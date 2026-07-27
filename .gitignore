@@ -1,0 +1,10 @@
+# 로컬 키 — 절대 커밋 금지
+prototype/js/config.local.js
+
+.DS_Store
+node_modules/
+*.log
+
+# 개발용 자체 서명 인증서 (devserver.py --tls)
+prototype/.devcert.pem
+prototype/.devkey.pem

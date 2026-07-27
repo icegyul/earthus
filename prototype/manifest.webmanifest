@@ -1,0 +1,18 @@
+{
+  "name": "earthus — 지구관측 시각화",
+  "short_name": "earthus",
+  "description": "전 세계 기상·해양·재난 관측 자료를 3D 지구본 위에 실시간으로 보여줍니다. 모든 값에 출처와 관측 시각을 함께 표시합니다.",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#000000",
+  "theme_color": "#02060c",
+  "categories": ["weather", "education", "utilities"],
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

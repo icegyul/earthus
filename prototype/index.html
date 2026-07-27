@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<title>earthus — 지구관측 시각화</title>
+<meta name="description" content="전 세계 기상·해양·재난 관측 자료를 3D 지구본 위에 실시간으로. 모든 값에 출처와 관측 시각을 함께 표시합니다.">
+<meta name="application-name" content="earthus">
+<meta name="apple-mobile-web-app-title" content="earthus">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+<!-- 공유했을 때 -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="earthus">
+<meta property="og:title" content="earthus — 지구관측 시각화">
+<meta property="og:description" content="전 세계 기상·해양·재난 관측 자료를 3D 지구본 위에 실시간으로.">
+<meta property="og:image" content="icon.svg">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Widgets/widgets.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/account.css">
+<link rel="stylesheet" href="css/ask.css">
+</head>
+<body>
+
+<div id="cesiumContainer"></div>
+
+<div class="overlay">
+
+  <!-- ══ AMBIENT ══ -->
+  <div id="ambient">
+    <div class="amb-top">
+      <div class="clock"><span class="ampm" id="ampm">오후</span><span id="hhmm">—:—</span></div>
+      <div class="amb-date" id="ambDate">—</div>
+      <div class="amb-city" id="ambCity">—</div>
+    </div>
+    <div class="amb-bottom">
+      <div class="amb-cond" id="ambCond">—</div>
+      <div class="amb-temprow">
+        <div class="amb-temp" id="ambTemp">—</div>
+        <div class="amb-hl"><span id="ambHi">—</span><br><span id="ambLo">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="banner"></div>
+
+  <!-- 자료 안내 (좌측 하단) — 무엇을 보고 있고, 언제 것이고, 다음은 언제인가.
+       ⚠️ 지우지 말 것. 출처 표기는 장식이 아니라 NOAA·NASA·RealEarth 자료의 **이용 조건**이고,
+          받은 말로는 "나오는 게 재미있고 신뢰도 높다". 작게 두되 계속 보이게 한다. -->
+  <div id="srcNote" aria-live="polite"></div>
+
+  <!-- 바람 범례 — 선의 밝기가 곧 세기라는 걸 알려준다 -->
+  <div id="windLegend">
+    <div class="wl-scale">
+      <span class="wl-seg s1"></span><span class="wl-seg s2"></span>
+      <span class="wl-seg s3"></span><span class="wl-seg s4"></span>
+    </div>
+    <div class="wl-labels"><span>약함</span><span>5</span><span>15</span><span>25</span><span>m/s</span></div>
+    <!-- 예보일 때만 나온다. ⚠️ 예보를 현재값처럼 보여주면 틀린 정보를 주는 것이다. -->
+    <div class="wl-fc" id="windFcTag" hidden></div>
+  </div>
+
+  <!-- ══ 오른쪽 2단 메뉴 ═══════════════════════════════════════
+       손잡이만 화면에 남기고, 누르면 1단(지구/위성/…)이 오른쪽에서 나온다.
+       "지구"를 누르면 2단(레이어 썸네일)이 그 왼쪽으로 한 번 더 나온다.
+       확대 여부와 무관하게 항상 쓸 수 있다. -->
+  <button id="menuTab" aria-label="메뉴" aria-expanded="false"><span class="mt-arrow"></span></button>
+
+  <!-- 2단: 지구 스타일 (1단보다 왼쪽) -->
+  <div id="menuSub" aria-hidden="true">
+    <div class="ms-head">지구 스타일</div>
+    <div id="layerStrip"></div>
+  </div>
+
+  <!-- 1단 -->
+  <nav id="menuMain" aria-hidden="true">
+    <button class="mm-item" data-open="earth">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9.2"/><ellipse cx="12" cy="12" rx="4" ry="9.2"/><path d="M2.9 12h18.2"/></svg></span>
+      <span class="mm-label">지구</span><span class="mm-chev">‹</span>
+    </button>
+    <button class="mm-item" data-act="sat">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4.4" transform="rotate(-30 12 12)"/></svg></span>
+      <span class="mm-label">위성</span><span class="mm-badge" id="satCount"></span>
+    </button>
+    <button class="mm-item" data-act="ask">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><circle cx="11" cy="11" r="6.4"/><path d="M15.8 15.8 20.5 20.5" stroke-linecap="round"/><path d="M9.2 9.4c.2-1 1-1.6 1.9-1.6 1 0 1.8.7 1.8 1.6 0 1.3-1.7 1.4-1.7 2.6" stroke-linecap="round"/><circle cx="11.2" cy="14.4" r=".55" fill="currentColor" stroke="none"/></svg></span>
+      <span class="mm-label">물어보기</span>
+    </button>
+    <!-- 한국 특화 — 기상청 자료가 여기로 모인다.
+         ⚠️ 한국 밖 사용자에게는 이 항목을 강조하지 않는다 (ui-korea.js 가 판단).
+             지구를 보러 온 사람에게 한국 특보를 들이밀면 기능이 아니라 방해다. -->
+    <button class="mm-item" data-act="korea">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M7.6 13.4c1.3-2 3.5-2 4.4 0s3.1 2 4.4 0" stroke-linecap="round"/></svg></span>
+      <span class="mm-label">한국</span><span class="mm-badge" id="koreaBadge"></span>
+    </button>
+    <button class="mm-item" data-act="events">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M4.5 4.6h11.3l3.7 3.7v11.1H4.5z"/><path d="M7.6 9.4h6.2M7.6 12.5h8.8M7.6 15.6h5.2" stroke-linecap="round"/></svg></span>
+      <span class="mm-label">이벤트</span><span class="mm-badge" id="eventBadge"></span>
+    </button>
+    <button class="mm-item" data-act="community">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M20.4 12.4c0 3.9-3.8 7-8.4 7-1 0-2-.15-2.9-.42L4 20.6l1.35-3.5C4 15.9 3.2 14.25 3.2 12.4c0-3.87 3.76-7 8.4-7s8.8 3.13 8.8 7z"/></svg></span>
+      <span class="mm-label">커뮤니티</span><span class="mm-badge" id="commBadge"></span>
+    </button>
+    <button class="mm-item" data-act="flight">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2.4c.9 0 1.5 1.1 1.5 2.6v3.4l7.4 4.3v2.1l-7.4-2.3v4.2l2.5 1.8v1.6L12 19.3l-4 .8v-1.6l2.5-1.8v-4.2L3.1 14.8v-2.1l7.4-4.3V5c0-1.5.6-2.6 1.5-2.6z"/></svg></span>
+      <span class="mm-label">항공편</span><span class="mm-badge" id="flightBadge"></span>
+    </button>
+    <button class="mm-item" data-act="sky">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.4M12 19.2v2.4M21.6 12h-2.4M4.8 12H2.4M18.8 5.2l-1.7 1.7M6.9 17.1l-1.7 1.7M18.8 18.8l-1.7-1.7M6.9 6.9 5.2 5.2" stroke-linecap="round"/></svg></span>
+      <span class="mm-label">하늘</span><span class="mm-badge" id="skyBadge"></span>
+    </button>
+    <button class="mm-item" data-act="locate">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r="8" opacity=".55"/><path d="M12 1.5v2.6M12 19.9v2.6M22.5 12h-2.6M4.1 12H1.5" stroke-linecap="round"/></svg></span>
+      <span class="mm-label">내 위치</span>
+    </button>
+    <button class="mm-item" data-act="globe">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v6M12 3l-3 3M12 3l3 3"/><circle cx="12" cy="14" r="7"/></svg></span>
+      <span class="mm-label">전지구로</span>
+    </button>
+    <div class="mm-sep"></div>
+    <button class="mm-item" data-act="settings">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.2a2 2 0 0 1 2 2v.5a1.6 1.6 0 0 0 2.5 1.3l.4-.3a2 2 0 1 1 2.8 2.8l-.3.4a1.6 1.6 0 0 0 1.3 2.5h.5a2 2 0 1 1 0 4h-.5a1.6 1.6 0 0 0-1.3 2.5l.3.4a2 2 0 1 1-2.8 2.8l-.4-.3a1.6 1.6 0 0 0-2.5 1.3v.5a2 2 0 1 1-4 0v-.5a1.6 1.6 0 0 0-2.5-1.3l-.4.3a2 2 0 1 1-2.8-2.8l.3-.4A1.6 1.6 0 0 0 3.3 14h-.5a2 2 0 1 1 0-4h.5a1.6 1.6 0 0 0 1.3-2.5l-.3-.4a2 2 0 1 1 2.8-2.8l.4.3A1.6 1.6 0 0 0 10 4.7v-.5a2 2 0 0 1 2-2z"/></svg></span>
+      <span class="mm-label">설정</span>
+    </button>
+  </nav>
+
+  <!-- 위성 그룹 (아이콘에서 열림) -->
+  <div id="satSheet" class="sheet-panel">
+    <div class="traffic one"><button class="tl close" data-close="satSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3>위성 <span class="sat-status" id="satStatus">—</span></h3>
+
+    <label class="keep-row">
+      <input type="checkbox" id="satKeep">
+      <span>
+        <b>확대해도 계속 보기</b>
+        <em>내 지역 위로 지나가는 위성을 확인할 수 있습니다</em>
+      </span>
+    </label>
+    <div class="set-sep"></div>
+
+    <div id="satGroups"></div>
+    <div class="set-sep"></div>
+    <!-- 예정된 발사 — 커뮤니티에서 옮겨왔다 (발사는 경고가 아니라 일정) -->
+    <div id="satLaunches"></div>
+    <div id="chips" style="display:none"></div>
+  </div>
+
+  <!-- API 신청 관리 (설정 안) — 무엇을 신청했고 언제 만료되는가.
+       ⚠️ 키는 여기 저장하지 않는다. 서버 환경변수에만 둔다. -->
+  <div id="apiSheet" class="sheet-panel tall">
+    <div class="traffic one"><button class="tl close api-close" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="apiTitle">API 신청 관리</h3>
+    <div class="api-body"></div>
+  </div>
+
+  <!-- 물어보기: 질문 → 판단 → 자료 → 화면. AI API 없이 규칙으로 동작한다. -->
+  <div id="askSheet" class="sheet-panel tall">
+    <div class="traffic one"><button class="tl close ask-close" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="askTitle">물어보기</h3>
+    <div class="ask-log"></div>
+    <form class="ask-form" autocomplete="off">
+      <input class="ask-input" type="text" placeholder="지금 태풍 어디야?" aria-label="질문">
+      <button class="ask-send" type="submit" aria-label="보내기">→</button>
+    </form>
+  </div>
+
+  <!-- 이벤트: 교차검증된 사건 -->
+  <div id="eventSheet" class="sheet-panel tall">
+    <div class="traffic one"><button class="tl close" data-close="eventSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="eventTitle">이벤트</h3>
+    <div id="eventBody"></div>
+  </div>
+
+  <!-- 한국 — 기상청 자료 모음. 특보는 이 안의 한 탭이다. -->
+  <div id="koreaSheet" class="sheet-panel tall">
+    <div class="traffic one"><button class="tl close" data-close="koreaSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="koreaTitle">한국</h3>
+    <div id="koreaTabs" role="tablist"></div>
+    <div id="koreaBody"></div>
+  </div>
+
+  <!-- 기상특보 (한국) — 지금 발효 중인 것만 -->
+  <div id="warnSheet" class="sheet-panel tall">
+    <div class="traffic one"><button class="tl close" data-close="warnSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="warnTitle">기상특보</h3>
+    <div id="warnBody"></div>
+  </div>
+
+  <!-- 커뮤니티: 경고 · 개발 요청 -->
+  <div id="commSheet" class="sheet-panel tall">
+    <div class="traffic one"><button class="tl close" data-close="commSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="commTitle">커뮤니티</h3>
+    <div id="commBody"></div>
+  </div>
+
+  <!-- 항공편: 예약 · 예상 항로 · 내 비행기 추적 -->
+  <div id="flightSheet" class="sheet-panel tall">
+    <div class="traffic one"><button class="tl close" data-close="flightSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="flightTitle">항공편</h3>
+    <div id="flightBody"></div>
+  </div>
+
+  <!-- 구독 -->
+  <div id="subSheet" class="sheet-panel">
+    <div class="traffic one"><button class="tl close" data-close="subSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="subTitle">구독</h3>
+    <div id="subBody"></div>
+  </div>
+
+  <!-- 선착순 오픈 (항공기 · 선박) -->
+  <div id="demandSheet" class="sheet-panel">
+    <div class="traffic one"><button class="tl close" data-close="demandSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="demandTitle">—</h3>
+    <div id="demandBody"></div>
+  </div>
+
+  <!-- 하늘: 태양 · 유성우 · 일식/월식 -->
+  <div id="skySheet" class="sheet-panel tall">
+    <div class="traffic one"><button class="tl close" data-close="skySheet" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="skyTitle">하늘</h3>
+    <div id="skyBody"></div>
+  </div>
+
+  <!-- 정보 시트 -->
+
+  <!-- 기상특보 띠 (상단) — 한국 안에 있을 때만 뜬다.
+       ⚠️ 이건 안내지 공식 발표가 아니다. 눌러서 여는 패널에 그렇게 적는다. -->
+  <button id="warnBar" type="button" aria-live="polite" hidden></button>
+
+  <div id="sheet">
+    <!-- 맥 신호등 — 빨강=닫기, 노랑=내리기. 누구나 아는 관습이라 설명이 필요 없다. -->
+    <div class="traffic">
+      <button id="sheetClose" class="tl close" aria-label="닫기" title="닫기"><span>×</span></button>
+      <button id="sheetMin" class="tl min" aria-label="내리기" title="내리기 (궤적은 유지)"><span>−</span></button>
+    </div>
+    <div class="kind" id="sheetKind">—</div>
+    <h3 id="sheetTitle">—</h3>
+    <dl id="sheetRows"></dl>
+    <div id="rainbars"></div>
+    <div id="forecast"></div>
+  </div>
+
+
+  <div id="explore"></div>
+
+  <div id="gear" style="display:none">⚙</div>
+
+  <div id="settings">
+    <div class="traffic one"><button class="tl close" id="setClose" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="setTitle">설정</h3>
+
+    <div class="set-row"><label id="labLang">언어</label><div class="segbox" id="segLang"></div></div>
+    <div class="set-row"><label id="labUnit">온도 단위</label><div class="segbox" id="segUnit"></div></div>
+    <div class="set-row"><label id="labTier">요금제</label><div class="segbox" id="segTier"></div></div>
+    <div class="set-row"><label id="labApi">API 신청 관리</label><button id="btnApi" class="set-link">열기</button></div>
+    <div class="set-row">
+      <label id="labAlarm">위성 통과 알림</label>
+      <div class="segbox" id="segAlarm"></div>
+      <div class="set-hint" id="alarmHint"></div>
+    </div>
+    <div class="set-hint" id="tierHint"></div>
+
+    <div class="set-sep"></div>
+    <!-- ⚠️ 계정·사전등록은 지금 감춰둔다.
+         아직 로그인할 이유가 없는데 먼저 보여주면 진입 장벽만 된다.
+         유료 기능을 누를 때 그 자리에서 로그인 화면이 뜬다 (auth.requireLogin).
+         출시 준비 때 display 만 되돌리면 그대로 살아난다. -->
+    <button class="set-item" id="btnAccount" style="display:none"><span>계정</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnWaitlist" style="display:none"><span>사전등록 · 창립 멤버</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnTerms"><span>이용약관</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnPrivacy"><span>개인정보처리방침</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnChangelog"><span>업데이트</span><span class="chev">›</span></button>
+
+    <div class="set-sep"></div>
+    <div class="biz" id="bizInfo"></div>
+    <div class="credits">
+      데이터 · NASA GIBS / NOAA NESDIS GMGSI / NOAA SWPC / USGS / Open-Meteo (CC BY 4.0) /
+      CelesTrak / Launch Library 2 / © OpenStreetMap contributors
+    </div>
+  </div>
+
+  <!-- ══ 계정 ══ -->
+  <div id="accountSheet" class="sheet-panel">
+    <div class="traffic one"><button class="tl close" data-close="accountSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3>계정</h3>
+
+    <div id="accGuest">
+      <p class="sp-lead">로그인하지 않아도 지구본·기상·교육 콘텐츠는 모두 이용하실 수 있습니다.<br>
+        로그인은 <strong>구독, 설정 동기화, 창립 멤버 배지</strong>에 필요합니다.</p>
+      <button class="btn-primary" id="btnSignIn">로그인 / 가입</button>
+    </div>
+
+    <div id="accUser" style="display:none">
+      <dl class="acc-rows">
+        <dt>이메일</dt><dd id="accEmail">—</dd>
+        <dt>로그인 방식</dt><dd id="accProvider">—</dd>
+        <dt>요금제</dt><dd id="accTier">—</dd>
+      </dl>
+      <div class="founding" id="accBadge" style="display:none">✦ 창립 멤버</div>
+
+      <div class="set-sep"></div>
+      <button class="set-item" id="btnExport"><span>내 데이터 내려받기</span><span class="chev">›</span></button>
+      <button class="set-item" id="btnSignOut"><span>로그아웃</span><span class="chev">›</span></button>
+      <button class="set-item danger" id="btnDelete"><span>계정 삭제</span><span class="chev">›</span></button>
+      <p class="sp-note">계정을 삭제하면 모든 데이터가 즉시 파기되며 복구할 수 없습니다.
+        유료 구독 중이라면 App Store / Google Play에서 구독을 별도로 해지하셔야 합니다.</p>
+    </div>
+  </div>
+
+  <!-- ══ 로그인 ══ -->
+  <div id="loginSheet" class="sheet-panel">
+    <div class="traffic one"><button class="tl close" data-close="loginSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3>로그인</h3>
+    <p class="sp-lead" id="loginReason"></p>
+    <p class="sp-lead">Google 또는 Apple 계정으로만 가입할 수 있습니다.<br>
+      회사는 <strong>비밀번호를 저장하지 않습니다.</strong></p>
+    <p class="sp-note" id="bioNote" style="display:none">
+      ✓ 이 기기에서는 다음부터 <strong>Face ID / 지문</strong>으로 바로 들어옵니다.
+    </p>
+
+    <button class="oauth google" id="btnGoogle">
+      <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.7-2 5-4.4 6.6v5.5h7.1c4.2-3.8 6.6-9.5 6.6-16.1z"/><path fill="#34A853" d="M24 46c6 0 11-2 14.6-5.4l-7.1-5.5c-2 1.3-4.5 2.1-7.5 2.1-5.8 0-10.7-3.9-12.5-9.1H4.2v5.7C7.8 41.1 15.3 46 24 46z"/><path fill="#FBBC05" d="M11.5 28.1c-.5-1.3-.7-2.7-.7-4.1s.3-2.8.7-4.1v-5.7H4.2C2.8 17 2 20.4 2 24s.8 7 2.2 9.8l7.3-5.7z"/><path fill="#EA4335" d="M24 10.8c3.3 0 6.2 1.1 8.5 3.3l6.3-6.3C35 4.1 30 2 24 2 15.3 2 7.8 6.9 4.2 14.2l7.3 5.7c1.8-5.2 6.7-9.1 12.5-9.1z"/></svg>
+      Google로 계속하기
+    </button>
+    <button class="oauth apple" id="btnApple">
+      <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="currentColor"><path d="M17.05 12.54c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.7-3.19-1.73-1.36-.14-2.65.8-3.34.8-.69 0-1.75-.78-2.88-.76-1.48.02-2.85.86-3.61 2.18-1.54 2.67-.39 6.62 1.11 8.79.73 1.06 1.6 2.25 2.74 2.21 1.1-.04 1.52-.71 2.85-.71 1.33 0 1.7.71 2.86.69 1.18-.02 1.93-1.08 2.65-2.15.84-1.23 1.18-2.42 1.2-2.48-.03-.01-2.3-.88-2.32-3.52zM14.9 5.6c.6-.74 1.01-1.76.9-2.78-.87.04-1.93.58-2.56 1.31-.56.65-1.05 1.69-.92 2.69.97.07 1.97-.49 2.58-1.22z"/></svg>
+      Apple로 계속하기
+    </button>
+
+    <p class="sp-note" id="loginNotice" style="display:none">
+      ⚠️ 아직 Supabase 키가 설정되지 않았습니다. <code>js/config.local.js</code> 를 만들고
+      키를 입력하면 실제 로그인이 동작합니다.
+    </p>
+    <p class="sp-fine">계속 진행하면 <a href="#" data-legal="terms">이용약관</a> 및
+      <a href="#" data-legal="privacy">개인정보처리방침</a>에 동의하는 절차로 이동합니다.</p>
+  </div>
+
+  <!-- ══ 동의 ══ -->
+  <div id="consentSheet" class="sheet-panel">
+    <h3>약관 동의</h3>
+    <p class="sp-lead">서비스 이용을 위해 아래 항목에 동의해주세요.<br>
+      <strong>선택 항목은 동의하지 않아도 가입하실 수 있습니다.</strong></p>
+
+    <label class="consent all"><input type="checkbox" id="cAll"><span>전체 동의</span></label>
+    <div class="set-sep"></div>
+
+    <label class="consent"><input type="checkbox" id="cTos">
+      <span><b class="req">[필수]</b> 이용약관에 동의합니다
+        <a href="#" data-legal="terms">보기</a></span></label>
+    <label class="consent"><input type="checkbox" id="cPrivacy">
+      <span><b class="req">[필수]</b> 개인정보 수집·이용에 동의합니다
+        <a href="#" data-legal="privacy">보기</a></span></label>
+    <label class="consent"><input type="checkbox" id="cAge">
+      <span><b class="req">[필수]</b> 만 14세 이상입니다</span></label>
+
+    <div class="set-sep"></div>
+
+    <label class="consent"><input type="checkbox" id="cLocation">
+      <span><b class="opt">[선택]</b> 위치정보 이용에 동의합니다
+        <em>현재 위치의 기상 정보 표시에만 사용하며 저장하지 않습니다</em></span></label>
+    <label class="consent"><input type="checkbox" id="cMarketing">
+      <span><b class="opt">[선택]</b> 마케팅 정보 수신에 동의합니다
+        <em>신규 기능·이벤트 안내</em></span></label>
+
+    <button class="btn-primary" id="consentSubmit" disabled style="opacity:.4">동의하고 시작하기</button>
+    <button class="btn-text" id="consentCancel">동의하지 않고 나가기</button>
+  </div>
+
+  <!-- ══ 사전등록 ══ -->
+  <div id="waitlistSheet" class="sheet-panel">
+    <div class="traffic one"><button class="tl close" data-close="waitlistSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3>창립 멤버 사전등록</h3>
+    <p class="sp-lead">항공기·선박 실시간 추적은 유료 데이터라, 창립 멤버가 목표만큼 모이면
+      그 매출로 엽니다. 지금 등록하시면 <strong>평생 가격 고정 · 얼리 액세스 · 창립 멤버 배지</strong>를 받으십니다.</p>
+
+    <div id="wlProgress" style="display:none">
+      <div class="wl-track"><div class="wl-bar" id="wlBar"></div></div>
+      <div class="wl-text" id="wlText">—</div>
+    </div>
+
+    <form id="wlForm">
+      <input type="email" id="wlEmail" placeholder="이메일 주소" required autocomplete="email">
+      <label class="consent"><input type="checkbox" id="wlMarketing">
+        <span><b class="opt">[선택]</b> 출시 소식과 이벤트 안내를 받겠습니다</span></label>
+      <button type="submit" class="btn-primary">사전등록하기</button>
+    </form>
+    <p class="sp-fine">등록하신 이메일은 출시 안내 목적으로만 사용하며,
+      <a href="#" data-legal="privacy">개인정보처리방침</a>에 따라 처리됩니다.</p>
+  </div>
+
+  <!-- ══ 법적 문서 ══ -->
+  <div id="legalSheet" class="sheet-panel tall">
+    <div class="traffic one"><button class="tl close" data-close="legalSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="legalTitle">—</h3>
+    <div class="legal-body" id="legalBody"></div>
+  </div>
+
+  <!-- ══ 업데이트 내역 ══ -->
+  <div id="changelogSheet" class="sheet-panel tall">
+    <div class="traffic one"><button class="tl close" data-close="changelogSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="clTitle">업데이트</h3>
+    <div class="legal-body changelog" id="clBody"></div>
+  </div>
+
+  <div id="toast"></div>
+</div>
+
+<!-- 개발용 HUD -->
+<div id="hud">
+  <div>고도 <b id="hAlt">—</b></div>
+  <div>상태 <span class="mode" id="hMode">—</span></div>
+  <div>표시핀 <b id="hPins">0</b></div>
+  <div>프레임 <b id="hFps">—</b></div>
+  <div>해상도 <b id="hRes">—</b></div>
+  <hr>
+  <div id="hApi"></div>
+  <hr>
+  <div class="row">
+    <button data-jump="globe">전지구</button>
+    <button data-jump="country">국가</button>
+    <button data-jump="province">시도</button>
+    <button id="hudHide">숨김</button>
+  </div>
+</div>
+<button id="hudShow">HUD</button>
+
+<div id="loading">지구 불러오는 중…</div>
+
+<script>window.CESIUM_BASE_URL='https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/';</script>
+<script src="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Cesium.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/satellite.js@5.0.0/dist/satellite.min.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

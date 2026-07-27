@@ -1,0 +1,1017 @@
+:root{
+  --paper:#f2f5f8;
+  --fog:rgba(242,245,248,.55);
+  --dim:rgba(242,245,248,.28);
+  --amber:#f2a65a;
+  --teal:#3fc7c0;
+  --red:#ff5d5d;
+  --violet:#c9a7ff;
+  --panel:rgba(11,16,23,.82);
+  --line:rgba(242,245,248,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+/* ⚠️ iOS 는 주소창·툴바가 접히고 펴지며 뷰포트 높이가 변한다.
+   height:100% 는 "레이아웃 뷰포트" 기준이라 툴바에 가려지는 영역까지 포함한다.
+   dvh 를 쓰면 실제로 보이는 높이를 따라간다. 지원 안 하면 100% 로 떨어진다. */
+html,body{width:100%;height:100%;overflow:hidden;background:#000}
+html,body{height:100dvh}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+  color:var(--paper);-webkit-font-smoothing:antialiased;
+  user-select:none;-webkit-user-select:none;
+}
+a{color:var(--teal);text-decoration:none}
+
+#cesiumContainer{position:absolute;inset:0}
+.cesium-widget-credits,.cesium-viewer-bottom{display:none!important}
+.cesium-widget canvas{outline:none}
+
+.overlay{position:absolute;inset:0;pointer-events:none;z-index:10}
+.overlay>*{pointer-events:auto}
+
+/* ══════════ AMBIENT ══════════ */
+#ambient{position:absolute;inset:0;pointer-events:none;
+  transition:opacity .55s ease,transform .55s ease}
+#ambient.hidden{opacity:0;transform:translateY(-10px)}
+
+.amb-top{position:absolute;top:max(40px,env(safe-area-inset-top));left:0;right:0;text-align:center}
+.clock{font-size:clamp(44px,8.6vw,74px);font-weight:200;line-height:1;
+  display:flex;align-items:baseline;justify-content:center;gap:.26em}
+.clock .ampm{font-size:.42em;font-weight:300}
+.amb-date{margin-top:13px;font-size:15.5px;font-weight:300;opacity:.9}
+.amb-city{margin-top:5px;font-size:19px;font-weight:300;opacity:.92}
+
+.amb-bottom{position:absolute;bottom:max(62px,calc(env(safe-area-inset-bottom) + 48px));
+  left:0;right:0;text-align:center}
+.amb-cond{font-size:18px;font-weight:300;opacity:.88;margin-bottom:5px}
+.amb-temprow{display:flex;align-items:center;justify-content:center;gap:17px}
+.amb-temp{font-size:70px;font-weight:200;line-height:1}
+.amb-hl{font-size:20px;font-weight:300;line-height:1.45;text-align:left;opacity:.9}
+
+/* 전지구 이벤트 배너 (§5-10) */
+/* ⚠️ 알람은 **상단 한 곳**에만 둔다.
+   예전에는 특보 띠(#warnBar)가 위, 이벤트 배너(#banner)가 아래에 따로 떠서
+   같은 '알림'인데 두 군데를 봐야 했다. 둘 다 위로 모은다.
+   ⚠️ 특보 띠가 떠 있으면 그 아래로 내려가야 겹치지 않는다 (body.has-warn). */
+#banner{
+  position:absolute;top:calc(env(safe-area-inset-top, 0px) + 10px);left:50%;
+  transform:translateX(-50%) translateY(-14px);
+  display:flex;align-items:center;gap:9px;
+  font-size:13px;font-weight:300;letter-spacing:.01em;
+  padding:9px 16px;border-radius:999px;cursor:pointer;
+  background:var(--panel);backdrop-filter:blur(18px);
+  border:1px solid var(--line);white-space:nowrap;max-width:92vw;
+  opacity:0;transition:opacity .4s ease,transform .4s ease;pointer-events:none;
+}
+#banner.on{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+/* 특보 띠가 있을 때는 그 아래로. 특보가 더 급하므로 위를 내준다. */
+body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
+#banner .dot{width:7px;height:7px;border-radius:50%;flex:none;animation:pulse 1.9s infinite}
+#banner .dot.red{background:var(--red);box-shadow:0 0 0 0 rgba(255,93,93,.6)}
+#banner .dot.violet{background:var(--violet);box-shadow:0 0 0 0 rgba(201,167,255,.6)}
+/* 쓰나미 경보 — 다른 배너와 같은 무게로 보이면 안 된다.
+   테두리를 붉게 하고 은은하게 맥동시켜 "이건 다르다"를 말한다. */
+#banner.alert{
+  border-color:rgba(255,93,93,.65);
+  background:linear-gradient(rgba(255,93,93,.14),rgba(255,93,93,.06)),var(--panel);
+  font-weight:400;animation:alertGlow 2.4s ease-in-out infinite;
+}
+@keyframes alertGlow{
+  0%,100%{box-shadow:0 0 0 0 rgba(255,93,93,.34)}
+  50%{box-shadow:0 0 0 7px rgba(255,93,93,0)}
+}
+@media (prefers-reduced-motion:reduce){
+  #banner.alert{animation:none}
+}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 currentColor;opacity:1}
+  70%{box-shadow:0 0 0 9px transparent;opacity:.75}
+  100%{box-shadow:0 0 0 0 transparent;opacity:1}
+}
+
+/* ══════════ EXPLORE ══════════ */
+#explore{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .5s ease}
+#explore.on{opacity:1}
+#explore.on #chips{pointer-events:auto}
+
+#chips{
+  position:absolute;top:max(18px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);
+  display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:min(94vw,760px);
+}
+.chip{
+  font:400 12.5px/1 inherit;letter-spacing:.01em;
+  padding:8px 13px;border-radius:999px;cursor:pointer;white-space:nowrap;
+  border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(16px);
+  color:var(--fog);transition:all .17s ease;
+}
+.chip:hover{border-color:rgba(242,245,248,.28)}
+.chip.on{color:#0b0f17;background:var(--paper);border-color:var(--paper)}
+.chip.paid{border-color:rgba(242,166,90,.3)}
+.chip.paid.on{background:var(--amber);border-color:var(--amber)}
+.chip.locked{color:var(--dim);border-style:dashed}
+.chip.locked::after{content:'🔒';margin-left:6px;font-size:9px;opacity:.7}
+.chip.blocked{color:var(--dim);opacity:.42;border-style:dotted}
+
+/* ══════════ 정보 시트 ══════════ */
+#sheet{
+  position:absolute;left:12px;right:12px;max-width:520px;margin:0 auto;
+  /* ⚠️ viewport-fit=cover 라서 bottom:12px 로 두면 홈 인디케이터와
+     Safari 하단 툴바 "아래"로 들어간다. 화면 밖으로 밀려 닫기(×)를 못 누른다. */
+  bottom:max(12px, calc(env(safe-area-inset-bottom) + 8px));
+  max-height:min(80vh, calc(100dvh - 120px));overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:20px 22px 22px;border-radius:18px;
+  background:var(--panel);backdrop-filter:blur(24px);border:1px solid var(--line);
+  transform:translateY(140%);transition:transform .4s cubic-bezier(.22,1,.36,1);
+  z-index:14;
+}
+#sheet.up{transform:translateY(0)}
+#sheet .kind{clear:both;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
+#sheet .kind.evt{color:var(--amber)}
+#sheet h3{font-size:20px;font-weight:400;margin-bottom:13px}
+#sheetRows{display:grid;grid-template-columns:auto 1fr;gap:7px 20px;font-size:14px;font-weight:300}
+#sheetRows dt{opacity:.52}
+/* ── 맥 신호등 버튼 ──
+   ⌄ 와 × 만으로는 무슨 버튼인지 알기 어렵다는 지적을 받았다.
+   맥 창 버튼은 색만으로 뜻이 통하는 관습이다 — 빨강 닫기, 노랑 내리기.
+   평소엔 기호를 감추고 올려놨을 때만 보여준다 (맥과 같은 동작). */
+/* ⚠️ 맥은 왼쪽이지만 이 앱은 오른쪽에 둔다.
+   나머지 UI(메뉴 손잡이·아이콘)가 전부 오른쪽이라 왼쪽에 있으면 손이 헷갈린다.
+   순서도 뒤집는다 — 바깥쪽(오른쪽)이 닫기. */
+.traffic{
+  position:sticky; top:0; float:right; z-index:3;
+  display:flex; flex-direction:row-reverse; gap:8px; padding:2px 0 10px;
+}
+.tl{
+  width:13px; height:13px; border-radius:50%; border:0; cursor:pointer; padding:0;
+  display:flex; align-items:center; justify-content:center;
+  transition:filter .15s ease;
+}
+.tl span{ font-size:10px; line-height:1; opacity:0; transition:opacity .15s ease; }
+.traffic:hover .tl span{ opacity:.55; }
+.tl.close{ background:#ff5f57; } .tl.close span{ color:#5c0b06; font-weight:700; }
+.tl.min{ background:#febc2e; }  .tl.min span{ color:#6b4700; font-weight:700; }
+.tl:active{ filter:brightness(.82); }
+
+/* 내린 상태 — 화면 밖으로 밀지만 선택은 유지한다 (궤적이 남는다) */
+#sheet.down{transform:translateY(calc(100% + 24px))}
+#sheetClose:hover{opacity:.8}
+.sheet-cta{
+  margin-top:16px;width:100%;font:500 14px/1 inherit;padding:12px;border-radius:10px;
+  cursor:pointer;background:var(--amber);color:#20140a;border:0;
+}
+#forecast{display:none;gap:4px;margin-top:16px;padding-top:15px;border-top:1px solid var(--line)}
+.fc-day{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12px;font-weight:300}
+.fc-name{opacity:.5;font-size:11px}
+.fc-hi{font-weight:400}
+.fc-lo{opacity:.45}
+
+/* ══════════ 설정 ══════════ */
+#gear{
+  position:absolute;right:14px;bottom:max(14px,env(safe-area-inset-bottom));
+  width:38px;height:38px;border-radius:50%;cursor:pointer;z-index:15;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  background:var(--panel);backdrop-filter:blur(16px);border:1px solid var(--line);
+  color:var(--fog);
+}
+#settings{
+  position:absolute;left:12px;right:12px;max-width:420px;margin:0 auto;
+  bottom:max(12px, calc(env(safe-area-inset-bottom) + 8px));   /* #sheet 주석 참고 */
+  max-height:min(82vh, calc(100dvh - 100px));overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:22px;border-radius:18px;z-index:16;
+  background:var(--panel);backdrop-filter:blur(24px);border:1px solid var(--line);
+  transform:translateY(150%);transition:transform .4s cubic-bezier(.22,1,.36,1);
+}
+#settings.up{transform:translateY(0)}
+#settings h3{font-size:17px;font-weight:400;margin-bottom:18px}
+#setClose{position:sticky;top:0;float:right;font-size:23px;font-weight:200;opacity:.4;cursor:pointer;line-height:1;z-index:2;padding:2px 2px 6px 10px}
+.set-row{margin-bottom:16px}
+.set-row label{display:block;font-size:12.5px;opacity:.55;margin-bottom:7px}
+.segbox{display:flex;gap:5px}
+.seg{
+  flex:1;font:400 13px/1 inherit;padding:9px;border-radius:8px;cursor:pointer;
+  background:rgba(242,245,248,.07);border:1px solid var(--line);color:var(--fog);
+}
+.seg.on{background:var(--paper);color:#0b0f17;border-color:var(--paper)}
+.set-hint{font-size:11.5px;opacity:.4;line-height:1.6;margin-top:-6px}
+
+/* ══════════ HUD (개발용) ══════════ */
+#hud{
+  /* ⚠️ 개발용 HUD 는 패널(#sheet 14 / #settings 16 / .sheet-panel 20)보다
+     아래에 있어야 한다. 위에 있으면 패널 상단의 닫기(×)를 덮어버려
+     "× 를 눌러도 안 닫힌다"가 된다 (실제로 그랬다). */
+  position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;z-index:11;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;line-height:1.8;
+  background:rgba(0,0,0,.66);backdrop-filter:blur(12px);border:1px solid var(--line);
+  padding:9px 12px;border-radius:9px;color:var(--fog);min-width:196px;
+}
+#hud b{color:var(--paper);font-weight:600}
+#hud .mode{color:var(--teal)}
+#hud hr{border:0;border-top:1px solid var(--line);margin:7px 0}
+#hud .row{display:flex;gap:5px;flex-wrap:wrap}
+#hud button{
+  font:inherit;font-size:10px;cursor:pointer;padding:4px 7px;border-radius:5px;
+  background:rgba(242,245,248,.08);color:var(--paper);border:1px solid var(--line);
+}
+#hud button:hover{background:rgba(242,245,248,.2)}
+#hApi{font-size:9.5px;line-height:1.9;word-break:break-all}
+#hApi .s-ok{color:#7ee0a0}
+#hApi .s-error{color:var(--red)}
+#hApi .s-loading{color:var(--fog)}
+#hApi .s-blocked{color:var(--dim);text-decoration:line-through}
+#hudShow:hover{opacity:.9}
+#hudShow{
+  position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;z-index:12;display:none;
+  /* 평상시엔 거의 안 보이게 — 개발자만 찾으면 된다 */
+  font:10px ui-monospace,monospace;cursor:pointer;padding:5px 8px;border-radius:8px;
+  background:rgba(0,0,0,.3);color:var(--fog);border:1px solid var(--line);opacity:.25;
+}
+
+/* ══════════ 토스트 / 로딩 ══════════ */
+#toast{
+  position:absolute;bottom:max(96px, calc(env(safe-area-inset-bottom) + 88px));left:50%;transform:translateX(-50%) translateY(10px);
+  padding:11px 18px;border-radius:10px;font-size:13px;font-weight:300;z-index:40;
+  background:rgba(20,26,34,.94);backdrop-filter:blur(18px);border:1px solid var(--line);
+  opacity:0;transition:all .3s ease;pointer-events:none;max-width:88vw;text-align:center;
+}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+#loading{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:#000;z-index:50;font-size:13px;font-weight:300;letter-spacing:.06em;
+  color:var(--fog);transition:opacity .6s ease;
+}
+#loading.gone{opacity:0;pointer-events:none}
+
+@media (max-width:520px){
+  #chips{max-width:96vw;gap:5px}
+  .chip{padding:7px 11px;font-size:11.5px}
+  #hud{font-size:9.5px;min-width:172px}
+}
+
+/* ── 시간별 강수확률 막대 ──
+   "몇 시에 비" 대신 확률만 보여준다. 한 번 틀리면 신뢰를 잃기 때문이다. */
+#rainbars{ display:none; margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
+.rb-title{ font-size:11.5px; opacity:.5; margin-bottom:9px; letter-spacing:.02em;
+  display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.rb-legend{ font:400 10px ui-monospace,monospace; opacity:.7; }
+.rb-note{ margin-top:9px; font-size:10.5px; font-weight:300; line-height:1.6; opacity:.4; }
+.rb-row{ display:flex; gap:4px; align-items:flex-end; }
+.rb{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.rb-track{ width:100%; height:46px; border-radius:4px; background:rgba(242,245,248,.07);
+  display:flex; align-items:flex-end; overflow:hidden; }
+.rb-fill{ width:100%; border-radius:4px; background:rgba(63,199,192,.55); }
+.rb-fill.hi{ background:var(--teal); }
+.rb-p{ font:400 9.5px ui-monospace,monospace; opacity:.75; }
+/* 강수량 — 있을 때만 나온다. 확률보다 흐리게 둬서 주인공이 확률임을 알린다. */
+.rb-mm{ font:400 9px ui-monospace,monospace; opacity:.45; color:var(--teal); }
+.rb-t{ font:400 9.5px ui-monospace,monospace; opacity:.35; }
+
+/* ── 내 위치 버튼 ── (기어 바로 위) */
+#btnLocate{
+  position:absolute; right:14px; bottom:calc(max(14px,env(safe-area-inset-bottom)) + 48px);
+  width:38px; height:38px; border-radius:50%; cursor:pointer; z-index:15;
+  background:rgba(12,16,22,.55); backdrop-filter:blur(16px);
+  border:1px solid var(--line); color:var(--paper);
+  display:flex; align-items:center; justify-content:center;
+  opacity:.75; transition:opacity .2s ease, transform .15s ease;
+}
+#btnLocate:hover{ opacity:1; }
+#btnLocate:active{ transform:scale(.93); }
+#btnLocate.on{ color:#4d9fff; opacity:1; }
+
+/* ── 바람 범례 ──
+   파티클 속도는 실제보다 과장돼 있다(안 그러면 안 움직여 보인다).
+   그래서 "선이 밝고 빠를수록 강하다"는 기준을 눈으로 알려줘야 한다. */
+#windLegend{
+  position:absolute; left:50%; transform:translateX(-50%);
+  bottom:max(58px, calc(env(safe-area-inset-bottom) + 52px));
+  z-index:12; opacity:0; pointer-events:none;
+  transition:opacity .4s ease;
+}
+#windLegend.on{ opacity:.75; }
+.wl-scale{ display:flex; width:150px; height:3px; border-radius:2px; overflow:hidden; }
+.wl-seg{ flex:1; }
+.wl-seg.s1{ background:rgba(255,255,255,.28); }
+.wl-seg.s2{ background:rgba(255,255,255,.45); }
+.wl-seg.s3{ background:rgba(255,255,255,.65); }
+.wl-seg.s4{ background:rgba(255,255,255,.9); }
+.wl-labels{
+  display:flex; justify-content:space-between; width:150px; margin-top:5px;
+  font:400 9px ui-monospace,monospace; opacity:.6; letter-spacing:.02em;
+}
+
+/* ── 시간별 강수확률 막대 ──
+   "몇 시에 비" 대신 확률만 보여준다. 한 번 틀리면 신뢰를 잃기 때문이다. */
+#rainbars{ display:none; margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
+.rb-title{ font-size:11.5px; opacity:.5; margin-bottom:9px; letter-spacing:.02em;
+  display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.rb-legend{ font:400 10px ui-monospace,monospace; opacity:.7; }
+.rb-note{ margin-top:9px; font-size:10.5px; font-weight:300; line-height:1.6; opacity:.4; }
+.rb-row{ display:flex; gap:4px; align-items:flex-end; }
+.rb{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.rb-track{ width:100%; height:46px; border-radius:4px; background:rgba(242,245,248,.07);
+  display:flex; align-items:flex-end; overflow:hidden; }
+.rb-fill{ width:100%; border-radius:4px; background:rgba(63,199,192,.55); }
+.rb-fill.hi{ background:var(--teal); }
+.rb-p{ font:400 9.5px ui-monospace,monospace; opacity:.75; }
+/* 강수량 — 있을 때만 나온다. 확률보다 흐리게 둬서 주인공이 확률임을 알린다. */
+.rb-mm{ font:400 9px ui-monospace,monospace; opacity:.45; color:var(--teal); }
+.rb-t{ font:400 9.5px ui-monospace,monospace; opacity:.35; }
+
+/* ── 내 위치 버튼 ── (기어 바로 위) */
+#btnLocate{
+  position:absolute; right:14px; bottom:calc(max(14px,env(safe-area-inset-bottom)) + 48px);
+  width:38px; height:38px; border-radius:50%; cursor:pointer; z-index:15;
+  background:rgba(12,16,22,.55); backdrop-filter:blur(16px);
+  border:1px solid var(--line); color:var(--paper);
+  display:flex; align-items:center; justify-content:center;
+  opacity:.75; transition:opacity .2s ease, transform .15s ease;
+}
+#btnLocate:hover{ opacity:1; }
+#btnLocate:active{ transform:scale(.93); }
+#btnLocate.on{ color:#4d9fff; opacity:1; }
+
+/* ── 바람 범례 ──
+   파티클 속도는 실제보다 과장돼 있다(안 그러면 안 움직여 보인다).
+   그래서 "선이 밝고 빠를수록 강하다"는 기준을 눈으로 알려줘야 한다. */
+#windLegend{
+  position:absolute; left:50%; transform:translateX(-50%);
+  bottom:max(58px, calc(env(safe-area-inset-bottom) + 52px));
+  z-index:12; opacity:0; pointer-events:none;
+  transition:opacity .4s ease;
+}
+#windLegend.on{ opacity:.75; }
+.wl-scale{ display:flex; width:150px; height:3px; border-radius:2px; overflow:hidden; }
+.wl-seg{ flex:1; }
+.wl-seg.s1{ background:rgba(255,255,255,.28); }
+.wl-seg.s2{ background:rgba(255,255,255,.45); }
+.wl-seg.s3{ background:rgba(255,255,255,.65); }
+.wl-seg.s4{ background:rgba(255,255,255,.9); }
+.wl-labels{
+  display:flex; justify-content:space-between; width:150px; margin-top:5px;
+  font:400 9px ui-monospace,monospace; opacity:.6; letter-spacing:.02em;
+}
+
+/* ══════════ 하단 레이어 스트립 ══════════════════════════════
+   리빙어스식. 서랍보다 이쪽이 나은 이유:
+   ① 무엇을 고를 수 있는지 한눈에 보인다 (서랍은 열어야 안다)
+   ② 썸네일이 "켜면 이렇게 보인다"를 미리 알려준다
+   ③ 엄지로 닿는 하단에 있다 */
+/* ⚠️ 여기 있던 옛 '가로 레이어 스트립'(#layerBar/#layerStrip/.ly) 규칙을 지웠다.
+   지구 스타일이 세로 2열 격자로 바뀌었는데도 옛 규칙이 남아 있어서,
+   같은 선택자에 대해 뒤 규칙이 덮지 못한 속성들이 계속 살아 있었다:
+     #layerStrip { overflow-x:auto; scroll-snap-type:x proximity }
+     .ly         { width:92px; flex:0 0 auto; scroll-snap-align:center }
+   패널 폭이 186px 인데 항목을 92px 로 강제하니 두 칸이 184px + 여백 → 넘침,
+   거기에 overflow-x:auto 가 걸려 **손으로 잡으면 좌우로 밀렸다**.
+   ⚠️ 죽은 CSS 는 안 지우면 언젠가 살아있는 규칙을 오염시킨다. 지우는 게 맞다. */
+
+/* ── 하단 아이콘 줄 ── */
+#dock{
+  position:absolute; left:0; right:0; z-index:15;
+  bottom:max(8px,env(safe-area-inset-bottom));
+  display:flex; align-items:center; justify-content:space-around;
+  padding:0 18px;
+  opacity:0; transform:translateY(10px); pointer-events:none;
+  transition:opacity .38s ease, transform .38s cubic-bezier(.22,1,.36,1);
+}
+#dock.on{ opacity:1; transform:translateY(0); pointer-events:auto; }
+#dock button{
+  background:none; border:0; cursor:pointer; color:var(--paper);
+  opacity:.55; padding:9px 14px; position:relative; line-height:0;
+  transition:opacity .18s ease, transform .14s ease;
+}
+#dock button:hover{ opacity:.9; }
+#dock button:active{ transform:scale(.9); }
+#dock button.on{ opacity:1; color:#4d9fff; }
+.dock-badge{
+  position:absolute; right:6px; top:4px; min-width:15px; height:15px;
+  border-radius:8px; background:rgba(77,159,255,.9); color:#04121f;
+  font:600 9px/15px ui-monospace,monospace; text-align:center; padding:0 3px;
+}
+.dock-badge:empty{ display:none; }
+
+@media (max-width:390px){
+  .ly{ width:80px; } .ly canvas{ width:54px; height:54px; }
+}
+
+/* ══════════ 오른쪽 2단 메뉴 ═══════════════════════════════════
+   손잡이만 남기고 감춰두는 이유: 리빙어스처럼 평상시엔 지구만 보여야 한다.
+   2단 구조인 이유: 1단은 큰 갈래(지구/위성/설정), 2단은 그 안의 선택지.
+   한 화면에 다 펼치면 다시 "설정창 열어둔 앱"이 된다. */
+:root{ --mm-w:158px; --ms-w:206px; }
+
+#menuTab{
+  position:absolute; right:0; top:50%; transform:translateY(-50%);
+  z-index:19; width:26px; height:78px; cursor:pointer;
+  border-radius:13px 0 0 13px; border:1px solid var(--line); border-right:0;
+  background:rgba(12,16,22,.55); backdrop-filter:blur(16px);
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .42s cubic-bezier(.22,1,.36,1), background .2s ease;
+}
+#menuTab:hover{ background:rgba(24,30,40,.78); }
+.mt-arrow{
+  width:7px; height:7px; margin-left:3px;
+  border-left:1.5px solid var(--paper); border-bottom:1.5px solid var(--paper);
+  transform:rotate(45deg); opacity:.75;
+  transition:transform .42s cubic-bezier(.22,1,.36,1), margin .42s ease;
+}
+#menuTab.open{ transform:translateY(-50%) translateX(calc(-1 * var(--mm-w))); }
+#menuTab.open.sub{ transform:translateY(-50%) translateX(calc(-1 * (var(--mm-w) + var(--ms-w)))); }
+#menuTab.open .mt-arrow{ transform:rotate(-135deg); margin-left:-3px; }
+
+/* ── 1단 ── */
+#menuMain{
+  position:absolute; right:0; top:50%; transform:translateY(-50%) translateX(100%);
+  z-index:18; width:var(--mm-w); border-radius:14px 0 0 14px;
+  background:rgba(10,14,20,.74); backdrop-filter:blur(26px);
+  border:1px solid var(--line); border-right:0;
+  padding:8px 0; overflow:hidden;
+  transition:transform .42s cubic-bezier(.22,1,.36,1);
+}
+#menuMain.open{ transform:translateY(-50%) translateX(0); }
+
+.mm-item{
+  width:100%; display:flex; align-items:center; gap:10px;
+  background:none; border:0; cursor:pointer; color:var(--paper);
+  font:400 13px/1 inherit; padding:12px 14px; text-align:left;
+  opacity:.82; transition:opacity .16s ease, background .16s ease;
+}
+.mm-item:hover{ opacity:1; background:rgba(255,255,255,.05); }
+.mm-item.on{ color:#4d9fff; opacity:1; }
+.mm-ico{ line-height:0; flex:none; }
+.mm-label{ flex:1; }
+.mm-chev{ opacity:.4; font-size:16px; transition:transform .3s ease; }
+.mm-item.open .mm-chev{ transform:rotate(180deg); }
+.mm-badge{
+  min-width:16px; height:16px; border-radius:8px; padding:0 4px;
+  background:rgba(77,159,255,.9); color:#04121f;
+  font:600 9px/16px ui-monospace,monospace; text-align:center;
+}
+.mm-badge:empty{ display:none; }
+.mm-sep{ height:1px; background:var(--line); margin:6px 12px; }
+
+/* ── 2단 : 지구 스타일 (1단 왼쪽으로) ── */
+#menuSub{
+  position:absolute; right:var(--mm-w); top:50%;
+  transform:translateY(-50%) translateX(calc(100% + var(--mm-w)));
+  z-index:18; width:var(--ms-w);
+  max-height:min(78vh, calc(100dvh - 90px));
+  border-radius:14px 0 0 14px;
+  background:rgba(10,14,20,.74); backdrop-filter:blur(26px);
+  border:1px solid var(--line); border-right:0;
+  display:flex; flex-direction:column; overflow:hidden;
+  transition:transform .42s cubic-bezier(.22,1,.36,1);
+}
+#menuSub.open{ transform:translateY(-50%) translateX(0); }
+.ms-head{
+  font-size:11.5px; letter-spacing:.05em; opacity:.5;
+  padding:13px 14px 9px; border-bottom:1px solid var(--line);
+}
+#layerStrip{
+  flex:1; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;
+  display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:10px;
+  /* ⚠️ 손가락으로 잡았을 때 **세로로만** 움직이게 한다.
+     touch-action 을 안 주면 브라우저가 좌우 제스처도 스크롤로 해석한다. */
+  touch-action:pan-y;
+  /* 끝까지 내린 뒤 더 밀어도 뒤(지구본)로 넘어가지 않게 한다 */
+  overscroll-behavior:contain;
+}
+/* ⚠️ 격자 항목은 폭을 강제하지 않는다. 1fr 이 정하게 둔다 —
+   예전에 width:92px 이 남아 있어서 칸이 넘치고 좌우로 밀렸다. */
+#layerStrip > .ly{ width:auto; min-width:0; }
+#layerStrip::-webkit-scrollbar{ display:none; }
+
+.ly{
+  background:none; border:0; cursor:pointer; padding:7px 2px 9px;
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  color:var(--paper); position:relative; border-radius:10px;
+  transition:background .16s ease;
+}
+.ly:hover{ background:rgba(255,255,255,.05); }
+.ly canvas{ width:52px; height:52px; border-radius:50%; display:block;
+  box-shadow:0 2px 10px rgba(0,0,0,.55); transition:transform .18s ease; }
+.ly:active canvas{ transform:scale(.92); }
+.ly-name{ font-size:11.5px; font-weight:400; opacity:.72; line-height:1; }
+.ly-sub{ font-size:9.5px; font-weight:300; opacity:.4; line-height:1; }
+.ly.on .ly-name{ color:#4d9fff; opacity:1; }
+.ly.on .ly-sub{ opacity:.6; }
+.ly.on::after{
+  content:''; position:absolute; left:22%; right:22%; bottom:2px; height:2px;
+  border-radius:2px; background:#4d9fff;
+}
+.ly.locked canvas, .ly.blocked canvas{ filter:grayscale(1) brightness(.5); }
+
+@media (max-width:390px){
+  :root{ --mm-w:142px; --ms-w:186px; }
+  .ly canvas{ width:46px; height:46px; }
+}
+
+/* ── 위성 그림 ── */
+.sat-img{ margin:2px 0 16px; }
+.sat-img img, .sat-img canvas{
+  width:100%; border-radius:12px; display:block;
+  background:rgba(255,255,255,.03); border:1px solid var(--line);
+}
+.sat-img canvas{ aspect-ratio:420/240; }
+.sat-cap{ font-size:10.5px; opacity:.42; margin-top:6px; line-height:1.5; }
+.sat-cap a{ color:var(--teal); }
+
+/* ── 위성 통과 예보 ── */
+.passes{ margin-top:18px; padding-top:15px; border-top:1px solid var(--line); }
+.ps-title{ font-size:12.5px; opacity:.75; margin-bottom:10px; display:flex; align-items:baseline; gap:8px; }
+.ps-sub{ font-size:10.5px; opacity:.45; }
+.ps-empty{ font-size:12px; opacity:.5; line-height:1.6; }
+.ps-row{ display:flex; gap:12px; padding:9px 0; border-bottom:1px solid rgba(242,245,248,.06); }
+.ps-row:last-child{ border-bottom:0; }
+.ps-when{ font:400 11.5px ui-monospace,monospace; opacity:.65; min-width:82px; padding-top:1px; }
+.ps-main{ flex:1; font-size:12.5px; line-height:1.5; }
+.ps-main b{ font-weight:500; color:var(--teal); }
+.ps-main span{ display:block; opacity:.6; font-size:11.5px; }
+.ps-main em{ display:block; font-style:normal; opacity:.4; font-size:10.5px; margin-top:2px; }
+.ps-rx{
+  margin-top:14px; padding:11px 13px; border-radius:10px;
+  background:rgba(63,199,192,.08); border-left:2px solid var(--teal);
+}
+.ps-rx-t{ font-size:11.5px; font-weight:500; color:var(--teal); margin-bottom:5px; }
+.ps-rx-b{ font-size:11.5px; font-weight:300; line-height:1.65; opacity:.8; }
+.ps-rx-b b{ font-family:ui-monospace,monospace; font-weight:600; }
+
+/* ── 통과 알림 버튼 ── */
+.ps-row{ align-items:flex-start; }
+.ps-bell{
+  background:none; border:0; cursor:pointer; font-size:15px; line-height:1;
+  padding:4px 2px 4px 8px; opacity:.35; transition:opacity .15s ease, transform .12s ease;
+}
+.ps-bell:hover{ opacity:.8; }
+.ps-bell:active{ transform:scale(.88); }
+.ps-bell.on{ opacity:1; }
+.ps-lead{ font-size:10.5px; opacity:.45; margin-top:9px; }
+.ps-lead b{ color:var(--teal); font-weight:500; }
+.ps-limit{ font-size:10.5px; opacity:.35; margin-top:8px; line-height:1.6; }
+
+/* 내린 시트를 되돌리는 손잡이 */
+.sheet-restore{
+  position:absolute; left:50%; transform:translateX(-50%);
+  bottom:max(16px, calc(env(safe-area-inset-bottom) + 10px));
+  z-index:16; cursor:pointer;
+  font:400 12px/1 inherit; color:var(--paper);
+  padding:10px 16px; border-radius:999px;
+  background:rgba(12,16,22,.7); backdrop-filter:blur(16px);
+  border:1px solid var(--line);
+  animation:restoreIn .35s cubic-bezier(.22,1,.36,1);
+}
+@keyframes restoreIn{ from{opacity:0;transform:translateX(-50%) translateY(8px)} }
+
+/* ── 지진 단층 운동 ── */
+.fault{ margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
+.fa-t{ font-size:12.5px; opacity:.75; margin-bottom:9px; }
+.fa-load, .fa-none{ font-size:12px; opacity:.5; line-height:1.6; }
+.fa-name{ font-size:14.5px; font-weight:400; margin-bottom:7px; }
+.fa-name span{ font-size:12px; opacity:.6; margin-left:6px; }
+.fa-name.fa-reverse{ color:#ff8a65; }
+.fa-name.fa-normal{ color:#7ec8e3; }
+.fa-name.fa-strike-slip{ color:#ffd166; }
+.fa-d{ font-size:12.5px; font-weight:300; line-height:1.7; opacity:.82; }
+.fa-rows{ display:grid; grid-template-columns:auto 1fr; gap:5px 14px;
+  font-size:11.5px; font-weight:300; margin-top:11px; }
+.fa-rows dt{ opacity:.45; }
+.fa-rows dd{ font-family:ui-monospace,monospace; opacity:.8; }
+.fa-note{ font-size:10.5px; opacity:.4; margin-top:9px; line-height:1.6; }
+
+/* ── 현상의 위치 (열돔·환류 등) ── */
+.place-line{ margin:-4px 0 14px; font-size:12.5px; line-height:1.5; }
+.place-line b{ display:block; font-weight:400; opacity:.9; }
+.place-line span{ font-family:ui-monospace,monospace; font-size:10.5px; opacity:.45; }
+
+/* ── 공식 기관 링크 ── */
+.official{ margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
+.of-t{ font-size:12.5px; opacity:.75; margin-bottom:9px; }
+.of-row{
+  display:grid; grid-template-columns:1fr auto; gap:2px 8px;
+  padding:9px 0; border-bottom:1px solid rgba(242,245,248,.06);
+  color:var(--paper); text-decoration:none;
+}
+.of-row:last-of-type{ border-bottom:0; }
+.of-row:hover .of-l{ color:var(--teal); }
+.of-l{ font-size:12.5px; font-weight:400; }
+.of-n{ grid-column:1; font-size:10.5px; opacity:.42; }
+.of-x{ grid-row:1/3; align-self:center; opacity:.35; font-size:12px; }
+.of-note{ font-size:10.5px; opacity:.38; margin-top:9px; line-height:1.6; }
+
+/* ── 라이브 영상 임베드 ── */
+.live{ margin:2px 0 16px; }
+.lv-t{ font-size:12px; opacity:.8; margin-bottom:8px; display:flex; align-items:center; gap:7px; }
+.lv-dot{ width:7px; height:7px; border-radius:50%; background:var(--red);
+  box-shadow:0 0 0 0 rgba(255,93,93,.6); animation:lvPulse 1.8s infinite; }
+@keyframes lvPulse{ 70%{box-shadow:0 0 0 7px rgba(255,93,93,0)} 100%{box-shadow:0 0 0 0 rgba(255,93,93,0)} }
+.lv-frame{ position:relative; width:100%; aspect-ratio:16/9; border-radius:11px;
+  overflow:hidden; background:#000; border:1px solid var(--line); }
+.lv-frame iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+.lv-open{ display:inline-block; margin-top:8px; font-size:11.5px; color:var(--teal); }
+.lv-open.block{ display:block; padding:11px 13px; border-radius:10px;
+  background:rgba(63,199,192,.08); border-left:2px solid var(--teal); }
+.lv-note{ font-size:10.5px; opacity:.38; margin-top:7px; line-height:1.6; }
+
+/* ── 이벤트 원문 링크 ── */
+.evsrc{ margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
+.ev-warn{
+  font-size:11.5px; line-height:1.65; padding:10px 12px; border-radius:9px;
+  background:rgba(242,166,90,.1); border-left:2px solid var(--amber);
+  margin-bottom:12px; opacity:.9;
+}
+
+/* 지점 시트 안의 "이 지점을 덮고 있는 현상" 블록 (열돔·환류) */
+.ctx-block{
+  margin-top:14px; padding:11px 12px; border-radius:10px;
+  background:rgba(255,107,61,.09); border:1px solid rgba(255,107,61,.28);
+}
+.ctx-head{ display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:11px; opacity:.6; }
+.ctx-tag{
+  padding:2px 8px; border-radius:999px; font-size:11px; font-weight:400; opacity:1;
+  background:rgba(255,107,61,.22); color:#ffb199;
+}
+.ctx-rows{ display:grid; grid-template-columns:auto 1fr; gap:5px 13px; font-size:12.5px; font-weight:300; }
+.ctx-rows dt{ opacity:.5; white-space:nowrap; }
+
+/* 기관 대조 (USGS ↔ 일본 기상청) */
+.agency-check{
+  margin-top:14px; padding:11px 12px; border-radius:10px;
+  background:rgba(63,199,192,.07); border:1px solid rgba(63,199,192,.26);
+}
+.ac-head{ display:flex; align-items:baseline; gap:9px; font-size:11px; letter-spacing:.08em;
+  text-transform:uppercase; opacity:.6; margin-bottom:9px; }
+.ac-gap{ font:400 11px ui-monospace,monospace; letter-spacing:0; text-transform:none;
+  color:var(--amber); opacity:.95; }
+.ac-tbl{ width:100%; border-collapse:collapse; font-size:12.5px; font-weight:300; }
+.ac-tbl th{ font-weight:400; opacity:.5; text-align:right; padding:3px 0 6px; font-size:11px; }
+.ac-tbl th:first-child{ text-align:left; }
+.ac-tbl td{ padding:3px 0; text-align:right; font-variant-numeric:tabular-nums; }
+.ac-tbl td:first-child{ text-align:left; opacity:.5; }
+.ac-pri{ color:var(--teal); }
+.ac-note{ margin-top:9px; font-size:11px; line-height:1.65; opacity:.5; }
+.ac-note b{ font-weight:500; opacity:.85; }
+.ac-none{ font-size:11.5px; line-height:1.65; opacity:.5; }
+.ac-link{ display:inline-block; margin-top:8px; font-size:11.5px; color:var(--teal);
+  text-decoration:underline; text-underline-offset:3px; }
+
+/* 지점 열돔 판정 — 설명글과 지도가 같은 계산에서 나온다는 걸 보여주는 블록 */
+.heat-check{
+  margin-top:14px; padding:11px 12px; border-radius:10px;
+  background:rgba(242,245,248,.045); border:1px solid var(--line);
+}
+.heat-check.on{ background:rgba(255,107,61,.09); border-color:rgba(255,107,61,.3); }
+.hc-head{ display:flex; align-items:baseline; justify-content:space-between; gap:9px;
+  font-size:11px; letter-spacing:.08em; text-transform:uppercase; opacity:.55; margin-bottom:7px; }
+.hc-verdict{ font-size:11px; letter-spacing:0; text-transform:none; padding:2px 9px;
+  border-radius:999px; background:rgba(242,245,248,.1); opacity:.8; }
+.hc-verdict.yes{ background:rgba(255,107,61,.24); color:#ffb199; opacity:1; font-weight:500; }
+.hc-body{ font-size:12.5px; font-weight:300; line-height:1.65; opacity:.85; }
+.hc-crit{ margin-top:6px; font-size:10.5px; font-weight:300; line-height:1.55; opacity:.4; }
+
+/* 배너 순번 — 여러 소식이 돌아갈 때 몇 건 중 몇 번째인지.
+   ⚠️ 이게 없으면 "왜 아까 그 경보가 사라졌지?"가 된다. 더 있다는 걸 알려줘야 한다. */
+#banner .bn-n{
+  font-style:normal; margin-left:8px; padding-left:8px;
+  border-left:1px solid rgba(255,255,255,.16);
+  font:400 10px ui-monospace,SFMono-Regular,Menlo,monospace;
+  opacity:.5; letter-spacing:.02em;
+}
+
+/* 바람 범례의 "내일 예보" 표시.
+   ⚠️ 이 표시가 없으면 예보 바람을 지금 바람으로 읽는다. 색만으로는 구분되지 않는다. */
+#windLegend .wl-fc{
+  margin-top:5px; padding-top:5px; border-top:1px solid rgba(255,255,255,.12);
+  font-size:10px; letter-spacing:.02em; color:#b4d7ff; opacity:.9;
+}
+#windLegend .wl-fc[hidden]{ display:none; }
+
+/* ── 지상 관측소 시트 ──────────────────────────────────────
+   부이 시트와 같은 얼개다. 5일치 선 그래프 + 주변 사진.
+   ⚠️ 그래프는 SVG 로 그린다. 캔버스보다 가볍고 확대해도 안 깨진다. */
+.st-block { margin-top: 14px; }
+.st-h {
+  font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase;
+  color: rgba(255,255,255,.45); margin: 14px 0 7px;
+}
+.st-loading { font-size: 12.5px; color: rgba(255,255,255,.45); padding: 8px 0; }
+.st-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+.st-lab {
+  flex: 0 0 96px; display: flex; flex-direction: column; gap: 1px;
+  font-size: 11.5px; color: rgba(255,255,255,.5);
+}
+.st-lab b { font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.st-chart { flex: 1; position: relative; }
+.st-spark { width: 100%; height: 52px; display: block; }
+/* 위·아래 눈금 — 그래프만 있으면 "얼마나 변했나"를 알 수 없다 */
+.st-mm {
+  position: absolute; inset: 0; pointer-events: none;
+  display: flex; flex-direction: column; justify-content: space-between;
+  font-size: 9.5px; color: rgba(255,255,255,.3); font-variant-numeric: tabular-nums;
+}
+.st-raw { margin: 6px 0 10px; }
+.st-raw > summary {
+  font-size: 12px; color: rgba(255,255,255,.45); cursor: pointer; list-style: none;
+}
+.st-raw > summary::before { content: '▸ '; }
+.st-raw[open] > summary::before { content: '▾ '; }
+.st-raw code {
+  display: block; margin-top: 6px; padding: 8px 10px;
+  background: rgba(0,0,0,.25); border-radius: 7px;
+  font: 400 11.5px/1.5 ui-monospace, monospace;
+  color: rgba(255,255,255,.7); word-break: break-all; user-select: text;
+}
+.st-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.st-photo { display: block; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.05); }
+.st-photo img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+/* 저작자·라이선스는 반드시 보이게 둔다 — 가리면 이용 조건 위반이다 */
+.st-photo span {
+  display: block; padding: 4px 6px; font-size: 9.5px; line-height: 1.35;
+  color: rgba(255,255,255,.45); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.st-note { font-size: 11.5px; line-height: 1.55; color: rgba(255,255,255,.45); margin-top: 8px; }
+
+/* ── 오늘의 지구 ──────────────────────────────────────────
+   ⚠️ 카드에 재난 이미지를 쓰지 않는다. 숫자와 자리만 보여준다. */
+.td-counts { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
+.td-count {
+  flex: 1 1 88px; padding: 9px 10px; border-radius: 10px;
+  background: rgba(255,255,255,.05); text-align: center;
+}
+.td-count b { display: block; font-size: 17px; font-weight: 500; color: rgba(255,255,255,.92);
+              font-variant-numeric: tabular-nums; }
+.td-count span { display: block; margin-top: 2px; font-size: 10.5px; line-height: 1.3;
+                 color: rgba(255,255,255,.45); }
+.td-card {
+  display: block; width: 100%; text-align: left; margin-bottom: 7px;
+  padding: 11px 13px; border-radius: 11px; cursor: pointer;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.07);
+  font: inherit; color: inherit; transition: background .15s;
+}
+.td-card:hover { background: rgba(255,255,255,.09); }
+.td-t { font-size: 11.5px; color: rgba(255,255,255,.5); }
+.td-v { font-size: 20px; font-weight: 300; letter-spacing: -.3px; margin: 2px 0 1px;
+        color: rgba(255,255,255,.95); font-variant-numeric: tabular-nums; }
+.td-p { font-size: 11.5px; color: rgba(255,255,255,.42); }
+
+/* ── 자료 그래프 ──────────────────────────────────────────
+   ⚠️ 외부 차트 라이브러리를 쓰지 않는다 (첫 화면이 느려진다). SVG 로 직접 그린다. */
+.ch-h {
+  font-size: 12px; letter-spacing: .03em; color: rgba(255,255,255,.62);
+  margin: 16px 0 8px; font-weight: 500;
+}
+.ch-h:first-child { margin-top: 4px; }
+/* 넓은 그래프는 자기 영역 안에서만 가로 스크롤한다 — 화면 전체가 밀리면 안 된다 */
+.ch-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.ch-svg { display: block; width: 100%; min-width: 420px; height: auto; }
+.ch-leg { display: flex; gap: 12px; margin-top: 6px; font-size: 10.5px; color: rgba(255,255,255,.5); }
+.ch-leg span { display: flex; align-items: center; gap: 4px; }
+.ch-leg i { width: 12px; height: 2.5px; border-radius: 2px; display: inline-block; }
+
+.ch-bars { display: flex; flex-direction: column; gap: 3px; }
+.ch-bar { display: flex; align-items: center; gap: 8px; font-size: 11.5px; }
+.ch-bn { flex: 0 0 88px; color: rgba(255,255,255,.62); white-space: nowrap;
+         overflow: hidden; text-overflow: ellipsis; }
+.ch-bt { flex: 1; height: 13px; background: rgba(255,255,255,.05); border-radius: 3px; overflow: hidden; }
+/* ⚠️ 한 가지 색만 쓴다. 값에 따라 색을 바꾸면 자료가 아니라 인상을 전달하게 된다. */
+.ch-bt i { display: block; height: 100%; background: rgba(140,190,235,.55); border-radius: 3px; }
+.ch-bv { flex: 0 0 96px; text-align: right; color: rgba(255,255,255,.8);
+         font-variant-numeric: tabular-nums; }
+
+.ch-note { font-size: 11px; line-height: 1.55; color: rgba(255,255,255,.45);
+           margin: 7px 0 4px; white-space: pre-line; }
+.ch-own { display: flex; flex-direction: column; gap: 6px; }
+.ch-o { padding: 9px 11px; border-radius: 9px; background: rgba(255,255,255,.05);
+        border-left: 2px solid rgba(255,160,110,.5); }
+.ch-o b { font-size: 12.5px; font-weight: 500; color: rgba(255,255,255,.88); }
+.ch-o p { margin: 3px 0 4px; font-size: 11px; line-height: 1.5; color: rgba(255,255,255,.55); }
+.ch-o span { font-size: 10px; color: rgba(255,255,255,.35); }
+
+/* ── 자료 안내 (좌측 하단) ────────────────────────────────
+   ⚠️ 출처 표기는 이용 조건이다. 가리거나 지우지 말 것.
+   ⚠️ 지구본 조작을 막으면 안 되므로 pointer-events 를 끈다. */
+/* ⚠️ 출처 표기는 장식이 아니라 NOAA·NASA·RealEarth 자료의 **이용 조건**이다.
+   가리거나 지우지 말 것. 받은 말로는 "나오는 게 재미있고 신뢰도 높다".
+   대신 지구를 덜 가리도록 작게 둔다. */
+#srcNote {
+  position: fixed; left: 10px; bottom: 10px; z-index: 8;
+  max-width: min(46vw, 380px);
+  display: none; flex-direction: column; gap: 0;
+  pointer-events: none;
+  font-size: 9px; line-height: 1.42;
+  color: rgba(255,255,255,.42);
+  text-shadow: 0 1px 3px rgba(0,0,0,.8);
+}
+#srcNote.on { display: flex; }
+#srcNote b { font-weight: 500; color: rgba(255,255,255,.66); }
+#srcNote i { font-style: normal; color: rgba(255,255,255,.3); }
+/* 좁은 화면에서는 앞 세 줄만 — 지구를 가리면 안 된다 */
+@media (max-width: 520px) {
+  #srcNote { max-width: 66vw; font-size: 8.5px; }
+  #srcNote span:nth-child(n+4) { display: none; }
+}
+/* ⚠️ 큰 화면에서는 오히려 키운다.
+   9px 는 폰에서 손에 든 거리 기준이다. **차량 화면(테슬라 1920×1200)은
+   팔 길이만큼 떨어져 있어** 같은 9px 가 아예 안 읽힌다.
+   출처 표기는 읽히라고 있는 것이지 형식으로 붙이는 게 아니다. */
+@media (min-width: 1600px) {
+  #srcNote { font-size: 12px; left: 18px; bottom: 16px; max-width: min(40vw, 520px); }
+}
+
+/* 대륙 선택 — 그래프 위의 작은 탭 */
+.ch-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.ch-tab {
+  font: inherit; font-size: 11.5px; cursor: pointer;
+  color: rgba(255,255,255,.6); background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08); border-radius: 999px; padding: 4px 10px;
+}
+.ch-tab.on { color: rgba(255,255,255,.95); background: rgba(255,255,255,.15);
+             border-color: rgba(255,255,255,.22); }
+
+/* 묶음 사이 구분선 — 제목 없이 묶임만 보여준다 (받은 요청) */
+.ly-gap {
+  grid-column: 1 / -1;
+  height: 1px; margin: 9px 2px 7px;
+  background: rgba(255,255,255,.08);
+}
+
+/* 범례에 "N년 전" 작은 글씨 */
+.ch-leg em { font-style: normal; color: rgba(255,255,255,.32); margin-left: 3px; font-size: 9.5px; }
+.ch-leg { flex-wrap: wrap; row-gap: 4px; }
+
+/* 한국 강조 — ⚠️ 값의 좋고 나쁨이 아니라 "여기가 우리"라는 표시다.
+   그래서 막대 색은 그대로 두고 테두리와 글자만 바꾼다. */
+.ch-bar.kr .ch-bn { color: #ffd166; font-weight: 500; }
+.ch-bar.kr .ch-bv { color: #ffd166; }
+.ch-bar.kr .ch-bt { box-shadow: inset 0 0 0 1px rgba(255,209,102,.45); }
+.ch-kr {
+  margin: 6px 0 0; padding: 6px 10px; border-radius: 8px;
+  background: rgba(255,209,102,.09); border-left: 2px solid rgba(255,209,102,.5);
+  font-size: 11.5px; color: rgba(255,220,150,.9);
+}
+
+/* 그래프 확대 — ⚠️ touch-action 을 꺼야 브라우저가 손가락을 먼저 가로채지 않는다 */
+.ch-wrap { touch-action: pan-y; cursor: default; overflow: hidden; }
+.ch-wrap.zoomed { cursor: grab; }
+.ch-wrap.zoomed:active { cursor: grabbing; }
+.ch-hint { font-size: 10.5px; color: rgba(255,255,255,.3); margin: 3px 0 0; }
+
+/* ── API 신청 관리 ────────────────────────────────────────
+   ⚠️ 키를 다루는 화면처럼 보이면 안 된다. 여기는 "언제 만료되나"만 본다. */
+#apiSheet .api-body { overflow-y: auto; }
+.api-intro { font-size: 12.5px; line-height: 1.6; color: rgba(255,255,255,.7); margin: 0 0 8px; }
+.api-warn {
+  font-size: 11.5px; line-height: 1.6; color: rgba(255,220,150,.8);
+  background: rgba(255,190,80,.07); border-left: 2px solid rgba(255,190,80,.4);
+  border-radius: 7px; padding: 8px 10px; margin: 0 0 14px;
+}
+.api-h { font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
+         color: rgba(255,255,255,.4); margin: 14px 0 6px; }
+.api-row { padding: 10px 12px; margin-bottom: 7px; border-radius: 10px;
+           background: rgba(255,255,255,.05); }
+.api-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.api-top b { font-size: 13.5px; font-weight: 500; color: rgba(255,255,255,.92); }
+.api-badge { flex: 0 0 auto; font-size: 10.5px; padding: 2px 8px; border-radius: 999px;
+             white-space: nowrap; }
+.api-badge.none { color: rgba(255,255,255,.45); background: rgba(255,255,255,.07); }
+.api-badge.ok   { color: #9fe0b4; background: rgba(120,220,150,.12); }
+.api-badge.warn { color: #ffd166; background: rgba(255,209,102,.13); }
+.api-badge.bad  { color: #ff8a80; background: rgba(255,100,90,.14); }
+.api-why { font-size: 11.5px; line-height: 1.55; color: rgba(255,255,255,.55); margin: 4px 0 8px; }
+.api-acts { display: flex; flex-wrap: wrap; gap: 6px; }
+.api-btn {
+  font: inherit; font-size: 11.5px; cursor: pointer; text-decoration: none;
+  color: rgba(20,26,34,.95); background: rgba(180,215,240,.9);
+  border: none; border-radius: 7px; padding: 6px 11px;
+}
+.api-btn.ghost { color: rgba(255,255,255,.75); background: rgba(255,255,255,.08);
+                 border: 1px solid rgba(255,255,255,.1); }
+.api-hint { font-size: 10.5px; line-height: 1.5; color: rgba(255,255,255,.4); margin: 7px 0 0; }
+.api-hint code { background: rgba(0,0,0,.28); border-radius: 4px; padding: 1px 5px;
+                 font: 400 10px ui-monospace, monospace; user-select: text; }
+.api-note { font-size: 11px; line-height: 1.55; color: rgba(255,255,255,.42);
+            margin-top: 14px; white-space: pre-line; }
+.set-link {
+  font: inherit; font-size: 12.5px; cursor: pointer;
+  color: rgba(255,255,255,.8); background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 5px 13px;
+}
+
+/* 키 넣는 법 — 접어 둔다. 평소엔 볼 일이 없고, 필요할 때만 편다. */
+.api-how { margin-top: 9px; }
+.api-how > summary { font-size: 11.5px; color: rgba(180,215,240,.85); cursor: pointer; list-style: none; }
+.api-how > summary::before { content: '▸ '; }
+.api-how[open] > summary::before { content: '▾ '; }
+.api-how > div { padding: 8px 0 0; }
+.api-steps { margin: 8px 0 0; padding-left: 18px; font-size: 11.5px; line-height: 1.75;
+             color: rgba(255,255,255,.65); }
+.api-steps code { background: rgba(0,0,0,.28); border-radius: 4px; padding: 1px 5px;
+                  font: 400 10.5px ui-monospace, monospace; user-select: text; }
+
+/* 자료 번호 — 신청 페이지에서 제목이 맞는지 눈으로 대조하라고 적어 둔다.
+   ⚠️ 비슷한 이름이 여러 개라, 번호까지 있어야 확실하다. */
+.api-pk { font-size: 10.5px; color: rgba(255,255,255,.38); margin: 0 0 8px;
+          font-variant-numeric: tabular-nums; }
+.api-pk span { color: rgba(255,255,255,.5); }
+
+/* ── 기상특보 띠 (상단) ────────────────────────────────────
+   ⚠️ 한국 안에서 내 근처에 특보가 있을 때만 보인다.
+      전 세계 사용자에게 한국 폭염경보를 띄우면 그건 알림이 아니라 방해다. */
+#warnBar {
+  position: fixed; top: calc(env(safe-area-inset-top, 0px) + 10px);
+  left: 50%; transform: translateX(-50%); z-index: 30;
+  max-width: min(92vw, 520px);
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 14px; border: 0; border-radius: 999px;
+  font: 500 12.5px/1.3 inherit; color: #fff; text-align: left;
+  background: rgba(20,20,22,.82);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: 0 6px 24px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.1);
+  cursor: pointer;
+}
+#warnBar[hidden] { display: none; }
+/* 왼쪽 색 점 — 특보 종류 색을 인라인 스타일로 넣는다 */
+#warnBar .wdot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+#warnBar .wtxt { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#warnBar .wmore { flex: 0 0 auto; font-size: 11px; color: rgba(255,255,255,.45); }
+/* 중대경보만 숨쉬게 한다. 전부 깜빡이면 아무것도 강조되지 않는다. */
+#warnBar.severe { animation: warnPulse 2.4s ease-in-out infinite; }
+@keyframes warnPulse {
+  0%, 100% { box-shadow: 0 6px 24px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.1); }
+  50%      { box-shadow: 0 6px 30px rgba(233,80,12,.5), inset 0 0 0 1px rgba(255,140,60,.55); }
+}
+@media (prefers-reduced-motion: reduce) { #warnBar.severe { animation: none; } }
+
+/* ── 특보 패널 ─────────────────────────────────────────── */
+.warn-row {
+  display: flex; align-items: baseline; gap: 9px;
+  padding: 9px 2px; border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.warn-row .wk { flex: 0 0 auto; font-size: 15px; }
+.warn-row .wn { flex: 1 1 auto; min-width: 0; }
+.warn-row .wn b { display: block; font-weight: 500; font-size: 13px; }
+.warn-row .wn i { font-style: normal; font-size: 11px; color: rgba(255,255,255,.42); }
+.warn-row .wd { flex: 0 0 auto; font-size: 11px; color: rgba(255,255,255,.5); }
+.warn-lv { font-size: 11px; padding: 1px 6px; border-radius: 4px; margin-left: 6px; }
+.warn-note { margin-top: 12px; font-size: 11px; line-height: 1.55; color: rgba(255,255,255,.42); }
+
+/* ── 한국탭 ────────────────────────────────────────────── */
+#koreaTabs { display: flex; gap: 4px; margin: 2px 0 10px; flex-wrap: wrap; }
+.kr-tab {
+  padding: 5px 12px; border: 0; border-radius: 999px; cursor: pointer;
+  font: 500 12px/1 inherit; color: rgba(255,255,255,.55);
+  background: rgba(255,255,255,.06);
+}
+.kr-tab.on { color: #fff; background: rgba(255,255,255,.18); }
+
+.kr-big { display: flex; flex-direction: column; gap: 2px; margin: 6px 0 14px; }
+.kr-big b { font-size: 34px; font-weight: 300; line-height: 1.05; }
+.kr-big span { font-size: 12px; color: rgba(255,255,255,.5); }
+.kr-big em { font-style: normal; font-size: 12px; color: #ffb066; }
+
+.kr-kv { display: flex; gap: 18px; margin-bottom: 14px; flex-wrap: wrap; }
+.kr-kv span { display: flex; flex-direction: column; font-size: 11px; color: rgba(255,255,255,.45); }
+.kr-kv b { font-size: 14px; font-weight: 500; color: rgba(255,255,255,.9); }
+
+#koreaBody h4 {
+  margin: 16px 0 6px; font-size: 12px; font-weight: 500;
+  color: rgba(255,255,255,.55); display: flex; gap: 6px; align-items: baseline;
+}
+#koreaBody h4 i { font-style: normal; font-size: 11px; color: rgba(255,255,255,.32); }
+.kr-sub { margin: 9px 0 3px; font-size: 11px; color: rgba(255,255,255,.4); }
+.kr-row {
+  display: flex; justify-content: space-between; gap: 10px; align-items: baseline;
+  padding: 6px 2px; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 13px;
+}
+.kr-row span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kr-row span i { font-style: normal; font-size: 11px; color: rgba(255,255,255,.35); margin-left: 5px; }
+.kr-row b { font-weight: 500; flex: 0 0 auto; }
+.kr-cols { display: flex; gap: 18px; }
+.kr-cols > div { flex: 1 1 0; min-width: 0; }
+.kr-cols small { font-size: 11px; color: rgba(255,255,255,.35); }
+.kr-note { margin-top: 12px; font-size: 11px; line-height: 1.55; color: rgba(255,255,255,.42); }
+.kr-more {
+  margin-top: 12px; padding: 8px 14px; border: 0; border-radius: 8px; cursor: pointer;
+  font: 500 12px inherit; color: #fff; background: rgba(255,255,255,.12); width: 100%;
+}
+@media (max-width: 520px) { .kr-cols { flex-direction: column; gap: 4px; } }
+
+/* ── 지역 뉴스 (이벤트 패널) ────────────────────────────────
+   ⚠️ 제목만 보여준다. 본문 발췌를 넣을 자리를 아예 만들지 않는다. */
+.ev-grp {
+  margin: 16px 0 6px; font-size: 12px; font-weight: 500;
+  color: rgba(255,255,255,.55); letter-spacing: .02em;
+}
+.ev-news {
+  display: block; padding: 9px 2px; text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.ev-news:hover .en-title { color: #fff; }
+.en-title {
+  display: block; font-size: 13px; line-height: 1.45;
+  color: rgba(255,255,255,.86); transition: color .15s;
+}
+.en-meta {
+  display: block; margin-top: 3px; font-size: 10.5px;
+  color: rgba(255,255,255,.4);
+}

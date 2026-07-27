@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "earthus-prototype",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["devserver.py", "8787"],
+      "cwd": "prototype",
+      "port": 8787
+    }
+  ]
+}

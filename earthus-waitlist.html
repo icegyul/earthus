@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>earthus.world — 사전 등록</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void: #0b0f17;
+    --panel: #121a24;
+    --panel-2: #0e151e;
+    --line: rgba(236,241,246,0.09);
+    --amber: #f2a65a;
+    --amber-dim: rgba(242,166,90,0.16);
+    --teal: #3fc7c0;
+    --teal-dim: rgba(63,199,192,0.14);
+    --paper: #ecf1f6;
+    --fog: #7c8b9c;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background: radial-gradient(120% 90% at 50% -10%, #16202c 0%, var(--void) 55%);
+    color: var(--paper);
+    font-family: 'IBM Plex Sans KR','IBM Plex Sans',sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  .mono{ font-family:'IBM Plex Mono',monospace; letter-spacing:0.02em; }
+
+  .wrap{
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position: sticky; top:0; z-index: 20;
+    background: rgba(11,15,23,0.72);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav .wrap{
+    display:flex; align-items:center; justify-content:space-between;
+    height: 64px;
+  }
+  .brand{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700; font-size: 17px; letter-spacing: 0.01em;
+    color: var(--paper);
+  }
+  .brand span{ color: var(--teal); }
+  .nav-status{
+    display:flex; align-items:center; gap:8px;
+    font-size: 12px; color: var(--fog);
+  }
+  .dot-live{
+    width:6px; height:6px; border-radius:50%;
+    background: var(--amber);
+    box-shadow: 0 0 0 0 rgba(242,166,90,0.6);
+    animation: pulse-dot 2.4s infinite;
+  }
+  @keyframes pulse-dot{
+    0%{ box-shadow: 0 0 0 0 rgba(242,166,90,0.55); }
+    70%{ box-shadow: 0 0 0 8px rgba(242,166,90,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(242,166,90,0); }
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    padding: 88px 0 64px;
+    position: relative;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 48px;
+    align-items:center;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--teal);
+    text-transform: uppercase;
+    margin: 0 0 18px;
+    opacity:0;
+    animation: rise 0.7s ease-out 0.05s forwards;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight: 700;
+    font-size: clamp(34px, 4.6vw, 56px);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    margin: 0 0 22px;
+    opacity:0;
+    animation: rise 0.8s ease-out 0.15s forwards;
+  }
+  h1 em{
+    font-style: normal;
+    color: var(--amber);
+  }
+  .lede{
+    font-size: 17px;
+    line-height: 1.7;
+    color: #c4ccd6;
+    max-width: 480px;
+    margin: 0 0 32px;
+    opacity:0;
+    animation: rise 0.8s ease-out 0.25s forwards;
+  }
+  @keyframes rise{
+    from{ opacity:0; transform: translateY(14px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  .hero-cta{
+    display:flex; gap:12px; flex-wrap:wrap;
+    opacity:0;
+    animation: rise 0.8s ease-out 0.35s forwards;
+  }
+  .btn-primary, .btn-ghost{
+    font-family:'IBM Plex Sans KR','IBM Plex Sans',sans-serif;
+    font-weight:600; font-size: 14.5px;
+    padding: 13px 22px;
+    border-radius: 8px;
+    cursor:pointer;
+    border: 1px solid transparent;
+    transition: transform .15s ease, background .15s ease;
+  }
+  .btn-primary{
+    background: var(--amber); color: #201202;
+  }
+  .btn-primary:hover{ transform: translateY(-1px); }
+  .btn-ghost{
+    background: transparent; color: var(--paper);
+    border-color: var(--line);
+  }
+  .btn-ghost:hover{ background: rgba(255,255,255,0.04); }
+
+  /* ---------- GLOBE SIGNATURE ---------- */
+  .globe-stage{
+    position:relative;
+    height: 340px;
+    display:flex; align-items:center; justify-content:center;
+    perspective: 900px;
+  }
+  .globe{
+    width: 250px; height: 250px;
+    position: relative;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 32% 28%, rgba(63,199,192,0.20), transparent 45%),
+      radial-gradient(circle at 65% 70%, rgba(242,166,90,0.14), transparent 50%),
+      var(--panel);
+    box-shadow:
+      inset 0 0 40px rgba(0,0,0,0.55),
+      0 0 0 1px var(--line),
+      0 30px 60px -20px rgba(0,0,0,0.6);
+    transform-style: preserve-3d;
+    animation: spin 26s linear infinite;
+  }
+  @keyframes spin{
+    from{ transform: rotateY(0deg) rotateX(8deg); }
+    to{ transform: rotateY(360deg) rotateX(8deg); }
+  }
+  .globe svg{ position:absolute; inset:0; width:100%; height:100%; }
+  .meridian{ fill:none; stroke: rgba(236,241,246,0.16); stroke-width:1; }
+  .parallel{ fill:none; stroke: rgba(236,241,246,0.1); stroke-width:1; }
+  .event-dot{
+    position:absolute; width:7px; height:7px; border-radius:50%;
+    background: var(--amber);
+    box-shadow: 0 0 10px 2px rgba(242,166,90,0.65);
+  }
+  .event-dot.teal{ background: var(--teal); box-shadow: 0 0 10px 2px rgba(63,199,192,0.6); }
+  .ring{
+    position:absolute; border-radius:50%;
+    border: 1px dashed rgba(236,241,246,0.12);
+    animation: spin-slow 40s linear infinite;
+  }
+  @keyframes spin-slow{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+  /* ---------- SECTION shared ---------- */
+  section{ padding: 64px 0; }
+  .section-head{ margin: 0 0 36px; }
+  .kicker{
+    font-family:'IBM Plex Mono',monospace;
+    font-size: 11.5px; letter-spacing:0.12em; text-transform:uppercase;
+    color: var(--fog); margin: 0 0 10px;
+  }
+  h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600; font-size: clamp(24px,3vw,32px);
+    margin: 0; line-height:1.25;
+  }
+
+  /* ---------- UNLOCK GAUGE ---------- */
+  .unlock{
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    padding: 36px;
+    display:grid;
+    grid-template-columns: 200px 1fr;
+    gap: 36px;
+    align-items:center;
+  }
+  .gauge{ position:relative; width:180px; height:180px; }
+  .gauge svg{ width:100%; height:100%; transform: rotate(-90deg); }
+  .gauge-track{ fill:none; stroke: rgba(236,241,246,0.08); stroke-width:10; }
+  .gauge-fill{
+    fill:none; stroke: var(--amber); stroke-width:10; stroke-linecap: round;
+    stroke-dasharray: 502;
+    stroke-dashoffset: 502;
+    animation: fillGauge 1.6s ease-out 0.3s forwards;
+  }
+  @keyframes fillGauge{ to{ stroke-dashoffset: var(--offset, 375); } }
+  .gauge-center{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center;
+  }
+  .gauge-num{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; }
+  .gauge-label{ font-size:11px; color:var(--fog); margin-top:2px; }
+
+  .unlock-copy h3{
+    font-family:'Space Grotesk',sans-serif; font-size:20px; margin:0 0 10px;
+  }
+  .unlock-copy p{ color:#c4ccd6; line-height:1.75; margin:0 0 14px; font-size:14.5px; }
+  .unlock-tags{ display:flex; gap:8px; flex-wrap:wrap; }
+  .tag{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px;
+    padding: 5px 10px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--fog);
+  }
+  .tag.on{ color: var(--amber); border-color: rgba(242,166,90,0.35); background: var(--amber-dim); }
+
+  /* ---------- BENEFITS ---------- */
+  .benefits{ display:grid; grid-template-columns: repeat(3,1fr); gap:18px; }
+  .benefit{
+    border:1px solid var(--line); border-radius:14px; padding:26px;
+    background: rgba(255,255,255,0.015);
+  }
+  .benefit .num{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; color: var(--teal); margin-bottom:14px;
+  }
+  .benefit h3{ font-family:'Space Grotesk',sans-serif; font-size:17px; margin:0 0 10px; }
+  .benefit p{ font-size:13.5px; color:#aab4c0; line-height:1.65; margin:0; }
+
+  /* ---------- FORM ---------- */
+  .signup{
+    border: 1px solid var(--line); border-radius:18px;
+    padding: 44px 36px;
+    background: linear-gradient(160deg, rgba(63,199,192,0.06), rgba(242,166,90,0.05));
+    text-align:center;
+  }
+  .signup h2{ margin-bottom:12px; }
+  .signup p{ color:#c4ccd6; max-width:460px; margin: 0 auto 28px; line-height:1.7; font-size:14.5px; }
+  .signup-form{
+    display:flex; gap:10px; max-width:420px; margin: 0 auto;
+    flex-wrap: wrap; justify-content:center;
+  }
+  .signup-form input{
+    flex:1; min-width:220px;
+    background: var(--panel-2); border:1px solid var(--line); border-radius:8px;
+    padding: 13px 16px; color:var(--paper); font-size:14px;
+    font-family:'IBM Plex Sans KR','IBM Plex Sans',sans-serif;
+  }
+  .signup-form input:focus{ outline:2px solid var(--teal); outline-offset:1px; }
+  .signup-note{ font-size:12px; color:var(--fog); margin-top:14px; }
+  .success-msg{
+    display:none; color: var(--teal); font-size:14px; margin-top:16px;
+    font-family:'IBM Plex Mono',monospace;
+  }
+
+  footer{
+    border-top: 1px solid var(--line);
+    padding: 30px 0 50px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:12.5px; color: var(--fog);
+    flex-wrap:wrap; gap:10px;
+  }
+
+  @media (max-width: 760px){
+    .hero-grid{ grid-template-columns: 1fr; }
+    .globe-stage{ height:240px; }
+    .unlock{ grid-template-columns: 1fr; text-align:center; }
+    .unlock-tags{ justify-content:center; }
+    .benefits{ grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand">earthus<span>.world</span></div>
+    <div class="nav-status"><span class="dot-live"></span>사전 등록 진행 중</div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow">Earthus.World · Pre-Launch</p>
+        <h1>지구는,<br>지금도 <em>움직이고</em> 있다</h1>
+        <p class="lede">구름이 흐르고, 위성이 궤도를 돌고, 철새가 대륙을 건너는 순간을 — 실시간 3D 지구본 하나로 확인하세요. 날씨부터 재난, 로켓 발사, 야생동물 이동까지.</p>
+        <div class="hero-cta">
+          <a href="#signup" class="btn-primary">사전 등록하기</a>
+          <a href="#unlock" class="btn-ghost">항공·선박 추적은 언제?</a>
+        </div>
+      </div>
+
+      <div class="globe-stage">
+        <div class="ring" style="width:300px;height:300px;top:20px;left:-5px;"></div>
+        <div class="globe">
+          <svg viewBox="0 0 200 200">
+            <ellipse class="meridian" cx="100" cy="100" rx="90" ry="90"/>
+            <ellipse class="meridian" cx="100" cy="100" rx="55" ry="90"/>
+            <ellipse class="meridian" cx="100" cy="100" rx="20" ry="90"/>
+            <ellipse class="parallel" cx="100" cy="55" rx="90" ry="26"/>
+            <ellipse class="parallel" cx="100" cy="145" rx="90" ry="26"/>
+            <line x1="10" y1="100" x2="190" y2="100" class="parallel"/>
+          </svg>
+          <div class="event-dot" style="top:38%; left:62%;"></div>
+          <div class="event-dot teal" style="top:64%; left:30%;"></div>
+          <div class="event-dot" style="top:22%; left:44%;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="unlock">
+    <div class="section-head">
+      <p class="kicker">Feature Unlock</p>
+      <h2>항공기·선박 실시간 추적, 목표에 도달하면 열립니다</h2>
+    </div>
+    <div class="unlock">
+      <div class="gauge">
+        <svg viewBox="0 0 180 180">
+          <circle class="gauge-track" cx="90" cy="90" r="80"/>
+          <circle class="gauge-fill" cx="90" cy="90" r="80" style="--offset:377;"/>
+        </svg>
+        <div class="gauge-center">
+          <div class="gauge-num mono" id="gaugeNum">25%</div>
+          <div class="gauge-label">목표 대비</div>
+        </div>
+      </div>
+      <div class="unlock-copy">
+        <h3>실시간 API는 유료 데이터라, 구독 매출로 여는 기능이에요</h3>
+        <p>항공기·선박 위치는 상업용 데이터를 써야 해서, 처음부터 열어둘 수 없어요. 대신 창립 멤버가 목표만큼 모이면, 그 매출로 바로 다음 업데이트에 추가합니다. 지금 등록하면 그 과정을 처음부터 함께하시는 거예요.</p>
+        <div class="unlock-tags">
+          <span class="tag on">사전 등록 진행 중</span>
+          <span class="tag">목표 달성 시 업데이트</span>
+          <span class="tag">항공기 추적</span>
+          <span class="tag">선박 추적</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <p class="kicker">Founding Member</p>
+      <h2>지금 등록하면 이 세 가지가 남아요</h2>
+    </div>
+    <div class="benefits">
+      <div class="benefit">
+        <div class="num mono">01</div>
+        <h3>평생 가격 고정</h3>
+        <p>지금 등록가 그대로 계속 유지돼요. 나중에 기능이 늘고 가격이 올라도, 창립 멤버는 처음 가격 그대로예요.</p>
+      </div>
+      <div class="benefit">
+        <div class="num mono">02</div>
+        <h3>얼리 액세스</h3>
+        <p>항공·선박 실시간 추적 업데이트가 열리면, 일반 공개보다 먼저 사용해보실 수 있어요.</p>
+      </div>
+      <div class="benefit">
+        <div class="num mono">03</div>
+        <h3>창립 멤버 표식</h3>
+        <p>앱 안에 계속 남는 작은 배지예요. 초창기를 함께한 사람이라는 표시죠.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="signup">
+    <div class="signup">
+      <p class="kicker">Join the Waitlist</p>
+      <h2>가장 먼저 소식을 받아보세요</h2>
+      <p>출시일, 얼리 액세스 초대, 창립 멤버 혜택까지 — 이메일 하나로 전부 안내해드려요.</p>
+      <form class="signup-form" id="waitlistForm">
+        <input type="email" placeholder="이메일 주소" required>
+        <button type="submit" class="btn-primary">사전 등록하기</button>
+      </form>
+      <p class="signup-note">스팸 없이, 정말 필요한 소식만 보내드려요.</p>
+      <p class="success-msg" id="successMsg">✓ 등록 완료 — earthus.world가 곧 찾아갈게요.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>earthus.world · 어스어스월드</span>
+    <span class="mono">지구는, 실시간으로.</span>
+  </footer>
+</div>
+
+<script>
+  document.getElementById('waitlistForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    this.style.display = 'none';
+    document.getElementById('successMsg').style.display = 'block';
+  });
+</script>
+
+</body>
+</html>

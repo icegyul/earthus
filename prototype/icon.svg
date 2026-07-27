@@ -1,0 +1,52 @@
+<!-- earthus 아이콘
+     ⚠️ 사진이나 실제 위성 영상을 쓰지 않는다. 작은 크기에서 뭉개지고,
+        무엇보다 "어느 순간의 지구"를 아이콘으로 박으면 매일 달라지는 앱과 어긋난다.
+     지구본의 뼈대(자오선·위선)와 밤낮 경계만 남긴다 — 이 앱이 하는 일 그대로다. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- 밤에서 낮으로 넘어가는 결 -->
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1626"/>
+      <stop offset="1" stop-color="#02060c"/>
+    </linearGradient>
+    <linearGradient id="day" x1="0.15" y1="0.1" x2="0.85" y2="0.9">
+      <stop offset="0"    stop-color="#4f9fd6"/>
+      <stop offset="0.55" stop-color="#1d5b90"/>
+      <stop offset="1"    stop-color="#0a2338"/>
+    </linearGradient>
+    <!-- 대기 산란 — 가장자리만 밝게 -->
+    <radialGradient id="limb" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0.82" stop-color="#7fc4ff" stop-opacity="0"/>
+      <stop offset="0.97" stop-color="#7fc4ff" stop-opacity="0.55"/>
+      <stop offset="1"    stop-color="#7fc4ff" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="globe"><circle cx="256" cy="256" r="176"/></clipPath>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#sky)"/>
+
+  <circle cx="256" cy="256" r="176" fill="url(#day)"/>
+
+  <g clip-path="url(#globe)" fill="none" stroke="#bfe2ff" stroke-opacity="0.30" stroke-width="2.5">
+    <!-- 위선 -->
+    <ellipse cx="256" cy="256" rx="176" ry="0.5"/>
+    <ellipse cx="256" cy="256" rx="166" ry="58"/>
+    <ellipse cx="256" cy="256" rx="140" ry="112"/>
+    <!-- 자오선 -->
+    <ellipse cx="256" cy="256" rx="58"  ry="176"/>
+    <ellipse cx="256" cy="256" rx="118" ry="176"/>
+    <line x1="256" y1="80" x2="256" y2="432"/>
+  </g>
+
+  <!-- 밤 쪽 그림자. ⚠️ 완전히 덮지 않는다 — 도시 불빛이 보이는 게 이 앱의 밤이다. -->
+  <g clip-path="url(#globe)">
+    <ellipse cx="368" cy="256" rx="150" ry="182" fill="#02060c" opacity="0.62"/>
+    <circle cx="336" cy="212" r="2.6" fill="#ffd9a0" opacity="0.9"/>
+    <circle cx="352" cy="238" r="2"   fill="#ffd9a0" opacity="0.75"/>
+    <circle cx="330" cy="268" r="2.2" fill="#ffd9a0" opacity="0.8"/>
+    <circle cx="358" cy="300" r="1.8" fill="#ffd9a0" opacity="0.6"/>
+  </g>
+
+  <circle cx="256" cy="256" r="176" fill="url(#limb)"/>
+  <circle cx="256" cy="256" r="176" fill="none" stroke="#8fd0ff" stroke-opacity="0.35" stroke-width="2"/>
+</svg>

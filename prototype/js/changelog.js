@@ -1,0 +1,414 @@
+// 업데이트 내역 (변경 기록)
+//
+// 왜 이 파일이 따로 있나
+//   설정 화면에서 "지금까지 무엇이 바뀌었는지" 시간순으로 볼 수 있어야 한다.
+//   사용자에게는 신뢰의 근거이고, 나중에 합류하는 사람에게는 이력이다.
+//
+// ⚠️ 시각은 **소스 파일 최종 수정 시각**(로컬)이다. 커밋 시각이 아니다.
+//    아직 git 저장소가 아니라서 커밋 로그가 없다 — 있으면 그걸 써야 한다.
+//    그래서 "몇 시에 무엇을 만졌는지"는 정확하지만,
+//    "그 파일을 처음 만든 시각"은 아니다. 화면에도 그렇게 적어둔다.
+//
+// ⚠️ 없던 일을 적지 않는다. 실제로 고친 것만, 실제로 확인한 숫자만 쓴다.
+//    "성능 개선" 같은 뭉뚱그린 말 대신 무엇을 얼마나 고쳤는지 적는다.
+//
+// 새 항목 추가 규칙
+//   · 배열 맨 앞에 넣는다 (최신 우선).
+//   · tag 는 아래 TAGS 중 하나.
+//   · ko / en 둘 다 채운다. en 이 비면 ko 를 그대로 보여준다 (거짓 번역 금지).
+
+export const TAGS = {
+  new:   { ko: '신규',   en: 'New',      color: '#3fc7c0' },
+  fix:   { ko: '수정',   en: 'Fixed',    color: '#ff9f43' },
+  imp:   { ko: '개선',   en: 'Improved', color: '#5ad1e8' },
+  data:  { ko: '데이터', en: 'Data',     color: '#8b5cf6' },
+  infra: { ko: '기반',   en: 'Infra',    color: '#8a93a0' },
+  legal: { ko: '정책',   en: 'Policy',   color: '#c084fc' },
+};
+
+/* at: 'YYYY-MM-DD HH:MM' (로컬) — 최신이 위 */
+export const CHANGELOG = [
+  { at: '2026-07-27 10:30', tag: 'fix',
+    ko: '설정에서 **화씨(°F)로 맞춰도 그래프만 섭씨로 나오던** 문제를 고쳤습니다. 지적받은 그대로입니다. 커뮤니티 그래프의 막대·축 숫자·「오늘의 지구」 값이 전부 설정 단위를 따릅니다. ⚠️ 축 숫자를 빠뜨리면 막대와 축이 서로 다른 단위가 되므로 축까지 함께 변환합니다. 온도가 아닌 값(파고 m, 먼지 µg/m³)은 그대로 둡니다.',
+    en: 'Fixed **charts staying in Celsius even when the setting was Fahrenheit** — exactly as reported. Bars, axis numbers and the Earth Today values now all follow the unit setting. ⚠️ The axis is converted too; leaving it out would put bars and axis in different units. Non-temperature values (wave height in m, dust in µg/m³) are unchanged.' },
+
+  { at: '2026-07-27 10:20', tag: 'new',
+    ko: '**대륙별 과거~오늘 기온 그래프**를 만들었습니다. 대륙을 누르면 그 대륙의 1979년부터 오늘까지가 해마다 한 줄로 그려집니다 (전 육지·아시아·유럽·아프리카·북아메리카·남아메리카·오세아니아·북극권). 자료를 고르며 세 가지를 재봤습니다: NCEP 재분석은 1948년부터지만 **2026-03-17에서 멈춰 있어** 오늘까지를 못 주고, ERA5는 페타바이트급이라 일별 집계가 어렵고, **NOAA CPC**는 1979년부터 어제까지 오면서 **육지만** 담고 있었습니다. ⚠️ 이 "육지만"이 결정적입니다 — 상자로 대륙을 자르면 아시아에 태평양이, 유럽에 대서양이 섞입니다. CPC는 바다가 결측이라 상자를 씌워도 육지만 남아 **진짜 대륙 평균**이 됩니다. ⚠️ 일평균은 (일최고+일최저)/2입니다. CPC가 최고·최저만 주기 때문이고, 그렇게 만들었다는 사실을 화면에 적었습니다.',
+    en: 'Added **per-continent temperature curves from 1979 to today**. Tap a continent and its record is drawn one line per year (all land, Asia, Europe, Africa, N. America, S. America, Oceania, Arctic). Three sources were measured before choosing: NCEP reanalysis goes back to 1948 but **stops at 2026-03-17**, so it cannot reach today; ERA5 is petabyte-scale and awkward to aggregate daily; **NOAA CPC** runs 1979 to yesterday and — decisively — **covers land only**. ⚠️ That last point matters: cutting continents with bounding boxes drags the Pacific into Asia and the Atlantic into Europe. CPC leaves ocean as missing data, so a box yields land alone and these become **true continental means**. ⚠️ Daily mean is (max + min) / 2 because CPC supplies only those two; the page says so.' },
+
+  { at: '2026-07-27 10:00', tag: 'imp',
+    ko: '지구 스타일 메뉴를 **묶음별로 정리**하고 **서로 대체되게** 했습니다. 받은 지적 그대로입니다: "바람은 현재와 내일 두 가지… 둘 중 하나만. 기온도 마찬가지… 색으로 표현해주는 것도 하나만. 합쳐지면 복잡해지고 느려지는 현상 생기니깐." 33종이 한 줄로 늘어서 있던 것을 **바탕 · 기상 · 대기질 · 해양 · 관측소 · 재난 · 하늘·우주 · 이동 · 이벤트**로 묶었습니다. 그리고 세 무리를 배타로 만들었습니다: **색 격자 16종은 한 장만** (반투명이 겹치면 무슨 색이 무슨 값인지 알 수 없고 그리는 비용도 그만큼 듭니다), **바람은 현재/내일 중 하나**, **바탕은 위성영상/구름 중 하나**. ⚠️ 켤 때만 다른 것을 끕니다 — 끄면서 뭔가 켜주면 "껐는데 뭔가 켜졌다"가 되어 더 헷갈립니다.',
+    en: 'Reorganised the Earth style menu into **groups** and made overlapping layers **replace each other**, as reported: “wind has two versions, now and tomorrow — only one at a time. Same for temperature… only one colour overlay. Combined they get confusing and slow.” The flat list of 33 is now grouped into **Base, Weather, Air quality, Ocean, Stations, Hazards, Sky & space, Movement, Events**. Three sets became mutually exclusive: **only one of the 16 colour grids** (stacked translucent layers make the colours unreadable and cost proportionally more to draw), **wind now or tomorrow**, and **satellite view or clouds**. ⚠️ Turning something on switches the others off, but turning something off never switches anything on — that would read as “I turned it off and something else appeared”.' },
+
+  { at: '2026-07-27 09:50', tag: 'new',
+    ko: '화면 **왼쪽 아래에 자료 안내**를 넣었습니다. 지금 무엇을 보고 있고, 몇 시 자료이고, 다음 자료가 언제 들어오는지 적습니다. 받은 지적이 정확했습니다 — 구름이 두 종류였고 시각이 달랐습니다: 구름 오버레이는 NOAA GMGSI 합성으로 매시간 갱신되고, 실제 위성 영상은 VIIRS 트루컬러로 하루 한 장인데다 "오늘"도 아닙니다. 같은 지구인데 찍힌 시각이 다르니 구름 모양이 다를 수밖에 없었습니다. 이제 둘은 서로를 대체하고, 어느 쪽인지와 언제 것인지가 화면에 적힙니다. ⚠️ "다음 갱신"은 예정이지 약속이 아닙니다 — 지나면 "기다리는 중 (N분 지연)"으로 바뀝니다. 지나간 시각을 그대로 두면 고장난 시계가 됩니다.',
+    en: 'Added a **source note at the bottom left**: what you are looking at, what time the data was made, and when the next update is due. The report was exact — there were two kinds of cloud with different timestamps: the cloud overlay is a NOAA GMGSI composite refreshed hourly, while the satellite view is VIIRS true colour, one image per day and not even today’s. Same Earth, different moments, so the clouds could not match. The two now replace each other, and the panel states which one is showing and when it was captured. ⚠️ “Next update” is an estimate, not a promise — once it passes it becomes “waiting (N min late)”. Leaving a stale time on screen would make it a stopped clock.' },
+
+  { at: '2026-07-27 08:10', tag: 'new',
+    ko: '커뮤니티에 **「자료」 탭**을 만들었습니다 — 요청하신 그래프들입니다. ① **일별 해수면온도 스파게티 곡선** (1982~현재, 해마다 한 줄, 올해만 붉게). Copernicus 가 내는 그림과 같은 종류인데, 남의 그림을 가져오지 않고 같은 OISST 원본에서 우리가 직접 계산합니다. ⚠️ 면적 가중(cos 위도)을 반드시 합니다 — 안 하면 격자칸이 좁은 극지가 과대평가되어 평균이 낮게 나옵니다. ② **지역별 지금 기온** — 전지구 17.1°C, 북극권 5.4°C, 남극권 −32.2°C (7월이라 남반구는 겨울입니다). ③ **국가별 관측소 평균** — 실제 계기 1,912곳을 나라별로 묶었습니다. ⚠️ "그 나라 평균 기온"이 아니라 "공항 관측소들의 평균"이라고 적습니다. 관측소 3곳 미만인 나라와 부호를 모르는 200곳은 뺐습니다 — 나라 이름을 지어내지 않습니다. ④ **우리만 가진 자료** — 예보 정확도·태풍 소멸 후 경로·산불 생애주기. ⚠️ 아직 그래프를 그리지 않습니다. 하루치로 곡선을 그리면 없는 추세를 보여주게 됩니다.',
+    en: 'Added a **Charts tab** to Community — the graphs you asked for. ① **Daily sea surface temperature spaghetti plot** (1982–present, one line per year, this year in red). Same kind of figure Copernicus publishes, but computed by us from the same OISST source rather than borrowed. ⚠️ Area weighting by cos(latitude) is essential — without it the narrow polar cells are over-counted and the mean reads low. ② **Temperature by region right now** — global 17.1 °C, Arctic 5.4 °C, Antarctic −32.2 °C (July, so the south is in winter). ③ **Mean station temperature by country** — 1,912 real instruments grouped by country. ⚠️ Labelled as “the mean of airport stations”, never “the country’s average temperature”. Countries with fewer than three stations, and 200 stations whose code we cannot map, are excluded — we do not invent country names. ④ **Data only we hold** — forecast accuracy, post-dissipation storm tracks, wildfire lifecycles. ⚠️ Not yet plotted: a curve drawn from one day of data would imply a trend that does not exist.' },
+
+  { at: '2026-07-27 04:10', tag: 'new',
+    ko: '**평년 기준선을 만들었습니다** — 이제 "평년보다 얼마나"에 답할 수 있습니다. NOAA OISST 1991–2020 일별 평년 해수면온도 **365일 전부**를 우리 격자로 옮겼습니다. 실측 결과: 지금 전지구 바다는 평년 대비 **+0.67°C**, 동해는 **+3.23°C** 입니다. ⚠️ 반드시 **같은 달력 날짜**끼리 비교합니다 — 전에 열돔에서 1995–2024 전체 날짜를 평균 내(16.4°C) 비교했다가 여름 바다가 죄다 이상 고온으로 나온 적이 있습니다. 검증: 북반구 중위도 평년 수온이 1월 11.4°C → 7월 16.4°C, 남반구는 반대로 11.4°C → 9.1°C. 반구별 계절이 반대로 나오는 것이 날짜 색인이 옳다는 증거입니다. ⚠️ 1.4GB 원본을 통째로 받지 않고 OPeNDAP 부분 조회로 우리 격자만 뽑았습니다. ⚠️ 이 자료는 365일치라 윤년 366일째는 365일째를 씁니다 (366으로 요청했다가 400 오류가 났습니다).',
+    en: 'Built the **climatology baseline** — “how does this compare to normal?” is now answerable. All **365 days** of NOAA OISST 1991–2020 daily normal sea surface temperature were reprojected onto our grid. Measured: the global ocean is currently **+0.67 °C** against normal; the East Sea is **+3.23 °C**. ⚠️ Comparison is always **like calendar day with like** — an earlier heat-dome attempt averaged all dates 1995–2024 (16.4 °C), which made every summer ocean look anomalous. Verification: northern mid-latitude normals run 11.4 °C in January to 16.4 °C in July while southern ones run the opposite way, 11.4 °C to 9.1 °C. Opposite seasons per hemisphere is the proof the day indexing is right. ⚠️ The 1.4 GB source was never downloaded whole; OPeNDAP subsetting pulled only our grid. ⚠️ The dataset holds 365 days, so day 366 of a leap year reuses day 365 (requesting 366 returned HTTP 400).' },
+
+  { at: '2026-07-27 03:40', tag: 'new',
+    ko: '**대기질·해양 레이어 11종을 추가했습니다** (지구 메뉴). 초미세먼지 · 미세먼지 · 먼지(사막 모래바람) · 오존 · 자외선 지수 · 대기질 지수 · 해수면 온도 · 파고 · 너울 · 해류 · 안개(시정) · 토양 수분. 대기질 여섯 가지가 **한 번의 API 호출**로 오고, 해양 넷도 마찬가지라 요청 수가 늘지 않았습니다. 안개와 토양 수분은 기존 기상 격자에 변수만 더해 공짜로 얻었습니다. ⚠️ 먼지 레이어를 "황사"라고 부르지 않습니다 — 이 값은 먼지 질량이고 고비에서 왔는지 사하라에서 왔는지 공사장에서 났는지는 숫자에 없습니다. ⚠️ "해류"는 조류(물때)가 아닙니다. 어민·낚시하는 분이 물때표로 쓰면 위험해서 이름을 분명히 구분했습니다.',
+    en: 'Added **eleven air-quality and ocean layers**: PM2.5, PM10, desert dust, ozone, UV index, air quality index, sea surface temperature, wave height, swell, ocean current, fog (visibility) and soil moisture. Six air-quality variables arrive in **a single API call**, as do the four marine ones, so request volume did not increase. Fog and soil moisture came free by adding variables to the existing weather grid. ⚠️ The dust layer is never labelled “yellow dust” — it is a mass concentration, and whether it came from the Gobi, the Sahara or a construction site is not in the number. ⚠️ “Ocean current” is not tide. Someone who needs a tide table must not be handed this, so the naming keeps them distinct.' },
+
+  { at: '2026-07-27 03:10', tag: 'new',
+    ko: '**지상 관측소 1,912곳을 추가했습니다** — 해양 부이의 육지판입니다. 전 세계 공항에 실제로 설치된 계기가 30~60분마다 내는 **실황**(METAR)입니다. 누르면 기온·이슬점·바람·시정·기압·구름층·비행기상등급과 함께 **지난 5일치 그래프**, **그 근처에서 찍힌 사진**, 그리고 **원문 METAR**이 나옵니다. ⚠️ 기존 「관측소」 레이어와 다릅니다 — 그건 도시 47곳의 예보 조회입니다. ⚠️ 5일치 그래프는 관측소가 잰 값이 아니라 그 좌표의 기상 모델 재구성값이라 출처를 따로 밝힙니다. ⚠️ 사진은 "관측소를 찍은 사진"이 아니라 반경 3km 안에서 찍힌 공개 사진이며, 저작자와 라이선스를 사진마다 표시합니다.',
+    en: 'Added **1,912 ground stations** — the land counterpart to the ocean buoys. These are **live readings** (METAR) from instruments physically installed at airports worldwide, updating every 30–60 minutes. Tapping one shows temperature, dew point, wind, visibility, pressure, cloud layers and flight category, plus **five days of charts**, **photos taken nearby**, and the **raw METAR**. ⚠️ This is not the existing “Stations” layer, which queries forecasts for 47 cities. ⚠️ The five-day charts are a weather-model reconstruction for that coordinate, not station readings, and are labelled as such. ⚠️ Photos are public images taken within 3 km — not photographs of the station — with author and licence shown on each.' },
+
+  { at: '2026-07-27 02:30', tag: 'new',
+    ko: '**「물어보기」를 만들었습니다** — 질문하면 판단해서 자료를 찾고 지구본을 그리로 옮깁니다. **AI API 없이** 동작합니다. "지금 태풍 어디야?" → 태풍 레이어가 켜지고 경로와 함께 그 자리로 이동합니다. "동해 수온 평년보다 어때?" → 평년 대비 +3.23°C를 계산해 보여줍니다. ⚠️ 규칙 기반이라 **환각이 구조적으로 불가능합니다.** 자료에 있는 것만 보여주고 없으면 없다고 합니다. 답마다 **어떤 낱말이 걸려 어떤 자료를 봤는지**와 **인용문(DOI 포함)**을 붙여서, 논문 쓰는 분이 그대로 복사할 수 있습니다. ⚠️ 이건 임시방편이 아닙니다 — 나중에 LLM을 붙이면 이 라우터가 그대로 LLM의 도구가 되고, API가 끊길 때의 대비책으로 남습니다.',
+    en: 'Built **Ask** — put a question in, it works out what you mean, finds the data and flies the globe there. It runs **without any AI API**. “Where are the storms?” turns on the cyclone layer, draws the tracks and moves there. “How is the East Sea compared to normal?” computes +3.23 °C against the climatology. ⚠️ Being rule-based, **hallucination is structurally impossible**: it shows only what is in the data and says so when there is nothing. Every answer carries **which words matched which dataset** and a **citation including DOI**, ready to paste into a paper. ⚠️ This is not a stopgap — when an LLM is added later, this router becomes its tool, and it remains the fallback if that API is unavailable.' },
+
+  { at: '2026-07-27 02:00', tag: 'data',
+    ko: '**데이터 카탈로그를 만들었습니다** — 자료 29종이 어디에 있고, 어떻게 가져오고, 어떻게 인용하는지 한 파일에 정리했습니다. 사람(보고서 「자료와 방법」), 파이프라인(실제 수집), 챗 라우터(질문 연결)가 **같은 파일 하나**를 씁니다. ⚠️ 인용문을 사람이 쓰지 않습니다 — DOI가 있는 7종은 doi.org 서지정보에서 자동 생성합니다(OISST·IBTrACS·IMERG·ERA5·GHCN·GVP). 손으로 적으면 오타가 논문에 그대로 실립니다. ⚠️ 라이선스를 추측하지 않습니다. 확인된 것만 적고 모르는 9종은 **"확인 필요"로 표시**해서, 공개 배포 전 점검 목록이 저절로 생기게 했습니다. 그리고 아카이브의 모든 행에 출처·라이선스 태그를 박았습니다 — 나중에 붙이는 건 불가능합니다.',
+    en: 'Built a **data catalogue** — 29 sources, where each lives, how to fetch it, how to cite it, in one file. Humans (the report’s Data and Methods section), pipelines (actual collection) and the chat router (matching questions) all read **the same file**. ⚠️ Citations are not hand-written: the seven sources with DOIs generate theirs from doi.org metadata (OISST, IBTrACS, IMERG, ERA5, GHCN, GVP). A typo written by hand ends up printed in a paper. ⚠️ Licences are never guessed — only verified ones are stated, and the nine unknowns are **flagged “needs checking”**, so a pre-release checklist builds itself. Every archived row now carries source and licence tags; those cannot be added retroactively.' },
+
+  { at: '2026-07-27 01:50', tag: 'data',
+    ko: '예보 스냅샷을 **D+1에서 D+7까지** 늘렸습니다. 이제 "3일 전 예보는 얼마나 맞았나"를 리드타임별로 물을 수 있습니다. ⚠️ 요청 수는 그대로입니다 — Open-Meteo 한도가 요청 수 기준이라 응답만 커집니다. ⚠️ 앱이 받는 파일은 키우지 않았습니다. 리드타임 자료는 **별도 파일**로 빼서 아카이버만 읽습니다. 그리고 **결측 원장**을 만들었습니다 — 매 실행마다 있어야 할 산출물 8종을 점검해 없거나 낡은 것을 기록합니다. "산불 3,412건" 옆에 "관측 공백 5.0%"가 없으면 학계 심사에서 걸리고, 학습할 때도 결측과 0을 구분하지 못합니다. 결측은 소급 복원이 안 됩니다.',
+    en: 'Extended forecast snapshots from **D+1 to D+7**, so “how accurate was the three-day-out forecast?” becomes answerable per lead time. ⚠️ Request count is unchanged — Open-Meteo limits by requests, so only the response grew. ⚠️ The file the app downloads did not grow: lead-time data went into a **separate file** that only the archiver reads. Also added a **gap ledger** — each run checks eight expected outputs and records anything missing or stale. “3,412 fires” without “5.0% observation gap” fails academic review, and a model cannot tell missing from zero. Gaps cannot be reconstructed after the fact.' },
+
+  { at: '2026-07-27 01:30', tag: 'imp',
+    ko: '커뮤니티의 **경고(지진·화산·쓰나미·산불)를 「이벤트」 메뉴로 옮겼습니다.** 기관이 낸 사실과 사람이 쓴 글은 성격이 다릅니다 — 한 메뉴에 섞으면 "지금 위험한 게 뭔가"를 보러 온 사람이 글 목록을 뒤지게 됩니다. 경고 탭은 이벤트에서 **맨 앞**에 둡니다(급한 순서가 곧 탭 순서). 건수가 0이어도 탭을 없애지 않습니다 — "경고 0"은 그 자체로 알아야 할 정보입니다. 그리고 커뮤니티에 **「오늘의 지구」**를 넣었습니다. 오늘 가장 파도가 높은 바다, 가장 먼지가 많은 하늘, 가장 앞이 안 보이는 곳을 우리 격자에서 찾아 보여줍니다. 새 자료도 사람 손도 필요 없이 매일 달라집니다.',
+    en: 'Moved **warnings (quakes, volcanoes, tsunami, wildfire) out of Community and into Events.** Facts issued by agencies and posts written by people are different things; mixing them means someone checking “what is dangerous right now” has to scroll through a message board. The warnings tab sits **first** in Events — urgency sets tab order — and is never hidden at zero, because “no warnings” is itself information. Community gained **Earth Today**: the roughest sea, the dustiest sky and the lowest visibility on the planet right now, found in our own grids. It changes every day with no new data and no human curation.' },
+
+  { at: '2026-07-27 01:10', tag: 'fix',
+    ko: '태풍이 **GDACS 실시간 목록에서 빠지는 순간 화면에서도 사라지던** 문제를 고쳤습니다. 받은 지적입니다: "노을은 열대성 저압부로 바뀌어서 안 나오는 걸까? 그래도 2~3일은 구름이 지나가는 거라 계속 위치 추적 라인이 보여줬으면 해". 이제 폭풍이 살아있는 동안 서버가 **공식 경로를 붙잡아 두고**, 목록에서 빠진 뒤에도 **72시간** 동안 옅은 선으로 남깁니다. 경로는 누르기 전에도 항상 보입니다. ⚠️ 빠진 이유(약화·상륙·온대저기압화)는 GDACS가 알려주지 않으므로 **"관측 종료"** 라고만 적고 이유는 지어내지 않습니다. 끝난 폭풍에는 소용돌이 애니메이션과 등급·풍속을 보이지 않습니다 — 아직 그 세기인 것처럼 읽히기 때문입니다.',
+    en: 'Fixed storms **vanishing from the globe the moment GDACS drops them** from its live list. From the report: “Noul turned into a tropical depression — but its cloud keeps moving for another two or three days, so the track line should stay.” The server now **captures the official track while a storm is alive** and keeps it on screen as a faint line for **72 hours** after it leaves the list. The track is always visible without tapping. ⚠️ GDACS does not say why a storm leaves the list (weakening, landfall, extratropical transition), so we label it only **“no longer reported”** and invent no reason. Ended storms lose the spiral animation and the category/wind readout, which would otherwise read as still being that strong.' },
+
+  { at: '2026-07-27 01:10', tag: 'fix',
+    ko: '태풍 경로가 **태평양을 가로질러 튀던** 문제를 고쳤습니다. GDACS는 경로를 2점짜리 구간 38개로 주는데, 구간 번호(`Line_Line_N`)가 시간 순서일 거라 믿고 정렬했더니 FAUSTO-26이 −143°에서 −109°로 점프했습니다. 번호는 순서가 아니었습니다. 이제 번호를 무시하고 **끝점과 시작점을 맞춰** 잇습니다 (점간 최대 간격 2.0°로 확인). 그리고 GDACS 경로선에는 **앞으로 갈 구간이 함께** 들어 있습니다 — 현재 위치에서 잘라 지나온 길과 예보를 분리했습니다. 안 그러면 아직 가지 않은 자리를 "지나갔다"고 그리게 됩니다.',
+    en: 'Fixed cyclone tracks **jumping across the Pacific**. GDACS supplies a track as 38 two-point segments, and sorting them by their segment number (`Line_Line_N`) made FAUSTO-26 leap from −143° to −109° — the numbering is not chronological. Segments are now chained by **matching endpoints to start points** instead (verified: largest point-to-point gap 2.0°). Also, the GDACS track line **includes the forecast portion**; it is now split at the current position so past and predicted are separate. Otherwise we would be drawing places the storm has not reached yet as places it has been.' },
+
+  { at: '2026-07-27 01:05', tag: 'data',
+    ko: '**예보 스냅샷을 쌓기 시작했습니다.** 과거 관측은 기관들이 영구 보존하므로 3년 뒤에 받아도 그대로 있습니다. 그런데 **"그때 뭐라고 예보했었나"는 어디에도 안 남습니다** — 예보는 갱신되면 덮어써지고, 지나간 예보를 돌려주는 API는 없습니다. 우리는 이미 매시간 내일 예보(최고·최저기온, 대표 바람)를 받아 화면에 쓰고 있었으면서 **저장은 안 하고 버리고 있었습니다.** 이제 6시간마다(모델 갱신 주기) 그대로 남깁니다. 관측 쪽은 이미 시간당으로 쌓고 있어서, 1년 뒤 예보 정확도를 **외부 자료 없이 우리 안에서** 검증할 수 있게 됩니다. 실측 용량: 회당 30.7KB → 연 45MB.',
+    en: 'Started **archiving forecast snapshots.** Past observations are preserved permanently by the agencies that make them — you can fetch them three years from now. But **what was forecast at a given moment is kept nowhere**: forecasts are overwritten on update, and no API returns a past one. We were already fetching tomorrow’s forecast every hour (daily max/min temperature, representative wind) and displaying it — then throwing it away. It is now retained every six hours, matching the model update cycle. Since observations are already archived hourly, a year from now forecast accuracy can be checked **entirely from our own data**, with no external source. Measured: 30.7 KB per snapshot, about 45 MB a year.' },
+
+  { at: '2026-07-27 01:05', tag: 'data',
+    ko: '예보 격자에 **지점별 시간대(UTC 오프셋)** 를 추가했습니다. 지금까지는 "내일이 언제인가"를 전지구 대표 날짜 하나로만 갖고 있었는데, 날짜변경선 때문에 지점마다 "내일"이 다른 날짜입니다. 예보가 맞았는지 따지려면 **그 지역의 그날** 24시간과 맞춰야 하고, 그러려면 지점별 오프셋이 필요합니다. 지금 안 남기면 나중에 복구할 방법이 없어서 먼저 넣었습니다 (2,376지점 전부 채워짐 확인).',
+    en: 'Added a **per-point UTC offset** to the forecast grid. Until now “when is tomorrow” was a single representative date for the whole globe, but across the date line each point’s tomorrow is a different calendar day. Verifying a forecast means lining it up against **that location’s own 24 hours**, which requires the offset. There is no way to recover it later, so it goes in now (confirmed filled for all 2,376 points).' },
+
+  { at: '2026-07-27 00:45', tag: 'fix',
+    ko: '실제 위성 영상을 켜면 **밤인 쪽의 구름이 통째로 사라지던** 문제를 고쳤습니다. 제가 바로 앞에서 낸 문제입니다 — 구름이 두 겹으로 겹치는 걸 막으려고 구름 오버레이를 껐는데, 낮/밤을 나누지 않고 껐습니다. 그런데 위성 영상은 반사광이라 **낮면에만** 그려집니다. 그래서 밤인 쪽은 위성 영상도 없고 구름도 없는 상태가 됐습니다. 받은 지적 그대로입니다: "아시아는 지금 밤인데 구름이 없어". 이제 낮과 밤이 서로를 정확히 메웁니다 — **낮면**은 위성 영상이 그날의 실제 구름을 담당하고, **밤면**은 구름 오버레이가 그대로 남습니다. 새벽·황혼선에서는 두 겹의 합이 항상 1이 되도록 섞여서 이음매가 보이지 않습니다. 확대해서 위성 영상이 물러나면 낮면 구름도 그만큼 되돌아옵니다 (실측: 800km 고도에서 위성 영상 0.04 / 구름 0.96).',
+    en: 'Fixed **clouds vanishing entirely on the night side** when satellite view is on — a problem I introduced one step earlier. To stop clouds being drawn twice I suppressed the cloud overlay, but suppressed it everywhere instead of only where it overlapped. Satellite true colour is reflected sunlight, so it only draws on the **day side**; the night side was left with neither imagery nor clouds. The report was exact: “Asia is in darkness right now and there are no clouds.” Day and night now fill in for each other precisely — **day side**: the satellite imagery supplies that day’s real clouds; **night side**: the cloud overlay stays. Across the dawn/dusk terminator the two blend so their sum is always 1, leaving no visible seam. Zooming in restores day-side clouds as the satellite layer retreats (measured at 800 km altitude: satellite 0.04, clouds 0.96).' },
+
+  { at: '2026-07-27 00:45', tag: 'imp',
+    ko: '실제 위성 영상 레이어의 설명을 **"낮면 · 최근 완전한 날"** 로 바꿨습니다. 밤인 지역에서 켜면 화면이 거의 변하지 않아 "작동 안 되나?" 싶은데, 고장이 아니라 원래 낮면만 그리는 자료이기 때문입니다. 밤은 도시 불빛(위성 야간 관측)과 구름이 담당합니다.',
+    en: 'Relabelled the satellite layer as **“Day side · latest full day”**. Turning it on over a region in darkness changes almost nothing on screen, which reads as broken — it is not: the data only exists for the sunlit side. Night is covered by city lights (satellite night-time observation) and clouds.' },
+
+  { at: '2026-07-27 00:35', tag: 'fix',
+    ko: '실제 위성 영상이 **지구를 세로 줄무늬로 만들고, 확대하면 픽셀이 무너지던** 문제를 고쳤습니다. 세 가지가 겹쳐 있었습니다. ① **위성 선택** — MODIS Terra 는 관측 폭이 좁아 하루치가 완전해도 적도 부근에 궤도 사이 틈이 남습니다. 같은 타일에서 검은 픽셀이 Terra 5.0% 대 VIIRS 0.1% 였습니다. VIIRS 로 바꿨습니다. ② **날짜** — 당일치는 일부 궤도만 처리돼 있습니다 (실측: 07-26 은 VIIRS 도 36.7%가 검정). 이제 최근 닷새를 실제로 그려보고 검은 픽셀이 4% 이하인 날을 고릅니다. 파일 크기로는 판별이 안 됩니다 — 공백이 36%인 타일도 20KB로 옵니다. ③ **밤면** — 트루컬러는 반사광이라 밤이면 새까맣습니다. 밤은 기본 지도와 도시 불빛에 맡기고 낮면만 그리게 해서 "지도 두 장이 어긋난" 느낌을 없앴습니다. 그리고 확대하면 위성 영상이 물러나고 고해상도 지도로 넘어갑니다 (3,000km 위 위성 영상 100%, 1,500km 교차, 700km 아래 고해상도 100%).',
+    en: 'Fixed the satellite view **striping the globe and falling apart when zoomed in**. Three causes overlapped. ① **Wrong sensor** — MODIS Terra has a narrow swath, so even a complete day leaves inter-orbit gaps near the equator; on the same tile black pixels were 5.0% for Terra against 0.1% for VIIRS. Switched to VIIRS. ② **Wrong date** — same-day imagery has only some orbits processed (measured: even VIIRS was 36.7% black for 07-26). It now renders sample tiles and picks the most recent day under 4% black. File size cannot tell you this: a tile that is 36% gap still arrives at 20 KB. ③ **Night side** — true colour is reflected sunlight, so it is pure black at night. Night is left to the basemap and city lights while true colour draws only on the day side, which removes the “two mismatched maps” look. Zooming now fades the satellite view into the high-resolution map (100% satellite above 3,000 km, crossover at 1,500 km, 100% detail below 700 km).' },
+
+  { at: '2026-07-27 00:35', tag: 'fix',
+    ko: '실제 위성 영상을 켜면 **구름이 두 겹으로 겹치던** 문제를 고쳤습니다. 위성 영상에는 그날의 실제 구름이 이미 찍혀 있는데, 그 위에 우리 구름 오버레이(다른 위성·다른 시각)를 또 얹고 있었습니다 — "구름이 다르다"는 게 이것이었습니다. 위성 영상이 켜져 있는 동안 구름 오버레이를 물립니다. ⚠️ 구름 설정 자체는 건드리지 않아 위성 영상을 끄면 원래대로 돌아옵니다.',
+    en: 'Fixed **clouds being drawn twice** when the satellite view is on. The imagery already contains that day’s real clouds, and our separate cloud overlay (different satellite, different time) was layered on top — that was the “clouds don’t match” problem. The overlay now steps aside while satellite view is on. ⚠️ Your cloud setting itself is untouched, so turning satellite view off restores it.' },
+
+  { at: '2026-07-27 00:20', tag: 'new',
+    ko: '지구본에 **오늘 찍힌 실제 위성 영상**을 얹을 수 있게 했습니다 (메뉴 → 지구 → 실제 위성 영상). 기본 지도는 정지 사진이라 계절도 구름도 연기도 없습니다. 이걸 켜면 **산불 연기 기둥, 황사, 화산재가 지구본 위에 그대로 보입니다** — 스페인 산불에서 확인했습니다. ⚠️ MODIS Terra 를 씁니다: 실측으로 당일 스페인 상공에서 Terra 는 133KB 자료가 있었고 VIIRS(NOAA-20·SNPP)와 Aqua 는 비어 있었습니다. Terra 가 오전 통과라 가장 먼저 올라옵니다. ⚠️ "지금 이 순간"이 아니라 위성이 그날 지나가며 찍은 것을 이어 붙인 하루치 합성이며, 촬영 궤적의 이음매가 보입니다.',
+    en: 'The globe can now show **today’s actual satellite imagery** (Menu → Earth → Satellite view). The default basemap is a still photograph — no seasons, no clouds, no smoke. Switched on, **wildfire smoke plumes, dust storms and volcanic ash appear directly on the globe**; verified on the Spanish fires. ⚠️ It uses MODIS Terra: measured over Spain today, Terra had 133 KB of imagery while VIIRS (NOAA-20, SNPP) and Aqua were empty. Terra passes in the morning, so it lands first. ⚠️ This is not “right now” — it is a daily composite stitched from that day’s overpasses, and the swath seams are visible.' },
+
+  { at: '2026-07-27 00:20', tag: 'new',
+    ko: '산불을 누르면 **그 지역 위성 영상과 주변 보도**를 함께 보여줍니다. 영상에는 연기 기둥과 위성이 잡은 열(붉은 점)이 함께 그려집니다. ⚠️ 날짜를 우리가 추측하지 않습니다 — 요청한 날짜의 영상이 아직 합성되지 않았으면(실측: 당일 15KB / 전날 84KB) 자료가 실제로 있는 날짜로 물러서고, **물러섰다는 사실을 화면에 적습니다.** 주변 보도는 이미 교차검증한 이벤트 중 300km 이내 것만 붙입니다 — 새로 검색해서 검증 안 된 것을 「관련 뉴스」로 달지 않습니다.',
+    en: 'Tapping a wildfire now also shows **satellite imagery of that area and nearby reporting**. The image overlays smoke plumes with the heat the satellite detected (red). ⚠️ We don’t guess the date — if imagery for the requested day isn’t composited yet (measured: 15 KB same-day vs 84 KB the day before) it steps back to a day that actually has data, and **says on screen that it did**. Nearby reports are drawn only from already cross-verified events within 300 km — we don’t run a fresh search and attach unverified results as “related news”.' },
+
+  { at: '2026-07-27 00:20', tag: 'data',
+    ko: '산불에 **지속 ID**를 붙였습니다. 이전에는 군집을 매 실행마다 처음부터 다시 계산해서, 같은 불이라도 실행마다 다른 이름 없는 덩어리였습니다 — **"이 불이 어디서 시작해 어디로 갔나"를 물을 수 없었고, 1년을 쌓아도 추적에는 못 쓰는 자료였습니다.** 이제 직전 실행과 25km 안에서 맞춰 ID를 물려받고, 화재마다 처음 확인 시각·발화 추정 지점·중심 이동 거리·최대 세기와 그 시각이 남습니다. 아카이브도 합계만 저장하던 것을 개별 화재로 바꿨습니다. 검증: 두 번째 실행에서 900건 전부 승계, 신규 0건. ⚠️ "같은 불"은 거리·시간에 근거한 **추정**입니다. 두 불이 합쳐지거나 갈라지는 것을 위성 관측만으로 정확히 가를 수 없어, 링크 근거(거리)를 함께 저장해 나중에 검증할 수 있게 했습니다.',
+    en: 'Wildfires now carry a **persistent ID**. Previously clusters were recomputed from scratch every run, so the same fire was an anonymous new blob each time — **you could not ask where a fire started or where it spread, and a year of that data would have been useless for tracking.** Each run now matches against the previous one within 25 km and inherits the ID, so every fire keeps its first-seen time, estimated origin, distance its centre has moved, and peak intensity with timestamp. The archive also changed from storing only totals to storing individual fires. Verified: on the second run all 900 fires inherited IDs, 0 new. ⚠️ “Same fire” is an **inference** from distance and time. Satellite observation alone cannot cleanly separate fires merging or splitting, so the linking evidence (distance) is stored alongside for later checking.' },
+
+  { at: '2026-07-26 23:10', tag: 'new',
+    ko: '해양 부이를 누르면 **그 부이가 무엇을 하는 곳인지 볼 수 있게** 했습니다. ① 그 부이에 달린 카메라가 방금 찍은 바다 사진(6방향 파노라마) ② 같은 종류 부이의 실물 사진 ③ 부이 종류·탑재 장비·선체 번호·운용 기관·국가 ④ **최근 5일 변화 그래프** — 수온·기온·파고·풍속·기압 중 그 부이가 실제로 재는 항목만 ⑤ 원문 관측소 페이지와 연도별 전체 이력 링크. ⚠️ 5일은 그날의 날씨를 보기엔 충분하지만 연구용으로는 짧아서, 연도별 원자료 내려받기 링크를 함께 둡니다. ⚠️ 카메라가 없는 부이는 사진 자리를 비우고, 종류 사진은 「이 부이를 직접 찍은 것이 아니다」라고 적습니다.',
+    en: 'Tapping an ocean buoy now shows **what that buoy actually is and does**: ① the sea as its own camera just saw it (6-way panorama) ② a photo of the same buoy type ③ hull type, payload, hull number, operator and country ④ **5-day change charts** for water temp, air temp, wave height, wind and pressure — only the series that buoy actually measures ⑤ links to the station page and the year-by-year archive. ⚠️ Five days reads the weather but is too short for research, so the raw-archive link sits alongside. ⚠️ Buoys without a camera simply show no photo, and the type photo says plainly that it is not this individual buoy.' },
+
+  { at: '2026-07-26 23:10', tag: 'data',
+    ko: '해양 부이를 **871개 → 2,393개**로 늘렸습니다. 이전에는 NDBC(미국 국립부이센터) 피드만 받아서 **871개 중 814개(93%)가 북미**였고 일본·중국은 0개였습니다. NOAA OSMC(전지구 관측망 감시)를 함께 받아 유럽 130 · 아프리카 139 · 동남아·호주 115 · 남미 99 · 동아시아 91 · 남극해 43개가 새로 들어왔습니다. 같은 관측소가 양쪽에 있으면 NDBC를 씁니다 — 파주기와 카메라 사진이 거기에만 있습니다. ⚠️ 확인된 한계: 중국은 GTS 공개 채널로 부이 자료를 거의 내보내지 않아 실측 0건이고, 일본도 매우 적습니다. 관측을 안 하는 것이 아니라 공개하지 않는 것이라 우리가 채울 수 없습니다.',
+    en: 'Ocean buoys went from **871 to 2,393**. Previously only the NDBC (US National Data Buoy Center) feed was used, so **814 of 871 (93%) were North American** and Japan and China had none. Adding NOAA OSMC (global observing-system monitor) brought in Europe 130, Africa 139, SE Asia/Australia 115, South America 99, East Asia 91 and the Southern Ocean 43. Where a station appears in both, NDBC wins — wave period and camera imagery exist only there. ⚠️ A measured limit: China publishes almost no buoy data on the open GTS channel (0 found), and Japan very little. They observe but do not publish, which is not something we can fill in.' },
+
+  { at: '2026-07-26 23:10', tag: 'imp',
+    ko: '하단 알림이 **한 소식에 한 번만** 뜨도록 바꿨습니다. 계속 돌리면 이미 본 것이 반복되며 새 소식을 밀어냅니다. 지난 것은 이벤트 메뉴에서 언제든 볼 수 있으니, 하단은 「새로 들어온 것 알림」만 맡습니다. 대기 중인 것이 여럿이면 「+2」처럼 남은 수를 표시합니다.',
+    en: 'The bottom notification now shows each item **once**. Looping repeated things already seen and pushed new ones out of view. Past items remain in the Events menu, so the bar is only for new arrivals. When several are queued it shows the remainder, e.g. “+2”.' },
+
+  { at: '2026-07-26 23:10', tag: 'new',
+    ko: '일식 **개기대(띠)와 중심선을 실제 좌표로 그립니다.** 앞서 "자료가 없다"며 안 그렸는데, 다시 찾아보니 NASA GSFC가 일식마다 북쪽 한계선·남쪽 한계선·중심선을 120초 간격으로 공개하고 있었습니다. 7개 일식의 경로를 받아 지도에 얹었습니다. 검증: 중심선 중간 지점이 우리가 이미 갖고 있던 식심 좌표와 일치했고(2026-08-12: 65.2°N 25.2°W ↔ 65°N 25°W), 띠 폭도 273~319km로 기존 자료의 최대 294km와 맞았습니다. ⚠️ 극지 근처 구간은 띠를 그리지 않고 중심선만 그립니다 — 북극에서 폴리곤이 부채꼴로 깨지는 것을 확인했고, 그 구간의 실제 폭은 275km라 전지구 화면에서 한 픽셀도 안 되므로 잃는 정보가 없습니다.',
+    en: 'Solar-eclipse **paths of totality are now drawn from real coordinates.** I had previously skipped them saying the data didn’t exist; on looking again, NASA GSFC publishes the northern limit, southern limit and central line at 120-second intervals for every eclipse. Seven eclipse paths are now on the globe. Verified: the central line’s midpoint matches the greatest-eclipse coordinate we already had (2026-08-12: 65.2°N 25.2°W ↔ 65°N 25°W), and the path width of 273–319 km matches the 294 km maximum in the existing record. ⚠️ Near the poles only the central line is drawn — polygons there broke into a starburst artifact, and since the real band is 275 km wide (under one pixel at globe scale) nothing is lost.' },
+
+  { at: '2026-07-26 22:50', tag: 'fix',
+    ko: '일식 표시가 **바다 한가운데를 가리키며 "개기일식 · 17일 뒤"라고만 적혀 있어서, 거기서 보라는 말처럼 읽히던** 문제를 고쳤습니다. 그 점은 관측 장소가 아니라 달그림자가 지구를 가장 깊게 스치는 순간의 좌표(식심)이고, 대개 바다입니다. 이제 라벨이 「개기일식 **식심** · 17일 뒤 / 개기식 통과: Arctic, Greenland, Iceland …」로 나와 어디로 가야 하는지 지도에서 바로 보입니다. 상세창에도 「식심 위치(관측지 아님)」과 「⭐ 개기식을 볼 수 있는 곳」을 나눠 적었습니다. 개기대(띠)는 여전히 그리지 않습니다 — 좌표 자료가 없어 원으로 흉내 내면 실제와 다르게 읽힙니다.',
+    en: 'Fixed the eclipse marker sitting **in the middle of the ocean labelled only “Total eclipse · in 17d”, which read as “watch it from here.”** That point is not a viewing site — it is the moment the Moon’s shadow passes closest to Earth’s centre (greatest eclipse), usually at sea. The label now reads “Total · **greatest pt** · in 17d / Path crosses: Arctic, Greenland, Iceland …”, so where to actually go is visible on the globe. The detail panel separates “Greatest point (not a viewing site)” from “⭐ Where totality passes”. The path of totality is still not drawn — approximating a long band with a circle would misrepresent it.' },
+
+  { at: '2026-07-26 22:40', tag: 'imp',
+    ko: '**레이어를 끄는 것과 경보를 놓치는 것을 분리했습니다.** 레이어 스위치는 이제 「지도에 표시할지」만 정합니다 — 꺼도 자료는 계속 받고, 쓰나미·큰 지진·대형 산불 같은 긴급 사항은 화면 하단에 떴다가 사라집니다. 그래서 쓰나미도 기본으로 껐습니다: 지구는 깨끗하게 두고 경보는 놓치지 않습니다. 확대 상태도 보지 않습니다 — 확대해서 다른 걸 보고 있다고 경보를 감추지 않습니다. 발사 예정만 긴급이 아니므로 멀리서 보는 상태로 제한했습니다. 검증: 켜진 레이어가 구름 하나뿐인 상태에서 쓰나미 2건 + 대형 산불 1건이 하단에 떴습니다.',
+    en: '**Separated turning a layer off from missing an alert.** A layer switch now only controls what is drawn on the globe — data keeps arriving with it off, and urgent items (tsunami, large earthquakes, major wildfires) still appear and fade at the bottom of the screen. That let us default tsunami off too: a clean planet, without losing warnings. Zoom level is ignored as well — being zoomed in on something else is not a reason to hide an alert. Only launches, which aren’t urgent, stay limited to the far-out view. Verified: with clouds as the only layer on, 2 tsunami alerts and 1 major wildfire still surfaced.' },
+
+  { at: '2026-07-26 22:40', tag: 'fix',
+    ko: '하단 배너의 산불이 「대형 산불 · 51,556 MW」로만 떠서 **어디 불인지 알 수 없던** 문제를 고쳤습니다. 세기만 있고 지명이 없었습니다. 이제 「대형 산불 · 오리건주 Mitchell · 51,556 MW」처럼 지명을 붙입니다. 지명을 못 받으면 지어내지 않고 세기만 보여줍니다.',
+    en: 'Fixed the wildfire banner reading only “Major wildfire · 51,556 MW”, which never said **where the fire was** — intensity with no place. It now reads like “Major wildfire · Mitchell, Oregon · 51,556 MW”. If the place lookup fails we show intensity alone rather than inventing a location.' },
+
+  { at: '2026-07-26 22:25', tag: 'new',
+    ko: '예보 레이어 3종을 열었습니다 — **내일 최고기온 · 내일 최저기온 · 내일 바람.** 목록에 있지만 눌러도 안 되던 항목들입니다. 기준은 **내일**입니다: 오늘을 예보라고 부르면 이미 지나간 시간이 섞여 최고기온이 실제보다 낮게 나옵니다. 지점마다 시간대가 달라 각 지점의 **현지 날짜**로 하루를 자릅니다(그래야 날짜변경선 근처에서 하루가 어긋나지 않습니다). 예보 격자가 아직 없으면 지금 기온으로 대신 칠하지 않고 이유를 알려드립니다 — "내일 최고기온"이라는 이름 아래 현재값을 보여주는 것은 틀린 정보를 주는 일입니다.',
+    en: 'Enabled three forecast layers — **tomorrow’s high, tomorrow’s low, and tomorrow’s wind.** They were listed but did nothing when tapped. They are based on **tomorrow**: calling today a forecast mixes in hours that have already passed, which pulls the daily high below the real value. Because time zones differ, each point’s day is cut on its **local date**, so the day doesn’t slip near the date line. If the forecast grid isn’t available yet, we do not fall back to painting current temperature — we say why, because showing a current value under the label “tomorrow’s high” is simply wrong information.' },
+
+  { at: '2026-07-26 22:25', tag: 'fix',
+    ko: '하단 쓰나미 배너가 사라지지 않고 한 건만 계속 붙어 있던 문제를 고쳤습니다. 경보가 여러 건이어도 등급이 가장 높은 하나만 보였고, 나머지는 볼 방법이 없었습니다. 이제 소식들이 **돌아가며** 하나씩 뜨고 잠깐 비었다가 다음으로 넘어가며, 몇 건 중 몇 번째인지 표시합니다. 경보는 읽을 시간을 더 주고, 큐가 계속 돌기 때문에 놓쳐도 다음 바퀴에 다시 나옵니다. (검증 시점에 실제 경보가 2건이었고 `2/2`로 표시됐습니다.)',
+    en: 'Fixed the tsunami banner sticking to a single alert and never clearing. Only the highest-ranked alert was ever shown, with no way to see the others. Alerts and other headlines now **take turns**: each appears, the bar clears briefly, then the next one comes up, with a counter showing which of how many. Alerts get longer reading time, and because the queue keeps cycling, missing one means seeing it again next time round. (At verification there were 2 live alerts, displayed as `2/2`.)' },
+
+  { at: '2026-07-26 22:25', tag: 'fix',
+    ko: '지진 레이어를 끄면 하단 배너 전체가 죽던 결함을 고쳤습니다. 배너가 지진 정보를 물어볼 때 레이어가 준비됐는지 확인하지 않았습니다. 산불 쪽은 원래 확인하고 있었는데 지진 쪽만 빠져 있었습니다.',
+    en: 'Fixed the whole bottom banner dying when the earthquake layer was off — it asked the quake layer for a headline without checking the layer existed. The wildfire path already had that check; only the quake path was missing it.' },
+
+  { at: '2026-07-26 22:10', tag: 'imp',
+    ko: '**첫 화면을 구름만 켠 지구로** 바꿨습니다. 이전에는 지진 점·위성 궤도·발사대·관측소·부이가 한꺼번에 얹혀서, 처음 들어온 사람에게 지구가 아니라 계기판이 보였습니다. 필요한 레이어는 메뉴 → 지구에서 켜면 됩니다. 부수 효과로 발열도 줄어듭니다 — 위성이 꺼지면 위치 갱신 때문에 계속 렌더를 요청하던 일이 없어집니다. ⚠️ 쓰나미만 예외로 켜뒀습니다: 경보가 없을 때는 **아무것도 그리지 않아서** 화면을 가리지 않는데, 끄면 실제 경보를 놓치기 때문입니다.',
+    en: 'The opening view is now **Earth with clouds only.** Previously quake dots, satellite orbits, launch pads, stations and buoys all loaded at once, so a first-time visitor saw an instrument panel rather than a planet. Turn on what you need under Menu → Earth. A side benefit is less heat: with satellites off, nothing keeps requesting renders for position updates. ⚠️ Tsunami is the one exception left on — with no active alert it **draws nothing at all**, so it doesn’t obscure the view, but switching it off would mean missing a real warning.' },
+
+  { at: '2026-07-26 22:10', tag: 'imp',
+    ko: '시작하면 지구가 **내 위치로 돌아갑니다.** 확대해 들어가지는 않습니다 — 지구 전체가 보이는 높이를 유지한 채 경도·위도만 돕니다. 내가 지구의 어디에 있는지를 보여주는 쪽이 목적에 맞습니다. 위치를 못 받으면 아무것도 하지 않고, 위치가 도착하기 전에 이미 지구를 만졌으면 화면을 가로채지 않습니다.',
+    en: 'On launch the globe now **rotates to your location.** It does not zoom in — it keeps the whole-Earth framing and only turns to your longitude and latitude, which fits the point better: showing where on Earth you are. If location isn’t available it does nothing, and if you’ve already started turning the globe it won’t hijack your view.' },
+
+  { at: '2026-07-26 22:10', tag: 'new',
+    ko: '메뉴 → 지구에 **열돔**과 **해양 환류**를 넣어 각각 껐다 켤 수 있게 했습니다. 이전에는 목록에 없어서 끌 방법이 아예 없었습니다 — 레이어를 만들어놓고 안 만든 것과 같았습니다.',
+    en: 'Added **Heat dome** and **Ocean gyres** to Menu → Earth so each can be switched on and off. Neither was in the list before, so there was no way to turn them off — which amounts to having built a layer and not built it.' },
+
+  { at: '2026-07-26 22:00', tag: 'fix',
+    ko: '기기가 계속 뜨거워지던 문제를 고쳤습니다. 원인은 **끝나지 않는 애니메이션**이었습니다. ① 지진 파문이 최근 24시간 지진 전부에 붙어 영구히 돌았습니다 — 실측으로 규모 4.0+ 22건에 파문 66개, 그 지진들의 나이는 1.9~21.7시간이었습니다. 21시간 전 지진이 지금도 맥동하고 있었던 겁니다. 파문 하나가 매 프레임 원 도형을 다시 만들어서 초당 약 2,000회 재생성이 일어났습니다. ② 지구 자동 회전이 앱을 닫을 때까지 멈추지 않았습니다 — 카메라가 움직이면 타일 선택부터 전 엔티티 위치까지 다시 계산되니 이게 제일 비쌌습니다. ③ 파문이 있는지 판정하려고 33ms마다 모든 엔티티(위성·부이·산불 수천 개)를 훑었습니다. 이제 90분 이내 사건만 파문을 받고 24초 뒤 정적인 원으로 바뀌며, 자동 회전은 75초 뒤 멎고 회전·위성은 30fps가 아니라 10fps로 그립니다. 검증: 파문 66→0개, 렌더 요청이 실제로 멈추는 것을 확인했습니다.',
+    en: 'Fixed the device continuously heating up. The cause was **animations that never ended.** ① Earthquake ripples were attached to every quake from the past 24 hours and ran forever — measured: 66 ripples across 22 quakes of magnitude 4.0+, aged 1.9 to 21.7 hours. A quake from 21 hours ago was still pulsing. Each ripple rebuilt its circle geometry every frame, about 2,000 rebuilds per second. ② The globe’s auto-rotation never stopped until the app closed — and moving the camera re-computes tile selection and every entity position, making it the most expensive item. ③ Deciding whether any ripple existed meant scanning every entity (thousands of satellites, buoys, fires) every 33 ms. Now only events under 90 minutes old get a ripple, which becomes a static ring after 24 seconds; auto-rotation stops after 75 seconds; and rotation and satellites render at 10fps rather than 30. Verified: ripples 66 → 0, and render requests genuinely stop.' },
+
+  { at: '2026-07-26 22:00', tag: 'new',
+    ko: '열돔을 레이어 메뉴에서 **따로 끌 수 있게** 했습니다. 이전에는 「자연현상」에 묶여 있어서 해양 환류를 보려면 열돔도 같이 켜야 했습니다. 열돔은 반경 수백 km 반투명 면이라 다른 걸 볼 때 방해가 됩니다. 기본은 꺼둡니다 — 필요한 사람이 켜는 쪽이 맞습니다.',
+    en: 'Heat dome can now be **switched off separately** in the layer menu. It used to be bundled into “Phenomena”, so seeing ocean gyres meant having the heat dome on as well — and a translucent surface hundreds of kilometres across gets in the way of everything else. It is off by default; the people who want it can turn it on.' },
+
+  { at: '2026-07-26 22:00', tag: 'new',
+    ko: 'AI 뉴스 브리핑을 만들었습니다. 확정된 이벤트 중 관심도가 높은 것을 AI가 웹 검색으로 확인해 **사실을 항목으로 정리하고, 항목마다 근거 기사를 붙입니다.** 카드에서 그 지역으로 바로 갈 수 있고, 지구에서 표식을 눌러도 같은 브리핑이 나옵니다. 원문 문장은 옮기지 않고, 출처가 없는 항목은 서버가 버리며, AI가 썼다는 사실을 카드에 적습니다. ⚠️ 아직 AI 키가 없어 브리핑 목록은 비어 있습니다 — 화면과 연결은 완성됐고 키가 생기면 채워집니다.',
+    en: 'Added AI news briefs. For high-interest confirmed events, AI verifies facts via web search and **lays them out as points, each carrying the article it came from.** The card takes you to that area on the globe, and tapping the marker there shows the same brief. No article sentences are copied, points without a source are discarded server-side, and the card states that AI wrote it. ⚠️ There is no AI key yet, so the brief list is empty — the screen and the linkage are finished and will fill in once a key exists.' },
+
+  { at: '2026-07-26 21:40', tag: 'new',
+    ko: '설정에 이 업데이트 내역을 만들었습니다.',
+    en: 'Added this update history to Settings.' },
+
+  { at: '2026-07-26 21:14', tag: 'imp',
+    ko: '항공편 화면에 고도 색 범례와 “고도 8배 과장” 표기를 추가했습니다. 과장 없이 그리면 순항 11km 가 지구 반지름의 0.17% 라 지표에 붙어 보입니다.',
+    en: 'Added an altitude colour legend to the flight panel, and a note that altitude is exaggerated 8×. Un-exaggerated, an 11 km cruise is 0.17% of Earth’s radius and hugs the surface.' },
+
+  { at: '2026-07-26 21:13', tag: 'new',
+    ko: '내 항공편에 **실제 항적**을 고도별 색으로 그립니다. 예전에는 대권항로를 그려놓고 “경로”라고 했는데, 실제 항로는 제트기류·영공 때문에 꽤 다릅니다. 수신이 끊긴 구간은 선을 잇지 않고 끊습니다 — 가지 않은 길을 그리지 않기 위해서입니다.',
+    en: 'My Flight now draws the **real track**, coloured by altitude. Previously it drew a great-circle and called it the route; actual routes differ considerably because of jet streams and airspace. Reception gaps break the line rather than being bridged — we don’t draw a path we didn’t observe.' },
+
+  { at: '2026-07-26 21:10', tag: 'legal',
+    ko: '항공기 추적을 OpenSky 에서 **adsb.lol (ODbL 1.0)** 로 교체했습니다. OpenSky 라이선스는 비상업용이라 유료 앱에 쓸 수 없습니다 — 제가 만들어놓고 뒤늦게 발견한 위반이었습니다. adsb.lol 은 상업 사용이 허용되고, 편명으로 바로 조회되며 등록번호·기종·비상코드까지 옵니다.',
+    en: 'Replaced OpenSky with **adsb.lol (ODbL 1.0)** for aircraft tracking. OpenSky’s licence is non-commercial and cannot be used in a paid app — a violation I introduced and caught late. adsb.lol permits commercial use, is indexed by callsign, and also returns registration, type and emergency codes.' },
+
+  { at: '2026-07-26 21:07', tag: 'new',
+    ko: '이벤트 메뉴를 만들었습니다. 교차검증 결과(원본 → 중복 제거 → 확정)를 그대로 보여주고, 같은 도메인에서 온 보도는 묶어서 “한 매체가 여러 번 실었다”는 사실을 감추지 않습니다. 원문 제목은 시스템 언어에 맞춰 번역해 보여줍니다.',
+    en: 'Added the Events menu. It shows the cross-verification funnel as it is (raw → deduplicated → confirmed) and groups reports from the same domain, so “one outlet published it repeatedly” is not hidden. Headlines are shown in the system language.' },
+
+  { at: '2026-07-26 21:02', tag: 'new',
+    ko: '데이터 적립을 시작했습니다. 지진·쓰나미·뉴스·부이·태풍·태양활동·바람을 시간대별로 쌓습니다(회당 약 3,600행). 장기 목표인 이상 탐지는 축적된 과거 없이는 불가능합니다. 적립 데이터는 비공개 경로에 둡니다.',
+    en: 'Started accumulating data — quakes, tsunami, news, buoys, cyclones, solar activity and wind, partitioned by hour (~3,600 rows per run). The long-term goal of anomaly detection is impossible without accumulated history. The archive lives under a private prefix.' },
+
+  { at: '2026-07-26 20:59', tag: 'imp',
+    ko: '로켓 발사 예정을 위성 선택 탭으로 옮겼습니다. 커뮤니티에 있던 자리보다 여기가 맞습니다.',
+    en: 'Moved upcoming launches into the satellite tab, which fits better than its previous place in Community.' },
+
+  { at: '2026-07-26 20:57', tag: 'imp',
+    ko: '요금제를 다시 짰습니다. 경쟁 앱(overwatch.earth)이 항공기·선박을 무료로 주는데 우리가 유료로 막아둔 상태였습니다. 뉴스·산불·쓰나미·항공기를 포함해 모든 레이어를 **무료**로 열고, 유료는 메리트가 분명한 것만 남겼습니다 — 되감기(과거 이력), 위성 통과 알림, 전체 위성 카탈로그.',
+    en: 'Rebalanced the tiers. A competitor (overwatch.earth) gives aircraft and ships away free while we had them paywalled. All layers — news, wildfire, tsunami, aircraft included — are now **free**; paid keeps only what has a clear benefit: history playback, pass alerts, and the full satellite catalogue.' },
+
+  { at: '2026-07-26 20:32', tag: 'fix',
+    ko: '프랑스·스페인 대형 산불이 “교전”으로 표시되던 문제를 고쳤습니다. 원인은 GDELT 의 CAMEO 코드가 사건이 아니라 **문장 형태**를 분류한다는 점입니다 — “소방관들이 화염과 싸우다(battle the blaze)”가 코드 19 FIGHT 로 잡혔습니다. 재난 판별을 따로 넣고, 전쟁으로 읽히는 표현을 “긴급 / 속보”로 바꿨습니다.',
+    en: 'Fixed large wildfires in France and Spain being labelled “armed clash”. The cause: GDELT’s CAMEO codes classify **sentence patterns**, not events — “firefighters battle the blaze” resolved to root code 19 FIGHT. Added separate disaster detection and relabelled war-sounding wording as “Urgent / Breaking”.' },
+
+  { at: '2026-07-26 20:26', tag: 'fix',
+    ko: '지도 위 한글 라벨이 읽히지 않던 문제를 고쳤습니다. 11px 글자에 3px 검은 외곽선을 두르면 한글의 속공간(ㅁ·ㅇ 안쪽)이 메워집니다. 라틴 문자는 견디지만 한글은 못 견딥니다. 외곽선을 버리고 반투명 배경 알약으로 바꿨습니다.',
+    en: 'Fixed illegible Korean labels on the globe. A 3px black outline on 11px text fills in the counters of Hangul syllables (the holes inside ㅁ and ㅇ); Latin survives it, Hangul does not. Dropped the outline for a translucent background pill.' },
+
+  { at: '2026-07-26 20:23', tag: 'fix',
+    ko: '태풍 발생 애니메이션이 북반구에서 **시계 방향**으로 돌고 있었습니다. 부호가 뒤집혀 있었고, 시간에 따른 방위 변화를 측정해서 잡아냈습니다. 이제 북반구는 반시계, 남반구는 시계 방향으로 돕니다 — 실제 회전 방향입니다.',
+    en: 'The cyclone animation was spinning **clockwise** in the Northern Hemisphere. The sign was inverted; caught it by measuring bearing change over time. Now anticlockwise in the north and clockwise in the south — the real rotation.' },
+
+  { at: '2026-07-26 20:23', tag: 'fix',
+    ko: '열돔 크기를 실측으로 바꿨습니다. 이전에는 “260km + 지속일수 × 55km” 라는 만들어낸 공식이었습니다. 이제 8방향으로 220km 씩 8단계 탐색해 실제 경계를 찾고, 도시별로 열돔 안인지 밖인지 근거와 함께 판정합니다. 돔 안에서 보이지 않던 문제도 함께 고쳤습니다(입체 돔 → 지면 다각형).',
+    en: 'Heat-dome extent is now measured, not invented — the old radius was a made-up “260 km + days × 55 km”. It now probes 8 directions in 8 steps of 220 km to find the real boundary, and judges each city as inside or outside with its reasoning shown. Also fixed the dome being invisible from within (3D dome → ground polygon).' },
+
+  { at: '2026-07-26 20:23', tag: 'fix',
+    ko: '쓰나미 안내 글자가 지구 반대편에서도 보이던 문제를 고쳤습니다. 깊이 검사를 무한으로 끄면 지구를 뚫고 렌더링됩니다 — 코드에 이미 경고가 적혀 있었는데 제가 같은 함정을 밟았습니다.',
+    en: 'Fixed tsunami labels showing through the far side of the globe. Disabling the depth test with Infinity renders through the Earth — the trap was already documented in the code and I walked into it anyway.' },
+
+  { at: '2026-07-26 20:08', tag: 'new',
+    ko: '커뮤니티 메뉴를 만들었습니다. 경고(지진·분화·쓰나미·산불), 뉴스, 개발 요청란이 들어갑니다. 요청란에는 1인 기획자가 만들고 있어 제약이 있지만 가능한 만큼 만든다고 적어두었습니다. 한국어로 쓰면 영어 번역이, 영어로 쓰면 한국어 번역이 함께 붙습니다.',
+    en: 'Added the Community menu — warnings (quake, eruption, tsunami, wildfire), news, and a feature-request board. The board states plainly that this is built by one person, so there are limits, but as much as possible will get built. Korean posts get an English translation alongside, and vice versa.' },
+
+  { at: '2026-07-26 19:53', tag: 'imp',
+    ko: '레이어 바와 다국어를 정리했습니다. 새로 붙은 산불·쓰나미·일식·발사대·태풍을 그룹에 맞게 넣었습니다.',
+    en: 'Reorganised the layer bar and localisation, filing the newly added wildfire, tsunami, eclipse, launch-pad and cyclone layers into the right groups.' },
+
+  { at: '2026-07-26 19:51', tag: 'new',
+    ko: '산불을 추가했습니다. NASA FIRMS VIIRS 375m 근실시간 관측입니다. 원자료는 58,359개 화점인데 그대로 그리면 지구가 점으로 덮입니다 — 12km 격자로 군집해 3,943건으로 줄이고, 화재복사강도(FRP)로 크기를 표현합니다. **탐지가 없다는 것이 불이 없다는 뜻은 아닙니다**(구름·궤도 공백) — 화면에도 그렇게 적었습니다.',
+    en: 'Added wildfires from NASA FIRMS VIIRS 375m near-real-time. The raw feed has 58,359 hotspots, which would bury the globe in dots — clustered on a 12 km grid down to 3,943, sized by Fire Radiative Power. **No detection does not mean no fire** (cloud cover, orbital gaps) — stated in the panel.' },
+
+  { at: '2026-07-26 19:46', tag: 'new',
+    ko: '국제 쓰나미 경보를 추가했습니다(태평양 PTWC, 미국·캐나다 NTWC). 등급을 읽지 못했을 때 최하위 “정보”로 떨어뜨리지 않고 “불명”으로 남깁니다 — 경보를 실수로 낮춰 보여주는 쪽이 훨씬 위험합니다.',
+    en: 'Added international tsunami bulletins (Pacific PTWC, US/Canada NTWC). When a category can’t be parsed it stays “Unknown” rather than defaulting to the lowest level — silently under-reporting a warning is far more dangerous.' },
+
+  { at: '2026-07-26 19:40', tag: 'infra',
+    ko: '배포 스크립트에 빠져 있던 S3 권한을 넣었습니다. 이 때문에 데이터 적립 함수가 권한 없이 배포돼 아무것도 저장하지 못했습니다.',
+    en: 'Added the missing S3 permission to the deploy script — its absence had shipped the archiver with no write access, so it stored nothing.' },
+
+  { at: '2026-07-26 18:58', tag: 'imp',
+    ko: '전체 화면 스타일을 정리했습니다.',
+    en: 'General styling pass across the app.' },
+
+  { at: '2026-07-26 18:39', tag: 'fix',
+    ko: '화면이 검게 깜빡이던 문제를 고쳤습니다. 원인은 렌더 해상도가 0.625 ↔ 0.75 를 8초 동안 왕복하고 있었고, 바뀔 때마다 검은 프레임이 한 장 들어갔습니다. 판단 기준이 잘못돼 있었습니다 — 화면 갱신 **횟수**를 보고 있었는데, 실제로 봐야 하는 건 한 프레임을 그리는 데 걸린 **시간**입니다. 회전을 15초간 계속해도 해상도가 한 번도 바뀌지 않는 것을 확인했습니다.',
+    en: 'Fixed the screen flashing black. The render scale was oscillating 0.625 ↔ 0.75 across 8 seconds, and each change inserted one black frame. The decision logic was wrong: it judged on frame **rate** when what matters is the **time** spent drawing a frame. Verified zero scale changes across 15 seconds of continuous rotation.' },
+
+  { at: '2026-07-26 18:29', tag: 'new',
+    ko: '로그인을 **구글·애플만** 지원하도록 만들었습니다. 이메일·비밀번호 가입은 넣지 않습니다 — 비밀번호를 보관하지 않는 쪽이 안전합니다. 커뮤니티·개발요청·사전등록 테이블도 함께 만들었습니다. 사전등록 표는 이메일이 들어가므로 조회 정책을 아예 주지 않고, 인원 수만 셀 수 있게 했습니다.',
+    en: 'Sign-in supports **Google and Apple only** — no email/password signup, because not storing passwords is safer. Added the community, feature-request and waitlist tables. The waitlist holds email addresses, so it has no read policy at all; only a count can be obtained.' },
+
+  { at: '2026-07-26 18:26', tag: 'new',
+    ko: '자동 번역을 붙였습니다. 한국어로 쓰면 영어를, 영어로 쓰면 한국어를 함께 보여줍니다. 고유명사에서는 자주 틀리므로 원문을 항상 함께 남깁니다.',
+    en: 'Added automatic translation — Korean gets English alongside and vice versa. It often fails on proper nouns, so the original is always kept next to it.' },
+
+  { at: '2026-07-26 18:20', tag: 'legal',
+    ko: '사업자 정보(전자상거래법 제10조)와 개인정보 보호책임자(개인정보보호법 제30조) 표기 자리를 만들었습니다.',
+    en: 'Added the required business-registration and privacy-officer disclosure fields.' },
+
+  { at: '2026-07-26 17:54', tag: 'new',
+    ko: '설정에 구독하기를 넣었습니다. **카드 정보를 우리 화면에서 직접 받지 않습니다** — 애플/구글 결제나 결제대행사 화면으로 넘깁니다(PCI-DSS, 앱스토어 규정 3.1.1). 항공기·선박은 선착순 사전등록으로 안내하고, 인원이 모이면 서비스를 시작하며 베네핏을 드립니다.',
+    en: 'Added subscription to Settings. **Card details are never collected on our own page** — checkout is handed to Apple/Google billing or a PG-hosted page (PCI-DSS, App Store 3.1.1). Aircraft and ships are offered as a first-come waitlist: the service starts once enough people register, with a benefit for early members.' },
+
+  { at: '2026-07-26 17:45', tag: 'fix',
+    ko: '일본 지진의 진앙이 일본 기상청 발표와 어긋나던 문제를 고쳤습니다. USGS 와 JMA 는 같은 지진의 진앙을 다르게 계산합니다 — 30일간 40건 중 25건을 대조해 **3~35km(중앙값 약 14km)** 차이를 실측했습니다. 이제 일본 지진은 JMA 해를 기준으로 표시하고, 최대 진도를 함께 보여주며, 두 기관 값을 나란히 확인할 수 있습니다.',
+    en: 'Fixed Japanese earthquake epicentres disagreeing with the JMA bulletin. USGS and JMA compute different solutions for the same quake — measured **3–35 km (median ~14 km)** apart across 25 matched events over 30 days. Japanese quakes now use the JMA solution, show maximum shindo, and let you compare both agencies side by side.' },
+
+  { at: '2026-07-26 17:39', tag: 'fix',
+    ko: '화면을 더블클릭하면 시점이 고정된 채 풀리지 않던 문제를 고쳤습니다. 더블클릭이 대상 추적 모드로 들어가는데 기울기 조작이 잠겨 있어 빠져나올 수 없었습니다.',
+    en: 'Fixed double-clicking locking the camera with no way out — the double-click entered entity-tracking mode while tilt was disabled, so the view could not be released.' },
+
+  { at: '2026-07-26 17:38', tag: 'fix',
+    ko: '태풍 구름 사진이 경로와 어긋나던 문제를 고쳤습니다. 원자료(NOAA GMGSI)가 **정거원통이 아니라 메르카토르 격자**였습니다 — 위도 간격이 적도 0.0214°에서 ±72.7° 0.0720°까지 3.37배 변합니다. 그대로 붙이면 한국 위도에서 **1,124km** 밀립니다. 파일에 들어 있는 위도 배열로 재투영해 잔차 0.06° 이내, 원본과의 상관이 0° 에서 최대인 것을 확인했습니다.',
+    en: 'Fixed cloud imagery not lining up with cyclone tracks. The source (NOAA GMGSI) is on a **Mercator grid, not equirectangular** — latitude spacing varies 3.37× from 0.0214° at the equator to 0.0720° at ±72.7°. Pasted as-is it is displaced **1,124 km** at Korea’s latitude. Reprojected using the file’s own latitude array; residual ≤0.06°, and cross-correlation against the source peaks at exactly 0° offset.' },
+
+  { at: '2026-07-26 17:34', tag: 'imp',
+    ko: '우주정거장을 항상 켜진 상태가 아니라 **끌 수 있게** 바꿨습니다. 위성 카탈로그도 함께 정리했습니다.',
+    en: 'The space station can now be **switched off** instead of always being on. Also tidied the satellite catalogue.' },
+
+  { at: '2026-07-26 17:22', tag: 'new',
+    ko: '하늘(천문)을 추가했습니다 — 월령, 유성우, 일식. 검증을 위해 실제 삭·망 날짜 4건과 맞춰봤고, 시드니에서 페르세우스자리 유성우는 절대 뜨지 않는다(적위 +58° vs 위도 −33.87°)는 것과 서울에서 쌍둥이자리 유성우가 85.4°까지 올라온다는 것을 확인했습니다.',
+    en: 'Added the Sky layer — moon phase, meteor showers, eclipses. Validated moon phases against four known new/full moons, and confirmed the Perseids never rise from Sydney (declination +58° vs latitude −33.87°) while the Geminids reach 85.4° from Seoul.' },
+
+  { at: '2026-07-26 17:16', tag: 'new',
+    ko: '태양 활동과 오로라를 추가했습니다(NOAA SWPC).',
+    en: 'Added solar activity and aurora from NOAA SWPC.' },
+
+  { at: '2026-07-26 17:07', tag: 'new',
+    ko: '해양·태양 데이터 서버를 만들었습니다. 해수면 온도와 태양 지수를 앱에 맞는 형태로 가공해 내려줍니다.',
+    en: 'Added the ocean and solar data service, reshaping sea-surface temperature and solar indices for the app.' },
+
+  { at: '2026-07-26 15:58', tag: 'new',
+    ko: '공식 발표 링크와 라이브 영상을 붙였습니다. 영상은 재생 전까지 추적 쿠키를 심지 않는 방식으로 넣었습니다.',
+    en: 'Added official-bulletin links and live video. Video is embedded so that no tracking cookie is set before playback.' },
+
+  { at: '2026-07-26 15:37', tag: 'new',
+    ko: '지진의 발진기구(단층 운동 방향)를 표시합니다.',
+    en: 'Added earthquake focal mechanisms (fault motion).' },
+
+  { at: '2026-07-26 15:27', tag: 'new',
+    ko: '위성 통과 예보를 추가했습니다 — 내 위치 위로 언제 지나가는지 계산합니다.',
+    en: 'Added satellite pass predictions — when a satellite will pass over your location.' },
+
+  { at: '2026-07-26 15:12', tag: 'new',
+    ko: '위성 영상을 추가했습니다.',
+    en: 'Added satellite imagery.' },
+
+  { at: '2026-07-26 14:48', tag: 'new',
+    ko: '바람 데이터 서버와 바람 흐름 표현을 추가했습니다.',
+    en: 'Added the wind data service and the animated wind field.' },
+
+  { at: '2026-07-26 14:29', tag: 'new',
+    ko: '해류 표류 계산과 내 위치, 계정 화면 기초를 만들었습니다.',
+    en: 'Added ocean-drift estimation, my-location, and the basic account screen.' },
+
+  { at: '2026-07-26 13:04', tag: 'new',
+    ko: '날씨와 지명 검색, 강수를 추가했습니다(Open-Meteo).',
+    en: 'Added weather, place search and precipitation (Open-Meteo).' },
+
+  { at: '2026-07-26 11:54', tag: 'new',
+    ko: '패널·시트 UI 구조를 만들었습니다.',
+    en: 'Built the panel and sheet UI structure.' },
+
+  { at: '2026-07-26 10:00', tag: 'infra',
+    ko: '로컬 개발 서버와 AWS 배포 스크립트를 만들었습니다.',
+    en: 'Added the local dev server and AWS deploy scripts.' },
+
+  { at: '2026-07-26 06:51', tag: 'legal',
+    ko: '이용약관과 개인정보처리방침 초안을 작성했습니다.',
+    en: 'Drafted the terms of service and privacy policy.' },
+
+  { at: '2026-07-26 06:42', tag: 'infra',
+    ko: '인수인계 문서를 작성했습니다 — 장기 목표(데이터 축적 → 이상 탐지), 데이터 출처, 기능 목록, 우선순위, 미결 사항.',
+    en: 'Wrote the handover document — long-term goal (accumulated data → anomaly detection), data sources, feature list, priorities and open questions.' },
+
+  { at: '2026-07-26 00:49', tag: 'new',
+    ko: '프로젝트를 시작했습니다.',
+    en: 'Project started.' },
+];
+
+/* ── 렌더 ─────────────────────────────────────────────────── */
+
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* **강조** 만 허용한다. 그 외 태그는 이스케이프된 채로 남는다. */
+const inline = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+
+function dateLabel(ymd, ko) {
+  const [y, m, d] = ymd.split('-').map(Number);
+  if (ko) return `${y}년 ${m}월 ${d}일`;
+  const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+             'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][m - 1];
+  return `${M} ${d}, ${y}`;
+}
+
+/** 날짜별로 묶어 시간 역순 타임라인 HTML 을 만든다. */
+export function renderChangelog(lang = 'ko') {
+  const ko = lang === 'ko';
+  const days = [];
+
+  for (const e of CHANGELOG) {
+    const [ymd, hm] = e.at.split(' ');
+    let day = days[days.length - 1];
+    if (!day || day.ymd !== ymd) { day = { ymd, rows: [] }; days.push(day); }
+    day.rows.push({ hm, ...e });
+  }
+
+  const note = ko
+    ? '시각은 소스 파일이 마지막으로 수정된 시각입니다. 같은 시각의 항목은 함께 작업한 것입니다.'
+    : 'Times are when each source file was last modified. Entries sharing a time were worked on together.';
+
+  const total = ko ? `총 ${CHANGELOG.length}건` : `${CHANGELOG.length} entries`;
+
+  const body = days.map((day) => {
+    const rows = day.rows.map((r) => {
+      const t = TAGS[r.tag] || TAGS.imp;
+      const text = ko ? r.ko : (r.en || r.ko);
+      return `<li class="cl-row">
+        <div class="cl-when">${r.hm}</div>
+        <div class="cl-mark" style="--tag:${t.color}"></div>
+        <div class="cl-what">
+          <span class="cl-tag" style="--tag:${t.color}">${ko ? t.ko : t.en}</span>
+          <p>${inline(text)}</p>
+        </div>
+      </li>`;
+    }).join('');
+    return `<div class="cl-day">
+      <h4 class="cl-date">${dateLabel(day.ymd, ko)}</h4>
+      <ul class="cl-list">${rows}</ul>
+    </div>`;
+  }).join('');
+
+  return `<p class="cl-note">${note} · ${total}</p>${body}`;
+}

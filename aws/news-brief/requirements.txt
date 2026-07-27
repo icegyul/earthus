@@ -1,0 +1,3 @@
+# ⚠️ boto3/botocore 는 Lambda 런타임에 이미 있다 — 넣으면 용량만 커진다.
+# anthropic SDK 는 httpx/pydantic 을 끌고 온다 (합계 약 15MB, 한도 안).
+anthropic>=0.116.0

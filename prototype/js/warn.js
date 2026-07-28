@@ -157,9 +157,10 @@ export const warn = {
     // 가장 심한 것 하나만 띄운다. 377건을 다 띄우면 알림이 아니라 소음이다.
     const top = fresh.slice().sort((a, b) => b.levelRank - a.levelRank)[0];
     const ko = i18n.lang === 'ko';
+    // ⚠️ 영어에서 등급이 한국어로 새지 않게 한다 (levelEn — 파일 끝 참고)
     toast(ko
       ? `${top.icon} ${top.region} ${top.kind}${top.level}`
-      : `${top.icon} ${top.region}: ${top.kindEn} ${top.level}`);
+      : `${top.icon} ${top.region}: ${top.kindEn || top.kind} ${levelEn(top.level)}`);
 
     fresh.forEach(w => { seen[`${w.regionId}:${w.kind}`] = w.issuedKst; });
     // ⚠️ 무한정 쌓이면 저장소가 는다. 최근 200건만 남긴다.
@@ -191,3 +192,21 @@ export const warn = {
     };
   },
 };
+
+/* 특보 등급을 영문으로.
+ * ⚠️ 기상청 자료에는 kindEn 은 있는데 **levelEn 이 없다**(실측: levelEn = null).
+ *    그래서 영어 설정에서 "Heat 주의보" 처럼 섞여 나왔다.
+ * ⚠️ 실측으로 확인한 등급은 셋뿐이다: 주의 · 경보 · 중대경보.
+ *    표에 없는 값이 오면 **원문을 그대로 돌려준다** — 지어내지 않는다.
+ *    (예비특보 같은 것이 새로 들어올 수 있다)
+ */
+const LEVEL_EN = {
+  '주의':     'Advisory',
+  '주의보':   'Advisory',
+  '경보':     'Warning',
+  '중대경보': 'Emergency Warning',
+  '예비특보': 'Preliminary',
+};
+export function levelEn(level) {
+  return LEVEL_EN[String(level || '').trim()] || level || '';
+}

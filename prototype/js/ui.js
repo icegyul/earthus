@@ -16,6 +16,9 @@ import { launches } from './layers/space.js';
 import { tsunami } from './layers/tsunami.js';
 import { wildfires } from './layers/wildfire.js';
 import { flyTo, locateUser, fitGlobeHeight } from './viewer.js';
+// 한국 기상특보 — 별도 띠를 없애고 아래 banner 큐에 합쳤다 (한 줄로 표시)
+import { warn, levelEn } from './warn.js';
+import { warnUI } from './ui-warn.js';
 
 const $ = s => document.querySelector(s);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c =>
@@ -1330,6 +1333,41 @@ export const banner = {
         }));
     });
 
+    /* ── 1-b. 한국 기상특보 ──
+       ⚠️ 예전에는 특보만 **별도 띠(#warnBar)** 로 상단에 따로 떴다.
+          그래서 지진·쓰나미 배너와 **두 줄이 겹쳐** 화면을 먹었다 (지적받음).
+          이제 같은 배너 큐에 넣어 한 줄로 돌아가게 한다.
+
+       ⚠️ 특보는 '소식'이 아니라 **지속되는 상태**다. 한 번 보여줬다고 지우면
+          폭염이 계속되는데 표시가 사라진다. 그래서 persist 를 달아
+          _seen 에 넣지 않고 계속 순번에 다시 오르게 한다. */
+    safe(() => {
+      const s = warn.summary?.();
+      if (!s || !s.ready || !s.inKorea || !s.mine?.length || warn.off) return;
+      const top = s.mine.slice().sort((a, b) => b.levelRank - a.levelRank)[0];
+      const more = s.mine.length - 1;
+      items.push({
+        key: `warn:${top.region}:${top.kind}${top.level}`,
+        persist: true,                       // 상태이므로 계속 다시 뜬다
+        alert: top.levelRank >= 3,           // 경보급만 붉게
+        ms: BANNER_ALERT_MS,
+        html: `<span class="dot" style="background:${top.color}"></span>`
+            /* ⚠️ 영어 설정에서 등급이 한국어로 새어 나왔다 ("Heat 주의보").
+               자료에 levelEn 이 없어서 level 을 그대로 붙이고 있었다. */
+            + `${top.icon} ${ko ? top.kind + top.level
+                                : `${top.kindEn || top.kind} ${levelEn(top.level)}`}`
+            /* ⚠️ 구역명(양산시·서울서남권)은 기상청이 영문을 주지 않는다.
+               로마자를 손으로 지어내면 틀린 지명이 되므로 한국어를 그대로 둔다.
+               영어 사용자에게도 "Heat Advisory · 양산시" 가
+               "Heat 주의보 · 양산시" 보다 낫다. */
+            /* ⚠️ 여기 개수는 '내 지역의 다른 특보 건수'다.
+               배너 오른쪽 끝의 +N(_counter)은 '대기 중인 다른 소식 수'로 뜻이 다르다.
+               둘 다 bn-n 클래스를 쓰면 "+1 +1"처럼 보인다 — 본문 글자로 붙인다. */
+            + ` · ${top.region}${more > 0 ? (ko ? ` 외 ${more}건` : ` +${more} more`) : ''}`,
+        go: () => warnUI.open(),
+      });
+    });
+
     // ── 2. 큰 지진 — 긴급이다. 확대 상태와 무관하게 띄운다 ──
     safe(() => {
       const q = quakes.headline?.();
@@ -1350,7 +1388,8 @@ export const banner = {
 
     /* ⚠️ 이미 보여준 것은 큐에 넣지 않는다. 같은 경보를 계속 다시 띄우면
        새로 들어온 소식이 그 뒤에 묻힌다. 지난 것은 이벤트 메뉴에서 본다. */
-    const fresh = items.filter(it => it.key && !this._seen.has(it.key));
+    // persist 항목(기상특보)은 '지속되는 상태'라 이미 보여줬어도 다시 올린다
+    const fresh = items.filter(it => it.key && (it.persist || !this._seen.has(it.key)));
     // 기다리는 것이 있으면 순서를 유지하고, 새 것만 뒤에 붙인다
     const pending = new Set(this._queue.map(it => it.key));
     fresh.forEach(it => { if (!pending.has(it.key)) this._queue.push(it); });
@@ -1390,7 +1429,9 @@ export const banner = {
       box.classList.remove('on');           // 사라진다 (CSS 전환)
       // 보여줬으므로 큐에서 빼고 기억해 둔다 — 다시 올라오지 않는다
       this._queue.shift();
-      this._seen.add(it.key);
+      /* ⚠️ 기상특보는 기억하지 않는다. 지속되는 상태라 다음 rebuild 에서
+         다시 큐에 올라와야 한다 — 폭염이 계속되는데 표시가 사라지면 안 된다. */
+      if (!it.persist) this._seen.add(it.key);
       this._timer = setTimeout(() => this._cycle(), BANNER_GAP_MS);
     }, it.ms);
   },

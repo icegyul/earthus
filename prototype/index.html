@@ -13,14 +13,30 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<!-- 주소창이 /favicon.ico 를 직접 찾는 브라우저가 아직 있다. 없으면 403 이 뜬다. -->
+<link rel="icon" href="/favicon.ico" sizes="any">
 <!-- iOS 는 apple-touch-icon 에 SVG 를 무시한다 → PNG 로 준다 -->
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<!-- 공유했을 때 -->
+<!-- 공유했을 때
+     ⚠️ og:image 는 **절대 URL + PNG** 여야 한다.
+        · 상대경로('icon.svg')는 카카오톡·트위터 크롤러가 못 읽는다.
+        · SVG 는 아예 미리보기로 그려주지 않는다 — 썸네일이 통째로 안 뜬다.
+        · 비율은 1.91:1(1200×630)이 표준이다. 정사각을 주면 멋대로 잘려 지구가 반쯤 날아간다. -->
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://earthus.net/">
 <meta property="og:site_name" content="earthus">
 <meta property="og:title" content="earthus — 지구관측 시각화">
-<meta property="og:description" content="전 세계 기상·해양·재난 관측 자료를 3D 지구본 위에 실시간으로.">
-<meta property="og:image" content="icon.svg">
+<meta property="og:description" content="전 세계 기상·해양·재난 관측 자료를 3D 지구본 위에 실시간으로. 모든 값에 출처와 관측 시각을 함께 표시합니다.">
+<meta property="og:image" content="https://earthus.net/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="earthus — 지구관측 시각화">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="earthus — 지구관측 시각화">
+<meta name="twitter:description" content="전 세계 기상·해양·재난 관측 자료를 3D 지구본 위에 실시간으로.">
+<meta name="twitter:image" content="https://earthus.net/og.png">
+<link rel="canonical" href="https://earthus.net/">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Widgets/widgets.css">
 <link rel="stylesheet" href="css/app.css">
 <link rel="stylesheet" href="css/account.css">
@@ -258,7 +274,12 @@
     <div class="set-row"><label id="labLang">언어</label><div class="segbox" id="segLang"></div></div>
     <div class="set-row"><label id="labUnit">온도 단위</label><div class="segbox" id="segUnit"></div></div>
     <div class="set-row"><label id="labTier">요금제</label><div class="segbox" id="segTier"></div></div>
-    <div class="set-row"><label id="labApi">API 신청 관리</label><button id="btnApi" class="set-link">열기</button></div>
+    <!-- ⚠️ API 신청 관리는 **운영자용**이라 일반 설정에서 숨긴다 (hidden).
+         지우지는 않는다 — 공공데이터포털 활용신청이 **2년이면 만료**되는데,
+         만료되면 오류가 아니라 **조용히 자료가 끊긴다.** 11개 항목의 신청일과
+         만료 예정을 추적해 미리 경고하는 것이 이 화면의 실제 역할이다.
+         들어가려면 주소 뒤에 #api 를 붙인다 (main.js 참고). -->
+    <div class="set-row" id="rowApi" hidden><label id="labApi">API 신청 관리</label><button id="btnApi" class="set-link">열기</button></div>
     <div class="set-row">
       <label id="labAlarm">위성 통과 알림</label>
       <div class="segbox" id="segAlarm"></div>

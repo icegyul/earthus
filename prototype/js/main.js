@@ -181,6 +181,17 @@ async function boot() {
   warn.init();
   apiKeysPanel.init();
   document.getElementById('btnApi')?.addEventListener('click', () => apiKeysPanel.open());
+  /* API 신청 관리는 운영자용이라 설정에서 숨겨 두었다 (index.html 의 #rowApi).
+     ⚠️ 지우지 않은 이유: 공공데이터포털 활용신청이 2년이면 만료되고,
+        만료되면 오류 없이 조용히 자료가 끊긴다. 그걸 미리 알려주는 화면이다.
+     주소 뒤에 #api 를 붙이면 설정에 줄이 나타나고 바로 열린다. */
+  const showApiRow = () => {
+    if (location.hash !== '#api') return;
+    document.getElementById('rowApi')?.removeAttribute('hidden');
+    apiKeysPanel.open();
+  };
+  showApiRow();
+  window.addEventListener('hashchange', showApiRow);
 
   // 개발용 전역 핸들 (콘솔에서 __e.viewer 등으로 접근)
   window.__e = { viewer, scene, store, registry, i18n, imagery,

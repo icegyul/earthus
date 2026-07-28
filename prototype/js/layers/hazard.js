@@ -2,7 +2,7 @@
 import { PointLayer } from './pointLayer.js';
 import { API, C, GLOBAL_EVENT } from '../config.js';
 import { i18n } from '../i18n.js';
-import { jma, inJapan, distKm } from '../jma.js';
+import { jma, inJapan, distKm, jaPlaceKo } from '../jma.js';
 
 /* ══════════════════════════════════════════════════════════════
    지진 — USGS 실시간 GeoJSON (인증 불필요, CORS 허용)
@@ -129,7 +129,13 @@ export const quakes = {
       }
       if (j.depth != null) m.data[i18n.t.F.depth] = `${j.depth.toFixed(0)} km`;
       if (j.placeEn || j.placeJa) {
-        m.data[i18n.t.F.place] = ko ? (j.placeJa || j.placeEn) : (j.placeEn || j.placeJa);
+        /* ⚠️ 예전엔 한국어 설정에서 **일본어 원문**을 그대로 썼다.
+           화면에 「熊本県熊本地方」이 떴다 — 대부분의 한국 사용자가 못 읽는다.
+           이제 한국어 → 영어 → 일본어 순으로 떨어진다.
+           지어낸 음차보다 영문이 낫다. 최소한 읽히고 검색된다. */
+        m.data[i18n.t.F.place] = ko
+          ? (jaPlaceKo(j.placeJa) || j.placeEn || j.placeJa)
+          : (j.placeEn || j.placeJa);
       }
       // 진도 — 일본에서 실제로 중요한 값. USGS 피드에는 없다.
       const sh = jma.shindoText(j.shindo, ko);

@@ -6,7 +6,7 @@
 import { i18n } from './i18n.js';
 import { myLocation } from './mylocation.js';
 import { get, nearest, inKorea, normalFor, feelsLike } from './korea.js';
-import { warn } from './warn.js';
+import { warn, levelEn } from './warn.js';
 import { warnUI } from './ui-warn.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
@@ -157,7 +157,8 @@ export const koreaPanel = {
       + (s.mine.length
           ? `<h4>${ko ? `내 지역 · ${s.zone ? s.zone.name : ''}` : `My area · ${s.zone ? s.zone.name : ''}`} <i>${s.mine.length}</i></h4>`
             + s.mine.slice(0, 6).map(w =>
-                `<div class="kr-row"><span>${esc(w.icon)} ${esc(ko ? w.kind : w.kindEn)}${esc(w.level)} · ${esc(w.region)}</span><b>${esc(w.level)}</b></div>`).join('')
+                // ⚠️ 영어에서 등급이 한국어로 새지 않게 한다 (levelEn)
+                `<div class="kr-row"><span>${esc(w.icon)} ${esc(ko ? w.kind + w.level : `${w.kindEn || w.kind} ${levelEn(w.level)}`)} · ${esc(w.region)}</span><b>${esc(ko ? w.level : levelEn(w.level))}</b></div>`).join('')
           : `<p class="kr-note">${s.inKorea
               ? (ko ? `내 지역(${s.zone ? s.zone.name : '?'})에는 발효 중인 특보가 없습니다.` : 'No warnings in your area.')
               : (ko ? '위치가 한국 밖이거나 아직 못 받았습니다.' : 'Location outside Korea or unavailable.')}</p>`)

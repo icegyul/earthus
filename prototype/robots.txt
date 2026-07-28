@@ -1,0 +1,22 @@
+# earthus — https://earthus.net
+#
+# ⚠️ 앱은 한 장짜리(SPA)다. 크롤러가 볼 것은 사실상 / 하나뿐이고,
+#    나머지는 자료 파일이라 색인돼도 의미가 없다.
+
+User-agent: *
+Allow: /$
+Allow: /index.html
+
+# 관측 자료·타일은 색인 대상이 아니다.
+# 색인되면 검색 결과에 JSON 원문이 뜨고, 크롤러가 대역폭만 먹는다.
+Disallow: /wind/
+Disallow: /events/
+Disallow: /ocean/
+Disallow: /solar/
+Disallow: /clouds/
+Disallow: /celestrak/
+Disallow: /js/
+Disallow: /css/
+Disallow: /data/
+
+Sitemap: https://earthus.net/sitemap.xml

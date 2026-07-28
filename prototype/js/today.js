@@ -17,6 +17,7 @@
 
 import { i18n } from './i18n.js';
 import { API } from './config.js';
+import { describePlace, latLonText, miniMap } from './geoname.js';
 
 /* 무엇을 뽑을까 — 격자에서 최댓값(또는 최솟값)을 찾는다.
    ⚠️ 5° 격자라 "어느 나라"까지는 못 말한다. 위경도와 대략의 해역만 적는다. */
@@ -102,11 +103,17 @@ export const today = {
       const shown = p.unit === '°C'
         ? i18n.temp(best.v, p.fix)
         : `${best.v.toFixed(p.fix)}${p.unit ? ' ' + p.unit : ''}`;
+      const ko = i18n.lang === 'ko';
+      const where = describePlace(lat, lon, ko);
       out.push({
         id: p.id,
-        title: i18n.lang === 'ko' ? p.ko : p.en,
+        title: ko ? p.ko : p.en,
         value: shown,
-        place: roughPlace(lat, lon),
+        /* ⚠️ 예전 roughPlace 는 경도 띠로만 갈라서 사하라를 '대서양'이라 불렀다.
+           이제 가장 가까운 지점을 찾아 방위·거리로 말한다 (geoname.js). */
+        place: where.text,
+        coord: latLonText(lat, lon, ko),   // 위경도는 보조로만 남긴다
+        map: miniMap(lat, lon),            // 카드 옆 지도 썸네일
         lat, lon,
         layer: { wave: 'wave', sst: 'sst', sstc: 'sst', temp: 'temp', cold: 'temp',
                  wind: 'wind', dust: 'dust', uv: 'uv', fog: 'fog' }[p.id],

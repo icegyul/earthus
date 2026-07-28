@@ -120,10 +120,27 @@ export const communityPanel = {
 
     picks.forEach(p => {
       const card = el('button', 'td-card');
+      /* 왼쪽에 그 자리의 위성 지형도 한 조각을 붙인다 (NASA GIBS 정적 basemap).
+         ⚠️ 글자만 있으면 "여기가 어디인지"가 안 읽힌다 — 지도가 그 일을 한다.
+         ⚠️ loading="lazy" 필수. 카드 9장이 한꺼번에 타일을 받으면 시트가 늦게 뜬다.
+         ⚠️ 이미지가 실패해도 카드는 그대로 읽혀야 한다 — onerror 로 조용히 숨긴다. */
+      const m = p.map;
+      const thumb = m
+        ? `<span class="td-map">
+             <img src="${esc(m.url)}" alt="" loading="lazy" decoding="async"
+                  style="width:${m.tile}px;height:${m.tile}px;left:${m.left}px;top:${m.top}px"
+                  onerror="this.parentNode.classList.add('td-map-off')">
+             <i></i>
+           </span>`
+        : '';
       card.innerHTML =
-        `<div class="td-t">${esc(p.title)}</div>
-         <div class="td-v">${esc(p.value)}</div>
-         <div class="td-p">${esc(p.place)}</div>`;
+        `${thumb}
+         <span class="td-body">
+           <span class="td-t">${esc(p.title)}</span>
+           <span class="td-v">${esc(p.value)}</span>
+           <span class="td-p">${esc(p.place)}</span>
+           ${p.coord ? `<span class="td-c">${esc(p.coord)}</span>` : ''}
+         </span>`;
       card.onclick = () => {
         this.close();
         if (p.layer && !store.isOn(p.layer)) store.setLayer(p.layer, true);

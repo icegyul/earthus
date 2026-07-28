@@ -33,27 +33,21 @@ export const warnUI = {
     return this;
   },
 
-  renderBar(s) {
-    if (!this.bar) return;
-    // 한국 밖이거나, 근처에 특보가 없으면 아예 숨긴다.
-    if (!s || !s.ready || !s.inKorea || !s.mine || !s.mine.length || warn.off) {
-      this.bar.hidden = true;
-      document.body.classList.remove('has-warn');
-      return;
-    }
-    const ko = i18n.lang === 'ko';
-    const top = s.mine.slice().sort((a, b) => b.levelRank - a.levelRank)[0];
-    const more = s.mine.length - 1;
-    this.bar.innerHTML =
-      `<span class="wdot" style="background:${esc(top.color)}"></span>`
-      + `<span class="wtxt">${esc(top.icon)} ${esc(ko ? top.kind + top.level : `${top.kindEn} ${top.level}`)}`
-      + ` · ${esc(top.region)}</span>`
-      + (more > 0 ? `<span class="wmore">${ko ? `외 ${more}건` : `+${more}`}</span>` : '');
-    this.bar.classList.toggle('severe', top.levelRank >= 3);
-    this.bar.hidden = false;
-    // ⚠️ 특보 띠가 떠 있음을 body 에 표시 → 이벤트 배너(#banner)가 그 아래로 내려가
-    //    겹치지 않는다 (css 의 body.has-warn #banner). 이 토글이 없어서 겹쳐 있었다.
-    document.body.classList.add('has-warn');
+  /* ⚠️⚠️ 별도 특보 띠를 없앴다. 이제 아무것도 그리지 않는다.
+     ─────────────────────────────────────────────────────────────
+     예전에는 특보를 상단 #warnBar 에, 지진·쓰나미를 하단 #banner 에 따로 띄웠다.
+     둘 다 뜨면 **두 줄이 쌓여** 화면 위쪽을 먹었다 (지적받음: "한 줄로 뜨게 해줘").
+     body.has-warn 으로 겹침만 피했을 뿐, 줄 수는 그대로였다.
+
+     → 특보는 ui.js 의 banner 큐로 옮겼다 (banner.rebuild 의 1-b 항목).
+       한 줄에서 쓰나미·지진과 함께 번갈아 표시된다.
+       특보는 '지속되는 상태'라 persist 로 표시해 계속 다시 올라온다.
+
+     이 함수는 남겨 둔다 — earthus:warn 이벤트와 i18n.onChange 가 부르고 있어
+     지우면 그쪽에서 터진다. 대신 띠를 확실히 감추는 일만 한다. */
+  renderBar() {
+    if (this.bar) this.bar.hidden = true;
+    document.body.classList.remove('has-warn');
   },
 
   open() {

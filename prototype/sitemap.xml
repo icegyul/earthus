@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- earthus — 한 장짜리 앱이라 항목이 하나다.
+     ⚠️ 없는 주소를 채워 넣지 않는다. 404 가 섞인 사이트맵은 색인에 해가 된다. -->
+<!-- ⚠️ 네임스페이스는 sitemaps.org (복수) 다. sitemap.org 로 쓰면 통째로 무효다. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://earthus.net/</loc>
+    <changefreq>hourly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

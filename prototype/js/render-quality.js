@@ -100,6 +100,7 @@ export const renderQuality = {
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) { this._locked = false; this._seen = 0; this._gaps = []; }
     });
+    this._watchPressure();
     /* ⚠️ 예전엔 화면 주사율(60~120Hz)로 도는 rAF 안에서 판정했다.
        그런데 requestRenderMode 로 가만히 있으면 렌더가 0 인데도 그 rAF 이 계속 돌아
        CPU 가 깊은 절전에 못 들었다(발열·배터리). 판정에 필요한 건 초당 한 번뿐이고,
@@ -141,6 +142,36 @@ export const renderQuality = {
     const snapped = [165, 144, 120, 90, 75, 60, 48, 30]
       .reduce((best, r) => Math.abs(r - hz) < Math.abs(best - hz) ? r : best);
     if (snapped !== this.refreshHz) { this.refreshHz = snapped; this._emit(); }
+  },
+
+  /* 기기의 열 압박(thermal) 신호.
+     ⚠️ 지금까지는 **프레임이 느려진 뒤에야** 반응했다. 그건 이미 뜨거워진 다음이다.
+        Compute Pressure API 는 CPU 가 스로틀링에 들어가기 **전에** 알려준다.
+        · 'nominal'   여유 있음
+        · 'fair'      부하 있음 — 아직 괜찮다
+        · 'serious'   곧 스로틀링
+        · 'critical'  이미 스로틀링 중
+        fair 이상이면 _judge() 가 해상도를 최저로 내린다.
+
+     ⚠️ 지원 브라우저가 한정적이다(2026 기준 크로미움 계열). 없으면 조용히 넘어간다 —
+        기존 프레임 비용 기반 판정이 그대로 안전망으로 남는다.
+     ⚠️ 사용자가 수동으로 품질을 고정(auto=false)했으면 건드리지 않는다. */
+  pressure: null,
+  _watchPressure() {
+    if (typeof PressureObserver === 'undefined') return;
+    try {
+      const ob = new PressureObserver((records) => {
+        const last = records[records.length - 1];
+        if (!last) return;
+        if (this.pressure !== last.state) {
+          this.pressure = last.state;
+          console.log('[quality] 열 압박:', last.state);
+          this._emit();
+        }
+      });
+      ob.observe('cpu', { sampleInterval: 2000 }).catch(() => {});
+      this._pressureOb = ob;
+    } catch (_) { /* 권한·정책으로 막히면 그냥 안 쓴다 */ }
   },
 
   /* 화면 주사율 샘플러 — 렌더가 일어나는 활성 구간에만 rAF 로 짧게 잰다.
@@ -189,13 +220,28 @@ export const renderQuality = {
           유휴 구간의 표본으로 판단하면 안 된다. 표본이 충분할 때만 본다. */
     const enough = c.length >= 10;
     const cooling = now - this._lastChange < COOLDOWN_MS;
+    /* ⚠️ MAX_CHANGES 동결에 **예외를 둔다: 내리는 것은 언제나 허용한다.**
+       예전엔 6회를 다 쓰면 세션 내내 얼어붙었다. 그런데 열 스로틀링은 세션
+       후반에 서서히 온다 — 초반 로딩 변동으로 6회를 소진하면, 정작 기기가
+       뜨거워졌을 때 해상도를 못 내렸다. 상한은 "올렸다 내렸다 반복"을 막으려는
+       것이지 발열 대응을 막으려는 것이 아니다. */
     const frozen = this.changes >= MAX_CHANGES;
 
-    if (this.auto && enough && !cooling && !frozen) {
+    /* 열 압박 신호가 왔으면 프레임 비용과 무관하게 곧바로 내린다.
+       프레임이 느려지는 건 **이미 뜨거워진 뒤**에 나타나는 결과다. */
+    if (this.auto && this.pressure && this.pressure !== 'nominal' && this.scale > MIN
+        && !cooling) {
+      this._setScale(MIN, now);
+      this._badRuns = 0; this._goodRuns = 0;
+      return;
+    }
+
+    if (this.auto && enough && !cooling) {
+      // ⚠️ 내리는 쪽은 frozen 이어도 허용한다 (위 주석). 올리는 쪽만 막는다.
       if (this.frameCostMs > JANK_MS && this.scale > MIN) {
         this._goodRuns = 0;
         if (++this._badRuns >= BAD_RUNS) { this._setScale(this.scale - STEP, now); this._badRuns = 0; }
-      } else if (this.frameCostMs < SMOOTH_MS && this.scale < MAX) {
+      } else if (!frozen && this.frameCostMs < SMOOTH_MS && this.scale < MAX) {
         this._badRuns = 0;
         if (++this._goodRuns >= GOOD_RUNS) { this._setScale(this.scale + STEP, now); this._goodRuns = 0; }
       } else { this._goodRuns = 0; this._badRuns = 0; }

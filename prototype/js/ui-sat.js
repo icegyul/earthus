@@ -174,7 +174,23 @@ export const satPanel = {
       return;
     }
     const n = orbits.sats.length;
+    /* ⚠️ 기기 성능 때문에 잘렸으면 **반드시 그 사실을 적는다.**
+       유료 기능(SAT_ALL)이라 조용히 버리면 속이는 것이 된다.
+       실측: 위성 1개당 SGP4+좌표변환 0.006ms → 16,123개면 100ms 틱마다 99ms.
+       그대로 두면 코어 하나를 통째로 문다. */
+    if (orbits.satsCapped) {
+      const total = (orbits.satsTotal || n).toLocaleString();
+      el.textContent = ko
+        ? `${total}개 중 ${n.toLocaleString()}개 표시 중 · 기기 성능에 맞춰 줄였습니다`
+        : `${n.toLocaleString()} of ${total} shown · limited to what this device can run`;
+      el.className = 'sat-status warn';
+      el.title = ko
+        ? '위성 하나를 초당 10번 다시 계산합니다. 전부 그리면 화면이 멈추고 기기가 뜨거워집니다.'
+        : 'Each satellite is recomputed ten times a second. Drawing them all would stall the display and heat the device.';
+      return;
+    }
     el.textContent = ko ? `${n.toLocaleString()}개 표시 중` : `${n.toLocaleString()} shown`;
     el.className = 'sat-status' + (n > 3000 ? ' warn' : '');
+    el.title = '';
   },
 };

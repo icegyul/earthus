@@ -105,6 +105,24 @@ const LABEL_LIMIT = 400;   // 이 개수를 넘으면 이름표를 끈다 (아�
    100ms 면 전지구 뷰에서 위성이 0.02px 움직인 상태라 차이를 못 느낀다. */
 const POS_INTERVAL_MS = 100;
 
+/* ── 렌더 상한 ────────────────────────────────────────────────
+   ⚠️ 위성 개수에 상한이 없었다. 그게 이 앱 최악의 발열 경로였다.
+
+   실측(2026-07-28, 맥):  위성 1개당 SGP4 + Cartesian3 = 0.00614 ms
+       스타링크 10,776개 →  66 ms
+       전체     16,123개 →  99 ms      ← POS_INTERVAL_MS 가 100ms 다
+   즉 전체를 켜면 100ms 틱마다 99ms 를 써서 코어 하나를 통째로 문다.
+   폰은 3~5배 느리니 따라가지도 못하고 메인 스레드가 포화된다.
+
+   그래서 **기기 성능을 직접 재서** 상한을 정한다. 숫자를 지어내지 않는다.
+   틱 예산의 12ms(=12%)만 쓴다 — 나머지는 렌더·터치 응답에 남긴다.
+
+   ⚠️ 자르면 자른다고 **반드시 화면에 적는다**(satsTotal/satsCapped).
+      유료 기능(SAT_ALL)이라 조용히 80%를 버리면 그건 속이는 것이다. */
+const POS_BUDGET_MS = 12;
+const CAP_MIN = 1200;      // 이보다 낮추면 '전체'가 의미를 잃는다
+const CAP_MAX = 20000;     // 카탈로그 전체(16,123)보다 크면 상한이 없는 것과 같다
+
 export const orbits = {
   ds: null,
   sats: [],
@@ -265,10 +283,57 @@ export const orbits = {
     }
 
     this.catalogAge = cat?.generated || null;
-    this.sats = out;
+
+    /* ⚠️ 여기서 자른다. 자르는 순서가 곧 우선순위다 —
+       SAT_GROUPS 가 작은 그룹(정거장·기상·과학…)을 먼저 두고 스타링크·전체를
+       마지막에 두므로, 앞에서부터 남기면 "볼 만한 것"이 먼저 살아남는다. */
+    const cap = this.renderCap();
+    this.satsTotal = out.length;
+    this.satsCapped = out.length > cap;
+    this.sats = this.satsCapped ? out.slice(0, cap) : out;
+    if (this.satsCapped) {
+      console.warn(`[orbits] ${out.length}개 중 ${cap}개만 그린다 (기기 성능 기준)`);
+    }
     this.build();
     this.loading = false; this.emit();
     return out;
+  },
+
+  /** 이 기기가 100ms 틱 안에 무리 없이 전파할 수 있는 위성 수.
+   *
+   *  ⚠️ 상수를 박지 않는다. 맥과 저가 안드로이드는 5배 넘게 차이 난다 —
+   *     한쪽에 맞춘 숫자는 다른 쪽에서 반드시 틀린다. 그래서 **직접 잰다.**
+   *  ⚠️ 한 번만 재고 기억한다. 매번 재면 그 측정 자체가 비용이다.
+   *  ⚠️ 잴 표본이 없으면(위성 0개) 상한을 걸지 않는다 — 모르면 건드리지 않는다.
+   */
+  renderCap() {
+    if (this._cap) return this._cap;
+    const sample = this.sats?.length ? this.sats : null;
+    if (!sample) return CAP_MAX;
+    const when = new Date();
+    const N = 400;
+    for (let i = 0; i < 200; i++) this.propagate(sample[i % sample.length].rec, when); // 워밍업
+
+    /* ⚠️ 한 번만 재면 안 된다. 앱이 로딩·렌더로 바쁠 때 재면 실제보다 몇 배 느리게
+       나온다 (실측: 격리 상태 0.006ms 가 구동 중엔 0.022ms — 3.6배).
+       그 값으로 상한을 정하면 멀쩡한 기기에서도 위성이 과하게 잘린다.
+       그래서 짧게 여러 번 재고 **최솟값**을 쓴다 — 마이크로벤치의 표준 방식이다.
+       최솟값은 "방해가 가장 적었던 회차"이고, 그게 이 기기의 진짜 능력에 가깝다. */
+    let per = Infinity;
+    for (let round = 0; round < 5; round++) {
+      const t0 = performance.now();
+      for (let i = 0; i < N; i++) {
+        const p = this.propagate(sample[i % sample.length].rec, when);
+        if (p) Cesium.Cartesian3.fromDegrees(p.lon, p.lat, p.alt * 1000);
+      }
+      const dt = (performance.now() - t0) / N;
+      if (dt > 0 && dt < per) per = dt;
+    }
+    if (!isFinite(per) || per <= 0) return CAP_MAX;     // 타이머 해상도가 낮으면 포기
+    this._cap = Math.max(CAP_MIN, Math.min(CAP_MAX, Math.floor(POS_BUDGET_MS / per)));
+    this._capPerSatMs = +per.toFixed(5);
+    console.log(`[orbits] 위성 1개 ${this._capPerSatMs}ms → 상한 ${this._cap}개`);
+    return this._cap;
   },
 
   /* 위성 위치 일괄 계산 + 캐시

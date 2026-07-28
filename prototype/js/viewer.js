@@ -210,10 +210,15 @@ export function onCameraIdle(fn, ms = 420) {
   viewer.camera.percentageChanged = 0.15;
 }
 
-export function flyTo(lon, lat, height, duration = 1.5) {
+/* ⚠️ 도착 시점을 알려준다(onDone). 도착하고 나서 해야 하는 연출이 있다 —
+   핀 꽂기를 출발과 동시에 시작하면 날아가는 내내 화면 밖에서 떨어진다. */
+export function flyTo(lon, lat, height, duration = 1.5, onDone) {
   viewer.camera.flyTo({
     destination: Cesium.Cartesian3.fromDegrees(lon, lat, height),
     duration,
+    complete: onDone,
+    // 사용자가 도중에 화면을 만지면 비행이 취소된다 — 그때도 연출은 이어 준다
+    cancel: onDone,
   });
 }
 

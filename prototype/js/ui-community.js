@@ -141,10 +141,14 @@ export const communityPanel = {
            <span class="td-p">${esc(p.place)}</span>
            ${p.coord ? `<span class="td-c">${esc(p.coord)}</span>` : ''}
          </span>`;
-      card.onclick = () => {
+      card.onclick = async () => {
         this.close();
         if (p.layer && !store.isOn(p.layer)) store.setLayer(p.layer, true);
-        flyTo(p.lon, p.lat, 6_500_000);
+        /* 날아가서 **도착한 뒤** 핀을 꽂는다.
+           ⚠️ 출발과 동시에 꽂으면 화면 밖에서 떨어져 아무도 못 본다. */
+        const { dropPin } = await import('./pin.js');
+        flyTo(p.lon, p.lat, 2_600_000, 1.5,
+              () => dropPin(p.lon, p.lat, `${p.title} ${p.value}`));
       };
       body.appendChild(card);
     });

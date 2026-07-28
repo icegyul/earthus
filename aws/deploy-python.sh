@@ -95,10 +95,31 @@ if aws lambda get-function --function-name "$FN" >/dev/null 2>&1; then
     --function-name "$FN" --zip-file "fileb:///tmp/${FN}.zip" \
     --query 'LastModified' --output text
   aws lambda wait function-updated --function-name "$FN" 2>/dev/null || sleep 10
+  # ⚠️ --environment 는 합치는 게 아니라 **통째로 덮어쓴다.**
+  #    그냥 주면 KMA_HUB_KEY·METOFFICE_KEY 같은 API 키가 배포할 때마다 날아간다.
+  #    (실측 2026-07-28: kma-aws·gts-global 이 이 위험에 그대로 노출돼 있었다)
+  #    그래서 기존 값을 읽어 합친 뒤 넘긴다.
+  #    키 값은 화면에 찍지 않고, 600 권한 임시파일로만 건넨다.
+  ENVCUR="$(mktemp)"; ENVNEW="$(mktemp)"; chmod 600 "$ENVCUR" "$ENVNEW"
+  aws lambda get-function-configuration --function-name "$FN" \
+      --query 'Environment.Variables' --output json 2>/dev/null > "$ENVCUR" \
+      || echo '{}' > "$ENVCUR"
+  CUR="$ENVCUR" BKT="$BUCKET" BRG="$BUCKET_REGION" \
+    python3 - "$ENVNEW" <<'PY'
+import json, os, sys
+cur = json.load(open(os.environ["CUR"])) or {}
+kept = [k for k in cur if k not in ("CACHE_BUCKET", "CACHE_REGION")]
+cur["CACHE_BUCKET"] = os.environ["BKT"]
+cur["CACHE_REGION"] = os.environ["BRG"]
+json.dump({"Variables": cur}, open(sys.argv[1], "w"))
+# 이름만 찍는다 — 값은 절대 찍지 않는다.
+print("  · 기존 환경변수 보존: " + (", ".join(sorted(kept)) if kept else "(없음)"))
+PY
   aws lambda update-function-configuration \
     --function-name "$FN" --timeout 300 --memory-size 2048 \
-    --environment "Variables={CACHE_BUCKET=${BUCKET},CACHE_REGION=${BUCKET_REGION}}" \
+    --environment "file://$ENVNEW" \
     --query 'LastModified' --output text >/dev/null
+  rm -f "$ENVCUR" "$ENVNEW"
 else
   echo "▸ 함수 생성"
   # 메모리 2048MB — 3000×4999 float32 배열을 몇 개 다룬다 (하나에 60MB).

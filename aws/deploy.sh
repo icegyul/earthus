@@ -67,10 +67,27 @@ if aws lambda get-function --function-name "$FN" >/dev/null 2>&1; then
     --query 'LastModified' --output text
   # 코드 갱신이 끝나기 전에 설정을 바꾸면 ResourceConflictException 이 난다
   aws lambda wait function-updated --function-name "$FN" 2>/dev/null || sleep 8
+  # ⚠️ --environment 는 합치지 않고 **통째로 덮어쓴다** — API 키가 날아간다.
+  #    기존 값을 읽어 합쳐서 넘긴다. 값은 화면에 찍지 않는다.
+  ENVCUR="$(mktemp)"; ENVNEW="$(mktemp)"; chmod 600 "$ENVCUR" "$ENVNEW"
+  aws lambda get-function-configuration --function-name "$FN" \
+      --query 'Environment.Variables' --output json 2>/dev/null > "$ENVCUR" \
+      || echo '{}' > "$ENVCUR"
+  CUR="$ENVCUR" BKT="$BUCKET" BRG="$BUCKET_REGION" \
+    python3 - "$ENVNEW" <<'PY'
+import json, os, sys
+cur = json.load(open(os.environ["CUR"])) or {}
+kept = [k for k in cur if k not in ("CACHE_BUCKET", "CACHE_REGION")]
+cur["CACHE_BUCKET"] = os.environ["BKT"]
+cur["CACHE_REGION"] = os.environ["BRG"]
+json.dump({"Variables": cur}, open(sys.argv[1], "w"))
+print("  · 기존 환경변수 보존: " + (", ".join(sorted(kept)) if kept else "(없음)"))
+PY
   aws lambda update-function-configuration \
     --function-name "$FN" --timeout 300 --memory-size 1024 \
-    --environment "Variables={CACHE_BUCKET=${BUCKET},CACHE_REGION=${BUCKET_REGION}}" \
+    --environment "file://$ENVNEW" \
     --query 'LastModified' --output text >/dev/null
+  rm -f "$ENVCUR" "$ENVNEW"
 else
   echo "▸ 함수 생성"
   aws lambda create-function \

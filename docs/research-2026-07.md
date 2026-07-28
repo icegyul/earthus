@@ -248,6 +248,41 @@
 - 참고: 영국 경보는 DataHub보다 **MeteoAlarm 영국 피드로 커버 가능** → 사실상 가입 우선순위 낮음.
 - **신청 액션(오늘 가능): 가입 + Site-Specific 무료 플랜 구독. 10분 소요.**
 
+#### ✅ 구축 완료 (2026-07-28) — `aws/metoffice-uk`
+
+36지점(잉글랜드20·스코틀랜드10·웨일스4·북아일랜드2) × 3시간마다 = **288콜/일** (한도 360의 80%).
+EventBridge `metoffice-uk-3h` · 출력 `s3://earthus-cache-kr/events/uk-forecast.json` (190KB, 25시간 스텝).
+
+**실측으로 확인한 것**
+
+- 엔드포인트: `https://data.hub.api.metoffice.gov.uk/sitespecific/v0/point/hourly`
+  헤더 `apikey: <JWT>` · 파라미터 `latitude` `longitude` `excludeParameterMetadata` `includeLocationName`
+- **상품별로 키가 따로다.** DataHub 키는 WSO2 JWT 이고 **본문(payload)에 구독 목록이 박혀 있다.**
+  `subscribedAPIs[].context` 를 보면 어느 API 를 쓸 수 있는지 즉시 알 수 있다 — 403 디버깅에 이게 제일 빠르다.
+  - ❌ Atmospheric Models 키 → `/atmospheric-models/1.0.0` → sitespecific 호출 시 **403 `900908 Resource forbidden`**
+  - ✅ Site Specific 키 → `/sitespecific/v0` → 정상
+  - ⚠️ 구독을 추가해도 **기존 키는 그대로 403 이다.** JWT 가 발급 시점 구독을 담고 있어서
+    `My Subscriptions → Manage → API details / Refresh secret` 으로 **재발급**해야 한다.
+- ⚠️ **처음 적었던 "10km 격자라 산 정상을 해상 못 한다"는 틀렸다.**
+  Site Specific 은 격자 원값이 아니라 지점 후처리값이다. 실측:
+  벤네비스 모델고도 **1344m / 실제 1345m**, 스노든 1040/1085, 런던 11/11. 격자거리 68~1273m.
+  물리 교차검증 — 벤네비스 vs 포트윌리엄(12km) **기온감률 6.0°C/km** (표준 6.5·습윤단열 5.0 사이).
+- `significantWeatherCode` 표(DataPoint 시절 문서 기준)로 36지점 전부 매핑됐다 — 미매핑 0건.
+  다만 공식 DataHub 문서로 대조한 것은 아니므로, 표에 없는 코드가 오면 **라벨을 비우고 로그에 남긴다.**
+
+**⚠️ 미해결 — 오픈 전 필수**
+
+- 무료 플랜 **재배포 약관 미확인.** 필수 표기 문구는 확인됨(`Powered by Met Office data`),
+  재배포 허용 문구도 FAQ 에 있으나 유료 상품 설명 옆이라 무료 플랜 적용 여부가 불명확.
+  원문 T&C PDF 는 **404**. → `licensing@metoffice.gov.uk` 확인 전까지 **프런트엔드 노출 보류**(수집만).
+  호주 BoM 을 배제한 것과 같은 기준이다.
+
+**보류 — Atmospheric Models (무료 1GB/월, 키 보유 중)**
+
+전지구 10km·영국 2km 격자. GRIB2 라 `eccodes`/`cfgrib` 가 필요한데
+ECR·Lambda Layer 권한이 `earthus-deploy` 에 없고 로컬 Docker 도 없어 **현 배포 구조로는 불가.**
+컨테이너 Lambda 가 가능해지면 영국 2km 격자는 좋은 재료다. 키는 만료 클레임이 없어 보관해 두면 된다.
+
 ### 8. EU MeteoAlarm — 피드 접근 무신청 [확인], 재배포 조건 있음
 - 국가별 ATOM: `https://feeds.meteoalarm.org/feeds/meteoalarm-legacy-atom-{국가명}` [확인: france 200]. CAP API: https://api.meteoalarm.org
 - 조건 [확인]: CC BY 4.0 상당 + **무수정 재배포**, 여러 국가 경보를 묶어 표시하면 출처를 "EUMETNET – MeteoAlarm"으로 표기, Redistribution Hub의 가이드·CAP 프로필·SLA 준수. 출처: https://meteoalarm.org/en/page/terms-and-conditions , https://meteoalarm.org/en/live/page/redistribution-hub

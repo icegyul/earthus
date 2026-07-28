@@ -1,0 +1,6 @@
+# 의존성 없음 — urllib/json/concurrent 는 표준 라이브러리이고
+# boto3 는 Lambda 런타임에 이미 들어 있다.
+#
+# ⚠️ 이 파일을 지우지 말 것. deploy-python.sh 는 requirements.txt 가 **없으면**
+#    NetCDF 용 기본값(h5py·numpy·Pillow, 30MB)으로 떨어진다.
+#    이 함수엔 전혀 필요 없는 것들이다.

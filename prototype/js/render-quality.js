@@ -58,7 +58,6 @@ export const renderQuality = {
   onChange(fn) { this._subs.push(fn); },
   _emit() { this._subs.forEach(f => f(this)); },
 
-  _rendersThisSec: 0,
   renderFps: 0,
 
   frameCostMs: 0,           // 실제 한 프레임 비용 (중앙값)
@@ -69,6 +68,11 @@ export const renderQuality = {
   _lastChange: 0,
   _costs: [],
   _t0: 0,
+  _lastRenderT: 0,      // 직전 렌더 시각 — 활성/유휴 판정용
+  _rafOn: false,        // 주사율 샘플러(rAF)가 도는 중인가
+  _locked: false,       // 주사율이 확정돼 더는 재지 않는가
+  _goodRuns: 0,
+  _badRuns: 0,
 
   init() {
     this.scale = MAX;
@@ -82,10 +86,25 @@ export const renderQuality = {
     this._lastChange = performance.now() + 6000 - COOLDOWN_MS;   // 6초 유예
     scene.preUpdate.addEventListener(() => { this._t0 = performance.now(); });
     scene.postRender.addEventListener(() => {
-      this._rendersThisSec++; this._renderCount++;
-      if (this._t0) this._costs.push(performance.now() - this._t0);
+      const now = performance.now();
+      this._lastRenderT = now;
+      this._renderCount++;
+      if (this._t0) this._costs.push(now - this._t0);
+      /* ⚠️ 주사율을 "렌더 간격"으로 재면 안 된다 — requestRenderMode 에서 실제 렌더는
+         power.js 가 초당 30번(인트로)~11번(drift)으로 캡하므로 30Hz 로 오판한다(실측 버그).
+         rAF 은 렌더 횟수와 무관하게 화면 주사율(120Hz)로 발생하므로, 렌더가 일어나는
+         활성 구간에만 짧게 rAF 로 재고 잡히면 잠근다. idle 이면 스스로 멈춰 발열이 없다. */
+      this._startRefreshSampler();
     });
-    this._loop();      // 주사율은 _loop 이 매 프레임 _feedGap 으로 갱신한다
+    // 화면이 돌아오면(또는 기기·모드가 바뀌었을 수 있으니) 다시 한 번 측정한다.
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) { this._locked = false; this._seen = 0; this._gaps = []; }
+    });
+    /* ⚠️ 예전엔 화면 주사율(60~120Hz)로 도는 rAF 안에서 판정했다.
+       그런데 requestRenderMode 로 가만히 있으면 렌더가 0 인데도 그 rAF 이 계속 돌아
+       CPU 가 깊은 절전에 못 들었다(발열·배터리). 판정에 필요한 건 초당 한 번뿐이고,
+       판정에 쓰는 프레임 비용·렌더 횟수는 위 postRender 가 렌더가 있을 때만 모아준다. */
+    this._judgeTimer = setInterval(() => this._judge(), 1000);
     return this;
   },
 
@@ -124,58 +143,65 @@ export const renderQuality = {
     if (snapped !== this.refreshHz) { this.refreshHz = snapped; this._emit(); }
   },
 
-  /* 프레임 감시. 1초마다 판정한다.
-     ⚠️ 카메라가 움직이는 동안에만 의미가 있다 — 정지 상태에서도 Cesium 은
-        계속 그리지만 타일 로딩이 없어 항상 빠르게 나온다.
-        그래서 "느릴 때만" 낮추고, 올릴 땐 여유가 확실할 때만 올린다. */
-  _loop() {
-    let frames = 0, t0 = performance.now(), lastT = t0;
-    let goodRuns = 0, badRuns = 0;
-
+  /* 화면 주사율 샘플러 — 렌더가 일어나는 활성 구간에만 rAF 로 짧게 잰다.
+     rAF 은 실제 렌더 횟수(캡됨)와 무관하게 화면 주사율로 발생하므로 120Hz 가 제대로 잡힌다.
+     주사율이 확정되면(잠금) 멈추고, 렌더가 끊기면(idle) 스스로 멈춰 발열을 안 남긴다. */
+  _startRefreshSampler() {
+    if (this._rafOn || this._locked) return;
+    this._rafOn = true;
+    let last = performance.now();
     const tick = () => {
       const now = performance.now();
-      const gap = now - lastT; lastT = now;
-      this._feedGap(gap);        // 주사율 능력치 갱신 (표시용)
-      frames++;
-
-      if (now - t0 >= 1000) {
-        this.fps = Math.round(frames * 1000 / (now - t0));
-        this.renderFps = Math.round(this._renderCount * 1000 / (now - t0));
-        this._renderCount = 0;
-
-        /* 이번 1초의 실제 프레임 비용 — 중앙값을 쓴다.
-           평균은 히칭 한 번에 끌려가고, 최댓값은 타일 로딩 같은 일회성에 좌우된다. */
-        const c = this._costs; this._costs = [];
-        if (c.length) {
-          c.sort((a, b) => a - b);
-          this.frameCostMs = +c[Math.floor(c.length / 2)].toFixed(2);
-          this.frameMs = this.frameCostMs;
-        }
-
-        /* ⚠️ requestRenderMode 를 켠 뒤로는 "가만히 있으면 안 그린다".
-              유휴 구간의 표본으로 판단하면 안 된다. 표본이 충분할 때만 본다. */
-        const enough = c.length >= 10;
-        this._rendersThisSec = 0;
-
-        const cooling = now - this._lastChange < COOLDOWN_MS;
-        const frozen = this.changes >= MAX_CHANGES;
-
-        if (this.auto && enough && !cooling && !frozen) {
-          if (this.frameCostMs > JANK_MS && this.scale > MIN) {
-            goodRuns = 0;
-            if (++badRuns >= BAD_RUNS) { this._setScale(this.scale - STEP, now); badRuns = 0; }
-          } else if (this.frameCostMs < SMOOTH_MS && this.scale < MAX) {
-            badRuns = 0;
-            if (++goodRuns >= GOOD_RUNS) { this._setScale(this.scale + STEP, now); goodRuns = 0; }
-          } else { goodRuns = 0; badRuns = 0; }
-        }
-
-        this._emit();
-        frames = 0; t0 = now;
-      }
-      requestAnimationFrame(tick);
+      this._feedGap(now - last);
+      last = now;
+      // 주사율이 잡히고 표본이 넉넉하면 잠근다.
+      if (this.refreshHz && this._seen >= 120) { this._locked = true; this._rafOn = false; return; }
+      // 최근 400ms 안에 렌더가 있었으면(활성) 계속, 아니면 멈춘다.
+      if (now - this._lastRenderT < 400) requestAnimationFrame(tick);
+      else this._rafOn = false;
     };
     requestAnimationFrame(tick);
+  },
+
+  /* 프레임 감시. 1초마다 판정한다.
+     ⚠️ 카메라가 움직이는 동안(= 실제 렌더가 일어난 초)에만 의미가 있다 — 정지 상태에서도
+        예전엔 계속 재려 했지만, 렌더가 없으면 표본(_costs)이 비어 판정을 건너뛴다.
+        그래서 "느릴 때만" 낮추고, 올릴 땐 여유가 확실할 때만 올린다. */
+  _judge() {
+    const now = performance.now();
+
+    // 방금 1초 동안 실제로 그린 횟수. (setInterval 간격 ≈ 1000ms 라 그대로 초당값)
+    this.renderFps = this._renderCount;
+    this._renderCount = 0;
+    // 절전 표시 비교용 — "이 화면이 낼 수 있는 최대"(주사율). 아직 못 쟀으면 렌더율로 대체.
+    this.fps = this.refreshHz || this.renderFps;
+
+    /* 이번 1초의 실제 프레임 비용 — 중앙값을 쓴다.
+       평균은 히칭 한 번에 끌려가고, 최댓값은 타일 로딩 같은 일회성에 좌우된다. */
+    const c = this._costs; this._costs = [];
+    if (c.length) {
+      c.sort((a, b) => a - b);
+      this.frameCostMs = +c[Math.floor(c.length / 2)].toFixed(2);
+      this.frameMs = this.frameCostMs;
+    }
+
+    /* ⚠️ requestRenderMode 를 켠 뒤로는 "가만히 있으면 안 그린다".
+          유휴 구간의 표본으로 판단하면 안 된다. 표본이 충분할 때만 본다. */
+    const enough = c.length >= 10;
+    const cooling = now - this._lastChange < COOLDOWN_MS;
+    const frozen = this.changes >= MAX_CHANGES;
+
+    if (this.auto && enough && !cooling && !frozen) {
+      if (this.frameCostMs > JANK_MS && this.scale > MIN) {
+        this._goodRuns = 0;
+        if (++this._badRuns >= BAD_RUNS) { this._setScale(this.scale - STEP, now); this._badRuns = 0; }
+      } else if (this.frameCostMs < SMOOTH_MS && this.scale < MAX) {
+        this._badRuns = 0;
+        if (++this._goodRuns >= GOOD_RUNS) { this._setScale(this.scale + STEP, now); this._goodRuns = 0; }
+      } else { this._goodRuns = 0; this._badRuns = 0; }
+    }
+
+    this._emit();
   },
 
   /** ⚠️ 해상도를 바꾸면 WebGL 버퍼를 다시 잡느라 한 프레임이 검게 빈다.

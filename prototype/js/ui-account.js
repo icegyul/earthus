@@ -155,6 +155,10 @@ export const consentSheet = {
       }
       $('#consentCancel').textContent = review ? '닫기' : '동의하지 않고 나가기';
       this.sync();
+      // 다른 시트가 떠 있으면 먼저 닫는다 (화면 밖으로 겹쳐 쌓이지 않게)
+      document.querySelectorAll('.sheet-panel.up').forEach(p => {
+        if (p.id !== 'consentSheet') p.classList.remove('up');
+      });
       $('#consentSheet').classList.add('up');
     });
   },

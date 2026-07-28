@@ -41,6 +41,11 @@ function zoomScale(h) {
 export const drift = {
   enabled: localStorage.getItem('earthus.drift') !== 'off',
   dir: -1,                 // -1 = 서→동 (지구 자전과 같은 방향). 기본값.
+  /* ⚠️ 자동회전은 "인트로(첫 화면)"에서만 한다.
+     사용자가 한 번이라도 지구를 만지거나 고르면(터치·클릭·휠·핀치) 그 세션 동안
+     다시는 자동으로 돌지 않는다 — 잡아둔 구도가 밀리지 않고, 확대 상태에서 가만히 둘 때
+     생기던 발열(느린 회전이 75초간 렌더 요청)도 사라진다. */
+  _userEngaged: false,
   _lastInput: 0,
   _lastFrame: 0,
   _dragStartX: null,
@@ -77,7 +82,7 @@ export const drift = {
     return this;
   },
 
-  _touch() { this._lastInput = performance.now(); },
+  _touch() { this._lastInput = performance.now(); this._userEngaged = true; },
 
   setEnabled(on) {
     this.enabled = on;
@@ -95,6 +100,7 @@ export const drift = {
     this._lastFrame = now;
     if (!dt) return;
 
+    if (this._userEngaged) return;   // 첫 조작 이후로는 자동회전 없음 (인트로만 회전한다)
     if (!this.enabled || power.saving) return;   // 절전 모드면 안 흐른다
     if (this._blocked()) return;
     // ⚠️ 예전엔 Explore(확대 상태)에서 아예 멈췄는데,

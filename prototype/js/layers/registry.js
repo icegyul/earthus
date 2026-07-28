@@ -97,8 +97,50 @@ export const registry = {
     store.on('camera', () => this.applyAll());
 
     this.ready = true;
-    await this.refreshAll();
-    this.startTimers();
+    /* ⚠️ 첫 화면은 지구 + NOAA 구름만. 데이터는 부팅 직후 한꺼번에 받지 않는다.
+       예전엔 전 데이터를 동시에 받아 초기 화면이 느렸다.
+       → 20초 기다린 뒤, 태풍→열돔→뉴스 순으로 하나씩 천천히 받는다(_staggeredBoot). */
+    this._staggeredBoot();
+  },
+
+  /* 첫 접속 후 데이터를 순차적으로(하나씩 천천히) 받는다.
+     ⚠️ 여기 순서가 곧 우선순위다. */
+  async _staggeredBoot() {
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const GAP = 1800;              // 각 로드 사이 간격 (천천히)
+
+    /* 안전 소스는 예외 — 쓰나미·큰 지진은 레이어가 꺼져 있어도 하단 배너로 뜨는
+       긴급 정보다. 작은 자료라 첫 화면 속도에 지장 없이 먼저 받아, 앱을 열자마자
+       긴급 상황을 놓치지 않게 한다. (나머지는 아래 20초 뒤 순차 로드) */
+    await sleep(3500);
+    await this.run('quake',   () => quakes.refresh());   this.applyAll();
+    await this.run('tsunami', () => tsunami.refresh());  this.applyAll();
+
+    await sleep(20_000);          // 그 밖의 데이터는 첫 20초간 받지 않는다
+
+    const seq = [
+      ['cyclone',  () => cyclones.refresh()],                                  // 태풍
+      ['phenomena',() => phenomena.refresh()],                                 // 열돔·자연현상 (같은 자료)
+      ['news',     () => events.refresh()],                                    // 뉴스
+      ['wildfire', () => wildfires.refresh()],
+      ['launch',   () => launches.refresh().then(i => launchPads.build(i))],
+      ['orbits',   () => orbits.refresh()],
+      ['aurora',   () => imagery.loadAurora()],
+    ];
+    // 큰 자료는 켜져 있을 때만
+    if (store.isOn('buoy'))      seq.push(['buoy',      () => buoys.refresh()]);
+    if (store.isOn('lightning')) seq.push(['lightning', () => lightning.refresh()]);
+    if (store.isOn('regional'))  seq.push(['regional',  () => regional.refresh()]);
+    if (store.isOn('alerts'))    seq.push(['alerts',    () => alerts.refresh()]);
+    if (store.isOn('ukfc'))      seq.push(['ukfc',      () => ukForecast.refresh()]);
+
+    for (const [id, fn] of seq) {
+      await this.run(id, fn);
+      this.applyAll();
+      await sleep(GAP);
+    }
+
+    this.startTimers();          // 초기 순차 로드가 끝난 뒤에 주기 갱신을 켠다
   },
 
   /* ── 갱신 ─────────────────────────────────────────────────── */

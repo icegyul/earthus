@@ -113,6 +113,8 @@ export const subscribeSheet = {
       const btn = el('button', 'btn-primary', ko ? '사전등록하고 알림 받기' : 'Register for launch');
       btn.onclick = () => {
         this.close();
+        // 다른 시트가 떠 있으면 먼저 닫는다 (화면 밖으로 겹쳐 쌓이지 않게)
+        document.querySelectorAll('.sheet-panel.up').forEach(p => p.classList.remove('up'));
         $('#waitlistSheet')?.classList.add('up');
         import('./ui-account.js').then(m => m.waitlistUI.init());
       };

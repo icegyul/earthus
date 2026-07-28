@@ -38,6 +38,7 @@ export const warnUI = {
     // 한국 밖이거나, 근처에 특보가 없으면 아예 숨긴다.
     if (!s || !s.ready || !s.inKorea || !s.mine || !s.mine.length || warn.off) {
       this.bar.hidden = true;
+      document.body.classList.remove('has-warn');
       return;
     }
     const ko = i18n.lang === 'ko';
@@ -50,6 +51,9 @@ export const warnUI = {
       + (more > 0 ? `<span class="wmore">${ko ? `외 ${more}건` : `+${more}`}</span>` : '');
     this.bar.classList.toggle('severe', top.levelRank >= 3);
     this.bar.hidden = false;
+    // ⚠️ 특보 띠가 떠 있음을 body 에 표시 → 이벤트 배너(#banner)가 그 아래로 내려가
+    //    겹치지 않는다 (css 의 body.has-warn #banner). 이 토글이 없어서 겹쳐 있었다.
+    document.body.classList.add('has-warn');
   },
 
   open() {

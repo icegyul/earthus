@@ -7,6 +7,7 @@ import { layerBar } from './layerbar.js';
 import { power } from './power.js';
 import { panels } from './panels.js';
 import { drift } from './drift.js';
+import { intro } from './intro.js';
 import { renderQuality } from './render-quality.js';
 import { store } from './store.js';
 import { registry } from './layers/registry.js';
@@ -73,6 +74,7 @@ async function boot() {
      ⚠️ 이게 없으면 이미 다른 대륙을 돌려보던 사람의 화면을
         몇 초 뒤 도착한 위치가 갑자기 끌고 간다. 조작을 빼앗는 것이다. */
   let userTouchedGlobe = false;
+  let geoTookOver = false;
   scene.canvas.addEventListener('pointerdown', () => { userTouchedGlobe = true; },
                                { once: true, passive: true });
   scene.canvas.addEventListener('wheel', () => { userTouchedGlobe = true; },
@@ -93,12 +95,15 @@ async function boot() {
        ⚠️ 사람이 이미 지구를 만졌으면 가로채지 않는다. 위치 응답은 몇 초 걸릴 수 있고,
           그 사이 돌려보던 사람의 화면을 갑자기 끌고 가면 조작을 빼앗는 것이 된다. */
     if (!c || userTouchedGlobe) return;
+    // 위치를 받았으면 인트로 회전을 멈추고 "내가 지구 어디에 있는지"로 부드럽게 날아간다.
+    geoTookOver = true;
+    intro.stop();
     viewer.camera.flyTo({
       destination: Cesium.Cartesian3.fromDegrees(c.lon, c.lat, fitGlobeHeight(0.52)),
       duration: 2.6,
       easingFunction: Cesium.EasingFunction.QUADRATIC_IN_OUT,
-      // 도는 동안 계속 그려야 한다 (requestRenderMode)
-      complete: () => power.animate(400),
+      // 도착한 뒤에도 만지기 전까지는 다시 살살 돈다 (줌인 없이 회전만).
+      complete: () => { power.animate(400); if (!userTouchedGlobe) intro.start({ zoom: false }); },
     });
     power.animate(3000);
   });
@@ -142,6 +147,24 @@ async function boot() {
   bindAccountUI();
 
   await registry.init();
+
+  /* 지구(베이스맵)가 준비됐다 → 로딩을 걷어내고 인트로를 시작한다.
+     나머지 UI·데이터(chrome·계정·패널·점 데이터)는 지구 뒤에서 계속 붙는다. */
+  const loadingEl = document.getElementById('loading');
+  loadingEl?.classList.add('gone');
+  setTimeout(() => loadingEl?.remove(), 700);
+  /* ⚠️ 지오로케이션이 이미 카메라를 가져갔으면(geoTookOver) 여기서 인트로를 켜지 않는다.
+     그때 켜면 진행 중인 flyTo 와 카메라를 두고 싸운다 — 인트로 회전은 flyTo 가
+     끝난 뒤(그 complete 콜백)에만 다시 시작한다. */
+  if (!geoTookOver) intro.start();
+
+  /* ⚠️ 안전망 — 정보성 시트(업데이트·설정·사전등록)는 첫 화면에 절대 떠 있지 않게 한다.
+     이들은 오직 메뉴에서 눌러야 열리는데, 어떤 이유로든(옛 캐시·경로) 열린 채 들어오면
+     하단에 인포창이 계속 떠 있는 것처럼 보인다. 여기서 무조건 닫는다.
+     ⚠️ 동의창(consentSheet)은 제외 — 로그인 직후 떠야 하는 법적 화면이라 건드리지 않는다. */
+  ['changelogSheet', 'settings', 'waitlistSheet'].forEach(
+    id => document.getElementById(id)?.classList.remove('up'));
+
   await chrome.init();
   await initAccount();
   satPanel.init();
@@ -162,9 +185,6 @@ async function boot() {
   // 개발용 전역 핸들 (콘솔에서 __e.viewer 등으로 접근)
   window.__e = { viewer, scene, store, registry, i18n, imagery,
                  orbits: (await import('./layers/space.js')).orbits };
-
-  document.getElementById('loading').classList.add('gone');
-  setTimeout(() => document.getElementById('loading')?.remove(), 700);
 }
 
 

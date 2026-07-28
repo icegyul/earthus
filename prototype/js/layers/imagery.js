@@ -300,7 +300,7 @@ export const imagery = {
       return d.toISOString().slice(0, 10);
     };
 
-    let best = null;
+    let best = null, first = null;
     /* ⚠️ 오늘(back=0)은 넣지 않는다. 아직 궤도가 절반도 안 들어와 있다
        (실측: 07-26 평균 26%, 최대 100%). 어제부터 본다. */
     for (let back = 1; back <= 4; back++) {
@@ -308,6 +308,7 @@ export const imagery = {
       const pcts = await Promise.all(TILES.map(([z, y, x]) =>
         blackPct(`${base}/${day}/GoogleMapsCompatible_Level9/${z}/${y}/${x}.jpg`)));
       const avg = pcts.reduce((a, b) => a + b, 0) / pcts.length;
+      if (back === 1) first = avg;      // 어제(즉시 띄운 날)의 빈 구간 — 교체 판단용
       if (!best || avg < best.avg) best = { day, avg };
       /* 확연히 깨끗하면 더 볼 필요가 없다 */
       if (avg < 6) break;
@@ -316,40 +317,69 @@ export const imagery = {
       this._tcGap = Math.round(best.avg * 10) / 10;
       console.log(`[truecolor] ${best.day} 선택 (빈 구간 ${this._tcGap}%)`);
     }
-    return best ? best.day : null;
+    return best ? { day: best.day, avg: best.avg, first } : null;
+  },
+
+  /** 어제로부터 n 일 전 날짜 (YYYY-MM-DD) */
+  _ymdBack(n) {
+    const d = new Date(Date.now() - n * 86400000);
+    return d.toISOString().slice(0, 10);
+  },
+
+  /** 주어진 날짜로 트루컬러 레이어를 만들어 얹는다 (설정 한 곳에 모음) */
+  _addTruecolorLayer(day) {
+    const L = viewer.imageryLayers.addImageryProvider(
+      gibsProvider({ layer: this.TC_LAYER, level: 9, ext: 'jpg', date: day })
+    );
+    /* ⚠️ 밤면에는 그리지 않는다(반사광이라 밤엔 새까맣다). 밤은 기본면+도시불빛에 맡긴다. */
+    L.nightAlpha = 0.0;
+    /* ⚠️ 관측 공백 타일은 검은색으로 채워져 온다(투명 아님). 거의 검은 픽셀만 투명으로
+       만들어 아래 기본 지도가 비치게 한다. 낮면에만 그리므로 진짜 검정만 노린다. */
+    L.colorToAlpha = Cesium.Color.BLACK;
+    L.colorToAlphaThreshold = 0.14;
+    // 구름·도시불빛보다 아래(기본면 바로 위)에 있어야 한다
+    const want = viewer.imageryLayers.indexOf(this.detail) + 1;
+    while (viewer.imageryLayers.indexOf(L) > want) viewer.imageryLayers.lower(L);
+    return L;
+  },
+
+  /** 어제가 유난히 나쁜 날에만 배경에서 더 좋은 날짜로 조용히 교체 */
+  _swapTruecolorDate(day) {
+    if (!this.truecolor) return;
+    const old = this.truecolor;
+    const wasShown = old.show, alpha = old.dayAlpha;
+    this._tcDate = day;
+    this.truecolor = this._addTruecolorLayer(day);
+    this.truecolor.show = wasShown;
+    this.truecolor.dayAlpha = alpha;
+    viewer.imageryLayers.remove(old, true);
+    this._truecolorLoading(true);   // 새 날짜 타일 로딩 표시
   },
 
   async setTrueColor(on) {
     if (!on) {
       if (this.truecolor) this.truecolor.show = false;
+      this._truecolorLoading(false);
       this._applyClouds();
       return;
     }
     if (!this.truecolor) {
-      const day = await this.pickTrueColorDate();
-      if (!day) { console.warn('[truecolor] 완전한 날짜를 찾지 못함'); return; }
+      /* ⚡ 즉시 — 어제 날짜로 바로 띄운다. 예전엔 "가장 덜 빈 날짜"를 고르려고
+         날짜당 타일 32장 × 최대 4일을 먼저 받아 검사하느라(최악 128장) 수 초 걸렸다.
+         실측상 어느 날짜든 빈 구간이 ~12%로 비슷해 화질 차이가 거의 없으므로,
+         어제로 바로 띄우고 날짜 탐색은 배경으로 돌린다. */
+      const day = this._ymdBack(1);
       this._tcDate = day;
-      this.truecolor = viewer.imageryLayers.addImageryProvider(
-        gibsProvider({ layer: this.TC_LAYER, level: 9, ext: 'jpg', date: day })
-      );
-      /* ⚠️ 밤면에는 그리지 않는다. 트루컬러는 반사광이라 밤이면 새까맣다.
-         그대로 두면 밤 쪽이 검은 판이 되고 낮 쪽과 이어지지 않아
-         "지도 두 장이 어긋난" 것처럼 보인다. 밤은 기본면 + 도시 불빛에 맡긴다. */
-      this.truecolor.nightAlpha = 0.0;
-      /* ⚠️ 남은 관측 공백을 뚫는다. 공백 타일은 **검은색으로 채워져** 온다(투명 아님).
-         PNG 로 요청해도 GIBS 가 JPEG 를 준다(실측) — 아래에 레이어를 깔아
-         메우는 방법이 통하지 않는다. 그래서 거의 검은 픽셀만 투명으로 만든다.
-         낮면에만 그리므로 진짜 검정(0,0,0)만 노리면 된다. */
-      this.truecolor.colorToAlpha = Cesium.Color.BLACK;
-      /* ⚠️ 빈 구간을 아래 기본 지도로 뚫는다. 0.09 로는 띠 가장자리의
-         어두운 회색이 남아 줄무늬로 보였다. 조금 올린다.
-         너무 올리면 밤바다·짙은 숲까지 뚫려서 지도가 비쳐 보이므로 여기까지만. */
-      this.truecolor.colorToAlphaThreshold = 0.14;
-      // 구름·도시불빛보다 아래에 있어야 한다 (기본면 바로 위)
-      const want = viewer.imageryLayers.indexOf(this.detail) + 1;
-      while (viewer.imageryLayers.indexOf(this.truecolor) > want) {
-        viewer.imageryLayers.lower(this.truecolor);
-      }
+      this.truecolor = this._addTruecolorLayer(day);
+      this._truecolorLoading(true);
+
+      /* 배경 탐색 — 어제가 유난히 나쁜 날(빈 구간이 훨씬 큼)에만 조용히 교체한다.
+         평소엔 어제가 최선이라 그대로 둔다(불필요한 리로드·깜빡임 방지). */
+      this.pickTrueColorDate().then(r => {
+        if (r && r.day !== this._tcDate && (r.first - r.avg) > 12) {
+          this._swapTruecolorDate(r.day);
+        }
+      }).catch(() => {});
     }
     this.truecolor.show = true;
     // 켤 때 현재 고도에 맞는 알파를 즉시 반영한다 (다음 프레임까지 기다리지 않게)
@@ -361,6 +391,37 @@ export const imagery = {
        ⚠️ 사용자의 구름 설정(_cloudOn)은 건드리지 않는다. 트루컬러를 끄면
           원래대로 돌아와야 한다. */
     this._applyClouds();
+  },
+
+  /** 위성 영상 로딩 표시 — 타일이 다 로드될 때까지 하단에 "불러오는 중" 을 띄운다.
+   *  ⚠️ tileLoadProgressEvent 는 전지구 타일 전체를 세지만, 트루컬러를 켜는 순간
+   *     그 타일들이 큐에 쌓이므로 사실상 위성영상 로딩을 따라간다.
+   *     한 번이라도 대기(remaining>0)를 본 뒤 0 이 되면 끈다(캐시로 즉시 0 인 경우 오인 방지). */
+  _truecolorLoading(show) {
+    const globe = viewer.scene.globe;
+    // 이전 리스너·타이머 정리
+    if (this._tcProg) { globe.tileLoadProgressEvent.removeEventListener(this._tcProg); this._tcProg = null; }
+    clearTimeout(this._tcLoadTimer);
+
+    if (!show) { this._tcLoadEl?.classList.remove('on'); return; }
+
+    if (!this._tcLoadEl) {
+      const el = document.createElement('div');
+      el.id = 'tcLoading';
+      el.innerHTML = '<span class="tcl-spin"></span>위성 영상 불러오는 중…';
+      document.body.appendChild(el);
+      this._tcLoadEl = el;
+    }
+    this._tcLoadEl.classList.add('on');
+
+    let sawPending = false;
+    this._tcProg = (remaining) => {
+      if (remaining > 0) { sawPending = true; return; }
+      if (sawPending) this._truecolorLoading(false);
+    };
+    globe.tileLoadProgressEvent.addEventListener(this._tcProg);
+    // 안전 타임아웃 — 어떤 이유로 progress 가 안 끝나도 20초 뒤엔 끈다
+    this._tcLoadTimer = setTimeout(() => this._truecolorLoading(false), 20_000);
   },
 
   /** 구름 오버레이 표시 여부를 한 곳에서 정한다.
@@ -578,18 +639,12 @@ export const imagery = {
       }
     }
 
-    /* ── 고해상도 구름 판단 ────────────────────────────────────
-       ⚠️ 매 프레임 불린다. 상태가 바뀔 때만 손댄다 —
-          setHima 는 타일을 받아보므로 매번 부르면 안 된다. */
-    try {
-      /* ⚠️ 사람이 직접 고른 경우에는 자동으로 끄지 않는다.
-         "히마와리를 켰는데 조금 움직였더니 꺼졌다"가 되면 안 된다. */
-      if (this._himaManual) return;
-      const c = viewer.camera.positionCartographic;
-      const want = this._cloudOn
-        && this.himaWanted(h, Cesium.Math.toDegrees(c.longitude), Cesium.Math.toDegrees(c.latitude));
-      if (want !== this._himaOn) this.setHima(want);
-    } catch (_) { /* 카메라가 아직 없을 수 있다 */ }
+    /* ── 자동 히마와리 제거 ────────────────────────────────────
+       ⚠️ 예전엔 구름(NOAA)이 켜진 채 동아시아로 확대하면 히마와리를 자동으로 얹었다.
+          그런데 이 경로는 store 의 배타 그룹(구름 4종 중 하나만)을 우회해서,
+          "구름과 일본(히마와리)이 동시에 뜨는" 문제가 있었다.
+          → 히마와리는 이제 **사람이 메뉴에서 직접 고를 때만** 켜진다.
+            수동으로 고르면 store 배타가 다른 구름 3종을 자동으로 끈다. */
   },
 
   set(id, on) {

@@ -1308,8 +1308,13 @@ export const banner = {
     const safe = (fn) => { try { fn(); } catch (e) { console.warn('[banner]', e.message); } };
 
     // ── 1. 쓰나미 — 등급 높은 순 ──
+    /* ⚠️ 최하위 '쓰나미 정보'(rank 1, Information Statement)는 배너에 안 띄운다.
+       실제 위협 없이 안내로 자주 나와(특히 일본 주변) 하단이 계속 차 있게 만든다.
+       배너는 행동이 필요한 것만 — 예비특보(2)·주의보(3)·경보(4)만.
+       '정보' 등급도 지도·이벤트 메뉴·쓰나미 레이어에는 그대로 나온다(감시는 유지). */
     safe(() => {
       (tsunami.list || []).slice()
+        .filter(ts => (ts.level?.rank ?? 0) >= 2)
         .sort((a, b) => (b.level?.rank ?? 0) - (a.level?.rank ?? 0))
         .forEach(ts => items.push({
           key: `ts:${ts.id}`,
@@ -1337,45 +1342,11 @@ export const banner = {
       });
     });
 
-    // ── 3. 대형 산불 — 위성이 관측한 큰 불 ──
-    /* ⚠️ 산불 항목의 name 은 세기(51,556 MW)다. 그것만 띄우면 **어디 불인지 알 수 없다.**
-       역지오코딩으로 지명을 붙인다. 결과는 캐시되고, 못 받으면 세기만 보여준다
-       (지어내지 않는다). 비동기라 다음 회전 때부터 지명이 붙는다. */
-    safe(() => {
-      const w = wildfires.headline?.();
-      if (!w) return;
-      const pk = `${w.lat.toFixed(1)},${w.lon.toFixed(1)}`;
-      const known = this._places?.[pk];
-      if (known === undefined) {
-        this._places = this._places || {};
-        this._places[pk] = null;                    // 중복 요청 방지
-        lookupPlace(w.lat, w.lon).then(p => {
-          this._places[pk] = p?.detail || p?.country || null;
-        }).catch(() => {});
-      }
-      const where = known || null;
-      items.push({
-        key: `wf:${w.id}`,
-        alert: true,
-        ms: BANNER_SHOW_MS,
-        html: `<span class="dot red"></span>${ko ? '대형 산불' : 'Major wildfire'}`
-            + (where ? ` · ${where}` : '')
-            + ` · ${w.name}`,
-        go: () => { flyTo(w.lon, w.lat, 900_000); store.select(w); },
-      });
-    });
-
-    // ── 4. 발사 예정 — 긴급이 아니다. 멀리서 보는 상태에서만 ──
-    safe(() => {
-      if (store.mode !== 'ambient') return;
-      const l = launches.next?.();
-      if (l && l.data._hoursOut <= GLOBAL_EVENT.LAUNCH_HOURS) items.push({
-        key: `l:${l.id}`,
-        ms: BANNER_SHOW_MS,
-        html: `<span class="dot violet"></span>${l.name} · ${i18n.rel(l.data._net)}`,
-        go: () => { flyTo(l.lon, l.lat, 900_000); store.select(l); },
-      });
-    });
+    /* ⚠️ 하단 배너는 '긴급'만 띄운다 — 쓰나미·큰 지진.
+       예전엔 대형 산불·발사 예정 같은 '정보성' 항목도 띄웠는데, 평소에도 하단에
+       배너가 계속 떠 있어 산만하다는 요청으로 뺐다(2026-07-28).
+       산불·발사는 지도와 이벤트 메뉴에서 그대로 볼 수 있다 — 감시를 끈 게 아니라
+       '하단에 자동으로 밀어 올리는 것'만 멈춘 것이다. */
 
     /* ⚠️ 이미 보여준 것은 큐에 넣지 않는다. 같은 경보를 계속 다시 띄우면
        새로 들어온 소식이 그 뒤에 묻힌다. 지난 것은 이벤트 메뉴에서 본다. */
@@ -1518,24 +1489,9 @@ function renderTierRow(ko) {
             : 'Clouds, weather, cyclones, tsunami alerts and 3D lessons stay free.');
   }
 
-  /* 티어 전환 — 무료/유료 화면을 직접 바꿔 보기 위한 것.
-     한 번 숨겼다가 "무료·유료를 골라서 볼 수 있어야 한다"는 요청으로 되살렸다.
-     결제가 없는 동안은 아무도 속이지 않으므로 그대로 둔다.
-
-     ⚠️ 다만 **결제가 붙는 순간 이건 구멍이 된다** — 누구나 눌러서 유료 기능을 연다.
-        "출시 전에 빼자"는 주석은 잊히므로, 주석 대신 조건으로 막는다:
-        결제 경로(CHECKOUT_URL)가 설정되면 이 토글은 **스스로 사라진다.**
-        지울 때가 되면 코드가 알아서 지운다. 사람이 기억할 일을 남기지 않는다. */
-  if (!CONFIG.CHECKOUT_URL) {
-    const dev = el('div', 'tier-dev');
-    dev.appendChild(el('span', null, ko ? '미리보기' : 'Preview'));
-    [[TIER.FREE, ko ? '무료' : 'Free'], [TIER.PAID, ko ? '유료' : 'Pro']].forEach(([v, label]) => {
-      const b = el('button', 'seg tiny' + (store.tier === v ? ' on' : ''), label);
-      b.onclick = () => store.setTier(v);
-      dev.appendChild(b);
-    });
-    box.appendChild(dev);
-  }
+  /* ⚠️ 무료/유료 '미리보기' 토글은 출시 전 제거했다 (2026-07-28).
+     결제가 붙으면 누구나 눌러 유료 기능을 여는 구멍이 되므로, 출시 화면에는 두지 않는다.
+     티어는 로그인/구독 상태(auth)만으로 정해진다 — 게스트·무료는 free. */
 }
 
 /* ══════════════════════════════════════════════════════════════

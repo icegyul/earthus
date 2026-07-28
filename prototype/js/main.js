@@ -171,7 +171,12 @@ async function boot() {
 /* ── 회원 · 법적 문서 배선 ─────────────────────────────────── */
 function bindAccountUI() {
   const $ = s => document.querySelector(s);
-  const open  = id => $('#' + id).classList.add('up');
+  // 메뉴에서 시트를 열 땐 이미 떠 있는 다른 시트를 먼저 닫는다.
+  // (안 그러면 사전등록·업데이트·동의창이 겹쳐 쌓인다)
+  const open  = id => {
+    document.querySelectorAll('.sheet-panel.up').forEach(p => p.classList.remove('up'));
+    $('#' + id).classList.add('up');
+  };
   const close = id => $('#' + id).classList.remove('up');
 
   // 설정 → 각 화면
@@ -179,6 +184,11 @@ function bindAccountUI() {
   $('#btnWaitlist').onclick = () => { close('settings'); open('waitlistSheet'); waitlistUI.init(); };
   $('#btnTerms').onclick    = () => { close('settings'); legalView.open('terms'); };
   $('#btnPrivacy').onclick  = () => { close('settings'); legalView.open('privacy'); };
+  $('#btnConsent').onclick  = () => {
+    close('settings');
+    document.querySelectorAll('.sheet-panel.up').forEach(p => p.classList.remove('up'));
+    consentSheet.open(true);   // 검토(review) 모드 — 안 눌러도 로그아웃 안 됨
+  };
   $('#btnChangelog').onclick = () => {
     close('settings');
     $('#clTitle').textContent = i18n.lang === 'ko' ? '업데이트' : 'Updates';

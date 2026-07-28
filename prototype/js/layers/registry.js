@@ -9,6 +9,7 @@ import { launches, orbits } from './space.js';
 import { launchPads } from './launchpad.js';
 import { stations, wind } from './weather.js';
 import { landObs } from './landobs.js';
+import { ukForecast } from './ukfc.js';
 import { coverage } from './coverage.js';
 import { windField } from '../windfield.js';
 import { gridOverlay } from '../gridoverlay.js';
@@ -51,6 +52,10 @@ const REFRESH = {
   lightning: 5 * 60_000,
   regional: 20 * 60_000,   // Lambda 가 30분마다 올린다
   alerts: 10 * 60_000,     // 특보는 15분마다 갱신된다
+  /* 영국 예보는 Lambda 가 **3시간마다** 올린다 (무료 360콜/일 예산 때문).
+     ⚠️ 더 자주 물어봐야 같은 파일이다 — 190KB 를 헛되이 다시 받을 뿐이다.
+        원본 주기보다 촘촘한 폴링은 순수한 발열이다. */
+  ukfc: 60 * 60_000,
 };
 
 export const registry = {
@@ -66,6 +71,7 @@ export const registry = {
     launchPads.init();
     pointLayers.stations = stations.init();
     pointLayers.landobs  = landObs.init();
+    pointLayers.ukfc     = ukForecast.init();
     pointLayers.poi      = poi.init();
     pointLayers.buoy     = buoys.init();
     pointLayers.lightning = lightning.init();
@@ -116,6 +122,9 @@ export const registry = {
       store.isOn('lightning') ? this.run('lightning', () => lightning.refresh()) : Promise.resolve(),
       store.isOn('regional') ? this.run('regional', () => regional.refresh()) : Promise.resolve(),
       store.isOn('alerts') ? this.run('alerts', () => alerts.refresh()) : Promise.resolve(),
+      /* 영국 예보 190KB — 켜져 있을 때만 받는다.
+         영국을 안 보는 사람에게 시작할 때마다 190KB 를 물릴 이유가 없다. */
+      store.isOn('ukfc') ? this.run('ukfc', () => ukForecast.refresh()) : Promise.resolve(),
     ]);
     this.applyAll();
   },
@@ -148,6 +157,9 @@ export const registry = {
     setInterval(() => {
       if (store.isOn('alerts')) this.run('alerts', () => alerts.refresh()).then(() => this.applyAll());
     }, REFRESH.alerts);
+    setInterval(() => {
+      if (store.isOn('ukfc')) this.run('ukfc', () => ukForecast.refresh()).then(() => this.applyAll());
+    }, REFRESH.ukfc);
   },
 
   /* ── 가시성 ───────────────────────────────────────────────── */
@@ -198,6 +210,12 @@ export const registry = {
        낡은 경보를 켜 두면 "아직 위험하다"는 거짓 정보가 된다. */
     if (id === 'alerts' && store.isOn('alerts')) {
       this.run('alerts', () => alerts.refresh()).then(() => this.applyAll());
+    }
+    /* 영국 예보는 켤 때 처음 받는다.
+       ⚠️ meta 유무로 판단한다 — 3시간마다 갱신되는 자료라 낡아도 몇 시간이고,
+          켤 때마다 190KB 를 다시 받는 건 낭비다. 주기 타이머가 따로 갱신한다. */
+    if (id === 'ukfc' && store.isOn('ukfc') && !ukForecast.meta) {
+      this.run('ukfc', () => ukForecast.refresh()).then(() => this.applyAll());
     }
   },
 

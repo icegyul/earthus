@@ -67,6 +67,10 @@ const SRC = {
   swell:    { ko: 'Open-Meteo 해양 (파랑모델)', en: 'Open-Meteo Marine', every: 60 },
   current:  { ko: 'Open-Meteo 해양 — 표층 해류', en: 'Open-Meteo Marine — surface current', every: 60 },
   landobs:  { ko: 'NOAA 항공기상센터 METAR 실황', en: 'NOAA Aviation Weather Center METAR', every: 60 },
+  /* ⚠️ "Powered by Met Office data" 는 Met Office 약관이 요구하는 **의무 문구**다.
+        번역하거나 줄이지 말 것. 한국어 표기에도 원문을 그대로 남긴다. */
+  ukfc:     { ko: '영국 기상청 · Powered by Met Office data',
+              en: 'Powered by Met Office data', every: 180 },
   buoy:     { ko: 'NOAA NDBC + OSMC 부이', en: 'NOAA NDBC + OSMC buoys', every: 30 },
   coverage: { ko: '우리 관측점을 직접 센 것 (부이 + 지상 관측소)',
               en: 'Counted from our own observation points (buoys + ground stations)', every: 60 },
@@ -83,7 +87,7 @@ const SRC = {
 const PRIORITY = ['himaIR', 'himawari', 'truecolor', 'clouds', 'sstanom', 'temp', 'tmax', 'tmin', 'humidity', 'fog', 'drought',
                   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
                   'sst', 'wave', 'swell', 'current', 'wind', 'windfc',
-                  'coverage', 'landobs', 'buoy', 'wildfire', 'cyclone', 'quake', 'tsunami', 'aurora', 'news'];
+                  'coverage', 'ukfc', 'landobs', 'buoy', 'wildfire', 'cyclone', 'quake', 'tsunami', 'aurora', 'news'];
 
 function hhmm(d) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;

@@ -135,10 +135,25 @@ export const consentSheet = {
     return localStorage.getItem('earthus.consent') !== CONFIG.LEGAL_VERSION;
   },
 
-  open() {
+  /**
+   * @param {boolean} review  메뉴에서 다시 볼 때(true)는 저장된 동의를 미리 채우고,
+   *                          '닫기'로 나가도 로그인/가입을 취소하지 않는다.
+   */
+  open(review = false) {
+    this._review = review;
     return new Promise(resolve => {
       this._resolve = resolve;
-      ['cTos', 'cPrivacy', 'cAge', 'cMarketing', 'cLocation'].forEach(id => { $('#' + id).checked = false; });
+      if (review) {
+        const agreed = localStorage.getItem('earthus.consent') === CONFIG.LEGAL_VERSION;
+        $('#cTos').checked = agreed;
+        $('#cPrivacy').checked = agreed;
+        $('#cAge').checked = agreed;
+        $('#cLocation').checked = localStorage.getItem('earthus.consent.location') === '1';
+        $('#cMarketing').checked = false;
+      } else {
+        ['cTos', 'cPrivacy', 'cAge', 'cMarketing', 'cLocation'].forEach(id => { $('#' + id).checked = false; });
+      }
+      $('#consentCancel').textContent = review ? '닫기' : '동의하지 않고 나가기';
       this.sync();
       $('#consentSheet').classList.add('up');
     });
@@ -173,9 +188,11 @@ export const consentSheet = {
     toast('가입이 완료되었습니다');
   },
 
-  /** 필수 동의를 거부하고 나가면 가입을 취소한다 */
+  /** 필수 동의를 거부하고 나가면 가입을 취소한다.
+   *  단, 메뉴에서 다시 보기(review)로 연 경우엔 그냥 닫기만 한다. */
   async cancel() {
     $('#consentSheet').classList.remove('up');
+    if (this._review) { this._resolve?.(null); return; }
     await auth.signOut();
     this._resolve?.(null);
     toast('동의하지 않아 가입이 취소되었습니다');

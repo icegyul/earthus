@@ -265,14 +265,16 @@
     <div class="set-hint" id="tierHint"></div>
 
     <div class="set-sep"></div>
-    <!-- ⚠️ 계정·사전등록은 지금 감춰둔다.
+    <!-- ⚠️ 계정은 아직 감춰둔다.
          아직 로그인할 이유가 없는데 먼저 보여주면 진입 장벽만 된다.
          유료 기능을 누를 때 그 자리에서 로그인 화면이 뜬다 (auth.requireLogin).
-         출시 준비 때 display 만 되돌리면 그대로 살아난다. -->
+         출시 준비 때 display 만 되돌리면 그대로 살아난다.
+         사전등록·동의는 메뉴에서 직접 눌러 열도록 노출한다 (자동 팝업 아님). -->
     <button class="set-item" id="btnAccount" style="display:none"><span>계정</span><span class="chev">›</span></button>
-    <button class="set-item" id="btnWaitlist" style="display:none"><span>사전등록 · 창립 멤버</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnWaitlist"><span>사전등록 · 창립 멤버</span><span class="chev">›</span></button>
     <button class="set-item" id="btnTerms"><span>이용약관</span><span class="chev">›</span></button>
     <button class="set-item" id="btnPrivacy"><span>개인정보처리방침</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnConsent"><span>약관 · 동의 관리</span><span class="chev">›</span></button>
     <button class="set-item" id="btnChangelog"><span>업데이트</span><span class="chev">›</span></button>
 
     <div class="set-sep"></div>

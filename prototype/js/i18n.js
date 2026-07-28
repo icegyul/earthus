@@ -34,6 +34,9 @@ const KO = {
     sst:'해수면 온도', sstanom:'수온 편차(평년 대비)', wave:'파고', swell:'너울', current:'해류',
     // 안개·토양 (⚠️ drought 는 "지금 메마름"이지 가뭄 판정이 아니다)
     fog:'안개', drought:'토양 수분', landobs:'지상 관측소', coverage:'관측망 밀도',
+    /* ⚠️ 이름에 '예보'를 반드시 남긴다 — 바로 옆 landobs 가 실황이라
+       구분이 없으면 사용자가 둘을 같은 것으로 읽는다. */
+    ukfc:'영국 예보',
   },
   G: { base:'기본', weather:'기상', hazard:'재난', space:'우주', air:'대기질',
        ocean:'해양', events:'이벤트', nature:'자연', travel:'여행', transit:'교통', learn:'학습' },
@@ -80,6 +83,7 @@ const EN = {
     pm25:'PM2.5', pm10:'PM10', dust:'Desert dust', ozone:'Ozone', uv:'UV index', aqi:'Air quality index',
     sst:'Sea surface temperature', sstanom:'SST anomaly vs normal', wave:'Wave height', swell:'Swell', current:'Ocean current',
     fog:'Fog (visibility)', drought:'Soil moisture', landobs:'Ground stations', coverage:'Observation coverage',
+    ukfc:'UK forecast',
   },
   G: { base:'Base', weather:'Weather', hazard:'Hazards', space:'Space', air:'Air quality',
        ocean:'Ocean', events:'Events', nature:'Nature', travel:'Travel', transit:'Transit', learn:'Learn' },

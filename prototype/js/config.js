@@ -195,6 +195,12 @@ export const LAYER_DEFS = [
      ⚠️ 위 'stations' 와 다르다. 저건 도시 47곳의 예보 조회다.
         실황과 예보를 같은 이름으로 두면 사용자가 구분할 수 없다. */
   { id:'landobs',  kind:'point',   tier:TIER.FREE, on:false, group:'weather' },
+  /* 영국 예보 — 영국 기상청(Met Office) 지점예보 36곳.
+     한국(기상청) 다음으로 **자국 기관 예보**가 들어온 두 번째 나라다.
+     ⚠️ 출처 문구 "Powered by Met Office data" 는 약관상 의무다.
+     ⚠️ 무료 플랜 재배포 약관 확인 중(2026-07-28 문의). 부정적 답이 오면
+        **이 줄만 지우면** 화면에서 즉시 사라진다. Lambda 수집은 그대로 둬도 된다. */
+  { id:'ukfc',     kind:'point',   tier:TIER.FREE, on:false, group:'weather' },
   /* 관측망 밀도 — "어디를 아무도 안 보고 있나". 우리 자료의 약한 곳을 스스로 밝힌다.
      ⚠️ kind:'coverage' 는 이 레이어 전용이다 (격자도 점도 아니다). */
   { id:'coverage', kind:'coverage', tier:TIER.FREE, on:false, group:'weather' },

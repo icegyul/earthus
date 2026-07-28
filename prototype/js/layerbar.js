@@ -108,6 +108,10 @@ const ITEMS = [
   /* 지상 관측소 — 부이의 육지판. 실제 계기의 실황이다. */
   { id:'landobs', ko:'지상 관측소', en:'Ground stations', sub:'실황 관측', subEn:'Live readings', ready:true,
     sky:'#0d1a12', paint:'landobs' },
+  /* 영국 예보 — 부제에 '예보'를 반드시 남긴다.
+     바로 위 '지상 관측소'가 실황이라, 둘을 구분하지 않으면 사용자가 섞어 읽는다. */
+  { id:'ukfc', ko:'영국 예보', en:'UK forecast', sub:'영국 기상청 · 36곳', subEn:'Met Office · 36 sites', ready:true,
+    sky:'#0c1622', paint:'ukfc' },
   /* ⚠️ 이건 자료를 보여주는 레이어가 아니라 **자료가 없는 곳**을 보여주는 레이어다. */
   { id:'coverage', ko:'관측망 밀도', en:'Observation coverage', sub:'빈 곳 찾기', subEn:'Where nobody looks', ready:true,
     sky:'#0a0e14', paint:'coverage' },
@@ -169,6 +173,8 @@ function drawThumb(cv, kind) {
     /* 관측망 — 촘촘한 곳과 빈 곳. 점이 몰린 데와 없는 데가 대비되게. */
     coverage: () => { bg(['#0a0e14', '#050810']); dots('#a8d4ec'); },
     landobs: () => { bg(['#0e2418', '#04120a']); dots('#9fd8a8'); streaks('rgba(200,240,210,.45)'); },
+    /* 영국 — 흐린 하늘에 점점이 지점. 비 계열 파랑을 바탕에 깐다. */
+    ukfc: () => { bg(['#132638', '#060e18']); streaks('rgba(150,200,240,.35)'); dots('#8fd0ff'); },
     /* 대기질 — 탁한 공기는 알갱이로, 깨끗한 쪽은 맑은 띠로 */
     pm25: () => { bg(['#4a4048', '#1a1418']); blobs('rgba(230,190,150,.5)', 11, 9); },
     pm10: () => { bg(['#4e463a', '#1c1812']); blobs('rgba(235,205,150,.55)', 8, 13); },
@@ -374,7 +380,7 @@ const CATEGORIES = [
   { id: 'ocean',   ko: '해양',       en: 'Ocean',
     ids: ['sst', 'sstanom', 'wave', 'swell', 'current', 'phenomena'] },
   { id: 'station', ko: '관측소',     en: 'Stations',
-    ids: ['landobs', 'buoy', 'coverage'] },
+    ids: ['landobs', 'ukfc', 'buoy', 'coverage'] },
   { id: 'hazard',  ko: '재난',       en: 'Hazards',
     ids: ['cyclone', 'quake', 'tsunami', 'wildfire', 'alerts', 'lightning', 'regional', 'heatdome'] },
   { id: 'sky',     ko: '하늘·우주',  en: 'Sky & space',

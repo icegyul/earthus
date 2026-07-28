@@ -200,13 +200,20 @@ export const sourceNote = {
              확대했더니 구름 모양이 달라진 것으로 보인다.
              ⚠️ 직접 고른 경우와 확대해서 자동으로 바뀐 경우를 구분해 적는다 —
                 "확대해서 바뀌었습니다"라고 써 놓고 사실은 사람이 고른 것이면 틀린 안내다. */
+          /* ⚠️ "낮은 가시광, 밤은 적외" 라고 적어 두었던 것을 고쳤다.
+             밤에 적외를 얹으면 그게 「구름 꼭대기 온도」와 같은 자료라
+             구름 메뉴에서 색칠된 그림이 나와 강수량으로 오해된다.
+             이제 **가시광만** 쓴다 — 그래서 밤에는 비어 보인다. 그걸 그대로 적는다. */
           bits.push(ko
             ? (id === 'himawari'
-              ? '<i>동아시아·서태평양만 보는 정지위성입니다. <b>1km · 10분</b> (전지구 구름은 2.4km · 1시간). 낮은 가시광, 밤은 적외입니다.</i>'
-              : '<i>확대해서 <b>1km · 10분</b> 자료로 바뀌었습니다 (전지구는 2.4km · 1시간). 낮은 가시광, 밤은 적외입니다.</i>')
+              ? '<i>동아시아·서태평양만 보는 정지위성입니다. <b>1km · 10분</b> (전지구 구름은 2.4km · 1시간). <b>가시광</b>이라 낮에만 보입니다.</i>'
+              : '<i>확대해서 <b>1km · 10분</b> 자료로 바뀌었습니다 (전지구는 2.4km · 1시간). <b>가시광</b>이라 낮에만 보입니다.</i>')
             : (id === 'himawari'
-              ? '<i>A geostationary satellite covering only East Asia and the western Pacific. <b>1 km · 10 min</b> (the global cloud layer is 2.4 km · hourly). Visible by day, infrared by night.</i>'
-              : '<i>Zoomed in, so this is the <b>1 km · 10 min</b> feed (the global one is 2.4 km · hourly). Visible by day, infrared by night.</i>'));
+              ? '<i>A geostationary satellite covering only East Asia and the western Pacific. <b>1 km · 10 min</b> (the global cloud layer is 2.4 km · hourly). <b>Visible light</b>, so it shows only in daylight.</i>'
+              : '<i>Zoomed in, so this is the <b>1 km · 10 min</b> feed (the global one is 2.4 km · hourly). <b>Visible light</b>, so it shows only in daylight.</i>'));
+          bits.push(ko
+            ? '<i>밤에는 「구름 꼭대기 온도」(적외)를 쓰세요 — 어두워도 구름을 봅니다.</i>'
+            : '<i>At night use “Cloud-top temperature” (infrared) — it sees cloud in the dark.</i>');
           /* ⚠️ 구역 밖으로 나가면 아무것도 안 보인다. 그 사실을 미리 알린다. */
           if (id === 'himawari') {
             bits.push(ko

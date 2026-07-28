@@ -27,9 +27,11 @@ const ITEMS = [
   /* 오늘 찍힌 실사 위성 영상. 기본 지도는 정지 사진이라 연기·황사가 안 보인다. */
   { id:'truecolor', ko:'실제 위성 영상', en:'Satellite view', sub:'낮면 · 최근 완전한 날', subEn:'Day side · latest full day',
     ready:true, sky:'#0a1420', paint:'truecolor' },
-  { id:'himawari', ko:'구름 (동아시아)', en:'Clouds (E. Asia)', sub:'1km · 10분', subEn:'1 km · 10 min', ready:true,
+  /* ⚠️ 부제에 '낮'을 반드시 남긴다. 가시광이라 밤에는 비어 보이는데,
+     그 사실을 안 적으면 고장으로 읽힌다 (실제로 지적받았다). */
+  { id:'himawari', ko:'구름 (동아시아)', en:'Clouds (E. Asia)', sub:'1km · 10분 · 낮에만', subEn:'1 km · 10 min · daylight only', ready:true,
     sky:'#0a1626', paint:'himawari' },
-  { id:'himaIR', ko:'구름 꼭대기 온도', en:'Cloud-top temp', sub:'동아시아 · 찰수록 강한 대류', subEn:'E. Asia · colder = stronger', ready:true,
+  { id:'himaIR', ko:'구름 꼭대기 온도', en:'Cloud-top temp', sub:'동아시아 · 밤에도 · 찰수록 강한 대류', subEn:'E. Asia · works at night · colder = stronger', ready:true,
     sky:'#0d1020', paint:'himawari' },
   { id:'clouds', ko:'구름', en:'Clouds', sub:'현재', subEn:'Now', ready:true,
     sky:'#0b1a2e', paint:'cloud' },

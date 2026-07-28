@@ -15,6 +15,23 @@ export const T = {
 };
 
 /* ── 데이터 소스 ──────────────────────────────────────────────── */
+
+/* 자료를 어디서 받을지 — **열린 주소를 보고 스스로 고른다.**
+ *
+ * earthus.net 으로 열었으면 빈 문자열('')을 써서 **같은 출처**로 받는다.
+ *   · CloudFront 가 brotli 로 압축해 준다 (JSON 은 통상 70~90% 축소).
+ *     받는 양이 줄면 통신 모듈이 켜져 있는 시간이 줄고, 그게 곧 발열·배터리다.
+ *   · 한국 엣지에 캐시된다.
+ *   · 같은 출처라 CORS 예비요청(preflight)이 아예 없다.
+ *
+ * 그 밖(로컬 개발·옛 S3 주소)에서는 S3 로 직접 간다.
+ *   ⚠️ 여기를 earthus.net 으로 고정하면 S3 주소나 localhost 로 열었을 때
+ *      전부 교차출처가 되어 CORS 로 막힌다. 고정하지 말 것.
+ */
+const CDN = location.hostname.endsWith('earthus.net')
+  ? ''
+  : 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+
 export const API = {
   GIBS: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best',   // 4326 격자는 Cesium 과 안 맞음
   // 전지구 구름 합성 (위스콘신대 SSEC). 정지위성 낱장을 직접 겹치면 이음매가 생겨서 이걸 쓴다.
@@ -22,23 +39,23 @@ export const API = {
   REALEARTH: 'https://realearth.ssec.wisc.edu/api',   // 폴백 전용 (워터마크·한도 있음)
   // 1순위 구름 — Lambda(gmgsi-clouds)가 NOAA GMGSI 를 매시간 합성해 올린다.
   // 퍼블릭 도메인이라 워터마크·사용량 한도·라이선스 제약이 없다.
-  CLOUDS: 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds',
+  CLOUDS: CDN + '/clouds',
   // 전지구 바람 격자 — Lambda(wind-grid)가 매시간 만든다. 파티클 애니메이션용.
-  WIND:   'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/wind',
+  WIND:   CDN + '/wind',
   // 전지구 대기질 격자 — Lambda(air-grid)가 매시간 만든다.
   // PM2.5·미세먼지·먼지(황사)·오존·자외선·대기질지수가 한 파일에 들어 있다.
   // ⚠️ air/ 가 아니라 wind/ 아래다. 버킷 공개 접두사가 고정이라 air/ 는 403 이 난다(실측).
-  AIR:    'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/wind',
+  AIR:    CDN + '/wind',
   // 전지구 해양 격자 — Lambda(marine-grid). 파고·너울·해수면온도·해류.
   // ⚠️ 아래쪽 MARINE(지점 조회용 Open-Meteo)과 이름이 겹치면 나중 것이 이긴다.
   //    그래서 이름을 달리 둔다. 실제로 한 번 겹쳤다.
-  MARINE_GRID: 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/ocean',
+  MARINE_GRID: CDN + '/ocean',
   // 이벤트 뉴스 — Lambda(gdelt-events)가 GDELT 원본을 받아 신뢰도 점수를 매겨 올린다 (§5-2)
-  EVENTS: 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/events',
+  EVENTS: CDN + '/events',
   // 해양 관측 부이 / 태양 영상 — Lambda(ocean-solar)가 30분마다 올린다.
   // NDBC 도 SDO 도 CORS 헤더가 없어 브라우저가 직접 못 부른다.
-  OCEAN:  'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/ocean',
-  SOLAR:  'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/solar',
+  OCEAN:  CDN + '/ocean',
+  SOLAR:  CDN + '/solar',
   // 쓰나미 경보 — 미국 NWS. CORS 가 열려 있어 프록시가 필요 없다(실측).
   // ⚠️ 미국 관할(태평양·대서양·카리브) 중심이다. 전 세계를 덮지 않는다.
   NWS_ALERTS: 'https://api.weather.gov/alerts/active',
@@ -60,7 +77,7 @@ export const API = {
   REVGEO:      'https://api.bigdatacloud.net/data/reverse-geocode-client',
   // 위성 카탈로그 — AWS Lambda 가 하루 1회 CelesTrak + SATCAT 을 조인해 S3 에 올린 것.
   // 브라우저가 CelesTrak 을 직접 부르면 rate limit 에 걸리고, SATCAT 은 6.7MB 라 매번 못 받는다.
-  SAT_CATALOG: 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/celestrak/catalog.json.gz',
+  SAT_CATALOG: CDN + '/celestrak/catalog.json.gz',
   TLE:         'https://celestrak.org/NORAD/elements/gp.php',   // 폴백용
   LAUNCH:      'https://ll.thespacedevs.com/2.2.0/launch/upcoming/',
   KP:          'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json',

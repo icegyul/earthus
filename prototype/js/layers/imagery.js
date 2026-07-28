@@ -518,12 +518,34 @@ export const imagery = {
       return;
     }
     const ts = await this.pickHimaTime();
-    if (!ts) { this._himaOn = false; console.warn('[hima] 받을 수 있는 시각을 못 찾음'); return; }
+    /* ⚠️ 밤에는 여기서 반드시 실패한다 — GIBS 가 가시광 타일을 **아예 발행하지 않는다**
+       (실측: 19:30 KST 는 200, 21:30·22:10 은 404). 빈 타일이 아니라 404 다.
+       예전엔 console.warn 만 남기고 조용히 끝나서, 사용자에게는 "눌렀는데
+       아무 일도 안 일어남"이 됐다. 배타 그룹 때문에 직전 레이어까지 꺼진 뒤라
+       화면이 도리어 비어 버린다. 그래서 이유를 말한다. */
+    if (!ts) {
+      this._himaOn = false;
+      console.warn('[hima] 받을 수 있는 시각을 못 찾음 (밤이면 정상)');
+      this._himaUnavailable();
+      return;
+    }
     if (!this._himaOn) return;                      // 그 사이 화면이 벗어났다
     this._himaTime = ts;
 
-    /* 낮 = 가시광(구름이 하얗게), 밤 = 적외(구름 꼭대기 온도).
-       ⚠️ 둘 다 얹고 알파로 나눈다. 하나만 쓰면 반쪽 지구가 비어 보인다. */
+    /* ⚠️ **가시광(Band3) 한 장만 얹는다.**
+       예전에는 "밤에는 새까맣다"는 이유로 적외(Band13)를 밤 쪽에 같이 얹었다.
+       그런데 그 적외가 「구름 꼭대기 온도」 레이어와 **똑같은 자료**다.
+       GIBS 의 Clean Infrared 는 찬 꼭대기를 색으로 강조해 그리기 때문에,
+       구름 메뉴를 눌렀는데 색칠된 그림이 나와 **강수량으로 오해**된다.
+       지적받은 그대로다: "구름 메뉴 누르면 또 구름과 비양이 같이 나와".
+
+       그래서 나눈다.
+         · 히마와리 구름      = 가시광. 구름이 하얗게 보인다. **낮에만.**
+         · 구름 꼭대기 온도   = 적외. 색으로 높이를 보여준다. 낮·밤 모두.
+
+       ⚠️ 밤에 아무것도 안 보이는 것은 고장이 아니다 — 가시광 위성은 밤에 못 본다.
+          숨기지 않고 화면에 그렇게 적는다(ui-source). 밤에는 전지구 구름 합성
+          (GMGSI)이나 「구름 꼭대기 온도」를 쓰면 된다. */
     const add = (layer, tms, dayA, nightA) => {
       const L = viewer.imageryLayers.addImageryProvider(
         new Cesium.UrlTemplateImageryProvider({
@@ -539,10 +561,59 @@ export const imagery = {
       this.himaLayers.push(L);
       return L;
     };
+    // 가시광만. 밤(nightAlpha=0)에는 그리지 않는다 — 위 주석 참고.
     add('Himawari_AHI_Band3_Red_Visible_1km', 'GoogleMapsCompatible_Level7', 0.9, 0.0);
-    add('Himawari_AHI_Band13_Clean_Infrared', 'GoogleMapsCompatible_Level6', 0.0, 0.75);
     document.dispatchEvent(new CustomEvent('earthus:imagery'));
     console.log(`[hima] ${ts} 적용`);
+  },
+
+  /** 히마와리를 보는 지역이 지금 밤이면 그 사실을 알려준다.
+   *
+   *  ⚠️ 태양 위치를 직접 계산하지 않는다. 화면 중심의 **현지 시각**으로 판단한다 —
+   *     경도만 알면 되고(UTC + 경도/15), 이 안내에는 그 정밀도로 충분하다.
+   *     '해가 떴는지'를 정확히 따지려면 위도·날짜까지 필요한데, 여기서 그 정확도를
+   *     흉내 내면 오히려 틀린 시각을 말하게 된다. 어림임을 전제로 쓴다.
+   */
+  /** 화면 중심이 지금 밤인가 — 어림값.
+   *  ⚠️ 태양 위치를 계산하지 않는다. 경도만으로 현지 시각을 낸다(UTC + 경도/15).
+   *     이 안내에는 그 정밀도로 충분하고, 어설프게 정확한 척하면 오히려 틀린다. */
+  _isNightHere() {
+    let lonDeg = 135;                               // 히마와리 정지 위치 근처
+    try {
+      const c = Cesium.Cartographic.fromCartesian(viewer.camera.position);
+      lonDeg = Cesium.Math.toDegrees(c.longitude);
+    } catch (_) {}
+    const now = new Date();
+    const utcH = now.getUTCHours() + now.getUTCMinutes() / 60;
+    const localH = (utcH + lonDeg / 15 + 24) % 24;
+    return localH < 6 || localH >= 19;
+  },
+
+  /* ⚠️ ui.js 를 정적 import 하면 순환이 된다 (registry → imagery → ui → registry).
+     안내 한 줄 띄우자고 모듈 그래프를 꼬지 않는다 — 부를 때 가져온다. */
+  async _say(ko, en) {
+    try {
+      const [{ toast }, { i18n }] = await Promise.all([
+        import('../ui.js'), import('../i18n.js'),
+      ]);
+      toast(i18n.lang === 'ko' ? ko : en);
+    } catch (_) { /* 안내를 못 띄우는 것으로 레이어를 막지는 않는다 */ }
+  },
+
+  /** 켜자마자 미리 알려주는 안내 (밤일 때만) */
+  _himaNightHint() {
+    if (!this._isNightHere()) return;
+    this._say(
+      '지금 이 지역은 밤이라 가시광 위성이 구름을 볼 수 없습니다 — 「구름 꼭대기 온도」를 켜 보세요',
+      'It is night here, so the visible-light satellite cannot see cloud — try “Cloud-top temperature”');
+  },
+
+  /** 실제로 자료를 못 받았을 때 — 밤이라서인지, 아직 안 올라와서인지 나눠 말한다 */
+  _himaUnavailable() {
+    if (this._isNightHere()) return;                // 위 안내가 이미 나갔다
+    this._say(
+      '히마와리 최신 영상이 아직 올라오지 않았습니다 — 잠시 뒤 다시 시도해 주세요',
+      'The latest Himawari image is not published yet — please try again shortly');
   },
 
   /** 적외(Band 13) 단독 레이어 — 낮·밤 모두 같은 자료를 쓴다.
@@ -661,6 +732,9 @@ export const imagery = {
         if (on) {
           this.setHima(true);
           this.flyToHima();
+          /* ⚠️ 가시광이라 밤에는 아무것도 안 그려진다. 말없이 빈 화면을 보여주면
+             고장으로 읽힌다 — 왜 안 보이는지와 대안을 같이 알려준다. */
+          this._himaNightHint();
         } else {
           this.setHima(false);
         }

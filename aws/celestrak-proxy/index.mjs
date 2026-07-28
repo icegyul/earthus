@@ -182,6 +182,11 @@ async function writeCache(data) {
   await s3.send(new PutObjectCommand({
     Bucket: BUCKET, Key: KEY, Body: gz,
     ContentType: 'application/json', ContentEncoding: 'gzip',
+    /* ⚠️ 이게 없으면 CloudFront 가 **자기 기본값(하루)** 으로 캐시한다.
+       다른 자료 파일은 전부 Cache-Control 을 달고 있는데 이것만 빠져 있었다.
+       위성 카탈로그는 몇 시간마다 갱신되므로 하루는 너무 길다.
+       원본이 스스로 신선도를 밝히는 것이 옳다 — CDN 설정으로 덮지 않는다. */
+    CacheControl: 'public, max-age=3600',
   }));
   return gz.length;
 }

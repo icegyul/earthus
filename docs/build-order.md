@@ -85,6 +85,7 @@
 | # | 항목 |
 |---|---|
 | 17 | 관심 등록(Supabase) + Web Push 알림 파이프 — "감지 상품"의 전제 |
+| 17b | **사용 패턴 분석** — 어디를 자주 쓰고 어디서 불편해하는지. 설계: [usage-analytics-design.md](usage-analytics-design.md). ⚠️ 착수 전 대표님이 동의 방식(옵트인 vs 옵트아웃) 결정 필요. 사용자가 붙기 시작해야 볼 데이터가 생기므로 17 이후 |
 | 18 | 기관 대조 리그(지진) — USGS/EMSC/JMA 발표 시차·규모차 |
 | 19 | 예보 리그 주간판 — verify 아카이브 집계 |
 | 20 | IBTrACS 백필 + 태풍 유사경로 |
@@ -116,3 +117,4 @@
 | Met Office 약관 회신 | ⏳ 발송 완료, 대기 |
 | 테스트 행 삭제 (`service_interest` 2건 · `waitlist` 1건) | ⬜ 대시보드에서 |
 | 구글 OAuth 동의화면 "프로덕션" 전환 확인 | ⬜ 테스트 상태면 아무도 로그인 못 함 |
+| 사용 패턴 분석 동의 방식 (A 옵트인 / B 옵트아웃) | ⬜ 17b 착수 전 필수 — [usage-analytics-design.md](usage-analytics-design.md) §1 |

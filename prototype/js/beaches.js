@@ -33,6 +33,15 @@ const BATCH = 16;
    서퍼에게 이 둘은 다른 파도다 — 너울은 먼 바다에서 정리돼 온 것,
    풍파는 근처 바람이 방금 만든 잡파다. 합쳐진 wave_* 만 보면 구분이 안 된다.
    수온도 함께 받는다 (슈트를 입을지 정하는 값이다). */
+/* 조차가 이보다 작으면 물때를 **크게 말하지 않는다.**
+   ⚠️ 실측(2026-08-02, 48시간):
+        양양·강릉 0.27m · 포항 0.16m   ← 한국 서핑의 중심인데 가장 작다
+        부산 1.00m · 제주 남 2.21m
+        대천 5.53m · 인천 6.87m       ← 크지만 여기선 서핑을 안 한다
+      동해에서 물때를 크게 띄우면 **없는 중요성을 만드는 것**이 된다.
+      대신 제주·남해에서는 실제로 포인트가 열리고 닫히는 값이다. */
+const TIDE_MATTERS_M = 0.5;
+
 const MARINE_FIELDS = 'wave_height,wave_direction,wave_period,'
   + 'swell_wave_height,swell_wave_direction,swell_wave_period,'
   + 'wind_wave_height,wind_wave_period,sea_surface_temperature';
@@ -60,6 +69,42 @@ export function shortName(n) {
 /* 지역 라벨에서 괄호 안을 뗀다 — "동해 북부 (고성·속초·양양)" → "동해 북부" */
 export function shortRegion(r) {
   return String(r || '').replace(/\s*\(.*$/, '').trim();
+}
+
+/* 시간별 조위에서 **다음 만조·간조**와 조차를 낸다.
+   ⚠️ 예보 곡선의 봉우리·골을 찾는 것이지 조화분해가 아니다. 시간 간격이 1시간이라
+      실제 만조 시각과 최대 30분쯤 어긋날 수 있다 — 화면에 그렇게 적는다.
+   ⚠️ 못 내면 null. 지어내지 않는다. */
+function tideOf(hourly) {
+  const t = hourly?.time, h = hourly?.sea_level_height_msl;
+  if (!t?.length || !h?.length) return null;
+  const now = Date.now();
+  const pts = t.map((x, i) => ({ at: new Date(x).getTime(), v: h[i] }))
+    .filter(x => x.v != null && Number.isFinite(x.at));
+  if (pts.length < 6) return null;
+
+  const vals = pts.map(x => x.v);
+  const range = Math.max(...vals) - Math.min(...vals);
+
+  // 앞으로 오는 봉우리(만조)·골(간조)
+  const next = [];
+  for (let i = 1; i < pts.length - 1; i++) {
+    if (pts[i].at < now) continue;
+    const a = pts[i - 1].v, b = pts[i].v, c = pts[i + 1].v;
+    if (b >= a && b >= c) next.push({ kind: 'high', at: pts[i].at, v: b });
+    else if (b <= a && b <= c) next.push({ kind: 'low', at: pts[i].at, v: b });
+    if (next.length >= 4) break;
+  }
+  const cur = pts.reduce((best, x) =>
+    Math.abs(x.at - now) < Math.abs(best.at - now) ? x : best, pts[0]);
+  return {
+    rangeM: Math.round(range * 100) / 100,
+    matters: range >= TIDE_MATTERS_M,
+    nowM: Math.round(cur.v * 100) / 100,
+    next: next.slice(0, 2),
+    // 지금 물이 드는 중인가 나는 중인가
+    rising: next.length ? next[0].kind === 'high' : null,
+  };
 }
 
 export const beaches = {
@@ -122,6 +167,9 @@ export const beaches = {
         latitude: pts.map(p => p[0].toFixed(3)).join(','),
         longitude: pts.map(p => p[1].toFixed(3)).join(','),
         current: MARINE_FIELDS,
+        // 조위는 시간별로 받아야 만조·간조를 낼 수 있다 (현재값 하나로는 못 낸다)
+        hourly: 'sea_level_height_msl',
+        forecast_days: '2',
         timezone: 'auto',
       });
       try {
@@ -141,6 +189,7 @@ export const beaches = {
             windH: c.wind_wave_height, windPeriod: c.wind_wave_period,
             sst: c.sea_surface_temperature,
             at: c.time,
+            tide: tideOf(row.hourly),
           });
         });
       } catch (e) {                                        // noqa

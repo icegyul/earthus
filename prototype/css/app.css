@@ -1529,3 +1529,19 @@ body.is-ambient #windLegend.on{ opacity:0; }
   .sf-cell{ padding:9px 8px }
   .sf-cell .n{ font-size:20px }
 }
+
+/* 물때 — 조차가 클 때만 눈에 띄게. 작으면 한 줄로 조용히.
+   ⚠️ 동해 조차는 27cm 다. 거기서 만조·간조를 크게 적으면 없는 중요성을 만든다. */
+.sf-tide{
+  margin:0 0 10px; font-size:13px; line-height:1.6; color:var(--fog);
+  border-left:2px solid rgba(63,199,192,.34); padding-left:10px;
+}
+.sf-tide b{ color:var(--paper); font-weight:600 }
+.sf-tide.small{ border-left-color:var(--line); color:var(--dim); font-size:12px }
+.sf-tide.small b{ color:var(--fog); font-weight:500 }
+
+/* 지역 고르기 줄 — 지도를 옮기지 않고도 다른 바다를 볼 수 있게 */
+.mt-tabs.regions{ margin:-4px 0 10px; gap:5px }
+.mt-tab.sm{ font-size:12px; padding:4px 10px; opacity:.85 }
+.mt-tab.sm.on{ opacity:1 }
+.sf-loading{ padding:6px 2px 0 }

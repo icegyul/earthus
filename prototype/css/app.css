@@ -1545,3 +1545,40 @@ body.is-ambient #windLegend.on{ opacity:0; }
 .mt-tab.sm{ font-size:12px; padding:4px 10px; opacity:.85 }
 .mt-tab.sm.on{ opacity:1 }
 .sf-loading{ padding:6px 2px 0 }
+
+/* ── 태풍 경로 범례 ──
+   받은 질문: "그리고 흰색 선은 뭐야?"
+   ⚠️⚠️ 만든 사람이 자기 화면에서 못 알아봤다 = 아무도 못 알아본다.
+      과거 사례를 흐리게 깐 건 "예보로 읽히면 안 되니까"였는데,
+      흐리게 하는 것은 **뜻을 지우기만 하고 알려주지는 않는다.**
+   ⚠️ 오른쪽 아래는 메뉴 손잡이(#menuTab)가 있고, 아래 가운데는 바람 범례,
+      왼쪽 아래는 출처 표기(#srcNote)다. 그래서 **왼쪽 위**에 둔다.
+      다만 왼쪽 위에는 시각·지역 표시가 있으므로 그 아래로 내린다. */
+#tcLegend{
+  position:fixed; z-index:11; pointer-events:none;
+  left:12px; top:max(96px, calc(env(safe-area-inset-top) + 84px));
+  max-width:min(62vw, 300px);
+  display:none; flex-direction:column; gap:5px;
+  padding:9px 11px; border-radius:11px;
+  background:rgba(10,14,20,.62);
+  -webkit-backdrop-filter:blur(9px); backdrop-filter:blur(9px);
+  border:1px solid rgba(255,255,255,.08);
+  font-size:10.5px; line-height:1.35;
+  text-shadow:0 1px 3px rgba(0,0,0,.7);
+}
+#tcLegend.on{ display:flex }
+.tcl-row{ display:flex; align-items:baseline; gap:7px; flex-wrap:wrap }
+.tcl-row i{
+  flex:none; width:15px; height:2.5px; border-radius:2px;
+  transform:translateY(-3px);
+}
+/* 점선 항목은 실제로 점선으로 보여준다 — 지도의 그 선과 같은 모양이어야 한다 */
+.tcl-row i.dash{
+  background-image:none!important;
+  height:0; border-top:2.5px dashed currentColor; border-radius:0;
+}
+.tcl-row b{ font-weight:600; color:rgba(255,255,255,.9) }
+.tcl-row span{ color:rgba(255,255,255,.5); font-size:10px }
+@media (max-width:520px){
+  #tcLegend{ max-width:74vw; font-size:10px; padding:8px 10px }
+}

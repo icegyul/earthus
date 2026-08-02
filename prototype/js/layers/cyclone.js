@@ -113,6 +113,138 @@ const official = {
   },
 };
 
+/* 유럽중기예보센터(ECMWF) 진로.
+   받은 지적: "유럽 기상청도 예보 될 텐데??" — 맞다. 같은 경로에 BUFR 로 나온다.
+
+   ⚠️⚠️ **기상청·JMA 와 같은 것이 아니다.** 저쪽은 사람이 검토해 발표한 공식 통보문이고
+      이것은 모델이 계산한 원자료다. 나란히 그리되 **모델이라고 밝히고**, 선도 점선 중에서
+      가장 성기게(점) 그린다. 같은 굵기·같은 모양으로 그리면 "유럽 기상청 공식 예보"로
+      읽히는데 그건 사실이 아니다.
+   ⚠️ ecmwf-ingest 가 이름 없는 가상 저기압(70W·71A…)을 이미 걸러 낸다. 실측 25개 중 22개가
+      그것이었다 — 걸러내지 않으면 있지도 않은 태풍이 화면에 뜬다. */
+const ecmwfTc = {
+  _by: new Map(),
+  meta: null,
+  async load() {
+    try {
+      const r = await fetchT(`${API.EVENTS}/typhoon-ecmwf.json`, { cache: 'no-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json();
+      this._by.clear();
+      this.meta = { run: j.run, note: j.note, at: j.generated, capH: j.capH,
+                    source: j.source, url: j.sourceUrl, license: j.license };
+      (j.storms || []).forEach(s => {
+        if (s.name) this._by.set(String(s.name).toUpperCase(), s);
+      });
+    } catch (e) {
+      console.warn('[ECMWF 태풍] 못 받음 —', e.message);
+    }
+  },
+  /** official 과 같은 모양({agency, steps})으로 바꿔 돌려준다 — 그리는 쪽이 한 갈래면 된다 */
+  get(name) {
+    const key = String(name || '').toUpperCase().replace(/-\d+$/, '');
+    const s = this._by.get(key);
+    if (!s) return null;
+    return {
+      agency: 'ECMWF', agencyKo: '유럽중기예보센터', kind: 'model',
+      issue: this.meta?.at, run: this.meta?.run,
+      modelHorizonH: s.modelHorizonH, shownH: s.shownH,
+      steps: (s.steps || []).map(p => ({ ...p, validUtc: null })),
+    };
+  },
+};
+
+/* 예보 시각을 사람이 읽는 말로.
+   받은 지시: "시간 말고 예상 시간으로 해줘 8월3일 am9 이렇게나 더 좋은 방법으로"
+   ⚠️ "+48h" 는 **읽는 사람이 암산을 해야** 하는 값이다. 그것도 지금이 몇 시인지 알아야 한다.
+      기상청 통보문도 "08월 04일 09시"로 적는다 — 그 방식이 맞다.
+   ⚠️ 기상청 API 는 "202608021800"(UTC) 처럼 구분자 없이 준다. Date() 가 이 꼴을 못 읽어
+      Invalid Date 가 되고, 그러면 라벨이 통째로 사라진다. */
+function stepDate(x, issuedAt) {
+  const raw = x.validKst || x.validUtc;
+  if (raw) {
+    const m = /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})$/.exec(String(raw));
+    const d = m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]))
+                : new Date(raw);
+    if (!isNaN(d.getTime())) return d;
+  }
+  // ECMWF 는 회차 기준 +h 만 준다 — 발표 시각에 더한다
+  if (issuedAt && x.h != null) {
+    const b = new Date(issuedAt);
+    if (!isNaN(b.getTime())) return new Date(b.getTime() + x.h * 3_600_000);
+  }
+  return null;
+}
+
+/* ⚠️ 보는 사람의 시간대로 적는다. 태풍이 일본 앞바다에 있어도 "내가 몇 시에 대비하나"가
+      알고 싶은 것이므로 현지 시각이 맞다. */
+function stepLabel(d, ko) {
+  const h = d.getHours();
+  if (ko) {
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return `${d.getMonth() + 1}/${d.getDate()}\n${h < 12 ? '오전' : '오후'} ${h12}시`;
+  }
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+               'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${MON[d.getMonth()]} ${d.getDate()}\n${h12}${h < 12 ? 'AM' : 'PM'}`;
+}
+
+/* 중심에서 방위별 반경(km)을 받아 고리 좌표를 만든다.
+   ⚠️ 강풍역은 **방위마다 다르다** (실측: 북동 500km · 남서 390km). 하나로 평균 내면
+      실제로 부는 쪽을 줄이고 안 부는 쪽을 늘린다 — 위험한 쪽을 작게 그리게 된다. */
+function ringDegrees(lat, lon, radiusKmAt, stepDeg = 6) {
+  const R = 6371, r = Math.PI / 180;
+  const out = [];
+  for (let b = 0; b <= 360; b += stepDeg) {
+    const km = radiusKmAt(b % 360);
+    if (!(km > 0)) continue;
+    const d = km / R;
+    const la = Math.asin(Math.sin(lat * r) * Math.cos(d)
+      + Math.cos(lat * r) * Math.sin(d) * Math.cos(b * r));
+    const lo = lon * r + Math.atan2(
+      Math.sin(b * r) * Math.sin(d) * Math.cos(lat * r),
+      Math.cos(d) - Math.sin(lat * r) * Math.sin(la));
+    out.push(lo / r, la / r);
+  }
+  return out;
+}
+
+/* 지면에서 띄우는 높이(m).
+   ⚠️⚠️ **0 으로 두면 선이 통째로 안 보인다.** 지구 표면과 정확히 같은 자리라
+      깊이 검사에서 지면이 이기고, 특히 **멀리서 볼수록** 확실히 진다
+      (깊이 버퍼 정밀도가 떨어져서다. 실측: 3,600km 상공에서 예보선 3개가 전부 사라졌다).
+   ⚠️ 이 파일의 나선팔(ARM_H)이 이미 같은 이유로 2km 를 띄우고 있었다 —
+      **해법이 옆에 있었는데 새로 그린 선들에는 적용하지 않았다.**
+   ⚠️ 면(영향권)은 선보다 더 낮게 둔다. 같은 높이면 이번엔 면이 선을 가린다. */
+const LIFT_LINE_M = 6_000;
+const LIFT_AREA_M = 3_000;
+
+/** [lon,lat,...] → 띄운 높이의 Cartesian3 배열 */
+function lifted(flatLonLat, h = LIFT_LINE_M) {
+  const out = [];
+  for (let i = 0; i < flatLonLat.length; i += 2) out.push(flatLonLat[i], flatLonLat[i + 1], h);
+  return Cesium.Cartesian3.fromDegreesArrayHeights(out);
+}
+
+/** JMA 방위별 강풍역 → 방위각(0~360) 하나를 넣으면 반경(km)이 나오는 함수 */
+function radiusFn(areas) {
+  const list = (areas || []).filter(a => a.km > 0);
+  if (!list.length) return null;
+  const all = list.find(a => a.deg == null);
+  if (all || list.length === 1) return () => (all || list[0]).km;
+  // 방위가 있는 것들 — 각 방위에서 가장 가까운 쪽 값을 쓴다 (JMA 는 반원 두 개로 준다)
+  return (b) => {
+    let best = list[0], bd = 999;
+    list.forEach(a => {
+      let d = Math.abs(((a.deg - b + 540) % 360) - 180);
+      d = 180 - d;                       // 방위차가 작을수록 가깝다
+      if (d < bd) { bd = d; best = a; }
+    });
+    return best.km;
+  };
+}
+
 export const cyclones = {
   ds: null,
   list: [],          // { id, name, alert, kmh, countries, lat, lon, ... }
@@ -206,6 +338,8 @@ export const cyclones = {
        ⚠️ await 하되 실패는 무시한다(load 안에서 잡는다). 없으면 그 줄만 안 나온다. */
     await analog.load();
     await official.load();
+    /* ⚠️ ECMWF 는 실패해도 나머지가 그대로 돌아야 한다 — 셋 다 각자 try 안에서 끝난다 */
+    await ecmwfTc.load();
     const live = new Set(this.list.map(s => String(s.id)));
     const cutoff = Date.now() - RETAIN_H * 3600_000;
     this._hist.forEach((rec, id) => {
@@ -238,8 +372,25 @@ export const cyclones = {
     return this.list;
   },
 
+  /** 갱신으로 지워진 경로를 되돌린다 (draw 의 주석 참고) */
+  _restore(sel) {
+    if (!sel) return;
+    const s = this.list.find(x => String(x.id) === String(sel));
+    // ⚠️ 목록에서 빠진 태풍이면 되살리지 않는다 — 없는 것을 그리게 된다
+    if (s) this.showTrack(s);
+  },
+
   /** 현재 위치만 먼저 그린다. 경로는 선택했을 때 불러온다 (요청 절약) */
   draw() {
+    /* ⚠️⚠️ removeAll() 은 **펼쳐 놓은 경로까지** 지운다.
+       그런데 _selected 는 남아서, 다시 그리려 해도 showTrack() 이 맨 앞의
+       `if (this._selected === s.id) return;` 에 걸려 되돌아온다.
+       → 태풍 경로를 열어 둔 채 20분(REFRESH.cyclone)이 지나면 선이 통째로 사라지고
+         **다른 태풍을 눌렀다 돌아오기 전에는 다시 안 나온다.**
+       실제로 이 자리에서 걸렸다(검증 중 경로가 이유 없이 사라졌다).
+       → 지우기 전에 무엇이 열려 있었는지 기억했다가 다시 그린다. */
+    const sel = this._selected;
+    this._selected = null;
     this.ds.entities.removeAll();
     this._tracks = {};
 
@@ -402,6 +553,8 @@ export const cyclones = {
         _layer: 'cyclone',
       });
     });
+
+    this._restore(sel);
   },
 
   /** 선택 시 — 지나온 경로 + 예보 원뿔을 불러 그린다 */
@@ -416,74 +569,220 @@ export const cyclones = {
             · 공식 예보  — 굵은 실선 + 시점 표시. 기관마다 다른 색
             · 과거 사례  — 아주 얇고 흐린 다발. 배경처럼 깔린다
        ⚠️ 기관이 다르면 선도 따로 그린다. 평균 내지 않는다. */
+    /* ⚠️ 색만으로는 부족하다. 두 기관 예보가 거의 겹치면(오늘 기상청·JMA 가 그렇다)
+       나중에 그린 선이 앞 선을 통째로 덮어 **한 기관만 있는 것처럼 보인다.**
+       받은 지적: "노랑색과 초록색 기관 안 겹치게 해줘"
+       → 위치를 옮기면 예보를 틀리게 그리는 것이므로, **대시 무늬를 서로 어긋나게** 둔다.
+         한 선의 빈칸에서 다른 선이 드러나 둘 다 보인다. */
     const AG = {
-      KMA: { color: '#5ad1e8', ko: '기상청' },
-      JMA: { color: '#f2a65a', ko: '일본 기상청' },
-      NHC: { color: '#c9a7ff', ko: '미국 NHC' },
+      KMA:   { color: '#5ad1e8', ko: '기상청',          dash: 0b1111111100000000, len: 20 },
+      JMA:   { color: '#f2a65a', ko: '일본 기상청',      dash: 0b0000000011111111, len: 20 },
+      NHC:   { color: '#c9a7ff', ko: '미국 NHC',        dash: 0b1100110011001100, len: 16 },
+      /* ⚠️ ECMWF 만 **점**으로 그린다. 공식 통보문이 아니라 모델 원자료이기 때문이다.
+         선이 성길수록 "이건 계산 결과"라는 뜻으로 읽힌다. */
+      ECMWF: { color: '#ff7ab6', ko: '유럽중기예보센터', dash: 0b1010101010101010, len: 12,
+               model: true },
     };
     const off = official.get(s.name);
-    (off?.agencies || []).forEach((g, gi) => {
-      const pts = (g.steps || [])
-        .filter(x => x.lat != null && x.lon != null)
-        .map(x => [x.lon, x.lat]);
-      if (pts.length < 2) return;
-      const meta = AG[g.agency] || { color: '#8ee6c8', ko: g.agencyKo };
+    const eu = ecmwfTc.get(s.name);
+    const groups = [...(off?.agencies || []), ...(eu ? [eu] : [])];
+
+    groups.forEach((g, gi) => {
+      const steps = (g.steps || []).filter(x => x.lat != null && x.lon != null);
+      if (steps.length < 2) return;
+      const meta = AG[g.agency] || { color: '#8ee6c8', ko: g.agencyKo, dash: 255, len: 16 };
       const c = Cesium.Color.fromCssColorString(meta.color);
 
       made.push(this.ds.entities.add({
         id: `tc:${s.id}:fc:${g.agency}`,
         polyline: {
-          positions: Cesium.Cartesian3.fromDegreesArray(pts.flat()),
+          positions: lifted(steps.map(x => [x.lon, x.lat]).flat()),
           width: 2.6,
           /* ⚠️ 예보선은 **점선**이다. 실선으로 그리면 지나온 경로와 구분이 안 되고,
              "정해진 길"처럼 읽힌다. */
           material: new Cesium.PolylineDashMaterialProperty({
-            color: c.withAlpha(0.9), dashLength: 14,
+            color: c.withAlpha(0.92), dashLength: meta.len, dashPattern: meta.dash,
           }),
           arcType: Cesium.ArcType.GEODESIC, clampToGround: false,
         },
       }));
 
-      // 시점 표시 — 어느 기관의 몇 시간 뒤인지
-      (g.steps || []).forEach((x, i) => {
-        if (x.lat == null || !x.h) return;
+      /* ══ 영향권 ══════════════════════════════════════════════════
+         받은 지시: "보통 태풍 예보는 영향권으로 동그라미 연속으로 보여주니깐
+                     우리도 그렇게 표시해주고"
+         맞다. 기상청·JMA 통보문 그림이 정확히 그 꼴이다. 그리고 그 값이 이미 있었다 —
+         받아만 놓고 **그리지 않고 있었다.**
+
+         ⚠️⚠️ **실황과 예보를 같은 말로 부르면 안 된다.**
+           · 지금(h=0)  강풍역·폭풍역   = 지금 실제로 그만큼 불고 있는 범위
+           · 앞으로(h>0) 폭풍경계역     = 진로가 어긋날 가능성까지 더해 "닿을 수 있는" 범위
+             실측(돌핀): +12h 230km → +117h 440km. **태풍이 커지는 게 아니라
+             진로의 불확실성이 커지는 것**이다. 이걸 "폭풍반경"이라 적으면 거짓이 된다.
+         ⚠️ 채운 원을 겹쳐 그리면 통보문의 그 길쭉한 영역이 저절로 만들어진다. */
+      steps.forEach((x, i) => {
+        const zone = radiusFn(x.stormArea);
+        if (zone) {
+          made.push(this.ds.entities.add({
+            id: `tc:${s.id}:fc:${g.agency}:z${i}`,
+            polygon: {
+              hierarchy: new Cesium.PolygonHierarchy(
+                Cesium.Cartesian3.fromDegreesArray(ringDegrees(x.lat, x.lon, zone))),
+              height: LIFT_AREA_M,
+              material: c.withAlpha(x.h ? 0.055 : 0.14),   // 실황은 조금 더 진하게
+              outline: false, arcType: Cesium.ArcType.GEODESIC,
+            },
+          }));
+        }
+        // 강풍역(15m/s) — 실황에만 있고 **방위마다 다르다**
+        const gale = radiusFn(x.galeArea);
+        if (gale) {
+          made.push(this.ds.entities.add({
+            id: `tc:${s.id}:fc:${g.agency}:g${i}`,
+            polygon: {
+              hierarchy: new Cesium.PolygonHierarchy(
+                Cesium.Cartesian3.fromDegreesArray(ringDegrees(x.lat, x.lon, gale))),
+              height: LIFT_AREA_M,
+              material: c.withAlpha(0.06), outline: false,
+              arcType: Cesium.ArcType.GEODESIC,
+            },
+          }));
+        }
+        // 예보원 — 70% 확률로 중심이 이 안에 든다. ⚠️ 태풍 크기가 아니다.
+        if (x.circleKm > 0) {
+          made.push(this.ds.entities.add({
+            id: `tc:${s.id}:fc:${g.agency}:c${i}`,
+            polyline: {
+              positions: lifted(ringDegrees(x.lat, x.lon, () => x.circleKm, 8)),
+              width: 1.2,
+              material: new Cesium.PolylineDashMaterialProperty({
+                color: c.withAlpha(0.42), dashLength: 8,
+              }),
+              arcType: Cesium.ArcType.GEODESIC, clampToGround: false,
+            },
+          }));
+        }
+      });
+
+      /* ══ 시점 표시 ══════════════════════════════════════════════
+         ⚠️ 예전에는 **모든 스텝에 "+12h"** 를 찍었다. 두 가지가 잘못이었다.
+           ① 읽는 사람이 "지금 몇 시지?" 부터 암산해야 한다. 기상청 통보문은
+              "08월 04일 09시"로 적는다 — 그 방식이 맞다.
+           ② 기관 3~4곳 × 스텝 7~8개 = 라벨 30개가 한 자리에 뭉쳤다.
+         → **날짜가 바뀌는 첫 지점**과 **마지막 지점**에만 적는다. 기관당 4~6개가 된다. */
+      const issued = g.issue || null;
+      let lastDay = null;
+      const marks = new Set();
+      steps.forEach((x, i) => {
+        if (!x.h) return;                                  // 지금 위치는 태풍 표시가 이미 있다
+        const d = stepDate(x, issued);
+        if (!d) return;
+        const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+        if (key !== lastDay) { marks.add(i); lastDay = key; }
+      });
+      marks.add(steps.length - 1);                          // 예보가 어디서 끝나는지
+
+      steps.forEach((x, i) => {
+        if (!x.h) return;
+        const d = stepDate(x, issued);
+        const show = marks.has(i) && d;
+        /* ⚠️ 기관마다 라벨을 위/아래로 번갈아 놓는다. 같은 쪽에 두면 예보가 겹칠 때
+           글자끼리 포개진다 — 오늘 기상청·JMA 가 실제로 그랬다. */
+        const dy = (gi % 2 ? 1 : -1) * (18 + Math.floor(gi / 2) * 34);
         made.push(this.ds.entities.add({
           id: `tc:${s.id}:fc:${g.agency}:p${i}`,
           position: Cesium.Cartesian3.fromDegrees(x.lon, x.lat),
           point: {
-            pixelSize: 5, color: c, outlineColor: Cesium.Color.BLACK.withAlpha(0.5),
+            pixelSize: show ? 5.5 : 3.5, color: c,
+            outlineColor: Cesium.Color.BLACK.withAlpha(0.5),
             outlineWidth: 1, disableDepthTestDistance: 900_000,
           },
-          label: {
-            text: `+${x.h}h`,
-            font: '400 9px ui-monospace, monospace',
-            fillColor: c.withAlpha(0.9),
-            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-            outlineColor: Cesium.Color.BLACK.withAlpha(0.7), outlineWidth: 2,
-            pixelOffset: new Cesium.Cartesian2(0, -12 - gi * 11),
-            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 12_000_000),
-            disableDepthTestDistance: 900_000,
-          },
+          ...(show ? {
+            label: {
+              text: stepLabel(d, ko),
+              font: '600 10px -apple-system, sans-serif',
+              fillColor: Cesium.Color.WHITE.withAlpha(0.95),
+              /* 배경을 깔아 글자를 알갱이로 만든다 — 겹쳐도 어느 쪽 것인지 보인다 */
+              showBackground: true,
+              backgroundColor: c.withAlpha(0.34),
+              backgroundPadding: new Cesium.Cartesian2(6, 4),
+              style: Cesium.LabelStyle.FILL,
+              verticalOrigin: dy < 0 ? Cesium.VerticalOrigin.BOTTOM
+                                     : Cesium.VerticalOrigin.TOP,
+              pixelOffset: new Cesium.Cartesian2(0, dy),
+              distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 12_000_000),
+              disableDepthTestDistance: 900_000,
+            },
+          } : {}),
         }));
       });
 
       // 기관 이름은 선 끝에 한 번만
-      const last = pts[pts.length - 1];
+      const last = steps[steps.length - 1];
       made.push(this.ds.entities.add({
         id: `tc:${s.id}:fc:${g.agency}:name`,
-        position: Cesium.Cartesian3.fromDegrees(last[0], last[1]),
+        position: Cesium.Cartesian3.fromDegrees(last.lon, last.lat),
         label: {
-          text: ko ? meta.ko : g.agency,
+          /* ⚠️ ECMWF 는 이름 옆에 "모델"을 붙인다. 안 붙이면 공식 통보문으로 읽힌다. */
+          text: (ko ? meta.ko : g.agency) + (meta.model ? (ko ? ' 모델' : ' model') : ''),
           font: '600 11px -apple-system, sans-serif',
           fillColor: c, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-          outlineColor: Cesium.Color.BLACK.withAlpha(0.8), outlineWidth: 2.5,
-          pixelOffset: new Cesium.Cartesian2(0, 14),
+          outlineColor: Cesium.Color.BLACK.withAlpha(0.85), outlineWidth: 2.5,
+          verticalOrigin: gi % 2 ? Cesium.VerticalOrigin.TOP : Cesium.VerticalOrigin.BOTTOM,
+          pixelOffset: new Cesium.Cartesian2(0, gi % 2 ? 10 : -10),
           distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 14_000_000),
           disableDepthTestDistance: 900_000,
         },
       }));
     });
 
+    this._legend(groups, AG, ko, !!analog.get(s.id, s.name)?.sample?.length);
+  },
+
+  /* ══ 범례 ═════════════════════════════════════════════════════════
+     받은 질문: "그리고 흰색 선은 뭐야?"
+     ⚠️⚠️ **만든 사람이 자기 화면을 보고 못 알아봤다.** 그럼 아무도 못 알아본다.
+        과거 유사 사례를 흐리게 깐 것은 "예보로 읽히면 안 되니까"였는데,
+        흐리게 하는 것만으로는 **뜻을 지우기만 하고 알려주지는 못했다.**
+        선을 그리면 그 선이 무엇인지도 같이 적어야 한다. */
+  _legend(groups, AG, ko, hasAnalog) {
+    let box = document.getElementById('tcLegend');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'tcLegend';
+      document.body.appendChild(box);
+    }
+    const row = (color, dashed, label, note) =>
+      /* ⚠️ color 도 같이 준다 — 점선 항목은 border-top:dashed currentColor 로 그리는데,
+         background 만 주면 글자색(흰색)으로 나와 어느 기관인지 알 수 없게 된다. */
+      `<div class="tcl-row"><i style="color:${color};background:${color}"
+        class="${dashed ? 'dash' : ''}"></i><b>${label}</b>${
+        note ? `<span>${note}</span>` : ''}</div>`;
+
+    const rows = groups.map(g => {
+      const m = AG[g.agency] || { color: '#8ee6c8', ko: g.agencyKo };
+      const horizon = (g.steps || []).reduce((a, x) => Math.max(a, x.h || 0), 0);
+      const name = (ko ? m.ko : g.agency) + (m.model ? (ko ? ' 모델' : ' model') : '');
+      const note = m.model
+        ? (ko ? `수치모델 · ${horizon}시간` : `model output · ${horizon}h`)
+        : (ko ? `공식 예보 · ${horizon}시간` : `official · ${horizon}h`);
+      return row(m.color, true, name, note);
+    });
+    if (groups.some(g => (g.steps || []).some(x => x.circleKm > 0))) {
+      rows.push(row('rgba(255,255,255,.55)', true,
+        ko ? '옅은 동그라미' : 'Thin circles',
+        ko ? '70% 확률로 중심이 드는 범위' : '70% probability circle'));
+      rows.push(row('rgba(255,255,255,.22)', false,
+        ko ? '넓게 칠한 띠' : 'Shaded band',
+        ko ? '폭풍이 닿을 수 있는 범위' : 'storm watch area'));
+    }
+    if (hasAnalog) {
+      rows.push(row('rgba(255,255,255,.55)', false,
+        ko ? '흰 실선 다발' : 'Faint white lines',
+        ko ? '과거 비슷했던 태풍들이 간 길 — 예보 아님'
+           : 'where past similar storms went — not a forecast'));
+    }
+    box.innerHTML = rows.join('');
+    box.classList.toggle('on', rows.length > 0);
   },
 
   /** 과거 유사 사례 다발. ⚠️ 예보가 아니다 — 얇고 흐리게만. */
@@ -495,7 +794,8 @@ export const cyclones = {
       made.push(this.ds.entities.add({
         id: `tc:${s.id}:an${i}`,
         polyline: {
-          positions: Cesium.Cartesian3.fromDegreesArray(path.flat()),
+          // ⚠️ 예보선보다 **낮게** 띄운다 — 배경으로 깔려야 한다
+          positions: lifted(path.flat(), LIFT_AREA_M),
           width: 1,
           material: Cesium.Color.WHITE.withAlpha(0.16),
           arcType: Cesium.ArcType.GEODESIC, clampToGround: false,
@@ -603,6 +903,8 @@ export const cyclones = {
     });
     this._tracks = {};
     this._selected = null;
+    // ⚠️ 선을 지웠으면 범례도 지운다. 남으면 없는 선을 설명하게 된다.
+    document.getElementById('tcLegend')?.classList.remove('on');
   },
 
   /** 정보 시트용 */

@@ -84,6 +84,53 @@ def num(v):
         return None
 
 
+AREA_DIR_KO = {"北": "북", "北東": "북동", "東": "동", "南東": "남동",
+               "南": "남", "南西": "남서", "西": "서", "北西": "북서",
+               "全域": None}
+# 방위 → 각도(°). 비대칭 강풍역을 그리려면 어느 쪽인지 알아야 한다.
+AREA_DIR_DEG = {"北": 0, "北東": 45, "東": 90, "南東": 135,
+                "南": 180, "南西": 225, "西": 270, "北西": 315}
+
+
+def _areas(p):
+    """강풍역·폭풍역/폭풍경계역 반경.
+
+    ⚠️⚠️ **실황과 예보는 뜻이 전혀 다르다. 같은 말로 부르면 안 된다.**
+      · 실황(h=0)  暴風域 185km  = 지금 실제로 25m/s 이상이 부는 범위
+      · 예보(h>0)  暴風警戒域    = 진로가 어긋날 가능성까지 더해 "폭풍이 닿을 수 있는" 범위
+        실측(2026-08-02 돌핀): +12h 230km → +117h 440km 로 계속 커진다.
+        ⚠️ 태풍이 커지는 게 아니라 **진로의 불확실성이 커지는 것**이다.
+           이걸 "폭풍반경"이라고 적으면 "태풍이 2배로 자란다"는 거짓이 된다.
+
+    ⚠️ 강풍역은 **방위별로 다르다** (실측: 북동 500km · 남서 390km).
+       하나로 평균 내면 실제로 부는 쪽을 줄이고 안 부는 쪽을 늘리게 된다.
+    """
+    out = {}
+    gale = p.get("galeWarning") or []
+    storm = p.get("stormWarning") or []
+
+    def one(lst):
+        r = []
+        for a in lst:
+            area = a.get("area")
+            jp = area if isinstance(area, str) else (area or {}).get("jp", "")
+            km = num((a.get("range") or {}).get("km"))
+            if km is None:
+                continue
+            r.append({"km": km, "dirJp": jp or None,
+                      "dirKo": AREA_DIR_KO.get(jp), "deg": AREA_DIR_DEG.get(jp)})
+        return r or None
+
+    g, s = one(gale), one(storm)
+    if g:
+        out["galeArea"] = g           # 강풍역(15m/s 이상) — 실황에만 나온다
+    if s:
+        # 실황이면 실제 폭풍역, 예보면 폭풍경계역. 부르는 이름을 여기서 갈라 둔다.
+        out["stormArea"] = s
+        out["stormIsWatch"] = bool(p.get("advancedHours"))
+    return out
+
+
 # ── 일본 기상청 ────────────────────────────────────────────────────
 def from_jma():
     out = []
@@ -133,6 +180,7 @@ def from_jma():
                 "speedKmh": num((p.get("speed") or {}).get("km/h")),
                 "place": p.get("location"),
                 "circleKm": num((p.get("probabilityCircleRadius") or {}).get("km")),
+                **_areas(p),
             })
         steps.sort(key=lambda x: (x["h"] is None, x["h"] or 0))
         if steps:

@@ -159,6 +159,20 @@ export const narrative = {
     return { station: best, km: Math.round(bd), doy: this._doy.get(best.s) };
   },
 
+  /** 오늘 한반도 상태 판정 — 어제와 달라졌는지.
+   *  ⚠️⚠️ 원고의 제목이 **"이중 열돔에서 벗어난"** 이다. 값이 아니라 **바뀜**이 기사다.
+   *  ⚠️ 화면에서 그때그때 계산하면 오늘 값밖에 없어 "벗어났다"를 영영 못 쓴다 —
+   *     air-state Lambda 가 매일 판정을 남기고, 여기서는 읽기만 한다.
+   *  ⚠️ 하루 튐으로 쓰지 않는다. Lambda 가 **연속 2일** 확인한 것(publish)만 쓴다. */
+  async state() {
+    if (this._state !== undefined) return this._state;
+    try {
+      const r = await fetchT(`${API.WIND}/air-state.json`, { cache: 'no-cache' });
+      this._state = r.ok ? await r.json() : null;
+    } catch (_) { this._state = null; }
+    return this._state;
+  },
+
   /** 오늘 상층·수증기·불안정 — 원고의 "습도 폭탄 / 물폭탄의 재료" 자리 */
   async air(lat, lon) {
     const q = new URLSearchParams({
@@ -180,8 +194,8 @@ export const narrative = {
      돌려주는 것: { level, head, num, why, rows, sources, caveats }
      ⚠️ 못 내는 항목은 **빼고 낸다.** 추정으로 메우지 않는다. */
   async build(lat, lon, ko = true) {
-    const [nrm, air] = await Promise.all([
-      this.normalsAt(lat, lon), this.air(lat, lon),
+    const [nrm, air, st] = await Promise.all([
+      this.normalsAt(lat, lon), this.air(lat, lon), this.state(),
     ]);
     const c = air?.current;
     if (!c) return null;
@@ -281,6 +295,30 @@ export const narrative = {
                 + '⚠️ 이건 지금 상태이지 비가 온다는 예보가 아닙니다.' : '' });
     }
 
+    /* ── 상태 전이 — ⚠️⚠️ **이게 가장 앞선다.** ────────────────
+       원고의 제목이 "벗어난"이다. 오늘 값이 어떤가보다 **어제와 달라졌는가**가 기사다.
+       ⚠️ Lambda 가 연속 2일 확인한 것(publish)만 쓴다. 하루 튐으로 쓰지 않는다. */
+    const pub = st?.publish;
+    if (pub && (pub.left?.length || pub.entered?.length)) {
+      const L = { 초열대야: '초열대야', 열대야: '열대야', 고온: '고온',
+                  저온: '저온', 다습: '습한 상태', 불안정: '대기 불안정' };
+      if (pub.left?.length) {
+        const w = pub.left.map(x => L[x] || x).join('·');
+        cands.push({ w: 999, level: 'event',
+          head: ko ? `한반도가 **${w}에서 벗어났습니다**` : `Left ${w}`,
+          num: ko ? `${st.date} 판정 · 어제와 비교` : st.date,
+          why: ko ? '남·중·북 세 곳 중 둘 이상에서 그 상태가 사라졌고, '
+                  + '이틀 연속 확인해 알려드립니다. ⚠️ 하루 변덕으로는 쓰지 않습니다.' : '' });
+      } else {
+        const w = pub.entered.map(x => L[x] || x).join('·');
+        cands.push({ w: 998, level: 'event',
+          head: ko ? `한반도가 **${w}에 들어섰습니다**` : `Entered ${w}`,
+          num: ko ? `${st.date} 판정 · 어제와 비교` : st.date,
+          why: ko ? '남·중·북 세 곳 중 둘 이상에서 그 상태가 나타났고, '
+                  + '이틀 연속 확인해 알려드립니다.' : '' });
+      }
+    }
+
     cands.sort((a, b) => b.w - a.w);
     let pick = cands[0];
 
@@ -307,6 +345,11 @@ export const narrative = {
     }
     sources.push(ko ? '지금 값 — Open-Meteo (GFS/ECMWF)' : 'Now — Open-Meteo');
     sources.push(ko ? '열대야·폭염 기준 — 기상청 정의' : 'Thresholds — KMA definitions');
+    if (st?.national?.length) {
+      sources.push(ko
+        ? `오늘 한반도 상태 — ${st.national.join(' · ')} (${st.date}, 남·중·북 3점 중 2점 이상)`
+        : `Today: ${st.national.join(', ')}`);
+    }
 
     const caveats = [];
     if (nrm?.tooFar) {

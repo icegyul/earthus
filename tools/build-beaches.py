@@ -165,6 +165,20 @@ REGIONS = [
 
 DIR8 = ['북', '북동', '동', '남동', '남', '남서', '서', '북서']
 
+# ⚠️⚠️ 사람이 확인해 준 이름. **재생성해도 살아남아야 한다** —
+#    OSM 에는 로마자만 있는 곳이 있어서, 이 표가 없으면 다음 실행 때
+#    'Jiksan-Beach' 가 그대로 돌아온다. 좌표(소수 3자리)로 짚는다.
+#    데이터 파일(prototype/data/beaches.json)에도 같은 값이 들어 있다 —
+#    한쪽만 고치면 어긋난다.
+NAME_FIX = {
+    "36.733,129.476": "직산해변",      # 경북 울진 (OSM: Jiksan-Beach)
+}
+
+
+def fixed_name(name, lat, lon):
+    k = f"{round(lat, 3)},{round(lon, 3)}"
+    return NAME_FIX.get(k, name)
+
 
 def main():
     """⚠️ 지역을 인자로 받는다. 전국을 한 번에 돌리면 Overpass 대기 때문에
@@ -209,7 +223,7 @@ def main():
             lat, lon = c.get("lat"), c.get("lon")
             if lat is None:
                 continue
-            name = t["name"].strip()
+            name = fixed_name(t["name"].strip(), lat, lon)
             key = f"{name}@{round(lat,3)},{round(lon,3)}"
             if key in seen:
                 continue

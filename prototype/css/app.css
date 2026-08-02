@@ -1758,3 +1758,7 @@ body.is-ambient #windLegend.on{ opacity:0; }
                  color:#ffd3d3 }
 .pg-note{ margin:9px 0 0; font-size:11px; color:var(--dim); line-height:1.65 }
 .pg-note b{ color:var(--fog); font-weight:600 }
+
+/* 산 시트 — 등산로를 그리면 낮아진다.
+   ⚠️ 안 낮추면 길을 그려 놓고 시트 뒤에 가려 안 보인다(서핑·낚시에서 겪은 것). */
+#mtSheet.peek{ max-height:min(44vh, 380px) }

@@ -78,16 +78,50 @@ export const trails = {
     this._shown = null;
   },
 
+  /* 색인 — **이름이 아니라 좌표로 찾는다.**
+     ⚠️⚠️ 기상청 산 목록은 바뀐다. 실측(2026-08-03): 하루 사이에 78곳 → 84곳이 되고
+        "지리산(노고단대피소)"가 "지리산(정상)"으로 바뀌어, 받아 둔 39개 중
+        **20개만 이름이 맞았다.** 이름으로 찾으면 자료가 있는데도 없다고 나온다. */
+  async index() {
+    if (this._idx) return this._idx;
+    try {
+      const r = await fetchT('data/trails/index.json', { cache: 'force-cache' });
+      this._idx = r.ok ? await r.json() : { peaks: [], maxKm: 5 };
+    } catch (_) { this._idx = { peaks: [], maxKm: 5 }; }
+    return this._idx;
+  },
+
   /** 그 산의 등산로 자료. 없으면 null (자료가 없는 산도 있다 — 지어내지 않는다) */
-  async load(peakName) {
-    const key = String(peakName || '');
+  async load(peak) {
+    const name = typeof peak === 'string' ? peak : peak?.name;
+    const key = String(name || '');
     if (this._cache.has(key)) return this._cache.get(key);
+
+    const idx = await this.index();
+    let file = null;
+    if (peak?.lat != null && peak?.lon != null) {
+      /* ⚠️ 5km 를 넘으면 다른 산으로 본다. 지리산 노고단과 천왕봉은 25km 떨어져
+         등산로가 완전히 다르다 — 가깝다고 아무거나 붙이면 엉뚱한 길을 그린다. */
+      const max = idx.maxKm ?? 5;
+      let best = null, bd = Infinity;
+      (idx.peaks || []).forEach(p => {
+        const d = km(peak.lat, peak.lon, p.la, p.lo);
+        if (d < bd) { bd = d; best = p; }
+      });
+      if (best && bd <= max) file = best.f;
+    }
+    if (!file) {
+      const hit = (idx.peaks || []).find(p => p.n === key);
+      if (hit) file = hit.f;
+    }
+    if (!file) { this._cache.set(key, null); return null; }
+
     let doc = null;
     try {
-      const r = await fetchT(`data/trails/${encodeURIComponent(key)}.json`,
+      const r = await fetchT(`data/trails/${encodeURIComponent(file)}`,
                              { cache: 'force-cache' });
       if (r.ok) doc = await r.json();
-    } catch (_) { /* 없는 산은 조용히 넘어간다 */ }
+    } catch (_) { /* 없으면 조용히 넘어간다 */ }
     this._cache.set(key, doc);
     return doc;
   },
@@ -122,7 +156,7 @@ export const trails = {
     const name = peak?.name;
     if (!name) return null;
     if (this._shown === name) return this._cache.get(name);
-    const doc = await this.load(name);
+    const doc = await this.load(peak);
     this.clear();
     this._shown = name;
     if (!doc?.ways?.length) return doc;

@@ -43,6 +43,7 @@ export const mountainPanel = {
             첫 화면에서 그걸 받게 된다 (trails.js 머리말 참고). */
       const tr = e.target.closest('[data-mt-trail]');
       if (tr) { this.showTrail(tr.dataset.mtTrail); return; }
+      if (e.target.closest('[data-mt-grow]')) { this.toggleHeight(); return; }
     });
     return this;
   },
@@ -52,7 +53,10 @@ export const mountainPanel = {
     const body = $('#mtBody');
     const ko = i18n.lang === 'ko';
     if (!this._ready) {
-      body.innerHTML = `<p class="mt-load">${ko ? '산 자료를 받는 중…' : 'Loading…'}</p>`;
+      const peek = $('#mtSheet')?.classList.contains('peek');
+    body.innerHTML = `
+      ${peek ? `<button class="sf-grow" data-mt-grow>${
+        ko ? '목록 크게 ▲' : 'Expand ▲'}</button>` : ''}<p class="mt-load">${ko ? '산 자료를 받는 중…' : 'Loading…'}</p>`;
     }
     try {
       await mountain.build();
@@ -65,8 +69,14 @@ export const mountainPanel = {
   },
 
   close() {
-    $('#mtSheet')?.classList.remove('up');
+    $('#mtSheet')?.classList.remove('up', 'peek');
     trails.clear();
+  },
+
+  /** 시트를 낮췄다 키웠다 — 지도를 보려면 낮춰야 한다 */
+  toggleHeight() {
+    $('#mtSheet')?.classList.toggle('peek');
+    this.render();
   },
 
   /** 그 산의 등산로를 지도에 그리고 시트에 요약을 붙인다 */
@@ -87,11 +97,26 @@ export const mountainPanel = {
     try {
       viewer.camera.cancelFlight?.();
       viewer.scene.tweens?.removeAll?.();
-      viewer.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(p.lon, p.lat - 0.055, 32_000),
-        duration: 1.6,
-      });
+      /* 시트가 화면 아래 절반을 덮으므로 산이 위쪽에 오도록 남쪽으로 민다.
+         ⚠️ 시트가 자리를 잡은 뒤에 재야 한다 — 애니메이션 도중 값은 지나가는 높이다. */
+      setTimeout(() => {
+        const vh = window.innerHeight || 900;
+        const top = $('#mtSheet')?.getBoundingClientRect().top ?? vh;
+        const shiftPx = Math.max(0, vh / 2 - Math.max(0, top) / 2);
+        const fovy = viewer.camera?.frustum?.fovy ?? (Math.PI / 3);
+        const dLat = (shiftPx * ((2 * 32_000 * Math.tan(fovy / 2)) / vh)) / 111_320;
+        viewer.camera.cancelFlight?.();
+        viewer.scene.tweens?.removeAll?.();
+        viewer.camera.flyTo({
+          destination: Cesium.Cartesian3.fromDegrees(p.lon, p.lat - dLat, 32_000),
+          duration: 1.6,
+        });
+      }, 380);
     } catch (_) { }
+    /* ⚠️⚠️ 시트를 낮춘다. 안 그러면 길을 그려 놓고 **시트 뒤에 가려 안 보인다** —
+       서핑·낚시에서 똑같이 겪었다(ui-surf.js 의 peek 참고).
+       그리고 카메라도 시트에 안 가리는 자리로 밀어 올린다. */
+    $('#mtSheet')?.classList.add('peek');
     const st = trails.stats(doc);
     this._trail = { name, st };
     this.render();

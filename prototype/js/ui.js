@@ -239,7 +239,7 @@ export const sheet = {
           addRow(rows, k, `<a href="${v}" target="_blank" rel="noopener">NWS ↗</a>`, true);
         } else addRow(rows, k, v);
       });
-      if (d.rows._note) rows.parentElement.appendChild(el('p', 'sheet-note', d.rows._note));
+      if (d.rows._note) rows.parentElement.appendChild(noteEl(d.rows._note));
       box.classList.remove('down'); box.classList.add('up');
       return;
     }
@@ -256,7 +256,7 @@ export const sheet = {
         if (k.startsWith('_') || v == null) return;
         addRow(rows, k, v);
       });
-      if (d.rows._note) rows.parentElement.appendChild(el('p', 'sheet-note', d.rows._note));
+      if (d.rows._note) rows.parentElement.appendChild(noteEl(d.rows._note));
       box.classList.remove('down'); box.classList.add('up');
       return;
     }
@@ -284,7 +284,7 @@ export const sheet = {
       addRow(rows, ko3 ? '부분식 지역' : 'Partial from', e.see);
       addRow(rows, ko3 ? '상세 지도' : 'Detail map',
         `<a href="${nasaLink({ ...e, kind: 'solar' })}" target="_blank" rel="noopener">NASA ↗</a>`, true);
-      rows.parentElement.appendChild(el('p', 'sheet-note', ko3
+      rows.parentElement.appendChild(noteEl(ko3
         ? '지도의 점은 **관측 장소가 아닙니다.** 달그림자 중심이 지구에 가장 가깝게 스치는 순간의 좌표(식심)이며, 대개 바다 한가운데입니다. 실제로 개기식을 보려면 위의 「개기식을 볼 수 있는 곳」으로 가야 합니다. 개기대(띠)는 그리지 않습니다 — 좌표 자료가 없어 원으로 대신하면 실제와 다르게 읽힙니다. 내 위치에서의 시각은 NASA 지도에서 확인하세요. 자료: NASA GSFC 5천년 일식 목록.'
         : 'The marker is the single greatest-eclipse point. The path of totality is not drawn — approximating it with a circle would misrepresent it. Check the NASA map for your location. Source: NASA GSFC Five Millennium Canon.'));
       rows.parentElement.appendChild(el('p', 'sheet-note', ko3
@@ -308,7 +308,7 @@ export const sheet = {
           addRow(rows, k, `<a href="${v}" target="_blank" rel="noopener">GDACS ↗</a>`, true);
         } else addRow(rows, k, v);
       });
-      if (d.rows._note) rows.parentElement.appendChild(el('p', 'sheet-note', d.rows._note));
+      if (d.rows._note) rows.parentElement.appendChild(noteEl(d.rows._note));
       box.classList.add('up');
       // 진로는 선택했을 때만 불러 그린다 (전부 미리 받으면 요청이 낭비된다)
       cyclones.showTrack(m._tc);
@@ -331,7 +331,7 @@ export const sheet = {
           addRow(rows, k, v);
         });
         if (d.rows._note) {
-          const p = el('p', 'sheet-note', d.rows._note);
+          const p = noteEl(d.rows._note);
           rows.parentElement.appendChild(p);
         }
         /* 내 위치 통과 예보는 유료 기능이다.
@@ -482,10 +482,43 @@ export const sheet = {
     import('./layers/space.js').then(({ orbits }) => orbits.clearTrack()).catch(() => {}); $('#sheet').classList.remove('up'); clearForecast(); },
 };
 
+/* 긴 값은 몇 자부터 한 칸으로 펴는가.
+   ⚠️ 받은 신고(스크린샷): 좌우 2칸이라 오른쪽 칸이 좁아 **글자가 찌그러졌다.**
+      태풍 예보 서술처럼 문장이 긴 값은 라벨 아래로 내려 폭을 다 쓰는 게 맞다. */
+const WIDE_AT = 46;
+
+/* **굵게** 를 실제 굵은 글씨로.
+   ⚠️⚠️ **먼저 이스케이프하고 나서** 표시를 푼다. 값에는 기관이 준 문자열
+      (지명·기사 제목 등)이 섞여 있어서, 그대로 innerHTML 에 넣으면 주입이 된다.
+   ⚠️ 예전에는 textContent 로만 넣어서 화면에 "**+117시간**" 이 글자 그대로 보였다. */
+function mdBold(t) {
+  return String(t)
+    .replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+}
+
+/** 안내문 — ** 를 굵게 살린다 (mdBold 가 이스케이프한다) */
+function noteEl(text) {
+  const p = el('p', 'sheet-note');
+  p.innerHTML = mdBold(text);
+  return p;
+}
+
 function addRow(dl, k, v, html = false) {
   const dt = el('dt', null, k);
   const dd = el('dd');
-  if (html) dd.innerHTML = v; else dd.textContent = v;
+  if (html) {
+    dd.innerHTML = v;
+  } else {
+    const t = String(v ?? '');
+    // ⚠️ 굵게 표시가 있거나 길면 innerHTML 경로로 간다 (mdBold 가 이스케이프한다)
+    if (/\*\*/.test(t)) dd.innerHTML = mdBold(t);
+    else dd.textContent = t;
+    if (t.length >= WIDE_AT || /\*\*/.test(t)) {
+      dt.classList.add('wide');
+      dd.classList.add('wide');
+    }
+  }
   dl.append(dt, dd);
 }
 function renderForecast(w) {
@@ -1643,5 +1676,17 @@ export function bindModeTransition() {
     $('#ambient').classList.toggle('hidden', mode === 'explore');
     // 메뉴는 확대 여부와 무관하게 항상 쓸 수 있다 (손잡이만 보인다)
     $('#explore').classList.toggle('on', mode === 'explore');
+    /* 오늘의 볼거리 칩도 ambient 와 함께 접는다.
+       ⚠️ 확대해서 한 곳을 보고 있는 사람에게 "저 반대편을 보라"는 칩은 방해다.
+          (다시 멀어지면 되돌아온다 — 지웠다 만들지 않고 보이기만 바꾼다) */
+    const spot = $('#spotChips');
+    if (spot && spot.children.length) spot.classList.toggle('on', mode !== 'explore');
+    /* 화면 상태를 body 에도 남긴다 — CSS 만으로 겹침을 풀 수 있게.
+       (바람 범례가 Ambient 의 큰 온도 숫자와 겹치던 문제. app.css 맨 끝 참고) */
+    document.body.classList.toggle('is-ambient', mode !== 'explore');
   });
+  /* ⚠️ 초기값을 여기서 한 번 세운다.
+     store 의 'camera' 이벤트는 **카메라가 움직여야** 처음 불린다. 그때까지
+     body 에 아무 표시도 없어서, 첫 화면에서 바람을 켜면 범례가 잠깐 겹쳐 보였다. */
+  document.body.classList.toggle('is-ambient', store.mode !== 'explore');
 }

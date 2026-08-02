@@ -1490,3 +1490,18 @@ body.is-ambient #windLegend.on{ opacity:0; }
   .sf-main{ gap:18px }
   .sf-h,.sf-p{ min-width:64px }
 }
+
+/* ── 시트 행: 긴 값은 한 칸으로 편다 ─────────────────────────────
+   ⚠️ 받은 신고: 좌우 2칸이라 오른쪽이 좁아 글자가 찌그러졌다(스크린샷).
+      태풍 예보 서술처럼 긴 문장은 라벨 아래로 내려 폭을 다 쓴다. */
+#sheetRows dt.wide{
+  grid-column:1 / -1; margin-top:6px;
+  font-size:12.5px; letter-spacing:.01em;
+}
+#sheetRows dd.wide{
+  grid-column:1 / -1; line-height:1.7; margin-bottom:2px;
+  /* 긴 한국어 문장은 줄바꿈이 어색해지기 쉽다 */
+  word-break:keep-all; overflow-wrap:anywhere;
+}
+#sheetRows dd b{ font-weight:600; opacity:1 }
+.sheet-note b{ font-weight:600 }

@@ -11,6 +11,8 @@
 
 import { i18n } from './i18n.js';
 import { mountain } from './mountain.js';
+import { trails } from './trails.js';
+import { viewer } from './viewer.js';
 import { myLocation } from './mylocation.js';
 
 const $ = s => document.querySelector(s);
@@ -35,7 +37,12 @@ export const mountainPanel = {
   init() {
     document.addEventListener('click', (e) => {
       const t = e.target.closest('[data-mt-tab]');
-      if (t) { this._tab = t.dataset.mtTab; this.render(); }
+      if (t) { this._tab = t.dataset.mtTab; this.render(); return; }
+      /* 등산로 — 받은 요청: "등산로 길도 그려주고".
+         ⚠️ 그 산의 길만 그때 받는다. 전국을 한 덩어리로 만들면 몇 MB 가 되고
+            첫 화면에서 그걸 받게 된다 (trails.js 머리말 참고). */
+      const tr = e.target.closest('[data-mt-trail]');
+      if (tr) { this.showTrail(tr.dataset.mtTrail); return; }
     });
     return this;
   },
@@ -57,7 +64,38 @@ export const mountainPanel = {
     }
   },
 
-  close() { $('#mtSheet')?.classList.remove('up'); },
+  close() {
+    $('#mtSheet')?.classList.remove('up');
+    trails.clear();
+  },
+
+  /** 그 산의 등산로를 지도에 그리고 시트에 요약을 붙인다 */
+  async showTrail(name) {
+    const ko = i18n.lang === 'ko';
+    const p = (mountain.peaks || []).find(x => x.name === name);
+    if (!p) return;
+    const btn = document.querySelector(`[data-mt-trail="${CSS.escape(name)}"]`);
+    if (btn) btn.textContent = ko ? '받는 중…' : 'Loading…';
+    const doc = await trails.show(p);
+    /* ⚠️ 자료가 없는 산이 있다. 없으면 없다고 적는다 — 빈 지도를 보여주고
+       "왜 안 나오지" 하게 두면 안 된다. */
+    if (!doc?.ways?.length) {
+      if (btn) { btn.textContent = ko ? '등산로 자료 없음' : 'No trail data'; btn.disabled = true; }
+      return;
+    }
+    // 그 산으로 카메라를 옮긴다 — 그려 놓고 안 보여주면 그린 뜻이 없다
+    try {
+      viewer.camera.cancelFlight?.();
+      viewer.scene.tweens?.removeAll?.();
+      viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(p.lon, p.lat - 0.055, 32_000),
+        duration: 1.6,
+      });
+    } catch (_) { }
+    const st = trails.stats(doc);
+    this._trail = { name, st };
+    this.render();
+  },
 
   render() {
     const ko = i18n.lang === 'ko';
@@ -155,6 +193,34 @@ export const mountainPanel = {
         }</em>` : ''}
       </div>` : '';
 
+    /* ── 등산로 ─────────────────────────────────────────────
+       받은 요청: "등산로 길도 그려주고 산 날씨와 등산·하이킹에 필요한 데이터"
+       ⚠️⚠️ **"이 길로 가세요"가 아니다.** OpenStreetMap 에 그려진 길이고,
+          폐쇄·낙석·출입통제·계절통제는 담겨 있지 않다. 국립공원 통제 구간이
+          그대로 그려져 있을 수 있다. 그래서 버튼 옆에 반드시 그 말을 적는다.
+       ⚠️ 길에 고도가 없어 "얼마나 가파른가"는 말할 수 없다. 있는 것만 적는다:
+          총 길이 · 길 개수 · sac_scale(있으면) · 이름 있는 길. */
+    const tr = this._trail?.name === p.name ? this._trail.st : null;
+    const trailBox = `
+      <div class="mt-trail">
+        <button class="mt-trailbtn" data-mt-trail="${esc(p.name)}">${
+          tr ? (ko ? '지도에 그렸습니다' : 'Drawn on map')
+             : (ko ? '등산로 지도에 보기' : 'Show trails on map')}</button>
+        ${tr ? `
+          <p class="mt-trailsum">${ko
+            ? `길 <b>${tr.ways}개</b> · 합쳐서 <b>${tr.km}km</b>`
+            : `${tr.ways} paths · ${tr.km} km total`}${
+            tr.namedN ? (ko ? ` · 이름 있는 길 ${tr.namedN}개` : ` · ${tr.namedN} named`) : ''}</p>
+          ${tr.sac.length ? `<p class="mt-trailsac">${tr.sac.map(x =>
+            `<span class="sac" data-k="${x.key}">${esc(x.ko)} ${x.km}km</span>`).join('')}</p>` : ''}
+          ${tr.named.length ? `<p class="mt-trailnames">${tr.named.map(esc).join(' · ')}</p>` : ''}
+        ` : ''}
+        <p class="mt-trailwarn">⚠️ ${ko
+          ? 'OpenStreetMap 에 그려진 길입니다. <b>폐쇄·낙석·출입통제는 담겨 있지 않습니다</b> — '
+            + '국립공원 통제 구간이 그대로 그려져 있을 수 있습니다. 길 안내로 쓰지 마세요.'
+          : 'Paths as mapped in OpenStreetMap. Closures and access restrictions are not included.'}</p>
+      </div>`;
+
     return `
       <article class="mt-card">
         <header>
@@ -185,6 +251,7 @@ export const mountainPanel = {
         ${baseLine}
         ${marks.length ? `<ul class="mt-marks">${
           marks.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
+        ${trailBox}
       </article>`;
   },
 

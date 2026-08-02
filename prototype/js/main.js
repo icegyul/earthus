@@ -34,6 +34,7 @@ import { mountainPanel } from './ui-mountain.js';
 import { surfPanel } from './ui-surf.js';
 import { fishPanel } from './ui-fishing.js';
 import { outdoorPanel } from './ui-outdoor.js';
+import { paraPanel } from './ui-para.js';
 import { apiKeysPanel } from './ui-apikeys.js';
 import { eventPanel } from './ui-events.js';
 
@@ -147,6 +148,7 @@ async function boot() {
   layerBar.onAction('outdoor', () => outdoorPanel.open());
   layerBar.onAction('surf', () => surfPanel.open());
   layerBar.onAction('fishing', () => fishPanel.open());
+  layerBar.onAction('para', () => paraPanel.open());
   layerBar.onAction('mountain', () => mountainPanel.open());
   layerBar.onAction('sky', () => skyPanel.open());
   layerBar.onAction('flight', () => flightPanel.open());
@@ -217,8 +219,10 @@ async function boot() {
   mountainPanel.init();
   surfPanel.init();
   fishPanel.init();
+  paraPanel.init();
   outdoorPanel.init(act => {
     ({ surf: () => surfPanel.open(), fishing: () => fishPanel.open(),
+       para: () => paraPanel.open(),
        mountain: () => mountainPanel.open(), sky: () => skyPanel.open() })[act]?.();
   });
   warn.init();
@@ -345,6 +349,7 @@ function onPick(ev) {
   if (picked?.id?._surfRegion) { surfPanel.openRegion(picked.id._surfRegion); return; }
   if (picked?.id?._fishSpot) { fishPanel.focus(picked.id._fishSpot); return; }
   if (picked?.id?._fishRegion) { fishPanel.openRegion(picked.id._fishRegion); return; }
+  if (picked?.id?._paraSite) { paraPanel.focus(picked.id._paraSite); return; }
 
   /** 화면 좌표 → 지표의 위경도. 지구를 안 가리켰으면 null. */
   const ground = () => {

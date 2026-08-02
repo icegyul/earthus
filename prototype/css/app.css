@@ -1701,3 +1701,60 @@ body.is-ambient #windLegend.on{ opacity:0; }
 }
 #fsHere.on{ display:flex; opacity:1; transform:translateX(-50%) translateY(0) }
 #fsSheet.peek{ max-height:min(46vh, 400px) }
+
+/* ── 등산로 ──
+   ⚠️⚠️ "이 길로 가세요"가 아니다. OSM 에 그려진 길이고 폐쇄·통제는 담겨 있지 않다.
+      그래서 경고를 버튼 바로 아래 붙인다 — 접어 두거나 아래로 밀면 아무도 안 읽는다. */
+.mt-trail{ margin-top:12px; padding-top:11px; border-top:1px solid var(--line) }
+.mt-trailbtn{
+  display:block; width:100%; padding:9px 0; cursor:pointer;
+  background:rgba(159,216,176,.09); border:1px solid rgba(159,216,176,.3);
+  border-radius:9px; color:#bfe8cd; font-size:12.5px; font-weight:600;
+}
+.mt-trailbtn:hover{ background:rgba(159,216,176,.16) }
+.mt-trailbtn:disabled{ opacity:.45; cursor:default; background:none;
+                       border-color:var(--line); color:var(--dim) }
+.mt-trailsum{ margin:9px 0 0; font-size:12.5px; color:var(--fog) }
+.mt-trailsum b{ font-weight:600 }
+.mt-trailsac{ margin:7px 0 0; display:flex; flex-wrap:wrap; gap:5px }
+/* 등급 색은 지도의 선 색과 **같아야** 한다 — 다르면 범례 구실을 못 한다 */
+.mt-trailsac .sac{ font-size:10.5px; padding:3px 8px; border-radius:999px;
+  background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--fog) }
+.sac[data-k="hiking"]{ border-color:rgba(159,216,176,.5); color:#9fd8b0 }
+.sac[data-k="mountain_hiking"]{ border-color:rgba(143,208,232,.5); color:#8fd0e8 }
+.sac[data-k="demanding_mountain_hiking"]{ border-color:rgba(242,193,90,.5); color:#f2c15a }
+.sac[data-k="alpine_hiking"]{ border-color:rgba(240,149,90,.5); color:#f0955a }
+.sac[data-k="demanding_alpine_hiking"]{ border-color:rgba(232,112,90,.5); color:#e8705a }
+.sac[data-k="difficult_alpine_hiking"]{ border-color:rgba(216,69,90,.55); color:#d8455a }
+.mt-trailnames{ margin:6px 0 0; font-size:11px; color:var(--dim); line-height:1.6 }
+.mt-trailwarn{ margin:9px 0 0; font-size:11px; color:var(--dim); line-height:1.65 }
+.mt-trailwarn b{ color:var(--fog); font-weight:600 }
+
+/* ── 패러글라이딩 ── */
+#pgSheet.peek{ max-height:min(46vh, 400px) }
+.pg-warn{ margin:0 0 12px; padding:8px 11px; border-radius:9px; font-size:11.5px;
+  line-height:1.6; color:var(--fog); background:rgba(185,167,240,.08);
+  border:1px solid rgba(185,167,240,.22) }
+.pg-warn b{ font-weight:600 }
+/* 바람 구간 — ⚠️ 색으로 말하는 유일한 것이 이것이다 */
+.pg-band{ margin:10px 0 10px; padding:10px 12px; border-radius:10px;
+  border-left:3px solid var(--line); background:rgba(255,255,255,.03) }
+.pg-band.light{ border-left-color:#8fb8c8 }
+.pg-band.ok{ border-left-color:#7fd8a8; background:rgba(127,216,168,.07) }
+.pg-band.brisk{ border-left-color:#f2c15a; background:rgba(242,193,90,.07) }
+.pg-band.strong{ border-left-color:#f0955a; background:rgba(240,149,90,.09) }
+.pg-band.danger{ border-left-color:#e8556a; background:rgba(232,85,106,.11) }
+.pg-w{ display:flex; align-items:baseline; gap:4px }
+.pg-w .n{ font-size:24px; font-variant-numeric:tabular-nums; letter-spacing:-.02em }
+.pg-w i{ font-style:normal; font-size:12px; opacity:.6 }
+.pg-w em{ font-style:normal; margin-left:8px; font-size:13px; color:var(--fog) }
+.pg-band p{ margin:4px 0 0; font-size:12px; color:var(--dim) }
+.pg-gust{ margin:0 0 10px; padding:7px 11px; border-radius:9px; font-size:12.5px;
+  line-height:1.55; color:var(--fog); border-left:3px solid var(--line);
+  background:rgba(255,255,255,.03) }
+.pg-gust b{ font-weight:700 }
+.pg-gust.watch{ border-left-color:rgba(240,180,90,.75); background:rgba(240,180,90,.07) }
+.pg-gust.danger{ border-left-color:rgba(235,90,90,.85); background:rgba(235,90,90,.1);
+                 color:#ffd3d3 }
+.pg-note{ margin:9px 0 0; font-size:11px; color:var(--dim); line-height:1.65 }
+.pg-note b{ color:var(--fog); font-weight:600 }

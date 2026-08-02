@@ -3,25 +3,106 @@
 # ⚠️ 앱은 한 장짜리(SPA)다. 크롤러가 볼 것은 사실상 / 하나뿐이고,
 #    나머지는 자료 파일이라 색인돼도 의미가 없다.
 #
-# ⚠️⚠️ **규칙을 하나의 User-agent: * 블록에 모아 둔다. 봇별 블록을 만들지 말 것.**
-#    robots.txt 는 상속이 없다 — 크롤러는 **자기 이름의 블록이 있으면 그것만 읽고
-#    `*` 블록을 통째로 무시한다.** 그래서 "GPTBot 을 명시적으로 허용하자"고
-#    봇별 블록을 추가하면, 그 봇에게만 아래 Disallow 가 사라져 자료 디렉터리가
-#    통째로 열린다. (실제로 그렇게 썼다가 되돌렸다.)
-#    AI 크롤러 허용은 아무것도 안 적는 것이 곧 허용이다 — 아래 설명 참고.
+# ⚠️⚠️ **robots.txt 는 상속이 없다.**
+#    크롤러는 **자기 이름의 블록이 있으면 그것만 읽고 `*` 블록을 통째로 무시한다.**
+#    그래서 봇별 블록을 만들 때는 그 안에 Disallow 를 **다시 적어야 한다.**
+#    (예전에 "GPTBot 을 명시 허용"하려고 블록만 추가했다가 그 봇에게만
+#     자료 디렉터리가 통째로 열린 적이 있다.)
+#    아래 학습봇 블록은 전부 `Disallow: /` 라서 이 함정에 걸리지 않는다.
 #
-# ── AI 검색 크롤러 정책: 의도적으로 **허용** ──────────────────────
-#    GPTBot·OAI-SearchBot·ClaudeBot·PerplexityBot·Google-Extended·
-#    Applebot-Extended·CCBot 등을 따로 막지 않는다. robots.txt 에서
-#    "안 막는 것"이 곧 허용이므로, 이들은 아래 `*` 규칙을 그대로 따른다.
+# ══ AI 크롤러 정책 (2026-08-03 변경) ═══════════════════════════════
 #
-#    왜 허용하는가: 우리는 공공 관측자료를 출처와 함께 전달하는 서비스다.
-#    사람이 AI 에게 "지금 바다 수온이 어떤가"를 물을 때 우리가 인용되는 것이
-#    곧 우리가 하려는 일이다. (반대 사례: space.skyrocket.de 는 이들을 전부
-#    차단해 두어 우리가 그 위성 자료를 쓸 수 없었다. 차단은 그렇게 작동한다.)
+#  ⚠️⚠️ **학습은 막고, 검색 인용은 연다.** 둘은 다른 일이다.
 #
-#    ⚠️ 이 방침을 뒤집고 싶을 때만 봇별 블록을 만들 것. 그때는 위 상속 함정을
-#       기억해 Disallow 목록을 그 블록 안에 **다시 적어야** 한다.
+#    · **학습(training)** — 우리 글과 자료를 모델 가중치에 녹인다.
+#      출처가 사라지고, 우리가 만든 자료(해변 방위·낚시 지점·등산로·평년 분포)가
+#      누구 것인지 알 수 없게 된다. → **막는다.**
+#
+#    · **검색 인용(retrieval)** — 사람이 물었을 때 우리 페이지를 읽고 **출처와 함께**
+#      답한다. 이건 우리가 하려는 일 그 자체다 —
+#      "지금 바다 수온이 어떤가"에 earthus 가 인용되는 것. → **연다.**
+#
+#  ⚠️ 이건 **자발적 준수**다. 지키지 않는 크롤러는 이 파일로 못 막는다.
+#     실제 강제는 이용약관(제11조)과 서버 차단이 맡는다.
+#
+#  ⚠️ 되돌리려면 아래 "학습 전용" 블록을 지우면 된다. 그게 전부다.
+
+# ── 학습 전용 봇 — 차단 ────────────────────────────────────────────
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+User-agent: omgili
+Disallow: /
+
+User-agent: omgilibot
+Disallow: /
+
+User-agent: Timpibot
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
+
+User-agent: cohere-training-data-crawler
+Disallow: /
+
+User-agent: PanguBot
+Disallow: /
+
+User-agent: img2dataset
+Disallow: /
+
+User-agent: AI2Bot
+Disallow: /
+
+User-agent: Kangaroo Bot
+Disallow: /
+
+User-agent: Webzio-Extended
+Disallow: /
+
+# ── 검색·인용 봇 — 허용 ────────────────────────────────────────────
+# ⚠️ 아래 봇들은 **자기 블록이 없어야** `*` 규칙을 따른다.
+#    이름을 적는 순간 그 블록만 읽으므로, 허용하려면 **아무것도 안 적는 것**이 맞다.
+#      OAI-SearchBot · ChatGPT-User · PerplexityBot · Perplexity-User ·
+#      Applebot(일반) · Googlebot · Bingbot · DuckDuckBot · Yeti(네이버) · Daum
+#    → 이들은 아래 `*` 블록을 그대로 따른다.
 
 User-agent: *
 Allow: /$
@@ -31,6 +112,7 @@ Allow: /index.html
 Allow: /intro.html
 Allow: /llms.txt
 Allow: /shots/
+Allow: /legal/
 
 # 관측 자료는 색인 대상이 아니다.
 # 색인되면 검색 결과에 JSON 원문이 뜨고, 크롤러가 대역폭만 먹는다.
@@ -40,6 +122,12 @@ Disallow: /ocean/
 Disallow: /solar/
 Disallow: /clouds/
 Disallow: /celestrak/
+Disallow: /climate/
+
+# ⚠️⚠️ /data/ 는 **우리가 만든 자료**다 — 공공자료를 그대로 옮긴 것이 아니다.
+#    해변 방위 210곳 · 낚시 지점 946곳 · 등산로 12,982개 · 평년 분포 97지점 ·
+#    활공장 17곳. OSM·기상청 원자료에서 우리가 계산·정리·검증해 만든 것이라
+#    데이터베이스로 보호받는다(이용약관 제11조). 색인·수집 대상이 아니다.
 Disallow: /data/
 
 # ⚠️ /js/ 와 /css/ 는 **막지 않는다** (예전엔 막았다 — 되돌렸다).

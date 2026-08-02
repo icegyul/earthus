@@ -102,7 +102,7 @@ export const weatherPanel = {
 
     if (this.tab === 'today') this._today(body, wx, ko);
     else if (this.tab === 'd14') this._d14(body, wx, ko);
-    else this._note(body, ko);
+    else this._noteTab(body, ko);
 
     /* 한국 안이면 기상청 자료로 이어 준다.
        ⚠️ '한국' 메뉴를 없애면서 그 화면(특보·산·바다·생활·기록)이 갈 곳을 잃었다.
@@ -134,6 +134,13 @@ export const weatherPanel = {
 
   /* ── 오늘 ─────────────────────────────────────────────────── */
   _today(body, wx, ko) {
+    /* ⚠️⚠️ **서술이 맨 위다.** 설계 문서(weather-narrative-design.md §3-b)의 결정 —
+       "저런 식의 분석 문구는 오늘 기상정보 제공해줄 때 주는 걸로 가자".
+       숫자 위에 "그래서 오늘이 어떤 날인가" 한 문단이 먼저 온다.
+       ⚠️ 처음엔 별도 '안내' 탭에 넣었다. 그건 아무도 안 누른다 —
+          '내 위치'를 누르면 바로 이 탭이 열리는데 거기 없으면 없는 것과 같다. */
+    this._narrative(body, ko);
+
     // 한국이면 기상청 동네예보로 그린다 (공식·5km)
     if (this.kma?.now) { this._todayKma(body, ko); return; }
     this._todayMeteo(body, wx, ko);
@@ -281,7 +288,30 @@ export const weatherPanel = {
      ⚠️⚠️ 원고가 좋은 이유는 형용사가 아니라 **검증 가능한 주장**이라는 것이다 —
         "덥습니다"가 아니라 "평년보다 상위 5%". 그래서 규칙은 하나다:
         **숫자 없는 문장은 쓰지 않는다.** (narrative.js 머리말 참고) */
-  _note(body, ko) {
+  /* '안내' 탭 — ⚠️ 서술은 '오늘'에 있다. 여기서 또 그리면 같은 글이 두 번 나온다.
+     여기는 **어떻게 읽는지**만 적는다. */
+  _noteTab(body, ko) {
+    body.appendChild(el('div', 'mt-foot',
+      `<p><b>${ko ? '오늘 첫 줄은 어떻게 나오나' : 'How the headline works'}</b></p>`
+      + `<p>${ko
+          ? '지금 잰 값을 <b>1995~2026년 기상청 ASOS 실측</b>과 견줍니다. '
+            + '그날 ±7일을 모아 낸 분포에서 오늘이 몇 %인지 보고, '
+            + '가장 이례적인 것 하나를 첫 줄로 씁니다.'
+          : 'Today is compared against 30 years of KMA ASOS observations.'}</p>`
+      + `<p>⚠️ ${ko
+          ? '<b>판정 기준에 저희가 정한 값은 없습니다.</b> 열대야 25°C · 초열대야 30°C · '
+            + '폭염 33/35°C 는 모두 기상청 정의입니다.'
+          : 'Thresholds are KMA definitions, not ours.'}</p>`
+      + `<p>⚠️ ${ko
+          ? '<b>평범한 날은 평범하다고 씁니다.</b> 매일 극적인 척하면 '
+            + '진짜 위험한 날에 아무도 믿지 않기 때문입니다.'
+          : 'Ordinary days are called ordinary.'}</p>`
+      + `<p>⚠️ ${ko
+          ? '<b>예보가 아닙니다.</b> 지금 잰 값과 과거 기록을 견준 것입니다.'
+          : 'Not a forecast.'}</p>`));
+  },
+
+  _narrative(body, ko) {
     const box = el('div', 'wx-narr');
     box.innerHTML = `<p class="wx-narr-load">${ko ? '오늘이 어떤 날인지 보는 중…' : 'Reading today…'}</p>`;
     body.appendChild(box);

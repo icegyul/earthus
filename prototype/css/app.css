@@ -114,17 +114,26 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 
 /* ══════════ 정보 시트 ══════════ */
 #sheet{
-  position:absolute;left:12px;right:12px;max-width:520px;margin:0 auto;
+  position:fixed;left:12px;right:12px;max-width:520px;margin:0 auto;
   /* ⚠️ viewport-fit=cover 라서 bottom:12px 로 두면 홈 인디케이터와
      Safari 하단 툴바 "아래"로 들어간다. 화면 밖으로 밀려 닫기(×)를 못 누른다. */
   bottom:max(12px, calc(env(safe-area-inset-bottom) + 8px));
   max-height:min(80vh, calc(100dvh - 120px));overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:20px 22px 22px;border-radius:18px;
   background:var(--panel);backdrop-filter:blur(24px);border:1px solid var(--line);
-  transform:translateY(140%);transition:transform .4s cubic-bezier(.22,1,.36,1);
+  /* ⚠️ 닫을 때 화면 밖으로 **밀어내지 않는다.** 예전에는 translateY(140%) 로
+     아래에 숨겼는데, position:absolute 인 요소를 문서 아래로 밀면
+     body 의 overflow:hidden 으로 잘리지 않고 **페이지가 그만큼 늘어난다**
+     (기준이 body 가 아니라 초기 컨테이닝 블록이라서다).
+     실측: 폰에서 지구 아래로 업데이트·로그인·사전등록 패널이 줄줄이 보였다.
+     → position:fixed + 제자리에서 살짝 떠오르며 나타난다. */
+  transform:translateY(14px); opacity:0; visibility:hidden;
+  transition:transform .3s cubic-bezier(.22,1,.36,1), opacity .2s ease,
+             visibility 0s .3s;
   z-index:14;
 }
-#sheet.up{transform:translateY(0)}
+#sheet.up{transform:translateY(0); opacity:1; visibility:visible;
+  transition:transform .36s cubic-bezier(.22,1,.36,1), opacity .22s ease, visibility 0s;}
 #sheet .kind{clear:both;font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
 #sheet .kind.evt{color:var(--amber)}
 #sheet h3{font-size:20px;font-weight:400;margin-bottom:13px}
@@ -174,14 +183,18 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
   color:var(--fog);
 }
 #settings{
-  position:absolute;left:12px;right:12px;max-width:420px;margin:0 auto;
+  position:fixed;left:12px;right:12px;max-width:420px;margin:0 auto;
   bottom:max(12px, calc(env(safe-area-inset-bottom) + 8px));   /* #sheet 주석 참고 */
   max-height:min(82vh, calc(100dvh - 100px));overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding:22px;border-radius:18px;z-index:16;
   background:var(--panel);backdrop-filter:blur(24px);border:1px solid var(--line);
-  transform:translateY(150%);transition:transform .4s cubic-bezier(.22,1,.36,1);
+  /* 닫힘 처리는 #sheet 와 같다 — 밀어내지 않고 제자리에서 나타난다 */
+  transform:translateY(14px); opacity:0; visibility:hidden;
+  transition:transform .3s cubic-bezier(.22,1,.36,1), opacity .2s ease,
+             visibility 0s .3s;
 }
-#settings.up{transform:translateY(0)}
+#settings.up{transform:translateY(0); opacity:1; visibility:visible;
+  transition:transform .36s cubic-bezier(.22,1,.36,1), opacity .22s ease, visibility 0s;}
 #settings h3{font-size:17px;font-weight:400;margin-bottom:18px}
 #setClose{position:sticky;top:0;float:right;font-size:23px;font-weight:200;opacity:.4;cursor:pointer;line-height:1;z-index:2;padding:2px 2px 6px 10px}
 .set-row{margin-bottom:16px}
@@ -444,7 +457,7 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 
 /* ── 1단 ── */
 #menuMain{
-  position:absolute; right:0; top:50%; transform:translateY(-50%) translateX(100%);
+  position:fixed; right:0; top:50%; transform:translateY(-50%) translateX(100%);
   z-index:18; width:var(--mm-w); border-radius:14px 0 0 14px;
   background:rgba(10,14,20,.74); backdrop-filter:blur(26px);
   border:1px solid var(--line); border-right:0;
@@ -475,7 +488,7 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 
 /* ── 2단 : 지구 스타일 (1단 왼쪽으로) ── */
 #menuSub{
-  position:absolute; right:var(--mm-w); top:50%;
+  position:fixed; right:var(--mm-w); top:50%;
   transform:translateY(-50%) translateX(calc(100% + var(--mm-w)));
   z-index:18; width:var(--ms-w);
   max-height:min(78vh, calc(100dvh - 90px));

@@ -1582,3 +1582,22 @@ body.is-ambient #windLegend.on{ opacity:0; }
 @media (max-width:520px){
   #tcLegend{ max-width:74vw; font-size:10px; padding:8px 10px }
 }
+
+/* 지도에서 해변을 눌러 목록으로 왔을 때 — 어느 카드인지 잠깐 알려준다.
+   ⚠️ 지도와 목록이 따로 놀면 "방금 누른 게 어디 갔지"가 된다. */
+.mt-card.sf-hit{
+  box-shadow:0 0 0 1.5px rgba(79,208,224,.7), 0 6px 22px rgba(0,0,0,.35);
+  transition:box-shadow .35s ease;
+}
+
+/* 서핑 시트 — 낮은 상태.
+   ⚠️⚠️ 시트가 화면을 덮으면 지도에 찍은 해변이 **하나도 안 보인다.**
+      받은 요청이 "확대했을 때 위치랑 정보"였으니 지도가 보여야 한다.
+      실측: 88vh 시트에서 표시 12개가 다 만들어졌는데 전부 시트 뒤였다. */
+#sfSheet.peek{ max-height:min(46vh, 400px); }
+.sf-grow{
+  display:block; width:100%; margin:-6px 0 10px; padding:7px 0;
+  background:none; border:0; cursor:pointer;
+  color:rgba(255,255,255,.5); font-size:11.5px; letter-spacing:.02em;
+}
+.sf-grow:hover{ color:rgba(255,255,255,.8) }

@@ -18,6 +18,7 @@ import { judge, SURF_RULES } from './surf.js';
 import { get, nearest } from './korea.js';
 import { myLocation } from './mylocation.js';
 import { viewer } from './viewer.js';
+import { intro } from './intro.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c =>
@@ -34,6 +35,49 @@ const WIND_MAX_KM = 25;
 
 const N_SHOW = 12;
 
+/* 서핑 메뉴를 눌렀을 때 내려갈 높이(m).
+   받은 지적: "서핑 메뉴 누르면 이렇게 확대했을 때 위치랑 정보를 나오게 해달라고"
+   ⚠️ 목록만 띄우면 **그 해변이 어디인지**를 알 수 없다. 이름을 알아도 처음 가는
+      사람에게는 좌표가 없는 것과 같다. 지도에 찍어야 "여기서 저기까지"가 보인다.
+   ⚠️ 실측: 보내 준 화면이 강릉~양양 해안 약 90km 를 담고 있다. 120km 면
+      해변 대여섯 곳과 해안선의 방향이 함께 보인다. 더 내려가면 한 곳만 남는다. */
+const ZOOM_M = 120_000;
+
+/* 이 높이보다 이미 낮으면 카메라를 건드리지 않는다.
+   ⚠️ 사용자가 직접 확대해 둔 자리를 빼앗으면 안 된다 — 보고 있던 곳이 사라진다. */
+const ZOOM_SKIP_M = 300_000;
+
+/* 지도 위 표시가 보이는 거리. ⚠️ 전지구에서 해변 12개 이름표가 뜨면 지구가 안 보인다. */
+const MARK_MAX_M = 1_400_000;
+
+/* 해변 핀 — 네이버 지도처럼 **동그란 아이콘**으로 찍는다.
+   받은 요청: 보내 준 네이버 화면처럼 "이렇게 표시해주고 옆에 정보를".
+   ⚠️ 그림 파일을 쓰지 않는다. 캔버스로 그려 dataURI 로 만든다 —
+      파일 하나를 더 받게 하면 그만큼 늦고, 실패하면 표시가 통째로 사라진다.
+   ⚠️ 한 번만 만들어 재사용한다. 해변마다 그리면 12번 그리게 된다. */
+let _pin = null;
+function pinImage() {
+  if (_pin) return _pin;
+  const S = 48, c = document.createElement('canvas');
+  c.width = c.height = S;
+  const g = c.getContext('2d');
+  const r = S / 2 - 3;
+  g.beginPath(); g.arc(S / 2, S / 2, r, 0, Math.PI * 2);
+  g.fillStyle = '#2aa8bd'; g.fill();
+  g.lineWidth = 3; g.strokeStyle = 'rgba(255,255,255,.92)'; g.stroke();
+  // 파도 — 물결 두 줄
+  g.strokeStyle = '#fff'; g.lineWidth = 3.2; g.lineCap = 'round';
+  [-5, 4].forEach(dy => {
+    g.beginPath();
+    g.moveTo(S / 2 - 11, S / 2 + dy);
+    g.quadraticCurveTo(S / 2 - 5.5, S / 2 + dy - 5, S / 2, S / 2 + dy);
+    g.quadraticCurveTo(S / 2 + 5.5, S / 2 + dy + 5, S / 2 + 11, S / 2 + dy);
+    g.stroke();
+  });
+  _pin = c.toDataURL('image/png');
+  return _pin;
+}
+
 export const surfPanel = {
   _tab: 'near',
   _ready: false,
@@ -43,6 +87,7 @@ export const surfPanel = {
 
   init() {
     document.addEventListener('click', async (e) => {
+      if (e.target.closest('[data-sf-grow]')) { this.toggleHeight(); return; }
       const t = e.target.closest('[data-sf-tab]');
       if (t) { this._tab = t.dataset.sfTab; this.render(); return; }
       const r = e.target.closest('[data-sf-region]');
@@ -54,13 +99,24 @@ export const surfPanel = {
           `<p class="mt-load sf-loading">${i18n.lang === 'ko' ? '받는 중…' : 'Loading…'}</p>`);
         await this._fill();
         this.render();
+        // ⚠️ 지역을 바꾸면 지도 표시도 바뀌어야 한다. 안 바꾸면 목록은 남해인데
+        //    지도에는 동해 해변이 찍혀 있게 된다.
+        this._marks();
+        this._zoom(true);
       }
     });
     return this;
   },
 
   async open() {
-    $('#sfSheet')?.classList.add('up');
+    /* ⚠️ 기본은 **낮은 상태**다. 시트가 화면을 덮으면 지도에 찍은 해변이
+       하나도 안 보인다 — 받은 요청("확대했을 때 위치랑 정보")이 지도 쪽이었다.
+       목록을 길게 보고 싶으면 손잡이를 눌러 키운다. */
+    $('#sfSheet')?.classList.add('up', 'peek');
+    /* ⚠️⚠️ 인트로 회전을 **여기서** 세운다. _zoom() 에서 세우면 늦다 —
+       기준점(_anchor)이 카메라 위치를 읽는데, 그 사이에도 지구가 돌고 있어
+       기준이 실제로 보고 있던 곳에서 밀린다. 실측 0.48° (약 42km). */
+    intro.stop();
     const ko = i18n.lang === 'ko';
     const body = $('#sfBody');
     if (!this._ready) body.innerHTML =
@@ -73,13 +129,183 @@ export const surfPanel = {
       await this._fill();
       this._ready = true;
       this.render();
+      /* ⚠️ 지도는 목록이 준비된 **뒤에** 옮긴다. 먼저 날아가면 도착했을 때
+         아직 아무 표시도 없어서 "빈 바다로 보내진" 것처럼 보인다. */
+      this._marks();
+      setTimeout(() => this._zoom(), 380);   // 시트가 자리를 잡은 뒤에 잰다
     } catch (e) {
       body.innerHTML = `<p class="mt-load">${ko ? '해변 자료를 받지 못했습니다'
         : 'Could not load'}<br><small>${esc(e.message)}</small></p>`;
     }
   },
 
-  close() { $('#sfSheet')?.classList.remove('up'); },
+  close() {
+    $('#sfSheet')?.classList.remove('up');
+    this._clearMarks();
+  },
+
+  /* ══ 지도로 내려간다 ══════════════════════════════════════════════
+     ⚠️ 이미 가까이 보고 있으면 건드리지 않는다 — 사용자가 맞춰 둔 자리를
+        빼앗는 것은 도와주는 게 아니다. */
+  _zoom(force) {
+    const at = this._at;
+    if (!at) return;
+    try {
+      const h = viewer.camera.positionCartographic?.height ?? Infinity;
+      /* ⚠️ 지역을 **직접 고른** 경우와 시트 높이를 바꾼 경우는 가까이 있어도 옮긴다.
+         남해를 눌렀는데 동해를 계속 보고 있으면 무엇을 고른 건지 알 수 없고,
+         시트를 낮췄는데 해변이 그대로 시트 자리에 있으면 낮춘 뜻이 없다. */
+      if (!force && at.from !== 'region' && h < ZOOM_SKIP_M) return;
+      /* ⚠️⚠️ **인트로 회전을 먼저 세운다.** 이게 없으면 날아가 도착한 뒤에도
+         지구가 계속 돌아 해변이 화면 밖으로 밀려난다.
+         실측: 앵커는 128.95°E 였는데 촬영 시점 카메라는 131.43°E — 2.5° 밀렸고
+         해변 12곳이 전부 화면 왼쪽 밖(x = -1165px)에 있었다. 표시는 다 만들어졌는데
+         하나도 안 보였다. 시트가 열리면 drift 는 멈추지만(panels 의 OPEN_PANELS)
+         **intro 는 아무도 세우지 않는다.**
+         ⚠️ 트윈도 끊는다 — 남아 있으면 flyTo 가 끝나자마자 카메라를 도로 가져간다. */
+      intro.stop();
+      viewer.camera.cancelFlight?.();
+      viewer.scene.tweens?.removeAll?.();
+      /* ⚠️⚠️ 기준점이 아니라 **고른 해변들의 한가운데**로 간다.
+         기준점은 "어느 해변을 고를까"를 정하는 값이고, 카메라가 가야 할 곳은
+         "고른 해변들이 다 보이는 자리"다. 둘을 같게 두면 목록에는 있는데
+         지도에는 없는 해변이 생긴다 — 실측에서 12곳이 전부 화면 왼쪽으로 밀렸다. */
+      const c = this._center() || at;
+      viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(c.lon, c.lat - this._sheetShiftDeg(), ZOOM_M),
+        duration: 1.6,
+      });
+    } catch (_) { /* 뷰어가 아직이면 목록만 보여준다 */ }
+  },
+
+  /** 지도에 찍은 해변들의 한가운데 */
+  _center() {
+    const l = this._pick || [];
+    if (!l.length) return null;
+    return { lat: l.reduce((s, b) => s + b.lat, 0) / l.length,
+             lon: l.reduce((s, b) => s + b.lon, 0) / l.length };
+  },
+
+  /* 시트에 가리지 않는 자리로 지도를 밀어 올리는 양(위도 °).
+     ⚠️⚠️ 이게 없으면 해변이 **정확히 시트 뒤에** 놓인다. 카메라는 화면 한가운데를
+        보는데, 화면 아래 절반은 시트가 덮고 있기 때문이다.
+        실측: 시트를 열자 표시 12개가 다 만들어졌는데 하나도 안 보였다.
+     ⚠️ 시트 높이를 실제로 재서 계산한다 — 화면 크기·기기마다 다르다. */
+  _sheetShiftDeg() {
+    const vh = window.innerHeight || 900;
+    const el = $('#sfSheet');
+    const sheetTop = el ? el.getBoundingClientRect().top : vh;
+    const visibleMid = Math.max(0, sheetTop) / 2;      // 보이는 지도의 세로 한가운데
+    const shiftPx = vh / 2 - visibleMid;               // 화면 중앙에서 이만큼 위로 올려야 한다
+    if (!(shiftPx > 0)) return 0;
+    const fovy = viewer.camera?.frustum?.fovy ?? (Math.PI / 3);
+    const groundPerPx = (2 * ZOOM_M * Math.tan(fovy / 2)) / vh;   // m/px
+    // 카메라를 남쪽으로 밀면 기준점이 화면 위쪽으로 올라온다
+    return (shiftPx * groundPerPx) / 111_320;
+  },
+
+  /* 시트를 낮췄다 키웠다. 받은 요청이 "확대했을 때 **위치**랑 정보"였다 —
+     지도를 못 보면 위치를 보여주는 뜻이 없다. */
+  toggleHeight() {
+    const el = $('#sfSheet');
+    if (!el) return;
+    el.classList.toggle('peek');
+    this.render();
+    /* ⚠️ 시트가 다 움직인 **뒤에** 재야 한다. 애니메이션 도중에 재면
+       지금 높이가 아니라 지나가는 높이가 잡힌다. */
+    setTimeout(() => this._zoom(true), 380);
+  },
+
+  /* ══ 해변을 지도에 찍는다 ═════════════════════════════════════════
+     ⚠️ 이름만 찍지 않는다. 받은 요청이 "위치**랑 정보**"였다 —
+        어디인지와 지금 어떤지가 같이 보여야 목록을 안 열어도 읽힌다.
+     ⚠️ 너울 높이와 수온만 올린다. 카드에 있는 것을 다 올리면 이름표가 지도를 덮는다. */
+  _marks() {
+    this._clearMarks();
+    const ko = i18n.lang === 'ko';
+    const list = this._pick || [];
+    if (!list.length) return;
+    try {
+      if (!this._ds) {
+        this._ds = new Cesium.CustomDataSource('surf');
+        viewer.dataSources.add(this._ds);
+      }
+      const img = pinImage();
+      /* ⚠️⚠️ 이름표가 서로 **겹친다.** 한국 동해안은 해변이 5km 간격으로 붙어 있어
+         120km 상공에서 33px 밖에 안 떨어진다 — 이름표 높이가 20px 이니 다 포개진다.
+         실측 첫 화면: 사천·사근진·경포·강문 넷이 한 덩어리로 뭉개져 못 읽었다.
+         → 위에서부터 **좌우로 번갈아** 놓는다. 같은 쪽끼리는 두 칸씩 벌어진다.
+         ⚠️ 매 프레임 화면좌표를 재서 겹치는 것을 숨기는 방법도 있지만 쓰지 않는다 —
+            카메라가 움직일 때마다 전 지점을 다시 계산하는 것이 이 앱 발열의 원인이었다.
+            좌우 번갈이는 한 번 정하면 공짜다. */
+      const ordered = [...list].sort((a, b) => b.lat - a.lat);
+
+      /* ⚠️ 받은 지시: "해변, 해수욕장은 빼고 이름만 가자."
+         ⚠️⚠️ 그래서 **자료 쪽에서** 같은 이름이 두 번 나오지 않게 해야 한다.
+            한때 "망상 해수욕장"(37.594)과 "망상해수욕장"(37.598)이 600m 떨어져
+            둘 다 살아남아 지도에 "망상"이 두 번 떴다. 화면에서 긴 이름으로
+            되돌리는 방식은 지시를 어기는 것이므로, dedup-beaches.py 의
+            SAME_NAME_M(1.5km) 규칙으로 자료에서 합쳤다. 지금 겹치는 쌍은 0 이다. */
+      ordered.forEach((b, i) => {
+        const sea = beaches._sea.get(b.name) || null;
+        /* ⚠️ 값이 없으면 그 자리를 **비운다**. 0 으로 채우면 "파도가 없다"로 읽힌다.
+           ⚠️ 받은 지시: 이름 **옆에** 정보. 두 줄로 쌓으면 지도가 글자로 덮인다.
+              올리는 건 너울 높이·주기·수온까지다 — 카드에 있는 걸 다 올리지 않는다. */
+        const bits = [];
+        if (sea?.swellH != null) bits.push(`${sea.swellH.toFixed(1)}m`);
+        if (sea?.sst != null) bits.push(`${sea.sst.toFixed(0)}°`);
+        const text = shortName(b.name) + (bits.length ? '  ' + bits.join(' · ') : '');
+        const right = i % 2 === 0;      // 위에서부터 오른쪽·왼쪽 번갈아
+        this._ds.entities.add({
+          id: `surf:${b.name}`,
+          position: Cesium.Cartesian3.fromDegrees(b.lon, b.lat),
+          /* ⚠️ 점이 아니라 **아이콘**이다. 점은 지진·부이·관측소와 구분이 안 된다.
+             ⚠️ disableDepthTestDistance 를 크게 둬야 한다 — 안 그러면 해안선 지형에
+                가려 바다 쪽 해변이 사라진다. */
+          billboard: {
+            image: img, width: 22, height: 22,
+            verticalOrigin: Cesium.VerticalOrigin.CENTER,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, MARK_MAX_M),
+          },
+          label: {
+            text,
+            font: '600 11px -apple-system, sans-serif',
+            fillColor: Cesium.Color.WHITE,
+            showBackground: true,
+            backgroundColor: Cesium.Color.fromCssColorString('#0b1a20').withAlpha(0.78),
+            backgroundPadding: new Cesium.Cartesian2(6, 4),
+            style: Cesium.LabelStyle.FILL,
+            /* 핀 옆으로 붙인다 — 좌우 번갈아 두면 붙어 있는 해변끼리 안 포개진다 */
+            verticalOrigin: Cesium.VerticalOrigin.CENTER,
+            horizontalOrigin: right ? Cesium.HorizontalOrigin.LEFT
+                                    : Cesium.HorizontalOrigin.RIGHT,
+            pixelOffset: new Cesium.Cartesian2(right ? 14 : -14, 0),
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, MARK_MAX_M),
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          },
+          // 누르면 목록의 그 카드로 데려간다 (main.js 의 onPick 참고)
+          _beach: b.name,
+        });
+      });
+    } catch (e) {
+      console.warn('[서핑] 지도 표시 실패 —', e.message);
+    }
+  },
+
+  _clearMarks() {
+    try { this._ds?.entities.removeAll(); } catch (_) { }
+  },
+
+  /** 지도에서 해변을 눌렀을 때 — 목록의 그 카드로 데려간다 */
+  focus(name) {
+    $('#sfSheet')?.classList.add('up');
+    const card = document.querySelector(`[data-sf-beach="${CSS.escape(name)}"]`);
+    if (!card) return;
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.classList.add('sf-hit');
+    setTimeout(() => card.classList.remove('sf-hit'), 1600);
+  },
 
   /* 기준점을 어디로 잡을까.
      받은 지적: "화면을 옮겼을 때 다른 지역도 나와야 해. 사용자가 근처 해변이
@@ -142,7 +368,10 @@ export const surfPanel = {
         + `data-sf-region="${esc(r)}">${esc(shortRegion(r))} ${n}</button>`;
     }).join('');
 
+    const peek = $('#sfSheet')?.classList.contains('peek');
     body.innerHTML = `
+      <button class="sf-grow" data-sf-grow>${peek
+        ? (ko ? '목록 크게 ▲' : 'Expand ▲') : (ko ? '지도 보기 ▼' : 'Show map ▼')}</button>
       <div class="mt-tabs">${tabs}</div>
       ${this._tab === 'how' ? this._how(ko) : `
         <div class="mt-tabs regions">
@@ -185,7 +414,7 @@ export const surfPanel = {
       </header>`;
 
     if (!sea) {
-      return `<article class="mt-card">${head}
+      return `<article class="mt-card" data-sf-beach="${esc(b.name)}">${head}
         <p class="sf-none">${ko ? '이 지점의 파랑 자료가 없습니다'
                                 : 'No wave data at this point'}</p></article>`;
     }
@@ -218,7 +447,7 @@ export const surfPanel = {
     const tide = this._tide(sea.tide, ko);
 
     if (!j.ok) {
-      return `<article class="mt-card">${head}${trio}${tide}
+      return `<article class="mt-card" data-sf-beach="${esc(b.name)}">${head}${trio}${tide}
         <p class="sf-none">${esc(j.why)}</p></article>`;
     }
 
@@ -226,7 +455,7 @@ export const surfPanel = {
     const wcls = { offshore: 'good', cross: 'ok', onshore: 'bad' };
 
     return `
-      <article class="mt-card">
+      <article class="mt-card" data-sf-beach="${esc(b.name)}">
         ${head}
         ${trio}
         ${tide}

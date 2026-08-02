@@ -12,6 +12,16 @@ import io, json, math, re, sys
 
 SRC = 'prototype/data/beaches.json'
 NEAR_M = 250
+
+# 다듬은 이름이 **똑같을 때만** 여기까지 넓힌다.
+# ⚠️ 받은 지시: "해변, 해수욕장은 빼고 이름만 가자" — 그러면 화면에는 짧은 이름만
+#    남는데, 250m 기준으로는 "망상 해수욕장"(37.594)과 "망상해수욕장"(37.598)이
+#    600m 떨어져 둘 다 살아남는다. 지도에 **같은 이름이 두 번** 뜬다.
+#    실측으로 걸린 것: 망상 600m · 송정 600m · 맹방 300m · 무창포 250m.
+# ⚠️ 이름이 같아도 1.5km 를 넘으면 합치지 않는다. 실제로 다른 곳이 있다 —
+#    송도(부산 35.08 / 포항 36.04) · 옥계(남해 34.98 / 동해 37.63) ·
+#    망양(울진 36.84 / 36.97, 12km). 이것들은 이름만 같은 남남이다.
+SAME_NAME_M = 1500
 HAN = re.compile(r'[가-힣]')
 TAIL = re.compile(r'\s*(해수욕장|해변|해안|해수욕|비치|야영장|캠핑장)+\s*$')
 PAREN = re.compile(r'\s*\([^)]*\)\s*')
@@ -54,7 +64,9 @@ for i, a in enumerate(B):
     for k in range(i + 1, len(B)):
         if k in drop: continue
         b = B[k]
-        if km(a['la'], a['lo'], b['la'], b['lo']) * 1000 > NEAR_M: continue
+        d = km(a['la'], a['lo'], b['la'], b['lo']) * 1000
+        same = short(a['n']) == short(b['n'])
+        if d > (SAME_NAME_M if same else NEAR_M): continue
         if not linked(a, b): continue
         keep, gone = (a, b) if better(a, b) else (b, a)
         # ⚠️ 버리는 쪽에만 방위가 있으면 그 값을 살린다 — 화면에 나오는 게 그 값이다
@@ -73,7 +85,7 @@ j['beaches'] = out
 j['count'] = len(out)
 j['withFacing'] = sum(1 for b in out if b.get('f') is not None)
 j['dedup'] = {
-    'nearM': NEAR_M, 'removed': len(drop),
+    'nearM': NEAR_M, 'sameNameM': SAME_NAME_M, 'removed': len(drop),
     'ko': '같은 해변이 이름만 달리 두 번 들어온 것을 합쳤습니다. '
           '가깝기만 하면 합치지 않고 **이름이 서로 이어질 때만** 합칩니다 — '
           '27m 떨어진 다른 해변을 하나로 만들지 않기 위해서입니다.',

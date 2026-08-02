@@ -325,6 +325,11 @@ function onPick(ev) {
     return;
   }
 
+  /* 지도에 찍은 해변을 눌렀을 때 — 목록의 그 카드로 데려간다.
+     ⚠️ 아래 _meta 갈래보다 **먼저** 본다. 해변 표시에는 _meta 가 없어서
+        그냥 두면 지도 클릭으로 처리돼 엉뚱한 지점 날씨가 열린다. */
+  if (picked?.id?._beach) { surfPanel.focus(picked.id._beach); return; }
+
   /** 화면 좌표 → 지표의 위경도. 지구를 안 가리켰으면 null. */
   const ground = () => {
     const cart = scene.camera.pickEllipsoid(ev.position, scene.globe.ellipsoid);

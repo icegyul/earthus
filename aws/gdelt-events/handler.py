@@ -102,7 +102,11 @@ WIRE = re.compile(
 
 WINDOW_HOURS = 3        # 몇 시간치를 모을지 (교차검증이 쌓이려면 창이 필요하다)
 CONFIRM_SCORE = 60      # 이 이상이면 "확정", 미만은 "미확정"
+MAX_EVENTS = 150
 MIN_SCORE = 25          # 이 아래는 아예 내보내지 않는다 (노이즈)
+# ⚠️ 화면에 내보내는 최대 건수. **뉴스가 많은 날에는 MIN_SCORE 가 아니라 이 값이
+#    실제 하한선을 정한다** (실측 2026-08-02: 중복제거 303건 → 150건으로 잘렸고,
+#    잘린 지점의 점수는 25 가 아니라 34 였다). rules.effectiveMinScore 참고.
 DEDUP_KM = 60           # 이 거리 안 + 같은 종류면 같은 사건으로 본다
 
 
@@ -313,7 +317,10 @@ def handler(event, context):
     # ⚠️ 자르기 전 개수를 남긴다. 앱의 "교차검증 결과" 깔때기가 이 값을 쓴다 —
     #    자른 뒤 값(150)을 넣으면 중복제거가 몇 건인지 알 수 없어진다.
     dedup_count = len(merged)
-    merged = merged[:150]
+    # ⚠️ 자르기 전 최저 점수를 남긴다 — 이게 그날의 **실제** 하한선이다
+    capped = len(merged) > MAX_EVENTS
+    merged = merged[:MAX_EVENTS]
+    eff_min = min((e["score"] for e in merged), default=None)
 
     # 기사 제목을 붙인다.
     # ⚠️ 제목이 없으면 화면에 "재난 보도 · Gironde, France" 같은 분류만 남는다.
@@ -340,6 +347,13 @@ def handler(event, context):
         "source": "GDELT 2.0 Events",
         "rules": {
             "confirmScore": CONFIRM_SCORE, "minScore": MIN_SCORE, "dedupKm": DEDUP_KM,
+            # ⚠️ 실제로 잘린 지점. MIN_SCORE 는 **뉴스가 적은 날에만** 작동한다 —
+            #    많은 날은 MAX_EVENTS 상한이 먼저 걸려서, 하한선이 25 가 아니라
+            #    그날 150번째 사건의 점수가 된다(실측 2026-08-02: 34점).
+            #    이걸 안 적으면 화면의 깔때기가 "25점 이상은 다 보여준다"로 읽힌다.
+            "effectiveMinScore": eff_min,
+            "cappedByLimit": capped,
+            "maxEvents": MAX_EVENTS,
         },
         "counts": {
             "raw": len(rows), "candidates": len(cand), "afterDedup": dedup_count,

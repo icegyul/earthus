@@ -77,6 +77,7 @@ UA = {"User-Agent": "earthus/0.1 (+globe app)"}
 
 # 묶는 반경. 큰 산불의 화선(fire front)은 수십 km 에 걸친다.
 CLUSTER_KM = 12.0
+MERGE_PASSES = 5        # 중심 병합 반복 상한 (보통 2~3회에 멎는다)
 # 이 미만은 버린다. 화전·소각 같은 작은 열원을 다 보여주면 지도가 덮인다.
 MIN_FRP = 8.0
 MIN_CLUSTER_FRP = 30.0      # 묶은 뒤 합산 FRP 가 이보다 작으면 안 보여준다
@@ -180,7 +181,71 @@ def cluster(pts):
         })
 
     out.sort(key=lambda x: -x["frp"])
+    # ⚠️ 한 번으로는 안 끝난다. 합치면 중심이 또 옮겨져 다른 불과 가까워질 수 있다.
+    #    실측: 1회 46→2개, 안정될 때까지 돌리면 0개. 보통 2~3회면 멎는다.
+    for _ in range(MERGE_PASSES):
+        before = len(out)
+        out = _merge_close(out)
+        if len(out) == before:
+            break
     return out
+
+
+def _merge_close(fires):
+    """중심끼리 CLUSTER_KM 안에 든 불을 합친다.
+
+    ⚠️ 왜 필요한가 (실측 2026-08-02)
+       "12km 안의 탐지를 한 불로 묶는다"고 화면에 적어 두었는데,
+       표시된 불 808개 중 **46개(6%)가 서로 12km 안에** 있었다.
+       사용자가 8km 떨어진 두 불을 보면 우리 설명이 거짓이 된다.
+
+       원인은 버그가 아니라 순서다:
+         ① 가장 뜨거운 점을 씨앗으로 삼아 **씨앗에서** 12km 안을 모으고
+         ② 중심은 FRP **가중평균**으로 옮긴다
+       씨앗끼리는 12km 넘게 떨어져 있어도, 중심이 서로를 향해 끌리면
+       가까워질 수 있다. 묶기는 씨앗 기준, 표시는 중심 기준이라 생기는 틈이다.
+
+    → 중심을 낸 뒤 한 번 더 훑어 붙인다. 이러면 "표시된 어떤 두 불도
+      12km 안에 있지 않다"가 참이 된다 — 우리가 화면에 적은 그대로.
+
+    ⚠️ 이건 이음매를 메우는 것이지 군집 방식을 바꾸는 것이 아니다.
+       "씨앗 탐욕 방식이 긴 화선을 임의로 자르지 않는가"는 별개의 물음이고,
+       문헌을 확인한 뒤에 손대야 한다 (docs/methodology-sources.md).
+    """
+    merged, used = [], set()
+    for i, a in enumerate(fires):                 # FRP 큰 순 (이미 정렬됨)
+        if i in used:
+            continue
+        group = [a]
+        for k in range(i + 1, len(fires)):
+            if k in used:
+                continue
+            b = fires[k]
+            if km(a["lat"], a["lon"], b["lat"], b["lon"]) <= CLUSTER_KM:
+                group.append(b)
+                used.add(k)
+        if len(group) == 1:
+            merged.append(a)
+            continue
+        tot = sum(g["frp"] for g in group)
+        lat = sum(g["lat"] * g["frp"] for g in group) / tot
+        lon = sum(g["lon"] * g["frp"] for g in group) / tot
+        latest = max(group, key=lambda g: (g["date"] or "", g["time"] or ""))
+        merged.append({
+            "lat": round(lat, 4), "lon": round(lon, 4),
+            "frp": round(tot, 1),
+            "peak": round(max(g["peak"] for g in group), 1),
+            "count": sum(g["count"] for g in group),
+            "date": latest["date"], "time": latest["time"],
+            "sats": sorted({s2 for g in group for s2 in g["sats"]}),
+            "highConf": sum(g["highConf"] for g in group),
+            # 합친 뒤의 화선 길이 — 중심에서 가장 먼 구성 불까지의 두 배
+            "spanKm": round(max(
+                max(km(lat, lon, g["lat"], g["lon"]) * 2, g["spanKm"])
+                for g in group), 1),
+        })
+    merged.sort(key=lambda x: -x["frp"])
+    return merged
 
 
 def load_state():

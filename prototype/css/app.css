@@ -1456,3 +1456,37 @@ body.is-ambient #windLegend.on{ opacity:0; }
   .mt-main{ flex-direction:column; gap:10px }
   .mt-temp{ min-width:0 }
 }
+
+/* ── 서핑 시트 ───────────────────────────────────────────────────
+   산 시트(.mt-*)의 뼈대를 그대로 쓰고 여기서는 다른 부분만 더한다.
+   ⚠️ 색으로 좋고 나쁨을 말하되 **점수는 만들지 않는다** — 셋을 각각 보여준다. */
+.sf-main{ display:flex; gap:24px; align-items:flex-start; margin-bottom:12px }
+.sf-h,.sf-p{ min-width:74px }
+.sf-h .n,.sf-p .n{ font-size:34px; font-weight:300; letter-spacing:-.04em;
+                   font-variant-numeric:tabular-nums }
+.sf-h .u,.sf-p .u{ font-size:17px; color:var(--fog); margin-left:2px }
+.sf-h .lab,.sf-p .lab{ display:block; color:var(--dim); font-size:11.5px; margin-top:2px }
+
+.sf-rows{ list-style:none; margin:0; padding:0; display:flex;
+          flex-direction:column; gap:7px }
+.sf-rows li{ display:flex; align-items:baseline; gap:9px; font-size:13.5px;
+             padding-left:10px; border-left:2px solid var(--line) }
+.sf-rows i{ color:var(--dim); font-style:normal; flex:none; min-width:38px }
+.sf-rows b{ font-weight:600 }
+.sf-rows b.dim{ color:var(--dim); font-weight:400 }
+.sf-rows em{ margin-left:auto; color:var(--dim); font-style:normal; font-size:12px;
+             font-variant-numeric:tabular-nums }
+.sf-rows li.good{ border-left-color:var(--teal) }
+.sf-rows li.good b{ color:var(--teal) }
+.sf-rows li.ok{ border-left-color:rgba(242,245,248,.3) }
+.sf-rows li.weak{ border-left-color:var(--amber) }
+.sf-rows li.weak b{ color:var(--amber) }
+.sf-rows li.bad{ border-left-color:var(--red) }
+.sf-rows li.bad b{ color:var(--red) }
+
+.sf-none{ color:var(--dim); font-size:13px; line-height:1.6; margin:0 }
+
+@media (max-width:520px){
+  .sf-main{ gap:18px }
+  .sf-h,.sf-p{ min-width:64px }
+}

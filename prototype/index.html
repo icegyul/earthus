@@ -265,6 +265,11 @@
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2.4c.9 0 1.5 1.1 1.5 2.6v3.4l7.4 4.3v2.1l-7.4-2.3v4.2l2.5 1.8v1.6L12 19.3l-4 .8v-1.6l2.5-1.8v-4.2L3.1 14.8v-2.1l7.4-4.3V5c0-1.5.6-2.6 1.5-2.6z"/></svg></span>
       <span class="mm-label">항공편</span><span class="mm-badge" id="flightBadge"></span>
     </button>
+    <!-- 서핑 — 스웰이 이 해변에 들어오는가. 해변 방위는 미리 계산해 둔 정적 자료다. -->
+    <button class="mm-item" data-act="surf">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.4 16.6c1.6 0 1.6-1.5 3.2-1.5s1.6 1.5 3.2 1.5 1.6-1.5 3.2-1.5 1.6 1.5 3.2 1.5 1.6-1.5 3.2-1.5 1.6 1.5 3.2 1.5"/><path d="M2.4 20.2c1.6 0 1.6-1.5 3.2-1.5s1.6 1.5 3.2 1.5 1.6-1.5 3.2-1.5 1.6 1.5 3.2 1.5 1.6-1.5 3.2-1.5 1.6 1.5 3.2 1.5"/><path d="M6.6 11.4c2-4.4 6.2-7.3 10.8-7.3-.4 3.6-2.3 6.6-5 8.4"/></svg></span>
+      <span class="mm-label">서핑</span><span class="mm-badge" id="sfBadge"></span>
+    </button>
     <!-- 산 — 정상 예보와 실측을 나란히. 등산객을 대상으로 한 첫 기능이다. -->
     <button class="mm-item" data-act="mountain">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M2.6 19.4 9.4 7.2l4.1 7.1 2.2-3.4 5.7 8.5z"/><path d="M7.6 10.4h3.6" stroke-linecap="round"/></svg></span>
@@ -342,6 +347,12 @@
     <div class="traffic one"><button class="tl close" data-close="wxSheet" aria-label="닫기"><span>×</span></button></div>
     <h3 id="wxTitle">내 자리</h3>
     <div id="wxBody"></div>
+  </div>
+
+  <div id="sfSheet" class="sheet-panel tall">
+    <div class="traffic one"><button class="tl close" data-close="sfSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3>서핑</h3>
+    <div id="sfBody"></div>
   </div>
 
   <div id="mtSheet" class="sheet-panel tall">

@@ -31,6 +31,7 @@ import { warn } from './warn.js';
 import { warnUI } from './ui-warn.js';
 import { koreaPanel } from './ui-korea.js';
 import { mountainPanel } from './ui-mountain.js';
+import { surfPanel } from './ui-surf.js';
 import { apiKeysPanel } from './ui-apikeys.js';
 import { eventPanel } from './ui-events.js';
 
@@ -133,6 +134,7 @@ async function boot() {
       c.longitude, c.latitude, fitGlobeHeight()), duration: 1.4 });
   });
   layerBar.onAction('sat', () => satPanel.open());
+  layerBar.onAction('surf', () => surfPanel.open());
   layerBar.onAction('mountain', () => mountainPanel.open());
   layerBar.onAction('sky', () => skyPanel.open());
   layerBar.onAction('flight', () => flightPanel.open());
@@ -201,6 +203,7 @@ async function boot() {
   warnUI.init();
   koreaPanel.init();
   mountainPanel.init();
+  surfPanel.init();
   warn.init();
   apiKeysPanel.init();
   document.getElementById('btnApi')?.addEventListener('click', () => apiKeysPanel.open());

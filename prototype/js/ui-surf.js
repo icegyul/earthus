@@ -139,7 +139,9 @@ export const surfPanel = {
     const h = viewer.camera?.positionCartographic?.height ?? 0;
     const want = h > REGION_M ? 'region' : 'beach';
     // 높이가 문턱을 넘나들면 표시를 갈아 끼운다
-    if (want !== this._markMode) { this._marks(); }
+    /* ⚠️ 지도만 갈아 끼우면 시트는 그대로다 — 지도는 해변을 찍는데 목록은
+       바다별 표를 보여주는 어긋남이 낚시 화면에서 실측으로 걸렸다. */
+    if (want !== this._markMode) { this._marks(); this.render(); }
     if (want === 'region') { this._hereBtn(false); return; }
 
     /* 받은 지적: "표시가 안 나온 지역으로 가면 정보보기 버튼 나와서 나오게 해주면 되"
@@ -324,7 +326,17 @@ export const surfPanel = {
             둘 다 살아남아 지도에 "망상"이 두 번 떴다. 화면에서 긴 이름으로
             되돌리는 방식은 지시를 어기는 것이므로, dedup-beaches.py 의
             SAME_NAME_M(1.5km) 규칙으로 자료에서 합쳤다. 지금 겹치는 쌍은 0 이다. */
+      /* ⚠️⚠️ 좌우 번갈이만으로는 부족한 곳이 있다. 서해·남해는 해변이 촘촘해
+         120km 상공에서 이름표가 서로를 덮는다(낚시 화면에서 먼저 걸렸다).
+         → 앞서 이름을 단 곳에서 **실거리로 멀리 떨어진 것만** 이름을 단다.
+           나머지는 핀만 찍는다 — 있다는 건 보이고, 확대하면 이름이 나온다.
+         ⚠️ 화면 좌표가 아니라 실거리로 판단한다. 카메라가 움직일 때마다 다시
+            계산하지 않기 위해서다(이 앱 발열의 원인이었다). */
+      const LABEL_GAP_KM = 4;
+      const labeled = [];
       ordered.forEach((b, i) => {
+        const far = labeled.every(p => distKm(p.lat, p.lon, b.lat, b.lon) >= LABEL_GAP_KM);
+        if (far) labeled.push(b);
         const sea = beaches._sea.get(b.name) || null;
         /* ⚠️ 값이 없으면 그 자리를 **비운다**. 0 으로 채우면 "파도가 없다"로 읽힌다.
            ⚠️ 받은 지시: 이름 **옆에** 정보. 두 줄로 쌓으면 지도가 글자로 덮인다.
@@ -346,7 +358,7 @@ export const surfPanel = {
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
             distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, MARK_MAX_M),
           },
-          label: {
+          ...(far ? { label: {
             text,
             font: '600 11px -apple-system, sans-serif',
             fillColor: Cesium.Color.WHITE,
@@ -361,7 +373,7 @@ export const surfPanel = {
             pixelOffset: new Cesium.Cartesian2(right ? 14 : -14, 0),
             distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, MARK_MAX_M),
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
-          },
+          } } : {}),
           // 누르면 목록의 그 카드로 데려간다 (main.js 의 onPick 참고)
           _beach: b.name,
         });

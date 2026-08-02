@@ -32,6 +32,8 @@ import { warnUI } from './ui-warn.js';
 import { koreaPanel } from './ui-korea.js';
 import { mountainPanel } from './ui-mountain.js';
 import { surfPanel } from './ui-surf.js';
+import { fishPanel } from './ui-fishing.js';
+import { outdoorPanel } from './ui-outdoor.js';
 import { apiKeysPanel } from './ui-apikeys.js';
 import { eventPanel } from './ui-events.js';
 
@@ -139,7 +141,12 @@ async function boot() {
       c.longitude, c.latitude, fitGlobeHeight()), duration: 1.4 });
   });
   layerBar.onAction('sat', () => satPanel.open());
+  /* 나가기 전에 — 서핑·낚시·산·하늘을 한자리에 모았다 (ui-outdoor.js 머리말 참고).
+     ⚠️ 옛 메뉴 항목(surf/mountain/sky)도 그대로 살려 둔다. 검색·코치마크·딥링크가
+        그 이름으로 부르고 있어, 지우면 조용히 안 열린다. */
+  layerBar.onAction('outdoor', () => outdoorPanel.open());
   layerBar.onAction('surf', () => surfPanel.open());
+  layerBar.onAction('fishing', () => fishPanel.open());
   layerBar.onAction('mountain', () => mountainPanel.open());
   layerBar.onAction('sky', () => skyPanel.open());
   layerBar.onAction('flight', () => flightPanel.open());
@@ -209,6 +216,11 @@ async function boot() {
   koreaPanel.init();
   mountainPanel.init();
   surfPanel.init();
+  fishPanel.init();
+  outdoorPanel.init(act => {
+    ({ surf: () => surfPanel.open(), fishing: () => fishPanel.open(),
+       mountain: () => mountainPanel.open(), sky: () => skyPanel.open() })[act]?.();
+  });
   warn.init();
   apiKeysPanel.init();
   document.getElementById('btnApi')?.addEventListener('click', () => apiKeysPanel.open());
@@ -331,6 +343,8 @@ function onPick(ev) {
   if (picked?.id?._beach) { surfPanel.focus(picked.id._beach); return; }
   // 권역 대표를 누르면 그 권역으로 들어간다 (멀리서 → 가까이)
   if (picked?.id?._surfRegion) { surfPanel.openRegion(picked.id._surfRegion); return; }
+  if (picked?.id?._fishSpot) { fishPanel.focus(picked.id._fishSpot); return; }
+  if (picked?.id?._fishRegion) { fishPanel.openRegion(picked.id._fishRegion); return; }
 
   /** 화면 좌표 → 지표의 위경도. 지구를 안 가리켰으면 null. */
   const ground = () => {

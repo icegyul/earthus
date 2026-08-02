@@ -15,9 +15,9 @@
 import { i18n } from './i18n.js';
 import { beaches, shortName, shortRegion } from './beaches.js';
 import { judge, SURF_RULES } from './surf.js';
-import { get, nearest } from './korea.js';
+import { get, nearest, distKm } from './korea.js';
 import { myLocation } from './mylocation.js';
-import { viewer } from './viewer.js';
+import { viewer, onCameraIdle } from './viewer.js';
 import { intro } from './intro.js';
 
 const $ = s => document.querySelector(s);
@@ -49,6 +49,25 @@ const ZOOM_SKIP_M = 300_000;
 
 /* 지도 위 표시가 보이는 거리. ⚠️ 전지구에서 해변 12개 이름표가 뜨면 지구가 안 보인다. */
 const MARK_MAX_M = 1_400_000;
+
+/* 이 높이보다 위에서는 **권역 대표 하나씩**만 찍는다.
+   받은 지적: "이렇게 한반도를 보면 다 나올 필요 없어. 동서남 표차가 큰 대표 지역만
+              보여줘도 돼. 그럼 사용자가 큰 파도가 어딘지 금방 찾겠지. 어차피 그 근처
+              바다는 파도 차이가 크게 없거든. 디테일하게 보고 싶으면 확대해서 보겠지"
+   ⚠️ 실측(고도 929km, 한반도 전체): 해변 12개가 전부 동해 남부 한 점에 뭉쳐
+      이름표가 서로를 덮었다 — 대탄·조살·칠포·영덕이 한 덩어리로 못 읽었다.
+      그 화면에서 알고 싶은 건 "어느 바다가 큰가"지 "칠포가 0.3m"가 아니다.
+   ⚠️ 권역을 더 뭉치지는 않는다. 동해를 하나로 합치자는 생각이 들 수 있는데,
+      태풍·저기압 위치에 따라 **동해 북부와 남부는 실제로 갈린다.** */
+const REGION_M = 300_000;
+
+/* 권역마다 몇 곳을 재서 대표값을 낼까.
+   ⚠️ 한 곳만 재면 그 지점의 사정(만·방파제)이 권역 전체가 된다.
+   ⚠️ 많이 재면 요청이 늘어난다. 권역 8곳 × 3 = 24지점 = 한 번에 두 묶음이면 끝난다. */
+const REGION_SAMPLES = 3;
+
+/* 지도를 이만큼 옮기면 "여긴 다른 지역"으로 보고 버튼을 띄운다. */
+const AWAY_KM = 90;
 
 /* 해변 핀 — 네이버 지도처럼 **동그란 아이콘**으로 찍는다.
    받은 요청: 보내 준 네이버 화면처럼 "이렇게 표시해주고 옆에 정보를".
@@ -88,6 +107,7 @@ export const surfPanel = {
   init() {
     document.addEventListener('click', async (e) => {
       if (e.target.closest('[data-sf-grow]')) { this.toggleHeight(); return; }
+      if (e.target.closest('#sfHere')) { this.here(); return; }
       const t = e.target.closest('[data-sf-tab]');
       if (t) { this._tab = t.dataset.sfTab; this.render(); return; }
       const r = e.target.closest('[data-sf-region]');
@@ -105,7 +125,59 @@ export const surfPanel = {
         this._zoom(true);
       }
     });
+    /* 지도를 옮기면 화면이 따라와야 한다.
+       ⚠️ 매 프레임이 아니라 **멈췄을 때만** 본다. 카메라가 움직이는 동안 전 지점을
+          다시 계산하는 것이 이 앱 발열의 원인이었다(pointLayer 머리말 참고). */
+    onCameraIdle(() => this._onCamera());
     return this;
+  },
+
+  /* 지도가 멈췄다 — 무엇을 보여줄지 다시 정한다 */
+  _onCamera() {
+    const el = $('#sfSheet');
+    if (!el?.classList.contains('up')) { this._hereBtn(false); return; }
+    const h = viewer.camera?.positionCartographic?.height ?? 0;
+    const want = h > REGION_M ? 'region' : 'beach';
+    // 높이가 문턱을 넘나들면 표시를 갈아 끼운다
+    if (want !== this._markMode) { this._marks(); }
+    if (want === 'region') { this._hereBtn(false); return; }
+
+    /* 받은 지적: "표시가 안 나온 지역으로 가면 정보보기 버튼 나와서 나오게 해주면 되"
+       ⚠️ 여기서 **자동으로 다시 받지 않는다.** 지도를 조금 미는 것만으로 목록이
+          바뀌면 읽던 것을 잃는다. 물어보고, 누를 때만 바꾼다. */
+    const c = this._center();
+    let away = Infinity;
+    try {
+      const p = viewer.camera.positionCartographic;
+      if (c && p) away = distKm(Cesium.Math.toDegrees(p.latitude),
+                                Cesium.Math.toDegrees(p.longitude), c.lat, c.lon);
+    } catch (_) { }
+    this._hereBtn(away > AWAY_KM);
+  },
+
+  _hereBtn(on) {
+    let b = document.getElementById('sfHere');
+    if (!on) { b?.classList.remove('on'); return; }
+    if (!b) {
+      b = document.createElement('button');
+      b.id = 'sfHere';
+      document.body.appendChild(b);
+    }
+    b.textContent = i18n.lang === 'ko' ? '이 지역 해변 보기' : 'Search this area';
+    b.classList.add('on');
+  },
+
+  /** 지금 보고 있는 지도 기준으로 다시 고른다.
+      ⚠️ 카메라는 **건드리지 않는다.** 사용자가 고른 자리다. */
+  async here() {
+    this._region = null;
+    this._hereBtn(false);
+    const body = $('#sfBody');
+    if (body) body.insertAdjacentHTML('afterbegin',
+      `<p class="mt-load sf-loading">${i18n.lang === 'ko' ? '받는 중…' : 'Loading…'}</p>`);
+    await this._fill();
+    this.render();
+    this._marks();
   },
 
   async open() {
@@ -142,6 +214,7 @@ export const surfPanel = {
   close() {
     $('#sfSheet')?.classList.remove('up');
     this._clearMarks();
+    this._hereBtn(false);
   },
 
   /* ══ 지도로 내려간다 ══════════════════════════════════════════════
@@ -221,15 +294,20 @@ export const surfPanel = {
         어디인지와 지금 어떤지가 같이 보여야 목록을 안 열어도 읽힌다.
      ⚠️ 너울 높이와 수온만 올린다. 카드에 있는 것을 다 올리면 이름표가 지도를 덮는다. */
   _marks() {
+    /* 높이에 따라 **무엇을 찍을지가 다르다.**
+       멀리서는 "어느 바다가 큰가", 가까이서는 "이 해변이 지금 어떤가"를 묻는다.
+       ⚠️ 같은 것을 크기만 줄여 보여주면 둘 다 못 읽는다 — 실측에서 12개가 한 점에 뭉쳤다. */
+    const h = viewer.camera?.positionCartographic?.height ?? 0;
+    const mode = h > REGION_M ? 'region' : 'beach';
+    this._markMode = mode;
+    if (mode === 'region') { this._regionsDrawn = false; this._markRegions(); return; }
+
     this._clearMarks();
     const ko = i18n.lang === 'ko';
     const list = this._pick || [];
     if (!list.length) return;
     try {
-      if (!this._ds) {
-        this._ds = new Cesium.CustomDataSource('surf');
-        viewer.dataSources.add(this._ds);
-      }
+      this._ensureDs();
       const img = pinImage();
       /* ⚠️⚠️ 이름표가 서로 **겹친다.** 한국 동해안은 해변이 5km 간격으로 붙어 있어
          120km 상공에서 33px 밖에 안 떨어진다 — 이름표 높이가 20px 이니 다 포개진다.
@@ -291,6 +369,122 @@ export const surfPanel = {
     } catch (e) {
       console.warn('[서핑] 지도 표시 실패 —', e.message);
     }
+  },
+
+  _ensureDs() {
+    if (!this._ds) {
+      this._ds = new Cesium.CustomDataSource('surf');
+      viewer.dataSources.add(this._ds);
+    }
+    return this._ds;
+  },
+
+  /* ══ 권역 대표 ════════════════════════════════════════════════════
+     한반도 전체가 보이는 높이에서는 권역마다 하나씩만 찍는다.
+
+     ⚠️⚠️ 값은 **그 권역에서 가장 큰 너울**이다. 평균이 아니다.
+        이 화면에서 묻는 것이 "큰 파도가 어디냐"이기 때문이다 —
+        평균을 쓰면 한 곳만 크게 이는 날에 그 권역이 조용해 보인다.
+     ⚠️ 몇 곳을 재서 낸 값인지 시트에 적는다. 권역 전체를 잰 것처럼 말하지 않는다.
+     ⚠️ 한 곳만 재면 그 지점 사정(만·방파제)이 권역 전체가 된다 → 3곳을 고르게 뽑는다. */
+  async _fillRegions() {
+    if (this._regions && Date.now() - this._regionsAt < 10 * 60_000) return this._regions;
+    const picks = [];
+    const byRegion = new Map();
+    beaches.regions().forEach(r => {
+      const l = beaches.byRegion(r).filter(b => b.facing != null)
+        .sort((a, b) => b.lat - a.lat);
+      if (!l.length) return;
+      // 권역 안에서 고르게 — 처음·가운데·끝
+      const take = [];
+      for (let i = 0; i < REGION_SAMPLES; i++) {
+        const idx = Math.round((i / Math.max(1, REGION_SAMPLES - 1)) * (l.length - 1));
+        if (!take.includes(l[idx])) take.push(l[idx]);
+      }
+      byRegion.set(r, take);
+      picks.push(...take);
+    });
+    await beaches.sea(picks);
+
+    const out = [];
+    byRegion.forEach((take, r) => {
+      const seas = take.map(b => beaches._sea.get(b.name)).filter(Boolean);
+      /* ⚠️ 자료를 못 받은 권역은 **값 없이** 내보낸다. 0 으로 채우면 "잔잔하다"가 된다. */
+      const sw = seas.map(s => s.swellH).filter(v => v != null);
+      const st = seas.map(s => s.sst).filter(v => v != null);
+      const all = beaches.byRegion(r).filter(b => b.facing != null);
+      out.push({
+        region: r,
+        lat: all.reduce((s, b) => s + b.lat, 0) / all.length,
+        lon: all.reduce((s, b) => s + b.lon, 0) / all.length,
+        maxSwell: sw.length ? Math.max(...sw) : null,
+        sst: st.length ? st.reduce((a, b) => a + b, 0) / st.length : null,
+        sampled: seas.length, of: take.length, beaches: all.length,
+      });
+    });
+    this._regions = out;
+    this._regionsAt = Date.now();
+    return out;
+  },
+
+  _markRegions() {
+    const ko = i18n.lang === 'ko';
+    this._fillRegions().then(rows => {
+      // 그리는 사이에 확대했으면 그만둔다 (권역 표시가 개별 표시를 덮어쓰면 안 된다)
+      if (this._markMode !== 'region') return;
+      /* 값이 방금 도착했으면 시트도 다시 그린다 — 지도만 바뀌고 목록이 그대로면
+         둘이 다른 말을 하게 된다. */
+      if (!this._regionsDrawn) { this._regionsDrawn = true; this.render(); }
+      this._clearMarks();
+      this._ensureDs();
+      const img = pinImage();
+      /* 가장 큰 곳을 밝게. ⚠️ 색으로 "좋다/나쁘다"를 말하지 않는다 — 크기만 말한다. */
+      const top = rows.reduce((a, b) => ((b.maxSwell ?? -1) > (a?.maxSwell ?? -1) ? b : a), null);
+      rows.forEach((r, i) => {
+        const bits = [];
+        if (r.maxSwell != null) bits.push(`${r.maxSwell.toFixed(1)}m`);
+        if (r.sst != null) bits.push(`${r.sst.toFixed(0)}°`);
+        const isTop = top && r === top && r.maxSwell != null;
+        const text = shortRegion(r.region) + (bits.length ? '  ' + bits.join(' · ') : '')
+          + (isTop ? (ko ? '  ← 가장 큼' : '  ← highest') : '');
+        this._ds.entities.add({
+          id: `surf:r:${r.region}`,
+          position: Cesium.Cartesian3.fromDegrees(r.lon, r.lat),
+          billboard: {
+            image: img, width: isTop ? 30 : 24, height: isTop ? 30 : 24,
+            verticalOrigin: Cesium.VerticalOrigin.CENTER,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          },
+          label: {
+            text,
+            font: `${isTop ? 700 : 600} 12px -apple-system, sans-serif`,
+            fillColor: Cesium.Color.WHITE,
+            showBackground: true,
+            backgroundColor: Cesium.Color.fromCssColorString(isTop ? '#12333d' : '#0b1a20')
+              .withAlpha(0.82),
+            backgroundPadding: new Cesium.Cartesian2(7, 5),
+            style: Cesium.LabelStyle.FILL,
+            verticalOrigin: Cesium.VerticalOrigin.CENTER,
+            horizontalOrigin: i % 2 ? Cesium.HorizontalOrigin.RIGHT
+                                    : Cesium.HorizontalOrigin.LEFT,
+            pixelOffset: new Cesium.Cartesian2(i % 2 ? -16 : 16, 0),
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          },
+          // 누르면 그 권역으로 들어간다
+          _surfRegion: r.region,
+        });
+      });
+    }).catch(e => console.warn('[서핑] 권역 표시 실패 —', e.message));
+  },
+
+  /** 지도에서 권역을 눌렀을 때 — 그 권역으로 들어간다 */
+  async openRegion(region) {
+    this._region = region;
+    $('#sfSheet')?.classList.add('up', 'peek');
+    await this._fill();
+    this.render();
+    this._marks();
+    this._zoom(true);
   },
 
   _clearMarks() {
@@ -384,9 +578,39 @@ export const surfPanel = {
                  home: '<b>양양 기준</b>입니다 (위치를 모릅니다) · ' }[this._at?.from] || ''}`
             + `해변 ${m.count}곳 중 바다 방향을 낸 곳 ${m.withFacing}곳 · 파랑 자료 Open-Meteo 해양`
           : `${m.withFacing} of ${m.count} beaches have a shore orientation · waves: Open-Meteo Marine`}</p>
+        ${this._markMode === 'region' ? this._regionList(ko) : ''}
         <div class="mt-list">${list.map(b => this._card(b, ko)).join('')}</div>
         ${this._foot(ko)}`}
     `;
+  },
+
+  /* 멀리서 볼 때 — 어느 바다가 큰가를 먼저 말한다.
+     ⚠️ 지도에는 권역 대표를 찍어 놓고 목록만 개별 해변이면 둘이 어긋난다.
+        지도가 권역을 말하는 동안에는 시트도 권역을 먼저 말한다.
+     ⚠️⚠️ **"몇 곳을 재서 낸 값"인지 반드시 적는다.** 권역 전체를 잰 것이 아니다.
+        3지점의 최댓값을 "동해 중부 0.8m"라고만 쓰면 잰 적 없는 곳까지 단정하게 된다. */
+  _regionList(ko) {
+    const rows = (this._regions || []).slice()
+      .sort((a, b) => (b.maxSwell ?? -1) - (a.maxSwell ?? -1));
+    if (!rows.length) return '';
+    const items = rows.map((r, i) => `
+      <button class="sf-rg${i === 0 && r.maxSwell != null ? ' top' : ''}"
+              data-sf-region="${esc(r.region)}">
+        <b>${esc(shortRegion(r.region))}</b>
+        <span class="n">${r.maxSwell == null ? '—' : r.maxSwell.toFixed(1) + 'm'}</span>
+        <em>${r.sst == null ? '' : r.sst.toFixed(0) + '°'}</em>
+      </button>`).join('');
+    return `
+      <div class="sf-rglist">
+        <p class="sf-rghead">${ko
+          ? `바다별 <b>가장 큰 너울</b> · 권역마다 ${REGION_SAMPLES}곳을 재서 낸 값입니다`
+          : `Largest swell by sea · sampled at ${REGION_SAMPLES} points per region`}</p>
+        ${items}
+        <p class="sf-rgnote">${ko
+          ? '⚠️ 권역 전체를 잰 값이 아닙니다. 그 안에서도 만·방파제에 따라 크게 다릅니다 — '
+            + '보고 싶은 바다를 누르거나 지도를 확대하면 해변별로 나옵니다.'
+          : '⚠️ Not a survey of the whole region. Tap a sea or zoom in for individual beaches.'}</p>
+      </div>`;
   },
 
   _windAt(b) {

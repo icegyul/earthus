@@ -329,6 +329,8 @@ function onPick(ev) {
      ⚠️ 아래 _meta 갈래보다 **먼저** 본다. 해변 표시에는 _meta 가 없어서
         그냥 두면 지도 클릭으로 처리돼 엉뚱한 지점 날씨가 열린다. */
   if (picked?.id?._beach) { surfPanel.focus(picked.id._beach); return; }
+  // 권역 대표를 누르면 그 권역으로 들어간다 (멀리서 → 가까이)
+  if (picked?.id?._surfRegion) { surfPanel.openRegion(picked.id._surfRegion); return; }
 
   /** 화면 좌표 → 지표의 위경도. 지구를 안 가리켰으면 null. */
   const ground = () => {

@@ -57,7 +57,18 @@ export class PointLayer {
           "여기서 이만큼 규모의 일이 있었다"는 정보는 남기고 움직임만 뺀다. */
     const at = m.at ?? m.data?._time;
     const ageMin = at != null ? (Date.now() - at) / 60_000 : 0;
-    if (ageMin > RIPPLE_MAX_AGE_MIN || this._rippleN >= RIPPLE_MAX) {
+    /* ⚠️⚠️ **안 보이는 파문에는 움직임을 주지 않는다.**
+       실측(2026-08-02, 고도 3,321km · 뉴스만 켠 상태):
+         · 화면에 움직이는 것 0개 · 카메라 정지 · 타일 로드 완료
+         · 그런데 **8초에 306프레임**(초당 38장)을 그리고 있었다
+         · 렌더를 요청한 곳을 스택으로 잡아 보니 전부 power.js 였고,
+           power 를 깨운 것은 여기서 부른 animate(24초)였다
+       그 높이는 pinsVisible() 이 false 라 **점 레이어 전체가 숨겨져 있다.**
+       아무도 못 보는 파문 때문에 24초 동안 30fps 로 지구를 다시 그렸다.
+       지진 갱신은 2분마다 돌아오므로 사실상 쉬지 않는다.
+       → 안 보이면 정적인 원만 남긴다. 정보는 남고 비용은 0 이다. */
+    if (ageMin > RIPPLE_MAX_AGE_MIN || this._rippleN >= RIPPLE_MAX
+        || !this._rippleVisible(meta)) {
       this._staticRing(m, color, maxM, meta, layerId);
       return;
     }
@@ -93,6 +104,16 @@ export class PointLayer {
     /* 이 시간만 그린다. 지나면 스스로 정적으로 바뀐다 — 아무도 안 깨워주면 멈춘다. */
     power.animate(RIPPLE_LIFE_MS);
     setTimeout(() => this._retireRipples(m, color, maxM, meta, layerId), RIPPLE_LIFE_MS);
+  }
+
+  /** 지금 이 파문이 화면에 보이는가.
+      ⚠️ applyVisibility() 와 **같은 규칙**이어야 한다. 두 곳이 달라지면
+         보이는데 안 움직이거나, 안 보이는데 계속 그리는 일이 생긴다. */
+  _rippleVisible(meta) {
+    if (!store.isOn(this.id)) return false;
+    if (store.pinsVisible()) return true;
+    // 전지구에서도 보이는 층(지진 등)은 주인이 그 문턱을 넘었을 때만
+    return !!(this.globalOK && meta && this.globalOK(meta));
   }
 
   /** 파문을 걷고 정적인 원으로 바꾼다.
@@ -270,7 +291,11 @@ export class PointLayer {
     const layerOn = store.isOn(this.id);
     const pinsOn = store.pinsVisible();
 
-    if (!layerOn) { this.ds.show = false; return; }
+    if (!layerOn) { this.ds.show = false; this._freezeRipples(); return; }
+    /* ⚠️ 안 보이게 되는 순간 파문을 굳힌다. 안 그러면 숨은 채로 남은 파문의
+       CallbackProperty 가 계속 평가되고, animate(24초) 요청도 그대로 흐른다
+       (고도 3,321km 발열의 원인 — _addRipples 머리말 참고). */
+    if (!pinsOn && !this.globalOK) this._freezeRipples();
 
     /* ⚠️ 파문 엔티티는 _meta 가 없다. globalOK 에 넘기면 터진다 (실제로 터졌다).
        파문은 주인 핀을 따라가야 하므로, 주인의 표시 여부를 그대로 물려준다. */
@@ -287,6 +312,26 @@ export class PointLayer {
       const want = store.cluster && pinsOn;
       if (this.ds.clustering.enabled !== want) this.ds.clustering.enabled = want;
     }
+  }
+
+  /** 살아 있는 파문을 지금 모습으로 굳힌다 (모양은 남고 계산은 0) */
+  _freezeRipples() {
+    if (!this._rippleN) return;
+    const now = Cesium.JulianDate.now();
+    this.ds.entities.values.forEach(e => {
+      if (!e._ripple || !e.ellipse) return;
+      try {
+        const a = e.ellipse.semiMajorAxis?.getValue(now);
+        if (a == null) return;
+        e.ellipse.semiMajorAxis = a;
+        e.ellipse.semiMinorAxis = a;
+        const mat = e.ellipse.material?.getValue(now);
+        if (mat?.color) e.ellipse.material = new Cesium.ColorMaterialProperty(mat.color);
+        const oc = e.ellipse.outlineColor?.getValue(now);
+        if (oc) e.ellipse.outlineColor = oc;
+      } catch (_) { /* 이미 정적이면 넘어간다 */ }
+    });
+    this._rippleN = 0;
   }
 
   count() {

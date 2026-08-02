@@ -300,8 +300,9 @@ export const narrative = {
        ⚠️ Lambda 가 연속 2일 확인한 것(publish)만 쓴다. 하루 튐으로 쓰지 않는다. */
     const pub = st?.publish;
     if (pub && (pub.left?.length || pub.entered?.length)) {
-      const L = { 초열대야: '초열대야', 열대야: '열대야', 고온: '고온',
-                  저온: '저온', 다습: '습한 상태', 불안정: '대기 불안정' };
+      const L = { 초열대야: '초열대야', 열대야: '열대야', 고온: '고온', 저온: '저온',
+                  다습: '수증기가 많은 상태', 건조: '수증기가 적은 상태',
+                  불안정: '대기 불안정' };
       if (pub.left?.length) {
         const w = pub.left.map(x => L[x] || x).join('·');
         cands.push({ w: 999, level: 'event',
@@ -317,6 +318,24 @@ export const narrative = {
           why: ko ? '남·중·북 세 곳 중 둘 이상에서 그 상태가 나타났고, '
                   + '이틀 연속 확인해 알려드립니다.' : '' });
       }
+    }
+
+    /* 전이가 없어도 오늘 상태는 말할 수 있다.
+       ⚠️ 가중치를 낮게 둔다 — 지점별 특징(위 후보들)이 더 구체적이면 그쪽이 먼저다. */
+    const mine = st?.points?.find(p => Math.abs(p.lat - lat) < 2.2);
+    if (mine?.vals?.pTcwv != null && (mine.vals.pTcwv >= 90 || mine.vals.pTcwv <= 10)) {
+      const many = mine.vals.pTcwv >= 90;
+      cands.push({ w: 55, level: 'feature',
+        head: ko ? `하늘의 수증기가 평년보다 **${many ? '많습니다' : '적습니다'}**`
+                 : `Column water vapour ${many ? 'above' : 'below'} normal`,
+        num: ko ? `${mine.vals.tcwv?.toFixed(0)} kg/m² — 평년 ${mine.vals.tcwvNormal} `
+                + `· ${many ? '상위' : '하위'} ${many ? 100 - mine.vals.pTcwv : mine.vals.pTcwv}%` : '',
+        why: ko
+          ? (many
+              ? '가강수량은 하늘 기둥 전체에 든 수증기의 양입니다. 많으면 소나기가 굵어지기 쉽습니다.'
+              : '가강수량은 하늘 기둥 전체에 든 수증기의 양입니다. 적으면 소나기가 커지기 어렵습니다.')
+            + ' ⚠️ 지표 습도와는 다른 값입니다 — 땅 근처만 눅눅하고 위는 마를 수 있습니다.'
+          : '' });
     }
 
     cands.sort((a, b) => b.w - a.w);

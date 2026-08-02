@@ -123,9 +123,16 @@ def judge(vals, norm):
     elif tp is not None and tp <= LO_PCT:
         labels.append("저온"); ev["저온"] = f"낮 최고 평년 하위 {tp}%"
 
+    # ⚠️⚠️ 지표 습도와 가강수량은 **다른 것**이다. 오늘 실측이 그 예다 —
+    #    지표 습도 82% 인데 가강수량은 하위 5%. 땅 근처만 눅눅하고 대기 기둥 전체
+    #    수증기는 적다는 뜻이다(낮은 구름·안개). 원고의 "습도 폭탄"이 말하는 건 후자다.
+    #    습도만 보고 "수증기가 많다"고 쓰면 틀린다.
     wp = vals.get("pTcwv")
     if wp is not None and wp >= HI_PCT:
         labels.append("다습"); ev["다습"] = f"가강수량 평년 상위 {100 - wp}%"
+    elif wp is not None and wp <= LO_PCT:
+        # ⚠️ 낮은 쪽도 정보다. "수증기가 적다"는 소나기가 커지기 어렵다는 뜻이다.
+        labels.append("건조"); ev["건조"] = f"가강수량 평년 하위 {wp}%"
 
     cape = vals.get("cape")
     if cape is not None and cape >= 1000 and (vals.get("rh") or 0) >= 75:
@@ -140,6 +147,9 @@ def handler(event=None, context=None):
 
     # 평년 분위수 — 우리가 만들어 올린 표(지점별)
     idx = load("app/data/doy/index.json", {"stations": []})
+    # 가강수량 평년 — 원고의 "남쪽 수증기 대량 유입 / 물폭탄의 재료"
+    # ⚠️ ERA5 1995~2025. 2026년은 재분석이 아직 안 나와 빠져 있다.
+    tc = load("app/data/tcwv-normals.json", {}) or {}
 
     per = []
     for nm, la, lo in PTS:
@@ -170,10 +180,15 @@ def handler(event=None, context=None):
             "tmax": tmax, "tminTonight": tmin_t,
             "pTmax": pct_of(cell["tmax"]["q"], qs, tmax) if (cell and "tmax" in cell) else None,
             "pTmin": pct_of(cell["tmin"]["q"], qs, tmin_t) if (cell and "tmin" in cell) else None,
-            # ⚠️ 가강수량 평년은 아직 없다(TCWV 30년 표를 따로 만든다). 없으면 None 이다.
             "pTcwv": None,
             "station": best["n"] if best else None,
         }
+        # 가강수량 평년 대비 — ⚠️ 지점이 남·중·북 셋뿐이라 이름으로 바로 찾는다
+        tcell = ((tc.get("points") or {}).get(nm) or {}).get("doy", {}).get(mmdd)
+        if tcell and vals.get("tcwv") is not None:
+            vals["pTcwv"] = pct_of(tcell["q"], (tc["points"][nm]["qs"]), vals["tcwv"])
+            vals["tcwvNormal"] = tcell["q"][3]      # 중앙값 — 화면에서 "평년 47" 로 쓴다
+
         labels, ev = judge(vals, cell)
         per.append({"pt": nm, "lat": la, "lon": lo,
                     "labels": labels, "evidence": ev, "vals": vals})

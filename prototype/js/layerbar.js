@@ -22,8 +22,10 @@ const $ = s => document.querySelector(s);
 const el = (t, c) => { const n = document.createElement(t); if (c) n.className = c; return n; };
 
 /* 표시할 레이어. sub 은 "현재/예보" 같은 시제 표시다.
-   ready:false 는 데이터가 아직 없는 것 — 회색으로 보이고 누르면 안내만 뜬다. */
-const ITEMS = [
+   ready:false 는 데이터가 아직 없는 것 — 회색으로 보이고 누르면 안내만 뜬다.
+   ⚠️ export 인 이유: 통합 검색(search.js)이 레이어 이름을 찾을 때 이 표를 쓴다.
+      레이어 목록을 두 곳에 적으면 하나만 고치고 지나가는 날이 온다. */
+export const ITEMS = [
   /* 오늘 찍힌 실사 위성 영상. 기본 지도는 정지 사진이라 연기·황사가 안 보인다. */
   { id:'truecolor', ko:'실제 위성 영상', en:'Satellite view', sub:'낮면 · 최근 완전한 날', subEn:'Day side · latest full day',
     ready:true, sky:'#0a1420', paint:'truecolor' },
@@ -106,6 +108,10 @@ const ITEMS = [
     sky:'#12171a', paint:'fog' },
   { id:'drought', ko:'토양 수분', en:'Soil moisture', sub:'메마름 정도', subEn:'Dryness', ready:true,
     sky:'#1a1610', paint:'drought' },
+  /* ⚠️ 부제를 "태풍 진로"라고 쓰지 않는다. 진로를 끄는 것은 상층(500hPa) 흐름이고
+     이건 지상 기압이다. 여기서 보이는 건 **고기압·저기압이 어디 있나** 까지다. */
+  { id:'pressure', ko:'기압 배치', en:'Pressure pattern', sub:'고기압·저기압', subEn:'Highs and lows',
+    ready:true, sky:'#0e1420', paint:'pressure' },
 
   /* 지상 관측소 — 부이의 육지판. 실제 계기의 실황이다. */
   { id:'landobs', ko:'지상 관측소', en:'Ground stations', sub:'실황 관측', subEn:'Live readings', ready:true,
@@ -194,6 +200,8 @@ function drawThumb(cv, kind) {
     /* 안개 — 흐릿한 띠. 가뭄 — 갈라진 땅빛 */
     fog:  () => { bg(['#8a969c', '#2a3236']); blobs('rgba(255,255,255,.45)', 6, 26); },
     drought: () => { band(['#9b5f2d', '#c8a05f', '#e1d796', '#96c89b', '#3c96af']); },
+    /* ⚠️ 가운데(1013hPa)가 무채색이어야 한다 — 고기압·저기압이 양쪽으로 갈린다 */
+    pressure: () => { band(['#465ac0', '#82becf', '#e8ecee', '#facd8c', '#eb7d41']); },
     eclipse: () => { bg(['#0b0b14', '#020208']); corona(); },
     flightlayer: () => { bg(['#0a1c2e', '#04101c']); tracks('#8fd0ff'); },
     shiplayer: () => { bg(['#062232', '#03111a']); waves('#7fb8d8'); tracks('#bfe4f5'); },
@@ -376,15 +384,13 @@ const CATEGORIES = [
   { id: 'base',    ko: '바탕',       en: 'Base',
     ids: ['truecolor', 'clouds', 'himawari', 'himaIR'] },
   { id: 'weather', ko: '기상',       en: 'Weather',
-    ids: ['temp', 'tmax', 'tmin', 'humidity', 'wind', 'windfc', 'fog', 'drought'] },
+    ids: ['temp', 'tmax', 'tmin', 'humidity', 'wind', 'windfc', 'pressure', 'fog', 'drought'] },
   { id: 'air',     ko: '대기질',     en: 'Air quality',
     ids: ['pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone'] },
   { id: 'ocean',   ko: '해양',       en: 'Ocean',
     ids: ['sst', 'sstanom', 'wave', 'swell', 'current', 'phenomena'] },
   { id: 'station', ko: '관측소',     en: 'Stations',
     ids: ['landobs', 'ukfc', 'buoy', 'coverage'] },
-  { id: 'hazard',  ko: '재난',       en: 'Hazards',
-    ids: ['cyclone', 'quake', 'tsunami', 'wildfire', 'alerts', 'lightning', 'regional', 'heatdome'] },
   { id: 'sky',     ko: '하늘·우주',  en: 'Sky & space',
     ids: ['aurora', 'eclipse'] },
   { id: 'move',    ko: '이동',       en: 'Movement',
@@ -393,43 +399,77 @@ const CATEGORIES = [
     ids: ['news'] },
 ];
 
+/* ── Alert 묶음 ──────────────────────────────────────────────
+   재난 레이어는 '지구 스타일'에서 빼내 **Alert 메뉴**로 옮겼다 (받은 요청).
+   이유: 지구 스타일은 "지구를 어떻게 볼 것인가"(바탕·기상·해양)이고,
+   재난은 "지금 무슨 일이 났는가"다. 성격이 달라 한 목록에 섞으면
+   급할 때 찾기 어렵다.
+
+   ⚠️ CATEGORIES 에서 빼는 것만으로는 부족하다. render() 의 '그 밖에' 수거가
+      ITEMS 에 남은 항목을 자동으로 다시 붙여서 지구 스타일에 조용히 재등장한다.
+      그래서 ALERT_IDS 로 명시적으로 걸러낸다. */
+const ALERT_CATEGORIES = [
+  { id: 'hazard',  ko: '재난',       en: 'Hazards',
+    ids: ['cyclone', 'quake', 'tsunami', 'wildfire', 'alerts', 'lightning', 'regional', 'heatdome'] },
+];
+const ALERT_IDS = new Set(ALERT_CATEGORIES.flatMap(c => c.ids));
+
 export const layerBar = {
   open: false,      // 1단
-  sub: false,       // 2단(지구 스타일)
+  /* 2단 — 어떤 목록을 펼쳤나. null · 'earth'(지구 스타일) · 'alert'(재난)
+     ⚠️ 예전엔 불리언이었다. 2단이 하나뿐이라는 전제였는데 Alert 가 생기며 깨졌다.
+        DOM(#menuSub)과 CSS 는 그대로 두고 **내용만 갈아끼운다** — 폭·위치 계산이
+        --ms-w 하나에 묶여 있어(app.css) 패널을 하나 더 만들면 그것까지 손대야 한다. */
+  sub: null,
 
   init() {
     const tab = $('#menuTab'), main = $('#menuMain'), sub = $('#menuSub');
 
     const apply = () => {
       main.classList.toggle('open', this.open);
-      sub.classList.toggle('open', this.open && this.sub);
+      sub.classList.toggle('open', this.open && !!this.sub);
       tab.classList.toggle('open', this.open);
-      tab.classList.toggle('sub', this.open && this.sub);
+      tab.classList.toggle('sub', this.open && !!this.sub);
       main.setAttribute('aria-hidden', String(!this.open));
       sub.setAttribute('aria-hidden', String(!(this.open && this.sub)));
       tab.setAttribute('aria-expanded', String(this.open));
-      main.querySelector('[data-open="earth"]')?.classList.toggle('open', this.sub);
+      // 열린 쪽 버튼만 펼침 표시
+      main.querySelectorAll('[data-open]').forEach(b => {
+        b.classList.toggle('open', this.sub === b.dataset.open);
+      });
     };
     this._apply = apply;
 
     tab.onclick = () => {
       this.open = !this.open;
-      if (!this.open) this.sub = false;    // 닫으면 2단도 같이 접는다
+      /* ⚠️ 열 때도 2단을 접는다. 닫을 때만 접으면 한 번 '지구'를 펼친 뒤로는
+         메뉴를 열 때마다 2단이 따라 나온다 — "누르기 전엔 안 보인다"가 깨진다. */
+      this.sub = null;
       apply();
     };
-    main.querySelector('[data-open="earth"]').onclick = () => { this.sub = !this.sub; apply(); };
+
+    /* data-open 을 가진 1단 항목(지구·Alert)은 2단을 토글한다.
+       같은 걸 다시 누르면 접히고, 다른 걸 누르면 그쪽으로 갈아탄다. */
+    main.querySelectorAll('[data-open]').forEach(b => {
+      b.onclick = () => {
+        const k = b.dataset.open;
+        this.sub = (this.sub === k) ? null : k;
+        if (this.sub) this.render(this.sub);
+        apply();
+      };
+    });
 
     // 바깥을 누르면 닫는다 — 지구를 조작하려는 것이므로
     document.addEventListener('pointerdown', ev => {
       if (!this.open) return;
       if (tab.contains(ev.target) || main.contains(ev.target) || sub.contains(ev.target)) return;
-      this.open = false; this.sub = false; apply();
+      this.open = false; this.sub = null; apply();
     }, true);
 
     this.render();
     store.on('layer', () => this.sync());
-    store.on('tier', () => this.render());
-    i18n.onChange(() => this.render());
+    store.on('tier', () => this.render(this.sub || 'earth'));
+    i18n.onChange(() => this.render(this.sub || 'earth'));
     apply();
     return this;
   },
@@ -437,28 +477,38 @@ export const layerBar = {
   /** 1단 항목의 동작을 바깥(main.js)에서 붙인다 */
   onAction(name, fn) {
     const b = document.querySelector(`#menuMain [data-act="${name}"]`);
-    if (b) b.onclick = () => { fn(); this.open = false; this.sub = false; this._apply(); };
+    if (b) b.onclick = () => { fn(); this.open = false; this.sub = null; this._apply(); };
   },
 
-  render() {
+  /** 2단 목록을 그린다. kind: 'earth'(지구 스타일) | 'alert'(재난) */
+  render(kind = 'earth') {
     const strip = $('#layerStrip');
     if (!strip) return;
     strip.innerHTML = '';
     const ko = i18n.lang === 'ko';
+    const isAlert = kind === 'alert';
+
+    // 머리글은 목록에 따라 바뀐다 (DOM 은 하나를 돌려 쓴다)
+    const head = $('#menuSub .ms-head');
+    if (head) head.textContent = isAlert ? 'Alert' : (ko ? '지구 스타일' : 'Earth style');
 
     /* 묶음별로 제목을 두고 그 아래에 항목을 놓는다.
-       ⚠️ CATEGORIES 에 없는 항목이 생기면 조용히 사라지므로 마지막에 모아 붙인다. */
+       ⚠️ CATEGORIES 에 없는 항목이 생기면 조용히 사라지므로 마지막에 모아 붙인다.
+          단 Alert 로 옮긴 것들(ALERT_IDS)은 여기서 제외한다 — 안 그러면
+          '그 밖에'로 수거돼 지구 스타일에 그대로 다시 나타난다. */
     const placed = new Set();
     const order = [];
-    CATEGORIES.forEach(c => {
+    (isAlert ? ALERT_CATEGORIES : CATEGORIES).forEach(c => {
       const items = c.ids.map(id => ITEMS.find(x => x.id === id)).filter(Boolean);
       if (!items.length) return;
       items.forEach(x => placed.add(x.id));
       order.push({ cat: c, items });
     });
-    const rest = ITEMS.filter(x => !placed.has(x.id));
-    if (rest.length) {
-      order.push({ cat: { id: 'etc', ko: '그 밖에', en: 'Other' }, items: rest });
+    if (!isAlert) {
+      const rest = ITEMS.filter(x => !placed.has(x.id) && !ALERT_IDS.has(x.id));
+      if (rest.length) {
+        order.push({ cat: { id: 'etc', ko: '그 밖에', en: 'Other' }, items: rest });
+      }
     }
 
     /* ⚠️ 묶음 이름은 적지 않는다 (받은 요청).

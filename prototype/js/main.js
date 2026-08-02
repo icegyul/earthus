@@ -296,6 +296,20 @@ function bindAccountUI() {
 function onPick(ev) {
   const picked = scene.pick(ev.position);
 
+  /* 태풍 밖을 누르면 펼쳐 둔 경로를 접는다.
+     받은 지적: "태풍 외 지역 터치하면 사라지게 해줘, 다른 거 보려니깐"
+     ⚠️ 태풍 경로는 예보선·영향권·과거 사례까지 70개가 넘는 도형이라 켜 두면
+        그 아래 지도가 안 보인다. 열 때만큼 **닫기도 쉬워야** 한다.
+     ⚠️ 태풍 자신(_tc)이나 경로 위 도형을 눌렀을 때는 접으면 안 된다 —
+        방금 연 것을 누르자마자 닫는 꼴이 된다. tc: 로 시작하는 id 가 그것이다. */
+  const pid = String(picked?.id?.id ?? '');
+  const onCyclone = !!picked?.id?._meta?._tc || pid.startsWith('tc:');
+  if (!onCyclone) {
+    import('./layers/cyclone.js')
+      .then(({ cyclones }) => { if (cyclones._selected) cyclones.clearTrack(); })
+      .catch(() => {});
+  }
+
   // 클러스터 → 확대
   if (Cesium.defined(picked) && Array.isArray(picked.id)) {
     const pts = picked.id

@@ -55,6 +55,7 @@ const SRC = {
   windfc:   { ko: 'Open-Meteo — 내일 예보', en: 'Open-Meteo — tomorrow’s forecast', every: 60 },
   fog:      { ko: 'Open-Meteo — 시정', en: 'Open-Meteo — visibility', every: 60 },
   drought:  { ko: 'Open-Meteo — 토양수분', en: 'Open-Meteo — soil moisture', every: 60 },
+  pressure: { ko: 'Open-Meteo — 해면기압', en: 'Open-Meteo — mean sea-level pressure', every: 60 },
   pm25:     { ko: 'Copernicus CAMS (Open-Meteo 경유)', en: 'Copernicus CAMS via Open-Meteo', every: 60 },
   pm10:     { ko: 'Copernicus CAMS (Open-Meteo 경유)', en: 'Copernicus CAMS via Open-Meteo', every: 60 },
   dust:     { ko: 'Copernicus CAMS — 먼지 질량', en: 'Copernicus CAMS — dust mass', every: 60 },
@@ -84,7 +85,7 @@ const SRC = {
 
 /* 어느 레이어의 시각을 보여줄까 — 위에 있는 것부터.
    ⚠️ 켜진 것이 여러 개면 "지금 바탕에 깔린 것"을 우선한다. 사람이 보고 있는 게 그것이다. */
-const PRIORITY = ['himaIR', 'himawari', 'truecolor', 'clouds', 'sstanom', 'temp', 'tmax', 'tmin', 'humidity', 'fog', 'drought',
+const PRIORITY = ['himaIR', 'himawari', 'truecolor', 'clouds', 'sstanom', 'temp', 'tmax', 'tmin', 'humidity', 'pressure', 'fog', 'drought',
                   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
                   'sst', 'wave', 'swell', 'current', 'wind', 'windfc',
                   'coverage', 'ukfc', 'landobs', 'buoy', 'wildfire', 'cyclone', 'quake', 'tsunami', 'aurora', 'news'];

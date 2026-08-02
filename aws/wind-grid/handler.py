@@ -79,8 +79,11 @@ def fetch_batch(pts, tries=4):
         "latitude": ",".join(f"{p[0]:.2f}" for p in pts),
         "longitude": ",".join(f"{p[1]:.2f}" for p in pts),
         # ⚠️ 변수를 늘려도 요청 수는 그대로다 — 안개(시정)·가뭄(토양수분)을 공짜로 얻는다.
+        # ⚠️ pressure_msl 은 **해면기압**이다. surface_pressure 를 쓰면 안 된다 —
+        #    그건 그 지점 고도의 기압이라 고지대가 통째로 저기압처럼 칠해진다.
+        #    고기압·저기압 배치를 보려면 해면으로 환산한 값이어야 한다.
         "current": "wind_speed_10m,wind_direction_10m,temperature_2m,relative_humidity_2m,"
-                   "visibility,soil_moisture_0_to_1cm",
+                   "visibility,soil_moisture_0_to_1cm,pressure_msl",
         # ⚠️ 변수를 늘려도 요청 수는 그대로다 (파일 머리말 참고). 예보는 공짜로 얻는다.
         "daily": "temperature_2m_max,temperature_2m_min,"
                  "wind_speed_10m_max,wind_direction_10m_dominant",
@@ -135,6 +138,7 @@ def handler(event, context):
     lead_tmin = [[None] * (nx * ny) for _ in range(7)]
     vis = [None] * (nx * ny)     # 시정(m) — 안개
     soil = [None] * (nx * ny)    # 표층 토양수분(m³/m³) — 가뭄의 대용 지표
+    mslp = [None] * (nx * ny)    # 해면기압(hPa) — 고기압·저기압 배치
     ok = 0
     fail = 0
     daily_ok = 0
@@ -168,6 +172,8 @@ def handler(event, context):
             sm = c.get("soil_moisture_0_to_1cm")
             vis[idx] = int(vv) if vv is not None else None
             soil[idx] = round(sm, 3) if sm is not None else None
+            pv = c.get("pressure_msl")
+            mslp[idx] = round(pv, 1) if pv is not None else None
             ok += 1
 
             # ── 내일(인덱스 1) 예보 ──
@@ -218,11 +224,13 @@ def handler(event, context):
         "res": RES, "lat0": -LAT_MAX, "lon0": -180.0,
         "nx": nx, "ny": ny, "unit": "m/s",
         "source": "Open-Meteo (GFS/ECMWF)",
-        "vars": ["u", "v", "t", "rh", "vis", "soil", "tmax", "tmin", "fu", "fv"],
+        "vars": ["u", "v", "t", "rh", "vis", "soil", "mslp", "tmax", "tmin", "fu", "fv"],
         "u": u, "v": v, "t": t2, "rh": rh,
         # ⚠️ vis 는 미터다. 안개 판정은 화면 쪽 눈금에서 한다 (1km 미만이 안개).
         #    여기서 "안개다/아니다"로 바꾸지 않는다 — 원자료를 그대로 남긴다.
         "vis": vis, "soil": soil,
+        # ⚠️ 해면기압(hPa). 태풍 진로를 밀고 당기는 고기압·저기압 배치가 이 값에 있다.
+        "mslp": mslp,
         # ── 내일 예보 ──
         # ⚠️ fcDate 는 "가장 많은 지점이 공유하는 현지 날짜"다. 전지구를 한 날짜로
         #    묶을 수는 없다(날짜변경선). 앱은 이 값을 "대체로 이 날짜"로만 쓴다.

@@ -204,6 +204,13 @@ export const LAYER_DEFS = [
         평년 기준선이 생기기 전까지 "가뭄이다"라고 말하지 않는다. */
   { id:'fog',      kind:'grid',    tier:TIER.FREE, on:false, group:'weather' },
   { id:'drought',  kind:'grid',    tier:TIER.FREE, on:false, group:'weather' },
+  /* 해면기압 — 고기압·저기압 배치.
+     받은 요청: 태풍이 "북태평양 고기압 가장자리를 따라" 간다는 것을 그림으로도 보고 싶다.
+     ⚠️ 이 값은 태풍 시트의 "무엇이 밀고 있나" 와 **다른 높이**다.
+        여기는 지상(해면), 저기는 500hPa(약 5.5km 상공)이다. 진로를 끌고 가는 것은
+        상층 흐름이고, 이 레이어는 그 배치가 지상에 어떻게 나타나는지를 보여준다.
+        둘을 같은 것이라고 말하면 안 된다. */
+  { id:'pressure', kind:'grid',    tier:TIER.FREE, on:false, group:'weather' },
   { id:'aurora',   kind:'imagery', tier:TIER.FREE, on:false, group:'space' },
 
   // ── 선 ──

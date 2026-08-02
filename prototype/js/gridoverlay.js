@@ -185,6 +185,28 @@ const SCALES = {
     alpha: 0.58,
   },
 
+  /* 해면기압(hPa) — 고기압·저기압 배치.
+     받은 요청: "태풍 경로는 대체로 북태평양 고기압 가장자리 따라 이동함" 을
+     그림으로도 보여 달라 (기압 배치도 사진 2장).
+
+     ⚠️⚠️ **1013 을 한가운데 중립색으로 둔다.** 기압은 절대값이 아니라 **차이**가
+        읽혀야 하는 값이다. 한쪽으로 흐르는 눈금을 쓰면 "1020 이 높은 건가?" 를
+        알 수 없다. 표준대기 1013.25hPa 를 0 점으로 삼아 고기압(난색)·저기압(한색)이
+        한눈에 갈리게 한다.
+     ⚠️ 범위를 970~1040 으로 좁게 잡는다. 지상 기압은 대부분 이 안에 든다 —
+        넓히면 실제 배치 차이가 전부 같은 색이 된다.
+        (태풍 중심은 930hPa 까지 내려가지만 그건 점 하나다. 그 한 점 때문에
+         전지구를 흐리게 칠할 이유가 없다 — 아래쪽 끝 색으로 잘린다.) */
+  mslp: {
+    unit: 'hPa',
+    stops: [
+      [ 970, [ 70,  20, 110]], [ 990, [ 60,  90, 190]], [1005, [130, 190, 225]],
+      [1013, [232, 236, 238]],
+      [1020, [250, 205, 140]], [1030, [235, 125,  65]], [1040, [165,  35,  55]],
+    ],
+    alpha: 0.55,
+  },
+
   /* 내일 최저기온 — 추위 쪽을 넓게. 밤에 얼마나 떨어지는지가 관심사다. */
   tmin: {
     unit: '°C',
@@ -206,6 +228,7 @@ const FIELD_OF = {
   pm25: 'pm25', pm10: 'pm10', dust: 'dust', ozone: 'o3', uv: 'uv', aqi: 'aqi',
   sst: 'sst', wave: 'wave', swell: 'swell', current: 'cur',
   sstanom: 'sst',   // 실제 값은 편차로 갈아끼운다 (show 참고)
+  pressure: 'mslp',
 };
 
 /* 어느 격자 파일에서 오는가.
@@ -213,6 +236,7 @@ const FIELD_OF = {
       하나로 합치면 한쪽이 실패할 때 전부가 없어진다. 따로 두면 따로 산다. */
 const SOURCE_OF = {
   temp: 'wind', rh: 'wind', tmax: 'wind', tmin: 'wind', fog: 'wind', drought: 'wind',
+  pressure: 'wind',
   pm25: 'air', pm10: 'air', dust: 'air', ozone: 'air', uv: 'air', aqi: 'air',
   sst: 'marine', wave: 'marine', swell: 'marine', current: 'marine',
   sstanom: 'marine',
@@ -220,7 +244,7 @@ const SOURCE_OF = {
 
 /* 눈금 이름 — 레이어 id 와 눈금 이름이 다른 것들 */
 const SCALE_OF = { temp: 'temp', humidity: 'rh', rh: 'rh', fog: 'vis', drought: 'soil',
-                   ozone: 'o3', current: 'cur', sstanom: 'sstAnom' };
+                   ozone: 'o3', current: 'cur', sstanom: 'sstAnom', pressure: 'mslp' };
 
 /* 예보 레이어인지 — 화면에 "내일"이라고 밝혀야 하는지 판단한다 */
 export const IS_FORECAST = { tmax: true, tmin: true, windfc: true };

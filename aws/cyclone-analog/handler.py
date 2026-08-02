@@ -30,6 +30,7 @@ import io
 import json
 import math
 import os
+import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 
@@ -418,6 +419,155 @@ def analyse(storm, history):
     }
 
 
+# ══════════════════════════════════════════════════════════════════
+#  지향류 — 왜 이 방향으로 가는가
+# ══════════════════════════════════════════════════════════════════
+#  받은 요청: "태풍 경로가 중국쪽 고기압, 일본쪽 저기압 때문에 …
+#              무역풍·편서풍 때문에 … 이렇게 예상된다" 식으로 설명해 달라.
+#
+#  ⚠️⚠️ 그런데 **"이렇게 될 것으로 예상된다"는 우리가 하면 안 되는 말**이다.
+#     진로와 소멸을 단정하는 것은 예보이고, 우리는 예보 기관이 아니다.
+#     대신 **왜 그 방향인지는 실제로 잰 기압장으로 설명할 수 있다.**
+#
+#  태풍을 미는 것은 중층(500hPa)의 흐름이다. 그 층의 지위고도에서
+#  **5,880m 선**이 북태평양 고기압의 가장자리로 널리 쓰인다 —
+#  태풍은 그 가장자리를 따라 돈다. 고기압이 서쪽으로 뻗어 있으면 서진하고,
+#  고기압 서쪽 끝을 지나면 북상하다 편서풍대에서 북동으로 꺾인다(전향).
+#
+#  ⚠️ 여기서 만드는 것은 **사실(숫자)뿐**이다. 문장은 화면이 조립한다.
+#     서버가 문장을 만들면 그 안의 숫자가 어디서 왔는지 확인할 수 없게 된다.
+
+STEER_URL = "https://api.open-meteo.com/v1/forecast"
+RIDGE_GPM = 5880          # 북태평양 고기압 가장자리로 널리 쓰이는 등고선
+STEER_RING_DEG = 5        # 지향류를 평균 낼 고리 반경 (중심은 뺀다)
+WESTERLY_LOOK_DEG = 10    # 편서풍대를 확인할 북쪽 거리
+
+
+def _om_points(pts, fields):
+    """Open-Meteo 다중 지점 조회. ⚠️ 지점이 하나면 배열이 아니라 객체로 온다."""
+    q = urllib.parse.urlencode({
+        "latitude": ",".join(f"{p[0]:.2f}" for p in pts),
+        "longitude": ",".join(f"{p[1]:.2f}" for p in pts),
+        "hourly": fields, "forecast_days": 1, "timezone": "UTC",
+    })
+    req = urllib.request.Request(f"{STEER_URL}?{q}", headers=UA)
+    with urllib.request.urlopen(req, timeout=60) as r:
+        j = json.loads(r.read())
+    return j if isinstance(j, list) else [j]
+
+
+def steering(lat, lon):
+    """지금 태풍을 미는 환경을 **잰다**. 못 재면 None — 지어내지 않는다."""
+    # ① 북쪽 자오선 (고기압이 어디까지 뻗어 있나) + ② 동서 (서쪽 끝이 어디인가)
+    lats = [lat + d for d in (-5, 0, 5, 10, 15, 20) if -60 < lat + d < 60]
+    lons = [lon + d for d in (-25, -15, -8, 0, 8, 15, 25)]
+    # ⚠️⚠️ 지향류를 **태풍 중심에서 재면 안 된다.** 자기 소용돌이가 잡힌다.
+    #    실측(DOLPHIN-26): 중심에서 238° **55 m/s** 가 나왔다 — 지향류가 아니라
+    #    태풍 자신의 바람이다. 이걸 "태풍을 미는 흐름"이라고 적으면 거짓이 된다.
+    #    → 중심을 비우고 **반경 STEER_RING_DEG 의 고리**에서 벡터 평균을 낸다.
+    #      태풍 예보에서 쓰는 표준 방식이다(환경 흐름만 남기려는 것).
+    ring = []
+    for k in range(8):
+        th = k * math.pi / 4
+        rla = lat + STEER_RING_DEG * math.cos(th)
+        rlo = lon + STEER_RING_DEG * math.sin(th) / max(0.25, math.cos(lat * math.pi / 180))
+        if -60 < rla < 60:
+            ring.append((rla, rlo))
+    pts = ([(la, lon) for la in lats] + [(lat + 8, lo) for lo in lons]
+           + ring + [(lat, lon)])
+    try:
+        rows = _om_points(pts, "geopotential_height_500hPa,"
+                               "wind_speed_500hPa,wind_direction_500hPa")
+    except Exception as e:                                   # noqa: BLE001
+        print(f"[steer] 실패 {e!r}")
+        return None
+    if len(rows) != len(pts):
+        return None
+
+    def at(i):
+        h = rows[i].get("hourly") or {}
+        try:
+            return (h["geopotential_height_500hPa"][0],
+                    h["wind_speed_500hPa"][0], h["wind_direction_500hPa"][0])
+        except (KeyError, IndexError, TypeError):
+            return (None, None, None)
+
+    # ── 고기압이 북쪽으로 어디까지 뻗어 있나 (자오선) ──
+    ridge_north = None
+    for k, la in enumerate(lats):
+        gh, _, _ = at(k)
+        if gh is not None and gh >= RIDGE_GPM and la > lat:
+            ridge_north = la          # 태풍보다 북쪽에서 마지막으로 넘긴 위도
+    # ── 고기압의 서쪽 끝 (동서 단면, 태풍 북쪽 8°) ──
+    base = len(lats)
+    ridge_west = None
+    for k, lo in enumerate(lons):
+        gh, _, _ = at(base + k)
+        if gh is not None and gh >= RIDGE_GPM and ridge_west is None:
+            ridge_west = lo           # 서쪽부터 훑어 처음 넘긴 경도
+    # ── 지향류 = 고리 평균 (중심 제외) ──
+    # ⚠️ 방위는 벡터로 더해야 한다. 각도를 산술평균하면 350°와 10°의 평균이 180°가 된다.
+    r0 = len(lats) + len(lons)
+    ux = uy = 0.0
+    nring = 0
+    for k in range(len(ring)):
+        _, ws, wd = at(r0 + k)
+        if ws is None or wd is None:
+            continue
+        # 기상 관례: wd 는 **불어오는 쪽**. 이동 방향은 그 반대다.
+        th = math.radians(wd)
+        ux += -ws * math.sin(th)      # 동쪽 성분
+        uy += -ws * math.cos(th)      # 북쪽 성분
+        nring += 1
+    steer_dir = steer_spd = None
+    if nring:
+        ux /= nring; uy /= nring
+        steer_spd = math.hypot(ux, uy)
+        # ⚠️ 여기서는 **가는 쪽**을 낸다 — 태풍이 밀려가는 방향이라 그게 자연스럽다.
+        steer_dir = (math.degrees(math.atan2(ux, uy)) + 360) % 360
+    gh0, _, _ = at(len(pts) - 1)
+    # ── 북쪽 편서풍대 확인 ──
+    wl = None
+    for k, la in enumerate(lats):
+        if abs((la - lat) - WESTERLY_LOOK_DEG) < 3:
+            _, ws, wd = at(k)
+            if wd is not None:
+                wl = {"lat": round(la, 1), "dir": round(wd), "speed": round(ws, 1)}
+    heights = [at(k)[0] for k in range(len(pts))]
+    heights = [h for h in heights if h is not None]
+    if not heights:
+        return None
+
+    return {
+        "ridgeGpm": RIDGE_GPM,
+        # ⚠️ null 이면 "고기압이 없다"가 아니라 **우리가 본 범위 안에 없다**는 뜻이다.
+        #    화면이 그렇게 말하도록 sampled 를 같이 보낸다.
+        "ridgeNorthLat": round(ridge_north, 1) if ridge_north is not None else None,
+        "ridgeWestLon": round(ridge_west, 1) if ridge_west is not None else None,
+        "maxGpm": round(max(heights)),
+        "hereGpm": round(gh0) if gh0 is not None else None,
+        # ⚠️ steerDir 은 **가는 쪽**이다 (바람의 '불어오는 쪽' 관례와 반대).
+        #    화면에서 헷갈리지 않게 이름과 함께 적는다.
+        "steerDir": round(steer_dir) if steer_dir is not None else None,
+        "steerSpeed": round(steer_spd, 1) if steer_spd is not None else None,
+        "steerIsToward": True,
+        "steerRingDeg": STEER_RING_DEG,
+        "steerRingN": nring,
+        "northWind": wl,
+        "sampled": {"latFrom": round(min(lats), 1), "latTo": round(max(lats), 1),
+                    "lonFrom": round(min(lons), 1), "lonTo": round(max(lons), 1)},
+        "source": "Open-Meteo (GFS·ECMWF) 500hPa",
+        "note": {
+            "ko": "500hPa(약 5.5km 상공)는 태풍을 미는 층입니다. 지위고도 "
+                  f"{RIDGE_GPM}m 선이 북태평양 고기압의 가장자리로 널리 쓰이며, "
+                  "태풍은 그 가장자리를 따라 움직입니다.",
+            "en": "500 hPa is the steering level. The "
+                  f"{RIDGE_GPM} m contour is the usual edge of the subtropical high; "
+                  "storms travel along it.",
+        },
+    }
+
+
 def _why(cur_doy, cur_wind):
     """판정 기준을 그대로 실어 보낸다 — 화면에 공개하기 위함."""
     return {
@@ -427,6 +577,52 @@ def _why(cur_doy, cur_wind):
         "topN": TOP_N, "lookAheadH": LOOK_AHEAD_H,
         "weights": {"pos": W_POS, "shape": W_SHAPE, "wind": W_WIND},
         "curDoy": cur_doy, "curWind": cur_wind,
+    }
+
+
+def recurve_stats(sample):
+    """유사 사례들이 **어느 위도에서 북동으로 꺾였나**.
+
+    ⚠️ 전향(recurvature)은 태풍이 고기압 서쪽 끝을 지나 편서풍대에 들어갈 때
+       일어난다. 그 위도를 우리가 정하지 않고 **과거 사례에서 센다.**
+
+    ⚠️ 표본이 적으면 퍼센트를 만들지 않는다 (MIN_SAMPLE_FOR_PCT).
+    """
+    lats, turned = [], 0
+    for h in sample:
+        path = h.get("path") or []
+        if len(path) < 4:
+            continue
+        # 경로를 따라가며 진행 방향이 북동(0~90°)으로 바뀌는 첫 지점
+        prev = None
+        for i in range(1, len(path)):
+            lon0, lat0 = path[i - 1][0], path[i - 1][1]
+            lon1, lat1 = path[i][0], path[i][1]
+            b = bearing(lat0, lon0, lat1, lon1)
+            ne = 10 <= b <= 90
+            if ne and prev is False:
+                lats.append(round(lat1, 1))
+                turned += 1
+                break
+            prev = ne
+    n = len(sample)
+    if not n:
+        return None
+    med = None
+    if lats:
+        v = sorted(lats)
+        med = v[len(v) // 2]
+    return {
+        "n": n, "turned": turned,
+        # ⚠️ 표본이 적으면 퍼센트를 쓰지 않는다 — 3건 중 2건을 67%로 적으면 거짓이다
+        "pct": round(turned * 100 / n) if n >= MIN_SAMPLE_FOR_PCT else None,
+        "medianLat": med,
+        "note": {
+            "ko": "유사 사례가 이후 72시간 안에 **북동으로 방향을 바꾼** 건수입니다. "
+                  "예보가 아니라 과거를 센 것입니다.",
+            "en": "How many analogues turned northeast within the next 72 h — "
+                  "a count of the past, not a forecast.",
+        },
     }
 
 
@@ -443,7 +639,22 @@ def handler(event, context):
         a = analyse(st, history)
         if a is None:
             continue
-        out.append({"id": st.get("id"), "name": st.get("name"), **a})
+        rec = {"id": st.get("id"), "name": st.get("name"), **a}
+
+        # ── 지향류 — 왜 이 방향인가 ──────────────────────────────
+        # ⚠️ 살아 있는 태풍만 잰다. 이미 목록에서 빠진 폭풍의 '지금 기압장'은
+        #    설명이 아니라 혼란이다.
+        tr = st.get("track") or []
+        if st.get("live") and tr:
+            sv = steering(tr[-1][1], tr[-1][0])
+            if sv:
+                rec["steering"] = sv
+
+        # ── 유사 사례가 어디서 꺾였나 ────────────────────────────
+        # ⚠️ "편서풍대에서 북동으로 꺾인다"는 교과서 설명이다. 우리는 그걸
+        #    **세어서** 말한다 — 유사 사례 중 몇 건이 실제로 그랬는지.
+        rec["recurve"] = recurve_stats(a.get("sample") or [])
+        out.append(rec)
 
     doc = {
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z"),

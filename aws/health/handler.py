@@ -84,6 +84,8 @@ WATCH = [
      "ko": "태풍 유사 사례"},
     {"key": "events/cyclone-tracks.json", "everyMin": 60, "graceMin": 120,
      "ko": "태풍 경로 보관"},
+    {"key": "events/jma-typhoon.json", "everyMin": 60, "graceMin": 120,
+     "ko": "JMA 태풍 공식 예보"},
 ]
 
 # ── 축적형: **있어야 할 파일이 실제로 있는가** ─────────────────

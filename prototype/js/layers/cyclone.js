@@ -82,6 +82,37 @@ const analog = {
   },
 };
 
+/* 일본 기상청(JMA) 공식 태풍 예보.
+   ⚠️⚠️ **우리가 만든 값이 하나도 없다.** 진로·강도·약화 전망은 전부 JMA 의 것이고
+      우리는 옮기기만 한다. 받은 지적이 정확했다 —
+      "소멸할 것으로 예상된다는 공신력 있는 곳에서 제시한 걸 쓰면 되지."
+      우리가 단정하면 자체 예보지만, 공식 발표를 출처와 함께 전하는 건 우리 일이다.
+   ⚠️ 이름으로 맞춘다. GDACS 는 'DOLPHIN-26', JMA 는 'Dolphin' 이라 대문자로 맞춘 뒤
+      번호 접미사를 떼고 비교한다. */
+const official = {
+  _by: new Map(),
+  meta: null,
+  async load() {
+    try {
+      const r = await fetchT(`${API.EVENTS}/typhoon-official.json`, { cache: 'no-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json();
+      this._by.clear();
+      this.meta = { source: j.source, url: j.sourceUrl, note: j.note, at: j.generated };
+      (j.storms || []).forEach(s => {
+        if (s.name) this._by.set(String(s.name).toUpperCase(), s);
+        if (s.key) this._by.set(String(s.key).toUpperCase(), s);
+      });
+    } catch (e) {
+      console.warn('[태풍 공식예보] 못 받음 —', e.message);
+    }
+  },
+  get(name) {
+    const key = String(name || '').toUpperCase().replace(/-\d+$/, '');
+    return this._by.get(key) || null;
+  },
+};
+
 export const cyclones = {
   ds: null,
   list: [],          // { id, name, alert, kmh, countries, lat, lon, ... }
@@ -174,6 +205,7 @@ export const cyclones = {
     /* 과거 유사 사례도 같이 받아 둔다 — 정보 시트를 열 때 이미 있어야 한다.
        ⚠️ await 하되 실패는 무시한다(load 안에서 잡는다). 없으면 그 줄만 안 나온다. */
     await analog.load();
+    await official.load();
     const live = new Set(this.list.map(s => String(s.id)));
     const cutoff = Date.now() - RETAIN_H * 3600_000;
     this._hist.forEach((rec, id) => {
@@ -500,14 +532,142 @@ export const cyclones = {
     d[ko ? '출처' : 'Source'] = s.source || 'GDACS';
     if (s.report) d[ko ? '상세 보고서' : 'Full report'] = s.report;
 
-    /* ── 과거 유사 사례 ─────────────────────────────────────────
-       ⚠️⚠️ 표현 규율(2026-08-02 확정)을 여기서 지킨다.
-         · **건수가 먼저, 퍼센트는 괄호 안.** 퍼센트만 쓰면 모델 예측처럼 읽힌다.
-         · 표본이 적으면(minSampleForPct 미만) **퍼센트를 아예 안 쓴다.**
-           3/4 를 75% 로 쓰는 순간 정밀한 척하는 거짓이 된다.
-         · 문구는 "이렇게 갈 것이다"가 아니라 **"과거의 비슷한 태풍들은 이렇게 갔다"**.
-         · 공식 예보(점선 원뿔)를 항상 함께 둔다 — 아래 _note 가 그 역할이다. */
+    /* ── 각국 기상기관 공식 예보 ────────────────────────────────
+       받은 지시: "미국 일본 한국 중에 **먼저 발표된 걸로** 말해주면 돼 — 태풍 소멸 등"
+                  "발표는 매일 바뀌니깐 예측 문장도 매일 바뀌어야 해, 기관 업데이트 기준으로"
+
+       ⚠️⚠️ 여기 있는 값은 **하나도 우리 것이 아니다.** 진로·강도·약화 전망은
+          전부 각 기관의 발표이고 우리는 옮기기만 한다. 주어를 우리로 바꾸는
+          순간 자체 예보가 되고, 그건 규율 위반이자 기상업무법 문제다.
+       ⚠️⚠️ **기관이 다르면 다르다고 그대로 말한다.** 평균 내거나 하나로 합치지 않는다
+          (지진에서 JMA·USGS 를 다루는 방식과 같다).
+       ⚠️ 문장은 **발표 시각과 함께** 적는다. 매시간 다시 받으므로 발표가 바뀌면
+          문장도 바뀐다 — 그 근거가 화면에 보여야 한다. */
+    const off = official.get(s.name);
+    if (off?.agencies?.length) {
+      const fmt = (t) => (t || '').replace('T', ' ').slice(0, 16);
+      // 발표가 새로운 기관부터
+      const ags = [...off.agencies].sort((a, b) => (b.issue || '').localeCompare(a.issue || ''));
+
+      ags.forEach(g => {
+        const st = g.steps || [];
+        const now0 = st.find(x => x.h === 0) || st[0];
+        const last = st[st.length - 1];
+        const bits = [];
+        if (now0) {
+          bits.push(ko
+            ? `현재 ${now0.categoryKo ? now0.categoryKo + ' ' : ''}`
+              + `${now0.windMs != null ? `최대풍속 ${now0.windMs} m/s` : ''}`
+              + `${now0.intensityKo ? `·「${now0.intensityKo}」` : ''}`
+              + `${now0.courseKo ? `, ${now0.courseKo}쪽으로` : ''}`
+              + `${now0.speedKmh ? ` 시속 ${now0.speedKmh}km` : ''}`
+              + `${now0.place ? ` (${now0.place})` : ''}.`
+            : `Now ${now0.category || ''} ${now0.windMs ?? '—'} m/s.`);
+        }
+        if (last && last.h) {
+          bits.push(ko
+            ? `**+${last.h}시간**${last.validKst || last.validUtc
+                ? `(${fmt(last.validKst || last.validUtc)})` : ''}에는 `
+              + `${last.place ? `**${last.place}**, ` : ''}`
+              + `${last.categoryKo ? last.categoryKo + ' ' : ''}`
+              + `${last.windMs != null ? `${last.windMs} m/s` : ''}`
+              + `${last.intensityKo ? `·「${last.intensityKo}」` : ''}로 예보합니다.`
+            : `At +${last.h} h: ${last.place || ''} ${last.windMs ?? '—'} m/s.`);
+        }
+        if (g.downgrade) {
+          bits.push(ko
+            ? `⚠️ **+${g.downgrade.h}시간에 ${g.downgrade.toKo || g.downgrade.to}로 바뀔 것**으로 봅니다.`
+            : `⚠️ Change to ${g.downgrade.to} at +${g.downgrade.h} h.`);
+        }
+        if (g.basinNote) bits.push(ko ? `(${g.basinNote.ko})` : `(${g.basinNote.en})`);
+        d[`${ko ? g.agencyKo : g.agency} 예보 · ${fmt(g.issue)} 발표`] = bits.join(' ');
+      });
+
+      // ⚠️ "먼저 발표한 곳"을 앞세우되 나머지를 지우지 않는다 (위에서 이미 다 적었다)
+      if (off.earliestDowngrade) {
+        const e = off.earliestDowngrade;
+        d[ko ? '약화를 먼저 예보한 곳' : 'First to forecast weakening'] = ko
+          ? `${e.agencyKo} — +${e.h}시간에 ${e.toKo || e.to}`
+          : `${e.agency} — ${e.to} at +${e.h} h`;
+      }
+      d[ko ? '⚠️ 기관 비교' : '⚠️ Agencies'] = ko
+        ? `${ags.length}개 기관의 발표를 **그대로** 옮겼습니다. 서로 다를 수 있으며 `
+          + '저희가 하나로 합치거나 평균 내지 않습니다. 실제 대응은 기상청 발표를 따르세요.'
+        : `${ags.length} agencies, relayed verbatim and not merged.`;
+    }
+
     const an = analog.get(s.id, s.name);
+
+    /* ── 왜 이 방향인가 ────────────────────────────────────────
+       받은 요청: "중국쪽 고기압, 일본쪽 저기압 때문에 … 편서풍 때문에 …
+                   이렇게 될 것으로 예상된다" 식으로 설명해 달라.
+
+       ⚠️⚠️ 그중 **"이렇게 될 것으로 예상된다"는 쓰지 않는다.** 진로와 소멸을
+          단정하는 것은 예보이고 우리는 예보 기관이 아니다.
+          대신 **왜 그 방향인지는 실제로 잰 기압장으로 말할 수 있다** —
+          아래 문장의 숫자는 전부 500hPa 관측(모델 해석)에서 나온 것이고,
+          '앞으로'에 해당하는 부분은 **과거를 센 결과**로만 적는다.
+
+       ⚠️ 문장을 서버가 만들지 않는다. 서버는 숫자만 주고 여기서 조립한다 —
+          그래야 화면의 각 숫자가 어디서 왔는지 추적할 수 있다. */
+    const sv = an?.steering;
+    if (sv) {
+      const dir8 = (deg) => (ko ? ['북','북동','동','남동','남','남서','서','북서']
+                                : ['N','NE','E','SE','S','SW','W','NW'])[Math.round(deg / 45) % 8];
+      const parts = [];
+
+      // ① 무엇이 밀고 있나 — 북태평양 고기압의 위치
+      if (sv.ridgeWestLon != null || sv.ridgeNorthLat != null) {
+        const w = sv.ridgeWestLon, n = sv.ridgeNorthLat;
+        parts.push(ko
+          ? `상공 5.5km(500hPa)에서 **북태평양 고기압**(지위고도 ${sv.ridgeGpm}m 이상)이 `
+            + (w != null ? `서쪽으로 **${Math.abs(w).toFixed(0)}°${w < 0 ? 'W' : 'E'}**까지` : '')
+            + (w != null && n != null ? ', ' : '')
+            + (n != null ? `북쪽으로 **${n.toFixed(0)}°N**까지` : '')
+            + ` 뻗어 있습니다 (관측 최대 ${sv.maxGpm}m).`
+          : `At 500 hPa the **subtropical high** (≥ ${sv.ridgeGpm} m) reaches `
+            + (w != null ? `**${Math.abs(w).toFixed(0)}°${w < 0 ? 'W' : 'E'}** westward` : '')
+            + (w != null && n != null ? ' and ' : '')
+            + (n != null ? `**${n.toFixed(0)}°N** northward` : '')
+            + ` (max ${sv.maxGpm} m).`);
+        parts.push(ko
+          ? '태풍은 이 고기압의 **가장자리를 따라** 움직입니다.'
+          : 'Storms travel **along the edge** of this high.');
+      } else {
+        // ⚠️ 못 찾았으면 "고기압이 없다"가 아니라 "본 범위 안에 없다"고 적는다
+        parts.push(ko
+          ? `주변 ${sv.sampled.latFrom.toFixed(0)}~${sv.sampled.latTo.toFixed(0)}°N 범위에서는 `
+            + `${sv.ridgeGpm}m 이상 구역을 찾지 못했습니다.`
+          : `No ≥ ${sv.ridgeGpm} m area within the sampled box.`);
+      }
+
+      // ② 실제 지향류 — ⚠️ 고리 평균이다. 중심에서 재면 태풍 자기 바람이 잡힌다.
+      if (sv.steerDir != null) {
+        parts.push(ko
+          ? `이 배치에서 나오는 지향류는 **${dir8(sv.steerDir)}쪽 ${sv.steerSpeed} m/s**입니다 `
+            + `(태풍 중심을 뺀 반경 ${sv.steerRingDeg}° 고리 ${sv.steerRingN}곳 평균).`
+          : `The resulting steering flow is **${dir8(sv.steerDir)} at ${sv.steerSpeed} m/s** `
+            + `(mean of ${sv.steerRingN} points on a ${sv.steerRingDeg}° ring, centre excluded).`);
+      }
+
+      // ③ 편서풍대 — 교과서 설명을 **세어서** 말한다
+      const rc = an.recurve;
+      if (rc && rc.medianLat != null && rc.turned) {
+        parts.push(ko
+          ? `북쪽으로 올라가 **편서풍대**에 들면 진행이 북동으로 꺾입니다(전향). `
+            + `유사 사례 ${rc.n}건 중 **${rc.turned}건**이 그렇게 꺾였고`
+            + (rc.pct != null ? ` (${rc.pct}%)` : '')
+            + `, 꺾인 위도는 중앙값 **${rc.medianLat}°N**이었습니다.`
+          : `Further north the **westerlies** turn storms northeast (recurvature). `
+            + `**${rc.turned}** of ${rc.n} analogues did so`
+            + (rc.pct != null ? ` (${rc.pct}%)` : '')
+            + `, at a median latitude of **${rc.medianLat}°N**.`);
+      }
+
+      d[ko ? '왜 이 방향인가' : 'Why this direction'] = parts.join(' ');
+      d[ko ? '기압장 출처' : 'Pressure field'] = sv.source;
+    }
+
     if (an) {
       if (an.outOfBasin) {
         d[ko ? '과거 유사 사례' : 'Past analogues'] = ko
@@ -528,11 +688,17 @@ export const cyclones = {
           d[ko ? '비슷했던 태풍' : 'Similar storms'] = an.sample.slice(0, 5)
             .map(x => `${x.season} ${x.name}`).join(', ');
         }
+        /* ⚠️ 2026-08-02 알고리즘을 논문 기준으로 갈아엎었는데 **이 화면만 옛 필드를
+           읽고 있었다** — 화면에 "반경 undefined km · 진행방향 ±undefined°" 가
+           그대로 나왔다. 서버 자료 구조를 바꿀 때 읽는 쪽을 같이 고쳐야 한다. */
         const w = an.why;
         if (w) {
           d[ko ? '유사 판정 기준' : 'Match criteria'] = ko
-            ? `반경 ${w.radiusKm}km · 진행방향 ±${w.headingDeg}° · 이후 ${w.lookAheadH}시간`
-            : `${w.radiusKm} km · heading ±${w.headingDeg}° · next ${w.lookAheadH} h`;
+            ? `계절 ±${w.seasonWindowDays}일 · 최근 ${(w.windowPts - 1) * w.stepH}시간 경로 비교 · `
+              + `가까운 순 ${w.topN}건 · 이후 ${w.lookAheadH}시간`
+            : `±${w.seasonWindowDays} days of season · last ${(w.windowPts - 1) * w.stepH} h of track · `
+              + `nearest ${w.topN} · next ${w.lookAheadH} h`;
+          d[ko ? '판정 방식' : 'Method'] = w.method;
         }
       }
     }

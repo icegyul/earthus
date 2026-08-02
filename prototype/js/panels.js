@@ -29,14 +29,31 @@ export const panels = {
     return this;
   },
 
+  /* 시트를 닫을 때 같이 치워야 하는 것들.
+     ⚠️⚠️ 시트에 `.up` 만 떼면 **지도에 찍은 표시가 그대로 남는다.**
+        받은 신고: "서핑 선택 후 나가려면 어떻게 하지? 계속 유지 되는데".
+        닫는 길이 셋(닫기 버튼 · 바깥 탭 · Esc)인데 정리는 한 군데도 안 걸려 있었다.
+        → 여기에 등록해 두면 **어느 길로 닫아도** 불린다. */
+  _cleanup: new Map(),
+  onClose(id, fn) { this._cleanup.set(id, fn); return this; },
+  _fire(el) {
+    const fn = el && this._cleanup.get(el.id);
+    if (fn) { try { fn(); } catch (e) { console.warn('[panels] 정리 실패', e.message); } }
+  },
+
   closeTop() {
     const open = [...document.querySelectorAll(OPEN_PANELS)];
     if (!open.length) return;
     // 가장 나중에 열린 것(= z-index 가 높거나 문서 뒤쪽) 하나만 닫는다
-    open[open.length - 1].classList.remove('up');
+    const el = open[open.length - 1];
+    el.classList.remove('up');
+    this._fire(el);
   },
 
   closeAll() {
-    document.querySelectorAll(OPEN_PANELS).forEach(p => p.classList.remove('up'));
+    document.querySelectorAll(OPEN_PANELS).forEach(p => {
+      p.classList.remove('up');
+      this._fire(p);
+    });
   },
 };

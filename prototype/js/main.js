@@ -274,9 +274,17 @@ function bindAccountUI() {
     open('changelogSheet');
   };
 
+  /* 시트를 닫을 때 같이 치울 것들 — 어느 길로 닫아도(버튼·바깥 탭·Esc) 불린다.
+     ⚠️⚠️ 예전에는 시트에서 `.up` 만 떼서, **지도에 찍은 해변·낚시터·활공장 표시가
+        그대로 남았다.** 받은 신고: "서핑 선택 후 나가려면? 계속 유지 되는데". */
+  panels.onClose('sfSheet', () => surfPanel.close());
+  panels.onClose('fsSheet', () => fishPanel.close());
+  panels.onClose('pgSheet', () => paraPanel.close());
+  panels.onClose('mtSheet', () => mountainPanel.close());
+
   // 닫기 버튼 일괄
   document.querySelectorAll('[data-close]').forEach(b => {
-    b.onclick = () => close(b.dataset.close);
+    b.onclick = () => { close(b.dataset.close); panels._fire(document.getElementById(b.dataset.close)); };
   });
 
   // 로그인

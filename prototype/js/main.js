@@ -4,6 +4,9 @@ import { alarms } from './alarms.js';
 import { windField } from './windfield.js';
 import { myLocation } from './mylocation.js';
 import { layerBar } from './layerbar.js';
+import { search } from './search.js';
+import { onboard } from './onboard.js';
+import { weatherPanel } from './ui-weather.js';
 import { power } from './power.js';
 import { panels } from './panels.js';
 import { drift } from './drift.js';
@@ -27,6 +30,7 @@ import { sourceNote } from './ui-source.js';
 import { warn } from './warn.js';
 import { warnUI } from './ui-warn.js';
 import { koreaPanel } from './ui-korea.js';
+import { mountainPanel } from './ui-mountain.js';
 import { apiKeysPanel } from './ui-apikeys.js';
 import { eventPanel } from './ui-events.js';
 
@@ -65,6 +69,9 @@ async function boot() {
   chips.init();
   alarms.init();
   layerBar.init();
+  search.init();          // ⌘K · 우상단 돋보기
+  onboard.init();         // 오늘의 볼거리 칩 + 첫 실행 코치마크 (await 하지 않는다)
+  weatherPanel.init();    // 하단 온도 탭 → 내 자리 날씨 시트
 
   // 내 위치 — 실패해도 조용히 넘어간다 (HTTP 접속·권한 거부 등)
   windField.init();
@@ -108,9 +115,17 @@ async function boot() {
     power.animate(3000);
   });
   // 1단 메뉴 동작 — 누르면 실행하고 메뉴는 닫힌다
+  /* 내 위치 — 날아가고, 한국이면 지역 자료(옛 '한국' 메뉴)를 같이 연다.
+     ⚠️ '한국' 메뉴는 없앴다. 그 자료가 필요한 사람은 곧 '내 위치'를 누르는 사람이라
+        두 메뉴로 나눠 둘 이유가 없었다. 한국 밖에서는 날아가기만 한다 —
+        관측소가 없는 곳에서 한국 화면을 띄우면 빈 시트만 보인다. */
   layerBar.onAction('locate', async () => {
     if (!myLocation.coords) await myLocation.locate();
-    if (!myLocation.flyTo()) toast(myLocation.reason() || '');
+    if (!myLocation.flyTo()) { toast(myLocation.reason() || ''); return; }
+    /* 도착하면 그 자리의 날씨를 띄운다 (받은 요청: "내 위치로 가면서 다시 화면 나오게").
+       ⚠️ 한국 안이면 기상청 자료(옛 '한국' 메뉴)를 함께 볼 수 있게 안내만 남긴다 —
+          시트를 두 장 겹쳐 띄우면 뒤엣것을 아무도 못 본다. */
+    weatherPanel.open('today');
   });
   layerBar.onAction('globe', () => {
     const c = viewer.camera.positionCartographic;
@@ -118,11 +133,18 @@ async function boot() {
       c.longitude, c.latitude, fitGlobeHeight()), duration: 1.4 });
   });
   layerBar.onAction('sat', () => satPanel.open());
+  layerBar.onAction('mountain', () => mountainPanel.open());
   layerBar.onAction('sky', () => skyPanel.open());
   layerBar.onAction('flight', () => flightPanel.open());
   layerBar.onAction('community', () => communityPanel.open());
   layerBar.onAction('events', () => eventPanel.open());
-  layerBar.onAction('korea', () => koreaPanel.open());
+  /* News — 지구에서 지금 일어나는 일. 레이어를 켜서 지도에 올리고 목록도 같이 연다.
+     ⚠️ 레이어만 켜면 "눌렀는데 아무 일도 안 났다"로 보인다 (지구 반대편이면 더 그렇다). */
+  layerBar.onAction('news', () => {
+    store.setLayer('news', true);
+    eventPanel.show = 'confirmed';
+    eventPanel.open();
+  });
   layerBar.onAction('ask', () => askPanel.open());
   layerBar.onAction('settings', () => document.getElementById('settings').classList.add('up'));
   sheet.init();
@@ -178,6 +200,7 @@ async function boot() {
      ⚠️ await 하지 않는다. 특보 서버가 느리다고 지구본이 늦게 뜨면 안 된다. */
   warnUI.init();
   koreaPanel.init();
+  mountainPanel.init();
   warn.init();
   apiKeysPanel.init();
   document.getElementById('btnApi')?.addEventListener('click', () => apiKeysPanel.open());

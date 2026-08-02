@@ -265,6 +265,11 @@
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2.4c.9 0 1.5 1.1 1.5 2.6v3.4l7.4 4.3v2.1l-7.4-2.3v4.2l2.5 1.8v1.6L12 19.3l-4 .8v-1.6l2.5-1.8v-4.2L3.1 14.8v-2.1l7.4-4.3V5c0-1.5.6-2.6 1.5-2.6z"/></svg></span>
       <span class="mm-label">항공편</span><span class="mm-badge" id="flightBadge"></span>
     </button>
+    <!-- 산 — 정상 예보와 실측을 나란히. 등산객을 대상으로 한 첫 기능이다. -->
+    <button class="mm-item" data-act="mountain">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M2.6 19.4 9.4 7.2l4.1 7.1 2.2-3.4 5.7 8.5z"/><path d="M7.6 10.4h3.6" stroke-linecap="round"/></svg></span>
+      <span class="mm-label">산</span><span class="mm-badge" id="mtBadge"></span>
+    </button>
     <button class="mm-item" data-act="sky">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.4M12 19.2v2.4M21.6 12h-2.4M4.8 12H2.4M18.8 5.2l-1.7 1.7M6.9 17.1l-1.7 1.7M18.8 18.8l-1.7-1.7M6.9 6.9 5.2 5.2" stroke-linecap="round"/></svg></span>
       <span class="mm-label">하늘</span><span class="mm-badge" id="skyBadge"></span>
@@ -337,6 +342,12 @@
     <div class="traffic one"><button class="tl close" data-close="wxSheet" aria-label="닫기"><span>×</span></button></div>
     <h3 id="wxTitle">내 자리</h3>
     <div id="wxBody"></div>
+  </div>
+
+  <div id="mtSheet" class="sheet-panel tall">
+    <div class="traffic one"><button class="tl close" data-close="mtSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3>산</h3>
+    <div id="mtBody"></div>
   </div>
 
   <div id="koreaSheet" class="sheet-panel tall">

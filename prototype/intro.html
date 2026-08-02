@@ -212,19 +212,22 @@ footer .note{margin-top:22px;line-height:1.8;max-width:72ch}
      화면에 없는 주장을 스키마에만 적으면 그것이 곧 거짓 표기다. -->
 <script type="application/ld+json">
 {
-  "@context":"https://schema.org",
-  "@graph":[
+  "@context": "https://schema.org",
+  "@graph": [
     {
-      "@type":"WebApplication",
-      "@id":"https://earthus.net/#app",
-      "name":"earthus",
-      "url":"https://earthus.net/",
-      "applicationCategory":"WeatherApplication",
-      "operatingSystem":"Web (Chrome, Safari, Edge, Firefox), iOS, Android, Windows, macOS",
-      "browserRequirements":"WebGL 2.0",
-      "inLanguage":["ko","en"],
-      "description":"NOAA·NASA·ECMWF·기상청 등 공공기관의 지구 관측 자료를 3D 지구본 위에 모아 보여주는 웹 앱. 모든 값에 출처와 관측 시각을 함께 표시한다.",
-      "featureList":[
+      "@type": "WebApplication",
+      "@id": "https://earthus.net/#app",
+      "name": "earthus",
+      "url": "https://earthus.net/",
+      "applicationCategory": "WeatherApplication",
+      "operatingSystem": "Web (Chrome, Safari, Edge, Firefox), iOS, Android, Windows, macOS",
+      "browserRequirements": "WebGL 2.0",
+      "inLanguage": [
+        "ko",
+        "en"
+      ],
+      "description": "NOAA·NASA·ECMWF·기상청 등 공공기관의 지구 관측 자료를 3D 지구본 위에 모아 보여주는 웹 앱. 모든 값에 출처와 관측 시각을 함께 표시한다.",
+      "featureList": [
         "전지구 구름 합성 (NOAA GMGSI, 1시간 간격)",
         "기상특보·재해 경보 (기상청 및 각국 기관)",
         "산불 탐지 (NASA FIRMS VIIRS 375m)",
@@ -234,34 +237,91 @@ footer .note{margin-top:22px;line-height:1.8;max-width:72ch}
         "위성 궤도와 통과 예보",
         "지구 뉴스 지도 (GDELT)"
       ],
-      "offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "KRW"
+      },
+      "provider": {
+        "@id": "https://earthus.net/#dalur"
+      },
+      "publisher": {
+        "@id": "https://earthus.net/#dalur"
+      }
     },
     {
-      "@type":"WebPage",
-      "@id":"https://earthus.net/intro.html#page",
-      "url":"https://earthus.net/intro.html",
-      "name":"earthus란? — 지구 관측 자료를 출처와 함께 보여주는 3D 지구본",
-      "about":{"@id":"https://earthus.net/#app"},
-      "inLanguage":"ko",
-      "primaryImageOfPage":{"@type":"ImageObject","url":"https://earthus.net/shots/globe.jpg"}
+      "@type": "WebPage",
+      "@id": "https://earthus.net/intro.html#page",
+      "url": "https://earthus.net/intro.html",
+      "name": "earthus란? — 지구 관측 자료를 출처와 함께 보여주는 3D 지구본",
+      "about": {
+        "@id": "https://earthus.net/#app"
+      },
+      "inLanguage": "ko",
+      "primaryImageOfPage": {
+        "@type": "ImageObject",
+        "url": "https://earthus.net/shots/globe.jpg"
+      }
     },
     {
-      "@type":"FAQPage",
-      "@id":"https://earthus.net/intro.html#faq",
-      "mainEntity":[
-        {"@type":"Question","name":"earthus는 무엇인가요?",
-         "acceptedAnswer":{"@type":"Answer","text":"earthus는 NOAA·NASA·ECMWF·기상청 등 공공기관이 공개하는 지구 관측 자료를 3D 지구본 하나에 모아 보여주는 웹 앱입니다. 관측 레이어는 41종이며, 화면에 나오는 모든 값에 출처와 관측 시각을 함께 적습니다. 설치 없이 브라우저에서 바로 열립니다."}},
-        {"@type":"Question","name":"earthus는 날씨를 예보하나요?",
-         "acceptedAnswer":{"@type":"Answer","text":"아닙니다. earthus는 예보 기관이 아닙니다. 공공기관이 낸 예보와 관측을 출처와 함께 전달하고, 진로나 결과를 단정하지 않습니다. 태풍처럼 앞일이 궁금한 경우에는 예측하는 대신 과거 유사 사례를 세어서 '유사 사례 30건 중 13건이 북서쪽으로 진행(43%)'처럼 알려드립니다. 실제 대응은 기상청 등 공식 발표를 따르셔야 합니다."}},
-        {"@type":"Question","name":"자료 출처는 어디인가요?",
-         "acceptedAnswer":{"@type":"Answer","text":"구름은 NOAA GMGSI, 산불은 NASA FIRMS VIIRS 375m, 지진은 USGS, 쓰나미는 미국 NWS와 태평양쓰나미경보센터, 태풍은 GDACS(EU JRC·UN)와 NOAA IBTrACS, 수치예보는 ECMWF Open Data, 한국 예보와 특보는 기상청 API 허브, 지구 뉴스는 GDELT 2.0입니다. 모두 공개 자료이며 화면에 출처와 관측 시각을 함께 적습니다."}},
-        {"@type":"Question","name":"AI 예보 모델도 쓰나요?",
-         "acceptedAnswer":{"@type":"Answer","text":"ECMWF의 AI 모델 AIFS와 물리 모델 IFS를 매일 함께 받아 97개 지점의 24~120시간 기온 예측을 나란히 기록하고 있습니다. 두 모델 중 어느 쪽이 더 맞았는지는 실제 관측과 대조해 기록이 쌓인 뒤에 공개합니다. 근거가 모이기 전에 순위를 매기지 않습니다."}},
-        {"@type":"Question","name":"무료인가요? 설치가 필요한가요?",
-         "acceptedAnswer":{"@type":"Answer","text":"무료이며 설치가 필요 없습니다. earthus.net을 브라우저로 열면 바로 실행됩니다. PWA라서 홈 화면이나 바탕화면에 추가하면 앱처럼 쓸 수 있습니다."}},
-        {"@type":"Question","name":"뉴스는 어떻게 걸러지나요?",
-         "acceptedAnswer":{"@type":"Answer","text":"GDELT 2.0에서 3시간마다 들어오는 원문 약 6,300건을 신뢰도 점수로 거릅니다. 최근 집계에서는 원문 6,353건 가운데 후보 580건, 중복 제거 후 297건, 화면 표시 150건, 여러 매체가 함께 보도해 확정으로 분류된 것이 9건이었습니다. 확정된 사건에만 말풍선을 답니다. 미확정 보도는 흐린 점으로 남겨 두고 확정된 것처럼 보이지 않게 합니다."}}
+      "@type": "FAQPage",
+      "@id": "https://earthus.net/intro.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "earthus는 무엇인가요?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "earthus는 NOAA·NASA·ECMWF·기상청 등 공공기관이 공개하는 지구 관측 자료를 3D 지구본 하나에 모아 보여주는 웹 앱입니다. 관측 레이어는 41종이며, 화면에 나오는 모든 값에 출처와 관측 시각을 함께 적습니다. 설치 없이 브라우저에서 바로 열립니다."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "earthus는 날씨를 예보하나요?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "아닙니다. earthus는 예보 기관이 아닙니다. 공공기관이 낸 예보와 관측을 출처와 함께 전달하고, 진로나 결과를 단정하지 않습니다. 태풍처럼 앞일이 궁금한 경우에는 예측하는 대신 과거 유사 사례를 세어서 '유사 사례 30건 중 13건이 북서쪽으로 진행(43%)'처럼 알려드립니다. 실제 대응은 기상청 등 공식 발표를 따르셔야 합니다."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "자료 출처는 어디인가요?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "구름은 NOAA GMGSI, 산불은 NASA FIRMS VIIRS 375m, 지진은 USGS, 쓰나미는 미국 NWS와 태평양쓰나미경보센터, 태풍은 GDACS(EU JRC·UN)와 NOAA IBTrACS, 수치예보는 ECMWF Open Data, 한국 예보와 특보는 기상청 API 허브, 지구 뉴스는 GDELT 2.0입니다. 모두 공개 자료이며 화면에 출처와 관측 시각을 함께 적습니다."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "AI 예보 모델도 쓰나요?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "ECMWF의 AI 모델 AIFS와 물리 모델 IFS를 매일 함께 받아 97개 지점의 24~120시간 기온 예측을 나란히 기록하고 있습니다. 두 모델 중 어느 쪽이 더 맞았는지는 실제 관측과 대조해 기록이 쌓인 뒤에 공개합니다. 근거가 모이기 전에 순위를 매기지 않습니다."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "무료인가요? 설치가 필요한가요?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "무료이며 설치가 필요 없습니다. earthus.net을 브라우저로 열면 바로 실행됩니다. PWA라서 홈 화면이나 바탕화면에 추가하면 앱처럼 쓸 수 있습니다."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "뉴스는 어떻게 걸러지나요?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "GDELT 2.0에서 3시간마다 들어오는 원문 약 6,300건을 신뢰도 점수로 거릅니다. 최근 집계에서는 원문 6,353건 가운데 후보 580건, 중복 제거 후 297건, 화면 표시 150건, 여러 매체가 함께 보도해 확정으로 분류된 것이 9건이었습니다. 확정된 사건에만 말풍선을 답니다. 미확정 보도는 흐린 점으로 남겨 두고 확정된 것처럼 보이지 않게 합니다."
+          }
+        }
       ]
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://earthus.net/#dalur",
+      "name": "달루어",
+      "alternateName": "Dalur"
     }
   ]
 }

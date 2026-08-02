@@ -45,23 +45,47 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "earthus",
-  "alternateName": "어스어스",
-  "url": "https://earthus.net/",
-  "applicationCategory": "WeatherApplication",
-  "operatingSystem": "Web browser",
-  "inLanguage": ["ko", "en"],
-  "description": "전 세계 기상·해양·재난 관측 자료를 3D 지구본 위에 실시간으로 보여주는 지구관측 데이터 플랫폼입니다. 모든 값에 출처 기관과 관측 시각을 함께 표시합니다.",
-  "featureList": [
-    "3D 지구본 위 실시간 기상 관측 시각화",
-    "해수면 온도·파고·해류 등 해양 관측",
-    "태풍·지진·산불·기상특보 등 재난 정보",
-    "한국 기상청 736개 관측지점 실황",
-    "위성 궤도 추적",
-    "모든 수치에 출처 기관·관측 시각 표기"
-  ],
-  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" }
+  "@graph": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "earthus",
+      "alternateName": "어스어스",
+      "url": "https://earthus.net/",
+      "applicationCategory": "WeatherApplication",
+      "operatingSystem": "Web browser",
+      "inLanguage": [
+        "ko",
+        "en"
+      ],
+      "description": "전 세계 기상·해양·재난 관측 자료를 3D 지구본 위에 실시간으로 보여주는 지구관측 데이터 플랫폼입니다. 모든 값에 출처 기관과 관측 시각을 함께 표시합니다.",
+      "featureList": [
+        "3D 지구본 위 실시간 기상 관측 시각화",
+        "해수면 온도·파고·해류 등 해양 관측",
+        "태풍·지진·산불·기상특보 등 재난 정보",
+        "한국 기상청 736개 관측지점 실황",
+        "위성 궤도 추적",
+        "모든 수치에 출처 기관·관측 시각 표기"
+      ],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "KRW"
+      },
+      "provider": {
+        "@id": "https://earthus.net/#dalur"
+      },
+      "publisher": {
+        "@id": "https://earthus.net/#dalur"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://earthus.net/#dalur",
+      "name": "달루어",
+      "alternateName": "Dalur"
+    }
+  ]
 }
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Widgets/widgets.css">

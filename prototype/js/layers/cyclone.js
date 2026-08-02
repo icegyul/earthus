@@ -405,22 +405,132 @@ export const cyclones = {
   },
 
   /** 선택 시 — 지나온 경로 + 예보 원뿔을 불러 그린다 */
+  /** 기관별 예보 경로. ⚠️ GDACS 와 무관하게 항상 그린다. */
+  _drawForecasts(s, made, ko) {
+    /* ══ 기관별 예보 경로 ═══════════════════════════════════════
+       받은 지시: "태풍 진행 예상방향, 여러 개 기관들 예보되는 라인 그려달라"
+
+       ⚠️⚠️ **색과 굵기를 반드시 가른다.** 공식 예보(기상청·JMA)와
+          우리가 센 과거 사례가 같은 굵기로 그려지면 사용자는 셋 다 예보로 읽는다.
+          그건 우리가 지켜온 선이 무너지는 지점이다.
+            · 공식 예보  — 굵은 실선 + 시점 표시. 기관마다 다른 색
+            · 과거 사례  — 아주 얇고 흐린 다발. 배경처럼 깔린다
+       ⚠️ 기관이 다르면 선도 따로 그린다. 평균 내지 않는다. */
+    const AG = {
+      KMA: { color: '#5ad1e8', ko: '기상청' },
+      JMA: { color: '#f2a65a', ko: '일본 기상청' },
+      NHC: { color: '#c9a7ff', ko: '미국 NHC' },
+    };
+    const off = official.get(s.name);
+    (off?.agencies || []).forEach((g, gi) => {
+      const pts = (g.steps || [])
+        .filter(x => x.lat != null && x.lon != null)
+        .map(x => [x.lon, x.lat]);
+      if (pts.length < 2) return;
+      const meta = AG[g.agency] || { color: '#8ee6c8', ko: g.agencyKo };
+      const c = Cesium.Color.fromCssColorString(meta.color);
+
+      made.push(this.ds.entities.add({
+        id: `tc:${s.id}:fc:${g.agency}`,
+        polyline: {
+          positions: Cesium.Cartesian3.fromDegreesArray(pts.flat()),
+          width: 2.6,
+          /* ⚠️ 예보선은 **점선**이다. 실선으로 그리면 지나온 경로와 구분이 안 되고,
+             "정해진 길"처럼 읽힌다. */
+          material: new Cesium.PolylineDashMaterialProperty({
+            color: c.withAlpha(0.9), dashLength: 14,
+          }),
+          arcType: Cesium.ArcType.GEODESIC, clampToGround: false,
+        },
+      }));
+
+      // 시점 표시 — 어느 기관의 몇 시간 뒤인지
+      (g.steps || []).forEach((x, i) => {
+        if (x.lat == null || !x.h) return;
+        made.push(this.ds.entities.add({
+          id: `tc:${s.id}:fc:${g.agency}:p${i}`,
+          position: Cesium.Cartesian3.fromDegrees(x.lon, x.lat),
+          point: {
+            pixelSize: 5, color: c, outlineColor: Cesium.Color.BLACK.withAlpha(0.5),
+            outlineWidth: 1, disableDepthTestDistance: 900_000,
+          },
+          label: {
+            text: `+${x.h}h`,
+            font: '400 9px ui-monospace, monospace',
+            fillColor: c.withAlpha(0.9),
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            outlineColor: Cesium.Color.BLACK.withAlpha(0.7), outlineWidth: 2,
+            pixelOffset: new Cesium.Cartesian2(0, -12 - gi * 11),
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 12_000_000),
+            disableDepthTestDistance: 900_000,
+          },
+        }));
+      });
+
+      // 기관 이름은 선 끝에 한 번만
+      const last = pts[pts.length - 1];
+      made.push(this.ds.entities.add({
+        id: `tc:${s.id}:fc:${g.agency}:name`,
+        position: Cesium.Cartesian3.fromDegrees(last[0], last[1]),
+        label: {
+          text: ko ? meta.ko : g.agency,
+          font: '600 11px -apple-system, sans-serif',
+          fillColor: c, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+          outlineColor: Cesium.Color.BLACK.withAlpha(0.8), outlineWidth: 2.5,
+          pixelOffset: new Cesium.Cartesian2(0, 14),
+          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 14_000_000),
+          disableDepthTestDistance: 900_000,
+        },
+      }));
+    });
+
+  },
+
+  /** 과거 유사 사례 다발. ⚠️ 예보가 아니다 — 얇고 흐리게만. */
+  _drawAnalogs(s, made) {
+    const anForPaths = analog.get(s.id, s.name);
+    (anForPaths?.sample || []).forEach((h, i) => {
+      const path = h.path || [];
+      if (path.length < 3) return;
+      made.push(this.ds.entities.add({
+        id: `tc:${s.id}:an${i}`,
+        polyline: {
+          positions: Cesium.Cartesian3.fromDegreesArray(path.flat()),
+          width: 1,
+          material: Cesium.Color.WHITE.withAlpha(0.16),
+          arcType: Cesium.ArcType.GEODESIC, clampToGround: false,
+        },
+      }));
+    });
+  },
+
   async showTrack(s) {
     if (this._selected === s.id) return;
+    const ko = i18n.lang === 'ko';
     this.clearTrack();
     this._selected = s.id;
-    if (!s.geometryUrl) return;
-
-    let g;
-    try {
-      const r = await fetch(s.geometryUrl);
-      if (!r.ok) throw new Error('geometry ' + r.status);
-      g = await r.json();
-    } catch (e) { console.warn('[cyclone] 경로 실패', e.message); return; }
 
     const a = ALERT[s.alert] || ALERT.Green;
     const col = Cesium.Color.fromCssColorString(a.color);
     const made = [];
+
+    /* ⚠️⚠️ 기관 예보선과 과거 사례는 **GDACS 와 무관하다.**
+       예전에는 이 함수가 맨 앞에서 `if (!s.geometryUrl) return;` 로 빠져나가서,
+       GDACS 가 죽으면(오늘이 그렇다) 아무 선도 안 그려졌다 — 우리가 이미 갖고 있는
+       기상청·JMA 예보와 과거 사례까지 함께 사라졌다.
+       → **먼저 그리고**, GDACS 원뿔은 받아지면 얹는다. */
+    this._drawForecasts(s, made, ko);
+    this._drawAnalogs(s, made);
+
+    let g = null;
+    if (s.geometryUrl) {
+      try {
+        const r = await fetchT(s.geometryUrl);
+        if (!r.ok) throw new Error('geometry ' + r.status);
+        g = await r.json();
+      } catch (e) { console.warn('[cyclone] GDACS 경로 실패 — 예보선만 그린다:', e.message); }
+    }
+    if (!g) { this._tracks[s.id] = made; power.animate(300); return; }
     const feats = g.features || [];
 
     // ── 예보 원뿔 (앞으로 갈 범위) ──

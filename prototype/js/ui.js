@@ -51,15 +51,30 @@ export const chrome = {
   },
 
   async reverseName(lat, lon) {
-    // 가장 가까운 프리셋 도시명으로 대체 (지오코딩 API 없이)
-    const CITIES = [['서울',37.57,126.98],['인천',37.46,126.71],['부산',35.18,129.08],
-      ['도쿄',35.68,139.65],['런던',51.51,-0.13],['뉴욕',40.71,-74.01],['파리',48.86,2.35]];
-    let best = CITIES[0], bd = 1e9;
-    CITIES.forEach(([n, a, o]) => {
-      const d = (a - lat) ** 2 + (o - lon) ** 2;
-      if (d < bd) { bd = d; best = [n, a, o]; }
-    });
-    this.place.name = bd < 4 ? best[0] : `${lat.toFixed(1)}, ${lon.toFixed(1)}`;
+    /* ⚠️⚠️ 예전에는 **도시 7개를 하드코딩**해 두고 가장 가까운 것을 골랐다.
+       허용 범위가 제곱도 4 = 약 200km 라, 인천·수원·춘천·대전에 있어도
+       전부 "서울"로 나왔다. 실제로 그 신고를 받았다 —
+       "지금 위치가 서울이 아닌데 서울로 나오고 있고".
+
+       우리는 이미 제대로 된 역지오코딩을 갖고 있었다(place.js, 탭한 지점에 쓰던 것).
+       그걸 쓰지 않고 목록을 들고 있었던 게 문제였다. */
+    try {
+      const { lookupPlace } = await import('./place.js');
+      const p = await lookupPlace(lat, lon);
+      if (p && !p.isOcean) {
+        // 시·군·구가 있으면 그것, 없으면 시도, 그것도 없으면 나라
+        this.place.name = p.city || p.region || p.country;
+        this.render();
+        return;
+      }
+      if (p?.isOcean) {
+        this.place.name = i18n.lang === 'ko' ? '바다 위' : 'At sea';
+        this.render();
+        return;
+      }
+    } catch (_) { /* 아래 좌표 표기로 내려간다 */ }
+    // ⚠️ 못 알아내면 **좌표를 그대로** 적는다. 엉뚱한 도시 이름을 지어내지 않는다.
+    this.place.name = `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
     this.render();
   },
 

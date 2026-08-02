@@ -25,7 +25,17 @@ const RAMP_MS    = 1800;   // 갑자기 튀지 않게 서서히 속도를 올리
    파문 몇 개보다 훨씬 비싸다. 그런데 예전에는 **영구히** 돌았다:
    손 떼고 2초 뒤 시작해서 앱을 닫을 때까지 멈추지 않았다.
    실제 지구본도 밀어두면 결국 멎는다. 그 편이 비유에도 맞고 기기도 식는다. */
-const SPIN_DOWN_MS = 75_000;   // 손 뗀 뒤 이만큼 지나면 회전을 멈춘다
+/* ⚠️⚠️ 회전에 끝을 두는 이유는 발열이었다(위 주석). 그런데 2026-08-02 에
+   **첫 화면을 비웠다** — 예전에는 꺼진 레이어까지 받아 엔티티가 100개 넘게 떠
+   있었지만, 지금 첫 화면은 지구와 구름뿐이고 엔티티가 0개다.
+   카메라가 움직일 때 다시 계산할 것이 그만큼 사라졌다.
+
+   받은 지시: "자동 무빙 줘. 살아있는 지구 느낌 주게."
+   → **멀리 있을 때(Ambient)는 계속 돈다.** 거기선 엔티티가 없고 타일도 성기다.
+     확대했을 때는 예전 규칙대로 멎는다 — 거기가 비싸고, 잡아둔 구도가 밀리면
+     그것대로 방해다. */
+const SPIN_DOWN_MS = 75_000;      // 확대 상태에서 손 뗀 뒤 멈추기까지
+const AMBIENT_FOREVER = true;     // 멀리 있을 때는 멎지 않는다
 
 /* 회전은 초당 0.15° 다 — 33ms 동안 0.005° 움직인다. 30fps 로 그릴 이유가 없다.
    90ms(≈11fps) 로도 부드럽고, 렌더 횟수가 3분의 1 이 된다. */
@@ -100,7 +110,11 @@ export const drift = {
     this._lastFrame = now;
     if (!dt) return;
 
-    if (this._userEngaged) return;   // 첫 조작 이후로는 자동회전 없음 (인트로만 회전한다)
+    /* ⚠️ 예전에는 첫 조작 이후로 자동회전을 아예 껐다(발열).
+       지금은 **멀리 있을 때만** 되살린다 — 거기선 엔티티가 0개고 타일도 성기다.
+       확대 상태에서는 예전 규칙 그대로 끈다: 비싸고, 잡아둔 구도가 밀린다. */
+    const far = store.height >= T.CHROME;
+    if (this._userEngaged && !far) return;
     if (!this.enabled || power.saving) return;   // 절전 모드면 안 흐른다
     if (this._blocked()) return;
     // ⚠️ 예전엔 Explore(확대 상태)에서 아예 멈췄는데,
@@ -109,8 +123,10 @@ export const drift = {
 
     const idle = now - this._lastInput;
     if (idle < RESUME_MS) return;
-    // 오래 가만히 뒀으면 회전을 멈춘다 (만지면 _lastInput 이 갱신돼 다시 시작된다)
-    if (idle > SPIN_DOWN_MS) return;
+    /* 확대 상태에서는 오래 가만히 두면 멎는다(발열).
+       ⚠️ 멀리 있을 때는 멎지 않는다 — "살아있는 지구"가 첫 화면의 전부이고,
+          그 구도에서는 그릴 것이 지구와 구름뿐이다. */
+    if (!(AMBIENT_FOREVER && far) && idle > SPIN_DOWN_MS) return;
 
     // 재개 직후 확 도는 대신 천천히 붙는다
     const ramp = Math.min(1, (idle - RESUME_MS) / RAMP_MS);

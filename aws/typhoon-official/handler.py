@@ -286,7 +286,7 @@ def from_kma(year, numbers):
         } for r in sorted(rows, key=lambda x: (x["ft"], x["h"]))]
         # 분석(FT=0) 행의 시각이 그 회차의 발표 기준시각이다
         at = next((r["atUtc"] for r in rows if r["ft"] == 0), rows[0]["atUtc"])
-        out.append({"agency": "KMA", "agencyKo": "기상청",
+        out.append({"agency": "KMA", "agencyKo": "한국 기상청",
                     "name": nm, "number": f"{year}-{typ}호",
                     "seq": top,
                     "issue": f"{at[:4]}-{at[4:6]}-{at[6:8]}T{at[8:10]}:{at[10:12]}:00Z",

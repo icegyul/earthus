@@ -13,7 +13,7 @@
  */
 
 import { i18n } from './i18n.js';
-import { beaches } from './beaches.js';
+import { beaches, shortName, shortRegion } from './beaches.js';
 import { judge, SURF_RULES } from './surf.js';
 import { get, nearest } from './korea.js';
 import { myLocation } from './mylocation.js';
@@ -123,10 +123,48 @@ export const surfPanel = {
     const wind = this._windAt(b);
     const j = judge(b, sea, wind, ko);
 
+    /* 머리 — 받은 지시대로 **이름과 위치**만. "해수욕장·해변" 꼬리는 뗀다.
+       (주문진해수욕장 → 주문진 · 사근진해변 → 사근진) */
+    const head = `
+      <header>
+        <h4>${esc(shortName(b.name))}</h4>
+        <span class="mt-alt">${esc(shortRegion(b.region))}${
+          b.km != null ? ` · ${b.km}km` : ''}</span>
+      </header>`;
+
+    if (!sea) {
+      return `<article class="mt-card">${head}
+        <p class="sf-none">${ko ? '이 지점의 파랑 자료가 없습니다'
+                                : 'No wave data at this point'}</p></article>`;
+    }
+
+    /* ⚠️ **너울과 풍파를 나눠 보여준다.** 이게 서핑에서 가장 중요한 구분이다:
+       같은 1.5m 라도 너울 12초면 좋은 파도, 풍파 5초면 못 타는 잡파다.
+       합쳐진 wave_* 하나만 보여주면 이 차이가 통째로 사라진다.
+       ⚠️ 값이 없으면 '—' 로 둔다. 0 으로 채우면 "파도가 없다"로 읽힌다. */
+    const v = (x, d = 1) => (x == null ? '—' : x.toFixed(d));
+    const trio = `
+      <div class="sf-trio">
+        <div class="sf-cell">
+          <span class="k">${ko ? '너울' : 'Swell'}</span>
+          <span class="n">${v(sea.swellH)}<i>m</i></span>
+          <span class="s">${v(sea.swellPeriod, 1)}${ko ? '초' : 's'}</span>
+        </div>
+        <div class="sf-cell">
+          <span class="k">${ko ? '파도' : 'Wind wave'}</span>
+          <span class="n">${v(sea.windH)}<i>m</i></span>
+          <span class="s">${sea.windPeriod ? `${v(sea.windPeriod, 1)}${ko ? '초' : 's'}`
+                                            : (ko ? '없음' : 'none')}</span>
+        </div>
+        <div class="sf-cell">
+          <span class="k">${ko ? '수온' : 'Sea temp'}</span>
+          <span class="n">${v(sea.sst)}<i>°</i></span>
+          <span class="s">${sea.sst == null ? '' : (ko ? this._suit(sea.sst) : '')}</span>
+        </div>
+      </div>`;
+
     if (!j.ok) {
-      return `<article class="mt-card">
-        <header><h4>${esc(b.name)}</h4>
-          <span class="mt-alt">${b.km != null ? `${b.km}km` : ''}</span></header>
+      return `<article class="mt-card">${head}${trio}
         <p class="sf-none">${esc(j.why)}</p></article>`;
     }
 
@@ -135,31 +173,14 @@ export const surfPanel = {
 
     return `
       <article class="mt-card">
-        <header>
-          <h4>${esc(b.name)}</h4>
-          <span class="mt-alt">${ko ? '해변 방향' : 'Faces'} ${b.facing}°
-            ${dirText(b.facing, ko)}${b.km != null ? ` · ${b.km}km` : ''}</span>
-        </header>
-
-        <div class="sf-main">
-          <div class="sf-h">
-            <span class="n">${j.height.toFixed(1)}</span><span class="u">m</span>
-            <span class="lab">${ko ? '파고' : 'Wave'}</span>
-          </div>
-          <div class="sf-p">
-            <span class="n">${j.period ? j.period.s.toFixed(1) : '—'}</span><span class="u">s</span>
-            <span class="lab">${ko ? '주기' : 'Period'}</span>
-          </div>
-        </div>
-
+        ${head}
+        ${trio}
         <ul class="sf-rows">
           <li class="${cls[j.exposure.key] || ''}">
             <i>${ko ? '스웰' : 'Swell'}</i>
             <b>${j.exposure.text}</b>
             <em>${ko ? `${j.exposure.gapDeg}° 차이` : `${j.exposure.gapDeg}° off`}</em>
           </li>
-          ${j.period ? `<li class="${j.period.key === 'wind' ? 'weak' : 'good'}">
-            <i>${ko ? '파도' : 'Type'}</i><b>${j.period.text}</b></li>` : ''}
           ${j.wind ? `<li class="${wcls[j.wind.key] || ''}">
             <i>${ko ? '바람' : 'Wind'}</i>
             <b>${j.wind.text}</b>
@@ -168,6 +189,17 @@ export const surfPanel = {
             <b class="dim">${ko ? '가까운 관측소가 없습니다' : 'No nearby station'}</b></li>`}
         </ul>
       </article>`;
+  },
+
+  /* 수온으로 슈트를 가늠한다.
+     ⚠️ 이건 **널리 쓰이는 목안**이지 공인 기준이 아니다. 화면에도 그렇게 적는다.
+        사람마다 추위를 타는 정도가 다르고, 바람·시간에 따라 체감이 달라진다. */
+  _suit(t) {
+    if (t >= 24) return '슈트 없이도';
+    if (t >= 20) return '스프링';
+    if (t >= 17) return '3/2mm';
+    if (t >= 14) return '4/3mm';
+    return '5mm+';
   },
 
   _how(ko) {

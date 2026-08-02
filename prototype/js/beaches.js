@@ -29,8 +29,13 @@ const OFFSHORE_KM = 1.2;
    ⚠️ 좌표를 URL 에 이어 붙이므로 무한정 늘릴 수 없다(주소 길이 제한). */
 const BATCH = 16;
 
+/* ⚠️ 너울(swell)과 풍파(wind wave)를 **따로** 받는다.
+   서퍼에게 이 둘은 다른 파도다 — 너울은 먼 바다에서 정리돼 온 것,
+   풍파는 근처 바람이 방금 만든 잡파다. 합쳐진 wave_* 만 보면 구분이 안 된다.
+   수온도 함께 받는다 (슈트를 입을지 정하는 값이다). */
 const MARINE_FIELDS = 'wave_height,wave_direction,wave_period,'
-  + 'swell_wave_height,swell_wave_direction,swell_wave_period,wind_wave_height';
+  + 'swell_wave_height,swell_wave_direction,swell_wave_period,'
+  + 'wind_wave_height,wind_wave_period,sea_surface_temperature';
 
 /** 해변에서 바다 쪽으로 km 만큼 민 좌표
  *  ⚠️ load() 가 축약 필드(n/la/lo/f)를 풀어 이름을 바꿔 놓는다.
@@ -41,6 +46,20 @@ function offshore(b, km = OFFSHORE_KM) {
   const dLat = (km * Math.cos(b.facing * r)) / 110.57;
   const dLon = (km * Math.sin(b.facing * r)) / (111.32 * Math.cos(b.lat * r));
   return [b.lat + dLat, b.lon + dLon];
+}
+
+/* 이름에서 "해수욕장·해변" 같은 꼬리를 뗀다.
+   받은 지시: "주문진해변에서 해변만 빼고 이름만 나와도 돼 (사근진 너울 파도 온도)"
+   ⚠️ 떼고 나서 비면 원래 이름을 그대로 쓴다 — 빈 칸이 나오면 안 된다. */
+const TAIL = /\s*(해수욕장|해변|해안|해수욕|비치|야영장|캠핑장)+\s*$/;
+export function shortName(n) {
+  const t = String(n || '').replace(TAIL, '').replace(TAIL, '').trim();
+  return t || String(n || '');
+}
+
+/* 지역 라벨에서 괄호 안을 뗀다 — "동해 북부 (고성·속초·양양)" → "동해 북부" */
+export function shortRegion(r) {
+  return String(r || '').replace(/\s*\(.*$/, '').trim();
 }
 
 export const beaches = {
@@ -118,7 +137,9 @@ export const beaches = {
           this._sea.set(b.name, {
             waveH: c.wave_height, waveDir: c.wave_direction, wavePeriod: c.wave_period,
             swellH: c.swell_wave_height, swellDir: c.swell_wave_direction,
-            swellPeriod: c.swell_wave_period, windWaveH: c.wind_wave_height,
+            swellPeriod: c.swell_wave_period,
+            windH: c.wind_wave_height, windPeriod: c.wind_wave_period,
+            sst: c.sea_surface_temperature,
             at: c.time,
           });
         });

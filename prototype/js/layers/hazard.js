@@ -1,6 +1,7 @@
 // 재난 레이어 — 지진(USGS 실시간 + 일본은 JMA 대조) + 화산
 import { PointLayer } from './pointLayer.js';
 import { API, C, GLOBAL_EVENT } from '../config.js';
+import { fetchT } from '../net.js';
 import { i18n } from '../i18n.js';
 import { jma, inJapan, distKm, jaPlaceKo } from '../jma.js';
 
@@ -35,7 +36,7 @@ export const quakes = {
   },
 
   async refresh() {
-    const res = await fetch(API.QUAKE_DAY);
+    const res = await fetchT(API.QUAKE_DAY, { timeout: 15_000 });   // 하루치 피드가 수 MB
     if (!res.ok) throw new Error('usgs ' + res.status);
     const j = await res.json();
     this.raw = j.features;

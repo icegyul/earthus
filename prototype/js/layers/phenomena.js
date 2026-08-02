@@ -16,6 +16,7 @@ import { store } from '../store.js';
 import { i18n } from '../i18n.js';
 import { mapLabel } from '../maplabel.js';
 import { API, C } from '../config.js';
+import { fetchT } from '../net.js';
 import { power } from '../power.js';
 
 /* ── 열돔 판정 기준 ────────────────────────────────────────────
@@ -55,6 +56,9 @@ export const phenomena = {
   ds: null,        // 환류 등 정적 자연현상
   dsHeat: null,    // 열돔 — 따로 끌 수 있어야 한다
   found: [],
+  /* 환류별 "흐름 굳히기" 예약. 다시 그릴 때 취소해야 옛 타이머가
+     새로 만든 엔티티를 멈춰 세우는 일이 없다. (_drawGyreFlow 참고) */
+  _flowFreeze: {},
 
   /* ⚠️ 데이터소스를 둘로 나눈 이유
      열돔은 반경 수백 km 를 덮는 큰 반투명 면이라, 다른 걸 보려는 사람에게는
@@ -96,6 +100,10 @@ export const phenomena = {
     if (this._busy) return this._busy;
     this._busy = (async () => {
       try {
+        /* ⚠️ 엔티티를 지우기 전에 예약된 "흐름 굳히기"를 취소한다.
+           안 그러면 옛 타이머가 깨어나 새로 그린 흐름을 멈춰 세운다. */
+        Object.values(this._flowFreeze).forEach(clearTimeout);
+        this._flowFreeze = {};
         this.ds.entities.removeAll();
         this.dsHeat.entities.removeAll();
         this.found = [];
@@ -133,7 +141,7 @@ export const phenomena = {
       hourly: 'geopotential_height_500hPa',
       forecast_days: '7', timezone: 'auto',
     });
-    const r = await fetch(`${API.METEO}?${q}`);
+    const r = await fetchT(`${API.METEO}?${q}`);
     if (!r.ok) throw new Error('heatdome-check ' + r.status);
     const j = await r.json();
     const d = j.daily, h = j.hourly;
@@ -216,7 +224,7 @@ export const phenomena = {
       forecast_days: '7',
       timezone: 'auto',
     });
-    const res = await fetch(`${API.METEO}?${q}`);
+    const res = await fetchT(`${API.METEO}?${q}`);
     if (!res.ok) throw new Error('meteo-scan ' + res.status);
     const rows = await res.json();
     const list = Array.isArray(rows) ? rows : [rows];
@@ -303,7 +311,7 @@ export const phenomena = {
       forecast_days: '1',
       timezone: 'UTC',
     });
-    const r = await fetch(`${API.METEO}?${q}`);
+    const r = await fetchT(`${API.METEO}?${q}`);
     if (!r.ok) throw new Error('extent ' + r.status);
     const rows = await r.json();
     const list = Array.isArray(rows) ? rows : [rows];
@@ -470,16 +478,19 @@ export const phenomena = {
     const FLOW_MS = 20_000;
     const flowUntil = Date.now() + FLOW_MS;
 
+    // 각도 → 지구 위 좌표. 콜백과 굳힐 때가 **같은 식**을 써야 멈추는 순간 안 튄다.
+    const at = (off, ms) => {
+      const th = off + dir * (ms % PERIOD) / PERIOD * Math.PI * 2;
+      // 타원 위의 점을 위경도로 — 위도 1° ≈ 111km, 경도는 위도에 따라 줄어든다
+      const dLat = (b * Math.sin(th)) / 111_000;
+      const dLon = (a * Math.cos(th)) / (111_000 * Math.cos(g.lat * Math.PI / 180));
+      return Cesium.Cartesian3.fromDegrees(g.lon + dLon, g.lat + dLat);
+    };
+
     for (let i = 0; i < N; i++) {
       const off = (i / N) * Math.PI * 2;
-      const pos = new Cesium.CallbackProperty(() => {
-        const nowMs = Math.min(Date.now(), flowUntil);
-        const th = off + dir * (nowMs % PERIOD) / PERIOD * Math.PI * 2;
-        // 타원 위의 점을 위경도로 — 위도 1° ≈ 111km, 경도는 위도에 따라 줄어든다
-        const dLat = (b * Math.sin(th)) / 111_000;
-        const dLon = (a * Math.cos(th)) / (111_000 * Math.cos(g.lat * Math.PI / 180));
-        return Cesium.Cartesian3.fromDegrees(g.lon + dLon, g.lat + dLat);
-      }, false);
+      const pos = new Cesium.CallbackProperty(
+        () => at(off, Math.min(Date.now(), flowUntil)), false);
 
       this.ds.entities.add({
         id: `gyreflow:${g.id}:${i}`,
@@ -494,6 +505,24 @@ export const phenomena = {
       });
     }
     power.animate(FLOW_MS);
+
+    /* ⚠️ 여기서 끝내면 안 된다. 위 콜백은 20초 뒤 **움직임만** 멈춘다 —
+       CallbackProperty 자체는 그대로 남아 매 프레임 계속 평가된다.
+       환류 5곳 × 14점 = **70개가 켜 둔 내내 프레임마다 sin/cos + 좌표 변환**을 한다.
+       (실측 2026-08-02: 이 레이어 하나가 애니메이션 엔티티 70개 — 앱 전체 1위였다.)
+       파문이 수명이 다하면 정적인 원으로 바뀌는 것과 같은 처리가 빠져 있었다.
+       → 다 돈 뒤에는 **멈춘 자리에 상수로 굳힌다.** 보이는 그림은 그대로고,
+         프레임마다 하던 계산만 사라진다. */
+    clearTimeout(this._flowFreeze[g.id]);
+    this._flowFreeze[g.id] = setTimeout(() => {
+      for (let i = 0; i < N; i++) {
+        const e = this.ds.entities.getById(`gyreflow:${g.id}:${i}`);
+        // 그 사이 다시 그려졌으면 새 콜백이 돌고 있다 — 건드리지 않는다
+        if (!e || !(e.position instanceof Cesium.CallbackProperty)) continue;
+        e.position = new Cesium.ConstantPositionProperty(
+          at((i / N) * Math.PI * 2, flowUntil));
+      }
+    }, FLOW_MS + 200);
   },
 
   /* ══════════════════════════════════════════════════════════

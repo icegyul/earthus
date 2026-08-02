@@ -12,6 +12,7 @@
 //    예보는 NOAA SWPC 가 한다 — 링크로 넘긴다.
 
 import { API } from '../config.js';
+import { fetchT } from '../net.js';
 import { i18n } from '../i18n.js';
 
 /* X선 플레어 등급. 로그 척도라 자릿수가 곧 등급이다.
@@ -41,7 +42,9 @@ export const solar = {
         if (!r.ok) throw new Error('solar ' + r.status);
         return r.json();
       }),
-      fetch(API.KP).then(r => (r.ok ? r.json() : null)).catch(() => null),
+      /* ⚠️ .catch 는 매달림을 못 잡는다 — allSettled 가 영영 안 끝나서
+         우리 CDN 의 meta.json 이 멀쩡해도 태양 레이어가 안 뜬다. */
+      fetchT(API.KP).then(r => (r.ok ? r.json() : null)).catch(() => null),
     ]);
 
     if (m.status === 'fulfilled') this.meta = m.value;

@@ -2,6 +2,7 @@
 import { PointLayer } from './pointLayer.js';
 import { viewer } from '../viewer.js';
 import { API, C, GLOBAL_EVENT } from '../config.js';
+import { fetchT } from '../net.js';
 import { i18n } from '../i18n.js';
 import { SAT_GROUPS, satDetail, ISS_ICON } from './satcat.js';
 import { power } from '../power.js';
@@ -30,7 +31,7 @@ export const launches = {
 
   async refresh() {
     const url = `${API.LAUNCH}?limit=30&hide_recent_previous=true`;
-    const res = await fetch(url);
+    const res = await fetchT(url);
     if (!res.ok) throw new Error('ll2 ' + res.status);
     const j = await res.json();
     const t = i18n.t.F;
@@ -176,7 +177,7 @@ export const orbits = {
   /** 카탈로그를 한 번만 받아 캐시 (그룹 전환 시 재요청 안 함) */
   async loadCatalog() {
     if (this._catalog) return this._catalog;
-    const res = await fetch(API.SAT_CATALOG);
+    const res = await fetchT(API.SAT_CATALOG, { timeout: 30_000 });   // 압축 카탈로그가 커서 넉넉히
     if (!res.ok) throw new Error('catalog ' + res.status);
     // S3 가 Content-Encoding: gzip 을 붙여 보내므로 브라우저가 알아서 푼다
     this._catalog = await res.json();
@@ -204,7 +205,7 @@ export const orbits = {
     const seen = new Set();
     for (const name of (g.celestrak || [])) {
       try {
-        const r = await fetch(`${API.TLE}?GROUP=${name}&FORMAT=tle`);
+        const r = await fetchT(`${API.TLE}?GROUP=${name}&FORMAT=tle`);
         if (!r.ok) continue;
         const txt = await r.text();
         // rate limit 에 걸리면 짧은 안내문이 200 으로 돌아온다

@@ -22,10 +22,21 @@
 import { PointLayer } from './pointLayer.js';
 import { API } from '../config.js';
 import { i18n } from '../i18n.js';
+import { levelEn } from '../warn.js';
 
 /* 종류별 색. kma-warn 이 이미 색·아이콘을 실어 보내므로 그걸 먼저 쓰고,
    없는 종류만 여기서 채운다. */
 const FALLBACK = { icon: '⚠️', color: '#fa5252' };
+
+/* 라벨을 붙일 대표 도시 — 특별·광역·특별자치시와 도청 소재지급.
+   특보가 전국에 깔리면(폭염철에 실제로 그렇다) 라벨 수백 장이 지도를 덮어
+   서로 겹쳐 읽을 수 없게 된다. 라벨은 여기 해당하는 구역만 붙이고
+   나머지는 점만 남긴다 — 탭하면 정보 시트에 이름이 그대로 나온다.
+   ⚠️ 구역 이름은 기상청 특보구역명("서울", "경기도 남부", "백령도" 식)이라
+      완전일치가 아니라 포함으로 본다. '광주'는 광역시와 경기 광주가 같이
+      걸리지만, 라벨이 하나 더 붙는 쪽이 빠지는 쪽보다 낫다. */
+const MAJOR_KR = ['서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종',
+  '수원', '춘천', '청주', '전주', '목포', '포항', '창원', '제주', '강릉'];
 
 /** 수준 → 점 크기. 주의보보다 경보가 커야 한눈에 읽힌다. */
 const SIZE = { 1: 4.2, 2: 5.6, 3: 7.2 };
@@ -62,22 +73,42 @@ export const alerts = {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const j = await r.json();
       sources.push({ name: j.source, license: j.license, count: j.activeCount });
-      (j.active || []).forEach((w, i) => {
+
+      /* ⚠️ 같은 구역에 특보가 여러 개 걸리는 일은 흔하다 (폭염+열대야).
+         구역 좌표가 같으니 특보마다 엔티티를 만들면 라벨이 정확히 겹쳐
+         글자가 뭉개진다 (실제 신고: "폭염"과 "열대야"가 "열폭염야" 덩어리로 보임).
+         → 구역당 엔티티 하나로 합치고, 종류는 줄바꿈으로 위아래 나열한다.
+           Cesium 라벨은 \n 멀티라인을 지원하고 배경 알약도 전체를 덮는다. */
+      const byRegion = new Map();
+      (j.active || []).forEach(w => {
         if (w.lat == null || w.lon == null) { noCoords++; return; }
+        const g = byRegion.get(w.regionId);
+        if (g) g.warns.push(w);
+        else byRegion.set(w.regionId, { region: w.region, lat: w.lat, lon: w.lon, warns: [w] });
+      });
+
+      byRegion.forEach((g, regionId) => {
+        g.warns.sort((a, b) => b.levelRank - a.levelRank);   // 심한 것이 첫 줄 — 색·크기도 그걸 따른다
+        const top = g.warns[0];
         const d = {};
-        d[ko ? '종류' : 'Type'] = ko ? w.kind : (w.kindEn || w.kind);
-        d[ko ? '수준' : 'Level'] = w.level;
-        d[ko ? '구역' : 'Zone'] = w.region;
-        if (w.effectiveKst) d[ko ? '발효(KST)' : 'From (KST)'] = fmt(w.effectiveKst);
+        d[ko ? '종류' : 'Type'] = g.warns
+          .map(w => (ko ? `${w.kind}${w.level}` : `${w.kindEn || w.kind} ${levelEn(w.level)}`))
+          .join(' · ');
+        d[ko ? '구역' : 'Zone'] = g.region;
+        if (top.effectiveKst) d[ko ? '발효(KST)' : 'From (KST)'] = fmt(top.effectiveKst);
         // ⚠️ 구역 경보임을 반드시 적는다. 점 하나로 오해하면 안 된다.
         d[ko ? '범위' : 'Extent'] = ko ? '구역 전체 (표시는 대표 지점)' : 'Whole zone (shown at a representative point)';
         d[ko ? '출처' : 'Source'] = j.source;
         items.push({
-          id: `kr-${w.regionId}-${w.kind}-${i}`,
-          lat: w.lat, lon: w.lon,
-          name: `${w.icon || FALLBACK.icon} ${ko ? w.kind : (w.kindEn || w.kind)}`,
-          color: w.color || FALLBACK.color,
-          radius: SIZE[w.levelRank] || 5,
+          id: `kr-${regionId}`,
+          lat: g.lat, lon: g.lon,
+          name: g.warns
+            .map(w => `${w.icon || FALLBACK.icon} ${ko ? w.kind : (w.kindEn || w.kind)}`)
+            .join('\n'),
+          // 라벨은 대표 도시만 — 나머지 구역은 점만 (위 MAJOR_KR 머리말 참고)
+          noLabel: !MAJOR_KR.some(n => (g.region || '').includes(n)),
+          color: top.color || FALLBACK.color,
+          radius: SIZE[top.levelRank] || 5,
           data: d,
         });
       });

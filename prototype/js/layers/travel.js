@@ -4,6 +4,7 @@ import { PointLayer } from './pointLayer.js';
 import { viewRect } from '../viewer.js';
 import { store } from '../store.js';
 import { API, C } from '../config.js';
+import { fetchT } from '../net.js';
 import { i18n } from '../i18n.js';
 
 const KIND_LABEL = {
@@ -54,7 +55,8 @@ out body 120;`;
 
     this.busy = true;
     try {
-      const res = await fetch(API.OVERPASS, {
+      const res = await fetchT(API.OVERPASS, {
+        timeout: 25_000,   // Overpass 는 원래 느리다 — 짧게 끊으면 멀쩡한 질의를 죽인다
         method: 'POST',
         body: 'data=' + encodeURIComponent(q),
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

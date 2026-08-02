@@ -1,6 +1,7 @@
 // 면(imagery) 레이어 — 전지구부터 항상 표시 (§5-10)
 import { viewer, gibsProvider } from '../viewer.js';
 import { API } from '../config.js';
+import { fetchT } from '../net.js';
 import { CONFIG } from '../config.local.js';
 
 /** GIBS 시간축 레이어는 D-1이 안전 (당일치는 처리 지연) */
@@ -198,7 +199,7 @@ export const imagery = {
   async _cloudsFromRealEarth() {
     let time = null;
     try {
-      const r = await fetch(`${API.REALEARTH}/times?products=globalir`);
+      const r = await fetchT(`${API.REALEARTH}/times?products=globalir`, { timeout: 10_000 });
       if (r.ok) {
         const j = await r.json();
         const list = j.globalir || [];
@@ -755,7 +756,7 @@ export const imagery = {
   /* ── 오로라 (SWPC OVATION) ──────────────────────────────────
      360×181 격자의 오로라 출현 확률(0~100)을 캔버스로 그려 단일 타일로 얹음 */
   async loadAurora() {
-    const res = await fetch(API.AURORA);
+    const res = await fetchT(API.AURORA, { timeout: 15_000 });   // 1.5MB 격자라 넉넉히
     if (!res.ok) throw new Error('aurora ' + res.status);
     const j = await res.json();
 
@@ -812,7 +813,7 @@ export const imagery = {
 
   /** 지자기 활동 지수 */
   async loadKp() {
-    const res = await fetch(API.KP);
+    const res = await fetchT(API.KP);
     if (!res.ok) return null;
     const rows = await res.json();
     const last = rows[rows.length - 1];

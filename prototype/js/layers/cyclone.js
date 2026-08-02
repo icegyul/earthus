@@ -16,6 +16,7 @@
 
 import { viewer } from '../viewer.js';
 import { API } from '../config.js';
+import { fetchT } from '../net.js';
 import { i18n } from '../i18n.js';
 import { mapLabel } from '../maplabel.js';
 import { power } from '../power.js';
@@ -51,6 +52,35 @@ function grade(kmh) {
       온대저기압으로 바뀐 것인지는 GDACS 가 알려주지 않는다.
       그래서 표시는 "관측 종료"로 한다. "열대저압부로 약화"라고 쓰면 지어낸 것이 된다. */
 const RETAIN_H = 72;
+
+/* GDACS 응답을 이만큼만 기다린다.
+   ⚠️ 넉넉히 주되 무한정은 안 된다 — 넘으면 우리 보관본으로 그린다(refresh 참고).
+      사용자에게는 "조금 늦은 자료"가 "빈 화면"보다 언제나 낫다. */
+const GDACS_TIMEOUT_MS = 12_000;
+
+/* 과거 유사 사례 — cyclone-analog Lambda 가 만든 것을 읽어 둔다.
+   ⚠️ 실패해도 태풍 표시는 그대로 돌아야 한다. 없으면 그 줄만 안 나온다. */
+const analog = {
+  _by: new Map(),
+  async load() {
+    try {
+      const r = await fetch(`${API.OCEAN}/cyclone-analog.json`, { cache: 'no-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json();
+      this._by.clear();
+      (j.storms || []).forEach(s => {
+        const v = { ...s, minSampleForPct: j.minSampleForPct };
+        if (s.id) this._by.set(String(s.id), v);
+        if (s.name) this._by.set(String(s.name).toUpperCase(), v);
+      });
+    } catch (e) {
+      console.warn('[태풍 유사사례] 못 받음 —', e.message);
+    }
+  },
+  get(id, name) {
+    return this._by.get(String(id)) || this._by.get(String(name || '').toUpperCase()) || null;
+  },
+};
 
 export const cyclones = {
   ds: null,
@@ -89,12 +119,35 @@ export const cyclones = {
   set(on) { if (this.ds) this.ds.show = on; },
 
   async refresh() {
-    const r = await fetch(`${API.GDACS}?eventtypes=TC`);
-    if (!r.ok) throw new Error('gdacs ' + r.status);
-    const j = await r.json();
-
-    // ⚠️ eventtypes=TC 로 물어도 지진 등이 섞여 온다. eventtype 으로 다시 거른다.
-    const feats = (j.features || []).filter(f => f.properties?.eventtype === 'TC');
+    /* ⚠️⚠️ GDACS 가 죽어도 화면이 비면 안 된다.
+       실측(2026-08-02): GDACS 가 커넥션 풀 고갈로 완전히 응답하지 않았다
+       (400 본문 "Timeout expired... all pooled connections were in use",
+        이후 4회 연속 45초 타임아웃). 그때 이 함수가 통째로 throw 해서
+       **태풍 레이어에 아무것도 안 나왔다.**
+       그런데 우리는 자료를 갖고 있었다 — archiver 가 events/cyclone-tracks.json 에
+       경로를 보관해 두고, 유사 사례 분석까지 끝나 있었다. 쓰지 못하고 있었을 뿐이다.
+       → 실패하면 던지지 말고 **우리 보관본으로 그린다.** 대신 그게 실시간이 아님을
+         반드시 화면에 적는다(stale 플래그 → detail 참고). */
+    let feats = [];
+    let gdacsOk = true;
+    try {
+      /* ⚠️⚠️ fetch 에는 타임아웃이 없다. 이것 때문에 위 폴백이 무용지물이었다.
+         GDACS 가 죽는 방식은 두 가지인데 **무응답이 더 흔하고 더 나쁘다**:
+           · 오류 응답(400 등) → catch 로 잡힌다 ✓
+           · 아무 응답도 안 함  → fetch 가 **영원히 매달린다.** 오류가 안 나니
+                                 catch 도 안 걸리고, 폴백도 영영 실행되지 않는다.
+         실측(2026-08-02): 4회 연속 45초 넘게 0바이트. 그동안 화면은 계속 비어 있었다.
+         → 제한 시간을 걸어 **실패로 만들어야** 보관본으로 넘어간다. */
+      const r = await fetchT(`${API.GDACS}?eventtypes=TC`, { timeout: GDACS_TIMEOUT_MS });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json();
+      // ⚠️ eventtypes=TC 로 물어도 지진 등이 섞여 온다. eventtype 으로 다시 거른다.
+      feats = (j.features || []).filter(f => f.properties?.eventtype === 'TC');
+    } catch (e) {
+      gdacsOk = false;
+      console.warn('[cyclone] GDACS 응답 없음 — 보관본으로 그린다:', e.message);
+    }
+    this.gdacsOk = gdacsOk;
 
     this.list = feats.map(f => {
       const p = f.properties;
@@ -118,10 +171,17 @@ export const cyclones = {
        실시간 목록에 없지만 우리가 최근 RETAIN_H 안에 기록한 것이 있으면
        "관측 종료" 상태로 이어서 그린다. 마지막으로 기록한 자리에 둔다. */
     await this.loadTracks();
+    /* 과거 유사 사례도 같이 받아 둔다 — 정보 시트를 열 때 이미 있어야 한다.
+       ⚠️ await 하되 실패는 무시한다(load 안에서 잡는다). 없으면 그 줄만 안 나온다. */
+    await analog.load();
     const live = new Set(this.list.map(s => String(s.id)));
     const cutoff = Date.now() - RETAIN_H * 3600_000;
     this._hist.forEach((rec, id) => {
-      if (live.has(id) || rec.live) return;
+      if (live.has(id)) return;
+      /* rec.live 는 "우리가 마지막으로 봤을 때 GDACS 목록에 있었다"는 뜻이다.
+         · GDACS 가 살아 있으면 그건 위 목록에 이미 있어야 하므로 건너뛴다.
+         · GDACS 가 죽었으면 우리 보관본이 **유일한 자료**다 — 살려서 그린다. */
+      if (rec.live && gdacsOk) return;
       const t = rec.track || [];
       if (!t.length) return;
       const lastMs = Date.parse(rec.lastSeen);
@@ -133,7 +193,12 @@ export const cyclones = {
         lat, lon,
         from: rec.from, to: rec.to,
         source: 'GDACS',
-        ended: true, lastSeen: rec.lastSeen,
+        /* ⚠️ 둘을 구분한다. 같은 "옛 자료"라도 뜻이 다르다.
+           ended — GDACS 는 멀쩡한데 이 폭풍이 목록에서 빠졌다 (관측 종료)
+           stale — GDACS 자체가 응답하지 않는다 (폭풍은 아마 살아 있다) */
+        ended: !rec.live,
+        stale: rec.live && !gdacsOk,
+        lastSeen: rec.lastSeen,
       });
     });
 
@@ -414,6 +479,16 @@ export const cyclones = {
         : 'This storm has dropped out of the GDACS live list. The track shown is **our own hourly record**, not an official best track. GDACS does not say why a storm leaves the list (weakening, landfall, extratropical transition), so we do not claim a reason. Its remaining cloud and rain can persist for days.';
       return { title: `${s.name}`, rows: d };
     }
+    /* ⚠️ GDACS 가 응답하지 않아 우리 보관본으로 그리고 있는 경우.
+       "관측 종료"와 **다른 말**이다 — 폭풍은 아마 살아 있고, 우리가 지금 값을 못 받는 것뿐이다.
+       이 둘을 섞으면 "끝난 태풍"이라고 잘못 말하게 된다. */
+    if (s.stale) {
+      d[ko ? '상태' : 'Status'] = ko
+        ? '⚠️ GDACS 응답 없음 — 마지막으로 받은 위치입니다'
+        : '⚠️ GDACS not responding — last received position';
+      d[ko ? '마지막 수신' : 'Last received'] =
+        (s.lastSeen || '').slice(0, 16).replace('T', ' ');
+    }
     d[ko ? '등급' : 'Category'] = grade(s.kmh);
     d[ko ? '최대풍속' : 'Max wind'] = s.kmh != null
       ? `${Math.round(s.kmh)} km/h · ${(s.kmh / 3.6).toFixed(0)} m/s · ${(s.kmh / 1.852).toFixed(0)} kt`
@@ -424,9 +499,56 @@ export const cyclones = {
     d[ko ? '최신 관측' : 'Latest'] = (s.to || '').slice(0, 16).replace('T', ' ');
     d[ko ? '출처' : 'Source'] = s.source || 'GDACS';
     if (s.report) d[ko ? '상세 보고서' : 'Full report'] = s.report;
-    d['_note'] = ko
+
+    /* ── 과거 유사 사례 ─────────────────────────────────────────
+       ⚠️⚠️ 표현 규율(2026-08-02 확정)을 여기서 지킨다.
+         · **건수가 먼저, 퍼센트는 괄호 안.** 퍼센트만 쓰면 모델 예측처럼 읽힌다.
+         · 표본이 적으면(minSampleForPct 미만) **퍼센트를 아예 안 쓴다.**
+           3/4 를 75% 로 쓰는 순간 정밀한 척하는 거짓이 된다.
+         · 문구는 "이렇게 갈 것이다"가 아니라 **"과거의 비슷한 태풍들은 이렇게 갔다"**.
+         · 공식 예보(점선 원뿔)를 항상 함께 둔다 — 아래 _note 가 그 역할이다. */
+    const an = analog.get(s.id, s.name);
+    if (an) {
+      if (an.outOfBasin) {
+        d[ko ? '과거 유사 사례' : 'Past analogues'] = ko
+          ? an.basinNote.ko : an.basinNote.en;
+      } else if (an.matches) {
+        const n = an.matches;
+        const usePct = an.topPct != null;
+        d[ko ? '과거 유사 사례' : 'Past analogues'] = ko
+          ? `${n}건 중 ${an.topN}건이 ${an.topDir}쪽으로 진행`
+            + (usePct ? ` (${an.topPct}%)` : '')
+          : `${an.topN} of ${n} moved ${an.topDirEn}`
+            + (usePct ? ` (${an.topPct}%)` : '');
+        // 나머지 방향도 세어서 보여준다 — 하나만 보이면 그게 예보로 읽힌다
+        const rest = an.bins.slice(1, 4)
+          .map(b => `${ko ? b.dir : b.dirEn} ${b.n}`).join(' · ');
+        if (rest) d[ko ? '그 밖의 진행' : 'Other directions'] = rest;
+        if (an.sample?.length) {
+          d[ko ? '비슷했던 태풍' : 'Similar storms'] = an.sample.slice(0, 5)
+            .map(x => `${x.season} ${x.name}`).join(', ');
+        }
+        const w = an.why;
+        if (w) {
+          d[ko ? '유사 판정 기준' : 'Match criteria'] = ko
+            ? `반경 ${w.radiusKm}km · 진행방향 ±${w.headingDeg}° · 이후 ${w.lookAheadH}시간`
+            : `${w.radiusKm} km · heading ±${w.headingDeg}° · next ${w.lookAheadH} h`;
+        }
+      }
+    }
+
+    d['_note'] = (s.stale
+      ? (ko ? '⚠️ 지금 GDACS(전지구 재난경보시스템)가 응답하지 않아, 저희가 보관해 둔 마지막 경로를 보여드리고 있습니다. 현재 위치·강도는 그 이후 달라졌을 수 있습니다. 실제 대응은 기상청 발표를 따르세요. '
+            : '⚠️ GDACS is not responding, so this shows the last track we archived. Current position and intensity may have changed since. ')
+      : '') + (ko
       ? '점선 원뿔은 예보 범위입니다. 실제 경로는 달라질 수 있습니다.'
-      : 'The dotted cone is a forecast range — the actual track may differ.';
+        + (an && an.matches
+            ? ' ⚠️ 「과거 유사 사례」는 예보가 아닙니다 — 위치·진행방향·강도가 비슷했던 과거 태풍이 이후 어디로 갔는지 센 기록입니다. 판정 기준은 우리가 정한 값이며 공인 표준이 아닙니다. 실제 대응은 기상청 공식 발표를 따르세요.'
+            : '')
+      : 'The dotted cone is a forecast range — the actual track may differ.'
+        + (an && an.matches
+            ? ' ⚠️ "Past analogues" is not a forecast — it counts where similar past storms went. Follow official warnings.'
+            : ''));
     return { title: `${s.name}`, rows: d };
   },
 };

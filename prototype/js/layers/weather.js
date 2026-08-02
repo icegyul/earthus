@@ -3,6 +3,7 @@
 import { PointLayer } from './pointLayer.js';
 import { viewer, viewRect } from '../viewer.js';
 import { API, C } from '../config.js';
+import { fetchT } from '../net.js';
 import { i18n } from '../i18n.js';
 import { store } from '../store.js';
 
@@ -51,9 +52,11 @@ export async function fetchWeather(lat, lon) {
     // 강수확률은 hourly 에만 있다 (current 에 없음). 12시간치를 받아 시트에 막대로 보여준다.
     hourly: 'precipitation_probability,precipitation,weather_code,temperature_2m',
     daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,sunrise,sunset',
-    timezone: 'auto', forecast_days: '7', forecast_hours: '13',
+    // ⚠️ 14일을 받는다(요청). Open-Meteo 최대는 16일이다.
+    //    기존 지점 시트의 renderForecast 는 Math.min(7,…) 으로 잘라 쓰므로 영향 없다.
+    timezone: 'auto', forecast_days: '14', forecast_hours: '13',
   });
-  const res = await fetch(`${API.METEO}?${q}`);
+  const res = await fetchT(`${API.METEO}?${q}`);
   if (!res.ok) throw new Error('meteo ' + res.status);
   return res.json();
 }
@@ -65,7 +68,7 @@ async function fetchGrid(pts) {
     longitude: pts.map(p => p[1].toFixed(3)).join(','),
     current: 'wind_speed_10m,wind_direction_10m',
   });
-  const res = await fetch(`${API.METEO}?${q}`);
+  const res = await fetchT(`${API.METEO}?${q}`);
   if (!res.ok) throw new Error('meteo-grid ' + res.status);
   const j = await res.json();
   return Array.isArray(j) ? j : [j];

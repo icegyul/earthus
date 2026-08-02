@@ -4,6 +4,7 @@
 // 바다를 탭하면 파고·파향·주기를 준다 — 항해하는 사람에게 필요한 값이다.
 
 import { API } from './config.js';
+import { fetchT } from './net.js';
 import { i18n } from './i18n.js';
 
 /* 결과를 캐시한다. 같은 지역을 여러 번 탭하는 일이 잦고,
@@ -20,7 +21,7 @@ export async function lookupPlace(lat, lon) {
   const url = `${API.REVGEO}?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&localityLanguage=${lang}`;
   let out = null;
   try {
-    const r = await fetch(url);
+    const r = await fetchT(url, { timeout: 8_000 });   // 탭 즉시 반응이 중요 — 짧게
     if (r.ok) {
       const j = await r.json();
       // 바다 한가운데면 국가명이 비어서 온다 — 그게 곧 "바다"라는 신호다
@@ -52,7 +53,7 @@ export async function lookupWaves(lat, lon) {
     timezone: 'auto',
   });
   try {
-    const r = await fetch(`${API.MARINE}?${q}`);
+    const r = await fetchT(`${API.MARINE}?${q}`);
     if (!r.ok) return null;
     const c = (await r.json()).current;
     if (!c || c.wave_height == null) return null;   // 육지

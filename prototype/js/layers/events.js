@@ -14,16 +14,39 @@ import { viewer } from '../viewer.js';
 import { API } from '../config.js';
 import { i18n } from '../i18n.js';
 import { mapLabel } from '../maplabel.js';
+import { bubbleImage } from '../newsbubble.js';
 
+/* 뉴스 성격 → 색. **말풍선 테두리 색이 여기서 나온다** (받은 요청).
+   ⚠️ 'DIS'(재난)가 빠져 있어서 재난 보도가 시위와 같은 노랑으로 떨어지고 있었다.
+      ui-events.js 는 '#ff8a3c' 를 쓰고 있어 지도와 목록의 색이 서로 달랐다 —
+      같은 값으로 맞춘다. 색이 곧 분류인데 두 화면이 다르면 분류가 거짓말이 된다. */
 const KIND_COLOR = {
+  DIS:  '#ff8a3c',   // 재난
   '14': '#ffd166',   // 시위
-  '13': '#ff9f45',   // 위협
+  '13': '#ffb84d',   // 위협
   '15': '#ff9f45',   // 무력 과시
   '17': '#ff8a65',   // 강압
   '18': '#ff5d5d',   // 공격
   '19': '#ff4d4d',   // 교전
   '20': '#e03131',   // 대규모 폭력
 };
+
+/* ⚠️⚠️ 말풍선을 몇 개까지 다나 — 이 숫자를 함부로 올리지 말 것.
+   같은 날(2026-08-02) 새벽 발열의 원인이 **라벨 2,843개 동시 표시**였다.
+   말풍선은 라벨보다 무겁다: 사건마다 글자가 달라 캐시가 안 되고 하나가 텍스처 한 장이다.
+   확정 사건을 신뢰도 순으로 정렬해 위에서 이만큼만 단다. 나머지는 점으로 남는다.
+   ⚠️ 미확정에는 절대 달지 않는다 — 말풍선은 라벨보다 강한 표시라
+      "확인된 사건"으로 읽힌다. 이 레이어의 존재 이유(거르기)와 어긋난다. */
+const BUBBLE_MAX = 12;
+/* 말풍선이 보이는 거리. 전지구에서 12개가 다 뜨면 지구를 덮는다. */
+const BUBBLE_FAR = 14_000_000;
+/* 말풍선끼리 최소 간격(도).
+   ⚠️ Cesium 은 겹친 표시를 밀어내 주지 않는다. 워싱턴 근처 사건 3건이 정확히
+      포개져 글자가 통째로 뭉갠 화면을 보고 넣은 규칙이다.
+      가까운 사건은 신뢰도가 높은 쪽만 말풍선을 갖고, 나머지는 라벨로 내려간다.
+   ⚠️ 화면 좌표가 아니라 위경도로 재는 근사다 — 줌에 따라 완벽하지는 않지만,
+      "읽을 수 있는 것 몇 개"가 "못 읽는 것 여러 개"보다 낫다. */
+const BUBBLE_MIN_SEP_DEG = 6;
 
 export const events = {
   ds: null,
@@ -56,9 +79,26 @@ export const events = {
     this.ds.entities.removeAll();
     const ko = i18n.lang === 'ko';
 
+    /* 말풍선을 달 사건 고르기 — 확정 중 신뢰도 높은 순으로, **서로 떨어진 것만**.
+       ⚠️ 정렬을 원본 배열에 하지 않는다(list 는 시트가 그대로 쓴다). */
+    const picked = [];
+    this.list.filter(e => e.status === 'confirmed')
+      .slice()
+      .sort((a, b) => (b.score || 0) - (a.score || 0))
+      .forEach(e => {
+        if (picked.length >= BUBBLE_MAX) return;
+        // 이미 고른 말풍선과 너무 가까우면 건너뛴다 (겹쳐서 못 읽는다)
+        const tooClose = picked.some(p =>
+          Math.abs(p.lat - e.lat) < BUBBLE_MIN_SEP_DEG &&
+          Math.abs(p.lon - e.lon) < BUBBLE_MIN_SEP_DEG);
+        if (!tooClose) picked.push(e);
+      });
+    const bubbleIds = new Set(picked.map(e => e.id));
+
     this.list.forEach(e => {
       const confirmed = e.status === 'confirmed';
       const col = Cesium.Color.fromCssColorString(KIND_COLOR[e.root] || '#ffd166');
+      const withBubble = bubbleIds.has(e.id);
 
       this.ds.entities.add({
         id: `ev:${e.id}`,
@@ -76,8 +116,10 @@ export const events = {
             ? undefined
             : new Cesium.DistanceDisplayCondition(0, 6_000_000),
         },
-        // 라벨은 확정에만 — 미확정에 이름을 달면 "확인된 사건"처럼 읽힌다
-        ...(confirmed ? {
+        /* 말풍선을 다는 사건은 라벨을 달지 않는다 — 같은 말이 두 번 뜬다.
+           라벨은 확정이면서 말풍선을 못 받은 사건에만.
+           ⚠️ 미확정에 이름을 달면 "확인된 사건"처럼 읽힌다. */
+        ...(confirmed && !withBubble ? {
           /* ⚠️ 외곽선 라벨을 쓰지 않는다 — 한글이 뭉갱진다.
              "시위·집회" 가 읽을 수 없는 덩어리로 나온 게 이 스타일이었다.
              maplabel.js 머리말에 이유를 적어뒀다. */
@@ -87,6 +129,28 @@ export const events = {
             maxDistance: 30_000_000,
           }),
         } : {}),
+        /* ── 말풍선 ──────────────────────────────────────────
+           ⚠️ 꼬리 끝이 사건 좌표에 닿아야 한다 → verticalOrigin BOTTOM.
+           ⚠️ disableDepthTestDistance 를 Infinity 로 주지 않는다 —
+              지구 반대편 말풍선이 뚫고 보인다 (pin.js·maplabel.js 와 같은 함정). */
+        ...(withBubble ? (() => {
+          const img = bubbleImage({
+            kind: ko ? e.kindKo : e.kindEn,
+            /* 제목이 없는 사건이 있다(GKG 매칭 실패). 그럴 땐 장소로 대신한다 —
+               빈 말풍선을 띄우지 않는다. ⚠️ 본문·요약은 넣지 않는다(저작권). */
+            title: e.title || e.place || '',
+            color: KIND_COLOR[e.root] || '#ffd166',
+          });
+          return {
+            billboard: {
+              image: img.url, width: img.w, height: img.h,
+              verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+              disableDepthTestDistance: 600_000,
+              distanceDisplayCondition:
+                new Cesium.DistanceDisplayCondition(0, BUBBLE_FAR),
+            },
+          };
+        })() : {}),
         _meta: {
           id: `ev-${e.id}`, kind: 'newsevent',
           name: ko ? e.kindKo : e.kindEn,

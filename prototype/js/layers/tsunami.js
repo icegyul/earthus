@@ -10,6 +10,7 @@
 
 import { viewer } from '../viewer.js';
 import { API } from '../config.js';
+import { fetchT } from '../net.js';
 import { i18n } from '../i18n.js';
 import { mapLabel } from '../maplabel.js';
 
@@ -57,7 +58,7 @@ export const tsunami = {
        ⚠️ 국제 것을 빼면 일본·필리핀·칠레 앞바다 쓰나미가 아예 안 뜬다.
           "전 세계를 보여주는 앱"에서 그건 기능이 없는 것과 같다. */
     const [nws, intl] = await Promise.allSettled([
-      fetch(`${API.NWS_ALERTS}?event=${events}&status=actual`).then(r => {
+      fetchT(`${API.NWS_ALERTS}?event=${events}&status=actual`).then(r => {
         if (!r.ok) throw new Error('nws ' + r.status);
         return r.json();
       }),

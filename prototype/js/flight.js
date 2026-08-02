@@ -23,6 +23,7 @@
 //       adsb.lol (ODbL 1.0) — 출처 표기 의무. 화면에 반드시 띄운다.
 
 import { API } from './config.js';
+import { fetchT } from './net.js';
 import { CONFIG } from './config.local.js';
 import { i18n } from './i18n.js';
 
@@ -137,7 +138,7 @@ export const tracker = {
     if (!API.FLIGHT) throw new Error('FLIGHT_PROXY_NOT_CONFIGURED');
     const u = new URL(API.FLIGHT);
     Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
-    const r = await fetch(u, { cache: 'no-cache' });
+    const r = await fetchT(u, { cache: 'no-cache' });
     let j;
     try { j = await r.json(); } catch { throw new Error('bad response ' + r.status); }
     if (!r.ok) throw new Error(j.throttled ? 'THROTTLED' : (j.error || 'request failed'));

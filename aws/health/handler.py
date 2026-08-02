@@ -48,6 +48,8 @@ WATCH = [
      "ko": "기상청 동네예보",       "critical": True},
     {"key": "wind/global.json",      "everyMin": 60,  "graceMin": 60,
      "ko": "전지구 바람 격자",      "critical": True},
+    {"key": "wind/series/mountain-gap-daily.json", "everyMin": 60, "graceMin": 90,
+     "ko": "산악 예보−실측 축적", "critical": True},
 
     # ── 표시형 (다음 주기에 회복된다) ─────────────────────────
     {"key": "clouds/meta.json",      "everyMin": 60,  "graceMin": 90,
@@ -128,8 +130,19 @@ ECMWF_LAG_H = 9        # ECMWF 공개 지연 (실측: 18Z 회차가 다음날 02
 
 # ⚠️ 최근 3회차 중 **하나라도** 있으면 ok. 셋 다 없으면 dead.
 #    한 회차만 보면 원본 지연 때마다 거짓 경보가 뜬다.
+def exp_mtgap(now):
+    """산악 차이 — 매시 35분에 돈다. 방금 시각은 아직일 수 있으니 한 시간 전부터."""
+    out = []
+    t = now.replace(minute=0, second=0, microsecond=0) - timedelta(hours=1)
+    for k in range(3):
+        r = t - timedelta(hours=k)
+        out.append((f"{r:%m-%d %H}시", f"archive/mtgap/{r:%Y%m%d%H}.json"))
+    return out
+
+
 EXPECTED = [
     {"ko": "ECMWF 보관 (AI·물리 예보)", "fn": exp_ecmwf},
+    {"ko": "산악 차이 보관", "fn": exp_mtgap},
     {"ko": "예보 검증 보관",             "fn": exp_verify},
     {"ko": "바람 보관",                  "fn": exp_wind},
 ]

@@ -1,6 +1,7 @@
 // 면(imagery) 레이어 — 전지구부터 항상 표시 (§5-10)
 import { viewer, gibsProvider } from '../viewer.js';
 import { API } from '../config.js';
+import { store } from '../store.js';
 import { fetchT } from '../net.js';
 import { CONFIG } from '../config.local.js';
 
@@ -83,7 +84,12 @@ export const imagery = {
        ⚠️ 하루 1,000MP 한도. 전지구 한 화면에 20~40타일이 드니 400~700회분이다.
           폴백으로만 써야 하는 이유가 이것이다. */
     this.cloudLayers = [];
-    this._addClouds();
+    /* 구름은 첫 화면에 **켜진 채로 나온다** (받은 지시: "구름만 켜줘, NOAA 껄로").
+       1순위가 GMGSI = NOAA 원본을 우리 Lambda 가 합성해 우리 S3 에 올린 것이다.
+       RealEarth(위스콘신대)는 우리 쪽이 죽었을 때만 쓰는 폴백이다.
+       ⚠️ 끈 상태에서는 여기 오지 않게 해야 한다 — alpha 0 인 이미지 레이어도
+          타일 요청은 그대로 한다(그리지 않을 뿐이다). set('clouds', …) 참고. */
+    if (store.isOn('clouds')) this._addClouds();
 
     // 기온은 GIBS(AIRS, 하루 1회, 위색)에서 wind-grid 격자로 옮겼다.
     // 매시간 갱신되고 색 눈금을 우리가 정할 수 있다 — gridoverlay.js 참고.
@@ -118,6 +124,8 @@ export const imagery = {
   _swapCloudLayer(L) {
     // ⚠️ 새 구름 타일도 트루컬러 상태를 따라야 한다 (안 그러면 갱신될 때 다시 겹친다)
     L.alpha = (this._cloudOn && !(this.truecolor && this.truecolor.show)) ? 1.0 : 0.0;
+    // ⚠️ show 도 같이 맞춘다 — alpha 0 만으로는 타일 요청이 안 멈춘다(_applyClouds 참고)
+    L.show = this._cloudOn;
     const old = this.cloudLayers.slice();
     this.cloudLayers = [L];
     this.clouds = L;
@@ -444,6 +452,9 @@ export const imagery = {
     const tcOn = !!(this.truecolor && this.truecolor.show);
     const day = tcOn ? (this._d || 0) : 1.0;
     this.cloudLayers.forEach(L => {
+      /* ⚠️ alpha 0 만으로는 부족하다 — 안 그릴 뿐 **타일은 계속 받는다.**
+         show=false 라야 요청이 멈춘다. 통신과 텍스처 메모리가 여기서 갈린다. */
+      L.show = this._cloudOn;
       L.alpha = this._cloudOn ? 1.0 : 0.0;
       L.dayAlpha = day;
       L.nightAlpha = 1.0;
@@ -723,6 +734,9 @@ export const imagery = {
     switch (id) {
       case 'clouds':
         this._cloudOn = on;
+        /* ⚠️ 켜는데 아직 받아둔 게 없으면 그때 받는다.
+           init() 이 꺼진 상태로 시작했을 수 있다(첫 화면 부하를 줄이려고). */
+        if (on && !this.cloudLayers.length) this._addClouds();
         this._applyClouds();
         break;
       /* 히마와리를 사람이 직접 골랐을 때.

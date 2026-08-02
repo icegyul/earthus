@@ -218,8 +218,16 @@ const VOLCANO_KIND = {
 
 export const volcanoes = {
   layer: null,
+  /* ⚠️ init 은 **빈 층만** 만든다. 점 51개는 켤 때 만든다(load).
+     예전에는 여기서 바로 만들었다 — 기본이 꺼짐인데도 첫 화면에서 엔티티 51개와
+     그만큼의 설명 문자열을 만들고 있었다. 통신은 없지만 인트로 회전 중에 하는 일이다.
+     받은 지시: "처음 접속시 모든 기능 다 꺼줘. 지구 무빙 애니메이션만." */
   init() {
     this.layer = new PointLayer({ id: 'volcano', color: C.amber, radius: 6, cluster: true });
+    return this.layer;
+  },
+
+  load() {
     const t = i18n.t.F;
     this.layer.setData(VOLCANOES.map(([n, lat, lon, type, last]) => ({
       id: n, name: n, lat, lon, kind: 'volcano',

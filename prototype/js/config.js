@@ -144,6 +144,11 @@ export const PAID_CAP = {
       "안 보이게 했다"와 "놓쳤다"는 다른 일이고, 후자가 되면 안 된다. */
 export const LAYER_DEFS = [
   // ── 면 ──
+  /* ⚠️ 첫 화면에서 **켜져 있는 유일한 레이어**다.
+     받은 지시: "처음 접속시 모든 기능 다 꺼줘, 지구 무빙 애니메이션만" +
+                "구름만 켜줘, NOAA 껄로".
+     NOAA GMGSI = 우리 Lambda 가 합성해 우리 S3 에 올린 것 (퍼블릭 도메인).
+     RealEarth 는 우리 쪽이 죽었을 때만 쓰는 폴백이다 — imagery.js 주석 참고. */
   { id:'clouds',   kind:'imagery', tier:TIER.FREE, on:true,  group:'weather' },
   /* 오늘의 실제 위성 영상 — 기본면(정지 사진) 대신 그날 찍힌 트루컬러를 얹는다.
      ⚠️ 산불 연기·황사·화산재가 그대로 보인다. 기본면에는 안 보인다. */

@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#02060c">
+<meta name="color-scheme" content="dark">
+
+<title>earthus란? — 지구 관측 자료를 출처와 함께 보여주는 3D 지구본</title>
+<meta name="description" content="earthus는 NOAA·NASA·ECMWF·기상청 등 공공기관의 관측 자료를 3D 지구본 위에 모아 보여줍니다. 모든 값에 출처와 관측 시각을 함께 적고, 예보를 단정하는 대신 과거 사례를 세어서 알려줍니다. 관측 레이어 41종, 설치 없이 웹에서 바로.">
+<link rel="canonical" href="https://earthus.net/intro.html">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://earthus.net/intro.html">
+<meta property="og:site_name" content="earthus">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="earthus란? — 지구 관측 자료를 출처와 함께 보여주는 3D 지구본">
+<meta property="og:description" content="NOAA·NASA·ECMWF·기상청의 관측 자료를 3D 지구본 위에. 모든 값에 출처와 관측 시각을 함께 적습니다.">
+<meta property="og:image" content="https://earthus.net/shots/globe.jpg">
+<meta property="og:image:width" content="1600">
+<meta property="og:image:height" content="1000">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="earthus — 지구 관측 자료를 출처와 함께">
+<meta name="twitter:description" content="NOAA·NASA·ECMWF·기상청의 관측 자료를 3D 지구본 위에. 모든 값에 출처와 관측 시각을 함께 적습니다.">
+<meta name="twitter:image" content="https://earthus.net/shots/globe.jpg">
+
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<!-- ⚠️ 웹폰트를 링크하지 않는다. 한글 본문은 시스템 폰트가 더 낫고(자간·힌팅),
+     폰트 CDN 은 첫 화면을 늦추고 외부 의존을 하나 더 만든다. -->
+<style>
+:root{
+  /* 앱에서 그대로 가져온 색 — 소개 페이지와 제품이 한 물건으로 읽혀야 한다 */
+  --ink:#02060c; --ink2:#070d16; --ink3:#0b131e;
+  --paper:#f2f5f8; --fog:rgba(242,245,248,.62); --dim:rgba(242,245,248,.38);
+  --teal:#3fc7c0; --amber:#f2a65a; --red:#ff5d5d; --violet:#c9a7ff;
+  --line:rgba(242,245,248,.12); --line2:rgba(242,245,248,.07);
+  --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",Pretendard,
+         "Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --wrap:1080px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--ink);color:var(--paper);font-family:var(--sans);
+  font-size:17px;line-height:1.75;letter-spacing:-.01em;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+img{max-width:100%;height:auto;display:block}
+a{color:var(--teal);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:4px}
+
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 24px}
+section{padding:96px 0;border-top:1px solid var(--line2)}
+h1,h2,h3{text-wrap:balance;letter-spacing:-.03em;line-height:1.25;margin:0}
+h2{font-size:clamp(28px,4.4vw,42px);font-weight:700}
+h3{font-size:clamp(19px,2.4vw,23px);font-weight:650;letter-spacing:-.02em}
+p{margin:0}
+.lede{font-size:clamp(17px,2vw,20px);color:var(--fog);line-height:1.8}
+/* ⚠️ 자간을 넓게 주는 라벨은 **라틴 기준**이다. 한글에 .16em 을 그대로 주면
+   "자 주  묻 는  것"처럼 흩어져 읽기 나빠진다(실측). 한글이 섞이는 자리는 좁게 준다. */
+.eyebrow{
+  font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--teal);margin-bottom:18px;
+}
+.eyebrow.lat{letter-spacing:.16em}
+.stack{display:flex;flex-direction:column}
+.g14{gap:14px} .g20{gap:20px} .g28{gap:28px} .g44{gap:44px} .g64{gap:64px}
+
+/* ── 머리 ─────────────────────────────────────────────── */
+header.hero{position:relative;overflow:hidden;padding:0 0 40px}
+.heroGlow{
+  position:absolute;inset:-30% -10% auto;height:820px;pointer-events:none;
+  background:radial-gradient(60% 55% at 50% 42%,rgba(63,199,192,.16),transparent 70%);
+}
+.heroInner{position:relative;padding:76px 0 0}
+.logo{width:min(340px,68vw);margin:0 0 40px}
+.heroTitle{
+  font-size:clamp(34px,6.2vw,62px);font-weight:750;letter-spacing:-.04em;line-height:1.14;
+  max-width:16ch;
+}
+.heroTitle em{font-style:normal;color:var(--teal)}
+.heroSub{max-width:56ch;margin-top:24px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:36px}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;padding:13px 24px;border-radius:999px;
+  font-size:16px;font-weight:600;letter-spacing:-.01em;transition:.15s ease;
+}
+.btn.primary{background:var(--teal);color:#04231f}
+.btn.primary:hover{background:#5ad9d2;text-decoration:none}
+.btn.ghost{border:1px solid var(--line);color:var(--paper)}
+.btn.ghost:hover{border-color:var(--fog);text-decoration:none}
+.heroShot{margin-top:64px}
+
+figure{margin:0}
+.shot{
+  border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--ink2);
+  box-shadow:0 24px 70px -28px rgba(0,0,0,.9);
+}
+figcaption{
+  margin-top:12px;font-size:13.5px;color:var(--dim);line-height:1.6;
+}
+figcaption b{color:var(--fog);font-weight:600}
+
+/* ── 한 줄 정의 (AI 검색이 그대로 인용할 수 있는 덩어리) ── */
+.answer{
+  border-left:2px solid var(--teal);padding:4px 0 4px 26px;
+  font-size:clamp(18px,2.3vw,22px);line-height:1.75;letter-spacing:-.02em;max-width:64ch;
+}
+
+/* ── 숫자 띠 ───────────────────────────────────────────── */
+.stats{
+  display:grid;gap:1px;background:var(--line2);
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  border:1px solid var(--line2);border-radius:14px;overflow:hidden;
+}
+.stat{background:var(--ink2);padding:26px 22px}
+.stat .n{
+  font-family:var(--mono);font-size:clamp(26px,3.6vw,34px);font-weight:600;
+  letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--paper);
+}
+.stat .k{margin-top:6px;font-size:13.5px;color:var(--dim);line-height:1.5}
+
+/* ── 파이프라인 ────────────────────────────────────────── */
+.pipe{display:grid;gap:1px;background:var(--line2);border:1px solid var(--line2);
+      border-radius:14px;overflow:hidden;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.pipeStep{background:var(--ink2);padding:28px 24px}
+.pipeStep .t{font-family:var(--mono);font-size:12px;letter-spacing:.05em;color:var(--amber);
+             text-transform:uppercase}
+.pipeStep h3{margin:12px 0 10px}
+.pipeStep p{font-size:15px;color:var(--fog);line-height:1.7}
+
+/* ── 기능 ─────────────────────────────────────────────── */
+.feature{display:grid;gap:44px;align-items:center;
+         grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}
+.feature.flip .fText{order:2}
+.fText{display:flex;flex-direction:column;gap:18px}
+.fText p{color:var(--fog);font-size:16.5px}
+.fText .h{color:var(--paper)}
+.meta{
+  display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;
+}
+.tag{
+  font-family:var(--sans);font-size:12px;letter-spacing:0;color:var(--dim);
+  border:1px solid var(--line);border-radius:999px;padding:5px 11px;white-space:nowrap;
+}
+.tag.on{color:var(--teal);border-color:rgba(63,199,192,.34)}
+
+/* 인용구 — 앱이 실제로 내놓는 문장 */
+.saying{
+  background:var(--ink3);border:1px solid var(--line);border-radius:12px;
+  padding:20px 22px;font-size:16px;line-height:1.7;color:var(--paper);
+}
+.saying .lab{font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--amber);
+             text-transform:uppercase;display:block;margin-bottom:10px}
+.saying em{font-style:normal;color:var(--teal);font-weight:600}
+
+/* ── 출처 표 ──────────────────────────────────────────── */
+.tableWrap{overflow-x:auto;border:1px solid var(--line2);border-radius:14px}
+table{border-collapse:collapse;width:100%;min-width:660px;font-size:14.5px}
+th,td{text-align:left;padding:15px 18px;border-bottom:1px solid var(--line2);vertical-align:top}
+thead th{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--dim);font-weight:500;background:var(--ink2);white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:0}
+td.src{color:var(--paper);font-weight:600}
+td.who{color:var(--fog)}
+td.freq{font-family:var(--mono);color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ── 문답 ─────────────────────────────────────────────── */
+.qa{display:flex;flex-direction:column;gap:1px;background:var(--line2);
+    border:1px solid var(--line2);border-radius:14px;overflow:hidden}
+.qa details{background:var(--ink2)}
+.qa summary{
+  padding:22px 24px;cursor:pointer;font-size:17px;font-weight:600;letter-spacing:-.02em;
+  list-style:none;display:flex;justify-content:space-between;gap:18px;align-items:baseline;
+}
+.qa summary::-webkit-details-marker{display:none}
+.qa summary::after{content:"+";font-family:var(--mono);color:var(--teal);font-size:19px;flex:none}
+.qa details[open] summary::after{content:"−"}
+.qa .a{padding:0 24px 24px;color:var(--fog);font-size:16px;line-height:1.8;max-width:70ch}
+.qa .a p + p{margin-top:12px}
+
+/* ── 꼬리 ─────────────────────────────────────────────── */
+footer{padding:64px 0 80px;border-top:1px solid var(--line2);color:var(--dim);font-size:14px}
+footer .row{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center}
+footer .note{margin-top:22px;line-height:1.8;max-width:72ch}
+
+.note-warn{
+  border:1px solid rgba(242,166,90,.28);background:rgba(242,166,90,.05);
+  border-radius:12px;padding:18px 20px;font-size:15px;line-height:1.75;color:var(--fog);
+}
+.note-warn b{color:var(--amber);font-weight:650}
+
+@media (max-width:820px){
+  section{padding:68px 0}
+  .feature{grid-template-columns:1fr;gap:26px}
+  .feature.flip .fText{order:0}
+  .heroInner{padding-top:52px}
+  .heroShot{margin-top:44px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<!-- ⚠️ 구조화 데이터 — 검색엔진과 AI 답변엔진이 이 페이지를 "무엇에 관한 것"으로
+     인식하는 근거다. 여기 적는 값은 전부 화면에도 있는 사실이어야 한다.
+     화면에 없는 주장을 스키마에만 적으면 그것이 곧 거짓 표기다. -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@graph":[
+    {
+      "@type":"WebApplication",
+      "@id":"https://earthus.net/#app",
+      "name":"earthus",
+      "url":"https://earthus.net/",
+      "applicationCategory":"WeatherApplication",
+      "operatingSystem":"Web (Chrome, Safari, Edge, Firefox), iOS, Android, Windows, macOS",
+      "browserRequirements":"WebGL 2.0",
+      "inLanguage":["ko","en"],
+      "description":"NOAA·NASA·ECMWF·기상청 등 공공기관의 지구 관측 자료를 3D 지구본 위에 모아 보여주는 웹 앱. 모든 값에 출처와 관측 시각을 함께 표시한다.",
+      "featureList":[
+        "전지구 구름 합성 (NOAA GMGSI, 1시간 간격)",
+        "기상특보·재해 경보 (기상청 및 각국 기관)",
+        "산불 탐지 (NASA FIRMS VIIRS 375m)",
+        "태풍 경로와 과거 유사 사례 분석 (NOAA IBTrACS)",
+        "지진·쓰나미 경보 (USGS, NWS)",
+        "해양 관측 부이·해수면 온도·파고",
+        "위성 궤도와 통과 예보",
+        "지구 뉴스 지도 (GDELT)"
+      ],
+      "offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}
+    },
+    {
+      "@type":"WebPage",
+      "@id":"https://earthus.net/intro.html#page",
+      "url":"https://earthus.net/intro.html",
+      "name":"earthus란? — 지구 관측 자료를 출처와 함께 보여주는 3D 지구본",
+      "about":{"@id":"https://earthus.net/#app"},
+      "inLanguage":"ko",
+      "primaryImageOfPage":{"@type":"ImageObject","url":"https://earthus.net/shots/globe.jpg"}
+    },
+    {
+      "@type":"FAQPage",
+      "@id":"https://earthus.net/intro.html#faq",
+      "mainEntity":[
+        {"@type":"Question","name":"earthus는 무엇인가요?",
+         "acceptedAnswer":{"@type":"Answer","text":"earthus는 NOAA·NASA·ECMWF·기상청 등 공공기관이 공개하는 지구 관측 자료를 3D 지구본 하나에 모아 보여주는 웹 앱입니다. 관측 레이어는 41종이며, 화면에 나오는 모든 값에 출처와 관측 시각을 함께 적습니다. 설치 없이 브라우저에서 바로 열립니다."}},
+        {"@type":"Question","name":"earthus는 날씨를 예보하나요?",
+         "acceptedAnswer":{"@type":"Answer","text":"아닙니다. earthus는 예보 기관이 아닙니다. 공공기관이 낸 예보와 관측을 출처와 함께 전달하고, 진로나 결과를 단정하지 않습니다. 태풍처럼 앞일이 궁금한 경우에는 예측하는 대신 과거 유사 사례를 세어서 '유사 사례 30건 중 13건이 북서쪽으로 진행(43%)'처럼 알려드립니다. 실제 대응은 기상청 등 공식 발표를 따르셔야 합니다."}},
+        {"@type":"Question","name":"자료 출처는 어디인가요?",
+         "acceptedAnswer":{"@type":"Answer","text":"구름은 NOAA GMGSI, 산불은 NASA FIRMS VIIRS 375m, 지진은 USGS, 쓰나미는 미국 NWS와 태평양쓰나미경보센터, 태풍은 GDACS(EU JRC·UN)와 NOAA IBTrACS, 수치예보는 ECMWF Open Data, 한국 예보와 특보는 기상청 API 허브, 지구 뉴스는 GDELT 2.0입니다. 모두 공개 자료이며 화면에 출처와 관측 시각을 함께 적습니다."}},
+        {"@type":"Question","name":"AI 예보 모델도 쓰나요?",
+         "acceptedAnswer":{"@type":"Answer","text":"ECMWF의 AI 모델 AIFS와 물리 모델 IFS를 매일 함께 받아 97개 지점의 24~120시간 기온 예측을 나란히 기록하고 있습니다. 두 모델 중 어느 쪽이 더 맞았는지는 실제 관측과 대조해 기록이 쌓인 뒤에 공개합니다. 근거가 모이기 전에 순위를 매기지 않습니다."}},
+        {"@type":"Question","name":"무료인가요? 설치가 필요한가요?",
+         "acceptedAnswer":{"@type":"Answer","text":"무료이며 설치가 필요 없습니다. earthus.net을 브라우저로 열면 바로 실행됩니다. PWA라서 홈 화면이나 바탕화면에 추가하면 앱처럼 쓸 수 있습니다."}},
+        {"@type":"Question","name":"뉴스는 어떻게 걸러지나요?",
+         "acceptedAnswer":{"@type":"Answer","text":"GDELT 2.0에서 3시간마다 들어오는 원문 약 6,300건을 신뢰도 점수로 거릅니다. 최근 집계에서는 원문 6,353건 가운데 후보 580건, 중복 제거 후 297건, 화면 표시 150건, 여러 매체가 함께 보도해 확정으로 분류된 것이 9건이었습니다. 확정된 사건에만 말풍선을 답니다. 미확정 보도는 흐린 점으로 남겨 두고 확정된 것처럼 보이지 않게 합니다."}}
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<!-- ══════════════ 머리 ══════════════ -->
+<header class="hero">
+  <div class="heroGlow" aria-hidden="true"></div>
+  <div class="wrap heroInner">
+    <picture>
+      <source srcset="logo-lockup.webp" type="image/webp">
+      <img class="logo" src="logo-lockup.png" alt="earthus" width="900" height="156" fetchpriority="high">
+    </picture>
+
+    <h1 class="heroTitle">지구에서 지금 일어나는 일을,
+      <em>출처와 함께</em> 봅니다.</h1>
+
+    <p class="lede heroSub">
+      NOAA·NASA·ECMWF·기상청이 공개하는 관측 자료를 3D 지구본 하나에 모았습니다.
+      화면에 뜨는 모든 값에는 <strong>어디서 온 자료인지</strong>와
+      <strong>언제 관측된 것인지</strong>가 함께 적힙니다.
+    </p>
+
+    <div class="cta">
+      <a class="btn primary" href="/">지구본 열기 →</a>
+      <a class="btn ghost" href="#sources">자료 출처 보기</a>
+    </div>
+
+    <figure class="heroShot">
+      <div class="shot">
+        <picture>
+          <source srcset="shots/globe.webp" type="image/webp">
+          <img src="shots/globe.jpg" width="1600" height="1000"
+               alt="earthus 첫 화면. 3D 지구본 위에 NOAA GMGSI 전지구 구름 합성이 얹혀 있고, 현재 시각과 지역 기온, 오늘의 최고 파고·수온·기온이 표시돼 있다.">
+        </picture>
+      </div>
+      <figcaption>
+        첫 화면. <b>지구와 구름, 그리고 지금 내 자리 날씨</b>만 나옵니다.
+        나머지 40종의 관측 레이어는 켤 때 켜집니다 — 안 켜면 자료를 받지 않습니다.
+      </figcaption>
+    </figure>
+  </div>
+</header>
+
+<!-- ══════════════ 한 줄 정의 ══════════════ -->
+<section id="what">
+  <div class="wrap stack g44">
+    <div class="stack g28">
+      <p class="eyebrow">earthus란</p>
+      <p class="answer">
+        <strong>earthus</strong>는 공공기관이 공개하는 지구 관측 자료를
+        3D 지구본 하나에 모아 보여주는 웹 앱입니다.
+        관측 레이어는 <strong>41종</strong>, 자료 출처는 <strong>12개 기관</strong>이며,
+        화면에 나오는 모든 값에 <strong>출처와 관측 시각</strong>을 함께 적습니다.
+        설치 없이 브라우저에서 바로 열립니다.
+      </p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="n">41</div><div class="k">관측 레이어</div></div>
+      <div class="stat"><div class="n">12</div><div class="k">자료 제공 기관</div></div>
+      <div class="stat"><div class="n">1,477</div><div class="k">비교용 과거 태풍<br>(1980년 이후 서태평양)</div></div>
+      <div class="stat"><div class="n">116,376</div><div class="k">하루 산불 탐지 픽셀<br>(2026-08-02 기준)</div></div>
+      <div class="stat"><div class="n">1시간</div><div class="k">전지구 구름 갱신 주기</div></div>
+    </div>
+
+    <div class="note-warn">
+      <b>⚠️ earthus는 예보 기관이 아닙니다.</b>
+      공공기관이 낸 예보와 관측을 출처와 함께 전달할 뿐, 진로나 결과를 단정하지 않습니다.
+      실제 대응은 기상청을 비롯한 공식 발표를 따르셔야 합니다.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 파이프라인 ══════════════ -->
+<section id="how">
+  <div class="wrap stack g44">
+    <div class="stack g20">
+      <p class="eyebrow">자료가 화면에 오기까지</p>
+      <h2>원본을 그대로 보여주지 않습니다.<br>대신 무엇을 했는지 밝힙니다.</h2>
+      <p class="lede" style="max-width:62ch">
+        공개된 관측 자료는 대개 그대로는 못 씁니다. 위성 낱장은 이음매가 보이고,
+        탐지 픽셀 11만 개는 지도에 찍을 수 없으며, 뉴스 6천 건은 읽을 수 없습니다.
+        가공은 필요합니다 — 다만 <strong>무엇을 어떻게 줄였는지 숨기지 않습니다.</strong>
+      </p>
+    </div>
+
+    <div class="pipe">
+      <div class="pipeStep">
+        <div class="t">01 · 관측</div>
+        <h3>공개 자료만 씁니다</h3>
+        <p>NOAA·NASA·USGS·ECMWF·기상청·EU JRC 등이 공개한 자료를 서버가 정해진 주기로 받습니다.
+           라이선스가 상업 이용을 허용하는 것만 씁니다.</p>
+      </div>
+      <div class="pipeStep">
+        <div class="t">02 · 가공</div>
+        <h3>줄인 만큼 적습니다</h3>
+        <p>산불은 탐지 픽셀 116,376개를 12km 기준으로 묶어 불 7,028건으로,
+           그중 900건을 표시합니다. 이 숫자를 화면에 그대로 적습니다.</p>
+      </div>
+      <div class="pipeStep">
+        <div class="t">03 · 표시</div>
+        <h3>출처와 시각을 붙입니다</h3>
+        <p>모든 레이어 아래에 자료 제공처와 관측 시각이 붙습니다.
+           원본이 늦어지면 <em>“다음 자료 기다리는 중 (32분 지연)”</em>처럼 지연도 적습니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 기능 ══════════════ -->
+<section id="features">
+  <div class="wrap stack g64">
+
+    <div class="stack g20">
+      <p class="eyebrow">특수 기능</p>
+      <h2>세어서 말하는 기능들</h2>
+      <p class="lede" style="max-width:62ch">
+        앞일이 궁금할 때 저희는 예측하지 않습니다. <strong>과거를 세어서</strong> 말합니다.
+        세는 방법과 표본 수를 함께 밝히면, 읽는 사람이 그 숫자를 얼마나 믿을지
+        스스로 정할 수 있습니다.
+      </p>
+    </div>
+
+    <!-- 태풍 -->
+    <article class="feature">
+      <div class="fText">
+        <h3 class="h">태풍 — 과거의 비슷한 태풍들은 이후 어디로 갔나</h3>
+        <p>
+          1980년 이후 서태평양 태풍 <strong>1,477개</strong>의 경로를 갖고 있습니다.
+          지금 태풍과 <strong>위치·진행방향·강도·계절</strong>이 비슷했던 과거 시점을 찾아,
+          그 태풍들이 그 뒤 72시간에 어디로 갔는지 셉니다.
+        </p>
+        <div class="saying">
+          <span class="lab">화면에 나오는 문장</span>
+          유사 사례 <em>30건 중 13건이 북서쪽으로 진행 (43%)</em> ·
+          서쪽 8건 · 북쪽 6건 · 북동쪽 3건
+        </div>
+        <p>
+          고르는 방식은 저희가 지어낸 것이 아니라 이 분야의 표준(Delle Monache 외, 2013)을
+          따릅니다. 각 항목을 그 항목의 표준편차로 나눠 거리를 재고 가까운 순으로 뽑으며,
+          계절이 ±21일 안인 사례만 씁니다.
+          <strong>표본이 5건 미만이면 퍼센트를 아예 쓰지 않습니다</strong> —
+          3건 중 2건을 67%로 적는 순간 정밀한 척하는 거짓이 되기 때문입니다.
+        </p>
+        <div class="meta">
+          <span class="tag on">NOAA IBTrACS v04r01</span>
+          <span class="tag on">GDACS (EU JRC · UN)</span>
+          <span class="tag">퍼블릭 도메인</span>
+        </div>
+      </div>
+      <figure>
+        <div class="shot">
+          <picture>
+            <source srcset="shots/cyclone.webp" type="image/webp">
+            <img src="shots/cyclone.jpg" width="1600" height="1000" loading="lazy"
+                 alt="서태평양 상공. NOAA GMGSI 구름 합성 위로 태풍의 소용돌이 구조와 눈이 또렷하게 보인다.">
+          </picture>
+        </div>
+        <figcaption>서태평양의 태풍. 구름 합성은 NOAA GMGSI, 2.4km/px·1시간 간격.</figcaption>
+      </figure>
+    </article>
+
+    <!-- 뉴스 -->
+    <article class="feature flip">
+      <div class="fText">
+        <h3 class="h">뉴스 — 확정된 사건에만 말풍선을 답니다</h3>
+        <p>
+          GDELT 2.0에서 3시간마다 들어오는 보도를 신뢰도 점수로 거릅니다.
+          최근 집계에서는 원문 <strong>6,353건</strong> 중 후보 580건,
+          중복 제거 297건, 화면 표시 150건,
+          여러 매체가 함께 보도해 <strong>확정으로 분류된 것은 9건</strong>이었습니다.
+        </p>
+        <p>
+          말풍선은 <strong>확정된 사건에만</strong> 답니다. 미확정 보도에 말풍선을 달면
+          “확인된 사건”으로 읽히는데, 이 레이어는 원래 <strong>거르기 위해</strong> 만든 것입니다.
+          미확정은 흐린 점으로 남습니다. 테두리 색이 사건 성격을 나타냅니다 —
+          재난은 주황, 무력 충돌은 빨강, 시위는 노랑.
+        </p>
+        <div class="meta">
+          <span class="tag on">GDELT 2.0 Events</span>
+          <span class="tag">3시간 주기</span>
+          <span class="tag">확정 기준 공개</span>
+        </div>
+      </div>
+      <figure>
+        <div class="shot">
+          <picture>
+            <source srcset="shots/news.webp" type="image/webp">
+            <img src="shots/news.jpg" width="1600" height="1000" loading="lazy"
+                 alt="유럽·중동·아프리카가 보이는 지구본. 사건이 일어난 위치마다 말풍선이 꼬리로 그 지점을 가리키고, 분류와 기사 제목이 들어 있다.">
+          </picture>
+        </div>
+        <figcaption>사건이 난 자리에 말풍선이 붙습니다. 한 화면에 최대 12개, 서로 6° 이상 떨어진 것만.</figcaption>
+      </figure>
+    </article>
+
+    <!-- 산불 -->
+    <article class="feature">
+      <div class="fText">
+        <h3 class="h">산불 — 탐지 픽셀이 아니라 “불”로 묶어 보여줍니다</h3>
+        <p>
+          NASA FIRMS의 VIIRS 375m 위성 탐지는 하루 <strong>116,376개</strong> 픽셀로 들어옵니다.
+          그대로 찍으면 지도가 아니라 점의 바다가 됩니다.
+          12km 안의 탐지를 한 불로 묶어 <strong>7,028건</strong>으로 줄이고,
+          그중 세기가 큰 <strong>900건</strong>을 표시합니다.
+        </p>
+        <p>
+          같은 불은 날이 바뀌어도 같은 것으로 이어 붙여, 며칠째 타고 있는지와
+          중심이 얼마나 움직였는지를 함께 보여줍니다.
+          <strong>다만 “같은 불”이라는 판단은 거리와 시간에 근거한 추정입니다</strong> —
+          그렇게 적습니다.
+        </p>
+        <div class="meta">
+          <span class="tag on">NASA FIRMS · VIIRS 375m</span>
+          <span class="tag">Suomi-NPP · NOAA-20</span>
+          <span class="tag">최근 24시간</span>
+        </div>
+      </div>
+      <figure>
+        <div class="shot">
+          <picture>
+            <source srcset="shots/wildfire.webp" type="image/webp">
+            <img src="shots/wildfire.jpg" width="1600" height="1000" loading="lazy"
+                 alt="미국 서부 야간 화면. 도시 불빛 위로 산불 위치가 붉은 점과 원으로 표시돼 있고, 불의 세기에 따라 원의 크기가 다르다.">
+          </picture>
+        </div>
+        <figcaption>미국 서부. 원의 크기는 화재복사에너지(FRP), 즉 불의 세기입니다.</figcaption>
+      </figure>
+    </article>
+
+    <!-- 특보 -->
+    <article class="feature flip">
+      <div class="fText">
+        <h3 class="h">기상특보 — 겹쳐서 못 읽느니 묶어서 보여줍니다</h3>
+        <p>
+          기상청 특보는 같은 지역에 여러 종류가 동시에 발효됩니다.
+          전부 따로 찍으면 글자가 서로 겹쳐 <strong>“열폭염야”</strong> 같은 뭉개진 덩어리가 됩니다.
+          그래서 같은 지역의 특보는 하나로 묶고, 확대하면 풀립니다.
+        </p>
+        <p>
+          특보는 <strong>켤 때마다 새로 받습니다.</strong> 15분이면 해제된 것이 생기는데,
+          낡은 경보를 켜 두면 “아직 위험하다”는 거짓 정보가 되기 때문입니다.
+        </p>
+        <div class="meta">
+          <span class="tag on">기상청 API 허브</span>
+          <span class="tag on">각국 기관 재해 경보</span>
+          <span class="tag">공공누리 제1유형</span>
+        </div>
+      </div>
+      <figure>
+        <div class="shot">
+          <picture>
+            <source srcset="shots/alerts.webp" type="image/webp">
+            <img src="shots/alerts.jpg" width="1600" height="1000" loading="lazy"
+                 alt="한반도와 일본이 보이는 화면. 지역마다 발효 중인 특보 건수가 원 안의 숫자로 묶여 표시돼 있다.">
+          </picture>
+        </div>
+        <figcaption>지역별로 묶인 특보 건수. 확대하면 종류별로 풀립니다.</figcaption>
+      </figure>
+    </article>
+
+    <!-- 해양 -->
+    <article class="feature">
+      <div class="fText">
+        <h3 class="h">바다 — 수온·파고·너울·해류를 색으로</h3>
+        <p>
+          해수면 온도, 파고, 너울, 해류를 격자로 받아 색으로 칠합니다.
+          평년과 얼마나 차이 나는지(수온 편차)도 따로 볼 수 있습니다.
+          바다 위 관측 부이 <strong>2,300여 개</strong>의 실측값도 함께 있습니다.
+        </p>
+        <p>
+          <strong>색 격자는 한 번에 한 장만 켜집니다.</strong> 두 장이 겹치면
+          반투명이 섞여 무슨 색이 무슨 값인지 알 수 없게 되기 때문입니다 —
+          받은 지적을 그대로 규칙으로 만들었습니다.
+        </p>
+        <div class="meta">
+          <span class="tag on">Open-Meteo 해양 (파랑모델)</span>
+          <span class="tag on">NOAA NDBC 부이</span>
+          <span class="tag">1시간 주기</span>
+        </div>
+      </div>
+      <figure>
+        <div class="shot">
+          <picture>
+            <source srcset="shots/sst.webp" type="image/webp">
+            <img src="shots/sst.jpg" width="1600" height="1000" loading="lazy"
+                 alt="태평양이 보이는 지구본에 해수면 온도가 색 격자로 칠해져 있다. 적도 부근이 붉고 고위도로 갈수록 푸르다.">
+          </picture>
+        </div>
+        <figcaption>해수면 온도. 색 눈금과 관측 시각이 화면 아래에 함께 표시됩니다.</figcaption>
+      </figure>
+    </article>
+
+  </div>
+</section>
+
+<!-- ══════════════ AI ══════════════ -->
+<section id="ai">
+  <div class="wrap stack g44">
+    <div class="stack g20">
+      <p class="eyebrow">AI가 하는 일</p>
+      <h2>AI를 쓰는 곳과, 일부러 쓰지 않는 곳</h2>
+      <p class="lede" style="max-width:64ch">
+        기상 분야에서 AI는 이미 실전에 들어와 있습니다. 다만 “AI로 예보합니다”라는 말은
+        저희가 할 수 있는 말이 아닙니다. 저희가 실제로 하는 일은 이렇습니다.
+      </p>
+    </div>
+
+    <div class="pipe">
+      <div class="pipeStep">
+        <div class="t">쓰는 곳 · 01</div>
+        <h3>AI 예보 모델을 물리 모델과 나란히 기록합니다</h3>
+        <p>
+          ECMWF의 <strong>AIFS</strong>(AI 모델)와 <strong>IFS</strong>(물리 모델)를 매일 함께 받아,
+          97개 지점의 24·48·72·96·120시간 기온 예측을 나란히 저장합니다.
+          <strong>어느 쪽이 더 맞았는지는 실제 관측과 대조한 기록이 쌓인 뒤에 공개합니다.</strong>
+          근거가 모이기 전에 순위를 매기지 않습니다.
+        </p>
+      </div>
+      <div class="pipeStep">
+        <div class="t">쓰는 곳 · 02</div>
+        <h3>과거 사례를 찾는 데 씁니다</h3>
+        <p>
+          태풍 유사 경로 분석은 1,477개 과거 태풍에서 지금과 닮은 시점을 찾아내는
+          패턴 검색입니다. 학계에서 <em>아날로그 앙상블</em>이라 부르는 방법으로,
+          미 해군의 태풍 아날로그 시스템(EPANALOG)이 쓰는 것과 같은 계열입니다.
+        </p>
+      </div>
+      <div class="pipeStep">
+        <div class="t">안 쓰는 곳</div>
+        <h3>문장을 지어내는 데는 쓰지 않습니다</h3>
+        <p>
+          화면의 설명은 전부 <strong>관측값에서 계산된 문장</strong>입니다.
+          “태풍이 위험해 보입니다” 같은 추측 문장은 만들지 않습니다.
+          숫자가 없으면 문장도 없습니다.
+        </p>
+      </div>
+    </div>
+
+    <div class="note-warn">
+      <b>⚠️ 아직 안 되는 것도 적습니다.</b>
+      AI 모델과 물리 모델의 <strong>성적 비교는 아직 공개 전</strong>입니다 —
+      자료를 모으기 시작한 지 얼마 되지 않았고, 며칠치로 순위를 매기면
+      그 자체가 틀린 정보가 됩니다. 준비되면 채점 방법(MAE·RMSE·편의)과 함께 공개합니다.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 출처 ══════════════ -->
+<section id="sources">
+  <div class="wrap stack g44">
+    <div class="stack g20">
+      <p class="eyebrow">자료 출처</p>
+      <h2>어디서 온 자료인지 전부 밝힙니다</h2>
+      <p class="lede" style="max-width:62ch">
+        아래는 earthus가 쓰는 자료의 원 제공처입니다.
+        전부 공개 자료이며, 앱 화면에서도 각 레이어마다 같은 내용을 확인할 수 있습니다.
+      </p>
+    </div>
+
+    <div class="tableWrap">
+      <table>
+        <caption class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">earthus 자료 출처와 갱신 주기</caption>
+        <thead>
+          <tr><th scope="col">무엇</th><th scope="col">제공 기관</th><th scope="col">갱신</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="src">전지구 구름</td><td class="who">NOAA GMGSI (정지위성 합성, 2.4km/px)</td><td class="freq">1시간</td></tr>
+          <tr><td class="src">위성 영상 · 야간 불빛</td><td class="who">NASA GIBS (VIIRS, Blue Marble)</td><td class="freq">1일</td></tr>
+          <tr><td class="src">산불</td><td class="who">NASA FIRMS (VIIRS 375m · Suomi-NPP, NOAA-20)</td><td class="freq">30분</td></tr>
+          <tr><td class="src">지진</td><td class="who">USGS Earthquake Hazards Program</td><td class="freq">2분</td></tr>
+          <tr><td class="src">쓰나미 경보</td><td class="who">미국 NWS · 태평양쓰나미경보센터(PTWC/NTWC)</td><td class="freq">3분</td></tr>
+          <tr><td class="src">태풍 (현재)</td><td class="who">GDACS — EU JRC · UN</td><td class="freq">20분</td></tr>
+          <tr><td class="src">태풍 (과거 1,477개)</td><td class="who">NOAA NCEI IBTrACS v04r01</td><td class="freq">1일</td></tr>
+          <tr><td class="src">수치예보 (AI · 물리)</td><td class="who">ECMWF Open Data — AIFS · IFS (CC-BY-4.0)</td><td class="freq">6시간</td></tr>
+          <tr><td class="src">한국 동네예보 · 특보 · 낙뢰</td><td class="who">기상청 API 허브 (공공누리 제1유형)</td><td class="freq">1시간</td></tr>
+          <tr><td class="src">영국 예보</td><td class="who">Met Office DataHub</td><td class="freq">3시간</td></tr>
+          <tr><td class="src">해양 격자 · 파랑</td><td class="who">Open-Meteo 해양 (파랑모델)</td><td class="freq">1시간</td></tr>
+          <tr><td class="src">해양 관측 부이</td><td class="who">NOAA NDBC</td><td class="freq">30분</td></tr>
+          <tr><td class="src">태양 활동 · 오로라</td><td class="who">NOAA SWPC · NASA SDO</td><td class="freq">5분</td></tr>
+          <tr><td class="src">위성 궤도</td><td class="who">CelesTrak · SATCAT</td><td class="freq">1일</td></tr>
+          <tr><td class="src">지구 뉴스</td><td class="who">GDELT 2.0 Events</td><td class="freq">3시간</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="color:var(--dim);font-size:14.5px;line-height:1.8;max-width:72ch">
+      ⚠️ 원본이 응답하지 않을 때는 <strong style="color:var(--fog)">보관해 둔 마지막 자료</strong>로 그리고,
+      화면에 “마지막으로 받은 위치입니다”라고 적습니다.
+      <strong style="color:var(--fog)">“관측 종료”와 “원본 응답 없음”은 다른 말</strong>이므로 섞지 않습니다.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════ 문답 ══════════════ -->
+<section id="faq">
+  <div class="wrap stack g44">
+    <div class="stack g20">
+      <p class="eyebrow">자주 묻는 것</p>
+      <h2>궁금한 것들</h2>
+    </div>
+
+    <div class="qa">
+      <details open>
+        <summary>earthus는 날씨를 예보하나요?</summary>
+        <div class="a">
+          <p>아닙니다. earthus는 <strong>예보 기관이 아닙니다.</strong>
+             공공기관이 낸 예보와 관측을 출처와 함께 전달할 뿐, 진로나 결과를 단정하지 않습니다.</p>
+          <p>태풍처럼 앞일이 궁금한 경우에는 예측하는 대신 <strong>과거 유사 사례를 세어서</strong>
+             “유사 사례 30건 중 13건이 북서쪽으로 진행(43%)”처럼 알려드립니다.
+             공식 예보 원뿔은 항상 함께 표시되며, 실제 대응은 기상청 등 공식 발표를 따르셔야 합니다.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>무료인가요? 설치가 필요한가요?</summary>
+        <div class="a">
+          <p>무료이며 설치가 필요 없습니다. <a href="/">earthus.net</a>을 브라우저로 열면 바로 실행됩니다.</p>
+          <p>PWA라서 홈 화면(iPhone·Android)이나 바탕화면(Windows·macOS)에 추가하면
+             앱처럼 창 하나로 쓸 수 있습니다.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>AI 예보 모델도 쓰나요?</summary>
+        <div class="a">
+          <p>ECMWF의 AI 모델 <strong>AIFS</strong>와 물리 모델 <strong>IFS</strong>를 매일 함께 받아
+             97개 지점의 24~120시간 기온 예측을 나란히 기록하고 있습니다.</p>
+          <p>다만 <strong>어느 쪽이 더 맞았는지는 아직 공개하지 않습니다.</strong>
+             실제 관측과 대조한 기록이 며칠치뿐이라, 지금 순위를 매기면 그 자체가 틀린 정보입니다.
+             준비되면 채점 방법(MAE·RMSE·편의)을 함께 공개합니다.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>왜 첫 화면에는 아무것도 안 켜져 있나요?</summary>
+        <div class="a">
+          <p>켜지 않은 레이어의 자료는 <strong>한 바이트도 받지 않기 때문</strong>입니다.
+             예전에는 꺼져 있는 레이어까지 미리 받았는데, 화면에 안 나오는 자료를 위해
+             통신하고 계산하느라 첫 화면의 지구 회전이 끊겼습니다.</p>
+          <p>지금은 지구와 구름만 나오고, 나머지는 켜는 그 순간에 받습니다.
+             <strong>예외는 쓰나미와 큰 지진뿐</strong>입니다 — 이 둘은 레이어를 꺼 두어도
+             화면 아래 배너로 알립니다. “안 보이게 했다”와 “놓쳤다”는 다른 일이기 때문입니다.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>뉴스는 어떻게 걸러지나요?</summary>
+        <div class="a">
+          <p>GDELT 2.0에서 3시간마다 들어오는 보도를 신뢰도 점수로 거릅니다.
+             최근 집계 기준으로 원문 6,353건 → 후보 580건 → 중복 제거 297건 →
+             화면 표시 150건 → <strong>확정 9건</strong>이었습니다.</p>
+          <p>여러 매체가 함께 보도한 것만 확정으로 분류하고, <strong>확정된 사건에만 말풍선을 답니다.</strong>
+             미확정 보도는 흐린 점으로 남겨 확정된 것처럼 보이지 않게 합니다.
+             판정 기준(확정 점수 60점, 최소 25점, 중복 반경 60km)도 화면에 공개합니다.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>어떤 기기에서 되나요?</summary>
+        <div class="a">
+          <p>WebGL 2.0을 지원하는 브라우저면 됩니다 —
+             Chrome·Safari·Edge·Firefox의 최근 버전, iPhone·iPad·Android, Windows·macOS.</p>
+          <p>3D 지구본을 그리므로 아주 오래된 기기에서는 느릴 수 있습니다.
+             레이어를 적게 켤수록 가벼워집니다.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>자료를 그대로 가져다 써도 되나요?</summary>
+        <div class="a">
+          <p>원본 자료의 라이선스를 따르셔야 합니다. 대부분 미국 정부 저작물(퍼블릭 도메인)이거나
+             CC-BY-4.0(ECMWF), 공공누리 제1유형(기상청)입니다 —
+             <strong>출처 표기 조건으로 상업 이용까지 허용되는 것들</strong>입니다.</p>
+          <p>앱 화면에도 각 레이어마다 원 제공처와 라이선스를 적어 두었습니다.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ 마무리 ══════════════ -->
+<section id="open">
+  <div class="wrap stack g28">
+    <h2 style="max-width:18ch">지금 지구에서<br>무슨 일이 있는지 보세요.</h2>
+    <p class="lede" style="max-width:54ch">
+      설치도, 가입도 필요 없습니다. 열면 바로 지구가 돕니다.
+    </p>
+    <div class="cta">
+      <a class="btn primary" href="/">지구본 열기 →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="row">
+      <picture>
+        <source srcset="logo-lockup.webp" type="image/webp">
+        <img src="logo-lockup.png" alt="earthus" width="180" height="31" style="width:150px" loading="lazy">
+      </picture>
+      <a href="/">지구본</a>
+      <a href="#sources">자료 출처</a>
+      <a href="#faq">자주 묻는 것</a>
+    </div>
+    <p class="note">
+      earthus는 공공기관이 공개한 지구 관측 자료를 모아 보여주는 서비스입니다.
+      기상 예보·재난 대응의 공식 채널이 아니며, 실제 대응은 기상청을 비롯한
+      관계기관의 공식 발표를 따르셔야 합니다.
+      자료 출처와 라이선스는 각 레이어 화면과 <a href="#sources">이 페이지</a>에 표시됩니다.
+      <!-- ⚠️ 약관·개인정보 처리방침은 앱 안에서 읽는다. 여기서 .md 파일로 바로 링크하면
+           Content-Type 이 text/markdown 이라 브라우저가 **내려받기**로 처리한다(실측). -->
+      이용약관과 개인정보 처리방침은 앱의 <strong style="color:var(--fog)">설정</strong>에서 볼 수 있습니다.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

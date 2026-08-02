@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- earthus — 한 장짜리 앱이라 항목이 하나다.
-     ⚠️ 없는 주소를 채워 넣지 않는다. 404 가 섞인 사이트맵은 색인에 해가 된다. -->
-<!-- ⚠️ 네임스페이스는 sitemaps.org (복수) 다. sitemap.org 로 쓰면 통째로 무효다. -->
+<!-- earthus 사이트맵
+     ⚠️ 없는 주소를 채워 넣지 않는다. 404 가 섞인 사이트맵은 색인에 해가 된다.
+     ⚠️ 네임스페이스는 sitemaps.org (복수) 다. sitemap.org 로 쓰면 통째로 무효다. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- 앱 본체 — 자료가 매시간 바뀐다 -->
   <url>
     <loc>https://earthus.net/</loc>
     <changefreq>hourly</changefreq>
     <priority>1.0</priority>
+  </url>
+  <!-- 소개 — 검색·AI 답변이 인용할 설명 페이지.
+       앱은 화면을 전부 JS 로 그리는 한 장짜리라 크롤러가 읽을 글이 적다.
+       이 페이지가 "earthus 가 무엇인가"에 답하는 정적 본문 역할을 한다. -->
+  <url>
+    <loc>https://earthus.net/intro.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
 </urlset>

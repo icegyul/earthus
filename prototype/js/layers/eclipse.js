@@ -55,14 +55,16 @@ export const eclipseMarks = {
     this.ds = new Cesium.CustomDataSource('eclipse');
     viewer.dataSources.add(this.ds);
     this.ds.show = false;
-    this.draw();
+    // ⚠️ 여기서 draw 하지 않는다 — 켤 때 set(true) 가 그린다 (첫 화면 부하)
     return this;
   },
 
   set(on) {
     if (this.ds) this.ds.show = on;
-    // ⚠️ 켤 때 받는다. 시작할 때 미리 받으면 안 쓸 사람에게도 내려받게 된다.
-    if (on && !eclipsePaths.loaded) {
+    if (!on) return;
+    if (!this.ds.entities.values.length) this.draw();   // 켤 때 그린다
+    // ⚠️ 경로도 켤 때 받는다. 시작할 때 미리 받으면 안 쓸 사람에게도 내려받게 된다.
+    if (!eclipsePaths.loaded) {
       eclipsePaths.load().then(() => this.draw()).catch(() => {});
     }
   },

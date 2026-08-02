@@ -22,7 +22,10 @@ const LS_DEFAULTS_VER = 'earthus.layerDefaultsVer';
       실제로 한 번 어겼다: 2 로 올려 배포한 뒤 orbits 를 on:true 로 바꿨는데
       번호를 안 올려서, 그 사이에 접속한 기기는 orbits:false 가 저장된 채 굳었다.
       "내 기기에선 되는데 폰에선 안 되는" 증상으로 나타난다. */
-const DEFAULTS_VER = '12';  // 12: 실제 위성 영상 레이어 추가
+/* ⚠️ 이 값을 올리면 **저장된 레이어 on/off 가 전부 초기화**된다.
+   기본값을 바꿔 놓고 안 올리면, 이미 방문한 사람에게는 옛 기본값이 남아
+   "고쳤는데 내 폰에서만 그대로"가 된다. */
+const DEFAULTS_VER = '13';  // 13: 첫 화면 전부 꺼짐 (구름 포함)
 
 function loadLayerState() {
   const stale = localStorage.getItem(LS_DEFAULTS_VER) !== DEFAULTS_VER;

@@ -10,6 +10,9 @@
 <meta name="apple-mobile-web-app-title" content="earthus">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- 소개 페이지 — 앱은 JS 로 그리는 한 장짜리라 크롤러가 읽을 글이 적다.
+     "무엇을 하는 서비스인가"에 답하는 정적 본문은 intro.html 이 맡는다. -->
+<link rel="alternate" type="text/html" href="https://earthus.net/intro.html" title="earthus 소개">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -37,12 +40,90 @@
 <meta name="twitter:description" content="전 세계 기상·해양·재난 관측 자료를 3D 지구본 위에 실시간으로.">
 <meta name="twitter:image" content="https://earthus.net/og.png">
 <link rel="canonical" href="https://earthus.net/">
+<!-- 구조화 데이터 — 검색엔진·AI 답변엔진이 "이게 무엇인지"를 추측하지 않게 한다.
+     ⚠️ 여기 적는 것은 전부 사실이어야 한다. 없는 기능을 적으면 그게 곧 거짓 표시다. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "earthus",
+  "alternateName": "어스어스",
+  "url": "https://earthus.net/",
+  "applicationCategory": "WeatherApplication",
+  "operatingSystem": "Web browser",
+  "inLanguage": ["ko", "en"],
+  "description": "전 세계 기상·해양·재난 관측 자료를 3D 지구본 위에 실시간으로 보여주는 지구관측 데이터 플랫폼입니다. 모든 값에 출처 기관과 관측 시각을 함께 표시합니다.",
+  "featureList": [
+    "3D 지구본 위 실시간 기상 관측 시각화",
+    "해수면 온도·파고·해류 등 해양 관측",
+    "태풍·지진·산불·기상특보 등 재난 정보",
+    "한국 기상청 736개 관측지점 실황",
+    "위성 궤도 추적",
+    "모든 수치에 출처 기관·관측 시각 표기"
+  ],
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" }
+}
+</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Widgets/widgets.css">
 <link rel="stylesheet" href="css/app.css">
 <link rel="stylesheet" href="css/account.css">
 <link rel="stylesheet" href="css/ask.css">
 </head>
 <body>
+
+<!-- ══ 자바스크립트 없이 읽히는 설명 ═══════════════════════════════
+     왜 필요한가: 이 앱은 Cesium(WebGL)로 화면을 전부 자바스크립트가 그린다.
+     그래서 스크립트를 실행하지 않는 방문자에게는 **빈 페이지**로 보인다.
+     구글은 스크립트를 실행하지만 대기열이 있어 늦고, GPTBot·ClaudeBot·
+     PerplexityBot 같은 AI 검색 크롤러는 대체로 실행하지 않는다.
+     → 그들에게 우리는 존재하지 않는 사이트였다.
+
+     ⚠️ <noscript> 를 쓰는 이유: 화면에 안 보이게 숨긴 텍스트는 검색엔진이
+        스팸(cloaking)으로 볼 수 있다. noscript 는 스크립트가 꺼진 사람에게
+        **실제로 보이는** 내용이라 그 위험이 없다.
+     ⚠️ 여기 적는 것은 전부 사실이어야 한다. 지금 없는 기능을 적지 않는다. -->
+<noscript>
+  <div class="nojs">
+    <h1>earthus — 지구관측 데이터 플랫폼</h1>
+    <p>전 세계 기상·해양·재난 관측 자료를 3D 지구본 위에 실시간으로 보여줍니다.
+       모든 수치에 <strong>어느 기관의 자료인지</strong>와 <strong>언제 관측한 값인지</strong>를 함께 적습니다.</p>
+
+    <h2>무엇을 볼 수 있나</h2>
+    <ul>
+      <li><strong>기상</strong> — 기온·바람·습도·구름·안개, 내일 예보</li>
+      <li><strong>해양</strong> — 해수면 온도와 평년 대비 편차, 파고·너울·해류</li>
+      <li><strong>재난</strong> — 태풍 경로, 지진, 산불, 쓰나미 경보, 기상특보</li>
+      <li><strong>대기질</strong> — 초미세먼지·미세먼지·오존·자외선</li>
+      <li><strong>하늘·우주</strong> — 오로라, 일식, 인공위성 궤도</li>
+      <li><strong>한국</strong> — 기상청 736개 지점 실황, 특보, 낙뢰</li>
+    </ul>
+
+    <h2>자료 출처</h2>
+    <p>미국 해양대기청(NOAA), 미국 항공우주국(NASA GIBS), 대한민국 기상청,
+       일본 기상청(JMA), 미국 국립기상청(NWS), 브라질 기상청(INMET),
+       유럽위원회 재난경보시스템(GDACS), 미국 지질조사국(USGS), CelesTrak 등
+       공공기관이 공개한 자료를 받아 그대로 보여줍니다.
+       각 자료의 이용 조건에 따라 출처를 표기합니다.</p>
+
+    <h2>자주 묻는 것</h2>
+    <dl>
+      <dt>earthus는 무엇인가요?</dt>
+      <dd>지구 곳곳의 관측 자료를 한 화면의 3D 지구본에서 보는 웹 서비스입니다.
+          내려받거나 설치하지 않고 브라우저에서 바로 씁니다.</dd>
+      <dt>무료인가요?</dt>
+      <dd>기본 기능은 무료입니다. 일부 심화 분석은 구독으로 제공할 예정입니다.</dd>
+      <dt>예보를 만드나요?</dt>
+      <dd>아니요. earthus는 예보 기관이 아닙니다. 기상청 등 공식 기관이 발표한
+          관측·예보 자료를 출처와 함께 전달합니다. 재난 상황의 실제 대응은
+          반드시 공식 발표를 따르셔야 합니다.</dd>
+      <dt>어떤 기기에서 되나요?</dt>
+      <dd>WebGL을 지원하는 최신 브라우저면 PC·태블릿·스마트폰 모두 됩니다.</dd>
+    </dl>
+
+    <p><a href="/intro.html">earthus 소개 — 기능과 자료 출처 전체 보기</a></p>
+    <p><em>3D 지구본을 보시려면 자바스크립트를 켜 주세요.</em></p>
+  </div>
+</noscript>
 
 <div id="cesiumContainer"></div>
 
@@ -55,7 +136,9 @@
       <div class="amb-date" id="ambDate">—</div>
       <div class="amb-city" id="ambCity">—</div>
     </div>
-    <div class="amb-bottom">
+    <!-- ⚠️ 누르면 날씨 시트가 열린다 (ui-weather.js). #ambient 는 pointer-events:none 이라
+         이 덩어리만 CSS 에서 auto 로 되돌린다 — 전체를 되돌리면 지구를 못 돌린다. -->
+    <div class="amb-bottom" id="ambBottom" role="button" tabindex="0" aria-label="날씨 자세히">
       <div class="amb-cond" id="ambCond">—</div>
       <div class="amb-temprow">
         <div class="amb-temp" id="ambTemp">—</div>
@@ -65,6 +148,32 @@
   </div>
 
   <div id="banner"></div>
+
+  <!-- 오늘의 볼거리 — 첫 화면에서 "할 일"을 준다. 누르면 그곳으로 날아간다.
+       ⚠️ 비어 있으면(자료 못 받음) 아무것도 그리지 않는다. 빈 줄이 보이면 고장으로 읽힌다. -->
+  <div id="spotChips" aria-label="오늘의 볼거리"></div>
+
+  <!-- 첫 실행 코치마크 — 한 번만 뜬다 (localStorage) -->
+  <div id="coach" aria-hidden="true"></div>
+
+  <!-- ══ 통합 검색 ═══════════════════════════════════════════════
+       ⚠️ 버튼이 반드시 있어야 한다. ⌘K 만 두면 키보드가 없는 폰에서는
+          기능이 없는 것과 같다 — 우리 사용자 대부분이 폰이다. -->
+  <button id="searchBtn" aria-label="검색" title="검색 (⌘K)">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10.6" cy="10.6" r="6.4"/><path d="M15.4 15.4 20.4 20.4"/></svg>
+  </button>
+
+  <div id="searchBox" aria-hidden="true" role="dialog" aria-label="검색">
+    <div class="sb-panel">
+      <div class="sb-head">
+        <svg class="sb-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10.6" cy="10.6" r="6.4"/><path d="M15.4 15.4 20.4 20.4"/></svg>
+        <input id="searchInput" type="search" autocomplete="off" autocorrect="off"
+               autocapitalize="off" spellcheck="false" placeholder="장소 · 레이어 · 기능 검색">
+        <button id="searchClose" aria-label="닫기">✕</button>
+      </div>
+      <div id="searchList"></div>
+    </div>
+  </div>
 
   <!-- 자료 안내 (좌측 하단) — 무엇을 보고 있고, 언제 것이고, 다음은 언제인가.
        ⚠️ 지우지 말 것. 출처 표기는 장식이 아니라 NOAA·NASA·RealEarth 자료의 **이용 조건**이고,
@@ -104,24 +213,29 @@
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4.4" transform="rotate(-30 12 12)"/></svg></span>
       <span class="mm-label">위성</span><span class="mm-badge" id="satCount"></span>
     </button>
-    <button class="mm-item" data-act="ask">
-      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><circle cx="11" cy="11" r="6.4"/><path d="M15.8 15.8 20.5 20.5" stroke-linecap="round"/><path d="M9.2 9.4c.2-1 1-1.6 1.9-1.6 1 0 1.8.7 1.8 1.6 0 1.3-1.7 1.4-1.7 2.6" stroke-linecap="round"/><circle cx="11.2" cy="14.4" r=".55" fill="currentColor" stroke="none"/></svg></span>
-      <span class="mm-label">물어보기</span>
+    <!-- Alert — 지금 무슨 일이 났는가. 재난 레이어를 '지구 스타일'에서 빼내 따로 모았다.
+         data-open 이라 1단을 누르면 2단(#menuSub)이 재난 목록으로 바뀌어 열린다. -->
+    <button class="mm-item" data-open="alert">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 4.2 21 19.4H3z"/><path d="M12 10v3.6" stroke-linecap="round"/><circle cx="12" cy="16.6" r=".7" fill="currentColor" stroke="none"/></svg></span>
+      <span class="mm-label">Alert</span><span class="mm-chev">‹</span>
     </button>
-    <!-- 한국 특화 — 기상청 자료가 여기로 모인다.
-         ⚠️ 한국 밖 사용자에게는 이 항목을 강조하지 않는다 (ui-korea.js 가 판단).
-             지구를 보러 온 사람에게 한국 특보를 들이밀면 기능이 아니라 방해다. -->
-    <button class="mm-item" data-act="korea">
-      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M7.6 13.4c1.3-2 3.5-2 4.4 0s3.1 2 4.4 0" stroke-linecap="round"/></svg></span>
-      <span class="mm-label">한국</span><span class="mm-badge" id="koreaBadge"></span>
+    <button class="mm-item" data-act="news">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3.4 6.2h13v13H5.6a2.2 2.2 0 0 1-2.2-2.2z"/><path d="M16.4 9.2h4.2v7.8a2.2 2.2 0 0 1-4.2 0z"/><path d="M6.2 9.4h7.4M6.2 12.4h7.4M6.2 15.4h4.6" stroke-linecap="round"/></svg></span>
+      <span class="mm-label">News</span><span class="mm-badge" id="newsBadge"></span>
     </button>
     <button class="mm-item" data-act="events">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M4.5 4.6h11.3l3.7 3.7v11.1H4.5z"/><path d="M7.6 9.4h6.2M7.6 12.5h8.8M7.6 15.6h5.2" stroke-linecap="round"/></svg></span>
       <span class="mm-label">이벤트</span><span class="mm-badge" id="eventBadge"></span>
     </button>
+    <!-- LAB — 옛 '커뮤니티'. 표시명만 바꾼다 (내부 id 는 community 그대로). -->
     <button class="mm-item" data-act="community">
-      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M20.4 12.4c0 3.9-3.8 7-8.4 7-1 0-2-.15-2.9-.42L4 20.6l1.35-3.5C4 15.9 3.2 14.25 3.2 12.4c0-3.87 3.76-7 8.4-7s8.8 3.13 8.8 7z"/></svg></span>
-      <span class="mm-label">커뮤니티</span><span class="mm-badge" id="commBadge"></span>
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M9.6 3.4v5.2L4.8 17a2.2 2.2 0 0 0 1.9 3.3h10.6a2.2 2.2 0 0 0 1.9-3.3l-4.8-8.4V3.4"/><path d="M8.4 3.4h7.2M8.6 13.2h6.8" stroke-linecap="round"/></svg></span>
+      <span class="mm-label">LAB</span><span class="mm-badge" id="commBadge"></span>
+    </button>
+    <!-- if — 옛 '물어보기'. 관측 질의(기존)에 시나리오 분석이 얹힌다. -->
+    <button class="mm-item" data-act="ask">
+      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><circle cx="11" cy="11" r="6.4"/><path d="M15.8 15.8 20.5 20.5" stroke-linecap="round"/><path d="M9.2 9.4c.2-1 1-1.6 1.9-1.6 1 0 1.8.7 1.8 1.6 0 1.3-1.7 1.4-1.7 2.6" stroke-linecap="round"/><circle cx="11.2" cy="14.4" r=".55" fill="currentColor" stroke="none"/></svg></span>
+      <span class="mm-label">if</span>
     </button>
     <button class="mm-item" data-act="flight">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2.4c.9 0 1.5 1.1 1.5 2.6v3.4l7.4 4.3v2.1l-7.4-2.3v4.2l2.5 1.8v1.6L12 19.3l-4 .8v-1.6l2.5-1.8v-4.2L3.1 14.8v-2.1l7.4-4.3V5c0-1.5.6-2.6 1.5-2.6z"/></svg></span>
@@ -178,7 +292,7 @@
   <!-- 물어보기: 질문 → 판단 → 자료 → 화면. AI API 없이 규칙으로 동작한다. -->
   <div id="askSheet" class="sheet-panel tall">
     <div class="traffic one"><button class="tl close ask-close" aria-label="닫기"><span>×</span></button></div>
-    <h3 id="askTitle">물어보기</h3>
+    <h3 id="askTitle">if</h3>
     <div class="ask-log"></div>
     <form class="ask-form" autocomplete="off">
       <input class="ask-input" type="text" placeholder="지금 태풍 어디야?" aria-label="질문">
@@ -194,6 +308,13 @@
   </div>
 
   <!-- 한국 — 기상청 자료 모음. 특보는 이 안의 한 탭이다. -->
+  <!-- 내 자리 날씨 — 하단 온도를 누르거나, 메뉴 › 내 위치로 열린다 -->
+  <div id="wxSheet" class="sheet-panel tall">
+    <div class="traffic one"><button class="tl close" data-close="wxSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="wxTitle">내 자리</h3>
+    <div id="wxBody"></div>
+  </div>
+
   <div id="koreaSheet" class="sheet-panel tall">
     <div class="traffic one"><button class="tl close" data-close="koreaSheet" aria-label="닫기"><span>×</span></button></div>
     <h3 id="koreaTitle">한국</h3>
@@ -211,7 +332,7 @@
   <!-- 커뮤니티: 경고 · 개발 요청 -->
   <div id="commSheet" class="sheet-panel tall">
     <div class="traffic one"><button class="tl close" data-close="commSheet" aria-label="닫기"><span>×</span></button></div>
-    <h3 id="commTitle">커뮤니티</h3>
+    <h3 id="commTitle">LAB</h3>
     <div id="commBody"></div>
   </div>
 
@@ -453,10 +574,24 @@
 </div>
 <button id="hudShow">HUD</button>
 
+<!-- 첫 화면 — 지구가 준비될 때까지 확정 로고를 보여준다.
+     ⚠️ 글자를 폰트로 흉내내지 않는다. 로고는 브랜딩/결정.png 에서 락업(워드마크+구분선+
+        태그라인)만 잘라낸 것이다. A 자리의 Λ 와 자간은 전용 서체라 시스템 폰트로는
+        재현되지 않는다 — 비슷하게 만들면 그건 다른 로고다.
+     ⚠️ 배경을 투명(흰 글자)으로 뽑았다. 검정째로 두면 다른 배경에서 검은 사각형이 보인다.
+     ⚠️ WebP 31KB / PNG 48KB. 첫 화면 경로라 이보다 키우지 말 것.
+        ⚠️ SVG 로 못 바꾼 이유: 원본이 이미지 생성물이라 벡터 원본이 없다.
+           래스터를 추적하면 얇은 획과 구분선의 빛 번짐이 뭉개지고, 손으로 다시 그리면
+           비슷하지만 다른 로고가 된다. 벡터 원본이 생기면 그때 갈아 끼울 것(≈3KB). -->
 <div id="loading">
   <div class="load-box">
-    <div class="load-text">지구 불러오는 중…</div>
+    <picture>
+      <source srcset="logo-lockup.webp" type="image/webp">
+      <img id="brandLogo" src="logo-lockup.png" alt="earthus — where earth becomes one"
+           width="450" height="96" decoding="async" fetchpriority="high">
+    </picture>
     <div class="load-bar"><i></i></div>
+    <div class="load-text">지구 불러오는 중…</div>
   </div>
 </div>
 

@@ -79,13 +79,17 @@ async function fetchGrid(pts) {
    ══════════════════════════════════════════════════════════════ */
 export const stations = {
   layer: null,
+  // ⚠️ 점 47개는 켤 때 만든다 (화산과 같은 이유 — hazard.js 주석 참고)
   init() {
     this.layer = new PointLayer({ id: 'stations', color: C.teal, radius: 5, cluster: true });
+    return this.layer;
+  },
+
+  load() {
     this.layer.setData(CITIES.map(([n, lat, lon]) => ({
       id: n, name: n, lat, lon, kind: 'station',
       data: { _lazy: true },      // 탭 시점에 Open-Meteo 조회
     })));
-    return this.layer;
   },
 };
 

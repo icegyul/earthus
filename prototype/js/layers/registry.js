@@ -23,6 +23,55 @@ import { lightning } from './lightning.js';
 import { regional } from './regional.js';
 import { alerts } from './alerts.js';
 
+/* ── 레이어를 켤 때 그때 받는다 ────────────────────────────────
+   ⚠️ 받은 지적: **"처음 접속시 모든 기능 다 꺼줘. 지구 무빙 애니메이션만. 버벅거린다."**
+
+   예전에는 첫 화면에서 태풍·환류·뉴스·산불·발사·궤도·오로라 **7종을 꺼져 있어도**
+   받았다. 화면에는 안 나오는데 통신·해석·엔티티 생성 비용은 그대로 들었고,
+   그게 인트로 회전이 끊기는 원인이었다.
+
+   → 이제 **켜는 그 순간에 받는다.** 안 켜면 한 바이트도 안 받는다.
+
+   ⚠️ 이 표에 빠뜨리면 "켜도 아무것도 안 나오는" 레이어가 된다.
+      예전에는 buoy·lightning·regional·alerts·ukfc 만 이 방식이었고 나머지는
+      부팅 때 무조건 받았기 때문에, 표 없이 부팅만 끄면 그대로 빈 레이어가 된다. */
+const LOADERS = {
+  cyclone:   () => cyclones.refresh(),
+  phenomena: () => phenomena.refresh(),
+  heatdome:  () => phenomena.refresh(),      // 환류와 같은 자료 (LOAD_KEY 참고)
+  news:      () => events.refresh(),
+  wildfire:  () => wildfires.refresh(),
+  launch:    () => launches.refresh().then(i => launchPads.build(i)),
+  orbits:    () => orbits.refresh(),
+  aurora:    () => imagery.loadAurora(),
+  buoy:      () => buoys.refresh(),
+  lightning: () => lightning.refresh(),
+  regional:  () => regional.refresh(),
+  alerts:    () => alerts.refresh(),
+  ukfc:      () => ukForecast.refresh(),
+  quake:     () => quakes.refresh(),
+  tsunami:   () => tsunami.refresh(),
+  /* 통신 없이 번들 상수로 점을 만드는 층들. 통신이 없다고 공짜는 아니다 —
+     엔티티 생성과 설명 문자열 조립이 인트로 회전 중에 일어난다. */
+  volcano:   () => volcanoes.load(),
+  stations:  () => stations.load(),
+};
+
+/* 받아 둔 것을 공유하는 레이어 — 한쪽이 받았으면 다른 쪽은 다시 안 받는다 */
+const LOAD_KEY = { heatdome: 'phenomena' };
+
+/* 켤 때마다 **다시** 받는다. 낡으면 거짓이 되는 자료다:
+   해제된 특보를 띄우면 "아직 위험하다"는 거짓이고,
+   5분 전 낙뢰를 지금이라고 말하면 뇌우의 위치를 틀리게 알려준다. */
+const ALWAYS_FRESH = new Set(['lightning', 'alerts', 'tsunami']);
+
+/* 첫 자료 요청을 미루는 시간.
+   ⚠️ 인트로는 줌인 4초 + 그 뒤 회전이다. 예전 값 3,500ms 는 **줌인 한가운데**였다.
+      이 시점의 통신·JSON 해석·엔티티 생성이 회전을 끊었다.
+      12초면 줌인이 끝나고 첫 타일들도 자리를 잡는다.
+   ⚠️ 이 값은 "쓰나미 경보를 얼마나 늦게 알아채는가"이기도 하다. 더 늘리지 말 것. */
+const SAFETY_DELAY_MS = 12_000;
+
 /** 레이어 id → 격자 필드 이름 */
 /* 격자 레이어 id 는 곧 눈금 이름이다 (gridoverlay 의 FIELD_OF 가 실제 필드로 옮긴다).
    ⚠️ 예전에는 'humidity 면 rh, 아니면 temp' 였다. 그대로 두면 tmax/tmin 이
@@ -97,9 +146,9 @@ export const registry = {
     store.on('camera', () => this.applyAll());
 
     this.ready = true;
-    /* ⚠️ 첫 화면은 지구 + NOAA 구름만. 데이터는 부팅 직후 한꺼번에 받지 않는다.
-       예전엔 전 데이터를 동시에 받아 초기 화면이 느렸다.
-       → 20초 기다린 뒤, 태풍→열돔→뉴스 순으로 하나씩 천천히 받는다(_staggeredBoot). */
+    /* ⚠️ 첫 화면은 **지구 + NOAA 구름뿐**이다. 그 밖에는 아무것도 받지 않는다.
+       인트로가 끝난 뒤(SAFETY_DELAY_MS) 안전 소스 둘만 받고,
+       나머지는 사용자가 켜는 그 순간에 받는다(_staggeredBoot / _ensureLoaded). */
     this._staggeredBoot();
   },
 
@@ -109,33 +158,33 @@ export const registry = {
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     const GAP = 1800;              // 각 로드 사이 간격 (천천히)
 
-    /* 안전 소스는 예외 — 쓰나미·큰 지진은 레이어가 꺼져 있어도 하단 배너로 뜨는
-       긴급 정보다. 작은 자료라 첫 화면 속도에 지장 없이 먼저 받아, 앱을 열자마자
-       긴급 상황을 놓치지 않게 한다. (나머지는 아래 20초 뒤 순차 로드) */
-    await sleep(3500);
+    /* ⚠️ 인트로(줌인 4초 + 회전)가 끝나기 전에는 아무것도 받지 않는다.
+       예전에는 3.5초에 지진·쓰나미를 받았는데, 그게 줌인 한가운데였다.
+       "버벅거린다"는 지적의 상당 부분이 여기였다. */
+    await sleep(SAFETY_DELAY_MS);
+
+    /* 안전 소스만 예외 — 쓰나미·큰 지진은 레이어가 꺼져 있어도 하단 배너로 뜬다.
+       ⚠️ 이건 "안 보이게 했다"와 "놓쳤다"를 가르는 선이다 (config.js 주석 참고).
+          레이어를 끄는 것은 지도 표시를 끄는 것이지 감시를 끄는 것이 아니다.
+          둘 다 수 KB 라 이 시점에는 화면에 영향이 없다. */
     await this.run('quake',   () => quakes.refresh());   this.applyAll();
     await this.run('tsunami', () => tsunami.refresh());  this.applyAll();
+    this._loaded.quake = true;
+    this._loaded.tsunami = true;
 
-    await sleep(20_000);          // 그 밖의 데이터는 첫 20초간 받지 않는다
+    /* 나머지는 **켜져 있는 것만** 받는다.
+       ⚠️ 예전에는 태풍·환류·뉴스·산불·발사·궤도·오로라를 꺼져 있어도 받았다.
+          첫 방문자는 기본이 전부 꺼짐이므로 이 구간이 통째로 사라진다.
+          다시 방문한 사람은 켜 뒀던 것만 순서대로 돌아온다. */
+    const seq = ['cyclone', 'phenomena', 'heatdome', 'news', 'wildfire',
+                 'launch', 'orbits', 'aurora',
+                 'buoy', 'lightning', 'regional', 'alerts', 'ukfc']
+      .filter(id => store.isOn(id));
 
-    const seq = [
-      ['cyclone',  () => cyclones.refresh()],                                  // 태풍
-      ['phenomena',() => phenomena.refresh()],                                 // 열돔·자연현상 (같은 자료)
-      ['news',     () => events.refresh()],                                    // 뉴스
-      ['wildfire', () => wildfires.refresh()],
-      ['launch',   () => launches.refresh().then(i => launchPads.build(i))],
-      ['orbits',   () => orbits.refresh()],
-      ['aurora',   () => imagery.loadAurora()],
-    ];
-    // 큰 자료는 켜져 있을 때만
-    if (store.isOn('buoy'))      seq.push(['buoy',      () => buoys.refresh()]);
-    if (store.isOn('lightning')) seq.push(['lightning', () => lightning.refresh()]);
-    if (store.isOn('regional'))  seq.push(['regional',  () => regional.refresh()]);
-    if (store.isOn('alerts'))    seq.push(['alerts',    () => alerts.refresh()]);
-    if (store.isOn('ukfc'))      seq.push(['ukfc',      () => ukForecast.refresh()]);
-
-    for (const [id, fn] of seq) {
-      await this.run(id, fn);
+    for (const id of seq) {
+      if (this._loaded[LOAD_KEY[id] || id]) continue;   // 환류/열돔처럼 이미 받은 것
+      this._loaded[LOAD_KEY[id] || id] = true;
+      await this.run(id, LOADERS[id]);
       this.applyAll();
       await sleep(GAP);
     }
@@ -144,30 +193,26 @@ export const registry = {
   },
 
   /* ── 갱신 ─────────────────────────────────────────────────── */
+  /* 언어를 바꿨을 때처럼 전부 다시 그려야 할 때 쓴다.
+     ⚠️ **켜져 있는 것만** 받는다. 예전에는 지진·태풍·뉴스·발사·오로라·궤도·환류·
+        산불을 꺼져 있어도 받았다 — 화면에 없는 것을 위해 통신하는 셈이었다.
+     ⚠️ 안전 소스(지진·쓰나미)만 예외다. 하단 배너가 이걸 쓴다. */
   async refreshAll() {
+    const ids = Object.keys(LOADERS).filter(id => store.isOn(id));
+    const done = new Set();
     await Promise.allSettled([
-      this.run('quake',  () => quakes.refresh()),
-      this.run('cyclone', () => cyclones.refresh()),
-      this.run('news', () => events.refresh()),
-      this.run('launch', () => launches.refresh().then(items => launchPads.build(items))),
-      this.run('aurora', () => imagery.loadAurora()),
-      this.run('orbits', () => orbits.refresh()),
-      // ⚠️ 열돔과 자연현상이 같은 자료를 쓴다. 둘 중 하나라도 켜져 있으면 받는다.
-      this.run('phenomena', () => phenomena.refresh()),
-      this.run('heatdome', () => phenomena.refresh()),
-      this.run('tsunami', () => tsunami.refresh()),
-      this.run('wildfire', () => wildfires.refresh()),
-      /* 부이는 869개라 켜져 있을 때만 받는다.
-         꺼놓은 사람에게 107KB 를 매번 내려받게 할 이유가 없다. */
-      store.isOn('buoy') ? this.run('buoy', () => buoys.refresh()) : Promise.resolve(),
-      // 낙뢰도 켜져 있을 때만 — 평소엔 한국 밖 사용자에게 받을 이유가 없다
-      store.isOn('lightning') ? this.run('lightning', () => lightning.refresh()) : Promise.resolve(),
-      store.isOn('regional') ? this.run('regional', () => regional.refresh()) : Promise.resolve(),
-      store.isOn('alerts') ? this.run('alerts', () => alerts.refresh()) : Promise.resolve(),
-      /* 영국 예보 190KB — 켜져 있을 때만 받는다.
-         영국을 안 보는 사람에게 시작할 때마다 190KB 를 물릴 이유가 없다. */
-      store.isOn('ukfc') ? this.run('ukfc', () => ukForecast.refresh()) : Promise.resolve(),
+      this.run('quake',   () => quakes.refresh()),      // 안전 소스
+      this.run('tsunami', () => tsunami.refresh()),     // 안전 소스
+      ...ids.map(id => {
+        const key = LOAD_KEY[id] || id;
+        if (key === 'quake' || key === 'tsunami' || done.has(key)) return Promise.resolve();
+        done.add(key);
+        return this.run(id, LOADERS[id]);
+      }),
     ]);
+    ids.forEach(id => { this._loaded[LOAD_KEY[id] || id] = true; });
+    this._loaded.quake = true;
+    this._loaded.tsunami = true;
     this.applyAll();
   },
 
@@ -177,31 +222,33 @@ export const registry = {
     catch (e) { this.status[id] = 'error'; console.warn(`[${id}]`, e.message); }
   },
 
+  /* 주기 갱신.
+     ⚠️ **꺼져 있는 레이어는 갱신하지 않는다.** 예전에는 지진·발사·오로라·궤도·
+        태풍·뉴스·산불이 꺼져 있어도 계속 폴링했다. 20분마다 산불 목록을 받아
+        아무도 안 보는 엔티티 912개를 다시 만드는 식이었다 — 순수한 발열이다.
+     ⚠️ 예외는 안전 소스 둘(지진·쓰나미)뿐이다. 하단 배너가 이걸 쓴다. */
   startTimers() {
-    setInterval(() => this.run('quake',  () => quakes.refresh()).then(() => this.applyAll()), REFRESH.quake);
-    setInterval(() => this.run('launch', () => launches.refresh().then(i => launchPads.build(i))).then(() => this.applyAll()), REFRESH.launch);
-    setInterval(() => this.run('aurora', () => imagery.loadAurora()), REFRESH.aurora);
-    setInterval(() => this.run('orbits', () => orbits.refresh()), REFRESH.orbits);
-    setInterval(() => this.run('cyclone', () => cyclones.refresh()).then(() => this.applyAll()), REFRESH.cyclone);
-    setInterval(() => this.run('news', () => events.refresh()).then(() => this.applyAll()), REFRESH.news);
-    setInterval(() => this.run('clouds', () => imagery._addClouds()), REFRESH.clouds);
+    const on = (id, fn, ms) => setInterval(() => {
+      if (!store.isOn(id)) return;
+      this.run(id, fn).then(() => this.applyAll());
+    }, ms);
+
+    // 안전 소스 — 레이어가 꺼져 있어도 계속 본다 (배너용). 둘 다 수 KB.
+    setInterval(() => this.run('quake',   () => quakes.refresh()).then(() => this.applyAll()), REFRESH.quake);
     setInterval(() => this.run('tsunami', () => tsunami.refresh()).then(() => this.applyAll()), REFRESH.tsunami);
-    setInterval(() => this.run('wildfire', () => wildfires.refresh()).then(() => this.applyAll()), REFRESH.wildfire);
-    setInterval(() => {
-      if (store.isOn('buoy')) this.run('buoy', () => buoys.refresh()).then(() => this.applyAll());
-    }, REFRESH.buoy);
-    setInterval(() => {
-      if (store.isOn('lightning')) this.run('lightning', () => lightning.refresh()).then(() => this.applyAll());
-    }, REFRESH.lightning);
-    setInterval(() => {
-      if (store.isOn('regional')) this.run('regional', () => regional.refresh()).then(() => this.applyAll());
-    }, REFRESH.regional);
-    setInterval(() => {
-      if (store.isOn('alerts')) this.run('alerts', () => alerts.refresh()).then(() => this.applyAll());
-    }, REFRESH.alerts);
-    setInterval(() => {
-      if (store.isOn('ukfc')) this.run('ukfc', () => ukForecast.refresh()).then(() => this.applyAll());
-    }, REFRESH.ukfc);
+
+    on('launch',   LOADERS.launch,   REFRESH.launch);
+    on('aurora',   LOADERS.aurora,   REFRESH.aurora);
+    on('orbits',   LOADERS.orbits,   REFRESH.orbits);
+    on('cyclone',  LOADERS.cyclone,  REFRESH.cyclone);
+    on('news',     LOADERS.news,     REFRESH.news);
+    on('wildfire', LOADERS.wildfire, REFRESH.wildfire);
+    on('buoy',     LOADERS.buoy,     REFRESH.buoy);
+    on('lightning',LOADERS.lightning,REFRESH.lightning);
+    on('regional', LOADERS.regional, REFRESH.regional);
+    on('alerts',   LOADERS.alerts,   REFRESH.alerts);
+    on('ukfc',     LOADERS.ukfc,     REFRESH.ukfc);
+    on('clouds',   () => imagery._addClouds(), REFRESH.clouds);
   },
 
   /* ── 가시성 ───────────────────────────────────────────────── */
@@ -234,31 +281,25 @@ export const registry = {
     if (id === 'launch') launchPads.set(store.isOn('launch'));
 
     if (id === 'poi') poi.refresh();
-    // 부이는 켤 때 처음 받는다 (§ 위 refreshAll 의 지연 로딩과 짝)
-    if (id === 'buoy' && store.isOn('buoy') && !buoys.meta) {
-      this.run('buoy', () => buoys.refresh()).then(() => this.applyAll());
-    }
-    /* 낙뢰도 켤 때 처음 받는다.
-       ⚠️ meta 유무로 판단하면 두 번째 켤 때 낡은 자료를 그대로 쓴다.
-          낙뢰는 5분이면 딴 세상이라, 켤 때마다 다시 받는다. */
-    if (id === 'lightning' && store.isOn('lightning')) {
-      this.run('lightning', () => lightning.refresh()).then(() => this.applyAll());
-    }
-    // 지역 재해도 켤 때 받는다 (평소엔 전 세계 사용자에게 받게 할 이유가 없다)
-    if (id === 'regional' && store.isOn('regional') && !regional.meta) {
-      this.run('regional', () => regional.refresh()).then(() => this.applyAll());
-    }
-    /* 경보는 켤 때마다 새로 받는다. ⚠️ 15분이면 해제된 것이 생긴다 —
-       낡은 경보를 켜 두면 "아직 위험하다"는 거짓 정보가 된다. */
-    if (id === 'alerts' && store.isOn('alerts')) {
-      this.run('alerts', () => alerts.refresh()).then(() => this.applyAll());
-    }
-    /* 영국 예보는 켤 때 처음 받는다.
-       ⚠️ meta 유무로 판단한다 — 3시간마다 갱신되는 자료라 낡아도 몇 시간이고,
-          켤 때마다 190KB 를 다시 받는 건 낭비다. 주기 타이머가 따로 갱신한다. */
-    if (id === 'ukfc' && store.isOn('ukfc') && !ukForecast.meta) {
-      this.run('ukfc', () => ukForecast.refresh()).then(() => this.applyAll());
-    }
+
+    /* 켰으면 그때 받는다. 예전에는 여기에 레이어마다 if 가 따로 있었고
+       (buoy·lightning·regional·alerts·ukfc) 나머지는 부팅 때 무조건 받았다.
+       이제 전부 LOADERS 표 한 곳에서 다룬다 — 빠뜨리면 빈 레이어가 되므로
+       추가할 때 표에도 같이 넣을 것. */
+    this._ensureLoaded(id);
+  },
+
+  /** 한 번 받은 것 (LOAD_KEY 기준) */
+  _loaded: {},
+
+  /** 켜져 있으면 자료를 확보한다. 이미 있으면 아무 일도 안 한다. */
+  _ensureLoaded(id) {
+    const fn = LOADERS[id];
+    if (!fn || !store.isOn(id)) return;
+    const key = LOAD_KEY[id] || id;
+    if (this._loaded[key] && !ALWAYS_FRESH.has(id)) return;
+    this._loaded[key] = true;
+    this.run(id, fn).then(() => this.applyAll());
   },
 
   applyAll() {

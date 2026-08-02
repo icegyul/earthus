@@ -2,11 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "earthus-prototype",
+      "name": "earthus-static",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["devserver.py", "8787"],
-      "cwd": "prototype",
-      "port": 8787
+      "runtimeArgs": ["-m", "http.server", "8777", "--directory", "prototype"],
+      "port": 8777
     }
   ]
 }

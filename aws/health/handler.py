@@ -101,6 +101,8 @@ WATCH = [
      "ko": "동아시아 기압 격자 (등압선)"},
     {"key": "wind/air-state.json", "everyMin": 1440, "graceMin": 360,
      "ko": "하루 한 번 대기 상태 판정"},
+    {"key": "events/quake-asia.json", "everyMin": 10, "graceMin": 25,
+     "ko": "지진 (기상청·JMA)"},
 ]
 
 # ── 축적형: **있어야 할 파일이 실제로 있는가** ─────────────────

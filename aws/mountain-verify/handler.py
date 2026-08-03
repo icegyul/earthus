@@ -174,6 +174,15 @@ def handler(event=None, context=None):
     days = daily.get("days") or {}
     key = kst_now.strftime("%Y-%m-%d")
     d = days.get(key) or {"n": 0, "sum": 0.0, "gaps": [], "peaks": {}}
+    # ⚠️⚠️ **하루에 한 번만 성공하고 그 뒤로는 계속 죽던 자리다.**
+    #    아래에서 d.pop("gaps") 로 배열을 지워 저장했는데, 다음 시각에 그 dict 를
+    #    그대로 다시 읽으니 "gaps" 키가 없어 KeyError 가 났다.
+    #    ⚠️ 조용히 죽는 종류다 — 첫 회차가 성공하니 파일은 만들어져 있고,
+    #       화면도 멀쩡해 보인다. 실측으로 **15시간** 동안 아무도 몰랐다.
+    #    ⚠️ 그리고 이건 **되돌릴 수 없는 자료**다(health 가 critical 로 표시하는 이유).
+    #       그 시각의 예보를 놓치면 검증 짝을 영영 만들 수 없다.
+    d.setdefault("gaps", [])
+    d.setdefault("peaks", {})
 
     for r in rows:
         d["n"] += 1
@@ -187,12 +196,16 @@ def handler(event=None, context=None):
         pk["min"] = min(pk["min"], r["gap"])
         pk["max"] = max(pk["max"], r["gap"])
 
-    # ⚠️ gaps 를 그대로 쌓으면 파일이 계속 커진다. 중앙값만 남기고 버린다.
+    # ⚠️⚠️ 예전에는 여기서 gaps 를 버렸다. 파일 크기를 아끼려던 것인데 둘이 틀렸다.
+    #    ① 다음 회차에 KeyError 로 **하루 종일 죽었다** (위 참고)
+    #    ② 설령 안 죽었어도, 배열이 없으면 중앙값이 **그 시각 것만으로** 계산된다.
+    #       그걸 "그날의 중앙값"이라고 부르면 거짓이 된다.
+    #    → **오늘 것만 배열로 들고 있는다.** 산 84곳 × 24회 = 하루 2천 개 남짓,
+    #      JSON 으로 20KB 정도다. 지난 날들은 아래에서 배열만 떼어 낸다.
     d["median"] = round(median(d["gaps"]), 2)
     d["mean"] = round(d["sum"] / d["n"], 2)
     d["min"] = round(min(d["gaps"]), 1)
     d["max"] = round(max(d["gaps"]), 1)
-    d.pop("gaps", None)
     for pk in d["peaks"].values():
         pk["mean"] = round(pk["sum"] / pk["n"], 2)
     days[key] = d
@@ -200,6 +213,11 @@ def handler(event=None, context=None):
     # 오래된 날은 버린다
     cutoff = (kst_now - timedelta(days=RETAIN_DAYS)).strftime("%Y-%m-%d")
     days = {k: v for k, v in days.items() if k >= cutoff}
+    # ⚠️ 지난 날의 배열만 떼어 낸다 — 요약값(중앙값·평균·최소·최대)은 이미 다 냈다.
+    #    오늘 것은 남겨야 다음 회차가 이어서 계산한다.
+    for k, v in days.items():
+        if k != key:
+            v.pop("gaps", None)
 
     out = {
         "generated": now.strftime("%Y-%m-%dT%H:%M:00Z"),

@@ -84,8 +84,23 @@ WATCH = [
      "ko": "태풍 유사 사례"},
     {"key": "events/cyclone-tracks.json", "everyMin": 60, "graceMin": 120,
      "ko": "태풍 경로 보관"},
-    {"key": "events/jma-typhoon.json", "everyMin": 60, "graceMin": 120,
-     "ko": "JMA 태풍 공식 예보"},
+    # ⚠️⚠️ **없어진 파일을 계속 감시하면 감시기 전체가 무시당한다.**
+    #    events/jma-typhoon.json 을 여기서 보고 있었는데, 그 파일은
+    #    typhoon-official.json 으로 대체되어 **아무도 안 쓴다.**
+    #    그래서 21시간째 dead 로 떠 있었고, overall 이 늘 critical 이었다.
+    #    실제로 그 옆에 있던 **진짜 고장(산악 축적 15시간 중단)을 하마터면 같이 넘길 뻔했다.**
+    #    → 늑대가 없는데 우는 감시기는 진짜 늑대를 숨긴다. 항목을 갈아 끼운다.
+    {"key": "events/typhoon-official.json", "everyMin": 60, "graceMin": 120,
+     "ko": "태풍 공식 예보 (기상청·JMA·NHC)"},
+    # ⚠️ 새로 만든 파이프라인은 **만든 날 여기에 넣는다.** 안 넣으면 죽어도 조용하다.
+    #    실측(2026-08-03): 아래 둘이 각각 31분·371분 밀려 있었는데 감시 밖이라
+    #    아무도 몰랐고, 사람이 손으로 재 보고서야 알았다.
+    {"key": "clouds/gk2a/meta.json", "everyMin": 10, "graceMin": 25,
+     "ko": "천리안2A 위성영상"},
+    {"key": "wind/pressure-ea.json", "everyMin": 60, "graceMin": 90,
+     "ko": "동아시아 기압 격자 (등압선)"},
+    {"key": "wind/air-state.json", "everyMin": 1440, "graceMin": 360,
+     "ko": "하루 한 번 대기 상태 판정"},
 ]
 
 # ── 축적형: **있어야 할 파일이 실제로 있는가** ─────────────────

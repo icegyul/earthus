@@ -38,11 +38,21 @@ export const DEMAND_SERVICES = {
 
 export const subscribeSheet = {
   plan: 'yearly',
+  seats: undefined,          // undefined=아직 안 물어봄 · null=못 셈 · 숫자=남은 자리
 
   open(reason) {
     this._reason = reason || null;
     $('#subSheet').classList.add('up');
     this.render();
+    // ⚠️ 좌석 수는 **네트워크가 필요하다.** 먼저 화면을 그리고 오면 채운다 —
+    //    기다렸다 그리면 결제 화면이 늦게 뜬다.
+    if (this.seats === undefined) {
+      billing.seatsLeft('founding').then((n) => {
+        this.seats = n;
+        // 그 사이 시트를 닫았으면 다시 그리지 않는다
+        if ($('#subSheet')?.classList.contains('up')) this.render();
+      }).catch(() => { this.seats = null; });
+    }
   },
   close() { $('#subSheet').classList.remove('up'); },
 
@@ -70,27 +80,57 @@ export const subscribeSheet = {
 
     /* ── 요금제 선택 ── */
     const save = billing.yearlySavingPct();
+    const opts = [
+      ['yearly', ko ? '연간' : 'Yearly', save > 0 ? (ko ? `${save}% 절약` : `save ${save}%`) : ''],
+      ['monthly', ko ? '월간' : 'Monthly', ''],
+    ];
+    /* 창립회원 — ⚠️ **남은 자리가 있다고 확인됐을 때만** 보여준다.
+       못 셌을 때(null) 보여주면 마감된 상품을 파는 것이 될 수 있다. */
+    if (typeof this.seats === 'number' && this.seats > 0) {
+      opts.unshift(['founding', ko ? '창립회원' : 'Founding',
+        ko ? `${this.seats.toLocaleString()}자리 남음` : `${this.seats} left`]);
+    }
     const picker = el('div', 'plan-picker');
-    [['yearly', ko ? '연간' : 'Yearly', save > 0 ? (ko ? `${save}% 절약` : `save ${save}%`) : ''],
-     ['monthly', ko ? '월간' : 'Monthly', '']].forEach(([key, label, badge]) => {
+    opts.forEach(([key, label, badge]) => {
       const p = PLANS[key];
+      if (!p) return;
       const b = el('button', 'plan' + (this.plan === key ? ' on' : ''));
+      const perYear = p.period === 'year';
       b.innerHTML = `<div class="pl-name">${label}${badge ? `<em>${badge}</em>` : ''}</div>`
         + `<div class="pl-price">${billing.price(key)}</div>`
         + `<div class="pl-per">${ko
-            ? (key === 'yearly' ? `연 · 월 ₩${Math.round(p.krw / 12).toLocaleString()} 꼴` : '월')
-            : (key === 'yearly' ? `per year · $${(p.usd / 12).toFixed(2)}/mo` : 'per month')}</div>`;
+            ? (perYear ? `연 · 월 ₩${Math.round(p.krw / 12).toLocaleString()} 꼴` : '월')
+            : (perYear ? `per year · $${(p.usd / 12).toFixed(2)}/mo` : 'per month')}</div>`;
       b.onclick = () => { this.plan = key; this.render(); };
       picker.appendChild(b);
     });
     body.appendChild(picker);
 
+    if (this.plan === 'founding') {
+      /* ⚠️ 창립회원이 **무엇을 약속하는 것인지** 분명히 적는다.
+         "평생 이 가격"은 지키기 어려운 약속이다 — 1년치 이용권이라고 정확히 쓴다. */
+      body.appendChild(el('p', 'sky-note', ko
+        ? '창립회원은 1년 이용권입니다. 계정에 창립회원 표시가 남고, 다음 해 갱신 때 그때의 정가로 안내드립니다. 지금 가격이 평생 고정된다는 뜻은 아닙니다.'
+        : 'Founding membership is a one-year pass. Your account keeps the founding badge; renewal is at the then-current price. It is not a lifetime price lock.'));
+    }
+
     /* ── 무엇이 열리나 ── */
     const feat = el('div', 'feat-block');
     feat.appendChild(el('h4', null, ko ? '구독하면 열리는 것' : 'Unlocked with Pro'));
     const ul = el('ul', 'feat-list');
-    PAID_FEATURES.forEach(f => ul.appendChild(el('li', 'yes', ko ? f.ko : f.en)));
+    PAID_FEATURES.forEach(f => {
+      /* ⚠️⚠️ 아직 못 만든 것을 **만든 것처럼 팔지 않는다.**
+         이 목록은 한때 "지진 알림"을 팔고 있었는데 웹푸시 서버가 없어 알림이 안 갔다. */
+      const li = el('li', f.soon ? 'soon' : 'yes', ko ? f.ko : f.en);
+      if (f.soon) li.appendChild(el('em', 'soon-tag', ko ? ' 준비 중' : ' coming soon'));
+      ul.appendChild(li);
+    });
     feat.appendChild(ul);
+    if (PAID_FEATURES.some(f => f.soon)) {
+      feat.appendChild(el('p', 'sky-note', ko
+        ? '「준비 중」은 아직 동작하지 않는 기능입니다. 지금 결제하셔도 그 기능은 완성된 뒤에 열립니다 — 그 점을 미리 말씀드립니다.'
+        : 'Items marked "coming soon" do not work yet. Subscribing now does not enable them until they ship — we would rather say so up front.'));
+    }
 
     feat.appendChild(el('h4', null, ko ? '구독하지 않아도 계속 무료' : 'Always free'));
     const ul2 = el('ul', 'feat-list');
@@ -128,10 +168,19 @@ export const subscribeSheet = {
       });
     }
 
-    /* ── 법정 고지 (전자상거래법 · 앱스토어 규정) ── */
-    body.appendChild(el('p', 'sub-legal', ko
-      ? '구독은 기간이 끝나기 전에 해지하지 않으면 자동으로 갱신됩니다. 해지는 결제하신 곳에서 언제든 가능하며, 남은 기간까지는 계속 이용하실 수 있습니다. 표시 금액은 부가세 포함입니다.'
-      : 'Subscriptions renew automatically unless cancelled before the period ends. Cancel any time where you purchased; access continues until the period ends. Prices include VAT where applicable.'));
+    /* ── 법정 고지 (전자상거래법 · 앱스토어 규정) ──
+       ⚠️⚠️ **자동갱신 여부를 결제 수단에 맞춰 쓴다.**
+       앱스토어·플레이 결제는 자동갱신이지만, 웹(PG)은 지금 **자동갱신 없는 이용권**이다.
+       한 문장으로 뭉뚱그려 "자동 갱신됩니다"라고 쓰면 웹 구매자에게 거짓말이 되고,
+       반대로 자동갱신인데 안 적으면 앱스토어 심사에서 걸린다. */
+    const autoRenew = provs.some(p => p.key === 'apple' || p.key === 'google');
+    body.appendChild(el('p', 'sub-legal', autoRenew
+      ? (ko
+        ? '앱스토어·구글플레이 구독은 기간이 끝나기 전에 해지하지 않으면 자동으로 갱신됩니다. 해지는 결제하신 곳에서 언제든 가능하며, 남은 기간까지는 계속 이용하실 수 있습니다. 표시 금액은 부가세 포함입니다.'
+        : 'App Store and Google Play subscriptions renew automatically unless cancelled before the period ends. Cancel any time where you purchased; access continues until the period ends. Prices include VAT where applicable.')
+      : (ko
+        ? '카드 결제는 정해진 기간만큼 쓰는 이용권입니다. 자동으로 갱신되지 않으므로 해지 절차도 없습니다. 기간이 끝나면 무료로 돌아가고, 필요하시면 다시 결제하시면 됩니다. 남은 기간이 있는 상태에서 다시 결제하면 그 뒤에 이어 붙습니다. 표시 금액은 부가세 포함입니다.'
+        : 'Card payment buys a pass for a fixed period. It does not auto-renew, so there is nothing to cancel. When it ends you return to the free tier. Buying again while time remains extends from that date. Prices include VAT where applicable.')));
   },
 
   async go(providerKey) {
@@ -149,8 +198,22 @@ export const subscribeSheet = {
     try {
       await billing.subscribe(this.plan, providerKey);
     } catch (e) {
-      if (e.message === 'NOT_AVAILABLE') {
-        toast(ko ? '이 기기에서는 아직 결제할 수 없습니다' : 'Payments unavailable on this device');
+      /* ⚠️ 실패 이유를 뭉뚱그리지 않는다. "결제 실패"만 뜨면 사용자는
+         카드 문제인지 우리 문제인지 알 수 없어 같은 시도를 반복한다. */
+      const MSG = {
+        NOT_AVAILABLE:  ['이 기기에서는 아직 결제할 수 없습니다', 'Payments unavailable on this device'],
+        NOT_CONFIGURED: ['결제 수단이 아직 연결되지 않았습니다', 'Payments are not connected yet'],
+        NOT_SIGNED_IN:  ['로그인이 필요합니다', 'Please sign in first'],
+        SOLD_OUT:       ['창립회원 모집이 마감되었습니다', 'Founding membership is sold out'],
+        UNKNOWN_PLAN:   ['판매하지 않는 상품입니다', 'That plan is not on sale'],
+        PG_SDK_BLOCKED: ['결제 모듈을 불러오지 못했습니다. 광고 차단 확장을 잠시 꺼주세요',
+                         'Could not load the payment module — try disabling ad blockers'],
+      };
+      const m = MSG[e.message];
+      if (m) {
+        toast(ko ? m[0] : m[1]);
+        // 마감이면 화면의 선택지도 즉시 걷어낸다 — 다시 눌러도 안 되는 버튼을 남기지 않는다.
+        if (e.message === 'SOLD_OUT') { this.seats = 0; this.plan = 'yearly'; this.render(); }
       } else {
         toast((ko ? '결제 시작 실패: ' : 'Checkout failed: ') + e.message);
       }

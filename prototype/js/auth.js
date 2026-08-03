@@ -68,6 +68,24 @@ export const auth = {
     this.emit();
   },
 
+  /* 서버(Edge Function)를 부를 때 쓰는 토큰.
+     ⚠️ 저장해 두지 않는다 — 만료되면 조용히 401 이 나서 "왜 안 되지"가 된다.
+        getSession() 이 자동 갱신된 것을 준다. */
+  async accessToken() {
+    if (!this.client) return null;
+    const { data } = await this.client.auth.getSession();
+    return data?.session?.access_token ?? null;
+  },
+
+  /* 결제 직후처럼 **서버에서 바뀐 값을 다시 읽어야** 할 때.
+     ⚠️ 클라이언트가 tier 를 직접 'paid' 로 바꾸지 않는다. 서버가 정본이다. */
+  async refresh() {
+    if (!this.client || !this.user) return null;
+    this.profile = await this.loadProfile();
+    this.emit();
+    return this.profile;
+  },
+
   /* ── 프로필 ─────────────────────────────────────────────── */
   async loadProfile() {
     if (!this.client || !this.user) return null;

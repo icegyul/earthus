@@ -108,6 +108,20 @@ WATCH = [
      "ko": "땅의 움직임 (GNSS)"},
     {"key": "events/social-drafts.json", "everyMin": 60, "graceMin": 180,
      "ko": "SNS 초안"},
+    # ── 2026-08-04 추가 ────────────────────────────────────────
+    # ⚠️ 만든 날 여기 안 넣으면, 죽어도 화면에 옛 자료가 그대로 떠 있어 아무도 모른다.
+    #    (mountain-verify 가 15시간 죽어 있던 게 정확히 그래서였다)
+    {"key": "events/lightning.json", "everyMin": 10, "graceMin": 30,
+     "ko": "낙뢰 (기상청·JMA)"},
+    # ⚠️⚠️ 이안류는 **여름 한정**이다. 비수기에 rip 이 0곳이어도 고장이 아니다 —
+    #    이 감시는 "파일이 새로 올라오는가"만 본다. 내용 판단은 화면이 한다.
+    {"key": "events/coast-kr.json", "everyMin": 15, "graceMin": 45,
+     "ko": "이안류·조위 실측 (국립해양조사원)"},
+    # ⚠️ 3시간마다 나온다(2·5·8…시 분석 → 3·6·9…시 제공). 여유를 넉넉히 준다.
+    {"key": "events/forest-fire-kr.json", "everyMin": 180, "graceMin": 260,
+     "ko": "산불위험예보 (산림청)"},
+    {"key": "wind/korea-air-obs.json", "everyMin": 60, "graceMin": 130,
+     "ko": "대기질 실측 (에어코리아)"},
 ]
 
 # ── 축적형: **있어야 할 파일이 실제로 있는가** ─────────────────

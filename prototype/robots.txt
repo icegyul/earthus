@@ -119,6 +119,10 @@ Allow: /legal/
 #    실제 보호는 Supabase RLS 가 한다(admin.html 안의 SQL 참고).
 Disallow: /admin.html
 
+# ⚠️⚠️ 결제 복귀 페이지. 주소에 **주문번호와 결제키**가 실려 온다.
+#    색인되면 그 값이 검색 결과에 남는다. noindex 메타도 함께 넣었다.
+Disallow: /pay-return.html
+
 # 관측 자료는 색인 대상이 아니다.
 # 색인되면 검색 결과에 JSON 원문이 뜨고, 크롤러가 대역폭만 먹는다.
 Disallow: /wind/

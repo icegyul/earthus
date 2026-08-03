@@ -65,9 +65,18 @@ export const CONFIG = {
      ⚠️ App Store / Play / PG 에 등록한 실제 상품 가격과 반드시 일치시킬 것.   */
   // PLANS: { monthly: { id:'earthus.pro.monthly', krw:4900, usd:3.99, period:'month' } },
 
-  /* 서버가 만드는 PG 결제창 생성 엔드포인트. 없으면 결제 버튼 대신 사전등록 안내가 뜹니다.
-     ⚠️ 금액을 클라이언트가 정해 보내면 위변조가 됩니다. 서버가 주문을 만들어야 합니다. */
-  CHECKOUT_URL: '',
+  /* ── 결제 (Supabase Edge Function 두 개) ───────────────────
+     ⚠️ 둘 다 채워야 결제가 돕니다. 하나만 있으면 결제 후 이용권이 안 붙습니다.
+
+       CHECKOUT_URL  주문을 만든다        → functions/v1/checkout
+       CONFIRM_URL   결제를 승인한다      → functions/v1/payment-confirm
+
+     ⚠️ 금액을 클라이언트가 정해 보내면 위변조가 됩니다. 서버가 주문을 만들어야 합니다.
+     ⚠️ 여기에 **토스 시크릿 키를 넣지 마세요.** 시크릿 키는 Edge Function 의
+        secrets 에만 둡니다 (supabase secrets set TOSS_SECRET_KEY=...).
+        이 파일은 브라우저로 그대로 내려갑니다.                            */
+  CHECKOUT_URL: '',   // 예: https://xxxx.supabase.co/functions/v1/checkout
+  CONFIRM_URL:  '',   // 예: https://xxxx.supabase.co/functions/v1/payment-confirm
 
   LEGAL_VERSION: '2026-07-26',
 

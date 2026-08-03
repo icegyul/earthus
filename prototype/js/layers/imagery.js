@@ -309,13 +309,30 @@ export const imagery = {
       return d.toISOString().slice(0, 10);
     };
 
+    /* ⚠️⚠️ **한 번에 32장을 던지면 안 된다.**
+       받은 지적: "나사 구름 누르면 굉징히 늦게 뜨니깐" · "확대나 줌을 하려하면
+                  안되 그냥 지구가 움직여"
+       두 지적의 원인이 하나다. 이 탐색이 최악 128장을 동시에 받고 각각을 캔버스로
+       디코딩한다. 브라우저 연결 수를 이 검사가 다 먹어 **정작 보여줄 타일이 밀리고**,
+       메인 스레드가 getImageData 로 막혀 requestRenderMode 가 프레임을 못 낸다.
+       그래서 확대를 해도 화면이 안 바뀌고 지구만 도는 것처럼 보였다.
+       → 4장씩만 받는다. 느려도 화면이 살아 있는 쪽이 낫다. */
+    const pool = async (arr, n, fn) => {
+      const out = new Array(arr.length);
+      let i = 0;
+      await Promise.all(Array.from({ length: Math.min(n, arr.length) }, async () => {
+        while (i < arr.length) { const k = i++; out[k] = await fn(arr[k]); }
+      }));
+      return out;
+    };
+
     let best = null, first = null;
     /* ⚠️ 오늘(back=0)은 넣지 않는다. 아직 궤도가 절반도 안 들어와 있다
        (실측: 07-26 평균 26%, 최대 100%). 어제부터 본다. */
     for (let back = 1; back <= 4; back++) {
       const day = ymd(back);
-      const pcts = await Promise.all(TILES.map(([z, y, x]) =>
-        blackPct(`${base}/${day}/GoogleMapsCompatible_Level9/${z}/${y}/${x}.jpg`)));
+      const pcts = await pool(TILES, 4, ([z, y, x]) =>
+        blackPct(`${base}/${day}/GoogleMapsCompatible_Level9/${z}/${y}/${x}.jpg`));
       const avg = pcts.reduce((a, b) => a + b, 0) / pcts.length;
       if (back === 1) first = avg;      // 어제(즉시 띄운 날)의 빈 구간 — 교체 판단용
       if (!best || avg < best.avg) best = { day, avg };
@@ -383,12 +400,27 @@ export const imagery = {
       this._truecolorLoading(true);
 
       /* 배경 탐색 — 어제가 유난히 나쁜 날(빈 구간이 훨씬 큼)에만 조용히 교체한다.
-         평소엔 어제가 최선이라 그대로 둔다(불필요한 리로드·깜빡임 방지). */
-      this.pickTrueColorDate().then(r => {
-        if (r && r.day !== this._tcDate && (r.first - r.avg) > 12) {
-          this._swapTruecolorDate(r.day);
-        }
-      }).catch(() => {});
+         평소엔 어제가 최선이라 그대로 둔다(불필요한 리로드·깜빡임 방지).
+
+         ⚠️⚠️ **켤 때마다 다시 하지 않는다.** 하루에 한 번이면 충분하다 —
+            들여다보는 대상이 "어제 자료"라 하루 안에는 답이 안 바뀐다.
+            전에는 켰다 껐다 할 때마다 매번 최악 128장을 다시 받았다.
+         ⚠️ 그리고 **보여줄 타일이 다 뜬 뒤에** 시작한다. 같이 달리면
+            이 검사가 연결을 다 먹어 정작 화면이 늦게 뜬다. */
+      const KEY = 'earthus.tcProbe';
+      let cached = null;
+      try { cached = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (_) { }
+      if (cached?.on === day) {
+        if (cached.day && cached.day !== day) this._swapTruecolorDate(cached.day);
+      } else {
+        this._afterTilesSettle(() => {
+          this.pickTrueColorDate().then(r => {
+            const pick = (r && r.day !== this._tcDate && (r.first - r.avg) > 12) ? r.day : null;
+            try { localStorage.setItem(KEY, JSON.stringify({ on: day, day: pick })); } catch (_) { }
+            if (pick) this._swapTruecolorDate(pick);
+          }).catch(() => { });
+        });
+      }
     }
     this.truecolor.show = true;
     // 켤 때 현재 고도에 맞는 알파를 즉시 반영한다 (다음 프레임까지 기다리지 않게)
@@ -402,35 +434,95 @@ export const imagery = {
     this._applyClouds();
   },
 
-  /** 위성 영상 로딩 표시 — 타일이 다 로드될 때까지 하단에 "불러오는 중" 을 띄운다.
-   *  ⚠️ tileLoadProgressEvent 는 전지구 타일 전체를 세지만, 트루컬러를 켜는 순간
-   *     그 타일들이 큐에 쌓이므로 사실상 위성영상 로딩을 따라간다.
-   *     한 번이라도 대기(remaining>0)를 본 뒤 0 이 되면 끈다(캐시로 즉시 0 인 경우 오인 방지). */
+  /** 타일이 다 앉은 뒤에 무언가를 한다 (없으면 그냥 조금 뒤에).
+   *  ⚠️ 무거운 배경 작업은 **화면이 다 뜬 뒤에** 시작해야 한다.
+   *     같이 달리면 그 작업이 연결을 다 먹어 정작 보여줄 것이 늦게 뜬다. */
+  _afterTilesSettle(fn) {
+    const globe = viewer.scene.globe;
+    let done = false;
+    const run = () => { if (done) return; done = true; clearTimeout(t);
+      globe.tileLoadProgressEvent.removeEventListener(h);
+      // ⚠️ 한 박자 더 쉰다 — 0 이 되자마자 시작하면 후속 타일과 다시 겹친다
+      setTimeout(fn, 1500); };
+    const h = (remaining) => { if (remaining === 0) run(); };
+    globe.tileLoadProgressEvent.addEventListener(h);
+    const t = setTimeout(run, 15_000);   // 안 끝나도 언젠간 한다
+  },
+
+  /** 위성 영상 로딩 표시 — 타일이 다 로드될 때까지 진행 막대를 띄운다.
+   *
+   *  받은 지적: "나사 구름 누르면 굉징히 늦게 뜨니깐 로딩바 보여주자"
+   *
+   *  ⚠️ tileLoadProgressEvent 는 **남은 개수**만 준다. 전체 개수는 안 알려준다.
+   *     그래서 **여태 본 최댓값**을 분모로 쓴다. 도중에 더 늘면 분모도 같이 늘려
+   *     막대가 **뒤로 가지 않게** 한다 — 되돌아가는 막대는 고장으로 읽힌다.
+   *  ⚠️ 한 번이라도 대기(remaining>0)를 본 뒤 0 이 되면 끈다
+   *     (캐시로 즉시 0 인 경우 오인 방지). */
   _truecolorLoading(show) {
     const globe = viewer.scene.globe;
-    // 이전 리스너·타이머 정리
     if (this._tcProg) { globe.tileLoadProgressEvent.removeEventListener(this._tcProg); this._tcProg = null; }
     clearTimeout(this._tcLoadTimer);
+    clearTimeout(this._tcIdleTimer);
 
-    if (!show) { this._tcLoadEl?.classList.remove('on'); return; }
+    if (!show) {
+      this._tcLoadEl?.classList.remove('on');
+      this._tcLoadEl?.classList.remove('indet');
+      return;
+    }
 
     if (!this._tcLoadEl) {
       const el = document.createElement('div');
       el.id = 'tcLoading';
-      el.innerHTML = '<span class="tcl-spin"></span>위성 영상 불러오는 중…';
+      el.innerHTML = '<span class="tcl-txt">위성 영상 불러오는 중…</span>'
+                   + '<span class="tcl-bar"><i></i></span>';
       document.body.appendChild(el);
       this._tcLoadEl = el;
+      this._tcBar = el.querySelector('.tcl-bar > i');
+      this._tcTxt = el.querySelector('.tcl-txt');
     }
     this._tcLoadEl.classList.add('on');
+    /* ⚠️⚠️ 처음에는 **몇 장인지 모른다.** 타일이 큐에 쌓이는 동안은 remaining 이
+       계속 늘어서, 최댓값을 분모로 삼으면 막대가 4% 에 붙어 있다(실측으로 확인했다).
+       모르는 것을 아는 척하지 않는다 — 총량을 알기 전까지는 **흐르는 막대**로 두고,
+       remaining 이 줄기 시작한 뒤에야 퍼센트를 말한다. */
+    this._tcLoadEl.classList.add('indet');
+    this._tcBar.style.width = '';
+    this._tcTxt.textContent = '위성 영상 불러오는 중…';
 
-    let sawPending = false;
+    let sawPending = false, peak = 0, shown = 0;
+
+    /* ⚠️⚠️ **받을 것이 없으면 막대를 띄우면 안 된다.**
+       타일이 이미 캐시에 있으면 remaining 이 처음부터 0 이라 sawPending 이
+       영영 참이 되지 않는다 — 실측에서 막대가 13초 넘게 "흐름"으로 떠 있었다.
+       (안전 타임아웃 30초까지 갔을 것이다.)
+       → 잠깐 기다려 보고 대기가 한 번도 없으면 조용히 끈다. */
+    this._tcIdleTimer = setTimeout(() => {
+      if (!sawPending) this._truecolorLoading(false);
+    }, 2_500);
     this._tcProg = (remaining) => {
-      if (remaining > 0) { sawPending = true; return; }
-      if (sawPending) this._truecolorLoading(false);
+      if (remaining > 0) {
+        sawPending = true;
+        if (remaining > peak) { peak = remaining; return; }   // 아직 쌓이는 중
+        this._tcLoadEl.classList.remove('indet');             // 이제 총량을 안다
+        const pct = Math.round((1 - remaining / peak) * 100);
+        shown = Math.max(shown, pct);                         // ⚠️ 뒤로 가지 않는다
+        this._tcBar.style.width = `${Math.max(4, shown)}%`;
+        this._tcTxt.textContent = `위성 영상 불러오는 중… ${shown}%`;
+        return;
+      }
+      if (sawPending) {
+        this._tcLoadEl.classList.remove('indet');
+        this._tcBar.style.width = '100%';
+        this._tcTxt.textContent = '위성 영상 불러오는 중… 100%';
+        // 100% 를 잠깐 보여 주고 끈다 — 갑자기 사라지면 끝난 건지 죽은 건지 모른다
+        setTimeout(() => this._truecolorLoading(false), 420);
+        this._tcProg && globe.tileLoadProgressEvent.removeEventListener(this._tcProg);
+        this._tcProg = null;
+      }
     };
     globe.tileLoadProgressEvent.addEventListener(this._tcProg);
-    // 안전 타임아웃 — 어떤 이유로 progress 가 안 끝나도 20초 뒤엔 끈다
-    this._tcLoadTimer = setTimeout(() => this._truecolorLoading(false), 20_000);
+    // 안전 타임아웃 — 어떤 이유로 progress 가 안 끝나도 30초 뒤엔 끈다
+    this._tcLoadTimer = setTimeout(() => this._truecolorLoading(false), 30_000);
   },
 
   /** 구름 오버레이 표시 여부를 한 곳에서 정한다.

@@ -27,13 +27,39 @@ const LS_DEFAULTS_VER = 'earthus.layerDefaultsVer';
    "고쳤는데 내 폰에서만 그대로"가 된다. */
 const DEFAULTS_VER = '13';  // 13: 첫 화면 전부 꺼짐 (구름 포함)
 
+/* 이 탭에서 이미 한 번 켠 적이 있는가.
+   ⚠️ sessionStorage 는 **탭을 닫으면 사라지고 새로고침에는 남는다.** 이 차이가
+      아래 규칙의 전부다. localStorage 로 하면 구분이 안 된다. */
+const SS_LIVE = 'earthus.session';
+
+/* ⚠️⚠️ **다시 들어오면 지구 스타일을 초기화한다.**
+   받은 지적: "재접속 할때 그전에 보고 있던 지구스타일이 계속 유지되는데
+              초기화 해서 보여주게 해줘"
+
+   맞는 말이다. 사흘 전에 켜 둔 미세먼지가 그대로 덮여 있으면 그건 "내가 고른 것"이
+   아니라 **까먹은 설정**이다. 처음 열 때는 지구가 지구로 보여야 한다.
+
+   ⚠️ 그렇다고 아예 안 남기면 **실수로 새로고침했을 때 고른 것이 전부 날아간다.**
+      (기본값이 '전부 꺼짐'이라 통째로 사라진다.)
+   → 그래서 둘을 가른다:
+       새로고침·뒤로가기 (같은 탭)  → 그대로 둔다
+       새로 들어옴 (탭을 닫았다 옴)  → 기본값으로 시작한다 */
 function loadLayerState() {
   const stale = localStorage.getItem(LS_DEFAULTS_VER) !== DEFAULTS_VER;
-  if (stale) {
+  let fresh = false;
+  try {
+    fresh = !sessionStorage.getItem(SS_LIVE);
+    sessionStorage.setItem(SS_LIVE, '1');
+  } catch (_) {
+    /* ⚠️ 사파리 비공개 모드 등에서 sessionStorage 가 막힐 수 있다.
+       그때는 **초기화 쪽으로 기운다** — 못 지우는 것보다 낫다. */
+    fresh = true;
+  }
+  if (stale || fresh) {
     localStorage.removeItem(LS_LAYERS);
     localStorage.setItem(LS_DEFAULTS_VER, DEFAULTS_VER);
   }
-  const saved = stale ? {} : JSON.parse(localStorage.getItem(LS_LAYERS) || '{}');
+  const saved = (stale || fresh) ? {} : JSON.parse(localStorage.getItem(LS_LAYERS) || '{}');
   const s = {};
   LAYER_DEFS.forEach(d => { s[d.id] = saved[d.id] ?? d.on; });
   return s;

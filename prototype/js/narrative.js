@@ -173,6 +173,29 @@ export const narrative = {
     return this._state;
   },
 
+  /** 지금 살아 있는 태풍 — 원고의 "태풍까지 북상하면" 자리.
+   *  ⚠️ 실패해도 나머지 문단은 그대로 나와야 한다. */
+  async cyclones() {
+    try {
+      const r = await fetchT(`${API.EVENTS}/typhoon-official.json`, { cache: 'no-cache' });
+      if (!r.ok) return [];
+      const j = await r.json();
+      return (j.storms || []).map(s => {
+        const g = (s.agencies || [])[0];
+        const now = (g?.steps || []).find(x => x.h === 0) || (g?.steps || [])[0];
+        if (now?.lat == null) return null;
+        /* ⚠️⚠️ **이름 없는 열대저압부가 있다.** 아직 태풍으로 승격 전이면 이름이 없고
+           번호만 있는데, 그 번호가 'b' 한 글자일 때가 있다 —
+           실측 화면에 "지금 **B** 가 2,416km" 라고 나왔다.
+           → 두 글자 미만이면 이름으로 쓰지 않는다. 그냥 "열대저압부"라고 적는다.
+           ⚠️ 없는 이름을 지어내지 않는다. 모르면 모른다고 부른다. */
+        const raw = String(s.name || '').trim();
+        const named = raw.length >= 2;
+        return { name: named ? raw : '열대저압부', named, lat: now.lat, lon: now.lon };
+      }).filter(Boolean);
+    } catch (_) { return []; }
+  },
+
   /** 오늘 상층·수증기·불안정 — 원고의 "습도 폭탄 / 물폭탄의 재료" 자리 */
   async air(lat, lon) {
     const q = new URLSearchParams({
@@ -194,8 +217,8 @@ export const narrative = {
      돌려주는 것: { level, head, num, why, rows, sources, caveats }
      ⚠️ 못 내는 항목은 **빼고 낸다.** 추정으로 메우지 않는다. */
   async build(lat, lon, ko = true) {
-    const [nrm, air, st] = await Promise.all([
-      this.normalsAt(lat, lon), this.air(lat, lon), this.state(),
+    const [nrm, air, st, tc] = await Promise.all([
+      this.normalsAt(lat, lon), this.air(lat, lon), this.state(), this.cyclones(),
     ]);
     const c = air?.current;
     if (!c) return null;
@@ -417,8 +440,123 @@ export const narrative = {
       ? '⚠️ 이 글은 **예보가 아닙니다.** 지금 잰 값과 30년 기록을 견준 것입니다.'
       : '⚠️ Not a forecast — measured values compared against 30 years.');
 
+    /* ══ 문단 — 원고처럼 ═══════════════════════════════════════
+       받은 요청: 영상 스크립트를 보여주며 "이런 식으로 원고 작성 해달라는거야".
+
+       원고의 뼈대를 그대로 따른다:
+         ① 상태      "이중 열돔에서 벗어난 한반도"
+         ② 무엇이 겹쳤나 "여기에 남쪽 수증기까지 더해져 열기 위에 습도 폭탄"
+         ③ 왜 문제인가  "습도가 높으면 땀이 안 말라 → 열이 안 빠져 → 체감 급상승"
+         ④ 그래서 무엇이 "밤에도 안 빠져 초열대야"
+         ⑤ 앞으로 변수  "태풍까지 북상하면 폭염을 키우거나 비구름을 만든다"
+
+       ⚠️⚠️ **각 문장은 해당 값이 실제로 그럴 때만 나온다.**
+          초열대야가 아니면 그 문장이 없다. 수증기가 적으면 **반대로** 적는다.
+          원고를 흉내내려고 없는 문장을 채우면 그날부터 이 화면은 거짓이 된다.
+       ⚠️ 인과 사슬(③)은 교과서 내용이라 인용해도 되지만,
+          **앞의 조건이 측정으로 참일 때만** 붙인다.
+       ⚠️ "폭염 3배 레버리지" 같은 비유는 쓰지 않는다 — 세기를 지어내는 말이다.
+          대신 "지표 셋이 동시에 상위 10%"처럼 **센 것을 센 만큼** 적는다. */
+    const story = [];
+    const S = t => { if (t) story.push(t); };
+
+    if (ko) {
+      // ① 상태
+      if (dome) {
+        S(`한반도 상공에 고기압이 눌러앉아 있습니다. `
+          + `500hPa 고도가 ${mine.vals.h500}m 로 평년(${mine.vals.h500Normal}m)보다 `
+          + `상위 ${100 - mine.vals.pH500}% 이고`
+          + (dome === 2 && mine.vals.pH200 != null
+              ? `, 더 위인 200hPa 도 상위 ${100 - mine.vals.pH200}% 라 **이중**입니다.`
+              : `, 저희는 이런 상태를 열돔이라 부릅니다.`));
+        S('상공에서 공기가 내려오면서 데워지고, 구름이 잘 생기지 않아 햇볕이 그대로 들어옵니다.');
+      }
+
+      // ② 무엇이 겹쳤나 — 수증기
+      const wp = mine?.vals?.pTcwv;
+      if (wp != null) {
+        if (wp >= 90) {
+          S(`여기에 남쪽에서 온 수증기까지 겹쳤습니다 — 하늘 기둥의 수증기가 `
+            + `${mine.vals.tcwv?.toFixed(0)} kg/m² 로 평년(${mine.vals.tcwvNormal})보다 `
+            + `상위 ${100 - wp}% 입니다. **열기 위에 습도**가 얹힌 셈입니다.`);
+        } else if (wp <= 10) {
+          S(`다만 수증기는 적습니다 — ${mine.vals.tcwv?.toFixed(0)} kg/m² 로 `
+            + `평년(${mine.vals.tcwvNormal})보다 하위 ${wp}% 입니다. `
+            + `⚠️ 지표 습도(${rh != null ? Math.round(rh) + '%' : '—'})와는 다른 값입니다 — `
+            + `땅 근처만 눅눅하고 위는 말라 있습니다.`);
+        }
+      }
+
+      /* ③ 왜 문제인가 — 체감
+         ⚠️ 앞 문장에서 "수증기는 적다"고 했는데 여기서 "습도가 높으면"으로 시작하면
+            앞뒤가 어긋나 읽힌다. 지표 습도를 **먼저 말해** 무엇을 가리키는지 분명히 한다. */
+      if (hot >= 1 && feel.kma != null) {
+        S(`지표 습도는 ${rh != null ? Math.round(rh) : '—'}% 입니다. `
+          + `습도가 높으면 땀이 잘 마르지 않아 몸이 열을 못 버립니다. `
+          + `그래서 같은 기온이라도 체감이 오릅니다 — `
+          + `공식 ${lv.length}개 중 ${hot}개가 폭염 단계이고, `
+          + `기상청 기준 체감온도는 ${feel.kma.toFixed(1)}°C 입니다.`);
+      }
+
+      // ④ 그래서 무엇이 — 밤
+      if (tminTonight != null) {
+        if (tminTonight >= KMA.superTropical) {
+          S(`낮에 쌓인 열기가 밤에도 안 빠집니다. 오늘 밤 최저가 `
+            + `${tminTonight.toFixed(1)}°C 로 **초열대야**입니다 (기상청 기준 30°C 이상).`);
+        } else if (tminTonight >= KMA.tropicalNight) {
+          S(`낮에 쌓인 열기가 밤에도 덜 빠집니다. 오늘 밤 최저가 `
+            + `${tminTonight.toFixed(1)}°C 로 **열대야**입니다 (기상청 기준 25°C 이상).`);
+        } else if (dome) {
+          S(`다만 밤 최저는 ${tminTonight.toFixed(1)}°C 로 열대야(25°C) 아래입니다.`);
+        }
+      }
+
+      // ⑤ 소나기 재료
+      if (c.cape != null) {
+        if (c.cape >= 1000 && wp != null && wp >= 90) {
+          S(`넘치는 수증기는 소나기의 재료가 됩니다 — 대기 불안정도(CAPE)가 `
+            + `${Math.round(c.cape)} J/kg 라 갑자기 굵어질 수 있습니다.`);
+        } else if (c.cape >= 1000 && wp != null && wp <= 10) {
+          S(`대기는 불안정하지만(CAPE ${Math.round(c.cape)} J/kg) 재료가 될 수증기가 `
+            + `적어, 소나기가 나도 오래 가기 어렵습니다.`);
+        } else if (c.cape >= 1000) {
+          S(`대기 불안정도(CAPE)가 ${Math.round(c.cape)} J/kg 입니다 — 소나기가 설 수 있는 상태입니다.`);
+        }
+      }
+
+      /* ⑤-b 앞으로의 변수 — 태풍
+         원고: "여기에 태풍까지 북상하면 폭염을 더 키우거나 강력한 비구름을 만들기도 한다"
+         ⚠️⚠️ **진로를 단정하지 않는다.** "온다/안 온다"는 우리가 할 말이 아니다 —
+            기관 예보를 옮길 뿐이고, 여기서는 **있다는 사실과 거리**만 적는다.
+         ⚠️ 우리 쪽으로 오는지도 말하지 않는다. 그건 태풍 화면에서 기관별 예보선으로 본다. */
+      if (tc?.length) {
+        const near = tc.map(x => ({ ...x, km: Math.round(km(lat, lon, x.lat, x.lon)) }))
+          .sort((a, b) => a.km - b.km)[0];
+        if (near && near.km < 3500) {
+          /* ⚠️ 태풍 이름은 로마자가 많다(Dolphin·Genevieve). 받침 규칙이 안 통하므로
+             로마자면 "가"로 둔다 — "Genevieve 이"가 실측 화면에 나왔다. */
+          S(`지금 ${near.named ? `**${near.name}**` : '이름이 붙기 전인 **열대저압부**'}`
+            + `${/[가-힣]$/.test(near.name) ? iGa(near.name) : '가'} `
+            + `${near.km.toLocaleString()}km 떨어져 있습니다. `
+            + `태풍은 상공 고기압의 가장자리를 따라 움직이고, 그 위치에 따라 `
+            + `폭염을 더 키우기도 하고 비구름을 몰고 오기도 합니다. `
+            + `⚠️ 진로는 저희가 말하지 않습니다 — 태풍 화면에서 기관별 예보를 보세요.`);
+        }
+      }
+
+      // 평온한 날 — ⚠️ 부끄러워하지 않는다
+      if (!story.length) {
+        const bits = [];
+        if (pTmax) bits.push(`낮 ${tmax.toFixed(1)}°C(평년 ${cell.tmax.q[3]}°C)`);
+        if (pHm) bits.push(`습도 ${Math.round(rh)}%(평년 ${cell.hm.q[3]}%)`);
+        S(`특별한 기압 배치는 없습니다. ${bits.join(' · ')} 로 평년 범위입니다.`);
+        S('⚠️ 평범한 날은 평범하다고 적습니다. 매일 극적인 척하면 진짜 위험한 날에 '
+          + '아무도 믿지 않기 때문입니다.');
+      }
+    }
+
     return {
-      level: pick.level, head: pick.head, num: pick.num, why: pick.why,
+      level: pick.level, head: pick.head, num: pick.num, why: pick.why, story,
       rows, feel, feelHot: hot, feelN: lv.length,
       station: nrm?.doy ? { name: nrm.doy.name, km: nrm.km } : null,
       sources, caveats,

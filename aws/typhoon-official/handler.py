@@ -76,6 +76,22 @@ def get(url, raw=False):
     return b if raw else json.loads(b)
 
 
+def coord(v, neg="SW"):
+    """NHC 좌표 — "139.5W" 처럼 방위 글자가 붙어 온다.
+
+    ⚠️⚠️ 글자만 떼면 **부호가 사라진다.** 139.5W 가 139.5E 가 되어
+       동태평양 허리케인이 서태평양에 찍힌다.
+       실측: 제네비브가 서울에서 1,849km 로 나왔다 — 실제로는 지구 반대편이다.
+       (원고 문단에 "지금 Genevieve 가 1,849km" 라고 나와서 잡혔다)
+    """
+    t = str(v or "").strip().upper()
+    if not t:
+        return None
+    sign = -1 if t[-1] in neg else 1
+    f = num(t.rstrip("NSEW"))
+    return None if f is None else sign * abs(f)
+
+
 def num(v):
     try:
         f = float(v)
@@ -312,8 +328,8 @@ def from_nhc():
             "basinNote": {"ko": "대서양·동태평양 담당", "en": "Atlantic / E. Pacific only"},
             "steps": [{
                 "h": 0, "validUtc": s.get("lastUpdate"),
-                "lat": num(str(s.get("latitude", "")).rstrip("NS")),
-                "lon": num(str(s.get("longitude", "")).rstrip("EW")),
+                "lat": coord(s.get("latitude"), "S"),
+                "lon": coord(s.get("longitude"), "W"),
                 "windMs": round(num(s.get("intensity")) * 0.5144, 1)
                           if num(s.get("intensity")) else None,
                 "hpa": num(s.get("pressure")),

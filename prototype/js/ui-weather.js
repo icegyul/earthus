@@ -343,6 +343,8 @@ export const weatherPanel = {
             <p class="h">${md(n.head)}</p>
             ${n.num ? `<p class="n">${esc(n.num)}</p>` : ''}
           </div>
+          ${n.story?.length ? `<div class="wx-story">${
+            n.story.map(t => `<p>${md(t)}</p>`).join('')}</div>` : ''}
           <button class="wx-narr-more" data-wx-more>${ko ? '근거 보기' : 'Why'}</button>
           <div class="wx-narr-body" hidden>
             ${n.why ? `<p class="wx-why">${esc(n.why)}</p>` : ''}

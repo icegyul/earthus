@@ -274,13 +274,61 @@ function bindAccountUI() {
     open('changelogSheet');
   };
 
-  /* 시트를 닫을 때 같이 치울 것들 — 어느 길로 닫아도(버튼·바깥 탭·Esc) 불린다.
-     ⚠️⚠️ 예전에는 시트에서 `.up` 만 떼서, **지도에 찍은 해변·낚시터·활공장 표시가
-        그대로 남았다.** 받은 신고: "서핑 선택 후 나가려면? 계속 유지 되는데". */
-  panels.onClose('sfSheet', () => surfPanel.close());
-  panels.onClose('fsSheet', () => fishPanel.close());
-  panels.onClose('pgSheet', () => paraPanel.close());
-  panels.onClose('mtSheet', () => mountainPanel.close());
+  /* ⚠️⚠️ **닫기와 끄기는 다르다.**
+     · 닫기 — 창만 내린다. 지도 표시는 **남긴다**.
+       받은 지적: "큰 화면에서 보고 싶은데 꺼져" — 지도를 보려고 닫는 경우가 있다.
+     · 끄기 — 표시까지 지운다.
+     예전엔 하나로 묶여 있어서, 지도를 크게 보려고 닫으면 볼 것이 함께 사라졌다.
+
+     ⚠️ 그래서 panels.onClose 에 정리를 걸지 **않는다.** 대신 표시가 남아 있는 동안
+        지도 위에 "○○ 표시 끄기" 칩을 띄워, 창을 닫아도 끄는 길이 늘 보이게 한다.
+        (걸어 두면 "서핑 선택 후 계속 유지되는데" 문제가 되돌아온다 — 칩이 그 답이다) */
+  const OFF = {
+    sfSheet: () => surfPanel.close(), fsSheet: () => fishPanel.close(),
+    pgSheet: () => paraPanel.close(), mtSheet: () => mountainPanel.close(),
+  };
+  const OFF_LABEL = { sfSheet: '서핑', fsSheet: '낚시', pgSheet: '활공장', mtSheet: '등산로' };
+
+  /** 지도에 표시가 남아 있으면 끄는 칩을 띄운다 */
+  function offChip(id, on) {
+    let c = document.getElementById('mapOff');
+    if (!on) { c?.classList.remove('on'); return; }
+    if (!c) {
+      c = document.createElement('button');
+      c.id = 'mapOff';
+      document.body.appendChild(c);
+    }
+    c.textContent = `${OFF_LABEL[id] || ''} 표시 끄기 ×`;
+    c.onclick = () => { OFF[id]?.(); offChip(id, false); };
+    c.classList.add('on');
+  }
+  window.__offChip = offChip;
+
+  // "표시 끄기" 버튼 — 창도 내리고 표시도 지운다
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-sheet-off]');
+    if (!b) return;
+    const id = b.dataset.sheetOff;
+    OFF[id]?.();
+    offChip(id, false);
+  });
+
+  /* 닫기 버튼·Esc·바깥 탭으로 창만 내렸을 때 — 표시가 남아 있으면 칩을 띄운다.
+     ⚠️ 표시가 없으면 띄우지 않는다. 아무것도 안 하는 버튼이 떠 있으면 안 된다. */
+  const HAS_MARKS = {
+    sfSheet: () => (surfPanel._ds?.entities.values.length || 0) > 0,
+    fsSheet: () => (fishPanel._ds?.entities.values.length || 0) > 0,
+    pgSheet: () => (paraPanel._ds?.entities.values.length || 0) > 0,
+    mtSheet: () => (trailsHasMarks()),
+  };
+  let trailsMod = null;
+  function trailsHasMarks() {
+    return (trailsMod?.trails?.ds?.entities.values.length || 0) > 0;
+  }
+  import('./trails.js').then(m => { trailsMod = m; }).catch(() => {});
+  Object.keys(OFF).forEach(id => {
+    panels.onClose(id, () => { if (HAS_MARKS[id]?.()) offChip(id, true); });
+  });
 
   // 닫기 버튼 일괄
   document.querySelectorAll('[data-close]').forEach(b => {

@@ -1805,3 +1805,32 @@ body.is-ambient #windLegend.on{ opacity:0; }
 .wx-narr-src{ margin:14px 0 0; padding-top:11px; border-top:1px solid var(--line) }
 .wx-narr-src p{ margin:0 0 4px; font-size:11px; line-height:1.65; color:var(--fog) }
 .wx-narr-src p.s{ color:var(--dim); font-size:10.5px }
+
+/* ── 시트 위쪽 동작 줄 — 닫기 / 표시 끄기 ──
+   ⚠️⚠️ **둘은 다른 일이다.** 닫기는 창만 내리고 지도 표시는 남긴다(지도를 크게 보려고
+      닫는 경우가 있다). 끄기는 표시까지 지운다.
+      하나로 묶으면 둘 중 하나는 못 하게 된다. */
+.sheet-acts{ display:flex; gap:6px; justify-content:flex-end; margin:-4px 0 8px }
+.sheet-acts button{
+  padding:5px 11px; border-radius:999px; cursor:pointer; font-size:11.5px;
+  background:rgba(255,255,255,.05); border:1px solid var(--line);
+  color:rgba(255,255,255,.72);
+}
+.sheet-acts button:hover{ background:rgba(255,255,255,.11); color:#fff }
+.sheet-acts .sh-off{ border-color:rgba(240,149,90,.35); color:#f0c49a }
+.sheet-acts .sh-off:hover{ background:rgba(240,149,90,.14) }
+
+/* 창을 닫아도 표시가 남아 있으면 뜨는 칩 —
+   ⚠️ 이게 없으면 "닫았는데 표시가 안 없어진다"가 된다. 끄는 길이 늘 보여야 한다. */
+#mapOff{
+  position:fixed; z-index:22; right:12px;
+  bottom:max(74px, calc(env(safe-area-inset-bottom) + 62px));
+  display:none; padding:8px 14px; border-radius:999px; cursor:pointer;
+  background:rgba(12,18,24,.88);
+  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.16);
+  color:rgba(255,255,255,.85); font-size:12px; font-weight:600;
+  box-shadow:0 6px 20px rgba(0,0,0,.4);
+  opacity:0; transition:opacity .2s ease;
+}
+#mapOff.on{ display:block; opacity:1 }

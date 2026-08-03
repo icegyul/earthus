@@ -20,6 +20,12 @@ export const panels = {
       if (open.some(p => p.contains(ev.target))) return;   // 패널 안이면 무시
       // 설정 버튼 같은 여는 버튼을 눌렀을 땐 그쪽 핸들러에 맡긴다
       if (ev.target.closest('#gear, [data-open]')) return;
+      /* ⚠️⚠️ **지도를 봐야 하는 화면은 바깥 탭으로 안 닫는다.**
+         받은 지적: "취미 메뉴에서 각각 누르고 큰 화면에서 보고 싶은데 꺼져".
+         서핑·낚시·활공장·산은 **지도에 표시를 그려 놓고 그걸 보라는 화면**이다.
+         지도를 만질 때마다 닫히면 볼 수가 없다 — 그 화면들은 닫기 버튼으로만 닫는다. */
+      const top = open[open.length - 1];
+      if (top.classList.contains('keep-open')) return;
       this.closeTop();
     }, true);
 

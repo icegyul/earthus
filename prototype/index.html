@@ -348,23 +348,41 @@
     <div id="wxBody"></div>
   </div>
 
-  <div id="sfSheet" class="sheet-panel tall">
-    <div class="traffic one"><button class="tl close" data-close="sfSheet" aria-label="닫기"><span>×</span></button></div>
+  <div id="sfSheet" class="sheet-panel tall keep-open">
+    <!-- ⚠️ **닫기와 끄기는 다르다.** 닫기는 창만 내리고 지도 표시는 남긴다 —
+         지도를 크게 보려고 닫는 경우가 있기 때문이다.
+         끄기는 표시까지 지운다. 둘을 한 버튼으로 묶으면 둘 중 하나는 못 하게 된다. -->
+    <div class="sheet-acts">
+      <button class="sh-off" data-sheet-off="sfSheet">표시 끄기</button>
+      <button class="sh-close" data-close="sfSheet" aria-label="닫기">닫기 ×</button>
+    </div>
     <h3>서핑</h3>
     <div id="sfBody"></div>
   </div>
 
   <!-- 낚시 — 물때와 안전. ⚠️ 조황은 말하지 않는다 (fishing.js 머리말 참고) -->
-  <div id="fsSheet" class="sheet-panel tall">
-    <div class="traffic one"><button class="tl close" data-close="fsSheet" aria-label="닫기"><span>×</span></button></div>
+  <div id="fsSheet" class="sheet-panel tall keep-open">
+    <!-- ⚠️ **닫기와 끄기는 다르다.** 닫기는 창만 내리고 지도 표시는 남긴다 —
+         지도를 크게 보려고 닫는 경우가 있기 때문이다.
+         끄기는 표시까지 지운다. 둘을 한 버튼으로 묶으면 둘 중 하나는 못 하게 된다. -->
+    <div class="sheet-acts">
+      <button class="sh-off" data-sheet-off="fsSheet">표시 끄기</button>
+      <button class="sh-close" data-close="fsSheet" aria-label="닫기">닫기 ×</button>
+    </div>
     <h3>낚시</h3>
     <div id="fsBody"></div>
   </div>
 
   <!-- 패러글라이딩 — 바람과 구름 밑면.
        ⚠️ 좌표는 산 정상이지 이륙장이 아니다 (para.js 머리말 참고) -->
-  <div id="pgSheet" class="sheet-panel tall">
-    <div class="traffic one"><button class="tl close" data-close="pgSheet" aria-label="닫기"><span>×</span></button></div>
+  <div id="pgSheet" class="sheet-panel tall keep-open">
+    <!-- ⚠️ **닫기와 끄기는 다르다.** 닫기는 창만 내리고 지도 표시는 남긴다 —
+         지도를 크게 보려고 닫는 경우가 있기 때문이다.
+         끄기는 표시까지 지운다. 둘을 한 버튼으로 묶으면 둘 중 하나는 못 하게 된다. -->
+    <div class="sheet-acts">
+      <button class="sh-off" data-sheet-off="pgSheet">표시 끄기</button>
+      <button class="sh-close" data-close="pgSheet" aria-label="닫기">닫기 ×</button>
+    </div>
     <h3>패러글라이딩</h3>
     <div id="pgBody"></div>
   </div>
@@ -377,8 +395,14 @@
     <div id="outBody"></div>
   </div>
 
-  <div id="mtSheet" class="sheet-panel tall">
-    <div class="traffic one"><button class="tl close" data-close="mtSheet" aria-label="닫기"><span>×</span></button></div>
+  <div id="mtSheet" class="sheet-panel tall keep-open">
+    <!-- ⚠️ **닫기와 끄기는 다르다.** 닫기는 창만 내리고 지도 표시는 남긴다 —
+         지도를 크게 보려고 닫는 경우가 있기 때문이다.
+         끄기는 표시까지 지운다. 둘을 한 버튼으로 묶으면 둘 중 하나는 못 하게 된다. -->
+    <div class="sheet-acts">
+      <button class="sh-off" data-sheet-off="mtSheet">표시 끄기</button>
+      <button class="sh-close" data-close="mtSheet" aria-label="닫기">닫기 ×</button>
+    </div>
     <h3>산</h3>
     <div id="mtBody"></div>
   </div>

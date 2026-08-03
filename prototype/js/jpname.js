@@ -138,6 +138,13 @@ export function toHangul(en) {
     return h ? `${h} ${KR[DIR[1].toLowerCase()]}` : null;
   }
 
+  /* ⚠️ 일본 산 영문은 대개 "Mount X" · "Mt. X" 로 시작한다. Mount 는 영어라 못 읽어서
+     실측으로 5,226곳 중 213곳만 변환됐다. 일반명사이므로 떼고 "산"을 붙인다.
+     ⚠️ 원래 이름 끝이 岳(다케)·峰(미네)여도 영문이 이미 그걸 버렸다 — 되살릴 수 없다.
+        "산"으로 두고 원문을 함께 보여준다. */
+  const MT = s.match(/^(?:mount|mt\.?)\s*(.+)$/i);
+  if (MT) { const h = toHangul(MT[1]); return h ? `${h}산` : null; }
+
   let tail = '';
   for (const [re, kr] of TAIL) {
     const m = s.match(re);

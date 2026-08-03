@@ -130,6 +130,14 @@ def to_hangul(name_en):
             tail = kr
             s = s[:m.start()].strip()
             break
+    # ⚠️ 일본 산 영문은 대개 "Mount X" · "Mt. X" 로 시작한다. Mount 는 영어라 못 읽어서
+    #    **5,226곳 중 213곳만** 변환됐다. 이건 지명이 아니라 일반명사이므로 떼고 "산"을 붙인다.
+    #    ⚠️ 원래 이름 끝이 岳(다케)·峰(미네)여도 영문이 이미 그걸 버렸다 —
+    #       우리가 되살릴 수는 없다. "산"으로 두고 원문을 함께 보여준다.
+    m = re.match(r"^(?:mount|mt\.?)\s*(.+)$", s, re.I)
+    if m:
+        h = to_hangul(m.group(1))
+        return f"{h}산" if h else None
     parts = [p for p in re.split(r"[\s\-]+", s) if p]
     got = []
     for p in parts:

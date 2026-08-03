@@ -114,6 +114,11 @@ Allow: /llms.txt
 Allow: /shots/
 Allow: /legal/
 
+# ⚠️⚠️ 관리자 화면. noindex 메타도 넣었지만 그건 **읽어 주는 크롤러에게만** 통한다.
+#    여기서도 막는다. ⚠️ 이건 보안이 아니라 예의다 —
+#    실제 보호는 Supabase RLS 가 한다(admin.html 안의 SQL 참고).
+Disallow: /admin.html
+
 # 관측 자료는 색인 대상이 아니다.
 # 색인되면 검색 결과에 JSON 원문이 뜨고, 크롤러가 대역폭만 먹는다.
 Disallow: /wind/

@@ -302,7 +302,7 @@ export const narrative = {
     if (pub && (pub.left?.length || pub.entered?.length)) {
       const L = { 초열대야: '초열대야', 열대야: '열대야', 고온: '고온', 저온: '저온',
                   다습: '수증기가 많은 상태', 건조: '수증기가 적은 상태',
-                  불안정: '대기 불안정' };
+                  불안정: '대기 불안정', 열돔: '열돔', 이중열돔: '이중 열돔' };
       if (pub.left?.length) {
         const w = pub.left.map(x => L[x] || x).join('·');
         cands.push({ w: 999, level: 'event',
@@ -323,6 +323,33 @@ export const narrative = {
     /* 전이가 없어도 오늘 상태는 말할 수 있다.
        ⚠️ 가중치를 낮게 둔다 — 지점별 특징(위 후보들)이 더 구체적이면 그쪽이 먼저다. */
     const mine = st?.points?.find(p => Math.abs(p.lat - lat) < 2.2);
+
+    /* ── 열돔 — ⚠️⚠️ 원고의 첫 문장이 이것이다 ─────────────────
+       "이중 열돔에서 벗어난 한반도".
+       ⚠️⚠️ **"열돔"은 공식 기상 용어가 아니라 언론 표현이다.** 우리가 쓰려면
+          "우리는 이런 기준으로 그렇게 부른다"를 반드시 함께 적어야 한다 —
+          안 적으면 지어낸 말이 된다. 그래서 why 에 기준을 박아 둔다. */
+    const dome = st?.national?.includes('이중열돔') ? 2
+               : st?.national?.includes('열돔') ? 1 : 0;
+    if (dome && mine?.vals?.pH500 != null) {
+      const v = mine.vals;
+      cands.push({ w: 120, level: 'event',
+        head: ko ? (dome === 2 ? '한반도가 **이중 열돔** 상태입니다'
+                               : '한반도가 **열돔** 상태입니다')
+                 : (dome === 2 ? 'Double heat dome' : 'Heat dome'),
+        num: ko ? `500hPa ${v.h500}m — 평년 ${v.h500Normal}m · 상위 ${100 - v.pH500}%`
+                + (dome === 2 && v.pH200 != null
+                    ? ` · 200hPa 상위 ${100 - v.pH200}%` : '') : '',
+        why: ko
+          ? '⚠️ "열돔"은 공식 기상 용어가 아니라 언론 표현입니다. '
+            + '저희는 <b>500hPa 고도가 평년 상위 10%</b>일 때 그렇게 부르고, '
+            + '<b>200hPa도 상위 10%</b>면 "이중"이라고 씁니다 — 상층과 중층이 겹쳤다는 뜻입니다. '
+            + '상공에 고기압이 눌러앉으면 공기가 내려오면서 데워지고, 구름이 못 생겨 '
+            + '햇볕이 그대로 들어옵니다. '
+            + '⚠️ 남·중·북 세 곳 중 둘 이상에서 나와야 "한반도"라고 씁니다.'
+          : '' });
+    }
+
     if (mine?.vals?.pTcwv != null && (mine.vals.pTcwv >= 90 || mine.vals.pTcwv <= 10)) {
       const many = mine.vals.pTcwv >= 90;
       cands.push({ w: 55, level: 'feature',
@@ -368,6 +395,12 @@ export const narrative = {
       sources.push(ko
         ? `오늘 한반도 상태 — ${st.national.join(' · ')} (${st.date}, 남·중·북 3점 중 2점 이상)`
         : `Today: ${st.national.join(', ')}`);
+    }
+    if (dome) {
+      sources.push(ko
+        ? '상층 고도 평년 — NOAA NCEP/NCAR 재분석 1995~2026 · ⚠️ 재분석은 모델이 '
+          + '관측을 끌어안아 만든 값이지 순수 실측이 아닙니다'
+        : 'Upper-air normals — NOAA NCEP/NCAR Reanalysis (not pure observation)');
     }
 
     const caveats = [];

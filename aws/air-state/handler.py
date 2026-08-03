@@ -80,6 +80,7 @@ def now_air(lat, lon):
         "latitude": lat, "longitude": lon,
         "current": "temperature_2m,relative_humidity_2m,dew_point_2m,cape,"
                    "total_column_integrated_water_vapour,pressure_msl",
+        "hourly": "geopotential_height_500hPa,geopotential_height_200hPa",
         "daily": "temperature_2m_max,temperature_2m_min",
         "timezone": "Asia/Seoul", "forecast_days": "2",
     })
@@ -134,6 +135,23 @@ def judge(vals, norm):
         # ⚠️ 낮은 쪽도 정보다. "수증기가 적다"는 소나기가 커지기 어렵다는 뜻이다.
         labels.append("건조"); ev["건조"] = f"가강수량 평년 하위 {wp}%"
 
+    # ── 열돔 ─────────────────────────────────────────────────
+    # ⚠️⚠️ **"열돔"은 공식 기상 용어가 아니라 언론 표현이다.**
+    #    우리가 쓰려면 "우리는 이런 기준으로 열돔이라 부른다"를 밝혀야 한다 —
+    #    안 밝히면 지어낸 말이 된다(설계 문서 §3 주석).
+    # ⚠️ 우리 기준: 500hPa 고도가 평년 **상위 10%**.
+    #    여기에 200hPa 도 상위 10% 면 **이중**(상·하층이 겹쳤다는 뜻).
+    # ⚠️ 하루로 부르지 않는다 — 연속 며칠인지는 air-state 가 날마다 남긴 기록으로 센다.
+    p5, p2 = vals.get("pH500"), vals.get("pH200")
+    if p5 is not None and p5 >= HI_PCT:
+        if p2 is not None and p2 >= HI_PCT:
+            labels.append("이중열돔")
+            ev["이중열돔"] = (f"500hPa 상위 {100 - p5}% ({vals.get('h500')}m) · "
+                          f"200hPa 상위 {100 - p2}% ({vals.get('h200')}m)")
+        else:
+            labels.append("열돔")
+            ev["열돔"] = f"500hPa 상위 {100 - p5}% ({vals.get('h500')}m)"
+
     cape = vals.get("cape")
     if cape is not None and cape >= 1000 and (vals.get("rh") or 0) >= 75:
         labels.append("불안정"); ev["불안정"] = f"CAPE {cape:.0f} J/kg · 습도 {vals['rh']:.0f}%"
@@ -150,6 +168,10 @@ def handler(event=None, context=None):
     # 가강수량 평년 — 원고의 "남쪽 수증기 대량 유입 / 물폭탄의 재료"
     # ⚠️ ERA5 1995~2025. 2026년은 재분석이 아직 안 나와 빠져 있다.
     tc = load("app/data/tcwv-normals.json", {}) or {}
+    # 상층 고도 평년 — 원고의 "이중 열돔"
+    # ⚠️⚠️ NOAA 재분석이다(모델이 관측을 끌어안아 만든 값). 기상청 고층관측은 실측이지만
+    #    지오포텐셜고도를 안 줘서 이것만은 NOAA 를 쓴다. 화면에 그렇게 적는다.
+    hg = load("app/data/hgt-normals.json", {}) or {}
 
     per = []
     for nm, la, lo in PTS:
@@ -158,6 +180,17 @@ def handler(event=None, context=None):
             continue
         c = air.get("current") or {}
         d = air.get("daily") or {}
+        # 상층 고도 — ⚠️ 시간별로만 오므로 **오늘 하루 평균**을 낸다.
+        #    평년(재분석)이 일평균이라 같은 자로 재야 한다. 한 시각만 쓰면 일교차가 섞인다.
+        hh = air.get("hourly") or {}
+        def day_mean(key):
+            ts, vs = hh.get("time") or [], hh.get(key) or []
+            today_s = today.isoformat()
+            got = [vs[i] for i, t in enumerate(ts)
+                   if i < len(vs) and vs[i] is not None and str(t).startswith(today_s)]
+            return round(sum(got) / len(got), 1) if len(got) >= 18 else None
+        h500 = day_mean("geopotential_height_500hPa")
+        h200 = day_mean("geopotential_height_200hPa")
         tmax = (d.get("temperature_2m_max") or [None])[0]
         tmins = d.get("temperature_2m_min") or []
         # ⚠️ '오늘 밤 최저'는 **내일 아침** 값이다. 오늘 값은 이미 지나간 새벽이다.
@@ -182,12 +215,24 @@ def handler(event=None, context=None):
             "pTmin": pct_of(cell["tmin"]["q"], qs, tmin_t) if (cell and "tmin" in cell) else None,
             "pTcwv": None,
             "station": best["n"] if best else None,
+            "h500": h500, "h200": h200, "pH500": None, "pH200": None,
         }
         # 가강수량 평년 대비 — ⚠️ 지점이 남·중·북 셋뿐이라 이름으로 바로 찾는다
         tcell = ((tc.get("points") or {}).get(nm) or {}).get("doy", {}).get(mmdd)
         if tcell and vals.get("tcwv") is not None:
             vals["pTcwv"] = pct_of(tcell["q"], (tc["points"][nm]["qs"]), vals["tcwv"])
             vals["tcwvNormal"] = tcell["q"][3]      # 중앙값 — 화면에서 "평년 47" 로 쓴다
+
+        # 상층 고도 평년 대비
+        hcell = ((hg.get("points") or {}).get(nm) or {}).get("doy", {}).get(mmdd)
+        if hcell:
+            hqs = hg["points"][nm]["qs"]
+            if h500 is not None and "h500" in hcell:
+                vals["pH500"] = pct_of(hcell["h500"]["q"], hqs, h500)
+                vals["h500Normal"] = hcell["h500"]["q"][3]
+            if h200 is not None and "h200" in hcell:
+                vals["pH200"] = pct_of(hcell["h200"]["q"], hqs, h200)
+                vals["h200Normal"] = hcell["h200"]["q"][3]
 
         labels, ev = judge(vals, cell)
         per.append({"pt": nm, "lat": la, "lon": lo,

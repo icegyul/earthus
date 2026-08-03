@@ -52,7 +52,10 @@ export const ITEMS = [
   { id:'clouds', flag:'🌐', ko:'전지구 합성', en:'Global composite', sub:'NOAA GMGSI · 구름 · 지금', subEn:'NOAA GMGSI · cloud · now', ready:true,
     sky:'#0b1a2e', paint:'cloud' },
   /* 오늘 찍힌 실사. 기본 지도는 정지 사진이라 연기·황사가 안 보인다. */
-  { id:'truecolor', flag:'🇺🇸', ko:'수오미 NPP', en:'Suomi NPP', sub:'실제 색 위성 사진 · 낮면', subEn:'True colour · day side', ready:true,
+  /* ⚠️ **수오미 NPP 는 위성 이름, VIIRS 는 그 위에 실린 센서 이름**이다.
+     둘 다 맞지만 가리키는 것이 다르다 — 메뉴는 위성, 부제는 센서로 통일한다.
+     (우리가 부르는 GIBS 레이어가 VIIRS_SNPP_… 이다) */
+  { id:'truecolor', flag:'🇺🇸', ko:'수오미 NPP', en:'Suomi NPP', sub:'VIIRS 실제 색 · 낮면', subEn:'VIIRS true colour · day side', ready:true,
     sky:'#0a1420', paint:'truecolor' },
   { id:'temp', ko:'기온', en:'Temperature', sub:'현재', subEn:'Now', ready:true,
     sky:'#101820', paint:'temp' },
@@ -410,10 +413,15 @@ const CATEGORIES = [
      (실제로 천리안 3종이 그렇게 목록 맨 아래로 갔다).
      받은 지적: "순서는 천리안 부터 위성 이름으로 해줘" */
   { id: 'base',    ko: '바탕',       en: 'Base',
-    ids: ['gk2aIR', 'gk2aVIS', 'gk2aWV',      // 🇰🇷 우리 위성이 맨 위
-          'himawari', 'himaIR',                // 🇯🇵
-          'clouds',                            // 🌐 전지구 합성
-          'truecolor'] },                      // 🇺🇸
+    /* 받은 지시대로: 넓은 것 → 좁은 것, 그리고 같은 위성끼리 붙이지 않는다.
+       ⚠️ 앞의 넷이 **서로 다른 위성이 본 같은 하늘**이라 나란히 두면 비교가 된다. */
+    ids: ['clouds',        // 🌐 NOAA 전지구 합성 (가장 넓다)
+          'truecolor',     // 🇺🇸 수오미 NPP
+          'gk2aIR',        // 🇰🇷 천리안 2km
+          'himawari',      // 🇯🇵 히마와리 1km
+          'gk2aVIS',       // 🇰🇷 천리안 0.5km (낮)
+          'gk2aWV',        // 🇰🇷 천리안 수증기
+          'himaIR'] },     // 🇯🇵 히마와리 구름 꼭대기 온도
   { id: 'weather', ko: '기상',       en: 'Weather',
     ids: ['temp', 'tmax', 'tmin', 'humidity', 'wind', 'windfc', 'rain', 'pressure',
           'fog', 'drought'] },

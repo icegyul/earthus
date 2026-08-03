@@ -55,7 +55,10 @@ const SRC = {
      태양동기궤도라 **각 지점은 늘 그 지역 현지 낮 1시 30분경**에 찍힌다.
      즉 "전 지구를 같은 순간에 찍은 사진"이 아니라
      "각 지점을 현지 오후 1시 반에 찍어 이어 붙인 사진"이다. */
-  truecolor:{ ko: 'NASA VIIRS 트루컬러', en: 'NASA VIIRS true colour', every: 1440 },
+  /* ⚠️ 위성(수오미 NPP)과 센서(VIIRS)를 **둘 다** 적는다. 예전엔 메뉴는 위성,
+     여기는 센서라 같은 것을 두 이름으로 부르고 있었다. */
+  truecolor:{ ko: '수오미 NPP 위성 · VIIRS 센서 (NASA)',
+              en: 'Suomi NPP satellite · VIIRS sensor (NASA)', every: 1440 },
   temp:     { ko: 'Open-Meteo (GFS/ECMWF)', en: 'Open-Meteo (GFS/ECMWF)', every: 60 },
   humidity: { ko: 'Open-Meteo (GFS/ECMWF)', en: 'Open-Meteo (GFS/ECMWF)', every: 60 },
   tmax:     { ko: 'Open-Meteo — 내일 예보', en: 'Open-Meteo — tomorrow’s forecast', every: 60 },

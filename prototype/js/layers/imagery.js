@@ -383,7 +383,7 @@ export const imagery = {
     this.truecolor.show = wasShown;
     this.truecolor.dayAlpha = alpha;
     viewer.imageryLayers.remove(old, true);
-    this._imgLoading(true, '위성 영상');   // 새 날짜 타일 로딩 표시
+    this._imgLoading(true, '수오미 NPP');   // 새 날짜 타일 로딩 표시
   },
 
   async setTrueColor(on) {
@@ -401,7 +401,7 @@ export const imagery = {
       const day = this._ymdBack(1);
       this._tcDate = day;
       this.truecolor = this._addTruecolorLayer(day);
-      this._imgLoading(true, '위성 영상');
+      this._imgLoading(true, '수오미 NPP');
 
       /* 배경 탐색 — 어제가 유난히 나쁜 날(빈 구간이 훨씬 큼)에만 조용히 교체한다.
          평소엔 어제가 최선이라 그대로 둔다(불필요한 리로드·깜빡임 방지).

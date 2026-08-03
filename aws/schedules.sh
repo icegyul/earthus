@@ -30,6 +30,11 @@ JOBS=(
   "gk2a-clouds|rate(10 minutes)|천리안2A 한반도 영상"
   "pressure-grid|rate(1 hour)|동아시아 기압 격자 (등압선)"
   "air-state|cron(20 12 * * ? *)|하루 한 번 대기 상태 판정 (KST 21:20)"
+  # 2026-08-03 에 함께 만든 것들. ⚠️ 만든 날 여기 안 넣으면 손으로만 돈다.
+  "quake-asia|rate(10 minutes)|지진 (기상청·JMA)"
+  "social-draft|rate(1 hour)|SNS 초안"
+  # ⚠️ 원본(네바다 MIDAS)이 하루보다 자주 안 바뀐다. 더 자주 부를 이유가 없다.
+  "crustal|cron(40 3 * * ? *)|땅의 움직임 (GNSS) — KST 12:40"
 )
 
 for job in "${JOBS[@]}"; do

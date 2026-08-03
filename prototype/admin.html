@@ -117,6 +117,19 @@ pre{background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:9px;
     </div>
   </div>
 
+  <!-- ⚠️⚠️ SNS 초안 — **자동으로 올라가지 않는다.** 사람이 보고 올린다. -->
+  <div class="card">
+    <h2>SNS 초안 <span id="dfCount" style="color:var(--fog);font-weight:300"></span></h2>
+    <div class="note danger" style="padding:10px 12px;border-radius:9px;border:1px solid rgba(240,100,90,.3);background:rgba(240,100,90,.07)">
+      ⚠️ <b>아직 아무 데도 올라가지 않았습니다.</b> 자동 게시는 만들지 않았습니다 —
+      화면의 오류는 고치면 되지만 <b>게시물은 이미 퍼집니다.</b>
+      실제로 하루 만에 <b>경도 부호 오류</b>(동태평양 허리케인이 서태평양에 찍힘)와
+      <b>파고 축소 오류</b>(최대 2.0m를 0.6m로 표시)를 찾았습니다.
+      <br>⚠️ 올리기 전에 <b>숫자와 지명을 눈으로 확인</b>하십시오.
+    </div>
+    <div id="drafts" style="margin-top:12px"></div>
+  </div>
+
   <div class="card warnbox">
     <h2 style="color:#ffcf8f">아직 안 된 것</h2>
     <div class="note" id="todo"></div>
@@ -288,6 +301,96 @@ $('#inGoogle').onclick = () => client?.auth.signInWithOAuth({
 $('#out').onclick = async () => { await client?.auth.signOut(); location.reload(); };
 
 boot();
+
+/* ── SNS 초안 ────────────────────────────────────────────────
+   ⚠️ 카드 그림을 **여기서** 그린다. Lambda(Amazon Linux)에 한글 폰트가 없어서다.
+      어차피 사람이 보고 올리므로 브라우저에서 그리는 편이 낫다. */
+const PLAT = [['x','X (280자)'],['threads','Threads'],['instagram','Instagram'],['facebook','Facebook']];
+
+function cardCanvas(c) {
+  const W = 1080, H = 1080, cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  const grd = g.createLinearGradient(0, 0, 0, H);
+  grd.addColorStop(0, '#0a1420'); grd.addColorStop(1, '#132030');
+  g.fillStyle = grd; g.fillRect(0, 0, W, H);
+  g.fillStyle = '#eaf2ff';
+  g.font = '600 58px -apple-system, "Apple SD Gothic Neo", sans-serif';
+  // 제목 줄바꿈
+  const wrap = (t, max) => {
+    const out = []; let line = '';
+    for (const ch of String(t || '')) {
+      if (g.measureText(line + ch).width > max) { out.push(line); line = ''; }
+      line += ch;
+    }
+    if (line) out.push(line);
+    return out;
+  };
+  let y = 190;
+  wrap(c.title, W - 160).forEach(l => { g.fillText(l, 80, y); y += 72; });
+  if (c.sub) {
+    g.font = '300 34px -apple-system, "Apple SD Gothic Neo", sans-serif';
+    g.fillStyle = 'rgba(234,242,255,.62)';
+    wrap(c.sub, W - 160).forEach(l => { g.fillText(l, 80, y + 14); y += 46; });
+  }
+  y += 60;
+  (c.rows || []).forEach(r => {
+    g.font = '300 32px -apple-system, "Apple SD Gothic Neo", sans-serif';
+    g.fillStyle = 'rgba(234,242,255,.55)'; g.fillText(r.k, 80, y);
+    g.font = '500 36px -apple-system, "Apple SD Gothic Neo", sans-serif';
+    g.fillStyle = '#9fd4ff'; g.fillText(r.v, 420, y);
+    y += 62;
+  });
+  /* ⚠️⚠️ 이 두 줄은 카드에서 지우지 않는다. 이미지만 퍼 나르는 사람이 많다. */
+  g.font = '300 27px -apple-system, "Apple SD Gothic Neo", sans-serif';
+  g.fillStyle = 'rgba(255,207,143,.92)';
+  g.fillText('⚠️ 진로는 저희가 예측하지 않습니다 — 기관 예보를 옮깁니다', 80, H - 190);
+  g.fillText('⚠️ 대피 판단은 기상청 공식 발표를 따르세요', 80, H - 148);
+  g.font = '300 26px -apple-system, sans-serif';
+  g.fillStyle = 'rgba(234,242,255,.4)';
+  g.fillText(c.stamp || '', 80, H - 80);
+  return cv;
+}
+
+async function loadDrafts() {
+  const box = document.getElementById('drafts');
+  try {
+    const r = await fetch('/events/social-drafts.json?t=' + Date.now(), { cache: 'no-store' });
+    const d = await r.json();
+    document.getElementById('dfCount').textContent = `· ${d.count}건`;
+    if (!d.drafts?.length) { box.innerHTML = '<div class="note">지금 올릴 만한 태풍 소식이 없습니다.</div>'; return; }
+    box.innerHTML = '';
+    d.drafts.forEach(x => {
+      const w = document.createElement('div');
+      w.style.cssText = 'border:1px solid var(--line);border-radius:11px;padding:14px;margin-bottom:12px';
+      w.innerHTML = `<div style="font-weight:500;margin-bottom:8px">${x.name || x.storm}
+        <span class="pill ${x.kind === 'downgrade' ? 'paid' : 'free'}">${x.kind === 'downgrade' ? '약화' : '갱신'}</span></div>`;
+      const cv = cardCanvas(x.card);
+      cv.style.cssText = 'width:100%;max-width:340px;border-radius:9px;display:block;margin:8px 0';
+      w.appendChild(cv);
+      const dl = document.createElement('button');
+      dl.className = 'ghost'; dl.textContent = '카드 이미지 내려받기';
+      dl.onclick = () => { const a = document.createElement('a');
+        a.download = `${x.storm}-${x.id}.png`; a.href = cv.toDataURL('image/png'); a.click(); };
+      w.appendChild(dl);
+      PLAT.forEach(([k, label]) => {
+        const t = x.text?.[k]; if (!t) return;
+        const d2 = document.createElement('div');
+        d2.style.cssText = 'margin-top:10px';
+        d2.innerHTML = `<div style="font-size:11px;color:var(--fog);margin-bottom:4px">${label} · ${t.length}자</div>`;
+        const pre = document.createElement('pre'); pre.textContent = t; d2.appendChild(pre);
+        const cp = document.createElement('button');
+        cp.className = 'ghost'; cp.style.marginTop = '6px'; cp.textContent = '문구 복사';
+        cp.onclick = async () => { await navigator.clipboard.writeText(t); cp.textContent = '복사됨'; };
+        d2.appendChild(cp); w.appendChild(d2);
+      });
+      box.appendChild(w);
+    });
+  } catch (e) {
+    box.innerHTML = `<div class="note">초안을 읽지 못했습니다 — ${e.message}</div>`;
+  }
+}
+loadDrafts();
 </script>
 </body>
 </html>

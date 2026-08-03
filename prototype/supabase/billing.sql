@@ -57,10 +57,20 @@ create table if not exists public.orders (
   id             text primary key,             -- 우리가 만든 주문번호 (PG 에 그대로 보낸다)
   user_id        uuid not null references auth.users(id) on delete cascade,
   plan_id        text not null references public.plans(id),
-  krw            integer not null,             -- ⚠️ 주문 시점 금액을 **박제**한다
+  -- ⚠️⚠️ 금액은 **최소 단위(minor unit)** 로 저장한다. 통화마다 다르다:
+  --      KRW 는 소수점이 없어 amount = 원 그대로 (29000 = 29,000원)
+  --      USD 는 센트다            (2199 = $21.99)
+  --    ⚠️ 이걸 안 지키면 $21.99 결제가 $2,199 로 기록된다. 100배 사고다.
+  --    ⚠️ 예전엔 컬럼 이름이 krw 였다. 해외 결제를 붙이는 순간 **USD 금액이
+  --       "krw" 라는 이름의 칸에 들어가** 회계가 조용히 틀어진다. 그래서 갈랐다.
+  amount         integer not null check (amount >= 0),
+  currency       text not null default 'KRW' check (currency in ('KRW','USD')),
   status         text not null default 'pending'
                  check (status in ('pending','paid','failed','canceled','refunded')),
-  provider       text not null default 'toss', -- 'toss' | 'apple' | 'google'
+  -- ⚠️ 'toss' 는 국내 카드 전용이다. 해외는 별도 수단이 필요하다 —
+  --    한국 사업자는 Stripe 계정을 못 열기 때문에(2026 기준) MoR 이나 앱스토어를 쓴다.
+  --    docs/pricing-plan.md 「해외 결제」 참고.
+  provider       text not null default 'toss', -- 'toss' | 'apple' | 'google' | 'paddle'
   payment_key    text,                         -- PG 가 준 결제 식별자
   approved_at    timestamptz,
   fail_reason    text,
@@ -183,7 +193,9 @@ grant execute on function public.expire_subscriptions() to service_role;
 -- ═══════════════════════════════════════════════════════════
 -- 확인용
 -- ═══════════════════════════════════════════════════════════
--- select id, name_ko, krw, months, max_seats from public.plans order by sort;
+-- select id, name_ko, krw, usd, months, max_seats from public.plans order by sort;
+-- -- ⚠️ 금액이 최소 단위로 들어갔는지 확인 (USD 는 센트여야 한다)
+-- select id, currency, amount, plan_id from public.orders order by created_at desc limit 10;
 -- select tablename, rowsecurity from pg_tables
 --   where schemaname='public' and tablename in ('plans','orders');
 -- -- anon 키로 아래가 0행이어야 정상 (남의 주문이 안 보인다)

@@ -66,6 +66,14 @@ Deno.serve(async (req) => {
   // ⚠️ **남의 주문을 승인시키지 못하게** 소유자를 확인한다.
   if (order.user_id !== user.id) return json({ error: 'NOT_YOURS' }, 403);
 
+  // ⚠️⚠️ 이 함수는 **토스 전용**이다. 다른 수단으로 만든 주문이 여기로 오면
+  //    엉뚱한 곳에 승인을 요청하게 된다. 통화까지 함께 막는다 —
+  //    토스는 원화만 받으므로 USD 주문이 여기 오는 건 그 자체가 사고다.
+  if (order.provider !== 'toss' || order.currency !== 'KRW') {
+    return json({ error: 'WRONG_PROVIDER',
+                  provider: order.provider, currency: order.currency }, 400);
+  }
+
   // ── ② 이미 끝난 주문이면 다시 승인하지 않는다 (멱등) ─────
   if (order.status === 'paid') {
     const { data: prof } = await admin
@@ -86,7 +94,7 @@ Deno.serve(async (req) => {
         // ⚠️ 같은 키로 두 번 보내도 토스가 한 번만 처리한다. 네트워크 재시도 보호.
         'Idempotency-Key': orderId,
       },
-      body: JSON.stringify({ paymentKey, orderId, amount: order.krw }),
+      body: JSON.stringify({ paymentKey, orderId, amount: order.amount }),
     });
     tossBody = await r.json();
     tossOk = r.ok;
@@ -105,10 +113,10 @@ Deno.serve(async (req) => {
 
   // ⚠️ 토스가 승인했다고 해도 **금액이 우리 주문과 같은지 한 번 더** 본다.
   //    여기서 어긋나면 사람이 봐야 하는 사고다 — 조용히 넘기지 않는다.
-  if (Number(tossBody?.totalAmount) !== Number(order.krw)) {
+  if (Number(tossBody?.totalAmount) !== Number(order.amount)) {
     await admin.from('orders').update({
       status: 'failed',
-      fail_reason: `AMOUNT_MISMATCH pg=${tossBody?.totalAmount} db=${order.krw}`,
+      fail_reason: `AMOUNT_MISMATCH pg=${tossBody?.totalAmount} db=${order.amount} ${order.currency}`,
       updated_at: new Date().toISOString(),
     }).eq('id', orderId);
     return json({ error: 'AMOUNT_MISMATCH' }, 409);

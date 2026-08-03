@@ -81,8 +81,14 @@ Deno.serve(async (req) => {
 
   // ── 4. 주문 기록 ─────────────────────────────────────────
   const id = orderId();
+  // ⚠️⚠️ **토스는 원화 전용이다.** 해외 카드 결제는 이 함수로 처리하지 않는다 —
+  //    한국 사업자는 Stripe 계정을 못 열어서(2026 기준) MoR(Paddle 등)이나
+  //    앱스토어 IAP 를 따로 붙여야 한다. 그쪽은 별도 함수가 된다.
+  //    여기서 통화를 KRW 로 못 박는 이유가 그것이다. 조용히 원화로 긁히면 안 된다.
   const { error: oerr } = await admin.from('orders').insert({
-    id, user_id: user.id, plan_id: planId, krw: plan.krw, provider: 'toss',
+    id, user_id: user.id, plan_id: planId,
+    // ⚠️ 최소 단위로 저장한다. KRW 는 소수점이 없어 원 그대로다.
+    amount: plan.krw, currency: 'KRW', provider: 'toss',
   });
   if (oerr) return json({ error: 'ORDER_FAILED', detail: oerr.message }, 500);
 
@@ -92,6 +98,7 @@ Deno.serve(async (req) => {
     // ⚠️ 금액을 함께 돌려주지만, 승인 때 **다시 DB 와 대조**한다.
     //    여기 값을 신뢰해서 승인하면 중간에 바꿔치기할 수 있다.
     amount: plan.krw,
+    currency: 'KRW',
     orderName: plan.name_ko,
     clientKey,                                   // ⚠️ 공개 키다. 시크릿 키가 아니다.
     customerEmail: user.email ?? undefined,

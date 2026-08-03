@@ -23,6 +23,9 @@ const KO = {
   now: '지금',
   // 레이어명
   L: {
+    /* ⚠️ 레이어를 추가하면 여기에도 이름을 넣는다 — 없으면 화면에 **id 가 그대로**
+       나온다('gk2aIR · 천리안2A 적외…'). 실제로 그렇게 나갔다. */
+    gk2aIR:'천리안2A 구름', gk2aVIS:'천리안2A 구름 (낮)', gk2aWV:'천리안2A 수증기',
     clouds:'구름', himawari:'구름 (동아시아 고해상도)', himaIR:'구름 꼭대기 온도', regional:'각국 기관 재해', alerts:'기상경보', truecolor:'실제 위성 영상', citylight:'야간 불빛', temp:'기온', aurora:'오로라',
     wind:'바람', orbits:'위성 궤도', stations:'관측소', volcano:'화산', launch:'로켓 발사',
     poi:'명소', phenomena:'해양 환류', heatdome:'열돔', quake:'지진', buoy:'해양 부이', news:'이벤트 뉴스',
@@ -75,6 +78,7 @@ const EN = {
   close: 'Close',
   now: 'now',
   L: {
+    gk2aIR:'Chollian-2A cloud', gk2aVIS:'Chollian-2A cloud (day)', gk2aWV:'Chollian-2A water vapour',
     clouds:'Clouds', himawari:'Clouds (E. Asia, high-res)', himaIR:'Cloud-top temperature', regional:'National agency hazards', alerts:'Weather alerts', truecolor:'Satellite view', citylight:'City lights', temp:'Temperature', aurora:'Aurora',
     wind:'Wind', orbits:'Satellite orbits', stations:'Stations', volcano:'Volcanoes', launch:'Launches',
     poi:'Places', phenomena:'Ocean gyres', heatdome:'Heat dome', quake:'Earthquakes', buoy:'Ocean buoys', news:'Event news',

@@ -35,6 +35,15 @@ const SRC = {
      ⚠️ 색이 강수량처럼 읽힌다. 실제로 "구름에서 왜 비의 양까지 체크되는 것 같냐"는
         지적을 받았다. 아주 찬 꼭대기가 강한 대류(=소나기·뇌우)와 관계가 깊은 건 맞지만,
         **강수량 자체가 아니다** — 높고 얇은 권운도 차갑다. 그 차이를 화면에 적는다. */
+  /* ── 천리안2A ──────────────────────────────────────────────
+     ⚠️ **"NASA GIBS 경유" 같은 중간 경유가 없다.** 우리 Lambda 가 NOAA 공개 원본을
+        직접 받아 만든다. 출처를 그렇게 정확히 적는다 — 기상청이 만들고 NOAA 가 공개한다. */
+  gk2a_ir:  { ko: '천리안2A 적외 11.2㎛ (기상청) · NOAA 공개자료',
+              en: 'Chollian-2A IR 11.2µm (KMA) via NOAA open data', every: 10 },
+  gk2a_vis: { ko: '천리안2A 가시광 0.64㎛ (기상청) · NOAA 공개자료',
+              en: 'Chollian-2A visible 0.64µm (KMA) via NOAA open data', every: 10 },
+  gk2a_wv:  { ko: '천리안2A 수증기 6.3㎛ (기상청) · NOAA 공개자료',
+              en: 'Chollian-2A water vapour 6.3µm (KMA) via NOAA open data', every: 10 },
   hima_ir: { ko: '히마와리 적외 (일본 기상청) · NASA GIBS 경유',
              en: 'Himawari infrared (JMA) via NASA GIBS', every: 10 },
   clouds_hima: { ko: '히마와리 (일본 기상청) · NASA GIBS 경유',
@@ -86,7 +95,13 @@ const SRC = {
 
 /* 어느 레이어의 시각을 보여줄까 — 위에 있는 것부터.
    ⚠️ 켜진 것이 여러 개면 "지금 바탕에 깔린 것"을 우선한다. 사람이 보고 있는 게 그것이다. */
-const PRIORITY = ['himaIR', 'himawari', 'truecolor', 'clouds', 'sstanom', 'temp', 'tmax', 'tmin', 'humidity', 'rain', 'pressure', 'fog', 'drought',
+/* ⚠️⚠️ **레이어를 새로 만들면 이 목록에도 넣어야 한다.**
+   여기 없으면 find 가 undefined 를 주고 `render()` 가 첫 줄에서 빠져나가
+   **좌하단 안내가 통째로 사라진다.** 오류도 경고도 없다 —
+   실제로 천리안 3종을 넣고 이걸 빼먹어 "위성정보가 안나와"라는 신고를 받았다.
+   (layerbar 의 CATEGORIES 도 같은 성격이다. 레이어 추가는 세 곳을 함께 고친다.) */
+const PRIORITY = ['gk2aIR', 'gk2aVIS', 'gk2aWV',
+                  'himaIR', 'himawari', 'truecolor', 'clouds', 'sstanom', 'temp', 'tmax', 'tmin', 'humidity', 'rain', 'pressure', 'fog', 'drought',
                   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
                   'sst', 'wave', 'swell', 'current', 'wind', 'windfc',
                   'coverage', 'ukfc', 'landobs', 'buoy', 'wildfire', 'cyclone', 'quake', 'tsunami', 'aurora', 'news'];
@@ -122,7 +137,9 @@ export const sourceNote = {
     /* ⚠️ 구름은 확대하면 자료가 바뀐다 (전지구 합성 → 히마와리).
        보고 있는 것과 다른 출처를 적으면 안내가 아니라 오정보다. */
     let key = id, hima = null;
-    if (id === 'himaIR') {
+    if (id === 'gk2aIR' || id === 'gk2aVIS' || id === 'gk2aWV') {
+      key = { gk2aIR: 'gk2a_ir', gk2aVIS: 'gk2a_vis', gk2aWV: 'gk2a_wv' }[id];
+    } else if (id === 'himaIR') {
       key = 'hima_ir';
       try {
         const { imagery } = await import('./layers/imagery.js');
@@ -151,6 +168,15 @@ export const sourceNote = {
       } else if (id === 'truecolor') {
         const { imagery } = await import('./layers/imagery.js');
         if (imagery._tcDate) made = new Date(`${imagery._tcDate}T12:00:00Z`);
+      } else if (id === 'gk2aIR' || id === 'gk2aVIS' || id === 'gk2aWV') {
+        /* ⚠️ 시각은 meta.json 이 말하는 **관측 시각**이다. 우리가 받은 시각이 아니다.
+           둘을 섞으면 "방금 자료"라고 적어 놓고 실제로는 20분 전 하늘이 된다. */
+        const { imagery } = await import('./layers/imagery.js');
+        /* ⚠️ 레이어를 켜는 순간에는 meta 가 아직 안 왔을 수 있다. 그러면 시각이 없어
+           **설명 블록 전체가 건너뛰어진다** (히마와리에서 이미 한 번 겪은 함정이다).
+           → 없으면 여기서 직접 한 번 받는다. */
+        const t = imagery._gk2aMeta?.time || (await imagery._gk2aBox())?.time;
+        if (t) made = new Date(t);
       } else if (id === 'himaIR') {
         /* ⚠️ 이 분기를 빼먹으면 made 가 null 이라 **설명 블록 전체가 건너뛰어진다.**
            실제로 그렇게 돼서 "이건 강수량이 아니다"라는 경고가 화면에 안 나왔다. */
@@ -187,6 +213,44 @@ export const sourceNote = {
         }
       } else {
         bits.push(ko ? `${hhmm(made)} 자료` : `data ${hhmm(made)}`);
+        /* ── 천리안 — 무엇을 보고 있고 무엇이 안 보이는가 ──────────── */
+        if (key === 'gk2a_ir') {
+          bits.push(ko
+            ? '<i>구름 <b>꼭대기 온도</b>입니다. 밝을수록 차갑고 높은 구름입니다. <b>밤에도 보입니다.</b></i>'
+            : '<i><b>Cloud-top temperature.</b> Brighter = colder, higher cloud. Works at night.</i>');
+          /* ⚠️⚠️ 이걸 안 적으면 "천리안은 구름을 못 본다"로 읽힌다.
+             실측(2026-08-03): 강릉 앞 낮은 구름 꼭대기 21.6°C, 바다 25°C — **3°C 차이**다.
+             적외 11.2㎛ 의 한계이지 이 위성의 성능이 아니다. 히마와리 적외도 똑같다. */
+          bits.push(ko
+            ? '<i>⚠️ <b>낮은 구름은 잘 안 보입니다.</b> 바다와 온도가 몇 도밖에 차이 나지 않기 때문입니다 '
+              + '— 적외선의 한계입니다. 낮이라면 <b>천리안 구름(낮)</b>이 훨씬 잘 보입니다.</i>'
+            : '<i>⚠️ <b>Low cloud is hard to see</b> — only a few degrees colder than the sea. '
+              + 'In daylight use the visible channel instead.</i>');
+        }
+        if (key === 'gk2a_vis') {
+          bits.push(ko
+            ? '<i><b>0.5km</b> 로 이 앱에서 가장 자세한 구름입니다 (히마와리 1km · 전지구 합성 2.4km). '
+              + '낮은 구름도 그대로 보입니다.</i>'
+            : '<i><b>0.5 km</b> — the sharpest cloud imagery here (Himawari 1 km, global composite 2.4 km).</i>');
+          bits.push(ko
+            ? '<i>⚠️ <b>가시광이라 밤에는 비어 보입니다.</b> 고장이 아닙니다 — 그때는 <b>천리안 구름</b>(적외)을 쓰세요.</i>'
+            : '<i>⚠️ Visible light — blank at night. Use the infrared channel then.</i>');
+        }
+        if (key === 'gk2a_wv') {
+          bits.push(ko
+            ? '<i>땅이 아니라 <b>하늘 중상층(약 6~8km)의 물기</b>를 봅니다. 밝은 띠가 습한 흐름, '
+              + '어두운 곳이 마른 공기가 내려앉는 자리입니다.</i>'
+            : '<i>Moisture in the <b>mid-to-upper troposphere</b>, not at the ground.</i>');
+          bits.push(ko
+            ? '<i>⚠️ 구름이 없어도 밝게 나옵니다 — 이건 구름 그림이 아니라 <b>공기의 흐름</b>입니다.</i>'
+            : '<i>⚠️ Bright without cloud — this shows airflow, not cloud.</i>');
+        }
+        /* ⚠️ 한반도만 덮는다는 사실은 셋 다 적는다 — 밖으로 나가면 빈 화면이다. */
+        if (key.startsWith('gk2a_')) {
+          bits.push(ko
+            ? '<i>⚠️ <b>한반도 주변만</b> 덮습니다 (31.5~43.5°N · 120.5~132°E). 그 밖은 비어 있습니다.</i>'
+            : '<i>⚠️ Covers Korea only (31.5–43.5°N, 120.5–132°E).</i>');
+        }
         if (key === 'hima_ir') {
           /* ⚠️ 이 자료의 색은 **강수량이 아니다.** 그런데 꼭 그렇게 읽힌다.
              무엇인지와 무엇이 아닌지를 둘 다 적어야 오해가 안 생긴다. */

@@ -773,6 +773,93 @@ export const imagery = {
     } catch (_) { /* 카메라가 아직 없을 수 있다 */ }
   },
 
+  /* ── 천리안2A ────────────────────────────────────────────────
+     Lambda(gk2a-clouds)가 NOAA 공개 원본을 등경위도 PNG 로 바꿔 올린 것을 얹는다.
+     ⚠️ 타일이 아니라 **한 장**이다. 덮는 범위가 한반도뿐이라 타일로 쪼갤 이유가 없고,
+        한 장이면 요청도 한 번이다. */
+  gk2aLayers: {},
+  _gk2aMeta: null,
+  _gk2aAt: 0,
+
+  async _gk2aBox() {
+    // ⚠️ 범위를 코드에 박지 않는다. Lambda 가 격자를 바꾸면 여기도 같이 틀어진다.
+    //    meta.json 이 말하는 대로 얹는다.
+    if (this._gk2aMeta && Date.now() - this._gk2aAt < 5 * 60_000) return this._gk2aMeta;
+    try {
+      const r = await fetchT(`${API.GK2A}/meta.json`, { cache: 'no-cache' });
+      this._gk2aMeta = r.ok ? await r.json() : null;
+      this._gk2aAt = Date.now();
+    } catch (_) { this._gk2aMeta = null; }
+    return this._gk2aMeta;
+  },
+
+  async setGK2A(ch, on) {
+    const cur = this.gk2aLayers[ch];
+    if (!on) {
+      if (cur) { try { viewer.imageryLayers.remove(cur, true); } catch (_) { } }
+      this.gk2aLayers[ch] = null;
+      return;
+    }
+    if (cur) { cur.show = true; return; }
+
+    const m = await this._gk2aBox();
+    const info = m?.channels?.[ch];
+    /* ⚠️⚠️ 자료가 없으면 **아무것도 얹지 않고 그렇게 말한다.**
+       빈 레이어를 얹어 두면 "켰는데 왜 안 보이지"가 되고, 그게 고장으로 읽힌다.
+       특히 가시광은 **밤이면 원본이 있어도 새까맣다** — 그건 고장이 아니다. */
+    if (!m?.bbox || !info?.ok) {
+      this._say(
+        info?.reason ? `천리안 자료를 아직 못 받았습니다 — ${info.reason}`
+                     : '천리안 자료를 아직 못 받았습니다',
+        'Chollian imagery is not available yet');
+      return;
+    }
+    const b = m.bbox;
+    const L = viewer.imageryLayers.addImageryProvider(
+      new Cesium.SingleTileImageryProvider({
+        url: `${API.GK2A}/${ch}.png?t=${encodeURIComponent(m.time || '')}`,
+        rectangle: Cesium.Rectangle.fromDegrees(b.west, b.south, b.east, b.north),
+        tileWidth: m.width, tileHeight: m.height,
+      })
+    );
+    /* ⚠️ 밤낮을 나누지 않는다. 적외는 밤에도 유효하고, 가시광은 원본 자체가
+       밤에 어두워 알아서 사라진다 — Cesium 의 nightAlpha 로 지우면
+       "밤에도 보이는 적외"라는 이 레이어의 존재 이유가 없어진다. */
+    L.alpha = 1.0;
+    this.gk2aLayers[ch] = L;
+
+    // 한반도만 덮으므로, 켜면 보이는 곳으로 데려간다
+    try {
+      const mid = viewer.camera.positionCartographic;
+      const far = Cesium.Math.toDegrees(mid.longitude) < b.west - 6
+               || Cesium.Math.toDegrees(mid.longitude) > b.east + 6
+               || Cesium.Math.toDegrees(mid.latitude) < b.south - 6
+               || Cesium.Math.toDegrees(mid.latitude) > b.north + 6
+               || mid.height > 6_000_000;
+      if (far) {
+        viewer.camera.flyTo({
+          destination: Cesium.Cartesian3.fromDegrees(
+            (b.west + b.east) / 2, (b.south + b.north) / 2, 2_400_000),
+          duration: 1.4,
+        });
+      }
+    } catch (_) { }
+
+    /* ⚠️ **언제 찍은 것인지 반드시 말한다.** 위성 영상은 지금처럼 보이지만
+       10~20분 전이다. 그 사실을 안 적으면 사용자가 실시간으로 읽는다. */
+    const t = m.time ? new Date(m.time) : null;
+    if (t) {
+      const min = Math.round((Date.now() - t.getTime()) / 60000);
+      const hhmm = t.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      this._say(`천리안2A ${hhmm} 관측 · ${min}분 전`, `Chollian-2A · ${min} min ago`);
+    }
+    /* 가시광인데 지금 밤이면 미리 알려준다 — 새까만 화면은 고장으로 읽힌다 */
+    if (ch === 'vi006' && this._isNightHere()) {
+      this._say('지금 이 지역은 밤이라 가시광 위성이 구름을 볼 수 없습니다 — 「천리안 구름」을 켜 보세요',
+                'It is night here — try “Chollian clouds” (infrared)');
+    }
+  },
+
   /** 화면 중심이 히마와리 구역 안이고 충분히 가까운가 */
   himaWanted(h, lon, lat) {
     if (h > this.HIMA_H || lon == null) return false;
@@ -854,6 +941,14 @@ export const imagery = {
         if (on) { this.setHimaIR(true); this.flyToHima(); }
         else { this.setHimaIR(false); }
         break;
+      /* ── 천리안2A — 우리 위성이 본 한반도 ─────────────────────
+         ⚠️ 히마와리와 겹쳐 보이지만 다르다. 히마와리는 NASA GIBS 를 거친
+            가시광이라 **밤에 빈 화면**이고, 이건 우리 Lambda 가 원본에서
+            직접 만든 것이라 적외가 **밤에도 보인다.**
+         ⚠️ 대신 **한반도만** 덮는다. 그래서 켜면 그 자리로 데려간다. */
+      case 'gk2aIR':  this.setGK2A('ir112', on); break;
+      case 'gk2aVIS': this.setGK2A('vi006', on); break;
+      case 'gk2aWV':  this.setGK2A('wv063', on); break;
       case 'citylight': this.citylight.show = on; break;
       case 'aurora':    if (this.aurora) this.aurora.show = on; break;
     }

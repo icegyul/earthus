@@ -40,6 +40,11 @@ export const API = {
   // 1순위 구름 — Lambda(gmgsi-clouds)가 NOAA GMGSI 를 매시간 합성해 올린다.
   // 퍼블릭 도메인이라 워터마크·사용량 한도·라이선스 제약이 없다.
   CLOUDS: CDN + '/clouds',
+  // 천리안2A(GK-2A) 한반도 — Lambda(gk2a-clouds)가 NOAA 공개 원본을 받아
+  // 등경위도 PNG 로 바꿔 올린다. ⚠️ 우리 위성이고, 한반도만 2km 로 본다.
+  //    구름(밤에도) / 구름(낮) / 상층 수증기 세 장 + meta.json
+  // ⚠️ clouds/ 아래다. 버킷 공개 접두사가 고정이라 gk2a/ 로 두면 403 이 난다(실측).
+  GK2A:   CDN + '/clouds/gk2a',
   // 전지구 바람 격자 — Lambda(wind-grid)가 매시간 만든다. 파티클 애니메이션용.
   WIND:   CDN + '/wind',
   // 전지구 대기질 격자 — Lambda(air-grid)가 매시간 만든다.
@@ -160,6 +165,15 @@ export const LAYER_DEFS = [
   /* 적외 단독 — 구름 꼭대기 온도. 구름 레이어에 섞여 있던 것을 따로 뺐다.
      ⚠️ 강수량이 아니다. 찬 꼭대기가 강한 비와 관계가 깊을 뿐이다. */
   { id:'himaIR',   kind:'imagery', tier:TIER.FREE, on:false, group:'base' },
+  /* ── 천리안2A — 우리 위성이 본 한반도 ─────────────────────────
+     ⚠️ 히마와리와 겹치는 것 같지만 다르다.
+        히마와리는 NASA GIBS 를 거친 가시광이라 **밤에 빈 화면**이고,
+        이건 우리가 원본에서 직접 만든 것이라 적외가 **밤에도 보인다.**
+     ⚠️ 대신 **한반도만** 덮는다(31.5~43.5°N · 120.5~132°E).
+        그 밖으로 나가면 아무것도 없다 — 부제에 그렇게 적었다. */
+  { id:'gk2aIR',   kind:'imagery', tier:TIER.FREE, on:false, group:'base' },
+  { id:'gk2aVIS',  kind:'imagery', tier:TIER.FREE, on:false, group:'base' },
+  { id:'gk2aWV',   kind:'imagery', tier:TIER.FREE, on:false, group:'base' },
   // 야간 불빛은 메뉴에서 뺐다.
   //   해가 없는 쪽은 어차피 밤이 되므로 사용자가 켜고 끌 이유가 없다.
   //   imagery.init() 이 dayAlpha=0 / nightAlpha=1 로 얹고 그대로 둔다.

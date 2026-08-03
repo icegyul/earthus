@@ -26,17 +26,34 @@ const el = (t, c) => { const n = document.createElement(t); if (c) n.className =
    ⚠️ export 인 이유: 통합 검색(search.js)이 레이어 이름을 찾을 때 이 표를 쓴다.
       레이어 목록을 두 곳에 적으면 하나만 고치고 지나가는 날이 온다. */
 export const ITEMS = [
-  /* 오늘 찍힌 실사 위성 영상. 기본 지도는 정지 사진이라 연기·황사가 안 보인다. */
-  { id:'truecolor', ko:'실제 위성 영상', en:'Satellite view', sub:'낮면 · 최근 완전한 날', subEn:'Day side · latest full day',
-    ready:true, sky:'#0a1420', paint:'truecolor' },
-  /* ⚠️ 부제에 '낮'을 반드시 남긴다. 가시광이라 밤에는 비어 보이는데,
+  /* ── 위성 구름 ─────────────────────────────────────────────
+     받은 지적: "지구 스타일에 구름 설명을 국기 달아주고
+                 순서는 천리안 부터 위성 이름으로 해줘"
+
+     ⚠️ 이름을 **위성 이름**으로 바꿨다. 예전에는 '구름', '구름 (동아시아)',
+        '실제 위성 영상' 이라 **무엇이 다른지 이름만 봐서는 알 수 없었다** —
+        전부 구름인데 셋 다 다른 위성이 다른 파장으로 본 것이다.
+     ⚠️ 국기는 **누가 찍은 위성인가**다. 우리 것이 맨 위에 온다.
+     ⚠️ GMGSI 에 특정 국기를 달지 않는다 — 여러 나라 위성을 NOAA 가 합친 것이라
+        한 나라 것이라고 하면 틀린 말이 된다. 🌐 로 둔다. */
+  { id:'gk2aIR', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 한반도 2km · 밤에도', subEn:'Cloud · Korea 2km · day & night', ready:true,
+    sky:'#0b1626', paint:'gk2a' },
+  { id:'gk2aVIS', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 한반도 0.5km · 낮에만', subEn:'Cloud · Korea 0.5km · daylight only', ready:true,
+    sky:'#0a1828', paint:'gk2a' },
+  { id:'gk2aWV', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'수증기 · 상층 흐름 · 밤에도', subEn:'Water vapour · upper flow', ready:true,
+    sky:'#0c1422', paint:'gk2a' },
+  /* ⚠️ 부제에 '낮에만'을 반드시 남긴다. 가시광이라 밤에는 비어 보이는데,
      그 사실을 안 적으면 고장으로 읽힌다 (실제로 지적받았다). */
-  { id:'himawari', ko:'구름 (동아시아)', en:'Clouds (E. Asia)', sub:'1km · 10분 · 낮에만', subEn:'1 km · 10 min · daylight only', ready:true,
+  { id:'himawari', flag:'🇯🇵', ko:'히마와리', en:'Himawari', sub:'구름 · 동아시아 1km · 낮에만', subEn:'Cloud · E. Asia 1km · daylight only', ready:true,
     sky:'#0a1626', paint:'himawari' },
-  { id:'himaIR', ko:'구름 꼭대기 온도', en:'Cloud-top temp', sub:'동아시아 · 밤에도 · 찰수록 강한 대류', subEn:'E. Asia · works at night · colder = stronger', ready:true,
+  { id:'himaIR', flag:'🇯🇵', ko:'히마와리', en:'Himawari', sub:'구름 꼭대기 온도 · 찰수록 강한 대류', subEn:'Cloud-top temp · colder = stronger', ready:true,
     sky:'#0d1020', paint:'himawari' },
-  { id:'clouds', ko:'구름', en:'Clouds', sub:'현재', subEn:'Now', ready:true,
+  /* NOAA 가 전 세계 정지위성(Meteosat 포함)을 하나로 합성한 것. 전지구를 덮는 유일한 장. */
+  { id:'clouds', flag:'🌐', ko:'전지구 합성', en:'Global composite', sub:'NOAA GMGSI · 구름 · 지금', subEn:'NOAA GMGSI · cloud · now', ready:true,
     sky:'#0b1a2e', paint:'cloud' },
+  /* 오늘 찍힌 실사. 기본 지도는 정지 사진이라 연기·황사가 안 보인다. */
+  { id:'truecolor', flag:'🇺🇸', ko:'수오미 NPP', en:'Suomi NPP', sub:'실제 색 위성 사진 · 낮면', subEn:'True colour · day side', ready:true,
+    sky:'#0a1420', paint:'truecolor' },
   { id:'temp', ko:'기온', en:'Temperature', sub:'현재', subEn:'Now', ready:true,
     sky:'#101820', paint:'temp' },
   { id:'wind', ko:'바람', en:'Wind', sub:'현재', subEn:'Now', ready:true,
@@ -388,8 +405,15 @@ function drawThumb(cv, kind) {
 
    ⚠️ 순서는 "많이 쓰는 것부터"다. 알파벳순이나 만든 순서가 아니다. */
 const CATEGORIES = [
+  /* ⚠️⚠️ **이 순서가 화면 순서다.** ITEMS 의 순서가 아니다 —
+     ITEMS 만 고쳐 놓고 여기를 안 고치면 새 항목이 조용히 '그 밖에'로 밀려난다
+     (실제로 천리안 3종이 그렇게 목록 맨 아래로 갔다).
+     받은 지적: "순서는 천리안 부터 위성 이름으로 해줘" */
   { id: 'base',    ko: '바탕',       en: 'Base',
-    ids: ['truecolor', 'clouds', 'himawari', 'himaIR'] },
+    ids: ['gk2aIR', 'gk2aVIS', 'gk2aWV',      // 🇰🇷 우리 위성이 맨 위
+          'himawari', 'himaIR',                // 🇯🇵
+          'clouds',                            // 🌐 전지구 합성
+          'truecolor'] },                      // 🇺🇸
   { id: 'weather', ko: '기상',       en: 'Weather',
     ids: ['temp', 'tmax', 'tmin', 'humidity', 'wind', 'windfc', 'rain', 'pressure',
           'fog', 'drought'] },
@@ -542,7 +566,16 @@ export const layerBar = {
       b.appendChild(cv);
 
       const n = document.createElement('div');
-      n.className = 'ly-name'; n.textContent = ko ? it.ko : it.en;
+      n.className = 'ly-name';
+      /* ⚠️ 국기를 이름 문자열에 섞지 않는다 — 통합 검색(search.js)이 이 표의
+         ko/en 으로 이름을 찾기 때문에, 섞으면 "천리안"으로 검색이 안 된다. */
+      if (it.flag) {
+        const fl = document.createElement('span');
+        fl.className = 'ly-flag'; fl.textContent = it.flag;
+        fl.setAttribute('aria-hidden', 'true');
+        n.appendChild(fl);
+      }
+      n.appendChild(document.createTextNode(ko ? it.ko : it.en));
       const s2 = document.createElement('div');
       s2.className = 'ly-sub'; s2.textContent = ko ? it.sub : it.subEn;
       b.append(n, s2);

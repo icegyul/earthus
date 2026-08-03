@@ -207,6 +207,27 @@ const SCALES = {
     alpha: 0.55,
   },
 
+  /* 비구름 — 지금 내리는 양(mm/h).
+     ⚠️⚠️ **구름량이 아니다.** 구름이 하늘을 덮고 있어도 비는 안 올 수 있다.
+        "비구름"을 구름량으로 칠하면 흐린 날 전국이 비 오는 것처럼 보인다.
+     ⚠️ 0 에 가까운 값을 칠하지 않는다 — 0.1mm/h 까지 파랗게 하면 지구가 통째로
+        젖은 것처럼 보인다. 0.1 아래는 투명하게 둔다(alphaFrom 참고).
+     ⚠️ 구간은 기상청 강수 강도 감각에 맞췄다:
+        1mm/h 미만 약한 비 · 3 보통 · 15 강한 비 · 30 매우 강한 비 */
+  rain: {
+    unit: 'mm/h',
+    /* ⚠️ 이 값 아래는 **투명**하다. 0.1mm/h 는 우산도 안 편다 —
+       그걸 칠하면 지구가 통째로 젖은 것처럼 보인다(실측으로 확인). */
+    mute: 0.1,
+    fade: 0.4,
+    stops: [
+      [0.1, [ 90, 150, 220]], [1, [ 70, 190, 210]], [3, [ 90, 210, 140]],
+      [8,  [235, 215, 100]], [15, [240, 150,  70]], [30, [225,  70,  80]],
+      [50, [165,  40, 120]],
+    ],
+    alpha: 0.72,
+  },
+
   /* 내일 최저기온 — 추위 쪽을 넓게. 밤에 얼마나 떨어지는지가 관심사다. */
   tmin: {
     unit: '°C',
@@ -229,6 +250,7 @@ const FIELD_OF = {
   sst: 'sst', wave: 'wave', swell: 'swell', current: 'cur',
   sstanom: 'sst',   // 실제 값은 편차로 갈아끼운다 (show 참고)
   pressure: 'mslp',
+  rain: 'rain',
 };
 
 /* 어느 격자 파일에서 오는가.
@@ -236,7 +258,7 @@ const FIELD_OF = {
       하나로 합치면 한쪽이 실패할 때 전부가 없어진다. 따로 두면 따로 산다. */
 const SOURCE_OF = {
   temp: 'wind', rh: 'wind', tmax: 'wind', tmin: 'wind', fog: 'wind', drought: 'wind',
-  pressure: 'wind',
+  pressure: 'wind', rain: 'wind',
   pm25: 'air', pm10: 'air', dust: 'air', ozone: 'air', uv: 'air', aqi: 'air',
   sst: 'marine', wave: 'marine', swell: 'marine', current: 'marine',
   sstanom: 'marine',
@@ -244,7 +266,8 @@ const SOURCE_OF = {
 
 /* 눈금 이름 — 레이어 id 와 눈금 이름이 다른 것들 */
 const SCALE_OF = { temp: 'temp', humidity: 'rh', rh: 'rh', fog: 'vis', drought: 'soil',
-                   ozone: 'o3', current: 'cur', sstanom: 'sstAnom', pressure: 'mslp' };
+                   ozone: 'o3', current: 'cur', sstanom: 'sstAnom', pressure: 'mslp',
+                   rain: 'rain' };
 
 /* 예보 레이어인지 — 화면에 "내일"이라고 밝혀야 하는지 판단한다 */
 export const IS_FORECAST = { tmax: true, tmin: true, windfc: true };
@@ -337,9 +360,22 @@ export const gridOverlay = {
           const i = (y * W + x) * 4;
           if (a == null || b == null || c == null || d == null) { img.data[i + 3] = 0; continue; }
           const v = a * (1 - tx) * (1 - ty) + b * tx * (1 - ty) + c * (1 - tx) * ty + d * tx * ty;
+          /* ⚠️⚠️ **아무 일도 없는 곳은 칠하지 않는다.**
+             강수처럼 "대부분 0" 인 값은 눈금 아래를 그대로 칠하면
+             **비가 안 오는 곳까지 전부 파랗게** 된다 — 실측 화면에서 지구 전체가
+             젖은 것처럼 보였다. 눈금 시작값 아래는 투명하게 두고,
+             시작값 근처에서는 서서히 나타나게 한다(계단이 보이지 않게).
+             ⚠️ `mute` 를 안 준 눈금(기온·습도 등)은 예전 그대로 전부 칠한다 —
+                기온은 "0도 지역"이 없어서 투명하게 두면 구멍이 뚫린다. */
+          if (scale.mute != null && v < scale.mute) { img.data[i + 3] = 0; continue; }
           const [R, G, B] = colorAt(scale, v);
           img.data[i] = R; img.data[i + 1] = G; img.data[i + 2] = B;
-          img.data[i + 3] = Math.round(scale.alpha * 255);
+          let al = scale.alpha;
+          if (scale.mute != null) {
+            const fade = scale.fade ?? (scale.mute * 3);
+            if (v < fade) al *= (v - scale.mute) / (fade - scale.mute || 1);
+          }
+          img.data[i + 3] = Math.round(Math.max(0, Math.min(1, al)) * 255);
         }
       }
       ctx.putImageData(img, 0, 0);

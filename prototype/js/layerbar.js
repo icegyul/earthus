@@ -112,6 +112,9 @@ export const ITEMS = [
      이건 지상 기압이다. 여기서 보이는 건 **고기압·저기압이 어디 있나** 까지다. */
   { id:'pressure', ko:'기압 배치', en:'Pressure pattern', sub:'고기압·저기압', subEn:'Highs and lows',
     ready:true, sky:'#0e1420', paint:'pressure' },
+  /* ⚠️ 부제를 "구름"이라 쓰지 않는다 — 구름 레이어가 따로 있고, 그건 다른 것이다. */
+  { id:'rain', ko:'비구름', en:'Rain', sub:'지금 내리는 양', subEn:'Falling now',
+    ready:true, sky:'#0a1420', paint:'rain' },
 
   /* 지상 관측소 — 부이의 육지판. 실제 계기의 실황이다. */
   { id:'landobs', ko:'지상 관측소', en:'Ground stations', sub:'실황 관측', subEn:'Live readings', ready:true,
@@ -202,6 +205,7 @@ function drawThumb(cv, kind) {
     drought: () => { band(['#9b5f2d', '#c8a05f', '#e1d796', '#96c89b', '#3c96af']); },
     /* ⚠️ 가운데(1013hPa)가 무채색이어야 한다 — 고기압·저기압이 양쪽으로 갈린다 */
     pressure: () => { band(['#465ac0', '#82becf', '#e8ecee', '#facd8c', '#eb7d41']); },
+    rain: () => { band(['#5a96dc', '#46bed2', '#5ad28c', '#ebd764', '#e14650']); },
     eclipse: () => { bg(['#0b0b14', '#020208']); corona(); },
     flightlayer: () => { bg(['#0a1c2e', '#04101c']); tracks('#8fd0ff'); },
     shiplayer: () => { bg(['#062232', '#03111a']); waves('#7fb8d8'); tracks('#bfe4f5'); },
@@ -384,7 +388,8 @@ const CATEGORIES = [
   { id: 'base',    ko: '바탕',       en: 'Base',
     ids: ['truecolor', 'clouds', 'himawari', 'himaIR'] },
   { id: 'weather', ko: '기상',       en: 'Weather',
-    ids: ['temp', 'tmax', 'tmin', 'humidity', 'wind', 'windfc', 'pressure', 'fog', 'drought'] },
+    ids: ['temp', 'tmax', 'tmin', 'humidity', 'wind', 'windfc', 'rain', 'pressure',
+          'fog', 'drought'] },
   { id: 'air',     ko: '대기질',     en: 'Air quality',
     ids: ['pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone'] },
   { id: 'ocean',   ko: '해양',       en: 'Ocean',

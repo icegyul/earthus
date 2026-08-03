@@ -211,6 +211,10 @@ export const LAYER_DEFS = [
         상층 흐름이고, 이 레이어는 그 배치가 지상에 어떻게 나타나는지를 보여준다.
         둘을 같은 것이라고 말하면 안 된다. */
   { id:'pressure', kind:'grid',    tier:TIER.FREE, on:false, group:'weather' },
+  /* 비구름 — 지금 내리는 양(mm/h).
+     ⚠️ 구름량이 아니다. 구름 레이어(clouds)는 위성이 본 구름이고, 이건 **비**다.
+        흐리기만 한 날과 비 오는 날을 가르는 것이 이 레이어의 존재 이유다. */
+  { id:'rain',     kind:'grid',    tier:TIER.FREE, on:false, group:'weather' },
   { id:'aurora',   kind:'imagery', tier:TIER.FREE, on:false, group:'space' },
 
   // ── 선 ──

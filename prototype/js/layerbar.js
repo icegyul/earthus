@@ -94,7 +94,10 @@ export const ITEMS = [
     sky:'#06161f', paint:'sst' },
   { id:'sstanom', ko:'수온 편차', en:'SST anomaly', sub:'평년 대비', subEn:'vs 1991–2020', ready:true,
     sky:'#0d1420', paint:'sstanom' },
-  { id:'wave', ko:'파고', en:'Waves', sub:'유의파고', subEn:'Significant height', ready:true,
+  /* ⚠️ 부제를 "유의파고"라고 쓰지 않는다 — 이건 기상 전공자의 말이다.
+     뜻은 **"큰 쪽 3분의 1 파도의 평균"**이고, 사람이 눈으로 보고 "이 정도 파도"라고
+     말하는 크기와 대체로 맞다. 그래서 정의를 그대로 쉬운 말로 적는다. */
+  { id:'wave', ko:'파고', en:'Waves', sub:'큰 쪽 파도 평균', subEn:'Significant height', ready:true,
     sky:'#061520', paint:'wave' },
   { id:'swell', ko:'너울', en:'Swell', sub:'먼바다 파도', subEn:'Long-period', ready:true,
     sky:'#05131c', paint:'swell' },

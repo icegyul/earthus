@@ -20,7 +20,7 @@ const $ = s => document.querySelector(s);
    "서핑 · 서핑 정보" 같은 줄은 아무것도 알려주지 않는다. */
 const ITEMS = [
   { act: 'surf', ko: '서핑', en: 'Surf',
-    subKo: '이 해변에 스웰이 들어오는가', subEn: 'Is the swell reaching this beach',
+    subKo: '이 해변에 너울이 들어오는가', subEn: 'Is the swell reaching this beach',
     color: '#4fd0e0',
     ico: '<path d="M2.4 16.6c1.6 0 1.6-1.5 3.2-1.5s1.6 1.5 3.2 1.5 1.6-1.5 3.2-1.5 1.6 1.5 3.2 1.5 1.6-1.5 3.2-1.5 1.6 1.5 3.2 1.5"/><path d="M2.4 20.2c1.6 0 1.6-1.5 3.2-1.5s1.6 1.5 3.2 1.5 1.6-1.5 3.2-1.5 1.6 1.5 3.2 1.5 1.6-1.5 3.2-1.5 1.6 1.5 3.2 1.5"/><path d="M6.6 11.4c2-4.4 6.2-7.3 10.8-7.3-.4 3.6-2.3 6.6-5 8.4"/>' },
   { act: 'fishing', ko: '낚시', en: 'Fishing',

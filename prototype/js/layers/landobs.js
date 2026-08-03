@@ -73,8 +73,10 @@ export const landObs = {
            ⚠️ "안개다"라고 말하지 않는다. 조건일 뿐이고, 실제 안개는 시정으로 판정한다. */
         if (s.temp_c != null) {
           const gap = s.temp_c - s.dewp_c;
-          d[ko ? '기온−이슬점' : 'Spread'] = `${gap.toFixed(0)}°C`
-            + (gap <= 2 ? (ko ? ' · 포화에 가까움' : ' · near saturation') : '');
+          /* ⚠️ "포화에 가까움"은 화학 시간에 들은 말이다.
+             뜻은 **공기가 물기를 더 못 머금는다**는 것이고, 그래서 안개가 낀다. */
+          d[ko ? '이슬점까지 남은 폭' : 'Spread'] = `${gap.toFixed(0)}°C`
+            + (gap <= 2 ? (ko ? ' · 안개가 끼기 쉬운 상태' : ' · near saturation') : '');
         }
       }
       if (s.wspd_kt != null) {

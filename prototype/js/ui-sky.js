@@ -139,10 +139,11 @@ export const skyPanel = {
         const v = viewing(s, c.lat, c.lon, s.at);
         if (!v) {
           add(ko ? '내 위치에서' : 'From your location',
-              ko ? '복사점이 지평선 위로 안 올라옵니다' : 'Radiant never rises');
+              ko ? '유성이 뻗어 나오는 자리가 지평선 위로 안 올라옵니다' : 'Radiant never rises');
         } else {
           add(ko ? '가장 좋은 때' : 'Best time', local(v.best));
-          add(ko ? '복사점 고도' : 'Radiant altitude', `${v.alt.toFixed(0)}°`);
+          add(ko ? '유성이 뻗어 나오는 자리' : 'Radiant altitude',
+              ko ? `하늘 ${v.alt.toFixed(0)}° 높이` : `${v.alt.toFixed(0)}°`);
           add(ko ? '예상' : 'Expected',
               ko ? `시간당 대략 ${v.rate}개` : `roughly ${v.rate}/hour`);
           if (v.moonAlt > 0 && v.illum > 0.4) {
@@ -160,7 +161,10 @@ export const skyPanel = {
     });
 
     wrap.appendChild(el('p', 'sky-note', ko
-      ? '예상 개수는 복사점 고도와 달빛을 반영한 근삿값입니다. ZHR(이상 조건 기준 시간당 개수)은 완전히 어두운 하늘에 복사점이 천정에 있을 때의 값이라, 도시에서는 이보다 훨씬 적게 보입니다. 자료: 국제유성기구(IMO) 유성우 달력.'
+      ? '유성우는 하늘 한 지점에서 사방으로 뻗어 나오는 것처럼 보입니다. 그 자리가 높이 떠 있을수록 많이 보입니다. '
+      + '예상 개수는 그 높이와 달빛을 함께 따진 어림값입니다. '
+      + '⚠️ ZHR 은 「구름 한 점 없고 불빛도 없는 하늘에서, 그 자리가 바로 머리 위에 있을 때」의 개수라 '
+      + '실제 도시에서는 이보다 훨씬 적게 보입니다. 자료: 국제유성기구(IMO) 유성우 달력.'
       : 'Expected counts are estimates from radiant altitude and moonlight. ZHR assumes a perfectly dark sky with the radiant overhead, so city skies show far fewer. Source: IMO meteor shower calendar.'));
     return wrap;
   },

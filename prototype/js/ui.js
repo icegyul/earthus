@@ -1002,7 +1002,8 @@ async function renderHeatCheck(m, rows) {
           ? (ko ? '열돔' : 'Heat dome') : (ko ? '해당 없음' : 'No')}</span></div>`
       + `<div class="hc-body">${r.reason}</div>`
       + `<div class="hc-crit">${ko
-          ? `기준: 최고기온 ${i18n.temp(33)} 이상 + 500hPa 지위고도 5,880m 이상이 3일 연속`
+          ? `기준: 최고기온 ${i18n.temp(33)} 이상 + 하늘이 부푼 정도`
+            + `(약 5.9km 상공의 높이)가 5,880m 이상, 이것이 3일 연속`
           : `Criteria: high ≥ ${i18n.temp(33)} and 500hPa height ≥ 5,880m for 3+ consecutive days`}</div>`
       + (r.isDome ? `<div class="hc-crit">${ko
           ? '지도에도 이 열돔의 범위를 표시했습니다.'

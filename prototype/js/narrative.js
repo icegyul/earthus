@@ -387,9 +387,10 @@ export const narrative = {
         head: ko ? (dome === 2 ? '한반도가 **이중 열돔** 상태입니다'
                                : '한반도가 **열돔** 상태입니다')
                  : (dome === 2 ? 'Double heat dome' : 'Heat dome'),
-        num: ko ? `500hPa ${v.h500}m — 평년 ${v.h500Normal}m · 상위 ${100 - v.pH500}%`
+        num: ko ? `하늘이 평년보다 ${Math.round(v.h500 - v.h500Normal)}m 더 부풀었습니다 `
+                + `(약 5.9km 상공 ${Math.round(v.h500).toLocaleString()}m · 상위 ${100 - v.pH500}%)`
                 + (dome === 2 && v.pH200 != null
-                    ? ` · 200hPa 상위 ${100 - v.pH200}%` : '') : '',
+                    ? ` · 약 12km 상공도 상위 ${100 - v.pH200}%` : '') : '',
         why: ko
           ? '더워진 공기는 부풀어 오릅니다. 그래서 하늘이 얼마나 부풀었는지를 재면 '
             + '아래가 얼마나 뜨거운지를 알 수 있습니다. '

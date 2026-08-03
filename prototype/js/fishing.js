@@ -153,7 +153,7 @@ export function safety(sea, wind, spot, ko) {
   const exposed = spot?.kind === 'island' || spot?.kind === 'breakwater';
 
   if (sw == null && wv == null) {
-    out.lines.push(ko ? '이 지점의 파랑 자료가 없습니다.' : 'No wave data here.');
+    out.lines.push(ko ? '이 지점의 파도 자료가 없습니다.' : 'No wave data here.');
     return out;
   }
   const s = sw ?? 0;

@@ -245,11 +245,18 @@ export const sourceNote = {
             ? '<i>⚠️ 구름이 없어도 밝게 나옵니다 — 이건 구름 그림이 아니라 <b>공기의 흐름</b>입니다.</i>'
             : '<i>⚠️ Bright without cloud — this shows airflow, not cloud.</i>');
         }
-        /* ⚠️ 한반도만 덮는다는 사실은 셋 다 적는다 — 밖으로 나가면 빈 화면이다. */
+        /* ⚠️ 덮는 범위는 **채널마다 다르다.** 하나로 적으면 둘 중 하나는 거짓말이 된다. */
         if (key.startsWith('gk2a_')) {
+          const { imagery } = await import('./layers/imagery.js');
+          const ch = { gk2a_ir: 'ir112', gk2a_vis: 'vi006', gk2a_wv: 'wv063' }[key];
+          const area = imagery._gk2aMeta?.channels?.[ch]?.area;
           bits.push(ko
-            ? '<i>⚠️ <b>한반도 주변만</b> 덮습니다 (31.5~43.5°N · 120.5~132°E). 그 밖은 비어 있습니다.</i>'
-            : '<i>⚠️ Covers Korea only (31.5–43.5°N, 120.5–132°E).</i>');
+            ? (area === 'LA'
+              ? '<i>⚠️ <b>한반도 주변만</b> 덮습니다 (32~40°N · 123.5~131.5°E). 그 밖은 비어 있습니다.</i>'
+              : '<i>위성이 보는 <b>전면</b>입니다 — 동아시아·서태평양·호주까지. 지구 반대편은 이 위성이 못 봅니다.</i>')
+            : (area === 'LA'
+              ? '<i>⚠️ Korea only (32–40°N, 123.5–131.5°E).</i>'
+              : '<i>Full disk — East Asia to Australia. The other side of Earth is not visible to this satellite.</i>'));
         }
         if (key === 'hima_ir') {
           /* ⚠️ 이 자료의 색은 **강수량이 아니다.** 그런데 꼭 그렇게 읽힌다.

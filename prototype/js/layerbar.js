@@ -36,11 +36,11 @@ export const ITEMS = [
      ⚠️ 국기는 **누가 찍은 위성인가**다. 우리 것이 맨 위에 온다.
      ⚠️ GMGSI 에 특정 국기를 달지 않는다 — 여러 나라 위성을 NOAA 가 합친 것이라
         한 나라 것이라고 하면 틀린 말이 된다. 🌐 로 둔다. */
-  { id:'gk2aIR', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 한반도 2km · 밤에도', subEn:'Cloud · Korea 2km · day & night', ready:true,
+  { id:'gk2aIR', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 전면 2km · 밤에도', subEn:'Cloud · full disk 2km · day & night', ready:true,
     sky:'#0b1626', paint:'gk2a' },
   { id:'gk2aVIS', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 한반도 0.5km · 낮에만', subEn:'Cloud · Korea 0.5km · daylight only', ready:true,
     sky:'#0a1828', paint:'gk2a' },
-  { id:'gk2aWV', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'수증기 · 상층 흐름 · 밤에도', subEn:'Water vapour · upper flow', ready:true,
+  { id:'gk2aWV', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'수증기 · 전면 · 상층 흐름', subEn:'Water vapour · full disk', ready:true,
     sky:'#0c1422', paint:'gk2a' },
   /* ⚠️ 부제에 '낮에만'을 반드시 남긴다. 가시광이라 밤에는 비어 보이는데,
      그 사실을 안 적으면 고장으로 읽힌다 (실제로 지적받았다). */

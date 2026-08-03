@@ -804,22 +804,26 @@ export const imagery = {
 
     const m = await this._gk2aBox();
     const info = m?.channels?.[ch];
+    /* ⚠️⚠️ **범위는 채널마다 다르다.** 적외·수증기는 전면(위성이 보는 전부),
+       가시광은 한반도만이다. 예전처럼 최상위 bbox 하나를 쓰면
+       한반도 그림이 전면 사각형에 늘어붙어 **엉뚱한 자리에 그려진다.** */
+    const box = info?.bbox;
     /* ⚠️⚠️ 자료가 없으면 **아무것도 얹지 않고 그렇게 말한다.**
        빈 레이어를 얹어 두면 "켰는데 왜 안 보이지"가 되고, 그게 고장으로 읽힌다.
        특히 가시광은 **밤이면 원본이 있어도 새까맣다** — 그건 고장이 아니다. */
-    if (!m?.bbox || !info?.ok) {
+    if (!box || !info?.ok) {
       this._say(
         info?.reason ? `천리안 자료를 아직 못 받았습니다 — ${info.reason}`
                      : '천리안 자료를 아직 못 받았습니다',
         'Chollian imagery is not available yet');
       return;
     }
-    const b = m.bbox;
+    const b = box;
     const L = viewer.imageryLayers.addImageryProvider(
       new Cesium.SingleTileImageryProvider({
         url: `${API.GK2A}/${ch}.png?t=${encodeURIComponent(m.time || '')}`,
         rectangle: Cesium.Rectangle.fromDegrees(b.west, b.south, b.east, b.north),
-        tileWidth: m.width, tileHeight: m.height,
+        tileWidth: info.width, tileHeight: info.height,
       })
     );
     /* ⚠️ 밤낮을 나누지 않는다. 적외는 밤에도 유효하고, 가시광은 원본 자체가
@@ -828,8 +832,11 @@ export const imagery = {
     L.alpha = 1.0;
     this.gk2aLayers[ch] = L;
 
-    // 한반도만 덮으므로, 켜면 보이는 곳으로 데려간다
+    /* 한반도만 덮는 채널(가시광)일 때만 그 자리로 데려간다.
+       ⚠️ 전면 채널까지 끌고 가면 남미를 보다가 켰는데 화면이 한국으로 튄다 —
+          그 채널은 거기서도 보이는데 말이다. */
     try {
+      if (info.area !== 'LA') throw 0;
       const mid = viewer.camera.positionCartographic;
       const far = Cesium.Math.toDegrees(mid.longitude) < b.west - 6
                || Cesium.Math.toDegrees(mid.longitude) > b.east + 6

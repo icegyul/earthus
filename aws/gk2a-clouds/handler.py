@@ -51,31 +51,57 @@ DST_REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 src = boto3.client("s3", region_name="us-east-1", config=Config(signature_version=UNSIGNED))
 dst = boto3.client("s3", region_name=DST_REGION)
 
-# ── 출력 격자 (등경위도) ─────────────────────────────────────────
-#   LA 영역은 대략 31.1~44.2°N · 119.9~132.2°E 다. 그 안쪽으로 잡는다 —
-#   가장자리는 위성이 비스듬히 보는 곳이라 늘어난다.
-LAT0, LAT1 = 31.5, 43.5
-LON0, LON1 = 120.5, 132.0
-W, H = 1100, 1150          # 약 1.1km/px — 원본 2km 보다 촘촘히 뽑아 계단을 줄인다
+# ── 채널마다 **다른 영역·다른 격자** ─────────────────────────────
+#  받은 지적: "범위도 작고" · "천리안은 안보여"
+#
+#  ⚠️⚠️ 처음엔 셋 다 한반도(LA) · 한 격자(1100×1150)로 뽑았다. 둘 다 틀렸다.
+#     ① 범위 — LA 는 한반도만 덮는다. 지구본에서 우표만 하다.
+#        적외·수증기는 **전면(FD)** 이 있고 36MB · 12초면 처리된다(실측).
+#     ② 해상도 — 가시광 0.64㎛ 원본이 **0.5km** 인데 출력이 0.92~1.16km 였다.
+#        **가장 자세한 채널의 자세함을 절반 넘게 버리고 있었다.**
+#        → 가시광만 한반도에 딱 맞춰 0.5km 로 뽑는다.
+#
+#  area: 'FD' 전면 5500×5500(2km) | 'LA' 한반도 2000×2000(0.5km) 또는 500×500(2km)
+AREAS = {
+    # 전면 — 히마와리와 비슷한 범위. ⚠️ 격자를 더 키우면 PNG 가 8MB 를 넘는다(실측).
+    "FD": {"lat": (-60.0, 60.0), "lon": (70.0, 190.0), "w": 1600, "h": 1600},
+    # 한반도 — 가시광 0.5km 를 살리는 크기. 8°×8° 를 1780 화소면 약 0.5km/화소.
+    "LA": {"lat": (32.0, 40.0), "lon": (123.5, 131.5), "w": 1780, "h": 1780},
+}
 
 # ── 채널 ────────────────────────────────────────────────────────
 #  kind: 'ir'  적외/수증기 — 밝기온도로 바꿔 **차가울수록 하얗게**
-#        'vis' 가시광     — 반사도 그대로, 밝을수록 하얗게 (낮에만 의미 있음)
-#  hot/cold: 색을 입히는 기준(°C). ⚠️ 사진마다 자동으로 늘리지 않는다 —
-#            그러면 **날마다 밝기가 달라져 어제와 비교가 안 된다.**
-#  res: 파일 이름에 박히는 해상도 꼬리.
-#       ⚠️⚠️ **채널마다 다르다.** 적외·수증기는 2km(la020ge)인데
-#          가시광 0.64㎛ 는 0.5km(la005ge), 나머지 가시광은 1km(la010ge)다.
-#          전부 la020ge 로 찾으면 **가시광만 "파일이 없습니다"** 가 되는데,
-#          목록에는 멀쩡히 있어서 원인을 찾기 어렵다 (실제로 한 번 겪었다).
+#        'vis' 가시광     — 반사도 그대로 (낮에만 의미 있음)
+#  res:  파일 이름에 박히는 해상도 꼬리.
+#        ⚠️⚠️ **채널마다 다르다.** 적외·수증기는 2km(020ge)인데
+#           가시광 0.64㎛ 는 0.5km(005ge), 나머지 가시광은 1km(010ge)다.
+#           전부 020ge 로 찾으면 **가시광만 "파일이 없습니다"** 가 되는데,
+#           목록에는 멀쩡히 있어서 원인을 찾기 어렵다 (실제로 겪었다).
+#  gamma: 알파 곡선. ⚠️ 1 보다 작으면 **낮은(따뜻한) 구름 쪽이 살아난다.**
+#        실측(강릉): 낮은 구름 꼭대기 21.6°C, 바다 25°C — 3°C 차이다.
+#        선형으로 두면 alpha 0.14 라 사실상 안 보인다. 0.55 로 끌어올린다.
+#        ⚠️ 그래도 완전히는 안 갈린다. 적외 11.2㎛ 자체의 한계다 —
+#           화면(ui-source)에 그렇게 적어 두었다.
 CHANNELS = {
-    "ir112": {"kind": "ir",  "res": "la020ge", "hot": 35.0, "cold": -75.0,
-              "a_from": 25.0, "a_span": 45.0, "ko": "구름 (밤에도)"},
-    # ⚠️ 수증기는 실측 범위가 -60~-27°C 로 좁다. 기준을 넓게 잡으면 통째로 회색이 된다.
-    "wv063": {"kind": "ir",  "res": "la020ge", "hot": -25.0, "cold": -62.0,
-              "a_from": -22.0, "a_span": 30.0, "ko": "상층 수증기"},
-    "vi006": {"kind": "vis", "res": "la005ge", "a_from": 0.14, "a_span": 0.34,
-              "ko": "구름 (낮)"},
+    # rowbase — 위도줄마다 맑은 하늘을 재서 그보다 몇 도 찬지로 구름을 정한다.
+    # dLo/dHi: 지표보다 이만큼 차면 보이기 시작 / 이만큼이면 완전히 덮는다 (°C)
+    #  ⚠️⚠️ dLo 를 정할 때 **낮은 구름을 살리려다 지구를 덮을 뻔했다.**
+    #     3°C 로 두면(강릉 낮은 구름이 바다보다 3.4°C 찼으니) 살긴 사는데,
+    #     **면적의 52%가 40% 이상 불투명**해진다. 지금 쓰는 GMGSI 는 19% 다 —
+    #     2.7배다. 지구본에 안개가 낀 것처럼 된다.
+    #     → 10°C 로 올렸다(26%). 이 정도가 물리적으로도 "진짜 구름"이다.
+    #  ⚠️ 그 대가로 **낮은 구름은 안 보인다.** 감추지 않고 화면(ui-source)에 적었고,
+    #     낮에는 가시광 채널이 그 일을 한다. 적외 하나로는 원리상 안 되는 일이다.
+    "ir112": {"kind": "ir", "area": "FD", "res": "020ge", "rowbase": True,
+              "hot": 30.0, "cold": -75.0, "dLo": 10.0, "dHi": 55.0, "gamma": 1.1,
+              "ko": "구름 (밤에도)"},
+    # ⚠️ 수증기는 **구름 그림이 아니다.** 지표가 안 보이는 채널이라 rowbase 를 쓰지 않고
+    #    통째로 덮는 게 맞다 — 원래 그렇게 보는 자료다.
+    "wv063": {"kind": "ir", "area": "FD", "res": "020ge",
+              "hot": -25.0, "cold": -62.0, "floor": 0.0, "gamma": 1.0,
+              "ko": "상층 수증기"},
+    "vi006": {"kind": "vis", "area": "LA", "res": "005ge",
+              "floor": 0.14, "gamma": 0.8, "ko": "구름 (낮)"},
 }
 
 # 플랑크 상수 (파수 기준) ⚠️ 파장 기준 값과 섞으면 안 된다
@@ -99,10 +125,13 @@ def latest_key(ch, now=None):
     """가장 최근 파일 하나를 찾는다.
     ⚠️ 목록을 통째로 뒤지지 않는다. 시각을 알고 있으니 **최근 시간대부터** 좁혀 본다."""
     now = now or datetime.now(timezone.utc)
-    res = CHANNELS[ch]["res"]
+    cfg = CHANNELS[ch]
+    area = cfg["area"]                              # 'FD' 전면 | 'LA' 한반도
+    # ⚠️ 꼬리는 영역+해상도다: fd020ge / la005ge …
+    tail = f"{area.lower()}{cfg['res']}"
     for back_h in range(0, 4):                     # 최대 4시간 전까지
         t = now - timedelta(hours=back_h)
-        prefix = f"AMI/L1B/LA/{t:%Y%m}/{t:%d}/{t:%H}/gk2a_ami_le1b_{ch}_{res}_"
+        prefix = f"AMI/L1B/{area}/{t:%Y%m}/{t:%d}/{t:%H}/gk2a_ami_le1b_{ch}_{tail}_"
         r = src.list_objects_v2(Bucket=SRC_BUCKET, Prefix=prefix)
         keys = sorted(o["Key"] for o in r.get("Contents", []))
         if keys:
@@ -110,10 +139,12 @@ def latest_key(ch, now=None):
     return None
 
 
-def _geos_index(sub, ulx, uly, dx, dy, nx, ny):
+def _geos_index(sub, ulx, uly, dx, dy, nx, ny, box):
     """등경위도 격자의 각 칸이 원본의 몇 번 화소인가 (CGMS 정지위성 변환)"""
-    lon = np.linspace(LON0, LON1, W)[None, :]
-    lat = np.linspace(LAT1, LAT0, H)[:, None]
+    (LAT0, LAT1), (LON0, LON1) = box["lat"], box["lon"]
+    W, H = box["w"], box["h"]
+    lon = np.linspace(LON0, LON1, W, dtype=np.float32)[None, :]
+    lat = np.linspace(LAT1, LAT0, H, dtype=np.float32)[:, None]
     la, lo = np.radians(lat), np.radians(lon)
     cl = np.arctan(0.993243 * np.tan(la))                       # 지심위도
     rl = RPOL / np.sqrt(1 - 0.00669438444 * np.cos(cl) ** 2)
@@ -132,8 +163,9 @@ def _geos_index(sub, ulx, uly, dx, dy, nx, ny):
     col = (xs - ulx) / dx - 0.5
     row = (ys - uly) / dy - 0.5
     ok = vis & (col >= 0) & (col < nx - 1) & (row >= 0) & (row < ny - 1)
-    return (np.clip(np.round(row), 0, ny - 1).astype(np.int32),
-            np.clip(np.round(col), 0, nx - 1).astype(np.int32), ok)
+    # ⚠️ 최근접으로 뽑으면 원본보다 촘촘한 격자(가시광 0.5km)에서 계단이 그대로 남는다.
+    #    이중선형으로 섞는다 — 없는 정보를 만드는 게 아니라 있는 값을 이어 주는 것이다.
+    return col, row, ok
 
 
 def render(ch, key):
@@ -152,42 +184,84 @@ def render(ch, key):
         off = float(_attr(f, "DN_to_Radiance_Offset"))
         lam = float(_attr(f, "channel_center_wavelength"))
 
+    box = AREAS[cfg["area"]]
+    W, H = box["w"], box["h"]
     dx, dy = (lrx - ulx) / nx, (lry - uly) / ny
-    ri, ci, ok = _geos_index(sub, ulx, uly, dx, dy, nx, ny)
+    col, row, ok = _geos_index(sub, ulx, uly, dx, dy, nx, ny, box)
+    c0 = np.clip(np.floor(col), 0, nx - 2).astype(np.int32)
+    r0 = np.clip(np.floor(row), 0, ny - 2).astype(np.int32)
+    fc = (col - c0).astype(np.float32)
+    fr = (row - r0).astype(np.float32)
+    def sample(a):
+        return (a[r0, c0] * (1 - fc) * (1 - fr) + a[r0, c0 + 1] * fc * (1 - fr)
+                + a[r0 + 1, c0] * (1 - fc) * fr + a[r0 + 1, c0 + 1] * fc * fr)
 
     rad = gain * dn + off      # ⚠️ 적외는 gain 이 **음수**다 = 값이 클수록 차갑다
     if cfg["kind"] == "ir":
         # ⚠️⚠️ 복사휘도가 **파수(cm⁻¹)** 기준이다. 파장(㎛) 식을 쓰면 131~437°C 가 나온다
         #    (실제로 그렇게 나왔고, 물리적으로 불가능해서 바로 걸렸다).
         nu = 1e4 / lam
-        v = (C2 * nu) / np.log1p(C1 * nu ** 3 / np.maximum(rad, 1e-6)) - 273.15
-        s = v[ri, ci]
-        gy = np.clip((cfg["hot"] - s) / (cfg["hot"] - cfg["cold"]), 0, 1)
-        # 투명도는 **밝기가 아니라 온도**로 정한다 — 지표(따뜻)는 비고 구름만 남는다
-        al = np.clip((cfg["a_from"] - s) / cfg["a_span"], 0, 1)
+        v = ((C2 * nu) / np.log1p(C1 * nu ** 3 / np.maximum(rad, 1e-6)) - 273.15).astype(np.float32)
+        s = sample(v)
+        # 밝기는 절대온도 기준 — 색이 날마다 달라지면 어제와 비교가 안 된다
+        t = np.clip((cfg["hot"] - s) / (cfg["hot"] - cfg["cold"]), 0, 1)
+        gy = np.clip(t * 1.35, 0, 1)
+
+        if cfg.get("rowbase"):
+            # ⚠️⚠️ **고정 온도 문턱은 전면에서 못 쓴다.**
+            #    실측: hot=30·cold=-75 로 두었더니 **남극해(-45~-60°)가 62.5% 불투명**이었다.
+            #    구름이 아니라 그냥 차가운 바다다. 적도에서 극까지 지표 온도가
+            #    40°C 넘게 다르니, 하나의 문턱이 어디선가는 반드시 틀린다.
+            #
+            #    → **위도줄마다 "맑은 하늘"을 그 줄에서 직접 잰다.**
+            #      그 줄에서 가장 따뜻한 축(92 분위)이 곧 지표이고,
+            #      구름은 "그보다 얼마나 찬가"다. 바깥 자료가 필요 없다.
+            #    ⚠️ 그 위도가 통째로 구름에 덮인 날은 기준선도 구름이라 **덜 보인다.**
+            #       고정 문턱이 대륙 하나를 통째로 칠하는 것보다는 낫다고 판단했다.
+            m = np.where(ok, s, np.nan)
+            with np.errstate(all="ignore"):
+                base = np.nanpercentile(m, 92, axis=1).astype(np.float32)
+            base = np.where(np.isfinite(base), base, np.nanmedian(base))
+            # 줄마다 튀면 **가로줄 무늬**가 생긴다 — 25줄 이동평균으로 편다
+            k = 25
+            pad = np.pad(base, k // 2, mode="edge")
+            base = np.convolve(pad, np.ones(k, np.float32) / k, mode="valid")
+            dT = base[:, None] - s            # 지표보다 몇 도 찬가
+            LO, HI = cfg["dLo"], cfg["dHi"]   # 이만큼 차면 보이기 시작 / 완전히 덮는다
+            al = np.clip((dT - LO) / (HI - LO), 0, 1) ** cfg["gamma"]
+        else:
+            # ⚠️ 좁은 영역(한반도)에서는 고정 문턱으로 충분하다
+            al = np.clip((t - cfg["floor"]) / max(1e-6, 1 - cfg["floor"]), 0, 1) ** cfg["gamma"]
         lo_c, hi_c = float(np.nanmin(s[ok])), float(np.nanmax(s[ok]))
         unit = "°C"
     else:
         # 가시광은 복사휘도를 그대로 쓴다. ⚠️ 밤에는 0 에 가깝다 — 그게 정상이다.
-        s = rad[ri, ci]
+        s = sample(rad.astype(np.float32))
         hi = np.percentile(s[ok], 99.0) if ok.any() else 1.0
         gy = np.clip(s / max(hi, 1e-6), 0, 1)
-        al = np.clip((gy - cfg["a_from"]) / cfg["a_span"], 0, 1)
+        al = np.clip((gy - cfg["floor"]) / max(1e-6, 1 - cfg["floor"]), 0, 1) ** cfg["gamma"]
         lo_c, hi_c = float(np.nanmin(s[ok])), float(hi)
         unit = "radiance"
 
-    rgba = np.zeros((H, W, 4), np.uint8)
-    rgba[..., :3] = (gy * 255).astype(np.uint8)[..., None]
-    rgba[..., 3] = (al * 255).astype(np.uint8)
-    rgba[~ok] = 0
-
+    # ⚠️ **LA(회색+알파) 2채널**로 보낸다. RGB 가 어차피 같은 값이라 3장을 보낼 이유가 없다 —
+    #    실측으로 RGBA 4.63MB → LA 2.99MB (35% 절감). 폰에서 받는 파일이라 크다.
+    #    GMGSI 가 쓰는 방식이고 브라우저가 알아서 R=G=B=L 로 푼다.
+    g8 = (gy * 255).astype(np.uint8)
+    a8 = (al * 255).astype(np.uint8)
+    g8[~ok] = 0
+    a8[~ok] = 0
     buf = io.BytesIO()
-    Image.fromarray(rgba).save(buf, "PNG", optimize=True)
+    Image.fromarray(np.stack([g8, a8], -1), "LA").save(buf, "PNG", optimize=True)
     png = buf.getvalue()
     dst.put_object(Bucket=DST_BUCKET, Key=f"clouds/gk2a/{ch}.png", Body=png,
                    ContentType="image/png", CacheControl="public, max-age=300")
+    (la0, la1), (lo0, lo1) = box["lat"], box["lon"]
     return {"bytes": len(png), "min": round(lo_c, 1), "max": round(hi_c, 1),
-            "unit": unit, "cover": round(float(ok.mean()) * 100, 1)}
+            "unit": unit, "cover": round(float(ok.mean()) * 100, 1),
+            # ⚠️ 채널마다 범위가 다르다. 하나로 두면 가시광(한반도)이
+            #    전면 사각형에 늘어붙어 **엉뚱한 자리에 그려진다.**
+            "bbox": {"south": la0, "north": la1, "west": lo0, "east": lo1},
+            "width": W, "height": H, "area": cfg["area"]}
 
 
 def handler(event=None, context=None):
@@ -221,13 +295,15 @@ def handler(event=None, context=None):
             tzinfo=timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z")
     meta = {
         "time": iso,
-        "bbox": {"south": LAT0, "north": LAT1, "west": LON0, "east": LON1},
-        "width": W, "height": H,
+        # ⚠️ 여기 bbox 는 **없다.** 채널마다 다르므로 channels[*].bbox 를 봐야 한다.
+        #    옛 화면이 최상위 bbox 를 읽고 있었다면 그건 이제 틀린 값이다.
         "source": "천리안2A (GK-2A) · 기상청 국가기상위성센터 / NOAA AWS 공개데이터",
         "resolution_km": 2.0,
         "channels": out,
         "note": {
-            "ko": "천리안2A 가 한반도만 잘라 2km 로 찍은 것입니다. 원본은 2.5분마다 나옵니다. "
+            "ko": "천리안2A 가 찍은 것입니다. 원본은 2.5분마다 나옵니다. "
+                  "적외·수증기는 위성이 보는 전면(동아시아·서태평양)을, "
+                  "가시광은 한반도를 0.5km 로 잘라 드립니다. "
                   "⚠️ 적외(구름·수증기)는 밤에도 보이지만, 가시광은 낮에만 보입니다. "
                   "⚠️ 적외 하나로는 낮은 구름과 따뜻한 바다를 깨끗이 가르지 못합니다 — "
                   "둘 다 20°C 근처라 자료 자체의 한계입니다.",

@@ -148,11 +148,15 @@ export const imagery = {
       if (!m.time) return false;
       if (m.time === this._cloudTime) return true;    // 이미 최신
 
+      /* ⚠️ 1.2MB 다. 예전엔 아무 표시 없이 몇 초를 기다렸다 —
+         첫 화면에서 켜지는 레이어라 "구름이 왜 안 나오지"가 된다. */
+      const src = await this._fetchImage(
+        `${API.CLOUDS}/global.png?t=${encodeURIComponent(m.time)}`, '전지구 구름');
       const img = new Image();
       img.crossOrigin = 'anonymous';
       await new Promise((ok, no) => {
         img.onload = ok; img.onerror = () => no(new Error('png'));
-        img.src = `${API.CLOUDS}/global.png?t=${encodeURIComponent(m.time)}`;
+        img.src = src;
       });
 
       const cv = document.createElement('canvas');
@@ -379,13 +383,13 @@ export const imagery = {
     this.truecolor.show = wasShown;
     this.truecolor.dayAlpha = alpha;
     viewer.imageryLayers.remove(old, true);
-    this._truecolorLoading(true);   // 새 날짜 타일 로딩 표시
+    this._imgLoading(true, '위성 영상');   // 새 날짜 타일 로딩 표시
   },
 
   async setTrueColor(on) {
     if (!on) {
       if (this.truecolor) this.truecolor.show = false;
-      this._truecolorLoading(false);
+      this._imgLoading(false);
       this._applyClouds();
       return;
     }
@@ -397,7 +401,7 @@ export const imagery = {
       const day = this._ymdBack(1);
       this._tcDate = day;
       this.truecolor = this._addTruecolorLayer(day);
-      this._truecolorLoading(true);
+      this._imgLoading(true, '위성 영상');
 
       /* 배경 탐색 — 어제가 유난히 나쁜 날(빈 구간이 훨씬 큼)에만 조용히 교체한다.
          평소엔 어제가 최선이라 그대로 둔다(불필요한 리로드·깜빡임 방지).
@@ -434,6 +438,63 @@ export const imagery = {
     this._applyClouds();
   },
 
+
+  /* ── 한 장짜리 큰 그림은 **실제 바이트로** 진행률을 낸다 ─────────────
+     받은 지적: "모든 지구 위성 구름 사진은 로딩바 만들자 뜨는지 안뜨는지 모르겠어"
+
+     ⚠️⚠️ 타일 세기(tileLoadProgressEvent)로는 **한 장짜리 그림의 진행을 못 본다.**
+        천리안은 채널당 2~3MB 인데 그동안 아무 표시가 없었다 — 켜 놓고 몇 초 동안
+        화면이 그대로라 "안 켜졌나" 싶게 된다.
+     → fetch 로 직접 받으면서 Content-Length 대비 몇 % 왔는지 그대로 말한다.
+        이건 추정이 아니라 **실제로 받은 바이트**다.
+     ⚠️ 서버가 길이를 안 주면(압축 전송 등) 퍼센트를 지어내지 않고 흐르는 막대로 둔다. */
+  async _fetchImage(url, label) {
+    this._imgLoading(true, label);
+    try {
+      const r = await fetch(url, { cache: 'no-cache' });
+      if (!r.ok) throw new Error(String(r.status));
+      const total = Number(r.headers.get('content-length')) || 0;
+      if (!r.body || !total) {
+        // 길이를 모르면 흐르는 막대 그대로 — 다 받으면 끝낸다
+        const b = await r.blob();
+        this._imgDone();
+        return URL.createObjectURL(b);
+      }
+      const rd = r.body.getReader();
+      const chunks = []; let got = 0;
+      for (;;) {
+        const { done, value } = await rd.read();
+        if (done) break;
+        chunks.push(value); got += value.length;
+        this._imgBytes(got, total);
+      }
+      this._imgDone();
+      return URL.createObjectURL(new Blob(chunks, { type: 'image/png' }));
+    } catch (e) {
+      this._imgLoading(false);
+      throw e;
+    }
+  },
+
+  /** 바이트 진행률을 막대에 반영 */
+  _imgBytes(got, total) {
+    if (!this._tcBar) return;
+    this._tcLoadEl?.classList.remove('indet');
+    const pct = Math.min(100, Math.round(got / total * 100));
+    this._tcBar.style.width = `${Math.max(3, pct)}%`;
+    // ⚠️ MB 도 함께 적는다 — 느릴 때 "얼마나 남았나"를 알아야 기다릴지 정한다
+    this._tcTxt.textContent =
+      `${this._tcLabel} ${pct}% · ${(got / 1e6).toFixed(1)}/${(total / 1e6).toFixed(1)}MB`;
+  },
+
+  _imgDone() {
+    if (!this._tcBar) return;
+    this._tcLoadEl?.classList.remove('indet');
+    this._tcBar.style.width = '100%';
+    this._tcTxt.textContent = `${this._tcLabel} 100%`;
+    setTimeout(() => this._imgLoading(false), 420);
+  },
+
   /** 타일이 다 앉은 뒤에 무언가를 한다 (없으면 그냥 조금 뒤에).
    *  ⚠️ 무거운 배경 작업은 **화면이 다 뜬 뒤에** 시작해야 한다.
    *     같이 달리면 그 작업이 연결을 다 먹어 정작 보여줄 것이 늦게 뜬다. */
@@ -458,7 +519,7 @@ export const imagery = {
    *     막대가 **뒤로 가지 않게** 한다 — 되돌아가는 막대는 고장으로 읽힌다.
    *  ⚠️ 한 번이라도 대기(remaining>0)를 본 뒤 0 이 되면 끈다
    *     (캐시로 즉시 0 인 경우 오인 방지). */
-  _truecolorLoading(show) {
+  _imgLoading(show, label) {
     const globe = viewer.scene.globe;
     if (this._tcProg) { globe.tileLoadProgressEvent.removeEventListener(this._tcProg); this._tcProg = null; }
     clearTimeout(this._tcLoadTimer);
@@ -473,7 +534,7 @@ export const imagery = {
     if (!this._tcLoadEl) {
       const el = document.createElement('div');
       el.id = 'tcLoading';
-      el.innerHTML = '<span class="tcl-txt">위성 영상 불러오는 중…</span>'
+      el.innerHTML = '<span class="tcl-txt"></span>'
                    + '<span class="tcl-bar"><i></i></span>';
       document.body.appendChild(el);
       this._tcLoadEl = el;
@@ -487,7 +548,8 @@ export const imagery = {
        remaining 이 줄기 시작한 뒤에야 퍼센트를 말한다. */
     this._tcLoadEl.classList.add('indet');
     this._tcBar.style.width = '';
-    this._tcTxt.textContent = '위성 영상 불러오는 중…';
+    this._tcLabel = label || '위성 영상';
+    this._tcTxt.textContent = `${this._tcLabel} 불러오는 중…`;
 
     let sawPending = false, peak = 0, shown = 0;
 
@@ -497,7 +559,7 @@ export const imagery = {
        (안전 타임아웃 30초까지 갔을 것이다.)
        → 잠깐 기다려 보고 대기가 한 번도 없으면 조용히 끈다. */
     this._tcIdleTimer = setTimeout(() => {
-      if (!sawPending) this._truecolorLoading(false);
+      if (!sawPending) this._imgLoading(false);
     }, 2_500);
     this._tcProg = (remaining) => {
       if (remaining > 0) {
@@ -507,22 +569,22 @@ export const imagery = {
         const pct = Math.round((1 - remaining / peak) * 100);
         shown = Math.max(shown, pct);                         // ⚠️ 뒤로 가지 않는다
         this._tcBar.style.width = `${Math.max(4, shown)}%`;
-        this._tcTxt.textContent = `위성 영상 불러오는 중… ${shown}%`;
+        this._tcTxt.textContent = `${this._tcLabel} 불러오는 중… ${shown}%`;
         return;
       }
       if (sawPending) {
         this._tcLoadEl.classList.remove('indet');
         this._tcBar.style.width = '100%';
-        this._tcTxt.textContent = '위성 영상 불러오는 중… 100%';
+        this._tcTxt.textContent = `${this._tcLabel} 100%`;
         // 100% 를 잠깐 보여 주고 끈다 — 갑자기 사라지면 끝난 건지 죽은 건지 모른다
-        setTimeout(() => this._truecolorLoading(false), 420);
+        setTimeout(() => this._imgLoading(false), 420);
         this._tcProg && globe.tileLoadProgressEvent.removeEventListener(this._tcProg);
         this._tcProg = null;
       }
     };
     globe.tileLoadProgressEvent.addEventListener(this._tcProg);
     // 안전 타임아웃 — 어떤 이유로 progress 가 안 끝나도 30초 뒤엔 끈다
-    this._tcLoadTimer = setTimeout(() => this._truecolorLoading(false), 30_000);
+    this._tcLoadTimer = setTimeout(() => this._imgLoading(false), 30_000);
   },
 
   /** 구름 오버레이 표시 여부를 한 곳에서 정한다.
@@ -621,6 +683,10 @@ export const imagery = {
       document.dispatchEvent(new CustomEvent('earthus:imagery'));
       return;
     }
+    /* ⚠️ 타일 레이어라 바이트로 못 잰다 — 타일 진행으로 표시한다.
+       그래도 표시는 해야 한다: 켜고 자료가 올 때까지 화면이 그대로면
+       "고장인가" 싶게 된다. 실제로 그 신고를 받았다. */
+    this._imgLoading(true, '히마와리');
     const ts = await this.pickHimaTime();
     /* ⚠️ 밤에는 여기서 반드시 실패한다 — GIBS 가 가시광 타일을 **아예 발행하지 않는다**
        (실측: 19:30 KST 는 200, 21:30·22:10 은 404). 빈 타일이 아니라 404 다.
@@ -735,6 +801,10 @@ export const imagery = {
     (this.irLayers || []).forEach(L => { try { viewer.imageryLayers.remove(L, true); } catch (_) {} });
     this.irLayers = [];
     if (!on) { document.dispatchEvent(new CustomEvent('earthus:imagery')); return; }
+    /* ⚠️ 타일 레이어라 바이트로 못 잰다 — 타일 진행으로 표시한다.
+       그래도 표시는 해야 한다: 켜고 자료가 올 때까지 화면이 그대로면
+       "고장인가" 싶게 된다. 실제로 그 신고를 받았다. */
+    this._imgLoading(true, '구름 꼭대기 온도');
 
     const ts = await this.pickHimaTime();
     if (!ts) { console.warn('[himaIR] 받을 수 있는 시각을 못 찾음'); return; }
@@ -819,9 +889,21 @@ export const imagery = {
       return;
     }
     const b = box;
+    /* ⚠️ 채널당 2~3MB 다. 그냥 얹으면 다 올 때까지 화면이 그대로라
+       "안 켜졌나" 싶게 된다 — 받으면서 진행률을 보여준다. */
+    const LABEL = { ir112: '천리안 구름', vi006: '천리안 구름(낮)', wv063: '천리안 수증기' }[ch]
+                || '천리안 영상';
+    let src;
+    try {
+      src = await this._fetchImage(
+        `${API.GK2A}/${ch}.png?t=${encodeURIComponent(m.time || '')}`, LABEL);
+    } catch (e) {
+      this._say(`천리안 영상을 받지 못했습니다 (${e.message})`, 'Failed to load Chollian imagery');
+      return;
+    }
     const L = viewer.imageryLayers.addImageryProvider(
       new Cesium.SingleTileImageryProvider({
-        url: `${API.GK2A}/${ch}.png?t=${encodeURIComponent(m.time || '')}`,
+        url: src,
         rectangle: Cesium.Rectangle.fromDegrees(b.west, b.south, b.east, b.north),
         tileWidth: info.width, tileHeight: info.height,
       })

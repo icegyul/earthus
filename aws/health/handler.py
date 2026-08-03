@@ -103,6 +103,9 @@ WATCH = [
      "ko": "하루 한 번 대기 상태 판정"},
     {"key": "events/quake-asia.json", "everyMin": 10, "graceMin": 25,
      "ko": "지진 (기상청·JMA)"},
+    # ⚠️ 하루 한 번이면 충분하다 — 원본(네바다 MIDAS)이 그보다 자주 안 바뀐다.
+    {"key": "events/crustal.json", "everyMin": 1440, "graceMin": 720,
+     "ko": "땅의 움직임 (GNSS)"},
 ]
 
 # ── 축적형: **있어야 할 파일이 실제로 있는가** ─────────────────

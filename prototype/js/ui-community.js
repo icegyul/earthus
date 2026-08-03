@@ -18,6 +18,9 @@ import { flyTo } from './viewer.js';
 import { store } from './store.js';
 import { auth } from './auth.js';
 import { requests, STATUS } from './community.js';
+/* 땅의 움직임 탭이 쓴다 */
+import { API } from './config.js';
+import { fetchT } from './net.js';
 import { translator, detectLang } from './translate.js';
 
 const $ = s => document.querySelector(s);
@@ -32,6 +35,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
 const TABS = ko => [
   ['today', ko ? '오늘의 지구' : 'Earth today'],
   ['charts', ko ? '자료' : 'Charts'],
+  ['crust', ko ? '땅의 움직임' : 'Ground motion'],
   ['req', ko ? '개발 요청' : 'Requests'],
 ];
 
@@ -86,9 +90,91 @@ export const communityPanel = {
     });
     body.appendChild(tabs);
 
-    if (this.tab === 'today') this.renderToday(body, ko);
+    if (this.tab === 'crust') this.renderCrust(body, ko);
+    else if (this.tab === 'today') this.renderToday(body, ko);
     else if (this.tab === 'charts') this.renderCharts(body, ko);
     else this.renderRequests(body, ko);
+  },
+
+
+  /* ── 땅의 움직임 ────────────────────────────────────────────
+     ⚠️⚠️ 이 앱에서 **유일하게 하늘이 아닌 자료**다. 그리고 가장 순수하게 "잰 값"이다 —
+        관측점의 좌표가 해마다 얼마나 달라졌는지, 그뿐이다. 모델도 예보도 아니다.
+     ⚠️ 그래서 못 하는 것을 화면에 먼저 적는다. 안 그러면 "지진 감지"로 읽힌다. */
+  _crust: null,
+  async loadCrust() {
+    if (this._crust) return this._crust;
+    try {
+      const r = await fetchT(`${API.EVENTS}/crustal.json`, { cache: 'no-cache' });
+      this._crust = r.ok ? await r.json() : null;
+    } catch (_) { this._crust = null; }
+    return this._crust;
+  },
+
+  renderCrust(body, ko) {
+    const d = this._crust;
+    if (!d) {
+      body.appendChild(el('p', 'comm-load', ko ? '받는 중…' : 'Loading…'));
+      this.loadCrust().then(() => this.render());
+      return;
+    }
+    const near = (a) => a == null ? '—' : a.toFixed(0);
+    const compass = deg => {
+      const N = ko ? ['북','북동','동','남동','남','남서','서','북서']
+                   : ['N','NE','E','SE','S','SW','W','NW'];
+      return N[Math.round(((deg % 360) + 360) % 360 / 45) % 8];
+    };
+    const k = d.korea, j = d.japan;
+
+    body.appendChild(el('p', 'cr-lead', ko
+      ? '<b>땅이 실제로 얼마나 움직였는지</b>입니다. 계산한 값이 아니라 '
+        + 'GNSS 상시관측점의 좌표가 해마다 달라진 거리입니다.'
+      : '<b>Measured</b> motion of continuous GNSS stations — not a model.'));
+
+    const grid = el('div', 'cr-grid');
+    [[ko ? '한국' : 'Korea', k], [ko ? '일본' : 'Japan', j]].forEach(([nm, v]) => {
+      const c = el('div', 'cr-stat');
+      c.innerHTML = `<div class="n">${near(v.medianSpeed)}<small>mm/${ko ? '년' : 'yr'}</small></div>`
+        + `<div class="k">${nm} · ${compass(v.medianDir)}${ko ? '쪽' : ''} · `
+        + `${v.n}${ko ? '지점' : ' sites'}</div>`;
+      grid.appendChild(c);
+    });
+    body.appendChild(grid);
+
+    /* ⚠️⚠️ 이 문단을 지우면 안 된다. 숫자만 보면 "땅이 갈라지고 있다"로 읽힌다. */
+    body.appendChild(el('p', 'cr-note', ko
+      ? '⚠️ 이 움직임의 대부분은 <b>판 전체가 함께 가는 것</b>입니다. 한반도가 연 3cm '
+        + '동남동으로 가는 것은 유라시아판이 그렇게 가기 때문이지, 땅이 찢어지고 '
+        + '있어서가 아닙니다. 우리도 그 위에 얹혀 같이 갑니다.'
+      : '⚠️ Most of this is whole-plate drift, not local deformation.'));
+
+    /* 큰 지진이 실제로 땅을 얼마나 옮겼는지 — 우리가 직접 재 본 값 */
+    const ex = el('div', 'cr-case');
+    ex.innerHTML = (ko
+      ? '<b>2011년 동일본대지진(M9.0) 때</b><br>'
+        + '<span>진앙 130km 지점 <b>3.42m</b> 이동 · 200km 지점 1.97m · '
+        + '<b>대전 2.3cm</b> — 한반도가 통째로 동쪽으로 끌려갔습니다.</span>'
+      : '<b>2011 Tōhoku (M9.0)</b><br><span>3.42 m at 130 km · 1.97 m at 200 km · '
+        + '2.3 cm in Daejeon — the whole peninsula shifted east.</span>');
+    body.appendChild(ex);
+
+    /* ⚠️⚠️ 못 하는 것 — 크게, 먼저 */
+    body.appendChild(el('div', 'cr-cant', ko
+      ? '<b>⚠️ 이걸로 못 하는 것</b><br>'
+        + '· <b>실시간이 아닙니다.</b> 최종 좌표가 약 <b>한 달</b> 늦습니다. '
+        + '지진 나고 바로는 못 봅니다.<br>'
+        + '· <b>중소 지진은 안 보입니다.</b> M5.8은 M9.0보다 에너지가 6만 배 작아 '
+        + '변위가 일일 관측 잡음(수 mm)에 묻힙니다.<br>'
+        + '· ⚠️ <b>안 보이는 것과 안 움직인 것은 다릅니다.</b> 작은 값을 '
+        + '"지진 때문"이라고 말하지 않습니다 — 2011년에도 잡음으로 1~2cm가 나왔습니다.'
+      : '<b>⚠️ What this cannot do</b><br>· Not real time — final solutions lag ~1 month.<br>'
+        + '· Quakes below ~M6 are lost in daily noise.<br>'
+        + '· Invisible is not the same as motionless.'));
+
+    body.appendChild(el('p', 'cr-src', ko
+      ? `자료: 네바다 측지연구소(UNR) MIDAS 속도장 · 관측점 ${d.count.toLocaleString()}곳 · `
+        + `${d.cite}`
+      : `Source: Nevada Geodetic Laboratory · ${d.count.toLocaleString()} sites · ${d.cite}`));
   },
 
   /* ── 오늘의 지구 ────────────────────────────────────────────

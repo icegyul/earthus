@@ -520,10 +520,17 @@ export const fishPanel = {
   _card(s, ko) {
     const sea = fishing._sea.get(s.name) || null;
     const wind = this._windAt(s);
+    /* ⚠️ 일본 지점은 **이름을 못 읽는 쪽이 훨씬 많다**(492곳 중 490곳이 원문).
+       원문을 그대로 두되, 한국 지점과 섞였을 때 어느 쪽인지 알 수 있게 표시한다.
+       ⚠️ 그리고 kindKo(방파제·선착장 구분)가 일본에는 없다 — 없는 것을 지어내지 않는다. */
+    const jp = s.country === 'jp';
+    const kindTxt = jp ? (ko ? '일본' : 'Japan') : esc(s.kindKo || '');
     const head = `
       <header>
-        <h4>${esc(s.name)}</h4>
-        <span class="mt-alt">${esc(s.kindKo)}${s.km != null ? ` · ${s.km}km` : ''}</span>
+        <h4>${esc(s.name)}${jp && s.nameJa && s.nameMark !== 'ja'
+          ? ` <span class="sf-ja">${esc(s.nameJa)}</span>` : ''}</h4>
+        <span class="mt-alt">${kindTxt}${s.km != null ? ` · ${s.km}km` : ''}${
+          jp && ko && s.nameMark === 'ja' ? ' · 현지 표기' : ''}</span>
       </header>`;
 
     if (!sea) {

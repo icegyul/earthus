@@ -24,8 +24,12 @@
 import { API } from './config.js';
 import { fetchT } from './net.js';
 import { distKm } from './korea.js';
+/* 일본 지점 이름을 기기 언어에 맞춰 */
+import { jpName } from './jpname.js';
+import { i18n } from './i18n.js';
 
 const SRC = 'data/fishing.json';
+const JP_SRC = 'data/jp/fishing.json';
 
 /* 조회 지점을 뭍에서 바다 쪽으로 미는 거리(km).
    ⚠️ 방파제·항구 좌표는 뭍에 찍혀 있다. 그대로 물으면 값이 통째로 빈다
@@ -208,9 +212,36 @@ export const fishing = {
     if (!r.ok) throw new Error('fishing ' + r.status);
     const j = await r.json();
     this.list = (j.spots || []).map(s => ({
-      name: s.n, lat: s.la, lon: s.lo, region: s.r,
+      name: s.n, lat: s.la, lon: s.lo, region: s.r, country: 'kr',
       kind: s.k, kindKo: s.kko, spanM: s.sp ?? null,
     }));
+
+    /* ── 일본 방파제·선착장 ────────────────────────────────────
+       ⚠️⚠️ **한국어 이름이 한 곳도 없다.** OSM 에 name:ko 가 0곳이고,
+          영문도 68곳뿐이라 규칙으로 옮겨진 것이 **단 2곳**이다.
+          나머지 490곳은 일본어 원문 그대로 나간다 — 그게 자료의 현실이다.
+       ⚠️ 그래도 넣는다. 물때·파고·수온은 그대로 잰 값이고, 이름을 못 읽는 것과
+          자리를 모르는 것은 다르다.
+       ⚠️ 실패해도 한국 자료는 그대로 뜬다. */
+    try {
+      const jr = await fetchT(JP_SRC, { cache: 'force-cache' });
+      if (jr.ok) {
+        const jj = await jr.json();
+        const lang = i18n.lang;
+        (jj.spots || []).forEach(s => {
+          const nm = s.ko
+            ? { text: lang === 'ko' ? s.ko : lang === 'ja' ? s.n : (s.en || s.ko),
+                mark: lang === 'ko' ? 'tr' : lang === 'ja' ? 'ja' : (s.en ? 'en' : 'tr') }
+            : jpName({ ja: s.n, en: s.en }, lang);
+          this.list.push({
+            name: nm.text, nameJa: s.n, nameMark: nm.mark,
+            lat: s.la, lon: s.lo, region: 'jp', country: 'jp',
+            kind: 'jp', kindKo: null, spanM: null,
+          });
+        });
+      }
+    } catch (_) { /* 일본이 없어도 한국은 뜬다 */ }
+
     this.meta = { generated: j.generated, source: j.source, license: j.license,
                   count: j.count, note: j.note };
     return this.list;

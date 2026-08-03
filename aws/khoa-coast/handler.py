@@ -112,11 +112,34 @@ def num(v):
         return None
 
 
+def sea(v):
+    """수온·염분 전용. ⚠️⚠️ **0.00 은 "0도"가 아니라 "안 잰다"는 뜻이다.**
+
+    실측(2026-08-04 08시): 45곳 중 17곳이 wtem 0.00 · slntQty 0.00 을 보낸다.
+    묵호를 보면 기온 27.7 · 기압 1013.2 · 조위 37.0 은 정상인데 그 둘만 0.00 이다.
+    → 수온 센서가 없는 관측소가 빈칸 대신 0.00 을 채워 보내는 것이다.
+
+    ⚠️ 그대로 쓰면 **8월 동해가 0°C** 로 나온다. 바닷물은 -1.8°C 에서 언다.
+       염분 0 은 민물이라는 뜻이라 바다에서는 더더욱 불가능하다.
+    ⚠️ 기온(artmp)에는 이 규칙을 쓰지 않는다 — 겨울에 0.0°C 는 실제로 있다.
+       바다 값에만 적용한다."""
+    x = num(v)
+    return None if x is None or x == 0.0 else x
+
+
 def one_beach(code, ymd):
     """한 해수욕장의 오늘치. 5분 간격이라 하루 288건까지 온다 —
     ⚠️ 전부 내보내면 파일이 커진다. **가장 최근 값 + 오늘 최고 등급**만 남긴다."""
     try:
-        d = get(RIP, {"beachCode": code, "date": ymd, "resultType": "json"})
+        # ⚠️⚠️ **numOfRows 를 반드시 넘긴다. 기본값이 10 이다.**
+        #    안 넘기면 하루치 중 **맨 앞 10건(00:00~00:45)** 만 온다.
+        #    정렬해서 마지막을 골라도 그건 **자정 값**이다 —
+        #    아침 8시에 "지금 위험"이라며 자정 등급을 보여주게 된다.
+        #    오류도 안 나고, 값도 그럴듯해서 **눈으로는 절대 안 걸린다.**
+        #    (실제로 그렇게 배포됐다가 화면의 '오래됨' 검사에서 잡혔다)
+        #    5분 간격 × 하루 = 288건이라 300 이면 하루가 다 들어온다.
+        d = get(RIP, {"beachCode": code, "date": ymd, "resultType": "json",
+                      "numOfRows": 300, "pageNo": 1})
     except Exception as e:                                       # noqa: BLE001
         print(f"[coast] 이안류 {code} 실패: {str(e)[:60]}")
         return None
@@ -140,7 +163,7 @@ def one_beach(code, ymd):
         "grade": last.get("lastScrCn"),
         "gradeRank": RANK.get(last.get("lastScrCn") or "", 0),
         "waveM": num(last.get("wvhgt")), "wavePeriodS": num(last.get("wvpd")),
-        "seaTempC": num(last.get("wtem")), "airTempC": num(last.get("artmp")),
+        "seaTempC": sea(last.get("wtem")), "airTempC": num(last.get("artmp")),
         "windDir": last.get("wndrct"), "windMs": num(last.get("wspd")),
         "todayWorst": worst, "todayWorstAt": worst_at,
         "samples": len(rows),
@@ -164,8 +187,8 @@ def one_tide(code):
         # ⚠️ 조위는 cm 로 온다. m 로 바꾸지 않는다 — 기관 표기가 cm 이고,
         #    바꾸면 다른 곳에서 본 숫자와 어긋난다.
         "tideCm": num(r.get("bscTdlvHgt")),
-        "seaTempC": num(r.get("wtem")), "airTempC": num(r.get("artmp")),
-        "salinityPsu": num(r.get("slntQty")),
+        "seaTempC": sea(r.get("wtem")), "airTempC": num(r.get("artmp")),
+        "salinityPsu": sea(r.get("slntQty")),
         "pressureHpa": num(r.get("atmpr")),
         "windMs": num(r.get("wspd")), "windDir": num(r.get("wndrct")),
         "gustMs": num(r.get("maxMmntWspd")),

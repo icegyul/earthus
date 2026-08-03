@@ -17,6 +17,7 @@ import { fishing, safety, FISH_RULES } from './fishing.js';
 import { get, nearest, distKm } from './korea.js';
 import { myLocation } from './mylocation.js';
 import { viewer, onCameraIdle } from './viewer.js';
+import { nearestRip } from './coast.js';
 import { intro } from './intro.js';
 /* ⚠️ 입수 통제 경고는 서핑과 **같은 문장**을 쓴다. 두 곳에 따로 적으면
    한쪽만 고치는 날이 온다 — 이 앱에서 실제로 여러 번 그랬다. */
@@ -186,7 +187,12 @@ export const fishPanel = {
     const at = this._anchor();
     this._at = at;
     // ⚠️ 실패해도 화면은 뜬다 — 부이가 없다고 낚시 정보를 막지 않는다
-    this._buoy = await nearestBuoy(at.lat, at.lon).catch(() => null);
+    // ⚠️ 부이와 이안류를 **동시에** 받는다.
+    //    순서대로 기다리면 화면이 그만큼 늦게 뜬다.
+    [this._buoy, this._rip] = await Promise.all([
+      nearestBuoy(at.lat, at.lon).catch(() => null),
+      nearestRip(at.lat, at.lon).catch(() => null),
+    ]);
     this._pick = this._region
       ? fishing.byRegion(this._region).slice(0, N_SHOW)
       : fishing.near(at.lat, at.lon, N_SHOW);
@@ -478,7 +484,7 @@ export const fishPanel = {
             + `방파제·항·섬 ${m.count}곳 · 바다 자료 Open-Meteo 해양`
           : `${m.count} spots · sea data from Open-Meteo Marine`}</p>
         ${buoyLine(this._buoy, ko)}
-        ${swimWarn(ko)}
+        ${swimWarn(ko, this._rip)}
         ${this._markMode === 'region' ? this._regionList(ko) : ''}
         <div class="mt-list">${list.map(s => this._card(s, ko)).join('')}</div>
         ${this._foot(ko)}`}

@@ -21,6 +21,7 @@ import { viewer, onCameraIdle } from './viewer.js';
 import { intro } from './intro.js';
 /* 부이 실측을 함께 보여주려고 더 가져온다 — 아래 nearestBuoy 참고 */
 import { API } from './config.js';
+import { nearestRip, RIP_COLOR, RIP_EN } from './coast.js';
 import { fetchT } from './net.js';
 
 const $ = s => document.querySelector(s);
@@ -550,7 +551,12 @@ export const surfPanel = {
     const at = this._anchor();
     this._at = at;
     // ⚠️ 실패해도 화면은 뜬다 — 부이가 없다고 서핑 정보를 막지 않는다
-    this._buoy = await nearestBuoy(at.lat, at.lon).catch(() => null);
+    // ⚠️ 부이와 이안류를 **동시에** 받는다.
+    //    순서대로 기다리면 화면이 그만큼 늦게 뜬다.
+    [this._buoy, this._rip] = await Promise.all([
+      nearestBuoy(at.lat, at.lon).catch(() => null),
+      nearestRip(at.lat, at.lon).catch(() => null),
+    ]);
     this._pick = this._region
       ? beaches.byRegion(this._region).filter(b => b.facing != null).slice(0, N_SHOW)
       : beaches.near(at.lat, at.lon, N_SHOW);
@@ -596,7 +602,7 @@ export const surfPanel = {
             + `해변 ${m.count}곳 중 바다 방향을 낸 곳 ${m.withFacing}곳 · 파랑 자료 Open-Meteo 해양`
           : `${m.withFacing} of ${m.count} beaches have a shore orientation · waves: Open-Meteo Marine`}</p>
         ${buoyLine(this._buoy, ko)}
-        ${swimWarn(ko)}
+        ${swimWarn(ko, this._rip)}
         ${this._markMode === 'region' ? this._regionList(ko) : ''}
         <div class="mt-list">${list.map(b => this._card(b, ko)).join('')}</div>
         ${this._foot(ko)}`}
@@ -827,17 +833,60 @@ export const surfPanel = {
       통제 중인 해변인데 우리 화면은 파고 0.9m 만 조용히 띄운다.
       → 맨 아래 긴 주의 문구에 묻어 두지 않고, **목록보다 먼저** 보이게 둔다.
 
-   ⚠️ 자료가 생기면 지운다. 지금은 기상청 API 허브에 해수욕장 특화예보가 없고
-      (404 확인), 국립해양조사원 이안류 지수는 따로 신청해야 한다. */
-export function swimWarn(ko) {
-  return `<p class="mt-danger">${ko
-    ? '⚠️ <b>입수 통제 여부는 여기서 알 수 없습니다.</b> 해수욕장 통제는 대개 '
-      + '<b>이안류</b>로 정해지는데, 이안류는 해변 코앞에서 생겨 이 자료에 잡히지 '
-      + '않습니다. <b>잔잔해 보여도 통제 중일 수 있습니다</b> — 현장 안내와 '
-      + '안전요원 지시를 따르세요.'
-    : '⚠️ <b>We cannot tell you if the water is closed.</b> Beach closures are usually '
-      + 'driven by <b>rip currents</b>, which form right at the shore and do not appear '
-      + 'in this data. <b>Calm-looking does not mean open</b> — follow on-site signage.'}</p>`;
+   ⚠️⚠️ **2026-08-04: 자료가 생겼다.** 국립해양조사원 이안류 지수 승인이 나서
+      열 곳은 실제 등급을 말할 수 있게 됐다.
+      → 그 열 곳에서는 "알 수 없습니다"라고 쓰면 **거짓말**이 된다. 등급을 보여준다.
+      → 나머지 240여 곳에서는 이 문구를 그대로 쓴다. 그쪽은 여전히 모른다.
+      ⚠️ 등급이 '관심'이어도 **"들어가도 된다"로 바뀌지 않는다.**
+         입수 통제는 해수욕장 관리 주체가 정하고, 이안류 말고도 이유는 많다. */
+export function swimWarn(ko, rip) {
+  /* 관측 해변이 아니거나, 자료가 오래됐으면 — 예전 그대로 "모른다"고 말한다.
+     ⚠️ 값을 못 받았을 때 조용히 아무것도 안 띄우면, 경고가 사라진 화면이 된다.
+        그게 제일 위험하다. 모를 때는 **모른다고 크게** 적는다. */
+  if (!rip || rip.stale || !rip.grade) {
+    return `<p class="mt-danger">${ko
+      ? '⚠️ <b>입수 통제 여부는 여기서 알 수 없습니다.</b> 해수욕장 통제는 대개 '
+        + '<b>이안류</b>로 정해지는데, 이안류를 재는 해수욕장은 <b>전국에 열 곳뿐</b>이고 '
+        + '여기는 그중에 없습니다. <b>잔잔해 보여도 통제 중일 수 있습니다</b> — '
+        + '현장 안내와 안전요원 지시를 따르세요.'
+      : '⚠️ <b>We cannot tell you if the water is closed.</b> Closures are usually driven by '
+        + '<b>rip currents</b>, and only <b>ten beaches nationwide</b> are measured — this is '
+        + 'not one of them. <b>Calm-looking does not mean open</b> — follow on-site signage.'}</p>`;
+  }
+
+  const col = RIP_COLOR[rip.grade] || '#f87171';
+  const gEn = RIP_EN[rip.grade] || rip.grade;
+  const mins = rip.ageMin == null ? null : Math.max(0, Math.round(rip.ageMin));
+  const when = mins == null ? '' : (ko
+    ? (mins < 1 ? '방금' : `${mins}분 전`)
+    : (mins < 1 ? 'just now' : `${mins} min ago`));
+
+  /* ⚠️ 같은 해변이 아니면 **어디 값인지·얼마나 먼지 반드시 밝힌다.**
+     이걸 빼면 옆 해변 값을 이 해변 값으로 읽는다. */
+  const whose = rip.same
+    ? (ko ? '이 해변' : 'this beach')
+    : (ko ? `${rip.ko} 해수욕장 (${rip.distKm.toFixed(0)}km 떨어짐)`
+          : `${rip.name || rip.ko} beach, ${rip.distKm.toFixed(0)} km away`);
+
+  /* 오늘 더 높았던 적이 있으면 그것도 적는다.
+     ⚠️ 지금 '관심'이어도 아까 '위험'이었으면 그건 알아야 하는 정보다. */
+  const worse = rip.todayWorst && rip.todayWorst !== rip.grade
+    && (rip.gradeRank || 0) < 4
+    ? (ko ? ` · 오늘 최고 <b>${rip.todayWorst}</b>` : ` · today's peak <b>${rip.todayWorst}</b>`)
+    : '';
+
+  return `<p class="mt-danger rip-live" style="--rip:${col}">
+    <b class="rip-grade">${ko ? rip.grade : gEn}</b>
+    ${ko
+      ? `<b>이안류 ${rip.grade}</b> — ${whose}, ${when} 관측${worse}<br>`
+        + `<small>국립해양조사원이 매긴 등급입니다. 저희가 계산한 값이 아닙니다.</small><br>`
+        + `⚠️ <b>등급과 무관하게, 들어가도 되는지는 저희가 판단하지 않습니다.</b> `
+        + `입수 통제는 해수욕장 관리 주체가 정합니다 — 현장 안내와 안전요원 지시를 따르세요.`
+      : `<b>Rip current: ${gEn}</b> — ${whose}, observed ${when}${worse}<br>`
+        + `<small>Graded by KHOA, not computed by us.</small><br>`
+        + `⚠️ <b>Whatever the grade, we do not judge whether it is safe to enter.</b> `
+        + `Closure is decided on site — follow signage and lifeguards.`}
+  </p>`;
 }
 
 /* ── 가장 가까운 부이가 **실제로 잰** 파고 ────────────────────────────

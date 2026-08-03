@@ -556,6 +556,28 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 }
 .mt-danger b{ font-weight:600; color:#ffcf8f; }
 
+/* 이안류 실측이 있는 해변 — ⚠️ **등급에 따라 테두리 색이 바뀐다.**
+   '관심'과 '위험'을 같은 주황 상자로 그리면 등급을 나눈 의미가 없다.
+   색은 coast.js 의 RIP_COLOR 가 --rip 으로 넣어 준다. */
+.mt-danger.rip-live{
+  border-color:color-mix(in srgb, var(--rip) 52%, transparent);
+  background:color-mix(in srgb, var(--rip) 11%, transparent);
+  padding-left:12px;
+}
+.mt-danger.rip-live b{ color:var(--rip); }
+/* ⚠️⚠️ 선택자를 `.rip-grade` 로만 쓰면 **글자가 사라진다.**
+   바로 위 `.mt-danger.rip-live b` 가 (0,2,1) 로 더 세서 color 를 덮어버리고,
+   배지 배경과 글자가 **같은 색**이 된다. 실측으로 잡았다 —
+   둘 다 rgb(248,113,113) 이라 '위험' 두 글자가 안 보였다.
+   → 앞에 `.mt-danger.rip-live` 를 붙여 (0,3,1) 로 올린다. */
+.mt-danger.rip-live b.rip-grade{
+  display:inline-block; margin-right:7px; padding:2px 9px; border-radius:999px;
+  font-size:11px; font-weight:700; letter-spacing:.02em;
+  /* ⚠️ 배지 안 글자는 **어두운 색**이다. 밝은 배경에 흰 글자면 '위험'이 안 읽힌다. */
+  background:var(--rip); color:#10151d;
+}
+.mt-danger.rip-live small{ opacity:.72; font-size:10.5px; }
+
 .ly-flag{ font-size:10px; margin-right:3px; opacity:.9; }
 .ly-sub{ font-size:9.5px; font-weight:300; opacity:.4; line-height:1; }
 .ly.on .ly-name{ color:#4d9fff; opacity:1; }

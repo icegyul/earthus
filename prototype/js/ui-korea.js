@@ -86,6 +86,20 @@ export const koreaPanel = {
 
   _src(d) {
     const ko = i18n.lang === 'ko';
+    if (!d) return '';
+    /* ⚠️⚠️ 자료마다 출처 모양이 **두 가지**다.
+         기상청 계열: { source, sourceEn, license }       ← 문자열 하나
+         새 공공데이터: { sources: [{ko, en, license}] }   ← 여러 기관일 수 있어 배열
+       배열을 안 받아 주면 화면에 **"undefined"** 가 찍힌다. 출처가 안 보이는 것도
+       나쁘지만, 그 자리에 undefined 가 뜨는 건 자료 전체를 의심하게 만든다. */
+    if (Array.isArray(d.sources) && d.sources.length) {
+      return `<p class="kr-note">`
+        + d.sources.map(s => esc(ko ? (s.ko || s.en) : (s.en || s.ko))
+            + (s.license ? ` · ${esc(s.license)}` : '')).join('<br>')
+        + (d.generatedKst ? `<br>${ko ? '기준' : 'As of'} ${esc(d.generatedKst)} KST` : '')
+        + `</p>`;
+    }
+    if (!d.source && !d.sourceEn) return '';
     return `<p class="kr-note">${esc(ko ? d.source : (d.sourceEn || d.source))}`
       + (d.license ? ` · ${esc(d.license)}` : '')
       + (d.observedKst ? `<br>${ko ? '관측' : 'Observed'} ${esc(d.observedKst)} KST` : '')
@@ -275,7 +289,12 @@ export const koreaPanel = {
   /* ── 생활 (자외선 · 대기확산 · 꽃가루 · 체감온도) ─────── */
   async _life() {
     const ko = i18n.lang === 'ko';
-    const [lf, aws] = await Promise.all([get('life'), get('aws')]);
+    /* ⚠️ 실측·산불은 **실패해도 생활 탭 전체를 막지 않는다.**
+       하나가 죽었다고 체감온도까지 사라지면 안 된다. */
+    const [lf, aws, air, fire] = await Promise.all([
+      get('life'), get('aws'),
+      get('airobs').catch(() => null), get('fire').catch(() => null),
+    ]);
     const c = myLocation.coords;
     let h = '';
 
@@ -301,6 +320,9 @@ export const koreaPanel = {
         }
       }
     }
+
+    h += this._airObs(air, c, ko);
+    h += this._fireRisk(fire, c, ko);
 
     const idx = lf.indices || {};
     const box = (key) => {
@@ -333,6 +355,97 @@ export const koreaPanel = {
 
     h += box('uv') + box('disp') + box('oak') + box('pine');
     return h + `<p class="kr-note">${esc(ko ? lf.scales.uv : lf.scales.uv)}</p>` + this._src(lf);
+  },
+
+  /* ── 대기질 실측 (에어코리아 673지점) ──────────────────────
+     ⚠️⚠️ 지도에 칠하는 대기질 색은 유럽 CAMS **모델값**이다.
+        이 앱은 부이 파고도 산 기온도 늘 실측을 앞세워 왔는데 대기질만 모델이었다.
+        → 여기서 **실제로 잰 값**을 앞에 세운다. 모델을 지우지는 않는다 —
+          모델은 전 지구를 덮고, 실측은 정확하지만 한국뿐이다.
+     ⚠️ 등급(좋음·보통·나쁨·매우 나쁨)은 **환경부가 매긴 것**을 그대로 옮긴다.
+        농도에 우리가 기준을 붙이면 환경부 발표와 다른 답이 나온다. */
+  _airObs(air, c, ko) {
+    if (!air || !(air.stations || []).length) return '';
+
+    /* 가장 가까운 측정소. ⚠️ 좌표가 없는 측정소는 거리 계산에서 빼야 한다 —
+       넣으면 좌표 없는 곳이 "0km"가 되어 제일 가까운 곳으로 뽑힌다. */
+    const withXY = air.stations.filter(x => x.lat != null && x.pm25 != null);
+    const near = (c && inKorea(c.lat, c.lon)) ? nearest(withXY, c.lat, c.lon, 20) : null;
+
+    let out = `<h4>${ko ? '대기질 — 실제로 잰 값' : 'Air quality — measured'}</h4>`;
+
+    if (near) {
+      const km = Math.round(near.km);
+      out += `<div class="kr-big"><b>${n1(near.pm25)}<i>㎍/㎥</i></b>`
+        + `<span>${ko ? '초미세먼지' : 'PM2.5'} · ${esc(near.name)}`
+        + `${km > 0 ? ` (${km}km)` : ''}${near.gradeKo ? ` · ${esc(near.gradeKo)}` : ''}</span>`
+        + (near.pm10 != null
+            ? `<em>${ko ? '미세먼지' : 'PM10'} ${n1(near.pm10)}㎍/㎥</em>` : '')
+        + `</div>`;
+      if (near.addr) {
+        /* ⚠️ 주소를 보여주는 이유: **도로변 측정소는 원래 높게 나온다.**
+           "왜 우리 동네만 높지"의 답이 대개 여기 있다. */
+        out += `<p class="kr-note">${ko
+          ? `측정소 위치: ${esc(near.addr)}${near.kind ? ` · ${esc(near.kind)}` : ''}`
+          : `Station: ${esc(near.addr)}`}</p>`;
+      }
+    } else if ((air.sido || []).length) {
+      /* 20km 안에 측정소가 없거나 위치를 모를 때 — **시도 평균**으로 물러난다.
+         ⚠️ 이때 반드시 **몇 곳에서 쟀는지(n)** 를 같이 적는다.
+            2곳 평균과 40곳 평균을 같은 굵기로 말하면 안 된다. */
+      const top = air.sido.slice(0, 6);
+      out += `<p class="kr-note">${ko
+        ? '20km 안에 측정소가 없어 시도 평균으로 보여드립니다.'
+        : 'No station within 20 km — showing provincial averages.'}</p>`;
+      out += top.map(x =>
+        `<div class="kr-row"><span>${esc(x.sido)}</span>`
+        + `<b>${n1(x.pm25)}<i style="font-style:normal;opacity:.6">㎍/㎥ · ${x.nPm25}${ko ? '곳' : ' stns'}</i></b></div>`
+      ).join('');
+    } else {
+      return '';
+    }
+
+    out += `<p class="kr-note">${ko
+      ? `⚠️ 지도에 칠한 대기질 색은 유럽 <b>모델값</b>이고 이 숫자는 <b>실측</b>입니다 — 둘이 다를 수 있습니다. `
+        + `전국 ${air.count}곳이 ${esc(air.observedKst || '')} 기준으로 잰 값이고, `
+        + `등급은 <b>환경부가 매긴 것</b>을 그대로 옮깁니다.`
+      : `⚠️ The map's air colour is a European <b>model</b>; these are <b>measurements</b> from `
+        + `${air.count} stations (${esc(air.observedKst || '')} KST). Grades are the Ministry of Environment's.`}</p>`;
+    return out;
+  },
+
+  /* ── 산불위험예보 (산림청) ────────────────────────────────
+     ⚠️⚠️ **등급 이름을 우리가 붙이지 않는다.** 산림청이 나눠 준 네 단계별
+        **면적 비율**을 그대로 옮긴다. 지수 평균에 우리가 임계값을 붙여
+        "높음"이라고 부르면 산림청 발표와 다른 답이 나온다.
+     ⚠️ 숫자는 **행정구역 전체의 평균**이다. 그 안에서도 능선과 골짜기가 다르다. */
+  _fireRisk(fire, c, ko) {
+    if (!fire || !(fire.sido || []).length) return '';
+    const mine = (c && inKorea(c.lat, c.lon))
+      ? nearest(fire.sido.filter(x => x.lat != null), c.lat, c.lon, 400) : null;
+    const row = mine || fire.nation;
+    if (!row) return '';
+
+    const st = row.steps || {};
+    const hi = (st.d3 || 0) + (st.d4 || 0);       // 3·4단계 면적 비율
+    let out = `<h4>${ko ? '산불위험' : 'Forest-fire risk'}</h4>`;
+    out += `<div class="kr-big"><b>${n1(row.avg)}</b>`
+      + `<span>${ko ? '산불위험지수 평균' : 'Mean risk index'} · `
+      + `${esc(mine ? row.sido : (ko ? '전국' : 'Nationwide'))}</span>`
+      + `<em>${ko ? '가장 높은 곳' : 'Peak'} ${n1(row.max)}</em></div>`;
+
+    out += `<p class="kr-note">${ko
+      ? (hi > 0
+          ? `⚠️ 이 지역 산림의 <b>${n1(hi)}%</b>가 산림청 기준 <b>3~4단계</b>(높은 쪽)입니다.`
+          : `지금은 산림 대부분이 <b>1단계</b>(가장 낮은 쪽)입니다.`)
+        + ` ⚠️ 이 숫자는 <b>행정구역 전체의 평균</b>이라 능선·골짜기마다 다릅니다. `
+        + `단계는 <b>산림청이 나눈 것</b>을 그대로 옮깁니다.`
+        + (mine ? '' : ' ⚠️ 위치를 몰라 전국 값을 보여드립니다.')
+      : (hi > 0 ? `⚠️ <b>${n1(hi)}%</b> of forest here is at the agency's steps 3–4.`
+                : 'Most forest is at step 1 (lowest).')
+        + ' Values are area averages; the steps are the Forest Service’s own.'}</p>`;
+    out += this._src(fire);
+    return out;
   },
 
   /** 위경도로 시도 이름을 고른다. ⚠️ 경계 자료가 없으므로 가장 가까운 시도 중심으로 근사한다. */

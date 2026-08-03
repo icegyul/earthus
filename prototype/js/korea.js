@@ -37,6 +37,11 @@ const SRC = {
   lgtDaily:  `${API.EVENTS}/kma-lightning-daily.json`,
   episodes: `${API.EVENTS}/kma-warn-episodes.json`,
   life:     `${API.WIND}/kma-life.json`,          // 자외선·대기확산·꽃가루
+  // ⚠️ 지도에 칠하는 대기질 색은 유럽 CAMS **모델값**이다.
+  //    이건 한국 측정소 673곳이 **실제로 잰 값**이다. 둘은 다를 수 있고,
+  //    다르면 다르다고 적는다 — 모델을 지우지 않는다(모델은 전 지구를 덮는다).
+  airobs:   `${API.WIND}/korea-air-obs.json`,     // 에어코리아 실측 673지점
+  fire:     `${API.EVENTS}/forest-fire-kr.json`,  // 산불위험예보 (산림청)
 };
 
 const _cache = {};

@@ -8,3 +8,8 @@ node_modules/
 # 개발용 자체 서명 인증서 (devserver.py --tls)
 prototype/.devcert.pem
 prototype/.devkey.pem
+
+# ⚠️⚠️ 브랜딩 원본 — **5.6GB** 다 (영상·PSD·드라이브 zip).
+#    git 에 들어가면 clone 이 사실상 불가능해지고 되돌릴 수도 없다.
+#    원본은 드라이브에 두고, 앱이 쓰는 파일만 prototype/ 안으로 내보낸다.
+브랜딩/

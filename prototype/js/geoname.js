@@ -239,6 +239,13 @@ const P = [
   ['로테라기지','Rothera Station','남극','Antarctica',-67.57,-68.13],
 ];
 
+/* 검색이 쓰는 세계 지명 표.
+   ⚠️ P 를 그대로 내보내지 않고 객체로 바꿔 준다 — 배열 인덱스(p[0], p[4] …)를
+      바깥에서 쓰기 시작하면 이 표에 열을 하나 끼워 넣는 순간 조용히 깨진다. */
+export function worldPlaces() {
+  return P.map(p => ({ ko: p[0], en: p[1], countryKo: p[2], countryEn: p[3], lat: p[4], lon: p[5] }));
+}
+
 const rad = d => d * Math.PI / 180;
 
 function distKm(aLat, aLon, bLat, bLon) {

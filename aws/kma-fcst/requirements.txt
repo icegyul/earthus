@@ -1,0 +1,6 @@
+# 의존성 없음 — 표준 라이브러리(urllib·json·math·concurrent.futures)와
+# Lambda 런타임이 기본 제공하는 boto3 만 쓴다.
+#
+# ⚠️ 이 파일을 지우지 말 것. deploy-python.sh 는 requirements.txt 가 **없으면**
+#    NetCDF 용 기본값(h5py·numpy·Pillow, 30MB+)을 억지로 끼워 넣는다.
+#    빈 파일이 "아무것도 필요 없다"는 뜻이다.

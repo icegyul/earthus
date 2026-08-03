@@ -1,0 +1,79 @@
+# cyclone-analog — 태풍 유사 사례
+
+지금 태풍과 **위치·진행방향·강도가 비슷했던 과거 태풍**을 찾아, 그들이 그 뒤 72시간에
+어디로 갔는지 센다.
+
+⚠️ **예보가 아니다.** 우리는 심판이지 선수가 아니다. 진로를 단정하지 않고 **세어서 말한다**.
+
+- 배포: `./deploy-python.sh cyclone-analog`
+- 리전 `ap-northeast-2` · python3.12 · 타임아웃 600s · 메모리 2048MB (108MB CSV 처리)
+- 출력: `ocean/ibtracs-wp.json`(과거 트랙) · `ocean/cyclone-analog.json`(분석)
+- 자료: IBTrACS v04r01 (NOAA NCEI, 퍼블릭 도메인, DOI 10.25921/82ty-9e16)
+
+## 첫 실행 결과 (2026-08-02)
+
+과거 서태평양 태풍 **1,477개**(1980~) 확보. 현재 태풍 3개 분석:
+
+| 태풍 | 결과 |
+|---|---|
+| DOLPHIN-26 | **유사 사례 41건 중 북서 21건 (51%)** · 서 10 · 북 7 · 북동 1<br>비슷했던 태풍: 2021 Namtheun, 2020 Kujira, 2019 Faxai, 2016 Songda, 2015 Halola |
+| FAUSTO-26 | 서태평양 밖 — 비교 자료 없음 |
+| GENEVIEVE-26 | 서태평양 밖 — 비교 자료 없음 |
+
+⚠️ 서태평양 밖 태풍을 "유사 사례 0건"으로 내보내지 않는다. **"비슷한 게 없다"가 아니라
+"우리가 그 해역 자료를 안 가진 것"**이다. `outOfBasin` 플래그로 그 차이를 밝힌다.
+
+## 유사 판정 방식 (2026-08-02 개정 — 논문 기준으로)
+
+처음에는 딱딱한 임계값(반경 300km·방향 ±50°·강도 ±25kt)을 썼는데 **결함이 셋** 있었다.
+논문을 찾아 고쳤다 — 근거는 [methodology-sources.md](../../docs/methodology-sources.md) "확인 완료 ⑤".
+
+| 결함 | 고친 방식 | 근거 |
+|---|---|---|
+| ① **계절을 안 봤다** — 8월 태풍에 2월 사례가 섞였다 | 현재와 **±21일** 안의 사례만 | EPANALOG(미 해군)가 날짜 차이를 명시적 보정 항목으로 둠 |
+| ② **딱딱한 임계값** — 301km 는 버리고 299km 는 채택 | 각 항목을 **σ 로 나눠 더한 거리**로 재고 **가까운 순 30개** | Delle Monache et al. (2013), MWR 141, 3498 |
+| ③ **한 시점만 비교** — 직전 1스텝의 방향만 | **최근 24시간 경로**를 통째로 비교(위치를 뺀 상대 변위 → 방향+속도) | 〃 (시간창 t̃) |
+
+덤: 아날로그 경로를 **현재 태풍 위치로 평행이동**해 내보낸다(EPANALOG 방식) — 지도에 겹쳐 그리기 위함.
+
+⚠️ 현재 경로(GDACS)는 점마다의 시각이 자료에 없어 **from~to 사이 균등 간격으로 가정**해
+   6시간 간격으로 재표집한다. 근사다. 시각이 자료에 들어오면 그걸 쓸 것.
+
+### 개정 효과 (DOLPHIN-26 실측)
+
+후보 1,477개 → **61개**(계절), 채택 **30건**. 최다 방향 북서 **13건(43%)**.
+개정 전 51% 보다 **덜 쏠렸는데 그게 맞다** — 51% 는 계절을 섞어 부풀려진 값이었다.
+채택 사례가 전부 7~8월 태풍으로 바뀌었다(2019 Francisco, 2018 Wukong, 2011 Ma-On …).
+
+## 표현 규율 (코드가 지킨다)
+
+1. **건수가 먼저, 퍼센트는 괄호 안** — "41건 중 21건이 북서 (51%)". 퍼센트만 쓰면 모델 예측처럼 읽힌다
+2. **표본 5건 미만이면 퍼센트를 아예 안 쓴다** (`topPct: null`) — 3/4을 75%로 쓰면 정밀한 척하는 거짓
+3. **다른 방향도 함께 보여준다** — 하나만 보이면 그게 예보로 읽힌다
+4. **판정 기준을 화면에 공개한다** — 반경 300km·방향 ±50°·강도 ±25kt는 **우리가 정한 값**이고 공인 표준이 아니다
+5. **공식 예보 원뿔을 항상 병기** (cyclone.js `_note`)
+
+## ⚠️ 남은 일 — 정기 실행 등록 (대표님)
+
+```bash
+REGION=ap-northeast-2; ACC=294951922100
+aws events put-rule --region $REGION --name earthus-cyclone-analog \
+  --schedule-expression 'cron(25 */3 * * ? *)'
+aws events put-targets --region $REGION --rule earthus-cyclone-analog \
+  --targets "Id=1,Arn=arn:aws:lambda:$REGION:$ACC:function:cyclone-analog"
+aws lambda add-permission --region $REGION --function-name cyclone-analog \
+  --statement-id earthus-analog-schedule --action lambda:InvokeFunction \
+  --principal events.amazonaws.com \
+  --source-arn arn:aws:events:$REGION:$ACC:rule/earthus-cyclone-analog
+```
+
+과거 트랙(IBTrACS)은 30일마다 자동으로 다시 받는다 — 별도 스케줄이 필요 없다.
+
+## 다음에 개선할 것
+
+- ~~유사 판정 기준의 근거~~ ✅ 2026-08-02 조사·반영 완료 (위 "유사 판정 방식" 참고)
+- **DTW(동적시간왜곡) 검토** — 지금은 고정 시간창 비교다. 더 정교하게 가려면 다음 단계.
+  ⚠️ 순서를 건너뛰지 말 것 — 시간창 방식으로 먼저 올리고 그래도 부족할 때 간다
+- **강도 조건이 지금은 거의 안 걸린다** — GDACS 현재 태풍 자료에 풍속(kt)이 없어
+  `cur_wind` 가 None 이면 강도 필터를 건너뛴다. 조건이 하나 빠진 셈이라 표본이 넉넉하게 잡힌다
+- **유사 사례 경로를 지도에 겹쳐 그리기** — `sample[].path` 로 좌표를 이미 내보내고 있다

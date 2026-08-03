@@ -71,7 +71,8 @@ export const communityPanel = {
 
   render() {
     const ko = i18n.lang === 'ko';
-    $('#commTitle').textContent = ko ? '커뮤니티' : 'Community';
+    // 표시명은 LAB. 내부 id(commSheet·community)는 그대로 둔다 — 이름만 바뀐 것이다.
+    $('#commTitle').textContent = 'LAB';
     const body = $('#commBody');
     if (!body) return;
     body.innerHTML = '';

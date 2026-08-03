@@ -20,7 +20,7 @@ import { viewer, onCameraIdle } from './viewer.js';
 import { intro } from './intro.js';
 /* ⚠️ 입수 통제 경고는 서핑과 **같은 문장**을 쓴다. 두 곳에 따로 적으면
    한쪽만 고치는 날이 온다 — 이 앱에서 실제로 여러 번 그랬다. */
-import { swimWarn } from './ui-surf.js';
+import { swimWarn, buoyLine, nearestBuoy } from './ui-surf.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c =>
@@ -185,6 +185,8 @@ export const fishPanel = {
   async _fill() {
     const at = this._anchor();
     this._at = at;
+    // ⚠️ 실패해도 화면은 뜬다 — 부이가 없다고 낚시 정보를 막지 않는다
+    this._buoy = await nearestBuoy(at.lat, at.lon).catch(() => null);
     this._pick = this._region
       ? fishing.byRegion(this._region).slice(0, N_SHOW)
       : fishing.near(at.lat, at.lon, N_SHOW);
@@ -475,6 +477,7 @@ export const fishPanel = {
                  home: '<b>태안 기준</b>입니다 (위치를 모릅니다) · ' }[this._at?.from] || ''}`
             + `방파제·항·섬 ${m.count}곳 · 바다 자료 Open-Meteo 해양`
           : `${m.count} spots · sea data from Open-Meteo Marine`}</p>
+        ${buoyLine(this._buoy, ko)}
         ${swimWarn(ko)}
         ${this._markMode === 'region' ? this._regionList(ko) : ''}
         <div class="mt-list">${list.map(s => this._card(s, ko)).join('')}</div>

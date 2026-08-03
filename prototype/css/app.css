@@ -534,6 +534,19 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
       통제 중인 해변인데 화면에는 "파고 0.9m" 만 조용히 떠 있는 상황을 막는 문구다.
    ⚠️ 그렇다고 빨강으로 칠해 매번 겁을 주지는 않는다 — 매일 뜨는 문구라
       빨강이면 사흘 만에 아무도 안 읽는다. 호박색으로 **눈에는 걸리게** 둔다. */
+/* ── 부이 실측 ────────────────────────────────────────────────
+   ⚠️ 경고(호박)와 색을 달리한다. 이건 경고가 아니라 **더 믿을 만한 값**이다 —
+      모델 예측 옆에 "실제로 잰 값"이 있다는 것이 요점이다. */
+.mt-buoy{
+  margin:10px 0 4px; padding:10px 12px;
+  border-radius:10px; border:1px solid rgba(90,180,235,.30);
+  background:rgba(90,180,235,.08);
+  font-size:11.5px; font-weight:300; line-height:1.62;
+  color:rgba(226,242,255,.94);
+}
+.mt-buoy b{ font-weight:600; color:#9fd4ff; }
+.mt-buoy small{ display:block; margin-top:4px; font-size:10.5px; opacity:.62; line-height:1.55; }
+
 .mt-danger{
   margin:10px 0 12px; padding:10px 12px;
   border-radius:10px; border:1px solid rgba(240,160,60,.34);

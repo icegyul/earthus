@@ -19,6 +19,9 @@ import { get, nearest, distKm } from './korea.js';
 import { myLocation } from './mylocation.js';
 import { viewer, onCameraIdle } from './viewer.js';
 import { intro } from './intro.js';
+/* 부이 실측을 함께 보여주려고 더 가져온다 — 아래 nearestBuoy 참고 */
+import { API } from './config.js';
+import { fetchT } from './net.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c =>
@@ -546,6 +549,8 @@ export const surfPanel = {
   async _fill() {
     const at = this._anchor();
     this._at = at;
+    // ⚠️ 실패해도 화면은 뜬다 — 부이가 없다고 서핑 정보를 막지 않는다
+    this._buoy = await nearestBuoy(at.lat, at.lon).catch(() => null);
     this._pick = this._region
       ? beaches.byRegion(this._region).filter(b => b.facing != null).slice(0, N_SHOW)
       : beaches.near(at.lat, at.lon, N_SHOW);
@@ -590,6 +595,7 @@ export const surfPanel = {
                  home: '<b>양양 기준</b>입니다 (위치를 모릅니다) · ' }[this._at?.from] || ''}`
             + `해변 ${m.count}곳 중 바다 방향을 낸 곳 ${m.withFacing}곳 · 파랑 자료 Open-Meteo 해양`
           : `${m.withFacing} of ${m.count} beaches have a shore orientation · waves: Open-Meteo Marine`}</p>
+        ${buoyLine(this._buoy, ko)}
         ${swimWarn(ko)}
         ${this._markMode === 'region' ? this._regionList(ko) : ''}
         <div class="mt-list">${list.map(b => this._card(b, ko)).join('')}</div>
@@ -821,4 +827,58 @@ export function swimWarn(ko) {
     : '⚠️ <b>We cannot tell you if the water is closed.</b> Beach closures are usually '
       + 'driven by <b>rip currents</b>, which form right at the shore and do not appear '
       + 'in this data. <b>Calm-looking does not mean open</b> — follow on-site signage.'}</p>`;
+}
+
+/* ── 가장 가까운 부이가 **실제로 잰** 파고 ────────────────────────────
+   ⚠️⚠️ 왜 이걸 따로 보여주나 (받은 신고에서 나왔다)
+     "강릉쪽 파도가 점차 세저서 입수가 금지되는 해수욕장이 생기나봐"
+     그때 우리 화면은 그 앞바다를 **0.9m** 라고 말하고 있었다(Open-Meteo 모델).
+     10km 앞 강릉 부이가 같은 시각에 잰 값은 **최대 2.0m** 였다.
+     모델이 틀렸다기보다 **다른 것을 말하고 있었다** — 모델이 주는 건 유의파고고,
+     사람 몸에 부딪히는 건 최대파고다.
+   ⚠️ 모델을 지우고 부이로 바꾸지 않는다. 부이는 몇십 km 떨어진 한 점이고,
+      해변마다 값이 다르다. **둘 다 보여주고 무엇이 다른지 적는다.**
+   ⚠️ 부이가 멀면 아예 말하지 않는다 — 200km 밖 부이로 이 해변을 말할 수 없다. */
+const BUOY_MAX_KM = 120;
+let _buoyCache = null, _buoyAt = 0;
+
+export async function nearestBuoy(lat, lon) {
+  try {
+    if (!_buoyCache || Date.now() - _buoyAt > 5 * 60_000) {
+      const r = await fetchT(`${API.OCEAN}/kma-buoy.json`, { cache: 'no-cache' });
+      _buoyCache = r.ok ? await r.json() : null;
+      _buoyAt = Date.now();
+    }
+    const st = _buoyCache?.stations || [];
+    const R = 6371, rad = d => d * Math.PI / 180;
+    let best = null;
+    for (const b of st) {
+      // ⚠️ 최대파고가 있는 부이만 본다. 연안방재 지점은 바람만 재고 파고가 없다.
+      if (b.whMax == null || b.lat == null) continue;
+      const dp = rad(b.lat - lat), dl = rad(b.lon - lon);
+      const h = Math.sin(dp / 2) ** 2
+              + Math.cos(rad(lat)) * Math.cos(rad(b.lat)) * Math.sin(dl / 2) ** 2;
+      const km = 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+      if (!best || km < best.km) best = { ...b, km };
+    }
+    return best && best.km <= BUOY_MAX_KM ? best : null;
+  } catch (_) { return null; }
+}
+
+export function buoyLine(b, ko) {
+  if (!b) return '';
+  const hh = b.tm ? `${b.tm.slice(8, 10)}:${b.tm.slice(10, 12)}` : '';
+  const bits = [];
+  if (b.whMax != null) bits.push(ko ? `<b>가장 큰 파도 ${b.whMax.toFixed(1)}m</b>`
+                                    : `<b>max ${b.whMax.toFixed(1)} m</b>`);
+  if (b.whSig != null) bits.push(ko ? `큰 쪽 평균 ${b.whSig.toFixed(1)}m`
+                                    : `sig ${b.whSig.toFixed(1)} m`);
+  if (b.wp != null) bits.push(ko ? `주기 ${b.wp.toFixed(0)}초` : `${b.wp.toFixed(0)} s`);
+  return `<p class="mt-buoy">${ko
+    ? `🌊 <b>${esc(b.name)} 부이</b>가 ${hh} 에 실제로 잰 값 — ${bits.join(' · ')}`
+      + `<br><small>${Math.round(b.km)}km 떨어진 <b>먼바다</b> 값입니다. `
+      + `아래 목록은 해변별 <b>모델 예측</b>이라 숫자가 다릅니다 — `
+      + `모델은 큰 쪽 평균을, 부이는 가장 큰 파도까지 함께 알려줍니다.</small>`
+    : `🌊 <b>${esc(b.name)} buoy</b>, measured ${hh} — ${bits.join(' · ')}`
+      + `<br><small>${Math.round(b.km)} km offshore. The list below is model forecast.</small>`}</p>`;
 }

@@ -17,8 +17,12 @@
 import { API } from './config.js';
 import { fetchT } from './net.js';
 import { distKm } from './korea.js';
+/* 일본 해변 이름을 기기 언어에 맞춰 고른다 */
+import { jpName } from './jpname.js';
+import { i18n } from './i18n.js';
 
 const SRC = 'data/beaches.json';
+const JP_SRC = 'data/jp/beaches.json';
 
 /* 조회 지점을 해변에서 바다 쪽으로 미는 거리.
    ⚠️ 너무 적게 밀면 육지라 값이 비고, 너무 많이 밀면 앞바다가 아니라 먼바다가 된다.
@@ -120,10 +124,45 @@ export const beaches = {
     const j = await r.json();
     this.list = (j.beaches || []).map(b => ({
       name: b.n, nameEn: b.en || null,
-      lat: b.la, lon: b.lo, region: b.r,
+      lat: b.la, lon: b.lo, region: b.r, country: 'kr',
       facing: b.f ?? null, consist: b.c ?? null, spanM: b.sp ?? null,
       why: b.why || null,
     }));
+
+    /* ── 일본 해변 ────────────────────────────────────────────
+       ⚠️⚠️ **바다 방향(facing)이 없다.** 한국 해변은 OSM 해안선에서 축평균으로
+          계산해 뒀지만 일본은 아직 안 했다. facing 이 없으면 이 화면의 핵심 판단
+          ("이 스웰이 이 해변에 들어오는가")을 **할 수 없다.**
+       ⚠️ 그렇다고 빼지 않는다. 파고·주기·수온은 그대로 말할 수 있고,
+          그것만으로도 볼 이유가 있다. 대신 **못 하는 판단을 화면에 적는다.**
+       ⚠️ 실패해도 한국 자료는 그대로 뜬다 — 일본이 없다고 서핑 화면을 막지 않는다. */
+    try {
+      const jr = await fetchT(JP_SRC, { cache: 'force-cache' });
+      if (jr.ok) {
+        const jj = await jr.json();
+        const lang = i18n.lang;
+        (jj.beaches || []).forEach(b => {
+          /* ⚠️⚠️ 파일의 ko 에는 **두 가지가 섞여 있다** —
+             OSM 에 사람이 적어 둔 한국어(how='osm')와 우리가 옮긴 표기(how='tr').
+             그대로 넘기면 화면이 둘을 구분 못 해 **"표기 변환입니다"를 못 밝힌다.**
+             지어낸 값이 아니라는 것과, 공식 지명이 아니라는 것을 둘 다 말해야 한다. */
+          const nm = b.ko
+            ? { text: (lang === 'ja' ? (b.n || b.ko)
+                     : lang === 'ko' ? b.ko : (b.en || b.ko)),
+                mark: lang === 'ko' ? (b.how === 'tr' ? 'tr' : 'ko')
+                    : lang === 'ja' ? 'ja' : (b.en ? 'en' : 'ko') }
+            : jpName({ ja: b.n, en: b.en }, lang);
+          this.list.push({
+            name: nm.text, nameEn: b.en || null, nameJa: b.n,
+            nameMark: nm.mark,          // ko | tr | en | ja — 어디서 온 이름인가
+            lat: b.la, lon: b.lo, region: 'jp', country: 'jp',
+            facing: null, consist: null, spanM: null, why: null,
+          });
+        });
+        this._jp = { n: (jj.beaches || []).length, names: jj.names, note: jj.note };
+      }
+    } catch (_) { /* 일본이 없어도 한국은 뜬다 */ }
+
     this.meta = {
       generated: j.generated, source: j.source, license: j.license,
       count: j.count, withFacing: j.withFacing,
@@ -134,11 +173,17 @@ export const beaches = {
 
   /** 내 위치에서 가까운 순. 방위가 있는 곳을 앞에 둔다 (판단이 되는 곳이므로). */
   near(lat, lon, n = 12, onlyFacing = true) {
-    const src = onlyFacing ? this.list.filter(b => b.facing != null) : this.list;
-    return src
-      .map(b => ({ ...b, km: Math.round(distKm(lat, lon, b.lat, b.lon)) }))
-      .sort((a, b) => a.km - b.km)
-      .slice(0, n);
+    const all = this.list.map(b => ({ ...b, km: Math.round(distKm(lat, lon, b.lat, b.lon)) }))
+      .sort((a, b) => a.km - b.km);
+    if (!onlyFacing) return all.slice(0, n);
+    const withF = all.filter(b => b.facing != null);
+    /* ⚠️⚠️ 방향이 있는 곳만 고르면 **일본이 통째로 빠진다** — 일본 해변은 아직
+       해안선에서 방향을 계산하지 않았기 때문이다. 일본 바다를 보고 있는데
+       목록이 한국 해변으로 채워지면 그건 고장으로 보인다.
+       → 가까운 곳에 방향 있는 해변이 없으면 **방향 없는 곳이라도 보여준다.**
+         대신 화면이 "이 해변은 스웰 방향을 판단하지 못합니다"라고 적는다. */
+    if (withF.length && withF[0].km <= 150) return withF.slice(0, n);
+    return all.slice(0, n);
   },
 
   byRegion(region) {

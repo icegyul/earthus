@@ -649,12 +649,23 @@ export const surfPanel = {
 
     /* 머리 — 받은 지시대로 **이름과 위치**만. "해수욕장·해변" 꼬리는 뗀다.
        (주문진해수욕장 → 주문진 · 사근진해변 → 사근진) */
+    /* ⚠️⚠️ 일본 해변은 **바다 방향을 계산해 두지 않았다.** 그래서 이 화면의 핵심
+       판단("이 스웰이 들어오는가")을 못 한다. 카드마다 그 사실을 적는다 —
+       안 적으면 한국 해변과 똑같아 보이는데 판단만 빠져 있어 더 헷갈린다.
+    ⚠️ 이름이 원문(일본어)이거나 우리가 옮긴 표기면 그것도 밝힌다. */
+    const jp = b.country === 'jp';
+    const markKo = { tr: '표기 변환', ja: '현지 표기', en: '영문' }[b.nameMark];
     const head = `
       <header>
-        <h4>${esc(shortName(b.name))}</h4>
-        <span class="mt-alt">${esc(shortRegion(b.region))}${
-          b.km != null ? ` · ${b.km}km` : ''}</span>
-      </header>`;
+        <h4>${esc(shortName(b.name))}${jp && b.nameJa && b.nameMark !== 'ja'
+          ? ` <span class="sf-ja">${esc(b.nameJa)}</span>` : ''}</h4>
+        <span class="mt-alt">${jp ? (ko ? '일본' : 'Japan') : esc(shortRegion(b.region))}${
+          b.km != null ? ` · ${b.km}km` : ''}${
+          markKo && ko ? ` · ${markKo}` : ''}</span>
+      </header>${jp ? `<p class="sf-nofacing">${ko
+        ? '⚠️ 이 해변은 <b>바다 방향을 내지 못했습니다</b> — 스웰이 들어오는지 판단하지 '
+          + '않습니다. 아래 파도·주기·수온은 그대로 잰 값입니다.'
+        : '⚠️ Shore orientation unknown — we do not judge swell exposure here.'}</p>` : ''}`;
 
     if (!sea) {
       return `<article class="mt-card" data-sf-beach="${esc(b.name)}">${head}

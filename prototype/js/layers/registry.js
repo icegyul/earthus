@@ -272,6 +272,13 @@ export const registry = {
       windField.set(on);
     }
     else if (id === 'cyclone') cyclones.set(store.isOn(id));
+    /* 기압 배치를 켜면 **등압선도 함께** 그린다.
+       ⚠️ 색칠만으로는 "어디가 높나"만 알고 "얼마나 급한가"를 모른다 —
+          받은 지적대로 등압선의 간격이 곧 바람 세기다(isobars.js 머리말). */
+    else if (id === 'pressure') {
+      import('../isobars.js').then(({ isobars }) => isobars.set(store.isOn('pressure')))
+        .catch(e => console.warn('[등압선]', e.message));
+    }
     else if (id === 'news') events.set(store.isOn(id));
     else if (id === 'tsunami') tsunami.set(store.isOn(id));
     else if (id === 'eclipse') eclipseMarks.set(store.isOn(id));
@@ -321,6 +328,10 @@ export const registry = {
     orbits.set(store.isOn('orbits') && (orbits.keepVisible || store.height >= T.SAT_SHOW));
     // 바람은 파티클 애니메이션으로 보여준다 (윈디 방식). 기존 화살표는 접었다.
     cyclones.set(store.isOn('cyclone'));
+    /* ⚠️ applyAll 에서도 불러야 한다 — 레이어 목록에서 켜면 apply() 를 안 거치고
+       여기로 오는 경로가 있다(실측에서 등압선만 안 나왔다). */
+    import('../isobars.js').then(({ isobars }) => isobars.set(store.isOn('pressure')))
+      .catch(() => {});
     events.set(store.isOn('news'));
     /* 쓰나미는 확대 여부와 무관하게 항상 보인다.
        "지구 전체가 보이는 화면에서는 경보가 안 뜬다"는 건 있을 수 없다. */

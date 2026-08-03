@@ -127,6 +127,26 @@ export function initViewer(containerId) {
   cc.inertiaSpin = 0.96;
   cc.inertiaZoom = 0.88;
 
+  /* ⚠️⚠️ **손을 대면 날아가던 것이 멈춰야 한다.**
+     받은 신고: "히미와리 위성 으로 선택하고 줌 하면 다시 아웃되"
+
+     원인: 히마와리를 고르면 flyToHima() 가 1.6초짜리 비행을 건다. 비행 중에는
+     Cesium 이 **매 프레임 카메라를 목적지 궤적으로 덮어쓴다.** 그 사이에 확대하면
+     내 확대가 다음 프레임에 지워져 도로 4,200km 로 끌려간다 —
+     "줌 하면 다시 아웃되"가 이것이다.
+
+     ⚠️ 히마와리만의 문제가 아니다. 앱 안에 flyTo 가 **11군데**다
+        (서핑·낚시·등산로·활공장·내 위치·검색·인트로…). 한 군데만 고치면
+        나머지 열 곳에서 같은 신고가 다시 온다. → 여기서 한 번에 막는다.
+
+     ⚠️ cancelFlight() 는 비행 중이 아닐 때 부르면 아무 일도 안 한다(Cesium 내부에서
+        확인한다). 그래서 조작마다 그냥 불러도 안전하다. */
+  ['pointerdown', 'wheel', 'touchstart'].forEach(ev => {
+    scene.canvas.addEventListener(ev, () => {
+      try { viewer.camera.cancelFlight(); } catch (_) { }
+    }, { passive: true, capture: true });
+  });
+
   /* ⚠️ 더블클릭하면 화면이 얼어붙는 문제.
      Cesium Viewer 는 엔티티를 더블클릭하면 viewer.trackedEntity 를 걸어
      카메라를 그 엔티티에 고정한다. 그런데 우리는 enableTilt 를 꺼둬서

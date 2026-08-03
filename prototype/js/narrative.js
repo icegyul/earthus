@@ -80,6 +80,22 @@ function pct(qs, cuts, v) {
   return null;
 }
 
+/* 백분위를 **일상어**로. ⚠️⚠️ "상위 5%"는 통계를 아는 사람의 말이다 —
+   받은 지적: "쉬운 단어를 써서 작성해줘 그런 전문 용어는 일반인들은 몰라"
+   → "스무 번에 한 번"으로 바꾼다. 5% = 1/20, 10% = 1/10 이라 산수가 그대로 맞다.
+   ⚠️ 숫자를 **지우지는 않는다.** 쉬운 말이 앞, 정확한 값은 괄호 안에 남긴다.
+      지워 버리면 "믿을 만한가"를 독자가 확인할 방법이 사라진다.
+   ⚠️ "20년에 한 번"이라고는 안 쓴다 — 이건 연 최댓값 분포가 아니라
+      **같은 날짜(±7일) 기록의 분포**다. 재현기간과 다른 개념이다. */
+function howOften(p) {
+  if (p == null) return null;
+  const hi = p >= 50;
+  const tail = hi ? 100 - p : p;
+  const n = tail <= 5 ? '스무 번' : tail <= 10 ? '열 번' : tail <= 25 ? '네 번' : null;
+  if (!n) return null;
+  return `예년 같은 날짜 ${n}에 한 번 있을까 하게 ${hi ? '높습니다' : '낮습니다'}`;
+}
+
 /* ── 체감온도 — 공식이 여럿이고 서로 다른 값을 낸다 ────────────
    ⚠️⚠️ 하나만 쓰면 그 공식의 가정(그늘·미풍 등)이 숨는다.
       셋을 나란히 놓고 **몇 개가 위험 단계인지**로 결론을 낸다.
@@ -191,7 +207,13 @@ export const narrative = {
            ⚠️ 없는 이름을 지어내지 않는다. 모르면 모른다고 부른다. */
         const raw = String(s.name || '').trim();
         const named = raw.length >= 2;
-        return { name: named ? raw : '열대저압부', named, lat: now.lat, lon: now.lon };
+        /* 기상청 호수("2026-13호") — 한국 뉴스가 실제로 부르는 이름이다.
+           ⚠️ 로마자 이름에는 "이/가" 규칙이 안 통한다("Dolphin 가"가 화면에 나왔다).
+              "13호 태풍"으로 부르면 **한글로 끝나 조사가 저절로 맞는다.** */
+        const kn = (s.agencies || []).find(a => a.agency === 'KMA')?.number;
+        const no = /(\d+)호/.exec(kn || '')?.[1] || null;
+        return { name: named ? raw : '열대저압부', named, no,
+                 lat: now.lat, lon: now.lon };
       }).filter(Boolean);
     } catch (_) { return []; }
   },
@@ -260,7 +282,9 @@ export const narrative = {
                   p: num(P('tmin', tminTonight)), fld: 'tmin' });
     }
     if (rh != null) rows.push({ k: ko ? '습도' : 'Humidity', v: `${Math.round(rh)}%`, p: num(pHm), fld: 'hm' });
-    if (c.cape != null) rows.push({ k: ko ? '대기 불안정(CAPE)' : 'CAPE', v: `${Math.round(c.cape)} J/kg` });
+    /* ⚠️ 이름은 쉬운 말로, 값에는 원래 단위를 남긴다 —
+       이름만 쉬우면 못 읽고, 값까지 바꾸면 확인할 수가 없다. */
+    if (c.cape != null) rows.push({ k: ko ? '위로 솟구치는 힘(CAPE)' : 'CAPE', v: `${Math.round(c.cape)} J/kg` });
 
     /* ── 헤드라인 고르기 ─────────────────────────────
        ⚠️⚠️ **가장 이례적인 것 하나만** 고른다. 여러 개를 늘어놓으면 무엇이 오늘의
@@ -303,10 +327,11 @@ export const narrative = {
       cands.push({ w: 50 + Math.abs(p.p - 50), level: 'feature',
         head: ko ? `${label}${iGa(label)} 평년보다 **${high ? '높습니다' : '낮습니다'}**`
                  : `${label} is ${high ? 'above' : 'below'} normal`,
-        num: ko ? `${v} — 상위 ${high ? 100 - p.p : p.p}%`
+        num: ko ? `${v} — ${high ? '상위' : '하위'} ${high ? 100 - p.p : p.p}%`
                 : `${v} — ${high ? 'top' : 'bottom'} ${high ? 100 - p.p : p.p}%`,
-        why: ko ? `${nrm.doy.from}~${nrm.doy.to}년 같은 날짜(±${nrm.doy.winDays}일) `
-                + `${cell[fld].n}개를 세어 낸 값입니다.` : '' });
+        why: ko ? (howOften(p.p) ? `${howOften(p.p)}. ` : '')
+                + `${nrm.doy.from}~${nrm.doy.to}년 같은 날짜(앞뒤 ${nrm.doy.winDays}일까지) `
+                + `${cell[fld].n}번을 세어 낸 값입니다.` : '' });
     });
 
     // 호우 잠재 — ⚠️ 둘 다 충족할 때만. 하나만으론 안 부른다
@@ -314,7 +339,8 @@ export const narrative = {
       cands.push({ w: 80, level: 'event',
         head: ko ? '비구름이 커지기 쉬운 상태입니다' : 'Unstable and humid',
         num: ko ? `CAPE ${Math.round(c.cape)} J/kg · 습도 ${Math.round(rh)}%` : '',
-        why: ko ? '대기가 불안정하고 수증기가 많으면 소나기가 갑자기 굵어질 수 있습니다. '
+        why: ko ? '공기가 위로 솟구치려는 힘이 세고 물기도 많으면, 소나기가 한번 서면 '
+                + '갑자기 굵어질 수 있습니다. '
                 + '⚠️ 이건 지금 상태이지 비가 온다는 예보가 아닙니다.' : '' });
     }
 
@@ -323,9 +349,10 @@ export const narrative = {
        ⚠️ Lambda 가 연속 2일 확인한 것(publish)만 쓴다. 하루 튐으로 쓰지 않는다. */
     const pub = st?.publish;
     if (pub && (pub.left?.length || pub.entered?.length)) {
-      const L = { 초열대야: '초열대야', 열대야: '열대야', 고온: '고온', 저온: '저온',
-                  다습: '수증기가 많은 상태', 건조: '수증기가 적은 상태',
-                  불안정: '대기 불안정', 열돔: '열돔', 이중열돔: '이중 열돔' };
+      const L = { 초열대야: '초열대야', 열대야: '열대야',
+                  고온: '예년보다 더운 상태', 저온: '예년보다 서늘한 상태',
+                  다습: '하늘에 물기가 많은 상태', 건조: '하늘이 마른 상태',
+                  불안정: '공기가 들뜬 상태', 열돔: '열돔', 이중열돔: '이중 열돔' };
       if (pub.left?.length) {
         const w = pub.left.map(x => L[x] || x).join('·');
         cands.push({ w: 999, level: 'event',
@@ -364,10 +391,13 @@ export const narrative = {
                 + (dome === 2 && v.pH200 != null
                     ? ` · 200hPa 상위 ${100 - v.pH200}%` : '') : '',
         why: ko
-          ? '⚠️ "열돔"은 공식 기상 용어가 아니라 언론 표현입니다. '
-            + '저희는 <b>500hPa 고도가 평년 상위 10%</b>일 때 그렇게 부르고, '
-            + '<b>200hPa도 상위 10%</b>면 "이중"이라고 씁니다 — 상층과 중층이 겹쳤다는 뜻입니다. '
-            + '상공에 고기압이 눌러앉으면 공기가 내려오면서 데워지고, 구름이 못 생겨 '
+          ? '더워진 공기는 부풀어 오릅니다. 그래서 하늘이 얼마나 부풀었는지를 재면 '
+            + '아래가 얼마나 뜨거운지를 알 수 있습니다. '
+            + '⚠️ "열돔"은 공식 기상 용어가 아니라 언론 표현입니다. '
+            + '저희는 <b>약 5.9km 상공(500hPa)의 높이가 예년 열 번 중 한 번 있을까 하게 클 때</b> '
+            + '그렇게 부르고, <b>약 12km 상공(200hPa)까지 그러면</b> "이중"이라고 씁니다 — '
+            + '뜨거운 공기가 두 겹으로 덮였다는 뜻입니다. '
+            + '뚜껑이 덮이면 공기가 눌려 내려오면서 데워지고, 구름이 못 생겨 '
             + '햇볕이 그대로 들어옵니다. '
             + '⚠️ 남·중·북 세 곳 중 둘 이상에서 나와야 "한반도"라고 씁니다.'
           : '' });
@@ -376,15 +406,15 @@ export const narrative = {
     if (mine?.vals?.pTcwv != null && (mine.vals.pTcwv >= 90 || mine.vals.pTcwv <= 10)) {
       const many = mine.vals.pTcwv >= 90;
       cands.push({ w: 55, level: 'feature',
-        head: ko ? `하늘의 수증기가 평년보다 **${many ? '많습니다' : '적습니다'}**`
+        head: ko ? `하늘에 든 물기가 예년보다 **${many ? '많습니다' : '적습니다'}**`
                  : `Column water vapour ${many ? 'above' : 'below'} normal`,
-        num: ko ? `${mine.vals.tcwv?.toFixed(0)} kg/m² — 평년 ${mine.vals.tcwvNormal} `
+        num: ko ? `짜면 ${mine.vals.tcwv?.toFixed(0)}mm — 평년 ${mine.vals.tcwvNormal}mm `
                 + `· ${many ? '상위' : '하위'} ${many ? 100 - mine.vals.pTcwv : mine.vals.pTcwv}%` : '',
         why: ko
-          ? (many
-              ? '가강수량은 하늘 기둥 전체에 든 수증기의 양입니다. 많으면 소나기가 굵어지기 쉽습니다.'
-              : '가강수량은 하늘 기둥 전체에 든 수증기의 양입니다. 적으면 소나기가 커지기 어렵습니다.')
-            + ' ⚠️ 지표 습도와는 다른 값입니다 — 땅 근처만 눅눅하고 위는 마를 수 있습니다.'
+          ? '머리 위 하늘을 통째로 쥐어짰을 때 나올 물의 깊이입니다(가강수량). '
+            + (many ? '많으면 소나기가 굵어지기 쉽습니다.' : '적으면 소나기가 커지기 어렵습니다.')
+            + ' ⚠️ 땅바닥에서 재는 습도와는 다른 값입니다 — '
+            + '발밑만 눅눅하고 하늘은 마를 수 있습니다.'
           : '' });
     }
 
@@ -463,65 +493,88 @@ export const narrative = {
     if (ko) {
       // ① 상태
       if (dome) {
-        S(`한반도 상공에 고기압이 눌러앉아 있습니다. `
-          + `500hPa 고도가 ${mine.vals.h500}m 로 평년(${mine.vals.h500Normal}m)보다 `
-          + `상위 ${100 - mine.vals.pH500}% 이고`
-          + (dome === 2 && mine.vals.pH200 != null
-              ? `, 더 위인 200hPa 도 상위 ${100 - mine.vals.pH200}% 라 **이중**입니다.`
-              : `, 저희는 이런 상태를 열돔이라 부릅니다.`));
-        S('상공에서 공기가 내려오면서 데워지고, 구름이 잘 생기지 않아 햇볕이 그대로 들어옵니다.');
+        const up = Math.round(mine.vals.h500 - mine.vals.h500Normal);
+        S(`더워진 공기는 풍선처럼 부풉니다. 지금 머리 위 하늘이 평소보다 `
+          + `${up}m 더 부풀어 올라 있습니다 — `
+          + `${howOften(mine.vals.pH500) || '평소보다 높습니다'} `
+          + `(약 5.9km 상공 ${Math.round(mine.vals.h500).toLocaleString()}m · `
+          + `평년 ${Math.round(mine.vals.h500Normal).toLocaleString()}m).`);
+        S(dome === 2 && mine.vals.pH200 != null
+          ? `더 높은 하늘(약 12km)도 똑같이 부풀어 있습니다. 뜨거운 공기가 한 겹이 `
+            + `아니라 **두 겹**으로 덮여 있다는 뜻이고, 저희는 이걸 이중 열돔이라 부릅니다.`
+          : `뜨거운 공기가 뚜껑처럼 덮여 있는 셈이고, 저희는 이걸 열돔이라 부릅니다.`);
+        S('뚜껑이 덮이면 구름이 잘 생기지 않습니다. 햇볕이 가려지지 않고 그대로 내리쬐고, '
+          + '위에서 공기가 눌러 내려오면서 한 번 더 데워집니다.');
       }
 
-      // ② 무엇이 겹쳤나 — 수증기
+      /* ② 무엇이 겹쳤나 — 하늘의 물기
+         ⚠️ "가강수량 62 kg/m²"는 일반 독자에게 아무 그림도 못 그려 준다.
+            1 kg/m² = 물 1mm 라 **"하늘을 짜면 나올 물의 깊이"**로 그대로 바꿔 쓸 수 있다.
+            단위 환산이지 근사가 아니다 — 물 1kg 을 1m² 에 펴면 정확히 1mm 다. */
       const wp = mine?.vals?.pTcwv;
       if (wp != null) {
         if (wp >= 90) {
-          S(`여기에 남쪽에서 온 수증기까지 겹쳤습니다 — 하늘 기둥의 수증기가 `
-            + `${mine.vals.tcwv?.toFixed(0)} kg/m² 로 평년(${mine.vals.tcwvNormal})보다 `
-            + `상위 ${100 - wp}% 입니다. **열기 위에 습도**가 얹힌 셈입니다.`);
+          S(`여기에 남쪽 바다에서 올라온 물기까지 겹쳤습니다. 지금 머리 위 하늘을 `
+            + `통째로 쥐어짜면 물 ${mine.vals.tcwv?.toFixed(0)}mm 가 나옵니다 — `
+            + `평소 이맘때는 ${mine.vals.tcwvNormal}mm 입니다. `
+            + `**뜨거운 공기 위에 물기가 얹힌** 셈입니다.`);
         } else if (wp <= 10) {
-          S(`다만 수증기는 적습니다 — ${mine.vals.tcwv?.toFixed(0)} kg/m² 로 `
-            + `평년(${mine.vals.tcwvNormal})보다 하위 ${wp}% 입니다. `
-            + `⚠️ 지표 습도(${rh != null ? Math.round(rh) + '%' : '—'})와는 다른 값입니다 — `
-            + `땅 근처만 눅눅하고 위는 말라 있습니다.`);
+          S(`다만 하늘의 물기는 적습니다. 머리 위 하늘을 통째로 쥐어짜도 물 `
+            + `${mine.vals.tcwv?.toFixed(0)}mm 밖에 안 나옵니다 — `
+            + `평소 이맘때는 ${mine.vals.tcwvNormal}mm 입니다. `
+            + `⚠️ 아래에 나오는 습도(${rh != null ? Math.round(rh) + '%' : '—'})와는 다른 이야기입니다. `
+            + `발밑은 눅눅한데 하늘은 말라 있습니다.`);
         }
       }
 
       /* ③ 왜 문제인가 — 체감
-         ⚠️ 앞 문장에서 "수증기는 적다"고 했는데 여기서 "습도가 높으면"으로 시작하면
-            앞뒤가 어긋나 읽힌다. 지표 습도를 **먼저 말해** 무엇을 가리키는지 분명히 한다. */
+         ⚠️ 앞 문장에서 "하늘의 물기는 적다"고 했는데 여기서 "습도가 높으면"으로 시작하면
+            앞뒤가 어긋나 읽힌다. 땅바닥 습도를 **먼저 말해** 무엇을 가리키는지 분명히 한다. */
       if (hot >= 1 && feel.kma != null) {
-        S(`지표 습도는 ${rh != null ? Math.round(rh) : '—'}% 입니다. `
-          + `습도가 높으면 땀이 잘 마르지 않아 몸이 열을 못 버립니다. `
-          + `그래서 같은 기온이라도 체감이 오릅니다 — `
-          + `공식 ${lv.length}개 중 ${hot}개가 폭염 단계이고, `
-          + `기상청 기준 체감온도는 ${feel.kma.toFixed(1)}°C 입니다.`);
+        S(`땅바닥 습도는 ${rh != null ? Math.round(rh) : '—'}% 입니다. `
+          + `습도가 높으면 땀이 잘 마르지 않습니다. `
+          + `땀이 마르면서 열을 가져가야 몸이 식는데 그게 안 되니, `
+          + `같은 기온이라도 훨씬 덥게 느껴집니다 — `
+          + `체감온도 계산법 ${lv.length}가지 중 ${hot}가지가 폭염 구간을 가리키고, `
+          + `기상청 방식으로는 ${feel.kma.toFixed(1)}°C 입니다.`);
       }
 
       // ④ 그래서 무엇이 — 밤
       if (tminTonight != null) {
         if (tminTonight >= KMA.superTropical) {
-          S(`낮에 쌓인 열기가 밤에도 안 빠집니다. 오늘 밤 최저가 `
-            + `${tminTonight.toFixed(1)}°C 로 **초열대야**입니다 (기상청 기준 30°C 이상).`);
+          S(`낮에 달궈진 열이 밤에도 빠지지 않습니다. 오늘 밤 가장 낮은 기온이 `
+            + `${tminTonight.toFixed(1)}°C 입니다 — 밤새 30°C 아래로 내려가지 않는 밤을 `
+            + `기상청은 **초열대야**라고 부릅니다.`);
         } else if (tminTonight >= KMA.tropicalNight) {
-          S(`낮에 쌓인 열기가 밤에도 덜 빠집니다. 오늘 밤 최저가 `
-            + `${tminTonight.toFixed(1)}°C 로 **열대야**입니다 (기상청 기준 25°C 이상).`);
+          S(`낮에 달궈진 열이 밤에도 덜 빠집니다. 오늘 밤 가장 낮은 기온이 `
+            + `${tminTonight.toFixed(1)}°C 입니다 — 밤새 25°C 아래로 내려가지 않는 밤을 `
+            + `기상청은 **열대야**라고 부릅니다.`);
         } else if (dome) {
-          S(`다만 밤 최저는 ${tminTonight.toFixed(1)}°C 로 열대야(25°C) 아래입니다.`);
+          S(`다만 밤에는 ${tminTonight.toFixed(1)}°C 까지 내려갑니다. `
+            + `열대야 기준(25°C)보다는 낮습니다.`);
         }
       }
 
-      // ⑤ 소나기 재료
-      if (c.cape != null) {
-        if (c.cape >= 1000 && wp != null && wp >= 90) {
-          S(`넘치는 수증기는 소나기의 재료가 됩니다 — 대기 불안정도(CAPE)가 `
-            + `${Math.round(c.cape)} J/kg 라 갑자기 굵어질 수 있습니다.`);
-        } else if (c.cape >= 1000 && wp != null && wp <= 10) {
-          S(`대기는 불안정하지만(CAPE ${Math.round(c.cape)} J/kg) 재료가 될 수증기가 `
-            + `적어, 소나기가 나도 오래 가기 어렵습니다.`);
-        } else if (c.cape >= 1000) {
-          S(`대기 불안정도(CAPE)가 ${Math.round(c.cape)} J/kg 입니다 — 소나기가 설 수 있는 상태입니다.`);
+      /* ⑤ 소나기 재료
+         ⚠️⚠️ CAPE 를 "대기 불안정도"라고만 적으면 그것도 전문 용어다.
+            **용수철** 비유로 쓴다 — 감긴 만큼 튀어 오른다는 것이 CAPE 의 정의 그대로다.
+         ⚠️ 그리고 CAPE 는 **에너지지 방아쇠가 아니다.** 감긴 용수철도 놓아 주는 손이
+            없으면 그대로다. "힘이 세다 = 비가 온다"로 읽히지 않게 반드시 덧붙인다. */
+      if (c.cape != null && c.cape >= 1000) {
+        const spring = `공기가 위로 솟구치려는 힘이 용수철처럼 감겨 있습니다`
+                     + `(세기 ${Math.round(c.cape).toLocaleString()} — 1,000이 넘으면 센 편입니다)`;
+        if (wp != null && wp >= 90) {
+          S(`그 물기가 소나기의 재료가 됩니다. ${spring} — `
+            + `한번 터지면 빗줄기가 갑자기 굵어질 수 있습니다.`);
+        } else if (wp != null && wp <= 10) {
+          S(`${spring}. 다만 비로 만들 물기가 적어서, `
+            + `소나기가 서더라도 오래 가기는 어렵습니다.`);
+        } else {
+          S(`${spring}. 소나기가 설 수 있는 상태입니다.`);
         }
+        S('⚠️ 힘이 감겨 있다고 반드시 터지는 것은 아닙니다. '
+          + '찬 공기가 들어오거나, 산을 타고 오르거나, 바닷바람이 부딪치는 것 같은 '
+          + '방아쇠가 있어야 실제로 소나기가 됩니다.');
       }
 
       /* ⑤-b 앞으로의 변수 — 태풍
@@ -535,12 +588,17 @@ export const narrative = {
         if (near && near.km < 3500) {
           /* ⚠️ 태풍 이름은 로마자가 많다(Dolphin·Genevieve). 받침 규칙이 안 통하므로
              로마자면 "가"로 둔다 — "Genevieve 이"가 실측 화면에 나왔다. */
-          S(`지금 ${near.named ? `**${near.name}**` : '이름이 붙기 전인 **열대저압부**'}`
-            + `${/[가-힣]$/.test(near.name) ? iGa(near.name) : '가'} `
+          /* ⚠️ 이름을 **한글로 끝내** 조사를 맞춘다. 로마자 이름은 괄호로 뺀다. */
+          const who = near.named
+            ? (near.no ? `**${near.no}호 태풍**(${near.name})이`
+                       : `**${near.name}** 태풍이`)
+            : '아직 태풍이 되기 전 단계인 **열대저압부**가';
+          S(`지금 ${who} `
             + `${near.km.toLocaleString()}km 떨어져 있습니다. `
-            + `태풍은 상공 고기압의 가장자리를 따라 움직이고, 그 위치에 따라 `
-            + `폭염을 더 키우기도 하고 비구름을 몰고 오기도 합니다. `
-            + `⚠️ 진로는 저희가 말하지 않습니다 — 태풍 화면에서 기관별 예보를 보세요.`);
+            + `태풍은 이 뜨거운 공기 덩어리의 가장자리를 따라 빙 돌아 움직입니다. `
+            + `그래서 어디쯤 있느냐에 따라 더위를 더 키우기도 하고, `
+            + `비구름을 몰고 오기도 합니다. `
+            + `⚠️ 어디로 갈지는 저희가 말하지 않습니다 — 태풍 화면에서 기관별 예보를 보세요.`);
         }
       }
 
@@ -549,7 +607,7 @@ export const narrative = {
         const bits = [];
         if (pTmax) bits.push(`낮 ${tmax.toFixed(1)}°C(평년 ${cell.tmax.q[3]}°C)`);
         if (pHm) bits.push(`습도 ${Math.round(rh)}%(평년 ${cell.hm.q[3]}%)`);
-        S(`특별한 기압 배치는 없습니다. ${bits.join(' · ')} 로 평년 범위입니다.`);
+        S(`오늘은 눈에 띄는 것이 없습니다. ${bits.join(' · ')} 로 예년 그 언저리입니다.`);
         S('⚠️ 평범한 날은 평범하다고 적습니다. 매일 극적인 척하면 진짜 위험한 날에 '
           + '아무도 믿지 않기 때문입니다.');
       }

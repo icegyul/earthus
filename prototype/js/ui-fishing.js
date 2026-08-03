@@ -18,6 +18,9 @@ import { get, nearest, distKm } from './korea.js';
 import { myLocation } from './mylocation.js';
 import { viewer, onCameraIdle } from './viewer.js';
 import { intro } from './intro.js';
+/* ⚠️ 입수 통제 경고는 서핑과 **같은 문장**을 쓴다. 두 곳에 따로 적으면
+   한쪽만 고치는 날이 온다 — 이 앱에서 실제로 여러 번 그랬다. */
+import { swimWarn } from './ui-surf.js';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c =>
@@ -472,6 +475,7 @@ export const fishPanel = {
                  home: '<b>태안 기준</b>입니다 (위치를 모릅니다) · ' }[this._at?.from] || ''}`
             + `방파제·항·섬 ${m.count}곳 · 바다 자료 Open-Meteo 해양`
           : `${m.count} spots · sea data from Open-Meteo Marine`}</p>
+        ${swimWarn(ko)}
         ${this._markMode === 'region' ? this._regionList(ko) : ''}
         <div class="mt-list">${list.map(s => this._card(s, ko)).join('')}</div>
         ${this._foot(ko)}`}

@@ -590,6 +590,7 @@ export const surfPanel = {
                  home: '<b>양양 기준</b>입니다 (위치를 모릅니다) · ' }[this._at?.from] || ''}`
             + `해변 ${m.count}곳 중 바다 방향을 낸 곳 ${m.withFacing}곳 · 파랑 자료 Open-Meteo 해양`
           : `${m.withFacing} of ${m.count} beaches have a shore orientation · waves: Open-Meteo Marine`}</p>
+        ${swimWarn(ko)}
         ${this._markMode === 'region' ? this._regionList(ko) : ''}
         <div class="mt-list">${list.map(b => this._card(b, ko)).join('')}</div>
         ${this._foot(ko)}`}
@@ -793,3 +794,31 @@ export const surfPanel = {
     </p>`;
   },
 };
+
+/* ⚠️⚠️ **입수 통제 경고 — 맨 위에 둔다.**
+   받은 신고: "강릉쪽 파도가 점차 세저서 입수가 금지되는 해수욕장이 생기나봐"
+
+   확인해 보니 우리 자료는 **정반대**를 말하고 있었다 —
+   같은 시각 강릉 앞바다 파고 0.9m, 앞으로 더 낮아짐, 풍랑특보 없음
+   (강릉에 나와 있는 특보는 폭염경보·열대야뿐이었다).
+
+   ⚠️ 그런데 이건 모순이 아니다. **해수욕장 입수 통제는 파고로 정하지 않는다.**
+      대개 **이안류**로 막는데, 이안류는 해변 코앞 수십 미터에서 생기는 흐름이라
+      우리가 쓰는 격자에는 **원리상 안 잡힌다.** 0.9m 잔잔한 바다에서도 끌려 나간다.
+
+   ⚠️⚠️ 그래서 위험한 것은 "자료가 없다"가 아니라 **"괜찮아 보인다"** 는 것이다.
+      통제 중인 해변인데 우리 화면은 파고 0.9m 만 조용히 띄운다.
+      → 맨 아래 긴 주의 문구에 묻어 두지 않고, **목록보다 먼저** 보이게 둔다.
+
+   ⚠️ 자료가 생기면 지운다. 지금은 기상청 API 허브에 해수욕장 특화예보가 없고
+      (404 확인), 국립해양조사원 이안류 지수는 따로 신청해야 한다. */
+export function swimWarn(ko) {
+  return `<p class="mt-danger">${ko
+    ? '⚠️ <b>입수 통제 여부는 여기서 알 수 없습니다.</b> 해수욕장 통제는 대개 '
+      + '<b>이안류</b>로 정해지는데, 이안류는 해변 코앞에서 생겨 이 자료에 잡히지 '
+      + '않습니다. <b>잔잔해 보여도 통제 중일 수 있습니다</b> — 현장 안내와 '
+      + '안전요원 지시를 따르세요.'
+    : '⚠️ <b>We cannot tell you if the water is closed.</b> Beach closures are usually '
+      + 'driven by <b>rip currents</b>, which form right at the shore and do not appear '
+      + 'in this data. <b>Calm-looking does not mean open</b> — follow on-site signage.'}</p>`;
+}

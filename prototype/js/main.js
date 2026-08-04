@@ -39,6 +39,13 @@ import { paraPanel } from './ui-para.js';
 import { apiKeysPanel } from './ui-apikeys.js';
 import { eventPanel } from './ui-events.js';
 
+/* 늦게 불러오는 바다거북 모듈을 붙잡아 두는 곳.
+   ⚠️⚠️ **모듈 바깥에 둔다.** 켜는 쪽은 boot(), 끄는 쪽(OFF·HAS_MARKS)은
+      bindAccountUI() 라 **함수가 서로 다르다.** boot() 안에 두었더니
+      끄는 쪽에서 `turtleMod is not defined` 가 났다 —
+      panels._fire 의 try/catch 가 삼켜서 "칩이 안 뜬다"로만 보였다. */
+let turtleMod = null;
+
 async function boot() {
   initViewer('cesiumContainer');
   setAmbientView(127, 25);
@@ -241,10 +248,12 @@ async function boot() {
       para: () => paraPanel.open(),
       mountain: () => mountainPanel.open(),
       sky: () => skyPanel.open(),
-      /* 자료가 1.7MB 다(경로 28,770점). 누른 사람에게만 받는다. */
+      /* 자료가 1.7MB 다(경로 28,770점). 누른 사람에게만 받는다.
+         ⚠️ 받아온 모듈을 붙잡아 둔다 — 아래 "지도에서 지우기"가 이걸 쓴다.
+            늦게 불러오는 것이라 여기 말고는 손잡이가 없다. */
       turtle: async () => {
-        const { turtlePanel } = await import('./ui-turtle.js');
-        turtlePanel.open();
+        turtleMod = (await import('./ui-turtle.js')).turtlePanel;
+        turtleMod.open();
       },
     }[act];
     // ⚠️ 조용히 넘어가지 않는다. 빠뜨린 것이 눈에 보여야 다시 안 빠뜨린다.
@@ -312,8 +321,12 @@ function bindAccountUI() {
   const OFF = {
     sfSheet: () => surfPanel.close(), fsSheet: () => fishPanel.close(),
     pgSheet: () => paraPanel.close(), mtSheet: () => mountainPanel.close(),
+    /* ⚠️ 거북은 늦게 불러오는 모듈이라 아직 안 눌렀으면 turtleMod 가 null 이다.
+       그때는 지울 것도 없으니 아무 일도 안 하는 게 맞다. */
+    turtleSheet: () => turtleMod?.close(),
   };
-  const OFF_LABEL = { sfSheet: '서핑', fsSheet: '낚시', pgSheet: '활공장', mtSheet: '등산로' };
+  const OFF_LABEL = { sfSheet: '서핑', fsSheet: '낚시', pgSheet: '활공장', mtSheet: '등산로',
+                      turtleSheet: '바다거북' };
 
   /** 지도에 표시가 남아 있으면 끄는 칩을 띄운다 */
   function offChip(id, on) {
@@ -346,6 +359,7 @@ function bindAccountUI() {
     fsSheet: () => (fishPanel._ds?.entities.values.length || 0) > 0,
     pgSheet: () => (paraPanel._ds?.entities.values.length || 0) > 0,
     mtSheet: () => (trailsHasMarks()),
+    turtleSheet: () => (turtleMod?._ents.length || 0) > 0,
   };
   let trailsMod = null;
   function trailsHasMarks() {

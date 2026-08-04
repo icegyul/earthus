@@ -421,7 +421,14 @@
   <!-- 바다거북 — ⚠️ 제4유형 자료(상업적 이용금지·변경금지). ui-turtle.js 머리말 참고.
        ⚠️ 추적이 끝난 경로다. 화면 맨 위에 그 사실을 적는다. -->
   <div id="turtleSheet" class="sheet-panel tall keep-open">
-    <div class="traffic one"><button class="tl close" data-close="turtleSheet" aria-label="닫기"><span>×</span></button></div>
+    <!-- ⚠️ 여기 있던 동그란 × (.traffic) 는 뺐다. 아래 "닫기 ×" 와 겹쳐
+         닫는 버튼이 둘이 됐다. 서핑·낚시·활공장·등산로 시트와 같은 모양으로 맞춘다. -->
+    <!-- ⚠️ 거북 경로는 45마리 28,770점이라 켜 두면 바다가 실뭉치가 된다.
+         다 보고 나서 지울 길이 반드시 보여야 한다. 닫기와 끄기는 다르다. -->
+    <div class="sheet-acts">
+      <button class="sh-off" data-sheet-off="turtleSheet">지도에서 지우기</button>
+      <button class="sh-close" data-close="turtleSheet" aria-label="닫기">닫기 ×</button>
+    </div>
     <h3 id="turtleTitle">🐢 바다거북</h3>
     <div id="turtleBody"></div>
   </div>

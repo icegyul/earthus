@@ -103,6 +103,19 @@ def pages(url, extra=None):
     return out
 
 
+def norm_st(code):
+    """정점 번호를 하나로 맞춘다.
+
+    ⚠️⚠️ **같은 정점이 `EB-01` 과 `EB01` 두 형식으로 들어온다.**
+       그대로 두면 정점이 72곳으로 세어지는데 **실제로는 37곳**이다.
+       좌표까지 사실상 같다(38.437 vs 38.438 — 반올림 차이뿐).
+       → 지도에 같은 자리에 점이 두 번 찍히고,
+         "조사정점 72곳"이라는 **틀린 숫자**가 화면에 나간다.
+       하이픈과 대소문자를 지워 합친다.
+    """
+    return (code or "").replace("-", "").replace(" ", "").upper()
+
+
 def num(v):
     try:
         x = float(str(v).strip())
@@ -119,7 +132,7 @@ def site_coords():
         return None
     m = {}
     for r in got:
-        code = (r.get("exmnLstaNo") or r.get("exmnStaNo") or "").strip()
+        code = norm_st(r.get("exmnLstaNo") or r.get("exmnStaNo"))
         if not code:
             continue
         # ⚠️ 필드 이름을 못 봤다. 좌표처럼 생긴 것을 모두 훑어서 찾는다.
@@ -175,7 +188,7 @@ def handler(event=None, context=None):
         if not name:
             continue
         yr = (r.get("exmnYr") or "").strip()
-        st = (r.get("exmnLstaNo") or "").strip()
+        st = norm_st(r.get("exmnLstaNo"))
         # ⚠️ 개체수가 비어 있는 줄이 있다. 0 으로 세지 않는다 — 못 센 것과 없는 것은 다르다.
         c = num(r.get("enttCnt"))
 
@@ -226,6 +239,9 @@ def handler(event=None, context=None):
     species = sorted(
         ({"ko": k, "sci": v["sci"], "records": v["n"], "individuals": v["cnt"],
           "years": sorted(v["yrs"]), "stations": len(v["stations"]),
+          # ⚠️ 정점 **번호까지** 보낸다. 개수만 보내면 화면에서 종을 눌러도
+          #    지도를 그 종이 나온 곳으로 좁힐 수가 없다(실제로 그렇게 만들다 걸렸다).
+          "at": sorted(v["stations"]),
           "endangered": grade_of(k, v["n"])}
          for k, v in spc.items()),
         key=lambda x: -x["records"])

@@ -41,6 +41,12 @@ const ITEMS = [
     subKo: '방류된 거북이 지나간 길', subEn: 'Where released turtles went',
     color: '#4fd0e0',
     ico: '<ellipse cx="12" cy="12.4" rx="6.2" ry="5.2"/><path d="M12 7.2v10.4M6.4 10.6h11.2M6.4 14.2h11.2"/><circle cx="12" cy="4.6" r="1.8"/><path d="M5.2 8.2 2.8 6.4M18.8 8.2l2.4-1.8M5.2 16.6l-2.4 1.8M18.8 16.6l2.4 1.8" stroke-linecap="round"/>' },
+  /* ⚠️ 부제에 **"조사한 해에"** 를 넣는다. 이 자료도 실시간이 아니다 —
+     "바닷새 위치"라고만 쓰면 지금 거기 있는 줄 안다. 거북과 같은 이유다. */
+  { act: 'seabird', ko: '바닷새', en: 'Seabirds',
+    subKo: '조사한 해에 어디서 몇 마리를 셌나', subEn: 'Counts made at survey stations',
+    color: '#7fd8c8',
+    ico: '<path d="M3 13.5c3.2-4 5.6-5.4 9-5.4s5.8 1.4 9 5.4" stroke-linecap="round"/><path d="M6.5 12.2c1.6-2.6 3.4-3.8 5.5-3.8s3.9 1.2 5.5 3.8" stroke-linecap="round" opacity=".55"/><circle cx="12" cy="17.4" r="1.5"/>' },
   { act: 'sky', ko: '하늘', en: 'Sky',
     subKo: '오늘 밤 별이 보이는가', subEn: 'Will the sky be clear tonight',
     color: '#b9a7f0',

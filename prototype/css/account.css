@@ -857,3 +857,43 @@
 .tt-row b{ font-size:13px; font-weight:500; display:block; }
 .tt-row em{ font-style:normal; font-size:10.5px; opacity:.55; display:block; margin-top:2px;
   font-variant-numeric:tabular-nums; }
+
+/* ── 바닷새 ────────────────────────────────────────────────
+   ⚠️ 거북(.tt-*)과 색을 나눈다. 둘 다 생물 자료라 같이 켜면 헷갈린다. */
+.sb-warn{ border:1px solid rgba(240,168,120,.34); background:rgba(240,168,120,.07);
+          border-radius:12px; padding:11px 13px; margin-bottom:12px; }
+.sb-warn b{ font-size:13px; color:#f0c49a; display:block; margin-bottom:5px }
+.sb-warn p{ font-size:12px; line-height:1.62; color:rgba(255,255,255,.72); margin:0 }
+
+/* 한눈에 — 숫자는 자릿수를 맞춘다 */
+.sb-sum{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:14px }
+.sb-cell{ background:rgba(255,255,255,.045); border-radius:9px; padding:8px 4px; text-align:center }
+.sb-cell b{ display:block; font-size:14px; font-weight:600; color:#cfeef2;
+            font-variant-numeric:tabular-nums }
+.sb-cell em{ display:block; font-style:normal; font-size:10px; margin-top:2px;
+             color:rgba(255,255,255,.45) }
+@media (max-width:400px){ .sb-sum{ grid-template-columns:repeat(2,1fr) } }
+
+.sb-h{ font-size:12px; letter-spacing:.02em; color:rgba(255,255,255,.6);
+       margin:15px 0 7px; font-weight:500 }
+.sb-list{ display:flex; flex-direction:column }
+.sb-row{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+         width:100%; text-align:left; background:none; border:0; cursor:pointer;
+         padding:8px 4px; border-bottom:1px solid rgba(255,255,255,.06); color:inherit }
+.sb-row:hover{ background:rgba(255,255,255,.04) }
+.sb-row.on{ background:rgba(127,216,200,.13) }
+.sb-nm{ min-width:0 }
+.sb-nm b{ font-size:13px; font-weight:500; color:rgba(255,255,255,.92) }
+.sb-nm em{ display:block; font-style:italic; font-size:10.5px; margin-top:1px;
+           color:rgba(255,255,255,.38); white-space:nowrap; overflow:hidden;
+           text-overflow:ellipsis }
+/* 멸종위기 표시 — ⚠️ 색만으로 알리지 않는다. 글자로도 적는다. */
+.sb-g{ display:inline-block; font-style:normal; font-size:9.5px; margin-left:6px;
+       padding:1px 5px; border-radius:4px; vertical-align:1px;
+       color:var(--g); border:1px solid color-mix(in srgb, var(--g) 45%, transparent);
+       background:color-mix(in srgb, var(--g) 12%, transparent) }
+.sb-n{ flex:0 0 auto; text-align:right; font-size:13px; color:#9fe8f0;
+       font-variant-numeric:tabular-nums }
+.sb-n u{ text-decoration:none; font-size:10px; opacity:.55; margin-left:1px }
+.sb-n em{ display:block; font-style:normal; font-size:10px; margin-top:1px;
+          color:rgba(255,255,255,.38) }

@@ -155,8 +155,13 @@ export const turtlePanel = {
       const pts = t.track || [];
       if (pts.length < 2) return;
 
+      const info = ko
+        ? `🐢 ${t.nameKo} · ${String(t.first?.at || '').slice(0, 10)}~${String(t.last?.at || '').slice(0, 10)}`
+          + ` · ${t.points}점 · ⚠️ 추적이 끝난 경로입니다`
+        : `${t.nameKo} · ${t.points} pts · tracking ended`;
       /* 경로선 — ⚠️ 전체를 볼 때는 흐리게. 45마리를 진하게 그으면 바다가 안 보인다. */
       this._ents.push(viewer.entities.add({
+        _pick: info,          // 받은 요청: "거북 선을 누르면 어떤 것인지 나오게"
         polyline: {
           positions: pts.map((p) => C.Cartesian3.fromDegrees(p.lon, p.lat)),
           width: pttId ? 2.4 : 1.4,
@@ -170,6 +175,7 @@ export const turtlePanel = {
          ⚠️ "지금 위치"가 아니라 "여기서 추적이 끝났다"는 뜻이다 — 말풍선에 그렇게 적는다. */
       const last = pts[pts.length - 1];
       this._ents.push(viewer.entities.add({
+        _pick: info,
         position: C.Cartesian3.fromDegrees(last.lon, last.lat),
         label: {
           text: '🐢',

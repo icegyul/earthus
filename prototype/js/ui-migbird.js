@@ -145,6 +145,7 @@ export const migbirdPanel = {
       if (p.home) {
         /* 출발지 — 시·군 단위라 점으로 찍어도 된다(±12km) */
         this._ents.push(viewer.entities.add({
+          _pick: `${p.name} — ${ko ? `여기서 떠난 기록 ${p.n}건` : `${p.n} departures`}`,
           position: C.Cartesian3.fromDegrees(p.lon, p.lat),
           point: { pixelSize: 7, color: C.Color.fromCssColorString('#ffd08a').withAlpha(0.95),
                    outlineColor: C.Color.BLACK.withAlpha(0.5), outlineWidth: 1,
@@ -155,6 +156,10 @@ export const migbirdPanel = {
       } else {
         /* ⚠️⚠️ 도착지는 **원**이다. 반경이 곧 "얼마나 모르는가"다. */
         this._ents.push(viewer.entities.add({
+          /* ⚠️ 반경을 반드시 같이 말한다. 원 이름만 읽으면 '거기 갔다'로 들린다. */
+          _pick: ko
+            ? `${p.name} — 도착 ${p.n}건 · ⚠️ 반경 약 ${p.r}km 안 어딘가입니다`
+            : `${p.name} — ${p.n} arrivals · within ~${p.r} km`,
           position: C.Cartesian3.fromDegrees(p.lon, p.lat),
           ellipse: {
             semiMajorAxis: p.r * 1000, semiMinorAxis: p.r * 1000,
@@ -184,6 +189,10 @@ export const migbirdPanel = {
       if (!a || !b) return;
       const col = C.Color.fromCssColorString(colorOf(names, t.spc));
       this._ents.push(viewer.entities.add({
+        /* 받은 요청: "새 선을 누르면 어떤 새인지 나오게 해줘" */
+        _pick: ko
+          ? `🦆 ${t.spc} · ${t.from} → ${t.to} · ${t.on} 떠남 (추적기 ${t.tag})`
+          : `${t.spc} · ${t.from} → ${t.to} · left ${t.on}`,
         polyline: {
           /* ⚠️⚠️ 양 끝을 높이 0 으로 두면 **지구에 묻혀 안 보인다.**
              가운데만 260km 올렸더니 그래도 화면에 아무것도 안 나왔다.

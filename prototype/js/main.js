@@ -166,12 +166,20 @@ async function boot() {
   layerBar.onAction('sky', () => skyPanel.open());
   layerBar.onAction('flight', () => flightPanel.open());
   layerBar.onAction('community', () => communityPanel.open());
-  layerBar.onAction('events', () => eventPanel.open());
+  /* ⚠️⚠️ **뉴스와 이벤트는 같은 패널이다.** 받은 지적: "뉴스하고 이벤트 메뉴가 동일해".
+     원인은 `eventPanel.show` 가 **한 번 바뀌면 그대로 남는** 값이라는 것이었다 —
+     뉴스를 먼저 열면 show='confirmed' 가 남아서 이벤트도 같은 화면으로 열렸다.
+     → 둘 다 **열 때마다 제 탭을 지정한다.** 남은 값에 기대지 않는다.
+       · 이벤트 = 지금 지구에서 일어나는 일  → 경고 탭
+       · 뉴스   = 읽을 거리                 → 지역 뉴스 탭
+     ⚠️ 그래도 **같은 방으로 가는 문 두 개**인 것은 그대로다. 합칠지는 따로 정할 것. */
+  layerBar.onAction('events', () => { eventPanel.show = 'warn'; eventPanel.open(); });
   /* News — 지구에서 지금 일어나는 일. 레이어를 켜서 지도에 올리고 목록도 같이 연다.
      ⚠️ 레이어만 켜면 "눌렀는데 아무 일도 안 났다"로 보인다 (지구 반대편이면 더 그렇다). */
   layerBar.onAction('news', () => {
     store.setLayer('news', true);
-    eventPanel.show = 'confirmed';
+    // ⚠️ '확정'은 이벤트 쪽 말이다. 뉴스 메뉴는 **읽을 거리**로 연다.
+    eventPanel.show = 'local';
     eventPanel.open();
   });
   layerBar.onAction('ask', () => askPanel.open());
@@ -461,6 +469,20 @@ function onPick(ev) {
   if (picked?.id?._fishSpot) { fishPanel.focus(picked.id._fishSpot); return; }
   if (picked?.id?._fishRegion) { fishPanel.openRegion(picked.id._fishRegion); return; }
   if (picked?.id?._paraSite) { paraPanel.focus(picked.id._paraSite); return; }
+
+  /* 철새·거북·바닷새 — 누르면 무엇인지 한 줄로 말한다.
+     받은 요청: "거북이나 새 선을 누르면 어떤 새인지 나오게 해줘"
+
+     ⚠️⚠️ **Cesium 기본 말풍선(infoBox)은 꺼져 있다**(viewer.js).
+        그래서 엔티티에 적어 둔 `description` 은 **아무 데도 안 나온다.**
+        여기 `_pick` 을 읽어 toast 로 띄우는 것이 이 앱의 방식이다.
+        ⚠️ 새 도형을 추가하면서 description 만 적으면 조용히 안 보인다.
+
+     ⚠️ 선이 1.8px 라 정확히 누르기 어렵다. 기본 집기(3×3)로 놓치면
+        **16×16 으로 한 번 더** 집는다. 손가락으로도 눌리게 하려는 것이다. */
+  const pickInfo = picked?.id?._pick
+    || scene.pick(ev.position, 16, 16)?.id?._pick;
+  if (pickInfo) { toast(pickInfo); return; }
 
   /** 화면 좌표 → 지표의 위경도. 지구를 안 가리켰으면 null. */
   const ground = () => {

@@ -190,6 +190,9 @@ export const seabirdPanel = {
       const f = Math.sqrt((s.individuals || 0) / max);          // 0~1
       const px = 8 + f * 26;
       this._ents.push(viewer.entities.add({
+        _pick: ko
+          ? `조사정점 ${s.code} · ${n0(s.species)}종 · ${n0(s.individuals)}마리 (조사한 해들의 합계)`
+          : `Station ${s.code} · ${n0(s.species)} species · ${n0(s.individuals)} birds`,
         position: C.Cartesian3.fromDegrees(s.lon, s.lat),
         point: {
           pixelSize: px,

@@ -44,15 +44,12 @@ export const subscribeSheet = {
     this._reason = reason || null;
     $('#subSheet').classList.add('up');
     this.render();
-    // ⚠️ 좌석 수는 **네트워크가 필요하다.** 먼저 화면을 그리고 오면 채운다 —
-    //    기다렸다 그리면 결제 화면이 늦게 뜬다.
-    if (this.seats === undefined) {
-      billing.seatsLeft('founding').then((n) => {
-        this.seats = n;
-        // 그 사이 시트를 닫았으면 다시 그리지 않는다
-        if ($('#subSheet')?.classList.contains('up')) this.render();
-      }).catch(() => { this.seats = null; });
-    }
+    /* ⚠️ 창립회원 요금제를 없앴다 (받은 결정). 좌석을 셀 일이 없어 조회도 뺀다.
+       이유: 연 ₩19,000 은 한 달 ₩1,583 꼴이라 월간(₩12,000)보다 8배 싸서
+       아무도 월간을 안 사고, 500명이 차도 초기 자금이 950만원에서 멈춘다.
+       그리고 오늘 새로 쓴 '초기에 결제해 주시면'(기간 2배·이름 등재·우선 초대)과
+       하는 일이 겹쳤다 — 초기 후원자를 부르는 장치가 두 개일 이유가 없다.
+       ⚠️ '사전등록 · 창립 멤버' 배지는 **요금제가 아니라 별개다.** 그대로 둔다. */
   },
   close() { $('#subSheet').classList.remove('up'); },
 
@@ -86,10 +83,6 @@ export const subscribeSheet = {
     ];
     /* 창립회원 — ⚠️ **남은 자리가 있다고 확인됐을 때만** 보여준다.
        못 셌을 때(null) 보여주면 마감된 상품을 파는 것이 될 수 있다. */
-    if (typeof this.seats === 'number' && this.seats > 0) {
-      opts.unshift(['founding', ko ? '창립회원' : 'Founding',
-        ko ? `${this.seats.toLocaleString()}자리 남음` : `${this.seats} left`]);
-    }
     const picker = el('div', 'plan-picker');
     opts.forEach(([key, label, badge]) => {
       const p = PLANS[key];
@@ -106,13 +99,6 @@ export const subscribeSheet = {
     });
     body.appendChild(picker);
 
-    if (this.plan === 'founding') {
-      /* ⚠️ 창립회원이 **무엇을 약속하는 것인지** 분명히 적는다.
-         "평생 이 가격"은 지키기 어려운 약속이다 — 1년치 이용권이라고 정확히 쓴다. */
-      body.appendChild(el('p', 'sky-note', ko
-        ? '창립회원은 1년 이용권입니다. 계정에 창립회원 표시가 남고, 다음 해 갱신 때 그때의 정가로 안내드립니다. 지금 가격이 평생 고정된다는 뜻은 아닙니다.'
-        : 'Founding membership is a one-year pass. Your account keeps the founding badge; renewal is at the then-current price. It is not a lifetime price lock.'));
-    }
 
     /* ── 무엇이 열리나 ── */
     const feat = el('div', 'feat-block');

@@ -25,11 +25,9 @@ const DEFAULT_PLANS = {
      정본은 서버(plans 표)이고 여기 값은 화면 표시용이다. */
   monthly:  { id: 'earthus.pro.monthly',  krw: 12000, usd: 8,  listKrw: 15000, listUsd: 10, period: 'month' },
   yearly:   { id: 'earthus.pro.yearly',   krw: 120000, usd: 80, listKrw: 180000, listUsd: 120, period: 'year' },
-  /* 창립회원 — **수량 제한 상품**이다 (500명).
-     ⚠️ 좌석이 남았는지는 서버만 안다. 클라이언트가 세면 동시에 결제한 사람을 못 막는다.
-        화면 표시는 참고용이고, 실제 차단은 checkout Edge Function 이 한다. */
-  founding: { id: 'earthus.founding.500', krw: 19000, usd: 14.99, period: 'year',
-              seats: 500, foundingOnly: true },
+  /* ⚠️ 창립회원 요금제는 없앴다 (받은 결정) — ui-subscribe.js 머리말 참고.
+     월간보다 8배 싸서 아무도 월간을 안 사고, 초기 자금도 950만원에서 멈춘다.
+     '초기에 결제해 주시면' 문구가 같은 일을 더 정직하게 한다. */
 };
 
 /* ⚠️⚠️ 여기 값은 **화면 표시용**이다. 결제 금액의 정본은 서버(plans 테이블)다.

@@ -43,7 +43,11 @@ values
   --    정가 ₩15,000 / $10 → 초기 특가 ₩12,000 / $8 (서비스 초반 한시).
   ('earthus.pro.monthly',  '한 달 이용권', 'Monthly',       12000,  8.00, 'month',  1, null, 10),
   ('earthus.pro.yearly',   '1년 이용권',   'Yearly',       120000, 80.00, 'year',  12, null, 20),
-  -- ⚠️ 창립회원은 **수량 제한 상품**이다. 500명이 차면 서버가 주문을 거절한다.
+  -- ⚠️ 창립회원(earthus.founding.500)은 **뺐다** (받은 결정).
+  --    연 ₩19,000 은 한 달 ₩1,583 꼴이라 월간(₩12,000)보다 8배 싸서
+  --    아무도 월간을 안 사고, 500명이 다 차도 초기 자금이 950만원에서 멈춘다.
+  --    '초기에 결제해 주시면'(기간 2배·이름 등재·우선 초대)이 같은 일을 더 정직하게 한다.
+  --    ⚠️ 줄을 지우지 않고 **꺼 둔다**(아래 update). 이미 산 사람이 있으면 기록이 남아야 한다.
   ('earthus.founding.500', '창립회원 1년', 'Founding year', 19000, 14.99, 'year', 12,  500,  5)
 on conflict (id) do update
   set krw = excluded.krw, usd = excluded.usd, months = excluded.months,
@@ -203,3 +207,6 @@ grant execute on function public.expire_subscriptions() to service_role;
 --   where schemaname='public' and tablename in ('plans','orders');
 -- -- anon 키로 아래가 0행이어야 정상 (남의 주문이 안 보인다)
 -- select count(*) from public.orders;
+
+-- ⚠️ 창립회원을 화면에서 내린다. plans_read 정책이 active = true 만 보여준다.
+update public.plans set active = false where id = 'earthus.founding.500';

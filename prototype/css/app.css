@@ -2010,3 +2010,13 @@ body.is-ambient #windLegend.on{ opacity:0; }
 .ev-maptoggle.on{ color:#cfe6ff; border-color:rgba(140,190,235,.35) }
 .ev-maptoggle.on i{ background:rgba(140,190,235,.62) }
 .ev-maptoggle.on i::after{ transform:translateX(11px); background:#fff }
+
+/* 지구스타일 목록의 위성 그림 — ⚠️ 캔버스 미리보기와 **같은 크기**여야 줄이 안 흔들린다.
+   .ly canvas 크기를 바꾸면 여기도 같이 바꿀 것. */
+.ly-sat{ width:52px; height:52px; border-radius:50%; display:block; object-fit:contain;
+  background:radial-gradient(circle at 38% 32%, #16283c, #060b12 72%);
+  box-shadow:0 2px 10px rgba(0,0,0,.55); transition:transform .18s ease;
+  padding:5px; box-sizing:border-box; }
+.ly.on .ly-sat{ transform:scale(1.06) }
+@media (max-width:520px){ .ly-sat{ width:54px; height:54px } }
+@media (max-width:390px){ .ly-sat{ width:46px; height:46px } }

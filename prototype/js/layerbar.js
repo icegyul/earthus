@@ -37,9 +37,9 @@ export const ITEMS = [
      ⚠️ GMGSI 에 특정 국기를 달지 않는다 — 여러 나라 위성을 NOAA 가 합친 것이라
         한 나라 것이라고 하면 틀린 말이 된다. 🌐 로 둔다. */
   { id:'gk2aIR', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 전면 2km · 밤에도', subEn:'Cloud · full disk 2km · day & night', ready:true,
-    sky:'#0b1626', paint:'gk2a' },
+    sky:'#0b1626', paint:'gk2a', img:'img/sat-gk2a.png' },
   { id:'gk2aVIS', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 한반도 0.5km · 낮에만', subEn:'Cloud · Korea 0.5km · daylight only', ready:true,
-    sky:'#0a1828', paint:'gk2a' },
+    sky:'#0a1828', paint:'gk2a', img:'img/sat-gk2a.png' },
   /* ⚠️⚠️ 이 레이어가 생긴 이유를 적어 둔다 — 받은 지적이 정확했다.
      "일본꺼는 잘 표현되는데 천리안은 안보여" (같은 시각, 15분 차)
      원인은 위성 성능이 아니라 **채널**이었다. 화면의 히마와리는 가시광이고
@@ -47,17 +47,17 @@ export const ITEMS = [
      원리상 안 잡힌다 — 실측으로 서울 위 구름이 지표보다 5°C도 안 찼다.
      → 같은 위성의 **가시광을 전면으로** 넓혔다. 낮에는 이게 히마와리와 같은 것을 본다. */
   { id:'gk2aVISfd', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 전면 · 낮에만 · 히마와리와 같은 방식', subEn:'Cloud · full disk · daylight only', ready:true,
-    sky:'#0a1828', paint:'gk2a' },
+    sky:'#0a1828', paint:'gk2a', img:'img/sat-gk2a.png' },
   /* ⚠️⚠️ 한반도(8°)와 전면(120°) 사이가 통째로 비어 있었다.
      한반도 상자는 0.5km 로 선명한데 8°밖에 안 되고, 전면은 8.35km 라
      그 사이 — 오키나와·대만·일본 남부 — 가 어느 쪽으로도 잘 안 보였다.
      태풍이 오키나와쯤 있을 때가 정확히 그 구간이다. 2km 로 메운다. */
   { id:'gk2aIRea', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 동아시아 2km · 밤에도', subEn:'Cloud · E. Asia 2km · day & night', ready:true,
-    sky:'#0b1626', paint:'gk2a' },
+    sky:'#0b1626', paint:'gk2a', img:'img/sat-gk2a.png' },
   { id:'gk2aVISea', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 동아시아 2km · 낮에만', subEn:'Cloud · E. Asia 2km · daylight only', ready:true,
-    sky:'#0a1828', paint:'gk2a' },
+    sky:'#0a1828', paint:'gk2a', img:'img/sat-gk2a.png' },
   { id:'gk2aWV', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'수증기 · 전면 · 상층 흐름', subEn:'Water vapour · full disk', ready:true,
-    sky:'#0c1422', paint:'gk2a' },
+    sky:'#0c1422', paint:'gk2a', img:'img/sat-gk2a.png' },
   /* ⚠️ 부제에 '낮에만'을 반드시 남긴다. 가시광이라 밤에는 비어 보이는데,
      그 사실을 안 적으면 고장으로 읽힌다 (실제로 지적받았다). */
   { id:'himawari', flag:'🇯🇵', ko:'히마와리', en:'Himawari', sub:'구름 · 동아시아 1km · 낮에만', subEn:'Cloud · E. Asia 1km · daylight only', ready:true,
@@ -619,9 +619,25 @@ export const layerBar = {
       b.className = 'ly';
       b.dataset.id = it.id;
 
-      const cv = document.createElement('canvas');
-      drawThumb(cv, it.paint);
-      b.appendChild(cv);
+      /* ⚠️⚠️ 위성 그림이 있으면 **캔버스 대신 그림**을 쓴다.
+         받은 요청: "지금 위성 동그라미는 아무것도 없이 그냥 원이야
+                    차라리 위성 이미지를 넣자"
+         ⚠️ drawThumb 안에서 그리지 않는 이유: 캔버스 그리기는 **그 자리에서 끝나는데**
+            그림은 나중에 도착한다. 캔버스에 그리려면 도착을 기다렸다 다시 그려야 하고,
+            이 앱은 '변할 때만 그리는' 모드라 그 다시 그리기를 또 요청해야 한다.
+            그림 태그로 두면 브라우저가 알아서 한다. */
+      if (it.img) {
+        const im = document.createElement('img');
+        im.className = 'ly-sat';
+        im.src = it.img;
+        im.alt = '';                       // ⚠️ 이름은 옆에 글자로 있다. 두 번 읽히면 안 된다
+        im.loading = 'lazy';
+        b.appendChild(im);
+      } else {
+        const cv = document.createElement('canvas');
+        drawThumb(cv, it.paint);
+        b.appendChild(cv);
+      }
 
       const n = document.createElement('div');
       n.className = 'ly-name';

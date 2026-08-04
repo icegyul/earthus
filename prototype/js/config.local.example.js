@@ -78,6 +78,14 @@ export const CONFIG = {
   CHECKOUT_URL: '',   // 예: https://xxxx.supabase.co/functions/v1/checkout
   CONFIRM_URL:  '',   // 예: https://xxxx.supabase.co/functions/v1/payment-confirm
 
+  /* ── 웹푸시 (알림) ─────────────────────────────────────────
+     ⚠️⚠️ **공개키만 여기 넣습니다.** 이 파일은 브라우저로 그대로 내려갑니다 —
+        비밀키를 넣으면 아무나 사용자에게 알림을 보낼 수 있게 됩니다.
+        비밀키는 Supabase secrets 에만 둡니다.
+     ⚠️ 비어 있으면 알림 켜기 버튼이 "알림 서버가 아직 연결되지 않았습니다"로 뜹니다.
+        되는 척하지 않습니다.                                                  */
+  VAPID_PUBLIC_KEY: '',
+
   LEGAL_VERSION: '2026-07-26',
 
   /* ── 사업자 정보 (법적 고지 필수) ────────────────────────

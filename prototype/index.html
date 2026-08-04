@@ -418,6 +418,13 @@
     <div id="koreaBody"></div>
   </div>
 
+  <!-- 알림 설정 — ⚠️ 첫 줄이 "못 하는 것"이다 (ui-alerts.js 머리말 참고) -->
+  <div id="alertSheet" class="sheet-panel tall">
+    <div class="traffic one"><button class="tl close" data-close="alertSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="alertTitle">알림</h3>
+    <div id="alertBody"></div>
+  </div>
+
   <!-- 일본 (JMA) — ⚠️ 한국 탭을 베낀 것이 아니다. 두 나라가 공개하는 것이 다르다.
        특보는 일부러 빠져 있다 (JMA 특보 경로가 2026-05-28 이후 멈춰 있어 확인 불가). -->
   <div id="jpSheet" class="sheet-panel tall">
@@ -510,6 +517,10 @@
       <label id="labAlarm">위성 통과 알림</label>
       <div class="segbox" id="segAlarm"></div>
       <div class="set-hint" id="alarmHint"></div>
+      <!-- ⚠️ 위 항목은 앱이 열려 있을 때만 울리는 타이머 알림이다.
+           앱이 닫혀도 오는 웹푸시는 별도 화면(ui-alerts.js)에서 켠다.
+           한 줄에 섞으면 "켰으니 닫아도 오겠지"로 읽힌다. -->
+      <button class="set-item" id="setAlertsBtn"></button>
     </div>
     <div class="set-hint" id="tierHint"></div>
 

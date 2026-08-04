@@ -218,6 +218,10 @@ async function boot() {
   warnUI.init();
   koreaPanel.init();
   japanPanel.init();
+  /* ⚠️ 브라우저가 푸시 구독을 말없이 갱신·만료시킨다. 한 번 등록했으니 됐다고
+     두면 조용히 알림이 끊긴다 — 켤 때마다 서버와 맞춘다.
+     ⚠️ 실패해도 앱을 막지 않는다. 알림은 부가 기능이다. */
+  import('./push.js').then((m) => m.push.sync().catch(() => { })).catch(() => { });
   mountainPanel.init();
   surfPanel.init();
   fishPanel.init();

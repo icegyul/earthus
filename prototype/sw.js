@@ -59,3 +59,70 @@ self.addEventListener('fetch', (e) => {
         (r) => r || caches.match('./index.html', { ignoreSearch: true })))
   );
 });
+
+/* ══════════════════════════════════════════════════════════════
+   웹푸시 — 앱이 닫혀 있어도 알림
+   ══════════════════════════════════════════════════════════════
+   ⚠️⚠️ **이 자리는 안전 경보가 지나가는 길이다.** 여기서 예외가 나면
+      알림이 통째로 안 뜨는데, 사용자는 "경보가 없었다"고 생각한다.
+      → 본문 파싱이 실패해도 **반드시 무언가는 띄운다.**
+
+   ⚠️ iOS 는 **홈 화면에 추가한 PWA** 에서만 이 이벤트가 온다. 사파리 탭에서는 안 온다.
+      브라우저가 알려 주지 않으므로 화면 쪽(push.js)에서 미리 안내한다. */
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (_) {
+    // ⚠️ JSON 이 아니면 글자로라도 살린다. 조용히 삼키지 않는다.
+    try { d = { body: e.data.text() }; } catch (_) { d = {}; }
+  }
+
+  const title = d.title || 'earthus';
+  const opts = {
+    body: d.body || '',
+    icon: d.icon || './icon.png',
+    badge: './icon.png',
+    /* ⚠️ tag 를 주면 같은 tag 의 옛 알림을 **덮어쓴다.**
+       이안류 등급이 오르면 이전 알림이 남지 않고 최신만 보인다 — 그게 맞다.
+       ⚠️ 다만 서로 다른 사건이 같은 tag 를 쓰면 하나가 사라진다.
+          서버가 사건마다 다른 tag 를 준다. */
+    tag: d.tag || undefined,
+    /* ⚠️ 중요한 경보는 **자동으로 안 사라지게** 한다. 지나가 버리면 못 본다. */
+    requireInteraction: !!d.urgent,
+    /* 진동 — 위험할 때만 길게. ⚠️ 평범한 알림까지 길게 울리면 다 꺼 버린다. */
+    vibrate: d.urgent ? [200, 80, 200, 80, 200] : [120],
+    data: { url: d.url || './', at: Date.now() },
+  };
+  e.waitUntil(self.registration.showNotification(title, opts));
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || './';
+  e.waitUntil((async () => {
+    /* ⚠️ 이미 열려 있는 창이 있으면 **새로 열지 않고 그 창을 쓴다.**
+       누를 때마다 창이 늘어나면 사용자가 앱을 정리하다 알림을 끈다. */
+    const list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of list) {
+      if (c.url.includes(self.location.origin)) {
+        await c.focus();
+        try { c.postMessage({ type: 'earthus:push-open', url }); } catch (_) { }
+        return;
+      }
+    }
+    await self.clients.openWindow(url);
+  })());
+});
+
+/* 브라우저가 구독을 스스로 갱신할 때 (만료·키 교체).
+   ⚠️ 이걸 안 받으면 **말없이 알림이 끊긴다.** 사용자는 이유를 모른다. */
+self.addEventListener('pushsubscriptionchange', (e) => {
+  e.waitUntil((async () => {
+    const list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    /* ⚠️ 서비스워커는 로그인 토큰이 없어 서버에 직접 못 올린다.
+       열려 있는 창에 알려 주고, 창이 없으면 다음 실행 때 화면이 다시 등록한다
+       (push.js 가 켤 때마다 현재 구독을 서버와 맞춘다). */
+    for (const c of list) {
+      try { c.postMessage({ type: 'earthus:push-resubscribe' }); } catch (_) { }
+    }
+  })());
+});

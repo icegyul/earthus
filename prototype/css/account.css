@@ -806,3 +806,28 @@
 .fv-news-row a{ color:#9fd8ff; text-decoration:none; }
 .fv-news-row a:hover{ text-decoration:underline; }
 .fv-news-m{ font-size:10.5px; opacity:.4; }
+
+/* ── 알림 설정 ────────────────────────────────────────────────
+   ⚠️ 한계 안내를 회색 작은 글씨로 묻지 않는다. 이 화면에서 가장 먼저,
+      가장 또렷하게 읽혀야 하는 내용이다. */
+.al-limits{ margin:2px 0 16px; padding:12px 14px; border-radius:11px;
+  border:1px solid rgba(240,160,60,.34); background:rgba(240,160,60,.09);
+  font-size:11.5px; line-height:1.65; color:rgba(255,236,214,.94); font-weight:300; }
+.al-limits b{ font-weight:600; color:#ffcf8f; display:block; margin-bottom:6px; }
+.al-limits ul{ margin:0; padding-left:16px; display:grid; gap:5px; }
+.al-block{ margin:0 0 14px; padding:11px 13px; border-radius:10px;
+  border:1px solid var(--line,#1d2635); font-size:12px; font-weight:300; }
+.al-block b{ display:block; margin-bottom:4px; }
+.al-block p{ margin:0; opacity:.78; line-height:1.6; }
+.al-toggle{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:12px 0; border-top:1px solid var(--line,#1d2635); }
+.al-toggle b{ display:block; font-size:13px; font-weight:550; }
+.al-toggle i{ font-style:normal; font-size:11px; opacity:.6; }
+.al-toggle button{ flex:0 0 auto; padding:8px 16px; }
+.al-spot{ display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:9px 0; border-top:1px solid var(--line,#1d2635); font-size:12.5px; }
+.al-spot i{ display:block; font-style:normal; font-size:10.5px; opacity:.55; margin-top:2px;
+  font-variant-numeric:tabular-nums; }
+.al-del{ background:none; border:none; color:inherit; opacity:.45; font-size:18px;
+  line-height:1; padding:4px 8px; cursor:pointer; }
+.al-del:hover{ opacity:.9; }

@@ -1524,6 +1524,19 @@ export const settings = {
     $('#labAlarm').textContent = ko2 ? '위성 통과 알림' : 'Satellite pass alert';
     seg('#segAlarm', LEAD_CHOICES.map(m => [m, ko2 ? `${m}분 전` : `${m} min`]),
         alarms.lead, v => { alarms.setLead(Number(v)); this.render(); });
+    /* ⚠️ 위성 통과 알림은 **앱이 열려 있을 때만** 울린다(타이머).
+       앱이 닫혀도 오는 것은 웹푸시이고 그건 별도 화면이다 —
+       한 줄에 섞으면 "알림을 켰으니 닫아도 오겠지"로 읽힌다. */
+    const alertBtn = $('#setAlertsBtn');
+    if (alertBtn) {
+      alertBtn.textContent = ko2 ? '앱이 닫혀 있어도 오는 알림 ›' : 'Alerts while the app is closed ›';
+      alertBtn.onclick = async () => {
+        $('#settings').classList.remove('up');
+        const { alertsSheet } = await import('./ui-alerts.js');
+        alertsSheet.open();
+      };
+    }
+
     const st = alarms.status();
     $('#alarmHint').textContent = st.ok
       ? (ko2 ? '앱이 열려 있을 때 울립니다. 통과 예보에서 종을 눌러 예약하세요.'

@@ -63,10 +63,13 @@ export const PAID_FEATURES = [
   { ko: '궤도 추적선 · 위성 용도 상세',
     en: 'Orbit tracks & per-satellite mission detail' },
   { ko: '내 위치 위성 통과 예보', en: 'Satellite passes over my location' },
-  // ⚠️ 아래 둘은 **웹푸시 서버가 아직 없다.** 만들기 전까지 팔지 않는다.
-  { ko: '관심 지역 지진 · 이벤트 알림',
-    en: 'Quake & event alerts for places I care about', soon: true },
-  { ko: '이안류 · 특보 알림', en: 'Rip-current and warning alerts', soon: true },
+  /* ⚠️⚠️ **알림을 유료 목록에서 뺐다.** 2026-08-04 웹푸시를 만들면서 다시 생각했다.
+     이안류·지진·특보는 사람이 다치는 일이라 결제 뒤에 두지 않는다 —
+     FREE_FEATURES 의 "안전 정보는 언제나 무료"와 어긋나 있었다.
+     대신 **지켜볼 곳의 개수**로 가른다: 무료 1곳 · 유료 20곳.
+     그건 우리가 사용자마다 계산하고 보내는 양이라 유료 기준에 맞는다. */
+  { ko: '여러 곳 알림 — 관심 지점 20곳까지 (무료는 1곳)',
+    en: 'Alerts for up to 20 places (free covers one)' },
 ];
 
 /* 무료로 유지되는 것 — 유료 안내에서 이것도 같이 보여준다.
@@ -80,6 +83,8 @@ export const FREE_FEATURES = [
      이 줄을 지우자는 제안이 나오면 그때도 지우지 않는다. */
   { ko: '⚠️ 안전 정보는 언제나 무료 — 특보·지진·쓰나미·이안류 위험·낙뢰',
     en: '⚠️ Safety information is always free — warnings, quakes, tsunami, rip currents, lightning' },
+  { ko: '⚠️ 안전 알림도 무료 — 이안류·지진·특보를 한 곳까지 알려드립니다',
+    en: '⚠️ Safety alerts are free too — for one saved place' },
   { ko: '출처 · 관측 지점 수 · 판단 기준 · 한계 — 전부 공개',
     en: 'Sources, sample sizes, thresholds and limits — all shown' },
   { ko: '이벤트 뉴스 교차검증 — 신뢰도 점수와 근거까지',

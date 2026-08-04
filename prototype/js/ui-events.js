@@ -111,6 +111,11 @@ export const eventPanel = {
   /* ⚠️ 첫 화면을 '브리핑'으로 둔다. 사용자가 이 메뉴를 여는 이유는
         점수표가 아니라 "지금 무슨 일이 났나"다. 브리핑이 없으면 확정 목록으로 떨어진다. */
   show: 'brief',            // 'brief' | 'warn' | 'confirmed' | 'all'
+  /* 어느 문으로 들어왔나. ⚠️ 같은 패널이 두 가지 일을 한다 —
+     'alert' = 지금 일어난 일(경고·확정·미확정) · 'news' = 읽을 거리(브리핑·지역뉴스)
+     받은 요청: "이벤트 삭제하고 지진과 쓰나미 등 정보는 alert 메뉴로,
+                뉴스탭만 남으니 뉴스를 다루게" */
+  mode: 'alert',
   _warn: null,
 
   init() {
@@ -157,7 +162,9 @@ export const eventPanel = {
        이 숫자가 이 레이어의 존재 이유다. */
     const m = events.meta || {};
     const c = m.counts || {};
-    body.appendChild(el('div', 'ev-funnel',
+    /* ⚠️ 교차검증 깔때기(원본→중복제거→확정)는 **이벤트 쪽 이야기**다.
+       뉴스 문으로 들어온 사람에게는 뜻 없는 숫자다. 받은 지적으로 갈랐다. */
+    if (this.mode !== 'news') body.appendChild(el('div', 'ev-funnel',
       `<div class="ef-head">${ko ? '교차검증 결과' : 'Cross-verification'}</div>`
       + `<div class="ef-row">`
       + `<span><b>${(c.raw || 0).toLocaleString()}</b>${ko ? '원본' : 'raw'}</span>`
@@ -172,26 +179,56 @@ export const eventPanel = {
     const hasBrief = briefs.list.length > 0;
     if (!hasBrief && this.show === 'brief') this.show = 'confirmed';
 
+    /* ⚠️ 제목도 문에 따라 바꾼다. 뉴스로 들어왔는데 '이벤트'라고 적혀 있으면
+       메뉴를 잘못 누른 줄 안다. DOM 은 하나를 돌려 쓴다. */
+    const h3 = document.querySelector('#eventTitle');
+    if (h3) h3.textContent = this.mode === 'news'
+      ? (ko ? '뉴스' : 'News') : (ko ? '지금 일어난 일' : "What's happening");
+
     const tabs = el('div', 'comm-tabs');
     const defs = [];
     /* ⚠️ 경고를 맨 앞에 둔다. 급한 순서가 곧 탭 순서다.
        건수가 0 이어도 탭을 없애지 않는다 — "경고 0"은 그 자체로 알아야 할 정보다.
        (브리핑은 없으면 탭을 없앤다. 그건 우리가 못 만든 것이지 사실이 아니다.) */
-    defs.push(['warn', ko ? `경고 ${this._warn ? this._warn.length : '…'}`
-                          : `Warnings ${this._warn ? this._warn.length : '…'}`]);
-    if (hasBrief) defs.push(['brief', ko ? `브리핑 ${briefs.list.length}` : `Briefs ${briefs.list.length}`]);
-    defs.push(['confirmed', ko ? `확정 ${conf.length}` : `Confirmed ${conf.length}`]);
-    defs.push(['all', ko ? `미확정 포함 ${list.length}` : `All ${list.length}`]);
+    const isNews = this.mode === 'news';
+    if (!isNews) {
+      defs.push(['warn', ko ? `경고 ${this._warn ? this._warn.length : '…'}`
+                            : `Warnings ${this._warn ? this._warn.length : '…'}`]);
+      defs.push(['confirmed', ko ? `확정 ${conf.length}` : `Confirmed ${conf.length}`]);
+      defs.push(['all', ko ? `미확정 포함 ${list.length}` : `All ${list.length}`]);
+    }
+    // 브리핑은 뉴스 쪽 글이다
+    if (hasBrief && isNews) defs.push(['brief', ko ? `브리핑 ${briefs.list.length}` : `Briefs ${briefs.list.length}`]);
     /* 지역 뉴스 — GDELT 가 상대적으로 덜 잡는 지역 매체를 따로 본다.
        ⚠️ 건수를 아직 모를 때는 '…' 로 둔다. 0 으로 적으면 "없다"로 읽힌다. */
-    defs.push(['local', ko ? `지역 뉴스 ${this._news ? this._news.count : '…'}`
-                           : `Local news ${this._news ? this._news.count : '…'}`]);
+    if (isNews) {
+      defs.push(['local', ko ? `지역 뉴스 ${this._news ? this._news.count : '…'}`
+                             : `Local news ${this._news ? this._news.count : '…'}`]);
+    }
+    /* ⚠️ 지금 고른 탭이 이 문에 없는 탭이면 첫 탭으로 되돌린다.
+       안 그러면 **탭은 하나도 안 켜지고 본문만 엉뚱한 것**이 나온다
+       (show 가 남는 값이라 예전에 뉴스/이벤트가 같아 보였던 것과 같은 뿌리다). */
+    if (!defs.some(([k]) => k === this.show)) this.show = defs[0][0];
     defs.forEach(([k, label]) => {
       const b = el('button', 'comm-tab' + (this.show === k ? ' on' : ''), label);
       b.onclick = () => { this.show = k; this.render(); };
       tabs.appendChild(b);
     });
     body.appendChild(tabs);
+
+    /* 지도에 뉴스 점을 켜고 끄는 스위치 — 받은 요청: "뉴스 버튼도 만들어줘 껏다 켰다".
+       ⚠️ 목록만 보고 지도는 안 켜고 싶을 때가 있고, 반대도 있다.
+          레이어 칩까지 찾아가지 않아도 여기서 바로 되게 둔다.
+       ⚠️ 상태를 store 에서 **매번 읽는다.** 여기 따로 기억해 두면
+          다른 곳에서 끈 뒤 이 버튼만 켜진 채로 남는다. */
+    if (this.mode === 'news') {
+      const on = store.isOn('news');
+      const sw = el('button', 'ev-maptoggle' + (on ? ' on' : ''),
+        `<i></i>${ko ? (on ? '지도에 뉴스 켜짐' : '지도에 뉴스 꺼짐')
+                     : (on ? 'News on map: on' : 'News on map: off')}`);
+      sw.onclick = () => { store.setLayer('news', !store.isOn('news')); this.render(); };
+      body.appendChild(sw);
+    }
 
     if (this.show === 'warn') { this.renderWarnings(body, ko); return; }
     if (this.show === 'brief') { this.renderBriefs(body, ko); return; }

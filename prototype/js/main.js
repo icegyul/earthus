@@ -166,19 +166,17 @@ async function boot() {
   layerBar.onAction('sky', () => skyPanel.open());
   layerBar.onAction('flight', () => flightPanel.open());
   layerBar.onAction('community', () => communityPanel.open());
-  /* ⚠️⚠️ **뉴스와 이벤트는 같은 패널이다.** 받은 지적: "뉴스하고 이벤트 메뉴가 동일해".
-     원인은 `eventPanel.show` 가 **한 번 바뀌면 그대로 남는** 값이라는 것이었다 —
-     뉴스를 먼저 열면 show='confirmed' 가 남아서 이벤트도 같은 화면으로 열렸다.
-     → 둘 다 **열 때마다 제 탭을 지정한다.** 남은 값에 기대지 않는다.
-       · 이벤트 = 지금 지구에서 일어나는 일  → 경고 탭
-       · 뉴스   = 읽을 거리                 → 지역 뉴스 탭
-     ⚠️ 그래도 **같은 방으로 가는 문 두 개**인 것은 그대로다. 합칠지는 따로 정할 것. */
-  layerBar.onAction('events', () => { eventPanel.show = 'warn'; eventPanel.open(); });
+  /* ⚠️ 1단의 '이벤트' 메뉴는 없앴다 (받은 요청). News 와 같은 패널을 여는 문 두 개였다.
+     지진·쓰나미 같은 **지금 일어난 일**은 Alert 메뉴 안 '지금 일어난 일'로 들어간다
+     (layerbar.js render()). 여기 배선도 함께 지웠다 —
+     ⚠️ 버튼만 지우고 배선을 남기면 죽은 코드가 되고, 나중에 왜 안 열리는지 헤맨다. */
   /* News — 지구에서 지금 일어나는 일. 레이어를 켜서 지도에 올리고 목록도 같이 연다.
      ⚠️ 레이어만 켜면 "눌렀는데 아무 일도 안 났다"로 보인다 (지구 반대편이면 더 그렇다). */
   layerBar.onAction('news', () => {
-    store.setLayer('news', true);
-    // ⚠️ '확정'은 이벤트 쪽 말이다. 뉴스 메뉴는 **읽을 거리**로 연다.
+    /* ⚠️ 여기서 레이어를 **강제로 켜지 않는다.** 껐던 사람이 목록을 보려고
+       눌렀는데 지도가 도로 켜지면 끈 것이 무시된 것이다.
+       대신 패널 안에 켜고 끄는 버튼을 뒀다 (ui-events.js). */
+    eventPanel.mode = 'news';
     eventPanel.show = 'local';
     eventPanel.open();
   });

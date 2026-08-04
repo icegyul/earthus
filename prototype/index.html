@@ -257,10 +257,11 @@
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3.4 6.2h13v13H5.6a2.2 2.2 0 0 1-2.2-2.2z"/><path d="M16.4 9.2h4.2v7.8a2.2 2.2 0 0 1-4.2 0z"/><path d="M6.2 9.4h7.4M6.2 12.4h7.4M6.2 15.4h4.6" stroke-linecap="round"/></svg></span>
       <span class="mm-label">News</span><span class="mm-badge" id="newsBadge"></span>
     </button>
-    <button class="mm-item" data-act="events">
-      <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M4.5 4.6h11.3l3.7 3.7v11.1H4.5z"/><path d="M7.6 9.4h6.2M7.6 12.5h8.8M7.6 15.6h5.2" stroke-linecap="round"/></svg></span>
-      <span class="mm-label">이벤트</span><span class="mm-badge" id="eventBadge"></span>
-    </button>
+    <!-- ⚠️ '이벤트' 항목을 뺐다 (받은 요청). News 와 같은 패널을 여는 문 두 개였다.
+         지진·쓰나미 같은 **지금 일어난 일**은 Alert 메뉴 안으로 옮겼고,
+         News 는 뉴스만 다룬다.
+         ⚠️ #eventBadge 는 지웠다 — 이 자리를 참조하던 코드가 있으면 조용히 죽는다.
+            main.js 에서 함께 정리했다. -->
     <!-- LAB — 옛 '커뮤니티'. 표시명만 바꾼다 (내부 id 는 community 그대로). -->
     <button class="mm-item" data-act="community">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M9.6 3.4v5.2L4.8 17a2.2 2.2 0 0 0 1.9 3.3h10.6a2.2 2.2 0 0 0 1.9-3.3l-4.8-8.4V3.4"/><path d="M8.4 3.4h7.2M8.6 13.2h6.8" stroke-linecap="round"/></svg></span>

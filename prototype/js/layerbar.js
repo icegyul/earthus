@@ -576,6 +576,34 @@ export const layerBar = {
     /* ⚠️ 묶음 이름은 적지 않는다 (받은 요청).
        대신 묶음 사이에 옅은 구분선만 둔다 — 순서로 묶임이 읽히면 충분하고,
        제목이 33종 위에 아홉 줄 더 얹히면 목록이 더 길어진다. */
+    /* ⚠️ Alert 목록 맨 위에 **지금 일어난 일** 입구를 둔다 (받은 요청).
+       아래 항목들은 "지도에 무엇을 켤까"고, 이건 "무슨 일이 났나"다.
+       예전엔 1단의 '이벤트' 메뉴가 이 일을 했는데 News 와 같은 패널을 여는
+       문 두 개였다 → 그 메뉴를 없애고 여기로 넣었다. */
+    if (isAlert) {
+      const go = el('button', 'ly-open');
+      /* ⚠️ 이 파일의 `el(t, c)` 는 **인자가 둘뿐이다** — 다른 파일의 el(t,c,html) 과 다르다.
+         세 번째로 글을 넘겼더니 **조용히 버려져 빈 버튼**이 나왔다. innerHTML 로 넣는다. */
+      go.innerHTML = `<b>${ko ? '지금 일어난 일' : "What's happening"}</b>`
+        + `<em>${ko ? '지진 · 쓰나미 · 태풍 · 산불 · 경보' : 'Quakes, tsunami, storms, fires'}</em>`;
+      go.onclick = async () => {
+        /* ⚠️ 여기서 `this.close()` 를 불렀다가 조용히 터졌다 —
+           **layerBar 에는 close() 가 없다.** onclick 이 async 라 그 오류가
+           삼켜져서 "눌러도 아무 일이 없다"로만 보였다.
+           메뉴는 바깥 눌림 감지가 알아서 닫는다. 손대지 않는다. */
+        try {
+          const { eventPanel } = await import('./ui-events.js');
+          eventPanel.mode = 'alert';
+          eventPanel.show = 'warn';
+          eventPanel.open();
+        } catch (e) {
+          console.warn('[layerbar] 지금 일어난 일을 못 열었습니다', e.message);
+        }
+      };
+      strip.appendChild(go);
+      strip.appendChild(el('div', 'ly-gap'));
+    }
+
     order.forEach(({ items }, i) => {
       if (i) strip.appendChild(el('div', 'ly-gap'));
       items.forEach(it => this._item(strip, it, ko));

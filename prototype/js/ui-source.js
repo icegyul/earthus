@@ -42,6 +42,8 @@ const SRC = {
               en: 'Chollian-2A IR 11.2µm (KMA) via NOAA open data', every: 10 },
   gk2a_vis: { ko: '천리안2A 가시광 0.64㎛ (기상청) · NOAA 공개자료',
               en: 'Chollian-2A visible 0.64µm (KMA) via NOAA open data', every: 10 },
+  gk2a_vis_fd: { ko: '천리안2A 가시광 0.64㎛ · 전면 (기상청) · NOAA 공개자료',
+                 en: 'Chollian-2A visible 0.64µm, full disk (KMA) via NOAA open data', every: 10 },
   gk2a_wv:  { ko: '천리안2A 수증기 6.3㎛ (기상청) · NOAA 공개자료',
               en: 'Chollian-2A water vapour 6.3µm (KMA) via NOAA open data', every: 10 },
   hima_ir: { ko: '히마와리 적외 (일본 기상청) · NASA GIBS 경유',
@@ -103,7 +105,7 @@ const SRC = {
    **좌하단 안내가 통째로 사라진다.** 오류도 경고도 없다 —
    실제로 천리안 3종을 넣고 이걸 빼먹어 "위성정보가 안나와"라는 신고를 받았다.
    (layerbar 의 CATEGORIES 도 같은 성격이다. 레이어 추가는 세 곳을 함께 고친다.) */
-const PRIORITY = ['gk2aIR', 'gk2aVIS', 'gk2aWV',
+const PRIORITY = ['gk2aIR', 'gk2aVIS', 'gk2aVISfd', 'gk2aWV',
                   'himaIR', 'himawari', 'truecolor', 'clouds', 'sstanom', 'temp', 'tmax', 'tmin', 'humidity', 'rain', 'pressure', 'fog', 'drought',
                   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
                   'sst', 'wave', 'swell', 'current', 'wind', 'windfc',
@@ -140,8 +142,9 @@ export const sourceNote = {
     /* ⚠️ 구름은 확대하면 자료가 바뀐다 (전지구 합성 → 히마와리).
        보고 있는 것과 다른 출처를 적으면 안내가 아니라 오정보다. */
     let key = id, hima = null;
-    if (id === 'gk2aIR' || id === 'gk2aVIS' || id === 'gk2aWV') {
-      key = { gk2aIR: 'gk2a_ir', gk2aVIS: 'gk2a_vis', gk2aWV: 'gk2a_wv' }[id];
+    if (id === 'gk2aIR' || id === 'gk2aVIS' || id === 'gk2aVISfd' || id === 'gk2aWV') {
+      key = { gk2aIR: 'gk2a_ir', gk2aVIS: 'gk2a_vis', gk2aVISfd: 'gk2a_vis_fd',
+              gk2aWV: 'gk2a_wv' }[id];
     } else if (id === 'himaIR') {
       key = 'hima_ir';
       try {
@@ -171,7 +174,7 @@ export const sourceNote = {
       } else if (id === 'truecolor') {
         const { imagery } = await import('./layers/imagery.js');
         if (imagery._tcDate) made = new Date(`${imagery._tcDate}T12:00:00Z`);
-      } else if (id === 'gk2aIR' || id === 'gk2aVIS' || id === 'gk2aWV') {
+      } else if (id === 'gk2aIR' || id === 'gk2aVIS' || id === 'gk2aVISfd' || id === 'gk2aWV') {
         /* ⚠️ 시각은 meta.json 이 말하는 **관측 시각**이다. 우리가 받은 시각이 아니다.
            둘을 섞으면 "방금 자료"라고 적어 놓고 실제로는 20분 전 하늘이 된다. */
         const { imagery } = await import('./layers/imagery.js');
@@ -226,9 +229,30 @@ export const sourceNote = {
              적외 11.2㎛ 의 한계이지 이 위성의 성능이 아니다. 히마와리 적외도 똑같다. */
           bits.push(ko
             ? '<i>⚠️ <b>낮은 구름은 잘 안 보입니다.</b> 바다와 온도가 몇 도밖에 차이 나지 않기 때문입니다 '
-              + '— 적외선의 한계입니다. 낮이라면 <b>천리안 구름(낮)</b>이 훨씬 잘 보입니다.</i>'
+              + '— 적외선의 한계입니다. 낮이라면 <b>천리안 구름(낮)</b>이나 '
+              + '<b>천리안 구름(낮·전지구)</b>가 훨씬 잘 보입니다.</i>'
             : '<i>⚠️ <b>Low cloud is hard to see</b> — only a few degrees colder than the sea. '
               + 'In daylight use the visible channel instead.</i>');
+        }
+        if (key === 'gk2a_vis_fd') {
+          /* ⚠️⚠️ 이 레이어가 왜 생겼는지가 곧 사용자에게 필요한 설명이다.
+             받은 지적: "일본꺼는 잘 표현되는데 천리안은 안보여" — 같은 시각 15분 차.
+             원인은 위성이 아니라 **채널**이었다. 그걸 여기서 밝힌다. */
+          bits.push(ko
+            ? '<i>같은 천리안2A 이지만 <b>적외(온도)가 아니라 가시광(햇빛 반사)</b>입니다. '
+              + '히마와리 구름과 <b>같은 방식으로 같은 것을 봅니다.</b></i>'
+            : '<i>Same satellite as the infrared layer, but this is <b>visible light</b> — '
+              + 'the same thing Himawari’s cloud layer shows.</i>');
+          bits.push(ko
+            ? '<i>⚠️ <b>천리안 구름(밤에도)에서 안 보이던 낮은 구름이 여기서는 보입니다.</b> '
+              + '적외는 구름 꼭대기 <b>온도</b>로 찾는데, 낮은 구름은 지표와 온도가 거의 같아 '
+              + '원리상 안 잡힙니다 (실측: 서울 위 구름이 지표보다 5°C도 안 찼습니다).</i>'
+            : '<i>⚠️ Low cloud that the infrared layer misses shows up here. Infrared finds cloud by '
+              + 'temperature, and low cloud is nearly as warm as the ground.</i>');
+          bits.push(ko
+            ? '<i>⚠️ <b>가시광이라 밤에는 비어 보입니다.</b> 고장이 아닙니다 — '
+              + '그때는 <b>천리안 구름(밤에도)</b>을 쓰세요.</i>'
+            : '<i>⚠️ Visible light — blank at night. Use the infrared layer then.</i>');
         }
         if (key === 'gk2a_vis') {
           bits.push(ko

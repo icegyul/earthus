@@ -173,6 +173,7 @@ export const LAYER_DEFS = [
         그 밖으로 나가면 아무것도 없다 — 부제에 그렇게 적었다. */
   { id:'gk2aIR',   kind:'imagery', tier:TIER.FREE, on:false, group:'base' },
   { id:'gk2aVIS',  kind:'imagery', tier:TIER.FREE, on:false, group:'base' },
+  { id:'gk2aVISfd',kind:'imagery', tier:TIER.FREE, on:false, group:'base' },
   { id:'gk2aWV',   kind:'imagery', tier:TIER.FREE, on:false, group:'base' },
   // 야간 불빛은 메뉴에서 뺐다.
   //   해가 없는 쪽은 어차피 밤이 되므로 사용자가 켜고 끌 이유가 없다.

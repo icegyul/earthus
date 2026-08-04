@@ -40,6 +40,14 @@ export const ITEMS = [
     sky:'#0b1626', paint:'gk2a' },
   { id:'gk2aVIS', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 한반도 0.5km · 낮에만', subEn:'Cloud · Korea 0.5km · daylight only', ready:true,
     sky:'#0a1828', paint:'gk2a' },
+  /* ⚠️⚠️ 이 레이어가 생긴 이유를 적어 둔다 — 받은 지적이 정확했다.
+     "일본꺼는 잘 표현되는데 천리안은 안보여" (같은 시각, 15분 차)
+     원인은 위성 성능이 아니라 **채널**이었다. 화면의 히마와리는 가시광이고
+     천리안은 적외(온도)였다. 낮은 구름은 꼭대기가 지표만큼 따뜻해 적외로는
+     원리상 안 잡힌다 — 실측으로 서울 위 구름이 지표보다 5°C도 안 찼다.
+     → 같은 위성의 **가시광을 전면으로** 넓혔다. 낮에는 이게 히마와리와 같은 것을 본다. */
+  { id:'gk2aVISfd', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 전면 · 낮에만 · 히마와리와 같은 방식', subEn:'Cloud · full disk · daylight only', ready:true,
+    sky:'#0a1828', paint:'gk2a' },
   { id:'gk2aWV', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'수증기 · 전면 · 상층 흐름', subEn:'Water vapour · full disk', ready:true,
     sky:'#0c1422', paint:'gk2a' },
   /* ⚠️ 부제에 '낮에만'을 반드시 남긴다. 가시광이라 밤에는 비어 보이는데,
@@ -423,6 +431,7 @@ const CATEGORIES = [
           'gk2aIR',        // 🇰🇷 천리안 2km
           'himawari',      // 🇯🇵 히마와리 1km
           'gk2aVIS',       // 🇰🇷 천리안 0.5km (낮)
+          'gk2aVISfd',     // 🇰🇷 천리안 전면 가시광 (낮) — 히마와리와 같은 것을 본다
           'gk2aWV',        // 🇰🇷 천리안 수증기
           'himaIR'] },     // 🇯🇵 히마와리 구름 꼭대기 온도
   { id: 'weather', ko: '기상',       en: 'Weather',

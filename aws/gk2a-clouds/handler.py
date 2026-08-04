@@ -100,8 +100,34 @@ CHANNELS = {
     "wv063": {"kind": "ir", "area": "FD", "res": "020ge",
               "hot": -25.0, "cold": -62.0, "floor": 0.0, "gamma": 1.0,
               "ko": "상층 수증기"},
+    # ⚠️ 한반도만 보는 영역이라 태양 보정이 필요 없다(범위 안에서 각도 차이가 작다).
+    #    다만 밝기 기준은 전면과 **같은 반사도**를 쓴다 — 두 레이어를 번갈아 볼 때
+    #    같은 구름이 다른 밝기로 나오면 어느 쪽이 맞는지 알 수 없게 된다.
     "vi006": {"kind": "vis", "area": "LA", "res": "005ge",
-              "floor": 0.14, "gamma": 0.8, "ko": "구름 (낮)"},
+              "floor": 0.18, "hi": 0.65, "gamma": 0.8, "ko": "구름 (낮)"},
+
+    # ⚠️⚠️⚠️ **"천리안은 구름이 안 보인다"의 진짜 원인이 여기 있었다.**
+    #   받은 지적: "일본꺼는 잘 표현되는데 천리안은 안보여" (같은 시각 15분 차)
+    #   원자료로 직접 재 보니(2026-08-04 10:40 KST, 서울·경기 2,500화소):
+    #       구름 꼭대기 온도  19.3 ~ 25.7°C   맑은하늘 기준 24.2°C
+    #       기준보다 10°C 이상 찬 화소 = **0.0%**   (5°C 이상도 0.0%)
+    #   즉 그날 서울 위 구름은 **꼭대기가 지표보다 5°C도 안 찼다** — 아주 낮은 구름이다.
+    #   적외는 온도로 구름을 찾으므로 **원리상 이 구름을 못 본다.** 위성 성능 차이가
+    #   아니라 **채널 차이**였다. 화면의 히마와리 레이어는 가시광(햇빛 반사)이라 다 보인다.
+    #   ⚠️ 문턱(dLo)을 낮춰서 풀 문제가 아니다. 2°C 까지 내려야 서울이 보이기 시작하는데,
+    #      그러면 전지구가 잡음으로 덮인다(3°C 에서 이미 화면의 52%).
+    #   → **같은 위성의 가시광을 전면(FD)으로** 쓴다. 낮에는 이게 답이다.
+    #
+    # ⚠️ vi006 은 전면(FD)에 **005ge(0.5km) 하나뿐**이고 파일이 480MB 다.
+    #    통째로 float 로 올리면 22000² × 8바이트 = 3.9GB — Lambda 가 죽는다.
+    #    → stride 로 **띄엄띄엄 읽는다**(아래 render 참고). 우리 FD 출력이
+    #      1600px/120° = 약 8km/px 라 2km 원본이면 충분하고도 남는다.
+    # ⚠️ vi008(1km, 138MB)이 더 가볍지만 쓰지 않는다 — 0.86㎛ 는 **식생이 밝게** 나와
+    #    숲과 구름이 섞인다. 0.64㎛(vi006)는 식생이 어두워 구름만 하얗게 남는다.
+    "vi006fd": {"ch": "vi006", "kind": "vis", "area": "FD", "res": "005ge",
+                "stride": 8, "solar": True,
+                # ⚠️ 반사도(0~1) 기준이다. 실측으로 정했다 — 지표 0.07 / 구름 0.37~1.15.
+                "floor": 0.18, "hi": 0.65, "gamma": 0.9, "ko": "구름 (낮 · 전지구)"},
 }
 
 # 플랑크 상수 (파수 기준) ⚠️ 파장 기준 값과 섞으면 안 된다
@@ -129,14 +155,49 @@ def latest_key(ch, now=None):
     area = cfg["area"]                              # 'FD' 전면 | 'LA' 한반도
     # ⚠️ 꼬리는 영역+해상도다: fd020ge / la005ge …
     tail = f"{area.lower()}{cfg['res']}"
+    # ⚠️ 레이어 id 와 채널명이 다를 수 있다 (vi006fd → vi006).
+    #    id 로 파일을 찾으면 "파일이 없습니다"만 나오고 원인을 못 찾는다.
+    real = cfg.get("ch", ch)
     for back_h in range(0, 4):                     # 최대 4시간 전까지
         t = now - timedelta(hours=back_h)
-        prefix = f"AMI/L1B/{area}/{t:%Y%m}/{t:%d}/{t:%H}/gk2a_ami_le1b_{ch}_{tail}_"
+        prefix = f"AMI/L1B/{area}/{t:%Y%m}/{t:%d}/{t:%H}/gk2a_ami_le1b_{real}_{tail}_"
         r = src.list_objects_v2(Bucket=SRC_BUCKET, Prefix=prefix)
         keys = sorted(o["Key"] for o in r.get("Contents", []))
         if keys:
             return keys[-1]
     return None
+
+
+def _cos_sza(lat, lon, when):
+    """태양 고도의 코사인 (0=지평선, 1=머리 위).
+
+    ⚠️⚠️ **왜 필요한가 — 전면 가시광에서 한국 구름이 사라진 이유가 이것이다.**
+      가시광은 "햇빛을 얼마나 되쏘았나"인데, 같은 구름이라도 **해가 비스듬히 드는
+      곳은 어둡게** 들어온다. 그런데 밝기를 화면 전체의 99백분위 하나로 나누면,
+      태양 바로 아래(가장 밝은 곳)가 기준이 되어 비껴 있는 곳은 통째로 문턱 아래로
+      떨어진다.
+      실측(2026-08-04 01:46 UTC): 태양이 153°E 위에 있었고, 한국(127°E)은
+      26° 비껴 있어 서울·경기 알파가 평균 7.8/255 였다 — 구름이 있는데 안 보였다.
+      → 되쏜 양을 **해가 든 각도로 나눠** 각도 차이를 지운다. 그러면 어디서든
+        같은 구름이 같은 밝기가 된다. (위성 기관이 '반사도'를 낼 때 하는 그 계산이다)
+
+    ⚠️ 정밀 천문 계산이 아니라 Spencer 근사다. 오차 0.5° 안쪽이라 밝기 보정에는 충분하다.
+       ⚠️ 일식·월식 같은 걸 여기서 계산하지 않는다 — 그건 다른 화면이 한다.
+    """
+    doy = when.timetuple().tm_yday
+    hh = when.hour + when.minute / 60.0
+    g = 2 * np.pi * (doy - 1 + (hh - 12) / 24) / 365.0
+    # 태양 적위 (Spencer 1971)
+    decl = (0.006918 - 0.399912 * np.cos(g) + 0.070257 * np.sin(g)
+            - 0.006758 * np.cos(2 * g) + 0.000907 * np.sin(2 * g)
+            - 0.002697 * np.cos(3 * g) + 0.001480 * np.sin(3 * g))
+    # 균시차 (분)
+    eq = 229.18 * (0.000075 + 0.001868 * np.cos(g) - 0.032077 * np.sin(g)
+                   - 0.014615 * np.cos(2 * g) - 0.040849 * np.sin(2 * g))
+    # 시간각 — ⚠️ 경도는 동경이 +. 부호를 틀리면 낮과 밤이 뒤집힌다.
+    ha = np.radians((hh * 60 + eq + 4 * lon) / 4.0 - 180.0)
+    la = np.radians(lat)
+    return np.sin(la) * np.sin(decl) + np.cos(la) * np.cos(decl) * np.cos(ha)
 
 
 def _geos_index(sub, ulx, uly, dx, dy, nx, ny, box):
@@ -170,9 +231,21 @@ def _geos_index(sub, ulx, uly, dx, dy, nx, ny, box):
 
 def render(ch, key):
     cfg = CHANNELS[ch]
+    # ⚠️ 관측 시각은 **파일 이름**에서 뽑는다(..._202608040146.nc, UTC).
+    #    지금 시각(now)을 쓰면 안 된다 — 원자료가 20~30분 늦게 올라오는 날이 있어
+    #    태양 위치가 그만큼 어긋나고, 새벽·저녁에 밝기가 통째로 틀어진다.
+    m = re.search(r"_(\d{12})\.nc$", key)
+    when = (datetime.strptime(m.group(1), "%Y%m%d%H%M").replace(tzinfo=timezone.utc)
+            if m else datetime.now(timezone.utc))
     body = src.get_object(Bucket=SRC_BUCKET, Key=key)["Body"].read()
     with h5py.File(io.BytesIO(body), "r") as f:
-        raw = np.asarray(f["image_pixel_values"])
+        st = cfg.get("stride", 1)
+        # ⚠️⚠️ 480MB 짜리 0.5km 전면 자료를 통째로 올리면 Lambda 가 메모리로 죽는다.
+        #    h5py 의 **띄엄띄엄 읽기**로 필요한 만큼만 가져온다.
+        #    stride=8 이면 22000² → 2750² (60MB). 우리 출력이 8km/px 라 2km 면 충분하다.
+        #    ⚠️ 격자 간격(dx·dy)도 같이 늘려야 한다. 안 그러면 그림이 8배 어긋난다.
+        raw = np.asarray(f["image_pixel_values"][::st, ::st] if st > 1
+                         else f["image_pixel_values"])
         # ⚠️⚠️ 16비트 중 **유효 13비트**다. 위 2비트는 품질 플래그다 —
         #    안 떼면 불량 화소가 6만 대 값으로 튀어 흰 점이 박힌다.
         dn = (raw & 0x1FFF).astype(np.float64)
@@ -182,10 +255,24 @@ def render(ch, key):
         lrx, lry = float(_attr(f, "image_lowerright_x")), float(_attr(f, "image_lowerright_y"))
         gain = float(_attr(f, "DN_to_Radiance_Gain"))
         off = float(_attr(f, "DN_to_Radiance_Offset"))
+        # ⚠️⚠️ 가시광은 **파일이 주는 공식 계수**로 반사도를 만든다.
+        #    예전엔 화면 전체의 99백분위로 나눠 밝기를 정했는데, 그러면
+        #    ① 날마다 기준이 달라 어제와 오늘을 비교할 수 없고
+        #    ② 화면 안에 아주 밝은 구름이 하나만 있어도 나머지가 통째로 어두워진다.
+        #    실측(2026-08-04 11:00 KST): 그 방식으로 **서울 알파가 평균 2.4/255** 였다 —
+        #    구름이 있는데 안 보였다. 반사도로 보면 지표 0.07 · 구름 0.37~1.15 로
+        #    분명히 갈린다. 물리값이라 문턱을 근거 있게 정할 수 있다.
+        # ⚠️ 적외·수증기 채널에는 이 속성이 **없다.** _attr 는 없으면 KeyError 를 낸다 —
+        #    그대로 두면 구름(적외) 레이어가 통째로 죽는다.
+        alb_c = (float(_attr(f, "Radiance_to_Albedo_c"))
+                 if "Radiance_to_Albedo_c" in f.attrs else None)
         lam = float(_attr(f, "channel_center_wavelength"))
 
     box = AREAS[cfg["area"]]
     W, H = box["w"], box["h"]
+    # ⚠️ 띄엄띄엄 읽었으면 화소 하나가 그만큼 넓어진 것이다.
+    #    nx·ny 는 이미 줄어든 값이라 (lrx-ulx)/nx 가 자동으로 맞는다 —
+    #    여기서 stride 를 또 곱하면 두 번 적용되어 그림이 찌그러진다.
     dx, dy = (lrx - ulx) / nx, (lry - uly) / ny
     col, row, ok = _geos_index(sub, ulx, uly, dx, dy, nx, ny, box)
     c0 = np.clip(np.floor(col), 0, nx - 2).astype(np.int32)
@@ -235,13 +322,34 @@ def render(ch, key):
         lo_c, hi_c = float(np.nanmin(s[ok])), float(np.nanmax(s[ok]))
         unit = "°C"
     else:
-        # 가시광은 복사휘도를 그대로 쓴다. ⚠️ 밤에는 0 에 가깝다 — 그게 정상이다.
-        s = sample(rad.astype(np.float32))
-        hi = np.percentile(s[ok], 99.0) if ok.any() else 1.0
+        # 가시광 = 햇빛을 얼마나 되쏘았나. ⚠️ 밤에는 0 에 가깝다 — 그게 정상이다.
+        s = sample((rad * alb_c).astype(np.float32) if alb_c else rad.astype(np.float32))
+        if cfg.get("solar"):
+            # ⚠️⚠️ **해가 든 각도로 나눈다.** 안 하면 태양에서 비껴 있는 곳의 구름이
+            #    통째로 사라진다 (_cos_sza 주석의 실측 참고).
+            lonv = np.linspace(box["lon"][0], box["lon"][1], W, dtype=np.float32)[None, :]
+            latv = np.linspace(box["lat"][1], box["lat"][0], H, dtype=np.float32)[:, None]
+            mu = _cos_sza(latv, lonv, when).astype(np.float32)
+            # ⚠️ 새벽·저녁에는 mu 가 0 에 가까워 **나누면 폭발한다.** 바닥을 둔다.
+            #    0.30 은 태양고도 약 17° — 그보다 낮으면 그림자가 길어 구름 판별이 무의미하고,
+            #    나누기가 3배를 넘어가면 잡음까지 같이 커진다.
+            day = mu > 0.15
+            s = np.where(day, s / np.maximum(mu, 0.30), 0.0).astype(np.float32)
+            # ⚠️ 밤은 **아예 비운다.** 억지로 밝히면 잡음이 구름이 된다.
+            #    "밤에는 안 보입니다"라고 화면에 적는 편이 정직하다.
+            ok = ok & day
+        # ⚠️⚠️ 반사도가 있으면 문턱을 **물리값으로 고정**한다.
+        #    실측(전면, 2026-08-04 11:00 KST): 지표·바다 0.07 · 90분위 0.37 · 최대 1.15.
+        #    → floor 0.18 은 지표 위·옅은 구름 아래다. hi 0.65 에서 완전히 하얘진다.
+        #    ⚠️ 백분위로 잡으면 날마다 기준이 달라져 **어제와 비교가 안 된다.**
+        hi = float(cfg.get("hi") or 0) or (
+            0.65 if alb_c else (np.percentile(s[ok], 99.0) if ok.any() else 1.0))
+        fl = float(cfg["floor"])
         gy = np.clip(s / max(hi, 1e-6), 0, 1)
-        al = np.clip((gy - cfg["floor"]) / max(1e-6, 1 - cfg["floor"]), 0, 1) ** cfg["gamma"]
-        lo_c, hi_c = float(np.nanmin(s[ok])), float(hi)
-        unit = "radiance"
+        al = np.clip((s - fl) / max(1e-6, hi - fl), 0, 1) ** cfg["gamma"] if alb_c \
+            else np.clip((gy - fl) / max(1e-6, 1 - fl), 0, 1) ** cfg["gamma"]
+        lo_c, hi_c = (float(np.nanmin(s[ok])) if ok.any() else 0.0), float(hi)
+        unit = "albedo" if alb_c else "radiance"
 
     # ⚠️ **LA(회색+알파) 2채널**로 보낸다. RGB 가 어차피 같은 값이라 3장을 보낼 이유가 없다 —
     #    실측으로 RGBA 4.63MB → LA 2.99MB (35% 절감). 폰에서 받는 파일이라 크다.

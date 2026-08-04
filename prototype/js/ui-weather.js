@@ -21,6 +21,9 @@
 // ⚠️ 예보 자료는 Open-Meteo 다. 기상청이 아니다 — 화면에 그렇게 적는다.
 
 import { i18n } from './i18n.js';
+/* ⚠️ inJapan 만 정적으로 가져온다 — render() 는 async 가 아니라
+   여기서 await import 를 쓸 수 없다. 패널 본체는 눌렀을 때 받는다. */
+import { inJapan } from './ui-japan.js';
 import { chrome } from './ui.js';
 import { wxText } from './layers/weather.js';
 import { myLocation } from './mylocation.js';
@@ -119,6 +122,26 @@ export const weatherPanel = {
         koreaPanel.open();
       };
       body.appendChild(b);
+    }
+
+    /* 일본 — 한국과 같은 자리, 같은 규칙.
+       ⚠️ 일본 밖에서는 만들지 않는다. 한국 버튼과 똑같은 이유다 — 열면 빈 화면이다.
+       ⚠️ 부제에 **특보를 적지 않는다.** 일본 탭에는 특보가 없다(JMA 경로가 멈춰 있다).
+          한국 버튼 문구를 그대로 복사하면 있지도 않은 것을 약속하게 된다. */
+    {
+      if (inJapan(chrome.place.lat, chrome.place.lon)) {
+        const j = el('button', 'wx-kr',
+          `<b>${ko ? '일본 기상청 자료 자세히' : 'JMA detail'}</b>`
+          + `<i>${ko ? '실측 1,280지점 · 지진 · 낙뢰 · 해변 · 산'
+                    : '1,280 stations · quakes · lightning · coast · peaks'}</i>`
+          + `<span>›</span>`);
+        j.onclick = async () => {
+          const { japanPanel } = await import('./ui-japan.js');
+          this.close();
+          japanPanel.open();
+        };
+        body.appendChild(j);
+      }
     }
 
     /* 출처 — 어느 탭이든 항상 붙는다.

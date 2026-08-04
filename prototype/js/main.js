@@ -30,6 +30,7 @@ import { sourceNote } from './ui-source.js';
 import { warn } from './warn.js';
 import { warnUI } from './ui-warn.js';
 import { koreaPanel } from './ui-korea.js';
+import { japanPanel } from './ui-japan.js';
 import { mountainPanel } from './ui-mountain.js';
 import { surfPanel } from './ui-surf.js';
 import { fishPanel } from './ui-fishing.js';
@@ -216,6 +217,7 @@ async function boot() {
      ⚠️ await 하지 않는다. 특보 서버가 느리다고 지구본이 늦게 뜨면 안 된다. */
   warnUI.init();
   koreaPanel.init();
+  japanPanel.init();
   mountainPanel.init();
   surfPanel.init();
   fishPanel.init();

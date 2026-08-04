@@ -1037,6 +1037,7 @@ export const imagery = {
          ⚠️ 대신 **한반도만** 덮는다. 그래서 켜면 그 자리로 데려간다. */
       case 'gk2aIR':  this.setGK2A('ir112', on); break;
       case 'gk2aVIS': this.setGK2A('vi006', on); break;
+      case 'gk2aVISfd': this.setGK2A('vi006fd', on); break;
       case 'gk2aWV':  this.setGK2A('wv063', on); break;
       case 'citylight': this.citylight.show = on; break;
       case 'aurora':    if (this.aurora) this.aurora.show = on; break;

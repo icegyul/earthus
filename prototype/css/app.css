@@ -880,7 +880,10 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 .ch-h:first-child { margin-top: 4px; }
 /* 넓은 그래프는 자기 영역 안에서만 가로 스크롤한다 — 화면 전체가 밀리면 안 된다 */
 .ch-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.ch-svg { display: block; width: 100%; min-width: 420px; height: auto; }
+/* ⚠️⚠️ **`min-width:420px` 를 두면 안 된다.** 폰 시트 내용폭이 322px 라
+   98px 이 잘렸고, 그게 하필 오른쪽 값 라벨 칸이었다.
+   이제 폭은 `chartBox()` 가 실제 픽셀에 맞춰 정한다 — 여기서 늘리지 않는다. */
+.ch-svg { display: block; width: 100%; min-width: 0; height: auto; }
 .ch-leg { display: flex; gap: 12px; margin-top: 6px; font-size: 10.5px; color: rgba(255,255,255,.5); }
 .ch-leg span { display: flex; align-items: center; gap: 4px; }
 .ch-leg i { width: 12px; height: 2.5px; border-radius: 2px; display: inline-block; }

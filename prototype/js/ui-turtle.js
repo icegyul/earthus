@@ -132,7 +132,11 @@ export const turtlePanel = {
     /* ── 출처 — ⚠️ 제4유형이라 특히 분명히 적는다 ───────────── */
     body.appendChild(el('p', 'sub-legal',
       `${esc(_data.source || '')}${_data.license ? ` · ${esc(_data.license)}` : ''}<br>`
-      + (ko ? (_data.licenseNote?.ko || '') : (_data.licenseNote?.en || ''))));
+      /* ⚠️ 안내문은 Lambda 가 `**굵게**` 로 적어 보낸다. 그대로 넣으면
+         화면에 별표가 그냥 보였다. 먼저 escape 하고 굵게만 되살린다 —
+         순서가 반대면 원문의 `<` 가 태그로 살아난다. */
+      + esc(ko ? (_data.licenseNote?.ko || '') : (_data.licenseNote?.en || ''))
+          .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')));
   },
 
   /** 지도에 그린다. pttId 가 null 이면 전부.

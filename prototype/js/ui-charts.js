@@ -98,6 +98,54 @@ function unitSuffix(kind) {
   return i18n.unit === 'f' ? '°F' : '°C';
 }
 
+/* ── 그래프 상자 크기 ──────────────────────────────────────
+   ⚠️⚠️ **"육상·해상 차트가 그려지다 말았다"의 정체가 여기였다.**
+      예전에는 700 단위로 그려 놓고 CSS 로 `.ch-svg{min-width:420px}` 를 걸었다.
+      폰(390px)에서 시트 내용폭을 실제로 재보니 **322px** 였다 → **98px 이 잘렸다.**
+      하필 잘린 98px 이 **오른쪽 값 라벨 칸(R=78단위)** 과 정확히 겹쳤다.
+      그래서 선은 보이는데 숫자가 통째로 사라져 "덜 그려진" 것처럼 보였다.
+
+   ⚠️ `.ch-wrap` 에 `overflow-x:auto` 가 있어 밀면 보이긴 했다. 그런데
+      **아무도 밀 수 있다는 걸 모른다.** 게다가 이 wrap 은 확대/이동 제스처를
+      먼저 받는다. 보이지 않는 것은 없는 것이다.
+
+   → 고침: **단위 폭을 실제 픽셀 폭에 맞춘다.** 배율이 1:1 이 되므로
+      글자 크기가 지정한 값 그대로 나온다(줄여서 4.8px 로 뭉개지지 않는다). */
+function chartBox() {
+  const host = document.querySelector('#sheet');
+  /* 시트가 아직 안 열렸으면 폭이 0 이다. 그때는 CSS 규칙과 같은 식으로 어림한다
+     (#sheet: left/right 12px · max-width 520px · 좌우 안쪽 여백 22px). */
+  let avail = Math.min(520, innerWidth - 24) - 44;
+  if (host) {
+    const cs = getComputedStyle(host);
+    const w = host.getBoundingClientRect().width
+      - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if (w > 40) avail = w;
+  }
+  const W = Math.round(Math.max(300, Math.min(700, avail)));
+  const narrow = W < 420;
+  /* ⚠️ 값 옆 연도는 **자리가 진짜 있을 때만** 붙인다.
+     "20.2°C 2016" 은 1:1 에서 84px 쯤 되는데 라벨 칸은 70px 이다 —
+     넓은 화면(476단위)에서 실측하니 **5.5px 삐져나왔다.**
+     연도는 아래 범례에 색과 함께 있고 점 색도 같다. **값이 먼저다.** */
+  const showYear = W >= 560;
+  return {
+    W,
+    /* ⚠️ 세로도 같이 줄인다. H 를 320 으로 두면 폰에서 322×320 — 거의 정사각형이다.
+       해마다 한 줄인 곡선은 **가로로 길어야** 언제가 언제인지 읽힌다. */
+    H: Math.round(Math.max(190, Math.min(320, W * 0.46))),
+    L: narrow ? 34 : 42,     // 왼쪽 눈금 숫자 칸
+    /* 오른쪽 값 라벨 칸. ⚠️ 좁을 때 58 로 뒀더니 가장 긴 라벨이
+       상자 오른쪽 끝에 **0.1px 남기고 닿았다**(실측). 여유를 준다 —
+       칸을 넓히면 라벨이 그만큼 왼쪽에서 시작한다. */
+    R: showYear ? 100 : (narrow ? 68 : 78),
+    showYear,
+    T: 14,
+    B: 24,
+    narrow,
+  };
+}
+
 /**
  * 해마다 한 줄인 곡선.
  *   · 올해 = 붉게 · 10년 단위 = 색 · 나머지 = 회색
@@ -109,7 +157,7 @@ function spaghetti(series, opt = {}) {
   const kind = opt.kind || 'temp';
   const years = Object.keys(series).map(Number).sort((a, b) => a - b);
   if (years.length < 2) return null;
-  const W = 700, H = 320, L = 42, R = 78, T = 14, B = 24;
+  const { W, H, L, R, T, B, showYear } = chartBox();
 
   let lo = Infinity, hi = -Infinity;
   years.forEach(y => (series[y] || []).forEach(v => {
@@ -209,8 +257,8 @@ function spaghetti(series, opt = {}) {
       x2="${(W - R + 4).toFixed(1)}" y2="${yy.toFixed(1)}"
       stroke="${mk.color}" stroke-width="0.8" opacity=".5"/>`);
     parts.push(`<text x="${(W - R + 8).toFixed(1)}" y="${(yy + 3.5).toFixed(1)}"
-      fill="${mk.color}" font-size="10.5">${unitVal(mk.v, kind).toFixed(1)}${unitSuffix(kind)}
-      <tspan fill="rgba(255,255,255,.42)" font-size="9"> ${mk.yr}</tspan></text>`);
+      fill="${mk.color}" font-size="10.5">${unitVal(mk.v, kind).toFixed(1)}${unitSuffix(kind)}${
+      showYear ? `<tspan fill="rgba(255,255,255,.42)" font-size="9"> ${mk.yr}</tspan>` : ''}</text>`);
   });
 
   /* ── 마지막 자료 점 ──────────────────────────────────────

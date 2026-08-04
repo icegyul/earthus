@@ -150,12 +150,9 @@ async function boot() {
   layerBar.onAction('surf', () => surfPanel.open());
   layerBar.onAction('fishing', () => fishPanel.open());
   layerBar.onAction('para', () => paraPanel.open());
-  /* ⚠️ 무겁지 않게 눌렀을 때만 받는다 — 자료가 532KB 다 (경로 8,752점).
-     첫 화면에서 받으면 안 여는 사람에게도 부담이다. */
-  layerBar.onAction('turtle', async () => {
-    const { turtlePanel } = await import('./ui-turtle.js');
-    turtlePanel.open();
-  });
+  /* ⚠️ 바다거북은 여기가 아니다. layerBar 에 'turtle' 을 내보내는 곳이 없어서
+     이 자리에 등록해 두었더니 **눌러도 안 열렸다.** 취미 카드가 쓰는
+     `outdoorPanel.init()` 의 표(아래)로 옮겼다. */
   layerBar.onAction('mountain', () => mountainPanel.open());
   layerBar.onAction('sky', () => skyPanel.open());
   layerBar.onAction('flight', () => flightPanel.open());
@@ -232,10 +229,27 @@ async function boot() {
   surfPanel.init();
   fishPanel.init();
   paraPanel.init();
+  /* ⚠️⚠️ **취미 카드는 layerBar 를 거치지 않는다.** 여기 이 표가 전부다.
+     위쪽에 `layerBar.onAction('turtle', …)` 을 등록해 뒀다고 열리지 않는다 —
+     그건 다른 경로다. 실제로 바다거북이 그렇게 빠져서 **눌러도 아무 일이
+     없었다.** `?.()` 가 오류까지 삼켜 콘솔에도 안 찍혔다.
+     → 카드를 추가하면 **반드시 이 표에도 넣는다.** */
   outdoorPanel.init(act => {
-    ({ surf: () => surfPanel.open(), fishing: () => fishPanel.open(),
-       para: () => paraPanel.open(),
-       mountain: () => mountainPanel.open(), sky: () => skyPanel.open() })[act]?.();
+    const go = {
+      surf: () => surfPanel.open(),
+      fishing: () => fishPanel.open(),
+      para: () => paraPanel.open(),
+      mountain: () => mountainPanel.open(),
+      sky: () => skyPanel.open(),
+      /* 자료가 1.7MB 다(경로 28,770점). 누른 사람에게만 받는다. */
+      turtle: async () => {
+        const { turtlePanel } = await import('./ui-turtle.js');
+        turtlePanel.open();
+      },
+    }[act];
+    // ⚠️ 조용히 넘어가지 않는다. 빠뜨린 것이 눈에 보여야 다시 안 빠뜨린다.
+    if (!go) { console.warn(`[취미] '${act}' 를 여는 곳이 없습니다 — main.js 의 표를 보세요`); return; }
+    go();
   });
   warn.init();
   apiKeysPanel.init();

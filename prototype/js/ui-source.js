@@ -294,6 +294,15 @@ export const sourceNote = {
           bits.push(ko
             ? '<i>⚠️ 강수량 자체는 아닙니다 — 높고 얇은 구름(권운)도 차갑습니다.</i>'
             : '<i>⚠️ Not rainfall itself — thin high cirrus is cold too.</i>');
+          /* ⚠️⚠️ 천리안 적외에는 이 안내를 적어 두고 **히마와리 적외에는 빠뜨렸다.**
+             같은 파장, 같은 한계인데 한쪽만 적으면 "천리안만 못 본다"로 읽힌다.
+             실제로 그렇게 읽혔다 — 받은 지적이 그것이었다. */
+          bits.push(ko
+            ? '<i>⚠️ <b>낮은 구름은 잘 안 보입니다.</b> 바다·땅과 온도가 몇 도밖에 차이 나지 '
+              + '않기 때문입니다 — 적외선이면 어느 위성이든 같습니다(천리안도 마찬가지). '
+              + '낮이라면 <b>가시광</b> 레이어가 훨씬 잘 보입니다.</i>'
+            : '<i>⚠️ <b>Low cloud is hard to see</b> — only a few degrees from the surface. '
+              + 'This is true of any infrared channel, on any satellite. Use a visible layer by day.</i>');
         }
         if (key === 'clouds_hima') {
           /* ⚠️ "왜 갑자기 촘촘해졌나"에 답한다. 자료가 바뀐 걸 모르면

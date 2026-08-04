@@ -124,11 +124,50 @@ CHANNELS = {
     #      1600px/120° = 약 8km/px 라 2km 원본이면 충분하고도 남는다.
     # ⚠️ vi008(1km, 138MB)이 더 가볍지만 쓰지 않는다 — 0.86㎛ 는 **식생이 밝게** 나와
     #    숲과 구름이 섞인다. 0.64㎛(vi006)는 식생이 어두워 구름만 하얗게 남는다.
+    # ⚠️⚠️⚠️ **밤에 낮은 구름을 보는 유일한 길.**
+    #   가시광은 밤에 꺼지고, 적외 11.2㎛ 하나로는 낮은 구름을 원리상 못 본다.
+    #   → 그래서 낮에는 가시광으로 메웠지만 **밤에는 메울 것이 없었다.**
+    #
+    #   기상기관들이 쓰는 방법이 있다: **두 파장의 온도 차(BTD)** 다.
+    #   물방울로 된 낮은 구름·안개는 3.8㎛ 에서 방사율이 낮아 그 파장에서만
+    #   더 차갑게 보인다. 그래서 T(11.2) − T(3.8) 이 **양수(+2~+6K)** 가 된다.
+    #     맑은 하늘   ≈ 0
+    #     낮은 물구름 +2 ~ +6 K   ← 이걸 찾는다
+    #     높은 얼음구름 0 또는 음수
+    #
+    #   ⚠️⚠️ **낮에는 못 쓴다.** 3.8㎛ 에는 햇빛 반사가 크게 섞여 차이가 무의미해진다.
+    #      → 해가 진 곳에서만 그린다. 가시광과 정확히 반대라 둘이 짝을 이룬다.
+    #   ⚠️⚠️ **이 채널은 실제 밤 자료로 아직 확인하지 못했다** (만든 시각이 낮이라
+    #      전면 안에 밤인 곳이 없었다). 밤에 눈으로 확인하기 전까지는
+    #      화면에 "확인 중"이라고 적어 둔다. 검증 안 된 것을 확정처럼 보이면 안 된다.
+    "nightlow": {"ch": "ir112", "pair": "sw038", "kind": "btd",
+                 "area": "FD", "res": "020ge",
+                 # ⚠️⚠️ **3.8㎛ 는 14비트다.** 아래 BITS 주석 참고.
+                 "pairBits": 14,
+                 # 단위는 K. 실측으로 다시 맞춰야 한다.
+                 "floor": 1.5, "hi": 6.0, "gamma": 0.9,
+                 "ko": "낮은 구름·안개 (밤)"},
     "vi006fd": {"ch": "vi006", "kind": "vis", "area": "FD", "res": "005ge",
                 "stride": 8, "solar": True,
                 # ⚠️ 반사도(0~1) 기준이다. 실측으로 정했다 — 지표 0.07 / 구름 0.37~1.15.
                 "floor": 0.18, "hi": 0.65, "gamma": 0.9, "ko": "구름 (낮 · 전지구)"},
 }
+
+# ⚠️⚠️⚠️ **채널마다 유효 비트 수가 다르다.** 이걸 하나로 두면 조용히 틀린다.
+#   실측(2026-08-04):
+#     ir112  원시 DN 최솟값  1,404 → 13비트로 충분  (온도 -113~57°C, 정상)
+#     sw038  원시 DN 최솟값 14,092 → **13비트로 자르면 통째로 잘린다**
+#            잘린 채로 계산하면 밝기온도가 **104°C** 로 나온다 (불가능한 값이라 걸렸다).
+#            14비트로 읽으면 27.2°C — 한낮 지표 온도로 맞다.
+#   ⚠️ 찾는 법: 복사휘도가 0 이 되는 DN = (0 - offset) / gain 을 구해
+#      그 값이 들어가는 비트 수를 쓴다. ir112 는 8,017 (13비트), sw038 은 16,344 (14비트).
+#   ⚠️ 최상위 비트(0x8000, 32768)는 **결측 표시**다. 어느 채널이든 마스크로 지워진다.
+BITS = {"ir112": 13, "wv063": 13, "vi006": 13, "sw038": 14}
+
+
+def _mask(ch):
+    return (1 << BITS.get(ch, 13)) - 1
+
 
 # 플랑크 상수 (파수 기준) ⚠️ 파장 기준 값과 섞으면 안 된다
 C1, C2 = 1.191042e-5, 1.4387752      # mW/(m²·sr·cm⁻⁴), cm·K
@@ -246,9 +285,12 @@ def render(ch, key):
         #    ⚠️ 격자 간격(dx·dy)도 같이 늘려야 한다. 안 그러면 그림이 8배 어긋난다.
         raw = np.asarray(f["image_pixel_values"][::st, ::st] if st > 1
                          else f["image_pixel_values"])
+        # ⚠️ 마스크는 **실제 채널 이름**으로 고른다. 레이어 id 가 아니다
+        #    (vi006fd → vi006). id 로 찾으면 기본값 13 이 조용히 쓰인다.
+        MASK = _mask(cfg.get("ch", ch))
         # ⚠️⚠️ 16비트 중 **유효 13비트**다. 위 2비트는 품질 플래그다 —
         #    안 떼면 불량 화소가 6만 대 값으로 튀어 흰 점이 박힌다.
-        dn = (raw & 0x1FFF).astype(np.float64)
+        dn = (raw & MASK).astype(np.float64)
         ny, nx = dn.shape
         sub = float(_attr(f, "sub_longitude"))
         ulx, uly = float(_attr(f, "image_upperleft_x")), float(_attr(f, "image_upperleft_y"))
@@ -284,7 +326,48 @@ def render(ch, key):
                 + a[r0 + 1, c0] * (1 - fc) * fr + a[r0 + 1, c0 + 1] * fc * fr)
 
     rad = gain * dn + off      # ⚠️ 적외는 gain 이 **음수**다 = 값이 클수록 차갑다
-    if cfg["kind"] == "ir":
+
+    def planck(r, wl):
+        """복사휘도 → 밝기온도(°C).
+        ⚠️ **파수(cm⁻¹) 기준**이다. 파장 식을 쓰면 437°C 가 나온다."""
+        nu = 1e4 / wl
+        return ((C2 * nu) / np.log1p(C1 * nu ** 3 / np.maximum(r, 1e-6)) - 273.15).astype(np.float32)
+
+    if cfg["kind"] == "btd":
+        # ⚠️ 짝 파일은 **같은 시각·같은 격자**여야 한다. 파일 이름에서 채널만 바꿔 찾는다 —
+        #    시각이 다르면 구름이 움직인 만큼 차이가 생겨 없는 안개가 나타난다.
+        pkey = key.replace(f"_{cfg['ch']}_", f"_{cfg['pair']}_")
+        pbody = src.get_object(Bucket=SRC_BUCKET, Key=pkey)["Body"].read()
+        with h5py.File(io.BytesIO(pbody), "r") as pf:
+            praw = np.asarray(pf["image_pixel_values"])
+            # ⚠️ 짝 채널은 **비트 수가 다를 수 있다.** sw038 이 정확히 그렇다.
+            pdn = (praw & ((1 << cfg.get("pairBits", BITS.get(cfg["pair"], 13))) - 1)
+                   ).astype(np.float64)
+            pgain = float(_attr(pf, "DN_to_Radiance_Gain"))
+            poff = float(_attr(pf, "DN_to_Radiance_Offset"))
+            plam = float(_attr(pf, "channel_center_wavelength"))
+        if pdn.shape != dn.shape:
+            raise ValueError(f"짝 격자가 다르다 {pdn.shape} vs {dn.shape}")
+
+        t11 = planck(rad, lam)
+        t38 = planck(pgain * pdn + poff, plam)
+        s = sample((t11 - t38).astype(np.float32))          # BTD (K)
+
+        # ⚠️⚠️ **해가 떠 있으면 못 쓴다.** 3.8㎛ 에 햇빛 반사가 섞인다.
+        #    낮에도 그리면 사막·바다가 통째로 "안개"가 된다.
+        lonv = np.linspace(box["lon"][0], box["lon"][1], W, dtype=np.float32)[None, :]
+        latv = np.linspace(box["lat"][1], box["lat"][0], H, dtype=np.float32)[:, None]
+        mu = _cos_sza(latv, lonv, when).astype(np.float32)
+        night = mu < 0.0                                    # 해가 지평선 아래
+        ok = ok & night
+        fl, hi = float(cfg["floor"]), float(cfg["hi"])
+        al = np.where(night, np.clip((s - fl) / max(1e-6, hi - fl), 0, 1) ** cfg["gamma"], 0.0)
+        # 밝기는 차이가 클수록 하얗게 — 짙은 안개가 더 두껍게 보인다
+        gy = np.clip((s - fl) / max(1e-6, hi - fl), 0, 1)
+        lo_c, hi_c = (float(np.nanmin(s[ok])) if ok.any() else 0.0,
+                      float(np.nanmax(s[ok])) if ok.any() else 0.0)
+        unit = "K(BTD)"
+    elif cfg["kind"] == "ir":
         # ⚠️⚠️ 복사휘도가 **파수(cm⁻¹)** 기준이다. 파장(㎛) 식을 쓰면 131~437°C 가 나온다
         #    (실제로 그렇게 나왔고, 물리적으로 불가능해서 바로 걸렸다).
         nu = 1e4 / lam

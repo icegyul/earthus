@@ -202,8 +202,11 @@ export const eventPanel = {
     /* 지역 뉴스 — GDELT 가 상대적으로 덜 잡는 지역 매체를 따로 본다.
        ⚠️ 건수를 아직 모를 때는 '…' 로 둔다. 0 으로 적으면 "없다"로 읽힌다. */
     if (isNews) {
-      defs.push(['local', ko ? `지역 뉴스 ${this._news ? this._news.count : '…'}`
-                             : `Local news ${this._news ? this._news.count : '…'}`]);
+      /* ⚠️ 뉴스 문에서는 그냥 '뉴스'다 (받은 지적). 패널 제목이 이미 '뉴스'이고
+         탭이 하나뿐인데 '지역 뉴스'라고 적으면 무엇과 구분하는 말인지 알 수 없다.
+         '지역 매체'라는 사실은 아래 헤드라인 묶음이 그대로 말해 준다. */
+      defs.push(['local', ko ? `뉴스 ${this._news ? this._news.count : '…'}`
+                             : `News ${this._news ? this._news.count : '…'}`]);
     }
     /* ⚠️ 지금 고른 탭이 이 문에 없는 탭이면 첫 탭으로 되돌린다.
        안 그러면 **탭은 하나도 안 켜지고 본문만 엉뚱한 것**이 나온다

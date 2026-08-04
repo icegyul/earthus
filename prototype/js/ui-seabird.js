@@ -222,7 +222,7 @@ export const seabirdPanel = {
          한참 헤맸다. 답은 "그릴 시간을 안 줬다"였다.
        ⚠️ 점(point)은 한 프레임에 나오기 때문에 **점만 보이고 선만 안 보인다** —
           이 증상이 나오면 여기를 먼저 볼 것. */
-    power.animate(1500);
+    power.animate(700);
   },
 
   clear() {

@@ -189,10 +189,14 @@ export const migbirdPanel = {
             material: C.Color.fromCssColorString('#4fd0e0').withAlpha(0.14),
             outline: true, outlineColor: C.Color.fromCssColorString('#7fe4f0').withAlpha(0.55),
             outlineWidth: 1,
-            /* ⚠️⚠️ `height: 0` 으로 두면 **지구 표면에 묻혀 아예 안 보인다.**
-               엔티티는 멀쩡히 59개 있는데 화면에 하나도 안 나와서 한참 헤맸다.
-               지표에 붙이는 건 heightReference 로 시킨다 — 이게 제대로 된 방법이다. */
-            heightReference: C.HeightReference.CLAMP_TO_GROUND,
+            /* ⚠️⚠️⚠️ **`CLAMP_TO_GROUND` 를 쓰지 않는다.** 받은 신고: "발열이 생겨".
+               지형에 붙이는 도형(ground primitive)은 **지형 모양에 맞춰 다시 계산**되므로
+               폰에서 가장 비싸다. 원 59개를 그렇게 그리면 손에서 열이 난다.
+               ⚠️ 예전에 `height:0` 으로 뒀을 때 안 보였던 건 지구에 묻혀서가 아니라
+                  **그릴 시간을 안 줘서**였다(power.animate 로 따로 고쳤다).
+                  원인을 잘못 짚고 비싼 쪽으로 바꿨던 것이다 — 되돌린다.
+               ⚠️ 이건 대략의 영역 표시지 지형에 딱 맞아야 하는 그림이 아니다. */
+            height: 0,
           },
           description: `<div style="font:14px/1.7 -apple-system,sans-serif"><b>${esc(p.name)}</b><br>`
             + `${ko ? '도착 기록' : 'Arrivals'} ${p.n}${ko ? '건' : ''}<hr style="opacity:.2">`
@@ -254,7 +258,9 @@ export const migbirdPanel = {
          한참 헤맸다. 답은 "그릴 시간을 안 줬다"였다.
        ⚠️ 점(point)은 한 프레임에 나오기 때문에 **점만 보이고 선만 안 보인다** —
           이 증상이 나오면 여기를 먼저 볼 것. */
-    power.animate(1500);
+    /* ⚠️ 1500 → 700. 도형이 만들어지는 데는 이만큼이면 넉넉하고,
+       길게 잡을수록 폰이 그만큼 더 오래 그린다(= 발열). */
+    power.animate(700);
   },
 
   clear() {

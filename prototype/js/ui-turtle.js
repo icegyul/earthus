@@ -210,7 +210,7 @@ export const turtlePanel = {
        ⚠️ 여태 안 걸렸던 건 아래 flyTo 가 프레임을 계속 돌려줬기 때문이다.
           그런데 flyTo 는 **한 마리를 골랐을 때만** 부른다 —
           즉 전체(45마리) 보기는 운에 기대고 있었다. 명시적으로 요청한다. */
-    power.animate(1500);
+    power.animate(700);
 
     // 한 마리만 볼 때는 그쪽으로 옮겨 준다
     if (pttId && this._ents.length) {

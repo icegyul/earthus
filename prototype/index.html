@@ -419,6 +419,15 @@
     <div id="koreaBody"></div>
   </div>
 
+  <!-- 개발할 수 있는 것 — ⚠️ 운영자용. 주소 뒤 #dev 를 붙여야 설정에 줄이 나타난다. -->
+  <div id="devSheet" class="sheet-panel tall keep-open">
+    <div class="sheet-acts">
+      <button class="sh-close" data-close="devSheet" aria-label="닫기">닫기 ×</button>
+    </div>
+    <h3>개발할 수 있는 것</h3>
+    <div id="devBody"></div>
+  </div>
+
   <!-- 철새 — ⚠️ 경로가 아니다. 출발지·도착지 두 지점뿐이다. ui-migbird.js 머리말 참고. -->
   <div id="migbirdSheet" class="sheet-panel tall keep-open">
     <div class="sheet-acts">
@@ -549,6 +558,8 @@
          만료되면 오류가 아니라 **조용히 자료가 끊긴다.** 11개 항목의 신청일과
          만료 예정을 추적해 미리 경고하는 것이 이 화면의 실제 역할이다.
          들어가려면 주소 뒤에 #api 를 붙인다 (main.js 참고). -->
+    <!-- ⚠️ 운영자용. #dev 를 붙여야 나타난다 (#api 와 같은 방식) -->
+    <div class="set-row" id="rowDev" hidden><label>개발할 수 있는 것</label><button id="btnDev" class="set-link">열기</button></div>
     <div class="set-row" id="rowApi" hidden><label id="labApi">API 신청 관리</label><button id="btnApi" class="set-link">열기</button></div>
     <div class="set-row">
       <label id="labAlarm">위성 통과 알림</label>

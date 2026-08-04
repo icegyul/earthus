@@ -288,6 +288,21 @@ async function boot() {
     document.getElementById('rowApi')?.removeAttribute('hidden');
     apiKeysPanel.open();
   };
+  /* 개발할 수 있는 것 — 갖고 있는데 안 쓰는 자료 목록 (운영자용).
+     ⚠️ #api 와 같은 방식이다. 주소 뒤에 #dev 를 붙여야 설정에 줄이 나타난다.
+     ⚠️ 늦게 불러온다 — 안 여는 사람에게 짐이 되면 안 된다. */
+  const openDev = async () => {
+    const { devPanel } = await import('./ui-dev.js');
+    devPanel.open();
+  };
+  document.getElementById('btnDev')?.addEventListener('click', openDev);
+  const showDevRow = () => {
+    if (location.hash !== '#dev') return;
+    document.getElementById('rowDev')?.removeAttribute('hidden');
+    openDev();
+  };
+  showDevRow();
+  window.addEventListener('hashchange', showDevRow);
   showApiRow();
   window.addEventListener('hashchange', showApiRow);
 

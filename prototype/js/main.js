@@ -150,6 +150,12 @@ async function boot() {
   layerBar.onAction('surf', () => surfPanel.open());
   layerBar.onAction('fishing', () => fishPanel.open());
   layerBar.onAction('para', () => paraPanel.open());
+  /* ⚠️ 무겁지 않게 눌렀을 때만 받는다 — 자료가 532KB 다 (경로 8,752점).
+     첫 화면에서 받으면 안 여는 사람에게도 부담이다. */
+  layerBar.onAction('turtle', async () => {
+    const { turtlePanel } = await import('./ui-turtle.js');
+    turtlePanel.open();
+  });
   layerBar.onAction('mountain', () => mountainPanel.open());
   layerBar.onAction('sky', () => skyPanel.open());
   layerBar.onAction('flight', () => flightPanel.open());

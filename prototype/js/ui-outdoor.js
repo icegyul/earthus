@@ -35,6 +35,12 @@ const ITEMS = [
     subKo: '정상은 여기보다 얼마나 추운가', subEn: 'How much colder is the summit',
     color: '#9fd8b0',
     ico: '<path d="M2.6 19.4 9.4 7.2l4.1 7.1 2.2-3.4 5.7 8.5z"/><path d="M7.6 10.4h3.6" stroke-linecap="round"/>' },
+  /* ⚠️ 부제에 **"지나간"** 을 반드시 넣는다. 이 자료는 추적이 끝난 것만 공개되므로
+     "바다거북 위치"라고만 쓰면 지금 거기 있는 줄 안다. */
+  { act: 'turtle', ko: '바다거북', en: 'Sea turtles',
+    subKo: '방류된 거북이 지나간 길', subEn: 'Where released turtles went',
+    color: '#4fd0e0',
+    ico: '<ellipse cx="12" cy="12.4" rx="6.2" ry="5.2"/><path d="M12 7.2v10.4M6.4 10.6h11.2M6.4 14.2h11.2"/><circle cx="12" cy="4.6" r="1.8"/><path d="M5.2 8.2 2.8 6.4M18.8 8.2l2.4-1.8M5.2 16.6l-2.4 1.8M18.8 16.6l2.4 1.8" stroke-linecap="round"/>' },
   { act: 'sky', ko: '하늘', en: 'Sky',
     subKo: '오늘 밤 별이 보이는가', subEn: 'Will the sky be clear tonight',
     color: '#b9a7f0',

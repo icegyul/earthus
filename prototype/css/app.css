@@ -22,7 +22,24 @@ body{
 }
 a{color:var(--teal);text-decoration:none}
 
-#cesiumContainer{position:absolute;inset:0}
+/* ⚠️⚠️⚠️ **`touch-action:none` 이 없으면 아이폰에서 두 손가락 확대가 안 된다.**
+   받은 신고: "거북이선 열어두고 줌인 후 움직이고 다시 아웃 하려면
+              손 하나로 미는것과 같은 걸로 되"
+
+   ⚠️ 아이폰 사파리는 **`user-scalable=no` 를 무시한다**(iOS 10부터).
+      그래서 touch-action 을 안 걸면 **사파리가 두 손가락을 먼저 가져가**
+      페이지 자체를 확대해 버린다. 그러면 Cesium 에는 손가락이 하나만 남아
+      **오므리기가 밀기로 처리된다** — 정확히 신고된 증상이다.
+   ⚠️ 한번 페이지가 확대되고 나면 좌표까지 어긋나서 그 뒤로 계속 이상해진다.
+      "그 뒤로 줌아웃이 잘 안 된다"가 이것이다.
+
+   ⚠️ 이 프로젝트는 이미 같은 함정을 겪었다 — 아래 .ch-wrap 과 목록 스크롤에
+      touch-action 을 걸어 뒀는데 **정작 지구에는 안 걸려 있었다.**
+   overscroll-behavior 는 위아래 고무줄 튕김을 막는다. 지구를 끌 때 페이지가
+   같이 딸려 오면 손이 미끄러진 것처럼 느껴진다. */
+#cesiumContainer{position:absolute;inset:0;
+  touch-action:none;overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+#cesiumContainer canvas{touch-action:none}
 .cesium-widget-credits,.cesium-viewer-bottom{display:none!important}
 .cesium-widget canvas{outline:none}
 

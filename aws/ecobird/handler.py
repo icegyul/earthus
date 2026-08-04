@@ -25,7 +25,7 @@ from datetime import datetime, timedelta, timezone
 
 import boto3
 
-from tm import parse_point
+from tm import parse_point, raw_xy
 
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
@@ -43,10 +43,41 @@ SETS = [
     ("백두대간조사", "BgtsInfoService"),
 ]
 
-PAGE = 1000
+# ⚠️⚠️ **1,000 으로 두면 105만 건에 1,054번 요청이라 15분 안에 못 끝낸다.**
+#    찔러 보니 10,000 도 받아준다(응답 3MB) → 106번이면 끝난다.
+#    ⚠️ 더 키우지 않는다. 응답이 커질수록 한 번 실패했을 때 다시 받는 값이 커진다.
+PAGE = 10000
 CELL = 0.05          # 격자 한 칸 ≈ 5km
 # ⚠️ Lambda 가 15분이라 무한정 받을 수 없다. 남은 시간을 보고 멈춘다.
 BUDGET_SEC = 720
+
+# ⚠️⚠️⚠️ **"위치 없음"을 뜻하는 가짜 좌표가 **여러 가지** 섞여 있다.**
+#    글자로 하나씩 맞추면 새 것이 나올 때마다 조용히 뚫린다. **값으로 거른다.**
+#
+#    ① `POINT(-70529.58 382209.83)` → 정확히 **36.0000N 124.0000E**
+#       2013년 조사분 405/500 이 **전부 이 값 하나**였다. 꿩·집비둘기·물까치…
+#       서로 다른 종인데 좌표가 똑같다. 거기는 **서해 한가운데 빈 바다**다.
+#       ⚠️ 딱 떨어지는 값이라 우연이 아니다 — 누군가 "없음"을 이렇게 적었다.
+#       ⚠️ 우리 남한 경계가 124.5°E 부터라 **우연히** 걸러졌다.
+#          조금만 넓었으면 이 점들이 서해에 찍혔을 것이다.
+#
+#    ② `POINT(1.84467440194776e+15 …)` → **2⁶⁴** 근처 값.
+#       **-1(값 없음)을 부호 없는 정수로 잘못 읽은 것**이다. 2017년 조사분.
+#
+#    ⚠️ 둘 다 '오류'가 아니라 **'위치 미기재'**다. 따로 세어 화면에 밝힌다 —
+#       버린 수를 안 밝히면 "조사 안 한 곳"과 구분이 안 된다.
+def no_location(x_y, ll):
+    """위치를 적지 않은 자료인가."""
+    if x_y is None or ll is None:
+        return True
+    x, y = x_y
+    if abs(x) > 1e7 or abs(y) > 1e7:            # ② 말도 안 되게 큰 값
+        return True
+    la, lo = ll
+    if abs(la - 36.0) < 1e-6 and abs(lo - 124.0) < 1e-6:   # ① 딱 떨어지는 자리표시
+        return True
+    return False
+
 
 SOURCE = "국립생태원 에코뱅크 (전국 자연환경조사 · 생태계정밀조사 · 백두대간조사)"
 LICENSE = "국립생태원 에코뱅크 오픈API"
@@ -82,11 +113,51 @@ def rows(doc):
     return it, int(b.get("totalCount") or 0)
 
 
+def probe(svc="NteeInfoService", page=1):
+    """왜 버려지는지 본다. ⚠️ 한 쪽만 받아 **버려지는 값을 그대로 찍는다** —
+       개수만 세면 원인을 영영 모른다(바닷새에서 같은 실수를 했다)."""
+    it, tc = rows(get(f"{BASE}/{svc}/attr/getBirdsPointAttr",
+                      {"type": "json", "numOfRows": 500, "pageNo": page}))
+    if not it:
+        return {"ok": False, "why": "못 받음"}
+    empty = weird = out = ok = 0
+    shown = []
+    for r in it:
+        g = r.get("geom")
+        if not g or "POINT" not in str(g):
+            empty += 1
+            if len(shown) < 6:
+                shown.append(f"[빈칸] {g!r}")
+            continue
+        ll = parse_point(g)
+        if not ll:
+            weird += 1
+            if len(shown) < 12:
+                shown.append(f"[못품] {g!r}")
+            continue
+        la, lo = ll
+        if not (33.0 <= la <= 39.0 and 124.5 <= lo <= 131.5):
+            out += 1
+            if len(shown) < 20:
+                shown.append(f"[범위밖] {g} → {la:.4f},{lo:.4f}"
+                             f"  yr={r.get('examinYear')} {r.get('spcsLcnm')}")
+            continue
+        ok += 1
+    print(f"[probe] {svc} {page}쪽 {len(it)}건 — 정상 {ok} · 빈칸 {empty} · "
+          f"못품 {weird} · 범위밖 {out}")
+    for x in shown:
+        print("   " + x)
+    return {"ok": True, "good": ok, "empty": empty, "weird": weird, "out": out}
+
+
 def handler(event=None, context=None):
+    if (event or {}).get("probe"):
+        return probe((event or {}).get("svc", "NteeInfoService"),
+                     int((event or {}).get("page", 1)))
     started = time.time()
     grid = defaultdict(lambda: {"n": 0, "spc": set(), "yrs": set()})
     species = defaultdict(int)
-    got = truncated = bad = 0
+    got = truncated = bad = noloc = 0
     per_set = {}
 
     for label, svc in SETS:
@@ -109,9 +180,11 @@ def handler(event=None, context=None):
             if not it:
                 break
             for r in it:
-                ll = parse_point(r.get("geom"))
-                if not ll:
-                    bad += 1
+                geom = (r.get("geom") or "").strip()
+                xy = raw_xy(geom)
+                ll = parse_point(geom)
+                if no_location(xy, ll):
+                    noloc += 1
                     continue
                 la, lo = ll
                 # ⚠️ 남한 밖이면 버린다. 좌표계를 잘못 골랐을 때 곧바로 드러난다.
@@ -153,7 +226,8 @@ def handler(event=None, context=None):
         "cellDeg": CELL,
         "records": got,
         "truncated": truncated,          # ⚠️ 못 받고 끊은 건수. 0 이면 전부 받은 것이다.
-        "dropped": bad,                  # 좌표를 못 읽었거나 남한 밖
+        "dropped": bad,                  # 좌표를 못 읽었거나 남한 밖 — 이건 진짜 이상한 것
+        "noLocation": noloc,             # ⚠️ 기관이 "위치 없음"으로 적어 보낸 건수
         "sets": per_set,
         "speciesCount": len(species),
         "species": top,
@@ -172,5 +246,5 @@ def handler(event=None, context=None):
                   ContentType="application/json; charset=utf-8",
                   CacheControl="public, max-age=43200")
     print(f"[ecobird] ✔ {DST} — 관측 {got:,} · 격자 {len(cells):,}칸 · 종 {len(species)} · "
-          f"버림 {bad:,} · 못받음 {truncated:,} · {len(body)/1024:.0f}KB")
+          f"버림 {bad:,} · 위치없음 {noloc:,} · 못받음 {truncated:,} · {len(body)/1024:.0f}KB")
     return {"ok": True, "records": got, "cells": len(cells), "truncated": truncated}

@@ -83,3 +83,16 @@ def parse_point(geom):
         return to_wgs84(float(parts[0]), float(parts[1]))
     except Exception:               # noqa: BLE001
         return None
+
+
+def raw_xy(geom):
+    """`POINT(x y)` 의 **원래 미터 값**. ⚠️ 변환 전에 값 자체를 봐야
+    걸러낼 수 있는 것들이 있다(2^64 같은 '값 없음' 표시)."""
+    if not geom or "POINT" not in geom:
+        return None
+    try:
+        inside = geom[geom.index("(") + 1:geom.rindex(")")]
+        parts = inside.replace(",", " ").split()
+        return (float(parts[0]), float(parts[1])) if len(parts) >= 2 else None
+    except Exception:               # noqa: BLE001
+        return None

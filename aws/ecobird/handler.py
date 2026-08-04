@@ -218,6 +218,7 @@ def handler(event=None, context=None):
             "n": v["n"], "spc": len(v["spc"]),
         })
     cells.sort(key=lambda c: -c["n"])
+    mapped = sum(c["n"] for c in cells)   # 실제로 지도에 올라간 관측 수
     top = sorted(species.items(), key=lambda kv: -kv[1])[:60]
 
     doc = {
@@ -225,6 +226,7 @@ def handler(event=None, context=None):
         "source": SOURCE, "license": LICENSE,
         "cellDeg": CELL,
         "records": got,
+        "mapped": mapped,
         "truncated": truncated,          # ⚠️ 못 받고 끊은 건수. 0 이면 전부 받은 것이다.
         "dropped": bad,                  # 좌표를 못 읽었거나 남한 밖 — 이건 진짜 이상한 것
         "noLocation": noloc,             # ⚠️ 기관이 "위치 없음"으로 적어 보낸 건수
@@ -233,11 +235,17 @@ def handler(event=None, context=None):
         "species": top,
         "cells": cells,
         "note": {
+            # ⚠️⚠️ 지도에 올라간 수와 원본 수를 **둘 다** 적는다.
+            #    원본 수만 적으면 27만 건이 지도에 있는 줄 알게 된다.
             "ko": f"⚠️ 점 하나가 관측 한 건이 아닙니다. 약 5km({CELL}°) 칸마다 "
-                  f"관측 건수를 묶은 것입니다 — 원본은 {got:,}건입니다.\n"
+                  f"묶은 것입니다.\n"
+                  f"받은 기록 {got:,}건 중 지도에 올린 것은 {mapped:,}건입니다. "
+                  f"⚠️ 나머지 {noloc:,}건은 **기관이 위치를 적지 않은 자료**입니다 — "
+                  "저희가 못 읽은 것이 아니라 원본에 자리가 비어 있습니다.\n"
                   "⚠️ 조사하러 간 곳의 기록입니다. 빈 칸은 '새가 없다'가 아니라 "
                   "'그 칸은 조사 기록이 없다'는 뜻입니다.",
-            "en": f"Each dot is a ~5 km cell, not one sighting ({got:,} records aggregated). "
+            "en": f"Each dot is a ~5 km cell. {mapped:,} of {got:,} records are mapped; "
+                  f"{noloc:,} carry no location in the source. "
                   "Empty cells mean no survey record, not no birds.",
         },
     }

@@ -30,10 +30,19 @@ export const auth = {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
     });
 
-    const { data } = await this.client.auth.getSession();
+    /* ⚠️ 로그인이 왜 안 붙는지 짐작으로 못 찾아서, **어디서 끊기는지 찍는다.**
+       콘솔 한 줄이면 원인이 갈린다 — 세션이 안 오는 것과, 와도 화면이 안 바뀌는 것은 다르다. */
+    const { data, error } = await this.client.auth.getSession();
+    console.info('[auth] getSession →',
+      data?.session ? '세션 있음 · ' + data.session.user.email : '세션 없음',
+      error ? '· 오류: ' + error.message : '',
+      '· 주소해시:', location.hash ? location.hash.slice(0, 24) + '…' : '(없음)');
     await this._apply(data?.session ?? null);
 
-    this.client.auth.onAuthStateChange((_evt, session) => { this._apply(session); });
+    this.client.auth.onAuthStateChange((evt, session) => {
+      console.info('[auth] 상태변화 →', evt, session ? session.user.email : '(없음)');
+      this._apply(session);
+    });
 
     this.ready = true;
     this.emit();
@@ -41,7 +50,15 @@ export const auth = {
 
   async _apply(session) {
     this.user = session?.user ?? null;
-    this.profile = this.user ? await this.loadProfile() : null;
+    /* ⚠️⚠️ profile 조회가 실패해도 **emit 은 반드시 한다.**
+       예전에는 여기서 던지면 emit 이 안 돌아 화면이 영영 '로그인 안 됨'으로 남았다.
+       프로필을 못 읽는 것과 로그인이 안 된 것은 다르다. */
+    try {
+      this.profile = this.user ? await this.loadProfile() : null;
+    } catch (e) {
+      console.warn('[auth] 프로필 못 읽음 (로그인 자체는 됨):', e.message);
+      this.profile = this.user ? { id: this.user.id, email: this.user.email, tier: 'free' } : null;
+    }
     this.emit();
   },
 
@@ -52,7 +69,13 @@ export const auth = {
     const { error } = await this.client.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: window.location.origin,
+        /* ⚠️⚠️ `window.location.origin` 이 아니라 **`location.href`** 다.
+           origin 은 `https://earthus.net` (슬래시 없음)인데, 돌아올 때는
+           `https://earthus.net/` 로 오는 등 미묘하게 어긋나 세션이 안 붙었다.
+           받은 신고: "로그인하고나도 로그인하라고 나와".
+           ⚠️ admin.html 은 처음부터 location.href 를 써서 **되고 있었다** —
+              같은 프로젝트 안에서 되는 쪽과 안 되는 쪽의 차이가 이것뿐이었다. */
+        redirectTo: window.location.href,
         // Apple 은 최초 1회만 이름/이메일을 준다. 그 이후엔 안 준다.
         scopes: provider === 'apple' ? 'name email' : 'email',
       },
@@ -169,7 +192,13 @@ export const auth = {
       const ok = await this._promptLogin(reason);
       if (!ok) return false;
     }
-    return this.isPaid();
+    /* ⚠️⚠️ 예전에는 여기서 `this.isPaid()` 를 돌려줬다.
+       그러면 **로그인에 성공해도 유료가 아니면 false** 라, 부르는 쪽이
+       "아직 로그인이 안 됐다"로 읽고 로그인 창을 다시 띄운다.
+       받은 신고: "로그인하고나도 로그인하라고 나와" — 이것이었다.
+       ⚠️ 함수 이름이 requireLogin 인데 결제까지 요구하고 있었다.
+          로그인 여부만 돌려준다. 유료 판정은 부르는 쪽이 isPaid() 로 따로 한다. */
+    return !!this.user;
   },
 
   _promptLogin(reason) {

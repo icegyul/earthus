@@ -951,3 +951,14 @@
 .sub-why-warn{ margin-top:14px !important; padding:10px 12px; border-radius:9px;
                border:1px solid rgba(240,168,120,.32); background:rgba(240,168,120,.07);
                color:rgba(255,255,255,.78) !important }
+
+/* 업데이트 이정표 — ⚠️ 목록을 훑기만 해도 "여기가 시작"인 게 보여야 한다 */
+.cl-milestone{ list-style:none; margin:6px 0 14px; padding:16px 18px; border-radius:14px;
+  text-align:center; position:relative;
+  background:linear-gradient(135deg, rgba(63,199,192,.16), rgba(90,209,232,.09));
+  border:1px solid rgba(63,199,192,.42); }
+.cl-milestone b{ display:block; font-size:16px; font-weight:600; letter-spacing:-.01em;
+  color:#8ff0e6; }
+.cl-milestone em{ display:block; font-style:normal; font-size:11.5px; margin-top:5px;
+  color:rgba(255,255,255,.55); }
+@media (max-width:400px){ .cl-milestone b{ font-size:14.5px } }

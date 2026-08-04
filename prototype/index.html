@@ -587,7 +587,8 @@
          · 로그인 후  → '계정'  (+ 유료면 배지)
          · 관리자면   → '관리자 페이지' 한 줄 더 -->
     <button class="set-item" id="btnLoginRow"><span>로그인 / 가입</span><span class="chev">›</span></button>
-    <button class="set-item" id="btnAdminRow" hidden><span>관리자 페이지</span><span class="chev">›</span></button>
+    <!-- ⚠️ 관리자 줄은 여기 두지 않는다. 숨긴 채로 있으면 소스에 남는다.
+         PD 계정으로 로그인했을 때만 main.js 가 그 자리에 만들어 넣는다. -->
     <button class="set-item" id="btnSubscribe"><span>구독</span><span class="chev">›</span></button>
     <button class="set-item" id="btnWaitlist"><span>사전등록 · 창립 멤버</span><span class="chev">›</span></button>
     <button class="set-item" id="btnTerms"><span>이용약관</span><span class="chev">›</span></button>

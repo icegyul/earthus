@@ -350,18 +350,27 @@ function bindAccountUI() {
       /* 유료면 줄에 표시를 남긴다 — 결제했는데 아무 티가 안 나면 불안하다. */
       acc.querySelector('span').textContent = auth.isPaid() ? '계정 · 구독 중' : '계정';
     }
-    /* ⚠️⚠️ **관리자 판정은 서버가 한다.** 여기 보이는 줄은 링크일 뿐이고,
-       실제 자료는 Supabase RLS 가 막는다. 이 줄이 보인다고 자료가 보이지 않는다.
-       ⚠️ CONFIG.ADMIN_UIDS 가 비어 있으면 **아무에게도 안 보인다** —
-          예전 admin.html 은 비어 있으면 누구나 통과였는데 그건 위험하다. */
+    /* ⚠️⚠️ **관리자 줄은 HTML 에 아예 두지 않는다.** 받은 지시:
+       "관리자페이지는 나 외 메뉴에 나오게 하지마".
+       숨김(hidden) 으로 두면 **소스를 열면 그대로 보인다** — 있는 줄 알게 된다.
+       그래서 자격이 맞을 때만 **그 자리에 만들어 넣는다.**
+       ⚠️ 그래도 이건 화면 가림이지 잠금이 아니다. 실제 차단은 Supabase RLS 다.
+       ⚠️ ADMIN_UIDS 가 비어 있으면 아무에게도 안 만들어진다. */
     const uids = (CONFIG.ADMIN_UIDS || []);
-    if (admin) admin.hidden = !(on && uids.length && uids.includes(auth.user.id));
+    const isAdmin = on && uids.length && uids.includes(auth.user.id);
+    const cur = document.getElementById('btnAdminRow');
+    if (isAdmin && !cur) {
+      const b = document.createElement('button');
+      b.className = 'set-item'; b.id = 'btnAdminRow';
+      b.innerHTML = '<span>관리자 페이지</span><span class="chev">›</span>';
+      b.addEventListener('click', () => window.open('/admin.html', '_blank', 'noopener'));
+      acc?.parentNode?.insertBefore(b, acc.nextSibling);
+    } else if (!isAdmin && cur) {
+      cur.remove();          // 로그아웃하면 흔적도 없앤다
+    }
   };
   document.getElementById('btnLoginRow')?.addEventListener('click', () => {
     close('settings'); loginSheet.open();
-  });
-  document.getElementById('btnAdminRow')?.addEventListener('click', () => {
-    window.open('/admin.html', '_blank', 'noopener');
   });
   auth.onChange(paintAuthRows);
   paintAuthRows();

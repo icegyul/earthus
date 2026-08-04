@@ -28,7 +28,7 @@ export const TAGS = {
 
 /* at: 'YYYY-MM-DD HH:MM' (로컬) — 최신이 위 */
 export const CHANGELOG = [
-  { at: '2026-08-04 22:00', tag: 'new',
+  { at: '2026-08-04 22:00', tag: 'new', milestone: true,
     ko: '**2026년 8월 4일, 정식 서비스를 시작합니다.** 지금 보시는 기능은 **전부 무료**입니다 — 위성 구름, 기온·바람·해양, 태풍·지진·산불·쓰나미, 대기질, 그리고 오늘 새로 들어온 생물 자료 셋까지. ⚠️ **유료 구독은 아직 열지 않았습니다.** 통신판매업 신고 절차를 밟고 있고, **신고가 끝나기 전에는 팔지 않습니다** — 법으로 그렇게 되어 있고 저희도 그게 맞다고 봅니다. 결제 화면은 열려 있지만 지금은 사전등록만 받습니다. ⚠️ **안전 정보는 열리고 나서도 계속 무료입니다.** 특보·지진·쓰나미·이안류·낙뢰는 돈을 받지 않습니다. **이용약관과 개인정보처리방침도 오늘 시행합니다.** 자료가 어느 나라로 나가는지(Supabase 일본 · AWS 미국 · 기상정보 독일), 무엇을 모으고 무엇을 안 하는지 전부 적었습니다.',
     en: '**earthus opens on 4 August 2026.** Everything you see is **free** — satellite cloud, temperature, wind, ocean, storms, quakes, wildfire, tsunami, air quality, and three new wildlife datasets added today. ⚠️ **Paid subscription is not open yet.** We are completing our mail-order business registration and **will not sell before it is done.** ⚠️ **Safety information stays free even after that** — warnings, quakes, tsunami, rip currents and lightning are never behind payment. Terms and the privacy policy also take effect today, stating exactly which countries data travels to.' },
   { at: '2026-08-04 21:00', tag: 'data',
@@ -543,7 +543,14 @@ export function renderChangelog(lang = 'ko') {
     const rows = day.rows.map((r) => {
       const t = TAGS[r.tag] || TAGS.imp;
       const text = ko ? r.ko : (r.en || r.ko);
-      return `<li class="cl-row">
+      /* ⚠️ 이정표는 줄 안에 묻으면 안 보인다. 받은 지시대로 **넓은 띠**로 따로 그린다 —
+         "이때가 서비스 시작이구나"를 목록을 훑기만 해도 알아야 한다. */
+      const band = r.milestone ? `<li class="cl-milestone">
+        <b>${ko ? '2026년 8월 4일 — 정식 서비스 시작' : '4 August 2026 — Service opens'}</b>
+        <em>${ko ? '여기서부터 earthus 가 정식으로 열렸습니다'
+                 : 'earthus opened to the public from here'}</em>
+      </li>` : '';
+      return band + `<li class="cl-row">
         <div class="cl-when">${r.hm}</div>
         <div class="cl-mark" style="--tag:${t.color}"></div>
         <div class="cl-what">

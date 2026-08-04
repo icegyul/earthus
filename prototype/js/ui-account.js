@@ -338,6 +338,14 @@ export async function initAccount() {
     store.setTier(auth.isPaid() ? 'paid' : 'free');
     accountSheet.render();
 
+    /* ⚠️⚠️ **로그인 창을 닫아주는 코드가 없었다.**
+       로그인에 성공해도 창이 그대로 떠 있어서 "또 로그인하라"로 보인다.
+       받은 지적: "로그인되면 계정 창이 나와야하는거 아냐?" — 맞는 말이다.
+       ⚠️ 동의가 필요하면 그쪽이 이어서 열리므로 여기서는 닫기만 한다. */
+    if (user) {
+      document.getElementById('loginSheet')?.classList.remove('up');
+    }
+
     // 최초 로그인이면 동의 화면
     if (user && consentSheet.needed()) {
       await consentSheet.open();

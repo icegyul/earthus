@@ -133,13 +133,19 @@ def site_coords():
                 la = x
             if lo is None and ("lot" in kl or "lon" in kl or kl.endswith("xcrd") or kl == "x"):
                 lo = x
-        # ⚠️ 우리 바다 밖이면 버린다. 이름이 뒤바뀐 자료를 여러 번 겪었다.
+        # ⚠️⚠️ 우리 바다 밖이면 버린다. 이름이 뒤바뀐 자료를 여러 번 겪었다.
+        #    ⚠️ 실제로 걸린 것 — 연안생태조사(ER/SR/JR/WR)와 섬 이름 정점들은
+        #       `52.75,9.04`(독일) `44.67,0.52`(프랑스) `17.21,57.58`(인도양) 처럼 나온다.
+        #       뒤바뀐 게 아니라 **도(度) 부분이 빠지고 분·초만 들어있는 것**이다.
+        #       도를 모르면 복원할 수 없다. **34를 붙여 추측하지 않는다** — 그건 지어내는 것이다.
+        #       바닷새 정점(SB/WB/JB…)은 온전해서 72곳 전부 붙었다. 화면에는 영향이 없다.
         if la is None or lo is None:
             continue
         if not (31.0 <= la <= 39.5 and 123.0 <= lo <= 133.0):
             la, lo = lo, la                      # 뒤바뀐 경우를 한 번 되돌려 본다
             if not (31.0 <= la <= 39.5 and 123.0 <= lo <= 133.0):
-                print(f"[seabird] ⚠️ 범위 밖 좌표 버림: {code}")
+                # ⚠️ 값을 같이 찍는다. 코드 이름만 찍었더니 **왜** 버려졌는지 알 수 없었다.
+                print(f"[seabird] ⚠️ 범위 밖 좌표 버림: {code} → {la!r},{lo!r}")
                 continue
         m[code] = (round(la, 5), round(lo, 5))
     print(f"[seabird] 조사지점 좌표 {len(m)}곳")

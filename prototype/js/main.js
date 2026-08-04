@@ -463,7 +463,7 @@ function bindAccountUI() {
 
   // 동의
   $('#cAll').onchange = e => consentSheet.toggleAll(e.target.checked);
-  ['cTos','cPrivacy','cAge','cMarketing','cLocation'].forEach(id => {
+  ['cTos','cPrivacy','cAge','cMarketing','cLocation','cUsage'].forEach(id => {
     $('#' + id).onchange = () => consentSheet.sync();
   });
   $('#consentSubmit').onclick = () => consentSheet.submit();

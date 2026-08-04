@@ -150,8 +150,9 @@ export const consentSheet = {
         $('#cAge').checked = agreed;
         $('#cLocation').checked = localStorage.getItem('earthus.consent.location') === '1';
         $('#cMarketing').checked = false;
+        $('#cUsage').checked = localStorage.getItem('earthus.consent.usage') === '1';
       } else {
-        ['cTos', 'cPrivacy', 'cAge', 'cMarketing', 'cLocation'].forEach(id => { $('#' + id).checked = false; });
+        ['cTos', 'cPrivacy', 'cAge', 'cMarketing', 'cLocation', 'cUsage'].forEach(id => { $('#' + id).checked = false; });
       }
       $('#consentCancel').textContent = review ? '닫기' : '동의하지 않고 나가기';
       this.sync();
@@ -170,7 +171,7 @@ export const consentSheet = {
   },
 
   toggleAll(v) {
-    ['cTos', 'cPrivacy', 'cAge', 'cMarketing', 'cLocation'].forEach(id => { $('#' + id).checked = v; });
+    ['cTos', 'cPrivacy', 'cAge', 'cMarketing', 'cLocation', 'cUsage'].forEach(id => { $('#' + id).checked = v; });
     this.sync();
   },
 
@@ -181,12 +182,16 @@ export const consentSheet = {
       over14: $('#cAge').checked,
       marketing: $('#cMarketing').checked,
       location: $('#cLocation').checked,
+      /* 이용 행태 — ⚠️ **선택**이다. 안 해도 서비스는 그대로 쓴다.
+         ⚠️ 그리고 **끌 수 있어야 한다.** 동의 관리에서 다시 열어 끄면 즉시 멈춘다. */
+      usage: $('#cUsage').checked,
     };
     if (!(payload.tos && payload.privacy && payload.over14)) return;
 
     await auth.saveConsent(payload);
     localStorage.setItem('earthus.consent', CONFIG.LEGAL_VERSION);
     localStorage.setItem('earthus.consent.location', payload.location ? '1' : '0');
+    localStorage.setItem('earthus.consent.usage', payload.usage ? '1' : '0');
     $('#consentSheet').classList.remove('up');
     this._resolve?.(payload);
     toast('가입이 완료되었습니다');

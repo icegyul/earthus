@@ -148,8 +148,12 @@ pre{background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:9px;
 
   <!-- 개발할 수 있는 것 — ⚠️ 목록의 원본은 js/ui-dev.js 다. 여기 따로 적지 않는다.
        두 곳에 적으면 한쪽만 고치게 되고, 이 페이지가 조용히 옛말을 하게 된다. -->
-  <div class="card">
+  <div class="card" id="devCard" hidden>
     <h2>개발할 수 있는 것 <span id="devCount" style="color:var(--fog);font-weight:300"></span></h2>
+    <!-- ⚠️⚠️ **이 가림은 진짜 잠금이 아니다.** 이 페이지는 브라우저에서 도는 정적 파일이고,
+         목록도 /js/ui-dev.js 를 직접 열면 그대로 보인다(위 보안 안내와 같은 이유).
+         ⚠️ 그래서 여기에는 **회원 정보나 열쇠를 절대 적지 않는다** — 우리 할 일만 적는다.
+         로그인 뒤에만 보이게 하는 것은 남의 눈에 덜 띄게 하려는 것이지 보호가 아니다. -->
     <div id="devList" class="devwrap">불러오는 중…</div>
   </div>
 
@@ -173,13 +177,26 @@ pre{background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:9px;
   /* 개발할 수 있는 것 — ⚠️ 목록은 js/ui-dev.js 한 곳에만 있다.
      ⚠️ 로그인과 무관하게 보여준다. 회원 자료가 아니라 우리 할 일 목록이라
         관리자 페이지를 여는 사람이면 봐야 한다. */
-  import('./js/ui-dev.js').then(({ renderDevList, GROUPS }) => {
-    renderDevList(document.getElementById('devList'));
-    const n = GROUPS.reduce((a, g) => a + g.items.length, 0);
-    document.getElementById('devCount').textContent = `${n}건`;
-  }).catch(e => {
-    document.getElementById('devList').textContent = '목록을 불러오지 못했습니다 — ' + e.message;
-  });
+  /* ⚠️ 로그인한 뒤에만 그린다 (받은 요청). paint() 에서 부른다.
+     ⚠️ 한 번만 그린다 — 로그인 상태가 바뀔 때마다 다시 그리면 헛일이다. */
+  let devDrawn = false;
+  async function showDev() {
+    const card = document.getElementById('devCard');
+    if (!card) return;
+    card.hidden = false;
+    if (devDrawn) return;
+    devDrawn = true;
+    try {
+      const { renderDevList, GROUPS } = await import('./js/ui-dev.js');
+      renderDevList(document.getElementById('devList'));
+      const n = GROUPS.reduce((a, g) => a + g.items.length, 0);
+      document.getElementById('devCount').textContent = `${n}건`;
+    } catch (e) {
+      devDrawn = false;
+      document.getElementById('devList').textContent = '목록을 불러오지 못했습니다 — ' + e.message;
+    }
+  }
+  function hideDev() { const c = document.getElementById('devCard'); if (c) c.hidden = true; }
 
 import { CONFIG } from './js/config.local.js';
 
@@ -266,6 +283,7 @@ async function paint() {
     $('#who').textContent = '로그인하지 않았습니다';
     inBtn.hidden = false; outBtn.hidden = true;
     $('#gateMsg').textContent = '관리자 계정으로 로그인해야 아래 값이 보입니다.';
+    hideDev();
     return;
   }
   inBtn.hidden = true; outBtn.hidden = false;
@@ -277,6 +295,7 @@ async function paint() {
     ? '로그인했습니다. 아래 값이 비어 있으면 <b>RLS 정책이 아직 없거나 관리자로 등록되지 않은 것</b>입니다.'
     : '⚠️ 이 계정은 관리자 목록에 없습니다. 그래도 <b>진짜 판정은 데이터베이스가</b> 합니다.';
 
+  showDev();
   await load();
 }
 

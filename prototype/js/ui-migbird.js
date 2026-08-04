@@ -139,13 +139,32 @@ export const migbirdPanel = {
 
     // 이 종이 실제로 쓴 곳만 그린다
     const used = new Set();
-    trips.forEach((t) => { used.add(t.from); used.add(t.to); });
+    /* ⚠️⚠️ 자리마다 **어떤 새**가 오갔는지도 센다.
+       받은 지적: "철새중에 이름이 안나오는것도 있네".
+       선에는 종 이름이 있었는데 **출발점·도착원에는 없었다** —
+       그런데 점과 원이 선보다 훨씬 누르기 쉬워서, 눌러보면 대개
+       "전북 익산 — 떠난 기록 18건" 처럼 **이름 없는 답**이 돌아왔다. */
+    const spcAt = {};
+    trips.forEach((t) => {
+      used.add(t.from); used.add(t.to);
+      (spcAt[t.from] ||= {})[t.spc] = (spcAt[t.from][t.spc] || 0) + 1;
+      (spcAt[t.to] ||= {})[t.spc] = (spcAt[t.to][t.spc] || 0) + 1;
+    });
+    /** 그 자리에 많은 새부터 세 가지. ⚠️ 더 있으면 '외 N종'으로 밝힌다 —
+        세 개만 적고 말면 나머지가 없는 것처럼 읽힌다. */
+    const birdsAt = (name) => {
+      const e = Object.entries(spcAt[name] || {}).sort((a, b) => b[1] - a[1]);
+      if (!e.length) return '';
+      const head = e.slice(0, 3).map(([nm, n]) => `${nm} ${n}`).join(' · ');
+      return head + (e.length > 3 ? (ko ? ` 외 ${e.length - 3}종` : ` +${e.length - 3}`) : '');
+    };
 
     (_data.places || []).filter((p) => used.has(p.name)).forEach((p) => {
       if (p.home) {
         /* 출발지 — 시·군 단위라 점으로 찍어도 된다(±12km) */
         this._ents.push(viewer.entities.add({
-          _pick: `${p.name} — ${ko ? `여기서 떠난 기록 ${p.n}건` : `${p.n} departures`}`,
+          _pick: `${p.name} — ${ko ? `여기서 떠난 기록 ${p.n}건` : `${p.n} departures`}`
+            + (birdsAt(p.name) ? ` · ${birdsAt(p.name)}` : ''),
           position: C.Cartesian3.fromDegrees(p.lon, p.lat),
           point: { pixelSize: 7, color: C.Color.fromCssColorString('#ffd08a').withAlpha(0.95),
                    outlineColor: C.Color.BLACK.withAlpha(0.5), outlineWidth: 1,
@@ -157,9 +176,11 @@ export const migbirdPanel = {
         /* ⚠️⚠️ 도착지는 **원**이다. 반경이 곧 "얼마나 모르는가"다. */
         this._ents.push(viewer.entities.add({
           /* ⚠️ 반경을 반드시 같이 말한다. 원 이름만 읽으면 '거기 갔다'로 들린다. */
-          _pick: ko
-            ? `${p.name} — 도착 ${p.n}건 · ⚠️ 반경 약 ${p.r}km 안 어딘가입니다`
-            : `${p.name} — ${p.n} arrivals · within ~${p.r} km`,
+          _pick: (ko
+            ? `${p.name} — 도착 ${p.n}건`
+            : `${p.name} — ${p.n} arrivals`)
+            + (birdsAt(p.name) ? ` · ${birdsAt(p.name)}` : '')
+            + (ko ? ` · ⚠️ 반경 약 ${p.r}km 안 어딘가입니다` : ` · within ~${p.r} km`),
           position: C.Cartesian3.fromDegrees(p.lon, p.lat),
           ellipse: {
             semiMajorAxis: p.r * 1000, semiMinorAxis: p.r * 1000,

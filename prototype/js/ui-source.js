@@ -42,6 +42,10 @@ const SRC = {
               en: 'Chollian-2A IR 11.2µm (KMA) via NOAA open data', every: 10 },
   gk2a_vis: { ko: '천리안2A 가시광 0.64㎛ (기상청) · NOAA 공개자료',
               en: 'Chollian-2A visible 0.64µm (KMA) via NOAA open data', every: 10 },
+  gk2a_vis_ea: { ko: '천리안2A 가시광 0.64㎛ · 동아시아 2km (기상청) · NOAA 공개자료',
+                 en: 'Chollian-2A visible, E. Asia 2 km (KMA) via NOAA', every: 10 },
+  gk2a_ir_ea:  { ko: '천리안2A 적외 11.2㎛ · 동아시아 2km (기상청) · NOAA 공개자료',
+                 en: 'Chollian-2A infrared, E. Asia 2 km (KMA) via NOAA', every: 10 },
   gk2a_vis_fd: { ko: '천리안2A 가시광 0.64㎛ · 전면 (기상청) · NOAA 공개자료',
                  en: 'Chollian-2A visible 0.64µm, full disk (KMA) via NOAA open data', every: 10 },
   gk2a_wv:  { ko: '천리안2A 수증기 6.3㎛ (기상청) · NOAA 공개자료',
@@ -105,7 +109,7 @@ const SRC = {
    **좌하단 안내가 통째로 사라진다.** 오류도 경고도 없다 —
    실제로 천리안 3종을 넣고 이걸 빼먹어 "위성정보가 안나와"라는 신고를 받았다.
    (layerbar 의 CATEGORIES 도 같은 성격이다. 레이어 추가는 세 곳을 함께 고친다.) */
-const PRIORITY = ['gk2aIR', 'gk2aVIS', 'gk2aVISfd', 'gk2aWV',
+const PRIORITY = ['gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 'gk2aVISfd', 'gk2aWV',
                   'himaIR', 'himawari', 'truecolor', 'clouds', 'sstanom', 'temp', 'tmax', 'tmin', 'humidity', 'rain', 'pressure', 'fog', 'drought',
                   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
                   'sst', 'wave', 'swell', 'current', 'wind', 'windfc',
@@ -142,8 +146,9 @@ export const sourceNote = {
     /* ⚠️ 구름은 확대하면 자료가 바뀐다 (전지구 합성 → 히마와리).
        보고 있는 것과 다른 출처를 적으면 안내가 아니라 오정보다. */
     let key = id, hima = null;
-    if (id === 'gk2aIR' || id === 'gk2aVIS' || id === 'gk2aVISfd' || id === 'gk2aWV') {
+    if (id.startsWith('gk2a')) {
       key = { gk2aIR: 'gk2a_ir', gk2aVIS: 'gk2a_vis', gk2aVISfd: 'gk2a_vis_fd',
+              gk2aVISea: 'gk2a_vis_ea', gk2aIRea: 'gk2a_ir_ea',
               gk2aWV: 'gk2a_wv' }[id];
     } else if (id === 'himaIR') {
       key = 'hima_ir';
@@ -174,7 +179,7 @@ export const sourceNote = {
       } else if (id === 'truecolor') {
         const { imagery } = await import('./layers/imagery.js');
         if (imagery._tcDate) made = new Date(`${imagery._tcDate}T12:00:00Z`);
-      } else if (id === 'gk2aIR' || id === 'gk2aVIS' || id === 'gk2aVISfd' || id === 'gk2aWV') {
+      } else if (id.startsWith('gk2a')) {
         /* ⚠️ 시각은 meta.json 이 말하는 **관측 시각**이다. 우리가 받은 시각이 아니다.
            둘을 섞으면 "방금 자료"라고 적어 놓고 실제로는 20분 전 하늘이 된다. */
         const { imagery } = await import('./layers/imagery.js');

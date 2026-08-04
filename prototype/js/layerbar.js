@@ -48,6 +48,14 @@ export const ITEMS = [
      → 같은 위성의 **가시광을 전면으로** 넓혔다. 낮에는 이게 히마와리와 같은 것을 본다. */
   { id:'gk2aVISfd', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 전면 · 낮에만 · 히마와리와 같은 방식', subEn:'Cloud · full disk · daylight only', ready:true,
     sky:'#0a1828', paint:'gk2a' },
+  /* ⚠️⚠️ 한반도(8°)와 전면(120°) 사이가 통째로 비어 있었다.
+     한반도 상자는 0.5km 로 선명한데 8°밖에 안 되고, 전면은 8.35km 라
+     그 사이 — 오키나와·대만·일본 남부 — 가 어느 쪽으로도 잘 안 보였다.
+     태풍이 오키나와쯤 있을 때가 정확히 그 구간이다. 2km 로 메운다. */
+  { id:'gk2aIRea', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 동아시아 2km · 밤에도', subEn:'Cloud · E. Asia 2km · day & night', ready:true,
+    sky:'#0b1626', paint:'gk2a' },
+  { id:'gk2aVISea', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 동아시아 2km · 낮에만', subEn:'Cloud · E. Asia 2km · daylight only', ready:true,
+    sky:'#0a1828', paint:'gk2a' },
   { id:'gk2aWV', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'수증기 · 전면 · 상층 흐름', subEn:'Water vapour · full disk', ready:true,
     sky:'#0c1422', paint:'gk2a' },
   /* ⚠️ 부제에 '낮에만'을 반드시 남긴다. 가시광이라 밤에는 비어 보이는데,
@@ -432,6 +440,8 @@ const CATEGORIES = [
           'himawari',      // 🇯🇵 히마와리 1km
           'gk2aVIS',       // 🇰🇷 천리안 0.5km (낮)
           'gk2aVISfd',     // 🇰🇷 천리안 전면 가시광 (낮) — 히마와리와 같은 것을 본다
+          'gk2aIRea',      // 🇰🇷 천리안 동아시아 2km (밤에도)
+          'gk2aVISea',     // 🇰🇷 천리안 동아시아 2km (낮)
           'gk2aWV',        // 🇰🇷 천리안 수증기
           'himaIR'] },     // 🇯🇵 히마와리 구름 꼭대기 온도
   { id: 'weather', ko: '기상',       en: 'Weather',

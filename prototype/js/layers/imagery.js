@@ -1057,6 +1057,8 @@ export const imagery = {
       case 'gk2aIR':  this.setGK2A('ir112', on); break;
       case 'gk2aVIS': this.setGK2A('vi006', on); break;
       case 'gk2aVISfd': this.setGK2A('vi006fd', on); break;
+      case 'gk2aIRea':  this.setGK2A('ir112ea', on); break;
+      case 'gk2aVISea': this.setGK2A('vi006ea', on); break;
       case 'gk2aWV':  this.setGK2A('wv063', on); break;
       case 'citylight': this.citylight.show = on; break;
       case 'aurora':    if (this.aurora) this.aurora.show = on; break;

@@ -67,6 +67,14 @@ AREAS = {
     "FD": {"lat": (-60.0, 60.0), "lon": (70.0, 190.0), "w": 1600, "h": 1600},
     # 한반도 — 가시광 0.5km 를 살리는 크기. 8°×8° 를 1780 화소면 약 0.5km/화소.
     "LA": {"lat": (32.0, 40.0), "lon": (123.5, 131.5), "w": 1780, "h": 1780},
+    # ⚠️⚠️ **한반도(8°)와 전면(120°) 사이가 통째로 비어 있었다.**
+    #    한반도 상자는 0.5km 로 선명한데 8°밖에 안 되고, 전면은 120°인데 8.35km 라
+    #    그 사이 — 오키나와·대만·일본 남부 — 가 어느 쪽으로도 잘 안 보였다.
+    #    태풍이 오키나와쯤 있을 때가 정확히 그 구간이다.
+    #    → 2km/화소로 그 사이를 메운다. 삿포로(43.1N)부터 타이베이(25.0N)까지 들어간다.
+    #    ⚠️ 화소를 더 키우지 말 것. 2000×1335 에서 PNG 가 이미 3MB 대다 —
+    #       전면(1600²)이 3.1MB 였다. 폰으로 받는 그림이라는 걸 잊으면 안 된다.
+    "EA": {"lat": (23.0, 47.0), "lon": (114.0, 150.0), "w": 2000, "h": 1335},
 }
 
 # ── 채널 ────────────────────────────────────────────────────────
@@ -147,6 +155,20 @@ CHANNELS = {
                  # 단위는 K. 실측으로 다시 맞춰야 한다.
                  "floor": 1.5, "hi": 6.0, "gamma": 0.9,
                  "ko": "낮은 구름·안개 (밤)"},
+    # 동아시아 2km — ⚠️ 낮에는 이것이 가장 쓸 만하다. 전면보다 4배 선명하고
+    #    한반도 상자가 못 담는 오키나와·대만까지 덮는다.
+    #    ⚠️ stride 4 (원본 2km) 로 읽는다. 8 로 읽으면 원본이 4km 가 되어
+    #       2km 출력에 모자란다 — 확대해도 안 선명해진다.
+    "vi006ea": {"ch": "vi006", "srcArea": "FD", "kind": "vis", "area": "EA", "res": "005ge",
+                "stride": 4, "solar": True,
+                "floor": 0.18, "hi": 0.65, "gamma": 0.9, "ko": "구름 (낮 · 동아시아 2km)"},
+    # ⚠️ 적외는 원본이 이미 2km 라 stride 가 필요 없다. 밤에는 이쪽만 보인다.
+    #    ⚠️ rowbase 를 쓰지 않는다 — 24° 안에서는 위도별 지표 온도 차이가 작아
+    #       고정 문턱으로 충분하고, 좁은 상자에서 위도줄마다 기준을 다시 재면
+    #       구름 낀 줄에서 기준선이 같이 내려가 오히려 덜 보인다.
+    "ir112ea": {"ch": "ir112", "srcArea": "FD", "kind": "ir", "area": "EA", "res": "020ge",
+                "hot": 25.0, "cold": -75.0, "floor": 0.14, "gamma": 0.85,
+                "ko": "구름 (밤에도 · 동아시아 2km)"},
     "vi006fd": {"ch": "vi006", "kind": "vis", "area": "FD", "res": "005ge",
                 "stride": 8, "solar": True,
                 # ⚠️ 반사도(0~1) 기준이다. 실측으로 정했다 — 지표 0.07 / 구름 0.37~1.15.
@@ -191,8 +213,12 @@ def latest_key(ch, now=None):
     ⚠️ 목록을 통째로 뒤지지 않는다. 시각을 알고 있으니 **최근 시간대부터** 좁혀 본다."""
     now = now or datetime.now(timezone.utc)
     cfg = CHANNELS[ch]
-    area = cfg["area"]                              # 'FD' 전면 | 'LA' 한반도
-    # ⚠️ 꼬리는 영역+해상도다: fd020ge / la005ge …
+    # ⚠️⚠️ **원본 영역과 우리 출력 상자는 다른 것이다.**
+    #    NOAA 에 있는 폴더는 FD·LA 뿐이다. EA 는 **우리가 정한 출력 범위**이지
+    #    원본 폴더가 아니다. 둘을 같은 값으로 쓰면 AMI/L1B/EA/ 를 찾다가
+    #    "최근 4시간 안에 파일이 없습니다"가 뜬다 (실제로 그렇게 막혔다).
+    area = cfg.get("srcArea", cfg["area"])          # 'FD' 전면 | 'LA' 한반도 (원본 폴더)
+    # ⚠️ 꼬리는 원본 영역+해상도다: fd020ge / la005ge …
     tail = f"{area.lower()}{cfg['res']}"
     # ⚠️ 레이어 id 와 채널명이 다를 수 있다 (vi006fd → vi006).
     #    id 로 파일을 찾으면 "파일이 없습니다"만 나오고 원인을 못 찾는다.
@@ -239,6 +265,21 @@ def _cos_sza(lat, lon, when):
     return np.sin(la) * np.sin(decl) + np.cos(la) * np.cos(decl) * np.cos(ha)
 
 
+def latest_key_for(ch_name, area, res):
+    """채널 이름으로 직접 최신 파일을 찾는다 (짝 채널 대체용).
+    ⚠️ latest_key(ch) 는 CHANNELS 표를 거치는데, 짝 채널(sw038)은 표에 없다."""
+    now = datetime.now(timezone.utc)
+    tail = f"{area.lower()}{res}"
+    for back_h in range(0, 4):
+        t = now - timedelta(hours=back_h)
+        prefix = f"AMI/L1B/{area}/{t:%Y%m}/{t:%d}/{t:%H}/gk2a_ami_le1b_{ch_name}_{tail}_"
+        r = src.list_objects_v2(Bucket=SRC_BUCKET, Prefix=prefix)
+        keys = sorted(o["Key"] for o in r.get("Contents", []))
+        if keys:
+            return keys[-1]
+    return None
+
+
 def _geos_index(sub, ulx, uly, dx, dy, nx, ny, box):
     """등경위도 격자의 각 칸이 원본의 몇 번 화소인가 (CGMS 정지위성 변환)"""
     (LAT0, LAT1), (LON0, LON1) = box["lat"], box["lon"]
@@ -268,6 +309,14 @@ def _geos_index(sub, ulx, uly, dx, dy, nx, ny, box):
     return col, row, ok
 
 
+# ⚠️⚠️ **같은 원본을 두 번 내려받지 않는다.**
+#    가시광 전면 파일이 **480MB** 다. 전면·동아시아를 따로 그리려고 두 번 받으면
+#    1GB 를 받게 되고 Lambda 시간이 두 배가 된다. 한 번 실행 안에서만 재사용한다.
+#    ⚠️ 전역에 두는 이유: 웜 스타트에서도 살아 있으면 **옛 시각 자료를 다시 그린다.**
+#       그래서 handler 시작할 때 반드시 비운다.
+_BODY = {}
+
+
 def render(ch, key):
     cfg = CHANNELS[ch]
     # ⚠️ 관측 시각은 **파일 이름**에서 뽑는다(..._202608040146.nc, UTC).
@@ -276,7 +325,10 @@ def render(ch, key):
     m = re.search(r"_(\d{12})\.nc$", key)
     when = (datetime.strptime(m.group(1), "%Y%m%d%H%M").replace(tzinfo=timezone.utc)
             if m else datetime.now(timezone.utc))
-    body = src.get_object(Bucket=SRC_BUCKET, Key=key)["Body"].read()
+    body = _BODY.get(key)
+    if body is None:
+        body = src.get_object(Bucket=SRC_BUCKET, Key=key)["Body"].read()
+        _BODY[key] = body
     with h5py.File(io.BytesIO(body), "r") as f:
         st = cfg.get("stride", 1)
         # ⚠️⚠️ 480MB 짜리 0.5km 전면 자료를 통째로 올리면 Lambda 가 메모리로 죽는다.
@@ -337,7 +389,22 @@ def render(ch, key):
         # ⚠️ 짝 파일은 **같은 시각·같은 격자**여야 한다. 파일 이름에서 채널만 바꿔 찾는다 —
         #    시각이 다르면 구름이 움직인 만큼 차이가 생겨 없는 안개가 나타난다.
         pkey = key.replace(f"_{cfg['ch']}_", f"_{cfg['pair']}_")
-        pbody = src.get_object(Bucket=SRC_BUCKET, Key=pkey)["Body"].read()
+        try:
+            pbody = src.get_object(Bucket=SRC_BUCKET, Key=pkey)["Body"].read()
+        except src.exceptions.NoSuchKey:
+            # ⚠️ 두 채널이 **같은 시각에 동시에 올라오지 않는다.** 몇 분 어긋난다.
+            #    없으면 그 채널의 최신을 찾아 쓰되, **10분을 넘게 벌어지면 쓰지 않는다** —
+            #    시간이 벌어진 만큼 구름이 움직여서 없는 안개가 만들어진다.
+            alt = latest_key_for(cfg["pair"], cfg.get("srcArea", cfg["area"]), cfg["res"])
+            if not alt:
+                raise ValueError(f"짝 채널({cfg['pair']}) 파일을 못 찾았다")
+            am = re.search(r"_(\d{12})\.nc$", alt)
+            gap = abs((datetime.strptime(am.group(1), "%Y%m%d%H%M")
+                       .replace(tzinfo=timezone.utc) - when).total_seconds()) / 60 if am else 999
+            if gap > 10:
+                raise ValueError(f"짝 채널이 {gap:.0f}분 어긋나 쓰지 않는다")
+            print(f"[gk2a] {ch} 짝을 {gap:.0f}분 차이로 대체: {alt.split('/')[-1]}")
+            pbody = src.get_object(Bucket=SRC_BUCKET, Key=alt)["Body"].read()
         with h5py.File(io.BytesIO(pbody), "r") as pf:
             praw = np.asarray(pf["image_pixel_values"])
             # ⚠️ 짝 채널은 **비트 수가 다를 수 있다.** sw038 이 정확히 그렇다.
@@ -457,6 +524,8 @@ def render(ch, key):
 
 def handler(event=None, context=None):
     want = (event or {}).get("channels") or list(CHANNELS)
+    # ⚠️ 웜 스타트에서 지난 실행의 원본이 남아 있으면 **옛 하늘을 다시 그린다.**
+    _BODY.clear()
     out, tstamp = {}, None
     for ch in want:
         if ch not in CHANNELS:

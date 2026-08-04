@@ -291,6 +291,11 @@ const SRC_URL = {
   wind:   () => `${API.WIND}/global.json`,
   air:    () => `${API.AIR}/air.json`,
   marine: () => `${API.MARINE_GRID}/marine.json`,
+  /* ⚠️⚠️ 전지구 해양 격자는 **5° = 약 550km** 다. 한반도 전체가 두세 칸이라
+     서해·동해·남해가 한 칸에 뭉개진다 — 화면에서는 "남해에만 자료가 있는 것"처럼 보인다.
+     동아시아만 **0.5°(약 55km)** 로 따로 만든다. 10배 촘촘하다.
+     ⚠️ 상자는 천리안 동아시아 영상과 같은 범위다(23~47N, 114~150E). */
+  marineEa: () => `${API.MARINE_GRID}/marine-ea.json`,
 };
 
 export const gridOverlay = {
@@ -315,11 +320,36 @@ export const gridOverlay = {
     return j;
   },
 
+  /** 지금 화면 한가운데가 동아시아 상자 안이고, 충분히 확대돼 있는가.
+   *  ⚠️ 상자 밖에서 촘촘한 판을 쓰면 화면 대부분이 빈다 — 반드시 안일 때만 쓴다.
+   *  ⚠️ 아주 멀리서 볼 때는 전지구 판이 맞다. 촘촘한 판은 동아시아 밖이 통째로 비어
+   *     "저기는 바다가 없다"처럼 보인다. */
+  _eastAsiaView() {
+    try {
+      const p = viewer?.camera?.positionCartographic;
+      if (!p) return false;
+      const lat = Cesium.Math.toDegrees(p.latitude);
+      const lon = Cesium.Math.toDegrees(p.longitude);
+      // 고도 4,000km 보다 가까울 때만. 그보다 멀면 지구 절반이 보인다.
+      return p.height < 4_000_000
+        && lat >= 23 && lat <= 47 && lon >= 114 && lon <= 150;
+    } catch (_) { return false; }
+  },
+
   /** key = 레이어 id (temp · rh · sst · pm25 · fog …) */
   async show(key, on) {
     if (!on) { this._remove(key); return; }
     try {
-      const g0 = await this.load(SOURCE_OF[key] || 'wind');
+      /* ⚠️ 동아시아를 보고 있으면 촘촘한 판으로 바꾼다.
+         ⚠️⚠️ 지금은 **레이어를 켜는 순간**에만 고른다. 켜 둔 채로 지구를 돌려
+            동아시아로 오면 전지구 판 그대로다 — 껐다 켜야 바뀐다.
+            (카메라가 멈출 때마다 격자를 다시 그리면 발열이 는다. 그 대가로 택한 것이다.)
+         ⚠️ 못 받으면 조용히 전지구 판으로 돌아간다. 안 그러면 화면이 통째로 빈다. */
+      let srcName = SOURCE_OF[key] || 'wind';
+      if (srcName === 'marine' && this._eastAsiaView()) {
+        try { await this.load('marineEa'); srcName = 'marineEa'; } catch (_) { }
+      }
+      const g0 = await this.load(srcName);
       /* ⚠️ 편차 레이어는 격자 값이 아니라 "지금 − 평년"이다.
          평년값을 못 받으면 **그리지 않는다**. 실측값을 편차인 척 칠하면
          평년과 같은 바다가 +25°C 로 새빨갛게 나온다. */

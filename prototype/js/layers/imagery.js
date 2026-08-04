@@ -339,7 +339,13 @@ export const imagery = {
         blackPct(`${base}/${day}/GoogleMapsCompatible_Level9/${z}/${y}/${x}.jpg`));
       const avg = pcts.reduce((a, b) => a + b, 0) / pcts.length;
       if (back === 1) first = avg;      // 어제(즉시 띄운 날)의 빈 구간 — 교체 판단용
-      if (!best || avg < best.avg) best = { day, avg };
+      /* ⚠️ **새 날짜를 조금 우대한다.** 빈 구간이 몇 %p 차이라면 하루라도 새 것이 낫다 —
+         사용자가 보고 싶은 건 "가장 안 빈 날"이 아니라 "가장 최근의 쓸 만한 날"이다.
+         실측(2026-08-04): 08-02 와 08-01 이 둘 다 멀쩡한데 08-01 이 조금 덜 비어서
+         **3일 전 사진**이 뽑혔다. 3%p 안쪽이면 새 쪽을 남긴다.
+         ⚠️ 그냥 "제일 새 날"로 하면 안 된다 — 어제가 통째로 비는 날이 실제로 있다
+            (08-03 은 한국 상공이 404 였다). 어디까지나 **비슷할 때만** 우대한다. */
+      if (!best || avg < best.avg - 3) best = { day, avg };
       /* 확연히 깨끗하면 더 볼 필요가 없다 */
       if (avg < 6) break;
     }
@@ -394,11 +400,21 @@ export const imagery = {
       return;
     }
     if (!this.truecolor) {
-      /* ⚡ 즉시 — 어제 날짜로 바로 띄운다. 예전엔 "가장 덜 빈 날짜"를 고르려고
-         날짜당 타일 32장 × 최대 4일을 먼저 받아 검사하느라(최악 128장) 수 초 걸렸다.
-         실측상 어느 날짜든 빈 구간이 ~12%로 비슷해 화질 차이가 거의 없으므로,
-         어제로 바로 띄우고 날짜 탐색은 배경으로 돌린다. */
-      const day = this._ymdBack(1);
+      /* ⚡ 즉시 띄우고 날짜 탐색은 배경으로 돌린다.
+         예전엔 "가장 덜 빈 날짜"를 고르려고 날짜당 타일 32장 × 최대 4일을 먼저
+         받아 검사하느라(최악 128장) 수 초 걸렸다.
+
+         ⚠️⚠️ **처음에 "어제"를 썼다가 실제로 크게 틀렸다.** (2026-08-04 실측)
+            한국 상공 타일이 **어제(08-03)는 404**, 그저께(08-02)는 정상이었다.
+            빈 화면이 그대로 떠서 **"수오미에는 구름이 없다"** 로 읽혔다 —
+            받은 지적이 정확히 그것이었다. 배경 탐색이 나중에 고쳐 주긴 하지만,
+            그 사이 몇 초 동안 **없는 맑음을 보여준다.** 그게 제일 나쁘다.
+         ⚠️ GIBS 는 하루치가 **여러 시간에 걸쳐 채워진다.** 날짜가 생겼다고
+            그 날짜 전체가 있는 게 아니다. 그래서 어제는 자주 반쯤 비어 있다.
+         → 처음부터 **이틀 전**으로 시작한다. 하루 더 오래됐지만 **차 있는** 자료다.
+            배경 탐색이 어제가 더 낫다고 판단하면 그때 앞으로 당긴다.
+         ⚠️ 이 숫자를 1 로 되돌리지 말 것. 되돌리면 위 증상이 그대로 돌아온다. */
+      const day = this._ymdBack(2);
       this._tcDate = day;
       this.truecolor = this._addTruecolorLayer(day);
       this._imgLoading(true, '수오미 NPP');
@@ -419,7 +435,10 @@ export const imagery = {
       } else {
         this._afterTilesSettle(() => {
           this.pickTrueColorDate().then(r => {
-            const pick = (r && r.day !== this._tcDate && (r.first - r.avg) > 12) ? r.day : null;
+            /* ⚠️ 예전 조건은 "첫 후보가 유난히 나쁠 때만" 바꾸는 것이었다.
+               이제 시작이 이틀 전이라 **더 새 날짜로 당기는 경우**도 있어야 한다.
+               탐색이 고른 날이 지금 것과 다르고, 눈에 띄게 덜 비면 바꾼다. */
+            const pick = (r && r.day !== this._tcDate) ? r.day : null;
             try { localStorage.setItem(KEY, JSON.stringify({ on: day, day: pick })); } catch (_) { }
             if (pick) this._swapTruecolorDate(pick);
           }).catch(() => { });

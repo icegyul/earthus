@@ -49,6 +49,7 @@ const SRC = {
   amedas: `${API.WIND}/jp-amedas.json`,
   quake:  `${API.EVENTS}/quake-asia.json`,
   light:  `${API.EVENTS}/lightning.json`,
+  warn:   `${API.EVENTS}/jma-warn.json`,
 };
 const LOCAL = { beach: 'data/jp/beaches.json', peak: 'data/jp/peaks.json' };
 
@@ -135,12 +136,61 @@ export const japanPanel = {
         : '⚠️ These are the public JSON feeds behind JMA’s disaster-prevention site, not a guaranteed API.'}</p>`;
   },
 
+  /* ── 특보 ───────────────────────────────────────────────
+     ⚠️⚠️ **자료가 살아 있을 때만 목록을 보여준다.**
+        JMA 특보 경로는 2026-05-28 이후 멈춰 있다. 멈춘 자료로 화면을 그리면
+        "지금 발효 중인 특보 없음"이 뜨는데, 그건 **없는 안전을 알리는 것**이다.
+        → live 가 아니면 "확인할 수 없습니다"라고 적는다. "없습니다"가 아니다.
+     ⚠️ 되살아나면 수집기가 live=true 로 바꾸고 여기가 **저절로** 목록을 그린다.
+        사람이 손댈 일이 없다. */
+  async _warnBlock(ko) {
+    let w = null;
+    try { w = await load(SRC.warn); } catch (_) { /* 수집기가 아직 없을 수 있다 */ }
+    if (!w) return '';
+
+    if (!w.live) {
+      return `<div class="jp-warn-dead"><b>${ko ? '⚠️ 특보를 확인할 수 없습니다' : '⚠️ Warnings unavailable'}</b>`
+        + `<p>${ko
+          ? `일본 기상청 특보 자료가 <b>${esc(w.feedLatestJst || '?')}</b> 이후 갱신되지 않고 있습니다`
+            + `${w.feedAgeHours ? ` (약 ${Math.round(w.feedAgeHours / 24)}일)` : ''}.<br>`
+            + `<b>지금 일본에 특보가 없다는 뜻이 아닙니다</b> — 저희가 확인할 수 없다는 뜻입니다. `
+            + `일본 기상청 발표나 현지 안내를 확인하세요.<br>`
+            + `<small>같은 사이트의 지진·낙뢰 자료는 정상입니다. 저희는 계속 확인하고 있으며, `
+            + `다시 들어오면 자동으로 여기에 나옵니다.</small>`
+          : `The JMA warning feed has not updated since ${esc(w.feedLatestJst || '?')}. `
+            + `<b>This does not mean there are no warnings</b> — we cannot check. `
+            + `<small>We keep polling; it will appear here automatically if it resumes.</small>`}</p></div>`;
+    }
+
+    const items = w.items || [];
+    if (!items.length) {
+      return `<div class="jp-warn-ok">${ko
+        ? '일본 기상청 기준 <b>지금 발효 중인 특보가 없습니다.</b>'
+        : 'No warnings currently in force, per JMA.'}</div>`;
+    }
+    let h = `<h4>${ko ? `특보 ${items.length}건` : `${items.length} warnings`}</h4>`;
+    h += items.slice(0, 25).map((x) => {
+      const nm = nameOf({ ja: x.ja, en: x.en });
+      return `<div class="kr-row"><span>${esc(nm.text)}</span>`
+        /* ⚠️ 종류를 코드로 적는다. 이름을 우리가 지어 붙이지 않는다 — 아래 주석 참고. */
+        + `<b>${(x.codes || []).map((c) => esc(String(c))).join(' · ')}</b></div>`;
+    }).join('');
+    h += `<p class="kr-note">${ko
+      ? '⚠️ 특보 <b>종류는 번호로만</b> 나옵니다. 일본 기상청이 종류를 코드로만 주고 '
+        + '공개된 대조표를 찾지 못해, 저희가 이름을 지어 붙이지 않았습니다. '
+        + '정확한 내용은 일본 기상청 발표를 보세요.'
+      : '⚠️ Warning types are shown as JMA codes; no public lookup table was found and we will not invent names.'}</p>`;
+    return h;
+  },
+
   /* ── 지금 — AMeDAS 실측 ────────────────────────────────── */
   async _now() {
     const ko = i18n.lang === 'ko';
     const d = await load(SRC.amedas);
     const c = myLocation.coords;
-    let h = '';
+    /* ⚠️ 특보를 **맨 위에** 둔다. 기온보다 먼저 알아야 하는 정보다.
+       (한국 화면에서 이안류 경고를 목록 위로 올린 것과 같은 이유다) */
+    let h = await this._warnBlock(ko);
 
     const st = (d.stations || []).filter((x) => x.lat != null);
     /* ⚠️⚠️ **가장 가까운 관측소가 기온을 안 잴 수 있다.**

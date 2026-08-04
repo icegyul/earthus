@@ -1952,3 +1952,19 @@ body.is-ambient #windLegend.on{ opacity:0; }
   font-size:10.5px; line-height:1.6; color:rgba(255,236,214,.82);
 }
 .sf-nofacing b{ color:#ffcf8f; font-weight:600; }
+
+/* 일본 특보 — ⚠️ 자료가 멈췄을 때의 안내다. 회색으로 묻으면 안 된다.
+   "특보 없음"으로 읽히는 것이 이 화면에서 가장 위험한 오해라 눈에 띄게 그린다. */
+.jp-warn-dead{
+  margin:10px 0 14px; padding:11px 13px; border-radius:10px;
+  border:1px solid rgba(240,160,60,.38); background:rgba(240,160,60,.10);
+  font-size:11.5px; line-height:1.62; color:rgba(255,236,214,.94); font-weight:300;
+}
+.jp-warn-dead b{ font-weight:600; color:#ffcf8f; }
+.jp-warn-dead p{ margin:5px 0 0; }
+.jp-warn-dead small{ opacity:.72; }
+.jp-warn-ok{
+  margin:10px 0 14px; padding:10px 12px; border-radius:10px;
+  border:1px solid rgba(90,200,160,.28); background:rgba(90,200,160,.08);
+  font-size:11.5px; color:rgba(220,245,235,.92); font-weight:300;
+}

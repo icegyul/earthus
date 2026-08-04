@@ -19,6 +19,15 @@ export const auth = {
 
   /* ── 초기화 ─────────────────────────────────────────────── */
   async init() {
+    /* ⚠️⚠️⚠️ **두 번 부르면 안 된다.** 실제로 콘솔에 getSession 이 두 번 찍혔다 —
+       Supabase 클라이언트가 두 개 만들어져 **같은 저장소를 두고 다투면**
+       한쪽이 쓴 세션을 다른 쪽이 덮어써서 로그인이 안 붙는다.
+       (Supabase 도 "Multiple GoTrueClient instances" 를 경고한다)
+       ⚠️ 받은 증상 그대로였다 — "로그인해도 계속 로그인하라고만 뜬다",
+          "관리자 페이지에서 또 로그인해야 한다".
+       → 진행 중인 약속을 돌려주어 **몇 번을 불러도 한 번만** 돈다. */
+    if (this._initing) return this._initing;
+    this._initing = (async () => {
     if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY) {
       console.info('[auth] Supabase 키 없음 → 게스트 모드로만 동작합니다.');
       this.ready = true;
@@ -33,19 +42,21 @@ export const auth = {
     /* ⚠️ 로그인이 왜 안 붙는지 짐작으로 못 찾아서, **어디서 끊기는지 찍는다.**
        콘솔 한 줄이면 원인이 갈린다 — 세션이 안 오는 것과, 와도 화면이 안 바뀌는 것은 다르다. */
     const { data, error } = await this.client.auth.getSession();
-    console.info('[auth] getSession →',
-      data?.session ? '세션 있음 · ' + data.session.user.email : '세션 없음',
-      error ? '· 오류: ' + error.message : '',
-      '· 주소해시:', location.hash ? location.hash.slice(0, 24) + '…' : '(없음)');
+    /* ⚠️ 이메일을 찍지 않는다. 정식 서비스이고, 기기를 함께 쓰는 경우가 있다.
+       세션이 있는지 없는지만 알면 문제를 가르는 데 충분하다. */
+    console.info('[auth] 세션', data?.session ? '있음' : '없음',
+      error ? '· 오류: ' + error.message : '');
     await this._apply(data?.session ?? null);
 
     this.client.auth.onAuthStateChange((evt, session) => {
-      console.info('[auth] 상태변화 →', evt, session ? session.user.email : '(없음)');
+      console.info('[auth] 상태변화', evt, session ? '· 로그인됨' : '· 로그아웃');
       this._apply(session);
     });
 
     this.ready = true;
     this.emit();
+    })();
+    return this._initing;
   },
 
   async _apply(session) {

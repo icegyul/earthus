@@ -16,6 +16,34 @@
 호출:
    aws lambda invoke --function-name ecobank \
      --payload '{"url":"https://.../svc","params":{"numOfRows":3}}' out.json
+
+━━━ 찔러서 알아낸 것 (2026-08-04) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+주소 꼴:  https://www.nie-ecobank.kr/ecoapi/{서비스}/attr/{작업}?type=json&serviceKey=키
+키 이름:  `serviceKey` (data.go.kr 과 같다)
+⚠️ 키는 **승인된 레이어에서만** 통한다. 조류 3종은 모두 통했다.
+
+  자연환경조사_조류_점   NteeInfoService  **1,053,574건**
+  생태계정밀조사_조류_점 EcpeInfoService      22,577건
+  백두대간_조류_점       BgtsInfoService       9,455건
+
+필드: spceId · geom · examinRealmSeNm · examinYear · tme · indvdCo(개체수)
+      spcsLcnm(국명) · spcsScncenm(학명) · examinBeginDe · examinEndDe · registDe · updtDe
+
+■⚠️⚠️⚠️ **좌표가 위경도가 아니다.** `geom: POINT(286374.92 595580.69)` —
+   미터 단위 **투영좌표**다. 그냥 lat/lon 으로 읽으면 아프리카 앞바다에 찍힌다.
+
+   추정: **EPSG:5186** (Korea 2000 중부원점 TM · 원점 127°E, 38°N ·
+   가짜동거리 200,000 · 가짜북거리 600,000).
+   ⚠️ 확인한 근거 — **백두대간 자료가 실제로 백두대간에 떨어진다**:
+     큰부리까마귀 (333170, 587671) → 약 128.5°E, 37.9°N = 강원 남부 산줄기
+     찌르레기     (297859, 469870) → 약 128.1°E, 36.8°N = 경북 내륙
+   ⚠️ 그래도 **EPSG:5174(구 중부원점, Bessel 타원체)와 수백 m 차이**가 난다.
+      붙이기 전에 아는 지점으로 한 번 더 맞춰볼 것. 산 이름 하나면 판별된다.
+
+■⚠️ 로드킬(5.6만)·조류 유리창 충돌(1만)은 **Open API 목록에 없다.**
+   메인 화면 배너에는 있지만 attr/wms/wfs 84개 어디에도 없다.
+   → '국가중점개방데이터 다운로드'(파일)로만 열리는 것으로 보인다. 따로 확인할 것.
 """
 import json
 import os

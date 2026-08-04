@@ -60,6 +60,22 @@ pre{background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:9px;
     padding:12px 14px;overflow-x:auto;font:400 11px/1.6 ui-monospace,Menlo,monospace;
     color:var(--dim);margin-top:9px}
 </style>
+<style>
+  /* 개발할 수 있는 것 — ⚠️ 앱(css/account.css)과 같은 class 이름을 쓴다.
+     이 페이지는 앱 CSS 를 안 불러오므로 여기에도 있어야 한다. */
+  .devwrap .dev-lead{ font-size:12.5px; line-height:1.65; color:var(--fog); margin-bottom:14px }
+  .devwrap .dev-h{ font-size:14px; font-weight:600; margin:20px 0 3px }
+  .devwrap .dev-sub{ font-size:11.5px; color:var(--fog); margin-bottom:9px }
+  .devwrap .dev-card{ background:rgba(255,255,255,.04); border-radius:10px;
+                      padding:11px 13px; margin-bottom:7px }
+  .devwrap .dev-top{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap }
+  .devwrap .dev-top i{ width:8px; height:8px; border-radius:50%; flex:0 0 auto; align-self:center }
+  .devwrap .dev-top b{ font-size:13.5px; font-weight:600 }
+  .devwrap .dev-top em{ font-style:normal; font-size:11px; color:var(--fog) }
+  .devwrap .dev-can{ font-size:12.5px; line-height:1.6; color:#a8d8e0; margin:7px 0 0 }
+  .devwrap .dev-warn{ font-size:12px; line-height:1.6; color:#f0b078; margin:5px 0 0 }
+  .devwrap code{ font-size:11px; background:rgba(255,255,255,.09); padding:1px 4px; border-radius:3px }
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -130,6 +146,13 @@ pre{background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:9px;
     <div id="drafts" style="margin-top:12px"></div>
   </div>
 
+  <!-- 개발할 수 있는 것 — ⚠️ 목록의 원본은 js/ui-dev.js 다. 여기 따로 적지 않는다.
+       두 곳에 적으면 한쪽만 고치게 되고, 이 페이지가 조용히 옛말을 하게 된다. -->
+  <div class="card">
+    <h2>개발할 수 있는 것 <span id="devCount" style="color:var(--fog);font-weight:300"></span></h2>
+    <div id="devList" class="devwrap">불러오는 중…</div>
+  </div>
+
   <div class="card warnbox">
     <h2 style="color:#ffcf8f">아직 안 된 것</h2>
     <div class="note" id="todo"></div>
@@ -147,6 +170,17 @@ pre{background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:9px;
 </div>
 
 <script type="module">
+  /* 개발할 수 있는 것 — ⚠️ 목록은 js/ui-dev.js 한 곳에만 있다.
+     ⚠️ 로그인과 무관하게 보여준다. 회원 자료가 아니라 우리 할 일 목록이라
+        관리자 페이지를 여는 사람이면 봐야 한다. */
+  import('./js/ui-dev.js').then(({ renderDevList, GROUPS }) => {
+    renderDevList(document.getElementById('devList'));
+    const n = GROUPS.reduce((a, g) => a + g.items.length, 0);
+    document.getElementById('devCount').textContent = `${n}건`;
+  }).catch(e => {
+    document.getElementById('devList').textContent = '목록을 불러오지 못했습니다 — ' + e.message;
+  });
+
 import { CONFIG } from './js/config.local.js';
 
 const $ = s => document.querySelector(s);

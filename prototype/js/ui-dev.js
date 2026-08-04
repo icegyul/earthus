@@ -10,8 +10,6 @@
 // ⚠️ 이 화면은 운영자용이다. 주소 뒤에 `#dev` 를 붙여야 설정에 줄이 나타난다.
 //    (API 신청 관리 `#api` 와 같은 방식 — main.js 참고)
 
-import { i18n } from './i18n.js';
-
 const $ = (s) => document.querySelector(s);
 const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
@@ -22,7 +20,10 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
      'part'   노랑 — 일부만 쓴다
      'block'  빨강 — 막혀 있다 (라이선스·연락·신청)
      'done'   초록 — 다 쓰고 있다 (대조용으로 몇 개만 둔다) */
-const GROUPS = [
+/* ⚠️⚠️ **이 목록이 유일한 원본이다.** 앱(#dev)과 관리자 페이지(admin.html)가
+   둘 다 여기서 가져다 쓴다. 두 곳에 따로 적으면 **한쪽만 고치게 된다** —
+   그러면 관리자 페이지가 조용히 옛말을 하게 된다. */
+export const GROUPS = [
   {
     title: '받아뒀는데 화면이 없다',
     note: '자료는 이미 S3 에 있다. 화면만 붙이면 된다.',
@@ -98,41 +99,45 @@ const GROUPS = [
 
 const DOT = { idle: '#9aa4b2', part: '#e0c26a', block: '#f0785a', done: '#7fd8c8' };
 
+/** 목록을 넣을 자리에 그린다. 앱과 관리자 페이지가 같은 함수를 쓴다.
+ *  ⚠️ 여기서 만드는 class 이름(dev-*)은 두 곳의 CSS 에 다 있어야 한다. */
+export function renderDevList(body) {
+  if (!body) return;
+  body.innerHTML = '';
+  body.appendChild(el('p', 'dev-lead',
+    '갖고 있는데 안 쓰는 자료와, 막혀 있는 것들입니다.<br>'
+    + '<b>⚠️ 여기 적힌 숫자는 전부 실제로 받아서 확인한 값입니다.</b> '
+    + '짐작으로 채우지 않았습니다 — 있는 줄 알고 화면을 만들었다가 없어서 '
+    + '되돌린 일이 여러 번 있었습니다.'));
+
+  GROUPS.forEach((g) => {
+    body.appendChild(el('p', 'dev-h', esc(g.title)));
+    body.appendChild(el('p', 'dev-sub', esc(g.note)));
+    g.items.forEach((it) => {
+      const card = el('div', 'dev-card');
+      card.appendChild(el('div', 'dev-top',
+        `<i style="background:${DOT[it.s] || DOT.idle}"></i>`
+        + `<b>${esc(it.name)}</b><em>${esc(it.size)}</em>`));
+      if (it.can && it.can !== '—') {
+        card.appendChild(el('p', 'dev-can', esc(it.can).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')));
+      }
+      if (it.warn) {
+        card.appendChild(el('p', 'dev-warn', esc(it.warn).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')));
+      }
+      body.appendChild(card);
+    });
+  });
+}
+
 export const devPanel = {
   open() {
     document.querySelectorAll('.sheet-panel.up').forEach((p) => p.classList.remove('up'));
     $('#devSheet')?.classList.add('up');
-    const body = $('#devBody');
-    if (!body) return;
-    body.innerHTML = '';
-
-    body.appendChild(el('p', 'dev-lead',
-      '갖고 있는데 안 쓰는 자료와, 막혀 있는 것들입니다.<br>'
-      + '<b>⚠️ 여기 적힌 숫자는 전부 실제로 받아서 확인한 값입니다.</b> '
-      + '짐작으로 채우지 않았습니다 — 있는 줄 알고 화면을 만들었다가 없어서 '
-      + '되돌린 일이 여러 번 있었습니다.'));
-
-    GROUPS.forEach((g) => {
-      body.appendChild(el('p', 'dev-h', esc(g.title)));
-      body.appendChild(el('p', 'dev-sub', esc(g.note)));
-      g.items.forEach((it) => {
-        const card = el('div', 'dev-card');
-        card.appendChild(el('div', 'dev-top',
-          `<i style="background:${DOT[it.s] || DOT.idle}"></i>`
-          + `<b>${esc(it.name)}</b><em>${esc(it.size)}</em>`));
-        if (it.can && it.can !== '—') {
-          card.appendChild(el('p', 'dev-can', esc(it.can).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')));
-        }
-        if (it.warn) {
-          card.appendChild(el('p', 'dev-warn', esc(it.warn).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')));
-        }
-        body.appendChild(card);
-      });
-    });
-
-    body.appendChild(el('p', 'sub-legal',
+    renderDevList($('#devBody'));
+    $('#devBody')?.appendChild(el('p', 'sub-legal',
       '⚠️ 이 화면은 운영자용입니다. 주소 뒤에 <code>#dev</code> 를 붙여야 나타납니다.<br>'
-      + '자료를 새로 붙이거나 막힌 것이 풀리면 <code>prototype/js/ui-dev.js</code> 를 고치세요.'));
+      + '관리자 페이지(<code>/admin.html</code>)에도 같은 목록이 있습니다 — '
+      + '고칠 곳은 <code>prototype/js/ui-dev.js</code> 한 곳입니다.'));
   },
 
   close() { $('#devSheet')?.classList.remove('up'); },

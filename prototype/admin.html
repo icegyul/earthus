@@ -197,6 +197,7 @@ pre{background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:9px;
     }
   }
   function hideDev() { const c = document.getElementById('devCard'); if (c) c.hidden = true; }
+  /* ⚠️ 관리자가 아니면 '개발할 수 있는 것'도 감춘다 — 우리 할 일 목록이다. */
 
 import { CONFIG } from './js/config.local.js';
 
@@ -290,12 +291,16 @@ async function paint() {
   /* ⚠️ uid 를 보여주는 이유: 위 SQL 에 붙여넣을 값이다. 비밀이 아니다. */
   $('#who').innerHTML = `${user.email || user.id} · <code>${user.id}</code>`;
 
-  const known = ADMIN_UIDS.length === 0 || ADMIN_UIDS.includes(user.id);
+  /* ⚠️⚠️ 예전에는 `ADMIN_UIDS.length === 0` 이면 **누구나 통과**였다.
+     목록을 안 채워 두면 로그인한 사람 아무나 이 화면을 보게 된다 —
+     비어 있을 때 열리는 것은 위험한 기본값이다. 반대로 바꿨다.
+     ⚠️ 그래도 이건 **화면 가림**이지 잠금이 아니다. 실제 차단은 Supabase RLS 다. */
+  const known = ADMIN_UIDS.includes(user.id);
   $('#gateMsg').innerHTML = known
     ? '로그인했습니다. 아래 값이 비어 있으면 <b>RLS 정책이 아직 없거나 관리자로 등록되지 않은 것</b>입니다.'
-    : '⚠️ 이 계정은 관리자 목록에 없습니다. 그래도 <b>진짜 판정은 데이터베이스가</b> 합니다.';
+    : '⚠️ 이 계정은 관리자 목록에 없습니다. 아래 값은 <b>Supabase RLS 가 막습니다.</b>';
 
-  showDev();
+  if (known) showDev(); else hideDev();
   await load();
 }
 

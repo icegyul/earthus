@@ -173,9 +173,12 @@ def handler(event=None, context=None):
 
     coords = site_coords()
 
-    spc = defaultdict(lambda: {"n": 0, "cnt": 0, "yrs": set(), "sci": "", "stations": set()})
+    spc = defaultdict(lambda: {"n": 0, "cnt": 0, "yrs": set(), "sci": "", "stations": set(),
+                               "yn": defaultdict(int), "yc": defaultdict(int)})
     by_year = defaultdict(int)
-    by_station = defaultdict(lambda: {"n": 0, "cnt": 0, "spc": set()})
+    by_year_cnt = defaultdict(int)
+    by_station = defaultdict(lambda: {"n": 0, "cnt": 0, "spc": set(),
+                                      "yn": defaultdict(int), "yc": defaultdict(int)})
     # ⚠️⚠️ 종마다 **등급을 세어서** 다수결로 정한다. 한 줄만 보고 정하면 안 된다.
     #    실제로 왜가리(1,961건)가 멸종위기 I급으로 나왔다 — 흔한 새다.
     #    잘못 입력된 줄 하나가 종 전체를 물들인 것이다.
@@ -199,14 +202,26 @@ def handler(event=None, context=None):
         if yr:
             s["yrs"].add(yr)
             by_year[yr] += 1
+            # ⚠️⚠️ 해마다 **조사 횟수가 다르다**(2016년 1,035건 vs 2017년 2,843건).
+            #    개체수만 비교하면 "2016년에 새가 줄었다"로 읽히는데
+            #    실제로는 **덜 나갔을 뿐**일 수 있다.
+            #    → 개체수(yc)와 **조사 횟수(yn)를 반드시 같이** 내보낸다.
+            s["yn"][yr] += 1
+            if c:
+                s["yc"][yr] += int(c)
+                by_year_cnt[yr] += int(c)
         s["sci"] = s["sci"] or (r.get("sciNm") or "").strip()
         if st:
             s["stations"].add(st)
             b = by_station[st]
             b["n"] += 1
             b["spc"].add(name)
+            if yr:
+                b["yn"][yr] += 1
             if c:
                 b["cnt"] += int(c)
+                if yr:
+                    b["yc"][yr] += int(c)
         g = (r.get("xtrmCrsisGrdCn") or "").strip()
         if g in ("1", "2"):
             grades[name][g] += 1
@@ -242,6 +257,8 @@ def handler(event=None, context=None):
           # ⚠️ 정점 **번호까지** 보낸다. 개수만 보내면 화면에서 종을 눌러도
           #    지도를 그 종이 나온 곳으로 좁힐 수가 없다(실제로 그렇게 만들다 걸렸다).
           "at": sorted(v["stations"]),
+          # 해마다 [연도, 조사 횟수, 센 개체수]. ⚠️ 셋을 함께 보내는 이유는 아래 note 참고.
+          "by": [[y, v["yn"][y], v["yc"][y]] for y in sorted(v["yn"])],
           "endangered": grade_of(k, v["n"])}
          for k, v in spc.items()),
         key=lambda x: -x["records"])
@@ -249,7 +266,8 @@ def handler(event=None, context=None):
     stations = []
     for code, v in sorted(by_station.items()):
         row = {"code": code, "records": v["n"], "individuals": v["cnt"],
-               "species": len(v["spc"])}
+               "species": len(v["spc"]),
+               "by": [[y, v["yn"][y], v["yc"][y]] for y in sorted(v["yn"])]}
         if coords and code in coords:
             row["lat"], row["lon"] = coords[code]
         stations.append(row)
@@ -262,7 +280,8 @@ def handler(event=None, context=None):
         # ⚠️ 화면이 "지도에 왜 안 보이나"를 스스로 설명할 수 있게 숫자를 같이 넘긴다.
         "hasCoords": bool(coords),
         "records": len(obs),
-        "years": sorted(by_year.items()),
+        # [연도, 조사 횟수, 센 개체수]
+        "years": [[y, n, by_year_cnt[y]] for y, n in sorted(by_year.items())],
         "speciesCount": len(species),
         "species": species,
         "stations": stations,
@@ -270,6 +289,11 @@ def handler(event=None, context=None):
         "note": {
             "ko": "조사한 해에 그 자리에서 센 기록입니다. ⚠️ 지금 거기 있다는 뜻이 아니고, "
                   "조사하지 않은 곳에 새가 없다는 뜻도 아닙니다.",
+            "yearKo": "⚠️ 해마다 조사를 나간 횟수가 다릅니다(2016년 1,035번, 2017년 2,843번). "
+                      "그래서 센 마릿수만 견주면 '그해에 새가 줄었다'로 잘못 읽힙니다. "
+                      "조사 한 번당 몇 마리였는지로 견주세요 — 그 값도 같이 적어 두었습니다.",
+            "yearEn": "⚠️ Survey effort differs by year, so compare birds-per-survey, "
+                      "not raw totals.",
             "en": "Counts recorded at survey stations in the survey year — not live positions, "
                   "and absence of a station does not mean absence of birds.",
         },

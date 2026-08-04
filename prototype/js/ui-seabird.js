@@ -90,6 +90,11 @@ export const seabirdPanel = {
     });
     body.appendChild(sum);
 
+    // 9년 변화 — ⚠️ 조사 횟수로 나눈 값이다. 이유는 _years() 주석 참고.
+    body.appendChild(el('p', 'sb-h', ko ? '9년 동안 어떻게 달라졌나' : 'Change over 9 years'));
+    body.appendChild(this._years(_data.years, ko));
+    body.appendChild(el('p', 'sb-note', ko ? esc(_data.note?.yearKo || '') : esc(_data.note?.yearEn || '')));
+
     const S = _data.species || [];
     const endangered = S.filter((s) => s.endangered);
 
@@ -110,6 +115,29 @@ export const seabirdPanel = {
       + (ko ? esc(_data.note?.ko || '') : esc(_data.note?.en || ''))));
   },
 
+  /** 해마다 막대 하나. `by` 는 [연도, 조사 횟수, 센 마릿수] 다.
+   *
+   *  ⚠️⚠️ **센 마릿수를 그대로 그리면 안 된다.** 해마다 조사를 나간 횟수가 다르다 —
+   *     2016년은 1,035번, 2017년은 2,843번이다. 원값으로 그리면 2016년이 낮게 나오는데
+   *     **조사 한 번당으로 보면 2016년이 가장 높다.** 정반대로 읽힌다.
+   *  → 막대는 **조사 한 번당 마릿수**로 그리고, 조사 횟수는 숫자로 함께 적는다.
+   *     둘 중 하나만 보여주면 어느 쪽이든 오해가 생긴다. */
+  _years(by, ko) {
+    const rows = (by || []).filter((r) => r[1] > 0)
+      .map(([y, n, c]) => ({ y: String(y).slice(0, 4), n, c, per: c / n }));
+    const wrap = el('div', 'sb-yr');
+    if (!rows.length) return wrap;
+    const max = Math.max(...rows.map((r) => r.per)) || 1;
+    rows.forEach((r) => {
+      wrap.appendChild(el('div', 'sb-yrow',
+        `<i>${esc(r.y)}</i>`
+        + `<u><b style="width:${(r.per / max * 100).toFixed(1)}%"></b></u>`
+        + `<s>${r.per.toFixed(0)}<em>${ko ? '마리/조사' : '/survey'}</em></s>`
+        + `<q>${ko ? `조사 ${n0(r.n)}번` : `${n0(r.n)} surveys`}</q>`));
+    });
+    return wrap;
+  },
+
   /** 종 목록. 누르면 그 종이 나온 정점만 지도에 남긴다. */
   _rows(list, ko) {
     const wrap = el('div', 'sb-list');
@@ -124,6 +152,16 @@ export const seabirdPanel = {
         + `<em>${ko ? `정점 ${s.stations}곳` : `${s.stations} stations`}</em></span>`);
       row.onclick = () => { this._spc = on ? null : s.ko; this.render(); this.draw(); };
       wrap.appendChild(row);
+      /* 고른 종은 **바로 그 자리에** 9년 변화를 편다.
+         ⚠️ 화면 위쪽에 펴면 목록이 밀려서, 누른 줄이 어디 갔는지 눈이 놓친다. */
+      if (on) {
+        const box = el('div', 'sb-open');
+        box.appendChild(this._years(s.by, ko));
+        box.appendChild(el('p', 'sb-note', ko
+          ? `정점 ${s.stations}곳에서 ${n0(s.records)}번 기록 · 지도를 이 종이 나온 곳으로 좁혔습니다`
+          : `${n0(s.records)} records at ${s.stations} stations`));
+        wrap.appendChild(box);
+      }
     });
     return wrap;
   },

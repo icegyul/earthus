@@ -29,6 +29,28 @@ const HEATDOME = {
   persist_days: 3,    // 며칠 이상 지속되어야 "돔"으로 본다
 };
 
+/* ── 범위 측정 요청 묶기 ────────────────────────────────────────
+   ⚠️ 2026-08-02 실측 사고: `[heatdome] 범위 측정 실패 extent 429`.
+      열돔 하나당 64지점을 묻는 요청을, 감지된 열돔 수만큼 **간격 없이 연달아** 쐈다.
+      Open-Meteo 무료 한도에 걸려 범위가 통째로 안 그려졌다.
+
+   2026-08-03 직접 재본 것:
+     · 한 요청에 400지점 → 200 OK.  600지점(URL 9,600자) → 414 (URL too long).
+       즉 상한은 "지점 수"가 아니라 **URL 길이**다. 예전 주석의 "100지점까지"는 틀렸다.
+     · 큰 다중지점 요청을 2분 안에 여러 번 보내면 429. 한도는 요청 수가 아니라
+       **분당 지점 수**로 걸린다 → 묶는 것만으로는 부족하고 **간격도** 둬야 한다.
+     · 429 응답에는 Retry-After 도, 남은 한도를 알려주는 헤더도 없다.
+       얼마나 기다리면 되는지 알 방법이 없으니, 처음부터 몰아치지 않는 쪽이 유일한 수다. */
+const EXTENT_MAX_PTS = 192;   // 열돔 3개분(64×3). URL 3,300자 남짓 — 414 나는 길이의 1/3
+const EXTENT_GAP_MS  = 1200;  // 묶음과 묶음 사이 간격
+const EXTENT_RETRY_MS = 1400; // 429 를 만나면 한 번은 조용히 기다렸다 다시 (ui-station.js 와 같은 규칙)
+
+/* 조사 격자 — 8방향 × 8단계 × 220km = 64지점, 최대 1,760km 까지 훑는다.
+   ⚠️ 지점을 만드는 곳(_probePoints)과 결과를 읽는 곳(_applyShape)이 **같은 값**을 써야 한다.
+      결과는 그냥 순서대로 온 배열이라, 한쪽만 바꾸면 d·s 계산이 어긋나
+      엉뚱한 지점을 그 방향의 가장자리로 읽는다 — 오류 없이 모양만 틀린다. */
+const PROBE = { DIRS: 8, STEPS: 8, STEP_KM: 220 };
+
 /* 전지구 육지 스캔 격자 — 한 번의 요청으로 다 받는다 (Open-Meteo 다중지점 지원) */
 const SCAN = [
   [37.5,127.0],[35.2,129.1],[35.7,139.7],[39.9,116.4],[31.2,121.5],
@@ -205,7 +227,8 @@ export const phenomena = {
           daily: { time: d.time, tmax: d.temperature_2m_max },
         };
         this.found.push(item);
-        try { await this.measureExtent(item); } catch (_) { item.shape = null; }
+        // 못 재도 던지지 않는다 — shapeErr 에 이유가 담겨 카드에 그대로 나간다
+        await this.measureExtent(item);
         this.renderHeatDome(item);
       }
     }
@@ -273,11 +296,13 @@ export const phenomena = {
           그 결과 7일 지속이면 반경 645km(지름 1,290km)짜리 원이 되어
           실제 열돔과 상관없이 거대하게 보였다 — "너무 크다"는 지적이 맞았다.
           이제는 중심점 주위를 실제로 훑어 조건이 끊기는 곳까지를 범위로 삼는다. */
-    for (const item of this.found.filter(f => f.kind === 'heatdome')) {
-      try { await this.measureExtent(item); }
-      catch (e) { console.warn('[heatdome] 범위 측정 실패', e.message); item.shape = null; }
-      this.renderHeatDome(item);
-    }
+    /* ⚠️ 열돔마다 따로 재지 않는다. 예전에는 이 자리에서 하나씩 await 로 쐈는데,
+          열돔이 여러 개면 64지점짜리 요청이 간격 없이 연달아 나가 429 를 맞았다.
+          이제 measureExtents 가 전부 모아 묶음으로 보내고 간격을 둔다.
+          못 잰 열돔은 shape=null + shapeErr 로 돌아온다 — 던지지 않으므로 렌더는 계속된다. */
+    const domes = this.found.filter(f => f.kind === 'heatdome');
+    await this.measureExtents(domes);
+    domes.forEach(item => this.renderHeatDome(item));
   },
 
   /**
@@ -287,12 +312,63 @@ export const phenomena = {
    * 조건이 깨지는 지점 직전까지를 그 방향의 반경으로 잡는다.
    * → 원이 아니라 실제 모양(대개 타원·불규칙)이 나온다.
    *
-   * ⚠️ Open-Meteo 는 한 요청에 100지점까지다. 8방향 × 8단계 = 64지점이면 한 번에 된다.
    * ⚠️ 조건이 끝까지 안 깨지면 "최소 이만큼"이라고 표시한다 (truncated).
    *    실제로는 더 넓은데 우리가 덜 본 것이므로, 그걸 확정처럼 그리면 안 된다.
+   *
+   * 열돔 하나만 잴 때 쓴다 (checkAt). 여러 개는 measureExtents 로 묶어서 재야 한다.
    */
-  async measureExtent(m) {
-    const DIRS = 8, STEPS = 8, STEP_KM = 220;      // 최대 1,760 km 까지 훑는다
+  async measureExtent(m) { await this.measureExtents([m]); },
+
+  /**
+   * 여러 열돔의 범위를 **묶어서** 잰다.
+   *
+   * 열돔마다 따로 쏘지 않는다. 모든 열돔의 조사 지점을 한 줄로 모아
+   * EXTENT_MAX_PTS 씩 잘라 보내고, 받은 결과를 다시 열돔별로 나눠 담는다.
+   * → 열돔 6개면 요청 6번이 아니라 2번이다 (위 EXTENT_* 주석 참고).
+   *
+   * ⚠️ 던지지 않는다. 못 잰 열돔은 shape=null 로 두고 **왜 못 쟀는지**를
+   *    m.shapeErr 에 적는다. 조용히 사라지는 것이 이 함수가 고치려는 버그다.
+   */
+  async measureExtents(domes) {
+    const jobs = domes.map(m => ({ m, pts: this._probePoints(m) }));
+    const flat = jobs.flatMap(j => j.pts);
+    if (!flat.length) return;
+
+    /* 지점을 요청 단위로 자른다. 어느 지점이 어느 요청에서 실패했는지 알아야
+       "이 열돔만 못 쟀다"고 정확히 말할 수 있다 — 그래서 결과와 오류를 같은 길이로 든다. */
+    const rows = new Array(flat.length).fill(null);
+    const errs = new Array(flat.length).fill(null);
+    for (let base = 0, c = 0; base < flat.length; base += EXTENT_MAX_PTS, c++) {
+      const chunk = flat.slice(base, base + EXTENT_MAX_PTS);
+      // 첫 묶음은 바로, 그 뒤로는 간격을 두고. 몰아치면 429 가 난다.
+      if (c) await new Promise(r => setTimeout(r, EXTENT_GAP_MS));
+      try {
+        const got = await this._probe(chunk);
+        got.forEach((v, i) => { rows[base + i] = v; });
+      } catch (e) {
+        for (let i = 0; i < chunk.length; i++) errs[base + i] = e;
+      }
+    }
+
+    let off = 0;
+    for (const { m, pts } of jobs) {
+      const mine = rows.slice(off, off + pts.length);
+      const err  = errs.slice(off, off + pts.length).find(Boolean);
+      off += pts.length;
+      if (err || mine.some(v => v == null)) {
+        m.shape = null;
+        m.meanKm = m.maxKm = null;
+        m.shapeErr = this._extentReason(err);
+        console.warn('[heatdome] 범위 측정 실패', m.id, err?.message || '자료 없음');
+      } else {
+        this._applyShape(m, mine);
+      }
+    }
+  },
+
+  /* 한 열돔의 조사 지점 (PROBE 격자) */
+  _probePoints(m) {
+    const { DIRS, STEPS, STEP_KM } = PROBE;
     const pts = [];
     for (let d = 0; d < DIRS; d++) {
       const a = (d / DIRS) * Math.PI * 2;
@@ -300,22 +376,48 @@ export const phenomena = {
         const km = s * STEP_KM;
         const dLat = (km * Math.cos(a)) / 110.54;
         const dLon = (km * Math.sin(a)) / (111.32 * Math.cos(m.lat * Math.PI / 180));
-        pts.push([Math.max(-89, Math.min(89, m.lat + dLat)), m.lon + dLon]);
+        pts.push([
+          Math.max(-89, Math.min(89, m.lat + dLat)),
+          ((m.lon + dLon + 180) % 360 + 360) % 360 - 180,
+        ]);
       }
     }
+    return pts;
+  },
+
+  /**
+   * 지점 묶음 하나를 물어본다. 429 면 한 번은 기다렸다 다시 시도한다.
+   *
+   * ⚠️ 12시 값 **하나만** 받는다 (start_hour/end_hour).
+   *    예전에는 forecast_days=1 로 24시간을 통째로 받아 그중 12시만 골라 썼다.
+   *    나머지 23개는 받자마자 버리는 값인데, 한도는 그것까지 세어 간다.
+   *    실측: 한 지점 응답이 1,070바이트 → 427바이트.
+   */
+  async _probe(pts) {
+    const day = new Date().toISOString().slice(0, 10);   // timezone=UTC 이므로 날짜도 UTC
     const q = new URLSearchParams({
-      latitude: pts.map(p => p[0].toFixed(3)).join(','),
-      longitude: pts.map(p => (((p[1] + 180) % 360 + 360) % 360 - 180).toFixed(3)).join(','),
+      latitude:  pts.map(p => p[0].toFixed(3)).join(','),
+      longitude: pts.map(p => p[1].toFixed(3)).join(','),
       daily: 'temperature_2m_max',
       hourly: 'geopotential_height_500hPa',
-      forecast_days: '1',
+      start_date: day, end_date: day,
+      start_hour: `${day}T12:00`, end_hour: `${day}T12:00`,
       timezone: 'UTC',
     });
-    const r = await fetchT(`${API.METEO}?${q}`);
-    if (!r.ok) throw new Error('extent ' + r.status);
-    const rows = await r.json();
-    const list = Array.isArray(rows) ? rows : [rows];
+    for (let a = 0; a < 2; a++) {
+      const r = await fetchT(`${API.METEO}?${q}`);
+      if (r.ok) {
+        const rows = await r.json();
+        return Array.isArray(rows) ? rows : [rows];
+      }
+      if (r.status !== 429 || a === 1) throw new Error('extent ' + r.status);
+      await new Promise(res => setTimeout(res, EXTENT_RETRY_MS));
+    }
+  },
 
+  /* 받은 지점 판정 → 8방향 반경(ring) */
+  _applyShape(m, list) {
+    const { DIRS, STEPS, STEP_KM } = PROBE;
     const ok = list.map(x => {
       const tmax = x?.daily?.temperature_2m_max?.[0];
       const gphArr = x?.hourly?.geopotential_height_500hPa || [];
@@ -341,8 +443,29 @@ export const phenomena = {
       ring.push({ a, km: Math.max(110, reach) });
     }
     m.shape = { ring, truncated };
+    m.shapeErr = null;
     m.meanKm = Math.round(ring.reduce((s, r) => s + r.km, 0) / ring.length);
     m.maxKm = Math.max(...ring.map(r => r.km));
+  },
+
+  /* 왜 못 쟀는지를 사람 말로. 화면에 그대로 나가는 문장이라 코드값을 앞세우지 않는다
+     — 숫자는 괄호에 남겨 두되, 먼저 무슨 일이 있었는지 말한다. */
+  _extentReason(err) {
+    const ko = i18n.lang === 'ko';
+    const msg = String(err?.message || err || '');
+    if (/\b429\b/.test(msg)) {
+      return ko
+        ? '자료를 주는 곳(Open-Meteo)이 잠깐 요청을 막아서 재지 못했습니다 (호출 제한 429). 잠시 뒤 다시 켜면 측정합니다.'
+        : 'The data source (Open-Meteo) briefly refused more requests, so this was not measured (rate limit, 429). Toggle the layer again in a moment.';
+    }
+    if (err?.name === 'TimeoutError' || /timeout|abort/i.test(msg)) {
+      return ko
+        ? '자료를 주는 곳이 제한 시간(12초) 안에 답하지 않아 재지 못했습니다.'
+        : 'The data source did not answer within the 12s limit, so this was not measured.';
+    }
+    return ko
+      ? `범위를 재지 못했습니다${msg ? ` (${msg.slice(0, 40)})` : ''}.`
+      : `Could not measure the extent${msg ? ` (${msg.slice(0, 40)})` : ''}.`;
   },
 
   /* ── 시각화 ────────────────────────────────────────────────
@@ -358,9 +481,13 @@ export const phenomena = {
     const edge = Cesium.Color.fromCssColorString('#ff6b3d');
 
     /* 실측 범위를 부드러운 폐곡선으로. 8방향 측정값 사이는 원형 보간한다.
-       측정에 실패했으면 아무것도 안 그린다 — 크기를 지어내지 않는다. */
+       ⚠️ 못 쟀으면 면은 그리지 않는다 — 크기를 지어내지 않는다.
+          다만 **아무것도 안 그리면 안 된다.** 예전에는 여기서 그냥 return 했고,
+          그래서 429 가 나면 열돔이 지도에서 통째로 사라졌다. 판정은 "열돔이 맞다"인데
+          화면에는 아무것도 없으니, 보는 사람은 열돔이 없는 건지 앱이 고장난 건지 알 수 없다.
+          → 중심점만 찍고, 왜 범위가 없는지는 카드에 적는다. */
     const ring = m.shape?.ring;
-    if (!ring?.length) return;
+    if (!ring?.length) return this._renderNoExtent(m);
     const cosLat = Math.cos(m.lat * Math.PI / 180);
     const hier = [];
     const N = 96;
@@ -426,6 +553,44 @@ export const phenomena = {
         },
       });
     }
+  },
+
+  /**
+   * 범위를 못 잰 열돔 — 중심점 하나만 찍는다.
+   *
+   * ⚠️ 면(다각형)도, 하강기류 화살표도 그리지 않는다. 둘 다 크기가 있어야 그릴 수 있는데
+   *    그 크기가 지금 없다. 없는 값을 눈대중으로 채우면 "재서 그린 그림"과
+   *    구분이 안 되고, 그 순간 이 레이어 전체를 믿을 수 없게 된다.
+   *
+   * ⚠️ _area 를 붙이지 않는다. 덮는 면이 없으니 그 안의 도시를 가릴 일도 없다.
+   */
+  _renderNoExtent(m) {
+    const ko = i18n.lang === 'ko';
+    const meta = {
+      ...m,
+      name: ko ? '열돔' : 'Heat dome',
+      _place: true,
+      data: this.explain(m),
+    };
+    this.dsHeat.entities.add({
+      id: m.id,
+      position: Cesium.Cartesian3.fromDegrees(m.lon, m.lat, 0),
+      point: {
+        pixelSize: 14,
+        color: Cesium.Color.fromCssColorString('#ff6b3d').withAlpha(0.5),
+        outlineColor: Cesium.Color.fromCssColorString('#ff6b3d'),
+        outlineWidth: 2,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+      },
+      /* 이름표에 "범위 못 잼"을 박아 둔다. 카드를 안 열어 봐도
+         점 하나만 있는 이유가 지도에서 바로 읽혀야 한다. */
+      label: mapLabel({
+        text: ko ? '열돔 (범위 못 잼)' : 'Heat dome (extent not measured)',
+        color: '#ffb199', size: 'md', offsetY: -26, maxDistance: 14_000_000,
+      }),
+      _meta: meta,
+      _layer: 'heatdome',
+    });
   },
 
   renderGyres() {
@@ -535,8 +700,8 @@ export const phenomena = {
     /* 범위는 "재본 값"이라고 밝힌다.
        ⚠️ 끝까지 조건이 안 깨졌으면 그건 우리가 덜 본 것이지 거기서 끝난 게 아니다.
           "약 N km"가 아니라 "최소 N km 이상"이라고 써야 맞다. */
+    const label = ko ? '범위(실측)' : 'Measured extent';
     if (m.shape) {
-      const label = ko ? '범위(실측)' : 'Measured extent';
       const v = ko
         ? `평균 반경 ${m.meanKm.toLocaleString()} km · 최대 ${m.maxKm.toLocaleString()} km`
         : `mean radius ${m.meanKm.toLocaleString()} km · max ${m.maxKm.toLocaleString()} km`;
@@ -544,6 +709,13 @@ export const phenomena = {
         ? (ko ? `${v} (조사 범위 끝까지 이어져 실제로는 더 넓습니다)`
               : `${v} (still going at the edge of our scan — actually wider)`)
         : v;
+    } else {
+      /* ⚠️ 못 쟀을 때 이 줄을 통째로 빼면 안 된다. 빠지면 "범위가 작아서 안 나온다"인지
+            "못 재서 안 나온다"인지 구분이 안 된다 — 둘은 전혀 다른 상황이다.
+            열돔 판정 자체는 그대로 유효하다는 것도 같이 말해 준다. */
+      out[label] = (m.shapeErr || (ko ? '범위를 재지 못했습니다.' : 'The extent was not measured.'))
+        + (ko ? ' 열돔이라는 판정은 중심 지점 자료로 내린 것이라 그대로입니다 — 넓이만 모릅니다.'
+              : ' The heat-dome call itself still stands (it comes from the centre point) — only the size is unknown.');
     }
 
     if (ko) {

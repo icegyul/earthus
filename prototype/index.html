@@ -582,6 +582,12 @@
     <!-- ⚠️ 구독 화면(#subSheet)은 만들어져 있었는데 **여는 버튼이 없었다.**
          유료 레이어를 누르면 열리게 해뒀지만 지금 유료로 표시된 레이어가 하나도 없어서
          결제창까지 갈 길이 통째로 막혀 있었다. 설정에서 바로 열 수 있게 둔다. -->
+    <!-- ⚠️ 로그인 상태에 따라 갈린다 (main.js 의 paintAuthRows).
+         · 로그인 전  → '로그인 / 가입'
+         · 로그인 후  → '계정'  (+ 유료면 배지)
+         · 관리자면   → '관리자 페이지' 한 줄 더 -->
+    <button class="set-item" id="btnLoginRow"><span>로그인 / 가입</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnAdminRow" hidden><span>관리자 페이지</span><span class="chev">›</span></button>
     <button class="set-item" id="btnSubscribe"><span>구독</span><span class="chev">›</span></button>
     <button class="set-item" id="btnWaitlist"><span>사전등록 · 창립 멤버</span><span class="chev">›</span></button>
     <button class="set-item" id="btnTerms"><span>이용약관</span><span class="chev">›</span></button>

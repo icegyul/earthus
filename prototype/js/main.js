@@ -17,6 +17,8 @@ import { registry } from './layers/registry.js';
 import { imagery } from './layers/imagery.js';
 import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js';
 import { i18n } from './i18n.js';
+import { auth } from './auth.js';
+import { CONFIG } from './config.local.js';   // ⚠️ config.js 가 아니다 — CONFIG 는 여기 있다
 import { initAccount, loginSheet, consentSheet, accountSheet,
          legalView, waitlistUI } from './ui-account.js';
 import { renderChangelog } from './changelog.js';
@@ -330,6 +332,39 @@ function bindAccountUI() {
 
   // 설정 → 각 화면
   $('#btnAccount').onclick  = () => { close('settings'); accountSheet.open(); };
+
+  /* ── 설정의 로그인·계정·관리자 줄 ─────────────────────────────
+     ⚠️ 예전에는 계정 줄을 `display:none` 으로 **아예 감춰만** 두었다.
+        "로그인할 이유가 없을 때 먼저 보여주면 진입 장벽"이라는 이유였는데,
+        이제 구독이 생겨서 **로그인할 이유가 있다.** 상태에 따라 갈라 보여준다.
+     ⚠️ 유료 여부는 `auth.isPaid()` 가 **서버에서 받은 profile.tier** 로 정한다.
+        브라우저가 정하지 않는다 — 정하면 누구나 유료가 된다. */
+  const paintAuthRows = () => {
+    const login = document.getElementById('btnLoginRow');
+    const acc   = document.getElementById('btnAccount');
+    const admin = document.getElementById('btnAdminRow');
+    const on    = !!auth.user;
+    if (login) login.hidden = on;
+    if (acc)   acc.style.display = on ? '' : 'none';
+    if (acc && on) {
+      /* 유료면 줄에 표시를 남긴다 — 결제했는데 아무 티가 안 나면 불안하다. */
+      acc.querySelector('span').textContent = auth.isPaid() ? '계정 · 구독 중' : '계정';
+    }
+    /* ⚠️⚠️ **관리자 판정은 서버가 한다.** 여기 보이는 줄은 링크일 뿐이고,
+       실제 자료는 Supabase RLS 가 막는다. 이 줄이 보인다고 자료가 보이지 않는다.
+       ⚠️ CONFIG.ADMIN_UIDS 가 비어 있으면 **아무에게도 안 보인다** —
+          예전 admin.html 은 비어 있으면 누구나 통과였는데 그건 위험하다. */
+    const uids = (CONFIG.ADMIN_UIDS || []);
+    if (admin) admin.hidden = !(on && uids.length && uids.includes(auth.user.id));
+  };
+  document.getElementById('btnLoginRow')?.addEventListener('click', () => {
+    close('settings'); loginSheet.open();
+  });
+  document.getElementById('btnAdminRow')?.addEventListener('click', () => {
+    window.open('/admin.html', '_blank', 'noopener');
+  });
+  auth.onChange(paintAuthRows);
+  paintAuthRows();
   $('#btnWaitlist').onclick = () => { close('settings'); open('waitlistSheet'); waitlistUI.init(); };
   $('#btnTerms').onclick    = () => { close('settings'); legalView.open('terms'); };
   $('#btnPrivacy').onclick  = () => { close('settings'); legalView.open('privacy'); };

@@ -61,9 +61,9 @@ export const ITEMS = [
   /* ⚠️ 부제에 '낮에만'을 반드시 남긴다. 가시광이라 밤에는 비어 보이는데,
      그 사실을 안 적으면 고장으로 읽힌다 (실제로 지적받았다). */
   { id:'himawari', flag:'🇯🇵', ko:'히마와리', en:'Himawari', sub:'구름 · 동아시아 1km · 낮에만', subEn:'Cloud · E. Asia 1km · daylight only', ready:true,
-    sky:'#0a1626', paint:'himawari' },
+    sky:'#0a1626', paint:'himawari', img:'img/sat-himawari.png' },
   { id:'himaIR', flag:'🇯🇵', ko:'히마와리', en:'Himawari', sub:'구름 꼭대기 온도 · 찰수록 강한 대류', subEn:'Cloud-top temp · colder = stronger', ready:true,
-    sky:'#0d1020', paint:'himawari' },
+    sky:'#0d1020', paint:'himawari', img:'img/sat-himawari.png' },
   /* NOAA 가 전 세계 정지위성(Meteosat 포함)을 하나로 합성한 것. 전지구를 덮는 유일한 장. */
   { id:'clouds', flag:'🌐', ko:'전지구 합성', en:'Global composite', sub:'NOAA GMGSI · 구름 · 지금', subEn:'NOAA GMGSI · cloud · now', ready:true,
     sky:'#0b1a2e', paint:'cloud' },
@@ -72,7 +72,7 @@ export const ITEMS = [
      둘 다 맞지만 가리키는 것이 다르다 — 메뉴는 위성, 부제는 센서로 통일한다.
      (우리가 부르는 GIBS 레이어가 VIIRS_SNPP_… 이다) */
   { id:'truecolor', flag:'🇺🇸', ko:'수오미 NPP', en:'Suomi NPP', sub:'VIIRS 실제 색 · 낮면', subEn:'VIIRS true colour · day side', ready:true,
-    sky:'#0a1420', paint:'truecolor' },
+    sky:'#0a1420', paint:'truecolor', img:'img/sat-suomi.png' },
   { id:'temp', ko:'기온', en:'Temperature', sub:'현재', subEn:'Now', ready:true,
     sky:'#101820', paint:'temp' },
   { id:'wind', ko:'바람', en:'Wind', sub:'현재', subEn:'Now', ready:true,

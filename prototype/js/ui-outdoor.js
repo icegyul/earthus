@@ -47,6 +47,12 @@ const ITEMS = [
     subKo: '조사한 해에 어디서 몇 마리를 셌나', subEn: 'Counts made at survey stations',
     color: '#7fd8c8',
     ico: '<path d="M3 13.5c3.2-4 5.6-5.4 9-5.4s5.8 1.4 9 5.4" stroke-linecap="round"/><path d="M6.5 12.2c1.6-2.6 3.4-3.8 5.5-3.8s3.9 1.2 5.5 3.8" stroke-linecap="round" opacity=".55"/><circle cx="12" cy="17.4" r="1.5"/>' },
+  /* ⚠️ 부제에 **"어디로 갔나"** 로 적는다. "이동 경로"라고 쓰면 길이 있는 줄 안다 —
+     이 자료는 출발지와 도착지 두 지점뿐이다. */
+  { act: 'migbird', ko: '철새', en: 'Migratory birds',
+    subKo: '봄에 우리 동네 새가 어디로 갔나', subEn: 'Where our birds went in spring',
+    color: '#ffd08a',
+    ico: '<path d="M2.6 9.6c3-1.2 5 .6 6.4 2.6s3 3.8 5.6 3.4" stroke-linecap="round"/><path d="M9.6 5.4c3.4-.8 6.2.8 7.8 3.4s2.6 4.4 4 5.2" stroke-linecap="round" opacity=".55"/>' },
   { act: 'sky', ko: '하늘', en: 'Sky',
     subKo: '오늘 밤 별이 보이는가', subEn: 'Will the sky be clear tonight',
     color: '#b9a7f0',

@@ -24,6 +24,7 @@
 import { i18n } from './i18n.js';
 import { API } from '../js/config.js';
 import { viewer } from './viewer.js';
+import { power } from './power.js';
 
 const $ = (s) => document.querySelector(s);
 const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
@@ -197,6 +198,13 @@ export const turtlePanel = {
           + `</div>`,
       }));
     });
+
+    /* ⚠️⚠️ 이 앱은 `requestRenderMode` 다 — 변한 게 있을 때만 그린다(power.js).
+       **경로선은 한 프레임에 안 만들어진다.** 그릴 시간을 안 주면 화면이 빈다.
+       ⚠️ 여태 안 걸렸던 건 아래 flyTo 가 프레임을 계속 돌려줬기 때문이다.
+          그런데 flyTo 는 **한 마리를 골랐을 때만** 부른다 —
+          즉 전체(45마리) 보기는 운에 기대고 있었다. 명시적으로 요청한다. */
+    power.animate(1500);
 
     // 한 마리만 볼 때는 그쪽으로 옮겨 준다
     if (pttId && this._ents.length) {

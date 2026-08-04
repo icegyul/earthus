@@ -46,6 +46,7 @@ import { eventPanel } from './ui-events.js';
       panels._fire 의 try/catch 가 삼켜서 "칩이 안 뜬다"로만 보였다. */
 let turtleMod = null;
 let seabirdMod = null;
+let migbirdMod = null;
 
 async function boot() {
   initViewer('cesiumContainer');
@@ -260,6 +261,10 @@ async function boot() {
         seabirdMod = (await import('./ui-seabird.js')).seabirdPanel;
         seabirdMod.open();
       },
+      migbird: async () => {
+        migbirdMod = (await import('./ui-migbird.js')).migbirdPanel;
+        migbirdMod.open();
+      },
     }[act];
     // ⚠️ 조용히 넘어가지 않는다. 빠뜨린 것이 눈에 보여야 다시 안 빠뜨린다.
     if (!go) { console.warn(`[취미] '${act}' 를 여는 곳이 없습니다 — main.js 의 표를 보세요`); return; }
@@ -330,9 +335,11 @@ function bindAccountUI() {
        그때는 지울 것도 없으니 아무 일도 안 하는 게 맞다. */
     turtleSheet: () => turtleMod?.close(),
     seabirdSheet: () => seabirdMod?.close(),
+    migbirdSheet: () => migbirdMod?.close(),
   };
   const OFF_LABEL = { sfSheet: '서핑', fsSheet: '낚시', pgSheet: '활공장', mtSheet: '등산로',
-                      turtleSheet: '바다거북', seabirdSheet: '바닷새' };
+                      turtleSheet: '바다거북', seabirdSheet: '바닷새',
+                      migbirdSheet: '철새' };
 
   /** 지도에 표시가 남아 있으면 끄는 칩을 띄운다 */
   function offChip(id, on) {
@@ -367,6 +374,7 @@ function bindAccountUI() {
     mtSheet: () => (trailsHasMarks()),
     turtleSheet: () => (turtleMod?._ents.length || 0) > 0,
     seabirdSheet: () => (seabirdMod?._ents.length || 0) > 0,
+    migbirdSheet: () => (migbirdMod?._ents.length || 0) > 0,
   };
   let trailsMod = null;
   function trailsHasMarks() {

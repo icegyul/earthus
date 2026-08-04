@@ -13,6 +13,7 @@
 import { i18n } from './i18n.js';
 import { API } from '../js/config.js';
 import { viewer } from './viewer.js';
+import { power } from './power.js';
 
 const $ = (s) => document.querySelector(s);
 const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
@@ -209,6 +210,16 @@ export const seabirdPanel = {
           + `<small style="opacity:.6">${esc(_data.source || '')}</small></div>`,
       }));
     });
+
+    /* ⚠️⚠️⚠️ **이걸 빠뜨리면 그린 것이 화면에 안 나온다.**
+       이 앱은 `requestRenderMode` — 변한 게 있을 때만 그린다(power.js).
+       그런데 **선·원 도형은 한 프레임에 안 만들어진다.** 여러 프레임에 걸쳐
+       조립되므로 `requestRender()` 한 번으로는 조립이 끝나기 전에 멈춘다.
+       → 엔티티는 멀쩡히 있는데 화면은 비어 있다. 좌표·색·높이를 다 의심하며
+         한참 헤맸다. 답은 "그릴 시간을 안 줬다"였다.
+       ⚠️ 점(point)은 한 프레임에 나오기 때문에 **점만 보이고 선만 안 보인다** —
+          이 증상이 나오면 여기를 먼저 볼 것. */
+    power.animate(1500);
   },
 
   clear() {

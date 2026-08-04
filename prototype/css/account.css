@@ -916,3 +916,9 @@
 .sb-note{ font-size:10.5px; line-height:1.6; color:rgba(255,255,255,.42); margin:6px 0 2px }
 .sb-open{ padding:9px 4px 4px; border-bottom:1px solid rgba(255,255,255,.06);
           background:rgba(127,216,200,.05) }
+
+/* 철새 — ⚠️ 경고 상자 색을 바닷새(.sb-warn)와 나눈다. 성격이 다른 경고다 */
+.mb-warn{ border:1px solid rgba(255,208,138,.34); background:rgba(255,208,138,.07);
+          border-radius:12px; padding:11px 13px; margin-bottom:12px }
+.mb-warn b{ font-size:13px; color:#ffd08a; display:block; margin-bottom:5px }
+.mb-warn p{ font-size:12px; line-height:1.62; color:rgba(255,255,255,.72); margin:0 }

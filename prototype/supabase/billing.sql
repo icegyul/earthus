@@ -38,8 +38,11 @@ create policy plans_read on public.plans for select using (active = true);
 
 insert into public.plans (id, name_ko, name_en, krw, usd, period, months, max_seats, sort)
 values
-  ('earthus.pro.monthly',  '한 달 이용권', 'Monthly',        3900,  2.99, 'month',  1, null, 10),
-  ('earthus.pro.yearly',   '1년 이용권',   'Yearly',        29000, 21.99, 'year',  12, null, 20),
+  -- ⚠️⚠️ **금액의 정본은 이 표다.** 화면(billing.js DEFAULT_PLANS)은 표시용일 뿐이고
+  --    checkout 함수는 planId 만 받아 금액을 여기서 찾는다. 값을 바꾸면 여기부터 바꾼다.
+  --    정가 ₩15,000 / $10 → 초기 특가 ₩12,000 / $8 (서비스 초반 한시).
+  ('earthus.pro.monthly',  '한 달 이용권', 'Monthly',       12000,  8.00, 'month',  1, null, 10),
+  ('earthus.pro.yearly',   '1년 이용권',   'Yearly',       120000, 80.00, 'year',  12, null, 20),
   -- ⚠️ 창립회원은 **수량 제한 상품**이다. 500명이 차면 서버가 주문을 거절한다.
   ('earthus.founding.500', '창립회원 1년', 'Founding year', 19000, 14.99, 'year', 12,  500,  5)
 on conflict (id) do update

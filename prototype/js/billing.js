@@ -21,8 +21,10 @@ import { i18n } from './i18n.js';
    ⚠️ 가격은 config.local.js 에서 덮어쓸 수 있게 둔다.
       PG·앱스토어에 등록한 실제 상품 가격과 어긋나면 안 되기 때문이다. */
 const DEFAULT_PLANS = {
-  monthly:  { id: 'earthus.pro.monthly',  krw: 3900,  usd: 2.99,  period: 'month' },
-  yearly:   { id: 'earthus.pro.yearly',   krw: 29000, usd: 21.99, period: 'year'  },
+  /* ⚠️ list 는 **정가**(줄 그어 보여주는 값)다. 실제 청구는 krw/usd 다.
+     정본은 서버(plans 표)이고 여기 값은 화면 표시용이다. */
+  monthly:  { id: 'earthus.pro.monthly',  krw: 12000, usd: 8,  listKrw: 15000, listUsd: 10, period: 'month' },
+  yearly:   { id: 'earthus.pro.yearly',   krw: 120000, usd: 80, listKrw: 180000, listUsd: 120, period: 'year' },
   /* 창립회원 — **수량 제한 상품**이다 (500명).
      ⚠️ 좌석이 남았는지는 서버만 안다. 클라이언트가 세면 동시에 결제한 사람을 못 막는다.
         화면 표시는 참고용이고, 실제 차단은 checkout Edge Function 이 한다. */

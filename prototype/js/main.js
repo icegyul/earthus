@@ -296,6 +296,11 @@ async function boot() {
     devPanel.open();
   };
   document.getElementById('btnDev')?.addEventListener('click', openDev);
+  /* 구독 — ⚠️ 늦게 불러온다(안 여는 사람에게 짐이 되면 안 된다). */
+  document.getElementById('btnSubscribe')?.addEventListener('click', async () => {
+    const { subscribeSheet } = await import('./ui-subscribe.js');
+    subscribeSheet.open();
+  });
   const showDevRow = () => {
     if (location.hash !== '#dev') return;
     document.getElementById('rowDev')?.removeAttribute('hidden');

@@ -281,6 +281,11 @@ PD 몫 (자격·전화가 필요한 것):
   남겨 paired 통계에서 제외한다. SVG는 A/B 절대오차를 같은 축의 산점도로 놓고 대각선
   위/아래 표본 수, 각 모델 ME/MAE/RMSE, 평균·중앙 `|error| A−B`, paired n·출처·
   생성시각을 남긴다. 한 날짜 결과가 장기 모델 순위가 아니라는 경고를 그림에 고정한다.
+  `Paired 재현 ZIP`은 같은 CSV·SVG, `earthus.paired-model-comparison-manifest.v1`,
+  README, 표준 라이브러리 검증 Python을 담는다. manifest는 선택·실제 시각·paired
+  통계·파일별 바이트/SHA-256·CSV 25개 열·pairing/결측/축 방법·출처/이용조건/
+  생성시각을 기록한다. 검증기는 해시·SVG XML·열/행과 함께 A/B 오차·절대오차·
+  `|error| A−B`·paired n·A/B/tie 판정·모든 요약 통계를 CSV에서 다시 계산한다.
   같은 일별 검증 자료에서 날짜·기온/풍속·MAE/ME/RMSE를 골라 모델×24/48시간 막대
   차트를 만들고 SVG로 내려받을 수 있다. SVG 안에 기간·단위·각 막대의 `n`·출처·
   생성시각과 “한 날 표본은 장기 순위가 아님” 경고를 함께 넣는다. ME의 음수는

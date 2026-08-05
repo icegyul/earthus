@@ -153,6 +153,10 @@ earthus의 유료 명분은 `이 값을 믿을 수 있는가`인데, 추천 결�
 
 ## 10. 2026-08-06 실행 기록
 
+- Paired Model Comparison의 CSV·SVG·`earthus.paired-model-comparison-manifest.v1`·
+  README·검증 Python을 재현 ZIP으로 묶었다. manifest에 선택·실제 시각·paired 통계·
+  파일 해시·CSV 25개 열·방법·출처를 기록하고, 검증기는 A/B 오차·절대오차·차이·
+  paired n·A/B/tie 판정·ME/MAE/RMSE·평균/중앙 차이를 원행에서 다시 계산한다.
 - Paired Model Comparison에서 실제 사례 날짜·서로 다른 모델 A/B·24/48시간·변수를
   골라 같은 지점·시각·관측 표본만 두 모델 절대오차로 대조한다. CSV와 대각선 산점도에
   paired n·한쪽 결측·A/B가 더 작은 절대오차인 표본 수·각 모델 ME/MAE/RMSE·평균/중앙

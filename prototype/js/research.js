@@ -3052,6 +3052,307 @@ function pairedSvgMarkup(result) {
   return chunks.join('');
 }
 
+const PAIRED_FIELD_META = {
+  model_a: ['-', '비교 모델 A 식별자'],
+  model_b: ['-', '비교 모델 B 식별자'],
+  forecast_a: ['variable unit', '모델 A 예보값'],
+  forecast_b: ['variable unit', '모델 B 예보값'],
+  error_a: ['variable unit', '모델 A forecast minus observation; 소수 셋째 자리'],
+  error_b: ['variable unit', '모델 B forecast minus observation; 소수 셋째 자리'],
+  absolute_error_a: ['variable unit', '모델 A 오차 절댓값'],
+  absolute_error_b: ['variable unit', '모델 B 오차 절댓값'],
+  absolute_error_a_minus_b: ['variable unit', '모델 A 절대오차 minus 모델 B 절대오차'],
+  lower_absolute_error_model: ['-', '절대오차가 더 작은 모델 식별자 또는 tie; unpaired는 빈칸'],
+  n: ['count', '관측과 두 모델 예보가 모두 유효하면 1, 아니면 0'],
+};
+
+async function buildPairedManifest(result) {
+  const csvName = pairedFilename(result, 'csv');
+  const svgName = pairedFilename(result, 'svg');
+  const csvContent = csvText(result.headers, result.rows);
+  const svgContent = `${pairedSvgMarkup(result)}\n`;
+  const [csvHash, svgHash] = await Promise.all([sha256(csvContent), sha256(svgContent)]);
+  return {
+    schema: 'earthus.paired-model-comparison-manifest.v1',
+    manifestVersion: 1,
+    createdAt: new Date().toISOString(),
+    product: 'earthus Research Paired Model Comparison 무료 미리보기',
+    salesStatus: '유료 판매 잠금; 현재 공개 사례 범위만 사용',
+    selection: {
+      date: result.date,
+      modelA: result.modelA,
+      modelB: result.modelB,
+      leadHour: result.lead,
+      variable: result.variable,
+      unit: result.unit,
+      actualTimes: result.actualTimes,
+      actualTimeCount: result.actualTimes.length,
+    },
+    statistics: result.stats,
+    files: [
+      {
+        role: 'paired-error-data', name: csvName, mediaType: 'text/csv; charset=utf-8',
+        encoding: 'UTF-8 with BOM', lineEnding: 'LF', rows: result.rows.length,
+        bytes: new TextEncoder().encode(csvContent).byteLength, sha256: csvHash,
+        fields: result.headers.map(name => ({
+          name,
+          unit: PAIRED_FIELD_META[name]?.[0] || EXTRACT_FIELD_META[name]?.[0] || TRACE_FIELD_META[name]?.[0] || '-',
+          description: PAIRED_FIELD_META[name]?.[1] || EXTRACT_FIELD_META[name]?.[1] || TRACE_FIELD_META[name]?.[1] || name,
+        })),
+      },
+      {
+        role: 'paired-error-figure', name: svgName, mediaType: 'image/svg+xml; charset=utf-8',
+        encoding: 'UTF-8', lineEnding: 'LF',
+        bytes: new TextEncoder().encode(svgContent).byteLength, sha256: svgHash,
+      },
+    ],
+    provenance: { source: result.source, license: result.license, sourceGeneratedAt: result.generated },
+    methodology: {
+      pairing: 'same valid time x station x observation; n=1 only when observation and both model forecasts are numeric',
+      difference: 'error = forecast - observation; errors and absolute_error_a_minus_b store three-decimal values',
+      statistics: 'all paired statistics are calculated only from n=1 CSV rows',
+      lowerAbsoluteError: 'model id with smaller stored absolute error; exact equality is tie',
+      missing: '한쪽이라도 결측이면 n=0이고 paired 통계·산점도에서 제외; 0으로 대체하지 않음',
+      axes: 'x is model A absolute error; y is model B absolute error on the same scale',
+      warning: '한 날짜의 paired 결과는 장기 모델 성능 순위가 아님',
+    },
+    licensePage: 'https://earthus.net/legal/data-license.ko.md',
+  };
+}
+
+function buildPairedReadme(result, manifest) {
+  const dataFile = manifest.files.find(file => file.role === 'paired-error-data');
+  const figureFile = manifest.files.find(file => file.role === 'paired-error-figure');
+  const stat = value => finite(value) ? Number(value).toFixed(3) : 'NA';
+  return `# earthus Paired Model Comparison
+
+## 선택과 같은 표본
+
+- 날짜: ${result.date}
+- 모델 A: ${modelName(result.modelA)} (\`${result.modelA}\`)
+- 모델 B: ${modelName(result.modelB)} (\`${result.modelB}\`)
+- 선행시간: ${result.lead}시간
+- 변수: ${result.variable} (${result.unit})
+- 실제 공개 시각: ${result.actualTimes.length}개
+- paired n: ${result.stats.n}/${result.stats.totalRows}
+- 결측 관측/A/B: ${result.stats.missingObservation}/${result.stats.missingModelA}/${result.stats.missingModelB}
+- A/B/tie가 더 작은 절대오차: ${result.stats.modelALower}/${result.stats.modelBLower}/${result.stats.ties}
+- A MAE/RMSE: ${stat(result.stats.maeA)} / ${stat(result.stats.rmseA)}
+- B MAE/RMSE: ${stat(result.stats.maeB)} / ${stat(result.stats.rmseB)}
+- 평균/중앙 \`|error| A−B\`: ${stat(result.stats.meanAbsoluteErrorDifference)} / ${stat(result.stats.medianAbsoluteErrorDifference)}
+
+## 파일
+
+| 역할 | 파일 | 행/바이트 | SHA-256 |
+|---|---|---:|---|
+| paired CSV | \`${dataFile.name}\` | ${dataFile.rows}행 / ${dataFile.bytes}바이트 | \`${dataFile.sha256}\` |
+| 같은 축 산점도 SVG | \`${figureFile.name}\` | ${figureFile.bytes}바이트 | \`${figureFile.sha256}\` |
+
+## 방법과 한계
+
+- CSV 한 행은 같은 유효시각 × 같은 ASOS 지점 × 같은 관측값입니다.
+- 관측과 두 모델 예보가 모두 숫자일 때만 n=1이며 paired 통계에 들어갑니다.
+- 오차는 \`forecast - observation\`, 비교값은 \`|error A| - |error B|\`입니다.
+- 한쪽 결측은 빈칸과 n=0으로 남기며 0으로 채우지 않습니다.
+- 산점도 x축은 모델 A, y축은 모델 B 절대오차이며 두 축 범위는 같습니다.
+- 한 날짜의 결과는 장기 모델 성능 순위가 아닙니다.
+- 출처: ${result.source}
+- 이용조건: ${result.license}
+- 원본 생성시각: ${result.generated}
+
+## 검증
+
+같은 폴더에서 \`python3 ${pairedFilename(result, 'verify.py')}\`를 실행하세요.
+Python 표준 라이브러리만 사용하며 파일 해시·SVG XML·CSV 열/행·선택 조건·오차·
+절대오차·paired n·A/B/tie 표본 수·모든 요약 통계를 원행에서 다시 계산합니다.
+
+이 묶음은 공식 DOI가 아닙니다. 원자료 제공기관 출처와 이용조건을 함께 표기하세요.
+`;
+}
+
+function buildPairedPython(result, manifest) {
+  const expectedFiles = JSON.stringify(manifest.files.map(file => ({
+    role: file.role,
+    name: file.name,
+    sha256: file.sha256,
+    rows: file.rows,
+    headers: file.fields?.map(field => field.name),
+  })));
+  const expectedSnapshot = JSON.stringify({ selection: manifest.selection, statistics: manifest.statistics });
+  return `#!/usr/bin/env python3
+import csv
+import hashlib
+import json
+import math
+from pathlib import Path
+from xml.etree import ElementTree
+
+EXPECTED_FILES = json.loads(r'''${expectedFiles}''')
+EXPECTED = json.loads(r'''${expectedSnapshot}''')
+ROOT = Path(__file__).resolve().parent
+
+for spec in EXPECTED_FILES:
+    path = ROOT / spec["name"]
+    if not path.is_file():
+        raise SystemExit(f"MISSING: {path.name}")
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest != spec["sha256"]:
+        raise SystemExit(f"SHA256 MISMATCH: {path.name} expected={spec['sha256']} actual={digest}")
+    if spec["role"] == "paired-error-figure":
+        try:
+            ElementTree.parse(path)
+        except ElementTree.ParseError as error:
+            raise SystemExit(f"SVG XML INVALID: {path.name}: {error}")
+    print(f"OK {path.name}: sha256={digest}")
+
+csv_spec = next(spec for spec in EXPECTED_FILES if spec["role"] == "paired-error-data")
+csv_path = ROOT / csv_spec["name"]
+with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
+    reader = csv.DictReader(handle)
+    if reader.fieldnames != csv_spec["headers"]:
+        raise SystemExit(f"HEADER MISMATCH: {csv_path.name}")
+    rows = list(reader)
+if len(rows) != csv_spec["rows"]:
+    raise SystemExit(f"ROW COUNT MISMATCH: {csv_path.name} expected={csv_spec['rows']} actual={len(rows)}")
+
+selection = EXPECTED["selection"]
+errors_a = []
+errors_b = []
+absolute_a = []
+absolute_b = []
+differences = []
+missing_observation = 0
+missing_a = 0
+missing_b = 0
+lower_a = 0
+lower_b = 0
+ties = 0
+actual_times = set()
+
+def number(value):
+    return None if value == "" else float(value)
+
+for row_number, row in enumerate(rows, start=2):
+    actual_times.add(row["valid_kst"])
+    if row["model_a"] != selection["modelA"] or row["model_b"] != selection["modelB"]:
+        raise SystemExit(f"MODEL MISMATCH: row {row_number}")
+    if float(row["lead_hour"]) != float(selection["leadHour"]):
+        raise SystemExit(f"LEAD MISMATCH: row {row_number}")
+    if row["variable"] != selection["variable"] or row["unit"] != selection["unit"]:
+        raise SystemExit(f"VARIABLE OR UNIT MISMATCH: row {row_number}")
+    observation = number(row["observation"])
+    forecast_a = number(row["forecast_a"])
+    forecast_b = number(row["forecast_b"])
+    error_a = number(row["error_a"])
+    error_b = number(row["error_b"])
+    abs_a = number(row["absolute_error_a"])
+    abs_b = number(row["absolute_error_b"])
+    difference = number(row["absolute_error_a_minus_b"])
+    n = int(row["n"])
+    if observation is None:
+        missing_observation += 1
+    if forecast_a is None:
+        missing_a += 1
+    if forecast_b is None:
+        missing_b += 1
+    valid_a = observation is not None and forecast_a is not None
+    valid_b = observation is not None and forecast_b is not None
+    if valid_a:
+        if error_a is None or abs_a is None or abs(error_a - (forecast_a - observation)) > 0.000501:
+            raise SystemExit(f"MODEL A ERROR MISMATCH: row {row_number}")
+        if not math.isclose(abs_a, abs(error_a), rel_tol=0, abs_tol=1e-12):
+            raise SystemExit(f"MODEL A ABSOLUTE ERROR MISMATCH: row {row_number}")
+    elif error_a is not None or abs_a is not None:
+        raise SystemExit(f"MODEL A MISSING SEMANTICS MISMATCH: row {row_number}")
+    if valid_b:
+        if error_b is None or abs_b is None or abs(error_b - (forecast_b - observation)) > 0.000501:
+            raise SystemExit(f"MODEL B ERROR MISMATCH: row {row_number}")
+        if not math.isclose(abs_b, abs(error_b), rel_tol=0, abs_tol=1e-12):
+            raise SystemExit(f"MODEL B ABSOLUTE ERROR MISMATCH: row {row_number}")
+    elif error_b is not None or abs_b is not None:
+        raise SystemExit(f"MODEL B MISSING SEMANTICS MISMATCH: row {row_number}")
+    paired = selection["modelA"] != selection["modelB"] and valid_a and valid_b
+    if paired:
+        if n != 1 or difference is None or abs(difference - (abs_a - abs_b)) > 0.000501:
+            raise SystemExit(f"PAIRED DIFFERENCE MISMATCH: row {row_number}")
+        expected_lower = selection["modelA"] if abs_a < abs_b else selection["modelB"] if abs_b < abs_a else "tie"
+        if row["lower_absolute_error_model"] != expected_lower:
+            raise SystemExit(f"LOWER ABSOLUTE ERROR MODEL MISMATCH: row {row_number}")
+        errors_a.append(error_a)
+        errors_b.append(error_b)
+        absolute_a.append(abs_a)
+        absolute_b.append(abs_b)
+        differences.append(difference)
+        if expected_lower == selection["modelA"]:
+            lower_a += 1
+        elif expected_lower == selection["modelB"]:
+            lower_b += 1
+        else:
+            ties += 1
+    elif n != 0 or difference is not None or row["lower_absolute_error_model"] != "":
+        raise SystemExit(f"UNPAIRED SEMANTICS MISMATCH: row {row_number}")
+
+if sorted(actual_times) != selection["actualTimes"]:
+    raise SystemExit("ACTUAL TIMES MISMATCH")
+
+def average(values):
+    return sum(values) / len(values) if values else None
+
+ordered_differences = sorted(differences)
+middle = len(ordered_differences) // 2
+median_difference = None if not ordered_differences else ordered_differences[middle] if len(ordered_differences) % 2 else (ordered_differences[middle - 1] + ordered_differences[middle]) / 2
+actual_stats = {
+    "totalRows": len(rows),
+    "n": len(errors_a),
+    "missingObservation": missing_observation,
+    "missingModelA": missing_a,
+    "missingModelB": missing_b,
+    "modelALower": lower_a,
+    "modelBLower": lower_b,
+    "ties": ties,
+    "meA": average(errors_a),
+    "meB": average(errors_b),
+    "maeA": average(absolute_a),
+    "maeB": average(absolute_b),
+    "rmseA": math.sqrt(average([value * value for value in errors_a])) if errors_a else None,
+    "rmseB": math.sqrt(average([value * value for value in errors_b])) if errors_b else None,
+    "meanAbsoluteErrorDifference": average(differences),
+    "medianAbsoluteErrorDifference": median_difference,
+}
+
+def assert_same(label, actual, expected):
+    if actual is None or expected is None:
+        if actual is not expected:
+            raise SystemExit(f"{label} MISMATCH: expected={expected} actual={actual}")
+    elif not math.isclose(float(actual), float(expected), rel_tol=1e-12, abs_tol=1e-12):
+        raise SystemExit(f"{label} MISMATCH: expected={expected} actual={actual}")
+
+for key, expected in EXPECTED["statistics"].items():
+    assert_same(f"STAT {key}", actual_stats[key], expected)
+
+print(f"OK {csv_path.name}: rows={len(rows)} paired_n={len(errors_a)}")
+print("VERIFIED: Paired Model Comparison CSV and SVG match this snapshot and recomputed statistics.")
+`;
+}
+
+async function buildPairedBundle(result) {
+  const manifest = await buildPairedManifest(result);
+  const baseName = pairedFilename(result, 'csv').replace(/\.csv$/, '');
+  const files = [
+    { name: pairedFilename(result, 'csv'), content: csvText(result.headers, result.rows) },
+    { name: pairedFilename(result, 'svg'), content: `${pairedSvgMarkup(result)}\n` },
+    { name: `${baseName}.manifest.json`, content: JSON.stringify(manifest, null, 2) + '\n' },
+    { name: `${baseName}.README.md`, content: buildPairedReadme(result, manifest) },
+    { name: `${baseName}.verify.py`, content: buildPairedPython(result, manifest) },
+  ];
+  return {
+    filename: `${baseName}.reproducible.zip`,
+    files,
+    bytes: zipArchive(files, new Date(manifest.createdAt)),
+    manifest,
+  };
+}
+
 function refillPairedControls(day) {
   const previous = {
     modelA: $('#pairedModelA').value,
@@ -3088,6 +3389,7 @@ function renderPaired() {
   $('.paired-canvas').innerHTML = markup || '<p class="figure-empty">서로 다른 두 모델의 유효한 같은 표본이 없습니다.</p>';
   $('#downloadPairedCsv').disabled = !result.rows.length || result.modelA === result.modelB;
   $('#downloadPairedSvg').disabled = !markup;
+  $('#downloadPairedBundle').disabled = !markup;
   $('#pairedWarning').textContent = `${result.date} · ${modelName(result.modelA)} vs ${modelName(result.modelB)} · ${result.lead}시간 · ${variableInfo(result.variable).name} · paired n=${result.stats.n}/${result.stats.totalRows}`;
 }
 
@@ -3106,6 +3408,7 @@ async function loadPairedDay() {
   const date = $('#pairedDate').value;
   $('#downloadPairedCsv').disabled = true;
   $('#downloadPairedSvg').disabled = true;
+  $('#downloadPairedBundle').disabled = true;
   $('#pairedWarning').textContent = `${date || '날짜 없음'} 실제 공개 사례를 불러오는 중입니다.`;
   try {
     const day = state.extractCache.cases[date] || await json(state.caseIndex.dates[date].path);
@@ -3138,6 +3441,24 @@ function initPaired() {
     const markup = result && pairedSvgMarkup(result);
     if (!markup) return;
     downloadText(pairedFilename(result, 'svg'), `${markup}\n`, 'image/svg+xml;charset=utf-8');
+  });
+  $('#downloadPairedBundle').addEventListener('click', async event => {
+    const result = state.pairedResult;
+    if (!result?.rows.length || !pairedSvgMarkup(result)) return;
+    const button = event.currentTarget;
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Paired 묶음 만드는 중…';
+    try {
+      const bundle = await buildPairedBundle(result);
+      downloadBlob(bundle.filename, [bundle.bytes], 'application/zip');
+    } catch (error) {
+      $('#error').hidden = false;
+      $('#error').textContent = `Paired 재현 묶음을 만들지 못했습니다. (${error.message})`;
+    } finally {
+      button.disabled = false;
+      button.textContent = original;
+    }
   });
   if (dates.length) loadPairedDay();
 }

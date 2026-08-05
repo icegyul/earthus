@@ -11,3 +11,11 @@
 
 문법 검사: `cp 파일.js /tmp/x.mjs && node --check /tmp/x.mjs`
 커밋 제목은 "무엇이 잘못돼 있었나"를 한국어로.
+
+## 지금 열려 있는 작업
+
+**마케팅 스튜디오** — `prototype/studio.html` (미착수).
+사양은 [`docs/MARKETING-STUDIO-SPEC.md`](docs/MARKETING-STUDIO-SPEC.md) 에 전부 있습니다.
+
+⚠️⚠️ 그 문서의 첫 규칙: **자동으로 게시하지 않는다.** 초안까지가 기계의 일이고
+올리는 손은 사람이 댑니다. 이 규칙을 깨는 변경은 받지 않습니다.

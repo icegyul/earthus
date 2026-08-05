@@ -148,6 +148,16 @@ export const sourceNote = {
     return this;
   },
 
+  /* 지구를 누른 지점의 값 — main.js 가 넣어 준다. (감사 3차)
+     받은 감사: "지구의 한 지점을 누르면 해당 위치의 값을 함께 보여준다."
+     ⚠️ 격자 밖이거나 값이 없으면 null 로 지운다 — 옛 값이 남으면 거짓말이 된다. */
+  _pointVal: null,
+  setPoint(id, v) {
+    this._pointVal = (v == null || !Number.isFinite(v)) ? null
+      : { id, v: Math.round(v * 10) / 10 };
+    this.render();
+  },
+
   async render() {
     if (!this.root) return;
     const ko = i18n.lang === 'ko';
@@ -382,8 +392,13 @@ export const sourceNote = {
         }).join(',');
         // 눈금 숫자 — 처음·가운데·끝만. 다 적으면 좁은 화면에서 뭉갠다
         const mid = sc.stops[Math.floor(sc.stops.length / 2)][0];
-        bits.push(
-          `<span class="lg-wrap"><i class="lg-bar" style="background:linear-gradient(90deg,${css})"></i>`
+        /* 눌러 본 지점의 값 — 있으면 눈금 앞에 굵게 붙인다.
+           ⚠️ 값이 없으면 자리를 비워 둔다. "—" 를 넣으면 0 으로 읽힌다. */
+        const pv = this._pointVal;
+        const shown = (pv && pv.id === painted)
+          ? `<b class="lg-v">${pv.v}${sc.unit || ''}</b>` : '';
+        bits.push(shown
+          + `<span class="lg-wrap"><i class="lg-bar" style="background:linear-gradient(90deg,${css})"></i>`
           + `<i class="lg-n">${lo}</i><i class="lg-n">${mid}</i>`
           + `<i class="lg-n">${hi}${sc.unit || ''}</i></span>`);
       }

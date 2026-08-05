@@ -588,6 +588,34 @@ function onPick(ev) {
     return;
   }
 
+  /* ── 누른 지점의 격자 값을 좌하단 범례에 붙인다 (감사 3차) ──────
+     받은 감사: "지구의 한 지점을 누르면 해당 위치의 값을 함께 보여준다."
+     ⚠️ 시트를 여는 것과 별개다. 시트가 안 열리는 상황(Ambient)에서도
+        "지금 여기가 몇 도인가"는 답할 수 있어야 한다.
+     ⚠️ 값이 없으면 지운다 — 옛 값이 남으면 다른 자리 값을 이 자리 값으로 읽는다. */
+  (async () => {
+    const g0 = ground();
+    if (!g0) { sourceNote.setPoint?.(null, null); return; }
+    try {
+      const { gridOverlay } = await import('./gridoverlay.js');
+      const PAINTED = ['temp', 'tmax', 'tmin', 'humidity', 'rain', 'pressure',
+                       'fog', 'drought', 'pm25', 'pm10', 'dust', 'aqi', 'uv',
+                       'ozone', 'sst', 'sstanom', 'wave', 'swell', 'current'];
+      const id = PAINTED.find(x => store.isOn(x));
+      if (!id) { sourceNote.setPoint?.(null, null); return; }
+      const grid = await gridOverlay.gridFor(id);
+      const f = gridOverlay.fieldOf(id);
+      const arr = grid?.[f];
+      if (!arr) { sourceNote.setPoint?.(null, null); return; }
+      // 가장 가까운 격자 칸 (보간하지 않는다 — 없는 정밀도를 만들지 않는다)
+      const ix = Math.round((g0.lon - grid.lon0) / grid.res);
+      const iy = Math.round((g0.lat - grid.lat0) / grid.res);
+      const x = ((ix % grid.nx) + grid.nx) % grid.nx;
+      const v = (iy >= 0 && iy < grid.ny) ? arr[iy * grid.nx + x] : null;
+      sourceNote.setPoint?.(id, v);
+    } catch (_) { sourceNote.setPoint?.(null, null); }
+  })();
+
   // 빈 곳 탭 → Explore 상태면 그 지점 날씨 (§10 Phase1-5)
   if (store.mode === 'explore') {
     const g = ground();

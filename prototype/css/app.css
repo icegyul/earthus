@@ -2140,3 +2140,6 @@ body.tc-ui-off #tcLegend{opacity:0;pointer-events:none;transition:opacity .2s}
 .act-chip:focus-visible,.act-all:focus-visible{outline:2px solid #9fe6f5;outline-offset:2px}
 /* 태풍 타임라인이 뜨면 자리를 비워 준다 */
 body.tc-ui-off #actBar{opacity:0;pointer-events:none;transition:opacity .2s}
+/* 눌러 본 지점의 값 — 눈금 앞에 굵게 (감사 3차) */
+.lg-v{font-size:13px;font-weight:700;margin-right:7px;color:var(--paper);
+  font-variant-numeric:tabular-nums;vertical-align:bottom}

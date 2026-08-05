@@ -503,6 +503,16 @@ export const sheet = {
         stationSheet.render(rows.parentNode || rows, m._station);
       }).catch(e => console.warn('[station]', e.message));
     }
+    /* 기상청 ASOS 지도 라벨 → 내 관측소.
+       ⚠️ 상세에서 본 지점과 station.html 기본값이 달랐던 단절을 URL id로 잇는다.
+          저장은 station.html에서 사용자가 다시 눌러야 한다 — 자동 저장하지 않는다. */
+    if (m.kind === 'landobs' && m._stationId) {
+      const a = el('a', 'sheet-cta', i18n.lang === 'ko'
+        ? '이 지점을 내 관측소로 열기 ↗' : 'Open as My station ↗');
+      a.href = `/station.html?station=${encodeURIComponent(m._stationId)}`;
+      a.target = '_blank'; a.rel = 'noopener';
+      rows.parentElement.appendChild(a);
+    }
 
     if (m.kind === 'wildfire') {
       renderFireView(m, rows);

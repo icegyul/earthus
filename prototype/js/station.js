@@ -7,6 +7,7 @@
 const CURRENT_URL = '/wind/kma-aws.json';
 const HISTORY_INDEX_URL = '/wind/series/stations.json';
 const SAVED_KEY = 'earthus.adoptedStationV1';
+const REQUESTED_STATION = new URLSearchParams(location.search).get('station');
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const $ = selector => document.querySelector(selector);
 
@@ -50,8 +51,12 @@ function renderPicker() {
     .sort((a, b) => String(a.name || a.id).localeCompare(String(b.name || b.id), 'ko'));
   if (!stations.some(station => station.id === state.stationId)) {
     const saved = localStorage.getItem(SAVED_KEY);
-    state.stationId = stations.some(station => station.id === saved)
-      ? saved : stations.find(station => station.id === '108')?.id || stations[0]?.id || null;
+    /* 지도 관측 라벨에서 온 지점을 먼저 연다. ⚠️ URL 값을 그대로 믿지 않고
+       실제 ASOS 목록에 있는 id일 때만 쓴다. 없는 id는 저장값·서울 순으로 폴백한다. */
+    state.stationId = stations.some(station => station.id === REQUESTED_STATION)
+      ? REQUESTED_STATION
+      : (stations.some(station => station.id === saved)
+          ? saved : stations.find(station => station.id === '108')?.id || stations[0]?.id || null);
   }
   stations.forEach(station => {
     const item = document.createElement('option');

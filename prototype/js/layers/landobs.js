@@ -156,6 +156,7 @@ export const landObs = {
         /* 전지구 METAR 1,987곳의 60km 제한과 분리한다. ASOS는 96곳뿐이라
            140km에서도 수도권 몇 개 시·군을 읽을 수 있고 전국을 덮지 않는다. */
         labelFar: 140_000,
+        _stationId: String(s.id),
         data: { _landobs: true, _kmaAsos: true, ...d },
       });
     });

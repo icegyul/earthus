@@ -199,8 +199,9 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 #sheet.down{transform:translateY(calc(100% + 24px))}
 #sheetClose:hover{opacity:.8}
 .sheet-cta{
-  margin-top:16px;width:100%;font:500 14px/1 inherit;padding:12px;border-radius:10px;
-  cursor:pointer;background:var(--amber);color:#20140a;border:0;
+  margin-top:16px;width:100%;min-height:44px;font:500 14px/1 inherit;padding:12px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--amber);color:#20140a;border:0;
+  text-align:center;text-decoration:none;
 }
 #forecast{display:none;gap:4px;margin-top:16px;padding-top:15px;border-top:1px solid var(--line)}
 .fc-day{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12px;font-weight:300}

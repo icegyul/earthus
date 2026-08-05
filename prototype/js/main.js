@@ -40,6 +40,7 @@ import { outdoorPanel } from './ui-outdoor.js';
 import { paraPanel } from './ui-para.js';
 import { apiKeysPanel } from './ui-apikeys.js';
 import { eventPanel } from './ui-events.js';
+import { activeBar } from './ui-active.js';
 
 /* 늦게 불러오는 바다거북 모듈을 붙잡아 두는 곳.
    ⚠️⚠️ **모듈 바깥에 둔다.** 켜는 쪽은 boot(), 끄는 쪽(OFF·HAS_MARKS)은
@@ -85,6 +86,7 @@ async function boot() {
   chips.init();
   alarms.init();
   layerBar.init();
+  activeBar.init();       // 지금 켜진 레이어 줄 (감사 3차)
   search.init();          // ⌘K · 우상단 돋보기
   /* ⚠️ 오늘의 볼거리 칩(최고 파고·수온·기온)은 **첫 화면에서 뺐다.**
      받은 지시: "밑에 최고파도 최고 수온 그런거 다 빼줘. 처음 보자마자

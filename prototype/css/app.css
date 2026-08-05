@@ -2108,3 +2108,35 @@ body.tc-ui-off #tcLegend{opacity:0;pointer-events:none;transition:opacity .2s}
 .amb-default{display:inline-block;margin-left:7px;padding:2px 7px;border-radius:999px;
   font-size:.52em;font-weight:500;opacity:.62;vertical-align:middle;
   border:1px solid rgba(255,255,255,.28)}
+
+/* 수치 범례 — 화면을 칠한 그 색표를 그대로 띠로 보여준다 (감사 3차) */
+/* ⚠️ 높이를 넉넉히 준다 — 실측에서 아래 눈금 숫자가 잘렸다.
+   ⚠️ 좌우로도 여백을 둔다. 0 과 끝 숫자가 가장자리에서 반쯤 잘려 나갔다. */
+.lg-wrap{display:inline-block;position:relative;
+  min-width:148px;height:20px;margin:3px 8px 1px 0;vertical-align:bottom}
+.lg-bar{position:absolute;left:0;right:0;top:0;height:7px;border-radius:3px;
+  border:1px solid rgba(255,255,255,.18)}
+.lg-n{position:absolute;top:8px;font-size:8.5px;opacity:.68;font-style:normal;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.lg-n:nth-of-type(1){left:0;transform:translateX(-2px)}
+.lg-n:nth-of-type(2){left:50%;transform:translateX(-50%)}
+.lg-n:nth-of-type(3){right:0}
+
+/* ── 지금 켜진 레이어 (ui-active.js · 감사 3차) ────────────────────
+   ⚠️ 좌하단 출처 표시와 겹치지 않게 그 위에 둔다. 태풍 타임라인(#fxBar)이
+      뜨면 함께 접힌다 — 아래 tc-ui-off 규칙 참고. */
+#actBar{position:fixed;left:12px;bottom:calc(74px + env(safe-area-inset-bottom));
+  display:none;flex-wrap:wrap;gap:5px;max-width:min(62vw,420px);z-index:12}
+#actBar.on{display:flex}
+.act-chip,.act-all{
+  display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;
+  font-size:11.5px;line-height:1;cursor:pointer;color:var(--fog);
+  background:rgba(10,16,22,.72);border:1px solid rgba(255,255,255,.16);
+  backdrop-filter:blur(10px);
+}
+.act-chip .act-x{font-style:normal;opacity:.5;font-size:12px}
+.act-chip:hover .act-x{opacity:1}
+.act-all{border-color:rgba(90,209,232,.4);color:#9fe6f5}
+.act-chip:focus-visible,.act-all:focus-visible{outline:2px solid #9fe6f5;outline-offset:2px}
+/* 태풍 타임라인이 뜨면 자리를 비워 준다 */
+body.tc-ui-off #actBar{opacity:0;pointer-events:none;transition:opacity .2s}

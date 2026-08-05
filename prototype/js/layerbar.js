@@ -566,7 +566,11 @@ export const layerBar = {
 
     // 머리글은 목록에 따라 바뀐다 (DOM 은 하나를 돌려 쓴다)
     const head = $('#menuSub .ms-head');
-    if (head) head.textContent = isAlert ? 'Alert' : (ko ? '지구 스타일' : 'Earth style');
+    /* ⚠️ '지구 스타일'이라 부르던 것을 '레이어'로 바꿨다. (감사 3차)
+       안에 기온·바람·대기질·바다·관측소가 다 들어 있는데 '스타일'이라고 하면
+       테마를 고르는 곳처럼 읽힌다 — 실제 이름은 레이어가 맞다. */
+    if (head) head.textContent = isAlert ? (ko ? '경보·재난' : 'Alerts')
+                                         : (ko ? '레이어' : 'Layers');
 
     /* 묶음별로 제목을 두고 그 아래에 항목을 놓는다.
        ⚠️ CATEGORIES 에 없는 항목이 생기면 조용히 사라지므로 마지막에 모아 붙인다.

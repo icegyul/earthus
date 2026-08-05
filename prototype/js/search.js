@@ -81,7 +81,7 @@ function score(text, q, qCho) {
    → 실제 메뉴 버튼(#menuMain [data-act])에서 그때그때 읽는다. 메뉴가 곧 목록이다.
    ⚠️ 그래서 여는 것도 반드시 그 버튼을 누르는 방식이어야 한다 — 아래 실행부 참고. */
 const HINTS = {                       // 설명만 우리가 붙인다 (메뉴에는 없는 정보)
-  sat:      { ko: '지금 머리 위를 지나는 위성', en: 'Satellites passing overhead' },
+  sat:      { ko: '궤도를 도는 인공위성 · 지금 머리 위', en: 'Satellites passing overhead' },
   news:     { ko: '지구에서 지금 일어나는 일',  en: "What's happening on Earth" },
   community:{ ko: '오늘의 지구 · 자료 그래프',  en: 'Earth today · data graphs' },
   ask:      { ko: '자료에 물어보기',            en: 'Ask the data' },
@@ -90,7 +90,7 @@ const HINTS = {                       // 설명만 우리가 붙인다 (메뉴�
   globe:    { ko: '멀리서 지구 전체',           en: 'Whole Earth' },
 };
 const EN_LABEL = {                    // 메뉴 라벨은 한국어라 영어만 따로
-  sat: 'Satellites', news: 'News', community: 'LAB', ask: 'if', flight: 'Flights',
+  sat: 'Satellites', news: 'News', community: 'LAB', ask: 'Ask', flight: 'Flights',
   outdoor: 'Outdoors', locate: 'My location', globe: 'Whole Earth', settings: 'Settings',
 };
 function liveActions() {
@@ -105,7 +105,7 @@ function liveActions() {
 }
 /* 2단을 여는 것(지구 스타일·Alert)은 data-open 이라 따로 둔다 */
 const OPENS = [
-  { open: 'earth', ko: '지구 스타일', en: 'Earth style', hint: '바탕·기상·해양 레이어' },
+  { open: 'earth', ko: '레이어', en: 'Layers', hint: '바탕·기상·해양·대기질·생물' },
   { open: 'alert', ko: 'Alert',       en: 'Alert',       hint: '태풍·지진·특보 레이어' },
 ];
 

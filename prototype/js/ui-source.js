@@ -363,6 +363,32 @@ export const sourceNote = {
       }
     }
 
+    /* ── 수치 범례 ────────────────────────────────────────────────
+       받은 감사(3차): "기온·습도·수온·파고 등은 색상만 있고 수치 범례가 없다.
+       색상·단위 정의는 이미 gridoverlay.js 에 있지만 지도 UI 에서 사용하지 않는다.
+       Windy 와 비교했을 때 가장 큰 실사용 차이다."
+       맞는 지적이다 — **색을 칠해 놓고 그 색이 몇인지 안 알려주면 그림일 뿐이다.**
+       ⚠️ 눈금은 우리가 만들지 않는다. 화면을 칠할 때 쓴 그 색표(SCALES)를 그대로
+          꺼내 그린다. 따로 그리면 화면과 범례가 어긋나는 날이 온다.
+       ⚠️ 면을 칠하는 레이어일 때만 나온다. 점·선 레이어에는 눈금이 없다. */
+    try {
+      const { gridOverlay } = await import('./gridoverlay.js');
+      const sc = painted ? gridOverlay.scaleOf(painted) : null;
+      if (sc?.stops?.length >= 2) {
+        const lo = sc.stops[0][0], hi = sc.stops[sc.stops.length - 1][0];
+        const css = sc.stops.map(([v, c]) => {
+          const pct = ((v - lo) / ((hi - lo) || 1) * 100).toFixed(1);
+          return `rgb(${c[0]},${c[1]},${c[2]}) ${pct}%`;
+        }).join(',');
+        // 눈금 숫자 — 처음·가운데·끝만. 다 적으면 좁은 화면에서 뭉갠다
+        const mid = sc.stops[Math.floor(sc.stops.length / 2)][0];
+        bits.push(
+          `<span class="lg-wrap"><i class="lg-bar" style="background:linear-gradient(90deg,${css})"></i>`
+          + `<i class="lg-n">${lo}</i><i class="lg-n">${mid}</i>`
+          + `<i class="lg-n">${hi}${sc.unit || ''}</i></span>`);
+      }
+    } catch (_) { /* 격자 모듈이 아직 없으면 넘어간다 */ }
+
     /* ⚠️⚠️ 안전 레이어(지진·쓰나미·특보·이안류·낙뢰·산불)가 **실패했으면 말한다.**
        (감사 P1-3) 빈 지도를 "위험 없음"으로 읽게 두면 안 된다 —
        "자료 확인 불가"와 "받은 자료 0건"은 다른 상태다.

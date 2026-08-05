@@ -71,7 +71,9 @@ export const chrome = {
        그걸 쓰지 않고 목록을 들고 있었던 게 문제였다. */
     try {
       const { lookupPlace } = await import('./place.js');
-      const p = await lookupPlace(lat, lon);
+      /* BigDataCloud 무료 조건은 동의받은 기기의 현재 위치만 허용한다.
+         지도에서 탭한 임의 좌표는 lookupPlace 기본값인 오프라인 지명표를 쓴다. */
+      const p = await lookupPlace(lat, lon, { deviceCurrent: true });
       if (p && !p.isOcean) {
         // 시·군·구가 있으면 그것, 없으면 시도, 그것도 없으면 나라
         this.place.name = p.city || p.region || p.country;

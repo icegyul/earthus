@@ -6,18 +6,35 @@
 import { API } from './config.js';
 import { fetchT } from './net.js';
 import { i18n } from './i18n.js';
+import { describePlace } from './geoname.js';
 
 /* 결과를 캐시한다. 같은 지역을 여러 번 탭하는 일이 잦고,
    무료 API 라 불필요한 호출을 줄이는 게 예의다. 0.05° ≈ 5km 단위로 묶는다. */
 const cache = new Map();
 const key = (lat, lon) => `${(lat / 0.05 | 0)},${(lon / 0.05 | 0)}`;
 
-/** 역지오코딩 — 국가 / 시도 / 시군구 / 동 */
-export async function lookupPlace(lat, lon) {
-  const k = key(lat, lon);
+/** 역지오코딩 — 국가 / 시도 / 시군구 / 동
+ *
+ * BigDataCloud 무료 엔드포인트는 동의받은 **기기의 현재 위치만** 허용한다.
+ * 지구본을 탭한 임의 좌표는 외부로 보내지 않고 우리 오프라인 지명표로 설명한다.
+ */
+export async function lookupPlace(lat, lon, { deviceCurrent = false } = {}) {
+  const lang = i18n.lang === 'ko' ? 'ko' : 'en';
+  if (!deviceCurrent) {
+    const p = describePlace(lat, lon, lang === 'ko');
+    return {
+      country: p.km <= 600 ? p.country : null,
+      countryCode: null, region: null, city: null,
+      detail: p.text,
+      /* 오프라인 기준점만으로 육지/바다를 판정하지 않는다. 모르면 null이다. */
+      isOcean: null,
+      approximate: true,
+    };
+  }
+
+  const k = `device:${key(lat, lon)}`;
   if (cache.has(k)) return cache.get(k);
 
-  const lang = i18n.lang === 'ko' ? 'ko' : 'en';
   const url = `${API.REVGEO}?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&localityLanguage=${lang}`;
   let out = null;
   try {

@@ -76,6 +76,16 @@ function warnLevel(level: unknown, ko: boolean) {
   } as Record<string, string>)[String(level ?? '').trim()] || String(level ?? '');
 }
 
+/** 같은 사건을 어느 기기에 보냈는지 구분하는 비식별 키.
+ *  ⚠️ 예전 alert_claim 키는 사용자+사건뿐이라 같은 계정의 첫 기기가 자리를 잡으면
+ *     휴대폰·태블릿 등 나머지 구독은 전부 '이미 보냄'으로 건너뛰었다.
+ *  endpoint 원문은 브라우저 푸시 주소이므로 DB 기록에 넣지 않고 SHA-256 앞부분만 쓴다. */
+async function deviceKey(endpoint: string) {
+  const bytes = new TextEncoder().encode(endpoint);
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
+  return [...digest.slice(0, 12)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 Deno.serve(async (req) => {
   // ── 문지기 ────────────────────────────────────────────────
   const want = Deno.env.get('PUSH_TICK_TOKEN');
@@ -127,6 +137,7 @@ Deno.serve(async (req) => {
 
   for (const t of targets as any[]) {
     const ko = (t.lang ?? 'ko') === 'ko';
+    const device = await deviceKey(String(t.endpoint ?? ''));
     const jobs: { key: string; title: string; body: string; urgent: boolean; tag: string }[] = [];
 
     // ── 이안류 ──────────────────────────────────────────────
@@ -203,7 +214,9 @@ Deno.serve(async (req) => {
     for (const j of jobs) {
       // ⚠️⚠️ **먼저 자리를 잡는다.** 이미 보냈으면 여기서 false 가 나온다.
       const { data: claimed } = await admin.rpc('alert_claim',
-        { p_user: t.user_id, p_key: j.key });
+        /* 한 계정의 여러 저장 지점에서는 같은 사건을 한 기기에 한 번만 보내되,
+           같은 계정의 다른 기기에는 각각 도착해야 한다. */
+        { p_user: t.user_id, p_key: `${j.key}:device:${device}` });
       if (!claimed) { stat.skipped++; continue; }
 
       try {

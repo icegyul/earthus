@@ -574,6 +574,30 @@ export const chartsPanel = {
       return;
     }
 
+    /* earthus가 시간을 들여 쌓은 자료로 만든 도구들.
+       ⚠️ 예전에는 예보 검증만 설정 맨 아래에 있었고, 내 관측소·Research Pack은
+          서로의 페이지에서만 갈 수 있었다. 만들어 놓고 메인 앱에서 못 찾으면 없는
+          기능과 같다. 새 최상위 메뉴를 늘리지 않고 자료를 보러 온 이 탭 맨 앞에 둔다. */
+    const tools = el('section', 'ch-tools');
+    tools.setAttribute('aria-label', ko ? 'earthus 분석 도구' : 'earthus analysis tools');
+    tools.appendChild(el('div', 'ch-tools-head', ko ? '시간이 쌓일수록 달라지는 자료' : 'Data that grows with time'));
+    (ko ? [
+      ['./verify.html', '예보 검증', '그때의 예보와 실제 관측을 같은 지점·시각으로 비교', 'GFS · ECMWF · 24/48시간'],
+      ['./station.html', '내 관측소', '기상청 ASOS 한 곳을 저장하고 쌓이는 관측 이력 확인', '무료 1곳 · 이 기기에 저장'],
+      ['./research.html', 'Research Pack', '검증·관측 자료를 조건과 체크섬이 있는 CSV로 내려받기', '무료 미리보기'],
+    ] : [
+      ['./verify.html', 'Forecast verification', 'Compare the forecast captured then with the observation at the same place and time', 'GFS · ECMWF · 24/48 h'],
+      ['./station.html', 'My station', 'Save one KMA ASOS station and follow its accumulating observation history', '1 free · saved on this device'],
+      ['./research.html', 'Research Pack', 'Download verification and observations as reproducible CSV files with checksums', 'Free preview'],
+    ]).forEach(([href, title, copy, meta]) => {
+      const a = el('a', 'ch-tool');
+      a.href = href; a.target = '_blank'; a.rel = 'noopener';
+      a.innerHTML = `<span><b>${esc(title)}</b><em>${esc(copy)}</em><small>${esc(meta)}</small></span>`
+        + '<i aria-hidden="true">↗</i>';
+      tools.appendChild(a);
+    });
+    body.appendChild(tools);
+
     // ── ① 스파게티: 일별 해수면온도 ──
     if (d.sst?.series?.['60S60N']) {
       /* ⚠️ 해수면온도는 10년 단위 그대로 둔다 — "지금 너무 잘 보이고 비교가 되어서
@@ -654,17 +678,17 @@ export const chartsPanel = {
     body.appendChild(el('div', 'ch-h', ko ? '우리만 가진 자료' : 'Data only we hold'));
     body.appendChild(el('div', 'ch-own',
       (ko ? [
-        ['예보 정확도', '어제 예보와 오늘 실측을 맞춰본 기록. 지나간 예보를 돌려주는 API 는 없어서, 그 시점에 붙잡은 우리 자료 말고는 만들 수 없습니다.', '2026-07-27 수집 시작'],
+        ['예보 정확도', '그때의 예보와 실제 관측을 같은 지점·시각으로 맞춰본 기록. 지나간 예보를 돌려주는 API 는 없어서, 그 시점에 붙잡은 우리 자료 말고는 만들 수 없습니다.', '운영 중 · GFS·ECMWF 24/48시간'],
         ['태풍 소멸 후 경로', '공식 기관은 열대저기압 지위를 잃는 순간 추적을 끊습니다. 그 뒤 72시간을 잇는 기록.', '2026-07-27 수집 시작'],
         ['산불 생애주기', '같은 불을 시간축으로 잇는 지속 ID. FIRMS 는 "이 시각 이 자리에 열이 있다"만 줍니다.', '2026-07-26 수집 시작'],
       ] : [
-        ['Forecast accuracy', 'Yesterday’s forecast checked against today’s measurement. No API returns a past forecast, so this can only be built from what we captured at the time.', 'collecting since 2026-07-27'],
+        ['Forecast accuracy', 'A captured forecast checked against the observation at the same place and time. No API returns a past forecast, so this can only be built from what we captured then.', 'Live · GFS and ECMWF at 24/48 h'],
         ['Tracks after dissipation', 'Agencies stop tracking the moment a storm loses tropical status. This records the following 72 hours.', 'collecting since 2026-07-27'],
         ['Wildfire lifecycle', 'A persistent id linking one fire across time. FIRMS only says “there is heat here now”.', 'collecting since 2026-07-26'],
       ]).map(([t, why, when]) =>
         `<div class="ch-o"><b>${esc(t)}</b><p>${esc(why)}</p><span>${esc(when)}</span></div>`).join('')));
     body.appendChild(el('p', 'ch-note', ko
-      ? '⚠️ 아직 그래프를 그릴 만큼 쌓이지 않았습니다. 하루치로 곡선을 그리면 없는 추세를 보여주게 됩니다. 몇 주 뒤부터 여기에 나옵니다.'
-      : '⚠️ Not yet enough accumulated to plot. Drawing a curve from one day would imply a trend that does not exist. These will appear here in a few weeks.'));
+      ? '예보 검증은 지점·시각별 사례와 일별 집계를 공개하고 있습니다. 태풍 소멸 후 경로와 산불 생애주기는 아직 추세 그래프를 만들 만큼 쌓이지 않아 곡선을 그리지 않습니다.'
+      : 'Forecast verification is live with station-time cases and daily aggregates. Post-dissipation storm tracks and wildfire lifecycles are not yet long enough for trend charts, so no curve is drawn for them.'));
   },
 };

@@ -970,6 +970,20 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
   margin: 16px 0 8px; font-weight: 500;
 }
 .ch-h:first-child { margin-top: 4px; }
+.ch-tools{ margin:2px 0 20px; display:grid; gap:6px }
+.ch-tools-head{ margin:0 1px 3px; color:rgba(255,255,255,.46); font-size:10.5px; letter-spacing:.04em }
+.ch-tool{
+  min-height:72px; padding:11px 12px; display:flex; align-items:center; justify-content:space-between; gap:12px;
+  border:1px solid rgba(255,255,255,.11); border-radius:10px; background:rgba(255,255,255,.045);
+  color:inherit; text-decoration:none;
+}
+.ch-tool:hover{ background:rgba(255,255,255,.075); border-color:rgba(143,208,232,.3) }
+.ch-tool:focus-visible{ outline:2px solid #8fd0e8; outline-offset:2px }
+.ch-tool span{ min-width:0; display:flex; flex-direction:column }
+.ch-tool b{ color:rgba(255,255,255,.94); font-size:13px; font-weight:650 }
+.ch-tool em{ margin-top:2px; color:rgba(255,255,255,.58); font-size:11px; line-height:1.45; font-style:normal }
+.ch-tool small{ margin-top:5px; color:#8fd0e8; font-size:9.5px }
+.ch-tool > i{ flex:0 0 auto; color:rgba(255,255,255,.5); font-size:15px; font-style:normal }
 /* 넓은 그래프는 자기 영역 안에서만 가로 스크롤한다 — 화면 전체가 밀리면 안 된다 */
 .ch-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 /* ⚠️⚠️ **`min-width:420px` 를 두면 안 된다.** 폰 시트 내용폭이 322px 라

@@ -222,10 +222,33 @@ export const alertsSheet = {
           dropPin(sp.lon, sp.lat, sp.label);
         });
       };
+      const edit = el('button', 'al-edit', '✎');
+      edit.title = ko ? `${sp.label} 이름 바꾸기` : `Rename ${sp.label}`;
+      edit.setAttribute('aria-label', edit.title);
+      edit.onclick = async () => {
+        const next = prompt(ko ? '지켜볼 곳의 새 이름' : 'New name for this place', sp.label);
+        if (next == null || next.trim() === sp.label) return;
+        if (!next.trim()) {
+          toast(ko ? '이름을 한 글자 이상 적어 주세요' : 'Enter at least one character');
+          return;
+        }
+        edit.disabled = true;
+        try {
+          sp.label = await push.renameSpot(sp.id, next);
+          this.render();
+        } catch (e) {
+          toast(`${ko ? '이름 변경 실패' : 'Could not rename place'}: ${e.message}`);
+          edit.disabled = false;
+        }
+      };
       const del = el('button', 'al-del', '×');
       del.title = ko ? `${sp.label} 삭제` : `Remove ${sp.label}`;
       del.setAttribute('aria-label', del.title);
       del.onclick = async () => {
+        const yes = confirm(ko
+          ? `${sp.label}을(를) 지켜볼 곳에서 삭제할까요? 이 장소의 알림도 중단됩니다.`
+          : `Remove ${sp.label}? Alerts for this place will stop.`);
+        if (!yes) return;
         del.disabled = true;
         try {
           await push.removeSpot(sp.id);
@@ -236,6 +259,7 @@ export const alertsSheet = {
         }
       };
       r.appendChild(go);
+      r.appendChild(edit);
       r.appendChild(del);
 
       /* 값은 DB에 이미 있었지만 화면에서는 읽기만 가능했다. 각 저장 지점마다

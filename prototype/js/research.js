@@ -3554,6 +3554,10 @@ function stationProfileFilename(result, extension) {
   return extension === 'svg' ? `${base}-${result.displayCount}shown.svg` : `${base}.${extension}`;
 }
 
+function stationProfileSampleFilename(result) {
+  return stationProfileFilename(result, 'csv').replace(/\.csv$/, '.samples.csv');
+}
+
 function stationProfileSvgMarkup(result) {
   const ranked = result.rows.filter(row => finite(row[15]))
     .sort((left, right) => Number(right[15]) - Number(left[15]) || Number(left[1]) - Number(right[1]));
@@ -3604,6 +3608,296 @@ function stationProfileSvgMarkup(result) {
   return chunks.join('');
 }
 
+const STATION_PROFILE_FIELD_META = {
+  actual_time_count: ['count', '선택 날짜에 실제 공개된 유효시각 수'],
+  paired_n: ['count', '지점별 통계에 들어간 관측-예보 유효 쌍 수'],
+  missing_observation: ['count', '관측 결측 또는 지점-시각 행 부재 수'],
+  missing_forecast: ['count', '선택 모델 예보 결측 또는 지점-시각 행 부재 수'],
+  me: ['variable unit', '지점별 forecast minus observation 평균'],
+  mae: ['variable unit', '지점별 절대오차 평균'],
+  rmse: ['variable unit', '지점별 제곱평균제곱근 오차'],
+  minimum_error: ['variable unit', '지점별 저장 오차 최솟값'],
+  maximum_error: ['variable unit', '지점별 저장 오차 최댓값'],
+};
+
+async function buildStationProfileManifest(result) {
+  const summaryName = stationProfileFilename(result, 'csv');
+  const samplesName = stationProfileSampleFilename(result);
+  const svgName = stationProfileFilename(result, 'svg');
+  const summaryContent = csvText(result.headers, result.rows);
+  const samplesContent = csvText(result.sampleHeaders, result.samples);
+  const svgContent = `${stationProfileSvgMarkup(result)}\n`;
+  const [summaryHash, samplesHash, svgHash] = await Promise.all([
+    sha256(summaryContent), sha256(samplesContent), sha256(svgContent),
+  ]);
+  return {
+    schema: 'earthus.station-error-profile-manifest.v1',
+    manifestVersion: 1,
+    createdAt: new Date().toISOString(),
+    product: 'earthus Research Station Error Profile 무료 미리보기',
+    salesStatus: '유료 판매 잠금; 현재 공개 사례 범위만 사용',
+    selection: {
+      date: result.date,
+      model: result.model,
+      leadHour: result.lead,
+      variable: result.variable,
+      unit: result.unit,
+      actualTimes: result.actualTimes,
+      actualTimeCount: result.actualTimes.length,
+      displayedStationCount: result.displayCount,
+      displayOrder: 'descending station MAE; station id ascending tie-break',
+    },
+    statistics: result.stats,
+    files: [
+      {
+        role: 'station-summary', name: summaryName, mediaType: 'text/csv; charset=utf-8',
+        encoding: 'UTF-8 with BOM', lineEnding: 'LF', rows: result.rows.length,
+        bytes: new TextEncoder().encode(summaryContent).byteLength, sha256: summaryHash,
+        fields: result.headers.map(name => ({
+          name,
+          unit: STATION_PROFILE_FIELD_META[name]?.[0] || EXTRACT_FIELD_META[name]?.[0] || TRACE_FIELD_META[name]?.[0] || '-',
+          description: STATION_PROFILE_FIELD_META[name]?.[1] || EXTRACT_FIELD_META[name]?.[1] || TRACE_FIELD_META[name]?.[1] || name,
+        })),
+      },
+      {
+        role: 'station-error-samples', name: samplesName, mediaType: 'text/csv; charset=utf-8',
+        encoding: 'UTF-8 with BOM', lineEnding: 'LF', rows: result.samples.length,
+        bytes: new TextEncoder().encode(samplesContent).byteLength, sha256: samplesHash,
+        fields: result.sampleHeaders.map(name => ({
+          name,
+          unit: EXTRACT_FIELD_META[name]?.[0] || TRACE_FIELD_META[name]?.[0] || '-',
+          description: EXTRACT_FIELD_META[name]?.[1] || TRACE_FIELD_META[name]?.[1] || name,
+        })),
+      },
+      {
+        role: 'station-profile-figure', name: svgName, mediaType: 'image/svg+xml; charset=utf-8',
+        encoding: 'UTF-8', lineEnding: 'LF',
+        bytes: new TextEncoder().encode(svgContent).byteLength, sha256: svgHash,
+      },
+    ],
+    provenance: { source: result.source, license: result.license, sourceGeneratedAt: result.generated },
+    methodology: {
+      samples: 'one selected model x lead x variable x actual time x station per row; absent station-time case is an explicit missing row',
+      difference: 'forecast_minus_observation = forecast - observation; sample CSV stores three-decimal values',
+      aggregation: 'station ME, MAE, RMSE, minimum and maximum are calculated from n=1 sample rows',
+      display: 'SVG shows selected top 10/20/30 stations by MAE; point color is signed ME',
+      missing: '결측은 빈칸과 n=0이며 지점 통계에서 제외; 0으로 대체하지 않음',
+      warning: '관측소 품질 순위가 아니며 고도·지형·지점과 모델 격자의 공간 대표성이 다름',
+    },
+    licensePage: 'https://earthus.net/legal/data-license.ko.md',
+  };
+}
+
+function buildStationProfileReadme(result, manifest) {
+  const summaryFile = manifest.files.find(file => file.role === 'station-summary');
+  const samplesFile = manifest.files.find(file => file.role === 'station-error-samples');
+  const figureFile = manifest.files.find(file => file.role === 'station-profile-figure');
+  const stat = value => finite(value) ? Number(value).toFixed(3) : 'NA';
+  return `# earthus Station Error Profile
+
+## 선택과 표본
+
+- 날짜: ${result.date}
+- 모델: ${modelName(result.model)} (\`${result.model}\`)
+- 선행시간: ${result.lead}시간
+- 변수: ${result.variable} (${result.unit})
+- 실제 공개 시각: ${result.actualTimes.length}개
+- 지점: ${result.stats.rankedStationCount}/${result.stats.stationCount}개에 유효 오차
+- paired n: ${result.stats.n}/${result.stats.totalRows}
+- 결측 관측/예보: ${result.stats.missingObservation}/${result.stats.missingForecast}
+- 전체 원행 ME/MAE/RMSE: ${stat(result.stats.me)} / ${stat(result.stats.mae)} / ${stat(result.stats.rmse)}
+- SVG 표시: 지점 MAE 상위 ${result.displayCount}개
+
+## 파일
+
+| 역할 | 파일 | 행/바이트 | SHA-256 |
+|---|---|---:|---|
+| 지점별 통계 CSV | \`${summaryFile.name}\` | ${summaryFile.rows}행 / ${summaryFile.bytes}바이트 | \`${summaryFile.sha256}\` |
+| 지점×시각 원행 CSV | \`${samplesFile.name}\` | ${samplesFile.rows}행 / ${samplesFile.bytes}바이트 | \`${samplesFile.sha256}\` |
+| 지점 MAE SVG | \`${figureFile.name}\` | ${figureFile.bytes}바이트 | \`${figureFile.sha256}\` |
+
+## 방법과 한계
+
+- 원행 CSV 한 행은 선택 모델 × 선행시간 × 변수 × 실제 유효시각 × ASOS 지점입니다.
+- 원 사례에 지점-시각 행이 없으면 명시적 결측 행으로 남깁니다.
+- n=1 원행만 지점별 ME·MAE·RMSE·최소/최대 오차에 사용합니다.
+- SVG는 지점 MAE 상위 ${result.displayCount}개만 보이지만 요약 CSV는 전체 지점을 담습니다.
+- 결측은 빈칸과 n=0이며 0으로 채우지 않습니다.
+- 관측소 품질 순위가 아니며 고도·지형·지점과 모델 격자의 공간 대표성이 다릅니다.
+- 출처: ${result.source}
+- 이용조건: ${result.license}
+- 원본 생성시각: ${result.generated}
+
+## 검증
+
+같은 폴더에서 \`python3 ${stationProfileFilename(result, 'verify.py')}\`를 실행하세요.
+Python 표준 라이브러리만 사용하며 파일 해시·SVG XML·CSV 열/행·원행 오차·결측 n과
+모든 지점/전체 요약 통계를 다시 계산합니다.
+
+이 묶음은 공식 DOI가 아닙니다. 원자료 제공기관 출처와 이용조건을 함께 표기하세요.
+`;
+}
+
+function buildStationProfilePython(result, manifest) {
+  const expectedFiles = JSON.stringify(manifest.files.map(file => ({
+    role: file.role,
+    name: file.name,
+    sha256: file.sha256,
+    rows: file.rows,
+    headers: file.fields?.map(field => field.name),
+  })));
+  const expectedSnapshot = JSON.stringify({ selection: manifest.selection, statistics: manifest.statistics });
+  return `#!/usr/bin/env python3
+import csv
+import hashlib
+import json
+import math
+from collections import defaultdict
+from pathlib import Path
+from xml.etree import ElementTree
+
+EXPECTED_FILES = json.loads(r'''${expectedFiles}''')
+EXPECTED = json.loads(r'''${expectedSnapshot}''')
+ROOT = Path(__file__).resolve().parent
+
+for spec in EXPECTED_FILES:
+    path = ROOT / spec["name"]
+    if not path.is_file():
+        raise SystemExit(f"MISSING: {path.name}")
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest != spec["sha256"]:
+        raise SystemExit(f"SHA256 MISMATCH: {path.name} expected={spec['sha256']} actual={digest}")
+    if spec["role"] == "station-profile-figure":
+        try:
+            ElementTree.parse(path)
+        except ElementTree.ParseError as error:
+            raise SystemExit(f"SVG XML INVALID: {path.name}: {error}")
+    print(f"OK {path.name}: sha256={digest}")
+
+def read_csv(role):
+    spec = next(item for item in EXPECTED_FILES if item["role"] == role)
+    path = ROOT / spec["name"]
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if reader.fieldnames != spec["headers"]:
+            raise SystemExit(f"HEADER MISMATCH: {path.name}")
+        rows = list(reader)
+    if len(rows) != spec["rows"]:
+        raise SystemExit(f"ROW COUNT MISMATCH: {path.name} expected={spec['rows']} actual={len(rows)}")
+    return path, rows
+
+summary_path, summaries = read_csv("station-summary")
+samples_path, samples = read_csv("station-error-samples")
+selection = EXPECTED["selection"]
+
+def number(value):
+    return None if value == "" else float(value)
+
+def average(values):
+    return sum(values) / len(values) if values else None
+
+def assert_same(label, actual, expected):
+    if actual is None or expected is None:
+        if actual is not expected:
+            raise SystemExit(f"{label} MISMATCH: expected={expected} actual={actual}")
+    elif not math.isclose(float(actual), float(expected), rel_tol=1e-12, abs_tol=1e-12):
+        raise SystemExit(f"{label} MISMATCH: expected={expected} actual={actual}")
+
+grouped = defaultdict(list)
+all_errors = []
+missing_observation = 0
+missing_forecast = 0
+actual_times = set()
+for row_number, row in enumerate(samples, start=2):
+    actual_times.add(row["valid_kst"])
+    if row["model"] != selection["model"] or float(row["lead_hour"]) != float(selection["leadHour"]):
+        raise SystemExit(f"MODEL OR LEAD MISMATCH: sample row {row_number}")
+    if row["variable"] != selection["variable"] or row["unit"] != selection["unit"]:
+        raise SystemExit(f"VARIABLE OR UNIT MISMATCH: sample row {row_number}")
+    observation = number(row["observation"])
+    forecast = number(row["forecast"])
+    error = number(row["forecast_minus_observation"])
+    n = int(row["n"])
+    if observation is None:
+        missing_observation += 1
+    if forecast is None:
+        missing_forecast += 1
+    if observation is not None and forecast is not None:
+        if n != 1 or error is None or abs(error - (forecast - observation)) > 0.000501:
+            raise SystemExit(f"ERROR VALUE MISMATCH: sample row {row_number}")
+        all_errors.append(error)
+    elif n != 0 or error is not None:
+        raise SystemExit(f"MISSING SEMANTICS MISMATCH: sample row {row_number}")
+    grouped[row["station_id"]].append(row)
+
+if sorted(actual_times) != selection["actualTimes"]:
+    raise SystemExit("ACTUAL TIMES MISMATCH")
+if set(grouped) != {row["station_id"] for row in summaries}:
+    raise SystemExit("STATION SET MISMATCH")
+
+for row_number, summary in enumerate(summaries, start=2):
+    station_samples = grouped[summary["station_id"]]
+    if len(station_samples) != int(selection["actualTimeCount"]):
+        raise SystemExit(f"STATION TIME COUNT MISMATCH: summary row {row_number}")
+    if summary["date"] != selection["date"] or summary["model"] != selection["model"]:
+        raise SystemExit(f"SUMMARY SELECTION MISMATCH: row {row_number}")
+    if float(summary["lead_hour"]) != float(selection["leadHour"]) or summary["variable"] != selection["variable"]:
+        raise SystemExit(f"SUMMARY LEAD OR VARIABLE MISMATCH: row {row_number}")
+    errors = [number(item["forecast_minus_observation"]) for item in station_samples if item["n"] == "1"]
+    expected_values = {
+        "actual_time_count": len(station_samples),
+        "paired_n": len(errors),
+        "missing_observation": sum(number(item["observation"]) is None for item in station_samples),
+        "missing_forecast": sum(number(item["forecast"]) is None for item in station_samples),
+        "me": average(errors),
+        "mae": average([abs(value) for value in errors]),
+        "rmse": math.sqrt(average([value * value for value in errors])) if errors else None,
+        "minimum_error": min(errors) if errors else None,
+        "maximum_error": max(errors) if errors else None,
+    }
+    for key, expected in expected_values.items():
+        assert_same(f"STATION {summary['station_id']} {key}", number(summary[key]), expected)
+
+actual_stats = {
+    "stationCount": len(summaries),
+    "rankedStationCount": sum(summary["mae"] != "" for summary in summaries),
+    "actualTimeCount": len(actual_times),
+    "totalRows": len(samples),
+    "n": len(all_errors),
+    "missingObservation": missing_observation,
+    "missingForecast": missing_forecast,
+    "me": average(all_errors),
+    "mae": average([abs(value) for value in all_errors]),
+    "rmse": math.sqrt(average([value * value for value in all_errors])) if all_errors else None,
+}
+for key, expected in EXPECTED["statistics"].items():
+    assert_same(f"STAT {key}", actual_stats[key], expected)
+
+print(f"OK {samples_path.name}: rows={len(samples)} paired_n={len(all_errors)}")
+print(f"OK {summary_path.name}: stations={len(summaries)}")
+print("VERIFIED: Station Error Profile summaries match the included station-time samples.")
+`;
+}
+
+async function buildStationProfileBundle(result) {
+  const manifest = await buildStationProfileManifest(result);
+  const baseName = stationProfileFilename(result, 'csv').replace(/\.csv$/, '');
+  const files = [
+    { name: stationProfileFilename(result, 'csv'), content: csvText(result.headers, result.rows) },
+    { name: stationProfileSampleFilename(result), content: csvText(result.sampleHeaders, result.samples) },
+    { name: stationProfileFilename(result, 'svg'), content: `${stationProfileSvgMarkup(result)}\n` },
+    { name: `${baseName}.manifest.json`, content: JSON.stringify(manifest, null, 2) + '\n' },
+    { name: `${baseName}.README.md`, content: buildStationProfileReadme(result, manifest) },
+    { name: `${baseName}.verify.py`, content: buildStationProfilePython(result, manifest) },
+  ];
+  return {
+    filename: `${baseName}.reproducible.zip`,
+    files,
+    bytes: zipArchive(files, new Date(manifest.createdAt)),
+    manifest,
+  };
+}
+
 function refillStationProfileControls(day) {
   const previous = {
     model: $('#stationProfileModel').value,
@@ -3633,6 +3927,7 @@ function renderStationProfile() {
   $('.station-profile-canvas').innerHTML = markup || '<p class="figure-empty">선택 조건에 지점별 유효 오차가 없습니다.</p>';
   $('#downloadStationProfileCsv').disabled = !result.rows.length;
   $('#downloadStationProfileSvg').disabled = !markup;
+  $('#downloadStationProfileBundle').disabled = !markup;
   $('#stationProfileWarning').textContent = `${result.date} · ${modelName(result.model)} ${result.lead}시간 · ${variableInfo(result.variable).name} · 지점 ${result.stats.rankedStationCount}/${result.stats.stationCount} · paired n=${result.stats.n}/${result.stats.totalRows}`;
 }
 
@@ -3640,6 +3935,7 @@ async function loadStationProfileDay() {
   const date = $('#stationProfileDate').value;
   $('#downloadStationProfileCsv').disabled = true;
   $('#downloadStationProfileSvg').disabled = true;
+  $('#downloadStationProfileBundle').disabled = true;
   $('#stationProfileWarning').textContent = `${date || '날짜 없음'} 실제 공개 사례를 불러오는 중입니다.`;
   try {
     const day = state.extractCache.cases[date] || await json(state.caseIndex.dates[date].path);
@@ -3671,6 +3967,24 @@ function initStationProfile() {
     const markup = result && stationProfileSvgMarkup(result);
     if (!markup) return;
     downloadText(stationProfileFilename(result, 'svg'), `${markup}\n`, 'image/svg+xml;charset=utf-8');
+  });
+  $('#downloadStationProfileBundle').addEventListener('click', async event => {
+    const result = state.stationProfileResult;
+    if (!result?.rows.length || !stationProfileSvgMarkup(result)) return;
+    const button = event.currentTarget;
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = '지점 묶음 만드는 중…';
+    try {
+      const bundle = await buildStationProfileBundle(result);
+      downloadBlob(bundle.filename, [bundle.bytes], 'application/zip');
+    } catch (error) {
+      $('#error').hidden = false;
+      $('#error').textContent = `지점 재현 묶음을 만들지 못했습니다. (${error.message})`;
+    } finally {
+      button.disabled = false;
+      button.textContent = original;
+    }
   });
   if (dates.length) loadStationProfileDay();
 }

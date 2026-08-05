@@ -192,6 +192,16 @@ export const push = {
     if (error) throw new Error(error.message);
   },
 
+  /** 좌표·알림 기준은 건드리지 않고 사용자가 붙인 이름만 바꾼다. */
+  async renameSpot(id, label) {
+    if (!auth.client || !auth.user) throw new Error('NOT_SIGNED_IN');
+    const name = String(label || '').trim().slice(0, 40);
+    if (!name) throw new Error('EMPTY_LABEL');
+    const { error } = await auth.client.from('alert_spots').update({ label: name }).eq('id', id);
+    if (error) throw new Error(error.message);
+    return name;
+  },
+
   /** 지점별 알림 종류와 사용자가 정한 지진 수신 기준을 바꾼다.
    *  ⚠️ 허용한 다섯 필드만 보낸다. 객체를 그대로 update 하면 user_id·좌표까지
    *     실수로 덮을 수 있고, 안전 알림 설정에서 그런 광범위 쓰기는 필요 없다. */

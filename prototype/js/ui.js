@@ -1257,12 +1257,18 @@ function renderPaidHint(rows, cap) {
 
   const box = el('div', 'paid-hint');
   box.innerHTML = `<div class="ph-head">✦ ${TXT[0]}</div><p>${TXT[1]}</p>`;
-  const btn = el('button', 'ph-btn', ko ? '구독 알아보기' : 'See subscription');
-  btn.onclick = async () => {
-    const { subscribeSheet } = await import('./ui-subscribe.js');
-    subscribeSheet.open(TXT[1]);
-  };
-  box.appendChild(btn);
+  /* ⚠️ 구독을 감춰 둔 동안에는 버튼 대신 '준비 중' 한 줄만.
+     누를 곳이 없으면 안 만든다 — 눌러도 아무 일 없는 버튼이 제일 나쁘다. */
+  if (CONFIG.SHOW_SUBSCRIBE) {
+    const btn = el('button', 'ph-btn', ko ? '구독 알아보기' : 'See subscription');
+    btn.onclick = async () => {
+      const { subscribeSheet } = await import('./ui-subscribe.js');
+      subscribeSheet.open(TXT[1]);
+    };
+    box.appendChild(btn);
+  } else {
+    box.appendChild(el('div', 'ph-soon', ko ? '준비 중입니다' : 'Coming soon'));
+  }
   box.appendChild(el('div', 'ph-free', ko
     ? '위성 위치와 기본 정보는 구독 없이 계속 보실 수 있습니다.'
     : 'Satellite positions and basic info stay free.'));
@@ -1712,6 +1718,21 @@ function renderTierRow(ko) {
   box.className = 'tier-box';
 
   const paid = store.isPaid();
+
+  /* ⚠️ 구독을 감춰 둔 동안(SHOW_SUBSCRIBE=false)에는 이 줄 자체를 비운다.
+     '무료' 배지만 남겨 두면 "돈 내면 뭔가 있나"를 묻게 만든다 —
+     팔 물건이 준비되기 전에는 묻게 하지 않는 편이 낫다.
+     단, **이미 결제한 분**에게는 상태와 관리 버튼이 계속 보여야 한다. */
+  if (!CONFIG.SHOW_SUBSCRIBE && !paid) {
+    box.style.display = 'none';
+    const h0 = $('#tierHint');
+    if (h0) h0.textContent = ko
+      ? '지금은 모든 화면이 무료입니다.'
+      : 'Everything on screen is free right now.';
+    return;
+  }
+  box.style.display = '';
+
   const badge = el('span', 'tier-badge' + (paid ? ' on' : ''),
     paid ? (ko ? '구독 중' : 'Pro') : (ko ? '무료' : 'Free'));
   box.appendChild(badge);

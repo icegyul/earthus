@@ -365,5 +365,8 @@ export async function initAccount() {
   });
 
   renderBusinessInfo();
-  waitlistUI.init();
+  /* ⚠️ 사전등록 시트는 지금 열 수 있는 문이 없다 (SHOW_SUBSCRIBE=false).
+     그런데도 부팅 때마다 Supabase 를 불러 등록 인원을 세고 있었다.
+     보이지 않는 화면 때문에 매번 왕복하지 않는다. */
+  if (CONFIG.SHOW_SUBSCRIBE) waitlistUI.init();
 }

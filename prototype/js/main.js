@@ -340,10 +340,17 @@ async function boot() {
   };
   document.getElementById('btnDev')?.addEventListener('click', openDev);
   /* 구독 — ⚠️ 늦게 불러온다(안 여는 사람에게 짐이 되면 안 된다). */
-  document.getElementById('btnSubscribe')?.addEventListener('click', async () => {
-    const { subscribeSheet } = await import('./ui-subscribe.js');
-    subscribeSheet.open();
-  });
+  /* ⚠️ CONFIG.SHOW_SUBSCRIBE 가 false 면 **줄 자체를 없앤다.**
+     숨기기(hidden)만 하면 소스에 남고 키보드 탭에도 걸린다. */
+  if (CONFIG.SHOW_SUBSCRIBE) {
+    document.getElementById('btnSubscribe')?.addEventListener('click', async () => {
+      const { subscribeSheet } = await import('./ui-subscribe.js');
+      subscribeSheet.open();
+    });
+  } else {
+    document.getElementById('btnSubscribe')?.remove();
+    document.getElementById('btnWaitlist')?.remove();
+  }
   const showDevRow = () => {
     if (location.hash !== '#dev') return;
     document.getElementById('rowDev')?.removeAttribute('hidden');
@@ -418,7 +425,9 @@ function bindAccountUI() {
   });
   auth.onChange(paintAuthRows);
   paintAuthRows();
-  $('#btnWaitlist').onclick = () => { close('settings'); open('waitlistSheet'); waitlistUI.init(); };
+  // ⚠️ 위에서 지웠을 수 있다 — ?. 로 받는다
+  const bw = $('#btnWaitlist');
+  if (bw) bw.onclick = () => { close('settings'); open('waitlistSheet'); waitlistUI.init(); };
   $('#btnTerms').onclick    = () => { close('settings'); legalView.open('terms'); };
   $('#btnPrivacy').onclick  = () => { close('settings'); legalView.open('privacy'); };
   $('#btnConsent').onclick  = () => {

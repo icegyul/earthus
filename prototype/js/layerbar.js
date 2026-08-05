@@ -17,6 +17,7 @@ import { store } from './store.js';
 import { LAYER_DEFS, TIER } from './config.js';
 import { i18n } from './i18n.js';
 import { toast } from './ui.js';
+import { CONFIG } from './config.local.js';
 
 const $ = s => document.querySelector(s);
 const el = (t, c) => { const n = document.createElement(t); if (c) n.className = c; return n; };
@@ -840,6 +841,12 @@ export const layerBar = {
            "구독하고 열기"라고 써놓고 열 방법을 안 주면 안내가 아니다. */
         b.classList.add('locked');
         b.onclick = async () => {
+          /* ⚠️ 구독을 감춰 둔 동안에는 "구독하면 열린다"고 말하면 안 된다.
+             열 방법이 없는데 열 수 있다고 하는 셈이다. 준비 중이라고만 한다. */
+          if (!CONFIG.SHOW_SUBSCRIBE) {
+            toast(ko ? `${it.ko}는 아직 준비 중입니다` : `${it.en} is coming soon`);
+            return;
+          }
           const { subscribeSheet } = await import('./ui-subscribe.js');
           subscribeSheet.open(ko
             ? `${it.ko}는 구독하시면 볼 수 있습니다.`

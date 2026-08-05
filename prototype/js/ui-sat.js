@@ -8,6 +8,7 @@ import { SAT_GROUPS } from './layers/satcat.js';
 import { store } from './store.js';
 import { PAID_CAP } from './config.js';
 import { i18n } from './i18n.js';
+import { CONFIG } from './config.local.js';
 
 const $ = s => document.querySelector(s);
 
@@ -139,6 +140,15 @@ export const satPanel = {
           기본 그룹은 전부 무료로 열려 있다 — 위성을 못 보게 막는 게 아니다. */
     if (cb.checked && g.heavy && !store.can(PAID_CAP.SAT_ALL)) {
       cb.checked = false;
+      /* ⚠️ 구독을 감춰 둔 동안 — 이유(대역폭·연산)는 그대로 말하되
+         "구독하면 열린다"는 말은 빼야 한다. 지금은 열 방법이 없다. */
+      if (!CONFIG.SHOW_SUBSCRIBE) {
+        const { toast } = await import('./ui.js');
+        toast(ko
+          ? `${g.ko}는 위성이 약 ${g.est.toLocaleString()}개입니다. 내려받는 양이 커서 아직 열지 않았습니다`
+          : `${g.en} has ~${g.est.toLocaleString()} satellites — too heavy to open yet`);
+        return;
+      }
       const { subscribeSheet } = await import('./ui-subscribe.js');
       subscribeSheet.open(ko
         ? `${g.ko}는 위성이 약 ${g.est.toLocaleString()}개입니다. 내려받는 양과 계산이 커서 구독 기능으로 두었습니다 — 기본 그룹은 모두 무료로 보실 수 있습니다.`

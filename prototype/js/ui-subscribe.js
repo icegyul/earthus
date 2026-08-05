@@ -42,6 +42,9 @@ export const subscribeSheet = {
   seats: undefined,          // undefined=아직 안 물어봄 · null=못 셈 · 숫자=남은 자리
 
   open(reason) {
+    /* ⚠️⚠️ **마지막 방어선.** 진입점을 다 지워도 딥링크·옛 코드가 부를 수 있다.
+       여기서 막으면 어느 경로로 와도 안 열린다. (2026-08-06) */
+    if (!CONFIG.SHOW_SUBSCRIBE) return;
     this._reason = reason || null;
     $('#subSheet').classList.add('up');
     this.render();

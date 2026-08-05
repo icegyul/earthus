@@ -86,6 +86,9 @@ export const CONFIG = {
   CHECKOUT_URL: '',   // 예: https://xxxx.supabase.co/functions/v1/checkout
   CONFIRM_URL:  '',   // 예: https://xxxx.supabase.co/functions/v1/payment-confirm
   SALES_OPEN: false,  // ⚠️ 통신판매업 신고·상품 검증이 끝나기 전에는 true 금지
+  /* 구독 안내 화면으로 가는 문. false 면 설정의 '구독'·'사전등록' 줄과
+     유료 안내 팝업이 아예 안 뜬다. SALES_OPEN(결제)과 별개의 스위치다. */
+  SHOW_SUBSCRIBE: false,
   /* ⚠️ Open-Meteo 무료 API는 비상업 전용이다. 모든 직접 호출·Lambda를
      customer-api(유료 키) 또는 셀프호스팅으로 옮기고 운영 검증한 뒤에만 true.
      SALES_OPEN과 이것이 둘 다 true여야 결제가 열린다. */

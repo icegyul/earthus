@@ -293,9 +293,14 @@ export const sourceNote = {
               + 'In daylight use the visible channel instead.</i>');
         }
         if (key === 'gk2a_nightlow') {
+          const { imagery } = await import('./layers/imagery.js');
+          const signal = Number(imagery._gk2aMeta?.channels?.nightlow?.signal);
           bits.push(ko
             ? '<i>두 적외 채널의 <b>밝기온도 차(11.2㎛ − 3.8㎛)</b>가 1.5K를 넘는 밤의 화소만 표시합니다. 밝을수록 차이가 큽니다.</i>'
             : '<i>Night pixels where the <b>brightness-temperature difference (11.2µm − 3.8µm)</b> exceeds 1.5 K. Brighter means a larger difference.</i>');
+          if (Number.isFinite(signal)) bits.push(ko
+            ? `<i>이번 영상에서 문턱을 넘은 화소는 전체 격자의 <b>${signal.toFixed(1)}%</b>입니다. 등위도 격자 비율이라 실제 구름 면적은 아닙니다.</i>`
+            : `<i><b>${signal.toFixed(1)}%</b> of this image grid exceeds the display threshold. This is an equirectangular pixel share, not cloud area.</i>`);
           bits.push(ko
             ? '<i>⚠️ 물방울로 된 낮은 구름의 <b>후보</b>입니다. 위성은 구름 꼭대기만 보므로 <b>지면에 닿은 안개인지 판정할 수 없고</b>, 위에 높은 구름이 있으면 그 아래도 못 봅니다.</i>'
             : '<i>⚠️ A <b>candidate signal</b> for low water cloud. The satellite sees only cloud tops, so it <b>cannot tell fog from low stratus</b>, and high cloud hides anything below.</i>');

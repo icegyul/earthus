@@ -145,9 +145,10 @@ CHANNELS = {
     #
     #   ⚠️⚠️ **낮에는 못 쓴다.** 3.8㎛ 에는 햇빛 반사가 크게 섞여 차이가 무의미해진다.
     #      → 해가 진 곳에서만 그린다. 가시광과 정확히 반대라 둘이 짝을 이룬다.
-    #   ⚠️⚠️ **이 채널은 실제 밤 자료로 아직 확인하지 못했다** (만든 시각이 낮이라
-    #      전면 안에 밤인 곳이 없었다). 밤에 눈으로 확인하기 전까지는
-    #      화면에 "확인 중"이라고 적어 둔다. 검증 안 된 것을 확정처럼 보이면 안 된다.
+    #   2026-08-06 02:46 KST 운영 밤 자료를 눈과 화소 수로 확인했다:
+    #      낮 영역은 비고, 전체 격자의 1.5%만 표시 문턱을 넘었다.
+    #   ⚠️ 이 확인은 산출·마스킹이 작동한다는 뜻이지, 그 1.5%가 실제 안개 면적이라는
+    #      뜻이 아니다. 지상 관측과 대조하기 전에는 계속 "후보"라고만 부른다.
     "nightlow": {"ch": "ir112", "pair": "sw038", "kind": "btd",
                  "area": "FD", "res": "020ge",
                  # ⚠️⚠️ **3.8㎛ 는 14비트다.** 아래 BITS 주석 참고.
@@ -183,7 +184,9 @@ CHANNELS = {
 #            14비트로 읽으면 27.2°C — 한낮 지표 온도로 맞다.
 #   ⚠️ 찾는 법: 복사휘도가 0 이 되는 DN = (0 - offset) / gain 을 구해
 #      그 값이 들어가는 비트 수를 쓴다. ir112 는 8,017 (13비트), sw038 은 16,344 (14비트).
-#   ⚠️ 최상위 비트(0x8000, 32768)는 **결측 표시**다. 어느 채널이든 마스크로 지워진다.
+#   ⚠️ 최상위 2비트는 **품질 플래그**다. 값을 자르는 것만으로는 부족하다.
+#      out_of_scan(32768)을 마스크로만 지우면 DN 0이 되어 플랑크 계산에 들어간다.
+#      아래에서 good_pixel인 화소만 별도로 남긴다.
 BITS = {"ir112": 13, "wv063": 13, "vi006": 13, "sw038": 14}
 
 
@@ -337,6 +340,11 @@ def render(ch, key):
         #    ⚠️ 격자 간격(dx·dy)도 같이 늘려야 한다. 안 그러면 그림이 8배 어긋난다.
         raw = np.asarray(f["image_pixel_values"][::st, ::st] if st > 1
                          else f["image_pixel_values"])
+        quality_shift = int(_attr(f["image_pixel_values"], "number_of_total_bits_per_pixel")) \
+            - int(_attr(f["image_pixel_values"], "number_of_data_quality_flag_bits_per_pixel"))
+        # ⚠️ conditionally_usable의 사용 조건은 파일에 없다. 조건을 모르는 화소를
+        #    정상값처럼 쓰지 않고 NOAA가 good_pixel(0)로 표시한 것만 쓴다.
+        quality_ok = (raw >> quality_shift) == 0
         # ⚠️ 마스크는 **실제 채널 이름**으로 고른다. 레이어 id 가 아니다
         #    (vi006fd → vi006). id 로 찾으면 기본값 13 이 조용히 쓰인다.
         MASK = _mask(cfg.get("ch", ch))
@@ -377,6 +385,13 @@ def render(ch, key):
         return (a[r0, c0] * (1 - fc) * (1 - fr) + a[r0, c0 + 1] * fc * (1 - fr)
                 + a[r0 + 1, c0] * (1 - fc) * fr + a[r0 + 1, c0 + 1] * fc * fr)
 
+    def sample_ok(a):
+        """이중선형 보간에 섞이는 네 원본 화소가 모두 정상인지."""
+        return (a[r0, c0] & a[r0, c0 + 1]
+                & a[r0 + 1, c0] & a[r0 + 1, c0 + 1])
+
+    ok = ok & sample_ok(quality_ok)
+
     rad = gain * dn + off      # ⚠️ 적외는 gain 이 **음수**다 = 값이 클수록 차갑다
 
     def planck(r, wl):
@@ -406,7 +421,11 @@ def render(ch, key):
             print(f"[gk2a] {ch} 짝을 {gap:.0f}분 차이로 대체: {alt.split('/')[-1]}")
             pbody = src.get_object(Bucket=SRC_BUCKET, Key=alt)["Body"].read()
         with h5py.File(io.BytesIO(pbody), "r") as pf:
-            praw = np.asarray(pf["image_pixel_values"])
+            pvalues = pf["image_pixel_values"]
+            praw = np.asarray(pvalues)
+            pquality_shift = int(_attr(pvalues, "number_of_total_bits_per_pixel")) \
+                - int(_attr(pvalues, "number_of_data_quality_flag_bits_per_pixel"))
+            pquality_ok = (praw >> pquality_shift) == 0
             # ⚠️ 짝 채널은 **비트 수가 다를 수 있다.** sw038 이 정확히 그렇다.
             pdn = (praw & ((1 << cfg.get("pairBits", BITS.get(cfg["pair"], 13))) - 1)
                    ).astype(np.float64)
@@ -415,6 +434,7 @@ def render(ch, key):
             plam = float(_attr(pf, "channel_center_wavelength"))
         if pdn.shape != dn.shape:
             raise ValueError(f"짝 격자가 다르다 {pdn.shape} vs {dn.shape}")
+        ok = ok & sample_ok(pquality_ok)
 
         t11 = planck(rad, lam)
         t38 = planck(pgain * pdn + poff, plam)
@@ -516,6 +536,9 @@ def render(ch, key):
     (la0, la1), (lo0, lo1) = box["lat"], box["lon"]
     return {"bytes": len(png), "min": round(lo_c, 1), "max": round(hi_c, 1),
             "unit": unit, "cover": round(float(ok.mean()) * 100, 1),
+            # 실제로 알파가 생긴 출력 화소 비율. 등위도 격자라 면적 비율이 아니고,
+            # BTD에서는 낮은 구름·안개의 후보 면적조차 아니다 — 화면에도 그렇게 적는다.
+            "signal": round(float((a8 > 0).mean()) * 100, 1),
             # ⚠️ 채널마다 범위가 다르다. 하나로 두면 가시광(한반도)이
             #    전면 사각형에 늘어붙어 **엉뚱한 자리에 그려진다.**
             "bbox": {"south": la0, "north": la1, "west": lo0, "east": lo1},
@@ -523,10 +546,23 @@ def render(ch, key):
 
 
 def handler(event=None, context=None):
-    want = (event or {}).get("channels") or list(CHANNELS)
+    requested = (event or {}).get("channels")
+    want = requested or list(CHANNELS)
     # ⚠️ 웜 스타트에서 지난 실행의 원본이 남아 있으면 **옛 하늘을 다시 그린다.**
     _BODY.clear()
-    out, tstamp = {}, None
+    out = {}
+    # ⚠️ 부분 채널 실행은 운영 점검에 쓴다. 선택한 결과만 meta.json에 쓰면
+    #    선택하지 않은 정상 채널이 전부 사라진다(2026-08-06 실제로 발생).
+    #    부분 실행일 때만 기존 채널을 먼저 읽고, 이번 결과로 해당 채널만 교체한다.
+    if requested and set(want) != set(CHANNELS):
+        try:
+            old = json.load(dst.get_object(
+                Bucket=DST_BUCKET, Key="clouds/gk2a/meta.json")["Body"])
+            if isinstance(old.get("channels"), dict):
+                out.update(old["channels"])
+        except Exception as e:                                  # noqa: BLE001
+            print(f"[gk2a] 기존 메타 병합 생략: {e}")
+
     for ch in want:
         if ch not in CHANNELS:
             continue
@@ -537,8 +573,6 @@ def handler(event=None, context=None):
             continue
         m = re.search(r"_(\d{12})\.nc$", key)
         t = m.group(1) if m else None
-        if tstamp is None or (t and t > tstamp):
-            tstamp = t
         try:
             r = render(ch, key)
             r.update(ok=True, at=t, ko=CHANNELS[ch]["ko"])
@@ -549,6 +583,10 @@ def handler(event=None, context=None):
             out[ch] = {"ok": False, "reason": str(e)[:120]}
             print(f"[gk2a] {ch} 실패: {e}")
 
+    # 부분 실행으로 보존한 채널까지 포함해 가장 최신 관측 시각을 계산한다.
+    stamps = [v.get("at") for v in out.values()
+              if isinstance(v, dict) and v.get("at")]
+    tstamp = max(stamps) if stamps else None
     iso = None
     if tstamp:
         iso = datetime.strptime(tstamp, "%Y%m%d%H%M").replace(

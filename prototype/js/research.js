@@ -848,6 +848,42 @@ function buildRangeResult(dataset, days, filters, dateFrom, dateTo, index = extr
   };
 }
 
+function extractSelectionPath(result) {
+  const parameters = new URLSearchParams({
+    dataset: result.dataset,
+    from: result.dateFrom,
+    to: result.dateTo,
+    time: result.filters.time,
+    station: result.filters.station,
+    variable: result.filters.variable,
+  });
+  return `/research.html?${parameters.toString()}`;
+}
+
+function extractSelectionUrl(result) {
+  return `https://earthus.net${extractSelectionPath(result)}`;
+}
+
+function extractSelectionRequest() {
+  if (typeof location === 'undefined') return null;
+  const parameters = new URLSearchParams(location.search);
+  if (!['dataset', 'from', 'to', 'time', 'station', 'variable'].some(key => parameters.has(key))) return null;
+  return Object.fromEntries(['dataset', 'from', 'to', 'time', 'station', 'variable']
+    .map(key => [key, parameters.get(key) || '']));
+}
+
+function setSelectValue(selector, value) {
+  const select = $(selector);
+  if (!value || ![...select.options].some(option => option.value === value)) return false;
+  select.value = value;
+  return true;
+}
+
+function syncExtractSelectionUrl(result) {
+  if (typeof history === 'undefined' || typeof location === 'undefined' || !/^https?:$/.test(location.protocol)) return;
+  history.replaceState(null, '', extractSelectionPath(result));
+}
+
 function renderExtract() {
   const dataset = $('#extractDataset').value;
   const days = state.extractDays;
@@ -870,11 +906,13 @@ function renderExtract() {
   $('#downloadExtract').disabled = rows.length === 0;
   $('#downloadExtractBundle').disabled = rows.length === 0;
   $('#downloadExtractNotebook').disabled = rows.length === 0;
+  $('#copyExtractLink').disabled = rows.length === 0;
   $('#downloadExtractManifest').disabled = rows.length === 0;
   $('#downloadExtractReadme').disabled = rows.length === 0;
   $('#downloadExtractPython').disabled = rows.length === 0;
   renderQuality(state.extractResult);
   renderTrend(state.extractResult);
+  syncExtractSelectionUrl(state.extractResult);
 }
 
 async function loadExtractRange() {
@@ -887,6 +925,7 @@ async function loadExtractRange() {
   $('#downloadExtract').disabled = true;
   $('#downloadExtractBundle').disabled = true;
   $('#downloadExtractNotebook').disabled = true;
+  $('#copyExtractLink').disabled = true;
   $('#downloadExtractManifest').disabled = true;
   $('#downloadExtractReadme').disabled = true;
   $('#downloadExtractPython').disabled = true;
@@ -910,6 +949,12 @@ async function loadExtractRange() {
     if (token !== state.extractToken) return;
     state.extractDays = days.sort((left, right) => left.date.localeCompare(right.date, 'en'));
     refillExtractFilters(state.extractDays);
+    if (state.extractRequestedFilters) {
+      setSelectValue('#extractTime', state.extractRequestedFilters.time);
+      setSelectValue('#extractStation', state.extractRequestedFilters.station);
+      setSelectValue('#extractVariable', state.extractRequestedFilters.variable);
+      state.extractRequestedFilters = null;
+    }
     renderExtract();
   } catch (error) {
     if (token !== state.extractToken) return;
@@ -985,6 +1030,8 @@ async function buildExtractManifest(result) {
       time: result.filters.time,
       station: result.filters.station,
       variable: result.filters.variable,
+      sharePath: extractSelectionPath(result),
+      shareUrl: extractSelectionUrl(result),
       allToken: 'all means no additional filter inside the selected date range',
     },
     file: {
@@ -1083,6 +1130,7 @@ python3 ${value(pythonName)}
 | 시각 | ${value(result.filters.time)} |
 | 관측소 | ${value(result.filters.station)} |
 | 변수 | ${value(result.filters.variable)} |
+| 선택 복원 링크 | ${value(manifest.selection.shareUrl)} |
 
 \`all\`은 선택 날짜 범위 안에서 해당 항목을 추가로 거르지 않았다는 뜻입니다.
 
@@ -1440,8 +1488,17 @@ function initExtract() {
   state.extractCache = { cases: {}, stations: {} };
   if (state.caseDay?.date) state.extractCache.cases[state.caseDay.date] = state.caseDay;
   if (state.stationDay?.date) state.extractCache.stations[state.stationDay.date] = state.stationDay;
+  const requested = extractSelectionRequest();
+  if (requested && ['cases', 'stations'].includes(requested.dataset)) $('#extractDataset').value = requested.dataset;
   refillExtractDates();
+  if (requested) {
+    setSelectValue('#extractFrom', requested.from);
+    setSelectValue('#extractTo', requested.to);
+    if ($('#extractFrom').value > $('#extractTo').value) $('#extractTo').value = $('#extractFrom').value;
+    state.extractRequestedFilters = requested;
+  }
   $('#extractDataset').addEventListener('change', () => {
+    state.extractRequestedFilters = null;
     refillExtractDates();
     loadExtractRange();
   });
@@ -1495,6 +1552,22 @@ function initExtract() {
       button.disabled = false;
       button.textContent = original;
     }
+  });
+  $('#copyExtractLink').addEventListener('click', async event => {
+    const result = state.extractResult;
+    if (!result?.rows.length) return;
+    const button = event.currentTarget;
+    const original = button.textContent;
+    const url = extractSelectionUrl(result);
+    syncExtractSelectionUrl(result);
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
+      await navigator.clipboard.writeText(url);
+      button.textContent = '현재 선택 링크 복사됨';
+    } catch (error) {
+      button.textContent = '주소창에 현재 선택 반영됨';
+    }
+    setTimeout(() => { button.textContent = original; }, 1800);
   });
   $('#downloadExtractManifest').addEventListener('click', async event => {
     const result = state.extractResult;

@@ -856,7 +856,7 @@
      왼쪽 설명이 한 글자 폭으로 찌그러진다. 알림 토글 안에서만 내용 폭으로 되돌린다. */
   flex:0 0 auto; width:auto; min-width:76px; min-height:44px; padding:8px 16px;
 }
-.al-spot{ display:flex; align-items:stretch; gap:4px;
+.al-spot{ display:grid; grid-template-columns:minmax(0,1fr) 44px; align-items:stretch; gap:0 4px;
   border-top:1px solid var(--line,#1d2635); font-size:12.5px; }
 .al-go{ flex:1; min-width:0; min-height:52px; display:flex; align-items:center;
   justify-content:space-between; gap:10px; padding:8px 4px; text-align:left;
@@ -871,6 +871,15 @@
   color:inherit; opacity:.45; font-size:18px; line-height:1; padding:0; cursor:pointer; }
 .al-del:hover{ opacity:.9; }
 .al-add{ min-height:44px; }
+.al-types{ grid-column:1/-1; display:flex; flex-wrap:wrap; gap:6px; padding:0 0 10px 4px; }
+.al-type{ min-height:44px; display:inline-flex; align-items:center; gap:6px; padding:0 10px;
+  border:1px solid var(--line,#1d2635); border-radius:999px; color:rgba(255,255,255,.58);
+  font-size:11px; cursor:pointer; }
+.al-type.on{ color:#9fe6f5; border-color:rgba(90,209,232,.38);
+  background:rgba(90,209,232,.08); }
+.al-type input{ width:16px; height:16px; margin:0; accent-color:#5ad1e8; cursor:pointer; }
+.al-type input:focus-visible{ outline:2px solid #9fe6f5; outline-offset:3px; }
+.al-type.saving{ opacity:.48; cursor:wait; }
 
 /* ── 바다거북 ─────────────────────────────────────────────────
    ⚠️ 맨 위 경고를 회색으로 묻지 않는다. "지금 위치가 아니다"가

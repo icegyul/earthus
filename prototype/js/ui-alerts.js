@@ -158,6 +158,40 @@ export const alertsSheet = {
       del.onclick = async () => { await push.removeSpot(sp.id); this._load(); };
       r.appendChild(go);
       r.appendChild(del);
+
+      /* 값은 DB에 이미 있었지만 화면에서는 읽기만 가능했다. 각 저장 지점마다
+         어떤 안전 알림을 받을지 직접 고르게 한다. ⚠️ 등급이나 판정 기준을 바꾸는
+         옵션이 아니다 — 기관이 매긴 항목 종류를 받을지 여부만 켜고 끈다. */
+      const types = el('div', 'al-types');
+      [['rip', ko ? '이안류' : 'Rip current'],
+       ['quake', ko ? '지진' : 'Quake'],
+       ['warn', ko ? '기상특보' : 'Weather warning']].forEach(([key, label]) => {
+        const chip = el('label', 'al-type' + (sp[key] ? ' on' : ''));
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.checked = !!sp[key];
+        input.setAttribute('aria-label', `${sp.label} · ${label}`);
+        input.onchange = async () => {
+          const next = input.checked;
+          input.disabled = true;
+          chip.classList.add('saving');
+          try {
+            await push.updateSpot(sp.id, { [key]: next });
+            sp[key] = next;
+            chip.classList.toggle('on', next);
+          } catch (e) {
+            input.checked = !next;
+            toast(`${ko ? '알림 설정 저장 실패' : 'Could not save alert setting'}: ${e.message}`);
+          } finally {
+            input.disabled = false;
+            chip.classList.remove('saving');
+          }
+        };
+        chip.appendChild(input);
+        chip.appendChild(document.createTextNode(label));
+        types.appendChild(chip);
+      });
+      r.appendChild(types);
       body.appendChild(r);
     });
 

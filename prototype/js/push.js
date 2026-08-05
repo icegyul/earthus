@@ -187,6 +187,20 @@ export const push = {
     if (!auth.client) return;
     await auth.client.from('alert_spots').delete().eq('id', id);
   },
+
+  /** 지점별 알림 종류를 바꾼다.
+   *  ⚠️ 허용한 boolean 세 개만 보낸다. 객체를 그대로 update 하면 user_id·좌표까지
+   *     실수로 덮을 수 있고, 안전 알림 설정에서 그런 광범위 쓰기는 필요 없다. */
+  async updateSpot(id, values = {}) {
+    if (!auth.client || !auth.user) throw new Error('NOT_SIGNED_IN');
+    const patch = {};
+    ['rip', 'quake', 'warn'].forEach((key) => {
+      if (typeof values[key] === 'boolean') patch[key] = values[key];
+    });
+    if (!Object.keys(patch).length) return;
+    const { error } = await auth.client.from('alert_spots').update(patch).eq('id', id);
+    if (error) throw new Error(error.message);
+  },
 };
 
 /* 서비스워커가 보내는 신호 처리.

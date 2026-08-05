@@ -93,6 +93,7 @@
 | Open-Meteo | 자료는 CC BY 4.0. 단, 무료 호스팅 API는 비상업 이용 전용 |
 | CelesTrak (위성 OMM · SATCAT) | 무료 공개·요청 정책 확인. 별도 재배포 라이선스는 미확인 |
 | Wikimedia Commons (위성·관측소 사진) | 파일마다 다름. 각 저작자·라이선스·원본 파일 페이지를 개별 표시 |
+| Smithsonian GVP (화산 데이터베이스) | 개인·교육·비상업 이용. 상업 이용은 사전 서면 허가 필요 |
 
 ⚠️ **자료 라이선스와 API 서버 이용권은 다릅니다.** Open-Meteo가 돌려주는 기상
 자료는 CC BY 4.0이지만, `api.open-meteo.com` 무료 서버는 구독·광고가 없는
@@ -123,6 +124,13 @@ earthus는 Wikimedia API에서 자유 이용 파일만 요청하고, 파일별 �
 
 Wikimedia Commons 재사용 지침:
 https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia/en
+
+⚠️ Smithsonian GVP는 저자·소스·GVP 링크 인용을 요구하며, 인용만으로 상업 이용이
+허용되는 것은 아닙니다. 상업 이용에는 GVP 또는 권리자의 사전 서면 허가가 필요합니다.
+earthus는 현재 판매를 열지 않았고, GVP 상업 이용 허가 확인값이 참이 아니면 결제를
+시작하지 못하게 막습니다.
+
+GVP 콘텐츠 이용 조건: https://volcano.si.edu/gvp_termsofuse.cfm
 
 ⚠️ OSM 에서 온 지리 자료(해변·낚시 지점·등산로)는 **ODbL 의 파생물**입니다.
 저희 가공분에는 저희 권리가 있지만, 원본 부분은 ODbL 을 따릅니다 —

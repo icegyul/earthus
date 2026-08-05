@@ -142,6 +142,10 @@ export const askPanel = {
         body.appendChild(el('p', 'ask-warn', ko
           ? '⚠️ 이 소스는 항목마다 라이선스가 다릅니다. 표시된 저작자·라이선스·원본 페이지를 각각 확인해야 합니다.'
           : '⚠️ Each item from this source has its own licence. Check the displayed creator, licence, and original file page for every item.'));
+      } else if (s.license?.status === 'restricted') {
+        body.appendChild(el('p', 'ask-warn', ko
+          ? '⚠️ 이 자료는 비상업 이용 조건입니다. 출처를 인용해도 상업 이용은 별도 허가가 필요합니다.'
+          : '⚠️ This source is restricted to non-commercial use. Attribution does not replace the separate permission required for commercial use.'));
       }
       d.appendChild(body);
       n.appendChild(d);

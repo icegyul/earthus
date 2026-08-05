@@ -475,7 +475,7 @@ export const sheet = {
     // 공식 기관 링크 (§5-4: 자연재난은 기관 화이트리스트 수동 큐레이션)
     if (m.kind === 'volcano' || m.kind === 'quake') renderOfficial(m, rows);
     // 분화 중인 화산이면 담당 기관 라이브를 시트 안에서 바로 (§5-4 화이트리스트)
-    if (m.kind === 'volcano' && m.data && /진행 중|erupt/i.test(JSON.stringify(m.data))) {
+    if (m.kind === 'volcano' && m.data?._currentEruption === true) {
       renderAgencyLive(m.name, rows);
     }
     // 산불 — 위성 열점의 한계를 반드시 함께 알린다

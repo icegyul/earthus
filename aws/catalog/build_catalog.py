@@ -86,6 +86,17 @@ LIC = {
             "en": "⚠️ Commons has no single blanket licence. Follow the creator, licence, and modification terms on each file description page.",
         },
     },
+    "smithsonian-noncommercial": {
+        "id": "SMITHSONIAN-USAGE-CONDITIONS",
+        "ko": "Smithsonian 이용 조건 — 개인·교육·비상업 이용, 상업 이용은 사전 허가 필요",
+        "en": "Smithsonian usage conditions — personal, educational, and non-commercial use; prior permission required for commercial use",
+        "url": "https://volcano.si.edu/gvp_termsofuse.cfm",
+        "status": "restricted",
+        "warn": {
+            "ko": "⚠️ 출처를 인용해도 상업 이용이 자동으로 허용되지 않는다. GVP 또는 권리자의 사전 서면 허가가 필요하다.",
+            "en": "⚠️ Attribution alone does not permit commercial use. Prior written permission from GVP or the applicable rightsholder is required.",
+        },
+    },
     "unverified": {
         "id": "UNVERIFIED",
         "ko": "라이선스 미확인 — 공개 배포 전 반드시 확인할 것",
@@ -285,14 +296,20 @@ DATASETS = [
     {
         "id": "gvp-volcano", "tier": "A",
         "title": {"ko": "세계 화산 목록 (스미소니언 GVP)", "en": "Volcanoes of the World (Smithsonian GVP)"},
-        "org": "Smithsonian Institution", "doi": "10.5479/si.GVP.VOTW5-2024.5.2",
+        "org": "Smithsonian Institution", "doi": "10.5479/si.GVP.VOTW5-2025.5.3",
+        "officialCitation": "Global Volcanism Program, 2025. [Database] Volcanoes of the World "
+                            "(v. 5.3.6; 26 May 2026). Distributed by Smithsonian Institution, "
+                            "compiled by Venzke, E. https://doi.org/10.5479/si.GVP.VOTW5-2025.5.3",
         "domain": ["volcano"],
         "keywords": {"ko": ["화산", "분화", "화산활동"], "en": ["volcano", "eruption"]},
-        "spatial": "전지구", "temporal": "홀로세 전체",
-        "access": {"method": "https", "url": "https://volcano.si.edu/", "format": "web/api",
-                   "cors": False},
-        "license": "unverified",
-        "licenseNote": "스미소니언은 인용을 요구한다. 재배포 조건은 확인 필요.",
+        "spatial": "전지구", "temporal": "홀로세 전체 · VOTW 5.3.6 (2026-05-26)",
+        "access": {"method": "https",
+                   "url": "https://webservices.volcano.si.edu/geoserver/GVP-VOTW/wfs",
+                   "format": "wfs", "cors": False,
+                   "termsUrl": "https://volcano.si.edu/gvp_termsofuse.cfm",
+                   "note": "⚠️ 화면의 30개 정적 지점은 실시간 피드가 아니다. 현재 분화 여부를 판정하지 않고 각국 담당 기관 링크를 제공한다."},
+        "license": "smithsonian-noncommercial",
+        "licenseNote": "GVP 이용 조건은 저자·소스·GVP 링크 인용을 요구하고, 상업 이용은 사전 서면 허가를 요구한다.",
         "usedBy": ["report-5"],
     },
     {
@@ -703,7 +720,11 @@ def main():
                                   "ko": "우리가 만든 자료 — 공개 조건은 우리가 정한다",
                                   "en": "Produced by us — release terms are ours to set",
                                   "status": "verified"}}.get(lic_key) or LIC.get(lic_key) or LIC["unverified"]
-        if "doi" in rec:
+        official_citation = rec.pop("officialCitation", None)
+        if official_citation:
+            rec["citation"] = official_citation
+            rec["citationSource"] = "Smithsonian GVP official database citation"
+        elif "doi" in rec:
             print(f"▸ DOI 조회 {rec['id']}")
             cit = csl_citation(rec["doi"])
             if cit:
@@ -721,13 +742,14 @@ def main():
             "ko": "earthus 가 쓰는 자료의 목록이다. 사람(보고서 '자료와 방법'), "
                   "파이프라인(access 로 실제 수집), 챗 라우터(keywords 로 질문 연결)가 "
                   "모두 이 파일 하나를 쓴다. "
-                  "인용문은 doi.org 서지정보에서 생성한 것이며 사람이 쓰지 않았다. "
+                  "인용문은 doi.org 서지정보에서 생성하며, GVP처럼 DOI 메타데이터가 "
+                  "현재 판과 다를 때는 기관이 직접 제시한 인용문을 쓴다. "
                   "라이선스가 'UNVERIFIED' 인 항목은 공개 배포 전에 반드시 확인해야 한다. "
                   "'WIKIMEDIA-PER-FILE' 은 파일별 조건을 각각 표시해야 한다.",
             "en": "The list of sources earthus uses. One file serves humans (the report's Data and "
                   "Methods section), pipelines (fetching via access), and the chat router (matching "
-                  "questions via keywords). Citations are generated from doi.org metadata, not "
-                  "written by hand. Entries marked 'UNVERIFIED' must be checked before any public "
+                  "questions via keywords). Citations use doi.org metadata, except when an agency's "
+                  "current official citation supersedes stale DOI metadata. Entries marked 'UNVERIFIED' must be checked before any public "
                   "redistribution. 'WIKIMEDIA-PER-FILE' requires displaying each file's own terms.",
         },
         "tiers": TIERS,

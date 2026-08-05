@@ -57,7 +57,9 @@ export async function warnings(limit = 30) {
         at: m.data._time, lat: m.lat, lon: m.lon, select: m,
       }));
     (volcanoes.layer?.items || [])
-      .filter(m => /진행 중|erupt/i.test(JSON.stringify(m.data || {})))
+      /* ⚠️ 정적 화산 목록의 설명에 erupt 라는 단어가 있다고
+         실시간 분화로 만들면 안 된다. 기관 피드가 명시한 플래그만 쓴다. */
+      .filter(m => m.data?._currentEruption === true)
       .slice(0, 6)
       .forEach(m => push({
         id: m.id, kind: 'volcano',

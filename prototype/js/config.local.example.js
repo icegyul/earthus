@@ -90,6 +90,10 @@ export const CONFIG = {
      customer-api(유료 키) 또는 셀프호스팅으로 옮기고 운영 검증한 뒤에만 true.
      SALES_OPEN과 이것이 둘 다 true여야 결제가 열린다. */
   OPEN_METEO_COMMERCIAL_READY: false,
+  /* ⚠️ Smithsonian GVP는 일반 콘텐츠의 상업 이용에 사전 서면 허가를 요구한다.
+     GVP 또는 적용 권리자의 상업 이용 허가를 받고 화산 데이터 경로를
+     재검증한 뒤에만 true. */
+  GVP_COMMERCIAL_READY: false,
 
   /* ── 웹푸시 (알림) ─────────────────────────────────────────
      ⚠️⚠️ **공개키만 여기 넣습니다.** 이 파일은 브라우저로 그대로 내려갑니다 —

@@ -187,10 +187,10 @@ export const subscribeSheet = {
        전자상거래법상 신고 없이 통신판매를 하는 것 자체가 위반이다.
        결제 코드는 다 되어 있고 테스트 키로 결제창까지 확인했지만,
        **된다고 여는 것과 열어도 되는 것은 다르다.**
-       ⚠️ 신고번호만으로는 부족하다. Open-Meteo 무료 호스팅 API는 비상업 전용이라
-          유료 customer-api 전환 또는 셀프호스팅 검증 뒤
-          OPEN_METEO_COMMERCIAL_READY도 true여야 한다. 둘 중 하나만 켜서는 안 열린다. */
-    const dataReady = CONFIG.OPEN_METEO_COMMERCIAL_READY === true;
+       ⚠️ 신고번호만으로는 부족하다. Open-Meteo 무료 호스팅 API는 비상업 전용이고,
+          Smithsonian GVP도 상업 이용은 사전 허가가 필요하다. 둘 다 검증하지 않으면 안 열린다. */
+    const dataReady = CONFIG.OPEN_METEO_COMMERCIAL_READY === true
+      && CONFIG.GVP_COMMERCIAL_READY === true;
     const salesReady = CONFIG.SALES_OPEN && dataReady;
     const provs = salesReady ? billing.providers() : [];
     if (!provs.length) {
@@ -201,9 +201,9 @@ export const subscribeSheet = {
       box.innerHTML = `<b>${ko ? '결제 준비 중' : 'Payments not live yet'}</b>`
         + `<p>${dataBlocked
           ? (ko
-            ? '상업 이용이 가능한 기상 API 경로를 검증하는 중입니다. 무료 API를 쓰는 상태에서는 유료 판매를 열지 않습니다.<br>'
+            ? '상업 이용이 가능한 기상 API 경로와 GVP 화산 자료 허가를 검증하는 중입니다. 조건을 모두 충족하기 전에는 유료 판매를 열지 않습니다.<br>'
               + '<b>지금 보시는 기능은 모두 무료입니다.</b>'
-            : 'We are validating a weather API route licensed for commercial use. Paid sales stay closed while the free API is in use.<br>'
+            : 'We are validating a weather API route licensed for commercial use and commercial permission for GVP volcano data. Paid sales stay closed until both are ready.<br>'
               + '<b>Everything you see now is free.</b>')
           : (ko
             ? '통신판매업 신고 절차를 밟고 있습니다. 신고가 끝나기 전에는 유료 판매를 열지 않습니다 — 법으로 그렇게 되어 있고, 저희도 그게 맞다고 봅니다.<br>'

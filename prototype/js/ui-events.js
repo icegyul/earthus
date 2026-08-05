@@ -342,8 +342,8 @@ export const eventPanel = {
         ? '✓ 지금 진행 중인 경고가 없습니다.'
         : '✓ No active warnings right now.'));
       body.appendChild(el('p', 'sky-note', ko
-        ? '규모 4.5 이상 지진, 분화 중인 화산, 쓰나미 경보, 대형 산불이 생기면 여기에 올라옵니다. 비어 있는 것은 정상입니다 — 없는 위험을 만들어 채우지 않습니다.'
-        : 'M4.5+ quakes, erupting volcanoes, tsunami alerts and large wildfires appear here. Empty is normal — we do not invent hazards to fill the list.'));
+        ? '규모 4.5 이상 지진, 쓰나미 경보, 대형 산불이 생기면 여기에 올라옵니다. 화산 정적 목록은 현재 분화로 간주하지 않습니다. 비어 있는 것은 정상입니다.'
+        : 'M4.5+ quakes, tsunami alerts and large wildfires appear here. The static volcano list is not treated as current eruption data. Empty is normal.'));
       return;
     }
 
@@ -366,8 +366,8 @@ export const eventPanel = {
     });
 
     body.appendChild(el('p', 'sky-note', ko
-      ? '지진은 USGS(일본 근해는 기상청 대조), 화산은 스미소니언, 쓰나미는 PTWC·NTWC·NWS, 산불은 NASA FIRMS 위성 관측입니다. 담당 기관 발표를 그대로 옮기고 등급을 우리가 다시 매기지 않습니다.'
-      : 'Quakes from USGS (JMA cross-check near Japan), volcanoes from Smithsonian, tsunami from PTWC/NTWC/NWS, wildfires from NASA FIRMS satellites. Levels are copied from the issuing agency, never re-graded by us.'));
+      ? '지진은 USGS(일본 근해는 기상청 대조), 쓰나미는 PTWC·NTWC·NWS, 산불은 NASA FIRMS 위성 관측입니다. 화산은 실시간 기관 피드가 없으므로 이 경고 목록에 넣지 않습니다.'
+      : 'Quakes come from USGS (JMA cross-check near Japan), tsunami alerts from PTWC/NTWC/NWS, and wildfires from NASA FIRMS. Volcanoes are excluded because no live agency feed is connected.'));
   },
 
   renderBriefs(body, ko) {

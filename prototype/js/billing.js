@@ -217,9 +217,13 @@ export const billing = {
     /* ⚠️⚠️ Open-Meteo는 **자료(CC BY 4.0)**와 **호스팅 API 이용권**이 다르다.
        무료 api.open-meteo.com은 비상업 전용이다. 여러 화면·Lambda가 아직 그
        엔드포인트를 쓰므로, 유료 customer-api 전환 또는 셀프호스팅을 검증했다는
-       두 번째 스위치 없이는 SALES_OPEN만 켜도 결제를 시작하지 못하게 막는다. */
+       두 번째 스위치 없이는 SALES_OPEN만 켜도 결제를 시작하지 못하게 막는다.
+       GVP도 인용만으로 상업 이용할 수 없고 사전 서면 허가가 필요하다. */
     if (!CONFIG.SALES_OPEN) throw new Error('NOT_AVAILABLE');
     if (CONFIG.OPEN_METEO_COMMERCIAL_READY !== true) {
+      throw new Error('DATA_LICENSE_NOT_READY');
+    }
+    if (CONFIG.GVP_COMMERCIAL_READY !== true) {
       throw new Error('DATA_LICENSE_NOT_READY');
     }
     const plan = PLANS[planKey];

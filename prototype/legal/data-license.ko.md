@@ -1,6 +1,6 @@
 # earthus 자료 이용 조건
 
-최종 개정일: 2026년 8월 3일
+최종 개정일: 2026년 8월 6일
 
 ---
 
@@ -90,7 +90,18 @@
 | ECMWF 오픈데이터 (IFS · AIFS · 태풍 진로) | CC-BY-4.0 |
 | NOAA (GMGSI 구름 · NCEP 재분석 · NDBC · 쓰나미) | 퍼블릭 도메인 |
 | NASA GIBS · JAXA Himawari · EU JRC (GDACS) | 각 기관 조건 |
-| Open-Meteo | CC-BY-4.0 |
+| Open-Meteo | 자료는 CC BY 4.0. 단, 무료 호스팅 API는 비상업 이용 전용 |
+
+⚠️ **자료 라이선스와 API 서버 이용권은 다릅니다.** Open-Meteo가 돌려주는 기상
+자료는 CC BY 4.0이지만, `api.open-meteo.com` 무료 서버는 구독·광고가 없는
+비상업 앱에만 허용됩니다. 구독이나 광고를 열려면 유료 `customer-api`와 API 키를
+쓰거나 같은 오픈소스 서버를 직접 운영해야 합니다.
+
+earthus는 현재 판매와 광고를 열지 않았습니다. 코드도 `SALES_OPEN`뿐 아니라
+Open-Meteo 상업 이용 전환 확인값이 함께 참이어야 결제를 시작하도록 막습니다.
+이 전환을 검증하기 전에는 유료 판매를 열지 않습니다.
+
+공식 조건: https://open-meteo.com/en/terms
 
 ⚠️ OSM 에서 온 지리 자료(해변·낚시 지점·등산로)는 **ODbL 의 파생물**입니다.
 저희 가공분에는 저희 권리가 있지만, 원본 부분은 ODbL 을 따릅니다 —

@@ -67,6 +67,13 @@ LIC = {
         "url": "https://apps.ecmwf.int/datasets/licences/copernicus/",
         "status": "verified",
     },
+    "cc-by-4.0": {
+        "id": "CC-BY-4.0",
+        "ko": "Creative Commons 저작자표시 4.0 국제",
+        "en": "Creative Commons Attribution 4.0 International",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "status": "verified",
+    },
     "unverified": {
         "id": "UNVERIFIED",
         "ko": "라이선스 미확인 — 공개 배포 전 반드시 확인할 것",
@@ -371,10 +378,13 @@ DATASETS = [
                             "visibility", "drought", "soil moisture"]},
         "spatial": "지점 조회 (우리는 5° 격자 2,376지점)", "temporal": "실시간 + 예보",
         "access": {"method": "https", "url": "https://api.open-meteo.com/v1/forecast",
-                   "format": "json", "cors": True, "auth": "none",
-                   "limits": "분당 요청 수 제한. 변수를 늘려도 요청 수는 그대로 (실측)"},
-        "license": "unverified",
-        "licenseNote": "Open-Meteo 자체 조건 + 기반 모델(NOAA GFS 등) 조건. 공개 전 확인.",
+                   "format": "json", "cors": True,
+                   "auth": "무료 비상업: 없음 · 상업: customer-api + apikey",
+                   "termsUrl": "https://open-meteo.com/en/terms",
+                   "limits": "무료 API는 비상업 전용 · 10,000호출/일"},
+        "license": "cc-by-4.0",
+        "licenseNote": "자료는 CC BY 4.0. 무료 호스팅 API는 비상업 전용이며, "
+                       "구독·광고 앱은 customer-api 유료 키 또는 셀프호스팅이 필요하다.",
         "usedBy": ["report-1", "model-1"],
     },
     {
@@ -388,9 +398,12 @@ DATASETS = [
                             "ozone", "uv index", "smog", "aqi"]},
         "spatial": "전지구 (우리는 5° 격자 2,376지점)", "temporal": "실시간 · 매시간",
         "access": {"method": "https", "url": "https://air-quality-api.open-meteo.com/v1/air-quality",
-                   "ours": "wind/air.json", "format": "json", "cors": True},
-        "license": "unverified",
-        "licenseNote": "Open-Meteo 조건 + 기반 CAMS(Copernicus) 조건. 공개 전 확인.",
+                   "ours": "wind/air.json", "format": "json", "cors": True,
+                   "auth": "무료 비상업: 없음 · 상업: customer-api + apikey",
+                   "termsUrl": "https://open-meteo.com/en/terms"},
+        "license": "cc-by-4.0",
+        "licenseNote": "Open-Meteo 자료 CC BY 4.0 + 기반 CAMS 조건. 무료 호스팅 API는 "
+                       "비상업 전용이며 판매 전 customer-api 또는 셀프호스팅 전환이 필요하다.",
         "why": {"ko": "⚠️ 대기질 지수(AQI)는 나라마다 계산식이 다르다. 같은 공기를 두고 "
                       "유럽과 미국이 다른 숫자를 낸다 — 그래서 둘 다 담고 어느 기준인지 밝힌다. "
                       "⚠️ dust 는 먼지 질량일 뿐, 어디서 왔는지(고비·사하라·공사장)는 들어 있지 않다. "
@@ -412,8 +425,12 @@ DATASETS = [
                             "surf", "sailing"]},
         "spatial": "전지구 해상", "temporal": "실시간 · 매시간",
         "access": {"method": "https", "url": "https://marine-api.open-meteo.com/v1/marine",
-                   "ours": "ocean/marine.json", "format": "json", "cors": True},
-        "license": "unverified",
+                   "ours": "ocean/marine.json", "format": "json", "cors": True,
+                   "auth": "무료 비상업: 없음 · 상업: customer-api + apikey",
+                   "termsUrl": "https://open-meteo.com/en/terms"},
+        "license": "cc-by-4.0",
+        "licenseNote": "자료는 CC BY 4.0. 무료 호스팅 API는 비상업 전용이며, "
+                       "구독·광고 앱은 customer-api 유료 키 또는 셀프호스팅이 필요하다.",
         "why": {"ko": "⚠️ 여기 '해류(current)'는 조류(tide)가 아니다. 조류는 달·태양 인력으로 "
                       "하루 두 번 드나드는 것이고 해류는 바람·밀도차로 흐르는 큰 흐름이다. "
                       "물때표가 필요한 사람에게 이걸 주면 안 된다.",

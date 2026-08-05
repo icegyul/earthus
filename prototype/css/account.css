@@ -871,21 +871,23 @@
      왼쪽 설명이 한 글자 폭으로 찌그러진다. 알림 토글 안에서만 내용 폭으로 되돌린다. */
   flex:0 0 auto; width:auto; min-width:76px; min-height:44px; padding:8px 16px;
 }
-.al-spot{ display:grid; grid-template-columns:minmax(0,1fr) 44px; align-items:stretch; gap:0 4px;
+.al-spot{ display:grid; grid-template-columns:minmax(0,1fr) 44px 44px; align-items:stretch; gap:0 2px;
   border-top:1px solid var(--line,#1d2635); font-size:12.5px; }
 .al-go{ flex:1; min-width:0; min-height:52px; display:flex; align-items:center;
   justify-content:space-between; gap:10px; padding:8px 4px; text-align:left;
   background:none; border:0; color:inherit; cursor:pointer; }
 .al-go:hover{ color:#9fe6f5; }
-.al-go:focus-visible,.al-del:focus-visible{ outline:2px solid #9fe6f5; outline-offset:-2px; }
+.al-go:focus-visible,.al-edit:focus-visible,.al-del:focus-visible{
+  outline:2px solid #9fe6f5; outline-offset:-2px; }
 .al-go > div{ min-width:0; }
 .al-go > span{ flex:0 0 auto; font-size:20px; opacity:.45; }
 .al-go i{ display:block; font-style:normal; font-size:10.5px; opacity:.55; margin-top:2px;
   font-variant-numeric:tabular-nums; }
-.al-del{ flex:0 0 44px; min-width:44px; min-height:44px; background:none; border:none;
+.al-edit,.al-del{ min-width:44px; min-height:44px; background:none; border:none;
   color:inherit; opacity:.45; font-size:18px; line-height:1; padding:0; cursor:pointer; }
-.al-del:hover{ opacity:.9; }
-.al-del:disabled{ opacity:.2; cursor:wait; }
+.al-edit{ font-size:15px; }
+.al-edit:hover,.al-del:hover{ opacity:.9; }
+.al-edit:disabled,.al-del:disabled{ opacity:.2; cursor:wait; }
 .al-add{ min-height:44px; }
 .al-add:disabled{ opacity:.45; cursor:wait; }
 .al-types{ grid-column:1/-1; display:flex; flex-wrap:wrap; gap:6px; padding:0 0 10px 4px; }
@@ -1038,3 +1040,7 @@
 .cl-milestone em{ display:block; font-style:normal; font-size:11.5px; margin-top:5px;
   color:rgba(255,255,255,.55); }
 @media (max-width:400px){ .cl-milestone b{ font-size:14.5px } }
+/* '준비 중' 꼬리표 — 곧 열릴 것을 지금 파는 것으로 오해하지 않게 (2026-08-06) */
+.sub-soon-tag{display:inline-block;margin-left:7px;padding:2px 8px;border-radius:999px;
+  font-size:11px;font-weight:600;vertical-align:middle;
+  color:#ffd9ae;background:rgba(180,90,20,.22);border:1px solid rgba(242,166,90,.42)}

@@ -111,45 +111,67 @@ export const subscribeSheet = {
           법으로 필요한 것이면서, 동시에 가장 설득력 있는 문장이다 —
           "못 하는 걸 못 한다고 말하는 사람"이라는 증거이기 때문이다. */
     feat.appendChild(el('div', 'sub-why', ko ? `
-      <h4>우리가 파는 것은 자료가 아닙니다</h4>
-      <p>자료는 공공기관이 공개한 것입니다. 누구나 받을 수 있습니다.
+      <h4>구독하면 오늘부터 열리는 것</h4>
+      <ul>
+        <li><b>지켜볼 곳 20군데</b> — 무료는 1곳입니다. 집·부모님 댁·자주 가는 해변까지
+            한꺼번에 지켜보고, 특보·지진·이안류가 뜨면 알려 드립니다</li>
+        <li><b>위성 전체 카탈로그</b> — 스타링크를 포함한 전체 목록.
+            무료는 주요 위성만 보입니다</li>
+        <li><b>궤도 추적선과 통과 예보</b> — 고른 위성이 지금 어디를 도는지,
+            내 위치 위를 언제 지나가는지</li>
+      </ul>
+
+      <h4>곧 열릴 것 <span class="sub-soon-tag">준비 중</span></h4>
+      <p>지구를 되감아 보는 기능과 내 지점의 지난 기록입니다.
+         <b>자료를 2026년 7월 27일부터 쌓고 있어서</b> 아직 기간이 짧습니다 —
+         충분히 모이면 엽니다. <b>준비 중인 것에는 돈을 받지 않습니다.</b></p>
+
+      <h4>안전 정보는 계속 무료입니다</h4>
+      <p>특보·지진·쓰나미·이안류·낙뢰, 그리고 모든 레이어와
+         출처·관측 시각·표본 수는 <b>구독과 상관없이 그대로</b>입니다.
+         유료는 <b>여러 곳을 동시에 지켜보는 양</b>과 <b>계산이 드는 것</b>뿐입니다.</p>
+
+      <h4>왜 돈을 받나</h4>
+      <p>자료는 공공기관이 공개한 것이라 누구나 받을 수 있습니다.
          우리가 하는 일은 그 자료를 <b>믿어도 되는지까지 말하는 것</b>입니다 —
-         출처, 관측 시각, 표본 수, 판단 기준, 그리고 <b>우리가 모르는 것</b>까지.</p>
-
-      <h4>⚠️ 지금 못 하는 것</h4>
-      <p>비행기와 배의 실시간 위치는 <b>공공자료가 아닙니다.</b> 돈을 주고 사와야 합니다.</p>
-
-      <h4>혼자 만들고 있습니다</h4>
-      <p>한국·일본·영국·미국이 공개한 자료를 모아 최대한 무료로 드리려 합니다.
-         다만 서버비와 개발 시간은 계속 듭니다.</p>
+         출처, 관측 시각, 표본 수, 판단 기준, 그리고 <b>우리가 모르는 것</b>까지.
+         혼자 만들고 있고, 서버비와 개발 시간은 계속 듭니다.</p>
 
       <h4>초기에 결제해 주시면</h4>
       <ul>
-        <li>비행기·배가 열릴 때까지 기다리신 기간을 <b>두 배로</b> 돌려드립니다</li>
         <li><b>초기 멤버 페이지</b>에 원하시는 이름이나 별칭을 올려 드립니다</li>
         <li>책·행사 같은 혜택이 생기면 <b>언제나 먼저</b> 모시겠습니다 — 서비스가 살아 있는 한</li>
       </ul>
-
     ` : `
-      <h4>We are not selling the data</h4>
-      <p>The data is public. Anyone can fetch it. What we do is tell you
-         <b>whether you can trust it</b> — source, observation time, sample size,
-         thresholds, and <b>what we do not know</b>.</p>
+      <h4>What opens today</h4>
+      <ul>
+        <li><b>20 places to watch</b> — free covers one. Home, family, your beach —
+            warnings, quakes and rip currents for all of them</li>
+        <li><b>Full satellite catalogue</b>, Starlink included. Free shows major ones only</li>
+        <li><b>Orbit tracks and pass predictions</b> over your location</li>
+      </ul>
 
-      <h4>⚠️ What we cannot do yet</h4>
-      <p>Live aircraft and ship positions are <b>not public data</b>. They must be bought.</p>
+      <h4>Coming <span class="sub-soon-tag">not yet</span></h4>
+      <p>Rewinding Earth and your spot's own history. <b>We have been archiving since
+         27 July 2026</b>, so the record is still short — we open it when there is enough.
+         <b>We do not charge for what is not ready.</b></p>
 
-      <h4>Built by one person</h4>
-      <p>Public data from Korea, Japan, the UK and the US, kept free as far as we can.
-         Servers and development time still cost money.</p>
+      <h4>Safety stays free</h4>
+      <p>Warnings, quakes, tsunami, rip currents, lightning — plus every layer and every
+         source, observation time and sample size — are <b>the same with or without a
+         subscription</b>. Paying covers <b>watching many places at once</b> and
+         <b>work that actually costs compute</b>.</p>
+
+      <h4>Why we charge</h4>
+      <p>The data is public; anyone can fetch it. What we do is tell you <b>whether you
+         can trust it</b> — source, observation time, sample size, thresholds, and
+         <b>what we do not know</b>. One person builds this; servers and time cost money.</p>
 
       <h4>If you subscribe early</h4>
       <ul>
-        <li>We <b>double</b> the time you waited until aircraft and ships open</li>
         <li>Your name or handle goes on the <b>early members page</b></li>
         <li>Books, events and other perks — <b>you are invited first</b>, as long as we exist</li>
       </ul>
-
     `));
 
     feat.appendChild(el('h4', null, ko ? '구독하면 열리는 것' : 'Unlocked with Pro'));

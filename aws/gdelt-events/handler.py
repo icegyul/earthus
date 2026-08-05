@@ -345,6 +345,9 @@ def handler(event, context):
         "sourceFile": stamp,
         "windowHours": WINDOW_HOURS,
         "source": "GDELT 2.0 Events",
+        "sourceUrl": "https://www.gdeltproject.org/",
+        "license": "Unlimited and unrestricted use; cite and link The GDELT Project",
+        "termsUrl": "https://www.gdeltproject.org/about.html#termsofuse",
         "rules": {
             "confirmScore": CONFIRM_SCORE, "minScore": MIN_SCORE, "dedupKm": DEDUP_KM,
             # ⚠️ 실제로 잘린 지점. MIN_SCORE 는 **뉴스가 적은 날에만** 작동한다 —

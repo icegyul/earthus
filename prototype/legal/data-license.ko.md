@@ -95,6 +95,7 @@
 | CelesTrak (위성 OMM · SATCAT) | 무료 공개·요청 정책 확인. 별도 재배포 라이선스는 미확인 |
 | Wikimedia Commons (위성·관측소 사진) | 파일마다 다름. 각 저작자·라이선스·원본 파일 페이지를 개별 표시 |
 | Smithsonian GVP (화산 데이터베이스) | 개인·교육·비상업 이용. 상업 이용은 사전 서면 허가 필요 |
+| GDELT 2.0 Events · GKG | 학술·상업·공공 용도 무제한 이용·재배포. GDELT Project 인용·링크 필수 |
 
 ⚠️ **자료 라이선스와 API 서버 이용권은 다릅니다.** Open-Meteo가 돌려주는 기상
 자료는 CC BY 4.0이지만, `api.open-meteo.com` 무료 서버는 구독·광고가 없는
@@ -139,6 +140,13 @@ GVP 콘텐츠 이용 조건: https://volcano.si.edu/gvp_termsofuse.cfm
 지역·국가 당국의 공식 대피·생명보호 경보를 대체하지 않습니다.
 
 GDACS 이용 조건: https://www.gdacs.org/Documents/2025/GDACS_Terms_of_use_Oct_25.pdf
+
+⚠️ GDELT Project가 배포하는 데이터셋은 학술·상업·공공 용도를 포함해 무제한 이용과
+재배포가 가능합니다. 다만 GDELT Project를 인용하고 해당 홈페이지로 링크해야 합니다.
+earthus는 기사 URL·제목·시각·자동 코딩 수치와 자체 집계만 저장하고 기사 본문은 저장하지
+않습니다. 연결된 기사 본문의 저작권은 각 매체의 조건을 그대로 따릅니다.
+
+GDELT 이용 조건: https://www.gdeltproject.org/about.html#termsofuse
 
 ⚠️ OSM 에서 온 지리 자료(해변·낚시 지점·등산로)는 **ODbL 의 파생물**입니다.
 저희 가공분에는 저희 권리가 있지만, 원본 부분은 ODbL 을 따릅니다 —

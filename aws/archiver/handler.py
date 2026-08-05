@@ -104,7 +104,7 @@ def put_jsonl(dataset, rows, now):
 SOURCES = {
     "quake":    ("usgs-quakes",  "US-Gov-Public-Domain"),
     "tsunami":  ("nws-tsunami",  "US-Gov-Public-Domain"),
-    "news":     ("gdelt",        "UNVERIFIED"),
+    "news":     ("gdelt",        "GDELT-OPEN-ATTRIBUTION"),
     "buoy":     ("ndbc-osmc",    "US-Gov-Public-Domain"),
     "cyclone":  ("gdacs",        "CC-BY-4.0"),
     "solar":    ("noaa-swpc",    "US-Gov-Public-Domain"),

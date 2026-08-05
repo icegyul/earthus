@@ -102,7 +102,8 @@ const SRC = {
               en: 'Global Disaster Awareness and Coordination System, GDACS · CC BY 4.0', every: 20 },
   tsunami:  { ko: 'NOAA NWS 쓰나미 경보', en: 'NOAA NWS tsunami alerts', every: 3 },
   aurora:   { ko: 'NOAA SWPC 우주기상', en: 'NOAA SWPC space weather', every: 5 },
-  news:     { ko: 'GDELT (우리가 신뢰도 채점)', en: 'GDELT, scored by us', every: 30 },
+  news:     { ko: 'GDELT Project (우리가 신뢰도 채점)', en: 'GDELT Project, scored by us',
+              url: 'https://www.gdeltproject.org/', every: 30 },
   poi:      { ko: '© OpenStreetMap contributors · ODbL 1.0',
               en: '© OpenStreetMap contributors · ODbL 1.0', every: 60 },
   orbits:   { ko: 'CelesTrak OMM JSON + SATCAT · 하루 1회 캐시',
@@ -255,7 +256,11 @@ export const sourceNote = {
     } catch (_) { /* 시각을 못 알아내면 출처만 적는다 — 지어내지 않는다 */ }
 
     const bits = [];
-    bits.push(`<b>${esc(name)}</b> · ${esc(ko ? src?.ko : src?.en) || '—'}`);
+    const sourceText = esc(ko ? src?.ko : src?.en) || '—';
+    const sourceHtml = src?.url
+      ? `<a href="${esc(src.url)}" target="_blank" rel="noopener noreferrer">${sourceText}</a>`
+      : sourceText;
+    bits.push(`<b>${esc(name)}</b> · ${sourceHtml}`);
 
     if (made && !Number.isNaN(made.getTime())) {
       if (id === 'truecolor') {

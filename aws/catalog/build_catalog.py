@@ -97,6 +97,13 @@ LIC = {
             "en": "⚠️ Attribution alone does not permit commercial use. Prior written permission from GVP or the applicable rightsholder is required.",
         },
     },
+    "gdelt-open": {
+        "id": "GDELT-OPEN-ATTRIBUTION",
+        "ko": "GDELT 오픈 데이터 — 학술·상업·공공 용도 무제한 이용·재배포, GDELT 인용·링크 필수",
+        "en": "GDELT open data — unlimited academic, commercial, and governmental use and redistribution; citation and link required",
+        "url": "https://www.gdeltproject.org/about.html#termsofuse",
+        "status": "verified",
+    },
     "unverified": {
         "id": "UNVERIFIED",
         "ko": "라이선스 미확인 — 공개 배포 전 반드시 확인할 것",
@@ -627,9 +634,12 @@ DATASETS = [
         "org": "The GDELT Project", "domain": ["news"],
         "keywords": {"ko": ["뉴스", "사건", "보도"], "en": ["news", "event", "media"]},
         "spatial": "전지구", "temporal": "15분 간격",
-        "access": {"method": "https", "url": "https://www.gdeltproject.org/", "format": "csv/json",
-                   "cors": False},
-        "license": "unverified",
+        "access": {"method": "https",
+                   "url": "http://data.gdeltproject.org/gdeltv2/lastupdate.txt",
+                   "format": "csv.zip/gkg.csv.zip", "cors": False,
+                   "termsUrl": "https://www.gdeltproject.org/about.html#termsofuse"},
+        "license": "gdelt-open",
+        "licenseNote": "이용·재배포 시 GDELT Project를 인용하고 https://www.gdeltproject.org/ 링크를 표시한다. 연결된 기사 본문의 저작권은 각 매체에 남는다.",
         "why": {"ko": "⚠️ 기사 본문은 저작권 대상이라 절대 저장하지 않는다. "
                       "링크·시각·제목과 거기서 뽑은 수치만 남긴다.",
                 "en": "⚠️ Article bodies are copyrighted and are never stored. Only links, "

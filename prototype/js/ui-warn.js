@@ -10,6 +10,7 @@
 
 import { i18n } from './i18n.js';
 import { warn } from './warn.js';
+import { safetyActions } from './safety-actions.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -92,5 +93,6 @@ export const warnUI = {
       + `<p class="warn-note">${esc(ko ? s.note.ko : s.note.en)}<br>`
       + `${ko ? '출처' : 'Source'}: ${esc(warn.data.source)} · ${esc(warn.data.license)}<br>`
       + `${ko ? '기준시각(KST)' : 'As of (KST)'} ${hhmm(s.observedKst)}</p>`;
+    this.body.appendChild(safetyActions());
   },
 };

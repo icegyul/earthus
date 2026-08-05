@@ -1207,6 +1207,27 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 .warn-lv { font-size: 11px; padding: 1px 6px; border-radius: 4px; margin-left: 6px; }
 .warn-note { margin-top: 12px; font-size: 11px; line-height: 1.55; color: rgba(255,255,255,.42); }
 
+/* 재난 상세에서 '봤다'로 끝나지 않고 공식 행동요령·전화로 이어진다.
+   ⚠️ 긴급전화는 실수로 누르지 않도록 작은 텍스트 링크가 아니라 44px 버튼으로. */
+.safety-actions{
+  margin:16px 0 2px; padding:13px;
+  border:1px solid rgba(255,255,255,.11); border-radius:12px;
+  background:rgba(255,255,255,.035);
+}
+.safety-actions > strong{ display:block; margin-bottom:9px; font-size:12px; font-weight:650 }
+.safety-action-grid{ display:grid; grid-template-columns:1fr 1fr; gap:7px }
+.safety-action{
+  min-height:44px; padding:0 11px; display:flex; align-items:center; justify-content:center;
+  border:1px solid rgba(255,255,255,.14); border-radius:9px;
+  color:rgba(255,255,255,.9); background:rgba(255,255,255,.06);
+  font-size:12px; font-weight:600; text-align:center; text-decoration:none;
+}
+.safety-action.guide{ grid-column:1 / -1; background:rgba(118,176,255,.1); border-color:rgba(118,176,255,.25) }
+.safety-action.emergency{ color:#fff; background:rgba(255,77,77,.18); border-color:rgba(255,77,77,.42) }
+.safety-action.police{ background:rgba(78,139,255,.14); border-color:rgba(78,139,255,.32) }
+.safety-action:focus-visible{ outline:2px solid #fff; outline-offset:2px }
+.safety-actions p{ margin:9px 1px 0; color:rgba(255,255,255,.46); font-size:10.5px; line-height:1.5 }
+
 /* ── 한국탭 ────────────────────────────────────────────── */
 #koreaTabs { display: flex; gap: 4px; margin: 2px 0 10px; flex-wrap: wrap; }
 .kr-tab {

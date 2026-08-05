@@ -32,12 +32,17 @@ function markA11y(el) {
 
 /** 열림/닫힘에 맞춰 role 과 inert 를 유지한다 */
 function syncA11y() {
+  let anyOpen = false;
   document.querySelectorAll('#sheet, #settings, .sheet-panel').forEach(el => {
     const open = el.classList.contains('up');
+    if (open) anyOpen = true;
     if (open) markA11y(el);
     if ('inert' in HTMLElement.prototype) el.inert = !open;
     el.setAttribute('aria-hidden', String(!open));
   });
+  /* 위성 로딩 표시처럼 z-index가 높은 지도 보조 UI가 시트의 마지막 줄을 가리지 않게
+     공통 상태를 body에 둔다. 여는 코드가 수십 군데라 각자 숨기면 반드시 빠진다. */
+  document.body.classList.toggle('panel-open', anyOpen);
 }
 
 export const panels = {

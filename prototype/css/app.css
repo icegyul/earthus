@@ -1188,6 +1188,9 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
   transition:opacity .3s ease, transform .3s ease;
 }
 #tcLoading.on{ opacity:1; transform:translateX(-50%) translateY(0); }
+/* 정보 시트가 열리면 로딩 진행률은 계속 계산하되 화면에서는 잠시 숨긴다.
+   z-index 22라 시트(20) 위로 떠서 하단 설명과 버튼을 가리고 있었다. */
+body.panel-open #tcLoading.on{ opacity:0; transform:translateX(-50%) translateY(8px); }
 .tcl-txt{ font-variant-numeric:tabular-nums; }   /* 숫자가 흔들리지 않게 */
 
 /* 진행 막대.

@@ -81,8 +81,13 @@ header.hero{position:relative;overflow:hidden;padding:0 0 40px}
   position:absolute;inset:-30% -10% auto;height:820px;pointer-events:none;
   background:radial-gradient(60% 55% at 50% 42%,rgba(63,199,192,.16),transparent 70%);
 }
-.heroInner{position:relative;padding:76px 0 0}
-.logo{width:min(340px,68vw);margin:0 0 40px}
+/* ⚠️⚠️ `padding:76px 0 0` 이 .wrap 의 `padding:0 24px` 를 통째로 덮어써서
+   **좌우 여백이 0** 이 돼 있었다. 같은 특이도라 나중에 선언된 이쪽이 이긴다.
+   화면 폭이 1080px 이하면 제목·본문·로고가 전부 화면 왼쪽 끝에 붙었다.
+   옛 로고 PNG 는 그림 안에 여백이 있어 **우연히 가려져 있었을 뿐**이다 —
+   여백 없는 SVG 로 바꾸자 드러났다. 세로만 지정한다. */
+.heroInner{position:relative;padding-top:76px}
+.logo{width:min(340px,68vw);height:auto;aspect-ratio:1150/330;object-fit:contain;margin:0 0 40px}
 .heroTitle{
   font-size:clamp(34px,6.2vw,62px);font-weight:750;letter-spacing:-.04em;line-height:1.14;
   max-width:16ch;
@@ -346,8 +351,8 @@ footer .note{margin-top:22px;line-height:1.8;max-width:72ch}
   <div class="heroGlow" aria-hidden="true"></div>
   <div class="wrap heroInner">
     <picture>
-      <source srcset="logo-lockup.webp" type="image/webp">
-      <img class="logo" src="logo-lockup.png" alt="earthus" width="900" height="156" fetchpriority="high">
+      <source srcset="logo/earthus-lockup-white.svg" type="image/svg+xml">
+      <img class="logo" src="logo-lockup.png" alt="earthus" width="1150" height="330" fetchpriority="high">
     </picture>
 
     <!-- 브랜드 슬로건 — 로고 밑에 영어·한국어 함께 -->
@@ -838,8 +843,8 @@ footer .note{margin-top:22px;line-height:1.8;max-width:72ch}
   <div class="wrap">
     <div class="row">
       <picture>
-        <source srcset="logo-lockup.webp" type="image/webp">
-        <img src="logo-lockup.png" alt="earthus" width="180" height="31" style="width:150px" loading="lazy">
+        <source srcset="logo/earthus-lockup-white.svg" type="image/svg+xml">
+        <img src="logo-lockup.png" alt="earthus" width="1150" height="330" style="width:150px;height:auto;aspect-ratio:1150/330;object-fit:contain" loading="lazy">
       </picture>
       <a href="/">지구본</a>
       <a href="#sources">자료 출처</a>

@@ -14,6 +14,10 @@ export const CONFIG = {
   SUPABASE_URL: '',
   SUPABASE_ANON_KEY: '',
 
+  /* 관리자 화면과 콘텐츠 스튜디오를 보이게 할 UID 목록.
+     ⚠️ 비어 있으면 아무도 통과하지 않는 것이 정상이다. */
+  ADMIN_UIDS: [],
+
   /* ── 소셜 로그인 ──────────────────────────────────────────
      Supabase Dashboard → Authentication → Providers 에서 설정합니다.
      코드에는 아무것도 넣지 않습니다.

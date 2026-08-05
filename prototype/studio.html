@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>earthus 콘텐츠 스튜디오</title>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="theme-color" content="#0A0A0A">
+<link rel="icon" href="./favicon.ico">
+<link rel="stylesheet" href="./css/studio.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="earthus로 돌아가기">
+      <img src="./logo-lockup.png" alt="earthus">
+    </a>
+    <div class="topbar-title">
+      <strong>콘텐츠 스튜디오</strong>
+      <span>검수, 제작, 공유</span>
+    </div>
+    <div class="account-state">
+      <span id="who">권한 확인 중</span>
+      <button class="button button-quiet button-small" id="signOut" type="button" hidden>로그아웃</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="gate" id="gate" aria-labelledby="gateTitle">
+      <div class="gate-mark" aria-hidden="true">A</div>
+      <p class="kicker">관리자 전용</p>
+      <h1 id="gateTitle">확인하고 만드는 손은 사람입니다.</h1>
+      <p id="gateMessage">earthus 관리자 계정으로 로그인해야 스튜디오가 열립니다.</p>
+      <div class="gate-actions">
+        <button class="button button-primary" id="signInGoogle" type="button">Google로 로그인</button>
+        <a class="button button-quiet" href="./">earthus로 돌아가기</a>
+      </div>
+    </section>
+
+    <div class="studio" id="studio" hidden>
+      <nav class="rail" aria-label="콘텐츠 제작 단계">
+        <div class="rail-heading">
+          <span>작업 흐름</span>
+          <strong>검수부터 공유까지</strong>
+        </div>
+        <button class="rail-tab active" type="button" data-tab="drafts" aria-controls="panel-drafts" aria-selected="true">
+          <span class="rail-number">01</span><span>초안</span><small id="draftCount">불러오는 중</small>
+        </button>
+        <button class="rail-tab" type="button" data-tab="cards" aria-controls="panel-cards" aria-selected="false">
+          <span class="rail-number">02</span><span>카드뉴스</span><small>3개 규격</small>
+        </button>
+        <button class="rail-tab" type="button" data-tab="reels" aria-controls="panel-reels" aria-selected="false">
+          <span class="rail-number">03</span><span>릴스</span><small>세로 프레임</small>
+        </button>
+        <button class="rail-tab" type="button" data-tab="library" aria-controls="panel-library" aria-selected="false">
+          <span class="rail-number">04</span><span>보관함</span><small id="libraryCount">이 기기</small>
+        </button>
+        <div class="rail-rule">
+          <strong>자동 게시 없음</strong>
+          <p>파일과 문구까지만 준비합니다. 외부 게시와 게시 기록은 사람이 눌러야 진행됩니다.</p>
+        </div>
+      </nav>
+
+      <div class="workspace">
+        <section class="safety-bar" aria-label="게시 전 확인 원칙">
+          <div>
+            <strong>게시 전 마지막 확인</strong>
+            <span>숫자, 지명, 출처, 시각을 원자료와 대조하세요.</span>
+          </div>
+          <span class="safety-state">수동 게시만 가능</span>
+        </section>
+
+        <section class="panel active" id="panel-drafts" data-panel="drafts" aria-labelledby="draftsTitle">
+          <div class="panel-head">
+            <div>
+              <p class="kicker">검수 대기</p>
+              <h2 id="draftsTitle">사실에서 만든 초안</h2>
+              <p>문구보다 먼저 근거를 펼쳐 보세요. 이미 올린 기록이 있으면 가장 앞에서 경고합니다.</p>
+            </div>
+            <button class="button button-quiet" id="refreshDrafts" type="button">새로 불러오기</button>
+          </div>
+          <div class="draft-layout">
+            <div class="draft-list" id="draftList" aria-live="polite">
+              <div class="skeleton-list" aria-label="초안 불러오는 중">
+                <i></i><i></i><i></i>
+              </div>
+            </div>
+            <article class="draft-detail" id="draftDetail">
+              <div class="empty-state">
+                <strong>초안을 고르세요.</strong>
+                <p>근거, 채널별 문구, 게시 이력을 한 화면에서 확인할 수 있습니다.</p>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-cards" data-panel="cards" aria-labelledby="cardsTitle" hidden>
+          <div class="panel-head">
+            <div>
+              <p class="kicker">PNG 제작</p>
+              <h2 id="cardsTitle">출처와 시각이 남는 카드</h2>
+              <p>초안 또는 현재 earthus 화면으로 만듭니다. 필수 근거가 비면 저장할 수 없습니다.</p>
+            </div>
+            <button class="button button-quiet" id="newCard" type="button">빈 카드 시작</button>
+          </div>
+
+          <div class="maker-layout">
+            <form class="editor" id="cardForm">
+              <div class="editor-block">
+                <div class="block-head">
+                  <strong>규격</strong>
+                  <span id="formatSize">1080 × 1350</span>
+                </div>
+                <div class="segmented" id="formatPicker" role="group" aria-label="카드 규격">
+                  <button type="button" data-format="portrait" class="active">스레드·인스타</button>
+                  <button type="button" data-format="square">정사각</button>
+                  <button type="button" data-format="x">X 가로</button>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="cardTitle">큰 문장</label>
+                <textarea id="cardTitle" rows="3" maxlength="100" required></textarea>
+                <small><span id="titleLength">0</span>/100</small>
+              </div>
+              <div class="field">
+                <label for="cardSub">받침 문장</label>
+                <textarea id="cardSub" rows="3" maxlength="150"></textarea>
+                <small>자료에 있는 설명만 사용합니다.</small>
+              </div>
+
+              <div class="editor-block">
+                <div class="block-head">
+                  <strong>확인한 값</strong>
+                  <button class="text-button" id="addRow" type="button">한 줄 추가</button>
+                </div>
+                <div class="row-editor" id="rowEditor"></div>
+              </div>
+
+              <div class="field">
+                <label for="cardSource">출처</label>
+                <input id="cardSource" type="text" maxlength="180" required placeholder="예: 기상청 공식 발표">
+                <small>기관 또는 원자료 이름을 그대로 적습니다.</small>
+              </div>
+              <div class="field">
+                <label for="cardObservedAt">관측·발표 시각</label>
+                <input id="cardObservedAt" type="datetime-local" required>
+                <small>초안에서 가져온 경우 자료 생성 시각으로 표시됩니다.</small>
+              </div>
+
+              <div class="editor-block">
+                <div class="block-head">
+                  <strong>earthus 화면</strong>
+                  <span id="captureState">연결 안 됨</span>
+                </div>
+                <p class="block-copy">새 창에서 earthus 장면을 맞춘 뒤 현재 화면을 카드 배경으로 가져옵니다.</p>
+                <div class="button-row">
+                  <button class="button button-quiet" id="openEarthusForCard" type="button">earthus 열기</button>
+                  <button class="button button-quiet" id="captureCardBackground" type="button">현재 장면 가져오기</button>
+                  <button class="text-button" id="clearCardBackground" type="button" hidden>배경 지우기</button>
+                </div>
+              </div>
+            </form>
+
+            <div class="preview-column">
+              <div class="preview-toolbar">
+                <strong>미리보기</strong>
+                <span id="previewMeta">세로 4:5</span>
+              </div>
+              <div class="canvas-wrap" id="cardCanvasWrap">
+                <canvas id="cardCanvas" width="1080" height="1350" aria-label="카드뉴스 미리보기"></canvas>
+              </div>
+              <div class="preview-actions">
+                <button class="button button-primary" id="downloadCard" type="button">PNG 내려받기</button>
+                <button class="button button-quiet" id="saveCard" type="button">보관함에 저장</button>
+                <button class="button button-quiet" id="shareCard" type="button">휴대폰으로 공유</button>
+              </div>
+              <p class="action-note" id="cardActionNote">내려받기와 공유는 사용자가 누른 경우에만 실행됩니다.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-reels" data-panel="reels" aria-labelledby="reelsTitle" hidden>
+          <div class="panel-head">
+            <div>
+              <p class="kicker">1080 × 1920</p>
+              <h2 id="reelsTitle">earthus 화면으로 만드는 릴스 프레임</h2>
+              <p>캡처할 때만 장면을 움직이고 멈춥니다. 1단계 출력은 순번이 붙은 PNG 묶음입니다.</p>
+            </div>
+            <button class="button button-quiet" id="openEarthusForReel" type="button">earthus 새 창</button>
+          </div>
+
+          <div class="reel-console">
+            <div class="reel-setup">
+              <div class="connection-card">
+                <span>캡처 창</span>
+                <strong id="reelConnection">연결 안 됨</strong>
+                <p>같은 주소에서 연 earthus 창만 읽을 수 있습니다. 로컬에서는 같은 포트를 사용하세요.</p>
+              </div>
+              <div class="field">
+                <label for="reelFrames">프레임 수</label>
+                <select id="reelFrames">
+                  <option value="8">8장</option>
+                  <option value="12" selected>12장</option>
+                  <option value="16">16장</option>
+                </select>
+                <small>영상 편집에서 약 1초 간격의 기준 장면으로 사용합니다.</small>
+              </div>
+              <div class="button-stack">
+                <button class="button button-primary" id="makeReelFrames" type="button">연속 프레임 만들기</button>
+                <button class="button button-quiet" id="captureOneFrame" type="button">현재 장면 한 장</button>
+              </div>
+              <div class="progress" id="reelProgress" hidden>
+                <div><i id="reelProgressBar"></i></div>
+                <span id="reelProgressText">준비 중</span>
+              </div>
+            </div>
+            <div class="reel-output">
+              <div class="output-head">
+                <div>
+                  <strong>프레임 출력</strong>
+                  <span id="reelOutputMeta">아직 만든 프레임이 없습니다.</span>
+                </div>
+                <button class="button button-quiet button-small" id="saveReelSet" type="button" hidden>보관함에 묶음 저장</button>
+              </div>
+              <div class="frame-grid" id="frameGrid">
+                <div class="empty-state compact">
+                  <strong>earthus 장면이 여기에 쌓입니다.</strong>
+                  <p>검게 캡처되면 실패로 표시하고 저장하지 않습니다.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-library" data-panel="library" aria-labelledby="libraryTitle" hidden>
+          <div class="panel-head">
+            <div>
+              <p class="kicker">사진·영상 작업 보관함</p>
+              <h2 id="libraryTitle">earthus 안에서 확인하고 공유</h2>
+              <p>생성한 카드와 릴스 프레임, 가져온 사진과 영상을 한곳에서 봅니다.</p>
+            </div>
+            <label class="button button-primary file-button" for="mediaFiles">사진·영상 가져오기</label>
+            <input id="mediaFiles" type="file" accept="image/*,video/*" multiple hidden>
+          </div>
+
+          <section class="local-notice">
+            <strong>현재 보관 범위: 이 브라우저와 이 기기</strong>
+            <p>서버 업로드를 아직 연결하지 않았습니다. 다른 기기에는 나타나지 않으며 브라우저 자료를 지우면 함께 사라질 수 있습니다.</p>
+          </section>
+
+          <form class="import-meta" id="importMeta" hidden>
+            <div class="field">
+              <label for="importTitle">자료 이름</label>
+              <input id="importTitle" type="text" maxlength="100" required>
+            </div>
+            <div class="field">
+              <label for="importSource">출처</label>
+              <input id="importSource" type="text" maxlength="180" required>
+            </div>
+            <div class="field">
+              <label for="importObservedAt">관측·촬영 시각</label>
+              <input id="importObservedAt" type="datetime-local" required>
+            </div>
+            <div class="import-file-list" id="importFileList"></div>
+            <div class="button-row">
+              <button class="button button-primary" type="submit">보관함에 넣기</button>
+              <button class="button button-quiet" id="cancelImport" type="button">취소</button>
+            </div>
+          </form>
+
+          <div class="library-grid" id="libraryGrid" aria-live="polite">
+            <div class="empty-state wide">
+              <strong>아직 보관한 자료가 없습니다.</strong>
+              <p>카드를 저장하거나, earthus 릴스 프레임을 만들거나, 기기의 사진과 영상을 가져오세요.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="./js/studio.js"></script>
+</body>
+</html>

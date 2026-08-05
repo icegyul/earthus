@@ -326,7 +326,22 @@ async function boot() {
 
   // 개발용 전역 핸들 (콘솔에서 __e.viewer 등으로 접근)
   window.__e = { viewer, scene, store, registry, i18n, imagery,
-                 orbits: (await import('./layers/space.js')).orbits };
+                 orbits: (await import('./layers/space.js')).orbits,
+                 studio: {
+                   /* ⚠️⚠️ 스튜디오 캡처 중에만 인트로를 멈춘다. 무한 애니메이션을
+                      영상 제작 수단으로 쓰지 않고, 각 프레임은 스튜디오가 직접 이동시킨다. */
+                   pause() {
+                     intro.stop();
+                     try { viewer.camera.cancelFlight(); } catch (_) { }
+                     scene.requestRender();
+                   },
+                   /* ⚠️ Cesium은 preserveDrawingBuffer가 꺼져 있다. render()와 읽기를
+                      같은 호출 안에서 이어야 빈 PNG가 나오지 않는다. 둘을 분리하지 말 것. */
+                   capture() {
+                     scene.render();
+                     return scene.canvas.toDataURL('image/png');
+                   },
+                 } };
 }
 
 
@@ -370,14 +385,24 @@ function bindAccountUI() {
     const uids = (CONFIG.ADMIN_UIDS || []);
     const isAdmin = on && uids.length && uids.includes(auth.user.id);
     const cur = document.getElementById('btnAdminRow');
+    const studio = document.getElementById('btnStudioRow');
     if (isAdmin && !cur) {
-      const b = document.createElement('button');
-      b.className = 'set-item'; b.id = 'btnAdminRow';
-      b.innerHTML = '<span>관리자 페이지</span><span class="chev">›</span>';
-      b.addEventListener('click', () => window.open('/admin.html', '_blank', 'noopener'));
-      acc?.parentNode?.insertBefore(b, acc.nextSibling);
-    } else if (!isAdmin && cur) {
-      cur.remove();          // 로그아웃하면 흔적도 없앤다
+      const adminButton = document.createElement('button');
+      adminButton.className = 'set-item'; adminButton.id = 'btnAdminRow';
+      adminButton.innerHTML = '<span>관리자 페이지</span><span class="chev">›</span>';
+      adminButton.addEventListener('click', () => window.open('/admin.html', '_blank', 'noopener'));
+      acc?.parentNode?.insertBefore(adminButton, acc.nextSibling);
+    }
+    if (isAdmin && !studio) {
+      const studioButton = document.createElement('button');
+      studioButton.className = 'set-item'; studioButton.id = 'btnStudioRow';
+      studioButton.innerHTML = '<span>콘텐츠 스튜디오</span><span class="chev">›</span>';
+      studioButton.addEventListener('click', () => window.open('/studio.html', '_blank', 'noopener'));
+      const adminButton = document.getElementById('btnAdminRow');
+      adminButton?.parentNode?.insertBefore(studioButton, adminButton.nextSibling);
+    } else if (!isAdmin) {
+      cur?.remove();
+      studio?.remove();      // 로그아웃하면 운영 도구 흔적도 없앤다
     }
   };
   document.getElementById('btnLoginRow')?.addEventListener('click', () => {

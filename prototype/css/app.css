@@ -1470,7 +1470,10 @@ body.is-ambient #windLegend.on{ opacity:0; }
    ⚠️ 폰트로 흉내내지 않는다 — A 자리의 Λ 와 자간이 전용 서체라 재현되지 않는다.
    ⚠️ opacity·transform 만 쓴다. 레이아웃을 다시 계산하지 않아 싸다. */
 #brandLogo{
-  width:min(450px, 78vw); height:auto; display:block;
+  /* ⚠️ 새 SVG 는 viewBox(1198×318)에 여백이 있다. 옛 PNG 비율(450×96)로 두면
+     <picture> 가 그 비율로 상자를 잡아 SVG 가 잘린다. 비율을 SVG 것으로 맞춘다. */
+  width:min(450px, 78vw); height:auto; aspect-ratio:1150/330;
+  object-fit:contain; display:block;
   margin-bottom:30px;
   opacity:0; animation:brandUp .7s cubic-bezier(.22,1,.36,1) .12s forwards;
 }
@@ -2014,14 +2017,31 @@ body.is-ambient #windLegend.on{ opacity:0; }
   font-size:11.5px; color:rgba(220,245,235,.92); font-weight:300;
 }
 
-/* Alert 목록 맨 위 — "지금 일어난 일" 입구 (레이어 스위치가 아니라 화면을 여는 줄) */
-.ly-open{ display:block; width:100%; text-align:left; cursor:pointer;
-          background:rgba(240,149,90,.10); border:1px solid rgba(240,149,90,.32);
-          border-radius:10px; padding:9px 12px; color:inherit; margin-bottom:2px }
-.ly-open:hover{ background:rgba(240,149,90,.17) }
-.ly-open b{ display:block; font-size:13px; font-weight:500; color:#f0c49a }
-.ly-open em{ display:block; font-style:normal; font-size:10.5px; margin-top:2px;
-             color:rgba(255,255,255,.45) }
+/* Alert 목록 맨 위 — "지금 일어난 일" 입구 (레이어 스위치가 아니라 화면을 여는 줄)
+   받은 지적: "경보재난 메뉴에 지금일어나는일 저거 봐봐 안예뻐 잘 배치해봐"
+   ⚑️ 이 줄은 개별 레이어가 아니다. 2열 격자의 한 칸에 두면 90px 남짓에서
+   제목이 세 줄로 꺼지고 상위 동작이 레이어 하나처럼 읽힌다.
+   두 칸을 모두 쓰고, 화살표로 '현황 화면을 연다'는 동작을 구분한다. */
+.ly-open{
+  grid-column:1 / -1; width:100%; min-width:0; text-align:left; cursor:pointer;
+  display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px;
+  background:linear-gradient(100deg,rgba(240,149,90,.14),rgba(240,149,90,.06));
+  border:1px solid rgba(240,149,90,.32); border-radius:10px;
+  padding:11px 11px 10px 12px; color:inherit; margin-bottom:2px;
+  transition:background .18s ease,border-color .18s ease,transform .14s ease;
+}
+.ly-open:hover{ background:linear-gradient(100deg,rgba(240,149,90,.21),rgba(240,149,90,.09));
+                border-color:rgba(240,149,90,.48) }
+.ly-open:active{ transform:scale(.98) }
+.ly-open:focus-visible{ outline:2px solid rgba(240,196,154,.9); outline-offset:2px }
+.ly-open-copy{ display:block; min-width:0 }
+.ly-open b{ display:block; font-size:13px; line-height:1.25; font-weight:600; color:#f0c49a;
+             white-space:nowrap; letter-spacing:-.015em }
+.ly-open em{ display:block; font-style:normal; font-size:10px; line-height:1.45; margin-top:4px;
+             color:rgba(255,255,255,.48); word-break:keep-all; text-wrap:balance }
+.ly-open-arrow{ align-self:center; color:rgba(240,196,154,.72); font:300 22px/1 system-ui,sans-serif;
+                transform:translateY(-1px); transition:transform .18s ease,color .18s ease }
+.ly-open:hover .ly-open-arrow{ color:#f0c49a; transform:translate(2px,-1px) }
 
 /* 뉴스 패널 — 지도 표시 켜고 끄기 */
 .ev-maptoggle{ display:flex; align-items:center; gap:7px; width:100%; cursor:pointer;

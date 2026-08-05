@@ -602,8 +602,10 @@ export const layerBar = {
       const go = el('button', 'ly-open');
       /* ⚠️ 이 파일의 `el(t, c)` 는 **인자가 둘뿐이다** — 다른 파일의 el(t,c,html) 과 다르다.
          세 번째로 글을 넘겼더니 **조용히 버려져 빈 버튼**이 나왔다. innerHTML 로 넣는다. */
-      go.innerHTML = `<b>${ko ? '지금 일어난 일' : "What's happening"}</b>`
-        + `<em>${ko ? '지진 · 쓰나미 · 태풍 · 산불 · 경보' : 'Quakes, tsunami, storms, fires'}</em>`;
+      go.innerHTML = `<span class="ly-open-copy">`
+        + `<b>${ko ? '지금 일어난 일' : "What's happening"}</b>`
+        + `<em>${ko ? '지진 · 쓰나미 · 태풍 · 산불 · 경보' : 'Quakes, tsunami, storms, fires'}</em>`
+        + `</span><span class="ly-open-arrow" aria-hidden="true">›</span>`;
       go.onclick = async () => {
         /* ⚠️ 여기서 `this.close()` 를 불렀다가 조용히 터졌다 —
            **layerBar 에는 close() 가 없다.** onclick 이 async 라 그 오류가

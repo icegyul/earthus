@@ -342,6 +342,23 @@ const EXTRACT_FIELD_META = {
   generated: ['ISO 8601', '원본 공개 산출물 생성시각'],
 };
 
+const QUALITY_FIELD_META = {
+  total_rows: ['count', '선택 범위의 전체 행 수'],
+  paired_n: ['count', '관측과 예보가 모두 있는 유효 표본 수'],
+  missing_observation: ['count', '관측 결측 행 수'],
+  missing_forecast: ['count', '예보 결측 행 수'],
+  me: ['unit column', '예보-관측 차이의 평균'],
+  mae: ['unit column', '예보-관측 차이 절댓값의 평균'],
+  rmse: ['unit column', '예보-관측 차이 제곱 평균의 제곱근'],
+  observed_n: ['count', '결측이 아닌 관측 행 수'],
+  numeric_n: ['count', '숫자 통계에 사용한 행 수'],
+  missing_n: ['count', '결측 행 수'],
+  missing_pct: ['%', 'missing_n / total_rows x 100'],
+  min: ['unit column', '숫자 관측 최솟값'],
+  max: ['unit column', '숫자 관측 최댓값'],
+  mean: ['unit column', '숫자 관측 평균'],
+};
+
 function stationFieldUnit(day, variable) {
   const label = day.fields?.[variable] || '';
   const match = label.match(/\(([^()]*)\)$/);
@@ -592,6 +609,9 @@ function extractFilename(result) {
 async function buildExtractManifest(result) {
   const filename = extractFilename(result);
   const content = csvText(result.headers, result.rows);
+  const quality = extractQualitySummary(result);
+  const qualityContent = csvText(quality.headers, quality.rows);
+  const [fileHash, qualityHash] = await Promise.all([sha256(content), sha256(qualityContent)]);
   return {
     schema: 'earthus.custom-extract-manifest.v1',
     manifestVersion: 1,
@@ -613,13 +633,29 @@ async function buildExtractManifest(result) {
       lineEnding: 'LF',
       rows: result.rows.length,
       bytes: new TextEncoder().encode(content).byteLength,
-      sha256: await sha256(content),
+      sha256: fileHash,
       fields: result.headers.map(name => ({
         name,
         unit: EXTRACT_FIELD_META[name]?.[0] || '-',
         description: EXTRACT_FIELD_META[name]?.[1] || name,
       })),
     },
+    derivedFiles: [{
+      role: 'quality-summary',
+      name: qualityFilename(result),
+      mediaType: 'text/csv; charset=utf-8',
+      encoding: 'UTF-8 with BOM',
+      lineEnding: 'LF',
+      rows: quality.rows.length,
+      bytes: new TextEncoder().encode(qualityContent).byteLength,
+      sha256: qualityHash,
+      fields: quality.headers.map(name => ({
+        name,
+        unit: QUALITY_FIELD_META[name]?.[0] || EXTRACT_FIELD_META[name]?.[0] || '-',
+        description: QUALITY_FIELD_META[name]?.[1] || EXTRACT_FIELD_META[name]?.[1] || name,
+      })),
+      methodology: quality.note,
+    }],
     provenance: {
       sourcePath: result.sourcePath,
       source: result.source,
@@ -661,6 +697,10 @@ function buildExtractReadme(result, manifest) {
 | 행 수 | ${manifest.file.rows.toLocaleString('ko-KR')} |
 | 바이트 | ${manifest.file.bytes.toLocaleString('ko-KR')} (UTF-8 BOM 포함) |
 | SHA-256 | \`${manifest.file.sha256}\` |
+| 품질 CSV | \`${value(manifest.derivedFiles[0].name)}\` |
+| 품질 CSV 행 수 | ${manifest.derivedFiles[0].rows.toLocaleString('ko-KR')} |
+| 품질 CSV 바이트 | ${manifest.derivedFiles[0].bytes.toLocaleString('ko-KR')} (UTF-8 BOM 포함) |
+| 품질 CSV SHA-256 | \`${manifest.derivedFiles[0].sha256}\` |
 | manifest schema | \`${manifest.schema}\` |
 
 ## 선택 조건
@@ -690,6 +730,7 @@ function buildExtractReadme(result, manifest) {
 - 차이 계산: ${value(manifest.methodology.difference)}
 - 정렬: ${value(manifest.methodology.ordering)}
 - 범위: ${value(manifest.methodology.scope)}
+- 품질 요약: ${value(manifest.derivedFiles[0].methodology)}
 
 ## 인용 메모
 

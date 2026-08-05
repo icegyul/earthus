@@ -65,11 +65,105 @@ function csvText(headers, rows) {
 }
 
 function downloadText(name, content, type) {
+  downloadBlob(name, [content], type);
+}
+
+function downloadBlob(name, parts, type) {
   const anchor = document.createElement('a');
-  anchor.href = URL.createObjectURL(new Blob([content], { type }));
+  anchor.href = URL.createObjectURL(new Blob(parts, { type }));
   anchor.download = name;
   anchor.click();
   setTimeout(() => URL.revokeObjectURL(anchor.href), 1000);
+}
+
+const CRC32_TABLE = Array.from({ length: 256 }, (_, index) => {
+  let value = index;
+  for (let bit = 0; bit < 8; bit += 1) value = (value & 1) ? (value >>> 1) ^ 0xedb88320 : value >>> 1;
+  return value >>> 0;
+});
+
+function crc32(bytes) {
+  let value = 0xffffffff;
+  bytes.forEach(byte => { value = CRC32_TABLE[(value ^ byte) & 0xff] ^ (value >>> 8); });
+  return (value ^ 0xffffffff) >>> 0;
+}
+
+function concatBytes(chunks) {
+  const output = new Uint8Array(chunks.reduce((total, chunk) => total + chunk.length, 0));
+  let offset = 0;
+  chunks.forEach(chunk => {
+    output.set(chunk, offset);
+    offset += chunk.length;
+  });
+  return output;
+}
+
+function zipArchive(files, modifiedAt = new Date()) {
+  if (!files.length || files.length > 65535) throw new Error('ZIP 파일 수 범위를 벗어났습니다.');
+  const encoder = new TextEncoder();
+  const year = Math.min(2107, Math.max(1980, modifiedAt.getUTCFullYear()));
+  const dosTime = (modifiedAt.getUTCHours() << 11) | (modifiedAt.getUTCMinutes() << 5) | Math.floor(modifiedAt.getUTCSeconds() / 2);
+  const dosDate = ((year - 1980) << 9) | ((modifiedAt.getUTCMonth() + 1) << 5) | modifiedAt.getUTCDate();
+  const locals = [];
+  const centrals = [];
+  let localOffset = 0;
+  files.forEach(file => {
+    const name = encoder.encode(file.name);
+    const content = file.content instanceof Uint8Array ? file.content : encoder.encode(file.content);
+    if (content.length > 0xffffffff || localOffset > 0xffffffff) throw new Error('ZIP32 크기 제한을 넘었습니다.');
+    const checksum = crc32(content);
+    const local = new Uint8Array(30 + name.length + content.length);
+    const localView = new DataView(local.buffer);
+    localView.setUint32(0, 0x04034b50, true);
+    localView.setUint16(4, 20, true);
+    localView.setUint16(6, 0x0800, true);
+    localView.setUint16(8, 0, true);
+    localView.setUint16(10, dosTime, true);
+    localView.setUint16(12, dosDate, true);
+    localView.setUint32(14, checksum, true);
+    localView.setUint32(18, content.length, true);
+    localView.setUint32(22, content.length, true);
+    localView.setUint16(26, name.length, true);
+    localView.setUint16(28, 0, true);
+    local.set(name, 30);
+    local.set(content, 30 + name.length);
+    locals.push(local);
+
+    const central = new Uint8Array(46 + name.length);
+    const centralView = new DataView(central.buffer);
+    centralView.setUint32(0, 0x02014b50, true);
+    centralView.setUint16(4, 20, true);
+    centralView.setUint16(6, 20, true);
+    centralView.setUint16(8, 0x0800, true);
+    centralView.setUint16(10, 0, true);
+    centralView.setUint16(12, dosTime, true);
+    centralView.setUint16(14, dosDate, true);
+    centralView.setUint32(16, checksum, true);
+    centralView.setUint32(20, content.length, true);
+    centralView.setUint32(24, content.length, true);
+    centralView.setUint16(28, name.length, true);
+    centralView.setUint16(30, 0, true);
+    centralView.setUint16(32, 0, true);
+    centralView.setUint16(34, 0, true);
+    centralView.setUint16(36, 0, true);
+    centralView.setUint32(38, 0, true);
+    centralView.setUint32(42, localOffset, true);
+    central.set(name, 46);
+    centrals.push(central);
+    localOffset += local.length;
+  });
+  const centralSize = centrals.reduce((total, central) => total + central.length, 0);
+  const end = new Uint8Array(22);
+  const endView = new DataView(end.buffer);
+  endView.setUint32(0, 0x06054b50, true);
+  endView.setUint16(4, 0, true);
+  endView.setUint16(6, 0, true);
+  endView.setUint16(8, files.length, true);
+  endView.setUint16(10, files.length, true);
+  endView.setUint32(12, centralSize, true);
+  endView.setUint32(16, localOffset, true);
+  endView.setUint16(20, 0, true);
+  return concatBytes([...locals, ...centrals, end]);
 }
 
 function download(name, headers, rows) {
@@ -774,6 +868,7 @@ function renderExtract() {
   $('#extractStatus').textContent = `${dateFrom} → ${dateTo} · 실제 공개 날짜 ${includedDates.length}일 · 결과 ${rows.length.toLocaleString('ko-KR')}행 · 미리보기 ${preview.length}행`;
   $('#extractEvidence').textContent = `${state.extractResult.source || '출처 없음'} · 원본 파일 ${sourceFiles.length}개 · 달력상 누락 ${missingCalendarDates.length}일 · 결측은 빈칸`;
   $('#downloadExtract').disabled = rows.length === 0;
+  $('#downloadExtractBundle').disabled = rows.length === 0;
   $('#downloadExtractManifest').disabled = rows.length === 0;
   $('#downloadExtractReadme').disabled = rows.length === 0;
   $('#downloadExtractPython').disabled = rows.length === 0;
@@ -789,6 +884,7 @@ async function loadExtractRange() {
   const token = (state.extractToken || 0) + 1;
   state.extractToken = token;
   $('#downloadExtract').disabled = true;
+  $('#downloadExtractBundle').disabled = true;
   $('#downloadExtractManifest').disabled = true;
   $('#downloadExtractReadme').disabled = true;
   $('#downloadExtractPython').disabled = true;
@@ -936,6 +1032,8 @@ function buildExtractReadme(result, manifest) {
   const value = input => String(input ?? '자료 없음').replaceAll('|', '\\|').replace(/\s*\n\s*/g, ' ');
   const qualityFile = manifest.derivedFiles.find(file => file.role === 'quality-summary');
   const trendFile = manifest.derivedFiles.find(file => file.role === 'daily-trend');
+  const manifestName = extractFilename(result).replace(/\.csv$/, '.manifest.json');
+  const pythonName = extractFilename(result).replace(/\.csv$/, '.verify.py');
   const trendRows = trendFile ? `
 | 날짜별 추세 CSV | \`${value(trendFile.name)}\` |
 | 추세 CSV 행 수 | ${trendFile.rows.toLocaleString('ko-KR')} |
@@ -954,11 +1052,20 @@ function buildExtractReadme(result, manifest) {
 | 행 수 | ${manifest.file.rows.toLocaleString('ko-KR')} |
 | 바이트 | ${manifest.file.bytes.toLocaleString('ko-KR')} (UTF-8 BOM 포함) |
 | SHA-256 | \`${manifest.file.sha256}\` |
+| manifest | \`${value(manifestName)}\` |
 | 품질 CSV | \`${value(qualityFile.name)}\` |
 | 품질 CSV 행 수 | ${qualityFile.rows.toLocaleString('ko-KR')} |
 | 품질 CSV 바이트 | ${qualityFile.bytes.toLocaleString('ko-KR')} (UTF-8 BOM 포함) |
 | 품질 CSV SHA-256 | \`${qualityFile.sha256}\` |${trendRows}
 | manifest schema | \`${manifest.schema}\` |
+
+## 로컬 검증
+
+압축을 푼 폴더에서 Python 3로 아래 명령을 실행하세요. 외부 패키지와 네트워크는 필요 없습니다.
+
+\`\`\`sh
+python3 ${value(pythonName)}
+\`\`\`
 
 ## 선택 조건
 
@@ -1089,6 +1196,36 @@ async function downloadExtractPython(result) {
   downloadText(filename, script, 'text/x-python;charset=utf-8');
 }
 
+async function buildExtractBundle(result) {
+  const manifest = await buildExtractManifest(result);
+  const quality = extractQualitySummary(result);
+  const trend = extractDailyTrend(result);
+  const mainName = extractFilename(result);
+  const baseName = mainName.replace(/\.csv$/, '');
+  const files = [
+    { name: mainName, content: csvText(result.headers, result.rows) },
+    { name: qualityFilename(result), content: csvText(quality.headers, quality.rows) },
+  ];
+  if (manifest.derivedFiles.some(file => file.role === 'daily-trend')) {
+    files.push({ name: trendFilename(result), content: csvText(trend.headers, trend.rows) });
+  }
+  files.push(
+    { name: `${baseName}.manifest.json`, content: JSON.stringify(manifest, null, 2) + '\n' },
+    { name: `${baseName}.README.md`, content: buildExtractReadme(result, manifest) },
+    { name: `${baseName}.verify.py`, content: buildExtractPython(result, manifest) },
+  );
+  return {
+    filename: `${baseName}.reproducible.zip`,
+    files,
+    bytes: zipArchive(files, new Date(manifest.createdAt)),
+  };
+}
+
+async function downloadExtractBundle(result) {
+  const bundle = await buildExtractBundle(result);
+  downloadBlob(bundle.filename, [bundle.bytes], 'application/zip');
+}
+
 async function downloadExtractReadme(result) {
   const manifest = await buildExtractManifest(result);
   const readme = buildExtractReadme(result, manifest);
@@ -1121,6 +1258,23 @@ function initExtract() {
     const result = state.extractResult;
     if (!result?.rows.length) return;
     download(extractFilename(result), result.headers, result.rows);
+  });
+  $('#downloadExtractBundle').addEventListener('click', async event => {
+    const result = state.extractResult;
+    if (!result?.rows.length) return;
+    const button = event.currentTarget;
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = '재현 묶음 만드는 중…';
+    try {
+      await downloadExtractBundle(result);
+    } catch (error) {
+      $('#error').hidden = false;
+      $('#error').textContent = `재현 묶음을 만들지 못했습니다. (${error.message})`;
+    } finally {
+      button.disabled = false;
+      button.textContent = original;
+    }
   });
   $('#downloadExtractManifest').addEventListener('click', async event => {
     const result = state.extractResult;

@@ -286,7 +286,10 @@ export class PointLayer {
           size: 'sm', weight: 400, offsetY: -17,
           /* 라벨은 개별 전개 구간에서만 — 클러스터 구간에선 숨김.
              거리는 층의 라벨 수에 따라 정해진다 (_labelFar 머리말 참고) */
-          maxDistance: labelFar,
+          /* 일부 성긴 대표망은 층 전체의 라벨 수와 다른 거리를 쓸 수 있다.
+             예: landobs 안의 전지구 METAR 1,987곳은 60km까지 숨기되,
+             기상청 ASOS 대표 96곳은 시·군 비교가 되는 140km부터 보여준다. */
+          maxDistance: m.labelFar ?? labelFar,
         }) : undefined,
         _meta: m,
         _layer: this.id,

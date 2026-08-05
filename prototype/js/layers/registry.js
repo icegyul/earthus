@@ -44,6 +44,7 @@ const LOADERS = {
   launch:    () => launches.refresh().then(i => launchPads.build(i)),
   orbits:    () => orbits.refresh(),
   aurora:    () => imagery.loadAurora(),
+  landobs:   () => landObs.refresh(),
   buoy:      () => buoys.refresh(),
   lightning: () => lightning.refresh(),
   regional:  () => regional.refresh(),
@@ -256,6 +257,7 @@ export const registry = {
     on('cyclone',  LOADERS.cyclone,  REFRESH.cyclone);
     on('news',     LOADERS.news,     REFRESH.news);
     on('wildfire', LOADERS.wildfire, REFRESH.wildfire);
+    on('landobs', LOADERS.landobs, REFRESH.landobs);
     on('buoy',     LOADERS.buoy,     REFRESH.buoy);
     on('lightning',LOADERS.lightning,REFRESH.lightning);
     on('regional', LOADERS.regional, REFRESH.regional);

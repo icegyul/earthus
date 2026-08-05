@@ -1,4 +1,4 @@
-// 지상 관측소 — 공항에 실제로 설치된 계기의 실황(METAR)
+// 지상 관측소 — 공항 METAR + 기상청 ASOS 실황
 //
 // 왜 별도 레이어인가
 //   기존 '관측소'(weather.js) 는 도시 47곳을 Open-Meteo 로 조회해 **예보**를 보여준다.
@@ -57,11 +57,24 @@ export const landObs = {
   },
 
   async refresh() {
-    const r = await fetch(`${API.WIND}/stations.json`, { cache: 'no-cache' });
-    // ⚠️ S3 는 없는 객체에 403 을 준다(404 아님). 아직 안 만들어진 것과 권한 오류를 구분하지 못한다.
-    if (!r.ok) throw new Error('stations ' + r.status);
-    const j = await r.json();
-    this.meta = { generated: j.generated, source: j.source, count: j.count, note: j.note };
+    /* 전지구는 METAR, 한국은 기상청 ASOS 96곳을 같은 '실황 관측' 층에 놓는다.
+       ⚠️ 둘 중 하나가 실패해도 다른 관측망은 보여야 한다. Promise.all 로 묶어 한쪽
+          장애가 전체를 빈 지도로 만들면 '관측 없음'처럼 읽힌다. */
+    const [r, rk] = await Promise.all([
+      fetch(`${API.WIND}/stations.json`, { cache: 'no-cache' }).catch(() => null),
+      fetch(`${API.WIND}/kma-aws.json`, { cache: 'no-cache' }).catch(() => null),
+    ]);
+    // ⚠️ S3 는 없는 객체에 403 을 준다(404 아님). 둘 다 없을 때만 실패로 올린다.
+    if (!r?.ok && !rk?.ok) throw new Error(`stations ${r?.status || 'network'} · kma ${rk?.status || 'network'}`);
+    const j = r?.ok ? await r.json() : { stations: [], count: 0 };
+    const k = rk?.ok ? await rk.json() : { stations: [], count: 0 };
+    this.meta = {
+      generated: [j.generated, k.generated].filter(Boolean).sort().at(-1),
+      source: [j.source, k.source].filter(Boolean).join(' + '),
+      count: (j.count || 0) + (k.count || 0),
+      note: { metar: j.note || null, kma: k.note || null },
+      failed: [!r?.ok ? 'METAR' : null, !rk?.ok ? 'KMA ASOS' : null].filter(Boolean),
+    };
     const ko = i18n.lang === 'ko';
 
     const items = (j.stations || []).map(s => {
@@ -113,6 +126,38 @@ export const landObs = {
         _station: s,
         data: { _landobs: true, ...d },
       };
+    });
+
+    /* 한국 시·군을 알아볼 수 있는 고도에서 관측소명 + 현재 기온을 라벨로 쓴다.
+       ⚠️ 736개 AWS를 전부 쓰면 한 화면이 글자로 덮인다. 장기 관측 기준점인 ASOS
+          96곳만 대표로 쓰고, PointLayer의 거리 제한·클러스터 규칙을 그대로 따른다.
+       ⚠️ 온도가 결측이면 이름만 쓴다. 0°C로 채우지 않는다. */
+    (k.stations || []).forEach(s => {
+      if (s.lat == null || s.lon == null) return;
+      const d = {};
+      if (s.temp_c != null) d[ko ? '기온' : 'Temperature'] = i18n.temp(s.temp_c, 1);
+      if (s.humid_pct != null) d[ko ? '습도' : 'Humidity'] = `${Math.round(s.humid_pct)}%`;
+      if (s.wind_ms != null) d[ko ? '바람' : 'Wind'] = `${s.wind_ms.toFixed(1)} m/s ${compass(s.wind_dir)}`;
+      if (s.rain_mm != null) d[ko ? '강수' : 'Rain'] = `${s.rain_mm.toFixed(1)} mm`;
+      if (s.pres_sea != null) d[ko ? '해면기압' : 'Sea-level pressure'] = `${s.pres_sea.toFixed(1)} hPa`;
+      if (s.dewp_c != null) d[ko ? '이슬점' : 'Dew point'] = i18n.temp(s.dewp_c, 1);
+      if (s.alt != null) d[ko ? '해발' : 'Elevation'] = `${s.alt} m`;
+      d[ko ? '관측소' : 'Station'] = `${s.name} · ${s.id}`;
+      if (k.observedKst) d[ko ? '관측 시각(KST)' : 'Observed (KST)'] = k.observedKst;
+      d[ko ? '출처' : 'Source'] = ko ? (k.source || '기상청 지상관측') : (k.sourceEn || 'KMA surface observations');
+      d['_note'] = ko
+        ? '기상청 ASOS 정시 **실황 관측**입니다. 예보가 아닙니다.'
+        : 'An hourly **observation** from the KMA ASOS network — not a forecast.';
+      items.push({
+        id: `kma-asos-${s.id}`,
+        name: `${s.name}${s.temp_c != null ? ` ${i18n.temp(s.temp_c, 0)}` : ''}`,
+        lat: s.lat, lon: s.lon,
+        kind: 'landobs', color: '#8fd0e8', _place: true,
+        /* 전지구 METAR 1,987곳의 60km 제한과 분리한다. ASOS는 96곳뿐이라
+           140km에서도 수도권 몇 개 시·군을 읽을 수 있고 전국을 덮지 않는다. */
+        labelFar: 140_000,
+        data: { _landobs: true, _kmaAsos: true, ...d },
+      });
     });
 
     this.layer.setData(items);

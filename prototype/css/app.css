@@ -1021,6 +1021,8 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 @media (max-width: 520px) {
   #srcNote { max-width: 66vw; font-size: 8.5px; }
   #srcNote span:nth-child(n+4) { display: none; }
+  /* 지도 제공자 표기는 이용 조건이라 줄 수 제한으로 숨기면 안 된다. */
+  #srcNote span.map-credit { display: block; }
 }
 /* ⚠️ 큰 화면에서는 오히려 키운다.
    9px 는 폰에서 손에 든 거리 기준이다. **차량 화면(테슬라 1920×1200)은

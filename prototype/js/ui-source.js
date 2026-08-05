@@ -163,6 +163,11 @@ export const sourceNote = {
   async render() {
     if (!this.root) return;
     const ko = i18n.lang === 'ko';
+    let esriVisible = false;
+    try {
+      const { imagery } = await import('./layers/imagery.js');
+      esriVisible = (imagery.detail?.alpha || 0) > 0.02;
+    } catch (_) { /* 기본면이 아직 만들어지기 전일 수 있다 */ }
     /* ⚠️⚠️ **지구를 칠하고 있는 레이어를 먼저 고른다.** (감사 P1-2)
        예전에는 PRIORITY 순서만 봤는데 그 목록에서 구름이 기온보다 앞이라,
        기온을 켜서 지구가 기온색으로 바뀌어도 좌하단은 계속
@@ -171,7 +176,17 @@ export const sourceNote = {
        없을 때만 예전 순서로 돌아간다. */
     const painted = PAINT.find(x => store.isOn(x));
     const id = painted || PRIORITY.find(x => store.isOn(x));
-    if (!id) { this.root.innerHTML = ''; this.root.classList.remove('on'); return; }
+    if (!id && !esriVisible) {
+      this.root.innerHTML = ''; this.root.classList.remove('on'); return;
+    }
+    /* 확대용 World Imagery만 보이는 경우에도 크레딧은 사라지면 안 된다.
+       Esri 공식 요건은 지도에 Esri와 자료 제공자 표기를 모두 표시하라는 것이다. */
+    if (!id) {
+      this.root.innerHTML = '<span class="map-credit">Powered by Esri · Source: Esri, Vantor, '
+        + 'Earthstar Geographics, and the GIS User Community</span>';
+      this.root.classList.add('on');
+      return;
+    }
 
     /* ⚠️ 구름은 확대하면 자료가 바뀐다 (전지구 합성 → 히마와리).
        보고 있는 것과 다른 출처를 적으면 안내가 아니라 오정보다. */
@@ -439,7 +454,11 @@ export const sourceNote = {
       }
     } catch (_) { /* 레지스트리가 아직 없으면 넘어간다 */ }
 
-    this.root.innerHTML = bits.map(b => `<span>${b}</span>`).join('');
+    this.root.innerHTML = bits.map(b => `<span>${b}</span>`).join('')
+      + (esriVisible
+        ? '<span class="map-credit">Powered by Esri · Source: Esri, Vantor, '
+          + 'Earthstar Geographics, and the GIS User Community</span>'
+        : '');
     this.root.classList.add('on');
   },
 };

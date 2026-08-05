@@ -38,7 +38,9 @@ export const imagery = {
       new Cesium.UrlTemplateImageryProvider({
         url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         maximumLevel: 19,
-        credit: 'Esri, Maxar, Earthstar Geographics',
+        /* 서비스가 현재 직접 반환하는 copyrightText와 맞춘다.
+           ⚠️ 공급사가 Maxar→Vantor로 바뀌었는데 옛 문자열을 계속 쓰고 있었다. */
+        credit: 'Powered by Esri · Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community',
       })
     );
     this.detail.alpha = 0.0;   // updateForHeight 가 고도에 따라 올린다
@@ -1016,6 +1018,14 @@ export const imagery = {
     if (Math.abs(d - this._d) > 0.002) {
       this._d = d;
       if (this.detail) this.detail.alpha = d;
+      /* ⚠️ Cesium 기본 크레딧 UI는 앱 레이아웃 때문에 숨겨져 있다(viewer.js).
+         따라서 확대용 Esri 영상이 실제로 보이기 시작/끝날 때 좌하단 출처를 다시
+         그려야 한다. 매 프레임 보내면 DOM을 계속 갱신하므로 경계에서 한 번만 보낸다. */
+      const creditOn = d > 0.02;
+      if (creditOn !== this._detailCreditOn) {
+        this._detailCreditOn = creditOn;
+        document.dispatchEvent(new CustomEvent('earthus:imagery'));
+      }
       /* ⚠️ 확대하면 트루컬러를 물린다.
          일일 트루컬러는 250m/px 가 한계다(레벨 9). 그보다 가까이 가면
          픽셀이 무너져 보인다 — "확대하면 픽셀이 무너진다"는 지적 그대로다.

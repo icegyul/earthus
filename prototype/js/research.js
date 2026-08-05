@@ -1640,6 +1640,223 @@ function initExtract() {
   loadExtractRange();
 }
 
+const TRACE_HEADERS = [
+  'valid_kst', 'station_id', 'station_name', 'lat', 'lon', 'alt_m', 'series',
+  'model', 'lead_hour', 'variable', 'unit', 'value', 'n', 'issued_kst',
+  'source', 'license', 'generated',
+];
+
+function buildTraceResult(day, stationId, variable, lead) {
+  const meta = day.stationMeta?.[stationId] || {};
+  const leadKey = `${lead}h`;
+  const models = [...new Set(day.models || [])].sort((left, right) =>
+    modelName(left).localeCompare(modelName(right), 'en'));
+  const rows = [];
+  Object.entries(day.hours || {}).sort(([left], [right]) => left.localeCompare(right, 'en'))
+    .forEach(([valid, hour]) => {
+      const item = (hour.cases || []).find(record => String(record.stationId) === String(stationId));
+      const observation = item?.observation?.[variable];
+      rows.push([
+        valid, stationId, meta.name, meta.lat, meta.lon, meta.alt, 'observation', '', '',
+        variable, variableInfo(variable).unit, observation, finite(observation) ? 1 : 0, '',
+        day.source, day.license, day.generated,
+      ]);
+      models.forEach(model => {
+        const forecast = item?.forecasts?.[model]?.[leadKey]?.[variable];
+        rows.push([
+          valid, stationId, meta.name, meta.lat, meta.lon, meta.alt, 'forecast', model, lead,
+          variable, variableInfo(variable).unit, forecast, finite(forecast) ? 1 : 0,
+          hour.issues?.[leadKey] ? formatIssue(hour.issues[leadKey]) : '', day.source, day.license, day.generated,
+        ]);
+      });
+    });
+  return {
+    date: day.date,
+    stationId: String(stationId),
+    stationName: meta.name || `지점 ${stationId}`,
+    variable,
+    unit: variableInfo(variable).unit,
+    lead: Number(lead),
+    models,
+    headers: TRACE_HEADERS,
+    rows,
+    source: day.source,
+    license: day.license,
+    generated: day.generated,
+  };
+}
+
+function traceTimeMillis(value) {
+  return Date.parse(`${value}:00+09:00`);
+}
+
+function traceSeriesSegments(points) {
+  const segments = [];
+  points.forEach(point => {
+    const previous = segments.at(-1)?.at(-1);
+    if (!previous || traceTimeMillis(point.time) - traceTimeMillis(previous.time) > 90 * 60 * 1000) {
+      segments.push([point]);
+    } else {
+      segments.at(-1).push(point);
+    }
+  });
+  return segments;
+}
+
+function traceFilename(result, extension) {
+  const compact = value => String(value || 'none').replace(/[^0-9a-z_-]+/gi, '-');
+  return `earthus-station-trace-${compact(result.date)}-${compact(result.stationId)}-${compact(result.variable)}-${compact(result.lead)}h.${extension}`;
+}
+
+function traceSvgMarkup(result) {
+  const times = [...new Set(result.rows.map(row => row[0]))].sort();
+  const definitions = [
+    { id: 'observation', label: 'ASOS observation', color: '#087f5b', matches: row => row[6] === 'observation' },
+    ...result.models.map((model, index) => ({
+      id: model,
+      label: `${modelName(model)} ${result.lead}h`,
+      color: ['#5f3dc4', '#d97706', '#1971c2'][index % 3],
+      matches: row => row[6] === 'forecast' && row[7] === model,
+    })),
+  ];
+  const series = definitions.map(definition => ({
+    ...definition,
+    points: result.rows.filter(definition.matches).filter(row => finite(row[11]))
+      .map(row => ({ time: row[0], value: Number(row[11]), n: Number(row[12]) })),
+  }));
+  const values = series.flatMap(item => item.points.map(point => point.value));
+  if (!times.length || !values.length) return '';
+  let minimum = Math.min(...values);
+  let maximum = Math.max(...values);
+  if (minimum === maximum) {
+    minimum -= 1;
+    maximum += 1;
+  }
+  const padding = (maximum - minimum) * .1;
+  minimum -= padding;
+  maximum += padding;
+  const width = 900;
+  const sourceLines = svgLines(result.source, 112);
+  const height = 485 + sourceLines.length * 18;
+  const left = 72;
+  const right = 32;
+  const top = 126;
+  const bottom = 356;
+  const plotWidth = width - left - right;
+  const x = time => {
+    const index = times.indexOf(time);
+    return left + (times.length === 1 ? plotWidth / 2 : index / (times.length - 1) * plotWidth);
+  };
+  const y = value => bottom - (value - minimum) / (maximum - minimum) * (bottom - top);
+  const chunks = [
+    `<svg id="traceSvg" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="traceTitle traceDesc" xmlns="http://www.w3.org/2000/svg">`,
+    `<title id="traceTitle">${html(result.stationName)} ${html(variableInfo(result.variable).name)} 관측과 모델 시간 추적</title>`,
+    `<desc id="traceDesc">${html(result.date)} 실제 공개 시각의 ASOS 관측과 ${html(result.lead)}시간 GFS·ECMWF 모델값. 빠진 시각과 결측은 연결하지 않음.</desc>`,
+    `<rect width="${width}" height="${height}" fill="#f7f7f4"/>`,
+    `<text x="32" y="38" fill="#15171c" font-size="23" font-family="sans-serif" font-weight="700">${html(result.stationName)} (${html(result.stationId)}) · ${html(variableInfo(result.variable).name)} ${html(result.unit)}</text>`,
+    `<text x="32" y="63" fill="#5d626c" font-size="12" font-family="monospace">${html(result.date)} · ${html(result.lead)}h forecast issue · actual public times ${times.length}</text>`,
+  ];
+  let legendX = 32;
+  series.forEach(item => {
+    chunks.push(`<circle cx="${legendX + 5}" cy="91" r="5" fill="${item.color}"/>`);
+    chunks.push(`<text x="${legendX + 16}" y="95" fill="#30343b" font-size="11" font-family="monospace">${html(item.label)} · n=${item.points.length}/${times.length}</text>`);
+    legendX += Math.max(190, item.label.length * 8 + 92);
+  });
+  for (let tick = 0; tick <= 4; tick += 1) {
+    const value = minimum + (maximum - minimum) * tick / 4;
+    const position = y(value);
+    chunks.push(`<line x1="${left}" y1="${position}" x2="${width - right}" y2="${position}" stroke="#d5d7db" stroke-width="1"/>`);
+    chunks.push(`<text x="${left - 9}" y="${position + 4}" text-anchor="end" fill="#676c75" font-size="10" font-family="monospace">${value.toFixed(2)}</text>`);
+  }
+  const labelStep = Math.max(1, Math.ceil(times.length / 8));
+  times.forEach((time, index) => {
+    if (index % labelStep && index !== times.length - 1) return;
+    chunks.push(`<text x="${x(time)}" y="380" text-anchor="middle" fill="#565b65" font-size="10" font-family="monospace">${html(time.split('T')[1] || time)}</text>`);
+  });
+  series.forEach(item => {
+    traceSeriesSegments(item.points).filter(segment => segment.length > 1).forEach((segment, index) => {
+      const path = segment.map((point, pointIndex) => `${pointIndex ? 'L' : 'M'} ${x(point.time).toFixed(2)} ${y(point.value).toFixed(2)}`).join(' ');
+      chunks.push(`<path data-series="${html(item.id)}" data-segment="${index}" d="${path}" fill="none" stroke="${item.color}" stroke-width="2.5"/>`);
+    });
+    item.points.forEach(point => {
+      chunks.push(`<circle cx="${x(point.time)}" cy="${y(point.value)}" r="4" fill="${item.color}"><title>${html(item.label)} · ${html(point.time)} · ${point.value} ${html(result.unit)} · n=${point.n}</title></circle>`);
+    });
+  });
+  chunks.push(`<text x="32" y="414" fill="#a45b08" font-size="11" font-family="sans-serif">실제 공개 사례의 사후 대조이며 예보가 아닙니다. 결측·빠진 시각은 잇지 않습니다.</text>`);
+  sourceLines.forEach((line, index) => chunks.push(`<text x="32" y="${440 + index * 18}" fill="#087f5b" font-size="10" font-family="monospace">source: ${html(line)}</text>`));
+  chunks.push(`<text x="32" y="${452 + sourceLines.length * 18}" fill="#6b7079" font-size="10" font-family="monospace">source generated: ${html(result.generated)} · license: ${html(result.license)}</text>`);
+  chunks.push('</svg>');
+  return chunks.join('');
+}
+
+function refillTraceControls(day) {
+  const station = $('#traceStation');
+  const variable = $('#traceVariable');
+  const lead = $('#traceLead');
+  const previousStation = station.value;
+  const previousVariable = variable.value;
+  const previousLead = lead.value;
+  const stationIds = [...new Set(Object.values(day.hours || {}).flatMap(hour =>
+    (hour.cases || []).map(item => String(item.stationId))))].sort((left, right) => Number(left) - Number(right));
+  station.innerHTML = stationIds.map(id => `<option value="${html(id)}">${html(day.stationMeta?.[id]?.name || `지점 ${id}`)} (${html(id)})</option>`).join('');
+  variable.innerHTML = (day.vars || []).map(value => `<option value="${html(value)}">${html(variableInfo(value).name)} (${html(variableInfo(value).unit)})</option>`).join('');
+  lead.innerHTML = (day.leadsHours || []).map(value => `<option value="${html(value)}">${html(value)}시간</option>`).join('');
+  setSelectValue('#traceStation', previousStation);
+  setSelectValue('#traceVariable', previousVariable);
+  setSelectValue('#traceLead', previousLead);
+}
+
+function renderTrace() {
+  const day = state.traceDay;
+  if (!day) return;
+  const result = buildTraceResult(day, $('#traceStation').value, $('#traceVariable').value, $('#traceLead').value);
+  const markup = traceSvgMarkup(result);
+  state.traceResult = result;
+  $('.trace-canvas').innerHTML = markup || '<p class="figure-empty">선택 범위에 그릴 유효 관측·모델값이 없습니다.</p>';
+  $('#downloadTraceCsv').disabled = !result.rows.length;
+  $('#downloadTraceSvg').disabled = !markup;
+  const valid = result.rows.filter(row => finite(row[11])).length;
+  $('#traceWarning').textContent = `${result.date} · ${result.stationName} (${result.stationId}) · ${variableInfo(result.variable).name} · ${result.lead}시간 · 유효 ${valid}/${result.rows.length}행`;
+}
+
+async function loadTraceDay() {
+  const date = $('#traceDate').value;
+  $('#downloadTraceCsv').disabled = true;
+  $('#downloadTraceSvg').disabled = true;
+  $('#traceWarning').textContent = `${date || '날짜 없음'} 실제 공개 사례를 불러오는 중입니다.`;
+  try {
+    const day = state.extractCache.cases[date] || await json(state.caseIndex.dates[date].path);
+    state.extractCache.cases[date] = day;
+    state.traceDay = day;
+    refillTraceControls(day);
+    renderTrace();
+  } catch (error) {
+    state.traceDay = null;
+    $('.trace-canvas').innerHTML = `<p class="figure-empty">사례 파일을 읽지 못했습니다. (${html(error.message)})</p>`;
+    $('#traceWarning').textContent = '실제 사례를 읽지 못해 차트를 만들지 않았습니다.';
+  }
+}
+
+function initTrace() {
+  const dates = Object.keys(state.caseIndex?.dates || {}).sort();
+  $('#traceDate').innerHTML = dates.map(date => `<option value="${html(date)}">${html(date)}</option>`).join('');
+  if (dates.length) $('#traceDate').value = dates.at(-1);
+  $('#traceDate').addEventListener('change', loadTraceDay);
+  ['#traceStation', '#traceVariable', '#traceLead'].forEach(selector => $(selector).addEventListener('change', renderTrace));
+  $('#downloadTraceCsv').addEventListener('click', () => {
+    const result = state.traceResult;
+    if (!result?.rows.length) return;
+    download(traceFilename(result, 'csv'), result.headers, result.rows);
+  });
+  $('#downloadTraceSvg').addEventListener('click', () => {
+    const result = state.traceResult;
+    const svg = $('#traceSvg');
+    if (!result || !svg) return;
+    downloadText(traceFilename(result, 'svg'), `${svg.outerHTML}\n`, 'image/svg+xml;charset=utf-8');
+  });
+  if (dates.length) loadTraceDay();
+}
+
 const FIGURE_METRICS = {
   mae: { name: 'MAE', description: 'Mean absolute error' },
   me: { name: 'ME', description: 'Mean forecast minus observation' },
@@ -1726,7 +1943,7 @@ function renderFigure() {
   const variable = $('#figureVariable').value;
   const metric = $('#figureMetric').value;
   const records = figureRecords(date, variable, metric);
-  const canvas = $('.figure-canvas');
+  const canvas = $('#figureBuilder .figure-canvas');
   const button = $('#downloadFigure');
   if (!records.length) {
     canvas.innerHTML = '<p class="figure-empty">No records match this date, variable, and metric.</p>';
@@ -1751,7 +1968,7 @@ function initFigure() {
   ['#figureDate', '#figureVariable', '#figureMetric'].forEach(selector =>
     $(selector).addEventListener('change', renderFigure));
   $('#downloadFigure').addEventListener('click', event => {
-    const svg = $('.figure-canvas svg');
+    const svg = $('#figureBuilder .figure-canvas svg');
     if (!svg) return;
     downloadText(event.currentTarget.dataset.filename, `${svg.outerHTML}\n`, 'image/svg+xml;charset=utf-8');
   });
@@ -1892,6 +2109,7 @@ async function boot() {
     ]);
     renderPacks();
     initExtract();
+    initTrace();
     initFigure();
     initWorksheet();
   } catch (error) {

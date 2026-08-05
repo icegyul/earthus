@@ -88,7 +88,7 @@ const SRC = {
   wave:     { ko: 'Open-Meteo 해양 (파랑모델)', en: 'Open-Meteo Marine', every: 60 },
   swell:    { ko: 'Open-Meteo 해양 (파랑모델)', en: 'Open-Meteo Marine', every: 60 },
   current:  { ko: 'Open-Meteo 해양 — 표층 해류', en: 'Open-Meteo Marine — surface current', every: 60 },
-  landobs:  { ko: 'NOAA METAR + 기상청 ASOS + JMA AMeDAS 실황', en: 'NOAA METAR + KMA ASOS + JMA AMeDAS observations', every: 60 },
+  landobs:  { ko: 'NOAA METAR + 기상청 ASOS + JMA AMeDAS 실황', en: 'NOAA METAR + KMA ASOS + JMA AMeDAS observations', every: 20 },
   /* ⚠️ "Powered by Met Office data" 는 Met Office 약관이 요구하는 **의무 문구**다.
         번역하거나 줄이지 말 것. 한국어 표기에도 원문을 그대로 남긴다. */
   ukfc:     { ko: '영국 기상청 · Powered by Met Office data',
@@ -252,6 +252,11 @@ export const sourceNote = {
       } else if (id === 'orbits') {
         const { orbits } = await import('./layers/space.js');
         if (orbits._catalog?.generated) made = new Date(orbits._catalog.generated);
+      } else if (id === 'landobs') {
+        /* 세 관측망은 시각 필드 이름이 서로 다르다. landobs.refresh()가 가장 최근
+           생성 시각으로 합친 meta.generated를 다시 쓴다 — 현재 시각을 지어 넣지 않는다. */
+        const { landObs } = await import('./layers/landobs.js');
+        if (landObs.meta?.generated) made = new Date(landObs.meta.generated);
       }
     } catch (_) { /* 시각을 못 알아내면 출처만 적는다 — 지어내지 않는다 */ }
 

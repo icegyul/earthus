@@ -153,6 +153,10 @@ earthus의 유료 명분은 `이 값을 믿을 수 있는가`인데, 추천 결�
 
 ## 10. 2026-08-06 실행 기록
 
+- Station Error Profile에서 실제 사례 날짜·모델·24/48시간·변수를 골라 공개 시각의
+  오차를 ASOS 지점별 ME·MAE·RMSE·결측·n으로 집계한다. 전체 지점 CSV와 MAE 상위
+  10/20/30개 SVG에 좌표·고도·출처·생성시각을 남기고, 관측소 품질 순위가 아니며
+  지점·격자의 공간 대표성이 다르다는 경고를 고정했다.
 - Paired Model Comparison의 CSV·SVG·`earthus.paired-model-comparison-manifest.v1`·
   README·검증 Python을 재현 ZIP으로 묶었다. manifest에 선택·실제 시각·paired 통계·
   파일 해시·CSV 25개 열·방법·출처를 기록하고, 검증기는 A/B 오차·절대오차·차이·

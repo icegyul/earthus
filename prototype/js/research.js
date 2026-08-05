@@ -3463,6 +3463,218 @@ function initPaired() {
   if (dates.length) loadPairedDay();
 }
 
+const STATION_PROFILE_HEADERS = [
+  'date', 'station_id', 'station_name', 'lat', 'lon', 'alt_m', 'model',
+  'lead_hour', 'variable', 'unit', 'actual_time_count', 'paired_n',
+  'missing_observation', 'missing_forecast', 'me', 'mae', 'rmse',
+  'minimum_error', 'maximum_error', 'source', 'license', 'generated',
+];
+
+function buildStationProfileResult(day, model, lead, variable, displayCount = 20) {
+  const leadKey = `${lead}h`;
+  const times = Object.keys(day.hours || {}).sort();
+  const stationIds = [...new Set([
+    ...Object.keys(day.stationMeta || {}),
+    ...times.flatMap(time => (day.hours?.[time]?.cases || []).map(item => String(item.stationId))),
+  ])].sort((left, right) => Number(left) - Number(right));
+  const samples = [];
+  times.forEach(time => {
+    const hour = day.hours[time] || {};
+    const byStation = new Map((hour.cases || []).map(item => [String(item.stationId), item]));
+    stationIds.forEach(stationId => {
+      const item = byStation.get(stationId) || {};
+      const meta = day.stationMeta?.[stationId] || {};
+      const observation = item.observation?.[variable];
+      const forecast = item.forecasts?.[model]?.[leadKey]?.[variable];
+      const paired = finite(observation) && finite(forecast);
+      samples.push([
+        time, stationId, meta.name, meta.lat, meta.lon, meta.alt, model, Number(lead),
+        variable, variableInfo(variable).unit, observation, forecast,
+        paired ? rounded(Number(forecast) - Number(observation)) : null, paired ? 1 : 0,
+        hour.issues?.[leadKey] ? formatIssue(hour.issues[leadKey]) : '',
+        day.source, day.license, day.generated,
+      ]);
+    });
+  });
+  const rows = stationIds.map(stationId => {
+    const stationSamples = samples.filter(row => row[1] === stationId);
+    const meta = day.stationMeta?.[stationId] || {};
+    const errors = stationSamples.map(row => row[12]).filter(finite).map(Number);
+    const n = errors.length;
+    const mean = n ? errors.reduce((sum, value) => sum + value, 0) / n : null;
+    return [
+      day.date, stationId, meta.name, meta.lat, meta.lon, meta.alt, model, Number(lead),
+      variable, variableInfo(variable).unit, times.length, n,
+      stationSamples.filter(row => !finite(row[10])).length,
+      stationSamples.filter(row => !finite(row[11])).length,
+      mean,
+      n ? errors.reduce((sum, value) => sum + Math.abs(value), 0) / n : null,
+      n ? Math.sqrt(errors.reduce((sum, value) => sum + value ** 2, 0) / n) : null,
+      n ? Math.min(...errors) : null,
+      n ? Math.max(...errors) : null,
+      day.source, day.license, day.generated,
+    ];
+  });
+  const allErrors = samples.map(row => row[12]).filter(finite).map(Number);
+  const n = allErrors.length;
+  const mean = n ? allErrors.reduce((sum, value) => sum + value, 0) / n : null;
+  return {
+    date: day.date,
+    model,
+    lead: Number(lead),
+    variable,
+    unit: variableInfo(variable).unit,
+    displayCount: Number(displayCount),
+    headers: STATION_PROFILE_HEADERS,
+    rows,
+    sampleHeaders: DISTRIBUTION_HEADERS,
+    samples,
+    actualTimes: times,
+    stats: {
+      stationCount: rows.length,
+      rankedStationCount: rows.filter(row => finite(row[15])).length,
+      actualTimeCount: times.length,
+      totalRows: samples.length,
+      n,
+      missingObservation: samples.filter(row => !finite(row[10])).length,
+      missingForecast: samples.filter(row => !finite(row[11])).length,
+      me: mean,
+      mae: n ? allErrors.reduce((sum, value) => sum + Math.abs(value), 0) / n : null,
+      rmse: n ? Math.sqrt(allErrors.reduce((sum, value) => sum + value ** 2, 0) / n) : null,
+    },
+    source: day.source,
+    license: day.license,
+    generated: day.generated,
+  };
+}
+
+function stationProfileFilename(result, extension) {
+  const compact = value => String(value || 'none').replace(/[^0-9a-z_-]+/gi, '-');
+  const base = `earthus-station-error-profile-${compact(result.date)}-${compact(result.model)}-${compact(result.lead)}h-${compact(result.variable)}`;
+  return extension === 'svg' ? `${base}-${result.displayCount}shown.svg` : `${base}.${extension}`;
+}
+
+function stationProfileSvgMarkup(result) {
+  const ranked = result.rows.filter(row => finite(row[15]))
+    .sort((left, right) => Number(right[15]) - Number(left[15]) || Number(left[1]) - Number(right[1]));
+  const displayRows = ranked.slice(0, result.displayCount);
+  if (!displayRows.length) return '';
+  const width = 900;
+  const sourceLines = svgLines(result.source, 112);
+  const plot = { left: 190, right: 80, top: 144, rowGap: 24 };
+  const axisBottom = plot.top + displayRows.length * plot.rowGap;
+  const height = axisBottom + 148 + sourceLines.length * 18;
+  const plotWidth = width - plot.left - plot.right;
+  const maximumMae = Math.max(...displayRows.map(row => Number(row[15])));
+  const maximum = maximumMae > 0 ? maximumMae * 1.08 : 1;
+  const maximumAbsoluteMe = Math.max(0, ...displayRows.map(row => Math.abs(Number(row[14]))));
+  const x = value => plot.left + Number(value) / maximum * plotWidth;
+  const stat = value => finite(value) ? Number(value).toFixed(3) : 'NA';
+  const chunks = [
+    `<svg id="stationProfileSvg" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="stationProfileTitle stationProfileDesc" xmlns="http://www.w3.org/2000/svg">`,
+    `<title id="stationProfileTitle">${html(result.date)} ${html(modelName(result.model))} ${html(result.lead)}시간 ${html(variableInfo(result.variable).name)} 지점별 오차</title>`,
+    `<desc id="stationProfileDesc">실제 공개 시각을 지점별로 묶은 MAE 상위 ${displayRows.length}개. 점 색은 ME 방향이며 n과 결측을 함께 표시. 관측소 품질 순위가 아님.</desc>`,
+    `<rect width="${width}" height="${height}" fill="#f7f7f4"/>`,
+    `<text x="34" y="38" fill="#15171c" font-size="23" font-family="sans-serif" font-weight="700">${html(modelName(result.model))} ${html(result.lead)}h · ${html(variableInfo(result.variable).name)} 지점 오차 프로필</text>`,
+    `<text x="34" y="63" fill="#5d626c" font-size="11" font-family="monospace">${html(result.date)} · top ${displayRows.length} by station MAE (${html(result.unit)}) · actual times ${result.actualTimes.length}</text>`,
+    `<text x="34" y="88" fill="#30343b" font-size="11" font-family="monospace">stations ${result.stats.rankedStationCount}/${result.stats.stationCount} · paired n ${result.stats.n}/${result.stats.totalRows} · missing obs ${result.stats.missingObservation} · forecast ${result.stats.missingForecast}</text>`,
+    `<text x="34" y="111" fill="#5f3dc4" font-size="11" font-family="monospace">all paired rows: ME ${stat(result.stats.me)} · MAE ${stat(result.stats.mae)} · RMSE ${stat(result.stats.rmse)}</text>`,
+  ];
+  for (let tick = 0; tick <= 4; tick += 1) {
+    const value = maximum * tick / 4;
+    const position = x(value);
+    chunks.push(`<line x1="${position}" y1="${plot.top - 11}" x2="${position}" y2="${axisBottom}" stroke="#d6d8dc"/>`);
+    chunks.push(`<text x="${position}" y="${axisBottom + 17}" text-anchor="middle" fill="#60656e" font-size="9" font-family="monospace">${value.toFixed(2)}</text>`);
+  }
+  displayRows.forEach((row, index) => {
+    const y = plot.top + index * plot.rowGap;
+    const pointX = x(row[15]);
+    const fill = spatialErrorColor(row[14], maximumAbsoluteMe);
+    chunks.push(`<text x="${plot.left - 10}" y="${y + 4}" text-anchor="end" fill="#30343b" font-size="10" font-family="sans-serif">${html(row[2] || `지점 ${row[1]}`)} (${html(row[1])})</text>`);
+    chunks.push(`<line x1="${plot.left}" y1="${y}" x2="${pointX}" y2="${y}" stroke="#aeb3ba" stroke-width="2"/>`);
+    chunks.push(`<circle data-profile-station="${html(row[1])}" cx="${pointX.toFixed(2)}" cy="${y}" r="5" fill="${fill}" stroke="#fff" stroke-width="1"><title>${html(row[2] || row[1])} (${html(row[1])}) · n=${row[11]}/${row[10]} · ME ${stat(row[14])} · MAE ${stat(row[15])} · RMSE ${stat(row[16])} · missing obs ${row[12]} · forecast ${row[13]}</title></circle>`);
+    chunks.push(`<text x="${Math.min(width - 38, pointX + 10)}" y="${y + 4}" fill="#30343b" font-size="9" font-family="monospace">${stat(row[15])} · n=${row[11]}</text>`);
+  });
+  chunks.push(`<text x="${plot.left + plotWidth / 2}" y="${axisBottom + 42}" text-anchor="middle" fill="#30343b" font-size="10" font-family="monospace">station MAE (${html(result.unit)}) · point color = signed ME</text>`);
+  chunks.push(`<text x="34" y="${axisBottom + 72}" fill="#a45b08" font-size="11" font-family="sans-serif">관측소 품질 순위가 아닙니다. 고도·지형·지점과 모델 격자의 공간 대표성이 다릅니다.</text>`);
+  chunks.push(`<text x="34" y="${axisBottom + 94}" fill="#5d626c" font-size="10" font-family="monospace">one actual date only · missing is excluded, never zero-filled · CSV includes all ${result.rows.length} stations</text>`);
+  sourceLines.forEach((line, index) => chunks.push(`<text x="34" y="${axisBottom + 120 + index * 18}" fill="#087f5b" font-size="10" font-family="monospace">source: ${html(line)}</text>`));
+  chunks.push(`<text x="34" y="${axisBottom + 132 + sourceLines.length * 18}" fill="#6b7079" font-size="10" font-family="monospace">source generated: ${html(result.generated)} · license: ${html(result.license)}</text>`);
+  chunks.push('</svg>');
+  return chunks.join('');
+}
+
+function refillStationProfileControls(day) {
+  const previous = {
+    model: $('#stationProfileModel').value,
+    lead: $('#stationProfileLead').value,
+    variable: $('#stationProfileVariable').value,
+  };
+  $('#stationProfileModel').innerHTML = (day.models || []).map(model => `<option value="${html(model)}">${html(modelName(model))}</option>`).join('');
+  $('#stationProfileLead').innerHTML = (day.leadsHours || []).map(lead => `<option value="${html(lead)}">${html(lead)}시간</option>`).join('');
+  $('#stationProfileVariable').innerHTML = (day.vars || []).map(variable => `<option value="${html(variable)}">${html(variableInfo(variable).name)} (${html(variableInfo(variable).unit)})</option>`).join('');
+  setSelectValue('#stationProfileModel', previous.model);
+  setSelectValue('#stationProfileLead', previous.lead);
+  setSelectValue('#stationProfileVariable', previous.variable);
+}
+
+function renderStationProfile() {
+  const day = state.stationProfileDay;
+  if (!day) return;
+  const result = buildStationProfileResult(
+    day,
+    $('#stationProfileModel').value,
+    $('#stationProfileLead').value,
+    $('#stationProfileVariable').value,
+    Number($('#stationProfileCount').value),
+  );
+  const markup = stationProfileSvgMarkup(result);
+  state.stationProfileResult = result;
+  $('.station-profile-canvas').innerHTML = markup || '<p class="figure-empty">선택 조건에 지점별 유효 오차가 없습니다.</p>';
+  $('#downloadStationProfileCsv').disabled = !result.rows.length;
+  $('#downloadStationProfileSvg').disabled = !markup;
+  $('#stationProfileWarning').textContent = `${result.date} · ${modelName(result.model)} ${result.lead}시간 · ${variableInfo(result.variable).name} · 지점 ${result.stats.rankedStationCount}/${result.stats.stationCount} · paired n=${result.stats.n}/${result.stats.totalRows}`;
+}
+
+async function loadStationProfileDay() {
+  const date = $('#stationProfileDate').value;
+  $('#downloadStationProfileCsv').disabled = true;
+  $('#downloadStationProfileSvg').disabled = true;
+  $('#stationProfileWarning').textContent = `${date || '날짜 없음'} 실제 공개 사례를 불러오는 중입니다.`;
+  try {
+    const day = state.extractCache.cases[date] || await json(state.caseIndex.dates[date].path);
+    state.extractCache.cases[date] = day;
+    state.stationProfileDay = day;
+    refillStationProfileControls(day);
+    renderStationProfile();
+  } catch (error) {
+    state.stationProfileDay = null;
+    $('.station-profile-canvas').innerHTML = `<p class="figure-empty">사례 파일을 읽지 못했습니다. (${html(error.message)})</p>`;
+    $('#stationProfileWarning').textContent = '실제 사례를 읽지 못해 지점 프로필을 만들지 않았습니다.';
+  }
+}
+
+function initStationProfile() {
+  const dates = Object.keys(state.caseIndex?.dates || {}).sort();
+  $('#stationProfileDate').innerHTML = dates.map(date => `<option value="${html(date)}">${html(date)}</option>`).join('');
+  if (dates.length) $('#stationProfileDate').value = dates.at(-1);
+  $('#stationProfileDate').addEventListener('change', loadStationProfileDay);
+  ['#stationProfileModel', '#stationProfileLead', '#stationProfileVariable', '#stationProfileCount']
+    .forEach(selector => $(selector).addEventListener('change', renderStationProfile));
+  $('#downloadStationProfileCsv').addEventListener('click', () => {
+    const result = state.stationProfileResult;
+    if (!result?.rows.length) return;
+    download(stationProfileFilename(result, 'csv'), result.headers, result.rows);
+  });
+  $('#downloadStationProfileSvg').addEventListener('click', () => {
+    const result = state.stationProfileResult;
+    const markup = result && stationProfileSvgMarkup(result);
+    if (!markup) return;
+    downloadText(stationProfileFilename(result, 'svg'), `${markup}\n`, 'image/svg+xml;charset=utf-8');
+  });
+  if (dates.length) loadStationProfileDay();
+}
+
 const FIGURE_METRICS = {
   mae: { name: 'MAE', description: 'Mean absolute error' },
   me: { name: 'ME', description: 'Mean forecast minus observation' },
@@ -3719,6 +3931,7 @@ async function boot() {
     initDistribution();
     initSpatial();
     initPaired();
+    initStationProfile();
     initFigure();
     initWorksheet();
   } catch (error) {

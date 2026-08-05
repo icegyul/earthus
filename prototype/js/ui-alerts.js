@@ -28,6 +28,7 @@ export const alertsSheet = {
   _health: null,
   _spotsLoading: false,
   _spotsError: false,
+  _renderSeq: 0,
 
   open() {
     document.querySelectorAll('.sheet-panel.up').forEach((p) => p.classList.remove('up'));
@@ -63,6 +64,7 @@ export const alertsSheet = {
   },
 
   async render() {
+    const seq = ++this._renderSeq;
     const body = $('#alertBody');
     if (!body) return;
     const ko = i18n.lang === 'ko';
@@ -139,6 +141,10 @@ export const alertsSheet = {
 
     /* ── 3. 켜고 끄기 ──────────────────────────────────────── */
     const cur = await push.current();
+    /* open()의 첫 렌더가 구독 확인을 기다리는 사이 _load()가 끝나 두 번째 렌더가
+       시작될 수 있다. 옛 렌더가 뒤늦게 행을 붙이면 토글·장소가 두 벌 생긴다.
+       DOM을 비운 가장 최신 회차만 이후 내용을 이어 쓴다. */
+    if (seq !== this._renderSeq) return;
     const row = el('div', 'al-toggle');
     row.appendChild(el('div', null,
       `<b>${ko ? '이 기기에서 알림 받기' : 'Alerts on this device'}</b>`

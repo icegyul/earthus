@@ -1,16 +1,16 @@
 /* earthus 내 관측소
  *
- * ⚠️ 공개된 현재 ASOS와 예보 검증 사례의 관측값만 읽는다. 30일·작년 자료가
+ * ⚠️ 공개된 현재 ASOS와 날짜별 관측 이력만 읽는다. 30일·작년 자료가
  *    실제로 생기기 전에는 계산하거나 복원했다고 쓰지 않는다.
  */
 
 const CURRENT_URL = '/wind/kma-aws.json';
-const CASE_INDEX_URL = '/wind/series/verify-cases.json';
+const HISTORY_INDEX_URL = '/wind/series/stations.json';
 const SAVED_KEY = 'earthus.adoptedStationV1';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const $ = selector => document.querySelector(selector);
 
-const state = { current: null, caseIndex: null, caseDoc: null, stationId: null };
+const state = { current: null, historyIndex: null, historyDoc: null, stationId: null };
 const FIELDS = [
   ['temp_c', '기온', '°C', 1], ['humid_pct', '습도', '%', 0], ['wind_ms', '풍속', 'm/s', 1],
   ['wind_dir', '풍향', '°', 0], ['rain_mm', '강수량', 'mm', 1], ['pres_hpa', '현지기압', 'hPa', 1],
@@ -97,10 +97,10 @@ function renderCurrent() {
 
 function stationHistory() {
   const rows = [];
-  Object.entries(state.caseDoc?.hours || {}).forEach(([time, hour]) => {
-    const item = (hour.cases || []).find(candidate => candidate.stationId === state.stationId);
+  Object.entries(state.historyDoc?.hours || {}).forEach(([time, hour]) => {
+    const item = (hour.stations || []).find(candidate => candidate.stationId === state.stationId);
     if (!item) return;
-    rows.push({ time, temp: item.observation?.temperature_2m, wind: item.observation?.wind_speed_10m });
+    rows.push({ time, temp: item.values?.temp_c, wind: item.values?.wind_ms });
   });
   return rows.sort((a, b) => a.time.localeCompare(b.time));
 }
@@ -144,8 +144,8 @@ function renderHistory() {
   renderSparkline('#windChart', rows, 'wind', 'wind', '#windRange', 'm/s');
   $('#historyCount').textContent = `${rows.length}개 관측 시각`;
   $('#historyNote').textContent = rows.length
-    ? `현재 공개 사례 파일 ${state.caseDoc.date} 안에서 이 지점의 관측 ${rows.length}개를 표시합니다. 날짜가 바뀌면 최신 날짜부터 읽습니다.`
-    : '이 지점에는 아직 공개 사례와 짝이 맞은 관측이 없습니다. 자료가 생길 때까지 빈칸으로 둡니다.';
+    ? `현재 날짜별 관측 파일 ${state.historyDoc.date} 안에서 이 지점의 관측 ${rows.length}개를 표시합니다. 날짜가 바뀌면 최신 날짜부터 읽습니다.`
+    : '이 지점에는 아직 공개 시간 관측이 없습니다. 자료가 생길 때까지 빈칸으로 둡니다.';
 }
 
 function addDays(day, count) {
@@ -155,7 +155,7 @@ function addDays(day, count) {
 }
 
 function renderReadiness() {
-  const since = state.caseIndex?.collectingSince;
+  const since = state.historyIndex?.collectingSince;
   const rows = stationHistory();
   $('#nowReady').textContent = rows.length ? `제공 중 · ${rows.length}시각` : '자료 축적 시작';
   if (!since) {
@@ -175,13 +175,13 @@ function renderAll() {
   $('#generatedLine').textContent = `자료 생성 · ${formatGenerated(state.current.generated)} · 현재 ${state.current.count ?? '—'}지점`;
 }
 
-async function loadLatestCases(index) {
+async function loadLatestHistory(index) {
   const days = Object.keys(index?.dates || {}).sort();
   if (!days.length) return null;
   const day = days[days.length - 1];
-  const path = index.dates[day].path || `/wind/series/verify-cases/${day}.json`;
+  const path = index.dates[day].path || `/wind/series/stations/${day}.json`;
   const response = await fetch(`${path}?t=${Date.now()}`, { cache: 'no-store' });
-  if (!response.ok) throw new Error(`사례 HTTP ${response.status}`);
+  if (!response.ok) throw new Error(`관측 이력 HTTP ${response.status}`);
   return response.json();
 }
 
@@ -189,14 +189,14 @@ async function boot() {
   try {
     const [currentResponse, indexResponse] = await Promise.all([
       fetch(`${CURRENT_URL}?t=${Date.now()}`, { cache: 'no-store' }),
-      fetch(`${CASE_INDEX_URL}?t=${Date.now()}`, { cache: 'no-store' }),
+      fetch(`${HISTORY_INDEX_URL}?t=${Date.now()}`, { cache: 'no-store' }),
     ]);
     if (!currentResponse.ok) throw new Error(`현재 관측 HTTP ${currentResponse.status}`);
     state.current = await currentResponse.json();
     if (!state.current || !Array.isArray(state.current.stations)) throw new Error('관측소 목록이 없습니다');
     if (indexResponse.ok) {
-      state.caseIndex = await indexResponse.json();
-      state.caseDoc = await loadLatestCases(state.caseIndex);
+      state.historyIndex = await indexResponse.json();
+      state.historyDoc = await loadLatestHistory(state.historyIndex);
     }
     renderPicker();
     renderAll();

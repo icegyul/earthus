@@ -31,6 +31,8 @@
 
 출력
   s3://<CACHE_BUCKET>/wind/kma-aws.json
+  s3://<CACHE_BUCKET>/wind/series/stations.json
+  s3://<CACHE_BUCKET>/wind/series/stations/<날짜>.json
 """
 
 import json
@@ -48,6 +50,9 @@ KEY = os.environ.get("KMA_HUB_KEY", os.environ.get("KMA_KEY", "")).strip()
 
 UA = {"User-Agent": "earthus/0.1 (+globe app)"}
 DST = "wind/kma-aws.json"
+HISTORY_INDEX = "wind/series/stations.json"
+HISTORY_PREFIX = "wind/series/stations/"
+HISTORY_KEEP_DAYS = 760
 
 # 공공데이터포털 — 방재기상관측(AWS) 초단기실황
 HUB = "https://apihub.kma.go.kr/api/typ01/url"
@@ -77,6 +82,21 @@ FIELDS = {
     "WW":  ("weather",   "현재일기"),
 }
 MISSING = {-9.0, -99.0, -999.0, -9999.0, -50.0}
+
+
+def load_json(key, default=None):
+    try:
+        return json.loads(s3.get_object(Bucket=BUCKET, Key=key)["Body"].read())
+    except Exception:                                        # noqa: BLE001
+        return default
+
+
+def put_json(key, doc, maxage=600):
+    s3.put_object(Bucket=BUCKET, Key=key,
+                  Body=json.dumps(doc, ensure_ascii=False,
+                                  separators=(",", ":")).encode(),
+                  ContentType="application/json; charset=utf-8",
+                  CacheControl=f"public, max-age={maxage}")
 
 
 def get(url, **params):
@@ -129,6 +149,73 @@ def num(v):
     except (TypeError, ValueError):
         return None
     return None if f in MISSING else f
+
+
+def store_history(doc):
+    """현재 ASOS를 날짜별 공개 관측 이력에 누적한다.
+
+    ⚠️ 예보 검증 사례와 분리한다. 예보 보관 파일이 빠졌다고 실제 관측까지
+       사라지면 30일 관측소 상품의 기간이 조용히 구멍 난다.
+    ⚠️ 같은 관측 시각을 다시 실행하면 append하지 않고 해당 시각을 교체한다.
+    """
+    digits = "".join(c for c in str(doc.get("observedKst") or "") if c.isdigit())
+    if len(digits) < 10:
+        print("[kma-aws] 관측 이력 시각을 못 읽었다:", doc.get("observedKst"))
+        return None
+    day = f"{digits[:4]}-{digits[4:6]}-{digits[6:8]}"
+    observed = f"{day}T{digits[8:10]}:00"
+    key = f"{HISTORY_PREFIX}{day}.json"
+    old = load_json(key, {}) or {}
+    hours = old.get("hours") or {}
+    rows = []
+    meta = old.get("stationMeta") or {}
+    value_fields = [field for field, _ in FIELDS.values()]
+    for station in doc.get("stations") or []:
+        sid = station.get("id")
+        if not sid:
+            continue
+        values = {field: station.get(field) for field in value_fields
+                  if station.get(field) is not None}
+        if not values:
+            continue
+        rows.append({"stationId": sid, "values": values})
+        if station.get("lat") is not None and station.get("lon") is not None:
+            meta[sid] = {
+                "name": station.get("name") or sid,
+                "lat": station.get("lat"), "lon": station.get("lon"),
+                "alt": station.get("alt"),
+            }
+    hours[observed] = {"n": len(rows), "stations": sorted(rows, key=lambda row: row["stationId"])}
+    hours = dict(sorted(hours.items()))
+    generated = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z")
+    put_json(key, {
+        "generated": generated,
+        "date": day,
+        "source": doc.get("source") or "기상청 지상관측 (API허브)",
+        "sourceEn": doc.get("sourceEn") or "KMA surface observations (API Hub)",
+        "license": "기상청 공공누리 제1유형 · 정규화 earthus",
+        "fields": {name: label for _, (name, label) in FIELDS.items()},
+        "stationMeta": meta,
+        "hourCount": len(hours),
+        "rowCount": sum(len(hour.get("stations") or []) for hour in hours.values()),
+        "hours": hours,
+    })
+
+    index = load_json(HISTORY_INDEX, {}) or {}
+    dates = index.get("dates") or {}
+    dates[day] = {"path": f"/{key}", "generated": generated,
+                  "hours": len(hours),
+                  "rows": sum(len(hour.get("stations") or []) for hour in hours.values())}
+    cut = (datetime.strptime(day, "%Y-%m-%d").replace(tzinfo=KST)
+           - timedelta(days=HISTORY_KEEP_DAYS)).strftime("%Y-%m-%d")
+    dates = {date: value for date, value in dates.items() if date >= cut}
+    put_json(HISTORY_INDEX, {
+        "generated": generated,
+        "collectingSince": index.get("collectingSince") or day,
+        "source": "기상청 ASOS 지점별 시간 관측 — earthus 공개 이력 목록",
+        "count": len(dates), "dates": dict(sorted(dates.items())),
+    })
+    return {"date": day, "hours": len(hours), "rows": len(rows)}
 
 
 def stations(refresh=False):
@@ -285,5 +372,7 @@ def handler(event, context):
     s3.put_object(Bucket=BUCKET, Key=DST, Body=body,
                   ContentType="application/json; charset=utf-8",
                   CacheControl="public, max-age=600")
+    history = store_history(doc)
     print(f"[kma-aws] {len(out)}곳 (좌표 {withpos}) · {tm} · {len(body)/1024:.0f}KB")
-    return {"ok": True, "stations": len(out), "withPosition": withpos, "observed": tm}
+    return {"ok": True, "stations": len(out), "withPosition": withpos,
+            "observed": tm, "history": history}

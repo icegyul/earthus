@@ -1,0 +1,2 @@
+# boto3는 Lambda 런타임 제공. 별도 패키지 없음.
+# ⚠️ 이 파일이 없으면 deploy-python.sh가 NetCDF 기본 패키지 30MB를 넣는다.

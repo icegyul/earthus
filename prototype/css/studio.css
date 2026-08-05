@@ -272,10 +272,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 }
 
 @media (max-width:767px){
-  /* ⚠️ 모바일 상단바는 계정 행을 두 번째 줄로 내려 실측 108px이다.
-     60px로 두면 스크롤 시 탭 레일의 15px가 상단바 뒤로 숨었다. */
-  :root{--topbar:108px}
-  .topbar{grid-template-columns:auto 1fr;padding:8px 14px;gap:12px}.brand{width:102px}.topbar-title span{display:none}.account-state{grid-column:1/-1;justify-content:space-between;border-top:1px solid var(--line);padding-top:7px}.topbar{min-height:auto}.account-state span{max-width:65vw}
+  /* 모바일에서는 작업 영역이 먼저다. 두 줄 108px 헤더가 탭 레일까지 밀어내던 것을
+     한 줄로 줄인다. 권한 문구는 로그인 게이트가 이미 설명하므로 중복 표시하지 않는다. */
+  :root{--topbar:64px}
+  .topbar{grid-template-columns:auto minmax(0,1fr);min-height:var(--topbar);padding:8px 12px;gap:10px}
+  .brand{width:90px}.topbar-title{display:none}
+  .account-state{grid-column:auto;justify-content:flex-end;gap:6px;border:0;padding:0}
+  .account-state>span{display:none}.account-state .button-small{padding-inline:9px;font-size:11px}
   .button,.button-small{min-height:44px}.text-button{min-height:44px;display:inline-flex;align-items:center}.rail-tab{min-height:44px}
   .gate{min-height:calc(100dvh - 92px);padding:56px 0 84px}.gate h1{font-size:42px}
   .studio{display:block;min-height:0}
@@ -284,7 +287,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   .workspace{padding:18px 14px 64px}.safety-bar{align-items:flex-start;margin-bottom:26px}.safety-state{display:none}
   .panel-head{align-items:flex-start;flex-direction:column;margin-bottom:22px}.panel-head h2{font-size:32px}.panel-head>.button,.panel-head>.file-button{width:100%}
   .draft-layout{display:block}.draft-list{min-height:0;max-height:310px;overflow:auto;margin-bottom:12px}.draft-detail{padding:16px;min-height:400px}.draft-title-row{display:block}.fact-summary{grid-template-columns:1fr 1fr}.agency{grid-template-columns:1fr}.post-record{grid-template-columns:1fr}.channel-footer{align-items:flex-start;flex-direction:column}
-  .maker-layout{display:block}.editor{padding:15px}.preview-column{margin-top:12px;padding:14px}.canvas-wrap{min-height:300px;padding:10px}.canvas-wrap canvas{max-height:58dvh}.preview-actions .button{flex:1 1 100%}
+  /* 카드 결과를 보려고 긴 편집 폼을 끝까지 지나가야 했던 순서를 뒤집는다.
+     HTML을 복제하지 않고 시각 순서만 바꿔 입력 id와 접근성 연결은 그대로 둔다. */
+  .maker-layout{display:flex;flex-direction:column}.preview-column{order:-1;margin:0 0 12px;padding:14px}.editor{order:1;padding:15px}.canvas-wrap{min-height:300px;padding:10px}.canvas-wrap canvas{max-height:58dvh}.preview-actions .button{flex:1 1 100%}
   .segmented{grid-template-columns:repeat(3,1fr)}.row-input{grid-template-columns:1fr 1fr auto}
   .reel-setup{display:block}.connection-card{margin-bottom:18px}.frame-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .local-notice{grid-template-columns:1fr;gap:7px}.import-meta{grid-template-columns:1fr}.import-file-list,.import-meta .button-row{grid-column:1}.library-grid{grid-template-columns:1fr}.media-card{display:grid;grid-template-columns:130px 1fr}.media-preview{aspect-ratio:1}.media-body{min-width:0}

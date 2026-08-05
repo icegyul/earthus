@@ -37,11 +37,19 @@ export const chrome = {
   place: { name: '인천', lat: 37.4563, lon: 126.7052 },
   wx: null,
 
+  /* ⚠️ 위치 권한이 없으면 인천을 쓴다. 그 사실을 **첫 화면에서** 밝힌다. (감사 P1-5)
+     예전에는 아무 말 없이 인천 날씨를 보여줬고, 그 설명은 날씨 상세 아래쪽에만
+     있었다 — 사용자는 자기 동네 날씨로 읽는다. */
+  isDefault: false,
+
   async init() {
     const loc = await locateUser();
     if (loc) {
       this.place = { name: '', lat: loc.lat, lon: loc.lon };
+      this.isDefault = false;
       this.reverseName(loc.lat, loc.lon);
+    } else {
+      this.isDefault = true;
     }
     this.tick();
     setInterval(() => this.tick(), 20_000);
@@ -99,7 +107,16 @@ export const chrome = {
   },
 
   render() {
-    $('#ambCity').textContent = this.place.name || '—';
+    const ko = i18n.lang === 'ko';
+    const el0 = $('#ambCity');
+    el0.textContent = this.place.name || '—';
+    /* 기본 위치일 때만 꼬리표를 붙인다 — 내 위치일 때는 붙일 이유가 없다 */
+    if (this.isDefault) {
+      const tag = document.createElement('span');
+      tag.className = 'amb-default';
+      tag.textContent = ko ? '기본 위치' : 'default location';
+      el0.appendChild(tag);
+    }
     if (!this.wx) return;
     const c = this.wx.current, d = this.wx.daily;
     $('#ambCond').textContent = wxText(c.weather_code);

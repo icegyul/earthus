@@ -265,14 +265,15 @@ export function flyTo(lon, lat, height, duration = 1.5, onDone) {
   });
 }
 
-/** 사용자 현재 위치로 (실패 시 기본값) */
-export function locateUser() {
-  return new Promise(resolve => {
-    if (!navigator.geolocation) return resolve(null);
-    navigator.geolocation.getCurrentPosition(
-      p => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
-      () => resolve(null),
-      { timeout: 5000, maximumAge: 600_000 }
-    );
-  });
+/** 사용자 현재 위치 (실패하면 null)
+ *
+ *  ⚠️⚠️ **여기서 직접 묻지 않는다.** (감사 P1-5)
+ *     예전에는 이 함수와 mylocation.js 가 **각각** getCurrentPosition 을 불러
+ *     앱이 뜨자마자 위치 권한을 두 번 요청했고, 둘이 서로 다른 좌표를 들고
+ *     화면(홈 날씨)과 지도 점이 어긋날 수 있었다.
+ *     → 요청은 mylocation.js 한 곳에서만 한다. 이 함수는 그 결과를 빌려 쓴다. */
+export async function locateUser() {
+  const { myLocation } = await import('./mylocation.js');
+  const c = myLocation.coords || await myLocation.locate();
+  return c ? { lat: c.lat, lon: c.lon } : null;
 }

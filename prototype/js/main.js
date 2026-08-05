@@ -141,7 +141,9 @@ async function boot() {
         두 메뉴로 나눠 둘 이유가 없었다. 한국 밖에서는 날아가기만 한다 —
         관측소가 없는 곳에서 한국 화면을 띄우면 빈 시트만 보인다. */
   layerBar.onAction('locate', async () => {
-    if (!myLocation.coords) await myLocation.locate();
+    /* ⚠️ '내 위치'는 사용자가 **직접 누른** 것이다 — 전에 거부했더라도 다시 묻는다.
+       (평소 자동 요청은 거부를 기억하고 안 묻는다. mylocation.locate 주석 참고) */
+    if (!myLocation.coords) await myLocation.locate(true);
     if (!myLocation.flyTo()) { toast(myLocation.reason() || ''); return; }
     /* 도착하면 그 자리의 날씨를 띄운다 (받은 요청: "내 위치로 가면서 다시 화면 나오게").
        ⚠️ 한국 안이면 기상청 자료(옛 '한국' 메뉴)를 함께 볼 수 있게 안내만 남긴다 —

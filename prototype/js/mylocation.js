@@ -18,8 +18,26 @@ export const myLocation = {
     return this;
   },
 
-  /** 위치를 얻어 표시. 실패해도 앱은 그대로 돌아야 한다. */
-  async locate() {
+  /** 위치를 얻어 표시. 실패해도 앱은 그대로 돌아야 한다.
+   *  ⚠️ 여러 화면이 동시에 부르므로 **한 번만 묻고 그 약속을 나눠 준다.**
+   *     안 그러면 브라우저 권한창이 겹쳐 뜨고 좌표도 제각각이 된다. (감사 P1-5) */
+  locate(force = false) {
+    // ① 이미 받아 뒀으면 그대로 준다
+    if (this.coords && !force) return Promise.resolve(this.coords);
+    // ② 지금 묻는 중이면 그 약속을 나눠 준다 (권한창이 겹쳐 뜨지 않게)
+    if (this._asking) return this._asking;
+    /* ③ ⚠️⚠️ **이미 거부당했으면 다시 묻지 않는다.** (감사 P1-5)
+       공유 promise 만으로는 부족했다 — 첫 요청이 끝난 뒤 다른 화면이 부르면
+       또 물었다(실측: 시작 한 번에 요청 2회). 거부한 사람에게 계속 묻는 것은
+       고장이자 무례다. 다시 물으려면 '내 위치' 버튼처럼 force 로 부른다. */
+    if (!force && (this.state === 'denied' || this.state === 'insecure')) {
+      return Promise.resolve(null);
+    }
+    this._asking = this._locate().finally(() => { this._asking = null; });
+    return this._asking;
+  },
+
+  async _locate() {
     if (!window.isSecureContext) {
       this.state = 'insecure';
       console.warn('[내 위치] 보안 컨텍스트가 아니라 위치를 못 받는다 (HTTPS 필요)');

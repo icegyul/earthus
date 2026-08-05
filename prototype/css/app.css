@@ -2088,3 +2088,7 @@ body.is-ambient #windLegend.on{ opacity:0; }
 body.tc-ui-off #fxBar{transform:translateX(-50%) translateY(200%);pointer-events:none}
 body.tc-ui-off #fxChip{opacity:0;pointer-events:none;transition:opacity .2s}
 body.tc-ui-off #tcLegend{opacity:0;pointer-events:none;transition:opacity .2s}
+/* 위치 권한이 없어 기본 위치(인천)를 쓰는 중이라는 표시 (감사 P1-5) */
+.amb-default{display:inline-block;margin-left:7px;padding:2px 7px;border-radius:999px;
+  font-size:.52em;font-weight:500;opacity:.62;vertical-align:middle;
+  border:1px solid rgba(255,255,255,.28)}

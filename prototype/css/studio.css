@@ -289,7 +289,10 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   .draft-layout{display:block}.draft-list{min-height:0;max-height:310px;overflow:auto;margin-bottom:12px}.draft-detail{padding:16px;min-height:400px}.draft-title-row{display:block}.fact-summary{grid-template-columns:1fr 1fr}.agency{grid-template-columns:1fr}.post-record{grid-template-columns:1fr}.channel-footer{align-items:flex-start;flex-direction:column}
   /* 카드 결과를 보려고 긴 편집 폼을 끝까지 지나가야 했던 순서를 뒤집는다.
      HTML을 복제하지 않고 시각 순서만 바꿔 입력 id와 접근성 연결은 그대로 둔다. */
-  .maker-layout{display:flex;flex-direction:column}.preview-column{order:-1;margin:0 0 12px;padding:14px}.editor{order:1;padding:15px}.canvas-wrap{min-height:300px;padding:10px}.canvas-wrap canvas{max-height:58dvh}.preview-actions .button{flex:1 1 100%}
+  .maker-layout{display:flex;flex-direction:column}.preview-column{order:-1;margin:0 0 12px;padding:14px}.editor{order:1;padding:15px}.canvas-wrap{min-height:300px;padding:10px}.canvas-wrap canvas{max-height:300px}.preview-actions .button{flex:1 1 100%}
+  /* 결과를 확인한 뒤 첫 화면에서 바로 할 수 있는 주 행동은 PNG 저장이다.
+     공유 채널 선택은 공유 버튼에만 필요하므로 모바일에서는 그 뒤로 보낸다. */
+  #downloadCard{order:-2}.share-target{order:-1}
   .segmented{grid-template-columns:repeat(3,1fr)}.row-input{grid-template-columns:1fr 1fr auto}
   .reel-setup{display:block}.connection-card{margin-bottom:18px}.frame-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .local-notice{grid-template-columns:1fr;gap:7px}.import-meta{grid-template-columns:1fr}.import-file-list,.import-meta .button-row{grid-column:1}.library-grid{grid-template-columns:1fr}.media-card{display:grid;grid-template-columns:130px 1fr}.media-preview{aspect-ratio:1}.media-body{min-width:0}

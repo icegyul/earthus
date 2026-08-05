@@ -2187,6 +2187,164 @@ function distributionSvgMarkup(result) {
   return chunks.join('');
 }
 
+async function buildDistributionManifest(result) {
+  const csvName = distributionFilename(result, 'csv');
+  const svgName = distributionFilename(result, 'svg');
+  const csvContent = csvText(result.headers, result.rows);
+  const svgContent = `${distributionSvgMarkup(result)}\n`;
+  const [csvHash, svgHash] = await Promise.all([sha256(csvContent), sha256(svgContent)]);
+  return {
+    schema: 'earthus.error-distribution-manifest.v1',
+    manifestVersion: 1,
+    createdAt: new Date().toISOString(),
+    product: 'earthus Research Error Distribution 무료 미리보기',
+    salesStatus: '유료 판매 잠금; 현재 공개 사례 범위만 사용',
+    selection: {
+      date: result.date,
+      model: result.model,
+      leadHour: result.lead,
+      variable: result.variable,
+      unit: result.unit,
+      binCount: result.binCount,
+    },
+    statistics: result.stats,
+    histogram: {
+      method: 'equal-width bins from actual minimum to maximum; last upper edge inclusive',
+      minimum: result.histogram.minimum,
+      maximum: result.histogram.maximum,
+      width: result.histogram.width,
+      bins: result.histogram.bins,
+    },
+    files: [
+      {
+        role: 'error-samples', name: csvName, mediaType: 'text/csv; charset=utf-8',
+        encoding: 'UTF-8 with BOM', lineEnding: 'LF', rows: result.rows.length,
+        bytes: new TextEncoder().encode(csvContent).byteLength, sha256: csvHash,
+        fields: result.headers.map(name => ({
+          name,
+          unit: EXTRACT_FIELD_META[name]?.[0] || TRACE_FIELD_META[name]?.[0] || '-',
+          description: EXTRACT_FIELD_META[name]?.[1] || TRACE_FIELD_META[name]?.[1] || name,
+        })),
+      },
+      {
+        role: 'error-histogram', name: svgName, mediaType: 'image/svg+xml; charset=utf-8',
+        encoding: 'UTF-8', lineEnding: 'LF',
+        bytes: new TextEncoder().encode(svgContent).byteLength, sha256: svgHash,
+      },
+    ],
+    provenance: { source: result.source, license: result.license, sourceGeneratedAt: result.generated },
+    methodology: {
+      difference: 'forecast_minus_observation = forecast - observation; CSV stores three decimal places',
+      statistics: 'n, ME, MAE, RMSE and quantiles are calculated from the CSV error values',
+      quantile: 'linear interpolation at position (n - 1) x probability',
+      missing: '관측 또는 예보 결측은 빈칸과 n=0이며 분포 계산에서 제외; 0으로 대체하지 않음',
+      warning: '한 날짜 분포는 장기 모델 성능 순위가 아님',
+    },
+    licensePage: 'https://earthus.net/legal/data-license.ko.md',
+  };
+}
+
+function buildDistributionReadme(result, manifest) {
+  const dataFile = manifest.files.find(file => file.role === 'error-samples');
+  const figureFile = manifest.files.find(file => file.role === 'error-histogram');
+  const stat = value => finite(value) ? Number(value).toFixed(3) : 'NA';
+  return `# earthus Error Distribution
+
+## 선택과 표본
+
+- 날짜: ${result.date}
+- 모델: ${modelName(result.model)} (\`${result.model}\`)
+- 선행시간: ${result.lead}시간
+- 변수: ${result.variable} (${result.unit})
+- 유효 n: ${result.stats.n}/${result.stats.totalRows}
+- 결측 관측/예보: ${result.stats.missingObservation}/${result.stats.missingForecast}
+- ME/중앙값/MAE/RMSE: ${stat(result.stats.me)} / ${stat(result.stats.median)} / ${stat(result.stats.mae)} / ${stat(result.stats.rmse)}
+- p10/p90: ${stat(result.stats.p10)} / ${stat(result.stats.p90)}
+
+## 파일
+
+| 역할 | 파일 | 행/바이트 | SHA-256 |
+|---|---|---:|---|
+| 개별 오차 CSV | \`${dataFile.name}\` | ${dataFile.rows}행 / ${dataFile.bytes}바이트 | \`${dataFile.sha256}\` |
+| 히스토그램 SVG | \`${figureFile.name}\` | ${figureFile.bytes}바이트 | \`${figureFile.sha256}\` |
+
+## 방법과 한계
+
+- 오차는 \`forecast - observation\`이며 CSV의 소수 셋째 자리 값을 통계에 사용합니다.
+- 분위수는 \`(n−1)×p\` 위치에서 선형 보간합니다.
+- 실제 최솟값–최댓값을 ${result.binCount}개 등간격으로 나누고 마지막 상한만 포함합니다.
+- 결측은 빈칸과 n=0이며 통계에서 제외합니다. 0으로 채우지 않습니다.
+- 한 날짜의 분포는 장기 모델 성능 순위가 아닙니다.
+- 출처: ${result.source}
+- 이용조건: ${result.license}
+- 원본 생성시각: ${result.generated}
+
+## 검증
+
+같은 폴더에서 \`python3 ${distributionFilename(result, 'verify.py')}\`를 실행하세요.
+Python 표준 라이브러리만 사용하며 CSV와 SVG의 SHA-256, CSV 열 순서와 행 수를 검사합니다.
+
+이 묶음은 공식 DOI가 아닙니다. 원자료 제공기관 출처와 이용조건을 함께 표기하세요.
+`;
+}
+
+function buildDistributionPython(result, manifest) {
+  const expected = JSON.stringify(manifest.files.map(file => ({
+    name: file.name,
+    sha256: file.sha256,
+    rows: file.rows,
+    headers: file.fields?.map(field => field.name),
+  })));
+  return `#!/usr/bin/env python3
+import csv
+import hashlib
+import json
+from pathlib import Path
+
+EXPECTED = json.loads(r'''${expected}''')
+ROOT = Path(__file__).resolve().parent
+
+for spec in EXPECTED:
+    path = ROOT / spec["name"]
+    if not path.is_file():
+        raise SystemExit(f"MISSING: {path.name}")
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest != spec["sha256"]:
+        raise SystemExit(f"SHA256 MISMATCH: {path.name} expected={spec['sha256']} actual={digest}")
+    if spec.get("headers"):
+        with path.open("r", encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            if reader.fieldnames != spec["headers"]:
+                raise SystemExit(f"HEADER MISMATCH: {path.name}")
+            rows = sum(1 for _ in reader)
+        if rows != spec["rows"]:
+            raise SystemExit(f"ROW COUNT MISMATCH: {path.name} expected={spec['rows']} actual={rows}")
+        print(f"OK {path.name}: rows={rows} sha256={digest}")
+    else:
+        print(f"OK {path.name}: sha256={digest}")
+
+print("VERIFIED: Error Distribution CSV and SVG match this snapshot.")
+`;
+}
+
+async function buildDistributionBundle(result) {
+  const manifest = await buildDistributionManifest(result);
+  const baseName = distributionFilename(result, 'csv').replace(/\.csv$/, '');
+  const files = [
+    { name: distributionFilename(result, 'csv'), content: csvText(result.headers, result.rows) },
+    { name: distributionFilename(result, 'svg'), content: `${distributionSvgMarkup(result)}\n` },
+    { name: `${baseName}.manifest.json`, content: JSON.stringify(manifest, null, 2) + '\n' },
+    { name: `${baseName}.README.md`, content: buildDistributionReadme(result, manifest) },
+    { name: `${baseName}.verify.py`, content: buildDistributionPython(result, manifest) },
+  ];
+  return {
+    filename: `${baseName}.reproducible.zip`,
+    files,
+    bytes: zipArchive(files, new Date(manifest.createdAt)),
+    manifest,
+  };
+}
+
 function refillDistributionControls(day) {
   const previous = {
     model: $('#distributionModel').value,
@@ -2216,6 +2374,7 @@ function renderDistribution() {
   $('.distribution-canvas').innerHTML = markup || '<p class="figure-empty">선택 조건에 유효한 관측·예보 쌍이 없습니다.</p>';
   $('#downloadDistributionCsv').disabled = !result.rows.length;
   $('#downloadDistributionSvg').disabled = !markup;
+  $('#downloadDistributionBundle').disabled = !result.rows.length || !markup;
   $('#distributionWarning').textContent = `${result.date} · ${modelName(result.model)} ${result.lead}시간 · ${variableInfo(result.variable).name} · 유효 n=${result.stats.n}/${result.stats.totalRows} · ${result.binCount}구간`;
 }
 
@@ -2223,6 +2382,7 @@ async function loadDistributionDay() {
   const date = $('#distributionDate').value;
   $('#downloadDistributionCsv').disabled = true;
   $('#downloadDistributionSvg').disabled = true;
+  $('#downloadDistributionBundle').disabled = true;
   $('#distributionWarning').textContent = `${date || '날짜 없음'} 실제 공개 사례를 불러오는 중입니다.`;
   try {
     const day = state.extractCache.cases[date] || await json(state.caseIndex.dates[date].path);
@@ -2253,6 +2413,24 @@ function initDistribution() {
     const result = state.distributionResult;
     if (!result || !distributionSvgMarkup(result)) return;
     downloadText(distributionFilename(result, 'svg'), `${distributionSvgMarkup(result)}\n`, 'image/svg+xml;charset=utf-8');
+  });
+  $('#downloadDistributionBundle').addEventListener('click', async event => {
+    const result = state.distributionResult;
+    if (!result?.rows.length || !distributionSvgMarkup(result)) return;
+    const button = event.currentTarget;
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = '분포 묶음 만드는 중…';
+    try {
+      const bundle = await buildDistributionBundle(result);
+      downloadBlob(bundle.filename, [bundle.bytes], 'application/zip');
+    } catch (error) {
+      $('#error').hidden = false;
+      $('#error').textContent = `분포 재현 묶음을 만들지 못했습니다. (${error.message})`;
+    } finally {
+      button.disabled = false;
+      button.textContent = original;
+    }
   });
   if (dates.length) loadDistributionDay();
 }

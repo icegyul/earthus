@@ -153,6 +153,10 @@ earthus의 유료 명분은 `이 값을 믿을 수 있는가`인데, 추천 결�
 
 ## 10. 2026-08-06 실행 기록
 
+- Error Distribution의 CSV·SVG·`earthus.error-distribution-manifest.v1`·README·검증
+  Python을 재현 ZIP으로 묶었다. manifest에 선택·통계·각 bin 경계/count·계산법·파일별
+  바이트/SHA-256·CSV 18개 열·출처/이용조건/생성시각을 기록하며, 개별 SVG와 ZIP은 같은
+  바이트를 쓴다. 검증기는 변조·CSV 열 순서·행 수 불일치에 즉시 실패한다.
 - Error Distribution에서 날짜·모델·24/48시간·변수·10/15/20개 구간을 골라 모든
   지점×시각의 관측·예보·오차 CSV와 등간격 히스토그램 SVG를 만든다. CSV의 소수 셋째
   자리 오차로 n·결측·ME·MAE·RMSE·최솟값·p10/p25/중앙값/p75/p90·최댓값을 계산하고,

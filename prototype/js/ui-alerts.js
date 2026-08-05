@@ -16,6 +16,7 @@ import { push } from './push.js';
 import { myLocation } from './mylocation.js';
 import { toast } from './ui.js';
 import { flyTo, viewCenter } from './viewer.js';
+import { API } from './config.js';
 
 const $ = (s) => document.querySelector(s);
 const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
@@ -24,6 +25,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
 
 export const alertsSheet = {
   _spots: [],
+  _health: null,
 
   open() {
     document.querySelectorAll('.sheet-panel.up').forEach((p) => p.classList.remove('up'));
@@ -34,7 +36,19 @@ export const alertsSheet = {
   close() { $('#alertSheet')?.classList.remove('up'); },
 
   async _load() {
-    try { this._spots = await push.spots(); } catch (_) { this._spots = []; }
+    /* 지점 DB와 발송 상태는 서로 독립이다. 한쪽이 실패했다고 다른 쪽까지 지우지 않는다.
+       특히 상태 파일 요청 실패를 '저장 지점 0개'로 바꾸면 사용자가 지점을 다시 만들다
+       서버 제한에 걸린다. */
+    const [spots, health] = await Promise.allSettled([
+      push.spots(),
+      fetch(`${API.EVENTS}/push-tick.json`, { cache: 'no-cache' }).then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      }),
+    ]);
+    if (spots.status === 'fulfilled') this._spots = spots.value;
+    if (health.status === 'fulfilled') this._health = health.value;
+    else this._health = { unavailable: true };
     if ($('#alertSheet')?.classList.contains('up')) this.render();
   },
 
@@ -61,6 +75,31 @@ export const alertsSheet = {
           ? '⚠️ <b>알림을 대피 수단으로 쓰지 마세요.</b> 공식 경보(기상청·지자체 재난문자)를 대신하지 않습니다.'
           : '⚠️ Do not rely on this for evacuation. It does not replace official warnings.'}</li>`
       + `</ul>`));
+
+    /* '켜짐'은 서버가 실제로 도는지 말해 주지 않는다. 공개 health 산출물의 마지막
+       실행 시각만 보여 준다. ⚠️ 화면 요청 실패와 서버 장애를 같은 말로 쓰지 않으며,
+       targets/sent 같은 이용자 규모 정보는 노출하지 않는다. */
+    if (this._health) {
+      const h = this._health;
+      const at = Date.parse(String(h.generated || ''));
+      const age = Number.isFinite(at) ? (Date.now() - at) / 60_000 : Infinity;
+      const ok = h.configured === true && h.ok === true && age <= 20;
+      const stamp = h.generatedKst
+        ? `${h.generatedKst} KST`
+        : (Number.isFinite(at) ? `${new Date(at).toISOString().slice(0, 16).replace('T', ' ')} UTC` : '—');
+      const text = h.unavailable
+        ? (ko
+            ? '<b>발송 서버 상태를 이 화면에서 확인하지 못했습니다.</b><span>네트워크 문제일 수도 있습니다. 공식 경보를 함께 확인하세요.</span>'
+            : '<b>This screen could not check the delivery server.</b><span>It may be a network issue. Check official warnings too.</span>')
+        : ok
+          ? (ko
+              ? `<b>발송 서버 최근 확인</b><span>${esc(stamp)} · 정상 실행</span>`
+              : `<b>Delivery server recently checked</b><span>${esc(stamp)} · running</span>`)
+          : (ko
+              ? `<b>발송 서버 상태 확인이 필요합니다.</b><span>마지막 기록 ${esc(stamp)} · 공식 경보를 함께 확인하세요.</span>`
+              : `<b>Delivery server status needs checking.</b><span>Last record ${esc(stamp)} · check official warnings too.</span>`);
+      body.appendChild(el('div', `al-health ${ok ? 'ok' : 'warn'}`, text));
+    }
 
     /* ── 2. 이 기기에서 되나 ───────────────────────────────── */
     const s = push.support();

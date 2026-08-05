@@ -153,6 +153,10 @@ earthus의 유료 명분은 `이 값을 믿을 수 있는가`인데, 추천 결�
 
 ## 10. 2026-08-06 실행 기록
 
+- Custom Extract를 실제 공개 인덱스의 시작일–종료일 범위로 확장했다. 범위 안 실제
+  포함 날짜와 달력상 누락 날짜, 날짜별 원본 파일 경로·출처·이용조건·생성시각을
+  `earthus.custom-extract-manifest.v2`에 기록한다. 등록된 파일 하나라도 로드에 실패하면
+  부분 추출을 만들지 않는다.
 - Custom Extract manifest의 `derivedFiles`에 선택 범위 품질 CSV의 파일명·행 수·
   BOM 포함 바이트·SHA-256·열 정의·계산 설명을 연결하고, 인용·방법 메모에도 같은
   체크섬을 기록한다.
@@ -164,7 +168,7 @@ earthus의 유료 명분은 `이 값을 믿을 수 있는가`인데, 추천 결�
   같은 manifest의 파일명·행 수·바이트·SHA-256, 선택 조건, 원본 URL·출처·이용조건·
   생성시각·방법론을 옮기고, 임의 DOI가 아닌 작업 메모임을 명시한다.
 - Custom Extract의 현재 선택 CSV와 정확히 대응하는
-  `earthus.custom-extract-manifest.v1` JSON을 추가했다. CSV 파일명·행 수·BOM 포함
+  `earthus.custom-extract-manifest.v2` JSON을 제공한다. CSV 파일명·행 수·BOM 포함
   바이트·SHA-256, 필터·열 정의·원본 경로·출처·이용조건·생성시각·방법론을 기록한다.
 - Research Custom Extract는 실제 공개 인덱스에 있는 날짜와 그 일파일만 읽는다.
   예보·관측 사례와 ASOS 시간 관측을 시각·관측소·변수로 걸러 long format CSV로

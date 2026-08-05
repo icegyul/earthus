@@ -369,7 +369,7 @@ function customExtractRows(dataset, day, filters) {
   const rows = [];
   const accepts = (selected, value) => selected === 'all' || String(selected) === String(value);
   Object.entries(day?.hours || {}).forEach(([time, hour]) => {
-    if (!accepts(filters.time, time)) return;
+    if (filters.time !== 'all' && time !== filters.time && !time.endsWith(`T${filters.time}`)) return;
     if (dataset === 'cases') {
       (hour.cases || []).forEach(item => {
         if (!accepts(filters.station, item.stationId)) return;
@@ -518,21 +518,46 @@ function extractVariables(dataset, day) {
 function refillExtractDates() {
   const dataset = $('#extractDataset').value;
   const dates = Object.keys(extractIndex(dataset)?.dates || {}).sort();
-  $('#extractDate').innerHTML = dates.map(date =>
-    `<option value="${html(date)}">${html(date)}</option>`).join('');
-  if (dates.length) $('#extractDate').value = dates.at(-1);
+  const options = dates.map(date => `<option value="${html(date)}">${html(date)}</option>`).join('');
+  $('#extractFrom').innerHTML = options;
+  $('#extractTo').innerHTML = options;
+  if (dates.length) {
+    $('#extractFrom').value = dates.at(-1);
+    $('#extractTo').value = dates.at(-1);
+  }
 }
 
-function refillExtractFilters(day) {
+function extractRangeDates(dataset, from, to) {
+  return Object.keys(extractIndex(dataset)?.dates || {}).sort()
+    .filter(date => date >= from && date <= to);
+}
+
+function calendarDates(from, to) {
+  const dates = [];
+  const cursor = new Date(`${from}T00:00:00Z`);
+  const end = new Date(`${to}T00:00:00Z`);
+  while (Number.isFinite(cursor.getTime()) && cursor <= end) {
+    dates.push(cursor.toISOString().slice(0, 10));
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return dates;
+}
+
+function refillExtractFilters(days) {
   const dataset = $('#extractDataset').value;
   const previousTime = $('#extractTime').value;
   const previousStation = $('#extractStation').value;
   const previousVariable = $('#extractVariable').value;
-  const times = Object.keys(day.hours || {}).sort();
-  const stations = Object.entries(day.stationMeta || {}).sort((left, right) => Number(left[0]) - Number(right[0]));
-  const variables = extractVariables(dataset, day);
+  const times = [...new Set(days.flatMap(day => Object.keys(day.hours || {})
+    .map(time => time.includes('T') ? time.split('T')[1] : time)))].sort();
+  const stationMap = new Map();
+  days.forEach(day => Object.entries(day.stationMeta || {}).forEach(([id, meta]) => stationMap.set(id, meta)));
+  const stations = [...stationMap.entries()].sort((left, right) => Number(left[0]) - Number(right[0]));
+  const variableMap = new Map();
+  days.forEach(day => extractVariables(dataset, day).forEach(([value, label]) => variableMap.set(value, label)));
+  const variables = [...variableMap.entries()].sort((left, right) => left[0].localeCompare(right[0], 'en'));
   $('#extractTime').innerHTML = `<option value="all">전체 시각 (${times.length})</option>`
-    + times.map(time => `<option value="${html(time)}">${html(formatTime(time))}</option>`).join('');
+    + times.map(time => `<option value="${html(time)}">${html(time)} KST</option>`).join('');
   $('#extractStation').innerHTML = `<option value="all">전체 관측소 (${stations.length})</option>`
     + stations.map(([id, meta]) => `<option value="${html(id)}">${html(meta.name || `지점 ${id}`)} (${html(id)})</option>`).join('');
   $('#extractVariable').innerHTML = `<option value="all">전체 변수 (${variables.length})</option>`
@@ -542,62 +567,97 @@ function refillExtractFilters(day) {
   if ([...$('#extractVariable').options].some(option => option.value === previousVariable)) $('#extractVariable').value = previousVariable;
 }
 
+function buildRangeResult(dataset, days, filters, dateFrom, dateTo, index = extractIndex(dataset)) {
+  const headers = EXTRACT_SCHEMAS[dataset];
+  const orderedDays = [...days].sort((left, right) => left.date.localeCompare(right.date, 'en'));
+  const rows = sortedRows(orderedDays.flatMap(day => customExtractRows(dataset, day, filters)), [0, 1, 6, 7, 8]);
+  const includedDates = orderedDays.map(day => day.date);
+  const missingCalendarDates = calendarDates(dateFrom, dateTo)
+    .filter(date => !includedDates.includes(date));
+  const unique = key => [...new Set(orderedDays.map(day => day[key]).filter(Boolean))];
+  const sourceFiles = orderedDays.map(day => ({
+    date: day.date,
+    path: index?.dates?.[day.date]?.path,
+    source: day.source,
+    license: day.license,
+    generated: day.generated,
+  }));
+  return {
+    dataset,
+    date: dateFrom === dateTo ? dateFrom : `${dateFrom}_to_${dateTo}`,
+    dateFrom,
+    dateTo,
+    includedDates,
+    missingCalendarDates,
+    filters,
+    headers,
+    rows,
+    source: unique('source').join(' | '),
+    license: unique('license').join(' | '),
+    generated: `${unique('generated').length} source snapshot(s); see manifest`,
+    sourcePath: URLS[dataset],
+    sourceFiles,
+  };
+}
+
 function renderExtract() {
   const dataset = $('#extractDataset').value;
-  const day = state.extractDay;
-  if (!day) return;
+  const days = state.extractDays;
+  if (!days?.length) return;
   const filters = {
     time: $('#extractTime').value,
     station: $('#extractStation').value,
     variable: $('#extractVariable').value,
   };
-  const headers = EXTRACT_SCHEMAS[dataset];
-  const rows = customExtractRows(dataset, day, filters);
-  state.extractResult = {
-    dataset, date: day.date, filters, headers, rows,
-    source: day.source, license: day.license, generated: day.generated,
-    sourcePath: extractIndex(dataset)?.dates?.[day.date]?.path,
-  };
+  const dateFrom = $('#extractFrom').value;
+  const dateTo = $('#extractTo').value;
+  state.extractResult = buildRangeResult(dataset, days, filters, dateFrom, dateTo);
+  const { headers, rows, includedDates, missingCalendarDates, sourceFiles } = state.extractResult;
   const preview = rows.slice(0, 5);
   $('#extractTable thead').innerHTML = `<tr>${headers.map(header => `<th>${html(header)}</th>`).join('')}</tr>`;
   $('#extractTable tbody').innerHTML = preview.map(row =>
     `<tr>${row.map(value => `<td>${html(value ?? '')}</td>`).join('')}</tr>`).join('');
-  $('#extractStatus').textContent = `${day.date} · 결과 ${rows.length.toLocaleString('ko-KR')}행 · 미리보기 ${preview.length}행 · 결측은 빈칸`;
-  $('#extractEvidence').textContent = `${day.source || '출처 없음'} · 생성 ${day.generated || '시각 없음'} · ${day.license || '이용조건 없음'}`;
+  $('#extractStatus').textContent = `${dateFrom} → ${dateTo} · 실제 공개 날짜 ${includedDates.length}일 · 결과 ${rows.length.toLocaleString('ko-KR')}행 · 미리보기 ${preview.length}행`;
+  $('#extractEvidence').textContent = `${state.extractResult.source || '출처 없음'} · 원본 파일 ${sourceFiles.length}개 · 달력상 누락 ${missingCalendarDates.length}일 · 결측은 빈칸`;
   $('#downloadExtract').disabled = rows.length === 0;
   $('#downloadExtractManifest').disabled = rows.length === 0;
   $('#downloadExtractReadme').disabled = rows.length === 0;
   renderQuality(state.extractResult);
 }
 
-async function loadExtractDay() {
+async function loadExtractRange() {
   const dataset = $('#extractDataset').value;
-  const date = $('#extractDate').value;
-  const entry = extractIndex(dataset)?.dates?.[date];
+  const from = $('#extractFrom').value;
+  const to = $('#extractTo').value;
+  const dates = extractRangeDates(dataset, from, to);
   const token = (state.extractToken || 0) + 1;
   state.extractToken = token;
   $('#downloadExtract').disabled = true;
   $('#downloadExtractManifest').disabled = true;
   $('#downloadExtractReadme').disabled = true;
   $('#downloadQuality').disabled = true;
-  $('#extractStatus').textContent = `${date || '날짜 없음'} 자료를 불러오는 중입니다.`;
-  if (!entry) {
-    state.extractDay = null;
-    $('#extractStatus').textContent = '실제로 보유한 공개 날짜가 없습니다.';
+  $('#extractStatus').textContent = `${from || '시작일 없음'} → ${to || '종료일 없음'} 공개 파일을 불러오는 중입니다.`;
+  if (!dates.length) {
+    state.extractDays = [];
+    $('#extractStatus').textContent = '선택 범위에 실제로 보유한 공개 날짜가 없습니다.';
     return;
   }
   state.extractCache ||= { cases: {}, stations: {} };
   try {
-    const day = state.extractCache[dataset][date] || await json(entry.path);
+    const days = await Promise.all(dates.map(async date => {
+      if (state.extractCache[dataset][date]) return state.extractCache[dataset][date];
+      const day = await json(extractIndex(dataset).dates[date].path);
+      state.extractCache[dataset][date] = day;
+      return day;
+    }));
     if (token !== state.extractToken) return;
-    state.extractCache[dataset][date] = day;
-    state.extractDay = day;
-    refillExtractFilters(day);
+    state.extractDays = days.sort((left, right) => left.date.localeCompare(right.date, 'en'));
+    refillExtractFilters(state.extractDays);
     renderExtract();
   } catch (error) {
     if (token !== state.extractToken) return;
-    state.extractDay = null;
-    $('#extractStatus').textContent = `선택한 공개 자료를 읽지 못했습니다. (${error.message})`;
+    state.extractDays = [];
+    $('#extractStatus').textContent = `범위 안 공개 파일을 모두 읽지 못해 추출을 중단했습니다. (${error.message})`;
   }
 }
 
@@ -613,18 +673,22 @@ async function buildExtractManifest(result) {
   const qualityContent = csvText(quality.headers, quality.rows);
   const [fileHash, qualityHash] = await Promise.all([sha256(content), sha256(qualityContent)]);
   return {
-    schema: 'earthus.custom-extract-manifest.v1',
-    manifestVersion: 1,
+    schema: 'earthus.custom-extract-manifest.v2',
+    manifestVersion: 2,
     createdAt: new Date().toISOString(),
     product: 'earthus Research Custom Extract 무료 미리보기',
     salesStatus: '유료 판매 잠금; 현재 공개 범위만 사용',
     selection: {
       dataset: result.dataset,
-      date: result.date,
+      dateFrom: result.dateFrom,
+      dateTo: result.dateTo,
+      includedDates: result.includedDates,
+      includedDateCount: result.includedDates.length,
+      missingCalendarDates: result.missingCalendarDates,
       time: result.filters.time,
       station: result.filters.station,
       variable: result.filters.variable,
-      allToken: 'all means no additional filter inside the selected date',
+      allToken: 'all means no additional filter inside the selected date range',
     },
     file: {
       name: filename,
@@ -661,6 +725,7 @@ async function buildExtractManifest(result) {
       source: result.source,
       license: result.license,
       sourceGeneratedAt: result.generated,
+      sourceFiles: result.sourceFiles,
     },
     methodology: {
       rowShape: result.dataset === 'cases'
@@ -669,7 +734,7 @@ async function buildExtractManifest(result) {
       missing: '결측은 빈칸이며 0으로 대체하지 않음',
       difference: 'forecast_minus_observation = forecast - observation; 소수 셋째 자리까지 보존',
       ordering: '시각, 지점번호, 변수와 모델·선행시간을 고정 순서로 정렬',
-      scope: '운영 공개 인덱스에 실제로 있는 선택 날짜만 사용',
+      scope: '운영 공개 인덱스의 시작일·종료일 사이에 실제로 있는 날짜 파일만 사용',
     },
     licensePage: 'https://earthus.net/legal/data-license.ko.md',
   };
@@ -708,12 +773,15 @@ function buildExtractReadme(result, manifest) {
 | 항목 | 값 |
 |---|---|
 | 자료 | ${value(label)} (${value(result.dataset)}) |
-| 날짜 | ${value(result.date)} |
+| 시작일 | ${value(result.dateFrom)} |
+| 종료일 | ${value(result.dateTo)} |
+| 실제 포함 날짜 | ${result.includedDates.length.toLocaleString('ko-KR')}일 |
+| 달력상 누락 날짜 | ${result.missingCalendarDates.length ? value(result.missingCalendarDates.join(', ')) : '없음'} |
 | 시각 | ${value(result.filters.time)} |
 | 관측소 | ${value(result.filters.station)} |
 | 변수 | ${value(result.filters.variable)} |
 
-\`all\`은 선택 날짜 안에서 해당 항목을 추가로 거르지 않았다는 뜻입니다.
+\`all\`은 선택 날짜 범위 안에서 해당 항목을 추가로 거르지 않았다는 뜻입니다.
 
 ## 출처와 이용조건
 
@@ -722,6 +790,10 @@ function buildExtractReadme(result, manifest) {
 - 이용조건: ${value(result.license)}
 - 원본 산출물 생성시각: ${value(result.generated)}
 - 이 메모 생성시각: ${value(manifest.createdAt)}
+- 원본 파일: ${manifest.provenance.sourceFiles.length.toLocaleString('ko-KR')}개
+
+${manifest.provenance.sourceFiles.map(file =>
+    `- ${value(file.date)} · ${value(file.path)} · 생성 ${value(file.generated)}`).join('\n')}
 
 ## 방법
 
@@ -734,8 +806,8 @@ function buildExtractReadme(result, manifest) {
 
 ## 인용 메모
 
-earthus, “Research Custom Extract — ${value(label)}, ${value(result.date)},”
-원본 산출물 생성 ${value(result.generated)}, 접근 ${value(manifest.createdAt.slice(0, 10))},
+earthus, “Research Custom Extract — ${value(label)}, ${value(result.dateFrom)}–${value(result.dateTo)},”
+원본 파일 ${manifest.provenance.sourceFiles.length}개, 접근 ${value(manifest.createdAt.slice(0, 10))},
 ${value(sourceUrl)}.
 
 이 문구는 선택 자료를 식별하기 위한 작업 메모이며 공식 DOI가 아닙니다.
@@ -758,9 +830,16 @@ function initExtract() {
   refillExtractDates();
   $('#extractDataset').addEventListener('change', () => {
     refillExtractDates();
-    loadExtractDay();
+    loadExtractRange();
   });
-  $('#extractDate').addEventListener('change', loadExtractDay);
+  $('#extractFrom').addEventListener('change', () => {
+    if ($('#extractFrom').value > $('#extractTo').value) $('#extractTo').value = $('#extractFrom').value;
+    loadExtractRange();
+  });
+  $('#extractTo').addEventListener('change', () => {
+    if ($('#extractTo').value < $('#extractFrom').value) $('#extractFrom').value = $('#extractTo').value;
+    loadExtractRange();
+  });
   ['#extractTime', '#extractStation', '#extractVariable'].forEach(selector =>
     $(selector).addEventListener('change', renderExtract));
   $('#downloadExtract').addEventListener('click', () => {
@@ -807,7 +886,7 @@ function initExtract() {
     if (!summary?.rows.length) return;
     download(summary.filename, summary.headers, summary.rows);
   });
-  loadExtractDay();
+  loadExtractRange();
 }
 
 const FIGURE_METRICS = {

@@ -21,12 +21,15 @@ import { i18n } from './i18n.js';
    ⚠️ 가격은 config.local.js 에서 덮어쓸 수 있게 둔다.
       PG·앱스토어에 등록한 실제 상품 가격과 어긋나면 안 되기 때문이다. */
 const DEFAULT_PLANS = {
-  /* ⚠️ list 는 **정가**(줄 그어 보여주는 값)다. 실제 청구는 krw/usd 다.
+  /* ⚠️ list 는 **실제로 받은 적 있는 정가**가 생겼을 때만 줄 그어 보여주는 값이다.
+     2026-08-05 결정: Personal Pro 정가는 월 ₩5,900/$4.99 · 연 ₩49,000/$39.
+     가짜 할인율이 생기지 않도록 지금은 실제 청구가와 같은 값으로 둔다.
      정본은 서버(plans 표)이고 여기 값은 화면 표시용이다. */
-  monthly:  { id: 'earthus.pro.monthly',  krw: 12000, usd: 8,  listKrw: 15000, listUsd: 10, period: 'month' },
-  yearly:   { id: 'earthus.pro.yearly',   krw: 120000, usd: 80, listKrw: 180000, listUsd: 120, period: 'year' },
+  monthly:  { id: 'earthus.pro.monthly',  krw: 5900,  usd: 4.99, listKrw: 5900,  listUsd: 4.99, period: 'month' },
+  yearly:   { id: 'earthus.pro.yearly',   krw: 49000, usd: 39,   listKrw: 49000, listUsd: 39,   period: 'year' },
   /* ⚠️ 창립회원 요금제는 없앴다 (받은 결정) — ui-subscribe.js 머리말 참고.
-     월간보다 8배 싸서 아무도 월간을 안 사고, 초기 자금도 950만원에서 멈춘다.
+     당시 월 ₩12,000 대비 연 ₩19,000이 월 환산 8배 싸서 아무도 월간을 안 사고,
+     초기 자금도 950만원에서 멈춘다는 판단이었다. 가격이 바뀌어도 이 상품은 되살리지 않는다.
      '초기에 결제해 주시면' 문구가 같은 일을 더 정직하게 한다. */
 };
 
@@ -53,23 +56,21 @@ export const PLANS = { ...DEFAULT_PLANS, ...(CONFIG.PLANS || {}) };
      ③ 양    — 여러 곳을 동시에 지켜보는 것 */
 export const PAID_FEATURES = [
   { ko: '되감기 · 이력 — 지난 며칠의 지구를 다시 본다',
-    en: 'Rewind & history — replay the past days of Earth' },
+    en: 'Rewind & history — replay the past days of Earth', soon: true },
   { ko: '내 지점 기록 — 이 해변·이 산의 지난 30일과 작년 같은 날',
-    en: 'My spot over time — last 30 days and the same date last year' },
-  { ko: '여러 곳 동시 감시 — 관심 지점 20곳까지',
-    en: 'Watch up to 20 places at once' },
-  { ko: '위성 전체 16,000개 · 스타링크',
-    en: 'All 16,000 satellites, including Starlink' },
-  { ko: '궤도 추적선 · 위성 용도 상세',
-    en: 'Orbit tracks & per-satellite mission detail' },
+    en: 'My spot over time — last 30 days and the same date last year', soon: true },
+  { ko: '스타링크 · 전체 위성 카탈로그 — 표시 수는 기기 성능에 따라 제한',
+    en: 'Starlink & full satellite catalogue — display count depends on device performance' },
+  { ko: '선택한 위성의 궤도 추적선',
+    en: 'Orbit track for a selected satellite' },
   { ko: '내 위치 위성 통과 예보', en: 'Satellite passes over my location' },
   /* ⚠️⚠️ **알림을 유료 목록에서 뺐다.** 2026-08-04 웹푸시를 만들면서 다시 생각했다.
      이안류·지진·특보는 사람이 다치는 일이라 결제 뒤에 두지 않는다 —
      FREE_FEATURES 의 "안전 정보는 언제나 무료"와 어긋나 있었다.
      대신 **지켜볼 곳의 개수**로 가른다: 무료 1곳 · 유료 20곳.
      그건 우리가 사용자마다 계산하고 보내는 양이라 유료 기준에 맞는다. */
-  { ko: '여러 곳 알림 — 관심 지점 20곳까지 (무료는 1곳)',
-    en: 'Alerts for up to 20 places (free covers one)' },
+  { ko: '이안류 · 지진 알림 — 관심 지점 20곳까지 (무료는 1곳)',
+    en: 'Rip-current & earthquake alerts for up to 20 places (free covers one)' },
 ];
 
 /* 무료로 유지되는 것 — 유료 안내에서 이것도 같이 보여준다.
@@ -83,8 +84,8 @@ export const FREE_FEATURES = [
      이 줄을 지우자는 제안이 나오면 그때도 지우지 않는다. */
   { ko: '⚠️ 안전 정보는 언제나 무료 — 특보·지진·쓰나미·이안류 위험·낙뢰',
     en: '⚠️ Safety information is always free — warnings, quakes, tsunami, rip currents, lightning' },
-  { ko: '⚠️ 안전 알림도 무료 — 이안류·지진·특보를 한 곳까지 알려드립니다',
-    en: '⚠️ Safety alerts are free too — for one saved place' },
+  { ko: '⚠️ 이안류·지진 안전 알림도 무료 — 한 곳까지 알려드립니다',
+    en: '⚠️ Rip-current and earthquake safety alerts are free too — for one saved place' },
   { ko: '출처 · 관측 지점 수 · 판단 기준 · 한계 — 전부 공개',
     en: 'Sources, sample sizes, thresholds and limits — all shown' },
   { ko: '이벤트 뉴스 교차검증 — 신뢰도 점수와 근거까지',
@@ -100,8 +101,8 @@ export const FREE_FEATURES = [
 /* 왜 이렇게 갈랐는지 사용자에게도 밝힌다.
    ⚠️ "유료가 더 좋다"가 아니라 "무료로 줄 수 있는 건 다 준다"가 우리 입장이다. */
 export const TIER_RATIONALE = {
-  ko: '지금 지구에서 무슨 일이 일어나고 있는지, 그리고 그걸 저희가 어떻게 아는지(출처·관측 지점 수·판단 기준·한계)는 전부 무료입니다. 다른 곳에서도 공개된 자료를 결제 뒤에 숨기지 않고, 안전에 관한 정보는 어떤 경우에도 유료로 돌리지 않습니다.\n구독은 셋에만 해당합니다 — 저희만 쌓고 있는 과거(이력), 사용자마다 따로 계산해야 하는 것(내 지점·통과 예보), 여러 곳을 동시에 지켜보는 것.',
-  en: 'What is happening right now — and how we know it (sources, sample sizes, thresholds, limits) — is free. We do not paywall data that is public elsewhere, and safety information is never behind payment. Subscription covers only three things: the past that only we accumulate, what we must compute per user, and watching many places at once.',
+  ko: '지금 지구에서 무슨 일이 일어나고 있는지, 그리고 그걸 저희가 어떻게 아는지(출처·관측 지점 수·판단 기준·한계)는 전부 무료입니다. 다른 곳에서도 공개된 자료를 결제 뒤에 숨기지 않고, 안전에 관한 정보는 어떤 경우에도 유료로 돌리지 않습니다.\n구독은 셋에만 해당합니다 — 저희만 쌓고 있는 과거, 사용자마다 따로 계산해야 하는 기능, 여러 곳을 동시에 지켜보는 양. 아직 완성되지 않은 것은 아래에 「준비 중」이라고 표시합니다.',
+  en: 'What is happening right now — and how we know it (sources, sample sizes, thresholds, limits) — is free. We do not paywall data that is public elsewhere, and safety information is never behind payment. Subscription covers only three things: the past that only we accumulate, what we must compute per user, and the volume of watching many places. Anything unfinished is marked "coming soon" below.',
 };
 
 /* ── 결제 제공자 어댑터 ────────────────────────────────────────
@@ -197,11 +198,15 @@ export const billing = {
       : `$${p.usd.toFixed(2)}`;
   },
 
-  /** 연간 구독이 월간 대비 몇 % 싼가 — 계산해서 보여준다 (반올림해 부풀리지 않는다) */
+  /** 연간 구독이 월간 대비 몇 % 싼가 — 현재 표시 통화로 계산한다.
+      ⚠️ KRW 로 계산한 할인율을 USD 화면에 쓰면 실제 가격과 다른 숫자가 된다. */
   yearlySavingPct() {
     const m = PLANS.monthly, y = PLANS.yearly;
     if (!m || !y) return 0;
-    return Math.floor((1 - y.krw / (m.krw * 12)) * 100);
+    const key = i18n.lang === 'ko' ? 'krw' : 'usd';
+    const monthly = Number(m[key]), yearly = Number(y[key]);
+    if (!Number.isFinite(monthly) || !Number.isFinite(yearly) || monthly <= 0 || yearly < 0) return 0;
+    return Math.max(0, Math.floor((1 - yearly / (monthly * 12)) * 100));
   },
 
   /**

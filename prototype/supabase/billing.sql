@@ -40,12 +40,13 @@ insert into public.plans (id, name_ko, name_en, krw, usd, period, months, max_se
 values
   -- ⚠️⚠️ **금액의 정본은 이 표다.** 화면(billing.js DEFAULT_PLANS)은 표시용일 뿐이고
   --    checkout 함수는 planId 만 받아 금액을 여기서 찾는다. 값을 바꾸면 여기부터 바꾼다.
-  --    정가 ₩15,000 / $10 → 초기 특가 ₩12,000 / $8 (서비스 초반 한시).
-  ('earthus.pro.monthly',  '한 달 이용권', 'Monthly',       12000,  8.00, 'month',  1, null, 10),
-  ('earthus.pro.yearly',   '1년 이용권',   'Yearly',       120000, 80.00, 'year',  12, null, 20),
+  --    2026-08-05 결정: Personal Pro 정가 월 ₩5,900/$4.99 · 연 ₩49,000/$39.
+  ('earthus.pro.monthly',  '한 달 이용권', 'Monthly',        5900,  4.99, 'month',  1, null, 10),
+  ('earthus.pro.yearly',   '1년 이용권',   'Yearly',        49000, 39.00, 'year',  12, null, 20),
   -- ⚠️ 창립회원(earthus.founding.500)은 **뺐다** (받은 결정).
-  --    연 ₩19,000 은 한 달 ₩1,583 꼴이라 월간(₩12,000)보다 8배 싸서
-  --    아무도 월간을 안 사고, 500명이 다 차도 초기 자금이 950만원에서 멈춘다.
+  --    당시 월 ₩12,000 대비 연 ₩19,000이 월 환산 8배 싸서 아무도 월간을 안 사고,
+  --    500명이 다 차도 초기 자금이 950만원에서 멈춘다는 판단이었다.
+  --    Personal Pro 가격이 바뀌어도 이 상품은 되살리지 않는다.
   --    '초기에 결제해 주시면'(기간 2배·이름 등재·우선 초대)이 같은 일을 더 정직하게 한다.
   --    ⚠️ 줄을 지우지 않고 **꺼 둔다**(아래 update). 이미 산 사람이 있으면 기록이 남아야 한다.
   ('earthus.founding.500', '창립회원 1년', 'Founding year', 19000, 14.99, 'year', 12,  500,  5)

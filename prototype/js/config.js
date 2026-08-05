@@ -117,7 +117,7 @@ export const NEEDS_PROXY = {
              · 내 위치 기준 위성 통과 예보 + 알람
              · 관심 지역 이벤트·지진 알림
              · 위성 전체 그룹(16,000개)·스타링크 — 대역폭·연산 부담
-             · 궤도 추적선·위성 용도 상세
+             · 궤도 추적선 — 위성 용도 상세는 무료
              · 되감기·이력 — 우리만 쌓고 있다 (§0, archive 파이프라인)
 
    ⚠️ 레이어의 tier 를 다시 유료로 돌리려면 위 판단을 먼저 뒤집을 것. */
@@ -129,7 +129,7 @@ export const PAID_CAP = {
   PASSES:   'passes',    // 내 위치 위성 통과 예보
   ALARMS:   'alarms',    // 통과·이벤트 알람
   SAT_ALL:  'satAll',    // 무거운 위성 그룹 (starlink / all)
-  SAT_DEEP: 'satDeep',   // 궤도 추적선 + 용도 상세
+  SAT_DEEP: 'satDeep',   // 궤도 추적선. 용도 상세는 무료로 공개한다.
   HISTORY:  'history',   // 되감기 · 이력
 };
 

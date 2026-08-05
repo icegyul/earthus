@@ -66,8 +66,12 @@ export const CONFIG = {
 
   /* ── 구독 상품 (선택) ─────────────────────────────────────
      비워두면 billing.js 의 기본값을 씁니다.
-     ⚠️ App Store / Play / PG 에 등록한 실제 상품 가격과 반드시 일치시킬 것.   */
-  // PLANS: { monthly: { id:'earthus.pro.monthly', krw:4900, usd:3.99, period:'month' } },
+     ⚠️ App Store / Play / PG 에 등록한 실제 상품 가격과 반드시 일치시킬 것.
+     ⚠️ 덮어쓸 때는 일부 숫자만 쓰지 말고 상품 객체 전체를 넣습니다.          */
+  // PLANS: {
+  //   monthly: { id:'earthus.pro.monthly', krw:5900,  usd:4.99, listKrw:5900,  listUsd:4.99, period:'month' },
+  //   yearly:  { id:'earthus.pro.yearly',  krw:49000, usd:39,   listKrw:49000, listUsd:39,   period:'year' },
+  // },
 
   /* ── 결제 (Supabase Edge Function 두 개) ───────────────────
      ⚠️ 둘 다 채워야 결제가 돕니다. 하나만 있으면 결제 후 이용권이 안 붙습니다.
@@ -81,6 +85,7 @@ export const CONFIG = {
         이 파일은 브라우저로 그대로 내려갑니다.                            */
   CHECKOUT_URL: '',   // 예: https://xxxx.supabase.co/functions/v1/checkout
   CONFIRM_URL:  '',   // 예: https://xxxx.supabase.co/functions/v1/payment-confirm
+  SALES_OPEN: false,  // ⚠️ 통신판매업 신고·상품 검증이 끝나기 전에는 true 금지
 
   /* ── 웹푸시 (알림) ─────────────────────────────────────────
      ⚠️⚠️ **공개키만 여기 넣습니다.** 이 파일은 브라우저로 그대로 내려갑니다 —

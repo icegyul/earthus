@@ -6,6 +6,7 @@
 
 const DATA_URL = '/wind/series/verify-daily.json';
 const CASE_INDEX_URL = '/wind/series/verify-cases.json';
+const REQUESTED_STATION = new URLSearchParams(location.search).get('station');
 const MODELS = [
   { id: 'gfs_seamless', name: 'GFS', detail: 'NOAA Global Forecast System', className: 'gfs' },
   { id: 'ecmwf_ifs025', name: 'ECMWF IFS', detail: 'ECMWF Integrated Forecasting System', className: 'ecmwf' },
@@ -30,6 +31,7 @@ const state = {
   caseDay: null,
   caseDoc: null,
   caseStation: null,
+  caseRequestedApplied: false,
   caseHour: null,
   caseLoadToken: 0,
 };
@@ -376,12 +378,22 @@ function renderCasePickers() {
   const stations = Object.entries(state.caseDoc?.stationMeta || {}).sort((a, b) =>
     String(a[1].name || a[0]).localeCompare(String(b[1].name || b[0]), 'ko'));
   const hours = Object.keys(state.caseDoc?.hours || {}).sort();
-  if (!stations.some(([id]) => id === state.caseStation)) state.caseStation = stations[0]?.[0] || null;
+  if (!stations.some(([id]) => id === state.caseStation)) {
+    /* 지도·내 관측소에서 넘긴 id는 실제 사례 지점에 있을 때만 쓴다.
+       첫 진입 뒤 사용자가 날짜·지점을 바꾸면 URL 값으로 다시 덮지 않는다. */
+    const requested = !state.caseRequestedApplied
+      && stations.some(([id]) => id === REQUESTED_STATION) ? REQUESTED_STATION : null;
+    state.caseStation = requested || stations[0]?.[0] || null;
+    state.caseRequestedApplied = true;
+  }
   if (!hours.includes(state.caseHour)) state.caseHour = hours[hours.length - 1] || null;
 
   stationPicker.innerHTML = '';
   stations.forEach(([id, meta]) => option(stationPicker, id, `${meta.name || id} · ${id}`));
   stationPicker.value = state.caseStation || '';
+  const stationLink = $('#caseStationLink');
+  if (stationLink) stationLink.href = state.caseStation
+    ? `./station.html?station=${encodeURIComponent(state.caseStation)}` : './station.html';
   hourPicker.innerHTML = '';
   [...hours].reverse().forEach(hour => option(hourPicker, hour, caseTimeLabel(hour)));
   hourPicker.value = state.caseHour || '';

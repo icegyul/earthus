@@ -74,6 +74,11 @@ function paintSaved() {
   const button = $('#saveStation');
   button.classList.toggle('saved', Boolean(active));
   button.textContent = active ? '저장됨 · 이 기기의 내 관측소' : '이 지점을 내 관측소로 저장';
+  /* 현재 고른 관측소 그대로 예보 검증 사례를 연다. 지도→관측소→검증에서
+     지점이 서울 기본값으로 되돌아가면 같은 장소를 비교한다는 흐름이 끊긴다. */
+  const verify = $('#verifyLink');
+  if (verify) verify.href = state.stationId
+    ? `./verify.html?station=${encodeURIComponent(state.stationId)}` : './verify.html';
 }
 
 function renderCurrent() {

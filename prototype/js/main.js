@@ -50,8 +50,34 @@ let turtleMod = null;
 let seabirdMod = null;
 let migbirdMod = null;
 
+function exposeStudioCapture() {
+  window.__e = window.__e || {};
+  Object.assign(window.__e, {
+    viewer,
+    scene,
+    studio: {
+      /* ⚠️⚠️ 스튜디오 캡처 중에만 인트로를 멈춘다. 무한 애니메이션을
+         영상 제작 수단으로 쓰지 않고, 각 프레임은 스튜디오가 직접 이동시킨다. */
+      pause() {
+        intro.stop();
+        try { viewer.camera.cancelFlight(); } catch (_) { }
+        scene.requestRender();
+      },
+      /* ⚠️ Cesium은 preserveDrawingBuffer가 꺼져 있다. render()와 읽기를
+         같은 호출 안에서 이어야 빈 PNG가 나오지 않는다. 둘을 분리하지 말 것. */
+      capture() {
+        scene.render();
+        return scene.canvas.toDataURL('image/png');
+      },
+    },
+  });
+}
+
 async function boot() {
   initViewer('cesiumContainer');
+  /* 부가 패널과 원격 자료가 모두 준비될 때까지 기다리면 느린 자료 하나 때문에
+     스튜디오 연결도 같이 늦어진다. 캡처에 필요한 지구본 손잡이는 바로 연다. */
+  exposeStudioCapture();
   setAmbientView(127, 25);
 
   // 화면 크기가 바뀌면 Ambient 상태일 때만 지구 크기를 다시 맞춘다
@@ -328,23 +354,8 @@ async function boot() {
   import('./ui-cyclone.js').then(m => m.openSharedCyclone()).catch(() => {});
 
   // 개발용 전역 핸들 (콘솔에서 __e.viewer 등으로 접근)
-  window.__e = { viewer, scene, store, registry, i18n, imagery,
-                 orbits: (await import('./layers/space.js')).orbits,
-                 studio: {
-                   /* ⚠️⚠️ 스튜디오 캡처 중에만 인트로를 멈춘다. 무한 애니메이션을
-                      영상 제작 수단으로 쓰지 않고, 각 프레임은 스튜디오가 직접 이동시킨다. */
-                   pause() {
-                     intro.stop();
-                     try { viewer.camera.cancelFlight(); } catch (_) { }
-                     scene.requestRender();
-                   },
-                   /* ⚠️ Cesium은 preserveDrawingBuffer가 꺼져 있다. render()와 읽기를
-                      같은 호출 안에서 이어야 빈 PNG가 나오지 않는다. 둘을 분리하지 말 것. */
-                   capture() {
-                     scene.render();
-                     return scene.canvas.toDataURL('image/png');
-                   },
-                 } };
+  Object.assign(window.__e, { viewer, scene, store, registry, i18n, imagery,
+                              orbits: (await import('./layers/space.js')).orbits });
 }
 
 
@@ -371,7 +382,6 @@ function bindAccountUI() {
   const paintAuthRows = () => {
     const login = document.getElementById('btnLoginRow');
     const acc   = document.getElementById('btnAccount');
-    const admin = document.getElementById('btnAdminRow');
     const on    = !!auth.user;
     if (login) login.hidden = on;
     if (acc)   acc.style.display = on ? '' : 'none';
@@ -388,24 +398,14 @@ function bindAccountUI() {
     const uids = (CONFIG.ADMIN_UIDS || []);
     const isAdmin = on && uids.length && uids.includes(auth.user.id);
     const cur = document.getElementById('btnAdminRow');
-    const studio = document.getElementById('btnStudioRow');
     if (isAdmin && !cur) {
       const adminButton = document.createElement('button');
       adminButton.className = 'set-item'; adminButton.id = 'btnAdminRow';
       adminButton.innerHTML = '<span>관리자 페이지</span><span class="chev">›</span>';
       adminButton.addEventListener('click', () => window.open('/admin.html', '_blank', 'noopener'));
       acc?.parentNode?.insertBefore(adminButton, acc.nextSibling);
-    }
-    if (isAdmin && !studio) {
-      const studioButton = document.createElement('button');
-      studioButton.className = 'set-item'; studioButton.id = 'btnStudioRow';
-      studioButton.innerHTML = '<span>콘텐츠 스튜디오</span><span class="chev">›</span>';
-      studioButton.addEventListener('click', () => window.open('/studio.html', '_blank', 'noopener'));
-      const adminButton = document.getElementById('btnAdminRow');
-      adminButton?.parentNode?.insertBefore(studioButton, adminButton.nextSibling);
     } else if (!isAdmin) {
       cur?.remove();
-      studio?.remove();      // 로그아웃하면 운영 도구 흔적도 없앤다
     }
   };
   document.getElementById('btnLoginRow')?.addEventListener('click', () => {
@@ -423,6 +423,7 @@ function bindAccountUI() {
   };
   /* 소개서 — 새 탭으로 연다. 같은 탭으로 가면 지구가 통째로 다시 뜬다. */
   $('#btnIntro').onclick = () => { window.open('/intro.html', '_blank', 'noopener'); };
+  $('#btnVerify').onclick = () => { window.open('/verify.html', '_blank', 'noopener'); };
   $('#btnChangelog').onclick = () => {
     close('settings');
     $('#clTitle').textContent = i18n.lang === 'ko' ? '업데이트' : 'Updates';

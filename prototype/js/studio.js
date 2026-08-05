@@ -40,18 +40,24 @@ const state = {
   user: null,
   known: false,
   draftsLoaded: false,
+  draftController: null,
   draftDoc: null,
   drafts: [],
+  draftDiagnostics: [],
+  draftRawCount: 0,
   selectedDraft: null,
   activeChannel: 'x',
+  shareChannel: 'x',
   format: 'portrait',
   rows: [],
   cardDraftId: null,
+  cardDirty: false,
   cardTimeLabel: '관측·발표',
   cardBackground: null,
   captureWindow: null,
   frames: [],
   frameUrls: [],
+  reelJob: null,
   logo: null,
   library: [],
   libraryUrls: [],
@@ -95,28 +101,66 @@ function create(tag, className, text) {
   return el;
 }
 
+function isRecord(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
 function valueOrMissing(value, suffix = '') {
   return value == null || value === '' ? '자료 없음' : `${value}${suffix}`;
 }
 
+function parseStudioDate(value) {
+  if (!value) return null;
+  const text = String(value);
+  const hasZone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(text);
+  const normalized = hasZone ? text : `${text}${text.length === 16 ? ':00' : ''}+09:00`;
+  const date = new Date(normalized);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function formatDate(value, withSeconds = false) {
   if (!value) return '시각 없음';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
-  return new Intl.DateTimeFormat('ko-KR', {
+  const date = parseStudioDate(value);
+  if (!date) return String(value);
+  const text = new Intl.DateTimeFormat('ko-KR', {
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit',
     second: withSeconds ? '2-digit' : undefined,
     hour12: false,
+    timeZone: 'Asia/Seoul',
   }).format(date);
+  return `${text} KST`;
+}
+
+function formatCompactDate(value) {
+  const date = parseStudioDate(value);
+  if (!date) return '';
+  return `${new Intl.DateTimeFormat('ko-KR', {
+    month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit',
+    hour12: false, timeZone: 'Asia/Seoul',
+  }).format(date)} KST`;
 }
 
 function toDateInput(value) {
   if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0, 16);
+  const date = parseStudioDate(value);
+  if (!date) return '';
+  return new Date(date.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 16);
+}
+
+function coordinateText(lat, lon) {
+  const y = Number(lat), x = Number(lon);
+  if (!Number.isFinite(y) || !Number.isFinite(x)) return '';
+  const latText = `${Math.abs(y).toFixed(1)}°${y < 0 ? 'S' : 'N'}`;
+  const lonText = `${Math.abs(x).toFixed(1)}°${x < 0 ? 'W' : 'E'}`;
+  return `${latText}, ${lonText}`;
+}
+
+function latestAgencyIssue(agencies) {
+  return (Array.isArray(agencies) ? agencies : [])
+    .map(agency => agency?.issue)
+    .filter(Boolean)
+    .sort((a, b) => (parseStudioDate(b)?.getTime() || 0) - (parseStudioDate(a)?.getTime() || 0))[0] || null;
 }
 
 function safeFilePart(value) {
@@ -129,7 +173,18 @@ function activeDraftForCard() {
 }
 
 function mergedPosted(draft) {
-  return { ...(draft?.posted || {}), ...(state.posted[draft?.id] || {}) };
+  const merged = {};
+  const stormKey = draft?.storm || draft?.facts?.key;
+  /* stable ID 도입 전 기록은 STORM-YYYYMMDDHHMM 키였다. 현재 초안과 정확히
+     같지 않아도 같은 태풍을 올린 이력은 먼저 경고해 전환 직후 중복을 막는다. */
+  if (stormKey) {
+    Object.entries(state.posted).forEach(([id, entries]) => {
+      const prefix = `${stormKey}-`;
+      const legacySuffix = id.startsWith(prefix) ? id.slice(prefix.length) : '';
+      if (id !== draft?.id && /^\d{12}$/.test(legacySuffix)) Object.assign(merged, entries || {});
+    });
+  }
+  return { ...merged, ...(draft?.posted || {}), ...(state.posted[draft?.id] || {}) };
 }
 
 function postedEntries(draft) {
@@ -145,6 +200,7 @@ function activateTab(tab) {
     const active = button.dataset.tab === tab;
     button.classList.toggle('active', active);
     button.setAttribute('aria-selected', String(active));
+    button.tabIndex = active ? 0 : -1;
   });
   $$('.panel').forEach(panel => {
     const active = panel.dataset.panel === tab;
@@ -152,6 +208,7 @@ function activateTab(tab) {
     panel.classList.toggle('active', active);
   });
   if (tab === 'library') renderLibrary();
+  if (tab === 'reels') updateReelReadiness();
   window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 }
 
@@ -185,9 +242,11 @@ async function bootAuth() {
 
 async function paintGate() {
   const uids = CONFIG.ADMIN_UIDS || [];
+  const wasKnown = state.known;
   state.known = LOCAL_PREVIEW || (!!state.user && uids.includes(state.user.id));
   $('#signOut').hidden = !state.user;
 
+  if (wasKnown && !state.known) clearAuthorizedSession();
   if (LOCAL_PREVIEW) {
     $('#who').textContent = '로컬 화면 미리보기';
     $('#gate').hidden = true;
@@ -221,40 +280,165 @@ async function paintGate() {
   await loadLibrary();
 }
 
+function clearAuthorizedSession() {
+  state.draftController?.abort();
+  state.draftsLoaded = false;
+  if (state.reelJob) state.reelJob.cancelled = true;
+  clearFrameUrls();
+  clearLibraryUrls();
+  state.draftDoc = null;
+  state.drafts = [];
+  state.draftDiagnostics = [];
+  state.draftRawCount = 0;
+  state.selectedDraft = null;
+  state.frames = [];
+  state.library = [];
+  state.captureWindow = null;
+  state.cardDraftId = null;
+  state.cardBackground = null;
+  state.cardDirty = false;
+  $('#draftList').innerHTML = '';
+  $('#draftDetail').innerHTML = '';
+  $('#frameGrid').innerHTML = '';
+  $('#libraryGrid').innerHTML = '';
+}
+
+function normalizeDraftDocument(doc) {
+  const diagnostics = [];
+  const drafts = [];
+  const ids = new Set();
+  let rejected = 0;
+
+  if (doc.count != null && Number(doc.count) !== doc.drafts.length) {
+    diagnostics.push(`문서의 count ${doc.count}건과 실제 배열 ${doc.drafts.length}건이 다릅니다.`);
+  }
+  if (typeof doc.source !== 'string' || !doc.source.trim()) {
+    diagnostics.push('문서 출처가 비어 있어 카드 제작 시 직접 입력해야 합니다.');
+  }
+  if (doc.generated && !parseStudioDate(doc.generated)) diagnostics.push('문서 생성 시각 형식을 읽을 수 없습니다.');
+
+  doc.drafts.forEach((raw, index) => {
+    const number = index + 1;
+    if (!isRecord(raw)) {
+      rejected += 1;
+      diagnostics.push(`${number}번째 초안은 객체가 아니어서 제외했습니다.`);
+      return;
+    }
+    const id = typeof raw.id === 'string' ? raw.id.trim() : '';
+    const title = isRecord(raw.card) && typeof raw.card.title === 'string' ? raw.card.title.trim() : '';
+    const validAt = parseStudioDate(raw.at);
+    if (!id || !title || !validAt) {
+      rejected += 1;
+      const missing = [!id && 'ID', !title && '제목', !validAt && '시각'].filter(Boolean).join('·');
+      diagnostics.push(`${number}번째 초안은 ${missing} 자료가 없어 제외했습니다.`);
+      return;
+    }
+    if (ids.has(id)) {
+      rejected += 1;
+      diagnostics.push(`${id} 초안 ID가 중복되어 뒤 항목을 제외했습니다.`);
+      return;
+    }
+    ids.add(id);
+
+    const rawFacts = isRecord(raw.facts) ? raw.facts : {};
+    const rawAgencies = Array.isArray(rawFacts.agencies) ? rawFacts.agencies : [];
+    const agencies = rawAgencies.filter(isRecord).map(agency => ({
+      ...agency,
+      track: Array.isArray(agency.track) ? agency.track.filter(isRecord) : [],
+    }));
+    if (rawAgencies.length !== agencies.length) {
+      diagnostics.push(`${id}의 기관 자료 ${rawAgencies.length - agencies.length}건을 형식 오류로 제외했습니다.`);
+    }
+    const cardRows = Array.isArray(raw.card.rows) ? raw.card.rows.filter(isRecord) : [];
+    const text = isRecord(raw.text)
+      ? Object.fromEntries(Object.keys(CHANNELS).flatMap(key => (
+        typeof raw.text[key] === 'string' ? [[key, raw.text[key]]] : []
+      )))
+      : {};
+    if (!Object.keys(text).length) diagnostics.push(`${id}에는 사용할 수 있는 채널 문구가 없습니다.`);
+
+    drafts.push({
+      ...raw,
+      id,
+      facts: { ...rawFacts, agencies },
+      card: { ...raw.card, title, rows: cardRows },
+      text,
+      posted: isRecord(raw.posted) ? raw.posted : {},
+    });
+  });
+
+  drafts.sort((a, b) => (parseStudioDate(b.at)?.getTime() || 0) - (parseStudioDate(a.at)?.getTime() || 0));
+  return { drafts, diagnostics, rejected };
+}
+
 async function loadDrafts() {
   const list = $('#draftList');
+  state.draftController?.abort();
+  const controller = new AbortController();
+  state.draftController = controller;
   state.draftsLoaded = true;
   list.innerHTML = '<div class="skeleton-list" aria-label="초안 불러오는 중"><i></i><i></i><i></i></div>';
   $('#draftCount').textContent = '불러오는 중';
   try {
-    const response = await fetch(`/events/social-drafts.json?t=${Date.now()}`, { cache: 'no-store' });
+    const response = await fetch(`/events/social-drafts.json?t=${Date.now()}`, {
+      cache: 'no-store', signal: controller.signal,
+    });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const doc = await response.json();
-    if (!Array.isArray(doc.drafts)) throw new Error('drafts 배열이 없습니다');
-    state.draftDoc = doc;
-    state.drafts = [...doc.drafts].sort((a, b) => new Date(b.at || 0) - new Date(a.at || 0));
-    $('#draftCount').textContent = `${state.drafts.length}건`;
+    if (!isRecord(doc) || !Array.isArray(doc.drafts)) throw new Error('drafts 배열이 없습니다');
+    const normalized = normalizeDraftDocument(doc);
+    const selectedId = state.selectedDraft?.id;
+    state.draftDoc = {
+      ...doc,
+      source: typeof doc.source === 'string' ? doc.source : '',
+      generated: typeof doc.generated === 'string' ? doc.generated : null,
+    };
+    state.drafts = normalized.drafts;
+    state.draftDiagnostics = normalized.diagnostics;
+    state.draftRawCount = doc.drafts.length;
+    state.selectedDraft = state.drafts.find(draft => draft.id === selectedId) || null;
+    $('#draftCount').textContent = normalized.rejected
+      ? `${state.drafts.length}건 · 제외 ${normalized.rejected}건`
+      : `${state.drafts.length}건`;
     renderDraftList();
     if (state.drafts.length && !state.selectedDraft) selectDraft(state.drafts[0]);
     if (!state.drafts.length) {
       $('#draftDetail').innerHTML = '<div class="empty-state"><strong>현재 초안이 없습니다.</strong><p>자료가 없다는 상태를 그대로 표시합니다. 자동으로 문구를 만들지 않습니다.</p></div>';
     }
   } catch (error) {
+    if (error.name === 'AbortError') return;
     state.drafts = [];
+    state.draftDiagnostics = [];
+    state.draftRawCount = 0;
+    state.selectedDraft = null;
     $('#draftCount').textContent = '읽기 실패';
     list.innerHTML = '';
     const box = create('div', 'error-state');
     box.append('초안을 읽지 못했습니다. ', error.message);
     list.append(box);
     $('#draftDetail').innerHTML = '<div class="empty-state"><strong>초안 자료를 확인할 수 없습니다.</strong><p>0건과 읽기 실패를 같은 상태로 보여주지 않습니다.</p></div>';
+  } finally {
+    if (state.draftController === controller) state.draftController = null;
   }
 }
 
 function renderDraftList() {
   const list = $('#draftList');
   list.innerHTML = '';
+  if (state.draftDiagnostics.length) {
+    const warning = create('div', 'data-warning');
+    warning.append(create('strong', '', '원자료 확인 필요'));
+    warning.append(document.createElement('br'));
+    warning.append(state.draftDiagnostics.join(' '));
+    list.append(warning);
+  }
   if (!state.drafts.length) {
-    list.innerHTML = '<div class="empty-state compact"><strong>표시할 초안이 없습니다.</strong><p>새 초안이 생길 때까지 비워 둡니다.</p></div>';
+    const empty = create('div', 'empty-state compact');
+    empty.append(create('strong', '', '표시할 초안이 없습니다.'));
+    empty.append(create('p', '', state.draftDiagnostics.length
+      ? '원자료 오류를 확인한 뒤 다시 불러오세요.'
+      : '새 초안이 생길 때까지 비워 둡니다.'));
+    list.append(empty);
     return;
   }
 
@@ -315,6 +499,7 @@ function renderDraftDetail() {
     ['중심 최대풍속', valueOrMissing(facts.windMs, facts.windMs == null ? '' : 'm/s')],
     ['중심 기압', valueOrMissing(facts.hpa, facts.hpa == null ? '' : 'hPa')],
     ['기관 수', Array.isArray(facts.agencies) ? `${facts.agencies.length}곳` : '자료 없음'],
+    ['최근 기관 발표', latestAgencyIssue(facts.agencies) ? formatDate(latestAgencyIssue(facts.agencies)) : '자료 없음'],
   ];
   cells.forEach(([label, value]) => {
     const cell = create('div', 'fact-cell');
@@ -333,11 +518,19 @@ function renderDraftDetail() {
     facts.agencies.forEach(agency => {
       const row = create('div', 'agency');
       row.append(create('strong', '', agency.ko || agency.id || '기관 이름 없음'));
+      const track = Array.isArray(agency.track) ? agency.track : [];
+      const current = track.find(point => Number(point.h) === 0) || track[0] || null;
+      const last = track[track.length - 1] || null;
       const bits = [
+        agency.issue ? `발표 ${formatDate(agency.issue)}` : '발표 시각 자료 없음',
+        current && coordinateText(current.lat, current.lon) ? `현재 위치 ${coordinateText(current.lat, current.lon)}` : null,
+        agency.categoryKo ? `등급 ${agency.categoryKo}` : null,
         agency.windMs == null ? '풍속 자료 없음' : `${agency.windMs}m/s`,
         agency.hpa == null ? '기압 자료 없음' : `${agency.hpa}hPa`,
-        agency.lastH == null ? '마지막 시각 자료 없음' : `+${agency.lastH}시간까지 발표`,
-      ];
+        last?.valid ? `마지막 유효 ${formatDate(last.valid)}`
+          : agency.lastH == null ? '마지막 유효 시각 자료 없음' : `+${agency.lastH}시간까지 발표`,
+        agency.downgrade ? `기관 약화 전망 +${agency.downgrade.h ?? '?'}시간 ${agency.downgrade.toKo || agency.downgrade.to || ''}`.trim() : null,
+      ].filter(Boolean);
       row.append(create('span', '', bits.join(' / ')));
       agencies.append(row);
     });
@@ -352,7 +545,7 @@ function renderDraftDetail() {
   const reelButton = create('button', 'button button-quiet', '릴스로');
   reelButton.type = 'button';
   reelButton.addEventListener('click', () => {
-    loadDraftIntoCard(draft, false);
+    if (!loadDraftIntoCard(draft, false)) return;
     activateTab('reels');
     $('#reelOutputMeta').textContent = `${draft.name || draft.storm || '선택 초안'} 기준으로 준비됨`;
   });
@@ -460,10 +653,48 @@ async function shareText(text) {
   toast('공유창을 열 수 없어 문구를 복사했습니다.');
 }
 
+function cardRowsFromDraft(draft) {
+  const agencies = Array.isArray(draft.facts?.agencies) ? draft.facts.agencies : [];
+  const rows = Array.isArray(draft.card?.rows) ? draft.card.rows : [];
+  return rows.slice(0, 5).map((row, index) => {
+    const agency = agencies.find(item => [item.ko, item.id].includes(row.k)) || agencies[index];
+    const issued = agency?.issue ? `${formatCompactDate(agency.issue)} 발표` : '';
+    return {
+      key: row.k || agency?.ko || agency?.id || '',
+      value: [row.v || '', issued].filter(Boolean).join(' · '),
+    };
+  });
+}
+
+function syncCardChannels(draft) {
+  const select = $('#cardChannel');
+  if (!select) return;
+  const available = [];
+  [...select.options].forEach(option => {
+    option.disabled = !draft?.text?.[option.value];
+    if (!option.disabled) available.push(option.value);
+  });
+  const preferred = available.includes(state.activeChannel) ? state.activeChannel : available[0];
+  state.shareChannel = preferred || 'x';
+  select.value = state.shareChannel;
+  select.disabled = !available.length;
+}
+
+function invalidateCaptureConnection() {
+  /* 초안이 바뀌었는데 이전 태풍 창을 그대로 캡처하면 출처와 화면이 갈라진다.
+     창은 닫지 않고 손잡이만 버려, 다음 「earthus 열기」가 같은 창을 새 주소로 연다. */
+  state.captureWindow = null;
+  $('#captureState').textContent = '연결 안 됨';
+  $('#reelConnection').textContent = '연결 안 됨';
+}
+
 function loadDraftIntoCard(draft, openCardTab = true) {
+  if (state.cardDirty && !confirm('작성 중인 카드 변경 내용을 지우고 이 초안을 불러오겠습니까?')) return false;
+  invalidateReelFrames('선택한 초안으로 새 프레임을 만드세요.');
+  invalidateCaptureConnection();
   state.cardDraftId = draft.id;
-  state.cardTimeLabel = '자료 생성';
-  state.rows = (draft.card?.rows || []).slice(0, 5).map(row => ({ key: row.k || '', value: row.v || '' }));
+  state.cardTimeLabel = '자료 취합';
+  state.rows = cardRowsFromDraft(draft);
   if (!state.rows.length) state.rows = [{ key: '', value: '' }];
   $('#cardTitle').value = draft.card?.title || '';
   $('#cardSub').value = draft.card?.sub || '';
@@ -471,22 +702,32 @@ function loadDraftIntoCard(draft, openCardTab = true) {
   $('#cardObservedAt').value = toDateInput(draft.at || state.draftDoc?.generated);
   state.cardBackground = null;
   $('#clearCardBackground').hidden = true;
-  $('#captureState').textContent = '연결 안 됨';
+  clearCardErrors();
+  state.cardDirty = false;
+  syncCardChannels(draft);
   renderRowEditor();
   queueCardRender();
+  updateReelReadiness();
   if (openCardTab) activateTab('cards');
+  return true;
 }
 
 function resetCard() {
+  if (state.cardDirty && !confirm('작성 중인 카드 변경 내용을 지우고 빈 카드로 시작하겠습니까?')) return;
+  invalidateReelFrames('카드 자료를 입력한 뒤 새 프레임을 만드세요.');
+  invalidateCaptureConnection();
   state.cardDraftId = null;
   state.cardTimeLabel = '관측·발표';
   state.rows = [{ key: '', value: '' }];
   state.cardBackground = null;
   $('#cardForm').reset();
   $('#clearCardBackground').hidden = true;
-  $('#captureState').textContent = '연결 안 됨';
+  clearCardErrors();
+  state.cardDirty = false;
+  syncCardChannels(null);
   renderRowEditor();
   queueCardRender();
+  updateReelReadiness();
   $('#cardTitle').focus();
 }
 
@@ -508,11 +749,12 @@ function renderRowEditor() {
     const remove = create('button', '', '삭제');
     remove.type = 'button';
     remove.setAttribute('aria-label', `${index + 1}번째 값 삭제`);
-    key.addEventListener('input', () => { state.rows[index].key = key.value; queueCardRender(); });
-    value.addEventListener('input', () => { state.rows[index].value = value.value; queueCardRender(); });
+    key.addEventListener('input', () => { state.rows[index].key = key.value; state.cardDirty = true; queueCardRender(); });
+    value.addEventListener('input', () => { state.rows[index].value = value.value; state.cardDirty = true; queueCardRender(); });
     remove.addEventListener('click', () => {
       state.rows.splice(index, 1);
       if (!state.rows.length) state.rows.push({ key: '', value: '' });
+      state.cardDirty = true;
       renderRowEditor();
       queueCardRender();
     });
@@ -559,6 +801,13 @@ function wrapCanvasText(ctx, text, maxWidth, maxLines) {
   return lines;
 }
 
+function truncateCanvasText(ctx, text, maxWidth) {
+  let value = String(text || '');
+  if (ctx.measureText(value).width <= maxWidth) return value;
+  while (value && ctx.measureText(`${value}…`).width > maxWidth) value = value.slice(0, -1);
+  return `${value}…`;
+}
+
 function drawCover(ctx, image, width, height) {
   const sourceRatio = image.width / image.height;
   const targetRatio = width / height;
@@ -584,12 +833,32 @@ function formCardData() {
 }
 
 function assertCardData(data = formCardData()) {
-  const missing = [];
-  if (!data.title) missing.push('큰 문장');
-  if (!data.source) missing.push('출처');
-  if (!data.observedAt) missing.push('관측·발표 시각');
-  if (missing.length) throw new Error(`${missing.join(', ')}을 입력하세요.`);
+  const fields = [
+    ['cardTitle', '큰 문장', data.title],
+    ['cardSource', '출처', data.source],
+    ['cardObservedAt', '관측·발표 시각', data.observedAt],
+  ];
+  const missing = fields.filter(([, , value]) => !value);
+  fields.forEach(([id]) => $(`#${id}`).removeAttribute('aria-invalid'));
+  if (missing.length) {
+    missing.forEach(([id]) => $(`#${id}`).setAttribute('aria-invalid', 'true'));
+    const message = `${missing.map(([, label]) => label).join(', ')}을 입력하세요.`;
+    const error = $('#cardFormError');
+    error.textContent = message;
+    error.hidden = false;
+    $(`#${missing[0][0]}`).focus();
+    throw new Error(message);
+  }
+  clearCardErrors();
   return data;
+}
+
+function clearCardErrors() {
+  ['cardTitle', 'cardSource', 'cardObservedAt'].forEach(id => $(`#${id}`)?.removeAttribute('aria-invalid'));
+  const error = $('#cardFormError');
+  if (!error) return;
+  error.textContent = '';
+  error.hidden = true;
 }
 
 async function renderCard() {
@@ -603,6 +872,13 @@ async function renderCard() {
   const ctx = canvas.getContext('2d');
   const { width: W, height: H } = format;
   const data = formCardData();
+  $('#cardCanvasSummary').textContent = [
+    data.title || '큰 문장 없음',
+    data.sub,
+    ...data.rows.map(row => `${row.key || '항목'} ${row.value || '자료 없음'}`),
+    data.source ? `출처 ${data.source}` : '출처 없음',
+    data.observedAt ? `${state.cardTimeLabel} ${formatDate(data.observedAt)}` : '관측·발표 시각 없음',
+  ].filter(Boolean).join('. ');
   const landscape = W > H;
   const pad = landscape ? 110 : 78;
 
@@ -664,10 +940,11 @@ async function renderCard() {
       if (y + rowHeight > footerTop) return;
       ctx.font = `500 ${landscape ? 22 : 20}px -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif`;
       ctx.fillStyle = 'rgba(230,230,230,.55)';
-      ctx.fillText(row.key || '항목', pad, y);
+      ctx.fillText(truncateCanvasText(ctx, row.key || '항목', landscape ? 250 : 220), pad, y);
       ctx.font = `650 ${landscape ? 30 : 29}px -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif`;
       ctx.fillStyle = '#8CB5ED';
-      ctx.fillText(row.value || '자료 없음', pad + (landscape ? 290 : 260), y);
+      const valueX = pad + (landscape ? 290 : 260);
+      ctx.fillText(truncateCanvasText(ctx, row.value || '자료 없음', W - pad - valueX), valueX, y);
       y += rowHeight;
     });
   }
@@ -720,6 +997,27 @@ async function currentCardFile() {
   return { file: new File([blob], name, { type: 'image/png' }), blob, data, name };
 }
 
+function dataUrlBlob(dataUrl) {
+  const [header, payload] = dataUrl.split(',');
+  const type = header.match(/^data:([^;]+)/)?.[1] || 'image/png';
+  const binary = atob(payload);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
+  return new Blob([bytes], { type });
+}
+
+async function currentCardShareFile() {
+  const data = assertCardData();
+  await renderCard();
+  /* Web Share는 사용자 동작 직후 호출해야 한다. toBlob 콜백을 기다리면 일부
+     모바일 브라우저에서 사용자 동작 자격이 끝나므로, 공유 때만 동기로 읽는다. */
+  const blob = dataUrlBlob($('#cardCanvas').toDataURL('image/png'));
+  const draft = activeDraftForCard();
+  const base = draft?.storm || draft?.name || data.title;
+  const name = `${safeFilePart(base)}-${state.format}.png`;
+  return { file: new File([blob], name, { type: 'image/png' }), data };
+}
+
 function triggerDownload(blob, name) {
   const url = URL.createObjectURL(blob);
   const anchor = create('a');
@@ -750,7 +1048,7 @@ async function shareFiles(files, text, title) {
 
 function selectedShareText() {
   const draft = activeDraftForCard();
-  return draft?.text?.[state.activeChannel]
+  return draft?.text?.[state.shareChannel]
     || draft?.text?.x
     || '';
 }
@@ -770,11 +1068,12 @@ async function openEarthusWindow() {
   return popup;
 }
 
-async function waitForEarthus(timeout = 30000) {
+async function waitForEarthus(timeout = 30000, job = null) {
   const popup = state.captureWindow;
   if (!popup || popup.closed) throw new Error('earthus 캡처 창을 먼저 여세요.');
   const started = Date.now();
   while (Date.now() - started < timeout) {
+    assertReelActive(job);
     try {
       if (popup.location.origin !== location.origin) throw new Error('다른 주소에서 열린 창은 읽을 수 없습니다.');
       if (popup.__e?.scene?.canvas) {
@@ -799,8 +1098,8 @@ function loadImage(src) {
   });
 }
 
-async function captureEarthusImage() {
-  const earthus = await waitForEarthus();
+async function captureEarthusImage(job = null) {
+  const earthus = await waitForEarthus(30000, job);
   let dataUrl;
   /* ⚠️ Cesium은 preserveDrawingBuffer가 꺼져 있다. render()와 읽기를 같은 호출 안에서
      이어서 해야 빈 그림을 피할 수 있다. main.js의 studio.capture()가 그 경계다. */
@@ -833,6 +1132,7 @@ async function takeCardBackground() {
   try {
     const image = await captureEarthusImage();
     state.cardBackground = image;
+    state.cardDirty = true;
     $('#clearCardBackground').hidden = false;
     $('#captureState').textContent = '현재 장면 사용 중';
     queueCardRender();
@@ -852,7 +1152,32 @@ function reelMeta() {
   };
 }
 
-async function composeReelFrame(image, meta) {
+function updateReelReadiness() {
+  const status = $('#reelDataState');
+  if (!status) return;
+  const data = formCardData();
+  const missing = [];
+  if (!data.title) missing.push('제목');
+  if (!data.source) missing.push('출처');
+  if (!data.observedAt) missing.push('시각');
+  const ready = !missing.length;
+  const draft = activeDraftForCard();
+  status.textContent = ready ? (draft?.name || draft?.storm || '직접 입력한 카드 자료') : `${missing.join(', ')} 필요`;
+  $('#reelDataDetail').textContent = ready
+    ? `${data.source} / ${state.cardTimeLabel} ${formatDate(data.observedAt)} / 공유 문구 ${selectedShareText() ? CHANNELS[state.shareChannel]?.label : '없음'}`
+    : '초안의 「릴스로」를 누르거나 카드뉴스에서 빠진 값을 입력하세요.';
+  const running = !!state.reelJob;
+  $('#makeReelFrames').disabled = !ready || running;
+  $('#captureOneFrame').disabled = !ready || running;
+}
+
+function reelEvidenceLabel(meta) {
+  if (meta.draft?.kind === 'downgrade') return '기관이 발표한 약화 전망';
+  if (meta.draft?.kind === 'update') return '기관별 공식 예보 갱신';
+  return '확인한 earthus 장면';
+}
+
+async function composeReelFrame(image, meta, phase = '본론') {
   const W = 1080, H = 1920;
   const canvas = document.createElement('canvas');
   canvas.width = W;
@@ -873,6 +1198,9 @@ async function composeReelFrame(image, meta) {
   ctx.letterSpacing = '7px';
   ctx.fillText('EARTHUS', 72, 92);
   ctx.letterSpacing = '0px';
+  ctx.fillStyle = '#8CB5ED';
+  ctx.font = '500 20px -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif';
+  ctx.fillText(`${phase} / ${reelEvidenceLabel(meta)}`, 72, 132);
 
   ctx.font = '650 64px -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif';
   ctx.fillStyle = '#E6E6E6';
@@ -883,6 +1211,20 @@ async function composeReelFrame(image, meta) {
     ctx.font = '400 28px -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif';
     ctx.fillStyle = 'rgba(230,230,230,.72)';
     wrapCanvasText(ctx, meta.sub, W - 144, 2).forEach(line => { ctx.fillText(line, 72, y); y += 40; });
+  }
+
+  const rows = meta.rows.slice(0, 3);
+  if (rows.length) {
+    let rowY = 1450 - rows.length * 58;
+    rows.forEach(row => {
+      ctx.font = '500 20px -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif';
+      ctx.fillStyle = 'rgba(230,230,230,.65)';
+      ctx.fillText(truncateCanvasText(ctx, row.key || '기관', 250), 72, rowY);
+      ctx.font = '650 25px -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif';
+      ctx.fillStyle = '#8CB5ED';
+      ctx.fillText(truncateCanvasText(ctx, row.value || '자료 없음', 640), 330, rowY);
+      rowY += 58;
+    });
   }
 
   ctx.strokeStyle = 'rgba(230,230,230,.3)';
@@ -903,6 +1245,50 @@ async function composeReelFrame(image, meta) {
   return canvasBlob(canvas);
 }
 
+async function composeReelClosingFrame(meta) {
+  const W = 1080, H = 1920;
+  const canvas = document.createElement('canvas');
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#0A0A0A';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#0A3D8F';
+  ctx.fillRect(72, 150, W - 144, 5);
+
+  ctx.fillStyle = '#8CB5ED';
+  ctx.font = '550 22px -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif';
+  ctx.fillText('기관 예보를 합치지 않고 그대로 봅니다', 72, 250);
+  ctx.fillStyle = '#E6E6E6';
+  ctx.font = '650 70px -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif';
+  let y = 390;
+  wrapCanvasText(ctx, meta.title, W - 144, 4).forEach(line => { ctx.fillText(line, 72, y); y += 84; });
+
+  const target = meta.draft?.storm || meta.draft?.name || '';
+  const destination = target ? `earthus.net/?tc=${target}` : 'earthus.net';
+  ctx.fillStyle = '#8CB5ED';
+  ctx.font = '600 38px ui-monospace, SFMono-Regular, Menlo, monospace';
+  wrapCanvasText(ctx, destination, W - 144, 2)
+    .forEach((line, index) => ctx.fillText(line, 72, 1170 + index * 52));
+
+  ctx.strokeStyle = 'rgba(230,230,230,.25)';
+  ctx.beginPath();
+  ctx.moveTo(72, 1680);
+  ctx.lineTo(W - 72, 1680);
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(230,230,230,.68)';
+  ctx.font = '500 19px -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif';
+  wrapCanvasText(ctx, `출처 ${meta.source}`, 720, 2).forEach((line, index) => ctx.fillText(line, 72, 1730 + index * 27));
+  ctx.fillStyle = 'rgba(230,230,230,.5)';
+  ctx.fillText(`${state.cardTimeLabel} ${formatDate(meta.observedAt)}`, 72, 1835);
+  if (state.logo) {
+    const logoW = 220;
+    const logoH = logoW * state.logo.height / state.logo.width;
+    ctx.drawImage(state.logo, W - 72 - logoW, 1785, logoW, logoH);
+  }
+  return canvasBlob(canvas);
+}
+
 function captureTarget(earthus) {
   const draft = activeDraftForCard();
   const facts = draft?.facts || {};
@@ -915,11 +1301,23 @@ function captureTarget(earthus) {
   return { lon: C.Math.toDegrees(c.longitude), lat: C.Math.toDegrees(c.latitude) };
 }
 
-async function waitForTiles(earthus, maxWait = 1500) {
+function assertReelActive(job) {
+  if (!job?.cancelled) return;
+  const error = new Error('사용자가 릴스 캡처를 취소했습니다.');
+  error.name = 'AbortError';
+  throw error;
+}
+
+async function waitForTiles(earthus, job, maxWait = 6000) {
   const started = Date.now();
   while (!earthus.scene.globe.tilesLoaded && Date.now() - started < maxWait) {
+    assertReelActive(job);
     earthus.scene.requestRender();
     await new Promise(resolve => setTimeout(resolve, 120));
+  }
+  assertReelActive(job);
+  if (!earthus.scene.globe.tilesLoaded) {
+    throw new Error('지구본 자료가 6초 안에 준비되지 않아 불완전한 프레임을 저장하지 않았습니다.');
   }
   await new Promise(resolve => setTimeout(resolve, 160));
 }
@@ -936,6 +1334,7 @@ function renderFrames() {
   if (!state.frames.length) {
     grid.innerHTML = '<div class="empty-state compact"><strong>earthus 장면이 여기에 쌓입니다.</strong><p>검게 캡처되면 실패로 표시하고 저장하지 않습니다.</p></div>';
     $('#saveReelSet').hidden = true;
+    $('#downloadReelSet').hidden = true;
     return;
   }
   state.frames.forEach((frame, index) => {
@@ -944,7 +1343,7 @@ function renderFrames() {
     const card = create('article', 'frame-card');
     const image = create('img');
     image.src = url;
-    image.alt = `${index + 1}번째 earthus 릴스 프레임`;
+    image.alt = `${index + 1}번째 earthus 릴스 ${frame.phase || '프레임'}`;
     const footer = create('div');
     footer.append(create('span', '', frame.name));
     const download = create('button', 'text-button', '내려받기');
@@ -955,7 +1354,23 @@ function renderFrames() {
     grid.append(card);
   });
   $('#saveReelSet').hidden = false;
+  $('#downloadReelSet').hidden = false;
   $('#reelOutputMeta').textContent = `${state.frames.length}장, 1080 × 1920 PNG`;
+}
+
+function invalidateReelFrames(message) {
+  if (state.reelJob) state.reelJob.cancelled = true;
+  if (!state.frames.length && !state.reelJob) return;
+  state.frames = [];
+  renderFrames();
+  $('#reelProgress').hidden = true;
+  $('#reelOutputMeta').textContent = message;
+}
+
+function downloadCurrentReelSet() {
+  if (!state.frames.length) return toast('내려받을 릴스 프레임이 없습니다.');
+  state.frames.forEach(frame => triggerDownload(frame.blob, frame.name));
+  toast(`${state.frames.length}개 PNG 내려받기를 요청했습니다. 브라우저가 여러 파일 허용을 물으면 승인하세요.`);
 }
 
 function setReelProgress(current, total, message) {
@@ -963,58 +1378,110 @@ function setReelProgress(current, total, message) {
   box.hidden = false;
   $('#reelProgressBar').style.width = `${Math.round(current / total * 100)}%`;
   $('#reelProgressText').textContent = message;
+  box.setAttribute('role', 'progressbar');
+  box.setAttribute('aria-valuemin', '0');
+  box.setAttribute('aria-valuemax', String(total));
+  box.setAttribute('aria-valuenow', String(current));
+  box.setAttribute('aria-valuetext', message);
 }
 
 async function makeReelFrames() {
   const button = $('#makeReelFrames');
+  const job = { cancelled: false };
+  if (state.reelJob) return toast('진행 중인 캡처를 먼저 끝내거나 취소하세요.');
   try {
     const meta = reelMeta();
     const total = Number($('#reelFrames').value) || 12;
-    const earthus = await waitForEarthus();
+    const closingCount = 2;
+    const sceneCount = total - closingCount;
+    state.reelJob = job;
+    button.disabled = true;
+    $('#captureOneFrame').disabled = true;
+    $('#cancelReelFrames').hidden = false;
+    const earthus = await waitForEarthus(30000, job);
     const popup = state.captureWindow;
     const C = popup.Cesium;
     const target = captureTarget(earthus);
     earthus.studio?.pause?.();
     state.frames = [];
     renderFrames();
-    button.disabled = true;
 
-    for (let index = 0; index < total; index++) {
-      const t = total === 1 ? 1 : index / (total - 1);
+    for (let index = 0; index < sceneCount; index++) {
+      assertReelActive(job);
+      const t = sceneCount === 1 ? 1 : index / (sceneCount - 1);
       let height;
-      if (t < .28) height = 19_000_000 - (14_000_000 * (t / .28));
-      else if (t < .78) height = 5_000_000 + Math.sin((t - .28) / .5 * Math.PI) * 650_000;
-      else height = 5_000_000 + 8_000_000 * ((t - .78) / .22);
+      if (t < .35) height = 19_000_000 - (14_000_000 * (t / .35));
+      else height = 5_000_000 + Math.sin((t - .35) / .65 * Math.PI) * 650_000;
       const lon = target.lon + Math.sin(t * Math.PI * 2) * 2.4;
       earthus.viewer.camera.setView({ destination: C.Cartesian3.fromDegrees(lon, target.lat, height) });
       earthus.scene.requestRender();
       setReelProgress(index, total, `${index + 1}/${total} 장면 자료 불러오는 중`);
-      await waitForTiles(earthus);
-      const image = await captureEarthusImage();
-      const blob = await composeReelFrame(image, meta);
-      state.frames.push({ name: `${safeFilePart(meta.name)}-${String(index + 1).padStart(3, '0')}.png`, blob });
+      await waitForTiles(earthus, job);
+      const image = await captureEarthusImage(job);
+      assertReelActive(job);
+      const phase = index < Math.max(2, Math.ceil(sceneCount * .28)) ? '여는 장면' : '본론';
+      const blob = await composeReelFrame(image, meta, phase);
+      assertReelActive(job);
+      state.frames.push({ name: `${safeFilePart(meta.name)}-${String(index + 1).padStart(3, '0')}.png`, blob, phase });
       setReelProgress(index + 1, total, `${index + 1}/${total} 프레임 완성`);
+      renderFrames();
+    }
+    for (let index = sceneCount; index < total; index++) {
+      assertReelActive(job);
+      const blob = await composeReelClosingFrame(meta);
+      assertReelActive(job);
+      state.frames.push({ name: `${safeFilePart(meta.name)}-${String(index + 1).padStart(3, '0')}.png`, blob, phase: '닫는 장면' });
+      setReelProgress(index + 1, total, `${index + 1}/${total} 닫는 장면 완성`);
       renderFrames();
     }
     toast(`${total}개 릴스 프레임을 만들었습니다.`);
   } catch (error) {
-    toast(error.message);
-    $('#reelProgressText').textContent = `중단됨: ${error.message}`;
+    if (error.name === 'AbortError') {
+      toast(`캡처를 취소했습니다. 완성된 ${state.frames.length}장은 남겨 두었습니다.`);
+      $('#reelProgressText').textContent = `취소됨: ${state.frames.length}장 완성`;
+    } else {
+      toast(error.message);
+      $('#reelProgressText').textContent = `중단됨: ${error.message}`;
+    }
   } finally {
-    button.disabled = false;
+    if (state.reelJob === job) state.reelJob = null;
+    $('#cancelReelFrames').hidden = true;
+    updateReelReadiness();
   }
 }
 
 async function captureOneReelFrame() {
+  if (state.reelJob) return toast('진행 중인 캡처를 먼저 끝내거나 취소하세요.');
+  const job = { cancelled: false };
   try {
     const meta = reelMeta();
-    const image = await captureEarthusImage();
-    const blob = await composeReelFrame(image, meta);
-    state.frames = [{ name: `${safeFilePart(meta.name)}-001.png`, blob }];
+    state.reelJob = job;
+    $('#makeReelFrames').disabled = true;
+    $('#captureOneFrame').disabled = true;
+    $('#cancelReelFrames').hidden = false;
+    state.frames = [];
     renderFrames();
+    setReelProgress(0, 1, '현재 장면 캡처 중');
+    const image = await captureEarthusImage(job);
+    assertReelActive(job);
+    const blob = await composeReelFrame(image, meta, '현재 장면');
+    assertReelActive(job);
+    state.frames = [{ name: `${safeFilePart(meta.name)}-001.png`, blob, phase: '현재 장면' }];
+    renderFrames();
+    setReelProgress(1, 1, '현재 장면 1/1 완성');
     toast('현재 장면을 1080 × 1920 프레임으로 만들었습니다.');
   } catch (error) {
-    toast(error.message);
+    if (error.name === 'AbortError') {
+      toast('현재 장면 캡처를 취소했습니다.');
+      $('#reelProgressText').textContent = '취소됨: 저장한 프레임 없음';
+    } else {
+      toast(error.message);
+      $('#reelProgressText').textContent = `중단됨: ${error.message}`;
+    }
+  } finally {
+    if (state.reelJob === job) state.reelJob = null;
+    $('#cancelReelFrames').hidden = true;
+    updateReelReadiness();
   }
 }
 
@@ -1146,7 +1613,7 @@ function renderLibrary() {
     const share = create('button', 'button button-quiet button-small', '공유');
     share.type = 'button';
     share.addEventListener('click', async () => {
-      const blobs = item.kind === 'sequence' ? (item.frames || []).slice(0, 10) : [{ name: item.fileName, blob: item.blob }];
+      const blobs = item.kind === 'sequence' ? (item.frames || []) : [{ name: item.fileName, blob: item.blob }];
       const files = blobs.filter(x => x?.blob).map((x, index) => new File(
         [x.blob], x.name || `${safeFilePart(item.title)}-${index + 1}.png`, { type: x.blob.type || 'image/png' }));
       if (!files.length) return toast('공유할 파일이 없습니다.');
@@ -1188,6 +1655,7 @@ async function saveCurrentCard() {
       text: selectedShareText(),
       localOnly: true,
     });
+    state.cardDirty = false;
     toast('카드를 이 기기의 보관함에 저장했습니다.');
   } catch (error) {
     toast(error.message);
@@ -1275,7 +1743,21 @@ async function loadBrandAssets() {
 }
 
 function bindEvents() {
-  $$('.rail-tab').forEach(button => button.addEventListener('click', () => activateTab(button.dataset.tab)));
+  const railTabs = $$('.rail-tab');
+  railTabs.forEach((button, index) => {
+    button.addEventListener('click', () => activateTab(button.dataset.tab));
+    button.addEventListener('keydown', event => {
+      let next = null;
+      if (['ArrowRight', 'ArrowDown'].includes(event.key)) next = (index + 1) % railTabs.length;
+      if (['ArrowLeft', 'ArrowUp'].includes(event.key)) next = (index - 1 + railTabs.length) % railTabs.length;
+      if (event.key === 'Home') next = 0;
+      if (event.key === 'End') next = railTabs.length - 1;
+      if (next == null) return;
+      event.preventDefault();
+      railTabs[next].focus();
+      activateTab(railTabs[next].dataset.tab);
+    });
+  });
   $('#signInGoogle').addEventListener('click', () => state.client?.auth.signInWithOAuth({
     provider: 'google', options: { redirectTo: location.href },
   }));
@@ -1284,12 +1766,14 @@ function bindEvents() {
     location.reload();
   });
   $('#refreshDrafts').addEventListener('click', loadDrafts);
-  $('#newCard').addEventListener('click', resetCard);
+  $('#newCard').addEventListener('click', () => resetCard());
 
   $('#formatPicker').addEventListener('click', event => {
     const button = event.target.closest('[data-format]');
     if (!button) return;
+    if (state.format === button.dataset.format) return;
     state.format = button.dataset.format;
+    state.cardDirty = true;
     $$('#formatPicker button').forEach(item => item.classList.toggle('active', item === button));
     const format = FORMATS[state.format];
     $('#formatSize').textContent = `${format.width} × ${format.height}`;
@@ -1297,10 +1781,21 @@ function bindEvents() {
     queueCardRender();
   });
 
-  $('#cardForm').addEventListener('input', queueCardRender);
+  $('#cardForm').addEventListener('input', () => {
+    clearCardErrors();
+    state.cardDirty = true;
+    invalidateReelFrames('카드 내용이 바뀌어 이전 프레임을 비웠습니다.');
+    queueCardRender();
+    updateReelReadiness();
+  });
+  $('#cardChannel').addEventListener('change', event => {
+    state.shareChannel = event.target.value;
+    updateReelReadiness();
+  });
   $('#addRow').addEventListener('click', () => {
     if (state.rows.length >= 5) return toast('한 카드에는 확인한 값을 최대 5줄까지 넣습니다.');
     state.rows.push({ key: '', value: '' });
+    state.cardDirty = true;
     renderRowEditor();
     queueCardRender();
   });
@@ -1310,6 +1805,7 @@ function bindEvents() {
   $('#captureCardBackground').addEventListener('click', takeCardBackground);
   $('#clearCardBackground').addEventListener('click', () => {
     state.cardBackground = null;
+    state.cardDirty = true;
     $('#clearCardBackground').hidden = true;
     $('#captureState').textContent = state.captureWindow && !state.captureWindow.closed ? 'earthus 연결됨' : '연결 안 됨';
     queueCardRender();
@@ -1324,7 +1820,7 @@ function bindEvents() {
   $('#saveCard').addEventListener('click', saveCurrentCard);
   $('#shareCard').addEventListener('click', async () => {
     try {
-      const { file, data } = await currentCardFile();
+      const { file, data } = await currentCardShareFile();
       await shareFiles([file], selectedShareText(), data.title);
     } catch (error) { toast(error.message); }
   });
@@ -1334,11 +1830,22 @@ function bindEvents() {
   });
   $('#makeReelFrames').addEventListener('click', makeReelFrames);
   $('#captureOneFrame').addEventListener('click', captureOneReelFrame);
+  $('#cancelReelFrames').addEventListener('click', () => {
+    if (state.reelJob) state.reelJob.cancelled = true;
+  });
+  $('#chooseReelDraft').addEventListener('click', () => activateTab('drafts'));
+  $('#downloadReelSet').addEventListener('click', downloadCurrentReelSet);
   $('#saveReelSet').addEventListener('click', saveCurrentReelSet);
 
   $('#mediaFiles').addEventListener('change', event => prepareImport([...event.target.files]));
   $('#importMeta').addEventListener('submit', importMedia);
   $('#cancelImport').addEventListener('click', cancelImport);
+
+  window.addEventListener('beforeunload', event => {
+    if (!state.cardDirty) return;
+    event.preventDefault();
+    event.returnValue = '';
+  });
 }
 
 async function boot() {
@@ -1346,6 +1853,8 @@ async function boot() {
   state.rows = [{ key: '', value: '' }];
   renderRowEditor();
   renderFrames();
+  syncCardChannels(null);
+  updateReelReadiness();
   loadBrandAssets();
   await bootAuth();
 }

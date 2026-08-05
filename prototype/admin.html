@@ -22,6 +22,12 @@ body{
 .wrap{max-width:920px;margin:0 auto}
 h1{font-size:19px;font-weight:500;letter-spacing:-.01em}
 h1 small{display:block;font-size:11.5px;font-weight:300;color:var(--fog);margin-top:5px;letter-spacing:0}
+.admin-nav{display:flex;gap:7px;overflow-x:auto;margin-top:18px;padding-bottom:2px}
+.admin-nav a{flex:0 0 auto;color:var(--dim);text-decoration:none;border:1px solid var(--line);
+             border-radius:9px;padding:8px 12px;font-size:12px}
+.admin-nav a:hover{color:var(--paper);background:rgba(255,255,255,.045)}
+.admin-nav a.active{color:var(--paper);border-color:rgba(90,169,230,.38);
+                    background:rgba(90,169,230,.15)}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:14px}
 .card h2{font-size:13px;font-weight:500;color:var(--dim);margin-bottom:12px;letter-spacing:.01em}
 .row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
@@ -83,6 +89,13 @@ pre{background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:9px;
     <small id="who">확인 중…</small>
   </h1>
 
+  <!-- ⚠️ 관리자 메뉴는 UID 확인 뒤에만 보인다. studio.html도 같은 판정을 다시 한다. -->
+  <nav class="admin-nav" id="adminNav" aria-label="관리자 메뉴" hidden>
+    <a class="active" href="./admin.html" aria-current="page">운영 현황</a>
+    <a href="./studio.html">콘텐츠 스튜디오</a>
+    <a href="./">earthus로 돌아가기</a>
+  </nav>
+
   <!-- ⚠️⚠️ 이 화면의 보안은 **이 페이지가 아니라 데이터베이스가** 지킨다.
        아래 경고를 지우지 말 것 — 지우면 다음 사람이 이걸 안전하다고 오해한다. -->
   <div class="card danger" id="secNote">
@@ -130,18 +143,6 @@ pre{background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:9px;
       ⚠️ <b>이메일은 일부러 안 보여줍니다.</b> 운영에 필요한 것은 수와 등급이지
       누가 누구인지가 아닙니다. 개별 문의 대응이 필요하면 그때 Supabase 콘솔에서
       한 건씩 보는 것이 낫습니다 — 목록으로 늘어놓으면 그 화면 하나가 유출 지점이 됩니다.
-    </div>
-  </div>
-
-  <!-- ⚠️⚠️ SNS 제작은 운영 현황과 분리한다. 자동 게시 경로는 어느 쪽에도 없다. -->
-  <div class="card">
-    <h2>콘텐츠 스튜디오</h2>
-    <div class="note">
-      초안 검수, 카드뉴스, earthus 릴스 프레임, 사진·영상 보관함을 별도 작업 화면에서 엽니다.
-      <b>파일과 문구까지만 준비하며 SNS에는 자동으로 게시하지 않습니다.</b>
-    </div>
-    <div style="margin-top:12px">
-      <button id="openStudio">콘텐츠 스튜디오 열기</button>
     </div>
   </div>
 
@@ -282,6 +283,7 @@ async function paint() {
   if (!user) {
     $('#who').textContent = '로그인하지 않았습니다';
     inBtn.hidden = false; outBtn.hidden = true;
+    $('#adminNav').hidden = true;
     $('#gateMsg').textContent = '관리자 계정으로 로그인해야 아래 값이 보입니다.';
     hideDev();
     return;
@@ -295,6 +297,7 @@ async function paint() {
      비어 있을 때 열리는 것은 위험한 기본값이다. 반대로 바꿨다.
      ⚠️ 그래도 이건 **화면 가림**이지 잠금이 아니다. 실제 차단은 Supabase RLS 다. */
   const known = ADMIN_UIDS.includes(user.id);
+  $('#adminNav').hidden = !known;
   $('#gateMsg').innerHTML = known
     ? '로그인했습니다. 아래 값이 비어 있으면 <b>RLS 정책이 아직 없거나 관리자로 등록되지 않은 것</b>입니다.'
     : '⚠️ 이 계정은 관리자 목록에 없습니다. 아래 값은 <b>Supabase RLS 가 막습니다.</b>';
@@ -356,7 +359,6 @@ $('#inGoogle').onclick = () => client?.auth.signInWithOAuth({
   provider: 'google', options: { redirectTo: location.href },
 });
 $('#out').onclick = async () => { await client?.auth.signOut(); location.reload(); };
-$('#openStudio').onclick = () => window.open('/studio.html', '_blank', 'noopener');
 
 boot();
 </script>

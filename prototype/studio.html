@@ -19,6 +19,7 @@
       <span>검수, 제작, 공유</span>
     </div>
     <div class="account-state">
+      <a class="button button-quiet button-small" href="./admin.html">관리자로 돌아가기</a>
       <span id="who">권한 확인 중</span>
       <button class="button button-quiet button-small" id="signOut" type="button" hidden>로그아웃</button>
     </div>
@@ -37,21 +38,21 @@
     </section>
 
     <div class="studio" id="studio" hidden>
-      <nav class="rail" aria-label="콘텐츠 제작 단계">
+      <nav class="rail" role="tablist" aria-label="콘텐츠 제작 단계">
         <div class="rail-heading">
           <span>작업 흐름</span>
           <strong>검수부터 공유까지</strong>
         </div>
-        <button class="rail-tab active" type="button" data-tab="drafts" aria-controls="panel-drafts" aria-selected="true">
+        <button class="rail-tab active" id="tab-drafts" role="tab" type="button" data-tab="drafts" aria-controls="panel-drafts" aria-selected="true">
           <span class="rail-number">01</span><span>초안</span><small id="draftCount">불러오는 중</small>
         </button>
-        <button class="rail-tab" type="button" data-tab="cards" aria-controls="panel-cards" aria-selected="false">
+        <button class="rail-tab" id="tab-cards" role="tab" type="button" data-tab="cards" aria-controls="panel-cards" aria-selected="false" tabindex="-1">
           <span class="rail-number">02</span><span>카드뉴스</span><small>3개 규격</small>
         </button>
-        <button class="rail-tab" type="button" data-tab="reels" aria-controls="panel-reels" aria-selected="false">
+        <button class="rail-tab" id="tab-reels" role="tab" type="button" data-tab="reels" aria-controls="panel-reels" aria-selected="false" tabindex="-1">
           <span class="rail-number">03</span><span>릴스</span><small>세로 프레임</small>
         </button>
-        <button class="rail-tab" type="button" data-tab="library" aria-controls="panel-library" aria-selected="false">
+        <button class="rail-tab" id="tab-library" role="tab" type="button" data-tab="library" aria-controls="panel-library" aria-selected="false" tabindex="-1">
           <span class="rail-number">04</span><span>보관함</span><small id="libraryCount">이 기기</small>
         </button>
         <div class="rail-rule">
@@ -69,7 +70,7 @@
           <span class="safety-state">수동 게시만 가능</span>
         </section>
 
-        <section class="panel active" id="panel-drafts" data-panel="drafts" aria-labelledby="draftsTitle">
+        <section class="panel active" id="panel-drafts" role="tabpanel" data-panel="drafts" aria-labelledby="tab-drafts draftsTitle">
           <div class="panel-head">
             <div>
               <p class="kicker">검수 대기</p>
@@ -93,7 +94,7 @@
           </div>
         </section>
 
-        <section class="panel" id="panel-cards" data-panel="cards" aria-labelledby="cardsTitle" hidden>
+        <section class="panel" id="panel-cards" role="tabpanel" data-panel="cards" aria-labelledby="tab-cards cardsTitle" hidden>
           <div class="panel-head">
             <div>
               <p class="kicker">PNG 제작</p>
@@ -119,7 +120,7 @@
 
               <div class="field">
                 <label for="cardTitle">큰 문장</label>
-                <textarea id="cardTitle" rows="3" maxlength="100" required></textarea>
+                <textarea id="cardTitle" rows="3" maxlength="100" required aria-describedby="cardFormError"></textarea>
                 <small><span id="titleLength">0</span>/100</small>
               </div>
               <div class="field">
@@ -138,14 +139,16 @@
 
               <div class="field">
                 <label for="cardSource">출처</label>
-                <input id="cardSource" type="text" maxlength="180" required placeholder="예: 기상청 공식 발표">
+                <input id="cardSource" type="text" maxlength="180" required placeholder="예: 기상청 공식 발표" aria-describedby="cardFormError">
                 <small>기관 또는 원자료 이름을 그대로 적습니다.</small>
               </div>
               <div class="field">
                 <label for="cardObservedAt">관측·발표 시각</label>
-                <input id="cardObservedAt" type="datetime-local" required>
-                <small>초안에서 가져온 경우 자료 생성 시각으로 표시됩니다.</small>
+                <input id="cardObservedAt" type="datetime-local" required aria-describedby="cardFormError">
+                <small>초안의 기관별 발표 시각은 값 줄에 함께 표시하고, 아래 시각은 자료 취합 시각으로 구분합니다.</small>
               </div>
+
+              <p class="form-error" id="cardFormError" role="alert" hidden></p>
 
               <div class="editor-block">
                 <div class="block-head">
@@ -167,9 +170,19 @@
                 <span id="previewMeta">세로 4:5</span>
               </div>
               <div class="canvas-wrap" id="cardCanvasWrap">
-                <canvas id="cardCanvas" width="1080" height="1350" aria-label="카드뉴스 미리보기"></canvas>
+                <canvas id="cardCanvas" width="1080" height="1350" aria-label="카드뉴스 미리보기" aria-describedby="cardCanvasSummary"></canvas>
+                <p class="sr-only" id="cardCanvasSummary">빈 카드뉴스 미리보기입니다.</p>
               </div>
               <div class="preview-actions">
+                <label class="share-target" for="cardChannel">
+                  <span>함께 보낼 문구</span>
+                  <select id="cardChannel">
+                    <option value="x">X</option>
+                    <option value="threads">스레드</option>
+                    <option value="instagram">인스타그램</option>
+                    <option value="facebook">페이스북</option>
+                  </select>
+                </label>
                 <button class="button button-primary" id="downloadCard" type="button">PNG 내려받기</button>
                 <button class="button button-quiet" id="saveCard" type="button">보관함에 저장</button>
                 <button class="button button-quiet" id="shareCard" type="button">휴대폰으로 공유</button>
@@ -179,7 +192,7 @@
           </div>
         </section>
 
-        <section class="panel" id="panel-reels" data-panel="reels" aria-labelledby="reelsTitle" hidden>
+        <section class="panel" id="panel-reels" role="tabpanel" data-panel="reels" aria-labelledby="tab-reels reelsTitle" hidden>
           <div class="panel-head">
             <div>
               <p class="kicker">1080 × 1920</p>
@@ -191,6 +204,12 @@
 
           <div class="reel-console">
             <div class="reel-setup">
+              <div class="connection-card reel-data-card">
+                <span>제작 근거</span>
+                <strong id="reelDataState">초안을 먼저 고르세요.</strong>
+                <p id="reelDataDetail">초안의 「릴스로」를 누르거나 카드뉴스에서 제목·출처·시각을 입력하세요.</p>
+                <button class="text-button" id="chooseReelDraft" type="button">초안에서 고르기</button>
+              </div>
               <div class="connection-card">
                 <span>캡처 창</span>
                 <strong id="reelConnection">연결 안 됨</strong>
@@ -208,6 +227,7 @@
               <div class="button-stack">
                 <button class="button button-primary" id="makeReelFrames" type="button">연속 프레임 만들기</button>
                 <button class="button button-quiet" id="captureOneFrame" type="button">현재 장면 한 장</button>
+                <button class="button button-quiet" id="cancelReelFrames" type="button" hidden>캡처 취소</button>
               </div>
               <div class="progress" id="reelProgress" hidden>
                 <div><i id="reelProgressBar"></i></div>
@@ -220,7 +240,10 @@
                   <strong>프레임 출력</strong>
                   <span id="reelOutputMeta">아직 만든 프레임이 없습니다.</span>
                 </div>
-                <button class="button button-quiet button-small" id="saveReelSet" type="button" hidden>보관함에 묶음 저장</button>
+                <div class="button-row">
+                  <button class="button button-quiet button-small" id="downloadReelSet" type="button" hidden>PNG 모두 내려받기</button>
+                  <button class="button button-quiet button-small" id="saveReelSet" type="button" hidden>보관함에 묶음 저장</button>
+                </div>
               </div>
               <div class="frame-grid" id="frameGrid">
                 <div class="empty-state compact">
@@ -232,7 +255,7 @@
           </div>
         </section>
 
-        <section class="panel" id="panel-library" data-panel="library" aria-labelledby="libraryTitle" hidden>
+        <section class="panel" id="panel-library" role="tabpanel" data-panel="library" aria-labelledby="tab-library libraryTitle" hidden>
           <div class="panel-head">
             <div>
               <p class="kicker">사진·영상 작업 보관함</p>

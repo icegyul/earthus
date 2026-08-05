@@ -16,11 +16,12 @@
 ■⚠️ 카드 이미지를 여기서 그리지 않는 이유
    Lambda(Amazon Linux)에 **한글 폰트가 없다.** 폰트를 넣으면 패키지가 커지고,
    무엇보다 사람이 어차피 보고 올릴 것이라 **브라우저에서 그리는 편이 낫다.**
-   → 초안은 "사실 + 문구 + 카드 사양"이고, 그림은 admin.html 이 그린다.
+   → 초안은 "사실 + 문구 + 카드 사양"이고, 그림은 studio.html 이 그린다.
 
 출력  s3://<CACHE_BUCKET>/events/social-drafts.json
 """
 
+import hashlib
 import json
 import os
 import urllib.request
@@ -62,6 +63,23 @@ def kst(s):
         return None
 
 
+def normalized_time(value, assumed_tz):
+    """기관 원문 시각을 뜻을 바꾸지 않고 ISO 8601로 맞춘다."""
+    if not value:
+        return None
+    text = str(value)
+    # 기상청 태풍 통보문은 UTC를 YYYYMMDDHHMM으로 준다.
+    if len(text) == 12 and text.isdigit():
+        try:
+            parsed = datetime.strptime(text, "%Y%m%d%H%M").replace(tzinfo=assumed_tz)
+        except ValueError:
+            return text
+        if assumed_tz == timezone.utc:
+            return parsed.strftime("%Y-%m-%dT%H:%M:00Z")
+        return parsed.isoformat()
+    return text
+
+
 def storm_facts(st):
     """한 태풍에서 **사실만** 뽑는다. 형용사·추측 금지."""
     ags = st.get("agencies") or []
@@ -77,9 +95,19 @@ def storm_facts(st):
         last = steps[-1]
         if now is None and s0.get("lat") is not None:
             now = s0
+        # ⚠️ 영상을 만들려면 **시각별 좌표**가 있어야 한다. 요약값만 담았더니
+        #    관리자 화면에서 태풍이 어디로 가는지 그릴 수가 없었다.
+        # ⚠️ 그렇다고 전부 담지 않는다 — 초안 파일이 커지면 관리자 화면이 느려진다.
+        #    영상에 필요한 것(시각·위치·세기)만 남긴다.
+        track = [{"h": x.get("h"),
+                  "valid": normalized_time(x.get("validKst"), KST)
+                           or normalized_time(x.get("validUtc"), timezone.utc),
+                  "lat": x.get("lat"), "lon": x.get("lon"),
+                  "w": x.get("windMs"), "p": x.get("hpa")}
+                 for x in steps if x.get("lat") is not None]
         out["agencies"].append({
             "id": a.get("agency"), "ko": a.get("agencyKo"),
-            "number": a.get("number"),
+            "number": a.get("number"), "issue": a.get("issue"), "track": track,
             "windMs": s0.get("windMs"), "hpa": s0.get("hpa"),
             "place": s0.get("place"),
             "categoryKo": s0.get("categoryKo") or s0.get("intensityKo"),
@@ -96,6 +124,18 @@ def storm_facts(st):
     return out
 
 
+def draft_revision(facts):
+    """같은 공식 공보에는 같은 ID를 준다.
+
+    ⚠️ 실행 시각을 ID에 넣으면 매시간 같은 공보도 새 초안이 되어, 사람이 남긴
+       게시 기록과 중복 경고가 끊긴다. 값이나 공보 시각이 실제로 바뀔 때만 ID가
+       바뀌도록 검증된 facts 전체를 정규화해 짧은 해시를 만든다.
+    """
+    canonical = json.dumps(facts, ensure_ascii=False, sort_keys=True,
+                           separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:12]
+
+
 def headline(f, ko=True):
     """⚠️ 여기서 예보를 만들지 않는다. 기관이 낸 것을 옮기고 출처를 붙인다."""
     nm = f.get("name") or "열대저압부"
@@ -103,12 +143,26 @@ def headline(f, ko=True):
     # 소멸/약화 — 기관이 downgrade 를 낸 경우에만
     dn = [a for a in f["agencies"] if a.get("downgrade")]
     if dn:
-        who = " · ".join(a["ko"] or a["id"] for a in dn)
-        return f"{nm} 약화 — {who}가 열대저압부로 낮췄습니다"
+        outlooks = []
+        for agency in dn:
+            change = agency.get("downgrade") or {}
+            who = agency.get("ko") or agency.get("id") or "기관"
+            target = change.get("toKo") or change.get("to") or "하위 등급"
+            valid = kst(change.get("valid"))
+            if valid:
+                when = f"{valid.month}월 {valid.day}일 {valid:%H:%M} KST"
+            elif change.get("h") is not None:
+                when = f"+{change['h']}시간 뒤"
+            else:
+                when = "향후"
+            outlooks.append(f"{who} {when} {target} 전망")
+        # ⚠️ `downgrade`는 미래 예보일 수 있다. "낮췄습니다"처럼
+        #    이미 일어난 사실로 바꾸지 말고 기관·시각·목표 등급을 그대로 쓴다.
+        return f"{nm}: " + " · ".join(outlooks)
     if w and w >= 43:
-        return f"{nm} 매우 강함 — 중심 최대풍속 {w:.0f}m/s"
+        return f"{nm} 매우 강함: 중심 최대풍속 {w:.0f}m/s"
     if w and w >= MIN_WIND_MS:
-        return f"{nm} — 중심 최대풍속 {w:.0f}m/s"
+        return f"{nm}: 중심 최대풍속 {w:.0f}m/s"
     return f"{nm} 현재 위치"
 
 
@@ -166,12 +220,12 @@ def handler(event=None, context=None):
         base = body_ko(f)
         link = f"\n\n{CDN} #태풍 #{(f.get('name') or '').replace(' ', '')} #earthus"
         drafts.append({
-            "id": f"{f['key']}-{now:%Y%m%d%H%M}",
+            "id": f"{f['key']}-r{draft_revision(f)}",
             "at": now.isoformat(),
             "storm": f["key"], "name": f.get("name"),
             "kind": "downgrade" if dn else "update",
             "facts": f,
-            # 카드 사양 — 그림은 admin.html 이 그린다 (Lambda 에 한글 폰트가 없다)
+            # 카드 사양 — 그림은 studio.html 이 그린다 (Lambda 에 한글 폰트가 없다)
             "card": {
                 "title": headline(f),
                 "sub": f.get("place"),

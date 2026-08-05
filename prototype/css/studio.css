@@ -208,6 +208,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .field textarea{resize:vertical;min-height:74px;line-height:1.45}
 .field input::placeholder,.field textarea::placeholder{color:#747b85}
 .field small{display:block;margin-top:5px;color:var(--fog);font-size:10px}
+.field [aria-invalid="true"]{border-color:var(--bad);box-shadow:0 0 0 1px rgba(255,121,111,.2)}
+.form-error{margin:0 0 18px;padding:10px 11px;border:1px solid rgba(255,121,111,.34);border-radius:8px;background:rgba(255,121,111,.08);color:#ffaaa3;font-size:11px}
 .row-editor{margin-top:10px}
 .row-input{display:grid;grid-template-columns:.75fr 1fr auto;gap:7px;margin-top:7px}
 .row-input input{min-width:0;border:1px solid var(--line);border-radius:7px;background:rgba(10,10,10,.45);color:var(--paper);padding:9px}
@@ -216,12 +218,15 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .canvas-wrap{margin-top:12px;display:grid;place-items:center;min-height:420px;padding:18px;border-radius:9px;background:#070809;overflow:hidden}
 .canvas-wrap canvas{display:block;max-width:100%;max-height:68dvh;width:auto;height:auto;box-shadow:0 22px 70px rgba(0,0,0,.36)}
 .preview-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.share-target{flex:1 1 100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 11px;border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:11px}
+.share-target select{min-width:132px;border:0;background:var(--ink);color:var(--paper);padding:6px 8px;border-radius:6px}
 .action-note{margin:10px 0 0;color:var(--fog);font-size:10.5px}
 
 .reel-console{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;align-items:start}
 .reel-setup,.reel-output{padding:18px}
 .connection-card{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--line)}
 .connection-card span{display:block;color:var(--fog);font-size:10px}.connection-card strong{display:block;margin:5px 0;font-size:15px}.connection-card p{margin:0;color:var(--muted);font-size:11px}
+.reel-data-card .text-button{margin-top:9px}
 .progress{margin-top:16px}.progress>div{height:4px;border-radius:99px;background:rgba(230,230,230,.08);overflow:hidden}.progress i{display:block;width:0;height:100%;background:var(--blue-bright);transition:width .18s ease}.progress span{display:block;margin-top:7px;color:var(--muted);font-size:11px}
 .output-head{margin-bottom:14px}.output-head>div span{display:block;margin-top:3px}
 .frame-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
@@ -247,6 +252,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .skeleton-list{display:grid;gap:7px}.skeleton-list i{display:block;height:104px;border-radius:9px;background:rgba(230,230,230,.045)}
 .skeleton-list i:nth-child(2){opacity:.72}.skeleton-list i:nth-child(3){opacity:.45}
 .error-state{padding:18px;color:#ffaaa3;font-size:12px}
+.data-warning{margin:0 0 8px;padding:11px 12px;border:1px solid rgba(243,180,93,.28);border-radius:8px;background:rgba(243,180,93,.07);color:#ffd28f;font-size:11px;line-height:1.55;overflow-wrap:anywhere}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));z-index:30;max-width:min(520px,calc(100% - 32px));padding:11px 15px;border:1px solid var(--line-strong);border-radius:9px;background:#24282f;color:var(--paper);box-shadow:0 18px 50px rgba(0,0,0,.35);font-size:12px;opacity:0;pointer-events:none;transform:translate(-50%,12px);transition:opacity .18s ease,transform .18s ease}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
@@ -265,17 +272,20 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 }
 
 @media (max-width:767px){
-  :root{--topbar:60px}
+  /* ⚠️ 모바일 상단바는 계정 행을 두 번째 줄로 내려 실측 108px이다.
+     60px로 두면 스크롤 시 탭 레일의 15px가 상단바 뒤로 숨었다. */
+  :root{--topbar:108px}
   .topbar{grid-template-columns:auto 1fr;padding:8px 14px;gap:12px}.brand{width:102px}.topbar-title span{display:none}.account-state{grid-column:1/-1;justify-content:space-between;border-top:1px solid var(--line);padding-top:7px}.topbar{min-height:auto}.account-state span{max-width:65vw}
+  .button,.button-small{min-height:44px}.text-button{min-height:44px;display:inline-flex;align-items:center}.rail-tab{min-height:44px}
   .gate{min-height:calc(100dvh - 92px);padding:56px 0 84px}.gate h1{font-size:42px}
   .studio{display:block;min-height:0}
-  .rail{position:sticky;top:93px;z-index:8;width:100%;height:auto;display:flex;gap:6px;padding:8px 12px;border-right:0;border-bottom:1px solid var(--line);overflow-x:auto;background:rgba(10,10,10,.95)}
+  .rail{position:sticky;top:var(--topbar);z-index:8;width:100%;height:auto;display:flex;gap:6px;padding:8px 12px;border-right:0;border-bottom:1px solid var(--line);overflow-x:auto;background:rgba(10,10,10,.95)}
   .rail-heading,.rail-rule{display:none}.rail-tab{flex:0 0 auto;width:auto;grid-template-columns:1fr;padding:8px 12px;text-align:center}.rail-tab .rail-number,.rail-tab small{display:none}.rail-tab>span:not(.rail-number){font-size:12px}
   .workspace{padding:18px 14px 64px}.safety-bar{align-items:flex-start;margin-bottom:26px}.safety-state{display:none}
   .panel-head{align-items:flex-start;flex-direction:column;margin-bottom:22px}.panel-head h2{font-size:32px}.panel-head>.button,.panel-head>.file-button{width:100%}
   .draft-layout{display:block}.draft-list{min-height:0;max-height:310px;overflow:auto;margin-bottom:12px}.draft-detail{padding:16px;min-height:400px}.draft-title-row{display:block}.fact-summary{grid-template-columns:1fr 1fr}.agency{grid-template-columns:1fr}.post-record{grid-template-columns:1fr}.channel-footer{align-items:flex-start;flex-direction:column}
   .maker-layout{display:block}.editor{padding:15px}.preview-column{margin-top:12px;padding:14px}.canvas-wrap{min-height:300px;padding:10px}.canvas-wrap canvas{max-height:58dvh}.preview-actions .button{flex:1 1 100%}
-  .segmented{grid-template-columns:1fr}.row-input{grid-template-columns:1fr 1fr auto}
+  .segmented{grid-template-columns:repeat(3,1fr)}.row-input{grid-template-columns:1fr 1fr auto}
   .reel-setup{display:block}.connection-card{margin-bottom:18px}.frame-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .local-notice{grid-template-columns:1fr;gap:7px}.import-meta{grid-template-columns:1fr}.import-file-list,.import-meta .button-row{grid-column:1}.library-grid{grid-template-columns:1fr}.media-card{display:grid;grid-template-columns:130px 1fr}.media-preview{aspect-ratio:1}.media-body{min-width:0}
 }

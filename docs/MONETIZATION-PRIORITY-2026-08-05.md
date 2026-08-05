@@ -153,6 +153,9 @@ earthus의 유료 명분은 `이 값을 믿을 수 있는가`인데, 추천 결�
 
 ## 10. 2026-08-06 실행 기록
 
+- Custom Extract의 현재 선택 CSV와 정확히 대응하는
+  `earthus.custom-extract-manifest.v1` JSON을 추가했다. CSV 파일명·행 수·BOM 포함
+  바이트·SHA-256, 필터·열 정의·원본 경로·출처·이용조건·생성시각·방법론을 기록한다.
 - Research Custom Extract는 실제 공개 인덱스에 있는 날짜와 그 일파일만 읽는다.
   예보·관측 사례와 ASOS 시간 관측을 시각·관측소·변수로 걸러 long format CSV로
   내보내며, 각 행에 좌표·단위·출처·이용조건·생성시각을 남긴다. 결측은 빈칸으로

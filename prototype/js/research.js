@@ -320,6 +320,28 @@ const EXTRACT_SCHEMAS = {
   ],
 };
 
+const EXTRACT_FIELD_META = {
+  valid_kst: ['KST', '예보 유효시각과 관측시각'],
+  observed_kst: ['KST', 'ASOS 관측시각'],
+  station_id: ['-', 'ASOS 지점번호'],
+  station_name: ['-', '관측소 이름'],
+  lat: ['degree north', '위도'],
+  lon: ['degree east', '경도'],
+  alt_m: ['m', '해발고도'],
+  model: ['-', '예보 모델 식별자'],
+  lead_hour: ['hour', '예보 선행시간'],
+  variable: ['-', '변수 식별자'],
+  unit: ['-', '해당 행 값의 단위'],
+  observation: ['unit column', 'ASOS 관측값'],
+  forecast: ['unit column', '모델 예보값'],
+  forecast_minus_observation: ['unit column', '예보에서 관측을 뺀 값'],
+  issued_kst: ['KST', '예보 발표 기준시각'],
+  value: ['unit column', 'ASOS 관측 변수값'],
+  source: ['-', '자료 출처'],
+  license: ['-', '자료 이용조건'],
+  generated: ['ISO 8601', '원본 공개 산출물 생성시각'],
+};
+
 function stationFieldUnit(day, variable) {
   const label = day.fields?.[variable] || '';
   const match = label.match(/\(([^()]*)\)$/);
@@ -420,7 +442,11 @@ function renderExtract() {
   };
   const headers = EXTRACT_SCHEMAS[dataset];
   const rows = customExtractRows(dataset, day, filters);
-  state.extractResult = { dataset, date: day.date, filters, headers, rows };
+  state.extractResult = {
+    dataset, date: day.date, filters, headers, rows,
+    source: day.source, license: day.license, generated: day.generated,
+    sourcePath: extractIndex(dataset)?.dates?.[day.date]?.path,
+  };
   const preview = rows.slice(0, 5);
   $('#extractTable thead').innerHTML = `<tr>${headers.map(header => `<th>${html(header)}</th>`).join('')}</tr>`;
   $('#extractTable tbody').innerHTML = preview.map(row =>
@@ -428,6 +454,7 @@ function renderExtract() {
   $('#extractStatus').textContent = `${day.date} · 결과 ${rows.length.toLocaleString('ko-KR')}행 · 미리보기 ${preview.length}행 · 결측은 빈칸`;
   $('#extractEvidence').textContent = `${day.source || '출처 없음'} · 생성 ${day.generated || '시각 없음'} · ${day.license || '이용조건 없음'}`;
   $('#downloadExtract').disabled = rows.length === 0;
+  $('#downloadExtractManifest').disabled = rows.length === 0;
 }
 
 async function loadExtractDay() {
@@ -437,6 +464,7 @@ async function loadExtractDay() {
   const token = (state.extractToken || 0) + 1;
   state.extractToken = token;
   $('#downloadExtract').disabled = true;
+  $('#downloadExtractManifest').disabled = true;
   $('#extractStatus').textContent = `${date || '날짜 없음'} 자료를 불러오는 중입니다.`;
   if (!entry) {
     state.extractDay = null;
@@ -463,6 +491,62 @@ function extractFilename(result) {
   return `earthus-${result.dataset}-${compact(result.date)}-${compact(result.filters.time)}-${compact(result.filters.station)}-${compact(result.filters.variable)}.csv`;
 }
 
+async function buildExtractManifest(result) {
+  const filename = extractFilename(result);
+  const content = csvText(result.headers, result.rows);
+  return {
+    schema: 'earthus.custom-extract-manifest.v1',
+    manifestVersion: 1,
+    createdAt: new Date().toISOString(),
+    product: 'earthus Research Custom Extract 무료 미리보기',
+    salesStatus: '유료 판매 잠금; 현재 공개 범위만 사용',
+    selection: {
+      dataset: result.dataset,
+      date: result.date,
+      time: result.filters.time,
+      station: result.filters.station,
+      variable: result.filters.variable,
+      allToken: 'all means no additional filter inside the selected date',
+    },
+    file: {
+      name: filename,
+      mediaType: 'text/csv; charset=utf-8',
+      encoding: 'UTF-8 with BOM',
+      lineEnding: 'LF',
+      rows: result.rows.length,
+      bytes: new TextEncoder().encode(content).byteLength,
+      sha256: await sha256(content),
+      fields: result.headers.map(name => ({
+        name,
+        unit: EXTRACT_FIELD_META[name]?.[0] || '-',
+        description: EXTRACT_FIELD_META[name]?.[1] || name,
+      })),
+    },
+    provenance: {
+      sourcePath: result.sourcePath,
+      source: result.source,
+      license: result.license,
+      sourceGeneratedAt: result.generated,
+    },
+    methodology: {
+      rowShape: result.dataset === 'cases'
+        ? 'one valid time x station x model x lead time x variable per row'
+        : 'one observed time x station x variable per row',
+      missing: '결측은 빈칸이며 0으로 대체하지 않음',
+      difference: 'forecast_minus_observation = forecast - observation; 소수 셋째 자리까지 보존',
+      ordering: '시각, 지점번호, 변수와 모델·선행시간을 고정 순서로 정렬',
+      scope: '운영 공개 인덱스에 실제로 있는 선택 날짜만 사용',
+    },
+    licensePage: 'https://earthus.net/legal/data-license.ko.md',
+  };
+}
+
+async function downloadExtractManifest(result) {
+  const manifest = await buildExtractManifest(result);
+  const filename = extractFilename(result).replace(/\.csv$/, '.manifest.json');
+  downloadText(filename, JSON.stringify(manifest, null, 2) + '\n', 'application/json;charset=utf-8');
+}
+
 function initExtract() {
   state.extractCache = { cases: {}, stations: {} };
   if (state.caseDay?.date) state.extractCache.cases[state.caseDay.date] = state.caseDay;
@@ -479,6 +563,23 @@ function initExtract() {
     const result = state.extractResult;
     if (!result?.rows.length) return;
     download(extractFilename(result), result.headers, result.rows);
+  });
+  $('#downloadExtractManifest').addEventListener('click', async event => {
+    const result = state.extractResult;
+    if (!result?.rows.length) return;
+    const button = event.currentTarget;
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = '체크섬 계산 중…';
+    try {
+      await downloadExtractManifest(result);
+    } catch (error) {
+      $('#error').hidden = false;
+      $('#error').textContent = `추출 manifest를 만들지 못했습니다. (${error.message})`;
+    } finally {
+      button.disabled = false;
+      button.textContent = original;
+    }
   });
   loadExtractDay();
 }

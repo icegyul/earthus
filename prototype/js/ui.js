@@ -34,7 +34,10 @@ const el = (tag, cls, txt) => {
    Ambient 크롬 — 시계 / 도시 / 현재 날씨
    ══════════════════════════════════════════════════════════════ */
 export const chrome = {
-  place: { name: '인천', lat: 37.4563, lon: 126.7052 },
+  /* ⚠️ 기본 위치 이름이 '인천'으로 박혀 있어 영어 화면에도 한글로 남았다.
+     (AX 1차 검수) 지명이라 뜻은 같지만, 언어를 고른 사람에게는 불일치다. */
+  place: { name: '', lat: 37.4563, lon: 126.7052 },
+  get defaultName() { return i18n.lang === 'ko' ? '인천' : 'Incheon'; },
   wx: null,
 
   /* ⚠️ 위치 권한이 없으면 인천을 쓴다. 그 사실을 **첫 화면에서** 밝힌다. (감사 P1-5)
@@ -109,7 +112,7 @@ export const chrome = {
   render() {
     const ko = i18n.lang === 'ko';
     const el0 = $('#ambCity');
-    el0.textContent = this.place.name || '—';
+    el0.textContent = this.place.name || (this.isDefault ? this.defaultName : '—');
     /* 기본 위치일 때만 꼬리표를 붙인다 — 내 위치일 때는 붙일 이유가 없다 */
     if (this.isDefault) {
       const tag = document.createElement('span');

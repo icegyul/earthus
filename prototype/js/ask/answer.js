@@ -365,6 +365,6 @@ export const ask = {
       ? ['지금 태풍 어디야?', '스페인 산불 있어?', '동해 수온 어때?',
          '최근 24시간 지진 몇 건?', '일본 근처 부이 보여줘', '지금 오로라 볼 수 있어?']
       : ['Where are the storms?', 'Any wildfires in Spain?', 'Sea temperature near Korea?',
-         'How many earthquakes today?', 'Show buoys near Japan', 'Any aurora right now?'];
+         'How many earthquakes in the last 24 h?', 'Show buoys near Japan', 'Any aurora right now?'];
   },
 };

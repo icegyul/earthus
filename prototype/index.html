@@ -243,7 +243,7 @@
 
   <!-- 2단: 지구 스타일 (1단보다 왼쪽) -->
   <div id="menuSub" aria-hidden="true">
-    <div class="ms-head">레이어</div>
+    <div class="ms-head" data-i18n="m.layers">레이어</div>
     <div id="layerStrip"></div>
   </div>
 
@@ -251,21 +251,21 @@
   <nav id="menuMain" aria-hidden="true">
     <button class="mm-item" data-open="earth">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9.2"/><ellipse cx="12" cy="12" rx="4" ry="9.2"/><path d="M2.9 12h18.2"/></svg></span>
-      <span class="mm-label">레이어</span><span class="mm-chev">‹</span>
+      <span class="mm-label" data-i18n="m.layers">레이어</span><span class="mm-chev">‹</span>
     </button>
     <button class="mm-item" data-act="sat">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4.4" transform="rotate(-30 12 12)"/></svg></span>
-      <span class="mm-label">인공위성</span><span class="mm-badge" id="satCount"></span>
+      <span class="mm-label" data-i18n="m.sat">인공위성</span><span class="mm-badge" id="satCount"></span>
     </button>
     <!-- Alert — 지금 무슨 일이 났는가. 재난 레이어를 '지구 스타일'에서 빼내 따로 모았다.
          data-open 이라 1단을 누르면 2단(#menuSub)이 재난 목록으로 바뀌어 열린다. -->
     <button class="mm-item" data-open="alert">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 4.2 21 19.4H3z"/><path d="M12 10v3.6" stroke-linecap="round"/><circle cx="12" cy="16.6" r=".7" fill="currentColor" stroke="none"/></svg></span>
-      <span class="mm-label">Alert</span><span class="mm-chev">‹</span>
+      <span class="mm-label" data-i18n="m.alert">Alert</span><span class="mm-chev">‹</span>
     </button>
     <button class="mm-item" data-act="news">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3.4 6.2h13v13H5.6a2.2 2.2 0 0 1-2.2-2.2z"/><path d="M16.4 9.2h4.2v7.8a2.2 2.2 0 0 1-4.2 0z"/><path d="M6.2 9.4h7.4M6.2 12.4h7.4M6.2 15.4h4.6" stroke-linecap="round"/></svg></span>
-      <span class="mm-label">News</span><span class="mm-badge" id="newsBadge"></span>
+      <span class="mm-label" data-i18n="m.news">News</span><span class="mm-badge" id="newsBadge"></span>
     </button>
     <!-- ⚠️ '이벤트' 항목을 뺐다 (받은 요청). News 와 같은 패널을 여는 문 두 개였다.
          지진·쓰나미 같은 **지금 일어난 일**은 Alert 메뉴 안으로 옮겼고,
@@ -275,36 +275,36 @@
     <!-- LAB — 옛 '커뮤니티'. 표시명만 바꾼다 (내부 id 는 community 그대로). -->
     <button class="mm-item" data-act="community">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M9.6 3.4v5.2L4.8 17a2.2 2.2 0 0 0 1.9 3.3h10.6a2.2 2.2 0 0 0 1.9-3.3l-4.8-8.4V3.4"/><path d="M8.4 3.4h7.2M8.6 13.2h6.8" stroke-linecap="round"/></svg></span>
-      <span class="mm-label">LAB</span><span class="mm-badge" id="commBadge"></span>
+      <span class="mm-label" data-i18n="m.lab">LAB</span><span class="mm-badge" id="commBadge"></span>
     </button>
     <!-- if — 옛 '물어보기'. 관측 질의(기존)에 시나리오 분석이 얹힌다. -->
     <button class="mm-item" data-act="ask">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><circle cx="11" cy="11" r="6.4"/><path d="M15.8 15.8 20.5 20.5" stroke-linecap="round"/><path d="M9.2 9.4c.2-1 1-1.6 1.9-1.6 1 0 1.8.7 1.8 1.6 0 1.3-1.7 1.4-1.7 2.6" stroke-linecap="round"/><circle cx="11.2" cy="14.4" r=".55" fill="currentColor" stroke="none"/></svg></span>
-      <span class="mm-label">물어보기</span>
+      <span class="mm-label" data-i18n="m.ask">물어보기</span>
     </button>
     <button class="mm-item" data-act="flight">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2.4c.9 0 1.5 1.1 1.5 2.6v3.4l7.4 4.3v2.1l-7.4-2.3v4.2l2.5 1.8v1.6L12 19.3l-4 .8v-1.6l2.5-1.8v-4.2L3.1 14.8v-2.1l7.4-4.3V5c0-1.5.6-2.6 1.5-2.6z"/></svg></span>
-      <span class="mm-label">항공편</span><span class="mm-badge" id="flightBadge"></span>
+      <span class="mm-label" data-i18n="m.flight">항공편</span><span class="mm-badge" id="flightBadge"></span>
     </button>
     <!-- 취미 — 서핑·낚시·패러글라이딩·산·하늘.
          ⚠️ 네 화면이 묻는 것은 같다: "지금 저기 조건이 어떤가".
             따로 두면 메뉴만 길어지고, 서로를 못 찾는다. -->
     <button class="mm-item" data-act="outdoor">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3.4 20.2h17.2"/><path d="M6.2 20.2 12 5.6l5.8 14.6"/><path d="M9.4 13.4h5.2" stroke-linecap="round"/><circle cx="18.6" cy="5.4" r="2.2"/></svg></span>
-      <span class="mm-label">취미</span><span class="mm-badge" id="outBadge"></span>
+      <span class="mm-label" data-i18n="m.outdoor">취미</span><span class="mm-badge" id="outBadge"></span>
     </button>
     <button class="mm-item" data-act="locate">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r="8" opacity=".55"/><path d="M12 1.5v2.6M12 19.9v2.6M22.5 12h-2.6M4.1 12H1.5" stroke-linecap="round"/></svg></span>
-      <span class="mm-label">내 위치</span>
+      <span class="mm-label" data-i18n="m.locate">내 위치</span>
     </button>
     <button class="mm-item" data-act="globe">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v6M12 3l-3 3M12 3l3 3"/><circle cx="12" cy="14" r="7"/></svg></span>
-      <span class="mm-label">전지구로</span>
+      <span class="mm-label" data-i18n="m.globe">전지구로</span>
     </button>
     <div class="mm-sep"></div>
     <button class="mm-item" data-act="settings">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.2a2 2 0 0 1 2 2v.5a1.6 1.6 0 0 0 2.5 1.3l.4-.3a2 2 0 1 1 2.8 2.8l-.3.4a1.6 1.6 0 0 0 1.3 2.5h.5a2 2 0 1 1 0 4h-.5a1.6 1.6 0 0 0-1.3 2.5l.3.4a2 2 0 1 1-2.8 2.8l-.4-.3a1.6 1.6 0 0 0-2.5 1.3v.5a2 2 0 1 1-4 0v-.5a1.6 1.6 0 0 0-2.5-1.3l-.4.3a2 2 0 1 1-2.8-2.8l.3-.4A1.6 1.6 0 0 0 3.3 14h-.5a2 2 0 1 1 0-4h.5a1.6 1.6 0 0 0 1.3-2.5l-.3-.4a2 2 0 1 1 2.8-2.8l.4.3A1.6 1.6 0 0 0 10 4.7v-.5a2 2 0 0 1 2-2z"/></svg></span>
-      <span class="mm-label">설정</span>
+      <span class="mm-label" data-i18n="m.settings">설정</span>
     </button>
   </nav>
 
@@ -588,7 +588,7 @@
          유료 기능을 누를 때 그 자리에서 로그인 화면이 뜬다 (auth.requireLogin).
          출시 준비 때 display 만 되돌리면 그대로 살아난다.
          사전등록·동의는 메뉴에서 직접 눌러 열도록 노출한다 (자동 팝업 아님). -->
-    <button class="set-item" id="btnAccount" style="display:none"><span>계정</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnAccount" style="display:none"><span data-i18n="s.account">계정</span><span class="chev">›</span></button>
     <!-- ⚠️ 구독 화면(#subSheet)은 만들어져 있었는데 **여는 버튼이 없었다.**
          유료 레이어를 누르면 열리게 해뒀지만 지금 유료로 표시된 레이어가 하나도 없어서
          결제창까지 갈 길이 통째로 막혀 있었다. 설정에서 바로 열 수 있게 둔다. -->
@@ -596,18 +596,18 @@
          · 로그인 전  → '로그인 / 가입'
          · 로그인 후  → '계정'  (+ 유료면 배지)
          · 관리자면   → '관리자 페이지' 한 줄 더 -->
-    <button class="set-item" id="btnLoginRow"><span>로그인 / 가입</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnLoginRow"><span data-i18n="s.login">로그인 / 가입</span><span class="chev">›</span></button>
     <!-- ⚠️ 관리자 줄은 여기 두지 않는다. 숨긴 채로 있으면 소스에 남는다.
          PD 계정으로 로그인했을 때만 main.js 가 그 자리에 만들어 넣는다. -->
-    <button class="set-item" id="btnSubscribe"><span>구독</span><span class="chev">›</span></button>
-    <button class="set-item" id="btnWaitlist"><span>사전등록 · 창립 멤버</span><span class="chev">›</span></button>
-    <button class="set-item" id="btnTerms"><span>이용약관</span><span class="chev">›</span></button>
-    <button class="set-item" id="btnPrivacy"><span>개인정보처리방침</span><span class="chev">›</span></button>
-    <button class="set-item" id="btnConsent"><span>약관 · 동의 관리</span><span class="chev">›</span></button>
-    <button class="set-item" id="btnChangelog"><span>업데이트</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnSubscribe"><span data-i18n="s.subscribe">구독</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnWaitlist"><span data-i18n="s.waitlist">사전등록 · 창립 멤버</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnTerms"><span data-i18n="s.terms">이용약관</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnPrivacy"><span data-i18n="s.privacy">개인정보처리방침</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnConsent"><span data-i18n="s.consent">약관 · 동의 관리</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnChangelog"><span data-i18n="s.changelog">업데이트</span><span class="chev">›</span></button>
     <!-- 소개서 — "설정란에 소개서 링크 붙여줘, 어디로 가야 할지 모르겠어" (받은 지적).
          intro.html 은 검색용으로만 있었고 앱 안에서 가는 문이 없었다. -->
-    <button class="set-item" id="btnIntro"><span>earthus 소개</span><span class="chev">↗</span></button>
+    <button class="set-item" id="btnIntro"><span data-i18n="s.intro">earthus 소개</span><span class="chev">↗</span></button>
 
     <div class="set-sep"></div>
     <div class="biz" id="bizInfo"></div>
@@ -637,8 +637,8 @@
       <div class="founding" id="accBadge" style="display:none">✦ 창립 멤버</div>
 
       <div class="set-sep"></div>
-      <button class="set-item" id="btnExport"><span>내 데이터 내려받기</span><span class="chev">›</span></button>
-      <button class="set-item" id="btnSignOut"><span>로그아웃</span><span class="chev">›</span></button>
+      <button class="set-item" id="btnExport"><span data-i18n="s.export">내 데이터 내려받기</span><span class="chev">›</span></button>
+      <button class="set-item" id="btnSignOut"><span data-i18n="s.logout">로그아웃</span><span class="chev">›</span></button>
       <button class="set-item danger" id="btnDelete"><span>계정 삭제</span><span class="chev">›</span></button>
       <p class="sp-note">계정을 삭제하면 모든 데이터가 즉시 파기되며 복구할 수 없습니다.
         유료 구독 중이라면 App Store / Google Play에서 구독을 별도로 해지하셔야 합니다.</p>

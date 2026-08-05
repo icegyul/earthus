@@ -85,6 +85,9 @@ async function boot() {
   hud.init();
   chips.init();
   alarms.init();
+  /* ⚠️ 첫 로드에도 정적 문구를 맞춘다. setLang 때만 부르면
+     영어로 저장해 둔 사용자가 새로고침했을 때 메뉴만 한국어로 돌아온다. */
+  i18n.applyStatic();
   layerBar.init();
   activeBar.init();       // 지금 켜진 레이어 줄 (감사 3차)
   search.init();          // ⌘K · 우상단 돋보기

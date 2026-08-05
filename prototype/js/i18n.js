@@ -132,7 +132,49 @@ export const i18n = {
     this.emit();
   },
   onChange(fn) { this.listeners.push(fn); },
-  emit() { this.listeners.forEach(f => f()); },
+  emit() { this.applyStatic(); this.listeners.forEach(f => f()); },
+
+  /* ── HTML 에 박힌 정적 문구 ────────────────────────────────────
+     받은 검수(AX 1차): "레이어 내용과 설정 제목은 영어로 바뀌지만, 메인 메뉴와
+     설정 하단의 로그인·약관·업데이트는 한국어로 남는다. 언어를 선택한 사용자에게
+     가장 눈에 띄는 불일치다." — 맞다.
+     원인은 이 글들이 index.html 에 **한국어로 박혀** 있고 아무도 손대지 않은 것이었다.
+     → data-i18n="키" 를 붙이고 여기서 한 번에 갈아 끼운다.
+     ⚠️ 키가 사전에 없으면 **건드리지 않는다.** 빈 글자로 지우면 메뉴가 통째로 사라진다. */
+  STATIC: {
+    'm.layers':   { ko: '레이어',            en: 'Layers' },
+    'm.sat':      { ko: '인공위성',          en: 'Satellites' },
+    'm.alert':    { ko: '경보·재난',         en: 'Alerts' },
+    'm.news':     { ko: '뉴스',              en: 'News' },
+    'm.lab':      { ko: 'LAB',               en: 'LAB' },
+    'm.ask':      { ko: '물어보기',          en: 'Ask' },
+    'm.flight':   { ko: '항공편',            en: 'Flights' },
+    'm.outdoor':  { ko: '취미',              en: 'Outdoors' },
+    'm.locate':   { ko: '내 위치',           en: 'My location' },
+    'm.globe':    { ko: '전지구로',          en: 'Whole Earth' },
+    'm.settings': { ko: '설정',              en: 'Settings' },
+    's.account':  { ko: '계정',              en: 'Account' },
+    's.login':    { ko: '로그인 / 가입',     en: 'Sign in / up' },
+    's.subscribe':{ ko: '구독',              en: 'Subscription' },
+    's.waitlist': { ko: '사전등록 · 창립 멤버', en: 'Waitlist · founding member' },
+    's.terms':    { ko: '이용약관',          en: 'Terms of service' },
+    's.privacy':  { ko: '개인정보처리방침',  en: 'Privacy policy' },
+    's.consent':  { ko: '약관 · 동의 관리',  en: 'Consent settings' },
+    's.changelog':{ ko: '업데이트',          en: 'Updates' },
+    's.intro':    { ko: 'earthus 소개',      en: 'About earthus' },
+    's.export':   { ko: '내 데이터 내려받기', en: 'Download my data' },
+    's.logout':   { ko: '로그아웃',          en: 'Sign out' },
+  },
+
+  applyStatic(root = document) {
+    const L = this.lang === 'en' ? 'en' : 'ko';
+    root.querySelectorAll('[data-i18n]').forEach(el => {
+      const v = this.STATIC[el.dataset.i18n];
+      if (v && v[L]) el.textContent = v[L];
+    });
+    // 문서 언어도 함께 바꾼다 — 스크린리더가 읽는 발음이 달라진다
+    document.documentElement.lang = L;
+  },
 
   // 온도 변환 + 포맷
   temp(celsius, digits = 0) {

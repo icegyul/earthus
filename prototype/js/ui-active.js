@@ -26,6 +26,9 @@ export const activeBar = {
 
   init() {
     store.on('layer', () => this.render());
+    /* ⚠️ 언어를 바꾸면 칩 글자도 따라가야 한다 — 안 하면 영어 화면에 한국어 칩이 남는다.
+       (AX 1차 검수 지적) */
+    i18n.onChange(() => this.render());
     this.render();
     return this;
   },

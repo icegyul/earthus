@@ -219,7 +219,16 @@ export const alertsSheet = {
       const del = el('button', 'al-del', '×');
       del.title = ko ? `${sp.label} 삭제` : `Remove ${sp.label}`;
       del.setAttribute('aria-label', del.title);
-      del.onclick = async () => { await push.removeSpot(sp.id); this._load(); };
+      del.onclick = async () => {
+        del.disabled = true;
+        try {
+          await push.removeSpot(sp.id);
+          this._load();
+        } catch (e) {
+          toast(`${ko ? '장소 삭제 실패' : 'Could not remove place'}: ${e.message}`);
+          del.disabled = false;
+        }
+      };
       r.appendChild(go);
       r.appendChild(del);
 

@@ -165,8 +165,11 @@ export const push = {
      ⚠️ 배경 위치 추적이 없어서 **이게 알림의 전부**다. 지점이 없으면 알림도 없다. */
   async spots() {
     if (!auth.client || !auth.user) return [];
-    const { data } = await auth.client.from('alert_spots')
+    const { data, error } = await auth.client.from('alert_spots')
       .select('*').order('created_at', { ascending: true });
+    /* ⚠️ error를 버리고 []로 돌리면 서버 장애가 '저장 장소 없음'으로 보인다.
+       ui-alerts는 실패와 빈 목록을 따로 처리하므로 반드시 위로 올린다. */
+    if (error) throw new Error(error.message);
     return data || [];
   },
 
@@ -184,8 +187,9 @@ export const push = {
   },
 
   async removeSpot(id) {
-    if (!auth.client) return;
-    await auth.client.from('alert_spots').delete().eq('id', id);
+    if (!auth.client || !auth.user) throw new Error('NOT_SIGNED_IN');
+    const { error } = await auth.client.from('alert_spots').delete().eq('id', id);
+    if (error) throw new Error(error.message);
   },
 
   /** 지점별 알림 종류와 사용자가 정한 지진 수신 기준을 바꾼다.

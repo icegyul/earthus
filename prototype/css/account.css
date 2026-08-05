@@ -885,6 +885,7 @@
 .al-del{ flex:0 0 44px; min-width:44px; min-height:44px; background:none; border:none;
   color:inherit; opacity:.45; font-size:18px; line-height:1; padding:0; cursor:pointer; }
 .al-del:hover{ opacity:.9; }
+.al-del:disabled{ opacity:.2; cursor:wait; }
 .al-add{ min-height:44px; }
 .al-types{ grid-column:1/-1; display:flex; flex-wrap:wrap; gap:6px; padding:0 0 10px 4px; }
 .al-type{ min-height:44px; display:inline-flex; align-items:center; gap:6px; padding:0 10px;

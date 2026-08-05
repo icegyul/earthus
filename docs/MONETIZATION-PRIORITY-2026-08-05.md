@@ -153,6 +153,10 @@ earthus의 유료 명분은 `이 값을 믿을 수 있는가`인데, 추천 결�
 
 ## 10. 2026-08-06 실행 기록
 
+- 선택 CSV와 manifest를 바로 읽는 Jupyter 분석 노트북을 개별 내려받기와 재현 ZIP에
+  추가했다. 사례는 예보−관측을 다시 계산해 모델×선행시간×변수별 n·결측·ME·MAE·
+  RMSE와 단일 변수 MAE SVG를 만들고, ASOS는 observed_n·numeric_n·결측률·범위·평균과
+  결측률 SVG를 만든다. 차트에 실제 날짜·원본 파일 수·출처·n·단기 표본 경고를 남긴다.
 - Custom Extract의 선택 CSV·품질 CSV·조건부 일별 추세 CSV·manifest·인용 README·
   검증 Python을 한 번에 받는 재현 묶음 ZIP을 추가했다. 묶음 안 CSV는 개별 내려받기와
   manifest 체크섬 대상 바이트가 같고, 실제 1일 선택에는 존재하지 않는 추세 파일을

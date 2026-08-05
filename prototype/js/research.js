@@ -869,6 +869,7 @@ function renderExtract() {
   $('#extractEvidence').textContent = `${state.extractResult.source || '출처 없음'} · 원본 파일 ${sourceFiles.length}개 · 달력상 누락 ${missingCalendarDates.length}일 · 결측은 빈칸`;
   $('#downloadExtract').disabled = rows.length === 0;
   $('#downloadExtractBundle').disabled = rows.length === 0;
+  $('#downloadExtractNotebook').disabled = rows.length === 0;
   $('#downloadExtractManifest').disabled = rows.length === 0;
   $('#downloadExtractReadme').disabled = rows.length === 0;
   $('#downloadExtractPython').disabled = rows.length === 0;
@@ -885,6 +886,7 @@ async function loadExtractRange() {
   state.extractToken = token;
   $('#downloadExtract').disabled = true;
   $('#downloadExtractBundle').disabled = true;
+  $('#downloadExtractNotebook').disabled = true;
   $('#downloadExtractManifest').disabled = true;
   $('#downloadExtractReadme').disabled = true;
   $('#downloadExtractPython').disabled = true;
@@ -1034,6 +1036,7 @@ function buildExtractReadme(result, manifest) {
   const trendFile = manifest.derivedFiles.find(file => file.role === 'daily-trend');
   const manifestName = extractFilename(result).replace(/\.csv$/, '.manifest.json');
   const pythonName = extractFilename(result).replace(/\.csv$/, '.verify.py');
+  const notebookName = extractFilename(result).replace(/\.csv$/, '.analysis.ipynb');
   const trendRows = trendFile ? `
 | 날짜별 추세 CSV | \`${value(trendFile.name)}\` |
 | 추세 CSV 행 수 | ${trendFile.rows.toLocaleString('ko-KR')} |
@@ -1053,6 +1056,7 @@ function buildExtractReadme(result, manifest) {
 | 바이트 | ${manifest.file.bytes.toLocaleString('ko-KR')} (UTF-8 BOM 포함) |
 | SHA-256 | \`${manifest.file.sha256}\` |
 | manifest | \`${value(manifestName)}\` |
+| 분석 노트북 | \`${value(notebookName)}\` |
 | 품질 CSV | \`${value(qualityFile.name)}\` |
 | 품질 CSV 행 수 | ${qualityFile.rows.toLocaleString('ko-KR')} |
 | 품질 CSV 바이트 | ${qualityFile.bytes.toLocaleString('ko-KR')} (UTF-8 BOM 포함) |
@@ -1189,11 +1193,209 @@ print("VERIFIED: all listed files match the manifest snapshot.")
 `;
 }
 
+function notebookSource(text) {
+  const lines = text.replace(/^\n/, '').replace(/\n$/, '').split('\n');
+  return lines.map((line, index) => index === lines.length - 1 ? line : `${line}\n`);
+}
+
+function buildExtractNotebook(result, manifest) {
+  const mainName = extractFilename(result);
+  const baseName = mainName.replace(/\.csv$/, '');
+  const variableIndex = result.dataset === 'cases' ? 8 : 6;
+  const firstVariable = result.filters.variable !== 'all'
+    ? result.filters.variable
+    : [...new Set(result.rows.map(row => row[variableIndex]).filter(Boolean))].sort()[0] || '';
+  const markdown = `# earthus Custom Extract 분석 시작점
+
+- 자료: \`${result.dataset}\`
+- 실제 포함 날짜: ${result.includedDates.join(', ')}
+- 달력상 누락 날짜: ${result.missingCalendarDates.length ? result.missingCalendarDates.join(', ') : '없음'}
+- 선택 CSV: \`${mainName}\`
+- manifest: \`${baseName}.manifest.json\`
+- 차트 변수: \`${firstVariable || '자료 없음'}\`
+
+이 노트북은 묶음에 들어 있는 CSV를 다시 읽어 표본 수와 통계를 계산합니다. 결측을 0으로
+대체하지 않으며, 사례 자료의 차이는 저장된 차이 열이 아니라 \`forecast - observation\`으로
+다시 계산합니다. 짧은 기간의 결과를 장기 모델 성능 순위로 해석하지 마세요.`;
+  const loadCode = `from pathlib import Path
+import csv
+import html
+import json
+import math
+import textwrap
+
+ROOT = Path.cwd()
+DATASET = ${JSON.stringify(result.dataset)}
+CSV_FILE = ${JSON.stringify(mainName)}
+MANIFEST_FILE = ${JSON.stringify(`${baseName}.manifest.json`)}
+SVG_FILE = ${JSON.stringify(`${baseName}.analysis.svg`)}
+CHART_VARIABLE = ${JSON.stringify(firstVariable)}
+
+with (ROOT / MANIFEST_FILE).open("r", encoding="utf-8") as handle:
+    manifest = json.load(handle)
+with (ROOT / CSV_FILE).open("r", encoding="utf-8-sig", newline="") as handle:
+    rows = list(csv.DictReader(handle))
+
+assert len(rows) == manifest["file"]["rows"], "manifest와 CSV 행 수가 다릅니다. verify.py를 먼저 실행하세요."
+print("dataset:", DATASET)
+print("range:", manifest["selection"]["dateFrom"], "→", manifest["selection"]["dateTo"])
+print("included dates:", manifest["selection"]["includedDateCount"])
+print("rows:", len(rows))
+print("source files:", len(manifest["provenance"]["sourceFiles"]))`;
+  const summaryCode = `from collections import defaultdict
+
+def number(value):
+    try:
+        parsed = float(value)
+        return parsed if math.isfinite(parsed) else None
+    except (TypeError, ValueError):
+        return None
+
+def metric_values(values):
+    n = len(values)
+    if not n:
+        return {"n": 0, "me": None, "mae": None, "rmse": None}
+    return {
+        "n": n,
+        "me": sum(values) / n,
+        "mae": sum(abs(value) for value in values) / n,
+        "rmse": math.sqrt(sum(value * value for value in values) / n),
+    }
+
+summary = []
+if DATASET == "cases":
+    groups = defaultdict(lambda: {"total": 0, "missing_observation": 0, "missing_forecast": 0, "differences": []})
+    for row in rows:
+        key = (row["model"], row["lead_hour"], row["variable"], row["unit"])
+        group = groups[key]
+        group["total"] += 1
+        observation = number(row["observation"])
+        forecast = number(row["forecast"])
+        if observation is None:
+            group["missing_observation"] += 1
+        if forecast is None:
+            group["missing_forecast"] += 1
+        if observation is not None and forecast is not None:
+            group["differences"].append(forecast - observation)
+    for (model, lead, variable, unit), group in sorted(groups.items()):
+        summary.append({"model": model, "lead_hour": lead, "variable": variable, "unit": unit,
+                        "total_rows": group["total"], "missing_observation": group["missing_observation"],
+                        "missing_forecast": group["missing_forecast"], **metric_values(group["differences"])})
+    print("model\tlead\tvariable\tunit\ttotal\tn\tmissing_obs\tmissing_fc\tME\tMAE\tRMSE")
+    for item in summary:
+        print(item["model"], item["lead_hour"], item["variable"], item["unit"],
+              item["total_rows"], item["n"], item["missing_observation"], item["missing_forecast"],
+              *("" if item[key] is None else f'{item[key]:.3f}' for key in ("me", "mae", "rmse")), sep="\t")
+else:
+    groups = defaultdict(lambda: {"total": 0, "observed": 0, "values": []})
+    for row in rows:
+        key = (row["variable"], row["unit"])
+        group = groups[key]
+        group["total"] += 1
+        if row["value"] != "":
+            group["observed"] += 1
+        parsed = number(row["value"])
+        if parsed is not None:
+            group["values"].append(parsed)
+    for (variable, unit), group in sorted(groups.items()):
+        values = group["values"]
+        missing = group["total"] - group["observed"]
+        summary.append({"variable": variable, "unit": unit, "total_rows": group["total"],
+                        "observed_n": group["observed"], "numeric_n": len(values), "missing_n": missing,
+                        "missing_pct": missing / group["total"] * 100 if group["total"] else None,
+                        "min": min(values) if values else None, "max": max(values) if values else None,
+                        "mean": sum(values) / len(values) if values else None})
+    print("variable\tunit\ttotal\tobserved_n\tnumeric_n\tmissing_n\tmissing_pct\tmin\tmax\tmean")
+    for item in summary:
+        values = [item[key] for key in ("missing_pct", "min", "max", "mean")]
+        print(item["variable"], item["unit"], item["total_rows"], item["observed_n"], item["numeric_n"],
+              item["missing_n"], *("" if value is None else f'{value:.3f}' for value in values), sep="\t")`;
+  const chartCode = `if DATASET == "cases":
+    chart = [item for item in summary if item["variable"] == CHART_VARIABLE and item["mae"] is not None]
+    chart = [{"label": f'{item["model"]} / {item["lead_hour"]}h', "value": item["mae"],
+              "n": item["n"], "unit": item["unit"]} for item in chart]
+    title = f"{CHART_VARIABLE} MAE — forecast minus observation"
+    warning = "짧은 범위의 표본은 장기 모델 성능 순위가 아닙니다."
+    value_label = lambda item: f'{item["value"]:.3f} {item["unit"]} · n={item["n"]}'
+else:
+    chart = [{"label": f'{item["variable"]} ({item["unit"]})', "value": item["missing_pct"],
+              "n": item["observed_n"], "unit": "%"} for item in summary if item["missing_pct"] is not None]
+    title = "ASOS variable missing rate"
+    warning = "문자열 관측은 observed_n에는 포함하고 numeric_n과 분리합니다."
+    value_label = lambda item: f'{item["value"]:.3f}% missing · observed_n={item["n"]}'
+
+if not chart:
+    raise RuntimeError("선택 자료에서 차트로 그릴 유효값이 없습니다.")
+
+width = 960
+left = 260
+right = 250
+row_height = 34
+source = manifest["provenance"]["source"] or "출처 없음"
+source_lines = textwrap.wrap(source, width=110) or ["출처 없음"]
+height = 150 + row_height * len(chart) + 24 * len(source_lines) + 56
+maximum = max(item["value"] for item in chart) or 1
+plot_width = width - left - right
+parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}">',
+         '<rect width="100%" height="100%" fill="#0b0c0f"/>',
+         f'<text x="32" y="42" fill="#e9e9ec" font-size="24" font-family="sans-serif">{html.escape(title)}</text>',
+         f'<text x="32" y="70" fill="#9da1ad" font-size="13" font-family="monospace">'
+         f'{html.escape(manifest["selection"]["dateFrom"])} → {html.escape(manifest["selection"]["dateTo"])} · '
+         f'actual dates {manifest["selection"]["includedDateCount"]} · source files {len(manifest["provenance"]["sourceFiles"])}</text>']
+for index, item in enumerate(chart):
+    y = 112 + index * row_height
+    bar_width = item["value"] / maximum * plot_width
+    parts.extend([
+        f'<text x="32" y="{y + 16}" fill="#e9e9ec" font-size="12" font-family="monospace">{html.escape(item["label"])}</text>',
+        f'<rect x="{left}" y="{y}" width="{bar_width:.2f}" height="20" rx="3" fill="#b6a4ff"/>',
+        f'<text x="{left + bar_width + 8:.2f}" y="{y + 15}" fill="#e9e9ec" font-size="10" font-family="monospace">{html.escape(value_label(item))}</text>',
+    ])
+footer_y = 126 + row_height * len(chart)
+parts.append(f'<text x="32" y="{footer_y}" fill="#efb879" font-size="12" font-family="sans-serif">{html.escape(warning)}</text>')
+for index, line in enumerate(source_lines):
+    parts.append(f'<text x="32" y="{footer_y + 28 + index * 20}" fill="#78d5ba" font-size="11" font-family="monospace">source: {html.escape(line)}</text>')
+parts.append('</svg>')
+svg = "\\n".join(parts)
+(ROOT / SVG_FILE).write_text(svg + "\\n", encoding="utf-8")
+print("saved:", SVG_FILE)
+
+try:
+    from IPython.display import SVG, display
+    display(SVG(svg))
+except ImportError:
+    print("SVG 미리보기는 Jupyter에서 표시됩니다.")`;
+  const codeCell = source => ({
+    cell_type: 'code', execution_count: null, metadata: {}, outputs: [], source: notebookSource(source),
+  });
+  return JSON.stringify({
+    cells: [
+      { cell_type: 'markdown', metadata: {}, source: notebookSource(markdown) },
+      codeCell(loadCode),
+      codeCell(summaryCode),
+      codeCell(chartCode),
+    ],
+    metadata: {
+      kernelspec: { display_name: 'Python 3', language: 'python', name: 'python3' },
+      language_info: { name: 'python', version: '3' },
+      earthus: { manifestSchema: manifest.schema, generatedAt: manifest.createdAt },
+    },
+    nbformat: 4,
+    nbformat_minor: 5,
+  }, null, 2) + '\n';
+}
+
 async function downloadExtractPython(result) {
   const manifest = await buildExtractManifest(result);
   const script = buildExtractPython(result, manifest);
   const filename = extractFilename(result).replace(/\.csv$/, '.verify.py');
   downloadText(filename, script, 'text/x-python;charset=utf-8');
+}
+
+async function downloadExtractNotebook(result) {
+  const manifest = await buildExtractManifest(result);
+  const notebook = buildExtractNotebook(result, manifest);
+  const filename = extractFilename(result).replace(/\.csv$/, '.analysis.ipynb');
+  downloadText(filename, notebook, 'application/x-ipynb+json;charset=utf-8');
 }
 
 async function buildExtractBundle(result) {
@@ -1213,6 +1415,7 @@ async function buildExtractBundle(result) {
     { name: `${baseName}.manifest.json`, content: JSON.stringify(manifest, null, 2) + '\n' },
     { name: `${baseName}.README.md`, content: buildExtractReadme(result, manifest) },
     { name: `${baseName}.verify.py`, content: buildExtractPython(result, manifest) },
+    { name: `${baseName}.analysis.ipynb`, content: buildExtractNotebook(result, manifest) },
   );
   return {
     filename: `${baseName}.reproducible.zip`,
@@ -1271,6 +1474,23 @@ function initExtract() {
     } catch (error) {
       $('#error').hidden = false;
       $('#error').textContent = `재현 묶음을 만들지 못했습니다. (${error.message})`;
+    } finally {
+      button.disabled = false;
+      button.textContent = original;
+    }
+  });
+  $('#downloadExtractNotebook').addEventListener('click', async event => {
+    const result = state.extractResult;
+    if (!result?.rows.length) return;
+    const button = event.currentTarget;
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = '분석 노트북 만드는 중…';
+    try {
+      await downloadExtractNotebook(result);
+    } catch (error) {
+      $('#error').hidden = false;
+      $('#error').textContent = `분석 노트북을 만들지 못했습니다. (${error.message})`;
     } finally {
       button.disabled = false;
       button.textContent = original;

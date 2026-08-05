@@ -123,7 +123,10 @@ export const imagery = {
   /** 새 레이어를 얹고 이전 것을 치운다 (깜빡임 없이 교체) */
   _swapCloudLayer(L) {
     // ⚠️ 새 구름 타일도 트루컬러 상태를 따라야 한다 (안 그러면 갱신될 때 다시 겹친다)
-    L.alpha = (this._cloudOn && !(this.truecolor && this.truecolor.show)) ? 1.0 : 0.0;
+    /* 타임라인 예보 보기 중엔 위성 구름을 옅게 — 위성은 실황이라 미래가 없다.
+       진하게 두면 '+48시간의 구름'으로 잘못 읽힌다. */
+    L.alpha = (this._cloudOn && !(this.truecolor && this.truecolor.show))
+      ? (this._fxDim ? 0.15 : 1.0) : 0.0;
     // ⚠️ show 도 같이 맞춘다 — alpha 0 만으로는 타일 요청이 안 멈춘다(_applyClouds 참고)
     L.show = this._cloudOn;
     const old = this.cloudLayers.slice();
@@ -625,6 +628,9 @@ export const imagery = {
    *
    * ⚠️ 확대해서 트루컬러가 물러나면(_d) 낮면 구름도 그만큼 되돌린다.
    *    안 그러면 확대했을 때 낮면만 구름이 사라진다. */
+  /** 예보 보기(타임라인) — 위성 구름 옅게/복귀 */
+  setFxDim(on) { this._fxDim = !!on; this._applyClouds(); },
+
   _applyClouds() {
     const tcOn = !!(this.truecolor && this.truecolor.show);
     const day = tcOn ? (this._d || 0) : 1.0;
@@ -632,7 +638,9 @@ export const imagery = {
       /* ⚠️ alpha 0 만으로는 부족하다 — 안 그릴 뿐 **타일은 계속 받는다.**
          show=false 라야 요청이 멈춘다. 통신과 텍스처 메모리가 여기서 갈린다. */
       L.show = this._cloudOn;
-      L.alpha = this._cloudOn ? 1.0 : 0.0;
+      /* 타임라인 예보 보기 중엔 옅게 — 위성 구름은 실황이라 미래가 없다.
+         진하게 두면 '+48시간의 구름'으로 잘못 읽힌다. (_swapCloudLayer 에도 같은 식) */
+      L.alpha = this._cloudOn ? (this._fxDim ? 0.15 : 1.0) : 0.0;
       L.dayAlpha = day;
       L.nightAlpha = 1.0;
     });

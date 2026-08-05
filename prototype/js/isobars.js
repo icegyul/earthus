@@ -129,6 +129,16 @@ export const isobars = {
   ds: null,
   _doc: null,
   _at: 0,
+  _on: false,
+  /* 타임라인 예보 보기 — null 이면 실황으로 복귀 (ui-timeline.js 가 부른다) */
+  _ovr: null,
+  async setOverride(step, meta) {
+    this._ovr = step
+      ? { nx: meta.nx, ny: meta.ny, lat0: meta.lat0, lon0: meta.lon0,
+          res: meta.res, mslp: step.mslp, min: step.min, max: step.max }
+      : null;
+    if (this._on) await this.set(true);
+  },
 
   _ensure() {
     if (!this.ds) {
@@ -152,8 +162,9 @@ export const isobars = {
 
   /** 켜기/끄기. ⚠️ 그리는 것은 자료가 바뀔 때 한 번뿐이다. */
   async set(on) {
+    this._on = !!on;
     if (!on) { this.clear(); return; }
-    const d = await this.load();
+    const d = this._ovr || await this.load();
     if (!d?.mslp) return;
     this.clear();
     const ds = this._ensure();

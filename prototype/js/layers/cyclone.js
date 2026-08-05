@@ -824,6 +824,7 @@ export const cyclones = {
     const ko = i18n.lang === 'ko';
     this.clearTrack();
     this._selected = s.id;
+    this._selStorm = s;   // 타임라인(setFxTime)이 쓴다
 
     const a = ALERT[s.alert] || ALERT.Green;
     const col = Cesium.Color.fromCssColorString(a.color);
@@ -941,9 +942,76 @@ export const cyclones = {
       });
 
     this._tracks[s.id] = made;
+    // 예보 타임라인을 연다 — 스크러버·플레이 버튼 (받은 지시)
+    import('../ui-timeline.js').then(m => m.fxTimeline.show(s)).catch(() => {});
+  },
+
+  /* ══ 타임라인 — 예보 시각의 기관별 위치 ═══════════════════════════
+     받은 지시: "타임라인 잡고 움직이면 그 시간대 위치 볼 수 있게,
+                플레이 버튼 누르면 시간대별로 움직임"
+     ⚠️ 기관 위치를 하나로 합치지 않는다. 반투명 원반을 기관 색으로 각자 그린다 —
+        겹치면 진해진다. 진한 곳 = 기관들이 대체로 동의하는 자리.
+     ⚠️ 원반 반지름은 통보문의 폭풍 범위(radiusFn) 값이다. 값이 없는 기관은
+        위치 점만 찍는다 — 그림용 상수로 채우지 않는다.
+     ⚠️ 스텝 시각은 발표 시각 + h 라 기관마다 어긋난다. stepDate 로 절대 시각을
+        만들어 "지금 + fxH" 와 맞춘다. 시각을 못 만들거나 예보가 그 시각까지
+        안 가면 그 기관은 안 그린다 — 연장하지 않는다. */
+  _fx: [],
+  setFxTime(fxH) {
+    this._fx.forEach(e => { try { this.ds.entities.remove(e); } catch (_) {} });
+    this._fx = [];
+    const s = this._selStorm;
+    if (fxH == null || !s || !this._selected) { power.animate(400); return; }
+    const AGC = { KMA: '#5ad1e8', JMA: '#f2a65a', NHC: '#c9a7ff', ECMWF: '#ff7ab6' };
+    const target = Date.now() + fxH * 3_600_000;
+    const off = official.get(s.name);
+    const eu = ecmwfTc.get(s.name);
+    const groups = [...(off?.agencies || []), ...(eu ? [eu] : [])];
+    groups.forEach(g => {
+      const issued = g.issue || null;
+      const steps = [{ _abs: Date.now(), lat: s.lat, lon: s.lon, stormArea: null },
+        ...(g.steps || [])
+          .filter(x => x.lat != null && x.lon != null)
+          .map(x => ({ ...x, _abs: stepDate(x, issued)?.getTime() }))
+          .filter(x => x._abs)]
+        .sort((x, y) => x._abs - y._abs);
+      let a = null, b = null;
+      for (const x of steps) {
+        if (x._abs <= target) a = x;
+        if (x._abs >= target) { b = x; break; }
+      }
+      if (!a || !b) return;
+      const t = b._abs === a._abs ? 0 : (target - a._abs) / (b._abs - a._abs);
+      const lat = a.lat + (b.lat - a.lat) * t;
+      const lon = a.lon + (b.lon - a.lon) * t;
+      const col = Cesium.Color.fromCssColorString(AGC[g.agency] || '#8ee6c8');
+      const rf = radiusFn((t < 0.5 ? a : b).stormArea);
+      const km = rf ? Math.max(rf(0), rf(90), rf(180), rf(270)) : null;
+      if (km) {
+        this._fx.push(this.ds.entities.add({
+          position: Cesium.Cartesian3.fromDegrees(lon, lat),
+          ellipse: {
+            semiMajorAxis: km * 1000, semiMinorAxis: km * 1000,
+            height: LIFT_AREA_M,
+            material: col.withAlpha(0.13),
+            outline: true, outlineColor: col.withAlpha(0.5), outlineWidth: 1,
+          },
+        }));
+      }
+      this._fx.push(this.ds.entities.add({
+        position: Cesium.Cartesian3.fromDegrees(lon, lat),
+        point: { pixelSize: 7, color: col,
+                 outlineColor: Cesium.Color.BLACK.withAlpha(0.6), outlineWidth: 1.5,
+                 disableDepthTestDistance: 900_000 },
+      }));
+    });
+    power.animate(500);
   },
 
   clearTrack() {
+    this.setFxTime(null);
+    this._selStorm = null;
+    import('../ui-timeline.js').then(m => m.fxTimeline.hide()).catch(() => {});
     Object.values(this._tracks).flat().forEach(e => {
       try { this.ds.entities.remove(e); } catch (_) {}
     });

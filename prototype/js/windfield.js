@@ -136,11 +136,22 @@ export const windField = {
   /** 예보 대상 날짜 (지점 현지 기준 대표 날짜) */
   get forecastDate() { return this.grid?.fcDate || null; },
 
+  /* 타임라인 예보 보기 — 지역(동아시아) 격자로 대신 분다. null 이면 실황.
+     ⚠️ 지역 격자는 경도로 안 감긴다 — 범위 밖이면 입자를 안 그린다.
+        예보 시각에 실황 바람을 그리는 것보다 빈 것이 정직하다. */
+  override: null,
+
   /** 격자에서 (lat,lon) 의 바람 — 양선형 보간 */
   sample(lat, lon) {
-    const g = this.grid;
+    const g = this.override || this.grid;
     if (!g) return null;
-    const fx = ((lon - g.lon0) / g.res + g.nx) % g.nx;
+    let fx;
+    if (this.override) {
+      fx = (lon - g.lon0) / g.res;
+      if (fx < 0 || fx > g.nx - 1) return null;       // 지역 격자 밖
+    } else {
+      fx = ((lon - g.lon0) / g.res + g.nx) % g.nx;
+    }
     const fy = (lat - g.lat0) / g.res;
     if (fy < 0 || fy > g.ny - 1) return null;         // 극지는 자료가 없다
 
@@ -151,8 +162,8 @@ export const windField = {
     const bl = (a, b, c, d) =>
       a * (1 - tx) * (1 - ty) + b * tx * (1 - ty) + c * (1 - tx) * ty + d * tx * ty;
 
-    const U = this.field === 'fc' ? g.fu : g.u;
-    const V = this.field === 'fc' ? g.fv : g.v;
+    const U = this.override ? g.u : (this.field === 'fc' ? g.fu : g.u);
+    const V = this.override ? g.v : (this.field === 'fc' ? g.fv : g.v);
     // ⚠️ 예보 격자가 없으면 지금 바람으로 대신 그리지 않는다 — 아무것도 안 그린다.
     if (!U || !V) return null;
     const a = U[at(x0, y0)], b = U[at(x1, y0)], c = U[at(x0, y1)], d = U[at(x1, y1)];

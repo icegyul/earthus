@@ -160,7 +160,21 @@ function readPoints(layerId, fmt) {
 
 const POINT_FMT = {
   wildfire: m => `${Math.round(m.data?._frp || 0).toLocaleString()} MW`,
-  quake:    m => (m.data?._mag != null ? `M ${m.data._mag}` : ''),
+  /* ⚠️ 왼쪽 label 이 이미 `M 6.3` 이다. 여기서 규모를 또 만들면
+     "M 6.3   M 6.3" 처럼 같은 값이 두 번 찍힌다. (감사 P1-8)
+     오른쪽에는 **위치와 발생 시각**을 적는다 — 그게 사람이 다음으로 궁금해하는 것이다. */
+  quake:    (m) => {
+    /* ⚠️ 실제 필드는 _time(밀리초)과 i18n.t.F.place 로 지역화된 키다.
+       하드코딩한 이름으로 읽으면 조용히 빈 값이 된다. */
+    const t = m.data?._time;
+    const when = t ? new Date(t) : null;
+    const hh = when && !isNaN(when)
+      ? `${when.getMonth() + 1}/${when.getDate()} `
+        + `${String(when.getHours()).padStart(2, '0')}:${String(when.getMinutes()).padStart(2, '0')}`
+      : '';
+    const place = m.data?.[i18n.t.F.place] || '';
+    return [place, hh].filter(Boolean).join(' · ') || (m.name || '');
+  },
   buoy:     m => m.name || '',
 };
 
@@ -305,11 +319,18 @@ export const ask = {
         : 'The view has moved there. Note that "no data" and "no event" are not the same thing.');
     } else {
       top3 = [...scoped].sort((a, b) => b.sort - a.sort).slice(0, 3);
+      /* ⚠️⚠️ **자료의 기간을 말한다.** (감사 P1-8)
+         "오늘 지진 몇 건?" 이라고 물어도 USGS 피드는 **최근 24시간 굴러가는 창**이지
+         자정부터의 오늘이 아니다. "지금 N건"이라고만 하면 질문의 '오늘'을 우리가
+         확인해 준 꼴이 된다 — 우리가 가진 것이 무엇인지 그대로 적는다. */
+      const WINDOW = { quake: ko ? '최근 24시간' : 'last 24 h',
+                       wildfire: ko ? '최근 24시간' : 'last 24 h' };
+      const win = WINDOW[layerId];    // ⚠️ p.layer 가 아니라 위에서 뽑아 둔 layerId 다
       lines.push(placeName
-        ? (ko ? `${placeName} 영역에 ${what} ${scoped.length}건이 있습니다.`
-              : `${scoped.length} in the ${placeName} area — ${what}.`)
-        : (ko ? `지금 ${what} ${scoped.length}건이 있습니다.`
-              : `${scoped.length} right now — ${what}.`));
+        ? (ko ? `${placeName} 영역에 ${what} ${scoped.length}건이 있습니다${win ? ` (${win} 자료)` : ''}.`
+              : `${scoped.length} in the ${placeName} area — ${what}${win ? ` (${win})` : ''}.`)
+        : (ko ? `${win ? `${win} 자료에 ` : '지금 '}${what} ${scoped.length}건이 있습니다.`
+              : `${scoped.length}${win ? ` in the ${win}` : ' right now'} — ${what}.`));
     }
 
     // ── 6. 아직 못 하는 것은 못 한다고 말한다 ──
@@ -342,7 +363,7 @@ export const ask = {
   examples() {
     return i18n.lang === 'ko'
       ? ['지금 태풍 어디야?', '스페인 산불 있어?', '동해 수온 어때?',
-         '오늘 지진 몇 건?', '일본 근처 부이 보여줘', '지금 오로라 볼 수 있어?']
+         '최근 24시간 지진 몇 건?', '일본 근처 부이 보여줘', '지금 오로라 볼 수 있어?']
       : ['Where are the storms?', 'Any wildfires in Spain?', 'Sea temperature near Korea?',
          'How many earthquakes today?', 'Show buoys near Japan', 'Any aurora right now?'];
   },

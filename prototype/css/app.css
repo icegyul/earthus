@@ -478,7 +478,15 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
   z-index:18; width:var(--mm-w); border-radius:14px 0 0 14px;
   background:rgba(10,14,20,.74); backdrop-filter:blur(26px);
   border:1px solid var(--line); border-right:0;
-  padding:8px 0; overflow:hidden;
+  padding:8px 0;
+  /* ⚠️⚠️ 가로 화면(844×390)에서 위아래가 통째로 잘렸다 — '지구'는 위로,
+     '설정'은 아래로 화면 밖이었고 overflow:hidden 이라 **스크롤도 안 됐다.**
+     (감사 P1-11) 가운데 정렬은 유지하되 화면을 넘지 않게 최대 높이를 주고,
+     넘치면 스스로 스크롤되게 한다. safe area 를 빼야 노치에 안 가린다. */
+  max-height:calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y:auto; overflow-x:hidden;
+  overscroll-behavior:contain;          /* 메뉴를 끝까지 밀어도 지구가 안 돌아간다 */
+  -webkit-overflow-scrolling:touch;
   transition:transform .42s cubic-bezier(.22,1,.36,1);
 }
 #menuMain.open{ transform:translateY(-50%) translateX(0); }
@@ -504,6 +512,7 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 .mm-sep{ height:1px; background:var(--line); margin:6px 12px; }
 
 /* ── 2단 : 지구 스타일 (1단 왼쪽으로) ── */
+/* 2단도 같은 이유로 최대 높이를 준다 (감사 P1-11) */
 #menuSub{
   position:fixed; right:var(--mm-w); top:50%;
   transform:translateY(-50%) translateX(calc(100% + var(--mm-w)));

@@ -46,6 +46,31 @@ export async function airports() {
   return loading;
 }
 
+/* ⚠️ 원본(OurAirports)은 **영문만** 준다. 그런데 화면 예시는 "예: 인천, ICN" 이라
+   한국어를 권하고 있었다 — 실제로 "인천"은 0건이었다. (감사 P1-7)
+   사용자에게 안 되는 입력을 권하지 않는다. 한국·일본·중화권과 한국인이 자주 찾는
+   노선만 별칭을 둔다.
+   ⚠️ 여기 없는 도시는 여전히 영문/코드로만 찾힌다 — 그래서 화면 예시도 함께 고쳤다. */
+const ALIAS = {
+  ICN: ['인천'], GMP: ['김포'], PUS: ['부산', '김해'], CJU: ['제주'], TAE: ['대구'],
+  CJJ: ['청주'], KWJ: ['광주'], RSU: ['여수'], USN: ['울산'], YNY: ['양양'],
+  NRT: ['도쿄', '나리타'], HND: ['도쿄', '하네다'], KIX: ['오사카', '간사이'],
+  ITM: ['오사카', '이타미'], CTS: ['삿포로', '치토세'], FUK: ['후쿠오카'],
+  OKA: ['오키나와', '나하'], NGO: ['나고야'],
+  PEK: ['베이징'], PKX: ['베이징'], PVG: ['상하이', '상해'], SHA: ['상하이', '상해'],
+  CAN: ['광저우'], HKG: ['홍콩'], TPE: ['타이베이', '대만'], MFM: ['마카오'],
+  BKK: ['방콕'], DMK: ['방콕'], SIN: ['싱가포르'], KUL: ['쿠알라룸푸르'],
+  MNL: ['마닐라'], CEB: ['세부'], DAD: ['다낭'], SGN: ['호치민'], HAN: ['하노이'],
+  DPS: ['발리', '덴파사르'], CXR: ['나트랑'], PQC: ['푸꾸옥'],
+  LAX: ['로스앤젤레스', 'LA'], JFK: ['뉴욕'], EWR: ['뉴욕'], SFO: ['샌프란시스코'],
+  SEA: ['시애틀'], HNL: ['호놀룰루', '하와이'], GUM: ['괌'], SPN: ['사이판'],
+  YVR: ['밴쿠버'], YYZ: ['토론토'],
+  LHR: ['런던'], CDG: ['파리'], FRA: ['프랑크푸르트'], MUC: ['뮌헨'],
+  FCO: ['로마'], MAD: ['마드리드'], BCN: ['바르셀로나'], AMS: ['암스테르담'],
+  IST: ['이스탄불'], DXB: ['두바이'], DOH: ['도하'],
+  SYD: ['시드니'], MEL: ['멜버른'], AKL: ['오클랜드'],
+};
+
 /** 공항 검색 — IATA 코드가 정확히 맞으면 최우선, 그다음 도시·이름 */
 export function search(list, q, limit = 8) {
   const s = String(q || '').trim().toLowerCase();
@@ -53,8 +78,12 @@ export function search(list, q, limit = 8) {
   const out = [];
   for (const a of list) {
     const iata = a.iata.toLowerCase();
+    const ko = ALIAS[a.iata];
     let score;
-    if (iata === s) score = 0;
+    // 한국어 별칭이 맞으면 코드 다음으로 높게 — "인천"을 치면 ICN 이 위에 온다
+    if (ko && ko.some(k => k === s)) score = 0.5;
+    else if (ko && ko.some(k => k.startsWith(s))) score = 1.5;
+    else if (iata === s) score = 0;
     else if (a.city.toLowerCase().startsWith(s)) score = 1;
     else if (a.name.toLowerCase().startsWith(s)) score = 2;
     else if (a.city.toLowerCase().includes(s)) score = 3;

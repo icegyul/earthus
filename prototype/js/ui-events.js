@@ -214,6 +214,7 @@ export const eventPanel = {
     if (!defs.some(([k]) => k === this.show)) this.show = defs[0][0];
     defs.forEach(([k, label]) => {
       const b = el('button', 'comm-tab' + (this.show === k ? ' on' : ''), label);
+      b.dataset.tab = k;          // ⚠️ 나중에 라벨을 고칠 때 글자로 찾지 않기 위해
       b.onclick = () => { this.show = k; this.render(); };
       tabs.appendChild(b);
     });
@@ -276,11 +277,13 @@ export const eventPanel = {
        ⚠️ 단, render() 를 다시 부르면 무한 재귀가 된다 — 라벨만 고쳐 넣는다. */
     const first = this._news == null;
     this._news = { count: j.count };
-    if (first) {
-      const tab = [...document.querySelectorAll('.comm-tab')]
-        .find(b => /지역 뉴스|Local news/.test(b.textContent));
-      if (tab) tab.textContent = ko ? `지역 뉴스 ${j.count}` : `Local news ${j.count}`;
-    }
+    /* ⚠️⚠️ 예전에는 탭을 **글자로** 찾았다(`/지역 뉴스|Local news/`). 그런데 탭 이름이
+       '뉴스'로 바뀌면서 아무것도 못 찾게 됐고, 라벨이 영원히 `뉴스 …` 로 남아
+       **다 불러온 뒤에도 로딩 중처럼** 보였다. (감사 P1-9)
+       → 화면 글자가 아니라 data-tab 키로 찾는다. 이름을 또 바꿔도 안 깨진다.
+       ⚠️ first 조건도 뺀다 — 갱신될 때마다 건수를 맞춰야 한다. */
+    const tab = document.querySelector('.comm-tab[data-tab="local"]');
+    if (tab) tab.textContent = ko ? `뉴스 ${j.count}` : `News ${j.count}`;
     body.removeChild(body.lastChild);
 
     const byRegion = j.byRegion || {};

@@ -74,18 +74,35 @@ function score(text, q, qCho) {
 /* ── 기능(메뉴) 목록 ───────────────────────────────────────────
    ⚠️ 여기 이름만 적고 **동작은 메뉴 버튼을 눌러서** 한다.
       같은 동작을 두 번 구현하면 한쪽만 고치는 날이 온다. */
-const ACTIONS = [
-  { act: 'sat',       ko: '위성',      en: 'Satellites',  hint: '지금 머리 위를 지나는 위성' },
-  { act: 'news',      ko: 'News',      en: 'News',        hint: '지구에서 지금 일어나는 일' },
-  { act: 'events',    ko: '이벤트',    en: 'Events',      hint: '경고·브리핑·확정 사건' },
-  { act: 'community', ko: 'LAB',       en: 'LAB',         hint: '오늘의 지구 · 자료 그래프' },
-  { act: 'ask',       ko: 'if',        en: 'if',          hint: '자료에 물어보기' },
-  { act: 'flight',    ko: '항공편',    en: 'Flights',     hint: '' },
-  { act: 'sky',       ko: '하늘',      en: 'Sky',         hint: '해·달·별' },
-  { act: 'locate',    ko: '내 위치',   en: 'My location', hint: '내가 있는 곳으로' },
-  { act: 'globe',     ko: '전지구로',  en: 'Whole Earth', hint: '멀리서 지구 전체' },
-  { act: 'settings',  ko: '설정',      en: 'Settings',    hint: '' },
-];
+/* ⚠️⚠️ **목록을 손으로 적지 않는다.** (감사 P1-6)
+   예전에는 여기 배열을 따로 두었는데, 메뉴에서 없어진 '이벤트'·'하늘'이 그대로 남아
+   **검색 결과를 눌러도 아무 일이 없었고**(누를 버튼이 없어 조용히 종료),
+   새로 생긴 '취미'는 아예 검색되지 않았다.
+   → 실제 메뉴 버튼(#menuMain [data-act])에서 그때그때 읽는다. 메뉴가 곧 목록이다.
+   ⚠️ 그래서 여는 것도 반드시 그 버튼을 누르는 방식이어야 한다 — 아래 실행부 참고. */
+const HINTS = {                       // 설명만 우리가 붙인다 (메뉴에는 없는 정보)
+  sat:      { ko: '지금 머리 위를 지나는 위성', en: 'Satellites passing overhead' },
+  news:     { ko: '지구에서 지금 일어나는 일',  en: "What's happening on Earth" },
+  community:{ ko: '오늘의 지구 · 자료 그래프',  en: 'Earth today · data graphs' },
+  ask:      { ko: '자료에 물어보기',            en: 'Ask the data' },
+  outdoor:  { ko: '철새 · 바닷새 · 바다거북',   en: 'Migratory birds, seabirds, turtles' },
+  locate:   { ko: '내가 있는 곳으로',           en: 'Go to my location' },
+  globe:    { ko: '멀리서 지구 전체',           en: 'Whole Earth' },
+};
+const EN_LABEL = {                    // 메뉴 라벨은 한국어라 영어만 따로
+  sat: 'Satellites', news: 'News', community: 'LAB', ask: 'if', flight: 'Flights',
+  outdoor: 'Outdoors', locate: 'My location', globe: 'Whole Earth', settings: 'Settings',
+};
+function liveActions() {
+  return [...document.querySelectorAll('#menuMain [data-act]')]
+    .filter(b => b.offsetParent !== null || !b.hidden)   // 숨긴 줄(관리자 등)은 뺀다
+    .map(b => {
+      const act = b.dataset.act;
+      const label = (b.querySelector('.mm-label')?.textContent || act).trim();
+      return { act, ko: label, en: EN_LABEL[act] || label,
+               hint: HINTS[act]?.[i18n.lang === 'ko' ? 'ko' : 'en'] || '' };
+    });
+}
 /* 2단을 여는 것(지구 스타일·Alert)은 data-open 이라 따로 둔다 */
 const OPENS = [
   { open: 'earth', ko: '지구 스타일', en: 'Earth style', hint: '바탕·기상·해양 레이어' },
@@ -217,8 +234,8 @@ export const search = {
     const qCho = isChosungOnly(qRaw.replace(/\s+/g, '')) ? norm(qRaw) : null;
     const hits = [];
 
-    // 기능
-    ACTIONS.forEach(a => {
+    // 기능 — 메뉴에서 그때그때 읽는다 (죽은 항목이 생기지 않는다)
+    liveActions().forEach(a => {
       const s = Math.max(score(a.ko, q, qCho), score(a.en, q, qCho));
       if (s > 0) hits.push({ s: s + 6, type: 'action', title: ko ? a.ko : a.en, sub: a.hint, ref: a });
     });
@@ -339,7 +356,14 @@ export const search = {
       ? `#menuMain [data-open="${h.ref.open}"]`
       : `#menuMain [data-act="${h.ref.act}"]`;
     const btn = document.querySelector(sel);
-    if (!btn) return;
+    /* ⚠️ 조용히 끝내지 않는다. 예전에는 여기서 return 만 해서 사용자에게는
+       "검색창만 닫히고 아무 일도 안 일어남"으로 보였다. (감사 P1-6) */
+    if (!btn) {
+      const { toast } = await import('./ui.js');
+      toast(i18n.lang === 'ko' ? '그 메뉴를 찾지 못했습니다.' : 'Menu item not found.');
+      console.warn('[search] 실행 대상 없음:', sel);
+      return;
+    }
     if (h.type === 'open') {
       /* 2단은 1단이 열려 있어야 보인다 — 손잡이를 먼저 연다 */
       const { layerBar } = await import('./layerbar.js');

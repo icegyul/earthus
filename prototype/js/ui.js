@@ -509,7 +509,11 @@ export const sheet = {
   close() {
     hideRestore();
     $('#sheet').classList.remove('down');
-    import('./layers/cyclone.js').then(({ cyclones }) => cyclones.clearTrack()).catch(() => {});
+    /* ⚠️ 태풍 진로선은 창을 닫아도 **지우지 않는다.**
+       받은 지적: "인포창 끄니깐 미국꺼 라인이 사라지네?" — 창을 닫는 건
+       글을 치우려는 것이지 지도를 치우려는 게 아니다. 선은
+       ① 태풍 밖을 탭하거나 ② 다른 것을 선택하거나 ③ 태풍 레이어를 끄면
+       접힌다 (①은 이미 "다른 거 보려니깐" 지적으로 만든 동작이다). */
     import('./layers/space.js').then(({ orbits }) => orbits.clearTrack()).catch(() => {}); $('#sheet').classList.remove('up'); clearForecast(); },
 };
 

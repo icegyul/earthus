@@ -189,18 +189,6 @@ export const orbits = {
     return this._catalog;
   },
 
-  /** TLE 텍스트(3줄 묶음) → 행 배열. S3 카탈로그와 같은 모양으로 맞춘다. */
-  parseTLE(txt) {
-    const lines = txt.split('\n').map(s => s.trimEnd()).filter(Boolean);
-    const out = [];
-    for (let i = 0; i + 2 < lines.length; i += 3) {
-      const [n, l1, l2] = [lines[i].trim(), lines[i + 1], lines[i + 2]];
-      if (!l1.startsWith('1 ') || !l2.startsWith('2 ')) continue;
-      out.push({ n, id: l1.slice(2, 7).trim(), l1, l2 });
-    }
-    return out;
-  },
-
   /* 폴백 — S3 카탈로그를 못 받을 때 CelesTrak 을 직접 부른다.
      ⚠️ 이건 어디까지나 비상용이다. CelesTrak 은 rate limit 이 있어서
         사용자가 늘면 막힌다(실측으로 걸렸다). 그리고 SATCAT 조인이 없어
@@ -210,13 +198,18 @@ export const orbits = {
     const seen = new Set();
     for (const name of (g.celestrak || [])) {
       try {
-        const r = await fetchT(`${API.TLE}?GROUP=${name}&FORMAT=tle`);
+        const r = await fetchT(`${API.GP}?GROUP=${name}&FORMAT=json`);
         if (!r.ok) continue;
         const txt = await r.text();
         // rate limit 에 걸리면 짧은 안내문이 200 으로 돌아온다
         if (txt.length < 500) { console.warn('[orbits] rate limit 의심:', name); continue; }
-        for (const row of this.parseTLE(txt)) {
-          if (seen.has(row.id)) continue;
+        let raw;
+        try { raw = JSON.parse(txt); } catch (_) { continue; }
+        if (!Array.isArray(raw)) continue;
+        for (const omm of raw) {
+          const id = String(omm?.NORAD_CAT_ID ?? '');
+          if (!id || seen.has(id)) continue;
+          const row = { n: String(omm.OBJECT_NAME || id), id, omm };
           seen.add(row.id);
           rows.push(row);
         }
@@ -227,16 +220,31 @@ export const orbits = {
 
   /** 카탈로그 행 → 화면에 쓸 위성 객체 */
   toSat(row, g) {
-    const rec = satellite.twoline2satrec(row.l1, row.l2);
+    /* 새 카탈로그는 6~9자리 번호를 담을 수 있는 OMM JSON이다.
+       배포 순서 사이에 남은 구형 S3 캐시도 읽히도록 TLE 폴백은 유지한다. */
+    const a = row.o;
+    const omm = row.omm || (Array.isArray(a) ? {
+      OBJECT_NAME: row.n, OBJECT_ID: row.oid, NORAD_CAT_ID: Number(row.id),
+      EPOCH: a[0], MEAN_MOTION: a[1], ECCENTRICITY: a[2], INCLINATION: a[3],
+      RA_OF_ASC_NODE: a[4], ARG_OF_PERICENTER: a[5], MEAN_ANOMALY: a[6],
+      EPHEMERIS_TYPE: a[7], CLASSIFICATION_TYPE: a[8], ELEMENT_SET_NO: a[9],
+      REV_AT_EPOCH: a[10], BSTAR: a[11], MEAN_MOTION_DOT: a[12], MEAN_MOTION_DDOT: a[13],
+    } : null);
+    const rec = omm ? satellite.json2satrec(omm)
+                    : satellite.twoline2satrec(row.l1, row.l2);
     if (!rec || rec.error !== 0) return null;
-    const raw = row.l1.slice(9, 17).trim();
-    const yy = +raw.slice(0, 2);
+    let objectId = row.oid || omm?.OBJECT_ID || null;
+    if (!objectId && row.l1) {
+      const raw = row.l1.slice(9, 17).trim();
+      const yy = +raw.slice(0, 2);
+      objectId = raw ? `${yy < 57 ? 2000 + yy : 1900 + yy}-${raw.slice(2)}` : null;
+    }
     return {
       name: row.n, rec,
       noradId: row.id,
-      objectId: raw ? `${yy < 57 ? 2000 + yy : 1900 + yy}-${raw.slice(2)}` : null,
+      objectId,
       group: g.id, color: g.color,
-      // SATCAT 조인 결과 — 무료 TLE 에는 없다. 폴백 경로에선 전부 undefined 다.
+      // SATCAT 조인 결과 — CelesTrak 직접 폴백 경로에선 전부 undefined 다.
       owner: row.own, ownerKo: row.ownKo,
       launchDate: row.ld, launchSite: row.ls,
       opsKo: row.opsKo, opsEn: row.opsEn, rcs: row.rcs,

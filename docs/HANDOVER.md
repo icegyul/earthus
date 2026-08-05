@@ -127,6 +127,10 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
   `events/typhoon-ecmwf.json` `events/seabird|migbird|ecobird.json`(생물)
   `wind/global.json`(입자) `wind/pressure-ea.json`(등압선) `wind/fx-ea.json`(예보 타임라인)
   `ocean/ibtracs-wp.json`(1980~ 태풍 1,477개 — 유사경로·통계용)
+- CelesTrak 궤도는 `celestrak/catalog.json.gz`에 하루 1회 캐시한다. 2026-08-06부터
+  TLE 대신 9자리 번호를 지원하는 OMM JSON·SATCAT JSON을 쓰며 `schemaVersion=2`다.
+  OMM 14개 원소는 전송량을 줄이려고 `o` 고정 순서 배열로 저장하고, 브라우저의
+  satellite.js 6.0.2 `json2satrec()`에서 다시 공식 필드명으로 복원한다.
 - **결측은 null 로 남긴다. 메우지 않는다.** 그리는 쪽이 빈 칸을 건너뛴다.
 
 ## 7. 계정·비밀 (⚠️ 값은 여기 없다 — 절대 문서·채팅에 적지 말 것)

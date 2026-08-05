@@ -104,8 +104,8 @@ const SRC = {
   news:     { ko: 'GDELT (우리가 신뢰도 채점)', en: 'GDELT, scored by us', every: 30 },
   poi:      { ko: '© OpenStreetMap contributors · ODbL 1.0',
               en: '© OpenStreetMap contributors · ODbL 1.0', every: 60 },
-  orbits:   { ko: 'CelesTrak GP + SATCAT · 하루 1회 캐시',
-              en: 'CelesTrak GP + SATCAT · cached daily', every: 1440 },
+  orbits:   { ko: 'CelesTrak OMM JSON + SATCAT · 하루 1회 캐시',
+              en: 'CelesTrak OMM JSON + SATCAT · cached daily', every: 1440 },
 };
 
 /* 어느 레이어의 시각을 보여줄까 — 위에 있는 것부터.
@@ -408,14 +408,6 @@ export const sourceNote = {
           /* ⚠️ 예정 시각이 지났으면 그대로 두지 않는다. 고장난 시계가 된다. */
           : (ko ? `다음 자료 기다리는 중 (${-mins}분 지연)` : `waiting for the next update (${-mins} min late)`));
       }
-    }
-
-    if (id === 'orbits') {
-      /* CelesTrak 공식 공지(2026-07): 6자리 신규 카탈로그 번호는 TLE에 들어오지 않는다.
-         현재 수집기는 아직 TLE이므로 "전체 활성 위성"이라고 말하면 틀리다. */
-      bits.push(ko
-        ? '<i>⚠️ 현재 TLE 형식은 2026년 7월 이후의 <b>6자리 신규 카탈로그 번호를 포함하지 않습니다.</b> CSV/JSON 형식으로 전환하기 전까지 새 위성이 일부 빠집니다.</i>'
-        : '<i>⚠️ The current TLE format <b>excludes new six-digit catalogue numbers</b> introduced after July 2026. Some new objects are missing until migration to CSV/JSON.</i>');
     }
 
     /* ── 수치 범례 ────────────────────────────────────────────────

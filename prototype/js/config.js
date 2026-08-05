@@ -80,10 +80,10 @@ export const API = {
   MARINE:      'https://marine-api.open-meteo.com/v1/marine',
   // 역지오코딩 — 탭한 지점의 국가·시도·도시. 키 불필요, 한국어 지원, CORS 열림.
   REVGEO:      'https://api.bigdatacloud.net/data/reverse-geocode-client',
-  // 위성 카탈로그 — AWS Lambda 가 하루 1회 CelesTrak + SATCAT 을 조인해 S3 에 올린 것.
-  // 브라우저가 CelesTrak 을 직접 부르면 rate limit 에 걸리고, SATCAT 은 6.7MB 라 매번 못 받는다.
+  // 위성 카탈로그 — AWS Lambda 가 하루 1회 CelesTrak OMM + SATCAT 을 조인해 S3 에 올린 것.
+  // 브라우저가 CelesTrak 을 직접 부르면 rate limit 에 걸리고, SATCAT 도 커서 매번 못 받는다.
   SAT_CATALOG: CDN + '/celestrak/catalog.json.gz',
-  TLE:         'https://celestrak.org/NORAD/elements/gp.php',   // 폴백용
+  GP:          'https://celestrak.org/NORAD/elements/gp.php',   // OMM JSON 폴백용
   LAUNCH:      'https://ll.thespacedevs.com/2.2.0/launch/upcoming/',
   KP:          'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json',
   AURORA:      'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json',

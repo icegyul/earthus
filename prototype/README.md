@@ -11,7 +11,7 @@ cd prototype && python3 devserver.py 8787
 
 → http://localhost:8787
 
-Cesium 1.143.0 과 satellite.js 5.0.0 은 CDN에서 받습니다. 빌드 과정 없음.
+Cesium 1.143.0 과 satellite.js 6.0.2 는 CDN에서 받습니다. 빌드 과정 없음.
 
 > ⚠️ **`python3 -m http.server` 를 쓰지 마세요.** ES 모듈이 브라우저에 캐시되어
 > 코드를 고쳐도 이전 버전이 계속 돕니다 (증상: 새 레이어가 안 보임, 고친 버그가 재현됨).
@@ -109,8 +109,10 @@ Cesium 의 `GeographicTilingScheme`(2→4→8→16)과 **어긋난다.**
 `imagery.updateForHeight()` 로 고도에 따라 nightAlpha 를 램프시킨다.
 멀리=리빙어스 룩(불빛만), 가까이=지도로 쓸 수 있게.
 
-### 4. satellite.js v5 에는 `json2satrec` 이 없다
-CelesTrak 을 `FORMAT=tle` 로 받아 `twoline2satrec(l1, l2)` 로 파싱.
+### 4. CelesTrak 궤도는 OMM JSON으로 받는다
+2026-07-11부터 6자리 신규 카탈로그 번호가 발급돼 TLE에는 새 위성이 들어오지 않는다.
+브라우저 전역 번들이 있는 satellite.js 6.0.2의 `json2satrec()`으로 파싱한다.
+v7은 ESM 전용이라 빌드 없는 현재 구조에서는 그대로 교체할 수 없다.
 
 ### 5. 구름 레이어는 미해결
 MODIS Cloud_Fraction 은 과학용 **위색** 산출물이라 그대로 얹으면 분홍/보라.

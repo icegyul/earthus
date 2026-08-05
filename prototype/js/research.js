@@ -2034,6 +2034,229 @@ function initTrace() {
   if (dates.length) loadTraceDay();
 }
 
+const DISTRIBUTION_HEADERS = [
+  'valid_kst', 'station_id', 'station_name', 'lat', 'lon', 'alt_m', 'model',
+  'lead_hour', 'variable', 'unit', 'observation', 'forecast',
+  'forecast_minus_observation', 'n', 'issued_kst', 'source', 'license', 'generated',
+];
+
+function linearQuantile(sorted, probability) {
+  if (!sorted.length) return null;
+  const position = (sorted.length - 1) * probability;
+  const lower = Math.floor(position);
+  const upper = Math.ceil(position);
+  if (lower === upper) return sorted[lower];
+  return sorted[lower] + (sorted[upper] - sorted[lower]) * (position - lower);
+}
+
+function equalWidthHistogram(values, binCount) {
+  if (!values.length) return { bins: [], minimum: null, maximum: null, width: null };
+  let minimum = Math.min(...values);
+  let maximum = Math.max(...values);
+  if (minimum === maximum) {
+    minimum -= .5;
+    maximum += .5;
+  }
+  const width = (maximum - minimum) / binCount;
+  const bins = Array.from({ length: binCount }, (_, index) => ({
+    from: minimum + width * index,
+    to: minimum + width * (index + 1),
+    count: 0,
+  }));
+  values.forEach(value => {
+    const index = Math.min(binCount - 1, Math.max(0, Math.floor((value - minimum) / width)));
+    bins[index].count += 1;
+  });
+  return { bins, minimum, maximum, width };
+}
+
+function buildDistributionResult(day, model, lead, variable, binCount = 15) {
+  const leadKey = `${lead}h`;
+  const rows = [];
+  Object.entries(day.hours || {}).sort(([left], [right]) => left.localeCompare(right, 'en'))
+    .forEach(([valid, hour]) => {
+      (hour.cases || []).forEach(item => {
+        const stationId = String(item.stationId);
+        const meta = day.stationMeta?.[stationId] || {};
+        const observation = item.observation?.[variable];
+        const forecast = item.forecasts?.[model]?.[leadKey]?.[variable];
+        const paired = finite(observation) && finite(forecast);
+        rows.push([
+          valid, stationId, meta.name, meta.lat, meta.lon, meta.alt, model, Number(lead),
+          variable, variableInfo(variable).unit, observation, forecast,
+          paired ? rounded(Number(forecast) - Number(observation)) : null, paired ? 1 : 0,
+          hour.issues?.[leadKey] ? formatIssue(hour.issues[leadKey]) : '',
+          day.source, day.license, day.generated,
+        ]);
+      });
+    });
+  const errors = rows.map(row => row[12]).filter(finite).map(Number).sort((left, right) => left - right);
+  const n = errors.length;
+  const mean = n ? errors.reduce((sum, value) => sum + value, 0) / n : null;
+  const stats = {
+    totalRows: rows.length,
+    n,
+    missingObservation: rows.filter(row => !finite(row[10])).length,
+    missingForecast: rows.filter(row => !finite(row[11])).length,
+    min: n ? errors[0] : null,
+    p10: linearQuantile(errors, .1),
+    p25: linearQuantile(errors, .25),
+    median: linearQuantile(errors, .5),
+    p75: linearQuantile(errors, .75),
+    p90: linearQuantile(errors, .9),
+    max: n ? errors.at(-1) : null,
+    me: mean,
+    mae: n ? errors.reduce((sum, value) => sum + Math.abs(value), 0) / n : null,
+    rmse: n ? Math.sqrt(errors.reduce((sum, value) => sum + value ** 2, 0) / n) : null,
+  };
+  return {
+    date: day.date,
+    model,
+    lead: Number(lead),
+    variable,
+    unit: variableInfo(variable).unit,
+    binCount: Number(binCount),
+    headers: DISTRIBUTION_HEADERS,
+    rows,
+    errors,
+    stats,
+    histogram: equalWidthHistogram(errors, Number(binCount)),
+    source: day.source,
+    license: day.license,
+    generated: day.generated,
+  };
+}
+
+function distributionFilename(result, extension) {
+  const compact = value => String(value || 'none').replace(/[^0-9a-z_-]+/gi, '-');
+  return `earthus-error-distribution-${compact(result.date)}-${compact(result.model)}-${compact(result.lead)}h-${compact(result.variable)}-${result.binCount}bins.${extension}`;
+}
+
+function distributionSvgMarkup(result) {
+  const { bins, minimum, maximum } = result.histogram;
+  if (!bins.length) return '';
+  const width = 900;
+  const sourceLines = svgLines(result.source, 112);
+  const height = 500 + sourceLines.length * 18;
+  const plot = { left: 68, right: 30, top: 154, bottom: 348 };
+  const plotWidth = width - plot.left - plot.right;
+  const plotHeight = plot.bottom - plot.top;
+  const maximumCount = Math.max(1, ...bins.map(bin => bin.count));
+  const barStep = plotWidth / bins.length;
+  const barWidth = Math.max(1, barStep - 2);
+  const x = value => plot.left + (value - minimum) / (maximum - minimum) * plotWidth;
+  const y = count => plot.bottom - count / maximumCount * plotHeight;
+  const stat = value => finite(value) ? Number(value).toFixed(3) : 'NA';
+  const chunks = [
+    `<svg id="distributionSvg" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="distributionTitle distributionDesc" xmlns="http://www.w3.org/2000/svg">`,
+    `<title id="distributionTitle">${html(result.date)} ${html(modelName(result.model))} ${html(result.lead)}시간 ${html(variableInfo(result.variable).name)} 오차 분포</title>`,
+    `<desc id="distributionDesc">forecast minus observation 개별 표본의 ${bins.length}개 등간격 히스토그램. n과 결측, 분위수를 함께 표시.</desc>`,
+    `<rect width="${width}" height="${height}" fill="#f7f7f4"/>`,
+    `<text x="34" y="38" fill="#15171c" font-size="23" font-family="sans-serif" font-weight="700">${html(modelName(result.model))} ${html(result.lead)}h · ${html(variableInfo(result.variable).name)} 오차 분포</text>`,
+    `<text x="34" y="62" fill="#5d626c" font-size="11" font-family="monospace">${html(result.date)} · forecast − observation (${html(result.unit)}) · equal-width ${bins.length} bins</text>`,
+    `<text x="34" y="91" fill="#30343b" font-size="11" font-family="monospace">n ${result.stats.n}/${result.stats.totalRows} · missing obs ${result.stats.missingObservation} · missing forecast ${result.stats.missingForecast}</text>`,
+    `<text x="34" y="116" fill="#5f3dc4" font-size="11" font-family="monospace">ME ${stat(result.stats.me)} · median ${stat(result.stats.median)} · MAE ${stat(result.stats.mae)} · RMSE ${stat(result.stats.rmse)} · p10 ${stat(result.stats.p10)} · p90 ${stat(result.stats.p90)}</text>`,
+  ];
+  for (let tick = 0; tick <= 4; tick += 1) {
+    const count = maximumCount * tick / 4;
+    const position = y(count);
+    chunks.push(`<line x1="${plot.left}" y1="${position}" x2="${width - plot.right}" y2="${position}" stroke="#d5d7db"/>`);
+    chunks.push(`<text x="${plot.left - 8}" y="${position + 4}" text-anchor="end" fill="#676c75" font-size="9" font-family="monospace">${Math.round(count)}</text>`);
+  }
+  bins.forEach((bin, index) => {
+    const barX = plot.left + index * barStep + 1;
+    const barY = y(bin.count);
+    const percentage = result.stats.n ? bin.count / result.stats.n * 100 : 0;
+    chunks.push(`<rect x="${barX.toFixed(2)}" y="${barY.toFixed(2)}" width="${barWidth.toFixed(2)}" height="${Math.max(0, plot.bottom - barY).toFixed(2)}" fill="#7059c7"><title>${bin.from.toFixed(3)} ≤ error ${index === bins.length - 1 ? '≤' : '&lt;'} ${bin.to.toFixed(3)} ${html(result.unit)} · count ${bin.count} · ${percentage.toFixed(2)}%</title></rect>`);
+  });
+  if (minimum <= 0 && maximum >= 0) {
+    chunks.push(`<line x1="${x(0)}" y1="${plot.top}" x2="${x(0)}" y2="${plot.bottom}" stroke="#d97706" stroke-width="2"/>`);
+    chunks.push(`<text x="${x(0) + 5}" y="${plot.top + 12}" fill="#a45b08" font-size="9" font-family="monospace">zero error</text>`);
+  }
+  const labelStep = Math.max(1, Math.ceil(bins.length / 7));
+  bins.forEach((bin, index) => {
+    if (index % labelStep && index !== bins.length - 1) return;
+    chunks.push(`<text x="${plot.left + index * barStep}" y="370" text-anchor="middle" fill="#565b65" font-size="9" font-family="monospace">${bin.from.toFixed(2)}</text>`);
+  });
+  chunks.push(`<text x="${width - plot.right}" y="370" text-anchor="end" fill="#565b65" font-size="9" font-family="monospace">${maximum.toFixed(2)} ${html(result.unit)}</text>`);
+  chunks.push(`<text x="34" y="406" fill="#a45b08" font-size="11" font-family="sans-serif">한 날짜의 분포는 장기 모델 성능 순위가 아닙니다. 결측은 0으로 넣지 않았습니다.</text>`);
+  chunks.push(`<text x="34" y="428" fill="#5d626c" font-size="10" font-family="monospace">quantile: linear interpolation at (n−1)×p · last histogram edge inclusive</text>`);
+  sourceLines.forEach((line, index) => chunks.push(`<text x="34" y="${454 + index * 18}" fill="#087f5b" font-size="10" font-family="monospace">source: ${html(line)}</text>`));
+  chunks.push(`<text x="34" y="${466 + sourceLines.length * 18}" fill="#6b7079" font-size="10" font-family="monospace">source generated: ${html(result.generated)} · license: ${html(result.license)}</text>`);
+  chunks.push('</svg>');
+  return chunks.join('');
+}
+
+function refillDistributionControls(day) {
+  const previous = {
+    model: $('#distributionModel').value,
+    lead: $('#distributionLead').value,
+    variable: $('#distributionVariable').value,
+  };
+  $('#distributionModel').innerHTML = (day.models || []).map(model => `<option value="${html(model)}">${html(modelName(model))}</option>`).join('');
+  $('#distributionLead').innerHTML = (day.leadsHours || []).map(lead => `<option value="${html(lead)}">${html(lead)}시간</option>`).join('');
+  $('#distributionVariable').innerHTML = (day.vars || []).map(variable => `<option value="${html(variable)}">${html(variableInfo(variable).name)} (${html(variableInfo(variable).unit)})</option>`).join('');
+  setSelectValue('#distributionModel', previous.model);
+  setSelectValue('#distributionLead', previous.lead);
+  setSelectValue('#distributionVariable', previous.variable);
+}
+
+function renderDistribution() {
+  const day = state.distributionDay;
+  if (!day) return;
+  const result = buildDistributionResult(
+    day,
+    $('#distributionModel').value,
+    $('#distributionLead').value,
+    $('#distributionVariable').value,
+    Number($('#distributionBins').value),
+  );
+  const markup = distributionSvgMarkup(result);
+  state.distributionResult = result;
+  $('.distribution-canvas').innerHTML = markup || '<p class="figure-empty">선택 조건에 유효한 관측·예보 쌍이 없습니다.</p>';
+  $('#downloadDistributionCsv').disabled = !result.rows.length;
+  $('#downloadDistributionSvg').disabled = !markup;
+  $('#distributionWarning').textContent = `${result.date} · ${modelName(result.model)} ${result.lead}시간 · ${variableInfo(result.variable).name} · 유효 n=${result.stats.n}/${result.stats.totalRows} · ${result.binCount}구간`;
+}
+
+async function loadDistributionDay() {
+  const date = $('#distributionDate').value;
+  $('#downloadDistributionCsv').disabled = true;
+  $('#downloadDistributionSvg').disabled = true;
+  $('#distributionWarning').textContent = `${date || '날짜 없음'} 실제 공개 사례를 불러오는 중입니다.`;
+  try {
+    const day = state.extractCache.cases[date] || await json(state.caseIndex.dates[date].path);
+    state.extractCache.cases[date] = day;
+    state.distributionDay = day;
+    refillDistributionControls(day);
+    renderDistribution();
+  } catch (error) {
+    state.distributionDay = null;
+    $('.distribution-canvas').innerHTML = `<p class="figure-empty">사례 파일을 읽지 못했습니다. (${html(error.message)})</p>`;
+    $('#distributionWarning').textContent = '실제 사례를 읽지 못해 분포를 만들지 않았습니다.';
+  }
+}
+
+function initDistribution() {
+  const dates = Object.keys(state.caseIndex?.dates || {}).sort();
+  $('#distributionDate').innerHTML = dates.map(date => `<option value="${html(date)}">${html(date)}</option>`).join('');
+  if (dates.length) $('#distributionDate').value = dates.at(-1);
+  $('#distributionDate').addEventListener('change', loadDistributionDay);
+  ['#distributionModel', '#distributionLead', '#distributionVariable', '#distributionBins']
+    .forEach(selector => $(selector).addEventListener('change', renderDistribution));
+  $('#downloadDistributionCsv').addEventListener('click', () => {
+    const result = state.distributionResult;
+    if (!result?.rows.length) return;
+    download(distributionFilename(result, 'csv'), result.headers, result.rows);
+  });
+  $('#downloadDistributionSvg').addEventListener('click', () => {
+    const result = state.distributionResult;
+    if (!result || !distributionSvgMarkup(result)) return;
+    downloadText(distributionFilename(result, 'svg'), `${distributionSvgMarkup(result)}\n`, 'image/svg+xml;charset=utf-8');
+  });
+  if (dates.length) loadDistributionDay();
+}
+
 const FIGURE_METRICS = {
   mae: { name: 'MAE', description: 'Mean absolute error' },
   me: { name: 'ME', description: 'Mean forecast minus observation' },
@@ -2287,6 +2510,7 @@ async function boot() {
     renderPacks();
     initExtract();
     initTrace();
+    initDistribution();
     initFigure();
     initWorksheet();
   } catch (error) {

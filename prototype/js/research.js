@@ -308,6 +308,124 @@ function renderPacks() {
   $('#generated').textContent = `최신 생성 · ${state.daily.generated} · CSV는 브라우저에서 현재 공개 JSON을 변환`;
 }
 
+const FIGURE_METRICS = {
+  mae: { name: 'MAE', description: 'Mean absolute error' },
+  me: { name: 'ME', description: 'Mean forecast minus observation' },
+  rmse: { name: 'RMSE', description: 'Root mean square error' },
+};
+
+function figureRecords(date, variable, metric) {
+  return Object.entries(state.daily.days?.[date] || {}).flatMap(([key, values]) => {
+    const [model, recordVariable, lead] = key.split('|');
+    if (recordVariable !== variable || !finite(values?.[metric])) return [];
+    const leadHours = Number.parseFloat(lead);
+    return [{ model, lead: Number.isFinite(leadHours) ? leadHours : lead, value: Number(values[metric]), n: values.n }];
+  }).sort((left, right) => {
+    const modelOrder = modelName(left.model).localeCompare(modelName(right.model), 'en');
+    return modelOrder || Number(left.lead) - Number(right.lead);
+  });
+}
+
+function svgLines(value, maxLength = 105) {
+  const words = String(value || 'Source unavailable').split(/\s+/);
+  const lines = [''];
+  words.forEach(word => {
+    const current = lines.at(-1);
+    if (current && `${current} ${word}`.length > maxLength) lines.push(word);
+    else lines[lines.length - 1] = current ? `${current} ${word}` : word;
+  });
+  return lines.slice(0, 2);
+}
+
+function figureSvgMarkup(records, context) {
+  const { date, variable, metric, source, generated } = context;
+  const info = variableInfo(variable);
+  const metricInfo = FIGURE_METRICS[metric] || FIGURE_METRICS.mae;
+  const values = records.map(record => record.value);
+  let minimum = Math.min(0, ...values);
+  let maximum = Math.max(0, ...values);
+  if (minimum === maximum) maximum = minimum + 1;
+  const padding = (maximum - minimum) * .08;
+  minimum = minimum < 0 ? minimum - padding : 0;
+  maximum += padding;
+
+  const plot = { left: 74, right: 28, top: 104, bottom: 329 };
+  const width = 860;
+  const plotWidth = width - plot.left - plot.right;
+  const plotHeight = plot.bottom - plot.top;
+  const y = value => plot.bottom - ((value - minimum) / (maximum - minimum)) * plotHeight;
+  const zeroY = y(0);
+  const step = plotWidth / Math.max(records.length, 1);
+  const barWidth = Math.min(86, step * .56);
+  const ticks = Array.from({ length: 5 }, (_, index) => minimum + (maximum - minimum) * index / 4).reverse();
+  const sourceLines = svgLines(`Source ${source}`);
+  const palette = { gfs_seamless: '#3b8f79', ecmwf_ifs025: '#7059c7' };
+  const title = `${date} ${info.name} ${metricInfo.name}`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 470" role="img" aria-labelledby="figureTitle figureDesc">
+    <title id="figureTitle">${html(title)} forecast observation verification chart</title>
+    <desc id="figureDesc">${html(metricInfo.description)}. Each bar is a model and lead-time pair. Sample size n is shown below each bar.</desc>
+    <rect width="860" height="470" fill="#f7f7f4"/>
+    <text x="38" y="38" fill="#6b5abd" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" font-weight="700" letter-spacing="1.5">EARTHUS / FORECAST VERIFICATION</text>
+    <text x="38" y="72" fill="#17191c" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="25" font-weight="650">${html(title)} <tspan fill="#646a73" font-size="15" font-weight="500">(${html(info.unit)})</tspan></text>
+    <text x="822" y="40" fill="#646a73" text-anchor="end" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9">${html(metricInfo.description)}</text>
+    ${ticks.map(tick => {
+      const tickY = y(tick);
+      return `<line x1="${plot.left}" y1="${tickY.toFixed(2)}" x2="${width - plot.right}" y2="${tickY.toFixed(2)}" stroke="#d7d8d3" stroke-width="1"/><text x="${plot.left - 10}" y="${(tickY + 3).toFixed(2)}" fill="#6b7078" text-anchor="end" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9">${html(displayNumber(tick))}</text>`;
+    }).join('')}
+    <line x1="${plot.left}" y1="${zeroY.toFixed(2)}" x2="${width - plot.right}" y2="${zeroY.toFixed(2)}" stroke="#32363b" stroke-width="1.5"/>
+    ${records.map((record, index) => {
+      const x = plot.left + step * index + (step - barWidth) / 2;
+      const valueY = y(record.value);
+      const top = Math.min(valueY, zeroY);
+      const height = Math.max(1.5, Math.abs(zeroY - valueY));
+      const labelY = record.value >= 0 ? top - 8 : top + height + 15;
+      return `<g><rect x="${x.toFixed(2)}" y="${top.toFixed(2)}" width="${barWidth.toFixed(2)}" height="${height.toFixed(2)}" rx="3" fill="${palette[record.model] || '#65717d'}" opacity="${Number(record.lead) === 24 ? '1' : '.68'}"/><text x="${(x + barWidth / 2).toFixed(2)}" y="${labelY.toFixed(2)}" fill="#202328" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" font-weight="700">${html(displayNumber(record.value))}</text><text x="${(x + barWidth / 2).toFixed(2)}" y="350" fill="#202328" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="650">${html(modelName(record.model))}</text><text x="${(x + barWidth / 2).toFixed(2)}" y="366" fill="#6b7078" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9">${html(record.lead)}h | n=${html(record.n)}</text></g>`;
+    }).join('')}
+    <line x1="38" y1="388" x2="822" y2="388" stroke="#c9cbc7"/>
+    ${sourceLines.map((line, index) => `<text x="38" y="${407 + index * 13}" fill="#555b63" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5">${html(line)}</text>`).join('')}
+    <text x="38" y="445" fill="#555b63" font-family="ui-monospace, SFMono-Regular, monospace" font-size="8.5">Generated ${html(generated || 'unavailable')} | period ${html(date)} | unit ${html(info.unit)}</text>
+    <text x="822" y="445" fill="#8a4d20" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="700">One-day samples are not a long-term model ranking.</text>
+  </svg>`;
+}
+
+function renderFigure() {
+  const date = $('#figureDate').value;
+  const variable = $('#figureVariable').value;
+  const metric = $('#figureMetric').value;
+  const records = figureRecords(date, variable, metric);
+  const canvas = $('.figure-canvas');
+  const button = $('#downloadFigure');
+  if (!records.length) {
+    canvas.innerHTML = '<p class="figure-empty">No records match this date, variable, and metric.</p>';
+    button.disabled = true;
+    return;
+  }
+  const markup = figureSvgMarkup(records, {
+    date, variable, metric, source: state.daily.source, generated: state.daily.generated,
+  });
+  canvas.innerHTML = markup;
+  button.disabled = false;
+  button.dataset.filename = `earthus-verify-${date}-${variable}-${metric}.svg`;
+  $('#figureWarning').textContent = `${date} | ${variableInfo(variable).name} | ${FIGURE_METRICS[metric].name} | ${records.length} model-lead samples. `
+    + '\uD55C \uB0A0\uC758 \uD45C\uBCF8\uC740 \uC7A5\uAE30 \uC131\uB2A5 \uC21C\uC704\uAC00 \uC544\uB2D9\uB2C8\uB2E4.';
+}
+
+function initFigure() {
+  const dates = Object.keys(state.daily.days || {}).sort();
+  const dateSelect = $('#figureDate');
+  dateSelect.innerHTML = dates.map(date => `<option value="${html(date)}">${html(date)}</option>`).join('');
+  if (dates.length) dateSelect.value = dates.at(-1);
+  ['#figureDate', '#figureVariable', '#figureMetric'].forEach(selector =>
+    $(selector).addEventListener('change', renderFigure));
+  $('#downloadFigure').addEventListener('click', event => {
+    const svg = $('.figure-canvas svg');
+    if (!svg) return;
+    downloadText(event.currentTarget.dataset.filename, `${svg.outerHTML}\n`, 'image/svg+xml;charset=utf-8');
+  });
+  renderFigure();
+}
+
 function formatTime(value) {
   return value ? `${String(value).replace('T', ' ')} KST` : '자료 없음';
 }
@@ -441,6 +559,7 @@ async function boot() {
       loadLatest(state.caseIndex), loadLatest(state.stationIndex),
     ]);
     renderPacks();
+    initFigure();
     initWorksheet();
   } catch (error) {
     $('#error').hidden = false;

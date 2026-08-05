@@ -115,7 +115,7 @@ main { width: min(1100px, calc(100% - 36px)); margin: auto; padding: 82px 0; }
   cursor: pointer;
 }
 .pack button:disabled { border-color: var(--line); background: transparent; color: var(--fog); cursor: not-allowed; }
-.dictionary, .lesson, .worksheet-builder {
+.dictionary, .lesson, .figure-builder, .worksheet-builder {
   display: grid;
   grid-template-columns: 240px 1fr;
   gap: 36px;
@@ -131,6 +131,47 @@ h2 { margin: 7px 0; font-size: 32px; font-weight: 500; letter-spacing: -.04em; }
 .lesson ol { margin: 0; padding: 0; list-style: none; counter-reset: q; }
 .lesson li { counter-increment: q; padding: 14px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
 .lesson li::before { content: counter(q, decimal-leading-zero); margin-right: 18px; color: var(--violet); font: 650 10px ui-monospace, SFMono-Regular, monospace; }
+
+.figure-head > p:last-child { margin: 18px 0 0; color: var(--muted); font-size: 11px; }
+.figure-ui { align-self: end; }
+.figure-controls { display: grid; grid-template-columns: 1fr 1.1fr .8fr 1.15fr; gap: 8px; }
+.figure-controls label {
+  display: grid;
+  gap: 6px;
+  color: var(--fog);
+  font: 650 9px ui-monospace, SFMono-Regular, monospace;
+  letter-spacing: .06em;
+}
+.figure-controls select, .figure-controls button {
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--paper);
+  background: var(--panel);
+}
+.figure-controls button {
+  align-self: end;
+  border-color: var(--mint);
+  background: var(--mint);
+  color: #101614;
+  font-weight: 700;
+  cursor: pointer;
+}
+.figure-controls button:disabled { border-color: var(--line); background: transparent; color: var(--fog); cursor: not-allowed; }
+.figure-warning { margin: 12px 0 0; color: var(--fog); font-size: 10px; }
+.figure-canvas {
+  grid-column: 1 / -1;
+  margin-top: 12px;
+  overflow-x: auto;
+  border: 1px solid #c8c9ce;
+  border-radius: 4px;
+  background: #f7f7f4;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .24);
+}
+.figure-canvas svg { display: block; width: 100%; height: auto; }
+.figure-empty { margin: 0; padding: 48px 24px; color: #555b63; text-align: center; }
 
 .builder-head > p:last-child { margin: 18px 0 0; color: var(--muted); font-size: 11px; }
 .builder-ui { align-self: end; }
@@ -228,7 +269,7 @@ footer p { margin: 0; }
 }
 
 @media (max-width: 900px) {
-  .builder-controls { grid-template-columns: 1fr 1fr; }
+  .figure-controls, .builder-controls { grid-template-columns: 1fr 1fr; }
   .ws-meta { grid-template-columns: 1fr 1fr; }
   .ws-meta div:nth-child(2) { border-right: 0; }
   .ws-meta div:nth-child(-n+2) { border-bottom: 1px solid #b7bac0; }
@@ -240,10 +281,11 @@ footer p { margin: 0; }
   nav { grid-column: 1 / -1; }
   nav a { flex: 1; text-align: center; }
   .hero h1 { font-size: 44px; }
-  .notice, .dictionary, .lesson, .worksheet-builder { grid-template-columns: 1fr; }
+  .notice, .dictionary, .lesson, .figure-builder, .worksheet-builder { grid-template-columns: 1fr; }
   .packs { grid-template-columns: 1fr; }
   .pack p { min-height: 0; }
   .dict-grid { grid-template-columns: 1fr; }
+  .figure-canvas svg { min-width: 680px; }
   .worksheet { padding: 20px 14px; overflow-x: auto; }
   .ws-header { align-items: flex-start; flex-direction: column; }
   .ws-student { white-space: normal; }
@@ -255,7 +297,7 @@ footer p { margin: 0; }
   main { width: calc(100% - 20px); padding-top: 55px; }
   .hero h1 { font-size: 39px; }
   .hero > p { font-size: 14px; }
-  .builder-controls { grid-template-columns: 1fr; }
+  .figure-controls, .builder-controls { grid-template-columns: 1fr; }
 }
 
 @page { size: A4 portrait; margin: 12mm; }

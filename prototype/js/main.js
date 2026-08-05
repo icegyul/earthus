@@ -349,8 +349,9 @@ async function boot() {
     });
   } else {
     document.getElementById('btnSubscribe')?.remove();
-    document.getElementById('btnWaitlist')?.remove();
   }
+  /* 사전등록은 별개 스위치다 — 결제는 닫아 두고 이것만 여는 상태가 있다. */
+  if (!CONFIG.SHOW_WAITLIST) document.getElementById('btnWaitlist')?.remove();
   const showDevRow = () => {
     if (location.hash !== '#dev') return;
     document.getElementById('rowDev')?.removeAttribute('hidden');

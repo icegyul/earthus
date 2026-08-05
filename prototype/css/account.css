@@ -105,9 +105,27 @@
   margin-bottom:4px;
 }
 #wlForm input[type=email]:focus{ outline:2px solid var(--teal); outline-offset:1px; }
-.wl-track{ height:6px; border-radius:99px; background:rgba(242,245,248,.1); overflow:hidden; margin-bottom:8px; }
-.wl-bar{ height:100%; width:0; border-radius:99px; background:linear-gradient(90deg,var(--amber),#ffd166); transition:width .8s cubic-bezier(.22,1,.36,1); }
-.wl-text{ font:400 12px ui-monospace,monospace; opacity:.6; margin-bottom:18px; }
+/* ⚠️ 달성 막대(.wl-track/.wl-bar/.wl-text)는 뺐다 — 2026-08-06.
+   창립 멤버 등급이 없어졌는데 막대만 남으면
+   "이만큼 모이면 열립니다"라는, 지킬 수 없는 약속으로 읽힌다. */
+
+/* 만들고 있는 것 · 계속 무료인 것 · 가격 */
+.wl-block{ margin-bottom:20px; }
+.wl-h{
+  font-size:11px; font-weight:500; letter-spacing:.08em; text-transform:uppercase;
+  opacity:.5; margin:18px 0 7px;
+}
+.wl-block > .wl-h:first-child{ margin-top:0; }
+.wl-list{ margin:0; padding-left:16px; list-style:none; }
+.wl-list li{
+  position:relative; font-size:12.5px; font-weight:300; line-height:1.75;
+  opacity:.75; margin-bottom:9px;
+}
+.wl-list li::before{
+  content:''; position:absolute; left:-13px; top:.62em;
+  width:4px; height:4px; border-radius:50%; background:var(--teal); opacity:.75;
+}
+.wl-p{ font-size:12.5px; font-weight:300; line-height:1.75; opacity:.75; margin:0; }
 
 /* ── 사업자 정보 ── */
 .biz{ font-size:11.5px; font-weight:300; line-height:1.9; opacity:.45; }

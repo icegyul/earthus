@@ -238,7 +238,6 @@ export const accountSheet = {
     $('#accProvider').textContent =
       ({ google: 'Google', apple: 'Apple' })[p.provider] || p.provider || '—';
     $('#accTier').textContent = auth.isPaid() ? '구독 중' : '무료';
-    $('#accBadge').style.display = auth.isFounding() ? 'inline-block' : 'none';
   },
 
   async exportData() {
@@ -279,15 +278,10 @@ export const accountSheet = {
    ══════════════════════════════════════════════════════════════ */
 export const waitlistUI = {
   async init() {
-    const p = await waitlist.progress();
-    if (p) this.renderProgress(p);
-  },
-  renderProgress({ count, goal, pct }) {
-    const bar = $('#wlBar'), txt = $('#wlText');
-    if (!bar) return;
-    bar.style.width = pct + '%';
-    txt.textContent = `${count.toLocaleString()} / ${goal.toLocaleString()}명 (${pct}%)`;
-    $('#wlProgress').style.display = 'block';
+    /* ⚠️ 달성 막대(몇 명 / 목표 몇 명)를 뺐다 (2026-08-06).
+       창립 멤버 등급이 없어졌는데 막대만 남으면
+       "이만큼 모이면 열립니다"라는 약속으로 읽힌다. 그 약속은 못 지킨다.
+       숫자는 서버에 계속 쌓인다 — 화면에만 안 그린다. */
   },
   async submit(ev) {
     ev?.preventDefault();
@@ -297,13 +291,20 @@ export const waitlistUI = {
     try {
       const r = await waitlist.join(email, { marketing });
       input.value = '';
-      toast(r.already ? '이미 등록된 이메일입니다' : '사전등록이 완료되었습니다');
-      const p = await waitlist.progress();
-      if (p) this.renderProgress(p);
+      /* ⚠️ 영어로 써도 여기만 한국어가 나오고 있었다 (AX 검수와 같은 종류). */
+      const ko = i18n.lang !== 'en';
+      toast(r.already
+        ? (ko ? '이미 등록된 이메일입니다' : 'This email is already registered')
+        : (ko ? '사전등록이 완료되었습니다. 열리면 먼저 알려드립니다'
+              : 'You are on the list. We will write to you when it opens'));
     } catch (e) {
-      if (e.message === 'INVALID_EMAIL') toast('이메일 형식을 확인해주세요');
-      else if (e.message === 'BACKEND_NOT_CONFIGURED') toast('백엔드가 아직 연결되지 않았습니다');
-      else toast('등록 실패: ' + e.message);
+      const ko = i18n.lang !== 'en';
+      if (e.message === 'INVALID_EMAIL')
+        toast(ko ? '이메일 형식을 확인해주세요' : 'Please check the email format');
+      else if (e.message === 'BACKEND_NOT_CONFIGURED')
+        toast(ko ? '아직 연결되지 않았습니다. 잠시 뒤 다시 시도해 주세요'
+                 : 'Not connected yet — please try again shortly');
+      else toast((ko ? '등록 실패: ' : 'Sign-up failed: ') + e.message);
     }
   },
 };
@@ -368,5 +369,5 @@ export async function initAccount() {
   /* ⚠️ 사전등록 시트는 지금 열 수 있는 문이 없다 (SHOW_SUBSCRIBE=false).
      그런데도 부팅 때마다 Supabase 를 불러 등록 인원을 세고 있었다.
      보이지 않는 화면 때문에 매번 왕복하지 않는다. */
-  if (CONFIG.SHOW_SUBSCRIBE) waitlistUI.init();
+  if (CONFIG.SHOW_WAITLIST) waitlistUI.init();
 }

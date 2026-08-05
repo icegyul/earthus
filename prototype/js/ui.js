@@ -1725,10 +1725,16 @@ function renderTierRow(ko) {
      단, **이미 결제한 분**에게는 상태와 관리 버튼이 계속 보여야 한다. */
   if (!CONFIG.SHOW_SUBSCRIBE && !paid) {
     box.style.display = 'none';
+    /* 받은 지시: "유료메뉴로 진행된다고 안내하고" — 파는 대신 알린다.
+       사전등록 줄이 바로 아래에 있으므로 갈 곳도 함께 가리킨다. */
     const h0 = $('#tierHint');
     if (h0) h0.textContent = ko
-      ? '지금은 모든 화면이 무료입니다.'
-      : 'Everything on screen is free right now.';
+      ? (CONFIG.SHOW_WAITLIST
+          ? '지금은 모든 화면이 무료입니다. 유료 기능을 만들고 있습니다 — 아래 사전등록을 해 두시면 열릴 때 먼저 알려드립니다.'
+          : '지금은 모든 화면이 무료입니다.')
+      : (CONFIG.SHOW_WAITLIST
+          ? 'Everything is free right now. Paid features are being built — join the waitlist below and we will write to you first.'
+          : 'Everything on screen is free right now.');
     return;
   }
   box.style.display = '';

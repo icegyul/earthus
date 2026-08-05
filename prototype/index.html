@@ -212,7 +212,7 @@
       <div class="sb-head">
         <svg class="sb-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10.6" cy="10.6" r="6.4"/><path d="M15.4 15.4 20.4 20.4"/></svg>
         <input id="searchInput" type="search" autocomplete="off" autocorrect="off"
-               autocapitalize="off" spellcheck="false" placeholder="장소 · 레이어 · 기능 검색">
+               autocapitalize="off" spellcheck="false" placeholder="장소 · 레이어 · 기능 검색" data-i18n-ph="ph.search">
         <button id="searchClose" aria-label="닫기">✕</button>
       </div>
       <div id="searchList"></div>
@@ -343,7 +343,7 @@
     <h3 id="askTitle">물어보기</h3>
     <div class="ask-log"></div>
     <form class="ask-form" autocomplete="off">
-      <input class="ask-input" type="text" placeholder="지금 태풍 어디야?" aria-label="질문">
+      <input class="ask-input" type="text" placeholder="지금 태풍 어디야?" data-i18n-ph="ph.ask" aria-label="질문">
       <button class="ask-send" type="submit" aria-label="보내기">→</button>
     </form>
   </div>
@@ -613,7 +613,7 @@
     <!-- 예보 검증은 출처·표본수·방법론까지 무료로 공개한다.
          ⚠️ 아직 지점별 사례 되감기는 없으므로 현재 동작하는 일별 집계 화면만 연다. -->
     <button class="set-item" id="btnVerify"><span>예보 검증 · Forecast check</span><span class="chev">↗</span></button>
-    <button class="set-item" id="btnWaitlist"><span data-i18n="s.waitlist">사전등록 · 창립 멤버</span><span class="chev">›</span></button>
+    <button class="set-item" id="btnWaitlist"><span data-i18n="s.waitlist">사전등록 · 유료 기능 안내</span><span class="chev">›</span></button>
     <button class="set-item" id="btnTerms"><span data-i18n="s.terms">이용약관</span><span class="chev">›</span></button>
     <button class="set-item" id="btnPrivacy"><span data-i18n="s.privacy">개인정보처리방침</span><span class="chev">›</span></button>
     <button class="set-item" id="btnConsent"><span data-i18n="s.consent">약관 · 동의 관리</span><span class="chev">›</span></button>
@@ -638,7 +638,9 @@
 
     <div id="accGuest">
       <p class="sp-lead">로그인하지 않아도 지구본·기상·교육 콘텐츠는 모두 이용하실 수 있습니다.<br>
-        로그인은 <strong>구독, 설정 동기화, 창립 멤버 배지</strong>에 필요합니다.</p>
+        <!-- ⚠️ '구독, 창립 멤버 배지'라고 써 있었다 — 둘 다 지금 없다.
+             로그인해서 실제로 되는 것만 적는다. -->
+        로그인은 <strong>설정 동기화</strong>와, 나중에 유료 기능이 열렸을 때 필요합니다.</p>
       <button class="btn-primary" id="btnSignIn">로그인 / 가입</button>
     </div>
 
@@ -648,7 +650,6 @@
         <dt>로그인 방식</dt><dd id="accProvider">—</dd>
         <dt>요금제</dt><dd id="accTier">—</dd>
       </dl>
-      <div class="founding" id="accBadge" style="display:none">✦ 창립 멤버</div>
 
       <div class="set-sep"></div>
       <button class="set-item" id="btnExport"><span data-i18n="s.export">내 데이터 내려받기</span><span class="chev">›</span></button>
@@ -729,23 +730,38 @@
   <!-- ══ 사전등록 ══ -->
   <div id="waitlistSheet" class="sheet-panel">
     <div class="traffic one"><button class="tl close" data-close="waitlistSheet" aria-label="닫기"><span>×</span></button></div>
-    <h3>창립 멤버 사전등록</h3>
-    <p class="sp-lead">항공기·선박 실시간 추적은 유료 데이터라, 창립 멤버가 목표만큼 모이면
-      그 매출로 엽니다. 지금 등록하시면 <strong>평생 가격 고정 · 얼리 액세스 · 창립 멤버 배지</strong>를 받으십니다.</p>
+    <!-- ⚠️ 2026-08-06 전면 교체. 이전 문구는 없어진 등급(창립 멤버)과
+         '평생 가격 고정'을 약속하고 있었다. 지킬 수 없는 약속은 뺐다.
+         날짜와 일수는 실제 보관함을 세어 적은 값이다 (2026-07-26 시작). -->
+    <h3 data-i18n="wl.title">유료 기능 사전등록</h3>
+    <p class="sp-lead" data-i18n="wl.lead">지금 earthus의 모든 화면은 무료입니다.
+      유료 기능을 만들고 있고, 열리면 등록하신 메일로 먼저 알려드립니다.</p>
 
-    <div id="wlProgress" style="display:none">
-      <div class="wl-track"><div class="wl-bar" id="wlBar"></div></div>
-      <div class="wl-text" id="wlText">—</div>
+    <div class="wl-block">
+      <div class="wl-h" data-i18n="wl.h1">만들고 있는 것</div>
+      <ul class="wl-list">
+        <li data-i18n="wl.i1">되감기 · 이력 — 자료를 2026년 7월 26일부터 모으고 있습니다. 오늘로 11일치입니다. 30일이 차야 "지난달 같은 날"을 보여드릴 수 있습니다.</li>
+        <li data-i18n="wl.i2">위성 전체 목록 · 궤도 추적선 — 스타링크를 포함한 약 16,000기</li>
+        <li data-i18n="wl.i3">관심 지점 알림 20곳 — 내 자리에 비·바람이 들어올 때</li>
+      </ul>
+      <div class="wl-h" data-i18n="wl.h2">계속 무료인 것</div>
+      <p class="wl-p" data-i18n="wl.p2">태풍 · 지진 · 쓰나미 같은 안전 정보, 구름과 날씨, 3D 학습은
+        구독과 상관없이 계속 무료입니다. 안전 정보에는 값을 매기지 않습니다.</p>
+      <div class="wl-h" data-i18n="wl.h3">가격</div>
+      <p class="wl-p" data-i18n="wl.p3">아직 정하는 중입니다. 정해지면 이 메일로 먼저 알려드립니다.
+        준비가 안 된 기능에는 돈을 받지 않습니다.</p>
     </div>
 
     <form id="wlForm">
-      <input type="email" id="wlEmail" placeholder="이메일 주소" required autocomplete="email">
+      <!-- ⚠️ 여기가 실제로 개인정보를 받는 자리다. 영어로 써도 한국어가 남으면 안 된다.
+           동의 문구를 못 읽고 체크하게 만드는 셈이 된다. -->
+      <input type="email" id="wlEmail" placeholder="이메일 주소" data-i18n-ph="ph.email" required autocomplete="email">
       <label class="consent"><input type="checkbox" id="wlMarketing">
-        <span><b class="opt">[선택]</b> 출시 소식과 이벤트 안내를 받겠습니다</span></label>
-      <button type="submit" class="btn-primary">사전등록하기</button>
+        <span><b class="opt" data-i18n="wl.opt">[선택]</b> <span data-i18n="wl.mkt">출시 소식과 이벤트 안내를 받겠습니다</span></span></label>
+      <button type="submit" class="btn-primary" data-i18n="wl.submit">사전등록하기</button>
     </form>
-    <p class="sp-fine">등록하신 이메일은 출시 안내 목적으로만 사용하며,
-      <a href="#" data-legal="privacy">개인정보처리방침</a>에 따라 처리됩니다.</p>
+    <p class="sp-fine"><span data-i18n="wl.fine1">등록하신 이메일은 출시 안내 목적으로만 사용하며,</span>
+      <a href="#" data-legal="privacy" data-i18n="wl.priv">개인정보처리방침</a><span data-i18n="wl.fine2">에 따라 처리됩니다.</span></p>
   </div>
 
   <!-- ══ 법적 문서 ══ -->

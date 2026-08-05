@@ -158,7 +158,37 @@ export const i18n = {
     's.account':  { ko: '계정',              en: 'Account' },
     's.login':    { ko: '로그인 / 가입',     en: 'Sign in / up' },
     's.subscribe':{ ko: '구독',              en: 'Subscription' },
-    's.waitlist': { ko: '사전등록 · 창립 멤버', en: 'Waitlist · founding member' },
+    's.waitlist': { ko: '사전등록 · 유료 기능 안내', en: 'Waitlist · paid features' },
+
+    /* 사전등록 화면 — 2026-08-06 전면 교체.
+       ⚠️ 날짜·일수는 실제 보관함을 센 값이다. 자료가 더 쌓이면 여기도 고쳐야 한다. */
+    'wl.title': { ko: '유료 기능 사전등록', en: 'Paid features — join the list' },
+    'wl.lead':  { ko: '지금 earthus의 모든 화면은 무료입니다. 유료 기능을 만들고 있고, 열리면 등록하신 메일로 먼저 알려드립니다.',
+                  en: 'Everything on earthus is free right now. Paid features are being built — we will write to you first when they open.' },
+    'wl.h1':    { ko: '만들고 있는 것', en: 'What we are building' },
+    'wl.i1':    { ko: '되감기 · 이력 — 자료를 2026년 7월 26일부터 모으고 있습니다. 오늘로 11일치입니다. 30일이 차야 "지난달 같은 날"을 보여드릴 수 있습니다.',
+                  en: 'Rewind & history — we have been archiving since 26 July 2026. That is 11 days so far. It takes 30 days before we can show you "the same date last month".' },
+    'wl.i2':    { ko: '위성 전체 목록 · 궤도 추적선 — 스타링크를 포함한 약 16,000기',
+                  en: 'Full satellite catalogue & orbit tracks — about 16,000 objects including Starlink' },
+    'wl.i3':    { ko: '관심 지점 알림 20곳 — 내 자리에 비·바람이 들어올 때',
+                  en: 'Alerts for 20 saved spots — when rain or wind reaches your place' },
+    'wl.h2':    { ko: '계속 무료인 것', en: 'What stays free' },
+    'wl.p2':    { ko: '태풍 · 지진 · 쓰나미 같은 안전 정보, 구름과 날씨, 3D 학습은 구독과 상관없이 계속 무료입니다. 안전 정보에는 값을 매기지 않습니다.',
+                  en: 'Safety information — cyclones, earthquakes, tsunami — plus clouds, weather and the 3D lessons stay free regardless of any subscription. We do not put a price on safety.' },
+    'wl.h3':    { ko: '가격', en: 'Price' },
+    'wl.p3':    { ko: '아직 정하는 중입니다. 정해지면 이 메일로 먼저 알려드립니다. 준비가 안 된 기능에는 돈을 받지 않습니다.',
+                  en: 'Still being decided. We will write to this address once it is set. We do not charge for features that are not ready.' },
+    'wl.opt':    { ko: '[선택]', en: '[optional]' },
+    'wl.mkt':    { ko: '출시 소식과 이벤트 안내를 받겠습니다',
+                   en: 'Send me launch news and event notices' },
+    'wl.submit': { ko: '사전등록하기', en: 'Join the list' },
+    'wl.fine1':  { ko: '등록하신 이메일은 출시 안내 목적으로만 사용하며,',
+                   en: 'Your email is used only to tell you when it opens, and is handled under our' },
+    'wl.priv':   { ko: '개인정보처리방침', en: 'privacy policy' },
+    'ph.email':  { ko: '이메일 주소',              en: 'Email address' },
+    'ph.search': { ko: '장소 · 레이어 · 기능 검색', en: 'Search places, layers, features' },
+    'ph.ask':    { ko: '지금 태풍 어디야?',        en: 'Where is the typhoon right now?' },
+    'wl.fine2':  { ko: '에 따라 처리됩니다.', en: '.' },
     's.terms':    { ko: '이용약관',          en: 'Terms of service' },
     's.privacy':  { ko: '개인정보처리방침',  en: 'Privacy policy' },
     's.consent':  { ko: '약관 · 동의 관리',  en: 'Consent settings' },
@@ -173,6 +203,12 @@ export const i18n = {
     root.querySelectorAll('[data-i18n]').forEach(el => {
       const v = this.STATIC[el.dataset.i18n];
       if (v && v[L]) el.textContent = v[L];
+    });
+    /* ⚠️ placeholder 는 textContent 가 아니라 위에서 안 잡힌다.
+       영어로 바꿔도 검색창·질문창·이메일칸에 한국어가 그대로 남아 있었다. */
+    root.querySelectorAll('[data-i18n-ph]').forEach(el => {
+      const v = this.STATIC[el.dataset.i18nPh];
+      if (v && v[L]) el.placeholder = v[L];
     });
     // 문서 언어도 함께 바꾼다 — 스크린리더가 읽는 발음이 달라진다
     document.documentElement.lang = L;

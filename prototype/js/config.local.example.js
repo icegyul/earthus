@@ -89,6 +89,9 @@ export const CONFIG = {
   /* 구독 안내 화면으로 가는 문. false 면 설정의 '구독'·'사전등록' 줄과
      유료 안내 팝업이 아예 안 뜬다. SALES_OPEN(결제)과 별개의 스위치다. */
   SHOW_SUBSCRIBE: false,
+  /* 사전등록 줄. 결제(SHOW_SUBSCRIBE)와 따로 켠다 —
+     "만들고 있습니다"는 열고 "지금 사세요"는 닫는 상태가 가능해야 한다. */
+  SHOW_WAITLIST: true,
   /* ⚠️ Open-Meteo 무료 API는 비상업 전용이다. 모든 직접 호출·Lambda를
      customer-api(유료 키) 또는 셀프호스팅으로 옮기고 운영 검증한 뒤에만 true.
      SALES_OPEN과 이것이 둘 다 true여야 결제가 열린다. */

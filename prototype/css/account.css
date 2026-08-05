@@ -851,13 +851,24 @@
   padding:12px 0; border-top:1px solid var(--line,#1d2635); }
 .al-toggle b{ display:block; font-size:13px; font-weight:550; }
 .al-toggle i{ font-style:normal; font-size:11px; opacity:.6; }
-.al-toggle button{ flex:0 0 auto; padding:8px 16px; }
-.al-spot{ display:flex; align-items:center; justify-content:space-between; gap:10px;
-  padding:9px 0; border-top:1px solid var(--line,#1d2635); font-size:12.5px; }
-.al-spot i{ display:block; font-style:normal; font-size:10.5px; opacity:.55; margin-top:2px;
+.al-toggle button{
+  /* ⚠️ 전역 .btn-primary의 width:100%를 그대로 받으면 버튼이 한 줄을 독차지해
+     왼쪽 설명이 한 글자 폭으로 찌그러진다. 알림 토글 안에서만 내용 폭으로 되돌린다. */
+  flex:0 0 auto; width:auto; min-width:76px; min-height:44px; padding:8px 16px;
+}
+.al-spot{ display:flex; align-items:stretch; gap:4px;
+  border-top:1px solid var(--line,#1d2635); font-size:12.5px; }
+.al-go{ flex:1; min-width:0; min-height:52px; display:flex; align-items:center;
+  justify-content:space-between; gap:10px; padding:8px 4px; text-align:left;
+  background:none; border:0; color:inherit; cursor:pointer; }
+.al-go:hover{ color:#9fe6f5; }
+.al-go:focus-visible,.al-del:focus-visible{ outline:2px solid #9fe6f5; outline-offset:-2px; }
+.al-go > div{ min-width:0; }
+.al-go > span{ flex:0 0 auto; font-size:20px; opacity:.45; }
+.al-go i{ display:block; font-style:normal; font-size:10.5px; opacity:.55; margin-top:2px;
   font-variant-numeric:tabular-nums; }
-.al-del{ background:none; border:none; color:inherit; opacity:.45; font-size:18px;
-  line-height:1; padding:4px 8px; cursor:pointer; }
+.al-del{ flex:0 0 44px; min-width:44px; min-height:44px; background:none; border:none;
+  color:inherit; opacity:.45; font-size:18px; line-height:1; padding:0; cursor:pointer; }
 .al-del:hover{ opacity:.9; }
 
 /* ── 바다거북 ─────────────────────────────────────────────────

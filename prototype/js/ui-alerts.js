@@ -15,6 +15,7 @@ import { auth } from './auth.js';
 import { push } from './push.js';
 import { myLocation } from './mylocation.js';
 import { toast } from './ui.js';
+import { flyTo } from './viewer.js';
 
 const $ = (s) => document.querySelector(s);
 const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
@@ -133,14 +134,29 @@ export const alertsSheet = {
     }
 
     this._spots.forEach((sp) => {
-      const r = el('div', 'al-spot',
+      const r = el('div', 'al-spot');
+      /* 저장한 곳은 알림 서버의 관리 행이면서, 다시 그 장소를 보는 가장 짧은 길이다.
+         예전에는 좌표를 읽고 삭제만 할 수 있어 저장 후 지도와 완전히 끊겼다.
+         ⚠️ 저장 좌표만 그대로 쓴다. 현재 위치로 바꾸거나 장소를 추측하지 않는다. */
+      const go = el('button', 'al-go',
         `<div><b>${esc(sp.label)}</b>`
         + `<i>${sp.lat.toFixed(3)}, ${sp.lon.toFixed(3)}`
         + ` · ${[sp.rip && (ko ? '이안류' : 'rip'), sp.quake && (ko ? '지진' : 'quake'),
-                 sp.warn && (ko ? '특보' : 'warnings')].filter(Boolean).join(' · ')}</i></div>`);
+                 sp.warn && (ko ? '특보' : 'warnings')].filter(Boolean).join(' · ')}</i></div>`
+        + `<span aria-hidden="true">›</span>`);
+      go.title = ko ? `${sp.label} 지도에서 보기` : `Show ${sp.label} on map`;
+      go.onclick = () => {
+        this.close();
+        flyTo(sp.lon, sp.lat, 900_000, 1.4, async () => {
+          const { dropPin } = await import('./pin.js');
+          dropPin(sp.lon, sp.lat, sp.label);
+        });
+      };
       const del = el('button', 'al-del', '×');
-      del.title = ko ? '삭제' : 'Remove';
+      del.title = ko ? `${sp.label} 삭제` : `Remove ${sp.label}`;
+      del.setAttribute('aria-label', del.title);
       del.onclick = async () => { await push.removeSpot(sp.id); this._load(); };
+      r.appendChild(go);
       r.appendChild(del);
       body.appendChild(r);
     });

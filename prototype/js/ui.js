@@ -19,6 +19,7 @@ import { flyTo, locateUser, fitGlobeHeight, scene } from './viewer.js';
 // 한국 기상특보 — 별도 띠를 없애고 아래 banner 큐에 합쳤다 (한 줄로 표시)
 import { warn, levelEn } from './warn.js';
 import { warnUI } from './ui-warn.js';
+import { fetchT } from './net.js';
 
 const $ = s => document.querySelector(s);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c =>
@@ -752,7 +753,9 @@ async function pickFireDate(lat, lon, from) {
     const d = new Date(d0.getTime() - back * 86400e3);
     const day = d.toISOString().slice(0, 10);
     try {
-      const res = await fetch(fireSnapshotUrl(lat, lon, day), { method: 'HEAD' });
+      /* 날짜 후보 하나가 무응답이어도 산불 시트 전체를 붙들지 않는다. */
+      const res = await fetchT(fireSnapshotUrl(lat, lon, day),
+        { method: 'HEAD', timeout: 8_000 });
       const n = Number(res.headers.get('Content-Length') || 0);
       if (res.ok && n >= FIRE_IMG_MIN_BYTES) return { day, bytes: n };
     } catch (_) { /* 네트워크 실패는 다음 날짜로 */ }

@@ -153,6 +153,9 @@ earthus의 유료 명분은 `이 값을 믿을 수 있는가`인데, 추천 결�
 
 ## 10. 2026-08-06 실행 기록
 
+- Custom Extract의 CSV·manifest와 함께 보관할 인용·방법 Markdown 메모를 추가했다.
+  같은 manifest의 파일명·행 수·바이트·SHA-256, 선택 조건, 원본 URL·출처·이용조건·
+  생성시각·방법론을 옮기고, 임의 DOI가 아닌 작업 메모임을 명시한다.
 - Custom Extract의 현재 선택 CSV와 정확히 대응하는
   `earthus.custom-extract-manifest.v1` JSON을 추가했다. CSV 파일명·행 수·BOM 포함
   바이트·SHA-256, 필터·열 정의·원본 경로·출처·이용조건·생성시각·방법론을 기록한다.

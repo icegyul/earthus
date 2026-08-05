@@ -160,6 +160,7 @@ h2 { margin: 7px 0; font-size: 32px; font-weight: 500; letter-spacing: -.04em; }
   cursor: pointer;
 }
 .extract-controls .manifest-button { grid-column: 1 / -1; background: transparent; color: var(--violet); }
+.extract-controls .readme-button { grid-column: 1 / -1; border-color: var(--mint); background: transparent; color: var(--mint); }
 .extract-controls button:disabled { border-color: var(--line); background: transparent; color: var(--fog); cursor: not-allowed; }
 .extract-status { margin: 12px 0 0; color: var(--fog); font-size: 10px; }
 .extract-preview {

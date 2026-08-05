@@ -455,6 +455,7 @@ function renderExtract() {
   $('#extractEvidence').textContent = `${day.source || '출처 없음'} · 생성 ${day.generated || '시각 없음'} · ${day.license || '이용조건 없음'}`;
   $('#downloadExtract').disabled = rows.length === 0;
   $('#downloadExtractManifest').disabled = rows.length === 0;
+  $('#downloadExtractReadme').disabled = rows.length === 0;
 }
 
 async function loadExtractDay() {
@@ -465,6 +466,7 @@ async function loadExtractDay() {
   state.extractToken = token;
   $('#downloadExtract').disabled = true;
   $('#downloadExtractManifest').disabled = true;
+  $('#downloadExtractReadme').disabled = true;
   $('#extractStatus').textContent = `${date || '날짜 없음'} 자료를 불러오는 중입니다.`;
   if (!entry) {
     state.extractDay = null;
@@ -547,6 +549,71 @@ async function downloadExtractManifest(result) {
   downloadText(filename, JSON.stringify(manifest, null, 2) + '\n', 'application/json;charset=utf-8');
 }
 
+function buildExtractReadme(result, manifest) {
+  const label = result.dataset === 'cases' ? '예보·관측 사례' : 'ASOS 시간 관측';
+  const sourceUrl = result.sourcePath ? `https://earthus.net${result.sourcePath}` : '자료 없음';
+  const value = input => String(input ?? '자료 없음').replaceAll('|', '\\|').replace(/\s*\n\s*/g, ' ');
+  return `# earthus Research Custom Extract
+
+이 메모는 아래 CSV와 같은 선택 상태에서 생성되었습니다. CSV와 manifest를 함께 보관하세요.
+
+## 파일 확인
+
+| 항목 | 값 |
+|---|---|
+| CSV | \`${value(manifest.file.name)}\` |
+| 행 수 | ${manifest.file.rows.toLocaleString('ko-KR')} |
+| 바이트 | ${manifest.file.bytes.toLocaleString('ko-KR')} (UTF-8 BOM 포함) |
+| SHA-256 | \`${manifest.file.sha256}\` |
+| manifest schema | \`${manifest.schema}\` |
+
+## 선택 조건
+
+| 항목 | 값 |
+|---|---|
+| 자료 | ${value(label)} (${value(result.dataset)}) |
+| 날짜 | ${value(result.date)} |
+| 시각 | ${value(result.filters.time)} |
+| 관측소 | ${value(result.filters.station)} |
+| 변수 | ${value(result.filters.variable)} |
+
+\`all\`은 선택 날짜 안에서 해당 항목을 추가로 거르지 않았다는 뜻입니다.
+
+## 출처와 이용조건
+
+- 원본 공개 경로: ${value(sourceUrl)}
+- 출처: ${value(result.source)}
+- 이용조건: ${value(result.license)}
+- 원본 산출물 생성시각: ${value(result.generated)}
+- 이 메모 생성시각: ${value(manifest.createdAt)}
+
+## 방법
+
+- 행 구조: ${value(manifest.methodology.rowShape)}
+- 결측: ${value(manifest.methodology.missing)}
+- 차이 계산: ${value(manifest.methodology.difference)}
+- 정렬: ${value(manifest.methodology.ordering)}
+- 범위: ${value(manifest.methodology.scope)}
+
+## 인용 메모
+
+earthus, “Research Custom Extract — ${value(label)}, ${value(result.date)},”
+원본 산출물 생성 ${value(result.generated)}, 접근 ${value(manifest.createdAt.slice(0, 10))},
+${value(sourceUrl)}.
+
+이 문구는 선택 자료를 식별하기 위한 작업 메모이며 공식 DOI가 아닙니다.
+원자료 제공기관의 출처와 이용조건을 함께 표기하고, 한 날짜·짧은 기간의 표본으로
+모델의 장기 성능 순위를 주장하지 마세요.
+`;
+}
+
+async function downloadExtractReadme(result) {
+  const manifest = await buildExtractManifest(result);
+  const readme = buildExtractReadme(result, manifest);
+  const filename = extractFilename(result).replace(/\.csv$/, '.README.md');
+  downloadText(filename, readme, 'text/markdown;charset=utf-8');
+}
+
 function initExtract() {
   state.extractCache = { cases: {}, stations: {} };
   if (state.caseDay?.date) state.extractCache.cases[state.caseDay.date] = state.caseDay;
@@ -576,6 +643,23 @@ function initExtract() {
     } catch (error) {
       $('#error').hidden = false;
       $('#error').textContent = `추출 manifest를 만들지 못했습니다. (${error.message})`;
+    } finally {
+      button.disabled = false;
+      button.textContent = original;
+    }
+  });
+  $('#downloadExtractReadme').addEventListener('click', async event => {
+    const result = state.extractResult;
+    if (!result?.rows.length) return;
+    const button = event.currentTarget;
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = '인용 메모 만드는 중…';
+    try {
+      await downloadExtractReadme(result);
+    } catch (error) {
+      $('#error').hidden = false;
+      $('#error').textContent = `인용·방법 메모를 만들지 못했습니다. (${error.message})`;
     } finally {
       button.disabled = false;
       button.textContent = original;

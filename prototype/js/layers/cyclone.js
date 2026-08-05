@@ -264,6 +264,21 @@ export const cyclones = {
     return this;
   },
 
+  /** 정보창의 번호 검색도 지도와 같은 공식 자료를 쓰게 한다.
+   *  ⚠️ JMA 번호를 ui-cyclone 쪽에서 다시 fetch/추측하면 지도와 뉴스가 서로 다른
+   *     회차를 볼 수 있다. refresh()에서 이미 받은 원문 레코드만 그대로 돌려준다. */
+  async officialFor(name) {
+    /* 공유 딥링크는 refresh()가 list를 채운 직후 곧바로 정보창을 열 수 있다.
+       그 시점에는 뒤이어 받는 official.load()가 아직 끝나지 않았을 수 있으므로,
+       별도 fetch를 만들지 않고 같은 레코드가 준비될 때까지만 짧게 기다린다. */
+    for (let i = 0; i < 50; i += 1) {
+      const rec = official.get(name);
+      if (rec || official.meta) return rec;
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    return null;
+  },
+
   /** 서버가 보관해 둔 태풍 경로. GDACS 가 목록에서 지운 뒤에도 이건 남는다.
    *
    * ⚠️ 왜 앱이 GDACS 에서 직접 안 받나

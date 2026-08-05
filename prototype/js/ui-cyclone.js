@@ -129,34 +129,75 @@ function explainBlocks(ko) {
   return wrap;
 }
 
-/* ── 이 태풍 소식 — 이미 모아 둔 각국 헤드라인에서 이름으로 찾는다 ──
+function newsText(t) {
+  return String(t || '').normalize('NFKC').toUpperCase()
+    .replace(/[‐‑‒–—-]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/* JMA typhoonNumber는 YYNN 네 자리다(실측: 2614 → 2026년 14호).
+   ⚠️ 숫자만 검색하면 기사 날짜·피해 건수까지 섞인다. 반드시 "태풍"과 번호가 붙은
+      일본식 제목만 검색한다. 형식이 다르면 추측하지 않고 이름 검색만 남긴다. */
+function newsTerms(s, official) {
+  const name = newsText(s.name);
+  const terms = name ? [name] : [];
+  const jma = (official?.agencies || []).find(a => a.agency === 'JMA');
+  const m = /^(\d{2})(\d{2})$/.exec(String(jma?.number || ''));
+  const no = m ? Number(m[2]) : null;
+  if (Number.isInteger(no) && no > 0) {
+    terms.push(newsText(`台風${no}号`), newsText(`台風第${no}号`));
+  }
+  return { terms: [...new Set(terms)], jma, no };
+}
+
+function newsUtc(t) {
+  const d = new Date(t || '');
+  return Number.isFinite(d.getTime())
+    ? `${d.toISOString().slice(0, 16).replace('T', ' ')} UTC`
+    : null;
+}
+
+/* ── 이 태풍 소식 — 이미 모아 둔 각국 헤드라인에서 이름·JMA 번호로 찾는다 ──
    ⚠️ 라이선스: 수집분 자체가 헤드라인·링크만이다. 본문을 옮기지 않는다.
    ⚠️ 이름이 제목에 없으면 없다고 적는다 — 다른 태풍 기사를 채워 넣지 않는다.
-      (일본 매체는 "台風9号"처럼 번호로 부르는 일이 많아 이름 검색이 못 잡는다.
-       그건 우리 검색의 한계라서, 한계를 그대로 적는다.) */
+   ⚠️ 번호는 지도에 쓰는 같은 JMA 공식 레코드에서만 가져온다. */
 function newsBlock(s, ko) {
   const wrap = div('tc-news');
-  wrap.appendChild(div('tc-chips-t', ko ? `「${s.name}」 소식` : `News on “${s.name}”`));
+  const heading = div('tc-chips-t', ko ? `「${s.name}」 소식` : `News on “${s.name}”`);
+  wrap.appendChild(heading);
   const body = div('tc-news-b', `<p class="sheet-note">${ko ? '찾는 중…' : 'Searching…'}</p>`);
   wrap.appendChild(body);
   // ⚠️ 자리는 지금 잡고 내용은 나중에 채운다 — 뉴스 때문에 시트가 늦게 뜨면 안 된다
   (async () => {
     try {
+      const { cyclones } = await import('./layers/cyclone.js');
+      const q = newsTerms(s, await cyclones.officialFor(s.name));
+      if (q.no) {
+        heading.textContent = ko
+          ? `「${s.name}」 · 일본 기상청 ${q.no}호 소식`
+          : `News on “${s.name}” · JMA No. ${q.no}`;
+      }
       const r = await fetch(`${API.EVENTS}/regional-news.json`, { cache: 'no-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
       const d = await r.json();
-      const items = (d.items || []).filter(a =>
-        (a.title || '').toUpperCase().includes(String(s.name || '').toUpperCase()));
+      const items = (d.items || []).filter(a => {
+        const title = newsText(a.title);
+        return q.terms.some(term => term && title.includes(term));
+      });
       if (!items.length) {
         body.innerHTML = `<p class="sheet-note">${ko
-          ? '수집한 헤드라인 중 이 태풍의 이름이 제목에 든 기사가 아직 없습니다. ' +
-            '(일본 매체는 태풍을 번호로 불러 이름 검색에 안 잡히기도 합니다)'
-          : 'No collected headline mentions this storm’s name yet. ' +
-            '(Japanese media often number typhoons, which name search misses.)'}</p>`;
+          ? `수집한 헤드라인에서 이 태풍의 ${q.no ? `이름과 일본 기상청 번호(${q.no}호)를` : '이름을'} 찾지 못했습니다.`
+          : `No collected headline matches this storm’s ${q.no ? `name or JMA number (No. ${q.no})` : 'name'}.`}</p>`;
         return;
       }
-      body.innerHTML = items.slice(0, 5).map(a =>
+      const sourceNote = q.no
+        ? `<p class="sheet-note">${ko ? '번호 출처' : 'Number source'}: JMA${q.jma?.issue ? ` · ${esc(q.jma.issue)}` : ''}</p>`
+        : '';
+      body.innerHTML = sourceNote + items.slice(0, 5).map(a => {
+        const meta = [a.source, a.region, newsUtc(a.utc)].filter(Boolean).join(' · ');
+        return (
         `<a class="tc-news-i" href="${esc(a.link)}" target="_blank" rel="noopener">
-           <span>${esc(a.source)} · ${esc(a.region || '')}</span>${esc(a.title)}</a>`).join('');
+           <span>${esc(meta)}</span>${esc(a.title)}</a>`);
+      }).join('');
     } catch (_) {
       body.innerHTML = `<p class="sheet-note">${ko ? '소식을 불러오지 못했습니다.' : 'Could not load news.'}</p>`;
     }

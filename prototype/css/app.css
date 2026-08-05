@@ -2020,3 +2020,32 @@ body.is-ambient #windLegend.on{ opacity:0; }
 .ly.on .ly-sat{ transform:scale(1.06) }
 @media (max-width:520px){ .ly-sat{ width:54px; height:54px } }
 @media (max-width:390px){ .ly-sat{ width:46px; height:46px } }
+
+/* ── 태풍 정보창 보강 (ui-cyclone.js) ─────────────────────────────── */
+.tc-chips{margin:14px 0 4px}
+.tc-chips-t{font-size:11.5px;font-weight:700;letter-spacing:.08em;opacity:.55;
+  margin:14px 0 8px;text-transform:uppercase}
+.tc-chip{display:inline-block;margin:0 6px 6px 0;padding:7px 12px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);
+  color:inherit;font-size:12.5px;cursor:pointer}
+.tc-chip.on{border-color:rgba(90,209,232,.7);background:rgba(90,209,232,.14);
+  color:#9fe6f5}
+.tc-fold{margin:6px 0;border:1px solid rgba(255,255,255,.09);border-radius:10px;
+  background:rgba(255,255,255,.03)}
+.tc-fold summary{padding:9px 12px;font-size:13px;font-weight:650;cursor:pointer;
+  list-style:none}
+.tc-fold summary::before{content:'▸ ';opacity:.5}
+.tc-fold[open] summary::before{content:'▾ '}
+.tc-fold p{margin:0;padding:2px 12px 11px;font-size:12.5px;line-height:1.6;opacity:.85}
+.tc-news-b{display:flex;flex-direction:column;gap:6px}
+.tc-news-i{display:block;padding:8px 11px;border-radius:9px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  font-size:12.5px;line-height:1.45;color:inherit;text-decoration:none}
+.tc-news-i span{display:block;font-size:10.5px;opacity:.5;margin-bottom:2px}
+.tc-links-b{display:flex;flex-wrap:wrap;gap:8px}
+.tc-links-b a{padding:7px 12px;border-radius:999px;font-size:12.5px;color:#9fe6f5;
+  border:1px solid rgba(90,209,232,.35);text-decoration:none}
+.tc-ld{animation:tcPulse 1.2s ease-in-out infinite}
+@keyframes tcPulse{0%,100%{opacity:.9}50%{opacity:.45}}
+.tc-share{margin:16px 0 2px}
+.tc-share-b{font-weight:650}

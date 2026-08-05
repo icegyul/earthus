@@ -313,6 +313,10 @@ async function boot() {
   showApiRow();
   window.addEventListener('hashchange', showApiRow);
 
+  /* 태풍 공유 링크 — ?tc=이름 으로 열면 그 태풍으로 바로 간다.
+     받은 지시: "공유버튼 누르면 복붙해서 다른 사람이 그걸 보고 태풍정보 볼 수 있게" */
+  import('./ui-cyclone.js').then(m => m.openSharedCyclone()).catch(() => {});
+
   // 개발용 전역 핸들 (콘솔에서 __e.viewer 등으로 접근)
   window.__e = { viewer, scene, store, registry, i18n, imagery,
                  orbits: (await import('./layers/space.js')).orbits };

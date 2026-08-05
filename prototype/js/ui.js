@@ -324,9 +324,25 @@ export const sheet = {
         } else addRow(rows, k, v);
       });
       if (d.rows._note) rows.parentElement.appendChild(noteEl(d.rows._note));
+
+      /* ── 경로 로딩 표시 ──
+         받은 지적: "일단 느리게 뜨니 로딩바 만들어주고".
+         GDACS 응답을 최대 12초 기다린다 — 그동안 아무 표시가 없으면
+         고장으로 읽힌다. 다 그려지면 걷는다. */
+      const tcLd = noteEl(i18n.lang === 'ko'
+        ? '⏳ 진로·예보선 불러오는 중…' : '⏳ Loading track & forecasts…');
+      tcLd.classList.add('tc-ld');
+      rows.parentElement.appendChild(tcLd);
+
+      /* 정보창 보강 — 도움 화면·원리 설명·소식·공식 링크 */
+      try {
+        const { renderCycloneExtras } = await import('./ui-cyclone.js');
+        renderCycloneExtras(rows.parentElement, m._tc);
+      } catch (_) { /* 보강이 실패해도 기본 상세는 떠야 한다 */ }
+
       box.classList.add('up');
       // 진로는 선택했을 때만 불러 그린다 (전부 미리 받으면 요청이 낭비된다)
-      cyclones.showTrack(m._tc);
+      cyclones.showTrack(m._tc).finally(() => tcLd.remove());
       return;
     }
 

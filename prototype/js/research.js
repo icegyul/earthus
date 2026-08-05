@@ -391,6 +391,100 @@ function customExtractRows(dataset, day, filters) {
   return sortedRows(rows, [0, 1, 6, 7, 8]);
 }
 
+function rounded(value) {
+  return finite(value) ? Number(Number(value).toFixed(3)) : null;
+}
+
+function extractQualitySummary(result) {
+  const groups = new Map();
+  if (result.dataset === 'cases') {
+    result.rows.forEach(row => {
+      const key = [row[6], row[7], row[8], row[9]].join('|');
+      const group = groups.get(key) || {
+        model: row[6], lead: row[7], variable: row[8], unit: row[9],
+        total: 0, missingObservation: 0, missingForecast: 0, differences: [],
+      };
+      group.total += 1;
+      if (!finite(row[10])) group.missingObservation += 1;
+      if (!finite(row[11])) group.missingForecast += 1;
+      if (finite(row[12])) group.differences.push(Number(row[12]));
+      groups.set(key, group);
+    });
+    const headers = [
+      'date', 'filter_time', 'filter_station', 'model', 'lead_hour', 'variable',
+      'unit', 'total_rows', 'paired_n', 'missing_observation', 'missing_forecast',
+      'me', 'mae', 'rmse', 'source', 'license', 'generated',
+    ];
+    const rows = [...groups.values()]
+      .sort((left, right) => modelName(left.model).localeCompare(modelName(right.model), 'en')
+        || Number(left.lead) - Number(right.lead)
+        || left.variable.localeCompare(right.variable, 'en'))
+      .map(group => {
+        const n = group.differences.length;
+        const mean = n ? group.differences.reduce((sum, value) => sum + value, 0) / n : null;
+        const mae = n ? group.differences.reduce((sum, value) => sum + Math.abs(value), 0) / n : null;
+        const rmse = n ? Math.sqrt(group.differences.reduce((sum, value) => sum + value ** 2, 0) / n) : null;
+        return [
+          result.date, result.filters.time, result.filters.station, group.model,
+          group.lead, group.variable, group.unit, group.total, n,
+          group.missingObservation, group.missingForecast, rounded(mean), rounded(mae),
+          rounded(rmse), result.source, result.license, result.generated,
+        ];
+      });
+    return {
+      headers,
+      rows,
+      note: `모델×선행시간×변수 ${rows.length}개 조합 · ME·MAE·RMSE의 n은 관측과 예보가 모두 있는 행만 포함 · 한 날짜 표본은 장기 순위가 아님`,
+    };
+  }
+
+  result.rows.forEach(row => {
+    const key = [row[6], row[7]].join('|');
+    const group = groups.get(key) || { variable: row[6], unit: row[7], total: 0, observed: 0, values: [] };
+    group.total += 1;
+    if (row[8] !== null && row[8] !== undefined && row[8] !== '') group.observed += 1;
+    if (finite(row[8])) group.values.push(Number(row[8]));
+    groups.set(key, group);
+  });
+  const headers = [
+    'date', 'filter_time', 'filter_station', 'variable', 'unit', 'total_rows',
+    'observed_n', 'numeric_n', 'missing_n', 'missing_pct', 'min', 'max', 'mean',
+    'source', 'license', 'generated',
+  ];
+  const rows = [...groups.values()].sort((left, right) => left.variable.localeCompare(right.variable, 'en'))
+    .map(group => {
+      const n = group.values.length;
+      const missing = group.total - group.observed;
+      return [
+        result.date, result.filters.time, result.filters.station, group.variable,
+        group.unit, group.total, group.observed, n, missing, rounded(group.total ? missing / group.total * 100 : null),
+        n ? rounded(Math.min(...group.values)) : null,
+        n ? rounded(Math.max(...group.values)) : null,
+        n ? rounded(group.values.reduce((sum, value) => sum + value, 0) / n) : null,
+        result.source, result.license, result.generated,
+      ];
+    });
+  return {
+    headers,
+    rows,
+    note: `변수 ${rows.length}개 · observed_n은 결측이 아닌 값, numeric_n은 수치 계산 값 · missing_pct = missing_n / total_rows × 100`,
+  };
+}
+
+function qualityFilename(result) {
+  return extractFilename(result).replace(/\.csv$/, '.quality.csv');
+}
+
+function renderQuality(result) {
+  const summary = extractQualitySummary(result);
+  state.qualityResult = { ...summary, filename: qualityFilename(result) };
+  $('#qualityTable thead').innerHTML = `<tr>${summary.headers.map(header => `<th>${html(header)}</th>`).join('')}</tr>`;
+  $('#qualityTable tbody').innerHTML = summary.rows.map(row =>
+    `<tr>${row.map(value => `<td>${html(value ?? '')}</td>`).join('')}</tr>`).join('');
+  $('#qualityNote').textContent = summary.note;
+  $('#downloadQuality').disabled = summary.rows.length === 0;
+}
+
 function extractIndex(dataset) {
   return dataset === 'cases' ? state.caseIndex : state.stationIndex;
 }
@@ -456,6 +550,7 @@ function renderExtract() {
   $('#downloadExtract').disabled = rows.length === 0;
   $('#downloadExtractManifest').disabled = rows.length === 0;
   $('#downloadExtractReadme').disabled = rows.length === 0;
+  renderQuality(state.extractResult);
 }
 
 async function loadExtractDay() {
@@ -467,6 +562,7 @@ async function loadExtractDay() {
   $('#downloadExtract').disabled = true;
   $('#downloadExtractManifest').disabled = true;
   $('#downloadExtractReadme').disabled = true;
+  $('#downloadQuality').disabled = true;
   $('#extractStatus').textContent = `${date || '날짜 없음'} 자료를 불러오는 중입니다.`;
   if (!entry) {
     state.extractDay = null;
@@ -664,6 +760,11 @@ function initExtract() {
       button.disabled = false;
       button.textContent = original;
     }
+  });
+  $('#downloadQuality').addEventListener('click', () => {
+    const summary = state.qualityResult;
+    if (!summary?.rows.length) return;
+    download(summary.filename, summary.headers, summary.rows);
   });
   loadExtractDay();
 }

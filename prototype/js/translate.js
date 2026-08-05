@@ -9,15 +9,34 @@
 //    기계 번역은 틀린다 — 특히 반어·농담·전문용어에서 그렇다.
 //    번역만 보여주면 글쓴이가 하지 않은 말이 그 사람 말이 되어버린다.
 //
-// 지금 쓰는 것: MyMemory (키 불필요, CORS 개방, 익명 하루 5,000 단어)
+// 지금 쓰는 것: MyMemory (키 불필요, CORS 개방, 익명 무료 한도)
 //   실측: en→ko "The typhoon is moving north" → "태풍이 북쪽으로 이동하고 있습니다." (품질 0.85)
 //        ko→en "지구본이 너무 느리게 돌아갑니다" → "The globe spins too slowly"
 //
 // 나중에 LLM 로 바꾸려면 PROVIDERS 에 하나 추가하고 ACTIVE 만 바꾸면 된다.
 // ⚠️ LLM 로 갈 때 API 키를 브라우저에 두면 안 된다. 반드시 서버(Lambda)를 거칠 것.
 
+import { fetchT } from './net.js';
+
 const LS_CACHE = 'earthus.tr';
 const MAX_CACHE = 300;
+
+/* MyMemory q 한도는 500 **글자**가 아니라 UTF-8 500 **바이트**다.
+   한국어 한 글자는 보통 3바이트라 slice(0, 480)는 거의 항상 거절된다. */
+export function clipUtf8(text, maxBytes = 500) {
+  const src = String(text || '');
+  const enc = new TextEncoder();
+  if (enc.encode(src).length <= maxBytes) return src;
+  const suffix = '…';
+  const budget = maxBytes - enc.encode(suffix).length;
+  let out = '', used = 0;
+  for (const ch of src) {
+    const n = enc.encode(ch).length;
+    if (used + n > budget) break;
+    out += ch; used += n;
+  }
+  return out + suffix;
+}
 
 /** 한글이 섞여 있으면 한국어로 본다. 짧은 글에도 잘 맞고 요청이 필요 없다. */
 export function detectLang(text) {
@@ -45,7 +64,7 @@ const PROVIDERS = {
       const u = new URL('https://api.mymemory.translated.net/get');
       u.searchParams.set('q', text);
       u.searchParams.set('langpair', `${from}|${to}`);
-      const r = await fetch(u);
+      const r = await fetchT(u, { timeout: 12_000 });
       if (!r.ok) throw new Error('translate ' + r.status);
       const j = await r.json();
       if (j.responseStatus !== 200 && j.responseStatus !== '200') {
@@ -76,8 +95,8 @@ export const translator = {
     const from = detectLang(src);
     if (from === target) return null;
 
-    // 너무 긴 글은 자른다 (MyMemory 는 500자 제한)
-    const q = src.length > 480 ? src.slice(0, 480) + '…' : src;
+    // 너무 긴 글은 UTF-8 바이트 기준으로 자른다 (MyMemory 는 500바이트 제한)
+    const q = clipUtf8(src);
 
     const cache = loadCache();
     const key = `${from}>${target}:${q}`;

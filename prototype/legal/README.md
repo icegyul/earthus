@@ -117,6 +117,7 @@
 | Launch Library 2.3 | 비인증 무료 15회/시간·API 문서 Apache-2.0. **제3자 이미지 라이선스는 항목마다 다르므로 사용하지 않음** |
 | OpenStreetMap | ODbL — **"© OpenStreetMap contributors" 표기 필수** |
 | BigDataCloud | 무료 클라이언트 역지오코딩은 상업 이용 가능. **동의받은 기기의 현재 위치만 허용**, 서버·저장 좌표·임의 좌표 금지 |
+| MyMemory (Translated) | 자동 API 사용 허용·재판매 금지·UTF-8 500바이트/요청. 번역 구문 장기 보관 가능 — **명시적 번역 버튼을 누를 때만 전송** |
 
 > ⚠️ **CelesTrak 확인 필요**: 2026-08-06 공식 Usage Policy에는 비상업 전용이라는
 > 문구가 없고, 갱신당 1회 다운로드·캐시·오류 시 요청 중단을 요구합니다. 현재 earthus의

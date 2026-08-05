@@ -464,6 +464,11 @@
   font:400 11.5px/1 inherit; padding:5px 10px; border-radius:7px; cursor:pointer;
   background:transparent; color:var(--teal); border:1px solid rgba(63,199,192,.35);
 }
+.req-preview-btn{
+  display:block; width:100%; margin:7px 0 10px; padding:8px 10px;
+  line-height:1.35; text-align:center;
+}
+.req-preview-btn:disabled{ opacity:.4; cursor:default; }
 .tr-text{ margin-top:6px; font-size:12.5px; font-weight:300; line-height:1.65; opacity:.72; }
 .rq-foot{ display:flex; align-items:center; gap:8px; margin-top:10px; }
 .rq-vote{

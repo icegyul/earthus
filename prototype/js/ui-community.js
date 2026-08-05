@@ -277,21 +277,36 @@ export const communityPanel = {
     ta.rows = 3; ta.maxLength = 1000; ta.id = 'reqBody';
     form.appendChild(ta);
 
-    // 입력 중 반대 언어 미리보기 — 내가 쓴 글이 상대에게 어떻게 보일지
+    /* 반대 언어 미리보기 — 내가 쓴 글이 상대에게 어떻게 보일지.
+       ⚠️ 예전에는 타이핑 700ms 뒤 초안을 MyMemory로 자동 전송했다.
+       사용자가 보내기도 전에 제3자에게 글을 넘기는 건 고지와 선택이 없었다.
+       이제 버튼을 직접 눌러야만 최대 500바이트가 전송된다. */
     const prev = el('div', 'req-preview'); prev.style.display = 'none';
     form.appendChild(prev);
-    let tt;
+    const previewBtn = el('button', 'tr-btn req-preview-btn', ko
+      ? '기계 번역 미리보기 · MyMemory로 전송'
+      : 'Machine translation preview · sends to MyMemory');
+    previewBtn.type = 'button'; previewBtn.disabled = true;
+    form.appendChild(previewBtn);
     ta.oninput = () => {
-      clearTimeout(tt);
       const v = ta.value.trim();
-      if (v.length < 8) { prev.style.display = 'none'; return; }
-      tt = setTimeout(async () => {
-        const r = await translator.both(v);
-        if (!r.translated) { prev.style.display = 'none'; return; }
-        prev.style.display = 'block';
-        prev.innerHTML = `<span class="tr-tag">${r.to === 'ko' ? '한국어' : 'English'} · ${
-          ko ? '기계 번역' : 'machine'}</span>${esc(r.translated)}`;
-      }, 700);
+      previewBtn.disabled = v.length < 8;
+      prev.style.display = 'none';
+    };
+    previewBtn.onclick = async () => {
+      const v = ta.value.trim();
+      if (v.length < 8) return;
+      previewBtn.disabled = true;
+      previewBtn.textContent = ko ? '번역 중…' : 'Translating…';
+      const r = await translator.both(v);
+      previewBtn.textContent = ko
+        ? '기계 번역 미리보기 · MyMemory로 전송'
+        : 'Machine translation preview · sends to MyMemory';
+      previewBtn.disabled = false;
+      if (!r.translated) { prev.style.display = 'none'; return; }
+      prev.style.display = 'block';
+      prev.innerHTML = `<span class="tr-tag">${r.to === 'ko' ? '한국어' : 'English'} · ${
+        ko ? '기계 번역' : 'machine'}</span>${esc(r.translated)}`;
     };
 
     const btn = el('button', 'btn-primary', ko ? '요청 보내기' : 'Send request');

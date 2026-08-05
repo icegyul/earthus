@@ -515,7 +515,19 @@ const TIME_PRESETS = [
 /* 첫 화면에 올릴 여덟 개. 재난은 바로 옆 Alert 메뉴가 더 빠르므로 중복하지 않는다.
    한국·일본에서 매일 확인하는 현재 기상과, earthus의 강점인 실측 두 종류를 섞는다.
    모델 파고와 부이는 함께 있어야 예측과 실측을 곧바로 오갈 수 있다. */
-const QUICK_IDS = ['gk2aIRea', 'temp', 'rain', 'wind', 'pm25', 'wave', 'buoy', 'landobs'];
+/* 빠른 레이어 — 받은 지시(2026-08-06)
+   "NOAA 와 수오미, 천리안 2km 밤에도, 히마와리9 이렇게 빠른 레이어로 배치"
+   ⚠️ 천리안 동아시아 2km(gk2aIRea)는 맨 앞이었는데 **뒤로 내린다**.
+      위성 넷을 나란히 두고 그중 하나로 보이게 하는 것이 지시의 뜻이다.
+   ⚠️ 히마와리는 '9호'가 아니라 레이어 id 로는 himawari 다 — 우리가 받는 것이
+      히마와리-9 이고 이름은 세대를 안 붙인다(위성 교체 시 이름이 틀려진다). */
+const QUICK_IDS = [
+  'clouds',     // 🌐 NOAA GMGSI 전지구 합성
+  'truecolor',  // 🇺🇸 수오미 NPP
+  'gk2aIRea',   // 🇰🇷 천리안2A 동아시아 2km · 밤에도
+  'himawari',   // 🇯🇵 히마와리
+  'temp', 'rain', 'wind', 'wave',
+];
 
 export const layerBar = {
   open: false,      // 1단

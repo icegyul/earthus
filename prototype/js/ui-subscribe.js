@@ -117,8 +117,7 @@ export const subscribeSheet = {
          출처, 관측 시각, 표본 수, 판단 기준, 그리고 <b>우리가 모르는 것</b>까지.</p>
 
       <h4>⚠️ 지금 못 하는 것</h4>
-      <p>비행기와 배의 실시간 위치는 <b>공공자료가 아닙니다.</b> 돈을 주고 사와야 합니다.
-         지금은 그 돈이 없어서 못 합니다. <b>있는 척하지 않겠습니다.</b></p>
+      <p>비행기와 배의 실시간 위치는 <b>공공자료가 아닙니다.</b> 돈을 주고 사와야 합니다.</p>
 
       <h4>혼자 만들고 있습니다</h4>
       <p>한국·일본·영국·미국이 공개한 자료를 모아 최대한 무료로 드리려 합니다.
@@ -131,9 +130,6 @@ export const subscribeSheet = {
         <li>책·행사 같은 혜택이 생기면 <b>언제나 먼저</b> 모시겠습니다 — 서비스가 살아 있는 한</li>
       </ul>
 
-      <p class="sub-why-warn">⚠️ <b>아직 없는 기능에 미리 내시는 돈입니다.</b>
-         언제 열릴지 약속드릴 수 없습니다.<br>
-         마음이 바뀌시면 <b>7일 안에</b> 말씀해 주세요. 그대로 돌려드립니다.</p>
     ` : `
       <h4>We are not selling the data</h4>
       <p>The data is public. Anyone can fetch it. What we do is tell you
@@ -141,8 +137,7 @@ export const subscribeSheet = {
          thresholds, and <b>what we do not know</b>.</p>
 
       <h4>⚠️ What we cannot do yet</h4>
-      <p>Live aircraft and ship positions are <b>not public data</b>. They must be bought.
-         We cannot afford that yet, and we will not pretend otherwise.</p>
+      <p>Live aircraft and ship positions are <b>not public data</b>. They must be bought.</p>
 
       <h4>Built by one person</h4>
       <p>Public data from Korea, Japan, the UK and the US, kept free as far as we can.
@@ -155,9 +150,6 @@ export const subscribeSheet = {
         <li>Books, events and other perks — <b>you are invited first</b>, as long as we exist</li>
       </ul>
 
-      <p class="sub-why-warn">⚠️ <b>You are paying ahead of a feature that does not exist yet.</b>
-         We cannot promise a date.<br>
-         Changed your mind? Tell us within <b>7 days</b> and we refund in full.</p>
     `));
 
     feat.appendChild(el('h4', null, ko ? '구독하면 열리는 것' : 'Unlocked with Pro'));

@@ -105,7 +105,7 @@ function liveActions() {
 }
 /* 2단을 여는 것(지구 스타일·Alert)은 data-open 이라 따로 둔다 */
 const OPENS = [
-  { open: 'earth', ko: '레이어', en: 'Layers', hint: '바탕·기상·해양·대기질·생물' },
+  { open: 'earth', ko: '지구 스타일', en: 'Earth style', hint: '바탕·기상·해양·대기질·생물' },
   { open: 'alert', ko: 'Alert',       en: 'Alert',       hint: '태풍·지진·특보 레이어' },
 ];
 

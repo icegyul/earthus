@@ -142,7 +142,9 @@ export const i18n = {
      → data-i18n="키" 를 붙이고 여기서 한 번에 갈아 끼운다.
      ⚠️ 키가 사전에 없으면 **건드리지 않는다.** 빈 글자로 지우면 메뉴가 통째로 사라진다. */
   STATIC: {
-    'm.layers':   { ko: '레이어',            en: 'Layers' },
+    /* ⚠️ 한때 '레이어'로 바꿨다가 되돌렸다 (받은 지시). 감사에서는 '스타일'이
+       테마 고르는 곳으로 읽힌다고 했지만, PD 판단은 '지구 스타일'이다. */
+    'm.layers':   { ko: '지구 스타일',      en: 'Earth style' },
     'm.sat':      { ko: '인공위성',          en: 'Satellites' },
     'm.alert':    { ko: '경보·재난',         en: 'Alerts' },
     'm.news':     { ko: '뉴스',              en: 'News' },

@@ -500,6 +500,18 @@ const PRESETS = [
     ids: ['wave', 'buoy'] },
 ];
 
+/* 일반 기상 격자에는 연속 시간축 자료가 없다. 현재 실황과 내일 하루 최고·최저,
+   대표 바람만 있으므로 그 세 상태만 정직하게 빠르게 바꾼다.
+   ⚠️ '내일 낮/밤'이라고 쓰지 않는다 — 최고·최저가 발생하는 시각은 지점마다 다르다. */
+const TIME_PRESETS = [
+  { id: 'wx-now', ko: '지금', en: 'Now', sub: '실황 기온·바람', subEn: 'Observed temp · wind',
+    ids: ['temp', 'wind'] },
+  { id: 'wx-high', ko: '내일 최고', en: 'Tomorrow high', sub: '일 최고·대표 바람', subEn: 'Daily high · wind',
+    ids: ['tmax', 'windfc'] },
+  { id: 'wx-low', ko: '내일 최저', en: 'Tomorrow low', sub: '일 최저·대표 바람', subEn: 'Daily low · wind',
+    ids: ['tmin', 'windfc'] },
+];
+
 /* 첫 화면에 올릴 여덟 개. 재난은 바로 옆 Alert 메뉴가 더 빠르므로 중복하지 않는다.
    한국·일본에서 매일 확인하는 현재 기상과, earthus의 강점인 실측 두 종류를 섞는다.
    모델 파고와 부이는 함께 있어야 예측과 실측을 곧바로 오갈 수 있다. */
@@ -680,6 +692,25 @@ export const layerBar = {
     }
 
     if (!isAlert) {
+      const times = el('section', 'ly-times');
+      const timeHead = el('div', 'ly-time-head');
+      timeHead.textContent = ko ? '시간 빠른 전환' : 'Time shortcuts';
+      times.appendChild(timeHead);
+      TIME_PRESETS.forEach(p => {
+        const b = el('button', 'ly-time');
+        b.type = 'button'; b.dataset.timePreset = p.id;
+        b.innerHTML = `<b>${ko ? p.ko : p.en}</b><span>${ko ? p.sub : p.subEn}</span>`;
+        b.onclick = () => this.applyWeatherTime(p);
+        times.appendChild(b);
+      });
+      const timeNote = el('p', 'ly-time-note');
+      timeNote.textContent = ko
+        ? '기온·바람만 바꿉니다. 내일은 시간별 지도가 아니라 하루 최고·최저 요약입니다.'
+        : 'Changes temp and wind only. Tomorrow is a daily summary, not an hourly map.';
+      times.appendChild(timeNote);
+      strip.appendChild(times);
+      strip.appendChild(el('div', 'ly-gap'));
+
       const presets = el('section', 'ly-presets');
       const title = el('div', 'ly-preset-head');
       title.textContent = ko ? '한 번에 보기' : 'Quick combinations';
@@ -831,6 +862,29 @@ export const layerBar = {
       b.classList.toggle('on', on);
       b.setAttribute('aria-pressed', String(on));
     });
+    document.querySelectorAll('#layerStrip .ly-time').forEach(b => {
+      const p = TIME_PRESETS.find(x => x.id === b.dataset.timePreset);
+      const on = !!p && p.ids.every(id => store.isOn(id));
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+  },
+
+  applyWeatherTime(preset) {
+    const ids = new Set(preset.ids);
+    /* 다른 바탕·관측소는 그대로 두고 시간에 따라 바뀌는 기온·바람만 교체한다.
+       전체 프리셋 applyPreset을 쓰면 부이·구름까지 꺼져 '시간만 바꿨는데 화면이
+       초기화됐다'가 된다. */
+    ['temp', 'tmax', 'tmin', 'wind', 'windfc'].forEach(id => {
+      if (!ids.has(id) && store.isOn(id)) store.setLayer(id, false);
+    });
+    preset.ids.forEach(id => {
+      if (!store.isOn(id)) store.setLayer(id, true);
+    });
+    this.open = false; this.sub = null; this._apply?.();
+    toast(i18n.lang === 'ko'
+      ? `${preset.ko} 기온·바람으로 바꿨습니다`
+      : `Switched to ${preset.en.toLowerCase()} temperature and wind`);
   },
 
   applyPreset(preset) {

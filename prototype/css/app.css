@@ -586,6 +586,21 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 .ly-preset.on b{ color:#9fe6f5; }
 .ly-preset:focus-visible{ outline:2px solid #9fe6f5; outline-offset:2px; }
 .ly-presets + .ly-gap{ grid-column:1/-1; }
+.ly-times{ grid-column:1/-1; display:grid; grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:5px; }
+.ly-time-head{ grid-column:1/-1; font-size:9.5px; letter-spacing:.06em; opacity:.42;
+  padding:1px 2px 2px; }
+.ly-time{ min-width:0; min-height:44px; padding:6px 4px; border-radius:9px; cursor:pointer;
+  text-align:center; color:var(--paper); background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.10); }
+.ly-time b{ display:block; font-size:10.5px; line-height:1.25; font-weight:550; word-break:keep-all; }
+.ly-time span{ display:none; }
+.ly-time:hover{ background:rgba(255,255,255,.07); }
+.ly-time.on{ border-color:rgba(90,209,232,.44); background:rgba(90,209,232,.08); }
+.ly-time.on b{ color:#9fe6f5; }
+.ly-time:focus-visible{ outline:2px solid #9fe6f5; outline-offset:2px; }
+.ly-time-note{ grid-column:1/-1; margin:1px 2px 0; font-size:8.5px; line-height:1.45;
+  color:rgba(255,255,255,.38); word-break:keep-all; }
 .ly-section-head{
   grid-column:1/-1; margin-top:2px; padding:2px;
   font-size:9.5px; letter-spacing:.06em; opacity:.42;

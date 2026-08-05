@@ -185,7 +185,7 @@ def kelvin_to_c(v):
 #   → **이미 기관이 이름을 붙인 태풍만** 남긴다(longStormName 이 있는 것).
 #
 # ⚠️ BUFR 결측은 None 이 아니라 1e100 이다. 그대로 쓰면 위도 1e100 이 찍힌다.
-TC_DIR = "{root}/{day}/{hh:02d}z/ifs/0p25/oper/"
+TC_DIR = "{root}/{day}/{hh:02d}z/ifs/0p25/{stream}/"
 TC_MISSING = 1e10
 TC_DST = "events/typhoon-ecmwf.json"
 
@@ -196,10 +196,10 @@ TC_DST = "events/typhoon-ecmwf.json"
 TC_CAP_H = 120
 
 
-def tc_track_file(day, hh):
+def tc_track_file(day, hh, stream="oper"):
     """그 회차의 `-tf.bufr` 주소. ⚠️ 파일명에 붙는 스텝(360h)이 회차마다 다를 수 있어
        디렉터리 목록에서 찾는다 — 이름을 고정하면 조용히 404 가 된다."""
-    base = TC_DIR.format(root=ROOT, day=day, hh=hh)
+    base = TC_DIR.format(root=ROOT, day=day, hh=hh, stream=stream)
     try:
         html = get(base, timeout=30).decode("utf-8", "replace")
     except Exception:                                        # noqa: BLE001
@@ -212,14 +212,14 @@ def tc_track_file(day, hh):
     return href if href.startswith("http") else "https://data.ecmwf.int" + href
 
 
-def tc_tracks(day, hh):
+def tc_tracks(day, hh, stream="oper"):
     """BUFR → [{id, name, steps:[{h,lat,lon}]}]. eccodes 가 없으면 빈 목록."""
     try:
         import eccodes as ec
     except Exception as e:                                   # noqa: BLE001
         print(f"[tc] eccodes 없음 {e!r}")
         return [], None
-    url = tc_track_file(day, hh)
+    url = tc_track_file(day, hh, stream)
     if not url:
         return [], None
     try:
@@ -239,13 +239,123 @@ def tc_tracks(day, hh):
             if h is None:
                 break
             try:
-                out.extend(_one_storm(ec, h))
+                parser = _one_ensemble_storm if stream == "enfo" else _one_storm
+                out.extend(parser(ec, h))
             except Exception as e:                           # noqa: BLE001
                 print(f"[tc] 메시지 건너뜀 {e!r}")
             finally:
                 ec.codes_release(h)
         fh.close()
     return out, url
+
+
+def _one_ensemble_storm(ec, h):
+    """압축 BUFR 한 메시지 → 이름 붙은 태풍의 멤버별 독립 진로.
+
+    ⚠️ 평균 진로를 만들지 않는다. 각 멤버는 기관이 독립 계산한 결과이고,
+       소멸 시각도 다르다. earthus 가 좌표를 평균 내면 새 예보를 만드는 셈이다.
+    ⚠️ 압축 BUFR 의 값 하나는 "모든 subset 에 같은 값"이라는 뜻이다.
+       첫 분석 위치가 실제로 이 형태라 멤버 수만큼 복제하되, 그 밖의 애매한
+       길이는 억지로 맞추지 않고 해당 시각을 버린다.
+    """
+    ec.codes_set(h, "unpack", 1)
+
+    def ga(k):
+        try:
+            return list(ec.codes_get_array(h, k))
+        except Exception:                                  # noqa: BLE001
+            return []
+
+    def one(k):
+        a = ga(k)
+        return a[0] if a else None
+
+    name = str(one("#1#longStormName") or "").strip()
+    sid = str(one("#1#stormIdentifier") or "").strip()
+    # ⚠️ 이름 없는 모델 발생 저기압은 화면에 내보내지 않는다.
+    if not name or name == sid:
+        return []
+
+    n = int(one("numberOfSubsets") or 0)
+    member_ids = ga("#1#ensembleMemberNumber")
+    member_types = ga("#1#ensembleForecastType")
+    if n < 2 or len(member_ids) not in (1, n):
+        return []
+    if len(member_ids) == 1:
+        member_ids = list(range(1, n + 1))
+    if len(member_types) == 1:
+        member_types *= n
+    if len(member_types) != n:
+        member_types = [None] * n
+
+    tracks = {int(member_ids[i]): {} for i in range(n)}
+
+    def expanded(a):
+        if len(a) == 1:
+            return a * n
+        return a if len(a) == n else None
+
+    it = ec.codes_bufr_keys_iterator_new(h)
+    keys = []
+    while ec.codes_bufr_keys_iterator_next(it):
+        keys.append(ec.codes_bufr_keys_iterator_get_name(it))
+    ec.codes_bufr_keys_iterator_delete(it)
+
+    hour, centre, lat = 0, False, None
+    for k in keys:
+        b = k.rsplit("#", 1)[-1]
+        if b == "timePeriod":
+            a = ga(k)
+            if a and abs(float(a[0])) < TC_MISSING:
+                hour = int(a[0])
+        elif b == "meteorologicalAttributeSignificance":
+            a = ga(k)
+            centre = bool(a) and all(int(x) == 1 for x in a)
+        elif b == "latitude" and centre:
+            lat = expanded(ga(k))
+        elif b == "longitude" and centre:
+            lon = expanded(ga(k))
+            if lat is not None and lon is not None:
+                for i in range(n):
+                    la, lo = float(lat[i]), float(lon[i])
+                    if abs(la) >= TC_MISSING or abs(lo) >= TC_MISSING:
+                        continue
+                    tracks[int(member_ids[i])].setdefault(hour, {
+                        "h": hour, "lat": round(la, 2),
+                        "lon": round(((lo + 180) % 360) - 180, 2),
+                    })
+            centre = False
+            lat = None
+
+    members = []
+    for i in range(n):
+        mid = int(member_ids[i])
+        full = sorted(tracks[mid])
+        kept = [tracks[mid][x] for x in full if x <= TC_CAP_H]
+        if len(kept) < 2:
+            continue
+        members.append({
+            "member": mid,
+            "type": "control" if member_types[i] == 0 else "perturbed",
+            "steps": kept,
+            "modelHorizonH": full[-1],
+            "shownH": kept[-1]["h"],
+        })
+    if not members:
+        return []
+
+    hours = sorted({x["h"] for m in members for x in m["steps"]})
+    available = [{"h": hour,
+                  "n": sum(any(x["h"] == hour for x in m["steps"])
+                           for m in members)} for hour in hours]
+    return [{
+        "id": sid, "name": name,
+        "totalMembers": n,
+        "members": members,
+        "availableByH": available,
+        "modelHorizonH": max(m["modelHorizonH"] for m in members),
+        "shownH": max(m["shownH"] for m in members),
+    }]
 
 
 def _one_storm(ec, h):
@@ -306,26 +416,46 @@ def run_tc(now):
        한쪽이 실패해도 다른 쪽은 나가야 한다. 실제로 회차 조건이 서로 다르다
        (기온은 IFS·AIFS 둘 다 필요하고, 진로는 IFS 하나면 된다)."""
     for day, hh in candidate_runs(now, back=6):
-        storms, url = tc_tracks(day, hh)
+        storms, url = tc_tracks(day, hh, "oper")
         if not storms:
             continue
+        ensemble, ensemble_url = tc_tracks(day, hh, "enfo")
+        ensemble_by_name = {s["name"].upper(): s for s in ensemble}
+        ensemble_by_id = {s["id"].upper(): s for s in ensemble}
+        for storm in storms:
+            ens = (ensemble_by_name.get(storm["name"].upper())
+                   or ensemble_by_id.get(storm["id"].upper()))
+            if not ens:
+                continue
+            # 결정론 진로와 앙상블 원자료를 같은 폭풍 객체에 두되, 평균은 만들지 않는다.
+            storm["ensemble"] = {
+                "totalMembers": ens["totalMembers"],
+                "members": ens["members"],
+                "availableByH": ens["availableByH"],
+                "modelHorizonH": ens["modelHorizonH"],
+                "shownH": ens["shownH"],
+            }
         doc = {
             "generated": now.strftime("%Y-%m-%dT%H:%M:00Z"),
             "run": f"{day}{hh:02d}",
             "agency": "ECMWF", "agencyKo": "유럽중기예보센터",
-            "model": "IFS (HRES)",
+            "model": "IFS (HRES + ENS)",
             "kindKo": "수치모델 예보", "kindEn": "numerical model forecast",
             "source": "ECMWF Open Data — IFS tropical cyclone tracks (BUFR)",
             "license": "CC-BY-4.0 — ECMWF",
             "sourceUrl": url,
+            "ensembleSourceUrl": ensemble_url,
             "capH": TC_CAP_H,
             "note": {
                 "ko": "유럽중기예보센터(ECMWF)의 물리 모델 IFS 가 낸 태풍 진로입니다. "
                       "⚠️ 기상청·일본 기상청이 내는 **공식 예보(통보문)와는 성격이 다릅니다** — "
                       "이것은 모델이 계산한 결과이고, 사람이 검토해 발표한 예보가 아닙니다. "
+                      "앙상블 선은 각 멤버의 독립 계산 결과이며 평균 진로가 아닙니다. "
+                      "멤버마다 자료가 있는 시각이 달라 시각별 표시 수가 달라질 수 있습니다. "
                       f"모델은 더 멀리까지 계산하지만 화면에는 {TC_CAP_H}시간까지만 그립니다.",
                 "en": "Tropical cyclone tracks from ECMWF's IFS physics model. "
-                      "These are raw model output, not an official warning-centre forecast.",
+                      "These are raw model output, not an official warning-centre forecast. "
+                      "Ensemble lines are independent members, not a mean track.",
             },
             "storms": storms,
         }
@@ -334,7 +464,8 @@ def run_tc(now):
                                       separators=(",", ":")).encode(),
                       ContentType="application/json; charset=utf-8",
                       CacheControl="public, max-age=1800")
-        names = ", ".join(f"{s['name']}({s['shownH']}h/{s['modelHorizonH']}h)"
+        names = ", ".join(f"{s['name']}({s['shownH']}h/{s['modelHorizonH']}h, "
+                          f"ENS {len((s.get('ensemble') or {}).get('members') or [])})"
                           for s in storms)
         print(f"[tc] 회차 {day}{hh:02d}z · 태풍 {len(storms)} — {names}")
         return {"run": f"{day}{hh:02d}", "storms": len(storms)}

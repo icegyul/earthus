@@ -152,6 +152,7 @@ const ecmwfTc = {
       issue: this.meta?.at, run: this.meta?.run,
       modelHorizonH: s.modelHorizonH, shownH: s.shownH,
       steps: (s.steps || []).map(p => ({ ...p, validUtc: null })),
+      ensemble: s.ensemble || null,
     };
   },
 };
@@ -254,6 +255,7 @@ export const cyclones = {
   _hist: new Map(),  // eventid → [{t, lat, lon, name, alert}] 우리가 기록한 위치
   _selected: null,
   _spinTimer: null,
+  _ensembleVisible: true,
 
   init() {
     this.ds = new Cesium.CustomDataSource('cyclone');
@@ -618,6 +620,45 @@ export const cyclones = {
     const eu = ecmwfTc.get(s.name);
     const groups = [...(off?.agencies || []), ...(eu ? [eu] : [])];
 
+    /* ══ ECMWF 앙상블 진로 다발 ════════════════════════════════════
+       각 선은 ECMWF 가 독립 계산한 한 멤버다. 평균·중심선을 새로 만들지 않는다.
+       ⚠️ 중간 시각의 좌표가 없으면 앞뒤를 잇지 않는다. 이어 버리면 ECMWF 가 내지 않은
+          구간을 earthus 가 직선으로 보간해 새 예보를 만드는 셈이다.
+       ⚠️ 선택한 태풍에만 만들고, 무한 애니메이션은 없다. 51개 선은 흐린 배경으로 한 번만
+          렌더해 결정론 진로와 공식 통보문이 계속 앞에서 읽히게 한다. */
+    const ens = eu?.ensemble;
+    (ens?.members || []).forEach(member => {
+      const ordered = (member.steps || [])
+        .filter(x => x.lat != null && x.lon != null)
+        .sort((a, b) => a.h - b.h);
+      const segments = [];
+      let segment = [];
+      ordered.forEach(x => {
+        if (segment.length && x.h - segment[segment.length - 1].h > 6) {
+          if (segment.length > 1) segments.push(segment);
+          segment = [];
+        }
+        segment.push(x);
+      });
+      if (segment.length > 1) segments.push(segment);
+      segments.forEach((points, si) => {
+        const entity = this.ds.entities.add({
+          id: `tc:${s.id}:ens:${member.member}:${si}`,
+          show: this._ensembleVisible,
+          polyline: {
+            positions: lifted(points.map(x => [x.lon, x.lat]).flat(), LIFT_LINE_M - 400),
+            width: member.type === 'control' ? 1.05 : 0.75,
+            material: Cesium.Color.fromCssColorString('#ff7ab6')
+              .withAlpha(member.type === 'control' ? 0.24 : 0.13),
+            arcType: Cesium.ArcType.GEODESIC,
+            clampToGround: false,
+          },
+        });
+        entity._earthusEnsemble = true;
+        made.push(entity);
+      });
+    });
+
     groups.forEach((g, gi) => {
       const steps = (g.steps || []).filter(x => x.lat != null && x.lon != null);
       if (steps.length < 2) return;
@@ -766,7 +807,7 @@ export const cyclones = {
       }));
     });
 
-    this._legend(groups, AG, ko, !!analog.get(s.id, s.name)?.sample?.length, s);
+    this._legend(groups, AG, ko, !!analog.get(s.id, s.name)?.sample?.length, s, ens);
   },
 
   /* ══ 범례 ═════════════════════════════════════════════════════════
@@ -775,11 +816,24 @@ export const cyclones = {
         과거 유사 사례를 흐리게 깐 것은 "예보로 읽히면 안 되니까"였는데,
         흐리게 하는 것만으로는 **뜻을 지우기만 하고 알려주지는 못했다.**
         선을 그리면 그 선이 무엇인지도 같이 적어야 한다. */
-  _legend(groups, AG, ko, hasAnalog, s) {
+  _legend(groups, AG, ko, hasAnalog, s, ensemble) {
     let box = document.getElementById('tcLegend');
     if (!box) {
       box = document.createElement('div');
       box.id = 'tcLegend';
+      box.addEventListener('click', e => {
+        const btn = e.target.closest('[data-tcl-ensemble]');
+        if (!btn) return;
+        this._ensembleVisible = !this._ensembleVisible;
+        this.ds.entities.values.forEach(entity => {
+          if (entity._earthusEnsemble) entity.show = this._ensembleVisible;
+        });
+        btn.setAttribute('aria-pressed', String(this._ensembleVisible));
+        btn.textContent = this._ensembleVisible
+          ? (i18n.lang === 'ko' ? '진로 다발 숨기기' : 'Hide track bundle')
+          : (i18n.lang === 'ko' ? '진로 다발 보이기' : 'Show track bundle');
+        power.animate(300);
+      });
       document.body.appendChild(box);
     }
     const row = (color, dashed, label, note) =>
@@ -811,6 +865,20 @@ export const cyclones = {
       return row(m.color, true, name, note);
     });
     rows.unshift(gdacsRow);
+    if ((ensemble?.members || []).length) {
+      const total = ensemble.totalMembers || ensemble.members.length;
+      const available = ensemble.availableByH || [];
+      const last = available[available.length - 1];
+      const count = last ? last.n : ensemble.members.length;
+      rows.push(row('#ff7ab6', false,
+        ko ? `ECMWF 앙상블 ${total}개 멤버` : `ECMWF ensemble ${total} members`,
+        ko ? `화면 진로 ${ensemble.members.length}개 · ${last?.h ?? ''}시간 자료 ${count}개 · 평균 아님`
+           : `${ensemble.members.length} shown · ${count} at ${last?.h ?? ''}h · not a mean`));
+      rows.push(`<button type="button" class="tcl-toggle" data-tcl-ensemble
+        aria-pressed="${this._ensembleVisible}">${this._ensembleVisible
+          ? (ko ? '진로 다발 숨기기' : 'Hide track bundle')
+          : (ko ? '진로 다발 보이기' : 'Show track bundle')}</button>`);
+    }
     if (groups.some(g => (g.steps || []).some(x => x.circleKm > 0))) {
       rows.push(row('rgba(255,255,255,.55)', true,
         ko ? '옅은 동그라미' : 'Thin circles',
@@ -1149,6 +1217,27 @@ export const cyclones = {
         ? `${ags.length}개 기관의 발표를 **그대로** 옮겼습니다. 서로 다를 수 있으며 `
           + '저희가 하나로 합치거나 평균 내지 않습니다. 실제 대응은 기상청 발표를 따르세요.'
         : `${ags.length} agencies, relayed verbatim and not merged.`;
+    }
+
+    /* ECMWF 앙상블은 공식 통보문 아래에 따로 둔다.
+       ⚠️ 기관 예보 수에 합치지 않는다. 51개 멤버를 "51개 기관"으로 읽히게 하거나,
+          평균 진로처럼 요약하면 자료의 성격이 바뀐다. 화면에 실제 그릴 수 있는 진로 수와
+          마지막 시각에 좌표가 있는 수만 그대로 센다. */
+    const eu = ecmwfTc.get(s.name);
+    const ens = eu?.ensemble;
+    if ((ens?.members || []).length) {
+      const available = ens.availableByH || [];
+      const last = available[available.length - 1];
+      const total = ens.totalMembers || ens.members.length;
+      d[ko ? `ECMWF 앙상블 · ${eu.run || '회차 미상'}`
+           : `ECMWF ensemble · ${eu.run || 'run unknown'}`] = ko
+        ? `전체 ${total}개 멤버 중 **화면에 그릴 수 있는 진로 ${ens.members.length}개**입니다. `
+          + (last ? `+${last.h}시간 좌표는 ${last.n}개 멤버에 있습니다. ` : '')
+          + '각 선은 서로 다른 모델 계산 결과이며 **평균 진로가 아닙니다**. '
+          + '사람이 검토해 발표한 공식 통보문도 아닙니다.'
+        : `${ens.members.length} drawable tracks from ${total} members. `
+          + (last ? `${last.n} members have coordinates at +${last.h} h. ` : '')
+          + 'Each line is an independent model calculation, not a mean track or an official bulletin.';
     }
 
     const an = analog.get(s.id, s.name);

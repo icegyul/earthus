@@ -776,6 +776,7 @@ function renderExtract() {
   $('#downloadExtract').disabled = rows.length === 0;
   $('#downloadExtractManifest').disabled = rows.length === 0;
   $('#downloadExtractReadme').disabled = rows.length === 0;
+  $('#downloadExtractPython').disabled = rows.length === 0;
   renderQuality(state.extractResult);
   renderTrend(state.extractResult);
 }
@@ -790,6 +791,7 @@ async function loadExtractRange() {
   $('#downloadExtract').disabled = true;
   $('#downloadExtractManifest').disabled = true;
   $('#downloadExtractReadme').disabled = true;
+  $('#downloadExtractPython').disabled = true;
   $('#downloadQuality').disabled = true;
   $('#downloadTrendCsv').disabled = true;
   $('#downloadTrendSvg').disabled = true;
@@ -1006,6 +1008,87 @@ ${value(sourceUrl)}.
 `;
 }
 
+function buildExtractPython(result, manifest) {
+  const files = [manifest.file, ...manifest.derivedFiles].map(file => ({
+    name: file.name,
+    sha256: file.sha256,
+    rows: file.rows,
+    headers: file.fields.map(field => field.name),
+  }));
+  const expected = JSON.stringify(files);
+  return `#!/usr/bin/env python3
+"""Verify earthus Custom Extract files using only the Python standard library.
+
+Put this script, the selected CSV, and every derived CSV from the matching
+manifest in the same directory, then run: python3 ${extractFilename(result).replace(/\.csv$/, '.verify.py')}
+"""
+import csv
+import hashlib
+import json
+from decimal import Decimal
+from pathlib import Path
+
+EXPECTED = json.loads(r'''${expected}''')
+DATASET = ${JSON.stringify(result.dataset)}
+ROOT = Path(__file__).resolve().parent
+
+
+def verify_file(spec):
+    path = ROOT / spec["name"]
+    if not path.is_file():
+        raise SystemExit(f"MISSING: {path.name}")
+    raw = path.read_bytes()
+    digest = hashlib.sha256(raw).hexdigest()
+    if digest != spec["sha256"]:
+        raise SystemExit(
+            f"SHA256 MISMATCH: {path.name} expected={spec['sha256']} actual={digest}"
+        )
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if reader.fieldnames != spec["headers"]:
+            raise SystemExit(
+                f"HEADER MISMATCH: {path.name} expected={spec['headers']} actual={reader.fieldnames}"
+            )
+        rows = list(reader)
+    if len(rows) != spec["rows"]:
+        raise SystemExit(
+            f"ROW COUNT MISMATCH: {path.name} expected={spec['rows']} actual={len(rows)}"
+        )
+    print(f"OK {path.name}: rows={len(rows)} sha256={digest}")
+    return rows
+
+
+verified = {spec["name"]: verify_file(spec) for spec in EXPECTED}
+main_name = EXPECTED[0]["name"]
+if DATASET == "cases":
+    checked = 0
+    tolerance = Decimal("0.001")
+    for number, row in enumerate(verified[main_name], start=2):
+        observation = row.get("observation", "")
+        forecast = row.get("forecast", "")
+        difference = row.get("forecast_minus_observation", "")
+        if not observation or not forecast or not difference:
+            continue
+        recomputed = Decimal(forecast) - Decimal(observation)
+        if abs(recomputed - Decimal(difference)) > tolerance:
+            raise SystemExit(
+                f"DIFFERENCE MISMATCH: {main_name} line={number} "
+                f"stored={difference} recomputed={recomputed}"
+            )
+        checked += 1
+    print(f"OK forecast_minus_observation: checked={checked} tolerance={tolerance}")
+
+print("VERIFIED: all listed files match the manifest snapshot.")
+`;
+}
+
+async function downloadExtractPython(result) {
+  const manifest = await buildExtractManifest(result);
+  const script = buildExtractPython(result, manifest);
+  const filename = extractFilename(result).replace(/\.csv$/, '.verify.py');
+  downloadText(filename, script, 'text/x-python;charset=utf-8');
+}
+
 async function downloadExtractReadme(result) {
   const manifest = await buildExtractManifest(result);
   const readme = buildExtractReadme(result, manifest);
@@ -1068,6 +1151,23 @@ function initExtract() {
     } catch (error) {
       $('#error').hidden = false;
       $('#error').textContent = `인용·방법 메모를 만들지 못했습니다. (${error.message})`;
+    } finally {
+      button.disabled = false;
+      button.textContent = original;
+    }
+  });
+  $('#downloadExtractPython').addEventListener('click', async event => {
+    const result = state.extractResult;
+    if (!result?.rows.length) return;
+    const button = event.currentTarget;
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = '검증 코드 만드는 중…';
+    try {
+      await downloadExtractPython(result);
+    } catch (error) {
+      $('#error').hidden = false;
+      $('#error').textContent = `재현 Python 코드를 만들지 못했습니다. (${error.message})`;
     } finally {
       button.disabled = false;
       button.textContent = original;

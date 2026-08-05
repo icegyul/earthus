@@ -90,6 +90,7 @@ export const renderQuality = {
       this._lastRenderT = now;
       this._renderCount++;
       if (this._t0) this._costs.push(now - this._t0);
+      this._scheduleJudge();
       /* ⚠️ 주사율을 "렌더 간격"으로 재면 안 된다 — requestRenderMode 에서 실제 렌더는
          power.js 가 초당 30번(인트로)~11번(drift)으로 캡하므로 30Hz 로 오판한다(실측 버그).
          rAF 은 렌더 횟수와 무관하게 화면 주사율(120Hz)로 발생하므로, 렌더가 일어나는
@@ -98,14 +99,21 @@ export const renderQuality = {
     });
     // 화면이 돌아오면(또는 기기·모드가 바뀌었을 수 있으니) 다시 한 번 측정한다.
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) { this._locked = false; this._seen = 0; this._gaps = []; }
+      if (document.hidden) {
+        clearTimeout(this._judgeTimer);
+        this._judgeTimer = null;
+      } else {
+        this._locked = false; this._seen = 0; this._gaps = [];
+      }
     });
     this._watchPressure();
     /* ⚠️ 예전엔 화면 주사율(60~120Hz)로 도는 rAF 안에서 판정했다.
        그런데 requestRenderMode 로 가만히 있으면 렌더가 0 인데도 그 rAF 이 계속 돌아
        CPU 가 깊은 절전에 못 들었다(발열·배터리). 판정에 필요한 건 초당 한 번뿐이고,
-       판정에 쓰는 프레임 비용·렌더 횟수는 위 postRender 가 렌더가 있을 때만 모아준다. */
-    this._judgeTimer = setInterval(() => this._judge(), 1000);
+       판정에 쓰는 프레임 비용·렌더 횟수는 위 postRender 가 렌더가 있을 때만 모아준다.
+       ⚠️ 1초 setInterval 도 유휴 중에는 불필요한 깨움이다. 렌더가 생긴 뒤에만
+          예약하고, 렌더가 끊기면 한 번 판정한 뒤 타이머도 같이 끝낸다. */
+    this._scheduleJudge();
     return this;
   },
 
@@ -194,6 +202,17 @@ export const renderQuality = {
     requestAnimationFrame(tick);
   },
 
+  _judgeTimer: null,
+  _scheduleJudge() {
+    if (this._judgeTimer != null || document.hidden) return;
+    this._judgeTimer = setTimeout(() => {
+      this._judgeTimer = null;
+      this._judge();
+      // 계속 그리는 중일 때만 다음 판정을 예약한다. 완전 유휴면 여기서 끝난다.
+      if (performance.now() - this._lastRenderT < 1200) this._scheduleJudge();
+    }, 1000);
+  },
+
   /* 프레임 감시. 1초마다 판정한다.
      ⚠️ 카메라가 움직이는 동안(= 실제 렌더가 일어난 초)에만 의미가 있다 — 정지 상태에서도
         예전엔 계속 재려 했지만, 렌더가 없으면 표본(_costs)이 비어 판정을 건너뛴다.
@@ -201,7 +220,7 @@ export const renderQuality = {
   _judge() {
     const now = performance.now();
 
-    // 방금 1초 동안 실제로 그린 횟수. (setInterval 간격 ≈ 1000ms 라 그대로 초당값)
+    // 방금 약 1초 동안 실제로 그린 횟수 (_scheduleJudge 간격이 1000ms).
     this.renderFps = this._renderCount;
     this._renderCount = 0;
     // 절전 표시 비교용 — "이 화면이 낼 수 있는 최대"(주사율). 아직 못 쟀으면 렌더율로 대체.

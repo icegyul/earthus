@@ -20,7 +20,8 @@
 //    그래서 흘러가기(drift)를 preRender 에 걸어두면
 //      렌더 없음 → tick 없음 → 렌더 요청 없음 → 영영 멈춤
 //    이라는 교착에 빠진다.
-//    → 애니메이션 시계는 렌더와 무관한 setInterval 로 따로 돌린다. 그게 이 파일이다.
+//    → 애니메이션 시계는 렌더와 무관한 짧은 setTimeout 으로 따로 돌린다.
+//      단, 요청이 있을 때만 켜고 유휴가 되면 타이머 자체도 없앤다.
 
 import { viewer, scene } from './viewer.js';
 
@@ -36,7 +37,9 @@ export const power = {
   _gap: 0,             // 렌더 사이 최소 간격(ms) — 느린 애니메이션을 위한 것
   _lastRender: 0,
   _clock: null,
-  _tickers: [],        // 매 틱 호출할 함수들 (drift 등)
+  _inTick: false,
+  _tickers: [],        // 움직이는 동안 매 틱 호출할 함수들 (intro 등)
+  _requests: new Map(),// 애니메이션 주인 → { until, gap }
 
   init() {
     scene.requestRenderMode = true;
@@ -44,11 +47,12 @@ export const power = {
     // 우리가 필요할 때 requestRender() 로 직접 깨운다.
     scene.maximumRenderTimeChange = Infinity;
 
-    // 렌더와 독립된 시계. 항상 돌지만 하는 일은 거의 없다(틱 함수 몇 개).
-    this._clock = setInterval(() => this._tick(), ANIM_MS);
-
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) this._needUntil = 0;      // 즉시 멈춤
+      if (document.hidden) {
+        this._requests.clear();
+        this._needUntil = 0;
+        this._stopClock();                           // 즉시 멈춤
+      }
       else this.animate(800);                        // 돌아오면 잠깐 그려서 화면 복구
     });
     return this;
@@ -75,7 +79,7 @@ export const power = {
        그 시간이 지나면 스스로 정적인 모습으로 바꾼다.
        판정 스캔이 없어졌으므로 30Hz 로 도는 일은 틱 함수 몇 개뿐이다. */
 
-  /** 매 틱 불릴 함수 등록 (drift 처럼 렌더와 무관하게 돌아야 하는 것) */
+  /** 움직이는 동안 매 틱 불릴 함수 등록 */
   onTick(fn) { this._tickers.push(fn); },
 
   /**
@@ -83,6 +87,7 @@ export const power = {
    *
    * @param ms   이만큼 동안 렌더를 요청한다
    * @param gap  렌더 사이 최소 간격(ms). 0 이면 시계 속도(30fps)대로.
+   * @param key  애니메이션 주인. 레이어를 끌 때 cancel(key) 로 남은 시간을 거둔다.
    *
    * ⚠️ gap 이 왜 필요한가
    *    모든 애니메이션이 30fps 를 필요로 하지 않는다.
@@ -95,32 +100,73 @@ export const power = {
    * ⚠️ 여러 곳이 동시에 요청하면 **가장 빠른 요구**를 따른다(gap 의 최솟값).
    *    느린 쪽에 맞추면 빠른 애니메이션이 끊겨 보인다.
    */
-  animate(ms = 300, gap = 0) {
+  animate(ms = 300, gap = 0, key = 'default') {
     if (document.hidden) return;
     const now = performance.now();
     const until = now + ms;
-    // 창이 이미 닫혀 있었다면 간격을 새로 정한다. 열려 있으면 더 빠른 쪽을 택한다.
-    this._gap = now > this._needUntil ? gap : Math.min(this._gap, gap);
-    if (until > this._needUntil) this._needUntil = until;
+    const prev = this._requests.get(key);
+    this._requests.set(key, {
+      until: Math.max(prev?.until || 0, until),
+      // 같은 주인이 아직 움직이는 중이면 더 빠른 요청을 지킨다.
+      gap: prev?.until >= now ? Math.min(prev.gap, gap) : gap,
+    });
+    this._needUntil = Math.max(this._needUntil, until); // 기존 진단 손잡이 유지
+    if (!this._inTick) this._schedule(0);
+  },
+
+  /** 레이어를 끄면 그 레이어가 남긴 렌더 시간도 즉시 거둔다. */
+  cancel(key) {
+    this._requests.delete(key);
+    const active = this._active(performance.now());
+    if (!active) this._stopClock();
+  },
+
+  _active(now) {
+    let until = 0, gap = Infinity;
+    for (const [key, req] of this._requests) {
+      if (req.until < now) { this._requests.delete(key); continue; }
+      until = Math.max(until, req.until);
+      gap = Math.min(gap, req.gap);
+    }
+    this._needUntil = until;
+    if (!until) return null;
+    return { until, gap: Number.isFinite(gap) ? gap : 0 };
+  },
+
+  _schedule(delay = ANIM_MS) {
+    if (this._clock != null || document.hidden) return;
+    this._clock = setTimeout(() => {
+      this._clock = null;
+      this._tick();
+    }, delay);
+  },
+
+  _stopClock() {
+    clearTimeout(this._clock);
+    this._clock = null;
   },
 
   _tick() {
-    if (document.hidden) return;
+    if (document.hidden) { this._stopClock(); return; }
+    this._inTick = true;
     for (const fn of this._tickers) {
       try { fn(); } catch (e) { console.warn('[power] ticker', e.message); }
     }
+    this._inTick = false;
     /* ⚠️ 여기서 애니메이션을 스스로 연장하지 않는다.
        animate() 를 부른 쪽이 정한 시간이 지나면 렌더는 멈춘다.
        그게 requestRenderMode 를 켠 이유다. */
     const now = performance.now();
-    if (now <= this._needUntil && now - this._lastRender >= this._gap) {
+    const active = this._active(now);
+    if (active && now - this._lastRender >= active.gap) {
       this._lastRender = now;
       scene.requestRender();
     }
+    if (active) this._schedule(ANIM_MS);
   },
 
   /** 지금 렌더를 계속 요청하고 있나 — 계측·검증용 */
-  get animating() { return performance.now() <= this._needUntil; },
+  get animating() { return !!this._active(performance.now()); },
 
   /** 절전 모드 — 흘러가기를 끄고 애니메이션을 줄인다 */
   setSaving(on) {

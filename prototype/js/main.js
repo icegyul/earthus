@@ -9,7 +9,6 @@ import { onboard } from './onboard.js';
 import { weatherPanel } from './ui-weather.js';
 import { power } from './power.js';
 import { panels } from './panels.js';
-import { drift } from './drift.js';
 import { intro } from './intro.js';
 import { renderQuality } from './render-quality.js';
 import { store } from './store.js';
@@ -79,7 +78,6 @@ async function boot() {
      이제 애니메이션을 만드는 쪽(pointLayer 파문, cyclone 나선팔)이
      필요한 시간만큼만 power.animate() 를 부르고 스스로 정적으로 바뀐다. */
   renderQuality.init();
-  drift.init();
   panels.init();
   bindModeTransition();
   hud.init();
@@ -103,14 +101,16 @@ async function boot() {
   windField.init();
   myLocation.init();
 
-  /* 위치 응답이 오기 전에 사람이 지구를 만졌는지 기록한다.
+  /* 위치 응답이 오기 전에 사람이 화면을 쓰기 시작했는지 기록한다.
      ⚠️ 이게 없으면 이미 다른 대륙을 돌려보던 사람의 화면을
         몇 초 뒤 도착한 위치가 갑자기 끌고 간다. 조작을 빼앗는 것이다. */
-  let userTouchedGlobe = false;
+  let userEngaged = false;
   let geoTookOver = false;
-  scene.canvas.addEventListener('pointerdown', () => { userTouchedGlobe = true; },
-                               { once: true, passive: true });
-  scene.canvas.addEventListener('wheel', () => { userTouchedGlobe = true; },
+  /* 지구뿐 아니라 메뉴·검색을 먼저 누른 것도 "이미 사용 중"이다.
+     그 뒤 위치 응답이나 인트로가 카메라를 움직이면 조작을 빼앗고 발열도 남긴다. */
+  document.addEventListener('pointerdown', () => { userEngaged = true; },
+                            { once: true, passive: true });
+  scene.canvas.addEventListener('wheel', () => { userEngaged = true; },
                                { once: true, passive: true });
   myLocation.locate().then(c => {
     document.querySelector('#menuMain [data-act="locate"]')?.classList.toggle('on', !!c);
@@ -127,7 +127,7 @@ async function boot() {
           엉뚱한 곳으로 날아가는 것보다 가만히 있는 게 낫다.
        ⚠️ 사람이 이미 지구를 만졌으면 가로채지 않는다. 위치 응답은 몇 초 걸릴 수 있고,
           그 사이 돌려보던 사람의 화면을 갑자기 끌고 가면 조작을 빼앗는 것이 된다. */
-    if (!c || userTouchedGlobe) return;
+    if (!c || userEngaged) return;
     // 위치를 받았으면 인트로 회전을 멈추고 "내가 지구 어디에 있는지"로 부드럽게 날아간다.
     geoTookOver = true;
     intro.stop();
@@ -136,7 +136,7 @@ async function boot() {
       duration: 2.6,
       easingFunction: Cesium.EasingFunction.QUADRATIC_IN_OUT,
       // 도착한 뒤에도 만지기 전까지는 다시 살살 돈다 (줌인 없이 회전만).
-      complete: () => { power.animate(400); if (!userTouchedGlobe) intro.start({ zoom: false }); },
+      complete: () => { power.animate(400); if (!userEngaged) intro.start({ zoom: false }); },
     });
     power.animate(3000);
   });
@@ -222,7 +222,10 @@ async function boot() {
   /* ⚠️ 지오로케이션이 이미 카메라를 가져갔으면(geoTookOver) 여기서 인트로를 켜지 않는다.
      그때 켜면 진행 중인 flyTo 와 카메라를 두고 싸운다 — 인트로 회전은 flyTo 가
      끝난 뒤(그 complete 콜백)에만 다시 시작한다. */
-  if (!geoTookOver) intro.start();
+  /* 로딩 중 이미 지구를 만졌다면 뒤늦게 인트로를 시작하지 않는다.
+     ⚠️ 예전에는 자료 준비 뒤 무조건 시작해, 사용자가 메뉴를 보고 있는데도
+        배경 카메라가 90초 움직이며 렌더를 계속 요구할 수 있었다. */
+  if (!geoTookOver && !userEngaged) intro.start();
 
   /* ⚠️ 안전망 — 정보성 시트(업데이트·설정·사전등록)는 첫 화면에 절대 떠 있지 않게 한다.
      이들은 오직 메뉴에서 눌러야 열리는데, 어떤 이유로든(옛 캐시·경로) 열린 채 들어오면

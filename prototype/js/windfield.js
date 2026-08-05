@@ -18,6 +18,7 @@ import { i18n } from './i18n.js';
 const COUNT_MAX = 3000;      // 입자 수. 많을수록 촘촘하지만 프레임을 먹는다.
 const LIFE_SEC = 3.0;        // 입자 수명(초)
 const FADE = 0.94;           // 잔상이 남는 정도. 1 에 가까울수록 꼬리가 길다.
+const FRAME_MS = Math.round(1000 / 30); // 120Hz 폰에서도 30회만 계산·그린다
 
 /* ── 속도 기준 (윈디 척도) ──────────────────────────────────────
    ⚠️ 처음엔 "프레임당" 이동시켰다. 그러면 주사율에 따라 속도가 달라진다.
@@ -59,10 +60,14 @@ export const windField = {
   on: false,
   canvas: null, ctx: null,
   parts: [],
-  _raf: null,
+  _timer: null,
   _lastFetch: 0,
   _last: 0,
   _camKey: null,
+  _ticks: 0,
+  _tickCostSum: 0, _tickCostN: 0,
+  _scratchWind: { u: 0, v: 0 },
+  _scratchCur: null, _scratchNormal: null, _scratchToCam: null, _scratchScreen: null,
 
   init() {
     const cv = document.createElement('canvas');
@@ -74,8 +79,16 @@ export const windField = {
     scene.canvas.parentElement.appendChild(cv);
     this.canvas = cv;
     this.ctx = cv.getContext('2d');
+    this._scratchCur = new Cesium.Cartesian3();
+    this._scratchNormal = new Cesium.Cartesian3();
+    this._scratchToCam = new Cesium.Cartesian3();
+    this._scratchScreen = new Cesium.Cartesian2();
     this._resize();
     new ResizeObserver(() => this._resize()).observe(scene.canvas.parentElement);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) this._stop();
+      else if (this.on) this._start();
+    });
     return this;
   },
 
@@ -142,7 +155,7 @@ export const windField = {
   override: null,
 
   /** 격자에서 (lat,lon) 의 바람 — 양선형 보간 */
-  sample(lat, lon) {
+  sample(lat, lon, out = null) {
     const g = this.override || this.grid;
     if (!g) return null;
     let fx;
@@ -158,19 +171,25 @@ export const windField = {
     const x0 = Math.floor(fx), y0 = Math.floor(fy);
     const x1 = (x0 + 1) % g.nx, y1 = Math.min(y0 + 1, g.ny - 1);
     const tx = fx - x0, ty = fy - y0;
-    const at = (x, y) => y * g.nx + x;
-    const bl = (a, b, c, d) =>
-      a * (1 - tx) * (1 - ty) + b * tx * (1 - ty) + c * (1 - tx) * ty + d * tx * ty;
-
     const U = this.override ? g.u : (this.field === 'fc' ? g.fu : g.u);
     const V = this.override ? g.v : (this.field === 'fc' ? g.fv : g.v);
     // ⚠️ 예보 격자가 없으면 지금 바람으로 대신 그리지 않는다 — 아무것도 안 그린다.
     if (!U || !V) return null;
-    const a = U[at(x0, y0)], b = U[at(x1, y0)], c = U[at(x0, y1)], d = U[at(x1, y1)];
-    const e = V[at(x0, y0)], f = V[at(x1, y0)], h = V[at(x0, y1)], i = V[at(x1, y1)];
+    /* ⚠️ 이 함수는 입자마다 매 틱 호출된다. 예전의 at/bl 화살표 함수 두 개와
+       {u,v} 반환 객체는 1,500입자 × 30fps 에서 초당 13만 개가 넘는 짧은 객체를
+       만들었다. 인덱스·보간을 직접 계산하고 호출자가 준 결과 객체를 재사용한다. */
+    const i00 = y0 * g.nx + x0, i10 = y0 * g.nx + x1;
+    const i01 = y1 * g.nx + x0, i11 = y1 * g.nx + x1;
+    const a = U[i00], b = U[i10], c = U[i01], d = U[i11];
+    const e = V[i00], f = V[i10], h = V[i01], i = V[i11];
     if (a == null || b == null || c == null || d == null
         || e == null || f == null || h == null || i == null) return null;
-    return { u: bl(a, b, c, d), v: bl(e, f, h, i) };
+    const x0w = 1 - tx, y0w = 1 - ty;
+    const w00 = x0w * y0w, w10 = tx * y0w, w01 = x0w * ty, w11 = tx * ty;
+    const result = out || {};
+    result.u = a * w00 + b * w10 + c * w01 + d * w11;
+    result.v = e * w00 + f * w10 + h * w01 + i * w11;
+    return result;
   },
 
   _spawn(p) {
@@ -209,23 +228,33 @@ export const windField = {
   },
 
   _start() {
-    if (this._raf) return;
+    if (this._timer != null || document.hidden || !this.on || !this.grid) return;
     const n = Math.min(COUNT_MAX, Math.round(this.canvas.width * this.canvas.height / 2400));
-    this.parts = Array.from({ length: n }, () => { const p = {}; this._spawn(p); return p; });
+    if (this.parts.length !== n) {
+      this.parts = Array.from({ length: n }, () => { const p = {}; this._spawn(p); return p; });
+    }
     const step = () => {
-      this._raf = requestAnimationFrame(step);
+      this._timer = null;
+      if (!this.on || document.hidden) return;
       this._tick();
+      /* ⚠️ rAF 에 바로 다시 걸면 ProMotion 에서 120회/초 돈다.
+         바람 속도는 dt 기반이라 30fps 로 줄여도 물리적 이동과 꼬리 길이는 같다. */
+      this._timer = setTimeout(step, FRAME_MS);
     };
-    this._raf = requestAnimationFrame(step);
+    this._timer = setTimeout(step, 0);
   },
 
   _stop() {
-    cancelAnimationFrame(this._raf); this._raf = null;
+    clearTimeout(this._timer); this._timer = null;
+    this._last = 0;
+    for (const p of this.parts) p.px = null;
     this.ctx?.clearRect(0, 0, this.canvas.width, this.canvas.height);
   },
 
   _tick() {
     if (!this.on || !this.grid || document.hidden) { this._last = 0; return; }
+    const tickStarted = performance.now();
+    this._ticks++;
 
     /* ⚠️ 프레임 수가 아니라 실제 경과 시간으로 움직여야 한다.
        안 그러면 120Hz 폰이 30fps 기기보다 4배 빨라진다 (그래서 태풍처럼 보였다).
@@ -268,7 +297,7 @@ export const windField = {
 
     for (const p of this.parts) {
       if ((p.age += dt) > LIFE_SEC) { this._spawn(p); continue; }
-      const w = this.sample(p.lat, p.lon);
+      const w = this.sample(p.lat, p.lon, this._scratchWind);
       if (!w) { this._spawn(p); continue; }
 
       // 크기는 윈디 척도로 매핑하고 방향(단위벡터)은 그대로 쓴다
@@ -279,13 +308,18 @@ export const windField = {
       // 고위도로 갈수록 경도 1도의 실제 거리가 짧아진다 → 보정 안 하면 극 근처가 느려 보인다
       const nlon = p.lon + ux * step / Math.max(0.25, Math.cos(p.lat * Math.PI / 180));
 
-      const cur = Cesium.Cartesian3.fromDegrees(p.lon, p.lat);
+      /* 프레임마다 입자 수 × 4개의 좌표 객체를 새로 만들면 짧은 GC가 계속 난다.
+         한 번 만든 scratch 객체를 순서대로 재사용한다 — 값은 p 에 숫자로만 남긴다. */
+      const cur = Cesium.Cartesian3.fromDegrees(
+        p.lon, p.lat, 0, ell, this._scratchCur);
       // ⚠️ 지구 뒤편 입자는 그리지 않는다. 카메라→점 벡터와 법선의 각도로 판정한다.
-      const normal = ell.geodeticSurfaceNormal(cur, new Cesium.Cartesian3());
-      const toCam = Cesium.Cartesian3.subtract(cam, cur, new Cesium.Cartesian3());
+      const normal = ell.geodeticSurfaceNormal(cur, this._scratchNormal);
+      const toCam = Cesium.Cartesian3.subtract(cam, cur, this._scratchToCam);
       const front = Cesium.Cartesian3.dot(normal, toCam) > 0;
 
-      const sc = front ? scene.cartesianToCanvasCoordinates(cur) : null;
+      const sc = front
+        ? scene.cartesianToCanvasCoordinates(cur, this._scratchScreen)
+        : null;
       if (sc) {
         const x = sc.x * this._dpr, y = sc.y * this._dpr;
         if (p.px != null) {
@@ -317,6 +351,17 @@ export const windField = {
          → 지구본을 다시 그려도 입자 캔버스는 1픽셀도 안 바뀐다.
 
        카메라가 움직이면 Cesium 이 알아서 렌더한다(사용자 조작은 항상 렌더를 깨운다).
-       카메라가 멈춰 있으면 지구본은 바뀔 것이 없고, 입자는 자기 rAF 로 계속 흐른다. */
+       카메라가 멈춰 있으면 지구본은 바뀔 것이 없고, 입자는 자기 타이머로 계속 흐른다. */
+
+    /* 개발 계측용. 매 틱 DOM 을 건드리지 않고 약 1초에 한 번만 비용을 남긴다. */
+    this._tickCostSum += performance.now() - tickStarted;
+    this._tickCostN++;
+    if (this._tickCostN >= 30) {
+      this.canvas.dataset.ticks = String(this._ticks);
+      this.canvas.dataset.tickMs = (this._tickCostSum / this._tickCostN).toFixed(2);
+      this.canvas.dataset.particles = String(this.parts.length);
+      this._tickCostSum = 0;
+      this._tickCostN = 0;
+    }
   },
 };

@@ -72,6 +72,7 @@ const easeOut = p => 1 - Math.pow(1 - p, 3);
 /** 지금 꽂혀 있는 핀을 치운다 */
 export function clearPin() {
   clearTimeout(_timer);
+  power.cancel('pin');
   _seq++;
   if (_ds) _ds.entities.removeAll();
 }
@@ -161,7 +162,7 @@ export function dropPin(lon, lat, label) {
   });
 
   /* 도는 동안만 그린다. 스스로 연장하지 않는다 — 그게 requestRenderMode 를 켠 이유다. */
-  power.animate(LIFE_MS);
+  power.animate(LIFE_MS, 0, 'pin');
 
   /* ⚠️ 끝나면 **반드시** CallbackProperty 를 떼고 정적 핀으로 바꾼다.
      안 그러면 핀 하나가 프레임마다 위치·크기·파문을 다시 계산해

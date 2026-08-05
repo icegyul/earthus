@@ -31,11 +31,10 @@ const RAMP_MS    = 1800;   // 갑자기 튀지 않게 서서히 속도를 올리
    카메라가 움직일 때 다시 계산할 것이 그만큼 사라졌다.
 
    받은 지시: "자동 무빙 줘. 살아있는 지구 느낌 주게."
-   → **멀리 있을 때(Ambient)는 계속 돈다.** 거기선 엔티티가 없고 타일도 성기다.
-     확대했을 때는 예전 규칙대로 멎는다 — 거기가 비싸고, 잡아둔 구도가 밀리면
-     그것대로 방해다. */
+   이후 첫 화면 전용 intro.js 로 역할을 옮겼다. 이 파일은 현재 main.js 에서
+   초기화하지 않지만, 다시 연결돼도 영구 회전이 부활하지 않도록 안전장치를 둔다. */
 const SPIN_DOWN_MS = 75_000;      // 확대 상태에서 손 뗀 뒤 멈추기까지
-const AMBIENT_FOREVER = true;     // 멀리 있을 때는 멎지 않는다
+const AMBIENT_FOREVER = false;    // ⚠️ 어떤 고도에서도 무한 회전 금지
 
 /* 회전은 초당 0.15° 다 — 33ms 동안 0.005° 움직인다. 30fps 로 그릴 이유가 없다.
    90ms(≈11fps) 로도 부드럽고, 렌더 횟수가 3분의 1 이 된다. */
@@ -92,11 +91,16 @@ export const drift = {
     return this;
   },
 
-  _touch() { this._lastInput = performance.now(); this._userEngaged = true; },
+  _touch() {
+    this._lastInput = performance.now();
+    this._userEngaged = true;
+    power.cancel('drift');
+  },
 
   setEnabled(on) {
     this.enabled = on;
     localStorage.setItem('earthus.drift', on ? 'on' : 'off');
+    if (!on) power.cancel('drift');
   },
 
   /** 시트가 열려 있는지 — 읽는 중에는 배경을 세운다 */
@@ -135,6 +139,6 @@ export const drift = {
 
     // 지축(Z) 기준 회전 = 지구가 자전하는 방향과 같은 축
     viewer.camera.rotate(Cesium.Cartesian3.UNIT_Z, angle);
-    power.animate(200, DRIFT_GAP_MS);   // requestRenderMode 상태에서 계속 그려지도록
+    power.animate(200, DRIFT_GAP_MS, 'drift'); // 다시 연결돼도 주인별로 즉시 취소 가능
   },
 };

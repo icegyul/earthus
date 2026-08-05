@@ -22,7 +22,11 @@ import { power } from '../power.js';
    셋이 다 지나면 애니메이션이 0개가 되고, 지구는 실제로 쉰다.
    (requestRenderMode 를 켜둔 목적이 그것이다.) */
 const RIPPLE_MS = 2600;          // 한 번 퍼지는 주기
-const RIPPLE_LIFE_MS = 24_000;   // 이만큼만 움직인다
+/* 실측(2026-08-05): 저고도에서 관측소·부이·산불 2,906개가 함께 보일 때
+   24초짜리 강조가 정지한 지구를 약 20fps 로 계속 깨웠다. 세 번 퍼지면
+   새 사건이라는 뜻은 충분히 읽힌다. 8초 뒤에는 반드시 정적으로 굳힌다. */
+const RIPPLE_LIFE_MS = 8_000;    // 약 3회만 퍼지고 정적으로 전환
+const RIPPLE_FRAME_MS = 100;     // 파문·맥동은 10fps 면 충분하다
 const RIPPLE_MAX_AGE_MIN = 90;   // 이보다 오래된 사건은 처음부터 정적으로
 const RIPPLE_MAX = 6;            // 동시 파문 상한
 
@@ -102,7 +106,7 @@ export class PointLayer {
     }
 
     /* 이 시간만 그린다. 지나면 스스로 정적으로 바뀐다 — 아무도 안 깨워주면 멈춘다. */
-    power.animate(RIPPLE_LIFE_MS);
+    power.animate(RIPPLE_LIFE_MS, RIPPLE_FRAME_MS, this._powerKey);
     setTimeout(() => this._retireRipples(m, color, maxM, meta, layerId), RIPPLE_LIFE_MS);
   }
 
@@ -159,6 +163,7 @@ export class PointLayer {
       radius: 5, pulse: false, cluster: true, globalOK: null, ...o,
     });
     this.ds = new Cesium.CustomDataSource(this.id);
+    this._powerKey = `point:${this.id}`;
     viewer.dataSources.add(this.ds);
     this.items = [];
 
@@ -214,6 +219,9 @@ export class PointLayer {
 
   /** meta: { id, name, lat, lon, kind, data:{}, radius?, color?, alwaysGlobal? } */
   setData(list) {
+    /* 이전 자료의 엔티티를 지우면 그 자료가 남긴 렌더 예약도 같이 지운다.
+       안 그러면 새 목록에 움직일 사건이 0개여도 옛 24초가 끝날 때까지 그린다. */
+    power.cancel(this._powerKey);
     this.ds.entities.removeAll();
     this.items = list;
     // 이 층이 실제로 라벨을 몇 개 만들지 먼저 세어 거리를 정한다
@@ -239,15 +247,16 @@ export class PointLayer {
       const pAgeMin = pAt != null ? (Date.now() - pAt) / 60_000 : 0;
       const pulse = wantPulse
         && pAgeMin <= RIPPLE_MAX_AGE_MIN
+        && this._rippleVisible(m)
         && (this._pulseN = (this._pulseN || 0) + 1) <= PULSE_MAX;
       /* ⚠️ 이벤트(지진·화산·태풍)는 점만으로는 "무슨 일이 났다"가 안 읽힌다.
          파문이 퍼지는 원을 겹쳐 그린다 — 셋을 시차를 두고 퍼뜨리면
          자연히 "여기서 무언가 터졌다"로 읽힌다.
          ⚠️ ellipse 를 쓰면 지표에 붙어 지구 뒤편에서 가려진다 (점과 동작이 같다).
             반경은 규모에 비례시켜 큰 지진이 크게 퍼지게 한다. */
-      if (pulse) this._addRipples(m, color, r, m, this.id);
+      if (wantPulse) this._addRipples(m, color, r, m, this.id);
 
-      this.ds.entities.add({
+      const pointEntity = this.ds.entities.add({
         id: `${this.id}:${m.id}`,
         position: Cesium.Cartesian3.fromDegrees(m.lon, m.lat),
         point: {
@@ -282,6 +291,14 @@ export class PointLayer {
         _meta: m,
         _layer: this.id,
       });
+      if (pulse) {
+        /* ⚠️ 맥동 점도 파문과 같은 시각에 정적으로 바꾼다.
+           예전에는 파문만 은퇴하고 최대 12개 점의 CallbackProperty 는 영구히 남았다. */
+        setTimeout(() => {
+          const e = this.ds.entities.getById(pointEntity.id);
+          if (e?.point?.pixelSize instanceof Cesium.CallbackProperty) e.point.pixelSize = r;
+        }, RIPPLE_LIFE_MS);
+      }
     });
     this.applyVisibility();
   }
@@ -316,9 +333,11 @@ export class PointLayer {
 
   /** 살아 있는 파문을 지금 모습으로 굳힌다 (모양은 남고 계산은 0) */
   _freezeRipples() {
-    if (!this._rippleN) return;
     const now = Cesium.JulianDate.now();
     this.ds.entities.values.forEach(e => {
+      if (e.point?.pixelSize instanceof Cesium.CallbackProperty) {
+        e.point.pixelSize = e._meta?.radius || this.radius;
+      }
       if (!e._ripple || !e.ellipse) return;
       try {
         const a = e.ellipse.semiMajorAxis?.getValue(now);
@@ -332,6 +351,8 @@ export class PointLayer {
       } catch (_) { /* 이미 정적이면 넘어간다 */ }
     });
     this._rippleN = 0;
+    this._pulseN = 0;
+    power.cancel(this._powerKey);
   }
 
   count() {

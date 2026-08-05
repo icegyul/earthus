@@ -15,7 +15,7 @@ import { quakes } from './layers/hazard.js';
 import { launches } from './layers/space.js';
 import { tsunami } from './layers/tsunami.js';
 import { wildfires } from './layers/wildfire.js';
-import { flyTo, locateUser, fitGlobeHeight } from './viewer.js';
+import { flyTo, locateUser, fitGlobeHeight, scene } from './viewer.js';
 // 한국 기상특보 — 별도 띠를 없애고 아래 banner 큐에 합쳤다 (한 줄로 표시)
 import { warn, levelEn } from './warn.js';
 import { warnUI } from './ui-warn.js';
@@ -1662,6 +1662,11 @@ export const hud = {
     });
   },
   update() {
+    /* 보이지 않는 누적 프레임 번호 — 발열 전수 점검용이다.
+       ⚠️ fps 글자는 렌더가 멈추면 마지막 값에서 얼어 "11fps"처럼 남는다.
+          그 글자만 보고 계속 돈다고 판정하면 틀린다. 실제 frameNumber 를 DOM 에
+          남겨 두면 자동화·실기기 검사에서 두 시점의 차이로 완전 유휴를 확인할 수 있다. */
+    $('#hud').dataset.frame = String(scene.frameState.frameNumber);
     $('#hAlt').textContent = (store.height / 1000).toFixed(0) + ' km';
     $('#hMode').textContent = store.mode === 'ambient'
       ? 'AMBIENT'

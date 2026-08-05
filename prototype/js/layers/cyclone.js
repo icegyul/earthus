@@ -57,6 +57,8 @@ const RETAIN_H = 72;
    ⚠️ 넉넉히 주되 무한정은 안 된다 — 넘으면 우리 보관본으로 그린다(refresh 참고).
       사용자에게는 "조금 늦은 자료"가 "빈 화면"보다 언제나 낫다. */
 const GDACS_TIMEOUT_MS = 12_000;
+const CYCLONE_SPIN_MS = 20_000;
+const CYCLONE_FRAME_MS = 67;  // 나선팔 좌표 재생성은 15fps 로 제한
 
 /* 과거 유사 사례 — cyclone-analog Lambda 가 만든 것을 읽어 둔다.
    ⚠️ 실패해도 태풍 표시는 그대로 돌아야 한다. 없으면 그 줄만 안 나온다. */
@@ -251,6 +253,7 @@ export const cyclones = {
   _tracks: {},       // eventid → 그려진 경로 엔티티들
   _hist: new Map(),  // eventid → [{t, lat, lon, name, alert}] 우리가 기록한 위치
   _selected: null,
+  _spinTimer: null,
 
   init() {
     this.ds = new Cesium.CustomDataSource('cyclone');
@@ -279,7 +282,26 @@ export const cyclones = {
     }
   },
 
-  set(on) { if (this.ds) this.ds.show = on; },
+  set(on) {
+    if (this.ds) this.ds.show = on;
+    if (!on) this._freezeArms();
+  },
+
+  /** 소용돌이를 현재 모양으로 고정한다 — 꺼진 레이어의 남은 20초도 즉시 끝낸다. */
+  _freezeArms() {
+    clearTimeout(this._spinTimer);
+    this._spinTimer = null;
+    const now = Cesium.JulianDate.now();
+    this.ds?.entities.values.forEach(e => {
+      const prop = e.polyline?.positions;
+      if (!(prop instanceof Cesium.CallbackProperty)) return;
+      try {
+        const pts = prop.getValue(now);
+        if (pts) e.polyline.positions = new Cesium.ConstantProperty(pts);
+      } catch (_) { /* 갱신 중 지워졌으면 넘어간다 */ }
+    });
+    power.cancel('cyclone');
+  },
 
   async refresh() {
     /* ⚠️⚠️ GDACS 가 죽어도 화면이 비면 안 된다.
@@ -391,8 +413,12 @@ export const cyclones = {
        → 지우기 전에 무엇이 열려 있었는지 기억했다가 다시 그린다. */
     const sel = this._selected;
     this._selected = null;
+    clearTimeout(this._spinTimer);
+    this._spinTimer = null;
+    power.cancel('cyclone');
     this.ds.entities.removeAll();
     this._tracks = {};
+    let spinning = false;
 
     this.list.forEach(s => {
       const a = ALERT[s.alert] || ALERT.Green;
@@ -466,8 +492,8 @@ export const cyclones = {
          그건 몇 바퀴만 보면 전달된다. 영구히 돌리면 그 뒤로는 정보를 주지 않고
          GPU 만 태운다 — 팔마다 매 프레임 27개 좌표를 다시 만든다.
          SPIN_MS 가 지나면 나선을 그 순간 모양으로 굳힌다(모양은 남고 비용은 0). */
-      const SPIN_MS = 20_000;
-      const spinUntil = Date.now() + SPIN_MS;
+      const spinUntil = Date.now() + CYCLONE_SPIN_MS;
+      spinning = true;
       const ccw = s.lat >= 0 ? 1 : -1;              // 북반구 +1(반시계), 남반구 -1(시계)
       const P = Math.max(2600, 7000 - (s.kmh || 100) * 18);   // 강할수록 빨리 돈다
       const ARMS = 3, SEG = 26;
@@ -482,10 +508,8 @@ export const cyclones = {
                  즉 ang 이 커지면 시계 방향이다.
                  북반구는 반시계로 돌아야 하므로 방위각이 줄어야 한다 → 음수.
                  (처음에 ccw 를 그대로 더했다가 반대로 돌았다. 실측으로 잡았다.) */
-              /* 수명이 지나면 시계를 멈춘 것처럼 같은 값을 돌려준다.
-                 ⚠️ 여기서 멈춰도 CallbackProperty 평가 자체는 남는다.
-                    실제 절감은 power 가 렌더를 더 요청하지 않는 것에서 온다 —
-                    렌더가 없으면 이 함수도 불리지 않는다. */
+              /* 수명 안에서는 끝 시각을 넘지 않게 한다. 수명이 끝나면 draw() 아래의
+                 타이머가 CallbackProperty 자체를 ConstantProperty 로 바꾼다. */
               const nowMs = Math.min(Date.now(), spinUntil);
               const spin = -ccw * ((nowMs % P) / P) * Math.PI * 2;
               const pts = [];
@@ -520,10 +544,6 @@ export const cyclones = {
           _layer: 'cyclone',
         });
       }
-      /* 회전이 보이도록 이 시간만 렌더를 요청한다.
-         ⚠️ 예전에는 아무도 시간을 정하지 않고 영구히 돌렸다. */
-      power.animate(SPIN_MS);
-
       // 눈(eye) 주변의 옅은 원반 — 폭풍 반경이 어디까지인지
       this.ds.entities.add({
         id: `tc:${s.id}:disc`,
@@ -553,6 +573,15 @@ export const cyclones = {
         _layer: 'cyclone',
       });
     });
+
+    if (spinning) {
+      /* 회전이 보이도록 이 시간만 렌더를 요청하고, 끝나면 CallbackProperty 자체도 뗀다.
+         ⚠️ 시계 값만 고정하면 이후 줌·이동 때 팔마다 27좌표를 계속 다시 만든다. */
+      /* 나선팔 하나가 매 장면 27개 좌표를 다시 만든다. 30fps 는 방향을 읽는 데
+         필요하지 않으므로 15fps 로 제한해 CPU·GPU 작업을 절반으로 줄인다. */
+      power.animate(CYCLONE_SPIN_MS, CYCLONE_FRAME_MS, 'cyclone');
+      this._spinTimer = setTimeout(() => this._freezeArms(), CYCLONE_SPIN_MS + 100);
+    }
 
     this._restore(sel);
   },

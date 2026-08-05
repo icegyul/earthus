@@ -83,7 +83,8 @@ a{color:var(--teal);text-decoration:none}
 #banner.on{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
 /* 특보 띠가 있을 때는 그 아래로. 특보가 더 급하므로 위를 내준다. */
 body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
-#banner .dot{width:7px;height:7px;border-radius:50%;flex:none;animation:pulse 1.9s infinite}
+/* ⚠️ CSS 맥동도 무한 반복하지 않는다. 처음 몇 번 주의를 끈 뒤에는 정적인 강조로 남긴다. */
+#banner .dot{width:7px;height:7px;border-radius:50%;flex:none;animation:pulse 1.9s 3}
 #banner .dot.red{background:var(--red);box-shadow:0 0 0 0 rgba(255,93,93,.6)}
 #banner .dot.violet{background:var(--violet);box-shadow:0 0 0 0 rgba(201,167,255,.6)}
 /* 쓰나미 경보 — 다른 배너와 같은 무게로 보이면 안 된다.
@@ -91,7 +92,7 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 #banner.alert{
   border-color:rgba(255,93,93,.65);
   background:linear-gradient(rgba(255,93,93,.14),rgba(255,93,93,.06)),var(--panel);
-  font-weight:400;animation:alertGlow 2.4s ease-in-out infinite;
+  font-weight:400;animation:alertGlow 2.4s ease-in-out 3;
 }
 @keyframes alertGlow{
   0%,100%{box-shadow:0 0 0 0 rgba(255,93,93,.34)}
@@ -731,7 +732,7 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 .live{ margin:2px 0 16px; }
 .lv-t{ font-size:12px; opacity:.8; margin-bottom:8px; display:flex; align-items:center; gap:7px; }
 .lv-dot{ width:7px; height:7px; border-radius:50%; background:var(--red);
-  box-shadow:0 0 0 0 rgba(255,93,93,.6); animation:lvPulse 1.8s infinite; }
+  box-shadow:0 0 0 0 rgba(255,93,93,.6); animation:lvPulse 1.8s 3; }
 @keyframes lvPulse{ 70%{box-shadow:0 0 0 7px rgba(255,93,93,0)} 100%{box-shadow:0 0 0 0 rgba(255,93,93,0)} }
 .lv-frame{ position:relative; width:100%; aspect-ratio:16/9; border-radius:11px;
   overflow:hidden; background:#000; border:1px solid var(--line); }
@@ -1097,7 +1098,7 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 #warnBar .wtxt { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #warnBar .wmore { flex: 0 0 auto; font-size: 11px; color: rgba(255,255,255,.45); }
 /* 중대경보만 숨쉬게 한다. 전부 깜빡이면 아무것도 강조되지 않는다. */
-#warnBar.severe { animation: warnPulse 2.4s ease-in-out infinite; }
+#warnBar.severe { animation: warnPulse 2.4s ease-in-out 3; }
 @keyframes warnPulse {
   0%, 100% { box-shadow: 0 6px 24px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.1); }
   50%      { box-shadow: 0 6px 30px rgba(233,80,12,.5), inset 0 0 0 1px rgba(255,140,60,.55); }
@@ -1134,7 +1135,7 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 /* 총량을 아직 모르는 동안 — ⚠️ 가짜 퍼센트를 보여 주느니 흐르게 둔다 */
 #tcLoading.indet .tcl-bar > i{
   width:38%; transition:none;
-  animation:tclflow 1.15s cubic-bezier(.5,0,.5,1) infinite;
+  animation:tclflow 1.15s cubic-bezier(.5,0,.5,1) 26;
 }
 @keyframes tclflow{ from{ transform:translateX(-105%); } to{ transform:translateX(272%); } }
 @media (prefers-reduced-motion: reduce){
@@ -2090,7 +2091,7 @@ body.is-ambient #windLegend.on{ opacity:0; }
 .tc-links-b{display:flex;flex-wrap:wrap;gap:8px}
 .tc-links-b a{padding:7px 12px;border-radius:999px;font-size:12.5px;color:#9fe6f5;
   border:1px solid rgba(90,209,232,.35);text-decoration:none}
-.tc-ld{animation:tcPulse 1.2s ease-in-out infinite}
+.tc-ld{animation:tcPulse 1.2s ease-in-out 12}
 @keyframes tcPulse{0%,100%{opacity:.9}50%{opacity:.45}}
 .tc-share{margin:16px 0 2px}
 .tc-share-b{font-weight:650}

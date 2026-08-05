@@ -103,25 +103,26 @@ const LABEL_LIMIT = 400;   // 이 개수를 넘으면 이름표를 끈다 (아�
 
 /* 위성 위치를 다시 계산하는 간격.
    짧을수록 부드럽지만 CPU 를 그만큼 더 쓴다 (발열·배터리).
-   100ms 면 전지구 뷰에서 위성이 0.02px 움직인 상태라 차이를 못 느낀다. */
-const POS_INTERVAL_MS = 100;
+   100ms 면 전지구 뷰에서 위성이 0.02px 움직인 상태라 차이를 못 느낀다.
+   250ms 도 0.05px 로 눈에 안 보이고, 계산·렌더 횟수는 10회→4회/초로 줄어든다. */
+const POS_INTERVAL_MS = 250;
 
 /* ── 렌더 상한 ────────────────────────────────────────────────
    ⚠️ 위성 개수에 상한이 없었다. 그게 이 앱 최악의 발열 경로였다.
 
    실측(2026-07-28, 맥):  위성 1개당 SGP4 + Cartesian3 = 0.00614 ms
        스타링크 10,776개 →  66 ms
-       전체     16,123개 →  99 ms      ← POS_INTERVAL_MS 가 100ms 다
-   즉 전체를 켜면 100ms 틱마다 99ms 를 써서 코어 하나를 통째로 문다.
+       전체     16,123개 →  99 ms      ← 당시 POS_INTERVAL_MS 가 100ms 였다
+   즉 예전에는 100ms 틱마다 99ms 를 써서 코어 하나를 통째로 물었다.
    폰은 3~5배 느리니 따라가지도 못하고 메인 스레드가 포화된다.
 
    그래서 **기기 성능을 직접 재서** 상한을 정한다. 숫자를 지어내지 않는다.
-   틱 예산의 12ms(=12%)만 쓴다 — 나머지는 렌더·터치 응답에 남긴다.
+   틱 예산의 8ms만 쓴다 — 250ms 간격 기준 CPU 약 3.2%다.
 
    ⚠️ 자르면 자른다고 **반드시 화면에 적는다**(satsTotal/satsCapped).
       유료 기능(SAT_ALL)이라 조용히 80%를 버리면 그건 속이는 것이다. */
-const POS_BUDGET_MS = 12;
-const CAP_MIN = 1200;      // 이보다 낮추면 '전체'가 의미를 잃는다
+const POS_BUDGET_MS = 8;
+const CAP_MIN = 400;       // 느린 폰에서 하한 때문에 예산을 넘지 않게 한다
 const CAP_MAX = 20000;     // 카탈로그 전체(16,123)보다 크면 상한이 없는 것과 같다
 
 export const orbits = {
@@ -151,6 +152,10 @@ export const orbits = {
     this.ds = new Cesium.CustomDataSource('orbits');
     viewer.dataSources.add(this.ds);
     this.ds.show = false;
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) this._stopTrackTimer();
+      else if (this.ds?.show) this._startTrackTimer();
+    });
     return this;
   },
 
@@ -347,19 +352,20 @@ export const orbits = {
      그런데 이렇게까지 자주 계산할 이유가 없다.
        위성은 초속 7.5km. 전지구 뷰에서 1px ≈ 34km 이므로
        100ms 동안 움직이는 거리는 0.75km = 0.02px 다. 눈에 보이지 않는다.
-     → 100ms 마다 한 번만 전부 계산하고, 그 사이에는 캐시를 돌려준다.
-       계산량이 12분의 1 로 줄고 화면은 똑같다. */
+     → 처음에는 100ms, 이번 발열 전수 점검에서 250ms 로 늘렸다.
+       250ms 이동도 0.05px 라 안 보이고, 계산은 초당 10회→4회로 줄어든다. */
   _pos: [],
   _posAt: 0,
 
   _syncPositions() {
+    if (document.hidden || !this.ds?.show) return;
     const now = Date.now();
     if (now - this._posAt < POS_INTERVAL_MS) return;
     this._posAt = now;
     // requestRenderMode 를 켜뒀으므로, 위치가 바뀌었으면 다시 그려달라고 알려야 한다
-    /* ⚠️ 위치 갱신이 100ms 간격이므로 렌더도 그 간격으로 충분하다.
-       30fps 로 그리면 같은 좌표를 세 번 그리는 셈이다. */
-    if (this.ds?.show) power.animate(POS_INTERVAL_MS * 3, POS_INTERVAL_MS);
+    /* ⚠️ 위치 갱신이 250ms 간격이므로 렌더도 그 간격으로 충분하다.
+       30fps 로 그리면 같은 좌표를 일곱 번 넘게 그리는 셈이다. */
+    if (this.ds?.show) power.animate(POS_INTERVAL_MS * 3, POS_INTERVAL_MS, 'orbits');
     const when = new Date(now);
     const n = this.sats.length;
     if (this._pos.length !== n) this._pos = new Array(n);
@@ -468,12 +474,23 @@ export const orbits = {
       }
     });
 
-    clearInterval(this._trackTimer);
+    if (this.ds.show) this._startTrackTimer();
+    else this._stopTrackTimer();
+  },
+
+  _startTrackTimer() {
+    if (this._trackTimer != null || document.hidden || !this.ds?.show) return;
     this._trackTimer = setInterval(() => this.redrawTracks(), 120_000);
   },
 
+  _stopTrackTimer() {
+    clearInterval(this._trackTimer);
+    this._trackTimer = null;
+  },
+
   redrawTracks() {
-    if (!this.ds) return;
+    /* 꺼진 뒤에도 2분마다 궤적 180점을 다시 전파하던 숨은 계산을 막는다. */
+    if (!this.ds?.show || document.hidden) return;
     this.ds.entities.values.filter(e => e._trackOf != null).forEach(e => {
       const s = this.sats[e._trackOf];
       if (!s) return;
@@ -566,5 +583,15 @@ export const orbits = {
     return out;
   },
 
-  set(on) { if (this.ds) this.ds.show = on; },
+  set(on) {
+    if (!this.ds) return;
+    this.ds.show = on;
+    if (on) {
+      this._startTrackTimer();
+      power.animate(POS_INTERVAL_MS * 2, POS_INTERVAL_MS, 'orbits');
+    } else {
+      this._stopTrackTimer();
+      power.cancel('orbits');
+    }
+  },
 };

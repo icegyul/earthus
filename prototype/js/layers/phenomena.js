@@ -101,6 +101,7 @@ export const phenomena = {
   /** 자연현상(환류 등) */
   set(on) {
     if (this.ds) this.ds.show = on;
+    if (!on) this._freezeFlows();
     if (on && !this.found.length) this.refresh();
   },
 
@@ -126,6 +127,7 @@ export const phenomena = {
            안 그러면 옛 타이머가 깨어나 새로 그린 흐름을 멈춰 세운다. */
         Object.values(this._flowFreeze).forEach(clearTimeout);
         this._flowFreeze = {};
+        power.cancel('phenomena');
         this.ds.entities.removeAll();
         this.dsHeat.entities.removeAll();
         this.found = [];
@@ -642,6 +644,9 @@ export const phenomena = {
        영구히 돌리면 그 뒤로는 정보 없이 렌더만 계속 요청하게 된다. */
     const FLOW_MS = 20_000;
     const flowUntil = Date.now() + FLOW_MS;
+    /* 열돔만 켠 경우에도 같은 refresh() 가 환류 엔티티를 만든다.
+       ⚠️ 숨겨진 환류가 20초 렌더를 요청하던 것이 메뉴 토글 직후 발열 원인이었다. */
+    const moving = !!this.ds.show && !power.saving;
 
     // 각도 → 지구 위 좌표. 콜백과 굳힐 때가 **같은 식**을 써야 멈추는 순간 안 튄다.
     const at = (off, ms) => {
@@ -654,8 +659,10 @@ export const phenomena = {
 
     for (let i = 0; i < N; i++) {
       const off = (i / N) * Math.PI * 2;
-      const pos = new Cesium.CallbackProperty(
-        () => at(off, Math.min(Date.now(), flowUntil)), false);
+      const pos = moving
+        ? new Cesium.CallbackProperty(
+            () => at(off, Math.min(Date.now(), flowUntil)), false)
+        : new Cesium.ConstantPositionProperty(at(off, flowUntil));
 
       this.ds.entities.add({
         id: `gyreflow:${g.id}:${i}`,
@@ -669,7 +676,10 @@ export const phenomena = {
         _gyreFlow: true,
       });
     }
-    power.animate(FLOW_MS);
+    if (!moving) return;
+    /* 환류는 26초에 한 바퀴뿐인 느린 움직임이다. 30fps 로 70개 좌표를 다시
+       계산할 이유가 없으므로 10fps 로 제한한다. 방향은 그대로 읽힌다. */
+    power.animate(FLOW_MS, 100, 'phenomena');
 
     /* ⚠️ 여기서 끝내면 안 된다. 위 콜백은 20초 뒤 **움직임만** 멈춘다 —
        CallbackProperty 자체는 그대로 남아 매 프레임 계속 평가된다.
@@ -688,6 +698,21 @@ export const phenomena = {
           at((i / N) * Math.PI * 2, flowUntil));
       }
     }, FLOW_MS + 200);
+  },
+
+  /** 레이어를 끄면 흐름을 현재 위치에 즉시 고정하고 남은 렌더 시간도 거둔다. */
+  _freezeFlows() {
+    Object.values(this._flowFreeze).forEach(clearTimeout);
+    this._flowFreeze = {};
+    const now = Cesium.JulianDate.now();
+    this.ds?.entities.values.forEach(e => {
+      if (!e._gyreFlow || !(e.position instanceof Cesium.CallbackProperty)) return;
+      try {
+        const p = e.position.getValue(now);
+        if (p) e.position = new Cesium.ConstantPositionProperty(Cesium.Cartesian3.clone(p));
+      } catch (_) { /* 이미 지워졌거나 정적이면 넘어간다 */ }
+    });
+    power.cancel('phenomena');
   },
 
   /* ══════════════════════════════════════════════════════════

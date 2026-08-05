@@ -93,6 +93,6 @@ export const warnUI = {
       + `<p class="warn-note">${esc(ko ? s.note.ko : s.note.en)}<br>`
       + `${ko ? '출처' : 'Source'}: ${esc(warn.data.source)} · ${esc(warn.data.license)}<br>`
       + `${ko ? '기준시각(KST)' : 'As of (KST)'} ${hhmm(s.observedKst)}</p>`;
-    this.body.appendChild(safetyActions());
+    this.body.appendChild(safetyActions({ country: 'kr' }));
   },
 };

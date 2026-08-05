@@ -49,6 +49,7 @@ import { activeBar } from './ui-active.js';
 let turtleMod = null;
 let seabirdMod = null;
 let migbirdMod = null;
+let ecobirdMod = null;
 
 function exposeStudioCapture() {
   window.__e = window.__e || {};
@@ -309,6 +310,10 @@ async function boot() {
         migbirdMod = (await import('./ui-migbird.js')).migbirdPanel;
         migbirdMod.open();
       },
+      ecobird: async () => {
+        ecobirdMod = (await import('./ui-ecobird.js')).ecobirdPanel;
+        ecobirdMod.open();
+      },
     }[act];
     // ⚠️ 조용히 넘어가지 않는다. 빠뜨린 것이 눈에 보여야 다시 안 빠뜨린다.
     if (!go) { console.warn(`[취미] '${act}' 를 여는 곳이 없습니다 — main.js 의 표를 보세요`); return; }
@@ -448,10 +453,11 @@ function bindAccountUI() {
     turtleSheet: () => turtleMod?.close(),
     seabirdSheet: () => seabirdMod?.close(),
     migbirdSheet: () => migbirdMod?.close(),
+    ecobirdSheet: () => ecobirdMod?.close(),
   };
   const OFF_LABEL = { sfSheet: '서핑', fsSheet: '낚시', pgSheet: '활공장', mtSheet: '등산로',
                       turtleSheet: '바다거북', seabirdSheet: '바닷새',
-                      migbirdSheet: '철새' };
+                      migbirdSheet: '철새', ecobirdSheet: '전국 조류 조사' };
 
   /** 지도에 표시가 남아 있으면 끄는 칩을 띄운다 */
   function offChip(id, on) {
@@ -487,6 +493,7 @@ function bindAccountUI() {
     turtleSheet: () => (turtleMod?._ents.length || 0) > 0,
     seabirdSheet: () => (seabirdMod?._ents.length || 0) > 0,
     migbirdSheet: () => (migbirdMod?._ents.length || 0) > 0,
+    ecobirdSheet: () => !!ecobirdMod?._points,
   };
   let trailsMod = null;
   function trailsHasMarks() {

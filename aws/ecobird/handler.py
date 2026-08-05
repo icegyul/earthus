@@ -7,8 +7,11 @@
    자연환경조사 조류만 1,053,574건이다. 점을 다 그리면 브라우저가 죽고,
    설령 살아도 남한이 통째로 한 덩어리 색으로 덮여 아무것도 안 보인다.
    → **격자로 묶는다.** 0.05°(약 5km) 칸마다 관측 건수와 종 수를 센다.
-   ⚠️ 묶는 것은 '가공'이지만 이 자료는 이용허락 제한이 없다.
-      그래도 **원본 건수를 함께 실어** 얼마나 묶였는지 밝힌다.
+   ⚠️ 묶는 것은 화면 표시를 위한 통계 처리다. 공개 안내는 외부 활용용 API라고
+      설명하지만 세부 이용약관은 로그인 뒤 신청 화면에 있다. 상업 이용·재배포를
+      허용한다고 추정하지 않는다. 확인 전에는 무료 화면의 출처 표기만 하고,
+      유료 상품·CSV/API 내보내기는 보류한다.
+   ⚠️ **원본 건수를 함께 실어** 얼마나 묶였는지 밝힌다.
 
 ■⚠️⚠️ 좌표가 위경도가 아니다 — TM 투영이다. tm.py 머리말 참고.
    EPSG:5186 으로 확정했고 근거는 **백두대간 자료가 백두대간에 떨어진다**는 것이다.
@@ -80,7 +83,8 @@ def no_location(x_y, ll):
 
 
 SOURCE = "국립생태원 에코뱅크 (전국 자연환경조사 · 생태계정밀조사 · 백두대간조사)"
-LICENSE = "국립생태원 에코뱅크 오픈API"
+LICENSE = "국립생태원 에코뱅크 OpenAPI · 세부 이용조건 확인 중"
+SOURCE_URL = "https://www.nie-ecobank.kr/data/api/intrcn.do"
 
 
 def get(url, params, tries=3):
@@ -223,7 +227,7 @@ def handler(event=None, context=None):
 
     doc = {
         "updated": datetime.now(KST).isoformat(timespec="seconds"),
-        "source": SOURCE, "license": LICENSE,
+        "source": SOURCE, "sourceUrl": SOURCE_URL, "license": LICENSE,
         "cellDeg": CELL,
         "records": got,
         "mapped": mapped,

@@ -17,6 +17,8 @@
 //
 // 출처: https://www.jma.go.jp/bosai/quake/data/list.json  (CORS 개방 확인)
 
+import { fetchT } from './net.js';
+
 const LIST = 'https://www.jma.go.jp/bosai/quake/data/list.json';
 const TTL = 120_000;
 
@@ -89,7 +91,7 @@ export const jma = {
 
   async load() {
     if (Date.now() - this.at < TTL && this.list.length) return this.list;
-    const r = await fetch(LIST, { cache: 'no-cache' });
+    const r = await fetchT(LIST, { cache: 'no-cache', timeout: 12_000 });
     if (!r.ok) throw new Error('jma ' + r.status);
     const raw = await r.json();
 

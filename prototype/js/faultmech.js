@@ -13,6 +13,7 @@
 //   그 사이는 빗겨나는 성분이 섞인 것이다.
 
 import { i18n } from './i18n.js';
+import { fetchT } from './net.js';
 
 const cache = new Map();
 
@@ -67,7 +68,7 @@ export async function fetchMechanism(detailUrl) {
   if (cache.has(detailUrl)) return cache.get(detailUrl);
   let out = null;
   try {
-    const r = await fetch(detailUrl);
+    const r = await fetchT(detailUrl, { timeout: 12_000 });
     if (r.ok) {
       const j = await r.json();
       const prods = j.properties?.products || {};

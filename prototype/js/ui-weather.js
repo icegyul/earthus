@@ -145,14 +145,24 @@ export const weatherPanel = {
       compare.dataset.forecastCompare = '';
       body.appendChild(compare);
       import('./korea.js').then(async ({ get, nearest }) => {
-        const asos = await get('asos');
+        /* 지점별 사례와 전국 집계를 섞지 않는다. verify-daily의 MAE는 96지점 전체
+           집계이므로 버튼에는 값이 아니라 축적 범위(며칠·몇 지점)만 밝힌다. */
+        const [asos, verify] = await Promise.all([
+          get('asos'),
+          get('verify').catch(() => null),
+        ]);
         const s = nearest(asos?.stations || [], chrome.place.lat, chrome.place.lon);
         if (!s || !compare.isConnected) return;
         compare.href = `./verify.html?station=${encodeURIComponent(s.id)}#stationCase`;
         const detail = compare.querySelector('i');
+        const days = Number(verify?.count);
+        const stations = Number(verify?.stationCount);
+        const scope = Number.isFinite(days) && Number.isFinite(stations)
+          ? (ko ? `전체 ${days}일·${stations}지점 집계` : `aggregate: ${days} day${days === 1 ? '' : 's'} · ${stations} stations`)
+          : (ko ? '기관 예보와 관측 사례' : 'forecast cases');
         if (detail) detail.textContent = ko
-          ? `${s.name} · 약 ${Math.round(s.km)}km · 기관 예보와 관측 사례`
-          : `${s.name || s.id} · about ${Math.round(s.km)} km · forecast cases`;
+          ? `${s.name} · 약 ${Math.round(s.km)}km · ${scope}`
+          : `${s.name || s.id} · about ${Math.round(s.km)} km · ${scope}`;
       }).catch(() => {
         const detail = compare.querySelector('i');
         if (detail) detail.textContent = ko

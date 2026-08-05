@@ -7,10 +7,12 @@
    자연환경조사 조류만 1,053,574건이다. 점을 다 그리면 브라우저가 죽고,
    설령 살아도 남한이 통째로 한 덩어리 색으로 덮여 아무것도 안 보인다.
    → **격자로 묶는다.** 0.05°(약 5km) 칸마다 관측 건수와 종 수를 센다.
-   ⚠️ 묶는 것은 화면 표시를 위한 통계 처리다. 공개 안내는 외부 활용용 API라고
-      설명하지만 세부 이용약관은 로그인 뒤 신청 화면에 있다. 상업 이용·재배포를
-      허용한다고 추정하지 않는다. 확인 전에는 무료 화면의 출처 표기만 하고,
-      유료 상품·CSV/API 내보내기는 보류한다.
+   ⚠️ 묶는 것은 화면 표시를 위한 통계 처리다. 공공데이터포털의 자연환경·
+      생태계정밀·백두대간정밀조사 조류 점 API 3종은 공공누리 제1유형이지만
+      **제3자 권리 포함**으로
+      표시된다. 공공누리가 덮어주지 않는 부분을 우리가 구분할 수 없으므로 무료
+      집계 화면은 출처와 권리 경고를 함께 두고, 유료 상품·원자료 CSV/API
+      내보내기는 권리 범위를 서면으로 확인할 때까지 보류한다.
    ⚠️ **원본 건수를 함께 실어** 얼마나 묶였는지 밝힌다.
 
 ■⚠️⚠️ 좌표가 위경도가 아니다 — TM 투영이다. tm.py 머리말 참고.
@@ -83,8 +85,17 @@ def no_location(x_y, ll):
 
 
 SOURCE = "국립생태원 에코뱅크 (전국 자연환경조사 · 생태계정밀조사 · 백두대간조사)"
-LICENSE = "국립생태원 에코뱅크 OpenAPI · 세부 이용조건 확인 중"
+LICENSE = "공공누리 제1유형(출처표시) · 제3자 권리 포함"
 SOURCE_URL = "https://www.nie-ecobank.kr/data/api/intrcn.do"
+LICENSE_URLS = [
+    {"ko": "자연환경조사 조류 점", "en": "Natural Environment Survey birds",
+     "url": "https://www.data.go.kr/data/15101293/openapi.do"},
+    {"ko": "생태계정밀조사 조류 점", "en": "Ecosystem Detail Survey birds",
+     "url": "https://www.data.go.kr/data/15101323/openapi.do"},
+    {"ko": "백두대간정밀조사 조류 점", "en": "Baekdudaegan Detail Survey birds",
+     "url": "https://www.data.go.kr/data/15101305/openapi.do"},
+]
+COPYRIGHT_URL = "https://www.nie-ecobank.kr/cmmn/intro/copyrightPolicy.do"
 
 
 def get(url, params, tries=3):
@@ -228,6 +239,13 @@ def handler(event=None, context=None):
     doc = {
         "updated": datetime.now(KST).isoformat(timespec="seconds"),
         "source": SOURCE, "sourceUrl": SOURCE_URL, "license": LICENSE,
+        "licenseUrls": LICENSE_URLS, "copyrightUrl": COPYRIGHT_URL,
+        "useStatus": {
+            # ⚠️ 이것은 법률 상태를 단정하는 필드가 아니라 earthus의 운영 잠금이다.
+            "freeMap": "출처·공공누리 유형·제3자 권리 포함 표시로 제공",
+            "paidDerived": "제3자 권리 범위 서면 확인 전 보류",
+            "rawExport": "원자료 CSV/API 재배포 서면 확인 전 보류",
+        },
         "cellDeg": CELL,
         "records": got,
         "mapped": mapped,

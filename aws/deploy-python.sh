@@ -21,6 +21,15 @@ BUCKET_REGION="us-east-2"
 PYVER="3.12"
 ROLE="earthus-lambda-${FN}"
 DIR="$(cd "$(dirname "$0")" && pwd)/${FN}"
+TIMEOUT=300
+
+# ⚠️ 기본 300초로 덮어쓰면 대량 API를 끝까지 받는 함수가 배포 직후부터
+#    반복해 죽는다. 함수 폴더의 timeout-seconds.txt만 예외로 읽는다.
+if [ -f "$DIR/timeout-seconds.txt" ]; then
+  TIMEOUT="$(tr -d '[:space:]' < "$DIR/timeout-seconds.txt")"
+  [[ "$TIMEOUT" =~ ^[0-9]+$ ]] && [ "$TIMEOUT" -ge 1 ] && [ "$TIMEOUT" -le 900 ] \
+    || { echo "❌ timeout-seconds.txt는 1~900 정수여야 함"; exit 1; }
+fi
 
 [ -d "$DIR" ] || { echo "❌ ${DIR} 없음"; exit 1; }
 
@@ -116,7 +125,7 @@ json.dump({"Variables": cur}, open(sys.argv[1], "w"))
 print("  · 기존 환경변수 보존: " + (", ".join(sorted(kept)) if kept else "(없음)"))
 PY
   aws lambda update-function-configuration \
-    --function-name "$FN" --timeout 300 --memory-size 2048 \
+    --function-name "$FN" --timeout "$TIMEOUT" --memory-size 2048 \
     --environment "file://$ENVNEW" \
     --query 'LastModified' --output text >/dev/null
   rm -f "$ENVCUR" "$ENVNEW"
@@ -130,7 +139,7 @@ else
     --role "$ROLE_ARN" \
     --handler handler.handler \
     --zip-file "fileb:///tmp/${FN}.zip" \
-    --timeout 300 --memory-size 2048 \
+    --timeout "$TIMEOUT" --memory-size 2048 \
     --environment "Variables={CACHE_BUCKET=${BUCKET},CACHE_REGION=${BUCKET_REGION}}" \
     --query 'FunctionArn' --output text
 fi

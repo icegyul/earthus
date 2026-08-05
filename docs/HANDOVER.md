@@ -120,6 +120,8 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
 - **Lambda 54개** (aws/ 폴더당 하나) → S3 JSON → 앱이 fetch. 스키마는 각 handler.py 상단 주석에.
 - 새 Lambda: `bash aws/deploy-python.sh 폴더명` (requirements.txt 없으면 빈 파일이라도 둘 것 —
   없으면 NetCDF 용 30MB 기본 의존성이 딸려간다). 스케줄은 schedules.sh 패턴으로 EventBridge.
+- 대량 수집으로 300초를 넘는 함수는 폴더에 `timeout-seconds.txt`로 1~900초를 적어
+  `deploy-python.sh`가 다음 배포에도 예외를 보존하게 한다. `ecobird`는 108만 건 수집으로 900초다.
 - 환경변수: `CACHE_BUCKET=earthus-cache-kr`, `CACHE_REGION=us-east-2`. 타임아웃 넉넉히(fx-grid 는 300초).
 - 주요 산출물: `events/cyclone*.json` `events/typhoon-official.json`(KMA·JMA)
   `events/typhoon-ecmwf.json` `events/seabird|migbird|ecobird.json`(생물)
@@ -197,8 +199,14 @@ PD 몫 (자격·전화가 필요한 것):
   103건을 함께 밝힘. 현재 위치·개체수 지도가 아니며 빈 칸도 새가 없다는 뜻이
   아니라고 화면 첫 문장에 고정함. 4,521개 Entity 대신 PointPrimitiveCollection
   하나를 써서 2026-08-06 운영 화면에서 렌더·닫기·표시 끄기를 확인함.
-  에코뱅크 공개 안내는 외부 활용용 OpenAPI임을 밝히지만 세부 약관은 로그인 뒤
-  신청 화면에 있어, 유료 상품·CSV/API 내보내기는 공식 확인 전 계속 보류함.
+  공공데이터포털의 자연환경·생태계정밀·백두대간정밀조사 조류 점 API 3종은
+  공공누리 제1유형으로 상업 이용·가공이 가능하지만, 동시에 `제3자 권리 포함`으로
+  표시된다. 공식 근거 URL과 운영 판정은 `docs/ECObank-LICENSE-2026-08-06.md`에 기록했다.
+  무료 집계 지도에는 출처·제1유형·제3자 권리 경고를 노출하고, 유료 가공물·원자료
+  CSV/API 내보내기는 담당자에게 권리 범위를 서면으로 확인할 때까지 계속 보류함.
+  2026-08-06 운영 재수집은 558초 걸려 1,085,606건 전체를 받았고 `truncated=0`을
+  확인했다. 기존 배포 스크립트가 300초로 덮어쓰며 실제 타임아웃이 난 적이 있어,
+  `aws/ecobird/timeout-seconds.txt`의 900초 예외를 다음 배포에도 보존하게 고쳤다.
 
 개발 몫 (착수 안 됨):
 - 이용 행태 수집 (동의는 받는데 수집 코드가 없음)

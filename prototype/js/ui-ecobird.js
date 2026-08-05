@@ -18,6 +18,12 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const n0 = v => Number(v || 0).toLocaleString('ko-KR');
 const SOURCE_URL = 'https://www.nie-ecobank.kr/data/api/intrcn.do';
+const LICENSE_URLS = [
+  { ko: '자연환경조사 조류 점', en: 'Natural Environment Survey birds', url: 'https://www.data.go.kr/data/15101293/openapi.do' },
+  { ko: '생태계정밀조사 조류 점', en: 'Ecosystem Detail Survey birds', url: 'https://www.data.go.kr/data/15101323/openapi.do' },
+  { ko: '백두대간정밀조사 조류 점', en: 'Baekdudaegan Detail Survey birds', url: 'https://www.data.go.kr/data/15101305/openapi.do' },
+];
+const COPYRIGHT_URL = 'https://www.nie-ecobank.kr/cmmn/intro/copyrightPolicy.do';
 
 let data = null;
 
@@ -57,6 +63,9 @@ export const ecobirdPanel = {
     const cells = data.cells || [];
     const species = data.species || [];
     const updated = String(data.updated || '').replace('T', ' ').slice(0, 16);
+    const licenseLinks = (Array.isArray(data.licenseUrls) ? data.licenseUrls : LICENSE_URLS)
+      .map(item => `<a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item[ko ? 'ko' : 'en'] || item.ko || item.en)} ↗</a>`)
+      .join(' · ');
 
     body.innerHTML = `
       <div class="sb-warn">
@@ -86,9 +95,13 @@ export const ecobirdPanel = {
       <p class="sub-legal">
         ${esc(data.source || '')} · ${esc(data.license || '')}<br>
         ${ko
-          ? `자료 갱신 ${esc(updated)} · 무료 화면에서 출처와 함께 표시합니다. 상업적 재사용·내보내기는 공식 세부 이용조건 확인 전 보류합니다.`
-          : `Updated ${esc(updated)} · shown with attribution on the free map. Commercial reuse and export remain on hold pending the detailed terms.`}<br>
+          ? `자료 갱신 ${esc(updated)} · 공공누리 제1유형은 출처를 밝히면 상업적 이용과 가공을 허용합니다. `
+            + `다만 이 API는 <b>제3자 권리 포함</b>으로 표시됩니다. earthus는 권리 범위를 서면으로 확인하기 전까지 유료 가공물과 원자료 CSV/API를 제공하지 않습니다.`
+          : `Updated ${esc(updated)} · KOGL Type 1 permits commercial use and adaptation with attribution. `
+            + `This API is also marked <b>as including third-party rights</b>, so earthus withholds paid derivatives and raw CSV/API exports until the rights scope is confirmed in writing.`}<br>
+        ${licenseLinks}<br>
         <a href="${esc(data.sourceUrl || SOURCE_URL)}" target="_blank" rel="noopener">${ko ? '에코뱅크 OpenAPI 안내 ↗' : 'EcoBank OpenAPI guide ↗'}</a>
+        · <a href="${esc(data.copyrightUrl || COPYRIGHT_URL)}" target="_blank" rel="noopener">${ko ? '에코뱅크 저작권 정책 ↗' : 'EcoBank copyright policy ↗'}</a>
       </p>`;
   },
 

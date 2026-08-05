@@ -40,6 +40,8 @@ const SRC = {
         직접 받아 만든다. 출처를 그렇게 정확히 적는다 — 기상청이 만들고 NOAA 가 공개한다. */
   gk2a_ir:  { ko: '천리안2A 적외 11.2㎛ (기상청) · NOAA 공개자료',
               en: 'Chollian-2A IR 11.2µm (KMA) via NOAA open data', every: 10 },
+  gk2a_nightlow: { ko: '천리안2A 11.2−3.8㎛ 밝기온도차 (기상청) · NOAA 공개자료',
+                    en: 'Chollian-2A 11.2−3.8µm BTD (KMA) via NOAA open data', every: 10 },
   gk2a_vis: { ko: '천리안2A 가시광 0.64㎛ (기상청) · NOAA 공개자료',
               en: 'Chollian-2A visible 0.64µm (KMA) via NOAA open data', every: 10 },
   gk2a_vis_ea: { ko: '천리안2A 가시광 0.64㎛ · 동아시아 2km (기상청) · NOAA 공개자료',
@@ -109,7 +111,7 @@ const SRC = {
    **좌하단 안내가 통째로 사라진다.** 오류도 경고도 없다 —
    실제로 천리안 3종을 넣고 이걸 빼먹어 "위성정보가 안나와"라는 신고를 받았다.
    (layerbar 의 CATEGORIES 도 같은 성격이다. 레이어 추가는 세 곳을 함께 고친다.) */
-const PRIORITY = ['gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 'gk2aVISfd', 'gk2aWV',
+const PRIORITY = ['gk2aNightLow', 'gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 'gk2aVISfd', 'gk2aWV',
                   'himaIR', 'himawari', 'truecolor', 'clouds', 'sstanom', 'temp', 'tmax', 'tmin', 'humidity', 'rain', 'pressure', 'fog', 'drought',
                   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
                   'sst', 'wave', 'swell', 'current', 'wind', 'windfc',
@@ -119,7 +121,7 @@ const PRIORITY = ['gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 'gk2aVISfd', 'gk
    ⚠️ 점·선 레이어(산불·지진·태풍·낙뢰)는 여기 넣지 않는다. 그것들은 위에 얹히는 것이라
       "지금 보고 있는 바탕"이 아니다.
    ⚠️ 위성 영상이 켜져 있으면 그게 바탕이다 — 그래서 맨 앞이다. */
-const PAINT = ['gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 'gk2aVISfd', 'gk2aWV',
+const PAINT = ['gk2aNightLow', 'gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 'gk2aVISfd', 'gk2aWV',
                'himaIR', 'himawari', 'truecolor',
                'temp', 'tmax', 'tmin', 'humidity', 'rain', 'pressure', 'fog', 'drought',
                'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
@@ -175,7 +177,7 @@ export const sourceNote = {
        보고 있는 것과 다른 출처를 적으면 안내가 아니라 오정보다. */
     let key = id, hima = null;
     if (id.startsWith('gk2a')) {
-      key = { gk2aIR: 'gk2a_ir', gk2aVIS: 'gk2a_vis', gk2aVISfd: 'gk2a_vis_fd',
+      key = { gk2aIR: 'gk2a_ir', gk2aNightLow: 'gk2a_nightlow', gk2aVIS: 'gk2a_vis', gk2aVISfd: 'gk2a_vis_fd',
               gk2aVISea: 'gk2a_vis_ea', gk2aIRea: 'gk2a_ir_ea',
               gk2aWV: 'gk2a_wv' }[id];
     } else if (id === 'himaIR') {
@@ -267,6 +269,17 @@ export const sourceNote = {
             : '<i>⚠️ <b>Low cloud is hard to see</b> — only a few degrees colder than the sea. '
               + 'In daylight use the visible channel instead.</i>');
         }
+        if (key === 'gk2a_nightlow') {
+          bits.push(ko
+            ? '<i>두 적외 채널의 <b>밝기온도 차(11.2㎛ − 3.8㎛)</b>가 1.5K를 넘는 밤의 화소만 표시합니다. 밝을수록 차이가 큽니다.</i>'
+            : '<i>Night pixels where the <b>brightness-temperature difference (11.2µm − 3.8µm)</b> exceeds 1.5 K. Brighter means a larger difference.</i>');
+          bits.push(ko
+            ? '<i>⚠️ 물방울로 된 낮은 구름의 <b>후보</b>입니다. 위성은 구름 꼭대기만 보므로 <b>지면에 닿은 안개인지 판정할 수 없고</b>, 위에 높은 구름이 있으면 그 아래도 못 봅니다.</i>'
+            : '<i>⚠️ A <b>candidate signal</b> for low water cloud. The satellite sees only cloud tops, so it <b>cannot tell fog from low stratus</b>, and high cloud hides anything below.</i>');
+          bits.push(ko
+            ? '<i>⚠️ 3.8㎛에 햇빛이 섞이는 <b>낮은 자료 없음</b>으로 비웁니다. 빈 곳이 맑다는 뜻은 아닙니다.</i>'
+            : '<i>⚠️ <b>No data in daylight</b>, where sunlight contaminates 3.8µm. Blank does not mean clear.</i>');
+        }
         if (key === 'gk2a_vis_fd') {
           /* ⚠️⚠️ 이 레이어가 왜 생겼는지가 곧 사용자에게 필요한 설명이다.
              받은 지적: "일본꺼는 잘 표현되는데 천리안은 안보여" — 같은 시각 15분 차.
@@ -308,7 +321,8 @@ export const sourceNote = {
         /* ⚠️ 덮는 범위는 **채널마다 다르다.** 하나로 적으면 둘 중 하나는 거짓말이 된다. */
         if (key.startsWith('gk2a_')) {
           const { imagery } = await import('./layers/imagery.js');
-          const ch = { gk2a_ir: 'ir112', gk2a_vis: 'vi006', gk2a_wv: 'wv063' }[key];
+          const ch = { gk2a_ir: 'ir112', gk2a_nightlow: 'nightlow',
+                       gk2a_vis: 'vi006', gk2a_wv: 'wv063' }[key];
           const area = imagery._gk2aMeta?.channels?.[ch]?.area;
           bits.push(ko
             ? (area === 'LA'

@@ -172,6 +172,7 @@ export const LAYER_DEFS = [
      ⚠️ 대신 **한반도만** 덮는다(31.5~43.5°N · 120.5~132°E).
         그 밖으로 나가면 아무것도 없다 — 부제에 그렇게 적었다. */
   { id:'gk2aIR',   kind:'imagery', tier:TIER.FREE, on:false, group:'base' },
+  { id:'gk2aNightLow',kind:'imagery',tier:TIER.FREE,on:false, group:'base' },
   { id:'gk2aVIS',  kind:'imagery', tier:TIER.FREE, on:false, group:'base' },
   { id:'gk2aVISfd',kind:'imagery', tier:TIER.FREE, on:false, group:'base' },
   { id:'gk2aIRea', kind:'imagery', tier:TIER.FREE, on:false, group:'base' },

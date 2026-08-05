@@ -38,6 +38,8 @@ export const ITEMS = [
         한 나라 것이라고 하면 틀린 말이 된다. 🌐 로 둔다. */
   { id:'gk2aIR', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 전면 2km · 밤에도', subEn:'Cloud · full disk 2km · day & night', ready:true,
     sky:'#0b1626', paint:'gk2a', img:'img/sat-gk2a.png' },
+  { id:'gk2aNightLow', flag:'🇰🇷', ko:'천리안2A 야간 하층운', en:'Chollian-2A night low cloud', sub:'물방울 구름 후보 · 전면 2km · 밤에만', subEn:'Water-cloud signal · full disk 2km · night only', ready:true,
+    sky:'#0a1724', paint:'gk2a', img:'img/sat-gk2a.png' },
   { id:'gk2aVIS', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 한반도 0.5km · 낮에만', subEn:'Cloud · Korea 0.5km · daylight only', ready:true,
     sky:'#0a1828', paint:'gk2a', img:'img/sat-gk2a.png' },
   /* ⚠️⚠️ 이 레이어가 생긴 이유를 적어 둔다 — 받은 지적이 정확했다.
@@ -439,6 +441,7 @@ const CATEGORIES = [
     ids: ['clouds',        // 🌐 NOAA 전지구 합성 (가장 넓다)
           'truecolor',     // 🇺🇸 수오미 NPP
           'gk2aIR',        // 🇰🇷 천리안 2km
+          'gk2aNightLow',  // 🇰🇷 11.2−3.8㎛ 야간 하층 물구름 신호
           'himawari',      // 🇯🇵 히마와리 1km
           'gk2aVIS',       // 🇰🇷 천리안 0.5km (낮)
           'gk2aVISfd',     // 🇰🇷 천리안 전면 가시광 (낮) — 히마와리와 같은 것을 본다

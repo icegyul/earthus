@@ -922,7 +922,8 @@ export const imagery = {
     const b = box;
     /* ⚠️ 채널당 2~3MB 다. 그냥 얹으면 다 올 때까지 화면이 그대로라
        "안 켜졌나" 싶게 된다 — 받으면서 진행률을 보여준다. */
-    const LABEL = { ir112: '천리안 구름', vi006: '천리안 구름(낮)', wv063: '천리안 수증기' }[ch]
+    const LABEL = { ir112: '천리안 구름', nightlow: '천리안 야간 하층운',
+                    vi006: '천리안 구름(낮)', wv063: '천리안 수증기' }[ch]
                 || '천리안 영상';
     let src;
     try {
@@ -977,6 +978,11 @@ export const imagery = {
     if (ch === 'vi006' && this._isNightHere()) {
       this._say('지금 이 지역은 밤이라 가시광 위성이 구름을 볼 수 없습니다 — 「천리안 구름」을 켜 보세요',
                 'It is night here — try “Chollian clouds” (infrared)');
+    }
+    if (ch === 'nightlow') {
+      this._say(
+        '야간 하층운 신호입니다 · 해가 뜬 곳은 자료 없음 · 안개 여부는 판정할 수 없습니다',
+        'Night low-cloud signal · no data in daylight · this cannot determine whether cloud reaches the ground');
     }
   },
 
@@ -1067,6 +1073,7 @@ export const imagery = {
             직접 만든 것이라 적외가 **밤에도 보인다.**
          ⚠️ 대신 **한반도만** 덮는다. 그래서 켜면 그 자리로 데려간다. */
       case 'gk2aIR':  this.setGK2A('ir112', on); break;
+      case 'gk2aNightLow': this.setGK2A('nightlow', on); break;
       case 'gk2aVIS': this.setGK2A('vi006', on); break;
       case 'gk2aVISfd': this.setGK2A('vi006fd', on); break;
       case 'gk2aIRea':  this.setGK2A('ir112ea', on); break;

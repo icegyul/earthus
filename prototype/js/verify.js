@@ -32,6 +32,7 @@ const state = {
   caseDoc: null,
   caseStation: null,
   caseRequestedApplied: false,
+  caseRequestedScrolled: false,
   caseHour: null,
   caseLoadToken: 0,
 };
@@ -400,6 +401,17 @@ function renderCasePickers() {
   $('#caseStatus').textContent = `${state.caseDoc?.hourCount || hours.length}개 시각 · ${state.caseDoc?.caseCount || 0}개 지점 사례`;
   $('#caseSource').textContent = `${state.caseDoc?.source || '출처 자료 없음'} · 생성 ${formatKst(state.caseDoc?.generated)}`;
   renderCaseBoard();
+  /* 위치 날씨·내 관측소에서 지점을 지정해 들어오면 소개문이 아니라 그 지점의
+     실제 비교가 목적이다. 자료와 선택기가 완성된 뒤 한 번만 해당 구역으로 간다. */
+  if (REQUESTED_STATION && !state.caseRequestedScrolled) {
+    state.caseRequestedScrolled = true;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      $('#stationCase')?.scrollIntoView({
+        behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        block: 'start',
+      });
+    }));
+  }
 }
 
 async function loadCaseDay(day) {

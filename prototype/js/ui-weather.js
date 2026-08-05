@@ -148,7 +148,7 @@ export const weatherPanel = {
         const asos = await get('asos');
         const s = nearest(asos?.stations || [], chrome.place.lat, chrome.place.lon);
         if (!s || !compare.isConnected) return;
-        compare.href = `./verify.html?station=${encodeURIComponent(s.id)}`;
+        compare.href = `./verify.html?station=${encodeURIComponent(s.id)}#stationCase`;
         const detail = compare.querySelector('i');
         if (detail) detail.textContent = ko
           ? `${s.name} · 약 ${Math.round(s.km)}km · 기관 예보와 관측 사례`

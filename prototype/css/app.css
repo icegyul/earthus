@@ -1540,9 +1540,11 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 .wx-kr{
   width:100%; display:flex; align-items:center; gap:10px; margin-top:14px;
   padding:12px 13px; border-radius:11px; cursor:pointer; text-align:left;
+  min-height:44px; text-decoration:none;
   background:rgba(242,245,248,.05); border:1px solid var(--line); color:var(--paper);
 }
 .wx-kr:hover{ background:rgba(242,245,248,.09); }
+.wx-kr:focus-visible{ outline:2px solid #9fe6f5; outline-offset:2px; }
 .wx-kr b{ font-size:13.5px; font-weight:400; }
 .wx-kr i{ flex:1; font-style:normal; font-size:11px; color:var(--fog); }
 .wx-kr span{ color:rgba(255,255,255,.3); font-size:17px; }

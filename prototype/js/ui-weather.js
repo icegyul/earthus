@@ -133,6 +133,32 @@ export const weatherPanel = {
         koreaPanel.open();
       };
       body.appendChild(b);
+
+      /* Windy의 모델 비교처럼 위치를 본 다음 곧바로 비교로 이어진다.
+         ⚠️ 지도 좌표를 임의의 관측소 ID로 바꾸지 않는다. 실제 ASOS 목록에서 가장
+            가까운 지점을 찾은 뒤에만 딥링크하고, 실패하면 일반 화면만 연다. */
+      const compare = el('a', 'wx-kr',
+        `<b>${ko ? '예보와 실제 비교' : 'Forecast vs observation'}</b>`
+        + `<i>${ko ? '가까운 ASOS 지점 찾는 중' : 'Finding the nearest ASOS station'}</i>`
+        + `<span>›</span>`);
+      compare.href = './verify.html';
+      compare.dataset.forecastCompare = '';
+      body.appendChild(compare);
+      import('./korea.js').then(async ({ get, nearest }) => {
+        const asos = await get('asos');
+        const s = nearest(asos?.stations || [], chrome.place.lat, chrome.place.lon);
+        if (!s || !compare.isConnected) return;
+        compare.href = `./verify.html?station=${encodeURIComponent(s.id)}`;
+        const detail = compare.querySelector('i');
+        if (detail) detail.textContent = ko
+          ? `${s.name} · 약 ${Math.round(s.km)}km · 기관 예보와 관측 사례`
+          : `${s.name || s.id} · about ${Math.round(s.km)} km · forecast cases`;
+      }).catch(() => {
+        const detail = compare.querySelector('i');
+        if (detail) detail.textContent = ko
+          ? '지점 목록을 못 받아 전체 비교 화면을 엽니다'
+          : 'Station list unavailable · opening the full comparison';
+      });
     }
 
     /* 일본 — 한국과 같은 자리, 같은 규칙.

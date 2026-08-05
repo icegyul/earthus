@@ -1359,7 +1359,11 @@ async function renderSatImage(sat, rows) {
     img.src = photo.url; img.alt = photo.title; img.loading = 'lazy';
     box.appendChild(img);
     const cap = el('div', 'sat-cap');
-    cap.innerHTML = `<a href="${photo.page}" target="_blank" rel="noopener">${photo.credit} ↗</a>`;
+    const source = el('a', '', `${photo.credit} ↗`);
+    source.href = photo.page;
+    source.target = '_blank';
+    source.rel = 'noopener';
+    cap.appendChild(source);
     box.appendChild(cap);
   } else {
     const cv = document.createElement('canvas');

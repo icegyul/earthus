@@ -11,6 +11,7 @@
 // ⚠️ 위키백과 이미지는 CC 라이선스다. 출처 표기와 링크가 의무다.
 
 import { i18n } from './i18n.js';
+import { fetchT } from './net.js';
 
 /* 실사진이 있는 위성 — 위성 이름 → 위키백과 문서 제목.
    여기 없는 건 개념도로 간다. 늘리려면 한 줄씩 추가하면 된다. */
@@ -57,6 +58,18 @@ const FAMILY = [
 
 const cache = new Map();
 
+/* Commons 의 Artist/Credit 값은 링크가 든 HTML 이다. 화면에는 평문만 보여 준다.
+   ⚠️ API 문자열을 그대로 innerHTML 에 넣으면 출처 표시가 XSS 통로가 된다. */
+function plainMeta(html, max = 120) {
+  const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+  const text = (doc.body.textContent || '').replace(/\s+/g, ' ').trim();
+  return text.length > max ? `${text.slice(0, max - 1).trim()}…` : text;
+}
+
+function firstPage(json) {
+  return Object.values(json?.query?.pages || {})[0] || null;
+}
+
 /** 실사진 찾기. 없으면 null. */
 export async function satPhoto(name) {
   if (!name) return null;
@@ -72,17 +85,42 @@ export async function satPhoto(name) {
   const lang = (i18n.lang === 'ko' && entry.ko) ? 'ko' : 'en';
   const title = entry[lang] || entry.en;
   try {
-    const r = await fetch(
-      `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
-    if (!r.ok) throw new Error(String(r.status));
-    const j = await r.json();
-    const src = j.thumbnail?.source;
-    const out = src ? {
-      url: src.replace(/\/\d+px-/, '/480px-'),   // 조금 큰 판으로
-      page: j.content_urls?.desktop?.page,
-      title: j.title,
-      credit: lang === 'ko' ? '위키백과' : 'Wikipedia',
-    } : null;
+    const api = `https://${lang}.wikipedia.org/w/api.php`;
+    const pageParams = new URLSearchParams({
+      action: 'query', format: 'json', origin: '*', redirects: '1',
+      prop: 'pageimages', piprop: 'name|thumbnail', pithumbsize: '480',
+      /* 비자유 이용(fair use) 이미지는 상업 서비스에서 쓰지 않는다. */
+      pilicense: 'free', titles: title,
+    });
+    const pageRes = await fetchT(`${api}?${pageParams}`, { timeout: 12_000 });
+    if (!pageRes.ok) throw new Error(String(pageRes.status));
+    const article = firstPage(await pageRes.json());
+    if (!article?.pageimage) throw new Error('no free page image');
+
+    /* "Wikipedia"라는 뭉뚱그린 표기는 라이선스 의무를 충족하지 못한다.
+       파일 원문의 저작자·라이선스·설명 페이지를 별도로 조회한다. */
+    const fileParams = new URLSearchParams({
+      action: 'query', format: 'json', origin: '*', redirects: '1',
+      prop: 'imageinfo', titles: `File:${article.pageimage}`,
+      iiprop: 'url|extmetadata', iiurlwidth: '480',
+      iiextmetadatafilter: 'Artist|Credit|LicenseShortName|LicenseUrl',
+    });
+    const fileRes = await fetchT(`${api}?${fileParams}`, { timeout: 12_000 });
+    if (!fileRes.ok) throw new Error(String(fileRes.status));
+    const info = firstPage(await fileRes.json())?.imageinfo?.[0];
+    const meta = info?.extmetadata || {};
+    const author = plainMeta(meta.Artist?.value || meta.Credit?.value);
+    const license = plainMeta(meta.LicenseShortName?.value, 60);
+
+    /* 파일별 라이선스를 확인하지 못하면 실사진을 쓰지 않고 개념도로 돌아간다. */
+    const src = info?.thumburl || article.thumbnail?.source;
+    if (!src || !info?.descriptionurl || !license) throw new Error('missing attribution');
+    const out = {
+      url: src,
+      page: info.descriptionurl,
+      title: article.title || title.replaceAll('_', ' '),
+      credit: [author, license].filter(Boolean).join(' · '),
+    };
     cache.set(name, out);
     return out;
   } catch (_) {

@@ -386,6 +386,8 @@ function bindAccountUI() {
     document.querySelectorAll('.sheet-panel.up').forEach(p => p.classList.remove('up'));
     consentSheet.open(true);   // 검토(review) 모드 — 안 눌러도 로그아웃 안 됨
   };
+  /* 소개서 — 새 탭으로 연다. 같은 탭으로 가면 지구가 통째로 다시 뜬다. */
+  $('#btnIntro').onclick = () => { window.open('/intro.html', '_blank', 'noopener'); };
   $('#btnChangelog').onclick = () => {
     close('settings');
     $('#clTitle').textContent = i18n.lang === 'ko' ? '업데이트' : 'Updates';

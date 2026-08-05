@@ -37,7 +37,8 @@ prototype/        ← 서비스 전체 (정적 웹앱, 빌드 없음, 그대로 
   intro.html      소개 페이지 (검색·AI 답변엔진용 정적 본문)
   admin.html      관리자 (PD UID 만 통과 — 목록이 비면 아무도 못 들어감)
   studio.html     관리자용 콘텐츠 초안·캡처 작업실 (자동 게시 없음)
-  verify.html     예보-관측 일별 검증 공개 화면 (지점별 사례 되감기는 아직 없음)
+  verify.html     예보-관측 일별 집계·지점별 사례 공개 화면
+  station.html    ASOS 한 지점 저장·현재값·실제 축적 기간 화면 (30일은 아직 준비 중)
   manifest.webmanifest / sw.js (웹푸시 + 오프라인)
   js/             화면 코드 (ES 모듈, 약 32,000줄)
     main.js       부팅·메뉴 배선  viewer.js  Cesium 초기화 (infoBox:false 주의)
@@ -174,6 +175,11 @@ PD 몫 (자격·전화가 필요한 것):
   한 시간 오차를 2026-08-06 발견했다. 옛 집계는
   `archive/verify/legacy-daily-before-observation-time-fix.json`에 비공개 보관하고,
   공개 일별 집계는 `leadBasis=observation-time`으로 같은 날부터 다시 시작했다.
+- 관측소 입양 무료 MVP — `station.html`에서 ASOS 96지점 중 한 곳을 기기에 저장하고
+  현재 관측 6종과 공개 사례에 실제로 쌓인 시간별 기온·풍속을 표시한다.
+  2026-08-06 운영 배포와 390×844 검증을 마쳤다. 30일 이력은 빠르면
+  2026-09-05, 작년 같은 날은 빠르면 2027-08-06 이후 실제 보유 여부를 계산하며
+  그 전에는 준비 중이다. 저장은 아직 계정 동기화가 아니라 이 브라우저 기기에만 남는다.
 - ECMWF 태풍 앙상블 — `ecmwf-ingest`가 ENFO BUFR의 51개 멤버를 독립 진로로
   풀어 `events/typhoon-ecmwf.json`에 함께 저장하고, 선택한 태풍에만 얇은 진로
   다발로 표시함. 평균 진로를 만들지 않고, 중간 좌표가 없는 구간도 잇지 않는다.

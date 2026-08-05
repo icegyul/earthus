@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>earthus 내 관측소</title>
+<meta name="description" content="기상청 ASOS 관측소 한 곳을 저장하고 현재 관측과 실제로 쌓인 기록을 봅니다.">
+<meta name="theme-color" content="#0b0d0c">
+<link rel="icon" href="./favicon.ico">
+<link rel="stylesheet" href="./css/station.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="earthus로 돌아가기"><img src="./logo-lockup.png" alt="earthus"></a>
+    <div><strong>내 관측소</strong><span>one place, over time</span></div>
+    <nav><a href="./verify.html">예보 검증</a><a href="./">지구로</a></nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">MY STATION / KMA ASOS</p>
+      <h1>한 곳을 정하고,<br>그곳의 시간을 쌓습니다.</h1>
+      <p>기상청 ASOS 관측소 한 곳을 이 기기에 저장합니다. 현재 관측과 earthus가 실제로 보관한 시간만 보여주며, 아직 없는 30일·작년 기록은 만들지 않습니다.</p>
+    </section>
+
+    <section class="station-picker" aria-labelledby="pickTitle">
+      <div><p class="eyebrow">CHOOSE</p><h2 id="pickTitle">관측소 선택</h2></div>
+      <label><span>ASOS 지점</span><select id="stationPicker" aria-label="ASOS 관측소"></select></label>
+      <button id="saveStation" type="button">이 지점을 내 관측소로 저장</button>
+      <p id="saveNote">저장은 이 브라우저 기기에만 남습니다. 계정·위치 권한은 사용하지 않습니다.</p>
+    </section>
+
+    <section class="station-head" aria-live="polite">
+      <div>
+        <p class="eyebrow">CURRENT OBSERVATION</p>
+        <h2 id="stationName">자료 불러오는 중</h2>
+        <p id="stationMeta"></p>
+      </div>
+      <time id="observedTime"></time>
+    </section>
+
+    <section class="current-grid" id="currentGrid" aria-label="현재 관측값"></section>
+
+    <section class="history-panel" aria-labelledby="historyTitle">
+      <div class="section-head">
+        <div><p class="eyebrow">OBSERVED HISTORY</p><h2 id="historyTitle">실제로 쌓인 시간</h2></div>
+        <span id="historyCount">확인 중</span>
+      </div>
+      <div class="history-grid">
+        <article><header><strong>2m 기온</strong><span>°C</span></header><svg id="tempChart" viewBox="0 0 640 180" role="img" aria-label="시간별 기온"></svg><p id="tempRange"></p></article>
+        <article><header><strong>10m 풍속</strong><span>m/s</span></header><svg id="windChart" viewBox="0 0 640 180" role="img" aria-label="시간별 풍속"></svg><p id="windRange"></p></article>
+      </div>
+      <p class="history-note" id="historyNote">기록을 불러오는 중입니다.</p>
+    </section>
+
+    <section class="readiness" aria-labelledby="readyTitle">
+      <div><p class="eyebrow">WHAT EXISTS</p><h2 id="readyTitle">있는 기간만 엽니다</h2></div>
+      <div class="ready-list">
+        <article><span>현재·오늘 기록</span><strong id="nowReady">확인 중</strong><p>현재 관측과 공개 산출물에 들어온 시간별 값입니다.</p></article>
+        <article><span>지난 30일</span><strong id="monthReady">준비 중</strong><p id="monthNote">30일이 실제로 쌓인 뒤 엽니다.</p></article>
+        <article><span>작년 같은 날</span><strong id="yearReady">준비 중</strong><p id="yearNote">1년 전 같은 날짜가 생긴 뒤 엽니다.</p></article>
+      </div>
+    </section>
+
+    <section class="method">
+      <strong>자료를 읽는 법</strong>
+      <p>ASOS는 지점 관측입니다. 내가 선 정확한 위치의 값이 아니며, 산지·해안·도심은 가까운 지점끼리도 다를 수 있습니다. 결측은 0으로 바꾸지 않고 차트에서 건너뜁니다.</p>
+    </section>
+
+    <footer>
+      <p id="sourceLine">출처 확인 중</p>
+      <p id="generatedLine"></p>
+      <a href="./legal/data-license.ko.md">자료 이용조건</a>
+    </footer>
+  </main>
+
+  <div class="error-banner" id="errorBanner" role="alert" hidden></div>
+  <script type="module" src="./js/station.js"></script>
+</body>
+</html>

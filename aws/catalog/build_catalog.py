@@ -652,9 +652,17 @@ DATASETS = [
         "keywords": {"ko": ["위성", "궤도", "ISS", "우주정거장"],
                      "en": ["satellite", "orbit", "tle", "iss"]},
         "spatial": "지구궤도", "temporal": "일 단위 갱신",
-        "access": {"method": "https", "url": "https://celestrak.org/NORAD/elements/",
-                   "format": "tle/json", "cors": False},
-        "license": "unverified", "licenseNote": "CelesTrak 재배포 조건 확인 필요",
+        "access": {"method": "https",
+                   "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json",
+                   "satcatUrl": "https://celestrak.org/satcat/records.php?GROUP=active&FORMAT=json",
+                   "ours": "celestrak/catalog.json.gz", "format": "omm-json+satcat-json",
+                   "cors": True, "cache": "하루 1회",
+                   "termsUrl": "https://celestrak.org/usage-policy.php",
+                   "note": "공식 정책보다 드물게 하루 1회만 받고 캐시한다. HTTP 200이 아니면 "
+                           "즉시 중단하며 브라우저 사용자가 원본을 반복 호출하지 않는다."},
+        "license": "unverified",
+        "licenseNote": "CelesTrak은 데이터를 무료 공개하지만 별도 재배포 라이선스는 찾지 못했다. "
+                       "사용정책(갱신당 1회·오류 시 즉시 중단)은 확인·준수하며, 재배포 권리 범위는 추가 확인 필요.",
         "usedBy": [],
     },
     {

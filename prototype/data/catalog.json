@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated": "2026-08-05T18:36:00Z",
+ "generated": "2026-08-05T18:38:00Z",
  "note": {
   "ko": "earthus 가 쓰는 자료의 목록이다. 사람(보고서 '자료와 방법'), 파이프라인(access 로 실제 수집), 챗 라우터(keywords 로 질문 연결)가 모두 이 파일 하나를 쓴다. 인용문은 doi.org 서지정보에서 생성한 것이며 사람이 쓰지 않았다. 라이선스가 'UNVERIFIED' 인 항목은 공개 배포 전에 반드시 확인해야 한다.",
   "en": "The list of sources earthus uses. One file serves humans (the report's Data and Methods section), pipelines (fetching via access), and the chat router (matching questions via keywords). Citations are generated from doi.org metadata, not written by hand. Entries marked 'UNVERIFIED' must be checked before any public redistribution."
@@ -1418,11 +1418,16 @@
    "temporal": "일 단위 갱신",
    "access": {
     "method": "https",
-    "url": "https://celestrak.org/NORAD/elements/",
-    "format": "tle/json",
-    "cors": false
+    "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json",
+    "satcatUrl": "https://celestrak.org/satcat/records.php?GROUP=active&FORMAT=json",
+    "ours": "celestrak/catalog.json.gz",
+    "format": "omm-json+satcat-json",
+    "cors": true,
+    "cache": "하루 1회",
+    "termsUrl": "https://celestrak.org/usage-policy.php",
+    "note": "공식 정책보다 드물게 하루 1회만 받고 캐시한다. HTTP 200이 아니면 즉시 중단하며 브라우저 사용자가 원본을 반복 호출하지 않는다."
    },
-   "licenseNote": "CelesTrak 재배포 조건 확인 필요",
+   "licenseNote": "CelesTrak은 데이터를 무료 공개하지만 별도 재배포 라이선스는 찾지 못했다. 사용정책(갱신당 1회·오류 시 즉시 중단)은 확인·준수하며, 재배포 권리 범위는 추가 확인 필요.",
    "usedBy": [],
    "license": {
     "id": "UNVERIFIED",

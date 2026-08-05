@@ -1,4 +1,4 @@
-// 우주 레이어 — 로켓 발사(LL2) + 위성 궤도(CelesTrak TLE + SGP4)
+// 우주 레이어 — 로켓 발사(LL2) + 위성 궤도(CelesTrak OMM + SGP4)
 import { PointLayer } from './pointLayer.js';
 import { viewer } from '../viewer.js';
 import { API, C, GLOBAL_EVENT } from '../config.js';
@@ -8,7 +8,7 @@ import { SAT_GROUPS, satDetail, ISS_ICON } from './satcat.js';
 import { power } from '../power.js';
 
 /* ══════════════════════════════════════════════════════════════
-   로켓 발사 — Launch Library 2 (인증 불필요)
+   로켓 발사 — Launch Library 2.3 (비인증 15회/시간)
    §5-5: 발사장 핀 + 카운트다운 → 미션 정보 + 라이브 스트림
    §5-10: 발사 D-24h 이내면 전지구 노출
    ══════════════════════════════════════════════════════════════ */
@@ -30,7 +30,9 @@ export const launches = {
   },
 
   async refresh() {
-    const url = `${API.LAUNCH}?limit=30&hide_recent_previous=true`;
+    /* mode=normal이면 우리가 쓰지 않는 이미지·설명을 덜 받는다.
+       ⚠️ LL2 이미지에는 CC BY-NC 등 제3자 라이선스가 섞여 있으므로 표시하지 않는다. */
+    const url = `${API.LAUNCH}?limit=30&hide_recent_previous=true&mode=normal`;
     const res = await fetchT(url);
     if (!res.ok) throw new Error('ll2 ' + res.status);
     const j = await res.json();
@@ -42,7 +44,7 @@ export const launches = {
       .map(r => {
         const net = r.net ? new Date(r.net).getTime() : null;
         const hoursOut = net != null ? (net - now) / 3600_000 : null;
-        const stream = (r.vidURLs || []).find(v => v.url)?.url || null;
+        const stream = (r.vidURLs || r.vid_urls || []).find(v => v.url)?.url || null;
         return {
           id: r.id,
           name: (r.name || '').split('|')[0].trim(),
@@ -76,7 +78,7 @@ export const launches = {
 };
 
 /* ══════════════════════════════════════════════════════════════
-   위성 궤도 — CelesTrak TLE + SGP4 로컬 연산
+   위성 궤도 — CelesTrak OMM JSON + SGP4 로컬 연산
    §5-10: 선(line) 레이어 → 전지구부터 표시
 
    사용자가 그룹을 골라 개수를 조절한다 (satcat.js 의 SAT_GROUPS).

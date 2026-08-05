@@ -33,7 +33,7 @@ Cesium 1.143.0 과 satellite.js 6.0.2 는 CDN에서 받습니다. 빌드 과정 
 | 지진 (2분 갱신, 규모별 크기·색, 6.5+ 전지구 노출) | USGS | ✅ |
 | 기상 — 지점 탭 시 현재값 + 7일 예보 | Open-Meteo (GFS/ECMWF) | ✅ |
 | 바람 방향 화살표 (뷰포트 격자) | Open-Meteo | ✅ |
-| 로켓 발사 (15분 갱신, D-24h 전지구 노출, 중계 링크) | Launch Library 2 | ✅ |
+| 로켓 발사 (15분 갱신, D-24h 전지구 노출, 중계 링크) | Launch Library 2.3 | ✅ |
 | 위성 궤도 (SGP4 실시간 전파, ISS 궤적) | CelesTrak TLE | ✅ |
 | 오로라 확률 (5분 갱신) | NOAA SWPC OVATION | ✅ |
 | 기온 래스터 | NASA AIRS | ✅ |

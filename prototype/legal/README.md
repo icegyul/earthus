@@ -114,7 +114,7 @@
 | NOAA (SWPC, USGS 등 미 연방기관) | 퍼블릭 도메인. 출처 표기 권장 |
 | Open-Meteo | CC BY 4.0 — **출처 표기 필수** |
 | CelesTrak | 공개 이용. 공식 정책은 갱신당 1회 다운로드·필요 자료만 요청·캐시를 요구. **상업 재배포 허용 범위는 명시 확인 필요** ⚠️ |
-| Launch Library 2 | 무료. 출처 표기 권장 |
+| Launch Library 2.3 | 비인증 무료 15회/시간·API 문서 Apache-2.0. **제3자 이미지 라이선스는 항목마다 다르므로 사용하지 않음** |
 | OpenStreetMap | ODbL — **"© OpenStreetMap contributors" 표기 필수** |
 
 > ⚠️ **CelesTrak 확인 필요**: 2026-08-06 공식 Usage Policy에는 비상업 전용이라는

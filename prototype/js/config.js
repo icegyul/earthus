@@ -84,7 +84,7 @@ export const API = {
   // 브라우저가 CelesTrak 을 직접 부르면 rate limit 에 걸리고, SATCAT 도 커서 매번 못 받는다.
   SAT_CATALOG: CDN + '/celestrak/catalog.json.gz',
   GP:          'https://celestrak.org/NORAD/elements/gp.php',   // OMM JSON 폴백용
-  LAUNCH:      'https://ll.thespacedevs.com/2.2.0/launch/upcoming/',
+  LAUNCH:      'https://ll.thespacedevs.com/2.3.0/launches/upcoming/',
   KP:          'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json',
   AURORA:      'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json',
   OVERPASS:    'https://overpass-api.de/api/interpreter',

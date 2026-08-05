@@ -887,6 +887,7 @@
 .al-del:hover{ opacity:.9; }
 .al-del:disabled{ opacity:.2; cursor:wait; }
 .al-add{ min-height:44px; }
+.al-add:disabled{ opacity:.45; cursor:wait; }
 .al-types{ grid-column:1/-1; display:flex; flex-wrap:wrap; gap:6px; padding:0 0 10px 4px; }
 .al-type{ min-height:44px; display:inline-flex; align-items:center; gap:6px; padding:0 10px;
   border:1px solid var(--line,#1d2635); border-radius:999px; color:rgba(255,255,255,.58);

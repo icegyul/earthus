@@ -349,7 +349,16 @@ export const alertsSheet = {
 
       const addMe = el('button', 'btn-secondary al-add',
         ko ? '＋ 지금 내 위치' : '＋ Watch my current location');
-      addMe.onclick = () => saveAt(myLocation.coords);
+      addMe.onclick = async () => {
+        addMe.disabled = true;
+        const c = myLocation.coords || await myLocation.locate(true);
+        addMe.disabled = false;
+        if (!c) {
+          toast(myLocation.reason() || (ko ? '위치를 가져오지 못했습니다' : 'Could not get location'));
+          return;
+        }
+        saveAt(c);
+      };
       body.appendChild(addMe);
     } else if (!this._spotsLoading && !this._spotsError && !paid && this._spots.length >= max) {
       body.appendChild(el('p', 'sky-note', ko

@@ -2145,6 +2145,17 @@ body.is-ambient #windLegend.on{ opacity:0; }
 .ly-open-arrow{ align-self:center; color:rgba(240,196,154,.72); font:300 22px/1 system-ui,sans-serif;
                 transform:translateY(-1px); transition:transform .18s ease,color .18s ease }
 .ly-open:hover .ly-open-arrow{ color:#f0c49a; transform:translate(2px,-1px) }
+.ly-open--watch{
+  background:linear-gradient(100deg,rgba(90,209,232,.13),rgba(90,209,232,.05));
+  border-color:rgba(90,209,232,.30);
+}
+.ly-open--watch:hover{
+  background:linear-gradient(100deg,rgba(90,209,232,.20),rgba(90,209,232,.08));
+  border-color:rgba(90,209,232,.46);
+}
+.ly-open--watch b{ color:#9fe6f5; }
+.ly-open--watch .ly-open-arrow{ color:rgba(159,230,245,.72); }
+.ly-open--watch:hover .ly-open-arrow{ color:#9fe6f5; }
 
 /* 뉴스 패널 — 지도 표시 켜고 끄기 */
 .ev-maptoggle{ display:flex; align-items:center; gap:7px; width:100%; cursor:pointer;

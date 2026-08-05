@@ -629,6 +629,7 @@ export const layerBar = {
        문 두 개였다 → 그 메뉴를 없애고 여기로 넣었다. */
     if (isAlert) {
       const go = el('button', 'ly-open');
+      go.type = 'button';
       /* ⚠️ 이 파일의 `el(t, c)` 는 **인자가 둘뿐이다** — 다른 파일의 el(t,c,html) 과 다르다.
          세 번째로 글을 넘겼더니 **조용히 버려져 빈 버튼**이 나왔다. innerHTML 로 넣는다. */
       go.innerHTML = `<span class="ly-open-copy">`
@@ -650,6 +651,31 @@ export const layerBar = {
         }
       };
       strip.appendChild(go);
+
+      /* Windy류 앱에서 즐겨찾기와 알림은 지도 레이어와 별개인 핵심 동작이다.
+         earthus도 이미 저장 지점 기반 웹푸시가 있었지만 설정 맨 아래에만 있어
+         Alert 메뉴를 연 사람조차 찾기 어려웠다. 레이어처럼 켜는 스위치로 섞지 않고,
+         위의 현황 화면과 나란한 '다른 화면을 여는 줄'로 분명히 구분한다.
+         ⚠️ '현재 위치 알림'이라고 쓰지 않는다 — 앱이 닫히면 위치를 추적하지 않으며
+         알림은 사용자가 저장한 지점 기준이다 (ui-alerts.js의 안전 원칙). */
+      const watch = el('button', 'ly-open ly-open--watch');
+      watch.type = 'button';
+      watch.innerHTML = `<span class="ly-open-copy">`
+        + `<b>${ko ? '지켜볼 곳 · 알림 설정' : 'Saved places & alerts'}</b>`
+        + `<em>${ko ? '저장한 장소 기준 · 안전 알림은 무료' : 'For saved places · safety alerts are free'}</em>`
+        + `</span><span class="ly-open-arrow" aria-hidden="true">›</span>`;
+      watch.onclick = async () => {
+        try {
+          const { alertsSheet } = await import('./ui-alerts.js');
+          this.open = false;
+          this.sub = null;
+          this._apply?.();
+          alertsSheet.open();
+        } catch (e) {
+          console.warn('[layerbar] 알림 설정을 못 열었습니다', e.message);
+        }
+      };
+      strip.appendChild(watch);
       strip.appendChild(el('div', 'ly-gap'));
     }
 

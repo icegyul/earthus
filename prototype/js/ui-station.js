@@ -17,6 +17,7 @@
 //    사람들은 전부 그 관측소가 잰 값이라고 읽는다.
 
 import { i18n } from './i18n.js';
+import { fetchT } from './net.js';
 
 const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
@@ -148,7 +149,7 @@ export const stationSheet = {
        429 가 난다 (실측). 한 번은 조용히 기다렸다 다시 시도한다.
        그래도 안 되면 "못 받았다"고 말한다 — 지어내지 않는다. */
     for (let a = 0; a < 2; a++) {
-      const r = await fetch(u);
+      const r = await fetchT(u, { timeout: 12_000 });
       if (r.ok) return (await r.json()).hourly || null;
       if (r.status !== 429 || a === 1) throw new Error(`HTTP ${r.status}`);
       await new Promise(res => setTimeout(res, 1400));
@@ -162,7 +163,9 @@ export const stationSheet = {
       + `&generator=geosearch&ggscoord=${lat.toFixed(4)}%7C${lon.toFixed(4)}`
       + '&ggsradius=3000&ggslimit=6&ggsnamespace=6'
       + '&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=420';
-    const r = await fetch(u);
+    /* Commons가 답을 안 하면 사진만 포기하고 5일치 그래프는 살린다.
+       제한 시간이 없으면 Promise.allSettled 자체가 끝나지 않아 시트가 영원히 로딩이다. */
+    const r = await fetchT(u, { timeout: 15_000 });
     if (!r.ok) return [];
     const j = await r.json();
     const pages = j.query?.pages || {};

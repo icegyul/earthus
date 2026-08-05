@@ -488,6 +488,108 @@ function extractQualitySummary(result) {
   };
 }
 
+const TREND_HEADERS = [
+  'date', 'model', 'lead_hour', 'variable', 'unit', 'n', 'me', 'mae', 'rmse',
+  'source', 'license', 'generated',
+];
+
+function extractDailyTrend(result) {
+  if (result.dataset !== 'cases') return { headers: TREND_HEADERS, rows: [] };
+  const groups = new Map();
+  result.rows.forEach(row => {
+    const date = String(row[0] || '').slice(0, 10);
+    const key = [date, row[6], row[7], row[8], row[9]].join('|');
+    const group = groups.get(key) || {
+      date, model: row[6], lead: row[7], variable: row[8], unit: row[9],
+      differences: [], source: row[14], license: row[15], generated: row[16],
+    };
+    if (finite(row[12])) group.differences.push(Number(row[12]));
+    groups.set(key, group);
+  });
+  const rows = [...groups.values()].sort((left, right) =>
+    left.date.localeCompare(right.date, 'en')
+      || modelName(left.model).localeCompare(modelName(right.model), 'en')
+      || Number(left.lead) - Number(right.lead)
+      || left.variable.localeCompare(right.variable, 'en'))
+    .map(group => {
+      const n = group.differences.length;
+      const me = n ? group.differences.reduce((sum, value) => sum + value, 0) / n : null;
+      const mae = n ? group.differences.reduce((sum, value) => sum + Math.abs(value), 0) / n : null;
+      const rmse = n ? Math.sqrt(group.differences.reduce((sum, value) => sum + value ** 2, 0) / n) : null;
+      return [
+        group.date, group.model, group.lead, group.variable, group.unit, n,
+        rounded(me), rounded(mae), rounded(rmse), group.source, group.license, group.generated,
+      ];
+    });
+  return { headers: TREND_HEADERS, rows };
+}
+
+function trendFilename(result) {
+  return extractFilename(result).replace(/\.csv$/, '.daily-trend.csv');
+}
+
+function trendSvgMarkup(rows, context) {
+  const { variable, metric, dateFrom, dateTo, sourceFileCount } = context;
+  const info = variableInfo(variable);
+  const metricIndex = { me: 6, mae: 7, rmse: 8 }[metric];
+  const metricName = String(metric || '').toUpperCase();
+  const records = rows.filter(row => row[3] === variable && finite(row[metricIndex]))
+    .map(row => ({ date: row[0], model: row[1], lead: row[2], n: row[5], value: Number(row[metricIndex]), source: row[9] }));
+  const allDates = calendarDates(dateFrom, dateTo);
+  const values = records.map(record => record.value);
+  let minimum = Math.min(0, ...values);
+  let maximum = Math.max(0, ...values);
+  if (minimum === maximum) maximum = minimum + 1;
+  const padding = (maximum - minimum) * .08;
+  minimum = minimum < 0 ? minimum - padding : 0;
+  maximum += padding;
+  const plot = { left: 66, right: 28, top: 102, bottom: 314 };
+  const plotWidth = 860 - plot.left - plot.right;
+  const plotHeight = plot.bottom - plot.top;
+  const x = date => plot.left + (allDates.indexOf(date) / Math.max(allDates.length - 1, 1)) * plotWidth;
+  const y = value => plot.bottom - ((value - minimum) / (maximum - minimum)) * plotHeight;
+  const ticks = Array.from({ length: 5 }, (_, index) => minimum + (maximum - minimum) * index / 4).reverse();
+  const colors = {
+    'ecmwf_ifs025|24': '#7059c7', 'ecmwf_ifs025|48': '#9a86db',
+    'gfs_seamless|24': '#3b8f79', 'gfs_seamless|48': '#6eae9d',
+  };
+  const series = new Map();
+  records.forEach(record => {
+    const key = `${record.model}|${record.lead}`;
+    const list = series.get(key) || [];
+    list.push(record);
+    series.set(key, list);
+  });
+  const adjacent = (left, right) =>
+    (new Date(`${right}T00:00:00Z`) - new Date(`${left}T00:00:00Z`)) / 86400000 === 1;
+  const source = [...new Set(records.map(record => record.source).filter(Boolean))].join(' | ');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 470" role="img" aria-labelledby="trendTitle trendDesc">
+    <title id="trendTitle">${html(dateFrom)}부터 ${html(dateTo)}까지 ${html(info.name)} ${html(metricName)} 날짜별 품질 추세</title>
+    <desc id="trendDesc">실제 공개 날짜별 검증값입니다. 날짜가 빠진 구간은 선으로 연결하지 않으며 각 점에 표본 수 n을 표시합니다.</desc>
+    <rect width="860" height="470" fill="#f7f7f4"/>
+    <text x="38" y="38" fill="#6b5abd" font-family="ui-monospace, SFMono-Regular, monospace" font-size="10" font-weight="700" letter-spacing="1.5">EARTHUS / DAILY QUALITY TREND</text>
+    <text x="38" y="72" fill="#17191c" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="24" font-weight="650">${html(info.name)} ${html(metricName)} · ${html(dateFrom)} → ${html(dateTo)} <tspan fill="#646a73" font-size="14">(${html(info.unit)})</tspan></text>
+    ${ticks.map(tick => `<line x1="${plot.left}" y1="${y(tick).toFixed(2)}" x2="832" y2="${y(tick).toFixed(2)}" stroke="#d7d8d3"/><text x="56" y="${(y(tick) + 3).toFixed(2)}" fill="#6b7078" text-anchor="end" font-family="ui-monospace, SFMono-Regular, monospace" font-size="9">${html(displayNumber(tick))}</text>`).join('')}
+    ${[...series.entries()].map(([key, list]) => {
+      const ordered = list.sort((left, right) => left.date.localeCompare(right.date, 'en'));
+      const color = colors[key] || '#65717d';
+      const lines = ordered.slice(1).map((record, index) => adjacent(ordered[index].date, record.date)
+        ? `<line data-series-segment="${html(key)}" x1="${x(ordered[index].date).toFixed(2)}" y1="${y(ordered[index].value).toFixed(2)}" x2="${x(record.date).toFixed(2)}" y2="${y(record.value).toFixed(2)}" stroke="${color}" stroke-width="2"/>`
+        : '').join('');
+      const points = ordered.map(record => `<g data-series-point="${html(key)}"><circle cx="${x(record.date).toFixed(2)}" cy="${y(record.value).toFixed(2)}" r="4" fill="${color}"/><text x="${x(record.date).toFixed(2)}" y="${(y(record.value) - 9).toFixed(2)}" fill="#32363b" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, monospace" font-size="8">${html(displayNumber(record.value))} · n=${html(record.n)}</text></g>`).join('');
+      return lines + points;
+    }).join('')}
+    ${[...new Set(records.map(record => record.date))].map(date => `<text x="${x(date).toFixed(2)}" y="337" fill="#555b63" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, monospace" font-size="8">${html(date.slice(5))}</text>`).join('')}
+    ${[...series.keys()].map((key, index) => {
+      const [model, lead] = key.split('|');
+      return `<g><circle cx="${46 + index * 164}" cy="370" r="4" fill="${colors[key] || '#65717d'}"/><text x="${56 + index * 164}" y="373" fill="#363a40" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9">${html(modelName(model))} ${html(lead)}h</text></g>`;
+    }).join('')}
+    <line x1="38" y1="392" x2="822" y2="392" stroke="#c9cbc7"/>
+    <text x="38" y="413" fill="#555b63" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="8.5">Source ${html(source)} · source files ${html(sourceFileCount)}</text>
+    <text x="38" y="438" fill="#8a4d20" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="700">Missing dates are not connected. Short ranges are not long-term model rankings.</text>
+  </svg>`;
+}
+
 function qualityFilename(result) {
   return extractFilename(result).replace(/\.csv$/, '.quality.csv');
 }
@@ -500,6 +602,46 @@ function renderQuality(result) {
     `<tr>${row.map(value => `<td>${html(value ?? '')}</td>`).join('')}</tr>`).join('');
   $('#qualityNote').textContent = summary.note;
   $('#downloadQuality').disabled = summary.rows.length === 0;
+}
+
+function renderTrendChart() {
+  const trend = state.trendResult;
+  if (!trend?.available) return;
+  const variable = $('#trendVariable').value;
+  const metric = $('#trendMetric').value;
+  const markup = trendSvgMarkup(trend.rows, {
+    variable,
+    metric,
+    dateFrom: trend.result.dateFrom,
+    dateTo: trend.result.dateTo,
+    sourceFileCount: trend.result.sourceFiles.length,
+  });
+  $('.trend-canvas').innerHTML = markup;
+  const info = variableInfo(variable);
+  $('#trendNote').textContent = `${trend.result.includedDates.length}개 실제 날짜 · ${info.name} ${metric.toUpperCase()} · 점마다 n 표시 · 빠진 날짜는 연결하지 않음`;
+}
+
+function renderTrend(result) {
+  const trend = extractDailyTrend(result);
+  const variables = [...new Set(trend.rows.map(row => row[3]))].sort();
+  const previous = $('#trendVariable').value;
+  $('#trendVariable').innerHTML = variables.map(variable =>
+    `<option value="${html(variable)}">${html(variableInfo(variable).name)} (${html(variableInfo(variable).unit)})</option>`).join('');
+  if (variables.includes(previous)) $('#trendVariable').value = previous;
+  const trendDates = [...new Set(trend.rows.map(row => row[0]))];
+  const available = result.dataset === 'cases' && result.includedDates.length >= 2 && trendDates.length >= 2;
+  state.trendResult = { ...trend, result, available };
+  $('#downloadTrendCsv').disabled = !available;
+  $('#downloadTrendSvg').disabled = !available;
+  if (!available) {
+    const reason = result.dataset !== 'cases'
+      ? '날짜별 예보 검증 추세는 예보·관측 사례 자료에서만 만듭니다.'
+      : `현재 선택에 실제 검증 날짜가 ${trendDates.length}일뿐입니다. 2일 이상부터 만듭니다.`;
+    $('#trendNote').textContent = reason;
+    $('.trend-canvas').innerHTML = `<p>${html(reason)}</p>`;
+    return;
+  }
+  renderTrendChart();
 }
 
 function extractIndex(dataset) {
@@ -623,6 +765,7 @@ function renderExtract() {
   $('#downloadExtractManifest').disabled = rows.length === 0;
   $('#downloadExtractReadme').disabled = rows.length === 0;
   renderQuality(state.extractResult);
+  renderTrend(state.extractResult);
 }
 
 async function loadExtractRange() {
@@ -636,6 +779,8 @@ async function loadExtractRange() {
   $('#downloadExtractManifest').disabled = true;
   $('#downloadExtractReadme').disabled = true;
   $('#downloadQuality').disabled = true;
+  $('#downloadTrendCsv').disabled = true;
+  $('#downloadTrendSvg').disabled = true;
   $('#extractStatus').textContent = `${from || '시작일 없음'} → ${to || '종료일 없음'} 공개 파일을 불러오는 중입니다.`;
   if (!dates.length) {
     state.extractDays = [];
@@ -842,6 +987,8 @@ function initExtract() {
   });
   ['#extractTime', '#extractStation', '#extractVariable'].forEach(selector =>
     $(selector).addEventListener('change', renderExtract));
+  ['#trendVariable', '#trendMetric'].forEach(selector =>
+    $(selector).addEventListener('change', renderTrendChart));
   $('#downloadExtract').addEventListener('click', () => {
     const result = state.extractResult;
     if (!result?.rows.length) return;
@@ -885,6 +1032,18 @@ function initExtract() {
     const summary = state.qualityResult;
     if (!summary?.rows.length) return;
     download(summary.filename, summary.headers, summary.rows);
+  });
+  $('#downloadTrendCsv').addEventListener('click', () => {
+    const trend = state.trendResult;
+    if (!trend?.available) return;
+    download(trendFilename(trend.result), trend.headers, trend.rows);
+  });
+  $('#downloadTrendSvg').addEventListener('click', () => {
+    const trend = state.trendResult;
+    const svg = $('.trend-canvas svg');
+    if (!trend?.available || !svg) return;
+    const filename = trendFilename(trend.result).replace(/\.csv$/, `-${$('#trendVariable').value}-${$('#trendMetric').value}.svg`);
+    downloadText(filename, `${svg.outerHTML}\n`, 'image/svg+xml;charset=utf-8');
   });
   loadExtractRange();
 }

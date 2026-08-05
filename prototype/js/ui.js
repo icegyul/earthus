@@ -1756,12 +1756,18 @@ export const hud = {
        고도·프레임·해상도·레이어 ID 가 상시로 떠 있으면 아무리 폰트를 다듬어도
        "개발 도구를 켜둔 화면"으로 보인다. 리빙어스와 가장 크게 벌어지던 지점이다.
        필요할 때만 켜고, 선택은 기억한다. */
-    const showHud = on => {
-      $('#hud').style.display = on ? 'block' : 'none';
-      $('#hudShow').style.display = on ? 'none' : 'block';
-      localStorage.setItem('earthus.hud', on ? 'on' : 'off');
+    /* ⚠️ HUD 자체만 숨기고 `HUD` 손잡이를 일반 화면에 남기면 개발 도구가 여전히
+       제품 첫 화면에 보인다. 운영자용 설정과 같은 규칙으로 #dev 에서만 접근한다. */
+    const allowed = () => location.hash === '#dev';
+    const showHud = (on, remember = true) => {
+      const visible = allowed() && on;
+      $('#hud').style.display = visible ? 'block' : 'none';
+      $('#hudShow').style.display = allowed() && !visible ? 'block' : 'none';
+      if (remember && allowed()) localStorage.setItem('earthus.hud', on ? 'on' : 'off');
     };
-    showHud(localStorage.getItem('earthus.hud') === 'on');
+    const restore = () => showHud(localStorage.getItem('earthus.hud') === 'on', false);
+    restore();
+    window.addEventListener('hashchange', restore);
     $('#hudHide').onclick = () => showHud(false);
     $('#hudShow').onclick = () => showHud(true);
     document.querySelectorAll('#hud [data-jump]').forEach(b => {

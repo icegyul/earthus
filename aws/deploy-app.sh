@@ -52,6 +52,15 @@ for f in $(cd "$SRC" && find . -name '*.js' | sed 's|^\./||'); do
     --cache-control 'public, max-age=60' >/dev/null
 done
 
+# ⚠️⚠️ **sw.js 는 예외다.** 위 루프가 모든 .js 에 max-age=60 을 걸어 버리는데,
+#    서비스워커가 캐시되면 **고친 앱이 사용자에게 안 간다** — 옛 sw 가 옛 파일을
+#    계속 내어 준다. 감사에서 운영 sw.js 가 max-age=300 으로 나가는 것이 확인됐다.
+#    반드시 마지막에 no-cache 로 덮어쓴다.
+aws s3 cp "s3://${BUCKET}/${PREFIX}/sw.js" "s3://${BUCKET}/${PREFIX}/sw.js" \
+  --region "$REGION" --metadata-directive REPLACE \
+  --content-type 'text/javascript; charset=utf-8' \
+  --cache-control 'no-cache' >/dev/null && echo "▸ sw.js — no-cache 로 교정"
+
 echo ""
 echo "✅ 업로드 완료"
 echo "   ${URL}"

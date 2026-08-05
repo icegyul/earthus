@@ -98,7 +98,8 @@ export const alarms = {
     const body = ko ? '하늘을 올려다볼 시간입니다.' : 'Time to look up.';
     try {
       if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-        new Notification(title, { body, tag: a.key, icon: 'icon.png' });
+        // ⚠️ icon.png 는 없는 파일이다 (감사) — 실제로 있는 파일로.
+        new Notification(title, { body, tag: a.key, icon: 'icon-192.png' });
       } else {
         toast(`${title} — ${body}`);
       }

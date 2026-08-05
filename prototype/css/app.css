@@ -2073,3 +2073,9 @@ body.is-ambient #windLegend.on{ opacity:0; }
   text-align:center;backdrop-filter:blur(10px)}
 #fxChip.on{display:block}
 @media (max-width:640px){ #fxLabel{min-width:0} }
+
+/* 태풍 범례·타임라인은 다른 전체 패널이 열리면 접는다 (감사 P1-1).
+   ⚠️ display:none 이 아니라 내려서 숨긴다 — 돌아올 때 자리를 기억한다. */
+body.tc-ui-off #fxBar{transform:translateX(-50%) translateY(200%);pointer-events:none}
+body.tc-ui-off #fxChip{opacity:0;pointer-events:none;transition:opacity .2s}
+body.tc-ui-off #tcLegend{opacity:0;pointer-events:none;transition:opacity .2s}

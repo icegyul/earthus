@@ -79,8 +79,11 @@ self.addEventListener('push', (e) => {
   const title = d.title || 'earthus';
   const opts = {
     body: d.body || '',
-    icon: d.icon || './icon.png',
-    badge: './icon.png',
+    /* ⚠️ icon.png 는 **없는 파일이었다** (감사). 저장소에는 icon-192/512.png 뿐이라
+       운영에서 403 이 났고, 알림 아이콘과 배지가 깨진 채 나갔다.
+       ⚠️ 배지는 단색으로 축약돼 그려지므로 작은 쪽을 준다. */
+    icon: d.icon || './icon-192.png',
+    badge: './icon-192.png',
     /* ⚠️ tag 를 주면 같은 tag 의 옛 알림을 **덮어쓴다.**
        이안류 등급이 오르면 이전 알림이 남지 않고 최신만 보인다 — 그게 맞다.
        ⚠️ 다만 서로 다른 사건이 같은 tag 를 쓰면 하나가 사라진다.

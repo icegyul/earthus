@@ -188,7 +188,16 @@ export const consentSheet = {
     };
     if (!(payload.tos && payload.privacy && payload.over14)) return;
 
-    await auth.saveConsent(payload);
+    /* ⚠️⚠️ 서버에 동의가 저장돼야 가입 완료다. 저장이 실패했는데 완료라고
+       말하면 기록 없는 동의가 된다 — 동의창을 열어 둔 채 다시 시도하게 한다.
+       (감사 P1-4) */
+    const r = await auth.saveConsent(payload);
+    if (!r?.ok) {
+      toast(r?.reason === 'no-session'
+        ? '로그인이 풀렸습니다. 다시 로그인해 주세요.'
+        : '동의 기록을 저장하지 못했습니다. 잠시 뒤 다시 눌러 주세요.');
+      return;                          // ⚠️ 창을 닫지 않는다
+    }
     localStorage.setItem('earthus.consent', CONFIG.LEGAL_VERSION);
     localStorage.setItem('earthus.consent.location', payload.location ? '1' : '0');
     localStorage.setItem('earthus.consent.usage', payload.usage ? '1' : '0');
@@ -313,7 +322,10 @@ export function renderBusinessInfo() {
   ].filter(([, v]) => v);
   box.innerHTML = rows.length
     ? rows.map(([k, v]) => `<div class="biz-row"><span>${k}</span><span>${v}</span></div>`).join('')
-    : '<div class="biz-row" style="opacity:.4"><span>사업자 정보</span><span>config.local.js 에 입력 필요</span></div>';
+    /* ⚠️ 사업자 정보가 없으면 **줄을 통째로 숨긴다.** 예전엔 운영 화면에
+       'config.local.js 에 입력 필요'라는 개발자용 문구가 그대로 보였다.
+       사용자에게 우리 파일 이름을 알려 줄 이유가 없다. (감사 P1-10) */
+    : '';
 }
 
 /* ── 토스트 (ui.js 와 공유) ─────────────────────────────────── */

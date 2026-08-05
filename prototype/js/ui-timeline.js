@@ -25,6 +25,38 @@ const MAX_H = 120;
 const N = MAX_H / STEP_H;          // 20 (+ "지금" = 21칸)
 const PLAY_MS = 900;               // 재생 속도 — 한 칸에 약 1초
 
+/* ── 다른 전체 패널이 열리면 잠시 접는다 ───────────────────────────
+   받은 감사(P1-1): 태풍 범례와 타임라인이 설정·뉴스·LAB·if 위에 겹쳐
+   제목과 닫기 버튼을 가렸다. 모바일에서는 나가기가 어려웠다.
+   ⚠️ 선택과 시각은 그대로 둔다 — 패널을 닫으면 있던 자리로 돌아온다.
+   ⚠️ '접기'는 표시만 끄는 것이다. 예보 시각을 실황으로 되돌리면
+      돌아왔을 때 사용자가 맞춰 둔 시각이 사라진다. */
+/* ⚠️ 패널 id 를 하나씩 적지 않는다 — 새 시트가 생길 때마다 빠뜨린다.
+   실제 구조는 .sheet-panel 29개 + #settings 이고, 열림 표시는 .up / .open 이다.
+   ⚠️ #sheet(정보 시트)는 뺀다. 그건 태풍 정보창 자신이라 같이 떠 있어야 한다. */
+const PANEL_SEL = '.sheet-panel, #settings';
+
+export function fxUiCollapsed(on) {
+  document.body.classList.toggle('tc-ui-off', !!on);
+}
+
+/* 패널이 열리고 닫히는 것을 직접 본다 — 여는 쪽이 여러 곳이라
+   각각에 손을 대는 것보다 한 곳에서 감시하는 편이 새는 데가 없다. */
+let _mo = null;
+export function watchPanels() {
+  if (_mo) return;
+  const check = () => {
+    const open = [...document.querySelectorAll(PANEL_SEL)]
+      .some(n => n.id !== 'sheet'
+                 && (n.classList.contains('up') || n.classList.contains('open')));
+    fxUiCollapsed(open);
+  };
+  _mo = new MutationObserver(check);
+  _mo.observe(document.body, { subtree: true, attributes: true,
+                               attributeFilter: ['class', 'aria-hidden'] });
+  check();
+}
+
 export const fxTimeline = {
   _el: null,
   _doc: null,
@@ -145,6 +177,7 @@ export const fxTimeline = {
   /* ── 표시/숨김 (cyclone.js 가 부른다) ── */
   async show(storm) {
     this._storm = storm;
+    watchPanels();
     this._build().classList.add('on');
     this.set(this._i && this._storm === storm ? this._i : 0);
     this._load();                            // 격자를 미리 받아 둔다

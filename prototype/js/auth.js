@@ -137,7 +137,11 @@ export const auth = {
 
   /** 동의 기록 저장 — 언제/무엇에 동의했는지 남겨야 분쟁 시 근거가 된다 */
   async saveConsent({ tos, privacy, over14, marketing, location }) {
-    if (!this.client || !this.user) return;
+    /* ⚠️⚠️ **성공/실패를 반드시 돌려준다.** 예전에는 오류를 경고만 찍고
+       조용히 성공처럼 끝냈다 — 서버에 동의 기록이 없는데 사용자에게는
+       "가입 완료"라고 말하고 있었다. 분쟁 때 근거가 되는 기록이라 이건
+       화면 문제가 아니라 법적 문제다. (감사 P1-4) */
+    if (!this.client || !this.user) return { ok: false, reason: 'no-session' };
     const { error } = await this.client.from('consents').insert({
       user_id: this.user.id,
       tos_agreed: !!tos,
@@ -149,7 +153,11 @@ export const auth = {
       privacy_version: CONFIG.LEGAL_VERSION,
       agreed_at: new Date().toISOString(),
     });
-    if (error) console.warn('[auth] consent', error.message);
+    if (error) {
+      console.warn('[auth] consent', error.message);
+      return { ok: false, reason: error.message };
+    }
+    return { ok: true };
   },
 
   /* ── 계정 삭제 ──────────────────────────────────────────────

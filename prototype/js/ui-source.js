@@ -115,6 +115,17 @@ const PRIORITY = ['gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 'gk2aVISfd', 'gk
                   'sst', 'wave', 'swell', 'current', 'wind', 'windfc',
                   'coverage', 'ukfc', 'landobs', 'buoy', 'wildfire', 'cyclone', 'quake', 'tsunami', 'aurora', 'news'];
 
+/* 지구 표면을 통째로 칠하는 레이어들 — 화면을 지배하므로 출처도 이쪽이 우선이다.
+   ⚠️ 점·선 레이어(산불·지진·태풍·낙뢰)는 여기 넣지 않는다. 그것들은 위에 얹히는 것이라
+      "지금 보고 있는 바탕"이 아니다.
+   ⚠️ 위성 영상이 켜져 있으면 그게 바탕이다 — 그래서 맨 앞이다. */
+const PAINT = ['gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 'gk2aVISfd', 'gk2aWV',
+               'himaIR', 'himawari', 'truecolor',
+               'temp', 'tmax', 'tmin', 'humidity', 'rain', 'pressure', 'fog', 'drought',
+               'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
+               'sst', 'sstanom', 'wave', 'swell', 'current', 'wind', 'windfc',
+               'clouds'];
+
 function hhmm(d) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
@@ -140,7 +151,14 @@ export const sourceNote = {
   async render() {
     if (!this.root) return;
     const ko = i18n.lang === 'ko';
-    const id = PRIORITY.find(x => store.isOn(x));
+    /* ⚠️⚠️ **지구를 칠하고 있는 레이어를 먼저 고른다.** (감사 P1-2)
+       예전에는 PRIORITY 순서만 봤는데 그 목록에서 구름이 기온보다 앞이라,
+       기온을 켜서 지구가 기온색으로 바뀌어도 좌하단은 계속
+       "구름 · NOAA GMGSI"라고 적고 있었다 — 화면과 출처가 어긋난 것이다.
+       면을 칠하는 레이어(PAINT)가 켜져 있으면 그것을 주 레이어로 삼고,
+       없을 때만 예전 순서로 돌아간다. */
+    const painted = PAINT.find(x => store.isOn(x));
+    const id = painted || PRIORITY.find(x => store.isOn(x));
     if (!id) { this.root.innerHTML = ''; this.root.classList.remove('on'); return; }
 
     /* ⚠️ 구름은 확대하면 자료가 바뀐다 (전지구 합성 → 히마와리).
@@ -344,6 +362,27 @@ export const sourceNote = {
           : (ko ? `다음 자료 기다리는 중 (${-mins}분 지연)` : `waiting for the next update (${-mins} min late)`));
       }
     }
+
+    /* ⚠️⚠️ 안전 레이어(지진·쓰나미·특보·이안류·낙뢰·산불)가 **실패했으면 말한다.**
+       (감사 P1-3) 빈 지도를 "위험 없음"으로 읽게 두면 안 된다 —
+       "자료 확인 불가"와 "받은 자료 0건"은 다른 상태다.
+       ⚠️ 성공했을 때는 아무 말도 보태지 않는다. 평상시에 줄이 늘면 아무도 안 읽는다. */
+    try {
+      const { registry } = await import('./layers/registry.js');
+      const SAFE = { quake: '지진', tsunami: '쓰나미', alerts: '특보',
+                     lightning: '낙뢰', wildfire: '산불', cyclone: '태풍' };
+      const bad = Object.keys(SAFE)
+        .filter(k => store.isOn(k) && registry.status?.[k] === 'error');
+      if (bad.length) {
+        const names = bad.map(k => ko ? SAFE[k] : k).join(' · ');
+        const t = registry.lastOk?.[bad[0]];
+        bits.push(ko
+          ? `<i>⚠️ <b>${names} 자료를 지금 확인할 수 없습니다</b> — 빈 화면이 "사건 없음"이라는 뜻이 아닙니다.`
+            + (t ? ` 마지막으로 받은 시각 ${hhmm(new Date(t))}.` : '') + '</i>'
+          : `<i>⚠️ <b>Cannot reach ${names} data</b> — an empty map does not mean "nothing is happening".`
+            + (t ? ` Last good ${hhmm(new Date(t))}.` : '') + '</i>');
+      }
+    } catch (_) { /* 레지스트리가 아직 없으면 넘어간다 */ }
 
     this.root.innerHTML = bits.map(b => `<span>${b}</span>`).join('');
     this.root.classList.add('on');

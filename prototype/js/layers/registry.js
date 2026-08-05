@@ -216,10 +216,23 @@ export const registry = {
     this.applyAll();
   },
 
+  /* ⚠️⚠️ 마지막 성공 시각을 남긴다. (감사 P1-3)
+     예전에는 status 만 있어서 실패했을 때 "언제 자료까지는 맞았나"를 말할 수 없었다.
+     빈 지도는 사용자가 "지금 위험 없음"으로 읽는다 — 실패인지 사건 없음인지
+     구분해 주지 않으면 그건 안전 정보에서 가장 나쁜 침묵이다. */
+  lastOk: {},
+  lastErr: {},
   async run(id, fn) {
     this.status[id] = 'loading';
-    try { await fn(); this.status[id] = 'ok'; }
-    catch (e) { this.status[id] = 'error'; console.warn(`[${id}]`, e.message); }
+    try {
+      await fn();
+      this.status[id] = 'ok';
+      this.lastOk[id] = Date.now();
+    } catch (e) {
+      this.status[id] = 'error';
+      this.lastErr[id] = e.message;
+      console.warn(`[${id}]`, e.message);
+    }
   },
 
   /* 주기 갱신.

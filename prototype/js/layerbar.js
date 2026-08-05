@@ -478,6 +478,25 @@ const ALERT_CATEGORIES = [
 ];
 const ALERT_IDS = new Set(ALERT_CATEGORIES.flatMap(c => c.ids));
 
+/* Windy처럼 자주 쓰는 조합을 한 번에 켜되, earthus는 조합의 성격을 글로 밝힌다.
+   ⚠️ 프리셋은 새 자료를 만들지 않는다. 이미 검증된 레이어를 묶는 단축키일 뿐이다.
+   ⚠️ 한 프리셋을 적용하면 기존 레이어는 하나씩 끈다. 상태 객체를 통째로 바꾸면
+      레이어별 정리 경로가 실행되지 않아 점·선 잔상이 남는다. */
+const PRESETS = [
+  { id: 'typhoon', ko: '태풍 보기', en: 'Cyclone view',
+    sub: '천리안 구름 · 기관 경로 · 부이 실측', subEn: 'Satellite · agency tracks · observed buoys',
+    ids: ['gk2aIRea', 'cyclone', 'buoy'] },
+  { id: 'fire', ko: '산불 보기', en: 'Wildfire view',
+    sub: '전지구 구름 · 위성 탐지 · 모델 바람', subEn: 'Clouds · satellite detections · model wind',
+    ids: ['clouds', 'wildfire', 'wind'] },
+  { id: 'quake', ko: '지진 보기', en: 'Earthquake view',
+    sub: '지진 관측 · 쓰나미 경보', subEn: 'Observed quakes · tsunami alerts',
+    ids: ['quake', 'tsunami'] },
+  { id: 'ocean', ko: '바다 보기', en: 'Ocean view',
+    sub: '모델 파고 · 부이 실측', subEn: 'Model waves · observed buoys',
+    ids: ['wave', 'buoy'] },
+];
+
 export const layerBar = {
   open: false,      // 1단
   /* 2단 — 어떤 목록을 펼쳤나. null · 'earth'(지구 스타일) · 'alert'(재난)
@@ -624,6 +643,22 @@ export const layerBar = {
       strip.appendChild(el('div', 'ly-gap'));
     }
 
+    if (!isAlert) {
+      const presets = el('section', 'ly-presets');
+      const title = el('div', 'ly-preset-head');
+      title.textContent = ko ? '한 번에 보기' : 'Quick combinations';
+      presets.appendChild(title);
+      PRESETS.forEach(p => {
+        const b = el('button', 'ly-preset');
+        b.type = 'button'; b.dataset.preset = p.id;
+        b.innerHTML = `<b>${ko ? p.ko : p.en}</b><span>${ko ? p.sub : p.subEn}</span>`;
+        b.onclick = () => this.applyPreset(p);
+        presets.appendChild(b);
+      });
+      strip.appendChild(presets);
+      strip.appendChild(el('div', 'ly-gap'));
+    }
+
     order.forEach(({ items }, i) => {
       if (i) strip.appendChild(el('div', 'ly-gap'));
       items.forEach(it => this._item(strip, it, ko));
@@ -710,5 +745,25 @@ export const layerBar = {
     document.querySelectorAll('#layerStrip .ly').forEach(b => {
       b.classList.toggle('on', store.isOn(b.dataset.id));
     });
+    document.querySelectorAll('#layerStrip .ly-preset').forEach(b => {
+      const p = PRESETS.find(x => x.id === b.dataset.preset);
+      const on = !!p && p.ids.every(id => store.isOn(id));
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+  },
+
+  applyPreset(preset) {
+    const target = new Set(preset.ids);
+    /* ⚠️ 끄기부터 한다. 격자·바탕 배타 그룹의 교대 순서가 뒤집히면 짧게 두 장이
+       겹쳐 보일 수 있다. 모든 변경은 setLayer를 지나 정리 이벤트를 보낸다. */
+    LAYER_DEFS.forEach(d => {
+      if (!target.has(d.id) && store.isOn(d.id)) store.setLayer(d.id, false);
+    });
+    preset.ids.forEach(id => {
+      if (!store.isOn(id)) store.setLayer(id, true);
+    });
+    this.open = false; this.sub = null; this._apply?.();
+    toast(i18n.lang === 'ko' ? `${preset.ko} 조합을 켰습니다` : `${preset.en} enabled`);
   },
 };

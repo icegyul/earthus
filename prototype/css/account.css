@@ -887,6 +887,16 @@
 .al-type input{ width:16px; height:16px; margin:0; accent-color:#5ad1e8; cursor:pointer; }
 .al-type input:focus-visible{ outline:2px solid #9fe6f5; outline-offset:3px; }
 .al-type.saving{ opacity:.48; cursor:wait; }
+.al-quake-rule{ grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr; gap:7px;
+  margin:-3px 4px 11px; padding:9px; border-radius:9px; background:rgba(255,255,255,.025);
+  border:1px solid rgba(255,255,255,.07); }
+.al-quake-rule[hidden]{ display:none; }
+.al-rule-title{ grid-column:1/-1; font-size:10.5px; opacity:.58; }
+.al-quake-rule label{ display:grid; gap:4px; font-size:9.5px; color:rgba(255,255,255,.48); }
+.al-quake-rule select{ width:100%; min-height:44px; padding:0 8px; border-radius:8px;
+  color:var(--paper); background:#121923; border:1px solid var(--line,#1d2635); font-size:11px; }
+.al-quake-rule select:focus-visible{ outline:2px solid #9fe6f5; outline-offset:2px; }
+.al-quake-rule small{ grid-column:1/-1; font-size:9.5px; line-height:1.4; opacity:.4; }
 
 /* ── 바다거북 ─────────────────────────────────────────────────
    ⚠️ 맨 위 경고를 회색으로 묻지 않는다. "지금 위치가 아니다"가

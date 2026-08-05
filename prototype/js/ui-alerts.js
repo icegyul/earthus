@@ -202,6 +202,7 @@ export const alertsSheet = {
          어떤 안전 알림을 받을지 직접 고르게 한다. ⚠️ 등급이나 판정 기준을 바꾸는
          옵션이 아니다 — 기관이 매긴 항목 종류를 받을지 여부만 켜고 끈다. */
       const types = el('div', 'al-types');
+      let quakeRule = null;
       [['rip', ko ? '이안류' : 'Rip current'],
        ['quake', ko ? '지진' : 'Quake'],
        ['warn', ko ? '기상특보' : 'Weather warning']].forEach(([key, label]) => {
@@ -218,6 +219,7 @@ export const alertsSheet = {
             await push.updateSpot(sp.id, { [key]: next });
             sp[key] = next;
             chip.classList.toggle('on', next);
+            if (key === 'quake' && quakeRule) quakeRule.hidden = !next;
           } catch (e) {
             input.checked = !next;
             toast(`${ko ? '알림 설정 저장 실패' : 'Could not save alert setting'}: ${e.message}`);
@@ -231,6 +233,45 @@ export const alertsSheet = {
         types.appendChild(chip);
       });
       r.appendChild(types);
+
+      /* 서버가 처음부터 규모·거리 기준을 갖고 있었지만 화면에서는 기본값 3.5/150km가
+         보이지도, 바뀌지도 않았다. 이 값은 기관의 경보 등급이 아니라 사용자가 정하는
+         수신 필터다. 그 차이를 바로 아래에 적는다. */
+      quakeRule = el('div', 'al-quake-rule');
+      quakeRule.hidden = !sp.quake;
+      const ruleTitle = el('span', 'al-rule-title', ko ? '지진 수신 기준' : 'Quake alert filter');
+      const magLabel = el('label', null, ko ? '규모 M' : 'Magnitude M');
+      const magSelect = document.createElement('select');
+      const currentMag = Number(sp.quake_min_mag ?? 3.5);
+      [...new Set([2.5, 3, 3.5, 4, 4.5, 5, 6, currentMag])].sort((a, b) => a - b)
+        .forEach((v) => magSelect.appendChild(new Option(
+          ko ? `${v.toFixed(1)} 이상` : `M${v.toFixed(1)} or greater`,
+          String(v), false, v === currentMag)));
+      magSelect.setAttribute('aria-label', ko ? `${sp.label} 지진 최소 규모` : `${sp.label} minimum quake magnitude`);
+      magLabel.appendChild(magSelect);
+      const kmLabel = el('label', null, ko ? '거리' : 'Distance');
+      const kmSelect = document.createElement('select');
+      const currentKm = Number(sp.quake_max_km ?? 150);
+      [...new Set([50, 100, 150, 300, 500, currentKm])].sort((a, b) => a - b)
+        .forEach((v) => kmSelect.appendChild(new Option(`${v}km ${ko ? '이내' : 'or less'}`, String(v), false, v === currentKm)));
+      kmSelect.setAttribute('aria-label', ko ? `${sp.label} 지진 최대 거리` : `${sp.label} maximum quake distance`);
+      kmLabel.appendChild(kmSelect);
+      const saveRule = async (input, key, value) => {
+        const before = Number(sp[key] ?? (key === 'quake_min_mag' ? 3.5 : 150));
+        input.disabled = true;
+        try {
+          await push.updateSpot(sp.id, { [key]: value });
+          sp[key] = value;
+        } catch (e) {
+          input.value = String(before);
+          toast(`${ko ? '지진 기준 저장 실패' : 'Could not save quake filter'}: ${e.message}`);
+        } finally { input.disabled = false; }
+      };
+      magSelect.onchange = () => saveRule(magSelect, 'quake_min_mag', Number(magSelect.value));
+      kmSelect.onchange = () => saveRule(kmSelect, 'quake_max_km', Number(kmSelect.value));
+      quakeRule.append(ruleTitle, magLabel, kmLabel,
+        el('small', null, ko ? '내가 정하는 수신 기준 · 기관 경보 등급 아님' : 'Your delivery filter · not an agency warning level'));
+      r.appendChild(quakeRule);
       body.appendChild(r);
     });
 

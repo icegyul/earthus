@@ -188,8 +188,8 @@ export const push = {
     await auth.client.from('alert_spots').delete().eq('id', id);
   },
 
-  /** 지점별 알림 종류를 바꾼다.
-   *  ⚠️ 허용한 boolean 세 개만 보낸다. 객체를 그대로 update 하면 user_id·좌표까지
+  /** 지점별 알림 종류와 사용자가 정한 지진 수신 기준을 바꾼다.
+   *  ⚠️ 허용한 다섯 필드만 보낸다. 객체를 그대로 update 하면 user_id·좌표까지
    *     실수로 덮을 수 있고, 안전 알림 설정에서 그런 광범위 쓰기는 필요 없다. */
   async updateSpot(id, values = {}) {
     if (!auth.client || !auth.user) throw new Error('NOT_SIGNED_IN');
@@ -197,6 +197,14 @@ export const push = {
     ['rip', 'quake', 'warn'].forEach((key) => {
       if (typeof values[key] === 'boolean') patch[key] = values[key];
     });
+    const mag = Number(values.quake_min_mag);
+    if (values.quake_min_mag != null && Number.isFinite(mag) && mag >= 0 && mag <= 10) {
+      patch.quake_min_mag = mag;
+    }
+    const radius = Number(values.quake_max_km);
+    if (values.quake_max_km != null && Number.isInteger(radius) && radius > 0 && radius <= 20_000) {
+      patch.quake_max_km = radius;
+    }
     if (!Object.keys(patch).length) return;
     const { error } = await auth.client.from('alert_spots').update(patch).eq('id', id);
     if (error) throw new Error(error.message);

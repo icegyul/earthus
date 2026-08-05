@@ -359,6 +359,18 @@ const QUALITY_FIELD_META = {
   mean: ['unit column', '숫자 관측 평균'],
 };
 
+const TREND_FIELD_META = {
+  date: ['KST date', '검증 날짜'],
+  model: ['-', '예보 모델 식별자'],
+  lead_hour: ['hour', '예보 선행시간'],
+  variable: ['-', '변수 식별자'],
+  unit: ['-', '검증값 단위'],
+  n: ['count', '관측과 예보가 모두 있는 유효 표본 수'],
+  me: ['unit column', '해당 날짜 예보-관측 차이의 평균'],
+  mae: ['unit column', '해당 날짜 절대오차의 평균'],
+  rmse: ['unit column', '해당 날짜 제곱평균오차의 제곱근'],
+};
+
 function stationFieldUnit(day, variable) {
   const label = day.fields?.[variable] || '';
   const match = label.match(/\(([^()]*)\)$/);
@@ -816,7 +828,47 @@ async function buildExtractManifest(result) {
   const content = csvText(result.headers, result.rows);
   const quality = extractQualitySummary(result);
   const qualityContent = csvText(quality.headers, quality.rows);
-  const [fileHash, qualityHash] = await Promise.all([sha256(content), sha256(qualityContent)]);
+  const trend = extractDailyTrend(result);
+  const trendDates = [...new Set(trend.rows.map(row => row[0]))];
+  const trendAvailable = result.dataset === 'cases' && result.includedDates.length >= 2 && trendDates.length >= 2;
+  const trendContent = trendAvailable ? csvText(trend.headers, trend.rows) : null;
+  const [fileHash, qualityHash, trendHash] = await Promise.all([
+    sha256(content),
+    sha256(qualityContent),
+    trendContent ? sha256(trendContent) : Promise.resolve(null),
+  ]);
+  const derivedFiles = [{
+    role: 'quality-summary',
+    name: qualityFilename(result),
+    mediaType: 'text/csv; charset=utf-8',
+    encoding: 'UTF-8 with BOM',
+    lineEnding: 'LF',
+    rows: quality.rows.length,
+    bytes: new TextEncoder().encode(qualityContent).byteLength,
+    sha256: qualityHash,
+    fields: quality.headers.map(name => ({
+      name,
+      unit: QUALITY_FIELD_META[name]?.[0] || EXTRACT_FIELD_META[name]?.[0] || '-',
+      description: QUALITY_FIELD_META[name]?.[1] || EXTRACT_FIELD_META[name]?.[1] || name,
+    })),
+    methodology: quality.note,
+  }];
+  if (trendAvailable) derivedFiles.push({
+    role: 'daily-trend',
+    name: trendFilename(result),
+    mediaType: 'text/csv; charset=utf-8',
+    encoding: 'UTF-8 with BOM',
+    lineEnding: 'LF',
+    rows: trend.rows.length,
+    bytes: new TextEncoder().encode(trendContent).byteLength,
+    sha256: trendHash,
+    fields: trend.headers.map(name => ({
+      name,
+      unit: TREND_FIELD_META[name]?.[0] || EXTRACT_FIELD_META[name]?.[0] || '-',
+      description: TREND_FIELD_META[name]?.[1] || EXTRACT_FIELD_META[name]?.[1] || name,
+    })),
+    methodology: '날짜 x 모델 x 선행시간 x 변수별 n, ME, MAE, RMSE; 빠진 날짜를 보간하지 않음',
+  });
   return {
     schema: 'earthus.custom-extract-manifest.v2',
     manifestVersion: 2,
@@ -849,22 +901,7 @@ async function buildExtractManifest(result) {
         description: EXTRACT_FIELD_META[name]?.[1] || name,
       })),
     },
-    derivedFiles: [{
-      role: 'quality-summary',
-      name: qualityFilename(result),
-      mediaType: 'text/csv; charset=utf-8',
-      encoding: 'UTF-8 with BOM',
-      lineEnding: 'LF',
-      rows: quality.rows.length,
-      bytes: new TextEncoder().encode(qualityContent).byteLength,
-      sha256: qualityHash,
-      fields: quality.headers.map(name => ({
-        name,
-        unit: QUALITY_FIELD_META[name]?.[0] || EXTRACT_FIELD_META[name]?.[0] || '-',
-        description: QUALITY_FIELD_META[name]?.[1] || EXTRACT_FIELD_META[name]?.[1] || name,
-      })),
-      methodology: quality.note,
-    }],
+    derivedFiles,
     provenance: {
       sourcePath: result.sourcePath,
       source: result.source,
@@ -895,6 +932,14 @@ function buildExtractReadme(result, manifest) {
   const label = result.dataset === 'cases' ? '예보·관측 사례' : 'ASOS 시간 관측';
   const sourceUrl = result.sourcePath ? `https://earthus.net${result.sourcePath}` : '자료 없음';
   const value = input => String(input ?? '자료 없음').replaceAll('|', '\\|').replace(/\s*\n\s*/g, ' ');
+  const qualityFile = manifest.derivedFiles.find(file => file.role === 'quality-summary');
+  const trendFile = manifest.derivedFiles.find(file => file.role === 'daily-trend');
+  const trendRows = trendFile ? `
+| 날짜별 추세 CSV | \`${value(trendFile.name)}\` |
+| 추세 CSV 행 수 | ${trendFile.rows.toLocaleString('ko-KR')} |
+| 추세 CSV 바이트 | ${trendFile.bytes.toLocaleString('ko-KR')} (UTF-8 BOM 포함) |
+| 추세 CSV SHA-256 | \`${trendFile.sha256}\` |` : '';
+  const trendMethod = trendFile ? `\n- 날짜별 추세: ${value(trendFile.methodology)}` : '';
   return `# earthus Research Custom Extract
 
 이 메모는 아래 CSV와 같은 선택 상태에서 생성되었습니다. CSV와 manifest를 함께 보관하세요.
@@ -907,10 +952,10 @@ function buildExtractReadme(result, manifest) {
 | 행 수 | ${manifest.file.rows.toLocaleString('ko-KR')} |
 | 바이트 | ${manifest.file.bytes.toLocaleString('ko-KR')} (UTF-8 BOM 포함) |
 | SHA-256 | \`${manifest.file.sha256}\` |
-| 품질 CSV | \`${value(manifest.derivedFiles[0].name)}\` |
-| 품질 CSV 행 수 | ${manifest.derivedFiles[0].rows.toLocaleString('ko-KR')} |
-| 품질 CSV 바이트 | ${manifest.derivedFiles[0].bytes.toLocaleString('ko-KR')} (UTF-8 BOM 포함) |
-| 품질 CSV SHA-256 | \`${manifest.derivedFiles[0].sha256}\` |
+| 품질 CSV | \`${value(qualityFile.name)}\` |
+| 품질 CSV 행 수 | ${qualityFile.rows.toLocaleString('ko-KR')} |
+| 품질 CSV 바이트 | ${qualityFile.bytes.toLocaleString('ko-KR')} (UTF-8 BOM 포함) |
+| 품질 CSV SHA-256 | \`${qualityFile.sha256}\` |${trendRows}
 | manifest schema | \`${manifest.schema}\` |
 
 ## 선택 조건
@@ -947,7 +992,7 @@ ${manifest.provenance.sourceFiles.map(file =>
 - 차이 계산: ${value(manifest.methodology.difference)}
 - 정렬: ${value(manifest.methodology.ordering)}
 - 범위: ${value(manifest.methodology.scope)}
-- 품질 요약: ${value(manifest.derivedFiles[0].methodology)}
+- 품질 요약: ${value(qualityFile.methodology)}${trendMethod}
 
 ## 인용 메모
 

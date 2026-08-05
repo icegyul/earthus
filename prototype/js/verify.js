@@ -5,6 +5,7 @@
  */
 
 const DATA_URL = '/wind/series/verify-daily.json';
+const CASE_INDEX_URL = '/wind/series/verify-cases.json';
 const MODELS = [
   { id: 'gfs_seamless', name: 'GFS', detail: 'NOAA Global Forecast System', className: 'gfs' },
   { id: 'ecmwf_ifs025', name: 'ECMWF IFS', detail: 'ECMWF Integrated Forecasting System', className: 'ecmwf' },
@@ -24,6 +25,13 @@ const state = {
   variable: 'temperature_2m',
   lead: 24,
   day: null,
+  caseIndex: null,
+  caseDays: [],
+  caseDay: null,
+  caseDoc: null,
+  caseStation: null,
+  caseHour: null,
+  caseLoadToken: 0,
 };
 
 function svg(tag, attrs = {}, text = null) {
@@ -258,6 +266,186 @@ function renderAll() {
   $('#generatedLine').textContent = `자료 생성 · ${formatKst(state.doc.generated)} · 결측 관측 제외 · 채점 조합별 n 공개`;
 }
 
+function caseUnit() {
+  return VARIABLES[state.variable].unit;
+}
+
+function caseValue(value, signed = false) {
+  if (!Number.isFinite(Number(value))) return '자료 없음';
+  const number = Number(value);
+  return `${signed && number > 0 ? '+' : ''}${number.toFixed(VARIABLES[state.variable].digits)} ${caseUnit()}`;
+}
+
+function caseTimeLabel(value) {
+  if (!value) return '시각 없음';
+  const iso = /(?:Z|[+-]\d\d:\d\d)$/.test(value) ? value : `${value}+09:00`;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return value;
+  return `${new Intl.DateTimeFormat('ko-KR', {
+    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+    hour12: false, timeZone: 'Asia/Seoul',
+  }).format(date)} KST`;
+}
+
+function issueLabel(value) {
+  const text = String(value || '');
+  if (/^\d{10}$/.test(text)) {
+    return `${text.slice(4, 6)}-${text.slice(6, 8)} ${text.slice(8, 10)}:00 KST`;
+  }
+  return caseTimeLabel(text);
+}
+
+function option(select, value, label) {
+  const item = document.createElement('option');
+  item.value = value;
+  item.textContent = label;
+  select.append(item);
+}
+
+function selectedCaseHour() {
+  return state.caseDoc?.hours?.[state.caseHour] || null;
+}
+
+function selectedCase() {
+  return (selectedCaseHour()?.cases || []).find(item => item.stationId === state.caseStation) || null;
+}
+
+function renderCaseBoard() {
+  const board = $('#caseBoard');
+  board.innerHTML = '';
+  const hour = selectedCaseHour();
+  const item = selectedCase();
+  if (!hour || !item) {
+    const empty = document.createElement('div');
+    empty.className = 'case-empty';
+    empty.textContent = '이 지점·시각에는 예보와 관측이 모두 있는 조합이 없습니다. 0으로 바꾸지 않습니다.';
+    board.append(empty);
+    return;
+  }
+
+  const meta = state.caseDoc.stationMeta?.[item.stationId] || {};
+  const observation = item.observation?.[state.variable];
+  const reading = document.createElement('div');
+  reading.className = 'case-reading';
+
+  const observed = document.createElement('article');
+  observed.className = 'case-observation';
+  const observedKicker = document.createElement('span');
+  observedKicker.className = 'case-kicker';
+  observedKicker.textContent = 'KMA ASOS OBSERVATION';
+  const observedTitle = document.createElement('h3');
+  observedTitle.textContent = `${meta.name || item.stationId}${meta.alt != null ? ` · 해발 ${meta.alt}m` : ''}`;
+  const observedNumber = document.createElement('strong');
+  observedNumber.className = 'case-number';
+  observedNumber.textContent = caseValue(observation);
+  const observedMeta = document.createElement('span');
+  observedMeta.className = 'case-meta';
+  observedMeta.textContent = `관측 ${caseTimeLabel(state.caseHour)} · 지점 ${item.stationId}`;
+  observed.append(observedKicker, observedTitle, observedNumber, observedMeta);
+  reading.append(observed);
+
+  MODELS.forEach(model => {
+    const forecast = item.forecasts?.[model.id]?.[`${state.lead}h`]?.[state.variable];
+    const error = Number.isFinite(Number(forecast)) && Number.isFinite(Number(observation))
+      ? Number(forecast) - Number(observation) : null;
+    const card = document.createElement('article');
+    card.className = `case-forecast ${model.className}`;
+    const kicker = document.createElement('span');
+    kicker.className = 'case-kicker';
+    kicker.textContent = `${model.name} · ${state.lead}H FORECAST`;
+    const title = document.createElement('h3');
+    title.textContent = model.detail;
+    const number = document.createElement('strong');
+    number.className = 'case-number';
+    number.textContent = caseValue(forecast);
+    const difference = document.createElement('span');
+    difference.className = `case-error${error > 0 ? ' positive' : error < 0 ? ' negative' : ''}`;
+    difference.textContent = error == null ? '차이 계산 불가' : `예보−관측 ${caseValue(error, true)}`;
+    const issued = document.createElement('span');
+    issued.className = 'case-meta';
+    issued.textContent = `발표 ${issueLabel(hour.issues?.[`${state.lead}h`])} · 유효 ${caseTimeLabel(state.caseHour)}`;
+    card.append(kicker, title, number, difference, issued);
+    reading.append(card);
+  });
+  board.append(reading);
+}
+
+function renderCasePickers() {
+  const stationPicker = $('#caseStationPicker');
+  const hourPicker = $('#caseHourPicker');
+  const stations = Object.entries(state.caseDoc?.stationMeta || {}).sort((a, b) =>
+    String(a[1].name || a[0]).localeCompare(String(b[1].name || b[0]), 'ko'));
+  const hours = Object.keys(state.caseDoc?.hours || {}).sort();
+  if (!stations.some(([id]) => id === state.caseStation)) state.caseStation = stations[0]?.[0] || null;
+  if (!hours.includes(state.caseHour)) state.caseHour = hours[hours.length - 1] || null;
+
+  stationPicker.innerHTML = '';
+  stations.forEach(([id, meta]) => option(stationPicker, id, `${meta.name || id} · ${id}`));
+  stationPicker.value = state.caseStation || '';
+  hourPicker.innerHTML = '';
+  [...hours].reverse().forEach(hour => option(hourPicker, hour, caseTimeLabel(hour)));
+  hourPicker.value = state.caseHour || '';
+  $('#caseStatus').textContent = `${state.caseDoc?.hourCount || hours.length}개 시각 · ${state.caseDoc?.caseCount || 0}개 지점 사례`;
+  $('#caseSource').textContent = `${state.caseDoc?.source || '출처 자료 없음'} · 생성 ${formatKst(state.caseDoc?.generated)}`;
+  renderCaseBoard();
+}
+
+async function loadCaseDay(day) {
+  state.caseDay = day;
+  const token = ++state.caseLoadToken;
+  $('#caseStatus').textContent = `${day} 불러오는 중`;
+  try {
+    const entry = state.caseIndex?.dates?.[day];
+    const path = entry?.path || `/wind/series/verify-cases/${day}.json`;
+    const response = await fetch(`${path}?t=${Date.now()}`, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const doc = await response.json();
+    if (token !== state.caseLoadToken) return;
+    if (!doc || typeof doc.hours !== 'object') throw new Error('사례 hours 자료가 없습니다');
+    state.caseDoc = doc;
+    state.caseStation = null;
+    state.caseHour = null;
+    renderCasePickers();
+  } catch (error) {
+    if (token !== state.caseLoadToken) return;
+    state.caseDoc = null;
+    $('#caseStatus').textContent = '사례 자료 읽기 실패';
+    $('#caseBoard').innerHTML = '';
+    const empty = document.createElement('div');
+    empty.className = 'case-empty';
+    empty.textContent = `자료 없음과 읽기 실패를 구분합니다. (${error.message})`;
+    $('#caseBoard').append(empty);
+  }
+}
+
+async function loadCaseIndex() {
+  try {
+    const response = await fetch(`${CASE_INDEX_URL}?t=${Date.now()}`, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const index = await response.json();
+    const days = Object.keys(index?.dates || {}).sort();
+    if (!days.length) throw new Error('아직 공개된 사례 날짜가 없습니다');
+    state.caseIndex = index;
+    state.caseDays = days;
+    state.caseDay = days[days.length - 1];
+    const picker = $('#caseDayPicker');
+    picker.innerHTML = '';
+    [...days].reverse().forEach(day => option(picker, day, day));
+    picker.value = state.caseDay;
+    $('#caseScope').textContent = `날짜별 전체 지점 집계와 ${index.collectingSince || days[0]}부터 쌓인 지점·시각별 사례를 함께 제공합니다. 사례 기간은 실제 공개 산출물이 있는 날짜만 표시합니다.`;
+    await loadCaseDay(state.caseDay);
+  } catch (error) {
+    $('#caseScope').textContent = '날짜별 전체 지점 집계는 제공 중입니다. 지점·시각별 사례는 공개 산출물이 생기면 이 자리에 표시하며, 없는 값을 만들지 않습니다.';
+    $('#caseStatus').textContent = '사례 자료 준비 중';
+    $('#caseControls').hidden = true;
+    $('#caseBoard').innerHTML = '';
+    const empty = document.createElement('div');
+    empty.className = 'case-empty';
+    empty.textContent = `아직 읽을 수 있는 사례 자료가 없습니다. (${error.message})`;
+    $('#caseBoard').append(empty);
+  }
+}
+
 function bindControls() {
   $('#variablePicker').addEventListener('click', event => {
     const button = event.target.closest('[data-variable]');
@@ -266,6 +454,7 @@ function bindControls() {
     $$('#variablePicker button').forEach(item => item.classList.toggle('active', item === button));
     renderChart();
     renderSelection();
+    renderCaseBoard();
   });
   $('#leadPicker').addEventListener('click', event => {
     const button = event.target.closest('[data-lead]');
@@ -274,10 +463,20 @@ function bindControls() {
     $$('#leadPicker button').forEach(item => item.classList.toggle('active', item === button));
     renderChart();
     renderSelection();
+    renderCaseBoard();
   });
   $('#dayPicker').addEventListener('change', event => {
     state.day = event.target.value;
     renderSelection();
+  });
+  $('#caseDayPicker').addEventListener('change', event => loadCaseDay(event.target.value));
+  $('#caseStationPicker').addEventListener('change', event => {
+    state.caseStation = event.target.value;
+    renderCaseBoard();
+  });
+  $('#caseHourPicker').addEventListener('change', event => {
+    state.caseHour = event.target.value;
+    renderCaseBoard();
   });
 }
 
@@ -293,6 +492,7 @@ async function boot() {
     state.day = state.days[state.days.length - 1] || null;
     if (!state.days.length) throw new Error('아직 채점된 날짜가 없습니다');
     renderAll();
+    loadCaseIndex();
   } catch (error) {
     const banner = $('#errorBanner');
     banner.hidden = false;

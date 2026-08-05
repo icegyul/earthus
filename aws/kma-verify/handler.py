@@ -29,6 +29,8 @@
 출력
   archive/verify/fc/<YYYYMMDDHH>.json   (비공개 — 원본 예보 보관)
   wind/series/verify-daily.json         (공개 — 일별 채점 결과)
+  wind/series/verify-cases.json         (공개 — 사례 날짜 목록)
+  wind/series/verify-cases/<날짜>.json  (공개 — 지점·시각별 예보와 관측)
 """
 
 import json
@@ -47,6 +49,9 @@ OM = "https://api.open-meteo.com/v1/forecast"
 OBS_KEY = "wind/kma-aws.json"                 # ASOS 97지점 (정시 관측)
 FC_PREFIX = "archive/verify/fc/"
 SER = "wind/series/verify-daily.json"
+LEGACY_SER = "archive/verify/legacy-daily-before-observation-time-fix.json"
+CASE_INDEX = "wind/series/verify-cases.json"
+CASE_PREFIX = "wind/series/verify-cases/"
 KST = timezone(timedelta(hours=9))
 
 # 채점할 모델. ⚠️ 이름을 바꾸면 과거 기록과 이어지지 않는다.
@@ -54,6 +59,7 @@ MODELS = ["gfs_seamless", "ecmwf_ifs025"]
 VARS = ["temperature_2m", "wind_speed_10m"]
 LEADS = [24, 48]                              # 시간. 하나만 두면 비교가 안 된다.
 KEEP_DAYS = 760
+CASE_KEEP_DAYS = 760
 
 s3 = boto3.client("s3", region_name=REGION)
 
@@ -129,7 +135,11 @@ def slim(fcs, st, issued):
 
 
 def score(now, obs, st):
-    """24h·48h 전 예보를 꺼내 지금 실측과 비교한다."""
+    """24h·48h 전 예보를 꺼내 지금 실측과 비교한다.
+
+    일별 점수와 함께 공개 가능한 지점별 사례도 만든다. 원본 예보 파일 전체를
+    공개하지 않고, 실제 관측과 짝이 맞은 값만 별도 산출물로 옮긴다.
+    """
     # ⚠️ 실측 시각을 기준으로 맞춘다. '지금'이 아니라 '관측된 시각'이다.
     # ⚠️ observedKst 는 "20260727 16:00" 처럼 **공백과 콜론이 섞여** 온다.
     #    자리수로 잘라 쓰면 "2026-07-27T 1:00" 이 나와 예보 시각과 영원히 안 맞는다.
@@ -137,16 +147,23 @@ def score(now, obs, st):
     tm = "".join(c for c in str(obs.get("observedKst") or "") if c.isdigit())
     if len(tm) < 10:
         print("[verify] 관측 시각을 못 읽었다:", obs.get("observedKst"))
-        return {}
+        return {}, None, [], {}
     want = f"{tm[:4]}-{tm[4:6]}-{tm[6:8]}T{tm[8:10]}:00"
+    observed_at = datetime.strptime(want, "%Y-%m-%dT%H:%M").replace(tzinfo=KST)
     obs_by_id = {s["id"]: s for s in st}
 
     out = {}
+    cases = {}
+    issues = {}
     for lead in LEADS:
-        issued = (now - timedelta(hours=lead)).strftime("%Y%m%d%H")
+        # ⚠️ 수집 시각(now)이 아니라 **관측 시각**에서 lead를 뺀다.
+        #    KMA 정시 자료는 보통 한 시간 늦게 들어오므로 now에서 빼면 24h라고
+        #    적고 실제로는 23h 전 예보를 고르는 한 시간 오차가 생긴다.
+        issued = (observed_at - timedelta(hours=lead)).strftime("%Y%m%d%H")
         fc = load(f"{FC_PREFIX}{issued}.json")
         if not fc:
             continue                                     # 아직 그만큼 안 쌓였다
+        issues[f"{lead}h"] = fc.get("issuedKst") or issued
         ids = fc.get("stations") or []
         # ⚠️ 파일은 있는데 시각이 안 맞는 경우가 가장 위험하다 — 조용히 0점이 된다.
         #    한 번은 관측시각 파싱이 틀려서 그렇게 됐다. 반드시 소리를 낸다.
@@ -172,6 +189,16 @@ def score(now, obs, st):
                     if p is None or o is None:
                         continue
                     errs.append(p - o)
+                    # ⚠️ 관측과 예보가 실제로 짝지어진 값만 공개 사례에 넣는다.
+                    #    한쪽이 결측인 조합을 0으로 만들거나 다른 시각으로 메우지 않는다.
+                    case = cases.setdefault(sid, {
+                        "stationId": sid,
+                        "observation": {},
+                        "forecasts": {},
+                    })
+                    case["observation"][v] = o
+                    (case["forecasts"].setdefault(m, {})
+                     .setdefault(f"{lead}h", {}))[v] = p
                 if len(errs) >= 20:                      # 표본이 너무 적으면 채점하지 않는다
                     n = len(errs)
                     out[f"{m}|{v}|{lead}h"] = {
@@ -180,7 +207,75 @@ def score(now, obs, st):
                         "mae": round(sum(abs(e) for e in errs) / n, 3),
                         "rmse": round((sum(e * e for e in errs) / n) ** 0.5, 3),
                     }
-    return out
+    return out, want, list(cases.values()), issues
+
+
+def store_cases(want, st, cases, issues, scores):
+    """한 날짜의 지점·시각별 사례를 공개 경로에 누적한다.
+
+    ⚠️ archive/ 원본은 비공개다. 이 파일에는 이미 관측과 짝지은 변수만 넣는다.
+       같은 관측 시각을 다시 처리하면 append 하지 않고 그 시각을 교체한다.
+    """
+    if not want or not cases:
+        return None
+    day = want[:10]
+    key = f"{CASE_PREFIX}{day}.json"
+    doc = load(key) or {}
+    generated = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z")
+    station_by_id = {s["id"]: s for s in st}
+    used_ids = {case["stationId"] for case in cases}
+    station_meta = {}
+    for sid in sorted(used_ids):
+        src = station_by_id.get(sid) or {}
+        station_meta[sid] = {
+            "name": src.get("name") or sid,
+            "lat": src.get("lat"),
+            "lon": src.get("lon"),
+            "alt": src.get("alt"),
+        }
+
+    hours = doc.get("hours") or {}
+    hours[want] = {
+        "issues": issues,
+        "scores": scores,
+        "n": len(cases),
+        "cases": sorted(cases, key=lambda item: item["stationId"]),
+    }
+    hours = dict(sorted(hours.items()))
+    put(key, {
+        "generated": generated,
+        "date": day,
+        "source": "Open-Meteo GFS·ECMWF 예보 vs 기상청 ASOS 실측 — earthus 시각·지점 대조",
+        "sourceEn": "Open-Meteo GFS and ECMWF forecasts matched to KMA ASOS observations by station and valid time",
+        "license": "예보 Open-Meteo (CC BY 4.0) · 관측 기상청 공공누리 제1유형 · 대조 earthus",
+        "models": MODELS,
+        "vars": VARS,
+        "leadsHours": LEADS,
+        "stationMeta": station_meta,
+        "hourCount": len(hours),
+        "caseCount": sum(len(hour.get("cases") or []) for hour in hours.values()),
+        "hours": hours,
+    }, 600)
+
+    index = load(CASE_INDEX) or {}
+    dates = index.get("dates") or {}
+    dates[day] = {
+        "path": f"/{key}",
+        "generated": generated,
+        "hours": len(hours),
+        "cases": sum(len(hour.get("cases") or []) for hour in hours.values()),
+    }
+    cut = (datetime.strptime(day, "%Y-%m-%d").replace(tzinfo=KST)
+           - timedelta(days=CASE_KEEP_DAYS)).strftime("%Y-%m-%d")
+    dates = {date: value for date, value in dates.items() if date >= cut}
+    put(CASE_INDEX, {
+        "generated": generated,
+        "collectingSince": index.get("collectingSince") or day,
+        "source": "earthus 예보-관측 지점별 사례 공개 목록",
+        "count": len(dates),
+        "dates": dict(sorted(dates.items())),
+    }, 600)
+    return {"date": day, "hours": len(hours), "cases": len(cases)}
 
 
 def handler(event, context):
@@ -201,10 +296,19 @@ def handler(event, context):
         print("[verify] 예보 저장 실패 —", repr(e)[:120])
 
     # ── B. 과거 예보 채점 ────────────────────────────────────
-    sc = score(now, obs, st)
+    sc, observed, cases, issues = score(now, obs, st)
+    case_result = store_cases(observed, st, cases, issues, sc)
 
     # ── C. 일별 적재 ─────────────────────────────────────────
     doc = load(SER) or {}
+    # ⚠️⚠️ 2026-08-06 사고 기록: KMA 관측이 한 시간 늦게 들어오는데 Lambda 실행
+    # 시각에서 lead를 빼, 24h·48h라고 쓴 집계가 실제로는 23h·47h 파일을 골랐다.
+    # 옛 값과 고친 값을 가중 평균하면 오류가 영구히 숨는다. 원본 예보는 그대로 두고
+    # 옛 공개 집계만 비공개 사고 보관본으로 옮긴 뒤 올바른 기준으로 다시 시작한다.
+    if doc.get("leadBasis") != "observation-time":
+        if doc.get("days"):
+            put(LEGACY_SER, doc, public=False)
+        doc = {}
     days = doc.get("days", {})
     day = now.strftime("%Y-%m-%d")
     d = days.setdefault(day, {})
@@ -230,6 +334,7 @@ def handler(event, context):
         "sourceEn": "Open-Meteo (GFS · ECMWF) forecasts verified against KMA ASOS observations",
         "license": "예보 Open-Meteo (CC BY 4.0) · 관측 기상청 공공누리 제1유형 · 검증 earthus",
         "models": MODELS, "vars": VARS, "leadsHours": LEADS,
+        "leadBasis": "observation-time",
         "metrics": {
             "me": "평균오차 — 양수면 모델이 실측보다 높게 본다 (치우침)",
             "mae": "평균절대오차 — 방향 무시하고 얼마나 빗나갔나",
@@ -253,4 +358,5 @@ def handler(event, context):
 
     print(f"[verify] 예보저장 {saved} · 채점 {len(sc)}조합 · 누적 {len(days)}일")
     return {"ok": True, "saved": saved, "scored": len(sc), "days": len(days),
-            "stations": len(st), "sample": dict(list(sc.items())[:3])}
+            "stations": len(st), "cases": case_result,
+            "sample": dict(list(sc.items())[:3])}

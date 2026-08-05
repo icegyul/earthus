@@ -28,7 +28,7 @@
 
     <section class="truth-note" aria-label="현재 제공 범위">
       <strong>현재 제공 범위</strong>
-      <p>날짜별 전체 지점 집계는 볼 수 있습니다. 선택한 지점의 예보값·실측값을 한 줄씩 되감는 사례 화면은 아직 공개 산출물이 없어 준비 중입니다.</p>
+      <p id="caseScope">날짜별 전체 지점 집계와 지점·시각별 사례 자료를 불러오고 있습니다.</p>
     </section>
 
     <section class="controls" aria-label="예보 검증 조건">
@@ -74,6 +74,23 @@
         <time id="selectedDate"></time>
       </div>
       <div class="model-grid" id="modelGrid" aria-live="polite"></div>
+    </section>
+
+    <section class="case-section" aria-labelledby="caseTitle">
+      <div class="section-head">
+        <div><p class="eyebrow">STATION CASE</p><h2 id="caseTitle">한 지점·한 시각의 예보와 관측</h2></div>
+        <span class="case-status" id="caseStatus">사례 자료 확인 중</span>
+      </div>
+      <p class="case-intro">평균 뒤에 숨은 실제 값을 봅니다. 예보 발표 시각과 유효 시각을 고정하고, 결측은 다른 값으로 메우지 않습니다.</p>
+      <div class="case-controls" id="caseControls">
+        <label><span>사례 날짜</span><select id="caseDayPicker" aria-label="사례 날짜"></select></label>
+        <label><span>관측 지점</span><select id="caseStationPicker" aria-label="관측 지점"></select></label>
+        <label><span>관측 시각</span><select id="caseHourPicker" aria-label="관측 시각"></select></label>
+      </div>
+      <div class="case-board" id="caseBoard" aria-live="polite">
+        <div class="case-empty">사례 자료를 불러오는 중입니다.</div>
+      </div>
+      <p class="case-source" id="caseSource"></p>
     </section>
 
     <section class="panel table-panel" aria-labelledby="tableTitle">

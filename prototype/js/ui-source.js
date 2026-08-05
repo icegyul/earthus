@@ -219,7 +219,7 @@ export const sourceNote = {
     const name = i18n.t.L?.[id] || id;
 
     // 자료 시각 — 격자·영상은 파일에 시각이 들어 있다
-    let made = null;
+    let made = null, landMeta = null;
     try {
       const { gridOverlay } = await import('./gridoverlay.js');
       const SOURCE_MAP = { pm25: 'air', pm10: 'air', dust: 'air', aqi: 'air', uv: 'air', ozone: 'air',
@@ -256,16 +256,31 @@ export const sourceNote = {
         /* 세 관측망은 시각 필드 이름이 서로 다르다. landobs.refresh()가 가장 최근
            생성 시각으로 합친 meta.generated를 다시 쓴다 — 현재 시각을 지어 넣지 않는다. */
         const { landObs } = await import('./layers/landobs.js');
-        if (landObs.meta?.generated) made = new Date(landObs.meta.generated);
+        landMeta = landObs.meta;
+        if (landMeta?.generated) made = new Date(landMeta.generated);
       }
     } catch (_) { /* 시각을 못 알아내면 출처만 적는다 — 지어내지 않는다 */ }
 
     const bits = [];
-    const sourceText = esc(ko ? src?.ko : src?.en) || '—';
+    /* ⚠️ 관측망 하나가 실패해도 나머지는 계속 그린다. 그때 고정된 세 기관 이름을
+       그대로 쓰면 못 받은 자료까지 화면에 있는 것처럼 보이므로 성공한 출처만 쓴다. */
+    const failedLand = new Set(landMeta?.failed || []);
+    const availableLand = [
+      ['METAR', 'NOAA METAR', 'NOAA METAR'],
+      ['KMA ASOS', '기상청 ASOS', 'KMA ASOS'],
+      ['JMA AMeDAS', 'JMA AMeDAS', 'JMA AMeDAS'],
+    ].filter(([id]) => !failedLand.has(id)).map(x => x[ko ? 1 : 2]).join(' + ');
+    const sourceText = esc(id === 'landobs' && failedLand.size
+      ? availableLand : (ko ? src?.ko : src?.en)) || '—';
     const sourceHtml = src?.url
       ? `<a href="${esc(src.url)}" target="_blank" rel="noopener noreferrer">${sourceText}</a>`
       : sourceText;
     bits.push(`<b>${esc(name)}</b> · ${sourceHtml}`);
+    if (id === 'landobs' && landMeta?.failed?.length) {
+      bits.push(ko
+        ? `<i>⚠️ 지금 못 받은 관측망: <b>${esc(landMeta.failed.join(' · '))}</b>. 나머지 자료만 표시합니다.</i>`
+        : `<i>⚠️ Observation networks unavailable now: <b>${esc(landMeta.failed.join(' · '))}</b>. Showing the remaining sources only.</i>`);
+    }
 
     if (made && !Number.isNaN(made.getTime())) {
       if (id === 'truecolor') {

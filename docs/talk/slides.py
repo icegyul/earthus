@@ -358,10 +358,12 @@ dict(kind="shot", title="브랜드 — EARTHUS",
      cap="Where Earth Becomes One — 지구가 하나 되는 곳. "
          "이 브랜드 이미지는 ChatGPT 로 만들었다."),
 
-dict(kind="shot", title="브랜드 캐릭터 시트",
+dict(kind="shot", title="브랜드 시트 — 4번 칸을 봐 주세요",
      img="brand-sheet.png",
-     cap="로고 구성(AXIS·EARTH·VERIFIED) · 색 · 타이포 · 모션 콘셉트까지 한 장. "
-         "이 시트도 ChatGPT 로 만들었다 — 어떤 도구로 만들었는지 숨기지 않는다."),
+     cap="⚠️ 오른쪽 「PRODUCT PRINCIPLE」 세 줄이 이 발표의 3부·5부 그대로다 — "
+         "출처+시각 · 관측≠예보 · 자료 없음≠사건 없음. "
+         "브랜드가 로고와 색이 아니라 「무엇을 하지 않는가」로 적혀 있다. "
+         "이 시트는 ChatGPT 로 만들었다 — 어떤 도구로 만들었는지 숨기지 않는다."),
 
 dict(kind="bullets", title="릴스 · 쇼츠 (1080×1920) — 확산에 제일 좋다",
      items=["지구가 실제로 움직이는 것이 그대로 콘텐츠다.",

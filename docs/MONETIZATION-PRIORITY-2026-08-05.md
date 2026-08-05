@@ -153,6 +153,10 @@ earthus의 유료 명분은 `이 값을 믿을 수 있는가`인데, 추천 결�
 
 ## 10. 2026-08-06 실행 기록
 
+- Spatial Error Plot의 CSV·SVG·`earthus.spatial-error-manifest.v1`·README·검증
+  Python을 재현 ZIP으로 묶었다. manifest에 유효시각·공간 범위·통계·파일 해시·CSV
+  18개 열·방법·출처를 기록하고, 검증기는 해시·SVG XML·열/행뿐 아니라 선택 조건·결측
+  n·예보−관측 차이·ME/MAE/RMSE·최대 절대오차·위경도 범위를 원행에서 다시 계산한다.
 - Spatial Error Plot에서 실제 사례 날짜·유효시각·모델·24/48시간·변수를 골라 96개
   ASOS 지점 오차를 long-format CSV와 위·경도 산점도 SVG로 만든다. 색은 오차 부호,
   크기는 절댓값, 속 빈 점은 결측이며 절댓값 상위 5개 지점만 라벨을 붙인다. 행정경계

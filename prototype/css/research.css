@@ -228,6 +228,7 @@ h2 { margin: 7px 0; font-size: 32px; font-weight: 500; letter-spacing: -.04em; }
 .distribution-controls { grid-template-columns: repeat(4, 1fr); }
 .distribution-controls .distribution-bundle-button { grid-column: 1 / -1; border-color: var(--amber); background: var(--amber); color: #17120d; }
 .spatial-controls { grid-template-columns: repeat(4, 1fr); }
+.spatial-controls .spatial-bundle-button { grid-column: 1 / -1; border-color: var(--amber); background: var(--amber); color: #17120d; }
 .figure-controls label {
   display: grid;
   gap: 6px;

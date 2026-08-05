@@ -2572,6 +2572,248 @@ function spatialSvgMarkup(result) {
   return chunks.join('');
 }
 
+async function buildSpatialManifest(result) {
+  const csvName = spatialFilename(result, 'csv');
+  const svgName = spatialFilename(result, 'svg');
+  const csvContent = csvText(result.headers, result.rows);
+  const svgContent = `${spatialSvgMarkup(result)}\n`;
+  const [csvHash, svgHash] = await Promise.all([sha256(csvContent), sha256(svgContent)]);
+  return {
+    schema: 'earthus.spatial-error-manifest.v1',
+    manifestVersion: 1,
+    createdAt: new Date().toISOString(),
+    product: 'earthus Research Spatial Error Plot 무료 미리보기',
+    salesStatus: '유료 판매 잠금; 현재 공개 사례 범위만 사용',
+    selection: {
+      date: result.date,
+      validTime: result.time,
+      model: result.model,
+      leadHour: result.lead,
+      variable: result.variable,
+      unit: result.unit,
+    },
+    statistics: result.stats,
+    spatialExtent: result.extent,
+    files: [
+      {
+        role: 'spatial-error-data', name: csvName, mediaType: 'text/csv; charset=utf-8',
+        encoding: 'UTF-8 with BOM', lineEnding: 'LF', rows: result.rows.length,
+        bytes: new TextEncoder().encode(csvContent).byteLength, sha256: csvHash,
+        fields: result.headers.map(name => ({
+          name,
+          unit: EXTRACT_FIELD_META[name]?.[0] || TRACE_FIELD_META[name]?.[0] || '-',
+          description: EXTRACT_FIELD_META[name]?.[1] || TRACE_FIELD_META[name]?.[1] || name,
+        })),
+      },
+      {
+        role: 'spatial-error-figure', name: svgName, mediaType: 'image/svg+xml; charset=utf-8',
+        encoding: 'UTF-8', lineEnding: 'LF',
+        bytes: new TextEncoder().encode(svgContent).byteLength, sha256: svgHash,
+      },
+    ],
+    provenance: { source: result.source, license: result.license, sourceGeneratedAt: result.generated },
+    methodology: {
+      rowShape: 'one ASOS station at the selected valid time per row',
+      difference: 'forecast_minus_observation = forecast - observation; CSV stores three decimal places',
+      statistics: 'n, ME, MAE, RMSE and maximumAbsoluteError are calculated from the CSV error values',
+      coordinates: 'station latitude and longitude from the public case metadata; no administrative boundaries',
+      visualEncoding: 'color shows signed error; point size shows absolute error; five largest absolute errors are labelled',
+      missing: '관측 또는 예보 결측은 빈칸·n=0·속이 빈 점이며 0으로 대체하지 않음',
+      warning: 'ASOS 지점 관측과 모델 격자의 공간 대표성이 다름',
+    },
+    licensePage: 'https://earthus.net/legal/data-license.ko.md',
+  };
+}
+
+function buildSpatialReadme(result, manifest) {
+  const dataFile = manifest.files.find(file => file.role === 'spatial-error-data');
+  const figureFile = manifest.files.find(file => file.role === 'spatial-error-figure');
+  const stat = value => finite(value) ? Number(value).toFixed(3) : 'NA';
+  return `# earthus Spatial Error Plot
+
+## 선택과 표본
+
+- 날짜: ${result.date}
+- 유효시각: ${result.time}
+- 모델: ${modelName(result.model)} (\`${result.model}\`)
+- 선행시간: ${result.lead}시간
+- 변수: ${result.variable} (${result.unit})
+- 유효 n: ${result.stats.n}/${result.stats.totalRows}
+- 결측 관측/예보: ${result.stats.missingObservation}/${result.stats.missingForecast}
+- ME/MAE/RMSE/최대 절대오차: ${stat(result.stats.me)} / ${stat(result.stats.mae)} / ${stat(result.stats.rmse)} / ${stat(result.stats.maximumAbsoluteError)}
+
+## 파일
+
+| 역할 | 파일 | 행/바이트 | SHA-256 |
+|---|---|---:|---|
+| 지점별 오차 CSV | \`${dataFile.name}\` | ${dataFile.rows}행 / ${dataFile.bytes}바이트 | \`${dataFile.sha256}\` |
+| 위·경도 산점도 SVG | \`${figureFile.name}\` | ${figureFile.bytes}바이트 | \`${figureFile.sha256}\` |
+
+## 방법과 한계
+
+- CSV 한 행은 선택한 유효시각의 ASOS 지점 하나입니다.
+- 오차는 \`forecast - observation\`이며 CSV의 소수 셋째 자리 값을 통계에 사용합니다.
+- SVG 색은 오차 부호, 점 크기는 절댓값이며 절댓값 상위 5개 지점만 라벨을 붙입니다.
+- 결측은 빈칸·n=0·속이 빈 점으로 남기며 0으로 채우지 않습니다.
+- 그림은 지점 위·경도 산점도이며 행정경계 지도가 아닙니다.
+- ASOS 지점 관측과 모델 격자의 공간 대표성은 서로 다릅니다.
+- 출처: ${result.source}
+- 이용조건: ${result.license}
+- 원본 생성시각: ${result.generated}
+
+## 검증
+
+같은 폴더에서 \`python3 ${spatialFilename(result, 'verify.py')}\`를 실행하세요.
+Python 표준 라이브러리만 사용하며 파일 SHA-256·SVG XML·CSV 열/행·선택 조건·
+결측 n·예보−관측 차이·요약 통계를 검사합니다.
+
+이 묶음은 공식 DOI가 아닙니다. 원자료 제공기관 출처와 이용조건을 함께 표기하세요.
+`;
+}
+
+function buildSpatialPython(result, manifest) {
+  const expectedFiles = JSON.stringify(manifest.files.map(file => ({
+    role: file.role,
+    name: file.name,
+    sha256: file.sha256,
+    rows: file.rows,
+    headers: file.fields?.map(field => field.name),
+  })));
+  const expectedSnapshot = JSON.stringify({
+    selection: manifest.selection,
+    statistics: manifest.statistics,
+    spatialExtent: manifest.spatialExtent,
+  });
+  return `#!/usr/bin/env python3
+import csv
+import hashlib
+import json
+import math
+from pathlib import Path
+from xml.etree import ElementTree
+
+EXPECTED_FILES = json.loads(r'''${expectedFiles}''')
+EXPECTED = json.loads(r'''${expectedSnapshot}''')
+ROOT = Path(__file__).resolve().parent
+
+for spec in EXPECTED_FILES:
+    path = ROOT / spec["name"]
+    if not path.is_file():
+        raise SystemExit(f"MISSING: {path.name}")
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest != spec["sha256"]:
+        raise SystemExit(f"SHA256 MISMATCH: {path.name} expected={spec['sha256']} actual={digest}")
+    if spec["role"] == "spatial-error-figure":
+        try:
+            ElementTree.parse(path)
+        except ElementTree.ParseError as error:
+            raise SystemExit(f"SVG XML INVALID: {path.name}: {error}")
+    print(f"OK {path.name}: sha256={digest}")
+
+csv_spec = next(spec for spec in EXPECTED_FILES if spec["role"] == "spatial-error-data")
+csv_path = ROOT / csv_spec["name"]
+with csv_path.open("r", encoding="utf-8-sig", newline="") as handle:
+    reader = csv.DictReader(handle)
+    if reader.fieldnames != csv_spec["headers"]:
+        raise SystemExit(f"HEADER MISMATCH: {csv_path.name}")
+    rows = list(reader)
+if len(rows) != csv_spec["rows"]:
+    raise SystemExit(f"ROW COUNT MISMATCH: {csv_path.name} expected={csv_spec['rows']} actual={len(rows)}")
+
+selection = EXPECTED["selection"]
+errors = []
+missing_observation = 0
+missing_forecast = 0
+latitudes = []
+longitudes = []
+
+def number(value):
+    return None if value == "" else float(value)
+
+for row_number, row in enumerate(rows, start=2):
+    if row["valid_kst"] != selection["validTime"]:
+        raise SystemExit(f"VALID TIME MISMATCH: row {row_number}")
+    if row["model"] != selection["model"] or float(row["lead_hour"]) != float(selection["leadHour"]):
+        raise SystemExit(f"MODEL OR LEAD MISMATCH: row {row_number}")
+    if row["variable"] != selection["variable"] or row["unit"] != selection["unit"]:
+        raise SystemExit(f"VARIABLE OR UNIT MISMATCH: row {row_number}")
+    observation = number(row["observation"])
+    forecast = number(row["forecast"])
+    stored_error = number(row["forecast_minus_observation"])
+    n = int(row["n"])
+    if observation is None:
+        missing_observation += 1
+    if forecast is None:
+        missing_forecast += 1
+    if observation is not None and forecast is not None:
+        if n != 1 or stored_error is None:
+            raise SystemExit(f"PAIRED N/ERROR MISMATCH: row {row_number}")
+        if abs(stored_error - (forecast - observation)) > 0.000501:
+            raise SystemExit(f"ERROR VALUE MISMATCH: row {row_number}")
+        errors.append(stored_error)
+    elif n != 0 or stored_error is not None:
+        raise SystemExit(f"MISSING VALUE SEMANTICS MISMATCH: row {row_number}")
+    latitude = number(row["lat"])
+    longitude = number(row["lon"])
+    if latitude is not None and longitude is not None:
+        latitudes.append(latitude)
+        longitudes.append(longitude)
+
+actual_stats = {
+    "totalRows": len(rows),
+    "n": len(errors),
+    "missingObservation": missing_observation,
+    "missingForecast": missing_forecast,
+    "me": sum(errors) / len(errors) if errors else None,
+    "mae": sum(abs(value) for value in errors) / len(errors) if errors else None,
+    "rmse": math.sqrt(sum(value * value for value in errors) / len(errors)) if errors else None,
+    "maximumAbsoluteError": max((abs(value) for value in errors), default=None),
+}
+
+def assert_same(label, actual, expected):
+    if actual is None or expected is None:
+        if actual is not expected:
+            raise SystemExit(f"{label} MISMATCH: expected={expected} actual={actual}")
+    elif not math.isclose(float(actual), float(expected), rel_tol=1e-12, abs_tol=1e-12):
+        raise SystemExit(f"{label} MISMATCH: expected={expected} actual={actual}")
+
+for key, expected in EXPECTED["statistics"].items():
+    assert_same(f"STAT {key}", actual_stats[key], expected)
+
+actual_extent = {
+    "minLat": min(latitudes), "maxLat": max(latitudes),
+    "minLon": min(longitudes), "maxLon": max(longitudes),
+} if latitudes else None
+if actual_extent is None or EXPECTED["spatialExtent"] is None:
+    if actual_extent is not EXPECTED["spatialExtent"]:
+        raise SystemExit("SPATIAL EXTENT MISMATCH")
+else:
+    for key, expected in EXPECTED["spatialExtent"].items():
+        assert_same(f"EXTENT {key}", actual_extent[key], expected)
+
+print(f"OK {csv_path.name}: rows={len(rows)} n={len(errors)}")
+print("VERIFIED: Spatial Error CSV and SVG match this snapshot and recomputed statistics.")
+`;
+}
+
+async function buildSpatialBundle(result) {
+  const manifest = await buildSpatialManifest(result);
+  const baseName = spatialFilename(result, 'csv').replace(/\.csv$/, '');
+  const files = [
+    { name: spatialFilename(result, 'csv'), content: csvText(result.headers, result.rows) },
+    { name: spatialFilename(result, 'svg'), content: `${spatialSvgMarkup(result)}\n` },
+    { name: `${baseName}.manifest.json`, content: JSON.stringify(manifest, null, 2) + '\n' },
+    { name: `${baseName}.README.md`, content: buildSpatialReadme(result, manifest) },
+    { name: `${baseName}.verify.py`, content: buildSpatialPython(result, manifest) },
+  ];
+  return {
+    filename: `${baseName}.reproducible.zip`,
+    files,
+    bytes: zipArchive(files, new Date(manifest.createdAt)),
+    manifest,
+  };
+}
+
 function refillSpatialControls(day) {
   const previous = {
     time: $('#spatialTime').value,
@@ -2605,6 +2847,7 @@ function renderSpatial() {
   $('.spatial-canvas').innerHTML = markup || '<p class="figure-empty">선택 조건에 좌표와 유효 오차가 없습니다.</p>';
   $('#downloadSpatialCsv').disabled = !result.rows.length;
   $('#downloadSpatialSvg').disabled = !markup;
+  $('#downloadSpatialBundle').disabled = !result.rows.length || !markup;
   $('#spatialWarning').textContent = `${result.time} · ${modelName(result.model)} ${result.lead}시간 · ${variableInfo(result.variable).name} · 유효 n=${result.stats.n}/${result.stats.totalRows}`;
 }
 
@@ -2612,6 +2855,7 @@ async function loadSpatialDay() {
   const date = $('#spatialDate').value;
   $('#downloadSpatialCsv').disabled = true;
   $('#downloadSpatialSvg').disabled = true;
+  $('#downloadSpatialBundle').disabled = true;
   $('#spatialWarning').textContent = `${date || '날짜 없음'} 실제 공개 사례를 불러오는 중입니다.`;
   try {
     const day = state.extractCache.cases[date] || await json(state.caseIndex.dates[date].path);
@@ -2642,6 +2886,24 @@ function initSpatial() {
     const result = state.spatialResult;
     if (!result || !spatialSvgMarkup(result)) return;
     downloadText(spatialFilename(result, 'svg'), `${spatialSvgMarkup(result)}\n`, 'image/svg+xml;charset=utf-8');
+  });
+  $('#downloadSpatialBundle').addEventListener('click', async event => {
+    const result = state.spatialResult;
+    if (!result?.rows.length || !spatialSvgMarkup(result)) return;
+    const button = event.currentTarget;
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = '공간 묶음 만드는 중…';
+    try {
+      const bundle = await buildSpatialBundle(result);
+      downloadBlob(bundle.filename, [bundle.bytes], 'application/zip');
+    } catch (error) {
+      $('#error').hidden = false;
+      $('#error').textContent = `공간 재현 묶음을 만들지 못했습니다. (${error.message})`;
+    } finally {
+      button.disabled = false;
+      button.textContent = original;
+    }
   });
   if (dates.length) loadSpatialDay();
 }

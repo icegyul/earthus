@@ -870,6 +870,7 @@
 .al-del{ flex:0 0 44px; min-width:44px; min-height:44px; background:none; border:none;
   color:inherit; opacity:.45; font-size:18px; line-height:1; padding:0; cursor:pointer; }
 .al-del:hover{ opacity:.9; }
+.al-add{ min-height:44px; }
 
 /* ── 바다거북 ─────────────────────────────────────────────────
    ⚠️ 맨 위 경고를 회색으로 묻지 않는다. "지금 위치가 아니다"가

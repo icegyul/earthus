@@ -15,7 +15,7 @@ import { auth } from './auth.js';
 import { push } from './push.js';
 import { myLocation } from './mylocation.js';
 import { toast } from './ui.js';
-import { flyTo } from './viewer.js';
+import { flyTo, viewCenter } from './viewer.js';
 
 const $ = (s) => document.querySelector(s);
 const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
@@ -162,10 +162,7 @@ export const alertsSheet = {
     });
 
     if (this._spots.length < max) {
-      const add = el('button', 'btn-secondary',
-        ko ? '＋ 지금 내 위치를 지켜볼 곳으로' : '＋ Watch my current location');
-      add.onclick = async () => {
-        const c = myLocation.coords;
+      const saveAt = async (c) => {
         if (!c) { toast(ko ? '위치를 먼저 확인해 주세요' : 'Location unknown'); return; }
         const label = prompt(ko ? '이 곳의 이름 (예: 경포해변)' : 'Name this place');
         if (!label) return;
@@ -179,7 +176,25 @@ export const alertsSheet = {
             : `${ko ? '저장 실패' : 'Failed'}: ${e.message}`);
         }
       };
-      body.appendChild(add);
+
+      /* GPS 위치만 저장할 수 있으면 여행지·가족이 있는 곳처럼 실제로 지켜볼 장소를
+         미리 등록할 수 없다. 사용자가 지구를 돌려 고른 화면 중심을 좌표 그대로 저장한다.
+         ⚠️ 화면 중심은 viewer.viewCenter()의 지표 교차점이며 지명을 추측하지 않는다. */
+      const center = viewCenter();
+      const addMap = el('button', 'btn-secondary al-add', center
+        ? (ko
+            ? `＋ 지금 보고 있는 곳 (${center.lat.toFixed(2)}, ${center.lon.toFixed(2)})`
+            : `＋ Watch map centre (${center.lat.toFixed(2)}, ${center.lon.toFixed(2)})`)
+        : (ko ? '＋ 지금 보고 있는 곳' : '＋ Watch map centre'));
+      /* 버튼에 적힌 좌표와 저장값이 반드시 같아야 한다. 배경 인트로가 천천히 도는 중
+         클릭 시점에 다시 읽으면 몇 초 사이 경도가 달라져 보지 않은 곳을 저장한다. */
+      addMap.onclick = () => saveAt(center);
+      body.appendChild(addMap);
+
+      const addMe = el('button', 'btn-secondary al-add',
+        ko ? '＋ 지금 내 위치' : '＋ Watch my current location');
+      addMe.onclick = () => saveAt(myLocation.coords);
+      body.appendChild(addMe);
     } else if (!paid) {
       body.appendChild(el('p', 'sky-note', ko
         ? '무료로는 한 곳을 지켜봅니다. 구독하면 20곳까지 늘어납니다. '

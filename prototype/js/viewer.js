@@ -231,6 +231,22 @@ export function cameraHeight() {
   return viewer.camera.positionCartographic.height;
 }
 
+/** 화면 한가운데가 가리키는 지표 좌표.
+ *  ⚠️ 카메라의 positionCartographic은 카메라 바로 아래 점이지, 기울여 보고 있을 때의
+ *     화면 중심이 아니다. 저장 장소처럼 사람의 선택이 되는 값에는 광선 교차점을 쓴다. */
+export function viewCenter() {
+  const canvas = scene.canvas;
+  if (!canvas) return null;
+  const screen = new Cesium.Cartesian2(canvas.clientWidth / 2, canvas.clientHeight / 2);
+  const cart = viewer.camera.pickEllipsoid(screen, scene.globe.ellipsoid);
+  if (!cart) return null;
+  const c = Cesium.Cartographic.fromCartesian(cart);
+  return {
+    lat: Cesium.Math.toDegrees(c.latitude),
+    lon: Cesium.Math.toDegrees(c.longitude),
+  };
+}
+
 /** 현재 화면 범위 (뷰포트 기반 로딩용, §5-1) */
 export function viewRect() {
   const r = viewer.camera.computeViewRectangle(scene.globe.ellipsoid);

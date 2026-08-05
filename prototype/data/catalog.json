@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated": "2026-08-05T18:49:00Z",
+ "generated": "2026-08-05T18:52:00Z",
  "note": {
   "ko": "earthus 가 쓰는 자료의 목록이다. 사람(보고서 '자료와 방법'), 파이프라인(access 로 실제 수집), 챗 라우터(keywords 로 질문 연결)가 모두 이 파일 하나를 쓴다. 인용문은 doi.org 서지정보에서 생성하며, GVP처럼 DOI 메타데이터가 현재 판과 다를 때는 기관이 직접 제시한 인용문을 쓴다. 라이선스가 'UNVERIFIED' 인 항목은 공개 배포 전에 반드시 확인해야 한다. 'WIKIMEDIA-PER-FILE' 은 파일별 조건을 각각 표시해야 한다.",
   "en": "The list of sources earthus uses. One file serves humans (the report's Data and Methods section), pipelines (fetching via access), and the chat router (matching questions via keywords). Citations use doi.org metadata, except when an agency's current official citation supersedes stale DOI metadata. Entries marked 'UNVERIFIED' must be checked before any public redistribution. 'WIKIMEDIA-PER-FILE' requires displaying each file's own terms."
@@ -118,7 +118,7 @@
     "format": "json",
     "cors": true
    },
-   "licenseNote": "GDACS 원자료 조건을 따른다",
+   "licenseNote": "GDACS 원자료의 CC BY 4.0과 출처표시 조건을 계속 따른다.",
    "why": {
     "ko": "공식 기관은 열대저기압 지위를 잃는 순간 추적을 끊는다. 그런데 그 구름과 비는 며칠 더 지나간다. 그 공백 구간을 잇는 기록은 우리만 갖는다.",
     "en": "Official agencies stop tracking the moment a system loses tropical status, yet its cloud and rain persist for days. Only we record that gap."
@@ -127,10 +127,11 @@
     "report-2"
    ],
    "license": {
-    "id": "UNVERIFIED",
-    "ko": "라이선스 미확인 — 공개 배포 전 반드시 확인할 것",
-    "en": "Licence not verified — must be checked before any public redistribution",
-    "status": "unverified"
+    "id": "CC-BY-4.0",
+    "ko": "Creative Commons 저작자표시 4.0 국제",
+    "en": "Creative Commons Attribution 4.0 International",
+    "url": "https://creativecommons.org/licenses/by/4.0/",
+    "status": "verified"
    }
   },
   {
@@ -1028,19 +1029,25 @@
     "format": "geojson",
     "cors": true
    },
-   "licenseNote": "JRC 재사용 조건 확인 필요",
+   "licenseNote": "Global Disaster Awareness and Coordination System, GDACS로 출처를 표시한다. 이벤트 API 자료는 European Union CC BY 4.0으로 재사용할 수 있다.",
+   "termsUrl": "https://www.gdacs.org/Documents/2025/GDACS_Terms_of_use_Oct_25.pdf",
    "why": {
     "ko": "⚠️ 지위를 잃은 태풍을 목록에서 통째로 뺀다 (실측: NOUL 소멸 후 완전 제거). 그래서 살아있는 동안 경로를 받아 우리가 보관한다. ⚠️ 경로선에 예보 구간이 섞여 있고, 구간 번호는 시간 순서가 아니다 — 끝점-시작점으로 이어야 한다 (실측으로 확인).",
     "en": "⚠️ Drops storms entirely once they lose status (measured: NOUL vanished). So we capture the track while it is alive. ⚠️ The track line mixes in the forecast leg, and segment numbering is not chronological — chain by matching endpoints (measured)."
+   },
+   "warning": {
+    "ko": "GDACS 통보와 영향 추정은 자동 모델 산출물이며 인적 검토 전에 발행될 수 있다. 지역·국가 당국의 공식 경보를 대체하지 않는다.",
+    "en": "GDACS notifications and impact estimates are automated model outputs and may be issued before human review. They do not replace official alerts from local or national authorities."
    },
    "usedBy": [
     "report-2"
    ],
    "license": {
-    "id": "UNVERIFIED",
-    "ko": "라이선스 미확인 — 공개 배포 전 반드시 확인할 것",
-    "en": "Licence not verified — must be checked before any public redistribution",
-    "status": "unverified"
+    "id": "CC-BY-4.0",
+    "ko": "Creative Commons 저작자표시 4.0 국제",
+    "en": "Creative Commons Attribution 4.0 International",
+    "url": "https://creativecommons.org/licenses/by/4.0/",
+    "status": "verified"
    }
   },
   {

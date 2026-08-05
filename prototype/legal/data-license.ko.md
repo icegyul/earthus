@@ -89,7 +89,8 @@
 | OpenStreetMap (해안선 · 낚시 지점 · 등산로 · 산) | ODbL 1.0 |
 | ECMWF 오픈데이터 (IFS · AIFS · 태풍 진로) | CC-BY-4.0 |
 | NOAA (GMGSI 구름 · NCEP 재분석 · NDBC · 쓰나미) | 퍼블릭 도메인 |
-| NASA GIBS · JAXA Himawari · EU JRC (GDACS) | 각 기관 조건 |
+| NASA GIBS · JAXA Himawari | 각 기관 조건 |
+| GDACS (EU JRC · UN OCHA) | CC BY 4.0 · “Global Disaster Awareness and Coordination System, GDACS” 출처표시 |
 | Open-Meteo | 자료는 CC BY 4.0. 단, 무료 호스팅 API는 비상업 이용 전용 |
 | CelesTrak (위성 OMM · SATCAT) | 무료 공개·요청 정책 확인. 별도 재배포 라이선스는 미확인 |
 | Wikimedia Commons (위성·관측소 사진) | 파일마다 다름. 각 저작자·라이선스·원본 파일 페이지를 개별 표시 |
@@ -131,6 +132,13 @@ earthus는 현재 판매를 열지 않았고, GVP 상업 이용 허가 확인값
 시작하지 못하게 막습니다.
 
 GVP 콘텐츠 이용 조건: https://volcano.si.edu/gvp_termsofuse.cfm
+
+⚠️ GDACS 이벤트 API 자료는 European Union CC BY 4.0으로 재사용할 수 있고,
+“Global Disaster Awareness and Coordination System, GDACS”로 출처를 밝혀야 합니다. 다만 태풍·지진·
+쓰나미 통보와 영향 추정은 인적 검토 전에 발행될 수 있는 자동 모델 산출물입니다.
+지역·국가 당국의 공식 대피·생명보호 경보를 대체하지 않습니다.
+
+GDACS 이용 조건: https://www.gdacs.org/Documents/2025/GDACS_Terms_of_use_Oct_25.pdf
 
 ⚠️ OSM 에서 온 지리 자료(해변·낚시 지점·등산로)는 **ODbL 의 파생물**입니다.
 저희 가공분에는 저희 권리가 있지만, 원본 부분은 ODbL 을 따릅니다 —

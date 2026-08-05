@@ -106,7 +106,7 @@ SOURCES = {
     "tsunami":  ("nws-tsunami",  "US-Gov-Public-Domain"),
     "news":     ("gdelt",        "UNVERIFIED"),
     "buoy":     ("ndbc-osmc",    "US-Gov-Public-Domain"),
-    "cyclone":  ("gdacs",        "UNVERIFIED"),
+    "cyclone":  ("gdacs",        "CC-BY-4.0"),
     "solar":    ("noaa-swpc",    "US-Gov-Public-Domain"),
     "wind":     ("open-meteo",   "UNVERIFIED"),
     "forecast": ("open-meteo",   "UNVERIFIED"),
@@ -603,6 +603,9 @@ def roll_cyclone_tracks(now, feats):
         "generated": now.strftime("%Y-%m-%dT%H:%M:00Z"),
         "retainDays": TRACK_RETAIN_DAYS,
         "source": "GDACS",
+        "sourceFull": "Global Disaster Awareness and Coordination System, GDACS",
+        "license": "CC BY 4.0",
+        "termsUrl": "https://www.gdacs.org/Documents/2025/GDACS_Terms_of_use_Oct_25.pdf",
         "note": {
             "ko": "경로는 GDACS 가 제공한 값입니다. 실시간 목록에서 빠진 폭풍(live=false)도 "
                   "보관 기간 동안 남겨 둡니다. 빠진 이유는 자료에 없어 표시하지 않습니다.",

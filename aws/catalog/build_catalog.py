@@ -187,7 +187,8 @@ DATASETS = [
         "spatial": "전지구", "temporal": "2026-07-27~ · 매시간 · 소멸 후 72시간 유지",
         "access": {"method": "https", "key": "events/cyclone-tracks.json",
                    "format": "json", "cors": True},
-        "license": "unverified", "licenseNote": "GDACS 원자료 조건을 따른다",
+        "license": "cc-by-4.0",
+        "licenseNote": "GDACS 원자료의 CC BY 4.0과 출처표시 조건을 계속 따른다.",
         "why": {"ko": "공식 기관은 열대저기압 지위를 잃는 순간 추적을 끊는다. 그런데 그 구름과 비는 "
                       "며칠 더 지나간다. 그 공백 구간을 잇는 기록은 우리만 갖는다.",
                 "en": "Official agencies stop tracking the moment a system loses tropical status, "
@@ -538,7 +539,9 @@ DATASETS = [
                    "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry"
                                "?eventtype=TC&eventid={id}&episodeid={ep}",
                    "format": "geojson", "cors": True},
-        "license": "unverified", "licenseNote": "JRC 재사용 조건 확인 필요",
+        "license": "cc-by-4.0",
+        "licenseNote": "Global Disaster Awareness and Coordination System, GDACS로 출처를 표시한다. 이벤트 API 자료는 European Union CC BY 4.0으로 재사용할 수 있다.",
+        "termsUrl": "https://www.gdacs.org/Documents/2025/GDACS_Terms_of_use_Oct_25.pdf",
         "why": {"ko": "⚠️ 지위를 잃은 태풍을 목록에서 통째로 뺀다 (실측: NOUL 소멸 후 완전 제거). "
                       "그래서 살아있는 동안 경로를 받아 우리가 보관한다. "
                       "⚠️ 경로선에 예보 구간이 섞여 있고, 구간 번호는 시간 순서가 아니다 — "
@@ -547,6 +550,8 @@ DATASETS = [
                       "So we capture the track while it is alive. ⚠️ The track line mixes in the "
                       "forecast leg, and segment numbering is not chronological — chain by "
                       "matching endpoints (measured)."},
+        "warning": {"ko": "GDACS 통보와 영향 추정은 자동 모델 산출물이며 인적 검토 전에 발행될 수 있다. 지역·국가 당국의 공식 경보를 대체하지 않는다.",
+                    "en": "GDACS notifications and impact estimates are automated model outputs and may be issued before human review. They do not replace official alerts from local or national authorities."},
         "usedBy": ["report-2"],
     },
     {

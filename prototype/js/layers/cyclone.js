@@ -22,9 +22,9 @@ import { mapLabel } from '../maplabel.js';
 import { power } from '../power.js';
 
 const ALERT = {
-  Red:    { color: '#ff4d4d', ko: '적색 경보', en: 'Red alert' },
-  Orange: { color: '#ff9f45', ko: '주황 경보', en: 'Orange alert' },
-  Green:  { color: '#7ee0a0', ko: '녹색 (주의)', en: 'Green' },
+  Red:    { color: '#ff4d4d', ko: 'GDACS 적색 영향 추정', en: 'GDACS red impact estimate' },
+  Orange: { color: '#ff9f45', ko: 'GDACS 주황 영향 추정', en: 'GDACS orange impact estimate' },
+  Green:  { color: '#7ee0a0', ko: 'GDACS 녹색 영향 추정', en: 'GDACS green impact estimate' },
 };
 
 /* 최대풍속(km/h) → 등급. 한국 기상청 태풍 강도 기준에 맞췄다. */
@@ -1144,9 +1144,10 @@ export const cyclones = {
       d[ko ? '상태' : 'Status'] = ko ? '관측 종료' : 'No longer reported';
       d[ko ? '마지막 기록' : 'Last fix'] = (s.lastSeen || '').slice(0, 16).replace('T', ' ');
       d[ko ? '경로 기록' : 'Track from'] = (s.from || '').slice(0, 16).replace('T', ' ');
+      d[ko ? '출처' : 'Source'] = 'Global Disaster Awareness and Coordination System, GDACS · CC BY 4.0';
       d['_note'] = ko
-        ? 'GDACS 실시간 목록에서 빠진 폭풍입니다. 화면의 경로는 **우리가 매시간 기록한 위치**이며 공식 베스트트랙이 아닙니다. 목록에서 빠진 이유(약화·상륙·온대저기압화)는 자료에 나오지 않아 표시하지 않습니다. 남은 구름과 비는 며칠 더 지나갈 수 있습니다.'
-        : 'This storm has dropped out of the GDACS live list. The track shown is **our own hourly record**, not an official best track. GDACS does not say why a storm leaves the list (weakening, landfall, extratropical transition), so we do not claim a reason. Its remaining cloud and rain can persist for days.';
+        ? 'GDACS 실시간 목록에서 빠진 폭풍입니다. 화면의 경로는 **우리가 매시간 기록한 위치**이며 공식 베스트트랙이 아닙니다. 목록에서 빠진 이유(약화·상륙·온대저기압화)는 자료에 나오지 않아 표시하지 않습니다. GDACS 영향 추정은 자동 모델 산출물이며 지역 당국의 공식 경보가 아닙니다.'
+        : 'This storm has dropped out of the GDACS live list. The track shown is **our own hourly record**, not an official best track. GDACS does not say why a storm leaves the list, so we do not claim a reason. GDACS impact estimates are automated model outputs, not official alerts from local authorities.';
       return { title: `${s.name}`, rows: d };
     }
     /* ⚠️ GDACS 가 응답하지 않아 우리 보관본으로 그리고 있는 경우.
@@ -1163,11 +1164,11 @@ export const cyclones = {
     d[ko ? '최대풍속' : 'Max wind'] = s.kmh != null
       ? `${Math.round(s.kmh)} km/h · ${(s.kmh / 3.6).toFixed(0)} m/s · ${(s.kmh / 1.852).toFixed(0)} kt`
       : '—';
-    d[ko ? '경보' : 'Alert'] = ko ? a.ko : a.en;
+    d[ko ? '자동 영향 추정' : 'Automated impact estimate'] = ko ? a.ko : a.en;
     if (s.countries?.length) d[ko ? '영향권' : 'Affected'] = s.countries.join(', ');
     d[ko ? '발생' : 'Formed'] = (s.from || '').slice(0, 16).replace('T', ' ');
     d[ko ? '최신 관측' : 'Latest'] = (s.to || '').slice(0, 16).replace('T', ' ');
-    d[ko ? '출처' : 'Source'] = s.source || 'GDACS';
+    d[ko ? '출처' : 'Source'] = `${s.source || '원 기관'} · Global Disaster Awareness and Coordination System, GDACS`;
     if (s.report) d[ko ? '상세 보고서' : 'Full report'] = s.report;
 
     /* ── 각국 기상기관 공식 예보 ────────────────────────────────
@@ -1366,11 +1367,11 @@ export const cyclones = {
       ? (ko ? '⚠️ 지금 GDACS(전지구 재난경보시스템)가 응답하지 않아, 저희가 보관해 둔 마지막 경로를 보여드리고 있습니다. 현재 위치·강도는 그 이후 달라졌을 수 있습니다. 실제 대응은 기상청 발표를 따르세요. '
             : '⚠️ GDACS is not responding, so this shows the last track we archived. Current position and intensity may have changed since. ')
       : '') + (ko
-      ? '점선 원뿔은 예보 범위입니다. 실제 경로는 달라질 수 있습니다.'
+      ? 'GDACS 영향 추정은 자동 모델 산출물이며 지역 당국의 공식 경보가 아닙니다. 점선 원뿔은 예보 범위입니다. 실제 경로는 달라질 수 있습니다.'
         + (an && an.matches
             ? ' ⚠️ 「과거 유사 사례」는 예보가 아닙니다 — 위치·진행방향·강도가 비슷했던 과거 태풍이 이후 어디로 갔는지 센 기록입니다. 판정 기준은 우리가 정한 값이며 공인 표준이 아닙니다. 실제 대응은 기상청 공식 발표를 따르세요.'
             : '')
-      : 'The dotted cone is a forecast range — the actual track may differ.'
+      : 'GDACS impact estimates are automated model outputs, not official alerts from local authorities. The dotted cone is a forecast range — the actual track may differ.'
         + (an && an.matches
             ? ' ⚠️ "Past analogues" is not a forecast — it counts where similar past storms went. Follow official warnings.'
             : ''));

@@ -792,6 +792,29 @@
 }
 .bc-link:hover{ text-decoration:underline; }
 
+/* 부이 실측과 모델 격자값 — 원자료를 섞지 않고 출처·시각·좌표를 함께 둔다. */
+.buoy-compare{
+  margin-top:13px; padding:12px; border:1px solid rgba(90,209,232,.18);
+  border-radius:10px; background:rgba(90,209,232,.045);
+}
+.buc-head{ font-size:12px; font-weight:600; color:#9ee8f3; margin-bottom:10px; }
+.buc-loading,.buc-none,.buc-note{ margin:0; font-size:10.5px; line-height:1.65; opacity:.55; }
+.buc-metric{ font-size:10px; opacity:.45; margin-bottom:5px; }
+.buc-values{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); border-block:1px solid var(--line); }
+.buc-values div{ padding:9px 6px; min-width:0; }
+.buc-values div+div{ border-left:1px solid var(--line); }
+.buc-values span{ display:block; font-size:9px; line-height:1.35; opacity:.5; }
+.buc-values strong{ display:block; margin-top:4px; font-size:15px; font-weight:550; white-space:nowrap; }
+.buc-values .is-muted{ opacity:.45; }
+.buc-meta{ margin:9px 0; font-size:9.5px; line-height:1.55; }
+.buc-meta div{ display:grid; grid-template-columns:62px 1fr; gap:8px; }
+.buc-meta dt{ opacity:.42; }
+.buc-meta dd{ margin:0; text-align:right; overflow-wrap:anywhere; opacity:.72; }
+@media(max-width:390px){
+  .buc-values strong{ font-size:13px; }
+  .buc-values div{ padding-inline:4px; }
+}
+
 /* ══ 산불 위성 영상 + 주변 뉴스 ═══════════════════════════════ */
 .fire-view{ margin-top:13px; max-width:100%; }
 .fv-img{

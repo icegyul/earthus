@@ -9,7 +9,7 @@ import { LAYER_DEFS, TIER, T, GLOBAL_EVENT, PAID_CAP } from './config.js';
 import { CONFIG } from './config.local.js';
 import { registry, pointLayers } from './layers/registry.js';
 import { fetchWeather, wxText } from './layers/weather.js';
-import { lookupPlace, lookupWaves, compass, seaState } from './place.js';
+import { lookupPlace, lookupWaves, lookupWaveModel, compass, seaState } from './place.js';
 import { imagery } from './layers/imagery.js';
 import { quakes } from './layers/hazard.js';
 import { launches } from './layers/space.js';
@@ -484,7 +484,10 @@ export const sheet = {
           다른 부이 사진을 보여주면 그 부이를 찍은 것처럼 읽힌다.
        ⚠️ 사진은 <img> 로 브라우저가 직접 받는다. 이미지 표시에는 CORS 가 필요 없어
           프록시를 거치지 않는다 (Function URL 이 막힌 것과 무관하게 동작한다). */
-    if (m.kind === 'buoy' && m._buoyId) renderBuoyCam(m, rows);
+    if (m.kind === 'buoy' && m._buoyId) {
+      renderBuoyModel(m, rows);
+      renderBuoyCam(m, rows);
+    }
 
     /* 지상 관측소 — 부이의 육지판. 5일치 그래프와 주변 사진을 붙인다.
        ⚠️ 비동기라 시트가 먼저 뜨고 내용이 나중에 채워진다. 그게 맞다 —
@@ -835,6 +838,86 @@ function haversineKm(la1, lo1, la2, lo2) {
   return 6371 * Math.acos(Math.max(-1, Math.min(1,
     Math.sin(la1 * p) * Math.sin(la2 * p)
     + Math.cos(la1 * p) * Math.cos(la2 * p) * Math.cos((lo2 - lo1) * p))));
+}
+
+/** 같은 좌표의 부이 실측과 파랑 모델값을 대조한다.
+ *  ⚠️ 기관 순위나 정확도 점수는 만들지 않는다. 한 시각의 한 점만으로 모델 전체를
+ *  평가할 수 없고, 관측시각 차이가 2시간을 넘으면 수치 차이도 계산하지 않는다. */
+function renderBuoyModel(m, rows) {
+  const ko = i18n.lang === 'ko';
+  const box = el('section', 'buoy-compare');
+  box.innerHTML = `<div class="buc-head">${ko ? '부이 실측 · 파랑 모델 대조' : 'Buoy observation · wave model'}</div>`
+    + `<div class="buc-loading">${ko ? '같은 좌표의 모델값을 확인 중…' : 'Loading the model value at this coordinate…'}</div>`;
+  rows.parentElement.appendChild(box);
+
+  const obsRaw = m._obs?.waveHeight;
+  const obs = obsRaw == null ? NaN : Number(obsRaw);
+  const obsAt = parseUtc(m._obsAt);
+  const source = String(m._meta2?.src || 'NOAA NDBC/OSMC');
+  lookupWaveModel(m.lat, m.lon).then(model => {
+    if (!box.isConnected) return;
+    if (!Number.isFinite(obs) || !model) {
+      box.innerHTML = `<div class="buc-head">${ko ? '부이 실측 · 파랑 모델 대조' : 'Buoy observation · wave model'}</div>`
+        + `<p class="buc-none">${ko ? '비교할 유의파고 실측 또는 모델값이 없습니다.' : 'No comparable significant-wave-height observation or model value.'}</p>`;
+      return;
+    }
+
+    const modelAt = parseUtc(model.time);
+    const gapMin = obsAt && modelAt ? Math.round(Math.abs(modelAt - obsAt) / 60000) : null;
+    const comparable = gapMin != null && gapMin <= 120;
+    const diff = model.waveHeight - obs;
+    const signed = `${diff >= 0 ? '+' : ''}${diff.toFixed(1)} m`;
+    const gap = gapMin == null ? (ko ? '시각 확인 불가' : 'time unavailable')
+      : gapMin < 60 ? `${gapMin}${ko ? '분' : ' min'}`
+      : `${(gapMin / 60).toFixed(1)}${ko ? '시간' : ' h'}`;
+    const obsTime = fmtUtcKst(obsAt, ko);
+    const modelTime = fmtUtcKst(modelAt, ko);
+    const grid = Number.isFinite(model.gridLat) && Number.isFinite(model.gridLon)
+      ? `${Number(model.gridLat).toFixed(2)}, ${Number(model.gridLon).toFixed(2)}` : '—';
+
+    box.innerHTML = `
+      <div class="buc-head">${ko ? '부이 실측 · 파랑 모델 대조' : 'Buoy observation · wave model'}</div>
+      <div class="buc-metric">${ko ? '유의파고' : 'Significant wave height'}</div>
+      <div class="buc-values">
+        <div><span>${ko ? '부이 실측' : 'Buoy observed'}</span><strong>${obs.toFixed(1)} m</strong></div>
+        <div><span>${ko ? '모델 격자값' : 'Model grid value'}</span><strong>${Number(model.waveHeight).toFixed(1)} m</strong></div>
+        <div class="${comparable ? '' : 'is-muted'}"><span>${ko ? '모델 − 실측' : 'Model − observed'}</span><strong>${comparable ? signed : '—'}</strong></div>
+      </div>
+      <dl class="buc-meta">
+        <div><dt>${ko ? '관측' : 'Observed'}</dt><dd>${esc(source)} · ${esc(obsTime)}</dd></div>
+        <div><dt>${ko ? '모델' : 'Model'}</dt><dd>${esc(model.model)} via Open-Meteo Marine · ${esc(modelTime)}</dd></div>
+        <div><dt>${ko ? '시각 차이' : 'Time gap'}</dt><dd>${esc(gap)}</dd></div>
+        <div><dt>${ko ? '요청 좌표' : 'Requested'}</dt><dd>${m.lat.toFixed(3)}, ${m.lon.toFixed(3)}</dd></div>
+        <div><dt>${ko ? '사용 격자' : 'Model grid'}</dt><dd>${grid}</dd></div>
+      </dl>
+      <p class="buc-note">${comparable
+        ? (ko ? '양수는 모델값이 실측보다 높다는 뜻입니다. 한 시각의 대조이며 기관 순위나 장기 정확도 평가는 아닙니다.'
+              : 'Positive means the model is higher than observed. This is one timestamp, not an agency ranking or long-term skill score.')
+        : (ko ? '관측과 모델의 시각 차이가 2시간을 넘거나 시각이 없어, 두 값을 나란히만 보여주고 차이는 계산하지 않았습니다.'
+              : 'The timestamps are over two hours apart or unavailable, so values are shown side by side without a difference.')}</p>`;
+  }).catch(() => {
+    if (box.isConnected) box.querySelector('.buc-loading').textContent = ko
+      ? '모델값을 불러오지 못했습니다. 부이 실측은 위 값이 그대로 유효합니다.'
+      : 'Could not load the model value. The buoy observation above remains valid.';
+  });
+}
+
+function parseUtc(v) {
+  if (!v) return null;
+  const s = String(v);
+  const d = new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(s) ? s : `${s}Z`);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function fmtUtcKst(d, ko) {
+  if (!d) return ko ? '시각 없음' : 'time unavailable';
+  const utc = d.toISOString().slice(5, 16).replace('T', ' ') + ' UTC';
+  if (!ko) return utc;
+  const kst = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(d);
+  return `${utc} · ${kst} KST`;
 }
 
 /** 부이 카메라 사진 + 이 부이가 하는 일 */

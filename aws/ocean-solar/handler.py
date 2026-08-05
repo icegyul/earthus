@@ -308,6 +308,7 @@ def osmc():
         country = row[ix["country"]].strip()
         best[code] = {
             "_t": t,
+            "time": t,
             "id": code,
             "lat": round(la, 3), "lon": round(lo, 3),
             "wvht": f(row, "wvht"),
@@ -361,6 +362,19 @@ def buoys():
             "wspd": num(c[ix["WSPD"]]) if "WSPD" in ix else None,   # 풍속 m/s
             "wdir": num(c[ix["WDIR"]]) if "WDIR" in ix else None,   # 풍향
         }
+        # ⚠️ 관측 시각을 전체 파일 생성 시각으로 대신하면 안 된다. 관측소마다 송신
+        #    시각이 다르며, 이 값은 뒤에서 같은 시각의 모델값과 대조할 때 쓰인다.
+        try:
+            # NDBC 파일은 배포 시기에 따라 연도 열을 YY 또는 YYYY 로 쓴다.
+            year_key = "YYYY" if "YYYY" in ix else "YY"
+            yy = int(c[ix[year_key]])
+            year = 2000 + yy if yy < 100 else yy
+            rec["time"] = datetime(
+                year, int(c[ix["MM"]]), int(c[ix["DD"]]),
+                int(c[ix["hh"]]), int(c[ix["mm"]]), tzinfo=timezone.utc,
+            ).strftime("%Y-%m-%dT%H:%M:00Z")
+        except (KeyError, ValueError, IndexError):
+            pass
         # 제원 — 있으면 붙이고 없으면 안 붙인다 (빈 칸을 지어내지 않는다)
         m = meta.get(rec["id"]) or meta.get(rec["id"].lower()) or meta.get(rec["id"].upper())
         if m:
@@ -453,7 +467,7 @@ def handler(event, context):
 
     try:
         b = buoys()
-        body = json.dumps({"generated": now, "source": "NOAA NDBC",
+        body = json.dumps({"generated": now, "source": "NOAA NDBC + NOAA OSMC/GTS",
                            "count": len(b), "buoys": b},
                           separators=(",", ":")).encode()
         dst.put_object(Bucket=DST_BUCKET, Key="ocean/buoys.json", Body=body,

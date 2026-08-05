@@ -61,6 +61,32 @@ export async function lookupWaves(lat, lon) {
   } catch (_) { return null; }
 }
 
+/** 부이 실측과 나란히 놓을 한 지점의 현재 파랑 모델값.
+ *  일반 지점 카드와 달리 응답 격자 좌표와 UTC 시각까지 보존한다. 모델 격자값을
+ *  부이에서 직접 잰 값처럼 보이지 않게 하려면 이 메타데이터가 반드시 필요하다. */
+export async function lookupWaveModel(lat, lon) {
+  const q = new URLSearchParams({
+    latitude: lat.toFixed(3), longitude: lon.toFixed(3),
+    current: 'wave_height',
+    timezone: 'GMT',
+    cell_selection: 'sea',
+    models: 'ecmwf_wam',
+  });
+  try {
+    const r = await fetchT(`${API.MARINE}?${q}`);
+    if (!r.ok) return null;
+    const j = await r.json();
+    if (!j.current || j.current.wave_height == null) return null;
+    return {
+      time: j.current.time,
+      waveHeight: j.current.wave_height,
+      gridLat: j.latitude,
+      gridLon: j.longitude,
+      model: 'ECMWF WAM',
+    };
+  } catch (_) { return null; }
+}
+
 /** 방위각 → 16방위 */
 export function compass(deg) {
   if (deg == null) return '—';

@@ -77,6 +77,12 @@ export const buoys = {
         kind: 'buoy',
         _buoyId: b.id,
         _meta2: M || null,
+        _obsAt: b.time || null,
+        _obs: {
+          waveHeight: b.wvht,
+          wavePeriod: b.dpd,
+          waterTemp: b.wtmp,
+        },
         /* NDBC 가 이 관측소를 호스팅하나 — 카메라·차트·상세 페이지의 조건.
            ⚠️ 예전에는 `src`가 'NDBC'로 시작하는지만 봤다. 그러면 OSMC 로 들어온
               관측소는 전부 빠진다 — 그런데 실측하니 그중에도 NDBC 차트가 있는 곳이

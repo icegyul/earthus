@@ -417,7 +417,6 @@ export const imagery = {
       const day = this._ymdBack(2);
       this._tcDate = day;
       this.truecolor = this._addTruecolorLayer(day);
-      this._imgLoading(true, '수오미 NPP');
 
       /* 배경 탐색 — 어제가 유난히 나쁜 날(빈 구간이 훨씬 큼)에만 조용히 교체한다.
          평소엔 어제가 최선이라 그대로 둔다(불필요한 리로드·깜빡임 방지).
@@ -446,6 +445,11 @@ export const imagery = {
       }
     }
     this.truecolor.show = true;
+    /* ⚠️ 로딩 표시는 **켤 때마다** 띄운다. 예전엔 레이어를 처음 만들 때만 띄워서,
+       두 번째부터는 새 지역 타일을 받는 동안 아무 표시가 없었다 —
+       받은 지적: "수오미 위성 누르면 반응이 없어 … 느리게 뜨네".
+       이미 캐시돼 바로 뜨는 경우는 _imgLoading 의 2.5초 대기가 알아서 걷는다. */
+    this._imgLoading(true, '수오미 NPP');
     // 켤 때 현재 고도에 맞는 알파를 즉시 반영한다 (다음 프레임까지 기다리지 않게)
     this.truecolor.dayAlpha = 1 - (this._d || 0);
     /* ⚠️ 구름을 두 번 그리지 않는다.

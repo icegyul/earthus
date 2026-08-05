@@ -737,7 +737,7 @@ export const cyclones = {
       }));
     });
 
-    this._legend(groups, AG, ko, !!analog.get(s.id, s.name)?.sample?.length);
+    this._legend(groups, AG, ko, !!analog.get(s.id, s.name)?.sample?.length, s);
   },
 
   /* ══ 범례 ═════════════════════════════════════════════════════════
@@ -746,7 +746,7 @@ export const cyclones = {
         과거 유사 사례를 흐리게 깐 것은 "예보로 읽히면 안 되니까"였는데,
         흐리게 하는 것만으로는 **뜻을 지우기만 하고 알려주지는 못했다.**
         선을 그리면 그 선이 무엇인지도 같이 적어야 한다. */
-  _legend(groups, AG, ko, hasAnalog) {
+  _legend(groups, AG, ko, hasAnalog, s) {
     let box = document.getElementById('tcLegend');
     if (!box) {
       box = document.createElement('div');
@@ -760,6 +760,18 @@ export const cyclones = {
         class="${dashed ? 'dash' : ''}"></i><b>${label}</b>${
         note ? `<span>${note}</span>` : ''}</div>`;
 
+    /* ── 굵은 실선(GDACS 경로)을 범례 맨 위에 ─────────────────────
+       받은 지적: "선이 4개네? 하나는 어디꺼야?"
+       화면에서 제일 굵은 선인데 범례에 없었다. 제일 먼저 적는다. */
+    const gsrc = String(s?.source || '').toUpperCase();
+    const gwho = gsrc.includes('JTWC') ? (ko ? '미국 JTWC' : 'US JTWC')
+               : gsrc.includes('NHC')  ? (ko ? '미국 NHC'  : 'US NHC')
+               : (s?.source || 'GDACS');
+    const gdacsRow = row(
+      (ALERT[s?.alert] || ALERT.Green).color, false,
+      gwho === 'GDACS' ? 'GDACS' : `${gwho} · GDACS`,
+      ko ? '관측 경로와 진로' : 'observed track & path');
+
     const rows = groups.map(g => {
       const m = AG[g.agency] || { color: '#8ee6c8', ko: g.agencyKo };
       const horizon = (g.steps || []).reduce((a, x) => Math.max(a, x.h || 0), 0);
@@ -769,6 +781,7 @@ export const cyclones = {
         : (ko ? `공식 예보 · ${horizon}시간` : `official · ${horizon}h`);
       return row(m.color, true, name, note);
     });
+    rows.unshift(gdacsRow);
     if (groups.some(g => (g.steps || []).some(x => x.circleKm > 0))) {
       rows.push(row('rgba(255,255,255,.55)', true,
         ko ? '옅은 동그라미' : 'Thin circles',
@@ -868,6 +881,37 @@ export const cyclones = {
         },
       }));
     });
+
+    /* ── 이 실선의 이름표 ────────────────────────────────────────────
+       받은 지적: "선이 4개네? 하나는 어디꺼야? 이름 없는 선"
+       기상청·JMA·ECMWF 선에는 이름이 붙는데 이 GDACS 실선만 무명이었다.
+       서태평양이면 원자료가 보통 미국 JTWC(하와이 합동태풍경보센터)다.
+       ⚠️ 우리가 단정하지 않는다 — GDACS 가 주는 source 필드를 그대로 옮긴다. */
+    if (segs.length) {
+      const lastCs = segs[segs.length - 1].geometry?.coordinates;
+      const tail = lastCs?.[lastCs.length - 1];
+      if (tail) {
+        const src = String(s.source || '').toUpperCase();
+        const who = src.includes('JTWC') ? (ko ? '미국 JTWC' : 'US JTWC')
+                  : src.includes('NHC')  ? (ko ? '미국 NHC'  : 'US NHC')
+                  : (s.source || 'GDACS');
+        made.push(this.ds.entities.add({
+          id: `tc:${s.id}:recname`,
+          position: Cesium.Cartesian3.fromDegrees(tail[0], tail[1]),
+          label: {
+            text: who === 'GDACS' ? 'GDACS'
+                 : `${who}${ko ? ' (GDACS 제공)' : ' (via GDACS)'}`,
+            font: '600 11px -apple-system, sans-serif',
+            fillColor: col, style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            outlineColor: Cesium.Color.BLACK.withAlpha(0.85), outlineWidth: 2.5,
+            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+            pixelOffset: new Cesium.Cartesian2(0, -14),
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 14_000_000),
+            disableDepthTestDistance: 900_000,
+          },
+        }));
+      }
+    }
 
     // ── 6시간 간격 관측점 ──
     feats.filter(f => String(f.properties?.Class || '').startsWith('Point_Polygon_Point_'))

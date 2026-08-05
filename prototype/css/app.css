@@ -2049,3 +2049,6 @@ body.is-ambient #windLegend.on{ opacity:0; }
 @keyframes tcPulse{0%,100%{opacity:.9}50%{opacity:.45}}
 .tc-share{margin:16px 0 2px}
 .tc-share-b{font-weight:650}
+/* 태풍 정보창의 도움 화면 — 지구 스타일과 같은 동그라미(.ly)를 가로로 */
+.tc-lys{display:flex;gap:4px;flex-wrap:wrap}
+.tc-lys .ly{width:84px;flex:0 0 auto}

@@ -190,7 +190,9 @@ export const ITEMS = [
 ];
 
 /* 썸네일 — 구(球) 느낌만 나면 된다. 실제 지구를 렌더할 필요는 없다. */
-function drawThumb(cv, kind) {
+/* export — 태풍 정보창(ui-cyclone.js)이 같은 동그라미를 그린다.
+   받은 요청: "요거 메뉴는 지구 스타일 메뉴의 동그란 걸로 같은 걸로 넣어줘" */
+export function drawThumb(cv, kind) {
   const S = 124;                       // 레티나 대비 2배로 그린다
   cv.width = S; cv.height = S;
   const g = cv.getContext('2d');

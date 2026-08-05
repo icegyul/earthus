@@ -14,6 +14,7 @@ import { store } from './store.js';
 import { i18n } from './i18n.js';
 import { API } from './config.js';
 import { toast } from './ui.js';
+import { drawThumb } from './layerbar.js';
 
 const esc = (t) => String(t ?? '')
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -32,29 +33,50 @@ function div(cls, html) {
         기압배치: 고기압 가장자리(태풍이 타는 길)가 보인다
         바람:     조향류가 보인다
         구름:     히마와리 — 태풍 본체가 보인다
-        낙뢰:     최전선 대류가 보인다 */
+        낙뢰:     최전선 대류가 보인다
+   받은 요청: "지구 스타일 메뉴의 동그란 걸로 같은 걸로" —
+   layerbar 의 drawThumb/그림을 그대로 써서 같은 동그라미로 그린다. */
 const HELPERS = [
-  { id: 'pressure',  ko: '기압배치', en: 'Pressure' },
-  { id: 'wind',      ko: '바람',     en: 'Wind' },
-  { id: 'himawari',  ko: '구름(히마와리)', en: 'Clouds (Himawari)' },
-  { id: 'lightning', ko: '낙뢰',     en: 'Lightning' },
+  { id: 'pressure',  ko: '기압배치', en: 'Pressure',  paint: 'pressure' },
+  { id: 'wind',      ko: '바람',     en: 'Wind',      paint: 'wind' },
+  { id: 'himawari',  ko: '히마와리', en: 'Himawari',  img: 'img/sat-himawari.png', flag: '🇯🇵' },
+  { id: 'lightning', ko: '낙뢰',     en: 'Lightning', paint: 'quake' },
 ];
 
 function helperBar(ko) {
   const bar = div('tc-chips');
   bar.appendChild(div('tc-chips-t', ko ? '같이 보면 좋은 화면' : 'Helpful layers'));
+  const row = div('tc-lys');
   HELPERS.forEach(h => {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'tc-chip' + (store.isOn?.(h.id) || store.layers?.[h.id] ? ' on' : '');
-    b.textContent = ko ? h.ko : h.en;
+    b.className = 'ly' + (store.isOn?.(h.id) || store.layers?.[h.id] ? ' on' : '');
+    if (h.img) {
+      const im = document.createElement('img');
+      im.className = 'ly-sat'; im.src = h.img; im.alt = ''; im.loading = 'lazy';
+      b.appendChild(im);
+    } else {
+      const cv = document.createElement('canvas');
+      drawThumb(cv, h.paint);
+      b.appendChild(cv);
+    }
+    const n = div('ly-name');
+    if (h.flag) {
+      const fl = document.createElement('span');
+      fl.className = 'ly-flag'; fl.textContent = h.flag;
+      fl.setAttribute('aria-hidden', 'true');
+      n.appendChild(fl);
+    }
+    n.appendChild(document.createTextNode(ko ? h.ko : h.en));
+    b.appendChild(n);
     b.onclick = () => {
       const now = !(b.classList.contains('on'));
       store.setLayer(h.id, now);
       b.classList.toggle('on', now);
     };
-    bar.appendChild(b);
+    row.appendChild(b);
   });
+  bar.appendChild(row);
   return bar;
 }
 

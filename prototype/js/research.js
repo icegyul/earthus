@@ -2908,6 +2908,240 @@ function initSpatial() {
   if (dates.length) loadSpatialDay();
 }
 
+const PAIRED_HEADERS = [
+  'valid_kst', 'station_id', 'station_name', 'lat', 'lon', 'alt_m',
+  'model_a', 'model_b', 'lead_hour', 'variable', 'unit', 'observation',
+  'forecast_a', 'forecast_b', 'error_a', 'error_b', 'absolute_error_a',
+  'absolute_error_b', 'absolute_error_a_minus_b', 'lower_absolute_error_model',
+  'n', 'issued_kst', 'source', 'license', 'generated',
+];
+
+function buildPairedResult(day, modelA, modelB, lead, variable) {
+  const leadKey = `${lead}h`;
+  const rows = [];
+  Object.entries(day.hours || {}).sort(([left], [right]) => left.localeCompare(right, 'en'))
+    .forEach(([valid, hour]) => {
+      [...(hour.cases || [])].sort((left, right) => Number(left.stationId) - Number(right.stationId))
+        .forEach(item => {
+          const stationId = String(item.stationId);
+          const meta = day.stationMeta?.[stationId] || {};
+          const observation = item.observation?.[variable];
+          const forecastA = item.forecasts?.[modelA]?.[leadKey]?.[variable];
+          const forecastB = item.forecasts?.[modelB]?.[leadKey]?.[variable];
+          const validA = finite(observation) && finite(forecastA);
+          const validB = finite(observation) && finite(forecastB);
+          const paired = modelA !== modelB && validA && validB;
+          const errorA = validA ? rounded(Number(forecastA) - Number(observation)) : null;
+          const errorB = validB ? rounded(Number(forecastB) - Number(observation)) : null;
+          const absoluteA = validA ? Math.abs(errorA) : null;
+          const absoluteB = validB ? Math.abs(errorB) : null;
+          const difference = paired ? rounded(absoluteA - absoluteB) : null;
+          const lower = !paired ? '' : absoluteA < absoluteB ? modelA : absoluteB < absoluteA ? modelB : 'tie';
+          rows.push([
+            valid, stationId, meta.name, meta.lat, meta.lon, meta.alt,
+            modelA, modelB, Number(lead), variable, variableInfo(variable).unit, observation,
+            forecastA, forecastB, errorA, errorB, absoluteA, absoluteB, difference, lower,
+            paired ? 1 : 0, hour.issues?.[leadKey] ? formatIssue(hour.issues[leadKey]) : '',
+            day.source, day.license, day.generated,
+          ]);
+        });
+    });
+  const pairedRows = rows.filter(row => row[20] === 1);
+  const errorsA = pairedRows.map(row => Number(row[14]));
+  const errorsB = pairedRows.map(row => Number(row[15]));
+  const absoluteA = pairedRows.map(row => Number(row[16]));
+  const absoluteB = pairedRows.map(row => Number(row[17]));
+  const differences = pairedRows.map(row => Number(row[18])).sort((left, right) => left - right);
+  const n = pairedRows.length;
+  const average = values => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+  return {
+    date: day.date,
+    modelA,
+    modelB,
+    lead: Number(lead),
+    variable,
+    unit: variableInfo(variable).unit,
+    headers: PAIRED_HEADERS,
+    rows,
+    actualTimes: Object.keys(day.hours || {}).sort(),
+    stats: {
+      totalRows: rows.length,
+      n,
+      missingObservation: rows.filter(row => !finite(row[11])).length,
+      missingModelA: rows.filter(row => !finite(row[12])).length,
+      missingModelB: rows.filter(row => !finite(row[13])).length,
+      modelALower: pairedRows.filter(row => row[19] === modelA).length,
+      modelBLower: pairedRows.filter(row => row[19] === modelB).length,
+      ties: pairedRows.filter(row => row[19] === 'tie').length,
+      meA: average(errorsA),
+      meB: average(errorsB),
+      maeA: average(absoluteA),
+      maeB: average(absoluteB),
+      rmseA: n ? Math.sqrt(errorsA.reduce((sum, value) => sum + value ** 2, 0) / n) : null,
+      rmseB: n ? Math.sqrt(errorsB.reduce((sum, value) => sum + value ** 2, 0) / n) : null,
+      meanAbsoluteErrorDifference: average(differences),
+      medianAbsoluteErrorDifference: linearQuantile(differences, .5),
+    },
+    source: day.source,
+    license: day.license,
+    generated: day.generated,
+  };
+}
+
+function pairedFilename(result, extension) {
+  const compact = value => String(value || 'none').replace(/[^0-9a-z_-]+/gi, '-');
+  return `earthus-paired-model-${compact(result.date)}-${compact(result.modelA)}-vs-${compact(result.modelB)}-${compact(result.lead)}h-${compact(result.variable)}.${extension}`;
+}
+
+function pairedSvgMarkup(result) {
+  const pairedRows = result.rows.filter(row => row[20] === 1);
+  if (result.modelA === result.modelB || !pairedRows.length) return '';
+  const width = 900;
+  const sourceLines = svgLines(result.source, 112);
+  const height = 700 + sourceLines.length * 18;
+  const plot = { left: 72, top: 122, size: 420 };
+  const right = plot.left + plot.size;
+  const bottom = plot.top + plot.size;
+  const observedMaximum = Math.max(...pairedRows.flatMap(row => [Number(row[16]), Number(row[17])]));
+  const maximum = observedMaximum > 0 ? observedMaximum * 1.05 : 1;
+  const x = value => plot.left + Number(value) / maximum * plot.size;
+  const y = value => bottom - Number(value) / maximum * plot.size;
+  const stat = value => finite(value) ? Number(value).toFixed(3) : 'NA';
+  const color = row => row[19] === result.modelA ? '#3b8f79' : row[19] === result.modelB ? '#7059c7' : '#7a8089';
+  const chunks = [
+    `<svg id="pairedSvg" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="pairedTitle pairedDesc" xmlns="http://www.w3.org/2000/svg">`,
+    `<title id="pairedTitle">${html(result.date)} ${html(modelName(result.modelA))}와 ${html(modelName(result.modelB))}의 같은 표본 절대오차 비교</title>`,
+    `<desc id="pairedDesc">같은 지점, 같은 유효시각, 같은 관측값을 가진 표본의 두 모델 절대오차 산점도. 대각선 위는 모델 A 절대오차가 더 작고 아래는 모델 B가 더 작음.</desc>`,
+    `<rect width="${width}" height="${height}" fill="#f7f7f4"/>`,
+    `<text x="34" y="38" fill="#15171c" font-size="23" font-family="sans-serif" font-weight="700">${html(modelName(result.modelA))} vs ${html(modelName(result.modelB))} · ${html(result.lead)}h · ${html(variableInfo(result.variable).name)}</text>`,
+    `<text x="34" y="63" fill="#5d626c" font-size="11" font-family="monospace">${html(result.date)} · same station/time/observation · absolute forecast error (${html(result.unit)})</text>`,
+    `<text x="34" y="88" fill="#30343b" font-size="11" font-family="monospace">paired n ${result.stats.n}/${result.stats.totalRows} · actual times ${result.actualTimes.length} · missing obs ${result.stats.missingObservation} · A ${result.stats.missingModelA} · B ${result.stats.missingModelB}</text>`,
+  ];
+  for (let tick = 0; tick <= 4; tick += 1) {
+    const value = maximum * tick / 4;
+    const px = x(value);
+    const py = y(value);
+    chunks.push(`<line x1="${px}" y1="${plot.top}" x2="${px}" y2="${bottom}" stroke="#d6d8dc"/>`);
+    chunks.push(`<line x1="${plot.left}" y1="${py}" x2="${right}" y2="${py}" stroke="#d6d8dc"/>`);
+    chunks.push(`<text x="${px}" y="${bottom + 18}" text-anchor="middle" fill="#60656e" font-size="9" font-family="monospace">${value.toFixed(2)}</text>`);
+    chunks.push(`<text x="${plot.left - 9}" y="${py + 3}" text-anchor="end" fill="#60656e" font-size="9" font-family="monospace">${value.toFixed(2)}</text>`);
+  }
+  chunks.push(`<rect x="${plot.left}" y="${plot.top}" width="${plot.size}" height="${plot.size}" fill="none" stroke="#aeb2b8"/>`);
+  chunks.push(`<line x1="${plot.left}" y1="${bottom}" x2="${right}" y2="${plot.top}" stroke="#42474f" stroke-width="1.5" stroke-dasharray="5 4"/>`);
+  pairedRows.forEach(row => {
+    chunks.push(`<circle data-paired-point="${html(`${row[0]}-${row[1]}`)}" cx="${x(row[16]).toFixed(2)}" cy="${y(row[17]).toFixed(2)}" r="3.2" fill="${color(row)}" fill-opacity=".62" stroke="#fff" stroke-width=".6"><title>${html(row[2] || row[1])} (${html(row[1])}) · ${html(row[0])} · ${html(modelName(result.modelA))} |error| ${Number(row[16]).toFixed(3)} · ${html(modelName(result.modelB))} |error| ${Number(row[17]).toFixed(3)} · lower ${html(row[19] === 'tie' ? 'tie' : modelName(row[19]))} · n=${row[20]}</title></circle>`);
+  });
+  chunks.push(`<text x="${(plot.left + right) / 2}" y="${bottom + 43}" text-anchor="middle" fill="#30343b" font-size="11" font-family="monospace">${html(modelName(result.modelA))} absolute error (${html(result.unit)})</text>`);
+  chunks.push(`<text x="20" y="${(plot.top + bottom) / 2}" text-anchor="middle" fill="#30343b" font-size="11" font-family="monospace" transform="rotate(-90 20 ${(plot.top + bottom) / 2})">${html(modelName(result.modelB))} absolute error (${html(result.unit)})</text>`);
+  const sideX = 544;
+  chunks.push(`<text x="${sideX}" y="145" fill="#30343b" font-size="12" font-family="sans-serif" font-weight="700">같은 표본 요약</text>`);
+  chunks.push(`<circle cx="${sideX + 5}" cy="174" r="5" fill="#3b8f79"/><text x="${sideX + 18}" y="178" fill="#30343b" font-size="10" font-family="monospace">A lower |error| ${result.stats.modelALower}</text>`);
+  chunks.push(`<circle cx="${sideX + 5}" cy="199" r="5" fill="#7059c7"/><text x="${sideX + 18}" y="203" fill="#30343b" font-size="10" font-family="monospace">B lower |error| ${result.stats.modelBLower}</text>`);
+  chunks.push(`<circle cx="${sideX + 5}" cy="224" r="5" fill="#7a8089"/><text x="${sideX + 18}" y="228" fill="#30343b" font-size="10" font-family="monospace">tie ${result.stats.ties}</text>`);
+  chunks.push(`<text x="${sideX}" y="270" fill="#3b8f79" font-size="11" font-family="monospace">A MAE ${stat(result.stats.maeA)} · RMSE ${stat(result.stats.rmseA)}</text>`);
+  chunks.push(`<text x="${sideX}" y="294" fill="#7059c7" font-size="11" font-family="monospace">B MAE ${stat(result.stats.maeB)} · RMSE ${stat(result.stats.rmseB)}</text>`);
+  chunks.push(`<text x="${sideX}" y="326" fill="#30343b" font-size="10" font-family="monospace">mean |error| A−B ${stat(result.stats.meanAbsoluteErrorDifference)}</text>`);
+  chunks.push(`<text x="${sideX}" y="348" fill="#30343b" font-size="10" font-family="monospace">median |error| A−B ${stat(result.stats.medianAbsoluteErrorDifference)}</text>`);
+  chunks.push(`<text x="${sideX}" y="396" fill="#3b8f79" font-size="10" font-family="monospace">above diagonal: A lower</text>`);
+  chunks.push(`<text x="${sideX}" y="418" fill="#7059c7" font-size="10" font-family="monospace">below diagonal: B lower</text>`);
+  chunks.push(`<text x="34" y="620" fill="#a45b08" font-size="11" font-family="sans-serif">같은 관측 표본만 대조했습니다. 한 날짜의 결과는 장기 모델 성능 순위가 아닙니다.</text>`);
+  chunks.push(`<text x="34" y="642" fill="#5d626c" font-size="10" font-family="monospace">A=${html(result.modelA)} · B=${html(result.modelB)} · missing one side excluded from paired n</text>`);
+  sourceLines.forEach((line, index) => chunks.push(`<text x="34" y="${670 + index * 18}" fill="#087f5b" font-size="10" font-family="monospace">source: ${html(line)}</text>`));
+  chunks.push(`<text x="34" y="${682 + sourceLines.length * 18}" fill="#6b7079" font-size="10" font-family="monospace">source generated: ${html(result.generated)} · license: ${html(result.license)}</text>`);
+  chunks.push('</svg>');
+  return chunks.join('');
+}
+
+function refillPairedControls(day) {
+  const previous = {
+    modelA: $('#pairedModelA').value,
+    modelB: $('#pairedModelB').value,
+    lead: $('#pairedLead').value,
+    variable: $('#pairedVariable').value,
+  };
+  const modelOptions = (day.models || []).map(model => `<option value="${html(model)}">${html(modelName(model))}</option>`).join('');
+  $('#pairedModelA').innerHTML = modelOptions;
+  $('#pairedModelB').innerHTML = modelOptions;
+  $('#pairedLead').innerHTML = (day.leadsHours || []).map(lead => `<option value="${html(lead)}">${html(lead)}시간</option>`).join('');
+  $('#pairedVariable').innerHTML = (day.vars || []).map(variable => `<option value="${html(variable)}">${html(variableInfo(variable).name)} (${html(variableInfo(variable).unit)})</option>`).join('');
+  setSelectValue('#pairedModelA', previous.modelA);
+  setSelectValue('#pairedModelB', previous.modelB || day.models?.[1]);
+  setSelectValue('#pairedLead', previous.lead);
+  setSelectValue('#pairedVariable', previous.variable);
+  if ($('#pairedModelA').value === $('#pairedModelB').value && day.models?.length > 1) {
+    $('#pairedModelB').value = day.models.find(model => model !== $('#pairedModelA').value);
+  }
+}
+
+function renderPaired() {
+  const day = state.pairedDay;
+  if (!day) return;
+  const result = buildPairedResult(
+    day,
+    $('#pairedModelA').value,
+    $('#pairedModelB').value,
+    $('#pairedLead').value,
+    $('#pairedVariable').value,
+  );
+  const markup = pairedSvgMarkup(result);
+  state.pairedResult = result;
+  $('.paired-canvas').innerHTML = markup || '<p class="figure-empty">서로 다른 두 모델의 유효한 같은 표본이 없습니다.</p>';
+  $('#downloadPairedCsv').disabled = !result.rows.length || result.modelA === result.modelB;
+  $('#downloadPairedSvg').disabled = !markup;
+  $('#pairedWarning').textContent = `${result.date} · ${modelName(result.modelA)} vs ${modelName(result.modelB)} · ${result.lead}시간 · ${variableInfo(result.variable).name} · paired n=${result.stats.n}/${result.stats.totalRows}`;
+}
+
+function keepPairedModelsDistinct(changed) {
+  const models = state.pairedDay?.models || [];
+  const modelA = $('#pairedModelA').value;
+  const modelB = $('#pairedModelB').value;
+  if (modelA === modelB && models.length > 1) {
+    if (changed === 'a') $('#pairedModelB').value = models.find(model => model !== modelA);
+    else $('#pairedModelA').value = models.find(model => model !== modelB);
+  }
+  renderPaired();
+}
+
+async function loadPairedDay() {
+  const date = $('#pairedDate').value;
+  $('#downloadPairedCsv').disabled = true;
+  $('#downloadPairedSvg').disabled = true;
+  $('#pairedWarning').textContent = `${date || '날짜 없음'} 실제 공개 사례를 불러오는 중입니다.`;
+  try {
+    const day = state.extractCache.cases[date] || await json(state.caseIndex.dates[date].path);
+    state.extractCache.cases[date] = day;
+    state.pairedDay = day;
+    refillPairedControls(day);
+    renderPaired();
+  } catch (error) {
+    state.pairedDay = null;
+    $('.paired-canvas').innerHTML = `<p class="figure-empty">사례 파일을 읽지 못했습니다. (${html(error.message)})</p>`;
+    $('#pairedWarning').textContent = '실제 사례를 읽지 못해 모델 대조를 만들지 않았습니다.';
+  }
+}
+
+function initPaired() {
+  const dates = Object.keys(state.caseIndex?.dates || {}).sort();
+  $('#pairedDate').innerHTML = dates.map(date => `<option value="${html(date)}">${html(date)}</option>`).join('');
+  if (dates.length) $('#pairedDate').value = dates.at(-1);
+  $('#pairedDate').addEventListener('change', loadPairedDay);
+  $('#pairedModelA').addEventListener('change', () => keepPairedModelsDistinct('a'));
+  $('#pairedModelB').addEventListener('change', () => keepPairedModelsDistinct('b'));
+  ['#pairedLead', '#pairedVariable'].forEach(selector => $(selector).addEventListener('change', renderPaired));
+  $('#downloadPairedCsv').addEventListener('click', () => {
+    const result = state.pairedResult;
+    if (!result?.rows.length || result.modelA === result.modelB) return;
+    download(pairedFilename(result, 'csv'), result.headers, result.rows);
+  });
+  $('#downloadPairedSvg').addEventListener('click', () => {
+    const result = state.pairedResult;
+    const markup = result && pairedSvgMarkup(result);
+    if (!markup) return;
+    downloadText(pairedFilename(result, 'svg'), `${markup}\n`, 'image/svg+xml;charset=utf-8');
+  });
+  if (dates.length) loadPairedDay();
+}
+
 const FIGURE_METRICS = {
   mae: { name: 'MAE', description: 'Mean absolute error' },
   me: { name: 'ME', description: 'Mean forecast minus observation' },
@@ -3163,6 +3397,7 @@ async function boot() {
     initTrace();
     initDistribution();
     initSpatial();
+    initPaired();
     initFigure();
     initWorksheet();
   } catch (error) {

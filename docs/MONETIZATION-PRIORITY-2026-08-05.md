@@ -153,6 +153,10 @@ earthus의 유료 명분은 `이 값을 믿을 수 있는가`인데, 추천 결�
 
 ## 10. 2026-08-06 실행 기록
 
+- Paired Model Comparison에서 실제 사례 날짜·서로 다른 모델 A/B·24/48시간·변수를
+  골라 같은 지점·시각·관측 표본만 두 모델 절대오차로 대조한다. CSV와 대각선 산점도에
+  paired n·한쪽 결측·A/B가 더 작은 절대오차인 표본 수·각 모델 ME/MAE/RMSE·평균/중앙
+  `|error| A−B`·출처·원본 생성시각을 남기며, 한 날짜를 장기 성능 순위로 쓰지 않는다.
 - Spatial Error Plot의 CSV·SVG·`earthus.spatial-error-manifest.v1`·README·검증
   Python을 재현 ZIP으로 묶었다. manifest에 유효시각·공간 범위·통계·파일 해시·CSV
   18개 열·방법·출처를 기록하고, 검증기는 해시·SVG XML·열/행뿐 아니라 선택 조건·결측

@@ -138,6 +138,10 @@ export const askPanel = {
         body.appendChild(el('p', 'ask-warn', ko
           ? '⚠️ 이 자료는 재배포 조건이 확인되지 않았습니다. 인용은 가능하지만 자료 자체를 다시 배포하기 전에 확인이 필요합니다.'
           : '⚠️ Redistribution terms for this source are unverified. Citing is fine; redistributing the data itself needs checking first.'));
+      } else if (s.license?.status === 'per-item') {
+        body.appendChild(el('p', 'ask-warn', ko
+          ? '⚠️ 이 소스는 항목마다 라이선스가 다릅니다. 표시된 저작자·라이선스·원본 페이지를 각각 확인해야 합니다.'
+          : '⚠️ Each item from this source has its own licence. Check the displayed creator, licence, and original file page for every item.'));
       }
       d.appendChild(body);
       n.appendChild(d);

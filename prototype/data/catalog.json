@@ -1,9 +1,9 @@
 {
  "schema": 1,
- "generated": "2026-08-05T18:38:00Z",
+ "generated": "2026-08-05T18:42:00Z",
  "note": {
-  "ko": "earthus 가 쓰는 자료의 목록이다. 사람(보고서 '자료와 방법'), 파이프라인(access 로 실제 수집), 챗 라우터(keywords 로 질문 연결)가 모두 이 파일 하나를 쓴다. 인용문은 doi.org 서지정보에서 생성한 것이며 사람이 쓰지 않았다. 라이선스가 'UNVERIFIED' 인 항목은 공개 배포 전에 반드시 확인해야 한다.",
-  "en": "The list of sources earthus uses. One file serves humans (the report's Data and Methods section), pipelines (fetching via access), and the chat router (matching questions via keywords). Citations are generated from doi.org metadata, not written by hand. Entries marked 'UNVERIFIED' must be checked before any public redistribution."
+  "ko": "earthus 가 쓰는 자료의 목록이다. 사람(보고서 '자료와 방법'), 파이프라인(access 로 실제 수집), 챗 라우터(keywords 로 질문 연결)가 모두 이 파일 하나를 쓴다. 인용문은 doi.org 서지정보에서 생성한 것이며 사람이 쓰지 않았다. 라이선스가 'UNVERIFIED' 인 항목은 공개 배포 전에 반드시 확인해야 한다. 'WIKIMEDIA-PER-FILE' 은 파일별 조건을 각각 표시해야 한다.",
+  "en": "The list of sources earthus uses. One file serves humans (the report's Data and Methods section), pipelines (fetching via access), and the chat router (matching questions via keywords). Citations are generated from doi.org metadata, not written by hand. Entries marked 'UNVERIFIED' must be checked before any public redistribution. 'WIKIMEDIA-PER-FILE' requires displaying each file's own terms."
  },
  "tiers": {
   "A": {
@@ -918,17 +918,22 @@
     "format": "json",
     "cors": true
    },
-   "licenseNote": "사진마다 라이선스가 다르다(CC0·CC BY·CC BY-SA). 사진 단위로 표시해야 한다.",
+   "licenseNote": "자유 이용 파일만 조회하고, 저작자·라이선스명·원본 파일 페이지를 파일별로 표시한다. 조건을 확인하지 못하면 사진을 쓰지 않는다.",
    "why": {
     "ko": "⚠️ 좌표 반경 안에서 찍힌 사진이지 '그 대상을 찍은 사진'이 아니다. 실측: 인천공항 좌표로 찾으면 「The Bookstore」 같은 무관한 것도 온다. 화면에 '이 근처에서 찍힌 사진'이라고 쓰고 저작자·라이선스를 반드시 붙인다.",
     "en": "⚠️ These are photos taken *near* a coordinate, not photos *of* the subject. Measured: searching Incheon Airport's coordinate also returns things like 'The Bookstore'. Label them as taken nearby and always show author and licence."
    },
    "usedBy": [],
    "license": {
-    "id": "UNVERIFIED",
-    "ko": "라이선스 미확인 — 공개 배포 전 반드시 확인할 것",
-    "en": "Licence not verified — must be checked before any public redistribution",
-    "status": "unverified"
+    "id": "WIKIMEDIA-PER-FILE",
+    "ko": "파일별 자유 라이선스 — 저작자·조건·원본 파일 페이지를 각각 표시",
+    "en": "Per-file free licence — show each creator, terms, and original file page",
+    "url": "https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia/en",
+    "status": "per-item",
+    "warn": {
+     "ko": "⚠️ Commons 전체에 하나의 라이선스가 있는 것이 아니다. 각 파일 설명 페이지의 저작자·라이선스·변경 조건을 따로 따라야 한다.",
+     "en": "⚠️ Commons has no single blanket licence. Follow the creator, licence, and modification terms on each file description page."
+    }
    }
   },
   {

@@ -181,6 +181,8 @@ export const stationSheet = {
         license: em.LicenseShortName?.value || '',
         author,
       };
-    }).filter(p => p.thumb).slice(0, 6);
+    /* 파일 설명 페이지의 최소 귀속 정보를 못 받으면 사진을 보이지 않는다.
+       Commons 전체를 하나의 라이선스로 간주하면 안 된다. */
+    }).filter(p => p.thumb && p.page && p.license && p.author).slice(0, 6);
   },
 };

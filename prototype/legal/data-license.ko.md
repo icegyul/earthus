@@ -92,6 +92,7 @@
 | NASA GIBS · JAXA Himawari · EU JRC (GDACS) | 각 기관 조건 |
 | Open-Meteo | 자료는 CC BY 4.0. 단, 무료 호스팅 API는 비상업 이용 전용 |
 | CelesTrak (위성 OMM · SATCAT) | 무료 공개·요청 정책 확인. 별도 재배포 라이선스는 미확인 |
+| Wikimedia Commons (위성·관측소 사진) | 파일마다 다름. 각 저작자·라이선스·원본 파일 페이지를 개별 표시 |
 
 ⚠️ **자료 라이선스와 API 서버 이용권은 다릅니다.** Open-Meteo가 돌려주는 기상
 자료는 CC BY 4.0이지만, `api.open-meteo.com` 무료 서버는 구독·광고가 없는
@@ -110,6 +111,18 @@ Open-Meteo 상업 이용 전환 확인값이 함께 참이어야 결제를 시�
 보고 퍼블릭 도메인이나 자유 라이선스라고 쓰지 않습니다.
 
 CelesTrak 이용 정책: https://celestrak.org/usage-policy.php
+
+⚠️ Wikimedia Commons는 사진 저장소 전체를 덮는 하나의 라이선스가 없습니다.
+각 파일의 설명 페이지에서 원 저작자(단순 업로더가 아님), 구체적인 라이선스,
+변경 시 동일조건변경허락 의무 등을 확인해야 합니다. 원본 파일을 직접 링크해도
+이 의무가 사라지지 않습니다.
+
+earthus는 Wikimedia API에서 자유 이용 파일만 요청하고, 파일별 저작자·라이선스명·
+원본 파일 페이지를 함께 표시합니다. 이 조건을 받지 못하면 실사진을 쓰지 않고
+개념도로 돌아갑니다.
+
+Wikimedia Commons 재사용 지침:
+https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia/en
 
 ⚠️ OSM 에서 온 지리 자료(해변·낚시 지점·등산로)는 **ODbL 의 파생물**입니다.
 저희 가공분에는 저희 권리가 있지만, 원본 부분은 ODbL 을 따릅니다 —

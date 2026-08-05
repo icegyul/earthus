@@ -39,7 +39,8 @@ OUT = os.path.join(os.path.dirname(__file__), "..", "..",
 UA = {"User-Agent": "earthus-catalog/0.1 (+globe app)"}
 
 # ── 라이선스 사전 ───────────────────────────────────────────────
-# ⚠️ status: verified 는 근거를 확인한 것만. 나머지는 unverified 로 남긴다.
+# ⚠️ status: verified 는 소스 전체에 하나의 확인된 조건을 적용할 수 있을 때만 쓴다.
+# per-item 은 각 항목의 조건을 화면에서 개별 확인해야 한다는 뜻이다.
 LIC = {
     "usgov-pd": {
         "id": "US-Gov-Public-Domain",
@@ -73,6 +74,17 @@ LIC = {
         "en": "Creative Commons Attribution 4.0 International",
         "url": "https://creativecommons.org/licenses/by/4.0/",
         "status": "verified",
+    },
+    "wikimedia-per-item": {
+        "id": "WIKIMEDIA-PER-FILE",
+        "ko": "파일별 자유 라이선스 — 저작자·조건·원본 파일 페이지를 각각 표시",
+        "en": "Per-file free licence — show each creator, terms, and original file page",
+        "url": "https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia/en",
+        "status": "per-item",
+        "warn": {
+            "ko": "⚠️ Commons 전체에 하나의 라이선스가 있는 것이 아니다. 각 파일 설명 페이지의 저작자·라이선스·변경 조건을 따로 따라야 한다.",
+            "en": "⚠️ Commons has no single blanket licence. Follow the creator, licence, and modification terms on each file description page.",
+        },
     },
     "unverified": {
         "id": "UNVERIFIED",
@@ -467,8 +479,8 @@ DATASETS = [
         "spatial": "전지구", "temporal": "상시",
         "access": {"method": "https", "url": "https://commons.wikimedia.org/w/api.php",
                    "format": "json", "cors": True},
-        "license": "unverified",
-        "licenseNote": "사진마다 라이선스가 다르다(CC0·CC BY·CC BY-SA). 사진 단위로 표시해야 한다.",
+        "license": "wikimedia-per-item",
+        "licenseNote": "자유 이용 파일만 조회하고, 저작자·라이선스명·원본 파일 페이지를 파일별로 표시한다. 조건을 확인하지 못하면 사진을 쓰지 않는다.",
         "why": {"ko": "⚠️ 좌표 반경 안에서 찍힌 사진이지 '그 대상을 찍은 사진'이 아니다. "
                       "실측: 인천공항 좌표로 찾으면 「The Bookstore」 같은 무관한 것도 온다. "
                       "화면에 '이 근처에서 찍힌 사진'이라고 쓰고 저작자·라이선스를 반드시 붙인다.",
@@ -710,12 +722,13 @@ def main():
                   "파이프라인(access 로 실제 수집), 챗 라우터(keywords 로 질문 연결)가 "
                   "모두 이 파일 하나를 쓴다. "
                   "인용문은 doi.org 서지정보에서 생성한 것이며 사람이 쓰지 않았다. "
-                  "라이선스가 'UNVERIFIED' 인 항목은 공개 배포 전에 반드시 확인해야 한다.",
+                  "라이선스가 'UNVERIFIED' 인 항목은 공개 배포 전에 반드시 확인해야 한다. "
+                  "'WIKIMEDIA-PER-FILE' 은 파일별 조건을 각각 표시해야 한다.",
             "en": "The list of sources earthus uses. One file serves humans (the report's Data and "
                   "Methods section), pipelines (fetching via access), and the chat router (matching "
                   "questions via keywords). Citations are generated from doi.org metadata, not "
                   "written by hand. Entries marked 'UNVERIFIED' must be checked before any public "
-                  "redistribution.",
+                  "redistribution. 'WIKIMEDIA-PER-FILE' requires displaying each file's own terms.",
         },
         "tiers": TIERS,
         "counts": {},
@@ -730,8 +743,8 @@ def main():
     size = os.path.getsize(OUT)
     print(f"\n✅ {os.path.abspath(OUT)}  {size/1024:.0f}KB")
     print(f"   자료 {len(out)}개  등급별 {doc['counts']}")
-    unver = [d["id"] for d in out if d["license"]["status"] == "unverified"]
-    print(f"   ⚠️ 라이선스 확인 필요 {len(unver)}개: {', '.join(unver)}")
+    attention = [d["id"] for d in out if d["license"]["status"] != "verified"]
+    print(f"   ⚠️ 라이선스 개별 조건/확인 필요 {len(attention)}개: {', '.join(attention)}")
     cited = [d["id"] for d in out if d.get("citation")]
     print(f"   인용문 생성됨 {len(cited)}개")
     return 0

@@ -496,6 +496,18 @@ export const layerBar = {
       tab.classList.toggle('sub', this.open && !!this.sub);
       main.setAttribute('aria-hidden', String(!this.open));
       sub.setAttribute('aria-hidden', String(!(this.open && this.sub)));
+      /* ⚠️⚠️ aria-hidden 만으로는 **키보드 탭이 그대로 들어간다.** (감사 P2-2)
+         화면 밖으로 밀어 둔 메뉴 버튼들이 탭 순서에 남아, 탭을 누르면
+         보이지도 않는 것에 포커스가 갔다. inert 가 그걸 통째로 막는다.
+         ⚠️ inert 를 모르는 브라우저를 위해 지원 여부를 보고 tabindex 도 함께 끈다. */
+      const seal = (el, off) => {
+        if ('inert' in HTMLElement.prototype) { el.inert = off; return; }
+        el.querySelectorAll('button,a,input,select,textarea,[tabindex]')
+          .forEach(n => { if (off) { n.setAttribute('tabindex', '-1'); }
+                          else { n.removeAttribute('tabindex'); } });
+      };
+      seal(main, !this.open);
+      seal(sub, !(this.open && this.sub));
       tab.setAttribute('aria-expanded', String(this.open));
       // 열린 쪽 버튼만 펼침 표시
       main.querySelectorAll('[data-open]').forEach(b => {

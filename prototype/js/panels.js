@@ -9,8 +9,43 @@
 /** 열려 있는 패널을 찾는 셀렉터 — 새 패널을 만들면 여기 추가할 것 */
 export const OPEN_PANELS = '#sheet.up, #settings.up, .sheet-panel.up';
 
+/* ── 접근성: 패널이 열릴 때 의미 구조를 붙인다 ────────────────────
+   받은 감사(P2-4): 시트들은 눈에는 모달인데 role="dialog"·aria-modal·
+   aria-labelledby 가 없어 스크린리더에는 그냥 글 뭉치였다.
+   ⚠️ 29개 시트에 손으로 다는 대신 **열릴 때 자동으로** 붙인다 —
+      손으로 달면 새 시트가 생길 때마다 빠뜨린다(검색 목록에서 이미 겪었다).
+   ⚠️ 닫힌 패널은 inert 로 탭 순서에서도 뺀다. 화면 밖에 있는데 탭이 들어가면
+      "탭을 눌렀는데 아무 데도 안 간다"가 된다. */
+function markA11y(el) {
+  if (!el || el.dataset.a11y) return;
+  el.dataset.a11y = '1';
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-modal', 'true');
+  const h = el.querySelector('h3, h2, .sheet-title, #sheetTitle');
+  if (h) {
+    if (!h.id) h.id = 'ttl-' + (el.id || Math.random().toString(36).slice(2, 8));
+    el.setAttribute('aria-labelledby', h.id);
+  } else if (!el.getAttribute('aria-label')) {
+    el.setAttribute('aria-label', '정보 창');
+  }
+}
+
+/** 열림/닫힘에 맞춰 role 과 inert 를 유지한다 */
+function syncA11y() {
+  document.querySelectorAll('#sheet, #settings, .sheet-panel').forEach(el => {
+    const open = el.classList.contains('up');
+    if (open) markA11y(el);
+    if ('inert' in HTMLElement.prototype) el.inert = !open;
+    el.setAttribute('aria-hidden', String(!open));
+  });
+}
+
 export const panels = {
   init() {
+    /* 클래스가 바뀔 때마다 맞춘다 — 여는 곳이 수십 군데라 한 곳에서 감시한다 */
+    new MutationObserver(syncA11y).observe(document.body,
+      { subtree: true, attributes: true, attributeFilter: ['class'] });
+    syncA11y();
     // 배경(지구) 탭 → 가장 위 패널 닫기
     // ⚠️ 캔버스에서 시작한 입력만 본다. 패널 안을 스크롤하다 손을 떼는 걸
     //    "바깥 클릭"으로 오인하면 읽는 중에 패널이 닫혀버린다.

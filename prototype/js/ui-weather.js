@@ -56,7 +56,18 @@ export const weatherPanel = {
        ⚠️ #ambient 전체를 pointer-events:auto 로 되돌리면 안 된다 —
           그러면 지구를 돌리려고 화면 위쪽을 잡았을 때 텍스트가 먹어버린다.
           누를 수 있어야 하는 건 아래 온도 덩어리 하나뿐이다. (CSS 에서 지정) */
-    $('#ambBottom')?.addEventListener('click', () => this.open());
+    const amb = $('#ambBottom');
+    amb?.addEventListener('click', () => this.open());
+    /* ⚠️ role="button" tabindex="0" 만 붙여 놓고 click 만 듣고 있었다 —
+       키보드로는 포커스는 가는데 Enter·Space 로 열리지 않았다. (감사 P2-3)
+       기본 <button> 이 공짜로 주는 동작이라, 흉내 냈으면 끝까지 흉내 내야 한다.
+       ⚠️ Space 는 기본 동작(화면 스크롤)을 막아야 한다. */
+    amb?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+        this.open();
+      }
+    });
     return this;
   },
 

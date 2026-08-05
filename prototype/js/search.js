@@ -120,6 +120,8 @@ export const search = {
     const box = $('#searchBox');
     if (!box) return this;
     const input = $('#searchInput');
+    // 처음부터 닫혀 있으니 탭 순서에서도 빼 둔다
+    if ('inert' in HTMLElement.prototype) box.inert = true;
 
     $('#searchBtn')?.addEventListener('click', () => this.open());
     $('#searchClose')?.addEventListener('click', () => this.close());
@@ -153,8 +155,11 @@ export const search = {
     const box = $('#searchBox'), input = $('#searchInput');
     if (!box) return;
     this.on = true;
+    this._returnTo = document.activeElement;   // 닫을 때 여기로 포커스를 돌려준다
     box.classList.add('on');
     box.setAttribute('aria-hidden', 'false');
+    /* ⚠️ 닫혀 있을 때 탭 순서에서 빼 두었던 것을 되돌린다 (아래 close 참고) */
+    if ('inert' in HTMLElement.prototype) box.inert = false;
     input.value = '';
     this.render('');
     this._load();                       // 배경에서 장소 자료를 받아 둔다
@@ -170,6 +175,13 @@ export const search = {
     box.classList.remove('on');
     box.setAttribute('aria-hidden', 'true');
     $('#searchInput').blur();
+    /* ⚠️⚠️ opacity·pointer-events 로만 숨겨서 **닫힌 검색창이 탭 순서에 남아 있었다.**
+       (감사 P2-2) 탭을 누르면 보이지도 않는 입력칸과 ✕ 로 포커스가 갔다.
+       inert 로 통째로 막는다. */
+    if ('inert' in HTMLElement.prototype) box.inert = true;
+    /* 열기 전에 있던 자리로 포커스를 돌려준다 — 안 돌려주면 탭이 문서 맨 앞에서 다시 시작한다 */
+    try { this._returnTo?.focus?.(); } catch (_) {}
+    this._returnTo = null;
   },
 
   /* ── 장소 자료 (한 번만 받는다) ───────────────────────────── */

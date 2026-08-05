@@ -187,19 +187,29 @@ export const subscribeSheet = {
        전자상거래법상 신고 없이 통신판매를 하는 것 자체가 위반이다.
        결제 코드는 다 되어 있고 테스트 키로 결제창까지 확인했지만,
        **된다고 여는 것과 열어도 되는 것은 다르다.**
-       ⚠️ 신고번호가 나오면 config.local.js 의 SALES_OPEN 을 true 로 바꾼다.
-          그 한 줄이 유료 판매의 스위치다 — 코드를 다시 고칠 필요가 없다. */
-    const provs = CONFIG.SALES_OPEN ? billing.providers() : [];
+       ⚠️ 신고번호만으로는 부족하다. Open-Meteo 무료 호스팅 API는 비상업 전용이라
+          유료 customer-api 전환 또는 셀프호스팅 검증 뒤
+          OPEN_METEO_COMMERCIAL_READY도 true여야 한다. 둘 중 하나만 켜서는 안 열린다. */
+    const dataReady = CONFIG.OPEN_METEO_COMMERCIAL_READY === true;
+    const salesReady = CONFIG.SALES_OPEN && dataReady;
+    const provs = salesReady ? billing.providers() : [];
     if (!provs.length) {
       /* ⚠️ 여기가 지금 상태다. 버튼을 눌러도 결제가 안 되므로,
          "곧 됩니다"가 아니라 "무엇이 없어서 안 되는지"를 쓴다. */
       const box = el('div', 'pay-pending');
+      const dataBlocked = CONFIG.SALES_OPEN && !dataReady;
       box.innerHTML = `<b>${ko ? '결제 준비 중' : 'Payments not live yet'}</b>`
-        + `<p>${ko
-          ? '통신판매업 신고 절차를 밟고 있습니다. 신고가 끝나기 전에는 유료 판매를 열지 않습니다 — 법으로 그렇게 되어 있고, 저희도 그게 맞다고 봅니다.<br>'
-            + '<b>지금 보시는 기능은 모두 무료입니다.</b> 사전등록해 두시면 결제가 열리는 즉시 알려드리고, 초기 구독자 혜택을 함께 드립니다.'
-          : 'We are completing our mail-order business registration. We will not open paid sales before it is done.<br>'
-            + '<b>Everything you see now is free.</b> Register and we will tell you the moment it opens, with early-subscriber benefits.'}</p>`;
+        + `<p>${dataBlocked
+          ? (ko
+            ? '상업 이용이 가능한 기상 API 경로를 검증하는 중입니다. 무료 API를 쓰는 상태에서는 유료 판매를 열지 않습니다.<br>'
+              + '<b>지금 보시는 기능은 모두 무료입니다.</b>'
+            : 'We are validating a weather API route licensed for commercial use. Paid sales stay closed while the free API is in use.<br>'
+              + '<b>Everything you see now is free.</b>')
+          : (ko
+            ? '통신판매업 신고 절차를 밟고 있습니다. 신고가 끝나기 전에는 유료 판매를 열지 않습니다 — 법으로 그렇게 되어 있고, 저희도 그게 맞다고 봅니다.<br>'
+              + '<b>지금 보시는 기능은 모두 무료입니다.</b> 사전등록해 두시면 결제가 열리는 즉시 알려드리고, 초기 구독자 혜택을 함께 드립니다.'
+            : 'We are completing our mail-order business registration. We will not open paid sales before it is done.<br>'
+              + '<b>Everything you see now is free.</b> Register and we will tell you the moment it opens, with early-subscriber benefits.')}</p>`;
       body.appendChild(box);
 
       const btn = el('button', 'btn-primary', ko ? '사전등록하고 알림 받기' : 'Register for launch');
@@ -255,6 +265,8 @@ export const subscribeSheet = {
       const MSG = {
         NOT_AVAILABLE:  ['이 기기에서는 아직 결제할 수 없습니다', 'Payments unavailable on this device'],
         NOT_CONFIGURED: ['결제 수단이 아직 연결되지 않았습니다', 'Payments are not connected yet'],
+        DATA_LICENSE_NOT_READY: ['상업 이용 가능한 기상 자료 경로를 확인하기 전에는 결제를 열지 않습니다',
+                                 'Payments stay closed until the commercial weather-data route is verified'],
         NOT_SIGNED_IN:  ['로그인이 필요합니다', 'Please sign in first'],
         SOLD_OUT:       ['창립회원 모집이 마감되었습니다', 'Founding membership is sold out'],
         UNKNOWN_PLAN:   ['판매하지 않는 상품입니다', 'That plan is not on sale'],

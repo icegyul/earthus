@@ -214,6 +214,14 @@ export const billing = {
    * @throws {Error} 'NOT_AVAILABLE' — 결제 수단이 아직 연결되지 않음
    */
   async subscribe(planKey, providerKey) {
+    /* ⚠️⚠️ Open-Meteo는 **자료(CC BY 4.0)**와 **호스팅 API 이용권**이 다르다.
+       무료 api.open-meteo.com은 비상업 전용이다. 여러 화면·Lambda가 아직 그
+       엔드포인트를 쓰므로, 유료 customer-api 전환 또는 셀프호스팅을 검증했다는
+       두 번째 스위치 없이는 SALES_OPEN만 켜도 결제를 시작하지 못하게 막는다. */
+    if (!CONFIG.SALES_OPEN) throw new Error('NOT_AVAILABLE');
+    if (CONFIG.OPEN_METEO_COMMERCIAL_READY !== true) {
+      throw new Error('DATA_LICENSE_NOT_READY');
+    }
     const plan = PLANS[planKey];
     if (!plan) throw new Error('UNKNOWN_PLAN');
     const list = this.providers();

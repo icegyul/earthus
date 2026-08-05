@@ -115,7 +115,7 @@ main { width: min(1100px, calc(100% - 36px)); margin: auto; padding: 82px 0; }
   cursor: pointer;
 }
 .pack button:disabled { border-color: var(--line); background: transparent; color: var(--fog); cursor: not-allowed; }
-.dictionary, .lesson, .figure-builder, .worksheet-builder {
+.dictionary, .lesson, .extract-builder, .figure-builder, .worksheet-builder {
   display: grid;
   grid-template-columns: 240px 1fr;
   gap: 36px;
@@ -131,6 +131,52 @@ h2 { margin: 7px 0; font-size: 32px; font-weight: 500; letter-spacing: -.04em; }
 .lesson ol { margin: 0; padding: 0; list-style: none; counter-reset: q; }
 .lesson li { counter-increment: q; padding: 14px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
 .lesson li::before { content: counter(q, decimal-leading-zero); margin-right: 18px; color: var(--violet); font: 650 10px ui-monospace, SFMono-Regular, monospace; }
+
+.extract-head > p:last-child { margin: 18px 0 0; color: var(--muted); font-size: 11px; }
+.extract-ui { align-self: end; }
+.extract-controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.extract-controls label {
+  display: grid;
+  gap: 6px;
+  color: var(--fog);
+  font: 650 9px ui-monospace, SFMono-Regular, monospace;
+  letter-spacing: .06em;
+}
+.extract-controls select, .extract-controls button {
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--paper);
+  background: var(--panel);
+}
+.extract-controls button {
+  align-self: end;
+  border-color: var(--violet);
+  background: var(--violet);
+  color: #101016;
+  font-weight: 700;
+  cursor: pointer;
+}
+.extract-controls button:disabled { border-color: var(--line); background: transparent; color: var(--fog); cursor: not-allowed; }
+.extract-status { margin: 12px 0 0; color: var(--fog); font-size: 10px; }
+.extract-preview {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+}
+.extract-preview-head { display: flex; justify-content: space-between; gap: 18px; padding: 13px 15px; border-bottom: 1px solid var(--line); }
+.extract-preview-head strong { color: var(--mint); font: 700 10px ui-monospace, SFMono-Regular, monospace; }
+.extract-preview-head span { color: var(--fog); font-size: 9px; text-align: right; overflow-wrap: anywhere; }
+.extract-table-wrap { overflow-x: auto; }
+#extractTable { width: 100%; min-width: 980px; border-collapse: collapse; font: 500 9px ui-monospace, SFMono-Regular, monospace; }
+#extractTable th, #extractTable td { max-width: 190px; padding: 9px 10px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#extractTable th { position: sticky; top: 0; color: var(--fog); background: #11141a; }
+#extractTable tbody tr:last-child td { border-bottom: 0; }
 
 .figure-head > p:last-child { margin: 18px 0 0; color: var(--muted); font-size: 11px; }
 .figure-ui { align-self: end; }
@@ -269,7 +315,7 @@ footer p { margin: 0; }
 }
 
 @media (max-width: 900px) {
-  .figure-controls, .builder-controls { grid-template-columns: 1fr 1fr; }
+  .extract-controls, .figure-controls, .builder-controls { grid-template-columns: 1fr 1fr; }
   .ws-meta { grid-template-columns: 1fr 1fr; }
   .ws-meta div:nth-child(2) { border-right: 0; }
   .ws-meta div:nth-child(-n+2) { border-bottom: 1px solid #b7bac0; }
@@ -281,7 +327,7 @@ footer p { margin: 0; }
   nav { grid-column: 1 / -1; }
   nav a { flex: 1; text-align: center; }
   .hero h1 { font-size: 44px; }
-  .notice, .dictionary, .lesson, .figure-builder, .worksheet-builder { grid-template-columns: 1fr; }
+  .notice, .dictionary, .lesson, .extract-builder, .figure-builder, .worksheet-builder { grid-template-columns: 1fr; }
   .packs { grid-template-columns: 1fr; }
   .pack p { min-height: 0; }
   .dict-grid { grid-template-columns: 1fr; }
@@ -297,7 +343,7 @@ footer p { margin: 0; }
   main { width: calc(100% - 20px); padding-top: 55px; }
   .hero h1 { font-size: 39px; }
   .hero > p { font-size: 14px; }
-  .figure-controls, .builder-controls { grid-template-columns: 1fr; }
+  .extract-controls, .figure-controls, .builder-controls { grid-template-columns: 1fr; }
 }
 
 @page { size: A4 portrait; margin: 12mm; }

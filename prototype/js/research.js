@@ -139,36 +139,36 @@ function dailyRows() {
   return rows;
 }
 
-function stationRows() {
+function stationRows(day = state.stationDay) {
   const rows = [];
-  Object.entries(state.stationDay?.hours || {}).forEach(([time, hour]) =>
+  Object.entries(day?.hours || {}).forEach(([time, hour]) =>
     (hour.stations || []).forEach(item => {
-      const meta = state.stationDay.stationMeta?.[item.stationId] || {};
+      const meta = day.stationMeta?.[item.stationId] || {};
       const value = item.values || {};
       rows.push([
         time, item.stationId, meta.name, meta.lat, meta.lon, meta.alt,
         value.temp_c, value.humid_pct, value.wind_ms, value.wind_dir, value.rain_mm,
         value.pres_hpa, value.pres_sea, value.dewp_c, value.solar, value.cloud,
-        state.stationDay.source, state.stationDay.generated,
+        day.source, day.generated,
       ]);
     }));
   return rows;
 }
 
-function caseRows() {
+function caseRows(day = state.caseDay) {
   const rows = [];
-  Object.entries(state.caseDay?.hours || {}).forEach(([time, hour]) => {
+  Object.entries(day?.hours || {}).forEach(([time, hour]) => {
     (hour.cases || []).forEach(item => {
       Object.entries(item.forecasts || {}).forEach(([model, leads]) => {
         Object.entries(leads).forEach(([lead, variables]) => {
           Object.entries(variables).forEach(([variable, forecast]) => {
             const observation = item.observation?.[variable];
             const difference = finite(observation) && finite(forecast)
-              ? Number(forecast) - Number(observation)
+              ? Number((Number(forecast) - Number(observation)).toFixed(3))
               : null;
             rows.push([
               time, item.stationId, model, lead, variable, observation, forecast,
-              difference, hour.issues?.[lead], state.caseDay.source, state.caseDay.generated,
+              difference, hour.issues?.[lead], day.source, day.generated,
             ]);
           });
         });
@@ -306,6 +306,181 @@ function renderPacks() {
 
   $('#scope').textContent = `일별 집계 ${state.daily.count}일 · ASOS ${stations.scope.hours}시각/${stations.rows.length}행 · 사례 ${cases.scope.hours}시각/${cases.rows.length}행`;
   $('#generated').textContent = `최신 생성 · ${state.daily.generated} · CSV는 브라우저에서 현재 공개 JSON을 변환`;
+}
+
+const EXTRACT_SCHEMAS = {
+  cases: [
+    'valid_kst', 'station_id', 'station_name', 'lat', 'lon', 'alt_m', 'model',
+    'lead_hour', 'variable', 'unit', 'observation', 'forecast',
+    'forecast_minus_observation', 'issued_kst', 'source', 'license', 'generated',
+  ],
+  stations: [
+    'observed_kst', 'station_id', 'station_name', 'lat', 'lon', 'alt_m',
+    'variable', 'unit', 'value', 'source', 'license', 'generated',
+  ],
+};
+
+function stationFieldUnit(day, variable) {
+  const label = day.fields?.[variable] || '';
+  const match = label.match(/\(([^()]*)\)$/);
+  return match ? match[1] : '-';
+}
+
+function customExtractRows(dataset, day, filters) {
+  const rows = [];
+  const accepts = (selected, value) => selected === 'all' || String(selected) === String(value);
+  Object.entries(day?.hours || {}).forEach(([time, hour]) => {
+    if (!accepts(filters.time, time)) return;
+    if (dataset === 'cases') {
+      (hour.cases || []).forEach(item => {
+        if (!accepts(filters.station, item.stationId)) return;
+        const meta = day.stationMeta?.[item.stationId] || {};
+        Object.entries(item.forecasts || {}).forEach(([model, leads]) =>
+          Object.entries(leads).forEach(([lead, variables]) =>
+            Object.entries(variables).forEach(([variable, forecast]) => {
+              if (!accepts(filters.variable, variable)) return;
+              const observation = item.observation?.[variable];
+              const difference = finite(observation) && finite(forecast)
+                ? Number((Number(forecast) - Number(observation)).toFixed(3))
+                : null;
+              rows.push([
+                time, item.stationId, meta.name, meta.lat, meta.lon, meta.alt, model,
+                Number.parseFloat(lead), variable, variableInfo(variable).unit,
+                observation, forecast, difference, formatIssue(hour.issues?.[lead]),
+                day.source, day.license, day.generated,
+              ]);
+            })));
+      });
+      return;
+    }
+    (hour.stations || []).forEach(item => {
+      if (!accepts(filters.station, item.stationId)) return;
+      const meta = day.stationMeta?.[item.stationId] || {};
+      Object.keys(day.fields || {}).forEach(variable => {
+        if (!accepts(filters.variable, variable)) return;
+        rows.push([
+          time, item.stationId, meta.name, meta.lat, meta.lon, meta.alt, variable,
+          stationFieldUnit(day, variable), item.values?.[variable], day.source,
+          day.license, day.generated,
+        ]);
+      });
+    });
+  });
+  return sortedRows(rows, [0, 1, 6, 7, 8]);
+}
+
+function extractIndex(dataset) {
+  return dataset === 'cases' ? state.caseIndex : state.stationIndex;
+}
+
+function extractVariables(dataset, day) {
+  if (dataset === 'cases') {
+    return (day.vars || []).map(variable => [
+      variable, `${variableInfo(variable).name} (${variableInfo(variable).unit})`,
+    ]);
+  }
+  return Object.entries(day.fields || {});
+}
+
+function refillExtractDates() {
+  const dataset = $('#extractDataset').value;
+  const dates = Object.keys(extractIndex(dataset)?.dates || {}).sort();
+  $('#extractDate').innerHTML = dates.map(date =>
+    `<option value="${html(date)}">${html(date)}</option>`).join('');
+  if (dates.length) $('#extractDate').value = dates.at(-1);
+}
+
+function refillExtractFilters(day) {
+  const dataset = $('#extractDataset').value;
+  const previousTime = $('#extractTime').value;
+  const previousStation = $('#extractStation').value;
+  const previousVariable = $('#extractVariable').value;
+  const times = Object.keys(day.hours || {}).sort();
+  const stations = Object.entries(day.stationMeta || {}).sort((left, right) => Number(left[0]) - Number(right[0]));
+  const variables = extractVariables(dataset, day);
+  $('#extractTime').innerHTML = `<option value="all">전체 시각 (${times.length})</option>`
+    + times.map(time => `<option value="${html(time)}">${html(formatTime(time))}</option>`).join('');
+  $('#extractStation').innerHTML = `<option value="all">전체 관측소 (${stations.length})</option>`
+    + stations.map(([id, meta]) => `<option value="${html(id)}">${html(meta.name || `지점 ${id}`)} (${html(id)})</option>`).join('');
+  $('#extractVariable').innerHTML = `<option value="all">전체 변수 (${variables.length})</option>`
+    + variables.map(([value, label]) => `<option value="${html(value)}">${html(label)}</option>`).join('');
+  if ([...$('#extractTime').options].some(option => option.value === previousTime)) $('#extractTime').value = previousTime;
+  if ([...$('#extractStation').options].some(option => option.value === previousStation)) $('#extractStation').value = previousStation;
+  if ([...$('#extractVariable').options].some(option => option.value === previousVariable)) $('#extractVariable').value = previousVariable;
+}
+
+function renderExtract() {
+  const dataset = $('#extractDataset').value;
+  const day = state.extractDay;
+  if (!day) return;
+  const filters = {
+    time: $('#extractTime').value,
+    station: $('#extractStation').value,
+    variable: $('#extractVariable').value,
+  };
+  const headers = EXTRACT_SCHEMAS[dataset];
+  const rows = customExtractRows(dataset, day, filters);
+  state.extractResult = { dataset, date: day.date, filters, headers, rows };
+  const preview = rows.slice(0, 5);
+  $('#extractTable thead').innerHTML = `<tr>${headers.map(header => `<th>${html(header)}</th>`).join('')}</tr>`;
+  $('#extractTable tbody').innerHTML = preview.map(row =>
+    `<tr>${row.map(value => `<td>${html(value ?? '')}</td>`).join('')}</tr>`).join('');
+  $('#extractStatus').textContent = `${day.date} · 결과 ${rows.length.toLocaleString('ko-KR')}행 · 미리보기 ${preview.length}행 · 결측은 빈칸`;
+  $('#extractEvidence').textContent = `${day.source || '출처 없음'} · 생성 ${day.generated || '시각 없음'} · ${day.license || '이용조건 없음'}`;
+  $('#downloadExtract').disabled = rows.length === 0;
+}
+
+async function loadExtractDay() {
+  const dataset = $('#extractDataset').value;
+  const date = $('#extractDate').value;
+  const entry = extractIndex(dataset)?.dates?.[date];
+  const token = (state.extractToken || 0) + 1;
+  state.extractToken = token;
+  $('#downloadExtract').disabled = true;
+  $('#extractStatus').textContent = `${date || '날짜 없음'} 자료를 불러오는 중입니다.`;
+  if (!entry) {
+    state.extractDay = null;
+    $('#extractStatus').textContent = '실제로 보유한 공개 날짜가 없습니다.';
+    return;
+  }
+  state.extractCache ||= { cases: {}, stations: {} };
+  try {
+    const day = state.extractCache[dataset][date] || await json(entry.path);
+    if (token !== state.extractToken) return;
+    state.extractCache[dataset][date] = day;
+    state.extractDay = day;
+    refillExtractFilters(day);
+    renderExtract();
+  } catch (error) {
+    if (token !== state.extractToken) return;
+    state.extractDay = null;
+    $('#extractStatus').textContent = `선택한 공개 자료를 읽지 못했습니다. (${error.message})`;
+  }
+}
+
+function extractFilename(result) {
+  const compact = value => String(value || 'all').replace(/[^0-9a-z_-]+/gi, '-');
+  return `earthus-${result.dataset}-${compact(result.date)}-${compact(result.filters.time)}-${compact(result.filters.station)}-${compact(result.filters.variable)}.csv`;
+}
+
+function initExtract() {
+  state.extractCache = { cases: {}, stations: {} };
+  if (state.caseDay?.date) state.extractCache.cases[state.caseDay.date] = state.caseDay;
+  if (state.stationDay?.date) state.extractCache.stations[state.stationDay.date] = state.stationDay;
+  refillExtractDates();
+  $('#extractDataset').addEventListener('change', () => {
+    refillExtractDates();
+    loadExtractDay();
+  });
+  $('#extractDate').addEventListener('change', loadExtractDay);
+  ['#extractTime', '#extractStation', '#extractVariable'].forEach(selector =>
+    $(selector).addEventListener('change', renderExtract));
+  $('#downloadExtract').addEventListener('click', () => {
+    const result = state.extractResult;
+    if (!result?.rows.length) return;
+    download(extractFilename(result), result.headers, result.rows);
+  });
+  loadExtractDay();
 }
 
 const FIGURE_METRICS = {
@@ -559,6 +734,7 @@ async function boot() {
       loadLatest(state.caseIndex), loadLatest(state.stationIndex),
     ]);
     renderPacks();
+    initExtract();
     initFigure();
     initWorksheet();
   } catch (error) {

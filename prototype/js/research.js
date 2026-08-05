@@ -2435,6 +2435,217 @@ function initDistribution() {
   if (dates.length) loadDistributionDay();
 }
 
+function buildSpatialResult(day, time, model, lead, variable) {
+  const hour = day.hours?.[time] || { cases: [] };
+  const leadKey = `${lead}h`;
+  const rows = (hour.cases || []).map(item => {
+    const stationId = String(item.stationId);
+    const meta = day.stationMeta?.[stationId] || {};
+    const observation = item.observation?.[variable];
+    const forecast = item.forecasts?.[model]?.[leadKey]?.[variable];
+    const paired = finite(observation) && finite(forecast);
+    return [
+      time, stationId, meta.name, meta.lat, meta.lon, meta.alt, model, Number(lead),
+      variable, variableInfo(variable).unit, observation, forecast,
+      paired ? rounded(Number(forecast) - Number(observation)) : null, paired ? 1 : 0,
+      hour.issues?.[leadKey] ? formatIssue(hour.issues[leadKey]) : '',
+      day.source, day.license, day.generated,
+    ];
+  }).sort((left, right) => Number(left[1]) - Number(right[1]));
+  const errors = rows.map(row => row[12]).filter(finite).map(Number);
+  const n = errors.length;
+  const coordinates = rows.filter(row => finite(row[3]) && finite(row[4]));
+  const latitudes = coordinates.map(row => Number(row[3]));
+  const longitudes = coordinates.map(row => Number(row[4]));
+  const mean = n ? errors.reduce((sum, value) => sum + value, 0) / n : null;
+  return {
+    date: day.date,
+    time,
+    model,
+    lead: Number(lead),
+    variable,
+    unit: variableInfo(variable).unit,
+    headers: DISTRIBUTION_HEADERS,
+    rows,
+    stats: {
+      totalRows: rows.length,
+      n,
+      missingObservation: rows.filter(row => !finite(row[10])).length,
+      missingForecast: rows.filter(row => !finite(row[11])).length,
+      me: mean,
+      mae: n ? errors.reduce((sum, value) => sum + Math.abs(value), 0) / n : null,
+      rmse: n ? Math.sqrt(errors.reduce((sum, value) => sum + value ** 2, 0) / n) : null,
+      maximumAbsoluteError: n ? Math.max(...errors.map(Math.abs)) : null,
+    },
+    extent: coordinates.length ? {
+      minLat: Math.min(...latitudes), maxLat: Math.max(...latitudes),
+      minLon: Math.min(...longitudes), maxLon: Math.max(...longitudes),
+    } : null,
+    source: day.source,
+    license: day.license,
+    generated: day.generated,
+  };
+}
+
+function spatialErrorColor(value, maximumAbsoluteError) {
+  if (!finite(value)) return '#ffffff';
+  const ratio = maximumAbsoluteError ? Math.min(1, Math.abs(Number(value)) / maximumAbsoluteError) : 0;
+  const start = [225, 228, 232];
+  const end = Number(value) < 0 ? [35, 93, 178] : Number(value) > 0 ? [196, 53, 53] : [122, 128, 136];
+  const rgb = start.map((channel, index) => Math.round(channel + (end[index] - channel) * ratio));
+  return `rgb(${rgb.join(',')})`;
+}
+
+function spatialFilename(result, extension) {
+  const compact = value => String(value || 'none').replace(/[^0-9a-z_-]+/gi, '-');
+  const time = String(result.time || '').split('T')[1] || result.time;
+  return `earthus-spatial-error-${compact(result.date)}-${compact(time)}-${compact(result.model)}-${compact(result.lead)}h-${compact(result.variable)}.${extension}`;
+}
+
+function spatialSvgMarkup(result) {
+  if (!result.extent || !result.rows.length) return '';
+  const width = 900;
+  const sourceLines = svgLines(result.source, 112);
+  const height = 622 + sourceLines.length * 18;
+  const plot = { left: 72, right: 190, top: 112, bottom: 506 };
+  const lonPadding = Math.max(.25, (result.extent.maxLon - result.extent.minLon) * .05);
+  const latPadding = Math.max(.25, (result.extent.maxLat - result.extent.minLat) * .05);
+  const minLon = result.extent.minLon - lonPadding;
+  const maxLon = result.extent.maxLon + lonPadding;
+  const minLat = result.extent.minLat - latPadding;
+  const maxLat = result.extent.maxLat + latPadding;
+  const plotWidth = width - plot.left - plot.right;
+  const plotHeight = plot.bottom - plot.top;
+  const x = lon => plot.left + (lon - minLon) / (maxLon - minLon) * plotWidth;
+  const y = lat => plot.bottom - (lat - minLat) / (maxLat - minLat) * plotHeight;
+  const maximumAbsoluteError = result.stats.maximumAbsoluteError || 0;
+  const stat = value => finite(value) ? Number(value).toFixed(3) : 'NA';
+  const validRows = result.rows.filter(row => finite(row[12]) && finite(row[3]) && finite(row[4]));
+  const labelRows = [...validRows].sort((left, right) => Math.abs(Number(right[12])) - Math.abs(Number(left[12]))).slice(0, 5);
+  const longitudeTicks = [];
+  for (let value = Math.ceil(minLon); value <= Math.floor(maxLon); value += 1) longitudeTicks.push(value);
+  const latitudeTicks = [];
+  for (let value = Math.ceil(minLat); value <= Math.floor(maxLat); value += 1) latitudeTicks.push(value);
+  const chunks = [
+    `<svg id="spatialSvg" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="spatialTitle spatialDesc" xmlns="http://www.w3.org/2000/svg">`,
+    `<title id="spatialTitle">${html(result.time)} ${html(modelName(result.model))} ${html(result.lead)}시간 ${html(variableInfo(result.variable).name)} 지점 오차</title>`,
+    `<desc id="spatialDesc">ASOS 위경도 좌표에 forecast minus observation을 표시한 산점도. 행정경계 지도가 아님.</desc>`,
+    '<defs><linearGradient id="spatialLegend" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#235db2"/><stop offset="0.5" stop-color="#e1e4e8"/><stop offset="1" stop-color="#c43535"/></linearGradient></defs>',
+    `<rect width="${width}" height="${height}" fill="#f7f7f4"/>`,
+    `<text x="34" y="38" fill="#15171c" font-size="23" font-family="sans-serif" font-weight="700">${html(modelName(result.model))} ${html(result.lead)}h · ${html(variableInfo(result.variable).name)} 공간 오차</text>`,
+    `<text x="34" y="63" fill="#5d626c" font-size="11" font-family="monospace">${html(result.time)} · forecast − observation (${html(result.unit)}) · ASOS longitude/latitude scatter</text>`,
+    `<text x="34" y="88" fill="#30343b" font-size="11" font-family="monospace">n ${result.stats.n}/${result.stats.totalRows} · missing obs ${result.stats.missingObservation} · missing forecast ${result.stats.missingForecast} · ME ${stat(result.stats.me)} · MAE ${stat(result.stats.mae)} · RMSE ${stat(result.stats.rmse)}</text>`,
+  ];
+  longitudeTicks.forEach(value => {
+    chunks.push(`<line x1="${x(value)}" y1="${plot.top}" x2="${x(value)}" y2="${plot.bottom}" stroke="#d6d8dc"/>`);
+    chunks.push(`<text x="${x(value)}" y="${plot.bottom + 18}" text-anchor="middle" fill="#60656e" font-size="9" font-family="monospace">${value}°E</text>`);
+  });
+  latitudeTicks.forEach(value => {
+    chunks.push(`<line x1="${plot.left}" y1="${y(value)}" x2="${width - plot.right}" y2="${y(value)}" stroke="#d6d8dc"/>`);
+    chunks.push(`<text x="${plot.left - 9}" y="${y(value) + 3}" text-anchor="end" fill="#60656e" font-size="9" font-family="monospace">${value}°N</text>`);
+  });
+  chunks.push(`<rect x="${plot.left}" y="${plot.top}" width="${plotWidth}" height="${plotHeight}" fill="none" stroke="#aeb2b8"/>`);
+  result.rows.filter(row => finite(row[3]) && finite(row[4])).forEach(row => {
+    const error = row[12];
+    const ratio = finite(error) && maximumAbsoluteError ? Math.abs(Number(error)) / maximumAbsoluteError : 0;
+    const radius = finite(error) ? 3.5 + ratio * 4.5 : 3.5;
+    const fill = spatialErrorColor(error, maximumAbsoluteError);
+    const stroke = finite(error) ? '#ffffff' : '#858b94';
+    const dash = finite(error) ? '' : ' stroke-dasharray="2 2"';
+    chunks.push(`<circle data-station="${html(row[1])}" cx="${x(Number(row[4])).toFixed(2)}" cy="${y(Number(row[3])).toFixed(2)}" r="${radius.toFixed(2)}" fill="${fill}" stroke="${stroke}" stroke-width="1"${dash}><title>${html(row[2] || row[1])} (${html(row[1])}) · ${finite(error) ? `${Number(error).toFixed(3)} ${result.unit}` : 'missing'} · observation ${finite(row[10]) ? row[10] : 'missing'} · forecast ${finite(row[11]) ? row[11] : 'missing'} · n=${row[13]}</title></circle>`);
+  });
+  labelRows.forEach(row => {
+    chunks.push(`<text x="${(x(Number(row[4])) + 7).toFixed(2)}" y="${(y(Number(row[3])) - 7).toFixed(2)}" fill="#202329" stroke="#f7f7f4" stroke-width="3" paint-order="stroke" font-size="9" font-family="monospace">${html(row[2] || row[1])} ${Number(row[12]).toFixed(2)}</text>`);
+  });
+  const legendX = width - 126;
+  chunks.push(`<text x="${legendX - 22}" y="146" fill="#30343b" font-size="10" font-family="monospace">error (${html(result.unit)})</text>`);
+  chunks.push(`<rect x="${legendX}" y="166" width="18" height="220" fill="url(#spatialLegend)" stroke="#aeb2b8"/>`);
+  chunks.push(`<text x="${legendX + 26}" y="174" fill="#8f2d2d" font-size="9" font-family="monospace">+${maximumAbsoluteError.toFixed(2)}</text>`);
+  chunks.push(`<text x="${legendX + 26}" y="280" fill="#60656e" font-size="9" font-family="monospace">0</text>`);
+  chunks.push(`<text x="${legendX + 26}" y="388" fill="#234f92" font-size="9" font-family="monospace">−${maximumAbsoluteError.toFixed(2)}</text>`);
+  chunks.push(`<circle cx="${legendX + 8}" cy="420" r="4" fill="#fff" stroke="#858b94" stroke-dasharray="2 2"/><text x="${legendX + 20}" y="423" fill="#60656e" font-size="9" font-family="monospace">missing</text>`);
+  chunks.push(`<text x="34" y="548" fill="#a45b08" font-size="11" font-family="sans-serif">행정경계 지도가 아닌 ASOS 좌표 산점도입니다. 지점·격자 공간 대표성이 다릅니다.</text>`);
+  chunks.push(`<text x="34" y="569" fill="#5d626c" font-size="10" font-family="monospace">point size = |error|; labels = five largest |error|; missing is hollow</text>`);
+  sourceLines.forEach((line, index) => chunks.push(`<text x="34" y="${594 + index * 18}" fill="#087f5b" font-size="10" font-family="monospace">source: ${html(line)}</text>`));
+  chunks.push(`<text x="34" y="${606 + sourceLines.length * 18}" fill="#6b7079" font-size="10" font-family="monospace">source generated: ${html(result.generated)} · license: ${html(result.license)}</text>`);
+  chunks.push('</svg>');
+  return chunks.join('');
+}
+
+function refillSpatialControls(day) {
+  const previous = {
+    time: $('#spatialTime').value,
+    model: $('#spatialModel').value,
+    lead: $('#spatialLead').value,
+    variable: $('#spatialVariable').value,
+  };
+  const times = Object.keys(day.hours || {}).sort();
+  $('#spatialTime').innerHTML = times.map(time => `<option value="${html(time)}">${html(time.split('T')[1] || time)} KST</option>`).join('');
+  $('#spatialModel').innerHTML = (day.models || []).map(model => `<option value="${html(model)}">${html(modelName(model))}</option>`).join('');
+  $('#spatialLead').innerHTML = (day.leadsHours || []).map(lead => `<option value="${html(lead)}">${html(lead)}시간</option>`).join('');
+  $('#spatialVariable').innerHTML = (day.vars || []).map(variable => `<option value="${html(variable)}">${html(variableInfo(variable).name)} (${html(variableInfo(variable).unit)})</option>`).join('');
+  setSelectValue('#spatialTime', previous.time);
+  setSelectValue('#spatialModel', previous.model);
+  setSelectValue('#spatialLead', previous.lead);
+  setSelectValue('#spatialVariable', previous.variable);
+}
+
+function renderSpatial() {
+  const day = state.spatialDay;
+  if (!day) return;
+  const result = buildSpatialResult(
+    day,
+    $('#spatialTime').value,
+    $('#spatialModel').value,
+    $('#spatialLead').value,
+    $('#spatialVariable').value,
+  );
+  const markup = spatialSvgMarkup(result);
+  state.spatialResult = result;
+  $('.spatial-canvas').innerHTML = markup || '<p class="figure-empty">선택 조건에 좌표와 유효 오차가 없습니다.</p>';
+  $('#downloadSpatialCsv').disabled = !result.rows.length;
+  $('#downloadSpatialSvg').disabled = !markup;
+  $('#spatialWarning').textContent = `${result.time} · ${modelName(result.model)} ${result.lead}시간 · ${variableInfo(result.variable).name} · 유효 n=${result.stats.n}/${result.stats.totalRows}`;
+}
+
+async function loadSpatialDay() {
+  const date = $('#spatialDate').value;
+  $('#downloadSpatialCsv').disabled = true;
+  $('#downloadSpatialSvg').disabled = true;
+  $('#spatialWarning').textContent = `${date || '날짜 없음'} 실제 공개 사례를 불러오는 중입니다.`;
+  try {
+    const day = state.extractCache.cases[date] || await json(state.caseIndex.dates[date].path);
+    state.extractCache.cases[date] = day;
+    state.spatialDay = day;
+    refillSpatialControls(day);
+    renderSpatial();
+  } catch (error) {
+    state.spatialDay = null;
+    $('.spatial-canvas').innerHTML = `<p class="figure-empty">사례 파일을 읽지 못했습니다. (${html(error.message)})</p>`;
+    $('#spatialWarning').textContent = '실제 사례를 읽지 못해 공간 오차를 만들지 않았습니다.';
+  }
+}
+
+function initSpatial() {
+  const dates = Object.keys(state.caseIndex?.dates || {}).sort();
+  $('#spatialDate').innerHTML = dates.map(date => `<option value="${html(date)}">${html(date)}</option>`).join('');
+  if (dates.length) $('#spatialDate').value = dates.at(-1);
+  $('#spatialDate').addEventListener('change', loadSpatialDay);
+  ['#spatialTime', '#spatialModel', '#spatialLead', '#spatialVariable']
+    .forEach(selector => $(selector).addEventListener('change', renderSpatial));
+  $('#downloadSpatialCsv').addEventListener('click', () => {
+    const result = state.spatialResult;
+    if (!result?.rows.length) return;
+    download(spatialFilename(result, 'csv'), result.headers, result.rows);
+  });
+  $('#downloadSpatialSvg').addEventListener('click', () => {
+    const result = state.spatialResult;
+    if (!result || !spatialSvgMarkup(result)) return;
+    downloadText(spatialFilename(result, 'svg'), `${spatialSvgMarkup(result)}\n`, 'image/svg+xml;charset=utf-8');
+  });
+  if (dates.length) loadSpatialDay();
+}
+
 const FIGURE_METRICS = {
   mae: { name: 'MAE', description: 'Mean absolute error' },
   me: { name: 'ME', description: 'Mean forecast minus observation' },
@@ -2689,6 +2900,7 @@ async function boot() {
     initExtract();
     initTrace();
     initDistribution();
+    initSpatial();
     initFigure();
     initWorksheet();
   } catch (error) {

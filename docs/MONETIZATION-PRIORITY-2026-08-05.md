@@ -153,6 +153,10 @@ earthus의 유료 명분은 `이 값을 믿을 수 있는가`인데, 추천 결�
 
 ## 10. 2026-08-06 실행 기록
 
+- Station Trace의 동일 선택 CSV·SVG·manifest·README·검증 Python을 한 ZIP으로 묶었다.
+  `earthus.station-trace-manifest.v1`은 선택·실제 시각·파일별 바이트와 SHA-256·CSV 17개
+  열 정의·출처·이용조건·원본 생성시각·결측/90분 선 끊기 방법을 기록한다. 개별 SVG도
+  ZIP과 같은 바이트를 쓰며 검증 코드는 파일 변조·CSV 열/행 불일치에 즉시 실패한다.
 - Station Trace에서 실제 사례 날짜·관측소·변수·24/48시간을 골라 ASOS 관측과 GFS·
   ECMWF 값을 시간축 CSV·SVG로 만든다. long-format 행과 그림에 단위·n·발표시각·출처·
   이용조건·원본 생성시각을 남기고, 결측 또는 90분 초과 시각 간격은 선으로 잇지 않는다.

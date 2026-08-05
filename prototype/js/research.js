@@ -1789,6 +1789,164 @@ function traceSvgMarkup(result) {
   return chunks.join('');
 }
 
+const TRACE_FIELD_META = {
+  series: ['-', 'observation 또는 forecast 계열 구분'],
+  model: ['-', '예보 모델 식별자; 관측 행은 빈칸'],
+  lead_hour: ['hour', '예보 선행시간; 관측 행은 빈칸'],
+  value: ['variable unit', '관측 또는 모델값'],
+  n: ['count', '해당 행 값이 유효하면 1, 결측이면 0'],
+  issued_kst: ['KST', '예보 발표 기준시각; 관측 행은 빈칸'],
+};
+
+async function buildTraceManifest(result) {
+  const csvName = traceFilename(result, 'csv');
+  const svgName = traceFilename(result, 'svg');
+  const csvContent = csvText(result.headers, result.rows);
+  const svgContent = `${traceSvgMarkup(result)}\n`;
+  const [csvHash, svgHash] = await Promise.all([sha256(csvContent), sha256(svgContent)]);
+  const times = [...new Set(result.rows.map(row => row[0]))].sort();
+  return {
+    schema: 'earthus.station-trace-manifest.v1',
+    manifestVersion: 1,
+    createdAt: new Date().toISOString(),
+    product: 'earthus Research Station Trace 무료 미리보기',
+    salesStatus: '유료 판매 잠금; 현재 공개 사례 범위만 사용',
+    selection: {
+      date: result.date,
+      stationId: result.stationId,
+      stationName: result.stationName,
+      variable: result.variable,
+      unit: result.unit,
+      leadHour: result.lead,
+      actualTimes: times,
+      actualTimeCount: times.length,
+      models: result.models,
+    },
+    files: [
+      {
+        role: 'trace-data', name: csvName, mediaType: 'text/csv; charset=utf-8',
+        encoding: 'UTF-8 with BOM', lineEnding: 'LF', rows: result.rows.length,
+        bytes: new TextEncoder().encode(csvContent).byteLength, sha256: csvHash,
+        fields: result.headers.map(name => ({
+          name,
+          unit: TRACE_FIELD_META[name]?.[0] || EXTRACT_FIELD_META[name]?.[0] || '-',
+          description: TRACE_FIELD_META[name]?.[1] || EXTRACT_FIELD_META[name]?.[1] || name,
+        })),
+      },
+      {
+        role: 'trace-figure', name: svgName, mediaType: 'image/svg+xml; charset=utf-8',
+        encoding: 'UTF-8', lineEnding: 'LF',
+        bytes: new TextEncoder().encode(svgContent).byteLength, sha256: svgHash,
+      },
+    ],
+    provenance: { source: result.source, license: result.license, sourceGeneratedAt: result.generated },
+    methodology: {
+      rowShape: 'one valid time x observation/model series per row',
+      value: 'observation rows use ASOS observation; forecast rows use the selected model and lead time',
+      missing: '결측은 빈칸이며 n=0; 0으로 대체하지 않음',
+      line: '유효값만 표시하고 인접 유효 시각 간격이 90분을 넘으면 SVG 선을 끊음',
+      warning: '실제 공개 사례의 사후 대조이며 예보가 아님',
+    },
+    licensePage: 'https://earthus.net/legal/data-license.ko.md',
+  };
+}
+
+function buildTraceReadme(result, manifest) {
+  const dataFile = manifest.files.find(file => file.role === 'trace-data');
+  const figureFile = manifest.files.find(file => file.role === 'trace-figure');
+  return `# earthus Station Trace
+
+## 선택
+
+- 날짜: ${result.date}
+- 관측소: ${result.stationName} (${result.stationId})
+- 변수: ${result.variable} (${result.unit})
+- 선행시간: ${result.lead}시간
+- 실제 공개 시각: ${manifest.selection.actualTimeCount}개
+
+## 파일
+
+| 역할 | 파일 | 행/바이트 | SHA-256 |
+|---|---|---:|---|
+| long-format CSV | \`${dataFile.name}\` | ${dataFile.rows}행 / ${dataFile.bytes}바이트 | \`${dataFile.sha256}\` |
+| 근거 포함 SVG | \`${figureFile.name}\` | ${figureFile.bytes}바이트 | \`${figureFile.sha256}\` |
+
+## 방법과 한계
+
+- CSV 한 행은 유효시각 × 관측 또는 모델 계열입니다.
+- 결측은 빈칸과 n=0으로 남기며 0으로 채우지 않습니다.
+- SVG는 유효값만 그리고, 인접 유효 시각 간격이 90분을 넘으면 선을 끊습니다.
+- 실제 공개 사례의 사후 대조이며 미래 예보가 아닙니다.
+- 출처: ${result.source}
+- 이용조건: ${result.license}
+- 원본 생성시각: ${result.generated}
+
+## 검증
+
+같은 폴더에서 \`python3 ${traceFilename(result, 'verify.py')}\`를 실행하세요.
+Python 표준 라이브러리만 사용하며 CSV와 SVG의 SHA-256, CSV 열 순서와 행 수를 검사합니다.
+
+이 묶음은 공식 DOI가 아닙니다. 원자료 제공기관 출처와 이용조건을 함께 표기하세요.
+`;
+}
+
+function buildTracePython(result, manifest) {
+  const expected = JSON.stringify(manifest.files.map(file => ({
+    name: file.name,
+    sha256: file.sha256,
+    rows: file.rows,
+    headers: file.fields?.map(field => field.name),
+  })));
+  return `#!/usr/bin/env python3
+import csv
+import hashlib
+import json
+from pathlib import Path
+
+EXPECTED = json.loads(r'''${expected}''')
+ROOT = Path(__file__).resolve().parent
+
+for spec in EXPECTED:
+    path = ROOT / spec["name"]
+    if not path.is_file():
+        raise SystemExit(f"MISSING: {path.name}")
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    if digest != spec["sha256"]:
+        raise SystemExit(f"SHA256 MISMATCH: {path.name} expected={spec['sha256']} actual={digest}")
+    if spec.get("headers"):
+        with path.open("r", encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            if reader.fieldnames != spec["headers"]:
+                raise SystemExit(f"HEADER MISMATCH: {path.name}")
+            rows = sum(1 for _ in reader)
+        if rows != spec["rows"]:
+            raise SystemExit(f"ROW COUNT MISMATCH: {path.name} expected={spec['rows']} actual={rows}")
+        print(f"OK {path.name}: rows={rows} sha256={digest}")
+    else:
+        print(f"OK {path.name}: sha256={digest}")
+
+print("VERIFIED: Station Trace CSV and SVG match this snapshot.")
+`;
+}
+
+async function buildTraceBundle(result) {
+  const manifest = await buildTraceManifest(result);
+  const baseName = traceFilename(result, 'csv').replace(/\.csv$/, '');
+  const files = [
+    { name: traceFilename(result, 'csv'), content: csvText(result.headers, result.rows) },
+    { name: traceFilename(result, 'svg'), content: `${traceSvgMarkup(result)}\n` },
+    { name: `${baseName}.manifest.json`, content: JSON.stringify(manifest, null, 2) + '\n' },
+    { name: `${baseName}.README.md`, content: buildTraceReadme(result, manifest) },
+    { name: `${baseName}.verify.py`, content: buildTracePython(result, manifest) },
+  ];
+  return {
+    filename: `${baseName}.reproducible.zip`,
+    files,
+    bytes: zipArchive(files, new Date(manifest.createdAt)),
+    manifest,
+  };
+}
+
 function refillTraceControls(day) {
   const station = $('#traceStation');
   const variable = $('#traceVariable');
@@ -1815,6 +1973,7 @@ function renderTrace() {
   $('.trace-canvas').innerHTML = markup || '<p class="figure-empty">선택 범위에 그릴 유효 관측·모델값이 없습니다.</p>';
   $('#downloadTraceCsv').disabled = !result.rows.length;
   $('#downloadTraceSvg').disabled = !markup;
+  $('#downloadTraceBundle').disabled = !result.rows.length || !markup;
   const valid = result.rows.filter(row => finite(row[11])).length;
   $('#traceWarning').textContent = `${result.date} · ${result.stationName} (${result.stationId}) · ${variableInfo(result.variable).name} · ${result.lead}시간 · 유효 ${valid}/${result.rows.length}행`;
 }
@@ -1823,6 +1982,7 @@ async function loadTraceDay() {
   const date = $('#traceDate').value;
   $('#downloadTraceCsv').disabled = true;
   $('#downloadTraceSvg').disabled = true;
+  $('#downloadTraceBundle').disabled = true;
   $('#traceWarning').textContent = `${date || '날짜 없음'} 실제 공개 사례를 불러오는 중입니다.`;
   try {
     const day = state.extractCache.cases[date] || await json(state.caseIndex.dates[date].path);
@@ -1850,9 +2010,26 @@ function initTrace() {
   });
   $('#downloadTraceSvg').addEventListener('click', () => {
     const result = state.traceResult;
-    const svg = $('#traceSvg');
-    if (!result || !svg) return;
-    downloadText(traceFilename(result, 'svg'), `${svg.outerHTML}\n`, 'image/svg+xml;charset=utf-8');
+    if (!result) return;
+    downloadText(traceFilename(result, 'svg'), `${traceSvgMarkup(result)}\n`, 'image/svg+xml;charset=utf-8');
+  });
+  $('#downloadTraceBundle').addEventListener('click', async event => {
+    const result = state.traceResult;
+    if (!result?.rows.length) return;
+    const button = event.currentTarget;
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Trace 묶음 만드는 중…';
+    try {
+      const bundle = await buildTraceBundle(result);
+      downloadBlob(bundle.filename, [bundle.bytes], 'application/zip');
+    } catch (error) {
+      $('#error').hidden = false;
+      $('#error').textContent = `Trace 재현 묶음을 만들지 못했습니다. (${error.message})`;
+    } finally {
+      button.disabled = false;
+      button.textContent = original;
+    }
   });
   if (dates.length) loadTraceDay();
 }

@@ -26,10 +26,14 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
 export const alertsSheet = {
   _spots: [],
   _health: null,
+  _spotsLoading: false,
+  _spotsError: false,
 
   open() {
     document.querySelectorAll('.sheet-panel.up').forEach((p) => p.classList.remove('up'));
     $('#alertSheet')?.classList.add('up');
+    this._spotsLoading = true;
+    this._spotsError = false;
     this.render();
     this._load();
   },
@@ -46,7 +50,13 @@ export const alertsSheet = {
         return r.json();
       }),
     ]);
-    if (spots.status === 'fulfilled') this._spots = spots.value;
+    this._spotsLoading = false;
+    if (spots.status === 'fulfilled') {
+      this._spots = spots.value;
+      this._spotsError = false;
+    } else {
+      this._spotsError = true;
+    }
     if (health.status === 'fulfilled') this._health = health.value;
     else this._health = { unavailable: true };
     if ($('#alertSheet')?.classList.contains('up')) this.render();
@@ -166,7 +176,22 @@ export const alertsSheet = {
     body.appendChild(el('h4', null,
       `${ko ? '지켜볼 곳' : 'Places to watch'} <i style="font-style:normal;opacity:.55">${this._spots.length}/${max}</i>`));
 
-    if (!this._spots.length) {
+    if (this._spotsLoading) {
+      body.appendChild(el('p', 'al-sync', ko ? '저장한 장소를 확인하는 중…' : 'Checking saved places…'));
+    } else if (this._spotsError) {
+      const sync = el('div', 'al-sync warn', ko
+        ? '<span>⚠️ 저장 장소 목록의 최신 상태를 확인하지 못했습니다. 아래 목록은 이전에 받은 내용일 수 있습니다.</span>'
+        : '<span>⚠️ Could not refresh saved places. The list below may be from an earlier load.</span>');
+      const retry = el('button', null, ko ? '다시 확인' : 'Retry');
+      retry.onclick = () => {
+        this._spotsLoading = true;
+        this._spotsError = false;
+        this.render();
+        this._load();
+      };
+      sync.appendChild(retry);
+      body.appendChild(sync);
+    } else if (!this._spots.length) {
       body.appendChild(el('p', 'sky-note', ko
         ? '⚠️ <b>지점이 없으면 알림도 없습니다.</b> 지켜볼 곳을 한 곳 이상 저장해 주세요.'
         : '⚠️ <b>No places, no alerts.</b> Save at least one place to watch.'));
@@ -275,7 +300,9 @@ export const alertsSheet = {
       body.appendChild(r);
     });
 
-    if (this._spots.length < max) {
+    /* 목록 개수를 확인하지 못했을 때 새 지점을 만들면 실제 서버에는 이미 제한만큼 있어
+       SPOT_LIMIT만 나고, 사용자는 왜 안 되는지 알 수 없다. 최신 목록을 받은 뒤에만 연다. */
+    if (!this._spotsLoading && !this._spotsError && this._spots.length < max) {
       const saveAt = async (c) => {
         if (!c) { toast(ko ? '위치를 먼저 확인해 주세요' : 'Location unknown'); return; }
         const label = prompt(ko ? '이 곳의 이름 (예: 경포해변)' : 'Name this place');
@@ -309,7 +336,7 @@ export const alertsSheet = {
         ko ? '＋ 지금 내 위치' : '＋ Watch my current location');
       addMe.onclick = () => saveAt(myLocation.coords);
       body.appendChild(addMe);
-    } else if (!paid) {
+    } else if (!this._spotsLoading && !this._spotsError && !paid && this._spots.length >= max) {
       body.appendChild(el('p', 'sky-note', ko
         ? '무료로는 한 곳을 지켜봅니다. 구독하면 20곳까지 늘어납니다. '
           + '⚠️ 알림 자체(이안류·지진·특보)는 <b>무료로도 그대로 옵니다</b> — 곳 수만 다릅니다.'

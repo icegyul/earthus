@@ -850,6 +850,14 @@
 .al-health span{ text-align:right; line-height:1.45; opacity:.64; }
 .al-health.ok{ border-color:rgba(90,209,160,.28); color:rgba(215,247,232,.9); }
 .al-health.warn{ border-color:rgba(240,160,60,.34); color:rgba(255,225,190,.92); }
+.al-sync{ min-height:44px; display:flex; align-items:center; justify-content:space-between;
+  gap:10px; margin:4px 0 8px; font-size:11px; line-height:1.5; opacity:.62; }
+.al-sync.warn{ padding:8px 10px; border-radius:9px; opacity:1;
+  color:rgba(255,225,190,.92); border:1px solid rgba(240,160,60,.30);
+  background:rgba(240,160,60,.06); }
+.al-sync button{ flex:0 0 auto; min-height:44px; padding:0 11px; border-radius:8px; cursor:pointer;
+  color:inherit; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); }
+.al-sync button:focus-visible{ outline:2px solid #9fe6f5; outline-offset:2px; }
 .al-block{ margin:0 0 14px; padding:11px 13px; border-radius:10px;
   border:1px solid var(--line,#1d2635); font-size:12px; font-weight:300; }
 .al-block b{ display:block; margin-bottom:4px; }

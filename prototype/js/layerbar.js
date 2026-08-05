@@ -497,8 +497,15 @@ const PRESETS = [
     ids: ['wave', 'buoy'] },
 ];
 
+/* 첫 화면에 올릴 여덟 개. 재난은 바로 옆 Alert 메뉴가 더 빠르므로 중복하지 않는다.
+   한국·일본에서 매일 확인하는 현재 기상과, earthus의 강점인 실측 두 종류를 섞는다.
+   모델 파고와 부이는 함께 있어야 예측과 실측을 곧바로 오갈 수 있다. */
+const QUICK_IDS = ['gk2aIRea', 'temp', 'rain', 'wind', 'pm25', 'wave', 'buoy', 'landobs'];
+
 export const layerBar = {
   open: false,      // 1단
+  showAll: false,
+  query: '',
   /* 2단 — 어떤 목록을 펼쳤나. null · 'earth'(지구 스타일) · 'alert'(재난)
      ⚠️ 예전엔 불리언이었다. 2단이 하나뿐이라는 전제였는데 Alert 가 생기며 깨졌다.
         DOM(#menuSub)과 CSS 는 그대로 두고 **내용만 갈아끼운다** — 폭·위치 계산이
@@ -659,20 +666,52 @@ export const layerBar = {
       strip.appendChild(el('div', 'ly-gap'));
     }
 
-    order.forEach(({ items }, i) => {
-      if (i) strip.appendChild(el('div', 'ly-gap'));
-      items.forEach(it => this._item(strip, it, ko));
-    });
+    if (isAlert) {
+      order.forEach(({ items }, i) => {
+        if (i) strip.appendChild(el('div', 'ly-gap'));
+        items.forEach(it => this._item(strip, it, ko));
+      });
+    } else {
+      const qh = el('div', 'ly-section-head');
+      qh.textContent = ko ? '빠른 레이어' : 'Quick layers';
+      strip.appendChild(qh);
+      QUICK_IDS.map(id => ITEMS.find(x => x.id === id)).filter(Boolean)
+        .forEach(it => this._item(strip, it, ko, 'ly-quick-item'));
+
+      const allItems = order.flatMap(x => x.items).filter(it => !QUICK_IDS.includes(it.id));
+      const more = el('button', 'ly-all-toggle');
+      more.type = 'button'; more.setAttribute('aria-expanded', String(this.showAll));
+      more.innerHTML = `<span>${this.showAll
+        ? (ko ? '전체 레이어 접기' : 'Hide all layers')
+        : (ko ? `전체 레이어 보기 · ${allItems.length}개 더` : `All layers · ${allItems.length} more`)}</span>`
+        + `<i aria-hidden="true">${this.showAll ? '−' : '+'}</i>`;
+      more.onclick = () => { this.showAll = !this.showAll; this.render('earth'); };
+      strip.appendChild(more);
+
+      if (this.showAll) {
+        const search = el('label', 'ly-search');
+        search.innerHTML = `<input type="search" aria-label="${ko ? '전체 레이어 검색' : 'Search all layers'}"`
+          + ` value="${this.query.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"`
+          + ` placeholder="${ko ? '레이어 이름 검색' : 'Search layers'}" autocomplete="off">`;
+        const input = search.querySelector('input');
+        input.oninput = () => { this.query = input.value; this._filterAll(strip); };
+        strip.appendChild(search);
+        allItems.forEach(it => this._item(strip, it, ko, 'ly-all-item'));
+        this._filterAll(strip);
+      }
+    }
     this.sync();
   },
 
   /** 항목 하나 */
-  _item(strip, it, ko) {
+  _item(strip, it, ko, extraClass = '') {
     {
       const def = LAYER_DEFS.find(d => d.id === it.id);
       const b = document.createElement('button');
       b.className = 'ly';
+      if (extraClass) b.classList.add(extraClass);
       b.dataset.id = it.id;
+      b.dataset.search = `${it.ko} ${it.en} ${it.sub || ''} ${it.subEn || ''}`.toLocaleLowerCase();
 
       /* ⚠️⚠️ 위성 그림이 있으면 **캔버스 대신 그림**을 쓴다.
          받은 요청: "지금 위성 동그라미는 아무것도 없이 그냥 원이야
@@ -739,6 +778,18 @@ export const layerBar = {
       }
       strip.appendChild(b);
     }
+  },
+
+  _filterAll(strip) {
+    const q = this.query.trim().toLocaleLowerCase();
+    strip.querySelectorAll('.ly-all-item').forEach(b => {
+      b.hidden = !!q && !b.dataset.search.includes(q);
+    });
+    const none = strip.querySelector('.ly-search-empty') || el('p', 'ly-search-empty');
+    const visible = [...strip.querySelectorAll('.ly-all-item')].some(b => !b.hidden);
+    none.textContent = i18n.lang === 'ko' ? '일치하는 레이어가 없습니다.' : 'No matching layers.';
+    if (!visible && !none.isConnected) strip.appendChild(none);
+    if (visible) none.remove();
   },
 
   sync() {

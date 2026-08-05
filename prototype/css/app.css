@@ -581,6 +581,33 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 .ly-preset.on b{ color:#9fe6f5; }
 .ly-preset:focus-visible{ outline:2px solid #9fe6f5; outline-offset:2px; }
 .ly-presets + .ly-gap{ grid-column:1/-1; }
+.ly-section-head{
+  grid-column:1/-1; margin-top:2px; padding:2px;
+  font-size:9.5px; letter-spacing:.06em; opacity:.42;
+}
+.ly-all-toggle{
+  grid-column:1/-1; min-height:44px; display:flex; align-items:center;
+  justify-content:space-between; padding:0 11px; margin-top:4px; border-radius:9px;
+  color:rgba(242,245,248,.78); background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.10); cursor:pointer; font-size:10.5px;
+}
+.ly-all-toggle i{ font-style:normal; font-size:15px; opacity:.5; }
+.ly-all-toggle:hover{ background:rgba(255,255,255,.07); }
+.ly-all-toggle:focus-visible{ outline:2px solid #9fe6f5; outline-offset:2px; }
+.ly-search{ grid-column:1/-1; display:block; }
+.ly-search input{
+  width:100%; min-height:44px; padding:0 11px; border-radius:9px;
+  color:var(--paper); background:rgba(4,8,12,.42); border:1px solid rgba(255,255,255,.13);
+  font:400 11px/1 system-ui,sans-serif;
+}
+.ly-search input::placeholder{ color:rgba(242,245,248,.35); }
+.ly-search input:focus{ outline:2px solid rgba(90,209,232,.55); outline-offset:1px; }
+.ly-search-empty{
+  grid-column:1/-1; margin:5px 0; padding:12px; text-align:center;
+  font-size:10.5px; opacity:.48;
+}
+/* `.ly{display:flex}`가 hidden의 브라우저 기본 display:none을 덮는 환경이 있다. */
+.ly-all-item[hidden]{ display:none; }
 
 .ly{
   background:none; border:0; cursor:pointer; padding:7px 2px 9px;

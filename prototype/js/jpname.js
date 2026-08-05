@@ -48,7 +48,9 @@ const BASE = {
   pya:'퍄', pyu:'퓨', pyo:'표', mya:'먀', myu:'뮤', myo:'묘',
   rya:'랴', ryu:'류', ryo:'료',
 };
-const MID_ONLY = { cha:'차', chu:'추', cho:'초' };
+/* ⚠️ k 계열 요음도 어두/어중이 다르다.
+   Tokyo를 `도교`로 만들던 실제 오류: 첫 음절 To는 도가 맞지만, 뒤의 kyo는 쿄다. */
+const MID_ONLY = { kya:'캬', kyu:'큐', kyo:'쿄', cha:'차', chu:'추', cho:'초' };
 /* ⚠️ 긴 것부터 맞춘다 — "shi" 를 "s"+"hi" 로 쪼개면 안 된다 */
 const SYL = [...new Set([...Object.keys(BASE), ...Object.keys(HEAD)])]
   .sort((a, b) => b.length - a.length);

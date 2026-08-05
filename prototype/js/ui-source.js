@@ -88,7 +88,7 @@ const SRC = {
   wave:     { ko: 'Open-Meteo 해양 (파랑모델)', en: 'Open-Meteo Marine', every: 60 },
   swell:    { ko: 'Open-Meteo 해양 (파랑모델)', en: 'Open-Meteo Marine', every: 60 },
   current:  { ko: 'Open-Meteo 해양 — 표층 해류', en: 'Open-Meteo Marine — surface current', every: 60 },
-  landobs:  { ko: 'NOAA METAR + 기상청 ASOS 실황', en: 'NOAA METAR + KMA ASOS observations', every: 60 },
+  landobs:  { ko: 'NOAA METAR + 기상청 ASOS + JMA AMeDAS 실황', en: 'NOAA METAR + KMA ASOS + JMA AMeDAS observations', every: 60 },
   /* ⚠️ "Powered by Met Office data" 는 Met Office 약관이 요구하는 **의무 문구**다.
         번역하거나 줄이지 말 것. 한국어 표기에도 원문을 그대로 남긴다. */
   ukfc:     { ko: '영국 기상청 · Powered by Met Office data',

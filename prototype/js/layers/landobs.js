@@ -1,4 +1,4 @@
-// 지상 관측소 — 공항 METAR + 기상청 ASOS 실황
+// 지상 관측소 — 공항 METAR + 기상청 ASOS + 일본 JMA AMeDAS 실황
 //
 // 왜 별도 레이어인가
 //   기존 '관측소'(weather.js) 는 도시 47곳을 Open-Meteo 로 조회해 **예보**를 보여준다.
@@ -16,6 +16,7 @@
 import { PointLayer } from './pointLayer.js';
 import { API } from '../config.js';
 import { i18n } from '../i18n.js';
+import { jpName } from '../jpname.js';
 
 /* 비행 기상 등급 — METAR 의 fltCat. 시정과 운고로 정해진다.
    ⚠️ 이건 항공 기준이지 "날씨가 나쁘다"가 아니다. 그대로 옮기고 뜻을 적어 준다. */
@@ -42,6 +43,18 @@ function compass(deg) {
   return (ko ? K : E)[i];
 }
 
+/* ⚠️ JMA AMeDAS의 windDirection은 각도가 아니라 0(고요)+16방위 코드다.
+   METAR/KMA용 compass()에 넣으면 9를 북쪽으로 잘못 읽으므로 따로 옮긴다. */
+function jmaCompass(code) {
+  if (code == null) return '';
+  const ko = i18n.lang === 'ko';
+  const K = ['고요', '북북동', '북동', '동북동', '동', '동남동', '남동', '남남동',
+    '남', '남남서', '남서', '서남서', '서', '서북서', '북서', '북북서', '북'];
+  const E = ['Calm', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+    'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N'];
+  return (ko ? K : E)[Number(code)] || '';
+}
+
 export const landObs = {
   layer: null,
   meta: null,
@@ -57,23 +70,29 @@ export const landObs = {
   },
 
   async refresh() {
-    /* 전지구는 METAR, 한국은 기상청 ASOS 96곳을 같은 '실황 관측' 층에 놓는다.
-       ⚠️ 둘 중 하나가 실패해도 다른 관측망은 보여야 한다. Promise.all 로 묶어 한쪽
+    /* 전지구는 METAR, 한국은 기상청 ASOS 96곳, 일본은 JMA AMeDAS 대표 지점을
+       같은 '실황 관측' 층에 놓는다.
+       ⚠️ 하나가 실패해도 다른 관측망은 보여야 한다. Promise.all 로 묶어 한쪽
           장애가 전체를 빈 지도로 만들면 '관측 없음'처럼 읽힌다. */
-    const [r, rk] = await Promise.all([
+    const [r, rk, rj] = await Promise.all([
       fetch(`${API.WIND}/stations.json`, { cache: 'no-cache' }).catch(() => null),
       fetch(`${API.WIND}/kma-aws.json`, { cache: 'no-cache' }).catch(() => null),
+      fetch(`${API.WIND}/jp-amedas.json`, { cache: 'no-cache' }).catch(() => null),
     ]);
-    // ⚠️ S3 는 없는 객체에 403 을 준다(404 아님). 둘 다 없을 때만 실패로 올린다.
-    if (!r?.ok && !rk?.ok) throw new Error(`stations ${r?.status || 'network'} · kma ${rk?.status || 'network'}`);
+    // ⚠️ S3 는 없는 객체에 403 을 준다(404 아님). 셋 다 없을 때만 실패로 올린다.
+    if (!r?.ok && !rk?.ok && !rj?.ok) {
+      throw new Error(`stations ${r?.status || 'network'} · kma ${rk?.status || 'network'} · jma ${rj?.status || 'network'}`);
+    }
     const j = r?.ok ? await r.json() : { stations: [], count: 0 };
     const k = rk?.ok ? await rk.json() : { stations: [], count: 0 };
+    const a = rj?.ok ? await rj.json() : { stations: [], count: 0 };
     this.meta = {
-      generated: [j.generated, k.generated].filter(Boolean).sort().at(-1),
-      source: [j.source, k.source].filter(Boolean).join(' + '),
-      count: (j.count || 0) + (k.count || 0),
-      note: { metar: j.note || null, kma: k.note || null },
-      failed: [!r?.ok ? 'METAR' : null, !rk?.ok ? 'KMA ASOS' : null].filter(Boolean),
+      generated: [j.generated, k.generated, a.time].filter(Boolean).sort().at(-1),
+      source: [j.source, k.source, a.source].filter(Boolean).join(' + '),
+      count: (j.count || 0) + (k.count || 0) + (a.count || 0),
+      note: { metar: j.note || null, kma: k.note || null, jma: a.note || null },
+      failed: [!r?.ok ? 'METAR' : null, !rk?.ok ? 'KMA ASOS' : null,
+        !rj?.ok ? 'JMA AMeDAS' : null].filter(Boolean),
     };
     const ko = i18n.lang === 'ko';
 
@@ -158,6 +177,42 @@ export const landObs = {
         labelFar: 140_000,
         _stationId: String(s.id),
         data: { _landobs: true, _kmaAsos: true, ...d },
+      });
+    });
+
+    /* 일본도 한국과 같은 확대 경험을 준다. AMeDAS 1,285곳을 전부 이름표로 만들면
+       간토 한 화면이 글자로 덮이므로, 기압·기온을 함께 재는 154개 기상관서급 지점만
+       대표로 쓴다. 비만 재는 지점도 원자료 수에는 포함되지만 지도 라벨에는 넣지 않는다. */
+    (a.stations || []).filter(s => s.pres != null && s.temp != null).forEach(s => {
+      if (s.lat == null || s.lon == null) return;
+      const nm = jpName(s, i18n.lang);
+      const d = {};
+      d[ko ? '기온' : 'Temperature'] = i18n.temp(s.temp, 1);
+      if (s.hum != null) d[ko ? '습도' : 'Humidity'] = `${Math.round(s.hum)}%`;
+      if (s.wind != null) {
+        const dir = jmaCompass(s.wdir);
+        d[ko ? '바람' : 'Wind'] = `${s.wind.toFixed(1)} m/s${dir ? ` ${dir}` : ''}`;
+      }
+      if (s.rain10 != null) d[ko ? '10분 강수' : 'Rain (10 min)'] = `${s.rain10.toFixed(1)} mm`;
+      if (s.rain1h != null) d[ko ? '1시간 강수' : 'Rain (1 h)'] = `${s.rain1h.toFixed(1)} mm`;
+      if (s.rain24h != null) d[ko ? '24시간 강수' : 'Rain (24 h)'] = `${s.rain24h.toFixed(1)} mm`;
+      d[ko ? '현지기압' : 'Station pressure'] = `${s.pres.toFixed(1)} hPa`;
+      if (s.snow != null) d[ko ? '적설' : 'Snow depth'] = `${s.snow} cm`;
+      if (s.alt != null) d[ko ? '해발' : 'Elevation'] = `${s.alt} m`;
+      d[ko ? '관측소' : 'Station'] = `${nm.text} · ${s.id}`;
+      if (a.timeJst) d[ko ? '관측 시각(JST)' : 'Observed (JST)'] = a.timeJst;
+      d[ko ? '출처' : 'Source'] = a.source || 'JMA AMeDAS';
+      d['_note'] = ko
+        ? 'JMA AMeDAS의 10분 **실황 관측**입니다. 예보가 아닙니다.'
+          + (nm.mark === 'tr' ? ' 한국어 지명은 영문 표기의 변환이며 공식 번역이 아닙니다.' : '')
+        : 'A 10-minute **observation** from JMA AMeDAS — not a forecast.';
+      items.push({
+        id: `jma-amedas-${s.id}`,
+        name: `${nm.text}${s.temp != null ? ` ${i18n.temp(s.temp, 0)}` : ''}`,
+        lat: s.lat, lon: s.lon,
+        kind: 'landobs', color: '#ffb46b', _place: true,
+        labelFar: 140_000,
+        data: { _landobs: true, _jmaAmedas: true, ...d },
       });
     });
 

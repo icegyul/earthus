@@ -123,6 +123,16 @@ export const auth = {
   /* ── 프로필 ─────────────────────────────────────────────── */
   async loadProfile() {
     if (!this.client || !this.user) return null;
+
+    /* 창립 멤버 자격 굳히기 — 사전등록 선착순 500명 (약관 제8조 제7항).
+       ⚠️ 이메일을 보내지 않는다. 서버가 auth.uid() 로 본인을 찾아
+          auth.users 의 이메일로 판정한다. 여기서 이메일을 인자로 넘기면
+          남의 이메일을 넣어 남의 자격을 자기 계정에 붙일 수 있다.
+       ⚠️ 실패해도 로그인을 막지 않는다 — 배지가 늦게 붙을 뿐이고,
+          진짜 판정은 결제할 때 서버가 다시 한다 (price_for). */
+    try { await this.client.rpc('claim_founding'); }
+    catch (e) { console.warn('[auth] founding', e?.message || e); }
+
     const { data, error } = await this.client
       .from('profiles').select('*').eq('id', this.user.id).single();
     if (error && error.code !== 'PGRST116') console.warn('[auth] profile', error.message);

@@ -37,9 +37,9 @@ export const ITEMS = [
      ⚠️ 국기는 **누가 찍은 위성인가**다. 우리 것이 맨 위에 온다.
      ⚠️ GMGSI 에 특정 국기를 달지 않는다 — 여러 나라 위성을 NOAA 가 합친 것이라
         한 나라 것이라고 하면 틀린 말이 된다. 🌐 로 둔다. */
-  { id:'gk2aIR', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 전면 2km · 밤에도', subEn:'Cloud · full disk 2km · day & night', ready:true,
+  { id:'gk2aIR', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 아시아·태평양 전체 · 밤에도 (8km)', subEn:'Cloud · Asia–Pacific full disk · day & night (8 km)', ready:true,
     sky:'#0b1626', paint:'gk2a', img:'img/sat-gk2a.png' },
-  { id:'gk2aNightLow', flag:'🇰🇷', ko:'천리안2A 야간 하층운', en:'Chollian-2A night low cloud', sub:'물방울 구름 후보 · 전면 2km · 밤에만', subEn:'Water-cloud signal · full disk 2km · night only', ready:true,
+  { id:'gk2aNightLow', flag:'🇰🇷', ko:'천리안2A 야간 하층운', en:'Chollian-2A night low cloud', sub:'물방울 구름 후보 · 아시아·태평양 전체 · 밤에만 (8km)', subEn:'Water-cloud signal · Asia–Pacific full disk · night only (8 km)', ready:true,
     sky:'#0a1724', paint:'gk2a', img:'img/sat-gk2a.png' },
   { id:'gk2aVIS', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 한반도 0.5km · 낮에만', subEn:'Cloud · Korea 0.5km · daylight only', ready:true,
     sky:'#0a1828', paint:'gk2a', img:'img/sat-gk2a.png' },
@@ -488,8 +488,10 @@ const ALERT_IDS = new Set(ALERT_CATEGORIES.flatMap(c => c.ids));
       레이어별 정리 경로가 실행되지 않아 점·선 잔상이 남는다. */
 const PRESETS = [
   { id: 'typhoon', ko: '태풍 보기', en: 'Cyclone view',
-    sub: '천리안 구름 · 기관 경로 · 부이 실측', subEn: 'Satellite · agency tracks · observed buoys',
-    ids: ['gk2aIRea', 'cyclone', 'buoy'] },
+    sub: '천리안 구름(전면) · 기관 경로 · 부이 실측', subEn: 'Satellite (full disk) · agency tracks · observed buoys',
+    /* ⚠️ 전면(gk2aIR)이다. 동아시아(gk2aIRea)는 114~150°E / 23~47°N 상자여서
+       태풍이 상자 밖에 있으면 구름이 아예 안 보인다 — 받은 지적: "구름 화면이 작아". */
+    ids: ['gk2aIR', 'cyclone', 'buoy'] },
   { id: 'fire', ko: '산불 보기', en: 'Wildfire view',
     sub: '전지구 구름 · 위성 탐지 · 모델 바람', subEn: 'Clouds · satellite detections · model wind',
     ids: ['clouds', 'wildfire', 'wind'] },
@@ -525,7 +527,10 @@ const TIME_PRESETS = [
 const QUICK_IDS = [
   'clouds',     // 🌐 NOAA GMGSI 전지구 합성
   'truecolor',  // 🇺🇸 수오미 NPP
-  'gk2aIRea',   // 🇰🇷 천리안2A 동아시아 2km · 밤에도
+  /* 🇰🇷 천리안2A 전면 — 받은 지시(2026-08-06): "천리안은 전면2km 로 바꿔줘"
+     동아시아(gk2aIRea)는 114~150°E / 23~47°N 상자라 태풍이 그 밖으로 나가면 잘린다.
+     전면(gk2aIR)은 70~190°E / -60~60°N 이라 태풍 전체가 들어온다. */
+  'gk2aIR',
   'himawari',   // 🇯🇵 히마와리
   'temp', 'rain', 'wind', 'wave',
 ];

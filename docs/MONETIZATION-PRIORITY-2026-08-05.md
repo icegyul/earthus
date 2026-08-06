@@ -153,6 +153,10 @@ earthus의 유료 명분은 `이 값을 믿을 수 있는가`인데, 추천 결�
 
 ## 10. 2026-08-06 실행 기록
 
+- Station Error Profile의 전체 지점 요약 CSV·지점×시각 원행 CSV·SVG·
+  `earthus.station-error-profile-manifest.v1`·README·검증 Python을 재현 ZIP으로
+  묶었다. 원 사례에서 사라진 지점-시각도 n=0 결측 행으로 명시하고, 검증기는 원행
+  오차부터 96개 지점과 전체 ME·MAE·RMSE·결측·n을 다시 계산해 요약과 대조한다.
 - Station Error Profile에서 실제 사례 날짜·모델·24/48시간·변수를 골라 공개 시각의
   오차를 ASOS 지점별 ME·MAE·RMSE·결측·n으로 집계한다. 전체 지점 CSV와 MAE 상위
   10/20/30개 SVG에 좌표·고도·출처·생성시각을 남기고, 관측소 품질 순위가 아니며

@@ -749,11 +749,15 @@
         <li data-i18n="wl.i2">위성 전체 목록 · 궤도 추적선 — 스타링크를 포함한 약 16,000기</li>
         <li data-i18n="wl.i3">관심 지점 알림 20곳 — 내 자리에 비·바람이 들어올 때</li>
       </ul>
-      <div class="wl-h" data-i18n="wl.h4">창립 멤버로 남으시면</div>
+      <div class="wl-h" data-i18n="wl.h4">창립 멤버 500명에게 드리는 것</div>
       <ul class="wl-list">
+        <li data-i18n="wl.i6">언제나 정가의 반값 — 나중에 값이 오르더라도 창립 멤버는 계속 반값입니다</li>
         <li data-i18n="wl.i4">열리는 날 가장 먼저 연락드립니다</li>
         <li data-i18n="wl.i5">계정에 창립 멤버 표시가 붙습니다</li>
       </ul>
+      <!-- 남은 자리. ⚠️ 셀 수 없으면 이 줄은 아예 안 나온다 —
+           서버가 잠깐 안 될 때 "500자리 남음"을 지어내면 그게 거짓말이다. -->
+      <p class="wl-seats" id="wlSeats" style="display:none">—</p>
       <div class="wl-h" data-i18n="wl.h2">계속 무료인 것</div>
       <p class="wl-p" data-i18n="wl.p2">태풍 · 지진 · 쓰나미 같은 안전 정보, 구름과 날씨, 3D 학습은
         구독과 상관없이 계속 무료입니다. 안전 정보에는 값을 매기지 않습니다.</p>
@@ -771,7 +775,11 @@
       <button type="submit" class="btn-primary" data-i18n="wl.submit">사전등록하기</button>
     </form>
     <p class="sp-fine"><span data-i18n="wl.fine1">등록하신 이메일은 출시 안내 목적으로만 사용하며,</span>
-      <a href="#" data-legal="privacy" data-i18n="wl.priv">개인정보처리방침</a><span data-i18n="wl.fine2">에 따라 처리됩니다.</span></p>
+      <a href="#" data-legal="privacy" data-i18n="wl.priv">개인정보처리방침</a><span data-i18n="wl.fine2">에 따라 처리됩니다.</span><br>
+      <!-- 값이 걸린 약속이라 근거 조항으로 가는 길이 있어야 한다.
+           약관 제8조 제7항에 창립 멤버 반값이 명시돼 있다. -->
+      <span data-i18n="wl.fine3">창립 멤버 반값은</span>
+      <a href="#" data-legal="terms" data-i18n="wl.terms">이용약관 제8조 제7항</a><span data-i18n="wl.fine4">에 정해져 있습니다.</span></p>
   </div>
 
   <!-- ══ 법적 문서 ══ -->

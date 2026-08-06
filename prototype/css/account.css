@@ -127,6 +127,16 @@
 }
 .wl-p{ font-size:12.5px; font-weight:300; line-height:1.75; opacity:.75; margin:0; }
 
+/* 남은 자리 — 달성 막대가 아니라 한 줄이다.
+   막대는 "채우면 열린다"로 읽히고, 이건 "차면 닫힌다"다. */
+.wl-seats{
+  margin:12px 0 0; padding:9px 12px; border-radius:9px;
+  background:rgba(242,245,248,.05); border:1px solid var(--line);
+  font:400 12px/1.5 ui-monospace,monospace; letter-spacing:.01em;
+  color:var(--amber); opacity:.92;
+}
+.wl-seats.full{ color:var(--paper); opacity:.6; font-family:inherit; font-weight:300; font-size:12.5px; }
+
 /* ── 사업자 정보 ── */
 .biz{ font-size:11.5px; font-weight:300; line-height:1.9; opacity:.45; }
 .biz-row{ display:flex; gap:12px; }

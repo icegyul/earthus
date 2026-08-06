@@ -263,19 +263,27 @@ export const waitlist = {
   },
 
   /** 진행률 게이지용 — §7 의 하드코딩 25% 를 대체 */
+  /* ⚠️⚠️ **여기는 select 로 세면 안 된다.**
+     waitlist 는 RLS 로 읽기가 막혀 있다 (이메일 목록이 노출되면 안 되니까).
+     insert 만 열려 있어서 select count 는 오류도 없이 **항상 0** 을 돌려준다.
+     실제로 1명이 등록돼 있는데 0 이 나오고 있었다 — 2026-08-06 확인.
+     선착순 500명을 걸어 두고 남은 자리를 틀리게 세면 그건 거짓 광고다.
+     숫자만 돌려주는 함수가 schema.sql 에 이미 있다. 그걸 쓴다. */
   async count() {
     if (!auth.client) return null;
-    const { count, error } = await auth.client
-      .from('waitlist').select('*', { count: 'exact', head: true });
+    const { data, error } = await auth.client.rpc('waitlist_count');
     if (error) { console.warn('[waitlist]', error.message); return null; }
-    return count;
+    return typeof data === 'number' ? data : null;
   },
 
+  /* 창립 멤버 남은 자리.
+     ⚠️ 못 세면 0 이 아니라 null 이다. 0 은 "마감"으로 읽힌다 —
+        서버가 잠깐 안 될 때 멀쩡한 자리를 마감으로 보여주면 안 된다. */
   async progress() {
     const n = await this.count();
     if (n == null) return null;
-    const goal = CONFIG.FOUNDING_GOAL || 500;
-    return { count: n, goal, pct: Math.min(100, Math.round((n / goal) * 100)) };
+    const seats = CONFIG.FOUNDING_SEATS || 500;
+    return { count: n, seats, left: Math.max(0, seats - n) };
   },
 };
 

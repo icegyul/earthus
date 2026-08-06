@@ -14,6 +14,13 @@
 
 ## 지금 열려 있는 작업
 
+**창립 멤버 500 — 반값 결제** (미착수, ⚠️ `SALES_OPEN=true` 전 필수).
+사양은 [`docs/FOUNDING-500.md`](docs/FOUNDING-500.md) 에 있습니다.
+
+⚠️⚠️ 사전등록 화면과 이용약관(제8조 제7항)에 **이미 약속이 걸려 있습니다.**
+서버에 반값 경로가 없는 상태로 판매를 열면 창립 멤버가 정가를 냅니다 — 약관 위반입니다.
+할인은 반드시 **서버(checkout 함수)** 에서 합니다. `billing.js` 값은 화면 표시용입니다.
+
 **마케팅 스튜디오** — `prototype/studio.html` (미착수).
 사양은 [`docs/MARKETING-STUDIO-SPEC.md`](docs/MARKETING-STUDIO-SPEC.md) 에 전부 있습니다.
 

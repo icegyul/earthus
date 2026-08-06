@@ -6,14 +6,14 @@
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
-  background:#F6F8F9; color:#0E1A1F;
+  background:#F6F6F4; color:#111216;
   font-family:'Apple SD Gothic Neo','Pretendard','Noto Sans KR',
               -apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;
   -webkit-font-smoothing:antialiased;
   font-feature-settings:'tnum' 1;
 }
 code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.9em;
-     background:#E4F0EE;padding:.08em .34em;border-radius:5px}
+     background:#E8EEF8;padding:.08em .34em;border-radius:5px}
 .w{color:#A8530C;font-weight:700}
 
 /* 한 장 = 1600×900 고정, 창 크기에는 축척으로 맞춘다.
@@ -22,14 +22,14 @@ code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.9em;
 .s{
   position:relative; width:1600px; height:900px;
   margin:0 auto; padding:64px 76px 76px;
-  background:#F6F8F9; display:none; flex-direction:column;
+  background:#F6F6F4; display:none; flex-direction:column;
   border-radius:22px; overflow:hidden; zoom:var(--z);
 }
 .s.on{display:flex}
 body:not(.all){display:flex;align-items:center;justify-content:center;
   min-height:100vh;overflow:hidden}
 body.all{padding:20px 0}
-body.all .s{display:flex;margin-bottom:22px;box-shadow:0 2px 14px rgba(14,26,31,.10)}
+body.all .s{display:flex;margin-bottom:22px;box-shadow:0 2px 18px rgba(10,10,10,.10)}
 
 h1{font-size:58px;line-height:1.16;margin:0 0 18px;font-weight:800;letter-spacing:-.02em;
    text-wrap:balance}
@@ -38,38 +38,38 @@ h2{font-size:52px;line-height:1.2;margin:0;font-weight:800;letter-spacing:-.02em
 h3{font-size:38px;line-height:1.25;margin:0 0 30px;font-weight:750;letter-spacing:-.018em;
    text-wrap:balance}
 .eyebrow{display:inline-block;font-size:15px;font-weight:700;letter-spacing:.13em;
-  text-transform:uppercase;color:#0E8C7F;margin-bottom:14px}
-.sub{font-size:23px;color:#5C6E76;margin:0 0 8px;line-height:1.5}
-.note{font-size:19px;color:#5C6E76;line-height:1.55;margin:26px 0 0;
-      padding-top:18px;border-top:1px solid #D9E2E5}
-.cap{font-size:18px;color:#5C6E76;line-height:1.55;margin:18px 0 0}
+  text-transform:uppercase;color:#0A3D8F;margin-bottom:14px}
+.sub{font-size:23px;color:#59616D;margin:0 0 8px;line-height:1.5}
+.note{font-size:19px;color:#59616D;line-height:1.55;margin:26px 0 0;
+      padding-top:18px;border-top:1px solid #D8DDE5}
+.cap{font-size:18px;color:#59616D;line-height:1.55;margin:18px 0 0}
 
 /* 표지 */
-.cover{padding:0;background:#0B1418;color:#F2F7F8}
+.cover{padding:0;background:#0A0A0A;color:#F7F8FA}
 .cov-bg{position:absolute;inset:0}
 .cov-bg img{width:100%;height:100%;object-fit:cover;opacity:.55}
-.cov-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,rgba(11,20,24,.92) 0%,rgba(11,20,24,.72) 46%,rgba(11,20,24,.30) 100%)}
+.cov-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,rgba(10,10,10,.94) 0%,rgba(10,10,10,.76) 46%,rgba(10,10,10,.30) 100%)}
 .cov-in{position:relative;margin:auto 0;padding:0 90px;max-width:1080px}
 .cov-logo{height:40px;margin-bottom:34px;filter:brightness(0) invert(1);opacity:.95}
 .cover h1{font-size:64px}
-.cover .sub{color:#BFD6D8;font-size:24px}
+.cover .sub{color:#D4DBE8;font-size:24px}
 .meta{list-style:none;display:flex;gap:26px;flex-wrap:wrap;padding:0;margin:34px 0 0;
-  font-size:17px;color:#93AEB2}
-.meta li:not(:last-child)::after{content:'';margin-left:26px;border-left:1px solid #35494F}
+  font-size:17px;color:#AAB4C5}
+.meta li:not(:last-child)::after{content:'';margin-left:26px;border-left:1px solid #394554}
 
 /* 장 표지 */
-.sect{background:#0B1418;color:#F2F7F8}
+.sect{background:#0A0A0A;color:#F7F8FA}
 .sect-in{margin:auto;max-width:1120px}
 .sect h2{font-size:76px;color:#fff}
-.part{display:block;font-size:19px;letter-spacing:.2em;color:#0E8C7F;
+.part{display:block;font-size:19px;letter-spacing:.2em;color:#0A3D8F;
   font-weight:800;margin-bottom:16px}
-.sect .sub{color:#BFD6D8;font-size:26px;margin-top:16px}
-.sect .note{border-color:#283A40;color:#93AEB2}
+.sect .sub{color:#D4DBE8;font-size:26px;margin-top:16px}
+.sect .note{border-color:#293341;color:#AAB4C5}
 
 /* 큰 문장 */
 .big-in{margin:auto 0;max-width:1180px}
 .big h2{font-size:66px}
-.big{border-left:10px solid #0E8C7F}
+.big{border-left:10px solid #0A3D8F}
 
 /* ⚠️ 본문은 남는 세로 공간을 채우고 가운데로 온다.
    안 그러면 내용이 위쪽에만 몰리고 아래가 텅 빈다. */
@@ -83,22 +83,22 @@ h3{font-size:38px;line-height:1.25;margin:0 0 30px;font-weight:750;letter-spacin
 
 /* 숫자 */
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:6px}
-.stat{background:#fff;border:1px solid #D9E2E5;border-radius:16px;padding:26px 28px}
+.stat{background:#fff;border:1px solid #D8DDE5;border-radius:3px;padding:26px 28px}
 .stat b{display:block;font-size:46px;font-weight:800;letter-spacing:-.03em;
-  color:#0E8C7F;line-height:1.05;font-variant-numeric:tabular-nums}
-.stat span{display:block;margin-top:8px;font-size:17px;color:#5C6E76;line-height:1.4}
+  color:#0A3D8F;line-height:1.05;font-variant-numeric:tabular-nums}
+.stat span{display:block;margin-top:8px;font-size:17px;color:#59616D;line-height:1.4}
 
 /* 목록 */
 .bul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:18px}
 .bul li{position:relative;padding-left:32px;font-size:26px;line-height:1.55}
 .bul li::before{content:'';position:absolute;left:2px;top:.62em;width:11px;height:2px;
-  background:#0E8C7F;border-radius:2px}
+  background:#0A3D8F;border-radius:2px}
 .bul li.w-li::before{background:#A8530C}
 
 /* 두 칸 */
 .two{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start;flex:1;min-height:0}
-.shot{margin:0;border-radius:14px;overflow:hidden;background:#0B1418;
-  border:1px solid #D9E2E5;box-shadow:0 6px 22px rgba(14,26,31,.10)}
+.shot{margin:0;border-radius:4px;overflow:hidden;background:#0A0A0A;
+  border:1px solid #D8DDE5;box-shadow:0 8px 26px rgba(10,10,10,.10)}
 .shot img{display:block;width:100%;height:auto}
 .missing{display:flex;align-items:center;justify-content:center;min-height:340px;padding:40px;color:#93AEB2;font-size:20px;text-align:center;line-height:1.7}
 .missing code{background:rgba(255,255,255,.08);color:#BFD6D8}
@@ -109,34 +109,34 @@ h3{font-size:38px;line-height:1.25;margin:0 0 30px;font-weight:750;letter-spacin
 .case .eyebrow{margin-bottom:10px}
 .rows{display:flex;flex-direction:column;gap:26px}
 .row{display:grid;grid-template-columns:150px 1fr;gap:22px;align-items:start}
-.lab{font-size:17px;font-weight:800;color:#0E8C7F;padding-top:5px;letter-spacing:-.01em}
+.lab{font-size:17px;font-weight:800;color:#0A3D8F;padding-top:5px;letter-spacing:-.01em}
 .row p{margin:0;font-size:25px;line-height:1.55}
-.rows.lite .row{display:block;padding-left:26px;border-left:3px solid #0E8C7F}
+.rows.lite .row{display:block;padding-left:26px;border-left:3px solid #0A3D8F}
 .lead{font-size:30px!important;font-weight:750;line-height:1.35!important}
-.sub2{margin-top:6px!important;color:#5C6E76;font-size:20px!important}
-.tag{align-self:flex-start;margin:26px 0 0;padding:14px 22px;background:#E4F0EE;border-radius:12px;
-  font-size:19px;font-weight:650;color:#0E1A1F;display:inline-block}
+.sub2{margin-top:6px!important;color:#59616D;font-size:20px!important}
+.tag{align-self:flex-start;margin:26px 0 0;padding:14px 22px;background:#E8EEF8;border-radius:3px;
+  font-size:19px;font-weight:650;color:#111216;display:inline-block}
 
 /* 모델 */
 .models{display:grid;grid-template-columns:1fr 1fr;gap:26px}
-.mcard{background:#fff;border:1px solid #D9E2E5;border-radius:18px;padding:30px 32px}
-.mcard b{font-size:34px;font-weight:800;color:#0E8C7F;letter-spacing:-.02em}
-.when{display:block;margin:6px 0 20px;font-size:19px;color:#5C6E76;font-weight:600}
+.mcard{background:#fff;border:1px solid #D8DDE5;border-radius:3px;padding:30px 32px}
+.mcard b{font-size:34px;font-weight:800;color:#0A3D8F;letter-spacing:-.02em}
+.when{display:block;margin:6px 0 20px;font-size:19px;color:#59616D;font-weight:600}
 .mcard ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:11px}
 .mcard li{font-size:22px;padding-left:22px;position:relative;line-height:1.45}
 .mcard li::before{content:'';position:absolute;left:0;top:.6em;width:9px;height:2px;
-  background:#0E8C7F;border-radius:2px}
-.why{margin:22px 0 0;padding-top:16px;border-top:1px solid #D9E2E5;
-  font-size:18px;color:#5C6E76;line-height:1.5}
+  background:#0A3D8F;border-radius:2px}
+.why{margin:22px 0 0;padding-top:16px;border-top:1px solid #D8DDE5;
+  font-size:18px;color:#59616D;line-height:1.5}
 
 /* 아래 표시 */
-.pager{position:fixed;right:22px;bottom:18px;font-size:14px;color:#5C6E76;
-  background:rgba(246,248,249,.9);padding:7px 13px;border-radius:999px;
-  border:1px solid #D9E2E5;font-variant-numeric:tabular-nums}
-.hint{position:fixed;left:22px;bottom:18px;font-size:13px;color:#5C6E76;background:rgba(246,248,249,.9);padding:7px 13px;border-radius:999px;border:1px solid #D9E2E5}
+.pager{position:fixed;right:22px;bottom:18px;font-size:14px;color:#59616D;
+  background:rgba(246,246,244,.94);padding:7px 13px;border-radius:3px;
+  border:1px solid #D8DDE5;font-variant-numeric:tabular-nums}
+.hint{position:fixed;left:22px;bottom:18px;font-size:13px;color:#59616D;background:rgba(246,246,244,.94);padding:7px 13px;border-radius:3px;border:1px solid #D8DDE5}
 body.all .pager,body.all .hint{display:none}
 .s::after{content:attr(data-n);position:absolute;right:34px;bottom:22px;
-  font-size:14px;color:#5C6E76;font-variant-numeric:tabular-nums}
+  font-size:14px;color:#59616D;font-variant-numeric:tabular-nums}
 .cover::after,.sect::after{color:#6E888D}
 
 @media print{
@@ -161,8 +161,8 @@ body.all .pager,body.all .hint{display:none}
 <section class="s big" data-n="2">
   <div class="big-in">
     <span class="eyebrow">이 발표에서 다루는 것</span>
-    <h2>무엇을 만들었나가 아니라<br>어떻게 판단했나</h2>
-    <p class="note">화면은 뒤에서 보여 드립니다. 앞쪽은 전부 “왜 그렇게 결정했나”입니다.</p>
+    <h2>앱을 만든 이야기가 아니라,<br>판단을 만든 이야기입니다</h2>
+    <p class="note">화면은 뒤에서 보여 드립니다. 앞쪽은 전부 “어떤 근거로 결정했나”입니다.</p>
   </div>
 </section>
 <section class="s" data-n="3">
@@ -241,7 +241,7 @@ body.all .pager,body.all .hint{display:none}
   <p class="cap">한국 기상청·일본 기상청의 공식 예보, 미국 JTWC 의 관측·진로(GDACS 제공), 유럽중기예보센터 모델 — 세 나라 기상 기관과 모델 하나. 기관이 다르면 선도 따로 그린다, 평균 내지 않는다. 선이 벌어질수록 그만큼 불확실하다는 뜻이고, 그 벌어짐도 정보다.</p>
 </section>
 <section class="s" data-n="16">
-  <h3>모든 값에 붙는 세 가지</h3>
+  <h3>값 하나를 올리기 전에 확인한 네 가지</h3>
   <ul class="bul"><li>출처 — 어느 기관의 어느 자료인가</li><li>관측 시각 — 언제 잰 값인가 (예보가 아니라 관측)</li><li>표본 수(n) — 몇 개를 세서 나온 값인가</li><li>그리고 기준값이 있으면 그 기준을 우리가 정했다는 사실까지 같이 적는다.</li></ul>
   <p class="note">이 네 줄이 없으면 화면에 안 올린다는 게 규칙이었다.</p>
 </section>
@@ -479,8 +479,8 @@ body.all .pager,body.all .hint{display:none}
 <section class="s big" data-n="50">
   <div class="big-in">
     <span class="eyebrow">무엇을 파는가</span>
-    <h2>자료가 아니라<br>“그 자료를 믿어도 되는지”를 판다</h2>
-    <p class="note">같은 공공자료를 쓰는 곳은 많다. 한계까지 적는 곳은 드물다.</p>
+    <h2>자료를 파는 것이 아니라,<br>그 자료를 판단할 근거를 만든다</h2>
+    <p class="note">같은 공공자료를 쓰는 곳은 많다. 출처·시각·한계까지 보이게 하는 곳은 드물다.</p>
   </div>
 </section>
 <section class="s" data-n="51">
@@ -489,9 +489,9 @@ body.all .pager,body.all .hint{display:none}
   <p class="cap">Where Earth Becomes One — 지구가 하나 되는 곳. 이 브랜드 이미지는 ChatGPT 로 만들었다.</p>
 </section>
 <section class="s" data-n="52">
-  <h3>브랜드 시트 — 4번 칸을 봐 주세요</h3>
-  <figure class="shot big-shot"><img src="img/brand-sheet.png" alt=""></figure>
-  <p class="cap"><span class="w">⚠️</span> 오른쪽 「PRODUCT PRINCIPLE」 세 줄이 이 발표의 3부·5부 그대로다 — 출처+시각 · 관측≠예보 · 자료 없음≠사건 없음. 브랜드가 로고와 색이 아니라 「무엇을 하지 않는가」로 적혀 있다. 이 시트는 ChatGPT 로 만들었다 — 어떤 도구로 만들었는지 숨기지 않는다.</p>
+  <h3>브랜드 시스템 — 로고보다 먼저 읽혀야 할 것</h3>
+  <figure class="shot big-shot"><img src="img/brand-master.png" alt=""></figure>
+  <p class="cap">화면의 정보 원칙을 브랜드 안에 넣었다 — 출처와 시각, 관측과 예보의 구분, 자료 없음과 사건 없음의 구분. 브랜드는 장식이 아니라 이 약속을 반복하는 장치다.</p>
 </section>
 <section class="s" data-n="53">
   <h3>릴스 · 쇼츠 (1080×1920) — 확산에 제일 좋다</h3>
@@ -529,8 +529,8 @@ body.all .pager,body.all .hint{display:none}
 <section class="s big" data-n="59">
   <div class="big-in">
     <span class="eyebrow">닫는 말</span>
-    <h2>값을 보여주는 앱은 많다.<br>우리는 그 값의 한계까지 보여준다</h2>
-    <p class="note">earthus.net · 달루어(dalur) · 김정우</p>
+    <h2>값을 보여주는 앱은 많다.<br>EARTHUS는 그 값의 상태를 함께 보여준다</h2>
+    <p class="note">출처 · 시각 · 표본 · 한계  |  earthus.net · 달루어(dalur) · 김정우</p>
   </div>
 </section>
 <section class="s sect" data-n="60">

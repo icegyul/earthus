@@ -277,12 +277,28 @@ export const accountSheet = {
 /* ══════════════════════════════════════════════════════════════
    사전등록 (§7)
    ══════════════════════════════════════════════════════════════ */
+/* 언어를 바꾸면 남은 자리 문구도 따라와야 한다.
+   ⚠️ data-i18n 이 아니라 스크립트가 쓰는 글이라 applyStatic 이 못 건드린다. */
+i18n.onChange(() => {
+  const el = $('#wlSeats');
+  if (el && el.style.display !== 'none') waitlistUI.init();
+});
+
 export const waitlistUI = {
   async init() {
-    /* ⚠️ 달성 막대(몇 명 / 목표 몇 명)를 뺐다 (2026-08-06).
-       창립 멤버 등급이 없어졌는데 막대만 남으면
-       "이만큼 모이면 열립니다"라는 약속으로 읽힌다. 그 약속은 못 지킨다.
-       숫자는 서버에 계속 쌓인다 — 화면에만 안 그린다. */
+    /* 남은 자리. ⚠️ 달성 막대가 아니다 —
+       막대는 "채우면 열린다"로 읽히고, 이건 "차면 닫힌다"다.
+       선착순 500명에게 평생 반값을 약속했으니 숫자가 맞아야 한다. */
+    const el = $('#wlSeats');
+    if (!el) return;
+    const p = await waitlist.progress();
+    if (!p) { el.style.display = 'none'; return; }   // 못 세면 안 보여준다
+    const ko = i18n.lang !== 'en';
+    el.textContent = p.left > 0
+      ? (i18n.STATIC['wl.seats'][ko ? 'ko' : 'en']).replace('{n}', p.left.toLocaleString())
+      : i18n.STATIC['wl.seatsFull'][ko ? 'ko' : 'en'];
+    el.classList.toggle('full', p.left <= 0);
+    el.style.display = 'block';
   },
   async submit(ev) {
     ev?.preventDefault();
@@ -298,6 +314,7 @@ export const waitlistUI = {
         ? (ko ? '이미 등록된 이메일입니다' : 'This email is already registered')
         : (ko ? '사전등록이 완료되었습니다. 열리면 먼저 알려드립니다'
               : 'You are on the list. We will write to you when it opens'));
+      if (!r.already) this.init();   // 방금 한 자리가 줄어든 것을 바로 보여준다
     } catch (e) {
       const ko = i18n.lang !== 'en';
       if (e.message === 'INVALID_EMAIL')

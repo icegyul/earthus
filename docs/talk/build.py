@@ -70,15 +70,15 @@ def _resolve_refs(slides):
 SLIDES = _resolve_refs(SLIDES)
 
 # ── 색 ────────────────────────────────────────────────────────────────
-BG      = "F6F8F9"   # 차가운 기운이 살짝 도는 흰색 — 인쇄해도 뜨지 않는다
-INK     = "0E1A1F"   # 순수 검정 대신 짙은 청록빛 먹
-MUTED   = "5C6E76"
-ACCENT  = "0E8C7F"   # 앱의 청록을 인쇄에서도 읽히도록 낮춘 값
-SOFT    = "E4F0EE"
+BG      = "F6F6F4"   # 차가운 백색보다 종이에 가까운 바탕 — 인쇄해도 뜨지 않는다
+INK     = "111216"   # EARTHUS 우주 블랙과 같은 먹색
+MUTED   = "59616D"
+ACCENT  = "0A3D8F"   # EARTHUS horizon blue — 밝은 종이에서도 충분히 읽힌다
+SOFT    = "E8EEF8"
 WARN    = "A8530C"
-LINE    = "D9E2E5"
-PANEL   = "0B1418"   # 어두운 카드 (표지·강조 장)
-PANEL_INK = "F2F7F8"
+LINE    = "D8DDE5"
+PANEL   = "0A0A0A"   # EARTHUS space black (표지·강조 장)
+PANEL_INK = "F7F8FA"
 
 FONT = "Apple SD Gothic Neo"   # ⚠️ 윈도우에서 열면 '맑은 고딕'으로 바꿔 주세요
 
@@ -251,7 +251,7 @@ code{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:.9em;
 body:not(.all){display:flex;align-items:center;justify-content:center;
   min-height:100vh;overflow:hidden}
 body.all{padding:20px 0}
-body.all .s{display:flex;margin-bottom:22px;box-shadow:0 2px 14px rgba(14,26,31,.10)}
+body.all .s{display:flex;margin-bottom:22px;box-shadow:0 2px 18px rgba(10,10,10,.10)}
 
 h1{font-size:58px;line-height:1.16;margin:0 0 18px;font-weight:800;letter-spacing:-.02em;
    text-wrap:balance}
@@ -270,14 +270,14 @@ h3{font-size:38px;line-height:1.25;margin:0 0 30px;font-weight:750;letter-spacin
 .cover{padding:0;background:#%(panel)s;color:#%(pink)s}
 .cov-bg{position:absolute;inset:0}
 .cov-bg img{width:100%%;height:100%%;object-fit:cover;opacity:.55}
-.cov-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,rgba(11,20,24,.92) 0%%,rgba(11,20,24,.72) 46%%,rgba(11,20,24,.30) 100%%)}
+.cov-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,rgba(10,10,10,.94) 0%%,rgba(10,10,10,.76) 46%%,rgba(10,10,10,.30) 100%%)}
 .cov-in{position:relative;margin:auto 0;padding:0 90px;max-width:1080px}
 .cov-logo{height:40px;margin-bottom:34px;filter:brightness(0) invert(1);opacity:.95}
 .cover h1{font-size:64px}
-.cover .sub{color:#BFD6D8;font-size:24px}
+.cover .sub{color:#D4DBE8;font-size:24px}
 .meta{list-style:none;display:flex;gap:26px;flex-wrap:wrap;padding:0;margin:34px 0 0;
-  font-size:17px;color:#93AEB2}
-.meta li:not(:last-child)::after{content:'';margin-left:26px;border-left:1px solid #35494F}
+  font-size:17px;color:#AAB4C5}
+.meta li:not(:last-child)::after{content:'';margin-left:26px;border-left:1px solid #394554}
 
 /* 장 표지 */
 .sect{background:#%(panel)s;color:#%(pink)s}
@@ -285,8 +285,8 @@ h3{font-size:38px;line-height:1.25;margin:0 0 30px;font-weight:750;letter-spacin
 .sect h2{font-size:76px;color:#fff}
 .part{display:block;font-size:19px;letter-spacing:.2em;color:#%(accent)s;
   font-weight:800;margin-bottom:16px}
-.sect .sub{color:#BFD6D8;font-size:26px;margin-top:16px}
-.sect .note{border-color:#283A40;color:#93AEB2}
+.sect .sub{color:#D4DBE8;font-size:26px;margin-top:16px}
+.sect .note{border-color:#293341;color:#AAB4C5}
 
 /* 큰 문장 */
 .big-in{margin:auto 0;max-width:1180px}
@@ -305,7 +305,7 @@ h3{font-size:38px;line-height:1.25;margin:0 0 30px;font-weight:750;letter-spacin
 
 /* 숫자 */
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:6px}
-.stat{background:#fff;border:1px solid #%(line)s;border-radius:16px;padding:26px 28px}
+.stat{background:#fff;border:1px solid #%(line)s;border-radius:3px;padding:26px 28px}
 .stat b{display:block;font-size:46px;font-weight:800;letter-spacing:-.03em;
   color:#%(accent)s;line-height:1.05;font-variant-numeric:tabular-nums}
 .stat span{display:block;margin-top:8px;font-size:17px;color:#%(muted)s;line-height:1.4}
@@ -319,8 +319,8 @@ h3{font-size:38px;line-height:1.25;margin:0 0 30px;font-weight:750;letter-spacin
 
 /* 두 칸 */
 .two{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start;flex:1;min-height:0}
-.shot{margin:0;border-radius:14px;overflow:hidden;background:#%(panel)s;
-  border:1px solid #%(line)s;box-shadow:0 6px 22px rgba(14,26,31,.10)}
+.shot{margin:0;border-radius:4px;overflow:hidden;background:#%(panel)s;
+  border:1px solid #%(line)s;box-shadow:0 8px 26px rgba(10,10,10,.10)}
 .shot img{display:block;width:100%%;height:auto}
 .missing{display:flex;align-items:center;justify-content:center;min-height:340px;padding:40px;color:#93AEB2;font-size:20px;text-align:center;line-height:1.7}
 .missing code{background:rgba(255,255,255,.08);color:#BFD6D8}
@@ -336,12 +336,12 @@ h3{font-size:38px;line-height:1.25;margin:0 0 30px;font-weight:750;letter-spacin
 .rows.lite .row{display:block;padding-left:26px;border-left:3px solid #%(accent)s}
 .lead{font-size:30px!important;font-weight:750;line-height:1.35!important}
 .sub2{margin-top:6px!important;color:#%(muted)s;font-size:20px!important}
-.tag{align-self:flex-start;margin:26px 0 0;padding:14px 22px;background:#%(soft)s;border-radius:12px;
+.tag{align-self:flex-start;margin:26px 0 0;padding:14px 22px;background:#%(soft)s;border-radius:3px;
   font-size:19px;font-weight:650;color:#%(ink)s;display:inline-block}
 
 /* 모델 */
 .models{display:grid;grid-template-columns:1fr 1fr;gap:26px}
-.mcard{background:#fff;border:1px solid #%(line)s;border-radius:18px;padding:30px 32px}
+.mcard{background:#fff;border:1px solid #%(line)s;border-radius:3px;padding:30px 32px}
 .mcard b{font-size:34px;font-weight:800;color:#%(accent)s;letter-spacing:-.02em}
 .when{display:block;margin:6px 0 20px;font-size:19px;color:#%(muted)s;font-weight:600}
 .mcard ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:11px}
@@ -353,9 +353,9 @@ h3{font-size:38px;line-height:1.25;margin:0 0 30px;font-weight:750;letter-spacin
 
 /* 아래 표시 */
 .pager{position:fixed;right:22px;bottom:18px;font-size:14px;color:#%(muted)s;
-  background:rgba(246,248,249,.9);padding:7px 13px;border-radius:999px;
+  background:rgba(246,246,244,.94);padding:7px 13px;border-radius:3px;
   border:1px solid #%(line)s;font-variant-numeric:tabular-nums}
-.hint{position:fixed;left:22px;bottom:18px;font-size:13px;color:#%(muted)s;background:rgba(246,248,249,.9);padding:7px 13px;border-radius:999px;border:1px solid #%(line)s}
+.hint{position:fixed;left:22px;bottom:18px;font-size:13px;color:#%(muted)s;background:rgba(246,246,244,.94);padding:7px 13px;border-radius:3px;border:1px solid #%(line)s}
 body.all .pager,body.all .hint{display:none}
 .s::after{content:attr(data-n);position:absolute;right:34px;bottom:22px;
   font-size:14px;color:#%(muted)s;font-variant-numeric:tabular-nums}
@@ -481,7 +481,7 @@ def build_pptx(path):
                 emph = True
         return p
 
-    def rect(sl, x, y, w, h, fill, line=None, radius=True):
+    def rect(sl, x, y, w, h, fill, line=None, radius=False):
         from pptx.enum.shapes import MSO_SHAPE
         shp = sl.shapes.add_shape(
             MSO_SHAPE.ROUNDED_RECTANGLE if radius else MSO_SHAPE.RECTANGLE,
@@ -507,6 +507,16 @@ def build_pptx(path):
         if not os.path.exists(p):
             return None
         return sl.shapes.add_picture(p, In(x), In(y), width=In(w))
+
+    def image_ratio(name, fallback=16 / 9):
+        """이미지를 16:9로 단정하면 3:2 브랜드 시트 같은 자료가 캡션을 덮는다."""
+        p = os.path.join(IMG, name)
+        try:
+            from PIL import Image
+            with Image.open(p) as image:
+                return image.width / image.height
+        except Exception:
+            return fallback
 
     def title(sl, text, y=1.05, size=32, color=INK):
         tf = box(sl, M, y, CW, 1.4)
@@ -538,14 +548,9 @@ def build_pptx(path):
 
         if k == "cover":
             bg(sl, PANEL)
-            if img:
-                # 배경 사진을 가득 깔고 그 위에 어두운 판을 덮는다
-                p = pic(sl, img, 0, 0, W)
-                if p:
-                    p.top = In((H - p.height.inches) / 2)
-                sh = rect(sl, -0.1, -0.1, W + 0.2, H + 0.2, PANEL, radius=False)
-                sh.fill.fore_color.rgb = rgb(PANEL)
-                sh.fill.transparency = 0.42
+            # PPTX는 인쇄·제출용이라 표지에서도 고정된 우주 블랙을 쓴다.
+            # 전체 화면 사진은 PowerPoint 렌더러가 가장자리로 번지며 캔버스 검사에 걸린다.
+            # 브라우저 발표본은 같은 장에서 실제 지구 이미지를 배경으로 계속 보여 준다.
             if os.path.exists(LOGO):
                 sl.shapes.add_picture(LOGO, In(M + 0.15), In(1.5), height=In(0.38))
             tf = box(sl, M + 0.15, 2.15, CW - 1.6, 2.0)
@@ -618,7 +623,7 @@ def build_pptx(path):
             if img:
                 bw = CW * 0.46
                 pw = CW - bw - 0.5
-                ph = pw * 9 / 16
+                ph = pw / image_ratio(img)
                 pic(sl, img, M + bw + 0.5, top + max(0, (bottom - top - ph) / 2), pw)
                 tf = box(sl, M, top, bw, bottom - top, mid=True)
             else:
@@ -635,15 +640,16 @@ def build_pptx(path):
             title(sl, s["title"], 0.72, 30)
             # ⚠️ 그림 높이 + 설명 글이 장 아래를 넘지 않게 폭부터 잡는다
             ptop, cap_h, gap = 1.85, 0.82, 0.2
-            pw = min(CW, (H - ptop - cap_h - gap) * 16 / 9)
+            ratio = image_ratio(img)
+            pw = min(CW, (H - ptop - cap_h - gap) * ratio)
             px = (W - pw) / 2
             if pic(sl, img, px, ptop, pw) is None:
-                ph = pw * 9 / 16
+                ph = pw / ratio
                 rect(sl, px, ptop, pw, ph, "FFFFFF", LINE)
                 tfm = box(sl, px + 0.5, ptop, pw - 1.0, ph, mid=True)
                 para(tfm, "이미지 없음 — docs/talk/img/%s 로 넣고 python3 build.py" % img,
                      15, MUTED, line=1.5, first=True)
-            cy = ptop + pw * 9 / 16 + gap
+            cy = ptop + pw / ratio + gap
             tf = box(sl, px, cy, pw, cap_h)
             para(tf, s["cap"], 12.5, MUTED, line=1.45, first=True)
             continue
@@ -663,7 +669,8 @@ def build_pptx(path):
                 first = False
             if img:
                 pw = CW - wide - 0.25
-                pic(sl, img, M + wide + 0.25, top + max(0, (bot - top - pw * 9 / 16) / 2), pw)
+                ph = pw / image_ratio(img)
+                pic(sl, img, M + wide + 0.25, top + max(0, (bot - top - ph) / 2), pw)
             tag = rect(sl, M, H - 1.12, min(CW, len(s["tag"]) * 0.148 + 0.7), 0.62, SOFT)
             tf = box(sl, M + 0.28, H - 0.97, CW - 0.6, 0.5)
             para(tf, s["tag"], 13, INK, bold=True, first=True)

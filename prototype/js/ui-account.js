@@ -238,6 +238,7 @@ export const accountSheet = {
     $('#accProvider').textContent =
       ({ google: 'Google', apple: 'Apple' })[p.provider] || p.provider || '—';
     $('#accTier').textContent = auth.isPaid() ? '구독 중' : '무료';
+    $('#accBadge').style.display = auth.isFounding() ? 'inline-block' : 'none';
   },
 
   async exportData() {

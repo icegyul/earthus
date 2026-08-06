@@ -1730,10 +1730,10 @@ function renderTierRow(ko) {
     const h0 = $('#tierHint');
     if (h0) h0.textContent = ko
       ? (CONFIG.SHOW_WAITLIST
-          ? '지금은 모든 화면이 무료입니다. 유료 기능을 만들고 있습니다 — 아래 사전등록을 해 두시면 열릴 때 먼저 알려드립니다.'
+          ? '지금은 모든 화면이 무료입니다. 항공기·선박을 포함한 유료 서비스를 만들고 있습니다 — 아래 창립 멤버로 남겨 두시면 열리는 날 먼저 연락드립니다. 결제는 그때 정하시면 됩니다.'
           : '지금은 모든 화면이 무료입니다.')
       : (CONFIG.SHOW_WAITLIST
-          ? 'Everything is free right now. Paid features are being built — join the waitlist below and we will write to you first.'
+          ? 'Everything is free right now. A paid service — including live aircraft and ships — is being built. Join as a founding member below and we will write to you first on the day it opens; you decide about paying then.'
           : 'Everything on screen is free right now.');
     return;
   }

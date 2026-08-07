@@ -22,6 +22,11 @@
 서버에 반값 경로가 없는 상태로 판매를 열면 창립 멤버가 정가를 냅니다 — 약관 위반입니다.
 할인은 반드시 **서버(checkout 함수)** 에서 합니다. `billing.js` 값은 화면 표시용입니다.
 
+**우주·심해 탐험 (교육 영역)** — 신규, 사양 확정.
+지시서는 [`docs/EXPLORE-DEV-SPEC.md`](docs/EXPLORE-DEV-SPEC.md) 에 있습니다 —
+공통 기반(A) → 우주 사진(B1·2) → 심해 수심 기둥(C1·2) 순서. 주차별 완료 조건 명시.
+⚠️ 크레딧 없는 사진·"관측 기록" 문구 누락은 기능이 돼도 검수에서 돌려보냅니다.
+
 **마케팅 스튜디오** — `prototype/studio.html` (미착수).
 사양은 [`docs/MARKETING-STUDIO-SPEC.md`](docs/MARKETING-STUDIO-SPEC.md) 에 전부 있습니다.
 

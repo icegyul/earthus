@@ -22,6 +22,7 @@ import { eclipseMarks } from './eclipse.js';
 import { lightning } from './lightning.js';
 import { regional } from './regional.js';
 import { alerts } from './alerts.js';
+import { airStations } from './airkr.js';
 
 /* ── 레이어를 켤 때 그때 받는다 ────────────────────────────────
    ⚠️ 받은 지적: **"처음 접속시 모든 기능 다 꺼줘. 지구 무빙 애니메이션만. 버벅거린다."**
@@ -46,6 +47,7 @@ const LOADERS = {
   aurora:    () => imagery.loadAurora(),
   landobs:   () => landObs.refresh(),
   buoy:      () => buoys.refresh(),
+  airkr:     () => airStations.refresh(),
   lightning: () => lightning.refresh(),
   regional:  () => regional.refresh(),
   alerts:    () => alerts.refresh(),
@@ -92,6 +94,7 @@ const REFRESH = {
   news: 30 * 60_000,
   clouds: 20 * 60_000,   // RealEarth 는 1시간 간격 — 20분마다 새 시각 확인
   buoy: 30 * 60_000,     // Lambda 가 30분마다 올린다
+  airkr: 20 * 60_000,     // 자료 CacheControl max-age=600(10분) — 그보다 여유 있게
   /* 쓰나미는 다르다. 지진 직후 몇 분 안에 나오는 경보를 놓치면 의미가 없다.
      응답이 보통 수 KB 라 자주 물어도 부담이 없다. */
   tsunami: 3 * 60_000,
@@ -124,6 +127,7 @@ export const registry = {
     pointLayers.ukfc     = ukForecast.init();
     pointLayers.poi      = poi.init();
     pointLayers.buoy     = buoys.init();
+    pointLayers.airkr    = airStations.init();
     pointLayers.lightning = lightning.init();
     pointLayers.regional  = regional.init();
     pointLayers.alerts    = alerts.init();
@@ -179,7 +183,7 @@ export const registry = {
           다시 방문한 사람은 켜 뒀던 것만 순서대로 돌아온다. */
     const seq = ['cyclone', 'phenomena', 'heatdome', 'news', 'wildfire',
                  'launch', 'orbits', 'aurora',
-                 'buoy', 'lightning', 'regional', 'alerts', 'ukfc']
+                 'buoy', 'airkr', 'lightning', 'regional', 'alerts', 'ukfc']
       .filter(id => store.isOn(id));
 
     for (const id of seq) {
@@ -259,6 +263,7 @@ export const registry = {
     on('wildfire', LOADERS.wildfire, REFRESH.wildfire);
     on('landobs', LOADERS.landobs, REFRESH.landobs);
     on('buoy',     LOADERS.buoy,     REFRESH.buoy);
+    on('airkr',    LOADERS.airkr,    REFRESH.airkr);
     on('lightning',LOADERS.lightning,REFRESH.lightning);
     on('regional', LOADERS.regional, REFRESH.regional);
     on('alerts',   LOADERS.alerts,   REFRESH.alerts);

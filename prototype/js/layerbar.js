@@ -174,6 +174,11 @@ export const ITEMS = [
 
   { id:'buoy', ko:'해양 부이', en:'Buoys', sub:'파고·수온', subEn:'Waves', ready:true,
     sky:'#06121a', paint:'buoy' },
+  /* ⚠️ '실측'을 부제에 반드시 남긴다 — 대기질 메뉴의 pm25/pm10 격자는
+     유럽 CAMS 모델값이고, 이건 한국환경공단이 실제로 잰 값이라 서로 다르다. */
+  { id:'airkr', ko:'대기오염(실측)', en:'Air quality (measured)',
+    sub:'전국 673개 측정소', subEn:'673 stations nationwide', ready:true,
+    sky:'#141a12', paint:'airkr' },
   { id:'eclipse', ko:'일식', en:'Eclipse', sub:'예정', subEn:'Upcoming', ready:true,
     sky:'#0a0a10', paint:'eclipse' },
   /* 열돔·환류는 예전에 목록에 없어서 끌 방법이 없었다.
@@ -228,6 +233,8 @@ export function drawThumb(cv, kind) {
     tsunami: () => { bg(['#0a2030', '#04101a']); waves('#ff5d5d'); },
     fire: () => { bg(['#2a1206', '#120602']); flames(); },
     buoy: () => { bg(['#062535', '#031018']); waves('#5ad1e8'); dots('#9fe8f5'); },
+    // 초록(좋음)~빨강(매우나쁨) — 등급 4단계를 점으로 흩어 놓는다
+    airkr: () => { bg(['#141a12', '#0a0e08']); dots('#5fd15a'); dots('#ff9f43'); },
     /* 관측망 — 촘촘한 곳과 빈 곳. 점이 몰린 데와 없는 데가 대비되게. */
     coverage: () => { bg(['#0a0e14', '#050810']); dots('#a8d4ec'); },
     landobs: () => { bg(['#0e2418', '#04120a']); dots('#9fd8a8'); streaks('rgba(200,240,210,.45)'); },
@@ -454,7 +461,7 @@ const CATEGORIES = [
     ids: ['temp', 'tmax', 'tmin', 'humidity', 'wind', 'windfc', 'rain', 'pressure',
           'fog', 'drought'] },
   { id: 'air',     ko: '대기질',     en: 'Air quality',
-    ids: ['pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone'] },
+    ids: ['airkr', 'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone'] },
   { id: 'ocean',   ko: '해양',       en: 'Ocean',
     ids: ['sst', 'sstanom', 'wave', 'swell', 'current', 'phenomena'] },
   { id: 'station', ko: '관측소',     en: 'Stations',

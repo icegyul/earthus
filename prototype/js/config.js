@@ -289,6 +289,10 @@ export const LAYER_DEFS = [
 
   // ── 점 ──
   { id:'buoy',     kind:'point',   tier:TIER.FREE, on:false, group:'ocean' },
+  /* 에어코리아(한국환경공단) 실측 — 673개 측정소. 지도의 pm25/pm10/aqi 격자는
+     유럽 CAMS 모델값이고, 이건 한국이 실제로 잰 값이다. group 은 'air' —
+     모델과 실측을 같은 메뉴에서 고르게 한다(어느 쪽인지는 각 항목 이름에 적는다). */
+  { id:'airkr',    kind:'point',   tier:TIER.FREE, on:false, group:'air' },
 
   // ── 미구현 (연결 지점만) ──
   /* 이벤트 뉴스는 무료다.

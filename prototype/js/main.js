@@ -44,6 +44,7 @@ import { sceneMgr } from './scene.js';
 import { scaleRail } from './ui-scale.js';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
 import { solarScene } from './space/solarscene.js?v=20260809-solar1';
+import { galaxyCards } from './space/galaxycards.js?v=20260809-galaxy1';
 import { trenchCards } from './ocean/trenchcards.js';
 
 /* 늦게 불러오는 바다거북 모듈을 붙잡아 두는 곳.
@@ -104,6 +105,7 @@ async function boot() {
   sceneMgr.init();
   scaleRail.init();
   solarScene.init();
+  galaxyCards.init();
   trenchCards.init();
   // 수심 장면을 공유하거나 동일 좌표로 재현할 수 있게 한다.
   // ⚠️ 좌표만 받고 수심은 반드시 배포된 GEBCO 격자에서 다시 읽는다.
@@ -125,6 +127,10 @@ async function boot() {
   } else if (sceneParams.get('ocean') === '1') {
     queueMicrotask(() => sceneMgr.to('ocean', { stage: 'trench' }).catch(error => {
       console.warn('[ocean-link]', error.message);
+    }));
+  } else if (['milkyway', 'galaxies'].includes(sceneParams.get('space'))) {
+    queueMicrotask(() => sceneMgr.to('space', { stage: sceneParams.get('space') }).catch(error => {
+      console.warn('[space-link]', error.message);
     }));
   } else if (sceneParams.get('solar') === '1') {
     queueMicrotask(() => sceneMgr.to('space', { stage: 'solar' }).catch(error => {

@@ -36,6 +36,8 @@ const DAY_MS = 86_400_000;
 const LIGHT_HOURS_PER_AU = 499.004783836 / 3600;
 const MOTION_SAMPLES = 145;
 const MOTION_DURATION_MS = 6500;
+const COSMIC_FPS = 30;
+const COSMIC_FRAME_MS = 1000 / COSMIC_FPS;
 const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
 const mix = (a, b, amount) => a + (b - a) * amount;
 const smooth = (a, b, value) => {
@@ -95,6 +97,8 @@ export const cosmic3d = {
   _motionPaths: new Map(),
   _motionPlanetMeshes: new Map(),
   _motionDistance: 132,
+  _renderCount: 0,
+  _earthTextureLoadId: 0,
 
   init() {
     if (this.root) return this;
@@ -119,7 +123,17 @@ export const cosmic3d = {
     store.on('scene', (next, stage) => {
       const visible = next === 'space';
       this.root.hidden = !visible;
-      if (!visible) return;
+      if (!visible) {
+        if (this._frame) cancelAnimationFrame(this._frame);
+        this._frame = 0; this.cancelSolarMotionReplay();
+        this.root.classList.remove('is-moving', 'is-loading');
+        // 지구로 돌아가기 버튼 외의 장면 전환도 숨은 3D 상태를 남기지 않는다.
+        if (this._solarMotionMode) this.closeSolarMotion(false);
+        if (this._photoMode) this.closePhotoAtlas(false);
+        if (this._detailBody) this.closeBody(false);
+        if (this._selectedCraft) this.closeCraft(false);
+        return;
+      }
       this.activate(stage);
     });
     i18n.onChange(() => {
@@ -143,8 +157,11 @@ export const cosmic3d = {
     if (note) note.textContent = ko() ? '3D 우주 공간을 준비하는 중…' : 'Preparing the 3D space…';
     try {
       await this.ensureEngine();
+      if (store.scene !== 'space') { this.root.classList.remove('is-loading'); return; }
       await this.loadSpacecraftCatalog();
+      if (store.scene !== 'space') { this.root.classList.remove('is-loading'); return; }
       await this.loadSolarMotionCatalog();
+      if (store.scene !== 'space') { this.root.classList.remove('is-loading'); return; }
       this.root.classList.remove('is-loading');
       if (!this._internalStage) this.animateTo(TARGET[stage] ?? TARGET.solar);
       this.render();
@@ -178,7 +195,8 @@ export const cosmic3d = {
       canvas: this.canvas,
       antialias: false,
       alpha: false,
-      powerPreference: 'high-performance',
+      // 정지 화면 중심의 교육 장면이다. 외장·고성능 GPU를 강제해 열을 올리지 않는다.
+      powerPreference: 'low-power',
     });
     this.renderer.setPixelRatio(Math.min(1.55, window.devicePixelRatio || 1));
     this.renderer.outputColorSpace = T.SRGBColorSpace;
@@ -704,9 +722,17 @@ export const cosmic3d = {
     }
     this.setSolarMotionProgress(0, false);
     const start = performance.now();
+    let lastDraw = start - COSMIC_FRAME_MS;
     this.root.classList.add('is-moving');
     const step = now => {
       const progress = clamp((now - start) / MOTION_DURATION_MS, 0, 1);
+      // ProMotion 120Hz에서도 WebGL은 최대 30fps만 그린다. rAF 콜백은 가볍게
+      // 건너뛰고, 마지막 프레임은 반드시 그린 뒤 예약을 끝낸다.
+      if (progress < 1 && now - lastDraw < COSMIC_FRAME_MS) {
+        this._motionFrame = requestAnimationFrame(step);
+        return;
+      }
+      lastDraw = now;
       const eased = progress < .5 ? 2 * progress * progress : 1 - ((-2 * progress + 2) ** 2) / 2;
       this.setSolarMotionProgress(eased, false); this.render();
       if (progress >= 1) {
@@ -1347,11 +1373,15 @@ export const cosmic3d = {
 
   applyEarthTexture() {
     if (!this._earthCapture || !this.earthMesh) return;
+    const loadId = ++this._earthTextureLoadId;
     new this.THREE.TextureLoader().load(this._earthCapture, texture => {
+      if (loadId !== this._earthTextureLoadId) { texture.dispose(); return; }
       texture.colorSpace = this.THREE.SRGBColorSpace;
+      const previous = this.earthMesh.material.map;
       this.earthMesh.material.map = texture;
       this.earthMesh.material.color.set(0xffffff);
       this.earthMesh.material.needsUpdate = true;
+      if (previous && previous !== texture) previous.dispose();
       this.render();
     });
   },
@@ -1371,6 +1401,10 @@ export const cosmic3d = {
     this.root.classList.add('is-moving');
     this._last = performance.now();
     const step = now => {
+      if (now - this._last < COSMIC_FRAME_MS) {
+        this._frame = requestAnimationFrame(step);
+        return;
+      }
       const elapsed = Math.min(40, now - this._last); this._last = now;
       const amount = 1 - Math.pow(.002, elapsed / 1000);
       this.level = mix(this.level, this.target, amount);
@@ -1421,6 +1455,17 @@ export const cosmic3d = {
 
   render() {
     if (!this._ready || this.root.hidden) return;
+    this._renderCount += 1;
+    // #dev에서만 DOM에 계측값을 복사한다. 일반 이용자는 렌더마다 DOM을 건드리지 않는다.
+    if (location.hash === '#dev') {
+      const info = this.renderer.info;
+      this.canvas.dataset.renderFrame = String(this._renderCount);
+      this.canvas.dataset.geometries = String(info.memory.geometries);
+      this.canvas.dataset.textures = String(info.memory.textures);
+      this.canvas.dataset.drawCalls = String(info.render.calls);
+      this.canvas.dataset.triangles = String(info.render.triangles);
+      this.canvas.dataset.points = String(info.render.points);
+    }
     this.resize();
     const T = this.THREE;
     const level = this.level;

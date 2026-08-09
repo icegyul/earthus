@@ -49,7 +49,10 @@ def main() -> None:
     require(duration is not None and int(duration.group(1)) <= 10_000,
             "motion must have a short finite duration")
     for guard in ("cancelAnimationFrame(this._motionFrame)", "geometry.setDrawRange",
-                  "prefers-reduced-motion: reduce", "closeSolarMotion"):
+                  "prefers-reduced-motion: reduce", "closeSolarMotion",
+                  "const COSMIC_FPS = 30", "powerPreference: 'low-power'",
+                  "canvas.dataset.renderFrame", "canvas.dataset.geometries",
+                  "canvas.dataset.drawCalls"):
         require(guard in script, f"runtime guard missing: {guard}")
     require("setAnimationLoop" not in script, "permanent WebGL animation loop is forbidden")
     for element_id in ("cosmicMotionOpen", "cosmicMotionInfo", "cosmicMotionReplay",

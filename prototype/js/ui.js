@@ -506,8 +506,8 @@ export const sheet = {
             try {
               sheet.minimize();
               await sceneMgr.to('ocean', { stage: 'trench' });
-              const { diveScene } = await import('./ocean/divescene.js');
-              await diveScene.open({ lat: m.lat, lon: m.lon, name });
+              const { trenchGlobe } = await import('./ocean/trenchglobe.js?v=20260810-globe1');
+              await trenchGlobe.openAt(m.lat, m.lon);
             } catch (error) {
               dive.disabled = false;
               toast(ko ? '수심 장면을 열지 못했습니다.' : 'Could not open the depth scene.');

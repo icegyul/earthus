@@ -46,6 +46,7 @@ import { initSkyframeDiagnostic } from './space/skyframe.js';
 import { solarScene } from './space/solarscene.js?v=20260809-solar1';
 import { galaxyCards } from './space/galaxycards.js?v=20260809-galaxy1';
 import { trenchCards } from './ocean/trenchcards.js';
+import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-globe1';
 
 /* 늦게 불러오는 바다거북 모듈을 붙잡아 두는 곳.
    ⚠️⚠️ **모듈 바깥에 둔다.** 켜는 쪽은 boot(), 끄는 쪽(OFF·HAS_MARKS)은
@@ -107,6 +108,7 @@ async function boot() {
   solarScene.init();
   galaxyCards.init();
   trenchCards.init();
+  trenchGlobe.init();
   // 수심 장면을 공유하거나 동일 좌표로 재현할 수 있게 한다.
   // ⚠️ 좌표만 받고 수심은 반드시 배포된 GEBCO 격자에서 다시 읽는다.
   const sceneParams = new URLSearchParams(location.search);
@@ -117,8 +119,7 @@ async function boot() {
       queueMicrotask(async () => {
         try {
           await sceneMgr.to('ocean', { stage: 'trench' });
-          const { diveScene } = await import('./ocean/divescene.js');
-          await diveScene.open({ lat, lon, name: `${lat.toFixed(2)}, ${lon.toFixed(2)}` });
+          await trenchGlobe.openAt(lat, lon);
         } catch (error) {
           console.warn('[dive-link]', error.message);
         }
@@ -174,7 +175,10 @@ async function boot() {
   /* 위치 응답이 오기 전에 사람이 화면을 쓰기 시작했는지 기록한다.
      ⚠️ 이게 없으면 이미 다른 대륙을 돌려보던 사람의 화면을
         몇 초 뒤 도착한 위치가 갑자기 끌고 간다. 조작을 빼앗는 것이다. */
-  let userEngaged = false;
+  /* 공유된 우주·해구 주소도 사용자의 명시적 선택이다. 위치 응답·인트로가 뒤늦게
+     카메라를 지구 첫 화면으로 빼앗으면 딥링크가 0m에서 멈춘 것처럼 보인다. */
+  let userEngaged = !!(diveParam || sceneParams.get('ocean') === '1'
+    || sceneParams.get('space') || sceneParams.get('solar') === '1');
   let geoTookOver = false;
   /* 지구뿐 아니라 메뉴·검색을 먼저 누른 것도 "이미 사용 중"이다.
      그 뒤 위치 응답이나 인트로가 카메라를 움직이면 조작을 빼앗고 발열도 남긴다. */
@@ -283,6 +287,8 @@ async function boot() {
   bindAccountUI();
 
   await registry.init();
+  // 딥링크는 레이어 초기화보다 먼저 해구 모드에 들어올 수 있다. 뒤늦게 생긴 구름도 다시 쉰다.
+  if (store.scene === 'ocean') trenchGlobe.setQuietGlobe(true);
 
   /* 지구(베이스맵)가 준비됐다 → 로딩을 걷어내고 인트로를 시작한다.
      나머지 UI·데이터(chrome·계정·패널·점 데이터)는 지구 뒤에서 계속 붙는다. */
@@ -295,7 +301,7 @@ async function boot() {
   /* 로딩 중 이미 지구를 만졌다면 뒤늦게 인트로를 시작하지 않는다.
      ⚠️ 예전에는 자료 준비 뒤 무조건 시작해, 사용자가 메뉴를 보고 있는데도
         배경 카메라가 90초 움직이며 렌더를 계속 요구할 수 있었다. */
-  if (!geoTookOver && !userEngaged) intro.start();
+  if (store.scene === 'earth' && !geoTookOver && !userEngaged) intro.start();
 
   /* ⚠️ 안전망 — 정보성 시트(업데이트·설정·사전등록)는 첫 화면에 절대 떠 있지 않게 한다.
      이들은 오직 메뉴에서 눌러야 열리는데, 어떤 이유로든(옛 캐시·경로) 열린 채 들어오면
@@ -633,6 +639,7 @@ function onPick(ev) {
   if (picked?.id?._fishSpot) { fishPanel.focus(picked.id._fishSpot); return; }
   if (picked?.id?._fishRegion) { fishPanel.openRegion(picked.id._fishRegion); return; }
   if (picked?.id?._paraSite) { paraPanel.focus(picked.id._paraSite); return; }
+  if (picked?.id?._trench) { trenchGlobe.focus(picked.id._trench); return; }
 
   /* 철새·거북·바닷새 — 누르면 무엇인지 한 줄로 말한다.
      받은 요청: "거북이나 새 선을 누르면 어떤 새인지 나오게 해줘"

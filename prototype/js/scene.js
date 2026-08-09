@@ -65,7 +65,7 @@ export const sceneMgr = {
     const inputs = scene?.screenSpaceCameraController;
     try { viewer?.camera.cancelFlight(); } catch (_) { }
 
-    if (next === 'earth') {
+    if (next !== 'space') {
       root?.classList.remove('active');
       root?.setAttribute('aria-hidden', 'true');
       earth?.classList.remove('scene-hidden');

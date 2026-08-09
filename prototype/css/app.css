@@ -85,6 +85,9 @@ a{color:var(--teal);text-decoration:none}
 #cesiumContainer.scene-hidden{display:none}
 #sceneRoot{position:absolute;inset:0;z-index:20;display:none;pointer-events:auto;overflow:hidden;background:#05070b}
 #sceneRoot.active{display:block}
+.ocean-globe #windCanvas,.ocean-globe #windLegend,.ocean-globe #srcNote,.ocean-globe #actBar,.ocean-globe #ambient,.ocean-globe #spotChips{display:none!important}
+#trenchGlobeHud{position:absolute;left:max(12px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));z-index:27;display:none;width:min(340px,calc(100vw - 76px));padding:11px 12px;border:1px solid rgba(87,214,232,.34);border-radius:10px;background:rgba(3,14,19,.86);backdrop-filter:blur(14px);color:var(--paper);font-size:11px;line-height:1.45;pointer-events:none}
+#trenchGlobeHud.on{display:grid;gap:3px}#trenchGlobeHud b{font-size:14px}#trenchGlobeHud span{color:#7fe6f1;font:600 12px ui-monospace,monospace}#trenchGlobeHud strong{font-weight:600}#trenchGlobeHud small{color:var(--muted)}
 .scene-view{position:absolute;inset:0;display:none;align-content:center;padding:clamp(28px,8vw,110px);background:#05070b}
 .scene-view.current{display:grid}
 .space-scene{background:#06080d}

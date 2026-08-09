@@ -14,6 +14,7 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 
 def plain(fragment: str) -> str:
@@ -29,6 +30,13 @@ def required(pattern: str, source: str, label: str) -> str:
     if not value:
         raise ValueError(f"빈 필드: {label}")
     return value
+
+
+def optional(pattern: str, source: str) -> Optional[str]:
+    match = re.search(pattern, source, re.IGNORECASE | re.DOTALL)
+    if not match:
+        return None
+    return plain(match.group(1)) or None
 
 
 def ra_degrees(value: str) -> float:
@@ -53,6 +61,7 @@ def extract(path: Path) -> dict[str, object]:
     source = path.read_text(encoding="utf-8")
     image_id = path.stem
     title = required(r'<h1[^>]*class="[^"]*my-3[^"]*"[^>]*>(.*?)</h1>', source, "title")
+    subject = optional(r">\s*Name:\s*</th>\s*<td>(.*?)</td>", source)
     ra = required(r"Position \(RA\):</th>\s*<td>(.*?)</td>", source, "RA")
     dec = required(r"Position \(Dec\):</th>\s*<td>(.*?)</td>", source, "Dec")
     credit = required(r'<div class="credit">(.*?)</div>', source, "credit")
@@ -61,6 +70,7 @@ def extract(path: Path) -> dict[str, object]:
     return {
         "id": f"esawebb-{image_id.lower()}",
         "name": {"ko": None, "en": title},
+        "subject": subject,
         "telescope": "JWST",
         "ra": ra_degrees(ra),
         "dec": dec_degrees(dec),

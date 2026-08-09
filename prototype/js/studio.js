@@ -693,6 +693,21 @@ function invalidateCaptureConnection() {
   $('#reelConnection').textContent = '연결 안 됨';
 }
 
+function syncCardCaptureState() {
+  const captured = !!state.cardBackground;
+  const rule = $('#cardCaptureRule');
+  if (rule) {
+    rule.classList.toggle('satisfied', captured);
+    rule.textContent = captured
+      ? 'earthus 장면이 들어갔습니다. 저장·다운로드·공유할 수 있습니다.'
+      : 'earthus 장면을 가져오기 전에는 저장·다운로드·공유할 수 없습니다.';
+  }
+  const note = $('#cardActionNote');
+  if (note) note.textContent = captured
+    ? '이 카드에는 earthus 화면이 포함됩니다. 출력은 사용자가 누른 경우에만 실행됩니다.'
+    : 'earthus 장면 캡처가 필요합니다. 글만 있는 카드는 출력하지 않습니다.';
+}
+
 function loadDraftIntoCard(draft, openCardTab = true) {
   if (state.cardDirty && !confirm('작성 중인 카드 변경 내용을 지우고 이 초안을 불러오겠습니까?')) return false;
   invalidateReelFrames('선택한 초안으로 새 프레임을 만드세요.');
@@ -707,6 +722,7 @@ function loadDraftIntoCard(draft, openCardTab = true) {
   $('#cardObservedAt').value = toDateInput(draft.at || state.draftDoc?.generated);
   state.cardBackground = null;
   $('#clearCardBackground').hidden = true;
+  syncCardCaptureState();
   clearCardErrors();
   state.cardDirty = false;
   syncCardChannels(draft);
@@ -727,6 +743,7 @@ function resetCard() {
   state.cardBackground = null;
   $('#cardForm').reset();
   $('#clearCardBackground').hidden = true;
+  syncCardCaptureState();
   clearCardErrors();
   state.cardDirty = false;
   syncCardChannels(null);
@@ -858,8 +875,21 @@ function assertCardData(data = formCardData()) {
   return data;
 }
 
+function assertCardBackground() {
+  if (state.cardBackground) return;
+  const message = 'earthus 현재 장면을 먼저 가져오세요. 글만 있는 카드는 만들 수 없습니다.';
+  const button = $('#captureCardBackground');
+  button.setAttribute('aria-invalid', 'true');
+  const error = $('#cardFormError');
+  error.textContent = message;
+  error.hidden = false;
+  button.focus();
+  throw new Error(message);
+}
+
 function clearCardErrors() {
   ['cardTitle', 'cardSource', 'cardObservedAt'].forEach(id => $(`#${id}`)?.removeAttribute('aria-invalid'));
+  $('#captureCardBackground')?.removeAttribute('aria-invalid');
   const error = $('#cardFormError');
   if (!error) return;
   error.textContent = '';
@@ -878,6 +908,7 @@ async function renderCard() {
   const { width: W, height: H } = format;
   const data = formCardData();
   $('#cardCanvasSummary').textContent = [
+    state.cardBackground ? 'earthus 화면 포함' : 'earthus 화면 캡처 필요',
     data.title || '큰 문장 없음',
     data.sub,
     ...data.rows.map(row => `${row.key || '항목'} ${row.value || '자료 없음'}`),
@@ -984,6 +1015,21 @@ async function renderCard() {
     ctx.fillText('earthus', W - pad, H - 52);
     ctx.textAlign = 'left';
   }
+
+  if (!state.cardBackground) {
+    const boxH = landscape ? 108 : 132;
+    const boxY = Math.round(H * .46 - boxH / 2);
+    ctx.fillStyle = 'rgba(10,10,10,.9)';
+    ctx.fillRect(pad, boxY, W - pad * 2, boxH);
+    ctx.strokeStyle = 'rgba(243,180,93,.82)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(pad, boxY, W - pad * 2, boxH);
+    ctx.fillStyle = '#FFD28F';
+    ctx.textAlign = 'center';
+    ctx.font = `650 ${landscape ? 28 : 30}px -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif`;
+    ctx.fillText('EARTHUS 화면 캡처가 필요합니다', W / 2, boxY + boxH * .58);
+    ctx.textAlign = 'left';
+  }
 }
 
 async function canvasBlob(canvas, type = 'image/png', quality) {
@@ -994,6 +1040,7 @@ async function canvasBlob(canvas, type = 'image/png', quality) {
 
 async function currentCardFile() {
   const data = assertCardData();
+  assertCardBackground();
   await renderCard();
   const blob = await canvasBlob($('#cardCanvas'));
   const draft = activeDraftForCard();
@@ -1013,6 +1060,7 @@ function dataUrlBlob(dataUrl) {
 
 async function currentCardShareFile() {
   const data = assertCardData();
+  assertCardBackground();
   await renderCard();
   /* Web Share는 사용자 동작 직후 호출해야 한다. toBlob 콜백을 기다리면 일부
      모바일 브라우저에서 사용자 동작 자격이 끝나므로, 공유 때만 동기로 읽는다. */
@@ -1140,6 +1188,8 @@ async function takeCardBackground() {
     state.cardDirty = true;
     $('#clearCardBackground').hidden = false;
     $('#captureState').textContent = '현재 장면 사용 중';
+    clearCardErrors();
+    syncCardCaptureState();
     queueCardRender();
     toast('earthus 장면을 카드에 가져왔습니다.');
   } catch (error) {
@@ -1848,7 +1898,8 @@ function bindEvents() {
     state.cardBackground = null;
     state.cardDirty = true;
     $('#clearCardBackground').hidden = true;
-    $('#captureState').textContent = state.captureWindow && !state.captureWindow.closed ? 'earthus 연결됨' : '연결 안 됨';
+    $('#captureState').textContent = state.captureWindow && !state.captureWindow.closed ? 'earthus 연결됨, 캡처 필요' : '캡처 필요';
+    syncCardCaptureState();
     queueCardRender();
   });
   $('#downloadCard').addEventListener('click', async () => {

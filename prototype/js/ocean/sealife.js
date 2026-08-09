@@ -109,8 +109,15 @@ function depthLabel(item, ko) {
 }
 
 function formatSize(item, ko) {
+  if (item.sizeKind === 'range-midpoint' && item.sizeMinM && item.sizeMaxM) {
+    return `${formatMeters(item.sizeMinM)}–${formatMeters(item.sizeMaxM)}`;
+  }
   const value = item.sizeM < 1 ? `${Math.round(item.sizeM * 100)}cm` : `${item.sizeM.toLocaleString()}m`;
   if (item.sizeKind === 'minimum') return ko ? `${value} 초과` : `over ${value}`;
   if (item.sizeKind === 'range-midpoint') return ko ? `대표값 약 ${value}` : `representative ~${value}`;
   return ko ? `약 ${value}` : `about ${value}`;
+}
+
+function formatMeters(value) {
+  return value < 1 ? `${Math.round(value * 100)}cm` : `${value.toLocaleString()}m`;
 }

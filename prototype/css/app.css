@@ -2321,3 +2321,5 @@ body.tc-ui-off #actBar{opacity:0;pointer-events:none;transition:opacity .2s}
 /* 눌러 본 지점의 값 — 눈금 앞에 굵게 (감사 3차) */
 .lg-v{font-size:13px;font-weight:700;margin-right:7px;color:var(--paper);
   font-variant-numeric:tabular-nums;vertical-align:bottom}
+/* B0 ICRF 진단은 ?skyframe=1에서만 JS가 만든다. 일반 화면에는 DOM 자체가 없다. */
+.skyframe-diagnostic{position:fixed;z-index:80;left:max(12px,env(safe-area-inset-left));bottom:max(12px,env(safe-area-inset-bottom));max-width:min(560px,calc(100vw - 24px));padding:9px 12px;border:1px solid rgba(121,217,255,.55);border-radius:10px;background:rgba(0,8,18,.88);color:#dff7ff;font:600 12px/1.45 var(--sans);letter-spacing:.01em;pointer-events:none}

@@ -42,6 +42,7 @@ import { eventPanel } from './ui-events.js';
 import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
 import { scaleRail } from './ui-scale.js';
+import { initSkyframeDiagnostic } from './space/skyframe.js';
 
 /* 늦게 불러오는 바다거북 모듈을 붙잡아 두는 곳.
    ⚠️⚠️ **모듈 바깥에 둔다.** 켜는 쪽은 boot(), 끄는 쪽(OFF·HAS_MARKS)은
@@ -82,6 +83,8 @@ async function boot() {
      스튜디오 연결도 같이 늦어진다. 캡처에 필요한 지구본 손잡이는 바로 연다. */
   exposeStudioCapture();
   setAmbientView(127, 25);
+  // B0 실험은 ?skyframe=1에서만 보인다. 일반 방문자 화면에는 진단 마커를 섞지 않는다.
+  initSkyframeDiagnostic(viewer);
 
   // 화면 크기가 바뀌면 Ambient 상태일 때만 지구 크기를 다시 맞춘다
   let rz;

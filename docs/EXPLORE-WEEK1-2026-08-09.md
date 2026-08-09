@@ -26,7 +26,6 @@
 
 ## 아직 안 된 것
 
-- B0 북극성 RA·Dec의 ICRF→지구고정 방향 대조와 행렬 `undefined` 폴백.
 - 구형 폰에서 전환 후 정지 GPU 유휴 실측. 데스크톱에서는 무한 타이머·프레임 루프가
   새로 생기지 않았음을 코드와 콘솔로 확인했지만, 이를 폰 실측으로 바꿔 말하지 않는다.
 - 실제 재난 항목이 떠 있는 상태의 배너 클릭 화면 검수. 복귀 배선은 들어갔지만
@@ -35,8 +34,7 @@
 
 ## 다음 단위
 
-1. B0 ICRF 북극성 스파이크와 폴백.
-2. 크레딧과 원본 링크가 확인된 우주 사진의 최소 카탈로그부터 B1·B2로 확장.
+1. 크레딧과 원본 링크가 확인된 우주 사진의 최소 카탈로그부터 B1·B2로 확장.
 
 ## A3 추가 완료
 
@@ -47,3 +45,20 @@
 - `credit: TBD`, RA 400°, Dec -91° 시험값을 모두 거절했다.
 - 운영 JSON 4개 SHA가 로컬과 일치하고 `items=0`임을 확인했다.
   CloudFront 무효화: `IE5J9V35HVB78239T05MIBQIAY`.
+
+## B0 ICRF 추가 완료
+
+- `space/skyframe.js`에 RA·Dec 천구 방향을 ICRF 직교좌표로 바꾸고, Cesium의
+  `computeIcrfToFixedMatrix()`로 지구고정 좌표에 옮기는 공통 함수를 만들었다.
+- 공식 `preloadIcrfFixed()`로 전후 12시간 자료를 먼저 받는다. 행렬이 `undefined`이면
+  좌표를 추정하지 않고, 60초 안의 마지막 정상 행렬만 재사용한다. 정상 행렬도 없으면
+  마커를 그리지 않고 “자료 대기 중”으로 표시한다.
+- 일반 화면에는 마커를 넣지 않는다. `?skyframe=1` 진단에서만 북극성
+  (RA 2h31m, Dec +89.26°) 빌보드와 PASS/FAIL 수치를 표시한다.
+- 같은 진단 실행에서 행렬 `undefined`를 강제로 넣어 `last-valid` 폴백을 확인한다.
+- 로컬·운영 브라우저 모두 `PASS`, 북극성 방향의 지구고정 위도 `89.373°`, 폴백
+  `last-valid`를 표시했다. 쿼리 없는 일반 화면에는 진단 DOM과 마커가 없음을 확인했다.
+- 운영 3파일 SHA-256이 로컬과 일치했다. CloudFront 무효화:
+  `I6QWL5C58YCBDTY0BCNLECUACC`.
+- 출처: CesiumJS Transforms 공식 문서
+  https://cesium.com/learn/cesiumjs/ref-doc/Transforms.html

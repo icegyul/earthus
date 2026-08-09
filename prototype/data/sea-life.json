@@ -756,6 +756,46 @@
       "depthSource": "NOAA Fisheries species profile",
       "depthSourceUrl": "https://www.fisheries.noaa.gov/species/harp-seal",
       "note": { "ko": "NOAA는 몸길이를 약 5–6피트로, 잠수 능력을 수면 아래 1,300피트까지로 설명합니다. 0–396m는 계절적으로 이동하는 종의 잠수 능력이지 현재 좌표의 출현 기록이 아닙니다.", "en": "NOAA lists a body length of about 5–6ft and dives to 1,300ft below the surface. The displayed 0–396m is species-level dive capability, not an occurrence record for the current coordinates." }
+    },
+    {
+      "id": "hooded-seal-noaa-profile",
+      "name": { "ko": "후드물범", "en": "Hooded seal" },
+      "sci": "Cystophora cristata",
+      "group": "whale",
+      "depthKind": "literature-range",
+      "depthMin": 99,
+      "depthMax": 594,
+      "sizeM": 2.3,
+      "sizeMinM": 2.01,
+      "sizeMaxM": 2.59,
+      "sizeKind": "range-midpoint",
+      "thumb": "ocean/thumbs/hooded-seal.jpg",
+      "credit": "NOAA Northeast Fisheries Science Center",
+      "license": "NOAA public domain; credit requested",
+      "photoSourceUrl": "https://www.fisheries.noaa.gov/species/hooded-seal/science",
+      "depthSource": "NOAA Fisheries species profile",
+      "depthSourceUrl": "https://www.fisheries.noaa.gov/species/hooded-seal/science",
+      "note": { "ko": "NOAA는 몸길이를 6.6–8.5피트로, 먹이활동 평균 잠수 깊이를 325–1,950피트로 설명합니다. 3,280피트를 넘는 기록도 있지만, 화면의 99–594m는 평균 먹이활동 잠수 범위만 표시합니다.", "en": "NOAA lists a body length of 6.6–8.5ft and average foraging dives of 325–1,950ft. Dives beyond 3,280ft are known, but the displayed 99–594m shows only the average foraging-depth interval." }
+    },
+    {
+      "id": "gray-seal-noaa-profile",
+      "name": { "ko": "회색물범", "en": "Gray seal" },
+      "sci": "Halichoerus grypus",
+      "group": "whale",
+      "depthKind": "literature-range",
+      "depthMin": 0,
+      "depthMax": 475,
+      "sizeM": 2.67,
+      "sizeMinM": 2.29,
+      "sizeMaxM": 3.05,
+      "sizeKind": "range-midpoint",
+      "thumb": "ocean/thumbs/gray-seal.jpg",
+      "credit": "NOAA Fisheries",
+      "license": "NOAA public domain; credit requested",
+      "photoSourceUrl": "https://www.fisheries.noaa.gov/species/gray-seal",
+      "depthSource": "NOAA Fisheries species profile",
+      "depthSourceUrl": "https://www.fisheries.noaa.gov/species/gray-seal",
+      "note": { "ko": "NOAA는 몸길이를 7.5–10피트로, 잠수 능력을 1,560피트까지로 설명합니다. 0–475m는 북대서양 종의 잠수 능력이지 현재 좌표의 출현 기록이 아닙니다.", "en": "NOAA lists a body length of 7.5–10ft and dives to 1,560ft. The displayed 0–475m is species-level dive capability in the North Atlantic, not an occurrence record for the current coordinates." }
     }
   ]
 }

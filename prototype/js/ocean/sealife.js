@@ -84,7 +84,7 @@ export const seaLife = {
       ? `${ko ? '기록된 관측 깊이' : 'Recorded observation depth'}: ${item.depthMin.toLocaleString()}m`
       : `${ko ? '문헌 깊이 범위' : 'Literature depth range'}: ${item.depthMin.toLocaleString()}–${item.depthMax.toLocaleString()}m`;
     const size = document.createElement('p');
-    size.textContent = `${ko ? '사진 속 기록 크기' : 'Recorded size in image'}: ${formatSize(item, ko)}`;
+    size.textContent = `${sizeLabel(item, ko)}: ${formatSize(item, ko)}`;
     const warning = document.createElement('p');
     warning.textContent = ko ? '관측·문헌 기록 기반 — 이 자리에 지금 있다는 뜻이 아닙니다.' : 'Based on observation and literature records — not evidence that it is here now.';
     const note = document.createElement('p'); note.textContent = item.note[ko ? 'ko' : 'en'];
@@ -116,6 +116,15 @@ function formatSize(item, ko) {
   if (item.sizeKind === 'minimum') return ko ? `${value} 초과` : `over ${value}`;
   if (item.sizeKind === 'range-midpoint') return ko ? `대표값 약 ${value}` : `representative ~${value}`;
   return ko ? `약 ${value}` : `about ${value}`;
+}
+
+function sizeLabel(item, ko) {
+  if (item.depthKind === 'observation-depth') {
+    return ko ? '사진 속 기록 크기' : 'Recorded size in image';
+  }
+  return item.sizeKind === 'range-midpoint'
+    ? (ko ? '문헌 크기 범위' : 'Literature size range')
+    : (ko ? '문헌 대표 크기' : 'Representative literature size');
 }
 
 function formatMeters(value) {

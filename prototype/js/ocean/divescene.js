@@ -6,6 +6,7 @@
 import { i18n } from '../i18n.js';
 import { oceanDepth } from './depth.js';
 import { seaLife } from './sealife.js';
+import { obisSummary } from './obis.js?v=20260810-obis1';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -49,6 +50,7 @@ export const diveScene = {
     new ResizeObserver(() => this.draw()).observe(wrap);
     i18n.onChange(() => { this.renderText(); this.renderComparisons(); this.draw(); });
     seaLife.init();
+    obisSummary.init();
     return this;
   },
 
@@ -63,6 +65,7 @@ export const diveScene = {
     document.getElementById('diveSource').textContent = i18n.lang === 'ko'
       ? 'GEBCO 2026 격자를 읽는 중…' : 'Reading the GEBCO 2026 grid…';
     document.getElementById('diveLimit').textContent = '';
+    obisSummary.show(lat, lon);
     this.draw();
     try {
       const [data, comparisons] = await Promise.all([

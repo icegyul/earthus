@@ -18,6 +18,7 @@ CATALOGS = {
     "trenches": ROOT / "prototype/data/trenches.json",
     "ocean-comparisons": ROOT / "prototype/data/ocean-comparisons.json",
     "sat-aliases": ROOT / "prototype/data/sat-aliases.json",
+    "obis-cells": ROOT / "prototype/data/obis-cells.json",
 }
 PLACEHOLDERS = {"todo", "tbd", "unknown", "모름", "미정", "-"}
 SAT_GROUPS = {"stations", "weather", "science", "nav", "comm", "earth",
@@ -166,12 +167,21 @@ def validate_ocean_comparison(item: dict[str, Any], path: str, errors: list[str]
             f"{path}.sourceUrl", "HTTPS 공식 출처 링크가 필요", errors)
 
 
+def validate_obis_cell(item: dict[str, Any], path: str, errors: list[str]) -> None:
+    require(localized(item.get("name")), f"{path}.name", "ko/en 해역 이름이 모두 필요", errors)
+    require(number(item.get("lat")) and -90 <= item["lat"] <= 90,
+            f"{path}.lat", "-90~90 범위의 숫자 필요", errors)
+    require(number(item.get("lon")) and -180 <= item["lon"] <= 180,
+            f"{path}.lon", "-180~180 범위의 숫자 필요", errors)
+
+
 VALIDATORS = {
     "space-photos": validate_space,
     "sea-life": validate_life,
     "trenches": validate_trench,
     "sat-aliases": validate_alias,
     "ocean-comparisons": validate_ocean_comparison,
+    "obis-cells": validate_obis_cell,
 }
 
 
@@ -190,6 +200,12 @@ def validate_catalog(name: str, path: Path, require_populated: bool) -> tuple[in
                 "대조한 카탈로그 관측 시각 필요", errors)
         require(text(doc.get("source")) and text(doc.get("sourceUrl")), f"{name}.source",
                 "카탈로그 출처와 URL 필요", errors)
+    if name == "obis-cells":
+        require(doc.get("cellSizeDegrees") == 5, f"{name}.cellSizeDegrees", "5도 셀이어야 함", errors)
+        require(text(doc.get("source")) and text(doc.get("sourceUrl")), f"{name}.source",
+                "OBIS 출처와 URL 필요", errors)
+        require(text(doc.get("policyUrl")), f"{name}.policyUrl", "OBIS 자료 정책 URL 필요", errors)
+        require(localized(doc.get("coverage")), f"{name}.coverage", "ko/en 수집 범위 설명 필요", errors)
     items = doc.get("items")
     require(isinstance(items, list), f"{name}.items", "배열이어야 함", errors)
     if not isinstance(items, list):

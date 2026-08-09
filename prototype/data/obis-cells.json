@@ -1,0 +1,26 @@
+{
+  "generated": "2026-08-10",
+  "cellSizeDegrees": 5,
+  "source": "OBIS API v3",
+  "sourceUrl": "https://api.obis.org/",
+  "policyUrl": "https://manual.obis.org/policy.html",
+  "coverage": {
+    "ko": "첫 배포는 해구 10곳과 한국 주변 바다 3곳이 속한 5도 해역만 매주 갱신합니다.",
+    "en": "The first release refreshes only the 5-degree cells containing 10 featured trenches and 3 seas around Korea each week."
+  },
+  "items": [
+    { "id": "challenger-deep", "name": { "ko": "챌린저 해연", "en": "Challenger Deep" }, "lat": 11.369, "lon": 142.587 },
+    { "id": "horizon-deep", "name": { "ko": "호라이즌 해연", "en": "Horizon Deep" }, "lat": -23.270, "lon": -174.740 },
+    { "id": "scholl-deep", "name": { "ko": "숄 해연", "en": "Scholl Deep" }, "lat": -31.935, "lon": -177.317 },
+    { "id": "new-britain-bougainville", "name": { "ko": "뉴브리튼 해구 최심부", "en": "New Britain Trench deep" }, "lat": -6.186, "lon": 153.597 },
+    { "id": "brownson-deep", "name": { "ko": "브라운슨 해연", "en": "Brownson Deep" }, "lat": 19.712, "lon": -67.311 },
+    { "id": "meteor-deep", "name": { "ko": "메테오 해연", "en": "Meteor Deep" }, "lat": -55.230, "lon": -26.173 },
+    { "id": "factorian-deep", "name": { "ko": "팩토리안 해연", "en": "Factorian Deep" }, "lat": -60.479, "lon": -25.542 },
+    { "id": "java-unnamed-deep", "name": { "ko": "자바 해구 최심부", "en": "Java Trench deep" }, "lat": -11.129, "lon": 114.942 },
+    { "id": "dordrecht-deep", "name": { "ko": "도르드레흐트 해연", "en": "Dordrecht Deep" }, "lat": -33.631, "lon": 101.356 },
+    { "id": "molloy-hole", "name": { "ko": "몰로이 해연", "en": "Molloy Hole" }, "lat": 79.194, "lon": 2.706 },
+    { "id": "yellow-sea", "name": { "ko": "서해", "en": "Yellow Sea" }, "lat": 37.0, "lon": 124.0 },
+    { "id": "south-sea-korea", "name": { "ko": "남해", "en": "South Sea of Korea" }, "lat": 34.0, "lon": 128.0 },
+    { "id": "east-sea-korea", "name": { "ko": "동해", "en": "East Sea" }, "lat": 38.0, "lon": 131.0 }
+  ]
+}

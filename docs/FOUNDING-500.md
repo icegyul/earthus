@@ -6,17 +6,17 @@
 
 ## 0. 지금 상태 한 줄
 
-**코드까지 만들었다. 다만 아직 DB 에 적용되지 않았다.** (2026-08-06 갱신)
+**운영 DB 적용과 9개 검증까지 끝났다. 판매 스위치는 계속 닫혀 있다.** (2026-08-09 갱신)
 
 - 화면: 사전등록에 "창립 멤버 500명 — 언제나 정가의 반값" 표시 중 (라이브)
 - 약관: 제2조 제6항 · 제8조 제7항에 명시 (2026-08-06 개정, 라이브)
 - 코드: `supabase/founding.sql` · `functions/checkout/index.ts` · `js/auth.js` — **작성 완료**
-- 적용: ⬜ `founding.sql` 미적용 · ☑ `checkout` 배포 (`SALES_ENABLED=false`, 2026-08-09 운영 응답 확인)
+- 적용: ☑ `founding.sql` 적용·9/9 검증 · ☑ `checkout` 배포 (`SALES_ENABLED=false`, 운영 `503 SALES_CLOSED` 확인)
 
 ⚠️ `SALES_OPEN=true` 전에 적용과 검증이 끝나야 한다.
 안 되어 있으면 결제창에서 창립 멤버가 **정가를 낸다.** 그건 약관 위반이다.
-⚠️ 만든 쪽에 Postgres·Deno 가 없어 **실행 검증은 못 했다.**
-`supabase/founding-verify.sql` 을 붙여넣으면 9가지를 스스로 PASS/FAIL 로 찍는다.
+`supabase/founding-verify.sql` 은 9/9가 아니면 실행 자체가 실패한다.
+2026-08-09 운영 DB에서 성공했고, 롤백 뒤 시험 계정이 0건임을 다시 확인했다.
 작업 경위는 [`WORK-2026-08-06.md`](WORK-2026-08-06.md).
 
 ---

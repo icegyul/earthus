@@ -168,6 +168,12 @@ begin
 
   raise notice '───────────────────────────────';
   raise notice '   합격 %건 · 불합격 %건', pass, fail;
+  -- ⚠️ Supabase Management API 는 NOTICE 를 응답에 싣지 않는다.
+  --    경고만 찍으면 자동 검증에서 불합격이어도 종료코드 0으로 보이므로,
+  --    정확히 9/9가 아니면 실행 자체를 실패시킨다.
+  if pass <> 9 or fail <> 0 then
+    raise exception '창립 멤버 검증 실패: PASS %, FAIL % (9 PASS 필요)', pass, fail;
+  end if;
   if fail > 0 then
     raise notice '   ⚠️ 불합격이 있으면 SALES_OPEN 을 열지 않는다.';
   else

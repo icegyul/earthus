@@ -577,6 +577,26 @@
       "depthSource": "NOAA Fisheries species profile",
       "depthSourceUrl": "https://www.fisheries.noaa.gov/species/bairds-beaked-whale",
       "note": { "ko": "NOAA는 암컷 최대 약 36피트·수컷 최대 약 35피트로 설명하고, 일반적인 먹이활동 깊이를 2,500–4,000피트로 제시합니다. 크기 표시는 성별 최대치 범위이며 개체 평균이 아닙니다.", "en": "NOAA reports maxima of about 36ft for females and 35ft for males and gives a typical feeding-depth range of 2,500–4,000ft. The size display is the range of sex-specific maxima, not an individual average." }
+    },
+    {
+      "id": "blainvilles-beaked-whale-noaa-profile",
+      "name": { "ko": "블랭빌부리고래", "en": "Blainville's beaked whale" },
+      "sci": "Mesoplodon densirostris",
+      "group": "whale",
+      "depthKind": "literature-range",
+      "depthMin": 200,
+      "depthMax": 1000,
+      "sizeM": 5.335,
+      "sizeMinM": 4.57,
+      "sizeMaxM": 6.1,
+      "sizeKind": "range-midpoint",
+      "thumb": "ocean/thumbs/blainvilles-beaked-whale.jpg",
+      "credit": "NOAA Fisheries",
+      "license": "NOAA public domain; credit requested",
+      "photoSourceUrl": "https://www.fisheries.noaa.gov/species/blainvilles-beaked-whale",
+      "depthSource": "NOAA Fisheries species profile",
+      "depthSourceUrl": "https://www.fisheries.noaa.gov/species/blainvilles-beaked-whale",
+      "note": { "ko": "NOAA는 성체 길이를 약 15–20피트로, 대륙붕 바깥의 전형적인 심해 서식 수심을 656–3,281피트로 설명합니다. 이 범위는 종 수준의 문헌 요약이며 현재 좌표의 출현 자료가 아닙니다.", "en": "NOAA lists adults at about 15–20ft and describes typical deep offshore habitat at 656–3,281ft beyond the continental shelf. This is a species-level literature summary, not occurrence data for the current location." }
     }
   ]
 }

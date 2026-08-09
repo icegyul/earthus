@@ -74,6 +74,11 @@ export const cosmic3d = {
   _detailMarkers: new Map(),
   _pointerStart: null,
   _bodyDistance: 48,
+  _photoCatalogPromise: null,
+  _photoMode: null,
+  _photoMarkers: new Map(),
+  _photoFov: 56,
+  _selectedPhoto: null,
 
   init() {
     if (this.root) return this;
@@ -82,7 +87,8 @@ export const cosmic3d = {
     this.labels = document.getElementById('cosmicLabels');
     this.bodyPicker = document.getElementById('cosmicBodyPicker');
     this.bodyInfo = document.getElementById('cosmicBodyInfo');
-    if (!this.root || !this.canvas || !this.labels || !this.bodyPicker || !this.bodyInfo) return this;
+    this.photoInfo = document.getElementById('cosmicPhotoInfo');
+    if (!this.root || !this.canvas || !this.labels || !this.bodyPicker || !this.bodyInfo || !this.photoInfo) return this;
     this.root.closest('.space-scene')?.classList.add('cosmic-mode');
     document.getElementById('spaceSceneIntro')?.setAttribute('hidden', '');
     document.getElementById('solarExperience')?.setAttribute('hidden', '');
@@ -98,6 +104,7 @@ export const cosmic3d = {
     i18n.onChange(() => {
       this.buildBodyPicker();
       if (this._detailBody) this.showBodyInfo(this._detailBody);
+      if (this._selectedPhoto) this.selectPhoto(this._selectedPhoto);
       this.updateHud(); this.updateLabels(); this.render();
     });
     this.root.hidden = store.scene !== 'space';
@@ -161,6 +168,7 @@ export const cosmic3d = {
     this.makeMilkyWay();
     this.makeGalaxyGroup();
     this.makeBodyDetail();
+    this.makePhotoAtlas();
     this.resize();
   },
 
@@ -629,11 +637,122 @@ export const cosmic3d = {
   updateBodyPicker() {
     if (!this.bodyPicker) return;
     const visible = store.scene === 'space' && stageFor(this.level) === 'solar'
-      && (this._detailBody || this.level > .22);
+      && !this._photoMode && (this._detailBody || this.level > .22);
     this.bodyPicker.hidden = !visible;
     this.bodyPicker.querySelectorAll('[data-body]').forEach(button => {
       button.classList.toggle('on', button.dataset.body === this._detailBody?.id);
     });
+  },
+
+  makePhotoAtlas() {
+    this.photoGroup = new this.THREE.Group();
+    this.photoGroup.visible = false;
+    this.world.add(this.photoGroup);
+  },
+
+  loadPhotoCatalog() {
+    if (this._photoCatalogPromise) return this._photoCatalogPromise;
+    this._photoCatalogPromise = fetch('/data/space-photos.json', { cache: 'no-cache' })
+      .then(response => {
+        if (!response.ok) throw new Error(`SPACE_PHOTOS_${response.status}`);
+        return response.json();
+      })
+      .then(document => {
+        const items = Array.isArray(document.items) ? document.items : [];
+        const valid = items.filter(item => Number.isFinite(item.ra) && Number.isFinite(item.dec)
+          && item.credit && item.license && item.full && item.thumb);
+        if (!valid.length) throw new Error('SPACE_PHOTOS_EMPTY');
+        return valid;
+      });
+    return this._photoCatalogPromise;
+  },
+
+  async openPhotoAtlas(telescope) {
+    try {
+      await this.ensureEngine();
+      const catalog = await this.loadPhotoCatalog();
+      const items = catalog.filter(item => item.telescope === telescope);
+      if (!items.length) throw new Error(`SPACE_PHOTOS_${telescope}_EMPTY`);
+      if (this._detailBody) this.closeBody(false);
+      if (this._frame) cancelAnimationFrame(this._frame);
+      this._frame = 0; this.root.classList.remove('is-moving');
+      this.clearPhotoAtlas();
+      this._photoMode = telescope;
+      this._photoFov = 56;
+      this.root.classList.add('is-photo');
+      document.querySelectorAll('#menuMain [data-act="space-hubble"],#menuMain [data-act="space-webb"]')
+        .forEach(button => button.classList.toggle('on', button.dataset.act === (telescope === 'JWST' ? 'space-webb' : 'space-hubble')));
+      this.photoGroup.visible = true;
+      const T = this.THREE;
+      items.forEach((photo, index) => {
+        const ra = T.MathUtils.degToRad(photo.ra);
+        const dec = T.MathUtils.degToRad(photo.dec);
+        const radius = 88;
+        const marker = new T.Mesh(
+          new T.SphereGeometry(matchMedia('(max-width:560px)').matches ? 1.6 : 1.25, 10, 8),
+          new T.MeshBasicMaterial({ color: telescope === 'JWST' ? 0xc1a7ff : 0x8bd8ec }),
+        );
+        marker.position.set(
+          Math.cos(dec) * Math.sin(ra) * radius,
+          Math.sin(dec) * radius,
+          Math.cos(dec) * Math.cos(ra) * radius,
+        );
+        marker.userData.photoId = photo.id;
+        this.photoGroup.add(marker);
+        this._photoMarkers.set(photo.id, { object: marker, photo, index });
+      });
+      const first = items[0];
+      this.yaw = T.MathUtils.degToRad(first.ra);
+      this.pitch = clamp(T.MathUtils.degToRad(first.dec), -1.35, 1.35);
+      this.selectPhoto(first);
+      this.updateHud(); this.render();
+    } catch (error) {
+      console.warn('[cosmic-photos]', error.message);
+      const note = document.getElementById('cosmicNote');
+      if (note) note.textContent = ko() ? '공식 사진 카탈로그를 읽지 못했습니다.' : 'Could not load the official image catalogue.';
+    }
+  },
+
+  clearPhotoAtlas() {
+    if (!this.photoGroup) return;
+    while (this.photoGroup.children.length) {
+      const object = this.photoGroup.children[this.photoGroup.children.length - 1];
+      this.photoGroup.remove(object); object.geometry?.dispose?.(); object.material?.dispose?.();
+    }
+    this._photoMarkers.clear(); this._selectedPhoto = null;
+  },
+
+  selectPhoto(photo) {
+    if (!photo) return;
+    this._selectedPhoto = photo;
+    this._photoMarkers.forEach(entry => entry.object.scale.setScalar(entry.photo.id === photo.id ? 1.75 : 1));
+    const isKo = ko();
+    const image = document.getElementById('cosmicPhotoImage');
+    image.src = `/${photo.thumb}`;
+    image.alt = `${photo.name[isKo ? 'ko' : 'en']} · ${photo.telescope}`;
+    document.getElementById('cosmicPhotoMeta').textContent = `${photo.telescope} · ${photo.date} · ${isKo ? '공개일' : 'release date'}`;
+    document.getElementById('cosmicPhotoTitle').textContent = photo.name[isKo ? 'ko' : 'en'];
+    document.getElementById('cosmicPhotoCredit').textContent = `${isKo ? '크레딧' : 'Credit'} · ${photo.credit}`;
+    document.getElementById('cosmicPhotoLimit').textContent = isKo
+      ? `${photo.license} · 표식은 지구에서 본 적경·적위 방향입니다. 거리는 같은 비율이 아닙니다.`
+      : `${photo.license} · Marker uses right ascension and declination as seen from Earth; distance is not to scale.`;
+    const source = document.getElementById('cosmicPhotoSource');
+    source.href = photo.full; source.textContent = isKo ? '공식 원본·설명' : 'Official original & description';
+    document.getElementById('cosmicPhotoBack').textContent = isKo ? '← 3D 우주' : '← 3D space';
+    this.photoInfo.hidden = false;
+    this.render();
+  },
+
+  closePhotoAtlas(render = true) {
+    if (!this._photoMode) return;
+    this._photoMode = null; this.root.classList.remove('is-photo');
+    document.querySelectorAll('#menuMain [data-act="space-hubble"],#menuMain [data-act="space-webb"]')
+      .forEach(button => button.classList.remove('on'));
+    this.photoGroup.visible = false; this.photoInfo.hidden = true;
+    document.getElementById('cosmicPhotoImage').removeAttribute('src');
+    this.clearPhotoAtlas(); this.yaw = .72; this.pitch = .56;
+    this.updateBodyPicker(); this.updateHud();
+    if (render) this.render();
   },
 
   bindInput() {
@@ -648,6 +767,10 @@ export const cosmic3d = {
     this.root.addEventListener('wheel', event => {
       if (store.scene !== 'space') return;
       event.preventDefault();
+      if (this._photoMode) {
+        this._photoFov = clamp(this._photoFov + Math.sign(event.deltaY) * 3, 34, 74);
+        this.render(); return;
+      }
       if (this._detailBody) {
         this._bodyDistance = clamp(this._bodyDistance + Math.sign(event.deltaY) * 3.8, 31, 150);
         this.render(); return;
@@ -670,7 +793,9 @@ export const cosmic3d = {
       if (this._pointers.size === 2) {
         const distance = this.pointerDistance();
         if (this._pinchDistance) {
-          if (this._detailBody) {
+          if (this._photoMode) {
+            this._photoFov = clamp(this._photoFov * this._pinchDistance / Math.max(1, distance), 34, 74);
+          } else if (this._detailBody) {
             this._bodyDistance = clamp(this._bodyDistance * this._pinchDistance / Math.max(1, distance), 31, 150);
           } else {
             this.target = clamp(this.target + Math.log(this._pinchDistance / Math.max(1, distance)) * .78, 0, 3.15);
@@ -682,7 +807,7 @@ export const cosmic3d = {
       } else {
         this.yaw -= (event.clientX - previous.x) * .005;
         this.pitch = clamp(this.pitch + (event.clientY - previous.y) * .004,
-          this._detailBody ? -1.48 : .035, 1.48);
+          this._detailBody || this._photoMode ? -1.48 : .035, 1.48);
       }
       if (this._pointerStart && Math.hypot(event.clientX - this._pointerStart.x, event.clientY - this._pointerStart.y) > 5) {
         this._pointerStart.moved = true;
@@ -702,22 +827,26 @@ export const cosmic3d = {
     this.canvas.addEventListener('pointercancel', release);
     this.canvas.addEventListener('dblclick', () => { this.yaw = .72; this.pitch = .56; this.render(); });
     this.canvas.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && this._photoMode) { this.closePhotoAtlas(); return; }
       if (event.key === 'Escape' && this._detailBody) { this.closeBody(); return; }
       if (event.key === '+' || event.key === '=') {
-        if (this._detailBody) { this._bodyDistance = clamp(this._bodyDistance - 4, 31, 150); this.render(); }
+        if (this._photoMode) { this._photoFov = clamp(this._photoFov - 3, 34, 74); this.render(); }
+        else if (this._detailBody) { this._bodyDistance = clamp(this._bodyDistance - 4, 31, 150); this.render(); }
         else this.animateTo(this.target - .16);
       }
       if (event.key === '-' || event.key === '_') {
-        if (this._detailBody) { this._bodyDistance = clamp(this._bodyDistance + 4, 31, 150); this.render(); }
+        if (this._photoMode) { this._photoFov = clamp(this._photoFov + 3, 34, 74); this.render(); }
+        else if (this._detailBody) { this._bodyDistance = clamp(this._bodyDistance + 4, 31, 150); this.render(); }
         else this.animateTo(this.target + .16);
       }
       if (event.key === 'ArrowLeft') { this.yaw += .1; this.render(); }
       if (event.key === 'ArrowRight') { this.yaw -= .1; this.render(); }
-      if (event.key === 'ArrowUp') { this.pitch = clamp(this.pitch + .08, this._detailBody ? -1.48 : .035, 1.48); this.render(); }
-      if (event.key === 'ArrowDown') { this.pitch = clamp(this.pitch - .08, this._detailBody ? -1.48 : .035, 1.48); this.render(); }
+      if (event.key === 'ArrowUp') { this.pitch = clamp(this.pitch + .08, this._detailBody || this._photoMode ? -1.48 : .035, 1.48); this.render(); }
+      if (event.key === 'ArrowDown') { this.pitch = clamp(this.pitch - .08, this._detailBody || this._photoMode ? -1.48 : .035, 1.48); this.render(); }
     });
     document.getElementById('cosmicEarthReturn')?.addEventListener('click', () => this.exitToEarth());
     document.getElementById('cosmicBodyBack')?.addEventListener('click', () => this.closeBody());
+    document.getElementById('cosmicPhotoBack')?.addEventListener('click', () => this.closePhotoAtlas());
   },
 
   pointerDistance() {
@@ -726,6 +855,7 @@ export const cosmic3d = {
   },
 
   pickSolarBody(event) {
+    if (this._photoMode) { this.pickPhoto(event); return; }
     if (!this._ready || this._detailBody || stageFor(this.level) !== 'solar' || this.level < .22) return;
     const rect = this.canvas.getBoundingClientRect();
     const pointer = new this.THREE.Vector2(
@@ -737,6 +867,18 @@ export const cosmic3d = {
     if (!hit?.object?.userData?.id) return;
     if (hit.object.userData.id === 'earth') this.exitToEarth();
     else this.selectBody(hit.object.userData.id);
+  },
+
+  pickPhoto(event) {
+    const rect = this.canvas.getBoundingClientRect();
+    const pointer = new this.THREE.Vector2(
+      ((event.clientX - rect.left) / rect.width) * 2 - 1,
+      -((event.clientY - rect.top) / rect.height) * 2 + 1,
+    );
+    const raycaster = new this.THREE.Raycaster(); raycaster.setFromCamera(pointer, this.camera);
+    const hit = raycaster.intersectObjects(this.photoGroup.children, false)[0];
+    const entry = hit ? this._photoMarkers.get(hit.object.userData.photoId) : null;
+    if (entry) this.selectPhoto(entry.photo);
   },
 
   captureEarth() {
@@ -759,6 +901,7 @@ export const cosmic3d = {
   },
 
   animateTo(next) {
+    if (this._photoMode) this.closePhotoAtlas(false);
     if (this._detailBody) this.closeBody(false);
     this.target = clamp(next, 0, 3.15);
     this.syncStage(this.target);
@@ -795,6 +938,7 @@ export const cosmic3d = {
   },
 
   exitToEarth() {
+    if (this._photoMode) this.closePhotoAtlas(false);
     if (this._detailBody) this.closeBody(false);
     this.target = 0; this.level = 0;
     if (this._frame) cancelAnimationFrame(this._frame);
@@ -820,6 +964,31 @@ export const cosmic3d = {
     this.resize();
     const T = this.THREE;
     const level = this.level;
+    if (this._photoMode) {
+      this.solarGroup.visible = false;
+      this.galaxyGroup.visible = false;
+      this.clusterGroup.visible = false;
+      this.bodyDetailGroup.visible = false;
+      this.photoGroup.visible = true;
+      this.ambientLight.intensity = .52;
+      if (this.camera.fov !== this._photoFov) {
+        this.camera.fov = this._photoFov; this.camera.updateProjectionMatrix();
+      }
+      const cosPitch = Math.cos(this.pitch);
+      const direction = new T.Vector3(
+        Math.sin(this.yaw) * cosPitch,
+        Math.sin(this.pitch),
+        Math.cos(this.yaw) * cosPitch,
+      );
+      this.camera.position.set(0, 0, 0);
+      this.camera.lookAt(direction.multiplyScalar(10));
+      this.background.position.set(0, 0, 0);
+      this.renderer.render(this.world, this.camera);
+      this.updateHud(); this.updateLabels(); this.updateBodyPicker();
+      return;
+    }
+    this.photoGroup.visible = false;
+    if (this.camera.fov !== 47) { this.camera.fov = 47; this.camera.updateProjectionMatrix(); }
     if (this._detailBody) {
       this.solarGroup.visible = false;
       this.galaxyGroup.visible = false;
@@ -900,7 +1069,19 @@ export const cosmic3d = {
     if (!this._ready || !this.labels) return;
     const stage = stageFor(this.level);
     this.labels.querySelectorAll('[data-cosmic-label]').forEach(label => { label.hidden = true; });
-    if (this._detailBody) {
+    if (this._photoMode) {
+      const forward = new this.THREE.Vector3(); this.camera.getWorldDirection(forward);
+      [...this._photoMarkers.values()]
+        .map(entry => ({ entry, score: entry.object.position.clone().normalize().dot(forward) }))
+        .filter(item => item.score > .94)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 6)
+        .forEach(({ entry }) => {
+          const full = entry.photo.name[ko() ? 'ko' : 'en'];
+          const text = full.length > 25 ? `${full.slice(0, 24)}…` : full;
+          this.placeLabel(`sky-photo-${entry.photo.id}`, entry.object, text);
+        });
+    } else if (this._detailBody) {
       this._detailMarkers.forEach((entry, id) => {
         const name = entry.name[ko() ? 'ko' : 'en'];
         const suffix = entry.orbiter
@@ -954,6 +1135,21 @@ export const cosmic3d = {
     if (!this.root) return;
     const stage = stageFor(this.level);
     const isKo = ko();
+    if (this._photoMode) {
+      const telescope = this._photoMode === 'JWST' ? (isKo ? '제임스웹' : 'James Webb') : (isKo ? '허블' : 'Hubble');
+      document.getElementById('cosmicStage').textContent = `${telescope} · ${this._photoMarkers.size}`;
+      document.getElementById('cosmicScale').textContent = isKo
+        ? '지구에서 본 적경·적위 방향 · 3D 천구'
+        : 'RA/Dec directions seen from Earth · 3D celestial sphere';
+      document.getElementById('cosmicHint').textContent = isKo
+        ? '드래그해 하늘을 돌리고 빛나는 표식을 누르면 공식 사진이 열립니다'
+        : 'Drag around the sky and select a glowing marker to open the official image';
+      document.getElementById('cosmicNote').textContent = isKo
+        ? '표식 거리는 같은 비율이 아님 · 날짜는 관측일이 아닌 공개일'
+        : 'Marker distance is not to scale · dates are release dates, not observation times';
+      this.root.dataset.stage = 'photo';
+      return;
+    }
     if (this._detailBody) {
       const body = this._detailBody;
       document.getElementById('cosmicStage').textContent = body.name[isKo ? 'ko' : 'en'];

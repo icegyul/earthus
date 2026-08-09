@@ -189,6 +189,15 @@
           <p id="cosmicBodyLimit"></p>
           <a id="cosmicBodySource" target="_blank" rel="noopener noreferrer">공식 자료</a>
         </aside>
+        <aside id="cosmicPhotoInfo" class="cosmic-photo-info" aria-live="polite" hidden>
+          <button id="cosmicPhotoBack" type="button">← 3D 우주</button>
+          <img id="cosmicPhotoImage" alt="" loading="lazy" decoding="async">
+          <p id="cosmicPhotoMeta"></p>
+          <h2 id="cosmicPhotoTitle"></h2>
+          <p id="cosmicPhotoCredit"></p>
+          <p id="cosmicPhotoLimit"></p>
+          <a id="cosmicPhotoSource" target="_blank" rel="noopener noreferrer">공식 원본</a>
+        </aside>
         <header class="cosmic-hud" aria-live="polite">
           <p id="cosmicStage">태양계</p>
           <span id="cosmicScale">지구에서 해왕성 궤도까지 · 로그 스케일</span>
@@ -356,8 +365,8 @@
       <span class="mm-label"><b data-scene-earth-count>지구 레이어 0개 켜짐</b><small data-scene-earth-hint>지구로 돌아가 보기</small></span>
       <span class="mm-chev" aria-hidden="true">‹</span>
     </button>
-    <!-- AETHERUS 메뉴 — 실제로 동작하는 3D 규모 이동만 먼저 연다.
-         허블·제임스웹은 사진 위치 카탈로그가 붙기 전까지 버튼처럼 속이지 않는다. -->
+    <!-- AETHERUS 메뉴 — 규모 이동과 공식 사진 카탈로그를 같은 3D 공간에서 연다.
+         오른쪽 숫자는 현재 출처·크레딧·원본 링크까지 검증된 사진 수다. -->
     <button class="mm-item mm-space-route" type="button" data-act="space-solar" hidden>
       <span class="mm-ico" aria-hidden="true">☉</span>
       <span class="mm-label" data-i18n="m.solar">태양계</span>
@@ -371,16 +380,16 @@
       <span class="mm-label" data-i18n="m.galaxies">은하들</span>
     </button>
     <div class="mm-space-route mm-sep" hidden></div>
-    <div class="mm-item mm-space-route mm-soon" role="status" hidden>
+    <button class="mm-item mm-space-route" type="button" data-act="space-hubble" hidden>
       <span class="mm-ico" aria-hidden="true">◌</span>
       <span class="mm-label" data-i18n="m.hubble">허블</span>
-      <span class="mm-state" data-i18n="m.soon">준비 중</span>
-    </div>
-    <div class="mm-item mm-space-route mm-soon" role="status" hidden>
+      <span class="mm-state">1</span>
+    </button>
+    <button class="mm-item mm-space-route" type="button" data-act="space-webb" hidden>
       <span class="mm-ico" aria-hidden="true">◇</span>
       <span class="mm-label" data-i18n="m.webb">제임스웹</span>
-      <span class="mm-state" data-i18n="m.soon">준비 중</span>
-    </div>
+      <span class="mm-state">49</span>
+    </button>
     <button class="mm-item" data-act="sat">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4.4" transform="rotate(-30 12 12)"/></svg></span>
       <span class="mm-label" data-i18n="m.sat">인공위성</span><span class="mm-badge" id="satCount"></span>
@@ -986,7 +995,7 @@
 <!-- v6는 OMM JSON의 6~9자리 카탈로그 번호를 지원하는 마지막 UMD 배포본이다.
      v7은 ESM 전용이라 빌드 없는 이 앱에서 같은 script 전역으로 교체할 수 없다. -->
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"></script>
-<script type="module" src="js/main.js?v=20260810-bodies7"></script>
+<script type="module" src="js/main.js?v=20260810-skyphotos1"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

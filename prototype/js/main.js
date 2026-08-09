@@ -43,7 +43,7 @@ import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
 import { scaleRail } from './ui-scale.js?v=20260810-mobile1';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
-import { cosmic3d } from './space/cosmic3d.js?v=20260810-bodies7';
+import { cosmic3d } from './space/cosmic3d.js?v=20260810-skyphotos1';
 import { trenchCards } from './ocean/trenchcards.js';
 import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-globe2';
 
@@ -162,6 +162,8 @@ async function boot() {
   layerBar.onAction('space-solar', () => sceneMgr.to('space', { stage: 'solar' }));
   layerBar.onAction('space-milkyway', () => sceneMgr.to('space', { stage: 'milkyway' }));
   layerBar.onAction('space-galaxies', () => sceneMgr.to('space', { stage: 'galaxies' }));
+  layerBar.onAction('space-hubble', () => cosmic3d.openPhotoAtlas('HST'));
+  layerBar.onAction('space-webb', () => cosmic3d.openPhotoAtlas('JWST'));
   activeBar.init();       // 지금 켜진 레이어 줄 (감사 3차)
   search.init();          // ⌘K · 우상단 돋보기
   /* ⚠️ 오늘의 볼거리 칩(최고 파고·수온·기온)은 **첫 화면에서 뺐다.**

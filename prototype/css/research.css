@@ -36,7 +36,9 @@ header {
 }
 header > a { width: 120px; line-height: 0; }
 header img { width: 100%; }
+.header-copy { display: flex; align-items: center; gap: 9px; min-width: 0; }
 header strong { font-size: 13px; }
+.access-note { padding: 3px 7px; border: 1px solid rgba(120, 213, 186, .32); border-radius: 999px; color: var(--mint); font: 500 9px ui-monospace, SFMono-Regular, monospace; white-space: nowrap; }
 nav { display: flex; gap: 6px; }
 nav a {
   padding: 7px 9px;

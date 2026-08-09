@@ -716,6 +716,46 @@
       "depthSource": "NOAA Ocean Exploration",
       "depthSourceUrl": "https://oceanexplorer.noaa.gov/multimedia/explorations-24pr-usvi-biotech-media-tall-gorgonian/",
       "note": { "ko": "푸에르토리코 서부 해역의 157m 깊이에서 관측된 약 50cm 크기의 수지상 부채산호입니다. 사진 자료는 종 수준까지 동정하지 않았습니다.", "en": "This approximately 50cm bushy gorgonian coral was observed at 157m off western Puerto Rico. The photo record does not identify it to species level." }
+    },
+    {
+      "id": "ringed-seal-noaa-profile",
+      "name": { "ko": "환문물범", "en": "Ringed seal" },
+      "sci": "Pusa hispida",
+      "group": "whale",
+      "depthKind": "literature-range",
+      "depthMin": 0,
+      "depthMax": 46,
+      "sizeM": 1.295,
+      "sizeMinM": 1.22,
+      "sizeMaxM": 1.37,
+      "sizeKind": "range-midpoint",
+      "thumb": "ocean/thumbs/ringed-seal.jpg",
+      "credit": "NOAA Alaska Fisheries Science Center/John Jansen",
+      "license": "NOAA public domain; credit requested",
+      "photoSourceUrl": "https://www.fisheries.noaa.gov/species/ringed-seal",
+      "depthSource": "NOAA Fisheries species profile",
+      "depthSourceUrl": "https://www.fisheries.noaa.gov/species/ringed-seal",
+      "note": { "ko": "NOAA는 환문물범의 평균 몸길이를 4–4.5피트로 설명하고, 먹이활동 중 150피트 또는 그보다 깊게 잠수한다고 기록합니다. 0–46m는 북극 해빙 환경을 전제로 한 잠수 능력 표시입니다.", "en": "NOAA describes an average length of 4–4.5ft and foraging dives to 150ft or more. The displayed 0–46m is dive capability conditioned on Arctic sea-ice habitat, not an occurrence range for this location." }
+    },
+    {
+      "id": "harp-seal-noaa-profile",
+      "name": { "ko": "하프물범", "en": "Harp seal" },
+      "sci": "Pagophilus groenlandicus",
+      "group": "whale",
+      "depthKind": "literature-range",
+      "depthMin": 0,
+      "depthMax": 396,
+      "sizeM": 1.675,
+      "sizeMinM": 1.52,
+      "sizeMaxM": 1.83,
+      "sizeKind": "range-midpoint",
+      "thumb": "ocean/thumbs/harp-seal.jpg",
+      "credit": "NOAA Fisheries",
+      "license": "NOAA public domain; credit requested",
+      "photoSourceUrl": "https://www.fisheries.noaa.gov/species/harp-seal",
+      "depthSource": "NOAA Fisheries species profile",
+      "depthSourceUrl": "https://www.fisheries.noaa.gov/species/harp-seal",
+      "note": { "ko": "NOAA는 몸길이를 약 5–6피트로, 잠수 능력을 수면 아래 1,300피트까지로 설명합니다. 0–396m는 계절적으로 이동하는 종의 잠수 능력이지 현재 좌표의 출현 기록이 아닙니다.", "en": "NOAA lists a body length of about 5–6ft and dives to 1,300ft below the surface. The displayed 0–396m is species-level dive capability, not an occurrence record for the current coordinates." }
     }
   ]
 }

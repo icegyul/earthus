@@ -28,3 +28,8 @@ verify_jwt = true          # ⚠️ 서비스 역할로만 호출하고, 함수 
 #    로그인 토큰이 없다. 대신 함수 안에서 PUSH_TICK_TOKEN 을 직접 검사한다 —
 #    그 토큰이 없으면 아무나 불러 알림을 쏟아부을 수 있다. 절대 빼지 말 것.
 verify_jwt = false
+
+[functions.social-admin]
+# JWT를 플랫폼 게이트에서도 확인하고, 함수 안에서 SOCIAL_ADMIN_UIDS와 다시 대조한다.
+# 키 저장, 미디어 업로드 준비, 게시 모두 관리자 본인 요청만 허용한다.
+verify_jwt = true

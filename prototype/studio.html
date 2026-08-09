@@ -55,9 +55,12 @@
         <button class="rail-tab" id="tab-library" role="tab" type="button" data-tab="library" aria-controls="panel-library" aria-selected="false" tabindex="-1">
           <span class="rail-number">04</span><span>보관함</span><small id="libraryCount">이 기기</small>
         </button>
+        <button class="rail-tab" id="tab-social" role="tab" type="button" data-tab="social" aria-controls="panel-social" aria-selected="false" tabindex="-1">
+          <span class="rail-number">05</span><span>SNS 연결</span><small id="socialCount">설정 확인</small>
+        </button>
         <div class="rail-rule">
-          <strong>자동 게시 없음</strong>
-          <p>파일과 문구까지만 준비합니다. 외부 게시와 게시 기록은 사람이 눌러야 진행됩니다.</p>
+          <strong>사람이 눌러야 게시</strong>
+          <p>자격증명을 연결해도 자동 게시하지 않습니다. 최종 확인 뒤 게시 버튼을 누른 요청만 처리합니다.</p>
         </div>
       </nav>
 
@@ -268,7 +271,7 @@
 
           <section class="local-notice">
             <strong>현재 보관 범위: 이 브라우저와 이 기기</strong>
-            <p>서버 업로드를 아직 연결하지 않았습니다. 다른 기기에는 나타나지 않으며 브라우저 자료를 지우면 함께 사라질 수 있습니다.</p>
+            <p>기기 보관함 자료를 여러 관리자 기기에서 쓰려면 SNS 연결 탭의 서버 보관함에도 올리세요.</p>
           </section>
 
           <form class="import-meta" id="importMeta" hidden>
@@ -296,6 +299,141 @@
               <strong>아직 보관한 자료가 없습니다.</strong>
               <p>카드를 저장하거나, earthus 릴스 프레임을 만들거나, 기기의 사진과 영상을 가져오세요.</p>
             </div>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-social" role="tabpanel" data-panel="social" aria-labelledby="tab-social socialTitle" hidden>
+          <div class="panel-head social-head">
+            <div>
+              <p class="kicker">관리자 전용 연결</p>
+              <h2 id="socialTitle">자격증명과 게시를 한곳에서 관리</h2>
+              <p>입력값은 서버에서 암호화합니다. 화면에는 저장 여부만 표시하며 자동 게시 기능은 만들지 않습니다.</p>
+            </div>
+            <button class="button button-quiet" id="refreshSocial" type="button">연결 상태 새로고침</button>
+          </div>
+
+          <section class="credential-safety" aria-labelledby="credentialSafetyTitle">
+            <div>
+              <strong id="credentialSafetyTitle">이 페이지에 직접 입력해도 됩니다</strong>
+              <p>입력값은 브라우저 저장소에 남기지 않고 관리자 전용 서버로 보냅니다. 저장 뒤 입력칸은 즉시 비웁니다.</p>
+            </div>
+            <ul>
+              <li>관리자 계정과 서버 UID를 모두 확인</li>
+              <li>AES-GCM 암호화 저장</li>
+              <li>원문 다시 보기 불가</li>
+            </ul>
+          </section>
+
+          <div class="social-layout">
+            <section class="social-section" aria-labelledby="credentialTitle">
+              <div class="social-section-head">
+                <div>
+                  <h3 id="credentialTitle">SNS 자격증명</h3>
+                  <p>각 서비스에서 발급받은 값만 채우세요. 저장된 값은 점으로 다시 채우지 않습니다.</p>
+                </div>
+                <span class="connection-summary" id="connectionSummary">불러오는 중</span>
+              </div>
+
+              <div class="credential-grid" id="credentialGrid">
+                <form class="credential-card" data-provider="x" autocomplete="off">
+                  <div class="credential-card-head">
+                    <div><strong>X</strong><span>OAuth 2.0 사용자 권한</span></div>
+                    <span class="provider-state" data-provider-state="x">확인 중</span>
+                  </div>
+                  <div class="field"><label for="xAccessToken">사용자 액세스 토큰</label><input id="xAccessToken" name="accessToken" type="password" required autocomplete="new-password" spellcheck="false"><small>tweet.write 권한이 있어야 합니다.</small></div>
+                  <details class="optional-fields"><summary>토큰 갱신과 앱 정보</summary>
+                    <div class="field"><label for="xClientId">OAuth 2.0 Client ID</label><input id="xClientId" name="clientId" type="password" autocomplete="new-password" spellcheck="false"></div>
+                    <div class="field"><label for="xClientSecret">OAuth 2.0 Client Secret</label><input id="xClientSecret" name="clientSecret" type="password" autocomplete="new-password" spellcheck="false"></div>
+                    <div class="field"><label for="xRefreshToken">Refresh Token</label><input id="xRefreshToken" name="refreshToken" type="password" autocomplete="new-password" spellcheck="false"></div>
+                    <div class="field"><label for="xApiKey">API Key</label><input id="xApiKey" name="apiKey" type="password" autocomplete="new-password" spellcheck="false"></div>
+                    <div class="field"><label for="xApiSecret">API Key Secret</label><input id="xApiSecret" name="apiSecret" type="password" autocomplete="new-password" spellcheck="false"></div>
+                  </details>
+                  <p class="credential-error" role="alert" hidden></p>
+                  <div class="credential-actions"><button class="button button-primary button-small" type="submit">안전하게 저장</button><button class="button button-quiet button-small test-credential" type="button">계정 확인</button><button class="text-button clear-credential" type="button">연결 삭제</button></div>
+                </form>
+
+                <form class="credential-card" data-provider="threads" autocomplete="off">
+                  <div class="credential-card-head">
+                    <div><strong>Threads</strong><span>Threads API</span></div>
+                    <span class="provider-state" data-provider-state="threads">확인 중</span>
+                  </div>
+                  <div class="field"><label for="threadsToken">Threads 사용자 액세스 토큰</label><input id="threadsToken" name="accessToken" type="password" required autocomplete="new-password" spellcheck="false"><small>threads_basic, threads_content_publish 권한이 필요합니다.</small></div>
+                  <div class="field"><label for="threadsUserId">Threads User ID</label><input id="threadsUserId" name="userId" type="password" required autocomplete="new-password" spellcheck="false"></div>
+                  <details class="optional-fields"><summary>앱 정보</summary>
+                    <div class="field"><label for="threadsAppId">Meta App ID</label><input id="threadsAppId" name="appId" type="password" autocomplete="new-password" spellcheck="false"></div>
+                    <div class="field"><label for="threadsAppSecret">Meta App Secret</label><input id="threadsAppSecret" name="appSecret" type="password" autocomplete="new-password" spellcheck="false"></div>
+                  </details>
+                  <p class="credential-error" role="alert" hidden></p>
+                  <div class="credential-actions"><button class="button button-primary button-small" type="submit">안전하게 저장</button><button class="button button-quiet button-small test-credential" type="button">계정 확인</button><button class="text-button clear-credential" type="button">연결 삭제</button></div>
+                </form>
+
+                <form class="credential-card" data-provider="instagram" autocomplete="off">
+                  <div class="credential-card-head">
+                    <div><strong>Instagram</strong><span>프로페셔널 계정</span></div>
+                    <span class="provider-state" data-provider-state="instagram">확인 중</span>
+                  </div>
+                  <div class="field"><label for="instagramToken">Instagram 액세스 토큰</label><input id="instagramToken" name="accessToken" type="password" required autocomplete="new-password" spellcheck="false"><small>instagram_content_publish 권한이 필요합니다.</small></div>
+                  <div class="field"><label for="instagramUserId">Instagram Professional Account ID</label><input id="instagramUserId" name="userId" type="password" required autocomplete="new-password" spellcheck="false"></div>
+                  <details class="optional-fields"><summary>앱 정보와 API 버전</summary>
+                    <div class="field"><label for="instagramAppId">Meta App ID</label><input id="instagramAppId" name="appId" type="password" autocomplete="new-password" spellcheck="false"></div>
+                    <div class="field"><label for="instagramAppSecret">Meta App Secret</label><input id="instagramAppSecret" name="appSecret" type="password" autocomplete="new-password" spellcheck="false"></div>
+                    <div class="field"><label for="instagramVersion">Graph API 버전</label><input id="instagramVersion" name="graphVersion" type="text" value="v23.0" pattern="v[0-9]+\.[0-9]+" autocomplete="off"></div>
+                  </details>
+                  <p class="credential-error" role="alert" hidden></p>
+                  <div class="credential-actions"><button class="button button-primary button-small" type="submit">안전하게 저장</button><button class="button button-quiet button-small test-credential" type="button">계정 확인</button><button class="text-button clear-credential" type="button">연결 삭제</button></div>
+                </form>
+
+                <form class="credential-card" data-provider="facebook" autocomplete="off">
+                  <div class="credential-card-head">
+                    <div><strong>Facebook</strong><span>페이지 게시</span></div>
+                    <span class="provider-state" data-provider-state="facebook">확인 중</span>
+                  </div>
+                  <div class="field"><label for="facebookToken">Page Access Token</label><input id="facebookToken" name="pageAccessToken" type="password" required autocomplete="new-password" spellcheck="false"><small>pages_manage_posts 권한이 필요합니다.</small></div>
+                  <div class="field"><label for="facebookPageId">Facebook Page ID</label><input id="facebookPageId" name="pageId" type="password" required autocomplete="new-password" spellcheck="false"></div>
+                  <details class="optional-fields"><summary>앱 정보와 API 버전</summary>
+                    <div class="field"><label for="facebookAppId">Meta App ID</label><input id="facebookAppId" name="appId" type="password" autocomplete="new-password" spellcheck="false"></div>
+                    <div class="field"><label for="facebookAppSecret">Meta App Secret</label><input id="facebookAppSecret" name="appSecret" type="password" autocomplete="new-password" spellcheck="false"></div>
+                    <div class="field"><label for="facebookVersion">Graph API 버전</label><input id="facebookVersion" name="graphVersion" type="text" value="v23.0" pattern="v[0-9]+\.[0-9]+" autocomplete="off"></div>
+                  </details>
+                  <p class="credential-error" role="alert" hidden></p>
+                  <div class="credential-actions"><button class="button button-primary button-small" type="submit">안전하게 저장</button><button class="button button-quiet button-small test-credential" type="button">계정 확인</button><button class="text-button clear-credential" type="button">연결 삭제</button></div>
+                </form>
+              </div>
+            </section>
+
+            <section class="social-section server-library" aria-labelledby="serverLibraryTitle">
+              <div class="social-section-head">
+                <div><h3 id="serverLibraryTitle">서버 사진·영상 보관함</h3><p>여기에 올린 자료는 다른 관리자 기기에서도 보이고 SNS 게시에 사용할 수 있습니다.</p></div>
+                <span id="serverMediaCount">0건</span>
+              </div>
+              <form class="server-upload" id="serverUploadForm">
+                <div class="field"><label for="serverMediaFiles">사진 또는 영상</label><input id="serverMediaFiles" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/webm" required></div>
+                <div class="field"><label for="serverMediaTitle">자료 이름</label><input id="serverMediaTitle" type="text" maxlength="140" required></div>
+                <div class="field"><label for="serverMediaSource">출처</label><input id="serverMediaSource" type="text" maxlength="240" required></div>
+                <div class="field"><label for="serverMediaObservedAt">관측·촬영 시각</label><input id="serverMediaObservedAt" type="datetime-local" required></div>
+                <div class="server-upload-actions"><button class="button button-primary" type="submit">서버 보관함에 올리기</button><span id="serverUploadState" role="status">최대 512MB</span></div>
+              </form>
+              <div class="server-media-grid" id="serverMediaGrid" aria-live="polite"><div class="empty-state wide"><strong>서버 자료를 불러오는 중입니다.</strong></div></div>
+            </section>
+
+            <section class="social-section publisher" aria-labelledby="publisherTitle">
+              <div class="social-section-head"><div><h3 id="publisherTitle">확인하고 SNS에 게시</h3><p>선택한 채널마다 사람이 누른 요청을 한 번씩 처리하고 결과 주소를 남깁니다.</p></div></div>
+              <form id="publishForm">
+                <fieldset class="channel-choice"><legend>게시할 채널</legend>
+                  <label><input type="checkbox" name="publishProvider" value="x"> X</label>
+                  <label><input type="checkbox" name="publishProvider" value="threads"> Threads</label>
+                  <label><input type="checkbox" name="publishProvider" value="instagram"> Instagram</label>
+                  <label><input type="checkbox" name="publishProvider" value="facebook"> Facebook</label>
+                </fieldset>
+                <div class="publish-fields">
+                  <div class="field"><label for="publishMedia">함께 게시할 자료</label><select id="publishMedia"><option value="">텍스트만</option></select><small>Instagram은 사진 또는 영상이 반드시 필요합니다.</small></div>
+                  <div class="field publish-copy"><label for="publishText">게시 문구</label><textarea id="publishText" rows="7" maxlength="10000" required></textarea><small><span id="publishLength">0</span>자. 선택한 채널의 글자 수 제한을 먼저 확인합니다.</small></div>
+                </div>
+                <label class="final-confirm"><input id="publishConfirmed" type="checkbox" required><span><strong>원자료와 미리보기를 확인했습니다.</strong> 지금 선택한 SNS에 실제로 게시하는 것에 동의합니다.</span></label>
+                <div class="publish-actions"><button class="button button-primary" id="publishNow" type="submit">선택한 SNS에 게시</button><p>예약이나 자동 실행은 없습니다. 이 버튼을 누른 경우에만 게시합니다.</p></div>
+              </form>
+              <div class="publish-results" id="publishResults" aria-live="polite" hidden></div>
+            </section>
           </div>
         </section>
       </div>

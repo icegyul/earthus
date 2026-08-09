@@ -8,6 +8,7 @@
  */
 
 import { CONFIG } from './config.local.js';
+import { refreshSocialAdmin, setupSocialAdmin, uploadSocialFile } from './studio-social.js';
 
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -196,6 +197,7 @@ function kindLabel(kind) {
 }
 
 function activateTab(tab) {
+  if (!$$('.rail-tab').some(button => button.dataset.tab === tab)) return;
   $$('.rail-tab').forEach(button => {
     const active = button.dataset.tab === tab;
     button.classList.toggle('active', active);
@@ -209,6 +211,8 @@ function activateTab(tab) {
   });
   if (tab === 'library') renderLibrary();
   if (tab === 'reels') updateReelReadiness();
+  if (tab === 'social') refreshSocialAdmin();
+  if (location.hash !== `#${tab}`) history.replaceState(null, '', `#${tab}`);
   window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 }
 
@@ -278,6 +282,7 @@ async function paintGate() {
   $('#studio').hidden = false;
   if (!state.draftsLoaded) await loadDrafts();
   await loadLibrary();
+  if (!$('#panel-social').hidden) await refreshSocialAdmin();
 }
 
 function clearAuthorizedSession() {
@@ -1622,6 +1627,42 @@ function renderLibrary() {
     });
     actions.append(share);
 
+    const server = create('button', 'button button-quiet button-small', item.localOnly === false ? '서버 보관됨' : '서버에도 보관');
+    server.type = 'button';
+    server.disabled = item.localOnly === false;
+    server.addEventListener('click', async () => {
+      if (!state.known || !state.client) return toast('관리자 로그인 상태를 확인하세요.');
+      server.disabled = true;
+      const original = server.textContent;
+      try {
+        const files = item.kind === 'sequence'
+          ? (item.frames || []).map((frame, index) => ({
+              file: new File([frame.blob], frame.name || `${safeFilePart(item.title)}-${index + 1}.png`, { type: frame.blob.type || 'image/png' }),
+              title: `${item.title} ${index + 1}`,
+            }))
+          : [{ file: new File([item.blob], item.fileName || `${safeFilePart(item.title)}.${item.kind === 'video' ? 'mp4' : 'png'}`, { type: item.blob.type }), title: item.title }];
+        const serverIds = [];
+        for (const [index, entry] of files.entries()) {
+          const result = await uploadSocialFile({
+            file: entry.file,
+            title: entry.title,
+            source: item.source,
+            observedAt: item.observedAt,
+            onState: message => { server.textContent = files.length > 1 ? `${index + 1}/${files.length} ${message}` : message; },
+          });
+          serverIds.push(result.media.id);
+        }
+        await putMedia({ ...item, serverIds, localOnly: false });
+        await refreshSocialAdmin();
+        toast(`${files.length}개 자료를 서버 보관함에 올렸습니다.`);
+      } catch (error) {
+        server.disabled = false;
+        server.textContent = original;
+        toast(error.message);
+      }
+    });
+    actions.append(server);
+
     const remove = create('button', 'text-button', '삭제');
     remove.type = 'button';
     remove.addEventListener('click', async () => {
@@ -1850,12 +1891,15 @@ function bindEvents() {
 
 async function boot() {
   bindEvents();
+  setupSocialAdmin({ getClient: () => state.client, toast });
   state.rows = [{ key: '', value: '' }];
   renderRowEditor();
   renderFrames();
   syncCardChannels(null);
   updateReelReadiness();
   loadBrandAssets();
+  const initialTab = location.hash.slice(1);
+  if (initialTab) activateTab(initialTab);
   await bootAuth();
 }
 

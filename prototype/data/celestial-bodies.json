@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "generated": "2026-08-10",
+  "positionNotice": {
+    "ko": "지명은 구 위의 위도·경도에 놓았습니다. 질감은 실시간 사진이나 정밀 지형도가 아닌 가벼운 교육용 표현입니다.",
+    "en": "Names are placed by latitude and longitude. Textures are lightweight educational renderings, not live imagery or precision terrain."
+  },
+  "bodies": [
+    {
+      "id": "mercury",
+      "name": { "ko": "수성", "en": "Mercury" },
+      "kind": { "ko": "암석 행성", "en": "Rocky planet" },
+      "texture": "cratered",
+      "palette": ["#77746f", "#aaa69e", "#484744"],
+      "radiusKm": 2439.4,
+      "rotation": { "ko": "58.6 지구일", "en": "58.6 Earth days" },
+      "orbit": { "ko": "88 지구일", "en": "88 Earth days" },
+      "summary": { "ko": "태양에 가장 가깝고 태양계에서 가장 작은 행성", "en": "The closest planet to the Sun and the smallest planet" },
+      "features": [
+        { "name": { "ko": "칼로리스 분지", "en": "Caloris Basin" }, "lat": 30.5, "lon": 162.7 }
+      ],
+      "source": "NASA/JPL Planetary Physical Parameters",
+      "sourceUrl": "https://ssd.jpl.nasa.gov/planets/phys_par.html"
+    },
+    {
+      "id": "venus",
+      "name": { "ko": "금성", "en": "Venus" },
+      "kind": { "ko": "암석 행성 · 두꺼운 구름", "en": "Rocky planet · thick clouds" },
+      "texture": "cloudy",
+      "palette": ["#cfaa64", "#efd596", "#8e6939"],
+      "radiusKm": 6051.8,
+      "rotation": { "ko": "243 지구일 · 역행", "en": "243 Earth days · retrograde" },
+      "orbit": { "ko": "224.7 지구일", "en": "224.7 Earth days" },
+      "summary": { "ko": "표면은 두꺼운 황산 구름 아래에 가려져 있습니다", "en": "Its surface is hidden below thick sulfuric-acid clouds" },
+      "features": [
+        { "name": { "ko": "맥스웰 산맥", "en": "Maxwell Montes" }, "lat": 65.2, "lon": 3.3 }
+      ],
+      "source": "NASA/JPL Planetary Physical Parameters",
+      "sourceUrl": "https://ssd.jpl.nasa.gov/planets/phys_par.html"
+    },
+    {
+      "id": "moon",
+      "name": { "ko": "달", "en": "Moon" },
+      "kind": { "ko": "지구의 자연위성", "en": "Earth's natural satellite" },
+      "texture": "moon",
+      "palette": ["#8a8984", "#c4c2ba", "#4f504e"],
+      "radiusKm": 1737.4,
+      "rotation": { "ko": "27.3 지구일 · 동주기", "en": "27.3 Earth days · synchronous" },
+      "orbit": { "ko": "27.3 지구일", "en": "27.3 Earth days" },
+      "summary": { "ko": "닐 암스트롱과 버즈 올드린이 1969년 고요의 바다에 착륙했습니다", "en": "Neil Armstrong and Buzz Aldrin landed in Mare Tranquillitatis in 1969" },
+      "features": [
+        { "name": { "ko": "아폴로 11 착륙지", "en": "Apollo 11 landing site" }, "lat": 0.67409, "lon": 23.47298, "accent": true },
+        { "name": { "ko": "고요의 바다", "en": "Mare Tranquillitatis" }, "lat": 8.5, "lon": 31.4 },
+        { "name": { "ko": "티코 충돌구", "en": "Tycho crater" }, "lat": -43.31, "lon": -11.36 },
+        { "name": { "ko": "코페르니쿠스 충돌구", "en": "Copernicus crater" }, "lat": 9.62, "lon": -20.08 }
+      ],
+      "orbiters": [
+        { "name": { "ko": "LRO", "en": "LRO" }, "color": "#8bd8ec", "sourceUrl": "https://science.nasa.gov/mission/lro/" },
+        { "name": { "ko": "다누리", "en": "Danuri" }, "color": "#f2c879", "sourceUrl": "https://www.kari.re.kr/eng/contents/194" }
+      ],
+      "source": "NASA Apollo 11 Lunar Surface Journal · IAU/USGS Gazetteer",
+      "sourceUrl": "https://history.nasa.gov/wp-content/uploads/static/history/alsj/a11/a11ov.html"
+    },
+    {
+      "id": "mars",
+      "name": { "ko": "화성", "en": "Mars" },
+      "kind": { "ko": "암석 행성", "en": "Rocky planet" },
+      "texture": "mars",
+      "palette": ["#a64f32", "#d78658", "#572c26"],
+      "radiusKm": 3389.5,
+      "rotation": { "ko": "24시간 37분", "en": "24 h 37 min" },
+      "orbit": { "ko": "687 지구일", "en": "687 Earth days" },
+      "summary": { "ko": "태양계에서 가장 큰 화산과 거대한 협곡계를 가진 붉은 행성", "en": "The red planet, home to the largest volcano and a vast canyon system" },
+      "features": [
+        { "name": { "ko": "올림푸스 화산", "en": "Olympus Mons" }, "lat": 18.65, "lon": -133.8, "accent": true },
+        { "name": { "ko": "마리너 계곡", "en": "Valles Marineris" }, "lat": -14.0, "lon": -60.0 },
+        { "name": { "ko": "게일 충돌구", "en": "Gale crater" }, "lat": -5.4, "lon": 137.8 }
+      ],
+      "source": "NASA/JPL Planetary Physical Parameters · IAU/USGS Gazetteer",
+      "sourceUrl": "https://science.nasa.gov/mars/"
+    },
+    {
+      "id": "jupiter",
+      "name": { "ko": "목성", "en": "Jupiter" },
+      "kind": { "ko": "가스 행성", "en": "Gas giant" },
+      "texture": "bands",
+      "palette": ["#d0a27b", "#eee0c6", "#87543c"],
+      "radiusKm": 69911,
+      "rotation": { "ko": "약 9시간 56분", "en": "About 9 h 56 min" },
+      "orbit": { "ko": "11.86 지구년", "en": "11.86 Earth years" },
+      "summary": { "ko": "태양계에서 가장 큰 행성 · 표면이 아닌 구름층을 봅니다", "en": "The largest planet · this view shows cloud layers, not a solid surface" },
+      "features": [
+        { "name": { "ko": "대적점 · 경도는 변함", "en": "Great Red Spot · longitude changes" }, "lat": -22.0, "lon": -45.0, "accent": true, "schematic": true }
+      ],
+      "source": "NASA/JPL Planetary Physical Parameters",
+      "sourceUrl": "https://science.nasa.gov/jupiter/"
+    },
+    {
+      "id": "saturn",
+      "name": { "ko": "토성", "en": "Saturn" },
+      "kind": { "ko": "가스 행성 · 고리", "en": "Gas giant · rings" },
+      "texture": "bands",
+      "palette": ["#d8c48f", "#f0e4bd", "#92764e"],
+      "radiusKm": 58232,
+      "rotation": { "ko": "약 10시간 42분", "en": "About 10 h 42 min" },
+      "orbit": { "ko": "29.45 지구년", "en": "29.45 Earth years" },
+      "summary": { "ko": "얼음과 암석 조각으로 이루어진 넓은 고리를 가진 행성", "en": "A planet encircled by broad rings made of ice and rock" },
+      "features": [
+        { "name": { "ko": "북극 육각형", "en": "North polar hexagon" }, "lat": 78.0, "lon": 0.0, "schematic": true }
+      ],
+      "source": "NASA/JPL Planetary Physical Parameters",
+      "sourceUrl": "https://science.nasa.gov/saturn/"
+    },
+    {
+      "id": "uranus",
+      "name": { "ko": "천왕성", "en": "Uranus" },
+      "kind": { "ko": "얼음 행성", "en": "Ice giant" },
+      "texture": "ice",
+      "palette": ["#8bd3d6", "#bce9e8", "#4f9ca5"],
+      "radiusKm": 25362,
+      "rotation": { "ko": "약 17시간 14분 · 역행", "en": "About 17 h 14 min · retrograde" },
+      "orbit": { "ko": "84 지구년", "en": "84 Earth years" },
+      "summary": { "ko": "자전축이 약 98도 기울어 옆으로 누운 듯 도는 행성", "en": "Its roughly 98-degree axial tilt makes it appear to rotate on its side" },
+      "features": [],
+      "source": "NASA/JPL Planetary Physical Parameters",
+      "sourceUrl": "https://science.nasa.gov/uranus/"
+    },
+    {
+      "id": "neptune",
+      "name": { "ko": "해왕성", "en": "Neptune" },
+      "kind": { "ko": "얼음 행성", "en": "Ice giant" },
+      "texture": "ice",
+      "palette": ["#4169b4", "#6f91d8", "#223b80"],
+      "radiusKm": 24622,
+      "rotation": { "ko": "약 16시간 6분", "en": "About 16 h 6 min" },
+      "orbit": { "ko": "164.8 지구년", "en": "164.8 Earth years" },
+      "summary": { "ko": "태양에서 가장 먼 행성 · 매우 빠른 바람이 부는 구름층", "en": "The farthest planet from the Sun, with extremely fast winds in its clouds" },
+      "features": [],
+      "source": "NASA/JPL Planetary Physical Parameters",
+      "sourceUrl": "https://science.nasa.gov/neptune/"
+    }
+  ]
+}

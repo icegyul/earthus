@@ -50,7 +50,8 @@ export const seaLife = {
     const active = (this.items || []).filter(item => item.depthKind === 'observation-depth'
       ? Math.abs(depth - item.depthMin) <= item.displayWindowM
       : depth >= item.depthMin && depth <= item.depthMax)
-      .sort((left, right) => hash(left.id) - hash(right.id)).slice(0, 8);
+      .sort((left, right) => observationRank(left) - observationRank(right)
+        || hash(left.id) - hash(right.id)).slice(0, 8);
     const y = Math.max(10, Math.min(90, depth / Math.max(1, data.depthM) * 100));
     active.forEach((item, index) => {
       const button = document.createElement('button');
@@ -106,6 +107,10 @@ function depthLabel(item, ko) {
   return ko
     ? `단일 관측 · ±${item.displayWindowM}m 탐색창 · 현위치 아님`
     : `Single record · ±${item.displayWindowM}m discovery window · not live`;
+}
+
+function observationRank(item) {
+  return item.depthKind === 'observation-depth' ? 0 : 1;
 }
 
 function formatSize(item, ko) {

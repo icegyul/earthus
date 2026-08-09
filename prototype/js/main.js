@@ -46,7 +46,7 @@ import { initSkyframeDiagnostic } from './space/skyframe.js';
 import { solarScene } from './space/solarscene.js?v=20260809-solar1';
 import { galaxyCards } from './space/galaxycards.js?v=20260809-galaxy1';
 import { trenchCards } from './ocean/trenchcards.js';
-import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-globe1';
+import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-globe2';
 
 /* 늦게 불러오는 바다거북 모듈을 붙잡아 두는 곳.
    ⚠️⚠️ **모듈 바깥에 둔다.** 켜는 쪽은 boot(), 끄는 쪽(OFF·HAS_MARKS)은

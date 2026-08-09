@@ -110,7 +110,8 @@ export const trenchGlobe = {
         outlineColor: Cesium.Color.fromCssColorString('#dffbff').withAlpha(.9),
         outlineWidth: 1.2,
         scaleByDistance: new Cesium.NearFarScalar(300_000, 1.3, 30_000_000, .72),
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        // 지구 반대편 해구가 지구를 뚫고 보이면 위치를 잘못 읽는다. 항상 지구에 가린다.
+        disableDepthTestDistance: 0,
       });
       this.labels.add({
         id: { _trench: item }, position,
@@ -124,7 +125,7 @@ export const trenchGlobe = {
         verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
         // 전지구에서 10개 이름을 다 켜면 태평양이 글자 덩어리가 된다. 위치·크기 점만 먼저 본다.
         distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 8_000_000),
-        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        disableDepthTestDistance: 0,
       });
     });
     scene.requestRender();
@@ -192,7 +193,7 @@ export const trenchGlobe = {
       pixelOffset: new Cesium.Cartesian2(42, 18 + index * 25),
       horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
       verticalOrigin: Cesium.VerticalOrigin.TOP,
-      disableDepthTestDistance: Number.POSITIVE_INFINITY,
+      disableDepthTestDistance: 0,
     }));
     this.renderHud(depth, active.length);
     scene.requestRender();

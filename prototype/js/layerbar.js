@@ -648,9 +648,10 @@ export const layerBar = {
     const main = $('#menuMain');
     if (!main) return;
     const away = next !== 'earth';
+    const space = next === 'space';
     const fold = main.querySelector('[data-scene-earth-fold]');
     if (fold) {
-      fold.hidden = !away;
+      fold.hidden = !away || space;
       const count = this._activeEarthLayerCount();
       const label = fold.querySelector('[data-scene-earth-count]');
       const hint = fold.querySelector('[data-scene-earth-hint]');
@@ -664,17 +665,28 @@ export const layerBar = {
     /* 안전·뉴스·LAB·질문·설정은 어느 장면에서도 남긴다.
        우주에는 인공위성, 심해에는 취미(바다 조건)를 남기고 나머지 지구 조작만 접는다. */
     const hiddenAway = next === 'space'
-      ? ['[data-open="earth"]', '[data-act="flight"]', '[data-act="outdoor"]', '[data-act="locate"]', '[data-act="globe"]']
+      ? ['[data-open="earth"]', '[data-act="sat"]', '[data-act="flight"]', '[data-act="outdoor"]', '[data-act="earth-home"]', '[data-act="earth-surface"]', '[data-act="earth-trench"]', '[data-act="locate"]', '[data-act="globe"]']
       : next === 'ocean'
         ? ['[data-open="earth"]', '[data-act="sat"]', '[data-act="flight"]', '[data-act="locate"]', '[data-act="globe"]']
         : [];
     const sceneFiltered = [
       '[data-open="earth"]', '[data-act="sat"]', '[data-act="flight"]',
-      '[data-act="outdoor"]', '[data-act="locate"]', '[data-act="globe"]',
+      '[data-act="outdoor"]', '[data-act="earth-home"]', '[data-act="earth-surface"]',
+      '[data-act="earth-trench"]', '[data-act="locate"]', '[data-act="globe"]',
     ];
     sceneFiltered.forEach(selector => {
       const button = main.querySelector(selector);
       if (button) button.hidden = hiddenAway.includes(selector);
+    });
+    main.querySelectorAll('.mm-space-route').forEach(item => { item.hidden = !space; });
+    const activeEarthRoute = next === 'earth' ? 'earth-home'
+      : store.sceneStage === 'surface' ? 'earth-surface' : 'earth-trench';
+    main.querySelectorAll('.mm-earth-route').forEach(item => {
+      item.classList.toggle('on', !space && item.dataset.act === activeEarthRoute);
+    });
+    const activeSpaceRoute = `space-${store.sceneStage || 'solar'}`;
+    main.querySelectorAll('.mm-space-route[data-act]').forEach(item => {
+      item.classList.toggle('on', space && item.dataset.act === activeSpaceRoute);
     });
 
     // 지구 레이어 2단이 열린 채 장면을 떠나면 빈 맥락의 패널을 남기지 않는다.

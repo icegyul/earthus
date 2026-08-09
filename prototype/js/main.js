@@ -41,9 +41,9 @@ import { apiKeysPanel } from './ui-apikeys.js';
 import { eventPanel } from './ui-events.js';
 import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
-import { scaleRail } from './ui-scale.js?v=20260810-brand2';
+import { scaleRail } from './ui-scale.js?v=20260810-mobile1';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
-import { cosmicZoom } from './space/cosmiczoom.js?v=20260810-cosmic1';
+import { cosmic3d } from './space/cosmic3d.js?v=20260810-cosmic3d3';
 import { trenchCards } from './ocean/trenchcards.js';
 import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-globe2';
 
@@ -104,7 +104,7 @@ async function boot() {
   power.init();
   sceneMgr.init();
   scaleRail.init();
-  cosmicZoom.init();
+  cosmic3d.init();
   trenchCards.init();
   trenchGlobe.init();
   // 수심 장면을 공유하거나 동일 좌표로 재현할 수 있게 한다.
@@ -156,6 +156,12 @@ async function boot() {
      영어로 저장해 둔 사용자가 새로고침했을 때 메뉴만 한국어로 돌아온다. */
   i18n.applyStatic();
   layerBar.init();
+  layerBar.onAction('earth-home', () => sceneMgr.to('earth', { stage: 'earth' }));
+  layerBar.onAction('earth-surface', () => sceneMgr.to('ocean', { stage: 'surface' }));
+  layerBar.onAction('earth-trench', () => sceneMgr.to('ocean', { stage: 'trench' }));
+  layerBar.onAction('space-solar', () => sceneMgr.to('space', { stage: 'solar' }));
+  layerBar.onAction('space-milkyway', () => sceneMgr.to('space', { stage: 'milkyway' }));
+  layerBar.onAction('space-galaxies', () => sceneMgr.to('space', { stage: 'galaxies' }));
   activeBar.init();       // 지금 켜진 레이어 줄 (감사 3차)
   search.init();          // ⌘K · 우상단 돋보기
   /* ⚠️ 오늘의 볼거리 칩(최고 파고·수온·기온)은 **첫 화면에서 뺐다.**
@@ -414,7 +420,7 @@ async function boot() {
   import('./ui-cyclone.js').then(m => m.openSharedCyclone()).catch(() => {});
 
   // 개발용 전역 핸들 (콘솔에서 __e.viewer 등으로 접근)
-  Object.assign(window.__e, { viewer, scene, store, registry, i18n, imagery,
+  Object.assign(window.__e, { viewer, scene, store, registry, i18n, imagery, cosmic3d,
                               orbits: (await import('./layers/space.js')).orbits });
 }
 

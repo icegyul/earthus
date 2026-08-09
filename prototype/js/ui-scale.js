@@ -6,8 +6,7 @@ import { i18n } from './i18n.js';
 
 const ROUTES = {
   galaxies: ['space', 'galaxies'], milkyway: ['space', 'milkyway'],
-  solar: ['space', 'solar'], moon: ['space', 'moon'],
-  earth: ['earth', 'earth'], surface: ['ocean', 'surface'], trench: ['ocean', 'trench'],
+  solar: ['space', 'solar'],
 };
 
 export const scaleRail = {
@@ -27,14 +26,19 @@ export const scaleRail = {
     });
     store.on('scene', (next, stage) => this.render(next, stage));
     i18n.onChange(() => this.render(store.scene, store.sceneStage));
+    this._wide = window.matchMedia('(min-width: 561px)');
+    this._wide.addEventListener?.('change', () => this.render(store.scene, store.sceneStage));
     this.render(store.scene, store.sceneStage);
     return this;
   },
   render(next, stage) {
     if (!this.root) return;
-    // 지구에서는 접혀 기존 UI를 가리지 않고, 다른 장면에서는 자동으로 펼친다.
-    this.root.classList.toggle('open', next !== 'earth');
-    this.root.setAttribute('aria-expanded', String(next !== 'earth'));
+    /* 데스크톱 탐험 장면에서는 자동으로 펼친다. 560px 이하에서 112px 트랙을
+       자동으로 펴면 태양계 캔버스와 심해 자료를 덮으므로 손잡이만 남긴다.
+       사용자가 손잡이를 누르면 모바일에서도 그대로 열 수 있다. */
+    const autoOpen = next !== 'earth' && !!this._wide?.matches;
+    this.root.classList.toggle('open', autoOpen);
+    this.root.setAttribute('aria-expanded', String(autoOpen));
     this.root.querySelector('.scale-handle').textContent = 'AETHERUS';
     /* 받은 요청: "우주로 나가면 Aetherus 메뉴, 지구로 가면 earthus 메뉴".
        바다도 우리가 사는 지구의 영역이므로 space 장면만 Aetherus로 바꾼다. */

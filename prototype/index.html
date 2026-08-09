@@ -178,7 +178,8 @@
   <div id="sceneRoot" aria-hidden="true">
     <section class="scene-view space-scene" data-scene-view="space" aria-label="우주 탐험 기반 장면">
       <div id="cosmicExperience" class="cosmic-experience" hidden>
-        <canvas id="cosmicCanvas" aria-label="지구에서 태양계, 은하수, 은하들까지 이어지는 3D 로그 스케일"></canvas>
+        <canvas id="cosmicCanvas" tabindex="0" aria-label="지구에서 태양계, 은하수, 은하들까지 이어지는 회전 가능한 3D 로그 스케일"></canvas>
+        <div id="cosmicLabels" class="cosmic-labels" aria-hidden="true"></div>
         <header class="cosmic-hud" aria-live="polite">
           <p id="cosmicStage">태양계</p>
           <span id="cosmicScale">지구에서 해왕성 궤도까지 · 로그 스케일</span>
@@ -248,16 +249,12 @@
     </section>
   </div>
 
-  <nav id="scaleRail" aria-label="지구·우주·심해 크기 단계" aria-expanded="false">
+  <nav id="scaleRail" aria-label="우주 크기 단계" aria-expanded="false">
     <button class="scale-handle" type="button" aria-label="AETHERUS 크기 단계 열기">AETHERUS</button>
     <div class="scale-track">
       <button type="button" data-scale-stage="galaxies"><span>은하들</span><small>Galaxies</small></button>
       <button type="button" data-scale-stage="milkyway"><span>은하수</span><small>Milky Way</small></button>
       <button type="button" data-scale-stage="solar"><span>태양계</span><small>Solar system</small></button>
-      <button type="button" data-scale-stage="moon"><span>달</span><small>Moon</small></button>
-      <button type="button" data-scale-stage="earth"><span>지구</span><small>Earth</small></button>
-      <button type="button" data-scale-stage="surface"><span>수면</span><small>Surface</small></button>
-      <button type="button" data-scale-stage="trench"><span>해구</span><small>Trench</small></button>
     </div>
   </nav>
 
@@ -350,6 +347,31 @@
       <span class="mm-label"><b data-scene-earth-count>지구 레이어 0개 켜짐</b><small data-scene-earth-hint>지구로 돌아가 보기</small></span>
       <span class="mm-chev" aria-hidden="true">‹</span>
     </button>
+    <!-- AETHERUS 메뉴 — 실제로 동작하는 3D 규모 이동만 먼저 연다.
+         허블·제임스웹은 사진 위치 카탈로그가 붙기 전까지 버튼처럼 속이지 않는다. -->
+    <button class="mm-item mm-space-route" type="button" data-act="space-solar" hidden>
+      <span class="mm-ico" aria-hidden="true">☉</span>
+      <span class="mm-label" data-i18n="m.solar">태양계</span>
+    </button>
+    <button class="mm-item mm-space-route" type="button" data-act="space-milkyway" hidden>
+      <span class="mm-ico" aria-hidden="true">✦</span>
+      <span class="mm-label" data-i18n="m.milkyway">은하수</span>
+    </button>
+    <button class="mm-item mm-space-route" type="button" data-act="space-galaxies" hidden>
+      <span class="mm-ico" aria-hidden="true">⁙</span>
+      <span class="mm-label" data-i18n="m.galaxies">은하들</span>
+    </button>
+    <div class="mm-space-route mm-sep" hidden></div>
+    <div class="mm-item mm-space-route mm-soon" role="status" hidden>
+      <span class="mm-ico" aria-hidden="true">◌</span>
+      <span class="mm-label" data-i18n="m.hubble">허블</span>
+      <span class="mm-state" data-i18n="m.soon">준비 중</span>
+    </div>
+    <div class="mm-item mm-space-route mm-soon" role="status" hidden>
+      <span class="mm-ico" aria-hidden="true">◇</span>
+      <span class="mm-label" data-i18n="m.webb">제임스웹</span>
+      <span class="mm-state" data-i18n="m.soon">준비 중</span>
+    </div>
     <button class="mm-item" data-act="sat">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4.4" transform="rotate(-30 12 12)"/></svg></span>
       <span class="mm-label" data-i18n="m.sat">인공위성</span><span class="mm-badge" id="satCount"></span>
@@ -389,6 +411,20 @@
     <button class="mm-item" data-act="outdoor">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3.4 20.2h17.2"/><path d="M6.2 20.2 12 5.6l5.8 14.6"/><path d="M9.4 13.4h5.2" stroke-linecap="round"/><circle cx="18.6" cy="5.4" r="2.2"/></svg></span>
       <span class="mm-label" data-i18n="m.outdoor">취미</span><span class="mm-badge" id="outBadge"></span>
+    </button>
+    <!-- 지구·수면·해구는 우주 크기 자가 아니라 우리가 사는 지구의 갈래다.
+         받은 요청대로 EARTHUS 메뉴의 취미 바로 아래에 둔다. -->
+    <button class="mm-item mm-earth-route" type="button" data-act="earth-home">
+      <span class="mm-ico" aria-hidden="true">◎</span>
+      <span class="mm-label" data-i18n="m.earth">지구</span>
+    </button>
+    <button class="mm-item mm-earth-route" type="button" data-act="earth-surface">
+      <span class="mm-ico" aria-hidden="true">≈</span>
+      <span class="mm-label" data-i18n="m.surface">수면</span>
+    </button>
+    <button class="mm-item mm-earth-route" type="button" data-act="earth-trench">
+      <span class="mm-ico" aria-hidden="true">⌄</span>
+      <span class="mm-label" data-i18n="m.trench">해구</span>
     </button>
     <button class="mm-item" data-act="locate">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r="8" opacity=".55"/><path d="M12 1.5v2.6M12 19.9v2.6M22.5 12h-2.6M4.1 12H1.5" stroke-linecap="round"/></svg></span>
@@ -941,7 +977,7 @@
 <!-- v6는 OMM JSON의 6~9자리 카탈로그 번호를 지원하는 마지막 UMD 배포본이다.
      v7은 ESM 전용이라 빌드 없는 이 앱에서 같은 script 전역으로 교체할 수 없다. -->
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"></script>
-<script type="module" src="js/main.js?v=20260810-cosmic1"></script>
+<script type="module" src="js/main.js?v=20260810-cosmic3d3"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

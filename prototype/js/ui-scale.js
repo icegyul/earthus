@@ -36,6 +36,13 @@ export const scaleRail = {
     this.root.classList.toggle('open', next !== 'earth');
     this.root.setAttribute('aria-expanded', String(next !== 'earth'));
     this.root.querySelector('.scale-handle').textContent = 'Aetherus';
+    /* 받은 요청: "우주로 나가면 Aetherus 메뉴, 지구로 가면 earthus 메뉴".
+       바다도 우리가 사는 지구의 영역이므로 space 장면만 Aetherus로 바꾼다. */
+    const menuBrand = next === 'space' ? 'Aetherus' : 'earthus';
+    const menuTab = document.getElementById('menuTab');
+    const menuLabel = menuTab?.querySelector('.mt-label');
+    if (menuLabel) menuLabel.textContent = menuBrand;
+    menuTab?.setAttribute('aria-label', `${menuBrand} 메뉴`);
     this.root.querySelectorAll('[data-scale-stage]').forEach(button => {
       const active = button.dataset.scaleStage === stage;
       button.classList.toggle('current', active);

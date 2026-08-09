@@ -20,6 +20,9 @@ verify_jwt = true          # ⚠️ 주문을 만드는 함수다. 로그인 확
 [functions.payment-confirm]
 verify_jwt = true          # ⚠️ 돈이 움직인다. 더더욱 필요하다.
 
+[functions.payment-refund]
+verify_jwt = true          # ⚠️ 서비스 역할로만 호출하고, 함수 안에서도 다시 대조한다.
+
 [functions.push-tick]
 # ⚠️⚠️ 여기만 false 다. 사용자가 아니라 **우리 Lambda 가 주기적으로** 부르기 때문에
 #    로그인 토큰이 없다. 대신 함수 안에서 PUSH_TICK_TOKEN 을 직접 검사한다 —

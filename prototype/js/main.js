@@ -43,6 +43,7 @@ import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
 import { scaleRail } from './ui-scale.js';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
+import { solarScene } from './space/solarscene.js?v=20260809-solar1';
 
 /* 늦게 불러오는 바다거북 모듈을 붙잡아 두는 곳.
    ⚠️⚠️ **모듈 바깥에 둔다.** 켜는 쪽은 boot(), 끄는 쪽(OFF·HAS_MARKS)은
@@ -101,9 +102,11 @@ async function boot() {
   power.init();
   sceneMgr.init();
   scaleRail.init();
+  solarScene.init();
   // 수심 장면을 공유하거나 동일 좌표로 재현할 수 있게 한다.
   // ⚠️ 좌표만 받고 수심은 반드시 배포된 GEBCO 격자에서 다시 읽는다.
-  const diveParam = new URLSearchParams(location.search).get('dive');
+  const sceneParams = new URLSearchParams(location.search);
+  const diveParam = sceneParams.get('dive');
   if (diveParam) {
     const [lat, lon] = diveParam.split(',').map(Number);
     if (Number.isFinite(lat) && Number.isFinite(lon) && lat >= -90 && lat <= 90) {
@@ -117,6 +120,10 @@ async function boot() {
         }
       });
     }
+  } else if (sceneParams.get('solar') === '1') {
+    queueMicrotask(() => sceneMgr.to('space', { stage: 'solar' }).catch(error => {
+      console.warn('[solar-link]', error.message);
+    }));
   }
   /* 움직이는 게 화면에 있으면 계속 그려달라고 알린다 (requestRenderMode 대응).
      ⚠️ 여기 패턴을 빠뜨리면 그 애니메이션만 조용히 멈춘다.

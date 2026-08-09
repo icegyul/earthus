@@ -155,7 +155,7 @@ export const i18n = {
     'm.locate':   { ko: '내 위치',           en: 'My location' },
     'explore.space.kicker': { ko: '우주 / 크기 전환 데모', en: 'SPACE / SCALE DEMO' },
     'explore.space.title':  { ko: '지구 밖의 크기를 한 단계씩 봅니다.', en: 'See the scale beyond Earth, one step at a time.' },
-    'explore.space.status': { ko: '검증된 허블·JWST 사진을 천구 위치와 공식 크레딧으로 보세요. 태양계 장면은 아직 준비 중입니다.', en: 'Browse validated Hubble and JWST images at their sky positions with official credits. The Solar System scene is still in preparation.' },
+    'explore.space.status': { ko: '검증된 허블·JWST 사진과 JPL 궤도요소로 계산한 8행성의 위치를 보세요.', en: 'Browse validated Hubble and JWST images and the calculated positions of all eight planets from JPL orbital elements.' },
     'explore.ocean.kicker': { ko: '심해 / 크기 전환 데모', en: 'OCEAN / SCALE DEMO' },
     'explore.ocean.title':  { ko: '수면 아래의 깊이를 층으로 내려갑니다.', en: 'Descend through the layers below the surface.' },
     'explore.ocean.status': { ko: '지구에서 바다 지점을 누른 뒤 「여기서 잠수」를 고르면, 검증된 GEBCO 2026 격자로 그 지점의 수심 기둥을 보여줍니다.', en: 'Tap an ocean point on Earth and choose Dive here to see its depth column from the validated GEBCO 2026 grid.' },

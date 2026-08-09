@@ -177,9 +177,33 @@
        ⚠️ #banner는 이 장면보다 위여야 한다 — 재난 배너가 가려지면 안 된다. -->
   <div id="sceneRoot" aria-hidden="true">
     <section class="scene-view space-scene" data-scene-view="space" aria-label="우주 탐험 기반 장면">
-      <p class="scene-kicker" data-i18n="explore.space.kicker">SPACE / SCALE DEMO</p>
-      <h2 data-i18n="explore.space.title">지구 밖의 크기를 한 단계씩 봅니다.</h2>
-      <p class="scene-status" data-i18n="explore.space.status">검증된 허블·JWST 사진을 천구 위치와 공식 크레딧으로 보세요. 태양계 장면은 아직 준비 중입니다.</p>
+      <div id="spaceSceneIntro">
+        <p class="scene-kicker" data-i18n="explore.space.kicker">SPACE / SCALE DEMO</p>
+        <h2 data-i18n="explore.space.title">지구 밖의 크기를 한 단계씩 봅니다.</h2>
+        <p class="scene-status" data-i18n="explore.space.status">검증된 허블·JWST 사진과 JPL 궤도요소로 계산한 8행성의 위치를 보세요.</p>
+      </div>
+      <div id="solarExperience" class="solar-experience" hidden>
+        <header class="solar-head">
+          <p class="scene-kicker">SOLAR SYSTEM / JPL APPROXIMATION</p>
+          <h2 id="solarTitle">태양계의 오늘</h2>
+          <p id="solarSource" class="scene-status"></p>
+        </header>
+        <div class="solar-canvas-wrap">
+          <canvas id="solarCanvas" aria-label="8행성의 태양중심 위치"></canvas>
+          <span id="solarScaleNote" class="solar-scale-note">행성 크기 과장됨 · 안쪽 태양계는 확대 창</span>
+        </div>
+        <div class="solar-controls">
+          <div class="solar-time-row">
+            <button id="solarPlay" type="button" aria-label="행성 시간 재생">▶</button>
+            <output id="solarDate" for="solarTime"></output>
+          </div>
+          <input id="solarTime" type="range" step="1" aria-label="행성 시간">
+          <label><input id="solarOrbits" type="checkbox" checked> <span id="solarOrbitsLabel">궤도선</span></label>
+          <label><input id="solarNames" type="checkbox" checked> <span id="solarNamesLabel">이름표</span></label>
+          <label><input id="solarActualSize" type="checkbox"> <span id="solarActualLabel">실제 크기 비율</span></label>
+          <p id="solarLimit" class="solar-limit"></p>
+        </div>
+      </div>
       <button type="button" data-scene-home data-i18n="explore.home">지구로 돌아가기</button>
     </section>
     <section class="scene-view ocean-scene" data-scene-view="ocean" aria-label="심해 탐험 기반 장면">
@@ -893,7 +917,7 @@
 <!-- v6는 OMM JSON의 6~9자리 카탈로그 번호를 지원하는 마지막 UMD 배포본이다.
      v7은 ESM 전용이라 빌드 없는 이 앱에서 같은 script 전역으로 교체할 수 없다. -->
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"></script>
-<script type="module" src="js/main.js?v=20260809-ocean1"></script>
+<script type="module" src="js/main.js?v=20260809-solar2"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

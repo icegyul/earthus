@@ -597,6 +597,46 @@
       "depthSource": "NOAA Fisheries species profile",
       "depthSourceUrl": "https://www.fisheries.noaa.gov/species/blainvilles-beaked-whale",
       "note": { "ko": "NOAA는 성체 길이를 약 15–20피트로, 대륙붕 바깥의 전형적인 심해 서식 수심을 656–3,281피트로 설명합니다. 이 범위는 종 수준의 문헌 요약이며 현재 좌표의 출현 자료가 아닙니다.", "en": "NOAA lists adults at about 15–20ft and describes typical deep offshore habitat at 656–3,281ft beyond the continental shelf. This is a species-level literature summary, not occurrence data for the current location." }
+    },
+    {
+      "id": "atlantic-deep-sea-red-crab-noaa-profile",
+      "name": { "ko": "대서양 심해홍게", "en": "Atlantic deep-sea red crab" },
+      "sci": "Chaceon quinquedens",
+      "group": "crustacean",
+      "depthKind": "literature-range",
+      "depthMin": 200,
+      "depthMax": 1800,
+      "sizeM": 0.149,
+      "sizeMinM": 0.133,
+      "sizeMaxM": 0.165,
+      "sizeKind": "range-midpoint",
+      "thumb": "ocean/thumbs/atlantic-deep-sea-red-crab.jpg",
+      "credit": "NOAA Fisheries/Vince Guida",
+      "license": "NOAA public domain; credit requested",
+      "photoSourceUrl": "https://www.fisheries.noaa.gov/species/atlantic-deep-sea-red-crab",
+      "depthSource": "NOAA Fisheries species profile",
+      "depthSourceUrl": "https://www.fisheries.noaa.gov/species/atlantic-deep-sea-red-crab",
+      "note": { "ko": "NOAA는 대륙사면의 200–1,800m에서 매우 많이 발견된다고 설명합니다. 갑각 폭은 암컷 최대 13.3cm·수컷 최대 16.5cm로, 표시 크기는 성별 최대치 범위입니다.", "en": "NOAA describes this species as very numerous on the continental slope at 200–1,800m. Maximum carapace width is 13.3cm for females and 16.5cm for males, so the size display is a range of sex-specific maxima." }
+    },
+    {
+      "id": "bearded-seal-noaa-profile",
+      "name": { "ko": "턱수염물범", "en": "Bearded seal" },
+      "sci": "Erignathus barbatus",
+      "group": "whale",
+      "depthKind": "literature-range",
+      "depthMin": 0,
+      "depthMax": 198,
+      "sizeM": 2.285,
+      "sizeMinM": 2.13,
+      "sizeMaxM": 2.44,
+      "sizeKind": "range-midpoint",
+      "thumb": "ocean/thumbs/bearded-seal.jpg",
+      "credit": "John Jansen, NOAA Fisheries",
+      "license": "NOAA public domain; credit requested",
+      "photoSourceUrl": "https://www.fisheries.noaa.gov/species/bearded-seal",
+      "depthSource": "NOAA Fisheries species profile",
+      "depthSourceUrl": "https://www.fisheries.noaa.gov/species/bearded-seal",
+      "note": { "ko": "NOAA는 몸길이를 약 7–8피트로, 계절 해빙이 있는 해역에서 선호하는 수심을 대체로 650피트 미만으로 설명합니다. 0–198m는 북극 해빙 환경을 전제로 한 종 수준 범위입니다.", "en": "NOAA lists a body length of about 7–8ft and describes a preferred depth generally under 650ft in seasonally ice-covered waters. The 0–198m interval is a species-level range conditioned on Arctic sea-ice habitat." }
     }
   ]
 }

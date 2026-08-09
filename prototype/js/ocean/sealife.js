@@ -133,5 +133,7 @@ function sizeLabel(item, ko) {
 }
 
 function formatMeters(value) {
-  return value < 1 ? `${Math.round(value * 100)}cm` : `${value.toLocaleString()}m`;
+  if (value >= 1) return `${value.toLocaleString()}m`;
+  const centimeters = Number((value * 100).toFixed(1));
+  return `${centimeters.toLocaleString()}cm`;
 }

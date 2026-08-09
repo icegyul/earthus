@@ -35,7 +35,7 @@ export const scaleRail = {
     // 지구에서는 접혀 기존 UI를 가리지 않고, 다른 장면에서는 자동으로 펼친다.
     this.root.classList.toggle('open', next !== 'earth');
     this.root.setAttribute('aria-expanded', String(next !== 'earth'));
-    this.root.querySelector('.scale-handle').textContent = i18n.lang === 'ko' ? '크기' : 'Scale';
+    this.root.querySelector('.scale-handle').textContent = 'Aetherus';
     this.root.querySelectorAll('[data-scale-stage]').forEach(button => {
       const active = button.dataset.scaleStage === stage;
       button.classList.toggle('current', active);

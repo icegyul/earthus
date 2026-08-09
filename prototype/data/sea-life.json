@@ -537,6 +537,46 @@
       "depthSource": "NOAA Fisheries species profile",
       "depthSourceUrl": "https://www.fisheries.noaa.gov/species/northern-elephant-seal",
       "note": { "ko": "NOAA는 몸길이를 10–13피트로, 바다에서 보내는 시간의 일반적인 잠수 깊이를 약 1,000–2,500피트로 설명합니다. 개체·성별·행동에 따라 달라지는 문헌 범위입니다.", "en": "NOAA lists a body length of 10–13ft and describes typical at-sea dives of about 1,000–2,500ft. This literature range varies by individual, sex, and behavior." }
+    },
+    {
+      "id": "sperm-whale-noaa-profile",
+      "name": { "ko": "향유고래", "en": "Sperm whale" },
+      "sci": "Physeter macrocephalus",
+      "group": "whale",
+      "depthKind": "literature-range",
+      "depthMin": 0,
+      "depthMax": 610,
+      "sizeM": 14.02,
+      "sizeMinM": 12.19,
+      "sizeMaxM": 15.85,
+      "sizeKind": "range-midpoint",
+      "thumb": "ocean/thumbs/sperm-whales.jpg",
+      "credit": "NOAA Northeast Fisheries Science Center",
+      "license": "NOAA public domain; credit requested",
+      "photoSourceUrl": "https://www.fisheries.noaa.gov/species/sperm-whale",
+      "depthSource": "NOAA Fisheries species profile",
+      "depthSourceUrl": "https://www.fisheries.noaa.gov/species/sperm-whale",
+      "note": { "ko": "NOAA는 암컷 약 40피트부터 수컷 약 52피트까지의 몸길이와, 먹이 사냥 잠수가 통상 2,000피트에 이른다고 설명합니다. 0–610m는 한 번의 관측이 아니라 잠수 경로를 표현한 문헌 범위입니다.", "en": "NOAA lists body lengths from about 40ft for females to 52ft for males and says feeding dives routinely reach 2,000ft. The 0–610m interval represents a literature-based dive path, not one sighting." }
+    },
+    {
+      "id": "bairds-beaked-whale-noaa-profile",
+      "name": { "ko": "베어드부리고래", "en": "Baird's beaked whale" },
+      "sci": "Berardius bairdii",
+      "group": "whale",
+      "depthKind": "literature-range",
+      "depthMin": 762,
+      "depthMax": 1219,
+      "sizeM": 10.82,
+      "sizeMinM": 10.67,
+      "sizeMaxM": 10.97,
+      "sizeKind": "range-midpoint",
+      "thumb": "ocean/thumbs/bairds-beaked-whale.jpg",
+      "credit": "NOAA Fisheries",
+      "license": "NOAA public domain; credit requested",
+      "photoSourceUrl": "https://www.fisheries.noaa.gov/species/bairds-beaked-whale",
+      "depthSource": "NOAA Fisheries species profile",
+      "depthSourceUrl": "https://www.fisheries.noaa.gov/species/bairds-beaked-whale",
+      "note": { "ko": "NOAA는 암컷 최대 약 36피트·수컷 최대 약 35피트로 설명하고, 일반적인 먹이활동 깊이를 2,500–4,000피트로 제시합니다. 크기 표시는 성별 최대치 범위이며 개체 평균이 아닙니다.", "en": "NOAA reports maxima of about 36ft for females and 35ft for males and gives a typical feeding-depth range of 2,500–4,000ft. The size display is the range of sex-specific maxima, not an individual average." }
     }
   ]
 }

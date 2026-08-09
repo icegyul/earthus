@@ -35,10 +35,10 @@ export const scaleRail = {
     // 지구에서는 접혀 기존 UI를 가리지 않고, 다른 장면에서는 자동으로 펼친다.
     this.root.classList.toggle('open', next !== 'earth');
     this.root.setAttribute('aria-expanded', String(next !== 'earth'));
-    this.root.querySelector('.scale-handle').textContent = 'Aetherus';
+    this.root.querySelector('.scale-handle').textContent = 'AETHERUS';
     /* 받은 요청: "우주로 나가면 Aetherus 메뉴, 지구로 가면 earthus 메뉴".
        바다도 우리가 사는 지구의 영역이므로 space 장면만 Aetherus로 바꾼다. */
-    const menuBrand = next === 'space' ? 'Aetherus' : 'earthus';
+    const menuBrand = next === 'space' ? 'AETHERUS' : 'EARTHUS';
     const menuTab = document.getElementById('menuTab');
     const menuLabel = menuTab?.querySelector('.mt-label');
     if (menuLabel) menuLabel.textContent = menuBrand;

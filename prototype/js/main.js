@@ -41,7 +41,7 @@ import { apiKeysPanel } from './ui-apikeys.js';
 import { eventPanel } from './ui-events.js';
 import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
-import { scaleRail } from './ui-scale.js?v=20260810-brand1';
+import { scaleRail } from './ui-scale.js?v=20260810-brand2';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
 import { solarScene } from './space/solarscene.js?v=20260809-solar1';
 import { galaxyCards } from './space/galaxycards.js?v=20260809-galaxy1';

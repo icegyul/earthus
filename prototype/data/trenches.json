@@ -1,4 +1,164 @@
 {
+  "schema": "earthus.trenches.v2",
   "generated": "2026-08-09",
-  "items": []
+  "items": [
+    {
+      "id": "challenger-deep",
+      "name": { "ko": "마리아나 해구 · 챌린저 해연", "en": "Mariana Trench · Challenger Deep" },
+      "lat": 11.369,
+      "lon": 142.587,
+      "depthMin": 10902,
+      "depthMax": 10935,
+      "depthMethod": { "ko": "2009년 Nereus 직접 잠수값부터 2020년 유인잠수 보정값까지", "en": "From the 2009 Nereus dive to the corrected 2020 crewed-submersible result" },
+      "note": { "ko": "같은 해연도 장비·위치·수압 및 음속 보정에 따라 값이 달라집니다.", "en": "Even within one deep, equipment, position, pressure and sound-speed corrections change the result." },
+      "credit": "WHOI Nereus expedition; NOAA Ocean Service",
+      "source": "WHOI Nereus expedition",
+      "sourceUrl": "https://archives.whoi.edu/nereus/main/nereus/mariana-trench-2009.html",
+      "secondarySource": "NOAA Ocean Service",
+      "secondarySourceUrl": "https://oceanservice.noaa.gov/facts/oceandepth.html"
+    },
+    {
+      "id": "horizon-deep",
+      "name": { "ko": "통가 해구 · 호라이즌 해연", "en": "Tonga Trench · Horizon Deep" },
+      "lat": -23.270,
+      "lon": -174.740,
+      "depthMin": 10800,
+      "depthMax": 10832,
+      "depthMethod": { "ko": "고해상도 다중빔 수심 10,816±16m", "en": "High-resolution multibeam depth 10,816±16m" },
+      "note": { "ko": "논문은 지구에서 두 번째로 깊은 지점으로 보고합니다.", "en": "The study identifies it as the second-deepest point on Earth." },
+      "credit": "Bongiovanni, Stewart & Jamieson (2022)",
+      "source": "Geoscience Data Journal (2022)",
+      "sourceUrl": "https://doi.org/10.1002/gdj3.122"
+    },
+    {
+      "id": "scholl-deep",
+      "name": { "ko": "케르마데크 해구 · 숄 해연", "en": "Kermadec Trench · Scholl Deep" },
+      "lat": -31.935,
+      "lon": -177.317,
+      "depthMin": 10011,
+      "depthMax": 10106,
+      "depthMethod": { "ko": "2021년 다중빔값과 지역 수심자료의 차이", "en": "Difference between 2021 multibeam and regional bathymetry" },
+      "note": { "ko": "두 자료의 해상도 차이를 그대로 범위로 남겼습니다.", "en": "The range preserves the difference between datasets of unlike resolution." },
+      "credit": "Stewart & Jamieson (2024)",
+      "source": "Marine Geophysical Research (2024)",
+      "sourceUrl": "https://nora.nerc.ac.uk/id/eprint/537766/1/s11001-024-09550-7.pdf"
+    },
+    {
+      "id": "new-britain-bougainville",
+      "name": { "ko": "뉴브리튼 해구 · 부건빌 구간", "en": "New Britain Trench · Bougainville sector" },
+      "lat": -6.186,
+      "lon": 153.597,
+      "depthMin": 8921,
+      "depthMax": 9103,
+      "depthMethod": { "ko": "다중빔값과 지역 수심자료 최심값의 차이", "en": "Difference between multibeam and regional-bathymetry maxima" },
+      "note": { "ko": "논문은 지명과 자료 해상도에 따라 최심 위치도 달라짐을 설명합니다.", "en": "The paper explains that both naming and data resolution alter the reported deepest point." },
+      "credit": "Stewart & Jamieson (2024)",
+      "source": "Marine Geophysical Research (2024)",
+      "sourceUrl": "https://nora.nerc.ac.uk/id/eprint/537766/1/s11001-024-09550-7.pdf"
+    },
+    {
+      "id": "brownson-deep",
+      "name": { "ko": "푸에르토리코 해구 · 브라운슨 해연", "en": "Puerto Rico Trench · Brownson Deep" },
+      "lat": 19.712,
+      "lon": -67.311,
+      "depthMin": 8373,
+      "depthMax": 8383,
+      "depthMethod": { "ko": "고해상도 다중빔 수심 8,378±5m", "en": "High-resolution multibeam depth 8,378±5m" },
+      "note": { "ko": "Five Deeps가 대서양 최심부로 확인한 지점입니다.", "en": "Five Deeps identified this as the deepest point in the Atlantic." },
+      "credit": "Bongiovanni, Stewart & Jamieson (2022)",
+      "source": "Geoscience Data Journal (2022)",
+      "sourceUrl": "https://doi.org/10.1002/gdj3.122"
+    },
+    {
+      "id": "meteor-deep",
+      "name": { "ko": "남샌드위치 해구 · 미티어 해연", "en": "South Sandwich Trench · Meteor Deep" },
+      "lat": -55.230,
+      "lon": -26.173,
+      "depthMin": 8252,
+      "depthMax": 8278,
+      "depthMethod": { "ko": "고해상도 다중빔 수심 8,265±13m", "en": "High-resolution multibeam depth 8,265±13m" },
+      "note": { "ko": "남위 60도 북쪽이어서 지리 구분상 남대서양에 놓입니다.", "en": "Because it lies north of 60°S, it is geographically in the South Atlantic." },
+      "credit": "Bongiovanni, Stewart & Jamieson (2022)",
+      "source": "Geoscience Data Journal (2022)",
+      "sourceUrl": "https://doi.org/10.1002/gdj3.122"
+    },
+    {
+      "id": "factorian-deep",
+      "name": { "ko": "남샌드위치 해구 · 남극해 최심부", "en": "South Sandwich Trench · Southern Ocean deep" },
+      "lat": -60.479,
+      "lon": -25.542,
+      "depthMin": 7419,
+      "depthMax": 7445,
+      "depthMethod": { "ko": "고해상도 다중빔 수심 7,432±13m", "en": "High-resolution multibeam depth 7,432±13m" },
+      "note": { "ko": "남위 60도 남쪽에서 확인된 남극해 최심부입니다.", "en": "This is the deepest confirmed point south of 60°S in the Southern Ocean." },
+      "credit": "Bongiovanni, Stewart & Jamieson (2022)",
+      "source": "Geoscience Data Journal (2022)",
+      "sourceUrl": "https://doi.org/10.1002/gdj3.122"
+    },
+    {
+      "id": "java-unnamed-deep",
+      "name": { "ko": "자바 해구 · 무명 해연", "en": "Java Trench · unnamed deep" },
+      "lat": -11.129,
+      "lon": 114.942,
+      "depthMin": 7174,
+      "depthMax": 7200,
+      "depthMethod": { "ko": "고해상도 다중빔 수심 7,187±13m", "en": "High-resolution multibeam depth 7,187±13m" },
+      "note": { "ko": "기존 저해상도 추정 위치보다 서쪽에서 확인된 인도양 최심부입니다.", "en": "The Indian Ocean’s deepest point was found west of the earlier low-resolution estimate." },
+      "credit": "Bongiovanni, Stewart & Jamieson (2022)",
+      "source": "Geoscience Data Journal (2022)",
+      "sourceUrl": "https://doi.org/10.1002/gdj3.122"
+    },
+    {
+      "id": "dordrecht-deep",
+      "name": { "ko": "디아만티나 단열대 · 도르드레흐트 해연", "en": "Diamantina Fracture Zone · Dordrecht Deep" },
+      "lat": -33.631,
+      "lon": 101.356,
+      "depthMin": 7002,
+      "depthMax": 7036,
+      "depthMethod": { "ko": "고해상도 다중빔 수심 7,019±17m", "en": "High-resolution multibeam depth 7,019±17m" },
+      "note": { "ko": "정밀 조사 결과 자바 해구보다 얕아 인도양 최심부 후보에서 제외됐습니다.", "en": "High-resolution mapping showed it is shallower than the Java Trench candidate." },
+      "credit": "Bongiovanni, Stewart & Jamieson (2022)",
+      "source": "Geoscience Data Journal (2022)",
+      "sourceUrl": "https://doi.org/10.1002/gdj3.122"
+    },
+    {
+      "id": "molloy-hole",
+      "name": { "ko": "프람 해협 · 몰로이 홀", "en": "Fram Strait · Molloy Hole" },
+      "lat": 79.194,
+      "lon": 2.706,
+      "depthMin": 5537,
+      "depthMax": 5565,
+      "depthMethod": { "ko": "고해상도 다중빔 수심 5,551±14m", "en": "High-resolution multibeam depth 5,551±14m" },
+      "note": { "ko": "Five Deeps가 확인한 북극해 최심부입니다.", "en": "Five Deeps identified this as the deepest point in the Arctic Ocean." },
+      "credit": "Bongiovanni, Stewart & Jamieson (2022)",
+      "source": "Geoscience Data Journal (2022)",
+      "sourceUrl": "https://doi.org/10.1002/gdj3.122"
+    }
+  ],
+  "koreaCards": [
+    {
+      "id": "yellow-sea-average",
+      "name": { "ko": "서해(황해)", "en": "Yellow Sea" },
+      "averageDepthM": 44,
+      "note": { "ko": "한반도와 중국 대륙 사이의 얕은 반폐쇄해로, 넓은 갯벌이 발달합니다. 평균값은 특정 지점 수심이 아닙니다.", "en": "A shallow semi-enclosed sea between Korea and continental China with extensive tidal flats. An average is not a point depth." },
+      "source": "KIOST ScienceWatch",
+      "sourceUrl": "https://sciwatch.kiost.ac.kr/handle/2020.kiost/1684"
+    },
+    {
+      "id": "south-sea-average",
+      "name": { "ko": "남해", "en": "South Sea of Korea" },
+      "averageDepthM": 101,
+      "note": { "ko": "국립해양조사원·한국해양연구원이 정리한 해역 평균입니다. 섬·수로별 실제 수심은 크게 다릅니다.", "en": "A regional average reported from Korean hydrographic and ocean-research sources; actual depths vary greatly among islands and channels." },
+      "source": "KIOST strategy report",
+      "sourceUrl": "https://sciwatch.kiost.ac.kr/bitstream/2020.kiost/37423/1/%ED%95%B4%EC%96%91%EA%B3%BC%ED%95%99%EA%B8%B0%EC%88%A0_%EC%A0%84%EB%9E%B5%EA%B0%9C%EB%B0%9C_%EC%97%B0%EA%B5%AC.pdf"
+    },
+    {
+      "id": "east-sea-average",
+      "name": { "ko": "동해", "en": "East Sea" },
+      "averageDepthM": 1684,
+      "note": { "ko": "좁은 대륙붕과 넓은 심해를 가진 해역입니다. KIOST 자료의 최대수심은 4,049m입니다.", "en": "This sea has a narrow continental shelf and broad deep basin; KIOST reports a maximum depth of 4,049m." },
+      "source": "KIOST ScienceWatch",
+      "sourceUrl": "https://sciwatch.kiost.ac.kr/handle/2020.kiost/25810"
+    }
+  ]
 }

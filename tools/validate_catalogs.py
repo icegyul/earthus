@@ -110,8 +110,17 @@ def validate_life(item: dict[str, Any], path: str, errors: list[str]) -> None:
 
 def validate_trench(item: dict[str, Any], path: str, errors: list[str]) -> None:
     require(localized(item.get("name")), f"{path}.name", "ko/en 이름이 모두 필요", errors)
+    require(localized(item.get("note")), f"{path}.note", "ko/en 설명이 모두 필요", errors)
+    require(localized(item.get("depthMethod")), f"{path}.depthMethod", "ko/en 측정 방법이 모두 필요", errors)
     require(credit(item.get("credit")), f"{path}.credit", "자료 크레딧이 필요", errors)
-    require(text(item.get("source")), f"{path}.source", "출처 링크 또는 문헌명이 필요", errors)
+    require(text(item.get("source")), f"{path}.source", "출처 문헌명이 필요", errors)
+    require(text(item.get("sourceUrl")) and item["sourceUrl"].startswith("https://"),
+            f"{path}.sourceUrl", "HTTPS 원문 링크가 필요", errors)
+    if "secondarySource" in item or "secondarySourceUrl" in item:
+        require(text(item.get("secondarySource")), f"{path}.secondarySource",
+                "두 번째 출처명이 필요", errors)
+        require(text(item.get("secondarySourceUrl")) and item["secondarySourceUrl"].startswith("https://"),
+                f"{path}.secondarySourceUrl", "두 번째 HTTPS 원문 링크가 필요", errors)
     require(number(item.get("lat")) and -90 <= item["lat"] <= 90,
             f"{path}.lat", "-90~90 범위의 숫자 필요", errors)
     require(number(item.get("lon")) and -180 <= item["lon"] <= 180,
@@ -123,6 +132,17 @@ def validate_trench(item: dict[str, Any], path: str, errors: list[str]) -> None:
     if number(item.get("depthMin")) and number(item.get("depthMax")):
         require(item["depthMin"] <= item["depthMax"], path,
                 "depthMin은 depthMax보다 클 수 없음", errors)
+
+
+def validate_korea_card(item: dict[str, Any], path: str, errors: list[str]) -> None:
+    require(text(item.get("id")), f"{path}.id", "식별자 필요", errors)
+    require(localized(item.get("name")), f"{path}.name", "ko/en 이름이 모두 필요", errors)
+    require(localized(item.get("note")), f"{path}.note", "ko/en 설명이 모두 필요", errors)
+    require(number(item.get("averageDepthM")) and item["averageDepthM"] > 0,
+            f"{path}.averageDepthM", "0보다 큰 평균수심 필요", errors)
+    require(text(item.get("source")), f"{path}.source", "출처 기관명이 필요", errors)
+    require(text(item.get("sourceUrl")) and item["sourceUrl"].startswith("https://"),
+            f"{path}.sourceUrl", "HTTPS 원문 링크가 필요", errors)
 
 
 def validate_alias(item: dict[str, Any], path: str, errors: list[str]) -> None:
@@ -188,6 +208,16 @@ def validate_catalog(name: str, path: Path, require_populated: bool) -> tuple[in
             require(item_id not in seen, f"{item_path}.id", "중복 식별자", errors)
             seen.add(item_id)
         VALIDATORS[name](item, item_path, errors)
+    if name == "trenches":
+        cards = doc.get("koreaCards")
+        require(isinstance(cards, list) and bool(cards), "trenches.koreaCards",
+                "우리 바다 교육 카드가 최소 1개 필요", errors)
+        if isinstance(cards, list):
+            for index, item in enumerate(cards):
+                card_path = f"trenches.koreaCards[{index}]"
+                require(isinstance(item, dict), card_path, "객체여야 함", errors)
+                if isinstance(item, dict):
+                    validate_korea_card(item, card_path, errors)
     return len(items), errors
 
 

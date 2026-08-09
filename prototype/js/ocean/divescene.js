@@ -93,6 +93,11 @@ export const diveScene = {
     if (!this.data) return;
     const ko = i18n.lang === 'ko';
     const source = this.data.source;
+    document.querySelector('label[for="diveSlider"]').textContent = ko ? '현재 깊이' : 'Current depth';
+    this.slider.setAttribute('aria-label', ko ? '현재 깊이' : 'Current depth');
+    this.canvas.setAttribute('aria-label', ko ? '수면에서 해저까지의 수심 기둥' : 'Depth column from surface to seafloor');
+    this.root.closest('[data-scene-view="ocean"]')?.setAttribute('aria-label',
+      ko ? '심해 탐험 기반 장면' : 'Evidence-based deep-ocean exploration');
     document.getElementById('diveSource').textContent = ko
       ? `해저 ${this.data.depthM.toLocaleString()}m · ${source.title} · 자료 ${source.created} · 격자 ${this.data.source.gridBuilt.slice(0, 10)}`
       : `Seafloor ${this.data.depthM.toLocaleString()}m · ${source.title} · data ${source.created} · grid ${this.data.source.gridBuilt.slice(0, 10)}`;

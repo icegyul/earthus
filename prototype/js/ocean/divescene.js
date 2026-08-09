@@ -5,6 +5,7 @@
 
 import { i18n } from '../i18n.js';
 import { oceanDepth } from './depth.js';
+import { seaLife } from './sealife.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -32,6 +33,8 @@ export const diveScene = {
     }, { passive: false });
     wrap.addEventListener('pointerdown', event => {
       if (!this.data) return;
+      // ⚠️ 생물 카드·출처 링크의 포인터를 잡으면 click 이 취소되어 상세가 열리지 않는다.
+      if (event.target.closest('button, a')) return;
       this._drag = { y: event.clientY, depth: this.current };
       wrap.setPointerCapture(event.pointerId);
     });
@@ -45,6 +48,7 @@ export const diveScene = {
     wrap.addEventListener('pointercancel', end);
     new ResizeObserver(() => this.draw()).observe(wrap);
     i18n.onChange(() => { this.renderText(); this.renderComparisons(); this.draw(); });
+    seaLife.init();
     return this;
   },
 
@@ -76,6 +80,7 @@ export const diveScene = {
       this.renderComparisons();
       this.renderText();
       this.draw();
+      await seaLife.setDive(data, this.current);
     } catch (error) {
       document.getElementById('diveSource').textContent = error.message === 'LAND_CELL'
         ? (i18n.lang === 'ko' ? '이 격자 셀은 바다가 아니라 육지로 판정됐습니다.' : 'This grid cell is classified as land.')
@@ -115,6 +120,7 @@ export const diveScene = {
     this.current = clamp(value, 0, this.data.depthM);
     this.slider.value = String(Math.round(this.current));
     this.draw();
+    seaLife.update(this.data, this.current);
   },
 
   draw() {

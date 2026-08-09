@@ -22,6 +22,7 @@ CATALOGS = {
 PLACEHOLDERS = {"todo", "tbd", "unknown", "모름", "미정", "-"}
 SAT_GROUPS = {"stations", "weather", "science", "nav", "comm", "earth",
               "military", "amateur", "starlink", "all"}
+SEA_LIFE_GROUPS = {"whale", "fish", "cephalopod", "deep", "glow", "crustacean", "jelly"}
 
 
 def text(value: Any) -> bool:
@@ -71,7 +72,18 @@ def validate_space(item: dict[str, Any], path: str, errors: list[str]) -> None:
 def validate_life(item: dict[str, Any], path: str, errors: list[str]) -> None:
     require(localized(item.get("name")), f"{path}.name", "ko/en 이름이 모두 필요", errors)
     require(localized(item.get("note")), f"{path}.note", "ko/en 관측·문헌 설명 필요", errors)
+    require(text(item.get("sci")), f"{path}.sci", "학명이 필요", errors)
+    require(item.get("group") in SEA_LIFE_GROUPS, f"{path}.group", "허용된 생물 그룹이 필요", errors)
     require(credit(item.get("credit")), f"{path}.credit", "실제 크레딧이 필요", errors)
+    require(text(item.get("license")), f"{path}.license", "사진 이용 조건이 필요", errors)
+    require(text(item.get("thumb")), f"{path}.thumb", "로컬 캐시 사진 경로가 필요", errors)
+    require(text(item.get("photoSourceUrl")) and item["photoSourceUrl"].startswith("https://"),
+            f"{path}.photoSourceUrl", "HTTPS 사진 원문 링크가 필요", errors)
+    require(text(item.get("depthSource")), f"{path}.depthSource", "깊이 출처명이 필요", errors)
+    require(text(item.get("depthSourceUrl")) and item["depthSourceUrl"].startswith("https://"),
+            f"{path}.depthSourceUrl", "HTTPS 깊이 출처 링크가 필요", errors)
+    require(item.get("depthKind") in {"literature-range", "observation-depth"},
+            f"{path}.depthKind", "문헌 범위와 단일 관측 깊이를 구분해야 함", errors)
     require(number(item.get("depthMin")) and item["depthMin"] >= 0,
             f"{path}.depthMin", "0 이상의 숫자 필요", errors)
     require(number(item.get("depthMax")) and item["depthMax"] >= 0,
@@ -79,8 +91,21 @@ def validate_life(item: dict[str, Any], path: str, errors: list[str]) -> None:
     if number(item.get("depthMin")) and number(item.get("depthMax")):
         require(item["depthMin"] <= item["depthMax"], path,
                 "depthMin은 depthMax보다 클 수 없음", errors)
+        if item.get("depthKind") == "observation-depth":
+            require(item["depthMin"] == item["depthMax"], path,
+                    "단일 관측 깊이는 min/max가 같아야 함", errors)
+            require(number(item.get("displayWindowM")) and 0 < item["displayWindowM"] <= 100,
+                    f"{path}.displayWindowM", "관측 탐색창은 0 초과 100m 이하여야 함", errors)
+        else:
+            require("displayWindowM" not in item, f"{path}.displayWindowM",
+                    "문헌 범위에는 관측 탐색창을 쓰지 않음", errors)
     require(number(item.get("sizeM")) and item["sizeM"] > 0,
             f"{path}.sizeM", "0보다 큰 숫자 필요", errors)
+    require(item.get("sizeKind") in {"approximate", "minimum", "range-midpoint"},
+            f"{path}.sizeKind", "크기 수치의 의미 구분이 필요", errors)
+    if text(item.get("thumb")):
+        require((ROOT / "prototype" / item["thumb"]).is_file(), f"{path}.thumb",
+                "로컬 캐시 사진 파일이 없음", errors)
 
 
 def validate_trench(item: dict[str, Any], path: str, errors: list[str]) -> None:

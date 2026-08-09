@@ -40,6 +40,8 @@ import { paraPanel } from './ui-para.js';
 import { apiKeysPanel } from './ui-apikeys.js';
 import { eventPanel } from './ui-events.js';
 import { activeBar } from './ui-active.js';
+import { sceneMgr } from './scene.js';
+import { scaleRail } from './ui-scale.js';
 
 /* 늦게 불러오는 바다거북 모듈을 붙잡아 두는 곳.
    ⚠️⚠️ **모듈 바깥에 둔다.** 켜는 쪽은 boot(), 끄는 쪽(OFF·HAS_MARKS)은
@@ -94,6 +96,8 @@ async function boot() {
   });
 
   power.init();
+  sceneMgr.init();
+  scaleRail.init();
   /* 움직이는 게 화면에 있으면 계속 그려달라고 알린다 (requestRenderMode 대응).
      ⚠️ 여기 패턴을 빠뜨리면 그 애니메이션만 조용히 멈춘다.
         렌더를 요청하는 쪽이 없어 화면이 갱신되지 않기 때문이다.

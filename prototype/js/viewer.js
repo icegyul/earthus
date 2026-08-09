@@ -121,7 +121,10 @@ export function initViewer(containerId) {
      ⚠️ 8km 로 정한 이유: 등산로 갈림길과 방파제 하나가 구분되는 높이다.
         더 내려가면 우리가 쓰는 위성 영상이 뭉개져서 보여줄 것이 없다. */
   cc.minimumZoomDistance = 8_000;
-  cc.maximumZoomDistance = 45_000_000;
+  /* 우주 전환 B0 스파이크. 종전 45,000km 상한에서는 지구 바깥의 크기를
+     시험할 수조차 없었다. 2,000,000km까지 조작은 허용하되, 실제 우주 장면은
+     sceneMgr가 별도 전환하므로 이 값을 근거로 위치·자료를 지어내지 않는다. */
+  cc.maximumZoomDistance = 2_000_000_000;
   cc.enableTilt = false;
   cc.enableLook = false;
   cc.inertiaSpin = 0.96;

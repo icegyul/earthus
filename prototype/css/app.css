@@ -78,8 +78,34 @@ a{color:var(--teal);text-decoration:none}
   padding:9px 16px;border-radius:999px;cursor:pointer;
   background:var(--panel);backdrop-filter:blur(18px);
   border:1px solid var(--line);white-space:nowrap;max-width:92vw;
-  opacity:0;transition:opacity .4s ease,transform .4s ease;pointer-events:none;
+  opacity:0;transition:opacity .4s ease,transform .4s ease;pointer-events:none;z-index:30;
 }
+
+/* ══════════ 우주·심해 공통 장면 기반 ══════════ */
+#cesiumContainer.scene-hidden{display:none}
+#sceneRoot{position:absolute;inset:0;z-index:20;display:none;pointer-events:auto;overflow:hidden;background:#05070b}
+#sceneRoot.active{display:block}
+.scene-view{position:absolute;inset:0;display:none;align-content:center;padding:clamp(28px,8vw,110px);background:#05070b}
+.scene-view.current{display:grid}
+.space-scene{background:#06080d}
+.ocean-scene{background:#061116}
+.scene-kicker{margin:0 0 14px;color:var(--violet);font:650 10px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em}
+.ocean-scene .scene-kicker{color:var(--teal)}
+.scene-view h2{max-width:13ch;margin:0;font-size:clamp(42px,7vw,82px);font-weight:300;line-height:1.04;letter-spacing:-.055em}
+.scene-status{max-width:58ch;margin:22px 0 0;color:var(--muted);font-size:13px;line-height:1.8}
+.scene-view>button{justify-self:start;margin-top:26px;padding:10px 14px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--paper);cursor:pointer}
+#sceneFade{position:absolute;inset:0;z-index:80;background:#000;opacity:0;pointer-events:none;transition:opacity .6s ease}
+#sceneFade.covered{opacity:1;pointer-events:auto}
+#scaleRail{position:absolute;right:max(8px,env(safe-area-inset-right));top:50%;z-index:25;display:flex;align-items:stretch;transform:translateY(-50%);pointer-events:auto}
+.scale-handle{align-self:center;width:34px;padding:10px 5px;border:1px solid var(--line);border-right:0;border-radius:10px 0 0 10px;background:rgba(13,15,20,.9);color:var(--muted);font-size:10px;writing-mode:vertical-rl;cursor:pointer}
+.scale-track{display:grid;grid-template-rows:repeat(7,1fr);width:0;max-height:min(72vh,540px);overflow:hidden;border:0 solid var(--line);border-radius:12px;background:rgba(13,15,20,.94);backdrop-filter:blur(16px);opacity:0;transition:width .25s ease,opacity .25s ease,border-width .25s ease}
+#scaleRail.open .scale-track{width:132px;border-width:1px;opacity:1}
+.scale-track button{position:relative;min-height:48px;padding:7px 10px 7px 22px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--muted);text-align:left;cursor:pointer}
+.scale-track button:last-child{border-bottom:0}.scale-track button::before{content:"";position:absolute;left:10px;top:50%;width:5px;height:5px;border-radius:50%;background:var(--fog);transform:translateY(-50%)}
+.scale-track button.current{color:var(--paper);background:rgba(255,255,255,.05)}.scale-track button.current::before{background:var(--teal);box-shadow:0 0 0 4px rgba(90,209,160,.12)}
+.scale-track span,.scale-track small{display:block}.scale-track span{font-size:11px}.scale-track small{color:var(--fog);font:500 8px ui-monospace,SFMono-Regular,Menlo,monospace}
+@media(max-width:560px){#scaleRail{right:4px}.scale-handle{width:30px}.scene-view{padding:24px}.scene-view h2{font-size:42px}#scaleRail.open .scale-track{width:112px}.scale-track button{min-height:44px}}
+@media(prefers-reduced-motion:reduce){#sceneFade{transition-duration:.01s}.scale-track{transition-duration:.01s}}
 #banner.on{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
 /* 특보 띠가 있을 때는 그 아래로. 특보가 더 급하므로 위를 내준다. */
 body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }

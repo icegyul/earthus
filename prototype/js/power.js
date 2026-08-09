@@ -38,6 +38,7 @@ export const power = {
   _lastRender: 0,
   _clock: null,
   _inTick: false,
+  suspended: false,      // Cesium이 아닌 장면에서는 렌더 요청 자체를 막는다
   _tickers: [],        // 움직이는 동안 매 틱 호출할 함수들 (intro 등)
   _requests: new Map(),// 애니메이션 주인 → { until, gap }
 
@@ -53,7 +54,7 @@ export const power = {
         this._needUntil = 0;
         this._stopClock();                           // 즉시 멈춤
       }
-      else this.animate(800);                        // 돌아오면 잠깐 그려서 화면 복구
+      else if (!this.suspended) this.animate(800);   // 돌아오면 잠깐 그려서 화면 복구
     });
     return this;
   },
@@ -101,7 +102,7 @@ export const power = {
    *    느린 쪽에 맞추면 빠른 애니메이션이 끊겨 보인다.
    */
   animate(ms = 300, gap = 0, key = 'default') {
-    if (document.hidden) return;
+    if (document.hidden || this.suspended) return;
     const now = performance.now();
     const until = now + ms;
     const prev = this._requests.get(key);
@@ -119,6 +120,20 @@ export const power = {
     this._requests.delete(key);
     const active = this._active(performance.now());
     if (!active) this._stopClock();
+  },
+
+  /** Cesium을 숨긴 장면에서는 남은 애니메이션 예약까지 전부 거둔다. */
+  suspend() {
+    this.suspended = true;
+    this._requests.clear();
+    this._needUntil = 0;
+    this._stopClock();
+  },
+
+  /** 지구 장면으로 돌아왔을 때 한 번 깨워 백버퍼를 복구한다. */
+  resume() {
+    this.suspended = false;
+    this.animate(500, 0, 'scene-resume');
   },
 
   _active(now) {

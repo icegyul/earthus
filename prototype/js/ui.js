@@ -16,6 +16,7 @@ import { launches } from './layers/space.js';
 import { tsunami } from './layers/tsunami.js';
 import { wildfires } from './layers/wildfire.js';
 import { flyTo, locateUser, fitGlobeHeight, scene } from './viewer.js';
+import { sceneMgr } from './scene.js';
 // 한국 기상특보 — 별도 띠를 없애고 아래 banner 큐에 합쳤다 (한 줄로 표시)
 import { warn, levelEn } from './warn.js';
 import { warnUI } from './ui-warn.js';
@@ -1628,7 +1629,9 @@ export const banner = {
     box.innerHTML = it.html + this._counter();
     box.classList.toggle('alert', !!it.alert);
     box.classList.add('on');
-    box.onclick = it.go;
+    // ⚠️ 우주·심해 장면에서도 재난 배너는 살아 있다. 위치로 날기 전에
+    // Cesium 지구를 먼저 복구하지 않으면 경보를 눌러도 보이지 않는다.
+    box.onclick = () => sceneMgr.to('earth').then(() => it.go());
 
     this._timer = setTimeout(() => {
       box.classList.remove('on');           // 사라진다 (CSS 전환)

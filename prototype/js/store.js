@@ -94,12 +94,15 @@ const EXCLUSIVE = [
 export const store = {
   tier: localStorage.getItem(LS_TIER) || TIER.FREE,
   layers: loadLayerState(),
+  // ⚠️ 장면은 저장하지 않는다. 새 탭·새로고침은 항상 지구에서 시작한다.
+  scene: 'earth',           // earth | space | ocean
+  sceneStage: 'earth',
   height: 24_000_000,
   mode: 'ambient',          // ambient | explore
   cluster: true,
   pins: false,              // 핀 노출 구간인가 (T.PIN 이하)
   selected: null,
-  _subs: { tier: [], layer: [], camera: [], select: [] },
+  _subs: { tier: [], layer: [], camera: [], select: [], scene: [] },
 
   on(evt, fn) { this._subs[evt].push(fn); return () => {
     this._subs[evt] = this._subs[evt].filter(f => f !== fn);
@@ -123,6 +126,16 @@ export const store = {
   /** 이 "기능"을 쓸 수 있는가 (PAID_CAP).
       ⚠️ 레이어와 다르다. 레이어는 무료, 기능이 유료다. */
   can(cap) { return this.isPaid(); },
+
+  /* ── 장면 ─────────────────────────────────────────────── */
+  setScene(next, stage = next) {
+    if (!['earth', 'space', 'ocean'].includes(next)) return false;
+    const changed = this.scene !== next || this.sceneStage !== stage;
+    this.scene = next;
+    this.sceneStage = stage;
+    if (changed) this.emit('scene', next, stage);
+    return changed;
+  },
 
   /* ── 레이어 ───────────────────────────────────────────── */
   isOn(id) {

@@ -173,6 +173,38 @@
 
 <div class="overlay">
 
+  <!-- 우주·심해 공통 장면 기반. Cesium은 파괴하지 않고 이 아래에서 숨겨 쉰다.
+       ⚠️ #banner는 이 장면보다 위여야 한다 — 재난 배너가 가려지면 안 된다. -->
+  <div id="sceneRoot" aria-hidden="true">
+    <section class="scene-view space-scene" data-scene-view="space" aria-label="우주 탐험 기반 장면">
+      <p class="scene-kicker" data-i18n="explore.space.kicker">SPACE / SCALE DEMO</p>
+      <h2 data-i18n="explore.space.title">지구 밖의 크기를 한 단계씩 봅니다.</h2>
+      <p class="scene-status" data-i18n="explore.space.status">전환 기반 검증 장면입니다. 우주 사진과 태양계 자료는 다음 개발 단위에서 실제 출처·크레딧과 함께 들어옵니다.</p>
+      <button type="button" data-scene-home data-i18n="explore.home">지구로 돌아가기</button>
+    </section>
+    <section class="scene-view ocean-scene" data-scene-view="ocean" aria-label="심해 탐험 기반 장면">
+      <p class="scene-kicker" data-i18n="explore.ocean.kicker">OCEAN / SCALE DEMO</p>
+      <h2 data-i18n="explore.ocean.title">수면 아래의 깊이를 층으로 내려갑니다.</h2>
+      <p class="scene-status" data-i18n="explore.ocean.status">전환 기반 검증 장면입니다. 실제 지점 수심은 GEBCO 격자 검증 뒤에만 표시합니다.</p>
+      <button type="button" data-scene-home data-i18n="explore.home">지구로 돌아가기</button>
+    </section>
+  </div>
+
+  <nav id="scaleRail" aria-label="지구·우주·심해 크기 단계" aria-expanded="false">
+    <button class="scale-handle" type="button" aria-label="크기 단계 열기">크기</button>
+    <div class="scale-track">
+      <button type="button" data-scale-stage="galaxies"><span>은하들</span><small>Galaxies</small></button>
+      <button type="button" data-scale-stage="milkyway"><span>은하수</span><small>Milky Way</small></button>
+      <button type="button" data-scale-stage="solar"><span>태양계</span><small>Solar system</small></button>
+      <button type="button" data-scale-stage="moon"><span>달</span><small>Moon</small></button>
+      <button type="button" data-scale-stage="earth"><span>지구</span><small>Earth</small></button>
+      <button type="button" data-scale-stage="surface"><span>수면</span><small>Surface</small></button>
+      <button type="button" data-scale-stage="trench"><span>해구</span><small>Trench</small></button>
+    </div>
+  </nav>
+
+  <div id="sceneFade" aria-hidden="true"></div>
+
   <!-- ══ AMBIENT ══ -->
   <div id="ambient">
     <div class="amb-top">

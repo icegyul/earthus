@@ -331,6 +331,13 @@
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9.2"/><ellipse cx="12" cy="12" rx="4" ry="9.2"/><path d="M2.9 12h18.2"/></svg></span>
       <span class="mm-label" data-i18n="m.layers">지구 스타일</span><span class="mm-chev">‹</span>
     </button>
+    <!-- 우주·심해에서는 지구 레이어를 끄지 않고 이 한 줄로만 접는다.
+         ⚠️ 장면 전환이 레이어 상태를 바꾸면 지구로 돌아왔을 때 사용자의 선택이 사라진다. -->
+    <button class="mm-item mm-scene-fold" type="button" data-scene-earth-fold hidden>
+      <span class="mm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9.2"/><path d="M7.8 9.2h8.4M7.8 12h8.4M7.8 14.8h5.2"/></svg></span>
+      <span class="mm-label"><b data-scene-earth-count>지구 레이어 0개 켜짐</b><small data-scene-earth-hint>지구로 돌아가 보기</small></span>
+      <span class="mm-chev" aria-hidden="true">‹</span>
+    </button>
     <button class="mm-item" data-act="sat">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4.4" transform="rotate(-30 12 12)"/></svg></span>
       <span class="mm-label" data-i18n="m.sat">인공위성</span><span class="mm-badge" id="satCount"></span>

@@ -605,6 +605,20 @@ export const layerBar = {
       };
     });
 
+    const earthFold = main.querySelector('[data-scene-earth-fold]');
+    if (earthFold) {
+      earthFold.onclick = async () => {
+        /* 우주·심해에서 지구 레이어를 접어 보일 뿐 상태는 건드리지 않는다.
+           이 줄을 누른 행동만 지구 복귀 의사로 본다. */
+        const { sceneMgr } = await import('./scene.js');
+        await sceneMgr.to('earth');
+        this.open = true;
+        this.sub = 'earth';
+        this.render('earth');
+        this._apply?.();
+      };
+    }
+
     // 바깥을 누르면 닫는다 — 지구를 조작하려는 것이므로
     document.addEventListener('pointerdown', ev => {
       if (!this.open) return;
@@ -613,11 +627,61 @@ export const layerBar = {
     }, true);
 
     this.render();
-    store.on('layer', () => this.sync());
+    store.on('layer', () => { this.sync(); this._renderSceneFilter(store.scene); });
+    store.on('scene', next => this._renderSceneFilter(next));
     store.on('tier', () => this.render(this.sub || 'earth'));
-    i18n.onChange(() => this.render(this.sub || 'earth'));
+    i18n.onChange(() => {
+      this.render(this.sub || 'earth');
+      this._renderSceneFilter(store.scene);
+    });
+    this._renderSceneFilter(store.scene);
     apply();
     return this;
+  },
+
+  _activeEarthLayerCount() {
+    // ITEMS에 실제 메뉴로 공개한 레이어만 센다. 숨은 내부 상태를 숫자에 섞지 않는다.
+    return ITEMS.reduce((count, item) => count + (store.isOn(item.id) ? 1 : 0), 0);
+  },
+
+  _renderSceneFilter(next = 'earth') {
+    const main = $('#menuMain');
+    if (!main) return;
+    const away = next !== 'earth';
+    const fold = main.querySelector('[data-scene-earth-fold]');
+    if (fold) {
+      fold.hidden = !away;
+      const count = this._activeEarthLayerCount();
+      const label = fold.querySelector('[data-scene-earth-count]');
+      const hint = fold.querySelector('[data-scene-earth-hint]');
+      if (label) label.textContent = i18n.lang === 'ko'
+        ? `지구 레이어 ${count}개 켜짐`
+        : `${count} Earth layer${count === 1 ? '' : 's'} on`;
+      if (hint) hint.textContent = i18n.lang === 'ko' ? '지구로 돌아가 보기' : 'Return to Earth';
+      fold.setAttribute('aria-label', `${label?.textContent || ''}. ${hint?.textContent || ''}`);
+    }
+
+    /* 안전·뉴스·LAB·질문·설정은 어느 장면에서도 남긴다.
+       우주에는 인공위성, 심해에는 취미(바다 조건)를 남기고 나머지 지구 조작만 접는다. */
+    const hiddenAway = next === 'space'
+      ? ['[data-open="earth"]', '[data-act="flight"]', '[data-act="outdoor"]', '[data-act="locate"]', '[data-act="globe"]']
+      : next === 'ocean'
+        ? ['[data-open="earth"]', '[data-act="sat"]', '[data-act="flight"]', '[data-act="locate"]', '[data-act="globe"]']
+        : [];
+    const sceneFiltered = [
+      '[data-open="earth"]', '[data-act="sat"]', '[data-act="flight"]',
+      '[data-act="outdoor"]', '[data-act="locate"]', '[data-act="globe"]',
+    ];
+    sceneFiltered.forEach(selector => {
+      const button = main.querySelector(selector);
+      if (button) button.hidden = hiddenAway.includes(selector);
+    });
+
+    // 지구 레이어 2단이 열린 채 장면을 떠나면 빈 맥락의 패널을 남기지 않는다.
+    if (away && this.sub === 'earth') {
+      this.sub = null;
+      this._apply?.();
+    }
   },
 
   /** 1단 항목의 동작을 바깥(main.js)에서 붙인다 */

@@ -697,6 +697,25 @@
       "depthSource": "NOAA Fisheries species profile",
       "depthSourceUrl": "https://www.fisheries.noaa.gov/species/hawaiian-monk-seal/science",
       "note": { "ko": "NOAA는 몸길이를 6–7피트로, 잠수 능력을 1,800피트 초과로 설명합니다. 보통은 해저에서 먹이를 찾으며 200피트보다 얕게 잠수하고, 0–549m 표시는 최대 서식 수심이 아니라 최소한 확인된 잠수 능력입니다.", "en": "NOAA lists a body length of 6–7ft and a dive capability exceeding 1,800ft. Most dives are under 200ft while foraging at the seafloor; the displayed 0–549m is a minimum documented capability, not a maximum habitat depth." }
+    },
+    {
+      "id": "bushy-gorgonian-puerto-rico-157m",
+      "name": { "ko": "수지상 심해 부채산호", "en": "Bushy gorgonian coral" },
+      "sci": "Octocorallia sp.",
+      "group": "deep",
+      "depthKind": "observation-depth",
+      "depthMin": 157,
+      "depthMax": 157,
+      "displayWindowM": 75,
+      "sizeM": 0.5,
+      "sizeKind": "approximate",
+      "thumb": "ocean/thumbs/bushy-gorgonian-157m.jpg",
+      "credit": "Exploration of Deepwater Habitats off Puerto Rico and the U.S. Virgin Islands for Biotechnology Potential",
+      "license": "NOAA public domain; credit requested",
+      "photoSourceUrl": "https://oceanexplorer.noaa.gov/multimedia/explorations-24pr-usvi-biotech-media-tall-gorgonian/",
+      "depthSource": "NOAA Ocean Exploration",
+      "depthSourceUrl": "https://oceanexplorer.noaa.gov/multimedia/explorations-24pr-usvi-biotech-media-tall-gorgonian/",
+      "note": { "ko": "푸에르토리코 서부 해역의 157m 깊이에서 관측된 약 50cm 크기의 수지상 부채산호입니다. 사진 자료는 종 수준까지 동정하지 않았습니다.", "en": "This approximately 50cm bushy gorgonian coral was observed at 157m off western Puerto Rico. The photo record does not identify it to species level." }
     }
   ]
 }

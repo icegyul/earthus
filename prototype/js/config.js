@@ -234,6 +234,9 @@ export const LAYER_DEFS = [
         흐리기만 한 날과 비 오는 날을 가르는 것이 이 레이어의 존재 이유다. */
   { id:'rain',     kind:'grid',    tier:TIER.FREE, on:false, group:'weather' },
   { id:'aurora',   kind:'imagery', tier:TIER.FREE, on:false, group:'space' },
+  /* 공식 사진 카탈로그. 좌표·크레딧·이용 조건이 검증된 항목만 들어간다. */
+  { id:'hst',      kind:'skyphoto', tier:TIER.FREE, on:false, group:'space' },
+  { id:'jwst',     kind:'skyphoto', tier:TIER.FREE, on:false, group:'space' },
 
   // ── 선 ──
   { id:'wind',     kind:'line',    tier:TIER.FREE, on:false, group:'weather' },

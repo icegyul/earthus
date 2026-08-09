@@ -1,4 +1,33 @@
 {
   "generated": "2026-08-09",
-  "items": []
+  "items": [
+    {
+      "id": "southern-ring-jwst",
+      "name": { "ko": "남쪽고리 성운", "en": "Southern Ring Nebula" },
+      "ra": 151.753375,
+      "dec": -40.435306,
+      "telescope": "JWST",
+      "date": "2022-07-12",
+      "dateKind": "release",
+      "distanceLy": null,
+      "thumb": "space/thumbs/southern-ring-jwst.jpg",
+      "full": "https://esawebb.org/images/weic2207c/",
+      "credit": "NASA, ESA, CSA, STScI, and the Webb ERO Production Team",
+      "license": "CC BY 4.0 · ESA/Webb"
+    },
+    {
+      "id": "hubble-ultra-deep-field",
+      "name": { "ko": "허블 울트라 딥 필드", "en": "Hubble Ultra Deep Field" },
+      "ra": 53.166625,
+      "dec": -27.8,
+      "telescope": "HST",
+      "date": "2005-09-27",
+      "dateKind": "release",
+      "distanceLy": null,
+      "thumb": "space/thumbs/hudf-hst.jpg",
+      "full": "https://science.nasa.gov/asset/hubble/hubble-ultra-deep-field/",
+      "credit": "NASA, ESA, S. Beckwith and the HUDF Team (STScI), and B. Mobasher (STScI)",
+      "license": "NASA Media Usage Guidelines"
+    }
+  ]
 }

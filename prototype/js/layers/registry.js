@@ -23,6 +23,7 @@ import { lightning } from './lightning.js';
 import { regional } from './regional.js';
 import { alerts } from './alerts.js';
 import { airStations } from './airkr.js';
+import { skyPhotos } from '../space/skyphotos.js';
 
 /* ── 레이어를 켤 때 그때 받는다 ────────────────────────────────
    ⚠️ 받은 지적: **"처음 접속시 모든 기능 다 꺼줘. 지구 무빙 애니메이션만. 버벅거린다."**
@@ -44,6 +45,8 @@ const LOADERS = {
   wildfire:  () => wildfires.refresh(),
   launch:    () => launches.refresh().then(i => launchPads.build(i)),
   orbits:    () => orbits.refresh(),
+  hst:       () => skyPhotos.load(),
+  jwst:      () => skyPhotos.load(),
   aurora:    () => imagery.loadAurora(),
   landobs:   () => landObs.refresh(),
   buoy:      () => buoys.refresh(),
@@ -61,7 +64,7 @@ const LOADERS = {
 };
 
 /* 받아 둔 것을 공유하는 레이어 — 한쪽이 받았으면 다른 쪽은 다시 안 받는다 */
-const LOAD_KEY = { heatdome: 'phenomena' };
+const LOAD_KEY = { heatdome: 'phenomena', hst: 'spacephotos', jwst: 'spacephotos' };
 
 /* 켤 때마다 **다시** 받는다. 낡으면 거짓이 되는 자료다:
    해제된 특보를 띄우면 "아직 위험하다"는 거짓이고,
@@ -137,6 +140,7 @@ export const registry = {
     tsunami.init();
     eclipseMarks.init();
     orbits.init();
+    skyPhotos.init();
     wind.init();
     phenomena.init();
 
@@ -281,6 +285,11 @@ export const registry = {
     else if (def.kind === 'imagery') imagery.set(id, store.isOn(id));
     else if (def.kind === 'grid') gridOverlay.show(gridKey(id), store.isOn(id));
     else if (id === 'orbits') orbits.set(store.isOn(id));
+    else if (id === 'hst' || id === 'jwst') {
+      skyPhotos.show(store.isOn('hst'), store.isOn('jwst'));
+      // 사진은 45,000km 밖에서만 보인다. 사용자가 켰는데 빈 화면만 남기지 않는다.
+      if (store.isOn(id)) skyPhotos.focusOut();
+    }
     else if (id === 'truecolor') imagery.setTrueColor(store.isOn(id));
     else if (id === 'wind' || id === 'windfc') {
       /* ⚠️ 지금 바람과 내일 바람을 동시에 켜지 않는다.
@@ -346,6 +355,7 @@ export const registry = {
        다만 "계속 보기"를 켜면 확대해도 유지한다 —
        내가 있는 곳 위로 어떤 위성이 지나가는지 보려면 그래야 한다. */
     orbits.set(store.isOn('orbits') && (orbits.keepVisible || store.height >= T.SAT_SHOW));
+    skyPhotos.show(store.isOn('hst'), store.isOn('jwst'));
     // 바람은 파티클 애니메이션으로 보여준다 (윈디 방식). 기존 화살표는 접었다.
     cyclones.set(store.isOn('cyclone'));
     /* ⚠️ applyAll 에서도 불러야 한다 — 레이어 목록에서 켜면 apply() 를 안 거치고
@@ -371,6 +381,7 @@ export const registry = {
   onCameraIdle() {
     poi.refresh();
     wind.refresh();
+    skyPhotos.updateFrame();
   },
 
   /** 현재 화면에 렌더 중인 점 개수 (HUD용) */

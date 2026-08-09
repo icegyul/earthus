@@ -54,8 +54,11 @@ def validate_space(item: dict[str, Any], path: str, errors: list[str]) -> None:
     require(item.get("telescope") in {"HST", "JWST"},
             f"{path}.telescope", "HST 또는 JWST 필요", errors)
     require(text(item.get("date")), f"{path}.date", "촬영일 필요", errors)
+    require(item.get("dateKind") in {"observation", "observation-range", "release"},
+            f"{path}.dateKind", "관측일·관측기간·공개일 구분 필요", errors)
     require(text(item.get("thumb")), f"{path}.thumb", "캐시 썸네일 경로 필요", errors)
     require(text(item.get("full")), f"{path}.full", "공식 원본 링크 필요", errors)
+    require(text(item.get("license")), f"{path}.license", "이미지 이용 조건 필요", errors)
 
 
 def validate_life(item: dict[str, Any], path: str, errors: list[str]) -> None:

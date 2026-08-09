@@ -224,6 +224,35 @@ export const sheet = {
     clearRainBars();
     clearDynamic();
 
+    if (m.kind === 'skyphoto' && m._photo) {
+      const ko = i18n.lang === 'ko';
+      const p = m._photo;
+      $('#sheetKind').textContent = ko ? '우주 사진 · 무료' : 'Space image · Free';
+      $('#sheetTitle').textContent = p.name[ko ? 'ko' : 'en'];
+      const figure = el('figure', 'sat-img sky-photo');
+      const img = new Image();
+      img.src = p.thumb;
+      img.alt = p.name[ko ? 'ko' : 'en'];
+      figure.appendChild(img);
+      const cap = el('figcaption', 'sat-cap');
+      cap.appendChild(document.createTextNode(`${ko ? '크레딧' : 'Credit'}: ${p.credit} · `));
+      const source = el('a', '', ko ? '공식 원본 ↗' : 'Official source ↗');
+      source.href = p.full; source.target = '_blank'; source.rel = 'noopener';
+      cap.appendChild(source);
+      figure.appendChild(cap);
+      rows.parentElement.insertBefore(figure, rows);
+      addRow(rows, ko ? '망원경' : 'Telescope', p.telescope);
+      const dateLabel = p.dateKind === 'release'
+        ? (ko ? '공개일' : 'Released')
+        : (ko ? '관측일' : 'Observed');
+      addRow(rows, dateLabel, p.date);
+      addRow(rows, ko ? '하늘 좌표' : 'Sky coordinates', `RA ${p.ra.toFixed(4)}° · Dec ${p.dec.toFixed(4)}°`);
+      if (p.distanceLy != null) addRow(rows, ko ? '거리' : 'Distance', `${p.distanceLy.toLocaleString()} ly`);
+      addRow(rows, ko ? '이용 조건' : 'Usage', p.license);
+      box.classList.remove('down'); box.classList.add('up');
+      return;
+    }
+
     // 이벤트 뉴스 → 신뢰도와 원문 링크 (§5-3: 본문 재현 금지, 링크만)
     if (m.kind === 'newsevent' && m._ev) {
       const { events } = await import('./layers/events.js');

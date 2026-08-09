@@ -34,6 +34,8 @@ const ENTER_HEIGHT = 220_000_000;
 const SOLAR_MARKER = { x: 29, y: .7, z: 9 };
 const DAY_MS = 86_400_000;
 const LIGHT_HOURS_PER_AU = 499.004783836 / 3600;
+const MOTION_SAMPLES = 145;
+const MOTION_DURATION_MS = 6500;
 const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
 const mix = (a, b, amount) => a + (b - a) * amount;
 const smooth = (a, b, value) => {
@@ -85,6 +87,14 @@ export const cosmic3d = {
   _craftCatalog: null,
   _craftMarkers: new Map(),
   _selectedCraft: null,
+  _motionCatalogPromise: null,
+  _motionCatalog: null,
+  _solarMotionMode: false,
+  _motionFrame: 0,
+  _motionProgress: 0,
+  _motionPaths: new Map(),
+  _motionPlanetMeshes: new Map(),
+  _motionDistance: 132,
 
   init() {
     if (this.root) return this;
@@ -96,8 +106,10 @@ export const cosmic3d = {
     this.photoInfo = document.getElementById('cosmicPhotoInfo');
     this.craftPicker = document.getElementById('cosmicCraftPicker');
     this.craftInfo = document.getElementById('cosmicCraftInfo');
+    this.motionOpen = document.getElementById('cosmicMotionOpen');
+    this.motionInfo = document.getElementById('cosmicMotionInfo');
     if (!this.root || !this.canvas || !this.labels || !this.bodyPicker || !this.bodyInfo
-      || !this.photoInfo || !this.craftPicker || !this.craftInfo) return this;
+      || !this.photoInfo || !this.craftPicker || !this.craftInfo || !this.motionOpen || !this.motionInfo) return this;
     this.root.closest('.space-scene')?.classList.add('cosmic-mode');
     document.getElementById('spaceSceneIntro')?.setAttribute('hidden', '');
     document.getElementById('solarExperience')?.setAttribute('hidden', '');
@@ -115,6 +127,7 @@ export const cosmic3d = {
       if (this._detailBody) this.showBodyInfo(this._detailBody);
       if (this._selectedPhoto) this.selectPhoto(this._selectedPhoto);
       if (this._selectedCraft) this.showCraftInfo(this._selectedCraft);
+      if (this._solarMotionMode) this.showSolarMotionInfo();
       this.buildCraftPicker();
       this.updateHud(); this.updateLabels(); this.render();
     });
@@ -131,6 +144,7 @@ export const cosmic3d = {
     try {
       await this.ensureEngine();
       await this.loadSpacecraftCatalog();
+      await this.loadSolarMotionCatalog();
       this.root.classList.remove('is-loading');
       if (!this._internalStage) this.animateTo(TARGET[stage] ?? TARGET.solar);
       this.render();
@@ -179,6 +193,7 @@ export const cosmic3d = {
     this.makeSolarSystem();
     this.makeMilkyWay();
     this.makeGalaxyGroup();
+    this.makeSolarMotion();
     this.makeBodyDetail();
     this.makePhotoAtlas();
     this.resize();
@@ -393,6 +408,7 @@ export const cosmic3d = {
   selectCraft(id) {
     const entry = this._craftMarkers.get(id);
     if (!entry) return;
+    if (this._solarMotionMode) this.closeSolarMotion(false);
     if (this._photoMode) this.closePhotoAtlas(false);
     if (this._detailBody) this.closeBody(false);
     if (this._frame) cancelAnimationFrame(this._frame);
@@ -510,6 +526,238 @@ export const cosmic3d = {
     this.world.add(this.galaxyGroup);
   },
 
+  loadSolarMotionCatalog() {
+    if (this._motionCatalogPromise) return this._motionCatalogPromise;
+    this._motionCatalogPromise = fetch('/data/solar-motion.json', { cache: 'no-cache' })
+      .then(response => {
+        if (!response.ok) throw new Error(`SOLAR_MOTION_${response.status}`);
+        return response.json();
+      })
+      .then(document => {
+        if (document.schema !== 'earthus.solar-motion.v1'
+          || !Number.isFinite(document.displaySpanDays)
+          || !Number.isFinite(document.galacticSpeedKph)
+          || !Number.isFinite(document.distanceAu)
+          || !document.sourceUrl || !document.limitations?.ko || !document.limitations?.en
+          || !document.displayLimit?.ko || !document.displayLimit?.en) {
+          throw new Error('SOLAR_MOTION_SCHEMA');
+        }
+        this._motionCatalog = document;
+        this.buildSolarMotion();
+        return document;
+      })
+      .catch(error => {
+        // 전진 도식만 실패하고 은하수 자체까지 닫히면 안 된다.
+        console.warn('[solar-motion]', error.message);
+        this.motionOpen.hidden = true;
+        return null;
+      });
+    return this._motionCatalogPromise;
+  },
+
+  makeSolarMotion() {
+    this.solarMotionGroup = new this.THREE.Group();
+    this.solarMotionGroup.visible = false;
+    this.world.add(this.solarMotionGroup);
+  },
+
+  clearSolarMotion() {
+    if (!this.solarMotionGroup) return;
+    while (this.solarMotionGroup.children.length) {
+      const object = this.solarMotionGroup.children[this.solarMotionGroup.children.length - 1];
+      this.solarMotionGroup.remove(object);
+      object.traverse?.(child => {
+        child.geometry?.dispose?.();
+        if (Array.isArray(child.material)) child.material.forEach(material => material.dispose?.());
+        else child.material?.dispose?.();
+      });
+    }
+    this._motionPaths.clear(); this._motionPlanetMeshes.clear();
+    this.motionSun = null; this.motionSunGlow = null; this.motionDirectionMarker = null;
+  },
+
+  buildSolarMotion() {
+    if (!this._motionCatalog || !this.solarMotionGroup) return;
+    this.clearSolarMotion();
+    const T = this.THREE;
+    const start = new Date(`${this._motionCatalog.referenceDate}T00:00:00Z`);
+    const spanMs = this._motionCatalog.displaySpanDays * DAY_MS;
+    const travelStart = -42;
+    const travelEnd = 42;
+    const timeSamples = Array.from({ length: MOTION_SAMPLES }, (_, index) => {
+      const progress = index / (MOTION_SAMPLES - 1);
+      return {
+        progress,
+        positions: planetPositions(new Date(start.getTime() + progress * spanMs)),
+      };
+    });
+    const compressOrbit = point => {
+      const radius = Math.max(.0001, Math.hypot(point.x, point.y, point.z));
+      const displayRadius = 2.1 + Math.log1p(radius) * 5.7;
+      const scale = displayRadius / radius;
+      // 진행 방향을 X축으로 펼쳐 궤도면을 정면·측면 모두에서 읽게 한다. 실제 황도면과
+      // 은하 공전 방향의 각도는 보존하지 않으며 이 한계를 카드에 항상 표시한다.
+      return { x: point.z * scale * .35, y: point.x * scale, z: point.y * scale };
+    };
+    const linePoints = [new T.Vector3(travelStart - 5, 0, 0), new T.Vector3(travelEnd + 5, 0, 0)];
+    const directionLine = new T.Line(
+      new T.BufferGeometry().setFromPoints(linePoints),
+      new T.LineDashedMaterial({ color: 0x83e0f2, transparent: true, opacity: .32, dashSize: 1.5, gapSize: .9 }),
+    );
+    directionLine.computeLineDistances(); this.solarMotionGroup.add(directionLine);
+    const directionMarker = new T.Mesh(
+      new T.ConeGeometry(.72, 2.4, 16),
+      new T.MeshBasicMaterial({ color: 0x83e0f2, transparent: true, opacity: .72 }),
+    );
+    directionMarker.position.set(travelEnd + 5, 0, 0); directionMarker.rotation.z = -Math.PI / 2;
+    this.solarMotionGroup.add(directionMarker); this.motionDirectionMarker = directionMarker;
+
+    IDS.forEach(id => {
+      const points = timeSamples.map(sample => {
+        const { progress } = sample;
+        const point = sample.positions[id];
+        const orbit = compressOrbit(point);
+        return new T.Vector3(mix(travelStart, travelEnd, progress) + orbit.x, orbit.y, orbit.z);
+      });
+      const geometry = new T.BufferGeometry().setFromPoints(points);
+      geometry.setDrawRange(0, 2);
+      const line = new T.Line(geometry, new T.LineBasicMaterial({
+        color: PLANETS[id].color, transparent: true, opacity: id === 'earth' ? .94 : .66, depthWrite: false,
+      }));
+      this.solarMotionGroup.add(line);
+      const radius = clamp(PLANETS[id].radius * .5, .22, .62);
+      const planet = new T.Mesh(
+        new T.SphereGeometry(radius, 14, 10),
+        new T.MeshBasicMaterial({ color: PLANETS[id].color }),
+      );
+      planet.position.copy(points[0]); planet.userData.motionBody = id;
+      this.solarMotionGroup.add(planet);
+      this._motionPaths.set(id, { points, line });
+      this._motionPlanetMeshes.set(id, planet);
+    });
+
+    this.motionSun = new T.Mesh(
+      new T.SphereGeometry(1.15, 20, 14),
+      new T.MeshBasicMaterial({ color: 0xffca55 }),
+    );
+    this.motionSun.position.set(travelStart, 0, 0); this.solarMotionGroup.add(this.motionSun);
+    this.motionSunGlow = new T.Sprite(new T.SpriteMaterial({
+      map: this.spriteTexture, color: 0xffb83d, transparent: true, opacity: .72,
+      blending: T.AdditiveBlending, depthWrite: false,
+    }));
+    this.motionSunGlow.scale.set(8, 8, 1); this.motionSunGlow.position.copy(this.motionSun.position);
+    this.solarMotionGroup.add(this.motionSunGlow);
+    this.setSolarMotionProgress(0, false);
+  },
+
+  setSolarMotionProgress(value, updateScreen = true) {
+    if (!this._motionCatalog || !this.motionSun) return;
+    const progress = clamp(value, 0, 1);
+    this._motionProgress = progress;
+    const pointIndex = Math.min(MOTION_SAMPLES - 1, Math.floor(progress * (MOTION_SAMPLES - 1)));
+    const travelX = mix(-42, 42, progress);
+    this.motionSun.position.set(travelX, 0, 0); this.motionSunGlow.position.copy(this.motionSun.position);
+    this._motionPaths.forEach((entry, id) => {
+      entry.line.geometry.setDrawRange(0, Math.max(2, pointIndex + 1));
+      this._motionPlanetMeshes.get(id)?.position.copy(entry.points[pointIndex]);
+    });
+    const distance = this._motionCatalog.distanceAu * progress;
+    const days = Math.round(this._motionCatalog.displaySpanDays * progress);
+    const status = document.getElementById('cosmicMotionDistance');
+    if (status) status.textContent = ko()
+      ? `${days}일 · 태양 이동 약 ${distance.toFixed(1)} AU`
+      : `${days} days · Sun travels about ${distance.toFixed(1)} AU`;
+    const bar = document.getElementById('cosmicMotionProgress');
+    if (bar) bar.style.transform = `scaleX(${progress})`;
+    if (updateScreen) this.render();
+  },
+
+  async openSolarMotion() {
+    try {
+      await this.ensureEngine();
+      const catalog = await this.loadSolarMotionCatalog();
+      if (!catalog || !this.motionSun) throw new Error('SOLAR_MOTION_UNAVAILABLE');
+      if (this._photoMode) this.closePhotoAtlas(false);
+      if (this._detailBody) this.closeBody(false);
+      if (this._selectedCraft) this.closeCraft(false);
+      if (this._frame) cancelAnimationFrame(this._frame);
+      this._frame = 0; this.root.classList.remove('is-moving');
+      this.level = this.target = TARGET.milkyway; this._stage = 'milkyway';
+      this._solarMotionMode = true; this._motionDistance = matchMedia('(max-width:560px)').matches ? 162 : 132;
+      this.yaw = .08; this.pitch = .22;
+      this.root.classList.add('is-solar-motion');
+      this.solarMotionGroup.visible = true; this.motionInfo.hidden = false; this.motionOpen.hidden = true;
+      this.showSolarMotionInfo(); this.updateHud(); this.updateBodyPicker(); this.updateCraftPicker();
+      this.setSolarMotionProgress(0, false); this.render(); this.replaySolarMotion();
+    } catch (error) {
+      console.warn('[solar-motion]', error.message);
+      const note = document.getElementById('cosmicNote');
+      if (note) note.textContent = ko() ? '태양계 전진 자료를 읽지 못했습니다.' : 'Could not load Solar System motion data.';
+    }
+  },
+
+  replaySolarMotion() {
+    if (!this._solarMotionMode || !this._motionCatalog) return;
+    this.cancelSolarMotionReplay();
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      this.setSolarMotionProgress(1); return;
+    }
+    this.setSolarMotionProgress(0, false);
+    const start = performance.now();
+    this.root.classList.add('is-moving');
+    const step = now => {
+      const progress = clamp((now - start) / MOTION_DURATION_MS, 0, 1);
+      const eased = progress < .5 ? 2 * progress * progress : 1 - ((-2 * progress + 2) ** 2) / 2;
+      this.setSolarMotionProgress(eased, false); this.render();
+      if (progress >= 1) {
+        this._motionFrame = 0; this.root.classList.remove('is-moving');
+        return;
+      }
+      this._motionFrame = requestAnimationFrame(step);
+    };
+    this._motionFrame = requestAnimationFrame(step);
+  },
+
+  cancelSolarMotionReplay() {
+    if (this._motionFrame) cancelAnimationFrame(this._motionFrame);
+    this._motionFrame = 0;
+    if (!this._frame) this.root?.classList.remove('is-moving');
+  },
+
+  showSolarMotionInfo() {
+    if (!this._motionCatalog) return;
+    const isKo = ko();
+    document.getElementById('cosmicMotionKind').textContent = isKo
+      ? `${this._motionCatalog.referenceDate} 자료 기준 · 1년을 펼친 3D 도식`
+      : `Reference ${this._motionCatalog.referenceDate} · one year unfolded in 3D`;
+    document.getElementById('cosmicMotionTitle').textContent = isKo ? '움직이는 태양계' : 'The moving Solar System';
+    document.getElementById('cosmicMotionLimit').textContent = this._motionCatalog.displayLimit[isKo ? 'ko' : 'en'];
+    document.getElementById('cosmicMotionReplay').textContent = isKo ? '1년 다시 보기' : 'Replay one year';
+    document.getElementById('cosmicMotionBack').textContent = isKo ? '← 은하수 전체' : '← Full Milky Way';
+    const source = document.getElementById('cosmicMotionSource');
+    source.href = this._motionCatalog.sourceUrl;
+    source.textContent = `${isKo ? '출처' : 'Source'} · ${this._motionCatalog.source}`;
+    this.setSolarMotionProgress(this._motionProgress, false);
+  },
+
+  closeSolarMotion(render = true) {
+    if (!this._solarMotionMode) return;
+    this.cancelSolarMotionReplay(); this._solarMotionMode = false;
+    this.root.classList.remove('is-solar-motion'); this.motionInfo.hidden = true;
+    this.solarMotionGroup.visible = false; this.yaw = .72; this.pitch = .56;
+    this.level = this.target = TARGET.milkyway;
+    this.updateMotionControl(); this.updateBodyPicker(); this.updateCraftPicker(); this.updateHud();
+    if (render) this.render();
+  },
+
+  updateMotionControl() {
+    if (!this.motionOpen) return;
+    const visible = !!this._motionCatalog && store.scene === 'space' && stageFor(this.level) === 'milkyway'
+      && !this._solarMotionMode && !this._photoMode && !this._detailBody && !this._selectedCraft;
+    this.motionOpen.hidden = !visible;
+    this.motionOpen.textContent = ko() ? '태양계의 전진 보기 →' : 'See the Solar System move →';
+  },
+
   makeGalaxyGroup() {
     const T = this.THREE;
     this.clusterGroup = new T.Group();
@@ -576,6 +824,7 @@ export const cosmic3d = {
       const catalog = await this.loadBodyCatalog();
       const body = catalog.bodies.find(item => item.id === id);
       if (!body) throw new Error(`UNKNOWN_BODY_${id}`);
+      if (this._solarMotionMode) this.closeSolarMotion(false);
       if (this._selectedCraft) this.closeCraft(false);
       if (this._frame) cancelAnimationFrame(this._frame);
       this._frame = 0; this.root.classList.remove('is-moving');
@@ -806,7 +1055,7 @@ export const cosmic3d = {
   updateBodyPicker() {
     if (!this.bodyPicker) return;
     const visible = store.scene === 'space' && stageFor(this.level) === 'solar'
-      && !this._photoMode && !this._selectedCraft && (this._detailBody || this.level > .22);
+      && !this._photoMode && !this._solarMotionMode && !this._selectedCraft && (this._detailBody || this.level > .22);
     this.bodyPicker.hidden = !visible;
     this.bodyPicker.querySelectorAll('[data-body]').forEach(button => {
       button.classList.toggle('on', button.dataset.body === this._detailBody?.id);
@@ -816,7 +1065,7 @@ export const cosmic3d = {
   updateCraftPicker() {
     if (!this.craftPicker) return;
     const visible = !!this._craftCatalog && store.scene === 'space' && stageFor(this.level) === 'solar'
-      && !this._photoMode && !this._detailBody && this.level > .22;
+      && !this._photoMode && !this._solarMotionMode && !this._detailBody && this.level > .22;
     this.craftPicker.hidden = !visible;
     this.craftPicker.querySelectorAll('[data-craft]').forEach(button => {
       button.classList.toggle('on', button.dataset.craft === this._selectedCraft?.id);
@@ -852,6 +1101,7 @@ export const cosmic3d = {
       const catalog = await this.loadPhotoCatalog();
       const items = catalog.filter(item => item.telescope === telescope);
       if (!items.length) throw new Error(`SPACE_PHOTOS_${telescope}_EMPTY`);
+      if (this._solarMotionMode) this.closeSolarMotion(false);
       if (this._detailBody) this.closeBody(false);
       if (this._selectedCraft) this.closeCraft(false);
       if (this._frame) cancelAnimationFrame(this._frame);
@@ -947,6 +1197,10 @@ export const cosmic3d = {
     this.root.addEventListener('wheel', event => {
       if (store.scene !== 'space') return;
       event.preventDefault();
+      if (this._solarMotionMode) {
+        this._motionDistance = clamp(this._motionDistance + Math.sign(event.deltaY) * 7, 88, 230);
+        this.render(); return;
+      }
       if (this._photoMode) {
         this._photoFov = clamp(this._photoFov + Math.sign(event.deltaY) * 3, 34, 74);
         this.render(); return;
@@ -973,7 +1227,9 @@ export const cosmic3d = {
       if (this._pointers.size === 2) {
         const distance = this.pointerDistance();
         if (this._pinchDistance) {
-          if (this._photoMode) {
+          if (this._solarMotionMode) {
+            this._motionDistance = clamp(this._motionDistance * this._pinchDistance / Math.max(1, distance), 88, 230);
+          } else if (this._photoMode) {
             this._photoFov = clamp(this._photoFov * this._pinchDistance / Math.max(1, distance), 34, 74);
           } else if (this._detailBody) {
             this._bodyDistance = clamp(this._bodyDistance * this._pinchDistance / Math.max(1, distance), 31, 150);
@@ -987,7 +1243,7 @@ export const cosmic3d = {
       } else {
         this.yaw -= (event.clientX - previous.x) * .005;
         this.pitch = clamp(this.pitch + (event.clientY - previous.y) * .004,
-          this._detailBody || this._photoMode ? -1.48 : .035, 1.48);
+          this._detailBody || this._photoMode || this._solarMotionMode ? -1.48 : .035, 1.48);
       }
       if (this._pointerStart && Math.hypot(event.clientX - this._pointerStart.x, event.clientY - this._pointerStart.y) > 5) {
         this._pointerStart.moved = true;
@@ -1005,30 +1261,40 @@ export const cosmic3d = {
     };
     this.canvas.addEventListener('pointerup', release);
     this.canvas.addEventListener('pointercancel', release);
-    this.canvas.addEventListener('dblclick', () => { this.yaw = .72; this.pitch = .56; this.render(); });
+    this.canvas.addEventListener('dblclick', () => {
+      this.yaw = this._solarMotionMode ? .08 : .72;
+      this.pitch = this._solarMotionMode ? .22 : .56;
+      this.render();
+    });
     this.canvas.addEventListener('keydown', event => {
       if (event.key === 'Escape' && this._photoMode) { this.closePhotoAtlas(); return; }
       if (event.key === 'Escape' && this._detailBody) { this.closeBody(); return; }
       if (event.key === 'Escape' && this._selectedCraft) { this.closeCraft(); return; }
+      if (event.key === 'Escape' && this._solarMotionMode) { this.closeSolarMotion(); return; }
       if (event.key === '+' || event.key === '=') {
         if (this._photoMode) { this._photoFov = clamp(this._photoFov - 3, 34, 74); this.render(); }
         else if (this._detailBody) { this._bodyDistance = clamp(this._bodyDistance - 4, 31, 150); this.render(); }
+        else if (this._solarMotionMode) { this._motionDistance = clamp(this._motionDistance - 7, 88, 230); this.render(); }
         else this.animateTo(this.target - .16);
       }
       if (event.key === '-' || event.key === '_') {
         if (this._photoMode) { this._photoFov = clamp(this._photoFov + 3, 34, 74); this.render(); }
         else if (this._detailBody) { this._bodyDistance = clamp(this._bodyDistance + 4, 31, 150); this.render(); }
+        else if (this._solarMotionMode) { this._motionDistance = clamp(this._motionDistance + 7, 88, 230); this.render(); }
         else this.animateTo(this.target + .16);
       }
       if (event.key === 'ArrowLeft') { this.yaw += .1; this.render(); }
       if (event.key === 'ArrowRight') { this.yaw -= .1; this.render(); }
-      if (event.key === 'ArrowUp') { this.pitch = clamp(this.pitch + .08, this._detailBody || this._photoMode ? -1.48 : .035, 1.48); this.render(); }
-      if (event.key === 'ArrowDown') { this.pitch = clamp(this.pitch - .08, this._detailBody || this._photoMode ? -1.48 : .035, 1.48); this.render(); }
+      if (event.key === 'ArrowUp') { this.pitch = clamp(this.pitch + .08, this._detailBody || this._photoMode || this._solarMotionMode ? -1.48 : .035, 1.48); this.render(); }
+      if (event.key === 'ArrowDown') { this.pitch = clamp(this.pitch - .08, this._detailBody || this._photoMode || this._solarMotionMode ? -1.48 : .035, 1.48); this.render(); }
     });
     document.getElementById('cosmicEarthReturn')?.addEventListener('click', () => this.exitToEarth());
     document.getElementById('cosmicBodyBack')?.addEventListener('click', () => this.closeBody());
     document.getElementById('cosmicPhotoBack')?.addEventListener('click', () => this.closePhotoAtlas());
     document.getElementById('cosmicCraftBack')?.addEventListener('click', () => this.closeCraft());
+    document.getElementById('cosmicMotionOpen')?.addEventListener('click', () => this.openSolarMotion());
+    document.getElementById('cosmicMotionBack')?.addEventListener('click', () => this.closeSolarMotion());
+    document.getElementById('cosmicMotionReplay')?.addEventListener('click', () => this.replaySolarMotion());
   },
 
   pointerDistance() {
@@ -1038,13 +1304,19 @@ export const cosmic3d = {
 
   pickSolarBody(event) {
     if (this._photoMode) { this.pickPhoto(event); return; }
-    if (!this._ready || this._detailBody || stageFor(this.level) !== 'solar' || this.level < .22) return;
+    if (!this._ready || this._detailBody || this._solarMotionMode) return;
     const rect = this.canvas.getBoundingClientRect();
     const pointer = new this.THREE.Vector2(
       ((event.clientX - rect.left) / rect.width) * 2 - 1,
       -((event.clientY - rect.top) / rect.height) * 2 + 1,
     );
     const raycaster = new this.THREE.Raycaster(); raycaster.setFromCamera(pointer, this.camera);
+    if (stageFor(this.level) === 'milkyway') {
+      const markerHit = raycaster.intersectObject(this.solarMarker, false)[0];
+      if (markerHit) this.openSolarMotion();
+      return;
+    }
+    if (stageFor(this.level) !== 'solar' || this.level < .22) return;
     const craftHit = raycaster.intersectObjects([...this._craftMarkers.values()].map(entry => entry.object), false)[0];
     if (craftHit?.object?.userData?.craftId) { this.selectCraft(craftHit.object.userData.craftId); return; }
     const hit = raycaster.intersectObjects(Object.values(this.planetMeshes), false)[0];
@@ -1085,6 +1357,7 @@ export const cosmic3d = {
   },
 
   animateTo(next) {
+    if (this._solarMotionMode) this.closeSolarMotion(false);
     if (this._photoMode) this.closePhotoAtlas(false);
     if (this._detailBody) this.closeBody(false);
     if (this._selectedCraft) this.closeCraft(false);
@@ -1123,6 +1396,7 @@ export const cosmic3d = {
   },
 
   exitToEarth() {
+    if (this._solarMotionMode) this.closeSolarMotion(false);
     if (this._photoMode) this.closePhotoAtlas(false);
     if (this._detailBody) this.closeBody(false);
     if (this._selectedCraft) this.closeCraft(false);
@@ -1155,6 +1429,7 @@ export const cosmic3d = {
       this.galaxyGroup.visible = false;
       this.clusterGroup.visible = false;
       this.bodyDetailGroup.visible = false;
+      this.solarMotionGroup.visible = false;
       this.photoGroup.visible = true;
       this.ambientLight.intensity = .52;
       if (this.camera.fov !== this._photoFov) {
@@ -1170,11 +1445,37 @@ export const cosmic3d = {
       this.camera.lookAt(direction.multiplyScalar(10));
       this.background.position.set(0, 0, 0);
       this.renderer.render(this.world, this.camera);
-      this.updateHud(); this.updateLabels(); this.updateBodyPicker(); this.updateCraftPicker();
+      this.updateHud(); this.updateLabels(); this.updateBodyPicker(); this.updateCraftPicker(); this.updateMotionControl();
       return;
     }
     this.photoGroup.visible = false;
     if (this.camera.fov !== 47) { this.camera.fov = 47; this.camera.updateProjectionMatrix(); }
+    if (this._solarMotionMode) {
+      this.solarGroup.visible = false;
+      this.galaxyGroup.visible = true;
+      this.clusterGroup.visible = false;
+      this.bodyDetailGroup.visible = false;
+      this.solarMotionGroup.visible = true;
+      this.galaxyDustMaterial.opacity = .018;
+      this.galaxyMaterialMain.opacity = .12;
+      this.galaxyCore.material.opacity = .07;
+      this.solarMarker.material.opacity = 0;
+      this.ambientLight.intensity = .5;
+      const cosPitch = Math.cos(this.pitch);
+      const direction = new T.Vector3(
+        Math.sin(this.yaw) * cosPitch,
+        Math.sin(this.pitch),
+        Math.cos(this.yaw) * cosPitch,
+      );
+      this.camera.position.copy(direction).multiplyScalar(this._motionDistance);
+      this.camera.lookAt(0, 0, 0);
+      this.sunLight.position.copy(this.motionSun?.position || new T.Vector3());
+      this.background.position.copy(this.camera.position).multiplyScalar(.08);
+      this.renderer.render(this.world, this.camera);
+      this.updateHud(); this.updateLabels(); this.updateBodyPicker(); this.updateCraftPicker(); this.updateMotionControl();
+      return;
+    }
+    this.solarMotionGroup.visible = false;
     if (this._detailBody) {
       this.solarGroup.visible = false;
       this.galaxyGroup.visible = false;
@@ -1192,7 +1493,7 @@ export const cosmic3d = {
       this.sunLight.position.set(44, 26, 58);
       this.background.position.copy(this.camera.position).multiplyScalar(.08);
       this.renderer.render(this.world, this.camera);
-      this.updateHud(); this.updateLabels(); this.updateBodyPicker(); this.updateCraftPicker();
+      this.updateHud(); this.updateLabels(); this.updateBodyPicker(); this.updateCraftPicker(); this.updateMotionControl();
       return;
     }
     this.bodyDetailGroup.visible = false;
@@ -1258,14 +1559,21 @@ export const cosmic3d = {
     this.sunLight.position.copy(this.solarGroup.position);
     this.background.position.copy(this.camera.position).multiplyScalar(.08);
     this.renderer.render(this.world, this.camera);
-    this.updateHud(); this.updateLabels(); this.updateBodyPicker(); this.updateCraftPicker();
+    this.updateHud(); this.updateLabels(); this.updateBodyPicker(); this.updateCraftPicker(); this.updateMotionControl();
   },
 
   updateLabels() {
     if (!this._ready || !this.labels) return;
     const stage = stageFor(this.level);
     this.labels.querySelectorAll('[data-cosmic-label]').forEach(label => { label.hidden = true; });
-    if (this._photoMode) {
+    if (this._solarMotionMode) {
+      this.placeLabel('motion-sun', this.motionSun, ko() ? '태양 · 함께 전진' : 'Sun · moving with us', -18, -18);
+      ['earth', 'jupiter', 'neptune'].forEach((id, index) => {
+        this.placeLabel(`motion-${id}`, this._motionPlanetMeshes.get(id), PLANETS[id][ko() ? 'ko' : 'en'], 5, (index - 1) * 9);
+      });
+      this.placeLabel('motion-direction', this.motionDirectionMarker,
+        ko() ? '은하 중심 공전 방향을 직선으로 펼침' : 'Galactic orbit direction unfolded', -160, -22);
+    } else if (this._photoMode) {
       const forward = new this.THREE.Vector3(); this.camera.getWorldDirection(forward);
       [...this._photoMarkers.values()]
         .map(entry => ({ entry, score: entry.object.position.clone().normalize().dot(forward) }))
@@ -1341,6 +1649,18 @@ export const cosmic3d = {
     if (!this.root) return;
     const stage = stageFor(this.level);
     const isKo = ko();
+    if (this._solarMotionMode) {
+      document.getElementById('cosmicStage').textContent = isKo ? '앞으로 나아가는 태양계' : 'The Solar System in motion';
+      document.getElementById('cosmicScale').textContent = isKo
+        ? '1년 · 태양 약 48.6 AU 전진 · 행성 궤도 계산'
+        : 'One year · Sun travels about 48.6 AU · calculated planet orbits';
+      document.getElementById('cosmicHint').textContent = isKo
+        ? '행성은 멈춘 원이 아니라 전진하는 태양과 함께 3D 궤적을 만듭니다'
+        : 'Planets form 3D trails while moving with the Sun rather than orbiting a fixed point';
+      document.getElementById('cosmicNote').textContent = this._motionCatalog?.limitations?.[isKo ? 'ko' : 'en'] || '';
+      this.root.dataset.stage = 'solar-motion';
+      return;
+    }
     if (this._photoMode) {
       const telescope = this._photoMode === 'JWST' ? (isKo ? '제임스웹' : 'James Webb') : (isKo ? '허블' : 'Hubble');
       document.getElementById('cosmicStage').textContent = `${telescope} · ${this._photoMarkers.size}`;

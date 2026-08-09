@@ -1,0 +1,22 @@
+{
+  "schema": "earthus.solar-motion.v1",
+  "referenceDate": "2026-08-10",
+  "displaySpanDays": 365.25,
+  "galacticSpeedKph": 829000,
+  "distanceAu": 48.5769882017,
+  "galacticOrbitYears": 230000000,
+  "source": "NASA Science · Solar System Facts",
+  "sourceUrl": "https://science.nasa.gov/solar-system/solar-system-facts/",
+  "method": {
+    "ko": "NASA가 제시한 태양계의 은하 공전 속도 약 829,000 km/h에 365.25일을 곱해 48.6 AU를 계산했습니다. 각 행성 위치는 JPL의 1800–2050 근사 궤도요소로 같은 1년을 표본화했습니다.",
+    "en": "48.6 AU is calculated from NASA's approximate galactic orbital speed of 829,000 km/h over 365.25 days. Planet positions sample the same year with JPL's 1800–2050 approximate orbital elements."
+  },
+  "limitations": {
+    "ko": "전진 방향을 화면 축에 맞추고 행성 궤도 반지름을 로그 압축한 교육 도식입니다. 실제 황도면과 은하 공전 방향 사이 각도, 행성·태양 크기, 은하 궤도의 1년 곡률은 같은 비율이 아닙니다. 항법·관측 조준에 사용할 수 없습니다.",
+    "en": "Educational diagram: the travel direction is aligned to the screen and orbital radii are logarithmically compressed. The true ecliptic-to-galactic orientation, body sizes, and one-year galactic curvature are not to scale. Not for navigation or observation pointing."
+  },
+  "displayLimit": {
+    "ko": "진행 방향 정렬 · 궤도 반지름 로그 압축 · 천체 크기 과장. 실제 황도면 각도와 은하 궤도 곡률은 같은 비율이 아니며 항법용이 아닙니다.",
+    "en": "Direction aligned, orbital radii log-compressed, body sizes enlarged. True orientation and galactic curvature are not to scale; not for navigation."
+  }
+}

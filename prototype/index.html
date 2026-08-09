@@ -182,6 +182,7 @@
         <div id="cosmicLabels" class="cosmic-labels" aria-hidden="true"></div>
         <nav id="cosmicBodyPicker" class="cosmic-body-picker" aria-label="달과 행성 선택" hidden></nav>
         <nav id="cosmicCraftPicker" class="cosmic-craft-picker" aria-label="우주망원경과 탐사선 선택" hidden></nav>
+        <button id="cosmicMotionOpen" class="cosmic-motion-open" type="button" hidden>태양계의 전진 보기 →</button>
         <aside id="cosmicBodyInfo" class="cosmic-body-info" aria-live="polite" hidden>
           <button id="cosmicBodyBack" type="button">← 태양계</button>
           <p id="cosmicBodyKind"></p>
@@ -207,6 +208,18 @@
           <p id="cosmicCraftMethod"></p>
           <p id="cosmicCraftCredit"></p>
           <a id="cosmicCraftSource" target="_blank" rel="noopener noreferrer">공식 자료</a>
+        </aside>
+        <aside id="cosmicMotionInfo" class="cosmic-motion-info" aria-live="polite" hidden>
+          <button id="cosmicMotionBack" type="button">← 은하수 전체</button>
+          <p id="cosmicMotionKind">1년을 3D로 펼친 교육 도식</p>
+          <h2 id="cosmicMotionTitle">움직이는 태양계</h2>
+          <p id="cosmicMotionDistance">태양 이동 0.0 AU</p>
+          <div class="cosmic-motion-progress" aria-hidden="true"><i id="cosmicMotionProgress"></i></div>
+          <p id="cosmicMotionLimit"></p>
+          <div class="cosmic-motion-actions">
+            <button id="cosmicMotionReplay" type="button">1년 다시 보기</button>
+            <a id="cosmicMotionSource" target="_blank" rel="noopener noreferrer">NASA 공식 자료</a>
+          </div>
         </aside>
         <header class="cosmic-hud" aria-live="polite">
           <p id="cosmicStage">태양계</p>
@@ -1005,7 +1018,7 @@
 <!-- v6는 OMM JSON의 6~9자리 카탈로그 번호를 지원하는 마지막 UMD 배포본이다.
      v7은 ESM 전용이라 빌드 없는 이 앱에서 같은 script 전역으로 교체할 수 없다. -->
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"></script>
-<script type="module" src="js/main.js?v=20260810-trencharea1"></script>
+<script type="module" src="js/main.js?v=20260810-solarmotion1"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

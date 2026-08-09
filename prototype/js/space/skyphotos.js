@@ -45,7 +45,9 @@ export const skyPhotos = {
 
   async load() {
     if (this.loaded) return this.items;
-    const response = await fetch('data/space-photos.json', { cache: 'force-cache' });
+    // 카탈로그는 항목이 계속 늘어난다. 브라우저의 오래된 2장 응답을 영구 재사용하지
+    // 않도록 켤 때 조건부 재검증한다(썸네일 자체는 정적 캐시를 그대로 쓴다).
+    const response = await fetch('data/space-photos.json', { cache: 'no-cache' });
     if (!response.ok) throw new Error(`space-photos ${response.status}`);
     const doc = await response.json();
     this.items = Array.isArray(doc.items) ? doc.items : [];
@@ -144,7 +146,7 @@ export const skyPhotos = {
       out.className = 'skyframe-diagnostic';
       document.body.appendChild(out);
     }
-    out.textContent = `B2 ${telescope} · ds ${this.ds.show ? 'on' : 'off'} · marker ${entity.show ? 'on' : 'off'} · distance ${Math.round(distanceKm).toLocaleString()} km · camera ${Math.round(cameraKm).toLocaleString()} km · sky ${Math.round(markerKm).toLocaleString()} km`;
+    out.textContent = `B2 ${telescope} · catalog ${this.items.length} · ds ${this.ds.show ? 'on' : 'off'} · marker ${entity.show ? 'on' : 'off'} · distance ${Math.round(distanceKm).toLocaleString()} km · camera ${Math.round(cameraKm).toLocaleString()} km · sky ${Math.round(markerKm).toLocaleString()} km`;
   },
 
   show(hst, jwst) {

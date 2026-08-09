@@ -46,3 +46,16 @@
 - 운영 응답 Content-Type을 확인했다: JavaScript `text/javascript`, JSON `application/json`, 썸네일 `image/jpeg`.
 - 운영 `?skyphotos=jwst`에서 영문 이름·크레딧·공식 링크·공개일·RA/Dec·이용 조건과 썸네일 마커를 확인했다.
 - CloudFront 배포 계정에는 `GetInvalidation` 권한이 없어 waiter 조회는 거부됐지만, 모든 운영 파일이 새 바이트로 응답해 실제 반영을 확인했다.
+
+## 두 번째 카탈로그 묶음
+
+- ESA/Webb 공식 이미지 10건을 추가해 전체 12건으로 늘렸다.
+- 추가 대상: 창조의 기둥, 타란툴라 성운, 뱀자리 성운, 솜브레로 은하, 허빅-아로 49/50, 고양이 발 성운, 나비 성운 NGC 6302, 나선 성운, M51의 별 탄생 영역, 시가 은하 M82.
+- `tools/extract_esawebb_metadata.py`는 저장한 공식 페이지에서 제목·RA·Dec·공개일·전체 크레딧을 읽고 도 단위 좌표의 후보 JSON을 출력한다. 필드가 없으면 추정하지 않고 실패하며 정본 JSON을 자동으로 덮어쓰지 않는다.
+- 검수자가 한국어 이름과 대상을 확인한 뒤 카탈로그에 옮겼고, 썸네일은 ESA/Webb CDN 원본을 earthus에 캐시했다.
+- 검증기는 이제 JSON 경로만 보지 않고 실제 로컬 썸네일 파일 존재와 HTTPS 원본 링크도 검사한다.
+- 브라우저가 첫 2장 JSON을 `force-cache`로 계속 재사용하는 문제를 로컬에서 재현했다. 작은 카탈로그는 레이어를 켤 때 조건부 재검증하고, 큰 썸네일은 정적 캐시를 유지하도록 분리했다.
+- 로컬 진단 화면에서 `catalog 12`, 카메라 61,371km, 천구 300,000km, 마커 on을 다시 확인했다.
+- 두 번째 CloudFront 무효화: `I1C7GDS1FHNC4I78NZCE6D6FNT`. 운영 JSON·JavaScript·새 JPEG 10개를 다시 내려받아 로컬과 바이트 단위로 대조했고, JSON은 `Cache-Control: no-cache`로 응답했다.
+- 운영 영문 화면에서도 `catalog 12`, 마커 on, 카메라·천구 거리를 확인했다.
+- 50장 목표까지 38장이 남았으므로 여전히 B1·B2 전체 완료로 세지 않는다.

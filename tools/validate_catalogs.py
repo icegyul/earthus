@@ -59,6 +59,12 @@ def validate_space(item: dict[str, Any], path: str, errors: list[str]) -> None:
     require(text(item.get("thumb")), f"{path}.thumb", "캐시 썸네일 경로 필요", errors)
     require(text(item.get("full")), f"{path}.full", "공식 원본 링크 필요", errors)
     require(text(item.get("license")), f"{path}.license", "이미지 이용 조건 필요", errors)
+    if text(item.get("thumb")):
+        require((ROOT / "prototype" / item["thumb"]).is_file(), f"{path}.thumb",
+                "로컬 캐시 썸네일 파일이 없음", errors)
+    if text(item.get("full")):
+        require(item["full"].startswith("https://"), f"{path}.full",
+                "HTTPS 공식 원본 링크 필요", errors)
 
 
 def validate_life(item: dict[str, Any], path: str, errors: list[str]) -> None:

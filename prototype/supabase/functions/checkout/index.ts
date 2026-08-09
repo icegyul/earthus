@@ -12,7 +12,9 @@
 //
 // 배포
 //   supabase functions deploy checkout
-//   supabase secrets set TOSS_CLIENT_KEY=... APP_ORIGIN=https://earthus.net
+//   supabase secrets set SALES_ENABLED=false TOSS_CLIENT_KEY=... APP_ORIGIN=https://earthus.net
+//   ⚠️ SALES_ENABLED=true 는 founding.sql 검증·법적 선행조건·결제 테스트가
+//      모두 끝난 뒤에만 설정한다. 값이 없거나 철자가 다르면 판매는 닫힌다.
 //   ⚠️ TOSS_SECRET_KEY 는 여기 필요 없다 — 승인 함수에만 둔다 (노출면을 좁힌다).
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
@@ -40,6 +42,13 @@ function orderId(): string {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json({ error: 'METHOD' }, 405);
+
+  // ⚠️⚠️ 브라우저의 SALES_OPEN 은 화면용일 뿐이다. 사용자는 Edge Function 을
+  //    직접 호출할 수 있으므로 서버에도 독립된 문이 있어야 한다.
+  //    정확히 소문자 true 일 때만 연다 — 미설정·오타·"1"은 모두 닫힘이다.
+  if (Deno.env.get('SALES_ENABLED') !== 'true') {
+    return json({ error: 'SALES_CLOSED', ko: '유료 판매는 아직 시작하지 않았습니다.' }, 503);
+  }
 
   const clientKey = Deno.env.get('TOSS_CLIENT_KEY');
   if (!clientKey) {

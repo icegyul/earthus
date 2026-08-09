@@ -11,7 +11,7 @@
 - 화면: 사전등록에 "창립 멤버 500명 — 언제나 정가의 반값" 표시 중 (라이브)
 - 약관: 제2조 제6항 · 제8조 제7항에 명시 (2026-08-06 개정, 라이브)
 - 코드: `supabase/founding.sql` · `functions/checkout/index.ts` · `js/auth.js` — **작성 완료**
-- 적용: ⬜ `founding.sql` 미적용 · ⬜ `checkout` 미배포
+- 적용: ⬜ `founding.sql` 미적용 · ☑ `checkout` 배포 (`SALES_ENABLED=false`, 2026-08-09 운영 응답 확인)
 
 ⚠️ `SALES_OPEN=true` 전에 적용과 검증이 끝나야 한다.
 안 되어 있으면 결제창에서 창립 멤버가 **정가를 낸다.** 그건 약관 위반이다.

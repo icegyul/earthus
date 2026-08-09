@@ -32,6 +32,8 @@ const PLANETS = {
 const TARGET = { moon: .16, solar: .76, milkyway: 1.76, galaxies: 2.78 };
 const ENTER_HEIGHT = 220_000_000;
 const SOLAR_MARKER = { x: 29, y: .7, z: 9 };
+const DAY_MS = 86_400_000;
+const LIGHT_HOURS_PER_AU = 499.004783836 / 3600;
 const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
 const mix = (a, b, amount) => a + (b - a) * amount;
 const smooth = (a, b, value) => {
@@ -79,6 +81,10 @@ export const cosmic3d = {
   _photoMarkers: new Map(),
   _photoFov: 56,
   _selectedPhoto: null,
+  _craftCatalogPromise: null,
+  _craftCatalog: null,
+  _craftMarkers: new Map(),
+  _selectedCraft: null,
 
   init() {
     if (this.root) return this;
@@ -88,7 +94,10 @@ export const cosmic3d = {
     this.bodyPicker = document.getElementById('cosmicBodyPicker');
     this.bodyInfo = document.getElementById('cosmicBodyInfo');
     this.photoInfo = document.getElementById('cosmicPhotoInfo');
-    if (!this.root || !this.canvas || !this.labels || !this.bodyPicker || !this.bodyInfo || !this.photoInfo) return this;
+    this.craftPicker = document.getElementById('cosmicCraftPicker');
+    this.craftInfo = document.getElementById('cosmicCraftInfo');
+    if (!this.root || !this.canvas || !this.labels || !this.bodyPicker || !this.bodyInfo
+      || !this.photoInfo || !this.craftPicker || !this.craftInfo) return this;
     this.root.closest('.space-scene')?.classList.add('cosmic-mode');
     document.getElementById('spaceSceneIntro')?.setAttribute('hidden', '');
     document.getElementById('solarExperience')?.setAttribute('hidden', '');
@@ -105,6 +114,8 @@ export const cosmic3d = {
       this.buildBodyPicker();
       if (this._detailBody) this.showBodyInfo(this._detailBody);
       if (this._selectedPhoto) this.selectPhoto(this._selectedPhoto);
+      if (this._selectedCraft) this.showCraftInfo(this._selectedCraft);
+      this.buildCraftPicker();
       this.updateHud(); this.updateLabels(); this.render();
     });
     this.root.hidden = store.scene !== 'space';
@@ -119,6 +130,7 @@ export const cosmic3d = {
     if (note) note.textContent = ko() ? '3D 우주 공간을 준비하는 중…' : 'Preparing the 3D space…';
     try {
       await this.ensureEngine();
+      await this.loadSpacecraftCatalog();
       this.root.classList.remove('is-loading');
       if (!this._internalStage) this.animateTo(TARGET[stage] ?? TARGET.solar);
       this.render();
@@ -264,6 +276,162 @@ export const cosmic3d = {
       this.solarGroup.add(line); this.orbitMaterials.push(orbitMaterial);
     });
     this.earthMesh = this.planetMeshes.earth;
+    this.spacecraftGroup = new T.Group();
+    this.solarGroup.add(this.spacecraftGroup);
+  },
+
+  loadSpacecraftCatalog() {
+    if (this._craftCatalogPromise) return this._craftCatalogPromise;
+    this._craftCatalogPromise = fetch('/data/cosmic-spacecraft.json', { cache: 'no-cache' })
+      .then(response => {
+        if (!response.ok) throw new Error(`COSMIC_SPACECRAFT_${response.status}`);
+        return response.json();
+      })
+      .then(document => {
+        if (!Array.isArray(document.items) || !document.positionNotice) {
+          throw new Error('COSMIC_SPACECRAFT_SCHEMA');
+        }
+        this._craftCatalog = document;
+        this.buildSpacecraft(); this.buildCraftPicker(); this.render();
+        return document;
+      })
+      .catch(error => {
+        // 탐사선 자료가 실패해도 태양계·행성 3D 자체는 닫지 않는다.
+        console.warn('[cosmic-spacecraft]', error.message);
+        return null;
+      });
+    return this._craftCatalogPromise;
+  },
+
+  clearSpacecraft() {
+    if (!this.spacecraftGroup) return;
+    while (this.spacecraftGroup.children.length) {
+      const object = this.spacecraftGroup.children[this.spacecraftGroup.children.length - 1];
+      this.spacecraftGroup.remove(object); object.geometry?.dispose?.(); object.material?.dispose?.();
+    }
+    this._craftMarkers.clear();
+  },
+
+  buildSpacecraft() {
+    if (!this._craftCatalog || !this.spacecraftGroup || !this.earthMesh) return;
+    this.clearSpacecraft();
+    const T = this.THREE;
+    const earth = this.earthMesh.position.clone();
+    const outward = earth.clone().setY(0).normalize();
+    const tangent = new T.Vector3(-outward.z, 0, outward.x);
+    const addPath = (points, color, opacity, dashed = false) => {
+      const material = dashed
+        ? new T.LineDashedMaterial({ color, transparent: true, opacity, dashSize: .55, gapSize: .42, depthWrite: false })
+        : new T.LineBasicMaterial({ color, transparent: true, opacity, depthWrite: false });
+      const line = new T.Line(new T.BufferGeometry().setFromPoints(points), material);
+      if (dashed) line.computeLineDistances();
+      this.spacecraftGroup.add(line);
+    };
+    const addMarker = (craft, position, color, extra = {}) => {
+      const marker = new T.Mesh(
+        new T.OctahedronGeometry(extra.radius || .58, 1),
+        new T.MeshBasicMaterial({ color, transparent: true, opacity: .96 }),
+      );
+      marker.position.copy(position); marker.userData.craftId = craft.id;
+      this.spacecraftGroup.add(marker);
+      this._craftMarkers.set(craft.id, { object: marker, craft, ...extra });
+    };
+
+    this._craftCatalog.items.forEach(craft => {
+      if (craft.type === 'earth-orbit-schematic') {
+        const points = [];
+        for (let index = 0; index <= 64; index += 1) {
+          const angle = index / 64 * Math.PI * 2;
+          points.push(earth.clone().addScaledVector(tangent, Math.cos(angle) * 2.8)
+            .add(new T.Vector3(0, Math.sin(angle) * 1.22, 0)));
+        }
+        addPath(points, 0x8bd8ec, .42);
+        addMarker(craft, points[9], 0x8bd8ec, { radius: .42 });
+      } else if (craft.type === 'earth-l2-schematic') {
+        const center = earth.clone().addScaledVector(outward, 5.1);
+        addPath([earth, center], 0xbdaeff, .34, true);
+        const points = [];
+        for (let index = 0; index <= 64; index += 1) {
+          const angle = index / 64 * Math.PI * 2;
+          points.push(center.clone().addScaledVector(tangent, Math.cos(angle) * 1.28)
+            .add(new T.Vector3(0, Math.sin(angle) * 1.82, 0)));
+        }
+        addPath(points, 0xbdaeff, .42);
+        addMarker(craft, points[12], 0xbdaeff, { radius: .5 });
+      } else if (craft.type === 'heliocentric-vector') {
+        const epoch = Date.parse(craft.epoch);
+        const elapsedDays = (Date.now() - epoch) / DAY_MS;
+        const withinRange = Math.abs(elapsedDays) <= 365.25 * 5;
+        const values = craft.pos.map((value, index) => value + craft.vel[index] * (withinRange ? elapsedDays : 0));
+        const actual = new T.Vector3(values[0], values[2], values[1]);
+        const distanceAu = actual.length();
+        // 보이저를 실제 140~170 AU에 두면 행성 전체가 점 하나가 된다. 방향은 보존하고
+        // 해왕성 바깥 거리는 로그로 압축하며 카드에 실제 AU와 기준시각을 함께 밝힌다.
+        const displayRadius = 31.5 + Math.log2(Math.max(1, distanceAu / 30)) * 3.8;
+        const shown = actual.normalize().multiplyScalar(displayRadius);
+        addPath([new T.Vector3(), shown], craft.id === 'voyager-1' ? 0xffd36b : 0xff9b78, .42, true);
+        addMarker(craft, shown, craft.id === 'voyager-1' ? 0xffd36b : 0xff9b78,
+          { distanceAu, displayedAt: withinRange ? new Date() : new Date(epoch), radius: .62 });
+      }
+    });
+  },
+
+  buildCraftPicker() {
+    if (!this.craftPicker || !this._craftCatalog) return;
+    const isKo = ko();
+    this.craftPicker.replaceChildren(...this._craftCatalog.items.map(craft => {
+      const button = document.createElement('button');
+      button.type = 'button'; button.dataset.craft = craft.id;
+      button.textContent = craft.shortName[isKo ? 'ko' : 'en'];
+      button.classList.toggle('on', craft.id === this._selectedCraft?.id);
+      button.addEventListener('click', () => this.selectCraft(craft.id));
+      return button;
+    }));
+    this.updateCraftPicker();
+  },
+
+  selectCraft(id) {
+    const entry = this._craftMarkers.get(id);
+    if (!entry) return;
+    if (this._photoMode) this.closePhotoAtlas(false);
+    if (this._detailBody) this.closeBody(false);
+    if (this._frame) cancelAnimationFrame(this._frame);
+    this._frame = 0; this.root.classList.remove('is-moving');
+    this._selectedCraft = entry.craft;
+    this.level = this.target = .82; this._stage = 'solar';
+    this.root.classList.add('is-craft');
+    this._craftMarkers.forEach(item => item.object.scale.setScalar(item.craft.id === id ? 1.75 : 1));
+    this.buildCraftPicker(); this.updateBodyPicker(); this.showCraftInfo(entry.craft); this.updateHud(); this.render();
+  },
+
+  showCraftInfo(craft) {
+    const isKo = ko();
+    const entry = this._craftMarkers.get(craft.id);
+    const vector = craft.type === 'heliocentric-vector';
+    const distance = vector && entry?.distanceAu
+      ? (isKo
+        ? `태양에서 ${entry.distanceAu.toFixed(1)} AU · 빛 약 ${Math.round(entry.distanceAu * LIGHT_HOURS_PER_AU)}시간`
+        : `${entry.distanceAu.toFixed(1)} AU from the Sun · about ${Math.round(entry.distanceAu * LIGHT_HOURS_PER_AU)} light-hours`)
+      : craft.distance[isKo ? 'ko' : 'en'];
+    document.getElementById('cosmicCraftKind').textContent = vector
+      ? (isKo ? `${craft.epoch.slice(0, 10)} UTC 기준 상태벡터` : `State vector epoch ${craft.epoch.slice(0, 10)} UTC`)
+      : (isKo ? `${craft.referenceDate} 공식 자료 기준 · 위치 도식` : `Official reference ${craft.referenceDate} · schematic position`);
+    document.getElementById('cosmicCraftTitle').textContent = craft.name[isKo ? 'ko' : 'en'];
+    document.getElementById('cosmicCraftDistance').textContent = distance;
+    document.getElementById('cosmicCraftMethod').textContent = `${craft.method[isKo ? 'ko' : 'en']} · ${this._craftCatalog.positionNotice[isKo ? 'ko' : 'en']}`;
+    document.getElementById('cosmicCraftCredit').textContent = `${isKo ? '크레딧' : 'Credit'} · ${craft.credit}`;
+    const source = document.getElementById('cosmicCraftSource');
+    source.href = craft.sourceUrl; source.textContent = `${isKo ? '출처' : 'Source'} · ${craft.source}`;
+    document.getElementById('cosmicCraftBack').textContent = isKo ? '← 태양계 전체' : '← Full Solar System';
+    this.craftInfo.hidden = false;
+  },
+
+  closeCraft(render = true) {
+    if (!this._selectedCraft) return;
+    this._selectedCraft = null; this.root.classList.remove('is-craft'); this.craftInfo.hidden = true;
+    this._craftMarkers.forEach(entry => entry.object.scale.setScalar(1));
+    this.buildCraftPicker(); this.updateBodyPicker(); this.updateHud();
+    if (render) this.render();
   },
 
   makeGalaxyGeometry(count, radius = 50) {
@@ -408,6 +576,7 @@ export const cosmic3d = {
       const catalog = await this.loadBodyCatalog();
       const body = catalog.bodies.find(item => item.id === id);
       if (!body) throw new Error(`UNKNOWN_BODY_${id}`);
+      if (this._selectedCraft) this.closeCraft(false);
       if (this._frame) cancelAnimationFrame(this._frame);
       this._frame = 0; this.root.classList.remove('is-moving');
       this.level = this.target = TARGET.solar;
@@ -429,7 +598,7 @@ export const cosmic3d = {
       this.makeBodyMarkers(body);
       this.makeBodyOrbiters(body);
       this.showBodyInfo(body);
-      this.updateBodyPicker();
+      this.updateBodyPicker(); this.updateCraftPicker();
       this.updateHud(); this.render();
     } catch (error) {
       console.warn('[cosmic-body]', error.message);
@@ -630,17 +799,27 @@ export const cosmic3d = {
     this._detailBody = null; this.root.classList.remove('is-body');
     this.yaw = .72; this.pitch = .56;
     this.bodyDetailGroup.visible = false; this.bodyInfo.hidden = true;
-    this.clearBodyVisual(); this.updateBodyPicker(); this.updateHud();
+    this.clearBodyVisual(); this.updateBodyPicker(); this.updateCraftPicker(); this.updateHud();
     if (render) this.render();
   },
 
   updateBodyPicker() {
     if (!this.bodyPicker) return;
     const visible = store.scene === 'space' && stageFor(this.level) === 'solar'
-      && !this._photoMode && (this._detailBody || this.level > .22);
+      && !this._photoMode && !this._selectedCraft && (this._detailBody || this.level > .22);
     this.bodyPicker.hidden = !visible;
     this.bodyPicker.querySelectorAll('[data-body]').forEach(button => {
       button.classList.toggle('on', button.dataset.body === this._detailBody?.id);
+    });
+  },
+
+  updateCraftPicker() {
+    if (!this.craftPicker) return;
+    const visible = !!this._craftCatalog && store.scene === 'space' && stageFor(this.level) === 'solar'
+      && !this._photoMode && !this._detailBody && this.level > .22;
+    this.craftPicker.hidden = !visible;
+    this.craftPicker.querySelectorAll('[data-craft]').forEach(button => {
+      button.classList.toggle('on', button.dataset.craft === this._selectedCraft?.id);
     });
   },
 
@@ -674,6 +853,7 @@ export const cosmic3d = {
       const items = catalog.filter(item => item.telescope === telescope);
       if (!items.length) throw new Error(`SPACE_PHOTOS_${telescope}_EMPTY`);
       if (this._detailBody) this.closeBody(false);
+      if (this._selectedCraft) this.closeCraft(false);
       if (this._frame) cancelAnimationFrame(this._frame);
       this._frame = 0; this.root.classList.remove('is-moving');
       this.clearPhotoAtlas();
@@ -705,7 +885,7 @@ export const cosmic3d = {
       this.yaw = T.MathUtils.degToRad(first.ra);
       this.pitch = clamp(T.MathUtils.degToRad(first.dec), -1.35, 1.35);
       this.selectPhoto(first);
-      this.updateHud(); this.render();
+      this.updateHud(); this.updateCraftPicker(); this.render();
     } catch (error) {
       console.warn('[cosmic-photos]', error.message);
       const note = document.getElementById('cosmicNote');
@@ -751,7 +931,7 @@ export const cosmic3d = {
     this.photoGroup.visible = false; this.photoInfo.hidden = true;
     document.getElementById('cosmicPhotoImage').removeAttribute('src');
     this.clearPhotoAtlas(); this.yaw = .72; this.pitch = .56;
-    this.updateBodyPicker(); this.updateHud();
+    this.updateBodyPicker(); this.updateCraftPicker(); this.updateHud();
     if (render) this.render();
   },
 
@@ -829,6 +1009,7 @@ export const cosmic3d = {
     this.canvas.addEventListener('keydown', event => {
       if (event.key === 'Escape' && this._photoMode) { this.closePhotoAtlas(); return; }
       if (event.key === 'Escape' && this._detailBody) { this.closeBody(); return; }
+      if (event.key === 'Escape' && this._selectedCraft) { this.closeCraft(); return; }
       if (event.key === '+' || event.key === '=') {
         if (this._photoMode) { this._photoFov = clamp(this._photoFov - 3, 34, 74); this.render(); }
         else if (this._detailBody) { this._bodyDistance = clamp(this._bodyDistance - 4, 31, 150); this.render(); }
@@ -847,6 +1028,7 @@ export const cosmic3d = {
     document.getElementById('cosmicEarthReturn')?.addEventListener('click', () => this.exitToEarth());
     document.getElementById('cosmicBodyBack')?.addEventListener('click', () => this.closeBody());
     document.getElementById('cosmicPhotoBack')?.addEventListener('click', () => this.closePhotoAtlas());
+    document.getElementById('cosmicCraftBack')?.addEventListener('click', () => this.closeCraft());
   },
 
   pointerDistance() {
@@ -863,6 +1045,8 @@ export const cosmic3d = {
       -((event.clientY - rect.top) / rect.height) * 2 + 1,
     );
     const raycaster = new this.THREE.Raycaster(); raycaster.setFromCamera(pointer, this.camera);
+    const craftHit = raycaster.intersectObjects([...this._craftMarkers.values()].map(entry => entry.object), false)[0];
+    if (craftHit?.object?.userData?.craftId) { this.selectCraft(craftHit.object.userData.craftId); return; }
     const hit = raycaster.intersectObjects(Object.values(this.planetMeshes), false)[0];
     if (!hit?.object?.userData?.id) return;
     if (hit.object.userData.id === 'earth') this.exitToEarth();
@@ -903,6 +1087,7 @@ export const cosmic3d = {
   animateTo(next) {
     if (this._photoMode) this.closePhotoAtlas(false);
     if (this._detailBody) this.closeBody(false);
+    if (this._selectedCraft) this.closeCraft(false);
     this.target = clamp(next, 0, 3.15);
     this.syncStage(this.target);
     this.startMotion();
@@ -940,6 +1125,7 @@ export const cosmic3d = {
   exitToEarth() {
     if (this._photoMode) this.closePhotoAtlas(false);
     if (this._detailBody) this.closeBody(false);
+    if (this._selectedCraft) this.closeCraft(false);
     this.target = 0; this.level = 0;
     if (this._frame) cancelAnimationFrame(this._frame);
     this._frame = 0;
@@ -984,7 +1170,7 @@ export const cosmic3d = {
       this.camera.lookAt(direction.multiplyScalar(10));
       this.background.position.set(0, 0, 0);
       this.renderer.render(this.world, this.camera);
-      this.updateHud(); this.updateLabels(); this.updateBodyPicker();
+      this.updateHud(); this.updateLabels(); this.updateBodyPicker(); this.updateCraftPicker();
       return;
     }
     this.photoGroup.visible = false;
@@ -1006,7 +1192,7 @@ export const cosmic3d = {
       this.sunLight.position.set(44, 26, 58);
       this.background.position.copy(this.camera.position).multiplyScalar(.08);
       this.renderer.render(this.world, this.camera);
-      this.updateHud(); this.updateLabels(); this.updateBodyPicker();
+      this.updateHud(); this.updateLabels(); this.updateBodyPicker(); this.updateCraftPicker();
       return;
     }
     this.bodyDetailGroup.visible = false;
@@ -1051,6 +1237,16 @@ export const cosmic3d = {
     } else {
       distance = mix(165, 760, smooth(2.18, 3.15, level));
     }
+    if (this._selectedCraft) {
+      const entry = this._craftMarkers.get(this._selectedCraft.id);
+      if (entry?.object) {
+        if (this._selectedCraft.type === 'heliocentric-vector') {
+          target.copy(entry.object.position).multiplyScalar(.42); distance = 88;
+        } else {
+          target.copy(this.earthMesh.position); distance = 40;
+        }
+      }
+    }
     const cosPitch = Math.cos(this.pitch);
     const direction = new T.Vector3(
       Math.sin(this.yaw) * cosPitch,
@@ -1062,7 +1258,7 @@ export const cosmic3d = {
     this.sunLight.position.copy(this.solarGroup.position);
     this.background.position.copy(this.camera.position).multiplyScalar(.08);
     this.renderer.render(this.world, this.camera);
-    this.updateHud(); this.updateLabels(); this.updateBodyPicker();
+    this.updateHud(); this.updateLabels(); this.updateBodyPicker(); this.updateCraftPicker();
   },
 
   updateLabels() {
@@ -1091,6 +1287,16 @@ export const cosmic3d = {
       });
     } else if (stage === 'solar' && this.level > .24) {
       IDS.forEach(id => this.placeLabel(id, this.planetMeshes[id], PLANETS[id][ko() ? 'ko' : 'en']));
+      this._craftMarkers.forEach(entry => {
+        if (this._selectedCraft && entry.craft.id !== this._selectedCraft.id) return;
+        let text = entry.craft.shortName[ko() ? 'ko' : 'en'];
+        if (entry.distanceAu) text += ` · ${entry.distanceAu.toFixed(1)} AU`;
+        else text += ko() ? ' · 간격 과장' : ' · spacing enlarged';
+        const offsets = {
+          hubble: [-18, 18], jwst: [8, -18], 'voyager-1': [6, -10], 'voyager-2': [6, 12],
+        }[entry.craft.id] || [0, 0];
+        this.placeLabel(`craft-${entry.craft.id}`, entry.object, text, offsets[0], offsets[1]);
+      });
     } else if (stage === 'milkyway') {
       this.placeLabel('solar-place', this.solarMarker, ko() ? '태양계는 여기' : 'Solar System');
     } else if (stage === 'galaxies') {
@@ -1111,7 +1317,7 @@ export const cosmic3d = {
     this.placeLabel(id, object, text);
   },
 
-  placeLabel(id, object, text) {
+  placeLabel(id, object, text, offsetX = 0, offsetY = 0) {
     if (!object) return;
     let label = this.labels.querySelector(`[data-cosmic-label="${id}"]`);
     if (!label) {
@@ -1123,8 +1329,8 @@ export const cosmic3d = {
       label.hidden = true; return;
     }
     label.hidden = false; label.textContent = text;
-    const rawX = (point.x * .5 + .5) * this._width;
-    const rawY = (-point.y * .5 + .5) * this._height;
+    const rawX = (point.x * .5 + .5) * this._width + offsetX;
+    const rawY = (-point.y * .5 + .5) * this._height + offsetY;
     const labelWidth = label.offsetWidth || 105;
     const x = clamp(rawX, 40, Math.max(40, this._width - labelWidth - 46));
     const y = clamp(rawY, this._detailBody ? 86 : 18, Math.max(86, this._height - 30));
@@ -1159,6 +1365,17 @@ export const cosmic3d = {
       document.getElementById('cosmicHint').textContent = body.summary[isKo ? 'ko' : 'en'];
       document.getElementById('cosmicNote').textContent = this._bodyCatalog.positionNotice[isKo ? 'ko' : 'en'];
       this.root.dataset.stage = 'body';
+      return;
+    }
+    if (this._selectedCraft) {
+      const craft = this._selectedCraft;
+      document.getElementById('cosmicStage').textContent = craft.shortName[isKo ? 'ko' : 'en'];
+      document.getElementById('cosmicScale').textContent = isKo
+        ? '같은 3D 태양계 · 실제 방향 · 거리 표현 방식 표시'
+        : 'Same 3D Solar System · true direction · distance method stated';
+      document.getElementById('cosmicHint').textContent = craft.method[isKo ? 'ko' : 'en'];
+      document.getElementById('cosmicNote').textContent = this._craftCatalog.positionNotice[isKo ? 'ko' : 'en'];
+      this.root.dataset.stage = 'craft';
       return;
     }
     const copy = {

@@ -1,0 +1,61 @@
+{
+  "generated": "2026-08-10",
+  "positionNotice": {
+    "ko": "허블·제임스웹은 궤도 구조를 보여주는 위치 도식이며 현재 실시간 위치가 아닙니다. 보이저는 JPL Horizons 기준시점 상태벡터에 속도×경과일을 더한 교육용 등속 추정입니다.",
+    "en": "Hubble and Webb are schematic orbit locations, not live positions. Voyager uses an educational linear estimate from a JPL Horizons epoch state vector plus velocity × elapsed time."
+  },
+  "items": [
+    {
+      "id": "hubble",
+      "type": "earth-orbit-schematic",
+      "name": { "ko": "허블 우주망원경", "en": "Hubble Space Telescope" },
+      "shortName": { "ko": "허블", "en": "Hubble" },
+      "distance": { "ko": "지표면 약 483 km", "en": "about 483 km above Earth" },
+      "referenceDate": "2024-03-01",
+      "method": { "ko": "지구 저궤도를 크게 확대한 위치 도식", "en": "Greatly enlarged schematic of low-Earth orbit" },
+      "credit": "NASA Goddard Space Flight Center",
+      "source": "NASA Science · Hubble by the Numbers",
+      "sourceUrl": "https://science.nasa.gov/mission/hubble/overview/hubble-by-the-numbers/"
+    },
+    {
+      "id": "jwst",
+      "type": "earth-l2-schematic",
+      "name": { "ko": "제임스웹 우주망원경", "en": "James Webb Space Telescope" },
+      "shortName": { "ko": "제임스웹", "en": "Webb" },
+      "distance": { "ko": "지구에서 약 150만 km", "en": "about 1.5 million km from Earth" },
+      "referenceDate": "2026-08-10",
+      "method": { "ko": "태양–지구 L2 주변 168일 헤일로 궤도의 위치 도식", "en": "Schematic 168-day halo orbit around Sun–Earth L2" },
+      "credit": "NASA, ESA, CSA, STScI",
+      "source": "NASA Science · Webb orbit at L2",
+      "sourceUrl": "https://science.nasa.gov/asset/webb/webbs-orbit-at-sun-earth-lagrange-point-2-l2/"
+    },
+    {
+      "id": "voyager-1",
+      "type": "heliocentric-vector",
+      "target": "-31",
+      "name": { "ko": "보이저 1호", "en": "Voyager 1" },
+      "shortName": { "ko": "보이저 1", "en": "Voyager 1" },
+      "epoch": "2026-08-10T00:00:00Z",
+      "pos": [-32.10085006585962, -136.4158155269793, 98.69994641054545],
+      "vel": [-0.001195783385770565, -0.007861240106112147, 0.005678726587996986],
+      "method": { "ko": "태양 중심 J2000 황도 상태벡터의 ±5년 등속 추정", "en": "Linear estimate within ±5 years of a heliocentric J2000 ecliptic state vector" },
+      "credit": "NASA/JPL-Caltech · JPL Horizons",
+      "source": "JPL Horizons",
+      "sourceUrl": "https://ssd.jpl.nasa.gov/horizons/"
+    },
+    {
+      "id": "voyager-2",
+      "type": "heliocentric-vector",
+      "target": "-32",
+      "name": { "ko": "보이저 2호", "en": "Voyager 2" },
+      "shortName": { "ko": "보이저 2", "en": "Voyager 2" },
+      "epoch": "2026-08-10T00:00:00Z",
+      "pos": [39.76403273142556, -105.1838305138423, -89.36342923093405],
+      "vel": [0.002427684509609417, -0.005394672379614105, -0.006536448427114062],
+      "method": { "ko": "태양 중심 J2000 황도 상태벡터의 ±5년 등속 추정", "en": "Linear estimate within ±5 years of a heliocentric J2000 ecliptic state vector" },
+      "credit": "NASA/JPL-Caltech · JPL Horizons",
+      "source": "JPL Horizons",
+      "sourceUrl": "https://ssd.jpl.nasa.gov/horizons/"
+    }
+  ]
+}

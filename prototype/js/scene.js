@@ -49,13 +49,17 @@ export const sceneMgr = {
 
   async _run(next, stage) {
     const fade = document.getElementById('sceneFade');
+    const continuousSpaceZoom = (this.current === 'earth' && next === 'space')
+      || (this.current === 'space' && next === 'earth');
+    fade?.classList.toggle('cosmic-shift', continuousSpaceZoom);
     fade?.classList.add('covered');
-    await wait(620);
+    await wait(continuousSpaceZoom ? 240 : 620);
     this._apply(next, stage);
     // 새 장면의 첫 레이아웃이 검은 덮개 뒤에서 끝난 다음 걷는다.
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     fade?.classList.remove('covered');
-    await wait(620);
+    await wait(continuousSpaceZoom ? 240 : 620);
+    fade?.classList.remove('cosmic-shift');
     return next;
   },
 

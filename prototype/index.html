@@ -177,6 +177,18 @@
        ⚠️ #banner는 이 장면보다 위여야 한다 — 재난 배너가 가려지면 안 된다. -->
   <div id="sceneRoot" aria-hidden="true">
     <section class="scene-view space-scene" data-scene-view="space" aria-label="우주 탐험 기반 장면">
+      <div id="cosmicExperience" class="cosmic-experience" hidden>
+        <canvas id="cosmicCanvas" aria-label="지구에서 태양계, 은하수, 은하들까지 이어지는 3D 로그 스케일"></canvas>
+        <header class="cosmic-hud" aria-live="polite">
+          <p id="cosmicStage">태양계</p>
+          <span id="cosmicScale">지구에서 해왕성 궤도까지 · 로그 스케일</span>
+        </header>
+        <div class="cosmic-guide">
+          <strong id="cosmicHint">계속 줌아웃하면 은하수가 나타납니다</strong>
+          <span id="cosmicNote">행성 위치 계산값 · JPL 공개 궤도요소 · 크기 과장</span>
+        </div>
+        <button id="cosmicEarthReturn" type="button">지구로 돌아가기</button>
+      </div>
       <div id="spaceSceneIntro">
         <p class="scene-kicker" data-i18n="explore.space.kicker">SPACE / SCALE DEMO</p>
         <h2 data-i18n="explore.space.title">지구 밖의 크기를 한 단계씩 봅니다.</h2>
@@ -929,7 +941,7 @@
 <!-- v6는 OMM JSON의 6~9자리 카탈로그 번호를 지원하는 마지막 UMD 배포본이다.
      v7은 ESM 전용이라 빌드 없는 이 앱에서 같은 script 전역으로 교체할 수 없다. -->
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"></script>
-<script type="module" src="js/main.js?v=20260810-brand2"></script>
+<script type="module" src="js/main.js?v=20260810-cosmic1"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

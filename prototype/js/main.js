@@ -43,8 +43,7 @@ import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
 import { scaleRail } from './ui-scale.js?v=20260810-brand2';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
-import { solarScene } from './space/solarscene.js?v=20260809-solar1';
-import { galaxyCards } from './space/galaxycards.js?v=20260809-galaxy1';
+import { cosmicZoom } from './space/cosmiczoom.js?v=20260810-cosmic1';
 import { trenchCards } from './ocean/trenchcards.js';
 import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-globe2';
 
@@ -105,8 +104,7 @@ async function boot() {
   power.init();
   sceneMgr.init();
   scaleRail.init();
-  solarScene.init();
-  galaxyCards.init();
+  cosmicZoom.init();
   trenchCards.init();
   trenchGlobe.init();
   // 수심 장면을 공유하거나 동일 좌표로 재현할 수 있게 한다.

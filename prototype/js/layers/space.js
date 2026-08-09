@@ -135,6 +135,7 @@ export const orbits = {
   catalogAge: null,
   source: null,          // 's3' | 'celestrak' — 어느 경로로 받았는지
   _trackTimer: null,
+  _priorityNorad: null,
   selected: JSON.parse(localStorage.getItem(LS_GROUPS) || 'null')
             || ['stations', 'weather', 'science'],
 
@@ -172,6 +173,24 @@ export const orbits = {
     await this.refresh();
   },
   isSelected(id) { return this.selected.includes(id); },
+
+  /** 검색에서 한 위성을 지정해 불러온다. 렌더 상한에 잘리더라도 지정한 한 기는 남긴다. */
+  async prepareByNorad(norad, groupId) {
+    const id = String(norad);
+    const group = SAT_GROUPS.find(g => g.id === groupId);
+    if (!group) throw new Error('UNKNOWN_SAT_GROUP');
+    this._priorityNorad = id;
+    if (!this.selected.includes(groupId)) {
+      this.selected = [...this.selected, groupId];
+      localStorage.setItem(LS_GROUPS, JSON.stringify(this.selected));
+    }
+    await this.refresh();
+    const idx = this.sats.findIndex(s => String(s.noradId) === id);
+    if (idx < 0) throw new Error('SATELLITE_NOT_IN_CATALOG');
+    const position = this.propagate(this.sats[idx].rec, new Date());
+    if (!position) throw new Error('SATELLITE_POSITION_UNAVAILABLE');
+    return { idx, sat: this.sats[idx], position };
+  },
 
   /** 선택된 그룹의 예상 위성 수 — 경고 판단용 */
   estimate(ids) {
@@ -299,6 +318,13 @@ export const orbits = {
     }
 
     this.catalogAge = cat?.generated || null;
+
+    /* 검색으로 지정한 위성은 기기별 렌더 상한 앞에 둔다.
+       ⚠️ 전체 상한을 늘리지 않는다 — 한 기를 살리려고 발열 예산을 깨면 안 된다. */
+    if (this._priorityNorad) {
+      const priorityIndex = out.findIndex(s => String(s.noradId) === this._priorityNorad);
+      if (priorityIndex > 0) out.unshift(out.splice(priorityIndex, 1)[0]);
+    }
 
     /* ⚠️ 여기서 자른다. 자르는 순서가 곧 우선순위다 —
        SAT_GROUPS 가 작은 그룹(정거장·기상·과학…)을 먼저 두고 스타링크·전체를
@@ -578,6 +604,7 @@ export const orbits = {
         lat: satellite.degreesLat(gd.latitude),
         alt: gd.height,
         vel: pv.velocity ? Math.hypot(pv.velocity.x, pv.velocity.y, pv.velocity.z) : null,
+        at: when.toISOString(),
       };
     } catch (_) { return null; }
   },

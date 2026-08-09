@@ -409,6 +409,15 @@ export function satDetail(sat, live, lang = 'ko') {
   d[ko ? '속도' : 'Speed']    = live?.vel ? `${(live.vel * 3600).toFixed(0)} km/h` : '—';
   d[ko ? '공전주기' : 'Period'] = `${periodMin.toFixed(1)} ${ko ? '분' : 'min'}`;
   d[ko ? '궤도경사각' : 'Inclination'] = `${incDeg.toFixed(1)}°`;
+  if (live && Number.isFinite(live.lat) && Number.isFinite(live.lon)) {
+    const lat = `${Math.abs(live.lat).toFixed(2)}°${live.lat >= 0 ? 'N' : 'S'}`;
+    const lon = `${Math.abs(live.lon).toFixed(2)}°${live.lon >= 0 ? 'E' : 'W'}`;
+    d[ko ? '현재 계산 위치' : 'Calculated position'] = `${lat} · ${lon}`;
+    d[ko ? '위치 계산 시각' : 'Position calculated'] = live.at
+      ? new Date(live.at).toLocaleString(ko ? 'ko-KR' : 'en-US')
+      : '—';
+    d[ko ? '위치 자료·방법' : 'Position source & method'] = 'CelesTrak OMM · SGP4';
+  }
   const ld = sat.launchDate || (year ? String(year) : null);
   if (ld) d[ko ? '발사일' : 'Launched'] = ld;
   if (sat.noradId) d[ko ? '카탈로그 번호' : 'NORAD ID'] = sat.noradId;

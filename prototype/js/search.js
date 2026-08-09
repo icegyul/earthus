@@ -113,6 +113,8 @@ export const search = {
   on: false,
   _places: null,          // 지연 로딩
   _loading: null,
+  _satAliases: [],
+  _satLoading: null,
   _rows: [],              // 지금 화면의 결과 (키보드 이동용)
   _cursor: 0,
 
@@ -163,6 +165,7 @@ export const search = {
     input.value = '';
     this.render('');
     this._load();                       // 배경에서 장소 자료를 받아 둔다
+    this._loadSatAliases();             // 작은 별칭표도 검색창을 열 때 한 번만 받는다
     /* ⚠️ 모바일에서 focus() 를 바로 부르면 키보드가 안 올라오는 기기가 있다.
        화면 전환이 끝난 뒤 부른다. */
     setTimeout(() => input.focus(), 60);
@@ -238,6 +241,28 @@ export const search = {
     return this._loading;
   },
 
+  _loadSatAliases() {
+    if (this._satAliases.length || this._satLoading) return this._satLoading;
+    this._satLoading = fetch('data/sat-aliases.json', { cache: 'force-cache' })
+      .then(r => {
+        if (!r.ok) throw new Error(`sat-aliases ${r.status}`);
+        return r.json();
+      })
+      .then(doc => {
+        this._satAliases = Array.isArray(doc.items) ? doc.items : [];
+        this._satSource = doc.source || 'CelesTrak';
+        this._satObserved = doc.catalogObserved || null;
+        if (this.on) this.render($('#searchInput').value);
+        return this._satAliases;
+      })
+      .catch(error => {
+        console.warn('[search] 위성 별칭표:', error.message);
+        return [];
+      })
+      .finally(() => { this._satLoading = null; });
+    return this._satLoading;
+  },
+
   /* ── 검색 ─────────────────────────────────────────────────── */
   find(qRaw) {
     const ko = i18n.lang === 'ko';
@@ -262,6 +287,18 @@ export const search = {
       if (s > 0) {
         hits.push({ s: s + 3, type: 'layer', title: ko ? it.ko : it.en,
                     sub: ko ? it.sub : it.subEn, ref: it });
+      }
+    });
+
+    // 위성 별칭 — NORAD 번호는 CelesTrak 운영 캐시와 대조한 손 큐레이션만 쓴다.
+    this._satAliases.forEach(sat => {
+      const names = [...(sat.ko || []), ...(sat.en || [])];
+      const s = Math.max(0, ...names.map(name => score(name, q, qCho)));
+      if (s > 0) {
+        const namesForLang = ko ? sat.ko : sat.en;
+        hits.push({ s: s + 8, type: 'satellite', title: namesForLang[0],
+          sub: `${sat.kind[ko ? 'ko' : 'en']} · ${ko ? '지금 위치 보기' : 'Show current position'} · ${this._satSource}`,
+          ref: sat });
       }
     });
 
@@ -315,14 +352,14 @@ export const search = {
       return;
     }
 
-    const ICON = { place: '📍', layer: '◍', action: '›', open: '›' };
+    const ICON = { place: '📍', layer: '◍', action: '›', open: '›', satellite: '🛰' };
     rows.forEach((h, i) => {
       const b = document.createElement('button');
       b.className = 'sr-row' + (i === 0 ? ' on' : '');
       b.dataset.i = i;
       const tag = ko
-        ? { place: '장소', layer: '레이어', action: '기능', open: '기능' }[h.type]
-        : { place: 'Place', layer: 'Layer', action: 'Go', open: 'Go' }[h.type];
+        ? { place: '장소', layer: '레이어', action: '기능', open: '기능', satellite: '위성' }[h.type]
+        : { place: 'Place', layer: 'Layer', action: 'Go', open: 'Go', satellite: 'Satellite' }[h.type];
       b.innerHTML =
         `<span class="sr-ico">${ICON[h.type]}</span>`
         + `<span class="sr-txt"><b>${esc(h.title)}</b>`
@@ -345,6 +382,10 @@ export const search = {
   async _pick(i) {
     const h = this._rows[i];
     if (!h) return;
+    if (h.type === 'satellite') {
+      await this._pickSatellite(h);
+      return;
+    }
     this.close();
 
     if (h.type === 'place') {
@@ -383,6 +424,35 @@ export const search = {
     }
     btn.click();
   },
+
+  async _pickSatellite(h) {
+    const ko = i18n.lang === 'ko';
+    const list = $('#searchList');
+    list.innerHTML = `<div class="sr-empty">${ko ? '위성 자료 받는 중…' : 'Loading satellite data…'}</div>`;
+    try {
+      const [{ orbits }, { registry }] = await Promise.all([
+        import('./layers/space.js'), import('./layers/registry.js'),
+      ]);
+      const target = await orbits.prepareByNorad(h.ref.norad, h.ref.group);
+      store.setLayer('orbits', true);
+      registry.applyAll();
+      orbits.set(true);
+      this.close();
+
+      const p = target.position;
+      const cameraHeight = Math.max(9_500_000, (p.alt + Math.max(800, p.alt * 0.12)) * 1000);
+      flyTo(p.lon, p.lat, cameraHeight, 1.8, () => {
+        store.select({ id: `sat-${target.idx}`, name: target.sat.name,
+          kind: 'satellite', _sat: target.sat, _satIdx: target.idx,
+          lat: p.lat, lon: p.lon });
+      });
+    } catch (error) {
+      console.warn('[search] 위성 위치:', error.message);
+      list.innerHTML = `<div class="sr-empty">${ko
+        ? '지금 위성 위치를 불러오지 못했습니다. 잠시 뒤 다시 해 주세요.'
+        : 'Could not load the satellite position. Please try again.'}</div>`;
+    }
+  },
 };
 
 /** 빈 입력일 때 보여주는 안내 — 무엇을 칠 수 있는지 알려준다 */
@@ -390,11 +460,11 @@ function hintBlock(ko) {
   const d = document.createElement('div');
   d.className = 'sr-hint';
   const ex = ko
-    ? ['서울', '기온', '태풍', '내 위치', 'ㅅㅇ']
-    : ['Seoul', 'Temperature', 'Cyclones', 'My location'];
+    ? ['서울', '천리안', '기온', '태풍', 'ㅅㅇ']
+    : ['Seoul', 'Hubble', 'Temperature', 'Cyclones'];
   d.innerHTML = `<p>${ko
-    ? '장소 · 레이어 · 기능을 한 번에 찾습니다'
-    : 'Search places, layers and features'}</p>`
+    ? '장소 · 레이어 · 위성을 한 번에 찾습니다'
+    : 'Search places, layers and satellites'}</p>`
     + `<div class="sr-ex">${ex.map(e => `<button type="button">${esc(e)}</button>`).join('')}</div>`
     + `<p class="sr-note">${ko
         ? '초성으로도 찾습니다 · Esc 로 닫기'

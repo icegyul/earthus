@@ -19,6 +19,8 @@ CATALOGS = {
     "sat-aliases": ROOT / "prototype/data/sat-aliases.json",
 }
 PLACEHOLDERS = {"todo", "tbd", "unknown", "모름", "미정", "-"}
+SAT_GROUPS = {"stations", "weather", "science", "nav", "comm", "earth",
+              "military", "amateur", "starlink", "all"}
 
 
 def text(value: Any) -> bool:
@@ -95,7 +97,7 @@ def validate_alias(item: dict[str, Any], path: str, errors: list[str]) -> None:
         names = item.get(lang)
         require(isinstance(names, list) and bool(names) and all(text(name) for name in names),
                 f"{path}.{lang}", "비어 있지 않은 별칭 배열 필요", errors)
-    require(text(item.get("group")), f"{path}.group", "위성 그룹 필요", errors)
+    require(item.get("group") in SAT_GROUPS, f"{path}.group", "실제 위성 그룹 필요", errors)
     require(localized(item.get("kind")), f"{path}.kind", "ko/en 종류가 모두 필요", errors)
 
 
@@ -117,6 +119,11 @@ def validate_catalog(name: str, path: Path, require_populated: bool) -> tuple[in
     if not isinstance(doc, dict):
         return 0, errors
     require(text(doc.get("generated")), f"{name}.generated", "생성일 필요", errors)
+    if name == "sat-aliases":
+        require(text(doc.get("catalogObserved")), f"{name}.catalogObserved",
+                "대조한 카탈로그 관측 시각 필요", errors)
+        require(text(doc.get("source")) and text(doc.get("sourceUrl")), f"{name}.source",
+                "카탈로그 출처와 URL 필요", errors)
     items = doc.get("items")
     require(isinstance(items, list), f"{name}.items", "배열이어야 함", errors)
     if not isinstance(items, list):

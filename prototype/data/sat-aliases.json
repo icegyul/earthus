@@ -1,4 +1,64 @@
 {
   "generated": "2026-08-09",
-  "items": []
+  "catalogObserved": "2026-08-08T18:01:01.070Z",
+  "source": "CelesTrak OMM JSON + SATCAT JSON",
+  "sourceUrl": "https://celestrak.org/",
+  "items": [
+    {
+      "norad": "43823",
+      "ko": ["천리안2A", "천리안 2A", "천리안위성 2A"],
+      "en": ["GEO-KOMPSAT-2A", "GK-2A", "Chollian-2A"],
+      "group": "weather",
+      "kind": { "ko": "정지궤도 기상위성", "en": "Geostationary weather satellite" }
+    },
+    {
+      "norad": "25544",
+      "ko": ["국제우주정거장", "우주정거장", "ISS"],
+      "en": ["ISS", "International Space Station", "ISS (ZARYA)"],
+      "group": "stations",
+      "kind": { "ko": "유인 우주정거장", "en": "Crewed space station" }
+    },
+    {
+      "norad": "20580",
+      "ko": ["허블", "허블우주망원경", "허블 우주망원경"],
+      "en": ["HST", "Hubble", "Hubble Space Telescope"],
+      "group": "science",
+      "kind": { "ko": "우주망원경", "en": "Space telescope" }
+    },
+    {
+      "norad": "29268",
+      "ko": ["아리랑2호", "아리랑 2호"],
+      "en": ["ARIRANG-2", "KOMPSAT-2"],
+      "group": "earth",
+      "kind": { "ko": "지구관측위성", "en": "Earth observation satellite" }
+    },
+    {
+      "norad": "38338",
+      "ko": ["아리랑3호", "아리랑 3호"],
+      "en": ["ARIRANG-3", "KOMPSAT-3"],
+      "group": "earth",
+      "kind": { "ko": "지구관측위성", "en": "Earth observation satellite" }
+    },
+    {
+      "norad": "39227",
+      "ko": ["아리랑5호", "아리랑 5호"],
+      "en": ["ARIRANG-5", "KOMPSAT-5"],
+      "group": "earth",
+      "kind": { "ko": "지구관측위성", "en": "Earth observation satellite" }
+    },
+    {
+      "norad": "40536",
+      "ko": ["아리랑3A호", "아리랑 3A호"],
+      "en": ["KOMPSAT-3A"],
+      "group": "earth",
+      "kind": { "ko": "지구관측위성", "en": "Earth observation satellite" }
+    },
+    {
+      "norad": "66820",
+      "ko": ["아리랑7호", "아리랑 7호"],
+      "en": ["KOMPSAT-7"],
+      "group": "earth",
+      "kind": { "ko": "지구관측위성", "en": "Earth observation satellite" }
+    }
+  ]
 }

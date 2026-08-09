@@ -158,12 +158,17 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--require-populated", action="store_true",
                         help="출시 게이트: 모든 카탈로그에 최소 1개 항목 요구")
+    parser.add_argument("--space-min", type=int, default=0,
+                        help="우주 사진 출시 게이트의 최소 항목 수")
     args = parser.parse_args()
     all_errors: list[str] = []
     counts: dict[str, int] = {}
     for name, path in CATALOGS.items():
         counts[name], errors = validate_catalog(name, path, args.require_populated)
         all_errors.extend(errors)
+    if counts.get("space-photos", 0) < args.space_min:
+        all_errors.append(
+            f"space-photos.items: {args.space_min}건 필요, 현재 {counts.get('space-photos', 0)}건")
     if all_errors:
         for error in all_errors:
             print(f"FAIL {error}", file=sys.stderr)

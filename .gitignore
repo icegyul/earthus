@@ -5,6 +5,9 @@ prototype/js/config.local.js
 node_modules/
 *.log
 
+# GEBCO 전지구 원본·파생 격자 — 원본 zip만 약 4GB라 Git에 넣지 않는다.
+.cache/gebco/
+
 # 개발용 자체 서명 인증서 (devserver.py --tls)
 prototype/.devcert.pem
 prototype/.devkey.pem

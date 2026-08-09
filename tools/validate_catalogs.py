@@ -16,6 +16,7 @@ CATALOGS = {
     "space-photos": ROOT / "prototype/data/space-photos.json",
     "sea-life": ROOT / "prototype/data/sea-life.json",
     "trenches": ROOT / "prototype/data/trenches.json",
+    "ocean-comparisons": ROOT / "prototype/data/ocean-comparisons.json",
     "sat-aliases": ROOT / "prototype/data/sat-aliases.json",
 }
 PLACEHOLDERS = {"todo", "tbd", "unknown", "모름", "미정", "-"}
@@ -110,11 +111,22 @@ def validate_alias(item: dict[str, Any], path: str, errors: list[str]) -> None:
     require(localized(item.get("kind")), f"{path}.kind", "ko/en 종류가 모두 필요", errors)
 
 
+def validate_ocean_comparison(item: dict[str, Any], path: str, errors: list[str]) -> None:
+    require(localized(item.get("name")), f"{path}.name", "ko/en 이름이 모두 필요", errors)
+    require(localized(item.get("note")), f"{path}.note", "ko/en 설명이 모두 필요", errors)
+    require(number(item.get("depthM")) and item["depthM"] > 0,
+            f"{path}.depthM", "0보다 큰 출처 기반 깊이가 필요", errors)
+    require(text(item.get("source")), f"{path}.source", "출처 기관명이 필요", errors)
+    require(text(item.get("sourceUrl")) and item["sourceUrl"].startswith("https://"),
+            f"{path}.sourceUrl", "HTTPS 공식 출처 링크가 필요", errors)
+
+
 VALIDATORS = {
     "space-photos": validate_space,
     "sea-life": validate_life,
     "trenches": validate_trench,
     "sat-aliases": validate_alias,
+    "ocean-comparisons": validate_ocean_comparison,
 }
 
 

@@ -494,6 +494,28 @@ export const sheet = {
 
         renderForecast(w);
         renderRainBars(w);
+
+        // 바다를 누른 좌표에서만 수심 기둥으로 이어 준다.
+        // ⚠️ 파도 응답이 없더라도 역지오코딩이 바다로 판정했으면 진입할 수 있다.
+        //    역으로 육지에는 버튼을 노출하지 않는다.
+        if (pl?.isOcean === true || sea) {
+          const dive = el('button', 'sheet-cta', ko ? '🤿 여기서 잠수' : '🤿 Dive here');
+          dive.onclick = async () => {
+            dive.disabled = true;
+            const name = $('#sheetTitle').textContent;
+            try {
+              sheet.minimize();
+              await sceneMgr.to('ocean', { stage: 'trench' });
+              const { diveScene } = await import('./ocean/divescene.js');
+              await diveScene.open({ lat: m.lat, lon: m.lon, name });
+            } catch (error) {
+              dive.disabled = false;
+              toast(ko ? '수심 장면을 열지 못했습니다.' : 'Could not open the depth scene.');
+              console.warn('[dive]', error.message);
+            }
+          };
+          rows.parentElement.appendChild(dive);
+        }
       } catch (e) {
         rows.innerHTML = `<dt>—</dt><dd>${e.message}</dd>`;
       }

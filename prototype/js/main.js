@@ -101,6 +101,23 @@ async function boot() {
   power.init();
   sceneMgr.init();
   scaleRail.init();
+  // 수심 장면을 공유하거나 동일 좌표로 재현할 수 있게 한다.
+  // ⚠️ 좌표만 받고 수심은 반드시 배포된 GEBCO 격자에서 다시 읽는다.
+  const diveParam = new URLSearchParams(location.search).get('dive');
+  if (diveParam) {
+    const [lat, lon] = diveParam.split(',').map(Number);
+    if (Number.isFinite(lat) && Number.isFinite(lon) && lat >= -90 && lat <= 90) {
+      queueMicrotask(async () => {
+        try {
+          await sceneMgr.to('ocean', { stage: 'trench' });
+          const { diveScene } = await import('./ocean/divescene.js');
+          await diveScene.open({ lat, lon, name: `${lat.toFixed(2)}, ${lon.toFixed(2)}` });
+        } catch (error) {
+          console.warn('[dive-link]', error.message);
+        }
+      });
+    }
+  }
   /* 움직이는 게 화면에 있으면 계속 그려달라고 알린다 (requestRenderMode 대응).
      ⚠️ 여기 패턴을 빠뜨리면 그 애니메이션만 조용히 멈춘다.
         렌더를 요청하는 쪽이 없어 화면이 갱신되지 않기 때문이다.

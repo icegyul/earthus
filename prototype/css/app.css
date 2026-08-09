@@ -94,6 +94,19 @@ a{color:var(--teal);text-decoration:none}
 .scene-view h2{max-width:13ch;margin:0;font-size:clamp(42px,7vw,82px);font-weight:300;line-height:1.04;letter-spacing:-.055em}
 .scene-status{max-width:58ch;margin:22px 0 0;color:var(--muted);font-size:13px;line-height:1.8}
 .scene-view>button{justify-self:start;margin-top:26px;padding:10px 14px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--paper);cursor:pointer}
+.ocean-scene:has(.dive-experience:not([hidden])){align-content:stretch;padding:clamp(18px,3vw,38px) clamp(48px,7vw,110px) 24px}
+.dive-experience{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,32vw);grid-template-rows:auto 1fr auto auto;gap:14px 28px;min-height:0;height:calc(100vh - 86px)}
+.dive-head{grid-column:1/2}.dive-head h2{max-width:none;font-size:clamp(32px,4vw,58px)}
+.dive-canvas-wrap{position:relative;grid-column:1/2;min-height:260px;border:1px solid rgba(126,208,224,.22);border-radius:12px;overflow:hidden;background:#031018;touch-action:none}
+#diveCanvas{display:block;width:100%;height:100%}
+#diveReadout{position:absolute;right:14px;top:14px;padding:7px 10px;border:1px solid rgba(255,255,255,.2);border-radius:7px;background:rgba(0,0,0,.64);font:500 14px/1.2 ui-monospace,monospace}
+.dive-slider-label{grid-column:2;grid-row:1;color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.dive-slider{grid-column:2;grid-row:2;align-self:stretch;justify-self:center;width:32px;writing-mode:vertical-lr;direction:rtl;accent-color:#62d5e8}
+.dive-comparisons{grid-column:2;grid-row:3;display:grid;gap:5px;font-size:11px;line-height:1.4}
+.dive-comparisons a{color:#8de7f4;text-decoration:none}.dive-comparisons a:hover{text-decoration:underline}
+.dive-limit{grid-column:2;grid-row:4;align-self:end;margin:0;color:rgba(233,242,244,.65);font-size:11px;line-height:1.55}
+.ocean-scene>.dive-experience:not([hidden])~[data-scene-home]{position:absolute;right:clamp(48px,7vw,110px);bottom:24px;margin:0}
+@media(max-width:720px){.ocean-scene:has(.dive-experience:not([hidden])){padding:18px 40px 18px 18px}.dive-experience{grid-template-columns:1fr;grid-template-rows:auto minmax(260px,1fr) auto auto auto auto;height:calc(100vh - 72px);gap:9px}.dive-head{grid-column:1}.dive-head h2{font-size:32px}.dive-canvas-wrap{grid-column:1}.dive-slider-label,.dive-slider,.dive-comparisons,.dive-limit{grid-column:1;grid-row:auto}.dive-slider{width:100%;height:28px;writing-mode:horizontal-tb;direction:ltr}.ocean-scene>.dive-experience:not([hidden])~[data-scene-home]{right:42px;bottom:16px}}
 #sceneFade{position:absolute;inset:0;z-index:80;background:#000;opacity:0;pointer-events:none;transition:opacity .6s ease}
 #sceneFade.covered{opacity:1;pointer-events:auto}
 #scaleRail{position:absolute;right:max(8px,env(safe-area-inset-right));top:50%;z-index:25;display:flex;align-items:stretch;transform:translateY(-50%);pointer-events:auto}

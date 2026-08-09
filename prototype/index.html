@@ -179,13 +179,30 @@
     <section class="scene-view space-scene" data-scene-view="space" aria-label="우주 탐험 기반 장면">
       <p class="scene-kicker" data-i18n="explore.space.kicker">SPACE / SCALE DEMO</p>
       <h2 data-i18n="explore.space.title">지구 밖의 크기를 한 단계씩 봅니다.</h2>
-      <p class="scene-status" data-i18n="explore.space.status">전환 기반 검증 장면입니다. 우주 사진과 태양계 자료는 다음 개발 단위에서 실제 출처·크레딧과 함께 들어옵니다.</p>
+      <p class="scene-status" data-i18n="explore.space.status">검증된 허블·JWST 사진을 천구 위치와 공식 크레딧으로 보세요. 태양계 장면은 아직 준비 중입니다.</p>
       <button type="button" data-scene-home data-i18n="explore.home">지구로 돌아가기</button>
     </section>
     <section class="scene-view ocean-scene" data-scene-view="ocean" aria-label="심해 탐험 기반 장면">
-      <p class="scene-kicker" data-i18n="explore.ocean.kicker">OCEAN / SCALE DEMO</p>
-      <h2 data-i18n="explore.ocean.title">수면 아래의 깊이를 층으로 내려갑니다.</h2>
-      <p class="scene-status" data-i18n="explore.ocean.status">전환 기반 검증 장면입니다. 실제 지점 수심은 GEBCO 격자 검증 뒤에만 표시합니다.</p>
+      <div id="oceanSceneIntro">
+        <p class="scene-kicker" data-i18n="explore.ocean.kicker">OCEAN / SCALE DEMO</p>
+        <h2 data-i18n="explore.ocean.title">수면 아래의 깊이를 층으로 내려갑니다.</h2>
+        <p class="scene-status" data-i18n="explore.ocean.status">지구에서 바다 지점을 누른 뒤 「여기서 잠수」를 고르면, 검증된 GEBCO 2026 격자로 그 지점의 수심 기둥을 보여줍니다.</p>
+      </div>
+      <div id="diveExperience" class="dive-experience" hidden>
+        <header class="dive-head">
+          <p class="scene-kicker">OCEAN / GEBCO 2026</p>
+          <h2 id="diveTitle">이 지점의 수심</h2>
+          <p id="diveSource" class="scene-status">수심 자료를 읽는 중…</p>
+        </header>
+        <div class="dive-canvas-wrap">
+          <canvas id="diveCanvas" aria-label="수면에서 해저까지의 수심 기둥"></canvas>
+          <output id="diveReadout" aria-live="polite">0 m</output>
+        </div>
+        <label class="dive-slider-label" for="diveSlider">현재 깊이</label>
+        <input id="diveSlider" class="dive-slider" type="range" min="0" max="1" value="0" step="1">
+        <div id="diveComparisons" class="dive-comparisons"></div>
+        <p id="diveLimit" class="dive-limit"></p>
+      </div>
       <button type="button" data-scene-home data-i18n="explore.home">지구로 돌아가기</button>
     </section>
   </div>
@@ -876,7 +893,7 @@
 <!-- v6는 OMM JSON의 6~9자리 카탈로그 번호를 지원하는 마지막 UMD 배포본이다.
      v7은 ESM 전용이라 빌드 없는 이 앱에서 같은 script 전역으로 교체할 수 없다. -->
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"></script>
-<script type="module" src="js/main.js"></script>
+<script type="module" src="js/main.js?v=20260809-ocean1"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

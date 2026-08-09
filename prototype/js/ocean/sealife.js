@@ -2,7 +2,7 @@
 //
 // ⚠️ 현재 좌표에 생물이 있다고 판정하지 않는다.
 //    문헌 범위는 현재 수심과 겹칠 때, 단일 관측은 작은 탐색창 안에서만 보여 준다.
-// ⚠️ Math.random 금지. 종 id 해시로 가로 위치를 고정한다.
+// ⚠️ Math.random 금지. 종 id 해시로 표시 순서를 고정한다.
 
 import { i18n } from '../i18n.js';
 
@@ -47,17 +47,19 @@ export const seaLife = {
     this._last = { data, depth };
     this.layer.innerHTML = '';
     if (this.detail) this.detail.hidden = true;
+    const layout = cardLayout(this.layer.clientWidth, this.layer.clientHeight);
     const active = (this.items || []).filter(item => item.depthKind === 'observation-depth'
       ? Math.abs(depth - item.depthMin) <= item.displayWindowM
       : depth >= item.depthMin && depth <= item.depthMax)
       .sort((left, right) => observationRank(left) - observationRank(right)
-        || hash(left.id) - hash(right.id)).slice(0, 8);
+        || hash(left.id) - hash(right.id)).slice(0, layout.capacity);
     const y = Math.max(10, Math.min(90, depth / Math.max(1, data.depthM) * 100));
+    const positions = cardPositions(active.length, layout, y);
     active.forEach((item, index) => {
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'sea-life-item';
-      button.style.left = `${12 + hash(item.id) % 72}%`;
-      button.style.top = `${Math.max(9, Math.min(91, y + (index % 3 - 1) * 7))}%`;
+      button.style.left = `${positions[index].left}px`;
+      button.style.top = `${positions[index].top}px`;
       const image = new Image(); image.src = item.thumb;
       image.alt = item.name[i18n.lang === 'ko' ? 'ko' : 'en'];
       const name = document.createElement('b'); name.textContent = image.alt;
@@ -111,6 +113,39 @@ function depthLabel(item, ko) {
 
 function observationRank(item) {
   return item.depthKind === 'observation-depth' ? 0 : 1;
+}
+
+function cardLayout(layerWidth, layerHeight) {
+  const width = Math.max(120, layerWidth || 600);
+  const height = Math.max(260, layerHeight || 300);
+  const compact = width < 480;
+  const cardWidth = compact ? 92 : 112;
+  const cardHeight = 65;
+  const gap = compact ? 6 : 8;
+  const columns = Math.max(1, Math.min(4, Math.floor((width + gap) / (cardWidth + gap))));
+  const rows = Math.max(1, Math.floor((height + gap) / (cardHeight + gap)));
+  return {
+    width, height, cardWidth, cardHeight, gap, columns,
+    capacity: Math.max(1, Math.min(8, columns * rows)),
+  };
+}
+
+function cardPositions(count, layout, depthPercent) {
+  // 받은 수심에서 문헌 카드가 모두 위쪽으로 몰릴 때 해시 좌표가 겹쳐,
+  // 보이는 종과 다른 버튼이 열렸다. 실제 카드 크기와 탐색창 크기로 격자를 고정한다.
+  const { width, height, cardWidth, cardHeight, gap, columns } = layout;
+  const rows = Math.ceil(count / columns);
+  const usedWidth = columns * cardWidth + (columns - 1) * gap;
+  const blockHeight = rows * cardHeight + (rows - 1) * gap;
+  const leftEdge = Math.max(4, (width - usedWidth) / 2);
+  const desiredTopEdge = depthPercent / 100 * height - blockHeight / 2;
+  const maxTopEdge = Math.max(4, height - blockHeight - 4);
+  const topEdge = Math.max(4, Math.min(maxTopEdge, desiredTopEdge));
+
+  return Array.from({ length: count }, (_, index) => ({
+    left: leftEdge + cardWidth / 2 + (index % columns) * (cardWidth + gap),
+    top: topEdge + cardHeight / 2 + Math.floor(index / columns) * (cardHeight + gap),
+  }));
 }
 
 function formatSize(item, ko) {

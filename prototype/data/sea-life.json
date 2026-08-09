@@ -637,6 +637,46 @@
       "depthSource": "NOAA Fisheries species profile",
       "depthSourceUrl": "https://www.fisheries.noaa.gov/species/bearded-seal",
       "note": { "ko": "NOAA는 몸길이를 약 7–8피트로, 계절 해빙이 있는 해역에서 선호하는 수심을 대체로 650피트 미만으로 설명합니다. 0–198m는 북극 해빙 환경을 전제로 한 종 수준 범위입니다.", "en": "NOAA lists a body length of about 7–8ft and describes a preferred depth generally under 650ft in seasonally ice-covered waters. The 0–198m interval is a species-level range conditioned on Arctic sea-ice habitat." }
+    },
+    {
+      "id": "olive-ridley-turtle-noaa-profile",
+      "name": { "ko": "올리브각시바다거북", "en": "Olive ridley turtle" },
+      "sci": "Lepidochelys olivacea",
+      "group": "deep",
+      "depthKind": "literature-range",
+      "depthMin": 0,
+      "depthMax": 152,
+      "sizeM": 0.685,
+      "sizeMinM": 0.61,
+      "sizeMaxM": 0.76,
+      "sizeKind": "range-midpoint",
+      "thumb": "ocean/thumbs/olive-ridley-turtle.jpg",
+      "credit": "NOAA Fisheries",
+      "license": "NOAA public domain; credit requested",
+      "photoSourceUrl": "https://www.fisheries.noaa.gov/species/olive-ridley-turtle",
+      "depthSource": "NOAA Fisheries species profile",
+      "depthSourceUrl": "https://www.fisheries.noaa.gov/species/olive-ridley-turtle",
+      "note": { "ko": "NOAA는 성체 길이를 2–2.5피트로 설명하며, 저서 무척추동물을 먹기 위해 500피트까지 잠수할 수 있다고 기록합니다. 0–152m는 잠수 가능 범위이지 현재 좌표의 관측 범위가 아닙니다.", "en": "NOAA lists adults at 2–2.5ft and reports dives to 500ft while foraging for benthic invertebrates. The 0–152m interval is dive capability, not an occurrence range for the current location." }
+    },
+    {
+      "id": "steller-sea-lion-noaa-profile",
+      "name": { "ko": "큰바다사자", "en": "Steller sea lion" },
+      "sci": "Eumetopias jubatus",
+      "group": "whale",
+      "depthKind": "literature-range",
+      "depthMin": 0,
+      "depthMax": 427,
+      "sizeM": 3.125,
+      "sizeMinM": 2.9,
+      "sizeMaxM": 3.35,
+      "sizeKind": "range-midpoint",
+      "thumb": "ocean/thumbs/steller-sea-lion.jpg",
+      "credit": "NOAA Fisheries",
+      "license": "NOAA public domain; credit requested",
+      "photoSourceUrl": "https://www.fisheries.noaa.gov/species/steller-sea-lion",
+      "depthSource": "NOAA Fisheries species profile",
+      "depthSourceUrl": "https://www.fisheries.noaa.gov/species/steller-sea-lion",
+      "note": { "ko": "NOAA는 수컷 최대 약 11피트·암컷 최대 약 9.5피트로 설명하며, 문서화된 최심 잠수는 약 1,400피트입니다. 크기 표시는 성별 최대치 범위이고 0–427m는 잠수 기록 범위입니다.", "en": "NOAA reports maxima of about 11ft for males and 9.5ft for females, with a deepest documented dive of about 1,400ft. The size display is a range of sex-specific maxima and 0–427m is the dive-record interval." }
     }
   ]
 }

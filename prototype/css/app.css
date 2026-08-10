@@ -138,7 +138,7 @@ a{color:var(--teal);text-decoration:none}
 #sceneFade{position:absolute;inset:0;z-index:80;background:#000;opacity:0;pointer-events:none;transition:opacity .6s ease}
 #sceneFade.covered{opacity:1;pointer-events:auto}
 #sceneFade.cosmic-shift{background:#02050a;transition-duration:.22s}
-#scaleRail{position:absolute;left:env(safe-area-inset-left,0px);top:calc(50% - 92px);z-index:27;display:flex;flex-direction:row-reverse;align-items:stretch;transform:translateY(-50%);pointer-events:auto}
+#scaleRail{position:absolute;left:env(safe-area-inset-left,0px);top:50%;z-index:27;display:flex;flex-direction:row-reverse;align-items:stretch;transform:translateY(-50%);pointer-events:auto}
 .scale-handle{align-self:center;width:34px;padding:10px 5px;border:1px solid var(--line);border-left:0;border-radius:0 10px 10px 0;background:rgba(13,15,20,.9);color:#fff;font-size:10px;letter-spacing:.04em;writing-mode:vertical-rl;text-orientation:upright;text-shadow:0 1px 8px #000;cursor:pointer}
 .scale-track{display:grid;grid-template-rows:repeat(5,1fr);width:0;max-height:min(72vh,540px);overflow:hidden;border:0 solid var(--line);border-radius:0 12px 12px 0;background:rgba(13,15,20,.94);backdrop-filter:blur(16px);opacity:0;transition:width .25s ease,opacity .25s ease,border-width .25s ease}
 #scaleRail.open .scale-track{width:132px;border-width:1px;opacity:1}
@@ -536,18 +536,18 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
   .ly{ width:80px; } .ly canvas{ width:54px; height:54px; }
 }
 
-/* ══════════ 왼쪽 EARTHUS 2단 메뉴 ═════════════════════════════
+/* ══════════ 오른쪽 EARTHUS 2단 메뉴 ════════════════════════════
    손잡이만 남기고 감춰두는 이유: 리빙어스처럼 평상시엔 지구만 보여야 한다.
    2단 구조인 이유: 1단은 큰 갈래(지구/위성/설정), 2단은 그 안의 선택지.
    한 화면에 다 펼치면 다시 "설정창 열어둔 앱"이 된다. */
 :root{ --mm-w:158px; --ms-w:206px; }
 
 #menuTab{
-  position:absolute; left:env(safe-area-inset-left,0px); top:calc(50% + 92px); transform:translateY(-50%);
+  position:absolute; right:env(safe-area-inset-right,0px); top:50%; transform:translateY(-50%);
   /* 우주·심해 장면(#sceneRoot z20)보다 위, 재난 배너(z30)보다 아래여야 한다.
      19였을 때 탐험 장면이 손잡이를 덮어 메뉴를 전혀 누를 수 없었다. */
   z-index:29; width:44px; height:104px; cursor:pointer;
-  border-radius:0 13px 13px 0; border:1px solid var(--line); border-left:0;
+  border-radius:13px 0 0 13px; border:1px solid var(--line); border-right:0;
   background:rgba(12,16,22,.55); backdrop-filter:blur(16px);
   display:flex; flex-direction:column; gap:8px; align-items:center; justify-content:center;
   transition:transform .42s cubic-bezier(.22,1,.36,1), background .2s ease;
@@ -560,21 +560,21 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
   text-shadow:0 1px 8px #000;
 }
 .mt-arrow{
-  width:7px; height:7px; margin-right:3px;
-  border-right:1.5px solid var(--paper); border-bottom:1.5px solid var(--paper);
-  transform:rotate(-45deg); opacity:.75;
+  width:7px; height:7px; margin-left:3px;
+  border-left:1.5px solid var(--paper); border-bottom:1.5px solid var(--paper);
+  transform:rotate(45deg); opacity:.75;
   transition:transform .42s cubic-bezier(.22,1,.36,1), margin .42s ease;
 }
-#menuTab.open{ transform:translateY(-50%) translateX(var(--mm-w)); }
-#menuTab.open.sub{ transform:translateY(-50%) translateX(calc(var(--mm-w) + var(--ms-w))); }
-#menuTab.open .mt-arrow{ transform:rotate(135deg); margin-right:-3px; }
+#menuTab.open{ transform:translateY(-50%) translateX(calc(-1 * var(--mm-w))); }
+#menuTab.open.sub{ transform:translateY(-50%) translateX(calc(-1 * (var(--mm-w) + var(--ms-w)))); }
+#menuTab.open .mt-arrow{ transform:rotate(-135deg); margin-left:-3px; }
 
 /* ── 1단 ── */
 #menuMain{
-  position:fixed; left:env(safe-area-inset-left,0px); top:50%; transform:translateY(-50%) translateX(-100%);
-  z-index:28; width:var(--mm-w); border-radius:0 14px 14px 0;
+  position:fixed; right:env(safe-area-inset-right,0px); top:50%; transform:translateY(-50%) translateX(100%);
+  z-index:28; width:var(--mm-w); border-radius:14px 0 0 14px;
   background:rgba(10,14,20,.74); backdrop-filter:blur(26px);
-  border:1px solid var(--line); border-left:0;
+  border:1px solid var(--line); border-right:0;
   padding:8px 0;
   /* ⚠️⚠️ 가로 화면(844×390)에서 위아래가 통째로 잘렸다 — '지구'는 위로,
      '설정'은 아래로 화면 밖이었고 overflow:hidden 이라 **스크롤도 안 됐다.**
@@ -619,16 +619,16 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 .mm-badge:empty{ display:none; }
 .mm-sep{ height:1px; background:var(--line); margin:6px 12px; }
 
-/* ── 2단 : 지구 스타일 (1단 오른쪽으로) ── */
+/* ── 2단 : 지구 스타일 (1단 왼쪽으로) ── */
 /* 2단도 같은 이유로 최대 높이를 준다 (감사 P1-11) */
 #menuSub{
-  position:fixed; left:calc(env(safe-area-inset-left,0px) + var(--mm-w)); top:50%;
-  transform:translateY(-50%) translateX(calc(-100% - var(--mm-w)));
+  position:fixed; right:calc(env(safe-area-inset-right,0px) + var(--mm-w)); top:50%;
+  transform:translateY(-50%) translateX(calc(100% + var(--mm-w)));
   z-index:28; width:var(--ms-w);
   max-height:min(78vh, calc(100dvh - 90px));
-  border-radius:0 14px 14px 0;
+  border-radius:14px 0 0 14px;
   background:rgba(10,14,20,.74); backdrop-filter:blur(26px);
-  border:1px solid var(--line); border-left:0;
+  border:1px solid var(--line); border-right:0;
   display:flex; flex-direction:column; overflow:hidden;
   transition:transform .42s cubic-bezier(.22,1,.36,1);
 }

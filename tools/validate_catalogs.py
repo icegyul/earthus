@@ -19,6 +19,7 @@ CATALOGS = {
     "ocean-comparisons": ROOT / "prototype/data/ocean-comparisons.json",
     "sat-aliases": ROOT / "prototype/data/sat-aliases.json",
     "obis-cells": ROOT / "prototype/data/obis-cells.json",
+    "probes": ROOT / "prototype/data/probes.json",
 }
 PLACEHOLDERS = {"todo", "tbd", "unknown", "모름", "미정", "-"}
 SAT_GROUPS = {"stations", "weather", "science", "nav", "comm", "earth",
@@ -175,6 +176,23 @@ def validate_obis_cell(item: dict[str, Any], path: str, errors: list[str]) -> No
             f"{path}.lon", "-180~180 범위의 숫자 필요", errors)
 
 
+def validate_probe(item: dict[str, Any], path: str, errors: list[str]) -> None:
+    require(text(item.get("id")), f"{path}.id", "식별자 필요", errors)
+    require(localized(item.get("name")), f"{path}.name", "ko/en 이름이 모두 필요", errors)
+    require(str(item.get("target", "")).lstrip("-").isdigit(),
+            f"{path}.target", "Horizons 표적 번호 필요", errors)
+    require(text(item.get("epoch")) and item["epoch"].endswith("Z"),
+            f"{path}.epoch", "UTC 기준시점 필요", errors)
+    for field in ("pos", "vel"):
+        vector = item.get(field)
+        require(isinstance(vector, list) and len(vector) == 3 and all(number(v) for v in vector),
+                f"{path}.{field}", "유한한 3차원 벡터 필요", errors)
+    require(credit(item.get("credit")), f"{path}.credit", "자료 크레딧 필요", errors)
+    require(localized(item.get("method")), f"{path}.method", "ko/en 추정 방법 필요", errors)
+    require(number(item.get("displayRangeYears")) and 0 < item["displayRangeYears"] <= 10,
+            f"{path}.displayRangeYears", "0 초과 10년 이하 표시 범위 필요", errors)
+
+
 VALIDATORS = {
     "space-photos": validate_space,
     "sea-life": validate_life,
@@ -182,6 +200,7 @@ VALIDATORS = {
     "sat-aliases": validate_alias,
     "ocean-comparisons": validate_ocean_comparison,
     "obis-cells": validate_obis_cell,
+    "probes": validate_probe,
 }
 
 
@@ -206,6 +225,14 @@ def validate_catalog(name: str, path: Path, require_populated: bool) -> tuple[in
                 "OBIS 출처와 URL 필요", errors)
         require(text(doc.get("policyUrl")), f"{name}.policyUrl", "OBIS 자료 정책 URL 필요", errors)
         require(localized(doc.get("coverage")), f"{name}.coverage", "ko/en 수집 범위 설명 필요", errors)
+    if name == "probes":
+        require(text(doc.get("source")) and text(doc.get("sourceUrl")), f"{name}.source",
+                "상태벡터 출처와 URL 필요", errors)
+        require(text(doc.get("frame")), f"{name}.frame", "좌표 기준 필요", errors)
+        require(isinstance(doc.get("units"), dict)
+                and doc["units"].get("position") == "AU"
+                and doc["units"].get("velocity") == "AU/day",
+                f"{name}.units", "AU와 AU/day 단위가 필요", errors)
     items = doc.get("items")
     require(isinstance(items, list), f"{name}.items", "배열이어야 함", errors)
     if not isinstance(items, list):

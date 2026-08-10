@@ -5,6 +5,9 @@ prototype/js/config.local.js
 node_modules/
 *.log
 
+# Supabase CLI 로컬 연결 상태 — 프로젝트 메타데이터라 소스가 아니다.
+supabase/.temp/
+
 # GEBCO 전지구 원본·파생 격자 — 원본 zip만 약 4GB라 Git에 넣지 않는다.
 .cache/gebco/
 

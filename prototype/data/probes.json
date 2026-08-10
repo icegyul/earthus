@@ -1,0 +1,31 @@
+{
+  "generated": "2026-08-10",
+  "source": "JPL Horizons",
+  "sourceUrl": "https://ssd.jpl.nasa.gov/horizons/",
+  "frame": "태양 중심 · J2000 황도 · 기하학적 상태벡터",
+  "units": { "position": "AU", "velocity": "AU/day" },
+  "items": [
+    {
+      "id": "voyager-1",
+      "target": "-31",
+      "name": { "ko": "보이저 1호", "en": "Voyager 1" },
+      "epoch": "2026-08-10T00:00:00Z",
+      "pos": [-32.10085006585962, -136.4158155269793, 98.69994641054545],
+      "vel": [-0.001195783385770565, -0.007861240106112147, 0.005678726587996986],
+      "credit": "NASA/JPL-Caltech · JPL Horizons",
+      "method": { "ko": "기준시점 상태벡터에 속도×경과일을 더한 등속 추정", "en": "Linear estimate from the epoch state vector plus velocity × elapsed days" },
+      "displayRangeYears": 5
+    },
+    {
+      "id": "voyager-2",
+      "target": "-32",
+      "name": { "ko": "보이저 2호", "en": "Voyager 2" },
+      "epoch": "2026-08-10T00:00:00Z",
+      "pos": [39.76403273142556, -105.1838305138423, -89.36342923093405],
+      "vel": [0.002427684509609417, -0.005394672379614105, -0.006536448427114062],
+      "credit": "NASA/JPL-Caltech · JPL Horizons",
+      "method": { "ko": "기준시점 상태벡터에 속도×경과일을 더한 등속 추정", "en": "Linear estimate from the epoch state vector plus velocity × elapsed days" },
+      "displayRangeYears": 5
+    }
+  ]
+}

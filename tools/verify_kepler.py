@@ -22,6 +22,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 KEPLER_JS = ROOT / "prototype/js/space/kepler.js"
+PROBES_JSON = ROOT / "prototype/data/probes.json"
 HORIZONS = "https://ssd.jpl.nasa.gov/api/horizons.api"
 TARGETS = {
     "mercury": "199", "venus": "299", "earth": "399", "mars": "499",
@@ -92,6 +93,7 @@ def main() -> int:
     parser.add_argument("--base-date", type=date.fromisoformat,
                         default=datetime.now(timezone.utc).date())
     parser.add_argument("--max-longitude-error", type=float, default=1.0)
+    parser.add_argument("--max-probe-error-au", type=float, default=1.0)
     args = parser.parse_args()
     days = verification_dates(args.base_date)
     if days[-1].year > 2050:
@@ -112,11 +114,25 @@ def main() -> int:
             print(f"{status}: {planet:8s} {day.isoformat()} longitude error {error:.4f}°")
             if error >= args.max_longitude_error:
                 failures.append((planet, day.isoformat(), error))
-    if failures:
+    probes = json.loads(PROBES_JSON.read_text(encoding="utf-8"))
+    probe_failures = []
+    for probe in probes.get("items", []):
+        epoch = datetime.fromisoformat(probe["epoch"].replace("Z", "+00:00"))
+        check = epoch.date() + timedelta(days=365)
+        reference = horizons_positions(str(probe["target"]), [check])[0]
+        elapsed = (datetime.combine(check, datetime.min.time(), tzinfo=timezone.utc) - epoch).total_seconds() / 86_400
+        predicted = tuple(float(probe["pos"][i]) + float(probe["vel"][i]) * elapsed for i in range(3))
+        error_au = math.dist(predicted, reference)
+        status = "PASS" if error_au < args.max_probe_error_au else "FAIL"
+        print(f"{status}: {probe['id']:9s} {check.isoformat()} linear-vector error {error_au:.6f} AU")
+        if error_au >= args.max_probe_error_au:
+            probe_failures.append((probe["id"], check.isoformat(), error_au))
+    if failures or probe_failures:
         raise SystemExit(f"FAILED: {len(failures)} / 32 positions exceed "
-                         f"{args.max_longitude_error:.3f}°")
+                         f"{args.max_longitude_error:.3f}°; {len(probe_failures)} probe vectors exceed "
+                         f"{args.max_probe_error_au:.3f} AU")
     print(f"PASS: 8 planets x 4 dates; worst {worst[0]:.4f}° "
-          f"({worst[1]} {worst[2]}); source=JPL Horizons")
+          f"({worst[1]} {worst[2]}); 2 Voyager vectors at epoch+365d; source=JPL Horizons")
     return 0
 
 

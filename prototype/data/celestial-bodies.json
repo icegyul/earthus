@@ -2,10 +2,24 @@
   "version": 1,
   "generated": "2026-08-10",
   "positionNotice": {
-    "ko": "지명은 구 위의 위도·경도에 놓았습니다. 질감은 실시간 사진이나 정밀 지형도가 아닌 가벼운 교육용 표현입니다.",
-    "en": "Names are placed by latitude and longitude. Textures are lightweight educational renderings, not live imagery or precision terrain."
+    "ko": "지명은 구 위의 위도·경도에 놓았습니다. 질감은 실시간 사진이나 정밀 지형도가 아닌 출처 표기 교육용 표면 시각화입니다.",
+    "en": "Names are placed by latitude and longitude. Textures are sourced educational surface visualizations, not live imagery or precision terrain."
   },
   "bodies": [
+    {
+      "id": "sun",
+      "name": { "ko": "태양", "en": "Sun" },
+      "kind": { "ko": "G형 주계열성", "en": "G-type main-sequence star" },
+      "texture": "sun",
+      "palette": ["#f5a623", "#ffd36a", "#c44b14"],
+      "radiusKm": 700000,
+      "rotation": { "ko": "적도 약 25일 · 극 약 36일", "en": "About 25 days at equator · 36 days at poles" },
+      "orbit": { "ko": "은하 중심 약 2억 3천만 년", "en": "About 230 million years around the Milky Way" },
+      "summary": { "ko": "표면처럼 보이는 광구는 끊임없이 변합니다 · 이 질감은 현재 관측이 아닌 대표 시각화입니다", "en": "The visible photosphere constantly changes · this texture is representative, not a current observation" },
+      "features": [],
+      "source": "NASA Sun Facts · Solar System Scope surface visualization",
+      "sourceUrl": "https://science.nasa.gov/sun/facts/"
+    },
     {
       "id": "mercury",
       "name": { "ko": "수성", "en": "Mercury" },

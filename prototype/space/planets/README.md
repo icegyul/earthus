@@ -7,8 +7,8 @@
 
 ## 런타임 규격
 
-- `small/`: 512×256, 품질 76~78. 행성 8개와 달을 한 번만 내려받아 상세 화면의 즉시 미리보기에도 씁니다.
-- `detail/`: 수성·금성·달·화성·토성 4096×2048, 목성 3600×1800입니다. 공개 전구 원본이
+- `small/`: 512×256, 품질 76~80. 태양·행성 8개·달을 한 번만 내려받아 태양계와 상세 화면의 즉시 미리보기에 씁니다.
+- `detail/`: 태양·수성·금성·달·화성·토성 4096×2048, 목성 3600×1800입니다. 공개 전구 원본이
   1K급인 천왕성·해왕성은 1024×512를 유지합니다. 선택한 천체 한 장만 로드하고 화면을
   닫거나 다른 천체를 고르면 GPU에서 즉시 해제합니다.
 - `ultra/`: 수성·금성·화성 8192×4096. 화면 폭 900px 이상, GPU 최대 텍스처 8192 이상,
@@ -22,6 +22,7 @@
 
 | 파일 | 원본·설명 | 크레딧 |
 | --- | --- | --- |
+| `sun.webp` | [Solar System Scope Sun 표면 시각화](https://www.solarsystemscope.com/textures/); 태양의 실제 광구는 계속 변하므로 현재 관측으로 쓰지 않음 | Solar System Scope/INOVE, CC BY 4.0; 사실 설명 [NASA Sun Facts](https://science.nasa.gov/sun/facts/) |
 | `mercury.webp` | [Solar System Scope 8K Mercury 시각화](https://www.solarsystemscope.com/textures/); 비교 기준은 [USGS MESSENGER 전구 모자이크](https://astrogeology.usgs.gov/search/map/mercury_messenger_mdis_basemap_enhanced_color_global_mosaic_665m) | Solar System Scope/INOVE, CC BY 4.0; 비교 자료 NASA/JHUAPL/Carnegie/USGS |
 | `venus.webp` | Magellan 레이더 자료를 바탕으로 한 [Solar System Scope 8K 표면 시각화](https://www.solarsystemscope.com/textures/) | NASA/JPL, Solar System Scope/INOVE, CC BY 4.0 |
 | `earth.webp` | [NASA SVS Blue Marble](https://svs.gsfc.nasa.gov/2915) | NASA/GSFC Scientific Visualization Studio, Reto Stöckli/NASA Earth Observatory |

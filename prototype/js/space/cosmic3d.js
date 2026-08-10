@@ -18,13 +18,15 @@ import { i18n } from '../i18n.js';
 import { planetOrbit, planetPositions } from './kepler.js';
 
 const IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
-const BODY_ORDER = ['mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
-const SURFACE_IDS = [...IDS, 'moon'];
+const BODY_ORDER = ['sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
+const SOLAR_LABEL_ORDER = ['sun', ...IDS];
+const SURFACE_IDS = ['sun', ...IDS, 'moon'];
 const ULTRA_SURFACE_IDS = new Set(['mercury', 'venus', 'mars']);
 const PLANET_TEXTURE_ROOT = '/space/planets';
-const PLANET_TEXTURE_VERSION = '20260810c';
+const PLANET_TEXTURE_VERSION = '20260810d';
 const planetTextureUrl = path => `${PLANET_TEXTURE_ROOT}/${path}?v=${PLANET_TEXTURE_VERSION}`;
 const PLANETS = {
+  sun: { ko: '태양', en: 'Sun', color: 0xffc45a, radius: 1.65 },
   mercury: { ko: '수성', en: 'Mercury', color: 0xaaa7a0, radius: .38 },
   venus: { ko: '금성', en: 'Venus', color: 0xd7b575, radius: .52 },
   earth: { ko: '지구', en: 'Earth', color: 0x62b7da, radius: .56 },
@@ -283,7 +285,8 @@ export const cosmic3d = {
     this.orbitMaterials = [];
 
     const sunMaterial = new T.MeshBasicMaterial({ color: 0xffca55 });
-    this.sun = new T.Mesh(new T.SphereGeometry(1.65, 28, 18), sunMaterial);
+    this.sun = new T.Mesh(new T.SphereGeometry(1.65, 48, 32), sunMaterial);
+    this.sun.userData.id = 'sun';
     this.solarGroup.add(this.sun);
     const glowMaterial = new T.SpriteMaterial({
       map: this.spriteTexture, color: 0xffb83d, transparent: true, opacity: .75,
@@ -392,10 +395,10 @@ export const cosmic3d = {
     const jobs = SURFACE_IDS.map(async id => {
       const texture = await this.loadSurfaceTexture(planetTextureUrl(`small/${id}.webp`));
       this._planetTextures.set(id, texture);
-      const material = this.planetMeshes[id]?.material;
+      const material = id === 'sun' ? this.sun?.material : this.planetMeshes[id]?.material;
       if (!material) return;
       material.map = texture;
-      material.emissiveMap = texture;
+      if ('emissiveMap' in material) material.emissiveMap = texture;
       material.color.set(0xffffff);
       material.needsUpdate = true;
     });
@@ -443,9 +446,51 @@ export const cosmic3d = {
     if (!this.spacecraftGroup) return;
     while (this.spacecraftGroup.children.length) {
       const object = this.spacecraftGroup.children[this.spacecraftGroup.children.length - 1];
-      this.spacecraftGroup.remove(object); object.geometry?.dispose?.(); object.material?.dispose?.();
+      this.spacecraftGroup.remove(object);
+      object.traverse?.(child => {
+        child.geometry?.dispose?.();
+        if (Array.isArray(child.material)) child.material.forEach(material => material.dispose?.());
+        else child.material?.dispose?.();
+      });
     }
     this._craftMarkers.clear();
+  },
+
+  makeSpacecraftModel(craft, color, radius) {
+    const T = this.THREE;
+    const metal = value => new T.MeshStandardMaterial({
+      color: value, roughness: .38, metalness: .62,
+      emissive: new T.Color(value).multiplyScalar(.16), emissiveIntensity: .35,
+    });
+    const flat = value => new T.MeshBasicMaterial({ color: value, side: T.DoubleSide });
+    let root;
+    if (craft.id === 'hubble') {
+      root = new T.Mesh(new T.CylinderGeometry(.2, .25, .9, 12), metal(0xbec7cf));
+      const panelMaterial = metal(0x254c84);
+      [-1, 1].forEach(side => {
+        const panel = new T.Mesh(new T.BoxGeometry(.72, .035, .34), panelMaterial.clone());
+        panel.position.x = side * .62; root.add(panel);
+      });
+      const aperture = new T.Mesh(new T.CylinderGeometry(.15, .2, .12, 12), metal(0x24303b));
+      aperture.position.y = .5; root.add(aperture);
+    } else if (craft.id === 'jwst') {
+      root = new T.Mesh(new T.CylinderGeometry(.5, .5, .08, 6), metal(0xd8a62d));
+      const shield = new T.Mesh(new T.CircleGeometry(1.05, 4), flat(0xc7c9d5));
+      shield.rotation.x = -Math.PI / 2; shield.position.y = -.22; shield.scale.set(1.18, .64, 1);
+      root.add(shield);
+      const mast = new T.Mesh(new T.CylinderGeometry(.035, .035, .34, 6), metal(0xb08a3a));
+      mast.position.y = -.16; root.add(mast);
+    } else if (craft.id.startsWith('voyager')) {
+      root = new T.Mesh(new T.BoxGeometry(.38, .3, .38), metal(0xb79a62));
+      const dish = new T.Mesh(new T.ConeGeometry(.65, .2, 28, 1, true), metal(0xd5d7d2));
+      dish.position.y = .42; root.add(dish);
+      const boom = new T.Mesh(new T.CylinderGeometry(.025, .025, 1.45, 6), metal(0x8e969b));
+      boom.position.y = -.82; boom.rotation.z = .18; root.add(boom);
+    } else {
+      root = new T.Mesh(new T.OctahedronGeometry(.58, 1), metal(color));
+    }
+    root.scale.setScalar(radius / .58);
+    return root;
   },
 
   buildSpacecraft() {
@@ -464,10 +509,7 @@ export const cosmic3d = {
       this.spacecraftGroup.add(line);
     };
     const addMarker = (craft, position, color, extra = {}) => {
-      const marker = new T.Mesh(
-        new T.OctahedronGeometry(extra.radius || .58, 1),
-        new T.MeshBasicMaterial({ color, transparent: true, opacity: .96 }),
-      );
+      const marker = this.makeSpacecraftModel(craft, color, extra.radius || .58);
       marker.position.copy(position); marker.userData.craftId = craft.id;
       this.spacecraftGroup.add(marker);
       this._craftMarkers.set(craft.id, { object: marker, craft, ...extra });
@@ -985,7 +1027,8 @@ export const cosmic3d = {
       this._detailTexture.needsUpdate = true;
       this.bodySphere.material.map = this._detailTexture;
       this.bodySphere.material.emissiveMap = this._detailTexture;
-      this.bodySphere.material.emissiveIntensity = body.id === 'uranus' ? 0 : .68;
+      this.bodySphere.material.emissive.set(body.id === 'sun' ? 0xffffff : 0x555555);
+      this.bodySphere.material.emissiveIntensity = body.id === 'sun' ? 1.08 : body.id === 'uranus' ? 0 : .68;
       this.bodySphere.material.color.set(0xffffff);
       this.bodySphere.material.needsUpdate = true;
       if (location.hash === '#dev') {
@@ -1179,8 +1222,22 @@ export const cosmic3d = {
   },
 
   makeBodyAtmosphere(body) {
-    if (body.id !== 'uranus') return;
     const T = this.THREE;
+    if (body.id === 'sun') {
+      const inner = new T.Sprite(new T.SpriteMaterial({
+        map: this.spriteTexture, color: 0xffb13b, transparent: true, opacity: .46,
+        blending: T.AdditiveBlending, depthWrite: false,
+      }));
+      inner.scale.set(46, 46, 1);
+      const outer = new T.Sprite(new T.SpriteMaterial({
+        map: this.spriteTexture, color: 0xff6f21, transparent: true, opacity: .18,
+        blending: T.AdditiveBlending, depthWrite: false,
+      }));
+      outer.scale.set(54, 54, 1);
+      this.bodyDetailGroup.add(outer, inner);
+      return;
+    }
+    if (body.id !== 'uranus') return;
     const rim = new T.Mesh(
       new T.SphereGeometry(18.24, 32, 20),
       new T.MeshBasicMaterial({
@@ -1518,7 +1575,7 @@ export const cosmic3d = {
     if (stageFor(this.level) !== 'solar' || this.level < .22) return;
     const craftHit = raycaster.intersectObjects([...this._craftMarkers.values()].map(entry => entry.object), false)[0];
     if (craftHit?.object?.userData?.craftId) { this.selectCraft(craftHit.object.userData.craftId); return; }
-    const hit = raycaster.intersectObjects(Object.values(this.planetMeshes), false)[0];
+    const hit = raycaster.intersectObjects([this.sun, ...Object.values(this.planetMeshes)], false)[0];
     if (!hit?.object?.userData?.id) return;
     if (hit.object.userData.id === 'earth') this.exitToEarth();
     else this.selectBody(hit.object.userData.id);
@@ -1792,17 +1849,24 @@ export const cosmic3d = {
         this.placeBodyLabel(id, entry.object, name + suffix);
       });
     } else if (stage === 'solar' && this.level > .24) {
-      IDS.forEach(id => this.placeLabel(id, this.planetMeshes[id], PLANETS[id][ko() ? 'ko' : 'en']));
+      const offsets = {
+        sun: [-24, -38], mercury: [-54, -32], venus: [-52, -6], earth: [22, -28],
+        mars: [24, 10], jupiter: [8, -5], saturn: [8, 10], uranus: [8, -7], neptune: [8, 8],
+      };
+      SOLAR_LABEL_ORDER.forEach(id => this.placeLabel(
+        id, id === 'sun' ? this.sun : this.planetMeshes[id], PLANETS[id][ko() ? 'ko' : 'en'],
+        offsets[id][0], offsets[id][1],
+      ));
       this._craftMarkers.forEach(entry => {
         if (this._selectedCraft && entry.craft.id !== this._selectedCraft.id) return;
         let text = entry.craft.shortName[ko() ? 'ko' : 'en'];
         if (entry.distanceAu) text += ` · ${entry.distanceAu.toFixed(1)} AU`;
-        else text += ko() ? ' · 간격 과장' : ' · spacing enlarged';
         const offsets = {
           hubble: [-18, 18], jwst: [8, -18], 'voyager-1': [6, -10], 'voyager-2': [6, 12],
         }[entry.craft.id] || [0, 0];
         this.placeLabel(`craft-${entry.craft.id}`, entry.object, text, offsets[0], offsets[1]);
       });
+      this.resolveSolarLabelCollisions();
     } else if (stage === 'milkyway') {
       this.placeLabel('solar-place', this.solarMarker, ko() ? '태양계는 여기' : 'Solar System');
     } else if (stage === 'galaxies') {
@@ -1840,7 +1904,34 @@ export const cosmic3d = {
     const labelWidth = label.offsetWidth || 105;
     const x = clamp(rawX, 40, Math.max(40, this._width - labelWidth - 46));
     const y = clamp(rawY, this._detailBody ? 86 : 18, Math.max(86, this._height - 30));
+    label.dataset.labelX = String(x); label.dataset.labelY = String(y);
     label.style.transform = `translate(${x}px,${y}px)`;
+  },
+
+  resolveSolarLabelCollisions() {
+    const priority = [
+      'sun', 'earth', 'jupiter', 'saturn', 'uranus', 'neptune',
+      'craft-jwst', 'craft-hubble', 'craft-voyager-1', 'craft-voyager-2',
+      'mars', 'venus', 'mercury',
+    ];
+    const shifts = [[0,0],[0,-18],[0,18],[-38,0],[38,0],[-38,-18],[38,18],[-38,18],[38,-18]];
+    const placed = [];
+    priority.forEach(id => {
+      const label = this.labels.querySelector(`[data-cosmic-label="${id}"]`);
+      if (!label || label.hidden) return;
+      const baseX = Number(label.dataset.labelX); const baseY = Number(label.dataset.labelY);
+      const width = label.offsetWidth || 48; const height = label.offsetHeight || 18;
+      const fit = shifts.map(([dx, dy]) => ({
+        x: clamp(baseX + dx, 40, Math.max(40, this._width - width - 46)),
+        y: clamp(baseY + dy, 18, Math.max(18, this._height - height - 18)),
+      })).find(candidate => placed.every(box => (
+        candidate.x + width + 5 < box.x || candidate.x > box.x + box.width + 5
+        || candidate.y + height + 4 < box.y || candidate.y > box.y + box.height + 4
+      )));
+      if (!fit) { label.hidden = true; return; }
+      label.style.transform = `translate(${fit.x}px,${fit.y}px)`;
+      placed.push({ ...fit, width, height });
+    });
   },
 
   updateHud() {

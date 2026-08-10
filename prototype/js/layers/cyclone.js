@@ -844,39 +844,44 @@ export const cyclones = {
     this._legend(groups, AG, ko, !!analog.get(s.id, s.name)?.sample?.length, s, ens);
   },
 
-  /** 유료·관리자에게만 보이는 유사사례 중심선.
-   *  ⚠️ 공식 예보선이 아니다. 서버가 뽑은 유사 경로들의 시각별 중앙값이며,
-   *  권한은 서버 프로필의 tier 또는 배포 설정의 관리자 UID로 판정한다. */
+  /** 유료·관리자에게만 보이는 자료 종합 참고선.
+   *  ⚠️ 공식 예보선이 아니다. 기관·ECMWF를 골격으로 최근 이동과 다층 지향류를
+   *  단기 결합하고 관측 신선도로 신뢰등급을 제한한 2차 가공 자료다. */
   _canSeeEarthusEstimate() {
     return auth.isPaid() || auth.isAdmin();
   },
 
   _drawEarthusEstimate(s, made, ko) {
     if (!this._canSeeEarthusEstimate()) return;
-    const estimate = analog.get(s.id, s.name)?.estimate;
-    const steps = (estimate?.steps || []).filter(x => x.lat != null && x.lon != null);
+    const guidance = analog.get(s.id, s.name)?.guidance;
+    const steps = (guidance?.steps || []).filter(x => x.lat != null && x.lon != null);
     if (steps.length < 2) return;
     const color = Cesium.Color.fromCssColorString('#42f5c8');
-    const entity = this.ds.entities.add({
-      id: `tc:${s.id}:earthus-estimate`,
-      polyline: {
-        positions: lifted(steps.map(x => [x.lon, x.lat]).flat(), LIFT_LINE_M + 500),
-        width: 3.4,
-        material: new Cesium.PolylineDashMaterialProperty({
-          color: color.withAlpha(0.96), dashLength: 14, dashPattern: 0b1111111111000000,
-        }),
-        arcType: Cesium.ArcType.GEODESIC, clampToGround: false,
-      },
-    });
-    entity._earthusEstimate = true;
-    made.push(entity);
+    const alpha = { high: 0.96, medium: 0.72, low: 0.46 };
+    for (let i = 1; i < steps.length; i += 1) {
+      const grade = steps[i].confidence || 'low';
+      const entity = this.ds.entities.add({
+        id: `tc:${s.id}:earthus-estimate:${i}`,
+        polyline: {
+          positions: lifted([steps[i - 1].lon, steps[i - 1].lat, steps[i].lon, steps[i].lat], LIFT_LINE_M + 500),
+          width: grade === 'high' ? 3.6 : 3.1,
+          material: new Cesium.PolylineDashMaterialProperty({
+            color: color.withAlpha(alpha[grade] || alpha.low), dashLength: 14,
+            dashPattern: 0b1111111111000000,
+          }),
+          arcType: Cesium.ArcType.GEODESIC, clampToGround: false,
+        },
+      });
+      entity._earthusEstimate = true;
+      made.push(entity);
+    }
 
     const last = steps[steps.length - 1];
     made.push(this.ds.entities.add({
       id: `tc:${s.id}:earthus-estimate:name`,
       position: Cesium.Cartesian3.fromDegrees(last.lon, last.lat),
       label: {
-        text: ko ? 'EARTHUS 유사사례 중심선' : 'EARTHUS analogue median',
+        text: ko ? 'EARTHUS 자료 종합선' : 'EARTHUS multi-source guidance',
         font: '700 11px -apple-system, sans-serif', fillColor: color,
         style: Cesium.LabelStyle.FILL_AND_OUTLINE,
         outlineColor: Cesium.Color.BLACK.withAlpha(0.9), outlineWidth: 3,
@@ -982,12 +987,13 @@ export const cyclones = {
         ko ? '과거 비슷했던 태풍들이 간 길 — 예보 아님'
            : 'where past similar storms went — not a forecast'));
     }
-    if (this._canSeeEarthusEstimate() && (analog.get(s.id, s.name)?.estimate?.steps || []).length > 1) {
-      const est = analog.get(s.id, s.name).estimate;
+    if (this._canSeeEarthusEstimate() && (analog.get(s.id, s.name)?.guidance?.steps || []).length > 1) {
+      const guide = analog.get(s.id, s.name).guidance;
+      const last = guide.steps[guide.steps.length - 1];
       rows.push(row('#42f5c8', true,
-        ko ? 'EARTHUS 유사사례 중심선 · 구독/관리자' : 'EARTHUS analogue median · subscriber/admin',
-        ko ? `과거 유사사례 ${est.sampleN}건의 시각별 중앙값 · 공식 예보 아님`
-           : `Time-step median of ${est.sampleN} analogues · not an official forecast`));
+        ko ? 'EARTHUS 자료 종합선 · 구독/관리자' : 'EARTHUS multi-source guidance · subscriber/admin',
+        ko ? `기관·ECMWF·이동·다층 지향류 종합 · +${last.h}시간 · ${last.confidence} · 공식 예보 아님`
+           : `Agencies, ECMWF, motion and deep-layer flow · +${last.h} h · ${last.confidence} · not official`));
     }
     box.innerHTML = `<div class="tcl-mini"><b>${ko ? '태풍 진로 안내' : 'Cyclone track guide'}</b>`
       + `<span>${ko ? '펼치기' : 'Expand'}</span></div>`
@@ -1509,14 +1515,26 @@ export const cyclones = {
           d[ko ? '비슷했던 태풍' : 'Similar storms'] = an.sample.slice(0, 5)
             .map(x => `${x.season} ${x.name}`).join(', ');
         }
-        if (this._canSeeEarthusEstimate() && an.estimate?.steps?.length > 1) {
-          const last = an.estimate.steps[an.estimate.steps.length - 1];
-          d[ko ? 'EARTHUS 유사사례 중심선 · 구독/관리자'
-               : 'EARTHUS analogue median · subscriber/admin'] = ko
-            ? `유사사례 ${an.estimate.sampleN}건의 시각별 중앙값을 +${last.h}시간까지 이었습니다. `
-              + `끝 시각 중앙 분산거리 ${last.medianSpreadKm}km · 공식 예보가 아닙니다.`
-            : `Time-step median of ${an.estimate.sampleN} analogues through +${last.h} h. `
-              + `Final median spread ${last.medianSpreadKm} km · not an official forecast.`;
+        if (this._canSeeEarthusEstimate() && an.guidance?.steps?.length > 1) {
+          const guide = an.guidance;
+          const last = guide.steps[guide.steps.length - 1];
+          const ev = guide.evidence || {};
+          d[ko ? 'EARTHUS 자료 종합선 · 구독/관리자'
+               : 'EARTHUS multi-source guidance · subscriber/admin'] = ko
+            ? `KMA·JMA·ECMWF와 최근 이동·500/700/850hPa 환경류를 +${last.h}시간까지 종합했습니다. `
+              + `끝 시각 미래 입력 ${last.coreN}개(${last.sourceFamilyN}개 자료군) · 앙상블 ${last.ensembleN}개 · 자료 간 분산 ${last.spreadKm}km · 신뢰 ${last.confidence}. 공식 예보가 아닙니다.`
+            : `Combined KMA, JMA, ECMWF, recent motion and 500/700/850 hPa flow through +${last.h} h. `
+              + `${last.coreN} future inputs across ${last.sourceFamilyN} source families, ${last.ensembleN} ensemble members, ${last.spreadKm} km spread, ${last.confidence} confidence. Not official.`;
+          d[ko ? '현재 근거 자료' : 'Current evidence'] = ko
+            ? `신선한 지상·부이 ${ev.surfaceFreshN || 0}곳 · ASCAT 해상풍 ${ev.satelliteWindFreshN || 0}셀 · 해수면 수온 ${ev.seaSurfaceTemperatureN || 0}곳. 관측은 좌표를 임의로 밀지 않고 신뢰등급을 제한합니다.`
+            : `${ev.surfaceFreshN || 0} fresh surface/buoy sites · ${ev.satelliteWindFreshN || 0} ASCAT cells · ${ev.seaSurfaceTemperatureN || 0} SST sites. Observations gate confidence rather than displace coordinates.`;
+          d[ko ? '계산 입력·발표시각' : 'Inputs and issue times'] = (guide.components || [])
+            .map(x => `${x.id} · +${x.horizonH}h · ${x.issued || (ko ? '현재 계산항' : 'current term')}`).join('<br>');
+          d[ko ? '종합 계산시각' : 'Guidance generated'] = guide.generated || '—';
+          if (guide.steeringLayers?.length) {
+            d[ko ? '최신 다층 지향류' : 'Latest deep-layer flow'] = guide.steeringLayers
+              .map(x => `${x.hPa}hPa ${Math.round(x.towardDeg)}° ${x.speedMs}m/s · ${x.validUtc || '시각 없음'}`).join('<br>');
+          }
         }
         /* ⚠️ 2026-08-02 알고리즘을 논문 기준으로 갈아엎었는데 **이 화면만 옛 필드를
            읽고 있었다** — 화면에 "반경 undefined km · 진행방향 ±undefined°" 가

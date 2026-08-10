@@ -189,21 +189,22 @@ def observation_variables(source, row):
     if source == "gts":
         return {"wind": row.get("ws") is not None,
                 "pressure": row.get("pa") is not None or row.get("ps") is not None,
-                "temperature": row.get("ta") is not None}
+                "temperature": row.get("ta") is not None, "sst": False}
     if source == "metar":
         return {"wind": row.get("wspd_kt") is not None,
                 "pressure": row.get("pres_hpa") is not None,
-                "temperature": row.get("temp_c") is not None}
+                "temperature": row.get("temp_c") is not None, "sst": False}
     if source == "cwa":
         return {"wind": row.get("wind_ms") is not None,
                 "pressure": row.get("pres_hpa") is not None,
-                "temperature": row.get("temp_c") is not None}
+                "temperature": row.get("temp_c") is not None, "sst": False}
     if source == "ascat":
         return {"wind": row.get("wind_ms") is not None,
-                "pressure": False, "temperature": False}
+                "pressure": False, "temperature": False, "sst": False}
     return {"wind": row.get("wspd") is not None,
             "pressure": row.get("pres") is not None,
-            "temperature": row.get("atmp") is not None or row.get("wtmp") is not None}
+            "temperature": row.get("atmp") is not None,
+            "sst": row.get("wtmp") is not None}
 
 
 def load_observations():
@@ -246,18 +247,18 @@ def observation_evidence(lat, lon, pool, now):
                     ("남", "S"), ("남서", "SW"), ("서", "W"), ("북서", "NW")]
     sectors = [{"dir": ko, "dirEn": en, "n": 0, "freshN": 0,
                 "sources": {"gts": 0, "cwa": 0, "ascat": 0, "metar": 0, "buoy": 0},
-                "windN": 0, "pressureN": 0, "temperatureN": 0}
+                "windN": 0, "pressureN": 0, "temperatureN": 0, "sstN": 0}
                for ko, en in sector_names]
     by_source = {k: {"n": 0, "freshN": 0, "windN": 0, "pressureN": 0,
-                     "temperatureN": 0, "oldestMinutes": None,
+                     "temperatureN": 0, "sstN": 0, "oldestMinutes": None,
                      "freshLimitMinutes": ASCAT_FRESH_MINUTES if k == "ascat" else OBS_FRESH_MINUTES,
                      "_windSpeeds": [], "_u": [], "_v": []}
                  for k, _, _ in OBS_SOURCES}
     # 받은 요청: 대만·필리핀·러시아 관측이 실제 계산 근거에 들어갔는지 국가별로
     # 숨기지 않는다. PH/RP와 RS/RU는 NOAA 지점표가 시기별로 다른 국가코드를 쓴다.
-    regional = {"taiwan": {"n": 0, "freshN": 0, "windN": 0, "pressureN": 0, "temperatureN": 0},
-                "philippines": {"n": 0, "freshN": 0, "windN": 0, "pressureN": 0, "temperatureN": 0},
-                "russia": {"n": 0, "freshN": 0, "windN": 0, "pressureN": 0, "temperatureN": 0}}
+    regional = {"taiwan": {"n": 0, "freshN": 0, "windN": 0, "pressureN": 0, "temperatureN": 0, "sstN": 0},
+                "philippines": {"n": 0, "freshN": 0, "windN": 0, "pressureN": 0, "temperatureN": 0, "sstN": 0},
+                "russia": {"n": 0, "freshN": 0, "windN": 0, "pressureN": 0, "temperatureN": 0, "sstN": 0}}
     country_group = {"TW": "taiwan", "PH": "philippines", "RP": "philippines",
                      "RS": "russia", "RU": "russia"}
 
@@ -692,7 +693,8 @@ def _om_points(pts, fields):
     q = urllib.parse.urlencode({
         "latitude": ",".join(f"{p[0]:.2f}" for p in pts),
         "longitude": ",".join(f"{p[1]:.2f}" for p in pts),
-        "hourly": fields, "forecast_days": 1, "timezone": "UTC",
+        "hourly": fields, "forecast_days": 2, "timezone": "UTC",
+        "wind_speed_unit": "ms",
     })
     req = urllib.request.Request(f"{STEER_URL}?{q}", headers=UA)
     with urllib.request.urlopen(req, timeout=60) as r:
@@ -721,60 +723,91 @@ def steering(lat, lon):
            + ring + [(lat, lon)])
     try:
         rows = _om_points(pts, "geopotential_height_500hPa,"
-                               "wind_speed_500hPa,wind_direction_500hPa")
+                               "wind_speed_500hPa,wind_direction_500hPa,"
+                               "wind_speed_700hPa,wind_direction_700hPa,"
+                               "wind_speed_850hPa,wind_direction_850hPa")
     except Exception as e:                                   # noqa: BLE001
         print(f"[steer] 실패 {e!r}")
         return None
     if len(rows) != len(pts):
         return None
 
-    def at(i):
+    now = datetime.now(timezone.utc)
+
+    def at(i, level=500):
         h = rows[i].get("hourly") or {}
         try:
-            return (h["geopotential_height_500hPa"][0],
-                    h["wind_speed_500hPa"][0], h["wind_direction_500hPa"][0])
+            # Open-Meteo에 timezone=UTC를 명시했지만 time 문자열에는 Z가 붙지 않는다.
+            # 일반 관측 파서처럼 "시간대 없음"으로 버리면 전 층이 null이 된다.
+            times = [datetime.strptime(x, "%Y-%m-%dT%H:%M").replace(tzinfo=timezone.utc)
+                     for x in h.get("time") or []]
+            valid = [(abs((x - now).total_seconds()), k) for k, x in enumerate(times) if x]
+            if not valid:
+                return (None, None, None, None)
+            _, k = min(valid)
+            gh = h["geopotential_height_500hPa"][k]
+            return (gh, h[f"wind_speed_{level}hPa"][k],
+                    h[f"wind_direction_{level}hPa"][k], times[k])
         except (KeyError, IndexError, TypeError):
-            return (None, None, None)
+            return (None, None, None, None)
 
     # ── 고기압이 북쪽으로 어디까지 뻗어 있나 (자오선) ──
     ridge_north = None
     for k, la in enumerate(lats):
-        gh, _, _ = at(k)
+        gh, _, _, _ = at(k)
         if gh is not None and gh >= RIDGE_GPM and la > lat:
             ridge_north = la          # 태풍보다 북쪽에서 마지막으로 넘긴 위도
     # ── 고기압의 서쪽 끝 (동서 단면, 태풍 북쪽 8°) ──
     base = len(lats)
     ridge_west = None
     for k, lo in enumerate(lons):
-        gh, _, _ = at(base + k)
+        gh, _, _, _ = at(base + k)
         if gh is not None and gh >= RIDGE_GPM and ridge_west is None:
             ridge_west = lo           # 서쪽부터 훑어 처음 넘긴 경도
     # ── 지향류 = 고리 평균 (중심 제외) ──
     # ⚠️ 방위는 벡터로 더해야 한다. 각도를 산술평균하면 350°와 10°의 평균이 180°가 된다.
     r0 = len(lats) + len(lons)
-    ux = uy = 0.0
-    nring = 0
-    for k in range(len(ring)):
-        _, ws, wd = at(r0 + k)
-        if ws is None or wd is None:
+    layers = []
+    # 깊은 층 평균의 고정 비율. 이것은 태풍 이동속도 공식이 아니라 서로 다른 고도의
+    # 환경류를 한 벡터로 요약하는 공개 가능한 합성값이다. 실제 경로 결합에서는 낮은
+    # 보조 가중치만 주고 기관·앙상블보다 앞세우지 않는다.
+    layer_weights = {500: 0.5, 700: 0.3, 850: 0.2}
+    deep_ux = deep_uy = deep_weight = 0.0
+    for level, layer_weight in layer_weights.items():
+        ux = uy = 0.0
+        nring = 0
+        valid_at = None
+        for k in range(len(ring)):
+            _, ws, wd, at_time = at(r0 + k, level)
+            if ws is None or wd is None:
+                continue
+            # 기상 관례: wd 는 **불어오는 쪽**. 이동 방향은 그 반대다.
+            th = math.radians(wd)
+            ux += -ws * math.sin(th)
+            uy += -ws * math.cos(th)
+            nring += 1
+            valid_at = at_time
+        if not nring:
             continue
-        # 기상 관례: wd 는 **불어오는 쪽**. 이동 방향은 그 반대다.
-        th = math.radians(wd)
-        ux += -ws * math.sin(th)      # 동쪽 성분
-        uy += -ws * math.cos(th)      # 북쪽 성분
-        nring += 1
-    steer_dir = steer_spd = None
-    if nring:
         ux /= nring; uy /= nring
-        steer_spd = math.hypot(ux, uy)
-        # ⚠️ 여기서는 **가는 쪽**을 낸다 — 태풍이 밀려가는 방향이라 그게 자연스럽다.
-        steer_dir = (math.degrees(math.atan2(ux, uy)) + 360) % 360
-    gh0, _, _ = at(len(pts) - 1)
+        speed = math.hypot(ux, uy)
+        direction = (math.degrees(math.atan2(ux, uy)) + 360) % 360
+        layers.append({"hPa": level, "towardDeg": round(direction),
+                       "speedMs": round(speed, 1), "ringN": nring,
+                       "validUtc": valid_at.strftime("%Y-%m-%dT%H:%M:00Z") if valid_at else None})
+        deep_ux += ux * layer_weight; deep_uy += uy * layer_weight
+        deep_weight += layer_weight
+    if deep_weight:
+        deep_ux /= deep_weight; deep_uy /= deep_weight
+    steer_spd = math.hypot(deep_ux, deep_uy) if deep_weight else None
+    steer_dir = ((math.degrees(math.atan2(deep_ux, deep_uy)) + 360) % 360
+                 if deep_weight else None)
+    gh0, _, _, _ = at(len(pts) - 1)
     # ── 북쪽 편서풍대 확인 ──
     wl = None
     for k, la in enumerate(lats):
         if abs((la - lat) - WESTERLY_LOOK_DEG) < 3:
-            _, ws, wd = at(k)
+            _, ws, wd, _ = at(k)
             if wd is not None:
                 wl = {"lat": round(la, 1), "dir": round(wd), "speed": round(ws, 1)}
     heights = [at(k)[0] for k in range(len(pts))]
@@ -796,16 +829,17 @@ def steering(lat, lon):
         "steerSpeed": round(steer_spd, 1) if steer_spd is not None else None,
         "steerIsToward": True,
         "steerRingDeg": STEER_RING_DEG,
-        "steerRingN": nring,
+        "steerRingN": min((x["ringN"] for x in layers), default=0),
+        "layers": layers,
         "northWind": wl,
         "sampled": {"latFrom": round(min(lats), 1), "latTo": round(max(lats), 1),
                     "lonFrom": round(min(lons), 1), "lonTo": round(max(lons), 1)},
-        "source": "Open-Meteo (GFS·ECMWF) 500hPa",
+        "source": "Open-Meteo (GFS·ECMWF) 500·700·850hPa",
         "note": {
-            "ko": "500hPa(약 5.5km 상공)는 태풍을 미는 층입니다. 지위고도 "
+            "ko": "500·700·850hPa 환경류를 함께 재고, 500hPa 지위고도 "
                   f"{RIDGE_GPM}m 선이 북태평양 고기압의 가장자리로 널리 쓰이며, "
                   "태풍은 그 가장자리를 따라 움직입니다.",
-            "en": "500 hPa is the steering level. The "
+            "en": "Environmental flow is sampled at 500, 700 and 850 hPa. The 500 hPa "
                   f"{RIDGE_GPM} m contour is the usual edge of the subtropical high; "
                   "storms travel along it.",
         },
@@ -870,6 +904,233 @@ def recurve_stats(sample):
     }
 
 
+# ══════════════════════════════════════════════════════════════════
+#  EARTHUS 종합 진로 참고선
+# ══════════════════════════════════════════════════════════════════
+# ⚠️ 이 선은 독립 수치예보가 아니다. 공식기관·ECMWF가 이미 계산한 미래 좌표를
+# 현재 위치에 맞춰 시간 정렬하고, 최근 이동과 다층 환경류를 단기 보조항으로 더한
+# "자료 종합 참고선"이다. 지상관측·ASCAT·수온은 미래 좌표를 임의 계수로 밀지 않고
+# 입력의 신선도와 공개 신뢰등급을 제한한다. 검증 전 계수로 예보를 지어내지 않는다.
+GUIDANCE_MAX_H = 48
+GUIDANCE_STEP_H = 6
+
+
+def _median(values):
+    ordered = sorted(values)
+    if not ordered:
+        return None
+    mid = len(ordered) // 2
+    return ordered[mid] if len(ordered) % 2 else (ordered[mid - 1] + ordered[mid]) / 2
+
+
+def _normalise_steps(raw_steps, cur_lat, cur_lon):
+    """자료마다 다른 기준시각을 현재 위치와 가장 가까운 점으로 맞춘다.
+
+    ECMWF의 h는 모델 실행시각 기준이고 기관 h는 발표의 현재점 기준이라 그대로
+    섞으면 6~12시간이 어긋난다. 가장 가까운 계산점을 h=0으로 옮기고 좌표도 현재
+    관측점에 평행이동한다. 원 자료의 진행 모양은 바꾸지 않는다.
+    """
+    pts = []
+    for step in raw_steps or []:
+        try:
+            pts.append({"h": float(step.get("h") or 0),
+                        "lat": float(step["lat"]), "lon": float(step["lon"])})
+        except (TypeError, ValueError, KeyError):
+            continue
+    if not pts:
+        return []
+    anchor = min(pts, key=lambda p: dist_km(cur_lat, cur_lon, p["lat"], p["lon"]))
+    out = [{"h": round(p["h"] - anchor["h"], 3),
+            "lat": p["lat"] + cur_lat - anchor["lat"],
+            "lon": p["lon"] + cur_lon - anchor["lon"]}
+           for p in pts if p["h"] >= anchor["h"]]
+    out.sort(key=lambda p: p["h"])
+    return out
+
+
+def _point_at(steps, lead_h):
+    if not steps or lead_h < steps[0]["h"] or lead_h > steps[-1]["h"]:
+        return None
+    for point in steps:
+        if abs(point["h"] - lead_h) < 1e-6:
+            return (point["lat"], point["lon"])
+    for a, b in zip(steps, steps[1:]):
+        if a["h"] <= lead_h <= b["h"] and b["h"] > a["h"]:
+            ratio = (lead_h - a["h"]) / (b["h"] - a["h"])
+            return (a["lat"] + (b["lat"] - a["lat"]) * ratio,
+                    a["lon"] + (b["lon"] - a["lon"]) * ratio)
+    return None
+
+
+def _matched_official(official_doc, storm_name):
+    key = _storm_key(storm_name)
+    for item in official_doc.get("storms") or []:
+        if _storm_key(item.get("name") or item.get("key")) == key:
+            return item.get("agencies") or []
+    return []
+
+
+def _matched_ecmwf(ecmwf_doc, storm_name):
+    key = _storm_key(storm_name)
+    return next((x for x in ecmwf_doc.get("storms") or []
+                 if _storm_key(x.get("name")) == key), None)
+
+
+def _current_wind_ms(official_doc, storm_name):
+    vals = []
+    for agency in _matched_official(official_doc, storm_name):
+        steps = agency.get("steps") or []
+        if steps and steps[0].get("windMs") is not None:
+            try:
+                vals.append(float(steps[0]["windMs"]))
+            except (TypeError, ValueError):
+                pass
+    return _median(vals)
+
+
+def _evidence_gate(surface):
+    rows = {x.get("id"): x for x in (surface or {}).get("bySource") or []}
+    satellite_n = int((rows.get("ascat") or {}).get("freshN") or 0)
+    surface_n = sum(int(x.get("freshN") or 0) for key, x in rows.items() if key != "ascat")
+    sst_n = sum(int(x.get("sstN") or 0) for x in rows.values())
+    return {"surfaceFreshN": surface_n, "satelliteWindFreshN": satellite_n,
+            "seaSurfaceTemperatureN": sst_n,
+            "surfacePass": surface_n >= 3,
+            "satellitePass": satellite_n >= 20,
+            # 수온은 진로보다 세기 유지 근거다. 없다고 진로선을 없애지는 않되 낮은
+            # 신뢰 근거로 명시한다.
+            "seaSurfacePass": sst_n >= 1}
+
+
+def build_guidance(storm, analysis, official_doc, ecmwf_doc):
+    track = storm.get("track") or []
+    if len(track) < 2:
+        return None
+    cur_lon, cur_lat = float(track[-1][0]), float(track[-1][1])
+    components = []
+
+    for agency in _matched_official(official_doc, storm.get("name")):
+        steps = _normalise_steps(agency.get("steps"), cur_lat, cur_lon)
+        if len(steps) >= 2:
+            components.append({"id": str(agency.get("agency") or "OFFICIAL"),
+                               "kind": "official", "family": str(agency.get("agency") or "OFFICIAL"),
+                               "weight": 1.5, "steps": steps,
+                               "issued": agency.get("issue")})
+
+    model = _matched_ecmwf(ecmwf_doc, storm.get("name"))
+    if model:
+        steps = _normalise_steps(model.get("steps"), cur_lat, cur_lon)
+        if len(steps) >= 2:
+            components.append({"id": "ECMWF_HRES", "kind": "model", "family": "ECMWF",
+                               "weight": 1.25,
+                               "steps": steps, "issued": ecmwf_doc.get("generated")})
+        members = []
+        for member in (model.get("ensemble") or {}).get("members") or []:
+            normal = _normalise_steps(member.get("steps"), cur_lat, cur_lon)
+            if len(normal) >= 2:
+                members.append(normal)
+        if members:
+            ens_steps = []
+            for lead in range(0, GUIDANCE_MAX_H + 1, GUIDANCE_STEP_H):
+                pts = [_point_at(x, lead) for x in members]
+                pts = [x for x in pts if x]
+                if len(pts) < 5:
+                    continue
+                lat = _median([x[0] for x in pts]); lon = _median([x[1] for x in pts])
+                ens_steps.append({"h": lead, "lat": lat, "lon": lon, "n": len(pts)})
+            if len(ens_steps) >= 2:
+                components.append({"id": "ECMWF_ENS_MEDIAN", "kind": "ensemble",
+                                   "family": "ECMWF", "weight": 2.0, "steps": ens_steps,
+                                   "issued": ecmwf_doc.get("generated")})
+
+    # 최근 6시간 이동은 +18시간까지만 보조한다. 계속 직선 외삽하지 않고 12시간
+    # 시정수로 이동량을 포화시켜 장기 폭주를 막는다.
+    current = resample_current(track, storm.get("from"), storm.get("to"), n=2, step_h=6)
+    if current:
+        latest, previous = current[0], current[1]
+        dx, dy = km_xy(previous[0], previous[1], latest[0], latest[1])
+        motion_steps = []
+        denom = 1 - math.exp(-6 / 12)
+        for lead in range(0, 19, GUIDANCE_STEP_H):
+            factor = (1 - math.exp(-lead / 12)) / denom if lead else 0
+            motion_steps.append({"h": lead,
+                                 "lat": cur_lat + dy * factor / 110.57,
+                                 "lon": cur_lon + dx * factor / (111.32 * math.cos(math.radians(cur_lat)))})
+        components.append({"id": "RECENT_MOTION_6H", "kind": "motion",
+                           "family": "OBSERVED_MOTION", "weight": 0.8, "steps": motion_steps})
+
+    steering_info = analysis.get("steering") or {}
+    if steering_info.get("steerDir") is not None and steering_info.get("steerSpeed") is not None:
+        direction = math.radians(float(steering_info["steerDir"]))
+        speed = min(15.0, float(steering_info["steerSpeed"]))
+        steer_steps = []
+        for lead in range(0, 25, GUIDANCE_STEP_H):
+            # 환경류 전속도를 태풍 속도로 간주하지 않는다. 6시간 시정수로 완화하고
+            # 결합 가중치도 낮게 둔다.
+            km = speed * 3.6 * lead * (0.65 + 0.35 * math.exp(-lead / 12))
+            dx, dy = km * math.sin(direction), km * math.cos(direction)
+            steer_steps.append({"h": lead, "lat": cur_lat + dy / 110.57,
+                                "lon": cur_lon + dx / (111.32 * math.cos(math.radians(cur_lat)))})
+        components.append({"id": "DEEP_LAYER_STEERING", "kind": "steering",
+                           "family": "ENVIRONMENTAL_FLOW", "weight": 0.35, "steps": steer_steps})
+
+    analog_steps = (analysis.get("estimate") or {}).get("steps") or []
+    if analog_steps:
+        usable = [x for x in analog_steps if int(x.get("medianSpreadKm") or 0) <= 600]
+        if len(usable) >= 2:
+            components.append({"id": "IBTRACS_ANALOG", "kind": "analogue",
+                               "family": "IBTRACS", "weight": 0.15, "steps": usable})
+
+    evidence = _evidence_gate(analysis.get("surfaceEvidence"))
+    output = []
+    for lead in range(0, GUIDANCE_MAX_H + 1, GUIDANCE_STEP_H):
+        points = []
+        for comp in components:
+            point = _point_at(comp["steps"], lead)
+            if point:
+                points.append((comp, point))
+        core = [(c, p) for c, p in points if c["kind"] in ("official", "model", "ensemble")]
+        families = {c["family"] for c, _ in core}
+        if lead > 0 and len(families) < 2:
+            break
+        if not points:
+            continue
+        total = sum(c["weight"] for c, _ in points)
+        lat = sum(p[0] * c["weight"] for c, p in points) / total
+        lon = sum(p[1] * c["weight"] for c, p in points) / total
+        spreads = [dist_km(lat, lon, p[0], p[1]) for _, p in core]
+        spread = _median(spreads) or 0
+        if lead > 0 and spread > 500:
+            break
+        ens = next((c for c, _ in core if c["kind"] == "ensemble"), None)
+        ens_point = next((x for x in (ens or {}).get("steps", []) if x.get("h") == lead), None)
+        grade = ("high" if len(core) >= 3 and (ens_point or {}).get("n", 0) >= 10
+                 and spread <= 180 and evidence["surfacePass"] and evidence["satellitePass"]
+                 and evidence["seaSurfacePass"]
+                 else "medium" if len(core) >= 2 and spread <= 350 else "low")
+        output.append({"h": lead, "lat": round(lat, 2), "lon": round(lon, 2),
+                       "coreN": len(core), "inputN": len(points),
+                       "sourceFamilyN": len(families),
+                       "ensembleN": (ens_point or {}).get("n", 0),
+                       "spreadKm": round(spread), "confidence": grade})
+
+    if len(output) < 2:
+        return None
+    return {
+        "schema": 2, "kind": "multi-source guidance", "notOfficial": True,
+        "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z"),
+        "steps": output, "evidence": evidence,
+        "components": [{"id": x["id"], "kind": x["kind"], "family": x["family"], "weight": x["weight"],
+                        "issued": x.get("issued"), "horizonH": round(x["steps"][-1]["h"])}
+                       for x in components],
+        "steeringLayers": steering_info.get("layers") or [],
+        "method": {
+            "ko": "KMA·JMA·ECMWF HRES·ENS를 시간 정렬해 중심 골격을 만들고, 최근 6시간 이동과 최신 500·700·850hPa 환경류를 단기 보조항으로 결합했습니다. IBTrACS 유사사례는 낮은 가중치만 사용했습니다. 지상·부이·ASCAT·수온은 좌표를 밀지 않고 신뢰등급과 공개 범위를 제한합니다.",
+            "en": "Time-aligned KMA, JMA, ECMWF HRES and ENS guidance, with recent motion and current 500/700/850 hPa environmental flow as short-range terms. Analogues have low weight; observations gate confidence rather than displacing the track.",
+        },
+    }
+
+
 def _safe_s3(key, default):
     try:
         return json.loads(s3.get_object(Bucket=BUCKET, Key=key)["Body"].read())
@@ -887,10 +1148,10 @@ def _forecast_groups(storm, rec, official_doc, ecmwf_doc, issued):
     """그 시각 사용자가 본 미래 좌표를 회차 원문으로 보존한다."""
     key = _storm_key(storm.get("name"))
     groups = []
-    estimate = rec.get("estimate") or {}
-    if estimate.get("steps"):
-        groups.append({"agency": "EARTHUS_ANALOG_MEDIAN", "issued": issued,
-                       "steps": estimate["steps"], "notOfficial": True})
+    guidance = rec.get("guidance") or {}
+    if guidance.get("steps"):
+        groups.append({"agency": "EARTHUS_MULTI_SOURCE", "issued": issued,
+                       "steps": guidance["steps"], "notOfficial": True})
     for item in official_doc.get("storms") or []:
         if _storm_key(item.get("name") or item.get("key")) != key:
             continue
@@ -983,7 +1244,7 @@ def update_lifecycle(now, tracks, analyses, history):
             last = (session.get("snapshots") or [{}])[-1].get("issuedAt")
             if not last or last[:13] != stamp[:13]:
                 session.setdefault("snapshots", []).append({
-                    "issuedAt": stamp, "algorithmVersion": 1,
+                    "issuedAt": stamp, "algorithmVersion": 2,
                     "forecasts": _forecast_groups(storm, rec, official, ecmwf, stamp),
                     "surfaceEvidence": rec.get("surfaceEvidence"),
                     "steering": rec.get("steering"), "matches": rec.get("matches"),
@@ -1029,11 +1290,20 @@ def handler(event, context):
     except Exception as e:                                   # noqa: BLE001
         return {"ok": False, "reason": f"tracks: {e!r}"[:120]}
 
-    # 관측 목록은 태풍마다 다시 읽지 않는다. 같은 시각의 스냅샷을 모든 태풍에 쓴다.
+    # 관측·기관·모델 목록은 태풍마다 다시 읽지 않는다. 같은 실행 시각의 원문을 쓴다.
     observations = load_observations()
+    official = _safe_s3(OFFICIAL_KEY, {})
+    ecmwf = _safe_s3(ECMWF_KEY, {})
     now = datetime.now(timezone.utc)
     out = []
     for st in (cur.get("storms") or []):
+        # GDACS 경로에는 강도가 빠질 수 있다. 같은 태풍의 최신 기관 현재값 중앙값으로
+        # 채우되 출처 없는 추정값은 만들지 않는다.
+        if st.get("wind") is None and st.get("severity") is None:
+            current_wind = _current_wind_ms(official, st.get("name"))
+            if current_wind is not None:
+                st = {**st, "wind": round(current_wind * 1.94384, 1),
+                      "windSource": "KMA·JMA current wind median"}
         a = analyse(st, history)
         if a is None:
             continue
@@ -1048,6 +1318,10 @@ def handler(event, context):
             sv = steering(tr[-1][1], tr[-1][0])
             if sv:
                 rec["steering"] = sv
+
+        # 모든 입력이 준비된 뒤에만 선을 만든다. 관측은 신뢰 게이트이고, 좌표 골격은
+        # 기관·ECMWF가 담당한다. 둘 이상의 미래 자료군이 없으면 guidance=None이다.
+        rec["guidance"] = build_guidance(st, rec, official, ecmwf) if st.get("live") else None
 
         # ── 유사 사례가 어디서 꺾였나 ────────────────────────────
         # ⚠️ "편서풍대에서 북동으로 꺾인다"는 교과서 설명이다. 우리는 그걸

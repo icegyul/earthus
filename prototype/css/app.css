@@ -559,15 +559,8 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
   letter-spacing:.04em; writing-mode:vertical-rl; text-orientation:upright;
   text-shadow:0 1px 8px #000;
 }
-.mt-arrow{
-  width:7px; height:7px; margin-left:3px;
-  border-left:1.5px solid var(--paper); border-bottom:1.5px solid var(--paper);
-  transform:rotate(45deg); opacity:.75;
-  transition:transform .42s cubic-bezier(.22,1,.36,1), margin .42s ease;
-}
 #menuTab.open{ transform:translateY(-50%) translateX(calc(-1 * var(--mm-w))); }
 #menuTab.open.sub{ transform:translateY(-50%) translateX(calc(-1 * (var(--mm-w) + var(--ms-w)))); }
-#menuTab.open .mt-arrow{ transform:rotate(-135deg); margin-left:-3px; }
 
 /* ── 1단 ── */
 #menuMain{

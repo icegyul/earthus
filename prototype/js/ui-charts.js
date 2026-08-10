@@ -124,11 +124,6 @@ function chartBox() {
   }
   const W = Math.round(Math.max(300, Math.min(700, avail)));
   const narrow = W < 420;
-  /* ⚠️ 값 옆 연도는 **자리가 진짜 있을 때만** 붙인다.
-     "20.2°C 2016" 은 1:1 에서 84px 쯤 되는데 라벨 칸은 70px 이다 —
-     넓은 화면(476단위)에서 실측하니 **5.5px 삐져나왔다.**
-     연도는 아래 범례에 색과 함께 있고 점 색도 같다. **값이 먼저다.** */
-  const showYear = W >= 560;
   return {
     W,
     /* ⚠️ 세로도 같이 줄인다. H 를 320 으로 두면 폰에서 322×320 — 거의 정사각형이다.
@@ -138,8 +133,9 @@ function chartBox() {
     /* 오른쪽 값 라벨 칸. ⚠️ 좁을 때 58 로 뒀더니 가장 긴 라벨이
        상자 오른쪽 끝에 **0.1px 남기고 닿았다**(실측). 여유를 준다 —
        칸을 넓히면 라벨이 그만큼 왼쪽에서 시작한다. */
-    R: showYear ? 100 : (narrow ? 68 : 78),
-    showYear,
+    /* 오른쪽 끝값은 온도만 있으면 같은 값(28.2°C)이 어느 선인지 다시 범례와
+       대조해야 했다. 작은 `(연도)`를 항상 붙일 공간을 확보한다. */
+    R: narrow ? 84 : 92,
     T: 14,
     B: 24,
     narrow,
@@ -157,7 +153,7 @@ export function spaghetti(series, opt = {}) {
   const kind = opt.kind || 'temp';
   const years = Object.keys(series).map(Number).sort((a, b) => a - b);
   if (years.length < 2) return null;
-  const { W, H, L, R, T, B, showYear } = chartBox();
+  const { W, H, L, R, T, B, narrow } = chartBox();
 
   let lo = Infinity, hi = -Infinity;
   years.forEach(y => (series[y] || []).forEach(v => {
@@ -257,8 +253,8 @@ export function spaghetti(series, opt = {}) {
       x2="${(W - R + 4).toFixed(1)}" y2="${yy.toFixed(1)}"
       stroke="${mk.color}" stroke-width="0.8" opacity=".5"/>`);
     parts.push(`<text x="${(W - R + 8).toFixed(1)}" y="${(yy + 3.5).toFixed(1)}"
-      fill="${mk.color}" font-size="10.5">${unitVal(mk.v, kind).toFixed(1)}${unitSuffix(kind)}${
-      showYear ? `<tspan fill="rgba(255,255,255,.42)" font-size="9"> ${mk.yr}</tspan>` : ''}</text>`);
+      fill="${mk.color}" font-size="10.5">${unitVal(mk.v, kind).toFixed(1)}${unitSuffix(kind)}
+      <tspan fill="rgba(255,255,255,.46)" font-size="${narrow ? '6.8' : '7.5'}"> (${mk.yr})</tspan></text>`);
   });
 
   /* ── 마지막 자료 점 ──────────────────────────────────────

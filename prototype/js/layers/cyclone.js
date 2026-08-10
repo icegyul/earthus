@@ -836,18 +836,30 @@ export const cyclones = {
     if (!box) {
       box = document.createElement('div');
       box.id = 'tcLegend';
+      box.tabIndex = 0;
       box.addEventListener('click', e => {
         const btn = e.target.closest('[data-tcl-ensemble]');
-        if (!btn) return;
-        this._ensembleVisible = !this._ensembleVisible;
-        this.ds.entities.values.forEach(entity => {
-          if (entity._earthusEnsemble) entity.show = this._ensembleVisible;
-        });
-        btn.setAttribute('aria-pressed', String(this._ensembleVisible));
-        btn.textContent = this._ensembleVisible
-          ? (i18n.lang === 'ko' ? '진로 다발 숨기기' : 'Hide track bundle')
-          : (i18n.lang === 'ko' ? '진로 다발 보이기' : 'Show track bundle');
-        power.animate(300);
+        if (btn) {
+          this._ensembleVisible = !this._ensembleVisible;
+          this.ds.entities.values.forEach(entity => {
+            if (entity._earthusEnsemble) entity.show = this._ensembleVisible;
+          });
+          btn.setAttribute('aria-pressed', String(this._ensembleVisible));
+          btn.textContent = this._ensembleVisible
+            ? (i18n.lang === 'ko' ? '진로 다발 숨기기' : 'Hide track bundle')
+            : (i18n.lang === 'ko' ? '진로 다발 보이기' : 'Show track bundle');
+          power.animate(300);
+          return;
+        }
+        this._legendCollapsed = !this._legendCollapsed;
+        this._paintLegendCollapse(box);
+      });
+      box.addEventListener('keydown', e => {
+        // 안쪽 진로 다발 버튼의 키 입력은 그 버튼이 처리한다.
+        if (e.target !== box || !['Enter', ' '].includes(e.key)) return;
+        e.preventDefault();
+        this._legendCollapsed = !this._legendCollapsed;
+        this._paintLegendCollapse(box);
       });
       document.body.appendChild(box);
     }
@@ -908,8 +920,22 @@ export const cyclones = {
         ko ? '과거 비슷했던 태풍들이 간 길 — 예보 아님'
            : 'where past similar storms went — not a forecast'));
     }
-    box.innerHTML = rows.join('');
+    box.innerHTML = `<div class="tcl-mini"><b>${ko ? '태풍 진로 안내' : 'Cyclone track guide'}</b>`
+      + `<span>${ko ? '펼치기' : 'Expand'}</span></div>`
+      + `<div class="tcl-detail">${rows.join('')}</div>`;
+    this._paintLegendCollapse(box);
     box.classList.toggle('on', rows.length > 0);
+  },
+
+  _paintLegendCollapse(box = document.getElementById('tcLegend')) {
+    if (!box) return;
+    const ko = i18n.lang === 'ko';
+    const collapsed = !!this._legendCollapsed;
+    box.classList.toggle('collapsed', collapsed);
+    box.setAttribute('aria-expanded', String(!collapsed));
+    box.setAttribute('aria-label', collapsed
+      ? (ko ? '태풍 진로 안내 펼치기' : 'Expand cyclone track guide')
+      : (ko ? '태풍 진로 안내 접기' : 'Collapse cyclone track guide'));
   },
 
   /** 과거 유사 사례 다발. ⚠️ 예보가 아니다 — 얇고 흐리게만. */

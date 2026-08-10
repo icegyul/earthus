@@ -4,7 +4,7 @@
 // ⚠️ 두 번째 Cesium Viewer를 만들지 않는다. 기존 지구본과 정적 primitive만 재사용한다.
 // ⚠️ 점을 해구 면적으로 속이지 않는다. GEBCO 2026 격자에서 NOAA 하달대 기준인
 //    6,000m보다 깊고 최심점과 연결된 셀만 채운다. 공식 해구 경계·전체 면적은 아니다.
-// ⚠️ 생물은 문헌 깊이 범위가 겹치는 종일 뿐, 이 해구의 현재 관측으로 표현하지 않는다.
+// ⚠️ 생물은 문헌 최대·관측 수심 표식일 뿐, 이 해구의 현재 관측으로 표현하지 않는다.
 
 import { viewer, scene } from '../viewer.js';
 import { store } from '../store.js';
@@ -14,9 +14,17 @@ import { power } from '../power.js';
 const START_HEIGHT = 1_500_000;
 const END_HEIGHT = 8_000;
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+const LIFE_LABEL_OFFSETS = [
+  new Cesium.Cartesian2(-92, -82),
+  new Cesium.Cartesian2(72, 58),
+];
 const depthText = item => item.depthMin === item.depthMax
   ? `${item.depthMin.toLocaleString()}m`
   : `${item.depthMin.toLocaleString()}–${item.depthMax.toLocaleString()}m`;
+const lifeMarkerDepth = item => item.depthMax;
+const lifeMarkerWindow = item => item.depthKind === 'observation-depth'
+  ? Math.max(45, item.displayWindowM || 75)
+  : clamp(Math.round(item.depthMax * .07), 35, 120);
 const pointInRing = (lon, lat, ring) => {
   let inside = false;
   for (let index = 0, previous = ring.length - 1; index < ring.length; previous = index++) {
@@ -261,31 +269,46 @@ export const trenchGlobe = {
       Math.log(START_HEIGHT / Math.max(END_HEIGHT, height)) / Math.log(START_HEIGHT / END_HEIGHT), 0, 1);
     const progress = rawProgress ** 2.4;
     const depth = Math.round(progress * this.selected.depthMax);
-    const active = (this.species || []).filter(item => item.depthKind === 'observation-depth'
-      ? Math.abs(depth - item.depthMin) <= item.displayWindowM
-      : depth >= item.depthMin && depth <= item.depthMax)
-      .sort((a, b) => a.depthMin - b.depthMin || a.id.localeCompare(b.id)).slice(0, 4);
+    /* 범위의 시작부터 끝까지 종을 계속 켜면 수면에서 물범·거북이 한꺼번에 쌓인다.
+       문헌 범위 종은 최대 수심 부근, 단일 관측 자료는 그 관측 수심 부근에서만
+       표식으로 만난다. 이 값은 출현 좌표가 아니라 자료에 적힌 깊이 안내다. */
+    const active = (this.species || [])
+      .map(item => ({ item, distance: Math.abs(depth - lifeMarkerDepth(item)) }))
+      .filter(({ item, distance }) => depth > 0 && distance <= lifeMarkerWindow(item))
+      .sort((a, b) => a.distance - b.distance
+        || lifeMarkerDepth(a.item) - lifeMarkerDepth(b.item)
+        || a.item.id.localeCompare(b.item.id))
+      .slice(0, LIFE_LABEL_OFFSETS.length)
+      .map(candidate => candidate.item);
     const key = `${Math.round(depth / 50)}:${active.map(item => item.id).join(',')}:${i18n.lang}`;
     if (!force && key === this._speciesKey) return;
     this._speciesKey = key;
     this.speciesLabels.removeAll();
     const ko = i18n.lang === 'ko';
     const position = Cesium.Cartesian3.fromDegrees(this.selected.lon, this.selected.lat, 2600);
-    active.forEach((item, index) => this.speciesLabels.add({
-      id: { _pick: ko
-        ? `${item.name.ko} · 문헌 깊이 범위 · 이 해구의 현재 관측 아님`
-        : `${item.name.en} · literature depth range · not a live record here` },
-      position,
-      text: item.name[ko ? 'ko' : 'en'],
-      font: '500 12px system-ui,sans-serif',
-      fillColor: Cesium.Color.WHITE,
-      showBackground: true,
-      backgroundColor: Cesium.Color.fromCssColorString('#06232c').withAlpha(.88),
-      pixelOffset: new Cesium.Cartesian2(42, 18 + index * 25),
-      horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
-      verticalOrigin: Cesium.VerticalOrigin.TOP,
-      disableDepthTestDistance: 0,
-    }));
+    active.forEach((item, index) => {
+      const observed = item.depthKind === 'observation-depth';
+      const markerDepth = lifeMarkerDepth(item);
+      const depthLabel = ko
+        ? `${observed ? '관측' : '최대'} ${markerDepth.toLocaleString()}m`
+        : `${observed ? 'observed' : 'maximum'} ${markerDepth.toLocaleString()}m`;
+      const offset = LIFE_LABEL_OFFSETS[index];
+      this.speciesLabels.add({
+        id: { _pick: ko
+          ? `${item.name.ko} · 문헌 ${depthLabel} · 이 해구의 현재 관측 아님`
+          : `${item.name.en} · literature ${depthLabel} · not a live record here` },
+        position,
+        text: `${item.name[ko ? 'ko' : 'en']}\n${depthLabel}`,
+        font: '500 11px system-ui,sans-serif',
+        fillColor: Cesium.Color.WHITE,
+        showBackground: true,
+        backgroundColor: Cesium.Color.fromCssColorString('#06232c').withAlpha(.88),
+        pixelOffset: offset,
+        horizontalOrigin: offset.x < 0 ? Cesium.HorizontalOrigin.RIGHT : Cesium.HorizontalOrigin.LEFT,
+        verticalOrigin: Cesium.VerticalOrigin.CENTER,
+        disableDepthTestDistance: 0,
+      });
+    });
     this.renderHud(depth, active.length);
     scene.requestRender();
   },
@@ -310,8 +333,8 @@ export const trenchGlobe = {
       + `<span>${area}</span>`
       + `<strong>${ko ? '확대 단계의 가상 수심' : 'Virtual depth from zoom'} ${depth.toLocaleString()}m</strong>`
       + `<small>${ko
-        ? `문헌 깊이와 겹치는 생물 ${speciesCount}종 · 이 위치의 현재 관측 아님<br>${this.footprints.limitations.ko}<br>${this.selected.source}`
-        : `${speciesCount} species overlap this literature depth · not a live record here<br>${this.footprints.limitations.en}<br>${this.selected.source}`}</small>`;
+        ? `현재 수심 부근의 문헌 최대·관측 수심 표식 ${speciesCount}종 · 이 위치의 현재 관측 아님<br>${this.footprints.limitations.ko}<br>${this.selected.source}`
+        : `${speciesCount} literature maximum/observed-depth markers near this depth · not a live record here<br>${this.footprints.limitations.en}<br>${this.selected.source}`}</small>`;
   },
 
   renderOverviewHud() {
@@ -322,8 +345,8 @@ export const trenchGlobe = {
     this.hud.innerHTML = `<b>${ko ? '지구의 깊은 해구 영역' : 'Earth’s deep trench regions'}</b>`
       + `<span>${this.footprints.features.length}${ko ? '개 연결 영역' : ' connected regions'} · ${totalArea.toLocaleString()} km²</span>`
       + `<small>${ko
-        ? 'GEBCO 2026 약 11km 격자에서 6,000m보다 깊고 최심점과 연결된 영역입니다.<br>영역을 누르거나 그 안으로 확대하면 수심층과 문헌 깊이 생물이 나타납니다. 공식 해구 경계는 아닙니다.'
-        : 'GEBCO 2026 ~11 km cells deeper than 6,000 m and connected to a catalogued deep point.<br>Tap a region or zoom inside it for depth layers and literature-depth species. Not an official trench boundary.'}</small>`;
+        ? 'GEBCO 2026 약 11km 격자에서 6,000m보다 깊고 최심점과 연결된 영역입니다.<br>영역을 누르거나 그 안으로 확대하면 현재 수심 부근의 문헌 최대·관측 수심 표식이 나타납니다. 공식 해구 경계는 아닙니다.'
+        : 'GEBCO 2026 ~11 km cells deeper than 6,000 m and connected to a catalogued deep point.<br>Tap a region or zoom inside it to see literature maximum/observed-depth markers near the current depth. Not an official trench boundary.'}</small>`;
   },
 
 };

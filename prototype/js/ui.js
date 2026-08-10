@@ -506,7 +506,7 @@ export const sheet = {
             try {
               sheet.minimize();
               await sceneMgr.to('earth', { stage: 'trench' });
-              const { trenchGlobe } = await import('./ocean/trenchglobe.js?v=20260810-earthoverlay1');
+              const { trenchGlobe } = await import('./ocean/trenchglobe.js?v=20260810-depthlife1');
               await trenchGlobe.openAt(m.lat, m.lon);
             } catch (error) {
               dive.disabled = false;

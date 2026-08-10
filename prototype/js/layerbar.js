@@ -112,10 +112,10 @@ export const ITEMS = [
     sky:'#1a1208', paint:'quake' },
   { id:'regional', ko:'각국 기관 재해', en:'National agencies', sub:'지진·화산·경보 · 작은 것까지', subEn:'Quakes, volcanoes, alerts', ready:true,
     sky:'#101a24', paint:'quake' },
-  /* ⚠️ 이름에 **범위를 적는다.** "낙뢰"라고만 쓰면 전 지구인 줄 알고,
-     한국·일본 밖이 비어 있는 걸 "낙뢰 없음"으로 읽는다. 실제로는 자료가 없는 것이다.
-     (동아시아 정지위성에는 낙뢰 관측기가 없어 지상망뿐이고, 각국이 자기 나라만 공개한다) */
-  { id:'lightning', ko:'낙뢰 (한국·일본)', en:'Lightning (KR·JP)', sub:'최근 30분 · 실측', subEn:'Last 30 min · observed', ready:true,
+  /* 범위는 메뉴에 반복하지 않고, 레이어를 켰을 때 좌하단 자료 안내에 적는다.
+     그 안내는 실제로 들어온 기관 목록으로 만들므로 CWA가 아직 수신되지 않은 상태에서
+     "대만도 있다"고 미리 말하지 않는다. */
+  { id:'lightning', ko:'낙뢰', en:'Lightning', sub:'최근 30분 · 실측', subEn:'Last 30 min · observed', ready:true,
     sky:'#151020', paint:'quake' },
   { id:'wildfire', ko:'산불', en:'Wildfire', sub:'위성 관측', subEn:'Satellite', ready:true,
     sky:'#1a0c06', paint:'fire' },

@@ -28,7 +28,7 @@ const KO = {
     gk2aAuto:'천리안2A 자동 구름', gk2aIR:'천리안2A 구름', gk2aNightLow:'천리안2A 야간 하층운', gk2aVIS:'천리안2A 구름 (낮)', gk2aVISfd:'천리안2A 구름 (낮 · 전지구)', gk2aIRea:'천리안2A 구름 (동아시아 2km)', gk2aVISea:'천리안2A 구름 (낮 · 동아시아 2km)', gk2aWV:'천리안2A 수증기',
     clouds:'구름', himawari:'구름 (동아시아 고해상도)', himaIR:'구름 꼭대기 온도', regional:'각국 기관 재해', alerts:'기상경보', truecolor:'실제 위성 영상', citylight:'야간 불빛', temp:'기온', aurora:'오로라',
     wind:'바람', orbits:'위성 궤도', stations:'관측소', volcano:'화산', launch:'로켓 발사',
-    poi:'명소', phenomena:'해양 환류', heatdome:'열돔', quake:'지진', buoy:'해양 부이', news:'이벤트 뉴스',
+    poi:'명소', phenomena:'해양 환류', heatdome:'열돔', quake:'지진', buoy:'해양 부이', lightning:'낙뢰', news:'이벤트 뉴스',
     wildlife:'야생동물', plastic:'해양 쓰레기', flight:'항공기', ship:'선박',
     tsunami:'쓰나미 경보', wildfire:'산불', eclipse:'일식', launchpad:'발사대', cyclone:'태풍', sky:'하늘',
     // 대기질
@@ -81,7 +81,7 @@ const EN = {
     gk2aAuto:'Chollian-2A auto cloud', gk2aIR:'Chollian-2A cloud', gk2aNightLow:'Chollian-2A night low cloud', gk2aVIS:'Chollian-2A cloud (day)', gk2aVISfd:'Chollian-2A cloud (day, full disk)', gk2aIRea:'Chollian-2A cloud (E. Asia 2km)', gk2aVISea:'Chollian-2A cloud (day, E. Asia 2km)', gk2aWV:'Chollian-2A water vapour',
     clouds:'Clouds', himawari:'Clouds (E. Asia, high-res)', himaIR:'Cloud-top temperature', regional:'National agency hazards', alerts:'Weather alerts', truecolor:'Satellite view', citylight:'City lights', temp:'Temperature', aurora:'Aurora',
     wind:'Wind', orbits:'Satellite orbits', stations:'Stations', volcano:'Volcanoes', launch:'Launches',
-    poi:'Places', phenomena:'Ocean gyres', heatdome:'Heat dome', quake:'Earthquakes', buoy:'Ocean buoys', news:'Event news',
+    poi:'Places', phenomena:'Ocean gyres', heatdome:'Heat dome', quake:'Earthquakes', buoy:'Ocean buoys', lightning:'Lightning', news:'Event news',
     wildlife:'Wildlife', plastic:'Ocean plastic', flight:'Aircraft', ship:'Ships',
     tsunami:'Tsunami alert', wildfire:'Wildfire', eclipse:'Solar eclipse', launchpad:'Launch pad', cyclone:'Tropical cyclone', sky:'Sky',
     pm25:'PM2.5', pm10:'PM10', dust:'Desert dust', ozone:'Ozone', uv:'UV index', aqi:'Air quality index',

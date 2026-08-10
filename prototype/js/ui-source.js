@@ -96,6 +96,9 @@ const SRC = {
   buoy:     { ko: 'NOAA NDBC + OSMC 부이', en: 'NOAA NDBC + OSMC buoys', every: 30 },
   coverage: { ko: '우리 관측점을 직접 센 것 (부이 + 지상 관측소)',
               en: 'Counted from our own observation points (buoys + ground stations)', every: 60 },
+  // 낙뢰의 실제 범위와 기관명은 고정 문자열이 아니라 lightning.meta.sources에서 만든다.
+  // CWA 수집기가 아직 없을 때 "대만도 들어온다"고 표시하지 않기 위해 여기에는 기본값만 둔다.
+  lightning:{ ko: '기상청 + 일본 기상청', en: 'KMA + JMA', every: 5 },
   wildfire: { ko: 'NASA FIRMS 위성 화재 관측', en: 'NASA FIRMS active fire', every: 30 },
   quake:    { ko: 'USGS 지진 (일본 근해는 기상청 대조)', en: 'USGS (JMA cross-check near Japan)', every: 2 },
   cyclone:  { ko: 'Global Disaster Awareness and Coordination System, GDACS · CC BY 4.0',
@@ -121,7 +124,7 @@ const PRIORITY = ['gk2aAuto', 'gk2aNightLow', 'gk2aIR', 'gk2aVIS', 'gk2aVISea', 
                   'himaIR', 'himawari', 'truecolor', 'clouds', 'sstanom', 'temp', 'tmax', 'tmin', 'humidity', 'rain', 'pressure', 'fog', 'drought',
                   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
                   'sst', 'wave', 'swell', 'current', 'wind', 'windfc',
-                  'coverage', 'ukfc', 'landobs', 'buoy', 'wildfire', 'cyclone', 'quake', 'tsunami', 'aurora', 'news',
+                  'coverage', 'ukfc', 'landobs', 'buoy', 'lightning', 'wildfire', 'cyclone', 'quake', 'tsunami', 'aurora', 'news',
                   'poi', 'orbits'];
 
 /* 지구 표면을 통째로 칠하는 레이어들 — 화면을 지배하므로 출처도 이쪽이 우선이다.
@@ -137,6 +140,25 @@ const PAINT = ['gk2aAuto', 'gk2aNightLow', 'gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk
 
 function hhmm(d) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+/* 낙뢰 범위는 국가를 추측해서 적지 않는다. 수집 파일이 실제로 밝힌 기관 id만 쓴다.
+   CWA가 추가되면 sources에 CWA가 들어오는 즉시 「한국·일본·대만」으로 자연스럽게 늘어난다. */
+function lightningSummary(meta, ko) {
+  const ids = (meta?.sources || []).map(s => s?.id).filter(Boolean);
+  const known = ids.length ? ids : ['KMA', 'JMA'];
+  const country = {
+    KMA: ko ? '한국' : 'Korea',
+    JMA: ko ? '일본' : 'Japan',
+    CWA: ko ? '대만' : 'Taiwan',
+  };
+  const countries = [...new Set(known.map(id => country[id]).filter(Boolean))];
+  const agencies = (meta?.sources || []).map(s => ko ? (s.ko || s.id) : (s.en || s.ko || s.id));
+  return {
+    area: countries.join(ko ? '·' : ' · ') || (ko ? '자료 범위 확인 중' : 'coverage pending'),
+    agencies: agencies.join(' + ') || (ko ? '기상청 + 일본 기상청' : 'KMA + JMA'),
+    window: meta?.windowMinutes ?? 30,
+  };
 }
 
 export const sourceNote = {
@@ -225,7 +247,7 @@ export const sourceNote = {
     const name = i18n.t.L?.[id] || id;
 
     // 자료 시각 — 격자·영상은 파일에 시각이 들어 있다
-    let made = null, landMeta = null;
+    let made = null, landMeta = null, lightningMeta = null;
     try {
       const { gridOverlay } = await import('./gridoverlay.js');
       const SOURCE_MAP = { pm25: 'air', pm10: 'air', dust: 'air', aqi: 'air', uv: 'air', ozone: 'air',
@@ -270,6 +292,13 @@ export const sourceNote = {
         landMeta = landObs.meta;
         if (landMeta?.generated) made = new Date(landMeta.generated);
       }
+      /* 점 레이어여도 낙뢰를 켠 사람에게는 범위·기관·관측 창을 좌하단에 남긴다.
+         구름 같은 바탕 레이어가 켜져 있으면 아래에서 별도 한 줄로 앞에 붙인다. */
+      if (store.isOn('lightning')) {
+        const { lightning } = await import('./layers/lightning.js');
+        lightningMeta = lightning.meta;
+        if (id === 'lightning' && lightningMeta?.generated) made = new Date(lightningMeta.generated);
+      }
     } catch (_) { /* 시각을 못 알아내면 출처만 적는다 — 지어내지 않는다 */ }
 
     const bits = [];
@@ -281,12 +310,16 @@ export const sourceNote = {
       ['KMA ASOS', '기상청 ASOS', 'KMA ASOS'],
       ['JMA AMeDAS', 'JMA AMeDAS', 'JMA AMeDAS'],
     ].filter(([id]) => !failedLand.has(id)).map(x => x[ko ? 1 : 2]).join(' + ');
+    const lightningInfo = lightningSummary(lightningMeta, ko);
     const sourceText = esc(id === 'landobs' && failedLand.size
-      ? availableLand : (ko ? src?.ko : src?.en)) || '—';
+      ? availableLand : id === 'lightning'
+        ? lightningInfo.agencies
+        : (ko ? src?.ko : src?.en)) || '—';
     const sourceHtml = src?.url
       ? `<a href="${esc(src.url)}" target="_blank" rel="noopener noreferrer">${sourceText}</a>`
       : sourceText;
-    bits.push(`<b>${esc(name)}</b> · ${sourceHtml}`);
+    bits.push(`<b>${esc(id === 'lightning'
+      ? `${name} (${lightningInfo.area})` : name)}</b> · ${sourceHtml}`);
     if (id === 'landobs' && landMeta?.failed?.length) {
       bits.push(ko
         ? `<i>⚠️ 지금 못 받은 관측망: <b>${esc(landMeta.failed.join(' · '))}</b>. 나머지 자료만 표시합니다.</i>`
@@ -499,6 +532,13 @@ export const sourceNote = {
           + `<i class="lg-n">${hi}${sc.unit || ''}</i></span>`);
       }
     } catch (_) { /* 격자 모듈이 아직 없으면 넘어간다 */ }
+
+    /* 바탕 레이어가 우선 표시 중이어도, 낙뢰를 켠 순간에는 범위가 첫 줄에 보인다.
+       모바일은 네 번째 줄부터 숨기므로 push가 아니라 unshift를 쓴다. */
+    if (store.isOn('lightning') && id !== 'lightning') {
+      bits.unshift(`<b>${ko ? '낙뢰' : 'Lightning'} (${esc(lightningInfo.area)})</b> · ${esc(lightningInfo.agencies)} · `
+        + (ko ? `최근 ${lightningInfo.window}분 실측` : `last ${lightningInfo.window} min observed`));
+    }
 
     /* ⚠️⚠️ 안전 레이어(지진·쓰나미·특보·이안류·낙뢰·산불)가 **실패했으면 말한다.**
        (감사 P1-3) 빈 지도를 "위험 없음"으로 읽게 두면 안 된다 —

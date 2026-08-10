@@ -19,6 +19,7 @@ import { planetOrbit, planetPositions } from './kepler.js';
 
 const IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const BODY_ORDER = ['mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
+const PLANET_TEXTURE_ROOT = '/space/planets';
 const PLANETS = {
   mercury: { ko: '수성', en: 'Mercury', color: 0xaaa7a0, radius: .38 },
   venus: { ko: '금성', en: 'Venus', color: 0xd7b575, radius: .52 },
@@ -71,11 +72,13 @@ export const cosmic3d = {
   _pinchDistance: 0,
   _enginePromise: null,
   _ready: false,
-  _earthCapture: null,
   _bodyCatalogPromise: null,
   _bodyCatalog: null,
   _detailBody: null,
   _detailTexture: null,
+  _detailTextureLoadId: 0,
+  _planetTexturePromise: null,
+  _planetTextures: new Map(),
   _detailRing: null,
   _detailMarkers: new Map(),
   _pointerStart: null,
@@ -98,7 +101,6 @@ export const cosmic3d = {
   _motionPlanetMeshes: new Map(),
   _motionDistance: 132,
   _renderCount: 0,
-  _earthTextureLoadId: 0,
 
   init() {
     if (this.root) return this;
@@ -158,6 +160,9 @@ export const cosmic3d = {
     try {
       await this.ensureEngine();
       if (store.scene !== 'space') { this.root.classList.remove('is-loading'); return; }
+      // 첫 장면은 색상 구로 즉시 열고, 작은 표면 지도는 뒤에서 한 번만 올린다.
+      // 512×256 8장은 압축 전 GPU 메모리도 합계 약 4MB라 모바일에서 유지한다.
+      this.loadPlanetTextures();
       await this.loadSpacecraftCatalog();
       if (store.scene !== 'space') { this.root.classList.remove('is-loading'); return; }
       await this.loadSolarMotionCatalog();
@@ -202,7 +207,8 @@ export const cosmic3d = {
     this.renderer.outputColorSpace = T.SRGBColorSpace;
     this.renderer.setClearColor(0x02050a, 1);
 
-    this.ambientLight = new T.AmbientLight(0x9db5d3, .38);
+    // 표면 지도의 고유색을 보존한다. 푸른 환경광은 화성·목성을 회색으로 만들었다.
+    this.ambientLight = new T.AmbientLight(0xffffff, .38);
     this.world.add(this.ambientLight);
     this.sunLight = new T.PointLight(0xffdc91, 34, 180, 1.5);
     this.world.add(this.sunLight);
@@ -283,8 +289,11 @@ export const cosmic3d = {
     IDS.forEach(id => {
       const meta = PLANETS[id];
       const point = positions[id];
-      const material = new T.MeshStandardMaterial({ color: meta.color, roughness: .72, metalness: 0 });
-      const mesh = new T.Mesh(new T.SphereGeometry(meta.radius, 20, 14), material);
+      const material = new T.MeshStandardMaterial({
+        color: meta.color, roughness: .84, metalness: 0,
+        emissive: 0x242424, emissiveIntensity: .45,
+      });
+      const mesh = new T.Mesh(new T.SphereGeometry(meta.radius, 28, 18), material);
       mesh.position.set(point.x * scale, point.z * scale, point.y * scale);
       mesh.userData.id = id;
       this.solarGroup.add(mesh);
@@ -311,6 +320,38 @@ export const cosmic3d = {
     this.earthMesh = this.planetMeshes.earth;
     this.spacecraftGroup = new T.Group();
     this.solarGroup.add(this.spacecraftGroup);
+  },
+
+  loadSurfaceTexture(url) {
+    const T = this.THREE;
+    return new Promise((resolve, reject) => {
+      new T.TextureLoader().load(url, texture => {
+        texture.colorSpace = T.SRGBColorSpace;
+        texture.wrapS = T.RepeatWrapping;
+        texture.anisotropy = Math.min(4, this.renderer.capabilities.getMaxAnisotropy());
+        resolve(texture);
+      }, undefined, reject);
+    });
+  },
+
+  loadPlanetTextures() {
+    if (this._planetTexturePromise) return this._planetTexturePromise;
+    this._planetTexturePromise = Promise.allSettled(IDS.map(async id => {
+      const texture = await this.loadSurfaceTexture(`${PLANET_TEXTURE_ROOT}/small/${id}.webp`);
+      this._planetTextures.set(id, texture);
+      const material = this.planetMeshes[id]?.material;
+      if (!material) { texture.dispose(); this._planetTextures.delete(id); return; }
+      material.map = texture;
+      material.emissiveMap = texture;
+      material.color.set(0xffffff);
+      material.needsUpdate = true;
+    })).then(results => {
+      const failed = results.filter(result => result.status === 'rejected');
+      if (failed.length) console.warn(`[cosmic-texture] ${failed.length} planet texture(s) unavailable`);
+      this.render();
+      return results;
+    });
+    return this._planetTexturePromise;
   },
 
   loadSpacecraftCatalog() {
@@ -837,7 +878,10 @@ export const cosmic3d = {
     this.bodyDetailGroup.visible = false;
     this.bodySphere = new T.Mesh(
       new T.SphereGeometry(18, 56, 36),
-      new T.MeshStandardMaterial({ color: 0xffffff, roughness: .88, metalness: 0 }),
+      new T.MeshStandardMaterial({
+        color: 0xffffff, roughness: .88, metalness: 0,
+        emissive: 0x555555, emissiveIntensity: .85,
+      }),
     );
     this.bodyDetailGroup.add(this.bodySphere);
     this.world.add(this.bodyDetailGroup);
@@ -862,11 +906,16 @@ export const cosmic3d = {
       this.yaw = firstFeature ? this.THREE.MathUtils.degToRad(firstFeature.lon) : .72;
       this.pitch = firstFeature
         ? clamp(this.THREE.MathUtils.degToRad(firstFeature.lat), -1.35, 1.35) : .38;
+      // 북극 육각형의 위도(78°)를 그대로 정면에 두면 고리가 동심원처럼 납작해진다.
+      // 첫 진입은 행성과 고리의 입체감이 함께 보이는 각도로 두고, 사용자가 돌려 북극을 본다.
+      if (body.id === 'saturn') { this.yaw = .72; this.pitch = .38; }
       this.root.classList.add('is-body');
       this.bodyDetailGroup.visible = true;
       this.clearBodyVisual();
-      this._detailTexture = this.makeBodyTexture(body);
+      const loadId = ++this._detailTextureLoadId;
+      this._detailTexture = this.makeBodyFallbackTexture(body);
       this.bodySphere.material.map = this._detailTexture;
+      this.bodySphere.material.emissiveMap = this._detailTexture;
       this.bodySphere.material.color.set(0xffffff);
       this.bodySphere.material.needsUpdate = true;
       this.makeBodyRing(body);
@@ -875,6 +924,20 @@ export const cosmic3d = {
       this.showBodyInfo(body);
       this.updateBodyPicker(); this.updateCraftPicker();
       this.updateHud(); this.render();
+      this.loadSurfaceTexture(`${PLANET_TEXTURE_ROOT}/detail/${body.id}.webp`).then(texture => {
+        if (loadId !== this._detailTextureLoadId || this._detailBody?.id !== body.id) {
+          texture.dispose(); return;
+        }
+        this._detailTexture?.dispose();
+        this._detailTexture = texture;
+        this.bodySphere.material.map = texture;
+        this.bodySphere.material.emissiveMap = texture;
+        this.bodySphere.material.needsUpdate = true;
+        this.render();
+      }).catch(error => {
+        // 네트워크가 끊겨도 기존 가벼운 절차 텍스처로 천체 탐색은 계속한다.
+        console.warn(`[cosmic-texture:${body.id}]`, error?.message || 'load failed');
+      });
     } catch (error) {
       console.warn('[cosmic-body]', error.message);
       const note = document.getElementById('cosmicNote');
@@ -894,11 +957,14 @@ export const cosmic3d = {
       });
     }
     if (this._detailTexture) this._detailTexture.dispose();
+    this.bodySphere.material.map = null;
+    this.bodySphere.material.emissiveMap = null;
+    this.bodySphere.material.needsUpdate = true;
     this._detailTexture = null; this._detailRing = null;
     this._detailMarkers.clear();
   },
 
-  makeBodyTexture(body) {
+  makeBodyFallbackTexture(body) {
     const T = this.THREE;
     const width = matchMedia('(max-width:560px)').matches ? 512 : 768;
     const height = width / 2;
@@ -1001,7 +1067,7 @@ export const cosmic3d = {
     const T = this.THREE;
     const group = new T.Group();
     const bands = body.id === 'saturn'
-      ? [[20.5,21.4,.22],[21.7,23.1,.34],[23.5,26.2,.46],[26.7,29.4,.38],[30.1,31.4,.24],[32.2,33.1,.13]]
+      ? [[20.5,21.4,.1],[21.7,23.1,.16],[23.5,26.2,.24],[26.7,29.4,.18],[30.1,31.4,.12],[32.2,33.1,.08]]
       : [[21.2,21.45,.2],[22.3,22.55,.16],[24.1,24.4,.13]];
     bands.forEach(([inner, outer, opacity], index) => {
       const ring = new T.Mesh(
@@ -1071,6 +1137,7 @@ export const cosmic3d = {
 
   closeBody(render = true) {
     if (!this._detailBody) return;
+    this._detailTextureLoadId += 1;
     this._detailBody = null; this.root.classList.remove('is-body');
     this.yaw = .72; this.pitch = .56;
     this.bodyDetailGroup.visible = false; this.bodyInfo.hidden = true;
@@ -1215,7 +1282,6 @@ export const cosmic3d = {
     scene.canvas.addEventListener('wheel', event => {
       if (store.scene !== 'earth' || event.deltaY <= 0 || cameraHeight() < ENTER_HEIGHT) return;
       event.preventDefault();
-      this.captureEarth();
       this.level = .04; this.target = .13;
       sceneMgr.to('space', { stage: 'solar' }).then(() => this.animateTo(.22));
     }, { passive: false, capture: true });
@@ -1361,29 +1427,6 @@ export const cosmic3d = {
     const hit = raycaster.intersectObjects(this.photoGroup.children, false)[0];
     const entry = hit ? this._photoMarkers.get(hit.object.userData.photoId) : null;
     if (entry) this.selectPhoto(entry.photo);
-  },
-
-  captureEarth() {
-    try {
-      scene.render();
-      this._earthCapture = scene.canvas.toDataURL('image/png');
-      if (this._ready) this.applyEarthTexture();
-    } catch (_) { this._earthCapture = null; }
-  },
-
-  applyEarthTexture() {
-    if (!this._earthCapture || !this.earthMesh) return;
-    const loadId = ++this._earthTextureLoadId;
-    new this.THREE.TextureLoader().load(this._earthCapture, texture => {
-      if (loadId !== this._earthTextureLoadId) { texture.dispose(); return; }
-      texture.colorSpace = this.THREE.SRGBColorSpace;
-      const previous = this.earthMesh.material.map;
-      this.earthMesh.material.map = texture;
-      this.earthMesh.material.color.set(0xffffff);
-      this.earthMesh.material.needsUpdate = true;
-      if (previous && previous !== texture) previous.dispose();
-      this.render();
-    });
   },
 
   animateTo(next) {
@@ -1728,7 +1771,9 @@ export const cosmic3d = {
         ? '같은 3D 공간 · 드래그 회전 · 휠/핀치 확대'
         : 'Same 3D space · drag to rotate · wheel/pinch to zoom';
       document.getElementById('cosmicHint').textContent = body.summary[isKo ? 'ko' : 'en'];
-      document.getElementById('cosmicNote').textContent = this._bodyCatalog.positionNotice[isKo ? 'ko' : 'en'];
+      document.getElementById('cosmicNote').textContent = isKo
+        ? `${this._bodyCatalog.positionNotice.ko} · NASA/JPL/USGS 표면 시각화 · 분석용 아님`
+        : `${this._bodyCatalog.positionNotice.en} · NASA/JPL/USGS surface visualization · not for analysis`;
       this.root.dataset.stage = 'body';
       return;
     }
@@ -1748,7 +1793,7 @@ export const cosmic3d = {
         title: isKo ? '태양계' : 'Solar System',
         scale: isKo ? '3D 궤도 · 드래그하여 기울이기 · 로그 스케일' : '3D orbits · drag to tilt · logarithmic scale',
         hint: isKo ? '계속 줌아웃하면 은하수 안의 태양계 위치로 이어집니다' : 'Keep zooming out to reach the Solar System’s place in the Milky Way',
-        note: isKo ? '행성 위치 계산값 · JPL 공개 궤도요소 · 행성 크기 과장' : 'Calculated planet positions · JPL public elements · planet sizes exaggerated',
+        note: isKo ? '행성 위치 계산값 · JPL 공개 궤도요소 · NASA/JPL/USGS 표면 시각화 · 행성 크기 과장' : 'Calculated planet positions · JPL public elements · NASA/JPL/USGS surface visualization · planet sizes exaggerated',
       },
       milkyway: {
         title: isKo ? '은하수' : 'Milky Way',

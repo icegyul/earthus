@@ -45,6 +45,15 @@ IBTRACS = ("https://www.ncei.noaa.gov/data/"
 SRC_TRACKS = "events/cyclone-tracks.json"     # archiver 가 만드는 현재 태풍 경로
 DST_HIST = "ocean/ibtracs-wp.json"
 DST_ANALOG = "ocean/cyclone-analog.json"
+# 이미 수집 중인 **실측**만 쓴다. 이 파일들은 각각의 수집기가 실패할 때 옛 파일을
+# 지키므로, 이 분석은 원본 갱신시각·관측시각까지 함께 싣는다.
+OBS_SOURCES = (
+    ("gts", "wind/gts-global.json", "stations"),
+    ("metar", "wind/stations.json", "stations"),
+    ("buoy", "ocean/buoys.json", "buoys"),
+)
+OBS_RADIUS_KM = 800
+OBS_FRESH_MINUTES = 180
 UA = {"User-Agent": "earthus/0.1 (+earthus.net)"}
 
 # 과거 자료를 얼마나 자주 다시 받나. 태풍 시즌이 끝나야 갱신되므로 한 달이면 넉넉하다.
@@ -120,6 +129,134 @@ def put(key, doc, maxage):
                   ContentType="application/json; charset=utf-8",
                   CacheControl=f"public, max-age={maxage}")
     return len(body)
+
+
+# ── 현재 관측 근거 ────────────────────────────────────────────────
+def iso_time(value):
+    """자료원별 관측 시각을 UTC datetime 으로 읽는다. 못 읽으면 None.
+
+    ⚠️ 생성시각을 관측시각으로 대신하지 않는다. 부이는 파일이 갱신돼도 각 지점의
+    송신 시각이 다르고, GTS 는 그 정시 전문 시각이 따로 있다.
+    """
+    if not value:
+        return None
+    text = str(value).strip()
+    for form in ("%Y%m%d%H%M", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"):
+        try:
+            parsed = datetime.strptime(text, form)
+            return parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed.astimezone(timezone.utc)
+        except ValueError:
+            pass
+    return None
+
+
+def observation_time(source, row):
+    if source == "gts":
+        return iso_time(row.get("tm"))
+    if source == "metar":
+        return iso_time(row.get("obs"))
+    return iso_time(row.get("time"))
+
+
+def observation_variables(source, row):
+    """무엇을 실제로 잰 지 센다. 값이 없으면 0으로 만들지 않는다."""
+    if source == "gts":
+        return {"wind": row.get("ws") is not None,
+                "pressure": row.get("pa") is not None or row.get("ps") is not None,
+                "temperature": row.get("ta") is not None}
+    if source == "metar":
+        return {"wind": row.get("wspd_kt") is not None,
+                "pressure": row.get("pres_hpa") is not None,
+                "temperature": row.get("temp_c") is not None}
+    return {"wind": row.get("wspd") is not None,
+            "pressure": row.get("pres") is not None,
+            "temperature": row.get("atmp") is not None or row.get("wtmp") is not None}
+
+
+def load_observations():
+    """세 자료원의 최신 관측 목록을 한 번만 읽는다.
+
+    ⚠️ 하나라도 못 읽었다고 0곳으로 꾸미지 않는다. missing에 남겨 화면이
+    '관측 공백'과 '자료원 장애'를 구분하게 한다.
+    """
+    rows, sources, missing = [], [], []
+    for source, key, list_key in OBS_SOURCES:
+        try:
+            doc = json.loads(s3.get_object(Bucket=BUCKET, Key=key)["Body"].read())
+            src_rows = doc.get(list_key) or []
+            sources.append({
+                "id": source, "path": key, "source": doc.get("source"),
+                "generated": doc.get("generated"), "observedUtc": doc.get("observedUtc"),
+                "count": len(src_rows),
+            })
+            for row in src_rows:
+                try:
+                    lat, lon = float(row["lat"]), float(row["lon"])
+                except (KeyError, TypeError, ValueError):
+                    continue
+                rows.append((source, lat, lon, row))
+        except Exception as e:  # noqa: BLE001
+            print(f"[obs] {source} 읽기 실패 {e!r}")
+            missing.append(source)
+    return {"rows": rows, "sources": sources, "missing": missing}
+
+
+def observation_evidence(lat, lon, pool, now):
+    """태풍 주변 표면 관측의 **분포와 신선도**를 세어 낸다.
+
+    이 값은 진로·세기를 계산하거나 기관 예보의 가중치를 바꾸지 않는다. 지상/부이
+    실측은 태풍 주변 상태를 확인하는 근거이며, 상층 지향류·위성·공식 예보와 같은
+    물리량이 아니다. 아직 검증하지 않은 '관측소 점수'를 만들어 확신인 척하지 않는다.
+    """
+    sector_names = [("북", "N"), ("북동", "NE"), ("동", "E"), ("남동", "SE"),
+                    ("남", "S"), ("남서", "SW"), ("서", "W"), ("북서", "NW")]
+    sectors = [{"dir": ko, "dirEn": en, "n": 0, "freshN": 0,
+                "sources": {"gts": 0, "metar": 0, "buoy": 0},
+                "windN": 0, "pressureN": 0, "temperatureN": 0}
+               for ko, en in sector_names]
+    by_source = {k: {"n": 0, "freshN": 0, "windN": 0, "pressureN": 0,
+                     "temperatureN": 0, "oldestMinutes": None}
+                 for k, _, _ in OBS_SOURCES}
+
+    for source, rlat, rlon, row in pool["rows"]:
+        km = dist_km(lat, lon, rlat, rlon)
+        if km > OBS_RADIUS_KM:
+            continue
+        sec = sectors[dir_index(bearing(lat, lon, rlat, rlon))]
+        src = by_source[source]
+        src["n"] += 1
+        sec["n"] += 1
+        sec["sources"][source] += 1
+        observed = observation_time(source, row)
+        age = ((now - observed).total_seconds() / 60) if observed else None
+        # 미래 시각은 상류 시계 오차일 수 있으므로 신선하다고 처리하지 않는다.
+        if age is not None and 0 <= age <= OBS_FRESH_MINUTES:
+            src["freshN"] += 1
+            sec["freshN"] += 1
+        if age is not None and age >= 0:
+            src["oldestMinutes"] = max(src["oldestMinutes"] or 0, round(age))
+        for variable, present in observation_variables(source, row).items():
+            if present:
+                src[f"{variable}N"] += 1
+                sec[f"{variable}N"] += 1
+
+    # 지점이 없다는 것은 '안전'이 아니라, 이 반경의 직접 표면 근거가 적다는 뜻이다.
+    return {
+        "radiusKm": OBS_RADIUS_KM, "freshWithinMinutes": OBS_FRESH_MINUTES,
+        "at": now.strftime("%Y-%m-%dT%H:%M:00Z"),
+        "n": sum(x["n"] for x in by_source.values()),
+        "freshN": sum(x["freshN"] for x in by_source.values()),
+        "bySource": [{"id": key, **value} for key, value in by_source.items()],
+        "sectors": sectors,
+        "sources": pool["sources"], "missing": pool["missing"],
+        "note": {
+            "ko": "태풍 중심 반경 800km 안의 최신 지상·부이 실측을 방위별로 센 것입니다. "
+                  "관측소가 적거나 자료원이 빠진 것은 안전하다는 뜻이 아니라 직접 표면 관측 근거가 제한적이라는 뜻입니다. "
+                  "이 수는 자체 진로 예측이나 기관 예보 순위를 만들지 않습니다.",
+            "en": "Latest surface and buoy observations within 800 km of the storm centre, counted by direction. "
+                  "Sparse or missing observations mean limited direct surface evidence, not safety. This does not produce an Earthus track forecast or rank agencies.",
+        },
+    }
 
 
 # ── ① 과거 태풍 트랙 ──────────────────────────────────────────────
@@ -634,6 +771,9 @@ def handler(event, context):
     except Exception as e:                                   # noqa: BLE001
         return {"ok": False, "reason": f"tracks: {e!r}"[:120]}
 
+    # 관측 목록은 태풍마다 다시 읽지 않는다. 같은 시각의 스냅샷을 모든 태풍에 쓴다.
+    observations = load_observations()
+    now = datetime.now(timezone.utc)
     out = []
     for st in (cur.get("storms") or []):
         a = analyse(st, history)
@@ -646,6 +786,7 @@ def handler(event, context):
         #    설명이 아니라 혼란이다.
         tr = st.get("track") or []
         if st.get("live") and tr:
+            rec["surfaceEvidence"] = observation_evidence(tr[-1][1], tr[-1][0], observations, now)
             sv = steering(tr[-1][1], tr[-1][0])
             if sv:
                 rec["steering"] = sv

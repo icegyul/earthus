@@ -1284,6 +1284,39 @@ export const cyclones = {
 
     const an = analog.get(s.id, s.name);
 
+    /* ── 주변의 실제 관측은 얼마나 있나 ─────────────────────────
+       사용자가 말한 "A에서 본 변화가 B·C에서도 이어졌나"의 출발점이다.
+       ⚠️ 아직 관측소 연쇄를 인과관계·진로 예측으로 바꾸지 않는다. 지상과 부이는
+       태풍 주변의 표면 상태를 확인하는 서로 다른 관측망이고, 빈 방위는 '안전'이 아니라
+       '직접 근거가 적음'이다. 그래서 수·시각·자료원만 그대로 보여 준다. */
+    const se = an?.surfaceEvidence;
+    if (se) {
+      const srcName = { gts: ko ? '세계 지상관측 GTS' : 'Global GTS',
+                        metar: 'METAR', buoy: ko ? '해양 부이' : 'Ocean buoys' };
+      const bySource = (se.bySource || []).map(x => {
+        const name = srcName[x.id] || x.id;
+        return ko
+          ? `${name} ${x.n}곳 (최근 ${se.freshWithinMinutes}분 ${x.freshN} · 바람 ${x.windN} · 기압 ${x.pressureN})`
+          : `${name} ${x.n} (${x.freshN} within ${se.freshWithinMinutes} min · wind ${x.windN} · pressure ${x.pressureN})`;
+      }).join(' · ');
+      d[ko ? `주변 표면 관측 · 반경 ${se.radiusKm}km` : `Nearby surface observations · ${se.radiusKm} km`] = ko
+        ? `총 ${se.n}곳 중 최근 ${se.freshWithinMinutes}분 관측 ${se.freshN}곳. ${bySource}`
+        : `${se.n} total; ${se.freshN} observed within ${se.freshWithinMinutes} min. ${bySource}`;
+      const sectorText = (se.sectors || []).map(x =>
+        `${ko ? x.dir : x.dirEn} ${x.n}${ko ? `곳/최근 ${x.freshN}` : `/fresh ${x.freshN}`}`).join(' · ');
+      if (sectorText) d[ko ? '방위별 직접 관측' : 'Direct observations by direction'] = sectorText;
+      const times = (se.sources || []).map(x => {
+        const label = srcName[x.id] || x.id;
+        const at = x.observedUtc || x.generated || '—';
+        return `${label} n=${x.count} · ${at}`;
+      }).join(' / ');
+      if (times) d[ko ? '관측 자료원·시각' : 'Observation sources · time'] = times;
+      if ((se.missing || []).length) {
+        d[ko ? '⚠️ 못 받은 관측망' : '⚠️ Unavailable observation feeds'] = (se.missing || [])
+          .map(x => srcName[x] || x).join(' · ');
+      }
+    }
+
     /* ── 왜 이 방향인가 ────────────────────────────────────────
        받은 요청: "중국쪽 고기압, 일본쪽 저기압 때문에 … 편서풍 때문에 …
                    이렇게 될 것으로 예상된다" 식으로 설명해 달라.
@@ -1401,6 +1434,11 @@ export const cyclones = {
         + (an && an.matches
             ? ' ⚠️ "Past analogues" is not a forecast — it counts where similar past storms went. Follow official warnings.'
             : ''));
+    if (se) {
+      d['_note'] += ko
+        ? ' 주변 표면 관측은 현재 상태를 확인하는 근거입니다. 이 앱은 아직 관측소 연쇄를 자체 진로 예측이나 기관별 우열 판단으로 사용하지 않습니다.'
+        : ' Nearby surface observations are evidence for current conditions. Earthus does not use station chains to issue its own track forecast or rank agencies.';
+    }
     return { title: `${s.name}`, rows: d };
   },
 };

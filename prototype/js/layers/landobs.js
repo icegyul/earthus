@@ -1,9 +1,9 @@
-// 지상 관측소 — 공항 METAR + 기상청 ASOS + 일본 JMA AMeDAS 실황
+// 지상 관측소 — GTS SYNOP + 공항 METAR + 기상청 ASOS + 일본 JMA AMeDAS 실황
 //
 // 왜 별도 레이어인가
 //   기존 '관측소'(weather.js) 는 도시 47곳을 Open-Meteo 로 조회해 **예보**를 보여준다.
 //   실제로 계기가 놓인 자리가 아니다.
-//   이건 전 세계 공항에 물리적으로 설치된 장비가 30~60분마다 내는 **실황**이다.
+//   이건 전 세계 지상에 물리적으로 설치된 장비가 내는 **실황**이다.
 //   해양부이와 성격이 같아서, 부이와 같은 방식으로 다룬다.
 //
 // ⚠️ 예보와 실황을 한 화면에서 섞지 않는다.
@@ -70,28 +70,30 @@ export const landObs = {
   },
 
   async refresh() {
-    /* 전지구는 METAR, 한국은 기상청 ASOS 96곳, 일본은 JMA AMeDAS 대표 지점을
+    /* 전지구는 GTS SYNOP + METAR, 한국은 기상청 ASOS 96곳, 일본은 JMA AMeDAS 대표 지점을
        같은 '실황 관측' 층에 놓는다.
        ⚠️ 하나가 실패해도 다른 관측망은 보여야 한다. Promise.all 로 묶어 한쪽
           장애가 전체를 빈 지도로 만들면 '관측 없음'처럼 읽힌다. */
-    const [r, rk, rj] = await Promise.all([
+    const [r, rg, rk, rj] = await Promise.all([
       fetch(`${API.WIND}/stations.json`, { cache: 'no-cache' }).catch(() => null),
+      fetch(`${API.WIND}/gts-global.json`, { cache: 'no-cache' }).catch(() => null),
       fetch(`${API.WIND}/kma-aws.json`, { cache: 'no-cache' }).catch(() => null),
       fetch(`${API.WIND}/jp-amedas.json`, { cache: 'no-cache' }).catch(() => null),
     ]);
-    // ⚠️ S3 는 없는 객체에 403 을 준다(404 아님). 셋 다 없을 때만 실패로 올린다.
-    if (!r?.ok && !rk?.ok && !rj?.ok) {
-      throw new Error(`stations ${r?.status || 'network'} · kma ${rk?.status || 'network'} · jma ${rj?.status || 'network'}`);
+    // ⚠️ S3 는 없는 객체에 403 을 준다(404 아님). 넷 다 없을 때만 실패로 올린다.
+    if (!r?.ok && !rg?.ok && !rk?.ok && !rj?.ok) {
+      throw new Error(`stations ${r?.status || 'network'} · gts ${rg?.status || 'network'} · kma ${rk?.status || 'network'} · jma ${rj?.status || 'network'}`);
     }
     const j = r?.ok ? await r.json() : { stations: [], count: 0 };
+    const g = rg?.ok ? await rg.json() : { stations: [], count: 0 };
     const k = rk?.ok ? await rk.json() : { stations: [], count: 0 };
     const a = rj?.ok ? await rj.json() : { stations: [], count: 0 };
     this.meta = {
-      generated: [j.generated, k.generated, a.time].filter(Boolean).sort().at(-1),
-      source: [j.source, k.source, a.source].filter(Boolean).join(' + '),
-      count: (j.count || 0) + (k.count || 0) + (a.count || 0),
-      note: { metar: j.note || null, kma: k.note || null, jma: a.note || null },
-      failed: [!r?.ok ? 'METAR' : null, !rk?.ok ? 'KMA ASOS' : null,
+      generated: [j.generated, g.generated, k.generated, a.time].filter(Boolean).sort().at(-1),
+      source: [j.source, g.source, k.source, a.source].filter(Boolean).join(' + '),
+      count: (j.count || 0) + (g.count || 0) + (k.count || 0) + (a.count || 0),
+      note: { metar: j.note || null, gts: g.note || null, kma: k.note || null, jma: a.note || null },
+      failed: [!r?.ok ? 'METAR' : null, !rg?.ok ? 'GTS SYNOP' : null, !rk?.ok ? 'KMA ASOS' : null,
         !rj?.ok ? 'JMA AMeDAS' : null].filter(Boolean),
     };
     const ko = i18n.lang === 'ko';
@@ -145,6 +147,41 @@ export const landObs = {
         _station: s,
         data: { _landobs: true, ...d },
       };
+    });
+
+    /* 전 세계 GTS SYNOP. 공항만 보는 METAR와 달리 육상 기상관측소까지 들어온다.
+       ⚠️ 같은 물리 관측소가 METAR에도 있을 수 있다. 억지로 하나를 삭제하지 않는다:
+       두 전문은 갱신시각·측정항목·품질 통과 여부가 달라, "한 점"으로 합치면 원 출처와
+       실제 관측시각을 잃는다. 지도 클러스터는 겹침을 정리하고 상세는 출처를 분명히 한다. */
+    (g.stations || []).forEach(s => {
+      if (s.lat == null || s.lon == null) return;
+      const d = {};
+      if (s.ta != null) d[ko ? '기온' : 'Temperature'] = i18n.temp(s.ta, 1);
+      if (s.td != null) d[ko ? '이슬점' : 'Dew point'] = i18n.temp(s.td, 1);
+      if (s.hm != null) d[ko ? '습도' : 'Humidity'] = `${Math.round(s.hm)}%`;
+      if (s.ws != null) d[ko ? '바람' : 'Wind'] = `${s.ws.toFixed(1)} m/s ${compass(s.wd)}`;
+      if (s.pa != null) d[ko ? '해면기압' : 'Sea-level pressure'] = `${s.pa.toFixed(1)} hPa`;
+      if (s.ps != null) d[ko ? '현지기압' : 'Station pressure'] = `${s.ps.toFixed(1)} hPa`;
+      if (s.rn != null) d[ko ? '강수' : 'Rain'] = `${s.rn.toFixed(1)} mm`;
+      if (s.alt != null) d[ko ? '해발' : 'Elevation'] = `${s.alt} m`;
+      d[ko ? '관측소' : 'Station'] = `${s.name || s.id} · WMO ${s.id}`;
+      if (s.tm && /^\d{12}$/.test(s.tm)) {
+        d[ko ? '관측 시각(UTC)' : 'Observed (UTC)'] = `${s.tm.slice(0, 4)}-${s.tm.slice(4, 6)}-${s.tm.slice(6, 8)} ${s.tm.slice(8, 10)}:${s.tm.slice(10, 12)} UTC`;
+      }
+      d[ko ? '출처' : 'Source'] = ko
+        ? (g.source || '세계기상통신망(GTS) 지상관측')
+        : (g.sourceEn || 'GTS SYNOP surface observations');
+      d['_note'] = ko
+        ? '세계기상통신망(GTS)으로 들어온 지상 **실황 관측**입니다. 예보가 아닙니다. 좌표를 붙이지 못한 WMO 번호는 원자료에서 제외됩니다.'
+        : 'A ground **observation** reported through GTS SYNOP — not a forecast. WMO ids without a coordinate match are excluded upstream.';
+      items.push({
+        id: `gts-${s.id}`,
+        // 수천 곳의 라벨은 읽을 수 없고 발열만 만든다. 점을 눌러 상세를 연다.
+        name: '',
+        lat: s.lat, lon: s.lon,
+        kind: 'landobs', color: '#b4d978', _place: true,
+        data: { _landobs: true, _gtsSynop: true, ...d },
+      });
     });
 
     /* 한국 시·군을 알아볼 수 있는 고도에서 관측소명 + 현재 기온을 라벨로 쓴다.

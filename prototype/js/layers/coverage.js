@@ -2,7 +2,7 @@
 //
 // 왜 이 그림인가
 //   다른 레이어는 전부 "무엇이 있는가"를 보여준다. 이건 **없음**을 보여준다.
-//   부이 2,347곳과 지상 관측소 1,912곳을 한 화면에 겹치면,
+//   부이·공항 METAR·세계기상통신망(GTS) 지상 관측소를 한 화면에 겹치면,
 //   태평양 한가운데와 아프리카 내륙, 시베리아, 남대양이 통째로 비어 있는 게 드러난다.
 //
 //   그게 왜 중요한가: 우리가 보여주는 모든 값의 신뢰도가 여기에 달려 있다.
@@ -118,24 +118,29 @@ export const coverage = {
   /** 관측점 좌표를 모은다. ⚠️ 못 받은 자료원은 조용히 빼고, 무엇을 뺐는지 남긴다. */
   async _points() {
     const out = [];
+    const sourceCounts = {};
     this.missing = [];
-    const grab = async (url, key, label) => {
+    const grab = async (url, key, label, source) => {
       try {
         const r = await fetch(url, { cache: 'no-cache' });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const j = await r.json();
+        let n = 0;
         (j[key] || []).forEach(x => {
-          if (x.lat != null && x.lon != null) out.push([x.lat, x.lon]);
+          if (x.lat != null && x.lon != null) { out.push([x.lat, x.lon]); n += 1; }
         });
+        sourceCounts[source] = n;
       } catch (e) {
         // ⚠️ 한 자료원이 빠진 채로 "빈 곳"을 보여주면 없는 공백을 만들어낸다.
         this.missing.push(label);
       }
     };
     await Promise.all([
-      grab(`${API.OCEAN}/buoys.json`, 'buoys', i18n.lang === 'ko' ? '해양 부이' : 'ocean buoys'),
-      grab(`${API.WIND}/stations.json`, 'stations', i18n.lang === 'ko' ? '지상 관측소' : 'ground stations'),
+      grab(`${API.OCEAN}/buoys.json`, 'buoys', i18n.lang === 'ko' ? '해양 부이' : 'ocean buoys', 'buoy'),
+      grab(`${API.WIND}/stations.json`, 'stations', i18n.lang === 'ko' ? '공항 관측소(METAR)' : 'airport stations (METAR)', 'metar'),
+      grab(`${API.WIND}/gts-global.json`, 'stations', i18n.lang === 'ko' ? '세계 지상관측(GTS)' : 'global surface observations (GTS)', 'gts'),
     ]);
+    this.sourceCounts = sourceCounts;
     return out;
   },
 
@@ -148,12 +153,12 @@ export const coverage = {
             : `\n⚠️ ${this.missing.join(', ')} could not be loaded, so this looks emptier than it is.`)
       : '';
     return (ko
-      ? `관측점 ${s.points.toLocaleString()}곳 (해양 부이 + 지상 관측소)을 10° 격자에 센 것입니다. `
+      ? `관측점 ${s.points.toLocaleString()}곳 (해양 부이 ${this.sourceCounts?.buoy?.toLocaleString?.() || 0} · 공항 METAR ${this.sourceCounts?.metar?.toLocaleString?.() || 0} · 세계 지상관측 GTS ${this.sourceCounts?.gts?.toLocaleString?.() || 0})을 10° 격자에 센 것입니다. `
         + `${s.cells}칸 중 **${s.empty}칸(${s.emptyPct}%)에 관측점이 하나도 없습니다.**\n`
         + `⚠️ 면적당 개수로 나눴습니다 — 같은 10° 칸이라도 극지는 좁아서, 안 나누면 극지가 실제보다 촘촘해 보입니다.\n`
         + `색이 진할수록 관측이 없는 곳입니다 — 촘촘한 곳은 일부러 비워 두었습니다. 화면에 남는 붉은 자리가 곧 구멍입니다.\n`
         + `⚠️ 관측소 수는 신뢰도가 아닙니다. 바다 위 수온처럼 위성이 촘촘히 보는 값도 있습니다. 여기서는 센 것만 말합니다.`
-      : `${s.points.toLocaleString()} observation points (ocean buoys + ground stations) counted on a 10° grid. `
+      : `${s.points.toLocaleString()} observation points (ocean buoys ${this.sourceCounts?.buoy?.toLocaleString?.() || 0} · airport METAR ${this.sourceCounts?.metar?.toLocaleString?.() || 0} · global GTS ${this.sourceCounts?.gts?.toLocaleString?.() || 0}) counted on a 10° grid. `
         + `**${s.empty} of ${s.cells} cells (${s.emptyPct}%) contain no observation point at all.**\n`
         + `⚠️ Counts are divided by cell area: without that, the poles look denser than they are.\n`
         + `The stronger the colour, the fewer observations: dense areas are deliberately left clear, so what remains on screen is the gap.\n`

@@ -59,6 +59,9 @@ const normal = seed => {
   const a = Math.max(.00001, hash(seed));
   return Math.sqrt(-2 * Math.log(a)) * Math.cos(Math.PI * 2 * hash(seed + 17.31));
 };
+// 실제 AU를 그대로 쓰면 수성은 화면용 태양 안에 묻히고 해왕성은 너무 멀어진다.
+// 공전 방향과 행성 순서는 보존하되 안쪽을 충분히 벌리고 바깥쪽을 로그로 압축한다.
+const solarDisplayRadius = au => 3.5 + 7 * Math.log1p(Math.max(0, au) * 1.4);
 const stageFor = level => level < 1.28 ? 'solar' : level < 2.28 ? 'milkyway' : 'galaxies';
 const ko = () => i18n.lang !== 'en';
 
@@ -289,9 +292,13 @@ export const cosmic3d = {
     this.solarGroup = new T.Group();
     this.world.add(this.solarGroup);
     const positions = planetPositions(new Date());
-    const scale = 1.12;
     this.planetMeshes = {};
     this.orbitMaterials = [];
+    const displayPoint = point => {
+      const actualRadius = Math.hypot(point.x, point.y, point.z);
+      const scale = solarDisplayRadius(actualRadius) / Math.max(actualRadius, .00001);
+      return new T.Vector3(point.x * scale, point.z * scale, point.y * scale);
+    };
 
     const sunMaterial = new T.MeshBasicMaterial({ color: 0xffca55 });
     this.sun = new T.Mesh(new T.SphereGeometry(1.65, 48, 32), sunMaterial);
@@ -312,7 +319,7 @@ export const cosmic3d = {
         emissive: 0x242424, emissiveIntensity: id === 'uranus' ? .06 : .45,
       });
       const mesh = new T.Mesh(new T.SphereGeometry(meta.radius, 28, 18), material);
-      mesh.position.set(point.x * scale, point.z * scale, point.y * scale);
+      mesh.position.copy(displayPoint(point));
       mesh.userData.id = id;
       this.solarGroup.add(mesh);
       this.planetMeshes[id] = mesh;
@@ -325,9 +332,7 @@ export const cosmic3d = {
         ring.rotation.x = Math.PI / 2; mesh.add(ring); this.saturnMiniRing = ring;
       }
       const orbit = planetOrbit(id, new Date(), 150);
-      const orbitGeometry = new T.BufferGeometry().setFromPoints(orbit.map(item => new T.Vector3(
-        item.x * scale, item.z * scale, item.y * scale,
-      )));
+      const orbitGeometry = new T.BufferGeometry().setFromPoints(orbit.map(displayPoint));
       const orbitMaterial = new T.LineBasicMaterial({
         color: id === 'earth' ? 0x63b9d6 : 0x8290a8,
         transparent: true, opacity: id === 'earth' ? .38 : .16, depthWrite: false,
@@ -529,22 +534,22 @@ export const cosmic3d = {
         const points = [];
         for (let index = 0; index <= 64; index += 1) {
           const angle = index / 64 * Math.PI * 2;
-          points.push(earth.clone().addScaledVector(tangent, Math.cos(angle) * 2.8)
-            .add(new T.Vector3(0, Math.sin(angle) * 1.22, 0)));
+          points.push(earth.clone().addScaledVector(tangent, Math.cos(angle) * 1.35)
+            .add(new T.Vector3(0, Math.sin(angle) * .65, 0)));
         }
         addPath(points, 0x8bd8ec, .42);
-        addMarker(craft, points[9], 0x8bd8ec, { radius: .42 });
+        addMarker(craft, points[9], 0x8bd8ec, { radius: .3 });
       } else if (craft.type === 'earth-l2-schematic') {
-        const center = earth.clone().addScaledVector(outward, 5.1);
+        const center = earth.clone().addScaledVector(outward, 2.3);
         addPath([earth, center], 0xbdaeff, .34, true);
         const points = [];
         for (let index = 0; index <= 64; index += 1) {
           const angle = index / 64 * Math.PI * 2;
-          points.push(center.clone().addScaledVector(tangent, Math.cos(angle) * 1.28)
-            .add(new T.Vector3(0, Math.sin(angle) * 1.82, 0)));
+          points.push(center.clone().addScaledVector(tangent, Math.cos(angle) * .72)
+            .add(new T.Vector3(0, Math.sin(angle) * .92, 0)));
         }
         addPath(points, 0xbdaeff, .42);
-        addMarker(craft, points[12], 0xbdaeff, { radius: .5 });
+        addMarker(craft, points[12], 0xbdaeff, { radius: .34 });
       } else if (craft.type === 'heliocentric-vector') {
         const epoch = Date.parse(craft.epoch);
         const elapsedDays = (Date.now() - epoch) / DAY_MS;

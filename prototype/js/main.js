@@ -3,7 +3,7 @@ import { initViewer, viewer, scene, cameraHeight, onCameraIdle, flyTo, setAmbien
 import { alarms } from './alarms.js';
 import { windField } from './windfield.js';
 import { myLocation } from './mylocation.js';
-import { layerBar } from './layerbar.js';
+import { layerBar } from './layerbar.js?v=20260810-earthoverlay1';
 import { search } from './search.js';
 import { onboard } from './onboard.js';
 import { weatherPanel } from './ui-weather.js?v=20260810-copy1';
@@ -14,7 +14,7 @@ import { renderQuality } from './render-quality.js';
 import { store } from './store.js';
 import { registry } from './layers/registry.js';
 import { imagery } from './layers/imagery.js';
-import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js';
+import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js?v=20260810-earthoverlay1';
 import { i18n } from './i18n.js';
 import { auth } from './auth.js';
 import { CONFIG } from './config.local.js';   // ⚠️ config.js 가 아니다 — CONFIG 는 여기 있다
@@ -45,7 +45,7 @@ import { scaleRail } from './ui-scale.js?v=20260810-branddock1';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
 import { cosmic3d } from './space/cosmic3d.js?v=20260810-solarspacing1';
 import { trenchCards } from './ocean/trenchcards.js';
-import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-globe3';
+import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-earthoverlay1';
 
 /* 늦게 불러오는 바다거북 모듈을 붙잡아 두는 곳.
    ⚠️⚠️ **모듈 바깥에 둔다.** 켜는 쪽은 boot(), 끄는 쪽(OFF·HAS_MARKS)은
@@ -116,7 +116,7 @@ async function boot() {
     if (Number.isFinite(lat) && Number.isFinite(lon) && lat >= -90 && lat <= 90) {
       queueMicrotask(async () => {
         try {
-          await sceneMgr.to('ocean', { stage: 'trench' });
+          await sceneMgr.to('earth', { stage: 'trench' });
           await trenchGlobe.openAt(lat, lon);
         } catch (error) {
           console.warn('[dive-link]', error.message);
@@ -124,7 +124,7 @@ async function boot() {
       });
     }
   } else if (sceneParams.get('ocean') === '1') {
-    queueMicrotask(() => sceneMgr.to('ocean', { stage: 'trench' }).catch(error => {
+    queueMicrotask(() => sceneMgr.to('earth', { stage: 'trench' }).catch(error => {
       console.warn('[ocean-link]', error.message);
     }));
   } else if (['milkyway', 'galaxies'].includes(sceneParams.get('space'))) {
@@ -157,8 +157,12 @@ async function boot() {
   i18n.applyStatic();
   layerBar.init();
   layerBar.onAction('earth-home', () => sceneMgr.to('earth', { stage: 'earth' }));
-  layerBar.onAction('earth-surface', () => sceneMgr.to('ocean', { stage: 'surface' }));
-  layerBar.onAction('earth-trench', () => sceneMgr.to('ocean', { stage: 'trench' }));
+  layerBar.onAction('earth-surface', async () => {
+    await sceneMgr.to('earth', { stage: 'surface' });
+    // 수면은 별도 장면이 아니다. 현재 지구본에 해수면 온도 격자를 올린다.
+    store.setLayer('sst', true);
+  });
+  layerBar.onAction('earth-trench', () => sceneMgr.to('earth', { stage: 'trench' }));
   document.addEventListener('aetherus:photo', async event => {
     if (store.scene !== 'space') await sceneMgr.to('space', { stage: 'solar' });
     await cosmic3d.openPhotoAtlas(event.detail);
@@ -292,8 +296,9 @@ async function boot() {
   bindAccountUI();
 
   await registry.init();
-  // 딥링크는 레이어 초기화보다 먼저 해구 모드에 들어올 수 있다. 뒤늦게 생긴 구름도 다시 쉰다.
-  if (store.scene === 'ocean') trenchGlobe.setQuietGlobe(true);
+  // 딥링크는 레이어 초기화보다 먼저 해구 모드에 들어올 수 있다. 초기화가 끝난 뒤
+  // 기존 지구 위 해구 영역이 반드시 다시 보이도록 상태를 한 번 맞춘다.
+  if (store.scene === 'earth' && store.sceneStage === 'trench') trenchGlobe.setVisible(true, 'trench');
 
   /* 지구(베이스맵)가 준비됐다 → 로딩을 걷어내고 인트로를 시작한다.
      나머지 UI·데이터(chrome·계정·패널·점 데이터)는 지구 뒤에서 계속 붙는다. */

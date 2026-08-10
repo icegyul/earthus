@@ -652,7 +652,7 @@ export const layerBar = {
   _renderSceneFilter(next = 'earth') {
     const main = $('#menuMain');
     if (!main) return;
-    const away = next !== 'earth';
+    const away = next === 'space';
     const space = next === 'space';
     const fold = main.querySelector('[data-scene-earth-fold]');
     if (fold) {
@@ -669,11 +669,7 @@ export const layerBar = {
 
     /* EARTHUS는 우주에서도 전체 메뉴를 유지한다. 장면이 브랜드를 바꾸거나
        지구로 돌아가는 길을 숨기면 두 세계가 한 공간이라는 구조가 끊긴다. */
-    const hiddenAway = next === 'space'
-      ? []
-      : next === 'ocean'
-        ? ['[data-open="earth"]', '[data-act="sat"]', '[data-act="flight"]', '[data-act="locate"]', '[data-act="globe"]']
-        : [];
+    const hiddenAway = [];
     const sceneFiltered = [
       '[data-open="earth"]', '[data-act="sat"]', '[data-act="flight"]',
       '[data-act="outdoor"]', '[data-act="earth-home"]', '[data-act="earth-surface"]',
@@ -683,8 +679,8 @@ export const layerBar = {
       const button = main.querySelector(selector);
       if (button) button.hidden = hiddenAway.includes(selector);
     });
-    const activeEarthRoute = next === 'earth' ? 'earth-home'
-      : store.sceneStage === 'surface' ? 'earth-surface' : 'earth-trench';
+    const activeEarthRoute = store.sceneStage === 'surface' ? 'earth-surface'
+      : store.sceneStage === 'trench' ? 'earth-trench' : 'earth-home';
     main.querySelectorAll('.mm-earth-route').forEach(item => {
       item.classList.toggle('on', !space && item.dataset.act === activeEarthRoute);
     });

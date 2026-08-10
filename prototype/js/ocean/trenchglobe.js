@@ -38,7 +38,6 @@ export const trenchGlobe = {
   selected: null,
   selectedFootprint: null,
   visible: false,
-  _visualState: null,
   _speciesKey: '',
   _autoFocusAt: 0,
 
@@ -50,16 +49,15 @@ export const trenchGlobe = {
     this.outlines.show = this.labels.show = this.speciesLabels.show = false;
     viewer.imageryLayers.layerAdded.addEventListener(layer => {
       if (!this.visible) return;
-      // 첫 로드에서 시작한 구름 요청이 해구 진입 뒤 완료될 수 있다. 그 레이어는
-      // setQuietGlobe() 이후에 생기므로, 추가 직후 다시 숨겨 전용 지구를 오염시키지 않는다.
+      // 기존 지구의 레이어는 그대로 둔다. 해저지형은 선택한 해구를 가까이 볼 때만
+      // 가장 위에 반투명으로 겹치며, 새로 들어온 지구 레이어를 숨기지 않는다.
       queueMicrotask(() => {
         if (!this.visible) return;
-        layer.show = layer === this.bathymetryLayer;
-        if (this.bathymetryLayer) viewer.imageryLayers.raiseToTop(this.bathymetryLayer);
+        if (this.selected && this.bathymetryLayer) viewer.imageryLayers.raiseToTop(this.bathymetryLayer);
         scene.requestRender();
       });
     });
-    store.on('scene', (next, stage) => this.setVisible(next === 'ocean', stage));
+    store.on('scene', (next, stage) => this.setVisible(next === 'earth' && stage === 'trench', stage));
     i18n.onChange(() => { this.paint(); this.updateDepth(true); });
     scene.preRender.addEventListener(() => {
       if (this.visible && this.selected) this.updateDepth();
@@ -92,8 +90,10 @@ export const trenchGlobe = {
       credit: this.footprints.source.credit,
     });
     this.bathymetryLayer = viewer.imageryLayers.addImageryProvider(provider);
-    this.bathymetryLayer.alpha = 1;
-    this.bathymetryLayer.show = this.visible;
+    this.bathymetryLayer.alpha = .42;
+    // 전지구 개요에서는 원래 지구 표면과 해구 면적만 보인다. 해구를 고른 뒤에만
+    // 해저지형을 반투명 레이어로 올려 별도의 수심 지구처럼 보이지 않게 한다.
+    this.bathymetryLayer.show = false;
     viewer.imageryLayers.raiseToTop(this.bathymetryLayer);
     power.animate(1100, 0, 'trench-bathymetry-load');
   },
@@ -113,19 +113,19 @@ export const trenchGlobe = {
     if (this.areas) this.areas.show = !!on;
     this.outlines.show = this.labels.show = !!on;
     this.speciesLabels.show = !!on && !!this.selected;
-    document.body.classList.toggle('ocean-globe', !!on);
-    this.setQuietGlobe(!!on);
     if (!on) {
       this.selected = null;
       this.selectedFootprint = null;
       this._speciesKey = '';
       this.speciesLabels.removeAll();
+      if (this.bathymetryLayer) this.bathymetryLayer.show = false;
       this.hud?.classList.remove('on');
       scene.requestRender();
       return;
     }
     try {
       await this.load();
+      if (this.bathymetryLayer) this.bathymetryLayer.show = false;
       this.renderOverviewHud();
       if (stage === 'trench' && viewer.camera.positionCartographic.height > 18_000_000) {
         viewer.camera.flyTo({
@@ -219,6 +219,10 @@ export const trenchGlobe = {
     if (!item) return;
     this.selected = item;
     this.selectedFootprint = this.footprintFor(item);
+    if (this.bathymetryLayer) {
+      this.bathymetryLayer.show = true;
+      viewer.imageryLayers.raiseToTop(this.bathymetryLayer);
+    }
     this.speciesLabels.show = true;
     this._speciesKey = '';
     this.hud?.classList.add('on');
@@ -322,35 +326,4 @@ export const trenchGlobe = {
         : 'GEBCO 2026 ~11 km cells deeper than 6,000 m and connected to a catalogued deep point.<br>Tap a region or zoom inside it for depth layers and literature-depth species. Not an official trench boundary.'}</small>`;
   },
 
-  setQuietGlobe(on) {
-    if (!viewer) return;
-    if (on && !this._visualState) {
-      this._visualState = {
-        imagery: Array.from({ length: viewer.imageryLayers.length }, (_, index) => viewer.imageryLayers.get(index).show),
-        dataSources: Array.from({ length: viewer.dataSources.length }, (_, index) => viewer.dataSources.get(index).show),
-        lighting: scene.globe.enableLighting,
-      };
-    }
-    if (on) {
-      // GEBCO에서 만든 105KB 정적 수심 지구만 남긴다. 구름·도시불빛·실사 타일은 쉰다.
-      for (let index = 0; index < viewer.imageryLayers.length; index++) {
-        const layer = viewer.imageryLayers.get(index);
-        layer.show = layer === this.bathymetryLayer;
-      }
-      if (this.bathymetryLayer) this.bathymetryLayer.show = true;
-      for (let index = 0; index < viewer.dataSources.length; index++) viewer.dataSources.get(index).show = false;
-      // 밤면이 검게 죽으면 해저지형을 읽을 수 없다. 해구 모드에서만 주야 조명을 잠시 뺀다.
-      scene.globe.enableLighting = false;
-    } else if (this._visualState) {
-      this._visualState.imagery.forEach((show, index) => {
-        if (index < viewer.imageryLayers.length) viewer.imageryLayers.get(index).show = show;
-      });
-      this._visualState.dataSources.forEach((show, index) => {
-        if (index < viewer.dataSources.length) viewer.dataSources.get(index).show = show;
-      });
-      if (this.bathymetryLayer) this.bathymetryLayer.show = false;
-      scene.globe.enableLighting = this._visualState.lighting;
-      this._visualState = null;
-    }
-  },
 };

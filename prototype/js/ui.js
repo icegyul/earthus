@@ -505,8 +505,8 @@ export const sheet = {
             const name = $('#sheetTitle').textContent;
             try {
               sheet.minimize();
-              await sceneMgr.to('ocean', { stage: 'trench' });
-              const { trenchGlobe } = await import('./ocean/trenchglobe.js?v=20260810-globe3');
+              await sceneMgr.to('earth', { stage: 'trench' });
+              const { trenchGlobe } = await import('./ocean/trenchglobe.js?v=20260810-earthoverlay1');
               await trenchGlobe.openAt(m.lat, m.lon);
             } catch (error) {
               dive.disabled = false;

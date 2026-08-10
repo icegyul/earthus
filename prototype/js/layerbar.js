@@ -673,14 +673,14 @@ export const layerBar = {
     const sceneFiltered = [
       '[data-open="earth"]', '[data-act="sat"]', '[data-act="flight"]',
       '[data-act="outdoor"]', '[data-act="earth-home"]', '[data-act="earth-surface"]',
-      '[data-act="earth-trench"]', '[data-act="locate"]', '[data-act="globe"]',
+      '[data-act="locate"]', '[data-act="globe"]',
     ];
     sceneFiltered.forEach(selector => {
       const button = main.querySelector(selector);
       if (button) button.hidden = hiddenAway.includes(selector);
     });
     const activeEarthRoute = store.sceneStage === 'surface' ? 'earth-surface'
-      : store.sceneStage === 'trench' ? 'earth-trench' : 'earth-home';
+      : store.sceneStage === 'earth' ? 'earth-home' : null;
     main.querySelectorAll('.mm-earth-route').forEach(item => {
       item.classList.toggle('on', !space && item.dataset.act === activeEarthRoute);
     });

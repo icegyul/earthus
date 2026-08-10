@@ -1,4 +1,4 @@
-/* 취미 — 서핑 · 낚시 · 패러글라이딩 · 산 · 하늘을 묶은 자리
+/* 취미 — 서핑 · 낚시 · 해구 탐험 · 패러글라이딩 · 산 · 하늘을 묶은 자리
  *
  * 받은 요청: "서핑, 낚시, 하늘, 산 이것들을 묶어서 뭐라고 할까?" → "취미로 바꾸자"
  *
@@ -27,6 +27,10 @@ const ITEMS = [
     subKo: '물때와 안전 · 방파제 · 섬', subEn: 'Tide and safety · breakwaters · islands',
     color: '#e0d18a',
     ico: '<path d="M15.4 4.2v11.2a4 4 0 0 1-8 0v-1.6" stroke-linecap="round"/><path d="M12.6 4.2h5.6" stroke-linecap="round"/><circle cx="18.6" cy="4.2" r="1.4"/>' },
+  { act: 'trench', ko: '해구', en: 'Trenches',
+    subKo: '지구의 가장 깊은 바다로 들어가기', subEn: 'Explore Earth’s deepest ocean regions',
+    color: '#57b9d0',
+    ico: '<path d="M2.4 6.2h19.2" stroke-linecap="round"/><path d="M3.2 9.2c3.2.2 4.4 1.8 6.2 5.2 1.1 2.2 2 4.2 2.6 5.4.6-1.2 1.5-3.2 2.6-5.4 1.8-3.4 3-5 6.2-5.2" stroke-linecap="round"/><path d="M12 9.2v8.2" stroke-linecap="round" opacity=".55"/>' },
   { act: 'para', ko: '패러글라이딩', en: 'Paragliding',
     subKo: '바람 세기와 구름 밑면', subEn: 'Wind strength and cloud base',
     color: '#b9a7f0',

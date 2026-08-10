@@ -162,7 +162,6 @@ async function boot() {
     // 수면은 별도 장면이 아니다. 현재 지구본에 해수면 온도 격자를 올린다.
     store.setLayer('sst', true);
   });
-  layerBar.onAction('earth-trench', () => sceneMgr.to('earth', { stage: 'trench' }));
   document.addEventListener('aetherus:photo', async event => {
     if (store.scene !== 'space') await sceneMgr.to('space', { stage: 'solar' });
     await cosmic3d.openPhotoAtlas(event.detail);
@@ -253,7 +252,7 @@ async function boot() {
     power.animate(1700);
   });
   layerBar.onAction('sat', () => satPanel.open());
-  /* 나가기 전에 — 서핑·낚시·산·하늘을 한자리에 모았다 (ui-outdoor.js 머리말 참고).
+  /* 나가기 전에 — 서핑·낚시·해구·산·하늘을 한자리에 모았다 (ui-outdoor.js 머리말 참고).
      ⚠️ 옛 메뉴 항목(surf/mountain/sky)도 그대로 살려 둔다. 검색·코치마크·딥링크가
         그 이름으로 부르고 있어, 지우면 조용히 안 열린다. */
   layerBar.onAction('outdoor', () => outdoorPanel.open());
@@ -360,6 +359,7 @@ async function boot() {
     const go = {
       surf: () => surfPanel.open(),
       fishing: () => fishPanel.open(),
+      trench: () => sceneMgr.to('earth', { stage: 'trench' }),
       para: () => paraPanel.open(),
       mountain: () => mountainPanel.open(),
       sky: () => skyPanel.open(),

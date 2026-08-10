@@ -884,6 +884,12 @@ export const imagery = {
   _gk2aMeta: null,
   _gk2aAt: 0,
   gk2aAutoLayers: [],
+  /* 전면 적외(8km)를 단독으로 쓰면 태풍의 큰 흐름은 보이지만, 한국·일본·대만의
+     구름 결은 원본 2km를 3.4배 줄인 만큼 사라진다. 전면과 동아시아 상세는
+     서로 대체하는 레이어가 아니라 한 장면의 서로 다른 확대 단계다. store의
+     배타 규칙은 그대로 지키면서, 이 한 선택 안에서만 두 제공자를 관리한다. */
+  gk2aWideIRLayers: [],
+  _gk2aWideIROn: false,
   _gk2aAutoOn: false,
   _gk2aAutoMode: null,
   _gk2aAutoChannel: null,
@@ -986,6 +992,80 @@ export const imagery = {
     this.gk2aAutoLayers = [];
     this._gk2aDetailWanted = false;
     this._gk2aDetailOn = false;
+  },
+
+  _removeGK2AWideIRLayers() {
+    this.gk2aWideIRLayers.forEach(L => {
+      try { viewer.imageryLayers.remove(L, true); } catch (_) { }
+    });
+    this.gk2aWideIRLayers = [];
+  },
+
+  /** 전면 8km는 태풍의 넓은 흐름용, 동아시아 2km는 실제 판독용이다.
+   *
+   * ⚠️ 받은 지적: "천리안위성 8km의 구름 위성이 성능이 떨어진다".
+   * 위성 원본 적외는 2km지만 전면 5500×5500을 1600×1600으로 줄인 결과가
+   * 8km다. 전면 PNG를 5500px로 키우면 매 10분마다 수십 MB를 폰에 강요한다.
+   * 따라서 전면은 한 장으로 유지하고, 같은 관측시각의 동아시아 2km XYZ 타일을
+   * 그 위에 얹는다. 범위 밖(필리핀 남쪽·서태평양 동쪽)은 전면이 남고, 범위 안은
+   * 실제 2km 결을 쓴다. */
+  async setGK2AWideIR(on) {
+    this._gk2aWideIROn = on;
+    if (!on) {
+      this._removeGK2AWideIRLayers();
+      return;
+    }
+    if (this.gk2aWideIRLayers.length) return;
+
+    const m = await this._gk2aBox();
+    const overview = m?.channels?.ir112;
+    const detail = m?.channels?.ir112ea;
+    if (!overview?.ok) {
+      this._say(overview?.reason
+        ? `천리안 전면 적외를 아직 못 받았습니다 — ${overview.reason}`
+        : '천리안 전면 적외를 아직 못 받았습니다',
+      'Chollian full-disk infrared is not available yet');
+      return;
+    }
+
+    try {
+      const fullLayer = await this._addGK2ALayer('ir112', m, '천리안 전면 적외 8km');
+      if (!this._gk2aWideIROn) {
+        try { viewer.imageryLayers.remove(fullLayer, true); } catch (_) { }
+        return;
+      }
+      fullLayer._earthusGK2ARole = 'overview';
+      this.gk2aWideIRLayers.push(fullLayer);
+
+      /* 상세 타일이 늦거나 일시적으로 실패해도 전면 관측을 버리지 않는다.
+         "전면 8km + 동아시아 2km"라고 약속한 상태만 화면 설명에서 바로잡는다. */
+      if (detail?.ok) {
+        try {
+          const detailLayer = await this._addGK2ALayer('ir112ea', m, '천리안 동아시아 적외 2km');
+          if (!this._gk2aWideIROn) {
+            try { viewer.imageryLayers.remove(detailLayer, true); } catch (_) { }
+            return;
+          }
+          detailLayer._earthusGK2ARole = 'east-asia-detail';
+          this.gk2aWideIRLayers.push(detailLayer);
+        } catch (e) {
+          console.warn('[gk2a-wide-ir-detail]', e.message);
+        }
+      }
+      document.dispatchEvent(new CustomEvent('earthus:imagery'));
+    } catch (e) {
+      this._removeGK2AWideIRLayers();
+      this._say(`천리안 영상을 받지 못했습니다 (${e.message})`, 'Failed to load Chollian imagery');
+      return;
+    }
+
+    const t = this._gk2aDate(overview, m);
+    if (t) {
+      const min = Math.max(0, Math.round((Date.now() - t.getTime()) / 60000));
+      const hhmm = t.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      this._say(`천리안2A 전면 8km · 동아시아 2km · ${hhmm} 관측 · ${min}분 전`,
+        `Chollian-2A full disk 8 km · East Asia 2 km · ${min} min ago`);
+    }
   },
 
   async _loadGK2AAuto() {
@@ -1304,12 +1384,13 @@ export const imagery = {
         else { this.setHimaIR(false); }
         break;
       case 'gk2aAuto': this.setGK2AAuto(on); break;
-      /* ── 천리안2A — 우리 위성이 본 한반도 ─────────────────────
+      /* ── 천리안2A — 우리 위성이 본 동아시아·서태평양 ───────────
          ⚠️ 히마와리와 겹쳐 보이지만 다르다. 히마와리는 NASA GIBS 를 거친
             가시광이라 **밤에 빈 화면**이고, 이건 우리 Lambda 가 원본에서
             직접 만든 것이라 적외가 **밤에도 보인다.**
-         ⚠️ 대신 **한반도만** 덮는다. 그래서 켜면 그 자리로 데려간다. */
-      case 'gk2aIR':  this.setGK2A('ir112', on); break;
+         ⚠️ 전면 적외는 넓게, 동아시아는 원본 해상도에 맞춘 상세 타일로 낸다.
+            한반도 0.5km는 낮 가시광에서만 유효하다. */
+      case 'gk2aIR':  this.setGK2AWideIR(on); break;
       case 'gk2aNightLow': this.setGK2A('nightlow', on); break;
       case 'gk2aVIS': this.setGK2A('vi006', on); break;
       case 'gk2aVISfd': this.setGK2A('vi006fd', on); break;

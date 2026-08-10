@@ -38,8 +38,8 @@ const SRC = {
   /* ── 천리안2A ──────────────────────────────────────────────
      ⚠️ **"NASA GIBS 경유" 같은 중간 경유가 없다.** 우리 Lambda 가 NOAA 공개 원본을
         직접 받아 만든다. 출처를 그렇게 정확히 적는다 — 기상청이 만들고 NOAA 가 공개한다. */
-  gk2a_ir:  { ko: '천리안2A 적외 11.2㎛ (기상청) · NOAA 공개자료',
-              en: 'Chollian-2A IR 11.2µm (KMA) via NOAA open data', every: 10 },
+  gk2a_ir:  { ko: '천리안2A 적외 11.2㎛ · 전면 8km / 동아시아 2km (기상청) · NOAA 공개자료',
+              en: 'Chollian-2A IR 11.2µm · full disk 8 km / E. Asia 2 km (KMA) via NOAA open data', every: 10 },
   gk2a_nightlow: { ko: '천리안2A 11.2−3.8㎛ 밝기온도차 (기상청) · NOAA 공개자료',
                     en: 'Chollian-2A 11.2−3.8µm BTD (KMA) via NOAA open data', every: 10 },
   gk2a_vis: { ko: '천리안2A 가시광 0.64㎛ (기상청) · NOAA 공개자료',
@@ -415,6 +415,11 @@ export const sourceNote = {
           if (imagery._gk2aAutoMode === 'infrared') bits.push(ko
             ? '<i>⚠️ 밤에는 0.5km 가시광 원본이 유효하지 않아 2km 적외를 그대로 씁니다. 없는 야간 0.5km 자료를 확대해 표시하지 않습니다.</i>'
             : '<i>⚠️ At night the 0.5 km visible feed is not valid, so the 2 km infrared feed remains. No fake night upscaling.</i>');
+        }
+        if (id === 'gk2aIR') {
+          bits.push(ko
+            ? '<i><b>전면은 8km</b>로 태풍의 넓은 흐름을 보며, <b>동아시아(23~47°N · 114~150°E)는 같은 관측시각의 2km 타일</b>을 그 위에 겹쳐 봅니다. 전면 원본을 큰 PNG 하나로 확대해 흐리게 만든 것이 아닙니다.</i>'
+            : '<i><b>Full disk is 8 km</b> for wide cyclone context; <b>East Asia (23–47°N, 114–150°E) overlays same-time native 2 km tiles</b>. This is not a blurred upscale of one large PNG.</i>');
         }
         if (key === 'gk2a_wv') {
           bits.push(ko

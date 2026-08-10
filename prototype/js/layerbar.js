@@ -39,7 +39,7 @@ export const ITEMS = [
         한 나라 것이라고 하면 틀린 말이 된다. 🌐 로 둔다. */
   { id:'gk2aAuto', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'낮 가시광·밤 적외 자동 · 2km→한반도 0.5km', subEn:'Auto visible by day, IR by night · 2km→Korea 0.5km', ready:true,
     sky:'#0a1828', paint:'gk2a', img:'img/sat-gk2a.png' },
-  { id:'gk2aIR', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 아시아·태평양 전체 · 밤에도 (8km)', subEn:'Cloud · Asia–Pacific full disk · day & night (8 km)', ready:true,
+  { id:'gk2aIR', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 전면 8km + 동아시아 2km 상세 · 밤에도', subEn:'Cloud · full disk 8 km + E. Asia 2 km detail · day & night', ready:true,
     sky:'#0b1626', paint:'gk2a', img:'img/sat-gk2a.png' },
   { id:'gk2aNightLow', flag:'🇰🇷', ko:'천리안2A 야간 하층운', en:'Chollian-2A night low cloud', sub:'물방울 구름 후보 · 아시아·태평양 전체 · 밤에만 (8km)', subEn:'Water-cloud signal · Asia–Pacific full disk · night only (8 km)', ready:true,
     sky:'#0a1724', paint:'gk2a', img:'img/sat-gk2a.png' },
@@ -454,7 +454,7 @@ const CATEGORIES = [
        ⚠️ 앞의 넷이 **서로 다른 위성이 본 같은 하늘**이라 나란히 두면 비교가 된다. */
     ids: ['clouds',        // 🌐 NOAA 전지구 합성 (가장 넓다)
           'truecolor',     // 🇺🇸 수오미 NPP
-          'gk2aIR',        // 🇰🇷 천리안 2km
+          'gk2aIR',        // 🇰🇷 전면 8km + 동아시아 2km 상세
           'gk2aNightLow',  // 🇰🇷 11.2−3.8㎛ 야간 하층 물구름 신호
           'himawari',      // 🇯🇵 히마와리 1km
           'gk2aVIS',       // 🇰🇷 천리안 0.5km (낮)
@@ -501,9 +501,9 @@ const ALERT_IDS = new Set(ALERT_CATEGORIES.flatMap(c => c.ids));
       레이어별 정리 경로가 실행되지 않아 점·선 잔상이 남는다. */
 const PRESETS = [
   { id: 'typhoon', ko: '태풍 보기', en: 'Cyclone view',
-    sub: '천리안 구름(전면) · 기관 경로 · 부이 실측', subEn: 'Satellite (full disk) · agency tracks · observed buoys',
-    /* ⚠️ 전면(gk2aIR)이다. 동아시아(gk2aIRea)는 114~150°E / 23~47°N 상자여서
-       태풍이 상자 밖에 있으면 구름이 아예 안 보인다 — 받은 지적: "구름 화면이 작아". */
+    sub: '천리안 전면 8km·동아시아 2km · 기관 경로 · 부이 실측', subEn: 'Satellite: full 8 km + E. Asia 2 km · agency tracks · observed buoys',
+    /* 전면(gk2aIR)은 상자 밖 태풍까지 남기되, 동아시아 안에서는 2km 타일을
+       함께 올린다. 8km 전면만 보이게 두면 한반도 접근 단계에서 판독력이 부족했다. */
     ids: ['gk2aIR', 'cyclone', 'buoy'] },
   { id: 'fire', ko: '산불 보기', en: 'Wildfire view',
     sub: '전지구 구름 · 위성 탐지 · 모델 바람', subEn: 'Clouds · satellite detections · model wind',

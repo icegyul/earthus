@@ -25,7 +25,7 @@ const LS_DEFAULTS_VER = 'earthus.layerDefaultsVer';
 /* ⚠️ 이 값을 올리면 **저장된 레이어 on/off 가 전부 초기화**된다.
    기본값을 바꿔 놓고 안 올리면, 이미 방문한 사람에게는 옛 기본값이 남아
    "고쳤는데 내 폰에서만 그대로"가 된다. */
-const DEFAULTS_VER = '13';  // 13: 첫 화면 전부 꺼짐 (구름 포함)
+const DEFAULTS_VER = '13';  // 13: 첫 화면은 NOAA 구름만 켜짐
 
 /* 이 탭에서 이미 한 번 켠 적이 있는가.
    ⚠️ sessionStorage 는 **탭을 닫으면 사라지고 새로고침에는 남는다.** 이 차이가
@@ -162,6 +162,18 @@ export const store = {
     // 끈 것부터 알린다 — 켜는 쪽이 먼저 그려지면 한 프레임 동안 둘 다 보인다
     off.forEach(x => this.emit('layer', x, false));
     this.emit('layer', id, v);
+  },
+
+  /** 첫 접속 때의 지구 스타일로 되돌린다.
+      ⚠️ 기본 레이어를 여기 다시 적지 않는다. config.js 와 두 벌로 관리하면
+         다음 기본값 변경 때 `전지구로`만 옛 화면을 복원하는 사고가 난다. */
+  resetLayersToDefaults() {
+    // 먼저 기본 OFF를 모두 끈 다음 기본 ON을 켠다. 배타 그룹이 중간에
+    // 기본 레이어를 다시 끄지 않게 하고, 불필요한 렌더·저장도 만들지 않는다.
+    LAYER_DEFS.filter(d => !d.on && this.layers[d.id])
+      .forEach(d => this.setLayer(d.id, false));
+    LAYER_DEFS.filter(d => d.on && !this.layers[d.id])
+      .forEach(d => this.setLayer(d.id, true));
   },
 
   /** 이 레이어를 켜면 무엇이 꺼지는가 (메뉴가 미리 알려주기 위해) */

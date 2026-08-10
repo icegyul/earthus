@@ -238,10 +238,19 @@ async function boot() {
           시트를 두 장 겹쳐 띄우면 뒤엣것을 아무도 못 본다. */
     weatherPanel.open('today');
   });
-  layerBar.onAction('globe', () => {
+  layerBar.onAction('globe', async () => {
+    /* `전지구로`는 단순 줌아웃이 아니라 첫 접속 화면으로 돌아가는 문이다.
+       ⚠️ 예전에는 카메라 높이만 바꿔 수온·해구·우주와 열린 정보창이 남았다.
+       장면과 레이어를 함께 초기화해야 "NOAA 구름만 있는 지구"가 된다. */
+    await sceneMgr.to('earth', { stage: 'earth' });
+    store.clearSelect();
+    store.resetLayersToDefaults();
+    document.querySelectorAll('#sheet.up, #settings.up, .sheet-panel.up')
+      .forEach(panel => panel.classList.remove('up'));
     const c = viewer.camera.positionCartographic;
     viewer.camera.flyTo({ destination: Cesium.Cartesian3.fromRadians(
       c.longitude, c.latitude, fitGlobeHeight()), duration: 1.4 });
+    power.animate(1700);
   });
   layerBar.onAction('sat', () => satPanel.open());
   /* 나가기 전에 — 서핑·낚시·산·하늘을 한자리에 모았다 (ui-outdoor.js 머리말 참고).

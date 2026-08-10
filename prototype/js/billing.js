@@ -55,6 +55,8 @@ export const PLANS = { ...DEFAULT_PLANS, ...(CONFIG.PLANS || {}) };
      ② 나    — 사용자마다 따로 계산해야 하는 것
      ③ 양    — 여러 곳을 동시에 지켜보는 것 */
 export const PAID_FEATURES = [
+  { ko: '태풍 유사사례 중심선 — 과거 유사경로의 시각별 중앙값',
+    en: 'Cyclone analogue median track — time-step median of similar past tracks' },
   { ko: '되감기 · 이력 — 지난 며칠의 지구를 다시 본다',
     en: 'Rewind & history — replay the past days of Earth', soon: true },
   { ko: '내 지점 기록 — 이 해변·이 산의 지난 30일과 작년 같은 날',

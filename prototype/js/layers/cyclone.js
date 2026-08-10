@@ -16,10 +16,12 @@
 
 import { viewer } from '../viewer.js';
 import { API } from '../config.js';
+import { CONFIG } from '../config.local.js';
 import { fetchT } from '../net.js';
 import { i18n } from '../i18n.js';
 import { mapLabel } from '../maplabel.js';
 import { power } from '../power.js';
+import { auth } from '../auth.js';
 
 const ALERT = {
   Red:    { color: '#ff4d4d', ko: 'GDACS 적색 영향 추정', en: 'GDACS red impact estimate' },
@@ -822,7 +824,52 @@ export const cyclones = {
       }));
     });
 
+    this._drawEarthusEstimate(s, made, ko);
     this._legend(groups, AG, ko, !!analog.get(s.id, s.name)?.sample?.length, s, ens);
+  },
+
+  /** 유료·관리자에게만 보이는 유사사례 중심선.
+   *  ⚠️ 공식 예보선이 아니다. 서버가 뽑은 유사 경로들의 시각별 중앙값이며,
+   *  권한은 서버 프로필의 tier 또는 배포 설정의 관리자 UID로 판정한다. */
+  _canSeeEarthusEstimate() {
+    const admins = CONFIG.ADMIN_UIDS || [];
+    return auth.isPaid() || (!!auth.user && admins.includes(auth.user.id));
+  },
+
+  _drawEarthusEstimate(s, made, ko) {
+    if (!this._canSeeEarthusEstimate()) return;
+    const estimate = analog.get(s.id, s.name)?.estimate;
+    const steps = (estimate?.steps || []).filter(x => x.lat != null && x.lon != null);
+    if (steps.length < 2) return;
+    const color = Cesium.Color.fromCssColorString('#42f5c8');
+    const entity = this.ds.entities.add({
+      id: `tc:${s.id}:earthus-estimate`,
+      polyline: {
+        positions: lifted(steps.map(x => [x.lon, x.lat]).flat(), LIFT_LINE_M + 500),
+        width: 3.4,
+        material: new Cesium.PolylineDashMaterialProperty({
+          color: color.withAlpha(0.96), dashLength: 14, dashPattern: 0b1111111111000000,
+        }),
+        arcType: Cesium.ArcType.GEODESIC, clampToGround: false,
+      },
+    });
+    entity._earthusEstimate = true;
+    made.push(entity);
+
+    const last = steps[steps.length - 1];
+    made.push(this.ds.entities.add({
+      id: `tc:${s.id}:earthus-estimate:name`,
+      position: Cesium.Cartesian3.fromDegrees(last.lon, last.lat),
+      label: {
+        text: ko ? 'EARTHUS 유사사례 중심선' : 'EARTHUS analogue median',
+        font: '700 11px -apple-system, sans-serif', fillColor: color,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        outlineColor: Cesium.Color.BLACK.withAlpha(0.9), outlineWidth: 3,
+        pixelOffset: new Cesium.Cartesian2(0, -12),
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 14_000_000),
+        disableDepthTestDistance: 900_000,
+      },
+    }));
   },
 
   /* ══ 범례 ═════════════════════════════════════════════════════════
@@ -919,6 +966,13 @@ export const cyclones = {
         ko ? '흰 실선 다발' : 'Faint white lines',
         ko ? '과거 비슷했던 태풍들이 간 길 — 예보 아님'
            : 'where past similar storms went — not a forecast'));
+    }
+    if (this._canSeeEarthusEstimate() && (analog.get(s.id, s.name)?.estimate?.steps || []).length > 1) {
+      const est = analog.get(s.id, s.name).estimate;
+      rows.push(row('#42f5c8', true,
+        ko ? 'EARTHUS 유사사례 중심선 · 구독/관리자' : 'EARTHUS analogue median · subscriber/admin',
+        ko ? `과거 유사사례 ${est.sampleN}건의 시각별 중앙값 · 공식 예보 아님`
+           : `Time-step median of ${est.sampleN} analogues · not an official forecast`));
     }
     box.innerHTML = `<div class="tcl-mini"><b>${ko ? '태풍 진로 안내' : 'Cyclone track guide'}</b>`
       + `<span>${ko ? '펼치기' : 'Expand'}</span></div>`
@@ -1428,6 +1482,15 @@ export const cyclones = {
           d[ko ? '비슷했던 태풍' : 'Similar storms'] = an.sample.slice(0, 5)
             .map(x => `${x.season} ${x.name}`).join(', ');
         }
+        if (this._canSeeEarthusEstimate() && an.estimate?.steps?.length > 1) {
+          const last = an.estimate.steps[an.estimate.steps.length - 1];
+          d[ko ? 'EARTHUS 유사사례 중심선 · 구독/관리자'
+               : 'EARTHUS analogue median · subscriber/admin'] = ko
+            ? `유사사례 ${an.estimate.sampleN}건의 시각별 중앙값을 +${last.h}시간까지 이었습니다. `
+              + `끝 시각 중앙 분산거리 ${last.medianSpreadKm}km · 공식 예보가 아닙니다.`
+            : `Time-step median of ${an.estimate.sampleN} analogues through +${last.h} h. `
+              + `Final median spread ${last.medianSpreadKm} km · not an official forecast.`;
+        }
         /* ⚠️ 2026-08-02 알고리즘을 논문 기준으로 갈아엎었는데 **이 화면만 옛 필드를
            읽고 있었다** — 화면에 "반경 undefined km · 진행방향 ±undefined°" 가
            그대로 나왔다. 서버 자료 구조를 바꿀 때 읽는 쪽을 같이 고쳐야 한다. */
@@ -1463,3 +1526,13 @@ export const cyclones = {
     return { title: `${s.name}`, rows: d };
   },
 };
+
+/* 로그인·결제 상태가 열린 태풍 화면에서 바뀌면 즉시 선을 다시 그린다.
+   서버 profile.tier 또는 관리자 UID가 바뀌었는데 새로고침해야만 보이면 결제 완료가
+   실패한 것처럼 읽힌다. 일반회원으로 내려간 경우에도 같은 경로로 선을 즉시 제거한다. */
+auth.onChange(() => {
+  const selected = cyclones._selStorm;
+  if (!selected) return;
+  cyclones.clearTrack();
+  cyclones.showTrack(selected).catch(e => console.warn('[태풍 권한선] 다시 그리기 실패', e.message));
+});

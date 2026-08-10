@@ -614,6 +614,33 @@ def analyse(storm, history):
     order = sorted(range(8), key=lambda k: -bins[k])
     top = order[0]
     n = len(hits)
+
+    # 유사 사례 다발을 유료·관리자 화면에서 한눈에 읽을 수 있도록, 같은 +시간의
+    # 좌표별 중앙값을 잇는다. 평균은 한 사례의 큰 이탈에 끌려가므로 중앙값을 쓴다.
+    # ⚠️ 이 선에 ASCAT 바람을 임의 계수로 더하지 않는다. ASCAT은 현재 표면 근거이지
+    # 미래 이동량이 아니며, 검증되지 않은 계수로 좌표를 미는 순간 지어낸 예보가 된다.
+    # 최소 5개 사례가 같은 시각에 있어야 점을 남기고, 최대 72시간까지만 낸다.
+    def median(values):
+        ordered = sorted(values)
+        mid = len(ordered) // 2
+        return (ordered[mid] if len(ordered) % 2
+                else (ordered[mid - 1] + ordered[mid]) / 2)
+
+    estimate_steps = []
+    max_path_len = max((len(x["path"]) for x in hits), default=0)
+    for index in range(max_path_len):
+        points = [x["path"][index] for x in hits if len(x["path"]) > index]
+        if len(points) < 5:
+            continue
+        lon = median([p[0] for p in points])
+        lat = median([p[1] for p in points])
+        spread = median([dist_km(lat, lon, p[1], p[0]) for p in points])
+        estimate_steps.append({
+            "h": index * STEP_H,
+            "lon": round(lon, 2), "lat": round(lat, 2),
+            "n": len(points), "medianSpreadKm": round(spread),
+        })
+
     return {
         "matches": n,
         "bins": [{"dir": DIRS[k], "dirEn": DIRS_EN[k], "n": bins[k]} for k in order if bins[k]],
@@ -621,6 +648,12 @@ def analyse(storm, history):
         # ⚠️ 표본이 적으면 퍼센트를 만들지 않는다. null 이면 화면도 안 쓴다.
         "topPct": round(bins[top] * 100 / n) if n >= MIN_SAMPLE_FOR_PCT else None,
         "sample": sorted(hits, key=lambda x: -x["season"])[:12],
+        "estimate": {
+            "method": "coordinate-wise median of matched analogue paths",
+            "steps": estimate_steps,
+            "sampleN": n,
+            "notForecast": True,
+        } if len(estimate_steps) >= 2 else None,
         "candidates": len(cand),
         "why": _why(cur_doy, cur_wind),
     }

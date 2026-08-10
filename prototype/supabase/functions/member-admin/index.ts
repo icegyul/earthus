@@ -24,8 +24,10 @@ async function context(req: Request) {
   const { data: { user } } = await anon.auth.getUser();
   if (!user) throw new Error('NO_AUTH');
   const admins = (Deno.env.get('SOCIAL_ADMIN_UIDS') ?? '').split(',').map(x => x.trim()).filter(Boolean);
-  if (!admins.length || !admins.includes(user.id)) throw new Error('NOT_ADMIN');
   const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  const { data: dbAdmin } = await admin.from('admins').select('id').eq('id', user.id).maybeSingle();
+  const owner = String(user.email ?? '').toLowerCase() === 'contentsdalur@gmail.com';
+  if (!admins.includes(user.id) && !dbAdmin && !owner) throw new Error('NOT_ADMIN');
   return { user, admin };
 }
 
@@ -71,12 +73,13 @@ async function grant(admin: any, actor: string, body: any) {
   const email = cleanEmail(body.email);
   const kind = String(body.kind ?? 'test');
   const reason = String(body.reason ?? '').trim().slice(0, 300);
-  const endsAt = new Date(String(body.endsAt ?? ''));
+  const permanent = body.permanent === true;
+  const endsAt = permanent ? new Date('9999-12-31T23:59:59Z') : new Date(String(body.endsAt ?? ''));
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('BAD_EMAIL');
   if (!['test', 'academic', 'operations'].includes(kind)) throw new Error('BAD_KIND');
   if (reason.length < 2) throw new Error('BAD_REASON');
   if (!Number.isFinite(endsAt.getTime()) || endsAt.getTime() <= Date.now()) throw new Error('BAD_END');
-  if (endsAt.getTime() > Date.now() + 366 * 86400_000) throw new Error('END_TOO_FAR');
+  if (!permanent && endsAt.getTime() > Date.now() + 366 * 86400_000) throw new Error('END_TOO_FAR');
 
   const users = await allUsers(admin);
   const target = users.find((u: any) => cleanEmail(u.email) === email);
@@ -93,11 +96,12 @@ async function grant(admin: any, actor: string, body: any) {
     await admin.from('member_access_audit').insert({
       actor_id: actor, target_user_id: target.id,
       action: Number.isFinite(oldEnd) ? 'grant_extended' : 'grant_applied',
-      detail: { email, kind, reason, ends_at: chosenEnd },
+      detail: { email, kind, reason, ends_at: chosenEnd, permanent },
     });
     return { ok: true, applied: true, userId: target.id, endsAt: chosenEnd };
   }
 
+  if (permanent) throw new Error('SIGN_UP_FIRST_FOR_PERMANENT');
   const { data: old } = await admin.from('member_invites').select('id')
     .eq('email', email).is('claimed_at', null).is('revoked_at', null).maybeSingle();
   if (old?.id) await admin.from('member_invites').update({ revoked_at: new Date().toISOString(), revoked_by: actor }).eq('id', old.id);

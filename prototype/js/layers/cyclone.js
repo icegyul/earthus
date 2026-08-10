@@ -16,7 +16,6 @@
 
 import { viewer } from '../viewer.js';
 import { API } from '../config.js';
-import { CONFIG } from '../config.local.js';
 import { fetchT } from '../net.js';
 import { i18n } from '../i18n.js';
 import { mapLabel } from '../maplabel.js';
@@ -849,8 +848,7 @@ export const cyclones = {
    *  ⚠️ 공식 예보선이 아니다. 서버가 뽑은 유사 경로들의 시각별 중앙값이며,
    *  권한은 서버 프로필의 tier 또는 배포 설정의 관리자 UID로 판정한다. */
   _canSeeEarthusEstimate() {
-    const admins = CONFIG.ADMIN_UIDS || [];
-    return auth.isPaid() || (!!auth.user && admins.includes(auth.user.id));
+    return auth.isPaid() || auth.isAdmin();
   },
 
   _drawEarthusEstimate(s, made, ko) {

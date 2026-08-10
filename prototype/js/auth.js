@@ -9,6 +9,7 @@ import { CONFIG } from './config.local.js';
 import { biometric } from './biometric.js';
 
 const PROVIDERS = ['google', 'apple'];   // 이 둘만. 이메일/비밀번호 가입 없음.
+const OWNER_EMAILS = new Set(['contentsdalur@gmail.com']);
 
 export const auth = {
   client: null,
@@ -210,6 +211,10 @@ export const auth = {
      실제 검증은 Apple/Google 영수증을 서버가 확인해야 한다.
      여기서는 profiles.tier 를 읽기만 한다 — 결제 연동 시 서버가 이 값을 쓴다. */
   isPaid() { return this.profile?.tier === 'paid'; },
+  isAdmin() {
+    return !!this.user && ((CONFIG.ADMIN_UIDS || []).includes(this.user.id)
+      || OWNER_EMAILS.has(String(this.user.email || '').toLowerCase()));
+  },
 
   /* ── 유료 기능 진입점 ──────────────────────────────────────
      로그인은 "필요해질 때" 요구한다.

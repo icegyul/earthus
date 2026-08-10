@@ -475,9 +475,8 @@ function bindAccountUI() {
        숨김(hidden) 으로 두면 **소스를 열면 그대로 보인다** — 있는 줄 알게 된다.
        그래서 자격이 맞을 때만 **그 자리에 만들어 넣는다.**
        ⚠️ 그래도 이건 화면 가림이지 잠금이 아니다. 실제 차단은 Supabase RLS 다.
-       ⚠️ ADMIN_UIDS 가 비어 있으면 아무에게도 안 만들어진다. */
-    const uids = (CONFIG.ADMIN_UIDS || []);
-    const isAdmin = on && uids.length && uids.includes(auth.user.id);
+       서버의 public.admins 등록과 같은 관리자 계정만 만든다. */
+    const isAdmin = on && auth.isAdmin();
     const cur = document.getElementById('btnAdminRow');
     if (isAdmin && !cur) {
       const adminButton = document.createElement('button');

@@ -118,10 +118,12 @@ async function authorize(req: Request) {
 
   const admins = (Deno.env.get('SOCIAL_ADMIN_UIDS') ?? '')
     .split(',').map((id) => id.trim()).filter(Boolean);
-  // ⚠️⚠️ 빈 관리자 목록은 전원 차단이다. 클라이언트 ADMIN_UIDS만 믿지 않는다.
-  if (!admins.length || !admins.includes(user.id)) throw new Error('NOT_ADMIN');
-
   const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+  const { data: dbAdmin } = await admin.from('admins').select('id').eq('id', user.id).maybeSingle();
+  const owner = String(user.email ?? '').toLowerCase() === 'contentsdalur@gmail.com';
+  // ⚠️⚠️ 환경변수·DB 등록·서버가 검증한 운영자 이메일만 허용한다. 클라이언트 표시는 믿지 않는다.
+  if (!admins.includes(user.id) && !dbAdmin && !owner) throw new Error('NOT_ADMIN');
+
   await ensureBucket(admin);
   return { user, admin };
 }

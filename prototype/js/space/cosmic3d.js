@@ -628,30 +628,132 @@ export const cosmic3d = {
     const colors = new Float32Array(count * 3);
     const color = new T.Color();
     for (let index = 0; index < count; index += 1) {
-      const bulge = index < count * .17;
+      const bulge = index < count * .14;
       let x, y, z, radial;
       if (bulge) {
-        radial = Math.pow(hash(index + 31), 1.9) * radius * .34;
-        const theta = hash(index + 41) * Math.PI * 2;
-        const phi = Math.acos(2 * hash(index + 47) - 1);
-        x = radial * Math.sin(phi) * Math.cos(theta);
-        z = radial * Math.sin(phi) * Math.sin(theta);
-        y = radial * Math.cos(phi) * .52;
+        const along = clamp(normal(index + 31) * radius * .12, -radius * .3, radius * .3);
+        const across = normal(index + 41) * (1.25 + Math.abs(along) * .055);
+        const barAngle = -.38;
+        x = Math.cos(barAngle) * along - Math.sin(barAngle) * across;
+        z = Math.sin(barAngle) * along + Math.cos(barAngle) * across;
+        y = normal(index + 47) * (2.35 - Math.min(1.45, Math.abs(along) * .075));
+        radial = Math.hypot(x, z);
       } else {
-        radial = Math.pow(hash(index + 53), .68) * radius;
-        const arm = index % 4;
-        const scatter = normal(index + 61) * (.05 + radial / radius * .1);
-        const angle = arm * Math.PI / 2 + radial * .235 + scatter;
-        x = Math.cos(angle) * radial + normal(index + 71) * .48;
-        z = Math.sin(angle) * radial + normal(index + 79) * .48;
-        const thickness = mix(3.8, .45, radial / radius);
-        y = normal(index + 83) * thickness;
+        radial = 3 + Math.pow(hash(index + 53), .64) * (radius - 3);
+        // 두 주요 팔에 별을 더 배정하고 작은 두 팔은 성기게 남겨 사진 같은 비대칭을 만든다.
+        const arm = [0, 2, 0, 2, 1, 3][index % 6];
+        const baseAngle = this.galaxySpiralAngle(arm, radial);
+        const armWidth = .78 + radial * (arm === 0 || arm === 2 ? .042 : .055);
+        const cross = normal(index + 61) * armWidth;
+        const angle = baseAngle + normal(index + 67) * (.018 + radial / radius * .032);
+        x = Math.cos(angle) * radial + Math.cos(angle + Math.PI / 2) * cross;
+        z = Math.sin(angle) * radial + Math.sin(angle + Math.PI / 2) * cross;
+        const thickness = .34 + 2.7 * Math.exp(-radial / 10);
+        const warp = Math.sin(angle * 1.7) * .42 * (radial / radius) ** 2;
+        y = normal(index + 83) * thickness + warp;
       }
       positions[index * 3] = x; positions[index * 3 + 1] = y; positions[index * 3 + 2] = z;
-      const hot = !bulge && hash(index + 97) > .925;
-      if (bulge) color.setRGB(1, .76 + hash(index) * .18, .48 + hash(index + 2) * .22);
-      else if (hot) color.setRGB(1, .24 + hash(index) * .25, .48 + hash(index + 3) * .25);
-      else color.setRGB(.48 + hash(index) * .34, .62 + hash(index + 5) * .28, .92 + hash(index + 7) * .08);
+      const hot = !bulge && hash(index + 97) > .947;
+      const young = !bulge && hash(index + 101) > .91;
+      if (bulge) color.setRGB(1, .65 + hash(index) * .24, .34 + hash(index + 2) * .24);
+      else if (hot) color.setRGB(1, .22 + hash(index) * .28, .46 + hash(index + 3) * .3);
+      else if (young) color.setRGB(.44, .7 + hash(index + 5) * .22, 1);
+      else color.setRGB(.54 + hash(index) * .25, .62 + hash(index + 5) * .23, .78 + hash(index + 7) * .2);
+      colors[index * 3] = color.r; colors[index * 3 + 1] = color.g; colors[index * 3 + 2] = color.b;
+    }
+    const geometry = new T.BufferGeometry();
+    geometry.setAttribute('position', new T.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new T.BufferAttribute(colors, 3));
+    geometry.computeBoundingSphere();
+    return geometry;
+  },
+
+  galaxySpiralAngle(arm, radial) {
+    // 기존 radial*.235는 네 팔이 여러 바퀴 겹쳐 동심원처럼 보인 원인이었다.
+    const irregularity = Math.sin(radial * .27 + arm * 1.7) * .11
+      + Math.sin(radial * .071 + arm) * .07;
+    return arm * Math.PI / 2 - .72 + Math.log1p(radial * .22) * 2.25 + irregularity;
+  },
+
+  makeGalaxyBarGeometry(count, radius = 50) {
+    const T = this.THREE;
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const color = new T.Color();
+    const barAngle = -.38;
+    for (let index = 0; index < count; index += 1) {
+      const along = clamp(normal(index + 307) * radius * .115, -radius * .29, radius * .29);
+      const across = normal(index + 311) * (1.05 + Math.abs(along) * .052);
+      positions[index * 3] = Math.cos(barAngle) * along - Math.sin(barAngle) * across;
+      positions[index * 3 + 1] = normal(index + 313) * (2.7 - Math.min(1.7, Math.abs(along) * .09));
+      positions[index * 3 + 2] = Math.sin(barAngle) * along + Math.cos(barAngle) * across;
+      color.setRGB(1, .58 + hash(index + 317) * .28, .28 + hash(index + 319) * .23);
+      colors[index * 3] = color.r; colors[index * 3 + 1] = color.g; colors[index * 3 + 2] = color.b;
+    }
+    const geometry = new T.BufferGeometry();
+    geometry.setAttribute('position', new T.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new T.BufferAttribute(colors, 3));
+    geometry.computeBoundingSphere();
+    return geometry;
+  },
+
+  makeGalaxyKnotGeometry(count, radius = 50) {
+    const T = this.THREE;
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const color = new T.Color();
+    const clusterCount = matchMedia('(max-width:560px)').matches ? 34 : 58;
+    for (let index = 0; index < count; index += 1) {
+      const cluster = index % clusterCount;
+      const arm = [0, 2, 0, 2, 1, 3][cluster % 6];
+      const radial = 8 + hash(cluster + 211) * (radius - 11);
+      const angle = this.galaxySpiralAngle(arm, radial);
+      const spread = .18 + hash(cluster + 227) * .72;
+      positions[index * 3] = Math.cos(angle) * radial + normal(index + 233) * spread;
+      positions[index * 3 + 1] = normal(index + 239) * (.18 + spread * .32);
+      positions[index * 3 + 2] = Math.sin(angle) * radial + normal(index + 241) * spread;
+      const pink = cluster % 5 !== 0;
+      color.setRGB(pink ? 1 : .52, pink ? .24 + hash(cluster) * .22 : .72, pink ? .55 + hash(index) * .24 : 1);
+      colors[index * 3] = color.r; colors[index * 3 + 1] = color.g; colors[index * 3 + 2] = color.b;
+    }
+    const geometry = new T.BufferGeometry();
+    geometry.setAttribute('position', new T.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new T.BufferAttribute(colors, 3));
+    geometry.computeBoundingSphere();
+    return geometry;
+  },
+
+  makeGalaxyDustLaneGeometry(count, radius = 50) {
+    const T = this.THREE;
+    const positions = new Float32Array(count * 3);
+    for (let index = 0; index < count; index += 1) {
+      const radial = 5 + Math.pow(hash(index + 263), .7) * (radius - 7);
+      const arm = index % 4;
+      const angle = this.galaxySpiralAngle(arm, radial) - .055;
+      const cross = normal(index + 269) * (.28 + radial * .01) - .42;
+      positions[index * 3] = Math.cos(angle) * radial + Math.cos(angle + Math.PI / 2) * cross;
+      positions[index * 3 + 1] = normal(index + 271) * (.22 + 1.25 * Math.exp(-radial / 12));
+      positions[index * 3 + 2] = Math.sin(angle) * radial + Math.sin(angle + Math.PI / 2) * cross;
+    }
+    const geometry = new T.BufferGeometry();
+    geometry.setAttribute('position', new T.BufferAttribute(positions, 3));
+    geometry.computeBoundingSphere();
+    return geometry;
+  },
+
+  makeGalaxyDiskGeometry(count, radius = 50) {
+    const T = this.THREE;
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const color = new T.Color();
+    for (let index = 0; index < count; index += 1) {
+      const radial = 4 + Math.pow(hash(index + 283), .72) * (radius - 5);
+      const angle = hash(index + 293) * Math.PI * 2;
+      positions[index * 3] = Math.cos(angle) * radial;
+      positions[index * 3 + 1] = normal(index + 297) * (.22 + 2.5 * Math.exp(-radial / 13));
+      positions[index * 3 + 2] = Math.sin(angle) * radial;
+      const warm = radial < 14 && hash(index + 301) > .45;
+      color.setRGB(warm ? .92 : .38 + hash(index) * .2, warm ? .58 : .52 + hash(index + 5) * .2, warm ? .32 : .72 + hash(index + 7) * .22);
       colors[index * 3] = color.r; colors[index * 3 + 1] = color.g; colors[index * 3 + 2] = color.b;
     }
     const geometry = new T.BufferGeometry();
@@ -676,18 +778,47 @@ export const cosmic3d = {
     const geometry = this.makeGalaxyGeometry(count);
     // 같은 XYZ 별을 큰 저농도 광점으로 한 번 더 그려 참고 이미지의 성간 먼지·가스 같은
     // 부드러운 층을 만든다. 정지 화면이므로 프레임 비용은 상시 발생하지 않는다.
-    this.galaxyDustMaterial = this.galaxyMaterial(4.2, 0);
+    this.galaxyDustMaterial = this.galaxyMaterial(3.8, 0);
     this.galaxyDust = new T.Points(geometry, this.galaxyDustMaterial);
     this.galaxyGroup.add(this.galaxyDust);
-    this.galaxyMaterialMain = this.galaxyMaterial(.74, 0);
+    this.galaxyMaterialMain = this.galaxyMaterial(.68, 0);
     this.milkyWay = new T.Points(geometry, this.galaxyMaterialMain);
     this.galaxyGroup.add(this.milkyWay);
 
+    // 실제 은하 원반에는 팔 사이에도 오래된 별이 있다. 낮은 농도의 원반층을 깔아
+    // 네 줄짜리 도식이 아니라 하나의 이어진 은하로 읽히게 한다.
+    const diskCount = matchMedia('(max-width:560px)').matches ? 4000 : 8000;
+    this.galaxyDiskMaterial = this.galaxyMaterial(1.55, 0);
+    this.galaxyDisk = new T.Points(this.makeGalaxyDiskGeometry(diskCount), this.galaxyDiskMaterial);
+    this.galaxyGroup.add(this.galaxyDisk);
+
+    // 밝은 팔 안쪽의 어두운 입자는 깊이를 가르는 먼지 띠다. 별도 텍스처를 내려받지 않고
+    // 정적 점층으로만 구성해 기기를 쉬게 한 상태에서는 새 프레임을 만들지 않는다.
+    const laneCount = matchMedia('(max-width:560px)').matches ? 2800 : 5200;
+    this.galaxyLaneMaterial = new T.PointsMaterial({
+      size: 1.45, map: this.spriteTexture, color: 0x2a211f, transparent: true, opacity: 0,
+      blending: T.NormalBlending, depthWrite: false, sizeAttenuation: true,
+    });
+    this.galaxyLanes = new T.Points(this.makeGalaxyDustLaneGeometry(laneCount), this.galaxyLaneMaterial);
+    this.galaxyGroup.add(this.galaxyLanes);
+
+    const knotCount = matchMedia('(max-width:560px)').matches ? 560 : 1100;
+    this.galaxyKnotMaterial = this.galaxyMaterial(1.7, 0);
+    this.galaxyKnotMaterial.blending = T.NormalBlending;
+    this.galaxyKnots = new T.Points(this.makeGalaxyKnotGeometry(knotCount), this.galaxyKnotMaterial);
+    this.galaxyGroup.add(this.galaxyKnots);
+
+    // 한 장짜리 중심 광원 뒤에 실제 XYZ 별을 두어 옆으로 기울였을 때 막대와 팽대부 두께가 보인다.
+    const barCount = matchMedia('(max-width:560px)').matches ? 2600 : 4600;
+    this.galaxyBarMaterial = this.galaxyMaterial(.9, 0);
+    this.galaxyBar = new T.Points(this.makeGalaxyBarGeometry(barCount), this.galaxyBarMaterial);
+    this.galaxyGroup.add(this.galaxyBar);
+
     const coreMaterial = new T.SpriteMaterial({
-      map: this.spriteTexture, color: 0xffc96f, transparent: true, opacity: .55,
+      map: this.spriteTexture, color: 0xffd28a, transparent: true, opacity: .4,
       blending: T.AdditiveBlending, depthWrite: false,
     });
-    this.galaxyCore = new T.Sprite(coreMaterial); this.galaxyCore.scale.set(22, 10, 1);
+    this.galaxyCore = new T.Sprite(coreMaterial); this.galaxyCore.scale.set(16, 9, 1);
     this.galaxyGroup.add(this.galaxyCore);
     this.solarMarker = new T.Mesh(
       new T.SphereGeometry(.46, 12, 8),
@@ -709,7 +840,7 @@ export const cosmic3d = {
       const points = [];
       for (let index = 0; index <= 104; index += 1) {
         const radial = 5 + index / 104 * 46;
-        const angle = arm * Math.PI / 2 + radial * .235;
+        const angle = this.galaxySpiralAngle(arm, radial);
         points.push(new T.Vector3(Math.cos(angle) * radial, .62, Math.sin(angle) * radial));
       }
       const line = new T.Line(
@@ -719,7 +850,7 @@ export const cosmic3d = {
       this.galaxyGuideGroup.add(line);
       const anchor = new T.Object3D();
       const labelRadius = [39, 32, 27, 35][arm];
-      const labelAngle = arm * Math.PI / 2 + labelRadius * .235;
+      const labelAngle = this.galaxySpiralAngle(arm, labelRadius);
       anchor.position.set(Math.cos(labelAngle) * labelRadius, .9, Math.sin(labelAngle) * labelRadius);
       this.galaxyGuideGroup.add(anchor); this._galaxyGuideAnchors.set(id, anchor);
     });
@@ -1854,7 +1985,11 @@ export const cosmic3d = {
       this.solarMotionGroup.visible = true;
       this.galaxyDustMaterial.opacity = .018;
       this.galaxyMaterialMain.opacity = .12;
-      this.galaxyCore.material.opacity = .07;
+      this.galaxyDiskMaterial.opacity = .025;
+      this.galaxyLaneMaterial.opacity = .018;
+      this.galaxyKnotMaterial.opacity = .045;
+      this.galaxyBarMaterial.opacity = .055;
+      this.galaxyCore.material.opacity = .045;
       this.solarMarker.material.opacity = 0;
       this.ambientLight.intensity = .5;
       const cosPitch = Math.cos(this.pitch);
@@ -1914,9 +2049,13 @@ export const cosmic3d = {
 
     const galaxyOpacity = smooth(.84, 1.25, level);
     this.galaxyGroup.visible = galaxyOpacity > .005;
-    this.galaxyDustMaterial.opacity = galaxyOpacity * .06;
-    this.galaxyMaterialMain.opacity = galaxyOpacity * .7 * mix(1, .72, smooth(2.45, 3.05, level));
-    this.galaxyCore.material.opacity = .32 * galaxyOpacity;
+    this.galaxyDustMaterial.opacity = galaxyOpacity * .028;
+    this.galaxyMaterialMain.opacity = galaxyOpacity * .5 * mix(1, .72, smooth(2.45, 3.05, level));
+    this.galaxyDiskMaterial.opacity = galaxyOpacity * .1;
+    this.galaxyLaneMaterial.opacity = galaxyOpacity * .16;
+    this.galaxyKnotMaterial.opacity = galaxyOpacity * .78;
+    this.galaxyBarMaterial.opacity = galaxyOpacity * .38;
+    this.galaxyCore.material.opacity = .16 * galaxyOpacity;
     this.solarMarker.material.opacity = galaxyOpacity * (1 - smooth(2.45, 2.85, level));
     const clusterOpacity = smooth(2.02, 2.46, level);
     this.clusterGroup.visible = clusterOpacity > .005;

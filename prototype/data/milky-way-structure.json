@@ -1,0 +1,39 @@
+{
+  "schema": "earthus.milky-way-structure.v1",
+  "generated": "2026-08-10",
+  "title": {
+    "ko": "우리은하 나선팔 구조",
+    "en": "Milky Way spiral structure"
+  },
+  "diameterLightYears": 100000,
+  "sunDistanceFromCenterLightYears": 26000,
+  "solarOrbitYears": 230000000,
+  "arms": [
+    { "id": "perseus", "ko": "페르세우스자리 팔", "en": "Perseus Arm", "class": "major", "modelArm": 0, "labelRadius": 39 },
+    { "id": "scutum-centaurus", "ko": "방패자리-센타우루스자리 팔", "en": "Scutum-Centaurus Arm", "class": "major", "modelArm": 1, "labelRadius": 32 },
+    { "id": "sagittarius", "ko": "궁수자리 팔", "en": "Sagittarius Arm", "class": "minor", "modelArm": 2, "labelRadius": 27 },
+    { "id": "norma", "ko": "직각자자리 팔", "en": "Norma Arm", "class": "minor", "modelArm": 3, "labelRadius": 35 }
+  ],
+  "orionSpur": {
+    "ko": "오리온자리 가지",
+    "en": "Orion Spur"
+  },
+  "limitations": {
+    "ko": "우리은하 밖에서 촬영한 사진이 아닙니다. 나선팔의 수와 형태는 관측 방법과 새 자료에 따라 달라질 수 있으며, 화면의 선은 현재 3D 별 도식에 맞춘 안내선입니다.",
+    "en": "This is not a photograph taken from outside the Milky Way. The number and shape of its arms can change with observing methods and new data; the lines are guides fitted to this 3D star diagram."
+  },
+  "sources": [
+    {
+      "name": "NASA Solar System Facts",
+      "url": "https://science.nasa.gov/solar-system/solar-system-facts/"
+    },
+    {
+      "name": "NASA The Milky Way Galaxy",
+      "url": "https://science.nasa.gov/resource/the-milky-way-galaxy/"
+    },
+    {
+      "name": "ESA Gaia Milky Way map",
+      "url": "https://www.cosmos.esa.int/web/gaia/milky-way"
+    }
+  ]
+}

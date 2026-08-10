@@ -108,6 +108,10 @@ export const cosmic3d = {
   _motionPaths: new Map(),
   _motionPlanetMeshes: new Map(),
   _motionDistance: 132,
+  _galaxyGuideCatalogPromise: null,
+  _galaxyGuideCatalog: null,
+  _galaxyGuideMode: false,
+  _galaxyGuideAnchors: new Map(),
   _renderCount: 0,
 
   init() {
@@ -122,8 +126,10 @@ export const cosmic3d = {
     this.craftInfo = document.getElementById('cosmicCraftInfo');
     this.motionOpen = document.getElementById('cosmicMotionOpen');
     this.motionInfo = document.getElementById('cosmicMotionInfo');
+    this.galaxyGuideInfo = document.getElementById('cosmicGalaxyGuideInfo');
     if (!this.root || !this.canvas || !this.labels || !this.bodyPicker || !this.bodyInfo
-      || !this.photoInfo || !this.craftPicker || !this.craftInfo || !this.motionOpen || !this.motionInfo) return this;
+      || !this.photoInfo || !this.craftPicker || !this.craftInfo || !this.motionOpen || !this.motionInfo
+      || !this.galaxyGuideInfo) return this;
     this.root.closest('.space-scene')?.classList.add('cosmic-mode');
     document.getElementById('spaceSceneIntro')?.setAttribute('hidden', '');
     document.getElementById('solarExperience')?.setAttribute('hidden', '');
@@ -139,6 +145,7 @@ export const cosmic3d = {
         this.root.classList.remove('is-moving', 'is-loading');
         // 지구로 돌아가기 버튼 외의 장면 전환도 숨은 3D 상태를 남기지 않는다.
         if (this._solarMotionMode) this.closeSolarMotion(false);
+        if (this._galaxyGuideMode) this.closeGalaxyGuide(false);
         if (this._photoMode) this.closePhotoAtlas(false);
         if (this._detailBody) this.closeBody(false);
         if (this._selectedCraft) this.closeCraft(false);
@@ -152,12 +159,14 @@ export const cosmic3d = {
       if (this._selectedPhoto) this.selectPhoto(this._selectedPhoto);
       if (this._selectedCraft) this.showCraftInfo(this._selectedCraft);
       if (this._solarMotionMode) this.showSolarMotionInfo();
+      if (this._galaxyGuideMode) this.showGalaxyGuideInfo();
       this.buildCraftPicker();
       this.updateHud(); this.updateLabels(); this.render();
     });
     this.root.hidden = store.scene !== 'space';
     this.updateHud();
     if (store.scene === 'space') this.activate(store.sceneStage);
+    document.addEventListener('aetherus:galaxy-guide', () => this.openGalaxyGuide());
     return this;
   },
 
@@ -686,7 +695,140 @@ export const cosmic3d = {
     );
     this.solarMarker.position.set(SOLAR_MARKER.x, SOLAR_MARKER.y, SOLAR_MARKER.z);
     this.galaxyGroup.add(this.solarMarker);
+    this.makeGalaxyGuide();
     this.world.add(this.galaxyGroup);
+  },
+
+  makeGalaxyGuide() {
+    const T = this.THREE;
+    this.galaxyGuideGroup = new T.Group();
+    this.galaxyGuideGroup.visible = false;
+    this._galaxyGuideAnchors.clear();
+    const armIds = ['perseus', 'scutum-centaurus', 'sagittarius', 'norma'];
+    armIds.forEach((id, arm) => {
+      const points = [];
+      for (let index = 0; index <= 104; index += 1) {
+        const radial = 5 + index / 104 * 46;
+        const angle = arm * Math.PI / 2 + radial * .235;
+        points.push(new T.Vector3(Math.cos(angle) * radial, .62, Math.sin(angle) * radial));
+      }
+      const line = new T.Line(
+        new T.BufferGeometry().setFromPoints(points),
+        new T.LineBasicMaterial({ color: 0x83e0f2, transparent: true, opacity: arm < 2 ? .72 : .42, depthWrite: false }),
+      );
+      this.galaxyGuideGroup.add(line);
+      const anchor = new T.Object3D();
+      const labelRadius = [39, 32, 27, 35][arm];
+      const labelAngle = arm * Math.PI / 2 + labelRadius * .235;
+      anchor.position.set(Math.cos(labelAngle) * labelRadius, .9, Math.sin(labelAngle) * labelRadius);
+      this.galaxyGuideGroup.add(anchor); this._galaxyGuideAnchors.set(id, anchor);
+    });
+
+    const sunOrbitRadius = Math.hypot(SOLAR_MARKER.x, SOLAR_MARKER.z);
+    const orbitPoints = Array.from({ length: 129 }, (_, index) => {
+      const angle = index / 128 * Math.PI * 2;
+      return new T.Vector3(Math.cos(angle) * sunOrbitRadius, .82, Math.sin(angle) * sunOrbitRadius);
+    });
+    const orbit = new T.Line(
+      new T.BufferGeometry().setFromPoints(orbitPoints),
+      new T.LineDashedMaterial({ color: 0xe8f8fb, transparent: true, opacity: .52, dashSize: 1.4, gapSize: .9, depthWrite: false }),
+    );
+    orbit.computeLineDistances(); this.galaxyGuideGroup.add(orbit);
+    const orbitAnchor = new T.Object3D();
+    orbitAnchor.position.set(Math.cos(-1.18) * sunOrbitRadius, 1, Math.sin(-1.18) * sunOrbitRadius);
+    this.galaxyGuideGroup.add(orbitAnchor); this._galaxyGuideAnchors.set('sun-orbit', orbitAnchor);
+
+    const edgePoints = Array.from({ length: 129 }, (_, index) => {
+      const angle = index / 128 * Math.PI * 2;
+      return new T.Vector3(Math.cos(angle) * 50, .3, Math.sin(angle) * 50);
+    });
+    this.galaxyGuideGroup.add(new T.Line(
+      new T.BufferGeometry().setFromPoints(edgePoints),
+      new T.LineBasicMaterial({ color: 0x83e0f2, transparent: true, opacity: .18, depthWrite: false }),
+    ));
+    const edgeAnchor = new T.Object3D();
+    edgeAnchor.position.set(Math.cos(.72) * 50, .7, Math.sin(.72) * 50);
+    this.galaxyGuideGroup.add(edgeAnchor); this._galaxyGuideAnchors.set('disk-edge', edgeAnchor);
+    const bar = new T.Mesh(
+      new T.BoxGeometry(19, .22, 5.5),
+      new T.MeshBasicMaterial({ color: 0x83e0f2, transparent: true, opacity: .18, depthWrite: false }),
+    );
+    bar.rotation.y = -.38; this.galaxyGuideGroup.add(bar);
+    const center = new T.Object3D(); center.position.set(0, 1, 0);
+    this.galaxyGuideGroup.add(center); this._galaxyGuideAnchors.set('center', center);
+    this.galaxyGroup.add(this.galaxyGuideGroup);
+  },
+
+  loadGalaxyGuideCatalog() {
+    if (this._galaxyGuideCatalogPromise) return this._galaxyGuideCatalogPromise;
+    this._galaxyGuideCatalogPromise = fetch('/data/milky-way-structure.json', { cache: 'no-cache' })
+      .then(response => {
+        if (!response.ok) throw new Error(`MILKY_WAY_STRUCTURE_${response.status}`);
+        return response.json();
+      })
+      .then(document => {
+        if (document.schema !== 'earthus.milky-way-structure.v1' || !Array.isArray(document.arms)
+          || !document.limitations?.ko || !Array.isArray(document.sources)) throw new Error('MILKY_WAY_STRUCTURE_SCHEMA');
+        this._galaxyGuideCatalog = document;
+        return document;
+      });
+    return this._galaxyGuideCatalogPromise;
+  },
+
+  async openGalaxyGuide() {
+    try {
+      await this.ensureEngine();
+      const catalog = await this.loadGalaxyGuideCatalog();
+      if (store.scene !== 'space') await sceneMgr.to('space', { stage: 'milkyway' });
+      if (this._solarMotionMode) this.closeSolarMotion(false);
+      if (this._photoMode) this.closePhotoAtlas(false);
+      if (this._detailBody) this.closeBody(false);
+      if (this._selectedCraft) this.closeCraft(false);
+      if (this._frame) cancelAnimationFrame(this._frame);
+      this._frame = 0; this.level = this.target = TARGET.milkyway; this._stage = 'milkyway';
+      this.yaw = .08; this.pitch = 1.32; this._galaxyGuideMode = true;
+      this.root.classList.remove('is-moving'); this.root.classList.add('is-galaxy-guide');
+      this.galaxyGuideGroup.visible = true; this.galaxyGuideInfo.hidden = false;
+      this.showGalaxyGuideInfo(catalog); this.updateHud(); this.updateMotionControl(); this.render();
+      document.dispatchEvent(new CustomEvent('earthus:galaxy-guide-state', { detail: true }));
+    } catch (error) {
+      console.warn('[galaxy-guide]', error.message);
+      const note = document.getElementById('cosmicNote');
+      if (note) note.textContent = ko() ? '우리은하 구조 자료를 읽지 못했습니다.' : 'Could not load the Milky Way structure guide.';
+    }
+  },
+
+  showGalaxyGuideInfo(catalog = this._galaxyGuideCatalog) {
+    if (!catalog) return;
+    const isKo = ko();
+    document.getElementById('cosmicGalaxyGuideClose').textContent = isKo ? '안내 닫기' : 'Close guide';
+    document.getElementById('cosmicGalaxyGuideKind').textContent = isKo ? '관측 자료 기반 3D 구조도' : 'Observation-based 3D structural diagram';
+    document.getElementById('cosmicGalaxyGuideTitle').textContent = catalog.title[isKo ? 'ko' : 'en'];
+    const facts = document.getElementById('cosmicGalaxyGuideFacts');
+    facts.replaceChildren();
+    const rows = isKo
+      ? [['은하 원반', `지름 약 ${catalog.diameterLightYears.toLocaleString('ko-KR')} 광년`], ['태양 위치', `중심에서 약 ${catalog.sunDistanceFromCenterLightYears.toLocaleString('ko-KR')} 광년`], ['태양 공전', '약 2억 3천만 년']]
+      : [['Galactic disk', `About ${catalog.diameterLightYears.toLocaleString('en-US')} light-years across`], ['Sun', `About ${catalog.sunDistanceFromCenterLightYears.toLocaleString('en-US')} light-years from center`], ['Solar orbit', `About ${Math.round(catalog.solarOrbitYears / 1000000)} million years`]];
+    rows.forEach(([term, value]) => {
+      const dt = document.createElement('dt'); dt.textContent = term;
+      const dd = document.createElement('dd'); dd.textContent = value;
+      facts.append(dt, dd);
+    });
+    document.getElementById('cosmicGalaxyGuideLimit').textContent = catalog.limitations[isKo ? 'ko' : 'en'];
+    const sources = document.getElementById('cosmicGalaxyGuideSources'); sources.replaceChildren();
+    catalog.sources.forEach(source => {
+      const link = document.createElement('a'); link.href = source.url; link.target = '_blank';
+      link.rel = 'noopener noreferrer'; link.textContent = source.name; sources.append(link);
+    });
+  },
+
+  closeGalaxyGuide(render = true) {
+    if (!this._galaxyGuideMode) return;
+    this._galaxyGuideMode = false; this.root.classList.remove('is-galaxy-guide');
+    this.galaxyGuideInfo.hidden = true; this.galaxyGuideGroup.visible = false;
+    document.dispatchEvent(new CustomEvent('earthus:galaxy-guide-state', { detail: false }));
+    this.updateHud(); this.updateMotionControl();
+    if (render) this.render();
   },
 
   loadSolarMotionCatalog() {
@@ -924,7 +1066,7 @@ export const cosmic3d = {
   updateMotionControl() {
     if (!this.motionOpen) return;
     const visible = !!this._motionCatalog && store.scene === 'space' && stageFor(this.level) === 'milkyway'
-      && !this._solarMotionMode && !this._photoMode && !this._detailBody && !this._selectedCraft;
+      && !this._solarMotionMode && !this._galaxyGuideMode && !this._photoMode && !this._detailBody && !this._selectedCraft;
     this.motionOpen.hidden = !visible;
     this.motionOpen.textContent = ko() ? '태양계의 전진 보기 →' : 'See the Solar System move →';
   },
@@ -1551,6 +1693,7 @@ export const cosmic3d = {
     document.getElementById('cosmicMotionOpen')?.addEventListener('click', () => this.openSolarMotion());
     document.getElementById('cosmicMotionBack')?.addEventListener('click', () => this.closeSolarMotion());
     document.getElementById('cosmicMotionReplay')?.addEventListener('click', () => this.replaySolarMotion());
+    document.getElementById('cosmicGalaxyGuideClose')?.addEventListener('click', () => this.closeGalaxyGuide());
   },
 
   pointerDistance() {
@@ -1594,6 +1737,7 @@ export const cosmic3d = {
   },
 
   animateTo(next) {
+    if (this._galaxyGuideMode && Math.abs(next - TARGET.milkyway) > .01) this.closeGalaxyGuide(false);
     if (this._solarMotionMode) this.closeSolarMotion(false);
     if (this._photoMode) this.closePhotoAtlas(false);
     if (this._detailBody) this.closeBody(false);
@@ -1728,6 +1872,7 @@ export const cosmic3d = {
       return;
     }
     this.solarMotionGroup.visible = false;
+    this.galaxyGuideGroup.visible = this._galaxyGuideMode && stageFor(level) === 'milkyway';
     if (this._detailBody) {
       // 8K 원본을 가진 암석 행성은 데스크톱에서 충분히 확대했을 때만 한 장을 더 올린다.
       // 휴대폰에는 4K 한 장만 유지해 128MB급 GPU 텍스처와 발열을 피한다.
@@ -1868,7 +2013,20 @@ export const cosmic3d = {
       });
       this.resolveSolarLabelCollisions();
     } else if (stage === 'milkyway') {
-      this.placeLabel('solar-place', this.solarMarker, ko() ? '태양계는 여기' : 'Solar System');
+      if (this._galaxyGuideMode && this._galaxyGuideCatalog) {
+        const language = ko() ? 'ko' : 'en';
+        this._galaxyGuideCatalog.arms.forEach(arm => {
+          this.placeGalaxyGuideLabel(`guide-${arm.id}`, this._galaxyGuideAnchors.get(arm.id), arm[language]);
+        });
+        this.placeGalaxyGuideLabel('guide-center', this._galaxyGuideAnchors.get('center'), ko() ? '은하 중심' : 'Galactic center', -34, -20);
+        this.placeGalaxyGuideLabel('guide-sun', this.solarMarker,
+          ko() ? `${this._galaxyGuideCatalog.orionSpur.ko} / 태양계` : `${this._galaxyGuideCatalog.orionSpur.en} / Solar System`, 8, -18);
+        this.placeGalaxyGuideLabel('guide-sun-orbit', this._galaxyGuideAnchors.get('sun-orbit'),
+          ko() ? '태양의 은하 공전 궤도' : "Sun's galactic orbit", -42, -14);
+        this.placeGalaxyGuideLabel('guide-disk-edge', this._galaxyGuideAnchors.get('disk-edge'),
+          ko() ? '반지름 약 50,000 광년' : 'Radius about 50,000 light-years', -58, 8);
+        this.resolveGalaxyGuideLabelCollisions();
+      } else this.placeLabel('solar-place', this.solarMarker, ko() ? '태양계는 여기' : 'Solar System');
     } else if (stage === 'galaxies') {
       this.placeLabel('milky-way', this.milkyWay, ko() ? '우리 은하' : 'Milky Way');
     }
@@ -1908,6 +2066,34 @@ export const cosmic3d = {
     label.style.transform = `translate(${x}px,${y}px)`;
   },
 
+  placeGalaxyGuideLabel(id, object, text, offsetX = 6, offsetY = -8) {
+    this.placeLabel(id, object, text, offsetX, offsetY);
+    const label = this.labels.querySelector(`[data-cosmic-label="${id}"]`);
+    if (label) label.dataset.galaxyGuideLabel = 'true';
+  },
+
+  resolveGalaxyGuideLabelCollisions() {
+    const ids = ['guide-center', 'guide-sun', 'guide-sun-orbit', 'guide-disk-edge', 'guide-perseus', 'guide-scutum-centaurus', 'guide-sagittarius', 'guide-norma'];
+    const placed = [];
+    ids.forEach(id => {
+      const label = this.labels.querySelector(`[data-cosmic-label="${id}"]`);
+      if (!label || label.hidden) return;
+      const width = label.offsetWidth || 90; const height = label.offsetHeight || 18;
+      const baseX = Number(label.dataset.labelX); const baseY = Number(label.dataset.labelY);
+      const shifts = [[0,0],[0,-20],[0,20],[-46,0],[46,0],[-46,-20],[46,20]];
+      const fit = shifts.map(([dx, dy]) => ({
+        x: clamp(baseX + dx, 40, Math.max(40, this._width - width - 46)),
+        y: clamp(baseY + dy, 76, Math.max(76, this._height - height - 112)),
+      })).find(candidate => placed.every(box => (
+        candidate.x + width + 7 < box.x || candidate.x > box.x + box.width + 7
+        || candidate.y + height + 5 < box.y || candidate.y > box.y + box.height + 5
+      )));
+      if (!fit) { label.hidden = true; return; }
+      label.style.transform = `translate(${fit.x}px,${fit.y}px)`;
+      placed.push({ ...fit, width, height });
+    });
+  },
+
   resolveSolarLabelCollisions() {
     const priority = [
       'sun', 'earth', 'jupiter', 'saturn', 'uranus', 'neptune',
@@ -1938,6 +2124,16 @@ export const cosmic3d = {
     if (!this.root) return;
     const stage = stageFor(this.level);
     const isKo = ko();
+    if (this._galaxyGuideMode) {
+      document.getElementById('cosmicStage').textContent = isKo ? '우리은하 구조' : 'Milky Way structure';
+      document.getElementById('cosmicScale').textContent = isKo
+        ? '3D 나선팔 안내 · 드래그로 정면과 측면 비교'
+        : '3D spiral-arm guide · drag between face-on and edge-on views';
+      document.getElementById('cosmicHint').textContent = '';
+      document.getElementById('cosmicNote').textContent = this._galaxyGuideCatalog?.limitations?.[isKo ? 'ko' : 'en'] || '';
+      this.root.dataset.stage = 'galaxy-guide';
+      return;
+    }
     if (this._solarMotionMode) {
       document.getElementById('cosmicStage').textContent = isKo ? '앞으로 나아가는 태양계' : 'The Solar System in motion';
       document.getElementById('cosmicScale').textContent = isKo

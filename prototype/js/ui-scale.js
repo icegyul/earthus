@@ -11,6 +11,7 @@ const ROUTES = {
 
 export const scaleRail = {
   root: null,
+  _galaxyGuide: false,
   init() {
     this.root = document.getElementById('scaleRail');
     if (!this.root) return this;
@@ -27,11 +28,20 @@ export const scaleRail = {
       });
     });
     this.root.querySelectorAll('[data-aetherus-act]').forEach(button => {
-      button.addEventListener('click', () => {
+      button.addEventListener('click', async () => {
+        if (button.dataset.aetherusAct === 'galaxy-structure') {
+          await sceneMgr.to('space', { stage: 'milkyway' });
+          document.dispatchEvent(new CustomEvent('aetherus:galaxy-guide'));
+          return;
+        }
         document.dispatchEvent(new CustomEvent('aetherus:photo', {
           detail: button.dataset.aetherusAct === 'webb' ? 'JWST' : 'HST',
         }));
       });
+    });
+    document.addEventListener('earthus:galaxy-guide-state', event => {
+      this._galaxyGuide = !!event.detail;
+      this.render(store.scene, store.sceneStage);
     });
     document.addEventListener('earthus:open-menu', () => {
       this.root.classList.remove('open');
@@ -46,6 +56,7 @@ export const scaleRail = {
   },
   render(next, stage) {
     if (!this.root) return;
+    if (next !== 'space' || stage !== 'milkyway') this._galaxyGuide = false;
     /* 데스크톱 탐험 장면에서는 자동으로 펼친다. 560px 이하에서 112px 트랙을
        자동으로 펴면 태양계 캔버스와 심해 자료를 덮으므로 손잡이만 남긴다.
        사용자가 손잡이를 누르면 모바일에서도 그대로 열 수 있다. */
@@ -60,11 +71,16 @@ export const scaleRail = {
     if (menuLabel) menuLabel.textContent = 'EARTHUS';
     menuTab?.setAttribute('aria-label', 'EARTHUS 메뉴');
     this.root.querySelectorAll('[data-scale-stage]').forEach(button => {
-      const active = button.dataset.scaleStage === stage;
+      const active = !this._galaxyGuide && button.dataset.scaleStage === stage;
       button.classList.toggle('current', active);
       button.setAttribute('aria-current', active ? 'step' : 'false');
       const label = button.querySelector(i18n.lang === 'ko' ? 'span' : 'small');
       button.setAttribute('aria-label', label?.textContent || button.dataset.scaleStage);
+    });
+    this.root.querySelectorAll('[data-aetherus-act]').forEach(button => {
+      const active = this._galaxyGuide && button.dataset.aetherusAct === 'galaxy-structure';
+      button.classList.toggle('current', active);
+      button.setAttribute('aria-current', active ? 'step' : 'false');
     });
   },
 };

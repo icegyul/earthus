@@ -52,11 +52,17 @@ OBS_SOURCES = (
     # CWA 원문을 대만 전용 형식으로 바로 섞지 않는다. 수집기가 단위·시각·좌표를
     # 정규화한 뒤 남긴 실측만 쓴다. 없거나 수집에 실패하면 missing으로 드러난다.
     ("cwa", "wind/cwa-observations.json", "stations"),
+    # 관측소가 빈 바다는 ASCAT 격자로 메운다. 셀은 관측소가 아니므로 화면에서도
+    # 반드시 "위성 해상풍 셀"로 부르고 자체 진로를 만드는 입력으로 쓰지 않는다.
+    ("ascat", "wind/ascat-observations.json", "cells"),
     ("metar", "wind/stations.json", "stations"),
     ("buoy", "ocean/buoys.json", "buoys"),
 )
 OBS_RADIUS_KM = 800
 OBS_FRESH_MINUTES = 180
+# NOAA가 이 제품을 NRT 24시간 이내 지연 범주로 명시하므로 위성만 24시간 창을 쓴다.
+# 지상·부이 3시간과 섞어 "방금"이라고 부르지 않고 화면에 자료원별 기준을 공개한다.
+ASCAT_FRESH_MINUTES = 1440
 UA = {"User-Agent": "earthus/0.1 (+earthus.net)"}
 
 # 과거 자료를 얼마나 자주 다시 받나. 태풍 시즌이 끝나야 갱신되므로 한 달이면 넉넉하다.
@@ -167,6 +173,8 @@ def observation_time(source, row):
         return iso_time(row.get("tm"))
     if source == "cwa":
         return iso_time(row.get("observed"))
+    if source == "ascat":
+        return iso_time(row.get("observed"))
     if source == "metar":
         return iso_time(row.get("obs"))
     return iso_time(row.get("time"))
@@ -186,6 +194,9 @@ def observation_variables(source, row):
         return {"wind": row.get("wind_ms") is not None,
                 "pressure": row.get("pres_hpa") is not None,
                 "temperature": row.get("temp_c") is not None}
+    if source == "ascat":
+        return {"wind": row.get("wind_ms") is not None,
+                "pressure": False, "temperature": False}
     return {"wind": row.get("wspd") is not None,
             "pressure": row.get("pres") is not None,
             "temperature": row.get("atmp") is not None or row.get("wtmp") is not None}
@@ -204,7 +215,8 @@ def load_observations():
             src_rows = doc.get(list_key) or []
             sources.append({
                 "id": source, "path": key, "source": doc.get("source"),
-                "generated": doc.get("generated"), "observedUtc": doc.get("observedUtc"),
+                "generated": doc.get("generated"),
+                "observedUtc": doc.get("observedUtc") or doc.get("observedTo"),
                 "count": len(src_rows),
             })
             for row in src_rows:
@@ -229,11 +241,13 @@ def observation_evidence(lat, lon, pool, now):
     sector_names = [("북", "N"), ("북동", "NE"), ("동", "E"), ("남동", "SE"),
                     ("남", "S"), ("남서", "SW"), ("서", "W"), ("북서", "NW")]
     sectors = [{"dir": ko, "dirEn": en, "n": 0, "freshN": 0,
-                "sources": {"gts": 0, "cwa": 0, "metar": 0, "buoy": 0},
+                "sources": {"gts": 0, "cwa": 0, "ascat": 0, "metar": 0, "buoy": 0},
                 "windN": 0, "pressureN": 0, "temperatureN": 0}
                for ko, en in sector_names]
     by_source = {k: {"n": 0, "freshN": 0, "windN": 0, "pressureN": 0,
-                     "temperatureN": 0, "oldestMinutes": None}
+                     "temperatureN": 0, "oldestMinutes": None,
+                     "freshLimitMinutes": ASCAT_FRESH_MINUTES if k == "ascat" else OBS_FRESH_MINUTES,
+                     "_windSpeeds": [], "_u": [], "_v": []}
                  for k, _, _ in OBS_SOURCES}
     # 받은 요청: 대만·필리핀·러시아 관측이 실제 계산 근거에 들어갔는지 국가별로
     # 숨기지 않는다. PH/RP와 RS/RU는 NOAA 지점표가 시기별로 다른 국가코드를 쓴다.
@@ -259,7 +273,9 @@ def observation_evidence(lat, lon, pool, now):
         observed = observation_time(source, row)
         age = ((now - observed).total_seconds() / 60) if observed else None
         # 미래 시각은 상류 시계 오차일 수 있으므로 신선하다고 처리하지 않는다.
-        if age is not None and 0 <= age <= OBS_FRESH_MINUTES:
+        fresh_limit = ASCAT_FRESH_MINUTES if source == "ascat" else OBS_FRESH_MINUTES
+        is_fresh = age is not None and 0 <= age <= fresh_limit
+        if is_fresh:
             src["freshN"] += 1
             if country is not None:
                 country["freshN"] += 1
@@ -272,10 +288,29 @@ def observation_evidence(lat, lon, pool, now):
                 sec[f"{variable}N"] += 1
                 if country is not None:
                     country[f"{variable}N"] += 1
+        if source == "ascat" and is_fresh and row.get("wind_ms") is not None:
+            src["_windSpeeds"].append(float(row["wind_ms"]))
+            if row.get("u_ms") is not None and row.get("v_ms") is not None:
+                src["_u"].append(float(row["u_ms"]))
+                src["_v"].append(float(row["v_ms"]))
+
+    for source in by_source.values():
+        speeds = source.pop("_windSpeeds")
+        us, vs = source.pop("_u"), source.pop("_v")
+        if speeds:
+            source["meanWindMs"] = round(sum(speeds) / len(speeds), 2)
+            source["maxWindMs"] = round(max(speeds), 2)
+        if us and vs:
+            mean_u, mean_v = sum(us) / len(us), sum(vs) / len(vs)
+            source["vectorMeanWindMs"] = round(math.hypot(mean_u, mean_v), 2)
+            source["vectorMeanDirectionFromDeg"] = round(
+                (math.degrees(math.atan2(-mean_u, -mean_v)) + 360) % 360, 1)
 
     # 지점이 없다는 것은 '안전'이 아니라, 이 반경의 직접 표면 근거가 적다는 뜻이다.
     return {
         "radiusKm": OBS_RADIUS_KM, "freshWithinMinutes": OBS_FRESH_MINUTES,
+        "freshnessBySource": {"surfaceMinutes": OBS_FRESH_MINUTES,
+                              "ascatMinutes": ASCAT_FRESH_MINUTES},
         "at": now.strftime("%Y-%m-%dT%H:%M:00Z"),
         "n": sum(x["n"] for x in by_source.values()),
         "freshN": sum(x["freshN"] for x in by_source.values()),
@@ -285,10 +320,10 @@ def observation_evidence(lat, lon, pool, now):
         "sectors": sectors,
         "sources": pool["sources"], "missing": pool["missing"],
         "note": {
-            "ko": "태풍 중심 반경 800km 안의 최신 지상·부이 실측을 방위별로 센 것입니다. "
+            "ko": "태풍 중심 반경 800km 안의 지상·부이 실측과 ASCAT 위성 해상풍 셀을 방위별로 센 것입니다. "
                   "관측소가 적거나 자료원이 빠진 것은 안전하다는 뜻이 아니라 직접 표면 관측 근거가 제한적이라는 뜻입니다. "
                   "이 수는 자체 진로 예측이나 기관 예보 순위를 만들지 않습니다.",
-            "en": "Latest surface and buoy observations within 800 km of the storm centre, counted by direction. "
+            "en": "Surface and buoy observations plus ASCAT satellite wind cells within 800 km of the storm centre, counted by direction. "
                   "Sparse or missing observations mean limited direct surface evidence, not safety. This does not produce an Earthus track forecast or rank agencies.",
         },
     }

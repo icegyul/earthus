@@ -1293,16 +1293,27 @@ export const cyclones = {
     if (se) {
       const srcName = { gts: ko ? '세계 지상관측 GTS' : 'Global GTS',
                         cwa: ko ? '대만 CWA 지상·부이' : 'Taiwan CWA land & buoys',
+                        ascat: ko ? 'NOAA ASCAT 위성 해상풍 셀' : 'NOAA ASCAT satellite wind cells',
                         metar: 'METAR', buoy: ko ? '해양 부이' : 'Ocean buoys' };
       const bySource = (se.bySource || []).map(x => {
         const name = srcName[x.id] || x.id;
+        const unit = x.id === 'ascat' ? (ko ? '셀' : ' cells') : (ko ? '곳' : '');
+        const freshWindow = x.freshLimitMinutes >= 1440
+          ? (ko ? `${x.freshLimitMinutes / 1440}일` : `${x.freshLimitMinutes / 1440} day`)
+          : (x.freshLimitMinutes >= 60
+            ? (ko ? `${x.freshLimitMinutes / 60}시간` : `${x.freshLimitMinutes / 60} h`)
+            : (ko ? `${x.freshLimitMinutes}분` : `${x.freshLimitMinutes} min`));
+        const wind = x.meanWindMs != null
+          ? (ko ? ` · 평균 ${x.meanWindMs}m/s · 최대 ${x.maxWindMs}m/s`
+                : ` · mean ${x.meanWindMs}m/s · max ${x.maxWindMs}m/s`)
+          : '';
         return ko
-          ? `${name} ${x.n}곳 (최근 ${se.freshWithinMinutes}분 ${x.freshN} · 바람 ${x.windN} · 기압 ${x.pressureN})`
-          : `${name} ${x.n} (${x.freshN} within ${se.freshWithinMinutes} min · wind ${x.windN} · pressure ${x.pressureN})`;
+          ? `${name} ${x.n}${unit} (최근 ${freshWindow} ${x.freshN} · 바람 ${x.windN} · 기압 ${x.pressureN}${wind})`
+          : `${name} ${x.n}${unit} (${x.freshN} within ${freshWindow} · wind ${x.windN} · pressure ${x.pressureN}${wind})`;
       }).join(' · ');
       d[ko ? `주변 표면 관측 · 반경 ${se.radiusKm}km` : `Nearby surface observations · ${se.radiusKm} km`] = ko
-        ? `총 ${se.n}곳 중 최근 ${se.freshWithinMinutes}분 관측 ${se.freshN}곳. ${bySource}`
-        : `${se.n} total; ${se.freshN} observed within ${se.freshWithinMinutes} min. ${bySource}`;
+        ? `관측소·부이·위성 셀 총 ${se.n}개 중 자료원별 최근 기준 ${se.freshN}개. ${bySource}`
+        : `${se.n} stations, buoys and satellite cells; ${se.freshN} meet source-specific freshness limits. ${bySource}`;
       const sectorText = (se.sectors || []).map(x =>
         `${ko ? x.dir : x.dirEn} ${x.n}${ko ? `곳/최근 ${x.freshN}` : `/fresh ${x.freshN}`}`).join(' · ');
       if (sectorText) d[ko ? '방위별 직접 관측' : 'Direct observations by direction'] = sectorText;

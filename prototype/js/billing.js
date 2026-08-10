@@ -57,6 +57,8 @@ export const PLANS = { ...DEFAULT_PLANS, ...(CONFIG.PLANS || {}) };
 export const PAID_FEATURES = [
   { ko: '태풍 유사사례 중심선 — 과거 유사경로의 시각별 중앙값',
     en: 'Cyclone analogue median track — time-step median of similar past tracks' },
+  { ko: '태풍 종료 결과보고서 — 계산 회차·기관별 오차·알고리즘 성적',
+    en: 'Post-cyclone report — archived runs, agency errors and algorithm score' },
   { ko: '되감기 · 이력 — 지난 며칠의 지구를 다시 본다',
     en: 'Rewind & history — replay the past days of Earth', soon: true },
   { ko: '내 지점 기록 — 이 해변·이 산의 지난 30일과 작년 같은 날',

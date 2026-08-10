@@ -33,3 +33,7 @@ verify_jwt = false
 # JWT를 플랫폼 게이트에서도 확인하고, 함수 안에서 SOCIAL_ADMIN_UIDS와 다시 대조한다.
 # 키 저장, 미디어 업로드 준비, 게시 모두 관리자 본인 요청만 허용한다.
 verify_jwt = true
+
+[functions.member-admin]
+# 회원 이메일과 유료 자격을 다룬다. 플랫폼 JWT 확인 뒤 함수 안에서 관리자 UID를 재검증한다.
+verify_jwt = true

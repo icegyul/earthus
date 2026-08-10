@@ -86,6 +86,22 @@ const analog = {
   },
 };
 
+const lifecycleReports = {
+  _by: new Map(),
+  async load() {
+    try {
+      const r = await fetch(`${API.OCEAN}/cyclone-reports.json`, { cache: 'no-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const j = await r.json(); this._by.clear();
+      (j.reports || []).forEach(x => {
+        this._by.set(String(x.id), x);
+        this._by.set(String(x.name || '').toUpperCase(), x);
+      });
+    } catch (e) { console.warn('[태풍 결과보고서] 못 받음 —', e.message); }
+  },
+  get(id, name) { return this._by.get(String(id)) || this._by.get(String(name || '').toUpperCase()); },
+};
+
 /* 일본 기상청(JMA) 공식 태풍 예보.
    ⚠️⚠️ **우리가 만든 값이 하나도 없다.** 진로·강도·약화 전망은 전부 JMA 의 것이고
       우리는 옮기기만 한다. 받은 지적이 정확했다 —
@@ -378,6 +394,7 @@ export const cyclones = {
     /* 과거 유사 사례도 같이 받아 둔다 — 정보 시트를 열 때 이미 있어야 한다.
        ⚠️ await 하되 실패는 무시한다(load 안에서 잡는다). 없으면 그 줄만 안 나온다. */
     await analog.load();
+    await lifecycleReports.load();
     await official.load();
     /* ⚠️ ECMWF 는 실패해도 나머지가 그대로 돌아야 한다 — 셋 다 각자 try 안에서 끝난다 */
     await ecmwfTc.load();
@@ -1218,6 +1235,18 @@ export const cyclones = {
     const ko = i18n.lang === 'ko';
     const a = ALERT[s.alert] || ALERT.Green;
     const d = {};
+    const report = lifecycleReports.get(s.id, s.name);
+    if (report) {
+      const statusKo = { DETECTED: '최초 탐지', ACTIVE: '계산 중', VERIFYING: '종료 확인 중',
+                         PRELIMINARY_REPORT: '잠정 보고서', FINAL_REPORT: '최종 보고서' }[report.status] || report.status;
+      d[ko ? '태풍 분석 세션' : 'Cyclone analysis session'] = ko
+        ? `${statusKo} · 저장된 계산 회차 ${report.snapshotCount || 0}개`
+        : `${report.status} · ${report.snapshotCount || 0} archived runs`;
+      if (this._canSeeEarthusEstimate() && ['PRELIMINARY_REPORT','FINAL_REPORT'].includes(report.status)) {
+        d[ko ? '구독·관리자 결과보고서' : 'Subscriber/admin report'] =
+          `[${ko ? '결과보고서 열기' : 'Open report'}](/cyclone-reports.html?storm=${encodeURIComponent(report.id)})`;
+      }
+    }
     /* ⚠️ 끝난 폭풍에 "등급/최대풍속"을 그대로 보이면 아직 그 세기인 것처럼 읽힌다.
        마지막으로 기록한 시각과, 우리가 아는 사실만 적는다. */
     if (s.ended) {

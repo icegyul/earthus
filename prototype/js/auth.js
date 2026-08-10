@@ -132,6 +132,10 @@ export const auth = {
           진짜 판정은 결제할 때 서버가 다시 한다 (price_for). */
     try { await this.client.rpc('claim_founding'); }
     catch (e) { console.warn('[auth] founding', e?.message || e); }
+    /* 관리자가 이메일로 미리 만든 테스트·학회 초대를 OAuth 가입 뒤 본인이 받는다.
+       초대 목록은 RLS로 닫혀 있고, 함수가 auth.uid()의 이메일만 대조한다. */
+    try { await this.client.rpc('claim_member_invite'); }
+    catch (e) { console.warn('[auth] member invite', e?.message || e); }
 
     const { data, error } = await this.client
       .from('profiles').select('*').eq('id', this.user.id).single();

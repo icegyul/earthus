@@ -45,6 +45,10 @@ IBTRACS = ("https://www.ncei.noaa.gov/data/"
 SRC_TRACKS = "events/cyclone-tracks.json"     # archiver 가 만드는 현재 태풍 경로
 DST_HIST = "ocean/ibtracs-wp.json"
 DST_ANALOG = "ocean/cyclone-analog.json"
+SESSION_KEY = "archive/cyclone-sessions.json"   # 비공개: 당시 계산 회차 원문
+REPORT_KEY = "ocean/cyclone-reports.json"       # 공개 목록: 상태·검증 수치
+OFFICIAL_KEY = "events/typhoon-official.json"
+ECMWF_KEY = "events/typhoon-ecmwf.json"
 # 이미 수집 중인 **실측**만 쓴다. 이 파일들은 각각의 수집기가 실패할 때 옛 파일을
 # 지키므로, 이 분석은 원본 갱신시각·관측시각까지 함께 싣는다.
 OBS_SOURCES = (
@@ -866,6 +870,157 @@ def recurve_stats(sample):
     }
 
 
+def _safe_s3(key, default):
+    try:
+        return json.loads(s3.get_object(Bucket=BUCKET, Key=key)["Body"].read())
+    except Exception:  # noqa: BLE001 - 첫 실행·상류 결측은 명시적 기본값으로 남긴다
+        return default
+
+
+def _storm_key(name):
+    key = str(name or "").upper().strip()
+    head, sep, tail = key.rpartition("-")
+    return head if sep and tail.isdigit() else key
+
+
+def _forecast_groups(storm, rec, official_doc, ecmwf_doc, issued):
+    """그 시각 사용자가 본 미래 좌표를 회차 원문으로 보존한다."""
+    key = _storm_key(storm.get("name"))
+    groups = []
+    estimate = rec.get("estimate") or {}
+    if estimate.get("steps"):
+        groups.append({"agency": "EARTHUS_ANALOG_MEDIAN", "issued": issued,
+                       "steps": estimate["steps"], "notOfficial": True})
+    for item in official_doc.get("storms") or []:
+        if _storm_key(item.get("name") or item.get("key")) != key:
+            continue
+        for agency in item.get("agencies") or []:
+            groups.append({"agency": agency.get("agency"),
+                           "issued": agency.get("issue") or official_doc.get("generated") or issued,
+                           "steps": agency.get("steps") or [], "notOfficial": False})
+    for item in ecmwf_doc.get("storms") or []:
+        if _storm_key(item.get("name")) == key:
+            groups.append({"agency": "ECMWF", "issued": ecmwf_doc.get("generated") or issued,
+                           "steps": item.get("steps") or [], "notOfficial": True})
+    return groups
+
+
+def _final_track(history, name, year):
+    key = _storm_key(name)
+    candidates = [x for x in history.get("storms", [])
+                  if int(x.get("season") or 0) == year and _storm_key(x.get("name")) == key]
+    if not candidates:
+        return None
+    pts = candidates[0].get("pts") or []
+    return [{"lat": p[0], "lon": p[1], "windKt": p[2], "at": p[3]}
+            for p in pts if len(p) >= 4 and p[3]]
+
+
+def _score(groups, actual):
+    """발표 당시 +시간 좌표를 최종 best track의 가장 가까운 6시간 점과 대조한다."""
+    if not actual:
+        return []
+    actual_times = [(iso_time(x["at"]), x) for x in actual]
+    out = []
+    for group in groups:
+        issued = iso_time(group.get("issued"))
+        if not issued:
+            continue
+        rows = []
+        for step in group.get("steps") or []:
+            try:
+                h = int(step.get("h") or 0)
+                lat, lon = float(step["lat"]), float(step["lon"])
+            except (TypeError, ValueError, KeyError):
+                continue
+            if h <= 0:
+                continue
+            target = issued + timedelta(hours=h)
+            nearby = [(abs((at - target).total_seconds()), point)
+                      for at, point in actual_times if at]
+            if not nearby:
+                continue
+            gap, point = min(nearby, key=lambda x: x[0])
+            if gap > 4 * 3600:
+                continue
+            rows.append({"h": h, "errorKm": round(dist_km(lat, lon, point["lat"], point["lon"])),
+                         "verifiedAt": point["at"]})
+        if rows:
+            out.append({"agency": group.get("agency"), "n": len(rows),
+                        "meanErrorKm": round(sum(x["errorKm"] for x in rows) / len(rows)),
+                        "byLead": rows})
+    return out
+
+
+def update_lifecycle(now, tracks, analyses, history):
+    """탐지부터 종료 보고서까지 이어지는 상태와 당시 계산 회차를 보존한다."""
+    state = _safe_s3(SESSION_KEY, {"schema": 1, "sessions": []})
+    sessions = {str(x.get("id")): x for x in state.get("sessions", []) if x.get("id")}
+    by_analysis = {str(x.get("id")): x for x in analyses}
+    official = _safe_s3(OFFICIAL_KEY, {})
+    ecmwf = _safe_s3(ECMWF_KEY, {})
+    stamp = now.strftime("%Y-%m-%dT%H:%M:00Z")
+
+    for storm in tracks.get("storms") or []:
+        sid = str(storm.get("id"))
+        rec = by_analysis.get(sid)
+        session = sessions.get(sid) or {
+            "id": sid, "name": storm.get("name"), "detectedAt": stamp,
+            "status": "DETECTED", "snapshots": [], "events": [{"status": "DETECTED", "at": stamp}],
+        }
+        session["name"] = storm.get("name") or session.get("name")
+        session["lastSeen"] = storm.get("lastSeen") or session.get("lastSeen")
+        session["actualTrack"] = storm.get("track") or session.get("actualTrack") or []
+        wanted = "ACTIVE" if storm.get("live") else "VERIFYING"
+        if session.get("status") in ("DETECTED", "ACTIVE") and session.get("status") != wanted:
+            session["status"] = wanted
+            session["events"].append({"status": wanted, "at": stamp})
+        elif session.get("status") == "DETECTED" and wanted == "ACTIVE":
+            session["status"] = "ACTIVE"
+            session["events"].append({"status": "ACTIVE", "at": stamp})
+
+        if storm.get("live") and rec:
+            last = (session.get("snapshots") or [{}])[-1].get("issuedAt")
+            if not last or last[:13] != stamp[:13]:
+                session.setdefault("snapshots", []).append({
+                    "issuedAt": stamp, "algorithmVersion": 1,
+                    "forecasts": _forecast_groups(storm, rec, official, ecmwf, stamp),
+                    "surfaceEvidence": rec.get("surfaceEvidence"),
+                    "steering": rec.get("steering"), "matches": rec.get("matches"),
+                })
+                session["snapshots"] = session["snapshots"][-240:]
+        if not storm.get("live"):
+            session.setdefault("endedAt", storm.get("lastSeen") or stamp)
+            ended = iso_time(session.get("endedAt"))
+            if ended and now - ended >= timedelta(hours=72) and session["status"] == "VERIFYING":
+                session["status"] = "PRELIMINARY_REPORT"
+                session["events"].append({"status": "PRELIMINARY_REPORT", "at": stamp})
+
+        year = (iso_time(session.get("detectedAt")) or now).year
+        final = _final_track(history, session.get("name"), year)
+        if final and session.get("status") in ("VERIFYING", "PRELIMINARY_REPORT"):
+            session["status"] = "FINAL_REPORT"
+            session["finalTrack"] = final
+            session["events"].append({"status": "FINAL_REPORT", "at": stamp})
+            groups = [g for snap in session.get("snapshots", []) for g in snap.get("forecasts", [])]
+            session["scores"] = _score(groups, final)
+        sessions[sid] = session
+
+    kept = sorted(sessions.values(), key=lambda x: x.get("detectedAt", ""), reverse=True)[:100]
+    private = {"schema": 1, "generated": stamp, "sessions": kept}
+    s3.put_object(Bucket=BUCKET, Key=SESSION_KEY,
+                  Body=json.dumps(private, ensure_ascii=False, separators=(",", ":")).encode(),
+                  ContentType="application/json", CacheControl="private, no-store")
+    reports = [{"id": x["id"], "name": x.get("name"), "status": x.get("status"),
+                "detectedAt": x.get("detectedAt"), "lastSeen": x.get("lastSeen"),
+                "endedAt": x.get("endedAt"), "snapshotCount": len(x.get("snapshots", [])),
+                "scores": x.get("scores", []),
+                "note": "FINAL_REPORT만 IBTrACS best track으로 검증됨. PRELIMINARY_REPORT는 잠정 상태."}
+               for x in kept]
+    put(REPORT_KEY, {"generated": stamp, "count": len(reports), "reports": reports}, 1800)
+    return {"sessions": len(kept), "active": sum(x.get("status") == "ACTIVE" for x in kept)}
+
+
 def handler(event, context):
     history, rebuilt = load_history()
 
@@ -923,7 +1078,8 @@ def handler(event, context):
         "storms": out,
     }
     kb = put(DST_ANALOG, doc, 1800) / 1024
+    lifecycle = update_lifecycle(now, cur, out, history)
     print(f"[analog] 과거 {history['count']}개 · 현재 {len(out)}개 "
           f"· 이력재구축 {rebuilt} · {kb:.0f}KB")
     return {"ok": True, "history": history["count"], "storms": len(out),
-            "rebuilt": rebuilt}
+            "rebuilt": rebuilt, "lifecycle": lifecycle}

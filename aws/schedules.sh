@@ -28,6 +28,8 @@ REGION="${AWS_REGION:-ap-northeast-2}"
 #     자정에 돌리면 날짜가 넘어가 어느 날의 판정인지 흐려진다.
 JOBS=(
   "gk2a-clouds|rate(10 minutes)|천리안2A 한반도 영상"
+  # 대만 CWA의 실황은 태풍 표면 근거에만 쓴다. 자체 진로 예보나 기관 순위에는 쓰지 않는다.
+  "cwa-observations|rate(10 minutes)|대만 CWA 지상 실황 (태풍 표면 근거)"
   "pressure-grid|rate(1 hour)|동아시아 기압 격자 (등압선)"
   "air-state|cron(20 12 * * ? *)|하루 한 번 대기 상태 판정 (KST 21:20)"
   # 2026-08-03 에 함께 만든 것들. ⚠️ 만든 날 여기 안 넣으면 손으로만 돈다.

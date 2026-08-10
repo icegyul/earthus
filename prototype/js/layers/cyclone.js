@@ -1292,6 +1292,7 @@ export const cyclones = {
     const se = an?.surfaceEvidence;
     if (se) {
       const srcName = { gts: ko ? '세계 지상관측 GTS' : 'Global GTS',
+                        cwa: ko ? '대만 CWA 지상·부이' : 'Taiwan CWA land & buoys',
                         metar: 'METAR', buoy: ko ? '해양 부이' : 'Ocean buoys' };
       const bySource = (se.bySource || []).map(x => {
         const name = srcName[x.id] || x.id;
@@ -1305,6 +1306,15 @@ export const cyclones = {
       const sectorText = (se.sectors || []).map(x =>
         `${ko ? x.dir : x.dirEn} ${x.n}${ko ? `곳/최근 ${x.freshN}` : `/fresh ${x.freshN}`}`).join(' · ');
       if (sectorText) d[ko ? '방위별 직접 관측' : 'Direct observations by direction'] = sectorText;
+      const regional = (se.regionalEvidence || []).map(x => {
+        const name = { taiwan: ko ? '대만' : 'Taiwan',
+                       philippines: ko ? '필리핀' : 'Philippines',
+                       russia: ko ? '러시아' : 'Russia' }[x.id] || x.id;
+        return ko
+          ? `${name} ${x.n}곳/최근 ${x.freshN} · 바람 ${x.windN} · 기압 ${x.pressureN}`
+          : `${name} ${x.n}/fresh ${x.freshN} · wind ${x.windN} · pressure ${x.pressureN}`;
+      }).join(' · ');
+      if (regional) d[ko ? '주변 국가 표면 근거' : 'Nearby country surface evidence'] = regional;
       const times = (se.sources || []).map(x => {
         const label = srcName[x.id] || x.id;
         const at = x.observedUtc || x.generated || '—';

@@ -70,31 +70,34 @@ export const landObs = {
   },
 
   async refresh() {
-    /* 전지구는 GTS SYNOP + METAR, 한국은 기상청 ASOS 96곳, 일본은 JMA AMeDAS 대표 지점을
+    /* 전지구는 GTS SYNOP + METAR, 한국은 기상청 ASOS 96곳, 일본은 JMA AMeDAS 대표 지점,
+       대만은 CWA 전 측후소를
        같은 '실황 관측' 층에 놓는다.
        ⚠️ 하나가 실패해도 다른 관측망은 보여야 한다. Promise.all 로 묶어 한쪽
           장애가 전체를 빈 지도로 만들면 '관측 없음'처럼 읽힌다. */
-    const [r, rg, rk, rj] = await Promise.all([
+    const [r, rg, rk, rj, rc] = await Promise.all([
       fetch(`${API.WIND}/stations.json`, { cache: 'no-cache' }).catch(() => null),
       fetch(`${API.WIND}/gts-global.json`, { cache: 'no-cache' }).catch(() => null),
       fetch(`${API.WIND}/kma-aws.json`, { cache: 'no-cache' }).catch(() => null),
       fetch(`${API.WIND}/jp-amedas.json`, { cache: 'no-cache' }).catch(() => null),
+      fetch(`${API.WIND}/cwa-observations.json`, { cache: 'no-cache' }).catch(() => null),
     ]);
-    // ⚠️ S3 는 없는 객체에 403 을 준다(404 아님). 넷 다 없을 때만 실패로 올린다.
-    if (!r?.ok && !rg?.ok && !rk?.ok && !rj?.ok) {
-      throw new Error(`stations ${r?.status || 'network'} · gts ${rg?.status || 'network'} · kma ${rk?.status || 'network'} · jma ${rj?.status || 'network'}`);
+    // ⚠️ S3 는 없는 객체에 403 을 준다(404 아님). 다섯 자료원이 모두 없을 때만 실패로 올린다.
+    if (!r?.ok && !rg?.ok && !rk?.ok && !rj?.ok && !rc?.ok) {
+      throw new Error(`stations ${r?.status || 'network'} · gts ${rg?.status || 'network'} · kma ${rk?.status || 'network'} · jma ${rj?.status || 'network'} · cwa ${rc?.status || 'network'}`);
     }
     const j = r?.ok ? await r.json() : { stations: [], count: 0 };
     const g = rg?.ok ? await rg.json() : { stations: [], count: 0 };
     const k = rk?.ok ? await rk.json() : { stations: [], count: 0 };
     const a = rj?.ok ? await rj.json() : { stations: [], count: 0 };
+    const c = rc?.ok ? await rc.json() : { stations: [], count: 0 };
     this.meta = {
-      generated: [j.generated, g.generated, k.generated, a.time].filter(Boolean).sort().at(-1),
-      source: [j.source, g.source, k.source, a.source].filter(Boolean).join(' + '),
-      count: (j.count || 0) + (g.count || 0) + (k.count || 0) + (a.count || 0),
-      note: { metar: j.note || null, gts: g.note || null, kma: k.note || null, jma: a.note || null },
+      generated: [j.generated, g.generated, k.generated, a.time, c.generated].filter(Boolean).sort().at(-1),
+      source: [j.source, g.source, k.source, a.source, c.source].filter(Boolean).join(' + '),
+      count: (j.count || 0) + (g.count || 0) + (k.count || 0) + (a.count || 0) + (c.landCount || 0),
+      note: { metar: j.note || null, gts: g.note || null, kma: k.note || null, jma: a.note || null, cwa: c.terms || null },
       failed: [!r?.ok ? 'METAR' : null, !rg?.ok ? 'GTS SYNOP' : null, !rk?.ok ? 'KMA ASOS' : null,
-        !rj?.ok ? 'JMA AMeDAS' : null].filter(Boolean),
+        !rj?.ok ? 'JMA AMeDAS' : null, !rc?.ok ? 'CWA Taiwan' : null].filter(Boolean),
     };
     const ko = i18n.lang === 'ko';
 
@@ -181,6 +184,32 @@ export const landObs = {
         lat: s.lat, lon: s.lon,
         kind: 'landobs', color: '#b4d978', _place: true,
         data: { _landobs: true, _gtsSynop: true, ...d },
+      });
+    });
+
+    /* 대만 CWA 전 측후소. 태풍 주변 근거 계산에 쓰는 같은 정규화 파일을 지도도
+       읽는다. 부이는 해양 부이 레이어에서 다루므로 여기서는 land만 — 같은 점을
+       두 레이어에 중복해 놓지 않는다. 원문 시각·CWA 출처를 그대로 남긴다. */
+    (c.stations || []).filter(s => s.platform === 'land').forEach(s => {
+      if (s.lat == null || s.lon == null) return;
+      const d = {};
+      if (s.temp_c != null) d[ko ? '기온' : 'Temperature'] = i18n.temp(s.temp_c, 1);
+      if (s.humid_pct != null) d[ko ? '습도' : 'Humidity'] = `${Math.round(s.humid_pct)}%`;
+      if (s.wind_ms != null) d[ko ? '바람' : 'Wind'] = `${s.wind_ms.toFixed(1)} m/s ${compass(s.wind_dir)}`;
+      if (s.pres_hpa != null) d[ko ? '기압' : 'Pressure'] = `${s.pres_hpa.toFixed(1)} hPa`;
+      if (s.rain_mm != null) d[ko ? '강수' : 'Rain'] = `${s.rain_mm.toFixed(1)} mm`;
+      d[ko ? '관측소' : 'Station'] = `${s.name} · ${s.sourceStationId || s.id}`;
+      if (s.observed) d[ko ? '관측 시각' : 'Observed'] = s.observed;
+      d[ko ? '출처' : 'Source'] = c.source || 'Taiwan CWA Open Data';
+      d['_note'] = ko
+        ? '대만 중앙기상서(CWA)의 지상 **실황 관측**입니다. 예보가 아닙니다.'
+        : 'A ground **observation** from Taiwan CWA — not a forecast.';
+      items.push({
+        id: `cwa-${s.id}`,
+        name: '',
+        lat: s.lat, lon: s.lon,
+        kind: 'landobs', color: '#b493e8', _place: true,
+        data: { _landobs: true, _cwa: true, ...d },
       });
     });
 

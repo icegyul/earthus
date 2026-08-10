@@ -49,6 +49,9 @@ DST_ANALOG = "ocean/cyclone-analog.json"
 # 지키므로, 이 분석은 원본 갱신시각·관측시각까지 함께 싣는다.
 OBS_SOURCES = (
     ("gts", "wind/gts-global.json", "stations"),
+    # CWA 원문을 대만 전용 형식으로 바로 섞지 않는다. 수집기가 단위·시각·좌표를
+    # 정규화한 뒤 남긴 실측만 쓴다. 없거나 수집에 실패하면 missing으로 드러난다.
+    ("cwa", "wind/cwa-observations.json", "stations"),
     ("metar", "wind/stations.json", "stations"),
     ("buoy", "ocean/buoys.json", "buoys"),
 )
@@ -141,6 +144,15 @@ def iso_time(value):
     if not value:
         return None
     text = str(value).strip()
+    # CWA는 +08:00, 다른 자료원은 Z·숫자 UTC를 쓴다. Python 표준 파서로 먼저
+    # 읽으면 공백 구분 ISO 시각도 빠뜨리지 않는다. 시간대가 빠진 CWA 시각은
+    # 추측해 UTC로 바꾸지 않고 None으로 남긴다.
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        if parsed.tzinfo is not None:
+            return parsed.astimezone(timezone.utc)
+    except ValueError:
+        pass
     for form in ("%Y%m%d%H%M", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"):
         try:
             parsed = datetime.strptime(text, form)
@@ -153,6 +165,8 @@ def iso_time(value):
 def observation_time(source, row):
     if source == "gts":
         return iso_time(row.get("tm"))
+    if source == "cwa":
+        return iso_time(row.get("observed"))
     if source == "metar":
         return iso_time(row.get("obs"))
     return iso_time(row.get("time"))
@@ -166,6 +180,10 @@ def observation_variables(source, row):
                 "temperature": row.get("ta") is not None}
     if source == "metar":
         return {"wind": row.get("wspd_kt") is not None,
+                "pressure": row.get("pres_hpa") is not None,
+                "temperature": row.get("temp_c") is not None}
+    if source == "cwa":
+        return {"wind": row.get("wind_ms") is not None,
                 "pressure": row.get("pres_hpa") is not None,
                 "temperature": row.get("temp_c") is not None}
     return {"wind": row.get("wspd") is not None,
@@ -211,12 +229,19 @@ def observation_evidence(lat, lon, pool, now):
     sector_names = [("북", "N"), ("북동", "NE"), ("동", "E"), ("남동", "SE"),
                     ("남", "S"), ("남서", "SW"), ("서", "W"), ("북서", "NW")]
     sectors = [{"dir": ko, "dirEn": en, "n": 0, "freshN": 0,
-                "sources": {"gts": 0, "metar": 0, "buoy": 0},
+                "sources": {"gts": 0, "cwa": 0, "metar": 0, "buoy": 0},
                 "windN": 0, "pressureN": 0, "temperatureN": 0}
                for ko, en in sector_names]
     by_source = {k: {"n": 0, "freshN": 0, "windN": 0, "pressureN": 0,
                      "temperatureN": 0, "oldestMinutes": None}
                  for k, _, _ in OBS_SOURCES}
+    # 받은 요청: 대만·필리핀·러시아 관측이 실제 계산 근거에 들어갔는지 국가별로
+    # 숨기지 않는다. PH/RP와 RS/RU는 NOAA 지점표가 시기별로 다른 국가코드를 쓴다.
+    regional = {"taiwan": {"n": 0, "freshN": 0, "windN": 0, "pressureN": 0, "temperatureN": 0},
+                "philippines": {"n": 0, "freshN": 0, "windN": 0, "pressureN": 0, "temperatureN": 0},
+                "russia": {"n": 0, "freshN": 0, "windN": 0, "pressureN": 0, "temperatureN": 0}}
+    country_group = {"TW": "taiwan", "PH": "philippines", "RP": "philippines",
+                     "RS": "russia", "RU": "russia"}
 
     for source, rlat, rlon, row in pool["rows"]:
         km = dist_km(lat, lon, rlat, rlon)
@@ -224,7 +249,11 @@ def observation_evidence(lat, lon, pool, now):
             continue
         sec = sectors[dir_index(bearing(lat, lon, rlat, rlon))]
         src = by_source[source]
+        group = country_group.get(str(row.get("ctry") or row.get("country") or "").upper())
+        country = regional.get(group) if group else None
         src["n"] += 1
+        if country is not None:
+            country["n"] += 1
         sec["n"] += 1
         sec["sources"][source] += 1
         observed = observation_time(source, row)
@@ -232,6 +261,8 @@ def observation_evidence(lat, lon, pool, now):
         # 미래 시각은 상류 시계 오차일 수 있으므로 신선하다고 처리하지 않는다.
         if age is not None and 0 <= age <= OBS_FRESH_MINUTES:
             src["freshN"] += 1
+            if country is not None:
+                country["freshN"] += 1
             sec["freshN"] += 1
         if age is not None and age >= 0:
             src["oldestMinutes"] = max(src["oldestMinutes"] or 0, round(age))
@@ -239,6 +270,8 @@ def observation_evidence(lat, lon, pool, now):
             if present:
                 src[f"{variable}N"] += 1
                 sec[f"{variable}N"] += 1
+                if country is not None:
+                    country[f"{variable}N"] += 1
 
     # 지점이 없다는 것은 '안전'이 아니라, 이 반경의 직접 표면 근거가 적다는 뜻이다.
     return {
@@ -247,6 +280,8 @@ def observation_evidence(lat, lon, pool, now):
         "n": sum(x["n"] for x in by_source.values()),
         "freshN": sum(x["freshN"] for x in by_source.values()),
         "bySource": [{"id": key, **value} for key, value in by_source.items()],
+        # 0인 나라도 남긴다. "없음"과 "계산에서 빼먹음"을 구분하기 위해서다.
+        "regionalEvidence": [{"id": key, **value} for key, value in regional.items()],
         "sectors": sectors,
         "sources": pool["sources"], "missing": pool["missing"],
         "note": {

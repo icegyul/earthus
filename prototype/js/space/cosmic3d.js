@@ -1136,8 +1136,8 @@ export const cosmic3d = {
       this._photoMode = telescope;
       this._photoFov = 56;
       this.root.classList.add('is-photo');
-      document.querySelectorAll('#menuMain [data-act="space-hubble"],#menuMain [data-act="space-webb"]')
-        .forEach(button => button.classList.toggle('on', button.dataset.act === (telescope === 'JWST' ? 'space-webb' : 'space-hubble')));
+      document.querySelectorAll('#scaleRail [data-aetherus-act]')
+        .forEach(button => button.classList.toggle('current', button.dataset.aetherusAct === (telescope === 'JWST' ? 'webb' : 'hubble')));
       this.photoGroup.visible = true;
       const T = this.THREE;
       items.forEach((photo, index) => {
@@ -1202,8 +1202,8 @@ export const cosmic3d = {
   closePhotoAtlas(render = true) {
     if (!this._photoMode) return;
     this._photoMode = null; this.root.classList.remove('is-photo');
-    document.querySelectorAll('#menuMain [data-act="space-hubble"],#menuMain [data-act="space-webb"]')
-      .forEach(button => button.classList.remove('on'));
+    document.querySelectorAll('#scaleRail [data-aetherus-act]')
+      .forEach(button => button.classList.remove('current'));
     this.photoGroup.visible = false; this.photoInfo.hidden = true;
     document.getElementById('cosmicPhotoImage').removeAttribute('src');
     this.clearPhotoAtlas(); this.yaw = .72; this.pitch = .56;

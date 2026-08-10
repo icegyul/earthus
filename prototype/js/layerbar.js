@@ -1,9 +1,9 @@
-// 오른쪽 2단 메뉴 — 1단은 큰 갈래, 2단은 지구 스타일
+// 왼쪽 EARTHUS 2단 메뉴 — 1단은 큰 갈래, 2단은 지구 스타일
 //
 // 구조
 //   손잡이(#menuTab) 만 화면에 남는다. 확대 여부와 무관하게 항상 있다.
-//   누르면 1단(#menuMain)이 오른쪽에서 밀려 나오고,
-//   거기서 "지구"를 누르면 2단(#menuSub)이 그 왼쪽으로 한 번 더 나온다.
+//   누르면 1단(#menuMain)이 왼쪽에서 밀려 나오고,
+//   거기서 "지구"를 누르면 2단(#menuSub)이 그 오른쪽으로 한 번 더 나온다.
 //
 // 왜 2단인가
 //   한 화면에 레이어를 다 펼치면 다시 "설정창 열어둔 앱"이 된다.
@@ -588,11 +588,16 @@ export const layerBar = {
 
     tab.onclick = () => {
       this.open = !this.open;
+      if (this.open) document.dispatchEvent(new CustomEvent('earthus:open-menu'));
       /* ⚠️ 열 때도 2단을 접는다. 닫을 때만 접으면 한 번 '지구'를 펼친 뒤로는
          메뉴를 열 때마다 2단이 따라 나온다 — "누르기 전엔 안 보인다"가 깨진다. */
       this.sub = null;
       apply();
     };
+    document.addEventListener('earthus:close-menu', () => {
+      if (!this.open) return;
+      this.open = false; this.sub = null; apply();
+    });
 
     /* data-open 을 가진 1단 항목(지구·Alert)은 2단을 토글한다.
        같은 걸 다시 누르면 접히고, 다른 걸 누르면 그쪽으로 갈아탄다. */
@@ -662,10 +667,10 @@ export const layerBar = {
       fold.setAttribute('aria-label', `${label?.textContent || ''}. ${hint?.textContent || ''}`);
     }
 
-    /* 안전·뉴스·LAB·질문·설정은 어느 장면에서도 남긴다.
-       우주에는 인공위성, 심해에는 취미(바다 조건)를 남기고 나머지 지구 조작만 접는다. */
+    /* EARTHUS는 우주에서도 전체 메뉴를 유지한다. 장면이 브랜드를 바꾸거나
+       지구로 돌아가는 길을 숨기면 두 세계가 한 공간이라는 구조가 끊긴다. */
     const hiddenAway = next === 'space'
-      ? ['[data-open="earth"]', '[data-act="sat"]', '[data-act="flight"]', '[data-act="outdoor"]', '[data-act="earth-home"]', '[data-act="earth-surface"]', '[data-act="earth-trench"]', '[data-act="locate"]', '[data-act="globe"]']
+      ? []
       : next === 'ocean'
         ? ['[data-open="earth"]', '[data-act="sat"]', '[data-act="flight"]', '[data-act="locate"]', '[data-act="globe"]']
         : [];
@@ -678,15 +683,10 @@ export const layerBar = {
       const button = main.querySelector(selector);
       if (button) button.hidden = hiddenAway.includes(selector);
     });
-    main.querySelectorAll('.mm-space-route').forEach(item => { item.hidden = !space; });
     const activeEarthRoute = next === 'earth' ? 'earth-home'
       : store.sceneStage === 'surface' ? 'earth-surface' : 'earth-trench';
     main.querySelectorAll('.mm-earth-route').forEach(item => {
       item.classList.toggle('on', !space && item.dataset.act === activeEarthRoute);
-    });
-    const activeSpaceRoute = `space-${store.sceneStage || 'solar'}`;
-    main.querySelectorAll('.mm-space-route[data-act]').forEach(item => {
-      item.classList.toggle('on', space && item.dataset.act === activeSpaceRoute);
     });
 
     // 지구 레이어 2단이 열린 채 장면을 떠나면 빈 맥락의 패널을 남기지 않는다.

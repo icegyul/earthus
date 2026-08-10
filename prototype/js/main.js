@@ -41,9 +41,9 @@ import { apiKeysPanel } from './ui-apikeys.js';
 import { eventPanel } from './ui-events.js';
 import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
-import { scaleRail } from './ui-scale.js?v=20260810-mobile1';
+import { scaleRail } from './ui-scale.js?v=20260810-branddock1';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
-import { cosmic3d } from './space/cosmic3d.js?v=20260810-thermal2';
+import { cosmic3d } from './space/cosmic3d.js?v=20260810-branddock1';
 import { trenchCards } from './ocean/trenchcards.js';
 import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-globe3';
 
@@ -159,11 +159,10 @@ async function boot() {
   layerBar.onAction('earth-home', () => sceneMgr.to('earth', { stage: 'earth' }));
   layerBar.onAction('earth-surface', () => sceneMgr.to('ocean', { stage: 'surface' }));
   layerBar.onAction('earth-trench', () => sceneMgr.to('ocean', { stage: 'trench' }));
-  layerBar.onAction('space-solar', () => sceneMgr.to('space', { stage: 'solar' }));
-  layerBar.onAction('space-milkyway', () => sceneMgr.to('space', { stage: 'milkyway' }));
-  layerBar.onAction('space-galaxies', () => sceneMgr.to('space', { stage: 'galaxies' }));
-  layerBar.onAction('space-hubble', () => cosmic3d.openPhotoAtlas('HST'));
-  layerBar.onAction('space-webb', () => cosmic3d.openPhotoAtlas('JWST'));
+  document.addEventListener('aetherus:photo', async event => {
+    if (store.scene !== 'space') await sceneMgr.to('space', { stage: 'solar' });
+    await cosmic3d.openPhotoAtlas(event.detail);
+  });
   activeBar.init();       // 지금 켜진 레이어 줄 (감사 3차)
   search.init();          // ⌘K · 우상단 돋보기
   /* ⚠️ 오늘의 볼거리 칩(최고 파고·수온·기온)은 **첫 화면에서 뺐다.**

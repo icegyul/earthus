@@ -15,7 +15,9 @@ export const scaleRail = {
     this.root = document.getElementById('scaleRail');
     if (!this.root) return this;
     this.root.querySelector('.scale-handle')?.addEventListener('click', () => {
-      this.root.classList.toggle('open');
+      const opening = !this.root.classList.contains('open');
+      if (opening) document.dispatchEvent(new CustomEvent('earthus:close-menu'));
+      this.root.classList.toggle('open', opening);
       this.root.setAttribute('aria-expanded', String(this.root.classList.contains('open')));
     });
     this.root.querySelectorAll('[data-scale-stage]').forEach(button => {
@@ -23,6 +25,17 @@ export const scaleRail = {
         const [next, stage] = ROUTES[button.dataset.scaleStage] || [];
         if (next) sceneMgr.to(next, { stage });
       });
+    });
+    this.root.querySelectorAll('[data-aetherus-act]').forEach(button => {
+      button.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('aetherus:photo', {
+          detail: button.dataset.aetherusAct === 'webb' ? 'JWST' : 'HST',
+        }));
+      });
+    });
+    document.addEventListener('earthus:open-menu', () => {
+      this.root.classList.remove('open');
+      this.root.setAttribute('aria-expanded', 'false');
     });
     store.on('scene', (next, stage) => this.render(next, stage));
     i18n.onChange(() => this.render(store.scene, store.sceneStage));
@@ -40,13 +53,12 @@ export const scaleRail = {
     this.root.classList.toggle('open', autoOpen);
     this.root.setAttribute('aria-expanded', String(autoOpen));
     this.root.querySelector('.scale-handle').textContent = 'AETHERUS';
-    /* 받은 요청: "우주로 나가면 Aetherus 메뉴, 지구로 가면 earthus 메뉴".
-       바다도 우리가 사는 지구의 영역이므로 space 장면만 Aetherus로 바꾼다. */
-    const menuBrand = next === 'space' ? 'AETHERUS' : 'EARTHUS';
+    /* AETHERUS와 EARTHUS는 장면에 따라 교체하지 않는다. 우주에서도 EARTHUS로
+       즉시 돌아갈 수 있어야 하므로 두 손잡이를 왼쪽에 함께 유지한다. */
     const menuTab = document.getElementById('menuTab');
     const menuLabel = menuTab?.querySelector('.mt-label');
-    if (menuLabel) menuLabel.textContent = menuBrand;
-    menuTab?.setAttribute('aria-label', `${menuBrand} 메뉴`);
+    if (menuLabel) menuLabel.textContent = 'EARTHUS';
+    menuTab?.setAttribute('aria-label', 'EARTHUS 메뉴');
     this.root.querySelectorAll('[data-scale-stage]').forEach(button => {
       const active = button.dataset.scaleStage === stage;
       button.classList.toggle('current', active);

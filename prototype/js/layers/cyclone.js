@@ -856,7 +856,7 @@ export const cyclones = {
     const guidance = analog.get(s.id, s.name)?.guidance;
     const steps = (guidance?.steps || []).filter(x => x.lat != null && x.lon != null);
     if (steps.length < 2) return;
-    const color = Cesium.Color.fromCssColorString('#42f5c8');
+    const color = Cesium.Color.fromCssColorString('#ff4d5f');
     const alpha = { high: 0.96, medium: 0.72, low: 0.46 };
     for (let i = 1; i < steps.length; i += 1) {
       const grade = steps[i].confidence || 'low';
@@ -990,7 +990,7 @@ export const cyclones = {
     if (this._canSeeEarthusEstimate() && (analog.get(s.id, s.name)?.guidance?.steps || []).length > 1) {
       const guide = analog.get(s.id, s.name).guidance;
       const last = guide.steps[guide.steps.length - 1];
-      rows.push(row('#42f5c8', true,
+      rows.push(row('#ff4d5f', true,
         ko ? 'EARTHUS 자료 종합선 · 구독/관리자' : 'EARTHUS multi-source guidance · subscriber/admin',
         ko ? `기관·ECMWF·이동·다층 지향류 종합 · +${last.h}시간 · ${last.confidence} · 공식 예보 아님`
            : `Agencies, ECMWF, motion and deep-layer flow · +${last.h} h · ${last.confidence} · not official`));

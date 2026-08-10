@@ -19,7 +19,10 @@ import { planetOrbit, planetPositions } from './kepler.js';
 
 const IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const BODY_ORDER = ['mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
+const SURFACE_IDS = [...IDS, 'moon'];
 const PLANET_TEXTURE_ROOT = '/space/planets';
+const PLANET_TEXTURE_VERSION = '20260810b';
+const planetTextureUrl = path => `${PLANET_TEXTURE_ROOT}/${path}?v=${PLANET_TEXTURE_VERSION}`;
 const PLANETS = {
   mercury: { ko: '수성', en: 'Mercury', color: 0xaaa7a0, radius: .38 },
   venus: { ko: '금성', en: 'Venus', color: 0xd7b575, radius: .52 },
@@ -161,7 +164,7 @@ export const cosmic3d = {
       await this.ensureEngine();
       if (store.scene !== 'space') { this.root.classList.remove('is-loading'); return; }
       // 첫 장면은 색상 구로 즉시 열고, 작은 표면 지도는 뒤에서 한 번만 올린다.
-      // 512×256 8장은 압축 전 GPU 메모리도 합계 약 4MB라 모바일에서 유지한다.
+      // 512×256 9장과 고리 한 장은 압축 전 GPU 메모리도 합계 약 4.6MB라 모바일에서 유지한다.
       this.loadPlanetTextures();
       await this.loadSpacecraftCatalog();
       if (store.scene !== 'space') { this.root.classList.remove('is-loading'); return; }
@@ -291,7 +294,7 @@ export const cosmic3d = {
       const point = positions[id];
       const material = new T.MeshStandardMaterial({
         color: meta.color, roughness: .84, metalness: 0,
-        emissive: 0x242424, emissiveIntensity: .45,
+        emissive: 0x242424, emissiveIntensity: id === 'uranus' ? .06 : .45,
       });
       const mesh = new T.Mesh(new T.SphereGeometry(meta.radius, 28, 18), material);
       mesh.position.set(point.x * scale, point.z * scale, point.y * scale);
@@ -301,10 +304,10 @@ export const cosmic3d = {
 
       if (id === 'saturn') {
         const ring = new T.Mesh(
-          new T.RingGeometry(1.28, 2.02, 48),
-          new T.MeshBasicMaterial({ color: 0xd9ca9c, transparent: true, opacity: .5, side: T.DoubleSide, depthWrite: false }),
+          this.makeRadialRingGeometry(1.28, 2.02, 96),
+          new T.MeshBasicMaterial({ color: 0xd9ca9c, transparent: true, opacity: .22, side: T.DoubleSide, depthWrite: false }),
         );
-        ring.rotation.x = Math.PI / 2; mesh.add(ring);
+        ring.rotation.x = Math.PI / 2; mesh.add(ring); this.saturnMiniRing = ring;
       }
       const orbit = planetOrbit(id, new Date(), 150);
       const orbitGeometry = new T.BufferGeometry().setFromPoints(orbit.map(item => new T.Vector3(
@@ -322,12 +325,25 @@ export const cosmic3d = {
     this.solarGroup.add(this.spacecraftGroup);
   },
 
-  loadSurfaceTexture(url) {
+  makeRadialRingGeometry(inner, outer, segments = 128) {
+    const geometry = new this.THREE.RingGeometry(inner, outer, segments, 1);
+    const positions = geometry.attributes.position;
+    const uvs = geometry.attributes.uv;
+    for (let index = 0; index < positions.count; index += 1) {
+      const radius = Math.hypot(positions.getX(index), positions.getY(index));
+      uvs.setXY(index, clamp((radius - inner) / (outer - inner), 0, 1), .5);
+    }
+    uvs.needsUpdate = true;
+    return geometry;
+  },
+
+  loadSurfaceTexture(url, repeat = true) {
     const T = this.THREE;
     return new Promise((resolve, reject) => {
       new T.TextureLoader().load(url, texture => {
         texture.colorSpace = T.SRGBColorSpace;
-        texture.wrapS = T.RepeatWrapping;
+        texture.wrapS = repeat ? T.RepeatWrapping : T.ClampToEdgeWrapping;
+        texture.wrapT = T.ClampToEdgeWrapping;
         texture.anisotropy = Math.min(4, this.renderer.capabilities.getMaxAnisotropy());
         resolve(texture);
       }, undefined, reject);
@@ -336,18 +352,27 @@ export const cosmic3d = {
 
   loadPlanetTextures() {
     if (this._planetTexturePromise) return this._planetTexturePromise;
-    this._planetTexturePromise = Promise.allSettled(IDS.map(async id => {
-      const texture = await this.loadSurfaceTexture(`${PLANET_TEXTURE_ROOT}/small/${id}.webp`);
+    const jobs = SURFACE_IDS.map(async id => {
+      const texture = await this.loadSurfaceTexture(planetTextureUrl(`small/${id}.webp`));
       this._planetTextures.set(id, texture);
       const material = this.planetMeshes[id]?.material;
-      if (!material) { texture.dispose(); this._planetTextures.delete(id); return; }
+      if (!material) return;
       material.map = texture;
       material.emissiveMap = texture;
       material.color.set(0xffffff);
       material.needsUpdate = true;
-    })).then(results => {
+    });
+    jobs.push(this.loadSurfaceTexture(planetTextureUrl('saturn-ring.webp'), false).then(texture => {
+      this._planetTextures.set('saturn-ring', texture);
+      if (!this.saturnMiniRing) return;
+      this.saturnMiniRing.material.map = texture;
+      this.saturnMiniRing.material.color.set(0xffffff);
+      this.saturnMiniRing.material.opacity = .86;
+      this.saturnMiniRing.material.needsUpdate = true;
+    }));
+    this._planetTexturePromise = Promise.allSettled(jobs).then(results => {
       const failed = results.filter(result => result.status === 'rejected');
-      if (failed.length) console.warn(`[cosmic-texture] ${failed.length} planet texture(s) unavailable`);
+      if (failed.length) console.warn(`[cosmic-texture] ${failed.length} preview texture(s) unavailable`);
       this.render();
       return results;
     });
@@ -894,6 +919,9 @@ export const cosmic3d = {
       const catalog = await this.loadBodyCatalog();
       const body = catalog.bodies.find(item => item.id === id);
       if (!body) throw new Error(`UNKNOWN_BODY_${id}`);
+      // 상세 구를 먼저 단색으로 열지 않는다. 130KB 안팎의 미리보기가 준비될 때까지
+      // 태양계를 유지한 뒤 같은 실제 표면을 즉시 확대하고, 상세판만 뒤에서 선명하게 바꾼다.
+      await this.loadPlanetTextures();
       if (this._solarMotionMode) this.closeSolarMotion(false);
       if (this._selectedCraft) this.closeCraft(false);
       if (this._frame) cancelAnimationFrame(this._frame);
@@ -913,18 +941,23 @@ export const cosmic3d = {
       this.bodyDetailGroup.visible = true;
       this.clearBodyVisual();
       const loadId = ++this._detailTextureLoadId;
-      this._detailTexture = this.makeBodyFallbackTexture(body);
+      const previewTexture = this._planetTextures.get(body.id);
+      this._detailTexture = previewTexture ? previewTexture.clone() : this.makeBodyFallbackTexture(body);
+      this._detailTexture.needsUpdate = true;
       this.bodySphere.material.map = this._detailTexture;
       this.bodySphere.material.emissiveMap = this._detailTexture;
+      this.bodySphere.material.emissiveIntensity = body.id === 'uranus' ? 0 : .68;
       this.bodySphere.material.color.set(0xffffff);
       this.bodySphere.material.needsUpdate = true;
+      if (location.hash === '#dev') this.canvas.dataset.surfaceQuality = previewTexture ? 'preview' : 'fallback';
       this.makeBodyRing(body);
+      this.makeBodyAtmosphere(body);
       this.makeBodyMarkers(body);
       this.makeBodyOrbiters(body);
       this.showBodyInfo(body);
       this.updateBodyPicker(); this.updateCraftPicker();
       this.updateHud(); this.render();
-      this.loadSurfaceTexture(`${PLANET_TEXTURE_ROOT}/detail/${body.id}.webp`).then(texture => {
+      this.loadSurfaceTexture(planetTextureUrl(`detail/${body.id}.webp`)).then(texture => {
         if (loadId !== this._detailTextureLoadId || this._detailBody?.id !== body.id) {
           texture.dispose(); return;
         }
@@ -933,6 +966,7 @@ export const cosmic3d = {
         this.bodySphere.material.map = texture;
         this.bodySphere.material.emissiveMap = texture;
         this.bodySphere.material.needsUpdate = true;
+        if (location.hash === '#dev') this.canvas.dataset.surfaceQuality = 'detail';
         this.render();
       }).catch(error => {
         // 네트워크가 끊겨도 기존 가벼운 절차 텍스처로 천체 탐색은 계속한다.
@@ -1066,22 +1100,48 @@ export const cosmic3d = {
     if (!['saturn', 'uranus'].includes(body.id)) return;
     const T = this.THREE;
     const group = new T.Group();
-    const bands = body.id === 'saturn'
-      ? [[20.5,21.4,.1],[21.7,23.1,.16],[23.5,26.2,.24],[26.7,29.4,.18],[30.1,31.4,.12],[32.2,33.1,.08]]
-      : [[21.2,21.45,.2],[22.3,22.55,.16],[24.1,24.4,.13]];
+    if (body.id === 'saturn') {
+      const texture = this._planetTextures.get('saturn-ring');
+      const ring = new T.Mesh(
+        this.makeRadialRingGeometry(20.5, 33.1, 192),
+        new T.MeshBasicMaterial({
+          map: texture || null, color: texture ? 0xffffff : 0xd8caa0,
+          transparent: true, opacity: texture ? .9 : .18,
+          side: T.DoubleSide, depthWrite: false,
+        }),
+      );
+      group.add(ring);
+      group.rotation.x = Math.PI / 2;
+      this.bodyDetailGroup.add(group); this._detailRing = group;
+      return;
+    }
+    const bands = [[21.2,21.45,.2],[22.3,22.55,.16],[24.1,24.4,.13]];
     bands.forEach(([inner, outer, opacity], index) => {
       const ring = new T.Mesh(
         new T.RingGeometry(inner, outer, 128),
         new T.MeshBasicMaterial({
-          color: body.id === 'saturn' ? (index % 2 ? 0xc9b985 : 0xe1d4a9) : 0x86c7ce,
+          color: 0x86c7ce,
           transparent: true, opacity, side: T.DoubleSide, depthWrite: false,
         }),
       );
       group.add(ring);
     });
     group.rotation.x = Math.PI / 2;
-    if (body.id === 'uranus') group.rotation.z = Math.PI * .48;
+    group.rotation.z = Math.PI * .48;
     this.bodyDetailGroup.add(group); this._detailRing = group;
+  },
+
+  makeBodyAtmosphere(body) {
+    if (body.id !== 'uranus') return;
+    const T = this.THREE;
+    const rim = new T.Mesh(
+      new T.SphereGeometry(18.24, 32, 20),
+      new T.MeshBasicMaterial({
+        color: 0x9de8ee, transparent: true, opacity: .1,
+        side: T.BackSide, blending: T.AdditiveBlending, depthWrite: false,
+      }),
+    );
+    this.bodyDetailGroup.add(rim);
   },
 
   makeBodyOrbiters(body) {
@@ -1577,7 +1637,7 @@ export const cosmic3d = {
       );
       this.camera.position.copy(direction).multiplyScalar(this._bodyDistance);
       this.camera.lookAt(0, 0, 0);
-      this.ambientLight.intensity = .62;
+      this.ambientLight.intensity = this._detailBody.id === 'uranus' ? .28 : .62;
       this.sunLight.position.set(44, 26, 58);
       this.background.position.copy(this.camera.position).multiplyScalar(.08);
       this.renderer.render(this.world, this.camera);
@@ -1771,9 +1831,13 @@ export const cosmic3d = {
         ? '같은 3D 공간 · 드래그 회전 · 휠/핀치 확대'
         : 'Same 3D space · drag to rotate · wheel/pinch to zoom';
       document.getElementById('cosmicHint').textContent = body.summary[isKo ? 'ko' : 'en'];
+      const surfaceNote = body.id === 'uranus'
+        ? (isKo ? '가시광에서는 구름 대비가 낮아 거의 단색에 가깝습니다' : 'Cloud contrast is low in visible light, so Uranus appears nearly uniform')
+        : '';
       document.getElementById('cosmicNote').textContent = isKo
-        ? `${this._bodyCatalog.positionNotice.ko} · NASA/JPL/USGS 표면 시각화 · 분석용 아님`
-        : `${this._bodyCatalog.positionNotice.en} · NASA/JPL/USGS surface visualization · not for analysis`;
+        ? `${this._bodyCatalog.positionNotice.ko} · NASA/JPL/USGS·Solar System Scope 표면 시각화 · 분석용 아님`
+        : `${this._bodyCatalog.positionNotice.en} · NASA/JPL/USGS and Solar System Scope visualization · not for analysis`;
+      if (surfaceNote) document.getElementById('cosmicNote').textContent += ` · ${surfaceNote}`;
       this.root.dataset.stage = 'body';
       return;
     }
@@ -1793,7 +1857,7 @@ export const cosmic3d = {
         title: isKo ? '태양계' : 'Solar System',
         scale: isKo ? '3D 궤도 · 드래그하여 기울이기 · 로그 스케일' : '3D orbits · drag to tilt · logarithmic scale',
         hint: isKo ? '계속 줌아웃하면 은하수 안의 태양계 위치로 이어집니다' : 'Keep zooming out to reach the Solar System’s place in the Milky Way',
-        note: isKo ? '행성 위치 계산값 · JPL 공개 궤도요소 · NASA/JPL/USGS 표면 시각화 · 행성 크기 과장' : 'Calculated planet positions · JPL public elements · NASA/JPL/USGS surface visualization · planet sizes exaggerated',
+        note: isKo ? '행성 위치 계산값 · JPL 공개 궤도요소 · 출처 표기 표면 시각화 · 행성 크기 과장' : 'Calculated planet positions · JPL public elements · credited surface visualization · planet sizes exaggerated',
       },
       milkyway: {
         title: isKo ? '은하수' : 'Milky Way',

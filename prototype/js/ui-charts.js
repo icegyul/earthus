@@ -152,7 +152,7 @@ function chartBox() {
  *   · 오늘 자리에 세로선, 그 선과 만나는 곳에 값을 적는다
  *   · 마지막 자료 점에 날짜를 적는다
  */
-function spaghetti(series, opt = {}) {
+export function spaghetti(series, opt = {}) {
   /* 값의 종류 — 'temp' 면 설정 단위를 따르고, 그 밖에는 문자열을 그대로 붙인다. */
   const kind = opt.kind || 'temp';
   const years = Object.keys(series).map(Number).sort((a, b) => a - b);
@@ -281,7 +281,7 @@ function spaghetti(series, opt = {}) {
 
 
 /** 범례 — 올해 · 10년 단위 · 예년 */
-function legendOf(s2, ko) {
+export function legendOf(s2, ko) {
   const bits = [`<span><i style="background:#ff5d5d"></i>${s2.newest}</span>`];
   s2.decades.forEach(d => bits.push(
     `<span><i style="background:${d.color}"></i>${d.year}<em>${ko ? `${d.ago}년 전` : `${d.ago}y ago`}</em></span>`));
@@ -290,7 +290,7 @@ function legendOf(s2, ko) {
 }
 
 /** 그래프 아래 한 줄 — 어디까지의 자료인가 */
-function rangeNote(s2, ko, source) {
+export function rangeNote(s2, ko, source) {
   const upto = s2.lastLabel
     ? (ko ? `${s2.newest}년 ${s2.lastLabel}까지` : `through ${s2.lastLabel}, ${s2.newest}`)
     : '';
@@ -305,7 +305,7 @@ function rangeNote(s2, ko, source) {
       확대할 때마다 경로 수천 개를 다시 만들면 손가락을 따라오지 못한다.
    ⚠️ 가로만 확대한다. 세로까지 늘리면 눈금 숫자가 화면 밖으로 나가고,
       우리가 보고 싶은 건 "언제"지 "얼마나 높이"가 아니다. */
-function makeZoomable(wrap, W, H) {
+export function makeZoomable(wrap, W, H) {
   let z = 1, ox = 0;                       // 배율, 왼쪽 시작 x (viewBox 좌표)
   const svg = wrap.querySelector('svg');
   if (!svg) return;

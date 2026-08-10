@@ -81,17 +81,20 @@ export const chrome = {
         // 시·군·구가 있으면 그것, 없으면 시도, 그것도 없으면 나라
         this.place.name = p.city || p.region || p.country;
         this.render();
+        document.dispatchEvent(new CustomEvent('earthus:place', { detail: this.place }));
         return;
       }
       if (p?.isOcean) {
         this.place.name = i18n.lang === 'ko' ? '바다 위' : 'At sea';
         this.render();
+        document.dispatchEvent(new CustomEvent('earthus:place', { detail: this.place }));
         return;
       }
     } catch (_) { /* 아래 좌표 표기로 내려간다 */ }
     // ⚠️ 못 알아내면 **좌표를 그대로** 적는다. 엉뚱한 도시 이름을 지어내지 않는다.
     this.place.name = `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
     this.render();
+    document.dispatchEvent(new CustomEvent('earthus:place', { detail: this.place }));
   },
 
   tick() {

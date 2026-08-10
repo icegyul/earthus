@@ -1628,6 +1628,9 @@ body.panel-open #tcLoading.on{ opacity:0; transform:translateX(-50%) translateY(
 .wx-src{ margin-top:14px; padding-top:11px; border-top:1px solid var(--line); }
 .wx-where{ margin-top:12px; }
 .wx-empty{ padding:22px 0; text-align:center; color:var(--fog); font-size:13px; }
+.wx-climate{margin:16px 0 20px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.wx-climate h4{margin:0;color:var(--paper);font-size:14px;font-weight:600}
+.wx-climate-sub{margin:4px 0 10px;color:var(--fog);font-size:11px;line-height:1.5}
 
 .wx-soon{ background:rgba(242,245,248,.05); border:1px solid var(--line);
   border-radius:12px; padding:14px 15px; }

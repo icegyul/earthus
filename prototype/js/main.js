@@ -6,7 +6,7 @@ import { myLocation } from './mylocation.js';
 import { layerBar } from './layerbar.js?v=20260810-earthoverlay1';
 import { search } from './search.js';
 import { onboard } from './onboard.js';
-import { weatherPanel } from './ui-weather.js?v=20260810-copy1';
+import { weatherPanel } from './ui-weather.js?v=20260810-locationchart1';
 import { power } from './power.js';
 import { panels } from './panels.js';
 import { intro } from './intro.js';
@@ -14,7 +14,7 @@ import { renderQuality } from './render-quality.js';
 import { store } from './store.js';
 import { registry } from './layers/registry.js';
 import { imagery } from './layers/imagery.js';
-import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js?v=20260810-earthoverlay1';
+import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js?v=20260810-locationchart1';
 import { i18n } from './i18n.js';
 import { auth } from './auth.js';
 import { CONFIG } from './config.local.js';   // ⚠️ config.js 가 아니다 — CONFIG 는 여기 있다

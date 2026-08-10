@@ -68,6 +68,10 @@ export const weatherPanel = {
         this.open();
       }
     });
+    // 위치명은 날씨보다 늦게 도착할 수 있다. 시트가 열린 뒤 도착해도 제목을 갱신한다.
+    document.addEventListener('earthus:place', () => {
+      if ($('#wxSheet')?.classList.contains('up')) this.render();
+    });
     return this;
   },
 
@@ -76,6 +80,7 @@ export const weatherPanel = {
     document.querySelectorAll('.sheet-panel.up').forEach(p => p.classList.remove('up'));
     $('#wxSheet')?.classList.add('up');
     this.render();
+    if (!chrome.place.name && !chrome.isDefault) chrome.reverseName(chrome.place.lat, chrome.place.lon);
     /* 아직 안 받았으면 받아 온다 (위치 권한을 늦게 준 경우) */
     if (!chrome.wx) chrome.loadWeather().then(() => this.render());
     /* 한국이면 기상청 예보를 덧대 온다.
@@ -95,7 +100,8 @@ export const weatherPanel = {
     const ko = i18n.lang === 'ko';
     body.innerHTML = '';
 
-    $('#wxTitle').textContent = chrome.place.name || (ko ? '내 자리' : 'My spot');
+    $('#wxTitle').textContent = chrome.place.name
+      || (chrome.isDefault ? chrome.defaultName : (ko ? '위치 확인 중…' : 'Locating…'));
 
     // 탭
     const tabs = el('div', 'comm-tabs');
@@ -210,10 +216,47 @@ export const weatherPanel = {
        ⚠️ 처음엔 별도 '안내' 탭에 넣었다. 그건 아무도 안 누른다 —
           '내 위치'를 누르면 바로 이 탭이 열리는데 거기 없으면 없는 것과 같다. */
     this._narrative(body, ko);
+    this._annualClimate(body, ko);
 
     // 한국이면 기상청 동네예보로 그린다 (공식·5km)
     if (this.kma?.now) { this._todayKma(body, ko); return; }
     this._todayMeteo(body, wx, ko);
+  },
+
+  _annualClimate(body, ko) {
+    const host = el('section', 'wx-climate');
+    host.innerHTML = `<p class="wx-narr-load">${ko ? '1년 기온 기록을 불러오는 중…' : 'Loading annual temperature record…'}</p>`;
+    body.appendChild(host);
+    const p = chrome.place;
+    if (!p || p.lat == null) return;
+    Promise.all([
+      import('./location-climate.js?v=20260810-locationchart1').then(m => m.climateSeriesAt(p.lat, p.lon)),
+      import('./ui-charts.js?v=20260810-locationchart1'),
+    ]).then(([result, chart]) => {
+      if (!host.isConnected) return;
+      if (!result) {
+        host.innerHTML = `<p class="wx-narr-load">${ko
+          ? '40km 안에 최신 장기 관측소가 없어 1년 기온선을 표시하지 않습니다.'
+          : 'No current long-record station within 40 km.'}</p>`;
+        return;
+      }
+      const graph = chart.spaghetti(result.data.series, { step: 10 });
+      if (!graph) return;
+      const station = result.station;
+      const altitude = Number.isFinite(station.alt) ? ` · ${Math.round(station.alt)}m` : '';
+      host.innerHTML = `<h4>${ko ? `${station.name} 관측소 1년 기온` : `${station.name} station annual temperature`}</h4>`
+        + `<p class="wx-climate-sub">${ko
+          ? `현재 위치에서 약 ${station.km}km${altitude} · 올해와 10년 간격 비교`
+          : `About ${station.km} km away${altitude} · this year and 10-year steps`}</p>`
+        + `<div class="ch-wrap">${graph.svg}</div>`
+        + `<div class="ch-leg">${chart.legendOf(graph, ko)}</div>`
+        + `<p class="ch-note">${esc(chart.rangeNote(graph, ko, result.data.source))}</p>`
+        + `<p class="ch-note">${esc(result.data.method)}</p>`;
+      chart.makeZoomable(host.querySelector('.ch-wrap'), graph.W, graph.H);
+    }).catch(error => {
+      if (host.isConnected) host.innerHTML = `<p class="wx-narr-load">${ko
+        ? '1년 기온 기록을 불러오지 못했습니다.' : 'Could not load annual temperature record.'}<br><small>${esc(error.message)}</small></p>`;
+    });
   },
 
   /** 기상청 동네예보판 — 항목이 Open-Meteo 와 달라 따로 그린다 */
@@ -453,7 +496,7 @@ export const weatherPanel = {
     const st = myLocation.state;
     body.appendChild(el('div', 'wx-where', ko
       ? (st === 'ok'
-          ? `기준 위치: 내 위치 (${chrome.place.lat.toFixed(3)}, ${chrome.place.lon.toFixed(3)})`
+          ? `기준 위치: ${chrome.place.name || '위치 확인 중'} (${chrome.place.lat.toFixed(3)}, ${chrome.place.lon.toFixed(3)})`
           : `기준 위치: 기본값 ${chrome.place.name} — 위치 권한이 없어 내 자리를 모릅니다`)
       : (st === 'ok'
           ? `Based on your location (${chrome.place.lat.toFixed(3)}, ${chrome.place.lon.toFixed(3)})`

@@ -6,7 +6,7 @@ import { myLocation } from './mylocation.js';
 import { layerBar } from './layerbar.js';
 import { search } from './search.js';
 import { onboard } from './onboard.js';
-import { weatherPanel } from './ui-weather.js';
+import { weatherPanel } from './ui-weather.js?v=20260810-copy1';
 import { power } from './power.js';
 import { panels } from './panels.js';
 import { intro } from './intro.js';

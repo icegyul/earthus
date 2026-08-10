@@ -394,7 +394,7 @@ export const weatherPanel = {
       return;
     }
 
-    import('./narrative.js').then(({ narrative }) => narrative.build(p.lat, p.lon, ko))
+    import('./narrative.js?v=20260810-copy1').then(({ narrative }) => narrative.build(p.lat, p.lon, ko))
       .then(n => {
         if (!n) {
           box.innerHTML = `<p class="wx-narr-load">${ko

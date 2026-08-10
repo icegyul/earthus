@@ -117,7 +117,7 @@ const SRC = {
    **좌하단 안내가 통째로 사라진다.** 오류도 경고도 없다 —
    실제로 천리안 3종을 넣고 이걸 빼먹어 "위성정보가 안나와"라는 신고를 받았다.
    (layerbar 의 CATEGORIES 도 같은 성격이다. 레이어 추가는 세 곳을 함께 고친다.) */
-const PRIORITY = ['gk2aNightLow', 'gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 'gk2aVISfd', 'gk2aWV',
+const PRIORITY = ['gk2aAuto', 'gk2aNightLow', 'gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 'gk2aVISfd', 'gk2aWV',
                   'himaIR', 'himawari', 'truecolor', 'clouds', 'sstanom', 'temp', 'tmax', 'tmin', 'humidity', 'rain', 'pressure', 'fog', 'drought',
                   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
                   'sst', 'wave', 'swell', 'current', 'wind', 'windfc',
@@ -128,7 +128,7 @@ const PRIORITY = ['gk2aNightLow', 'gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 
    ⚠️ 점·선 레이어(산불·지진·태풍·낙뢰)는 여기 넣지 않는다. 그것들은 위에 얹히는 것이라
       "지금 보고 있는 바탕"이 아니다.
    ⚠️ 위성 영상이 켜져 있으면 그게 바탕이다 — 그래서 맨 앞이다. */
-const PAINT = ['gk2aNightLow', 'gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 'gk2aVISfd', 'gk2aWV',
+const PAINT = ['gk2aAuto', 'gk2aNightLow', 'gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 'gk2aVISfd', 'gk2aWV',
                'himaIR', 'himawari', 'truecolor',
                'temp', 'tmax', 'tmin', 'humidity', 'rain', 'pressure', 'fog', 'drought',
                'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
@@ -199,9 +199,15 @@ export const sourceNote = {
        보고 있는 것과 다른 출처를 적으면 안내가 아니라 오정보다. */
     let key = id, hima = null;
     if (id.startsWith('gk2a')) {
-      key = { gk2aIR: 'gk2a_ir', gk2aNightLow: 'gk2a_nightlow', gk2aVIS: 'gk2a_vis', gk2aVISfd: 'gk2a_vis_fd',
-              gk2aVISea: 'gk2a_vis_ea', gk2aIRea: 'gk2a_ir_ea',
-              gk2aWV: 'gk2a_wv' }[id];
+      if (id === 'gk2aAuto') {
+        const { imagery } = await import('./layers/imagery.js');
+        key = imagery._gk2aDetailOn ? 'gk2a_vis'
+          : imagery._gk2aAutoMode === 'infrared' ? 'gk2a_ir_ea' : 'gk2a_vis_ea';
+      } else {
+        key = { gk2aIR: 'gk2a_ir', gk2aNightLow: 'gk2a_nightlow', gk2aVIS: 'gk2a_vis', gk2aVISfd: 'gk2a_vis_fd',
+                gk2aVISea: 'gk2a_vis_ea', gk2aIRea: 'gk2a_ir_ea',
+                gk2aWV: 'gk2a_wv' }[id];
+      }
     } else if (id === 'himaIR') {
       key = 'hima_ir';
       try {
@@ -238,8 +244,13 @@ export const sourceNote = {
         /* ⚠️ 레이어를 켜는 순간에는 meta 가 아직 안 왔을 수 있다. 그러면 시각이 없어
            **설명 블록 전체가 건너뛰어진다** (히마와리에서 이미 한 번 겪은 함정이다).
            → 없으면 여기서 직접 한 번 받는다. */
-        const t = imagery._gk2aMeta?.time || (await imagery._gk2aBox())?.time;
-        if (t) made = new Date(t);
+        const meta = imagery._gk2aMeta || await imagery._gk2aBox();
+        const ch = id === 'gk2aAuto'
+          ? (imagery._gk2aDetailOn ? 'vi006' : imagery._gk2aAutoChannel) : {
+          gk2aIR: 'ir112', gk2aNightLow: 'nightlow', gk2aVIS: 'vi006',
+          gk2aVISfd: 'vi006fd', gk2aVISea: 'vi006ea', gk2aIRea: 'ir112ea', gk2aWV: 'wv063',
+        }[id];
+        made = imagery._gk2aDate(meta?.channels?.[ch], meta);
       } else if (id === 'himaIR') {
         /* ⚠️ 이 분기를 빼먹으면 made 가 null 이라 **설명 블록 전체가 건너뛰어진다.**
            실제로 그렇게 돼서 "이건 강수량이 아니다"라는 경고가 화면에 안 나왔다. */
@@ -359,9 +370,18 @@ export const sourceNote = {
             ? '<i><b>0.5km</b> 로 이 앱에서 가장 자세한 구름입니다 (히마와리 1km · 전지구 합성 2.4km). '
               + '낮은 구름도 그대로 보입니다.</i>'
             : '<i><b>0.5 km</b> — the sharpest cloud imagery here (Himawari 1 km, global composite 2.4 km).</i>');
-          bits.push(ko
+          if (id !== 'gk2aAuto') bits.push(ko
             ? '<i>⚠️ <b>가시광이라 밤에는 비어 보입니다.</b> 고장이 아닙니다 — 그때는 <b>천리안 구름</b>(적외)을 쓰세요.</i>'
             : '<i>⚠️ Visible light — blank at night. Use the infrared channel then.</i>');
+        }
+        if (id === 'gk2aAuto') {
+          const { imagery } = await import('./layers/imagery.js');
+          bits.push(ko
+            ? `<i>한국의 태양고도에 맞춰 <b>${imagery._gk2aAutoMode === 'infrared' ? '밤 적외' : '낮 가시광'}</b> 채널을 자동 선택했습니다. 동아시아는 2km 타일이며, 한반도로 확대하면 ${imagery._gk2aDetailOn ? '<b>현재 0.5km 원본 타일</b>' : '0.5km 원본 타일'}로 바뀝니다.</i>`
+            : `<i>Automatically using <b>${imagery._gk2aAutoMode === 'infrared' ? 'night infrared' : 'daylight visible'}</b>. East Asia starts at 2 km; zoom into Korea for native 0.5 km tiles.</i>`);
+          if (imagery._gk2aAutoMode === 'infrared') bits.push(ko
+            ? '<i>⚠️ 밤에는 0.5km 가시광 원본이 유효하지 않아 2km 적외를 그대로 씁니다. 없는 야간 0.5km 자료를 확대해 표시하지 않습니다.</i>'
+            : '<i>⚠️ At night the 0.5 km visible feed is not valid, so the 2 km infrared feed remains. No fake night upscaling.</i>');
         }
         if (key === 'gk2a_wv') {
           bits.push(ko
@@ -375,16 +395,24 @@ export const sourceNote = {
         /* ⚠️ 덮는 범위는 **채널마다 다르다.** 하나로 적으면 둘 중 하나는 거짓말이 된다. */
         if (key.startsWith('gk2a_')) {
           const { imagery } = await import('./layers/imagery.js');
-          const ch = { gk2a_ir: 'ir112', gk2a_nightlow: 'nightlow',
-                       gk2a_vis: 'vi006', gk2a_wv: 'wv063' }[key];
+          const ch = id === 'gk2aAuto'
+            ? (imagery._gk2aDetailOn ? 'vi006' : imagery._gk2aAutoChannel) : {
+                       gk2a_ir: 'ir112', gk2a_nightlow: 'nightlow',
+                       gk2a_vis: 'vi006', gk2a_vis_fd: 'vi006fd',
+                       gk2a_vis_ea: 'vi006ea', gk2a_ir_ea: 'ir112ea',
+                       gk2a_wv: 'wv063' }[key];
           const area = imagery._gk2aMeta?.channels?.[ch]?.area;
           bits.push(ko
             ? (area === 'LA'
               ? '<i>⚠️ <b>한반도 주변만</b> 덮습니다 (32~40°N · 123.5~131.5°E). 그 밖은 비어 있습니다.</i>'
-              : '<i>위성이 보는 <b>전면</b>입니다 — 동아시아·서태평양·호주까지. 지구 반대편은 이 위성이 못 봅니다.</i>')
+              : area === 'EA'
+                ? '<i><b>동아시아 2km</b> 영역입니다 (23~47°N · 114~150°E).</i>'
+                : '<i>위성이 보는 <b>전면</b>입니다 — 동아시아·서태평양·호주까지. 지구 반대편은 이 위성이 못 봅니다.</i>')
             : (area === 'LA'
               ? '<i>⚠️ Korea only (32–40°N, 123.5–131.5°E).</i>'
-              : '<i>Full disk — East Asia to Australia. The other side of Earth is not visible to this satellite.</i>'));
+              : area === 'EA'
+                ? '<i><b>East Asia 2 km</b> (23–47°N, 114–150°E).</i>'
+                : '<i>Full disk — East Asia to Australia. The other side of Earth is not visible to this satellite.</i>'));
         }
         if (key === 'hima_ir') {
           /* ⚠️ 이 자료의 색은 **강수량이 아니다.** 그런데 꼭 그렇게 읽힌다.

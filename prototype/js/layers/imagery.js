@@ -877,12 +877,21 @@ export const imagery = {
   },
 
   /* ── 천리안2A ────────────────────────────────────────────────
-     Lambda(gk2a-clouds)가 NOAA 공개 원본을 등경위도 PNG 로 바꿔 올린 것을 얹는다.
-     ⚠️ 타일이 아니라 **한 장**이다. 덮는 범위가 한반도뿐이라 타일로 쪼갤 이유가 없고,
-        한 장이면 요청도 한 번이다. */
+     Lambda(gk2a-clouds)가 NOAA 공개 원본을 등경위도 PNG와 지역 타일로 바꾼다.
+     빠른 메뉴는 동아시아 2km 타일부터 시작해, 한반도로 가까워지면 원본 해상도를
+     살린 0.5km 타일만 추가한다. 멀리서 0.5km 전체를 받지 않는 것이 발열·통신의 핵심이다. */
   gk2aLayers: {},
   _gk2aMeta: null,
   _gk2aAt: 0,
+  gk2aAutoLayers: [],
+  _gk2aAutoOn: false,
+  _gk2aAutoMode: null,
+  _gk2aAutoChannel: null,
+  _gk2aAutoTimer: 0,
+  _gk2aAutoPending: null,
+  _gk2aDetailPending: null,
+  _gk2aDetailWanted: false,
+  _gk2aDetailOn: false,
 
   async _gk2aBox() {
     // ⚠️ 범위를 코드에 박지 않는다. Lambda 가 격자를 바꾸면 여기도 같이 틀어진다.
@@ -894,6 +903,228 @@ export const imagery = {
       this._gk2aAt = Date.now();
     } catch (_) { this._gk2aMeta = null; }
     return this._gk2aMeta;
+  },
+
+  /** 메타의 채널별 관측시각(YYYYMMDDHHMM)을 Date로 바꾼다.
+   *  ⚠️ 최상위 meta.time은 여러 채널 중 가장 최신일 뿐이다. 적외가 04:30이고
+   *     가시광이 04:46인 운영 자료에서 적외에도 04:46을 붙이는 오류가 실제로 있었다. */
+  _gk2aDate(info, meta) {
+    if (!info) return null;
+    const s = info?.at;
+    if (/^\d{12}$/.test(s || '')) {
+      return new Date(Date.UTC(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8),
+                               +s.slice(8, 10), +s.slice(10, 12)));
+    }
+    return meta?.time ? new Date(meta.time) : null;
+  },
+
+  /** 표준 Web Mercator XYZ 타일 메타가 있으면 필요한 줌 타일만, 옛 산출물이면 단일 PNG를 읽는다.
+   *  ⚠️ UrlTemplate 제공자에 지역 rectangle을 주면 가까이 확대할 때 Cesium 1.143의
+   *     visible-frustum 계산이 터졌다. 제공자는 전역으로 두고, 실제 파일만 지역에 만든다. */
+  async _addGK2ALayer(ch, meta, label) {
+    const info = meta?.channels?.[ch];
+    const b = info?.bbox;
+    if (!b || !info?.ok) throw new Error(info?.reason || '자료 없음');
+    const rectangle = Cesium.Rectangle.fromDegrees(b.west, b.south, b.east, b.north);
+    let provider;
+    if (info.tiles?.scheme === 'webmercator-global-v1' && info.tiles.template) {
+      const tilingScheme = new Cesium.WebMercatorTilingScheme();
+      provider = new Cesium.UrlTemplateImageryProvider({
+        url: `${API.GK2A}/${info.tiles.template}?t=${encodeURIComponent(info.at || '')}`,
+        // ⚠️ rectangle을 넣지 말 것 — 위 주석의 렌더 중단을 실화면에서 반복 재현했다.
+        tilingScheme,
+        tileWidth: info.tiles.tileWidth || 512,
+        tileHeight: info.tiles.tileHeight || 512,
+        minimumLevel: Number(info.tiles.minimumLevel ?? 0),
+        maximumLevel: Number(info.tiles.maximumLevel ?? 0),
+        credit: 'GK-2A · KMA/NMSC via NOAA open data',
+      });
+    } else {
+      const src = await this._fetchImage(
+        `${API.GK2A}/${ch}.png?t=${encodeURIComponent(info.at || meta.time || '')}`, label);
+      provider = new Cesium.SingleTileImageryProvider({
+        url: src,
+        rectangle,
+        tileWidth: info.width,
+        tileHeight: info.height,
+        credit: 'GK-2A · KMA/NMSC via NOAA open data',
+      });
+    }
+    const layer = viewer.imageryLayers.addImageryProvider(provider);
+    layer.alpha = 1.0;
+    layer._earthusGK2AInfo = info;
+    return layer;
+  },
+
+  /** NOAA 태양 위치 근사식. 한국/동아시아 중심의 가시광 사용 가능 여부만 판정한다.
+   *  산출 Lambda가 가시광을 비우는 태양고도 약 9°와 같은 경계를 쓴다. */
+  _gk2aDaylight(at = new Date()) {
+    let lon = 127.5, lat = 36.0;
+    try {
+      const c = viewer.camera.positionCartographic;
+      const x = Cesium.Math.toDegrees(c.longitude), y = Cesium.Math.toDegrees(c.latitude);
+      if (x >= 114 && x <= 150 && y >= 23 && y <= 47) { lon = x; lat = y; }
+    } catch (_) { }
+    const start = Date.UTC(at.getUTCFullYear(), 0, 0);
+    const doy = Math.floor((Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate()) - start) / 86400000);
+    const hour = at.getUTCHours() + at.getUTCMinutes() / 60;
+    const g = 2 * Math.PI / 365 * (doy - 1 + (hour - 12) / 24);
+    const eq = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g)
+      - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+    const dec = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g)
+      - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g)
+      - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+    const tst = ((at.getUTCHours() * 60 + at.getUTCMinutes() + eq + 4 * lon) % 1440 + 1440) % 1440;
+    const ha = (tst / 4 - 180) * Math.PI / 180;
+    const p = lat * Math.PI / 180;
+    const sinAlt = Math.sin(p) * Math.sin(dec) + Math.cos(p) * Math.cos(dec) * Math.cos(ha);
+    return Math.asin(Math.max(-1, Math.min(1, sinAlt))) * 180 / Math.PI > 9;
+  },
+
+  _removeGK2AAutoLayers() {
+    this.gk2aAutoLayers.forEach(L => { try { viewer.imageryLayers.remove(L, true); } catch (_) { } });
+    this.gk2aAutoLayers = [];
+    this._gk2aDetailWanted = false;
+    this._gk2aDetailOn = false;
+  },
+
+  async _loadGK2AAuto() {
+    if (this._gk2aAutoPending) return this._gk2aAutoPending;
+    this._gk2aAutoPending = (async () => {
+      const m = await this._gk2aBox();
+      if (!this._gk2aAutoOn || !m) return;
+      const daylight = this._gk2aDaylight();
+      const broad = daylight ? 'vi006ea' : 'ir112ea';
+      const detail = daylight ? 'vi006' : null;
+      const info = m.channels?.[broad];
+      if (!info?.ok) throw new Error(info?.reason || '자동 채널 자료 없음');
+
+      this._removeGK2AAutoLayers();
+      const broadLayer = await this._addGK2ALayer(
+        broad, m, daylight ? '천리안 가시광 2km' : '천리안 적외 2km');
+      if (!this._gk2aAutoOn) { try { viewer.imageryLayers.remove(broadLayer, true); } catch (_) { } return; }
+      broadLayer._earthusGK2ARole = 'broad';
+      this.gk2aAutoLayers.push(broadLayer);
+
+      this._gk2aAutoMode = daylight ? 'visible' : 'infrared';
+      this._gk2aAutoChannel = broad;
+      this._updateGK2ADetail(viewer.camera.positionCartographic?.height || 24_000_000);
+      document.dispatchEvent(new CustomEvent('earthus:imagery'));
+
+      const observed = this._gk2aDate(info, m);
+      if (observed) {
+        const min = Math.max(0, Math.round((Date.now() - observed.getTime()) / 60000));
+        const hhmm = observed.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+        this._say(
+          `천리안2A ${daylight ? '가시광' : '적외'} · ${hhmm} 관측 · ${min}분 전`,
+          `Chollian-2A ${daylight ? 'visible' : 'infrared'} · ${min} min ago`);
+      }
+    })().catch(e => {
+      console.warn('[gk2a-auto]', e.message);
+      this._say(`천리안 자동 영상을 받지 못했습니다 (${e.message})`, 'Failed to load Chollian imagery');
+    }).finally(() => { this._gk2aAutoPending = null; });
+    return this._gk2aAutoPending;
+  },
+
+  setGK2AAuto(on) {
+    const firstOpen = on && !this._gk2aAutoOn;
+    this._gk2aAutoOn = on;
+    if (!on) {
+      clearTimeout(this._gk2aAutoTimer);
+      this._gk2aAutoTimer = 0;
+      this._removeGK2AAutoLayers();
+      this._gk2aAutoMode = this._gk2aAutoChannel = null;
+      document.dispatchEvent(new CustomEvent('earthus:imagery'));
+      return;
+    }
+    if (firstOpen) {
+      /* 빠른 메뉴인데 현재 화면이 동아시아 밖이면 회색 빈 영역만 보인다.
+         히마와리와 같은 원칙으로 관측 범위에 한 번만 데려가고, 이후 카메라는 건드리지 않는다. */
+      try {
+        const c = viewer.camera.positionCartographic;
+        const lon = Cesium.Math.toDegrees(c.longitude), lat = Cesium.Math.toDegrees(c.latitude);
+        if (c.height > 7_000_000 || lon < 108 || lon > 156 || lat < 17 || lat > 53) {
+          viewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(128, 36, 4_200_000),
+            duration: 1.4,
+          });
+        }
+      } catch (_) { }
+    }
+    if (!this.gk2aAutoLayers.length) this._loadGK2AAuto();
+    /* 일몰을 지나도 낮 채널이 남지 않게, 켜진 동안에만 5분마다 한 번 판정한다.
+       렌더를 요청하는 애니메이션이 아니라 단순 시각 확인이고, 끄면 즉시 취소한다. */
+    if (this._gk2aAutoTimer) return;
+    this._gk2aAutoTimer = setTimeout(() => {
+      this._gk2aAutoTimer = 0;
+      if (!this._gk2aAutoOn) return;
+      const next = this._gk2aDaylight() ? 'visible' : 'infrared';
+      if (next !== this._gk2aAutoMode) {
+        this._removeGK2AAutoLayers();
+        this._loadGK2AAuto();
+      }
+      this.setGK2AAuto(true);
+    }, 5 * 60_000);
+  },
+
+  _updateGK2ADetail(h) {
+    const info = this._gk2aMeta?.channels?.vi006;
+    const b = info?.bbox;
+    let inside = false;
+    try {
+      const c = viewer.camera.positionCartographic;
+      const lon = Cesium.Math.toDegrees(c.longitude), lat = Cesium.Math.toDegrees(c.latitude);
+      inside = b && lon >= b.west - 2 && lon <= b.east + 2 && lat >= b.south - 2 && lat <= b.north + 2;
+    } catch (_) { }
+    /* 1,800km에서 열었더니 8°짜리 상세 상자의 경계가 화면에 들어와, 관측시각이
+       6분 다른 2km 영상과 세로 이음매가 보였다. 상자 경계가 화면 밖으로 나가는
+       거리에서만 상세를 연다. 해상도가 실제로 필요한 거리이기도 하다. */
+    const show = this._gk2aAutoOn && this._gk2aAutoMode === 'visible'
+      && !!info?.ok && inside && h < 850_000;
+    this._gk2aDetailWanted = show;
+    const detail = this.gk2aAutoLayers.find(L => L._earthusGK2ARole === 'detail');
+    if (show && !detail) {
+      if (!this._gk2aDetailPending) {
+        /* 멀리 있을 때 show=false 제공자를 미리 만들 필요가 없다. 실제로 필요한 850km
+           안에서만 제공자 자체를 만들고, 다시 멀어지면 파괴해야 통신·메모리도 단계적으로 쓴다. */
+        this._gk2aDetailPending = this._addGK2ALayer(
+          'vi006', this._gk2aMeta, '천리안 한반도 0.5km').then(L => {
+          if (!this._gk2aDetailWanted || !this._gk2aAutoOn) {
+            try { viewer.imageryLayers.remove(L, true); } catch (_) { }
+            return;
+          }
+          L._earthusGK2ARole = 'detail';
+          this.gk2aAutoLayers.push(L);
+          this._gk2aDetailOn = true;
+          viewer.scene.requestRender();
+          document.dispatchEvent(new CustomEvent('earthus:imagery'));
+          this._announceGK2ADetail(true, L);
+        }).catch(e => console.warn('[gk2a-detail]', e.message))
+          .finally(() => { this._gk2aDetailPending = null; });
+      }
+      return;
+    }
+    if (!show && detail) {
+      try { viewer.imageryLayers.remove(detail, true); } catch (_) { }
+      this.gk2aAutoLayers = this.gk2aAutoLayers.filter(L => L !== detail);
+      this._gk2aDetailOn = false;
+      viewer.scene.requestRender();
+      document.dispatchEvent(new CustomEvent('earthus:imagery'));
+      this._announceGK2ADetail(false, this.gk2aAutoLayers.find(L => L._earthusGK2ARole === 'broad'));
+    }
+  },
+
+  _announceGK2ADetail(show, current) {
+    /* 화면 설명의 채널 시각만 바뀌고 아래 토스트에는 2km 시각이 남으면 서로 모순된다.
+       단계가 실제로 전환될 때 현재 보이는 채널의 관측시각도 함께 바꾼다. */
+    const observed = this._gk2aDate(current?._earthusGK2AInfo, this._gk2aMeta);
+    if (observed) {
+      const min = Math.max(0, Math.round((Date.now() - observed.getTime()) / 60000));
+      const hhmm = observed.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      this._say(
+        `천리안2A ${show ? '가시광 0.5km' : '가시광 2km'} · ${hhmm} 관측 · ${min}분 전`,
+        `Chollian-2A visible ${show ? '0.5 km' : '2 km'} · ${min} min ago`);
+    }
   },
 
   async setGK2A(ch, on) {
@@ -927,21 +1158,13 @@ export const imagery = {
     const LABEL = { ir112: '천리안 구름', nightlow: '천리안 야간 하층운',
                     vi006: '천리안 구름(낮)', wv063: '천리안 수증기' }[ch]
                 || '천리안 영상';
-    let src;
+    let L;
     try {
-      src = await this._fetchImage(
-        `${API.GK2A}/${ch}.png?t=${encodeURIComponent(m.time || '')}`, LABEL);
+      L = await this._addGK2ALayer(ch, m, LABEL);
     } catch (e) {
       this._say(`천리안 영상을 받지 못했습니다 (${e.message})`, 'Failed to load Chollian imagery');
       return;
     }
-    const L = viewer.imageryLayers.addImageryProvider(
-      new Cesium.SingleTileImageryProvider({
-        url: src,
-        rectangle: Cesium.Rectangle.fromDegrees(b.west, b.south, b.east, b.north),
-        tileWidth: info.width, tileHeight: info.height,
-      })
-    );
     /* ⚠️ 밤낮을 나누지 않는다. 적외는 밤에도 유효하고, 가시광은 원본 자체가
        밤에 어두워 알아서 사라진다 — Cesium 의 nightAlpha 로 지우면
        "밤에도 보이는 적외"라는 이 레이어의 존재 이유가 없어진다. */
@@ -970,7 +1193,7 @@ export const imagery = {
 
     /* ⚠️ **언제 찍은 것인지 반드시 말한다.** 위성 영상은 지금처럼 보이지만
        10~20분 전이다. 그 사실을 안 적으면 사용자가 실시간으로 읽는다. */
-    const t = m.time ? new Date(m.time) : null;
+    const t = this._gk2aDate(info, m);
     if (t) {
       const min = Math.round((Date.now() - t.getTime()) / 60000);
       const hhmm = t.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
@@ -1037,6 +1260,9 @@ export const imagery = {
       }
     }
 
+    // 0.5km 한반도 타일은 가까이 왔을 때만 보이고 요청된다.
+    this._updateGK2ADetail(h);
+
     /* ── 자동 히마와리 제거 ────────────────────────────────────
        ⚠️ 예전엔 구름(NOAA)이 켜진 채 동아시아로 확대하면 히마와리를 자동으로 얹었다.
           그런데 이 경로는 store 의 배타 그룹(구름 4종 중 하나만)을 우회해서,
@@ -1077,6 +1303,7 @@ export const imagery = {
         if (on) { this.setHimaIR(true); this.flyToHima(); }
         else { this.setHimaIR(false); }
         break;
+      case 'gk2aAuto': this.setGK2AAuto(on); break;
       /* ── 천리안2A — 우리 위성이 본 한반도 ─────────────────────
          ⚠️ 히마와리와 겹쳐 보이지만 다르다. 히마와리는 NASA GIBS 를 거친
             가시광이라 **밤에 빈 화면**이고, 이건 우리 Lambda 가 원본에서

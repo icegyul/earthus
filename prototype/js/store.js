@@ -87,7 +87,7 @@ const EXCLUSIVE = [
   // 바탕 영상 — 위성 사진에는 그날 구름이 이미 찍혀 있다. 구름을 또 얹으면 두 겹이 된다.
   // ⚠️ 천리안 3종도 같은 묶음이다 — 전부 '구름을 칠하는' 것이라
   //    두 장이 겹치면 어느 위성이 본 구름인지 알 수 없게 된다.
-  ['truecolor', 'clouds', 'himawari', 'himaIR', 'gk2aIR', 'gk2aNightLow', 'gk2aVIS', 'gk2aVISea',
+  ['truecolor', 'clouds', 'himawari', 'himaIR', 'gk2aAuto', 'gk2aIR', 'gk2aNightLow', 'gk2aVIS', 'gk2aVISea',
    'gk2aIRea', 'gk2aVISfd', 'gk2aWV'],
 ];
 

@@ -171,6 +171,7 @@ export const LAYER_DEFS = [
         이건 우리가 원본에서 직접 만든 것이라 적외가 **밤에도 보인다.**
      ⚠️ 대신 **한반도만** 덮는다(31.5~43.5°N · 120.5~132°E).
         그 밖으로 나가면 아무것도 없다 — 부제에 그렇게 적었다. */
+  { id:'gk2aAuto', kind:'imagery', tier:TIER.FREE, on:false, group:'base' },
   { id:'gk2aIR',   kind:'imagery', tier:TIER.FREE, on:false, group:'base' },
   { id:'gk2aNightLow',kind:'imagery',tier:TIER.FREE,on:false, group:'base' },
   { id:'gk2aVIS',  kind:'imagery', tier:TIER.FREE, on:false, group:'base' },

@@ -32,8 +32,10 @@
 
 import io
 import json
+import math
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 
 import boto3
@@ -189,9 +191,121 @@ CHANNELS = {
 #      아래에서 good_pixel인 화소만 별도로 남긴다.
 BITS = {"ir112": 13, "wv063": 13, "vi006": 13, "sw038": 14}
 
+# 빠른 천리안 레이어가 쓰는 단계별 타일.
+#   동아시아 2km → 한반도 0.5km(가시광일 때만)
+# 256px 타일을 지구본 기본 지형·히마와리와 같은 Web Mercator XYZ 좌표에 맞춰 만들고,
+# 실제 영상 사각형과 겹치는 조각만 올린다. 지역 사각형을 provider.rectangle로 제한하면
+# Cesium 1.143이 확대 첫 프레임의 frustum을 NaN으로 만들어 중단했다(실화면 반복 재현).
+# 화면 제공자는 전역으로 두되 레이어를 켜면 관측 범위로 이동하므로 없는 바깥 타일을 훑지 않는다.
+TILED_CHANNELS = {"vi006ea", "ir112ea", "vi006"}
+TILE_SIZE = 256
+TILE_LEVELS = {
+    # Web Mercator 256px 기준 z6가 동아시아에서 약 2.4km, z8이 한반도에서 약 0.6km다.
+    "vi006ea": (0, 6),
+    "ir112ea": (0, 6),
+    "vi006": (0, 8),
+}
+
 
 def _mask(ch):
     return (1 << BITS.get(ch, 13)) - 1
+
+
+def _mercator_y(lat):
+    """위도(도) → Web Mercator 전지구 Y(북=0, 남=1)."""
+    p = math.radians(max(-85.05112878, min(85.05112878, lat)))
+    return (1.0 - math.asinh(math.tan(p)) / math.pi) / 2.0
+
+
+def _to_mercator(image, south, north):
+    """등위도 영상의 세로축을 Web Mercator Y 등간격으로 재표본화한다."""
+    srca = np.asarray(image)
+    h = image.height
+    yn, ys = _mercator_y(north), _mercator_y(south)
+    y = np.linspace(yn, ys, h, dtype=np.float64)
+    lat = np.degrees(np.arctan(np.sinh(np.pi * (1.0 - 2.0 * y))))
+    sy = np.clip((north - lat) / (north - south) * (h - 1), 0, h - 1)
+    y0 = np.floor(sy).astype(np.int32)
+    y1 = np.minimum(y0 + 1, h - 1)
+    f = (sy - y0)[:, None, None]
+    warped = srca[y0] * (1.0 - f) + srca[y1] * f
+    return Image.fromarray(np.rint(warped).astype(np.uint8), "LA")
+
+
+def _upload_tile_pyramid(ch, at, image, box):
+    """등경위도 한 장을 표준 Web Mercator XYZ 타일 좌표로 올린다.
+
+    ⚠️ 두 슬롯을 번갈아 쓴다. 고정 경로 하나를 덮으면 업로드 중 새 조각과 옛
+       조각이 섞이고, 시각별 경로를 계속 만들면 저장공간이 끝없이 는다.
+       meta.json은 모든 타일 업로드가 끝난 뒤 갱신되므로 새 사용자는 완성된 슬롯만 본다.
+    """
+    when = datetime.strptime(at, "%Y%m%d%H%M").replace(tzinfo=timezone.utc)
+    slot = int(when.timestamp() // 600) % 2
+    prefix = f"clouds/gk2a/tiles/{ch}/{slot}"
+    resample = getattr(Image, "Resampling", Image).LANCZOS
+
+    west, east = box["lon"]
+    south, north = box["lat"]
+    image = _to_mercator(image, south, north)
+    bx0, bx1 = (west + 180.0) / 360.0, (east + 180.0) / 360.0
+    by0, by1 = _mercator_y(north), _mercator_y(south)
+    z_min, z_max = TILE_LEVELS[ch]
+    uploads = []
+    for z in range(z_min, z_max + 1):
+        n = 1 << z
+        span = 1.0 / n
+        x0 = max(0, int(math.floor(bx0 * n)))
+        x1 = min(n - 1, int(math.floor(bx1 * n - 1e-9)))
+        y0 = max(0, int(math.floor(by0 * n)))
+        y1 = min(n - 1, int(math.floor(by1 * n - 1e-9)))
+
+        for y in range(y0, y1 + 1):
+            ty0, ty1 = y * span, (y + 1) * span
+            for x in range(x0, x1 + 1):
+                tx0, tx1 = x * span, (x + 1) * span
+                ix0, ix1 = max(bx0, tx0), min(bx1, tx1)
+                iy0, iy1 = max(by0, ty0), min(by1, ty1)
+                if ix0 >= ix1 or iy0 >= iy1:
+                    continue
+
+                sx0 = round((ix0 - bx0) / (bx1 - bx0) * image.width)
+                sx1 = round((ix1 - bx0) / (bx1 - bx0) * image.width)
+                sy0 = round((iy0 - by0) / (by1 - by0) * image.height)
+                sy1 = round((iy1 - by0) / (by1 - by0) * image.height)
+                dx0 = round((ix0 - tx0) / span * TILE_SIZE)
+                dx1 = round((ix1 - tx0) / span * TILE_SIZE)
+                dy0 = round((iy0 - ty0) / span * TILE_SIZE)
+                dy1 = round((iy1 - ty0) / span * TILE_SIZE)
+                if sx1 <= sx0 or sy1 <= sy0 or dx1 <= dx0 or dy1 <= dy0:
+                    continue
+
+                part = image.crop((sx0, sy0, sx1, sy1)).resize(
+                    (dx1 - dx0, dy1 - dy0), resample)
+                tile = Image.new("LA", (TILE_SIZE, TILE_SIZE), (0, 0))
+                tile.paste(part, (dx0, dy0))
+                out = io.BytesIO()
+                tile.save(out, "PNG", compress_level=6)
+                uploads.append((f"{prefix}/{z}/{x}/{y}.png", out.getvalue()))
+
+    def put(item):
+        key, body = item
+        dst.put_object(Bucket=DST_BUCKET, Key=key, Body=body,
+                       ContentType="image/png", CacheControl="public, max-age=300")
+
+    # boto3 클라이언트는 스레드 안전하다. 직렬 PUT 150여 회가 영상 계산보다 오래 걸려
+    # Lambda 300초 제한을 넘길 수 있으므로 업로드만 병렬화한다. PNG 계산은 순서대로다.
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        list(pool.map(put, uploads))
+
+    return {
+        "template": f"tiles/{ch}/{slot}/{{z}}/{{x}}/{{y}}.png",
+        "tileWidth": TILE_SIZE,
+        "tileHeight": TILE_SIZE,
+        "minimumLevel": z_min,
+        "maximumLevel": z_max,
+        "tileCount": len(uploads),
+        "scheme": "webmercator-global-v1",
+    }
 
 
 # 플랑크 상수 (파수 기준) ⚠️ 파장 기준 값과 섞으면 안 된다
@@ -515,7 +629,13 @@ def render(ch, key):
         hi = float(cfg.get("hi") or 0) or (
             0.65 if alb_c else (np.percentile(s[ok], 99.0) if ok.any() else 1.0))
         fl = float(cfg["floor"])
-        gy = np.clip(s / max(hi, 1e-6), 0, 1)
+        # ⚠️ 받은 지적: "천리안 가시광은 밝은 구름이 하얗게 뭉개진다".
+        # 알파가 완전히 차는 기준(hi=0.65)을 밝기 상한으로도 써서, 그보다 밝은
+        # 구름 내부는 전부 255가 됐다. 알파 문턱은 유지하되 밝기는 더 넓은
+        # 반사도 구간을 로그 곡선으로 눌러 밝은 구름의 결을 남긴다.
+        tone_hi = float(cfg.get("toneHi") or (1.20 if alb_c else hi))
+        gy = (np.log1p(3.0 * np.clip(s, 0, tone_hi))
+              / np.log1p(3.0 * max(tone_hi, 1e-6)))
         al = np.clip((s - fl) / max(1e-6, hi - fl), 0, 1) ** cfg["gamma"] if alb_c \
             else np.clip((gy - fl) / max(1e-6, 1 - fl), 0, 1) ** cfg["gamma"]
         lo_c, hi_c = (float(np.nanmin(s[ok])) if ok.any() else 0.0), float(hi)
@@ -529,12 +649,13 @@ def render(ch, key):
     g8[~ok] = 0
     a8[~ok] = 0
     buf = io.BytesIO()
-    Image.fromarray(np.stack([g8, a8], -1), "LA").save(buf, "PNG", optimize=True)
+    image = Image.fromarray(np.stack([g8, a8], -1), "LA")
+    image.save(buf, "PNG", optimize=True)
     png = buf.getvalue()
     dst.put_object(Bucket=DST_BUCKET, Key=f"clouds/gk2a/{ch}.png", Body=png,
                    ContentType="image/png", CacheControl="public, max-age=300")
     (la0, la1), (lo0, lo1) = box["lat"], box["lon"]
-    return {"bytes": len(png), "min": round(lo_c, 1), "max": round(hi_c, 1),
+    result = {"bytes": len(png), "min": round(lo_c, 1), "max": round(hi_c, 1),
             "unit": unit, "cover": round(float(ok.mean()) * 100, 1),
             # 실제로 알파가 생긴 출력 화소 비율. 등위도 격자라 면적 비율이 아니고,
             # BTD에서는 낮은 구름·안개의 후보 면적조차 아니다 — 화면에도 그렇게 적는다.
@@ -543,6 +664,10 @@ def render(ch, key):
             #    전면 사각형에 늘어붙어 **엉뚱한 자리에 그려진다.**
             "bbox": {"south": la0, "north": la1, "west": lo0, "east": lo1},
             "width": W, "height": H, "area": cfg["area"]}
+    if ch in TILED_CHANNELS:
+        result["tiles"] = _upload_tile_pyramid(
+            ch, when.strftime("%Y%m%d%H%M"), image, box)
+    return result
 
 
 def handler(event=None, context=None):

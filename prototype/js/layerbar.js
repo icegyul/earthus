@@ -37,6 +37,8 @@ export const ITEMS = [
      ⚠️ 국기는 **누가 찍은 위성인가**다. 우리 것이 맨 위에 온다.
      ⚠️ GMGSI 에 특정 국기를 달지 않는다 — 여러 나라 위성을 NOAA 가 합친 것이라
         한 나라 것이라고 하면 틀린 말이 된다. 🌐 로 둔다. */
+  { id:'gk2aAuto', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'낮 가시광·밤 적외 자동 · 2km→한반도 0.5km', subEn:'Auto visible by day, IR by night · 2km→Korea 0.5km', ready:true,
+    sky:'#0a1828', paint:'gk2a', img:'img/sat-gk2a.png' },
   { id:'gk2aIR', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 아시아·태평양 전체 · 밤에도 (8km)', subEn:'Cloud · Asia–Pacific full disk · day & night (8 km)', ready:true,
     sky:'#0b1626', paint:'gk2a', img:'img/sat-gk2a.png' },
   { id:'gk2aNightLow', flag:'🇰🇷', ko:'천리안2A 야간 하층운', en:'Chollian-2A night low cloud', sub:'물방울 구름 후보 · 아시아·태평양 전체 · 밤에만 (8km)', subEn:'Water-cloud signal · Asia–Pacific full disk · night only (8 km)', ready:true,
@@ -538,10 +540,9 @@ const TIME_PRESETS = [
 const QUICK_IDS = [
   'clouds',     // 🌐 NOAA GMGSI 전지구 합성
   'truecolor',  // 🇺🇸 수오미 NPP
-  /* 🇰🇷 천리안2A 전면 — 받은 지시(2026-08-06): "천리안은 전면2km 로 바꿔줘"
-     동아시아(gk2aIRea)는 114~150°E / 23~47°N 상자라 태풍이 그 밖으로 나가면 잘린다.
-     전면(gk2aIR)은 70~190°E / -60~60°N 이라 태풍 전체가 들어온다. */
-  'gk2aIR',
+  /* 🇰🇷 천리안2A 자동 — 낮 가시광/밤 적외, 동아시아 2km에서 시작해
+     한반도로 가까워지면 유효한 낮에만 0.5km 원본 타일을 요청한다. */
+  'gk2aAuto',
   'himawari',   // 🇯🇵 히마와리
   'temp', 'rain', 'wind', 'wave',
 ];

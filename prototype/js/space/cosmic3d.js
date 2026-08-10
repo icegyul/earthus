@@ -20,8 +20,9 @@ import { planetOrbit, planetPositions } from './kepler.js';
 const IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const BODY_ORDER = ['mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const SURFACE_IDS = [...IDS, 'moon'];
+const ULTRA_SURFACE_IDS = new Set(['mercury', 'venus', 'mars']);
 const PLANET_TEXTURE_ROOT = '/space/planets';
-const PLANET_TEXTURE_VERSION = '20260810b';
+const PLANET_TEXTURE_VERSION = '20260810c';
 const planetTextureUrl = path => `${PLANET_TEXTURE_ROOT}/${path}?v=${PLANET_TEXTURE_VERSION}`;
 const PLANETS = {
   mercury: { ko: '수성', en: 'Mercury', color: 0xaaa7a0, radius: .38 },
@@ -80,6 +81,8 @@ export const cosmic3d = {
   _detailBody: null,
   _detailTexture: null,
   _detailTextureLoadId: 0,
+  _detailTextureStage: null,
+  _ultraTextureLoading: null,
   _planetTexturePromise: null,
   _planetTextures: new Map(),
   _detailRing: null,
@@ -344,9 +347,43 @@ export const cosmic3d = {
         texture.colorSpace = T.SRGBColorSpace;
         texture.wrapS = repeat ? T.RepeatWrapping : T.ClampToEdgeWrapping;
         texture.wrapT = T.ClampToEdgeWrapping;
-        texture.anisotropy = Math.min(4, this.renderer.capabilities.getMaxAnisotropy());
+        texture.anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy());
         resolve(texture);
       }, undefined, reject);
+    });
+  },
+
+  canUseUltraSurface(id) {
+    if (!ULTRA_SURFACE_IDS.has(id) || window.innerWidth < 900) return false;
+    const memoryGb = Number(navigator.deviceMemory || 8);
+    return memoryGb >= 8 && this.renderer.capabilities.maxTextureSize >= 8192;
+  },
+
+  maybeLoadUltraSurface() {
+    const body = this._detailBody;
+    if (!body || this._bodyDistance > 38 || this._detailTextureStage !== 'detail'
+      || this._ultraTextureLoading || !this.canUseUltraSurface(body.id)) return;
+    const loadId = this._detailTextureLoadId;
+    this._ultraTextureLoading = body.id;
+    this.loadSurfaceTexture(planetTextureUrl(`ultra/${body.id}.webp`)).then(texture => {
+      if (loadId !== this._detailTextureLoadId || this._detailBody?.id !== body.id) {
+        texture.dispose(); return;
+      }
+      this._detailTexture?.dispose();
+      this._detailTexture = texture;
+      this.bodySphere.material.map = texture;
+      this.bodySphere.material.emissiveMap = texture;
+      this.bodySphere.material.needsUpdate = true;
+      this._detailTextureStage = 'ultra';
+      if (location.hash === '#dev') {
+        this.canvas.dataset.surfaceQuality = 'ultra';
+        this.canvas.dataset.surfacePixels = `${texture.image.width}x${texture.image.height}`;
+      }
+      this.render();
+    }).catch(error => {
+      console.warn(`[cosmic-texture-ultra:${body.id}]`, error?.message || 'load failed');
+    }).finally(() => {
+      if (this._ultraTextureLoading === body.id) this._ultraTextureLoading = null;
     });
   },
 
@@ -902,7 +939,7 @@ export const cosmic3d = {
     this.bodyDetailGroup = new T.Group();
     this.bodyDetailGroup.visible = false;
     this.bodySphere = new T.Mesh(
-      new T.SphereGeometry(18, 56, 36),
+      new T.SphereGeometry(18, 128, 80),
       new T.MeshStandardMaterial({
         color: 0xffffff, roughness: .88, metalness: 0,
         emissive: 0x555555, emissiveIntensity: .85,
@@ -943,13 +980,18 @@ export const cosmic3d = {
       const loadId = ++this._detailTextureLoadId;
       const previewTexture = this._planetTextures.get(body.id);
       this._detailTexture = previewTexture ? previewTexture.clone() : this.makeBodyFallbackTexture(body);
+      this._detailTextureStage = previewTexture ? 'preview' : 'fallback';
+      this._ultraTextureLoading = null;
       this._detailTexture.needsUpdate = true;
       this.bodySphere.material.map = this._detailTexture;
       this.bodySphere.material.emissiveMap = this._detailTexture;
       this.bodySphere.material.emissiveIntensity = body.id === 'uranus' ? 0 : .68;
       this.bodySphere.material.color.set(0xffffff);
       this.bodySphere.material.needsUpdate = true;
-      if (location.hash === '#dev') this.canvas.dataset.surfaceQuality = previewTexture ? 'preview' : 'fallback';
+      if (location.hash === '#dev') {
+        this.canvas.dataset.surfaceQuality = this._detailTextureStage;
+        this.canvas.dataset.surfacePixels = `${this._detailTexture.image.width}x${this._detailTexture.image.height}`;
+      }
       this.makeBodyRing(body);
       this.makeBodyAtmosphere(body);
       this.makeBodyMarkers(body);
@@ -966,7 +1008,11 @@ export const cosmic3d = {
         this.bodySphere.material.map = texture;
         this.bodySphere.material.emissiveMap = texture;
         this.bodySphere.material.needsUpdate = true;
-        if (location.hash === '#dev') this.canvas.dataset.surfaceQuality = 'detail';
+        this._detailTextureStage = 'detail';
+        if (location.hash === '#dev') {
+          this.canvas.dataset.surfaceQuality = 'detail';
+          this.canvas.dataset.surfacePixels = `${texture.image.width}x${texture.image.height}`;
+        }
         this.render();
       }).catch(error => {
         // 네트워크가 끊겨도 기존 가벼운 절차 텍스처로 천체 탐색은 계속한다.
@@ -994,7 +1040,8 @@ export const cosmic3d = {
     this.bodySphere.material.map = null;
     this.bodySphere.material.emissiveMap = null;
     this.bodySphere.material.needsUpdate = true;
-    this._detailTexture = null; this._detailRing = null;
+    this._detailTexture = null; this._detailTextureStage = null; this._ultraTextureLoading = null;
+    this._detailRing = null;
     this._detailMarkers.clear();
   },
 
@@ -1625,6 +1672,9 @@ export const cosmic3d = {
     }
     this.solarMotionGroup.visible = false;
     if (this._detailBody) {
+      // 8K 원본을 가진 암석 행성은 데스크톱에서 충분히 확대했을 때만 한 장을 더 올린다.
+      // 휴대폰에는 4K 한 장만 유지해 128MB급 GPU 텍스처와 발열을 피한다.
+      this.maybeLoadUltraSurface();
       this.solarGroup.visible = false;
       this.galaxyGroup.visible = false;
       this.clusterGroup.visible = false;

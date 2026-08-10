@@ -8,19 +8,25 @@
 ## 런타임 규격
 
 - `small/`: 512×256, 품질 76~78. 행성 8개와 달을 한 번만 내려받아 상세 화면의 즉시 미리보기에도 씁니다.
-- `detail/`: 1024×512, 품질 82~84. 선택한 천체 한 장만 로드하고 화면을 닫을 때 GPU에서 해제합니다.
-- `saturn-ring.webp`: 1024×63 RGBA. 태양계와 토성 상세 화면이 같은 고리 질감을 공유합니다.
+- `detail/`: 수성·금성·달·화성·토성 4096×2048, 목성 3600×1800입니다. 공개 전구 원본이
+  1K급인 천왕성·해왕성은 1024×512를 유지합니다. 선택한 천체 한 장만 로드하고 화면을
+  닫거나 다른 천체를 고르면 GPU에서 즉시 해제합니다.
+- `ultra/`: 수성·금성·화성 8192×4096. 화면 폭 900px 이상, GPU 최대 텍스처 8192 이상,
+  브라우저가 메모리 8GB 이상으로 보고하거나 메모리 값을 제공하지 않는 데스크톱에서
+  행성에 가까이 확대했을 때만 한 장을 올립니다.
+  휴대폰에는 이 파일을 요청하지 않습니다.
+- `saturn-ring.webp`: 4096×250 RGBA. 태양계와 토성 상세 화면이 같은 고리 질감을 공유합니다.
 - 모두 2:1 등거리 원통도법(equirectangular) WebP입니다.
 
 ## 원본과 크레딧
 
 | 파일 | 원본·설명 | 크레딧 |
 | --- | --- | --- |
-| `mercury.webp` | [USGS MESSENGER MDIS Enhanced Color Global Mosaic](https://astrogeology.usgs.gov/search/map/mercury_messenger_mdis_basemap_enhanced_color_global_mosaic_665m) | NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington, USGS Astrogeology |
-| `venus.webp` | [JPL Solar System Simulator Venus map](https://space.jpl.nasa.gov/tmaps/venus.html) | NASA/JPL, Magellan radar imagery |
+| `mercury.webp` | [Solar System Scope 8K Mercury 시각화](https://www.solarsystemscope.com/textures/); 비교 기준은 [USGS MESSENGER 전구 모자이크](https://astrogeology.usgs.gov/search/map/mercury_messenger_mdis_basemap_enhanced_color_global_mosaic_665m) | Solar System Scope/INOVE, CC BY 4.0; 비교 자료 NASA/JHUAPL/Carnegie/USGS |
+| `venus.webp` | Magellan 레이더 자료를 바탕으로 한 [Solar System Scope 8K 표면 시각화](https://www.solarsystemscope.com/textures/) | NASA/JPL, Solar System Scope/INOVE, CC BY 4.0 |
 | `earth.webp` | [NASA SVS Blue Marble](https://svs.gsfc.nasa.gov/2915) | NASA/GSFC Scientific Visualization Studio, Reto Stöckli/NASA Earth Observatory |
-| `moon.webp` | [NASA SVS CGI Moon Kit](https://svs.gsfc.nasa.gov/4720) | NASA/GSFC Scientific Visualization Studio, Lunar Reconnaissance Orbiter |
-| `mars.webp` | [NASA 3D Resources Mars](https://science.nasa.gov/3d-resources/mars/) | NASA/JPL-Caltech/USGS |
+| `moon.webp` | [NASA SVS CGI Moon Kit 2025 4K color map](https://svs.gsfc.nasa.gov/4720) | NASA/GSFC Scientific Visualization Studio, Lunar Reconnaissance Orbiter |
+| `mars.webp` | [Solar System Scope 8K Mars 시각화](https://www.solarsystemscope.com/textures/); 비교 기준은 [USGS Viking 전구 색상 모자이크](https://astrogeology.usgs.gov/search/map/mars_viking_global_color_mosaic_925m) | Solar System Scope/INOVE, CC BY 4.0; 비교 자료 NASA/JPL/USGS |
 | `jupiter.webp` | [Cassini's Best Maps of Jupiter (PIA07782)](https://science.nasa.gov/photojournal/cassinis-best-maps-of-jupiter-cylindrical-map) | NASA/JPL/Space Science Institute |
 | `saturn.webp` | [Solar System Scope Saturn texture](https://www.solarsystemscope.com/textures/) | Solar System Scope/INOVE, CC BY 4.0; NASA 관측 기반 시각 조정본 |
 | `saturn-ring.webp` | [Solar System Scope Saturn ring texture](https://www.solarsystemscope.com/textures/) | Solar System Scope/INOVE, CC BY 4.0 |

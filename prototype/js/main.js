@@ -43,7 +43,7 @@ import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
 import { scaleRail } from './ui-scale.js?v=20260810-branddock1';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
-import { cosmic3d } from './space/cosmic3d.js?v=20260810-planettextures2';
+import { cosmic3d } from './space/cosmic3d.js?v=20260810-planettextures3';
 import { trenchCards } from './ocean/trenchcards.js';
 import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-globe3';
 

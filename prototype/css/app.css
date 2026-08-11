@@ -536,7 +536,7 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
   .ly{ width:80px; } .ly canvas{ width:54px; height:54px; }
 }
 
-/* ══════════ 오른쪽 EARTHUS 2단 메뉴 ════════════════════════════
+/* ══════════ 오른쪽 EARTHUS 통합 2단 메뉴 ═══════════════════════
    손잡이만 남기고 감춰두는 이유: 리빙어스처럼 평상시엔 지구만 보여야 한다.
    2단 구조인 이유: 1단은 큰 갈래(지구/위성/설정), 2단은 그 안의 선택지.
    한 화면에 다 펼치면 다시 "설정창 열어둔 앱"이 된다. */
@@ -601,7 +601,9 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 .mm-scene-fold .mm-label b{font-size:11px;font-weight:550;color:var(--paper)}
 .mm-scene-fold .mm-label small{font-size:8.5px;line-height:1.25;color:var(--fog)}
 .mm-ico{ line-height:0; flex:none; }
+.mm-brand-ico{display:grid;place-items:center;width:19px;height:19px;border:1px solid rgba(139,216,236,.68);border-radius:50%;color:#9fe6f5;font:650 11px/19px ui-monospace,SFMono-Regular,Menlo,monospace}
 .mm-label{ flex:1; }
+.mm-brand-label{display:grid;gap:3px}.mm-brand-label b{font-size:11px;letter-spacing:.05em;color:#9fe6f5}.mm-brand-label small{font-size:8.5px;color:var(--fog)}
 .mm-chev{ opacity:.4; font-size:16px; transition:transform .3s ease; }
 .mm-item.open .mm-chev{ transform:rotate(180deg); }
 .mm-badge{
@@ -643,6 +645,23 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
    예전에 width:92px 이 남아 있어서 칸이 넘치고 좌우로 밀렸다. */
 #layerStrip > .ly{ width:auto; min-width:0; }
 #layerStrip::-webkit-scrollbar{ display:none; }
+.aetherus-menu-list{display:flex!important;flex-direction:column;gap:0!important;padding:9px!important}
+.aetherus-menu-intro{margin:1px 3px 9px;color:var(--fog);font-size:10px;line-height:1.45}
+.aetherus-route{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:49px;padding:8px 10px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--paper);text-align:left;cursor:pointer}
+.aetherus-route:last-child{border-bottom:0}.aetherus-route:hover,.aetherus-route.current{background:rgba(255,255,255,.055)}
+.aetherus-route:focus-visible{outline:2px solid #9fe6f5;outline-offset:-3px}.aetherus-route span{display:grid;gap:3px}.aetherus-route b{font-size:12px;font-weight:600}.aetherus-route small{font:500 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--fog)}
+.aetherus-route i{font-style:normal;font-size:18px;color:rgba(255,255,255,.42)}.aetherus-route em{display:grid;place-items:center;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:rgba(139,216,236,.14);color:#9fe6f5;font:600 9px/18px ui-monospace,SFMono-Regular,Menlo,monospace}
+
+/* 좁은 화면에서는 1단과 2단을 나란히 두지 않는다. 둘을 더하면 364px이라
+   390px 폭에서 지구가 거의 사라졌다. 2단이 열린 동안에는 1단을 뒤로 보내고,
+   한 장짜리 패널만 보이게 한다. */
+@media(max-width:560px){
+  /* 목록을 읽을 최소 폭은 남기되, 열린 메뉴가 화면의 대부분을 먹지 않는다. */
+  :root{--mm-w:min(68vw,268px);--ms-w:min(68vw,268px)}
+  #menuMain.open.sub-open{transform:translateY(-50%) translateX(100%)}
+  #menuSub{right:env(safe-area-inset-right,0px)}
+  #menuTab.open.sub{transform:translateY(-50%) translateX(calc(-1 * var(--ms-w)))}
+}
 
 /* 자주 쓰는 레이어 조합 — 두 칸 목록 위에서 전체 폭을 쓴다. */
 .ly-presets{
@@ -780,7 +799,9 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 .ly.locked canvas, .ly.blocked canvas{ filter:grayscale(1) brightness(.5); }
 
 @media (max-width:390px){
-  :root{ --mm-w:142px; --ms-w:186px; }
+  /* 위의 통합 메뉴 폭을 덮어쓰면 390px에서 다시 두 좁은 레일로 돌아간다.
+     레이어 썸네일만 줄이고 메뉴는 한 장짜리 폭을 유지한다. */
+  :root{--mm-w:min(68vw,268px);--ms-w:min(68vw,268px)}
   .ly canvas{ width:46px; height:46px; }
 }
 

@@ -41,7 +41,6 @@ import { apiKeysPanel } from './ui-apikeys.js';
 import { eventPanel } from './ui-events.js';
 import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
-import { scaleRail } from './ui-scale.js?v=20260810-branddock1';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
 import { cosmic3d } from './space/cosmic3d.js?v=20260810-solarspacing1';
 import { trenchCards } from './ocean/trenchcards.js';
@@ -103,7 +102,6 @@ async function boot() {
 
   power.init();
   sceneMgr.init();
-  scaleRail.init();
   cosmic3d.init();
   trenchCards.init();
   trenchGlobe.init();
@@ -165,6 +163,24 @@ async function boot() {
   document.addEventListener('aetherus:photo', async event => {
     if (store.scene !== 'space') await sceneMgr.to('space', { stage: 'solar' });
     await cosmic3d.openPhotoAtlas(event.detail);
+  });
+  /* 통합 메뉴의 AETHERUS 갈래. 메뉴가 장면 위를 두 군데에서 덮지 않게 하되,
+     기존 은하·태양계·사진관의 실제 이동 동작은 하나도 줄이지 않는다. */
+  document.addEventListener('aetherus:route', async event => {
+    const route = event.detail;
+    if (route === 'galaxy-structure') {
+      await sceneMgr.to('space', { stage: 'milkyway' });
+      document.dispatchEvent(new CustomEvent('aetherus:galaxy-guide'));
+      return;
+    }
+    if (route === 'hubble' || route === 'webb') {
+      document.dispatchEvent(new CustomEvent('aetherus:photo', {
+        detail: route === 'webb' ? 'JWST' : 'HST',
+      }));
+      return;
+    }
+    const stage = { galaxies: 'galaxies', milkyway: 'milkyway', solar: 'solar' }[route];
+    if (stage) await sceneMgr.to('space', { stage });
   });
   activeBar.init();       // 지금 켜진 레이어 줄 (감사 3차)
   search.init();          // ⌘K · 우상단 돋보기

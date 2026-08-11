@@ -547,6 +547,17 @@ const QUICK_IDS = [
   'temp', 'rain', 'wind', 'wave',
 ];
 
+/* AETHERUS는 더 이상 반대쪽 레일을 열지 않는다. 같은 2단 패널을 재사용해
+   모바일에서 두 메뉴가 동시에 지도를 가리던 구조를 없앤다. */
+const AETHERUS_ROUTES = [
+  { id: 'galaxies', ko: '은하들', en: 'Galaxies' },
+  { id: 'milkyway', ko: '은하수', en: 'Milky Way' },
+  { id: 'galaxy-structure', ko: '우리은하 구조', en: 'Spiral arms' },
+  { id: 'solar', ko: '태양계', en: 'Solar system' },
+  { id: 'hubble', ko: '허블 사진관', en: 'Hubble images', count: 1 },
+  { id: 'webb', ko: '제임스웹 사진관', en: 'Webb images', count: 49 },
+];
+
 export const layerBar = {
   open: false,      // 1단
   showAll: false,
@@ -562,10 +573,13 @@ export const layerBar = {
 
     const apply = () => {
       main.classList.toggle('open', this.open);
+      main.classList.toggle('sub-open', this.open && !!this.sub);
       sub.classList.toggle('open', this.open && !!this.sub);
       tab.classList.toggle('open', this.open);
       tab.classList.toggle('sub', this.open && !!this.sub);
-      main.setAttribute('aria-hidden', String(!this.open));
+      /* 2단을 보는 동안 1단은 모바일에서 화면 밖으로 나가므로, 보조기술에도
+         같은 한 장 메뉴만 읽힌다. */
+      main.setAttribute('aria-hidden', String(!this.open || !!this.sub));
       sub.setAttribute('aria-hidden', String(!(this.open && this.sub)));
       /* ⚠️⚠️ aria-hidden 만으로는 **키보드 탭이 그대로 들어간다.** (감사 P2-2)
          화면 밖으로 밀어 둔 메뉴 버튼들이 탭 순서에 남아, 탭을 누르면
@@ -577,7 +591,9 @@ export const layerBar = {
           .forEach(n => { if (off) { n.setAttribute('tabindex', '-1'); }
                           else { n.removeAttribute('tabindex'); } });
       };
-      seal(main, !this.open);
+      /* 모바일에서는 2단이 1단을 완전히 대체한다. 화면 밖의 1단까지 탭으로
+         들어가면 사용자가 길을 잃으므로, 2단을 연 동안은 1단도 inert 처리한다. */
+      seal(main, !this.open || !!this.sub);
       seal(sub, !(this.open && this.sub));
       tab.setAttribute('aria-expanded', String(this.open));
       // 열린 쪽 버튼만 펼침 표시
@@ -699,21 +715,28 @@ export const layerBar = {
     if (b) b.onclick = () => { fn(); this.open = false; this.sub = null; this._apply(); };
   },
 
-  /** 2단 목록을 그린다. kind: 'earth'(지구 스타일) | 'alert'(재난) */
+  /** 2단 목록을 그린다. kind: 'earth'(레이어) | 'alert'(재난) | 'aetherus'(우주) */
   render(kind = 'earth') {
     const strip = $('#layerStrip');
     if (!strip) return;
     strip.innerHTML = '';
     const ko = i18n.lang === 'ko';
     const isAlert = kind === 'alert';
+    const isAetherus = kind === 'aetherus';
+    strip.classList.toggle('aetherus-menu-list', isAetherus);
 
     // 머리글은 목록에 따라 바뀐다 (DOM 은 하나를 돌려 쓴다)
     const head = $('#menuSub .ms-head');
     /* ⚠️ '지구 스타일'이라 부르던 것을 '레이어'로 바꿨다. (감사 3차)
        안에 기온·바람·대기질·바다·관측소가 다 들어 있는데 '스타일'이라고 하면
        테마를 고르는 곳처럼 읽힌다 — 실제 이름은 레이어가 맞다. */
-    if (head) head.textContent = isAlert ? (ko ? '경보·재난' : 'Alerts')
-                                         : (ko ? '레이어' : 'Layers');
+    if (head) head.textContent = isAetherus ? 'AETHERUS'
+      : isAlert ? (ko ? '경보·재난' : 'Alerts') : (ko ? '레이어' : 'Layers');
+
+    if (isAetherus) {
+      this._renderAetherus(strip, ko);
+      return;
+    }
 
     /* 묶음별로 제목을 두고 그 아래에 항목을 놓는다.
        ⚠️ CATEGORIES 에 없는 항목이 생기면 조용히 사라지므로 마지막에 모아 붙인다.
@@ -863,6 +886,32 @@ export const layerBar = {
       }
     }
     this.sync();
+  },
+
+  _renderAetherus(strip, ko) {
+    const intro = el('p', 'aetherus-menu-intro');
+    intro.textContent = ko
+      ? '검증된 우주 자료를 탐험합니다. 사진에는 출처와 크레딧을 표시합니다.'
+      : 'Explore verified space data. Images show source and credit.';
+    strip.appendChild(intro);
+    AETHERUS_ROUTES.forEach(route => {
+      const button = el('button', 'aetherus-route');
+      button.type = 'button';
+      button.dataset.aetherusRoute = route.id;
+      const active = (route.id === store.sceneStage && store.scene === 'space')
+        || (route.id === 'galaxy-structure' && store.scene === 'space' && store.sceneStage === 'milkyway');
+      button.classList.toggle('current', active);
+      button.setAttribute('aria-current', active ? 'page' : 'false');
+      button.innerHTML = `<span><b>${ko ? route.ko : route.en}</b><small>${ko ? route.en : route.ko}</small></span>`
+        + (route.count ? `<em>${route.count}</em>` : '<i aria-hidden="true">›</i>');
+      button.onclick = () => {
+        this.open = false;
+        this.sub = null;
+        this._apply?.();
+        document.dispatchEvent(new CustomEvent('aetherus:route', { detail: route.id }));
+      };
+      strip.appendChild(button);
+    });
   },
 
   /** 항목 하나 */

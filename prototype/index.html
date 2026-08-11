@@ -298,18 +298,6 @@
     </section>
   </div>
 
-  <nav id="scaleRail" aria-label="AETHERUS 메뉴" aria-expanded="false">
-    <button class="scale-handle" type="button" aria-label="AETHERUS 메뉴 열기">AETHERUS</button>
-    <div class="scale-track">
-      <button type="button" data-scale-stage="galaxies"><span>은하들</span><small>Galaxies</small></button>
-      <button type="button" data-scale-stage="milkyway"><span>은하수</span><small>Milky Way</small></button>
-      <button type="button" data-aetherus-act="galaxy-structure"><span>우리은하 구조</span><small>Spiral arms</small></button>
-      <button type="button" data-scale-stage="solar"><span>태양계</span><small>Solar system</small></button>
-      <button type="button" data-aetherus-act="hubble"><span>허블</span><small>Hubble</small><b>1</b></button>
-      <button type="button" data-aetherus-act="webb"><span>제임스웹</span><small>James Webb</small><b>49</b></button>
-    </div>
-  </nav>
-
   <div id="sceneFade" aria-hidden="true"></div>
 
   <!-- ══ AMBIENT ══ -->
@@ -374,9 +362,11 @@
     <div class="wl-fc" id="windFcTag" hidden></div>
   </div>
 
-  <!-- ══ 오른쪽 EARTHUS 2단 메뉴 ═══════════════════════════════
-       AETHERUS는 왼쪽, EARTHUS는 오른쪽에 고정한다. 장면에 따라 브랜드를
-       바꾸지 않아 우주에서도 지구로, 지구에서도 우주로 곧바로 이동한다. -->
+  <!-- ══ 오른쪽 통합 메뉴 ═══════════════════════════════════════
+       받은 요청: "양쪽에 있으니 편하긴 한데 모바일에서 화면을 가린다.
+       EARTHUS 밑에 AETHERUS 메뉴버튼을 달자."
+       그래서 화면 가장자리의 손잡이는 하나만 남긴다. AETHERUS는 EARTHUS 메뉴의
+       첫 갈래로 옮겨, 어느 장면에서도 한 곳에서 두 탐험을 오간다. -->
   <button id="menuTab" aria-label="EARTHUS 메뉴" aria-expanded="false"><span class="mt-label">EARTHUS</span></button>
 
   <!-- 2단: 지구 스타일 (1단보다 왼쪽) -->
@@ -387,6 +377,10 @@
 
   <!-- 1단 -->
   <nav id="menuMain" aria-hidden="true">
+    <button class="mm-item" data-open="aetherus">
+      <span class="mm-ico mm-brand-ico" aria-hidden="true">A</span>
+      <span class="mm-label mm-brand-label"><b>AETHERUS</b><small>우주 탐험</small></span><span class="mm-chev">‹</span>
+    </button>
     <button class="mm-item" data-open="earth">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9.2"/><ellipse cx="12" cy="12" rx="4" ry="9.2"/><path d="M2.9 12h18.2"/></svg></span>
       <span class="mm-label" data-i18n="m.layers">지구 스타일</span><span class="mm-chev">‹</span>

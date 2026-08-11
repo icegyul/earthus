@@ -724,6 +724,7 @@ export const layerBar = {
     const isAlert = kind === 'alert';
     const isAetherus = kind === 'aetherus';
     strip.classList.toggle('aetherus-menu-list', isAetherus);
+    document.querySelector('#menuSub')?.classList.toggle('aetherus-open', isAetherus);
 
     // 머리글은 목록에 따라 바뀐다 (DOM 은 하나를 돌려 쓴다)
     const head = $('#menuSub .ms-head');
@@ -891,8 +892,8 @@ export const layerBar = {
   _renderAetherus(strip, ko) {
     const intro = el('p', 'aetherus-menu-intro');
     intro.textContent = ko
-      ? '검증된 우주 자료를 탐험합니다. 사진에는 출처와 크레딧을 표시합니다.'
-      : 'Explore verified space data. Images show source and credit.';
+      ? '우주 자료를 고릅니다. 사진에는 출처와 크레딧을 함께 표시합니다.'
+      : 'Choose a space view. Images include source and credit.';
     strip.appendChild(intro);
     AETHERUS_ROUTES.forEach(route => {
       const button = el('button', 'aetherus-route');

@@ -1,4 +1,15 @@
 {
+  "schema": "earthus.cosmic-spacecraft.v1",
+  "schemaVersion": 1,
+  "contract": {
+    "provenanceByType": {
+      "earth-orbit-schematic": "reconstruction",
+      "earth-l2-schematic": "reconstruction",
+      "heliocentric-vector": "calculated"
+    },
+    "time": { "referenceDate": "official-reference-date", "epoch": "state-vector-epoch-utc" },
+    "rights": { "scope": "item", "required": ["credit", "source", "sourceUrl"] }
+  },
   "generated": "2026-08-10",
   "positionNotice": {
     "ko": "허블·제임스웹은 궤도 구조를 보여주는 위치 도식이며 현재 실시간 위치가 아닙니다. 보이저는 JPL Horizons 기준시점 상태벡터에 속도×경과일을 더한 교육용 등속 추정입니다.",

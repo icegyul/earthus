@@ -1,5 +1,11 @@
 {
   "schema": "earthus.solar-motion.v1",
+  "schemaVersion": 1,
+  "contract": {
+    "provenance": "simulation",
+    "time": { "referenceDate": "calculation-reference-date" },
+    "rights": { "scope": "source", "required": ["source", "sourceUrl"] }
+  },
   "referenceDate": "2026-08-10",
   "displaySpanDays": 365.25,
   "galacticSpeedKph": 829000,

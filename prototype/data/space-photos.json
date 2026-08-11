@@ -1,4 +1,11 @@
 {
+  "schema": "earthus.space-photos.v1",
+  "schemaVersion": 1,
+  "contract": {
+    "provenance": "observation",
+    "time": { "generated": "catalog-generated-date", "itemDate": "dateKind-field" },
+    "rights": { "scope": "item", "required": ["credit", "license", "full"] }
+  },
   "generated": "2026-08-09",
   "items": [
     {

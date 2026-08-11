@@ -1,5 +1,11 @@
 {
   "schema": "earthus.milky-way-structure.v1",
+  "schemaVersion": 1,
+  "contract": {
+    "provenance": "reconstruction",
+    "time": { "generated": "catalog-generated-date" },
+    "rights": { "scope": "source-list", "required": ["name", "url"] }
+  },
   "generated": "2026-08-10",
   "title": {
     "ko": "우리은하 나선팔 구조",

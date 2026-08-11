@@ -16,6 +16,7 @@ import { store } from '../store.js';
 import { sceneMgr } from '../scene.js';
 import { i18n } from '../i18n.js';
 import { planetOrbit, planetPositions } from './kepler.js';
+import { assertAetherusCatalog } from './contracts.js?v=20260812-contract1';
 
 const IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const BODY_ORDER = ['sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
@@ -80,6 +81,7 @@ export const cosmic3d = {
   _pointers: new Map(),
   _pinchDistance: 0,
   _enginePromise: null,
+  _activationPromise: Promise.resolve(null),
   _ready: false,
   _bodyCatalogPromise: null,
   _bodyCatalog: null,
@@ -152,9 +154,10 @@ export const cosmic3d = {
         if (this._photoMode) this.closePhotoAtlas(false);
         if (this._detailBody) this.closeBody(false);
         if (this._selectedCraft) this.closeCraft(false);
+        this.emitRouteState();
         return;
       }
-      this.activate(stage);
+      this._activationPromise = this.activate(stage);
     });
     i18n.onChange(() => {
       this.buildBodyPicker();
@@ -168,9 +171,55 @@ export const cosmic3d = {
     });
     this.root.hidden = store.scene !== 'space';
     this.updateHud();
-    if (store.scene === 'space') this.activate(store.sceneStage);
+    if (store.scene === 'space') this._activationPromise = this.activate(store.sceneStage);
     document.addEventListener('aetherus:galaxy-guide', () => this.openGalaxyGuide());
     return this;
+  },
+
+  routeState() {
+    if (store.scene !== 'space') return null;
+    return {
+      stage: this._stage || store.sceneStage || 'solar',
+      target: this._detailBody?.id || null,
+      photo: this._selectedPhoto?.id || (this._photoMode ? this._photoMode.toLowerCase() : null),
+      craft: this._selectedCraft?.id || null,
+    };
+  },
+
+  emitRouteState() {
+    document.dispatchEvent(new CustomEvent('aetherus:state', { detail: this.routeState() }));
+  },
+
+  async restoreRoute(route) {
+    if (!route?.stage || store.scene !== 'space') return false;
+    // 장면 진입의 마지막 animateTo가 상세 복원 뒤에 도착하면 상세 화면을 다시 닫는다.
+    // 기본 장면 준비를 먼저 끝낸 뒤 target/photo/craft를 적용한다.
+    await this._activationPromise;
+    if (store.scene !== 'space') return false;
+    if (route.issues?.length) console.warn('[aetherus-route]', route.issues.join(','));
+    if (route.target) {
+      await this.selectBody(route.target);
+      return this._detailBody?.id === route.target;
+    }
+    if (route.craft) {
+      await this.ensureEngine();
+      await this.loadSpacecraftCatalog();
+      this.selectCraft(route.craft);
+      return this._selectedCraft?.id === route.craft;
+    }
+    if (route.photo) {
+      const items = await this.loadPhotoCatalog();
+      const telescope = ['hst', 'jwst'].includes(route.photo) ? route.photo.toUpperCase() : null;
+      const photo = telescope ? null : items.find(item => item.id === route.photo);
+      if (!telescope && !photo) {
+        console.warn('[aetherus-route]', `UNKNOWN_PHOTO_${route.photo}`);
+        return false;
+      }
+      await this.openPhotoAtlas(telescope || photo.telescope, photo?.id || null);
+      return telescope ? this._photoMode === telescope : this._selectedPhoto?.id === photo.id;
+    }
+    this.emitRouteState();
+    return true;
   },
 
   async activate(stage) {
@@ -440,10 +489,8 @@ export const cosmic3d = {
         if (!response.ok) throw new Error(`COSMIC_SPACECRAFT_${response.status}`);
         return response.json();
       })
-      .then(document => {
-        if (!Array.isArray(document.items) || !document.positionNotice) {
-          throw new Error('COSMIC_SPACECRAFT_SCHEMA');
-        }
+      .then(raw => {
+        const document = assertAetherusCatalog('cosmic-spacecraft', raw);
         this._craftCatalog = document;
         this.buildSpacecraft(); this.buildCraftPicker(); this.render();
         return document;
@@ -595,6 +642,7 @@ export const cosmic3d = {
     this.root.classList.add('is-craft');
     this._craftMarkers.forEach(item => item.object.scale.setScalar(item.craft.id === id ? 1.75 : 1));
     this.buildCraftPicker(); this.updateBodyPicker(); this.showCraftInfo(entry.craft); this.updateHud(); this.render();
+    this.emitRouteState();
   },
 
   showCraftInfo(craft) {
@@ -624,7 +672,7 @@ export const cosmic3d = {
     this._selectedCraft = null; this.root.classList.remove('is-craft'); this.craftInfo.hidden = true;
     this._craftMarkers.forEach(entry => entry.object.scale.setScalar(1));
     this.buildCraftPicker(); this.updateBodyPicker(); this.updateHud();
-    if (render) this.render();
+    if (render) { this.render(); this.emitRouteState(); }
   },
 
   makeGalaxyGeometry(count, radius = 50) {
@@ -902,9 +950,8 @@ export const cosmic3d = {
         if (!response.ok) throw new Error(`MILKY_WAY_STRUCTURE_${response.status}`);
         return response.json();
       })
-      .then(document => {
-        if (document.schema !== 'earthus.milky-way-structure.v1' || !Array.isArray(document.arms)
-          || !document.limitations?.ko || !Array.isArray(document.sources)) throw new Error('MILKY_WAY_STRUCTURE_SCHEMA');
+      .then(raw => {
+        const document = assertAetherusCatalog('milky-way-structure', raw);
         this._galaxyGuideCatalog = document;
         return document;
       });
@@ -974,15 +1021,8 @@ export const cosmic3d = {
         if (!response.ok) throw new Error(`SOLAR_MOTION_${response.status}`);
         return response.json();
       })
-      .then(document => {
-        if (document.schema !== 'earthus.solar-motion.v1'
-          || !Number.isFinite(document.displaySpanDays)
-          || !Number.isFinite(document.galacticSpeedKph)
-          || !Number.isFinite(document.distanceAu)
-          || !document.sourceUrl || !document.limitations?.ko || !document.limitations?.en
-          || !document.displayLimit?.ko || !document.displayLimit?.en) {
-          throw new Error('SOLAR_MOTION_SCHEMA');
-        }
+      .then(raw => {
+        const document = assertAetherusCatalog('solar-motion', raw);
         this._motionCatalog = document;
         this.buildSolarMotion();
         return document;
@@ -1246,8 +1286,8 @@ export const cosmic3d = {
         if (!response.ok) throw new Error(`CELESTIAL_BODIES_${response.status}`);
         return response.json();
       })
-      .then(document => {
-        if (!Array.isArray(document.bodies)) throw new Error('CELESTIAL_BODIES_SCHEMA');
+      .then(raw => {
+        const document = assertAetherusCatalog('celestial-bodies', raw);
         this._bodyCatalog = document;
         return document;
       });
@@ -1320,6 +1360,7 @@ export const cosmic3d = {
       this.showBodyInfo(body);
       this.updateBodyPicker(); this.updateCraftPicker();
       this.updateHud(); this.render();
+      this.emitRouteState();
       this.loadSurfaceTexture(planetTextureUrl(`detail/${body.id}.webp`)).then(texture => {
         if (loadId !== this._detailTextureLoadId || this._detailBody?.id !== body.id) {
           texture.dispose(); return;
@@ -1584,7 +1625,7 @@ export const cosmic3d = {
     this.yaw = .72; this.pitch = .56;
     this.bodyDetailGroup.visible = false; this.bodyInfo.hidden = true;
     this.clearBodyVisual(); this.updateBodyPicker(); this.updateCraftPicker(); this.updateHud();
-    if (render) this.render();
+    if (render) { this.render(); this.emitRouteState(); }
   },
 
   updateBodyPicker() {
@@ -1620,22 +1661,21 @@ export const cosmic3d = {
         if (!response.ok) throw new Error(`SPACE_PHOTOS_${response.status}`);
         return response.json();
       })
-      .then(document => {
-        const items = Array.isArray(document.items) ? document.items : [];
-        const valid = items.filter(item => Number.isFinite(item.ra) && Number.isFinite(item.dec)
-          && item.credit && item.license && item.full && item.thumb);
-        if (!valid.length) throw new Error('SPACE_PHOTOS_EMPTY');
-        return valid;
+      .then(raw => {
+        const document = assertAetherusCatalog('space-photos', raw);
+        return document.items;
       });
     return this._photoCatalogPromise;
   },
 
-  async openPhotoAtlas(telescope) {
+  async openPhotoAtlas(telescope, photoId = null) {
     try {
       await this.ensureEngine();
       const catalog = await this.loadPhotoCatalog();
       const items = catalog.filter(item => item.telescope === telescope);
       if (!items.length) throw new Error(`SPACE_PHOTOS_${telescope}_EMPTY`);
+      const first = photoId ? items.find(photo => photo.id === photoId) : items[0];
+      if (!first) throw new Error(`SPACE_PHOTOS_${photoId}_UNKNOWN`);
       if (this._solarMotionMode) this.closeSolarMotion(false);
       if (this._detailBody) this.closeBody(false);
       if (this._selectedCraft) this.closeCraft(false);
@@ -1666,7 +1706,6 @@ export const cosmic3d = {
         this.photoGroup.add(marker);
         this._photoMarkers.set(photo.id, { object: marker, photo, index });
       });
-      const first = items[0];
       this.yaw = T.MathUtils.degToRad(first.ra);
       this.pitch = clamp(T.MathUtils.degToRad(first.dec), -1.35, 1.35);
       this.selectPhoto(first);
@@ -1706,6 +1745,7 @@ export const cosmic3d = {
     document.getElementById('cosmicPhotoBack').textContent = isKo ? '← 3D 우주' : '← 3D space';
     this.photoInfo.hidden = false;
     this.render();
+    this.emitRouteState();
   },
 
   closePhotoAtlas(render = true) {
@@ -1717,7 +1757,7 @@ export const cosmic3d = {
     document.getElementById('cosmicPhotoImage').removeAttribute('src');
     this.clearPhotoAtlas(); this.yaw = .72; this.pitch = .56;
     this.updateBodyPicker(); this.updateCraftPicker(); this.updateHud();
-    if (render) this.render();
+    if (render) { this.render(); this.emitRouteState(); }
   },
 
   bindInput() {
@@ -1913,7 +1953,7 @@ export const cosmic3d = {
     if (stage === this._stage && store.sceneStage === stage) return;
     this._stage = stage; this._internalStage = true;
     store.setScene('space', stage);
-    this._internalStage = false; this.updateHud();
+    this._internalStage = false; this.updateHud(); this.emitRouteState();
   },
 
   exitToEarth() {
@@ -1925,7 +1965,10 @@ export const cosmic3d = {
     if (this._frame) cancelAnimationFrame(this._frame);
     this._frame = 0;
     this.root.classList.remove('is-moving');
-    sceneMgr.to('earth', { stage: 'earth' }).then(() => scene.requestRender());
+    sceneMgr.to('earth', { stage: 'earth' }).then(() => {
+      scene.requestRender();
+      this.emitRouteState();
+    });
   },
 
   resize() {

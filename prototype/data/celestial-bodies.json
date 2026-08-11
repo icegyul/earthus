@@ -1,9 +1,72 @@
 {
+  "schema": "earthus.celestial-bodies.v1",
+  "schemaVersion": 1,
+  "contract": {
+    "provenance": "reconstruction",
+    "time": { "generated": "catalog-generated-date", "surface": "representative-not-current" },
+    "rights": { "scope": "assetRights", "required": ["credit", "usage", "sourceUrl", "policyUrl"] }
+  },
   "version": 1,
   "generated": "2026-08-10",
   "positionNotice": {
     "ko": "지명은 구 위의 위도·경도에 놓았습니다. 질감은 실시간 사진이나 정밀 지형도가 아닌 출처 표기 교육용 표면 시각화입니다.",
     "en": "Names are placed by latitude and longitude. Textures are sourced educational surface visualizations, not live imagery or precision terrain."
+  },
+  "assetRights": {
+    "sun": {
+      "credit": "Solar System Scope/INOVE",
+      "usage": "CC BY 4.0",
+      "sourceUrl": "https://www.solarsystemscope.com/textures/",
+      "policyUrl": "https://creativecommons.org/licenses/by/4.0/"
+    },
+    "mercury": {
+      "credit": "Solar System Scope/INOVE",
+      "usage": "CC BY 4.0",
+      "sourceUrl": "https://www.solarsystemscope.com/textures/",
+      "policyUrl": "https://creativecommons.org/licenses/by/4.0/"
+    },
+    "venus": {
+      "credit": "NASA/JPL and Solar System Scope/INOVE",
+      "usage": "CC BY 4.0",
+      "sourceUrl": "https://www.solarsystemscope.com/textures/",
+      "policyUrl": "https://creativecommons.org/licenses/by/4.0/"
+    },
+    "moon": {
+      "credit": "NASA/GSFC Scientific Visualization Studio and Lunar Reconnaissance Orbiter",
+      "usage": "NASA Images and Media Usage Guidelines",
+      "sourceUrl": "https://svs.gsfc.nasa.gov/4720",
+      "policyUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/"
+    },
+    "mars": {
+      "credit": "Solar System Scope/INOVE",
+      "usage": "CC BY 4.0",
+      "sourceUrl": "https://www.solarsystemscope.com/textures/",
+      "policyUrl": "https://creativecommons.org/licenses/by/4.0/"
+    },
+    "jupiter": {
+      "credit": "NASA/JPL/Space Science Institute",
+      "usage": "NASA Images and Media Usage Guidelines; retain caption credit",
+      "sourceUrl": "https://science.nasa.gov/photojournal/cassinis-best-maps-of-jupiter-cylindrical-map/",
+      "policyUrl": "https://www.nasa.gov/nasa-brand-center/images-and-media/"
+    },
+    "saturn": {
+      "credit": "Solar System Scope/INOVE",
+      "usage": "CC BY 4.0",
+      "sourceUrl": "https://www.solarsystemscope.com/textures/",
+      "policyUrl": "https://creativecommons.org/licenses/by/4.0/"
+    },
+    "uranus": {
+      "credit": "Solar System Scope/INOVE",
+      "usage": "CC BY 4.0",
+      "sourceUrl": "https://www.solarsystemscope.com/textures/",
+      "policyUrl": "https://creativecommons.org/licenses/by/4.0/"
+    },
+    "neptune": {
+      "credit": "NASA/JPL",
+      "usage": "JPL Image Use Policy; retain caption credit",
+      "sourceUrl": "https://space.jpl.nasa.gov/tmaps/neptune.html",
+      "policyUrl": "https://www.jpl.nasa.gov/jpl-image-use-policy/"
+    }
   },
   "bodies": [
     {

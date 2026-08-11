@@ -12,7 +12,7 @@ import { panels } from './panels.js';
 import { intro } from './intro.js';
 import { renderQuality } from './render-quality.js';
 import { store } from './store.js';
-import { registry } from './layers/registry.js?v=20260811-runtime-load1';
+import { registry } from './layers/registry.js?v=20260812-contract1';
 import { imagery } from './layers/imagery.js';
 import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js?v=20260810-locationchart1';
 import { i18n } from './i18n.js';
@@ -42,7 +42,8 @@ import { eventPanel } from './ui-events.js';
 import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
-import { cosmic3d } from './space/cosmic3d.js?v=20260810-solarspacing1';
+import { cosmic3d } from './space/cosmic3d.js?v=20260812-contract1';
+import { decodeAetherusRoute, replaceAetherusRoute } from './space/route-state.js?v=20260812-contract1';
 import { trenchCards } from './ocean/trenchcards.js';
 import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-depthlife1';
 
@@ -144,6 +145,20 @@ async function boot() {
   // ⚠️ 좌표만 받고 수심은 반드시 배포된 GEBCO 격자에서 다시 읽는다.
   const sceneParams = new URLSearchParams(location.search);
   const diveParam = sceneParams.get('dive');
+  const oceanRoute = sceneParams.get('ocean') === '1';
+  const aetherusRoute = diveParam || oceanRoute ? null : decodeAetherusRoute(sceneParams);
+  let aetherusRouteSyncReady = !aetherusRoute?.stage;
+  const syncAetherusRoute = state => {
+    try {
+      replaceAetherusRoute(state || null);
+    } catch (error) {
+      console.warn('[aetherus-route]', error.message);
+    }
+  };
+  document.addEventListener('aetherus:state', event => {
+    if (!aetherusRouteSyncReady) return;
+    syncAetherusRoute(event.detail);
+  });
   if (diveParam) {
     const [lat, lon] = diveParam.split(',').map(Number);
     if (Number.isFinite(lat) && Number.isFinite(lon) && lat >= -90 && lat <= 90) {
@@ -156,18 +171,22 @@ async function boot() {
         }
       });
     }
-  } else if (sceneParams.get('ocean') === '1') {
+  } else if (oceanRoute) {
     queueMicrotask(() => sceneMgr.to('earth', { stage: 'trench' }).catch(error => {
       console.warn('[ocean-link]', error.message);
     }));
-  } else if (['milkyway', 'galaxies'].includes(sceneParams.get('space'))) {
-    queueMicrotask(() => sceneMgr.to('space', { stage: sceneParams.get('space') }).catch(error => {
-      console.warn('[space-link]', error.message);
-    }));
-  } else if (sceneParams.get('solar') === '1') {
-    queueMicrotask(() => sceneMgr.to('space', { stage: 'solar' }).catch(error => {
-      console.warn('[solar-link]', error.message);
-    }));
+  } else if (aetherusRoute?.stage) {
+    queueMicrotask(async () => {
+      try {
+        await sceneMgr.to('space', { stage: aetherusRoute.stage });
+        await cosmic3d.restoreRoute(aetherusRoute);
+      } catch (error) {
+        console.warn('[aetherus-link]', error.message);
+      } finally {
+        aetherusRouteSyncReady = true;
+        syncAetherusRoute(cosmic3d.routeState());
+      }
+    });
   }
   /* 움직이는 게 화면에 있으면 계속 그려달라고 알린다 (requestRenderMode 대응).
      ⚠️ 여기 패턴을 빠뜨리면 그 애니메이션만 조용히 멈춘다.
@@ -236,8 +255,7 @@ async function boot() {
         몇 초 뒤 도착한 위치가 갑자기 끌고 간다. 조작을 빼앗는 것이다. */
   /* 공유된 우주·해구 주소도 사용자의 명시적 선택이다. 위치 응답·인트로가 뒤늦게
      카메라를 지구 첫 화면으로 빼앗으면 딥링크가 0m에서 멈춘 것처럼 보인다. */
-  let userEngaged = !!(diveParam || sceneParams.get('ocean') === '1'
-    || sceneParams.get('space') || sceneParams.get('solar') === '1');
+  let userEngaged = !!(diveParam || oceanRoute || aetherusRoute?.stage);
   let geoTookOver = false;
   /* 지구뿐 아니라 메뉴·검색을 먼저 누른 것도 "이미 사용 중"이다.
      그 뒤 위치 응답이나 인트로가 카메라를 움직이면 조작을 빼앗고 발열도 남긴다. */

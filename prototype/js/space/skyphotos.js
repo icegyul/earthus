@@ -5,6 +5,7 @@
 
 import { viewer } from '../viewer.js';
 import { radecToIcrf, icrfToFixedPosition, preloadIcrf } from './skyframe.js';
+import { assertAetherusCatalog } from './contracts.js?v=20260812-contract1';
 
 const SHOW_ABOVE_M = 45_000_000;
 
@@ -49,8 +50,8 @@ export const skyPhotos = {
     // 않도록 켤 때 조건부 재검증한다(썸네일 자체는 정적 캐시를 그대로 쓴다).
     const response = await fetch('data/space-photos.json', { cache: 'no-cache' });
     if (!response.ok) throw new Error(`space-photos ${response.status}`);
-    const doc = await response.json();
-    this.items = Array.isArray(doc.items) ? doc.items : [];
+    const doc = assertAetherusCatalog('space-photos', await response.json());
+    this.items = doc.items;
     const date = Cesium.JulianDate.now();
     await preloadIcrf(date);
     this._build(date);

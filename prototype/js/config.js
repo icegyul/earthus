@@ -57,6 +57,8 @@ export const API = {
   MARINE_GRID: CDN + '/ocean',
   // 이벤트 뉴스 — Lambda(gdelt-events)가 GDELT 원본을 받아 신뢰도 점수를 매겨 올린다 (§5-2)
   EVENTS: CDN + '/events',
+  // LAB 종료 보고서 공통 목록. 실제 보고서가 생긴 현상만 이 경로에 합류한다.
+  ANALYSIS: CDN + '/ocean',
   // 해양 관측 부이 / 태양 영상 — Lambda(ocean-solar)가 30분마다 올린다.
   // NDBC 도 SDO 도 CORS 헤더가 없어 브라우저가 직접 못 부른다.
   OCEAN:  CDN + '/ocean',

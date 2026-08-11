@@ -34,6 +34,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
       "지금 위험한 게 뭔지" 보러 온 사람이 글 목록을 뒤지게 된다. */
 const TABS = ko => [
   ['today', ko ? '오늘의 지구' : 'Earth today'],
+  ['reports', ko ? '분석 보고서' : 'Reports'],
   ['charts', ko ? '자료' : 'Charts'],
   ['crust', ko ? '땅의 움직임' : 'Ground motion'],
   ['req', ko ? '개발 요청' : 'Requests'],
@@ -68,6 +69,9 @@ export const communityPanel = {
     } else if (this.tab === 'charts') {
       const { chartsPanel } = await import('./ui-charts.js');
       await chartsPanel.load();
+    } else if (this.tab === 'reports') {
+      const { labReportsPanel } = await import('./ui-lab-reports.js');
+      await labReportsPanel.load();
     } else if (this._reqs === undefined) {
       this._reqs = await requests.list();
     }
@@ -92,6 +96,7 @@ export const communityPanel = {
 
     if (this.tab === 'crust') this.renderCrust(body, ko);
     else if (this.tab === 'today') this.renderToday(body, ko);
+    else if (this.tab === 'reports') this.renderReports(body, ko);
     else if (this.tab === 'charts') this.renderCharts(body, ko);
     else this.renderRequests(body, ko);
   },
@@ -257,6 +262,14 @@ export const communityPanel = {
           ? `그래프를 불러오지 못했습니다 (${e.message}).`
           : `Could not load charts (${e.message}).`));
       });
+  },
+
+  renderReports(body, ko) {
+    import('./ui-lab-reports.js')
+      .then(({ labReportsPanel }) => labReportsPanel.render(body, ko))
+      .catch(e => body.appendChild(el('p', 'sky-note', ko
+        ? `보고서를 불러오지 못했습니다 (${e.message}).`
+        : `Could not load reports (${e.message}).`)));
   },
 
   /* ── 개발 요청 ─────────────────────────────────────────────── */

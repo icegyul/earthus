@@ -1248,7 +1248,7 @@ export const cyclones = {
         : `${report.status} · ${report.snapshotCount || 0} archived runs`;
       if (this._canSeeEarthusEstimate() && ['PRELIMINARY_REPORT','FINAL_REPORT'].includes(report.status)) {
         d[ko ? '구독·관리자 결과보고서' : 'Subscriber/admin report'] =
-          `[${ko ? '결과보고서 열기' : 'Open report'}](/cyclone-reports.html?storm=${encodeURIComponent(report.id)})`;
+          `[${ko ? 'LAB 결과보고서 열기' : 'Open LAB report'}](/lab-reports.html?kind=cyclone&report=${encodeURIComponent(`cyclone:${report.id}`)})`;
       }
     }
     /* ⚠️ 끝난 폭풍에 "등급/최대풍속"을 그대로 보이면 아직 그 세기인 것처럼 읽힌다.

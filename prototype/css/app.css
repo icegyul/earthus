@@ -1096,6 +1096,20 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 .ch-h:first-child { margin-top: 4px; }
 .ch-tools{ margin:2px 0 20px; display:grid; gap:6px }
 .ch-tools-head{ margin:0 1px 3px; color:rgba(255,255,255,.46); font-size:10.5px; letter-spacing:.04em }
+
+/* LAB 분석 보고서 — 실제 생성된 보고서만 목록에 놓고, 0건인 현상은 수치로만 밝힌다. */
+.lab-report-lead{margin:4px 2px 14px;color:rgba(255,255,255,.68);font-size:12px;line-height:1.65}
+.lab-report-lead b{color:#f2f7fb;font-weight:720}
+.lab-report-kinds{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:14px}
+.lab-report-kind{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:38px;padding:8px 10px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.025);font-size:10.5px;color:rgba(255,255,255,.61)}
+.lab-report-kind b{color:#42f5c8;font:700 11px/1 ui-monospace,SFMono-Regular,monospace}
+.lab-report-list{display:grid;gap:7px}
+.lab-report-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(255,255,255,.035);color:#eef7fb;text-decoration:none}
+.lab-report-row span{display:grid;min-width:0}.lab-report-row small{font-size:9.5px;color:#42f5c8}.lab-report-row b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}.lab-report-row em{font-style:normal;font-size:9.5px;color:rgba(255,255,255,.46)}
+.lab-report-row i{font-style:normal;color:rgba(255,255,255,.45)}
+.lab-report-all{display:block;margin-top:10px;padding:11px 12px;border-radius:11px;background:rgba(66,245,200,.09);color:#79f7d8;text-align:center;text-decoration:none;font-size:11.5px;font-weight:680}
+.lab-report-rule,.lab-report-fail{margin:12px 2px 0;font-size:10.5px;line-height:1.55;color:rgba(255,255,255,.48)}
+.lab-report-fail{color:#efb56f}
 .ch-tool{
   min-height:72px; padding:11px 12px; display:flex; align-items:center; justify-content:space-between; gap:12px;
   border:1px solid rgba(255,255,255,.11); border-radius:10px; background:rgba(255,255,255,.045);

@@ -5,10 +5,11 @@
 //   "지금 부산 날씨"를 보려면 메뉴 → 지구 → 스타일 목록에서 기온을 찾아 켜고,
 //   지구를 손으로 돌려 부산을 찾아야 했다. 탐색 점수가 45/100 이었던 이유다.
 //
-// 무엇을 찾는가 (세 종류를 한 목록에 섞어 보여준다)
+// 무엇을 찾는가 (네 종류를 한 목록에 섞어 보여준다)
 //   ① 장소   — 세계 204곳(geoname) + 기상청 관측지점 736곳 + 공항 4,037곳
 //   ② 레이어 — layerbar 의 ITEMS 41종. 누르면 켜진다
 //   ③ 기능   — 메뉴 12항목. 누르면 그 메뉴를 누른 것과 같다
+//   ④ Aetherus — 옛 HST/JWST 레이어 이름도 사진관 필터로 이어 준다
 //
 // ⚠️ 장소 자료를 **이미 라이선스가 확인된 것만** 쓴다.
 //    Open-Meteo 지오코딩을 폴백으로 붙이자는 계획이 있었지만(build-order),
@@ -107,6 +108,18 @@ function liveActions() {
 const OPENS = [
   { open: 'earth', ko: '지구 스타일', en: 'Earth style', hint: '바탕·기상·해양·대기질·생물' },
   { open: 'alert', ko: 'Alert',       en: 'Alert',       hint: '태풍·지진·특보 레이어' },
+];
+
+/* HST/JWST는 더 이상 EARTHUS 레이어가 아니다. 검색에서 옛 이름을 지우면 사용자는
+   기능이 삭제됐다고 느끼므로, 같은 검색어를 Aetherus 사진관의 필터로 명시적으로
+   이동시킨다. 제목 전체가 아니라 aliases만 점수화해 "사진" 검색에 세 줄이 뜨지 않게 한다. */
+const AETHERUS_PHOTOS = [
+  { telescope: 'ALL', ko: '우주 사진관', en: 'Space photo gallery',
+    aliases: ['우주 사진', '우주 사진관', 'space photo', 'space photos', 'photo gallery'] },
+  { telescope: 'HST', ko: '우주 사진관 · 허블', en: 'Space gallery · Hubble',
+    aliases: ['허블', '허블 사진', 'hubble', 'hubble images', 'hst'] },
+  { telescope: 'JWST', ko: '우주 사진관 · 제임스웹', en: 'Space gallery · James Webb',
+    aliases: ['제임스웹', '제임스 웹', '제임스웹 사진', 'james webb', 'webb images', 'jwst'] },
 ];
 
 export const search = {
@@ -280,6 +293,16 @@ export const search = {
       const s = Math.max(score(a.ko, q, qCho), score(a.en, q, qCho));
       if (s > 0) hits.push({ s: s + 6, type: 'open', title: ko ? a.ko : a.en, sub: a.hint, ref: a });
     });
+    AETHERUS_PHOTOS.forEach(item => {
+      const s = Math.max(...item.aliases.map(alias => score(alias, q, qCho)));
+      if (s > 0) hits.push({
+        s: s + 9,
+        type: 'aetherus-photo',
+        title: ko ? item.ko : item.en,
+        sub: ko ? 'Aetherus · 공식 사진·크레딧·공개일' : 'Aetherus · official image, credit & release date',
+        ref: item,
+      });
+    });
 
     // 레이어
     ITEMS.forEach(it => {
@@ -352,14 +375,14 @@ export const search = {
       return;
     }
 
-    const ICON = { place: '📍', layer: '◍', action: '›', open: '›', satellite: '🛰' };
+    const ICON = { place: '📍', layer: '◍', action: '›', open: '›', satellite: '🛰', 'aetherus-photo': '✦' };
     rows.forEach((h, i) => {
       const b = document.createElement('button');
       b.className = 'sr-row' + (i === 0 ? ' on' : '');
       b.dataset.i = i;
       const tag = ko
-        ? { place: '장소', layer: '레이어', action: '기능', open: '기능', satellite: '위성' }[h.type]
-        : { place: 'Place', layer: 'Layer', action: 'Go', open: 'Go', satellite: 'Satellite' }[h.type];
+        ? { place: '장소', layer: '레이어', action: '기능', open: '기능', satellite: '위성', 'aetherus-photo': 'Aetherus' }[h.type]
+        : { place: 'Place', layer: 'Layer', action: 'Go', open: 'Go', satellite: 'Satellite', 'aetherus-photo': 'Aetherus' }[h.type];
       b.innerHTML =
         `<span class="sr-ico">${ICON[h.type]}</span>`
         + `<span class="sr-txt"><b>${esc(h.title)}</b>`
@@ -387,6 +410,13 @@ export const search = {
       return;
     }
     this.close();
+
+    if (h.type === 'aetherus-photo') {
+      document.dispatchEvent(new CustomEvent('aetherus:photo', {
+        detail: { telescope: h.ref.telescope },
+      }));
+      return;
+    }
 
     if (h.type === 'place') {
       const p = h.ref;

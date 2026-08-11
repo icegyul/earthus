@@ -45,6 +45,13 @@ assert.throws(
   error => error.code === 'AETHERUS_CATALOG_CONTRACT' && error.path === 'items[0].license',
 );
 
+const wrongPhotoOwner = clone(documents['space-photos']);
+wrongPhotoOwner.contract.owner = 'earthus';
+assert.throws(
+  () => contracts.assertAetherusCatalog('space-photos', wrongPhotoOwner),
+  error => error.code === 'AETHERUS_CATALOG_CONTRACT' && error.path === 'contract.owner',
+);
+
 const missingTextureRights = clone(documents['celestial-bodies']);
 delete missingTextureRights.assetRights.sun;
 assert.throws(
@@ -76,6 +83,21 @@ assert.deepEqual(
   { stage: 'solar', target: 'mars', photo: null, craft: null },
 );
 
+const telescopeRoute = routes.decodeAetherusRoute('?aetherus=1&solar=1&telescope=jwst');
+assert.deepEqual(
+  { stage: telescopeRoute.stage, telescope: telescopeRoute.telescope, photo: telescopeRoute.photo },
+  { stage: 'solar', telescope: 'jwst', photo: null },
+);
+
+const telescopeConflict = routes.decodeAetherusRoute('?aetherus=1&solar=1&target=mars&telescope=hst');
+assert.equal(telescopeConflict.target, null);
+assert.equal(telescopeConflict.telescope, null);
+assert.ok(telescopeConflict.issues.includes('CONFLICTING_DETAIL'));
+
+const invalidTelescope = routes.decodeAetherusRoute('?aetherus=1&solar=1&telescope=roman');
+assert.equal(invalidTelescope.telescope, null);
+assert.ok(invalidTelescope.issues.includes('INVALID_TELESCOPE'));
+
 const conflict = routes.decodeAetherusRoute('?aetherus=1&space=milkyway&target=mars&craft=voyager-1');
 assert.equal(conflict.stage, 'milkyway');
 assert.equal(conflict.target, null);
@@ -86,7 +108,7 @@ assert.equal(unsupported.stage, null);
 assert.deepEqual([...unsupported.issues], ['UNSUPPORTED_VERSION']);
 
 const encoded = routes.encodeAetherusRoute(
-  { stage: 'milkyway', photo: 'southern-ring-jwst' },
+  { stage: 'milkyway', telescope: 'jwst', photo: 'southern-ring-jwst' },
   'https://earthus.net/?lang=ko&space=galaxies&craft=voyager-1#dev',
 );
 assert.equal(encoded.searchParams.get('lang'), 'ko');
@@ -94,23 +116,26 @@ assert.equal(encoded.searchParams.get('aetherus'), '1');
 assert.equal(encoded.searchParams.get('solar'), '1');
 assert.equal(encoded.searchParams.get('space'), null);
 assert.equal(encoded.searchParams.get('photo'), 'southern-ring-jwst');
+assert.equal(encoded.searchParams.get('telescope'), 'jwst');
 assert.equal(encoded.searchParams.get('craft'), null);
 assert.equal(encoded.hash, '#dev');
 
 const roundTrip = routes.decodeAetherusRoute(encoded);
 assert.deepEqual(
-  { stage: roundTrip.stage, target: roundTrip.target, photo: roundTrip.photo, craft: roundTrip.craft },
-  { stage: 'solar', target: null, photo: 'southern-ring-jwst', craft: null },
+  { stage: roundTrip.stage, target: roundTrip.target, photo: roundTrip.photo,
+    telescope: roundTrip.telescope, craft: roundTrip.craft },
+  { stage: 'solar', target: null, photo: 'southern-ring-jwst', telescope: 'jwst', craft: null },
 );
 
 const cleared = routes.encodeAetherusRoute(null, 'https://earthus.net/?tc=Khanun&aetherus=1&solar=1&target=mars');
 assert.equal(cleared.searchParams.get('tc'), 'Khanun');
 assert.equal(cleared.searchParams.get('aetherus'), null);
 assert.equal(cleared.searchParams.get('target'), null);
+assert.equal(cleared.searchParams.get('telescope'), null);
 
 assert.throws(
   () => routes.encodeAetherusRoute({ stage: 'solar', target: 'mars', craft: 'voyager-1' }),
   error => error.code === 'CONFLICTING_DETAIL',
 );
 
-console.log('PASS: 5 Aetherus catalogue contracts, 4 failure fixtures, and 10 route-state cases');
+console.log('PASS: 5 Aetherus catalogue contracts, 5 failure fixtures, and 13 route-state cases');

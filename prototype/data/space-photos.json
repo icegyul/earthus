@@ -2,6 +2,8 @@
   "schema": "earthus.space-photos.v1",
   "schemaVersion": 1,
   "contract": {
+    "owner": "aetherus",
+    "surfaces": ["photo-gallery", "sky-position"],
     "provenance": "observation",
     "time": { "generated": "catalog-generated-date", "itemDate": "dateKind-field" },
     "rights": { "scope": "item", "required": ["credit", "license", "full"] }

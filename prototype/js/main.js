@@ -12,7 +12,7 @@ import { panels } from './panels.js';
 import { intro } from './intro.js';
 import { renderQuality } from './render-quality.js';
 import { store } from './store.js';
-import { registry } from './layers/registry.js?v=20260812-contract1';
+import { registry } from './layers/registry.js?v=20260812-photoownership1';
 import { imagery } from './layers/imagery.js';
 import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js?v=20260810-locationchart1';
 import { i18n } from './i18n.js';
@@ -42,8 +42,8 @@ import { eventPanel } from './ui-events.js';
 import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
-import { cosmic3d } from './space/cosmic3d.js?v=20260812-contract1';
-import { decodeAetherusRoute, replaceAetherusRoute } from './space/route-state.js?v=20260812-contract1';
+import { cosmic3d } from './space/cosmic3d.js?v=20260812-photoownership1';
+import { decodeAetherusRoute, replaceAetherusRoute } from './space/route-state.js?v=20260812-photoownership1';
 import { trenchCards } from './ocean/trenchcards.js';
 import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-depthlife1';
 
@@ -215,8 +215,11 @@ async function boot() {
     store.setLayer('sst', true);
   });
   document.addEventListener('aetherus:photo', async event => {
+    const request = typeof event.detail === 'string'
+      ? { telescope: event.detail }
+      : (event.detail || {});
     if (store.scene !== 'space') await sceneMgr.to('space', { stage: 'solar' });
-    await cosmic3d.openPhotoAtlas(event.detail);
+    await cosmic3d.openPhotoAtlas(request.telescope || 'ALL', request.photo || null);
   });
   /* 통합 메뉴의 AETHERUS 갈래. 메뉴가 장면 위를 두 군데에서 덮지 않게 하되,
      기존 은하·태양계·사진관의 실제 이동 동작은 하나도 줄이지 않는다. */
@@ -227,9 +230,9 @@ async function boot() {
       document.dispatchEvent(new CustomEvent('aetherus:galaxy-guide'));
       return;
     }
-    if (route === 'hubble' || route === 'webb') {
+    if (route === 'photos' || route === 'hubble' || route === 'webb') {
       document.dispatchEvent(new CustomEvent('aetherus:photo', {
-        detail: route === 'webb' ? 'JWST' : 'HST',
+        detail: { telescope: route === 'webb' ? 'JWST' : route === 'hubble' ? 'HST' : 'ALL' },
       }));
       return;
     }

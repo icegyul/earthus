@@ -1,11 +1,13 @@
-// 허블·제임스웹 공식 사진 천구 마커
+// 허블·제임스웹 공식 사진의 옛 EARTHUS 천구 마커.
+// PR-02부터 registry가 이 모듈을 활성 소비하지 않는다. 롤백 호환을 위해 남겨 두되,
+// 다시 쓰더라도 Aetherus 단일 카탈로그 소유자를 통해서만 자료를 읽는다.
 //
 // ⚠️ 사진은 카탈로그의 credit·license·공식 원본 링크가 모두 있을 때만 그린다.
 // ⚠️ ICRF 변환은 카메라가 멈췄을 때만 갱신한다. 매 프레임 변환 금지.
 
 import { viewer } from '../viewer.js';
 import { radecToIcrf, icrfToFixedPosition, preloadIcrf } from './skyframe.js';
-import { assertAetherusCatalog } from './contracts.js?v=20260812-contract1';
+import { loadAetherusPhotoCatalog } from './photo-catalog.js?v=20260812-photoownership1';
 
 const SHOW_ABOVE_M = 45_000_000;
 
@@ -48,9 +50,7 @@ export const skyPhotos = {
     if (this.loaded) return this.items;
     // 카탈로그는 항목이 계속 늘어난다. 브라우저의 오래된 2장 응답을 영구 재사용하지
     // 않도록 켤 때 조건부 재검증한다(썸네일 자체는 정적 캐시를 그대로 쓴다).
-    const response = await fetch('data/space-photos.json', { cache: 'no-cache' });
-    if (!response.ok) throw new Error(`space-photos ${response.status}`);
-    const doc = assertAetherusCatalog('space-photos', await response.json());
+    const doc = await loadAetherusPhotoCatalog();
     this.items = doc.items;
     const date = Cesium.JulianDate.now();
     await preloadIcrf(date);

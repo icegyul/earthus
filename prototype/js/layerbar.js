@@ -94,10 +94,6 @@ export const ITEMS = [
     sky:'#0d1622', paint:'windfc' },
   { id:'aurora', ko:'오로라', en:'Aurora', sub:'현재', subEn:'Now', ready:true,
     sky:'#050d12', paint:'aurora' },
-  { id:'hst', ko:'허블 우주 사진', en:'Hubble images', sub:'공식 사진 · 크레딧 포함', subEn:'Official images · credited', ready:true,
-    sky:'#080b18', paint:'aurora' },
-  { id:'jwst', ko:'제임스웹 우주 사진', en:'Webb images', sub:'공식 사진 · 크레딧 포함', subEn:'Official images · credited', ready:true,
-    sky:'#120817', paint:'aurora' },
   { id:'news', ko:'이벤트', en:'Events', sub:'검증됨', subEn:'Verified', ready:true,
     sky:'#1a1208', paint:'news' },
   { id:'cyclone', ko:'태풍', en:'Cyclones', sub:'실시간', subEn:'Live', ready:true,
@@ -473,7 +469,7 @@ const CATEGORIES = [
   { id: 'station', ko: '관측소',     en: 'Stations',
     ids: ['landobs', 'ukfc', 'buoy', 'coverage'] },
   { id: 'sky',     ko: '하늘·우주',  en: 'Sky & space',
-    ids: ['aurora', 'eclipse', 'hst', 'jwst'] },
+    ids: ['aurora', 'eclipse'] },
   { id: 'move',    ko: '이동',       en: 'Movement',
     ids: ['flight', 'ship'] },
   { id: 'events',  ko: '이벤트',     en: 'Events',
@@ -551,8 +547,7 @@ const AETHERUS_ROUTES = [
   { id: 'milkyway', ko: '은하수', en: 'Milky Way' },
   { id: 'galaxy-structure', ko: '우리은하 구조', en: 'Spiral arms' },
   { id: 'solar', ko: '태양계', en: 'Solar system' },
-  { id: 'hubble', ko: '허블 사진관', en: 'Hubble images', count: 1 },
-  { id: 'webb', ko: '제임스웹 사진관', en: 'Webb images', count: 49 },
+  { id: 'photos', ko: '우주 사진관', en: 'Space photo gallery', count: 50 },
 ];
 
 export const layerBar = {
@@ -906,8 +901,8 @@ export const layerBar = {
   _renderAetherus(strip, ko) {
     const intro = el('p', 'aetherus-menu-intro');
     intro.textContent = ko
-      ? '우주 자료를 고릅니다. 사진에는 출처와 크레딧을 함께 표시합니다.'
-      : 'Choose a space view. Images include source and credit.';
+      ? '사진은 Aetherus 사진관에서 보고, 위치는 보조 3D 하늘에서 확인합니다.'
+      : 'View images in the Aetherus gallery and use the 3D sky as a position aid.';
     strip.appendChild(intro);
     AETHERUS_ROUTES.forEach(route => {
       const button = el('button', 'aetherus-route');

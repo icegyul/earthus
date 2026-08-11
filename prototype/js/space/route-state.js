@@ -4,8 +4,9 @@
 
 export const AETHERUS_ROUTE_VERSION = 1;
 
-const ROUTE_KEYS = ['aetherus', 'space', 'solar', 'target', 'photo', 'craft'];
+const ROUTE_KEYS = ['aetherus', 'space', 'solar', 'target', 'photo', 'telescope', 'craft'];
 const STAGES = new Set(['solar', 'milkyway', 'galaxies']);
+const TELESCOPES = new Set(['all', 'hst', 'jwst']);
 const ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,79}$/;
 
 export class AetherusRouteError extends Error {
@@ -41,6 +42,7 @@ export function decodeAetherusRoute(input) {
       stage: null,
       target: null,
       photo: null,
+      telescope: null,
       craft: null,
       issues: Object.freeze(['UNSUPPORTED_VERSION']),
     });
@@ -58,17 +60,23 @@ export function decodeAetherusRoute(input) {
 
   let target = routeId(params.get('target'));
   let photo = routeId(params.get('photo'));
+  let telescope = params.get('telescope')?.trim().toLowerCase() || null;
   let craft = routeId(params.get('craft'));
   if (params.has('target') && !target) issues.push('INVALID_TARGET');
   if (params.has('photo') && !photo) issues.push('INVALID_PHOTO');
+  if (telescope && !TELESCOPES.has(telescope)) {
+    issues.push('INVALID_TELESCOPE');
+    telescope = null;
+  }
   if (params.has('craft') && !craft) issues.push('INVALID_CRAFT');
 
-  const selected = [target, photo, craft].filter(Boolean);
-  if (selected.length > 1) {
+  const selectedKinds = [target ? 'target' : null, craft ? 'craft' : null,
+    (photo || telescope) ? 'photo' : null].filter(Boolean);
+  if (selectedKinds.length > 1) {
     issues.push('CONFLICTING_DETAIL');
-    target = null; photo = null; craft = null;
+    target = null; photo = null; telescope = null; craft = null;
   }
-  if (target || photo || craft) stage = 'solar';
+  if (target || photo || telescope || craft) stage = 'solar';
   if (!stage) return null;
 
   return Object.freeze({
@@ -76,6 +84,7 @@ export function decodeAetherusRoute(input) {
     stage,
     target,
     photo,
+    telescope,
     craft,
     issues: Object.freeze(issues),
   });
@@ -87,14 +96,22 @@ function requireState(state) {
   }
   const target = routeId(state.target);
   const photo = routeId(state.photo);
+  const telescope = state.telescope ? String(state.telescope).trim().toLowerCase() : null;
   const craft = routeId(state.craft);
   if (state.target && !target) throw new AetherusRouteError('INVALID_TARGET', 'Invalid target id');
   if (state.photo && !photo) throw new AetherusRouteError('INVALID_PHOTO', 'Invalid photo id');
+  if (telescope && !TELESCOPES.has(telescope)) {
+    throw new AetherusRouteError('INVALID_TELESCOPE', 'Invalid telescope filter');
+  }
   if (state.craft && !craft) throw new AetherusRouteError('INVALID_CRAFT', 'Invalid craft id');
-  if ([target, photo, craft].filter(Boolean).length > 1) {
+  if ([target ? 'target' : null, craft ? 'craft' : null,
+    (photo || telescope) ? 'photo' : null].filter(Boolean).length > 1) {
     throw new AetherusRouteError('CONFLICTING_DETAIL', 'Only one Aetherus detail may be encoded');
   }
-  return { stage: target || photo || craft ? 'solar' : state.stage, target, photo, craft };
+  return {
+    stage: target || photo || telescope || craft ? 'solar' : state.stage,
+    target, photo, telescope, craft,
+  };
 }
 
 export function encodeAetherusRoute(state, href = 'https://earthus.net/') {
@@ -108,6 +125,7 @@ export function encodeAetherusRoute(state, href = 'https://earthus.net/') {
   else url.searchParams.set('space', normalized.stage);
   if (normalized.target) url.searchParams.set('target', normalized.target);
   if (normalized.photo) url.searchParams.set('photo', normalized.photo);
+  if (normalized.telescope) url.searchParams.set('telescope', normalized.telescope);
   if (normalized.craft) url.searchParams.set('craft', normalized.craft);
   return url;
 }

@@ -96,6 +96,12 @@ function requireCommon(catalog, document) {
 
 function validateSpacePhotos(document) {
   const catalog = 'space-photos';
+  requireValue(document.contract.owner === 'aetherus', catalog,
+    'contract.owner', 'Aetherus ownership required');
+  requireValue(Array.isArray(document.contract.surfaces)
+    && document.contract.surfaces.includes('photo-gallery')
+    && document.contract.surfaces.includes('sky-position'), catalog,
+  'contract.surfaces', 'photo-gallery and sky-position surfaces required');
   requireValue(document.contract.provenance === 'observation', catalog,
     'contract.provenance', 'observation required');
   requireValue(document.contract.time.generated === 'catalog-generated-date', catalog,

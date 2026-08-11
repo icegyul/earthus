@@ -69,6 +69,9 @@ export const sceneMgr = {
     const inputs = scene?.screenSpaceCameraController;
     try { viewer?.camera.cancelFlight(); } catch (_) { }
 
+    // 지구 전용 로딩 토스트가 우주 사진 제목·썸네일 위를 덮지 않게 장면을 body에도 표시한다.
+    document.body.classList.toggle('scene-space', next === 'space');
+
     if (next !== 'space') {
       root?.classList.remove('active');
       root?.setAttribute('aria-hidden', 'true');

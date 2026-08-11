@@ -16,7 +16,14 @@ import { store } from '../store.js';
 import { sceneMgr } from '../scene.js';
 import { i18n } from '../i18n.js';
 import { planetOrbit, planetPositions } from './kepler.js';
-import { assertAetherusCatalog } from './contracts.js?v=20260812-contract1';
+import { assertAetherusCatalog } from './contracts.js?v=20260812-photoownership1';
+import {
+  aetherusPhotoCounts,
+  filterAetherusPhotos,
+  loadAetherusPhotoCatalog,
+  normalizeAetherusTelescope,
+  resolveAetherusPhoto,
+} from './photo-catalog.js?v=20260812-photoownership1';
 
 const IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const BODY_ORDER = ['sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
@@ -97,6 +104,8 @@ export const cosmic3d = {
   _pointerStart: null,
   _bodyDistance: 48,
   _photoCatalogPromise: null,
+  _allPhotoItems: [],
+  _photoItems: [],
   _photoMode: null,
   _photoMarkers: new Map(),
   _photoFov: 56,
@@ -162,7 +171,11 @@ export const cosmic3d = {
     i18n.onChange(() => {
       this.buildBodyPicker();
       if (this._detailBody) this.showBodyInfo(this._detailBody);
-      if (this._selectedPhoto) this.selectPhoto(this._selectedPhoto);
+      if (this._selectedPhoto) {
+        this.renderPhotoFilters();
+        this.buildPhotoList(this._photoItems);
+        this.selectPhoto(this._selectedPhoto);
+      }
       if (this._selectedCraft) this.showCraftInfo(this._selectedCraft);
       if (this._solarMotionMode) this.showSolarMotionInfo();
       if (this._galaxyGuideMode) this.showGalaxyGuideInfo();
@@ -181,7 +194,8 @@ export const cosmic3d = {
     return {
       stage: this._stage || store.sceneStage || 'solar',
       target: this._detailBody?.id || null,
-      photo: this._selectedPhoto?.id || (this._photoMode ? this._photoMode.toLowerCase() : null),
+      photo: this._selectedPhoto?.id || null,
+      telescope: this._photoMode?.toLowerCase() || null,
       craft: this._selectedCraft?.id || null,
     };
   },
@@ -207,16 +221,35 @@ export const cosmic3d = {
       this.selectCraft(route.craft);
       return this._selectedCraft?.id === route.craft;
     }
-    if (route.photo) {
-      const items = await this.loadPhotoCatalog();
-      const telescope = ['hst', 'jwst'].includes(route.photo) ? route.photo.toUpperCase() : null;
-      const photo = telescope ? null : items.find(item => item.id === route.photo);
-      if (!telescope && !photo) {
+    if (route.photo || route.telescope) {
+      const legacyTelescope = ['hst', 'jwst'].includes(route.photo) ? route.photo.toUpperCase() : null;
+      const routeTelescope = legacyTelescope || normalizeAetherusTelescope(route.telescope, 'ALL');
+      // 필터만 있는 딥링크도 사진관 자체 로더를 거쳐야 실패 UI와 재시도가 보인다.
+      // 여기서 미리 fetch하면 503이 상위 라우터로 새어 URL만 지워지고 빈 3D 장면이 남는다.
+      if (!route.photo || legacyTelescope) {
+        const opened = await this.openPhotoAtlas(routeTelescope);
+        return opened && this._photoMode === routeTelescope;
+      }
+      let items;
+      try {
+        items = await this.loadPhotoCatalog();
+      } catch (error) {
+        console.warn('[aetherus-route]', error.message);
+        this.showPhotoError(routeTelescope);
+        return false;
+      }
+      const photo = resolveAetherusPhoto(items, route.photo);
+      if (route.photo && !legacyTelescope && !photo) {
         console.warn('[aetherus-route]', `UNKNOWN_PHOTO_${route.photo}`);
         return false;
       }
-      await this.openPhotoAtlas(telescope || photo.telescope, photo?.id || null);
-      return telescope ? this._photoMode === telescope : this._selectedPhoto?.id === photo.id;
+      let telescope = normalizeAetherusTelescope(route.telescope, photo?.telescope || 'ALL');
+      if (photo && telescope !== 'ALL' && telescope !== photo.telescope) {
+        console.warn('[aetherus-route]', `PHOTO_FILTER_CONFLICT_${route.telescope}_${photo.telescope}`);
+        telescope = photo.telescope;
+      }
+      const opened = await this.openPhotoAtlas(telescope, photo?.id || null);
+      return opened && this._selectedPhoto?.id === photo.id;
     }
     this.emitRouteState();
     return true;
@@ -1654,40 +1687,59 @@ export const cosmic3d = {
     this.world.add(this.photoGroup);
   },
 
-  loadPhotoCatalog() {
+  loadPhotoCatalog(refresh = false) {
+    if (refresh) this._photoCatalogPromise = null;
     if (this._photoCatalogPromise) return this._photoCatalogPromise;
-    this._photoCatalogPromise = fetch('/data/space-photos.json', { cache: 'no-cache' })
-      .then(response => {
-        if (!response.ok) throw new Error(`SPACE_PHOTOS_${response.status}`);
-        return response.json();
-      })
-      .then(raw => {
-        const document = assertAetherusCatalog('space-photos', raw);
+    this._photoCatalogPromise = loadAetherusPhotoCatalog({ refresh })
+      .then(document => {
+        this._allPhotoItems = document.items;
         return document.items;
+      })
+      .catch(error => {
+        this._photoCatalogPromise = null;
+        throw error;
       });
     return this._photoCatalogPromise;
   },
 
-  async openPhotoAtlas(telescope, photoId = null) {
+  async openPhotoAtlas(telescope = 'ALL', photoId = null, { refresh = false } = {}) {
+    const normalized = normalizeAetherusTelescope(telescope);
     try {
+      // EARTHUS 검색에서 처음 우주로 넘어오는 경로는 sceneMgr.to()가 끝나도
+      // 뒤의 catalogue 준비와 기본 animateTo가 남아 있을 수 있다. 그보다 먼저
+      // 사진관을 열면 늦게 도착한 animateTo가 closePhotoAtlas()를 호출해 패널을 숨긴다.
+      if (store.scene === 'space') await this._activationPromise;
       await this.ensureEngine();
-      const catalog = await this.loadPhotoCatalog();
-      const items = catalog.filter(item => item.telescope === telescope);
-      if (!items.length) throw new Error(`SPACE_PHOTOS_${telescope}_EMPTY`);
-      const first = photoId ? items.find(photo => photo.id === photoId) : items[0];
-      if (!first) throw new Error(`SPACE_PHOTOS_${photoId}_UNKNOWN`);
       if (this._solarMotionMode) this.closeSolarMotion(false);
       if (this._detailBody) this.closeBody(false);
       if (this._selectedCraft) this.closeCraft(false);
       if (this._frame) cancelAnimationFrame(this._frame);
       this._frame = 0; this.root.classList.remove('is-moving');
-      this.clearPhotoAtlas();
-      this._photoMode = telescope;
+      this._photoMode = normalized;
       this._photoFov = 56;
       this.root.classList.add('is-photo');
-      document.querySelectorAll('#scaleRail [data-aetherus-act]')
-        .forEach(button => button.classList.toggle('current', button.dataset.aetherusAct === (telescope === 'JWST' ? 'webb' : 'hubble')));
+      document.body.classList.add('aetherus-photo-open');
+      this.photoInfo.hidden = false;
+
+      const catalog = await this.loadPhotoCatalog(refresh);
+      const items = filterAetherusPhotos(catalog, normalized);
+      if (!items.length) throw new Error(`SPACE_PHOTOS_${normalized}_EMPTY`);
+      const first = photoId ? resolveAetherusPhoto(items, photoId) : items[0];
+      if (!first) throw new Error(`SPACE_PHOTOS_${photoId}_UNKNOWN`);
+
+      this.clearPhotoAtlas();
+      this._photoMode = normalized;
+      this._photoItems = items;
+      this.photoInfo.classList.remove('has-error');
+      const image = document.getElementById('cosmicPhotoImage');
+      const imageStatus = document.getElementById('cosmicPhotoImageStatus');
+      image.hidden = false; imageStatus.hidden = true;
+      document.getElementById('cosmicPhotoRetry').hidden = true;
+      document.getElementById('cosmicPhotoSource').hidden = false;
+      this.renderPhotoFilters();
+      this.buildPhotoList(items);
       this.photoGroup.visible = true;
+
       const T = this.THREE;
       items.forEach((photo, index) => {
         const ra = T.MathUtils.degToRad(photo.ra);
@@ -1695,7 +1747,8 @@ export const cosmic3d = {
         const radius = 88;
         const marker = new T.Mesh(
           new T.SphereGeometry(matchMedia('(max-width:560px)').matches ? 1.6 : 1.25, 10, 8),
-          new T.MeshBasicMaterial({ color: telescope === 'JWST' ? 0xc1a7ff : 0x8bd8ec }),
+          // 망원경을 색으로 분류하지 않는다. 실제 사진이 주인공이고 표식은 위치 보조다.
+          new T.MeshBasicMaterial({ color: 0x8bd8ec }),
         );
         marker.position.set(
           Math.cos(dec) * Math.sin(ra) * radius,
@@ -1706,15 +1759,87 @@ export const cosmic3d = {
         this.photoGroup.add(marker);
         this._photoMarkers.set(photo.id, { object: marker, photo, index });
       });
-      this.yaw = T.MathUtils.degToRad(first.ra);
-      this.pitch = clamp(T.MathUtils.degToRad(first.dec), -1.35, 1.35);
+      this.focusPhoto(first);
       this.selectPhoto(first);
       this.updateHud(); this.updateCraftPicker(); this.render();
+      return true;
     } catch (error) {
       console.warn('[cosmic-photos]', error.message);
-      const note = document.getElementById('cosmicNote');
-      if (note) note.textContent = ko() ? '공식 사진 카탈로그를 읽지 못했습니다.' : 'Could not load the official image catalogue.';
+      this.showPhotoError(normalized);
+      return false;
     }
+  },
+
+  renderPhotoFilters() {
+    const counts = aetherusPhotoCounts(this._allPhotoItems || []);
+    const isKo = ko();
+    const labels = isKo
+      ? { ALL: '전체', HST: '허블', JWST: '제임스웹' }
+      : { ALL: 'All', HST: 'Hubble', JWST: 'James Webb' };
+    const filters = document.getElementById('cosmicPhotoFilters');
+    filters?.setAttribute('aria-label', isKo ? '망원경 필터' : 'Telescope filter');
+    filters?.querySelectorAll('[data-telescope]').forEach(button => {
+      const id = button.dataset.telescope;
+      const active = id === this._photoMode;
+      button.classList.toggle('on', active);
+      button.setAttribute('aria-selected', String(active));
+      button.innerHTML = `${labels[id]} <span>${counts[id] || 0}</span>`;
+    });
+  },
+
+  buildPhotoList(items) {
+    const list = document.getElementById('cosmicPhotoList');
+    if (!list) return;
+    const isKo = ko();
+    list.setAttribute('aria-label', isKo ? '우주 사진 목록' : 'Space image list');
+    list.replaceChildren(...items.map(photo => {
+      const button = document.createElement('button');
+      button.type = 'button'; button.dataset.photoId = photo.id;
+      button.setAttribute('role', 'option'); button.setAttribute('aria-selected', 'false');
+      const image = document.createElement('img');
+      image.src = `/${photo.thumb}`; image.alt = ''; image.loading = 'lazy'; image.decoding = 'async';
+      const text = document.createElement('span');
+      const title = document.createElement('b'); title.textContent = photo.name[isKo ? 'ko' : 'en'];
+      const meta = document.createElement('small'); meta.textContent = `${photo.telescope} · ${photo.date}`;
+      text.append(title, meta); button.append(image, text);
+      button.addEventListener('click', () => { this.focusPhoto(photo); this.selectPhoto(photo); });
+      return button;
+    }));
+  },
+
+  focusPhoto(photo) {
+    if (!photo || !this.THREE) return;
+    this.yaw = this.THREE.MathUtils.degToRad(photo.ra);
+    this.pitch = clamp(this.THREE.MathUtils.degToRad(photo.dec), -1.35, 1.35);
+  },
+
+  showPhotoError(telescope) {
+    this.clearPhotoAtlas();
+    this._photoMode = telescope;
+    this._photoItems = [];
+    this.root.classList.add('is-photo');
+    document.body.classList.add('aetherus-photo-open');
+    this.photoInfo.hidden = false; this.photoInfo.classList.add('has-error');
+    this.photoGroup.visible = false;
+    const isKo = ko();
+    const image = document.getElementById('cosmicPhotoImage');
+    image.removeAttribute('src'); image.hidden = true;
+    const imageStatus = document.getElementById('cosmicPhotoImageStatus');
+    imageStatus.hidden = false;
+    imageStatus.textContent = isKo ? '사진 카탈로그를 표시할 수 없습니다.' : 'The image catalogue is unavailable.';
+    document.getElementById('cosmicPhotoMeta').textContent = 'AETHERUS PHOTO CATALOG';
+    document.getElementById('cosmicPhotoTitle').textContent = isKo ? '사진을 불러오지 못했습니다' : 'Could not load images';
+    document.getElementById('cosmicPhotoCredit').textContent = isKo
+      ? '네트워크 또는 데이터 계약을 확인한 뒤 다시 시도해 주세요.'
+      : 'Check the network or data contract, then try again.';
+    document.getElementById('cosmicPhotoLimit').textContent = isKo
+      ? '검증되지 않은 사진은 대신 표시하지 않습니다.'
+      : 'Unverified images are not substituted.';
+    document.getElementById('cosmicPhotoSource').hidden = true;
+    const retry = document.getElementById('cosmicPhotoRetry');
+    retry.hidden = false; retry.textContent = isKo ? '다시 시도' : 'Try again';
+    document.getElementById('cosmicPhotoList').replaceChildren();
+    this.renderPhotoFilters(); this.updateHud(); this.render(); this.emitRouteState();
   },
 
   clearPhotoAtlas() {
@@ -1732,6 +1857,16 @@ export const cosmic3d = {
     this._photoMarkers.forEach(entry => entry.object.scale.setScalar(entry.photo.id === photo.id ? 1.75 : 1));
     const isKo = ko();
     const image = document.getElementById('cosmicPhotoImage');
+    const imageStatus = document.getElementById('cosmicPhotoImageStatus');
+    image.hidden = false; imageStatus.hidden = true;
+    image.onload = () => { if (this._selectedPhoto?.id === photo.id) imageStatus.hidden = true; };
+    image.onerror = () => {
+      if (this._selectedPhoto?.id !== photo.id) return;
+      image.hidden = true; imageStatus.hidden = false;
+      imageStatus.textContent = isKo
+        ? '미리보기 이미지를 불러오지 못했습니다. 공식 원본 링크를 이용해 주세요.'
+        : 'Preview unavailable. Use the official original link.';
+    };
     image.src = `/${photo.thumb}`;
     image.alt = `${photo.name[isKo ? 'ko' : 'en']} · ${photo.telescope}`;
     document.getElementById('cosmicPhotoMeta').textContent = `${photo.telescope} · ${photo.date} · ${isKo ? '공개일' : 'release date'}`;
@@ -1741,9 +1876,17 @@ export const cosmic3d = {
       ? `${photo.license} · 표식은 지구에서 본 적경·적위 방향입니다. 거리는 같은 비율이 아닙니다.`
       : `${photo.license} · Marker uses right ascension and declination as seen from Earth; distance is not to scale.`;
     const source = document.getElementById('cosmicPhotoSource');
+    source.hidden = false;
     source.href = photo.full; source.textContent = isKo ? '공식 원본·설명' : 'Official original & description';
     document.getElementById('cosmicPhotoBack').textContent = isKo ? '← 3D 우주' : '← 3D space';
     this.photoInfo.hidden = false;
+    this.photoInfo.classList.remove('has-error');
+    document.getElementById('cosmicPhotoRetry').hidden = true;
+    document.getElementById('cosmicPhotoList')?.querySelectorAll('[data-photo-id]').forEach(button => {
+      const active = button.dataset.photoId === photo.id;
+      button.classList.toggle('on', active);
+      button.setAttribute('aria-selected', String(active));
+    });
     this.render();
     this.emitRouteState();
   },
@@ -1751,10 +1894,17 @@ export const cosmic3d = {
   closePhotoAtlas(render = true) {
     if (!this._photoMode) return;
     this._photoMode = null; this.root.classList.remove('is-photo');
+    document.body.classList.remove('aetherus-photo-open');
     document.querySelectorAll('#scaleRail [data-aetherus-act]')
       .forEach(button => button.classList.remove('current'));
     this.photoGroup.visible = false; this.photoInfo.hidden = true;
+    this.photoInfo.classList.remove('has-error');
     document.getElementById('cosmicPhotoImage').removeAttribute('src');
+    document.getElementById('cosmicPhotoImage').hidden = false;
+    document.getElementById('cosmicPhotoImageStatus').hidden = true;
+    document.getElementById('cosmicPhotoRetry').hidden = true;
+    document.getElementById('cosmicPhotoList').replaceChildren();
+    this._photoItems = [];
     this.clearPhotoAtlas(); this.yaw = .72; this.pitch = .56;
     this.updateBodyPicker(); this.updateCraftPicker(); this.updateHud();
     if (render) { this.render(); this.emitRouteState(); }
@@ -1865,6 +2015,12 @@ export const cosmic3d = {
     document.getElementById('cosmicEarthReturn')?.addEventListener('click', () => this.exitToEarth());
     document.getElementById('cosmicBodyBack')?.addEventListener('click', () => this.closeBody());
     document.getElementById('cosmicPhotoBack')?.addEventListener('click', () => this.closePhotoAtlas());
+    document.getElementById('cosmicPhotoFilters')?.querySelectorAll('[data-telescope]').forEach(button => {
+      button.addEventListener('click', () => this.openPhotoAtlas(button.dataset.telescope));
+    });
+    document.getElementById('cosmicPhotoRetry')?.addEventListener('click', () => {
+      this.openPhotoAtlas(this._photoMode || 'ALL', null, { refresh: true });
+    });
     document.getElementById('cosmicCraftBack')?.addEventListener('click', () => this.closeCraft());
     document.getElementById('cosmicMotionOpen')?.addEventListener('click', () => this.openSolarMotion());
     document.getElementById('cosmicMotionBack')?.addEventListener('click', () => this.closeSolarMotion());
@@ -2334,14 +2490,16 @@ export const cosmic3d = {
       return;
     }
     if (this._photoMode) {
-      const telescope = this._photoMode === 'JWST' ? (isKo ? '제임스웹' : 'James Webb') : (isKo ? '허블' : 'Hubble');
-      document.getElementById('cosmicStage').textContent = `${telescope} · ${this._photoMarkers.size}`;
+      const telescope = this._photoMode === 'ALL'
+        ? (isKo ? '전체' : 'All')
+        : this._photoMode === 'JWST' ? (isKo ? '제임스웹' : 'James Webb') : (isKo ? '허블' : 'Hubble');
+      document.getElementById('cosmicStage').textContent = `${isKo ? '우주 사진관' : 'Space photo gallery'} · ${telescope} · ${this._photoMarkers.size}`;
       document.getElementById('cosmicScale').textContent = isKo
-        ? '지구에서 본 적경·적위 방향 · 3D 천구'
-        : 'RA/Dec directions seen from Earth · 3D celestial sphere';
+        ? '공식 사진이 중심 · 3D 천구는 적경·적위 위치 보조'
+        : 'Official images first · 3D sky is an RA/Dec position aid';
       document.getElementById('cosmicHint').textContent = isKo
-        ? '드래그해 하늘을 돌리고 빛나는 표식을 누르면 공식 사진이 열립니다'
-        : 'Drag around the sky and select a glowing marker to open the official image';
+        ? '전체·허블·제임스웹 필터와 아래 썸네일에서 사진을 고르세요'
+        : 'Choose an image using the filters and thumbnail list';
       document.getElementById('cosmicNote').textContent = isKo
         ? '표식 거리는 같은 비율이 아님 · 날짜는 관측일이 아닌 공개일'
         : 'Marker distance is not to scale · dates are release dates, not observation times';

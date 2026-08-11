@@ -63,6 +63,25 @@ CAMS GFAS v1.2는 연기 주입고도까지 제공하지만 공식 자료 페이
 있는 통보는 42건, 공식 이동 예보가 있는 통보는 32건이었다. EventBridge는 30분마다 실행하며,
 내용 해시가 달라진 회차만 비공개 이력으로 추가한다.
 
+## Tokyo VAAC 기준선 사후검증
+
+`aws/vaac-validation`은 공식 +6/+12/+18시간 도형을 같은 화산·같은 사건 안의 이후 관측
+도형과 유효시각 ±90분으로 짝짓는다. 발행기관의 `NO FURTHER ADVISORIES` 또는 36시간을 넘는
+공백을 사건 경계로 두며, 경계를 넘은 새 분화를 이전 예보의 정답으로 연결하지 않는다.
+
+- 도형 변을 약 50km 간격으로 재표본
+- 구면 중심점 거리, 대칭 평균 최근접 거리, 대칭 Hausdorff 거리 기록
+- 2026-08-11 실측: 통보 80건, 사건 묶음 40개, 유효 짝 16개, 짝이 있는 독립 사건 4개
+- +6시간 `n=10`, 중심점 MAE 87.5km / +12시간 `n=4`, 103.6km /
+  +18시간 `n=2`, 162.9km
+- 사건 경계를 적용하기 전 29쌍 중 다른 사건을 잘못 잇던 13쌍을 제거
+- 최소 10개 독립 사건 문턱에 아직 6건 부족하고 EARTHUS 당시 계산 회차도 없으므로
+  `public=false`, `reportPublished=false`, LAB 공개 금지
+
+운영 출력은 `archive/vaac-validation/latest.json`이며 `private, no-store`다. EventBridge는
+1시간마다 실행하고 입력 내용이 바뀌었을 때만 새 이력을 만든다. 이 값은 특정 기관의 장기 순위나
+항공 안전 판정이 아니라 향후 EARTHUS 계산을 같은 지표로 비교하기 위한 내부 기준선이다.
+
 CAMS 직접 자료와 10건 사후검증을 통과한 뒤에만 `analysis/smoke-ash-reports.json` 또는
 `analysis/air-pollution-reports.json`을 만들고 LAB에 합류시킨다.
 

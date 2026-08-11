@@ -138,6 +138,10 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
 - LAB 분석 보고서: 현상별 목록을 `aws/lab-report-index`가 15분마다 모아
   `ocean/lab-reports.json` 공개 요약 색인을 만든다. 태풍과 후속 7종의 공통 계약은
   `docs/LAB-REPORT-CONTRACT.md`다. 실제 산출물이 없는 종류는 만들지 않는다.
+- 대기 이동 첫 단계는 `aws/atmos-transport-spike`다. FIRMS 열점군 6개를
+  500/700/850hPa 바람으로 각각 24시간 적분하지만 연기 경로로 공개하지 않고
+  `archive/atmos-transport-spike/`에만 `private, no-store`로 둔다. 운영 18개 시나리오의
+  고도별 끝점 차이가 최대 1,025.6km여서 중심선·LAB 보고서·자동 실행은 보류했다.
 - CelesTrak 궤도는 `celestrak/catalog.json.gz`에 하루 1회 캐시한다. 2026-08-06부터
   TLE 대신 9자리 번호를 지원하는 OMM JSON·SATCAT JSON을 쓰며 `schemaVersion=2`다.
   OMM 14개 원소는 전송량을 줄이려고 `o` 고정 순서 배열로 저장하고, 브라우저의

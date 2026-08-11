@@ -20,7 +20,8 @@ if "botocore.exceptions" not in sys.modules:
     sys.modules["botocore"] = botocore
     sys.modules["botocore.exceptions"] = exceptions
 
-SPEC = importlib.util.spec_from_file_location("lab_report_index", pathlib.Path(__file__).with_name("handler.py"))
+HANDLER = pathlib.Path(__file__).parent.parent / "handler.py"
+SPEC = importlib.util.spec_from_file_location("lab_report_index", HANDLER)
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
 

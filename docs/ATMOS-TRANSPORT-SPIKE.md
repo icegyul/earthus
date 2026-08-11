@@ -25,6 +25,11 @@
    - 이용조건: <https://ads.atmosphere.copernicus.eu/licences/licence-to-use-copernicus-products>
 2. 화산재는 NOAA AviationWeather WIFS의 공식 VAA/TAC 또는 관할 VAAC 공식 자료
    - 후보 API: <https://aviationweather.gov/wifs/api/collections/tac_advisory_reports>
+   - WIFS API는 승인된 계정과 `X-API-Key`가 필요하므로 키를 받기 전에는 호출하거나
+     우회 수집하지 않는다.
+   - 동아시아는 Tokyo VAAC 공개 VAA를 `aws/tokyo-vaac`가 구조화해
+     `events/volcanic-ash-vaac.json`과 비공개 변경 이력에 보존한다. `NOT_IDENTIFIABLE`,
+     `NOT AVBL`, `NO VA EXP`는 그대로 결측/종료 근거로 남기고 경로선을 만들지 않는다.
 3. 과거 실제 사건 최소 10건의 입력 회차와 종료 관측
 4. 단순 지속 벡터 기준선, 공식 모델, 관측 검증의 오차·누락 비교
 5. 유료 상세는 공개 S3가 아니라 서버 권한 확인 응답
@@ -47,6 +52,16 @@ CAMS GFAS v1.2는 연기 주입고도까지 제공하지만 공식 자료 페이
 - 비공개: `archive/atmos-transport-spike/latest.json`
 - LAB 보고서: 생성하지 않음
 - 지도 경로선: 생성하지 않음
+
+공식 화산재 통보 수집기 `tokyo-vaac`는 계산 스파이크와 별개다. 출처가 확인된 관측·기관 예보를
+무료 원자료로 보존하고, 종료 뒤 EARTHUS 계산 회차를 검증할 기준으로 사용한다. JMA 자료를
+구조화하거나 도형으로 바꾸어 공개할 때는 "일본 기상청 Tokyo VAAC 자료를 EARTHUS가 구조화함"을
+항상 표시한다.
+
+2026-08-11 운영 첫 실행에서 최근 통보 80건을 오류 없이 구조화했다. 일본 40건, 러시아 25건,
+필리핀 5건, 원문 지역명이 `KAMCHATKA PENINSULA`인 러시아권 10건이다. 관측/추정 화산재 범위가
+있는 통보는 42건, 공식 이동 예보가 있는 통보는 32건이었다. EventBridge는 30분마다 실행하며,
+내용 해시가 달라진 회차만 비공개 이력으로 추가한다.
 
 CAMS 직접 자료와 10건 사후검증을 통과한 뒤에만 `analysis/smoke-ash-reports.json` 또는
 `analysis/air-pollution-reports.json`을 만들고 LAB에 합류시킨다.

@@ -37,7 +37,7 @@ export const ITEMS = [
      ⚠️ 국기는 **누가 찍은 위성인가**다. 우리 것이 맨 위에 온다.
      ⚠️ GMGSI 에 특정 국기를 달지 않는다 — 여러 나라 위성을 NOAA 가 합친 것이라
         한 나라 것이라고 하면 틀린 말이 된다. 🌐 로 둔다. */
-  { id:'gk2aAuto', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'낮 가시광·밤 적외 자동 · 2km→한반도 0.5km', subEn:'Auto visible by day, IR by night · 2km→Korea 0.5km', ready:true,
+  { id:'gk2aAuto', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'낮 가시광·밤 적외 자동 · 전면→동아시아 2km', subEn:'Auto visible by day, IR by night · full disk→E. Asia 2km', ready:true,
     sky:'#0a1828', paint:'gk2a', img:'img/sat-gk2a.png' },
   { id:'gk2aIR', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'구름 · 전면 8km + 동아시아 2km 상세 · 밤에도', subEn:'Cloud · full disk 8 km + E. Asia 2 km detail · day & night', ready:true,
     sky:'#0b1626', paint:'gk2a', img:'img/sat-gk2a.png' },
@@ -63,9 +63,9 @@ export const ITEMS = [
     sky:'#0a1828', paint:'gk2a', img:'img/sat-gk2a.png' },
   { id:'gk2aWV', flag:'🇰🇷', ko:'천리안2A', en:'Chollian-2A', sub:'수증기 · 전면 · 상층 흐름', subEn:'Water vapour · full disk', ready:true,
     sky:'#0c1422', paint:'gk2a', img:'img/sat-gk2a.png' },
-  /* ⚠️ 부제에 '낮에만'을 반드시 남긴다. 가시광이라 밤에는 비어 보이는데,
-     그 사실을 안 적으면 고장으로 읽힌다 (실제로 지적받았다). */
-  { id:'himawari', flag:'🇯🇵', ko:'히마와리', en:'Himawari', sub:'구름 · 동아시아 1km · 낮에만', subEn:'Cloud · E. Asia 1km · daylight only', ready:true,
+  /* 빠른 목록의 히마와리9는 낮 가시광·밤 적외를 한 선택에서 자동으로 잇는다.
+     ⚠️ 밤 적외의 색은 강수량이 아니라 구름 꼭대기 온도라는 설명을 반드시 남긴다. */
+  { id:'himawari', flag:'🇯🇵', ko:'히마와리9', en:'Himawari-9', sub:'낮 가시광 1km·밤 적외 2km 자동 · 동아시아·서태평양', subEn:'Auto visible 1 km by day, IR 2 km at night · E. Asia–W. Pacific', ready:true,
     sky:'#0a1626', paint:'himawari', img:'img/sat-himawari.png' },
   { id:'himaIR', flag:'🇯🇵', ko:'히마와리', en:'Himawari', sub:'구름 꼭대기 온도 · 찰수록 강한 대류', subEn:'Cloud-top temp · colder = stronger', ready:true,
     sky:'#0d1020', paint:'himawari', img:'img/sat-himawari.png' },
@@ -528,23 +528,20 @@ const TIME_PRESETS = [
     ids: ['tmin', 'windfc'] },
 ];
 
-/* 첫 화면에 올릴 여덟 개. 재난은 바로 옆 Alert 메뉴가 더 빠르므로 중복하지 않는다.
-   한국·일본에서 매일 확인하는 현재 기상과, earthus의 강점인 실측 두 종류를 섞는다.
-   모델 파고와 부이는 함께 있어야 예측과 실측을 곧바로 오갈 수 있다. */
 /* 빠른 레이어 — 받은 지시(2026-08-06)
    "NOAA 와 수오미, 천리안 2km 밤에도, 히마와리9 이렇게 빠른 레이어로 배치"
    ⚠️ 천리안 동아시아 2km(gk2aIRea)는 맨 앞이었는데 **뒤로 내린다**.
       위성 넷을 나란히 두고 그중 하나로 보이게 하는 것이 지시의 뜻이다.
-   ⚠️ 히마와리는 '9호'가 아니라 레이어 id 로는 himawari 다 — 우리가 받는 것이
-      히마와리-9 이고 이름은 세대를 안 붙인다(위성 교체 시 이름이 틀려진다). */
+   2026-08-11 재확인: 빠른 목록은 다른 기상 레이어를 섞지 않고 이 위성 4개만 둔다.
+   히마와리는 현재 운용 위성을 분명히 보이도록 화면 이름을 '히마와리9'로 적는다. */
 const QUICK_IDS = [
   'clouds',     // 🌐 NOAA GMGSI 전지구 합성
   'truecolor',  // 🇺🇸 수오미 NPP
-  /* 🇰🇷 천리안2A 자동 — 낮 가시광/밤 적외, 동아시아 2km에서 시작해
+  /* 🇰🇷 천리안2A 자동 — 낮 가시광/밤 적외, 전면에서 시작해
+     동아시아는 같은 채널의 2km 타일로 자세히 보이고,
      한반도로 가까워지면 유효한 낮에만 0.5km 원본 타일을 요청한다. */
   'gk2aAuto',
-  'himawari',   // 🇯🇵 히마와리
-  'temp', 'rain', 'wind', 'wave',
+  'himawari',   // 🇯🇵 히마와리9 — 낮 가시광/밤 적외 자동
 ];
 
 /* AETHERUS는 더 이상 반대쪽 레일을 열지 않는다. 같은 2단 패널을 재사용해

@@ -410,8 +410,8 @@ export const sourceNote = {
         if (id === 'gk2aAuto') {
           const { imagery } = await import('./layers/imagery.js');
           bits.push(ko
-            ? `<i>한국의 태양고도에 맞춰 <b>${imagery._gk2aAutoMode === 'infrared' ? '밤 적외' : '낮 가시광'}</b> 채널을 자동 선택했습니다. 동아시아는 2km 타일이며, 한반도로 확대하면 ${imagery._gk2aDetailOn ? '<b>현재 0.5km 원본 타일</b>' : '0.5km 원본 타일'}로 바뀝니다.</i>`
-            : `<i>Automatically using <b>${imagery._gk2aAutoMode === 'infrared' ? 'night infrared' : 'daylight visible'}</b>. East Asia starts at 2 km; zoom into Korea for native 0.5 km tiles.</i>`);
+            ? `<i>한국의 태양고도에 맞춰 <b>${imagery._gk2aAutoMode === 'infrared' ? '밤 적외' : '낮 가시광'}</b> 채널을 자동 선택했습니다. <b>위성 전면</b>을 넓게 보며 동아시아는 2km 타일을 겹치고, 한반도로 확대하면 ${imagery._gk2aDetailOn ? '<b>현재 0.5km 원본 타일</b>' : '0.5km 원본 타일'}로 바뀝니다.</i>`
+            : `<i>Automatically using <b>${imagery._gk2aAutoMode === 'infrared' ? 'night infrared' : 'daylight visible'}</b>. The <b>full disk</b> stays visible, with 2 km East Asia tiles and native 0.5 km tiles when zoomed into Korea.</i>`);
           if (imagery._gk2aAutoMode === 'infrared') bits.push(ko
             ? '<i>⚠️ 밤에는 0.5km 가시광 원본이 유효하지 않아 2km 적외를 그대로 씁니다. 없는 야간 0.5km 자료를 확대해 표시하지 않습니다.</i>'
             : '<i>⚠️ At night the 0.5 km visible feed is not valid, so the 2 km infrared feed remains. No fake night upscaling.</i>');
@@ -441,12 +441,16 @@ export const sourceNote = {
                        gk2a_wv: 'wv063' }[key];
           const area = imagery._gk2aMeta?.channels?.[ch]?.area;
           bits.push(ko
-            ? (area === 'LA'
+            ? (id === 'gk2aAuto'
+              ? '<i><b>위성 전면</b>(동아시아·서태평양·호주) 위에 <b>동아시아 2km</b> 상세를 겹쳐 봅니다.</i>'
+              : area === 'LA'
               ? '<i>⚠️ <b>한반도 주변만</b> 덮습니다 (32~40°N · 123.5~131.5°E). 그 밖은 비어 있습니다.</i>'
               : area === 'EA'
                 ? '<i><b>동아시아 2km</b> 영역입니다 (23~47°N · 114~150°E).</i>'
                 : '<i>위성이 보는 <b>전면</b>입니다 — 동아시아·서태평양·호주까지. 지구 반대편은 이 위성이 못 봅니다.</i>')
-            : (area === 'LA'
+            : (id === 'gk2aAuto'
+              ? '<i><b>Full-disk</b> coverage (East Asia, western Pacific and Australia) with a <b>2 km East Asia</b> detail overlay.</i>'
+              : area === 'LA'
               ? '<i>⚠️ Korea only (32–40°N, 123.5–131.5°E).</i>'
               : area === 'EA'
                 ? '<i><b>East Asia 2 km</b> (23–47°N, 114–150°E).</i>'
@@ -476,20 +480,22 @@ export const sourceNote = {
              확대했더니 구름 모양이 달라진 것으로 보인다.
              ⚠️ 직접 고른 경우와 확대해서 자동으로 바뀐 경우를 구분해 적는다 —
                 "확대해서 바뀌었습니다"라고 써 놓고 사실은 사람이 고른 것이면 틀린 안내다. */
-          /* ⚠️ "낮은 가시광, 밤은 적외" 라고 적어 두었던 것을 고쳤다.
-             밤에 적외를 얹으면 그게 「구름 꼭대기 온도」와 같은 자료라
-             구름 메뉴에서 색칠된 그림이 나와 강수량으로 오해된다.
-             이제 **가시광만** 쓴다 — 그래서 밤에는 비어 보인다. 그걸 그대로 적는다. */
+          /* 받은 지시(2026-08-11): 빠른 히마와리9는 낮 가시광·밤 적외를 자동 전환한다.
+             ⚠️ 밤 적외가 강수량처럼 읽힌 사고가 있었으므로 현재 채널과 한계를 함께 적는다. */
+          const { imagery } = await import('./layers/imagery.js');
+          const night = id === 'himawari' && imagery._isNightHere();
           bits.push(ko
             ? (id === 'himawari'
-              ? '<i>동아시아·서태평양만 보는 정지위성입니다. <b>1km · 10분</b> (전지구 구름은 2.4km · 1시간). <b>가시광</b>이라 낮에만 보입니다.</i>'
+              ? `<i>동아시아·서태평양을 넓게 보는 정지위성입니다. 현재 <b>${night ? '밤 적외 2km' : '낮 가시광 1km'}</b>를 자동 선택했습니다 · 10분 간격입니다.</i>`
               : '<i>확대해서 <b>1km · 10분</b> 자료로 바뀌었습니다 (전지구는 2.4km · 1시간). <b>가시광</b>이라 낮에만 보입니다.</i>')
             : (id === 'himawari'
-              ? '<i>A geostationary satellite covering only East Asia and the western Pacific. <b>1 km · 10 min</b> (the global cloud layer is 2.4 km · hourly). <b>Visible light</b>, so it shows only in daylight.</i>'
+              ? `<i>A geostationary satellite with broad East Asia–western Pacific coverage. Automatically using <b>${night ? 'night infrared 2 km' : 'daylight visible 1 km'}</b> · 10-minute intervals.</i>`
               : '<i>Zoomed in, so this is the <b>1 km · 10 min</b> feed (the global one is 2.4 km · hourly). <b>Visible light</b>, so it shows only in daylight.</i>'));
-          bits.push(ko
-            ? '<i>밤에는 「구름 꼭대기 온도」(적외)를 쓰세요 — 어두워도 구름을 봅니다.</i>'
-            : '<i>At night use “Cloud-top temperature” (infrared) — it sees cloud in the dark.</i>');
+          if (night) {
+            bits.push(ko
+              ? '<i>⚠️ 적외의 색은 <b>강수량이 아니라 구름 꼭대기 온도</b>입니다. 낮은 구름은 지표와 온도가 비슷해 잘 안 보일 수 있습니다.</i>'
+              : '<i>⚠️ Infrared colours show <b>cloud-top temperature, not rainfall</b>. Low cloud can be hard to distinguish from the similarly warm surface.</i>');
+          }
           /* ⚠️ 구역 밖으로 나가면 아무것도 안 보인다. 그 사실을 미리 알린다. */
           if (id === 'himawari') {
             bits.push(ko

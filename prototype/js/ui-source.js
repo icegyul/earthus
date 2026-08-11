@@ -239,7 +239,14 @@ export const sourceNote = {
     } else if (id === 'himawari' || id === 'clouds') {
       try {
         const { imagery } = await import('./layers/imagery.js');
-        if (imagery._himaOn && imagery._himaTime) { key = 'clouds_hima'; hima = imagery._himaTime; }
+        if (imagery._himaOn && imagery._himaTime) {
+          key = 'clouds_hima';
+          /* 가시광과 적외는 몇 분 어긋나 올라올 수 있다. 지금 화면 중심에서 실제로
+             보이는 채널의 시각을 골라야 적외 최신 시각을 낮 가시광에 붙이지 않는다. */
+          hima = imagery._isNightHere()
+            ? (imagery._himaIRTime || imagery._himaTime)
+            : (imagery._himaVisibleTime || imagery._himaTime);
+        }
         else if (id === 'himawari') { key = 'clouds_hima'; }
       } catch (_) { /* 아직 없을 수 있다 */ }
     }
@@ -511,6 +518,15 @@ export const sourceNote = {
           /* ⚠️ 예정 시각이 지났으면 그대로 두지 않는다. 고장난 시계가 된다. */
           : (ko ? `다음 자료 기다리는 중 (${-mins}분 지연)` : `waiting for the next update (${-mins} min late)`));
       }
+    }
+
+    /* 빠른 위성 4종의 역할은 같지 않다.
+       NOAA에는 히마와리 계열 신호도 들어 있고, 수오미는 하루 모자이크라 네 장을
+       같은 시각의 독립 표본처럼 평균하면 거짓이다. 현재량과 낮 형태 참고를 분리한다. */
+    if (['clouds', 'truecolor', 'gk2aAuto', 'himawari'].includes(id)) {
+      bits.push(ko
+        ? '<i><b>4위성 교차확인:</b> 현재 구름량은 NOAA·천리안2A·히마와리9 <b>3종</b>의 시각과 겹치는 구름대를 대조합니다. 수오미 NPP <b>1종</b>은 전날 낮 형태 참고이며 현재량 계산에는 넣지 않습니다. 시각이 다른 영상을 평균하지 않습니다.</i>'
+        : '<i><b>Four-satellite cross-check:</b> current cloud extent is checked across the timestamps and overlapping patterns of <b>three</b> feeds — NOAA, Chollian-2A and Himawari-9. Suomi NPP is <b>one</b> prior-day daylight reference and is excluded from current-amount calculations. Different observation times are never averaged.</i>');
     }
 
     /* ── 수치 범례 ────────────────────────────────────────────────

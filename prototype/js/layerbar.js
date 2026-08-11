@@ -76,7 +76,7 @@ export const ITEMS = [
   /* ⚠️ **수오미 NPP 는 위성 이름, VIIRS 는 그 위에 실린 센서 이름**이다.
      둘 다 맞지만 가리키는 것이 다르다 — 메뉴는 위성, 부제는 센서로 통일한다.
      (우리가 부르는 GIBS 레이어가 VIIRS_SNPP_… 이다) */
-  { id:'truecolor', flag:'🇺🇸', ko:'수오미 NPP', en:'Suomi NPP', sub:'VIIRS 실제 색 · 낮면', subEn:'VIIRS true colour · day side', ready:true,
+  { id:'truecolor', flag:'🇺🇸', ko:'수오미 NPP', en:'Suomi NPP', sub:'VIIRS 전날 낮 참고 · 현재 구름량 비교 제외', subEn:'VIIRS prior-day daylight reference · not current cloud amount', ready:true,
     sky:'#0a1420', paint:'truecolor', img:'img/sat-suomi.png' },
   { id:'temp', ko:'기온', en:'Temperature', sub:'현재', subEn:'Now', ready:true,
     sky:'#101820', paint:'temp' },

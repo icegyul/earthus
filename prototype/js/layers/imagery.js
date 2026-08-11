@@ -181,10 +181,17 @@ export const imagery = {
         for (let i = 0; i < d.length; i += 4) {
           const l = 90 + (d[i] * 165 / 255);   // 90~255 로 눌러 탁함 방지
           d[i] = d[i + 1] = d[i + 2] = l;
+          /* 네 빠른 위성 영상을 같은 동아시아 장면에서 대조했다(2026-08-11).
+             NOAA와 천리안 적외의 화소 상관은 0.83이었지만, NOAA의 중간 알파는
+             같은 구름을 훨씬 옅게 보여 화면에서 양이 적어 보였다.
+
+             ⚠️ 탐지 문턱이나 구름 면적을 바꾸지 않는다. 서버가 이미 구름이라고 낸
+             알파만 0.78 감마로 보이기 쉽게 만든다. 0은 계속 0, 1은 계속 1이다. */
+          d[i + 3] = Math.round(255 * Math.pow(d[i + 3] / 255, 0.78));
         }
       } else {
         for (let i = 0; i < d.length; i += 4) {
-          d[i + 3] = d[i];
+          d[i + 3] = Math.round(255 * Math.pow(d[i] / 255, 0.78));
           d[i] = d[i + 1] = d[i + 2] = 255;
         }
       }
@@ -673,6 +680,8 @@ export const imagery = {
         "구름이 잘린다"는 지적을 받은 것과 같은 문제다. */
   himaLayers: [],
   _himaTime: null,
+  _himaVisibleTime: null,
+  _himaIRTime: null,
   _himaOn: false,
   _himaManual: false,
   _himaMode: null,
@@ -683,19 +692,38 @@ export const imagery = {
   /* 이 고도보다 가까울 때만. 전지구에서 켜면 이음매가 보인다. */
   HIMA_H: 5_000_000,
 
-  /** 지금 받을 수 있는 가장 최근 10분 단위 시각을 찾는다.
+  /** 채널별로 지금 받을 수 있는 가장 최근 10분 단위 시각을 찾는다.
    *  ⚠️ 정지위성은 20~40분 늦게 올라온다. "지금"으로 요청하면 빈 타일이 온다.
    *     실제로 타일을 받아보고 되는 시각을 고른다 — 지어내지 않는다.
-   *  ⚠️ 밤에도 존재하는 Band13 적외를 기준으로 검사한다. 가시광을 기준으로 찾으면
-   *     야간 가시광 발행 상태에 따라 적외까지 없는 것으로 오판할 수 있다. */
-  async pickHimaTime() {
+   *  ⚠️ 적외와 가시광은 올라오는 시각이 다를 수 있다. 적외 최신 시각 하나를
+   *     가시광에도 붙였더니 적외는 보이는데 낮 구름이 통째로 비는 일을 재현했다.
+   *  ⚠️ HTTP 200만 보지 않는다. GIBS는 아직 비어 있는 검은 타일도 200으로 줄 수
+   *     있으므로 실제 화소의 2% 이상에 신호가 있는지 확인한다. */
+  async pickHimaTime(layer = 'Himawari_AHI_Band13_Clean_Infrared',
+                     tms = 'GoogleMapsCompatible_Level6') {
     const probe = (ts) => new Promise(res => {
       const im = new Image();
       im.crossOrigin = 'anonymous';
-      im.onload = () => res(im.naturalWidth > 1);
+      im.onload = () => {
+        if (im.naturalWidth <= 1) { res(false); return; }
+        try {
+          const cv = document.createElement('canvas');
+          cv.width = cv.height = 64;
+          const cx = cv.getContext('2d', { willReadFrequently: true });
+          cx.drawImage(im, 0, 0, 64, 64);
+          const p = cx.getImageData(0, 0, 64, 64).data;
+          let signal = 0;
+          for (let i = 0; i < p.length; i += 4) {
+            if (p[i + 3] > 8 && Math.max(p[i], p[i + 1], p[i + 2]) > 12) signal++;
+          }
+          res(signal / (64 * 64) >= 0.02);
+        } catch (_) {
+          /* CORS 정책이 바뀌어 화소를 못 읽는 날에는 종전의 이미지 존재 검사로 폴백한다. */
+          res(true);
+        }
+      };
       im.onerror = () => res(false);
-      im.src = `${API.GIBS}/Himawari_AHI_Band13_Clean_Infrared/default/${ts}`
-             + '/GoogleMapsCompatible_Level6/5/12/27.png';
+      im.src = `${API.GIBS}/${layer}/default/${ts}/${tms}/5/12/27.png`;
     });
     const now = Date.now();
     for (let back = 2; back <= 12; back++) {          // 20분 ~ 2시간 전
@@ -714,6 +742,8 @@ export const imagery = {
       this.himaLayers.forEach(L => { try { viewer.imageryLayers.remove(L, true); } catch (_) {} });
       this.himaLayers = [];
       this._himaTime = null;
+      this._himaVisibleTime = null;
+      this._himaIRTime = null;
       this._himaMode = null;
       /* ⚠️ 좌하단 안내가 바로 따라와야 한다. 안 알리면 최대 1분 동안
          전지구 합성 출처가 떠 있는데 화면은 히마와리인 상태가 된다. */
@@ -724,15 +754,20 @@ export const imagery = {
        그래도 표시는 해야 한다: 켜고 자료가 올 때까지 화면이 그대로면
        "고장인가" 싶게 된다. 실제로 그 신고를 받았다. */
     this._imgLoading(true, '히마와리');
-    const ts = await this.pickHimaTime();
-    if (!ts) {
+    const [visTs, irTs] = await Promise.all([
+      this.pickHimaTime('Himawari_AHI_Band3_Red_Visible_1km', 'GoogleMapsCompatible_Level7'),
+      this.pickHimaTime('Himawari_AHI_Band13_Clean_Infrared', 'GoogleMapsCompatible_Level6'),
+    ]);
+    if (!visTs && !irTs) {
       this._himaOn = false;
       console.warn('[hima] 받을 수 있는 시각을 못 찾음');
       this._himaUnavailable();
       return;
     }
     if (!this._himaOn) return;                      // 그 사이 화면이 벗어났다
-    this._himaTime = ts;
+    this._himaVisibleTime = visTs;
+    this._himaIRTime = irTs;
+    this._himaTime = this._isNightHere() ? (irTs || visTs) : (visTs || irTs);
 
     /* 받은 지시(2026-08-11): 빠른 목록의 히마와리9는 저녁에도 보여야 한다.
        낮에는 가시광(Band3), 밤에는 적외(Band13)를 같은 선택 안에서 자동으로 잇는다.
@@ -740,7 +775,7 @@ export const imagery = {
 
        ⚠️ 밤 적외의 색은 강수량이 아니라 구름 꼭대기 온도다. 예전에 비의 양처럼
        읽힌 사고가 있었으므로 ui-source에서 현재 채널과 이 한계를 반드시 밝힌다. */
-    const add = (layer, tms, dayA, nightA, threshold) => {
+    const add = (layer, ts, tms, dayA, nightA, threshold) => {
       const L = viewer.imageryLayers.addImageryProvider(
         new Cesium.UrlTemplateImageryProvider({
           url: `${API.GIBS}/${layer}/default/${ts}/${tms}/{z}/{y}/{x}.png`,
@@ -755,11 +790,16 @@ export const imagery = {
       this.himaLayers.push(L);
       return L;
     };
-    add('Himawari_AHI_Band3_Red_Visible_1km', 'GoogleMapsCompatible_Level7', 0.9, 0.0, 0.16);
-    add('Himawari_AHI_Band13_Clean_Infrared', 'GoogleMapsCompatible_Level6', 0.0, 0.82, 0.62);
+    /* ⚠️ 가시광의 검은색 제거 문턱은 0.16을 유지한다. 0.22로 올려 실제 화면을
+       비교했더니 지표뿐 아니라 얇은 구름까지 사라졌다. 구름 양을 잘 보이게 하려다
+       관측된 구름을 지우는 쪽으로 가면 안 된다. */
+    if (visTs) add('Himawari_AHI_Band3_Red_Visible_1km', visTs,
+      'GoogleMapsCompatible_Level7', 0.9, 0.0, 0.16);
+    if (irTs) add('Himawari_AHI_Band13_Clean_Infrared', irTs,
+      'GoogleMapsCompatible_Level6', 0.0, 0.82, 0.62);
     this._himaMode = this._isNightHere() ? 'infrared' : 'visible';
     document.dispatchEvent(new CustomEvent('earthus:imagery'));
-    console.log(`[hima] ${ts} 적용`);
+    console.log(`[hima] 가시광 ${visTs || '없음'} · 적외 ${irTs || '없음'} 적용`);
   },
 
   /** 히마와리를 보는 지역이 지금 밤이면 그 사실을 알려준다.
@@ -831,7 +871,8 @@ export const imagery = {
        "고장인가" 싶게 된다. 실제로 그 신고를 받았다. */
     this._imgLoading(true, '구름 꼭대기 온도');
 
-    const ts = await this.pickHimaTime();
+    const ts = await this.pickHimaTime(
+      'Himawari_AHI_Band13_Clean_Infrared', 'GoogleMapsCompatible_Level6');
     if (!ts) { console.warn('[himaIR] 받을 수 있는 시각을 못 찾음'); return; }
     if (!this._irManual) return;                    // 그 사이 꺼졌다
     this._irTime = ts;

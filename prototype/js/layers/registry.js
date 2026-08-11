@@ -335,7 +335,21 @@ export const registry = {
     const key = LOAD_KEY[id] || id;
     if (this._loaded[key] && !ALWAYS_FRESH.has(id)) return;
     this._loaded[key] = true;
-    this.run(id, fn).then(() => this.applyAll());
+    /* 태풍은 GDACS 타임아웃과 기관·유사사례 자료를 함께 기다려 첫 실행이 길다.
+       메뉴 클릭 순간부터 실제 run 종료까지를 알린다. 퍼센트는 UI가 만들지 않는다. */
+    if (id === 'cyclone') {
+      document.dispatchEvent(new CustomEvent('earthus:runtime-loading', {
+        detail: { key: 'cyclone-layer', active: true },
+      }));
+    }
+    const pending = this.run(id, fn);
+    pending.finally(() => {
+      if (id !== 'cyclone') return;
+      document.dispatchEvent(new CustomEvent('earthus:runtime-loading', {
+        detail: { key: 'cyclone-layer', active: false },
+      }));
+    });
+    pending.then(() => this.applyAll());
   },
 
   applyAll() {

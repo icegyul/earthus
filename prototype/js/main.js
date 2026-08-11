@@ -3,7 +3,7 @@ import { initViewer, viewer, scene, cameraHeight, onCameraIdle, flyTo, setAmbien
 import { alarms } from './alarms.js';
 import { windField } from './windfield.js';
 import { myLocation } from './mylocation.js';
-import { layerBar } from './layerbar.js?v=20260810-earthoverlay1';
+import { layerBar } from './layerbar.js?v=20260811-brandtabs1';
 import { search } from './search.js';
 import { onboard } from './onboard.js';
 import { weatherPanel } from './ui-weather.js?v=20260810-locationchart1';
@@ -12,7 +12,7 @@ import { panels } from './panels.js';
 import { intro } from './intro.js';
 import { renderQuality } from './render-quality.js';
 import { store } from './store.js';
-import { registry } from './layers/registry.js';
+import { registry } from './layers/registry.js?v=20260811-runtime-load1';
 import { imagery } from './layers/imagery.js';
 import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js?v=20260810-locationchart1';
 import { i18n } from './i18n.js';
@@ -55,6 +55,41 @@ let turtleMod = null;
 let seabirdMod = null;
 let migbirdMod = null;
 let ecobirdMod = null;
+
+/* 여러 자료를 받는 레이어의 실제 작업 상태를 한 곳에서 표시한다.
+   key별로 잡아 둬 한 요청이 먼저 끝났다고 다른 요청의 막대까지 숨기지 않는다. */
+const runtimeLoads = new Map();
+let runtimeLoadHideTimer = null;
+document.addEventListener('earthus:runtime-loading', event => {
+  const box = document.getElementById('runtimeLoading');
+  if (!box) return;
+  const { key, active } = event.detail || {};
+  if (!key) return;
+  if (active) runtimeLoads.set(key, Date.now());
+  else runtimeLoads.delete(key);
+  clearTimeout(runtimeLoadHideTimer);
+
+  if (runtimeLoads.size) {
+    const text = document.getElementById('runtimeLoadingText');
+    if (text) text.textContent = i18n.lang === 'ko'
+      ? '태풍 자료를 불러오는 중…'
+      : 'Loading cyclone data…';
+    box.hidden = false;
+    box.classList.remove('done', 'on');
+    /* 같은 레이어를 다시 켰을 때 0부터 시작하도록 애니메이션 상태를 재설정한다. */
+    void box.offsetWidth;
+    box.classList.add('on');
+    return;
+  }
+
+  box.classList.remove('on');
+  box.classList.add('done');
+  runtimeLoadHideTimer = setTimeout(() => {
+    if (runtimeLoads.size) return;
+    box.hidden = true;
+    box.classList.remove('done');
+  }, 280);
+});
 
 function exposeStudioCapture() {
   window.__e = window.__e || {};

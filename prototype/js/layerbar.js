@@ -544,8 +544,8 @@ const QUICK_IDS = [
   'himawari',   // 🇯🇵 히마와리9 — 낮 가시광/밤 적외 자동
 ];
 
-/* AETHERUS는 더 이상 반대쪽 레일을 열지 않는다. 같은 2단 패널을 재사용해
-   모바일에서 두 메뉴가 동시에 지도를 가리던 구조를 없앤다. */
+/* AETHERUS는 반대쪽 레일도, EARTHUS 안의 카테고리도 아니다.
+   EARTHUS 바로 아래 독립 손잡이가 이 목록을 같은 2단 패널에 그린다. */
 const AETHERUS_ROUTES = [
   { id: 'galaxies', ko: '은하들', en: 'Galaxies' },
   { id: 'milkyway', ko: '은하수', en: 'Milky Way' },
@@ -566,17 +566,21 @@ export const layerBar = {
   sub: null,
 
   init() {
-    const tab = $('#menuTab'), main = $('#menuMain'), sub = $('#menuSub');
+    const tab = $('#menuTab'), aetherusTab = $('#aetherusTab');
+    const main = $('#menuMain'), sub = $('#menuSub');
 
     const apply = () => {
-      main.classList.toggle('open', this.open);
-      main.classList.toggle('sub-open', this.open && !!this.sub);
+      const aetherusOpen = this.open && this.sub === 'aetherus';
+      const earthusOpen = this.open && !aetherusOpen;
+      main.classList.toggle('open', earthusOpen);
+      main.classList.toggle('sub-open', earthusOpen && !!this.sub);
       sub.classList.toggle('open', this.open && !!this.sub);
-      tab.classList.toggle('open', this.open);
-      tab.classList.toggle('sub', this.open && !!this.sub);
+      tab.classList.toggle('open', earthusOpen);
+      tab.classList.toggle('sub', earthusOpen && !!this.sub);
+      aetherusTab.classList.toggle('open', aetherusOpen);
       /* 2단을 보는 동안 1단은 모바일에서 화면 밖으로 나가므로, 보조기술에도
          같은 한 장 메뉴만 읽힌다. */
-      main.setAttribute('aria-hidden', String(!this.open || !!this.sub));
+      main.setAttribute('aria-hidden', String(!earthusOpen || !!this.sub));
       sub.setAttribute('aria-hidden', String(!(this.open && this.sub)));
       /* ⚠️⚠️ aria-hidden 만으로는 **키보드 탭이 그대로 들어간다.** (감사 P2-2)
          화면 밖으로 밀어 둔 메뉴 버튼들이 탭 순서에 남아, 탭을 누르면
@@ -590,9 +594,10 @@ export const layerBar = {
       };
       /* 모바일에서는 2단이 1단을 완전히 대체한다. 화면 밖의 1단까지 탭으로
          들어가면 사용자가 길을 잃으므로, 2단을 연 동안은 1단도 inert 처리한다. */
-      seal(main, !this.open || !!this.sub);
+      seal(main, !earthusOpen || !!this.sub);
       seal(sub, !(this.open && this.sub));
-      tab.setAttribute('aria-expanded', String(this.open));
+      tab.setAttribute('aria-expanded', String(earthusOpen));
+      aetherusTab.setAttribute('aria-expanded', String(aetherusOpen));
       // 열린 쪽 버튼만 펼침 표시
       main.querySelectorAll('[data-open]').forEach(b => {
         b.classList.toggle('open', this.sub === b.dataset.open);
@@ -601,11 +606,22 @@ export const layerBar = {
     this._apply = apply;
 
     tab.onclick = () => {
-      this.open = !this.open;
+      const wasEarthusOpen = this.open && this.sub !== 'aetherus';
+      this.open = !wasEarthusOpen;
       if (this.open) document.dispatchEvent(new CustomEvent('earthus:open-menu'));
       /* ⚠️ 열 때도 2단을 접는다. 닫을 때만 접으면 한 번 '지구'를 펼친 뒤로는
          메뉴를 열 때마다 2단이 따라 나온다 — "누르기 전엔 안 보인다"가 깨진다. */
       this.sub = null;
+      apply();
+    };
+    aetherusTab.onclick = () => {
+      const wasAetherusOpen = this.open && this.sub === 'aetherus';
+      this.open = !wasAetherusOpen;
+      this.sub = this.open ? 'aetherus' : null;
+      if (this.open) {
+        document.dispatchEvent(new CustomEvent('earthus:open-menu'));
+        this.render('aetherus');
+      }
       apply();
     };
     document.addEventListener('earthus:close-menu', () => {
@@ -641,7 +657,8 @@ export const layerBar = {
     // 바깥을 누르면 닫는다 — 지구를 조작하려는 것이므로
     document.addEventListener('pointerdown', ev => {
       if (!this.open) return;
-      if (tab.contains(ev.target) || main.contains(ev.target) || sub.contains(ev.target)) return;
+      if (tab.contains(ev.target) || aetherusTab.contains(ev.target)
+          || main.contains(ev.target) || sub.contains(ev.target)) return;
       this.open = false; this.sub = null; apply();
     }, true);
 

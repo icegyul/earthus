@@ -362,12 +362,12 @@
     <div class="wl-fc" id="windFcTag" hidden></div>
   </div>
 
-  <!-- ══ 오른쪽 통합 메뉴 ═══════════════════════════════════════
-       받은 요청: "양쪽에 있으니 편하긴 한데 모바일에서 화면을 가린다.
-       EARTHUS 밑에 AETHERUS 메뉴버튼을 달자."
-       그래서 화면 가장자리의 손잡이는 하나만 남긴다. AETHERUS는 EARTHUS 메뉴의
-       첫 갈래로 옮겨, 어느 장면에서도 한 곳에서 두 탐험을 오간다. -->
-  <button id="menuTab" aria-label="EARTHUS 메뉴" aria-expanded="false"><span class="mt-label">EARTHUS</span></button>
+  <!-- ══ 오른쪽 브랜드 메뉴 ═════════════════════════════════════
+       받은 요청(2026-08-11): AETHERUS는 EARTHUS 안의 카테고리가 아니다.
+       화면 반대편에 두지는 않되, EARTHUS 바로 아래에 **독립 손잡이**로 둔다.
+       두 브랜드는 같은 가장자리와 같은 디자인을 쓰지만 각자 자기 메뉴를 연다. -->
+  <button id="menuTab" class="brand-menu-tab" aria-label="EARTHUS 메뉴" aria-expanded="false"><span class="mt-label">EARTHUS</span></button>
+  <button id="aetherusTab" class="brand-menu-tab" aria-label="AETHERUS 메뉴" aria-expanded="false"><span class="mt-label">AETHERUS</span></button>
 
   <!-- 2단: 지구 스타일 (1단보다 왼쪽) -->
   <div id="menuSub" aria-hidden="true">
@@ -377,10 +377,6 @@
 
   <!-- 1단 -->
   <nav id="menuMain" aria-hidden="true">
-    <button class="mm-item" data-open="aetherus">
-      <span class="mm-ico mm-brand-ico" aria-hidden="true">A</span>
-      <span class="mm-label mm-brand-label"><b>AETHERUS</b><small>우주 탐험</small></span><span class="mm-chev">‹</span>
-    </button>
     <button class="mm-item" data-open="earth">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9.2"/><ellipse cx="12" cy="12" rx="4" ry="9.2"/><path d="M2.9 12h18.2"/></svg></span>
       <span class="mm-label" data-i18n="m.layers">지구 스타일</span><span class="mm-chev">‹</span>
@@ -942,6 +938,12 @@
   </div>
 
   <div id="toast"></div>
+  <!-- 태풍처럼 여러 공식 자료를 함께 받는 레이어의 실제 대기 상태.
+       ⚠️ 원격 서버의 전체 바이트 수를 모르므로 가짜 %를 만들지 않는다. -->
+  <div id="runtimeLoading" role="status" aria-live="polite" aria-atomic="true" hidden>
+    <span id="runtimeLoadingText">태풍 자료를 불러오는 중…</span>
+    <span class="runtime-load-bar" aria-hidden="true"><i></i></span>
+  </div>
 </div>
 
 <!-- 개발용 HUD -->
@@ -989,7 +991,7 @@
 <!-- v6는 OMM JSON의 6~9자리 카탈로그 번호를 지원하는 마지막 UMD 배포본이다.
      v7은 ESM 전용이라 빌드 없는 이 앱에서 같은 script 전역으로 교체할 수 없다. -->
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"></script>
-  <script type="module" src="js/main.js?v=20260810-locationchart1"></script>
+  <script type="module" src="js/main.js?v=20260811-brandtabs-load1"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

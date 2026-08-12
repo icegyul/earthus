@@ -103,7 +103,7 @@ assert.equal(conflict.stage, 'milkyway');
 assert.equal(conflict.target, null);
 assert.ok(conflict.issues.includes('CONFLICTING_DETAIL'));
 
-const unsupported = routes.decodeAetherusRoute('?aetherus=2&solar=1');
+const unsupported = routes.decodeAetherusRoute('?aetherus=3&solar=1');
 assert.equal(unsupported.stage, null);
 assert.deepEqual([...unsupported.issues], ['UNSUPPORTED_VERSION']);
 
@@ -112,7 +112,7 @@ const encoded = routes.encodeAetherusRoute(
   'https://earthus.net/?lang=ko&space=galaxies&craft=voyager-1#dev',
 );
 assert.equal(encoded.searchParams.get('lang'), 'ko');
-assert.equal(encoded.searchParams.get('aetherus'), '1');
+assert.equal(encoded.searchParams.get('aetherus'), '2');
 assert.equal(encoded.searchParams.get('solar'), '1');
 assert.equal(encoded.searchParams.get('space'), null);
 assert.equal(encoded.searchParams.get('photo'), 'southern-ring-jwst');
@@ -138,4 +138,4 @@ assert.throws(
   error => error.code === 'CONFLICTING_DETAIL',
 );
 
-console.log('PASS: 5 Aetherus catalogue contracts, 5 failure fixtures, and 13 route-state cases');
+console.log('PASS: 5 Aetherus catalogue contracts, 5 failure fixtures, and 13 route-state cases (v2 encoder, v1 reader)');

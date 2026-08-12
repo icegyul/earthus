@@ -42,8 +42,8 @@ import { eventPanel } from './ui-events.js';
 import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
-import { cosmic3d } from './space/cosmic3d.js?v=20260812-photoownership1';
-import { decodeAetherusRoute, replaceAetherusRoute } from './space/route-state.js?v=20260812-photoownership1';
+import { cosmic3d } from './space/cosmic3d.js?v=20260812-astronomy3';
+import { decodeAetherusRoute, replaceAetherusRoute } from './space/route-state.js?v=20260812-astronomy3';
 import { trenchCards } from './ocean/trenchcards.js';
 import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-depthlife1';
 

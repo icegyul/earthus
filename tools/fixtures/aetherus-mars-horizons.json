@@ -1,0 +1,61 @@
+{
+  "schema": "earthus.astronomy-comparison-fixture.v1",
+  "recordedOn": "2026-08-12",
+  "source": {
+    "name": "NASA/JPL Horizons API",
+    "url": "https://ssd.jpl.nasa.gov/api/horizons.api",
+    "documentationUrl": "https://ssd-api.jpl.nasa.gov/doc/horizons.html",
+    "apiVersionAtRecording": "1.3"
+  },
+  "query": {
+    "COMMAND": "499",
+    "EPHEM_TYPE": "OBSERVER",
+    "CENTER": "coord@399",
+    "COORD_TYPE": "GEODETIC",
+    "SITE_COORD": "126.7052,37.4563,0",
+    "TIME_TYPE": "UT",
+    "ANG_FORMAT": "DEG",
+    "APPARENT": "AIRLESS",
+    "QUANTITIES": "1,4,20",
+    "CSV_FORMAT": "YES"
+  },
+  "observer": {
+    "name": "Default observer - Incheon",
+    "lat": 37.4563,
+    "lon": 126.7052,
+    "elevationKm": 0
+  },
+  "target": {
+    "id": "mars",
+    "horizonsCommand": "499"
+  },
+  "rows": [
+    {
+      "utc": "2026-08-12T00:00:00.000Z",
+      "raDegJ2000": 90.06210,
+      "decDegJ2000": 23.67965,
+      "azimuthDegAirless": 167.472480,
+      "altitudeDegAirless": 75.937888,
+      "distanceAu": 1.94996640286764,
+      "horizon": "above"
+    },
+    {
+      "utc": "2026-12-01T12:00:00.000Z",
+      "raDegJ2000": 154.59985,
+      "decDegJ2000": 13.02533,
+      "azimuthDegAirless": 46.653560,
+      "altitudeDegAirless": -26.005308,
+      "distanceAu": 1.17314027986795,
+      "horizon": "below"
+    },
+    {
+      "utc": "2027-08-12T00:00:00.000Z",
+      "raDegJ2000": 194.90689,
+      "decDegJ2000": -6.36905,
+      "azimuthDegAirless": 83.949320,
+      "altitudeDegAirless": -18.490385,
+      "distanceAu": 1.84050448932090,
+      "horizon": "below"
+    }
+  ]
+}

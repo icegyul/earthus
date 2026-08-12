@@ -15,7 +15,12 @@ import { scene, cameraHeight } from '../viewer.js';
 import { store } from '../store.js';
 import { sceneMgr } from '../scene.js';
 import { i18n } from '../i18n.js';
+import { myLocation } from '../mylocation.js';
 import { planetOrbit, planetPositions } from './kepler.js';
+import {
+  calculateMarsObservation,
+  DEFAULT_ASTRONOMY_OBSERVER,
+} from './astronomy.js?v=20260812-astronomy3';
 import { assertAetherusCatalog } from './contracts.js?v=20260812-photoownership1';
 import {
   aetherusPhotoCounts,
@@ -72,6 +77,15 @@ const normal = seed => {
 const solarDisplayRadius = au => 3.5 + 7 * Math.log1p(Math.max(0, au) * 1.4);
 const stageFor = level => level < 1.28 ? 'solar' : level < 2.28 ? 'milkyway' : 'galaxies';
 const ko = () => i18n.lang !== 'en';
+const astronomyNow = () => new Date(Math.floor(Date.now() / 1000) * 1000).toISOString();
+const signedDegrees = value => `${Number(value) >= 0 ? '+' : '−'}${Math.abs(Number(value)).toFixed(3)}°`;
+const rightAscension = value => {
+  const totalSeconds = Number(value) / 15 * 3600;
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds - hours * 3600) / 60);
+  const seconds = totalSeconds - hours * 3600 - minutes * 60;
+  return `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${seconds.toFixed(1).padStart(4, '0')}s`;
+};
 
 export const cosmic3d = {
   root: null,
@@ -103,6 +117,12 @@ export const cosmic3d = {
   _detailMarkers: new Map(),
   _pointerStart: null,
   _bodyDistance: 48,
+  _astronomyObservation: null,
+  _astronomyObserver: null,
+  _astronomyAt: null,
+  _astronomyPrecision: null,
+  _astronomyError: null,
+  _pendingAstronomyRoute: null,
   _photoCatalogPromise: null,
   _allPhotoItems: [],
   _photoItems: [],
@@ -191,12 +211,18 @@ export const cosmic3d = {
 
   routeState() {
     if (store.scene !== 'space') return null;
+    const astronomy = this._detailBody?.id === 'mars' && this._astronomyObservation ? {
+      observer: this._astronomyObservation.observer,
+      at: this._astronomyObservation.time.utc,
+      precision: this._astronomyObservation.precision.tier,
+    } : {};
     return {
       stage: this._stage || store.sceneStage || 'solar',
       target: this._detailBody?.id || null,
       photo: this._selectedPhoto?.id || null,
       telescope: this._photoMode?.toLowerCase() || null,
       craft: this._selectedCraft?.id || null,
+      ...astronomy,
     };
   },
 
@@ -212,6 +238,7 @@ export const cosmic3d = {
     if (store.scene !== 'space') return false;
     if (route.issues?.length) console.warn('[aetherus-route]', route.issues.join(','));
     if (route.target) {
+      this._pendingAstronomyRoute = route.target === 'mars' ? route : null;
       await this.selectBody(route.target);
       return this._detailBody?.id === route.target;
     }
@@ -1356,6 +1383,7 @@ export const cosmic3d = {
       if (this._selectedCraft) this.closeCraft(false);
       if (this._frame) cancelAnimationFrame(this._frame);
       this._frame = 0; this.root.classList.remove('is-moving');
+      this.prepareAstronomy(body);
       this.level = this.target = TARGET.solar;
       this._stage = 'solar'; this._detailBody = body;
       const compact = matchMedia('(max-width:560px)').matches;
@@ -1648,12 +1676,172 @@ export const cosmic3d = {
     const source = document.getElementById('cosmicBodySource');
     source.textContent = `${isKo ? '출처' : 'Source'} · ${body.source}`; source.href = body.sourceUrl;
     document.getElementById('cosmicBodyBack').textContent = isKo ? '← 태양계' : '← Solar System';
+    this.showAstronomy(body);
     this.bodyInfo.hidden = false;
+  },
+
+  prepareAstronomy(body) {
+    if (body.id !== 'mars') {
+      this.clearAstronomy();
+      this._pendingAstronomyRoute = null;
+      return;
+    }
+    const route = this._pendingAstronomyRoute;
+    this._pendingAstronomyRoute = null;
+    const sharedObserver = route?.observer?.source === 'shared' ? {
+      lat: route.observer.lat,
+      lon: route.observer.lon,
+      source: 'shared',
+      name: { ko: '공유된 관측 위치', en: 'Shared observer location' },
+    } : null;
+    this._astronomyObserver = sharedObserver || DEFAULT_ASTRONOMY_OBSERVER;
+    this._astronomyAt = route?.at || astronomyNow();
+    this._astronomyPrecision = route?.precision || 'explorer';
+    const routeFailure = route?.issues?.find(issue => [
+      'INVALID_OBSERVER', 'INVALID_AT', 'INVALID_PRECISION',
+    ].includes(issue));
+    if (routeFailure) {
+      // 잘못된 공유 입력을 기본 위치·현재 시각으로 바꿔 성공처럼 보이지 않는다.
+      // 사용자가 '지금 다시 계산'을 누르면 그때 명시적으로 기본값으로 복구한다.
+      this._astronomyObservation = null;
+      this._astronomyError = routeFailure;
+      return;
+    }
+    this.calculateAstronomy();
+  },
+
+  calculateAstronomy() {
+    try {
+      this._astronomyObservation = calculateMarsObservation({
+        observer: this._astronomyObserver || DEFAULT_ASTRONOMY_OBSERVER,
+        at: this._astronomyAt || astronomyNow(),
+        precision: this._astronomyPrecision || 'explorer',
+      });
+      this._astronomyObserver = this._astronomyObservation.observer;
+      this._astronomyAt = this._astronomyObservation.time.utc;
+      this._astronomyPrecision = this._astronomyObservation.precision.tier;
+      this._astronomyError = null;
+    } catch (error) {
+      this._astronomyObservation = null;
+      this._astronomyError = error?.message || 'ASTRONOMY_CALCULATION_FAILED';
+      console.warn('[aetherus-astronomy]', this._astronomyError);
+    }
+  },
+
+  showAstronomy(body) {
+    const section = document.getElementById('cosmicAstronomy');
+    if (!section || !this.bodyInfo) return;
+    const active = body?.id === 'mars';
+    section.hidden = !active;
+    this.bodyInfo.classList.toggle('has-astronomy', active);
+    document.body.classList.toggle('aetherus-astronomy-open', active);
+    if (!active) return;
+
+    const isKo = ko();
+    const observation = this._astronomyObservation;
+    const coordinates = document.getElementById('cosmicAstronomyCoordinates');
+    coordinates.replaceChildren();
+    document.getElementById('cosmicAstronomyTitle').textContent = isKo ? '지금 하늘에서' : 'In the sky now';
+    document.getElementById('cosmicAstronomyTier').textContent = 'EXPLORER';
+    const source = document.getElementById('cosmicAstronomySource');
+    source.textContent = isKo ? 'NASA/JPL 계산 근거' : 'NASA/JPL calculation basis';
+    source.href = 'https://ssd.jpl.nasa.gov/planets/approx_pos.html';
+    document.getElementById('cosmicAstronomyNow').textContent = isKo ? '지금 다시 계산' : 'Recalculate now';
+    document.getElementById('cosmicAstronomyLocation').textContent = isKo
+      ? '내 위치 사용 · URL에 약 1km 위치 포함'
+      : 'Use my location · adds ~1 km location to URL';
+
+    if (!observation) {
+      document.getElementById('cosmicAstronomyContext').textContent = isKo
+        ? '관측 위치와 UTC를 확인하지 못했습니다.'
+        : 'Observer location or UTC could not be validated.';
+      document.getElementById('cosmicAstronomyHorizon').textContent = isKo
+        ? '계산할 수 없음' : 'Calculation unavailable';
+      document.getElementById('cosmicAstronomyLimit').textContent = this._astronomyError || 'ASTRONOMY_CALCULATION_FAILED';
+      return;
+    }
+
+    const observer = observation.observer;
+    const observerName = observer.source === 'device'
+      ? (isKo ? '내 위치(공유 좌표 약 1km)' : 'My location (~1 km shared coordinates)')
+      : observer.source === 'shared'
+        ? (isKo ? '공유된 관측 위치' : 'Shared observer location')
+        : observer.name[isKo ? 'ko' : 'en'];
+    document.getElementById('cosmicAstronomyContext').textContent =
+      `${observerName} · ${observer.lat.toFixed(observer.source === 'default' ? 4 : 2)}°, ${observer.lon.toFixed(observer.source === 'default' ? 4 : 2)}° · UTC ${observation.time.utc}`;
+    const horizontal = observation.coordinates.horizontal;
+    const rows = [
+      [isKo ? '적경 RA · J2000' : 'RA · J2000', rightAscension(observation.coordinates.raDeg)],
+      [isKo ? '적위 Dec · J2000' : 'Dec · J2000', signedDegrees(observation.coordinates.decDeg)],
+      [isKo ? '고도 · 기하학적' : 'Altitude · geometric', signedDegrees(horizontal.altitudeDeg)],
+      [isKo ? '방위각 · 북=0°' : 'Azimuth · north=0°', `${horizontal.azimuthDeg.toFixed(3)}°`],
+      [isKo ? '지구와의 거리' : 'Distance from Earth', `${observation.coordinates.distanceAu.toFixed(6)} AU`],
+    ];
+    rows.forEach(([term, value]) => {
+      const dt = document.createElement('dt'); dt.textContent = term;
+      const dd = document.createElement('dd'); dd.textContent = value;
+      coordinates.append(dt, dd);
+    });
+    document.getElementById('cosmicAstronomyHorizon').textContent = observation.horizon === 'above'
+      ? (isKo ? '기하학적 지평선 위 · 관측 가능 판정은 아님' : 'Above geometric horizon · not an observability claim')
+      : (isKo ? '기하학적 지평선 아래 · 현재 관측 가능 판정은 아님' : 'Below geometric horizon · not an observability claim');
+    document.getElementById('cosmicAstronomyLimit').textContent = isKo
+      ? '계산값 · n 해당 없음 · 대기굴절·시차·현지 지평선·주광·날씨 미포함 · 망원경 조준용 아님'
+      : 'Calculated · n not applicable · no refraction, parallax, local horizon, daylight, or weather · not for telescope pointing';
+  },
+
+  recalculateAstronomyNow() {
+    if (this._detailBody?.id !== 'mars') return;
+    this._astronomyAt = astronomyNow();
+    this.calculateAstronomy();
+    this.showAstronomy(this._detailBody);
+    this.emitRouteState();
+  },
+
+  async useAstronomyLocation() {
+    if (this._detailBody?.id !== 'mars') return;
+    const button = document.getElementById('cosmicAstronomyLocation');
+    if (button) button.disabled = true;
+    try {
+      const coords = await myLocation.locate(true);
+      if (!coords) {
+        this._astronomyError = myLocation.reason() || 'LOCATION_UNAVAILABLE';
+        this._astronomyObservation = null;
+        this.showAstronomy(this._detailBody);
+        return;
+      }
+      this._astronomyObserver = {
+        lat: Number(coords.lat.toFixed(2)),
+        lon: Number(coords.lon.toFixed(2)),
+        accuracyM: Number.isFinite(coords.acc) ? coords.acc : null,
+        source: 'device',
+        name: { ko: '내 위치', en: 'My location' },
+      };
+      this._astronomyAt = astronomyNow();
+      this.calculateAstronomy();
+      this.showAstronomy(this._detailBody);
+      this.emitRouteState();
+    } finally {
+      if (button) button.disabled = false;
+    }
+  },
+
+  clearAstronomy() {
+    this._astronomyObservation = null;
+    this._astronomyObserver = null;
+    this._astronomyAt = null;
+    this._astronomyPrecision = null;
+    this._astronomyError = null;
+    this.bodyInfo?.classList.remove('has-astronomy');
+    document.body.classList.remove('aetherus-astronomy-open');
+    const section = document.getElementById('cosmicAstronomy');
+    if (section) section.hidden = true;
   },
 
   closeBody(render = true) {
     if (!this._detailBody) return;
     this._detailTextureLoadId += 1;
+    this.clearAstronomy();
     this._detailBody = null; this.root.classList.remove('is-body');
     this.yaw = .72; this.pitch = .56;
     this.bodyDetailGroup.visible = false; this.bodyInfo.hidden = true;
@@ -2014,6 +2202,8 @@ export const cosmic3d = {
     });
     document.getElementById('cosmicEarthReturn')?.addEventListener('click', () => this.exitToEarth());
     document.getElementById('cosmicBodyBack')?.addEventListener('click', () => this.closeBody());
+    document.getElementById('cosmicAstronomyNow')?.addEventListener('click', () => this.recalculateAstronomyNow());
+    document.getElementById('cosmicAstronomyLocation')?.addEventListener('click', () => this.useAstronomyLocation());
     document.getElementById('cosmicPhotoBack')?.addEventListener('click', () => this.closePhotoAtlas());
     document.getElementById('cosmicPhotoFilters')?.querySelectorAll('[data-telescope]').forEach(button => {
       button.addEventListener('click', () => this.openPhotoAtlas(button.dataset.telescope));

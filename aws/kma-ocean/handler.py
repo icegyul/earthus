@@ -70,6 +70,21 @@ def num(v):
     return None if f <= -98 else f
 
 
+def validated_wave_height(v):
+    """API 문서 단위는 m다. 30m를 넘는 유의파고는 화면 계산에서 격리하되 원값은 남긴다.
+
+    2026-08-12 간절곶 파고부이가 90.0을 반환했다. 같은 시각 파고부이 중앙값은
+    0.6m, 다음 최댓값은 2.3m였다. 기계 결측/품질값을 바다 90m로 보여 주면 안 된다.
+    APIHub sea_obs에는 MQC가 없으므로 이 항목은 삭제하지 않고 whRaw+qualityFlags로 보존한다.
+    """
+    value = num(v)
+    if value is None:
+        return None, None
+    if value > 30:
+        return None, {"whRaw": value, "qualityFlags": ["wave-height-outlier-over-30m"]}
+    return value, None
+
+
 def rows(txt, sep=None):
     """자료 줄만. sep=',' 면 쉼표, None 이면 공백."""
     out = []
@@ -91,15 +106,18 @@ def sea_obs():
         lon, lat = num(f[4]), num(f[5])
         if lon is None or lat is None:
             continue                                  # 좌표 없는 지점은 지도에 못 찍는다
+        wh, wave_quality = validated_wave_height(f[6])
         out[sid] = {
             "id": sid, "name": f[3], "kind": KIND.get(f[0], f[0]),
             "kindEn": KIND_EN.get(f[0], f[0]), "tp": f[0],
             "lon": round(lon, 5), "lat": round(lat, 5), "tm": f[1],
-            "wh": num(f[6]),                          # 유의파고 m
+            "wh": wh,                                # 유의파고 m (품질 격리 후)
             "wd": num(f[7]), "ws": num(f[8]), "gust": num(f[9]),
             "tw": num(f[10]),                         # 해수면온도 °C
             "ta": num(f[11]), "pa": num(f[12]), "hm": num(f[13]),
         }
+        if wave_quality:
+            out[sid].update(wave_quality)
     return out
 
 
@@ -144,6 +162,7 @@ def handler(event, context):
     st = sorted(base.values(), key=lambda x: x["id"])
     wave = sum(1 for x in st if x.get("wh") is not None)
     sst = sum(1 for x in st if x.get("tw") is not None)
+    wave_excluded = sum(1 for x in st if "wave-height-outlier-over-30m" in x.get("qualityFlags", []))
 
     doc = {
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z"),
@@ -161,6 +180,11 @@ def handler(event, context):
         "count": len(st),
         "withWave": wave,
         "withSST": sst,
+        "quality": {
+            "waveExcluded": wave_excluded,
+            "rule": "유의파고 >30m는 원값을 whRaw에 보존하고 지도·극값 계산에서 제외",
+            "ruleEn": "Significant wave height >30 m is preserved as whRaw and excluded from map/extrema",
+        },
         "stations": st,
     }
     body = json.dumps(doc, ensure_ascii=False, separators=(",", ":")).encode()

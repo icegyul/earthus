@@ -14,8 +14,9 @@ const subscribe = await readFile(path.join(root, 'prototype/js/ui-subscribe.js')
 const handover = await readFile(path.join(root, 'docs/HANDOVER.md'), 'utf8');
 
 assert.match(localConfig, /SALES_OPEN\s*:\s*false/, 'SALES_OPEN must remain disabled');
+assert.match(localConfig, /TPW_READY\s*:\s*true/, 'validated TPW public release must remain explicitly enabled');
 for (const name of ['TPW_READY', 'DECISION_CORE_READY']) assert.match(configTemplate, new RegExp(`${name}\\s*:\\s*false`), `${name} default must remain disabled`);
 assert.match(main, /if \(CONFIG\.DECISION_CORE_READY === true\)/, 'Decision UI must remain explicitly gated');
 assert.match(subscribe, /const salesReady = CONFIG\.SALES_OPEN && dataReady/, 'sales must require both sale and data gates');
 assert.match(handover, /SNS 자동 게시 금지/);
-console.log('PASS: PR-11 release gate keeps sales, TPW, Decision UI and automatic publishing closed');
+console.log('PASS: TPW is explicitly released; sales, Decision UI and automatic publishing remain closed');

@@ -22,8 +22,19 @@ EARTHUS 메뉴·레이어 표현·무료/유료 경계, AETHERUS 정보 구조·
 로컬에 이어 AWS 서울 `tpw-grid` Lambda와 시간당 EventBridge 규칙을 배포했고,
 운영 `wind/tpw-ea.json` 91×36=3,276/3,276·결측 0, NOAA 원본 시각·출처·단위,
 CloudFront 동일 바이트와 1280×720·390×844 임시 flag-on 실화면까지 검증했다.
-운영 `TPW_READY`는 별도 공개 승인 전이라 여전히 false다. 정본 증거는
-[`earthus-v23/RELEASE-2026-08-12-TPW-BACKEND.md`](earthus-v23/RELEASE-2026-08-12-TPW-BACKEND.md)다.
+이후 2026-08-13 PD가 “자료가 들어오면 최대한 적용”하도록 지시했고, 이를 TPW 공개 승인으로
+기록해 운영 `TPW_READY=true`를 반영했다. 수증기 통로는 NOAA/NCEP GFS **모델분석** TPW이며
+위성관측·강수량·예보로 부르지 않는다. 판매·Decision·예약 실행·SNS 자동 게시 flag는 닫혀 있다.
+백엔드 정본은 [`earthus-v23/RELEASE-2026-08-12-TPW-BACKEND.md`](earthus-v23/RELEASE-2026-08-12-TPW-BACKEND.md),
+공개 검수 증거는 [`earthus-v23/RELEASE-2026-08-13-KMA-LIVE.md`](earthus-v23/RELEASE-2026-08-13-KMA-LIVE.md)다.
+
+같은 지시로 지구 스타일 메뉴 맨 위에 **기상청 라이브**를 공개했다. 첫 Earth는 그대로 유지하고,
+사용자가 열 때만 736개 AWS 분관측, 97개 대표 5km 격자 5일 예보, 공식 특보와 Safety gate,
+낙뢰·HSR 레이더·우량계, 최신/2010년 이후 상층, 산·해양·생활·기후기록을 탭별 지연 로딩한다.
+레이더는 서울 `kma-radar` Lambda와 5분 EventBridge로 수집하며 PNG 구조·크기·바이트를 통과한
+공식 영상만 last-good 캐시에 쓴다. 해양 30m 초과 파고는 원값과 quality flag를 보존하되
+지도·극값에서 제외한다. desktop/mobile 운영 실화면, KMA 25·연속층 40·Safety 23개 자동검사,
+TPW와 AETHERUS 회귀를 통과했다. 운영·권리·무결성 정본은 위 KMA Live 릴리스 문서다.
 
 같은 날 PD의 **“다음꺼 진행해”** 지시로 PR-01 Signal Foundation도 로컬 구현했다.
 기존 공개 KMA 특보·AWS 기온·TPW JSON을 바꾸지 않고 `archive/canonical/v1/` 비공개

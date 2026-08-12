@@ -72,7 +72,7 @@ export const KMA_APIS = [
     why: { ko: '호우·폭염·한파 특보. 지금 한국 경보는 미국 NWS 것만 받고 있어 한국 특보가 없다.',
            en: 'Heavy rain, heat and cold warnings. Our alerts come from the US NWS only.' },
     ep: 'api/typ01/url/wrn_now_data.php',
-    lambda: 'kma-warning', env: 'KMA_HUB_KEY' },
+    lambda: 'kma-warn', env: 'KMA_HUB_KEY', ready: 1 },
 
   { id: 'hub_typ', want: 1, hub: 1,
     ko: '태풍정보', en: 'Typhoon information',
@@ -88,19 +88,19 @@ export const KMA_APIS = [
     ep: 'api/typ01/url/kma_pm10.php',
     lambda: 'kma-asan', env: 'KMA_HUB_KEY' },
 
-  { id: 'hub_buoy', want: 0, hub: 1,
+  { id: 'hub_buoy', want: 1, hub: 1,
     ko: '해양 부이', en: 'Marine buoys',
     why: { ko: '한국 연안 부이. 지금도 NDBC·OSMC 로 일부 들어온다.',
            en: 'Korean coastal buoys; some already arrive via NDBC/OSMC.' },
     ep: 'api/typ01/url/kma_buoy2.php',
-    lambda: 'kma-sea', env: 'KMA_HUB_KEY' },
+    lambda: 'kma-ocean', env: 'KMA_HUB_KEY', ready: 1 },
 
-  { id: 'hub_aws', want: 0, hub: 1,
+  { id: 'hub_aws', want: 1, hub: 1,
     ko: 'AWS 매분자료', en: 'AWS per-minute',
-    why: { ko: '분 단위 관측. 시간자료로 충분해서 뒤로 미룬다 — 자료량이 60배다.',
-           en: 'Minute-level observations. Hourly is enough for now; this is 60× the volume.' },
-    ep: 'api/typ01/url/awsh.php',
-    lambda: 'kma-aws', env: 'KMA_HUB_KEY' },
+    why: { ko: '736개 관측소의 분 단위 실황. 지도와 기상청 라이브에서 사용 중이다.',
+           en: 'Minute observations from 736 stations, now used on the map and in KMA Live.' },
+    ep: 'api/typ01/cgi-bin/url/nph-aws2_min',
+    lambda: 'kma-aws-min', env: 'KMA_HUB_KEY', ready: 1 },
 
   // ── 공공데이터포털 (허브에 없는 것) ──────────────────────────
   { id: 'satlit', want: 1, pk: 15058167,
@@ -109,11 +109,12 @@ export const KMA_APIS = [
            en: 'The satellite that watches Korea most closely — not on NASA GIBS or RealEarth. ⚠️ Whether this is raw or derived needs checking on the page.' },
     lambda: 'kma-satellite', env: 'KMA_KEY' },
 
-  { id: 'radar', want: 1, pk: 15056924,
+  { id: 'radar', want: 1, hub: 1,
     ko: '레이더영상', en: 'Weather radar',
     why: { ko: '비가 지금 어디에 내리는지. 위성 구름으로는 비를 알 수 없다.',
            en: 'Where rain is falling right now — satellite cloud alone cannot tell you.' },
-    lambda: 'kma-radar', env: 'KMA_KEY' },
+    ep: 'api/typ03/cgi/rdr/nph-rdr_cmp1_img',
+    lambda: 'kma-radar', env: 'KMA_HUB_KEY', ready: 1 },
 
   { id: 'asos', want: 0, pk: 15059093,
     ko: '지상(종관 ASOS) 일자료', en: 'ASOS daily',
@@ -121,11 +122,12 @@ export const KMA_APIS = [
            en: 'Covered by the hub\u2019s surface observations; unnecessary once the hub key works.' },
     lambda: 'kma-asos', env: 'KMA_KEY' },
 
-  { id: 'uv', want: 0, pk: 15085288,
+  { id: 'uv', want: 1, hub: 1,
     ko: '생활기상지수 (자외선)', en: 'Life weather index (UV)',
-    why: { ko: '한국 기준 자외선 지수. 지금은 유럽 CAMS 값이라 기준이 다르다.',
-           en: 'UV index on the Korean standard; we currently use European CAMS values.' },
-    lambda: 'kma-uv', env: 'KMA_KEY' },
+    why: { ko: '한국 기준 자외선·대기확산·꽃가루 지수를 기상청 라이브에서 사용 중이다.',
+           en: 'Korean UV, air-dispersion and pollen indices are now used in KMA Live.' },
+    ep: 'api/typ02/openApi/LivingWthrIdxServiceV4',
+    lambda: 'kma-life', env: 'KMA_HUB_KEY', ready: 1 },
 ];
 
 /* 공공데이터포털은 활용신청이 **2년**이면 만료된다 (받은 정보).

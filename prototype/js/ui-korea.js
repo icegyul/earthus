@@ -4,15 +4,20 @@
 // ⚠️ 위치를 못 받았을 때도 화면이 비지 않게 한다 — 전국 요약은 위치 없이도 보여준다.
 
 import { i18n } from './i18n.js';
+import { API } from './config.js';
 import { myLocation } from './mylocation.js';
 import { get, nearest, inKorea, normalFor, feelsLike } from './korea.js';
+import { condText } from './kma-fcst.js';
+import { forecastHighlights, nearestForecastHour, parseKmaTime, parseKmaUtcTime, upperAirSummary } from './kma-live-metrics.js';
+import { store } from './store.js';
 import { warn, levelEn } from './warn.js';
 import { warnUI } from './ui-warn.js';
 import { safetyGateMarkup } from './safety-gate-ui.js?v=20260812-safety1';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const n1 = v => (v == null ? '—' : (Math.round(v * 10) / 10).toFixed(1));
+const n1 = v => (v == null || v === '' || !Number.isFinite(Number(v))
+  ? '—' : (Math.round(Number(v) * 10) / 10).toFixed(1));
 /** 마지막 글자에 받침이 있나 — 조사(은/는, 이/가)를 고르는 데 쓴다.
  *  ⚠️ "전남는" 처럼 나오면 기계가 쓴 티가 난다. */
 const hasJong = w => { const c = String(w || '').trim().slice(-1).charCodeAt(0);
@@ -23,8 +28,10 @@ const hhmmss = t => { const s = String(t || ''); return s.length >= 14
 
 const TABS = [
   { id: 'now',   ko: '지금',  en: 'Now' },
+  { id: 'forecast', ko: '5일 예보', en: '5-day' },
   { id: 'warn',  ko: '특보',  en: 'Alerts' },
   { id: 'sky',   ko: '하늘',  en: 'Sky' },
+  { id: 'upper', ko: '상층', en: 'Upper air' },
   { id: 'mtn',   ko: '산',    en: 'Peaks' },
   { id: 'sea',   ko: '바다',  en: 'Sea' },
   { id: 'life',  ko: '생활',  en: 'Living' },
@@ -36,6 +43,13 @@ export const koreaPanel = {
 
   init() {
     this._bind();
+    if (!document.querySelector('link[data-kma-live-style]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = new URL('../css/kma-live.css?v=20260812-kmalive1', import.meta.url).href;
+      link.dataset.kmaLiveStyle = '1';
+      document.head.appendChild(link);
+    }
     i18n.onChange(() => { this.renderTabs(); this.render(); });
     return this;
   },
@@ -52,6 +66,10 @@ export const koreaPanel = {
 
   open() {
     if (!this._bind()) { console.warn('[한국탭] 화면 요소를 못 찾았다'); return; }
+    const title = document.getElementById('koreaTitle');
+    if (title) title.innerHTML = i18n.lang === 'ko'
+      ? '기상청 라이브 <small>관측 · 공식예보 · 특보</small>'
+      : 'KMA Live <small>observations · official forecasts · warnings</small>';
     this.renderTabs();
     document.getElementById('koreaSheet')?.classList.add('up');
     this.render();
@@ -80,9 +98,55 @@ export const koreaPanel = {
       // ⚠️ innerHTML 로 갈아끼운 뒤에 배선한다 — 먼저 붙이면 사라진 요소에 붙는다.
       const more = document.getElementById('krWarnMore');
       if (more) more.onclick = () => { this.close(); warnUI.open(); };
+      this.body.querySelectorAll('[data-kma-layer]').forEach(button => {
+        button.onclick = () => this._openLayer(button.dataset.kmaLayer);
+      });
     } catch (e) {
       this.body.innerHTML = `<p class="kr-note">${ko ? '자료를 불러오지 못했습니다' : 'Could not load'} — ${esc(e.message)}</p>`;
     }
+  },
+
+  _openLayer(id) {
+    if (!id) return;
+    if (!store.isOn(id)) store.setLayer(id, true);
+    document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
+      detail: { view: 'data', layer: id, reason: 'kma-live-map' },
+    }));
+    this.close();
+  },
+
+  _mapButton(id, ko, en) {
+    return `<button class="kr-map" data-kma-layer="${esc(id)}">${esc(i18n.lang === 'ko' ? ko : en)} <i aria-hidden="true">↗</i></button>`;
+  },
+
+  _time(value, withDate = false) {
+    const date = parseKmaTime(value);
+    if (!date) return String(value || '—');
+    const options = { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hour12: false };
+    if (withDate) { options.month = 'numeric'; options.day = 'numeric'; }
+    return new Intl.DateTimeFormat(i18n.lang === 'ko' ? 'ko-KR' : 'en-US', options).format(date);
+  },
+
+  _upperTime(value) {
+    const date = parseKmaUtcTime(value);
+    if (!date) return String(value || '—');
+    const locale = i18n.lang === 'ko' ? 'ko-KR' : 'en-US';
+    const kst = new Intl.DateTimeFormat(locale, {
+      timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false,
+    }).format(date);
+    const utc = new Intl.DateTimeFormat(locale, {
+      timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hour12: false,
+    }).format(date);
+    return `${kst} KST (${utc} UTC)`;
+  },
+
+  _isoTime(value) {
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return String(value || '—');
+    return new Intl.DateTimeFormat(i18n.lang === 'ko' ? 'ko-KR' : 'en-US', {
+      timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: false,
+    }).format(date);
   },
 
   _src(d) {
@@ -101,9 +165,12 @@ export const koreaPanel = {
         + `</p>`;
     }
     if (!d.source && !d.sourceEn) return '';
+    const isForecast = Array.isArray(d.points) && d.points.some(point => point?.baseKst);
     return `<p class="kr-note">${esc(ko ? d.source : (d.sourceEn || d.source))}`
       + (d.license ? ` · ${esc(d.license)}` : '')
-      + (d.observedKst ? `<br>${ko ? '관측' : 'Observed'} ${esc(d.observedKst)} KST` : '')
+      + (d.observedKst ? `<br>${isForecast ? (ko ? '수집' : 'Collected') : (ko ? '관측' : 'Observed')} `
+        + `${esc(this._time(d.observedKst, true))} KST` : '')
+      + (!d.observedKst && d.generated ? `<br>${ko ? '수집' : 'Collected'} ${esc(this._isoTime(d.generated))} KST` : '')
       + `</p>`;
   },
 
@@ -143,6 +210,7 @@ export const koreaPanel = {
     const row = (s, v, u) => `<div class="kr-row"><span>${esc(s.name || s.id)}</span><b>${v}${u}</b></div>`;
 
     return head
+      + `<div class="kr-actions">${this._mapButton('landobs', '736개 관측소 지도', 'Map 736 stations')}</div>`
       + `<h4>${ko ? '전국' : 'Nationwide'} <i>${aws.count}${ko ? '지점' : ' stations'}</i></h4>`
       + `<div class="kr-cols"><div><small>${ko ? '가장 더운 곳' : 'Hottest'}</small>`
       + t.slice(0, 5).map(s => row(s, n1(s.ta), '°C')).join('')
@@ -154,6 +222,54 @@ export const koreaPanel = {
             + rain.slice(0, 8).map(s => row(s, n1(s.rn60), 'mm/h')).join('')
           : `<h4>${ko ? '지금 비 오는 곳' : 'Raining now'}</h4><p class="kr-note">${ko ? '없습니다' : 'None'}</p>`)
       + this._src(aws);
+  },
+
+  /* ── 5일 공식 동네예보 ────────────────────────────────── */
+  async _forecast() {
+    const ko = i18n.lang === 'ko';
+    const doc = await get('forecast');
+    const points = doc.points || [];
+    const c = myLocation.coords;
+    let focus = null;
+    if (c && inKorea(c.lat, c.lon)) focus = nearest(points, c.lat, c.lon, 300);
+    if (!focus) {
+      const seoul = points.find(point => /서울/.test(point.name || '')) || points[0];
+      focus = seoul ? { ...seoul, km: null } : null;
+    }
+    const highlights = forecastHighlights(points);
+    let h = `<div class="kr-data-ribbon"><b>${doc.count}${ko ? '개 대표격자' : ' representative grids'}</b>`
+      + `<span>${doc.cells}${ko ? '칸 요청' : ' cells requested'} · ${ko ? '실패' : 'failed'} ${doc.failedCells}</span>`
+      + `<span>${ko ? '기상청 5km 공식예보' : 'KMA official 5 km forecast'}</span></div>`;
+
+    if (focus) {
+      const current = nearestForecastHour(focus);
+      const hours = (focus.hourly || []).map(row => ({ ...row, at: parseKmaTime(row.tm) }))
+        .filter(row => row.at && row.at.getTime() >= Date.now() - 60 * 60_000).slice(0, 12);
+      h += `<div class="kr-big kr-forecast-hero"><b>${current?.t == null ? '—' : n1(current.t) + '°C'}</b>`
+        + `<span>${esc(focus.name || focus.id)}${focus.km == null ? '' : ` · ${ko ? '약' : '~'} ${Math.round(focus.km)}km`}`
+        + ` · ${esc(current ? condText(current.sky, current.pty, ko) : '—')}</span>`
+        + `<em>${current ? `${this._time(current.tm, true)} · ${ko ? '발표' : 'issued'} ${this._time(focus.baseKst, true)}`
+          + ` · ${ko ? '강수확률' : 'rain'} ${n1(current.pop)}% · ${ko ? '바람' : 'wind'} ${n1(current.ws)}m/s` : '—'}</em></div>`;
+      h += `<div class="kr-hourly" aria-label="${ko ? '앞으로 12시간' : 'Next 12 hours'}">`
+        + hours.map(row => `<div class="kr-hour"><time>${esc(this._time(row.tm))}</time>`
+          + `<b>${n1(row.t)}°</b><span>${esc(condText(row.sky, row.pty, ko))}</span>`
+          + `<em>${n1(row.pop)}%</em></div>`).join('') + `</div>`;
+    }
+
+    const rows = (label, list, field, unit) => `<section class="kr-rank"><small>${label}</small>`
+      + list.slice(0, 5).map(row => `<div class="kr-row"><span>${esc(row.name || row.id)}</span>`
+        + `<b>${n1(row[field])}${unit}</b></div>`).join('') + `</section>`;
+    h += `<h4>${ko ? '같은 유효시각 전국 비교' : 'Nationwide at the same valid time'} `
+      + `<i>n=${highlights.sampleCount} · ${esc(this._time(highlights.validAt, true))}</i></h4>`
+      + `<div class="kr-ranks">`
+      + rows(ko ? '기온 높은 곳' : 'Warmest', highlights.hottest, 't', '°C')
+      + rows(ko ? '강수확률 높은 곳' : 'Highest rain chance', highlights.wettest, 'pop', '%')
+      + rows(ko ? '바람 강한 곳' : 'Strongest wind', highlights.windiest, 'ws', 'm/s')
+      + `</div>`;
+    h += `<p class="kr-note">${ko
+      ? '이 순위는 97개 대표격자의 같은 예보시각 원값 비교입니다. 실제 관측 순위가 아니며, 사용자 위치의 정확한 5km 칸과 다를 수 있습니다.'
+      : 'Ranks compare raw values at the same forecast hour across 97 representative grids. They are not observation rankings and may differ from your exact 5 km cell.'}</p>`;
+    return h + this._src(doc);
   },
 
   /* ── 특보 ─────────────────────────────────────────────── */
@@ -178,13 +294,16 @@ export const koreaPanel = {
                 `<div class="kr-row"><span>${esc(w.icon)} ${esc(ko ? w.kind + w.level : `${w.kindEn || w.kind} ${levelEn(w.level)}`)} · ${esc(w.region)}</span><b>${esc(ko ? w.level : levelEn(w.level))}</b></div>`).join('')
           : '')
       + `<button class="kr-more" id="krWarnMore">${ko ? '전체 특보 보기' : 'See all warnings'}</button>`
+      + `<div class="kr-actions">${this._mapButton('alerts', '특보 지도', 'Warning map')}</div>`
       + this._src(warn.data);
   },
 
   /* ── 하늘 (낙뢰 · 비) ─────────────────────────────────── */
   async _sky() {
     const ko = i18n.lang === 'ko';
-    const [lg, aws] = await Promise.all([get('lightning'), get('aws')]);
+    const [lg, aws, radar] = await Promise.all([
+      get('lightning'), get('aws'), get('radar').catch(() => null),
+    ]);
     const c = myLocation.coords;
     let h = '';
 
@@ -224,7 +343,21 @@ export const koreaPanel = {
         + `<b>${Math.abs(s.kA)} kA</b></div>`).join('');
     }
 
-    /* 비 — 레이더가 아니라 **실측**이다. 레이더는 격자 투영 자료를 못 받아 아직 넣지 않았다. */
+    if (radar?.image?.url) {
+      const radarUrl = `${API.WIND}/kma-radar.png?v=${encodeURIComponent(radar.generated || radar.requestedKst || '')}`;
+      h += `<h4>${ko ? '기상청 HSR 레이더' : 'KMA HSR radar'} <i>${esc(radar.unit || 'mm/h')}</i></h4>`
+        + `<figure class="kr-radar"><a href="${esc(radarUrl)}" target="_blank" rel="noopener">`
+        + `<img src="${esc(radarUrl)}" width="${Number(radar.image.width) || 1000}" height="${Number(radar.image.height) || 980}" `
+        + `loading="lazy" decoding="async" alt="${ko ? '기상청 HSR 레이더 강수량 합성영상' : 'KMA HSR composite radar precipitation'}"></a>`
+        + `<figcaption>${ko
+          ? '강수세기·국경·행정경계·생산시각을 포함한 기상청 원본 · 누르면 크게 보기'
+          : 'Official KMA image with intensity legend, boundaries and production time · tap to enlarge'}</figcaption></figure>`
+        + this._src(radar);
+    } else {
+      h += `<p class="kr-note">${ko ? '레이더 최신 영상을 불러오지 못했습니다.' : 'Latest radar image is unavailable.'}</p>`;
+    }
+
+    /* 아래 비 목록은 레이더가 아니라 관측소 실측이다. 같은 탭에서 역할을 분명히 나눠 보여 준다. */
     const rain = (aws.stations || []).filter(s => (s.rn60 || 0) > 0)
       .sort((a, b) => b.rn60 - a.rn60);
     h += `<h4>${ko ? '지금 비 오는 곳' : 'Raining now'} <i>${rain.length}${ko ? '지점' : ''}</i></h4>`;
@@ -241,10 +374,42 @@ export const koreaPanel = {
         `<div class="kr-row"><span>${esc(s.name || s.id)}</span><b>${n1(s.rn60)} mm/h</b></div>`).join('');
     }
 
-    return h + this._src(lg)
+    return h + `<div class="kr-actions">${this._mapButton('lightning', '낙뢰 지도', 'Lightning map')}</div>`
+      + this._src(lg)
       + `<p class="kr-note">${ko
-        ? '강수는 레이더가 아니라 지상 관측소 실측입니다. 레이더 격자는 위경도 대응표를 받을 수 없어 아직 넣지 않았습니다 — 추측해서 얹으면 비가 엉뚱한 곳에 그려집니다.'
-        : 'Rainfall is measured at ground stations, not radar. The radar grid is omitted because its lat/lon reference is unavailable; placing it by guesswork would put rain in the wrong places.'}</p>`;
+        ? '‘지금 비 오는 곳’ 숫자는 지상 관측소 실측이고, 위 HSR은 레이더 합성영상입니다. 성격이 다른 두 값을 섞어 평균내지 않습니다.'
+        : '“Raining now” numbers are ground-station observations; HSR above is composite radar imagery. The two are not averaged together.'}</p>`;
+  },
+
+  /* ── 상층 대기 관측 ───────────────────────────────────── */
+  async _upper() {
+    const ko = i18n.lang === 'ko';
+    const [now, series] = await Promise.all([get('upperNow'), get('upper')]);
+    const summary = upperAirSummary(now, series);
+    const metric = (label, item, unit) => `<div class="kr-upper-metric"><small>${label}</small>`
+      + `<b>${item.value == null ? '—' : n1(item.value)}${unit}</b>`
+      + `<span>${item.percentile == null ? (ko ? '분포 계산 불가' : 'No distribution')
+        : (ko ? `2010~ 관측의 ${item.percentile}백분위` : `${item.percentile}th percentile since 2010`)}</span>`
+      + `<em>n=${item.historicalN.toLocaleString()}</em></div>`;
+    let h = `<div class="kr-data-ribbon"><b>${ko ? '레윈존데 실측' : 'Radiosonde observations'}</b>`
+      + `<span>${summary.stationCount}${ko ? '지점' : ' stations'} · ${this._upperTime(summary.latestAt)}</span>`
+      + `<span>${series.count?.toLocaleString?.() || Object.keys(series.days || {}).length.toLocaleString()}${ko ? '일 기록' : ' daily records'}</span></div>`;
+    h += `<div class="kr-upper-grid">`
+      + metric(ko ? '총가강수량 평균' : 'Mean TPW', summary.tpw, 'mm')
+      + metric(ko ? 'CAPE 지점 최댓값' : 'Max station CAPE', summary.capeMax, 'J/kg')
+      + metric(ko ? 'K지수 평균' : 'Mean K index', summary.ki, '')
+      + metric(ko ? '상승지수 평균' : 'Mean lifted index', summary.li, '')
+      + `</div>`;
+    const missing = Object.entries(summary.missing).filter(([, count]) => count > 0);
+    if (missing.length) h += `<p class="kr-note">${ko ? '결측' : 'Missing'} · `
+      + missing.map(([key, count]) => `${key.toUpperCase()} ${count}/${summary.stationCount}`).join(' · ') + `</p>`;
+    h += `<details class="kr-geek"><summary>${ko ? '지수 읽는 법 · 덕후 노트' : 'How to read the indices'}</summary>`
+      + Object.entries(now.fields || {}).map(([key, value]) => `<p><b>${esc(key.toUpperCase())}</b> ${esc(value)}</p>`).join('')
+      + `<p>${ko
+        ? '백분위는 기상청 관측 이력 안에서 오늘 값보다 낮았던 날의 비율입니다. 위험 확률이나 기상 예보가 아닙니다.'
+        : 'Percentiles are the share of historical KMA observation days below today’s value; they are not risk probabilities or forecasts.'}</p></details>`;
+    h += `<div class="kr-actions">${this._mapButton('tpw', '동아시아 수증기 통로', 'East Asia moisture corridor')}</div>`;
+    return h + this._src(now) + this._src(series);
   },
 
   /* ── 산 ───────────────────────────────────────────────── */
@@ -284,6 +449,10 @@ export const koreaPanel = {
       + `<p class="kr-note">${ko
           ? `실제 해상 장비 관측입니다 — 모델이 아닙니다. 파고 ${d.withWave}곳 · 수온 ${d.withSST}곳 / 전체 ${d.count}곳`
           : `Direct buoy observations, not model output. Waves ${d.withWave} · SST ${d.withSST} of ${d.count}`}</p>`
+      + (d.quality?.waveExcluded ? `<p class="kr-note kr-quality">${ko
+          ? `품질검증 · 비정상 유의파고 ${d.quality.waveExcluded}건은 원값을 보존하고 순위·지도에서 제외했습니다.`
+          : `Quality check · ${d.quality.waveExcluded} anomalous wave value(s) were preserved raw and excluded from ranks/maps.`}</p>` : '')
+      + `<div class="kr-actions">${this._mapButton('buoy', `${d.count}개 해양관측 지도`, `Map ${d.count} marine stations`)}</div>`
       + this._src(d);
   },
 

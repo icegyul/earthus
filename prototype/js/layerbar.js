@@ -883,6 +883,26 @@ export const layerBar = {
     }
 
     if (!isAlert) {
+      /* 받은 지적: 기상청 자료는 이미 9개 수집기가 살아 있는데 날씨 상세의 작은 링크
+         뒤에 숨어 있어 업데이트가 사용자 눈에는 '별거 없음'으로 보였다. 데이터 레이어와
+         성격이 다른 관측·공식예보·특보 탐색판이므로 스위치가 아닌 공개 입구로 둔다. */
+      const kma = el('button', 'ly-open ly-open--kma');
+      kma.type = 'button';
+      kma.innerHTML = `<span class="ly-open-copy"><b>${ko ? '기상청 라이브' : 'KMA Live'}</b>`
+        + `<em>${ko ? '736개 실측 · 5일 공식예보 · 레이더 · 특보 · 상층 · 바다' : '736 observations · 5-day forecast · radar · warnings · upper air · sea'}</em>`
+        + `</span><span class="ly-open-arrow" aria-hidden="true">›</span>`;
+      kma.onclick = async () => {
+        try {
+          const { koreaPanel } = await import('./ui-korea.js');
+          this.open = false; this.sub = null; this._apply?.();
+          koreaPanel.open();
+        } catch (error) {
+          console.warn('[layerbar] 기상청 라이브를 못 열었습니다', error?.message || error);
+        }
+      };
+      strip.appendChild(kma);
+      strip.appendChild(el('div', 'ly-gap'));
+
       const times = el('section', 'ly-times');
       const timeHead = el('div', 'ly-time-head');
       timeHead.textContent = ko ? '시간 빠른 전환' : 'Time shortcuts';

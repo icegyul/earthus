@@ -1,0 +1,21 @@
+/* 기상청 Live — 기존 sheet 구조를 유지하며 관측/예보/상층 자료의 숫자 위계를 보강한다. */
+#koreaTitle{display:flex;align-items:baseline;gap:9px;letter-spacing:-.025em}
+#koreaTitle small{font:550 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;color:rgba(159,230,245,.58)}
+#koreaTabs{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;overscroll-behavior-x:contain}
+#koreaTabs::-webkit-scrollbar{display:none}
+#koreaTabs .kr-tab{flex:0 0 auto;min-height:40px}
+.kr-data-ribbon{display:flex;gap:7px;flex-wrap:wrap;margin:2px 0 12px;padding:10px 11px;border:1px solid rgba(159,230,245,.18);background:rgba(37,78,88,.18);border-radius:10px;font:600 10px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;color:rgba(235,247,249,.58)}
+.kr-data-ribbon b{color:#b9f0f7}.kr-data-ribbon span+span:before{content:'·';margin-right:7px;color:rgba(255,255,255,.22)}
+.kr-actions{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 13px}
+.kr-map{min-height:40px;padding:0 12px;border:1px solid rgba(159,230,245,.26);border-radius:8px;background:rgba(80,164,182,.12);color:#c8f2f7;font:600 11px/1 system-ui,-apple-system,sans-serif;transition:background .2s ease,transform .16s ease}
+.kr-map:hover{background:rgba(80,164,182,.22)}.kr-map:active{transform:translateY(1px)}.kr-map:focus-visible{outline:2px solid #9fe6f5;outline-offset:2px}.kr-map i{font-style:normal;opacity:.55}
+.kr-forecast-hero{margin-bottom:9px}
+.kr-hourly{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(74px,1fr);gap:5px;overflow-x:auto;padding:2px 0 9px;scroll-snap-type:x proximity}
+.kr-hour{display:grid;gap:4px;scroll-snap-align:start;padding:9px 8px;border-radius:8px;background:rgba(255,255,255,.045);font-variant-numeric:tabular-nums}
+.kr-hour time,.kr-hour span,.kr-hour em{font:500 9px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;color:rgba(255,255,255,.46);font-style:normal;white-space:nowrap}.kr-hour b{font:650 16px/1 ui-monospace,SFMono-Regular,Menlo,monospace}.kr-hour em{color:#9fe6f5}
+.kr-ranks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.kr-rank{min-width:0;padding:9px;border-radius:9px;background:rgba(255,255,255,.035)}.kr-rank>small{display:block;margin-bottom:7px;color:#9fe6f5;font-weight:650}.kr-rank .kr-row{gap:5px}.kr-rank .kr-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.kr-rank .kr-row b{font-size:10px}
+.kr-upper-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.kr-upper-metric{display:grid;gap:4px;padding:12px 11px;border-radius:10px;background:rgba(255,255,255,.045);font-variant-numeric:tabular-nums}.kr-upper-metric small{color:rgba(255,255,255,.48)}.kr-upper-metric b{font:650 21px/1 ui-monospace,SFMono-Regular,Menlo,monospace}.kr-upper-metric span,.kr-upper-metric em{font:500 9px/1.25 ui-monospace,SFMono-Regular,Menlo,monospace;color:#9fe6f5;font-style:normal}.kr-upper-metric em{color:rgba(255,255,255,.34)}
+.kr-geek{margin:12px 0;padding:10px 11px;border-top:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.58)}.kr-geek summary{min-height:36px;cursor:pointer;color:#b9f0f7;font-weight:650}.kr-geek p{margin:8px 0;font-size:11px;line-height:1.55}.kr-geek b{color:rgba(255,255,255,.82)}
+.kr-radar{margin:5px 0 12px;border:1px solid rgba(159,230,245,.16);border-radius:11px;overflow:hidden;background:#e8e8e8}.kr-radar a{display:block}.kr-radar img{display:block;width:100%;height:auto;aspect-ratio:1.018/1;object-fit:contain;background:#e8e8e8}.kr-radar figcaption{padding:8px 10px;background:#142228;color:rgba(235,247,249,.58);font:550 9px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}
+@media(max-width:520px){#koreaTitle{align-items:flex-start;flex-direction:column;gap:4px}.kr-ranks{grid-template-columns:1fr}.kr-upper-grid{grid-template-columns:1fr 1fr}.kr-upper-metric b{font-size:18px}.kr-data-ribbon{display:grid;gap:3px}.kr-data-ribbon span+span:before{content:none}}
+@media(prefers-reduced-motion:reduce){.kr-map{transition:none}.kr-hourly{scroll-behavior:auto}}

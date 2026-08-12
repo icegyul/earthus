@@ -145,6 +145,7 @@ def handler(event, context):
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z"),
         "source": "기상청 지상 평년값 (API허브 sfc_norm1)",
         "sourceEn": "KMA surface climatological normals (API Hub)",
+        "license": "공공누리 제1유형 (출처표시)",
         "period": PERIOD_LABEL,
         "units": ["degC", "degC", "degC", "mm"],
         "fields": ["평균기온", "최고기온", "최저기온", "강수량"],

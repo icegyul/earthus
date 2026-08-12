@@ -352,6 +352,7 @@ def handler(event, context):
         "observedKst": f"{tm[:8]} {tm[8:10]}:00",
         "source": "기상청 지상관측 (API허브)",
         "sourceEn": "Korea Meteorological Administration surface observations (API Hub)",
+        "license": "공공누리 제1유형 (출처표시)",
         "note": {
             "ko": "기상청 지상관측망의 정시 실황입니다. 예보가 아닙니다. "
                   "⚠️ 결측(-9·-99·-999)은 값을 넣지 않고 비워 두었습니다 — 0 으로 채우면 "

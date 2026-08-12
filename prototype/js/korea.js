@@ -27,13 +27,16 @@ export function distKm(aLat, aLon, bLat, bLon) {
 const SRC = {
   aws:      `${API.WIND}/kma-aws-min.json`,     // 736지점 매분 관측
   asos:     `${API.WIND}/kma-aws.json`,         // 97지점 정시 관측
+  forecast: `${API.WIND}/kma-fcst.json`,        // 97개 5km 대표격자·약 5일 예보
   mountain: `${API.WIND}/kma-mountain.json`,    // 산 정상 예보
   normal:   `${API.WIND}/kma-normal.json`,      // 평년값 1991–2020
-  upper:    `${API.WIND}/series/upper-daily.json`,
+  upperNow: `${API.WIND}/kma-upper.json`,       // 레윈존데 최신 안정도 원값
+  upper:    `${API.WIND}/series/upper-daily.json`, // 2010~ 전국 일별 집계
   verify:   `${API.WIND}/series/verify-daily.json`,
   ocean:    `${API.OCEAN}/kma-buoy.json`,       // 해상 194지점
   warn:     `${API.EVENTS}/kma-warn.json`,
   lightning: `${API.EVENTS}/kma-lightning.json`,      // 최근 60분 낙뢰
+  radar:    `${API.WIND}/kma-radar.json`,       // HSR 공식 레이더 PNG 메타
   lgtDaily:  `${API.EVENTS}/kma-lightning-daily.json`,
   episodes: `${API.EVENTS}/kma-warn-episodes.json`,
   life:     `${API.WIND}/kma-life.json`,          // 자외선·대기확산·꽃가루

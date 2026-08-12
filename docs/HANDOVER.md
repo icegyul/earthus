@@ -58,6 +58,17 @@ live SHA-256, 1280×720·390×844 대표 화면, TPW 잠금과 AETHERUS·해구 
 운영 증거는 [`earthus-v23/RELEASE-2026-08-12-PR04.md`](earthus-v23/RELEASE-2026-08-12-PR04.md)다.
 실제 등치선은 PR-06, 공식 특보 Hard Gate는 PR-05 범위다.
 
+PD의 다음 **“계속 진행해”** 지시로 PR-05 Safety Slice를 구현하고 운영 반영했다. 기상청 특보는
+최근접 공식 관측지점의 특보구역 코드와 같은 `regionId`가 실제 발효 목록에 있을 때만 점수보다
+먼저 추천을 제한한다. 공식 polygon/hierarchy가 없는 현재 reader에서는 특보 0건·미일치·지연·
+위치 없음이 모두 `UNKNOWN`이며 SAFE나 CLOSED를 만들지 않는다. 수집기는 발표/대치/해제와
+`해제예보 연장`을 분리하고 command/revision을 공개 snapshot v2에 보존한다. Safety 23개,
+command 5개, 실제 KMA 21건 대조, 운영 desktop/mobile과 AETHERUS 회귀를 통과했다. Lambda는
+커밋 `beeca6d`의 code package만 서울 리전에 배포했고 정적 8개 파일은 CloudFront 무효화
+`I85JNEII7JXYIKR19GLYNIL56Y`로 반영했다. 정본은 [`earthus-v23/SAFETY_SLICE.md`](earthus-v23/SAFETY_SLICE.md),
+운영 증거는 [`earthus-v23/RELEASE-2026-08-12-PR05.md`](earthus-v23/RELEASE-2026-08-12-PR05.md)다.
+공식 polygon/hierarchy, 한국 밖 provider, PR-01/02 reader 전환은 여전히 미수행이다.
+
 ---
 
 ## 1. 무엇보다 먼저 — 이 프로젝트의 원칙

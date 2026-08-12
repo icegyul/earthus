@@ -9,11 +9,13 @@ const browser = await chromium.launch({ headless: true, executablePath });
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   const decisionRequests = [];
+  const runtimeErrors = [];
   page.on('request', request => {
     if (/\/decision-ui(?:-model)?\.(?:js|css)(?:\?|$)/.test(request.url())) {
       decisionRequests.push(request.url());
     }
   });
+  page.on('pageerror', error => runtimeErrors.push(error.message));
   await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 30_000 });
   await page.locator('#cesiumContainer').waitFor({ state: 'attached' });
   await page.waitForTimeout(3_000);
@@ -21,6 +23,8 @@ try {
   assert.deepEqual(decisionRequests, [], 'flag-off page fetched Decision UI assets');
   assert.equal(await page.locator('#decisionUiHost').count(), 0, 'flag-off page created Decision UI host');
   assert.equal(await page.locator('#cesiumContainer').count(), 1, 'first Earth container changed');
+  assert.ok(await page.locator('#cesiumContainer canvas').count() >= 1, 'first Earth canvas was not created');
+  assert.deepEqual(runtimeErrors, [], `same-origin runtime errors: ${runtimeErrors.join(' | ')}`);
   console.log(`decision UI production entry flag-off: PASS (${target})`);
 } finally {
   await browser.close();

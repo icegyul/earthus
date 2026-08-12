@@ -206,7 +206,8 @@ TPW는 공통 표현 엔진과 테스트만 포함하며 운영 객체
 - [ ] Safari·구형 iPhone·screen reader·canary/rollback rehearsal
 - [ ] PD의 공개 flag 전환 승인
 
-상세 계약은 `PERSONALIZATION_UI.md`다. 구현과 반응형 UI 검수 완료는 공개 추천 승인이 아니다.
+상세 계약은 `PERSONALIZATION_UI.md`, shadow 배포 증거는 `RELEASE-2026-08-12-PR08.md`다.
+구현과 반응형 UI 검수 완료는 공개 추천 승인이 아니다.
 위 미완료 항목 전에는 flag를 켜거나 실제 사용자 선호를 저장하지 않는다.
 
 ## 5. 금지

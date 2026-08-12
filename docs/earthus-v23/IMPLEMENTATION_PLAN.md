@@ -5,7 +5,7 @@
 > 예외: 2026-08-12 PD 직접 지시로 TPW 단독 vertical slice, PR-01 canonical shadow,
 > PR-02 governance shadow, PR-03 Earth View State를 구현했다. 후속 배포 지시로 PR-03와 잠긴
 > TPW 정적 계약만 운영 반영했다. 후속 직접 지시로 PR-04 Readability와 PR-05 Safety Slice도
-> 구현·검증했다. TPW flag on·판매·SNS는 미승인이다.
+> 구현·운영 반영했다. TPW flag on·판매·SNS는 미승인이다.
 
 ## 1. 공통 PR 형식
 
@@ -30,7 +30,7 @@
 | PR-02 | Rights/Freshness (로컬 완료) | PD의 다음 단계 직접 지시 | source policy, revision, provider health, standard errors | 20개 상태 replay·실제 KMA 연속검증 완료; 승인·AWS·reader는 별도 gate |
 | PR-03 | Earth View State (정적 운영 배포) | existing Cesium state | Earth View/Style/Data/Evidence/Decision URL state | 첫 화면 지구 보존, 공유·뒤로가기·대표 서비스 URL 운영 검증 |
 | PR-04 | V0 Readability (정적 운영 배포) | PR-03 | 공통 범례·값 라벨·지점 카드·read mode | 기온 대표 지역에서 10초 판독, 원값 대조 |
-| PR-05 | Safety Slice (구현·검증) | 공식 특보 fixture | KMA warning adapter, 근사 region mapping, Hard Gate, CTA | 발표→대치→해제/지연/미매핑 replay |
+| PR-05 | Safety Slice (운영 배포) | 공식 특보 fixture | KMA warning adapter, 근사 region mapping, Hard Gate, CTA | 발표→대치→해제/지연/미매핑 replay |
 | PR-06 | Continuous Layers | V0 | 기온·기압·바람·TPW·SST·편차·파고 | 단계색/등치선/값/원값, idle render 0 |
 | PR-07 | Decision Core | PR-05 | Confidence, Base Activity 5 profiles, contribution ledger | deterministic replay와 cache key |
 | PR-08 | Personal & UI | PR-07 | bounded personalization, 5축 UI, compare | shared base와 private delta 분리 |
@@ -133,6 +133,22 @@ PR-00은 문서 준비는 끝났지만 위 네 운영 관문 전까지 `APPROVAL
 상세 계약은 `READABILITY_FOUNDATION.md`, 운영 증거는 `RELEASE-2026-08-12-PR04.md`다.
 등치선은 PR-04 범위가 아니며, PR-06에서
 연속장별 간격·결측·성능을 따로 승인하기 전 점 관측이나 결측을 보간하지 않는다.
+
+## 4-5. PR-05 운영 배포와 남은 gate
+
+- [x] KMA 발표/대치/해제/해제예보 연장 command와 revision 보존
+- [x] 최근접 공식 station-zone 근사와 exact source `regionId` Hard Gate
+- [x] 특보 0/위치 없음/region unmapped/45분 초과 지연을 `UNKNOWN`으로 표시
+- [x] `activityAllowed=false`, `blocksPositiveRecommendation=true`, `safeClaimAllowed=false`
+- [x] source/time/license/전국 active `n`, 매핑 한계, 44px 공식 CTA 화면 계약
+- [x] JS 23개·Python 5개 replay, 실제 KMA exact match, desktop/mobile/AETHERUS 회귀
+- [x] 서울 Lambda snapshot v2와 정적 8개 파일 운영 배포·live hash 대조
+- [ ] 공식 warning polygon/hierarchy fixture와 authoritative mapping
+- [ ] 한국 밖 현지 공식 warning provider
+- [ ] PR-01/02 canonical/governance authoritative reader 전환
+
+상세 계약은 `SAFETY_SLICE.md`, 운영 증거는 `RELEASE-2026-08-12-PR05.md`다. 위 미완료
+mapping/provider 범위에서는 Safety Engine이 SAFE나 CLOSED를 만들지 않는다.
 
 ## 5. 금지
 

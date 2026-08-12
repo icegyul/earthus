@@ -11,6 +11,12 @@
 
 ### 다음 통합 작업 — 2026-08-16 착수 예정
 
+2026-08-13 현재 다음 사용량 리셋의 짧은 실행 정본은
+[`earthus-next-reset/README.md`](earthus-next-reset/README.md)다. 남은 운영 공백, 이번 작업에서
+새로 확인한 UX 한계, 추가 아이디어, 공통 개발 기준, 시작/릴리스 체크리스트를 분리했다.
+다음 작업은 문서·운영 정본 동기화(N0) 뒤 수집기 운영 관제(N1)부터 시작하고, AETHERUS의
+별도 dirty 파일을 stage·deploy·revert하지 않는다.
+
 EARTHUS 메뉴·레이어 표현·무료/유료 경계, AETHERUS 정보 구조·모바일·사진관,
 마케팅 스튜디오 공개 이야기관을 한 번에 개편하는 실행 정본은
 [`EARTHUS-AETHERUS-DEV-SPEC-2026-08-16.md`](EARTHUS-AETHERUS-DEV-SPEC-2026-08-16.md)다.
@@ -92,6 +98,14 @@ live SHA-256, 1280×720·390×844 대표 화면, TPW 잠금과 AETHERUS·해구 
 390×844에서 가로 overflow 0과 warning/error 0을 확인했다. 선택 배포 파일은
 `js/readability.js` 하나, 무효화는 `IDZOZH3GEQ6LDKFA21N9RJW659`이며 증거는
 [`earthus-v23/RELEASE-2026-08-12-COUNTRY-BOUNDARIES.md`](earthus-v23/RELEASE-2026-08-12-COUNTRY-BOUNDARIES.md)다.
+
+2026-08-13 PD가 일본 해안이 특히 흐리다고 지적했다. 기존 Esri raster는 국경·지명·해안을
+분리 스타일링할 수 없어, public-domain Natural Earth coastline을 별도 벡터로 추가했다.
+전지구는 1:110m, 한국·일본 포함 동아시아는 1:10m이며 449 lines·28,794 points를 어두운
+halo와 흰색 선으로 그린다. 첫 Earth에는 요청하지 않고 Data/Evidence/Decision에서만 표시하며
+나가면 Primitive를 제거한다. 1280×720 도쿄와 390×844 일본, 첫 Earth 무변경, 31/31과 전체
+회귀, live hash를 확인했다. 정본은
+[`earthus-v23/RELEASE-2026-08-13-WHITE-COASTLINE.md`](earthus-v23/RELEASE-2026-08-13-WHITE-COASTLINE.md)다.
 
 PD의 다음 **“계속 진행해”** 지시로 PR-05 Safety Slice를 구현하고 운영 반영했다. 기상청 특보는
 최근접 공식 관측지점의 특보구역 코드와 같은 `regionId`가 실제 발효 목록에 있을 때만 점수보다

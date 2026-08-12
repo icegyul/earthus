@@ -1,8 +1,8 @@
 # CURRENT STATE — EARTHUS v2.3
 
-> 조사 시각: 2026-08-12 KST
-> Git 기준: `main` · 조사 당시 HEAD `53c2557`
-> 근거: 저장소 정적 조사, `docs/HANDOVER.md`, 2026-08-12 운영 화면 실측
+> 조사 시각: 2026-08-13 KST
+> Git 기준: `main` · KMA Live 기준 커밋 `1d21df1`, 후속 해안선 보강은 별도 릴리스
+> 근거: 저장소 정적 조사, `docs/HANDOVER.md`, 2026-08-12~13 운영 화면 실측
 
 ## 1. 제품과 저장소
 
@@ -21,7 +21,7 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 | 판매 | `SALES_OPEN=false` | 유지 |
 | 행태 분석 | 사용 동의 UI는 있으나 event 수집 구현은 없음 | catalog 승인 전 수집 금지 |
 
-## 2. 2026-08-12 운영 화면 실측
+## 2. 2026-08-12~13 운영 화면 실측
 
 운영 URL `https://earthus.net/`을 데스크톱과 390×844에서 읽기 전용으로 확인했다.
 
@@ -35,6 +35,8 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 - 390×844에서 AETHERUS `태양계`를 선택하면 메뉴는 닫힌다.
 - 조사 중 새 console warning/error는 없었다.
 - 화면에 위성 자료원, 자료 시각, 다음 자료 지연 상태가 표시됐다.
+- KMA Live와 TPW 수증기 통로가 공개됐고 HSR 레이더가 5분 운영 갱신된다.
+- Data View에서 국가 경계·지명과 별도 흰색 해안선이 표시된다. 첫 Earth에는 표시하지 않는다.
 
 ### 남은 gap
 
@@ -72,12 +74,12 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 | AETHERUS URL | 복원되지 않음 | 태양계 선택 뒤에도 `/` | gap 유지 |
 | Analytics | 미구현 | 동의 UI만 있고 event emitter 없음 | 수집 금지 유지 |
 | 통합 착수 | 8월 16일 | 현재 8월 12일 | 문서·검증만 진행 |
-| TPW 단독 slice | 8월 12일 PD 직접 승인 | collector·지역 격자 renderer·UI 계약 로컬 구현 | 운영 flag·배포는 gate 통과 전 금지 |
+| TPW 단독 slice | 8월 12일 구현, 8월 13일 공개 승인 | 서울 collector·3,276 격자·결측 0·운영 UI | `TPW_READY=true`; 모델분석 고지, 판매/Decision은 계속 off |
 | Signal Foundation | PR-01 | 서울 최소권한 private shadow·3 source·stable ID·익명 403 검증 | schedule·authoritative reader 미승인 |
 | Rights/Freshness | PR-02 | 서울 private shadow·DRAFT 24 operation BLOCK·schema·재현성 검증 | source 승인·Control Plane·schedule·reader 미승인 |
 | Earth View State | PR-03 계획 | 접두어 URL·상태 fallback·앞뒤/새로고침 구현 | 정적 운영 배포·대표 URL·AETHERUS/해구 상호배제 검증 완료; 실제 기기·rollback rehearsal 남음 |
 | V0 Readability | PR-04 계획 | 공통 범례·화면 도시 원격자값·지점 근거·read mode 구현 | 정적 운영 배포·live hash·390×844 검증 완료; 등치선은 PR-06 |
-| Continuous Layers | PR-06 계획 | 기온·기압·바람·TPW 계약·SST·편차·파고 단계색/등치선/값 | 정적 운영 배포·40/40·모바일·idle render 0 완료; TPW flag·실기기 gate 유지 |
+| Continuous Layers | PR-06 계획 | 기온·기압·바람·TPW·SST·편차·파고 단계색/등치선/값 | 운영 배포·40/40·TPW 공개 완료; 실제 Safari/iPhone gate 유지 |
 
 ## 5. 현재 작업트리 보호
 

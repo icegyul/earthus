@@ -161,7 +161,9 @@ test('활성 공식 특보 UI는 제한·출처·시각·n·공식 CTA를 함께
 test('Safety UI는 독립 CSS와 versioned entry로 배포된다', () => {
   assert.match(css, /\.safety-gate--danger/);
   assert.match(index, /safety\.css\?v=20260812-safety1/);
-  assert.match(index, /main\.js\?v=20260812-[a-z0-9-]+/);
+  // 날짜를 2026-08-12로 고정하면 다른 기능의 정상 cache revision 변경만으로 Safety 회귀가 깨진다.
+  // Safety가 필요한 것은 main entry가 2026-08 계열의 명시적 version을 가진다는 계약이다.
+  assert.match(index, /main\.js\?v=202608\d{2}-[a-z0-9-]+/);
   assert.match(main, /from '\.\/warn\.js'/);
 });
 test('Safety Engine은 무한 timer나 animation을 만들지 않는다', () => {

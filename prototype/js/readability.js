@@ -13,6 +13,7 @@ import { gridBounds, nearestGridValue } from './gridmath.js';
 import { worldPlaces, describePlace, latLonText } from './geoname.js';
 import { i18n } from './i18n.js';
 import { store } from './store.js';
+import { coastlineReference } from './coastline-reference.js';
 /* main과 정확히 같은 URL을 써야 ES module 인스턴스가 둘로 갈라지지 않는다. */
 import { continuousContours } from './continuous-contours.js?v=20260812-contours1';
 
@@ -166,6 +167,7 @@ export const readability = {
       this._clearGrid();
       this._clearPoint();
       this._setReference(false);
+      coastlineReference.set(false);
       this._clearMapLabels();
       return;
     }
@@ -176,6 +178,7 @@ export const readability = {
        어려웠다. 경계/해안선/국가 지명 reference는 Data View 진입 즉시 올리고,
        판독 모드는 같은 reference의 대비를 더 높이는 단계로 유지한다. */
     this._setReference(true, state.read === true);
+    coastlineReference.set(true, state.read === true);
     const rendered = gridOverlay.renderedOf(this.gridLayer);
     if (rendered) {
       this._gridReady({ layer: this.gridLayer, ...rendered });
@@ -269,8 +272,8 @@ export const readability = {
       const credit = document.createElement('p');
       credit.className = 'rd-reference-credit';
       credit.textContent = i18n.lang === 'ko'
-        ? `국가 경계·해안선·지명 · ${ESRI_CREDIT}`
-        : `Country borders, coastlines and places · ${ESRI_CREDIT}`;
+        ? `국가 경계·지명 · ${ESRI_CREDIT} · 흰색 해안선 · Natural Earth (public domain)`
+        : `Country borders and places · ${ESRI_CREDIT} · white coastline · Natural Earth (public domain)`;
       children.push(credit);
     }
     this.legend.replaceChildren(...children);

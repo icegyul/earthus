@@ -7,7 +7,8 @@
 > TPW 정적 계약만 운영 반영했다. 후속 직접 지시로 PR-04 Readability와 PR-05 Safety Slice도
 > 구현·운영 반영했다. PR-06 Continuous Layers도 구현·검수·정적 운영 반영했다.
 > 후속 직접 지시로 PR-07 Decision Core와 PR-08 Personalization/5축 UI도
-> CALIBRATION/SHADOW로 구현했다. TPW flag on·Decision UI 공개·판매·SNS는 미승인이다.
+> CALIBRATION/SHADOW로 구현했다. 2026-08-13 TPW는 실자료·권리·운영 화면 검수 뒤 공개했다.
+> Decision UI 공개·판매·예약 실행·SNS는 미승인이다.
 > 후속 계속 지시로 PR-01·02를 서울 private shadow로 수동 배포·검증했다.
 > 둘 모두 schedule·authoritative reader는 없고 DRAFT 정책을 승인으로 바꾸지 않았다.
 
@@ -67,10 +68,10 @@
 - [ ] PD의 ADR·retention·비용 guardrail 승인
 - [ ] 2026-08-16 사용량 리셋 확인
 - [x] `tpw-grid` 서울 리전 GRIB/ecCodes·S3 객체·NOAA attribution·시각 QA
-- [ ] PD의 별도 `TPW_READY=true` 공개 승인
+- [x] PD의 별도 `TPW_READY=true` 공개 승인과 운영 반영
 
 PR-00A의 collector/unit/contract/문법·NOAA 실 GRIB, 서울 Lambda·시간당 schedule·운영 S3/CloudFront,
-데스크톱/모바일 임시 flag-on 실화면과 flag-off 우회 차단은 통과했다. 공개 flag만 별도 승인 gate다.
+데스크톱/모바일 flag-on 실화면과 URL 계약을 통과했고 2026-08-13 공개했다.
 
 PR-00은 문서 준비는 끝났지만 위 네 운영 관문 전까지 `APPROVAL_PENDING`이다.
 
@@ -171,11 +172,11 @@ mapping/provider 범위에서는 Safety Engine이 SAFE나 CLOSED를 만들지 �
 - [x] 자동검사 40/40와 PR-03/04/05·AETHERUS 회귀
 - [x] 데스크톱/390×844 실화면, 모바일 overflow 0, 단독 바람 활성층 1개, 정지 3초 추가 render 0
 - [ ] Safari·구형 iPhone 실제 기기 10~15분 열/배터리
-- [ ] TPW 서울 리전 객체·권리·화면 검수 뒤 별도 `TPW_READY=true` 승인
+- [x] TPW 서울 리전 객체·권리·화면 검수와 별도 `TPW_READY=true` 승인
 
 상세 계약은 `CONTINUOUS_LAYERS.md`, 배포 증거는 `RELEASE-2026-08-12-PR06.md`다.
-TPW는 공통 표현 엔진과 테스트만 포함하며 운영 객체
-403 상태에서 flag를 켜지 않았다. 점 관측·위성 영상·재난 점은 이 등치선 엔진에 넣지 않는다.
+TPW는 NOAA/NCEP GFS 모델분석으로 명시해 공개했다. 점 관측·위성 영상·재난 점은 이
+등치선 엔진에 넣지 않는다.
 
 ## 4-7. PR-07 Decision Core shadow와 남은 gate
 

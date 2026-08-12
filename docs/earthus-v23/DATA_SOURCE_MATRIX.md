@@ -27,6 +27,7 @@
 | Met Office DataHub | `metoffice-uk` | 영국 36곳 | 무료 plan 360 calls/day 확인. 재표시·cache·redistribution 조건 미확인 | `UNKNOWN` |
 | NOAA/NWS/NHC/USGS/NASA | `archiver`, `ascat-observations`, `cyclone-analog`, `eclipse-path`, `gk2a-clouds`, `gmgsi-clouds`, `gts-global`, `land-stations`, `ocean-solar`, `tpw-grid`, `tsunami-intl`, `wildfire`, `world-alerts` | 전지구/미국/해양. TPW는 GFS 0.25°→1° 동아시아 | 미국 정부 자료가 많지만 dataset·이미지별 metadata/제3자 credit 확인. TPW는 NOAA/NCEP 원본 직접 | TPW `APPROVED_FREE`, 그 외 dataset별 `CONDITIONAL` |
 | Esri World Boundaries and Places | PR-04 read mode reference tiles | 전지구 경계·지명, zoom에 따른 coverage | 화면 표시 중 Esri·Garmin·HERE·OSM·GIS community attribution 직접 노출. EARTHUS cache/history/export/derivative/AI 금지 | display-only `CONDITIONAL` |
+| Natural Earth coastline | Data View 흰색 해안선 정적 reference | 전지구 1:110m, 동아시아 110–155°E·15–55°N 1:10m | 모든 raster/vector가 public domain. pinned source commit과 화면 출처 보존 | 시각 reference `APPROVED_FREE`; 영토·안전 geometry 금지 |
 | adsb.lol | `flight-track` | 공급 coverage와 지연에 따름 | API·공개 DB ODbL, attribution/share-alike. 운영 사용은 공급자 연락 권고 | `CONDITIONAL`, SLA 판매 금지 |
 | 에코뱅크 | `ecobank`, `ecobird` | 한국 생태 조사 | 제1유형 표기와 제3자 권리 포함 | `BLOCKED_PAID` |
 | 바다거북 | `sea-turtle` | 공개 이동 경로 | 공공누리 제4유형: 비상업·변경금지 | `BLOCKED_PAID`, 파생/정밀좌표 제한 |

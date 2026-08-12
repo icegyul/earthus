@@ -1,7 +1,7 @@
 # EARTHUS v2.3 P0 실행 문서
 
 > 기준일: 2026-08-12 KST
-> 상태: **P0 완료 · PR-08까지 shadow/정적 구현 · 공개 Decision flag off · PR-01/02 backend 미배포**
+> 상태: **P0 완료 · PR-10 shadow · KMA Live/TPW 운영 공개 · 공개 Decision flag off**
 > 제품 코드 착수 관문: 2026-08-16 사용량 리셋 확인과 PD 승인
 
 이 디렉터리는 `EARTHUS_Product_Development_Spec_v2.3_FINAL_CODEX_HANDOFF.docx`의
@@ -40,13 +40,14 @@ P0 필수 산출물을 저장소 현실에 맞춰 고정한다. AETHERUS에서 �
 28. [`ANALYTICS_EVENT_CATALOG.md`](ANALYTICS_EVENT_CATALOG.md)
 29. [`RUNBOOK.md`](RUNBOOK.md)
 30. [`adr/`](adr/)
+31. [`../earthus-next-reset/README.md`](../earthus-next-reset/README.md) — 다음 사용량 리셋 실행 패키지
 
 ## 지금 할 수 있는 일
 
 - 저장소·운영 화면·데이터소스·권리·환경 차이를 문서와 fixture 후보로 고정한다.
 - `UNKNOWN`, `BLOCKED`, `STALE`, `POLICY_BLOCKED` 상태를 없애지 않고 목록화한다.
 - 8월 16일에 실행할 PR의 entry/exit/non-scope를 준비한다.
-- PD가 직접 승인한 TPW 단독 slice는 로컬에서 구현·검증하되 운영 flag는 잠근다.
+- PD가 직접 승인한 TPW 단독 slice는 운영 실자료·화면 검수 뒤 `TPW_READY=true`로 공개했다.
 - PD가 `다음꺼 진행해`로 승인한 PR-01은 대표 3 source의 비공개 canonical shadow를
   로컬 구현·검증하되 Lambda·schedule·reader 전환은 하지 않는다.
 - 두 번째 `다음꺼 진행해`로 승인한 PR-02는 DRAFT Source Registry와 권리·신선도·provider

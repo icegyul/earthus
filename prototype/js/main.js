@@ -1,5 +1,7 @@
 // 진입점
-import { initViewer, viewer, scene, cameraHeight, onCameraIdle, flyTo, setAmbientView, fitGlobeHeight } from './viewer.js?v=20260812-earthmoon1';
+/* viewer.js는 여러 모듈이 공유하는 싱글턴이다. 이 import 하나에만 버전을 붙이면
+   scene/viewer 인스턴스가 둘로 갈라져 power 초기화 전에 undefined가 된다. */
+import { initViewer, viewer, scene, cameraHeight, onCameraIdle, flyTo, setAmbientView, fitGlobeHeight } from './viewer.js';
 import { alarms } from './alarms.js';
 import { windField } from './windfield.js';
 import { myLocation } from './mylocation.js';

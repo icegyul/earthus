@@ -25,6 +25,15 @@ const el = (t, c, h) => { const n = document.createElement(t); if (c) n.classNam
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+/* 지구 뒤 천구도 화면을 이루는 사진이다. ESO CC BY 4.0은 크레딧이 분명하고
+   온라인에서는 링크가 활성화되어 있어야 한다. 레이어가 하나도 없어도 감추지 않는다. */
+const SKY_CREDIT_URL = 'https://www.eso.org/public/images/eso0932a/';
+function skyCredit(ko) {
+  if (store.scene !== 'earth') return '';
+  const label = ko ? '천구 배경' : 'Sky panorama';
+  return `<span class="map-credit sky-credit">${label} · <a href="${SKY_CREDIT_URL}" target="_blank" rel="noopener">ESO/S. Brunier · CC BY 4.0</a></span>`;
+}
+
 /* 레이어 → 출처와 갱신 주기(분).
    ⚠️ 주기는 우리 예약 실행 간격이다. 상류가 그보다 늦게 낼 수도 있다. */
 const SRC = {
@@ -174,6 +183,7 @@ export const sourceNote = {
     this.root = document.getElementById('srcNote');
     if (!this.root) return this;
     store.on('layer', () => this.render());
+    store.on('scene', () => this.render());
     i18n.onChange(() => this.render());
     /* 확대하면 자료가 바뀐다 (전지구 합성 ↔ 히마와리). 그때 바로 다시 그린다. */
     document.addEventListener('earthus:imagery', () => this.render());
@@ -197,9 +207,10 @@ export const sourceNote = {
   async render() {
     if (!this.root) return;
     const ko = i18n.lang === 'ko';
+    const sky = skyCredit(ko);
     let esriVisible = false;
     try {
-      const { imagery } = await import('./layers/imagery.js');
+      const { imagery } = await import('./layers/imagery.js?v=20260813-clouddepth1');
       esriVisible = (imagery.detail?.alpha || 0) > 0.02;
     } catch (_) { /* 기본면이 아직 만들어지기 전일 수 있다 */ }
     /* ⚠️⚠️ **지구를 칠하고 있는 레이어를 먼저 고른다.** (감사 P1-2)
@@ -211,13 +222,15 @@ export const sourceNote = {
     const painted = PAINT.find(x => store.isOn(x));
     const id = painted || PRIORITY.find(x => store.isOn(x));
     if (!id && !esriVisible) {
-      this.root.innerHTML = ''; this.root.classList.remove('on'); return;
+      this.root.innerHTML = sky;
+      this.root.classList.toggle('on', !!sky);
+      return;
     }
     /* 확대용 World Imagery만 보이는 경우에도 크레딧은 사라지면 안 된다.
        Esri 공식 요건은 지도에 Esri와 자료 제공자 표기를 모두 표시하라는 것이다. */
     if (!id) {
       this.root.innerHTML = '<span class="map-credit">Powered by Esri · Source: Esri, Vantor, '
-        + 'Earthstar Geographics, and the GIS User Community</span>';
+        + 'Earthstar Geographics, and the GIS User Community</span>' + sky;
       this.root.classList.add('on');
       return;
     }
@@ -227,7 +240,7 @@ export const sourceNote = {
     let key = id, hima = null;
     if (id.startsWith('gk2a')) {
       if (id === 'gk2aAuto') {
-        const { imagery } = await import('./layers/imagery.js');
+        const { imagery } = await import('./layers/imagery.js?v=20260813-clouddepth1');
         key = imagery._gk2aDetailOn ? 'gk2a_vis'
           : imagery._gk2aAutoMode === 'infrared' ? 'gk2a_ir_ea' : 'gk2a_vis_ea';
       } else {
@@ -238,12 +251,12 @@ export const sourceNote = {
     } else if (id === 'himaIR') {
       key = 'hima_ir';
       try {
-        const { imagery } = await import('./layers/imagery.js');
+        const { imagery } = await import('./layers/imagery.js?v=20260813-clouddepth1');
         hima = imagery._irTime || null;
       } catch (_) { /* 아직 없을 수 있다 */ }
     } else if (id === 'himawari' || id === 'clouds') {
       try {
-        const { imagery } = await import('./layers/imagery.js');
+        const { imagery } = await import('./layers/imagery.js?v=20260813-clouddepth1');
         if (imagery._himaOn && imagery._himaTime) {
           key = 'clouds_hima';
           /* 가시광과 적외는 몇 분 어긋나 올라올 수 있다. 지금 화면 중심에서 실제로
@@ -269,12 +282,12 @@ export const sourceNote = {
         const g = await gridOverlay.load(SOURCE_MAP[id] || 'wind');
         if (g?.time) made = new Date(g.time);
       } else if (id === 'truecolor') {
-        const { imagery } = await import('./layers/imagery.js');
+        const { imagery } = await import('./layers/imagery.js?v=20260813-clouddepth1');
         if (imagery._tcDate) made = new Date(`${imagery._tcDate}T12:00:00Z`);
       } else if (id.startsWith('gk2a')) {
         /* ⚠️ 시각은 meta.json 이 말하는 **관측 시각**이다. 우리가 받은 시각이 아니다.
            둘을 섞으면 "방금 자료"라고 적어 놓고 실제로는 20분 전 하늘이 된다. */
-        const { imagery } = await import('./layers/imagery.js');
+        const { imagery } = await import('./layers/imagery.js?v=20260813-clouddepth1');
         /* ⚠️ 레이어를 켜는 순간에는 meta 가 아직 안 왔을 수 있다. 그러면 시각이 없어
            **설명 블록 전체가 건너뛰어진다** (히마와리에서 이미 한 번 겪은 함정이다).
            → 없으면 여기서 직접 한 번 받는다. */
@@ -290,7 +303,7 @@ export const sourceNote = {
            실제로 그렇게 돼서 "이건 강수량이 아니다"라는 경고가 화면에 안 나왔다. */
         if (hima) made = new Date(hima);
       } else if (id === 'clouds' || id === 'himawari') {
-        const { imagery } = await import('./layers/imagery.js');
+        const { imagery } = await import('./layers/imagery.js?v=20260813-clouddepth1');
         // 히마와리를 보고 있으면 그 시각이 지금 화면의 시각이다
         const t = hima || (id === 'clouds' ? imagery.cloudTime?.() : null);
         if (t) made = new Date(t);
@@ -351,7 +364,7 @@ export const sourceNote = {
           : '<i>One daily mosaic, each place imaged around <b>13:30 its own local time</b> — not the whole Earth at one instant.</i>');
         /* ⚠️ 빈 구간이 있다는 사실을 숨기지 않는다. 실측: 어느 날짜든 평균 12%.
            띠 사이가 안 닿는 구간이라 날짜를 바꿔도 없어지지 않는다. */
-        const gap = (await import('./layers/imagery.js')).imagery._tcGap;
+        const gap = (await import('./layers/imagery.js?v=20260813-clouddepth1')).imagery._tcGap;
         if (gap != null) {
           bits.push(ko
             ? `<i>화면의 약 ${gap}%는 위성 띠 사이가 안 닿은 빈 구간이라 아래 기본 지도가 비칩니다.</i>`
@@ -392,7 +405,7 @@ export const sourceNote = {
               + 'In daylight use the visible channel instead.</i>');
         }
         if (key === 'gk2a_nightlow') {
-          const { imagery } = await import('./layers/imagery.js');
+          const { imagery } = await import('./layers/imagery.js?v=20260813-clouddepth1');
           const signal = Number(imagery._gk2aMeta?.channels?.nightlow?.signal);
           bits.push(ko
             ? '<i>두 적외 채널의 <b>밝기온도 차(11.2㎛ − 3.8㎛)</b>가 1.5K를 넘는 밤의 화소만 표시합니다. 밝을수록 차이가 큽니다.</i>'
@@ -437,7 +450,7 @@ export const sourceNote = {
             : '<i>⚠️ Visible light — blank at night. Use the infrared channel then.</i>');
         }
         if (id === 'gk2aAuto') {
-          const { imagery } = await import('./layers/imagery.js');
+          const { imagery } = await import('./layers/imagery.js?v=20260813-clouddepth1');
           bits.push(ko
             ? `<i>한국의 태양고도에 맞춰 <b>${imagery._gk2aAutoMode === 'infrared' ? '밤 적외' : '낮 가시광'}</b> 채널을 자동 선택했습니다. <b>위성 전면</b>을 넓게 보며 동아시아는 2km 타일을 겹치고, 한반도로 확대하면 ${imagery._gk2aDetailOn ? '<b>현재 0.5km 원본 타일</b>' : '0.5km 원본 타일'}로 바뀝니다.</i>`
             : `<i>Automatically using <b>${imagery._gk2aAutoMode === 'infrared' ? 'night infrared' : 'daylight visible'}</b>. The <b>full disk</b> stays visible, with 2 km East Asia tiles and native 0.5 km tiles when zoomed into Korea.</i>`);
@@ -461,7 +474,7 @@ export const sourceNote = {
         }
         /* ⚠️ 덮는 범위는 **채널마다 다르다.** 하나로 적으면 둘 중 하나는 거짓말이 된다. */
         if (key.startsWith('gk2a_')) {
-          const { imagery } = await import('./layers/imagery.js');
+          const { imagery } = await import('./layers/imagery.js?v=20260813-clouddepth1');
           const ch = id === 'gk2aAuto'
             ? (imagery._gk2aDetailOn ? 'vi006' : imagery._gk2aAutoChannel) : {
                        gk2a_ir: 'ir112', gk2a_nightlow: 'nightlow',
@@ -511,7 +524,7 @@ export const sourceNote = {
                 "확대해서 바뀌었습니다"라고 써 놓고 사실은 사람이 고른 것이면 틀린 안내다. */
           /* 받은 지시(2026-08-11): 빠른 히마와리9는 낮 가시광·밤 적외를 자동 전환한다.
              ⚠️ 밤 적외가 강수량처럼 읽힌 사고가 있었으므로 현재 채널과 한계를 함께 적는다. */
-          const { imagery } = await import('./layers/imagery.js');
+          const { imagery } = await import('./layers/imagery.js?v=20260813-clouddepth1');
           const night = id === 'himawari' && imagery._isNightHere();
           bits.push(ko
             ? (id === 'himawari'
@@ -614,7 +627,7 @@ export const sourceNote = {
       + (esriVisible
         ? '<span class="map-credit">Powered by Esri · Source: Esri, Vantor, '
           + 'Earthstar Geographics, and the GIS User Community</span>'
-        : '');
+        : '') + sky;
     this.root.classList.add('on');
   },
 };

@@ -5,6 +5,7 @@ import { store } from '../store.js';
 import { fetchT } from '../net.js';
 import { CONFIG } from '../config.local.js';
 import { buildCloudShadowAlpha } from '../cloud-shadow.js?v=20260812-cloudshadow1';
+import { CloudDepthImageryProvider } from '../cloud-depth-provider.js?v=20260813-clouddepth1';
 
 /** GIBS 시간축 레이어는 D-1이 안전 (당일치는 처리 지연) */
 function ymd(offsetDays = -1) {
@@ -15,6 +16,34 @@ function ymd(offsetDays = -1) {
 export const imagery = {
   base: null, detail: null, truecolor: null, clouds: null, cloudLayers: [], citylight: null, temp: null, aurora: null,
   auroraMeta: null,
+
+  /** 타일 구름 본체와 그 아래의 시각 깊이 층을 항상 함께 제거한다. */
+  _removeImageryWithDepth(layer) {
+    if (!layer) return;
+    if (layer._earthusDepthLayer) {
+      try { viewer.imageryLayers.remove(layer._earthusDepthLayer, true); } catch (_) { }
+      layer._earthusDepthLayer = null;
+    }
+    try { viewer.imageryLayers.remove(layer, true); } catch (_) { }
+  },
+
+  /** 같은 관측 제공자를 공유하는 깊이 층을 먼저 넣고 본체를 위에 놓는다. */
+  _addImageryWithDepth(provider, { mode, sun = null, alpha = 0.18,
+                                  dayAlpha = 1.0, nightAlpha = 1.0 } = {}) {
+    const depth = viewer.imageryLayers.addImageryProvider(
+      new CloudDepthImageryProvider(provider, { mode, sun })
+    );
+    depth._earthusCloudRole = sun ? 'sun-shadow' : 'visual-relief';
+    depth._earthusDepthBaseAlpha = alpha;
+    depth._earthusDepthDayAlpha = dayAlpha;
+    depth._earthusDepthNightAlpha = nightAlpha;
+    depth.alpha = alpha;
+    depth.dayAlpha = dayAlpha;
+    depth.nightAlpha = nightAlpha;
+    const layer = viewer.imageryLayers.addImageryProvider(provider);
+    layer._earthusDepthLayer = depth;
+    return layer;
+  },
 
   init() {
     // ── Blue Marble : 주간 기본면 ──
@@ -128,12 +157,18 @@ export const imagery = {
     /* 그림자를 먼저 넣어 같은 구름 본체 아래에만 놓는다. 둘 다 같은 관측 알파에서
        나왔고, 구름 설정·트루컬러·타임라인 상태도 _applyClouds 한 곳에서 함께 따른다. */
     L._earthusCloudRole = 'cloud';
-    if (shadow) shadow._earthusCloudRole = 'shadow';
+    const depth = shadow || L._earthusDepthLayer || null;
+    if (shadow) {
+      shadow._earthusCloudRole = 'shadow';
+      shadow._earthusDepthBaseAlpha = 0.28;
+      shadow._earthusDepthDayAlpha = 1.0;
+      shadow._earthusDepthNightAlpha = 0.0;
+    }
     const old = this.cloudLayers.slice();
-    this.cloudLayers = shadow ? [shadow, L] : [L];
+    this.cloudLayers = depth ? [depth, L] : [L];
     this.clouds = L;
     this._applyClouds();
-    old.forEach(o => { try { viewer.imageryLayers.remove(o, true); } catch (_) {} });
+    old.forEach(o => this._removeImageryWithDepth(o));
   },
 
   /** 관측 시각의 태양 방향. Cesium의 주야 조명과 같은 천체/고정 좌표계를 쓴다. */
@@ -290,13 +325,14 @@ export const imagery = {
     }
     if (time === this._cloudTime) return;
 
-    const L = viewer.imageryLayers.addImageryProvider(
+    const L = this._addImageryWithDepth(
       new Cesium.UrlTemplateImageryProvider({
-        url: `${API.REALEARTH}/image?products=globalir&time=${time}&x={x}&y={y}&z={z}`
-             + (CONFIG?.REALEARTH_KEY ? `&key=${CONFIG.REALEARTH_KEY}` : ''),
-        maximumLevel: 8,
-        credit: 'Source: SSEC RealEarth, UW-Madison',
-      })
+          url: `${API.REALEARTH}/image?products=globalir&time=${time}&x={x}&y={y}&z={z}`
+               + (CONFIG?.REALEARTH_KEY ? `&key=${CONFIG.REALEARTH_KEY}` : ''),
+          maximumLevel: 8,
+          credit: 'Source: SSEC RealEarth, UW-Madison',
+      }),
+      { mode: 'infrared', alpha: 0.12 },
     );
     L.brightness = 1.0;
     L.contrast   = 2.2;
@@ -702,11 +738,11 @@ export const imagery = {
       L.show = this._cloudOn;
       /* 타임라인 예보 보기 중엔 옅게 — 위성 구름은 실황이라 미래가 없다.
          진하게 두면 '+48시간의 구름'으로 잘못 읽힌다. (_swapCloudLayer 에도 같은 식) */
-      const shadow = L._earthusCloudRole === 'shadow';
-      const baseAlpha = shadow ? 0.28 : 1.0;
+      const depth = L._earthusCloudRole !== 'cloud';
+      const baseAlpha = depth ? (L._earthusDepthBaseAlpha ?? 0.28) : 1.0;
       L.alpha = this._cloudOn ? baseAlpha * (this._fxDim ? 0.15 : 1.0) : 0.0;
-      L.dayAlpha = day;
-      L.nightAlpha = shadow ? 0.0 : 1.0;
+      L.dayAlpha = depth ? day * (L._earthusDepthDayAlpha ?? 1.0) : day;
+      L.nightAlpha = depth ? (L._earthusDepthNightAlpha ?? 0.0) : 1.0;
     });
   },
 
@@ -794,7 +830,7 @@ export const imagery = {
     if (on === this._himaOn) return;
     this._himaOn = on;
     if (!on) {
-      this.himaLayers.forEach(L => { try { viewer.imageryLayers.remove(L, true); } catch (_) {} });
+      this.himaLayers.forEach(L => this._removeImageryWithDepth(L));
       this.himaLayers = [];
       this._himaTime = null;
       this._himaVisibleTime = null;
@@ -830,13 +866,19 @@ export const imagery = {
 
        ⚠️ 밤 적외의 색은 강수량이 아니라 구름 꼭대기 온도다. 예전에 비의 양처럼
        읽힌 사고가 있었으므로 ui-source에서 현재 채널과 이 한계를 반드시 밝힌다. */
-    const add = (layer, ts, tms, dayA, nightA, threshold) => {
-      const L = viewer.imageryLayers.addImageryProvider(
-        new Cesium.UrlTemplateImageryProvider({
-          url: `${API.GIBS}/${layer}/default/${ts}/${tms}/{z}/{y}/{x}.png`,
-          maximumLevel: tms.endsWith('7') ? 7 : 6,
-          credit: 'JMA Himawari via NASA GIBS',
-        }));
+    const add = (layer, ts, tms, dayA, nightA, threshold, mode) => {
+      const provider = new Cesium.UrlTemplateImageryProvider({
+        url: `${API.GIBS}/${layer}/default/${ts}/${tms}/{z}/{y}/{x}.png`,
+        maximumLevel: tms.endsWith('7') ? 7 : 6,
+        credit: 'JMA Himawari via NASA GIBS',
+      });
+      const L = this._addImageryWithDepth(provider, {
+        mode,
+        sun: mode === 'visible' ? this._sunFixedAt(ts) : null,
+        alpha: mode === 'visible' ? 0.20 : 0.12,
+        dayAlpha: dayA > 0 ? 1.0 : 0.0,
+        nightAlpha: nightA > 0 ? 1.0 : 0.0,
+      });
       L.dayAlpha = dayA;
       L.nightAlpha = nightA;
       /* ⚠️ 검은 배경(원반 바깥)을 뚫어야 지구 나머지가 보인다. */
@@ -849,9 +891,9 @@ export const imagery = {
        비교했더니 지표뿐 아니라 얇은 구름까지 사라졌다. 구름 양을 잘 보이게 하려다
        관측된 구름을 지우는 쪽으로 가면 안 된다. */
     if (visTs) add('Himawari_AHI_Band3_Red_Visible_1km', visTs,
-      'GoogleMapsCompatible_Level7', 0.9, 0.0, 0.16);
+      'GoogleMapsCompatible_Level7', 0.9, 0.0, 0.16, 'visible');
     if (irTs) add('Himawari_AHI_Band13_Clean_Infrared', irTs,
-      'GoogleMapsCompatible_Level6', 0.0, 0.82, 0.62);
+      'GoogleMapsCompatible_Level6', 0.0, 0.82, 0.62, 'infrared');
     this._himaMode = this._isNightHere() ? 'infrared' : 'visible';
     document.dispatchEvent(new CustomEvent('earthus:imagery'));
     console.log(`[hima] 가시광 ${visTs || '없음'} · 적외 ${irTs || '없음'} 적용`);
@@ -918,7 +960,7 @@ export const imagery = {
    *     대신 무엇을 보고 있는지 화면(ui-source)에 적는다.
    */
   async setHimaIR(on) {
-    (this.irLayers || []).forEach(L => { try { viewer.imageryLayers.remove(L, true); } catch (_) {} });
+    (this.irLayers || []).forEach(L => this._removeImageryWithDepth(L));
     this.irLayers = [];
     if (!on) { document.dispatchEvent(new CustomEvent('earthus:imagery')); return; }
     /* ⚠️ 타일 레이어라 바이트로 못 잰다 — 타일 진행으로 표시한다.
@@ -932,12 +974,14 @@ export const imagery = {
     if (!this._irManual) return;                    // 그 사이 꺼졌다
     this._irTime = ts;
 
-    const L = viewer.imageryLayers.addImageryProvider(
+    const L = this._addImageryWithDepth(
       new Cesium.UrlTemplateImageryProvider({
-        url: `${API.GIBS}/Himawari_AHI_Band13_Clean_Infrared/default/${ts}/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`,
-        maximumLevel: 6,
-        credit: 'JMA Himawari via NASA GIBS',
-      }));
+          url: `${API.GIBS}/Himawari_AHI_Band13_Clean_Infrared/default/${ts}/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`,
+          maximumLevel: 6,
+          credit: 'JMA Himawari via NASA GIBS',
+      }),
+      { mode: 'infrared', alpha: 0.12 },
+    );
     // 낮이든 밤이든 같은 자료다 — 적외는 해와 무관하게 관측한다.
     L.dayAlpha = 0.82;
     L.nightAlpha = 0.82;
@@ -1044,7 +1088,23 @@ export const imagery = {
         credit: 'GK-2A · KMA/NMSC via NOAA open data',
       });
     }
-    const layer = viewer.imageryLayers.addImageryProvider(provider);
+    /* 천리안 산출물은 서버가 원본 신호로 만든 gray+alpha다. 적외·가시광 모두
+       그 기존 알파만 깊이 마스크로 재사용한다. 새 구름 판정을 만들지 않는다.
+       가시광만 채널 관측 시각의 태양 방향으로 옮기고, 적외·야간 하층운은
+       물리적 그림자처럼 보이지 않는 약한 명암 분리만 둔다. 수증기는 구름층이
+       아니므로 깊이 효과를 붙이지 않는다. */
+    const visible = ch.startsWith('vi006');
+    const cloudChannel = visible || ch === 'ir112' || ch === 'ir112ea' || ch === 'nightlow';
+    const observed = this._gk2aDate(info, meta);
+    const layer = cloudChannel
+      ? this._addImageryWithDepth(provider, {
+          mode: 'alpha',
+          sun: visible && observed ? this._sunFixedAt(observed.toISOString()) : null,
+          alpha: visible ? 0.20 : 0.14,
+          dayAlpha: visible ? 1.0 : 1.0,
+          nightAlpha: visible ? 0.0 : 1.0,
+        })
+      : viewer.imageryLayers.addImageryProvider(provider);
     layer.alpha = 1.0;
     layer._earthusGK2AInfo = info;
     return layer;
@@ -1076,16 +1136,14 @@ export const imagery = {
   },
 
   _removeGK2AAutoLayers() {
-    this.gk2aAutoLayers.forEach(L => { try { viewer.imageryLayers.remove(L, true); } catch (_) { } });
+    this.gk2aAutoLayers.forEach(L => this._removeImageryWithDepth(L));
     this.gk2aAutoLayers = [];
     this._gk2aDetailWanted = false;
     this._gk2aDetailOn = false;
   },
 
   _removeGK2AWideIRLayers() {
-    this.gk2aWideIRLayers.forEach(L => {
-      try { viewer.imageryLayers.remove(L, true); } catch (_) { }
-    });
+    this.gk2aWideIRLayers.forEach(L => this._removeImageryWithDepth(L));
     this.gk2aWideIRLayers = [];
   },
 
@@ -1119,7 +1177,7 @@ export const imagery = {
     try {
       const fullLayer = await this._addGK2ALayer('ir112', m, '천리안 전면 적외 8km');
       if (!this._gk2aWideIROn) {
-        try { viewer.imageryLayers.remove(fullLayer, true); } catch (_) { }
+        this._removeImageryWithDepth(fullLayer);
         return;
       }
       fullLayer._earthusGK2ARole = 'overview';
@@ -1131,7 +1189,7 @@ export const imagery = {
         try {
           const detailLayer = await this._addGK2ALayer('ir112ea', m, '천리안 동아시아 적외 2km');
           if (!this._gk2aWideIROn) {
-            try { viewer.imageryLayers.remove(detailLayer, true); } catch (_) { }
+            this._removeImageryWithDepth(detailLayer);
             return;
           }
           detailLayer._earthusGK2ARole = 'east-asia-detail';
@@ -1171,7 +1229,7 @@ export const imagery = {
       this._removeGK2AAutoLayers();
       const overviewLayer = await this._addGK2ALayer(
         overview, m, daylight ? '천리안 전면 가시광' : '천리안 전면 적외 8km');
-      if (!this._gk2aAutoOn) { try { viewer.imageryLayers.remove(overviewLayer, true); } catch (_) { } return; }
+      if (!this._gk2aAutoOn) { this._removeImageryWithDepth(overviewLayer); return; }
       overviewLayer._earthusGK2ARole = 'overview';
       this.gk2aAutoLayers.push(overviewLayer);
 
@@ -1181,7 +1239,7 @@ export const imagery = {
         try {
           const broadLayer = await this._addGK2ALayer(
             broad, m, daylight ? '천리안 동아시아 가시광 2km' : '천리안 동아시아 적외 2km');
-          if (!this._gk2aAutoOn) { try { viewer.imageryLayers.remove(broadLayer, true); } catch (_) { } return; }
+          if (!this._gk2aAutoOn) { this._removeImageryWithDepth(broadLayer); return; }
           broadLayer._earthusGK2ARole = 'broad';
           this.gk2aAutoLayers.push(broadLayer);
         } catch (e) {
@@ -1273,7 +1331,7 @@ export const imagery = {
         this._gk2aDetailPending = this._addGK2ALayer(
           'vi006', this._gk2aMeta, '천리안 한반도 0.5km').then(L => {
           if (!this._gk2aDetailWanted || !this._gk2aAutoOn) {
-            try { viewer.imageryLayers.remove(L, true); } catch (_) { }
+            this._removeImageryWithDepth(L);
             return;
           }
           L._earthusGK2ARole = 'detail';
@@ -1288,7 +1346,7 @@ export const imagery = {
       return;
     }
     if (!show && detail) {
-      try { viewer.imageryLayers.remove(detail, true); } catch (_) { }
+      this._removeImageryWithDepth(detail);
       this.gk2aAutoLayers = this.gk2aAutoLayers.filter(L => L !== detail);
       this._gk2aDetailOn = false;
       viewer.scene.requestRender();
@@ -1313,7 +1371,7 @@ export const imagery = {
   async setGK2A(ch, on) {
     const cur = this.gk2aLayers[ch];
     if (!on) {
-      if (cur) { try { viewer.imageryLayers.remove(cur, true); } catch (_) { } }
+      if (cur) this._removeImageryWithDepth(cur);
       this.gk2aLayers[ch] = null;
       return;
     }

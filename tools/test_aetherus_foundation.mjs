@@ -40,7 +40,11 @@ assert.doesNotMatch(appCssSource, /ambientMoon|ambient-moon/);
 assert.doesNotMatch(mainSource, /ambientMoon|ambient-moon/);
 assert.match(viewerSource, /scene\.skyBox\.show = false/);
 assert.match(viewerSource, /new Cesium\.EquirectangularPanorama/);
+assert.match(viewerSource, /earthus-milky-way\/panorama-6000\.webp/);
+assert.match(viewerSource, /maximumTextureSize/);
 assert.match(viewerSource, /earthus-milky-way\/panorama\.webp/);
+assert.match(indexSource, /ESO\/S\. Brunier · CC BY 4\.0/);
+assert.match(mainSource, /layers\/imagery\.js\?v=20260813-clouddepth1/);
 
 const catalogFiles = {
   'space-photos': 'prototype/data/space-photos.json',

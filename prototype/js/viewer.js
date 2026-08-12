@@ -84,15 +84,33 @@ export function initViewer(containerId) {
 
   /* ── 리빙어스 룩 ────────────────────────────────────────────── */
   scene.backgroundColor = Cesium.Color.BLACK;
-  /* 받은 지적(2026-08-12): 지구 밖이 작은 별점만 고르게 반복되어 우주가 평면처럼 보였다.
-     EARTHUS 전용 360도 은하수 원본을 천구 파노라마로 둘러 카메라 회전에 맞춰 움직이게 한다.
+  /* 받은 지적(2026-08-12): 처음 넣은 1774×887 생성 원본을 4096×2048로 늘리고
+     121KB까지 압축해, 레티나·4K 화면에서 은하수와 별이 크게 깨졌다.
+
+     ESO/S. Brunier의 실제 6000×3000 전천 사진을 네이티브 해상도로 쓰고, 6K 텍스처를
+     안정적으로 올릴 수 없는 GPU·작은 화면에는 별도 4K 파생본을 쓴다. 파일 숫자만 큰
+     업스케일이 아니며 두 파일 모두 같은 실제 6K 원본에서 만든다.
+
      화면 위 DOM이나 무한 애니메이션이 아니라 Cesium의 기존 장면 primitive이므로
-     requestRenderMode의 유휴 정지와 지구 조작 좌표계를 그대로 지킨다. */
+     requestRenderMode의 유휴 정지와 지구 조작 좌표계를 그대로 지킨다.
+     ⚠️ 크레딧은 ui-source.js와 설정 화면에 항상 보인다. 지우지 말 것. */
+  const skyTextureLimit = scene.context?.maximumTextureSize || 4096;
+  const memoryGb = Number(navigator.deviceMemory || 0);
+  const desktopLike = window.innerWidth >= 1024 && window.matchMedia('(pointer:fine)').matches;
+  const useSixKMilkyWay = skyTextureLimit >= 6000 && desktopLike && (!memoryGb || memoryGb >= 6);
+  const milkyWayPanorama = useSixKMilkyWay
+    ? 'space/skybox/earthus-milky-way/panorama-6000.webp?v=20260813-sky6k2'
+    : 'space/skybox/earthus-milky-way/panorama.webp?v=20260813-sky6k2';
+  /* ESO 원본은 은하면이 수평인 전천 지도다. 그대로 두면 지구 뒤에서 일자로 누워
+     보이므로 천구 자체를 회전해 실제 하늘을 올려다보는 대각선 구도로 놓는다. */
+  const milkyWayRotation = Cesium.Matrix3.fromRotationX(Cesium.Math.toRadians(46));
+  const milkyWayTransform = Cesium.Matrix4.fromRotationTranslation(milkyWayRotation);
   scene.skyBox.show = false;
   scene.primitives.add(new Cesium.EquirectangularPanorama({
-    transform: Cesium.Matrix4.IDENTITY,
-    image: 'space/skybox/earthus-milky-way/panorama.webp?v=20260812b',
+    transform: milkyWayTransform,
+    image: milkyWayPanorama,
     radius: 500_000_000,
+    credit: '<a href="https://www.eso.org/public/images/eso0932a/" target="_blank">ESO/S. Brunier · CC BY 4.0</a>',
   }));
   globe.baseColor = Cesium.Color.BLACK;
   globe.enableLighting = true;         // 주야 경계선

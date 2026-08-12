@@ -24,7 +24,9 @@ import { initAccount, loginSheet, consentSheet, accountSheet,
          legalView, waitlistUI } from './ui-account.js';
 import { renderChangelog } from './changelog.js';
 import { satPanel } from './ui-sat.js';
-import { skyPanel } from './ui-sky.js';
+// 별보기 근거 베타는 서비스워커의 이전 Sky 패널 캐시를 재사용하면 공개 화면에
+// 나타나지 않는다. 화면 계약이 바뀔 때만 revision을 올려 새 모듈을 받는다.
+import { skyPanel } from './ui-sky.js?v=20260812-stargazing-evidence1';
 import { flightPanel } from './ui-flight.js';
 import { subscribeSheet, demandSheet } from './ui-subscribe.js';
 import { communityPanel } from './ui-community.js';

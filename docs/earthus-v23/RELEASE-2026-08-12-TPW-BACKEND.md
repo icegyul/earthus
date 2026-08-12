@@ -78,7 +78,12 @@ CloudFront 정적 파일은 수정하지 않았다.
 - `TPW_READY=false`, `SALES_OPEN=false`, Decision UI off, SNS 자동 게시 금지 유지
 - query 없는 첫 화면은 아름다운 Earth이고 TPW는 준비 중으로 잠김
 - 공개 flag 전환은 별도 PD 승인과 flag 배포·CloudFront 무효화·운영 재검증 필요
-- Lambda DLQ, X-Ray active tracing, CloudWatch alarm은 계정 공통 운영 관측 작업에 포함해 별도 진행
+- Lambda DLQ, 로그 보존, CloudWatch alarm 적용을 시도했으나 배포 IAM에
+  `sqs:CreateQueue`, `logs:PutRetentionPolicy`, `cloudwatch:PutMetricAlarm` 권한이 없어 모두
+  `AccessDenied`로 중단됐다. 부분 생성은 없고 Lambda `DeadLetter`도 계속 비어 있다.
+- 최소권한 제안은 `aws/tpw-operations-deploy-policy.json`, 멱등 적용 절차는
+  `aws/configure-tpw-operations.sh`에 고정했다. 승인된 관리자만 정책을 부여한 뒤 실행한다.
+- X-Ray active tracing과 실제 alarm 수신처 연결은 계정 공통 운영 관측 작업에 포함해 별도 진행한다.
 - source governance의 재배포·유료 export·API resale·AI 권리는 계속 DRAFT/UNKNOWN
 
 ## 7. 검증과 롤백

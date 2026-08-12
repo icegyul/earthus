@@ -1,0 +1,41 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "TpwDeadLetterQueue",
+      "Effect": "Allow",
+      "Action": [
+        "sqs:CreateQueue",
+        "sqs:GetQueueAttributes",
+        "sqs:GetQueueUrl",
+        "sqs:SetQueueAttributes",
+        "sqs:TagQueue"
+      ],
+      "Resource": "arn:aws:sqs:ap-northeast-2:294951922100:earthus-tpw-grid-dlq"
+    },
+    {
+      "Sid": "TpwLogRetention",
+      "Effect": "Allow",
+      "Action": "logs:PutRetentionPolicy",
+      "Resource": "arn:aws:logs:ap-northeast-2:294951922100:log-group:/aws/lambda/tpw-grid:*"
+    },
+    {
+      "Sid": "TpwMetricAlarms",
+      "Effect": "Allow",
+      "Action": "cloudwatch:PutMetricAlarm",
+      "Resource": "arn:aws:cloudwatch:ap-northeast-2:294951922100:alarm:earthus-tpw-grid-*"
+    },
+    {
+      "Sid": "VerifyTpwLogs",
+      "Effect": "Allow",
+      "Action": "logs:DescribeLogGroups",
+      "Resource": "*"
+    },
+    {
+      "Sid": "VerifyTpwAlarms",
+      "Effect": "Allow",
+      "Action": "cloudwatch:DescribeAlarms",
+      "Resource": "arn:aws:cloudwatch:ap-northeast-2:294951922100:alarm:earthus-tpw-grid-*"
+    }
+  ]
+}

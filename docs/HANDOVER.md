@@ -106,6 +106,15 @@ UI JS/CSS를 요청하지 않는다. 정적 7개 파일은 CloudFront 무효화
 검증했다. 증거는 [`earthus-v23/RELEASE-2026-08-12-PR08.md`](earthus-v23/RELEASE-2026-08-12-PR08.md)다.
 실제 preference 저장, 공개 추천, 예약 행동은 여전히 금지다.
 
+PD의 다음 **“해”** 지시로 PR-09 Reservation Impact의 순수 shadow 계약을 구현했다.
+이는 두 공급자 근거 snapshot을 비교해 사용자 확인이 필요한 변경을 제안할 뿐이며,
+미승인·지연·불완전 근거는 `WITHHELD`, 같은 fingerprint는 `DUPLICATE_WITHHELD`다.
+어떤 결과도 알림 발송·예약 생성/변경/취소·결제를 실행하지 않는다. PR-09 검증과 전체
+회귀를 통과했고 모듈 하나는 CloudFront 무효화 `IE164QWY602L1FE71OM8KURR2T`로 운영 반영했다.
+정본은 [`earthus-v23/RESERVATION_IMPACT.md`](earthus-v23/RESERVATION_IMPACT.md), 배포 근거는
+[`earthus-v23/RELEASE-2026-08-12-PR09.md`](earthus-v23/RELEASE-2026-08-12-PR09.md)다.
+실제 provider adapter·알림·예약/취소/결제는 계약·RLS·canary·PD 승인 전까지 금지다.
+
 ---
 
 ## 1. 무엇보다 먼저 — 이 프로젝트의 원칙

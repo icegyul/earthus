@@ -210,6 +210,21 @@ TPW는 공통 표현 엔진과 테스트만 포함하며 운영 객체
 구현과 반응형 UI 검수 완료는 공개 추천 승인이 아니다.
 위 미완료 항목 전에는 flag를 켜거나 실제 사용자 선호를 저장하지 않는다.
 
+## 4-9. PR-09 Reservation Impact shadow와 남은 gate
+
+- [x] opaque watch와 공급자 evidence snapshot의 schema/time/revision/n 계약
+- [x] 미승인·지연·불완전·provider mismatch `WITHHELD`, 최초 snapshot `BASELINE_RECORDED`
+- [x] evidence diff, stable fingerprint, duplicate proposal `DUPLICATE_WITHHELD`
+- [x] 사용자 `REVIEWED`/`DISMISSED` 확인만 기록하고 provider/payment action 0
+- [x] 공급자 실패·정정·중복·idempotency contract와 전체 회귀
+- [x] 정적 shadow module 운영 배포; 공개 UI/notification/adapter 0
+- [ ] 공급자별 권리·availability/change/cancel/cache/history/notification 계약
+- [ ] authenticated provider adapter, source/time/revision/n 보존, outage/retry/correction replay
+- [ ] consent/delete/retention·RLS tenant A/B·notification delivery idempotency 증거
+- [ ] sandbox/canary/rollback rehearsal 및 PD의 action route 승인
+
+상세 계약은 `RESERVATION_IMPACT.md`다. 공급자 성공을 추정하거나 예약·취소·결제를 실행하지 않는다.
+
 ## 5. 금지
 
 - PR-01에서 기존 source handler 64개를 한 번에 교체하지 않는다.

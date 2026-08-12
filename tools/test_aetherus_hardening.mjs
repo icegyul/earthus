@@ -4,9 +4,9 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const modules = ['ai-evidence.js', 'remote-observatory.js', 'plugin-sandbox.js', 'personal-universe.js', 'community-safety.js', 'citizen-science.js'];
+const modules = ['space/ai-evidence.js', 'space/remote-observatory.js', 'space/plugin-sandbox.js', 'reservation-impact.js', 'space/personal-universe.js', 'space/community-safety.js', 'space/citizen-science.js'];
 for (const name of modules) {
-  const source = await readFile(path.join(ROOT, 'prototype/js/space', name), 'utf8');
+  const source = await readFile(path.join(ROOT, 'prototype/js', name), 'utf8');
   assert.doesNotMatch(source, /\bfetch\s*\(|WebSocket|navigator\.serial|navigator\.bluetooth/, `${name}: no external/device bypass`);
   assert.doesNotMatch(source, /setInterval|requestAnimationFrame/, `${name}: no owned infinite render loop`);
 }

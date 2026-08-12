@@ -4,6 +4,7 @@ import { API } from '../config.js';
 import { store } from '../store.js';
 import { fetchT } from '../net.js';
 import { CONFIG } from '../config.local.js';
+import { buildCloudShadowAlpha } from '../cloud-shadow.js?v=20260812-cloudshadow1';
 
 /** GIBS 시간축 레이어는 D-1이 안전 (당일치는 처리 지연) */
 function ymd(offsetDays = -1) {
@@ -123,18 +124,56 @@ export const imagery = {
   },
 
   /** 새 레이어를 얹고 이전 것을 치운다 (깜빡임 없이 교체) */
-  _swapCloudLayer(L) {
-    // ⚠️ 새 구름 타일도 트루컬러 상태를 따라야 한다 (안 그러면 갱신될 때 다시 겹친다)
-    /* 타임라인 예보 보기 중엔 위성 구름을 옅게 — 위성은 실황이라 미래가 없다.
-       진하게 두면 '+48시간의 구름'으로 잘못 읽힌다. */
-    L.alpha = (this._cloudOn && !(this.truecolor && this.truecolor.show))
-      ? (this._fxDim ? 0.15 : 1.0) : 0.0;
-    // ⚠️ show 도 같이 맞춘다 — alpha 0 만으로는 타일 요청이 안 멈춘다(_applyClouds 참고)
-    L.show = this._cloudOn;
+  _swapCloudLayer(L, shadow = null) {
+    /* 그림자를 먼저 넣어 같은 구름 본체 아래에만 놓는다. 둘 다 같은 관측 알파에서
+       나왔고, 구름 설정·트루컬러·타임라인 상태도 _applyClouds 한 곳에서 함께 따른다. */
+    L._earthusCloudRole = 'cloud';
+    if (shadow) shadow._earthusCloudRole = 'shadow';
     const old = this.cloudLayers.slice();
-    this.cloudLayers = [L];
+    this.cloudLayers = shadow ? [shadow, L] : [L];
     this.clouds = L;
+    this._applyClouds();
     old.forEach(o => { try { viewer.imageryLayers.remove(o, true); } catch (_) {} });
+  },
+
+  /** 관측 시각의 태양 방향. Cesium의 주야 조명과 같은 천체/고정 좌표계를 쓴다. */
+  _sunFixedAt(isoTime) {
+    const time = Cesium.JulianDate.fromIso8601(isoTime);
+    const inertial = Cesium.Simon1994PlanetaryPositions
+      .computeSunPositionInEarthInertialFrame(time, new Cesium.Cartesian3());
+    let transform = Cesium.Transforms.computeIcrfToFixedMatrix(time, new Cesium.Matrix3());
+    if (!Cesium.defined(transform)) {
+      transform = Cesium.Transforms.computeTemeToPseudoFixedMatrix(time, new Cesium.Matrix3());
+    }
+    const fixed = Cesium.Matrix3.multiplyByVector(transform, inertial, new Cesium.Cartesian3());
+    Cesium.Cartesian3.normalize(fixed, fixed);
+    return [fixed.x, fixed.y, fixed.z];
+  },
+
+  _cloudShadowCanvas(rgba, width, height, meta) {
+    const shadow = buildCloudShadowAlpha({
+      rgba, sourceWidth: width, sourceHeight: height,
+      north: Cesium.Math.toRadians(meta.north), south: Cesium.Math.toRadians(meta.south),
+      sun: this._sunFixedAt(meta.time),
+    });
+    const mask = document.createElement('canvas');
+    mask.width = shadow.width; mask.height = shadow.height;
+    const maskContext = mask.getContext('2d');
+    const maskPixels = maskContext.createImageData(mask.width, mask.height);
+    for (let i = 0; i < shadow.alpha.length; i += 1) {
+      const offset = i * 4;
+      maskPixels.data[offset] = maskPixels.data[offset + 1] = maskPixels.data[offset + 2] = 0;
+      maskPixels.data[offset + 3] = shadow.alpha[i];
+    }
+    maskContext.putImageData(maskPixels, 0, 0);
+
+    // 날카로운 복사본이 아니라 지표에 닿는 부드러운 그림자로 보이게 한다.
+    const canvas = document.createElement('canvas');
+    canvas.width = mask.width; canvas.height = mask.height;
+    const context = canvas.getContext('2d');
+    context.filter = 'blur(1.4px)';
+    context.drawImage(mask, 0, 0);
+    return canvas;
   },
 
   /* ── 1순위: 우리가 만든 GMGSI 합성본 ──────────────────────────
@@ -197,18 +236,32 @@ export const imagery = {
       }
       ctx.putImageData(px, 0, 0);
 
+      /* 받은 지적(2026-08-12): "리빙어스를 보면 구름 그림자도 표현되어 있어 진짜
+         구름처럼 보여". 같은 NOAA 구름 알파를 관측 시각의 태양 방향으로만 투영한다.
+         ⚠️ 대표 구름 높이는 시각 효과일 뿐 관측값이 아니며 화면·자료로 내보내지 않는다.
+         ⚠️ 별도 타이머나 애니메이션이 없다. 새 관측 영상이 올 때 한 번만 다시 만든다. */
+      const shadowCanvas = this._cloudShadowCanvas(d, cv.width, cv.height, m);
+      const rectangle = Cesium.Rectangle.fromDegrees(-180, m.south, 180, m.north);
+      const shadowLayer = viewer.imageryLayers.addImageryProvider(
+        new Cesium.SingleTileImageryProvider({
+          url: shadowCanvas.toDataURL('image/png'),
+          rectangle,
+          tileWidth: shadowCanvas.width, tileHeight: shadowCanvas.height,
+        })
+      );
+
       const L = viewer.imageryLayers.addImageryProvider(
         new Cesium.SingleTileImageryProvider({
           url: cv.toDataURL('image/png'),
           // ⚠️ 자료가 위도 ±72.7° 까지다. 이 사각형을 정확히 맞춰야 구름이 제 위치에 온다.
-          rectangle: Cesium.Rectangle.fromDegrees(-180, m.south, 180, m.north),
+          rectangle,
           tileWidth: cv.width, tileHeight: cv.height,
           credit: m.credit || 'NOAA NESDIS GMGSI',
         })
       );
       this._cloudTime = m.time;
       this._cloudSource = 'gmgsi';
-      this._swapCloudLayer(L);
+      this._swapCloudLayer(L, shadowLayer);
       return true;
     } catch (e) {
       console.warn('[clouds] GMGSI 실패 → RealEarth 로 폴백:', e.message);
@@ -649,9 +702,11 @@ export const imagery = {
       L.show = this._cloudOn;
       /* 타임라인 예보 보기 중엔 옅게 — 위성 구름은 실황이라 미래가 없다.
          진하게 두면 '+48시간의 구름'으로 잘못 읽힌다. (_swapCloudLayer 에도 같은 식) */
-      L.alpha = this._cloudOn ? (this._fxDim ? 0.15 : 1.0) : 0.0;
+      const shadow = L._earthusCloudRole === 'shadow';
+      const baseAlpha = shadow ? 0.28 : 1.0;
+      L.alpha = this._cloudOn ? baseAlpha * (this._fxDim ? 0.15 : 1.0) : 0.0;
       L.dayAlpha = day;
-      L.nightAlpha = 1.0;
+      L.nightAlpha = shadow ? 0.0 : 1.0;
     });
   },
 

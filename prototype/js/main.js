@@ -17,7 +17,7 @@ import { store } from './store.js';
 import { earthViewState } from './earth-view-state.js?v=20260812-contours2';
 import { hasEarthRoute } from './earth-route-state.js';
 import { registry } from './layers/registry.js?v=20260812-photoownership1';
-import { imagery } from './layers/imagery.js';
+import { imagery } from './layers/imagery.js?v=20260812-cloudshadow1';
 import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js?v=20260812-hudreturn1';
 import { i18n } from './i18n.js';
 import { auth } from './auth.js';

@@ -179,12 +179,14 @@ TPW는 공통 표현 엔진과 테스트만 포함하며 운영 객체
 - [x] Safety/Confidence/Crowd/Availability revision까지 포함한 deterministic cache key
 - [x] GS-06~10 합성 replay, 자동검사 31개, 10,000회 benchmark
 - [x] `CALIBRATION_SHADOW`, `DECISION_CORE_READY=false`, live provider/UI/network 0
+- [x] 순수 ES module 3개 shadow 운영 배포·live hash/import/golden replay
 - [ ] profile 곡선·weight·하산 여유 도메인 승인과 effective/rollback version
 - [ ] 활동별 공식 운영·취소·폐쇄 provider와 한국 밖 Safety provider
 - [ ] live weather/AQ source rights·freshness·서울 리전 network gate
 - [ ] PR-08 private delta와 5축 공개 UI 실제 화면·접근성 검수
 
-상세 계약은 `DECISION_CORE.md`다. 높은 합성 점수는 품질 시험일 뿐 관측·예보·추천이 아니며,
+상세 계약은 `DECISION_CORE.md`, 배포 증거는 `RELEASE-2026-08-12-PR07.md`다. 높은 합성
+점수는 품질 시험일 뿐 관측·예보·추천이 아니며,
 위 미완료 항목 전에는 public entry가 이 엔진을 import하거나 긍정 추천을 만들지 않는다.
 
 ## 5. 금지

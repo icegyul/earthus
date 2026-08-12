@@ -88,7 +88,10 @@ cache key를 만들고, Safety가 100점 Base보다 먼저 긍정 추천을 막�
 자동검사 31개·10,000회 replay를 통과했지만 곡선 도메인 승인·live source/권리·한국 밖 Safety·
 PR-08 UI 전까지 `CALIBRATION_SHADOW`, `DECISION_CORE_READY=false`다. 정본은
 [`earthus-v23/DECISION_CORE.md`](earthus-v23/DECISION_CORE.md)다. 공개 앱 entry는 아직 이
-모듈을 import하지 않으며 개인화·예약·취소·폐쇄·재고를 생성하지 않는다.
+모듈을 import하지 않으며 개인화·예약·취소·폐쇄·재고를 생성하지 않는다. 코드 커밋은
+`e9236da`, shadow module 3개의 CloudFront 무효화는 `I4ALHAYXU16XI9PQBBH0UBH4FB`이고,
+live SHA-256·ES module import·GS-06 replay 증거는
+[`earthus-v23/RELEASE-2026-08-12-PR07.md`](earthus-v23/RELEASE-2026-08-12-PR07.md)에 있다.
 
 ---
 

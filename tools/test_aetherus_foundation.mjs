@@ -26,12 +26,16 @@ const routes = await importBrowserModule('prototype/js/space/route-state.js');
 const cosmicSource = await readFile(path.join(ROOT, 'prototype/js/space/cosmic3d.js'), 'utf8');
 const uiSource = await readFile(path.join(ROOT, 'prototype/js/ui.js'), 'utf8');
 const viewerSource = await readFile(path.join(ROOT, 'prototype/js/viewer.js'), 'utf8');
+const indexSource = await readFile(path.join(ROOT, 'prototype/index.html'), 'utf8');
+const appCssSource = await readFile(path.join(ROOT, 'prototype/css/app.css'), 'utf8');
 
 assert.match(cosmicSource, /this\.makeEarthMoon\(new Date\(\)\)/);
 assert.match(cosmicSource, /this\.planetMeshes\.moon = moon/);
 assert.match(cosmicSource, /달 위치·지구와의 거리 압축 도식/);
 assert.doesNotMatch(uiSource, /const allowed = \(\) => location\.hash === '#dev'/);
-assert.match(viewerSource, /scene\.moon\.show = true/);
+assert.match(viewerSource, /scene\.moon\.show = false/);
+assert.match(indexSource, /id="ambientMoon" class="ambient-moon"/);
+assert.match(appCssSource, /body\.scene-space \.ambient-moon\{display:none\}/);
 
 const catalogFiles = {
   'space-photos': 'prototype/data/space-photos.json',

@@ -95,7 +95,7 @@
 }
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Widgets/widgets.css">
-<link rel="stylesheet" href="css/app.css?v=20260812-earthmoonhud1">
+<link rel="stylesheet" href="css/app.css?v=20260812-ambientmoon1">
 <link rel="stylesheet" href="css/account.css">
 <link rel="stylesheet" href="css/ask.css">
 <link rel="stylesheet" href="css/readability.css?v=20260812-contours1">
@@ -350,6 +350,10 @@
       <div class="amb-date" id="ambDate">—</div>
       <div class="amb-city" id="ambCity">—</div>
     </div>
+    <!-- 받은 지적(2026-08-12): "이 화면일 때 달도 보이게".
+         실제 천구 좌표의 Cesium Moon은 시각에 따라 화면 밖으로 나가므로, 첫 Earth View에서는
+         지구-달 관계를 한눈에 읽는 압축 연출을 쓴다. 실제 거리·방향 도식은 아니다. -->
+    <div id="ambientMoon" class="ambient-moon" aria-hidden="true"></div>
     <!-- ⚠️ 누르면 날씨 시트가 열린다 (ui-weather.js). #ambient 는 pointer-events:none 이라
          이 덩어리만 CSS 에서 auto 로 되돌린다 — 전체를 되돌리면 지구를 못 돌린다. -->
     <div class="amb-bottom" id="ambBottom" role="button" tabindex="0" aria-label="날씨 자세히">

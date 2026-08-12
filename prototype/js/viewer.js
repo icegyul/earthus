@@ -90,10 +90,10 @@ export function initViewer(containerId) {
   scene.skyAtmosphere.show = true;     // 림 라이팅
   scene.fog.enabled = false;
   globe.showWaterEffect = false;
-  /* 받은 지적(2026-08-12): "지구를 볼 때 옆에 달이 있어야 하는데 달이 없어".
-     지구 장면의 달은 Cesium 시간계가 계산한 실제 천구 방향만 쓴다. 화면 밖에 있는
-     시각에는 억지로 옆에 붙이지 않고, AETHERUS 태양계에는 별도 압축 도식을 둔다. */
-  scene.moon.show = true;
+  /* 받은 지적(2026-08-12): "이 화면일 때 달도 보이게".
+     Cesium Moon은 실제 천구 방향이라 첫 화면 밖으로 사라질 수 있고, ambient 압축 달과
+     동시에 보이면 달이 두 개가 된다. 첫 Earth View의 달은 #ambientMoon 하나로 고정한다. */
+  scene.moon.show = false;
   scene.sun.show = true;
   scene.highDynamicRange = false;
 

@@ -51,6 +51,22 @@ a{color:var(--teal);text-decoration:none}
   transition:opacity .55s ease,transform .55s ease}
 #ambient.hidden{opacity:0;transform:translateY(-10px)}
 
+/* 첫 Earth View의 달. 실제 천구 방향을 따라가면 대부분 화면 밖에 있으므로 이 화면에서만
+   지구 옆에 압축해 둔다. 궤도 애니메이션은 발열과 거짓 거리 인상을 만들기 때문에 쓰지 않는다. */
+.ambient-moon{position:absolute;z-index:1;top:40%;
+  left:calc(50% + clamp(220px,22vw,440px));
+  width:clamp(58px,6vw,104px);aspect-ratio:1;border-radius:50%;
+  background:
+    radial-gradient(circle at 32% 27%,rgba(255,255,255,.18) 0,rgba(255,255,255,.03) 32%,rgba(0,0,0,.24) 67%,rgba(0,0,0,.76) 100%),
+    url('../space/planets/small/moon.webp?v=20260810d') center/cover no-repeat;
+  box-shadow:inset -10px -7px 18px rgba(0,0,0,.48),0 0 2px rgba(255,255,255,.7),0 0 18px rgba(180,205,230,.12);
+  opacity:.9;transform:translate(-50%,-50%);filter:saturate(.75) contrast(1.08)}
+body.scene-space .ambient-moon{display:none}
+
+@media(max-width:520px){
+  .ambient-moon{top:36%;left:calc(50% + 29vw);width:clamp(44px,13vw,58px)}
+}
+
 .amb-top{position:absolute;top:max(40px,env(safe-area-inset-top));left:0;right:0;text-align:center}
 .clock{font-size:clamp(44px,8.6vw,74px);font-weight:200;line-height:1;
   display:flex;align-items:baseline;justify-content:center;gap:.26em}

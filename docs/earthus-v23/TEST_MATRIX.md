@@ -113,6 +113,13 @@
 - PR-04 운영 8개 정적 파일 SHA-256 일치, 390×844 overflow 0, 기온 Data·read mode·
   지점 Evidence·새로고침·Earth 복귀·TPW 잠금·AETHERUS·해구 회귀 통과
 - 유효 운영 경로 warning/error 0. TPW 우회 시험에는 설계된 `UNAVAILABLE_LAYER` warning 1건만 기록
-- Safari·구형 iPhone·idle/released render owner 실제 계측은 남은 gate
+- PR-07 Activity Decision 31/31: 5개 Base profile, 6차원 Confidence, Safety-first,
+  deterministic public cache, 결측/중복/unit/range/timezone fail-closed
+- PR-08 Personalization/5축 UI 30/30: 명시적 동의/취향, ±12 cap 후보, private no-store,
+  민감·행동 추론 차단, Safety 보호축, UNKNOWN·same-scope compare/no-winner 계약
+- PR-08 390×844/430×932/768×1024/1280×900 실제 합성 화면: overflow 0,
+  Safety first, 44px target, focus/Escape, 개인화 off/on, source/time/revision/n, console error 0
+- production-like local entry flag off: Decision UI JS/CSS request 0, host DOM 0, Earth container 1
+- Safari·구형 iPhone·screen reader·idle/released render owner 실제 계측은 남은 gate
 
-이 기준선은 PR-04 로컬 완료와 PR-11 운영 전후 비교 기준이다.
+이 기준선은 PR-08 shadow 완료와 PR-11 운영 전후 비교 기준이다.

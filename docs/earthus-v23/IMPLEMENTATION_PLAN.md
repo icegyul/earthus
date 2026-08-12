@@ -6,8 +6,8 @@
 > PR-02 governance shadow, PR-03 Earth View State를 구현했다. 후속 배포 지시로 PR-03와 잠긴
 > TPW 정적 계약만 운영 반영했다. 후속 직접 지시로 PR-04 Readability와 PR-05 Safety Slice도
 > 구현·운영 반영했다. PR-06 Continuous Layers도 구현·검수·정적 운영 반영했다.
-> 후속 직접 지시로 PR-07 Decision Core도 CALIBRATION/SHADOW로 구현했다.
-> TPW flag on·Decision UI·판매·SNS는 미승인이다.
+> 후속 직접 지시로 PR-07 Decision Core와 PR-08 Personalization/5축 UI도
+> CALIBRATION/SHADOW로 구현했다. TPW flag on·Decision UI 공개·판매·SNS는 미승인이다.
 
 ## 1. 공통 PR 형식
 
@@ -183,11 +183,31 @@ TPW는 공통 표현 엔진과 테스트만 포함하며 운영 객체
 - [ ] profile 곡선·weight·하산 여유 도메인 승인과 effective/rollback version
 - [ ] 활동별 공식 운영·취소·폐쇄 provider와 한국 밖 Safety provider
 - [ ] live weather/AQ source rights·freshness·서울 리전 network gate
-- [ ] PR-08 private delta와 5축 공개 UI 실제 화면·접근성 검수
+- [x] PR-08 private delta와 5축 shadow UI 실제 화면·접근성 검수
 
 상세 계약은 `DECISION_CORE.md`, 배포 증거는 `RELEASE-2026-08-12-PR07.md`다. 높은 합성
 점수는 품질 시험일 뿐 관측·예보·추천이 아니며,
 위 미완료 항목 전에는 public entry가 이 엔진을 import하거나 긍정 추천을 만들지 않는다.
+
+## 4-8. PR-08 Personalization/5축 UI shadow와 남은 gate
+
+- [x] `PUBLIC_SHARED_BASE` 불변과 `USER_SCOPED_PRIVATE` bounded delta 분리
+- [x] 명시적 동의·명시적 preference만 허용하고 추론·민감정보 fail-closed
+- [x] ±12 초기 후보, raw/bounded/cap/contribution/revision ledger
+- [x] private key hash, TTL ≤300초, `private, no-store`, 원 subject 비노출
+- [x] Safety→Activity→Confidence→Crowd→Availability 고정 순서
+- [x] UNKNOWN 보존, 개인화 끄기, same-profile/time 비교, winner 없음
+- [x] source/time/revision/n, 쉬운 사유 문장, 44px/Escape/focus 계약
+- [x] 자동검사 30개와 4개 viewport 실제 화면·flag-off entry 검수
+- [x] `DECISION_CORE_READY=false`, live adapter·사용자 저장·예약 action 0
+- [ ] ±12 사용자 연구·분포·공정성 검증과 policy freeze
+- [ ] consent/preference 저장·철회·삭제, RLS/tenant·보존정책
+- [ ] live source/공식 폐쇄·운영 provider·한국 밖 Safety E2E
+- [ ] Safari·구형 iPhone·screen reader·canary/rollback rehearsal
+- [ ] PD의 공개 flag 전환 승인
+
+상세 계약은 `PERSONALIZATION_UI.md`다. 구현과 반응형 UI 검수 완료는 공개 추천 승인이 아니다.
+위 미완료 항목 전에는 flag를 켜거나 실제 사용자 선호를 저장하지 않는다.
 
 ## 5. 금지
 

@@ -1,7 +1,7 @@
 # EARTHUS v2.3 P0 실행 문서
 
 > 기준일: 2026-08-12 KST
-> 상태: **P0 완료 · PR-03와 잠긴 TPW 정적 계약 운영 배포 · PR-01/02 backend 미배포**
+> 상태: **P0 완료 · PR-08까지 shadow/정적 구현 · 공개 Decision flag off · PR-01/02 backend 미배포**
 > 제품 코드 착수 관문: 2026-08-16 사용량 리셋 확인과 PD 승인
 
 이 디렉터리는 `EARTHUS_Product_Development_Spec_v2.3_FINAL_CODEX_HANDOFF.docx`의
@@ -22,13 +22,15 @@ P0 필수 산출물을 저장소 현실에 맞춰 고정한다. AETHERUS에서 �
 10. [`READABILITY_FOUNDATION.md`](READABILITY_FOUNDATION.md)
 11. [`RELEASE-2026-08-12-PR04.md`](RELEASE-2026-08-12-PR04.md)
 12. [`ENVIRONMENT_MATRIX.md`](ENVIRONMENT_MATRIX.md)
-13. [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md)
-14. [`TEST_MATRIX.md`](TEST_MATRIX.md)
-15. [`TPW_LAYER.md`](TPW_LAYER.md)
-16. [`ADMIN_RUNBOOK.md`](ADMIN_RUNBOOK.md)
-17. [`ANALYTICS_EVENT_CATALOG.md`](ANALYTICS_EVENT_CATALOG.md)
-18. [`RUNBOOK.md`](RUNBOOK.md)
-19. [`adr/`](adr/)
+13. [`DECISION_CORE.md`](DECISION_CORE.md)
+14. [`PERSONALIZATION_UI.md`](PERSONALIZATION_UI.md)
+15. [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md)
+16. [`TEST_MATRIX.md`](TEST_MATRIX.md)
+17. [`TPW_LAYER.md`](TPW_LAYER.md)
+18. [`ADMIN_RUNBOOK.md`](ADMIN_RUNBOOK.md)
+19. [`ANALYTICS_EVENT_CATALOG.md`](ANALYTICS_EVENT_CATALOG.md)
+20. [`RUNBOOK.md`](RUNBOOK.md)
+21. [`adr/`](adr/)
 
 ## 지금 할 수 있는 일
 

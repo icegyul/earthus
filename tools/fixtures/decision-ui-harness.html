@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>EARTHUS PR-08 Decision UI Harness</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../../prototype/css/decision-ui.css">
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#050b11;color:#fff}
+    body{min-height:100vh;overflow:hidden;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .earth{position:fixed;left:8vw;top:8vh;width:min(68vw,760px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 63% 28%,#7fc7d2 0 4%,#39798c 5% 18%,#1d4b61 19% 39%,#0b2637 40% 68%,#07111c 69%);box-shadow:0 0 100px rgba(73,170,188,.18)}
+    .label{position:fixed;left:24px;bottom:24px;max-width:480px;color:#9fb0bd;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
+    @media(max-width:560px){.earth{left:-32vw;top:8vh;width:110vw}.label{display:none}}
+  </style>
+</head>
+<body>
+  <div class="earth" aria-hidden="true"></div>
+  <p class="label">PR-08 local visual fixture · synthetic data only · production entry remains flag-off</p>
+  <script type="module">
+    import { evaluateForecastConfidence } from '../../prototype/js/forecast-confidence.js';
+    import { evaluateBaseActivityDecision } from '../../prototype/js/activity-decision-core.js';
+    import { applyPersonalization } from '../../prototype/js/personalization-engine.js';
+    import { createDecisionViewModel } from '../../prototype/js/decision-ui-model.js';
+    import { decisionUI } from '../../prototype/js/decision-ui.js';
+
+    const fixture = await fetch('./activity-decision-v1.json').then(response => response.json());
+    const confidence = evaluateForecastConfidence(fixture.confidence);
+    const scenario = structuredClone(fixture.scenarios[0]);
+    scenario.signals.find(signal => signal.factor === 'APPARENT_TEMPERATURE').value = 40;
+    scenario.signals.find(signal => signal.factor === 'PRECIPITATION_AMOUNT').value = 3;
+    const dangerSafety = {
+      engineVersion: 'earthus.safety.warning.v1', ruleSetVersion: 'safety.fixture.v1',
+      status: 'DANGER', applies: true, blocksPositiveRecommendation: true,
+      reason: 'OFFICIAL_WARNING_ACTIVE',
+      evidence: { sourceId: 'fixture-official-warning', revision: 'r2', observedAt: '2026-08-12T09:00:00Z', n: 1 },
+    };
+    const build = (input, placeId, safety = dangerSafety) => evaluateBaseActivityDecision({
+      profileId: input.profileId, placeId, timeWindow: input.timeWindow,
+      signals: input.signals, safety, confidence, evaluatedAt: '2026-08-12T09:01:00Z',
+    });
+    const personal = base => applyPersonalization({
+      baseDecision: base,
+      subjectRef: 'sub_fixture_user_01',
+      preferenceSet: {
+        schemaVersion: 'earthus.personal-preference.v1', preferenceVersion: 'fixture-pref-v1', enabled: true,
+        consent: { status: 'GRANTED', version: 'earthus.personalization-consent.v1', grantedAt: '2026-08-12T08:00:00Z' },
+        entries: [
+          { key: 'HEAT_SENSITIVITY', level: 'HIGH', source: 'EXPLICIT_USER_INPUT', revision: 'r1' },
+          { key: 'RAIN_SENSITIVITY', level: 'HIGH', source: 'EXPLICIT_USER_INPUT', revision: 'r1' },
+          { key: 'TIME_WINDOW_PREFERENCE', level: 'HIGH', source: 'EXPLICIT_USER_INPUT', revision: 'r1', value: { startLocalMinute: 1080, endLocalMinute: 1380, utcOffsetMinutes: 540 } }
+        ]
+      }
+    });
+
+    decisionUI.init();
+    const mode = new URLSearchParams(location.search).get('mode') || 'single';
+    const left = build(scenario, '합성 · 잠실 19시');
+    if (mode === 'compare') {
+      const rightScenario = structuredClone(scenario);
+      rightScenario.signals.find(signal => signal.factor === 'PRECIPITATION_AMOUNT').value = 0;
+      rightScenario.signals.find(signal => signal.factor === 'APPARENT_TEMPERATURE').value = 24;
+      const right = build(rightScenario, '합성 · 대안 장소', {
+        ...fixture.safety,
+        status: 'UNKNOWN', blocksPositiveRecommendation: true, reason: 'SAFETY_EVIDENCE_MISSING',
+      });
+      decisionUI.presentCompare({
+        left: { baseDecision: left, personalResult: personal(left), label: '합성 · 잠실', lang: 'ko' },
+        right: { baseDecision: right, personalResult: personal(right), label: '합성 · 대안', lang: 'ko' },
+        lang: 'ko',
+      });
+    } else {
+      decisionUI.present({ baseDecision: left, personalResult: personal(left), label: '합성 · 잠실 19시', lang: 'ko', synthetic: true });
+    }
+    window.__decisionHarnessReady = true;
+  </script>
+</body>
+</html>

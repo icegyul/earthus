@@ -431,6 +431,14 @@ async function boot() {
   askPanel.init();
   sourceNote.init();
   readability.init();
+  /* PR-08 Decision UI는 live source·권리·도메인 검토가 끝날 때까지 완전히 잠근다.
+     false/미정이면 module·CSS·listener를 받지도 않는다. 합성 fixture를 운영 화면에
+     보이는 사고를 막기 위해 정적 import로 바꾸지 말 것. */
+  if (CONFIG.DECISION_CORE_READY === true) {
+    import('./decision-ui.js?v=20260812-personal1')
+      .then(({ decisionUI }) => decisionUI.init())
+      .catch(error => console.warn('[decision-ui] 초기화 실패:', error?.message || error));
+  }
   /* 기상특보 — 한국 안에 있을 때만 띠가 뜬다.
      ⚠️ await 하지 않는다. 특보 서버가 느리다고 지구본이 늦게 뜨면 안 된다. */
   warnUI.init();

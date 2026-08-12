@@ -93,6 +93,16 @@ PR-08 UI 전까지 `CALIBRATION_SHADOW`, `DECISION_CORE_READY=false`다. 정본�
 live SHA-256·ES module import·GS-06 replay 증거는
 [`earthus-v23/RELEASE-2026-08-12-PR07.md`](earthus-v23/RELEASE-2026-08-12-PR07.md)에 있다.
 
+PD의 다음 **“다음꺼 진행해”** 지시로 PR-08 Personalization/5축 UI를 구현했다. 개인화는
+PR-07의 공용 Base를 바꾸지 않고, 명시적으로 동의하고 직접 고른 취향만 최대 ±12 후보의
+private delta로 계산한다. Safety·공식 폐쇄·예보 자료 신뢰도·혼잡·예약 사실은 보호축이라
+개인화로 바꿀 수 없다. 화면은 Safety를 첫 번째로 보여주고 `UNKNOWN`을 안전·한산·가능으로
+바꾸지 않으며, 비교도 같은 활동/시간창의 5축을 나란히 보여줄 뿐 승자를 고르지 않는다.
+개인화/UI 30개와 기존 Decision 31·Safety 23개, 4개 viewport 실제 화면, flag-off entry를
+통과했다. 정본은 [`earthus-v23/PERSONALIZATION_UI.md`](earthus-v23/PERSONALIZATION_UI.md)다.
+공개 entry의 동적 import는 추가했지만 `DECISION_CORE_READY=false/undefined`라 운영 첫 Earth는
+UI JS/CSS를 요청하지 않는다. 실제 preference 저장, 공개 추천, 예약 행동은 여전히 금지다.
+
 ---
 
 ## 1. 무엇보다 먼저 — 이 프로젝트의 원칙

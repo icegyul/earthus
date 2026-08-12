@@ -147,6 +147,16 @@ export const cosmic3d = {
   _sessionServicePromise: null,
   _sessionUnsubscribe: null,
   _sessionLoadId: 0,
+  _skyARModulePromise: null,
+  _skyARRuntime: null,
+  _skyARTracker: null,
+  _skyARCalibration: null,
+  _skyARState: 'NOT_STARTED',
+  _skyARError: null,
+  _skyARCamera: null,
+  _skyARProjection: null,
+  _skyARSnapshot: null,
+  _skyAROpen: false,
   _photoCatalogPromise: null,
   _allPhotoItems: [],
   _photoItems: [],
@@ -193,12 +203,14 @@ export const cosmic3d = {
     document.getElementById('solarExperience')?.setAttribute('hidden', '');
     this.buildBodyPicker();
     this.ensureObservationSessionUi();
+    this.ensureSkyARProbeUi();
     this.bindInput();
     new ResizeObserver(() => this.render()).observe(this.root);
     store.on('scene', (next, stage) => {
       const visible = next === 'space';
       this.root.hidden = !visible;
       if (!visible) {
+        this.closeSkyARProbe({ hide: true });
         if (this._frame) cancelAnimationFrame(this._frame);
         this._frame = 0; this.cancelSolarMotionReplay();
         this.root.classList.remove('is-moving', 'is-loading');
@@ -225,6 +237,7 @@ export const cosmic3d = {
       if (this._solarMotionMode) this.showSolarMotionInfo();
       if (this._galaxyGuideMode) this.showGalaxyGuideInfo();
       this.renderObservationSession();
+      this.renderSkyARProbe();
       this.buildCraftPicker();
       this.updateHud(); this.updateLabels(); this.render();
     });
@@ -2145,11 +2158,325 @@ export const cosmic3d = {
     }
   },
 
+  skyARProbeEnabled() {
+    // 실기기 iOS/Android와 30분 thermal gate 전에는 공개 기능으로 보이지 않는다.
+    // HTTPS 기기 검수는 기존 운영자의 #dev 진입 규칙 안에서만 수행한다.
+    return window.location.hash === '#dev';
+  },
+
+  ensureSkyARProbeUi() {
+    if (!this.skyARProbeEnabled() || document.getElementById('cosmicSkyAR')) return;
+    const actions = document.querySelector('.cosmic-astronomy-actions');
+    if (!actions || !this.root) return;
+    const open = document.createElement('button');
+    open.id = 'cosmicSkyAROpen'; open.type = 'button'; open.className = 'cosmic-sky-ar-open';
+    actions.append(open);
+
+    const section = document.createElement('section');
+    section.id = 'cosmicSkyAR'; section.className = 'cosmic-sky-ar';
+    section.hidden = true; section.setAttribute('aria-labelledby', 'cosmicSkyARTitle');
+    section.innerHTML = `
+      <video id="cosmicSkyARVideo" autoplay muted playsinline aria-label="Sky AR 기기 카메라 미리보기"></video>
+      <div id="cosmicSkyARStage" class="cosmic-sky-ar-stage" aria-hidden="true">
+        <i class="cosmic-sky-ar-crosshair"></i>
+        <i id="cosmicSkyARTarget" class="cosmic-sky-ar-target" hidden><b></b></i>
+      </div>
+      <div class="cosmic-sky-ar-panel">
+        <header><div><small>DEVICE PROBE · #dev</small><h3 id="cosmicSkyARTitle"></h3></div><span id="cosmicSkyARStatus"></span></header>
+        <p id="cosmicSkyARContext"></p>
+        <dl id="cosmicSkyARFacts"></dl>
+        <p id="cosmicSkyAREvidence"></p>
+        <p id="cosmicSkyARLimits" role="status"></p>
+        <div class="cosmic-sky-ar-actions">
+          <button id="cosmicSkyARLocation" type="button"></button>
+          <button id="cosmicSkyARStart" type="button"></button>
+          <button id="cosmicSkyARCalibrate" type="button"></button>
+          <button id="cosmicSkyARStop" type="button"></button>
+          <button id="cosmicSkyARClose" type="button"></button>
+        </div>
+      </div>`;
+    this.root.append(section);
+  },
+
+  loadSkyARModule() {
+    this._skyARModulePromise = this._skyARModulePromise
+      || import('./sky-ar.js?v=20260812-skyar1');
+    return this._skyARModulePromise;
+  },
+
+  async openSkyARProbe() {
+    this.ensureSkyARProbeUi();
+    const section = document.getElementById('cosmicSkyAR');
+    if (!section || this._detailBody?.id !== 'mars') return false;
+    this._skyAROpen = true;
+    this._skyARState = 'NOT_STARTED';
+    this._skyARError = null;
+    section.hidden = false;
+    this.root.classList.add('is-sky-ar');
+    document.body.classList.add('aetherus-sky-ar-open');
+    try {
+      const module = await this.loadSkyARModule();
+      this._skyARTracker = this._skyARTracker || module.createSkyARPoseTracker();
+      this._skyARCalibration = this._skyARCalibration || module.createSkyARCalibrationSession();
+      this._skyARRuntime = this._skyARRuntime || module.createBrowserSkyARRuntime();
+    } catch (error) {
+      this._skyARState = 'BLOCKED';
+      this._skyARError = error?.message || 'SKY_AR_MODULE_LOAD_FAILED';
+    }
+    this.renderSkyARProbe();
+    return true;
+  },
+
+  async useSkyARLocation() {
+    await this.useAstronomyLocation();
+    if (this._skyAROpen) this.renderSkyARProbe();
+  },
+
+  async startSkyARProbe() {
+    if (!this._skyAROpen || this._detailBody?.id !== 'mars') return false;
+    if (this._astronomyObserver?.source !== 'device') {
+      this._skyARError = 'SKY_AR_DEVICE_LOCATION_REQUIRED';
+      this._skyARState = 'BLOCKED';
+      this.renderSkyARProbe();
+      return false;
+    }
+    const module = await this.loadSkyARModule();
+    if (!this._skyAROpen || this._detailBody?.id !== 'mars') return false;
+    this._skyARTracker = this._skyARTracker || module.createSkyARPoseTracker();
+    this._skyARCalibration = this._skyARCalibration || module.createSkyARCalibrationSession();
+    this._skyARRuntime = this._skyARRuntime || module.createBrowserSkyARRuntime();
+    this._skyARTracker.clear();
+    this._skyARCalibration.reset();
+    this._skyARError = null;
+    this._skyARState = 'REQUESTING_PERMISSION';
+    this._astronomyAt = astronomyNow();
+    this.calculateAstronomy();
+    this.showAstronomy(this._detailBody);
+    this.renderSkyARProbe();
+    const video = document.getElementById('cosmicSkyARVideo');
+    const result = await this._skyARRuntime.start({
+      video,
+      onSample: sample => {
+        try {
+          this._skyARTracker.push(sample);
+          if (this._skyARState === 'ACTIVE') this._skyARState = 'CALIBRATION_REQUIRED';
+          this.updateSkyARProjection();
+          this.renderSkyARProbe();
+        } catch (error) {
+          this._skyARError = error?.message || 'SKY_AR_POSE_REJECTED';
+          this.renderSkyARProbe();
+        }
+      },
+      onState: event => {
+        this._skyARState = event.state;
+        this._skyARError = event.reason || null;
+        if (event.camera) this._skyARCamera = event.camera;
+        if (event.state !== 'ACTIVE') {
+          this._skyARCamera = null;
+          this._skyARProjection = null;
+        }
+        this.renderSkyARProbe();
+      },
+    });
+    if (result.reason === 'START_CANCELLED' || !this._skyAROpen) return false;
+    if (result.status !== 'ACTIVE') {
+      this._skyARState = 'BLOCKED';
+      this._skyARError = result.reason;
+      this.renderSkyARProbe();
+      return false;
+    }
+    this._skyARCamera = result.camera;
+    this._skyARState = 'ACTIVE';
+    this.renderSkyARProbe();
+    return true;
+  },
+
+  calibrateSkyARProbe() {
+    const raw = this._skyARTracker?.latest();
+    if (!raw || !this._skyARCalibration) return false;
+    try {
+      this._skyARCalibration.start();
+      this._skyARCalibration.lockManualNorthHorizon(raw);
+      this._skyARState = 'CALIBRATED_LOW_CONFIDENCE';
+      this._skyARError = null;
+      this.updateSkyARProjection();
+      this.renderSkyARProbe();
+      return true;
+    } catch (error) {
+      this._skyARError = error?.message || 'SKY_AR_CALIBRATION_FAILED';
+      this._skyARState = 'BLOCKED';
+      this.renderSkyARProbe();
+      return false;
+    }
+  },
+
+  updateSkyARProjection() {
+    if (!this._skyARTracker || !this._astronomyObservation || !this._skyARModulePromise) return;
+    const runtime = this._skyARRuntime?.diagnostics();
+    const targetTime = Date.parse(this._astronomyObservation.time.utc);
+    const profile = this._skyARCalibration?.profile || null;
+    this._skyARSnapshot = this._skyARTracker.snapshot({
+      calibrationProfile: profile,
+      cameraActive: runtime?.state === 'ACTIVE',
+      targetAgeMs: Math.abs(Date.now() - targetTime),
+      locationAccuracyM: this._astronomyObserver?.accuracyM,
+      intrinsics: { source: 'FALLBACK_UNVERIFIED', horizontalFovDeg: 60 },
+    });
+    const pose = this._skyARSnapshot.latest;
+    const stage = document.getElementById('cosmicSkyARStage');
+    const horizontal = this._astronomyObservation.coordinates.horizontal;
+    if (!pose || !stage) { this._skyARProjection = null; return; }
+    const width = Math.max(1, stage.clientWidth || this.root?.clientWidth || window.innerWidth);
+    const height = Math.max(1, stage.clientHeight || this.root?.clientHeight || window.innerHeight);
+    void this._skyARModulePromise.then(module => {
+      this._skyARProjection = module.projectHorizontalToScreen({
+        targetAzimuthDeg: horizontal.azimuthDeg,
+        targetAltitudeDeg: horizontal.altitudeDeg,
+        poseAzimuthDeg: pose.azimuthDeg,
+        poseAltitudeDeg: pose.altitudeDeg,
+        rollDeg: pose.rollDeg,
+        horizontalFovDeg: 60,
+        width,
+        height,
+      });
+      this.renderSkyARProbe();
+    });
+  },
+
+  skyARErrorText(code, isKo = ko()) {
+    const messages = {
+      SKY_AR_DEVICE_LOCATION_REQUIRED: ['Sky AR를 열기 전에 이 기기의 위치를 별도로 허용해야 합니다.', 'Allow this device location separately before starting Sky AR.'],
+      SECURE_CONTEXT_REQUIRED: ['HTTPS에서만 센서와 카메라를 요청할 수 있습니다.', 'Sensors and camera require HTTPS.'],
+      ORIENTATION_SENSOR_UNAVAILABLE: ['이 브라우저에서 방향 센서를 사용할 수 없습니다.', 'Orientation sensors are unavailable in this browser.'],
+      CAMERA_API_UNAVAILABLE: ['이 브라우저에서 카메라 API를 사용할 수 없습니다.', 'The camera API is unavailable in this browser.'],
+      ORIENTATION_PERMISSION_DENIED: ['방향 센서 권한이 거부되었습니다. 자동으로 다시 묻지 않습니다.', 'Orientation permission was denied. It will not be requested again automatically.'],
+      PERMISSION_DENIED: ['카메라 권한이 거부되었습니다. 자동으로 다시 묻지 않습니다.', 'Camera permission was denied. It will not be requested again automatically.'],
+      CAMERA_NOT_FOUND: ['사용할 수 있는 카메라를 찾지 못했습니다.', 'No usable camera was found.'],
+      CAMERA_NOT_READABLE: ['다른 앱 또는 기기 오류 때문에 카메라를 열지 못했습니다.', 'The camera could not be opened because of another app or device error.'],
+      DOCUMENT_HIDDEN: ['화면이 숨겨져 센서와 카메라를 해제했습니다.', 'Sensors and camera were released when the page became hidden.'],
+      USER_STOP: ['센서와 카메라를 해제했습니다.', 'Sensors and camera were released.'],
+      START_CANCELLED: ['권한 요청을 취소하고 늦게 도착한 카메라 스트림도 해제했습니다.', 'The permission request was cancelled and any late camera stream was released.'],
+    };
+    return (messages[code] || [code || '', code || ''])[isKo ? 0 : 1];
+  },
+
+  renderSkyARProbe() {
+    const open = document.getElementById('cosmicSkyAROpen');
+    if (open) open.textContent = ko() ? 'Sky AR 기기 점검 · DEV' : 'Sky AR device probe · DEV';
+    const section = document.getElementById('cosmicSkyAR');
+    if (!section || !this._skyAROpen) return;
+    const isKo = ko();
+    const observation = this._astronomyObservation;
+    const horizontal = observation?.coordinates?.horizontal;
+    const runtime = this._skyARRuntime?.diagnostics?.() || null;
+    const capabilities = this._skyARRuntime?.capabilityReport?.() || null;
+    const snapshot = this._skyARSnapshot;
+    const confidence = snapshot?.confidence || null;
+    const pose = snapshot?.latest || null;
+    const profile = this._skyARCalibration?.profile || null;
+    const locationReady = this._astronomyObserver?.source === 'device';
+    const active = runtime?.state === 'ACTIVE';
+
+    document.getElementById('cosmicSkyARTitle').textContent = isKo ? '화성 Sky AR 코어' : 'Mars Sky AR core';
+    const status = confidence?.level || this._skyARState;
+    document.getElementById('cosmicSkyARStatus').textContent = status.replace(/_/g, ' ');
+    section.dataset.state = String(status).toLowerCase().replace(/_/g, '-');
+    document.getElementById('cosmicSkyARContext').textContent = locationReady && horizontal
+      ? `${isKo ? '이 기기 위치' : 'Device location'} · UTC ${observation.time.utc} · Mars ${horizontal.azimuthDeg.toFixed(2)}° / ${signedDegrees(horizontal.altitudeDeg)}`
+      : (isKo
+        ? '위치·센서·카메라는 각각 버튼을 눌렀을 때만 요청합니다. 먼저 이 기기 위치가 필요합니다.'
+        : 'Location, sensors, and camera are requested only after explicit button actions. Device location is required first.');
+
+    const facts = document.getElementById('cosmicSkyARFacts'); facts.replaceChildren();
+    const rows = [
+      [isKo ? '기기 지원' : 'Device support', capabilities
+        ? `HTTPS ${capabilities.secureContext ? 'YES' : 'NO'} · sensor ${capabilities.orientation ? 'YES' : 'NO'} · camera ${capabilities.camera ? 'YES' : 'NO'}` : 'CHECKING'],
+      [isKo ? '자세' : 'Pose', pose
+        ? `${pose.headingMode} · az ${pose.azimuthDeg.toFixed(1)}° · alt ${signedDegrees(pose.altitudeDeg)} · roll ${signedDegrees(pose.rollDeg)}` : (isKo ? '자료 없음' : 'No sample')],
+      [isKo ? '안정성' : 'Stability', snapshot
+        ? `buffer ${snapshot.bufferedSampleCount} · total ${snapshot.totalSamples} · jitter ${snapshot.jitterDeg == null ? 'n/a' : `${snapshot.jitterDeg.toFixed(2)}°`}` : 'n/a'],
+      [isKo ? '보정' : 'Calibration', profile
+        ? `${profile.state} · residual n/a · ${profile.precision}` : (isKo ? '미수행' : 'Not performed')],
+      [isKo ? '방향 cue' : 'Guidance cue', confidence
+        ? `${confidence.cueMode}${confidence.angularUncertaintyDeg ? ` · ±${confidence.angularUncertaintyDeg.toFixed(1)}°` : ''}` : 'HIDDEN'],
+    ];
+    rows.forEach(([term, value]) => {
+      const dt = document.createElement('dt'); dt.textContent = term;
+      const dd = document.createElement('dd'); dd.textContent = value;
+      facts.append(dt, dd);
+    });
+
+    const evidence = runtime
+      ? `listener ${runtime.listenerCount} · live track ${runtime.liveTrackCount} · accepted ${runtime.acceptedSampleCount} · dropped ${runtime.droppedSampleCount} · loop ${runtime.loopCount} · upload ${runtime.networkUploadCount}`
+      : 'listener 0 · live track 0 · loop 0 · upload 0';
+    document.getElementById('cosmicSkyAREvidence').textContent = evidence;
+    const reasons = confidence?.reasons?.length ? ` · ${confidence.reasons.join(', ')}` : '';
+    const error = this._skyARError ? ` · ${this.skyARErrorText(this._skyARError, isKo)}` : '';
+    document.getElementById('cosmicSkyARLimits').textContent = (isKo
+      ? `DEVICE PROBE · 실제 iOS/Android·30분 thermal 미검증 · 저신뢰 cue 숨김 · 수동 북쪽 보정은 자기편차·렌즈·별 잔차 미검증 · 날씨·현지 지평선·안전·망원경 조준 판정 아님${reasons}${error}`
+      : `DEVICE PROBE · real iOS/Android and 30-minute thermal unverified · low-confidence cue hidden · manual north calibration has no declination, lens, or star residual verification · no weather, local horizon, safety, or telescope-pointing claim${reasons}${error}`);
+
+    const marker = document.getElementById('cosmicSkyARTarget');
+    const projection = this._skyARProjection;
+    const showCue = confidence && confidence.cueMode !== 'HIDDEN' && projection?.visible;
+    marker.hidden = !showCue;
+    if (showCue) {
+      marker.style.transform = `translate(${projection.x}px,${projection.y}px) translate(-50%,-50%)`;
+      marker.style.setProperty('--sky-ar-uncertainty', `${Math.min(96, Math.max(48, (confidence.angularUncertaintyDeg || 8) * 4))}px`);
+    }
+
+    const location = document.getElementById('cosmicSkyARLocation');
+    const start = document.getElementById('cosmicSkyARStart');
+    const calibrate = document.getElementById('cosmicSkyARCalibrate');
+    const stop = document.getElementById('cosmicSkyARStop');
+    const close = document.getElementById('cosmicSkyARClose');
+    location.textContent = isKo ? '1 · 이 기기 위치 허용' : '1 · Allow device location';
+    start.textContent = isKo ? '2 · 센서·후면 카메라 요청' : '2 · Request sensors and rear camera';
+    calibrate.textContent = isKo ? '북쪽·수평에 맞춘 뒤 저정밀 보정' : 'Aim north and level, then low-precision calibrate';
+    stop.textContent = isKo ? '센서·카메라 해제' : 'Release sensors and camera';
+    close.textContent = isKo ? 'DEV 점검 닫기' : 'Close DEV probe';
+    location.hidden = locationReady;
+    location.disabled = active || this._skyARState === 'REQUESTING_PERMISSION';
+    start.hidden = active;
+    start.disabled = !locationReady || this._skyARState === 'REQUESTING_PERMISSION';
+    calibrate.hidden = !active;
+    calibrate.disabled = !pose;
+    stop.hidden = !active;
+  },
+
+  stopSkyARProbe(reason = 'USER_STOP') {
+    const diagnostics = this._skyARRuntime?.stop?.(reason) || null;
+    this._skyARState = 'STOPPED';
+    this._skyARError = reason;
+    this._skyARCamera = null;
+    this._skyARProjection = null;
+    this._skyARSnapshot = null;
+    this.renderSkyARProbe();
+    return diagnostics;
+  },
+
+  closeSkyARProbe({ hide = true } = {}) {
+    const runtimeState = this._skyARRuntime?.diagnostics?.().state;
+    if (runtimeState && !['IDLE', 'STOPPED', 'BLOCKED'].includes(runtimeState)) {
+      this.stopSkyARProbe('START_CANCELLED');
+    }
+    this._skyAROpen = false;
+    this._skyARProjection = null;
+    this._skyARSnapshot = null;
+    const section = document.getElementById('cosmicSkyAR');
+    if (section && hide) section.hidden = true;
+    this.root?.classList.remove('is-sky-ar');
+    document.body.classList.remove('aetherus-sky-ar-open');
+  },
+
   showAstronomy(body) {
     const section = document.getElementById('cosmicAstronomy');
     if (!section || !this.bodyInfo) return;
     const active = body?.id === 'mars';
     section.hidden = !active;
+    const skyAROpen = document.getElementById('cosmicSkyAROpen');
+    if (skyAROpen) skyAROpen.hidden = !active;
+    if (!active && this._skyAROpen) this.closeSkyARProbe({ hide: true });
     this.bodyInfo.classList.toggle('has-astronomy', active);
     document.body.classList.toggle('aetherus-astronomy-open', active);
     if (!active) return;
@@ -2208,6 +2535,7 @@ export const cosmic3d = {
       ? '계산값 · n 해당 없음 · 대기굴절·시차·현지 지평선·주광·날씨 미포함 · 망원경 조준용 아님'
       : 'Calculated · n not applicable · no refraction, parallax, local horizon, daylight, or weather · not for telescope pointing';
     this.showObservationPlanner();
+    this.renderSkyARProbe();
   },
 
   recalculateAstronomyNow() {
@@ -2248,6 +2576,7 @@ export const cosmic3d = {
 
   clearAstronomy() {
     this._sessionLoadId += 1;
+    this.closeSkyARProbe({ hide: true });
     this._astronomyObservation = null;
     this._astronomyObserver = null;
     this._astronomyAt = null;
@@ -2613,6 +2942,7 @@ export const cosmic3d = {
       this.render();
     });
     this.canvas.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && this._skyAROpen) { this.closeSkyARProbe({ hide: true }); return; }
       if (event.key === 'Escape' && this._photoMode) { this.closePhotoAtlas(); return; }
       if (event.key === 'Escape' && this._detailBody) { this.closeBody(); return; }
       if (event.key === 'Escape' && this._selectedCraft) { this.closeCraft(); return; }
@@ -2645,6 +2975,12 @@ export const cosmic3d = {
     document.getElementById('cosmicSessionPause')?.addEventListener('click', () => this.runObservationSessionCommand('PAUSE_SESSION'));
     document.getElementById('cosmicSessionAbort')?.addEventListener('click', () => this.runObservationSessionCommand('ABORT_SESSION'));
     document.getElementById('cosmicSessionExport')?.addEventListener('click', () => this.exportObservationSession());
+    document.getElementById('cosmicSkyAROpen')?.addEventListener('click', () => this.openSkyARProbe());
+    document.getElementById('cosmicSkyARLocation')?.addEventListener('click', () => this.useSkyARLocation());
+    document.getElementById('cosmicSkyARStart')?.addEventListener('click', () => this.startSkyARProbe());
+    document.getElementById('cosmicSkyARCalibrate')?.addEventListener('click', () => this.calibrateSkyARProbe());
+    document.getElementById('cosmicSkyARStop')?.addEventListener('click', () => this.stopSkyARProbe());
+    document.getElementById('cosmicSkyARClose')?.addEventListener('click', () => this.closeSkyARProbe({ hide: true }));
     document.getElementById('cosmicPhotoBack')?.addEventListener('click', () => this.closePhotoAtlas());
     document.getElementById('cosmicPhotoFilters')?.querySelectorAll('[data-telescope]').forEach(button => {
       button.addEventListener('click', () => this.openPhotoAtlas(button.dataset.telescope));

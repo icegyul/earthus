@@ -19,6 +19,9 @@ import { continuousContours } from './continuous-contours.js?v=20260812-contours
 const ESRI_REFERENCE = 'https://services.arcgisonline.com/ArcGIS/rest/services/'
   + 'Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
 const ESRI_CREDIT = 'Esri, Garmin, HERE, © OpenStreetMap contributors, and the GIS user community';
+/* 국가·해안선은 색면을 가리지 않는 범위에서 기본 표시하고, 사용자가 판독 모드를
+   명시적으로 켰을 때만 더 강하게 보인다. 첫 Earth View에는 reference 자체가 없다. */
+const REFERENCE_ALPHA = Object.freeze({ data: 0.78, read: 0.96 });
 const GRID_LAYERS = new Set([
   'temp', 'tmax', 'tmin', 'wind', 'windfc', 'humidity', 'tpw', 'rain', 'pressure', 'fog', 'drought',
   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone', 'sst', 'sstanom', 'wave', 'swell', 'current',
@@ -169,7 +172,10 @@ export const readability = {
     const info = KIND[this.activeLayer] || [this.activeLayer, this.activeLayer, 'MODEL'];
     this.title.textContent = info[i18n.lang === 'ko' ? 0 : 1];
     this.badge.textContent = info[2];
-    this._setReference(state.read === true);
+    /* 받은 지적: 온도·수증기 같은 색면을 켜면 도시값은 보여도 어느 국가인지 읽기
+       어려웠다. 경계/해안선/국가 지명 reference는 Data View 진입 즉시 올리고,
+       판독 모드는 같은 reference의 대비를 더 높이는 단계로 유지한다. */
+    this._setReference(true, state.read === true);
     const rendered = gridOverlay.renderedOf(this.gridLayer);
     if (rendered) {
       this._gridReady({ layer: this.gridLayer, ...rendered });
@@ -259,10 +265,12 @@ export const readability = {
     if (contour.textContent) children.push(contour);
     /* Cesium의 기본 credit 영역은 이 앱에서 숨겨져 있다. imagery provider에만 credit을
        넣으면 화면에서는 출처가 사라지므로, 참조 타일을 켠 동안 패널에도 항상 적는다. */
-    if (store.earthView.read) {
+    if (this.reference) {
       const credit = document.createElement('p');
       credit.className = 'rd-reference-credit';
-      credit.textContent = `Reference map · ${ESRI_CREDIT}`;
+      credit.textContent = i18n.lang === 'ko'
+        ? `국가 경계·해안선·지명 · ${ESRI_CREDIT}`
+        : `Country borders, coastlines and places · ${ESRI_CREDIT}`;
       children.push(credit);
     }
     this.legend.replaceChildren(...children);
@@ -392,7 +400,7 @@ export const readability = {
     if (this.point) this.point.hidden = true;
   },
 
-  _setReference(on) {
+  _setReference(on, enhanced = false) {
     if (!viewer?.imageryLayers) return;
     if (on && !this.reference) {
       this.reference = viewer.imageryLayers.addImageryProvider(
@@ -402,10 +410,14 @@ export const readability = {
           credit: ESRI_CREDIT,
         }),
       );
-      this.reference.alpha = 0.9;
     } else if (!on && this.reference) {
       try { viewer.imageryLayers.remove(this.reference, true); } catch (_) { }
       this.reference = null;
+    }
+    if (this.reference) {
+      this.reference.alpha = enhanced ? REFERENCE_ALPHA.read : REFERENCE_ALPHA.data;
+      this.reference.brightness = enhanced ? 1.12 : 1.04;
+      this.reference.contrast = enhanced ? 1.16 : 1.08;
     }
     viewer.scene.requestRender?.();
   },

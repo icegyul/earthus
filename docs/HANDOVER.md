@@ -75,6 +75,13 @@ live SHA-256, 1280×720·390×844 대표 화면, TPW 잠금과 AETHERUS·해구 
 운영 증거는 [`earthus-v23/RELEASE-2026-08-12-PR04.md`](earthus-v23/RELEASE-2026-08-12-PR04.md)다.
 실제 등치선은 PR-06, 공식 특보 Hard Gate는 PR-05 범위다.
 
+후속 판독 개선으로 온도·습도·기압 등 Data View 진입 즉시 국가 경계·해안선·국가/주요
+지명을 겹치도록 했다. query 없는 첫 Earth는 그대로이며 기존 판독 모드는 같은 참조 지도의
+대비를 높이는 강화 단계다. 운영 한반도 확대에서 남북 경계·`SOUTH KOREA`·주요 도시를,
+390×844에서 가로 overflow 0과 warning/error 0을 확인했다. 선택 배포 파일은
+`js/readability.js` 하나, 무효화는 `IDZOZH3GEQ6LDKFA21N9RJW659`이며 증거는
+[`earthus-v23/RELEASE-2026-08-12-COUNTRY-BOUNDARIES.md`](earthus-v23/RELEASE-2026-08-12-COUNTRY-BOUNDARIES.md)다.
+
 PD의 다음 **“계속 진행해”** 지시로 PR-05 Safety Slice를 구현하고 운영 반영했다. 기상청 특보는
 최근접 공식 관측지점의 특보구역 코드와 같은 `regionId`가 실제 발효 목록에 있을 때만 점수보다
 먼저 추천을 제한한다. 공식 polygon/hierarchy가 없는 현재 reader에서는 특보 0건·미일치·지연·

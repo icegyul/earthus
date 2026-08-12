@@ -27,9 +27,11 @@ CloudFront 동일 바이트와 1280×720·390×844 임시 flag-on 실화면까�
 
 같은 날 PD의 **“다음꺼 진행해”** 지시로 PR-01 Signal Foundation도 로컬 구현했다.
 기존 공개 KMA 특보·AWS 기온·TPW JSON을 바꾸지 않고 `archive/canonical/v1/` 비공개
-shadow로 변환하는 compatibility processor다. 자동검사 12개와 실제 공개 KMA 입력 대조는
-통과했지만 AWS 배포·schedule·UI/Safety/Activity reader 전환은 미승인이다. 실행 정본은
-[`earthus-v23/SIGNAL_FOUNDATION.md`](earthus-v23/SIGNAL_FOUNDATION.md)다.
+shadow로 변환하는 compatibility processor다. 자동검사 12개에 이어 서울 최소권한 Lambda,
+특보 39·기온 736·TPW 3,276 실자료, private/no-store·익명 403·stable ID를 검증했다.
+자동 schedule과 UI/Safety/Activity reader 전환은 아직 미승인이다. 실행 정본은
+[`earthus-v23/SIGNAL_FOUNDATION.md`](earthus-v23/SIGNAL_FOUNDATION.md), 운영 증거는
+[`earthus-v23/RELEASE-2026-08-12-PR01-SHADOW.md`](earthus-v23/RELEASE-2026-08-12-PR01-SHADOW.md)다.
 
 이후 PD의 두 번째 **“다음꺼 진행해”** 지시로 PR-02 Rights/Freshness도 로컬 구현했다.
 3개 source의 제안 권리를 모두 `DRAFT`로 둔 채 policy·freshness·provider health를 분리

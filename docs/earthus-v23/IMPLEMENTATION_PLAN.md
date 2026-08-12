@@ -78,7 +78,7 @@ PR-00은 문서 준비는 끝났지만 위 네 운영 관문 전까지 `APPROVAL
 - [x] CAN-01~08과 격리·권한오류·부분실패·3,276칸 용량 자동검사 12개
 - [x] 실제 공개 KMA 입력 29건·736지점 read-only 대조, parser 거절 0
 - [x] `archive/`가 익명 공개 bucket policy에서 제외됨을 읽기 전용 확인
-- [ ] 서울 리전 Lambda/IAM 최소권한/실제 3 source 처리·익명 GET 403
+- [x] 서울 리전 Lambda/IAM 최소권한/실제 3 source 처리·익명 GET 403
 - [ ] schedule·retention·비용 승인
 - [ ] dual-read diff·canary·rollback rehearsal와 authoritative reader 승인
 

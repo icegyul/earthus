@@ -18,6 +18,9 @@ EARTHUS 기존 JSON 3종을 수정하지 않고 private canonical shadow로 변�
 - 배포·스케줄 등록은 PR-01 운영 승인 뒤 별도로 한다.
 - 현재 공용 `deploy-python.sh`의 버킷 전체 IAM 권한은 PR-01 최소권한 gate를 만족하지 않는다.
   전용 IAM 범위를 승인하기 전 그 스크립트로 이 함수를 배포하지 않는다.
+- 첫 shadow가 아직 없을 때 `GetObject`의 `NoSuchKey`와 권한 오류를 구분하려면
+  `archive/canonical/v1/*`에 한정한 `s3:ListBucket` prefix 조건이 필요하다. 버킷 전체 목록
+  권한으로 넓히지 않는다.
 
 ```bash
 python3 -m unittest aws/signal-foundation/test_signal_foundation.py

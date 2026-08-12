@@ -32,3 +32,18 @@ KMA warning reader and it sends no location to a new endpoint.
 4. Production cache-busting SHA-256, MIME and no-cache verification after
    selective S3 upload and CloudFront invalidation.
 5. Actual desktop and mobile Sky-panel inspection after the release.
+
+## Release result
+
+- Commits: `7846114` (evidence beta) and `c3dca48` (cache-busting UI import).
+- CloudFront invalidation: `I4XHGLYKGMOD9J7PP1TVR0JKDX` for `/js/main.js` and
+  `/js/ui-sky.js`.
+- Production `main.js` SHA-256:
+  `11e0e7db53e5343134a7a5ecf1c8eb12c0af97ce67777efee2340a9748376686`.
+- Production `ui-sky.js` SHA-256:
+  `ebb4abcb9fe3fb443c082a0d69259bfa01698f816f17c6277e6fd6d6b03cdb27`.
+- Both cache-busting URLs returned HTTP 200 with
+  `text/javascript; charset=utf-8` and `cache-control: no-cache`; each body
+  matched its checked-out file.
+- In the live desktop UI, `EARTHUS → 취미 → 하늘` displayed the Korea
+  stargazing evidence-beta block with the no-location, no-recommendation text.

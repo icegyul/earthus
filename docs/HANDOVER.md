@@ -112,8 +112,9 @@ PD의 다음 **“해”** 지시로 PR-09 Reservation Impact의 순수 shadow �
 근거를 교차해 `INFO/WATCH/ACTION_REQUIRED/BLOCKED/UNKNOWN`을 만든다. 미승인·지연·미래·
 순서 역전·불완전 근거는 `WITHHELD`, 같은 fingerprint는 `DUPLICATE_WITHHELD`다. 대안은
 검증 decision/evidence가 있는 검토 후보일 뿐이며 재고·가격·순위를 생성하지 않는다.
-어떤 결과도 알림 발송·예약 생성/변경/취소·결제를 실행하지 않는다. PR-09 검증과 전체
-회귀를 통과했고 모듈 하나는 CloudFront 무효화 `IE164QWY602L1FE71OM8KURR2T`로 운영 반영했다.
+어떤 결과도 알림 발송·예약 생성/변경/취소·결제를 실행하지 않는다. PR-09 v1.1 21개와 전체
+회귀를 통과했고 모듈 하나는 커밋 `33d6170`, CloudFront 무효화
+`I50HZ92KDACE0AIY41T4I0R0LL`로 운영 반영했다.
 정본은 [`earthus-v23/RESERVATION_IMPACT.md`](earthus-v23/RESERVATION_IMPACT.md), 배포 근거는
 [`earthus-v23/RELEASE-2026-08-12-PR09.md`](earthus-v23/RELEASE-2026-08-12-PR09.md)다.
 실제 provider adapter·알림·예약/취소/결제는 계약·RLS·canary·PD 승인 전까지 금지다.

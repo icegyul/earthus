@@ -13,6 +13,8 @@
 import { i18n } from './i18n.js';
 import { solar } from './layers/solar.js';
 import { myLocation } from './mylocation.js';
+import { warn } from './warn.js';
+import { evaluateKoreaStargazingPreflight } from './space/korea-stargazing-preflight.js';
 import {
   upcomingEclipses, upcomingShowers, viewing, moonPhase, moonPhaseName,
   ECLIPSE_TYPE, LUNAR_TYPE, nasaLink,
@@ -44,6 +46,10 @@ export const skyPanel = {
     const box = $('#skySheet');
     box.classList.add('up');
     this.render();
+    // 전국 별보기 근거 베타는 특보를 '안전'으로 추정하지 않는다. 위치가 한국이면
+    // 기존 KMA reader를 한 번 시작해, 실패·경계 미확정도 화면에서 그대로 드러낸다.
+    try { await warn.maybeStart(); } catch (e) { console.warn('[stargazing-evidence]', e.message); }
+    if (box.classList.contains('up')) this.render();
     // 태양 데이터는 열 때 받아온다 (항상 폴링할 이유가 없다)
     try { await solar.refresh(); } catch (e) { console.warn('[solar]', e.message); }
     if (box.classList.contains('up')) this.render();
@@ -56,7 +62,56 @@ export const skyPanel = {
     body.innerHTML = '';
     $('#skyTitle').textContent = ko ? '하늘' : 'Sky';
 
-    body.append(this.sunBlock(ko), this.showerBlock(ko), this.eclipseBlock(ko));
+    body.append(this.stargazingEvidenceBlock(ko), this.sunBlock(ko), this.showerBlock(ko), this.eclipseBlock(ko));
+  },
+
+  /* ── 전국 별보기 근거 베타 ─────────────────────────────────── */
+  stargazingEvidenceBlock(ko) {
+    const wrap = el('section', 'sky-sec stargazing-evidence');
+    wrap.appendChild(el('h4', null, ko ? '전국 별보기 조건 · 근거 베타' : 'Korea stargazing conditions · evidence beta'));
+    const coords = myLocation.coords;
+    if (!coords) {
+      wrap.appendChild(el('p', 'sky-dim', ko
+        ? '내 위치를 켜면 선택한 한국 좌표의 특보 근거와 별보기 자료 연결 상태를 확인합니다.'
+        : 'Enable location to check official-warning evidence and data readiness for your selected Korean coordinates.'));
+      wrap.appendChild(el('p', 'sky-note', ko
+        ? '이 베타는 장소 추천이나 예약 화면이 아닙니다. 자료가 없으면 “좋음”으로 바꾸지 않습니다.'
+        : 'This beta is not a place recommendation or reservation screen. Missing data is never shown as good conditions.'));
+      return wrap;
+    }
+
+    const now = new Date();
+    const preflight = evaluateKoreaStargazingPreflight({
+      coords,
+      timeWindow: { start: now.toISOString(), end: new Date(now.getTime() + 2 * 60 * 60_000).toISOString() },
+      safety: warn.safety,
+      signals: [], // ⚠️ 아직 승인된 전국 6요소 reader가 없다. 빈 값을 추정해 채우지 않는다.
+      evaluatedAtUtc: now.toISOString(),
+    });
+    if (preflight.state === 'OUT_OF_KOREA_SCOPE') {
+      wrap.appendChild(el('p', 'sky-dim', ko
+        ? '현재 공개 베타는 한국 좌표만 다룹니다. 일본·대만은 공식 특보 근거 계약만 준비되어 있습니다.'
+        : 'The public beta currently covers Korean coordinates only. Japan and Taiwan currently have only the official-warning evidence contract.'));
+      return wrap;
+    }
+
+    const safety = preflight.safety;
+    const warningState = safety?.status === 'SAFE' ? (ko ? '특보 미발효도 안전 확정 아님 · 추가 근거 확인 중' : 'No inferred all-clear · more evidence required')
+      : safety?.status === 'WARNING' || safety?.status === 'DANGER' ? (ko ? '공식 특보가 있어 추천 보류' : 'Official warning present; recommendation withheld')
+        : (ko ? '특보 근거를 안전 판정에 쓰지 않음' : 'Warning evidence is not treated as an all-clear');
+    const verified = preflight.signals.length;
+    const generated = warn.data?.observedKst ? String(warn.data.observedKst) : (ko ? '자료 없음' : 'unavailable');
+    const rows = el('dl', 'sky-rows');
+    const add = (key, value) => { rows.appendChild(el('dt', null, key)); rows.appendChild(el('dd', null, value)); };
+    add(ko ? '상태' : 'Status', ko ? '추천 보류' : 'Recommendation withheld');
+    add(ko ? '기상청 특보' : 'KMA warnings', warningState);
+    add(ko ? '검증된 별보기 항목' : 'Verified sky factors', `${verified}/6`);
+    add(ko ? '특보 기준시각(KST)' : 'Warning time (KST)', generated);
+    wrap.appendChild(rows);
+    wrap.appendChild(el('p', 'sky-note', ko
+      ? '필요한 6개 항목: 구름량·시정·습도·강수확률·달 밝기·천문박명 여유. 각 항목에 출처·시각·개정번호가 모두 있어야 합니다. 현재는 이 자료가 모두 연결되지 않아 추천을 공개하지 않습니다.'
+      : 'The six required factors are cloud cover, visibility, humidity, precipitation probability, moon illumination, and astronomical-darkness margin. Each needs a source, time, and revision. A public recommendation remains disabled until all are connected.'));
+    return wrap;
   },
 
   /* ── 태양 ─────────────────────────────────────────────────── */

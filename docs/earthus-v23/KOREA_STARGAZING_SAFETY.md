@@ -7,6 +7,23 @@ facility, campground, observatory, road, inventory, reservation or payment
 concept. It may prepare evidence for calibration; it never issues a public
 recommendation.
 
+## Public evidence beta
+
+The existing public **Sky** panel exposes a Korea-only "stargazing conditions ·
+evidence beta" status when a visitor has selected a Korean device location. It
+shows the KMA-warning evidence state, the verified-factor count and the warning
+reference time. It is intentionally not a recommendation surface:
+
+- Its visible state is `Recommendation withheld` while the six-factor reader is
+  incomplete.
+- A missing warning, an approximate nearest-station match or a missing source
+  never becomes an all-clear or a favorable-condition claim.
+- The beta does not ask for a venue, construct an itinerary, rank locations,
+  create a reservation or take payment.
+
+This public status makes the remaining evidence gap inspectable without
+pretending that the gap has been solved.
+
 ```text
 selected Korean coordinates
   + KMA official-warning Safety result

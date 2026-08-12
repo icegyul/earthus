@@ -40,6 +40,7 @@ import os
 import time
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 
 import boto3
@@ -59,6 +60,39 @@ PAGE = 30
 # ⚠️ 솎기 상한은 없앴다 (위 handler 주석 참고 — 변경금지 때문이다).
 
 
+def _xml_value(node):
+    """기관 XML을 기존 JSON 응답과 같은 dict/list 모양으로 바꾼다.
+
+    받은 지적: 기관이 `_type=json`을 무시하고 2026-08-08부터 정상 자료를 XML로
+    보내기 시작했다. 응답 형식만 달라졌는데 JSON 파싱 실패를 자료 없음으로
+    기록하면 안 된다.
+    """
+    children = list(node)
+    if not children:
+        return (node.text or "").strip()
+
+    out = {}
+    for child in children:
+        key = child.tag.rsplit("}", 1)[-1]  # namespace가 붙어도 필드명은 보존한다.
+        value = _xml_value(child)
+        if key not in out:
+            out[key] = value
+        elif isinstance(out[key], list):
+            out[key].append(value)
+        else:
+            out[key] = [out[key], value]
+    return out
+
+
+def decode_response(raw):
+    """공공데이터포털의 JSON/XML 양쪽 정상 응답을 받아들인다."""
+    stripped = raw.lstrip()
+    if stripped.startswith("<"):
+        root = ET.fromstring(stripped)
+        return {root.tag.rsplit("}", 1)[-1]: _xml_value(root)}
+    return json.loads(raw)
+
+
 def get(op, params, tries=2):
     q = urllib.parse.urlencode(params)
     last = None
@@ -74,7 +108,7 @@ def get(op, params, tries=2):
             if RAW.get(op) is None:
                 RAW[op] = raw[:600]
                 print(f"[turtle] 원문({op}): {raw[:420]}")
-            return json.loads(raw)
+            return decode_response(raw)
         except Exception as e:                                   # noqa: BLE001
             last = e
             if i < tries - 1:

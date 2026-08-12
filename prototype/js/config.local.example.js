@@ -99,6 +99,10 @@ export const CONFIG = {
   /* tpw-grid Lambda가 실제 파일을 만들고 화면·출처·결측 검증을 통과한 뒤에만 true.
      false면 메뉴에 보이되 준비 중으로 잠긴다. */
   TPW_READY: false,
+  /* PR-07 Decision Core는 현재 CALIBRATION/SHADOW다. 5개 활동 곡선의 도메인 검토,
+     운영 source/권리, 한국 밖 Safety provider, PR-08 UI 검수가 모두 끝나기 전에는
+     true 금지. false여도 순수 엔진과 replay test는 배포할 수 있지만 추천 UI는 열지 않는다. */
+  DECISION_CORE_READY: false,
   /* ⚠️ Smithsonian GVP는 일반 콘텐츠의 상업 이용에 사전 서면 허가를 요구한다.
      GVP 또는 적용 권리자의 상업 이용 허가를 받고 화산 데이터 경로를
      재검증한 뒤에만 true. */

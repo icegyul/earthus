@@ -6,7 +6,8 @@
 > PR-02 governance shadow, PR-03 Earth View State를 구현했다. 후속 배포 지시로 PR-03와 잠긴
 > TPW 정적 계약만 운영 반영했다. 후속 직접 지시로 PR-04 Readability와 PR-05 Safety Slice도
 > 구현·운영 반영했다. PR-06 Continuous Layers도 구현·검수·정적 운영 반영했다.
-> TPW flag on·판매·SNS는 미승인이다.
+> 후속 직접 지시로 PR-07 Decision Core도 CALIBRATION/SHADOW로 구현했다.
+> TPW flag on·Decision UI·판매·SNS는 미승인이다.
 
 ## 1. 공통 PR 형식
 
@@ -167,6 +168,24 @@ mapping/provider 범위에서는 Safety Engine이 SAFE나 CLOSED를 만들지 �
 상세 계약은 `CONTINUOUS_LAYERS.md`, 배포 증거는 `RELEASE-2026-08-12-PR06.md`다.
 TPW는 공통 표현 엔진과 테스트만 포함하며 운영 객체
 403 상태에서 flag를 켜지 않았다. 점 관측·위성 영상·재난 점은 이 등치선 엔진에 넣지 않는다.
+
+## 4-7. PR-07 Decision Core shadow와 남은 gate
+
+- [x] 6차원 Forecast Confidence와 단일 source agreement `UNKNOWN`
+- [x] 야구 관람·캠핑·야외 풋살·등산·별보기 5개 versioned Base profile
+- [x] raw/unit/normalized/weight/points/signal/reason/basis contribution ledger
+- [x] Safety가 100점 Base보다 먼저 추천을 제한하는 5축 결과 계약
+- [x] 필수 결측·중복·unit/range/timezone 오류와 개인화 입력 fail-closed
+- [x] Safety/Confidence/Crowd/Availability revision까지 포함한 deterministic cache key
+- [x] GS-06~10 합성 replay, 자동검사 31개, 10,000회 benchmark
+- [x] `CALIBRATION_SHADOW`, `DECISION_CORE_READY=false`, live provider/UI/network 0
+- [ ] profile 곡선·weight·하산 여유 도메인 승인과 effective/rollback version
+- [ ] 활동별 공식 운영·취소·폐쇄 provider와 한국 밖 Safety provider
+- [ ] live weather/AQ source rights·freshness·서울 리전 network gate
+- [ ] PR-08 private delta와 5축 공개 UI 실제 화면·접근성 검수
+
+상세 계약은 `DECISION_CORE.md`다. 높은 합성 점수는 품질 시험일 뿐 관측·예보·추천이 아니며,
+위 미완료 항목 전에는 public entry가 이 엔진을 import하거나 긍정 추천을 만들지 않는다.
 
 ## 5. 금지
 

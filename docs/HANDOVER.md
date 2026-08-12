@@ -78,7 +78,17 @@ PD의 다음 **“계속 진행해”** 지시로 PR-06 Continuous Layers를 구
 `762bc04`·`dc5e6da`, 최종 무효화는 `I2IW2PFV22P0OJ020CHPU57D4V`다. 정본은
 [`earthus-v23/CONTINUOUS_LAYERS.md`](earthus-v23/CONTINUOUS_LAYERS.md), 운영 증거는
 [`earthus-v23/RELEASE-2026-08-12-PR06.md`](earthus-v23/RELEASE-2026-08-12-PR06.md)다.
-TPW 객체/flag, Safari·구형 iPhone 실제 기기 검수, PR-07 이후 판단 기능은 미수행이다.
+TPW 객체/flag, Safari·구형 iPhone 실제 기기 검수, PR-08 이후 공개 판단 기능은 미수행이다.
+
+PD의 다음 **“계속 개발 진행해”** 지시로 PR-07 Decision Core를 구현했다. Forecast Confidence는
+맞을 확률이 아니라 freshness·availability·model agreement·spatial support·horizon·provider
+health의 6차원 품질이며 단일 source agreement와 한 차원 결측은 `UNKNOWN`이다. 야구 관람·
+캠핑·야외 풋살·등산·별보기 5개 Base profile은 개인화 없이 contribution ledger와 revision
+cache key를 만들고, Safety가 100점 Base보다 먼저 긍정 추천을 막는다. 합성 GS-06~10과
+자동검사 31개·10,000회 replay를 통과했지만 곡선 도메인 승인·live source/권리·한국 밖 Safety·
+PR-08 UI 전까지 `CALIBRATION_SHADOW`, `DECISION_CORE_READY=false`다. 정본은
+[`earthus-v23/DECISION_CORE.md`](earthus-v23/DECISION_CORE.md)다. 공개 앱 entry는 아직 이
+모듈을 import하지 않으며 개인화·예약·취소·폐쇄·재고를 생성하지 않는다.
 
 ---
 

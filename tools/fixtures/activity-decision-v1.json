@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "earthus.activity-decision.fixture.v1",
+  "fixtureOnly": true,
+  "warning": "Synthetic replay data. Never display as observation, forecast, closure, inventory or safety evidence.",
+  "confidence": {
+    "dimensions": {
+      "FRESHNESS": { "score": 90 },
+      "AVAILABILITY": { "score": 100 },
+      "MODEL_AGREEMENT": { "score": 85 },
+      "SPATIAL_SUPPORT": { "score": 80 },
+      "TEMPORAL_HORIZON": { "score": 95 },
+      "PROVIDER_HEALTH": { "score": 100 }
+    },
+    "modelSourceIds": ["fixture-model-a", "fixture-model-b"],
+    "inputSignalIds": ["fixture-model-a:r1", "fixture-model-b:r1"],
+    "expectedScore": 91.25,
+    "expectedLevel": "HIGH"
+  },
+  "safety": {
+    "engineVersion": "earthus.safety.fixture.v1",
+    "ruleSetVersion": "earthus.safety.fixture-rules.v1",
+    "status": "NO_ACTIVE_BLOCKER_FIXTURE",
+    "applies": true,
+    "blocksPositiveRecommendation": false,
+    "reason": "SYNTHETIC_GATE_REPLAY_ONLY",
+    "evidence": {
+      "sourceId": "fixture-safety",
+      "revision": "r1",
+      "observedAt": "2026-08-12T09:00:00Z"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "GS-06",
+      "name": "잠실 19시 야구 관람 합성 입력",
+      "profileId": "BASEBALL_SPECTATOR",
+      "placeId": "fixture:seoul:jamsil-baseball",
+      "timeWindow": { "start": "2026-08-12T10:00:00Z", "end": "2026-08-12T13:00:00Z" },
+      "signals": [
+        { "id": "gs06-rain", "revision": "r1", "factor": "PRECIPITATION_AMOUNT", "value": 0.2, "unit": "mm/h" },
+        { "id": "gs06-pop", "revision": "r1", "factor": "PRECIPITATION_PROBABILITY", "value": 20, "unit": "%" },
+        { "id": "gs06-temp", "revision": "r1", "factor": "APPARENT_TEMPERATURE", "value": 22, "unit": "°C" },
+        { "id": "gs06-wind", "revision": "r1", "factor": "WIND_SPEED", "value": 3, "unit": "m/s" },
+        { "id": "gs06-rh", "revision": "r1", "factor": "RELATIVE_HUMIDITY", "value": 55, "unit": "%" }
+      ],
+      "expectedScore": 95.3
+    },
+    {
+      "id": "GS-07",
+      "name": "캠핑 합성 입력",
+      "profileId": "CAMPING",
+      "placeId": "fixture:camping",
+      "timeWindow": { "start": "2026-08-12T09:00:00Z", "end": "2026-08-12T21:00:00Z" },
+      "signals": [
+        { "id": "gs07-rain", "revision": "r1", "factor": "ACCUMULATED_PRECIPITATION", "value": 1, "unit": "mm" },
+        { "id": "gs07-gust", "revision": "r1", "factor": "WIND_GUST", "value": 5, "unit": "m/s" },
+        { "id": "gs07-temp", "revision": "r1", "factor": "APPARENT_TEMPERATURE", "value": 18, "unit": "°C" },
+        { "id": "gs07-snow", "revision": "r1", "factor": "SNOWFALL", "value": 0, "unit": "cm" },
+        { "id": "gs07-rh", "revision": "r1", "factor": "RELATIVE_HUMIDITY", "value": 55, "unit": "%" }
+      ],
+      "expectedScore": 94.65
+    },
+    {
+      "id": "GS-08",
+      "name": "야외 풋살 합성 입력",
+      "profileId": "FUTSAL_OUTDOOR",
+      "placeId": "fixture:futsal",
+      "timeWindow": { "start": "2026-08-12T10:00:00Z", "end": "2026-08-12T12:00:00Z" },
+      "signals": [
+        { "id": "gs08-rain", "revision": "r1", "factor": "PRECIPITATION_AMOUNT", "value": 0, "unit": "mm/h" },
+        { "id": "gs08-pop", "revision": "r1", "factor": "PRECIPITATION_PROBABILITY", "value": 10, "unit": "%" },
+        { "id": "gs08-temp", "revision": "r1", "factor": "APPARENT_TEMPERATURE", "value": 20, "unit": "°C" },
+        { "id": "gs08-aqi", "revision": "r1", "factor": "AIR_QUALITY_INDEX", "value": 50, "unit": "index" },
+        { "id": "gs08-wind", "revision": "r1", "factor": "WIND_SPEED", "value": 3, "unit": "m/s" }
+      ],
+      "expectedScore": 96.5
+    },
+    {
+      "id": "GS-09",
+      "name": "등산 합성 입력",
+      "profileId": "HIKING",
+      "placeId": "fixture:hiking",
+      "timeWindow": { "start": "2026-08-12T00:00:00Z", "end": "2026-08-12T05:00:00Z" },
+      "signals": [
+        { "id": "gs09-rain", "revision": "r1", "factor": "ACCUMULATED_PRECIPITATION", "value": 0, "unit": "mm" },
+        { "id": "gs09-snow", "revision": "r1", "factor": "SNOWFALL", "value": 0, "unit": "cm" },
+        { "id": "gs09-gust", "revision": "r1", "factor": "WIND_GUST", "value": 4, "unit": "m/s" },
+        { "id": "gs09-sunset", "revision": "r1", "factor": "DESCENT_MARGIN", "value": 120, "unit": "min" },
+        { "id": "gs09-aqi", "revision": "r1", "factor": "AIR_QUALITY_INDEX", "value": 40, "unit": "index" }
+      ],
+      "expectedScore": 96.8
+    },
+    {
+      "id": "GS-10",
+      "name": "별보기 합성 입력",
+      "profileId": "STARGAZING",
+      "placeId": "fixture:stargazing",
+      "timeWindow": { "start": "2026-08-12T12:00:00Z", "end": "2026-08-12T15:00:00Z" },
+      "signals": [
+        { "id": "gs10-cloud", "revision": "r1", "factor": "CLOUD_COVER", "value": 10, "unit": "%" },
+        { "id": "gs10-visibility", "revision": "r1", "factor": "VISIBILITY", "value": 20000, "unit": "m" },
+        { "id": "gs10-rh", "revision": "r1", "factor": "RELATIVE_HUMIDITY", "value": 40, "unit": "%" },
+        { "id": "gs10-pop", "revision": "r1", "factor": "PRECIPITATION_PROBABILITY", "value": 10, "unit": "%" },
+        { "id": "gs10-moon", "revision": "r1", "factor": "MOON_ILLUMINATION", "value": 25, "unit": "%" },
+        { "id": "gs10-dark", "revision": "r1", "factor": "DARKNESS_MARGIN", "value": 60, "unit": "min" }
+      ],
+      "expectedScore": 94.65
+    }
+  ]
+}

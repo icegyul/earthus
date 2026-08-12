@@ -30,6 +30,7 @@ const catalogFiles = {
   'cosmic-spacecraft': 'prototype/data/cosmic-spacecraft.json',
   'milky-way-structure': 'prototype/data/milky-way-structure.json',
   'solar-motion': 'prototype/data/solar-motion.json',
+  'mission-media-replay': 'prototype/data/missions/jwst-mission-media-replay-v1.json',
 };
 
 const documents = {};
@@ -138,4 +139,4 @@ assert.throws(
   error => error.code === 'CONFLICTING_DETAIL',
 );
 
-console.log('PASS: 5 Aetherus catalogue contracts, 5 failure fixtures, and 13 route-state cases (v3 encoder, v1 reader)');
+console.log('PASS: 6 Aetherus catalogue contracts, 5 failure fixtures, and 13 route-state cases (v3 encoder, v1 reader)');

@@ -1,0 +1,127 @@
+{
+  "schema": "earthus.mission-media-replay.v1",
+  "schemaVersion": 1,
+  "contract": {
+    "owner": "aetherus",
+    "surfaces": ["mission-media", "mission-replay"],
+    "time": {
+      "generated": "artifact-generated-utc",
+      "assertions": "source-valid-time-utc",
+      "replay": "requested-utc"
+    },
+    "rights": {
+      "scope": "asset",
+      "required": ["credit", "source", "sourceUrl", "license", "display"]
+    }
+  },
+  "artifact": {
+    "id": "jwst-mission-media-replay",
+    "revision": 1,
+    "generatedAtUtc": "2026-08-12T06:00:00.000Z"
+  },
+  "mission": {
+    "id": "jwst",
+    "name": { "ko": "제임스 웹 우주망원경", "en": "James Webb Space Telescope" },
+    "statusAssertions": [
+      {
+        "id": "jwst-operating-official-20220712",
+        "status": "OPERATING",
+        "authority": "OFFICIAL",
+        "validFromUtc": "2022-07-12T00:00:00.000Z",
+        "assertedAtUtc": "2022-07-12T00:00:00.000Z",
+        "source": "NASA Webb First Images",
+        "sourceUrl": "https://science.nasa.gov/mission/webb/webbs-first-images/"
+      }
+    ],
+    "instrumentRelations": [
+      {
+        "id": "jwst-nircam-relation",
+        "instrumentId": "nircam",
+        "relation": "OPERATED_BY_MISSION",
+        "validFromUtc": "2021-12-25T12:20:00.000Z",
+        "sourceUrl": "https://science.nasa.gov/mission/webb/observatory-overview/"
+      },
+      {
+        "id": "jwst-miri-relation",
+        "instrumentId": "miri",
+        "relation": "OPERATED_BY_MISSION",
+        "validFromUtc": "2021-12-25T12:20:00.000Z",
+        "sourceUrl": "https://science.nasa.gov/mission/webb/observatory-overview/"
+      }
+    ]
+  },
+  "timeline": [
+    {
+      "id": "jwst-launch",
+      "title": { "ko": "발사", "en": "Launch" },
+      "occurredAtUtc": "2021-12-25T12:20:00.000Z",
+      "provenance": "observation",
+      "source": "NASA Webb mission overview",
+      "sourceUrl": "https://science.nasa.gov/mission/webb/overview/"
+    },
+    {
+      "id": "jwst-first-images",
+      "title": { "ko": "첫 공개 이미지", "en": "First released images" },
+      "occurredAtUtc": "2022-07-12T00:00:00.000Z",
+      "provenance": "observation",
+      "source": "NASA Webb First Images",
+      "sourceUrl": "https://science.nasa.gov/mission/webb/webbs-first-images/"
+    },
+    {
+      "id": "jwst-pillars-release",
+      "title": { "ko": "창조의 기둥 NIRCam·MIRI 공개", "en": "Pillars of Creation NIRCam and MIRI release" },
+      "occurredAtUtc": "2022-11-30T00:00:00.000Z",
+      "provenance": "observation",
+      "source": "ESA/Webb image release",
+      "sourceUrl": "https://esawebb.org/images/pillarsofcreation_composite/"
+    }
+  ],
+  "mediaAssets": [
+    {
+      "id": "webb-pillars-nircam-miri-composite",
+      "title": { "ko": "창조의 기둥: NIRCam·MIRI 공개 합성", "en": "Pillars of Creation: published NIRCam and MIRI composite" },
+      "catalogAssetRef": "esawebb-pillarsofcreation_composite",
+      "provenance": "observation",
+      "source": "ESA/Webb image release",
+      "sourceUrl": "https://esawebb.org/images/pillarsofcreation_composite/",
+      "rights": {
+        "display": "ALLOWED",
+        "credit": "NASA, ESA, CSA, STScI, J. DePasquale (STScI), A. Pagan (STScI), A. M. Koekemoer (STScI)",
+        "license": "CC BY 4.0 · ESA/Webb"
+      },
+      "spectralCoverage": ["near-infrared", "mid-infrared"],
+      "displayMapping": "PUBLISHED_FALSE_COLOR_COMPOSITE",
+      "pixelAlignment": "NOT_VERIFIED"
+    },
+    {
+      "id": "webb-southern-ring-published-image",
+      "title": { "ko": "남쪽고리 성운: 공개 이미지", "en": "Southern Ring Nebula: published image" },
+      "catalogAssetRef": "southern-ring-jwst",
+      "provenance": "observation",
+      "source": "ESA/Webb image release",
+      "sourceUrl": "https://esawebb.org/images/weic2207c/",
+      "rights": {
+        "display": "ALLOWED",
+        "credit": "NASA, ESA, CSA, STScI, and the Webb ERO Production Team",
+        "license": "CC BY 4.0 · ESA/Webb"
+      },
+      "spectralCoverage": ["near-infrared"],
+      "displayMapping": "PUBLISHED_SINGLE_BAND",
+      "pixelAlignment": "NOT_VERIFIED"
+    }
+  ],
+  "layerSets": [
+    {
+      "id": "pillars-published-webb-layer-set",
+      "targetId": "pillars-of-creation",
+      "assetIds": ["webb-pillars-nircam-miri-composite"],
+      "registrationStatus": "NOT_VERIFIED"
+    }
+  ],
+  "replayManifest": {
+    "mode": "MILESTONE_ONLY",
+    "provenance": "reconstruction",
+    "interpolation": "NONE",
+    "cueEventIds": ["jwst-launch", "jwst-first-images", "jwst-pillars-release"]
+  }
+}

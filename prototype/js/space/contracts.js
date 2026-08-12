@@ -8,6 +8,7 @@ export const AETHERUS_CATALOG_SCHEMAS = Object.freeze({
   'space-photos': 'earthus.space-photos.v1',
   'celestial-bodies': 'earthus.celestial-bodies.v1',
   'cosmic-spacecraft': 'earthus.cosmic-spacecraft.v1',
+  'mission-media-replay': 'earthus.mission-media-replay.v1',
   'milky-way-structure': 'earthus.milky-way-structure.v1',
   'solar-motion': 'earthus.solar-motion.v1',
 });
@@ -239,12 +240,136 @@ function validateSolarMotion(document) {
   requireLocalized(document.displayLimit, catalog, 'displayLimit');
 }
 
+// 미션 타임라인은 보기 좋은 서술문이 아니라, 출처·유효 시각·수정 이력이 있는
+// assertion의 집합이다. 공개 이미지의 기관명이 곧 재배포 허가라는 뜻은 아니므로
+// 각 asset의 display 권리를 별도로 검사하고, 검증되지 않은 WCS는 pixel overlay를
+// 허용하지 않는다.
+function validateMissionMediaReplay(document) {
+  const catalog = 'mission-media-replay';
+  requireValue(document.contract.owner === 'aetherus', catalog,
+    'contract.owner', 'Aetherus ownership required');
+  requireValue(Array.isArray(document.contract.surfaces)
+    && document.contract.surfaces.includes('mission-media')
+    && document.contract.surfaces.includes('mission-replay'), catalog,
+  'contract.surfaces', 'mission-media and mission-replay surfaces required');
+  requireValue(document.contract.rights.scope === 'asset', catalog,
+    'contract.rights.scope', 'asset rights required');
+  requireValue(isObject(document.artifact), catalog, 'artifact', 'artifact metadata required');
+  requireValue(ID_PATTERN.test(document.artifact.id || ''), catalog,
+    'artifact.id', 'stable URL-safe id required');
+  requireValue(document.artifact.revision === 1, catalog,
+    'artifact.revision', 'revision 1 required');
+  requireValue(isTimestamp(document.artifact.generatedAtUtc), catalog,
+    'artifact.generatedAtUtc', 'UTC generated timestamp required');
+  requireValue(isObject(document.mission), catalog, 'mission', 'mission required');
+  requireValue(ID_PATTERN.test(document.mission.id || ''), catalog,
+    'mission.id', 'stable URL-safe id required');
+  requireLocalized(document.mission.name, catalog, 'mission.name');
+
+  const assertions = requireArray(document.mission.statusAssertions, catalog, 'mission.statusAssertions');
+  requireIds(assertions, catalog, 'mission.statusAssertions');
+  assertions.forEach((assertion, index) => {
+    const path = `mission.statusAssertions[${index}]`;
+    requireValue(['PROPOSED', 'DEVELOPMENT', 'LAUNCHED', 'OPERATING', 'ENDED', 'UNKNOWN'].includes(assertion.status),
+      catalog, `${path}.status`, 'known status required');
+    ['validFromUtc', 'assertedAtUtc'].forEach(field => requireValue(isTimestamp(assertion[field]), catalog,
+      `${path}.${field}`, 'UTC timestamp required'));
+    requireValue(['OFFICIAL', 'CURATED'].includes(assertion.authority), catalog,
+      `${path}.authority`, 'OFFICIAL or CURATED authority required');
+    requireValue(isText(assertion.source), catalog, `${path}.source`, 'source required');
+    requireValue(isHttps(assertion.sourceUrl), catalog, `${path}.sourceUrl`, 'HTTPS source required');
+    if (assertion.supersedesAssertionId !== undefined) {
+      requireValue(ID_PATTERN.test(assertion.supersedesAssertionId), catalog,
+        `${path}.supersedesAssertionId`, 'stable assertion id required');
+    }
+  });
+
+  const relations = requireArray(document.mission.instrumentRelations, catalog, 'mission.instrumentRelations');
+  requireIds(relations, catalog, 'mission.instrumentRelations');
+  relations.forEach((relation, index) => {
+    const path = `mission.instrumentRelations[${index}]`;
+    requireValue(ID_PATTERN.test(relation.instrumentId || ''), catalog,
+      `${path}.instrumentId`, 'stable instrument id required');
+    requireValue(relation.relation === 'OPERATED_BY_MISSION', catalog,
+      `${path}.relation`, 'OPERATED_BY_MISSION required');
+    requireValue(isTimestamp(relation.validFromUtc), catalog,
+      `${path}.validFromUtc`, 'UTC timestamp required');
+    requireValue(isHttps(relation.sourceUrl), catalog,
+      `${path}.sourceUrl`, 'HTTPS source required');
+  });
+
+  const events = requireArray(document.timeline, catalog, 'timeline');
+  requireIds(events, catalog, 'timeline');
+  events.forEach((event, index) => {
+    const path = `timeline[${index}]`;
+    requireLocalized(event.title, catalog, `${path}.title`);
+    requireValue(isTimestamp(event.occurredAtUtc), catalog,
+      `${path}.occurredAtUtc`, 'UTC timestamp required');
+    requireValue(isText(event.source), catalog, `${path}.source`, 'source required');
+    requireValue(isHttps(event.sourceUrl), catalog, `${path}.sourceUrl`, 'HTTPS source required');
+    requireValue(['observation', 'reconstruction'].includes(event.provenance), catalog,
+      `${path}.provenance`, 'observation or reconstruction provenance required');
+    if (event.supersedesEventId !== undefined) {
+      requireValue(ID_PATTERN.test(event.supersedesEventId), catalog,
+        `${path}.supersedesEventId`, 'stable event id required');
+    }
+  });
+
+  const assets = requireArray(document.mediaAssets, catalog, 'mediaAssets');
+  requireIds(assets, catalog, 'mediaAssets');
+  assets.forEach((asset, index) => {
+    const path = `mediaAssets[${index}]`;
+    requireLocalized(asset.title, catalog, `${path}.title`);
+    requireValue(['observation', 'reconstruction'].includes(asset.provenance), catalog,
+      `${path}.provenance`, 'observation or reconstruction provenance required');
+    requireValue(isText(asset.catalogAssetRef), catalog, `${path}.catalogAssetRef`, 'catalog reference required');
+    requireValue(isText(asset.source), catalog, `${path}.source`, 'source required');
+    requireValue(isHttps(asset.sourceUrl), catalog, `${path}.sourceUrl`, 'HTTPS source required');
+    requireValue(isObject(asset.rights), catalog, `${path}.rights`, 'rights required');
+    requireValue(asset.rights.display === 'ALLOWED' || asset.rights.display === 'DENIED', catalog,
+      `${path}.rights.display`, 'explicit display right required');
+    ['credit', 'license'].forEach(field => requireValue(isText(asset.rights[field]), catalog,
+      `${path}.rights.${field}`, `${field} required`));
+    requireArray(asset.spectralCoverage, catalog, `${path}.spectralCoverage`)
+      .forEach((band, bandIndex) => requireValue(isText(band), catalog,
+        `${path}.spectralCoverage[${bandIndex}]`, 'band text required'));
+    requireValue(['PUBLISHED_FALSE_COLOR_COMPOSITE', 'PUBLISHED_SINGLE_BAND'].includes(asset.displayMapping), catalog,
+      `${path}.displayMapping`, 'published display mapping required');
+    requireValue(['NOT_VERIFIED', 'METADATA_ALIGNED'].includes(asset.pixelAlignment), catalog,
+      `${path}.pixelAlignment`, 'pixel alignment status required');
+  });
+
+  const layerSets = requireArray(document.layerSets, catalog, 'layerSets');
+  requireIds(layerSets, catalog, 'layerSets');
+  layerSets.forEach((layerSet, index) => {
+    const path = `layerSets[${index}]`;
+    requireValue(ID_PATTERN.test(layerSet.targetId || ''), catalog,
+      `${path}.targetId`, 'stable target id required');
+    requireArray(layerSet.assetIds, catalog, `${path}.assetIds`).forEach((assetId, assetIndex) =>
+      requireValue(ID_PATTERN.test(assetId), catalog, `${path}.assetIds[${assetIndex}]`, 'stable asset id required'));
+    requireValue(['NOT_VERIFIED', 'METADATA_ALIGNED'].includes(layerSet.registrationStatus), catalog,
+      `${path}.registrationStatus`, 'registration status required');
+  });
+
+  requireValue(isObject(document.replayManifest), catalog, 'replayManifest', 'replay manifest required');
+  requireValue(document.replayManifest.mode === 'MILESTONE_ONLY', catalog,
+    'replayManifest.mode', 'MILESTONE_ONLY replay required');
+  requireValue(document.replayManifest.provenance === 'reconstruction', catalog,
+    'replayManifest.provenance', 'reconstruction provenance required');
+  requireValue(document.replayManifest.interpolation === 'NONE', catalog,
+    'replayManifest.interpolation', 'NONE interpolation required');
+  requireArray(document.replayManifest.cueEventIds, catalog, 'replayManifest.cueEventIds')
+    .forEach((eventId, index) => requireValue(ID_PATTERN.test(eventId), catalog,
+      `replayManifest.cueEventIds[${index}]`, 'stable event id required'));
+}
+
 const VALIDATORS = Object.freeze({
   'space-photos': validateSpacePhotos,
   'celestial-bodies': validateCelestialBodies,
   'cosmic-spacecraft': validateCosmicSpacecraft,
   'milky-way-structure': validateMilkyWayStructure,
   'solar-motion': validateSolarMotion,
+  'mission-media-replay': validateMissionMediaReplay,
 });
 
 export function assertAetherusCatalog(catalog, document) {

@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://earthus.net/schema/earth-signal-v1.schema.json",
+  "title": "EarthSignalEnvelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "signalId", "signalType", "identity", "geometry", "crs",
+    "sourceCrs", "coordinateTransform", "issuedAt", "observedAt", "validFrom",
+    "validTo", "receivedAt", "sourceTimezone", "sourceTimeRaw", "timePrecision", "value", "unit",
+    "sourceValue", "sourceUnit", "conversion", "vertical", "missingReason",
+    "revision", "supersedes", "region", "source", "quality", "processor"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "earth.signal.v1"},
+    "signalId": {"type": "string", "minLength": 12},
+    "signalType": {"type": "string", "minLength": 3},
+    "identity": {
+      "type": "object",
+      "required": ["naturalKey"],
+      "properties": {"naturalKey": {"type": "string", "minLength": 1}},
+      "additionalProperties": false
+    },
+    "geometry": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "required": ["type", "coordinates"],
+          "properties": {
+            "type": {"enum": ["Point", "LineString", "MultiLineString", "Polygon", "MultiPolygon"]},
+            "coordinates": {"type": "array"}
+          }
+        }
+      ]
+    },
+    "crs": {"const": "EPSG:4326"},
+    "sourceCrs": {"type": ["string", "null"]},
+    "coordinateTransform": {"type": ["object", "null"]},
+    "issuedAt": {"type": ["string", "null"], "format": "date-time"},
+    "observedAt": {"type": ["string", "null"], "format": "date-time"},
+    "validFrom": {"type": ["string", "null"], "format": "date-time"},
+    "validTo": {"type": ["string", "null"], "format": "date-time"},
+    "receivedAt": {"type": "string", "format": "date-time"},
+    "sourceTimezone": {"type": ["string", "null"]},
+    "sourceTimeRaw": {"type": "object"},
+    "timePrecision": {
+      "type": "object",
+      "required": ["issuedAt", "observedAt", "validFrom", "validTo"],
+      "properties": {
+        "issuedAt": {"type": ["string", "null"], "enum": [null, "SECOND", "MINUTE", "HOUR", "DAY"]},
+        "observedAt": {"type": ["string", "null"], "enum": [null, "SECOND", "MINUTE", "HOUR", "DAY"]},
+        "validFrom": {"type": ["string", "null"], "enum": [null, "SECOND", "MINUTE", "HOUR", "DAY"]},
+        "validTo": {"type": ["string", "null"], "enum": [null, "SECOND", "MINUTE", "HOUR", "DAY"]}
+      },
+      "additionalProperties": false
+    },
+    "value": {},
+    "unit": {"type": ["string", "null"]},
+    "sourceValue": {},
+    "sourceUnit": {"type": ["string", "null"]},
+    "conversion": {"type": ["object", "null"]},
+    "vertical": {"type": ["object", "null"]},
+    "missingReason": {
+      "type": ["string", "null"],
+      "enum": [null, "NOT_REPORTED", "OUT_OF_COVERAGE", "BELOW_DETECTION",
+        "SENSOR_OFFLINE", "PROVIDER_DELAY", "PARSE_REJECTED", "RIGHTS_BLOCKED",
+        "REGION_UNMAPPED", "TIME_UNCERTAIN", "QUALITY_REJECTED", "NOT_APPLICABLE"]
+    },
+    "revision": {"type": "string", "minLength": 1},
+    "supersedes": {"type": ["string", "null"]},
+    "region": {"type": ["object", "null"]},
+    "source": {
+      "type": "object",
+      "required": ["sourceId", "provider", "dataset", "url", "termsUrl", "licenseStatus",
+        "attribution", "snapshotGeneratedAt"],
+      "properties": {
+        "sourceId": {"type": "string", "minLength": 3},
+        "provider": {"type": "string"},
+        "dataset": {"type": "string"},
+        "url": {"type": "string"},
+        "termsUrl": {"type": "string"},
+        "licenseStatus": {"type": "string"},
+        "attribution": {"type": "string"},
+        "snapshotGeneratedAt": {"type": ["string", "null"]}
+      }
+    },
+    "quality": {
+      "type": "object",
+      "required": ["status", "reasons", "n"],
+      "properties": {
+        "status": {"enum": ["OK", "UNKNOWN", "DEGRADED", "REJECTED"]},
+        "reasons": {"type": "array", "items": {"type": "string"}},
+        "n": {"type": "integer", "minimum": 0}
+      }
+    },
+    "processor": {
+      "type": "object",
+      "required": ["name", "adapter", "version"],
+      "properties": {
+        "name": {"type": "string"},
+        "adapter": {"type": "string"},
+        "version": {"type": "string"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"value": {"type": "null"}}},
+      "then": {"properties": {"missingReason": {"type": "string"}}},
+      "else": {"properties": {"missingReason": {"type": "null"}}}
+    }
+  ]
+}

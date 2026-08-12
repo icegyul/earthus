@@ -430,6 +430,11 @@ export const search = {
 
     if (h.type === 'layer') {
       /* ⚠️ toggle 이 아니라 켜기다. 검색해서 고른 것이 꺼지면 고장으로 읽힌다. */
+      if (h.ref.ready !== true) {
+        const { toast } = await import('./ui.js');
+        toast(i18n.lang === 'ko' ? '아직 준비 중입니다' : 'Coming soon');
+        return;
+      }
       store.setLayer(h.ref.id, true);
       return;
     }

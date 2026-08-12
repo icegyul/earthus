@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "earth.source-registry.v1",
+  "registryId": "earthus.source-registry",
+  "revision": "2026-08-12.draft.1",
+  "previousRevision": null,
+  "status": "DRAFT",
+  "updatedAt": "2026-08-12T00:00:00Z",
+  "entries": [
+    {
+      "sourceId": "kma.weather-warning.wrn-now-data",
+      "provider": "Korea Meteorological Administration",
+      "dataset": "wrn_now_data",
+      "sourceUrl": "https://apihub.kma.go.kr/",
+      "termsUrl": "https://www.kogl.or.kr/",
+      "attribution": "기상청 기상특보 (API허브)",
+      "region": {"type": "KMA_WARNING_REGION", "coverage": "KOREA_AND_ADJACENT_SEAS"},
+      "freshnessPolicy": {
+        "referenceFields": ["source.snapshotGeneratedAt", "input.lastModified"],
+        "freshForSeconds": 1800,
+        "staleAfterSeconds": 2700,
+        "maxFutureSkewSeconds": 300
+      },
+      "providerHealthPolicy": {
+        "minSourceRecords": 0,
+        "emptyIsValid": true,
+        "degradedRejectionRate": 0.01,
+        "downRejectionRate": 0.5
+      },
+      "rights": {
+        "display": "ALLOW_WITH_ATTRIBUTION",
+        "cache": "ALLOW_WITH_ATTRIBUTION",
+        "history": "ALLOW_WITH_ATTRIBUTION",
+        "derivative": "ALLOW_WITH_ATTRIBUTION",
+        "redistribution": "UNKNOWN",
+        "paidExport": "UNKNOWN",
+        "APIResale": "UNKNOWN",
+        "AI": "UNKNOWN"
+      },
+      "expectedLicenseStatuses": ["APPROVED_ATTRIBUTION"],
+      "policyVersion": "kma-warning.draft.1",
+      "status": "DRAFT",
+      "reviewedAt": "2026-08-12T00:00:00Z",
+      "reviewDueAt": "2026-09-12T00:00:00Z",
+      "effectiveAt": null,
+      "approvedAt": null,
+      "approval": null,
+      "owner": "PD_APPROVAL_REQUIRED"
+    },
+    {
+      "sourceId": "kma.aws-1min.temperature",
+      "provider": "Korea Meteorological Administration",
+      "dataset": "AWS 1-minute observations",
+      "sourceUrl": "https://apihub.kma.go.kr/",
+      "termsUrl": "https://www.kogl.or.kr/",
+      "attribution": "기상청 방재기상관측 AWS 매분자료 (API허브)",
+      "region": {"type": "STATION_NETWORK", "coverage": "REPUBLIC_OF_KOREA"},
+      "freshnessPolicy": {
+        "referenceFields": ["observedAt", "source.snapshotGeneratedAt", "input.lastModified"],
+        "freshForSeconds": 300,
+        "staleAfterSeconds": 600,
+        "maxFutureSkewSeconds": 180
+      },
+      "providerHealthPolicy": {
+        "minSourceRecords": 100,
+        "emptyIsValid": false,
+        "degradedRejectionRate": 0.01,
+        "downRejectionRate": 0.5
+      },
+      "rights": {
+        "display": "ALLOW_WITH_ATTRIBUTION",
+        "cache": "ALLOW_WITH_ATTRIBUTION",
+        "history": "ALLOW_WITH_ATTRIBUTION",
+        "derivative": "ALLOW_WITH_ATTRIBUTION",
+        "redistribution": "UNKNOWN",
+        "paidExport": "UNKNOWN",
+        "APIResale": "UNKNOWN",
+        "AI": "UNKNOWN"
+      },
+      "expectedLicenseStatuses": ["APPROVED_ATTRIBUTION"],
+      "policyVersion": "kma-aws-temperature.draft.1",
+      "status": "DRAFT",
+      "reviewedAt": "2026-08-12T00:00:00Z",
+      "reviewDueAt": "2026-09-12T00:00:00Z",
+      "effectiveAt": null,
+      "approvedAt": null,
+      "approval": null,
+      "owner": "PD_APPROVAL_REQUIRED"
+    },
+    {
+      "sourceId": "noaa.ncep.gfs.pwat-0p25-f000",
+      "provider": "NOAA/NCEP",
+      "dataset": "GFS 0.25 degree f000 · PWAT entire atmosphere",
+      "sourceUrl": "https://www.nco.ncep.noaa.gov/pmb/products/gfs/",
+      "termsUrl": "https://www.weather.gov/disclaimer",
+      "attribution": "NOAA/NCEP GFS · NOMADS",
+      "region": {"type": "BBOX", "south": 20.0, "west": 90.0, "north": 55.0, "east": 180.0},
+      "freshnessPolicy": {
+        "referenceFields": ["validFrom", "issuedAt", "source.snapshotGeneratedAt", "input.lastModified"],
+        "freshForSeconds": 21600,
+        "staleAfterSeconds": 32400,
+        "maxFutureSkewSeconds": 300
+      },
+      "providerHealthPolicy": {
+        "minSourceRecords": 3200,
+        "emptyIsValid": false,
+        "degradedRejectionRate": 0.005,
+        "downRejectionRate": 0.02
+      },
+      "rights": {
+        "display": "ALLOW_WITH_ATTRIBUTION",
+        "cache": "ALLOW_WITH_ATTRIBUTION",
+        "history": "ALLOW_WITH_ATTRIBUTION",
+        "derivative": "ALLOW_WITH_ATTRIBUTION",
+        "redistribution": "ALLOW_WITH_ATTRIBUTION",
+        "paidExport": "UNKNOWN",
+        "APIResale": "UNKNOWN",
+        "AI": "UNKNOWN"
+      },
+      "expectedLicenseStatuses": ["APPROVED_FREE"],
+      "policyVersion": "noaa-gfs-tpw.draft.1",
+      "status": "DRAFT",
+      "reviewedAt": "2026-08-12T00:00:00Z",
+      "reviewDueAt": "2026-09-12T00:00:00Z",
+      "effectiveAt": null,
+      "approvedAt": null,
+      "approval": null,
+      "owner": "PD_APPROVAL_REQUIRED"
+    }
+  ]
+}

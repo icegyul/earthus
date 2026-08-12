@@ -79,7 +79,7 @@ function loadLayerState() {
       같이 봐야 의미가 있으므로 묶지 않는다. */
 const EXCLUSIVE = [
   // 색 격자 — 한 장만. 두 장이 겹치면 색이 섞여 값을 읽을 수 없다.
-  ['temp', 'tmax', 'tmin', 'humidity', 'fog', 'drought',
+  ['temp', 'tmax', 'tmin', 'humidity', 'tpw', 'fog', 'drought',
    'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
    'sst', 'sstanom', 'wave', 'swell', 'current'],
   // 바람 파티클 — 지금 바람과 내일 바람이 같이 흐르면 어느 쪽인지 알 수 없다.
@@ -97,12 +97,18 @@ export const store = {
   // ⚠️ 장면은 저장하지 않는다. 새 탭·새로고침은 항상 지구에서 시작한다.
   scene: 'earth',           // earth | space | ocean
   sceneStage: 'earth',
+  /* Earth View 상태는 저장소나 localStorage에 남기지 않는다. 공유·뒤로가기의 정본은
+     URL이고, query가 없는 새 방문은 언제나 아름다운 지구에서 시작한다. */
+  earthView: Object.freeze({
+    view: 'earth', layer: null, at: null, model: null, point: null,
+    activity: null, reservation: null,
+  }),
   height: 24_000_000,
   mode: 'ambient',          // ambient | explore
   cluster: true,
   pins: false,              // 핀 노출 구간인가 (T.PIN 이하)
   selected: null,
-  _subs: { tier: [], layer: [], camera: [], select: [], scene: [] },
+  _subs: { tier: [], layer: [], camera: [], select: [], scene: [], earthView: [] },
 
   on(evt, fn) { this._subs[evt].push(fn); return () => {
     this._subs[evt] = this._subs[evt].filter(f => f !== fn);
@@ -135,6 +141,24 @@ export const store = {
     this.sceneStage = stage;
     if (changed) this.emit('scene', next, stage);
     return changed;
+  },
+
+  setEarthView(next) {
+    const normalized = Object.freeze({
+      view: next?.view || 'earth',
+      layer: next?.layer || null,
+      at: next?.at || null,
+      model: next?.model || null,
+      point: next?.point || null,
+      activity: next?.activity || null,
+      reservation: next?.reservation || null,
+    });
+    const before = JSON.stringify(this.earthView);
+    const after = JSON.stringify(normalized);
+    if (before === after) return false;
+    this.earthView = normalized;
+    this.emit('earthView', normalized);
+    return true;
   },
 
   /* ── 레이어 ───────────────────────────────────────────── */

@@ -3,7 +3,7 @@ import { initViewer, viewer, scene, cameraHeight, onCameraIdle, flyTo, setAmbien
 import { alarms } from './alarms.js';
 import { windField } from './windfield.js';
 import { myLocation } from './mylocation.js';
-import { layerBar } from './layerbar.js?v=20260811-brandtabs1';
+import { layerBar } from './layerbar.js?v=20260812-earthview1';
 import { search } from './search.js';
 import { onboard } from './onboard.js';
 import { weatherPanel } from './ui-weather.js?v=20260810-locationchart1';
@@ -12,6 +12,8 @@ import { panels } from './panels.js';
 import { intro } from './intro.js';
 import { renderQuality } from './render-quality.js';
 import { store } from './store.js';
+import { earthViewState } from './earth-view-state.js?v=20260812-earthview1';
+import { hasEarthRoute } from './earth-route-state.js';
 import { registry } from './layers/registry.js?v=20260812-photoownership1';
 import { imagery } from './layers/imagery.js';
 import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js?v=20260810-locationchart1';
@@ -146,10 +148,15 @@ async function boot() {
   const sceneParams = new URLSearchParams(location.search);
   const diveParam = sceneParams.get('dive');
   const oceanRoute = sceneParams.get('ocean') === '1';
-  const aetherusRoute = diveParam || oceanRoute ? null : decodeAetherusRoute(sceneParams);
+  /* 잘못된 수동 URL에 두 서비스 route가 섞여도 장면 복원기가 경쟁하지 않는다.
+     해구(좌표 계약) > Earth의 명시 상태 > AETHERUS 순으로 하나만 선택한다. */
+  const earthRouteRequested = hasEarthRoute(sceneParams);
+  const aetherusRoute = diveParam || oceanRoute || earthRouteRequested
+    ? null : decodeAetherusRoute(sceneParams);
   let aetherusRouteSyncReady = !aetherusRoute?.stage;
   const syncAetherusRoute = state => {
     try {
+      if (state) earthViewState.leaveForForeignRoute();
       replaceAetherusRoute(state || null);
     } catch (error) {
       console.warn('[aetherus-route]', error.message);
@@ -208,6 +215,14 @@ async function boot() {
      영어로 저장해 둔 사용자가 새로고침했을 때 메뉴만 한국어로 돌아온다. */
   i18n.applyStatic();
   layerBar.init();
+  earthViewState.init({
+    layerBar,
+    sceneMgr,
+    sourceNote,
+    flyTo,
+    canOpenLayer: id => layerBar.canOpenLayer(id),
+    foreignRouteActive: !!diveParam || oceanRoute,
+  });
   layerBar.onAction('earth-home', () => sceneMgr.to('earth', { stage: 'earth' }));
   layerBar.onAction('earth-surface', async () => {
     await sceneMgr.to('earth', { stage: 'surface' });
@@ -315,7 +330,7 @@ async function boot() {
        장면과 레이어를 함께 초기화해야 "NOAA 구름만 있는 지구"가 된다. */
     await sceneMgr.to('earth', { stage: 'earth' });
     store.clearSelect();
-    store.resetLayersToDefaults();
+    earthViewState.goEarth({ resetLayers: true });
     document.querySelectorAll('#sheet.up, #settings.up, .sheet-panel.up')
       .forEach(panel => panel.classList.remove('up'));
     const c = viewer.camera.positionCartographic;
@@ -783,26 +798,49 @@ function onPick(ev) {
         "지금 여기가 몇 도인가"는 답할 수 있어야 한다.
      ⚠️ 값이 없으면 지운다 — 옛 값이 남으면 다른 자리 값을 이 자리 값으로 읽는다. */
   (async () => {
+    const clearEarthPoint = () => {
+      sourceNote.setPoint?.(null, null);
+      document.dispatchEvent(new CustomEvent('earthus:earth-point-clear'));
+    };
     const g0 = ground();
-    if (!g0) { sourceNote.setPoint?.(null, null); return; }
+    if (!g0) { clearEarthPoint(); return; }
     try {
       const { gridOverlay } = await import('./gridoverlay.js');
-      const PAINTED = ['temp', 'tmax', 'tmin', 'humidity', 'rain', 'pressure',
+      const PAINTED = ['temp', 'tmax', 'tmin', 'humidity', 'tpw', 'rain', 'pressure',
                        'fog', 'drought', 'pm25', 'pm10', 'dust', 'aqi', 'uv',
                        'ozone', 'sst', 'sstanom', 'wave', 'swell', 'current'];
       const id = PAINTED.find(x => store.isOn(x));
-      if (!id) { sourceNote.setPoint?.(null, null); return; }
+      if (!id) { clearEarthPoint(); return; }
+      if (id === 'tpw') {
+        /* TPW는 90~180°E 지역 격자다. 전지구 격자처럼 경도를 감으면
+           범위 밖을 반대편 값으로 보여주게 된다 — 지역 경계 검증이 들어간 공통 함수를 쓴다. */
+        const v = await gridOverlay.valueAt(id, g0.lat, g0.lon);
+        sourceNote.setPoint?.(id, v);
+        if (Number.isFinite(v)) {
+          document.dispatchEvent(new CustomEvent('earthus:earth-point', {
+            detail: { layer: id, point: { lat: g0.lat, lon: g0.lon } },
+          }));
+        }
+        else document.dispatchEvent(new CustomEvent('earthus:earth-point-clear'));
+        return;
+      }
       const grid = await gridOverlay.gridFor(id);
       const f = gridOverlay.fieldOf(id);
       const arr = grid?.[f];
-      if (!arr) { sourceNote.setPoint?.(null, null); return; }
+      if (!arr) { clearEarthPoint(); return; }
       // 가장 가까운 격자 칸 (보간하지 않는다 — 없는 정밀도를 만들지 않는다)
       const ix = Math.round((g0.lon - grid.lon0) / grid.res);
       const iy = Math.round((g0.lat - grid.lat0) / grid.res);
       const x = ((ix % grid.nx) + grid.nx) % grid.nx;
       const v = (iy >= 0 && iy < grid.ny) ? arr[iy * grid.nx + x] : null;
       sourceNote.setPoint?.(id, v);
-    } catch (_) { sourceNote.setPoint?.(null, null); }
+      if (Number.isFinite(v)) {
+        document.dispatchEvent(new CustomEvent('earthus:earth-point', {
+          detail: { layer: id, point: { lat: g0.lat, lon: g0.lon } },
+        }));
+      }
+      else document.dispatchEvent(new CustomEvent('earthus:earth-point-clear'));
+    } catch (_) { clearEarthPoint(); }
   })();
 
   // 빈 곳 탭 → Explore 상태면 그 지점 날씨 (§10 Phase1-5)

@@ -1,0 +1,24 @@
+{
+  "generated": "2026-08-12T00:01:00Z",
+  "observedKst": "202608120901",
+  "source": "기상청 기상특보 (API허브 wrn_now_data)",
+  "activeCount": 1,
+  "upcomingCount": 0,
+  "active": [
+    {
+      "region": "서울특별시",
+      "regionId": "S1100000",
+      "parentId": "S0000000",
+      "parent": "전국",
+      "kind": "호우",
+      "kindEn": "Heavy rain",
+      "level": "경보",
+      "levelRank": 2,
+      "issuedKst": "202608120900",
+      "effectiveKst": "202608120900",
+      "lat": 37.5665,
+      "lon": 126.978
+    }
+  ],
+  "upcoming": []
+}

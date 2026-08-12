@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://earthus.net/schema/earth-signal-batch-v1.schema.json",
+  "title": "EarthSignalBatch v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "signalSchemaVersion", "adapter", "processedAt", "input", "source",
+    "sourceRecordCount", "canonicalRecordCount", "rejectedCount", "rejectedByReason",
+    "rejected", "signals"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "earth.signal.batch.v1"},
+    "signalSchemaVersion": {"const": "earth.signal.v1"},
+    "adapter": {"type": "object"},
+    "processedAt": {"type": "string", "format": "date-time"},
+    "input": {
+      "type": "object",
+      "required": ["bucket", "key", "sha256", "bytes", "etag", "lastModified"]
+    },
+    "source": {
+      "type": "object",
+      "required": ["sourceId", "provider", "dataset", "url", "termsUrl", "licenseStatus",
+        "attribution", "snapshotGeneratedAt"]
+    },
+    "sourceRecordCount": {"type": "integer", "minimum": 0},
+    "canonicalRecordCount": {"type": "integer", "minimum": 0},
+    "rejectedCount": {"type": "integer", "minimum": 0},
+    "rejectedByReason": {"type": "object"},
+    "rejected": {"type": "array"},
+    "signals": {
+      "type": "array",
+      "items": {"$ref": "earth-signal-v1.schema.json"}
+    }
+  }
+}

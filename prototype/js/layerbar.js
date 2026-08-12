@@ -84,6 +84,11 @@ export const ITEMS = [
     sky:'#0d1622', paint:'wind' },
   { id:'humidity', ko:'습도', en:'Humidity', sub:'현재', subEn:'Now', ready:true,
     sky:'#0a1720', paint:'humid' },
+  /* 받은 지적: "대기중 수증기량인데 뉴스에 나온 자료야 너무 선명하게 잘 보여"
+     기존 천리안2A는 중상층 영상이고 이 값은 대기 기둥 전체의 TPW라 별도 항목이다. */
+  { id:'tpw', ko:'수증기 통로', en:'Moisture corridor',
+    sub:'총가강수량 · 하늘을 짜면 몇 mm', subEn:'Total precipitable water · mm',
+    ready:CONFIG.TPW_READY === true, sky:'#11112a', paint:'tpw' },
   /* 예보 3종 — **내일** 기준이다 (지점 현지 날짜).
      ⚠️ 부제에 '내일'을 반드시 쓴다. '최고'라고만 하면 오늘 최고기온으로 읽힌다. */
   { id:'tmax', ko:'기온', en:'Temp', sub:'내일 최고', subEn:'Tomorrow max', ready:true,
@@ -226,6 +231,7 @@ export function drawThumb(cv, kind) {
     temp:  () => { band(['#3b4cc0', '#4fb3d9', '#7dd87d', '#f5e05a', '#f0803c', '#c92b2b']); },
     wind:  () => { bg(['#cfe4f5', '#8fb8d8']); streaks('rgba(255,255,255,.9)'); },
     humid: () => { bg(['#7fc6e8', '#2a6f95']); blobs('rgba(240,150,60,.75)', 7, 15); },
+    tpw: () => { band(['#3c1e6e', '#2d50af', '#379bd2', '#91d7be', '#f5dc7d', '#ee9146', '#be4164', '#e191c3']); },
     tmax:  () => { band(['#f5e05a', '#f0a03c', '#e0562b', '#a81f1f']); },
     tmin:  () => { band(['#0d2a6b', '#2b62c0', '#69a8de', '#bcd8f0']); },
     aurora:() => { bg(['#04141c', '#02080c']); aurora(); },
@@ -460,7 +466,7 @@ const CATEGORIES = [
           'gk2aWV',        // 🇰🇷 천리안 수증기
           'himaIR'] },     // 🇯🇵 히마와리 구름 꼭대기 온도
   { id: 'weather', ko: '기상',       en: 'Weather',
-    ids: ['temp', 'tmax', 'tmin', 'humidity', 'wind', 'windfc', 'rain', 'pressure',
+    ids: ['temp', 'tmax', 'tmin', 'humidity', 'tpw', 'wind', 'windfc', 'rain', 'pressure',
           'fog', 'drought'] },
   { id: 'air',     ko: '대기질',     en: 'Air quality',
     ids: ['airkr', 'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone'] },
@@ -602,12 +608,18 @@ export const layerBar = {
 
     tab.onclick = () => {
       const wasEarthusOpen = this.open && this.sub !== 'aetherus';
+      const wasEarthStyle = this.open && this.sub === 'earth';
       this.open = !wasEarthusOpen;
       if (this.open) document.dispatchEvent(new CustomEvent('earthus:open-menu'));
       /* ⚠️ 열 때도 2단을 접는다. 닫을 때만 접으면 한 번 '지구'를 펼친 뒤로는
          메뉴를 열 때마다 2단이 따라 나온다 — "누르기 전엔 안 보인다"가 깨진다. */
       this.sub = null;
       apply();
+      if (wasEarthStyle) {
+        document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
+          detail: { view: 'earth', reason: 'style-closed' },
+        }));
+      }
     };
     aetherusTab.onclick = () => {
       const wasAetherusOpen = this.open && this.sub === 'aetherus';
@@ -621,7 +633,13 @@ export const layerBar = {
     };
     document.addEventListener('earthus:close-menu', () => {
       if (!this.open) return;
+      const wasEarthStyle = this.sub === 'earth';
       this.open = false; this.sub = null; apply();
+      if (wasEarthStyle) {
+        document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
+          detail: { view: 'earth', reason: 'style-closed' },
+        }));
+      }
     });
 
     /* data-open 을 가진 1단 항목(지구·Alert)은 2단을 토글한다.
@@ -629,9 +647,19 @@ export const layerBar = {
     main.querySelectorAll('[data-open]').forEach(b => {
       b.onclick = () => {
         const k = b.dataset.open;
+        const wasEarthStyle = this.sub === 'earth';
         this.sub = (this.sub === k) ? null : k;
         if (this.sub) this.render(this.sub);
         apply();
+        if (this.sub === 'earth') {
+          document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
+            detail: { view: 'style', reason: 'style-opened' },
+          }));
+        } else if (wasEarthStyle) {
+          document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
+            detail: { view: 'earth', reason: 'style-closed' },
+          }));
+        }
       };
     });
 
@@ -646,6 +674,9 @@ export const layerBar = {
         this.sub = 'earth';
         this.render('earth');
         this._apply?.();
+        document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
+          detail: { view: 'style', reason: 'earth-fold' },
+        }));
       };
     }
 
@@ -654,7 +685,13 @@ export const layerBar = {
       if (!this.open) return;
       if (tab.contains(ev.target) || aetherusTab.contains(ev.target)
           || main.contains(ev.target) || sub.contains(ev.target)) return;
+      const wasEarthStyle = this.sub === 'earth';
       this.open = false; this.sub = null; apply();
+      if (wasEarthStyle) {
+        document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
+          detail: { view: 'earth', reason: 'style-closed' },
+        }));
+      }
     }, true);
 
     this.render();
@@ -668,6 +705,25 @@ export const layerBar = {
     this._renderSceneFilter(store.scene);
     apply();
     return this;
+  },
+
+  canOpenLayer(id) {
+    const item = ITEMS.find(entry => entry.id === id);
+    const def = LAYER_DEFS.find(entry => entry.id === id);
+    return !!item && item.ready === true && !!def && !def.blocked && store.canUse(def);
+  },
+
+  showEarthStyle() {
+    this.open = true;
+    this.sub = 'earth';
+    this.render('earth');
+    this._apply?.();
+  },
+
+  closeMenus() {
+    this.open = false;
+    this.sub = null;
+    this._apply?.();
   },
 
   _activeEarthLayerCount() {
@@ -1048,6 +1104,9 @@ export const layerBar = {
     preset.ids.forEach(id => {
       if (!store.isOn(id)) store.setLayer(id, true);
     });
+    document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
+      detail: { view: 'data', layer: preset.ids[0], reason: 'time-preset' },
+    }));
     this.open = false; this.sub = null; this._apply?.();
     toast(i18n.lang === 'ko'
       ? `${preset.ko} 기온·바람으로 바꿨습니다`
@@ -1064,6 +1123,9 @@ export const layerBar = {
     preset.ids.forEach(id => {
       if (!store.isOn(id)) store.setLayer(id, true);
     });
+    document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
+      detail: { view: 'data', layer: preset.ids[0], reason: 'layer-preset' },
+    }));
     this.open = false; this.sub = null; this._apply?.();
     toast(i18n.lang === 'ko' ? `${preset.ko} 조합을 켰습니다` : `${preset.en} enabled`);
   },

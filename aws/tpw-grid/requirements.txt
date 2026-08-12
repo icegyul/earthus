@@ -1,0 +1,2 @@
+# ecCodes와 네이티브 라이브러리는 aws/deploy-grib-python.sh가 Linux x86_64 wheel로 묶는다.
+# 일반 deploy-python.sh를 쓰면 로컬 macOS wheel이 들어갈 수 있으므로 이 파일은 의도적으로 비운다.

@@ -1,8 +1,8 @@
 # EARTHUS · AETHERUS 통합 개편 — 2026-08-16 개발 실행 정본
 
 > 작성: 2026-08-10
-> 착수 예정: 2026-08-16 사용량 리셋 확인 후
-> 상태: **계획 확정 · 코딩 전**
+> 통합 착수 예정: 2026-08-16 사용량 리셋 확인 후
+> 상태: **계획 확정 · TPW와 PR-01/02 shadow·PR-03 Earth View State 로컬 구현 · 운영 전환 전**
 > 범위: EARTHUS 메뉴·레이어 표현·무료/유료 경계, AETHERUS 정보 구조·디자인,
 > 마케팅 스튜디오 공개 이야기관, 통합 검증·배포
 > 이 문서와 과거 문서가 충돌하면 가격·판매 상태는
@@ -222,17 +222,73 @@
 
 ---
 
-## 5. Windy 메뉴별 비교와 EARTHUS 보완
+## 5. 경쟁 지도·기상 서비스 전수 비교와 EARTHUS 보완
 
-Windy 공식 안내에서 확인한 강점은 50개 이상 레이어, 여러 예보 모델, 시간축,
-레이더·위성 과거 재생, 즐겨찾기·알림, 모델 비교, 경로 계획, 항공 METAR/TAF와
-모바일 딥링크다. 2026-08-10 확인 기준이며 16일 착수 때 현재 화면을 다시 본다.
+2026-08-11 운영 화면에서 EARTHUS의 `기온 현재`를 직접 열어 확인했다. 전지구 3D 구체 위에
+연속 그라데이션과 작은 범례는 보이지만, 도시별 수치·행정 경계·등온선이 없어 사용자가
+`어디가 몇 도이고 경계가 어디인지`를 한눈에 읽기 어렵다. 반면 같은 시각에 확인한 Windy는
+도시명과 기온 숫자, 경계, 단계 범례, 시간축, 모델 선택을 한 화면에 제공했고 Ventusky는
+지명·경계·흐름·단계 범례를 함께 보여줬다.
+
+이 장의 목표는 Windy의 외형을 복제하는 것이 아니다. 경쟁 서비스별로 가장 잘 푸는 문제를
+찾아 `자료 → 표현 → 조작 → 판단 → 검증` 계약으로 바꾼 뒤 EARTHUS의 출처·시각·결측·안전
+원칙 안에서 구현한다. 경쟁 서비스 화면이나 색상, 아이콘, 문구, 코드를 그대로 복제하지 않는다.
 
 참고:
 
-- <https://community.windy.com/topic/23730/be-one-step-ahead-with-the-advanced-features-of-windy-premium-en/1>
-- <https://community.windy.com/topic/23857/big-changes-same-price-premium-gets-an-upgrade>
-- <https://community.windy.com/topic/43511/what-s-new-in-v49-faster-smarter-and-made-to-fly>
+- Windy 레이어·등치선·모델: <https://api.windy.com/map-forecast/pricing>
+- Windy 레이더+위성 결합: <https://www.windy.com/articles/36164>
+- Windy 레이더·위성 과거 재생: <https://www.windy.com/articles/32468>
+- Windy 시간축·모델 비교: <https://www.windy.com/articles/23730>
+- Ventusky 지도 값·고도·모델 조작: <https://www.ventusky.com/help>
+- Ventusky 자료원: <https://www.ventusky.com/sources>
+- Zoom Earth 실황 위성·레이더·태풍: <https://zoom.earth/>
+- earth.nullschool 대기·해양·화학·우주 모드: <https://earth.nullschool.net/about>
+- RainViewer 레이더 해상도·이동 화살표·누적·과거 재생: <https://www.rainviewer.com/uk/features.html>
+- meteoblue MultiModel: <https://content.meteoblue.com/en/private-customers/website-help/forecast/multimodel>
+- Weather & Radar 지점 탭 상세: <https://www.weatherandradar.com/weather-news/new-tap-to-forecast-feature-in-weatherandradar-app-try-now--e3fba9fe-11df-47b3-8d28-953f47082344>
+
+### 5-1. 경쟁 서비스별 가져올 장점
+
+| 서비스 | 가장 잘 푸는 문제 | EARTHUS에 가져올 것 | 그대로 가져오지 않을 것 |
+|---|---|---|---|
+| Windy | 많은 연속 기상장을 같은 조작법으로 읽게 함 | 도시/거점 값 라벨, 등치선, 상시 범례, 일관된 시간축, 모델 선택·비교, 선택점 상세 | 특정 모델을 정답처럼 보이는 표현, 유료 기능 구조·색상·UI 복제 |
+| Ventusky | 값·지명·경계·흐름의 공간 관계를 빠르게 읽게 함 | 값 격자 토글, 고도/변수 선택, 경계가 살아 있는 색면, 흐름과 색대의 동시 표현 | 산악·도시의 실제 미세기후처럼 읽히는 가짜 정밀도 |
+| Zoom Earth | 위성·레이더·태풍을 낮은 학습비용으로 연결 | 큰 시간 재생기, 실황/예보 구분, 태풍 경로와 위성 맥락, 단순한 1단 레이어 전환 | 서로 다른 시각·해상도의 자료를 하나의 실황처럼 혼합 |
+| RainViewer | 강수의 위치·이동·누적을 행동으로 연결 | 정지 화살표 대체 모드, 관측 재생, 누적 강수, 지점 탭, 업데이트 지연 표시 | EARTHUS 자체 nowcast 생성, 레이더 없는 지역을 모델로 조용히 채움 |
+| earth.nullschool | 대기·해양·화학·우주를 한 지구 조작 체계로 연결 | 대기/해양/대기질/우주 모드, 고도 선택, 데이터 설명과 출처를 한 패널에 연결 | 애니메이션을 계속 돌리는 기본값, 모델장을 관측처럼 부르는 표현 |
+| meteoblue | 여러 모델의 불일치를 불확실성으로 보여줌 | 선택 지점 모델 나란히 보기, 모델별 색 고정, 공간 해상도·분산 표시 | 모델 평균을 EARTHUS 단일 예보값으로 발표 |
+| Weather & Radar | 지도 한 번 탭해 사용자 질문에 답함 | 모든 수치 레이어의 공통 지점 카드, 시간 추세·활성 특보·관련 관측 연결 | 한 화면에 출처가 다른 값을 근거 없이 합친 자동 결론 |
+
+### 5-2. 전 레이어 공통 판독 계약
+
+모든 수치형 레이어는 다음 여덟 요소 중 적용 가능한 것을 같은 위치와 조작법으로 제공한다.
+
+1. **참조 지도**: 해안선·국경·광역 경계·주요 도시를 값 위에 읽히게 표시한다.
+2. **값 라벨**: 서울·부산·제주·도쿄 같은 고정 도시만 박아 두지 않고 현재 화면의 도시·섬·해역을
+   충돌 없이 표본화한다. 줌이 멀면 국가/권역 대표값, 가까우면 도시/관측 지점 값으로 바꾼다.
+3. **등치선**: 연속 모델 격자에만 그린다. 선 위 숫자는 단위와 함께 표시하고 점 관측을 임의 보간해
+   등치선을 만들지 않는다.
+4. **범례**: 색 경계 숫자 전체, 단위, 0 기준, 자료 시각, 관측/모델 배지를 항상 보인다.
+5. **지점 카드**: 지도를 누르면 좌표·값·단위·유효시각·수신시각·출처·공간해상도·근처 관측을 연다.
+6. **시간축**: 관측 과거, 현재, 모델 미래를 색과 제목으로 분리한다. 하루 최고/최저는 시간별 지도처럼
+   재생하지 않는다.
+7. **비교**: 모델↔모델, 모델↔관측, 현재↔평년을 사용자가 명시적으로 선택할 때만 나란히 보여준다.
+8. **저대역폭·접근성**: 입자 대신 정지 화살표, 색면 대신 값 격자, 색 없이도 읽는 선 모양·기호·텍스트를
+   제공한다.
+
+첫 진입 화면은 **아름답고 몰입되는 3D 지구본**을 유지한다. 도시 숫자·등치선·복잡한 분석 패널을
+기본 화면에 얹지 않는다. 사용자가 `지구 스타일`을 누른 뒤 원하는 자료를 고를 때만 데이터 판독
+도구가 열린다. 이를 화면 계약으로 나누면 `Earth View(감상·발견) → Earth Style/Data View(자료 선택·판독)
+→ Evidence Detail(지점 근거) → Decision(안전·활동·예약)` 순서다. 일반 첫 방문은 Earth View에서
+시작하고, 공유 URL이 특정 레이어·시각·지점을 담은 경우에만 그 Data View를 직접 복원한다.
+
+Earth Style 안에는 **판독 모드**를 둔다. 전지구 감상과 사건 맥락은 현재 3D 구체를 유지하고, 값을
+읽을 때는 불필요한 우주 배경을 줄이고 지구를 크게 채워 경계·도시·등치선·범례가 우선하도록 한다.
+판독 모드는 새 지도를 따로 만드는 것이 아니라 같은 데이터와 선택 상태의 표현만 바꾸며 URL로
+복원돼야 한다. 언제든 `지구 보기`로 돌아가 원래의 아름다운 지구본을 회복할 수 있어야 한다.
+
+### 5-3. 현재 지구 스타일 전 항목 적용표
 
 | EARTHUS 메뉴 | Windy와 비교 | EARTHUS가 유지할 강점 | 수정할 것 |
 |---|---|---|---|
@@ -256,7 +312,46 @@ Windy 공식 안내에서 확인한 강점은 50개 이상 레이어, 여러 예
 | News | Windy의 커뮤니티/플러그인과 성격이 다름 | 기관 자료를 실제 사건과 연결 | 기사와 EARTHUS 제작 이야기를 분리 |
 | LAB | Windy의 모델 비교보다 재현성과 과거 예보 보관이 강점 | 예보-관측 원행과 검증기 | 무료 사례→Pro 기간 분석→내보내기의 경로를 명확히 함 |
 
-### 5-1. 그라데이션 문제의 설계 결정
+아래 표는 2026-08-11 운영 `전체 레이어` 목록을 빠짐없이 구현 단위로 묶은 것이다. 한 행에 묶여도
+각 항목은 별도 on/off, 출처, 시각, 실패 상태를 유지한다.
+
+| 현재 레이어 항목 | 가져올 경쟁 장점 | EARTHUS 변경 계약 |
+|---|---|---|
+| 천리안2A 자동·IR·야간 하층운·한반도 VIS·전면 VIS·동아시아 IR/VIS·수증기, 히마와리 자동·IR, 전지구 합성, 수오미 NPP | Zoom Earth의 큰 영상·단순 재생, Windy Radar+의 맥락 결합 | 채널·파장·낮/밤·해상도·관측시각을 상단에 고정하고 재생 범위를 표시. 원영상 위에는 도시·해안선만 선택적으로 얹고 위성값 등치선은 만들지 않음. 서로 다른 위성은 비교 슬라이더/분할 화면으로만 결합 |
+| 기온 현재·내일 최고·내일 최저 | Windy 도시값·등온선·모델/시간, Ventusky 값 격자 | 단계색+등온선+도시 숫자를 기본으로 함. 전지구는 5°C, 지역 확대는 2°C 간격을 초기 후보로 검증하며 실제 해상도와 라벨 충돌에 따라 고정 규칙을 확정. 현재/내일 최고/내일 최저를 서로 다른 상태 색과 제목으로 표시 |
+| 습도 현재 | Windy의 일관된 연속장, nullschool의 고도·변수 설명 | 10% 단계색·등습선 후보, 2m 상대습도/고도·모델·시각 고정, 선택점에서 이슬점과 혼동 방지 설명 |
+| 바람 현재·내일 | Windy/Ventusky 흐름+색면, RainViewer 정지 화살표 | 속도 단계색+유한 입자+도시/해역 값. 풍향 화살표와 돌풍/평균 기준을 명시하고 저전력·저대역폭에서는 정지 화살표로 전환 |
+| 비구름 | RainViewer 관측 재생·이동 화살표·누적, Zoom Earth의 실황 구분 | 관측 강수, 위성 구름, 모델 미래를 별도 탭으로 분리. 관측 재생·이동 참고 화살표·누적값은 실제 보유 자료로만 제공하고 레이더 공백을 0으로 칠하지 않음 |
+| 기압 배치 | Windy 등압선, Ventusky 경계·지명 | 기존 등압선을 판독 모드의 주인공으로 올리고 선 위 hPa 숫자·검증된 H/L 중심·자료시각 표시. 초기 4hPa 간격 후보를 지역별 가독성으로 검증 |
+| 안개·토양 수분 | Windy 시정/토양 레이어의 공통 조작 | 시정은 km 단계와 관측 지점을 함께 표시. 토양 수분은 깊이·단위·모델 시각을 고정하고 가뭄 판정으로 바꾸지 않음. 야간 하층운 후보와 모델 안개는 별도 |
+| 대기오염 실측, PM2.5·PM10·먼지·유럽 AQI·자외선·오존 | Windy 성분 전환, Weather & Radar 지점 상세 | AirKorea 점과 CAMS 모델면을 모양·제목으로 분리. 실측 지점에는 숫자/상태, 모델면에는 단계색/등치선을 적용하며 서로의 차이를 자동 보정하지 않음. 기준 체계와 단위 상시 노출 |
+| 해수면 온도·수온 편차 | nullschool SST/SSTA, Windy 해양 범례 | SST 단계색+등온선+근처 부이, 편차는 0 중심 발산색+0선+기준기간. 모델/분석장과 부이 실측을 한 카드에서 나란히 표시 |
+| 파고·너울 | Windy 파고·주기·방향, nullschool 파랑 | 높이 단계색+등치선+방향 화살표+주기. 선택점에는 모델값과 근처 부이 실측, 유의파고의 쉬운 정의, 항해용 아님을 함께 표시 |
+| 해류·해양 환류 | nullschool 해류 모드와 고도/시간 조작 | 해류는 속도 색대+유한 입자/정지 화살표+자료시각. 환류는 교육용 5개 해역임을 고정하고 현재 실측 흐름처럼 보이지 않게 별도 도식 배지 |
+| 지상 관측소·영국 예보·해양 부이·관측망 밀도 | Weather & Radar 지점 탭, meteoblue 시계열 | 관측/예보 기호를 다르게 하고 공통 지점 카드·시계열·보유기간을 제공. 관측망 밀도는 `값 없음`이 아니라 `EARTHUS가 확보한 관측 수`임을 첫 문장에 표시 |
+| 오로라·일식 | nullschool Space 모드, Zoom Earth 시간 조작 | 현재 우주날씨와 예정 천문현상을 분리. 구름·달빛·내 위치를 결합할 때 각 입력 근거와 관측 가능성 한계를 표시하고 AETHERUS로 이어지는 CTA 제공 |
+| 허블·제임스웹 우주 사진 | Zoom Earth의 큰 영상 중심 탐색 | 지구 레이어에서 제거하고 AETHERUS 사진관 필터로 이동. 공식 사진·크레딧·관측일·파장·실제/합성 설명 유지 |
+| 태풍·지진·쓰나미·기상경보·각국 기관 재해·낙뢰·산불·열돔 | Zoom Earth 태풍 맥락, Windy Radar+, RainViewer 공식 경보 | 공식 사건을 최상위에 두고 관련 위성·레이더·바람·부이를 사용자가 여는 맥락 레이어로 제공. 자체 위험등급 생성 금지. 관측/기관 발표/모델 참고선을 선 모양과 배지로 구분 |
+| 이벤트 | Zoom Earth의 사건 중심 진입 | 검증된 실제 사건만 지도에 노출하고 News/LAB 보고서로 연결. 자료가 없는 7종 보고서는 생성하거나 빈 카드로 채우지 않음 |
+| 항공기·선박 | Windy 경로 기상, 위치 추적 앱의 지연 표시 | `Track` 허브로 이동. 계약된 공급자·자료시각·수신시각·지연·공백 이유·항적 보관 범위를 표시하기 전에는 실시간이라고 판매하지 않음 |
+
+### 5-4. EARTHUS AX 차별화
+
+경쟁 앱에서 가져올 AX의 핵심은 AI 문장을 더 많이 보여주는 것이 아니라 사용자가 지도를 읽고
+결정하는 시간을 줄이는 것이다.
+
+- 사용자가 `왜 여기만 더 덥지?`라고 누르면 현재 선택한 기온·도시값·관측소·기압·구름 등
+  **이미 화면에 존재하고 출처가 확인된 신호만** 근거 카드로 묶는다.
+- AI는 수치·특보·폐쇄·레이더 이동을 만들지 않는다. `Observed / Official / Model / Computed`
+  또는 `AI-Explained`를 문장 가까이에 표시한다.
+- 여러 모델이 다르면 하나를 골라 단정하지 않고 모델별 값·해상도·분산·최근 관측을 나란히 보여준다.
+- `태풍 보기`, `바다 보기`, `별보기` 같은 목적형 진입은 필요한 레이어 조합을 제안하되 사용자가
+  켜기 전에는 상태를 바꾸지 않는다.
+- 설명 결과에는 `이 판단에 사용한 레이어`, 자료시각, 빠진 신호, 낮은 신뢰의 이유를 남긴다.
+- 화면 낭독 모드는 `색`을 설명하지 않고 `서울 28°C, 부산 26°C, 30°C 등온선은 수도권 남쪽`처럼
+  숫자·방향·경계를 읽는다. 자료에 없는 경계는 말하지 않는다.
+
+### 5-5. 그라데이션 문제의 설계 결정
 
 현재 EARTHUS의 부드러운 그라데이션은 값의 경계를 찾기 어렵고, 사용자가
 “색은 보이는데 무엇을 뜻하는지” 해석하기 어렵다. 모든 자료를 Windy처럼 보이게
@@ -280,6 +375,31 @@ Windy 공식 안내에서 확인한 강점은 50개 이상 레이어, 여러 예
 - 색만으로 양/음·위험 단계를 구분하지 않고 숫자·선 모양·기호를 함께 쓴다.
 - 바탕지도와 겹쳤을 때의 대비를 한국·일본·태평양·유럽·미주에서 각각 캡처해 본다.
 - 희소 관측값에 시각적으로 그럴듯한 가짜 등고선을 만들지 않는다.
+
+### 5-6. 개발 순서와 완료 조건
+
+| 단계 | 범위 | 완료 조건 |
+|---|---|---|
+| V0 판독 기반 | 경계·도시·값 라벨 엔진, 공통 범례, 지점 카드, 판독 모드, URL 상태 | 전지구/한국/일본/태평양에서 같은 선택이 복원되고 라벨 겹침·단위 누락이 없음 |
+| V1 연속장 | 기온·기압·바람·SST·수온편차·파고 | 단계색·등치선·값·범례가 함께 보이고 선택점 원자료와 일치. 무한 애니메이션 0 |
+| V2 실황 흐름 | 위성·비구름·낙뢰·태풍 | 관측/기관/모델 시간축이 분리되고 자료 공백을 0·맑음·안전으로 표시하지 않음 |
+| V3 지점·대기질 | AirKorea·ASOS·부이·영국 예보·관측망 | 점 자료에 가짜 연속면이 없고 지점 카드의 시각·출처·보유범위가 원자료와 일치 |
+| V4 나머지 레이어 | 습도·안개·토양수분·해류·오로라·일식·재난·Track | §5-3 계약과 기존 안전·라이선스 관문을 각각 통과 |
+| V5 비교·AX | 모델 비교, 근거 카드, 목적형 레이어 제안, 접근성 낭독 | AI 생성 수치 0, 모든 문장에 사용 신호와 결측 이유, 상태 변경은 사용자 승인 후에만 발생 |
+
+각 단계는 390×844, 430×932, 768×1024, 1280×720, 1440×900에서 검증한다. 카메라는 전지구,
+한국, 일본, 북서태평양, 유럽, 미주와 저고도 지역 확대를 포함한다. 다음 질문에 10초 안에 화면만 보고
+답할 수 있는지 사람 검수한다.
+
+- 서울과 부산 중 어디가 몇 도 더 높은가?
+- 가장 가까운 고기압/저기압 중심과 등압선 값은 무엇인가?
+- 선택 해역의 파고는 모델값인가 부이 실측인가?
+- 지금 보이는 비는 레이더 관측인가 모델 미래인가?
+- 색이 없는 화면에서도 위험 단계와 양/음 편차를 구분할 수 있는가?
+
+성능 완료 조건은 정지 후 추가 렌더 0, 해제된 레이어의 타이머·입자·네트워크 0, 구형 아이폰
+10~15분 발열·메모리 검증이다. 경쟁 서비스보다 화려한지가 아니라 **출처를 잃지 않고 더 빨리
+읽히는지**로 판정한다.
 
 ---
 
@@ -675,3 +795,193 @@ sceneUrl, credit, alt, status
 - 항공기·선박 유료 약속이 실제 라이선스·데이터·권한과 일치하는가?
 - 이야기관은 무료이며 사람 승인 없이 공개·SNS 게시되지 않는가?
 - 검증·운영 배포·운영 확인·선택 커밋까지 끝났는가?
+
+---
+
+## 13. EARTHUS v2.3 최종 폐쇄 계약
+
+아래 여섯 항목은 기능을 더 붙이는 백로그가 아니라 Codex 인계 전에 반드시 닫아야 할
+구현·운영 경계다. 상세 필드와 Golden scenario는
+`EARTHUS_Product_Development_Spec_v2.3_FINAL_CODEX_HANDOFF.docx`를 따른다.
+
+### 13-1. 시간·좌표·단위 정본
+
+- 시간은 UTC ISO 8601을 정본으로 두고 source timezone, reference/issued/valid/observed/received를 분리한다.
+- 기간은 `[from, to)`로 계산하며 DST·날짜변경선·24/48시간 선행시간의 한 시간 오차를 fixture로 막는다.
+- 정규 좌표는 EPSG:4326으로 두되 원 CRS·변환 라이브러리/버전을 보존한다. 날짜변경선 geometry는 분할한다.
+- 높이·수심은 vertical datum과 양의 방향을 기록한다. 단위는 원 단위·canonical 단위·변환 버전을 함께 둔다.
+- 결측은 `null + missingReason`이며 0·최솟값·안전값으로 바꾸지 않는다. 메타데이터가 없으면 `UNKNOWN`이다.
+
+### 13-2. 환경·전환·되돌리기
+
+- dev/staging/prod의 계정·버킷·DB·secretRef·callback·feature flag를 분리한다.
+- 새 데이터·결정 경로는 fixture → compatibility adapter/dual-read → shadow diff → 단계별 canary 순으로 연다.
+- canary에는 Safety·UNKNOWN·오류·발열·비용 중지 기준과 관찰 시간을 둔다.
+- 100% cutover 전에 구 reader/writer·cache/schema 호환·행동 보상 절차를 포함한 rollback을 실제 연습한다.
+- 구 경로 삭제는 사용량 0, 보존기간, rollback window, 백업·권리 삭제 확인 뒤 별도 PR로 한다.
+
+### 13-3. 관리자 제어면과 승인권
+
+- 관리자 화면은 Source Registry, Quarantine, 재처리 dry-run, Safety/Confidence/Profile 버전,
+  feature flag, 예약 행동, 판매 잠금의 diff·근거·승인·rollback을 제공한다.
+- Codex와 자동화는 구현·증거·제안을 담당하지만 안전·권리·판매·운영 배포·외부 실행을 최종 승인하지 않는다.
+- PD 승인은 actor, 근거 URL, approvedAt, effectiveAt, rollbackVersion과 함께 append-only로 남긴다.
+- 외부 이용조건·관할·안전 문구가 불명확하면 답을 만들지 않고 `BLOCKED`로 둔다.
+
+### 13-4. 알림·정정·사용자 제보
+
+- 채널·신호군·지역·시간대별 opt-in/철회를 지원하고 비안전 알림에는 quiet hours와 일일 상한을 둔다.
+- 동일 사건/revision은 dedup하고, 대치·해제·오발송은 이전 notificationId와 연결해 같은 채널로 정정한다.
+- 공식 안전 알림은 출처·관할·유효시각·원문을 포함하고 상업 추천과 섞지 않는다.
+- 제보는 `USER_REPORTED`와 검증상태로 분리하며 공식 관측·폐쇄·Hard Gate로 자동 승격하지 않는다.
+
+### 13-5. 제품 분석과 실험 금지선
+
+- HANDOVER 기준 이용 행태 수집은 아직 미구현이다. 수집 전에 동의, event catalog, 금지 필드,
+  보존, 삭제/export, 실험 할당과 종료 기준을 먼저 승인한다.
+- 정밀 위치·자유문구·건강/민감 상태는 기본 analytics에 넣지 않는다.
+- Safety Gate, 공식 경보, 출처·시각, 가격, 동의, 권리 gate는 A/B 실험 대상이 아니다.
+- 체류시간이나 유의확률 하나로 성공·전면배포를 선언하지 않고 판독·안전 guardrail과 비용을 함께 본다.
+
+### 13-6. B2B API·테넌트 격리·쿼터
+
+- tenantId는 서버 인증 context에서 주입하고 row/object/cache key에 포함한다. 교차 tenant 접근은 항상 차단한다.
+- `read:signal`, `read:decision`, `export:derived`, `action:*` scope와 tenant/user/IP/source별 쿼터를 분리한다.
+- bbox·기간·행·동시 export 상한, cursor, async job, 만료 signed URL, checksum manifest를 사용한다.
+- source별 display/export/redistribution/APIResale 권리 gate를 응답 행마다 적용하고 비용을 tenant에 귀속한다.
+- 격리·권리·쿼터·감사·비용 critical slice가 통과하기 전에는 기관용 API/Embed 판매나 SLA를 약속하지 않는다.
+
+이 여섯 계약 중 하나라도 설계·fixture·승인·rollback 증거가 없으면 “v2.3 문서 완료”와
+“운영 전환 가능”을 같은 뜻으로 취급하지 않는다.
+
+---
+
+## 14. 2026-08-12 EARTHUS v2.3 P0 기준선
+
+제품 코드 착수 전에 v2.3의 P0 산출물을 [`earthus-v23/INDEX.md`](earthus-v23/INDEX.md)에
+고정했다. 현재는 문서·운영 화면·source·환경 gap 조사, PD가 직접 승인한 TPW 단독
+vertical slice, PR-01/02 private shadow, PR-03 Earth View State의 로컬 구현까지다.
+8월 16일 사용량 리셋과 PR-00 운영 승인 전에는 그 밖의 EARTHUS/AETHERUS 통합 코딩이나
+운영 배포를 시작하지 않는다.
+
+P0에서 확인한 주요 현실은 다음과 같다.
+
+- source/data handler는 신규 `tpw-grid`를 포함해 64개다. 미배포 shadow processor
+  `signal-foundation`, `source-governance` 2개를 더해 현재 `aws/*/handler.py`는 총 66개다.
+- Supabase 함수 정본은 루트가 아니라 `prototype/supabase/functions/` 아래 6개다.
+- 2026-08-12 운영 화면에서 아름다운 첫 지구와 서비스 분리는 확인됐다.
+- 390×844에서 AETHERUS 태양계 선택 뒤 메뉴는 닫혔으므로 과거 gap 하나는 해소됐다.
+- 태양계 선택 상태가 URL에 남지 않는 공유·복원 gap은 그대로다.
+- Open-Meteo hosted API, GVP, Met Office, 에코뱅크, 바다거북, ADS-B의 상업·재배포
+  gate는 DATA_SOURCE_MATRIX의 상태보다 넓게 추정하지 않는다.
+- 별도 staging, 서울 런타임 공공 API 실측, dual-read/shadow/canary/rollback rehearsal은
+  아직 `PENDING`이다.
+
+P0 문서:
+
+- [`earthus-v23/CURRENT_STATE.md`](earthus-v23/CURRENT_STATE.md)
+- [`earthus-v23/DATA_SOURCE_MATRIX.md`](earthus-v23/DATA_SOURCE_MATRIX.md)
+- [`earthus-v23/CANONICALIZATION.md`](earthus-v23/CANONICALIZATION.md)
+- [`earthus-v23/SIGNAL_FOUNDATION.md`](earthus-v23/SIGNAL_FOUNDATION.md)
+- [`earthus-v23/RIGHTS_FRESHNESS.md`](earthus-v23/RIGHTS_FRESHNESS.md)
+- [`earthus-v23/EARTH_VIEW_STATE.md`](earthus-v23/EARTH_VIEW_STATE.md)
+- [`earthus-v23/ENVIRONMENT_MATRIX.md`](earthus-v23/ENVIRONMENT_MATRIX.md)
+- [`earthus-v23/IMPLEMENTATION_PLAN.md`](earthus-v23/IMPLEMENTATION_PLAN.md)
+- [`earthus-v23/TEST_MATRIX.md`](earthus-v23/TEST_MATRIX.md)
+- [`earthus-v23/TPW_LAYER.md`](earthus-v23/TPW_LAYER.md)
+- [`earthus-v23/ADMIN_RUNBOOK.md`](earthus-v23/ADMIN_RUNBOOK.md)
+- [`earthus-v23/ANALYTICS_EVENT_CATALOG.md`](earthus-v23/ANALYTICS_EVENT_CATALOG.md)
+- [`earthus-v23/RUNBOOK.md`](earthus-v23/RUNBOOK.md)
+- [`earthus-v23/adr/`](earthus-v23/adr/)
+
+---
+
+## 15. 2026-08-12 TPW 수증기 통로 단독 실행
+
+뉴스 화면에서 보인 CIMSS MIMIC-TPW2의 장점은 흐릿한 그라데이션이 아니라 수증기 통로와
+마른 공기 경계가 즉시 읽히는 점이다. EARTHUS는 그 이미지를 복제하지 않고 NOAA GFS의
+`PWAT:entire atmosphere` 0.25° 원격자를 NOAA/NCEP NOMADS에서 직접 받아 정확히 겹치는
+1° 원격자만 추출하고 자체 단계색으로 그린다. 보간값을 도시 숫자로 쓰지 않는다.
+
+구현 순서는 `collector 계약 → 지역 경계/결측 → 단계색·범례 → 도시 원격자값 → 탭 값 →
+출처·유효시각·한계 → 질문 라우팅 → on/off·idle 검증 → 권리·운영 승인 → flag on`이다.
+첫 화면의 아름다운 지구본은 건드리지 않으며 사용자가 지구 스타일에서 선택할 때만 표시한다.
+
+이 레이어는 위성 관측이나 강수량이 아니다. 높은 값만으로 비·호우·태풍·안전을 판단하지
+않는다. Open-Meteo 3,276지점 수집안은 전체 실행 429 실측으로 폐기했고, CIMSS 이미지의
+비상업 조건 때문에 그 이미지·색표·파일도 복제하지 않는다. 실제 S3 파일, 서울 리전의
+NOMADS GRIB/ecCodes, NOAA attribution, 데스크톱·모바일 화면과
+idle render가 검증되기 전에는 `CONFIG.TPW_READY=false`와 운영 미배포를 유지한다.
+
+2026-08-12 로컬에서 NOAA 실 GRIB 91×36=3,276개와 run/valid 시각, 단계색,
+서울·부산 원격자 라벨, 출처/한계, 해제, 390×844, flag-off 우회 차단은 통과했다.
+다만 AWS 서울 Lambda·S3·CloudFront·운영 idle 실측은 아직 남았으므로 flag와 운영 미배포는
+그대로 유지한다.
+
+---
+
+## 16. 2026-08-12 PR-01 Signal Foundation 로컬 실행
+
+PD의 다음 단계 직접 지시에 따라 기존 source handler 64개를 교체하지 않고 KMA 공식 특보,
+KMA AWS 기온, NOAA GFS TPW의 대표 3개 compatibility adapter를
+`aws/signal-foundation/`에 분리했다. 공개 원본은 그대로 두고 canonical 결과만
+`archive/canonical/v1/` 비공개 shadow로 쓰는 구조다.
+
+공식 특보의 기존 좌표는 구역 경계가 아니라 관측소 평균점이므로, 공식 polygon mapping 전에는
+`geometry=null`, `value=null`, `REGION_UNMAPPED`, `quality=UNKNOWN`으로 둔다. TPW는
+모델 분석장과 run/valid 시각을 보존하며 강수·위성 관측으로 승격하지 않는다. KMA AWS 원 결측은
+0으로 바꾸지 않는다. 모든 signal은 원 시각, UTC, precision, source/canonical 단위, 변환 version,
+revision/`supersedes`, source metadata, processor 코드 SHA를 보존한다.
+
+CAN-01~08을 포함한 자동검사 12개, 실제 공개 KMA 특보 29건과 AWS 736지점 read-only 대조,
+3,276칸 TPW shadow 용량 검사를 통과했다. `archive/`가 익명 공개 bucket policy에서 제외된 것도
+읽기 전용으로 확인했다. AWS Lambda·schedule·authoritative reader·Safety/Activity/UI 연결은
+아직 하지 않았으며, 운영 gate는 [`earthus-v23/SIGNAL_FOUNDATION.md`](earthus-v23/SIGNAL_FOUNDATION.md)를
+따른다.
+
+---
+
+## 17. 2026-08-12 PR-02 Rights/Freshness 로컬 실행
+
+PD의 다음 단계 직접 지시에 따라 `source-governance` private shadow를 구현했다. PR-01 batch의
+sourceId·자료 시각·행 수·거절률을 DRAFT Source Registry와 대조해 policy, freshness,
+providerHealth를 서로 다른 축으로 평가한다. 기존 공개 source·UI·Safety·Activity·AETHERUS는
+변경하지 않았다.
+
+권리는 display/cache/history/derivative/redistribution/paidExport/APIResale/AI를 따로 두고,
+entry가 `DRAFT/BLOCKED/EXPIRED`이거나 재검토 기한이 지나면 제안 권리가 ALLOW여도 operation을
+차단한다. `APPROVED`에는 actorId, reason, approvedAt, effectiveAt, rollbackVersion,
+evidenceRefs가 모두 필요하다. 번들 3개 entry는 전부 DRAFT이므로 실제 승인을 만들지 않는다.
+
+freshness는 source별 시각과 주기로 FRESH/AGING/STALE/FUTURE/UNKNOWN을 구분하고,
+provider health는 최소 행 수와 parser 거절률로 HEALTHY/DEGRADED/DOWN을 판정한다. 특보 0건은
+provider 정상일 수 있지만 안전 상태로 승격하지 않는다. sourceId/license/terms/source URL/
+attribution drift도 차단한다.
+
+상태 replay 20개와 PR-01 회귀 12개를 통과했다. 실제 공개 KMA 연속검증은 특보 26건과 AWS
+736지점을 parser 거절 0으로 처리했지만, DRAFT registry 때문에 둘 다
+`POLICY_BLOCKED/display BLOCK`을 유지했다. AWS·schedule·Control Plane·authoritative reader는
+아직 만들지 않았으며 운영 gate는
+[`earthus-v23/RIGHTS_FRESHNESS.md`](earthus-v23/RIGHTS_FRESHNESS.md)를 따른다.
+
+---
+
+## 18. 2026-08-12 PR-03 Earth View State 로컬 실행
+
+PD의 `계속 진행해` 지시에 따라 query 없는 첫 화면을 아름다운 Earth View로 유지하면서,
+사용자가 선택한 `Style → Data → Evidence → Decision` 의미 상태를 접두어가 있는 URL로
+분리했다. Decision은 후속 Safety/Activity/Reservation이 사용할 계약일 뿐, 이번 PR에서
+판단값이나 예약 행동을 만들지 않는다.
+
+Data는 layer와 선택 가능한 UTC 시각·모델, Evidence는 layer와 약 1km로 제한한 지점을
+복원한다. 잘못된 version/view/layer/point는 빈 화면이 아니라 가능한 이전 단계로 낮춘다.
+`TPW_READY=false` 같은 잠긴 레이어는 직접 URL로도 열리지 않는다. AETHERUS·해구 route와
+EARTHUS route는 한 주소에 섞지 않되, 한 서비스 route를 지울 때 다른 서비스의 의미 상태를
+무작정 삭제하지 않는다.
+
+URL 계약 11개, 기존 PR-01 12개와 PR-02 20개, 데스크톱과 390×844 실제 화면에서
+Earth↔Style↔Data↔Evidence 생성·새로고침·뒤로/앞으로 복원을 통과했다. 상세 계약과 운영 전
+gate는 [`earthus-v23/EARTH_VIEW_STATE.md`](earthus-v23/EARTH_VIEW_STATE.md)를 따른다.
+동시에 진행 중인 AETHERUS route v3와 foundation·astronomy·photo 시험은 같은 revision으로
+동기화해 재통과했다. 다만 다기기·cache-busting·rollback gate 전에는 PR-03 정적 파일을
+운영 배포하지 않는다.

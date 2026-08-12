@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://earthus.net/schema/source-governance-v1.schema.json",
+  "title": "EARTHUS Source Governance Evaluation v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "evaluationId", "evaluatedAt", "sourceId", "policy", "freshness",
+    "providerHealth", "operations", "presentation", "sourceBatch", "errors", "evaluator"],
+  "properties": {
+    "schemaVersion": {"const": "earth.source-governance.v1"},
+    "evaluationId": {"type": "string", "minLength": 8},
+    "evaluatedAt": {"type": "string", "format": "date-time"},
+    "sourceId": {"type": "string", "minLength": 3},
+    "policy": {"type": "object"},
+    "freshness": {
+      "type": "object",
+      "required": ["status", "referenceField", "referenceAt", "referenceRaw", "referenceCount",
+        "ageSeconds", "freshForSeconds", "staleAfterSeconds", "error"],
+      "properties": {
+        "status": {"enum": ["FRESH", "AGING", "STALE", "FUTURE", "UNKNOWN"]},
+        "referenceField": {"type": ["string", "null"]},
+        "referenceAt": {"type": ["string", "null"], "format": "date-time"},
+        "referenceRaw": {},
+        "referenceCount": {"type": "integer", "minimum": 0},
+        "ageSeconds": {"type": ["integer", "null"]},
+        "freshForSeconds": {"type": "integer", "minimum": 0},
+        "staleAfterSeconds": {"type": "integer", "minimum": 0},
+        "error": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/error"}]}
+      }
+    },
+    "providerHealth": {"type": "object"},
+    "operations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["display", "cache", "history", "derivative", "redistribution", "paidExport", "APIResale", "AI"],
+      "properties": {
+        "display": {"$ref": "#/$defs/operation"},
+        "cache": {"$ref": "#/$defs/operation"},
+        "history": {"$ref": "#/$defs/operation"},
+        "derivative": {"$ref": "#/$defs/operation"},
+        "redistribution": {"$ref": "#/$defs/operation"},
+        "paidExport": {"$ref": "#/$defs/operation"},
+        "APIResale": {"$ref": "#/$defs/operation"},
+        "AI": {"$ref": "#/$defs/operation"}
+      }
+    },
+    "presentation": {
+      "type": "object",
+      "required": ["state", "dataVisible", "statusVisible", "safetyMeaning"],
+      "properties": {
+        "state": {"enum": ["READY", "AGING", "STALE", "UNKNOWN", "POLICY_BLOCKED"]},
+        "dataVisible": {"type": "boolean"},
+        "statusVisible": {"const": true},
+        "safetyMeaning": {"const": "NO_INFERENCE"}
+      }
+    },
+    "sourceBatch": {"type": "object"},
+    "canonicalObject": {"type": "object"},
+    "errors": {"type": "array", "items": {"$ref": "#/$defs/error"}},
+    "evaluator": {"type": "object"}
+  },
+  "$defs": {
+    "error": {
+      "type": "object",
+      "required": ["code", "category", "severity", "retryable", "sourceId", "message", "details"],
+      "properties": {
+        "code": {"type": "string"},
+        "category": {"enum": ["POLICY", "RIGHTS", "FRESHNESS", "PROVIDER"]},
+        "severity": {"enum": ["WARNING", "ERROR"]},
+        "retryable": {"type": "boolean"},
+        "sourceId": {"type": "string"},
+        "message": {
+          "type": "object",
+          "required": ["ko", "en"],
+          "properties": {"ko": {"type": "string"}, "en": {"type": "string"}}
+        },
+        "details": {"type": "object"}
+      }
+    },
+    "operation": {
+      "type": "object",
+      "required": ["rightsDecision", "decision", "conditions", "errors"],
+      "properties": {
+        "rightsDecision": {"enum": ["ALLOW", "ALLOW_WITH_ATTRIBUTION", "BLOCK", "UNKNOWN"]},
+        "decision": {"enum": ["ALLOW", "BLOCK"]},
+        "conditions": {"type": "array", "items": {"type": "string"}},
+        "errors": {"type": "array", "items": {"$ref": "#/$defs/error"}}
+      }
+    }
+  }
+}

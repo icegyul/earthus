@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://earthus.net/schema/source-registry-v1.schema.json",
+  "title": "EARTHUS Source Registry v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "registryId", "revision", "previousRevision", "status", "updatedAt", "entries"],
+  "properties": {
+    "schemaVersion": {"const": "earth.source-registry.v1"},
+    "registryId": {"type": "string", "minLength": 3},
+    "revision": {"type": "string", "minLength": 1},
+    "previousRevision": {"type": ["string", "null"]},
+    "status": {"enum": ["DRAFT", "APPROVED", "BLOCKED", "EXPIRED"]},
+    "updatedAt": {"type": "string", "format": "date-time"},
+    "entries": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/entry"}
+    }
+  },
+  "$defs": {
+    "rightDecision": {"enum": ["ALLOW", "ALLOW_WITH_ATTRIBUTION", "BLOCK", "UNKNOWN"]},
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["display", "cache", "history", "derivative", "redistribution", "paidExport", "APIResale", "AI"],
+      "properties": {
+        "display": {"$ref": "#/$defs/rightDecision"},
+        "cache": {"$ref": "#/$defs/rightDecision"},
+        "history": {"$ref": "#/$defs/rightDecision"},
+        "derivative": {"$ref": "#/$defs/rightDecision"},
+        "redistribution": {"$ref": "#/$defs/rightDecision"},
+        "paidExport": {"$ref": "#/$defs/rightDecision"},
+        "APIResale": {"$ref": "#/$defs/rightDecision"},
+        "AI": {"$ref": "#/$defs/rightDecision"}
+      }
+    },
+    "freshnessPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["referenceFields", "freshForSeconds", "staleAfterSeconds", "maxFutureSkewSeconds"],
+      "properties": {
+        "referenceFields": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "freshForSeconds": {"type": "integer", "minimum": 0},
+        "staleAfterSeconds": {"type": "integer", "minimum": 0},
+        "maxFutureSkewSeconds": {"type": "integer", "minimum": 0}
+      }
+    },
+    "providerHealthPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minSourceRecords", "emptyIsValid", "degradedRejectionRate", "downRejectionRate"],
+      "properties": {
+        "minSourceRecords": {"type": "integer", "minimum": 0},
+        "emptyIsValid": {"type": "boolean"},
+        "degradedRejectionRate": {"type": "number", "minimum": 0, "maximum": 1},
+        "downRejectionRate": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "approval": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["actorId", "reason", "approvedAt", "effectiveAt", "rollbackVersion", "evidenceRefs"],
+          "properties": {
+            "actorId": {"type": "string", "minLength": 1},
+            "reason": {"type": "string", "minLength": 1},
+            "approvedAt": {"type": "string", "format": "date-time"},
+            "effectiveAt": {"type": "string", "format": "date-time"},
+            "rollbackVersion": {"type": "string", "minLength": 1},
+            "evidenceRefs": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+          }
+        }
+      ]
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceId", "provider", "dataset", "sourceUrl", "termsUrl", "attribution", "region",
+        "freshnessPolicy", "providerHealthPolicy", "rights", "expectedLicenseStatuses", "policyVersion",
+        "status", "reviewedAt", "reviewDueAt", "effectiveAt", "approvedAt", "approval", "owner"],
+      "properties": {
+        "sourceId": {"type": "string", "minLength": 3},
+        "provider": {"type": "string", "minLength": 1},
+        "dataset": {"type": "string", "minLength": 1},
+        "sourceUrl": {"type": "string", "pattern": "^https://"},
+        "termsUrl": {"type": "string", "pattern": "^https://"},
+        "attribution": {"type": "string", "minLength": 1},
+        "region": {"type": "object"},
+        "freshnessPolicy": {"$ref": "#/$defs/freshnessPolicy"},
+        "providerHealthPolicy": {"$ref": "#/$defs/providerHealthPolicy"},
+        "rights": {"$ref": "#/$defs/rights"},
+        "expectedLicenseStatuses": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "policyVersion": {"type": "string", "minLength": 1},
+        "status": {"enum": ["DRAFT", "APPROVED", "BLOCKED", "EXPIRED"]},
+        "reviewedAt": {"type": "string", "format": "date-time"},
+        "reviewDueAt": {"type": "string", "format": "date-time"},
+        "effectiveAt": {"type": ["string", "null"], "format": "date-time"},
+        "approvedAt": {"type": ["string", "null"], "format": "date-time"},
+        "approval": {"$ref": "#/$defs/approval"},
+        "owner": {"type": "string", "minLength": 1}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "APPROVED"}}},
+          "then": {
+            "properties": {
+              "effectiveAt": {"type": "string"},
+              "approvedAt": {"type": "string"},
+              "approval": {"type": "object"}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

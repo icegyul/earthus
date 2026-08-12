@@ -69,6 +69,11 @@ const SRC = {
               en: 'Suomi NPP satellite · VIIRS sensor (NASA)', every: 1440 },
   temp:     { ko: 'Open-Meteo (GFS/ECMWF)', en: 'Open-Meteo (GFS/ECMWF)', every: 60 },
   humidity: { ko: 'Open-Meteo (GFS/ECMWF)', en: 'Open-Meteo (GFS/ECMWF)', every: 60 },
+  tpw:      { ko: 'NOAA/NCEP GFS 총가강수량 분석장 · NOMADS',
+              en: 'NOAA/NCEP GFS total-column water vapour analysis · NOMADS',
+              /* Lambda는 매시간 신규 회차를 확인하지만 GFS 분석장 자체는 6시간 주기다.
+                 every=60으로 두면 정상 12z 자료를 13z부터 '지연'으로 거짓 표시한다. */
+              url: 'https://www.nco.ncep.noaa.gov/pmb/products/gfs/', every: 360 },
   tmax:     { ko: 'Open-Meteo — 내일 예보', en: 'Open-Meteo — tomorrow’s forecast', every: 60 },
   tmin:     { ko: 'Open-Meteo — 내일 예보', en: 'Open-Meteo — tomorrow’s forecast', every: 60 },
   wind:     { ko: 'Open-Meteo (GFS/ECMWF)', en: 'Open-Meteo (GFS/ECMWF)', every: 60 },
@@ -121,7 +126,7 @@ const SRC = {
    실제로 천리안 3종을 넣고 이걸 빼먹어 "위성정보가 안나와"라는 신고를 받았다.
    (layerbar 의 CATEGORIES 도 같은 성격이다. 레이어 추가는 세 곳을 함께 고친다.) */
 const PRIORITY = ['gk2aAuto', 'gk2aNightLow', 'gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 'gk2aVISfd', 'gk2aWV',
-                  'himaIR', 'himawari', 'truecolor', 'clouds', 'sstanom', 'temp', 'tmax', 'tmin', 'humidity', 'rain', 'pressure', 'fog', 'drought',
+                  'himaIR', 'himawari', 'truecolor', 'clouds', 'sstanom', 'temp', 'tmax', 'tmin', 'humidity', 'tpw', 'rain', 'pressure', 'fog', 'drought',
                   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
                   'sst', 'wave', 'swell', 'current', 'wind', 'windfc',
                   'coverage', 'ukfc', 'landobs', 'buoy', 'lightning', 'wildfire', 'cyclone', 'quake', 'tsunami', 'aurora', 'news',
@@ -133,7 +138,7 @@ const PRIORITY = ['gk2aAuto', 'gk2aNightLow', 'gk2aIR', 'gk2aVIS', 'gk2aVISea', 
    ⚠️ 위성 영상이 켜져 있으면 그게 바탕이다 — 그래서 맨 앞이다. */
 const PAINT = ['gk2aAuto', 'gk2aNightLow', 'gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk2aIRea', 'gk2aVISfd', 'gk2aWV',
                'himaIR', 'himawari', 'truecolor',
-               'temp', 'tmax', 'tmin', 'humidity', 'rain', 'pressure', 'fog', 'drought',
+               'temp', 'tmax', 'tmin', 'humidity', 'tpw', 'rain', 'pressure', 'fog', 'drought',
                'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
                'sst', 'sstanom', 'wave', 'swell', 'current', 'wind', 'windfc',
                'clouds'];
@@ -259,7 +264,7 @@ export const sourceNote = {
       const { gridOverlay } = await import('./gridoverlay.js');
       const SOURCE_MAP = { pm25: 'air', pm10: 'air', dust: 'air', aqi: 'air', uv: 'air', ozone: 'air',
                            sst: 'marine', sstanom: 'marine', wave: 'marine', swell: 'marine',
-                           current: 'marine' };
+                           current: 'marine', tpw: 'tpw' };
       if (id in SOURCE_MAP || ['temp', 'tmax', 'tmin', 'humidity', 'fog', 'drought', 'wind', 'windfc'].includes(id)) {
         const g = await gridOverlay.load(SOURCE_MAP[id] || 'wind');
         if (g?.time) made = new Date(g.time);
@@ -354,6 +359,23 @@ export const sourceNote = {
         }
       } else {
         bits.push(ko ? `${hhmm(made)} 자료` : `data ${hhmm(made)}`);
+        if (id === 'tpw') {
+          bits.push(ko
+            ? '<i><b>대기 기둥 전체</b>에 든 수증기를 모두 물로 만들었을 때의 깊이입니다. <b>1 kg/m² = 1 mm</b>로 표시합니다.</i>'
+            : '<i>Water vapour through the <b>entire atmospheric column</b>, expressed as liquid depth. <b>1 kg/m² = 1 mm</b>.</i>');
+          bits.push(ko
+            ? '<i>⚠️ <b>NOAA GFS 모델 분석장</b>이며 위성 관측영상이나 강수량이 아닙니다. 수증기가 많다는 사실만으로 비가 온다고 판정하지 않습니다.</i>'
+            : '<i>⚠️ A <b>NOAA GFS model analysis</b>, not satellite imagery or rainfall. High moisture alone does not mean rain.</i>');
+          bits.push(ko
+            ? '<i>⚠️ 동아시아·서태평양(20~55°N · 90~180°E) <b>1° 격자(약 111km)</b>입니다. 범위 밖의 빈 곳은 건조가 아니라 <b>자료 범위 밖</b>입니다.</i>'
+            : '<i>⚠️ A <b>1° grid (~111 km)</b> over East Asia and the western Pacific (20–55°N, 90–180°E). Blank outside means <b>out of coverage</b>, not dry.</i>');
+          const { gridOverlay } = await import('./gridoverlay.js');
+          const tpwGrid = await gridOverlay.load('tpw');
+          const run = tpwGrid?.issuedAt?.slice(11, 16);
+          if (run) bits.push(ko
+            ? `<i>모델 회차 <b>${run} UTC</b> · f000 분석장. 회차와 유효시각을 원본 GRIB에서 읽었습니다.</i>`
+            : `<i>Model run <b>${run} UTC</b> · f000 analysis. Run and valid times come from the source GRIB.</i>`);
+        }
         /* ── 천리안 — 무엇을 보고 있고 무엇이 안 보이는가 ──────────── */
         if (key === 'gk2a_ir') {
           bits.push(ko

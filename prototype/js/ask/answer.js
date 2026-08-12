@@ -14,6 +14,7 @@ import { store } from '../store.js';
 import { i18n } from '../i18n.js';
 import { flyTo } from '../viewer.js';
 import { pointLayers } from '../layers/registry.js';
+import { CONFIG } from '../config.local.js';
 
 /** 지역 상자 안인가. ⚠️ 경도가 날짜변경선을 넘는 상자(태평양)를 따로 다룬다. */
 function inBox(lat, lon, [s, w, n, e]) {
@@ -55,7 +56,7 @@ const READERS = {
    ⚠️ 격자에 "몇 건"은 뜻이 없다. 파고가 몇 건 있냐고 물으면 안 된다.
       대신 그 상자 안의 지금 값(평균·최대)을 말한다. */
 const GRID_LAYERS = new Set(['sst', 'wave', 'swell', 'current', 'pm25', 'pm10',
-  'dust', 'ozone', 'uv', 'aqi', 'fog', 'drought', 'temp', 'humidity', 'tmax', 'tmin']);
+  'dust', 'ozone', 'uv', 'aqi', 'fog', 'drought', 'temp', 'humidity', 'tpw', 'tmax', 'tmin']);
 
 async function readGrid(layerId, box) {
   const { gridOverlay } = await import('../gridoverlay.js');
@@ -104,7 +105,8 @@ async function readGrid(layerId, box) {
   const hi = vals.reduce((a, b) => (b.v > a.v ? b : a));
   const lo = vals.reduce((a, b) => (b.v < a.v ? b : a));
   const scale = gridOverlay.scaleOf(layerId);
-  return { n: nums.length, mean, hi, lo, unit: scale?.unit || '', time: g.time, nearest };
+  return { n: nums.length, mean, hi, lo, unit: scale?.unit || '', time: g.time,
+           res: g.res, nearest };
 }
 
 /** 지금 수온 − 평년값. 지역 상자가 있으면 그 안만. */
@@ -204,6 +206,18 @@ export const ask = {
     const ds = p.datasets[0];
     const layerId = p.action?.layer || null;
 
+    if (layerId === 'tpw' && CONFIG.TPW_READY !== true) {
+      return {
+        ok: false,
+        kind: 'pending',
+        title: ko ? '수증기 통로는 검증 중입니다' : 'Moisture corridor is being verified',
+        lines: [ko
+          ? '실제 NOAA 격자 파일·출처·시각·화면 검수가 끝나기 전에는 값을 보여주지 않습니다.'
+          : 'Values stay unavailable until the live NOAA grid, attribution, timestamps, and screen QA are verified.'],
+        items: [], source: router.citation(ds.id), why: p.why, layer: layerId,
+      };
+    }
+
     // ── 1. 해당 레이어를 켠다 ──
     // ⚠️ 끄지는 않는다. 사용자가 켜 둔 것을 질문 하나로 꺼버리면 안 된다.
     if (layerId && !store.isOn(layerId)) store.setLayer(layerId, true);
@@ -224,23 +238,29 @@ export const ask = {
           : `Turned on ${nm}. The grid is still loading, or there is no value in that area (ocean data has none over land).`);
       } else {
         const f = x => (Math.abs(x) >= 100 ? x.toFixed(0) : x.toFixed(1));
+        const areaName = layerId === 'tpw'
+          ? (ko ? '동아시아·서태평양' : 'East Asia and the western Pacific')
+          : (ko ? '전지구' : 'Global');
         lines.push(placeName
           ? (ko ? `${placeName} 영역 ${nm}: 평균 ${f(g.mean)}${g.unit}, 최고 ${f(g.hi.v)}${g.unit}`
                 : `${placeName} — ${nm}: mean ${f(g.mean)}${g.unit}, max ${f(g.hi.v)}${g.unit}`)
-          : (ko ? `전지구 ${nm}: 평균 ${f(g.mean)}${g.unit}, 최고 ${f(g.hi.v)}${g.unit} (${g.hi.lat.toFixed(0)}°, ${g.hi.lon.toFixed(0)}°)`
-                : `Global ${nm}: mean ${f(g.mean)}${g.unit}, max ${f(g.hi.v)}${g.unit}`));
+          : (ko ? `${areaName} ${nm}: 평균 ${f(g.mean)}${g.unit}, 최고 ${f(g.hi.v)}${g.unit} (${g.hi.lat.toFixed(0)}°, ${g.hi.lon.toFixed(0)}°)`
+                : `${areaName} ${nm}: mean ${f(g.mean)}${g.unit}, max ${f(g.hi.v)}${g.unit}`));
         if (g.nearest) {
           lines.push(ko
-            ? `⚠️ 그 지역이 격자(5°)보다 작아서 **가장 가까운 격자점**(${g.hi.lat.toFixed(0)}°, ${g.hi.lon.toFixed(0)}°) 값을 보여드립니다.`
-            : `⚠️ That area is smaller than the 5° grid, so this is the **nearest grid point** (${g.hi.lat.toFixed(0)}°, ${g.hi.lon.toFixed(0)}°).`);
+            ? `⚠️ 그 지역이 격자(${g.res}°)보다 작아서 **가장 가까운 격자점**(${g.hi.lat.toFixed(0)}°, ${g.hi.lon.toFixed(0)}°) 값을 보여드립니다.`
+            : `⚠️ That area is smaller than the ${g.res}° grid, so this is the **nearest grid point** (${g.hi.lat.toFixed(0)}°, ${g.hi.lon.toFixed(0)}°).`);
         }
         lines.push(ko
           ? `격자점 ${g.n}개 기준 · 자료 시각 ${(g.time || '').replace('T', ' ').replace(':00:00Z', ' UTC')}`
           : `From ${g.n} grid points · data time ${(g.time || '').replace('T', ' ')}`);
-        /* ⚠️ 5° 격자라는 걸 밝힌다. "우리 동네 값"으로 읽히면 안 된다. */
+        const approxKm = Math.round((g.res || 0) * 111);
         lines.push(ko
-          ? '⚠️ 5° 격자(약 550km) 값입니다. 동네 단위 값이 아닙니다 — 지점 값은 관측소나 부이를 눌러 보세요.'
-          : '⚠️ These are 5° grid values (~550 km). Not neighbourhood-level — tap a station or buoy for point readings.');
+          ? `⚠️ ${g.res}° 격자(약 ${approxKm}km) 값입니다. 동네 단위 값이 아닙니다 — 지점 값은 관측소나 부이를 눌러 보세요.`
+          : `⚠️ These are ${g.res}° grid values (~${approxKm} km). Not neighbourhood-level — tap a station or buoy for point readings.`);
+        if (layerId === 'tpw') lines.push(ko
+          ? '⚠️ 대기 기둥 전체의 수증기량을 나타내는 NOAA GFS 모델 분석장입니다. 위성 관측이나 강수량이 아니며, 이 값만으로 비를 판정하지 않습니다.'
+          : '⚠️ NOAA GFS model analysis of water vapour through the whole atmospheric column. It is neither satellite observation nor rainfall, and cannot by itself determine rain.');
       }
       /* ── 평년 대비 ─────────────────────────────────────────
          ⚠️ 해수면온도만 답할 수 있다. 다른 값은 평년 기준선이 아직 없다.

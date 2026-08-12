@@ -1,0 +1,41 @@
+{
+  "processedAt": "2026-08-12T00:05:00Z",
+  "processorVersion": "fixture-v1",
+  "warning": {
+    "count": 1,
+    "signalType": "weather.warning",
+    "issuedAt": "2026-08-12T00:00:00Z",
+    "validFrom": "2026-08-12T00:00:00Z",
+    "value": null,
+    "sourceValue": "경보",
+    "missingReason": "REGION_UNMAPPED",
+    "geometry": null,
+    "sourceRegionCode": "S1100000",
+    "qualityStatus": "UNKNOWN"
+  },
+  "aws": {
+    "count": 2,
+    "firstSignalType": "weather.surface.temperature",
+    "firstObservedAt": "2026-08-12T00:01:00Z",
+    "firstValue": 21.0,
+    "firstUnit": "Cel",
+    "firstCoordinates": [126.9658, 37.5714],
+    "firstVertical": {"reference": "MSL_M", "value": 85.7, "unit": "m"},
+    "secondValue": null,
+    "secondMissingReason": "NOT_REPORTED",
+    "secondQualityStatus": "UNKNOWN"
+  },
+  "tpw": {
+    "count": 4,
+    "firstSignalType": "weather.total_column_water_vapour",
+    "firstIssuedAt": "2026-08-11T12:00:00Z",
+    "firstValidFrom": "2026-08-11T12:00:00Z",
+    "firstValue": 10.0,
+    "firstUnit": "mm",
+    "firstSourceValue": 10.0,
+    "firstSourceUnit": "kg/m²",
+    "secondValue": null,
+    "secondMissingReason": "NOT_REPORTED",
+    "lastCoordinates": [127.0, 21.0]
+  }
+}

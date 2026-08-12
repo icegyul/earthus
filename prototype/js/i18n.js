@@ -36,7 +36,7 @@ const KO = {
     // 해양 (⚠️ current 는 해류다. 조류/물때가 아니다)
     sst:'해수면 온도', sstanom:'수온 편차(평년 대비)', wave:'파고', swell:'너울', current:'해류',
     // 안개·토양 (⚠️ drought 는 "지금 메마름"이지 가뭄 판정이 아니다)
-    fog:'안개', drought:'토양 수분', pressure:'기압 배치', rain:'비구름', landobs:'지상 관측소', coverage:'관측망 밀도',
+    tpw:'수증기 통로', fog:'안개', drought:'토양 수분', pressure:'기압 배치', rain:'비구름', landobs:'지상 관측소', coverage:'관측망 밀도',
     /* ⚠️ 이름에 '예보'를 반드시 남긴다 — 바로 옆 landobs 가 실황이라
        구분이 없으면 사용자가 둘을 같은 것으로 읽는다. */
     ukfc:'영국 예보',
@@ -86,7 +86,7 @@ const EN = {
     tsunami:'Tsunami alert', wildfire:'Wildfire', eclipse:'Solar eclipse', launchpad:'Launch pad', cyclone:'Tropical cyclone', sky:'Sky',
     pm25:'PM2.5', pm10:'PM10', dust:'Desert dust', ozone:'Ozone', uv:'UV index', aqi:'Air quality index',
     sst:'Sea surface temperature', sstanom:'SST anomaly vs normal', wave:'Wave height', swell:'Swell', current:'Ocean current',
-    fog:'Fog (visibility)', drought:'Soil moisture', pressure:'Pressure pattern', rain:'Rain', landobs:'Ground stations', coverage:'Observation coverage',
+    tpw:'Moisture corridor', fog:'Fog (visibility)', drought:'Soil moisture', pressure:'Pressure pattern', rain:'Rain', landobs:'Ground stations', coverage:'Observation coverage',
     ukfc:'UK forecast',
   },
   G: { base:'Base', weather:'Weather', hazard:'Hazards', space:'Space', air:'Air quality',

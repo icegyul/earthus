@@ -1,0 +1,1 @@
+# boto3는 Lambda Python 런타임에 포함되어 있다. 추가 의존성 없음.

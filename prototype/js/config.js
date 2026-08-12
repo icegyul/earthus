@@ -47,6 +47,8 @@ export const API = {
   GK2A:   CDN + '/clouds/gk2a',
   // 전지구 바람 격자 — Lambda(wind-grid)가 매시간 만든다. 파티클 애니메이션용.
   WIND:   CDN + '/wind',
+  // 동아시아·서태평양 총가강수량 1° 격자 — Lambda(tpw-grid), wind/ 접두사 공유.
+  TPW:    CDN + '/wind',
   // 전지구 대기질 격자 — Lambda(air-grid)가 매시간 만든다.
   // PM2.5·미세먼지·먼지(황사)·오존·자외선·대기질지수가 한 파일에 들어 있다.
   // ⚠️ air/ 가 아니라 wind/ 아래다. 버킷 공개 접두사가 고정이라 air/ 는 403 이 난다(실측).
@@ -189,6 +191,10 @@ export const LAYER_DEFS = [
   // (Open-Meteo 는 지점 API 라 타일을 안 준다 — gridoverlay.js 참고)
   { id:'temp',     kind:'grid',    tier:TIER.FREE, on:false, group:'weather' },
   { id:'humidity', kind:'grid',    tier:TIER.FREE, on:false, group:'weather' },
+  /* 총가강수량(TPW) — 지상 습도나 천리안 6.3㎛ 상층 수증기와 다른 값이다.
+     대기 기둥 전체를 물로 만들었을 때의 깊이(mm)를 보여준다.
+     ⚠️ 모델장만으로 비가 온다고 판정하지 않는다. */
+  { id:'tpw',      kind:'grid',    tier:TIER.FREE, on:false, group:'weather' },
   /* 예보 3종 — **내일** 기준이다.
      ⚠️ '오늘'을 예보라고 부르면 안 된다. 오늘은 이미 지나간 시간이 섞여 있어
         최고기온이 실제보다 낮게 나온다. wind-grid Lambda 가 forecast_days=2 로

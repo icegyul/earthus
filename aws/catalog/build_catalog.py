@@ -405,6 +405,29 @@ DATASETS = [
 
     # ── C등급: 실시간 수집 (이미 가동 중) ─────────────────────
     {
+        "id": "noaa-gfs-tpw", "tier": "C",
+        "title": {"ko": "NOAA GFS 총가강수량 분석장",
+                  "en": "NOAA GFS total-column water vapour analysis"},
+        "org": "NOAA/NCEP · NOMADS",
+        "domain": ["weather", "water-vapour"],
+        "keywords": {
+            "ko": ["총가강수량", "가강수량", "대기중 수증기량", "수증기 통로"],
+            "en": ["total precipitable water", "total column water vapour", "tpw", "tcwv"],
+        },
+        "spatial": "20~55°N · 90~180°E, GFS 0.25° 원본에서 1° 원격자 추출",
+        "temporal": "GFS 00·06·12·18 UTC 분석장 · 1시간마다 최신 회차 확인",
+        "access": {"method": "https-grib-filter",
+                   "url": "https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl",
+                   "format": "grib2", "cors": False,
+                   "termsUrl": "https://www.weather.gov/disclaimer"},
+        "license": "usgov-pd",
+        "why": {"ko": "수증기 통로를 선명하게 보되 높은 값만으로 비를 판정하지 않는다. "
+                      "위성 관측이 아니라 GFS 모델 분석장이다.",
+                "en": "Shows moisture corridors clearly without treating high values as rain. "
+                      "This is GFS model analysis, not satellite observation."},
+        "usedBy": [],
+    },
+    {
         "id": "open-meteo", "tier": "C",
         "title": {"ko": "Open-Meteo 예보 API", "en": "Open-Meteo forecast API"},
         "org": "Open-Meteo (기반: GFS/ECMWF)",

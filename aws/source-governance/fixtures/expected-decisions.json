@@ -1,0 +1,31 @@
+{
+  "approvedFresh": {
+    "presentation": "READY",
+    "freshness": "FRESH",
+    "providerHealth": "HEALTHY",
+    "display": "ALLOW",
+    "displayCondition": "ATTRIBUTION_REQUIRED"
+  },
+  "draft": {
+    "presentation": "POLICY_BLOCKED",
+    "display": "BLOCK",
+    "error": "SOURCE_POLICY_DRAFT"
+  },
+  "blocked": {
+    "presentation": "POLICY_BLOCKED",
+    "display": "BLOCK",
+    "error": "SOURCE_POLICY_BLOCKED"
+  },
+  "expired": {
+    "presentation": "POLICY_BLOCKED",
+    "display": "BLOCK",
+    "error": "SOURCE_POLICY_EXPIRED"
+  },
+  "stale": {
+    "presentation": "STALE",
+    "display": "ALLOW",
+    "displayCondition": "STALE_LABEL",
+    "AI": "BLOCK",
+    "error": "SOURCE_STALE"
+  }
+}

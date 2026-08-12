@@ -32,6 +32,8 @@ JOBS=(
   "cwa-observations|rate(10 minutes)|대만 CWA 지상 실황 (태풍 표면 근거)"
   "ascat-observations|rate(4 hours)|NOAA ASCAT 위성 해상풍 (태풍 표면 근거)"
   "pressure-grid|rate(1 hour)|동아시아 기압 격자 (등압선)"
+  # 총가강수량은 NOAA GFS의 모델 유효시각을 쓴다. 위성 관측이나 강수량으로 부르지 않는다.
+  "tpw-grid|rate(1 hour)|동아시아·서태평양 총가강수량 1도 격자"
   "air-state|cron(20 12 * * ? *)|하루 한 번 대기 상태 판정 (KST 21:20)"
   # 2026-08-03 에 함께 만든 것들. ⚠️ 만든 날 여기 안 넣으면 손으로만 돈다.
   "quake-asia|rate(10 minutes)|지진 (기상청·JMA)"
@@ -87,7 +89,7 @@ echo "▸ 지금 한 번씩 돌려 첫 자료를 만든다"
 for job in "${JOBS[@]}"; do
   IFS='|' read -r FN _ _ <<< "$job"
   aws lambda invoke --function-name "$FN" --region "$REGION" \
-    --cli-read-timeout 300 "/tmp/${FN}.out" >/dev/null 2>&1 \
+    --cli-read-timeout 480 "/tmp/${FN}.out" >/dev/null 2>&1 \
     && echo "   ${FN}: $(head -c 160 "/tmp/${FN}.out")" \
     || echo "   ${FN}: 실행 실패 — 로그를 보세요"
 done

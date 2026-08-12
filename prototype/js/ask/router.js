@@ -118,6 +118,7 @@ const ACTIONS = {
   'oisst-daily':       { layer: 'sst',     source: 'oisst-daily' },
   'oisst-climatology': { layer: 'sst',     source: 'oisst-climatology' },
   'ndbc-osmc':         { layer: 'buoy',    source: 'ndbc-osmc' },
+  'noaa-gfs-tpw':      { layer: 'tpw',     source: 'noaa-gfs-tpw' },
 
   air:      { layer: 'aqi',      source: 'open-meteo-air' },
   dust:     { layer: 'dust',     source: 'open-meteo-air' },
@@ -166,6 +167,10 @@ const KEYWORD_LAYER = [
   [['해수면온도', '수온', '해수온', '바닷물온도', 'sst', 'sea surface'], 'sst'],
   [['안개', '시정', 'fog', 'visibility'], 'fog'],
   [['가뭄', '토양수분', '메마', 'drought', 'soil moisture'], 'drought'],
+  /* 상대습도와 다르다. '수증기'만으로 천리안 상층 영상까지 뺏지 않도록
+     대기 기둥 전체를 뜻하는 구체적인 표현만 TPW 수치 레이어로 보낸다. */
+  [['총가강수량', '가강수량', '대기중수증기량', '대기중 수증기량', '수증기통로',
+    'total precipitable water', 'total column water vapour', 'tpw', 'tcwv'], 'tpw'],
   /* ⚠️ '서울 기온 평년보다?' 가 수온으로 가던 문제.
      '평년'이 걸려 해수면온도 자료가 뽑히는데, 물어본 건 기온이다.
      '해수면온도'(6자)가 '기온'(2자)보다 길어서 바다 질문은 그대로 수온으로 간다. */

@@ -14,8 +14,33 @@
 EARTHUS 메뉴·레이어 표현·무료/유료 경계, AETHERUS 정보 구조·모바일·사진관,
 마케팅 스튜디오 공개 이야기관을 한 번에 개편하는 실행 정본은
 [`EARTHUS-AETHERUS-DEV-SPEC-2026-08-16.md`](EARTHUS-AETHERUS-DEV-SPEC-2026-08-16.md)다.
-2026-08-16 사용량 리셋을 실제 확인한 뒤 배치 0부터 시작한다. 그 전에는 이 범위의 코딩을
-시작하지 않는다. `SALES_OPEN=false`와 SNS 자동 게시 금지는 그대로 유지한다.
+2026-08-16 사용량 리셋을 실제 확인한 뒤 배치 0부터 시작한다. 다만 2026-08-12 PD가
+**TPW 수증기 통로 단독 vertical slice의 로컬 코딩을 직접 승인**했다. 이 예외는 통합 배치,
+운영 배포, 판매, SNS를 열지 않는다. TPW 운영 노출은 실제 NOAA 파일·시각·화면 검수 후
+`TPW_READY=true`로 따로 승인한다. `SALES_OPEN=false`와 SNS 자동 게시 금지는 그대로 유지한다.
+로컬에서 NOAA GRIB 전체 격자·데스크톱/모바일 실화면·flag-off 우회 차단은 통과했으나,
+AWS 서울 Lambda·S3·CloudFront 운영 검증은 아직 미수행이다.
+
+같은 날 PD의 **“다음꺼 진행해”** 지시로 PR-01 Signal Foundation도 로컬 구현했다.
+기존 공개 KMA 특보·AWS 기온·TPW JSON을 바꾸지 않고 `archive/canonical/v1/` 비공개
+shadow로 변환하는 compatibility processor다. 자동검사 12개와 실제 공개 KMA 입력 대조는
+통과했지만 AWS 배포·schedule·UI/Safety/Activity reader 전환은 미승인이다. 실행 정본은
+[`earthus-v23/SIGNAL_FOUNDATION.md`](earthus-v23/SIGNAL_FOUNDATION.md)다.
+
+이후 PD의 두 번째 **“다음꺼 진행해”** 지시로 PR-02 Rights/Freshness도 로컬 구현했다.
+3개 source의 제안 권리를 모두 `DRAFT`로 둔 채 policy·freshness·provider health를 분리
+평가하고 `archive/governance/v1/` private shadow만 만드는 구조다. 상태 replay 20개와 실제
+KMA PR-01→PR-02 연속검증은 통과했지만 source 승인·Control Plane·AWS·reader 전환은 미승인이다.
+실행 정본은 [`earthus-v23/RIGHTS_FRESHNESS.md`](earthus-v23/RIGHTS_FRESHNESS.md)다.
+
+PD의 세 번째 **“계속 진행해”** 지시로 PR-03 Earth View State도 로컬 구현했다. query 없는
+첫 화면은 아름다운 Earth View로 유지하고, 사용자가 고른 Style→Data→Evidence 상태만
+접두어가 있는 URL에 남겨 공유·새로고침·뒤로가기로 복원한다. URL 계약 11개와 데스크톱·
+390×844 실제 화면, Earth↔Style↔Data↔Evidence 앞뒤 복원, `TPW_READY=false` 우회 차단은
+통과했다. Decision은 PR-05~09가 붙일 URL 계약만 있고 판단 UI·값은 만들지 않았다.
+실행 정본은 [`earthus-v23/EARTH_VIEW_STATE.md`](earthus-v23/EARTH_VIEW_STATE.md)다.
+동시 AETHERUS route v3 foundation·astronomy·photo 시험도 재통과했지만, 운영 배포는
+8월 16일 사용량·다기기·캐시 revision·rollback gate 전까지 미승인이다.
 
 ---
 
@@ -62,7 +87,7 @@ prototype/        ← 서비스 전체 (정적 웹앱, 빌드 없음, 그대로 
   css/app.css     스타일 전부
   legal/          이용약관·개인정보처리방침 (시행 2026-08-04)
   events/·obs/    (없음 — 데이터는 전부 S3 에서 옴)
-aws/              자료 수집 Lambda 54개 (폴더당 하나, handler.py)
+aws/              handler.py 66개 (source 64 + 미배포 shadow processor 2)
   deploy-python.sh  Lambda 배포   schedules.sh  EventBridge 등록
   fx-grid/        예보 격자(타임라인용)  cyclone-analog/  IBTrACS 유사경로
 docs/
@@ -125,7 +150,10 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
 
 ## 6. 데이터 파이프라인
 
-- **Lambda 54개** (aws/ 폴더당 하나) → S3 JSON → 앱이 fetch. 스키마는 각 handler.py 상단 주석에.
+- **source/data handler 64개** (aws/ 폴더당 하나) → S3 JSON → 앱이 fetch.
+  별도로 미배포 `signal-foundation`, `source-governance` shadow processor 2개가 있어
+  코드의 `handler.py`는 총 66개다.
+  스키마는 각 handler.py 상단 주석과 `docs/earthus-v23/schema/`에 있다.
 - 새 Lambda: `bash aws/deploy-python.sh 폴더명` (requirements.txt 없으면 빈 파일이라도 둘 것 —
   없으면 NetCDF 용 30MB 기본 의존성이 딸려간다). 스케줄은 schedules.sh 패턴으로 EventBridge.
 - 대량 수집으로 300초를 넘는 함수는 폴더에 `timeout-seconds.txt`로 1~900초를 적어
@@ -147,6 +175,12 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
   OMM 14개 원소는 전송량을 줄이려고 `o` 고정 순서 배열로 저장하고, 브라우저의
   satellite.js 6.0.2 `json2satrec()`에서 다시 공식 필드명으로 복원한다.
 - **결측은 null 로 남긴다. 메우지 않는다.** 그리는 쪽이 빈 칸을 건너뛴다.
+- PR-01 canonical shadow는 기존 원본을 덮어쓰지 않고 `archive/canonical/v1/`에만 쓴다.
+  공식 특보 경계가 매핑되지 않은 상태는 `REGION_UNMAPPED/UNKNOWN`이며 대표점으로 Hard Gate를
+  만들지 않는다. 배포·schedule·reader 전환 전에 `SIGNAL_FOUNDATION.md` gate를 전부 확인한다.
+- PR-02 governance shadow는 `archive/governance/v1/`에만 쓴다. 번들 registry는 모두
+  `DRAFT`이며 승인 actor·근거·효력시각·rollbackVersion 없이는 어떤 operation도 열지 않는다.
+  `RIGHTS_FRESHNESS.md` gate 전에는 source 승인이나 기존 UI 판정을 바꾸지 않는다.
 
 ## 7. 계정·비밀 (⚠️ 값은 여기 없다 — 절대 문서·채팅에 적지 말 것)
 

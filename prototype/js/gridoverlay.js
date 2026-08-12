@@ -5,12 +5,14 @@
 //   그래서 서버(wind-grid Lambda)가 만든 격자를 받아 브라우저에서 캔버스로 칠하고,
 //   Cesium 에 단일 타일로 얹는다. 오로라 레이어가 쓰는 것과 같은 방식이다.
 //
-// ⚠️ 격자가 5° 라 그대로 그리면 계단이 심하다.
-//    캔버스를 크게 잡고 양선형 보간으로 채운 뒤 얹는다.
+// ⚠️ 대부분은 5°이고 TPW는 동아시아 1° 지역 격자다.
+//    캔버스를 크게 잡고 양선형 보간으로 채우되, 화면 숫자는 원격자만 쓴다.
 
 import { viewer } from './viewer.js';
 import { API } from './config.js';
+import { CONFIG } from './config.local.js';
 import { i18n } from './i18n.js';
+import { gridBounds, isGlobalGrid, nearestGridValue } from './gridmath.js';
 
 /* 색 눈금 — 값에서 색으로.
    기온은 기상청·윈디가 쓰는 한색→난색 순서를 따랐다.
@@ -32,6 +34,19 @@ const SCALES = {
       [ 75, [ 90, 165, 210]], [100, [ 40,  90, 180]],
     ],
     alpha: 0.55,
+  },
+  /* 총가강수량(TPW) — 뉴스 화면처럼 수증기 통로와 마른 공기의 경계가 먼저 읽혀야 한다.
+     ⚠️ CIMSS 색표를 복제한 것이 아니다. 수치 구간과 색은 EARTHUS가 별도로 정했다.
+     ⚠️ 부드러운 무지개로 섞으면 경계가 흐려지므로 stepped=true로 단계색을 쓴다. */
+  tpw: {
+    unit: 'mm',
+    stepped: true,
+    stops: [
+      [ 0, [ 60,  30, 110]], [10, [ 45,  80, 175]], [20, [ 55, 155, 210]],
+      [30, [145, 215, 190]], [40, [245, 220, 125]], [50, [238, 145,  70]],
+      [60, [190,  65, 100]], [70, [225, 145, 195]],
+    ],
+    alpha: 0.86,
   },
   /* 내일 최고기온 — 더위 쪽을 넓게 잡는다. 최고기온을 보는 이유가 그것이다.
      ⚠️ 현재기온(temp)과 같은 색을 쓰면 두 레이어를 구분할 수 없다.
@@ -245,6 +260,7 @@ const SCALES = {
       "내일 최고기온"이라고 써놓고 지금 기온을 보여주는 것이 된다. */
 const FIELD_OF = {
   temp: 't', rh: 'rh', tmax: 'tmax', tmin: 'tmin',
+  tpw: 'tpw',
   fog: 'vis', drought: 'soil',
   pm25: 'pm25', pm10: 'pm10', dust: 'dust', ozone: 'o3', uv: 'uv', aqi: 'aqi',
   sst: 'sst', wave: 'wave', swell: 'swell', current: 'cur',
@@ -259,6 +275,7 @@ const FIELD_OF = {
 const SOURCE_OF = {
   temp: 'wind', rh: 'wind', tmax: 'wind', tmin: 'wind', fog: 'wind', drought: 'wind',
   pressure: 'wind', rain: 'wind',
+  tpw: 'tpw',
   pm25: 'air', pm10: 'air', dust: 'air', ozone: 'air', uv: 'air', aqi: 'air',
   sst: 'marine', wave: 'marine', swell: 'marine', current: 'marine',
   sstanom: 'marine',
@@ -267,7 +284,7 @@ const SOURCE_OF = {
 /* 눈금 이름 — 레이어 id 와 눈금 이름이 다른 것들 */
 const SCALE_OF = { temp: 'temp', humidity: 'rh', rh: 'rh', fog: 'vis', drought: 'soil',
                    ozone: 'o3', current: 'cur', sstanom: 'sstAnom', pressure: 'mslp',
-                   rain: 'rain' };
+                   rain: 'rain', tpw: 'tpw' };
 
 /* 예보 레이어인지 — 화면에 "내일"이라고 밝혀야 하는지 판단한다 */
 export const IS_FORECAST = { tmax: true, tmin: true, windfc: true };
@@ -276,6 +293,9 @@ function colorAt(scale, v) {
   const st = scale.stops;
   if (v <= st[0][0]) return st[0][1];
   if (v >= st[st.length - 1][0]) return st[st.length - 1][1];
+  if (scale.stepped) {
+    for (let i = st.length - 1; i >= 0; i--) if (v >= st[i][0]) return st[i][1];
+  }
   for (let i = 0; i < st.length - 1; i++) {
     const [a, ca] = st[i], [b, cb] = st[i + 1];
     if (v >= a && v <= b) {
@@ -289,6 +309,7 @@ function colorAt(scale, v) {
 /* 소스 이름 → 실제 파일 */
 const SRC_URL = {
   wind:   () => `${API.WIND}/global.json`,
+  tpw:    () => `${API.TPW}/tpw-ea.json`,
   air:    () => `${API.AIR}/air.json`,
   marine: () => `${API.MARINE_GRID}/marine.json`,
   /* ⚠️⚠️ 전지구 해양 격자는 **5° = 약 550km** 다. 한반도 전체가 두세 칸이라
@@ -303,6 +324,8 @@ export const gridOverlay = {
   grids: {},         // 소스 이름 → 격자
   layers: {},        // key → Cesium ImageryLayer
   _fetchedAt: {},
+  _labels: null,
+  _labelState: null,
 
   /** @param src 'wind' | 'air' | 'marine' */
   async load(src = 'wind') {
@@ -338,6 +361,16 @@ export const gridOverlay = {
 
   /** key = 레이어 id (temp · rh · sst · pm25 · fog …) */
   async show(key, on) {
+    /* 메뉴만 잠그면 검색·질문·저장 상태에서 우회해 켜질 수 있다.
+       실제 파일·권리·화면 검수 전에는 renderer 자체가 마지막 문이 된다. */
+    if (key === 'tpw' && CONFIG.TPW_READY !== true) {
+      this._remove(key);
+      if (on) {
+        const { store } = await import('./store.js');
+        if (store.isOn(key)) store.setLayer(key, false);
+      }
+      return;
+    }
     if (!on) { this._remove(key); return; }
     try {
       /* ⚠️ 동아시아를 보고 있으면 촘촘한 판으로 바꾼다.
@@ -371,8 +404,11 @@ export const gridOverlay = {
 
       const scale = SCALES[SCALE_OF[key] || key];
       if (!scale) throw new Error(`${key} 눈금 없음`);
-      // 격자(72×33)를 4배로 늘려 부드럽게 — 그냥 얹으면 계단이 보인다
-      const W = g.nx * 4, H = g.ny * 4;
+      // 전지구 격자는 날짜변경선에서 감고, 지역 격자는 양 끝을 이어 붙이지 않는다.
+      // ⚠️ 지역 격자를 전지구처럼 % 연산하면 180° 끝이 90° 시작과 섞인다.
+      const globalGrid = isGlobalGrid(g);
+      const W = Math.max(4, (globalGrid ? g.nx : Math.max(1, g.nx - 1)) * 4);
+      const H = Math.max(4, Math.max(1, g.ny - 1) * 4);
       const cv = document.createElement('canvas');
       cv.width = W; cv.height = H;
       const ctx = cv.getContext('2d');
@@ -383,8 +419,12 @@ export const gridOverlay = {
         const fy = (H - 1 - y) / (H - 1) * (g.ny - 1);
         const y0 = Math.floor(fy), y1 = Math.min(y0 + 1, g.ny - 1), ty = fy - y0;
         for (let x = 0; x < W; x++) {
-          const fx = x / W * g.nx;
-          const x0 = Math.floor(fx) % g.nx, x1 = (x0 + 1) % g.nx, tx = fx - Math.floor(fx);
+          const fx = globalGrid
+            ? x / W * g.nx
+            : x / Math.max(1, W - 1) * Math.max(0, g.nx - 1);
+          const x0 = Math.min(g.nx - 1, Math.floor(fx));
+          const x1 = globalGrid ? (x0 + 1) % g.nx : Math.min(x0 + 1, g.nx - 1);
+          const tx = fx - Math.floor(fx);
           const q = (xx, yy) => field[yy * g.nx + xx];
           const a = q(x0, y0), b = q(x1, y0), c = q(x0, y1), d = q(x1, y1);
           const i = (y * W + x) * 4;
@@ -417,17 +457,18 @@ export const gridOverlay = {
       sc.imageSmoothingEnabled = true; sc.imageSmoothingQuality = 'high';
       sc.drawImage(cv, 0, 0, soft.width, soft.height);
 
-      const half = g.res / 2;   // 격자점은 칸의 중심이다
+      const bounds = gridBounds(g);
+      if (!bounds) throw new Error(`${key} 격자 범위 없음`);
       const L = viewer.imageryLayers.addImageryProvider(
         new Cesium.SingleTileImageryProvider({
           url: soft.toDataURL('image/png'),
-          rectangle: Cesium.Rectangle.fromDegrees(
-            -180, g.lat0 - half, 180, g.lat0 + (g.ny - 1) * g.res + half),
+          rectangle: Cesium.Rectangle.fromDegrees(bounds.west, bounds.south, bounds.east, bounds.north),
           tileWidth: soft.width, tileHeight: soft.height,
-          credit: g.source || 'Open-Meteo',
+          credit: g.attribution || g.source || 'Open-Meteo',
         })
       );
       this.layers[key] = L;
+      this._showValueLabels(key, g, field);
     } catch (e) {
       console.warn('[gridOverlay]', key, e.message);
       /* ⚠️ 조용히 실패하면 안 된다. 켰는데 아무것도 안 나오고 설명도 없으면
@@ -451,6 +492,59 @@ export const gridOverlay = {
     const L = this.layers[key];
     if (L) { try { viewer.imageryLayers.remove(L, true); } catch (_) {} }
     delete this.layers[key];
+    if (key === 'tpw') this._clearValueLabels();
+  },
+
+  /* TPW는 색만 보면 값이 기억나지 않는다. 주요 도시를 제한된 수만 표시한다.
+     ⚠️ 라벨값은 가장 가까운 **실제 1° 격자점**이다. 보간한 화면 픽셀을 숫자로 쓰지 않는다. */
+  _showValueLabels(key, grid, field) {
+    if (key !== 'tpw' || !viewer?.scene?.primitives) {
+      if (key === 'tpw') this._clearValueLabels();
+      return;
+    }
+    if (!this._labels) {
+      this._labels = viewer.scene.primitives.add(new Cesium.LabelCollection());
+    }
+    this._labels.removeAll();
+    const cities = [
+      ['서울', 'Seoul', 37.5665, 126.9780], ['부산', 'Busan', 35.1796, 129.0756],
+      ['제주', 'Jeju', 33.4996, 126.5312], ['도쿄', 'Tokyo', 35.6762, 139.6503],
+      ['오사카', 'Osaka', 34.6937, 135.5023], ['후쿠오카', 'Fukuoka', 33.5902, 130.4017],
+      ['삿포로', 'Sapporo', 43.0618, 141.3545], ['나하', 'Naha', 26.2124, 127.6809],
+      ['베이징', 'Beijing', 39.9042, 116.4074], ['상하이', 'Shanghai', 31.2304, 121.4737],
+      ['칭다오', 'Qingdao', 36.0671, 120.3826], ['타이베이', 'Taipei', 25.0330, 121.5654],
+      ['홍콩', 'Hong Kong', 22.3193, 114.1694], ['하노이', 'Hanoi', 21.0278, 105.8342],
+    ];
+    cities.forEach(([ko, en, lat, lon]) => {
+      const value = nearestGridValue(grid, field, lat, lon);
+      if (value == null) return;
+      this._labels.add({
+        position: Cesium.Cartesian3.fromDegrees(lon, lat, 12_000),
+        text: `${i18n.lang === 'ko' ? ko : en} ${Math.round(value)}mm`,
+        font: '600 13px -apple-system, BlinkMacSystemFont, sans-serif',
+        fillColor: Cesium.Color.WHITE,
+        showBackground: true,
+        backgroundColor: Cesium.Color.fromCssColorString('#071019').withAlpha(0.78),
+        backgroundPadding: new Cesium.Cartesian2(7, 4),
+        verticalOrigin: Cesium.VerticalOrigin.CENTER,
+        distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 9_000_000),
+        id: { kind: 'tpw-label', ko, en, lat, lon, value },
+      });
+    });
+    this._labels.show = true;
+    this._labelState = { key, grid, field };
+    viewer.scene.requestRender?.();
+  },
+
+  _clearValueLabels() {
+    this._labels?.removeAll();
+    this._labelState = null;
+    viewer?.scene?.requestRender?.();
+  },
+
+  _refreshValueLabels() {
+    const state = this._labelState;
+    if (state) this._showValueLabels(state.key, state.grid, state.field);
   },
 
   /** 범례용 — 눈금 색 목록 */
@@ -459,6 +553,10 @@ export const gridOverlay = {
   /* 물어보기 패널이 쓴다 — 레이어를 켜지 않고 값만 읽을 수 있어야 한다 */
   async gridFor(key) { return this.load(SOURCE_OF[key] || 'wind'); },
   fieldOf(key) { return FIELD_OF[key]; },
+  async valueAt(key, lat, lon) {
+    const grid = await this.gridFor(key);
+    return nearestGridValue(grid, grid?.[FIELD_OF[key]], lat, lon);
+  },
 
   _clim: null,
   _climDoy: 0,
@@ -510,3 +608,5 @@ export const gridOverlay = {
     return { diff, n, mean: sum / n, period: clim.period, doy: clim.doy, time: now.time };
   },
 };
+
+i18n.onChange(() => gridOverlay._refreshValueLabels());

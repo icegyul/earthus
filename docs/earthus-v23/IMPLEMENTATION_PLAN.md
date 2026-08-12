@@ -240,6 +240,18 @@ v1.1은 기준서의 Weather/Safety 교차와 영향 등급까지
 
 상세 계약은 `DECISION_FUSION.md`다. Fusion에서 action route를 추가하지 않는다.
 
+## 4-11. Korea-first nationwide stargazing safety shadow
+
+- [x] KMA Safety + 운량/가시거리/습도/강수확률/달 밝기/어둠 근거 completeness contract
+- [x] 전국 한국 좌표만 허용, 장소·운영·예약·결제 concept 0
+- [x] KMA `WARNING/DANGER/UNKNOWN`과 stale/missing factor `WITHHELD`
+- [x] Japan/Taiwan official-warning 최소 adapter shape; missing/stale evidence `UNKNOWN`
+- [ ] KMA official boundary/hierarchy 또는 non-warning positive-evidence 방법
+- [ ] 6개 Korea nationwide source rights/freshness/live adapter와 실자료 replay
+- [ ] curve approval, device/accessibility, canary/rollback 및 PD 공개 승인
+
+상세 계약은 `KOREA_STARGAZING_SAFETY.md`다. 이 단계는 전국 장소 추천이나 예약을 만들지 않는다.
+
 ## 5. 금지
 
 - PR-01에서 기존 source handler 64개를 한 번에 교체하지 않는다.

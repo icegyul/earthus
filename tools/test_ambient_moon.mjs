@@ -4,34 +4,37 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const source = await readFile(new URL('../prototype/js/ambient-moon-math.js', import.meta.url), 'utf8');
-const { projectMoonDirection } = await import(
+const { classifyMoonDisplay } = await import(
   `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`
 );
 
 const base = {
-  towardCamera: 0.4,
+  inFront: true,
+  occludedByEarth: false,
+  screenX: 920,
+  screenY: 240,
   viewportWidth: 1280,
   viewportHeight: 720,
-  earthRadius: 187.2,
   moonRadius: 38.4,
-  gap: 25.2,
 };
 
-const right = projectMoonDirection({ ...base, horizontal: 1, vertical: 0 });
-assert.equal(right.visible, true);
-assert.equal(right.depth, 'near');
-assert.ok(right.x > 640 && Math.abs(right.y - 360) < 1e-9);
+const visible = classifyMoonDisplay(base);
+assert.deepEqual(visible, {
+  visible: true, x: 920, y: 240, distanceMode: 'compressed-3d-direction-preserving',
+});
 
-const upperLeft = projectMoonDirection({ ...base, horizontal: -1, vertical: 1, towardCamera: -0.2 });
-assert.equal(upperLeft.depth, 'far');
-assert.ok(upperLeft.x < 640 && upperLeft.y < 360);
+const occluded = classifyMoonDisplay({ ...base, occludedByEarth: true });
+assert.deepEqual(occluded, { visible: false, reason: 'EARTH_OCCLUDED' });
 
-const aligned = projectMoonDirection({ ...base, horizontal: 0, vertical: 0 });
-assert.deepEqual(aligned, { visible: false, reason: 'VIEW_AXIS_ALIGNMENT' });
+const behind = classifyMoonDisplay({ ...base, inFront: false });
+assert.deepEqual(behind, { visible: false, reason: 'BEHIND_CAMERA' });
+
+const outside = classifyMoonDisplay({ ...base, screenX: -100 });
+assert.deepEqual(outside, { visible: false, reason: 'OUTSIDE_VIEWPORT' });
 
 assert.throws(
-  () => projectMoonDirection({ ...base, horizontal: Number.NaN, vertical: 1 }),
+  () => classifyMoonDisplay({ ...base, screenX: Number.NaN }),
   /FINITE_MOON_PROJECTION_REQUIRED/,
 );
 
-console.log('Ambient Moon direction projection: 4/4 passed');
+console.log('Ambient Moon visibility and occlusion: 5/5 passed');

@@ -1,33 +1,31 @@
-/**
- * 현재 달의 카메라 평면 방향을 지구 둘레의 압축 반지름에 놓는다.
- * 실제 거리 대신 방향만 보존하며, 카메라와 같은 쪽인지 지구 뒤쪽인지 함께 반환한다.
- */
-export function projectMoonDirection({
-  horizontal,
-  vertical,
-  towardCamera,
+/** 축약 3D 위치를 화면에 그릴 수 있는지 판정한다. 화면 테두리로 끌어오지 않는다. */
+export function classifyMoonDisplay({
+  inFront,
+  occludedByEarth,
+  screenX,
+  screenY,
   viewportWidth,
   viewportHeight,
-  earthRadius,
   moonRadius,
-  gap,
 }) {
-  const values = [horizontal, vertical, towardCamera, viewportWidth, viewportHeight,
-    earthRadius, moonRadius, gap].map(Number);
-  if (!values.every(Number.isFinite)) throw new TypeError('FINITE_MOON_PROJECTION_REQUIRED');
-  if (viewportWidth <= 0 || viewportHeight <= 0 || earthRadius <= 0 || moonRadius <= 0 || gap < 0) {
+  const dimensions = [viewportWidth, viewportHeight, moonRadius].map(Number);
+  if (!dimensions.every(Number.isFinite)) throw new TypeError('FINITE_MOON_PROJECTION_REQUIRED');
+  if (viewportWidth <= 0 || viewportHeight <= 0 || moonRadius <= 0) {
     throw new RangeError('MOON_PROJECTION_DIMENSION_OUT_OF_RANGE');
   }
-
-  const projectedLength = Math.hypot(horizontal, vertical);
-  if (projectedLength < 1e-6) return Object.freeze({ visible: false, reason: 'VIEW_AXIS_ALIGNMENT' });
-
-  const radius = earthRadius + moonRadius + gap;
+  if (!inFront) return Object.freeze({ visible: false, reason: 'BEHIND_CAMERA' });
+  if (occludedByEarth) return Object.freeze({ visible: false, reason: 'EARTH_OCCLUDED' });
+  if (![screenX, screenY].map(Number).every(Number.isFinite)) {
+    throw new TypeError('FINITE_MOON_PROJECTION_REQUIRED');
+  }
+  if (screenX + moonRadius < 0 || screenX - moonRadius > viewportWidth
+      || screenY + moonRadius < 0 || screenY - moonRadius > viewportHeight) {
+    return Object.freeze({ visible: false, reason: 'OUTSIDE_VIEWPORT' });
+  }
   return Object.freeze({
     visible: true,
-    x: viewportWidth / 2 + horizontal / projectedLength * radius,
-    y: viewportHeight / 2 - vertical / projectedLength * radius,
-    depth: towardCamera >= 0 ? 'near' : 'far',
-    distanceMode: 'compressed-direction-preserving',
+    x: screenX,
+    y: screenY,
+    distanceMode: 'compressed-3d-direction-preserving',
   });
 }

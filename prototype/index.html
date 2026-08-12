@@ -95,7 +95,7 @@
 }
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Widgets/widgets.css">
-<link rel="stylesheet" href="css/app.css?v=20260812-ambientmoon2">
+<link rel="stylesheet" href="css/app.css?v=20260812-ambientmoon3">
 <link rel="stylesheet" href="css/account.css">
 <link rel="stylesheet" href="css/ask.css">
 <link rel="stylesheet" href="css/readability.css?v=20260812-contours1">
@@ -353,7 +353,7 @@
     <!-- 받은 지적(2026-08-12): "달이 왜 현재 위치에 안 있고 옆에 붙어 있어?".
          현재 달의 지구중심 방향은 Cesium 천체 계산값을 따르고, 지구와의 거리만 화면 안에
          들어오도록 축약한다. 오른쪽 고정 장식으로 되돌리지 말 것. -->
-    <div id="ambientMoon" class="ambient-moon" role="img"
+    <div id="ambientMoon" class="ambient-moon" role="img" hidden
          aria-label="현재 달 방향 · 지구와의 거리는 화면에 맞게 축약"></div>
     <!-- ⚠️ 누르면 날씨 시트가 열린다 (ui-weather.js). #ambient 는 pointer-events:none 이라
          이 덩어리만 CSS 에서 auto 로 되돌린다 — 전체를 되돌리면 지구를 못 돌린다. -->
@@ -397,7 +397,10 @@
   <!-- 자료 안내 (좌측 하단) — 무엇을 보고 있고, 언제 것이고, 다음은 언제인가.
        ⚠️ 지우지 말 것. 출처 표기는 장식이 아니라 NOAA·NASA·RealEarth 자료의 **이용 조건**이고,
           받은 말로는 "나오는 게 재미있고 신뢰도 높다". 작게 두되 계속 보이게 한다. -->
-  <div id="srcNote" aria-live="polite"></div>
+  <div id="sourceStack">
+    <div id="srcNote" aria-live="polite"></div>
+    <div id="ambientMoonNote" aria-live="polite"></div>
+  </div>
 
   <!-- PR-04 판독 기반 — 수치 격자를 사용자가 선택했을 때만 열린다.
        ⚠️ 첫 Earth View에는 자동으로 보이지 않는다. 도시값은 보간 픽셀이 아닌 원격자값이다. -->
@@ -1064,7 +1067,7 @@
 <!-- v6는 OMM JSON의 6~9자리 카탈로그 번호를 지원하는 마지막 UMD 배포본이다.
      v7은 ESM 전용이라 빌드 없는 이 앱에서 같은 script 전역으로 교체할 수 없다. -->
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"></script>
-  <script type="module" src="js/main.js?v=20260812-ambientmoon2"></script>
+  <script type="module" src="js/main.js?v=20260812-ambientmoon3"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

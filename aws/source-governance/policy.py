@@ -284,7 +284,7 @@ def evaluate_freshness(batch, entry, evaluated_at):
     }
 
 
-def evaluate_provider_health(batch, entry, freshness):
+def evaluate_provider_health(batch, entry):
     source_id = entry["sourceId"]
     policy = entry["providerHealthPolicy"]
     source_count = int(batch.get("sourceRecordCount") or 0)
@@ -307,8 +307,6 @@ def evaluate_provider_health(batch, entry, freshness):
 
     if too_few or rejection_rate >= float(policy["downRejectionRate"]):
         status = "DOWN"
-    elif freshness["status"] in {"STALE", "FUTURE", "UNKNOWN"}:
-        status = "DEGRADED"
     elif problems:
         status = "DEGRADED"
     else:
@@ -440,7 +438,7 @@ def evaluate_batch(batch, entry, *, evaluated_at, registry_revision, evaluator_v
     if time_problem:
         raise ValueError("evaluated_at은 timezone이 있는 ISO-8601이어야 함")
     freshness = evaluate_freshness(batch, entry, evaluated_dt)
-    health = evaluate_provider_health(batch, entry, freshness)
+    health = evaluate_provider_health(batch, entry)
     policy_problems = _policy_errors(entry, evaluated_dt)
     metadata_problems = _metadata_errors(batch, entry)
     operations = _operation_decisions(

@@ -8,6 +8,8 @@
 > 구현·운영 반영했다. PR-06 Continuous Layers도 구현·검수·정적 운영 반영했다.
 > 후속 직접 지시로 PR-07 Decision Core와 PR-08 Personalization/5축 UI도
 > CALIBRATION/SHADOW로 구현했다. TPW flag on·Decision UI 공개·판매·SNS는 미승인이다.
+> 후속 계속 지시로 PR-01·02를 서울 private shadow로 수동 배포·검증했다.
+> 둘 모두 schedule·authoritative reader는 없고 DRAFT 정책을 승인으로 바꾸지 않았다.
 
 ## 1. 공통 PR 형식
 
@@ -28,8 +30,8 @@
 |---|---|---|---|---|
 | PR-00 | Reality & Gap 승인 | 본 P0 문서 | 실제 AWS/Supabase/운영 inventory, ADR 승인, fixture 확보 | 코드 재작성 없이 승인된 실행·승인·전환 지도 |
 | PR-00A | TPW 수증기 통로 | PD 단독 예외 승인 | GFS TPW collector, 1° 지역 격자, 단계색·도시값·출처·질문 계약, flag | 계약·문법·지역경계·결측 테스트 통과, 실제 파일·권리·운영 화면 전에는 flag off |
-| PR-01 | Signal Foundation (로컬 완료) | PD의 다음 단계 직접 지시 | `EarthSignalEnvelope`, canonical time/CRS/unit/missing, 대표 3 compatibility adapter | fixture·실제 공개 KMA 입력 대조 완료; AWS/shadow reader 전환은 별도 gate |
-| PR-02 | Rights/Freshness (로컬 완료) | PD의 다음 단계 직접 지시 | source policy, revision, provider health, standard errors | 20개 상태 replay·실제 KMA 연속검증 완료; 승인·AWS·reader는 별도 gate |
+| PR-01 | Signal Foundation (private shadow 수동 검증) | PD의 다음 단계 직접 지시 | `EarthSignalEnvelope`, canonical time/CRS/unit/missing, 대표 3 compatibility adapter | 서울 실자료·private 403·stable ID 검증; schedule/reader는 별도 gate |
+| PR-02 | Rights/Freshness (private shadow 수동 검증) | PD의 다음 단계 직접 지시 | source policy, revision, provider health, standard errors | 서울 3 source DRAFT 차단·schema·private 403·재현성 검증; 승인/schedule/reader는 별도 gate |
 | PR-03 | Earth View State (정적 운영 배포) | existing Cesium state | Earth View/Style/Data/Evidence/Decision URL state | 첫 화면 지구 보존, 공유·뒤로가기·대표 서비스 URL 운영 검증 |
 | PR-04 | V0 Readability (정적 운영 배포) | PR-03 | 공통 범례·값 라벨·지점 카드·read mode | 기온 대표 지역에서 10초 판독, 원값 대조 |
 | PR-05 | Safety Slice (운영 배포) | 공식 특보 fixture | KMA warning adapter, 근사 region mapping, Hard Gate, CTA | 발표→대치→해제/지연/미매핑 replay |
@@ -94,9 +96,12 @@ PR-00은 문서 준비는 끝났지만 위 네 운영 관문 전까지 `APPROVAL
 - [x] 상태 replay 20개와 PR-01 회귀 12개 통과
 - [x] 실제 공개 KMA 특보·AWS PR-01→PR-02 read-only 연속 검증
 - [x] 기존 공개 writer/reader/UI/AETHERUS 불변, private shadow 경로만 추가
+- [x] 서울 Python 3.12·정확한 canonical 3 GET/governance 3 PUT IAM·실자료 수동 invoke
+- [x] registry 1개·결과 3개 schema, 24 operation BLOCK, 동일 replay byte stability
+- [x] `private, no-store`·AES256·S3/CloudFront 익명 403·canonical hash 불변
 - [ ] 공식 terms 증거와 PD의 source별 8개 operation 승인
 - [ ] append-only 승인 저장소·Control Plane·registry 서명/rollback
-- [ ] 서울 리전 최소 IAM·실제 shadow·익명 GET 403·schedule/비용/경보 검증
+- [ ] schedule·retention·비용 상한·DLQ/CloudWatch 경보·외부 채널 승인
 - [ ] dual-read/canary와 authoritative policy reader 승인
 
 상세 정본은 `RIGHTS_FRESHNESS.md`다. 번들 registry는 계속 `DRAFT`이며 코드에 적힌

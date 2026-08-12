@@ -168,6 +168,7 @@ class RegistryAndPolicyReplayTest(unittest.TestCase):
         result = evaluate(entry, source)
         exp = self.expected["stale"]
         self.assertEqual(result["presentation"]["state"], exp["presentation"])
+        self.assertEqual(result["providerHealth"]["status"], "HEALTHY")
         self.assertEqual(result["operations"]["display"]["decision"], exp["display"])
         self.assertIn(exp["displayCondition"], result["operations"]["display"]["conditions"])
         self.assertEqual(result["operations"]["AI"]["decision"], exp["AI"])
@@ -189,6 +190,7 @@ class RegistryAndPolicyReplayTest(unittest.TestCase):
         source["signals"][0]["source"]["snapshotGeneratedAt"] = None
         result = evaluate(entry, source)
         self.assertEqual(result["freshness"]["status"], "UNKNOWN")
+        self.assertEqual(result["providerHealth"]["status"], "HEALTHY")
         self.assertEqual(result["presentation"]["state"], "UNKNOWN")
         self.assertEqual(result["operations"]["display"]["decision"], "BLOCK")
         self.assertEqual(result["operations"]["cache"]["decision"], "ALLOW")

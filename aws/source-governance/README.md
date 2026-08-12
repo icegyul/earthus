@@ -8,7 +8,10 @@ shadow processor다.
 - 기존 공개 JSON, UI, Safety, Activity, AETHERUS reader는 바꾸지 않는다.
 - `BLOCKED/EXPIRED/STALE/UNKNOWN`을 0·안전·허용으로 바꾸지 않는다.
 - 공용 `deploy-python.sh`는 registry JSON을 패키징하지 않고 IAM 범위도 넓으므로 사용 금지다.
-- AWS 배포·schedule·Control Plane 승인·reader 전환은 별도 gate다.
+- AWS 배포는 `aws/deploy-source-governance.sh`만 쓴다. canonical 정확히 3개
+  `GetObject`와 governance 정확히 3개 `PutObject`만 허용하며 bucket list는 허용하지 않는다.
+- 수동 private shadow 배포는 source 승인이 아니다. schedule·Control Plane 승인·
+  authoritative reader 전환은 여전히 별도 gate다.
 
 ```bash
 python3 -m unittest aws/source-governance/test_source_governance.py

@@ -35,9 +35,12 @@ shadow로 변환하는 compatibility processor다. 자동검사 12개에 이어 
 
 이후 PD의 두 번째 **“다음꺼 진행해”** 지시로 PR-02 Rights/Freshness도 로컬 구현했다.
 3개 source의 제안 권리를 모두 `DRAFT`로 둔 채 policy·freshness·provider health를 분리
-평가하고 `archive/governance/v1/` private shadow만 만드는 구조다. 상태 replay 20개와 실제
-KMA PR-01→PR-02 연속검증은 통과했지만 source 승인·Control Plane·AWS·reader 전환은 미승인이다.
-실행 정본은 [`earthus-v23/RIGHTS_FRESHNESS.md`](earthus-v23/RIGHTS_FRESHNESS.md)다.
+평가하고 `archive/governance/v1/` private shadow만 만드는 구조다. 서울 최소권한 Lambda를
+수동 배포해 특보 39·기온 736·TPW 3,276, DRAFT로 인한 24 operation 전부 BLOCK,
+schema·재현성·private 403·canonical 불변을 검증했다. source 승인·Control Plane·schedule·
+authoritative reader 전환은 미승인이다. 실행 정본은
+[`earthus-v23/RIGHTS_FRESHNESS.md`](earthus-v23/RIGHTS_FRESHNESS.md), 운영 증거는
+[`earthus-v23/RELEASE-2026-08-12-PR02-SHADOW.md`](earthus-v23/RELEASE-2026-08-12-PR02-SHADOW.md)다.
 
 PD의 세 번째 **“계속 진행해”** 지시로 PR-03 Earth View State도 로컬 구현했다. query 없는
 첫 화면은 아름다운 Earth View로 유지하고, 사용자가 고른 Style→Data→Evidence 상태만
@@ -233,7 +236,7 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
 ## 6. 데이터 파이프라인
 
 - **source/data handler 64개** (aws/ 폴더당 하나) → S3 JSON → 앱이 fetch.
-  별도로 미배포 `signal-foundation`, `source-governance` shadow processor 2개가 있어
+  별도로 서울 수동 shadow Lambda `signal-foundation`, `source-governance` 2개가 있어
   코드의 `handler.py`는 총 66개다.
   스키마는 각 handler.py 상단 주석과 `docs/earthus-v23/schema/`에 있다.
 - 새 Lambda: `bash aws/deploy-python.sh 폴더명` (requirements.txt 없으면 빈 파일이라도 둘 것 —

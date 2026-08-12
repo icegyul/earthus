@@ -1,7 +1,7 @@
 # Rights & Freshness — PR-02 실행 계약
 
 > 기준일: 2026-08-12 KST
-> 상태: **로컬 엔진·DRAFT registry·replay 완료 / source 승인·AWS 배포·reader 전환 미승인**
+> 상태: **서울 private shadow 수동 검증 완료 / source 승인·schedule·reader 전환 미승인**
 
 ## 1. 목적
 
@@ -29,6 +29,7 @@ Evaluator Time ─ 현재 시각              ┘
 - registry schema: `schema/source-registry-v1.schema.json`
 - 평가 schema: `schema/source-governance-v1.schema.json`
 - replay fixture/test: `aws/source-governance/fixtures/`, `test_source_governance.py`
+- 전용 배포: `aws/deploy-source-governance.sh`
 
 PR-01 canonical batch에도 batch 단위 `sourceId`와 source metadata를 추가했다. 활성 특보가 0건인
 경우에도 이용조건·출처·snapshot 시각을 잃지 않기 위해서다. 기존 공개 source와 UI는 바꾸지 않았다.
@@ -78,6 +79,8 @@ FRESH와 STALE 사이는 `AGING`이다. timezone 없는 시각·시각 없음은
 공급자 건강상태는 license나 signal 품질과 분리한다.
 
 - 원 행 수, canonical 행 수, parser 거절 수·비율을 기록한다.
+- freshness가 `STALE/FUTURE/UNKNOWN`이라는 이유만으로 provider를 `DEGRADED`로 바꾸지
+  않는다. provider 상태는 행 수·파서 거절률로, 최신성은 freshness로 각각 표시한다.
 - 특보 0건은 정상일 수 있어 `emptyIsValid=true`다. 0건을 공급자 장애나 안전으로 단정하지 않는다.
 - AWS 기온은 최소 100행, TPW는 최소 3,200칸보다 적으면 `DOWN`이다.
 - 특보 region 미매핑으로 signal 품질이 `UNKNOWN`이어도 provider parser가 정상이라면
@@ -116,15 +119,42 @@ PROVIDER_TOO_FEW_RECORDS, PROVIDER_REJECTION_RATE
 
 위 행 수·AGING은 실시간 입력의 검증 시점 값이며 고정 상품 수치가 아니다.
 
+### 7.1 서울 private shadow 수동 검증
+
+`source-governance` Lambda를 `ap-northeast-2` Python 3.12, 1,024MB, timeout 120초,
+VPC 미연결로 배포했다. canonical 정확히 3개는 `GetObject`, governance 정확히
+3개는 `PutObject`만 하며 bucket list·함수 URL·Lambda resource policy·알려진
+EventBridge schedule은 없다.
+
+2026-08-12 12:57:37 UTC의 동일 input·동일 evaluator time replay 결과는 다음과 같다.
+
+| source | source/canonical/rejected | freshness | provider | presentation |
+|---|---:|---|---|---|
+| KMA 공식 특보 | 39/39/0 | FRESH | HEALTHY | POLICY_BLOCKED |
+| KMA AWS 기온 | 736/736/0 | STALE | HEALTHY | POLICY_BLOCKED |
+| NOAA GFS TPW | 3,276/3,276/0 | AGING | HEALTHY | POLICY_BLOCKED |
+
+AWS 기온은 stale이지만 행 수·파서는 정상이므로 provider를 `HEALTHY`로 분리했다.
+같은 평가를 두 번 실행해 3개 JSON의 SHA-256과 `evaluationId`가 모두 일치했다.
+registry 1개·결과 3개는 Draft 2020-12 schema를 통과했고, 24개 operation은 모두
+`BLOCK`, `dataVisible=false`, `safetyMeaning=NO_INFERENCE`였다. 세 결과는
+`application/json; charset=utf-8`, `private, no-store`, AES256이고 S3·CloudFront 익명 GET이
+모두 403이다. 평가 전후 canonical 3개의 SHA-256도 일치했다.
+
+실행 중 최신성 상태가 provider 상태를 자동으로 낮추는 구현과 문서 계약의
+불일치를 발견했다. 이를 분리하고 stale·시각 미상이면서 파서가 정상인 replay에
+provider `HEALTHY`를 고정하는 회귀검사를 추가했다.
+
 ## 8. 운영 전환 gate
 
-다음을 모두 통과하고 PD가 승인하기 전에는 Lambda·schedule·Control Plane·reader를 열지 않는다.
+수동 private Lambda 검증은 source 승인이 아니다. 다음을 모두 통과하고 PD가
+승인하기 전에는 schedule·Control Plane·authoritative reader를 열지 않는다.
 
 1. source별 공식 terms와 8개 operation 권리를 evidenceRefs로 재검토
 2. PD 승인 기록의 actor/reason/time/effective/rollback append-only 저장소 확정
 3. registry revision 서명·diff·이전 version rollback과 권한 분리
-4. Python 3.12 서울 리전에서 canonical GET과 governance PUT 최소 IAM
-5. `archive/governance/v1/` Content-Type, `private, no-store`, 익명 GET 403
+4. [완료] Python 3.12 서울 리전에서 canonical GET과 governance PUT 최소 IAM
+5. [완료] `archive/governance/v1/` Content-Type, `private, no-store`, 익명 GET 403
 6. 실제 주기별 FRESH→AGING→STALE replay와 provider 장애 경보
 7. 기존 공개 JSON·UI·Safety·Activity·AETHERUS network/표시 불변
 8. retention·S3 비용·schedule 주기·경보 채널 승인

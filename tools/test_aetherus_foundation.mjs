@@ -29,26 +29,18 @@ const viewerSource = await readFile(path.join(ROOT, 'prototype/js/viewer.js'), '
 const indexSource = await readFile(path.join(ROOT, 'prototype/index.html'), 'utf8');
 const appCssSource = await readFile(path.join(ROOT, 'prototype/css/app.css'), 'utf8');
 const mainSource = await readFile(path.join(ROOT, 'prototype/js/main.js'), 'utf8');
-const ambientMoonSource = await readFile(path.join(ROOT, 'prototype/js/ambient-moon.js'), 'utf8');
 
 assert.match(cosmicSource, /this\.makeEarthMoon\(new Date\(\)\)/);
 assert.match(cosmicSource, /this\.planetMeshes\.moon = moon/);
 assert.match(cosmicSource, /달 위치·지구와의 거리 압축 도식/);
 assert.doesNotMatch(uiSource, /const allowed = \(\) => location\.hash === '#dev'/);
 assert.match(viewerSource, /scene\.moon\.show = false/);
-assert.match(indexSource, /id="ambientMoonNote"/);
-assert.doesNotMatch(indexSource, /id="ambientMoon"/);
-assert.doesNotMatch(appCssSource, /\.ambient-moon\{/);
-assert.match(mainSource, /ambientMoon\.init\(\)/);
-assert.match(ambientMoonSource, /computeMoonPositionInEarthInertialFrame/);
-assert.match(ambientMoonSource, /computeIcrfToFixedMatrix/);
-assert.match(ambientMoonSource, /new Cesium\.IauOrientationAxes/);
-assert.match(ambientMoonSource, /new Cesium\.EllipsoidPrimitive/);
-assert.match(ambientMoonSource, /Cesium\.Material\.fromType\(Cesium\.Material\.ImageType\)/);
-assert.match(ambientMoonSource, /onlySunLighting: true/);
-assert.match(ambientMoonSource, /depthTestEnabled: true/);
-assert.match(ambientMoonSource, /moonAxes\.evaluate/);
-assert.doesNotMatch(ambientMoonSource, /RENDER_THROTTLE_MS|postRender|--moon-x|--moon-y/);
+assert.doesNotMatch(indexSource, /ambientMoon/);
+assert.doesNotMatch(appCssSource, /ambientMoon|ambient-moon/);
+assert.doesNotMatch(mainSource, /ambientMoon|ambient-moon/);
+assert.match(viewerSource, /scene\.skyBox\.show = false/);
+assert.match(viewerSource, /new Cesium\.EquirectangularPanorama/);
+assert.match(viewerSource, /earthus-milky-way\/panorama\.webp/);
 
 const catalogFiles = {
   'space-photos': 'prototype/data/space-photos.json',

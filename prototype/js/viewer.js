@@ -84,15 +84,25 @@ export function initViewer(containerId) {
 
   /* ── 리빙어스 룩 ────────────────────────────────────────────── */
   scene.backgroundColor = Cesium.Color.BLACK;
+  /* 받은 지적(2026-08-12): 지구 밖이 작은 별점만 고르게 반복되어 우주가 평면처럼 보였다.
+     EARTHUS 전용 360도 은하수 원본을 천구 파노라마로 둘러 카메라 회전에 맞춰 움직이게 한다.
+     화면 위 DOM이나 무한 애니메이션이 아니라 Cesium의 기존 장면 primitive이므로
+     requestRenderMode의 유휴 정지와 지구 조작 좌표계를 그대로 지킨다. */
+  scene.skyBox.show = false;
+  scene.primitives.add(new Cesium.EquirectangularPanorama({
+    transform: Cesium.Matrix4.IDENTITY,
+    image: 'space/skybox/earthus-milky-way/panorama.webp?v=20260812b',
+    radius: 500_000_000,
+  }));
   globe.baseColor = Cesium.Color.BLACK;
   globe.enableLighting = true;         // 주야 경계선
   globe.showGroundAtmosphere = true;   // 지표 대기산란
   scene.skyAtmosphere.show = true;     // 림 라이팅
   scene.fog.enabled = false;
   globe.showWaterEffect = false;
-  /* 받은 지적(2026-08-12): "달이 왜 현재 위치에 안 있고 옆에 붙어 있어?".
-     실제 거리의 Cesium Moon은 첫 Earth View 시야에 함께 담기지 않는다. 같은 Cesium 천체
-     계산값을 쓰는 #ambientMoon이 현재 방향을 거리만 축약해 표시하므로 원본은 중복 방지로 끈다. */
+  /* 받은 지적(2026-08-12): 실제 거리 달은 첫 Earth View에 함께 담기지 않고,
+     거리를 축약해 억지로 넣으면 지구와 겹치거나 화면 밖으로 사라져 어설퍼 보였다.
+     EARTHUS 첫 지구 화면에서는 달을 그리지 않는다. 달은 AETHERUS 우주 화면에서 본다. */
   scene.moon.show = false;
   scene.sun.show = true;
   scene.highDynamicRange = false;

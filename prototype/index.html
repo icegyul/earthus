@@ -200,8 +200,24 @@
             <div class="cosmic-astronomy-actions">
               <button id="cosmicAstronomyNow" type="button">지금 다시 계산</button>
               <button id="cosmicAstronomyLocation" type="button">내 위치 사용</button>
+              <button id="cosmicPlannerBuild" type="button">24시간 기하 계획 만들기</button>
             </div>
             <a id="cosmicAstronomySource" target="_blank" rel="noopener noreferrer">JPL 계산 근거</a>
+            <section id="cosmicPlanner" class="cosmic-planner" aria-labelledby="cosmicPlannerTitle" hidden>
+              <header>
+                <h4 id="cosmicPlannerTitle">화성 기하 계획</h4>
+                <span id="cosmicPlannerStatus">DRAFT</span>
+              </header>
+              <p id="cosmicPlannerContext"></p>
+              <ol id="cosmicPlannerWindows"></ol>
+              <p id="cosmicPlannerEvidence"></p>
+              <p id="cosmicPlannerLimits"></p>
+              <div class="cosmic-planner-actions">
+                <button id="cosmicPlannerRebuild" type="button">바뀐 입력으로 다시 계산</button>
+                <button id="cosmicPlannerDownload" type="button">계획 JSON 저장</button>
+              </div>
+              <a id="cosmicPlannerDefinition" href="https://aa.usno.navy.mil/faq/RST_defs" target="_blank" rel="noopener noreferrer">USNO 박명 정의</a>
+            </section>
           </section>
           <p id="cosmicBodyLimit"></p>
           <a id="cosmicBodySource" target="_blank" rel="noopener noreferrer">공식 자료</a>

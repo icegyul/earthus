@@ -1,19 +1,20 @@
-// Aetherus 공유 URL 계약 v2.
-// v1·기존 ?solar=1, ?space=milkyway|galaxies 주소를 계속 읽고,
-// v2에서 우주 관측의 대상·관측자·UTC·정밀도를 추가한다.
+// Aetherus 공유 URL 계약 v3.
+// v1·v2·기존 ?solar=1, ?space=milkyway|galaxies 주소를 계속 읽고,
+// v2의 대상·관측자·UTC·정밀도에 v3의 결정론적 24시간 계획 상태를 추가한다.
 // 관측 좌표는 사용자가 명시적으로 '내 위치 사용'을 눌렀을 때만
 // 소수점 둘째 자리(약 1km)로 공유 URL에 넣는다. localStorage에는 저장하지 않는다.
 
-export const AETHERUS_ROUTE_VERSION = 2;
+export const AETHERUS_ROUTE_VERSION = 3;
 
-const SUPPORTED_VERSIONS = new Set(['1', '2']);
+const SUPPORTED_VERSIONS = new Set(['1', '2', '3']);
 const ROUTE_KEYS = [
   'aetherus', 'space', 'solar', 'target', 'photo', 'telescope', 'craft',
-  'observer', 'at', 'precision',
+  'observer', 'at', 'precision', 'plan',
 ];
 const STAGES = new Set(['solar', 'milkyway', 'galaxies']);
 const TELESCOPES = new Set(['all', 'hst', 'jwst']);
 const PRECISIONS = new Set(['explorer']);
+const PLANS = new Set(['geometry24h']);
 const ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,79}$/;
 const UTC_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
 const MIN_ASTRONOMY_MS = Date.parse('1800-01-01T00:00:00.000Z');
@@ -83,6 +84,7 @@ function emptyUnsupportedRoute(rawVersion) {
     observer: null,
     at: null,
     precision: null,
+    plan: null,
     issues: Object.freeze(['UNSUPPORTED_VERSION']),
   });
 }
@@ -109,6 +111,7 @@ export function decodeAetherusRoute(input) {
   let observer = routeObserver(params.get('observer'));
   let at = routeInstant(params.get('at'));
   let precision = params.get('precision')?.trim().toLowerCase() || null;
+  let plan = params.get('plan')?.trim().toLowerCase() || null;
   if (params.has('target') && !target) issues.push('INVALID_TARGET');
   if (params.has('photo') && !photo) issues.push('INVALID_PHOTO');
   if (telescope && !TELESCOPES.has(telescope)) {
@@ -122,6 +125,10 @@ export function decodeAetherusRoute(input) {
     issues.push('INVALID_PRECISION');
     precision = null;
   }
+  if (plan && !PLANS.has(plan)) {
+    issues.push('INVALID_PLAN');
+    plan = null;
+  }
 
   const selectedKinds = [target ? 'target' : null, craft ? 'craft' : null,
     (photo || telescope) ? 'photo' : null].filter(Boolean);
@@ -133,6 +140,16 @@ export function decodeAetherusRoute(input) {
   if (hasAstronomy && target !== 'mars') {
     issues.push('ORPHAN_ASTRONOMY_STATE');
     observer = null; at = null; precision = null;
+  }
+  if (plan && target !== 'mars') {
+    issues.push('ORPHAN_PLAN_STATE');
+    plan = null;
+  } else if (plan && rawVersion !== '3') {
+    issues.push('PLAN_REQUIRES_V3');
+    plan = null;
+  } else if (plan && !(observer && at && precision)) {
+    issues.push('INCOMPLETE_PLAN_INPUT');
+    plan = null;
   }
   if (target || photo || telescope || craft) stage = 'solar';
   if (!stage) return null;
@@ -147,6 +164,7 @@ export function decodeAetherusRoute(input) {
     observer,
     at,
     precision,
+    plan,
     issues: Object.freeze(issues),
   });
 }
@@ -180,20 +198,28 @@ function requireState(state) {
   const photo = routeId(state.photo);
   const telescope = state.telescope ? String(state.telescope).trim().toLowerCase() : null;
   const craft = routeId(state.craft);
+  const plan = state.plan ? String(state.plan).trim().toLowerCase() : null;
   if (state.target && !target) throw new AetherusRouteError('INVALID_TARGET', 'Invalid target id');
   if (state.photo && !photo) throw new AetherusRouteError('INVALID_PHOTO', 'Invalid photo id');
   if (telescope && !TELESCOPES.has(telescope)) {
     throw new AetherusRouteError('INVALID_TELESCOPE', 'Invalid telescope filter');
   }
   if (state.craft && !craft) throw new AetherusRouteError('INVALID_CRAFT', 'Invalid craft id');
+  if (plan && !PLANS.has(plan)) throw new AetherusRouteError('INVALID_PLAN', 'Unsupported observation plan');
   if ([target ? 'target' : null, craft ? 'craft' : null,
     (photo || telescope) ? 'photo' : null].filter(Boolean).length > 1) {
     throw new AetherusRouteError('CONFLICTING_DETAIL', 'Only one Aetherus detail may be encoded');
   }
   const astronomy = requireAstronomy(state, target);
+  if (plan && target !== 'mars') {
+    throw new AetherusRouteError('ORPHAN_PLAN_STATE', 'Observation plan currently requires target=mars');
+  }
+  if (plan && !(astronomy.observer && astronomy.at && astronomy.precision)) {
+    throw new AetherusRouteError('INCOMPLETE_PLAN_INPUT', 'Observation plan requires observer, UTC, and precision');
+  }
   return {
     stage: target || photo || telescope || craft ? 'solar' : state.stage,
-    target, photo, telescope, craft, ...astronomy,
+    target, photo, telescope, craft, ...astronomy, plan,
   };
 }
 
@@ -220,6 +246,7 @@ export function encodeAetherusRoute(state, href = 'https://earthus.net/') {
   if (observer) url.searchParams.set('observer', observer);
   if (normalized.at) url.searchParams.set('at', normalized.at);
   if (normalized.precision) url.searchParams.set('precision', normalized.precision);
+  if (normalized.plan) url.searchParams.set('plan', normalized.plan);
   return url;
 }
 

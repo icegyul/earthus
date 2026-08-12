@@ -4,6 +4,9 @@
 > 선행 기준: `docs/AETHERUS-PR-02-PHOTO-OWNERSHIP-2026-08-12.md`
 > 설계 기준: `AETHERUS_Engineering_Specification_v1.0_FINAL_CODEX_HANDOFF.docx`
 
+> 현재 route 주의: 이 문서가 완료될 때의 writer는 v2였다. PR-04 Observation Planner가
+> `plan=geometry24h`를 추가해 현재 writer를 v3로 올렸으며 v1·v2 reader는 유지한다.
+
 ## 0. 결론
 
 PR-03은 기능 목록이 아니라 Aetherus 천문 계산의 첫 종단 수직 절편이다.
@@ -146,14 +149,14 @@ MARS_ASTRONOMY_READY
   └─ back/Escape/Earth exit → clear observer/time/result from memory and URL
 
 DEEP_LINK
-  └─ decode v1/v2 → activate base scene → apply observer/time → select Mars
-       └─ canonicalize to v2 only after restoration finishes
+  └─ decode v1/v2/v3 → activate base scene → apply observer/time → select Mars
+       └─ canonicalize to current v3 only after restoration finishes
 ```
 
 `showAstronomy()`는 계산 결과를 `textContent`로만 표시한다. 엔진이 실패하면 좌표나 지평선
 결론을 대체하지 않고 실패 상태와 재계산/위치 버튼만 남긴다.
 
-## 4. URL v2·개인정보 계약
+## 4. URL v2(당시 writer, 현재 v3)·개인정보 계약
 
 ### 4.1 문법
 
@@ -169,7 +172,7 @@ DEEP_LINK
   &precision=explorer
 ```
 
-- v1·비버전 `solar/space` 링크를 계속 읽는다. 새 URL만 v2로 쓴다.
+- v1·비버전 `solar/space` 링크를 계속 읽는다. PR-04 이후 새 URL은 v3로 쓴다.
 - `observer=default` 또는 유효한 `lat,lon` 형식만 허용한다.
 - Aetherus 천문 패널은 이미 있는 Earthus 위치 값을 자동으로 소비하거나 URL에 넣지 않는다.
 - 사용자가 버튼을 눌러 허용한 뒤에만 위경도를 0.01°(중위도에서 약 1km)로 반올림한다.
@@ -237,7 +240,7 @@ python3 tools/verify_kepler.py --base-date 2026-08-12
 
 1. 3개 Horizons row의 RA·Dec·Az·Alt·range·horizon 통과
 2. 위도 91°, 2051년, 미제공 `scientific` 등급 실패
-3. v1 링크 복원, v2 round trip, v3 차단
+3. v1·v2 링크 복원, 현재 v3 round trip, v4 차단
 4. 기기 좌표 0.01° 반올림, accuracy 미직렬화
 5. target 없는 천문 상태 제거
 6. 기존 8행성×4시점·Voyager 검증 회귀 통과
@@ -247,8 +250,8 @@ python3 tools/verify_kepler.py --base-date 2026-08-12
 ```text
 desktop 1280×844: Mars direct route, default observer, source/UTC/n/limits visible
 mobile 390×844: bottom sheet, 12px values, 44px controls, no horizontal overflow
-v1 target=mars → v2 canonical URL
-v2 shared observer/time → same coordinates and URL
+v1 target=mars → current v3 canonical URL
+v2 shared observer/time → same coordinates and current v3 URL
 location denied → explicit failure, no fabricated coordinates
 back/Escape → observer/time removed from URL and memory
 idle render delta = 0

@@ -20,7 +20,13 @@ import { planetOrbit, planetPositions } from './kepler.js';
 import {
   calculateMarsObservation,
   DEFAULT_ASTRONOMY_OBSERVER,
-} from './astronomy.js?v=20260812-astronomy3';
+} from './astronomy.js?v=20260812-planner1';
+import {
+  assessObservationPlan,
+  createMarsGeometryPlan,
+  createOfflinePlanManifest,
+  GEOMETRY_24H_PLAN,
+} from './observation-planner.js?v=20260812-planner1';
 import { assertAetherusCatalog } from './contracts.js?v=20260812-photoownership1';
 import {
   aetherusPhotoCounts,
@@ -86,6 +92,7 @@ const rightAscension = value => {
   const seconds = totalSeconds - hours * 3600 - minutes * 60;
   return `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${seconds.toFixed(1).padStart(4, '0')}s`;
 };
+const plannerUtc = value => String(value).replace('T', ' ').replace('.000Z', 'Z');
 
 export const cosmic3d = {
   root: null,
@@ -123,6 +130,10 @@ export const cosmic3d = {
   _astronomyPrecision: null,
   _astronomyError: null,
   _pendingAstronomyRoute: null,
+  _observationPlan: null,
+  _observationPlanStatus: null,
+  _offlinePlanManifest: null,
+  _plannerError: null,
   _photoCatalogPromise: null,
   _allPhotoItems: [],
   _photoItems: [],
@@ -216,6 +227,8 @@ export const cosmic3d = {
       at: this._astronomyObservation.time.utc,
       precision: this._astronomyObservation.precision.tier,
     } : {};
+    const planner = this._detailBody?.id === 'mars' && this._observationPlan
+      && this._observationPlanStatus === 'CURRENT' ? { plan: GEOMETRY_24H_PLAN } : {};
     return {
       stage: this._stage || store.sceneStage || 'solar',
       target: this._detailBody?.id || null,
@@ -223,6 +236,7 @@ export const cosmic3d = {
       telescope: this._photoMode?.toLowerCase() || null,
       craft: this._selectedCraft?.id || null,
       ...astronomy,
+      ...planner,
     };
   },
 
@@ -240,7 +254,12 @@ export const cosmic3d = {
     if (route.target) {
       this._pendingAstronomyRoute = route.target === 'mars' ? route : null;
       await this.selectBody(route.target);
-      return this._detailBody?.id === route.target;
+      const restored = this._detailBody?.id === route.target;
+      if (restored && route.target === 'mars' && route.plan === GEOMETRY_24H_PLAN) {
+        this.buildObservationPlan({ emit: false });
+        this.emitRouteState();
+      }
+      return restored;
     }
     if (route.craft) {
       await this.ensureEngine();
@@ -1721,11 +1740,149 @@ export const cosmic3d = {
       this._astronomyAt = this._astronomyObservation.time.utc;
       this._astronomyPrecision = this._astronomyObservation.precision.tier;
       this._astronomyError = null;
+      this.updateObservationPlanFreshness();
     } catch (error) {
       this._astronomyObservation = null;
       this._astronomyError = error?.message || 'ASTRONOMY_CALCULATION_FAILED';
+      if (this._observationPlan) {
+        this._observationPlanStatus = 'STALE';
+        this._offlinePlanManifest = null;
+      }
       console.warn('[aetherus-astronomy]', this._astronomyError);
     }
+  },
+
+  updateObservationPlanFreshness() {
+    if (!this._observationPlan || !this._astronomyObservation) return;
+    const assessment = assessObservationPlan(this._observationPlan, {
+      observer: this._astronomyObservation.observer,
+      startAt: this._astronomyObservation.time.utc,
+    });
+    this._observationPlanStatus = assessment.status;
+    if (assessment.status === 'STALE') this._offlinePlanManifest = null;
+  },
+
+  buildObservationPlan({ emit = true } = {}) {
+    if (this._detailBody?.id !== 'mars' || !this._astronomyObservation) {
+      this._plannerError = this._astronomyError || 'ASTRONOMY_INPUT_REQUIRED';
+      this._observationPlanStatus = 'ERROR';
+      this.showObservationPlanner();
+      return false;
+    }
+    try {
+      this._observationPlan = createMarsGeometryPlan({
+        observer: this._astronomyObservation.observer,
+        startAt: this._astronomyObservation.time.utc,
+      });
+      this._observationPlanStatus = 'CURRENT';
+      this._offlinePlanManifest = createOfflinePlanManifest(this._observationPlan);
+      this._plannerError = null;
+      this.showObservationPlanner();
+      if (emit) this.emitRouteState();
+      return true;
+    } catch (error) {
+      this._observationPlan = null;
+      this._offlinePlanManifest = null;
+      this._observationPlanStatus = 'ERROR';
+      this._plannerError = error?.message || 'OBSERVATION_PLAN_FAILED';
+      console.warn('[aetherus-planner]', this._plannerError);
+      this.showObservationPlanner();
+      if (emit) this.emitRouteState();
+      return false;
+    }
+  },
+
+  showObservationPlanner() {
+    const section = document.getElementById('cosmicPlanner');
+    const build = document.getElementById('cosmicPlannerBuild');
+    if (!section || !build) return;
+    const isKo = ko();
+    build.textContent = isKo ? '24시간 기하 계획 만들기' : 'Build 24-hour geometry plan';
+    build.disabled = !this._astronomyObservation;
+    const hasResult = !!(this._observationPlan || this._plannerError);
+    section.hidden = !hasResult;
+    if (!hasResult) return;
+
+    const plan = this._observationPlan;
+    const stale = this._observationPlanStatus === 'STALE';
+    const error = this._observationPlanStatus === 'ERROR';
+    const noFeasible = plan?.result === 'NO_FEASIBLE';
+    section.dataset.state = error ? 'error' : stale ? 'stale' : noFeasible ? 'no-feasible' : 'current';
+    document.getElementById('cosmicPlannerTitle').textContent = isKo ? '화성 기하 계획' : 'Mars geometry plan';
+    document.getElementById('cosmicPlannerStatus').textContent = error
+      ? 'ERROR' : stale ? 'STALE' : noFeasible ? 'NO FEASIBLE' : 'GEOMETRY';
+    document.getElementById('cosmicPlannerRebuild').textContent = isKo
+      ? (stale ? '바뀐 입력으로 다시 계산' : '같은 입력 다시 계산')
+      : (stale ? 'Rebuild with changed input' : 'Rebuild same input');
+    document.getElementById('cosmicPlannerDownload').textContent = isKo
+      ? '계획 JSON 저장' : 'Save plan JSON';
+    document.getElementById('cosmicPlannerDefinition').textContent = isKo
+      ? 'USNO 박명 정의' : 'USNO twilight definition';
+    const windows = document.getElementById('cosmicPlannerWindows');
+    windows.replaceChildren();
+
+    if (error || !plan) {
+      document.getElementById('cosmicPlannerContext').textContent = isKo
+        ? '계획 입력을 검증하지 못했습니다.' : 'Planner input could not be validated.';
+      const item = document.createElement('li');
+      item.textContent = this._plannerError || 'OBSERVATION_PLAN_FAILED';
+      windows.append(item);
+      document.getElementById('cosmicPlannerEvidence').textContent = isKo
+        ? '계산값 없음 · 관측 n 해당 없음' : 'No calculation · observation n not applicable';
+      document.getElementById('cosmicPlannerLimits').textContent = isKo
+        ? '실패를 기본 성공값으로 바꾸지 않았습니다.' : 'Failure was not replaced with a default success.';
+    } else {
+      const criteria = plan.input.criteria;
+      document.getElementById('cosmicPlannerContext').textContent =
+        `UTC ${plannerUtc(plan.input.availability.startUtc)} → ${plannerUtc(plan.input.availability.endUtc)} · Mars ≥ ${criteria.marsAltitudeMinDeg}° · Sun ≤ ${criteria.sunAltitudeMaxDeg}°`;
+      if (stale) {
+        const item = document.createElement('li');
+        item.textContent = isKo
+          ? '위치 또는 UTC가 바뀌어 아래 이전 계획은 현재 입력에 사용할 수 없습니다.'
+          : 'Location or UTC changed; the previous plan below is not valid for the current input.';
+        windows.append(item);
+      }
+      if (noFeasible) {
+        const item = document.createElement('li');
+        item.textContent = isKo
+          ? '이 24시간 계산 격자에는 두 기하 조건의 교집합이 없습니다.'
+          : 'No grid sample in this 24-hour window satisfies both geometry constraints.';
+        const note = document.createElement('small');
+        note.textContent = isKo
+          ? '관측 불가 결론이 아닙니다. 날씨·현지 지평선·달·장비는 평가하지 않았습니다.'
+          : 'This is not an unobservable claim; weather, local horizon, Moon, and equipment were not evaluated.';
+        item.append(note); windows.append(item);
+      } else {
+        plan.windows.forEach((window, index) => {
+          const item = document.createElement('li');
+          item.textContent = `${isKo ? '후보' : 'Candidate'} ${index + 1} · ${plannerUtc(window.startUtc)} → ${plannerUtc(window.endUtc)}`;
+          const note = document.createElement('small');
+          note.textContent = `${isKo ? '격자 최고점' : 'Grid peak'} ${plannerUtc(window.peak.utc)} · Mars ${signedDegrees(window.peak.marsAltitudeDeg)} · Sun ${signedDegrees(window.peak.sunAltitudeDeg)}`;
+          item.append(note); windows.append(item);
+        });
+      }
+      document.getElementById('cosmicPlannerEvidence').textContent =
+        `${plan.revision} · ${isKo ? '계산 격자' : 'calculation grid'} ${plan.evidence.calculationSampleCount} · ${isKo ? '관측 n 해당 없음' : 'observation n not applicable'}`;
+      document.getElementById('cosmicPlannerLimits').textContent = isKo
+        ? '제한된 기하 후보 · 날씨·빛공해·현지 지평선·달·장비 미포함 · 성공률·안전·이동·조준 판정 아님 · JSON은 계획 데이터만 포함'
+        : 'Limited geometry candidate · no weather, light pollution, local horizon, Moon, or equipment · not a success, safety, travel, or pointing claim · JSON contains plan data only';
+    }
+    document.getElementById('cosmicPlannerDownload').disabled = !this._offlinePlanManifest;
+  },
+
+  downloadObservationPlan() {
+    if (!this._offlinePlanManifest || !this._observationPlan) return false;
+    const blob = new Blob([`${JSON.stringify(this._offlinePlanManifest, null, 2)}\n`], {
+      type: 'application/json;charset=utf-8',
+    });
+    const href = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = href;
+    link.download = `aetherus-mars-plan-${this._observationPlan.revision}.json`;
+    document.body.append(link);
+    link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(href), 0);
+    return true;
   },
 
   showAstronomy(body) {
@@ -1750,6 +1907,7 @@ export const cosmic3d = {
     document.getElementById('cosmicAstronomyLocation').textContent = isKo
       ? '내 위치 사용 · URL에 약 1km 위치 포함'
       : 'Use my location · adds ~1 km location to URL';
+    this.showObservationPlanner();
 
     if (!observation) {
       document.getElementById('cosmicAstronomyContext').textContent = isKo
@@ -1758,6 +1916,7 @@ export const cosmic3d = {
       document.getElementById('cosmicAstronomyHorizon').textContent = isKo
         ? '계산할 수 없음' : 'Calculation unavailable';
       document.getElementById('cosmicAstronomyLimit').textContent = this._astronomyError || 'ASTRONOMY_CALCULATION_FAILED';
+      this.showObservationPlanner();
       return;
     }
 
@@ -1788,6 +1947,7 @@ export const cosmic3d = {
     document.getElementById('cosmicAstronomyLimit').textContent = isKo
       ? '계산값 · n 해당 없음 · 대기굴절·시차·현지 지평선·주광·날씨 미포함 · 망원경 조준용 아님'
       : 'Calculated · n not applicable · no refraction, parallax, local horizon, daylight, or weather · not for telescope pointing';
+    this.showObservationPlanner();
   },
 
   recalculateAstronomyNow() {
@@ -1832,10 +1992,16 @@ export const cosmic3d = {
     this._astronomyAt = null;
     this._astronomyPrecision = null;
     this._astronomyError = null;
+    this._observationPlan = null;
+    this._observationPlanStatus = null;
+    this._offlinePlanManifest = null;
+    this._plannerError = null;
     this.bodyInfo?.classList.remove('has-astronomy');
     document.body.classList.remove('aetherus-astronomy-open');
     const section = document.getElementById('cosmicAstronomy');
     if (section) section.hidden = true;
+    const planner = document.getElementById('cosmicPlanner');
+    if (planner) planner.hidden = true;
   },
 
   closeBody(render = true) {
@@ -2204,6 +2370,9 @@ export const cosmic3d = {
     document.getElementById('cosmicBodyBack')?.addEventListener('click', () => this.closeBody());
     document.getElementById('cosmicAstronomyNow')?.addEventListener('click', () => this.recalculateAstronomyNow());
     document.getElementById('cosmicAstronomyLocation')?.addEventListener('click', () => this.useAstronomyLocation());
+    document.getElementById('cosmicPlannerBuild')?.addEventListener('click', () => this.buildObservationPlan());
+    document.getElementById('cosmicPlannerRebuild')?.addEventListener('click', () => this.buildObservationPlan());
+    document.getElementById('cosmicPlannerDownload')?.addEventListener('click', () => this.downloadObservationPlan());
     document.getElementById('cosmicPhotoBack')?.addEventListener('click', () => this.closePhotoAtlas());
     document.getElementById('cosmicPhotoFilters')?.querySelectorAll('[data-telescope]').forEach(button => {
       button.addEventListener('click', () => this.openPhotoAtlas(button.dataset.telescope));

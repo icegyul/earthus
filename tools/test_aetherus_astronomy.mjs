@@ -70,14 +70,14 @@ const encoded = routes.encodeAetherusRoute({
   at: fixture.rows[0].utc,
   precision: 'explorer',
 }, 'https://earthus.net/?lang=ko#dev');
-assert.equal(encoded.searchParams.get('aetherus'), '2');
+assert.equal(encoded.searchParams.get('aetherus'), '3');
 assert.equal(encoded.searchParams.get('observer'), '37.46,126.71');
 assert.equal(encoded.searchParams.get('at'), fixture.rows[0].utc);
 assert.equal(encoded.searchParams.get('precision'), 'explorer');
 assert.ok(!encoded.href.includes('accuracy'));
 
 const decoded = routes.decodeAetherusRoute(encoded);
-assert.equal(decoded.version, 2);
+assert.equal(decoded.version, 3);
 assert.deepEqual(decoded.observer, { id: null, source: 'shared', lat: 37.46, lon: 126.71 });
 assert.equal(decoded.at, fixture.rows[0].utc);
 assert.equal(decoded.precision, 'explorer');
@@ -95,7 +95,7 @@ const invalidObserver = routes.decodeAetherusRoute('?aetherus=2&solar=1&target=m
 assert.ok(invalidObserver.issues.includes('INVALID_OBSERVER'));
 assert.equal(invalidObserver.observer, null);
 
-const unsupported = routes.decodeAetherusRoute('?aetherus=3&solar=1');
+const unsupported = routes.decodeAetherusRoute('?aetherus=4&solar=1');
 assert.deepEqual([...unsupported.issues], ['UNSUPPORTED_VERSION']);
 
 console.log(`PASS: ${fixture.rows.length} JPL Mars fixtures, 3 engine failures, and 5 astronomy route/privacy cases`);

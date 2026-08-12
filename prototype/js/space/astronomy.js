@@ -1,4 +1,4 @@
-// Aetherus Astronomy Vertical Slice — 화성 관측자 기준 계산
+// Aetherus Astronomy Vertical Slice — 화성·태양 관측자 기준 계산
 //
 // 입력: target + observer geodetic lat/lon + UTC instant
 // 출력: J2000/ICRF 근사 RA·Dec, 거리, 기하학적 고도·방위각, 정밀도/출처 계약
@@ -204,6 +204,76 @@ export function calculateMarsObservation({ observer, at = new Date(), precision 
       sourceUrl: 'https://ssd.jpl.nasa.gov/planets/approx_pos.html',
       comparisonSource: 'NASA/JPL Horizons observer ephemeris',
       comparisonUrl: 'https://ssd-api.jpl.nasa.gov/doc/horizons.html',
+    }),
+  });
+}
+
+// Observation Planner의 주광 경계에만 쓰는 태양 중심의 기하학적 위치다.
+// Earth/Moon barycenter 근사 벡터의 반대 방향을 사용하므로 일출·일몰 시각이나
+// 태양 관측 안전 판정으로 승격하지 않는다. -18° 기준의 의미는 USNO 정의를 따르되,
+// 현지 지평선·굴절이 없는 15분 계산 격자라는 제한을 Planner가 함께 표시한다.
+export function calculateSunObservation({ observer, at = new Date(), precision = 'explorer' } = {}) {
+  if (precision !== 'explorer') throw new RangeError('PRECISION_TIER_UNAVAILABLE');
+  const date = normalizedDate(at);
+  const normalizedObserver = normalizeAstronomyObserver(observer);
+  const earth = planetPosition('earth', date);
+  const ecliptic = { x: -earth.x, y: -earth.y, z: -earth.z };
+  const obliquity = J2000_OBLIQUITY_DEG * DEG;
+  const equatorial = {
+    x: ecliptic.x,
+    y: Math.cos(obliquity) * ecliptic.y - Math.sin(obliquity) * ecliptic.z,
+    z: Math.sin(obliquity) * ecliptic.y + Math.cos(obliquity) * ecliptic.z,
+  };
+  const distanceAu = Math.hypot(equatorial.x, equatorial.y, equatorial.z);
+  const raDeg = wrap360(Math.atan2(equatorial.y, equatorial.x) * RAD);
+  const decDeg = Math.asin(equatorial.z / distanceAu) * RAD;
+  const equatorialOfDate = precessJ2000ToDate({ raDeg, decDeg, at: date });
+  const horizontal = equatorialToHorizontal({
+    raDeg: equatorialOfDate.raDeg,
+    decDeg: equatorialOfDate.decDeg,
+    observer: normalizedObserver,
+    at: date,
+  });
+
+  return Object.freeze({
+    schema: 'earthus.astronomy-observation.v1',
+    target: 'sun',
+    observer: normalizedObserver,
+    time: Object.freeze({
+      utc: date.toISOString(),
+      julianDateUtc: julianDate(date),
+      inputScale: 'UTC',
+      dynamicsApproximation: 'UTC used as JDTDB at Explorer precision',
+    }),
+    coordinates: Object.freeze({
+      raDeg,
+      decDeg,
+      distanceAu,
+      frame: 'approximate-ICRF-J2000-geocentric',
+      equatorialOfDate,
+      horizontal,
+    }),
+    horizon: horizontal.altitudeDeg >= 0 ? 'above' : 'below',
+    precision: Object.freeze({
+      tier: ASTRONOMY_PRECISION.tier,
+      comparisonGateDeg: ASTRONOMY_PRECISION.comparisonGateDeg,
+      validFrom: ASTRONOMY_PRECISION.validFrom,
+      validUntil: ASTRONOMY_PRECISION.validUntil,
+      limitations: Object.freeze([
+        'earth-moon-barycenter-used-for-earth',
+        'no-light-time-aberration-nutation',
+        'no-topocentric-parallax-or-refraction',
+        'no-local-horizon-weather-or-solar-safety',
+      ]),
+    }),
+    provenance: Object.freeze({
+      kind: 'calculated',
+      sampleCount: null,
+      sampleReason: 'deterministic calculation, not an observation sample',
+      sourceName: 'NASA/JPL Solar System Dynamics · Approximate Positions of the Planets',
+      sourceUrl: 'https://ssd.jpl.nasa.gov/planets/approx_pos.html',
+      definitionSource: 'U.S. Naval Observatory · Rise, Set, and Twilight Definitions',
+      definitionUrl: 'https://aa.usno.navy.mil/faq/RST_defs',
     }),
   });
 }

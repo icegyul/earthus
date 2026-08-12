@@ -25,6 +25,7 @@ BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 TRACKS_KEY = "events/cyclone-tracks.json"
 DST = "wind/ascat-observations.json"
+STATUS_DST = "wind/status/ascat-observations.json"
 BASE = "https://coastwatch.noaa.gov/pub/socd1/coastwatch/products/ascat/4hr/hdf"
 UA = {"User-Agent": "earthus/0.1 (+https://earthus.net)"}
 
@@ -35,6 +36,28 @@ SEARCH_HOURS = 36
 COMBINATIONS = (("B", "a"), ("B", "d"), ("C", "a"), ("C", "d"))
 
 s3 = boto3.client("s3", region_name=REGION)
+
+
+def write_status(now, state, reason, output_written, **details):
+    """last-good ASCAT 셀과 실행 heartbeat를 분리한다.
+
+    활성 태풍 주변을 위성 궤도가 지나지 않은 실행은 관측 0이나 수집기 장애가 아니다.
+    자료 파일을 빈 값으로 덮지 않고, 그 결측 사유만 별도 상태 파일에 기록한다.
+    """
+    doc = {
+        "schema": 1,
+        "collector": "ascat-observations",
+        "generated": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "state": state,
+        "reason": reason,
+        "outputKey": DST,
+        "outputWritten": bool(output_written),
+    }
+    doc.update({key: value for key, value in details.items() if value is not None})
+    body = json.dumps(doc, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    s3.put_object(Bucket=BUCKET, Key=STATUS_DST, Body=body,
+                  ContentType="application/json; charset=utf-8", CacheControl="no-cache")
+    return doc
 
 
 def dist_km(a_lat, a_lon, b_lat, b_lon):
@@ -188,12 +211,23 @@ def file_cells(info, centres):
 
 def handler(event=None, context=None):
     now = datetime.now(timezone.utc)
-    centres, tracks_generated = active_centres()
+    try:
+        centres, tracks_generated = active_centres()
+    except Exception as exc:
+        reason = f"cyclone-input: {type(exc).__name__}"
+        write_status(now, "FAILED", reason, False)
+        raise
     if not centres:
-        return {"ok": True, "cells": 0, "reason": "no-live-cyclones"}
+        write_status(now, "IDLE_NO_LIVE_CYCLONES", "no-live-cyclones", False,
+                     activeCycloneCount=0, tracksGenerated=tracks_generated)
+        return {"ok": True, "cells": 0, "reason": "no-live-cyclones",
+                "status": "IDLE_NO_LIVE_CYCLONES"}
 
     files = latest_files(now)
     if not files:
+        write_status(now, "FAILED", "no-ascat-files-in-search-window", False,
+                     activeCycloneCount=len(centres), tracksGenerated=tracks_generated,
+                     fileCount=0, failureCount=0)
         return {"ok": False, "reason": "no-ascat-files-in-search-window"}
 
     cells, failures = [], []
@@ -212,8 +246,19 @@ def handler(event=None, context=None):
             unique[key] = cell
     cells = sorted(unique.values(), key=lambda cell: (cell["lat"], cell["lon"]))
     if not cells:
+        all_files_failed = len(failures) == len(files)
+        if all_files_failed:
+            status_state, status_reason = "FAILED", "all-ascat-files-failed"
+        elif failures:
+            status_state, status_reason = "PARTIAL_NO_COVERAGE", "partial-file-failure-and-no-cells"
+        else:
+            status_state, status_reason = "NO_COVERAGE", "no-cells-near-live-cyclones"
+        write_status(now, status_state, status_reason, False,
+                     activeCycloneCount=len(centres), tracksGenerated=tracks_generated,
+                     fileCount=len(files), cellCount=0, failureCount=len(failures))
         return {"ok": False, "reason": "no-cells-near-live-cyclones",
-                "files": [item["name"] for item in files], "failures": failures}
+                "files": [item["name"] for item in files], "failures": failures,
+                "status": status_state}
 
     doc = {
         "schema": 1,
@@ -240,5 +285,12 @@ def handler(event=None, context=None):
     s3.put_object(Bucket=BUCKET, Key=DST, Body=body,
                   ContentType="application/json; charset=utf-8",
                   CacheControl="public, max-age=3600")
+    status_state = "PARTIAL" if failures else "SUCCEEDED"
+    status_reason = "partial-file-failure" if failures else "ascat-cells-written"
+    write_status(now, status_state, status_reason, True,
+                 activeCycloneCount=len(centres), tracksGenerated=tracks_generated,
+                 dataGenerated=doc["generated"], fileCount=len(files),
+                 cellCount=len(cells), failureCount=len(failures))
     print(f"[ascat] files {len(files)} · cells {len(cells)} · failures {len(failures)}")
-    return {"ok": True, "files": len(files), "cells": len(cells), "failures": failures}
+    return {"ok": True, "files": len(files), "cells": len(cells),
+            "failures": failures, "status": status_state}

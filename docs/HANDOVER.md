@@ -42,6 +42,15 @@ authoritative reader 전환은 미승인이다. 실행 정본은
 [`earthus-v23/RIGHTS_FRESHNESS.md`](earthus-v23/RIGHTS_FRESHNESS.md), 운영 증거는
 [`earthus-v23/RELEASE-2026-08-12-PR02-SHADOW.md`](earthus-v23/RELEASE-2026-08-12-PR02-SHADOW.md)다.
 
+후속 **“계속 진행해”** 지시로 AWS 운영 인벤토리를 실제 서울 리전과 대조했다. 로컬 실행
+단위는 Python 66+Node 2=68개, 서울 배포는 `news-brief`를 제외한 67개다. runtime·VPC 0·
+구성 상태와 Lambda policy가 참조한 EventBridge 57개 enabled를 확인했고, 운영에 없던
+`cwa-observations` 10분·`ascat-observations` 4시간 rule을 복구했다. 두 수집기는 last-good과
+분리된 공개 heartbeat를 남기며 `health`가 CWA 성공, ASCAT 위성 비통과, 부분실패·실패·지연을
+서로 다르게 보존한다. target 전수·CloudWatch metric/alarm·log retention은 읽기 권한 부재로
+`UNKNOWN`이다. 정본은
+[`earthus-v23/AWS_PRODUCTION_INVENTORY.md`](earthus-v23/AWS_PRODUCTION_INVENTORY.md)다.
+
 PD의 세 번째 **“계속 진행해”** 지시로 PR-03 Earth View State도 로컬 구현했다. query 없는
 첫 화면은 아름다운 Earth View로 유지하고, 사용자가 고른 Style→Data→Evidence 상태만
 접두어가 있는 URL에 남겨 공유·새로고침·뒤로가기로 복원한다. URL 계약 11개와 데스크톱·
@@ -172,7 +181,7 @@ prototype/        ← 서비스 전체 (정적 웹앱, 빌드 없음, 그대로 
   css/app.css     스타일 전부
   legal/          이용약관·개인정보처리방침 (시행 2026-08-04)
   events/·obs/    (없음 — 데이터는 전부 S3 에서 옴)
-aws/              handler.py 66개 (source 64 + 미배포 shadow processor 2)
+aws/              Python handler.py 66개 + Node index.mjs 2개 (로컬 실행 단위 68)
   deploy-python.sh  Lambda 배포   schedules.sh  EventBridge 등록
   fx-grid/        예보 격자(타임라인용)  cyclone-analog/  IBTrACS 유사경로
 docs/
@@ -235,9 +244,10 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
 
 ## 6. 데이터 파이프라인
 
-- **source/data handler 64개** (aws/ 폴더당 하나) → S3 JSON → 앱이 fetch.
+- **source/data Python handler 64개** (aws/ 폴더당 하나) → S3 JSON → 앱이 fetch.
   별도로 서울 수동 shadow Lambda `signal-foundation`, `source-governance` 2개가 있어
-  코드의 `handler.py`는 총 66개다.
+  Python `handler.py`는 총 66개다. Node 실행 단위 `celestrak-proxy`, `spot-air`까지
+  로컬은 68개이며 서울에는 `news-brief`를 제외한 67개가 배포돼 있다.
   스키마는 각 handler.py 상단 주석과 `docs/earthus-v23/schema/`에 있다.
 - 새 Lambda: `bash aws/deploy-python.sh 폴더명` (requirements.txt 없으면 빈 파일이라도 둘 것 —
   없으면 NetCDF 용 30MB 기본 의존성이 딸려간다). 스케줄은 schedules.sh 패턴으로 EventBridge.

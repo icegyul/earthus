@@ -146,6 +146,13 @@ WATCH = [
     #    동아시아만 0.5° 로 따로 잰다.
     {"key": "ocean/marine-ea.json", "everyMin": 60, "graceMin": 120,
      "ko": "동아시아 해양 격자 (0.5°)"},
+    # ⚠️ 관측 자료 본문만 감시하면 두 종류의 고장을 놓친다.
+    #    CWA는 인증/일부 feed 실패가, ASCAT은 정상적인 위성 비통과가 last-good 뒤에 숨는다.
+    #    수집기가 별도로 남기는 heartbeat의 실행 결과와 나이를 함께 본다.
+    {"key": "wind/status/cwa-observations.json", "everyMin": 10, "graceMin": 25,
+     "ko": "대만 CWA 관측 수집 실행", "collectorStatus": True},
+    {"key": "wind/status/ascat-observations.json", "everyMin": 240, "graceMin": 180,
+     "ko": "NOAA ASCAT 해상풍 수집 실행", "collectorStatus": True},
 ]
 
 # ── 축적형: **있어야 할 파일이 실제로 있는가** ─────────────────
@@ -261,6 +268,30 @@ def generated_of(key):
     return None
 
 
+def collector_status_of(key):
+    """공개 heartbeat의 제한된 필드만 읽는다. provider 응답·비밀값은 상태에 없다."""
+    try:
+        body = s3.get_object(Bucket=BUCKET, Key=key)["Body"].read(16384)
+        doc = json.loads(body)
+        if not isinstance(doc, dict):
+            return None
+        return {name: doc.get(name) for name in (
+            "state", "reason", "outputWritten", "dataGenerated",
+            "stationCount", "cellCount", "failureCount",
+        )}
+    except Exception:                                        # noqa: BLE001
+        return None
+
+
+def collector_verdict(freshness_state, status):
+    """heartbeat freshness와 실행 결과를 한 축으로 뭉개지 않고 보수적으로 합친다."""
+    if status is None:
+        return "dead"
+    if status.get("state") in ("FAILED", "PARTIAL", "PARTIAL_NO_COVERAGE"):
+        return "late" if freshness_state == "ok" else freshness_state
+    return freshness_state
+
+
 def handler(event=None, context=None):
     global NOW
     NOW = datetime.now(timezone.utc)
@@ -278,14 +309,33 @@ def handler(event=None, context=None):
                           "ageMin": None, "expectMin": w["everyMin"]})
             continue
         a = round(age_min(ref))
-        items.append({
+        state = verdict(a, w["everyMin"], w["graceMin"])
+        status = collector_status_of(w["key"]) if w.get("collectorStatus") else None
+        # heartbeat가 제때 왔어도 수집기 자체가 실패/부분실패면 정상으로 숨기지 않는다.
+        # NO_COVERAGE와 IDLE은 장애가 아니라 관측 결측/대기 상태라 freshness만 판정한다.
+        if w.get("collectorStatus"):
+            state = collector_verdict(state, status)
+        item = {
             "key": w["key"], "ko": w["ko"],
-            "state": verdict(a, w["everyMin"], w["graceMin"]),
+            "state": state,
             "critical": bool(w.get("critical")),
             "ageMin": a, "expectMin": w["everyMin"],
             "generated": gen.strftime("%Y-%m-%dT%H:%MZ") if gen else None,
             "written": lm.strftime("%Y-%m-%dT%H:%MZ") if lm else None,
-        })
+        }
+        if status:
+            sample_count = status.get("stationCount")
+            if sample_count is None:
+                sample_count = status.get("cellCount")
+            item.update({
+                "collectorState": status.get("state"),
+                "reason": status.get("reason"),
+                "outputWritten": status.get("outputWritten"),
+                "dataGenerated": status.get("dataGenerated"),
+                "sampleCount": sample_count,
+                "failureCount": status.get("failureCount"),
+            })
+        items.append(item)
 
     for g in EXPECTED:
         slots = g["fn"](NOW)

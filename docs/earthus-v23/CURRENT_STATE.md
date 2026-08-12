@@ -14,7 +14,7 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 |---|---|---|
 | 프런트 | `prototype/` 정적 파일 29개, `prototype/js/` 최상위 101개 | 빌드 없음 |
 | 레이어 코드 | `prototype/js/layers/` 25개 | 기존 구조 보존 |
-| Python Lambda | `aws/*/handler.py` 66개 | source handler 64개 + 서울 수동 shadow Lambda 2개 |
+| Lambda 실행 단위 | 로컬 68개·서울 배포 67개 | Python 66 + Node 2; `news-brief`만 local-only |
 | Supabase 함수 | 로컬/운영 endpoint 6개 | 익명·publishable-key fail-closed 경계 실측 |
 | Supabase migration | 로컬 timestamp 4개 | 후속 column/relation 존재; remote version/checksum은 `UNKNOWN` |
 | 배포 | S3 정적 업로드 + CloudFront 무효화 | 파일별 Content-Type 필수 |
@@ -66,7 +66,7 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 
 | 항목 | 문서 상태 | 현재 코드/화면 | 처리 |
 |---|---|---|---|
-| Lambda 수 | HANDOVER 과거값 54개 | 코드 66개 | source 64 + 미배포 `signal-foundation`·`source-governance` |
+| Lambda 수 | HANDOVER 과거값 54개 | 로컬 68·서울 67 | Python 66 + Node 2; shadow 2개 배포, `news-brief`만 미배포 |
 | Supabase 경로 | `supabase/functions/` | `prototype/supabase/functions/` | HANDOVER 저장소 지도 수정 완료 |
 | AETHERUS 모바일 선택 | 선택 뒤 메뉴가 닫히지 않음 | 태양계 선택 뒤 닫힘 확인 | 과거 gap을 완료로 갱신 |
 | AETHERUS URL | 복원되지 않음 | 태양계 선택 뒤에도 `/` | gap 유지 |
@@ -96,9 +96,14 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 
 ## 6. 운영 전 확인이 필요한 것
 
-- AWS 계정 기준선 63개와 로컬 신규 `tpw-grid`, `signal-foundation`, `source-governance`의
-  배포 여부·region·VPC·schedule·timeout·last success
-- 서울 Lambda에서 기상청 새 특보 API, KMA APIHub, CWA, JMA, Open-Meteo의 실제 응답
+- AWS 서울 리전 67개 함수의 runtime·architecture·VPC·timeout·memory와 Lambda policy가
+  참조한 EventBridge rule 57개 enabled는 전수 확인했다. target 상세·최근 성공·CloudWatch
+  metric/alarm·log retention·concurrency는 read 권한 부재로 `UNKNOWN`이다.
+- `cwa-observations`·`ascat-observations` 누락 schedule은 복구했다. CWA는 갱신됐고 ASCAT은
+  최신 궤도에 활성 태풍 주변 usable cell이 없어 last-good이 유지됐다. 두 collector는
+  last-good과 분리한 heartbeat를 쓰고 `health`가 성공·부분실패·비통과·지연을 구분한다.
+  정본은 `AWS_PRODUCTION_INVENTORY.md`다.
+- 서울 Lambda에서 JMA·Open-Meteo를 포함한 나머지 provider 실제 응답·quota·비용 전수 확인
 - S3 공개/비공개 prefix와 객체별 Content-Type/Cache-Control/권리 만료
 - Supabase remote migration checksum, `pg_policies`/FORCE RLS, Edge Function version,
   private Storage·tenant A/B는 management/DB 읽기 접근 전까지 `UNKNOWN`

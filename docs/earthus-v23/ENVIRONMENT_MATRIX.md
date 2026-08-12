@@ -7,7 +7,7 @@
 | 자원 | local/dev | staging | production | 현재 gap |
 |---|---|---|---|---|
 | 정적 앱 | `prototype/` 직접 실행 | 별도 자원 확인 안 됨 | S3 `earthus-cache-kr/app/` + CloudFront | staging 없음 |
-| Lambda | 로컬 handler/fixture | 별도 계정·함수 확인 안 됨 | 배포 스크립트 기준 `ap-northeast-2` | 실제 함수·VPC·version 전수 미확인 |
+| Lambda | 로컬 68개 실행 단위/fixture | 별도 계정·함수 확인 안 됨 | 서울 67개, x86_64, VPC 0, Active/Successful 67 | target/metric/alarm/log retention/concurrency 읽기 권한 부재 |
 | 데이터 버킷 | fixture/로컬 파일 | 별도 버킷 확인 안 됨 | `earthus-cache-kr`, `us-east-2` | Lambda↔bucket cross-region 비용 |
 | Supabase | 로컬 SQL | 별도 project 확인 안 됨 | 도쿄 project public surface·14 relation·6 function 확인 | migration/policy/version·tenant A/B 읽기 접근 부재 |
 | 설정 | `config.local.js` gitignore | 미정 | 같은 파일의 운영값 | 환경별 생성/검증 manifest 없음 |
@@ -62,7 +62,10 @@ AWS 공식 문서에 따르면 VPC에 연결한 Lambda는 private subnet→NAT/e
 
 근거: <https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc-internet.html>
 
-현재 P0에서는 운영 Lambda를 새로 배포하거나 호출하지 않았으므로 이 체크는 `PENDING`이다.
+현재 67개 운영 Lambda는 모두 VPC 미연결이라 private subnet/NAT 체크 대상은 아니다.
+PR-00A/01/02와 CWA/ASCAT 일부 provider는 서울 함수에서 호출했지만, 전체 provider의
+DNS/TLS/error body/429/quota/비용 전수 검사는 `PENDING`이다. 근거는
+`AWS_PRODUCTION_INVENTORY.md`다.
 
 ## 5. Cutover 순서
 

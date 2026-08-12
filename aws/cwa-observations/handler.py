@@ -30,10 +30,34 @@ AUTH_PARAMETER = os.environ.get("CWA_AUTH_PARAMETER", "/earthus/cwa/api-auth-cod
 API = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/{}"
 DATASETS = (("land", "O-A0001-001"), ("buoy", "O-B0075-001"))
 DST = "wind/cwa-observations.json"
+STATUS_DST = "wind/status/cwa-observations.json"
 UA = {"User-Agent": "earthus/0.1 (+https://earthus.net)"}
 
 s3 = boto3.client("s3", region_name=REGION)
 ssm = boto3.client("ssm", region_name=REGION)
+
+
+def write_status(now, state, reason, output_written, **details):
+    """마지막 관측 자료를 덮지 않고 수집기 실행 상태만 별도 기록한다.
+
+    ⚠️ EventBridge는 handler가 ``ok: false``를 반환해도 Lambda 호출 자체는 성공으로 센다.
+    그래서 자료 파일의 나이만 보면 인증 실패·부분 실패와 단순 캐시 지연을 구분할 수 없다.
+    비밀값과 provider 응답 본문은 넣지 않고 상태·개수만 공개 heartbeat에 남긴다.
+    """
+    doc = {
+        "schema": 1,
+        "collector": "cwa-observations",
+        "generated": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "state": state,
+        "reason": reason,
+        "outputKey": DST,
+        "outputWritten": bool(output_written),
+    }
+    doc.update({key: value for key, value in details.items() if value is not None})
+    body = json.dumps(doc, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    s3.put_object(Bucket=BUCKET, Key=STATUS_DST, Body=body,
+                  ContentType="application/json; charset=utf-8", CacheControl="no-cache")
+    return doc
 
 
 def number(value, lo=None, hi=None):
@@ -154,11 +178,15 @@ def fetch(dataset, token):
 
 
 def handler(event=None, context=None):
+    now_dt = datetime.now(timezone.utc)
     try:
         token = ssm.get_parameter(Name=AUTH_PARAMETER, WithDecryption=True)["Parameter"]["Value"].strip()
     except Exception as exc:  # 값은 절대 로그에 넣지 않는다.
-        return {"ok": False, "reason": f"cwa-auth-parameter: {type(exc).__name__}"}
+        reason = f"cwa-auth-parameter: {type(exc).__name__}"
+        write_status(now_dt, "FAILED", reason, False)
+        return {"ok": False, "reason": reason}
     if not token:
+        write_status(now_dt, "FAILED", "cwa-auth-parameter-empty", False)
         return {"ok": False, "reason": "cwa-auth-parameter-empty"}
 
     stations, feeds, failures = [], [], []
@@ -180,9 +208,11 @@ def handler(event=None, context=None):
         unique[(row["platform"], row["sourceStationId"], row.get("observed"))] = row
     stations = sorted(unique.values(), key=lambda row: (row["platform"], row["sourceStationId"]))
     if not stations:
+        write_status(now_dt, "FAILED", "no-usable-cwa-observations", False,
+                     feedCount=len(feeds), failureCount=len(failures))
         return {"ok": False, "reason": "no-usable-cwa-observations", "feeds": feeds, "failures": failures}
 
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = now_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     doc = {
         "schema": 1,
         "generated": now,
@@ -199,6 +229,12 @@ def handler(event=None, context=None):
     body = json.dumps(doc, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
     s3.put_object(Bucket=BUCKET, Key=DST, Body=body,
                   ContentType="application/json; charset=utf-8", CacheControl="public, max-age=600")
+    status_state = "PARTIAL" if failures else "SUCCEEDED"
+    status_reason = "partial-source-failure" if failures else "all-requested-feeds-processed"
+    write_status(now_dt, status_state, status_reason, True,
+                 dataGenerated=now, stationCount=len(stations),
+                 landCount=doc["landCount"], buoyCount=doc["buoyCount"],
+                 feedCount=len(feeds), failureCount=len(failures))
     print(f"[cwa] usable {len(stations)} · land {doc['landCount']} · buoy {doc['buoyCount']} · failures {len(failures)}")
     return {"ok": True, "count": len(stations), "land": doc["landCount"],
-            "buoy": doc["buoyCount"], "failures": failures}
+            "buoy": doc["buoyCount"], "failures": failures, "status": status_state}

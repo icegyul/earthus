@@ -1,7 +1,7 @@
 # TPW 수증기 통로 — PR-00A 실행 계약
 
 > 승인: 2026-08-12 PD 직접 지시
-> 상태: 로컬 코드·NOAA 실파일·실화면 검증 완료 · 서울 Lambda/S3/flag/배포 대기
+> 상태: 서울 Lambda·시간당 schedule·운영 S3/CloudFront·임시 flag-on 실화면 검증 완료 · 공개 flag 승인 대기
 
 ## 1. 사용자 결과
 
@@ -67,4 +67,17 @@ NOAA GFS total_column_integrated_water_vapour
 임시 실화면에서 첫 지구 보존, 단계색, 서울 31mm·부산 25mm 원격자 라벨,
 NOAA/시각/모델·비 아님 고지, 해제 후 라벨 제거, 390×844 진입, flag-off 검색
 우회 차단과 console warning/error 0을 확인했다. 단, 이는 AWS 서울 리전·S3·
-운영 CloudFront 검증을 대신하지 않는다. 5~8 전에는 운영 완료라고 부르지 않는다.
+운영 CloudFront 검증을 대신하지 않는다.
+
+같은 날 후속 진행에서 5~7도 완료했다. 서울 `ap-northeast-2`의 Python 3.12 x86_64
+Lambda가 ecCodes 패키지로 NOAA 06 UTC f000 PWAT 101,981 bytes를 해독했고,
+`wind/tpw-ea.json` 18,296 bytes를 AES256·JSON·30분 cache로 썼다. 결과는
+91×36=3,276/3,276, 결측 0, 4.7~77.4mm이며 S3와 CloudFront 바이트가 일치했다.
+1280×720과 390×844 임시 flag-on 화면은 source/run/valid/1°/n/비 아님 고지,
+10~70mm 등치선 115 paths·14 labels, 도시 원격자값, 가로 overflow 0을 통과했다.
+NOAA/NWS 공식 disclaimer의 public-domain·무상 lawful-use 조건과 attribution·비공식 변환
+표기를 재확인했다. EventBridge `tpw-grid-schedule`은 시간당 ENABLED이고 호출 정책도 연결됐다.
+
+8의 정적 파일 배포는 이미 잠긴 UI 계약으로 운영에 있으며 새 정적 변경은 없었다.
+이번 작업에서는 `TPW_READY=false`를 유지했다. 운영 공개는 PD가 별도로 true를 승인한 뒤
+flag 파일만 배포·CloudFront 무효화하고 query 없는 첫 Earth·모바일·console을 다시 검증한다.

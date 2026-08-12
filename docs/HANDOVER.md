@@ -19,8 +19,11 @@ EARTHUS 메뉴·레이어 표현·무료/유료 경계, AETHERUS 정보 구조·
 배포를 직접 지시해 PR-03 Earth View State와 TPW의 잠긴 정적 UI 계약은 운영 반영했다.
 이 예외는 통합 backend, 판매, SNS를 열지 않는다. TPW 운영 노출은 실제 NOAA 파일·시각·화면 검수 후
 `TPW_READY=true`로 따로 승인한다. `SALES_OPEN=false`와 SNS 자동 게시 금지는 그대로 유지한다.
-로컬에서 NOAA GRIB 전체 격자·데스크톱/모바일 실화면·flag-off 우회 차단은 통과했으나,
-AWS 서울 Lambda·TPW JSON 생성은 아직 미수행이다.
+로컬에 이어 AWS 서울 `tpw-grid` Lambda와 시간당 EventBridge 규칙을 배포했고,
+운영 `wind/tpw-ea.json` 91×36=3,276/3,276·결측 0, NOAA 원본 시각·출처·단위,
+CloudFront 동일 바이트와 1280×720·390×844 임시 flag-on 실화면까지 검증했다.
+운영 `TPW_READY`는 별도 공개 승인 전이라 여전히 false다. 정본 증거는
+[`earthus-v23/RELEASE-2026-08-12-TPW-BACKEND.md`](earthus-v23/RELEASE-2026-08-12-TPW-BACKEND.md)다.
 
 같은 날 PD의 **“다음꺼 진행해”** 지시로 PR-01 Signal Foundation도 로컬 구현했다.
 기존 공개 KMA 특보·AWS 기온·TPW JSON을 바꾸지 않고 `archive/canonical/v1/` 비공개

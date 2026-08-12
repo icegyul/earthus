@@ -37,19 +37,22 @@ if ! aws iam get-role --role-name "$ROLE" >/dev/null 2>&1; then
       "Version":"2012-10-17",
       "Statement":[{"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"}]
     }' >/dev/null
-  aws iam attach-role-policy --role-name "$ROLE" \
-    --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-  aws iam put-role-policy --role-name "$ROLE" --policy-name cache-bucket \
-    --policy-document "{
-      \"Version\":\"2012-10-17\",
-      \"Statement\":[{
-        \"Effect\":\"Allow\",
-        \"Action\":[\"s3:GetObject\",\"s3:PutObject\"],
-        \"Resource\":\"arn:aws:s3:::${BUCKET}/*\"
-      }]
-    }"
   sleep 10
 fi
+
+# ⚠️ TPW 함수는 공개 버킷 전체를 읽거나 쓸 이유가 없다. 산출물 한 개만 PutObject 한다.
+# 역할이 이미 있어도 매 배포마다 이 경계를 수렴시켜 예전 광범위 정책이 남지 않게 한다.
+aws iam attach-role-policy --role-name "$ROLE" \
+  --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+aws iam put-role-policy --role-name "$ROLE" --policy-name cache-bucket \
+  --policy-document "{
+    \"Version\":\"2012-10-17\",
+    \"Statement\":[{
+      \"Effect\":\"Allow\",
+      \"Action\":\"s3:PutObject\",
+      \"Resource\":\"arn:aws:s3:::${BUCKET}/wind/tpw-ea.json\"
+    }]
+  }"
 
 PKG_DIR="$(mktemp -d)"
 ZIP_PATH="/tmp/${FN}-grib.zip"
@@ -88,10 +91,29 @@ if aws lambda get-function --function-name "$FN" --region "$REGION" >/dev/null 2
   aws lambda update-function-code --function-name "$FN" --region "$REGION" \
     --zip-file "fileb://${ZIP_PATH}" --query LastModified --output text
   aws lambda wait function-updated --function-name "$FN" --region "$REGION" 2>/dev/null || sleep 8
+  # --environment 는 통째로 교체된다. 미래에 추가된 비밀·운영 설정을 배포가 지우지 않도록
+  # 기존 값을 읽어 CACHE_* 두 항목만 수렴시킨다. 값은 출력하지 않는다.
+  ENV_CURRENT="$(mktemp)"
+  ENV_NEXT="$(mktemp)"
+  chmod 600 "$ENV_CURRENT" "$ENV_NEXT"
+  aws lambda get-function-configuration --function-name "$FN" --region "$REGION" \
+    --query 'Environment.Variables' --output json > "$ENV_CURRENT"
+  CURRENT="$ENV_CURRENT" TARGET="$ENV_NEXT" CACHE_BUCKET="$BUCKET" CACHE_REGION="$BUCKET_REGION" \
+    python3 - <<'PY'
+# -*- coding: utf-8 -*-
+import json, os
+values = json.load(open(os.environ["CURRENT"], encoding="utf-8")) or {}
+values["CACHE_BUCKET"] = os.environ["CACHE_BUCKET"]
+values["CACHE_REGION"] = os.environ["CACHE_REGION"]
+with open(os.environ["TARGET"], "w", encoding="utf-8") as stream:
+    json.dump({"Variables": values}, stream)
+print("  · 환경변수 이름 보존: " + ", ".join(sorted(values)))
+PY
   aws lambda update-function-configuration --function-name "$FN" --region "$REGION" \
     --timeout "$TIMEOUT" --memory-size "$MEMORY" \
-    --environment "Variables={CACHE_BUCKET=${BUCKET},CACHE_REGION=${BUCKET_REGION}}" \
+    --environment "file://${ENV_NEXT}" \
     --query LastModified --output text
+  rm -f "$ENV_CURRENT" "$ENV_NEXT"
 else
   aws lambda create-function --function-name "$FN" --region "$REGION" \
     --runtime "python${PYVER}" --role "$ROLE_ARN" --handler handler.handler \

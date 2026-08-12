@@ -62,10 +62,11 @@
 - [ ] 실제 Supabase migration/function/RLS inventory
 - [ ] PD의 ADR·retention·비용 guardrail 승인
 - [ ] 2026-08-16 사용량 리셋 확인
-- [ ] `tpw-grid` 서울 리전 GRIB/ecCodes·S3 객체·NOAA attribution·시각 QA 후 `TPW_READY` 승인
+- [x] `tpw-grid` 서울 리전 GRIB/ecCodes·S3 객체·NOAA attribution·시각 QA
+- [ ] PD의 별도 `TPW_READY=true` 공개 승인
 
-PR-00A의 로컬 collector/unit/contract/문법·NOAA 실 GRIB·데스크톱/모바일 임시 실화면·
-flag-off 우회 차단은 통과했다. 위 미완료 항목은 AWS 서울 리전 배포와 운영 승인 gate다.
+PR-00A의 collector/unit/contract/문법·NOAA 실 GRIB, 서울 Lambda·시간당 schedule·운영 S3/CloudFront,
+데스크톱/모바일 임시 flag-on 실화면과 flag-off 우회 차단은 통과했다. 공개 flag만 별도 승인 gate다.
 
 PR-00은 문서 준비는 끝났지만 위 네 운영 관문 전까지 `APPROVAL_PENDING`이다.
 

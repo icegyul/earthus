@@ -58,6 +58,9 @@ export const renderQuality = {
   onChange(fn) { this._subs.push(fn); },
   _emit() { this._subs.forEach(f => f(this)); },
 
+  /** 자동검수용 누적 렌더 수. 읽기 전용이며 렌더를 추가로 요청하지 않는다. */
+  totalRenders: 0,
+
   renderFps: 0,
 
   frameCostMs: 0,           // 실제 한 프레임 비용 (중앙값)
@@ -89,6 +92,8 @@ export const renderQuality = {
       const now = performance.now();
       this._lastRenderT = now;
       this._renderCount++;
+      this.totalRenders++;
+      document.documentElement.dataset.totalRenders = String(this.totalRenders);
       if (this._t0) this._costs.push(now - this._t0);
       this._scheduleJudge();
       /* ⚠️ 주사율을 "렌더 간격"으로 재면 안 된다 — requestRenderMode 에서 실제 렌더는

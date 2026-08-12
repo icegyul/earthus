@@ -13,18 +13,22 @@ import { gridBounds, nearestGridValue } from './gridmath.js';
 import { worldPlaces, describePlace, latLonText } from './geoname.js';
 import { i18n } from './i18n.js';
 import { store } from './store.js';
+/* main과 정확히 같은 URL을 써야 ES module 인스턴스가 둘로 갈라지지 않는다. */
+import { continuousContours } from './continuous-contours.js?v=20260812-contours1';
 
 const ESRI_REFERENCE = 'https://services.arcgisonline.com/ArcGIS/rest/services/'
   + 'Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
 const ESRI_CREDIT = 'Esri, Garmin, HERE, © OpenStreetMap contributors, and the GIS user community';
 const GRID_LAYERS = new Set([
-  'temp', 'tmax', 'tmin', 'humidity', 'tpw', 'rain', 'pressure', 'fog', 'drought',
+  'temp', 'tmax', 'tmin', 'wind', 'windfc', 'humidity', 'tpw', 'rain', 'pressure', 'fog', 'drought',
   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone', 'sst', 'sstanom', 'wave', 'swell', 'current',
 ]);
 const KIND = {
   temp: ['현재 기온', 'Current temperature', 'MODEL'],
   tmax: ['내일 최고기온', 'Tomorrow maximum', 'MODEL FORECAST'],
   tmin: ['내일 최저기온', 'Tomorrow minimum', 'MODEL FORECAST'],
+  wind: ['현재 풍속', 'Current wind speed', 'COMPUTED FROM MODEL'],
+  windfc: ['내일 대표 풍속', 'Tomorrow representative wind', 'MODEL FORECAST · COMPUTED'],
   humidity: ['2m 상대습도', '2 m relative humidity', 'MODEL'],
   tpw: ['수증기 통로', 'Moisture corridor', 'MODEL ANALYSIS'],
   rain: ['강수 강도', 'Precipitation rate', 'MODEL'],
@@ -83,6 +87,7 @@ export const readability = {
   sourceName: null,
   gridLayer: null,
   mapLabels: null,
+  contourMeta: null,
 
   init() {
     this.root = document.getElementById('readabilityPanel');
@@ -120,6 +125,16 @@ export const readability = {
     document.addEventListener('earthus:grid-removed', event => {
       if (this.acceptsLayer(event.detail?.layer)) this._clearGrid();
     });
+    document.addEventListener('earthus:contours-ready', event => {
+      if (!this.acceptsLayer(event.detail?.layer)) return;
+      this.contourMeta = event.detail;
+      this._renderLegend();
+    });
+    document.addEventListener('earthus:contours-removed', event => {
+      if (!this.acceptsLayer(event.detail?.layer)) return;
+      this.contourMeta = null;
+      this._renderLegend();
+    });
     document.addEventListener('earthus:earth-point', event => this._point(event.detail));
     document.addEventListener('earthus:earth-point-clear', () => this._clearPoint());
     onCameraIdle(() => this._refreshCities());
@@ -156,7 +171,19 @@ export const readability = {
     this.badge.textContent = info[2];
     this._setReference(state.read === true);
     const rendered = gridOverlay.renderedOf(this.gridLayer);
-    if (rendered) this._gridReady({ layer: this.gridLayer, ...rendered });
+    if (rendered) {
+      this._gridReady({ layer: this.gridLayer, ...rendered });
+      if (this.activeLayer === 'pressure') {
+        import('./isobars.js').then(({ isobars }) => {
+          if (this.activeLayer !== 'pressure') return;
+          this.contourMeta = isobars.rendered();
+          this._renderLegend();
+        }).catch(() => {});
+      } else {
+        this.contourMeta = continuousContours.renderedOf(this.activeLayer);
+        this._renderLegend();
+      }
+    }
     else this._loading();
   },
 
@@ -171,6 +198,7 @@ export const readability = {
     this.grid = detail.grid;
     this.field = detail.field;
     this.sourceName = detail.sourceName || null;
+    this.contourMeta = null;
     this._renderLegend();
     this._refreshCities();
     if (store.earthView.point) this._point({ layer: this.activeLayer, point: store.earthView.point });
@@ -180,6 +208,7 @@ export const readability = {
     this.grid = null;
     this.field = null;
     this.sourceName = null;
+    this.contourMeta = null;
     this.cities?.replaceChildren();
     this._clearMapLabels();
   },
@@ -214,6 +243,20 @@ export const readability = {
     meta.textContent = [source, time, cellText, latitude]
       .filter(Boolean).join(' · ');
     const children = [stopList, meta];
+    const contour = document.createElement('p');
+    contour.className = 'rd-contour-meta';
+    if (this.activeLayer === 'pressure') {
+      const detail = this.contourMeta;
+      contour.textContent = i18n.lang === 'ko'
+        ? `등압선 4hPa · 동아시아 1° 전용 원격자 · 결측 칸 제외${detail ? ` · 선 ${detail.pathCount}` : ''}`
+        : `Isobars 4 hPa · dedicated East Asia 1° grid · missing cells skipped${detail ? ` · ${detail.pathCount} paths` : ''}`;
+    } else {
+      contour.textContent = continuousContours.description(this.activeLayer) || '';
+      if (this.contourMeta) contour.textContent += i18n.lang === 'ko'
+        ? ` · 선 ${this.contourMeta.pathCount} · 라벨 ${this.contourMeta.labelCount}`
+        : ` · ${this.contourMeta.pathCount} paths · ${this.contourMeta.labelCount} labels`;
+    }
+    if (contour.textContent) children.push(contour);
     /* Cesium의 기본 credit 영역은 이 앱에서 숨겨져 있다. imagery provider에만 credit을
        넣으면 화면에서는 출처가 사라지므로, 참조 타일을 켠 동안 패널에도 항상 적는다. */
     if (store.earthView.read) {

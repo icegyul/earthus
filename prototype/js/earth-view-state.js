@@ -88,7 +88,12 @@ export const earthViewState = {
       this._commit(EMPTY, 'replace', false);
       writeEarthRoute(null, 'replace');
     } else if (route) this.restore(route, { history: true, initial: true });
-    else this._commit(EMPTY, 'replace', false);
+    else {
+      /* query 없는 첫 화면은 저장된 색면·바람까지 걷고 아름다운 지구로 시작한다.
+         store의 새 탭 판정이 IAB/PWA 수명과 어긋나도 URL 정본으로 한 번 더 보장한다. */
+      store.resetLayersToDefaults();
+      this._commit(EMPTY, 'replace', false);
+    }
     return this;
   },
 
@@ -244,6 +249,11 @@ export const earthViewState = {
       const turnedOn = preferred && store.isOn(preferred)
         ? preferred : [...batch.on].reverse().find(layer => store.isOn(layer) && this._knownLayer(layer));
       if (turnedOn) {
+        /* 이전 배포에서 pressure/rain이 색면 배타 그룹에 빠져 여러 면이 저장됐을 수 있다.
+           새 그룹의 현재 레이어 하나만 남겨 복원 직후에도 색이 섞이지 않게 한다. */
+        store.exclusiveLayerIds?.(turnedOn).forEach(layer => {
+          if (layer !== turnedOn && store.isOn(layer)) store.setLayer(layer, false);
+        });
         const current = store.earthView.layer === turnedOn ? store.earthView : {};
         this._transition({
           view: 'data', layer: turnedOn, at: current.at || null, model: current.model || null,

@@ -20,6 +20,8 @@
 import { viewer } from './viewer.js';
 import { API } from './config.js';
 import { fetchT } from './net.js';
+import { contourPathLength, contourPathMidpoint, contourSegments,
+         stitchSegments } from './contour-math.js';
 
 const SRC = () => `${API.WIND}/pressure-ea.json`;
 
@@ -42,59 +44,6 @@ const HL_RADIUS = 2;
 const HI = '#f0955a';     // 고기압
 const LO = '#6ea8dc';     // 저기압
 const LINE = 'rgba(255,255,255,.55)';
-
-/* ── 마칭 스퀘어 ─────────────────────────────────────────────
-   격자에서 같은 값의 선을 뽑는 표준 방법이다.
-   ⚠️ 칸 네 귀퉁이 중 하나라도 값이 없으면 그 칸은 **건너뛴다.**
-      없는 값을 이웃으로 메우면 있지도 않은 선이 생긴다. */
-function contour(grid, nx, ny, lat0, lon0, res, level) {
-  const segs = [];
-  const at = (x, y) => grid[y * nx + x];
-  const lerp = (v1, v2, p1, p2) => {
-    const t = (level - v1) / ((v2 - v1) || 1e-9);
-    return [p1[0] + (p2[0] - p1[0]) * t, p1[1] + (p2[1] - p1[1]) * t];
-  };
-  for (let y = 0; y < ny - 1; y++) {
-    for (let x = 0; x < nx - 1; x++) {
-      const v = [at(x, y + 1), at(x + 1, y + 1), at(x + 1, y), at(x, y)];
-      if (v.some(z => z == null)) continue;
-      const p = [
-        [lon0 + x * res, lat0 + (y + 1) * res],
-        [lon0 + (x + 1) * res, lat0 + (y + 1) * res],
-        [lon0 + (x + 1) * res, lat0 + y * res],
-        [lon0 + x * res, lat0 + y * res],
-      ];
-      let idx = 0;
-      for (let i = 0; i < 4; i++) if (v[i] >= level) idx |= (1 << i);
-      if (idx === 0 || idx === 15) continue;
-      // 변마다 교차점 — 0:위 1:오른쪽 2:아래 3:왼쪽
-      const e = [
-        lerp(v[0], v[1], p[0], p[1]),
-        lerp(v[1], v[2], p[1], p[2]),
-        lerp(v[2], v[3], p[2], p[3]),
-        lerp(v[3], v[0], p[3], p[0]),
-      ];
-      const T = {
-        1: [[3, 0]], 2: [[0, 1]], 3: [[3, 1]], 4: [[1, 2]],
-        6: [[0, 2]], 7: [[3, 2]], 8: [[2, 3]], 9: [[2, 0]],
-        11: [[2, 1]], 12: [[1, 3]], 13: [[1, 0]], 14: [[0, 3]],
-        /* ⚠️ 5·10 은 안장점(saddle)이다. 두 갈래로 갈리는데 어느 쪽인지
-           네 값의 평균으로 정한다 — 임의로 고르면 선이 엉뚱하게 이어진다. */
-        5: null, 10: null,
-      };
-      let pairs = T[idx];
-      if (pairs === null) {
-        const mid = (v[0] + v[1] + v[2] + v[3]) / 4;
-        const flip = mid >= level;
-        pairs = idx === 5
-          ? (flip ? [[3, 0], [1, 2]] : [[0, 1], [2, 3]])
-          : (flip ? [[0, 1], [2, 3]] : [[3, 0], [1, 2]]);
-      }
-      pairs.forEach(([a, b]) => segs.push([e[a], e[b]]));
-    }
-  }
-  return segs;
-}
 
 /** 고기압·저기압 중심 — 이웃보다 확실히 높거나 낮은 칸 */
 function extrema(grid, nx, ny, lat0, lon0, res) {
@@ -148,7 +97,19 @@ export const isobars = {
     return this.ds;
   },
 
-  clear() { try { this.ds?.entities.removeAll(); } catch (_) { } },
+  clear(announce = true) {
+    try { this.ds?.entities.removeAll(); } catch (_) { }
+    if (announce) document.dispatchEvent(new CustomEvent('earthus:contours-removed', {
+      detail: { layer: 'pressure' },
+    }));
+    if (document.documentElement.dataset.isobarLayer === 'pressure') {
+      delete document.documentElement.dataset.isobarLayer;
+      delete document.documentElement.dataset.isobarPaths;
+      delete document.documentElement.dataset.isobarLabels;
+    }
+    this._result = null;
+    viewer?.scene?.requestRender?.();
+  },
 
   async load() {
     if (this._doc && Date.now() - this._at < 20 * 60_000) return this._doc;
@@ -166,30 +127,35 @@ export const isobars = {
     if (!on) { this.clear(); return; }
     const d = this._ovr || await this.load();
     if (!d?.mslp) return;
-    this.clear();
+    this.clear(false);
     const ds = this._ensure();
 
     const { nx, ny, lat0, lon0, res } = d;
     const lo = Math.ceil(d.min / STEP) * STEP;
     const hi = Math.floor(d.max / STEP) * STEP;
 
+    let segmentCount = 0, pathCount = 0, labelCount = 0, missingCells = 0;
+    const levels = [];
     for (let lv = lo; lv <= hi; lv += STEP) {
-      const segs = contour(d.mslp, nx, ny, lat0, lon0, res, lv);
-      if (!segs.length) continue;
+      const result = contourSegments(d, d.mslp, lv);
+      const paths = stitchSegments(result.segments)
+        .filter(path => path.length >= 2)
+        .sort((a, b) => contourPathLength(b) - contourPathLength(a));
+      if (!paths.length) continue;
+      levels.push(lv);
+      segmentCount += result.segments.length;
+      missingCells = Math.max(missingCells, result.missingCells);
       /* ⚠️ 1012hPa(표준 기압 근처)를 굵게 한다. 기준선이 있어야 위아래가 읽힌다. */
       const base = Math.abs(lv - 1012) < 0.1;
-      const flat = [];
-      segs.forEach(([a, b]) => {
-        flat.push(a[0], a[1], LIFT_M, b[0], b[1], LIFT_M);
-      });
-      // 선분을 하나씩 엔티티로 만들면 수백 개가 된다 — 한 레벨을 한 덩어리로 그린다
-      for (let i = 0; i < segs.length; i++) {
-        const [a, b] = segs[i];
+      /* 짧은 선분을 연결한 경로 하나당 엔티티 하나만 만든다. */
+      paths.forEach((path, i) => {
+        pathCount++;
+        const positions = [];
+        path.forEach(([lon, lat]) => positions.push(lon, lat, LIFT_M));
         ds.entities.add({
           id: `iso:${lv}:${i}`,
           polyline: {
-            positions: Cesium.Cartesian3.fromDegreesArrayHeights(
-              [a[0], a[1], LIFT_M, b[0], b[1], LIFT_M]),
+            positions: Cesium.Cartesian3.fromDegreesArrayHeights(positions),
             width: base ? 2.2 : 1.3,
             material: Cesium.Color.fromCssColorString(LINE)
               .withAlpha(base ? 0.85 : 0.5),
@@ -198,7 +164,31 @@ export const isobars = {
               new Cesium.DistanceDisplayCondition(0, SHOW_MAX_M),
           },
         });
-      }
+      });
+      /* 등압선 자체에 값을 쓴다. H/L만으로는 어느 선이 몇 hPa인지 읽을 수 없다. */
+      paths.slice(0, 2).forEach((path, i) => {
+        if (contourPathLength(path) < Math.max(0.6, res * 0.45)) return;
+        const point = contourPathMidpoint(path);
+        if (!point) return;
+        labelCount++;
+        ds.entities.add({
+          id: `iso:value:${lv}:${i}`,
+          position: Cesium.Cartesian3.fromDegrees(point[0], point[1], LIFT_M + 700),
+          label: {
+            text: `${lv}hPa`,
+            font: '650 11px ui-monospace, SFMono-Regular, Menlo, monospace',
+            fillColor: Cesium.Color.WHITE,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            outlineColor: Cesium.Color.BLACK.withAlpha(0.9), outlineWidth: 3,
+            showBackground: true,
+            backgroundColor: Cesium.Color.fromCssColorString('#02080c').withAlpha(0.62),
+            backgroundPadding: new Cesium.Cartesian2(4, 2),
+            verticalOrigin: Cesium.VerticalOrigin.CENTER,
+            disableDepthTestDistance: 0,
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, SHOW_MAX_M),
+          },
+        });
+      });
     }
 
     /* ── 고기압 H · 저기압 L ──────────────────────────────
@@ -222,8 +212,25 @@ export const isobars = {
       });
     });
 
+    const payload = {
+      layer: 'pressure', levels, segmentCount, pathCount, labelCount,
+      missingCells, cells: (nx - 1) * (ny - 1), method: 'MARCHING_SQUARES',
+      basis: 'KMA_SURFACE_CHART_4HPA', unit: 'hPa', resolution: res,
+    };
+    document.dispatchEvent(new CustomEvent('earthus:contours-ready', { detail: payload }));
+    document.documentElement.dataset.isobarLayer = 'pressure';
+    document.documentElement.dataset.isobarPaths = String(pathCount);
+    document.documentElement.dataset.isobarLabels = String(labelCount);
+    queueMicrotask(() => document.dispatchEvent(new CustomEvent('earthus:contours-ready', {
+      detail: payload,
+    })));
+    /* readability가 늦게 초기화되는 딥링크 복원에서도 이미 생성된 결과를 읽는다. */
+    this._result = payload;
+    viewer.scene.requestRender?.();
+
     return d;
   },
 
+  rendered() { return this._result || null; },
   STEP, LIFT_M,
 };

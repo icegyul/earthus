@@ -5,7 +5,8 @@
 > 예외: 2026-08-12 PD 직접 지시로 TPW 단독 vertical slice, PR-01 canonical shadow,
 > PR-02 governance shadow, PR-03 Earth View State를 구현했다. 후속 배포 지시로 PR-03와 잠긴
 > TPW 정적 계약만 운영 반영했다. 후속 직접 지시로 PR-04 Readability와 PR-05 Safety Slice도
-> 구현·운영 반영했다. TPW flag on·판매·SNS는 미승인이다.
+> 구현·운영 반영했다. PR-06 Continuous Layers도 구현·검수·정적 운영 반영했다.
+> TPW flag on·판매·SNS는 미승인이다.
 
 ## 1. 공통 PR 형식
 
@@ -31,7 +32,7 @@
 | PR-03 | Earth View State (정적 운영 배포) | existing Cesium state | Earth View/Style/Data/Evidence/Decision URL state | 첫 화면 지구 보존, 공유·뒤로가기·대표 서비스 URL 운영 검증 |
 | PR-04 | V0 Readability (정적 운영 배포) | PR-03 | 공통 범례·값 라벨·지점 카드·read mode | 기온 대표 지역에서 10초 판독, 원값 대조 |
 | PR-05 | Safety Slice (운영 배포) | 공식 특보 fixture | KMA warning adapter, 근사 region mapping, Hard Gate, CTA | 발표→대치→해제/지연/미매핑 replay |
-| PR-06 | Continuous Layers | V0 | 기온·기압·바람·TPW·SST·편차·파고 | 단계색/등치선/값/원값, idle render 0 |
+| PR-06 | Continuous Layers (정적 운영 배포) | V0 | 기온·기압·바람·TPW 계약·SST·편차·파고 | 단계색/등치선/값/원값, idle render 0 |
 | PR-07 | Decision Core | PR-05 | Confidence, Base Activity 5 profiles, contribution ledger | deterministic replay와 cache key |
 | PR-08 | Personal & UI | PR-07 | bounded personalization, 5축 UI, compare | shared base와 private delta 분리 |
 | PR-09 | Reservation Impact | provider contract | diff/dedup/notification/alternative/confirm | 실패·중복·정정·idempotency E2E |
@@ -149,6 +150,22 @@ PR-00은 문서 준비는 끝났지만 위 네 운영 관문 전까지 `APPROVAL
 
 상세 계약은 `SAFETY_SLICE.md`, 운영 증거는 `RELEASE-2026-08-12-PR05.md`다. 위 미완료
 mapping/provider 범위에서는 Safety Engine이 SAFE나 CLOSED를 만들지 않는다.
+
+## 4-6. PR-06 운영 배포와 남은 gate
+
+- [x] 기온·내일 최고/최저·기압·바람·TPW 계약·SST·편차·파고 단계색
+- [x] 같은 연속 원격자만 쓰는 마칭 스퀘어, 결측 칸 제외, 날짜변경선 seam 계약
+- [x] 등치선 값 라벨, 도시 최근접 원격자값, 지점 Evidence, source/time/unit/n/missing
+- [x] 기압 동아시아 1° 전용판·4hPa·H/L, 바람 u/v 크기 m/s 색면과 방향 입자 분리
+- [x] SST/파고 동아시아 0.5° 보강판, 편차는 동일 5° 실황/평년장만 계산
+- [x] query 없는 첫 지구 수치/등치선 0, 모든 연속 색면 한 장만 유지
+- [x] 자동검사 36/36와 PR-03/04/05·AETHERUS 회귀
+- [x] 데스크톱/390×844 실화면, 모바일 overflow 0, 파고 정지 3초 추가 render 0
+- [ ] Safari·구형 iPhone 실제 기기 10~15분 열/배터리
+- [ ] TPW 서울 리전 객체·권리·화면 검수 뒤 별도 `TPW_READY=true` 승인
+
+상세 계약은 `CONTINUOUS_LAYERS.md`다. TPW는 공통 표현 엔진과 테스트만 포함하며 운영 객체
+403 상태에서 flag를 켜지 않았다. 점 관측·위성 영상·재난 점은 이 등치선 엔진에 넣지 않는다.
 
 ## 5. 금지
 

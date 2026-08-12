@@ -31,6 +31,7 @@ import { communityPanel } from './ui-community.js';
 import { askPanel } from './ask/panel.js';
 import { sourceNote } from './ui-source.js';
 import { readability } from './readability.js?v=20260812-readability1';
+import { continuousContours } from './continuous-contours.js?v=20260812-contours1';
 import { warn } from './warn.js';
 import { warnUI } from './ui-warn.js';
 import { koreaPanel } from './ui-korea.js';
@@ -124,6 +125,8 @@ async function boot() {
      스튜디오 연결도 같이 늦어진다. 캡처에 필요한 지구본 손잡이는 바로 연다. */
   exposeStudioCapture();
   setAmbientView(127, 25);
+  /* 등치선은 gridoverlay의 ready 이벤트보다 먼저 구독해야 딥링크 첫 렌더도 놓치지 않는다. */
+  continuousContours.init();
   // B0 실험은 ?skyframe=1에서만 보인다. 일반 방문자 화면에는 진단 마커를 섞지 않는다.
   initSkyframeDiagnostic(viewer);
 

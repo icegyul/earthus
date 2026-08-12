@@ -20,6 +20,9 @@ import { gridBounds, isGlobalGrid, nearestGridValue } from './gridmath.js';
 const SCALES = {
   temp: {
     unit: '°C',
+    /* PR-06: 색을 부드럽게 섞으면 경계가 안 읽힌다. 원자료는 연속값 그대로 두고
+       화면 색만 10°C 구간으로 고정한다. 숫자·지점 카드는 계속 원격자값을 쓴다. */
+    stepped: true,
     stops: [
       [-40, [ 40,  20,  90]], [-25, [ 50,  60, 170]], [-10, [ 60, 140, 210]],
       [  0, [120, 190, 225]], [ 10, [140, 215, 160]], [ 20, [240, 225, 120]],
@@ -53,6 +56,7 @@ const SCALES = {
         난색 쪽으로 치우친 눈금을 따로 둔다. */
   tmax: {
     unit: '°C',
+    stepped: true,
     stops: [
       [-20, [ 70,  90, 180]], [  0, [120, 190, 225]], [ 12, [150, 215, 165]],
       [ 22, [245, 230, 130]], [ 28, [245, 175,  80]], [ 33, [230, 110,  55]],
@@ -122,6 +126,7 @@ const SCALES = {
      기온 눈금(-40~50)을 쓰면 전부 비슷한 색이 되어 차이가 안 보인다. */
   sst: {
     unit: '°C',
+    stepped: true,
     stops: [
       [-2, [ 45,  35, 120]], [ 4, [ 55,  95, 190]], [10, [ 70, 160, 215]],
       [16, [110, 205, 190]], [22, [235, 220, 130]], [26, [240, 165,  80]],
@@ -132,6 +137,7 @@ const SCALES = {
   /* 유의파고 — 항해 경보 감각에 맞춘 구간. 4m 부터 붉어진다. */
   wave: {
     unit: 'm',
+    stepped: true,
     stops: [
       [0, [ 25,  60, 100]], [1, [ 60, 130, 190]], [2, [100, 195, 200]],
       [3, [190, 220, 150]], [4, [245, 215, 120]], [6, [240, 150,  75]],
@@ -168,6 +174,7 @@ const SCALES = {
         의미 있는 차이가 전부 흐린 색이 된다. */
   sstAnom: {
     unit: '°C',
+    stepped: true,
     stops: [
       [-3.0, [ 40,  60, 150]], [-1.5, [ 70, 130, 200]], [-0.5, [150, 200, 225]],
       [ 0.0, [235, 238, 240]],
@@ -214,6 +221,7 @@ const SCALES = {
          전지구를 흐리게 칠할 이유가 없다 — 아래쪽 끝 색으로 잘린다.) */
   mslp: {
     unit: 'hPa',
+    stepped: true,
     stops: [
       [ 970, [ 70,  20, 110]], [ 990, [ 60,  90, 190]], [1005, [130, 190, 225]],
       [1013, [232, 236, 238]],
@@ -246,10 +254,23 @@ const SCALES = {
   /* 내일 최저기온 — 추위 쪽을 넓게. 밤에 얼마나 떨어지는지가 관심사다. */
   tmin: {
     unit: '°C',
+    stepped: true,
     stops: [
       [-35, [ 45,  25,  95]], [-20, [ 60,  70, 175]], [-10, [ 75, 130, 205]],
       [  0, [130, 190, 225]], [ 8,  [165, 215, 200]], [ 16, [200, 225, 150]],
       [ 24, [240, 205, 110]], [ 32, [225, 130,  70]],
+    ],
+    alpha: 0.62,
+  },
+  /* 바람 색면 — u/v 모델 원격자의 벡터 크기 sqrt(u²+v²)를 정확히 계산한다.
+     입자 속도는 방향 판독용으로 과장하지만 이 색면·숫자는 실제 m/s 값이다. */
+  wind: {
+    unit: 'm/s',
+    stepped: true,
+    stops: [
+      [0, [ 27,  47,  74]], [2, [ 43,  95, 132]], [5, [ 66, 145, 164]],
+      [10, [129, 191, 156]], [15, [224, 211, 120]], [20, [232, 154,  80]],
+      [30, [205,  82,  74]], [45, [142,  42,  89]], [60, [ 87,  28,  76]],
     ],
     alpha: 0.62,
   },
@@ -260,6 +281,7 @@ const SCALES = {
       "내일 최고기온"이라고 써놓고 지금 기온을 보여주는 것이 된다. */
 const FIELD_OF = {
   temp: 't', rh: 'rh', tmax: 'tmax', tmin: 'tmin',
+  wind: 'windSpeed', windfc: 'windSpeedFc',
   tpw: 'tpw',
   fog: 'vis', drought: 'soil',
   pm25: 'pm25', pm10: 'pm10', dust: 'dust', ozone: 'o3', uv: 'uv', aqi: 'aqi',
@@ -274,6 +296,7 @@ const FIELD_OF = {
       하나로 합치면 한쪽이 실패할 때 전부가 없어진다. 따로 두면 따로 산다. */
 const SOURCE_OF = {
   temp: 'wind', rh: 'wind', tmax: 'wind', tmin: 'wind', fog: 'wind', drought: 'wind',
+  wind: 'wind', windfc: 'wind',
   pressure: 'wind', rain: 'wind',
   tpw: 'tpw',
   pm25: 'air', pm10: 'air', dust: 'air', ozone: 'air', uv: 'air', aqi: 'air',
@@ -284,7 +307,7 @@ const SOURCE_OF = {
 /* 눈금 이름 — 레이어 id 와 눈금 이름이 다른 것들 */
 const SCALE_OF = { temp: 'temp', humidity: 'rh', rh: 'rh', fog: 'vis', drought: 'soil',
                    ozone: 'o3', current: 'cur', sstanom: 'sstAnom', pressure: 'mslp',
-                   rain: 'rain', tpw: 'tpw' };
+                   rain: 'rain', tpw: 'tpw', wind: 'wind', windfc: 'wind' };
 
 /* 예보 레이어인지 — 화면에 "내일"이라고 밝혀야 하는지 판단한다 */
 export const IS_FORECAST = { tmax: true, tmin: true, windfc: true };
@@ -317,6 +340,8 @@ const SRC_URL = {
      동아시아만 **0.5°(약 55km)** 로 따로 만든다. 10배 촘촘하다.
      ⚠️ 상자는 천리안 동아시아 영상과 같은 범위다(23~47N, 114~150E). */
   marineEa: () => `${API.MARINE_GRID}/marine-ea.json`,
+  /* 기압 색면도 동아시아 확대에서는 등압선과 같은 1° 전용판을 쓴다. */
+  pressureEa: () => `${API.WIND}/pressure-ea.json`,
 };
 
 export const gridOverlay = {
@@ -360,6 +385,15 @@ export const gridOverlay = {
     } catch (_) { return false; }
   },
 
+  _desiredSource(key) {
+    const base = SOURCE_OF[key] || 'wind';
+    if (!this._eastAsiaView()) return base;
+    /* 편차 평년장은 전지구 5°뿐이다. 0.5° 실황과 배열로 빼지 않는다. */
+    if (base === 'marine' && key !== 'sstanom') return 'marineEa';
+    if (key === 'pressure') return 'pressureEa';
+    return base;
+  },
+
   /** key = 레이어 id (temp · rh · sst · pm25 · fog …) */
   async show(key, on) {
     /* 메뉴만 잠그면 검색·질문·저장 상태에서 우회해 켜질 수 있다.
@@ -379,9 +413,13 @@ export const gridOverlay = {
             동아시아로 오면 전지구 판 그대로다 — 껐다 켜야 바뀐다.
             (카메라가 멈출 때마다 격자를 다시 그리면 발열이 는다. 그 대가로 택한 것이다.)
          ⚠️ 못 받으면 조용히 전지구 판으로 돌아간다. 안 그러면 화면이 통째로 빈다. */
-      let srcName = SOURCE_OF[key] || 'wind';
-      if (srcName === 'marine' && this._eastAsiaView()) {
-        try { await this.load('marineEa'); srcName = 'marineEa'; } catch (_) { }
+      const baseSource = SOURCE_OF[key] || 'wind';
+      let srcName = this._desiredSource(key);
+      /* applyAll·카메라 임계 이벤트가 같은 판을 다시 요청해도 캔버스와 등치선을
+         다시 만들지 않는다. 자료 갱신은 레이어를 다시 켜거나 load TTL 이후 별도 경로다. */
+      if (this._rendered[key]?.sourceName === srcName && this.layers[key]) return this._rendered[key];
+      if (srcName !== baseSource) {
+        try { await this.load(srcName); } catch (_) { srcName = baseSource; }
       }
       const g0 = await this.load(srcName);
       /* ⚠️ 편차 레이어는 격자 값이 아니라 "지금 − 평년"이다.
@@ -394,6 +432,18 @@ export const gridOverlay = {
         g = { ...g0, _anom: an.diff };
         field = an.diff;
         this._anomInfo = { period: an.period, doy: an.doy, mean: an.mean, n: an.n };
+      } else if (key === 'wind' || key === 'windfc') {
+        const U = key === 'windfc' ? g.fu : g.u;
+        const V = key === 'windfc' ? g.fv : g.v;
+        if (!Array.isArray(U) || !Array.isArray(V) || U.length !== V.length) {
+          throw new Error(`격자에 ${key} 없음`);
+        }
+        field = U.map((u, index) => Number.isFinite(u) && Number.isFinite(V[index])
+          ? Math.round(Math.hypot(u, V[index]) * 100) / 100 : null);
+        /* 계산값의 식과 입력 필드를 메타데이터로 남긴다. source/time은 원 격자 그대로다. */
+        g = { ...g, [FIELD_OF[key]]: field,
+          derivation: { kind: 'VECTOR_MAGNITUDE', formula: 'sqrt(u^2+v^2)',
+            inputs: key === 'windfc' ? ['fu', 'fv'] : ['u', 'v'] } };
       } else {
         field = g[FIELD_OF[key]];
       }
@@ -451,11 +501,14 @@ export const gridOverlay = {
       }
       ctx.putImageData(img, 0, 0);
 
-      // 한 번 더 키워서 가장자리를 뭉갠다 (격자 티 제거)
+      /* 단계색은 경계가 목적이다. 저해상도 캔버스를 다시 선형 확대하면 색 사이에
+         존재하지 않는 중간색이 생기므로 nearest-neighbour로 키운다. 원자료 자체의
+         공간 보간은 위 루프에서 한 번만 하고, 범례 경계를 그대로 보존한다. */
       const soft = document.createElement('canvas');
       soft.width = W * 3; soft.height = H * 3;
       const sc = soft.getContext('2d');
-      sc.imageSmoothingEnabled = true; sc.imageSmoothingQuality = 'high';
+      sc.imageSmoothingEnabled = !scale.stepped;
+      if (!scale.stepped) sc.imageSmoothingQuality = 'high';
       sc.drawImage(cv, 0, 0, soft.width, soft.height);
 
       const bounds = gridBounds(g);
@@ -566,10 +619,33 @@ export const gridOverlay = {
 
   renderedOf(key) { return this._rendered[key] || null; },
 
+  /**
+   * 동아시아 전용 보강판 경계를 넘었을 때만 다시 그린다. 매 카메라 프레임·매 idle에
+   * 계산하지 않고 source bucket이 달라진 경우 한 번만 바꾼다.
+   */
+  refreshResolution() {
+    Object.entries(this._rendered).forEach(([key, rendered]) => {
+      const desired = this._desiredSource(key);
+      if (desired !== rendered.sourceName) this.show(key, true);
+    });
+  },
+
   /* 물어보기 패널이 쓴다 — 레이어를 켜지 않고 값만 읽을 수 있어야 한다 */
-  async gridFor(key) { return this.load(SOURCE_OF[key] || 'wind'); },
+  async gridFor(key) {
+    const g = await this.load(SOURCE_OF[key] || 'wind');
+    if (key === 'wind' || key === 'windfc') {
+      const U = key === 'windfc' ? g.fu : g.u;
+      const V = key === 'windfc' ? g.fv : g.v;
+      if (!Array.isArray(U) || !Array.isArray(V)) return g;
+      return { ...g, [FIELD_OF[key]]: U.map((u, index) => Number.isFinite(u)
+        && Number.isFinite(V[index]) ? Math.round(Math.hypot(u, V[index]) * 100) / 100 : null) };
+    }
+    return g;
+  },
   fieldOf(key) { return FIELD_OF[key]; },
   async valueAt(key, lat, lon) {
+    const rendered = this.renderedOf(key);
+    if (rendered) return nearestGridValue(rendered.grid, rendered.field, lat, lon);
     const grid = await this.gridFor(key);
     return nearestGridValue(grid, grid?.[FIELD_OF[key]], lat, lon);
   },

@@ -149,6 +149,7 @@ export const registry = {
     store.on('layer', id => this.onToggle(id));
     store.on('tier', () => this.applyAll());
     store.on('camera', () => this.applyAll());
+    store.on('earthView', state => this._syncDataSurface(state));
 
     this.ready = true;
     /* ⚠️ 첫 화면은 **지구 + NOAA 구름뿐**이다. 그 밖에는 아무것도 받지 않는다.
@@ -279,7 +280,15 @@ export const registry = {
       coverage.show(store.isOn(id)).catch(e => console.warn('[coverage]', e.message));
     }
     else if (def.kind === 'imagery') imagery.set(id, store.isOn(id));
-    else if (def.kind === 'grid') gridOverlay.show(gridKey(id), store.isOn(id));
+    else if (def.kind === 'grid') {
+      gridOverlay.show(gridKey(id), store.isOn(id));
+      /* pressure는 kind:grid라 이 분기에서 이미 끝난다. 예전의 아래 id 분기는
+         도달할 수 없어 일반 토글에서 등압선만 빠질 수 있었다. */
+      if (id === 'pressure') {
+        import('../isobars.js').then(({ isobars }) => isobars.set(store.isOn('pressure')))
+          .catch(e => console.warn('[등압선]', e.message));
+      }
+    }
     else if (id === 'orbits') orbits.set(store.isOn(id));
     else if (id === 'truecolor') imagery.setTrueColor(store.isOn(id));
     else if (id === 'wind' || id === 'windfc') {
@@ -290,15 +299,9 @@ export const registry = {
       const on = store.isOn('wind') || store.isOn('windfc');
       windField.setField(store.isOn('windfc') ? 'fc' : 'now');
       windField.set(on);
+      if (!store.isOn(id)) gridOverlay.show(id, false);
     }
     else if (id === 'cyclone') cyclones.set(store.isOn(id));
-    /* 기압 배치를 켜면 **등압선도 함께** 그린다.
-       ⚠️ 색칠만으로는 "어디가 높나"만 알고 "얼마나 급한가"를 모른다 —
-          받은 지적대로 등압선의 간격이 곧 바람 세기다(isobars.js 머리말). */
-    else if (id === 'pressure') {
-      import('../isobars.js').then(({ isobars }) => isobars.set(store.isOn('pressure')))
-        .catch(e => console.warn('[등압선]', e.message));
-    }
     else if (id === 'news') events.set(store.isOn(id));
     else if (id === 'tsunami') tsunami.set(store.isOn(id));
     else if (id === 'eclipse') eclipseMarks.set(store.isOn(id));
@@ -385,6 +388,31 @@ export const registry = {
   onCameraIdle() {
     poi.refresh();
     wind.refresh();
+    gridOverlay.refreshResolution();
+  },
+
+  /**
+   * 바람은 선 레이어라 기온 색면과 함께 켤 수 있다. 하지만 사용자가 **바람 자체를
+   * Data View로 고른 때**에는 실제 풍속 색면이 필요하다. 상태 단계가 바뀔 때만
+   * 색면을 교대해 두 반투명 면이 겹치지 않게 한다. 시간 프리셋(temp+wind)은 temp가
+   * Data View라 기온 색면 + 바람 입자 조합을 그대로 보존한다.
+   */
+  _syncDataSurface(state) {
+    const windKey = state?.view !== 'earth' && state?.view !== 'style'
+      && (state.layer === 'wind' || state.layer === 'windfc') ? state.layer : null;
+    if (windKey && store.isOn(windKey)) {
+      Object.keys(gridOverlay.layers).forEach(key => {
+        if (key !== windKey) gridOverlay.show(key, false);
+      });
+      gridOverlay.show(windKey, true);
+      return;
+    }
+    gridOverlay.show('wind', false);
+    gridOverlay.show('windfc', false);
+    const def = LAYER_DEFS.find(item => item.id === state?.layer);
+    if (def?.kind === 'grid' && store.isOn(def.id)) {
+      gridOverlay.show(gridKey(def.id), true);
+    }
   },
 
   /** 현재 화면에 렌더 중인 점 개수 (HUD용) */

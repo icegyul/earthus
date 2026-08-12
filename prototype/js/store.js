@@ -62,6 +62,17 @@ function loadLayerState() {
   const saved = (stale || fresh) ? {} : JSON.parse(localStorage.getItem(LS_LAYERS) || '{}');
   const s = {};
   LAYER_DEFS.forEach(d => { s[d.id] = saved[d.id] ?? d.on; });
+  /* pressure/rain이 색면 배타 그룹에서 빠져 있던 옛 저장값을 한 번 정리한다.
+     배열의 뒤쪽(최근 추가된 pressure/rain 포함)에서 켜진 마지막 하나를 보존한다. */
+  const colorIds = ['temp', 'tmax', 'tmin', 'humidity', 'tpw', 'fog', 'drought',
+    'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone', 'sst', 'sstanom', 'wave', 'swell',
+    'current', 'pressure', 'rain'];
+  const activeColors = colorIds.filter(id => s[id]);
+  if (activeColors.length > 1) {
+    const keep = activeColors[activeColors.length - 1];
+    activeColors.forEach(id => { if (id !== keep) s[id] = false; });
+    localStorage.setItem(LS_LAYERS, JSON.stringify(s));
+  }
   return s;
 }
 
@@ -81,7 +92,7 @@ const EXCLUSIVE = [
   // 색 격자 — 한 장만. 두 장이 겹치면 색이 섞여 값을 읽을 수 없다.
   ['temp', 'tmax', 'tmin', 'humidity', 'tpw', 'fog', 'drought',
    'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
-   'sst', 'sstanom', 'wave', 'swell', 'current'],
+   'sst', 'sstanom', 'wave', 'swell', 'current', 'pressure', 'rain'],
   // 바람 파티클 — 지금 바람과 내일 바람이 같이 흐르면 어느 쪽인지 알 수 없다.
   ['wind', 'windfc'],
   // 바탕 영상 — 위성 사진에는 그날 구름이 이미 찍혀 있다. 구름을 또 얹으면 두 겹이 된다.
@@ -173,6 +184,9 @@ export const store = {
     const g = EXCLUSIVE.find(x => x.includes(id));
     if (!g) return [];
     return g.filter(x => x !== id && this.layers[x]);
+  },
+  exclusiveLayerIds(id) {
+    return EXCLUSIVE.find(group => group.includes(id)) || [];
   },
 
   toggle(id) { this.setLayer(id, !this.layers[id]); },

@@ -29,6 +29,8 @@ from datetime import datetime, timedelta, timezone
 
 import boto3
 
+from safety_contract import command_state, latest_by_region_kind
+
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 KEY = os.environ.get("KMA_HUB_KEY", "").strip()
@@ -289,27 +291,28 @@ def handler(event, context):
         print("[warn] 구역 좌표 실패 —", repr(e)[:80])
         reg = {}
 
-    # (구역, 종류) 별로 가장 최근 발표만 남긴다
-    latest = {}
+    # (구역, 종류) 별로 가장 최근 발표만 남긴다. 순서가 뒤섞여도 pure reducer가 정한다.
+    parsed = []
     for f in raw:
         try:
             reg_id, reg_ko, tm_fc, tm_ef, wrn, lvl = f[2], f[3], f[4], f[5], f[6], f[7]
         except IndexError:
             continue
         cmd = f[8] if len(f) > 8 else ""
-        k = (reg_id, wrn)
-        if k not in latest or latest[k]["tm_fc"] < tm_fc:
-            latest[k] = {"reg_id": reg_id, "reg_ko": reg_ko, "tm_fc": tm_fc,
-                         "tm_ef": tm_ef, "wrn": wrn, "lvl": lvl, "cmd": cmd,
-                         # 상위 구역(도·광역시). 도 전체에 걸린 특보도 내게 해당하므로
-                         # 앱이 '내 구역'을 판단할 때 같이 봐야 한다.
-                         "up_id": f[0], "up_ko": f[1]}
+        parsed.append({"reg_id": reg_id, "reg_ko": reg_ko, "tm_fc": tm_fc,
+                       "tm_ef": tm_ef, "wrn": wrn, "lvl": lvl, "cmd": cmd,
+                       # 원문 상위 구역을 보존한다. 공식 hierarchy reader 전에는
+                       # 이 값만으로 사용자 위치까지 확장 매핑하지 않는다.
+                       "up_id": f[0], "up_ko": f[1]})
+    latest = latest_by_region_kind(parsed)
 
     now = datetime.now(KST).strftime("%Y%m%d%H%M")
     active, upcoming, cleared = [], [], 0
     for v in latest.values():
-        # ⚠️ '해제'는 그 구역의 특보가 끝났다는 뜻이다. 절대 표시하면 안 된다.
-        if "해제" in v["cmd"]:
+        cmd_state = command_state(v["cmd"])
+        # ⚠️ 코드 3/정확한 '해제'만 종료다. 코드 4 '해제예보 연장'은 특보가 아직 살아 있다.
+        # 예전의 문자열 포함 검사는 코드 4까지 해제로 오인할 수 있었다.
+        if cmd_state == "RELEASED":
             cleared += 1
             continue
         m = reg.get(v["reg_id"], {})
@@ -322,6 +325,8 @@ def handler(event, context):
             "level": v["lvl"], "levelRank": LEVEL.get(v["lvl"], 1),
             "icon": kind.get("icon", "⚠️"), "color": kind.get("color", "#fa5252"),
             "issuedKst": v["tm_fc"], "effectiveKst": v["tm_ef"],
+            "command": v["cmd"] or None, "commandState": cmd_state,
+            "revision": f"{v['tm_fc']}:{v['cmd'] or 'UNKNOWN'}:{v['lvl']}",
         }
         if m:
             rec["lat"], rec["lon"] = m["lat"], m["lon"]
@@ -333,6 +338,7 @@ def handler(event, context):
 
     top = max((r["levelRank"] for r in active), default=-1)
     doc = {
+        "schemaVersion": "earthus.kma-warning.snapshot.v2",
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z"),
         "observedKst": now,
         "source": "기상청 기상특보 (API허브 wrn_now_data)",
@@ -347,6 +353,12 @@ def handler(event, context):
                   "not zone boundaries. ⚠️ Always follow official KMA announcements.",
         },
         "levels": ["주의보", "경보", "중대경보"],
+        "freshnessPolicy": {"freshMinutes": 30, "staleAfterMinutes": 45},
+        "regionMapping": {
+            "method": "NEAREST_KMA_STATION_ZONE",
+            "officialBoundaryPolygon": False,
+            "exactRegionIdRequiredForHardGate": True,
+        },
         "activeCount": len(active),
         "upcomingCount": len(upcoming),
         "clearedCount": cleared,

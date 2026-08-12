@@ -1603,13 +1603,14 @@ export const banner = {
           _seen 에 넣지 않고 계속 순번에 다시 오르게 한다. */
     safe(() => {
       const s = warn.summary?.();
-      if (!s || !s.ready || !s.inKorea || !s.mine?.length || warn.off) return;
+      if (!s || !s.ready || !s.inKorea || s.safety?.gate !== 'OFFICIAL_WARNING_ACTIVE'
+          || !s.mine?.length || warn.off) return;
       const top = s.mine.slice().sort((a, b) => b.levelRank - a.levelRank)[0];
       const more = s.mine.length - 1;
       items.push({
         key: `warn:${top.region}:${top.kind}${top.level}`,
         persist: true,                       // 상태이므로 계속 다시 뜬다
-        alert: top.levelRank >= 3,           // 경보급만 붉게
+        alert: top.levelRank >= 2,           // 기상청 경보·중대경보는 긴급색
         ms: BANNER_ALERT_MS,
         html: `<span class="dot" style="background:${top.color}"></span>`
             /* ⚠️ 영어 설정에서 등급이 한국어로 새어 나왔다 ("Heat 주의보").

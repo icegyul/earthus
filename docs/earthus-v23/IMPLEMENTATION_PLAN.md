@@ -4,7 +4,8 @@
 > 통합 제품 코드 earliest start: 2026-08-16 사용량 리셋 확인 후
 > 예외: 2026-08-12 PD 직접 지시로 TPW 단독 vertical slice, PR-01 canonical shadow,
 > PR-02 governance shadow, PR-03 Earth View State를 구현했다. 후속 배포 지시로 PR-03와 잠긴
-> TPW 정적 계약만 운영 반영했다. backend·flag on·판매·SNS는 미승인이다.
+> TPW 정적 계약만 운영 반영했다. 후속 직접 지시로 PR-04 Readability와 PR-05 Safety Slice도
+> 구현·검증했다. TPW flag on·판매·SNS는 미승인이다.
 
 ## 1. 공통 PR 형식
 
@@ -29,7 +30,7 @@
 | PR-02 | Rights/Freshness (로컬 완료) | PD의 다음 단계 직접 지시 | source policy, revision, provider health, standard errors | 20개 상태 replay·실제 KMA 연속검증 완료; 승인·AWS·reader는 별도 gate |
 | PR-03 | Earth View State (정적 운영 배포) | existing Cesium state | Earth View/Style/Data/Evidence/Decision URL state | 첫 화면 지구 보존, 공유·뒤로가기·대표 서비스 URL 운영 검증 |
 | PR-04 | V0 Readability (정적 운영 배포) | PR-03 | 공통 범례·값 라벨·지점 카드·read mode | 기온 대표 지역에서 10초 판독, 원값 대조 |
-| PR-05 | Safety Slice | 공식 특보 fixture | KMA warning adapter, region mapping, Hard Gate, CTA | 발표→대치→해제/지연/미매핑 replay |
+| PR-05 | Safety Slice (구현·검증) | 공식 특보 fixture | KMA warning adapter, 근사 region mapping, Hard Gate, CTA | 발표→대치→해제/지연/미매핑 replay |
 | PR-06 | Continuous Layers | V0 | 기온·기압·바람·TPW·SST·편차·파고 | 단계색/등치선/값/원값, idle render 0 |
 | PR-07 | Decision Core | PR-05 | Confidence, Base Activity 5 profiles, contribution ledger | deterministic replay와 cache key |
 | PR-08 | Personal & UI | PR-07 | bounded personalization, 5축 UI, compare | shared base와 private delta 분리 |

@@ -1,0 +1,26 @@
+/* PR-05 Safety Engine — app.css와 분리해 AETHERUS 병행 변경을 건드리지 않는다. */
+.safety-gate {
+  --sg-accent: #8894a6;
+  margin: 0 0 14px;
+  padding: 13px 14px 12px;
+  border: 1px solid color-mix(in srgb, var(--sg-accent) 48%, rgba(255,255,255,.12));
+  border-left: 4px solid var(--sg-accent);
+  border-radius: 12px;
+  background: rgba(12, 18, 29, .9);
+  color: #edf3fa;
+}
+.safety-gate--warning { --sg-accent: #ffb648; }
+.safety-gate--danger { --sg-accent: #ff5f66; }
+.safety-gate--outside { --sg-accent: #6fa7d7; }
+.safety-gate header { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 8px; }
+.safety-gate header span { font:700 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.11em; color:#aeb9c8; }
+.safety-gate header strong { padding:3px 7px; border:1px solid var(--sg-accent); border-radius:999px; color:var(--sg-accent); font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.06em; }
+.safety-gate h4 { margin:0 0 6px !important; color:#fff; font-size:15px; line-height:1.35; }
+.safety-gate p { margin:0 0 8px; color:#d7e0eb; font-size:12.5px; line-height:1.55; }
+.safety-gate small { display:block; margin-top:5px; color:#9eacbd; font-size:10.5px; line-height:1.5; }
+.safety-gate a { display:inline-flex; min-height:44px; align-items:center; margin-top:5px; color:#cfe4ff; font-size:12px; font-weight:700; text-decoration:none; }
+.safety-gate a:hover,.safety-gate a:focus-visible { color:#fff; text-decoration:underline; }
+@media (max-width: 520px) {
+  .safety-gate { margin-bottom:12px; padding:12px; }
+  .safety-gate h4 { font-size:14px; }
+}

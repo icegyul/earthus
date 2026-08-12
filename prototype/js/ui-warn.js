@@ -11,6 +11,7 @@
 import { i18n } from './i18n.js';
 import { warn } from './warn.js';
 import { safetyActions } from './safety-actions.js';
+import { safetyGateMarkup } from './safety-gate-ui.js?v=20260812-safety1';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -64,7 +65,9 @@ export const warnUI = {
     const ko = i18n.lang === 'ko';
     const s = warn.summary();
     if (!s.ready) {
-      this.body.innerHTML = `<p class="warn-note">${ko ? '특보 자료를 불러오지 못했습니다.' : 'Could not load warnings.'}</p>`;
+      this.body.innerHTML = safetyGateMarkup(s.safety, i18n.lang)
+        + `<p class="warn-note">${ko ? '전국 특보 목록도 불러오지 못했습니다.' : 'The nationwide warning list could not be loaded either.'}</p>`;
+      this.body.appendChild(safetyActions({ country: 'kr' }));
       return;
     }
 
@@ -79,13 +82,10 @@ export const warnUI = {
     const z = s.zone;
     const near = s.mine.length
       ? `<h4>${ko ? `내 지역 · ${z ? z.name : ''}` : `My area · ${z ? z.name : ''}`}</h4>${rows(s.mine)}`
-      : `<p class="warn-note">${s.inKorea
-          ? (ko ? `내 지역(${s.zone ? s.zone.name : '?'})에는 발효 중인 특보가 없습니다.`
-                : `No active warnings in your area (${s.zone ? s.zone.name : '?'}).`)
-          : (ko ? '현재 위치가 한국 밖이거나 위치를 아직 못 받았습니다.' : 'Location is outside Korea or not available yet.')}</p>`;
+      : '';
 
     const all = (warn.data?.active || []).slice(0, 60);
-    this.body.innerHTML = near
+    this.body.innerHTML = safetyGateMarkup(s.safety, i18n.lang) + near
       + `<h4 style="margin-top:16px">${ko ? `전국 발효 중 ${s.activeCount}건` : `${s.activeCount} active nationwide`}</h4>`
       + rows(all)
       + (s.activeCount > all.length

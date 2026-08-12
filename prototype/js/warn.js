@@ -2,7 +2,7 @@
 //
 // ⚠️ 정직하게 말해야 하는 한계가 둘 있다.
 //
-//   ① 특보구역의 **경계선은 공개돼 있지 않다.**
+//   ① 이 공개 파일에는 특보구역의 **경계선이 없다.**
 //      대신 관측지점마다 특보구역코드가 달려 있어서,
 //      **가장 가까운 관측지점의 구역 = 내 구역**으로 본다 (사실상 보로노이 분할).
 //      구역 경계 바로 옆에서는 어긋날 수 있으니 화면에 구역 이름을 함께 적는다.
@@ -17,33 +17,18 @@ import { API } from './config.js';
 import { i18n } from './i18n.js';
 import { myLocation } from './mylocation.js';
 import { toast } from './ui.js';
+import { evaluateWarningSafety, inKorea } from './safety-engine.js?v=20260812-safety1';
 
 const LS_SEEN = 'earthus.warnSeen';     // 이미 알린 특보 (같은 걸 계속 울리지 않기 위해)
 const LS_OFF = 'earthus.warnOff';       // 사용자가 끈 경우
 
-// 한국 대략 범위. 여기 밖이면 이 기능을 아예 켜지 않는다.
-// ⚠️ 넉넉하게 잡는다 — 제주 남단(33.1)과 최북단(38.6), 독도(131.9)를 다 포함해야 한다.
-const KR = { s: 32.5, n: 39.0, w: 124.0, e: 132.5 };
-
-// 가장 가까운 관측지점을 찾을 최대 거리. 이걸 넘으면 '내 구역'을 못 정한다.
-const ZONE_MAX_KM = 60;
 const REFRESH_MS = 10 * 60_000;
-
-const inKorea = (lat, lon) =>
-  lat >= KR.s && lat <= KR.n && lon >= KR.w && lon <= KR.e;
-
-/** 두 지점 거리(km). 하버사인. */
-function distKm(aLat, aLon, bLat, bLon) {
-  const R = 6371, r = Math.PI / 180;
-  const dLat = (bLat - aLat) * r, dLon = (bLon - aLon) * r;
-  const h = Math.sin(dLat / 2) ** 2
-    + Math.cos(aLat * r) * Math.cos(bLat * r) * Math.sin(dLon / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
 
 export const warn = {
   data: null,
   mine: [],            // 내 위치 기준 가까운 순
+  safety: null,        // 공식 특보 Hard Gate. SAFE를 추정하지 않는다.
+  refreshError: null,
   off: localStorage.getItem(LS_OFF) === '1',
   _timer: null,
 
@@ -82,9 +67,13 @@ export const warn = {
       const r = await fetch(`${API.EVENTS}/kma-warn.json`, { cache: 'no-cache' });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       this.data = await r.json();
+      this.refreshError = null;
     } catch (e) {
       // ⚠️ 조용히 넘어간다. 특보를 못 받았다고 지구본이 안 돌 이유는 없다.
       console.warn('[특보] 못 받음 —', e.message);
+      this.refreshError = e?.message || 'FETCH_FAILED';
+      this._match();
+      document.dispatchEvent(new CustomEvent('earthus:warn', { detail: this.summary() }));
       return;
     }
     this.recheck();
@@ -101,14 +90,19 @@ export const warn = {
   recheck() {
     /* ⚠️ 위치가 늦게 도착하면 init() 때는 '한국 밖'이라 안 받았을 수 있다.
        그때 그냥 돌아가면 한국에 있는 사람이 특보를 영영 못 본다. 여기서 다시 시작한다. */
-    if (!this.data) { this.maybeStart(); return; }
+    if (!this.data) {
+      this._match();
+      document.dispatchEvent(new CustomEvent('earthus:warn', { detail: this.summary() }));
+      this.maybeStart();
+      return;
+    }
     this._match();
     this._notify();
     document.dispatchEvent(new CustomEvent('earthus:warn', { detail: this.summary() }));
   },
 
   /**
-   * 내가 **속한 특보구역**의 특보만 고른다.
+   * 내 위치와 공식 특보를 Safety Engine에 넘긴다.
    *
    * ⚠️ 예전에는 반경 30km 로 골랐다. 그러면 옆 시·군 특보까지 딸려 온다 —
    *    대구에서 달성군·경산시 것까지 14건이 떴다. 내 지역 특보가 아니다.
@@ -117,32 +111,19 @@ export const warn = {
    * 그래서 **가장 가까운 관측지점의 구역 = 내 구역**으로 본다 (사실상 보로노이 분할).
    * ⚠️ 구역 평균 좌표로 고르면 안 된다 — 넓은 구역일수록 중심이 멀어져 불리해진다.
    *
-   * 상위 구역(도·광역시)에 걸린 특보도 나에게 해당하므로 같이 본다.
+   * ⚠️ 상위 구역이라고 접두어·대표점으로 추정해 합치지 않는다. 현재 공개 reader에는
+   * 공식 hierarchy/polygon이 없으므로 같은 regionId만 Hard Gate로 쓰며, 나머지는 UNKNOWN이다.
    */
   _match() {
-    this.mine = [];
-    this.zone = null;
     const c = myLocation.coords;
-    if (!c || !inKorea(c.lat, c.lon)) return;
-
-    const pts = this._zones?.stations || [];
-    let best = null;
-    for (const p of pts) {
-      const km = distKm(c.lat, c.lon, p.lat, p.lon);
-      if (km <= ZONE_MAX_KM && (!best || km < best.km)) best = { ...p, km };
-    }
-    if (!best) return;                       // 구역을 못 정하면 아무것도 알리지 않는다
-    this.zone = { id: best.zone, name: best.zoneName, station: best.name, km: Math.round(best.km) };
-
-    const act = (this.data && this.data.active) || [];
-    this.mine = act
-      .filter(w => w.regionId === best.zone || w.parentId === best.zone)
-      .map(w => ({
-        ...w,
-        km: (w.lat != null && w.lon != null)
-          ? Math.round(distKm(c.lat, c.lon, w.lat, w.lon)) : null,
-      }))
-      .sort((a, b) => b.levelRank - a.levelRank);
+    this.safety = evaluateWarningSafety({ snapshot: this.data, zones: this._zones, coords: c });
+    const z = this.safety.zone;
+    this.zone = z?.mapped ? {
+      id: z.id, name: z.name, station: z.station, km: Math.round(z.km),
+      method: z.method, approximate: true, stationCount: z.stationCount,
+    } : null;
+    this.mine = this.safety.warnings || [];
+    document.dispatchEvent(new CustomEvent('earthus:safety-gate', { detail: this.safety }));
   },
 
   /** 새로 뜬 것만 한 번 알린다. */
@@ -177,8 +158,11 @@ export const warn = {
   /** 배너·패널이 쓸 요약 */
   summary() {
     const d = this.data;
-    if (!d) return { ready: false };
     const c = myLocation.coords;
+    const safety = this.safety || evaluateWarningSafety({
+      snapshot: d, zones: this._zones, coords: c,
+    });
+    if (!d) return { ready: false, safety, refreshError: this.refreshError };
     return {
       ready: true,
       inKorea: !!(c && inKorea(c.lat, c.lon)),
@@ -189,6 +173,8 @@ export const warn = {
       kinds: d.kinds,
       observedKst: d.observedKst,
       note: d.note,
+      safety,
+      refreshError: this.refreshError,
     };
   },
 };

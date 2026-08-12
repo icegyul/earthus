@@ -8,6 +8,7 @@ import { myLocation } from './mylocation.js';
 import { get, nearest, inKorea, normalFor, feelsLike } from './korea.js';
 import { warn, levelEn } from './warn.js';
 import { warnUI } from './ui-warn.js';
+import { safetyGateMarkup } from './safety-gate-ui.js?v=20260812-safety1';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -164,18 +165,18 @@ export const koreaPanel = {
     else warn.recheck();
     // 상세는 이미 만들어 둔 특보 패널이 낫다. 여기서는 요약 + 여는 버튼.
     const s = warn.summary();
-    if (!s.ready) return `<p class="kr-note">${ko ? '특보 자료를 불러오지 못했습니다' : 'Could not load warnings'}</p>`;
+    if (!s.ready) return safetyGateMarkup(s.safety, i18n.lang)
+      + `<p class="kr-note">${ko ? '전국 특보 목록도 불러오지 못했습니다.' : 'The nationwide warning list could not be loaded either.'}</p>`;
     const kinds = (s.kinds || []).join(', ');
-    return `<div class="kr-big"><b>${s.activeCount}</b><span>${ko ? '건 발효 중' : 'active'}</span>`
+    return safetyGateMarkup(s.safety, i18n.lang)
+      + `<div class="kr-big"><b>${s.activeCount}</b><span>${ko ? '건 발효 중' : 'active'}</span>`
       + (kinds ? `<em>${esc(kinds)}</em>` : '') + `</div>`
       + (s.mine.length
           ? `<h4>${ko ? `내 지역 · ${s.zone ? s.zone.name : ''}` : `My area · ${s.zone ? s.zone.name : ''}`} <i>${s.mine.length}</i></h4>`
             + s.mine.slice(0, 6).map(w =>
                 // ⚠️ 영어에서 등급이 한국어로 새지 않게 한다 (levelEn)
                 `<div class="kr-row"><span>${esc(w.icon)} ${esc(ko ? w.kind + w.level : `${w.kindEn || w.kind} ${levelEn(w.level)}`)} · ${esc(w.region)}</span><b>${esc(ko ? w.level : levelEn(w.level))}</b></div>`).join('')
-          : `<p class="kr-note">${s.inKorea
-              ? (ko ? `내 지역(${s.zone ? s.zone.name : '?'})에는 발효 중인 특보가 없습니다.` : 'No warnings in your area.')
-              : (ko ? '위치가 한국 밖이거나 아직 못 받았습니다.' : 'Location outside Korea or unavailable.')}</p>`)
+          : '')
       + `<button class="kr-more" id="krWarnMore">${ko ? '전체 특보 보기' : 'See all warnings'}</button>`
       + this._src(warn.data);
   },

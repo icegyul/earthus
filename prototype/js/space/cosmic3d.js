@@ -27,6 +27,11 @@ import {
   createOfflinePlanManifest,
   GEOMETRY_24H_PLAN,
 } from './observation-planner.js?v=20260812-planner1';
+import {
+  cacheLoadedSessionShell,
+  observeObservationSessionUpdates,
+  openLocalObservationSessionService,
+} from './observation-session.js?v=20260812-session1';
 import { assertAetherusCatalog } from './contracts.js?v=20260812-photoownership1';
 import {
   aetherusPhotoCounts,
@@ -134,6 +139,14 @@ export const cosmic3d = {
   _observationPlanStatus: null,
   _offlinePlanManifest: null,
   _plannerError: null,
+  _observationSession: null,
+  _observationSessionError: null,
+  _observationSessionBusy: false,
+  _observationSessionRecovery: null,
+  _sessionShellStatus: null,
+  _sessionServicePromise: null,
+  _sessionUnsubscribe: null,
+  _sessionLoadId: 0,
   _photoCatalogPromise: null,
   _allPhotoItems: [],
   _photoItems: [],
@@ -179,6 +192,7 @@ export const cosmic3d = {
     document.getElementById('spaceSceneIntro')?.setAttribute('hidden', '');
     document.getElementById('solarExperience')?.setAttribute('hidden', '');
     this.buildBodyPicker();
+    this.ensureObservationSessionUi();
     this.bindInput();
     new ResizeObserver(() => this.render()).observe(this.root);
     store.on('scene', (next, stage) => {
@@ -210,6 +224,7 @@ export const cosmic3d = {
       if (this._selectedCraft) this.showCraftInfo(this._selectedCraft);
       if (this._solarMotionMode) this.showSolarMotionInfo();
       if (this._galaxyGuideMode) this.showGalaxyGuideInfo();
+      this.renderObservationSession();
       this.buildCraftPicker();
       this.updateHud(); this.updateLabels(); this.render();
     });
@@ -1778,6 +1793,7 @@ export const cosmic3d = {
       this._offlinePlanManifest = createOfflinePlanManifest(this._observationPlan);
       this._plannerError = null;
       this.showObservationPlanner();
+      void this.restoreObservationSessionForPlan();
       if (emit) this.emitRouteState();
       return true;
     } catch (error) {
@@ -1868,6 +1884,7 @@ export const cosmic3d = {
         : 'Limited geometry candidate · no weather, light pollution, local horizon, Moon, or equipment · not a success, safety, travel, or pointing claim · JSON contains plan data only';
     }
     document.getElementById('cosmicPlannerDownload').disabled = !this._offlinePlanManifest;
+    this.renderObservationSession();
   },
 
   downloadObservationPlan() {
@@ -1883,6 +1900,249 @@ export const cosmic3d = {
     link.click(); link.remove();
     setTimeout(() => URL.revokeObjectURL(href), 0);
     return true;
+  },
+
+  ensureObservationSessionUi() {
+    const planner = document.getElementById('cosmicPlanner');
+    if (!planner || document.getElementById('cosmicSession')) return;
+    const section = document.createElement('section');
+    section.id = 'cosmicSession';
+    section.className = 'cosmic-session';
+    section.setAttribute('aria-labelledby', 'cosmicSessionTitle');
+    section.hidden = true;
+
+    const header = document.createElement('header');
+    const title = document.createElement('h5'); title.id = 'cosmicSessionTitle';
+    const status = document.createElement('span'); status.id = 'cosmicSessionStatus';
+    header.append(title, status);
+    const context = document.createElement('p'); context.id = 'cosmicSessionContext';
+    const history = document.createElement('ol'); history.id = 'cosmicSessionHistory';
+    const evidence = document.createElement('p'); evidence.id = 'cosmicSessionEvidence';
+    const limits = document.createElement('p'); limits.id = 'cosmicSessionLimits'; limits.setAttribute('role', 'status');
+    const actions = document.createElement('div'); actions.className = 'cosmic-session-actions';
+    ['Primary', 'Pause', 'Abort', 'Export'].forEach(name => {
+      const button = document.createElement('button');
+      button.id = `cosmicSession${name}`;
+      button.type = 'button';
+      actions.append(button);
+    });
+    section.append(header, context, history, evidence, limits, actions);
+    planner.append(section);
+  },
+
+  sessionErrorText(code, isKo = ko()) {
+    const messages = {
+      SESSION_INDEXEDDB_UNAVAILABLE: ['이 브라우저는 기기 로컬 세션 저장을 지원하지 않습니다.', 'This browser does not support device-local session storage.'],
+      SESSION_STORAGE_PRESSURE: ['저장 공간이 부족해 전이를 기록하지 않았습니다. 기존 기록은 그대로입니다.', 'Storage is full; the transition was not written and existing records remain unchanged.'],
+      SESSION_REVISION_CONFLICT: ['다른 탭에서 세션이 먼저 바뀌었습니다. 최신 체크포인트를 다시 읽었습니다.', 'Another tab changed the session first. The latest checkpoint was reloaded.'],
+      SESSION_OWNER_CONFLICT: ['다른 기기 소유 분기와 충돌해 자동 병합하지 않았습니다.', 'A different device-owner branch conflicted; it was not auto-merged.'],
+      SESSION_IDEMPOTENCY_CONFLICT: ['같은 명령 키에 다른 내용이 들어와 거부했습니다.', 'The same command key carried different content and was rejected.'],
+      SESSION_DATABASE_UPGRADE_BLOCKED: ['다른 탭이 이전 저장소를 사용 중입니다. 그 탭을 닫고 다시 시도하세요.', 'Another tab is using the previous database. Close it and try again.'],
+      SESSION_PLAN_CONTEXT_STALE: ['현재 위치·UTC와 세션 원본 계획이 달라 다음 단계로 진행하지 않았습니다.', 'The current location or UTC differs from the session plan, so it was not advanced.'],
+    };
+    return (messages[code] || [code || '세션 저장 실패', code || 'Session storage failed'])[isKo ? 0 : 1];
+  },
+
+  async ensureObservationSessionService() {
+    this._sessionServicePromise = this._sessionServicePromise || openLocalObservationSessionService();
+    const service = await this._sessionServicePromise;
+    if (!this._sessionUnsubscribe) {
+      this._sessionUnsubscribe = observeObservationSessionUpdates(message => {
+        if (message.planRevision !== this._observationPlan?.revision) return;
+        void this.restoreObservationSessionForPlan({ conflictNotice: false });
+      });
+    }
+    return service;
+  },
+
+  async restoreObservationSessionForPlan({ conflictNotice = false } = {}) {
+    this.ensureObservationSessionUi();
+    const plan = this._observationPlan;
+    const loadId = ++this._sessionLoadId;
+    if (!plan) {
+      this._observationSession = null;
+      this.renderObservationSession();
+      return false;
+    }
+    try {
+      const service = await this.ensureObservationSessionService();
+      const loaded = await service.findByPlanRevision(plan.revision);
+      if (loadId !== this._sessionLoadId || this._observationPlan?.revision !== plan.revision) return false;
+      this._observationSession = loaded.checkpoint;
+      this._observationSessionRecovery = loaded.recovered ? 'REPLAYED_FROM_APPEND_LOG' : null;
+      if (!conflictNotice) this._observationSessionError = null;
+      this.renderObservationSession();
+      return !!loaded.checkpoint;
+    } catch (error) {
+      if (loadId !== this._sessionLoadId) return false;
+      this._observationSessionError = error?.code || error?.message || 'SESSION_STORAGE_FAILED';
+      this.renderObservationSession();
+      return false;
+    }
+  },
+
+  sessionPrimaryCommand() {
+    const state = this._observationSession?.state;
+    if (!state || state === 'COMPLETED' || state === 'ABORTED') return 'START_SESSION';
+    if (state === 'PREPARING') return 'MARK_PREPARED';
+    if (state === 'ALIGNING') return 'MARK_ALIGNED';
+    if (state === 'OBSERVING') return 'COMPLETE_SESSION';
+    if (state === 'PAUSED') return 'RESUME_SESSION';
+    return null;
+  },
+
+  async runObservationSessionCommand(type) {
+    if (this._observationSessionBusy) return false;
+    const plan = this._observationPlan;
+    const current = this._observationSession;
+    const starts = type === 'START_SESSION';
+    if (!plan || (starts && (!this._offlinePlanManifest || this._observationPlanStatus !== 'CURRENT'))) return false;
+    if (!starts && !current) return false;
+    if (!starts && !['PAUSE_SESSION', 'ABORT_SESSION'].includes(type)
+      && (this._observationPlanStatus !== 'CURRENT' || current.planRevision !== plan.revision)) {
+      this._observationSessionError = 'SESSION_PLAN_CONTEXT_STALE';
+      this.renderObservationSession();
+      return false;
+    }
+    this._observationSessionBusy = true;
+    this._observationSessionError = null;
+    this.renderObservationSession();
+    try {
+      const service = await this.ensureObservationSessionService();
+      const result = starts
+        ? await service.start({ planManifest: this._offlinePlanManifest })
+        : await service.dispatch({
+          sessionId: current.sessionId,
+          type,
+          expectedRevision: current.revision,
+        });
+      this._observationSession = result.checkpoint;
+      this._observationSessionRecovery = result.recoveredBeforeCommand ? 'REPLAYED_FROM_APPEND_LOG' : null;
+      if (starts) {
+        this._sessionShellStatus = 'WARMING';
+        void cacheLoadedSessionShell().then(status => {
+          this._sessionShellStatus = status.checksum
+            ? `${status.status} · ${status.checksum} ${status.checksummed}/${status.requested}`
+            : status.status;
+          this.renderObservationSession();
+        }).catch(() => {
+          this._sessionShellStatus = 'PARTIAL';
+          this.renderObservationSession();
+        });
+      }
+      return true;
+    } catch (error) {
+      this._observationSessionError = error?.code || error?.message || 'SESSION_STORAGE_FAILED';
+      if (this._observationSessionError === 'SESSION_REVISION_CONFLICT') {
+        await this.restoreObservationSessionForPlan({ conflictNotice: true });
+        this._observationSessionError = 'SESSION_REVISION_CONFLICT';
+      }
+      return false;
+    } finally {
+      this._observationSessionBusy = false;
+      this.renderObservationSession();
+    }
+  },
+
+  async runObservationSessionPrimary() {
+    const command = this.sessionPrimaryCommand();
+    return command ? this.runObservationSessionCommand(command) : false;
+  },
+
+  renderObservationSession() {
+    const section = document.getElementById('cosmicSession');
+    if (!section) return;
+    const plan = this._observationPlan;
+    if (!plan) { section.hidden = true; return; }
+    section.hidden = false;
+    const isKo = ko();
+    const session = this._observationSession;
+    const currentPlan = this._observationPlanStatus === 'CURRENT';
+    const planMatches = !session || session.planRevision === plan.revision;
+    const primaryCommand = this.sessionPrimaryCommand();
+    const state = session?.state || (currentPlan ? 'LOCAL_READY' : 'PLAN_STALE');
+    section.dataset.state = state.toLowerCase().replace(/_/g, '-');
+    document.getElementById('cosmicSessionTitle').textContent = isKo ? '이 기기의 관측 세션' : 'Observation session on this device';
+    document.getElementById('cosmicSessionStatus').textContent = state.replace(/_/g, ' ');
+    document.getElementById('cosmicSessionContext').textContent = session
+      ? `${isKo ? '로컬 체크포인트' : 'Local checkpoint'} · ${session.sessionId} · ${session.executionMode}`
+      : (isKo
+        ? '현재 계획을 이 기기의 append-only 기록으로 시작할 수 있습니다.'
+        : 'The current plan can start as an append-only record on this device.');
+
+    const history = document.getElementById('cosmicSessionHistory');
+    history.replaceChildren();
+    if (session?.history?.length) {
+      session.history.slice(-4).forEach(item => {
+        const row = document.createElement('li');
+        row.textContent = `${item.from} → ${item.to}`;
+        const note = document.createElement('small');
+        note.textContent = `rev ${item.revision} · ${plannerUtc(item.occurredAtUtc)} · ${item.checkpointId}`;
+        row.append(note); history.append(row);
+      });
+    } else {
+      const row = document.createElement('li');
+      row.textContent = isKo ? '아직 저장된 세션 전이가 없습니다.' : 'No session transition has been stored yet.';
+      history.append(row);
+    }
+
+    const evidenceParts = [`plan ${plan.revision}`];
+    if (session) evidenceParts.push(`checkpoint rev ${session.revision}`, session.checkpointId);
+    if (this._observationSessionRecovery) evidenceParts.push(this._observationSessionRecovery);
+    if (this._sessionShellStatus) evidenceParts.push(`offline shell ${this._sessionShellStatus}`);
+    document.getElementById('cosmicSessionEvidence').textContent = evidenceParts.join(' · ');
+    const baseLimit = isKo
+      ? 'LOCAL ONLY · 서버 upload/pull 미구현 · 자동 병합 없음 · 기기 기록 시각은 관측 증거 n이 아님 · 장비 명령 없음'
+      : 'LOCAL ONLY · server upload/pull not implemented · no automatic merge · device action times are not observation evidence n · no device command';
+    const errorText = this._observationSessionError
+      ? ` · ${this.sessionErrorText(this._observationSessionError, isKo)}` : '';
+    document.getElementById('cosmicSessionLimits').textContent = `${baseLimit}${errorText}`;
+
+    const primary = document.getElementById('cosmicSessionPrimary');
+    const pause = document.getElementById('cosmicSessionPause');
+    const abort = document.getElementById('cosmicSessionAbort');
+    const exportButton = document.getElementById('cosmicSessionExport');
+    const labels = {
+      START_SESSION: isKo ? (session ? '새 로컬 세션 시작' : '이 기기에서 세션 시작') : (session ? 'Start a new local session' : 'Start session on this device'),
+      MARK_PREPARED: isKo ? '준비 확인 · 정렬 단계로' : 'Confirm preparation · align',
+      MARK_ALIGNED: isKo ? '정렬 확인 · 관측 기록 단계로' : 'Confirm alignment · observe',
+      COMPLETE_SESSION: isKo ? '세션 완료 기록' : 'Record session complete',
+      RESUME_SESSION: isKo ? '로컬 체크포인트 이어가기' : 'Resume local checkpoint',
+    };
+    primary.textContent = labels[primaryCommand] || (isKo ? '전이 불가' : 'Transition unavailable');
+    pause.textContent = isKo ? '일시중지 기록' : 'Record pause';
+    abort.textContent = isKo ? '중단 기록' : 'Record abort';
+    exportButton.textContent = isKo ? '세션 JSON 저장' : 'Save session JSON';
+    const terminal = session && ['COMPLETED', 'ABORTED'].includes(session.state);
+    const primaryNeedsCurrent = !['PAUSE_SESSION', 'ABORT_SESSION'].includes(primaryCommand);
+    primary.hidden = !primaryCommand;
+    primary.disabled = this._observationSessionBusy || (primaryNeedsCurrent && (!currentPlan || !planMatches));
+    pause.hidden = !session || !['PREPARING', 'ALIGNING', 'OBSERVING'].includes(session.state);
+    pause.disabled = this._observationSessionBusy;
+    abort.hidden = !session || terminal;
+    abort.disabled = this._observationSessionBusy;
+    exportButton.hidden = !session;
+    exportButton.disabled = this._observationSessionBusy;
+  },
+
+  async exportObservationSession() {
+    const session = this._observationSession;
+    if (!session) return false;
+    try {
+      const service = await this.ensureObservationSessionService();
+      const exported = await service.exportSession(session.sessionId);
+      const blob = new Blob([`${JSON.stringify(exported, null, 2)}\n`], { type: 'application/json;charset=utf-8' });
+      const href = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = href; link.download = `aetherus-session-${session.sessionId}.json`;
+      document.body.append(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(href), 0);
+      return true;
+    } catch (error) {
+      this._observationSessionError = error?.code || error?.message || 'SESSION_EXPORT_FAILED';
+      this.renderObservationSession();
+      return false;
+    }
   },
 
   showAstronomy(body) {
@@ -1987,6 +2247,7 @@ export const cosmic3d = {
   },
 
   clearAstronomy() {
+    this._sessionLoadId += 1;
     this._astronomyObservation = null;
     this._astronomyObserver = null;
     this._astronomyAt = null;
@@ -1996,12 +2257,19 @@ export const cosmic3d = {
     this._observationPlanStatus = null;
     this._offlinePlanManifest = null;
     this._plannerError = null;
+    this._observationSession = null;
+    this._observationSessionError = null;
+    this._observationSessionBusy = false;
+    this._observationSessionRecovery = null;
+    this._sessionShellStatus = null;
     this.bodyInfo?.classList.remove('has-astronomy');
     document.body.classList.remove('aetherus-astronomy-open');
     const section = document.getElementById('cosmicAstronomy');
     if (section) section.hidden = true;
     const planner = document.getElementById('cosmicPlanner');
     if (planner) planner.hidden = true;
+    const session = document.getElementById('cosmicSession');
+    if (session) session.hidden = true;
   },
 
   closeBody(render = true) {
@@ -2373,6 +2641,10 @@ export const cosmic3d = {
     document.getElementById('cosmicPlannerBuild')?.addEventListener('click', () => this.buildObservationPlan());
     document.getElementById('cosmicPlannerRebuild')?.addEventListener('click', () => this.buildObservationPlan());
     document.getElementById('cosmicPlannerDownload')?.addEventListener('click', () => this.downloadObservationPlan());
+    document.getElementById('cosmicSessionPrimary')?.addEventListener('click', () => this.runObservationSessionPrimary());
+    document.getElementById('cosmicSessionPause')?.addEventListener('click', () => this.runObservationSessionCommand('PAUSE_SESSION'));
+    document.getElementById('cosmicSessionAbort')?.addEventListener('click', () => this.runObservationSessionCommand('ABORT_SESSION'));
+    document.getElementById('cosmicSessionExport')?.addEventListener('click', () => this.exportObservationSession());
     document.getElementById('cosmicPhotoBack')?.addEventListener('click', () => this.closePhotoAtlas());
     document.getElementById('cosmicPhotoFilters')?.querySelectorAll('[data-telescope]').forEach(button => {
       button.addEventListener('click', () => this.openPhotoAtlas(button.dataset.telescope));

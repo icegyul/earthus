@@ -11,11 +11,32 @@
  *   · html·js·css(같은 출처)는 **network-first + cache:'reload'** 로 다룬다.
  *     cache:'reload' 는 브라우저 HTTP 캐시를 건너뛰고 네트워크에서 새로 받는다 →
  *     배포한 최신 코드가 항상 온다. 네트워크가 죽었을 때만 캐시로 폴백한다.
- *   · 데이터 JSON·타일·CDN 은 손대지 않고 통과시킨다 (여기서 캐시하면 용량만 는다).
+ *   · 일반 데이터 JSON·타일·CDN 은 손대지 않고 통과시킨다. 단, 사용자가 현장 세션을
+ *     시작하면 그 화성 세션 복원에 필요한 exact catalog/detail texture만 제한 저장한다.
  */
 
-const CACHE = 'earthus-shell-2026-07-28c';
+const CACHE = 'earthus-shell-2026-08-12-session1';
+const LEGACY_CACHES = new Set(['earthus-shell-2026-07-28c']);
 const SHELL = ['./index.html', './manifest.webmanifest'];
+const SESSION_DEPENDENCY_PATHS = new Set([
+  '/data/celestial-bodies.json',
+  '/space/planets/detail/mars.webp',
+]);
+const isSessionDependency = url => SESSION_DEPENDENCY_PATHS.has(url.pathname);
+
+async function responseWithSessionDigest(response) {
+  const body = await response.clone().arrayBuffer();
+  const digest = await crypto.subtle.digest('SHA-256', body);
+  const hex = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+  const headers = new Headers(response.headers);
+  headers.set('X-Earthus-Aetherus-Session-Resource', '1');
+  headers.set('X-Earthus-Aetherus-SHA256', hex);
+  return new Response(body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -25,8 +46,24 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+    caches.keys().then(async keys => {
+      const current = await caches.open(CACHE);
+      // 기존 세션이 warm한 same-origin 앱 코드만 새 cache로 옮긴 뒤 옛 cache를 지운다.
+      // 새 install이 넣은 index/manifest는 덮지 않고, 데이터·타일·외부 응답은 복사하지 않는다.
+      for (const key of keys.filter(candidate => LEGACY_CACHES.has(candidate))) {
+        const legacy = await caches.open(key);
+        const requests = await legacy.keys();
+        for (const request of requests) {
+          const url = new URL(request.url);
+          if (url.origin !== self.location.origin
+            || (!/\.(?:js|css|html|webmanifest)$/i.test(url.pathname) && !isSessionDependency(url))
+            || await current.match(request)) continue;
+          const response = await legacy.match(request);
+          if (response) await current.put(request, response);
+        }
+      }
+      await Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)));
+    })
       .then(() => self.clients.claim())
   );
 });
@@ -43,6 +80,14 @@ self.addEventListener('fetch', (e) => {
   const dest = req.destination;
   const isAppCode = req.mode === 'navigate'
     || dest === 'document' || dest === 'script' || dest === 'style';
+  if (!isAppCode && isSessionDependency(url)) {
+    e.respondWith(
+      fetch(req, { cache: 'no-cache' })
+        .catch(() => caches.match(req))
+        .then(response => response || new Response('', { status: 503, statusText: 'Session dependency unavailable' }))
+    );
+    return;
+  }
   if (!isAppCode) return;
 
   e.respondWith(
@@ -58,6 +103,47 @@ self.addEventListener('fetch', (e) => {
       .catch(() => caches.match(req).then(
         (r) => r || caches.match('./index.html', { ignoreSearch: true })))
   );
+});
+
+/* Aetherus 현장 세션을 시작한 뒤에는 그 순간 실제로 로드된 같은 출처의 앱 코드와
+   화성 session 복원에 필요한 exact catalog/detail texture만 체크포인트한다. 전체 사이트,
+   일반 데이터 JSON·사진·타일을 추측해 저장하지 않는다. 모든 항목은 SHA-256을 응답
+   header에 고정하지만, 이 제한 cache를 완전한 offline pack 또는 server sync로 표현하지 않는다. */
+self.addEventListener('message', (e) => {
+  if (e.data?.type !== 'earthus:aetherus-cache-session-shell') return;
+  const reply = e.ports?.[0];
+  const resources = [...new Set(Array.isArray(e.data.resources) ? e.data.resources : [])]
+    .slice(0, 160)
+    .map(value => {
+      try { return new URL(String(value), self.location.origin); } catch (_) { return null; }
+    })
+    .filter(url => url?.origin === self.location.origin
+      && (/\.(?:js|css|html|webmanifest)$/i.test(url.pathname) || isSessionDependency(url)));
+
+  e.waitUntil((async () => {
+    const cache = await caches.open(CACHE);
+    const results = await Promise.all(resources.map(async url => {
+      try {
+        const existing = await cache.match(url.href);
+        const response = existing || await fetch(url.href, { cache: 'no-cache' });
+        if (!response.ok) return { cached: false, checksummed: false };
+        const stamped = await responseWithSessionDigest(response);
+        await cache.put(url.href, stamped);
+        return { cached: true, checksummed: true };
+      } catch (_) { return { cached: false, checksummed: false }; }
+    }));
+    const cached = results.filter(result => result.cached).length;
+    const checksummed = results.filter(result => result.checksummed).length;
+    try {
+      reply?.postMessage({
+        ok: cached === resources.length && checksummed === resources.length,
+        cached,
+        requested: resources.length,
+        checksummed,
+        checksum: 'SHA-256',
+      });
+    } catch (_) { }
+  })());
 });
 
 /* ══════════════════════════════════════════════════════════════

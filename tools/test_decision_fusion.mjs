@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+import assert from 'node:assert/strict';
+import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'); const dir = await mkdtemp(path.join(os.tmpdir(), 'earthus-fusion-'));
+await writeFile(path.join(dir, 'package.json'), '{"type":"module"}');
+for (const name of ['ai-evidence.js', 'decision-fusion.js']) await writeFile(path.join(dir, name), await readFile(path.join(root, 'prototype/js/space', name), 'utf8'));
+const ai = await import(pathToFileURL(path.join(dir, 'ai-evidence.js')).href); const fusion = await import(pathToFileURL(path.join(dir, 'decision-fusion.js')).href);
+const intent = ai.classifyAiIntent({ text: 'Explain this observation.', requestedAtUtc: '2026-08-12T00:00:00Z' });
+const ledger = ai.createEvidenceLedger({ entries: [{ evidenceId: 'official-1', claim: 'The official source issued this observation.', sourceUrl: 'https://example.gov/observation', provenance: 'observation', observedAtUtc: '2026-08-12T00:00:00Z' }] });
+const plan = ai.composeEvidenceAnswerPlan({ intent, ledger, assertionEvidenceIds: ['official-1'] });
+const base = safety => ({ schemaVersion: 'earthus.activity-decision.v1', axes: { safety }, recommendation: { state: 'WITHHELD' } });
+const held = fusion.composeGroundedDecisionFusion({ intent, ledger, answerPlan: plan, baseDecision: base({ status: 'UNKNOWN', blocksPositiveRecommendation: true }), generatedAtUtc: '2026-08-12T00:01:00Z' });
+assert.equal(held.state, 'WITHHELD_SAFETY_OR_EVIDENCE'); assert.equal(held.action, null); assert.equal(held.toolCalls, 0); assert.equal(held.claims[0].sourceUrl, 'https://example.gov/observation');
+const readable = fusion.composeGroundedDecisionFusion({ intent, ledger, answerPlan: plan, baseDecision: base({ status: 'SAFE', blocksPositiveRecommendation: false }), generatedAtUtc: '2026-08-12T00:01:00Z' });
+assert.equal(readable.state, 'READ_ONLY_GROUNDED'); assert.equal(readable.recommendation.upgradedByFusion, false);
+assert.doesNotMatch(await readFile(path.join(root, 'prototype/js/space/decision-fusion.js'), 'utf8'), /\bfetch\s*\(|WebSocket|setInterval|requestAnimationFrame|navigator\.(serial|bluetooth)/i);
+console.log('PASS: grounded cited fusion stays read-only and cannot bypass decision safety');

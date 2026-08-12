@@ -225,6 +225,16 @@ TPW는 공통 표현 엔진과 테스트만 포함하며 운영 객체
 
 상세 계약은 `RESERVATION_IMPACT.md`다. 공급자 성공을 추정하거나 예약·취소·결제를 실행하지 않는다.
 
+## 4-10. PR-10 Grounded Fusion shadow와 남은 gate
+
+- [x] cited evidence ledger만 조합하고 source/time/provenance/precision/license 보존
+- [x] Safety `UNKNOWN`/`DANGER` 또는 recommendation block은 `WITHHELD`
+- [x] action/tool/model call 0, 기존 decision recommendation upgrade 0
+- [x] injection-safe read-only plan·uncited claim·unsafe plan fail-closed
+- [ ] live-source rights/freshness, model evaluation/cost, red-team, UI provenance, tool allowlist 승인
+
+상세 계약은 `DECISION_FUSION.md`다. Fusion에서 action route를 추가하지 않는다.
+
 ## 5. 금지
 
 - PR-01에서 기존 source handler 64개를 한 번에 교체하지 않는다.

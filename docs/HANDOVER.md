@@ -101,7 +101,10 @@ private delta로 계산한다. Safety·공식 폐쇄·예보 자료 신뢰도·�
 개인화/UI 30개와 기존 Decision 31·Safety 23개, 4개 viewport 실제 화면, flag-off entry를
 통과했다. 정본은 [`earthus-v23/PERSONALIZATION_UI.md`](earthus-v23/PERSONALIZATION_UI.md)다.
 공개 entry의 동적 import는 추가했지만 `DECISION_CORE_READY=false/undefined`라 운영 첫 Earth는
-UI JS/CSS를 요청하지 않는다. 실제 preference 저장, 공개 추천, 예약 행동은 여전히 금지다.
+UI JS/CSS를 요청하지 않는다. 정적 7개 파일은 CloudFront 무효화
+`I1M9HEZOHIKQJTOYOJRS88VGWP`로 운영 반영했고 live SHA-256·MIME·실제 운영 flag-off를
+검증했다. 증거는 [`earthus-v23/RELEASE-2026-08-12-PR08.md`](earthus-v23/RELEASE-2026-08-12-PR08.md)다.
+실제 preference 저장, 공개 추천, 예약 행동은 여전히 금지다.
 
 ---
 

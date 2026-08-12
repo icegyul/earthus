@@ -26,6 +26,7 @@
 | ECMWF Open Data | `ecmwf-ingest` | 전지구, run별 | 코드상 CC BY 4.0 표기 | 원문·attribution·버전 fixture 후 `CONDITIONAL` |
 | Met Office DataHub | `metoffice-uk` | 영국 36곳 | 무료 plan 360 calls/day 확인. 재표시·cache·redistribution 조건 미확인 | `UNKNOWN` |
 | NOAA/NWS/NHC/USGS/NASA | `archiver`, `ascat-observations`, `cyclone-analog`, `eclipse-path`, `gk2a-clouds`, `gmgsi-clouds`, `gts-global`, `land-stations`, `ocean-solar`, `tpw-grid`, `tsunami-intl`, `wildfire`, `world-alerts` | 전지구/미국/해양. TPW는 GFS 0.25°→1° 동아시아 | 미국 정부 자료가 많지만 dataset·이미지별 metadata/제3자 credit 확인. TPW는 NOAA/NCEP 원본 직접 | TPW `APPROVED_FREE`, 그 외 dataset별 `CONDITIONAL` |
+| Esri World Boundaries and Places | PR-04 read mode reference tiles | 전지구 경계·지명, zoom에 따른 coverage | 화면 표시 중 Esri·Garmin·HERE·OSM·GIS community attribution 직접 노출. EARTHUS cache/history/export/derivative/AI 금지 | display-only `CONDITIONAL` |
 | adsb.lol | `flight-track` | 공급 coverage와 지연에 따름 | API·공개 DB ODbL, attribution/share-alike. 운영 사용은 공급자 연락 권고 | `CONDITIONAL`, SLA 판매 금지 |
 | 에코뱅크 | `ecobank`, `ecobird` | 한국 생태 조사 | 제1유형 표기와 제3자 권리 포함 | `BLOCKED_PAID` |
 | 바다거북 | `sea-turtle` | 공개 이동 경로 | 공공누리 제4유형: 비상업·변경금지 | `BLOCKED_PAID`, 파생/정밀좌표 제한 |
@@ -79,6 +80,10 @@ wind-grid             world-alerts
 - Met Office Global Spot 무료 plan은 하루 360 calls다. 가격 페이지 확인만으로
   재표시·cache·redistribution 권리가 확정되지는 않는다.
   <https://datahub.metoffice.gov.uk/pricing/site-specific>
+- Esri World Boundaries and Places는 전지구 국경·1차 행정경계·주요 지명을 제공하며
+  Esri·Garmin·HERE·OpenStreetMap contributors·GIS user community attribution을 요구한다.
+  PR-04는 live display만 쓰고 별도 cache/export/derivative를 만들지 않는다.
+  <https://www.arcgis.com/home/item.html?id=83f1dfd1a4f54a148ad4419df4277d76>
 
 ## 5. 응답 행 필수 metadata
 

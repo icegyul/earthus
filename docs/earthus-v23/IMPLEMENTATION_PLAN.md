@@ -28,7 +28,7 @@
 | PR-01 | Signal Foundation (로컬 완료) | PD의 다음 단계 직접 지시 | `EarthSignalEnvelope`, canonical time/CRS/unit/missing, 대표 3 compatibility adapter | fixture·실제 공개 KMA 입력 대조 완료; AWS/shadow reader 전환은 별도 gate |
 | PR-02 | Rights/Freshness (로컬 완료) | PD의 다음 단계 직접 지시 | source policy, revision, provider health, standard errors | 20개 상태 replay·실제 KMA 연속검증 완료; 승인·AWS·reader는 별도 gate |
 | PR-03 | Earth View State (정적 운영 배포) | existing Cesium state | Earth View/Style/Data/Evidence/Decision URL state | 첫 화면 지구 보존, 공유·뒤로가기·대표 서비스 URL 운영 검증 |
-| PR-04 | V0 Readability | PR-03 | 공통 범례·값 라벨·지점 카드·read mode | 기온 대표 지역에서 10초 판독, 원값 대조 |
+| PR-04 | V0 Readability (로컬 완료) | PR-03 | 공통 범례·값 라벨·지점 카드·read mode | 기온 대표 지역에서 10초 판독, 원값 대조 |
 | PR-05 | Safety Slice | 공식 특보 fixture | KMA warning adapter, region mapping, Hard Gate, CTA | 발표→대치→해제/지연/미매핑 replay |
 | PR-06 | Continuous Layers | V0 | 기온·기압·바람·TPW·SST·편차·파고 | 단계색/등치선/값/원값, idle render 0 |
 | PR-07 | Decision Core | PR-05 | Confidence, Base Activity 5 profiles, contribution ledger | deterministic replay와 cache key |
@@ -115,6 +115,22 @@ PR-00은 문서 준비는 끝났지만 위 네 운영 관문 전까지 `APPROVAL
 
 상세 계약과 실제 증거는 `EARTH_VIEW_STATE.md`가 정본이다. Decision 상태는 후속 PR이
 사용할 주소 계약이며 이 PR이 안전·활동·예약 결과를 만들었다는 뜻이 아니다.
+
+## 4-4. PR-04 로컬 완료와 남은 gate
+
+- [x] query 없는 첫 지구에서 판독 패널·도시 숫자·참조 지도 0
+- [x] 연속 격자의 전체 색 경계·단위·유효시각·해상도·유효 원격자 `n`
+- [x] 카메라 지평선·캔버스 안·화면 충돌을 통과한 도시의 최근접 원격자값
+- [x] 지점 좌표·값·단위·시각·출처 Evidence 카드와 URL 새로고침 복원
+- [x] `earthRead=1`, Earth 복귀, 레이어 해제 시 참조 타일·라벨 해제 계약
+- [x] Esri 참조 지도의 화면 attribution과 display-only 권리 경계
+- [x] 390×844/430×932/768×1024/1280×720/1440×900 overflow 0 실화면
+- [x] 자동검사 16/16, Earth route 12/12와 TPW/AETHERUS 회귀
+- [ ] 운영 정적 배포·live SHA-256·대표 URL·warning/error 0
+- [ ] Safari·구형 iPhone 실제 기기, idle/released render owner 계측
+
+상세 계약은 `READABILITY_FOUNDATION.md`다. 등치선은 PR-04 범위가 아니며, PR-06에서
+연속장별 간격·결측·성능을 따로 승인하기 전 점 관측이나 결측을 보간하지 않는다.
 
 ## 5. 금지
 

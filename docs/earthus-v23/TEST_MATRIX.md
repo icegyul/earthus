@@ -102,5 +102,14 @@
 - PR-03 `TPW_READY=false` 직접 URL: Style fallback·NOAA 구름 유지·`UNAVAILABLE_LAYER`
 - 동시 AETHERUS route-state v3와 시험이 같은 revision으로 동기화된 뒤 foundation 13 route,
   astronomy 5 route/privacy, photo ownership 회귀 통과; PR-03은 해당 파일/시험을 수정하지 않음
+- PR-04 판독 자동검사 16/16, Earth route 12/12, TPW grid math, Signal Foundation 12,
+  Rights/Freshness 20, TPW handler 2와 AETHERUS 5개 회귀 suite 통과
+- 로컬 기온 Data: 9개 색 경계, valid 2026-08-12 01:00 UTC, 5°, n=2,376,
+  화면 도시 최근접 원격자값과 실제 지점 26.8°C·좌표·Open-Meteo 출처 복원
+- 지평선 검사를 추가하기 전 태평양 화면에 아프리카 도시가 섞인 실패를 실화면에서 발견했고,
+  수정 뒤 Okinawa/Taipei/Shanghai/Busan/Manila/Hong Kong/Guangzhou만 표시됨
+- 390×844/430×932/768×1024/1280×720/1440×900 판독 패널 overflow 0,
+  Esri 참조 credit 직접 표시, 첫 Earth·Earth 복귀에서는 패널/read class 0
+- PR-04 로컬 브라우저 warning/error 0. Safari·구형 iPhone·운영 live 검증은 배포 gate
 
-이 기준선은 PR-03 로컬 완료와 PR-11 운영 전후 비교 기준이다.
+이 기준선은 PR-04 로컬 완료와 PR-11 운영 전후 비교 기준이다.

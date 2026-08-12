@@ -47,6 +47,14 @@ PD의 세 번째 **“계속 진행해”** 지시로 PR-03 Earth View State도 
 정본 증거는 [`earthus-v23/RELEASE-2026-08-12-PR00A-03.md`](earthus-v23/RELEASE-2026-08-12-PR00A-03.md)다.
 PR-01/02 Lambda·schedule·reader, `TPW_READY=true`, 판매·SNS는 계속 미승인이다.
 
+PD의 후속 **“계속 진행해, 배포하고 커밋”** 지시로 PR-04 V0 Readability를 로컬 구현했다.
+query 없는 첫 Earth는 그대로 두고, 연속 격자를 고른 뒤에만 전체 색 경계·단위·유효시각·
+해상도·유효 원격자 `n`, 현재 화면 도시 최근접 원격자값, 지점 좌표·값·출처를 보여준다.
+판독 모드는 국경·지명 참조 타일과 `earthRead=1`을 복원하며 Esri 등 제공자 credit을 화면에
+직접 표시한다. 5개 화면 크기와 실제 지점·새로고침·Earth 복귀, 자동/회귀 시험을 통과했고
+정본은 [`earthus-v23/READABILITY_FOUNDATION.md`](earthus-v23/READABILITY_FOUNDATION.md)다.
+아직 운영 배포 전이며 실제 등치선은 PR-06, 공식 특보 Hard Gate는 PR-05 범위다.
+
 ---
 
 ## 1. 무엇보다 먼저 — 이 프로젝트의 원칙

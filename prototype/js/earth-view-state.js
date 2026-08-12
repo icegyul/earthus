@@ -9,7 +9,7 @@ import { decodeEarthRoute, writeEarthRoute } from './earth-route-state.js';
 
 const EMPTY = Object.freeze({
   view: 'earth', layer: null, at: null, model: null, point: null,
-  activity: null, reservation: null,
+  read: false, activity: null, reservation: null,
 });
 
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -21,6 +21,7 @@ function cleanState(state) {
     at: state?.at || null,
     model: state?.model || null,
     point: state?.point || null,
+    read: state?.read === true,
     activity: state?.activity || null,
     reservation: state?.reservation || null,
   };
@@ -44,7 +45,9 @@ export const earthViewState = {
       else if (detail.view === 'earth') {
         /* 레이어를 고른 뒤 메뉴만 닫는 것은 Data View를 닫는 행동이 아니다.
            Style 단계에서 아무것도 고르지 않고 닫았을 때만 Earth로 돌아간다. */
-        if (detail.reason !== 'style-closed' || store.earthView.view === 'style') this.goEarth();
+        if (detail.reason !== 'style-closed' || store.earthView.view === 'style') {
+          this.goEarth({ resetLayers: detail.resetLayers === true });
+        }
       }
       else if (detail.view === 'data' && detail.layer) {
         this._preferredLayer = detail.layer;
@@ -62,6 +65,10 @@ export const earthViewState = {
     document.addEventListener('earthus:decision-state', event => {
       const detail = event.detail || {};
       this.showDecision(detail);
+    });
+    document.addEventListener('earthus:read-mode', event => {
+      if (!store.earthView.layer || store.earthView.view === 'earth' || store.earthView.view === 'style') return;
+      this._transition({ ...store.earthView, read: event.detail?.on === true });
     });
 
     store.on('layer', (id, on) => this._queueLayer(id, on));
@@ -102,6 +109,7 @@ export const earthViewState = {
       state.point = null;
       state.activity = null;
       state.reservation = null;
+      state.read = false;
       state.view = 'style';
     }
     return { state, issues };
@@ -203,7 +211,8 @@ export const earthViewState = {
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
     this._transition({
       view: 'evidence', layer, at: extra.at || null, model: extra.model || null,
-      point: { lat, lon }, activity: null, reservation: null,
+      point: { lat, lon }, read: extra.read ?? store.earthView.read,
+      activity: null, reservation: null,
     });
   },
 
@@ -212,7 +221,8 @@ export const earthViewState = {
     this._transition({
       view: 'decision', layer: detail.layer || store.earthView.layer,
       at: detail.at || store.earthView.at, model: detail.model || store.earthView.model,
-      point: detail.point || store.earthView.point, activity: detail.activity || null,
+      point: detail.point || store.earthView.point, read: detail.read ?? store.earthView.read,
+      activity: detail.activity || null,
       reservation: detail.reservation || null,
     });
   },
@@ -237,7 +247,7 @@ export const earthViewState = {
         const current = store.earthView.layer === turnedOn ? store.earthView : {};
         this._transition({
           view: 'data', layer: turnedOn, at: current.at || null, model: current.model || null,
-          point: null, activity: null, reservation: null,
+          point: null, read: current.read === true, activity: null, reservation: null,
         });
         return;
       }

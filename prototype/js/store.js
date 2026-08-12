@@ -101,7 +101,7 @@ export const store = {
      URL이고, query가 없는 새 방문은 언제나 아름다운 지구에서 시작한다. */
   earthView: Object.freeze({
     view: 'earth', layer: null, at: null, model: null, point: null,
-    activity: null, reservation: null,
+    read: false, activity: null, reservation: null,
   }),
   height: 24_000_000,
   mode: 'ambient',          // ambient | explore
@@ -150,6 +150,7 @@ export const store = {
       at: next?.at || null,
       model: next?.model || null,
       point: next?.point || null,
+      read: next?.read === true,
       activity: next?.activity || null,
       reservation: next?.reservation || null,
     });

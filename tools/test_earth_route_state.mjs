@@ -30,13 +30,15 @@ test('Style 상태를 왕복한다', () => {
 
 test('Data 상태는 layer/time/model을 복원한다', () => {
   const state = {
-    view: 'data', layer: 'temp', at: '2026-08-12T12:00:00Z', model: 'noaa-gfs',
+    view: 'data', layer: 'temp', at: '2026-08-12T12:00:00Z', model: 'noaa-gfs', read: true,
   };
   const decoded = decodeEarthRoute(encodeEarthRoute(state));
   assert.equal(decoded.view, 'data');
   assert.equal(decoded.layer, 'temp');
   assert.equal(decoded.at, '2026-08-12T12:00:00.000Z');
   assert.equal(decoded.model, 'noaa-gfs');
+  assert.equal(decoded.read, true);
+  assert.equal(encodeEarthRoute(state).searchParams.get('earthRead'), '1');
 });
 
 test('Evidence 좌표는 약 1km 정밀도로 제한해 왕복한다', () => {
@@ -105,6 +107,13 @@ test('잘못된 시각은 URL 생성 단계에서 거부한다', () => {
     () => encodeEarthRoute({ view: 'data', layer: 'temp', at: 'tomorrow' }),
     error => error instanceof EarthRouteError && error.code === 'INVALID_AT',
   );
+});
+
+test('잘못된 판독 모드 값은 켜지 않고 issue를 남긴다', () => {
+  const route = decodeEarthRoute('?earth=1&earthView=data&earthLayer=temp&earthRead=yes');
+  assert.equal(route.view, 'data');
+  assert.equal(route.read, false);
+  assert.ok(route.issues.includes('INVALID_READ_MODE'));
 });
 
 let passed = 0;

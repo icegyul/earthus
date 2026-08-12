@@ -12,7 +12,7 @@ export const EARTH_ROUTE_VERSION = 1;
 
 export const EARTH_ROUTE_KEYS = Object.freeze([
   'earth', 'earthView', 'earthLayer', 'earthAt', 'earthModel', 'earthPoint',
-  'earthActivity', 'earthReservation',
+  'earthRead', 'earthActivity', 'earthReservation',
 ]);
 
 const FOREIGN_ROUTE_KEYS = Object.freeze([
@@ -85,6 +85,7 @@ function frozenState(state) {
     at: state.at || null,
     model: state.model || null,
     point: state.point || null,
+    read: state.read === true,
     activity: state.activity || null,
     reservation: state.reservation || null,
     issues: Object.freeze([...(state.issues || [])]),
@@ -94,7 +95,7 @@ function frozenState(state) {
 function safeFallback(version, issues) {
   return frozenState({
     version, view: 'earth', layer: null, at: null, model: null, point: null,
-    activity: null, reservation: null, issues,
+    read: false, activity: null, reservation: null, issues,
   });
 }
 
@@ -118,6 +119,7 @@ export function decodeEarthRoute(input) {
   let at = routeInstant(params.get('earthAt'));
   let model = routeId(params.get('earthModel'));
   let point = routePoint(params.get('earthPoint'));
+  let read = params.get('earthRead') === '1';
   let activity = routeId(params.get('earthActivity'));
   let reservation = routeId(params.get('earthReservation'));
 
@@ -125,6 +127,10 @@ export function decodeEarthRoute(input) {
   if (params.has('earthAt') && !at) issues.push('INVALID_AT');
   if (params.has('earthModel') && !model) issues.push('INVALID_MODEL');
   if (params.has('earthPoint') && !point) issues.push('INVALID_POINT');
+  if (params.has('earthRead') && !['0', '1'].includes(params.get('earthRead'))) {
+    issues.push('INVALID_READ_MODE');
+    read = false;
+  }
   if (params.has('earthActivity') && !activity) issues.push('INVALID_ACTIVITY');
   if (params.has('earthReservation') && !reservation) issues.push('INVALID_RESERVATION');
 
@@ -144,8 +150,8 @@ export function decodeEarthRoute(input) {
   }
 
   if (view === 'earth' || view === 'style') {
-    if (layer || at || model || point || activity || reservation) issues.push('ORPHAN_DETAIL');
-    layer = null; at = null; model = null; point = null; activity = null; reservation = null;
+    if (layer || at || model || point || read || activity || reservation) issues.push('ORPHAN_DETAIL');
+    layer = null; at = null; model = null; point = null; read = false; activity = null; reservation = null;
   } else if (view === 'data') {
     if (point || activity || reservation) issues.push('ORPHAN_DETAIL');
     point = null; activity = null; reservation = null;
@@ -155,7 +161,7 @@ export function decodeEarthRoute(input) {
   }
 
   return frozenState({
-    version: Number(rawVersion), view, layer, at, model, point, activity, reservation, issues,
+    version: Number(rawVersion), view, layer, at, model, point, read, activity, reservation, issues,
   });
 }
 
@@ -168,6 +174,7 @@ function requireState(input) {
   const model = routeId(input.model);
   const point = typeof input.point === 'string'
     ? routePoint(input.point) : routePoint(`${input.point?.lat},${input.point?.lon}`);
+  const read = input.read === true;
   const activity = routeId(input.activity);
   const reservation = routeId(input.reservation);
 
@@ -189,13 +196,13 @@ function requireState(input) {
     throw new EarthRouteError('MISSING_DECISION_TARGET', 'Decision view requires an activity or reservation');
   }
   if ((input.view === 'earth' || input.view === 'style')
-    && (layer || at || model || point || activity || reservation)) {
+    && (layer || at || model || point || read || activity || reservation)) {
     throw new EarthRouteError('ORPHAN_DETAIL', `${input.view} view cannot contain detail state`);
   }
   if (input.view === 'data' && (point || activity || reservation)) {
     throw new EarthRouteError('ORPHAN_DETAIL', 'Data view cannot contain point or decision state');
   }
-  return { view: input.view, layer, at, model, point, activity, reservation };
+  return { view: input.view, layer, at, model, point, read, activity, reservation };
 }
 
 export function encodeEarthRoute(state, href = 'https://earthus.net/') {
@@ -213,6 +220,7 @@ export function encodeEarthRoute(state, href = 'https://earthus.net/') {
   if (normalized.point) {
     url.searchParams.set('earthPoint', `${normalized.point.lat},${normalized.point.lon}`);
   }
+  if (normalized.read) url.searchParams.set('earthRead', '1');
   if (normalized.activity) url.searchParams.set('earthActivity', normalized.activity);
   if (normalized.reservation) url.searchParams.set('earthReservation', normalized.reservation);
   return url;

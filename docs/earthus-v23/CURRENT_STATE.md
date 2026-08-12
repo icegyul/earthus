@@ -40,7 +40,8 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 
 - 첫 화면에는 큰 시계·현재 기온·최고/최저·자료 설명이 함께 보인다. PR-03 운영 배포 뒤에도
   query 없는 진입은 아름다운 Earth View로 유지되고, 데이터는 사용자가 명시적으로 연다.
-- `지구 스타일` 안의 수치 레이어는 공통 도시값·등치선·범례·지점 카드 계약이 아직 없다.
+- 수치 레이어의 공통 범례·도시 원격자값·지점 카드는 PR-04 로컬 구현을 마쳤다.
+  운영 배포와 PR-06 연속장별 등치선 계약은 아직 남아 있다.
 - 모바일 메뉴는 열면 화면의 큰 부분을 덮는다. 선택 뒤 닫힘은 통과했지만 터치·포커스 복귀,
   작은 본문 크기와 실제 구형 iPhone 발열은 미검증이다.
 - 태양계로 들어가도 URL은 `https://earthus.net/` 그대로다. 새로고침·공유가 동일 장면을
@@ -74,6 +75,7 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 | Signal Foundation | PR-01 계획 | 대표 3 source compatibility adapter·schema·fixture 로컬 구현 | AWS·schedule·reader 전환 전부 미승인 |
 | Rights/Freshness | PR-02 계획 | DRAFT registry·governance engine·20 replay 로컬 구현 | source 승인·Control Plane·AWS·reader 전환 미승인 |
 | Earth View State | PR-03 계획 | 접두어 URL·상태 fallback·앞뒤/새로고침 구현 | 정적 운영 배포·대표 URL·AETHERUS/해구 상호배제 검증 완료; 실제 기기·rollback rehearsal 남음 |
+| V0 Readability | PR-04 계획 | 공통 범례·화면 도시 원격자값·지점 근거·read mode 로컬 구현 | 정적 운영 배포 전; 등치선은 PR-06으로 분리 |
 
 ## 5. 현재 작업트리 보호
 
@@ -85,6 +87,7 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 - `aws/signal-foundation/`, canonical schema와 관련 문서: PR-01의 분리된 신규 파일
 - `aws/source-governance/`, rights/freshness schema와 관련 문서: PR-02의 분리된 신규 파일
 - `earth-route-state.js`, `earth-view-state.js`와 store/layerbar/main 일부 hunk: PR-03
+- `readability.js`, `readability.css`와 route/store/grid/main 일부 hunk: PR-04
 
 사용자/AETHERUS/TPW 변경을 섞어 되돌리지 않는다. PR-01/02는 기존 source writer·reader를
 수정하지 않고 private shadow에 분리하며, PR-03은 공유 파일에서 자기 hunk만 선택 병합한다.

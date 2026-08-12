@@ -326,6 +326,7 @@ export const gridOverlay = {
   _fetchedAt: {},
   _labels: null,
   _labelState: null,
+  _rendered: {},
 
   /** @param src 'wind' | 'air' | 'marine' */
   async load(src = 'wind') {
@@ -468,7 +469,11 @@ export const gridOverlay = {
         })
       );
       this.layers[key] = L;
+      this._rendered[key] = { grid: g, field, sourceName: srcName };
       this._showValueLabels(key, g, field);
+      document.dispatchEvent(new CustomEvent('earthus:grid-ready', {
+        detail: { layer: key, grid: g, field, sourceName: srcName },
+      }));
     } catch (e) {
       console.warn('[gridOverlay]', key, e.message);
       /* ⚠️ 조용히 실패하면 안 된다. 켰는데 아무것도 안 나오고 설명도 없으면
@@ -492,12 +497,21 @@ export const gridOverlay = {
     const L = this.layers[key];
     if (L) { try { viewer.imageryLayers.remove(L, true); } catch (_) {} }
     delete this.layers[key];
+    delete this._rendered[key];
     if (key === 'tpw') this._clearValueLabels();
+    document.dispatchEvent(new CustomEvent('earthus:grid-removed', { detail: { layer: key } }));
   },
 
   /* TPW는 색만 보면 값이 기억나지 않는다. 주요 도시를 제한된 수만 표시한다.
      ⚠️ 라벨값은 가장 가까운 **실제 1° 격자점**이다. 보간한 화면 픽셀을 숫자로 쓰지 않는다. */
   _showValueLabels(key, grid, field) {
+    /* PR-04부터 공통 readability가 현재 화면·지평선·충돌을 검사해 수치 라벨을 소유한다.
+       예전 TPW 전용 라벨을 함께 켜면 같은 값이 두 번 겹친다. 구 HTML처럼 공통 패널이
+       없는 배포에서만 이 코드를 fallback으로 남긴다. */
+    if (document.getElementById('readabilityPanel')) {
+      this._clearValueLabels();
+      return;
+    }
     if (key !== 'tpw' || !viewer?.scene?.primitives) {
       if (key === 'tpw') this._clearValueLabels();
       return;
@@ -549,6 +563,8 @@ export const gridOverlay = {
 
   /** 범례용 — 눈금 색 목록 */
   scaleOf(key) { return SCALES[SCALE_OF[key] || key]; },
+
+  renderedOf(key) { return this._rendered[key] || null; },
 
   /* 물어보기 패널이 쓴다 — 레이어를 켜지 않고 값만 읽을 수 있어야 한다 */
   async gridFor(key) { return this.load(SOURCE_OF[key] || 'wind'); },

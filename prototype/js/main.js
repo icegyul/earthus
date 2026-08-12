@@ -30,6 +30,7 @@ import { subscribeSheet, demandSheet } from './ui-subscribe.js';
 import { communityPanel } from './ui-community.js';
 import { askPanel } from './ask/panel.js';
 import { sourceNote } from './ui-source.js';
+import { readability } from './readability.js?v=20260812-readability1';
 import { warn } from './warn.js';
 import { warnUI } from './ui-warn.js';
 import { koreaPanel } from './ui-korea.js';
@@ -424,6 +425,7 @@ async function boot() {
   eventPanel.init();
   askPanel.init();
   sourceNote.init();
+  readability.init();
   /* 기상특보 — 한국 안에 있을 때만 띠가 뜬다.
      ⚠️ await 하지 않는다. 특보 서버가 느리다고 지구본이 늦게 뜨면 안 된다. */
   warnUI.init();
@@ -818,7 +820,7 @@ function onPick(ev) {
         sourceNote.setPoint?.(id, v);
         if (Number.isFinite(v)) {
           document.dispatchEvent(new CustomEvent('earthus:earth-point', {
-            detail: { layer: id, point: { lat: g0.lat, lon: g0.lon } },
+            detail: { layer: id, point: { lat: g0.lat, lon: g0.lon }, value: v },
           }));
         }
         else document.dispatchEvent(new CustomEvent('earthus:earth-point-clear'));
@@ -836,7 +838,7 @@ function onPick(ev) {
       sourceNote.setPoint?.(id, v);
       if (Number.isFinite(v)) {
         document.dispatchEvent(new CustomEvent('earthus:earth-point', {
-          detail: { layer: id, point: { lat: g0.lat, lon: g0.lon } },
+          detail: { layer: id, point: { lat: g0.lat, lon: g0.lon }, value: v },
         }));
       }
       else document.dispatchEvent(new CustomEvent('earthus:earth-point-clear'));

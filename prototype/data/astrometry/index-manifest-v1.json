@@ -1,0 +1,40 @@
+{
+  "schema": "earthus.astrometry-index-manifest.v1",
+  "schemaVersion": 1,
+  "manifestId": "aetherus-astrometry-dev-index",
+  "revision": "dev-20260812-v1",
+  "status": "DEV_FIXTURE_ONLY",
+  "generatedAt": "2026-08-12T00:00:00Z",
+  "solverCompatibility": [
+    "aetherus-seeded-affine-v1"
+  ],
+  "artifacts": [
+    {
+      "path": "m82-nasa-wcs-seeded-v1.json",
+      "revision": "nasa-m82opt-20070104-v1",
+      "bytes": 4252,
+      "sha256": "7429183bf4aef3d32b47c28f9ba3cac3c263b84517c110505369f12eed276cb5",
+      "coverage": "M82 seeded public WCS development fixture"
+    }
+  ],
+  "provenance": {
+    "kind": "calculated",
+    "sourceName": "NASA FITS Support Office · NRAO sample WCS",
+    "sourceUrl": "https://fits.gsfc.nasa.gov/nrao_data/samples/wcs/",
+    "sourceRevision": "m82opt.fits · 2007-01-04",
+    "sampleCount": 24,
+    "licenseStatus": "PRODUCTION_APPROVAL_PENDING"
+  },
+  "distribution": {
+    "mode": "STATIC_CDN_DEV_FIXTURE",
+    "immutableArtifacts": true,
+    "rangeResume": "NOT_IMPLEMENTED",
+    "delta": "NOT_IMPLEMENTED",
+    "rollbackRevision": null
+  },
+  "signature": {
+    "algorithm": "Ed25519",
+    "keyId": "aetherus-astrometry-dev-fixture-20260812",
+    "valueBase64": "fcndjtcJ0VXhndX5PelnS/+58E+7A5SWyZnctLhkFfulLJlAYZfgIcATtskHMzNTCFey2EWWAiL/MN3wnnmGAg=="
+  }
+}

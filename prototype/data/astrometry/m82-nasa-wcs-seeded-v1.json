@@ -1,0 +1,64 @@
+{
+  "schema": "earthus.astrometry-index-shard.v1",
+  "schemaVersion": 1,
+  "indexId": "nasa-fits-m82opt-seeded",
+  "revision": "nasa-m82opt-20070104-v1",
+  "coverage": {
+    "frame": "ICRS",
+    "centerRaDeg": 147.927100003,
+    "centerDecDeg": 69.9079999924,
+    "radiusDeg": 0.18,
+    "scaleArcsecPerPixel": {
+      "min": 0.64,
+      "max": 1.02
+    },
+    "mode": "SEEDED_DEV_FIXTURE_ONLY"
+  },
+  "catalog": [
+    { "id": "m82-c01", "raDeg": 147.816920457, "decDeg": 69.92595661, "magnitudeProxy": -11.9197, "role": "INDEX" },
+    { "id": "m82-c02", "raDeg": 147.905332903, "decDeg": 69.937423407, "magnitudeProxy": -11.8996, "role": "INDEX" },
+    { "id": "m82-c03", "raDeg": 147.811672141, "decDeg": 69.872731685, "magnitudeProxy": -11.8669, "role": "VALIDATION" },
+    { "id": "m82-c04", "raDeg": 148.10759178, "decDeg": 69.914523645, "magnitudeProxy": -11.8349, "role": "INDEX" },
+    { "id": "m82-c05", "raDeg": 147.89803418, "decDeg": 69.892148632, "magnitudeProxy": -11.6118, "role": "INDEX" },
+    { "id": "m82-c06", "raDeg": 148.02107814, "decDeg": 69.912672152, "magnitudeProxy": -11.4753, "role": "VALIDATION" },
+    { "id": "m82-c07", "raDeg": 147.806068511, "decDeg": 69.869362379, "magnitudeProxy": -11.0174, "role": "INDEX" },
+    { "id": "m82-c08", "raDeg": 148.073992157, "decDeg": 69.913345268, "magnitudeProxy": -10.5579, "role": "INDEX" },
+    { "id": "m82-c09", "raDeg": 148.021469931, "decDeg": 69.956837447, "magnitudeProxy": -10.3458, "role": "VALIDATION" },
+    { "id": "m82-c10", "raDeg": 147.832643164, "decDeg": 69.871507077, "magnitudeProxy": -10.1773, "role": "INDEX" },
+    { "id": "m82-c11", "raDeg": 147.878259727, "decDeg": 69.879351073, "magnitudeProxy": -10.0999, "role": "INDEX" },
+    { "id": "m82-c12", "raDeg": 147.841586818, "decDeg": 69.931784286, "magnitudeProxy": -9.9676, "role": "VALIDATION" },
+    { "id": "m82-c13", "raDeg": 147.914241673, "decDeg": 69.892916293, "magnitudeProxy": -9.8169, "role": "INDEX" },
+    { "id": "m82-c14", "raDeg": 147.978731587, "decDeg": 69.945021706, "magnitudeProxy": -9.6143, "role": "INDEX" },
+    { "id": "m82-c15", "raDeg": 147.895400444, "decDeg": 69.935137729, "magnitudeProxy": -9.5861, "role": "VALIDATION" },
+    { "id": "m82-c16", "raDeg": 148.084285381, "decDeg": 69.921403512, "magnitudeProxy": -9.5716, "role": "INDEX" },
+    { "id": "m82-c17", "raDeg": 147.888435857, "decDeg": 69.881430511, "magnitudeProxy": -9.5274, "role": "INDEX" },
+    { "id": "m82-c18", "raDeg": 147.846579495, "decDeg": 69.884904232, "magnitudeProxy": -9.4812, "role": "VALIDATION" },
+    { "id": "m82-c19", "raDeg": 147.930256809, "decDeg": 69.942524674, "magnitudeProxy": -9.4653, "role": "INDEX" },
+    { "id": "m82-c20", "raDeg": 147.869608387, "decDeg": 69.932887813, "magnitudeProxy": -9.3995, "role": "INDEX" },
+    { "id": "m82-c21", "raDeg": 147.934393989, "decDeg": 69.93992256, "magnitudeProxy": -9.3473, "role": "VALIDATION" },
+    { "id": "m82-c22", "raDeg": 148.025455217, "decDeg": 69.901635674, "magnitudeProxy": -9.3473, "role": "INDEX" },
+    { "id": "m82-c23", "raDeg": 147.847148587, "decDeg": 69.928655462, "magnitudeProxy": -9.2546, "role": "INDEX" },
+    { "id": "m82-c24", "raDeg": 147.974962493, "decDeg": 69.89583367, "magnitudeProxy": -9.2546, "role": "VALIDATION" }
+  ],
+  "provenance": {
+    "kind": "calculated",
+    "sourceName": "NASA FITS Support Office · NRAO sample WCS · m82opt.fits",
+    "sourceUrl": "https://fits.gsfc.nasa.gov/nrao_data/samples/wcs/m82opt.fits",
+    "sourceSha256": "a1b771dcc0c3eae7e3e7365c67b54d0465091b30838e52c823e303e115603cf1",
+    "sourceLastModified": "2007-01-04T22:30:16Z",
+    "derivedAt": "2026-08-12T00:00:00Z",
+    "method": "deterministic local maxima outside the extended M82 core, transformed by the source FITS RA---ARC/DEC--ARC WCS",
+    "sampleCount": 24,
+    "limitations": [
+      "development seeded fixture, not a production sky catalog",
+      "magnitudeProxy is extraction sharpness ordering, not calibrated photometry",
+      "source projection ARC is compared through a local TAN fit over a narrow field"
+    ]
+  },
+  "rights": {
+    "sourceHost": "NASA FITS Support Office",
+    "originalBundled": false,
+    "derivedNumericFixtureOnly": true,
+    "productionLicenseApproval": "PENDING"
+  }
+}

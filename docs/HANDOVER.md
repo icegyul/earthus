@@ -179,7 +179,7 @@ docs/
   HANDOVER.md     ← 이 문서
   talk/           발표자료 (slides.py 가 원본 → build.py → html+pptx)
   marketing/      카드뉴스 초안
-supabase/functions/  결제(checkout·payment-confirm)·푸시(push-tick) Edge Functions
+prototype/supabase/  SQL·migrations·결제·푸시·관리 Edge Functions
 ```
 
 ## 3. 배포 (가장 자주 하는 일)
@@ -276,7 +276,14 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
   SALES_OPEN(현재 false), 결제 함수 URL.
 - 서버 비밀(토스 시크릿, VAPID 개인키, 틱 토큰): Supabase Edge Function secrets / AWS SSM.
   **service_role 키는 어떤 클라이언트 파일에도 넣지 않는다.**
-- Supabase 프로젝트: ltpupicvdijxkrxxsfky (도쿄 ap-northeast-1). RLS 켜져 있음.
+- Supabase 프로젝트: ltpupicvdijxkrxxsfky (도쿄 ap-northeast-1). 로컬 SQL은 14개
+  table 모두 RLS enable을 선언하고, 운영 publishable key에서 `plans` 외 알려진
+  private relation은 0행만 보였다. 그러나 운영 `pg_policies`/FORCE RLS 정의는 미확인이다.
+- 2026-08-12 publishable-key read-only audit로 14 relation의 핵심 column과 6 Edge Function
+  endpoint, Auth setting, `checkout=SALES_CLOSED`, 나머지 인증/토큰 차단을 확인했다.
+  다만 remote migration checksum, `pg_policies`, FORCE RLS, function version, private Storage,
+  tenant A/B는 management/DB 읽기 접근이 없어 `UNKNOWN`이다. 정본은
+  [`earthus-v23/SUPABASE_PRODUCTION_INVENTORY.md`](earthus-v23/SUPABASE_PRODUCTION_INVENTORY.md)다.
 - 로그인: Supabase Auth. ⚠️ `auth.init()` 은 중복 호출 방지 promise 가드가 있다 —
   건드리면 GoTrueClient 가 두 개 생겨 로그인이 안 붙는 버그가 재발한다.
 - 콘솔에 사용자 이메일 찍지 않는다(공용 기기).

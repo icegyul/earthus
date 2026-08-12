@@ -61,7 +61,8 @@
 - [x] dev/staging/prod gap과 cutover/rollback 정의
 - [x] admin/analytics/runbook/test 설계
 - [ ] 실제 AWS Lambda/VPC/schedule/provider response inventory
-- [ ] 실제 Supabase migration/function/RLS inventory
+- [ ] (부분 완료) Supabase public surface: 14 relation·핵심 column, 6 function, Auth, 판매 잠금 확인;
+  remote migration checksum·`pg_policies`·function version·tenant A/B는 management/DB 접근 전까지 `UNKNOWN`
 - [ ] PD의 ADR·retention·비용 guardrail 승인
 - [ ] 2026-08-16 사용량 리셋 확인
 - [x] `tpw-grid` 서울 리전 GRIB/ecCodes·S3 객체·NOAA attribution·시각 QA

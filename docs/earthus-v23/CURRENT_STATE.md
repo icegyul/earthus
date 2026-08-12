@@ -14,9 +14,9 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 |---|---|---|
 | 프런트 | `prototype/` 정적 파일 29개, `prototype/js/` 최상위 101개 | 빌드 없음 |
 | 레이어 코드 | `prototype/js/layers/` 25개 | 기존 구조 보존 |
-| Python Lambda | `aws/*/handler.py` 66개 | source handler 64개 + 로컬 shadow processor 2개 |
-| Supabase 함수 | `prototype/supabase/functions/` 6개 | 루트 `supabase/`는 `.temp`만 있음 |
-| Supabase migration | `prototype/supabase/migrations/` 4개 | 운영 적용 여부는 WORK 문서와 대조 필요 |
+| Python Lambda | `aws/*/handler.py` 66개 | source handler 64개 + 서울 수동 shadow Lambda 2개 |
+| Supabase 함수 | 로컬/운영 endpoint 6개 | 익명·publishable-key fail-closed 경계 실측 |
+| Supabase migration | 로컬 timestamp 4개 | 후속 column/relation 존재; remote version/checksum은 `UNKNOWN` |
 | 배포 | S3 정적 업로드 + CloudFront 무효화 | 파일별 Content-Type 필수 |
 | 판매 | `SALES_OPEN=false` | 유지 |
 | 행태 분석 | 사용 동의 UI는 있으나 event 수집 구현은 없음 | catalog 승인 전 수집 금지 |
@@ -67,14 +67,14 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 | 항목 | 문서 상태 | 현재 코드/화면 | 처리 |
 |---|---|---|---|
 | Lambda 수 | HANDOVER 과거값 54개 | 코드 66개 | source 64 + 미배포 `signal-foundation`·`source-governance` |
-| Supabase 경로 | `supabase/functions/` | `prototype/supabase/functions/` | HANDOVER 후속 수정 후보 |
+| Supabase 경로 | `supabase/functions/` | `prototype/supabase/functions/` | HANDOVER 저장소 지도 수정 완료 |
 | AETHERUS 모바일 선택 | 선택 뒤 메뉴가 닫히지 않음 | 태양계 선택 뒤 닫힘 확인 | 과거 gap을 완료로 갱신 |
 | AETHERUS URL | 복원되지 않음 | 태양계 선택 뒤에도 `/` | gap 유지 |
 | Analytics | 미구현 | 동의 UI만 있고 event emitter 없음 | 수집 금지 유지 |
 | 통합 착수 | 8월 16일 | 현재 8월 12일 | 문서·검증만 진행 |
 | TPW 단독 slice | 8월 12일 PD 직접 승인 | collector·지역 격자 renderer·UI 계약 로컬 구현 | 운영 flag·배포는 gate 통과 전 금지 |
-| Signal Foundation | PR-01 계획 | 대표 3 source compatibility adapter·schema·fixture 로컬 구현 | AWS·schedule·reader 전환 전부 미승인 |
-| Rights/Freshness | PR-02 계획 | DRAFT registry·governance engine·20 replay 로컬 구현 | source 승인·Control Plane·AWS·reader 전환 미승인 |
+| Signal Foundation | PR-01 | 서울 최소권한 private shadow·3 source·stable ID·익명 403 검증 | schedule·authoritative reader 미승인 |
+| Rights/Freshness | PR-02 | 서울 private shadow·DRAFT 24 operation BLOCK·schema·재현성 검증 | source 승인·Control Plane·schedule·reader 미승인 |
 | Earth View State | PR-03 계획 | 접두어 URL·상태 fallback·앞뒤/새로고침 구현 | 정적 운영 배포·대표 URL·AETHERUS/해구 상호배제 검증 완료; 실제 기기·rollback rehearsal 남음 |
 | V0 Readability | PR-04 계획 | 공통 범례·화면 도시 원격자값·지점 근거·read mode 구현 | 정적 운영 배포·live hash·390×844 검증 완료; 등치선은 PR-06 |
 | Continuous Layers | PR-06 계획 | 기온·기압·바람·TPW 계약·SST·편차·파고 단계색/등치선/값 | 정적 운영 배포·40/40·모바일·idle render 0 완료; TPW flag·실기기 gate 유지 |
@@ -100,7 +100,8 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
   배포 여부·region·VPC·schedule·timeout·last success
 - 서울 Lambda에서 기상청 새 특보 API, KMA APIHub, CWA, JMA, Open-Meteo의 실제 응답
 - S3 공개/비공개 prefix와 객체별 Content-Type/Cache-Control/권리 만료
-- Supabase migration/Edge Function의 실제 배포 version과 RLS
+- Supabase remote migration checksum, `pg_policies`/FORCE RLS, Edge Function version,
+  private Storage·tenant A/B는 management/DB 읽기 접근 전까지 `UNKNOWN`
 - 판매 관련 서버 gate, 약관, 통신판매업 정보, 창립 멤버 할인 checkout
 - 390×844/430×932/768×1024/1280×720/1440×900 전체 조합
 

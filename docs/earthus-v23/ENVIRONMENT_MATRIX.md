@@ -9,7 +9,7 @@
 | 정적 앱 | `prototype/` 직접 실행 | 별도 자원 확인 안 됨 | S3 `earthus-cache-kr/app/` + CloudFront | staging 없음 |
 | Lambda | 로컬 handler/fixture | 별도 계정·함수 확인 안 됨 | 배포 스크립트 기준 `ap-northeast-2` | 실제 함수·VPC·version 전수 미확인 |
 | 데이터 버킷 | fixture/로컬 파일 | 별도 버킷 확인 안 됨 | `earthus-cache-kr`, `us-east-2` | Lambda↔bucket cross-region 비용 |
-| Supabase | 로컬 SQL | 별도 project 확인 안 됨 | HANDOVER 기준 `ap-northeast-1` | 코드 위치가 `prototype/supabase/` |
+| Supabase | 로컬 SQL | 별도 project 확인 안 됨 | 도쿄 project public surface·14 relation·6 function 확인 | migration/policy/version·tenant A/B 읽기 접근 부재 |
 | 설정 | `config.local.js` gitignore | 미정 | 같은 파일의 운영값 | 환경별 생성/검증 manifest 없음 |
 | 비밀 | 로컬 사용자 보관 | 미정 | AWS env/SSM, Supabase secrets | secretRef inventory 없음 |
 | callback | localhost 후보 | 미정 | earthus.net | OAuth/결제 환경 분리 미확인 |

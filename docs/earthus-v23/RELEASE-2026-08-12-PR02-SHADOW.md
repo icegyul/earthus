@@ -73,12 +73,13 @@ provider를 degraded로 바꾸던 초기 구현은 문서 계약과 서로 엇�
 - 두 번째 동일 호출: 2,165.10ms, max memory 129MB
 - PR-02 source-governance: 20/20
 - PR-01 canonical 회귀: 12/12
-- Activity 31/31, Personalization 30/30, Reservation 21/21, Fusion PASS
+- Safety 23/23, Activity 31/31, Personalization 30/30, Reservation 21/21, Fusion PASS
 - PR-11 잠금: `SALES_OPEN=false`, TPW/Decision flag off, SNS 자동 게시 금지 PASS
 
-전체 Safety 회귀는 이 PR과 무관한 `prototype/index.html` main.js 캐시 버전이
-`earthmoonhud2`로 올라갔지만 기존 test가 이 버전을 허용하지 않아 1개가 실패했다.
-PR-02 Safety 코드 변경은 0이며, 별도 회귀 기준선 동기화로 남긴다.
+Safety 회귀는 이 PR과 무관한 `main.js` 캐시 버전을 예전 값 몇 개로만
+열거해 정상적인 새 버전을 실패 처리하던 공백을 드러냈다. Safety CSS 버전·
+`warn.js` import는 그대로 검사하고 main entry는 비어 있지 않은 2026-08-12 version token을
+갖는지 검사하도록 수정해 전체 23/23을 재확인했다.
 
 ## 6. 남은 관문
 

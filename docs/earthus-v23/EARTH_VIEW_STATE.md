@@ -1,7 +1,7 @@
 # PR-03 — Earth View State
 
 > 구현일: 2026-08-12 KST
-> 상태: **로컬 구현·계약·실화면 검증 완료 / 운영 배포 전환 미승인**
+> 상태: **정적 운영 배포·대표 URL 검증 완료 / backend·TPW flag 전환 없음**
 > 사용자 결과: 첫 방문의 아름다운 지구를 유지하면서 Style/Data/Evidence 상태를 공유·새로고침·뒤로가기로 복원
 
 ## 1. 범위
@@ -116,19 +116,26 @@ v2 시험 기대값과 어긋났지만, AETHERUS 작업이 v3 시험을 같은 r
 foundation·astronomy·photo ownership을 모두 다시 통과했다. PR-03은 해당 파일과 시험을
 수정하지 않았다.
 
-## 7. 운영 전 gate와 rollback
+## 7. 운영 배포와 남은 gate
 
-아직 S3·CloudFront에 배포하지 않는다. 2026-08-16 통합 관문과 동시 AETHERUS 회귀가 통과해야 한다.
+2026-08-12 PD의 직접 지시로 정적 파일은 S3·CloudFront에 배포했다. 자세한 해시·URL·rollback
+증거는 `RELEASE-2026-08-12-PR00A-03.md`가 정본이다. PR-01/02 backend와 TPW flag는 전환하지 않았다.
 
-운영 전:
+남은 검증:
 
 1. EARTHUS/AETHERUS/해구 대표 URL의 실제 화면 상호 배제 확인
 2. 430×932, 768×1024, 1280×720, 1440×900 추가 실제 화면
 3. Safari/Chrome과 실제 구형 iPhone 뒤로가기·새로고침
 4. Data/Evidence on/off 뒤 timer/network/render owner 0 확인
-5. `main.js`, `store.js`, `layerbar.js`의 다른 작업 hunk와 선택 병합
-6. `index.html`의 main 및 main→layerbar cache-busting revision을 통합 revision으로 올리고
-   서비스워커·CloudFront에서 이전 모듈이 섞이지 않는지 확인
+5. 실제 rollback 복구 rehearsal과 RTO 기록
+
+완료한 운영 검증:
+
+- `main.js`, `store.js`, `layerbar.js`를 다른 작업과 충돌 없이 커밋 `3c797f4`에 선택 병합
+- `index.html` main 및 main→layerbar cache revision을 `20260812-earthview1`로 통일
+- 배포 파일 15개의 운영 SHA-256과 로컬 일치, 신규 모듈 Content-Type/no-cache 확인
+- Earth/Style/Data/Evidence, 뒤로/앞으로, AETHERUS 화성, 해구, 혼합 route, TPW 잠금 확인
+- CloudFront 무효화 조회 권한은 없지만 cache-busting 응답과 파일 해시로 실제 반영 확인
 
 rollback은 `main.js`의 controller 연결과 store/layerbar intent hunk를 제거하고 신규 두 모듈을
 배포 대상에서 제외한다. URL을 읽는 코드가 사라져도 기존 query 없는 Earth 화면은 유지된다.

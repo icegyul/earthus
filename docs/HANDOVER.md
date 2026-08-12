@@ -15,11 +15,12 @@ EARTHUS 메뉴·레이어 표현·무료/유료 경계, AETHERUS 정보 구조·
 마케팅 스튜디오 공개 이야기관을 한 번에 개편하는 실행 정본은
 [`EARTHUS-AETHERUS-DEV-SPEC-2026-08-16.md`](EARTHUS-AETHERUS-DEV-SPEC-2026-08-16.md)다.
 2026-08-16 사용량 리셋을 실제 확인한 뒤 배치 0부터 시작한다. 다만 2026-08-12 PD가
-**TPW 수증기 통로 단독 vertical slice의 로컬 코딩을 직접 승인**했다. 이 예외는 통합 배치,
-운영 배포, 판매, SNS를 열지 않는다. TPW 운영 노출은 실제 NOAA 파일·시각·화면 검수 후
+**TPW 수증기 통로 단독 vertical slice의 로컬 코딩을 직접 승인**했다. 이후 PD가 커밋과
+배포를 직접 지시해 PR-03 Earth View State와 TPW의 잠긴 정적 UI 계약은 운영 반영했다.
+이 예외는 통합 backend, 판매, SNS를 열지 않는다. TPW 운영 노출은 실제 NOAA 파일·시각·화면 검수 후
 `TPW_READY=true`로 따로 승인한다. `SALES_OPEN=false`와 SNS 자동 게시 금지는 그대로 유지한다.
 로컬에서 NOAA GRIB 전체 격자·데스크톱/모바일 실화면·flag-off 우회 차단은 통과했으나,
-AWS 서울 Lambda·S3·CloudFront 운영 검증은 아직 미수행이다.
+AWS 서울 Lambda·TPW JSON 생성은 아직 미수행이다.
 
 같은 날 PD의 **“다음꺼 진행해”** 지시로 PR-01 Signal Foundation도 로컬 구현했다.
 기존 공개 KMA 특보·AWS 기온·TPW JSON을 바꾸지 않고 `archive/canonical/v1/` 비공개
@@ -39,8 +40,12 @@ PD의 세 번째 **“계속 진행해”** 지시로 PR-03 Earth View State도 
 390×844 실제 화면, Earth↔Style↔Data↔Evidence 앞뒤 복원, `TPW_READY=false` 우회 차단은
 통과했다. Decision은 PR-05~09가 붙일 URL 계약만 있고 판단 UI·값은 만들지 않았다.
 실행 정본은 [`earthus-v23/EARTH_VIEW_STATE.md`](earthus-v23/EARTH_VIEW_STATE.md)다.
-동시 AETHERUS route v3 foundation·astronomy·photo 시험도 재통과했지만, 운영 배포는
-8월 16일 사용량·다기기·캐시 revision·rollback gate 전까지 미승인이다.
+동시 AETHERUS route v3 foundation·astronomy·photo·observation planner 시험도 재통과했다.
+정적 UI는 커밋 `3c797f4`, CloudFront 무효화 `I77IXLLF77MDK0QJI1STXUEUQ3`로 운영 반영했고
+15개 배포 파일의 운영 SHA-256이 커밋 파일과 일치한다. query 없는 Earth, Style/Data/Evidence,
+뒤로/앞으로, TPW 잠금, AETHERUS 화성, 해구 대표 URL을 운영 브라우저에서 확인했다.
+정본 증거는 [`earthus-v23/RELEASE-2026-08-12-PR00A-03.md`](earthus-v23/RELEASE-2026-08-12-PR00A-03.md)다.
+PR-01/02 Lambda·schedule·reader, `TPW_READY=true`, 판매·SNS는 계속 미승인이다.
 
 ---
 

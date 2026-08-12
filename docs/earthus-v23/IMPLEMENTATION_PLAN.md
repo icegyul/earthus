@@ -3,7 +3,8 @@
 > 기준: 독립 배포 가능한 작은 PR, adapter 우선, feature flag, 실제 화면과 운영 증거
 > 통합 제품 코드 earliest start: 2026-08-16 사용량 리셋 확인 후
 > 예외: 2026-08-12 PD 직접 지시로 TPW 단독 vertical slice, PR-01 canonical shadow,
-> PR-02 governance shadow, PR-03 Earth View State 로컬 코딩 승인. 네 작업 모두 운영 전환은 미승인.
+> PR-02 governance shadow, PR-03 Earth View State를 구현했다. 후속 배포 지시로 PR-03와 잠긴
+> TPW 정적 계약만 운영 반영했다. backend·flag on·판매·SNS는 미승인이다.
 
 ## 1. 공통 PR 형식
 
@@ -26,7 +27,7 @@
 | PR-00A | TPW 수증기 통로 | PD 단독 예외 승인 | GFS TPW collector, 1° 지역 격자, 단계색·도시값·출처·질문 계약, flag | 계약·문법·지역경계·결측 테스트 통과, 실제 파일·권리·운영 화면 전에는 flag off |
 | PR-01 | Signal Foundation (로컬 완료) | PD의 다음 단계 직접 지시 | `EarthSignalEnvelope`, canonical time/CRS/unit/missing, 대표 3 compatibility adapter | fixture·실제 공개 KMA 입력 대조 완료; AWS/shadow reader 전환은 별도 gate |
 | PR-02 | Rights/Freshness (로컬 완료) | PD의 다음 단계 직접 지시 | source policy, revision, provider health, standard errors | 20개 상태 replay·실제 KMA 연속검증 완료; 승인·AWS·reader는 별도 gate |
-| PR-03 | Earth View State (로컬 완료) | existing Cesium state | Earth View/Style/Data/Evidence/Decision URL state | 첫 화면 지구 보존, 공유·뒤로가기 복원; 운영은 별도 gate |
+| PR-03 | Earth View State (정적 운영 배포) | existing Cesium state | Earth View/Style/Data/Evidence/Decision URL state | 첫 화면 지구 보존, 공유·뒤로가기·대표 서비스 URL 운영 검증 |
 | PR-04 | V0 Readability | PR-03 | 공통 범례·값 라벨·지점 카드·read mode | 기온 대표 지역에서 10초 판독, 원값 대조 |
 | PR-05 | Safety Slice | 공식 특보 fixture | KMA warning adapter, region mapping, Hard Gate, CTA | 발표→대치→해제/지연/미매핑 replay |
 | PR-06 | Continuous Layers | V0 | 기온·기압·바람·TPW·SST·편차·파고 | 단계색/등치선/값/원값, idle render 0 |
@@ -109,7 +110,8 @@ PR-00은 문서 준비는 끝났지만 위 네 운영 관문 전까지 `APPROVAL
 - [x] 동시 AETHERUS route v3 계약·시험 동기화와 foundation/astronomy/photo 회귀 통과
 - [ ] 430×932/768×1024/1280×720/1440×900, Safari, 구형 iPhone
 - [ ] 레이어/장면 해제 뒤 timer/network/render owner 0 계측
-- [ ] 2026-08-16 통합 gate 뒤 선택 병합·운영 배포·rollback rehearsal
+- [x] 선택 병합·cache revision·정적 운영 배포·15개 파일 live hash·대표 URL 검증
+- [ ] 실제 구형 iPhone·Safari와 rollback 복구 rehearsal
 
 상세 계약과 실제 증거는 `EARTH_VIEW_STATE.md`가 정본이다. Decision 상태는 후속 PR이
 사용할 주소 계약이며 이 PR이 안전·활동·예약 결과를 만들었다는 뜻이 아니다.

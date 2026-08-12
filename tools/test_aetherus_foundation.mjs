@@ -28,6 +28,8 @@ const uiSource = await readFile(path.join(ROOT, 'prototype/js/ui.js'), 'utf8');
 const viewerSource = await readFile(path.join(ROOT, 'prototype/js/viewer.js'), 'utf8');
 const indexSource = await readFile(path.join(ROOT, 'prototype/index.html'), 'utf8');
 const appCssSource = await readFile(path.join(ROOT, 'prototype/css/app.css'), 'utf8');
+const mainSource = await readFile(path.join(ROOT, 'prototype/js/main.js'), 'utf8');
+const ambientMoonSource = await readFile(path.join(ROOT, 'prototype/js/ambient-moon.js'), 'utf8');
 
 assert.match(cosmicSource, /this\.makeEarthMoon\(new Date\(\)\)/);
 assert.match(cosmicSource, /this\.planetMeshes\.moon = moon/);
@@ -36,6 +38,9 @@ assert.doesNotMatch(uiSource, /const allowed = \(\) => location\.hash === '#dev'
 assert.match(viewerSource, /scene\.moon\.show = false/);
 assert.match(indexSource, /id="ambientMoon" class="ambient-moon"/);
 assert.match(appCssSource, /body\.scene-space \.ambient-moon\{display:none\}/);
+assert.match(mainSource, /ambientMoon\.init\(\)/);
+assert.match(ambientMoonSource, /computeMoonPositionInEarthInertialFrame/);
+assert.match(ambientMoonSource, /computeIcrfToFixedMatrix/);
 
 const catalogFiles = {
   'space-photos': 'prototype/data/space-photos.json',

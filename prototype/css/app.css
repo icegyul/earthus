@@ -51,20 +51,29 @@ a{color:var(--teal);text-decoration:none}
   transition:opacity .55s ease,transform .55s ease}
 #ambient.hidden{opacity:0;transform:translateY(-10px)}
 
-/* 첫 Earth View의 달. 실제 천구 방향을 따라가면 대부분 화면 밖에 있으므로 이 화면에서만
-   지구 옆에 압축해 둔다. 궤도 애니메이션은 발열과 거짓 거리 인상을 만들기 때문에 쓰지 않는다. */
-.ambient-moon{position:absolute;z-index:1;top:40%;
-  left:calc(50% + clamp(220px,22vw,440px));
+/* 첫 Earth View의 달. JS가 Cesium의 현재 달 위치를 카메라 평면에 투영해 --moon-x/y를 준다.
+   실제 지구-달 거리는 이 화면에 들어오지 않으므로 방향만 보존하고 거리는 축약한다. */
+.ambient-moon{position:absolute;z-index:1;top:var(--moon-y,50%);left:var(--moon-x,50%);
   width:clamp(58px,6vw,104px);aspect-ratio:1;border-radius:50%;
   background:
     radial-gradient(circle at 32% 27%,rgba(255,255,255,.18) 0,rgba(255,255,255,.03) 32%,rgba(0,0,0,.24) 67%,rgba(0,0,0,.76) 100%),
     url('../space/planets/small/moon.webp?v=20260810d') center/cover no-repeat;
   box-shadow:inset -10px -7px 18px rgba(0,0,0,.48),0 0 2px rgba(255,255,255,.7),0 0 18px rgba(180,205,230,.12);
-  opacity:.9;transform:translate(-50%,-50%);filter:saturate(.75) contrast(1.08)}
+  opacity:0;transform:translate(-50%,-50%);filter:saturate(.75) contrast(1.08)}
+.ambient-moon.ready{opacity:.9}
+.ambient-moon::after{content:attr(data-note);position:absolute;left:50%;top:calc(100% + 8px);
+  transform:translateX(-50%);min-width:max-content;padding:3px 6px;border-radius:4px;
+  background:rgba(0,0,0,.58);color:rgba(238,239,247,.62);
+  font:500 9px/1.25 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.01em}
+.ambient-moon[data-hside="left"]::after{left:auto;right:calc(100% + 8px);top:50%;transform:translateY(-50%)}
+.ambient-moon[data-hside="right"]::after{left:calc(100% + 8px);top:50%;transform:translateY(-50%)}
+.ambient-moon[data-depth="far"]{opacity:.58}
 body.scene-space .ambient-moon{display:none}
 
 @media(max-width:520px){
-  .ambient-moon{top:36%;left:calc(50% + 29vw);width:clamp(44px,13vw,58px)}
+  .ambient-moon{width:clamp(44px,13vw,58px)}
+  .ambient-moon::after,.ambient-moon[data-hside]::after{left:50%;right:auto;top:calc(100% + 5px);
+    transform:translateX(-50%);min-width:88px;white-space:normal;text-align:center;font-size:8px}
 }
 
 .amb-top{position:absolute;top:max(40px,env(safe-area-inset-top));left:0;right:0;text-align:center}

@@ -90,9 +90,9 @@ export function initViewer(containerId) {
   scene.skyAtmosphere.show = true;     // 림 라이팅
   scene.fog.enabled = false;
   globe.showWaterEffect = false;
-  /* 받은 지적(2026-08-12): "이 화면일 때 달도 보이게".
-     Cesium Moon은 실제 천구 방향이라 첫 화면 밖으로 사라질 수 있고, ambient 압축 달과
-     동시에 보이면 달이 두 개가 된다. 첫 Earth View의 달은 #ambientMoon 하나로 고정한다. */
+  /* 받은 지적(2026-08-12): "달이 왜 현재 위치에 안 있고 옆에 붙어 있어?".
+     실제 거리의 Cesium Moon은 첫 Earth View 시야에 함께 담기지 않는다. 같은 Cesium 천체
+     계산값을 쓰는 #ambientMoon이 현재 방향을 거리만 축약해 표시하므로 원본은 중복 방지로 끈다. */
   scene.moon.show = false;
   scene.sun.show = true;
   scene.highDynamicRange = false;

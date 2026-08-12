@@ -36,11 +36,19 @@ assert.match(cosmicSource, /this\.planetMeshes\.moon = moon/);
 assert.match(cosmicSource, /달 위치·지구와의 거리 압축 도식/);
 assert.doesNotMatch(uiSource, /const allowed = \(\) => location\.hash === '#dev'/);
 assert.match(viewerSource, /scene\.moon\.show = false/);
-assert.match(indexSource, /id="ambientMoon" class="ambient-moon"/);
-assert.match(appCssSource, /body\.scene-space \.ambient-moon\{display:none\}/);
+assert.match(indexSource, /id="ambientMoonNote"/);
+assert.doesNotMatch(indexSource, /id="ambientMoon"/);
+assert.doesNotMatch(appCssSource, /\.ambient-moon\{/);
 assert.match(mainSource, /ambientMoon\.init\(\)/);
 assert.match(ambientMoonSource, /computeMoonPositionInEarthInertialFrame/);
 assert.match(ambientMoonSource, /computeIcrfToFixedMatrix/);
+assert.match(ambientMoonSource, /new Cesium\.IauOrientationAxes/);
+assert.match(ambientMoonSource, /new Cesium\.EllipsoidPrimitive/);
+assert.match(ambientMoonSource, /Cesium\.Material\.fromType\(Cesium\.Material\.ImageType\)/);
+assert.match(ambientMoonSource, /onlySunLighting: true/);
+assert.match(ambientMoonSource, /depthTestEnabled: true/);
+assert.match(ambientMoonSource, /moonAxes\.evaluate/);
+assert.doesNotMatch(ambientMoonSource, /RENDER_THROTTLE_MS|postRender|--moon-x|--moon-y/);
 
 const catalogFiles = {
   'space-photos': 'prototype/data/space-photos.json',

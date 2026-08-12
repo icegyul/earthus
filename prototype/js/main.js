@@ -54,7 +54,7 @@ import { cosmic3d } from './space/cosmic3d.js?v=20260812-earthmoon1';
 import { decodeAetherusRoute, replaceAetherusRoute } from './space/route-state.js?v=20260812-astronomy3';
 import { trenchCards } from './ocean/trenchcards.js';
 import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-depthlife1';
-import { ambientMoon } from './ambient-moon.js?v=20260812-visibility1';
+import { ambientMoon } from './ambient-moon.js?v=20260812-cesium3d1';
 
 /* 늦게 불러오는 바다거북 모듈을 붙잡아 두는 곳.
    ⚠️⚠️ **모듈 바깥에 둔다.** 켜는 쪽은 boot(), 끄는 쪽(OFF·HAS_MARKS)은

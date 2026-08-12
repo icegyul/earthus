@@ -161,7 +161,7 @@ test('활성 공식 특보 UI는 제한·출처·시각·n·공식 CTA를 함께
 test('Safety UI는 독립 CSS와 versioned entry로 배포된다', () => {
   assert.match(css, /\.safety-gate--danger/);
   assert.match(index, /safety\.css\?v=20260812-safety1/);
-  assert.match(index, /main\.js\?v=20260812-(?:safety|contours)1/);
+  assert.match(index, /main\.js\?v=20260812-(?:safety1|contours[12])/);
   assert.match(main, /from '\.\/warn\.js'/);
 });
 test('Safety Engine은 무한 timer나 animation을 만들지 않는다', () => {

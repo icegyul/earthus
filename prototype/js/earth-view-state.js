@@ -51,6 +51,7 @@ export const earthViewState = {
       }
       else if (detail.view === 'data' && detail.layer) {
         this._preferredLayer = detail.layer;
+        this._preferredReason = detail.reason || null;
         this._queueLayer(detail.layer, true);
       }
     });
@@ -136,6 +137,14 @@ export const earthViewState = {
         this._deps.layerBar.showEarthStyle?.();
       } else {
         this._deps.layerBar.closeMenus?.();
+        /* URL로 pressure를 본 다음 wind 링크를 여는 것처럼 같은 탭에서 Data View를
+           갈아타도 이전 색면 상태를 칩에 남기지 않는다. wind Data View는 자기 풍속
+           색면을 쓰므로 기존 연속 색면을 실제 상태에서도 끈다. */
+        if (state.layer === 'wind' || state.layer === 'windfc') {
+          store.continuousColorLayerIds?.().forEach(layer => {
+            if (store.isOn(layer)) store.setLayer(layer, false);
+          });
+        }
         if (state.layer && !store.isOn(state.layer)) store.setLayer(state.layer, true);
         if (state.view === 'evidence' && state.point) {
           this._restoreEvidence(state);
@@ -245,7 +254,9 @@ export const earthViewState = {
       if (this._restoring || store.scene !== 'earth') return;
 
       const preferred = this._preferredLayer;
+      const reason = this._preferredReason;
       this._preferredLayer = null;
+      this._preferredReason = null;
       const turnedOn = preferred && store.isOn(preferred)
         ? preferred : [...batch.on].reverse().find(layer => store.isOn(layer) && this._knownLayer(layer));
       if (turnedOn) {
@@ -254,6 +265,13 @@ export const earthViewState = {
         store.exclusiveLayerIds?.(turnedOn).forEach(layer => {
           if (layer !== turnedOn && store.isOn(layer)) store.setLayer(layer, false);
         });
+        /* '지금/내일' 프리셋은 temp+wind 조합이 목적이라 보존한다. 그 밖에 사용자가
+           바람 자체를 고른 경우에는 풍속 색면이 정본이므로 이전 온도·기압 색면을 끈다. */
+        if ((turnedOn === 'wind' || turnedOn === 'windfc') && reason !== 'time-preset') {
+          store.continuousColorLayerIds?.().forEach(layer => {
+            if (store.isOn(layer)) store.setLayer(layer, false);
+          });
+        }
         const current = store.earthView.layer === turnedOn ? store.earthView : {};
         this._transition({
           view: 'data', layer: turnedOn, at: current.at || null, model: current.model || null,

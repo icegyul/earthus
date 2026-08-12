@@ -45,10 +45,13 @@ Windy의 빠른 판독 장점은 가져오되 색표·화면 배치를 복제하
   SST 편차 314/10, 파고 139/11, 기압 20/11이었다. 자료값에 따라 개수는 변한다.
 - 파고 Data View를 3초 정지시킨 `data-total-renders` 차이는 0이었다.
 - 바람의 2D 입자 캔버스는 기존 동작이다. 이번 PR은 Cesium 등치선 무한 렌더를 만들지 않는다.
+- Earth Data/Evidence 딥링크는 첫 화면 intro를 시작하지 않는다. 단독 바람 Data View는
+  이전 온도·기압 색면 상태까지 끄고 풍속 색면+방향 입자만 남긴다. `지금/내일` 시간
+  프리셋의 기온+바람 조합은 의도된 예외로 보존한다.
 
 ## 4. 검증 증거
 
-- `tools/test_continuous_layers.mjs` 36/36
+- `tools/test_continuous_layers.mjs` 40/40
 - Readability 16/16, Earth route 12/12, Safety 23/23, TPW grid math 통과
 - AETHERUS foundation/astronomy/photo ownership/Sky AR/astrometry/planner/session 회귀 통과
 - 실화면 1280×720: 첫 Earth, 기온, 기압, 바람, SST, 편차, 파고 확인

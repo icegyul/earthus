@@ -48,6 +48,8 @@ const registry = await source('prototype/js/layers/registry.js');
 const store = await source('prototype/js/store.js');
 const readability = await source('prototype/js/readability.js');
 const renderQuality = await source('prototype/js/render-quality.js');
+const earthViewState = await source('prototype/js/earth-view-state.js');
+const main = await source('prototype/js/main.js');
 const index = await source('prototype/index.html');
 
 for (const key of ['temp', 'tmax', 'tmin', 'sst', 'wave', 'sstAnom', 'mslp', 'wind']) {
@@ -83,6 +85,14 @@ assert.match(store, /'current', 'pressure', 'rain'/,
   '기압·비도 모든 연속 색면과 같은 배타 그룹이어야 한다');
 assert.match(store, /activeColors\.length > 1[\s\S]*localStorage\.setItem/,
   '옛 저장값의 겹친 색면도 시작할 때 정리해야 한다');
+assert.match(store, /continuousColorLayerIds\(\)/,
+  '바람 Data View가 이전 연속 색면 상태까지 걷을 수 있어야 한다');
+assert.match(earthViewState, /state\.layer === 'wind'[\s\S]*continuousColorLayerIds/,
+  '바람 URL 복원에서 이전 기압·온도 색면을 실제 상태에서도 꺼야 한다');
+assert.match(earthViewState, /reason !== 'time-preset'[\s\S]*continuousColorLayerIds/,
+  '단독 바람 선택은 색면을 정리하되 temp+wind 시간 프리셋은 보존해야 한다');
+assert.match(main, /diveParam \|\| oceanRoute \|\| earthRouteRequested \|\| aetherusRoute/,
+  'Earth Data 딥링크에서는 아름다운 첫 화면 intro를 시작하면 안 된다');
 assert.match(readability, /'wind', 'windfc'/,
   '바람도 공통 범례·도시 원격자값·지점 카드 대상이어야 한다');
 assert.match(readability, /rd-contour-meta/,
@@ -92,4 +102,4 @@ assert.match(renderQuality, /totalRenders\+\+[\s\S]*dataset\.totalRenders/,
 assert.match(index, /readabilityPanel[\s\S]*hidden/,
   '첫 Earth View는 수치·등치선 없이 시작해야 한다');
 
-console.log('Continuous layers PR-06: 36/36 passed');
+console.log('Continuous layers PR-06: 40/40 passed');

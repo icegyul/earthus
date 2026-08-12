@@ -88,11 +88,15 @@ function loadLayerState() {
 
    ⚠️ 서로 배타적인 것만 묶는다. 지진과 산불처럼 성격이 다른 점 레이어는
       같이 봐야 의미가 있으므로 묶지 않는다. */
+const CONTINUOUS_COLOR_IDS = [
+  'temp', 'tmax', 'tmin', 'humidity', 'tpw', 'fog', 'drought',
+  'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
+  'sst', 'sstanom', 'wave', 'swell', 'current', 'pressure', 'rain',
+];
+
 const EXCLUSIVE = [
   // 색 격자 — 한 장만. 두 장이 겹치면 색이 섞여 값을 읽을 수 없다.
-  ['temp', 'tmax', 'tmin', 'humidity', 'tpw', 'fog', 'drought',
-   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
-   'sst', 'sstanom', 'wave', 'swell', 'current', 'pressure', 'rain'],
+  CONTINUOUS_COLOR_IDS,
   // 바람 파티클 — 지금 바람과 내일 바람이 같이 흐르면 어느 쪽인지 알 수 없다.
   ['wind', 'windfc'],
   // 바탕 영상 — 위성 사진에는 그날 구름이 이미 찍혀 있다. 구름을 또 얹으면 두 겹이 된다.
@@ -187,6 +191,12 @@ export const store = {
   },
   exclusiveLayerIds(id) {
     return EXCLUSIVE.find(group => group.includes(id)) || [];
+  },
+
+  /** 바람 Data View가 자기 풍속 색면을 쓸 때 걷어야 할 기존 연속 색면들.
+      바람 입자 자체는 temp+wind 시간 프리셋에서 함께 볼 수 있어 이 묶음에 넣지 않는다. */
+  continuousColorLayerIds() {
+    return [...CONTINUOUS_COLOR_IDS];
   },
 
   toggle(id) { this.setLayer(id, !this.layers[id]); },

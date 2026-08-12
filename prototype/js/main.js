@@ -12,7 +12,7 @@ import { panels } from './panels.js';
 import { intro } from './intro.js';
 import { renderQuality } from './render-quality.js';
 import { store } from './store.js';
-import { earthViewState } from './earth-view-state.js?v=20260812-earthview1';
+import { earthViewState } from './earth-view-state.js?v=20260812-contours2';
 import { hasEarthRoute } from './earth-route-state.js';
 import { registry } from './layers/registry.js?v=20260812-photoownership1';
 import { imagery } from './layers/imagery.js';
@@ -277,7 +277,9 @@ async function boot() {
         몇 초 뒤 도착한 위치가 갑자기 끌고 간다. 조작을 빼앗는 것이다. */
   /* 공유된 우주·해구 주소도 사용자의 명시적 선택이다. 위치 응답·인트로가 뒤늦게
      카메라를 지구 첫 화면으로 빼앗으면 딥링크가 0m에서 멈춘 것처럼 보인다. */
-  let userEngaged = !!(diveParam || oceanRoute || aetherusRoute?.stage);
+  /* Earth Data/Evidence 딥링크도 이미 '사용자가 원하는 화면'이다. 이 경로에서
+     아름다운 첫 화면용 intro를 시작하면 읽는 동안 30fps Cesium 렌더가 남는다. */
+  let userEngaged = !!(diveParam || oceanRoute || earthRouteRequested || aetherusRoute?.stage);
   let geoTookOver = false;
   /* 지구뿐 아니라 메뉴·검색을 먼저 누른 것도 "이미 사용 중"이다.
      그 뒤 위치 응답이나 인트로가 카메라를 움직이면 조작을 빼앗고 발열도 남긴다. */

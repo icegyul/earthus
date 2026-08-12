@@ -77,7 +77,7 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 | Rights/Freshness | PR-02 계획 | DRAFT registry·governance engine·20 replay 로컬 구현 | source 승인·Control Plane·AWS·reader 전환 미승인 |
 | Earth View State | PR-03 계획 | 접두어 URL·상태 fallback·앞뒤/새로고침 구현 | 정적 운영 배포·대표 URL·AETHERUS/해구 상호배제 검증 완료; 실제 기기·rollback rehearsal 남음 |
 | V0 Readability | PR-04 계획 | 공통 범례·화면 도시 원격자값·지점 근거·read mode 구현 | 정적 운영 배포·live hash·390×844 검증 완료; 등치선은 PR-06 |
-| Continuous Layers | PR-06 계획 | 기온·기압·바람·TPW 계약·SST·편차·파고 단계색/등치선/값 | 정적 운영 배포·36/36·모바일·idle render 0 완료; TPW flag·실기기 gate 유지 |
+| Continuous Layers | PR-06 계획 | 기온·기압·바람·TPW 계약·SST·편차·파고 단계색/등치선/값 | 정적 운영 배포·40/40·모바일·idle render 0 완료; TPW flag·실기기 gate 유지 |
 
 ## 5. 현재 작업트리 보호
 

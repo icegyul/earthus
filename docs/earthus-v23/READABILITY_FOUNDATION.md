@@ -1,7 +1,7 @@
 # PR-04 — V0 Readability Foundation
 
 > 구현일: 2026-08-12 KST
-> 상태: 로컬 구현 완료 · 운영 배포 전 검증 필요
+> 상태: 정적 운영 배포 완료 · Safari/구형 iPhone과 idle render 계측 남음
 
 ## 사용자 결과
 

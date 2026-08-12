@@ -110,6 +110,9 @@
   수정 뒤 Okinawa/Taipei/Shanghai/Busan/Manila/Hong Kong/Guangzhou만 표시됨
 - 390×844/430×932/768×1024/1280×720/1440×900 판독 패널 overflow 0,
   Esri 참조 credit 직접 표시, 첫 Earth·Earth 복귀에서는 패널/read class 0
-- PR-04 로컬 브라우저 warning/error 0. Safari·구형 iPhone·운영 live 검증은 배포 gate
+- PR-04 운영 8개 정적 파일 SHA-256 일치, 390×844 overflow 0, 기온 Data·read mode·
+  지점 Evidence·새로고침·Earth 복귀·TPW 잠금·AETHERUS·해구 회귀 통과
+- 유효 운영 경로 warning/error 0. TPW 우회 시험에는 설계된 `UNAVAILABLE_LAYER` warning 1건만 기록
+- Safari·구형 iPhone·idle/released render owner 실제 계측은 남은 gate
 
 이 기준선은 PR-04 로컬 완료와 PR-11 운영 전후 비교 기준이다.

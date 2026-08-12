@@ -53,7 +53,10 @@ query 없는 첫 Earth는 그대로 두고, 연속 격자를 고른 뒤에만 �
 판독 모드는 국경·지명 참조 타일과 `earthRead=1`을 복원하며 Esri 등 제공자 credit을 화면에
 직접 표시한다. 5개 화면 크기와 실제 지점·새로고침·Earth 복귀, 자동/회귀 시험을 통과했고
 정본은 [`earthus-v23/READABILITY_FOUNDATION.md`](earthus-v23/READABILITY_FOUNDATION.md)다.
-아직 운영 배포 전이며 실제 등치선은 PR-06, 공식 특보 Hard Gate는 PR-05 범위다.
+정적 UI는 커밋 `c78c15a`, 무효화 `I2CA93ZUPCVH9HR6BQTZRVV0KW`로 운영 반영했고 8개 파일의
+live SHA-256, 1280×720·390×844 대표 화면, TPW 잠금과 AETHERUS·해구 회귀를 확인했다.
+운영 증거는 [`earthus-v23/RELEASE-2026-08-12-PR04.md`](earthus-v23/RELEASE-2026-08-12-PR04.md)다.
+실제 등치선은 PR-06, 공식 특보 Hard Gate는 PR-05 범위다.
 
 ---
 

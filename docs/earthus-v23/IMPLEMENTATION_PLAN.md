@@ -159,12 +159,13 @@ mapping/provider 범위에서는 Safety Engine이 SAFE나 CLOSED를 만들지 �
 - [x] 기압 동아시아 1° 전용판·4hPa·H/L, 바람 u/v 크기 m/s 색면과 방향 입자 분리
 - [x] SST/파고 동아시아 0.5° 보강판, 편차는 동일 5° 실황/평년장만 계산
 - [x] query 없는 첫 지구 수치/등치선 0, 모든 연속 색면 한 장만 유지
-- [x] 자동검사 36/36와 PR-03/04/05·AETHERUS 회귀
-- [x] 데스크톱/390×844 실화면, 모바일 overflow 0, 파고 정지 3초 추가 render 0
+- [x] 자동검사 40/40와 PR-03/04/05·AETHERUS 회귀
+- [x] 데스크톱/390×844 실화면, 모바일 overflow 0, 단독 바람 활성층 1개, 정지 3초 추가 render 0
 - [ ] Safari·구형 iPhone 실제 기기 10~15분 열/배터리
 - [ ] TPW 서울 리전 객체·권리·화면 검수 뒤 별도 `TPW_READY=true` 승인
 
-상세 계약은 `CONTINUOUS_LAYERS.md`다. TPW는 공통 표현 엔진과 테스트만 포함하며 운영 객체
+상세 계약은 `CONTINUOUS_LAYERS.md`, 배포 증거는 `RELEASE-2026-08-12-PR06.md`다.
+TPW는 공통 표현 엔진과 테스트만 포함하며 운영 객체
 403 상태에서 flag를 켜지 않았다. 점 관측·위성 영상·재난 점은 이 등치선 엔진에 넣지 않는다.
 
 ## 5. 금지

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>earthus SNS 연결 관리</title>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="theme-color" content="#0A0A0A">
+<link rel="icon" href="./favicon.ico">
+<link rel="stylesheet" href="./css/studio.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="earthus로 돌아가기"><img src="./logo-lockup.png" alt="earthus"></a>
+    <div class="topbar-title"><strong>SNS 연결 관리</strong><span>토큰 보관, 계정 확인, 발급 설명서</span></div>
+    <div class="account-state">
+      <a class="button button-quiet button-small" href="./studio.html#social">마케팅 스튜디오</a>
+      <a class="button button-quiet button-small" href="./admin.html">관리자</a>
+      <span id="who">권한 확인 중</span>
+      <button class="button button-quiet button-small" id="signOut" type="button" hidden>로그아웃</button>
+    </div>
+  </header>
+
+  <main class="settings-shell">
+    <section class="gate settings-gate" id="gate" aria-labelledby="gateTitle">
+      <div class="gate-mark" aria-hidden="true">A</div>
+      <p class="kicker">관리자 전용</p>
+      <h1 id="gateTitle">SNS 열쇠는 서버에서만 보관합니다.</h1>
+      <p id="gateMessage">earthus 관리자 계정으로 로그인해야 연결 정보를 관리할 수 있습니다.</p>
+      <div class="gate-actions"><button class="button button-primary" id="signInGoogle" type="button">Google로 로그인</button><a class="button button-quiet" href="./admin.html">관리자로 돌아가기</a></div>
+    </section>
+
+    <div id="settingsApp" hidden>
+      <div class="settings-page-head">
+        <div><p class="kicker">보안 연결함</p><h1>채널 열쇠만 넣으면 됩니다.</h1><p>각 서비스에서 발급받은 OAuth 토큰과 앱 자격증명만 입력합니다. 저장된 원문은 브라우저로 다시 내려오지 않으며, 연결 후에도 게시 버튼을 사람이 눌러야 실제 발행됩니다.</p></div>
+        <button class="button button-quiet" id="refreshCredentials" type="button">연결 상태 새로고침</button>
+      </div>
+
+      <section class="password-ban" aria-labelledby="passwordBanTitle">
+        <div><strong id="passwordBanTitle">SNS 로그인 비밀번호는 절대 입력하지 마세요.</strong><p>계정 비밀번호를 요구하는 공식 게시 API는 없습니다. 아래에는 API 토큰·Refresh Token·App Secret만 넣습니다.</p></div>
+        <span>관리자 JWT 이중 확인</span><span>AES-GCM 암호화 저장</span><span>브라우저 저장 금지</span>
+      </section>
+
+      <div class="settings-summary"><div><strong>연결 현황</strong><span id="settingsSummary">불러오는 중</span></div><span>저장됨과 계정 확인됨은 다릅니다. 저장 후 반드시 ‘계정 확인’을 누르세요.</span></div>
+
+      <section class="credential-grid settings-credential-grid" id="credentialGrid" aria-label="SNS 자격증명 입력">
+        <form class="credential-card" data-provider="x" autocomplete="off">
+          <div class="credential-card-head"><div><strong>X</strong><span>OAuth 2.0 사용자 권한</span></div><span class="provider-state" data-provider-state="x">확인 중</span></div>
+          <div class="credential-card-meta"><span>tweet.write</span><span>media.write</span><span>offline.access</span></div>
+          <div class="field"><label for="xAccessToken">사용자 Access Token</label><input id="xAccessToken" name="accessToken" type="password" required autocomplete="new-password" spellcheck="false"></div>
+          <details class="optional-fields" open><summary>갱신용 앱 정보</summary><div class="field"><label for="xClientId">OAuth Client ID</label><input id="xClientId" name="clientId" type="text" autocomplete="off"></div><div class="field"><label for="xClientSecret">OAuth Client Secret</label><input id="xClientSecret" name="clientSecret" type="password" autocomplete="new-password"></div><div class="field"><label for="xRefreshToken">Refresh Token</label><input id="xRefreshToken" name="refreshToken" type="password" autocomplete="new-password"></div></details>
+          <p class="credential-error" role="alert" hidden></p><div class="credential-actions"><button class="button button-primary button-small" type="submit">암호화 저장</button><button class="button button-quiet button-small test-credential" type="button">계정 확인</button><button class="text-button clear-credential" type="button">연결 삭제</button></div>
+        </form>
+
+        <form class="credential-card" data-provider="threads" autocomplete="off">
+          <div class="credential-card-head"><div><strong>Threads</strong><span>Threads API</span></div><span class="provider-state" data-provider-state="threads">확인 중</span></div>
+          <div class="credential-card-meta"><span>threads_basic</span><span>threads_content_publish</span></div>
+          <div class="field"><label for="threadsToken">사용자 Access Token</label><input id="threadsToken" name="accessToken" type="password" required autocomplete="new-password"></div><div class="field"><label for="threadsUserId">Threads User ID</label><input id="threadsUserId" name="userId" type="text" required autocomplete="off"></div>
+          <details class="optional-fields"><summary>앱 정보</summary><div class="field"><label for="threadsAppId">Meta App ID</label><input id="threadsAppId" name="appId" type="text" autocomplete="off"></div><div class="field"><label for="threadsAppSecret">Meta App Secret</label><input id="threadsAppSecret" name="appSecret" type="password" autocomplete="new-password"></div></details>
+          <p class="credential-error" role="alert" hidden></p><div class="credential-actions"><button class="button button-primary button-small" type="submit">암호화 저장</button><button class="button button-quiet button-small test-credential" type="button">계정 확인</button><button class="text-button clear-credential" type="button">연결 삭제</button></div>
+        </form>
+
+        <form class="credential-card" data-provider="instagram" autocomplete="off">
+          <div class="credential-card-head"><div><strong>Instagram</strong><span>프로페셔널 계정 게시</span></div><span class="provider-state" data-provider-state="instagram">확인 중</span></div>
+          <div class="credential-card-meta"><span>Professional 계정</span><span>content publish</span></div>
+          <div class="field"><label for="instagramToken">Instagram Access Token</label><input id="instagramToken" name="accessToken" type="password" required autocomplete="new-password"></div><div class="field"><label for="instagramUserId">Professional Account ID</label><input id="instagramUserId" name="userId" type="text" required autocomplete="off"></div>
+          <details class="optional-fields"><summary>앱 정보와 API 버전</summary><div class="field"><label for="instagramAppId">Meta App ID</label><input id="instagramAppId" name="appId" type="text"></div><div class="field"><label for="instagramAppSecret">Meta App Secret</label><input id="instagramAppSecret" name="appSecret" type="password" autocomplete="new-password"></div><div class="field"><label for="instagramVersion">Graph API 버전</label><input id="instagramVersion" name="graphVersion" type="text" value="v23.0" pattern="v[0-9]+\.[0-9]+"></div></details>
+          <p class="credential-error" role="alert" hidden></p><div class="credential-actions"><button class="button button-primary button-small" type="submit">암호화 저장</button><button class="button button-quiet button-small test-credential" type="button">계정 확인</button><button class="text-button clear-credential" type="button">연결 삭제</button></div>
+        </form>
+
+        <form class="credential-card" data-provider="facebook" autocomplete="off">
+          <div class="credential-card-head"><div><strong>Facebook</strong><span>페이지 게시</span></div><span class="provider-state" data-provider-state="facebook">확인 중</span></div>
+          <div class="credential-card-meta"><span>pages_manage_posts</span><span>Page token</span></div>
+          <div class="field"><label for="facebookToken">Page Access Token</label><input id="facebookToken" name="pageAccessToken" type="password" required autocomplete="new-password"></div><div class="field"><label for="facebookPageId">Facebook Page ID</label><input id="facebookPageId" name="pageId" type="text" required autocomplete="off"></div>
+          <details class="optional-fields"><summary>앱 정보와 API 버전</summary><div class="field"><label for="facebookAppId">Meta App ID</label><input id="facebookAppId" name="appId" type="text"></div><div class="field"><label for="facebookAppSecret">Meta App Secret</label><input id="facebookAppSecret" name="appSecret" type="password" autocomplete="new-password"></div><div class="field"><label for="facebookVersion">Graph API 버전</label><input id="facebookVersion" name="graphVersion" type="text" value="v23.0" pattern="v[0-9]+\.[0-9]+"></div></details>
+          <p class="credential-error" role="alert" hidden></p><div class="credential-actions"><button class="button button-primary button-small" type="submit">암호화 저장</button><button class="button button-quiet button-small test-credential" type="button">계정 확인</button><button class="text-button clear-credential" type="button">연결 삭제</button></div>
+        </form>
+
+        <form class="credential-card" data-provider="tiktok" autocomplete="off">
+          <div class="credential-card-head"><div><strong>TikTok</strong><span>Content Posting API</span></div><span class="provider-state" data-provider-state="tiktok">확인 중</span></div>
+          <div class="credential-card-meta"><span>video.publish</span><span>user.info.basic</span><span>앱 심사 필요</span></div>
+          <div class="field"><label for="tiktokAccessToken">사용자 Access Token</label><input id="tiktokAccessToken" name="accessToken" type="password" required autocomplete="new-password"></div><div class="field"><label for="tiktokRefreshToken">Refresh Token</label><input id="tiktokRefreshToken" name="refreshToken" type="password" required autocomplete="new-password"></div><div class="field"><label for="tiktokClientKey">Client Key</label><input id="tiktokClientKey" name="clientKey" type="text" required></div><div class="field"><label for="tiktokClientSecret">Client Secret</label><input id="tiktokClientSecret" name="clientSecret" type="password" required autocomplete="new-password"></div>
+          <p class="credential-error" role="alert" hidden></p><div class="credential-actions"><button class="button button-primary button-small" type="submit">암호화 저장</button><button class="button button-quiet button-small test-credential" type="button">계정 확인</button><button class="text-button clear-credential" type="button">연결 삭제</button></div>
+        </form>
+
+        <form class="credential-card" data-provider="linkedin" autocomplete="off">
+          <div class="credential-card-head"><div><strong>LinkedIn</strong><span>Posts API</span></div><span class="provider-state" data-provider-state="linkedin">확인 중</span></div>
+          <div class="credential-card-meta"><span>openid profile</span><span>w_member_social 또는 w_organization_social</span></div>
+          <div class="field"><label for="linkedinAccessToken">OAuth Access Token</label><input id="linkedinAccessToken" name="accessToken" type="password" required autocomplete="new-password"></div><div class="field"><label for="linkedinAuthor">게시 주체 URN</label><input id="linkedinAuthor" name="authorUrn" type="text" required placeholder="urn:li:organization:123 또는 urn:li:person:123"></div><div class="field"><label for="linkedinVersion">LinkedIn API 버전</label><input id="linkedinVersion" name="apiVersion" type="text" value="202603" pattern="[0-9]{6}" required><small>YYYYMM 형식. 지원 버전은 공식 문서에서 확인하세요.</small></div>
+          <p class="credential-error" role="alert" hidden></p><div class="credential-actions"><button class="button button-primary button-small" type="submit">암호화 저장</button><button class="button button-quiet button-small test-credential" type="button">계정 확인</button><button class="text-button clear-credential" type="button">연결 삭제</button></div>
+        </form>
+
+        <form class="credential-card" data-provider="youtube" autocomplete="off">
+          <div class="credential-card-head"><div><strong>YouTube</strong><span>YouTube Data API v3</span></div><span class="provider-state" data-provider-state="youtube">확인 중</span></div>
+          <div class="credential-card-meta"><span>youtube.upload</span><span>OAuth offline access</span><span>API 심사</span></div>
+          <div class="field"><label for="youtubeAccessToken">OAuth Access Token</label><input id="youtubeAccessToken" name="accessToken" type="password" required autocomplete="new-password"></div><div class="field"><label for="youtubeRefreshToken">Refresh Token</label><input id="youtubeRefreshToken" name="refreshToken" type="password" required autocomplete="new-password"></div><div class="field"><label for="youtubeClientId">OAuth Client ID</label><input id="youtubeClientId" name="clientId" type="text" required></div><div class="field"><label for="youtubeClientSecret">OAuth Client Secret</label><input id="youtubeClientSecret" name="clientSecret" type="password" required autocomplete="new-password"></div>
+          <p class="credential-error" role="alert" hidden></p><div class="credential-actions"><button class="button button-primary button-small" type="submit">암호화 저장</button><button class="button button-quiet button-small test-credential" type="button">채널 확인</button><button class="text-button clear-credential" type="button">연결 삭제</button></div>
+        </form>
+      </section>
+
+      <section class="guide-section" aria-labelledby="guideTitle">
+        <div class="guide-head"><div><p class="kicker">공식 발급 설명서</p><h2 id="guideTitle">서비스별로 이렇게 준비하세요.</h2><p>개발자 앱 생성 → 게시 권한 신청 → OAuth 동의 → 토큰 입력 → 계정 확인 순서입니다.</p></div><span class="safety-state">공식 문서 기준 · 2026-08-12 확인</span></div>
+        <div class="guide-grid">
+          <article class="api-guide"><h3>X <span>OAuth 2.0</span></h3><ol><li>X Developer Portal에서 Project와 App을 만듭니다.</li><li>User authentication을 OAuth 2.0으로 켜고 earthus 콜백 주소를 등록합니다.</li><li><code>tweet.read tweet.write users.read media.write offline.access</code> 범위로 Authorization Code + PKCE 승인을 받습니다.</li><li>받은 Access Token·Refresh Token·Client ID/Secret을 위에 저장합니다.</li></ol><p class="guide-warning">X API 사용 등급에 따라 게시량과 비용이 달라질 수 있습니다.</p><a href="https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code" target="_blank" rel="noopener">X 공식 OAuth 설명서</a></article>
+          <article class="api-guide"><h3>Threads <span>Meta</span></h3><ol><li>Meta for Developers에서 Threads 사용 사례의 앱을 만듭니다.</li><li>Threads 계정을 테스트 사용자 또는 운영 사용자로 연결합니다.</li><li><code>threads_basic</code>과 <code>threads_content_publish</code> 권한으로 사용자 동의를 받습니다.</li><li>장기 토큰으로 교환하고 Threads User ID와 함께 저장합니다.</li></ol><p class="guide-warning">앱 역할 밖의 계정을 연결하려면 Meta의 권한 검토가 필요할 수 있습니다.</p><a href="https://developers.facebook.com/docs/threads" target="_blank" rel="noopener">Threads API 공식 문서</a></article>
+          <article class="api-guide"><h3>Instagram <span>Professional</span></h3><ol><li>Instagram 계정을 Business 또는 Creator 계정으로 전환합니다.</li><li>Meta 앱에 Instagram 제품을 추가하고 OAuth 리디렉션을 등록합니다.</li><li>콘텐츠 게시 권한을 요청하고 Professional Account ID를 확인합니다.</li><li>사용자 Access Token과 Account ID를 저장합니다.</li></ol><p class="guide-warning">일반 개인 계정에는 API 게시가 되지 않습니다. 사진 또는 영상이 반드시 필요합니다.</p><a href="https://developers.facebook.com/docs/instagram-platform/content-publishing" target="_blank" rel="noopener">Instagram 게시 공식 문서</a></article>
+          <article class="api-guide"><h3>Facebook <span>Page</span></h3><ol><li>Meta 앱을 만들고 Facebook Login for Business를 구성합니다.</li><li>게시할 Facebook Page에서 관리자 권한을 확보합니다.</li><li><code>pages_show_list pages_read_engagement pages_manage_posts</code> 권한을 받습니다.</li><li>Page Access Token과 Page ID를 저장합니다.</li></ol><p class="guide-warning">개인 프로필이 아니라 Facebook Page에 게시합니다.</p><a href="https://developers.facebook.com/docs/pages-api/posts" target="_blank" rel="noopener">Facebook Page 게시 공식 문서</a></article>
+          <article class="api-guide"><h3>TikTok <span>Direct Post</span></h3><ol><li>TikTok for Developers에서 앱을 만들고 Login Kit를 구성합니다.</li><li>Content Posting API의 Direct Post 기능을 켭니다.</li><li><code>user.info.basic video.publish</code> 권한 심사를 받고 사용자가 OAuth 동의합니다.</li><li>Access/Refresh Token과 Client Key/Secret을 저장합니다.</li></ol><p class="guide-warning">미심사 클라이언트가 올린 콘텐츠는 비공개로 제한됩니다. 현재 earthus 연결은 영상 게시를 지원합니다.</p><a href="https://developers.tiktok.com/doc/content-posting-api-get-started" target="_blank" rel="noopener">TikTok Content Posting 공식 문서</a></article>
+          <article class="api-guide"><h3>LinkedIn <span>Posts API</span></h3><ol><li>LinkedIn Developer Portal에서 앱을 만들고 회사 페이지와 연결합니다.</li><li>계정 확인용 <code>openid profile</code>과, 개인 게시의 <code>w_member_social</code> 또는 회사 게시의 <code>w_organization_social</code> 권한을 받습니다.</li><li>3-legged OAuth로 Access Token을 발급합니다.</li><li>게시 주체의 person 또는 organization URN과 지원 API 버전을 저장합니다.</li></ol><p class="guide-warning">회사 페이지 게시자는 해당 조직의 관리자 또는 콘텐츠 관리자 역할이어야 합니다.</p><a href="https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api" target="_blank" rel="noopener">LinkedIn Posts API 공식 문서</a></article>
+          <article class="api-guide"><h3>YouTube <span>Data API v3</span></h3><ol><li>Google Cloud에서 프로젝트를 만들고 YouTube Data API v3를 활성화합니다.</li><li>OAuth 동의 화면과 Web application Client를 만들고 콜백 주소를 등록합니다.</li><li><code>https://www.googleapis.com/auth/youtube.upload</code> 범위와 offline access로 동의받습니다.</li><li>Access/Refresh Token과 Client ID/Secret을 저장합니다.</li></ol><p class="guide-warning">2020-07-28 이후 생성된 미심사 API 프로젝트의 업로드는 비공개로 제한될 수 있습니다.</p><a href="https://developers.google.com/youtube/v3/docs/videos/insert" target="_blank" rel="noopener">YouTube 업로드 공식 문서</a></article>
+        </div>
+      </section>
+
+      <p class="settings-footer-note">토큰은 만료되거나 사용자가 권한을 철회할 수 있습니다. ‘저장됨’은 원문이 암호화되어 있다는 뜻이고, ‘계정 확인됨’은 그 시점에 공식 API가 응답했다는 뜻입니다. 앱 심사와 플랫폼 이용 요금은 별도입니다.</p>
+    </div>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./js/social-settings.js"></script>
+</body>
+</html>

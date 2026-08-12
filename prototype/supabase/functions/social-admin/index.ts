@@ -16,7 +16,7 @@ import { createClient, type SupabaseClient } from 'jsr:@supabase/supabase-js@2';
 const BUCKET = 'earthus-social-private';
 const MAX_MEDIA_BYTES = 512 * 1024 * 1024;
 const META_VERSION = 'v23.0';
-const PROVIDERS = ['x', 'threads', 'instagram', 'facebook'] as const;
+const PROVIDERS = ['x', 'threads', 'instagram', 'facebook', 'tiktok', 'linkedin', 'youtube'] as const;
 type Provider = typeof PROVIDERS[number];
 type Json = Record<string, unknown>;
 
@@ -25,6 +25,18 @@ const REQUIRED: Record<Provider, string[]> = {
   threads: ['accessToken', 'userId'],
   instagram: ['accessToken', 'userId'],
   facebook: ['pageAccessToken', 'pageId'],
+  tiktok: ['accessToken', 'refreshToken', 'clientKey', 'clientSecret'],
+  linkedin: ['accessToken', 'authorUrn'],
+  youtube: ['accessToken', 'refreshToken', 'clientId', 'clientSecret'],
+};
+const ALLOWED_FIELDS: Record<Provider, string[]> = {
+  x: ['accessToken', 'clientId', 'clientSecret', 'refreshToken'],
+  threads: ['accessToken', 'userId', 'appId', 'appSecret'],
+  instagram: ['accessToken', 'userId', 'appId', 'appSecret', 'graphVersion'],
+  facebook: ['pageAccessToken', 'pageId', 'appId', 'appSecret', 'graphVersion'],
+  tiktok: ['accessToken', 'refreshToken', 'clientKey', 'clientSecret', 'openId', 'scope'],
+  linkedin: ['accessToken', 'authorUrn', 'apiVersion'],
+  youtube: ['accessToken', 'refreshToken', 'clientId', 'clientSecret'],
 };
 
 function cors(req: Request) {
@@ -161,6 +173,17 @@ async function saveCredentials(admin: SupabaseClient, provider: Provider, creden
   });
 }
 
+async function saveRefreshedCredentials(admin: SupabaseClient, provider: Provider, credentials: Json) {
+  const previous = await getJson(admin, `credential-status/${provider}.json`);
+  await saveCredentials(admin, provider, credentials);
+  if (previous?.verifiedAt) {
+    const current = await getJson(admin, `credential-status/${provider}.json`);
+    await putJson(admin, `credential-status/${provider}.json`, {
+      ...current, verifiedAt: previous.verifiedAt, account: previous.account,
+    });
+  }
+}
+
 async function credentialStatus(admin: SupabaseClient) {
   return Promise.all(PROVIDERS.map(async (provider) => {
     const status = await getJson(admin, `credential-status/${provider}.json`);
@@ -179,6 +202,16 @@ async function remoteJson(response: Response, label: string) {
   return body;
 }
 
+async function tiktokJson(response: Response, label: string) {
+  const text = await response.text();
+  let body: any = null;
+  try { body = text ? JSON.parse(text) : {}; } catch { body = {}; }
+  if (!response.ok || (body?.error?.code && body.error.code !== 'ok')) {
+    throw new Error(`${label}: ${body?.error?.message || body?.error?.code || response.status}`);
+  }
+  return body;
+}
+
 function graphVersion(credentials: Json) {
   const value = cleanText(credentials.graphVersion, 12);
   return /^v\d+\.\d+$/.test(value) ? value : META_VERSION;
@@ -191,7 +224,55 @@ async function appSecretProof(token: string, secret: string) {
   return [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
-async function testCredentials(provider: Provider, credentials: Json) {
+async function refreshTikTokToken(admin: SupabaseClient, credentials: Json) {
+  const params = new URLSearchParams({
+    client_key: String(credentials.clientKey),
+    client_secret: String(credentials.clientSecret),
+    grant_type: 'refresh_token',
+    refresh_token: String(credentials.refreshToken),
+  });
+  const body = await remoteJson(await fetch('https://open.tiktokapis.com/v2/oauth/token/', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params,
+  }), 'TikTok 토큰 갱신 실패');
+  const next = {
+    ...credentials,
+    accessToken: body.access_token,
+    refreshToken: body.refresh_token || credentials.refreshToken,
+    openId: body.open_id || credentials.openId,
+    scope: body.scope || credentials.scope,
+  };
+  await saveRefreshedCredentials(admin, 'tiktok', next);
+  return next;
+}
+
+async function refreshYouTubeToken(admin: SupabaseClient, credentials: Json) {
+  const params = new URLSearchParams({
+    client_id: String(credentials.clientId),
+    client_secret: String(credentials.clientSecret),
+    refresh_token: String(credentials.refreshToken),
+    grant_type: 'refresh_token',
+  });
+  const body = await remoteJson(await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params,
+  }), 'YouTube 토큰 갱신 실패');
+  const next = { ...credentials, accessToken: body.access_token };
+  await saveRefreshedCredentials(admin, 'youtube', next);
+  return next;
+}
+
+function linkedInHeaders(credentials: Json, jsonBody = false) {
+  const version = /^\d{6}$/.test(cleanText(credentials.apiVersion, 6))
+    ? cleanText(credentials.apiVersion, 6) : '202603';
+  return {
+    Authorization: `Bearer ${credentials.accessToken}`,
+    'Linkedin-Version': version,
+    'X-Restli-Protocol-Version': '2.0.0',
+    ...(jsonBody ? { 'Content-Type': 'application/json' } : {}),
+  };
+}
+
+async function testCredentials(admin: SupabaseClient, provider: Provider, stored: Json) {
+  let credentials = stored;
   if (provider === 'x') {
     const response = await fetch('https://api.x.com/2/users/me?user.fields=username,name', {
       headers: { Authorization: `Bearer ${credentials.accessToken}` },
@@ -204,6 +285,39 @@ async function testCredentials(provider: Provider, credentials: Json) {
     const query = new URLSearchParams({ fields: 'id,username', access_token: String(credentials.accessToken) });
     const body = await remoteJson(await fetch(`https://graph.threads.net/v1.0/me?${query}`), 'Threads 계정 확인 실패');
     return { id: body.id, username: body.username };
+  }
+
+  if (provider === 'tiktok') {
+    credentials = await refreshTikTokToken(admin, credentials);
+    const body = await tiktokJson(await fetch('https://open.tiktokapis.com/v2/post/publish/creator_info/query/', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${credentials.accessToken}`, 'Content-Type': 'application/json; charset=UTF-8' },
+    }), 'TikTok 계정 확인 실패');
+    return {
+      id: credentials.openId,
+      name: body.data?.creator_nickname,
+      username: body.data?.creator_username,
+      privacyLevels: body.data?.privacy_level_options,
+      maxVideoSeconds: body.data?.max_video_post_duration_sec,
+    };
+  }
+
+  if (provider === 'linkedin') {
+    const body = await remoteJson(await fetch('https://api.linkedin.com/v2/userinfo', {
+      headers: { Authorization: `Bearer ${credentials.accessToken}` },
+    }), 'LinkedIn 계정 확인 실패');
+    return { id: body.sub || credentials.authorUrn, name: body.name };
+  }
+
+  if (provider === 'youtube') {
+    credentials = await refreshYouTubeToken(admin, credentials);
+    const query = new URLSearchParams({ part: 'id,snippet', mine: 'true', maxResults: '1' });
+    const body = await remoteJson(await fetch(`https://www.googleapis.com/youtube/v3/channels?${query}`, {
+      headers: { Authorization: `Bearer ${credentials.accessToken}` },
+    }), 'YouTube 채널 확인 실패');
+    const channel = body.items?.[0];
+    if (!channel) throw new Error('YouTube 채널 확인 실패: 연결된 채널이 없습니다.');
+    return { id: channel.id, name: channel.snippet?.title };
   }
 
   const token = provider === 'facebook' ? String(credentials.pageAccessToken) : String(credentials.accessToken);
@@ -465,11 +579,180 @@ async function publishFacebook(admin: SupabaseClient, credentials: Json, text: s
   return { id, url: permalink };
 }
 
-async function publish(admin: SupabaseClient, provider: Provider, credentials: Json, text: string, meta: any | null) {
+async function publishTikTok(admin: SupabaseClient, stored: Json, text: string, meta: any | null, options: Json) {
+  if (!meta || !String(meta.mimeType).startsWith('video/')) throw new Error('TIKTOK_VIDEO_REQUIRED');
+  const privacy = cleanText(options.privacyLevel, 80);
+  if (!['PUBLIC_TO_EVERYONE', 'MUTUAL_FOLLOW_FRIENDS', 'FOLLOWER_OF_CREATOR', 'SELF_ONLY'].includes(privacy)) {
+    throw new Error('TIKTOK_PRIVACY_REQUIRED');
+  }
+  const credentials = await refreshTikTokToken(admin, stored);
+  const creator = await tiktokJson(await fetch('https://open.tiktokapis.com/v2/post/publish/creator_info/query/', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${credentials.accessToken}`, 'Content-Type': 'application/json; charset=UTF-8' },
+  }), 'TikTok 게시 권한 확인 실패');
+  if (!creator.data?.privacy_level_options?.includes(privacy)) throw new Error('TIKTOK_PRIVACY_NOT_ALLOWED');
+
+  const { data: blob, error } = await admin.storage.from(BUCKET).download(meta.storagePath);
+  if (error || !blob) throw error ?? new Error('MEDIA_DOWNLOAD_FAILED');
+  const chunkSize = blob.size < 5 * 1024 * 1024 ? blob.size : Math.min(32 * 1024 * 1024, blob.size);
+  const totalChunkCount = Math.max(1, Math.floor(blob.size / chunkSize));
+  const initialized = await tiktokJson(await fetch('https://open.tiktokapis.com/v2/post/publish/video/init/', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${credentials.accessToken}`, 'Content-Type': 'application/json; charset=UTF-8' },
+    body: JSON.stringify({
+      post_info: {
+        title: text.slice(0, 2200), privacy_level: privacy,
+        disable_duet: false, disable_comment: false, disable_stitch: false,
+      },
+      source_info: {
+        source: 'FILE_UPLOAD', video_size: blob.size,
+        chunk_size: chunkSize, total_chunk_count: totalChunkCount,
+      },
+    }),
+  }), 'TikTok 게시 준비 실패');
+  const uploadUrl = String(initialized.data?.upload_url || '');
+  const publishId = String(initialized.data?.publish_id || '');
+  if (!uploadUrl || !publishId) throw new Error('TIKTOK_UPLOAD_URL_MISSING');
+
+  for (let index = 0; index < totalChunkCount; index += 1) {
+    const first = index * chunkSize;
+    const last = index === totalChunkCount - 1 ? blob.size - 1 : Math.min(blob.size - 1, first + chunkSize - 1);
+    const part = blob.slice(first, last + 1, meta.mimeType);
+    const uploaded = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': meta.mimeType,
+        'Content-Length': String(part.size),
+        'Content-Range': `bytes ${first}-${last}/${blob.size}`,
+      },
+      body: part,
+    });
+    if (![200, 201, 206].includes(uploaded.status)) throw new Error(`TikTok 영상 전송 실패: ${uploaded.status}`);
+  }
+  return { id: publishId, url: null };
+}
+
+async function uploadLinkedInImage(credentials: Json, owner: string, blob: Blob) {
+  const initialized = await remoteJson(await fetch('https://api.linkedin.com/rest/images?action=initializeUpload', {
+    method: 'POST', headers: linkedInHeaders(credentials, true),
+    body: JSON.stringify({ initializeUploadRequest: { owner } }),
+  }), 'LinkedIn 이미지 준비 실패');
+  const uploadUrl = String(initialized.value?.uploadUrl || '');
+  const image = String(initialized.value?.image || '');
+  if (!uploadUrl || !image) throw new Error('LINKEDIN_IMAGE_UPLOAD_MISSING');
+  const uploaded = await fetch(uploadUrl, {
+    method: 'PUT', headers: { Authorization: `Bearer ${credentials.accessToken}` }, body: blob,
+  });
+  if (!uploaded.ok) throw new Error(`LinkedIn 이미지 전송 실패: ${uploaded.status}`);
+  return image;
+}
+
+async function uploadLinkedInVideo(credentials: Json, owner: string, blob: Blob) {
+  const initialized = await remoteJson(await fetch('https://api.linkedin.com/rest/videos?action=initializeUpload', {
+    method: 'POST', headers: linkedInHeaders(credentials, true),
+    body: JSON.stringify({ initializeUploadRequest: {
+      owner, fileSizeBytes: blob.size, uploadCaptions: false, uploadThumbnail: false,
+    } }),
+  }), 'LinkedIn 영상 준비 실패');
+  const value = initialized.value || {};
+  const parts: string[] = [];
+  for (const instruction of value.uploadInstructions || []) {
+    const first = Number(instruction.firstByte);
+    const last = Math.min(blob.size - 1, Number(instruction.lastByte));
+    const uploaded = await fetch(String(instruction.uploadUrl), {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${credentials.accessToken}` },
+      body: blob.slice(first, last + 1),
+    });
+    if (!uploaded.ok) throw new Error(`LinkedIn 영상 전송 실패: ${uploaded.status}`);
+    const partId = (uploaded.headers.get('etag') || '').replace(/^\"|\"$/g, '');
+    if (!partId) throw new Error('LINKEDIN_VIDEO_PART_ID_MISSING');
+    parts.push(partId);
+  }
+  const video = String(value.video || '');
+  if (!video || !parts.length) throw new Error('LINKEDIN_VIDEO_UPLOAD_MISSING');
+  await remoteJson(await fetch('https://api.linkedin.com/rest/videos?action=finalizeUpload', {
+    method: 'POST', headers: linkedInHeaders(credentials, true),
+    body: JSON.stringify({ finalizeUploadRequest: {
+      video, uploadToken: value.uploadToken || '', uploadedPartIds: parts,
+    } }),
+  }), 'LinkedIn 영상 마무리 실패');
+  return video;
+}
+
+async function publishLinkedIn(admin: SupabaseClient, credentials: Json, text: string, meta: any | null) {
+  const owner = cleanText(credentials.authorUrn, 300);
+  if (!/^urn:li:(person|organization):/.test(owner)) throw new Error('LINKEDIN_AUTHOR_INVALID');
+  let mediaUrn = '';
+  if (meta) {
+    const { data: blob, error } = await admin.storage.from(BUCKET).download(meta.storagePath);
+    if (error || !blob) throw error ?? new Error('MEDIA_DOWNLOAD_FAILED');
+    mediaUrn = String(meta.mimeType).startsWith('video/')
+      ? await uploadLinkedInVideo(credentials, owner, blob)
+      : await uploadLinkedInImage(credentials, owner, blob);
+  }
+  const payload: any = {
+    author: owner, commentary: text, visibility: 'PUBLIC',
+    distribution: { feedDistribution: 'MAIN_FEED', targetEntities: [], thirdPartyDistributionChannels: [] },
+    lifecycleState: 'PUBLISHED', isReshareDisabledByAuthor: false,
+  };
+  if (mediaUrn) payload.content = { media: { id: mediaUrn, title: meta?.title || 'earthus' } };
+  const response = await fetch('https://api.linkedin.com/rest/posts', {
+    method: 'POST', headers: linkedInHeaders(credentials, true), body: JSON.stringify(payload),
+  });
+  if (!response.ok) await remoteJson(response, 'LinkedIn 게시 실패');
+  const id = response.headers.get('x-restli-id') || '';
+  return { id, url: id ? `https://www.linkedin.com/feed/update/${id}/` : null };
+}
+
+async function publishYouTube(admin: SupabaseClient, stored: Json, text: string, meta: any | null, options: Json) {
+  if (!meta || !String(meta.mimeType).startsWith('video/')) throw new Error('YOUTUBE_VIDEO_REQUIRED');
+  const title = cleanText(options.title, 100);
+  const privacyStatus = cleanText(options.privacyStatus, 20);
+  if (!title) throw new Error('YOUTUBE_TITLE_REQUIRED');
+  if (!['private', 'unlisted', 'public'].includes(privacyStatus)) throw new Error('YOUTUBE_PRIVACY_REQUIRED');
+  const credentials = await refreshYouTubeToken(admin, stored);
+  const { data: blob, error } = await admin.storage.from(BUCKET).download(meta.storagePath);
+  if (error || !blob) throw error ?? new Error('MEDIA_DOWNLOAD_FAILED');
+  const metadata = JSON.stringify({
+    snippet: { title, description: text, categoryId: cleanText(options.categoryId, 10) || '28' },
+    status: { privacyStatus, selfDeclaredMadeForKids: false },
+  });
+  const initialized = await fetch('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${credentials.accessToken}`,
+      'Content-Type': 'application/json; charset=UTF-8',
+      'X-Upload-Content-Length': String(blob.size),
+      'X-Upload-Content-Type': meta.mimeType,
+    },
+    body: metadata,
+  });
+  if (!initialized.ok) await remoteJson(initialized, 'YouTube 업로드 준비 실패');
+  const uploadUrl = initialized.headers.get('location');
+  if (!uploadUrl) throw new Error('YOUTUBE_UPLOAD_URL_MISSING');
+  const uploaded = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${credentials.accessToken}`,
+      'Content-Type': meta.mimeType,
+      'Content-Length': String(blob.size),
+    },
+    body: blob,
+  });
+  const result = await remoteJson(uploaded, 'YouTube 영상 업로드 실패');
+  const id = String(result.id || '');
+  return { id, url: id ? `https://www.youtube.com/watch?v=${encodeURIComponent(id)}` : null };
+}
+
+async function publish(admin: SupabaseClient, provider: Provider, credentials: Json, text: string, meta: any | null, options: Json) {
   if (provider === 'x') return publishX(admin, credentials, text, meta);
   if (provider === 'threads') return publishThreads(admin, credentials, text, meta);
   if (provider === 'instagram') return publishInstagram(admin, credentials, text, meta);
-  return publishFacebook(admin, credentials, text, meta);
+  if (provider === 'facebook') return publishFacebook(admin, credentials, text, meta);
+  if (provider === 'tiktok') return publishTikTok(admin, credentials, text, meta, options);
+  if (provider === 'linkedin') return publishLinkedIn(admin, credentials, text, meta);
+  return publishYouTube(admin, credentials, text, meta, options);
 }
 
 Deno.serve(async (req) => {
@@ -489,7 +772,10 @@ Deno.serve(async (req) => {
       const provider = providerOf(body.provider);
       const credentials = body.credentials && typeof body.credentials === 'object' ? body.credentials as Json : {};
       if (!provider) return json(req, { error: 'UNKNOWN_PROVIDER' }, 400);
+      /* ⚠️ 로그인 비밀번호처럼 이 서비스가 보관하면 안 되는 임의 필드는
+         관리자 요청이어도 버린다. 화면만 믿지 말고 서버 허용 목록으로 막는다. */
       const cleaned = Object.fromEntries(Object.entries(credentials)
+        .filter(([key]) => ALLOWED_FIELDS[provider].includes(key))
         .map(([key, value]) => [key, cleanText(value, 20_000)]).filter(([, value]) => value));
       const missing = REQUIRED[provider].filter((key) => !cleanText(cleaned[key], 20_000));
       if (missing.length) return json(req, { error: 'MISSING_FIELDS', fields: missing }, 400);
@@ -509,7 +795,12 @@ Deno.serve(async (req) => {
       if (!provider) return json(req, { error: 'UNKNOWN_PROVIDER' }, 400);
       const credentials = await loadCredentials(admin, provider);
       if (!credentials) return json(req, { error: 'NOT_CONFIGURED' }, 409);
-      return json(req, { ok: true, provider, account: await testCredentials(provider, credentials) });
+      const account = await testCredentials(admin, provider, credentials);
+      const previous = await getJson(admin, `credential-status/${provider}.json`) || { provider, fields: [] };
+      await putJson(admin, `credential-status/${provider}.json`, {
+        ...previous, provider, verifiedAt: new Date().toISOString(), account,
+      });
+      return json(req, { ok: true, provider, account });
     }
 
     if (action === 'prepare_upload') {
@@ -562,12 +853,15 @@ Deno.serve(async (req) => {
       const provider = providerOf(body.provider);
       const text = cleanText(body.text, 10_000);
       const mediaId = cleanText(body.mediaId, 80);
+      const options = body.options && typeof body.options === 'object' ? body.options as Json : {};
       const idempotencyKey = cleanText(body.idempotencyKey, 300);
       if (!provider || !text || body.confirmed !== true || !idempotencyKey) {
         return json(req, { error: 'PUBLISH_CONFIRMATION_REQUIRED' }, 400);
       }
       const credentials = await loadCredentials(admin, provider);
       if (!credentials) return json(req, { error: 'NOT_CONFIGURED', provider }, 409);
+      const connection = await getJson(admin, `credential-status/${provider}.json`);
+      if (!connection?.verifiedAt) return json(req, { error: 'ACCOUNT_NOT_VERIFIED', provider }, 409);
       const meta = mediaId ? await mediaMeta(admin, mediaId) : null;
       const lockId = await digest(`${provider}:${idempotencyKey}`);
       const lockPath = `publish-locks/${lockId}.json`;
@@ -582,7 +876,7 @@ Deno.serve(async (req) => {
       }
 
       try {
-        const result = await publish(admin, provider, credentials, text, meta);
+        const result = await publish(admin, provider, credentials, text, meta, options);
         const log = {
           id: crypto.randomUUID(), provider, mediaId: mediaId || null,
           postId: result.id, url: result.url, textDigest: await digest(text),

@@ -18,6 +18,9 @@ const CHANNELS = {
   threads: { label: '스레드', limit: 500 },
   instagram: { label: '인스타그램', limit: 2200 },
   facebook: { label: '페이스북', limit: 2000 },
+  tiktok: { label: '틱톡', limit: 2200 },
+  linkedin: { label: '링크드인', limit: 3000 },
+  youtube: { label: '유튜브', limit: 5000 },
 };
 
 /* ⚠️ 규격은 여기 한 곳만 고친다. 목록과 실제 캔버스 값이 어긋나면

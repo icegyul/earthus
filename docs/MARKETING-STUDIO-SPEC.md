@@ -230,9 +230,12 @@ const url = viewer.scene.canvas.toDataURL('image/png');
 ⚠️ 각 채널 게시 후 `posted` 에 `{채널: {at, url}}` 을 기록한다.
 중복 게시를 막는 유일한 방법이다.
 
-#### 2026-08-10 구현 상태
+#### 2026-08-12 구현 상태
 
-- 관리자 메뉴의 `SNS 연동 설정`에서 X, Threads, Instagram, Facebook 자격증명을 입력한다.
+- 관리자 메뉴의 별도 `social-settings.html`에서 X, Threads, Instagram, Facebook,
+  TikTok, LinkedIn, YouTube 자격증명을 입력하고 공식 발급 순서를 함께 읽는다.
+- SNS 로그인 아이디·비밀번호는 받지 않는다. OAuth Access/Refresh Token, App ID/Client ID,
+  App Secret과 게시 대상 ID·URN만 입력한다.
 - 원문은 브라우저 저장소에 두지 않고 `social-admin` Edge Function으로만 보낸다.
 - Edge Function은 `SOCIAL_VAULT_KEY`로 AES-GCM 암호화한 파일만 비공개 Storage에 저장한다.
   설정 화면에는 필드 이름과 갱신 시각만 돌려주며 원문 조회 API는 없다.
@@ -240,12 +243,17 @@ const url = viewer.scene.canvas.toDataURL('image/png');
   출처와 관측·촬영 시각이 없으면 카탈로그에 등록하지 않는다.
 - Meta가 미디어를 가져갈 때는 한시적 signed URL만 발급한다. 버킷 자체는 공개하지 않는다.
 - 게시 요청은 화면의 최종 확인 체크와 브라우저 확인창을 모두 통과한 수동 POST만 허용한다.
-- `provider + mediaId + text`로 중복 키를 만들고 서버 lock 파일로 같은 요청을 두 번 막는다.
+- `provider + mediaId + text + 공개범위/제목`으로 중복 키를 만들고 서버 lock 파일로 같은 요청을 두 번 막는다.
 - 성공 기록에는 채널, 게시물 ID·URL, 문구 SHA-256, 게시 시각, 관리자 UID만 남긴다.
   자격증명과 게시 문구 원문은 게시 이력에 남기지 않는다.
 - 예약, cron, 초안 생성 이벤트에서 `social-admin`을 부르는 코드는 없다.
 
-실제 X·Meta 앱의 토큰과 권한은 아직 입력하지 않았으므로 계정 확인과 실게시 검증은 남아 있다.
+TikTok은 Direct Post 심사 전 게시물이 비공개로 제한되고, YouTube도 미심사 API 프로젝트의
+업로드가 비공개로 제한될 수 있다. LinkedIn·Meta도 계정·앱 역할 밖의 운영에는 게시 권한 검토가
+필요하다. 따라서 키 저장만으로 공개 게시를 보장하지 않고, 각 카드의 `계정 확인`과 플랫폼 심사
+완료 뒤 사람이 누른 게시 요청만 실제 발행한다.
+
+실제 7개 서비스의 토큰과 권한은 아직 입력하지 않았으므로 계정 확인과 실게시 검증은 남아 있다.
 
 ---
 
@@ -294,7 +302,9 @@ const known = ADMIN_UIDS.includes(user.id);   // ⚠️ length === 0 이면 통�
 - [x] SNS 자격증명은 클라이언트 저장 없이 서버에서 암호화한다
 - [x] 서버 공용 사진·영상 보관함과 출처·촬영 시각 필수 검사를 구현했다
 - [x] 게시 요청 중복 lock과 성공 이력을 서버에 남긴다
-- [ ] X·Threads·Instagram·Facebook 실제 토큰으로 계정 확인과 사진·영상 게시를 각각 검증
+- [x] 별도 SNS 연결 관리 화면에 7개 채널 입력 폼과 공식 발급 설명서를 제공한다
+- [x] SNS 계정 비밀번호를 받거나 저장하는 입력 경로가 없다
+- [ ] 7개 서비스 실제 토큰으로 계정 확인과 지원되는 사진·영상 게시를 각각 검증
 - [x] 390×844(폰)에서 쓸 수 있다 — PD 가 폰으로 올린다
 - [x] JS 문법 검사 통과: `cp 파일.js /tmp/x.mjs && node --check /tmp/x.mjs`
 - [x] 배포 후 운영 URL 에서 실제로 열어 확인

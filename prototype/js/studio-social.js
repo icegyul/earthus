@@ -12,8 +12,11 @@ import { CONFIG } from './config.local.js';
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-const LABELS = { x: 'X', threads: 'Threads', instagram: 'Instagram', facebook: 'Facebook' };
-const LIMITS = { x: 280, threads: 500, instagram: 2200, facebook: 5000 };
+const LABELS = {
+  x: 'X', threads: 'Threads', instagram: 'Instagram', facebook: 'Facebook',
+  tiktok: 'TikTok', linkedin: 'LinkedIn', youtube: 'YouTube',
+};
+const LIMITS = { x: 280, threads: 500, instagram: 2200, facebook: 5000, tiktok: 2200, linkedin: 3000, youtube: 5000 };
 
 let getClient = () => null;
 let notify = () => {};
@@ -28,6 +31,7 @@ function koError(error) {
     NO_AUTH: '로그인이 만료되었습니다. 다시 로그인하세요.',
     NOT_ADMIN: '서버 관리자 목록에 없는 계정입니다.',
     NOT_CONFIGURED: '이 채널의 자격증명을 먼저 저장하세요.',
+    ACCOUNT_NOT_VERIFIED: 'SNS 연결 관리에서 이 채널의 계정 확인을 먼저 완료하세요.',
     VAULT_NOT_CONFIGURED: '서버 암호화 키가 준비되지 않았습니다.',
     INVALID_MEDIA: '지원하지 않는 파일이거나 512MB를 넘었습니다.',
     PROVENANCE_REQUIRED: '출처와 관측·촬영 시각을 모두 입력하세요.',
@@ -38,6 +42,12 @@ function koError(error) {
     X_TOKEN_EXPIRED: 'X 토큰이 만료됐습니다. 새 토큰을 저장하거나 갱신 정보를 넣으세요.',
     X_MEDIA_PROCESSING_TIMEOUT: 'X가 영상을 처리하는 시간이 길어 중단했습니다.',
     INSTAGRAM_PROCESSING_TIMEOUT: 'Instagram이 영상을 처리하는 시간이 길어 중단했습니다.',
+    TIKTOK_VIDEO_REQUIRED: 'TikTok에는 영상을 선택하세요.',
+    TIKTOK_PRIVACY_REQUIRED: 'TikTok 공개 범위를 선택하세요.',
+    TIKTOK_PRIVACY_NOT_ALLOWED: '현재 TikTok 계정에서 허용되지 않은 공개 범위입니다.',
+    YOUTUBE_VIDEO_REQUIRED: 'YouTube에는 영상을 선택하세요.',
+    YOUTUBE_TITLE_REQUIRED: 'YouTube 영상 제목을 입력하세요.',
+    YOUTUBE_PRIVACY_REQUIRED: 'YouTube 공개 범위를 선택하세요.',
   };
   return exact[code] || code.replace(/^FunctionsHttpError:\s*/i, '').slice(0, 500);
 }
@@ -76,17 +86,19 @@ function formatTime(value) {
 
 function renderCredentialStatus() {
   let configured = 0;
+  let verified = 0;
   credentialStatus.forEach(item => {
+    const ready = Array.isArray(item.fields) && item.fields.length > 0;
+    if (ready) configured += 1;
+    if (ready && item.verifiedAt) verified += 1;
     const state = $(`[data-provider-state="${item.provider}"]`);
     if (!state) return;
-    const ready = Array.isArray(item.fields) && item.fields.length > 0;
     state.classList.toggle('configured', ready);
     state.classList.remove('failed');
     state.textContent = ready ? `저장됨 ${formatTime(item.updatedAt)}` : '저장 안 됨';
-    if (ready) configured += 1;
   });
-  $('#connectionSummary').textContent = `${configured}/4개 저장됨`;
-  $('#socialCount').textContent = configured ? `${configured}개 연결` : '연결 없음';
+  $('#connectionSummary').textContent = `${configured}/7개 저장 · ${verified}/7개 계정 확인`;
+  $('#socialCount').textContent = verified ? `${verified}개 확인` : configured ? `${configured}개 저장` : '연결 없음';
 }
 
 function mediaOption(item) {
@@ -322,8 +334,8 @@ async function deleteMedia(item) {
   } catch (error) { notify(koError(error)); }
 }
 
-async function stableKey(provider, text, mediaId) {
-  const bytes = new TextEncoder().encode(`${provider}\n${mediaId}\n${text}`);
+async function stableKey(provider, text, mediaId, options = {}) {
+  const bytes = new TextEncoder().encode(`${provider}\n${mediaId}\n${text}\n${JSON.stringify(options)}`);
   const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
   return [...hash].map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
@@ -350,12 +362,34 @@ function resultRow(provider, status, url = '') {
 function validatePublish(providers, text, mediaId) {
   if (!providers.length) throw new Error('게시할 채널을 하나 이상 고르세요.');
   if (!text) throw new Error('게시 문구를 입력하세요.');
+  const selectedMedia = media.find(item => item.id === mediaId);
   for (const provider of providers) {
     if (text.length > LIMITS[provider]) throw new Error(`${LABELS[provider]} 문구는 ${LIMITS[provider]}자 이하여야 합니다.`);
     if (provider === 'instagram' && !mediaId) throw new Error('Instagram에는 사진 또는 영상을 함께 선택하세요.');
+    if (['tiktok', 'youtube'].includes(provider) && !mediaId) throw new Error(`${LABELS[provider]}에는 영상을 함께 선택하세요.`);
+    if (['tiktok', 'youtube'].includes(provider) && !String(selectedMedia?.mimeType || '').startsWith('video/')) {
+      throw new Error(`${LABELS[provider]}에는 영상 파일을 선택하세요.`);
+    }
+    if (provider === 'tiktok' && !$('#tiktokPrivacy').value) throw new Error('TikTok 공개 범위를 선택하세요.');
+    if (provider === 'youtube' && !$('#youtubeTitle').value.trim()) throw new Error('YouTube 영상 제목을 입력하세요.');
   }
   const missing = providers.filter(provider => !credentialStatus.find(item => item.provider === provider && item.fields?.length));
   if (missing.length) throw new Error(`${missing.map(provider => LABELS[provider]).join(', ')} 자격증명을 먼저 저장하세요.`);
+  const unverified = providers.filter(provider => !credentialStatus.find(item => item.provider === provider && item.verifiedAt));
+  if (unverified.length) throw new Error(`${unverified.map(provider => LABELS[provider]).join(', ')} 계정 확인을 먼저 완료하세요.`);
+}
+
+function publishOptions(provider) {
+  if (provider === 'tiktok') return { privacyLevel: $('#tiktokPrivacy').value };
+  if (provider === 'youtube') return {
+    title: $('#youtubeTitle').value.trim(), privacyStatus: $('#youtubePrivacy').value, categoryId: '28',
+  };
+  return {};
+}
+
+function syncProviderOptions() {
+  const checked = new Set($$('[name="publishProvider"]:checked').map(input => input.value));
+  $$('[data-publish-option]').forEach(section => { section.hidden = !checked.has(section.dataset.publishOption); });
 }
 
 async function publishNow(event) {
@@ -383,8 +417,11 @@ async function publishNow(event) {
     const pending = resultRow(provider, '게시 요청 중');
     results.append(pending);
     try {
-      const idempotencyKey = await stableKey(provider, text, mediaId);
-      const result = await call('publish', { provider, text, mediaId, idempotencyKey, confirmed: true });
+      const options = publishOptions(provider);
+      const idempotencyKey = await stableKey(provider, text, mediaId, options);
+      const result = await call('publish', {
+        provider, text, mediaId, idempotencyKey, confirmed: true, options,
+      });
       pending.replaceWith(resultRow(provider, result.duplicate ? '이미 처리한 요청입니다.' : '게시 완료', result.url || ''));
       succeeded += 1;
     } catch (error) {
@@ -415,7 +452,9 @@ function bind() {
     if (file && !$('#serverMediaTitle').value) $('#serverMediaTitle').value = file.name.replace(/\.[^.]+$/, '');
   });
   $('#publishText').addEventListener('input', event => { $('#publishLength').textContent = String(event.target.value.length); });
+  $$('[name="publishProvider"]').forEach(input => input.addEventListener('change', syncProviderOptions));
   $('#publishForm').addEventListener('submit', publishNow);
+  syncProviderOptions();
 }
 
 export function setupSocialAdmin(options) {

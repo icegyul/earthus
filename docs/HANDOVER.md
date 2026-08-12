@@ -331,7 +331,11 @@ PD 몫 (자격·전화가 필요한 것):
   비로그인 차단·Content-Type·운영 초안 3건을 확인함. 실제 관리자 계정·모바일
   `navigator.share()` 확인은 남음. 2026-08-10 관리자 `SNS 연동 설정`, 암호화
   자격증명 보관, 서버 사진·영상 보관함, X·Threads·Instagram·Facebook 수동 게시
-  Edge Function을 운영 배포함. 실제 플랫폼 토큰별 계정 확인과 실게시 검증은 남음.
+  Edge Function을 운영 배포함. 2026-08-12에는 비밀번호를 받지 않는 별도
+  `social-settings.html`을 만들고 TikTok·LinkedIn·YouTube까지 7개 채널로 확장했다.
+  서버 허용 필드 목록, AES-GCM 보관, 계정 확인 완료 gate, 채널별 공식 발급 설명서와
+  수동 사진·영상 게시 경로를 운영 배포했다. 미심사 TikTok·YouTube의 공개 제한과
+  Meta·LinkedIn 권한 심사를 화면에 명시했다. 실제 플랫폼 토큰별 계정 확인과 실게시 검증은 남음.
   **예약·cron·초안 이벤트로 게시하는 자동 경로는 없고, 사람이 최종 확인 뒤 누른
   요청만 처리한다.**
 - 예보 검증 — `verify.html`에 GFS·ECMWF의 24/48시간 기온·풍속 일별

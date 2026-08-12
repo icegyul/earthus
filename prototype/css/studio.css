@@ -275,6 +275,29 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .optional-fields .field{margin:0;padding:10px 11px 0}.optional-fields .field:last-child{padding-bottom:10px}
 .credential-actions{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:12px}
 .credential-error{margin:10px 0 0;padding:9px 10px;border:1px solid rgba(255,121,111,.3);border-radius:8px;background:rgba(255,121,111,.07);color:#ffaaa3;font-size:10.5px}
+.connection-manage{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px;border:1px solid var(--line);border-radius:10px;background:rgba(10,10,10,.26)}
+.connection-manage strong{display:block;font-size:14px}.connection-manage p{margin:5px 0 0;color:var(--muted);font-size:11px}
+.provider-publish-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}.provider-publish-options .field{padding:14px;border:1px solid var(--line);border-radius:9px;background:rgba(10,10,10,.2)}
+
+/* 별도 SNS 연결 관리. 비밀값 화면은 보이는 정보보다 입력 경계와 상태가 먼저다. */
+.settings-shell{width:min(1240px,calc(100% - 40px));margin:0 auto;padding:34px 0 80px}
+.settings-gate{max-width:640px;margin:70px auto}
+.settings-page-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:24px;margin-bottom:20px}
+.settings-page-head h1{margin:4px 0 8px;font-size:clamp(28px,4vw,52px);font-weight:620;letter-spacing:-.045em}.settings-page-head p{max-width:72ch;margin:0;color:var(--muted);font-size:12px;line-height:1.7}
+.password-ban{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,minmax(130px,.55fr));gap:10px;padding:16px;border:1px solid rgba(104,198,156,.3);border-radius:10px;background:rgba(104,198,156,.06)}
+.password-ban strong{display:block;color:#a9e4c4;font-size:14px}.password-ban p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.55}.password-ban span{display:grid;place-items:center;padding:10px;border-radius:8px;background:rgba(0,0,0,.18);color:#b9d9c8;text-align:center;font-size:10.5px}
+.settings-summary{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:18px 0 12px;padding:14px 16px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.settings-summary>div{display:flex;align-items:baseline;gap:8px}
+.settings-summary strong{font-size:13px}.settings-summary span{color:var(--muted);font-size:11px}
+.settings-credential-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.credential-card-meta{display:flex;flex-wrap:wrap;gap:5px;margin:-6px 0 12px}.credential-card-meta span{padding:4px 7px;border:1px solid var(--line);border-radius:999px;color:var(--fog);font-size:9.5px}
+.guide-section{margin-top:34px}.guide-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end;margin-bottom:14px}.guide-head h2{margin:4px 0 5px;font-size:25px;letter-spacing:-.03em}.guide-head p{margin:0;color:var(--muted);font-size:11.5px}
+.guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.api-guide{padding:18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(255,255,255,.015)}
+.api-guide h3{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;font-size:16px}.api-guide h3 span{color:var(--fog);font-size:9px;font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+.api-guide ol{margin:0;padding-left:18px;color:#c9c9c9;font-size:11px;line-height:1.65}.api-guide li+li{margin-top:6px}.api-guide .guide-warning{margin:12px 0 0;padding:9px 10px;border-left:2px solid var(--warn);background:rgba(243,180,93,.06);color:#ffd28f;font-size:10.5px;line-height:1.55}
+.api-guide a{display:inline-block;margin-top:12px;color:#9ce0bc;font-size:11px;text-decoration:underline;text-underline-offset:3px}
+.settings-footer-note{margin-top:20px;padding:14px 0;border-top:1px solid var(--line);color:var(--muted);font-size:10.5px;line-height:1.65}
 .server-upload{display:grid;grid-template-columns:minmax(190px,1.1fr) minmax(170px,.8fr) minmax(170px,.8fr) minmax(170px,.8fr);gap:10px;padding:14px;border-radius:10px;background:rgba(10,10,10,.25)}
 .server-upload .field{margin:0}.server-upload-actions{grid-column:1/-1;display:flex;align-items:center;gap:12px}.server-upload-actions span{color:var(--fog);font-size:10.5px}
 .server-media-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
@@ -352,6 +375,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   .credential-safety{grid-template-columns:1fr;gap:12px}.credential-safety ul{grid-template-columns:1fr 1fr 1fr}
   .social-section{padding:14px}.social-section-head{display:block}.social-section-head>span{display:block;margin-top:8px}
   .credential-grid{grid-template-columns:1fr}.credential-card{padding:14px}
+  .settings-credential-grid,.guide-grid,.provider-publish-options{grid-template-columns:1fr}.password-ban{grid-template-columns:1fr 1fr}.password-ban>div{grid-column:1/-1}.settings-page-head{grid-template-columns:1fr}.connection-manage{align-items:flex-start;flex-direction:column}
   .server-upload,.publish-fields{grid-template-columns:1fr}.server-upload-actions{grid-column:1;align-items:flex-start;flex-direction:column}.server-upload-actions .button{width:100%}
   .server-media-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .publish-actions{align-items:stretch;flex-direction:column}.publish-actions .button{width:100%}.publish-result{grid-template-columns:80px 1fr}.publish-result a{grid-column:2}
@@ -360,4 +384,5 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 @media (max-width:390px){
   .workspace{padding-left:10px;padding-right:10px}.safety-bar{padding:12px}.fact-summary{grid-template-columns:1fr}.row-input{grid-template-columns:1fr auto}.row-input input:nth-child(2){grid-column:1}.row-input button{grid-column:2;grid-row:1/3}.media-card{grid-template-columns:108px 1fr}
   .credential-safety ul{grid-template-columns:1fr}.server-media-grid{grid-template-columns:1fr}.server-media-card{display:grid;grid-template-columns:112px 1fr}.server-media-preview{aspect-ratio:1}
+  .settings-shell{width:min(100% - 20px,1240px);padding-top:22px}.password-ban{grid-template-columns:1fr}.settings-page-head h1{font-size:30px}.guide-head{grid-template-columns:1fr}.settings-summary{align-items:flex-start;flex-direction:column}
 }

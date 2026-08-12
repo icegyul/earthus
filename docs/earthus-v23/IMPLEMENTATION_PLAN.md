@@ -212,18 +212,22 @@ TPW는 공통 표현 엔진과 테스트만 포함하며 운영 객체
 
 ## 4-9. PR-09 Reservation Impact shadow와 남은 gate
 
-- [x] opaque watch와 공급자 evidence snapshot의 schema/time/revision/n 계약
-- [x] 미승인·지연·불완전·provider mismatch `WITHHELD`, 최초 snapshot `BASELINE_RECORDED`
-- [x] evidence diff, stable fingerprint, duplicate proposal `DUPLICATE_WITHHELD`
-- [x] 사용자 `REVIEWED`/`DISMISSED` 확인만 기록하고 provider/payment action 0
-- [x] 공급자 실패·정정·중복·idempotency contract와 전체 회귀
+- [x] opaque watch의 reservation/place/profile/time window 계약
+- [x] provider source/policy/record/time/revision/n/outcome·count 일관성 계약
+- [x] 예약 window와 이전/현재 Decision·Safety·Confidence·signal revision 교차
+- [x] `INFO/WATCH/ACTION_REQUIRED/BLOCKED/UNKNOWN` 영향 등급과 Safety 우선
+- [x] 검증 Decision/evidence 대안 후보, 재고·가격·순위 생성 금지
+- [x] 미래·지연·out-of-order, stable fingerprint, correction, duplicate `WITHHELD`
+- [x] 소유 subject `REVIEWED`/`DISMISSED`만 기록하고 execution/provider/payment action 0
+- [x] 공급자 실패·정정·중복·idempotency 21개 contract와 전체 회귀
 - [x] 정적 shadow module 운영 배포; 공개 UI/notification/adapter 0
 - [ ] 공급자별 권리·availability/change/cancel/cache/history/notification 계약
 - [ ] authenticated provider adapter, source/time/revision/n 보존, outage/retry/correction replay
 - [ ] consent/delete/retention·RLS tenant A/B·notification delivery idempotency 증거
 - [ ] sandbox/canary/rollback rehearsal 및 PD의 action route 승인
 
-상세 계약은 `RESERVATION_IMPACT.md`다. 공급자 성공을 추정하거나 예약·취소·결제를 실행하지 않는다.
+상세 계약은 `RESERVATION_IMPACT.md`다. v1.1은 기준서의 Weather/Safety 교차와 영향 등급까지
+구현하지만, 공급자 성공을 추정하거나 알림·예약·취소·결제를 실행하지 않는다.
 
 ## 4-10. PR-10 Grounded Fusion shadow와 남은 gate
 

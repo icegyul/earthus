@@ -1,5 +1,5 @@
 // 진입점
-import { initViewer, viewer, scene, cameraHeight, onCameraIdle, flyTo, setAmbientView, fitGlobeHeight } from './viewer.js';
+import { initViewer, viewer, scene, cameraHeight, onCameraIdle, flyTo, setAmbientView, fitGlobeHeight } from './viewer.js?v=20260812-earthmoon1';
 import { alarms } from './alarms.js';
 import { windField } from './windfield.js';
 import { myLocation } from './mylocation.js';
@@ -16,7 +16,7 @@ import { earthViewState } from './earth-view-state.js?v=20260812-contours2';
 import { hasEarthRoute } from './earth-route-state.js';
 import { registry } from './layers/registry.js?v=20260812-photoownership1';
 import { imagery } from './layers/imagery.js';
-import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js?v=20260810-locationchart1';
+import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js?v=20260812-hudreturn1';
 import { i18n } from './i18n.js';
 import { auth } from './auth.js';
 import { CONFIG } from './config.local.js';   // ⚠️ config.js 가 아니다 — CONFIG 는 여기 있다
@@ -48,7 +48,7 @@ import { eventPanel } from './ui-events.js';
 import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
-import { cosmic3d } from './space/cosmic3d.js?v=20260812-astronomy3';
+import { cosmic3d } from './space/cosmic3d.js?v=20260812-earthmoon1';
 import { decodeAetherusRoute, replaceAetherusRoute } from './space/route-state.js?v=20260812-astronomy3';
 import { trenchCards } from './ocean/trenchcards.js';
 import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-depthlife1';

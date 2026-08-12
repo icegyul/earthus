@@ -342,6 +342,9 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
   font:10px ui-monospace,monospace;cursor:pointer;padding:5px 8px;border-radius:8px;
   background:rgba(0,0,0,.3);color:var(--fog);border:1px solid var(--line);opacity:.25;
 }
+/* AETHERUS의 지구 복귀 버튼도 왼쪽 위를 쓴다. HUD가 그 위를 덮으면 우주에서
+   돌아갈 수 없으므로 우주 장면에서만 손잡이와 패널을 한 줄 아래로 내린다. */
+body.scene-space #hud,body.scene-space #hudShow{top:max(66px,calc(env(safe-area-inset-top) + 54px))}
 
 /* ══════════ 토스트 / 로딩 ══════════ */
 #toast{

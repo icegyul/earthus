@@ -43,7 +43,7 @@ import {
 
 const IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const BODY_ORDER = ['sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
-const SOLAR_LABEL_ORDER = ['sun', ...IDS];
+const SOLAR_LABEL_ORDER = ['sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const SURFACE_IDS = ['sun', ...IDS, 'moon'];
 const ULTRA_SURFACE_IDS = new Set(['mercury', 'venus', 'mars']);
 const PLANET_TEXTURE_ROOT = '/space/planets';
@@ -54,12 +54,18 @@ const PLANETS = {
   mercury: { ko: '수성', en: 'Mercury', color: 0xaaa7a0, radius: .38 },
   venus: { ko: '금성', en: 'Venus', color: 0xd7b575, radius: .52 },
   earth: { ko: '지구', en: 'Earth', color: 0x62b7da, radius: .56 },
+  moon: { ko: '달', en: 'Moon', color: 0xc9c7c1, radius: .16 },
   mars: { ko: '화성', en: 'Mars', color: 0xc86d50, radius: .44 },
   jupiter: { ko: '목성', en: 'Jupiter', color: 0xd0a27b, radius: 1.15 },
   saturn: { ko: '토성', en: 'Saturn', color: 0xd7c28a, radius: 1.02 },
   uranus: { ko: '천왕성', en: 'Uranus', color: 0x86d1d5, radius: .78 },
   neptune: { ko: '해왕성', en: 'Neptune', color: 0x557bd5, radius: .75 },
 };
+// 태양계 전체와 실제 지구-달 거리를 동시에 맞추면 달은 화면에서 보이지 않는다.
+// 위치는 공전 주기만 반영한 교육용 도식이며, HUD에서 거리 압축을 명시한다.
+const MOON_DISPLAY_DISTANCE = 1.42;
+const MOON_SYNODIC_DAYS = 29.530588;
+const MOON_PHASE_EPOCH_MS = Date.parse('2000-01-06T18:14:00.000Z');
 const TARGET = { moon: .16, solar: .76, milkyway: 1.76, galaxies: 2.78 };
 const ENTER_HEIGHT = 220_000_000;
 const SOLAR_MARKER = { x: 29, y: .7, z: 9 };
@@ -497,8 +503,49 @@ export const cosmic3d = {
       this.solarGroup.add(line); this.orbitMaterials.push(orbitMaterial);
     });
     this.earthMesh = this.planetMeshes.earth;
+    this.makeEarthMoon(new Date());
     this.spacecraftGroup = new T.Group();
     this.solarGroup.add(this.spacecraftGroup);
+  },
+
+  makeEarthMoon(at) {
+    const T = this.THREE;
+    this.moonGroup = new T.Group();
+    this.moonGroup.position.copy(this.earthMesh.position);
+    this.solarGroup.add(this.moonGroup);
+
+    const elapsedDays = (at.getTime() - MOON_PHASE_EPOCH_MS) / DAY_MS;
+    const phase = ((elapsedDays / MOON_SYNODIC_DAYS) % 1 + 1) % 1 * Math.PI * 2;
+    const moon = new T.Mesh(
+      new T.SphereGeometry(PLANETS.moon.radius, 24, 16),
+      new T.MeshStandardMaterial({
+        color: PLANETS.moon.color, roughness: .92, metalness: 0,
+        emissive: 0x202020, emissiveIntensity: .28,
+      }),
+    );
+    moon.position.set(
+      Math.cos(phase) * MOON_DISPLAY_DISTANCE,
+      Math.sin(phase) * MOON_DISPLAY_DISTANCE * .14,
+      Math.sin(phase) * MOON_DISPLAY_DISTANCE,
+    );
+    moon.userData.id = 'moon';
+    this.moonGroup.add(moon);
+    this.moonMesh = moon;
+    this.planetMeshes.moon = moon;
+
+    const orbitPoints = Array.from({ length: 97 }, (_, index) => {
+      const angle = index / 96 * Math.PI * 2;
+      return new T.Vector3(
+        Math.cos(angle) * MOON_DISPLAY_DISTANCE,
+        Math.sin(angle) * MOON_DISPLAY_DISTANCE * .14,
+        Math.sin(angle) * MOON_DISPLAY_DISTANCE,
+      );
+    });
+    this.moonOrbit = new T.LineLoop(
+      new T.BufferGeometry().setFromPoints(orbitPoints),
+      new T.LineBasicMaterial({ color: 0xbec9d7, transparent: true, opacity: .26, depthWrite: false }),
+    );
+    this.moonGroup.add(this.moonOrbit);
   },
 
   makeRadialRingGeometry(inner, outer, segments = 128) {
@@ -3305,7 +3352,7 @@ export const cosmic3d = {
       });
     } else if (stage === 'solar' && this.level > .24) {
       const offsets = {
-        sun: [-24, -38], mercury: [-54, -32], venus: [-52, -6], earth: [22, -28],
+        sun: [-24, -38], mercury: [-54, -32], venus: [-52, -6], earth: [22, -28], moon: [12, 8],
         mars: [24, 10], jupiter: [8, -5], saturn: [8, 10], uranus: [8, -7], neptune: [8, 8],
       };
       SOLAR_LABEL_ORDER.forEach(id => this.placeLabel(
@@ -3506,7 +3553,7 @@ export const cosmic3d = {
         title: isKo ? '태양계' : 'Solar System',
         scale: isKo ? '3D 궤도 · 드래그하여 기울이기 · 로그 스케일' : '3D orbits · drag to tilt · logarithmic scale',
         hint: isKo ? '계속 줌아웃하면 은하수 안의 태양계 위치로 이어집니다' : 'Keep zooming out to reach the Solar System’s place in the Milky Way',
-        note: isKo ? '행성 위치 계산값 · JPL 공개 궤도요소 · 출처 표기 표면 시각화 · 행성 크기 과장' : 'Calculated planet positions · JPL public elements · credited surface visualization · planet sizes exaggerated',
+        note: isKo ? '행성 위치 계산값 · JPL 공개 궤도요소 · 출처 표기 표면 시각화 · 행성 크기 과장 · 달 위치·지구와의 거리 압축 도식' : 'Calculated planet positions · JPL public elements · credited surface visualization · planet sizes exaggerated · Moon position and Earth distance are compressed schematics',
       },
       milkyway: {
         title: isKo ? '은하수' : 'Milky Way',

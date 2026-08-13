@@ -22,16 +22,16 @@
 - PR-09 Reservation Impact
 - PR-10 grounded Signal Fusion
 
-## Local verified — 운영 미배포
+## Visual 운영 완료
 
-- Visual PR-00의 `SatelliteFrameContract`, NOAA/GK-2A/Himawari fixture, module query gate,
-  layer/request/mask/render/texture 측정 도구가 로컬 검증됐다.
-- 1280×720·390×844 기준선에서 구름 base/depth의 동일 타일 중복 기회 41~49%,
-  전환/OFF 뒤 이전 provider 요청과 texture 잔존을 확인했다.
-- 최종 기준선의 mask p95는 로컬 Chrome에서 0.8~1.2ms, 50ms 초과 0이었다. 실제
-  Safari·iPhone 결과로 일반화하지 않는다.
-- 이 코드는 production entry가 import하지 않고 운영 배포하지 않았다. 정본은
-  [`../earthus-visual-engineering-next/PR00-CONTRACT-MEASUREMENT-ADR.md`](../earthus-visual-engineering-next/PR00-CONTRACT-MEASUREMENT-ADR.md)다.
+- Visual PR-01~08의 owner/abort/dispose, shared tile cache/worker, source policy, 재현 가능한
+  6K/4K/2K sky, 자동/낮음/끔, SRI·입력 상한·license audit를 운영에 반영했다.
+- 중복 tile 0, mask p95 1.6~4.1ms, OFF 뒤 sibling/cache/idle 0, desktop 30회 교대
+  layer/texture 증가 0을 fresh Chrome에서 확인했다.
+- 34개 S3 객체 SHA를 전수 대조하고 rollback 복원→후보 재적용, CloudFront와 live desktop/
+  mobile UI를 확인했다. 정본은
+  [`../earthus-visual-engineering-next/PR01-08-CLOSEOUT.md`](../earthus-visual-engineering-next/PR01-08-CLOSEOUT.md)다.
+- 실제 Safari·iPhone·저사양 Android·VoiceOver·열/배터리 결과로 일반화하지 않는다.
 
 Shadow의 높은 점수·합성 결과·replay 통과는 공개 추천이나 운영 승인이 아니다.
 
@@ -42,8 +42,7 @@ Shadow의 높은 점수·합성 결과·replay 통과는 공개 추천이나 운
 - 전체 Lambda 최근 성공·지연·결측·quota·비용·DLQ·alarm·log retention 통합 관측
 - Supabase remote migration checksum, RLS/FORCE RLS, tenant A/B 격리
 - Safari·구형 iPhone 장시간 발열·배터리, VoiceOver/스크린리더
-- 위성 base/depth owner 통합, 전환/OFF 취소, 30회 교대 뒤 layer/texture 회수
-- desktop 6K/4K capability 판정과 decode 실패 4K/2K 폴백
+- Visual의 Safari·지원 최저/최신 iPhone·저사양 Android·VoiceOver·열/배터리 실기기 표
 - 활동곡선 도메인 승인, 실제 사용자 preference 저장·철회·삭제
 - 예약 공급자 권리·인증 adapter·알림·변경/취소/결제 사용자 확인
 - 기관용 API/SLA를 위한 tenant·scope·quota·export 권리·비용 귀속

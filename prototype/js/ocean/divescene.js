@@ -6,7 +6,7 @@
 import { i18n } from '../i18n.js';
 import { oceanDepth } from './depth.js';
 import { seaLife } from './sealife.js';
-import { obisSummary } from './obis.js?v=20260810-obis1';
+import { obisSummary } from './obis.js';
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 

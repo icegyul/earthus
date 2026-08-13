@@ -19,7 +19,7 @@ async function importPlannerModules() {
   const astronomy = (await readFile(path.join(ROOT, 'prototype/js/space/astronomy.js'), 'utf8'))
     .replace("'./kepler.js'", "'./kepler.mjs'");
   const planner = (await readFile(path.join(ROOT, 'prototype/js/space/observation-planner.js'), 'utf8'))
-    .replace(/'\.\/astronomy\.js\?v=[^']+'/, "'./astronomy.mjs'");
+    .replace(/'\.\/astronomy\.js(?:\?v=[^']+)?'/, "'./astronomy.mjs'");
   await writeFile(path.join(directory, 'kepler.mjs'), kepler);
   await writeFile(path.join(directory, 'astronomy.mjs'), astronomy);
   await writeFile(path.join(directory, 'observation-planner.mjs'), planner);

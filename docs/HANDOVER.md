@@ -14,14 +14,13 @@
 2026-08-13 현재 다음 사용량 리셋의 짧은 실행 정본은
 [`earthus-next-reset/README.md`](earthus-next-reset/README.md)다. 남은 운영 공백, 이번 작업에서
 새로 확인한 UX 한계, 추가 아이디어, 공통 개발 기준, 시작/릴리스 체크리스트를 분리했다.
-다음 작업은 전체 패키지와 위성 전문 패키지를 함께 쓴다. 공통 N0 동기화 뒤
-[`earthus-visual-engineering-next/README.md`](earthus-visual-engineering-next/README.md)의
-PR-00 계약·측정 기반을 2026-08-13 로컬 완료했다. 측정 전용이라 운영 배포하지 않았다.
-구름 base/depth 동일 타일 중복 기회 41~49%, 레이어 전환/OFF 뒤 이전 provider 요청과
-texture 잔존, desktop의 잘못된 4K 천구 선택을 확인했다. 다음은 Visual PR-01에서
-base/sibling owner·abort·dispose와 30회 교대 회수를 닫고, 이후 전체 N1 수집기 운영 관제로
-돌아간다. 근거는
-[`earthus-visual-engineering-next/PR00-CONTRACT-MEASUREMENT-ADR.md`](earthus-visual-engineering-next/PR00-CONTRACT-MEASUREMENT-ADR.md)다.
+다음 작업은 전체 패키지와 위성 전문 패키지를 함께 쓴다. 공통 N0 뒤 Visual PR-01~08의
+base/sibling owner·abort·dispose, shared tile cache/worker, source golden, 재현 가능한
+6K/4K/2K sky, 자동/낮음/끔, SRI·입력 상한, 30회 교대·context loss·rollback을 2026-08-13
+운영 반영했다. 중복 tile 0, mask p95 1.6~4.1ms, OFF 뒤 sibling/cache/idle 0, 30회
+layer/texture 증가 0, 34개 S3 SHA 일치를 확인했다. Safari·실제 iPhone·저사양 Android·
+VoiceOver·열/배터리는 `UNKNOWN`이다. 다음 코드 포인터는 전체 N1 수집기 운영 관제다. 근거는
+[`earthus-visual-engineering-next/PR01-08-CLOSEOUT.md`](earthus-visual-engineering-next/PR01-08-CLOSEOUT.md)다.
 AETHERUS의 별도 dirty 파일을 stage·deploy·revert하지 않는다.
 
 EARTHUS 메뉴·레이어 표현·무료/유료 경계, AETHERUS 정보 구조·모바일·사진관,

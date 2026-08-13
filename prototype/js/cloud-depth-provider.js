@@ -9,9 +9,55 @@
  *    명암 분리만 쓴다. 수치·내보내기·판단 자료로 노출하지 않는다.
  * ⚠️ 별도 타이머나 렌더 루프가 없다. Cesium이 실제로 요청한 타일을 받을 때만 만든다. */
 
-import { cloudShadowSourceAt, normalizeCloudShadowSun } from './cloud-shadow.js?v=20260812-cloudshadow1';
+import { cloudShadowSourceAt, normalizeCloudShadowSun } from './cloud-shadow.js';
+import { assertRasterDimensions, RASTER_LIMITS } from './satellite-security.js';
 
-const SAMPLE_LIMIT = 128;
+let workerClient = null;
+let workerSerial = 0;
+
+class CloudDepthWorkerClient {
+  constructor() {
+    this.worker = new Worker(new URL('./cloud-depth-worker.js', import.meta.url), { type: 'module' });
+    this.pending = new Map();
+    this.worker.onmessage = event => {
+      const { id, result, error } = event.data || {};
+      const task = this.pending.get(id);
+      if (!task) { result?.close?.(); return; }
+      this.pending.delete(id);
+      if (error) task.reject(new Error(error)); else task.resolve(result);
+    };
+    this.worker.onerror = () => {
+      for (const task of this.pending.values()) task.reject(new Error('CLOUD_WORKER_FAILED'));
+      this.pending.clear();
+      this.worker.terminate();
+      workerClient = null;
+    };
+  }
+
+  run(image, { width, height, mode, ownerKey }) {
+    if (this.pending.size >= RASTER_LIMITS.maxWorkerTasks) return null;
+    const id = ++workerSerial;
+    return createImageBitmap(image).then(bitmap => new Promise((resolve, reject) => {
+      this.pending.set(id, { resolve, reject, ownerKey });
+      this.worker.postMessage({ id, bitmap, width, height, mode }, [bitmap]);
+    }));
+  }
+
+  cancelOwner(ownerKey) {
+    for (const [id, task] of this.pending) {
+      if (task.ownerKey !== ownerKey) continue;
+      this.pending.delete(id);
+      task.reject(new DOMException('Disposed', 'AbortError'));
+    }
+  }
+}
+
+function getWorkerClient() {
+  if (typeof Worker === 'undefined' || typeof OffscreenCanvas === 'undefined'
+      || typeof createImageBitmap !== 'function') return null;
+  try { return workerClient || (workerClient = new CloudDepthWorkerClient()); }
+  catch (_) { return null; }
+}
 
 function clamp(value, minimum = 0, maximum = 1) {
   return Math.max(minimum, Math.min(maximum, value));
@@ -80,11 +126,13 @@ export function cloudDepthOffset({ rectangle, sun, width, height }) {
 
 /** 기존 ImageryProvider의 수명과 격자를 그대로 위임하는 검은 마스크 제공자. */
 export class CloudDepthImageryProvider {
-  constructor(provider, { mode = 'alpha', sun = null } = {}) {
+  constructor(provider, { mode = 'alpha', sun = null, ownerKey = null, sampleLimit = 128 } = {}) {
     if (!provider) throw new TypeError('IMAGERY_PROVIDER_REQUIRED');
     this.provider = provider;
     this.mode = mode;
     this.sun = sun ? normalizeCloudShadowSun(sun) : null;
+    this.ownerKey = ownerKey;
+    this.sampleLimit = Math.max(32, Math.min(128, Number(sampleLimit) || 128));
   }
 
   get rectangle() { return this.provider.rectangle; }
@@ -116,29 +164,41 @@ export class CloudDepthImageryProvider {
     return Promise.resolve(result).then(image => this._makeMask(image, x, y, level));
   }
 
-  _makeMask(image, x, y, level) {
+  async _makeMask(image, x, y, level) {
     const outputWidth = Number(this.tileWidth || image.naturalWidth || image.width || 256);
     const outputHeight = Number(this.tileHeight || image.naturalHeight || image.height || 256);
     const output = document.createElement('canvas');
     output.width = outputWidth; output.height = outputHeight;
     const outputContext = output.getContext('2d');
     try {
-      const sampleWidth = Math.max(1, Math.min(SAMPLE_LIMIT, Math.ceil(outputWidth / 4)));
-      const sampleHeight = Math.max(1, Math.min(SAMPLE_LIMIT, Math.ceil(outputHeight / 4)));
+      assertRasterDimensions(image.naturalWidth || image.width || outputWidth,
+        image.naturalHeight || image.height || outputHeight);
+      const sampleWidth = Math.max(1, Math.min(this.sampleLimit, Math.ceil(outputWidth / 4)));
+      const sampleHeight = Math.max(1, Math.min(this.sampleLimit, Math.ceil(outputHeight / 4)));
       const sample = document.createElement('canvas');
       sample.width = sampleWidth; sample.height = sampleHeight;
-      const sampleContext = sample.getContext('2d', { willReadFrequently: true });
-      sampleContext.drawImage(image, 0, 0, sampleWidth, sampleHeight);
-      const pixels = sampleContext.getImageData(0, 0, sampleWidth, sampleHeight);
-      for (let i = 0; i < pixels.data.length; i += 4) {
-        const a = cloudDepthMaskAlpha({
-          red: pixels.data[i], green: pixels.data[i + 1], blue: pixels.data[i + 2],
-          alpha: pixels.data[i + 3], mode: this.mode,
-        });
-        pixels.data[i] = pixels.data[i + 1] = pixels.data[i + 2] = 0;
-        pixels.data[i + 3] = Math.round(255 * a);
+      const client = getWorkerClient();
+      const workerResult = client?.run(image, {
+        width: sampleWidth, height: sampleHeight, mode: this.mode, ownerKey: this.ownerKey,
+      });
+      if (workerResult) {
+        const bitmap = await workerResult;
+        sample.getContext('2d').drawImage(bitmap, 0, 0);
+        bitmap.close?.();
+      } else {
+        const sampleContext = sample.getContext('2d', { willReadFrequently: true });
+        sampleContext.drawImage(image, 0, 0, sampleWidth, sampleHeight);
+        const pixels = sampleContext.getImageData(0, 0, sampleWidth, sampleHeight);
+        for (let i = 0; i < pixels.data.length; i += 4) {
+          const a = cloudDepthMaskAlpha({
+            red: pixels.data[i], green: pixels.data[i + 1], blue: pixels.data[i + 2],
+            alpha: pixels.data[i + 3], mode: this.mode,
+          });
+          pixels.data[i] = pixels.data[i + 1] = pixels.data[i + 2] = 0;
+          pixels.data[i + 3] = Math.round(255 * a);
+        }
+        sampleContext.putImageData(pixels, 0, 0);
       }
-      sampleContext.putImageData(pixels, 0, 0);
 
       const singleTile = this.maximumLevel === 0 && this.minimumLevel === 0;
       const rectangle = !singleTile && this.tilingScheme?.tileXYToRectangle
@@ -149,7 +209,9 @@ export class CloudDepthImageryProvider {
       });
       outputContext.globalAlpha = offset.daylight;
       outputContext.filter = this.mode === 'visible' ? 'blur(1.6px)' : 'blur(1.2px)';
-      outputContext.drawImage(sample, offset.x, offset.y, outputWidth, outputHeight);
+      /* 1px gutter로 가장자리 화소를 타일 밖까지 늘린다. blur가 투명 캔버스 경계를
+         읽어 타일 사이 검은 실선을 만드는 일을 막되 관측 본체는 건드리지 않는다. */
+      outputContext.drawImage(sample, offset.x - 1, offset.y - 1, outputWidth + 2, outputHeight + 2);
     } catch (error) {
       /* CORS나 손상 타일 한 장 때문에 본체 관측 영상까지 막지 않는다. 투명 마스크로
          폴백하면 구름은 그대로 보이고 깊이 효과만 빠진다. */
@@ -157,4 +219,6 @@ export class CloudDepthImageryProvider {
     }
     return output;
   }
+
+  dispose() { if (this.ownerKey) workerClient?.cancelOwner(this.ownerKey); }
 }

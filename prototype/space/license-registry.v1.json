@@ -1,0 +1,19 @@
+{
+  "schema": "earthus.license-registry.v1",
+  "assets": [
+    {
+      "id": "earthus-milky-way-v1",
+      "creator": "ESO/S. Brunier",
+      "licenseId": "CC-BY-4.0",
+      "sourceUrl": "https://www.eso.org/public/images/eso0932a/",
+      "creditRequired": true,
+      "redistribution": "derived WebP with attribution"
+    }
+  ],
+  "providers": [
+    { "id": "NOAA_GMGSI", "producer": "NOAA NESDIS", "license": "US public domain", "region": "GLOBAL", "redistribution": "processed raster with source credit" },
+    { "id": "GK2A", "producer": "KMA/NMSC", "distributor": "NOAA open data mirror", "region": "FD/EA/LA", "redistribution": "processed raster; preserve producer and observation time" },
+    { "id": "HIMAWARI_GIBS", "producer": "JMA", "distributor": "NASA GIBS", "region": "Western Pacific", "redistribution": "GIBS use and attribution terms apply" },
+    { "id": "SSEC_REALEARTH", "producer": "UW-Madison SSEC", "region": "GLOBAL", "redistribution": "fallback only; registration and usage limit apply" }
+  ]
+}

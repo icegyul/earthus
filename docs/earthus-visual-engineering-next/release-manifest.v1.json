@@ -1,0 +1,73 @@
+{
+  "schema": "earthus.visual-release-manifest.v1",
+  "release": "2026-08-13-visualrelease1",
+  "status": "OPERATING_WITH_DEVICE_UNKNOWNS",
+  "activatedAt": "2026-08-13T14:27:05Z",
+  "origin": "s3://earthus-cache-kr/app/",
+  "publicBaseUrl": "https://earthus.net/",
+  "rollback": {
+    "versioningPermission": "UNKNOWN_ACCESS_DENIED",
+    "copyPrefix": "s3://earthus-cache-kr/rollback/earthus-visual-20260813T2325KST/app/",
+    "oldIndexEtag": "262ed452b7329e5f966c9004bc4bdd21",
+    "candidateIndexEtag": "b770449cfe68cc9c97f21acb28c316ea",
+    "restoreAndReapplyRehearsed": true
+  },
+  "cloudFront": {
+    "distributionId": "E193CZEBLWEB56",
+    "invalidationId": "I9KBZQDXQ5M638WDJ36B3RLNNU",
+    "followupInvalidationId": "I3ANIDEK62HBSQ85GPICCPNMWQ",
+    "pathCount": 35,
+    "getInvalidationPermission": "UNKNOWN_ACCESS_DENIED",
+    "liveCloudFrontMissAndByteMatch": true
+  },
+  "policies": {
+    "htmlCssJavaScriptJson": "no-cache",
+    "contentHashedWebp": "public,max-age=31536000,immutable",
+    "javascriptContentType": "text/javascript; charset=utf-8",
+    "jsonContentType": "application/json; charset=utf-8"
+  },
+  "objects": [
+    ["css/app.css", "45a91da4fa36c08029e22da36ce94bd74855abf7d984c4bff2ed66fda6205fed", 179777],
+    ["index.html", "a86e48b30737dd26a692a14477f6e578997a6e312d45c457b5589209a6a71578", 69288],
+    ["js/cloud-depth-provider.js", "81edce2805f062a5ea57a79d3b73d10c29e893f1186157de03cc5b913adc4032", 10672],
+    ["js/layers/imagery.js", "533d322849f43b9e84cdb959695d3d60563dd3c3234af299a34c18b26844ace4", 91831],
+    ["js/layers/registry.js", "c6eaeda3250f5a1147f848c8ef7335bec9109720527a44d7aaebd410a507bf4d", 20776],
+    ["js/main.js", "402e3c701fcaae050af41b931ebc28b0c47facbdb21e507f052ddc6d05b20fc0", 45288],
+    ["js/ocean/divescene.js", "d0785b5ab43ddf6ba5fbe80c7a166950de2e4f6e9fe5a9b79500fb5d512eef02", 9463],
+    ["js/readability.js", "db2e5a09bab82a1f609be2512318b35326fe29e0eb565f436caafec3063f5d65", 20126],
+    ["js/space/cosmic3d.js", "b8fc5684feace0b8f17e7435071598f353baf211311941180a7ca00f5a99944c", 179675],
+    ["js/space/observation-planner.js", "5b25719d28b46663d119684b741414348095c77c77a7d14c25e428d56500c827", 11433],
+    ["js/space/photo-catalog.js", "36a2df55e66d478e7326d537aa07104de412faef76662271cdae54df7a877193", 2117],
+    ["js/space/skyphotos.js", "3ec155139d187dd1710d00025ae83df0e039c11571f980a8d7fbb6360bea0da7", 8714],
+    ["js/ui-korea.js", "0fb6bb4c31eebdbc1cb5bf06a2f7de6ed34ba41ed57a51ff10144b846b55529a", 40403],
+    ["js/ui-source.js", "a77ae5b92ebe7a6b5c40368325de641ef828d99a881fe31b554235c0da26d0e9", 47919],
+    ["js/ui-timeline.js", "f445ccf92e0b934d65e86c7e6b8b9c109da85eadf9b8edd41235fa06dd6e3c1b", 8266],
+    ["js/ui-warn.js", "b5530c43547a0fd75c372ac872a7f2f1f1ba317bd7c9776917f1144ee1418090", 4889],
+    ["js/ui-weather.js", "0294496f5bf654a17c30e110ff2d5558a8a72e1dba37772ee395e643b7766c15", 27202],
+    ["js/ui.js", "f179fc710614f9ed660c3b50854d3733dfbfb57e4cd97ec1d1f31914febf4607", 103396],
+    ["js/viewer.js", "1d955f85bb7227d1d30bebd5526a25a1878b5f890de76097457b689a12c849c3", 18892],
+    ["js/warn.js", "d2f8b3f8c6dd903da170a2267a4867b69537f674115b3a1c1b64665bb4ac6443", 8600],
+    ["js/cloud-depth-worker.js", "385b2144e0e361962272988bb66438a71e55d60dc3d70e86e1624ab2c31478cd", 1729],
+    ["js/imagery-layer-group.js", "418da2537f2078046612a8b3a963fbc669ecdc34fbe033ed20296a7919a51d7c", 6451],
+    ["js/satellite-security.js", "610e5296966477be84e21ce14eddef9f2bfecc7d3d6e7f4a694b55a1fa800841", 1249],
+    ["js/satellite-tile-cache.js", "e0da1ad42650721c7532afa97d23d998156ff2de58f46aa4d165f67a791904ee", 1721],
+    ["js/satellite-visual-policy.js", "928db42d41d65b8f578ba3b6fadbec8732c5d87e67abcfd37db7f540ccae926e", 1545],
+    ["js/sky-panorama.js", "b4542a65e19d3b7e90194327409669ccef48519a78d56c9a8f5647cb66d774c5", 5049],
+    ["js/visual-effect-settings.js", "38ed63568b47fd5a71cc6bbb3b9b79766f9f5137541428b8ef6f7a7c0d7f6874", 1561],
+    ["space/license-registry.v1.json", "5db82ddfbaba524ecdd3d7a56224aaa174fb52c9a9bafb8db69dff4cea448479", 1021],
+    ["space/skybox/earthus-milky-way/panorama-2048.28125627e27567e3.webp", "28125627e27567e3c62ae148409ea9668054e438e10de0a3de0ad6e392906d3a", 309122],
+    ["space/skybox/earthus-milky-way/panorama-4096.87d8f6aa25b1f088.webp", "87d8f6aa25b1f08831839ddfd6d21b72060e89f9a716a8f234bdd5cc97f2f4f3", 1465014],
+    ["space/skybox/earthus-milky-way/panorama-6000.a68eeb037463019f.webp", "a68eeb037463019f7096d223f9e62eea2d6a2981116cd74a9218856dbaed346f", 3155422],
+    ["space/skybox/earthus-milky-way/sky-asset-manifest.js", "79736b3239e5b4ec2a5613982470e03bbd466a59ea799e7ac692198d1c59d2fa", 1603],
+    ["space/skybox/earthus-milky-way/sky-asset-manifest.v1.json", "e9a0e8fb0829a0ca05fa4b67eb222ceb670d971a888edf85e9df0dd96ab97676", 1478],
+    ["sw.js", "21038cf48b94e6b22af257c9765f8560ac43f7789152756e42f3d469d99b04f1", 11160]
+  ],
+  "verification": {
+    "objectCount": 34,
+    "s3Sha256MismatchCount": 0,
+    "liveIndexMainSkyByteMatch": true,
+    "liveDesktopAndMobileOverflow": 0,
+    "liveConsoleErrorCount": 0,
+    "automatedReport": "evidence/pr07/report.json"
+  }
+}

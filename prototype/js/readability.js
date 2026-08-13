@@ -15,7 +15,7 @@ import { i18n } from './i18n.js';
 import { store } from './store.js';
 import { coastlineReference } from './coastline-reference.js';
 /* main과 정확히 같은 URL을 써야 ES module 인스턴스가 둘로 갈라지지 않는다. */
-import { continuousContours } from './continuous-contours.js?v=20260812-contours1';
+import { continuousContours } from './continuous-contours.js';
 
 const ESRI_REFERENCE = 'https://services.arcgisonline.com/ArcGIS/rest/services/'
   + 'Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';

@@ -1,11 +1,5 @@
 {
   "schema": "earthus.module-specifier-baseline.v1",
-  "note": "PR-00에서 발견한 기존 singleton 부채다. 새 항목 추가는 실패하며 PR-01 전 엄격 모드에서 0으로 줄인다.",
-  "allowed": {
-    "prototype/js/ui.js": ["", "?v=20260812-hudreturn1"],
-    "prototype/js/layers/registry.js": ["", "?v=20260812-photoownership1"],
-    "prototype/js/layerbar.js": ["", "?v=20260812-earthview1"],
-    "prototype/js/space/contracts.js": ["", "?v=20260812-photoownership1"],
-    "prototype/js/ui-charts.js": ["", "?v=20260810-locationchart1"]
-  }
+  "note": "PR-01에서 singleton 부채를 0으로 닫았다. query 유무가 다른 동일 모듈은 허용하지 않는다.",
+  "allowed": {}
 }

@@ -5,20 +5,20 @@ import { initViewer, viewer, scene, cameraHeight, onCameraIdle, flyTo, setAmbien
 import { alarms } from './alarms.js';
 import { windField } from './windfield.js';
 import { myLocation } from './mylocation.js';
-import { layerBar } from './layerbar.js?v=20260812-earthview1';
+import { layerBar } from './layerbar.js';
 import { search } from './search.js';
 import { onboard } from './onboard.js';
-import { weatherPanel } from './ui-weather.js?v=20260810-locationchart1';
+import { weatherPanel } from './ui-weather.js';
 import { power } from './power.js';
 import { panels } from './panels.js';
 import { intro } from './intro.js';
 import { renderQuality } from './render-quality.js';
 import { store } from './store.js';
-import { earthViewState } from './earth-view-state.js?v=20260812-contours2';
+import { earthViewState } from './earth-view-state.js';
 import { hasEarthRoute } from './earth-route-state.js';
-import { registry } from './layers/registry.js?v=20260812-photoownership1';
-import { imagery } from './layers/imagery.js?v=20260813-satellite-list1';
-import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js?v=20260812-hudreturn1';
+import { registry } from './layers/registry.js';
+import { imagery } from './layers/imagery.js';
+import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js';
 import { i18n } from './i18n.js';
 import { auth } from './auth.js';
 import { CONFIG } from './config.local.js';   // ⚠️ config.js 가 아니다 — CONFIG 는 여기 있다
@@ -28,14 +28,14 @@ import { renderChangelog } from './changelog.js';
 import { satPanel } from './ui-sat.js';
 // 별보기 근거 베타는 서비스워커의 이전 Sky 패널 캐시를 재사용하면 공개 화면에
 // 나타나지 않는다. 화면 계약이 바뀔 때만 revision을 올려 새 모듈을 받는다.
-import { skyPanel } from './ui-sky.js?v=20260812-stargazing-evidence1';
+import { skyPanel } from './ui-sky.js';
 import { flightPanel } from './ui-flight.js';
 import { subscribeSheet, demandSheet } from './ui-subscribe.js';
 import { communityPanel } from './ui-community.js';
 import { askPanel } from './ask/panel.js';
-import { sourceNote } from './ui-source.js?v=20260812-sky6k1';
-import { readability } from './readability.js?v=20260812-readability1';
-import { continuousContours } from './continuous-contours.js?v=20260812-contours1';
+import { sourceNote } from './ui-source.js';
+import { readability } from './readability.js';
+import { continuousContours } from './continuous-contours.js';
 import { warn } from './warn.js';
 import { warnUI } from './ui-warn.js';
 import { koreaPanel } from './ui-korea.js';
@@ -50,10 +50,10 @@ import { eventPanel } from './ui-events.js';
 import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
-import { cosmic3d } from './space/cosmic3d.js?v=20260812-earthmoon1';
-import { decodeAetherusRoute, replaceAetherusRoute } from './space/route-state.js?v=20260812-astronomy3';
+import { cosmic3d } from './space/cosmic3d.js';
+import { decodeAetherusRoute, replaceAetherusRoute } from './space/route-state.js';
 import { trenchCards } from './ocean/trenchcards.js';
-import { trenchGlobe } from './ocean/trenchglobe.js?v=20260810-depthlife1';
+import { trenchGlobe } from './ocean/trenchglobe.js';
 
 /* 늦게 불러오는 바다거북 모듈을 붙잡아 두는 곳.
    ⚠️⚠️ **모듈 바깥에 둔다.** 켜는 쪽은 boot(), 끄는 쪽(OFF·HAS_MARKS)은
@@ -439,7 +439,7 @@ async function boot() {
      false/미정이면 module·CSS·listener를 받지도 않는다. 합성 fixture를 운영 화면에
      보이는 사고를 막기 위해 정적 import로 바꾸지 말 것. */
   if (CONFIG.DECISION_CORE_READY === true) {
-    import('./decision-ui.js?v=20260812-personal1')
+    import('./decision-ui.js')
       .then(({ decisionUI }) => decisionUI.init())
       .catch(error => console.warn('[decision-ui] 초기화 실패:', error?.message || error));
   }

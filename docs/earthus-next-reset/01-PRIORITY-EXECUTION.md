@@ -2,13 +2,9 @@
 
 ## 현재 실행 포인터
 
-공통 N0와 Visual PR-00은 2026-08-13 로컬 완료했다. 최근 실제 결함 흐름을 따라 다음은
-[`../earthus-visual-engineering-next/03-PR-IMPLEMENTATION-PLAN.md`](../earthus-visual-engineering-next/03-PR-IMPLEMENTATION-PLAN.md)의
-PR-01 `ImageryLayerGroup Lifecycle`이다. base/depth를 같은 owner로 묶고 전환·OFF 때 이전
-요청·listener·layer·texture를 취소/회수한 뒤, 이 문서의 N1로 돌아온다.
-
-Visual PR-01은 N1을 폐기하거나 완료 처리하지 않는다. 두 작업은 같은 상위 기준을 쓰되
-현재 실제 사용자 문제를 먼저 닫도록 순서만 정한 것이다.
+공통 N0와 Visual PR-01~08은 2026-08-13 운영 완료했다. 지정 실기기 검수는 UNKNOWN 표로
+남기되 코드 포인터는 이 문서의 N1 `수집기 운영 관제`로 이동한다. Visual 종료 근거는
+[`../earthus-visual-engineering-next/PR01-08-CLOSEOUT.md`](../earthus-visual-engineering-next/PR01-08-CLOSEOUT.md)다.
 
 ## N0. 문서·운영 정본 동기화
 

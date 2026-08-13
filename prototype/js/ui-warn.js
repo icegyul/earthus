@@ -11,7 +11,7 @@
 import { i18n } from './i18n.js';
 import { warn } from './warn.js';
 import { safetyActions } from './safety-actions.js';
-import { safetyGateMarkup } from './safety-gate-ui.js?v=20260812-safety1';
+import { safetyGateMarkup } from './safety-gate-ui.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

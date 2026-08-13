@@ -1,7 +1,7 @@
 {
   "schema": "earthus.visual-pr00-baseline.v1",
-  "generatedAt": "2026-08-13T06:49:06.800Z",
-  "gitHead": "0997015f7dcb1d55607bd4ead61e14c391e31a42",
+  "generatedAt": "2026-08-13T14:20:38.135Z",
+  "gitHead": "10648212b7403525cb95613f3e5ede0703ccd431",
   "browser": "151.0.7922.109",
   "mode": "local-read-only-no-production-deploy",
   "privacy": "No precise location, account identifier, search text, or URL query value is recorded.",
@@ -21,7 +21,7 @@
             "total": 5,
             "visible": 5,
             "depthSiblingCount": 1,
-            "baseWithDepthCount": 0,
+            "baseWithDepthCount": 1,
             "layers": [
               {
                 "index": 0,
@@ -47,7 +47,7 @@
               {
                 "index": 3,
                 "show": true,
-                "alpha": 0.28,
+                "alpha": 0.182,
                 "role": "shadow",
                 "hasDepthSibling": false
               },
@@ -56,14 +56,14 @@
                 "show": true,
                 "alpha": 1,
                 "role": "cloud",
-                "hasDepthSibling": false
+                "hasDepthSibling": true
               }
             ]
           },
           "texture": {
-            "created": 86,
+            "created": 87,
             "deleted": 0,
-            "live": 86
+            "live": 87
           },
           "mask": {
             "count": 0,
@@ -79,14 +79,121 @@
             "uniqueAccepted": 0
           },
           "sourceTimes": {
-            "noaaGmgsi": "2026-08-13T06:00:00Z",
+            "noaaGmgsi": "2026-08-13T12:00:00Z",
             "himawariVisible": null,
             "himawariInfrared": null,
             "gk2a": null
           },
           "render": {
-            "total": 192,
-            "frameCostMs": 0.8,
+            "total": 282,
+            "frameCostMs": 1.5,
+            "resolutionScale": 1,
+            "animating": false,
+            "activeOwnerKeys": []
+          },
+          "gpu": {
+            "cesiumMaximumTextureSize": null,
+            "webglMaximumTextureSize": 16384,
+            "deviceMemoryGb": 16,
+            "finePointer": true
+          },
+          "layout": {
+            "width": 1280,
+            "height": 720,
+            "dpr": 1,
+            "horizontalOverflow": 0
+          },
+          "tilesSettledBeforeIdle": true,
+          "renderSettledBeforeIdle": true,
+          "idleRenderCount3s": 9,
+          "requests": {
+            "requestCount": 2,
+            "uniqueKeyCount": 2,
+            "duplicateRequestCount": 0,
+            "dedupeOpportunityRatio": 0,
+            "providerBreakdown": {
+              "NOAA_GMGSI": 2
+            },
+            "duplicates": []
+          },
+          "sky": {
+            "variant": "mobile-2k",
+            "estimatedDecodedBytes": 8388608
+          },
+          "screenshot": "docs/earthus-visual-engineering-next/evidence/pr00/desktop-1280x720-earth.png"
+        },
+        {
+          "name": "himawari",
+          "layer": {
+            "total": 5,
+            "visible": 5,
+            "depthSiblingCount": 1,
+            "baseWithDepthCount": 1,
+            "layers": [
+              {
+                "index": 0,
+                "show": true,
+                "alpha": 1,
+                "role": "unclassified",
+                "hasDepthSibling": false
+              },
+              {
+                "index": 1,
+                "show": true,
+                "alpha": 0,
+                "role": "unclassified",
+                "hasDepthSibling": false
+              },
+              {
+                "index": 2,
+                "show": true,
+                "alpha": 1,
+                "role": "unclassified",
+                "hasDepthSibling": false
+              },
+              {
+                "index": 3,
+                "show": true,
+                "alpha": 0.078,
+                "role": "visual-relief",
+                "hasDepthSibling": false
+              },
+              {
+                "index": 4,
+                "show": true,
+                "alpha": 1,
+                "role": "unclassified",
+                "hasDepthSibling": true
+              }
+            ]
+          },
+          "texture": {
+            "created": 826,
+            "deleted": 6,
+            "live": 820
+          },
+          "mask": {
+            "count": 54,
+            "p50Ms": 0.6,
+            "p95Ms": 3.2,
+            "maxMs": 10,
+            "longTasksOver50Ms": 0
+          },
+          "providerRequestCalls": {
+            "attempted": 58335,
+            "accepted": 159,
+            "uniqueAttempted": 159,
+            "uniqueAccepted": 159
+          },
+          "sourceTimes": {
+            "noaaGmgsi": null,
+            "himawariVisible": null,
+            "himawariInfrared": "2026-08-13T13:40:00Z",
+            "gk2a": null
+          },
+          "render": {
+            "total": 1103,
+            "frameCostMs": 1.5,
             "resolutionScale": 1,
             "animating": false,
             "activeOwnerKeys": []
@@ -107,292 +214,27 @@
           "renderSettledBeforeIdle": true,
           "idleRenderCount3s": 0,
           "requests": {
-            "requestCount": 6,
-            "uniqueKeyCount": 2,
-            "duplicateRequestCount": 4,
-            "dedupeOpportunityRatio": 0.6667,
+            "requestCount": 9,
+            "uniqueKeyCount": 9,
+            "duplicateRequestCount": 0,
+            "dedupeOpportunityRatio": 0,
             "providerBreakdown": {
-              "NOAA_GMGSI": 6
+              "GIBS": 9
             },
-            "duplicates": [
-              {
-                "key": "NOAA_GMGSI/global.png",
-                "count": 3
-              },
-              {
-                "key": "NOAA_GMGSI/meta.json",
-                "count": 3
-              }
-            ]
+            "duplicates": []
           },
           "sky": {
-            "variant": "mobile-4k",
-            "estimatedDecodedBytes": 33554432
-          },
-          "screenshot": "docs/earthus-visual-engineering-next/evidence/pr00/desktop-1280x720-earth.png"
-        },
-        {
-          "name": "himawari",
-          "layer": {
-            "total": 9,
-            "visible": 7,
-            "depthSiblingCount": 3,
-            "baseWithDepthCount": 2,
-            "layers": [
-              {
-                "index": 0,
-                "show": true,
-                "alpha": 1,
-                "role": "unclassified",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 1,
-                "show": true,
-                "alpha": 0,
-                "role": "unclassified",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 2,
-                "show": true,
-                "alpha": 1,
-                "role": "unclassified",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 3,
-                "show": false,
-                "alpha": 0,
-                "role": "shadow",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 4,
-                "show": false,
-                "alpha": 0,
-                "role": "cloud",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 5,
-                "show": true,
-                "alpha": 0.2,
-                "role": "sun-shadow",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 6,
-                "show": true,
-                "alpha": 1,
-                "role": "unclassified",
-                "hasDepthSibling": true
-              },
-              {
-                "index": 7,
-                "show": true,
-                "alpha": 0.12,
-                "role": "visual-relief",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 8,
-                "show": true,
-                "alpha": 1,
-                "role": "unclassified",
-                "hasDepthSibling": true
-              }
-            ]
-          },
-          "texture": {
-            "created": 941,
-            "deleted": 6,
-            "live": 935
-          },
-          "mask": {
-            "count": 143,
-            "p50Ms": 0.5,
-            "p95Ms": 0.8,
-            "maxMs": 1.4,
-            "longTasksOver50Ms": 0
-          },
-          "providerRequestCalls": {
-            "attempted": 790733,
-            "accepted": 508,
-            "uniqueAttempted": 353,
-            "uniqueAccepted": 255
-          },
-          "sourceTimes": {
-            "noaaGmgsi": "2026-08-13T06:00:00Z",
-            "himawariVisible": "2026-08-13T06:20:00Z",
-            "himawariInfrared": "2026-08-13T06:20:00Z",
-            "gk2a": null
-          },
-          "render": {
-            "total": 1964,
-            "frameCostMs": 1.8,
-            "resolutionScale": 1,
-            "animating": false,
-            "activeOwnerKeys": []
-          },
-          "gpu": {
-            "cesiumMaximumTextureSize": null,
-            "webglMaximumTextureSize": 16384,
-            "deviceMemoryGb": 16,
-            "finePointer": true
-          },
-          "layout": {
-            "width": 1280,
-            "height": 720,
-            "dpr": 1,
-            "horizontalOverflow": 0
-          },
-          "tilesSettledBeforeIdle": true,
-          "renderSettledBeforeIdle": false,
-          "idleRenderCount3s": 314,
-          "requests": {
-            "requestCount": 66,
-            "uniqueKeyCount": 34,
-            "duplicateRequestCount": 32,
-            "dedupeOpportunityRatio": 0.4848,
-            "providerBreakdown": {
-              "GIBS": 66
-            },
-            "duplicates": [
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/12/27",
-                "count": 3
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/12/27",
-                "count": 3
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/2/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/2/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/3/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/3/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/5/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/5/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/6/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/6/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/11/26",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/11/27",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/12/26",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/13/26",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/13/27",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/2/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/2/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/3/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/3/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/5/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/5/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/6/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/6/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/11/26",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/11/27",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/11/28",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/12/26",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/12/28",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/13/26",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/13/27",
-                "count": 2
-              }
-            ]
-          },
-          "sky": {
-            "variant": "mobile-4k",
-            "estimatedDecodedBytes": 33554432
+            "variant": "mobile-2k",
+            "estimatedDecodedBytes": 8388608
           },
           "screenshot": "docs/earthus-visual-engineering-next/evidence/pr00/desktop-1280x720-himawari.png"
         },
         {
           "name": "gk2a-auto",
           "layer": {
-            "total": 9,
+            "total": 7,
             "visible": 6,
-            "depthSiblingCount": 3,
+            "depthSiblingCount": 2,
             "baseWithDepthCount": 2,
             "layers": [
               {
@@ -418,41 +260,27 @@
               },
               {
                 "index": 3,
-                "show": false,
-                "alpha": 0,
-                "role": "shadow",
+                "show": true,
+                "alpha": 0.091,
+                "role": "visual-relief",
                 "hasDepthSibling": false
               },
               {
                 "index": 4,
-                "show": false,
-                "alpha": 0,
-                "role": "cloud",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 5,
-                "show": true,
-                "alpha": 0.2,
-                "role": "sun-shadow",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 6,
                 "show": true,
                 "alpha": 1,
                 "role": "overview",
                 "hasDepthSibling": true
               },
               {
-                "index": 7,
+                "index": 5,
                 "show": true,
-                "alpha": 0.2,
-                "role": "sun-shadow",
+                "alpha": 0.091,
+                "role": "visual-relief",
                 "hasDepthSibling": false
               },
               {
-                "index": 8,
+                "index": 6,
                 "show": false,
                 "alpha": 1,
                 "role": "broad",
@@ -461,32 +289,32 @@
             ]
           },
           "texture": {
-            "created": 1094,
-            "deleted": 358,
-            "live": 736
+            "created": 886,
+            "deleted": 144,
+            "live": 742
           },
           "mask": {
-            "count": 40,
-            "p50Ms": 0.6,
-            "p95Ms": 0.8,
-            "maxMs": 1.7,
+            "count": 39,
+            "p50Ms": 0.7,
+            "p95Ms": 3.7,
+            "maxMs": 6.9,
             "longTasksOver50Ms": 0
           },
           "providerRequestCalls": {
-            "attempted": 69405,
-            "accepted": 158,
+            "attempted": 64832,
+            "accepted": 157,
             "uniqueAttempted": 157,
             "uniqueAccepted": 157
           },
           "sourceTimes": {
-            "noaaGmgsi": "2026-08-13T06:00:00Z",
+            "noaaGmgsi": null,
             "himawariVisible": null,
             "himawariInfrared": null,
-            "gk2a": "2026-08-13T06:36:00Z"
+            "gk2a": "2026-08-13T13:46:00Z"
           },
           "render": {
-            "total": 2890,
-            "frameCostMs": 1,
+            "total": 1844,
+            "frameCostMs": 0.9,
             "resolutionScale": 1,
             "animating": false,
             "activeOwnerKeys": []
@@ -507,917 +335,28 @@
           "renderSettledBeforeIdle": true,
           "idleRenderCount3s": 0,
           "requests": {
-            "requestCount": 491,
-            "uniqueKeyCount": 267,
-            "duplicateRequestCount": 224,
-            "dedupeOpportunityRatio": 0.4562,
+            "requestCount": 165,
+            "uniqueKeyCount": 165,
+            "duplicateRequestCount": 0,
+            "dedupeOpportunityRatio": 0,
             "providerBreakdown": {
-              "GIBS": 448,
-              "GK2A": 43
+              "GIBS": 163,
+              "GK2A": 2
             },
-            "duplicates": [
-              {
-                "key": "GK2A/meta.json",
-                "count": 4
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/0/0/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/1/0/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/1/0/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/1/1/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/1/1/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/2/0/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/2/0/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/2/1/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/2/1/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/2/1/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/2/2/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/2/2/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/2/2/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/2/2/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/2/3/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/2/3/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/2/3/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/2/3/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/0/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/0/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/1/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/1/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/1/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/2/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/2/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/2/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/2/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/2/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/3/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/3/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/3/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/3/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/3/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/4/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/4/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/4/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/4/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/5/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/5/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/5/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/5/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/6/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/6/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/6/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/6/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/7/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/7/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/7/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/7/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/10/10",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/3/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/3/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/3/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/3/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/3/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/4/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/4/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/4/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/4/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/4/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/5/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/5/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/5/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/6/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/6/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/6/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/7/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/7/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/7/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/7/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/7/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/8/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/8/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/8/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/9/10",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/9/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/9/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/9/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/10/24",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/10/25",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/10/26",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/10/27",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/10/28",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/10/29",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/11/24",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/11/25",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/11/29",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/12/24",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/12/25",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/12/28",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/12/29",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/13/24",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/13/25",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/13/28",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/13/29",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/14/24",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/14/25",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/14/26",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/14/27",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/14/28",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/14/29",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/15/24",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/15/25",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/15/26",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/15/27",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/15/28",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/15/29",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/9/24",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/9/25",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/9/26",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/9/27",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/9/28",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/9/29",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/1/0/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/1/0/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/1/1/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/1/1/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/0/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/0/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/1/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/1/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/1/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/2/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/2/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/2/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/2/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/3/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/3/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/3/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/3/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/0/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/1/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/2/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/2/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/2/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/2/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/2/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/3/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/3/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/3/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/3/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/3/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/4/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/4/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/4/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/4/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/5/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/5/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/5/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/5/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/6/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/6/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/6/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/6/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/7/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/7/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/7/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/7/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/10/10",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/3/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/3/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/3/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/3/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/3/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/4/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/4/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/4/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/4/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/4/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/5/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/5/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/5/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/6/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/6/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/6/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/7/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/7/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/7/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/7/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/7/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/8/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/8/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/8/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/9/10",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/9/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/9/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/9/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/10/24",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/10/25",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/10/26",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/10/27",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/10/28",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/10/29",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/11/24",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/11/25",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/11/29",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/12/24",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/12/25",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/12/29",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/13/24",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/13/25",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/13/28",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/13/29",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/14/24",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/14/25",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/14/26",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/14/27",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/14/28",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/14/29",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/15/24",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/15/25",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/15/26",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/15/27",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/15/28",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/15/29",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/9/24",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/9/25",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/9/26",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/9/27",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/9/28",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/9/29",
-                "count": 2
-              }
-            ]
+            "duplicates": []
           },
           "sky": {
-            "variant": "mobile-4k",
-            "estimatedDecodedBytes": 33554432
+            "variant": "mobile-2k",
+            "estimatedDecodedBytes": 8388608
           },
           "screenshot": "docs/earthus-visual-engineering-next/evidence/pr00/desktop-1280x720-gk2a.png"
         },
         {
           "name": "satellites-disposed",
           "layer": {
-            "total": 5,
+            "total": 3,
             "visible": 3,
-            "depthSiblingCount": 1,
+            "depthSiblingCount": 0,
             "baseWithDepthCount": 0,
             "layers": [
               {
@@ -1440,27 +379,13 @@
                 "alpha": 1,
                 "role": "unclassified",
                 "hasDepthSibling": false
-              },
-              {
-                "index": 3,
-                "show": false,
-                "alpha": 0,
-                "role": "shadow",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 4,
-                "show": false,
-                "alpha": 0,
-                "role": "cloud",
-                "hasDepthSibling": false
               }
             ]
           },
           "texture": {
-            "created": 1094,
-            "deleted": 418,
-            "live": 676
+            "created": 886,
+            "deleted": 204,
+            "live": 682
           },
           "mask": {
             "count": 0,
@@ -1476,13 +401,13 @@
             "uniqueAccepted": 0
           },
           "sourceTimes": {
-            "noaaGmgsi": "2026-08-13T06:00:00Z",
+            "noaaGmgsi": null,
             "himawariVisible": null,
             "himawariInfrared": null,
-            "gk2a": "2026-08-13T06:36:00Z"
+            "gk2a": "2026-08-13T13:46:00Z"
           },
           "render": {
-            "total": 2892,
+            "total": 1846,
             "frameCostMs": 1.1,
             "resolutionScale": 1,
             "animating": false,
@@ -1504,60 +429,60 @@
           "renderSettledBeforeIdle": true,
           "idleRenderCount3s": 0,
           "requests": {
-            "requestCount": 118,
-            "uniqueKeyCount": 118,
+            "requestCount": 156,
+            "uniqueKeyCount": 156,
             "duplicateRequestCount": 0,
             "dedupeOpportunityRatio": 0,
             "providerBreakdown": {
-              "GK2A": 118
+              "GK2A": 156
             },
             "duplicates": []
           },
           "sky": {
-            "variant": "mobile-4k",
-            "estimatedDecodedBytes": 33554432
+            "variant": "mobile-2k",
+            "estimatedDecodedBytes": 8388608
           },
           "screenshot": null
         }
       ],
       "console": {
-        "warningOrErrorCount": 351,
+        "warningOrErrorCount": 226,
         "messages": [
           "error:Failed to load resource: the server responded with a status of 404 ()",
           "error:Failed to load resource: the server responded with a status of 403 (Forbidden)"
         ],
         "pageErrors": [],
         "failedResponses": [
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/3/6.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/3/7.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/3/2/7.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/5/13.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/5/14.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/6/14.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/6/13.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/12/27.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/6/14.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/13/27.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/11/27.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/12/26.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/11/26.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/11/26.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/5/12/26.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/13/26.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/11/28.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/2/1/3.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/9/27.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/12/28.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/10/27.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/14/27.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/4/13.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/11/25.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/12/25.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/9/26.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/7/13.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/10/26.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/4/6/12.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/9/28.png"
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/27.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level7/5/12/27.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level7/5/12/27.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/13/27.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/12/27.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/13/26.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/12/28.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/11/28.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/14/27.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/13/28.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/11/25.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/12/25.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/4/6/13.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/9/26.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/10/28.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/10/26.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/4/5/14.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/4/6/14.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/4/5/12.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/11/29.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/3/3/6.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/9/25.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/9/29.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/12/29.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/4/5/13.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/3/3/7.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/14/25.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/3/2/6.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/11/24.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/4/4/12.png"
         ]
       }
     },
@@ -1576,7 +501,7 @@
             "total": 5,
             "visible": 5,
             "depthSiblingCount": 1,
-            "baseWithDepthCount": 0,
+            "baseWithDepthCount": 1,
             "layers": [
               {
                 "index": 0,
@@ -1602,7 +527,7 @@
               {
                 "index": 3,
                 "show": true,
-                "alpha": 0.28,
+                "alpha": 0.182,
                 "role": "shadow",
                 "hasDepthSibling": false
               },
@@ -1611,14 +536,14 @@
                 "show": true,
                 "alpha": 1,
                 "role": "cloud",
-                "hasDepthSibling": false
+                "hasDepthSibling": true
               }
             ]
           },
           "texture": {
-            "created": 86,
+            "created": 87,
             "deleted": 0,
-            "live": 86
+            "live": 87
           },
           "mask": {
             "count": 0,
@@ -1634,14 +559,14 @@
             "uniqueAccepted": 0
           },
           "sourceTimes": {
-            "noaaGmgsi": "2026-08-13T06:00:00Z",
+            "noaaGmgsi": "2026-08-13T12:00:00Z",
             "himawariVisible": null,
             "himawariInfrared": null,
             "gk2a": null
           },
           "render": {
-            "total": 247,
-            "frameCostMs": 1.3,
+            "total": 277,
+            "frameCostMs": 1.8,
             "resolutionScale": 1,
             "animating": false,
             "activeOwnerKeys": []
@@ -1662,37 +587,28 @@
           "renderSettledBeforeIdle": true,
           "idleRenderCount3s": 0,
           "requests": {
-            "requestCount": 6,
+            "requestCount": 2,
             "uniqueKeyCount": 2,
-            "duplicateRequestCount": 4,
-            "dedupeOpportunityRatio": 0.6667,
+            "duplicateRequestCount": 0,
+            "dedupeOpportunityRatio": 0,
             "providerBreakdown": {
-              "NOAA_GMGSI": 6
+              "NOAA_GMGSI": 2
             },
-            "duplicates": [
-              {
-                "key": "NOAA_GMGSI/global.png",
-                "count": 3
-              },
-              {
-                "key": "NOAA_GMGSI/meta.json",
-                "count": 3
-              }
-            ]
+            "duplicates": []
           },
           "sky": {
-            "variant": "mobile-4k",
-            "estimatedDecodedBytes": 33554432
+            "variant": "mobile-2k",
+            "estimatedDecodedBytes": 8388608
           },
           "screenshot": "docs/earthus-visual-engineering-next/evidence/pr00/mobile-390x844-earth.png"
         },
         {
           "name": "himawari",
           "layer": {
-            "total": 9,
-            "visible": 7,
-            "depthSiblingCount": 3,
-            "baseWithDepthCount": 2,
+            "total": 5,
+            "visible": 5,
+            "depthSiblingCount": 1,
+            "baseWithDepthCount": 1,
             "layers": [
               {
                 "index": 0,
@@ -1717,41 +633,13 @@
               },
               {
                 "index": 3,
-                "show": false,
-                "alpha": 0,
-                "role": "shadow",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 4,
-                "show": false,
-                "alpha": 0,
-                "role": "cloud",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 5,
                 "show": true,
-                "alpha": 0.2,
-                "role": "sun-shadow",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 6,
-                "show": true,
-                "alpha": 1,
-                "role": "unclassified",
-                "hasDepthSibling": true
-              },
-              {
-                "index": 7,
-                "show": true,
-                "alpha": 0.12,
+                "alpha": 0.078,
                 "role": "visual-relief",
                 "hasDepthSibling": false
               },
               {
-                "index": 8,
+                "index": 4,
                 "show": true,
                 "alpha": 1,
                 "role": "unclassified",
@@ -1760,32 +648,32 @@
             ]
           },
           "texture": {
-            "created": 831,
+            "created": 711,
             "deleted": 6,
-            "live": 825
+            "live": 705
           },
           "mask": {
-            "count": 128,
+            "count": 73,
             "p50Ms": 0.5,
-            "p95Ms": 0.9,
-            "maxMs": 1.7,
+            "p95Ms": 1.6,
+            "maxMs": 7,
             "longTasksOver50Ms": 0
           },
           "providerRequestCalls": {
-            "attempted": 295718,
-            "accepted": 379,
-            "uniqueAttempted": 190,
-            "uniqueAccepted": 190
+            "attempted": 21478,
+            "accepted": 94,
+            "uniqueAttempted": 94,
+            "uniqueAccepted": 94
           },
           "sourceTimes": {
-            "noaaGmgsi": "2026-08-13T06:00:00Z",
-            "himawariVisible": "2026-08-13T06:20:00Z",
-            "himawariInfrared": "2026-08-13T06:00:00Z",
+            "noaaGmgsi": null,
+            "himawariVisible": null,
+            "himawariInfrared": "2026-08-13T13:30:00Z",
             "gk2a": null
           },
           "render": {
-            "total": 1718,
-            "frameCostMs": 1.3,
+            "total": 840,
+            "frameCostMs": 0.6,
             "resolutionScale": 1,
             "animating": false,
             "activeOwnerKeys": []
@@ -1803,131 +691,30 @@
             "horizontalOverflow": 0
           },
           "tilesSettledBeforeIdle": true,
-          "renderSettledBeforeIdle": false,
+          "renderSettledBeforeIdle": true,
           "idleRenderCount3s": 0,
           "requests": {
-            "requestCount": 61,
-            "uniqueKeyCount": 36,
-            "duplicateRequestCount": 25,
-            "dedupeOpportunityRatio": 0.4098,
+            "requestCount": 12,
+            "uniqueKeyCount": 12,
+            "duplicateRequestCount": 0,
+            "dedupeOpportunityRatio": 0,
             "providerBreakdown": {
-              "GIBS": 61
+              "GIBS": 12
             },
-            "duplicates": [
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/2/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/3/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/3/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/4/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/4/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/5/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/5/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/5/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/6/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/6/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/6/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/7/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/7/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/3/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/3/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/4/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/4/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/5/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/5/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/5/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/6/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/6/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/6/14",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/7/13",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/7/14",
-                "count": 2
-              }
-            ]
+            "duplicates": []
           },
           "sky": {
-            "variant": "mobile-4k",
-            "estimatedDecodedBytes": 33554432
+            "variant": "mobile-2k",
+            "estimatedDecodedBytes": 8388608
           },
           "screenshot": "docs/earthus-visual-engineering-next/evidence/pr00/mobile-390x844-himawari.png"
         },
         {
           "name": "gk2a-auto",
           "layer": {
-            "total": 9,
+            "total": 7,
             "visible": 6,
-            "depthSiblingCount": 3,
+            "depthSiblingCount": 2,
             "baseWithDepthCount": 2,
             "layers": [
               {
@@ -1953,41 +740,27 @@
               },
               {
                 "index": 3,
-                "show": false,
-                "alpha": 0,
-                "role": "shadow",
+                "show": true,
+                "alpha": 0.091,
+                "role": "visual-relief",
                 "hasDepthSibling": false
               },
               {
                 "index": 4,
-                "show": false,
-                "alpha": 0,
-                "role": "cloud",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 5,
-                "show": true,
-                "alpha": 0.2,
-                "role": "sun-shadow",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 6,
                 "show": true,
                 "alpha": 1,
                 "role": "overview",
                 "hasDepthSibling": true
               },
               {
-                "index": 7,
+                "index": 5,
                 "show": true,
-                "alpha": 0.2,
-                "role": "sun-shadow",
+                "alpha": 0.091,
+                "role": "visual-relief",
                 "hasDepthSibling": false
               },
               {
-                "index": 8,
+                "index": 6,
                 "show": false,
                 "alpha": 1,
                 "role": "broad",
@@ -1996,32 +769,32 @@
             ]
           },
           "texture": {
-            "created": 883,
-            "deleted": 353,
-            "live": 530
+            "created": 763,
+            "deleted": 232,
+            "live": 531
           },
           "mask": {
             "count": 29,
-            "p50Ms": 0.6,
-            "p95Ms": 1.2,
-            "maxMs": 1.3,
+            "p50Ms": 0.8,
+            "p95Ms": 4.1,
+            "maxMs": 8,
             "longTasksOver50Ms": 0
           },
           "providerRequestCalls": {
-            "attempted": 16174,
-            "accepted": 96,
+            "attempted": 22498,
+            "accepted": 95,
             "uniqueAttempted": 95,
             "uniqueAccepted": 95
           },
           "sourceTimes": {
-            "noaaGmgsi": "2026-08-13T06:00:00Z",
+            "noaaGmgsi": null,
             "himawariVisible": null,
             "himawariInfrared": null,
-            "gk2a": "2026-08-13T06:36:00Z"
+            "gk2a": "2026-08-13T13:46:00Z"
           },
           "render": {
-            "total": 2150,
-            "frameCostMs": 0.5,
+            "total": 1354,
+            "frameCostMs": 1.3,
             "resolutionScale": 1,
             "animating": false,
             "activeOwnerKeys": []
@@ -2042,661 +815,28 @@
           "renderSettledBeforeIdle": true,
           "idleRenderCount3s": 0,
           "requests": {
-            "requestCount": 372,
-            "uniqueKeyCount": 212,
-            "duplicateRequestCount": 160,
-            "dedupeOpportunityRatio": 0.4301,
+            "requestCount": 154,
+            "uniqueKeyCount": 154,
+            "duplicateRequestCount": 0,
+            "dedupeOpportunityRatio": 0,
             "providerBreakdown": {
-              "GIBS": 322,
-              "GK2A": 50
+              "GIBS": 97,
+              "GK2A": 57
             },
-            "duplicates": [
-              {
-                "key": "GK2A/meta.json",
-                "count": 4
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/0/0/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/1/0/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/1/0/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/1/1/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/1/1/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/0/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/0/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/0/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/1/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/1/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/1/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/2/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/2/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/2/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/2/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/3/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/3/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/3/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/3/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/0/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/0/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/0/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/0/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/0/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/0/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/0/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/0/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/1/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/1/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/1/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/1/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/1/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/1/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/1/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/2/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/2/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/2/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/2/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/2/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/2/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/3/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/3/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/3/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/3/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/3/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/3/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/3/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/4/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/4/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/4/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/4/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/5/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/5/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/5/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/5/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/6/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/6/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/6/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/6/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/7/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/7/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/7/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/7/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/3/10",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/3/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/3/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/3/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/4/10",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/4/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/4/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/4/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/5/10",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/5/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/5/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/6/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/7/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/7/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/1/0/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/1/0/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/1/1/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/1/1/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/0/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/0/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/0/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/0/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/1/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/1/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/1/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/1/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/2/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/2/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/2/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/2/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/3/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/3/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/3/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/2/3/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/0/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/0/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/0/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/0/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/0/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/0/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/0/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/0/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/1/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/1/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/1/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/1/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/1/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/1/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/1/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/1/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/2/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/2/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/2/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/2/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/2/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/2/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/2/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/3/0",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/3/1",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/3/2",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/3/3",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/3/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/3/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/3/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/4/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/4/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/4/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/4/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/5/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/5/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/5/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/5/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/6/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/6/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/6/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/6/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/7/4",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/7/5",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/7/6",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/7/7",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/3/10",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/3/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/3/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/3/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/4/10",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/4/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/4/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/4/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/5/10",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/5/11",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/5/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/6/15",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/7/12",
-                "count": 2
-              },
-              {
-                "key": "GIBS/Himawari_AHI_Band3_Red_Visible_1km/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/7/15",
-                "count": 2
-              }
-            ]
+            "duplicates": []
           },
           "sky": {
-            "variant": "mobile-4k",
-            "estimatedDecodedBytes": 33554432
+            "variant": "mobile-2k",
+            "estimatedDecodedBytes": 8388608
           },
           "screenshot": "docs/earthus-visual-engineering-next/evidence/pr00/mobile-390x844-gk2a.png"
         },
         {
           "name": "satellites-disposed",
           "layer": {
-            "total": 5,
+            "total": 3,
             "visible": 3,
-            "depthSiblingCount": 1,
+            "depthSiblingCount": 0,
             "baseWithDepthCount": 0,
             "layers": [
               {
@@ -2719,27 +859,13 @@
                 "alpha": 1,
                 "role": "unclassified",
                 "hasDepthSibling": false
-              },
-              {
-                "index": 3,
-                "show": false,
-                "alpha": 0,
-                "role": "shadow",
-                "hasDepthSibling": false
-              },
-              {
-                "index": 4,
-                "show": false,
-                "alpha": 0,
-                "role": "cloud",
-                "hasDepthSibling": false
               }
             ]
           },
           "texture": {
-            "created": 883,
-            "deleted": 405,
-            "live": 478
+            "created": 763,
+            "deleted": 284,
+            "live": 479
           },
           "mask": {
             "count": 0,
@@ -2755,14 +881,14 @@
             "uniqueAccepted": 0
           },
           "sourceTimes": {
-            "noaaGmgsi": "2026-08-13T06:00:00Z",
+            "noaaGmgsi": null,
             "himawariVisible": null,
             "himawariInfrared": null,
-            "gk2a": "2026-08-13T06:36:00Z"
+            "gk2a": "2026-08-13T13:46:00Z"
           },
           "render": {
-            "total": 2152,
-            "frameCostMs": 0.8,
+            "total": 1356,
+            "frameCostMs": 0.9,
             "resolutionScale": 1,
             "animating": false,
             "activeOwnerKeys": []
@@ -2783,60 +909,60 @@
           "renderSettledBeforeIdle": true,
           "idleRenderCount3s": 0,
           "requests": {
-            "requestCount": 49,
-            "uniqueKeyCount": 49,
+            "requestCount": 39,
+            "uniqueKeyCount": 39,
             "duplicateRequestCount": 0,
             "dedupeOpportunityRatio": 0,
             "providerBreakdown": {
-              "GK2A": 49
+              "GK2A": 39
             },
             "duplicates": []
           },
           "sky": {
-            "variant": "mobile-4k",
-            "estimatedDecodedBytes": 33554432
+            "variant": "mobile-2k",
+            "estimatedDecodedBytes": 8388608
           },
           "screenshot": null
         }
       ],
       "console": {
-        "warningOrErrorCount": 218,
+        "warningOrErrorCount": 92,
         "messages": [
           "error:Failed to load resource: the server responded with a status of 404 ()",
           "error:Failed to load resource: the server responded with a status of 403 (Forbidden)"
         ],
         "pageErrors": [],
         "failedResponses": [
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level6/5/12/27.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:10:00Z/GoogleMapsCompatible_Level6/5/12/27.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/5/13.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/5/14.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/6/13.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/3/6.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/4/13.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/3/13.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/6/12.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/6/12.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/5/12.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/4/13.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/1/6.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/3/14.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/2/0/3.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/7/14.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/3/15.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/1/7.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/1/0/1.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/3/12.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/0/0/0.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/4/7.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/4/7.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/5/7.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/4/6.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/5/6.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/4/5/11.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/4/3/11.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T06:20:00Z/GoogleMapsCompatible_Level7/3/5/5.png",
-          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T06:00:00Z/GoogleMapsCompatible_Level6/3/4/5.png"
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T14:00:00Z/GoogleMapsCompatible_Level6/5/12/27.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T14:00:00Z/GoogleMapsCompatible_Level7/5/12/27.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/27.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/12/27.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level7/5/12/27.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/4/5/14.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/4/7/14.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/1/2.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/2/2.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/1/4.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/0/2.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/0/4.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/0/3.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/1/3.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/2/3.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/0/1.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/1/1.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/2/0/1.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/2/2/1.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/2/1/1.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/2/3/1.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/6/4.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/3/2.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/7/4.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/3/3.png",
+          "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/4/3/10.png",
+          "403:https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds/gk2a/tiles/ir112ea/0/4/13/7.png",
+          "403:https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds/gk2a/tiles/ir112ea/0/4/12/5.png",
+          "403:https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds/gk2a/tiles/ir112ea/0/4/12/6.png",
+          "403:https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds/gk2a/tiles/ir112ea/0/4/13/3.png"
         ]
       }
     }

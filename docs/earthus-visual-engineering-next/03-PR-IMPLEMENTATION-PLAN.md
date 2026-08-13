@@ -38,6 +38,8 @@ PR-01 추가 합격 조건: OFF/channel switch 뒤 이전 owner의 accepted requ
 
 ## PR-01 — ImageryLayerGroup Lifecycle
 
+상태: **2026-08-13 OPERATING**
+
 목표: base와 visual sibling을 하나의 취소/교체/제거 단위로 만든다.
 
 산출물:
@@ -54,6 +56,8 @@ PR-01 추가 합격 조건: OFF/channel switch 뒤 이전 owner의 accepted requ
 - visual failure가 base observation을 막지 않는다.
 
 ## PR-02 — Shared Tile Cache & Worker
+
+상태: **2026-08-13 OPERATING**
 
 목표: base/depth 중복 다운로드와 메인 스레드 canvas 비용을 제거한다.
 
@@ -72,6 +76,8 @@ PR-01 추가 합격 조건: OFF/channel switch 뒤 이전 owner의 accepted requ
 - cache 상한과 eviction 테스트 통과.
 
 ## PR-03 — Source Calibration & Golden Visuals
+
+상태: **2026-08-13 OPERATING — 공식 cloud mask 추가는 별도 승인 대기**
 
 목표: 소스/채널별 효과가 지표·팔레트·타일 경계를 오해하지 않도록 고정한다.
 
@@ -92,6 +98,8 @@ Decision gate: Himawari 공식 cloud mask 공급자·권리·비용 승인 전�
 
 ## PR-04 — Reproducible Sky Asset Pipeline
 
+상태: **2026-08-13 OPERATING**
+
 목표: 천구 원본→파생본→manifest→배포를 재현 가능하게 한다.
 
 산출물:
@@ -109,6 +117,8 @@ Decision gate: Himawari 공식 cloud mask 공급자·권리·비용 승인 전�
 - 6K 실패 시 UI 중단 없이 4K/2K로 복구.
 
 ## PR-05 — Transparency, Accessibility, User Control
+
+상태: **2026-08-13 OPERATING — 실제 VoiceOver 발화 순서는 UNKNOWN**
 
 목표: 사용자가 관측과 시각 효과를 구분하고 저사양에서 끌 수 있게 한다.
 
@@ -128,6 +138,8 @@ Decision gate: Himawari 공식 cloud mask 공급자·권리·비용 승인 전�
 
 ## PR-06 — Security & Supply Chain
 
+상태: **2026-08-13 OPERATING — SRI/allowlist/input limit 완료, CSP enforcement는 보류**
+
 목표: 외부 이미지/스크립트/캔버스 처리와 정적 배포 경계를 강화한다.
 
 산출물:
@@ -146,6 +158,8 @@ Decision gate: Himawari 공식 cloud mask 공급자·권리·비용 승인 전�
 - CSP 위반 0인 canary 증거 후 enforcement 결정.
 
 ## PR-07 — Device, Thermal & Failure Validation
+
+상태: **Chrome 자동화 완료 · Safari/iPhone/Android/VoiceOver/열·배터리 UNKNOWN**
 
 목표: 브라우저 시뮬레이션을 넘어 실제 지원 기기를 승인한다.
 
@@ -171,6 +185,8 @@ Decision gate: Himawari 공식 cloud mask 공급자·권리·비용 승인 전�
 - 온도/배터리 결과와 지원/차단 기기 목록을 문서화.
 
 ## PR-08 — Canary, Rollback & Close-out
+
+상태: **2026-08-13 OPERATING**
 
 목표: 시각 품질 개선을 안전하게 공개하고 되돌릴 수 있게 한다.
 

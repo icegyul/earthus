@@ -309,6 +309,7 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
   background:rgba(242,245,248,.07);border:1px solid var(--line);color:var(--fog);
 }
 .seg.on{background:var(--paper);color:#0b0f17;border-color:var(--paper)}
+.seg:focus-visible{outline:2px solid #8fd0e8;outline-offset:2px}
 .set-hint{font-size:11.5px;opacity:.4;line-height:1.6;margin-top:-6px}
 
 /* ══════════ HUD (개발용) ══════════ */

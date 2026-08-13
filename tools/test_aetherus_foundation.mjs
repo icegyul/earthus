@@ -26,6 +26,7 @@ const routes = await importBrowserModule('prototype/js/space/route-state.js');
 const cosmicSource = await readFile(path.join(ROOT, 'prototype/js/space/cosmic3d.js'), 'utf8');
 const uiSource = await readFile(path.join(ROOT, 'prototype/js/ui.js'), 'utf8');
 const viewerSource = await readFile(path.join(ROOT, 'prototype/js/viewer.js'), 'utf8');
+const skyPanoramaSource = await readFile(path.join(ROOT, 'prototype/js/sky-panorama.js'), 'utf8');
 const indexSource = await readFile(path.join(ROOT, 'prototype/index.html'), 'utf8');
 const appCssSource = await readFile(path.join(ROOT, 'prototype/css/app.css'), 'utf8');
 const mainSource = await readFile(path.join(ROOT, 'prototype/js/main.js'), 'utf8');
@@ -38,13 +39,14 @@ assert.match(viewerSource, /scene\.moon\.show = false/);
 assert.doesNotMatch(indexSource, /ambientMoon/);
 assert.doesNotMatch(appCssSource, /ambientMoon|ambient-moon/);
 assert.doesNotMatch(mainSource, /ambientMoon|ambient-moon/);
-assert.match(viewerSource, /scene\.skyBox\.show = false/);
-assert.match(viewerSource, /new Cesium\.EquirectangularPanorama/);
-assert.match(viewerSource, /earthus-milky-way\/panorama-6000\.webp/);
-assert.match(viewerSource, /maximumTextureSize/);
-assert.match(viewerSource, /earthus-milky-way\/panorama\.webp/);
+assert.match(viewerSource, /installMilkyWayPanorama\(scene\)/);
+assert.match(skyPanoramaSource, /scene\.skyBox\.show = false/);
+assert.match(skyPanoramaSource, /new Cesium\.EquirectangularPanorama/);
+assert.match(skyPanoramaSource, /gl\.MAX_TEXTURE_SIZE/);
+assert.match(skyPanoramaSource, /mobile-2k/);
 assert.match(indexSource, /ESO\/S\. Brunier · CC BY 4\.0/);
-assert.match(mainSource, /layers\/imagery\.js\?v=20260813-satellite-list1/);
+assert.match(mainSource, /layers\/imagery\.js'/);
+assert.doesNotMatch(mainSource, /layers\/imagery\.js\?v=/);
 
 const catalogFiles = {
   'space-photos': 'prototype/data/space-photos.json',

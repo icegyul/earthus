@@ -58,7 +58,7 @@ const repositoryAudit = auditModuleSpecifiers({
 });
 assert.equal(repositoryAudit.unexpectedMismatchCount, 0, 'new module query mismatch');
 assert.equal(repositoryAudit.staleBaseline.length, 0, 'stale module mismatch baseline');
-assert.equal(repositoryAudit.acknowledgedMismatchCount, 5, 'legacy singleton debt changed without review');
+assert.equal(repositoryAudit.acknowledgedMismatchCount, 0, 'PR-01 singleton debt must stay closed');
 
 /* 새 query mismatch가 실제 CI 실패 조건이 되는지 합성 저장소로 검증한다. */
 const temporary = await mkdtemp(path.join(os.tmpdir(), 'earthus-module-audit-'));

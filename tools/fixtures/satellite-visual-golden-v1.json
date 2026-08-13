@@ -1,0 +1,11 @@
+{
+  "schema": "earthus.satellite-visual-golden.v1",
+  "parametersVersion": "cloud-depth-ko-v1",
+  "cases": [
+    { "id": "noaa-day-source-alpha", "provider": "NOAA_GMGSI", "channel": "global", "mode": "alpha", "rgba": [90, 90, 90, 192], "expectedAlpha": 0.7529411765 },
+    { "id": "gk2a-ir-source-alpha", "provider": "GK2A", "channel": "ir112", "mode": "alpha", "rgba": [220, 220, 220, 160], "expectedAlpha": 0.6274509804 },
+    { "id": "hima-visible-cloud", "provider": "HIMAWARI_GIBS", "channel": "Band3", "mode": "visible", "rgba": [240, 235, 230, 255], "minAlpha": 0.5 },
+    { "id": "hima-visible-coloured-ground", "provider": "HIMAWARI_GIBS", "channel": "Band3", "mode": "visible", "rgba": [240, 70, 30, 255], "maxAlpha": 0.1 },
+    { "id": "hima-ir-warm-background", "provider": "HIMAWARI_GIBS", "channel": "Band13", "mode": "infrared", "rgba": [20, 20, 20, 255], "expectedAlpha": 0 }
+  ]
+}

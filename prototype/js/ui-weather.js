@@ -230,8 +230,8 @@ export const weatherPanel = {
     const p = chrome.place;
     if (!p || p.lat == null) return;
     Promise.all([
-      import('./location-climate.js?v=20260810-locationchart1').then(m => m.climateSeriesAt(p.lat, p.lon)),
-      import('./ui-charts.js?v=20260810-locationchart1'),
+      import('./location-climate.js').then(m => m.climateSeriesAt(p.lat, p.lon)),
+      import('./ui-charts.js'),
     ]).then(([result, chart]) => {
       if (!host.isConnected) return;
       if (!result) {
@@ -437,7 +437,7 @@ export const weatherPanel = {
       return;
     }
 
-    import('./narrative.js?v=20260810-copy1').then(({ narrative }) => narrative.build(p.lat, p.lon, ko))
+    import('./narrative.js').then(({ narrative }) => narrative.build(p.lat, p.lon, ko))
       .then(n => {
         if (!n) {
           box.innerHTML = `<p class="wx-narr-load">${ko

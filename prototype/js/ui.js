@@ -10,7 +10,7 @@ import { CONFIG } from './config.local.js';
 import { registry, pointLayers } from './layers/registry.js';
 import { fetchWeather, wxText } from './layers/weather.js';
 import { lookupPlace, lookupWaves, lookupWaveModel, compass, seaState } from './place.js';
-import { imagery } from './layers/imagery.js?v=20260813-satellite-list1';
+import { imagery } from './layers/imagery.js';
 import { quakes } from './layers/hazard.js';
 import { launches } from './layers/space.js';
 import { tsunami } from './layers/tsunami.js';
@@ -22,6 +22,7 @@ import { warn, levelEn } from './warn.js';
 import { warnUI } from './ui-warn.js';
 import { fetchT } from './net.js';
 import { safetyActions } from './safety-actions.js';
+import { visualEffects } from './visual-effect-settings.js';
 
 const $ = s => document.querySelector(s);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c =>
@@ -509,7 +510,7 @@ export const sheet = {
             try {
               sheet.minimize();
               await sceneMgr.to('earth', { stage: 'trench' });
-              const { trenchGlobe } = await import('./ocean/trenchglobe.js?v=20260810-depthlife1');
+              const { trenchGlobe } = await import('./ocean/trenchglobe.js');
               await trenchGlobe.openAt(m.lat, m.lon);
             } catch (error) {
               dive.disabled = false;
@@ -1721,9 +1722,16 @@ export const settings = {
     $('#labLang').textContent = t.language;
     $('#labUnit').textContent = t.tempUnit;
     $('#labTier').textContent = t.tier;
+    $('#labVisualFx').textContent = ko ? '구름 입체감 · 시각 효과' : 'Cloud depth · visual effect';
 
     seg('#segLang', [['ko','한국어'],['en','English']], i18n.lang, v => i18n.setLang(v));
     seg('#segUnit', [['c','°C'],['f','°F']], i18n.unit, v => i18n.setUnit(v));
+    seg('#segVisualFx', [
+      ['auto', ko ? '자동' : 'Auto'], ['low', ko ? '낮음' : 'Low'], ['off', ko ? '끔' : 'Off'],
+    ], visualEffects.mode, value => { visualEffects.set(value); this.render(); });
+    $('#visualFxHint').textContent = ko
+      ? '구름 관측 화소·출처·시각은 그대로입니다. 그림자·명암만 바꾸며 위험·추천·예약 판단에는 쓰지 않습니다.'
+      : 'Observation pixels, source and time stay unchanged. Only shadow/relief changes; it is never a safety, recommendation or reservation input.';
 
     /* ── 요금제 ──
        ⚠️ 예전엔 여기에 "무료 사용자 / 구독 사용자" 토글이 그대로 있었다.
@@ -1763,6 +1771,8 @@ function seg(sel, opts, cur, cb) {
   box.innerHTML = '';
   opts.forEach(([v, label]) => {
     const b = el('button', 'seg' + (v === cur ? ' on' : ''), label);
+    b.type = 'button';
+    b.setAttribute('aria-pressed', v === cur ? 'true' : 'false');
     b.onclick = () => cb(v);
     box.appendChild(b);
   });

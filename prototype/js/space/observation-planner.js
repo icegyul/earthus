@@ -9,7 +9,7 @@ import {
   calculateMarsObservation,
   calculateSunObservation,
   normalizeAstronomyObserver,
-} from './astronomy.js?v=20260812-planner1';
+} from './astronomy.js';
 
 const HOUR_MS = 3_600_000;
 const MINUTE_MS = 60_000;

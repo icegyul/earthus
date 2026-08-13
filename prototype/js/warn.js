@@ -17,7 +17,7 @@ import { API } from './config.js';
 import { i18n } from './i18n.js';
 import { myLocation } from './mylocation.js';
 import { toast } from './ui.js';
-import { evaluateWarningSafety, inKorea } from './safety-engine.js?v=20260812-safety1';
+import { evaluateWarningSafety, inKorea } from './safety-engine.js';
 
 const LS_SEEN = 'earthus.warnSeen';     // 이미 알린 특보 (같은 걸 계속 울리지 않기 위해)
 const LS_OFF = 'earthus.warnOff';       // 사용자가 끈 경우

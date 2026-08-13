@@ -14,7 +14,7 @@ async function importFixtureModules() {
   const astronomy = (await readFile(path.join(ROOT, 'prototype/js/space/astronomy.js'), 'utf8'))
     .replace("'./kepler.js'", "'./kepler.mjs'");
   const planner = (await readFile(path.join(ROOT, 'prototype/js/space/observation-planner.js'), 'utf8'))
-    .replace(/'\.\/astronomy\.js\?v=[^']+'/, "'./astronomy.mjs'");
+    .replace(/'\.\/astronomy\.js(?:\?v=[^']+)?'/, "'./astronomy.mjs'");
   const session = await readFile(path.join(ROOT, 'prototype/js/space/observation-session.js'), 'utf8');
   await Promise.all([
     writeFile(path.join(directory, 'kepler.mjs'), kepler),

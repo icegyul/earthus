@@ -12,7 +12,7 @@ import { forecastHighlights, nearestForecastHour, parseKmaTime, parseKmaUtcTime,
 import { store } from './store.js';
 import { warn, levelEn } from './warn.js';
 import { warnUI } from './ui-warn.js';
-import { safetyGateMarkup } from './safety-gate-ui.js?v=20260812-safety1';
+import { safetyGateMarkup } from './safety-gate-ui.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

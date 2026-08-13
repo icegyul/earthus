@@ -319,7 +319,9 @@ const source = await readFile(path.join(ROOT, 'prototype/js/space/sky-ar.js'), '
 assert.doesNotMatch(source, /requestAnimationFrame|setInterval|\bfetch\s*\(/);
 const integration = await readFile(path.join(ROOT, 'prototype/js/space/cosmic3d.js'), 'utf8');
 assert.match(integration, /window\.location\.hash === '#dev'/);
-assert.match(integration, /import\('\.\/sky-ar\.js\?v=20260812-skyar1'\)/);
+assert.match(integration, /import\('\.\/sky-ar\.js'\)/);
+assert.doesNotMatch(integration, /import\('\.\/sky-ar\.js\?v=/,
+  'ES module identity를 query suffix로 나누면 singleton 수명주기 검증이 무효화된다');
 assert.match(integration, /closeSkyARProbe\(\{ hide: true \}\)/);
 
 console.log('PASS: Sky AR ENU projection, southern hemisphere, low-confidence cue suppression, manual calibration, bounded 30-minute replay, permission denial, and zero-work release');

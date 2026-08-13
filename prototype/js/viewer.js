@@ -1,5 +1,6 @@
 // Cesium 초기화 + 리빙어스 룩 (§5-9)
 import { API, T } from './config.js';
+import { installMilkyWayPanorama } from './sky-panorama.js';
 
 export let viewer, scene, globe;
 
@@ -16,6 +17,9 @@ export function initViewer(containerId) {
 
   scene = viewer.scene;
   globe = scene.globe;
+  /* 시각 파이프라인의 설정 변경이 requestRenderMode에서도 한 프레임을 요청한다.
+     개발 계측 외에는 사용하지 않으며 새 viewer를 만들지 않는 싱글턴 포인터다. */
+  globalThis.__earthusViewer = viewer;
 
   /* ── 해상도 ────────────────────────────────────────────────────
      ⚠️ Cesium 의 useBrowserRecommendedResolution 기본값은 true 다.
@@ -94,24 +98,9 @@ export function initViewer(containerId) {
      화면 위 DOM이나 무한 애니메이션이 아니라 Cesium의 기존 장면 primitive이므로
      requestRenderMode의 유휴 정지와 지구 조작 좌표계를 그대로 지킨다.
      ⚠️ 크레딧은 ui-source.js와 설정 화면에 항상 보인다. 지우지 말 것. */
-  const skyTextureLimit = scene.context?.maximumTextureSize || 4096;
-  const memoryGb = Number(navigator.deviceMemory || 0);
-  const desktopLike = window.innerWidth >= 1024 && window.matchMedia('(pointer:fine)').matches;
-  const useSixKMilkyWay = skyTextureLimit >= 6000 && desktopLike && (!memoryGb || memoryGb >= 6);
-  const milkyWayPanorama = useSixKMilkyWay
-    ? 'space/skybox/earthus-milky-way/panorama-6000.webp?v=20260813-sky6k2'
-    : 'space/skybox/earthus-milky-way/panorama.webp?v=20260813-sky6k2';
-  /* ESO 원본은 은하면이 수평인 전천 지도다. 그대로 두면 지구 뒤에서 일자로 누워
-     보이므로 천구 자체를 회전해 실제 하늘을 올려다보는 대각선 구도로 놓는다. */
-  const milkyWayRotation = Cesium.Matrix3.fromRotationX(Cesium.Math.toRadians(46));
-  const milkyWayTransform = Cesium.Matrix4.fromRotationTranslation(milkyWayRotation);
-  scene.skyBox.show = false;
-  scene.primitives.add(new Cesium.EquirectangularPanorama({
-    transform: milkyWayTransform,
-    image: milkyWayPanorama,
-    radius: 500_000_000,
-    credit: '<a href="https://www.eso.org/public/images/eso0932a/" target="_blank">ESO/S. Brunier · CC BY 4.0</a>',
-  }));
+  /* 실제 WebGL MAX_TEXTURE_SIZE와 데이터 절약/메모리 힌트로 6K·4K·2K를 고른다.
+     context loss가 나면 한 단계 낮춰 복구하고, 지구 첫 화면은 멈추지 않는다. */
+  installMilkyWayPanorama(scene);
   globe.baseColor = Cesium.Color.BLACK;
   globe.enableLighting = true;         // 주야 경계선
   globe.showGroundAtmosphere = true;   // 지표 대기산란

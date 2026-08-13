@@ -2,7 +2,7 @@
 
 > 고정일: 2026-08-13 KST
 > 목적: 다음 사용량 리셋 직후 재조사 없이 가장 급한 운영 기반부터 이어서 개발
-> 상태: 공통 N0 동기화·Visual PR-00 로컬 완료, 다음 Visual PR-01
+> 상태: 공통 N0·Visual PR-01~08 운영 완료, 다음 N1 수집기 운영 관제
 
 ## 읽는 순서
 
@@ -23,19 +23,19 @@
 
 ## 다음 시작 한 줄
 
-> HANDOVER와 두 패키지를 읽고 작업트리·운영 상태를 다시 확인한 뒤 Visual PR-01
-> ImageryLayerGroup Lifecycle부터 시작하라. 그 트랙이 닫히면 전체 N1 수집기 운영 관제로
-> 돌아온다. AETHERUS 변경은 건드리지 말고 안전·판매·예약·SNS flag를 열지 마라.
+> HANDOVER와 두 패키지를 읽고 작업트리·운영 상태를 다시 확인한 뒤 전체 N1 수집기 운영
+> 관제부터 시작하라. Visual 지정 실기기 검수는 별도 UNKNOWN 표로 유지하고, AETHERUS의
+> 별도 변경을 건드리거나 안전·판매·예약·SNS flag를 열지 마라.
 
 ## 두 패키지의 현재 실행 순서
 
 1. 공통 N0 문서·운영 정본 동기화 — 완료
-2. Visual PR-00 계약·측정 기반 — 로컬 완료, 측정 전용이므로 운영 배포 없음
-3. Visual PR-01 layer owner/abort/dispose — 다음
-4. 전체 N1 수집기 운영 관제 — 대기
+2. Visual PR-00 계약·측정 기반 — 완료
+3. Visual PR-01~08 구현·검증·롤백·운영 배포 — 완료, 실기기 항목은 UNKNOWN
+4. 전체 N1 수집기 운영 관제 — 다음
 
-PR-00 결과와 다음 합격 기준은
-[`../earthus-visual-engineering-next/PR00-CONTRACT-MEASUREMENT-ADR.md`](../earthus-visual-engineering-next/PR00-CONTRACT-MEASUREMENT-ADR.md)에 있다.
+Visual 종료 결과는
+[`../earthus-visual-engineering-next/PR01-08-CLOSEOUT.md`](../earthus-visual-engineering-next/PR01-08-CLOSEOUT.md)에 있다.
 
 ## 완료와 미완료를 부르는 법
 

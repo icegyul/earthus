@@ -1,0 +1,1478 @@
+{
+  "schema": "earthus.visual-release-validation.v1",
+  "generatedAt": "2026-08-13T14:17:52.766Z",
+  "browser": "151.0.7922.109",
+  "cycles": 30,
+  "actualDeviceStatus": {
+    "safariMacOS": "UNKNOWN",
+    "minimumIPhone": "UNKNOWN",
+    "latestIPhone": "UNKNOWN",
+    "lowEndAndroid": "UNKNOWN",
+    "voiceOver": "UNKNOWN",
+    "thermalAndBattery": "UNKNOWN",
+    "reason": "현재 자동화 호스트에는 해당 실기기와 Safari WebDriver 접근이 없다"
+  },
+  "results": [
+    {
+      "item": {
+        "name": "desktop-1280x720",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "dpr": 1,
+        "cycles": true
+      },
+      "opening": {
+        "layers": 5,
+        "visual": {
+          "activeGroups": 1,
+          "groups": [
+            {
+              "ownerKey": "noaa-gmgsi/2026-08-13T12:00:00Z",
+              "state": "ACTIVE",
+              "pendingRequests": 0,
+              "hasBase": true,
+              "hasVisual": true
+            }
+          ],
+          "cache": {
+            "size": 0,
+            "hit": 0,
+            "miss": 0,
+            "evicted": 0,
+            "rejected": 0
+          }
+        },
+        "effect": {
+          "selected": "auto",
+          "resolved": "auto"
+        },
+        "sky": "/space/skybox/earthus-milky-way/panorama-6000.a68eeb037463019f.webp",
+        "layout": {
+          "width": 1280,
+          "height": 720,
+          "dpr": 1,
+          "overflow": 0
+        },
+        "texture": {
+          "created": 87,
+          "deleted": 0,
+          "live": 87
+        },
+        "idle": {
+          "animating": true,
+          "owners": [
+            "intro"
+          ]
+        },
+        "sourceTimes": {
+          "noaa": "2026-08-13T12:00:00Z",
+          "himaVisible": null,
+          "himaInfrared": null,
+          "gk2a": null
+        }
+      },
+      "settingsAudit": {
+        "labels": [
+          "자동",
+          "낮음",
+          "끔"
+        ],
+        "pressed": [
+          "true",
+          "false",
+          "false"
+        ],
+        "hint": "구름 관측 화소·출처·시각은 그대로입니다. 그림자·명암만 바꾸며 위험·추천·예약 판단에는 쓰지 않습니다."
+      },
+      "preEffect": {
+        "layers": 1,
+        "on": true,
+        "stored": true
+      },
+      "effectAudit": {
+        "baseBefore": 1,
+        "baseAfter": 1,
+        "depthHidden": true
+      },
+      "himawariState": {
+        "layers": 5,
+        "visual": {
+          "activeGroups": 1,
+          "groups": [
+            {
+              "ownerKey": "himawari/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T13:30:00Z",
+              "state": "ACTIVE",
+              "pendingRequests": 18,
+              "hasBase": true,
+              "hasVisual": true
+            }
+          ],
+          "cache": {
+            "size": 25,
+            "hit": 31,
+            "miss": 31,
+            "evicted": 0,
+            "rejected": 6
+          }
+        },
+        "effect": {
+          "selected": "low",
+          "resolved": "low"
+        },
+        "sky": "/space/skybox/earthus-milky-way/panorama-6000.a68eeb037463019f.webp",
+        "layout": {
+          "width": 1280,
+          "height": 720,
+          "dpr": 1,
+          "overflow": 0
+        },
+        "texture": {
+          "created": 700,
+          "deleted": 10,
+          "live": 690
+        },
+        "idle": {
+          "animating": true,
+          "owners": [
+            "intro"
+          ]
+        },
+        "sourceTimes": {
+          "noaa": null,
+          "himaVisible": null,
+          "himaInfrared": "2026-08-13T13:30:00Z",
+          "gk2a": null
+        }
+      },
+      "gk2aState": {
+        "layers": 7,
+        "visual": {
+          "activeGroups": 2,
+          "groups": [
+            {
+              "ownerKey": "gk2a/ir112/202608131340",
+              "state": "ACTIVE",
+              "pendingRequests": 0,
+              "hasBase": true,
+              "hasVisual": true
+            },
+            {
+              "ownerKey": "gk2a/ir112ea/202608131340",
+              "state": "ACTIVE",
+              "pendingRequests": 18,
+              "hasBase": true,
+              "hasVisual": true
+            }
+          ],
+          "cache": {
+            "size": 20,
+            "hit": 34,
+            "miss": 53,
+            "evicted": 0,
+            "rejected": 24
+          }
+        },
+        "effect": {
+          "selected": "low",
+          "resolved": "low"
+        },
+        "sky": "/space/skybox/earthus-milky-way/panorama-6000.a68eeb037463019f.webp",
+        "layout": {
+          "width": 1280,
+          "height": 720,
+          "dpr": 1,
+          "overflow": 0
+        },
+        "texture": {
+          "created": 708,
+          "deleted": 28,
+          "live": 680
+        },
+        "idle": {
+          "animating": true,
+          "owners": [
+            "intro"
+          ]
+        },
+        "sourceTimes": {
+          "noaa": null,
+          "himaVisible": null,
+          "himaInfrared": null,
+          "gk2a": "2026-08-13T13:46:00Z"
+        }
+      },
+      "lifecycle": [
+        {
+          "cycle": 1,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 2,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 3,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 4,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 5,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 6,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 7,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 8,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 9,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 10,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 11,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 12,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 13,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 14,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 15,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 16,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 17,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 18,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 19,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 20,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 21,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 22,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 23,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 24,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 25,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 26,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 27,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 28,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 29,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        },
+        {
+          "cycle": 30,
+          "layers": 3,
+          "liveTextures": 679,
+          "cacheSize": 0
+        }
+      ],
+      "restored": {
+        "layers": 5,
+        "visual": {
+          "activeGroups": 1,
+          "groups": [
+            {
+              "ownerKey": "noaa-gmgsi/2026-08-13T12:00:00Z",
+              "state": "ACTIVE",
+              "pendingRequests": 0,
+              "hasBase": true,
+              "hasVisual": true
+            }
+          ],
+          "cache": {
+            "size": 0,
+            "hit": 1152,
+            "miss": 1838,
+            "evicted": 0,
+            "rejected": 1366
+          }
+        },
+        "effect": {
+          "selected": "low",
+          "resolved": "low"
+        },
+        "sky": "/space/skybox/earthus-milky-way/panorama-6000.a68eeb037463019f.webp",
+        "layout": {
+          "width": 1280,
+          "height": 720,
+          "dpr": 1,
+          "overflow": 0
+        },
+        "texture": {
+          "created": 1532,
+          "deleted": 851,
+          "live": 681
+        },
+        "idle": {
+          "animating": false,
+          "owners": []
+        },
+        "sourceTimes": {
+          "noaa": "2026-08-13T12:00:00Z",
+          "himaVisible": null,
+          "himaInfrared": null,
+          "gk2a": "2026-08-13T13:46:00Z"
+        }
+      },
+      "contextLoss": {
+        "supported": true,
+        "reloaded": true,
+        "canvasConnected": true,
+        "fallbackLevel": 1,
+        "sky": "/space/skybox/earthus-milky-way/panorama-4096.87d8f6aa25b1f088.webp"
+      },
+      "errors": {
+        "runtimeBeforeContextLoss": {
+          "pageErrors": [],
+          "consoleErrors": []
+        },
+        "inducedContextLossErrors": {
+          "pageErrors": [],
+          "consoleErrors": []
+        },
+        "failedResponses": [
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/27.png",
+            "count": 31
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/12/27.png",
+            "count": 24
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level7/5/12/27.png",
+            "count": 31
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level7/5/12/27.png",
+            "count": 14
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/11/26.png",
+            "count": 5
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/12/28.png",
+            "count": 4
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/13/28.png",
+            "count": 7
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/10/27.png",
+            "count": 4
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/12/25.png",
+            "count": 4
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/9/28.png",
+            "count": 2
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/11/27.png",
+            "count": 2
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/11/28.png",
+            "count": 8
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/9/26.png",
+            "count": 6
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/4/6/14.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/12/26.png",
+            "count": 3
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/13/26.png",
+            "count": 3
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/11/25.png",
+            "count": 7
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/14/26.png",
+            "count": 3
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/11/29.png",
+            "count": 4
+          },
+          {
+            "key": "403:https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds/gk2a/tiles/ir112ea/0/5/27/9.png",
+            "count": 28
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/10/26.png",
+            "count": 4
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/10/28.png",
+            "count": 2
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/13/27.png",
+            "count": 4
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/9/27.png",
+            "count": 3
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/14/27.png",
+            "count": 3
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/4/4/13.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/11/27.png",
+            "count": 6
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/28.png",
+            "count": 7
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/26.png",
+            "count": 6
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/11/28.png",
+            "count": 4
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/11/25.png",
+            "count": 7
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/14/27.png",
+            "count": 7
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/25.png",
+            "count": 6
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/10/27.png",
+            "count": 4
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/10/28.png",
+            "count": 7
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/13/27.png",
+            "count": 6
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/10/26.png",
+            "count": 7
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/11/26.png",
+            "count": 6
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/13/28.png",
+            "count": 6
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/9/28.png",
+            "count": 3
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/6/13.png",
+            "count": 4
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/5/13.png",
+            "count": 3
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/14/26.png",
+            "count": 3
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/7/13.png",
+            "count": 3
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/5/14.png",
+            "count": 3
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/13/25.png",
+            "count": 4
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/6/12.png",
+            "count": 4
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/5/12.png",
+            "count": 2
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/13/29.png",
+            "count": 4
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/14/28.png",
+            "count": 3
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/29.png",
+            "count": 3
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/4/14.png",
+            "count": 3
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/9/25.png",
+            "count": 2
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/10/25.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/13/26.png",
+            "count": 4
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/9/26.png",
+            "count": 5
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/11/29.png",
+            "count": 2
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/4/13.png",
+            "count": 2
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/14/28.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/12/27.png",
+            "count": 8
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/9/27.png",
+            "count": 3
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/4/4/14.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/4/5/14.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/5/13/25.png",
+            "count": 2
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/13/26.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/13/27.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/13/28.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/9/26.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/10/28.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/9/27.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/11/26.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/11/27.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/10/26.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/12/28.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/11/25.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/9/28.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/4/6/14.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/4/4/13.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/13/25.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/14/26.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/13/29.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/12/29.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/4/5/13.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/4/5/12.png",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "item": {
+        "name": "mobile-390x844-save-data",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "dpr": 2,
+        "saveData": true
+      },
+      "opening": {
+        "layers": 5,
+        "visual": {
+          "activeGroups": 1,
+          "groups": [
+            {
+              "ownerKey": "noaa-gmgsi/2026-08-13T12:00:00Z",
+              "state": "ACTIVE",
+              "pendingRequests": 0,
+              "hasBase": true,
+              "hasVisual": true
+            }
+          ],
+          "cache": {
+            "size": 0,
+            "hit": 0,
+            "miss": 0,
+            "evicted": 0,
+            "rejected": 0
+          }
+        },
+        "effect": {
+          "selected": "auto",
+          "resolved": "low"
+        },
+        "sky": "/space/skybox/earthus-milky-way/panorama-2048.28125627e27567e3.webp",
+        "layout": {
+          "width": 390,
+          "height": 844,
+          "dpr": 2,
+          "overflow": 0
+        },
+        "texture": {
+          "created": 87,
+          "deleted": 0,
+          "live": 87
+        },
+        "idle": {
+          "animating": true,
+          "owners": [
+            "intro"
+          ]
+        },
+        "sourceTimes": {
+          "noaa": "2026-08-13T12:00:00Z",
+          "himaVisible": null,
+          "himaInfrared": null,
+          "gk2a": null
+        }
+      },
+      "settingsAudit": {
+        "labels": [
+          "자동",
+          "낮음",
+          "끔"
+        ],
+        "pressed": [
+          "true",
+          "false",
+          "false"
+        ],
+        "hint": "구름 관측 화소·출처·시각은 그대로입니다. 그림자·명암만 바꾸며 위험·추천·예약 판단에는 쓰지 않습니다."
+      },
+      "preEffect": {
+        "layers": 1,
+        "on": true,
+        "stored": true
+      },
+      "effectAudit": {
+        "baseBefore": 1,
+        "baseAfter": 1,
+        "depthHidden": true
+      },
+      "himawariState": {
+        "layers": 5,
+        "visual": {
+          "activeGroups": 1,
+          "groups": [
+            {
+              "ownerKey": "himawari/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T13:30:00Z",
+              "state": "ACTIVE",
+              "pendingRequests": 18,
+              "hasBase": true,
+              "hasVisual": true
+            }
+          ],
+          "cache": {
+            "size": 32,
+            "hit": 35,
+            "miss": 35,
+            "evicted": 0,
+            "rejected": 3
+          }
+        },
+        "effect": {
+          "selected": "low",
+          "resolved": "low"
+        },
+        "sky": "/space/skybox/earthus-milky-way/panorama-2048.28125627e27567e3.webp",
+        "layout": {
+          "width": 390,
+          "height": 844,
+          "dpr": 2,
+          "overflow": 0
+        },
+        "texture": {
+          "created": 513,
+          "deleted": 2,
+          "live": 511
+        },
+        "idle": {
+          "animating": true,
+          "owners": [
+            "intro"
+          ]
+        },
+        "sourceTimes": {
+          "noaa": null,
+          "himaVisible": null,
+          "himaInfrared": "2026-08-13T13:30:00Z",
+          "gk2a": null
+        }
+      },
+      "gk2aState": null,
+      "lifecycle": [],
+      "restored": {
+        "layers": 5,
+        "visual": {
+          "activeGroups": 1,
+          "groups": [
+            {
+              "ownerKey": "noaa-gmgsi/2026-08-13T12:00:00Z",
+              "state": "ACTIVE",
+              "pendingRequests": 0,
+              "hasBase": true,
+              "hasVisual": true
+            }
+          ],
+          "cache": {
+            "size": 0,
+            "hit": 54,
+            "miss": 54,
+            "evicted": 0,
+            "rejected": 29
+          }
+        },
+        "effect": {
+          "selected": "low",
+          "resolved": "low"
+        },
+        "sky": "/space/skybox/earthus-milky-way/panorama-2048.28125627e27567e3.webp",
+        "layout": {
+          "width": 390,
+          "height": 844,
+          "dpr": 2,
+          "overflow": 0
+        },
+        "texture": {
+          "created": 549,
+          "deleted": 64,
+          "live": 485
+        },
+        "idle": {
+          "animating": true,
+          "owners": [
+            "intro"
+          ]
+        },
+        "sourceTimes": {
+          "noaa": "2026-08-13T12:00:00Z",
+          "himaVisible": null,
+          "himaInfrared": null,
+          "gk2a": null
+        }
+      },
+      "contextLoss": {
+        "supported": true,
+        "reloaded": true,
+        "canvasConnected": true,
+        "fallbackLevel": 1,
+        "sky": "/space/skybox/earthus-milky-way/panorama-2048.28125627e27567e3.webp"
+      },
+      "errors": {
+        "runtimeBeforeContextLoss": {
+          "pageErrors": [],
+          "consoleErrors": []
+        },
+        "inducedContextLossErrors": {
+          "pageErrors": [],
+          "consoleErrors": [
+            "[Cesium WebGL] Fragment shader compile log: null",
+            "[Cesium WebGL]  Fragment shader source:\n#version 300 es\n\n#ifdef GL_FRAGMENT_PRECISION_HIGH\n    precision highp float;\n    precision highp int;\n#else\n    precision mediump float;\n    precision mediump ",
+            "An error occurred while rendering.  Rendering has stopped.\nRuntimeError: Fragment shader failed to compile.  Compile log: null\nError\n    at new vV ([url]\n    at ENe ([url]\n    at Ace ([url]\n    at c5 "
+          ]
+        },
+        "failedResponses": [
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/27.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level6/5/12/27.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level7/5/12/27.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/4/4/15.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/4/5/15.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/4/7/13.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/4/5/11.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/4/3/11.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/0/0.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/2/2.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/0/2.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/1/2.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/0/4.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:30:00Z/GoogleMapsCompatible_Level6/3/1/4.png",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "item": {
+        "name": "retina-1600x900",
+        "viewport": {
+          "width": 1600,
+          "height": 900
+        },
+        "dpr": 2
+      },
+      "opening": {
+        "layers": 5,
+        "visual": {
+          "activeGroups": 1,
+          "groups": [
+            {
+              "ownerKey": "noaa-gmgsi/2026-08-13T12:00:00Z",
+              "state": "ACTIVE",
+              "pendingRequests": 0,
+              "hasBase": true,
+              "hasVisual": true
+            }
+          ],
+          "cache": {
+            "size": 0,
+            "hit": 0,
+            "miss": 0,
+            "evicted": 0,
+            "rejected": 0
+          }
+        },
+        "effect": {
+          "selected": "auto",
+          "resolved": "auto"
+        },
+        "sky": "/space/skybox/earthus-milky-way/panorama-6000.a68eeb037463019f.webp",
+        "layout": {
+          "width": 1600,
+          "height": 900,
+          "dpr": 2,
+          "overflow": 0
+        },
+        "texture": {
+          "created": 135,
+          "deleted": 0,
+          "live": 135
+        },
+        "idle": {
+          "animating": true,
+          "owners": [
+            "intro"
+          ]
+        },
+        "sourceTimes": {
+          "noaa": "2026-08-13T12:00:00Z",
+          "himaVisible": null,
+          "himaInfrared": null,
+          "gk2a": null
+        }
+      },
+      "settingsAudit": {
+        "labels": [
+          "자동",
+          "낮음",
+          "끔"
+        ],
+        "pressed": [
+          "true",
+          "false",
+          "false"
+        ],
+        "hint": "구름 관측 화소·출처·시각은 그대로입니다. 그림자·명암만 바꾸며 위험·추천·예약 판단에는 쓰지 않습니다."
+      },
+      "preEffect": {
+        "layers": 1,
+        "on": true,
+        "stored": true
+      },
+      "effectAudit": {
+        "baseBefore": 1,
+        "baseAfter": 1,
+        "depthHidden": true
+      },
+      "himawariState": {
+        "layers": 5,
+        "visual": {
+          "activeGroups": 1,
+          "groups": [
+            {
+              "ownerKey": "himawari/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T13:50:00Z",
+              "state": "ACTIVE",
+              "pendingRequests": 14,
+              "hasBase": true,
+              "hasVisual": true
+            }
+          ],
+          "cache": {
+            "size": 14,
+            "hit": 30,
+            "miss": 30,
+            "evicted": 0,
+            "rejected": 16
+          }
+        },
+        "effect": {
+          "selected": "low",
+          "resolved": "low"
+        },
+        "sky": "/space/skybox/earthus-milky-way/panorama-6000.a68eeb037463019f.webp",
+        "layout": {
+          "width": 1600,
+          "height": 900,
+          "dpr": 2,
+          "overflow": 0
+        },
+        "texture": {
+          "created": 636,
+          "deleted": 2,
+          "live": 634
+        },
+        "idle": {
+          "animating": true,
+          "owners": [
+            "intro"
+          ]
+        },
+        "sourceTimes": {
+          "noaa": null,
+          "himaVisible": null,
+          "himaInfrared": "2026-08-13T13:50:00Z",
+          "gk2a": null
+        }
+      },
+      "gk2aState": null,
+      "lifecycle": [],
+      "restored": {
+        "layers": 5,
+        "visual": {
+          "activeGroups": 1,
+          "groups": [
+            {
+              "ownerKey": "noaa-gmgsi/2026-08-13T12:00:00Z",
+              "state": "ACTIVE",
+              "pendingRequests": 0,
+              "hasBase": true,
+              "hasVisual": true
+            }
+          ],
+          "cache": {
+            "size": 0,
+            "hit": 78,
+            "miss": 78,
+            "evicted": 0,
+            "rejected": 70
+          }
+        },
+        "effect": {
+          "selected": "low",
+          "resolved": "low"
+        },
+        "sky": "/space/skybox/earthus-milky-way/panorama-6000.a68eeb037463019f.webp",
+        "layout": {
+          "width": 1600,
+          "height": 900,
+          "dpr": 2,
+          "overflow": 0
+        },
+        "texture": {
+          "created": 656,
+          "deleted": 20,
+          "live": 636
+        },
+        "idle": {
+          "animating": true,
+          "owners": [
+            "intro"
+          ]
+        },
+        "sourceTimes": {
+          "noaa": "2026-08-13T12:00:00Z",
+          "himaVisible": null,
+          "himaInfrared": null,
+          "gk2a": null
+        }
+      },
+      "contextLoss": {
+        "supported": true,
+        "reloaded": true,
+        "canvasConnected": true,
+        "fallbackLevel": 1,
+        "sky": "/space/skybox/earthus-milky-way/panorama-4096.87d8f6aa25b1f088.webp"
+      },
+      "errors": {
+        "runtimeBeforeContextLoss": {
+          "pageErrors": [],
+          "consoleErrors": []
+        },
+        "inducedContextLossErrors": {
+          "pageErrors": [],
+          "consoleErrors": [
+            "[Cesium WebGL] Fragment shader compile log: null",
+            "[Cesium WebGL]  Fragment shader source:\n#version 300 es\n\n#ifdef GL_FRAGMENT_PRECISION_HIGH\n    precision highp float;\n    precision highp int;\n#else\n    precision mediump float;\n    precision mediump ",
+            "An error occurred while rendering.  Rendering has stopped.\nRuntimeError: Fragment shader failed to compile.  Compile log: null\nError\n    at new vV ([url]\n    at ENe ([url]\n    at Ace ([url]\n    at c5 "
+          ]
+        },
+        "failedResponses": [
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band3_Red_Visible_1km/default/2026-08-13T13:40:00Z/GoogleMapsCompatible_Level7/5/12/27.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/11/27.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/27.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/13/27.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/11/26.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/13/26.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/26.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/11/28.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/13/28.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/28.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/9/27.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/11/25.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/25.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/9/26.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/10/27.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/14/27.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/9/28.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/10/28.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/5/13.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/13/25.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/6/13.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/14/26.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/6/14.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/5/14.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/6/12.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/4/13.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/29.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/5/12.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/14/28.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/7/13.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/4/14.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/9/25.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/10/25.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/9/29.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/14/25.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/3/3/7.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/3/2/7.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/10/29.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/4/12.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/24.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/13/30.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/14/29.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/7/14.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/11/30.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/9/30.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/9/24.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/11/24.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/12/30.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/10/24.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/7/12.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/5/14/30.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/4/5/11.png",
+            "count": 1
+          },
+          {
+            "key": "404:https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Himawari_AHI_Band13_Clean_Infrared/default/2026-08-13T13:50:00Z/GoogleMapsCompatible_Level6/2/1/3.png",
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

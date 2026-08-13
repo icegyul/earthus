@@ -4,8 +4,9 @@ import { API } from '../config.js';
 import { store } from '../store.js';
 import { fetchT } from '../net.js';
 import { CONFIG } from '../config.local.js';
-import { buildCloudShadowAlpha } from '../cloud-shadow.js?v=20260812-cloudshadow1';
-import { CloudDepthImageryProvider } from '../cloud-depth-provider.js?v=20260813-clouddepth1';
+import { buildCloudShadowAlpha } from '../cloud-shadow.js';
+import { ImageryLayerGroup, adoptImageryLayerGroup, visualPipelineMetrics }
+  from '../imagery-layer-group.js';
 
 /** GIBS 시간축 레이어는 D-1이 안전 (당일치는 처리 지연) */
 function ymd(offsetDays = -1) {
@@ -20,6 +21,10 @@ export const imagery = {
   /** 타일 구름 본체와 그 아래의 시각 깊이 층을 항상 함께 제거한다. */
   _removeImageryWithDepth(layer) {
     if (!layer) return;
+    if (layer._earthusImageryGroup) {
+      layer._earthusImageryGroup.dispose();
+      return;
+    }
     if (layer._earthusDepthLayer) {
       try { viewer.imageryLayers.remove(layer._earthusDepthLayer, true); } catch (_) { }
       layer._earthusDepthLayer = null;
@@ -29,21 +34,16 @@ export const imagery = {
 
   /** 같은 관측 제공자를 공유하는 깊이 층을 먼저 넣고 본체를 위에 놓는다. */
   _addImageryWithDepth(provider, { mode, sun = null, alpha = 0.18,
-                                  dayAlpha = 1.0, nightAlpha = 1.0 } = {}) {
-    const depth = viewer.imageryLayers.addImageryProvider(
-      new CloudDepthImageryProvider(provider, { mode, sun })
-    );
-    depth._earthusCloudRole = sun ? 'sun-shadow' : 'visual-relief';
-    depth._earthusDepthBaseAlpha = alpha;
-    depth._earthusDepthDayAlpha = dayAlpha;
-    depth._earthusDepthNightAlpha = nightAlpha;
-    depth.alpha = alpha;
-    depth.dayAlpha = dayAlpha;
-    depth.nightAlpha = nightAlpha;
-    const layer = viewer.imageryLayers.addImageryProvider(provider);
-    layer._earthusDepthLayer = depth;
-    return layer;
+                                  dayAlpha = 1.0, nightAlpha = 1.0,
+                                  ownerKey = null } = {}) {
+    const group = new ImageryLayerGroup(viewer, {
+      provider, ownerKey,
+      depth: { mode, sun, alpha, dayAlpha, nightAlpha },
+    });
+    return group.baseLayer;
   },
+
+  visualMetrics() { return visualPipelineMetrics(); },
 
   init() {
     // ── Blue Marble : 주간 기본면 ──
@@ -121,7 +121,8 @@ export const imagery = {
        RealEarth(위스콘신대)는 우리 쪽이 죽었을 때만 쓰는 폴백이다.
        ⚠️ 끈 상태에서는 여기 오지 않게 해야 한다 — alpha 0 인 이미지 레이어도
           타일 요청은 그대로 한다(그리지 않을 뿐이다). set('clouds', …) 참고. */
-    if (store.isOn('clouds')) this._addClouds();
+    this._cloudOn = store.isOn('clouds');
+    if (this._cloudOn) this._addClouds();
 
     // 기온은 GIBS(AIRS, 하루 1회, 위색)에서 wind-grid 격자로 옮겼다.
     // 매시간 갱신되고 색 눈금을 우리가 정할 수 있다 — gridoverlay.js 참고.
@@ -145,11 +146,30 @@ export const imagery = {
   cloudTime() { return this._cloudTime; },
   _cloudOn: false,
   _cloudSource: null,   // 'gmgsi' | 'realearth'
+  _cloudPending: null,
+  _cloudAbort: null,
+  _cloudGeneration: 0,
 
   async _addClouds() {
-    // 우리 파이프라인(GMGSI) 우선. 실패하면 RealEarth 로 버틴다.
-    if (await this._cloudsFromGMGSI()) return;
-    await this._cloudsFromRealEarth();
+    if (!this._cloudOn && !store.isOn('clouds')) return false;
+    if (this._cloudPending) return this._cloudPending;
+    const generation = ++this._cloudGeneration;
+    this._cloudAbort?.abort();
+    const controller = new AbortController();
+    this._cloudAbort = controller;
+    this._cloudPending = (async () => {
+      // 우리 파이프라인(GMGSI) 우선. 실패하면 RealEarth 로 버틴다.
+      if (await this._cloudsFromGMGSI(controller.signal, generation)) return true;
+      if (controller.signal.aborted || generation !== this._cloudGeneration) return false;
+      await this._cloudsFromRealEarth(controller.signal, generation);
+      return true;
+    })().finally(() => {
+      if (generation === this._cloudGeneration) {
+        this._cloudPending = null;
+        this._cloudAbort = null;
+      }
+    });
+    return this._cloudPending;
   },
 
   /** 새 레이어를 얹고 이전 것을 치운다 (깜빡임 없이 교체) */
@@ -165,6 +185,7 @@ export const imagery = {
       shadow._earthusDepthNightAlpha = 0.0;
     }
     const old = this.cloudLayers.slice();
+    old.forEach(layer => layer?._earthusImageryGroup?.beginReplace());
     this.cloudLayers = depth ? [depth, L] : [L];
     this.clouds = L;
     this._applyClouds();
@@ -219,9 +240,9 @@ export const imagery = {
        RGB 가 상수 흰색이어도 RGBA PNG 는 1.4배 커진다 (실측 1.75MB vs 1.21MB).
        폰에서 매시간 받는 파일이라 0.5MB 차이가 크다.
        변환은 3072px 폭 한 번 훑는 작업이며 Lambda 안에서만 수행한다. */
-  async _cloudsFromGMGSI() {
+  async _cloudsFromGMGSI(signal, generation) {
     try {
-      const r = await fetch(`${API.CLOUDS}/meta.json`, { cache: 'no-cache' });
+      const r = await fetch(`${API.CLOUDS}/meta.json`, { cache: 'no-cache', signal });
       if (!r.ok) return false;
       const m = await r.json();
       if (!m.time) return false;
@@ -230,13 +251,22 @@ export const imagery = {
       /* ⚠️ 1.2MB 다. 예전엔 아무 표시 없이 몇 초를 기다렸다 —
          첫 화면에서 켜지는 레이어라 "구름이 왜 안 나오지"가 된다. */
       const src = await this._fetchImage(
-        `${API.CLOUDS}/global.png?t=${encodeURIComponent(m.time)}`, '전지구 구름');
+        `${API.CLOUDS}/global.png?t=${encodeURIComponent(m.time)}`, '전지구 구름', signal);
+      if (signal.aborted || generation !== this._cloudGeneration || !this._cloudOn) {
+        if (src.startsWith('blob:')) URL.revokeObjectURL(src);
+        return false;
+      }
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      await new Promise((ok, no) => {
-        img.onload = ok; img.onerror = () => no(new Error('png'));
-        img.src = src;
-      });
+      try {
+        await new Promise((ok, no) => {
+          img.onload = ok; img.onerror = () => no(new Error('png'));
+          img.src = src;
+        });
+      } finally {
+        if (src.startsWith('blob:')) URL.revokeObjectURL(src);
+      }
+      if (signal.aborted || generation !== this._cloudGeneration || !this._cloudOn) return false;
 
       const cv = document.createElement('canvas');
       cv.width = img.width; cv.height = img.height;
@@ -294,11 +324,13 @@ export const imagery = {
           credit: m.credit || 'NOAA NESDIS GMGSI',
         })
       );
+      adoptImageryLayerGroup(viewer, L, shadowLayer, `noaa-gmgsi/${m.time}`);
       this._cloudTime = m.time;
       this._cloudSource = 'gmgsi';
       this._swapCloudLayer(L, shadowLayer);
       return true;
     } catch (e) {
+      if (e?.name === 'AbortError' || signal?.aborted) return false;
       console.warn('[clouds] GMGSI 실패 → RealEarth 로 폴백:', e.message);
       return false;
     }
@@ -308,10 +340,10 @@ export const imagery = {
      우리 파이프라인이 죽었을 때만 쓴다.
      ⚠️ 등록 없이 쓰면 타일에 워터마크가 찍히고 하루 1,000MP 한도가 있다.
         평상시 경로가 아니라 비상용이다. */
-  async _cloudsFromRealEarth() {
+  async _cloudsFromRealEarth(signal, generation) {
     let time = null;
     try {
-      const r = await fetchT(`${API.REALEARTH}/times?products=globalir`, { timeout: 10_000 });
+      const r = await fetchT(`${API.REALEARTH}/times?products=globalir`, { timeout: 10_000, signal });
       if (r.ok) {
         const j = await r.json();
         const list = j.globalir || [];
@@ -324,6 +356,7 @@ export const imagery = {
       return;
     }
     if (time === this._cloudTime) return;
+    if (signal?.aborted || generation !== this._cloudGeneration || !this._cloudOn) return;
 
     const L = this._addImageryWithDepth(
       new Cesium.UrlTemplateImageryProvider({
@@ -332,7 +365,7 @@ export const imagery = {
           maximumLevel: 8,
           credit: 'Source: SSEC RealEarth, UW-Madison',
       }),
-      { mode: 'infrared', alpha: 0.12 },
+      { mode: 'infrared', alpha: 0.12, ownerKey: `realearth/${time}` },
     );
     L.brightness = 1.0;
     L.contrast   = 2.2;
@@ -575,10 +608,10 @@ export const imagery = {
      → fetch 로 직접 받으면서 Content-Length 대비 몇 % 왔는지 그대로 말한다.
         이건 추정이 아니라 **실제로 받은 바이트**다.
      ⚠️ 서버가 길이를 안 주면(압축 전송 등) 퍼센트를 지어내지 않고 흐르는 막대로 둔다. */
-  async _fetchImage(url, label) {
+  async _fetchImage(url, label, signal = null) {
     this._imgLoading(true, label);
     try {
-      const r = await fetch(url, { cache: 'no-cache' });
+      const r = await fetch(url, { cache: 'no-cache', signal });
       if (!r.ok) throw new Error(String(r.status));
       const total = Number(r.headers.get('content-length')) || 0;
       if (!r.body || !total) {
@@ -745,9 +778,11 @@ export const imagery = {
          진하게 두면 '+48시간의 구름'으로 잘못 읽힌다. (_swapCloudLayer 에도 같은 식) */
       const depth = L._earthusCloudRole !== 'cloud';
       const baseAlpha = depth ? (L._earthusDepthBaseAlpha ?? 0.28) : 1.0;
-      L.alpha = this._cloudOn ? baseAlpha * (this._fxDim ? 0.15 : 1.0) : 0.0;
+      L._earthusFxScale = this._fxDim ? 0.15 : 1.0;
+      L.alpha = this._cloudOn ? baseAlpha * L._earthusFxScale : 0.0;
       L.dayAlpha = depth ? day * (L._earthusDepthDayAlpha ?? 1.0) : day;
       L.nightAlpha = depth ? (L._earthusDepthNightAlpha ?? 0.0) : 1.0;
+      if (depth) L._earthusImageryGroup?.applyVisualMode();
     });
   },
 
@@ -781,6 +816,10 @@ export const imagery = {
   _himaOn: false,
   _himaManual: false,
   _himaMode: null,
+  _himaGeneration: 0,
+  _irGeneration: 0,
+  _himaAbort: null,
+  _irAbort: null,
 
   /* 히마와리가 보는 범위 (위성 위치 140.7°E 기준, 가장자리는 잘라냈다).
      ⚠️ 원반 가장자리는 비스듬히 봐서 왜곡이 크다. 넉넉히 안쪽만 쓴다. */
@@ -796,11 +835,15 @@ export const imagery = {
    *  ⚠️ HTTP 200만 보지 않는다. GIBS는 아직 비어 있는 검은 타일도 200으로 줄 수
    *     있으므로 실제 화소의 2% 이상에 신호가 있는지 확인한다. */
   async pickHimaTime(layer = 'Himawari_AHI_Band13_Clean_Infrared',
-                     tms = 'GoogleMapsCompatible_Level6') {
+                     tms = 'GoogleMapsCompatible_Level6', signal = null) {
     const probe = (ts) => new Promise(res => {
       const im = new Image();
+      const stop = () => { im.src = ''; res(false); };
+      if (signal?.aborted) { res(false); return; }
+      signal?.addEventListener('abort', stop, { once: true });
       im.crossOrigin = 'anonymous';
       im.onload = () => {
+        signal?.removeEventListener('abort', stop);
         if (im.naturalWidth <= 1) { res(false); return; }
         try {
           const cv = document.createElement('canvas');
@@ -818,11 +861,12 @@ export const imagery = {
           res(true);
         }
       };
-      im.onerror = () => res(false);
+      im.onerror = () => { signal?.removeEventListener('abort', stop); res(false); };
       im.src = `${API.GIBS}/${layer}/default/${ts}/${tms}/5/12/27.png`;
     });
     const now = Date.now();
     for (let back = 2; back <= 12; back++) {          // 20분 ~ 2시간 전
+      if (signal?.aborted) return null;
       const d = new Date(now - back * 10 * 60_000);
       d.setUTCMinutes(Math.floor(d.getUTCMinutes() / 10) * 10, 0, 0);
       const ts = d.toISOString().slice(0, 17) + '00Z';
@@ -833,7 +877,11 @@ export const imagery = {
 
   async setHima(on) {
     if (on === this._himaOn) return;
+    this._himaAbort?.abort();
+    const controller = new AbortController();
+    this._himaAbort = controller;
     this._himaOn = on;
+    const generation = ++this._himaGeneration;
     if (!on) {
       this._imgLoading(false);
       this.himaLayers.forEach(L => this._removeImageryWithDepth(L));
@@ -852,8 +900,8 @@ export const imagery = {
        "고장인가" 싶게 된다. 실제로 그 신고를 받았다. */
     this._imgLoading(true, '히마와리');
     const [visTs, irTs] = await Promise.all([
-      this.pickHimaTime('Himawari_AHI_Band3_Red_Visible_1km', 'GoogleMapsCompatible_Level7'),
-      this.pickHimaTime('Himawari_AHI_Band13_Clean_Infrared', 'GoogleMapsCompatible_Level6'),
+      this.pickHimaTime('Himawari_AHI_Band3_Red_Visible_1km', 'GoogleMapsCompatible_Level7', controller.signal),
+      this.pickHimaTime('Himawari_AHI_Band13_Clean_Infrared', 'GoogleMapsCompatible_Level6', controller.signal),
     ]);
     if (!visTs && !irTs) {
       this._himaOn = false;
@@ -861,7 +909,7 @@ export const imagery = {
       this._himaUnavailable();
       return;
     }
-    if (!this._himaOn) return;                      // 그 사이 화면이 벗어났다
+    if (!this._himaOn || generation !== this._himaGeneration) return;
     this._himaVisibleTime = visTs;
     this._himaIRTime = irTs;
     this._himaTime = this._isNightHere() ? (irTs || visTs) : (visTs || irTs);
@@ -884,6 +932,7 @@ export const imagery = {
         alpha: mode === 'visible' ? 0.20 : 0.12,
         dayAlpha: dayA > 0 ? 1.0 : 0.0,
         nightAlpha: nightA > 0 ? 1.0 : 0.0,
+        ownerKey: `himawari/${layer}/${ts}`,
       });
       L.dayAlpha = dayA;
       L.nightAlpha = nightA;
@@ -966,6 +1015,10 @@ export const imagery = {
    *     대신 무엇을 보고 있는지 화면(ui-source)에 적는다.
    */
   async setHimaIR(on) {
+    this._irAbort?.abort();
+    const controller = new AbortController();
+    this._irAbort = controller;
+    const generation = ++this._irGeneration;
     (this.irLayers || []).forEach(L => this._removeImageryWithDepth(L));
     this.irLayers = [];
     if (!on) { this._imgLoading(false); document.dispatchEvent(new CustomEvent('earthus:imagery')); return; }
@@ -975,9 +1028,9 @@ export const imagery = {
     this._imgLoading(true, '구름 꼭대기 온도');
 
     const ts = await this.pickHimaTime(
-      'Himawari_AHI_Band13_Clean_Infrared', 'GoogleMapsCompatible_Level6');
+      'Himawari_AHI_Band13_Clean_Infrared', 'GoogleMapsCompatible_Level6', controller.signal);
     if (!ts) { console.warn('[himaIR] 받을 수 있는 시각을 못 찾음'); return; }
-    if (!this._irManual) return;                    // 그 사이 꺼졌다
+    if (!this._irManual || generation !== this._irGeneration) return;
     this._irTime = ts;
 
     const L = this._addImageryWithDepth(
@@ -986,7 +1039,7 @@ export const imagery = {
           maximumLevel: 6,
           credit: 'JMA Himawari via NASA GIBS',
       }),
-      { mode: 'infrared', alpha: 0.12 },
+      { mode: 'infrared', alpha: 0.12, ownerKey: `himawari/ir/${ts}` },
     );
     // 낮이든 밤이든 같은 자료다 — 적외는 해와 무관하게 관측한다.
     L.dayAlpha = 0.82;
@@ -1021,6 +1074,7 @@ export const imagery = {
   gk2aLayers: {},
   _gk2aMeta: null,
   _gk2aAt: 0,
+  _gk2aMetaPending: null,
   gk2aAutoLayers: [],
   /* 전면 적외(8km)를 단독으로 쓰면 태풍의 큰 흐름은 보이지만, 한국·일본·대만의
      구름 결은 원본 2km를 3.4배 줄인 만큼 사라진다. 전면과 동아시아 상세는
@@ -1036,17 +1090,24 @@ export const imagery = {
   _gk2aDetailPending: null,
   _gk2aDetailWanted: false,
   _gk2aDetailOn: false,
+  _gk2aGeneration: 0,
+  _gk2aWideGeneration: 0,
+  _gk2aChannelGeneration: {},
 
   async _gk2aBox() {
     // ⚠️ 범위를 코드에 박지 않는다. Lambda 가 격자를 바꾸면 여기도 같이 틀어진다.
     //    meta.json 이 말하는 대로 얹는다.
     if (this._gk2aMeta && Date.now() - this._gk2aAt < 5 * 60_000) return this._gk2aMeta;
-    try {
-      const r = await fetchT(`${API.GK2A}/meta.json`, { cache: 'no-cache' });
-      this._gk2aMeta = r.ok ? await r.json() : null;
-      this._gk2aAt = Date.now();
-    } catch (_) { this._gk2aMeta = null; }
-    return this._gk2aMeta;
+    if (this._gk2aMetaPending) return this._gk2aMetaPending;
+    this._gk2aMetaPending = (async () => {
+      try {
+        const r = await fetchT(`${API.GK2A}/meta.json`, { cache: 'no-cache' });
+        this._gk2aMeta = r.ok ? await r.json() : null;
+        this._gk2aAt = Date.now();
+      } catch (_) { this._gk2aMeta = null; }
+      return this._gk2aMeta;
+    })().finally(() => { this._gk2aMetaPending = null; });
+    return this._gk2aMetaPending;
   },
 
   /** 메타의 채널별 관측시각(YYYYMMDDHHMM)을 Date로 바꾼다.
@@ -1070,7 +1131,7 @@ export const imagery = {
     const b = info?.bbox;
     if (!b || !info?.ok) throw new Error(info?.reason || '자료 없음');
     const rectangle = Cesium.Rectangle.fromDegrees(b.west, b.south, b.east, b.north);
-    let provider;
+    let provider, objectUrl = null;
     if (info.tiles?.scheme === 'webmercator-global-v1' && info.tiles.template) {
       const tilingScheme = new Cesium.WebMercatorTilingScheme();
       provider = new Cesium.UrlTemplateImageryProvider({
@@ -1089,6 +1150,7 @@ export const imagery = {
     } else {
       const src = await this._fetchImage(
         `${API.GK2A}/${ch}.png?t=${encodeURIComponent(info.at || meta.time || '')}`, label);
+      objectUrl = src.startsWith('blob:') ? src : null;
       provider = new Cesium.SingleTileImageryProvider({
         url: src,
         rectangle,
@@ -1112,8 +1174,12 @@ export const imagery = {
           alpha: visible ? 0.20 : 0.14,
           dayAlpha: visible ? 1.0 : 1.0,
           nightAlpha: visible ? 0.0 : 1.0,
+          ownerKey: `gk2a/${ch}/${info.at || meta.time || 'unknown'}`,
         })
       : viewer.imageryLayers.addImageryProvider(provider);
+    if (!cloudChannel) adoptImageryLayerGroup(
+      viewer, layer, null, `gk2a/${ch}/${info.at || meta.time || 'unknown'}`);
+    if (objectUrl) layer._earthusImageryGroup?.addCleanup(() => URL.revokeObjectURL(objectUrl));
     layer.alpha = 1.0;
     layer._earthusGK2AInfo = info;
     return layer;
@@ -1194,6 +1260,7 @@ export const imagery = {
    * 실제 2km 결을 쓴다. */
   async setGK2AWideIR(on) {
     this._gk2aWideIROn = on;
+    const generation = ++this._gk2aWideGeneration;
     if (!on) {
       this._imgLoading(false);
       this._removeGK2AWideIRLayers();
@@ -1215,7 +1282,7 @@ export const imagery = {
 
     try {
       const fullLayer = await this._addGK2ALayer('ir112', m, '천리안 전면 적외 8km');
-      if (!this._gk2aWideIROn) {
+      if (!this._gk2aWideIROn || generation !== this._gk2aWideGeneration) {
         this._removeImageryWithDepth(fullLayer);
         return;
       }
@@ -1227,7 +1294,7 @@ export const imagery = {
       if (detail?.ok) {
         try {
           const detailLayer = await this._addGK2ALayer('ir112ea', m, '천리안 동아시아 적외 2km');
-          if (!this._gk2aWideIROn) {
+          if (!this._gk2aWideIROn || generation !== this._gk2aWideGeneration) {
             this._removeImageryWithDepth(detailLayer);
             return;
           }
@@ -1255,10 +1322,11 @@ export const imagery = {
 
   async _loadGK2AAuto() {
     if (this._gk2aAutoPending) return this._gk2aAutoPending;
+    const generation = this._gk2aGeneration;
     this._gk2aAutoPending = (async () => {
       this._imgLoading(true, '천리안2A 자동 영상');
       const m = await this._gk2aBox();
-      if (!this._gk2aAutoOn || !m) return;
+      if (!this._gk2aAutoOn || generation !== this._gk2aGeneration || !m) return;
       const daylight = this._gk2aDaylight();
       const overview = daylight ? 'vi006fd' : 'ir112';
       const broad = daylight ? 'vi006ea' : 'ir112ea';
@@ -1269,7 +1337,7 @@ export const imagery = {
       this._removeGK2AAutoLayers();
       const overviewLayer = await this._addGK2ALayer(
         overview, m, daylight ? '천리안 전면 가시광' : '천리안 전면 적외 8km');
-      if (!this._gk2aAutoOn) { this._removeImageryWithDepth(overviewLayer); return; }
+      if (!this._gk2aAutoOn || generation !== this._gk2aGeneration) { this._removeImageryWithDepth(overviewLayer); return; }
       overviewLayer._earthusGK2ARole = 'overview';
       this.gk2aAutoLayers.push(overviewLayer);
 
@@ -1279,7 +1347,7 @@ export const imagery = {
         try {
           const broadLayer = await this._addGK2ALayer(
             broad, m, daylight ? '천리안 동아시아 가시광 2km' : '천리안 동아시아 적외 2km');
-          if (!this._gk2aAutoOn) { this._removeImageryWithDepth(broadLayer); return; }
+          if (!this._gk2aAutoOn || generation !== this._gk2aGeneration) { this._removeImageryWithDepth(broadLayer); return; }
           broadLayer._earthusGK2ARole = 'broad';
           this.gk2aAutoLayers.push(broadLayer);
         } catch (e) {
@@ -1315,6 +1383,7 @@ export const imagery = {
     if (on && store.isOn('clouds')) store.setLayer('clouds', false);
     const firstOpen = on && !this._gk2aAutoOn;
     this._gk2aAutoOn = on;
+    if (firstOpen || !on) this._gk2aGeneration += 1;
     if (!on) {
       this._imgLoading(false);
       clearTimeout(this._gk2aAutoTimer);
@@ -1420,6 +1489,8 @@ export const imagery = {
   },
 
   async setGK2A(ch, on) {
+    const generation = (this._gk2aChannelGeneration[ch] || 0) + 1;
+    this._gk2aChannelGeneration[ch] = generation;
     const cur = this.gk2aLayers[ch];
     if (!on) {
       this._imgLoading(false);
@@ -1457,6 +1528,13 @@ export const imagery = {
       L = await this._addGK2ALayer(ch, m, LABEL);
     } catch (e) {
       this._say(`천리안 영상을 받지 못했습니다 (${e.message})`, 'Failed to load Chollian imagery');
+      return;
+    }
+    if (this._gk2aChannelGeneration[ch] !== generation || !store.isOn({
+      ir112: 'gk2aIR', nightlow: 'gk2aNightLow', vi006: 'gk2aVIS', wv063: 'gk2aWV',
+      vi006ea: 'gk2aVISea', ir112ea: 'gk2aIRea', vi006fd: 'gk2aVISfd',
+    }[ch] || '')) {
+      this._removeImageryWithDepth(L);
       return;
     }
     /* ⚠️ 밤낮을 나누지 않는다. 적외는 밤에도 유효하고, 가시광은 원본 자체가
@@ -1573,6 +1651,18 @@ export const imagery = {
         /* ⚠️ 켜는데 아직 받아둔 게 없으면 그때 받는다.
            init() 이 꺼진 상태로 시작했을 수 있다(첫 화면 부하를 줄이려고). */
         if (on && !this.cloudLayers.length) this._addClouds();
+        if (!on) {
+          this._cloudGeneration += 1;
+          this._cloudAbort?.abort();
+          this._cloudAbort = null;
+          this._cloudPending = null;
+          this.cloudLayers.slice().forEach(layer => this._removeImageryWithDepth(layer));
+          this.cloudLayers = [];
+          this.clouds = null;
+          this._cloudTime = null;
+          this._cloudSource = null;
+          this._imgLoading(false);
+        }
         this._applyClouds();
         break;
       /* 히마와리를 사람이 직접 골랐을 때.

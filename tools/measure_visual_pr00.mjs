@@ -111,7 +111,7 @@ async function sceneSnapshot(page, name, requestUrls, screenshotPath) {
     const [{ viewer }, { renderQuality }, { imagery }, { power }, diag] = await Promise.all([
       import('/js/viewer.js'),
       import('/js/render-quality.js'),
-      import('/js/layers/imagery.js?v=20260813-satellite-list1'),
+      import('/js/layers/imagery.js'),
       import('/js/power.js'),
       import('/js/satellite-diagnostics.js'),
     ]);
@@ -158,8 +158,8 @@ async function sceneSnapshot(page, name, requestUrls, screenshotPath) {
     };
   });
   const resourceNames = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => entry.name));
-  const skyResource = resourceNames.find(name => /earthus-milky-way\/panorama(?:-6000)?\.webp/.test(name));
-  const skySixK = /panorama-6000\.webp/.test(skyResource || '');
+  const skyResource = resourceNames.find(name => /earthus-milky-way\/panorama-(?:6000|4096|2048)\.[a-f0-9]+\.webp/.test(name));
+  const skyWidth = Number(skyResource?.match(/panorama-(6000|4096|2048)\./)?.[1] || 0);
   if (screenshotPath) await page.screenshot({ path: screenshotPath, fullPage: false });
   return {
     name,
@@ -169,9 +169,10 @@ async function sceneSnapshot(page, name, requestUrls, screenshotPath) {
     idleRenderCount3s: idleAfter - idleBefore,
     requests: diagnostics.requestSummary(requestUrls),
     sky: {
-      variant: skySixK ? 'desktop-6k' : skyResource ? 'mobile-4k' : 'not-observed',
+      variant: skyWidth === 6000 ? 'desktop-6k' : skyWidth === 4096 ? 'desktop-4k'
+        : skyWidth === 2048 ? 'mobile-2k' : 'not-observed',
       estimatedDecodedBytes: skyResource
-        ? diagnostics.estimateTextureBytes(skySixK ? 6000 : 4096, skySixK ? 3000 : 2048)
+        ? diagnostics.estimateTextureBytes(skyWidth, skyWidth / 2)
         : null,
     },
     screenshot: screenshotPath ? path.relative(root, screenshotPath).split(path.sep).join('/') : null,
@@ -181,8 +182,8 @@ async function sceneSnapshot(page, name, requestUrls, screenshotPath) {
 async function installProbe(page) {
   await page.evaluate(async () => {
     const [{ imagery }, { CloudDepthImageryProvider }] = await Promise.all([
-      import('/js/layers/imagery.js?v=20260813-satellite-list1'),
-      import('/js/cloud-depth-provider.js?v=20260813-clouddepth1'),
+      import('/js/layers/imagery.js'),
+      import('/js/cloud-depth-provider.js'),
     ]);
     const probe = globalThis.__earthusPr00Probe = {
       maskMs: [],
@@ -191,8 +192,13 @@ async function installProbe(page) {
     const originalMask = CloudDepthImageryProvider.prototype._makeMask;
     CloudDepthImageryProvider.prototype._makeMask = function (...args) {
       const started = performance.now();
-      try { return originalMask.apply(this, args); }
-      finally { probe.maskMs.push(performance.now() - started); }
+      try {
+        return Promise.resolve(originalMask.apply(this, args))
+          .finally(() => probe.maskMs.push(performance.now() - started));
+      } catch (error) {
+        probe.maskMs.push(performance.now() - started);
+        throw error;
+      }
     };
     const originalAdd = imagery._addImageryWithDepth;
     imagery._addImageryWithDepth = function (provider, options) {
@@ -288,7 +294,7 @@ async function measureCase(browser, baseUrl, item) {
         store.setLayer('himawari', true);
       });
       await page.waitForFunction(async () => {
-        const { imagery } = await import('/js/layers/imagery.js?v=20260813-satellite-list1');
+        const { imagery } = await import('/js/layers/imagery.js');
         return imagery.himaLayers.length > 0;
       }, null, { timeout: 40_000 });
       await page.waitForTimeout(2500);
@@ -301,7 +307,7 @@ async function measureCase(browser, baseUrl, item) {
         store.setLayer('gk2aAuto', true);
       });
       await page.waitForFunction(async () => {
-        const { imagery } = await import('/js/layers/imagery.js?v=20260813-satellite-list1');
+        const { imagery } = await import('/js/layers/imagery.js');
         return imagery.gk2aAutoLayers.length > 0;
       }, null, { timeout: 40_000 });
       await page.waitForTimeout(2500);

@@ -15,9 +15,10 @@
  *     시작하면 그 화성 세션 복원에 필요한 exact catalog/detail texture만 제한 저장한다.
  */
 
-const CACHE = 'earthus-shell-2026-08-12-session1';
-const LEGACY_CACHES = new Set(['earthus-shell-2026-07-28c']);
-const SHELL = ['./index.html', './manifest.webmanifest'];
+const CACHE = 'earthus-shell-2026-08-13-visualrelease1';
+const LEGACY_CACHES = new Set(['earthus-shell-2026-07-28c', 'earthus-shell-2026-08-12-session1']);
+const SKY_FALLBACK = './space/skybox/earthus-milky-way/panorama-2048.28125627e27567e3.webp';
+const SHELL = ['./index.html', './manifest.webmanifest', SKY_FALLBACK];
 const SESSION_DEPENDENCY_PATHS = new Set([
   '/data/celestial-bodies.json',
   '/space/planets/detail/mars.webp',
@@ -75,6 +76,14 @@ self.addEventListener('fetch', (e) => {
   let url;
   try { url = new URL(req.url); } catch { return; }
   if (url.origin !== self.location.origin) return;   // CDN·NASA 타일·외부 API 는 통과
+
+  /* 천구는 content-hash라 오래 캐시해도 stale code가 되지 않는다. 오프라인에서 6K/4K를
+     못 받으면 install 때 검증해 둔 2K로 내려 첫 지구의 검은 배경만 남는 일을 막는다. */
+  if (req.destination === 'image'
+      && url.pathname.includes('/space/skybox/earthus-milky-way/panorama-')) {
+    e.respondWith(fetch(req).catch(() => caches.match(SKY_FALLBACK)));
+    return;
+  }
 
   // 앱 코드(화면·스크립트·스타일)만 다룬다. 데이터 JSON 등은 통과.
   const dest = req.destination;

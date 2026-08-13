@@ -1,0 +1,52 @@
+{
+  "schema": "earthus.sky-asset.v1",
+  "processingVersion": "earthus-milky-way-v1",
+  "source": {
+    "title": "The Milky Way panorama",
+    "creator": "ESO/S. Brunier",
+    "licenseId": "CC-BY-4.0",
+    "pageUrl": "https://www.eso.org/public/images/eso0932a/",
+    "downloadUrl": "https://cdn.eso.org/images/large/eso0932a.jpg",
+    "width": 6000,
+    "height": 3000,
+    "sha256": "60400c92c54b7c1bd12299c69e83b16e5b6256e7dabacc478c021758ecd28179"
+  },
+  "transform": {
+    "gamma": 1.25,
+    "brightness": 0.53,
+    "resample": "lanczos3",
+    "webpQuality": 86,
+    "webpEffort": 6,
+    "sharpVersion": "0.35.3",
+    "scriptVersion": "v1"
+  },
+  "variants": [
+    {
+      "id": "desktop-6k",
+      "width": 6000,
+      "height": 3000,
+      "sha256": "a68eeb037463019f7096d223f9e62eea2d6a2981116cd74a9218856dbaed346f",
+      "file": "panorama-6000.a68eeb037463019f.webp",
+      "bytes": 3155422,
+      "mime": "image/webp"
+    },
+    {
+      "id": "desktop-4k",
+      "width": 4096,
+      "height": 2048,
+      "sha256": "87d8f6aa25b1f08831839ddfd6d21b72060e89f9a716a8f234bdd5cc97f2f4f3",
+      "file": "panorama-4096.87d8f6aa25b1f088.webp",
+      "bytes": 1465014,
+      "mime": "image/webp"
+    },
+    {
+      "id": "mobile-2k",
+      "width": 2048,
+      "height": 1024,
+      "sha256": "28125627e27567e3c62ae148409ea9668054e438e10de0a3de0ad6e392906d3a",
+      "file": "panorama-2048.28125627e27567e3.webp",
+      "bytes": 309122,
+      "mime": "image/webp"
+    }
+  ]
+}

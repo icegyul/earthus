@@ -7,7 +7,7 @@
 
 import { viewer } from '../viewer.js';
 import { radecToIcrf, icrfToFixedPosition, preloadIcrf } from './skyframe.js';
-import { loadAetherusPhotoCatalog } from './photo-catalog.js?v=20260812-photoownership1';
+import { loadAetherusPhotoCatalog } from './photo-catalog.js';
 
 const SHOW_ABOVE_M = 45_000_000;
 

@@ -312,7 +312,9 @@ test('flag는 false이고 main 공개 entry는 아직 UI를 정적 import하지 
   assert.match(configExample, /DECISION_CORE_READY: false/);
   assert.doesNotMatch(main, /^import .*decision-ui/m);
   assert.match(main, /if \(CONFIG\.DECISION_CORE_READY === true\)/);
-  assert.match(main, /import\('\.\/decision-ui\.js\?v=20260812-personal1'\)/);
+  assert.match(main, /import\('\.\/decision-ui\.js'\)/);
+  assert.doesNotMatch(main, /import\('\.\/decision-ui\.js\?v=/,
+    '동일 모듈을 query suffix로 중복 평가하면 상태가 분리된다');
 });
 
 test('개인화와 UI 모듈은 fetch·예약 실행·timer·animation을 만들지 않는다', () => {

@@ -4,7 +4,7 @@
 // 가져와 검증하고 별도 상태로 보관했다. PR-02부터 모든 사진 소비자는 이 모듈을
 // 지나며, 동시 호출도 하나의 요청 promise를 공유한다.
 
-import { assertAetherusCatalog } from './contracts.js?v=20260812-photoownership1';
+import { assertAetherusCatalog } from './contracts.js';
 
 export const AETHERUS_PHOTO_TELESCOPES = Object.freeze(['ALL', 'HST', 'JWST']);
 const CATALOG_URL = '/data/space-photos.json';

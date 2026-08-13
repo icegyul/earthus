@@ -1,0 +1,21 @@
+{
+  "schema": "earthus.csp-candidate.v1",
+  "mode": "report-only-before-enforcement",
+  "directives": {
+    "default-src": ["'self'"],
+    "script-src": ["'self'", "https://cdn.jsdelivr.net", "'unsafe-inline'"],
+    "style-src": ["'self'", "https://cdn.jsdelivr.net", "'unsafe-inline'"],
+    "img-src": ["'self'", "blob:", "data:", "https:"],
+    "connect-src": ["'self'", "https:"],
+    "worker-src": ["'self'", "blob:"],
+    "font-src": ["'self'", "https://cdn.jsdelivr.net", "data:"],
+    "object-src": ["'none'"],
+    "base-uri": ["'self'"],
+    "frame-ancestors": ["'none'"]
+  },
+  "enforcementGate": "CloudFront report-only canary에서 위반 0 확인 후 Response Headers Policy로 전환",
+  "knownDebt": [
+    "index.html inline boot/JSON-LD 때문에 unsafe-inline이 남아 있다",
+    "connect-src와 img-src의 https 범위를 실제 API allowlist로 줄여야 한다"
+  ]
+}

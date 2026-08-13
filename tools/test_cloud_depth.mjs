@@ -5,6 +5,9 @@ const source = fs.readFileSync('prototype/js/cloud-depth-provider.js', 'utf8')
   .replace(/import \{ cloudShadowSourceAt, normalizeCloudShadowSun \}[^;]+;/,
     `const normalizeCloudShadowSun = sun => sun;
      const cloudShadowSourceAt = () => ({ longitude: 0.01, latitude: 0.01, daylight: 1 });`)
+  .replace(/import \{ assertRasterDimensions, RASTER_LIMITS \}[^;]+;/,
+    `const assertRasterDimensions = () => true;
+     const RASTER_LIMITS = { maxWorkerTasks: 2 };`)
   .replace(/export class CloudDepthImageryProvider[\s\S]*$/, '');
 const mod = await import(`data:text/javascript,${encodeURIComponent(source)}#${Date.now()}`);
 
@@ -23,7 +26,7 @@ const night = mod.cloudDepthOffset({
 assert.ok(Number.isFinite(night.x) && Number.isFinite(night.y));
 
 const imagery = fs.readFileSync('prototype/js/layers/imagery.js', 'utf8');
-assert.match(imagery, /new CloudDepthImageryProvider/);
+assert.match(imagery, /new ImageryLayerGroup/);
 assert.match(imagery, /mode === 'visible' \? this\._sunFixedAt\(ts\) : null/);
 assert.match(imagery, /const cloudChannel = visible \|\| ch === 'ir112' \|\| ch === 'ir112ea' \|\| ch === 'nightlow'/);
 assert.match(imagery, /old\.forEach\(o => this\._removeImageryWithDepth\(o\)\)/);

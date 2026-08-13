@@ -125,7 +125,7 @@ export const fxTimeline = {
     const ko = i18n.lang === 'ko';
     const [{ isobars }, { windField }, { cyclones }, { imagery }] = await Promise.all([
       import('./isobars.js'), import('./windfield.js'),
-      import('./layers/cyclone.js'), import('./layers/imagery.js?v=20260813-satellite-list1'),
+      import('./layers/cyclone.js'), import('./layers/imagery.js'),
     ]);
     if (setToken !== this._setToken) return;
 

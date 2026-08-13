@@ -20,26 +20,26 @@ import { planetOrbit, planetPositions } from './kepler.js';
 import {
   calculateMarsObservation,
   DEFAULT_ASTRONOMY_OBSERVER,
-} from './astronomy.js?v=20260812-planner1';
+} from './astronomy.js';
 import {
   assessObservationPlan,
   createMarsGeometryPlan,
   createOfflinePlanManifest,
   GEOMETRY_24H_PLAN,
-} from './observation-planner.js?v=20260812-planner1';
+} from './observation-planner.js';
 import {
   cacheLoadedSessionShell,
   observeObservationSessionUpdates,
   openLocalObservationSessionService,
-} from './observation-session.js?v=20260812-session1';
-import { assertAetherusCatalog } from './contracts.js?v=20260812-photoownership1';
+} from './observation-session.js';
+import { assertAetherusCatalog } from './contracts.js';
 import {
   aetherusPhotoCounts,
   filterAetherusPhotos,
   loadAetherusPhotoCatalog,
   normalizeAetherusTelescope,
   resolveAetherusPhoto,
-} from './photo-catalog.js?v=20260812-photoownership1';
+} from './photo-catalog.js';
 
 const IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const BODY_ORDER = ['sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
@@ -2247,7 +2247,7 @@ export const cosmic3d = {
 
   loadSkyARModule() {
     this._skyARModulePromise = this._skyARModulePromise
-      || import('./sky-ar.js?v=20260812-skyar1');
+      || import('./sky-ar.js');
     return this._skyARModulePromise;
   },
 

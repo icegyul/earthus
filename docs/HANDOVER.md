@@ -161,6 +161,18 @@ UI JS/CSS를 요청하지 않는다. 정적 7개 파일은 CloudFront 무효화
 검증했다. 증거는 [`earthus-v23/RELEASE-2026-08-12-PR08.md`](earthus-v23/RELEASE-2026-08-12-PR08.md)다.
 실제 preference 저장, 공개 추천, 예약 행동은 여전히 금지다.
 
+2026-08-14 PD의 AX 보강 지시로 **AX-01 Contextual Decision Rail**을 공개했다. 첫 Earth는
+기존처럼 깨끗하게 유지하고, 하단 접힌 손잡이→지점 선택→5 profile→선택 좌표 기상청
+공식 특보 Hard Gate→Safety-first 5축→연결된 지구 자료 질의 순서를 만들었다. 한국
+밖에는 KMA Safety를 오적용하지 않고 `현지 공식 특보 연결 전`으로 표시한다. Activity
+Score·Confidence 숫자·혼잡·재고·폐쇄·개인화·예약 행동은 열지 않았고
+`DECISION_CORE_READY=false`를 유지했다. 운영 1280×900·390×844, live Safety, 정적 7개
+SHA/MIME를 통과했고 무효화는 `IDZOUE4HBCRSEG51ZA2C8RH1TI`다. 설계 정본은
+[`earthus-v23/AX_DECISION_RAIL.md`](earthus-v23/AX_DECISION_RAIL.md), 운영 증거는
+[`earthus-v23/RELEASE-2026-08-14-AX01.md`](earthus-v23/RELEASE-2026-08-14-AX01.md)다. 다음은
+`STARGAZING` live decision canary의 source/curve/rights/rollback gate며, PD의 명시적 flag 승인 전에는
+이번 상태 문구를 점수로 바꾸지 않는다.
+
 PD의 다음 **“해”** 지시로 PR-09 Reservation Impact의 순수 shadow 계약을 구현했다.
 최초 v1이 공급자 snapshot 차이만 다룬 공백을 독립 검수에서 발견해 v1.1로 보강했다.
 예약 장소·활동·시간창과 이전/현재 Decision의 Safety·Confidence·signal revision, 승인 provider

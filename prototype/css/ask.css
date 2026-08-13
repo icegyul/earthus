@@ -39,6 +39,14 @@
 /* 답 — 배경 없이. 카드로 감싸면 "정리된 결론"처럼 보이는데,
    실제로는 우리가 센 숫자를 나열한 것뿐이라 그만한 무게를 주지 않는다. */
 .ask-bot, .ask-sys { align-self: stretch; color: rgba(255, 255, 255, .8); }
+.ask-context {
+  align-self: stretch;
+  padding: 10px 11px;
+  border-left: 2px solid rgba(166, 232, 245, .7);
+  background: rgba(166, 232, 245, .055);
+  color: rgba(239, 248, 251, .84);
+}
+.ask-context b { display: block; margin-bottom: 5px; font-size: 11px; font-weight: 650; }
 
 .ask-title {
   font-size: 12px;

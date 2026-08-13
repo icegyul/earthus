@@ -44,6 +44,25 @@ export const askPanel = {
     setTimeout(() => this.input?.focus(), 250);
   },
 
+  /**
+   * 판단 레일에서 들어온 맥락을 보여주되, 규칙 라우터가 이해한 척 자동 전송하지 않는다.
+   * 현재 라우터는 자유 좌표·활동 점수를 질의 인자로 받지 않는다. 지원하지 않는
+   * 문장을 미리 보내면 “AI가 장소를 이해했다”는 거짓 기대가 생긴다.
+   */
+  openContext({ label, coordinates, activity } = {}) {
+    this.open();
+    const ko = i18n.lang === 'ko';
+    this.log.querySelectorAll('.ask-context').forEach(node => node.remove());
+    const note = el('div', 'ask-msg ask-context');
+    note.appendChild(el('b', null, ko ? '선택한 맥락' : 'Selected context'));
+    note.appendChild(el('p', null, [label, coordinates, activity].filter(Boolean).map(esc).join(' · ')));
+    note.appendChild(el('p', 'ask-note', ko
+      ? '현재 물어보기는 태풍·지진·수온 등 연결된 자료만 찾습니다. Activity Score를 알고 있는 척 답하지 않습니다.'
+      : 'Ask searches only connected datasets such as cyclones, earthquakes and ocean temperature. It does not pretend to know an unpublished Activity Score.'));
+    this.log.appendChild(note);
+    this.scroll();
+  },
+
   close() { this.root?.classList.remove('up'); },
 
   /** 인사 대신 "무엇을 물을 수 있는가"를 보여준다 */

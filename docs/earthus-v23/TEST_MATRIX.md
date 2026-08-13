@@ -25,6 +25,7 @@
 | Temperature Readability | grid→envelope→Data View 단계색/등치선/도시값→point 원값→URL 복원→idle 0 |
 | TPW Moisture Corridor | NOAA GFS valid time→1° regional grid→단계색·도시 원격자값→범위 밖 missing→출처·한계→idle 0 |
 | Official Warning | KMA ingest→region mapping→revision→Hard Gate→CTA→해제 replay→UNKNOWN fallback |
+| Contextual AX | 첫 Earth 접힌 rail→지점 선택→정적 ring→5 profile→선택 좌표 Safety→한국 밖 UNKNOWN→근거 질의 |
 | Activity Decision | 5 profile fixture→confidence→base cache→private delta→5축 UI→ledger |
 | Reservation Impact | 예약 시간/장소→signal diff→dedup 알림→확인→provider 실패/성공 |
 | Rights/Export | APPROVED/BLOCKED/EXPIRED→publish/archive/export/AI gate→감사 |
@@ -120,6 +121,10 @@
 - PR-08 390×844/430×932/768×1024/1280×900 실제 합성 화면: overflow 0,
   Safety first, 44px target, focus/Escape, 개인화 off/on, source/time/revision/n, console error 0
 - production-like local entry flag off: Decision UI JS/CSS request 0, host DOM 0, Earth container 1
+- AX-01 판단 레일: 첫 Earth 접힘, 서울 호우경보 `DANGER`·추천 제한, 일본에 한국 Safety
+  오적용 0, 5 profile/5축, Activity Score 숫자 노출 0, `DECISION_CORE_READY=false` 자산 요청 0
+- AX-01 1280×900·390×844 실화면: 가로 overflow 0, 44px 표적, Safety first, 펼친 패널과
+  EARTHUS/AETHERUS 손잡이 충돌 0, 패널 재선택 스크롤 복귀, runtime error 0
 - Safari·구형 iPhone·screen reader·idle/released render owner 실제 계측은 남은 gate
 
 이 기준선은 PR-08 shadow 완료와 PR-11 운영 전후 비교 기준이다.

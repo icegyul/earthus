@@ -98,9 +98,10 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Widgets/widgets.css">
 <link rel="stylesheet" href="css/app.css?v=20260813-publicui1">
 <link rel="stylesheet" href="css/account.css?v=20260813-publicui1">
-<link rel="stylesheet" href="css/ask.css">
+<link rel="stylesheet" href="css/ask.css?v=20260814-ax1">
 <link rel="stylesheet" href="css/readability.css?v=20260812-contours1">
 <link rel="stylesheet" href="css/safety.css?v=20260812-safety1">
+<link rel="stylesheet" href="css/decision-rail.css?v=20260814-ax1">
   <!-- ⚠️ AI 학습 거부 — robots.txt 와 같은 방침이다(학습 금지, 인용 허용).
        메타 태그는 자발적 준수라 강제력이 없다. 실제 근거는 이용약관 제11조다. -->
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
@@ -423,6 +424,87 @@
       <button id="readabilityPointClose" type="button" aria-label="지점 근거 닫기">✕</button>
     </article>
   </section>
+
+  <!-- AX-01 판단 레일 — 챗봇을 따로 띄우지 않고 사용자가 누른 장소 맥락에서
+       공식 특보 → 활동 조건 → 근거 질의 순서로 읽히게 한다.
+       ⚠️ Decision Core는 Shadow다. 이 레일은 점수나 “가도 된다”를 만들지 않는다. -->
+  <aside id="decisionRail" data-state="empty" aria-label="이 장소의 활동 조건">
+    <button id="decisionRailHandle" class="dr-handle" type="button" aria-expanded="false"
+            aria-controls="decisionRailPanel">
+      <span class="dr-mark" aria-hidden="true"><i></i></span>
+      <span class="dr-handle-copy">
+        <strong id="decisionRailHandleTitle">장소를 눌러 조건 확인</strong>
+        <small id="decisionRailHandleNote">공식 특보를 먼저 확인합니다</small>
+      </span>
+      <span class="dr-chevron" aria-hidden="true">⌃</span>
+    </button>
+
+    <section id="decisionRailPanel" class="dr-panel" aria-labelledby="decisionRailTitle" hidden>
+      <header class="dr-head">
+        <div>
+          <span class="dr-kicker">PLACE · TIME · ACTIVITY</span>
+          <h2 id="decisionRailTitle" tabindex="-1">이 장소의 활동 조건</h2>
+        </div>
+        <button id="decisionRailClose" class="dr-close" type="button" aria-label="활동 조건 접기">×</button>
+      </header>
+
+      <div id="decisionRailEmpty" class="dr-empty">
+        <b>지구본에서 궁금한 장소를 눌러보세요.</b>
+        <p>선택한 지점의 공식 특보부터 확인하고, 없는 자료는 없다고 표시합니다.</p>
+      </div>
+
+      <div id="decisionRailContext" hidden>
+        <div class="dr-place">
+          <div>
+            <strong id="decisionRailPlace"></strong>
+            <span id="decisionRailCoords"></span>
+          </div>
+          <span class="dr-now" id="decisionRailNow">현재 자료</span>
+        </div>
+
+        <fieldset class="dr-activity">
+          <legend>무엇을 하려고 하나요?</legend>
+          <div class="dr-activity-grid">
+            <button type="button" data-activity="BASEBALL_SPECTATOR" aria-pressed="false">⚾ 야구 관람</button>
+            <button type="button" data-activity="CAMPING" aria-pressed="false">⌂ 캠핑</button>
+            <button type="button" data-activity="FUTSAL_OUTDOOR" aria-pressed="false">○ 야외 풋살</button>
+            <button type="button" data-activity="HIKING" aria-pressed="false">△ 등산</button>
+            <button type="button" data-activity="STARGAZING" aria-pressed="false">✦ 별보기</button>
+          </div>
+        </fieldset>
+
+        <p class="dr-time-note" id="decisionRailTimeNote">현재 자료 기준입니다. 미래 시각은 현지 시간대와 예보 근거가 연결된 뒤 제공합니다.</p>
+
+        <div id="decisionRailSafety" class="dr-safety" aria-live="polite">
+          <div class="dr-skeleton" role="status">공식 특보 근거를 확인하는 중입니다.</div>
+        </div>
+
+        <section class="dr-axes" aria-labelledby="decisionRailAxesTitle">
+          <h3 id="decisionRailAxesTitle">판단 근거 5축</h3>
+          <article class="dr-axis dr-axis--safety">
+            <span>1 · SAFETY</span><strong id="decisionRailSafetyState">확인 중</strong>
+          </article>
+          <article class="dr-axis">
+            <span>2 · 활동 적합도</span><strong id="decisionRailFitState">활동을 선택해주세요</strong>
+          </article>
+          <article class="dr-axis">
+            <span>3 · 예보 자료 신뢰도</span><strong>실데이터 연결 전</strong>
+          </article>
+          <article class="dr-axis">
+            <span>4 · 혼잡</span><strong>확인할 자료 없음</strong>
+          </article>
+          <article class="dr-axis">
+            <span>5 · 예약 가능성</span><strong>확인할 자료 없음</strong>
+          </article>
+        </section>
+
+        <div class="dr-actions">
+          <button id="decisionRailAsk" type="button">지구 자료에 더 물어보기</button>
+        </div>
+        <p class="dr-limit" id="decisionRailLimit">Activity Score는 곡선·실데이터 검증 전이라 아직 공개하지 않습니다.</p>
+      </div>
+    </section>
+  </aside>
 
   <!-- 바람 범례 — 선의 밝기가 곧 세기라는 걸 알려준다 -->
   <div id="windLegend">
@@ -1081,7 +1163,7 @@
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"
         integrity="sha384-J3D70NIZSVUuhQbp4W22OKF/xNWQjCEXmLxpnBp4CNDaQ+TbS1mmDZ2W3wlgqpKj"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script type="module" src="js/main.js?v=20260813-publicui1"></script>
+<script type="module" src="js/main.js?v=20260814-ax1"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

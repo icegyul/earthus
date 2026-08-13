@@ -17,7 +17,7 @@ import { API } from './config.js';
 import { i18n } from './i18n.js';
 import { myLocation } from './mylocation.js';
 import { toast } from './ui.js';
-import { evaluateWarningSafety, inKorea } from './safety-engine.js';
+import { evaluateWarningSafety, inKorea, warningFreshness } from './safety-engine.js';
 
 const LS_SEEN = 'earthus.warnSeen';     // 이미 알린 특보 (같은 걸 계속 울리지 않기 위해)
 const LS_OFF = 'earthus.warnOff';       // 사용자가 끈 경우
@@ -153,6 +153,30 @@ export const warn = {
   setOff(v) {
     this.off = !!v;
     localStorage.setItem(LS_OFF, v ? '1' : '0');
+  },
+
+  /**
+   * 지구본에서 사용자가 선택한 임의 좌표의 공식 특보 Hard Gate.
+   *
+   * ⚠️ 원래 mine/safety는 ‘내 현재 위치’ 전용이다. 그걸 재사용하면 서울을 눌렀는데
+   * 부산의 내 위치 특보를 보여주게 된다. 선택 좌표는 반드시 순수 Safety Engine에
+   * 다시 넣어 계산한다.
+   * ⚠️ 선택한 한국 좌표를 보기 전에는 특보 파일을 받지 않는다.
+   */
+  async safetyAt(coords) {
+    let result = evaluateWarningSafety({
+      snapshot: this.data, zones: this._zones, coords,
+    });
+    if (!inKorea(coords?.lat, coords?.lon)) return result;
+
+    const fresh = warningFreshness(this.data);
+    if (!this.data || !this._zones || !fresh.usable) {
+      await this.refresh();
+      result = evaluateWarningSafety({
+        snapshot: this.data, zones: this._zones, coords,
+      });
+    }
+    return result;
   },
 
   /** 배너·패널이 쓸 요약 */

@@ -35,6 +35,7 @@ import { communityPanel } from './ui-community.js';
 import { askPanel } from './ask/panel.js';
 import { sourceNote } from './ui-source.js';
 import { readability } from './readability.js';
+import { decisionRail } from './decision-rail.js';
 import { continuousContours } from './continuous-contours.js';
 import { warn } from './warn.js';
 import { warnUI } from './ui-warn.js';
@@ -435,6 +436,7 @@ async function boot() {
   askPanel.init();
   sourceNote.init();
   readability.init();
+  decisionRail.init();
   /* PR-08 Decision UI는 live source·권리·도메인 검토가 끝날 때까지 완전히 잠근다.
      false/미정이면 module·CSS·listener를 받지도 않는다. 합성 fixture를 운영 화면에
      보이는 사고를 막기 위해 정적 import로 바꾸지 말 것. */
@@ -728,6 +730,14 @@ function bindAccountUI() {
 function onPick(ev) {
   const picked = scene.pick(ev.position);
 
+  /** 화면 좌표 → 지표의 위경도. 지구를 안 가리켰으면 null. */
+  const ground = () => {
+    const cart = scene.camera.pickEllipsoid(ev.position, scene.globe.ellipsoid);
+    if (!cart) return null;
+    const c = Cesium.Cartographic.fromCartesian(cart);
+    return { lat: Cesium.Math.toDegrees(c.latitude), lon: Cesium.Math.toDegrees(c.longitude) };
+  };
+
   /* 태풍 밖을 누르면 펼쳐 둔 경로를 접는다.
      받은 지적: "태풍 외 지역 터치하면 사라지게 해줘, 다른 거 보려니깐"
      ⚠️ 태풍 경로는 예보선·영향권·과거 사례까지 70개가 넘는 도형이라 켜 두면
@@ -757,6 +767,16 @@ function onPick(ev) {
     return;
   }
 
+  /* AX-01 — 지구의 무엇을 누르든 선택 좌표는 먼저 판단 레일에 공유한다.
+     패널을 닫아도 마커는 남지만, 위험 polygon이나 특보 범위로 오해하지 않게
+     지점 좌표만 보낸다. 클러스터는 위에서 확대로 소비하므로 제외다. */
+  const decisionPoint = ground();
+  if (decisionPoint) {
+    document.dispatchEvent(new CustomEvent('earthus:decision-point', {
+      detail: { point: decisionPoint, pickedId: String(picked?.id?.id || '') || null },
+    }));
+  }
+
   /* 지도에 찍은 해변을 눌렀을 때 — 목록의 그 카드로 데려간다.
      ⚠️ 아래 _meta 갈래보다 **먼저** 본다. 해변 표시에는 _meta 가 없어서
         그냥 두면 지도 클릭으로 처리돼 엉뚱한 지점 날씨가 열린다. */
@@ -781,14 +801,6 @@ function onPick(ev) {
   const pickInfo = picked?.id?._pick
     || scene.pick(ev.position, 16, 16)?.id?._pick;
   if (pickInfo) { toast(pickInfo); return; }
-
-  /** 화면 좌표 → 지표의 위경도. 지구를 안 가리켰으면 null. */
-  const ground = () => {
-    const cart = scene.camera.pickEllipsoid(ev.position, scene.globe.ellipsoid);
-    if (!cart) return null;
-    const c = Cesium.Cartographic.fromCartesian(cart);
-    return { lat: Cesium.Math.toDegrees(c.latitude), lon: Cesium.Math.toDegrees(c.longitude) };
-  };
 
   // 엔티티 → 정보 시트
   if (Cesium.defined(picked) && picked.id?._meta) {

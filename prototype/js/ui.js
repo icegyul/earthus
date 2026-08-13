@@ -10,7 +10,7 @@ import { CONFIG } from './config.local.js';
 import { registry, pointLayers } from './layers/registry.js';
 import { fetchWeather, wxText } from './layers/weather.js';
 import { lookupPlace, lookupWaves, lookupWaveModel, compass, seaState } from './place.js';
-import { imagery } from './layers/imagery.js?v=20260813-clouddepth1';
+import { imagery } from './layers/imagery.js?v=20260813-satellite-list1';
 import { quakes } from './layers/hazard.js';
 import { launches } from './layers/space.js';
 import { tsunami } from './layers/tsunami.js';

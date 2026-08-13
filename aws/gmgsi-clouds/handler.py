@@ -42,10 +42,12 @@ DST_BUCKET = os.environ["CACHE_BUCKET"]
 DST_REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 
 # 출력 가로 픽셀.
-# 전지구 화면에서 지구는 폭 1000px 남짓이고 경도 180° 를 보여준다.
-# 즉 360° 에 2000px 이면 화면 픽셀과 거의 1:1 이다. 그 이상은 안 보이는 해상도다.
-# 실측 용량: 2048→1.2MB / 3072→2.5MB / 4096→4.1MB (회색조 PNG)
-OUT_W = 2048
+# 받은 지적: "NOAA 위성 구름이 너무 해상도가 떨어져".
+# Retina 2x에서 지구 폭이 1,600px까지 올라가면 보이는 반구 180°에 약 3,200px가
+# 필요하다. 2048은 1x 화면에는 충분했지만 2x에서는 확대되어 결이 깨졌다.
+# 원본 가로 4,999px를 넘겨 가짜 화소를 만들지 않고, 통신비와 디테일의 균형인
+# 3,072px로 올린다. 실측 예상 PNG 약 2.5MB이며 시간당 1회 갱신이다.
+OUT_W = 3072
 
 # 공개 버킷이라 서명 없이 읽는다. 서명해서 보내면 403 이 난다.
 src = boto3.client("s3", config=Config(signature_version=UNSIGNED))

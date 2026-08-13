@@ -1,7 +1,7 @@
 // 레이어 레지스트리 — 초기화 / 갱신 / 가시성 통합 관리 (§5-1)
 import { store } from '../store.js';
 import { LAYER_DEFS, T } from '../config.js';
-import { imagery } from './imagery.js?v=20260813-clouddepth1';
+import { imagery } from './imagery.js?v=20260813-satellite-list1';
 import { quakes, volcanoes } from './hazard.js';
 import { cyclones } from './cyclone.js';
 import { events } from './events.js';

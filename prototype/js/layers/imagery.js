@@ -104,7 +104,7 @@ export const imagery = {
        NOAA 가 전 세계 정지위성(Meteosat 포함)을 이미 하나로 합성해 공개한다.
        즉 이음매 맞추는 일은 NOAA 가 해놨고, 우리는 화면용으로 바꾸기만 하면 된다.
          원본  s3://noaa-gmgsi-pds  (퍼블릭 도메인, 인증 불필요, 1시간 간격, 2.4km/px)
-         가공  Lambda(gmgsi-clouds) → 회색조 PNG 2048×1229 (1.2MB) → 우리 S3
+         가공  Lambda(gmgsi-clouds) → 회색조 LA PNG 3072px 폭 → 우리 S3
        퍼블릭 도메인이라 워터마크도, 사용량 한도도, 라이선스 제약도 없다.
        ⚠️ 위도 ±72.7° 까지다 (정지위성이 극을 못 본다). 경계는 알파를 빼서 뭉갠다.
 
@@ -218,7 +218,7 @@ export const imagery = {
      왜 서버에서 RGBA 로 안 만들고 회색조로 받아 변환하나
        RGB 가 상수 흰색이어도 RGBA PNG 는 1.4배 커진다 (실측 1.75MB vs 1.21MB).
        폰에서 매시간 받는 파일이라 0.5MB 차이가 크다.
-       변환은 2048×1229 한 번 훑는 것이라 수십 ms 면 끝난다. */
+       변환은 3072px 폭 한 번 훑는 작업이며 Lambda 안에서만 수행한다. */
   async _cloudsFromGMGSI() {
     try {
       const r = await fetch(`${API.CLOUDS}/meta.json`, { cache: 'no-cache' });
@@ -384,9 +384,10 @@ export const imagery = {
    */
   async pickTrueColorDate() {
     const base = `${API.GIBS}/${this.TC_LAYER}/default`;
-    /* 중위도를 넓게 훑는다. 4장으로는 우연에 좌우된다 (실측으로 확인). */
+    /* 날짜 확인이 화면 표시보다 오래 걸리면 최신이어도 쓸 수 없다. 전지구 중위도 양쪽을
+       대표하는 8장을 본다. 4장은 우연이 컸고, 32장은 실화면에서 1분 가까이 걸렸다. */
     const TILES = [];
-    for (let y = 2; y <= 5; y++) for (let x = 0; x < 8; x++) TILES.push([3, y, x]);
+    for (const y of [3, 4]) for (const x of [0, 2, 4, 6]) TILES.push([3, y, x]);
 
     const blackPct = (url) => new Promise((res) => {
       const im = new Image();
@@ -440,6 +441,13 @@ export const imagery = {
         blackPct(`${base}/${day}/GoogleMapsCompatible_Level9/${z}/${y}/${x}.jpg`));
       const avg = pcts.reduce((a, b) => a + b, 0) / pcts.length;
       if (back === 1) first = avg;      // 어제(즉시 띄운 날)의 빈 구간 — 교체 판단용
+      /* 받은 지적: "수오미 NPP 자료는 2일전 사진 자료가 들어와요".
+         어제 자료가 기존 실측 정상 범위(약 12~14%)에 여유를 둔 18% 이내면
+         미세한 공백 차이를 찾으려고 더 오래된 날짜로 내려가지 않는다. */
+      if (back === 1 && avg <= 18) {
+        this._tcGap = Math.round(avg * 10) / 10;
+        return { day, avg, first };
+      }
       /* ⚠️ **새 날짜를 조금 우대한다.** 빈 구간이 몇 %p 차이라면 하루라도 새 것이 낫다 —
          사용자가 보고 싶은 건 "가장 안 빈 날"이 아니라 "가장 최근의 쓸 만한 날"이다.
          실측(2026-08-04): 08-02 와 08-01 이 둘 다 멀쩡한데 08-01 이 조금 덜 비어서
@@ -494,6 +502,7 @@ export const imagery = {
   },
 
   async setTrueColor(on) {
+    this._truecolorWanted = !!on;
     if (!on) {
       if (this.truecolor) this.truecolor.show = false;
       this._imgLoading(false);
@@ -501,49 +510,43 @@ export const imagery = {
       return;
     }
     if (!this.truecolor) {
-      /* ⚡ 즉시 띄우고 날짜 탐색은 배경으로 돌린다.
-         예전엔 "가장 덜 빈 날짜"를 고르려고 날짜당 타일 32장 × 최대 4일을 먼저
-         받아 검사하느라(최악 128장) 수 초 걸렸다.
-
-         ⚠️⚠️ **처음에 "어제"를 썼다가 실제로 크게 틀렸다.** (2026-08-04 실측)
-            한국 상공 타일이 **어제(08-03)는 404**, 그저께(08-02)는 정상이었다.
-            빈 화면이 그대로 떠서 **"수오미에는 구름이 없다"** 로 읽혔다 —
-            받은 지적이 정확히 그것이었다. 배경 탐색이 나중에 고쳐 주긴 하지만,
-            그 사이 몇 초 동안 **없는 맑음을 보여준다.** 그게 제일 나쁘다.
-         ⚠️ GIBS 는 하루치가 **여러 시간에 걸쳐 채워진다.** 날짜가 생겼다고
-            그 날짜 전체가 있는 게 아니다. 그래서 어제는 자주 반쯤 비어 있다.
-         → 처음부터 **이틀 전**으로 시작한다. 하루 더 오래됐지만 **차 있는** 자료다.
-            배경 탐색이 어제가 더 낫다고 판단하면 그때 앞으로 당긴다.
-         ⚠️ 이 숫자를 1 로 되돌리지 말 것. 되돌리면 위 증상이 그대로 돌아온다. */
-      const day = this._ymdBack(2);
-      this._tcDate = day;
-      this.truecolor = this._addTruecolorLayer(day);
-
-      /* 배경 탐색 — 어제가 유난히 나쁜 날(빈 구간이 훨씬 큼)에만 조용히 교체한다.
-         평소엔 어제가 최선이라 그대로 둔다(불필요한 리로드·깜빡임 방지).
-
-         ⚠️⚠️ **켤 때마다 다시 하지 않는다.** 하루에 한 번이면 충분하다 —
-            들여다보는 대상이 "어제 자료"라 하루 안에는 답이 안 바뀐다.
-            전에는 켰다 껐다 할 때마다 매번 최악 128장을 다시 받았다.
-         ⚠️ 그리고 **보여줄 타일이 다 뜬 뒤에** 시작한다. 같이 달리면
-            이 검사가 연결을 다 먹어 정작 화면이 늦게 뜬다. */
+      /* toggle 이벤트와 applyAll 이 같은 순간 들어와도 GIBS 검사를 중복 실행하거나,
+         끈 뒤 늦게 끝난 비동기 검사가 레이어를 되살리지 않게 한 작업만 공유한다. */
+      if (this._truecolorPending) {
+        await this._truecolorPending;
+        if (!this._truecolorWanted || !this.truecolor) return;
+      }
+    }
+    if (!this.truecolor) {
+      /* 오래된 안전 날짜를 먼저 보여 주지 않는다. 로딩 표시를 유지한 채 실제 GIBS
+         타일을 검사해 최신 완성일을 고른 뒤 그 날짜만 화면에 올린다. */
+      this._imgLoading(true, '수오미 최신 촬영일 확인', true);
       const KEY = 'earthus.tcProbe';
       let cached = null;
       try { cached = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (_) { }
-      if (cached?.on === day) {
-        if (cached.day && cached.day !== day) this._swapTruecolorDate(cached.day);
-      } else {
-        this._afterTilesSettle(() => {
-          this.pickTrueColorDate().then(r => {
-            /* ⚠️ 예전 조건은 "첫 후보가 유난히 나쁠 때만" 바꾸는 것이었다.
-               이제 시작이 이틀 전이라 **더 새 날짜로 당기는 경우**도 있어야 한다.
-               탐색이 고른 날이 지금 것과 다르고, 눈에 띄게 덜 비면 바꾼다. */
-            const pick = (r && r.day !== this._tcDate) ? r.day : null;
-            try { localStorage.setItem(KEY, JSON.stringify({ on: day, day: pick })); } catch (_) { }
-            if (pick) this._swapTruecolorDate(pick);
-          }).catch(() => { });
-        });
+      const today = this._ymdBack(0);
+      this._truecolorPending = (async () => {
+        let picked = cached?.on === today && cached?.day ? cached : null;
+        if (!picked) {
+          const r = await this.pickTrueColorDate();
+          picked = r?.day ? { on: today, day: r.day, avg: r.avg } : null;
+          if (picked) try { localStorage.setItem(KEY, JSON.stringify(picked)); } catch (_) { }
+        }
+        return picked;
+      })();
+      let picked = null;
+      try { picked = await this._truecolorPending; }
+      finally { this._truecolorPending = null; }
+      if (!this._truecolorWanted) { this._imgLoading(false); return; }
+      if (!picked?.day) {
+        this._imgLoading(false);
+        this._say('수오미 NPP의 완성된 최신 촬영일을 확인하지 못했습니다',
+          'Could not verify the latest complete Suomi NPP observation day');
+        return;
       }
+      this._tcDate = picked.day;
+      this._tcGap = Number.isFinite(picked.avg) ? Math.round(picked.avg * 10) / 10 : null;
+      this.truecolor = this._addTruecolorLayer(picked.day);
     }
     this.truecolor.show = true;
     /* ⚠️ 로딩 표시는 **켤 때마다** 띄운다. 예전엔 레이어를 처음 만들 때만 띄워서,
@@ -643,7 +646,7 @@ export const imagery = {
    *     막대가 **뒤로 가지 않게** 한다 — 되돌아가는 막대는 고장으로 읽힌다.
    *  ⚠️ 한 번이라도 대기(remaining>0)를 본 뒤 0 이 되면 끈다
    *     (캐시로 즉시 0 인 경우 오인 방지). */
-  _imgLoading(show, label) {
+  _imgLoading(show, label, hold = false) {
     const globe = viewer.scene.globe;
     if (this._tcProg) { globe.tileLoadProgressEvent.removeEventListener(this._tcProg); this._tcProg = null; }
     clearTimeout(this._tcLoadTimer);
@@ -682,9 +685,11 @@ export const imagery = {
        영영 참이 되지 않는다 — 실측에서 막대가 13초 넘게 "흐름"으로 떠 있었다.
        (안전 타임아웃 30초까지 갔을 것이다.)
        → 잠깐 기다려 보고 대기가 한 번도 없으면 조용히 끈다. */
-    this._tcIdleTimer = setTimeout(() => {
-      if (!sawPending) this._imgLoading(false);
-    }, 2_500);
+    if (!hold) {
+      this._tcIdleTimer = setTimeout(() => {
+        if (!sawPending) this._imgLoading(false);
+      }, 2_500);
+    }
     this._tcProg = (remaining) => {
       if (remaining > 0) {
         sawPending = true;
@@ -830,6 +835,7 @@ export const imagery = {
     if (on === this._himaOn) return;
     this._himaOn = on;
     if (!on) {
+      this._imgLoading(false);
       this.himaLayers.forEach(L => this._removeImageryWithDepth(L));
       this.himaLayers = [];
       this._himaTime = null;
@@ -962,7 +968,7 @@ export const imagery = {
   async setHimaIR(on) {
     (this.irLayers || []).forEach(L => this._removeImageryWithDepth(L));
     this.irLayers = [];
-    if (!on) { document.dispatchEvent(new CustomEvent('earthus:imagery')); return; }
+    if (!on) { this._imgLoading(false); document.dispatchEvent(new CustomEvent('earthus:imagery')); return; }
     /* ⚠️ 타일 레이어라 바이트로 못 잰다 — 타일 진행으로 표시한다.
        그래도 표시는 해야 한다: 켜고 자료가 올 때까지 화면이 그대로면
        "고장인가" 싶게 된다. 실제로 그 신고를 받았다. */
@@ -1158,10 +1164,12 @@ export const imagery = {
   async setGK2AWideIR(on) {
     this._gk2aWideIROn = on;
     if (!on) {
+      this._imgLoading(false);
       this._removeGK2AWideIRLayers();
       return;
     }
     if (this.gk2aWideIRLayers.length) return;
+    this._imgLoading(true, '천리안2A 구름');
 
     const m = await this._gk2aBox();
     const overview = m?.channels?.ir112;
@@ -1217,6 +1225,7 @@ export const imagery = {
   async _loadGK2AAuto() {
     if (this._gk2aAutoPending) return this._gk2aAutoPending;
     this._gk2aAutoPending = (async () => {
+      this._imgLoading(true, '천리안2A 자동 영상');
       const m = await this._gk2aBox();
       if (!this._gk2aAutoOn || !m) return;
       const daylight = this._gk2aDaylight();
@@ -1271,6 +1280,7 @@ export const imagery = {
     const firstOpen = on && !this._gk2aAutoOn;
     this._gk2aAutoOn = on;
     if (!on) {
+      this._imgLoading(false);
       clearTimeout(this._gk2aAutoTimer);
       this._gk2aAutoTimer = 0;
       this._removeGK2AAutoLayers();
@@ -1371,11 +1381,13 @@ export const imagery = {
   async setGK2A(ch, on) {
     const cur = this.gk2aLayers[ch];
     if (!on) {
+      this._imgLoading(false);
       if (cur) this._removeImageryWithDepth(cur);
       this.gk2aLayers[ch] = null;
       return;
     }
     if (cur) { cur.show = true; return; }
+    this._imgLoading(true, '천리안2A 영상');
 
     const m = await this._gk2aBox();
     const info = m?.channels?.[ch];

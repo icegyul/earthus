@@ -686,6 +686,9 @@ function bindAccountUI() {
   Object.keys(OFF).forEach(id => {
     panels.onClose(id, () => { if (HAS_MARKS[id]?.()) offChip(id, true); });
   });
+  /* 약관은 로그인·동의 화면에서 잠시 들어갔다가 돌아오는 보조 문서다.
+     두 모달을 동시에 보조기술에 노출하지 않고, 닫으면 출발한 화면을 복원한다. */
+  panels.onClose('legalSheet', () => legalView.restore());
 
   // 닫기 버튼 일괄
   document.querySelectorAll('[data-close]').forEach(b => {

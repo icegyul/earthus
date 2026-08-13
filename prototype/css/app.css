@@ -45,6 +45,7 @@ a{color:var(--teal);text-decoration:none}
 
 .overlay{position:absolute;inset:0;pointer-events:none;z-index:10}
 .overlay>*{pointer-events:auto}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 
 /* ══════════ AMBIENT ══════════ */
 #ambient{position:absolute;inset:0;pointer-events:none;
@@ -64,6 +65,17 @@ a{color:var(--teal);text-decoration:none}
 .amb-temprow{display:flex;align-items:center;justify-content:center;gap:17px}
 .amb-temp{font-size:70px;font-weight:200;line-height:1}
 .amb-hl{font-size:20px;font-weight:300;line-height:1.45;text-align:left;opacity:.9}
+/* 초기값을 숫자처럼 보이는 대시로 채우지 않는다. 자료가 오기 전에는 정적인
+   뼈대, 실패한 뒤에는 명시적인 오류 문구를 보여 로딩과 결측을 구분한다. */
+.amb-loading:empty::after{content:'';display:inline-block;vertical-align:middle;border-radius:999px;background:rgba(242,245,248,.2)}
+#hhmm.amb-loading:empty::after{width:3.2em;height:.72em}
+#ambDate.amb-loading:empty::after{width:8.5em;height:.72em}
+#ambCity.amb-loading:empty::after{width:5.5em;height:.72em}
+#ambCond.amb-loading:empty::after{width:7.5em;height:.7em}
+#ambTemp.amb-loading:empty::after{width:1.7em;height:.72em}
+#ambHi.amb-loading:empty::after,#ambLo.amb-loading:empty::after{width:3.7em;height:.68em}
+.amb-bottom.amb-unavailable .amb-temprow{display:none}
+.amb-bottom.amb-unavailable .amb-cond{max-width:min(84vw,440px);margin-inline:auto;font-size:13px;line-height:1.5;opacity:.72}
 
 /* 전지구 이벤트 배너 (§5-10) */
 /* ⚠️ 알람은 **상단 한 곳**에만 둔다.
@@ -597,6 +609,13 @@ body.scene-space #hud,body.scene-space #hudShow{top:max(66px,calc(env(safe-area-
 .mm-item:hover{ opacity:1; background:rgba(255,255,255,.05); }
 .mm-item:focus-visible{ outline:2px solid #9fe6f5; outline-offset:-3px; opacity:1; }
 .mm-item.on{ color:#4d9fff; opacity:1; }
+.mm-more{border-top:1px solid rgba(255,255,255,.055);border-bottom:1px solid rgba(255,255,255,.055)}
+.mm-more>summary{list-style:none}
+.mm-more>summary::-webkit-details-marker{display:none}
+.mm-more>summary .mm-ico{width:19px;text-align:center;font-size:16px;line-height:19px;transition:transform .2s ease}
+.mm-more[open]>summary .mm-ico{transform:rotate(45deg)}
+.mm-more[open]>summary .mm-chev{transform:rotate(180deg)}
+.mm-secondary{padding-left:22px;background:rgba(255,255,255,.018);font-size:12px}
 .mm-space-route.mm-soon{cursor:default;color:rgba(242,245,248,.58);opacity:.72}
 .mm-space-route.mm-soon:hover{background:none;opacity:.72}
 .mm-state{font:600 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#8bd8ec;white-space:nowrap}

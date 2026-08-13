@@ -82,21 +82,37 @@ function md2html(src) {
    법적 문서 뷰어
    ══════════════════════════════════════════════════════════════ */
 export const legalView = {
+  _returnTo: null,
   async open(doc) {
+    const kind = doc === 'terms' ? 'terms' : 'privacy';
     const box = $('#legalSheet');
     const body = $('#legalBody');
+    const openPanels = [...document.querySelectorAll('.sheet-panel.up')]
+      .filter(panel => panel !== box);
+    this._returnTo = openPanels.at(-1)?.id || null;
+    openPanels.forEach(panel => panel.classList.remove('up'));
     body.innerHTML = `<p style="opacity:.5">${i18n.t.loading}</p>`;
     box.classList.add('up');
-    $('#legalTitle').textContent = doc === 'terms' ? '이용약관' : '개인정보처리방침';
+    $('#legalTitle').textContent = kind === 'terms' ? '이용약관' : '개인정보처리방침';
     try {
-      const res = await fetch(`legal/${doc === 'terms' ? 'terms' : 'privacy'}.ko.md`);
+      const res = await fetch(`legal/${kind}.ko.md`);
       if (!res.ok) throw new Error(String(res.status));
       body.innerHTML = md2html(await res.text());
     } catch (e) {
-      body.innerHTML = `<p>문서를 불러오지 못했습니다 (${e.message})</p>`;
+      console.warn('[legal] 문서를 불러오지 못함:', e.message);
+      body.innerHTML = '<p>문서를 화면 안에서 불러오지 못했습니다.</p>'
+        + `<p><a href="legal/${kind}.ko.md" target="_blank" rel="noopener">문서 원문 새 창에서 열기</a></p>`;
     }
   },
-  close() { $('#legalSheet').classList.remove('up'); },
+  restore() {
+    const id = this._returnTo;
+    this._returnTo = null;
+    if (id) document.getElementById(id)?.classList.add('up');
+  },
+  close() {
+    $('#legalSheet').classList.remove('up');
+    this.restore();
+  },
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -105,7 +121,14 @@ export const legalView = {
 export const loginSheet = {
   open() {
     const configured = !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY);
-    $('#loginNotice').style.display = configured ? 'none' : 'block';
+    const notice = $('#loginNotice');
+    notice.hidden = configured;
+    ['#btnGoogle', '#btnApple'].forEach(selector => {
+      const button = $(selector);
+      if (!button) return;
+      button.disabled = !configured;
+      button.setAttribute('aria-disabled', String(!configured));
+    });
     $('#loginSheet').classList.add('up');
   },
   close() { $('#loginSheet').classList.remove('up'); },
@@ -115,9 +138,10 @@ export const loginSheet = {
       await auth.signIn(provider);   // OAuth 리디렉션 — 여기서 페이지를 떠난다
     } catch (e) {
       if (e.message === 'AUTH_NOT_CONFIGURED') {
-        toast('Supabase 키가 아직 설정되지 않았습니다 (config.local.js)');
+        toast('현재 로그인을 이용할 수 없습니다. 공개 자료는 로그인 없이 이용하실 수 있습니다.');
       } else {
-        toast('로그인 실패: ' + e.message);
+        console.warn('[login] 로그인 실패:', e.message);
+        toast('로그인을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.');
       }
     }
   },
@@ -234,9 +258,9 @@ export const accountSheet = {
     if (!signed) return;
 
     const p = auth.profile || {};
-    $('#accEmail').textContent = p.email || auth.user?.email || '—';
+    $('#accEmail').textContent = p.email || auth.user?.email || '확인되지 않음';
     $('#accProvider').textContent =
-      ({ google: 'Google', apple: 'Apple' })[p.provider] || p.provider || '—';
+      ({ google: 'Google', apple: 'Apple' })[p.provider] || p.provider || '확인되지 않음';
     $('#accTier').textContent = auth.isPaid() ? '구독 중' : '무료';
     $('#accBadge').style.display = auth.isFounding() ? 'inline-block' : 'none';
   },

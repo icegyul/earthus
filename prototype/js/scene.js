@@ -19,6 +19,12 @@ export const sceneMgr = {
   init() {
     this.current = 'earth';
     store.setScene('earth', 'earth');
+    const root = document.getElementById('sceneRoot');
+    if (root) {
+      root.hidden = true;
+      root.inert = true;
+      root.setAttribute('aria-hidden', 'true');
+    }
     document.querySelectorAll('[data-scene-home]').forEach(button => {
       button.addEventListener('click', () => this.to('earth'));
     });
@@ -75,6 +81,7 @@ export const sceneMgr = {
     if (next !== 'space') {
       root?.classList.remove('active');
       root?.setAttribute('aria-hidden', 'true');
+      if (root) { root.hidden = true; root.inert = true; }
       earth?.classList.remove('scene-hidden');
       if (earth) earth.inert = false;
       if (inputs) inputs.enableInputs = true;
@@ -85,6 +92,7 @@ export const sceneMgr = {
       if (earth) earth.inert = true;
       earth?.classList.add('scene-hidden');
       power.suspend();
+      if (root) { root.hidden = false; root.inert = false; }
       root?.classList.add('active');
       root?.setAttribute('aria-hidden', 'false');
     }

@@ -61,6 +61,7 @@
   margin-bottom:9px; border:1px solid transparent; transition:transform .14s ease;
 }
 .oauth:hover{ transform:translateY(-1px); }
+.oauth:disabled{cursor:not-allowed;opacity:.42;transform:none;filter:grayscale(.35)}
 .oauth.google{ background:#fff; color:#1f1f1f; }
 .oauth.apple{ background:#000; color:#fff; border-color:rgba(255,255,255,.35); }
 

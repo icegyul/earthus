@@ -15,8 +15,12 @@
  *     시작하면 그 화성 세션 복원에 필요한 exact catalog/detail texture만 제한 저장한다.
  */
 
-const CACHE = 'earthus-shell-2026-08-13-visualrelease1';
-const LEGACY_CACHES = new Set(['earthus-shell-2026-07-28c', 'earthus-shell-2026-08-12-session1']);
+const CACHE = 'earthus-shell-2026-08-13-publicui1';
+const LEGACY_CACHES = new Set([
+  'earthus-shell-2026-07-28c',
+  'earthus-shell-2026-08-12-session1',
+  'earthus-shell-2026-08-13-visualrelease1',
+]);
 const SKY_FALLBACK = './space/skybox/earthus-milky-way/panorama-2048.28125627e27567e3.webp';
 const SHELL = ['./index.html', './manifest.webmanifest', SKY_FALLBACK];
 const SESSION_DEPENDENCY_PATHS = new Set([

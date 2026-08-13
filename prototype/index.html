@@ -96,8 +96,8 @@
 }
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Widgets/widgets.css">
-<link rel="stylesheet" href="css/app.css?v=20260813-visualrelease1">
-<link rel="stylesheet" href="css/account.css">
+<link rel="stylesheet" href="css/app.css?v=20260813-publicui1">
+<link rel="stylesheet" href="css/account.css?v=20260813-publicui1">
 <link rel="stylesheet" href="css/ask.css">
 <link rel="stylesheet" href="css/readability.css?v=20260812-contours1">
 <link rel="stylesheet" href="css/safety.css?v=20260812-safety1">
@@ -176,9 +176,13 @@
 
 <div class="overlay">
 
+  <!-- 첫 화면의 정본은 예쁜 지구본과 지금 지구의 자료다.
+       우주·심해는 사용자가 AETHERUS/탐험을 고른 뒤에만 읽고 보게 한다. -->
+  <h1 class="sr-only">earthus — 지금 지구의 날씨·바다·재난을 출처와 관측 시각으로 보는 3D 지구본</h1>
+
   <!-- 우주·심해 공통 장면 기반. Cesium은 파괴하지 않고 이 아래에서 숨겨 쉰다.
        ⚠️ #banner는 이 장면보다 위여야 한다 — 재난 배너가 가려지면 안 된다. -->
-  <div id="sceneRoot" aria-hidden="true">
+  <div id="sceneRoot" aria-hidden="true" hidden inert data-nosnippet>
     <section class="scene-view space-scene" data-scene-view="space" aria-label="우주 탐험 기반 장면">
       <div id="cosmicExperience" class="cosmic-experience" hidden>
         <canvas id="cosmicCanvas" tabindex="0" aria-label="지구에서 태양계, 은하수, 은하들까지 이어지는 회전 가능한 3D 로그 스케일"></canvas>
@@ -284,14 +288,14 @@
         <button id="cosmicEarthReturn" type="button">지구로 돌아가기</button>
       </div>
       <div id="spaceSceneIntro">
-        <p class="scene-kicker" data-i18n="explore.space.kicker">SPACE / SCALE DEMO</p>
+        <p class="scene-kicker" data-i18n="explore.space.kicker">우주 / 크기 전환 데모</p>
         <h2 data-i18n="explore.space.title">지구 밖의 크기를 한 단계씩 봅니다.</h2>
         <p class="scene-status" data-i18n="explore.space.status">검증된 허블·JWST 사진과 JPL 궤도요소로 계산한 8행성의 위치를 보세요.</p>
         <div id="galaxyCards" class="galaxy-cards" aria-live="polite" hidden></div>
       </div>
       <div id="solarExperience" class="solar-experience" hidden>
         <header class="solar-head">
-          <p class="scene-kicker">SOLAR SYSTEM / JPL APPROXIMATION</p>
+          <p class="scene-kicker" data-i18n="explore.solar.kicker">태양계 / JPL 근사 계산</p>
           <h2 id="solarTitle">태양계의 오늘</h2>
           <p id="solarSource" class="scene-status"></p>
         </header>
@@ -315,14 +319,14 @@
     </section>
     <section class="scene-view ocean-scene" data-scene-view="ocean" aria-label="심해 탐험 기반 장면">
       <div id="oceanSceneIntro">
-        <p class="scene-kicker" data-i18n="explore.ocean.kicker">OCEAN / SCALE DEMO</p>
+        <p class="scene-kicker" data-i18n="explore.ocean.kicker">심해 / 크기 전환 데모</p>
         <h2 data-i18n="explore.ocean.title">수면 아래의 깊이를 층으로 내려갑니다.</h2>
         <p class="scene-status" data-i18n="explore.ocean.status">지구에서 바다 지점을 누른 뒤 「여기서 잠수」를 고르면, 검증된 GEBCO 2026 격자로 그 지점의 수심 기둥을 보여줍니다.</p>
         <div id="trenchExplorer" class="trench-explorer" aria-live="polite"></div>
       </div>
       <div id="diveExperience" class="dive-experience" hidden>
         <header class="dive-head">
-          <p class="scene-kicker">OCEAN / GEBCO 2026</p>
+          <p class="scene-kicker" data-i18n="explore.dive.kicker">심해 / GEBCO 2026</p>
           <h2 id="diveTitle">이 지점의 수심</h2>
           <p id="diveSource" class="scene-status">수심 자료를 읽는 중…</p>
         </header>
@@ -345,19 +349,19 @@
   <div id="sceneFade" aria-hidden="true"></div>
 
   <!-- ══ AMBIENT ══ -->
-  <div id="ambient">
+  <div id="ambient" aria-label="현재 위치의 시각과 날씨">
     <div class="amb-top">
-      <div class="clock"><span class="ampm" id="ampm">오후</span><span id="hhmm">—:—</span></div>
-      <div class="amb-date" id="ambDate">—</div>
-      <div class="amb-city" id="ambCity">—</div>
+      <div class="clock"><span class="ampm" id="ampm"></span><span id="hhmm" class="amb-loading" aria-label="현재 시각 불러오는 중"></span></div>
+      <div class="amb-date amb-loading" id="ambDate" aria-label="오늘 날짜 불러오는 중"></div>
+      <div class="amb-city amb-loading" id="ambCity" aria-label="위치 확인 중"></div>
     </div>
     <!-- ⚠️ 누르면 날씨 시트가 열린다 (ui-weather.js). #ambient 는 pointer-events:none 이라
          이 덩어리만 CSS 에서 auto 로 되돌린다 — 전체를 되돌리면 지구를 못 돌린다. -->
     <div class="amb-bottom" id="ambBottom" role="button" tabindex="0" aria-label="날씨 자세히">
-      <div class="amb-cond" id="ambCond">—</div>
+      <div class="amb-cond amb-loading" id="ambCond" aria-label="날씨 자료 확인 중"></div>
       <div class="amb-temprow">
-        <div class="amb-temp" id="ambTemp">—</div>
-        <div class="amb-hl"><span id="ambHi">—</span><br><span id="ambLo">—</span></div>
+        <div class="amb-temp amb-loading" id="ambTemp" aria-label="현재 기온 확인 중"></div>
+        <div class="amb-hl"><span id="ambHi" class="amb-loading" aria-label="최고 기온 확인 중"></span><br><span id="ambLo" class="amb-loading" aria-label="최저 기온 확인 중"></span></div>
       </div>
     </div>
   </div>
@@ -467,7 +471,14 @@
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 4.2 21 19.4H3z"/><path d="M12 10v3.6" stroke-linecap="round"/><circle cx="12" cy="16.6" r=".7" fill="currentColor" stroke="none"/></svg></span>
       <span class="mm-label" data-i18n="m.alert">Alert</span><span class="mm-chev">‹</span>
     </button>
-    <button class="mm-item" data-act="news">
+    <!-- 처음 온 사람에게는 핵심인 지구 자료·위성·경보를 먼저 보이고,
+         뉴스·질의·항공·취미는 필요할 때 펼치는 한 갈래로 묶는다. 기능은 줄이지 않는다. -->
+    <details class="mm-more" id="menuMore">
+      <summary class="mm-item" role="button" aria-expanded="false">
+        <span class="mm-ico" aria-hidden="true">＋</span>
+        <span class="mm-label" data-i18n="m.explore">탐색·활동</span><span class="mm-chev">⌄</span>
+      </summary>
+    <button class="mm-item mm-secondary" data-act="news">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3.4 6.2h13v13H5.6a2.2 2.2 0 0 1-2.2-2.2z"/><path d="M16.4 9.2h4.2v7.8a2.2 2.2 0 0 1-4.2 0z"/><path d="M6.2 9.4h7.4M6.2 12.4h7.4M6.2 15.4h4.6" stroke-linecap="round"/></svg></span>
       <span class="mm-label" data-i18n="m.news">News</span><span class="mm-badge" id="newsBadge"></span>
     </button>
@@ -477,26 +488,27 @@
          ⚠️ #eventBadge 는 지웠다 — 이 자리를 참조하던 코드가 있으면 조용히 죽는다.
             main.js 에서 함께 정리했다. -->
     <!-- LAB — 옛 '커뮤니티'. 표시명만 바꾼다 (내부 id 는 community 그대로). -->
-    <button class="mm-item" data-act="community">
+    <button class="mm-item mm-secondary" data-act="community">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M9.6 3.4v5.2L4.8 17a2.2 2.2 0 0 0 1.9 3.3h10.6a2.2 2.2 0 0 0 1.9-3.3l-4.8-8.4V3.4"/><path d="M8.4 3.4h7.2M8.6 13.2h6.8" stroke-linecap="round"/></svg></span>
       <span class="mm-label" data-i18n="m.lab">LAB</span><span class="mm-badge" id="commBadge"></span>
     </button>
     <!-- if — 옛 '물어보기'. 관측 질의(기존)에 시나리오 분석이 얹힌다. -->
-    <button class="mm-item" data-act="ask">
+    <button class="mm-item mm-secondary" data-act="ask">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><circle cx="11" cy="11" r="6.4"/><path d="M15.8 15.8 20.5 20.5" stroke-linecap="round"/><path d="M9.2 9.4c.2-1 1-1.6 1.9-1.6 1 0 1.8.7 1.8 1.6 0 1.3-1.7 1.4-1.7 2.6" stroke-linecap="round"/><circle cx="11.2" cy="14.4" r=".55" fill="currentColor" stroke="none"/></svg></span>
       <span class="mm-label" data-i18n="m.ask">물어보기</span>
     </button>
-    <button class="mm-item" data-act="flight">
+    <button class="mm-item mm-secondary" data-act="flight">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2.4c.9 0 1.5 1.1 1.5 2.6v3.4l7.4 4.3v2.1l-7.4-2.3v4.2l2.5 1.8v1.6L12 19.3l-4 .8v-1.6l2.5-1.8v-4.2L3.1 14.8v-2.1l7.4-4.3V5c0-1.5.6-2.6 1.5-2.6z"/></svg></span>
       <span class="mm-label" data-i18n="m.flight">항공편</span><span class="mm-badge" id="flightBadge"></span>
     </button>
     <!-- 취미 — 서핑·낚시·패러글라이딩·산·하늘.
          ⚠️ 네 화면이 묻는 것은 같다: "지금 저기 조건이 어떤가".
             따로 두면 메뉴만 길어지고, 서로를 못 찾는다. -->
-    <button class="mm-item" data-act="outdoor">
+    <button class="mm-item mm-secondary" data-act="outdoor">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3.4 20.2h17.2"/><path d="M6.2 20.2 12 5.6l5.8 14.6"/><path d="M9.4 13.4h5.2" stroke-linecap="round"/><circle cx="18.6" cy="5.4" r="2.2"/></svg></span>
       <span class="mm-label" data-i18n="m.outdoor">취미</span><span class="mm-badge" id="outBadge"></span>
     </button>
+    </details>
     <!-- 지구는 우리가 사는 지구로 돌아가는 길이다.
          수면 자료는 지구 스타일 안에 있고, 해구는 탐험 주제라 취미 안에 둔다. -->
     <button class="mm-item mm-earth-route" type="button" data-act="earth-home">
@@ -519,9 +531,9 @@
   </nav>
 
   <!-- 위성 그룹 (아이콘에서 열림) -->
-  <div id="satSheet" class="sheet-panel">
+  <div id="satSheet" class="sheet-panel" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="satSheet" aria-label="닫기"><span>×</span></button></div>
-    <h3>인공위성 <span class="sat-status" id="satStatus">—</span></h3>
+    <h3>인공위성 <span class="sat-status" id="satStatus">상태 확인 중</span></h3>
 
     <label class="keep-row">
       <input type="checkbox" id="satKeep">
@@ -541,14 +553,14 @@
 
   <!-- API 신청 관리 (설정 안) — 무엇을 신청했고 언제 만료되는가.
        ⚠️ 키는 여기 저장하지 않는다. 서버 환경변수에만 둔다. -->
-  <div id="apiSheet" class="sheet-panel tall">
+  <div id="apiSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close api-close" aria-label="닫기"><span>×</span></button></div>
     <h3 id="apiTitle">API 신청 관리</h3>
     <div class="api-body"></div>
   </div>
 
   <!-- 물어보기: 질문 → 판단 → 자료 → 화면. AI API 없이 규칙으로 동작한다. -->
-  <div id="askSheet" class="sheet-panel tall">
+  <div id="askSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close ask-close" aria-label="닫기"><span>×</span></button></div>
     <h3 id="askTitle">물어보기</h3>
     <div class="ask-log"></div>
@@ -559,7 +571,7 @@
   </div>
 
   <!-- 이벤트: 교차검증된 사건 -->
-  <div id="eventSheet" class="sheet-panel tall">
+  <div id="eventSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="eventSheet" aria-label="닫기"><span>×</span></button></div>
     <h3 id="eventTitle">이벤트</h3>
     <div id="eventBody"></div>
@@ -567,13 +579,13 @@
 
   <!-- 한국 — 기상청 자료 모음. 특보는 이 안의 한 탭이다. -->
   <!-- 내 자리 날씨 — 하단 온도를 누르거나, 메뉴 › 내 위치로 열린다 -->
-  <div id="wxSheet" class="sheet-panel tall">
+  <div id="wxSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="wxSheet" aria-label="닫기"><span>×</span></button></div>
     <h3 id="wxTitle">내 자리</h3>
     <div id="wxBody"></div>
   </div>
 
-  <div id="sfSheet" class="sheet-panel tall keep-open">
+  <div id="sfSheet" class="sheet-panel tall keep-open" aria-hidden="true" inert data-nosnippet>
     <!-- ⚠️ **닫기와 끄기는 다르다.** 닫기는 창만 내리고 지도 표시는 남긴다 —
          지도를 크게 보려고 닫는 경우가 있기 때문이다.
          끄기는 표시까지 지운다. 둘을 한 버튼으로 묶으면 둘 중 하나는 못 하게 된다. -->
@@ -586,7 +598,7 @@
   </div>
 
   <!-- 낚시 — 물때와 안전. ⚠️ 조황은 말하지 않는다 (fishing.js 머리말 참고) -->
-  <div id="fsSheet" class="sheet-panel tall keep-open">
+  <div id="fsSheet" class="sheet-panel tall keep-open" aria-hidden="true" inert data-nosnippet>
     <!-- ⚠️ **닫기와 끄기는 다르다.** 닫기는 창만 내리고 지도 표시는 남긴다 —
          지도를 크게 보려고 닫는 경우가 있기 때문이다.
          끄기는 표시까지 지운다. 둘을 한 버튼으로 묶으면 둘 중 하나는 못 하게 된다. -->
@@ -600,7 +612,7 @@
 
   <!-- 패러글라이딩 — 바람과 구름 밑면.
        ⚠️ 좌표는 산 정상이지 이륙장이 아니다 (para.js 머리말 참고) -->
-  <div id="pgSheet" class="sheet-panel tall keep-open">
+  <div id="pgSheet" class="sheet-panel tall keep-open" aria-hidden="true" inert data-nosnippet>
     <!-- ⚠️ **닫기와 끄기는 다르다.** 닫기는 창만 내리고 지도 표시는 남긴다 —
          지도를 크게 보려고 닫는 경우가 있기 때문이다.
          끄기는 표시까지 지운다. 둘을 한 버튼으로 묶으면 둘 중 하나는 못 하게 된다. -->
@@ -614,13 +626,13 @@
 
   <!-- 취미 — 서핑·낚시·패러글라이딩·산·하늘을 묶은 자리.
        ⚠️ 이름을 "추천"으로 하지 않았다. 우리는 권하지 않는다 — 조건을 옮길 뿐이다. -->
-  <div id="outSheet" class="sheet-panel">
+  <div id="outSheet" class="sheet-panel" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="outSheet" aria-label="닫기"><span>×</span></button></div>
     <h3>취미</h3>
     <div id="outBody"></div>
   </div>
 
-  <div id="mtSheet" class="sheet-panel tall keep-open">
+  <div id="mtSheet" class="sheet-panel tall keep-open" aria-hidden="true" inert data-nosnippet>
     <!-- ⚠️ **닫기와 끄기는 다르다.** 닫기는 창만 내리고 지도 표시는 남긴다 —
          지도를 크게 보려고 닫는 경우가 있기 때문이다.
          끄기는 표시까지 지운다. 둘을 한 버튼으로 묶으면 둘 중 하나는 못 하게 된다. -->
@@ -632,7 +644,7 @@
     <div id="mtBody"></div>
   </div>
 
-  <div id="koreaSheet" class="sheet-panel tall">
+  <div id="koreaSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="koreaSheet" aria-label="닫기"><span>×</span></button></div>
     <h3 id="koreaTitle">한국</h3>
     <div id="koreaTabs" role="tablist"></div>
@@ -640,7 +652,7 @@
   </div>
 
   <!-- 개발할 수 있는 것 — ⚠️ 운영자용. 주소 뒤 #dev 를 붙여야 설정에 줄이 나타난다. -->
-  <div id="devSheet" class="sheet-panel tall keep-open">
+  <div id="devSheet" class="sheet-panel tall keep-open" aria-hidden="true" inert data-nosnippet>
     <div class="sheet-acts">
       <button class="sh-close" data-close="devSheet" aria-label="닫기">닫기 ×</button>
     </div>
@@ -649,7 +661,7 @@
   </div>
 
   <!-- 철새 — ⚠️ 경로가 아니다. 출발지·도착지 두 지점뿐이다. ui-migbird.js 머리말 참고. -->
-  <div id="migbirdSheet" class="sheet-panel tall keep-open">
+  <div id="migbirdSheet" class="sheet-panel tall keep-open" aria-hidden="true" inert data-nosnippet>
     <div class="sheet-acts">
       <button class="sh-off" data-sheet-off="migbirdSheet">지도에서 지우기</button>
       <button class="sh-close" data-close="migbirdSheet" aria-label="닫기">닫기 ×</button>
@@ -660,7 +672,7 @@
 
   <!-- 바닷새 — 국가해양생태계종합조사. ⚠️ 이용허락범위 제한 없음(거북과 다르다).
        ⚠️ "지금 있는 새"가 아니라 "조사한 해에 센 숫자"다. 화면 맨 위에 적는다. -->
-  <div id="seabirdSheet" class="sheet-panel tall keep-open">
+  <div id="seabirdSheet" class="sheet-panel tall keep-open" aria-hidden="true" inert data-nosnippet>
     <div class="sheet-acts">
       <button class="sh-off" data-sheet-off="seabirdSheet">지도에서 지우기</button>
       <button class="sh-close" data-close="seabirdSheet" aria-label="닫기">닫기 ×</button>
@@ -670,7 +682,7 @@
   </div>
 
   <!-- 에코뱅크 조류 — ⚠️ 현재 위치·개체수가 아니라 5km 칸별 조사 기록이다. -->
-  <div id="ecobirdSheet" class="sheet-panel tall keep-open">
+  <div id="ecobirdSheet" class="sheet-panel tall keep-open" aria-hidden="true" inert data-nosnippet>
     <div class="sheet-acts">
       <button class="sh-off" data-sheet-off="ecobirdSheet">지도에서 지우기</button>
       <button class="sh-close" data-close="ecobirdSheet" aria-label="닫기">닫기 ×</button>
@@ -681,7 +693,7 @@
 
   <!-- 바다거북 — ⚠️ 제4유형 자료(상업적 이용금지·변경금지). ui-turtle.js 머리말 참고.
        ⚠️ 추적이 끝난 경로다. 화면 맨 위에 그 사실을 적는다. -->
-  <div id="turtleSheet" class="sheet-panel tall keep-open">
+  <div id="turtleSheet" class="sheet-panel tall keep-open" aria-hidden="true" inert data-nosnippet>
     <!-- ⚠️ 여기 있던 동그란 × (.traffic) 는 뺐다. 아래 "닫기 ×" 와 겹쳐
          닫는 버튼이 둘이 됐다. 서핑·낚시·활공장·등산로 시트와 같은 모양으로 맞춘다. -->
     <!-- ⚠️ 거북 경로는 45마리 28,770점이라 켜 두면 바다가 실뭉치가 된다.
@@ -695,7 +707,7 @@
   </div>
 
   <!-- 알림 설정 — ⚠️ 첫 줄이 "못 하는 것"이다 (ui-alerts.js 머리말 참고) -->
-  <div id="alertSheet" class="sheet-panel tall">
+  <div id="alertSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="alertSheet" aria-label="닫기"><span>×</span></button></div>
     <h3 id="alertTitle">알림</h3>
     <div id="alertBody"></div>
@@ -703,7 +715,7 @@
 
   <!-- 일본 (JMA) — ⚠️ 한국 탭을 베낀 것이 아니다. 두 나라가 공개하는 것이 다르다.
        특보는 일부러 빠져 있다 (JMA 특보 경로가 2026-05-28 이후 멈춰 있어 확인 불가). -->
-  <div id="jpSheet" class="sheet-panel tall">
+  <div id="jpSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="jpSheet" aria-label="닫기"><span>×</span></button></div>
     <h3 id="jpTitle">일본</h3>
     <div id="jpTabs" role="tablist"></div>
@@ -711,42 +723,42 @@
   </div>
 
   <!-- 기상특보 (한국) — 지금 발효 중인 것만 -->
-  <div id="warnSheet" class="sheet-panel tall">
+  <div id="warnSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="warnSheet" aria-label="닫기"><span>×</span></button></div>
     <h3 id="warnTitle">기상특보</h3>
     <div id="warnBody"></div>
   </div>
 
   <!-- 커뮤니티: 경고 · 개발 요청 -->
-  <div id="commSheet" class="sheet-panel tall">
+  <div id="commSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="commSheet" aria-label="닫기"><span>×</span></button></div>
     <h3 id="commTitle">LAB</h3>
     <div id="commBody"></div>
   </div>
 
   <!-- 항공편: 예약 · 예상 항로 · 내 비행기 추적 -->
-  <div id="flightSheet" class="sheet-panel tall">
+  <div id="flightSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="flightSheet" aria-label="닫기"><span>×</span></button></div>
     <h3 id="flightTitle">항공편</h3>
     <div id="flightBody"></div>
   </div>
 
   <!-- 구독 -->
-  <div id="subSheet" class="sheet-panel">
+  <div id="subSheet" class="sheet-panel" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="subSheet" aria-label="닫기"><span>×</span></button></div>
     <h3 id="subTitle">구독</h3>
     <div id="subBody"></div>
   </div>
 
   <!-- 선착순 오픈 (항공기 · 선박) -->
-  <div id="demandSheet" class="sheet-panel">
+  <div id="demandSheet" class="sheet-panel" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="demandSheet" aria-label="닫기"><span>×</span></button></div>
-    <h3 id="demandTitle">—</h3>
+    <h3 id="demandTitle">서비스 알림 신청</h3>
     <div id="demandBody"></div>
   </div>
 
   <!-- 하늘: 태양 · 유성우 · 일식/월식 -->
-  <div id="skySheet" class="sheet-panel tall">
+  <div id="skySheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="skySheet" aria-label="닫기"><span>×</span></button></div>
     <h3 id="skyTitle">하늘</h3>
     <div id="skyBody"></div>
@@ -758,14 +770,14 @@
        ⚠️ 이건 안내지 공식 발표가 아니다. 눌러서 여는 패널에 그렇게 적는다. -->
   <button id="warnBar" type="button" aria-live="polite" hidden></button>
 
-  <div id="sheet">
+  <div id="sheet" aria-hidden="true" inert data-nosnippet>
     <!-- 맥 신호등 — 빨강=닫기, 노랑=내리기. 누구나 아는 관습이라 설명이 필요 없다. -->
     <div class="traffic">
       <button id="sheetClose" class="tl close" aria-label="닫기" title="닫기"><span>×</span></button>
       <button id="sheetMin" class="tl min" aria-label="내리기" title="내리기 (궤적은 유지)"><span>−</span></button>
     </div>
-    <div class="kind" id="sheetKind">—</div>
-    <h3 id="sheetTitle">—</h3>
+    <div class="kind" id="sheetKind"></div>
+    <h3 id="sheetTitle">선택한 자료</h3>
     <dl id="sheetRows"></dl>
     <div id="rainbars"></div>
     <div id="forecast"></div>
@@ -776,7 +788,7 @@
 
   <div id="gear" style="display:none">⚙</div>
 
-  <div id="settings">
+  <div id="settings" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" id="setClose" aria-label="닫기"><span>×</span></button></div>
     <h3 id="setTitle">설정</h3>
 
@@ -848,7 +860,7 @@
   </div>
 
   <!-- ══ 계정 ══ -->
-  <div id="accountSheet" class="sheet-panel">
+  <div id="accountSheet" class="sheet-panel" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="accountSheet" aria-label="닫기"><span>×</span></button></div>
     <h3>계정</h3>
 
@@ -862,9 +874,9 @@
 
     <div id="accUser" style="display:none">
       <dl class="acc-rows">
-        <dt>이메일</dt><dd id="accEmail">—</dd>
-        <dt>로그인 방식</dt><dd id="accProvider">—</dd>
-        <dt>요금제</dt><dd id="accTier">—</dd>
+        <dt>이메일</dt><dd id="accEmail"></dd>
+        <dt>로그인 방식</dt><dd id="accProvider"></dd>
+        <dt>요금제</dt><dd id="accTier"></dd>
       </dl>
       <!-- 창립 멤버 표시. profiles.founding_member 가 실제 칸이고 admin 에서도 ★ 로 보인다.
            사전등록 화면에서 "표시가 붙습니다"라고 약속하므로 여기 있어야 한다. -->
@@ -880,7 +892,7 @@
   </div>
 
   <!-- ══ 로그인 ══ -->
-  <div id="loginSheet" class="sheet-panel">
+  <div id="loginSheet" class="sheet-panel" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="loginSheet" aria-label="닫기"><span>×</span></button></div>
     <h3>로그인</h3>
     <p class="sp-lead" id="loginReason"></p>
@@ -899,16 +911,15 @@
       Apple로 계속하기
     </button>
 
-    <p class="sp-note" id="loginNotice" style="display:none">
-      ⚠️ 아직 Supabase 키가 설정되지 않았습니다. <code>js/config.local.js</code> 를 만들고
-      키를 입력하면 실제 로그인이 동작합니다.
+    <p class="sp-note" id="loginNotice" role="status" hidden>
+      현재 로그인 연결을 점검하고 있습니다. 지구본과 공개 자료는 로그인 없이 계속 이용하실 수 있습니다.
     </p>
-    <p class="sp-fine">계속 진행하면 <a href="#" data-legal="terms">이용약관</a> 및
-      <a href="#" data-legal="privacy">개인정보처리방침</a>에 동의하는 절차로 이동합니다.</p>
+    <p class="sp-fine">계속 진행하면 <a href="legal/terms.ko.md" data-legal="terms">이용약관</a> 및
+      <a href="legal/privacy.ko.md" data-legal="privacy">개인정보처리방침</a>에 동의하는 절차로 이동합니다.</p>
   </div>
 
   <!-- ══ 동의 ══ -->
-  <div id="consentSheet" class="sheet-panel">
+  <div id="consentSheet" class="sheet-panel" aria-hidden="true" inert data-nosnippet>
     <h3>약관 동의</h3>
     <p class="sp-lead">서비스 이용을 위해 아래 항목에 동의해주세요.<br>
       <strong>선택 항목은 동의하지 않아도 가입하실 수 있습니다.</strong></p>
@@ -918,10 +929,10 @@
 
     <label class="consent"><input type="checkbox" id="cTos">
       <span><b class="req">[필수]</b> 이용약관에 동의합니다
-        <a href="#" data-legal="terms">보기</a></span></label>
+        <a href="legal/terms.ko.md" data-legal="terms">보기</a></span></label>
     <label class="consent"><input type="checkbox" id="cPrivacy">
       <span><b class="req">[필수]</b> 개인정보 수집·이용에 동의합니다
-        <a href="#" data-legal="privacy">보기</a></span></label>
+        <a href="legal/privacy.ko.md" data-legal="privacy">보기</a></span></label>
     <label class="consent"><input type="checkbox" id="cAge">
       <span><b class="req">[필수]</b> 만 14세 이상입니다</span></label>
 
@@ -947,7 +958,7 @@
   </div>
 
   <!-- ══ 사전등록 ══ -->
-  <div id="waitlistSheet" class="sheet-panel">
+  <div id="waitlistSheet" class="sheet-panel" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="waitlistSheet" aria-label="닫기"><span>×</span></button></div>
     <!-- ⚠️ 2026-08-06 전면 교체. 이전 문구는 없어진 등급(창립 멤버)과
          '평생 가격 고정'을 약속하고 있었다. 지킬 수 없는 약속은 뺐다.
@@ -973,7 +984,7 @@
       </ul>
       <!-- 남은 자리. ⚠️ 셀 수 없으면 이 줄은 아예 안 나온다 —
            서버가 잠깐 안 될 때 "500자리 남음"을 지어내면 그게 거짓말이다. -->
-      <p class="wl-seats" id="wlSeats" style="display:none">—</p>
+      <p class="wl-seats" id="wlSeats" style="display:none"></p>
       <div class="wl-h" data-i18n="wl.h2">계속 무료인 것</div>
       <p class="wl-p" data-i18n="wl.p2">태풍 · 지진 · 쓰나미 같은 안전 정보, 구름과 날씨, 3D 학습은
         구독과 상관없이 계속 무료입니다. 안전 정보에는 값을 매기지 않습니다.</p>
@@ -991,22 +1002,22 @@
       <button type="submit" class="btn-primary" data-i18n="wl.submit">사전등록하기</button>
     </form>
     <p class="sp-fine"><span data-i18n="wl.fine1">등록하신 이메일은 출시 안내 목적으로만 사용하며,</span>
-      <a href="#" data-legal="privacy" data-i18n="wl.priv">개인정보처리방침</a><span data-i18n="wl.fine2">에 따라 처리됩니다.</span><br>
+      <a href="legal/privacy.ko.md" data-legal="privacy" data-i18n="wl.priv">개인정보처리방침</a><span data-i18n="wl.fine2">에 따라 처리됩니다.</span><br>
       <!-- 값이 걸린 약속이라 근거 조항으로 가는 길이 있어야 한다.
            약관 제8조 제7항에 창립 멤버 반값이 명시돼 있다. -->
       <span data-i18n="wl.fine3">창립 멤버 반값은</span>
-      <a href="#" data-legal="terms" data-i18n="wl.terms">이용약관 제8조 제7항</a><span data-i18n="wl.fine4">에 정해져 있습니다.</span></p>
+      <a href="legal/terms.ko.md" data-legal="terms" data-i18n="wl.terms">이용약관 제8조 제7항</a><span data-i18n="wl.fine4">에 정해져 있습니다.</span></p>
   </div>
 
   <!-- ══ 법적 문서 ══ -->
-  <div id="legalSheet" class="sheet-panel tall">
+  <div id="legalSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="legalSheet" aria-label="닫기"><span>×</span></button></div>
-    <h3 id="legalTitle">—</h3>
+    <h3 id="legalTitle">법률 문서</h3>
     <div class="legal-body" id="legalBody"></div>
   </div>
 
   <!-- ══ 업데이트 내역 ══ -->
-  <div id="changelogSheet" class="sheet-panel tall">
+  <div id="changelogSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="changelogSheet" aria-label="닫기"><span>×</span></button></div>
     <h3 id="clTitle">업데이트</h3>
     <div class="legal-body changelog" id="clBody"></div>
@@ -1022,12 +1033,12 @@
 </div>
 
 <!-- 개발용 HUD -->
-<div id="hud">
-  <div>고도 <b id="hAlt">—</b></div>
-  <div>상태 <span class="mode" id="hMode">—</span></div>
+<div id="hud" hidden aria-hidden="true">
+  <div>고도 <b id="hAlt">측정 대기</b></div>
+  <div>상태 <span class="mode" id="hMode">측정 대기</span></div>
   <div>표시핀 <b id="hPins">0</b></div>
-  <div>프레임 <b id="hFps">—</b></div>
-  <div>해상도 <b id="hRes">—</b></div>
+  <div>프레임 <b id="hFps">측정 대기</b></div>
+  <div>해상도 <b id="hRes">측정 대기</b></div>
   <hr>
   <div id="hApi"></div>
   <hr>
@@ -1038,7 +1049,7 @@
     <button id="hudHide">숨김</button>
   </div>
 </div>
-<button id="hudShow">HUD</button>
+<button id="hudShow" hidden aria-hidden="true">HUD</button>
 
 <!-- 첫 화면 — 지구가 준비될 때까지 확정 로고를 보여준다.
      ⚠️ 글자를 폰트로 흉내내지 않는다. 로고는 브랜딩/결정.png 에서 락업(워드마크+구분선+
@@ -1070,7 +1081,7 @@
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"
         integrity="sha384-J3D70NIZSVUuhQbp4W22OKF/xNWQjCEXmLxpnBp4CNDaQ+TbS1mmDZ2W3wlgqpKj"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script type="module" src="js/main.js?v=20260813-visualrelease1"></script>
+<script type="module" src="js/main.js?v=20260813-publicui1"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

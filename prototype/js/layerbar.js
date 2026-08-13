@@ -569,6 +569,10 @@ export const layerBar = {
   init() {
     const tab = $('#menuTab'), aetherusTab = $('#aetherusTab');
     const main = $('#menuMain'), sub = $('#menuSub');
+    const more = main.querySelector('.mm-more');
+    more?.addEventListener('toggle', () => {
+      more.querySelector('summary')?.setAttribute('aria-expanded', String(more.open));
+    });
 
     const apply = () => {
       const aetherusOpen = this.open && this.sub === 'aetherus';
@@ -614,6 +618,7 @@ export const layerBar = {
       /* ⚠️ 열 때도 2단을 접는다. 닫을 때만 접으면 한 번 '지구'를 펼친 뒤로는
          메뉴를 열 때마다 2단이 따라 나온다 — "누르기 전엔 안 보인다"가 깨진다. */
       this.sub = null;
+      if (this.open) main.querySelector('.mm-more')?.removeAttribute('open');
       apply();
       if (wasEarthStyle) {
         document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {

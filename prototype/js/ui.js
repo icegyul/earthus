@@ -43,6 +43,7 @@ export const chrome = {
   place: { name: '', lat: 37.4563, lon: 126.7052 },
   get defaultName() { return i18n.lang === 'ko' ? '인천' : 'Incheon'; },
   wx: null,
+  wxError: false,
 
   /* ⚠️ 위치 권한이 없으면 인천을 쓴다. 그 사실을 **첫 화면에서** 밝힌다. (감사 P1-5)
      예전에는 아무 말 없이 인천 날씨를 보여줬고, 그 설명은 날씨 상세 아래쪽에만
@@ -109,19 +110,29 @@ export const chrome = {
     $('#ambDate').textContent = ko
       ? `${d.getMonth() + 1}월 ${d.getDate()}일 ${'일월화수목금토'[d.getDay()]}요일`
       : d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', weekday: 'long' });
+    ['hhmm', 'ambDate'].forEach(id => document.getElementById(id)?.removeAttribute('aria-label'));
   },
 
   async loadWeather() {
     try {
       this.wx = await fetchWeather(this.place.lat, this.place.lon);
+      this.wxError = false;
       this.render();
-    } catch (e) { console.warn('[chrome wx]', e.message); }
+    } catch (e) {
+      this.wx = null;
+      this.wxError = true;
+      this.render();
+      console.warn('[chrome wx]', e.message);
+    }
   },
 
   render() {
     const ko = i18n.lang === 'ko';
     const el0 = $('#ambCity');
-    el0.textContent = this.place.name || (this.isDefault ? this.defaultName : '—');
+    el0.textContent = this.place.name || (this.isDefault
+      ? this.defaultName
+      : (ko ? '위치 이름 확인 중' : 'Finding place name'));
+    el0.removeAttribute('aria-label');
     /* 기본 위치일 때만 꼬리표를 붙인다 — 내 위치일 때는 붙일 이유가 없다 */
     if (this.isDefault) {
       const tag = document.createElement('span');
@@ -129,13 +140,28 @@ export const chrome = {
       tag.textContent = ko ? '기본 위치' : 'default location';
       el0.appendChild(tag);
     }
-    if (!this.wx) return;
+    const bottom = $('#ambBottom');
+    if (!this.wx) {
+      if (this.wxError) {
+        $('#ambCond').textContent = ko
+          ? '현재 위치의 날씨 자료를 불러오지 못했습니다'
+          : 'Weather data for this location is unavailable';
+        $('#ambCond').removeAttribute('aria-label');
+        bottom?.classList.add('amb-unavailable');
+        bottom?.setAttribute('aria-label', ko ? '날씨 자료를 불러오지 못함' : 'Weather data unavailable');
+      }
+      return;
+    }
+    bottom?.classList.remove('amb-unavailable');
+    bottom?.setAttribute('aria-label', ko ? '날씨 자세히' : 'Weather details');
     const c = this.wx.current, d = this.wx.daily;
     $('#ambCond').textContent = wxText(c.weather_code);
     $('#ambTemp').textContent = i18n.temp(c.temperature_2m);
     const hi = i18n.t.lang === 'en' ? 'H' : '최고';
     $('#ambHi').textContent = `${i18n.lang === 'ko' ? '최고' : 'H'} ${i18n.temp(d.temperature_2m_max[0])}`;
     $('#ambLo').textContent = `${i18n.lang === 'ko' ? '최저' : 'L'} ${i18n.temp(d.temperature_2m_min[0])}`;
+    ['ambCond', 'ambTemp', 'ambHi', 'ambLo'].forEach(id =>
+      document.getElementById(id)?.removeAttribute('aria-label'));
   },
 };
 
@@ -1851,16 +1877,26 @@ export const hud = {
        고도·프레임·해상도·레이어 ID 가 상시로 떠 있으면 아무리 폰트를 다듬어도
        "개발 도구를 켜둔 화면"으로 보인다. 리빙어스와 가장 크게 벌어지던 지점이다.
        필요할 때만 켜고, 선택은 기억한다. */
-    /* 받은 지적(2026-08-12): "HUD가 없어졌고".
-       화면을 가리지 않도록 기본은 접힌 손잡이지만, 일반 주소에서도 다시 열 수 있게 한다.
-       사용자가 직접 연 상태만 기억하고, 강제로 상시 노출하지 않는다. */
+    /* 받은 지적(2026-08-12): "HUD가 없어졌고" — 그래서 접힌 손잡이로 복구했었다.
+       후속 공개화면 검수(2026-08-13)에서 고도·FPS·해상도가 일반 기능처럼 수집되고
+       미완성 화면으로 읽히는 문제가 확인됐다. 기능은 보존하되 이제 #dev에서만 연다. */
     const showHud = (on, remember = true) => {
-      $('#hud').style.display = on ? 'block' : 'none';
-      $('#hudShow').style.display = on ? 'none' : 'block';
+      const enabled = location.hash === '#dev';
+      const panel = $('#hud');
+      const handle = $('#hudShow');
+      panel.hidden = !enabled || !on;
+      handle.hidden = !enabled || on;
+      panel.setAttribute('aria-hidden', String(!enabled || !on));
+      handle.setAttribute('aria-hidden', String(!enabled || on));
       if (remember) localStorage.setItem('earthus.hud', on ? 'on' : 'off');
     };
-    const restore = () => showHud(localStorage.getItem('earthus.hud') === 'on', false);
+    /* 공개 주소에서는 손잡이까지 숨긴다. 개발자는 #dev에서만 열 수 있다.
+       초기 HTML을 수집한 방문자에게 고도·FPS 같은 내부 측정값을 제품 기능처럼
+       보이게 했던 것이 문제였다. */
+    const restore = () => showHud(location.hash === '#dev'
+      && localStorage.getItem('earthus.hud') === 'on', false);
     restore();
+    window.addEventListener('hashchange', restore);
     $('#hudHide').onclick = () => showHud(false);
     $('#hudShow').onclick = () => showHud(true);
     document.querySelectorAll('#hud [data-jump]').forEach(b => {

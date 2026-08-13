@@ -10,6 +10,7 @@ const account = read('prototype/js/ui-account.js');
 const ui = read('prototype/js/ui.js');
 const scene = read('prototype/js/scene.js');
 const i18n = read('prototype/js/i18n.js');
+const outdoor = read('prototype/js/ui-outdoor.js');
 
 const publicAuthText = html + '\n' + account;
 for (const leak of [
@@ -60,6 +61,10 @@ const newsIndex = html.indexOf('data-act="news"');
 assert.ok(coreIndex >= 0 && coreIndex < alertIndex && alertIndex < moreIndex && moreIndex < newsIndex,
   'core Earth menu must precede secondary exploration actions');
 assert.match(html, /id="menuMore"[\s\S]*?data-act="news"[\s\S]*?data-act="outdoor"[\s\S]*?<\/details>/);
+assert.equal(/<p class="out-note">/.test(outdoor), false,
+  'hobby picker must not render a footer disclaimer block');
+assert.equal(outdoor.includes('We report conditions. We never tell you it is safe to go.'), false,
+  'English hobby footer disclaimer remains');
 
 const panels = [...html.matchAll(/<div id="[^"]+" class="sheet-panel[^"]*"([^>]*)>/g)];
 assert.ok(panels.length >= 30, 'expected all public sheet panels in the contract');

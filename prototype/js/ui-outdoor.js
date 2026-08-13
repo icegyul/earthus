@@ -96,11 +96,7 @@ export const outdoorPanel = {
               stroke="currentColor" stroke-width="1.5" stroke-linejoin="round">${it.ico}</svg></span>
             <b>${ko ? it.ko : it.en}</b>
             <span>${ko ? it.subKo : it.subEn}</span>
-          </button>`).join('')}</div>
-        <p class="out-note">${ko
-          ? '⚠️ <b>“가도 좋다”고 말하지 않습니다.</b> 값을 그대로 옮길 뿐입니다 — '
-            + '실력·장비·동행은 우리가 모르고, 바다와 산에서는 사람이 다칩니다.'
-          : '⚠️ We report conditions. We never tell you it is safe to go.'}</p>`;
+          </button>`).join('')}</div>`;
     }
     $('#outSheet')?.classList.add('up');
   },

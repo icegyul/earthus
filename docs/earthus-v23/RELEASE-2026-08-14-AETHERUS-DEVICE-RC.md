@@ -86,6 +86,7 @@ CloudFront:
 - initial four-path invalidation: `IBCS0RI0PUEPEN567W2RUONWQU`
 - final JavaScript invalidation: `IB3F9Y4H808L8SXJ68ZOPL47C0`
 - final CSP·permission lifecycle invalidation: `I6LC8K5LHNHUWQHMYZ04I58S6I`
+- final incomplete-sample decision invalidation: `IBRUBW7EOZICY1AJ2DC80Z87JK`
 
 최종 local/live SHA-256:
 
@@ -93,7 +94,7 @@ CloudFront:
 |---|---|
 | `/aetherus-device-qa.html` | `712bcff02dea9eada3c3af13aa47b6c63248a8607494b2bb21ec9603ab46c376` |
 | `/css/aetherus-device-qa.css` | `1b012debe93386f8d70151c2165b0c6f038321ae11d248ee750ac004d8b8281f` |
-| `/js/aetherus-device-qa.js` | `5159565cf43889f556aa7ec4dc43483ff824606a6e7fcede813fbf1a0333d29a` |
+| `/js/aetherus-device-qa.js` | `a16a4c8860d1460f7876022f689661a6ebfc4960abf579f233574337ed545efa` |
 | `/data/astrometry/m82opt-nasa-wcs-features-v1.json` | `3cd25a78da13b04829318658dcb549ea975a3da2f763f525340ded6d61f955bb` |
 
 cache-busting URL을 다시 받아 local/live SHA-256 일치와 HTTP 200, 위 Content-Type,

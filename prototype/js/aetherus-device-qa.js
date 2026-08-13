@@ -323,7 +323,8 @@ function stopSkyAr(reason = 'USER_STOP') {
     networkUploadCount: after.networkUploadCount ?? null,
     stopReason: reason,
   };
-  setCheck('skyAr', enoughSamples && cleanStop && noUpload ? 'PASS' : 'FAIL', evidence);
+  const status = !cleanStop || !noUpload ? 'FAIL' : enoughSamples ? 'PASS' : 'BLOCKED';
+  setCheck('skyAr', status, evidence);
   return after;
 }
 

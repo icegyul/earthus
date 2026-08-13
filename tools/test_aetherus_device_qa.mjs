@@ -46,6 +46,7 @@ assert.match(js, /exactCoordinatesStoredInReport:\s*false/);
 assert.match(js, /&& capabilities\.orientationApi/);
 assert.match(js, /originalFilenameStored:\s*false/);
 assert.match(js, /originalUploadCount/);
+assert.match(js, /!cleanStop \|\| !noUpload \? 'FAIL' : enoughSamples \? 'PASS' : 'BLOCKED'/);
 assert.match(js, /releaseDecision\s*=\s*'BLOCKED'/);
 assert.doesNotMatch(js, /fetch\(['"]https?:\/\//i);
 assert.doesNotMatch(js, /WebSocket|EventSource|navigator\.sendBeacon/);

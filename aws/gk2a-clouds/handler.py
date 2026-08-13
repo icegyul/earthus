@@ -43,7 +43,7 @@ import h5py
 import numpy as np
 from botocore import UNSIGNED
 from botocore.config import Config
-from PIL import Image
+from PIL import Image, ImageFilter
 
 SRC_BUCKET = "noaa-gk2a-pds"
 DST_BUCKET = os.environ["CACHE_BUCKET"]
@@ -230,6 +230,19 @@ def _to_mercator(image, south, north):
     f = (sy - y0)[:, None, None]
     warped = srca[y0] * (1.0 - f) + srca[y1] * f
     return Image.fromarray(np.rint(warped).astype(np.uint8), "LA")
+
+
+def _feather_observation_edge(alpha, valid, radius):
+    """관측 가능/불가 경계를 알파로만 부드럽게 잇는다.
+
+    GK-2A 전면은 지구 원반을 위경도 직사각형으로 펼친 결과다. 원본 바깥과
+    quality flag 구간을 즉시 0으로 자르면 Cesium의 Web Mercator 타일에서
+    사각형 조각이 깨진 그림처럼 보인다. 경계만 흐리게 하고, 관측 불가 영역의
+    밝기값이나 구름을 만들어 내지는 않는다.
+    """
+    mask = Image.fromarray(np.where(valid, 255, 0).astype(np.uint8), "L")
+    softened = np.asarray(mask.filter(ImageFilter.GaussianBlur(radius=radius)), dtype=np.uint16)
+    return ((alpha.astype(np.uint16) * softened + 127) // 255).astype(np.uint8)
 
 
 def _upload_tile_pyramid(ch, at, image, box):
@@ -648,6 +661,10 @@ def render(ch, key):
     a8 = (al * 255).astype(np.uint8)
     g8[~ok] = 0
     a8[~ok] = 0
+    # 전면 120°는 정지위성 원반·quality flag 경계가 넓게 드러나므로 12px,
+    # 동아시아/한반도 상세은 실제 관측 영역 가장자리만 3px 처리한다.
+    # PNG와 XYZ 타일은 이 image 하나를 공유하므로 두 경로가 달라지지 않는다.
+    a8 = _feather_observation_edge(a8, ok, 12 if cfg["area"] == "FD" else 3)
     buf = io.BytesIO()
     image = Image.fromarray(np.stack([g8, a8], -1), "LA")
     image.save(buf, "PNG", optimize=True)

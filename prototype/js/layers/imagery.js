@@ -1158,6 +1158,7 @@ export const imagery = {
   _syncGK2AAutoLevels(h) {
     const overview = this.gk2aAutoLayers.find(L => L._earthusGK2ARole === 'overview');
     const broad = this.gk2aAutoLayers.find(L => L._earthusGK2ARole === 'broad');
+    const fine = this.gk2aAutoLayers.find(L => L._earthusGK2ARole === 'detail');
     const b = broad?._earthusGK2AInfo?.bbox;
     let inside = false;
     try {
@@ -1169,9 +1170,10 @@ export const imagery = {
     /* 2,400km보다 멀면 한 화면에 동아시아 전역과 전면 경계가 함께 들어온다.
        이 거리에서는 8km 전면 하나가 정직하다. 더 가까워져 상세 범위 안에
        들어온 뒤에만 2km를 단독으로 보인다. */
-    const detailOnly = !!broad && inside && h < 2_400_000;
-    if (overview) overview.show = !detailOnly;
-    if (broad) broad.show = detailOnly;
+    const broadOnly = !!broad && inside && h < 2_400_000 && !fine;
+    if (overview) overview.show = !broadOnly && !fine;
+    if (broad) broad.show = broadOnly;
+    if (fine) fine.show = true;
   },
 
   _removeGK2AWideIRLayers() {
@@ -1304,6 +1306,10 @@ export const imagery = {
   },
 
   setGK2AAuto(on) {
+    /* 빠른 레이어는 store 배타 그룹을 거쳐 오지만, 초기화 중 비동기 구름 교체가
+       뒤늦게 끝나거나 외부 호출이 이 메서드로 바로 들어와도 NOAA 합성본을 남기지
+       않는다. 상태·화면을 함께 끄므로 '천리안 선택인데 NOAA 구름도 보임'이 없다. */
+    if (on && store.isOn('clouds')) store.setLayer('clouds', false);
     const firstOpen = on && !this._gk2aAutoOn;
     this._gk2aAutoOn = on;
     if (!on) {
@@ -1377,6 +1383,7 @@ export const imagery = {
           L._earthusGK2ARole = 'detail';
           this.gk2aAutoLayers.push(L);
           this._gk2aDetailOn = true;
+          this._syncGK2AAutoLevels(viewer.camera.positionCartographic?.height || h);
           viewer.scene.requestRender();
           document.dispatchEvent(new CustomEvent('earthus:imagery'));
           this._announceGK2ADetail(true, L);
@@ -1389,6 +1396,7 @@ export const imagery = {
       this._removeImageryWithDepth(detail);
       this.gk2aAutoLayers = this.gk2aAutoLayers.filter(L => L !== detail);
       this._gk2aDetailOn = false;
+      this._syncGK2AAutoLevels(h);
       viewer.scene.requestRender();
       document.dispatchEvent(new CustomEvent('earthus:imagery'));
       this._announceGK2ADetail(false, this.gk2aAutoLayers.find(L => L._earthusGK2ARole === 'broad'));

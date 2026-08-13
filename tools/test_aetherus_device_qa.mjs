@@ -6,16 +6,20 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const [html, css, js, fixture, migration, verifier] = await Promise.all([
+const [html, css, js, fixture, migration, verifier, rollbackProbe] = await Promise.all([
   readFile(path.join(root, 'prototype/aetherus-device-qa.html'), 'utf8'),
   readFile(path.join(root, 'prototype/css/aetherus-device-qa.css'), 'utf8'),
   readFile(path.join(root, 'prototype/js/aetherus-device-qa.js'), 'utf8'),
   readFile(path.join(root, 'prototype/data/astrometry/m82opt-nasa-wcs-features-v1.json'), 'utf8'),
   readFile(path.join(root, 'prototype/supabase/migrations/20260814090000_aetherus_private_data.sql'), 'utf8'),
   readFile(path.join(root, 'tools/verify_aetherus_rls.mjs'), 'utf8'),
+  readFile(path.join(root, 'prototype/canary/aetherus-device-rc-rollback-probe.json'), 'utf8'),
 ]);
 
 const fixtureDocument = JSON.parse(fixture);
+const rollbackDocument = JSON.parse(rollbackProbe);
+assert.equal(rollbackDocument.state, 'RESTORED_SAFE_BASELINE');
+assert.equal(rollbackDocument.productionConsumerAffected, false);
 assert.equal(fixtureDocument.source.originalBundled, false);
 assert.equal(fixtureDocument.extraction.sampleCount, 24);
 assert.equal(fixtureDocument.features.length, 24);

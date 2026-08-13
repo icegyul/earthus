@@ -1,0 +1,8 @@
+{
+  "schema": "aetherus.device-rc-rollback-probe.v1",
+  "revision": "safe-v1",
+  "state": "RESTORED_SAFE_BASELINE",
+  "createdAtUtc": "2026-08-14T03:00:00Z",
+  "productionConsumerAffected": false,
+  "note": "Static canary rollback evidence only. This is not observation or device evidence."
+}

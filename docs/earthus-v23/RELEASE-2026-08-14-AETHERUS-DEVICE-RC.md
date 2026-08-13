@@ -102,6 +102,26 @@ cache-busting URL을 다시 받아 local/live SHA-256 일치와 HTTP 200, 위 Co
 
 ## 공개를 막는 Hard Gate
 
+### 격리 canary·rollback 리허설
+
+메인 RC·AETHERUS consumer와 분리된
+`/canary/aetherus-device-rc-rollback-probe.json`에서 다음을 실제 수행했다.
+
+```text
+safe local/live: e64ca235212604eef33298f318ede3b305126735b93ca7213eea6a15d828eb73
+intentional fault local/live: 2ba0a09610f1cf33e7cb2119008df18a2f182d41e172b4c042e58e190eb03fc6
+restored live: e64ca235212604eef33298f318ede3b305126735b93ca7213eea6a15d828eb73
+result: PASS — fault bytes were observed, then exact safe bytes restored
+```
+
+첫 시도에서는 장애 파일 경로가 없어 주입이 실행되지 않았고 안전판이 유지됐다.
+이 시도는 PASS로 계산하지 않았다. 두 번째 시도만 서로 다른 fault SHA가 실제
+CloudFront URL에서 관찰된 후 원래 safe SHA로 복원되어 PASS였다.
+
+probe는 `no-cache`, `application/json; charset=utf-8`이고
+`productionConsumerAffected=false`를 보존한다. 이 증거는 rollback 기술 절차 PASS이지
+메인 AETHERUS 공개 승인이 아니다.
+
 | gate | 현재 | 필요 증거 |
 |---|---|---|
 | iPhone Safari 카메라·센서 | `UNKNOWN` | 본인 권한 승인, 센서 sample, clean stop |
@@ -111,7 +131,7 @@ cache-busting URL을 다시 받아 local/live SHA-256 일치와 HTTP 200, 위 Co
 | Supabase principal A/B | `BLOCKED` | migration 적용 후 두 독립 JWT 실거절 |
 | 운영 AI | `BLOCKED` | 계약·비용·평가 dataset·red team·tool allowlist 승인 |
 | 원격 관측소 | `BLOCKED` | 물리 dome/mount/E-stop HIL |
-| 공개 전환 | `BLOCKED` | canary·장애 주입·rollback + PD 명시 승인 |
+| 공개 전환 | `BLOCKED` | 격리 canary·장애 주입·rollback PASS; 실기기·외부 gate 후 PD 명시 승인 남음 |
 
 따라서 자동 모듈·RC 콘솔·선별 배포는 완료되었지만, 실기기와 외부 권한 증거 전에
 제품 공개가 완료되었다고 표시하지 않는다. 오전 실행 순서는

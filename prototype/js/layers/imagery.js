@@ -1074,7 +1074,10 @@ export const imagery = {
     if (info.tiles?.scheme === 'webmercator-global-v1' && info.tiles.template) {
       const tilingScheme = new Cesium.WebMercatorTilingScheme();
       provider = new Cesium.UrlTemplateImageryProvider({
-        url: `${API.GK2A}/${info.tiles.template}?t=${encodeURIComponent(info.at || '')}`,
+        /* 산출기를 고쳐도 같은 관측시각의 타일 URL은 브라우저가 max-age 동안
+           이전 알파 조각으로 남긴다. 관측시각은 그대로 두고 산출 버전만 더해
+           이미 열린 탭도 새 경계 보정 타일을 즉시 다시 받는다. */
+        url: `${API.GK2A}/${info.tiles.template}?t=${encodeURIComponent(info.at || '')}&render=20260813-edge1`,
         // ⚠️ rectangle을 넣지 말 것 — 위 주석의 렌더 중단을 실화면에서 반복 재현했다.
         tilingScheme,
         tileWidth: info.tiles.tileWidth || 512,

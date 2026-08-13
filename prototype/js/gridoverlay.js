@@ -340,6 +340,9 @@ const SRC_URL = {
      동아시아만 **0.5°(약 55km)** 로 따로 만든다. 10배 촘촘하다.
      ⚠️ 상자는 천리안 동아시아 영상과 같은 범위다(23~47N, 114~150E). */
   marineEa: () => `${API.MARINE_GRID}/marine-ea.json`,
+  /* 동아시아 수온 편차는 Open-Meteo 모델에서 평년을 빼지 않는다. NOAA OISST
+     일별 관측과 같은 날짜의 OISST 1991–2020 평년을 같은 0.5° 칸에서 뺀다. */
+  sstAnomEa: () => `${API.MARINE_GRID}/sst-anom-ea.json`,
   /* 기압 색면도 동아시아 확대에서는 등압선과 같은 1° 전용판을 쓴다. */
   pressureEa: () => `${API.WIND}/pressure-ea.json`,
 };
@@ -388,7 +391,7 @@ export const gridOverlay = {
   _desiredSource(key) {
     const base = SOURCE_OF[key] || 'wind';
     if (!this._eastAsiaView()) return base;
-    /* 편차 평년장은 전지구 5°뿐이다. 0.5° 실황과 배열로 빼지 않는다. */
+    if (key === 'sstanom') return 'sstAnomEa';
     if (base === 'marine' && key !== 'sstanom') return 'marineEa';
     if (key === 'pressure') return 'pressureEa';
     return base;
@@ -427,11 +430,16 @@ export const gridOverlay = {
          평년과 같은 바다가 +25°C 로 새빨갛게 나온다. */
       let g = g0, field;
       if (key === 'sstanom') {
-        const an = await this.sstAnomaly();
-        if (!an) throw new Error('평년값 없음 — 편차를 그리지 않는다');
-        g = { ...g0, _anom: an.diff };
+        const an = srcName === 'sstAnomEa'
+          ? { diff: g0.sstAnom, period: g0.period, doy: g0.doy, n: g0.sea,
+              time: g0.observed, source: g0.source }
+          : await this.sstAnomaly();
+        if (!an?.diff) throw new Error('평년값 없음 — 편차를 그리지 않는다');
+        g = { ...g0, _anom: an.diff, time: an.time || g0.time };
         field = an.diff;
-        this._anomInfo = { period: an.period, doy: an.doy, mean: an.mean, n: an.n };
+        const sum = an.diff.reduce((total, value) => total + (Number.isFinite(value) ? value : 0), 0);
+        this._anomInfo = { period: an.period, doy: an.doy, mean: sum / an.n, n: an.n,
+                           source: an.source || g0.source };
       } else if (key === 'wind' || key === 'windfc') {
         const U = key === 'windfc' ? g.fu : g.u;
         const V = key === 'windfc' ? g.fv : g.v;

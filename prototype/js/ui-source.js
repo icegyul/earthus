@@ -98,7 +98,9 @@ const SRC = {
   uv:       { ko: 'Copernicus CAMS — 자외선 지수', en: 'Copernicus CAMS — UV index', every: 60 },
   ozone:    { ko: 'Copernicus CAMS — 오존', en: 'Copernicus CAMS — ozone', every: 60 },
   sst:      { ko: 'Open-Meteo 해양 (파랑모델)', en: 'Open-Meteo Marine', every: 60 },
-  sstanom:  { ko: '지금 수온 − 평년(NOAA OISST 1991–2020)', en: 'Now minus NOAA OISST 1991–2020 normal', every: 60 },
+  /* 동아시아 확대에서는 NOAA 일별 관측과 같은 날짜 평년을 같은 0.5° 칸에서 뺀다.
+     전지구 축척은 관측 격자가 아직 5°여서 기존 Open-Meteo 계산값을 표시한다. */
+  sstanom:  { ko: '동아시아 확대: NOAA OISST 일별 관측 − 같은 날짜 평년(1991–2020, 0.5°) · 전지구: Open-Meteo 계산', en: 'East Asia: NOAA OISST daily observation minus same-day 1991–2020 normal (0.5°); global: Open-Meteo calculation', every: 60 },
   wave:     { ko: 'Open-Meteo 해양 (파랑모델)', en: 'Open-Meteo Marine', every: 60 },
   swell:    { ko: 'Open-Meteo 해양 (파랑모델)', en: 'Open-Meteo Marine', every: 60 },
   current:  { ko: 'Open-Meteo 해양 — 표층 해류', en: 'Open-Meteo Marine — surface current', every: 60 },

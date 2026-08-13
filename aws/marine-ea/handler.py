@@ -27,17 +27,22 @@
 
 import json
 import os
+import re
 import time
 import urllib.parse
 import urllib.error
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import boto3
 
 DST_BUCKET = os.environ["CACHE_BUCKET"]
 DST_REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 API = "https://marine-api.open-meteo.com/v1/marine"
+OISST_DAILY = ("https://psl.noaa.gov/thredds/dodsC/Datasets/noaa.oisst.v2.highres/"
+               "sst.day.mean.{year}.nc.ascii")
+OISST_NORMAL = ("https://psl.noaa.gov/thredds/dodsC/Datasets/noaa.oisst.v2.highres/"
+                "sst.day.mean.ltm.1991-2020.nc.ascii")
 
 # ⚠️⚠️ **전지구 판(marine-grid)은 5° = 약 550km 다.**
 #    한반도 전체가 격자 두세 칸이라 서해·동해·남해가 한 칸에 뭉뚱그려진다.
@@ -63,6 +68,81 @@ VARS = [
     ("ocean_current_velocity", "cur", 2),
     ("ocean_current_direction", "cdir", 0),
 ]
+
+
+def _oisst_text(url):
+    request = urllib.request.Request(url, headers={"User-Agent": "earthus-marine-ea/1.0"})
+    with urllib.request.urlopen(request, timeout=90) as r:
+        return r.read().decode("utf-8", "replace")
+
+
+def _oisst_time_len(year):
+    """연도 OISST가 실제로 가진 마지막 일 인덱스. 미래 날짜를 요청하지 않는다."""
+    text = _oisst_text(OISST_DAILY.format(year=year).replace(".ascii", ".dds"))
+    match = re.search(r"Float64 time\[time = (\d+)\]", text)
+    if not match:
+        raise ValueError("OISST 시간축 길이를 읽지 못함")
+    return int(match.group(1))
+
+
+def _oisst_values(text, ny, nx):
+    """OPeNDAP ASCII의 한 시간면을 [행][열]로 읽는다. 육지는 None이다."""
+    rows = [None] * ny
+    for line in text.splitlines():
+        if not line.startswith("[0]["):
+            continue
+        try:
+            head, tail = line.split(",", 1)
+            row = int(head.split("][", 1)[1].rstrip("]"))
+            values = [float(v.strip()) for v in tail.split(",")]
+        except (ValueError, IndexError):
+            continue
+        if 0 <= row < ny:
+            rows[row] = [None if abs(v) > 100 else round(v, 2) for v in values[:nx]]
+    if any(row is None or len(row) != nx for row in rows):
+        raise ValueError("OISST 격자가 완전하지 않음")
+    return [value for row in rows for value in row]
+
+
+def oisst_anomaly_ea(now):
+    """동아시아 0.5° OISST 일별 관측 − 같은 날짜의 1991–2020 평년.
+
+    Open-Meteo 모델 격자에서 NOAA 평년을 빼면 해상도와 자료 성격이 섞인다.
+    편차는 같은 OISST 격자끼리만 빼며, 원본이 늦게 올라오면 마지막 실제 관측일을
+    `observed`로 남긴다. 미래 날짜나 보간한 오늘값은 만들지 않는다.
+    """
+    ny, nx = 49, 73                    # 23.125..47.125N, 114.125..150.125E, 0.5°
+    lat = "[452:2:548]"
+    lon = "[456:2:600]"
+    available = _oisst_time_len(now.year)
+    last_error = None
+    for back in range(8):
+        observed = (now - timedelta(days=back)).date()
+        year_start = datetime(observed.year, 1, 1, tzinfo=timezone.utc)
+        step = (datetime(observed.year, observed.month, observed.day, tzinfo=timezone.utc) - year_start).days
+        if step < 0 or step >= available:
+            continue
+        try:
+            daily = _oisst_text(f"{OISST_DAILY.format(year=observed.year)}?sst[{step}:1:{step}]{lat}{lon}")
+            current = _oisst_values(daily, ny, nx)
+            doy = min(364, step)
+            normal = _oisst_text(f"{OISST_NORMAL}?sst[{doy}:1:{doy}]{lat}{lon}")
+            baseline = _oisst_values(normal, ny, nx)
+            diff = [round(a - b, 2) if a is not None and b is not None else None
+                    for a, b in zip(current, baseline)]
+            count = sum(value is not None for value in diff)
+            if count < 500:
+                raise ValueError(f"바다 격자 부족 ({count}/{nx * ny})")
+            return {
+                "observed": f"{observed.isoformat()}T00:00:00Z", "doy": doy + 1,
+                "res": 0.5, "lat0": 23.125, "lon0": 114.125, "nx": nx, "ny": ny,
+                "source": "NOAA OISST v2.1 daily observation minus 1991-2020 daily climatology",
+                "period": "1991-2020", "sstAnom": diff, "sea": count,
+            }
+        except Exception as exc:  # noqa: BLE001
+            last_error = exc
+            print(f"[oisst] {observed.isoformat()} 실패: {exc!r}")
+    raise RuntimeError(f"최근 8일 OISST를 받지 못함: {last_error!r}")
 
 
 def grid_points():
@@ -94,6 +174,17 @@ def fetch_batch(pts, tries=4):
 
 
 def handler(event, context):
+    # OISST 편차는 Open-Meteo 모델 격자와 독립된 NOAA 일별 관측 자료다.
+    # 운영 수집이 429 재시도 중일 때도 이 좁은 재생성 경로는 모델 API를 건드리지 않는다.
+    if (event or {}).get("only") == "sst_anom":
+        anomaly = oisst_anomaly_ea(datetime.now(timezone.utc))
+        anom_body = json.dumps(anomaly, separators=(",", ":")).encode()
+        dst.put_object(Bucket=DST_BUCKET, Key="ocean/sst-anom-ea.json", Body=anom_body,
+                       ContentType="application/json", CacheControl="public, max-age=21600")
+        print(f"[oisst] 단독 생성 {anomaly['sea']}칸 {anomaly['observed']}")
+        return {"ok": True, "only": "sst_anom", "sea": anomaly["sea"],
+                "observed": anomaly["observed"]}
+
     lats, lons = grid_points()
     ny, nx = len(lats), len(lons)
     order = [(la, lo) for la in lats for lo in lons]
@@ -130,6 +221,15 @@ def handler(event, context):
     if sea < n * 0.35:
         raise RuntimeError(f"바다 격자를 너무 못 채움 ({sea}/{n})")
 
+    # 수온 편차는 모델값에 다른 기관의 평년장을 억지로 빼지 않는다. 같은 NOAA
+    # OISST 일별 관측과 평년을 같은 0.5° 칸에서 뺀 결과만 별도 파일에 기록한다.
+    # ⚠️ OISST가 잠시 지연돼도 기존 수온·파고·해류 격자까지 멈추게 하지 않는다.
+    try:
+        anomaly = oisst_anomaly_ea(datetime.now(timezone.utc))
+    except Exception as exc:  # noqa: BLE001
+        anomaly = None
+        print(f"[oisst] 편차는 이번 회차 보류: {exc!r}")
+
     doc = {
         "time": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:00:00Z"),
         "res": RES, "lat0": LAT0, "lon0": LON0,
@@ -145,6 +245,15 @@ def handler(event, context):
     dst.put_object(Bucket=DST_BUCKET, Key="ocean/marine-ea.json", Body=body,
                    ContentType="application/json",
                    CacheControl="public, max-age=1800")
+    if anomaly:
+        anom_body = json.dumps(anomaly, separators=(",", ":")).encode()
+        dst.put_object(Bucket=DST_BUCKET, Key="ocean/sst-anom-ea.json", Body=anom_body,
+                       ContentType="application/json",
+                       CacheControl="public, max-age=21600")
     counts = {f: sum(1 for v in out[f] if v is not None) for _, f, _ in VARS}
-    print(f"[out] {nx}x{ny} 바다 {sea} 실패 {fail} {len(body)/1024:.0f}KB  {counts}")
-    return {"ok": True, "sea": sea, "failed": fail, "bytes": len(body), "counts": counts}
+    anom_note = (f" · OISST 편차 {anomaly['sea']}칸 {anomaly['observed']}"
+                 if anomaly else " · OISST 편차 보류")
+    print(f"[out] {nx}x{ny} 바다 {sea} 실패 {fail} {len(body)/1024:.0f}KB  {counts}{anom_note}")
+    return {"ok": True, "sea": sea, "failed": fail, "bytes": len(body), "counts": counts,
+            "anomalySea": anomaly["sea"] if anomaly else 0,
+            "anomalyObserved": anomaly["observed"] if anomaly else None}

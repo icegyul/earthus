@@ -4,6 +4,8 @@ import fs from 'node:fs';
 const imagery = fs.readFileSync(new URL('../prototype/js/layers/imagery.js', import.meta.url), 'utf8');
 const layerbar = fs.readFileSync(new URL('../prototype/js/layerbar.js', import.meta.url), 'utf8');
 const gmgsi = fs.readFileSync(new URL('../aws/gmgsi-clouds/handler.py', import.meta.url), 'utf8');
+const css = fs.readFileSync(new URL('../prototype/css/app.css', import.meta.url), 'utf8');
+const index = fs.readFileSync(new URL('../prototype/index.html', import.meta.url), 'utf8');
 
 assert.doesNotMatch(imagery, /const day = this\._ymdBack\(2\)/,
   '수오미를 무조건 이틀 전으로 먼저 표시하면 안 된다');
@@ -17,6 +19,12 @@ assert.match(imagery, /_imgLoading\(show, label, hold = false\)/,
   '타일 큐 밖 날짜 확인은 로딩 표시를 유지할 수 있어야 한다');
 assert.match(layerbar, /VIIRS 최신 완성일 낮 참고/,
   '메뉴는 고정 전날이 아니라 화면에 실제 선택된 완성일을 설명해야 한다');
+assert.doesNotMatch(css, /body\.panel-open #tcLoading\.on/,
+  '위성 선택 시트가 열린 동안 로딩바를 숨기면 안 된다');
+assert.match(index, /app\.css\?v=20260813-satellite-loading1/,
+  '운영 브라우저가 로딩바 CSS 수정본을 즉시 받아야 한다');
+assert.match(imagery, /if \(on\) this\._imgLoading\(true, 'NOAA 전지구 구름'\)/,
+  '이미 받은 NOAA로 복귀할 때도 전환 표시가 필요하다');
 
 for (const label of ['히마와리', '구름 꼭대기 온도', '천리안2A 구름', '천리안2A 자동 영상', '천리안2A 영상']) {
   assert.ok(imagery.includes(`_imgLoading(true, '${label}')`), `${label} 전환에 로딩 표시가 필요하다`);

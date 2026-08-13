@@ -1348,9 +1348,9 @@ body.scene-space #hud,body.scene-space #hudShow{top:max(66px,calc(env(safe-area-
   transition:opacity .3s ease, transform .3s ease;
 }
 #tcLoading.on{ opacity:1; transform:translateX(-50%) translateY(0); }
-/* 정보 시트가 열리면 로딩 진행률은 계속 계산하되 화면에서는 잠시 숨긴다.
-   z-index 22라 시트(20) 위로 떠서 하단 설명과 버튼을 가리고 있었다. */
-body.panel-open #tcLoading.on{ opacity:0; transform:translateX(-50%) translateY(8px); }
+/* ⚠️ 위성 선택 시트(panel-open)에서도 숨기지 않는다.
+   사용자는 시트를 연 채 다른 위성을 누르므로 여기서 감추면 로딩 함수가 정상이어도
+   "아무 반응이 없다"고 보인다. z-index 22로 시트 위에 전환 상태를 명확히 띄운다. */
 body.scene-space #tcLoading.on{ opacity:0; transform:translateX(-50%) translateY(8px); }
 .tcl-txt{ font-variant-numeric:tabular-nums; }   /* 숫자가 흔들리지 않게 */
 

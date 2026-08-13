@@ -1148,6 +1148,32 @@ export const imagery = {
     this._gk2aDetailOn = false;
   },
 
+  /** 전면 8km와 동아시아 2km는 같은 장면을 보완하는 자료지만, 한 화면에
+   *  겹쳐 칠하면 해상도·처리 시각 차이가 두 겹 구름처럼 읽힌다. 동아시아 안에서
+   *  충분히 가까워진 경우에는 상세만, 그 밖에서는 전면만 요청·표시한다.
+   *
+   *  ⚠️ 제공자 rectangle을 제한하지 않는다. Cesium 1.143에서 Web Mercator
+   *  XYZ provider에 rectangle을 주면 확대 중 frustum 계산이 멈춘다. 여기서는
+   *  이미 만든 레이어의 show만 바꾼다. show=false면 타일 요청도 멈춘다. */
+  _syncGK2AAutoLevels(h) {
+    const overview = this.gk2aAutoLayers.find(L => L._earthusGK2ARole === 'overview');
+    const broad = this.gk2aAutoLayers.find(L => L._earthusGK2ARole === 'broad');
+    const b = broad?._earthusGK2AInfo?.bbox;
+    let inside = false;
+    try {
+      const c = viewer.camera.positionCartographic;
+      const lon = Cesium.Math.toDegrees(c.longitude), lat = Cesium.Math.toDegrees(c.latitude);
+      inside = !!b && lon >= b.west + 2 && lon <= b.east - 2
+        && lat >= b.south + 2 && lat <= b.north - 2;
+    } catch (_) { }
+    /* 2,400km보다 멀면 한 화면에 동아시아 전역과 전면 경계가 함께 들어온다.
+       이 거리에서는 8km 전면 하나가 정직하다. 더 가까워져 상세 범위 안에
+       들어온 뒤에만 2km를 단독으로 보인다. */
+    const detailOnly = !!broad && inside && h < 2_400_000;
+    if (overview) overview.show = !detailOnly;
+    if (broad) broad.show = detailOnly;
+  },
+
   _removeGK2AWideIRLayers() {
     this.gk2aWideIRLayers.forEach(L => this._removeImageryWithDepth(L));
     this.gk2aWideIRLayers = [];
@@ -1258,6 +1284,7 @@ export const imagery = {
 
       this._gk2aAutoMode = daylight ? 'visible' : 'infrared';
       this._gk2aAutoChannel = broadInfo?.ok ? broad : overview;
+      this._syncGK2AAutoLevels(viewer.camera.positionCartographic?.height || 24_000_000);
       this._updateGK2ADetail(viewer.camera.positionCartographic?.height || 24_000_000);
       document.dispatchEvent(new CustomEvent('earthus:imagery'));
 
@@ -1288,6 +1315,8 @@ export const imagery = {
       document.dispatchEvent(new CustomEvent('earthus:imagery'));
       return;
     }
+    /* 이미 받은 레이어로 돌아가는 경우에도 전환 시작을 즉시 알려야 한다. */
+    this._imgLoading(true, '천리안2A 자동 영상');
     if (firstOpen) {
       /* 빠른 메뉴인데 현재 화면이 동아시아 밖이면 회색 빈 영역만 보인다.
          히마와리와 같은 원칙으로 관측 범위에 한 번만 데려가고, 이후 카메라는 건드리지 않는다. */
@@ -1319,6 +1348,7 @@ export const imagery = {
   },
 
   _updateGK2ADetail(h) {
+    this._syncGK2AAutoLevels(h);
     const info = this._gk2aMeta?.channels?.vi006;
     const b = info?.bbox;
     let inside = false;
@@ -1528,6 +1558,7 @@ export const imagery = {
     switch (id) {
       case 'clouds':
         this._cloudOn = on;
+        if (on) this._imgLoading(true, 'NOAA 전지구 구름');
         /* ⚠️ 켜는데 아직 받아둔 게 없으면 그때 받는다.
            init() 이 꺼진 상태로 시작했을 수 있다(첫 화면 부하를 줄이려고). */
         if (on && !this.cloudLayers.length) this._addClouds();

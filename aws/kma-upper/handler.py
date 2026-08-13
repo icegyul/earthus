@@ -41,6 +41,9 @@ BASE = "https://apihub.kma.go.kr/api/typ01/url/"
 UA = {"User-Agent": "earthus/0.1 (+globe app)"}
 NOW_DST = "wind/kma-upper.json"
 SER_DST = "wind/series/upper-daily.json"
+# 일부 개인정보 보호 확장/브라우저가 URL의 "profiler"를 추적 도구로 오인해 차단한다.
+# 관측 종류는 문서 안 kind/source에 보존하고 공개 경로는 중립 이름을 쓴다.
+WPF_DST = "wind/kma-upper-wind.json"
 FIRST_YEAR = 2010                  # 실측: 2000년은 0줄, 2010년부터 나온다
 
 # 열 위치 — 주석의 자[尺] 줄에서 읽었다 (총 37칸).
@@ -79,6 +82,92 @@ def fetch(tm1, tm2):
         out.append({"tm": f[I["tm"]], "stn": f[I["stn"]],
                     **{k: num(f[i]) for k, i in I.items() if k not in ("tm", "stn")}})
     return out
+
+
+def parse_wind_profiler(raw, mode):
+    """WindProfiler text rows: TM STN HT WD WS U V W QC. 원 QC는 해석하지 않고 보존한다."""
+    out = []
+    for line in raw.split("\n"):
+        text = line.strip().rstrip("=").rstrip(",").strip()
+        if not text or text.startswith("#"):
+            continue
+        fields = [field.strip().strip(",") for field in text.replace(",", " ").split()]
+        if len(fields) < 9 or not fields[0].isdigit() or not fields[1].isdigit():
+            continue
+        height = num(fields[2])
+        if height is None or height < 0:
+            continue
+        out.append({
+            "tm": fields[0], "stn": fields[1], "mode": mode, "heightM": height,
+            "windDirectionDeg": num(fields[3]), "windSpeedMs": num(fields[4]),
+            "uMs": num(fields[5]), "vMs": num(fields[6]), "verticalMs": num(fields[7]),
+            "qcRaw": fields[8],
+        })
+    return out
+
+
+def fetch_wind_profiler(now):
+    """최근 생산시각을 10분씩 뒤로 찾는다. L/H는 서로 독립 실패를 허용한다."""
+    base = (now - timedelta(minutes=10)).replace(second=0, microsecond=0)
+    base = base.replace(minute=(base.minute // 10) * 10)
+    failures = []
+    for offset in range(0, 70, 10):
+        tm = (base - timedelta(minutes=offset)).strftime("%Y%m%d%H%M")
+        records = []
+        for mode in ("L", "H"):
+            try:
+                records.extend(parse_wind_profiler(get("kma_wpf.php", tm=tm, stn="0", mode=mode,
+                                                       help="0"), mode))
+            except urllib.error.HTTPError as error:
+                if error.code == 403:
+                    raise
+                failures.append(f"{tm}:{mode}:HTTP{error.code}")
+            except Exception as error:  # noqa: BLE001 — 반대 모드와 이전 시각을 계속 확인
+                failures.append(f"{tm}:{mode}:{type(error).__name__}")
+        if records:
+            # 같은 지점·고도는 H/L이 겹칠 수 있다. 더 높은 mode를 정본이라 추측하지 않고
+            # 두 mode를 key에 포함해 모두 보존한다.
+            records.sort(key=lambda row: (row["stn"], row["heightM"], row["mode"]))
+            return tm, records, failures
+    return None, [], failures
+
+
+def wind_profile_doc(tm, records, failures):
+    stations = {}
+    for row in records:
+        stations.setdefault(row["stn"], []).append(row)
+    return {
+        "schemaVersion": "earthus.kma-wind-profiler.v1",
+        "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z"),
+        "observedUtc": tm,
+        "source": "기상청 연직바람관측 WindProfiler (API허브 kma_wpf)",
+        "sourceEn": "KMA Wind Profiler observations (API Hub kma_wpf)",
+        "sourceUrl": "https://apihub.kma.go.kr/apiList.do?apiMov=WindProfiler&seqApi=4&seqApiSub=255",
+        "license": "공공누리 제1유형 (출처표시)",
+        "kind": "VERTICAL_WIND_OBSERVATION",
+        "forecast": False,
+        "tz": "UTC",
+        "modes": {"L": "저층 모드 약 5km", "H": "고층 모드 약 12km"},
+        "fields": {
+            "heightM": "관측 고도 m", "windDirectionDeg": "풍향 degree",
+            "windSpeedMs": "풍속 m/s", "uMs": "동서바람 m/s", "vMs": "남북바람 m/s",
+            "verticalMs": "연직바람 m/s", "qcRaw": "기상청 원 품질검사 코드 (임의 등급화하지 않음)",
+        },
+        "stationCount": len(stations),
+        "levelCount": len(records),
+        "missing": {
+            key: sum(row[key] is None for row in records)
+            for key in ("windDirectionDeg", "windSpeedMs", "uMs", "vMs", "verticalMs")
+        },
+        "requestFailures": failures[-20:],
+        "note": {
+            "ko": "10분 주기 연직바람관측 실측입니다. 기온·이슬점 프로파일이 아니므로 Skew-T로 표시하지 않습니다. "
+                  "지점 좌표 승인 전에는 지도 위치를 추측하지 않습니다.",
+            "en": "Ten-minute vertical wind observations. This is not a temperature/dew-point profile, "
+                  "so it is not rendered as a Skew-T. Station coordinates are not guessed.",
+        },
+        "stations": [{"stn": station, "levels": levels} for station, levels in sorted(stations.items())],
+    }
 
 
 def mean(xs):
@@ -126,6 +215,8 @@ def handler(event, context):
     if not KEY:
         return {"ok": False, "reason": "no-key"}
     now = datetime.now(timezone.utc)
+    profiler_state = "UNKNOWN"
+    profiler_levels = 0
 
     # ── 과거 소급 ────────────────────────────────────────────
     # 1년씩 끊어 받는다. 한 해가 실패해도 그 해만 비고 나머지는 남는다.
@@ -148,6 +239,17 @@ def handler(event, context):
                 "failedYears": bad, "kb": round(kb / 1024)}
 
     # ── 평상시: 최근 3일치만 받아 이어 붙인다 ────────────────
+    try:
+        profiler_tm, profiler_records, profiler_failures = fetch_wind_profiler(now)
+        if profiler_records:
+            put(WPF_DST, wind_profile_doc(profiler_tm, profiler_records, profiler_failures), 600)
+            profiler_state, profiler_levels = "SUCCEEDED", len(profiler_records)
+        else:
+            profiler_state = "EMPTY_LAST_GOOD_PRESERVED"
+    except urllib.error.HTTPError as error:
+        profiler_state = "POLICY_BLOCKED" if error.code == 403 else f"HTTP_{error.code}"
+    except Exception as error:  # noqa: BLE001 — 안정도 지수 정본까지 같이 실패시키지 않는다
+        profiler_state = f"FAILED_{type(error).__name__}"
     t0 = (now - timedelta(days=3)).strftime("%Y%m%d0000")
     try:
         recs = fetch(t0, now.strftime("%Y%m%d%H%M"))
@@ -193,7 +295,8 @@ def handler(event, context):
     days = doc.get("days", {})
     days.update(daily(recs))
     put(SER_DST, series_doc(days, doc.get("failedYears", [])), 86400)
-    return {"ok": True, "stations": len(latest), "days": len(days)}
+    return {"ok": True, "stations": len(latest), "days": len(days),
+            "windProfiler": profiler_state, "windProfilerLevels": profiler_levels}
 
 
 def series_doc(days, bad):

@@ -59,7 +59,26 @@ td{padding:8px;border-bottom:1px solid rgba(255,255,255,.05);font-variant-numeri
 .pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px}
 .pill.paid{background:rgba(90,209,160,.16);color:var(--ok)}
 .pill.free{background:rgba(255,255,255,.07);color:var(--dim)}
-.scroll{overflow-x:auto}
+  .scroll{overflow-x:auto}
+.health-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.health-head strong{display:block;font-size:14px;font-weight:600}
+.health-head small,.health-table small{display:block;color:var(--fog);font-size:10.5px;margin-top:3px}
+.health-state,.health-label{display:inline-block;padding:3px 8px;border-radius:5px;font-size:10.5px;white-space:nowrap}
+.health-state--ok,.health-label--ok{color:#88e6bd;background:rgba(90,209,160,.12)}
+.health-state--warn,.health-label--warn{color:#ffcf8f;background:rgba(240,160,60,.13)}
+.health-state--bad,.health-label--bad{color:#ffaaa2;background:rgba(240,100,90,.14)}
+.health-state--blocked,.health-label--blocked{color:#d5b6ff;background:rgba(162,112,220,.14)}
+.health-state--unknown,.health-label--unknown{color:var(--dim);background:rgba(255,255,255,.07)}
+.health-counts{display:grid;grid-template-columns:repeat(7,minmax(88px,1fr));gap:7px;margin:14px 0}
+.health-count{padding:9px 10px;background:rgba(255,255,255,.032);border-left:2px solid var(--line)}
+.health-count b{display:block;font-size:19px;font-weight:400;font-variant-numeric:tabular-nums}
+.health-count span{display:block;color:var(--fog);font-size:10.5px}
+.health-count--ok{border-color:var(--ok)}.health-count--warn{border-color:var(--warn)}
+.health-count--bad{border-color:var(--bad)}.health-count--blocked{border-color:#a270dc}
+.health-table{min-width:1100px}.health-table td{vertical-align:top}.health-table td:first-child{min-width:190px}
+.health-limits{margin:12px 0 0 18px;color:var(--fog);font-size:11px;line-height:1.65}
+.health-loading{color:var(--dim)}.health-error{color:#ffaaa2}
+@media(max-width:720px){.health-counts{grid-template-columns:repeat(2,1fr)}.health-head{display:block}.health-state{margin-top:9px}}
 code{font:400 11.5px/1.5 ui-monospace,Menlo,monospace;background:rgba(255,255,255,.06);
      padding:1px 5px;border-radius:4px}
 pre{background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:9px;
@@ -125,18 +144,18 @@ pre{background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:9px;
     </div>
   </div>
 
-  <div class="card">
+  <div class="card" id="memberCard" hidden>
     <h2>회원</h2>
     <div class="grid" id="stats">
-      <div class="stat"><div class="n" id="nAll">—</div><div class="k">전체 회원</div></div>
-      <div class="stat"><div class="n" id="nPaid">—</div><div class="k">유료 구독</div></div>
-      <div class="stat"><div class="n" id="nFound">—</div><div class="k">창립 멤버</div></div>
-      <div class="stat"><div class="n" id="nWait">—</div><div class="k">사전등록</div></div>
+      <div class="stat"><div class="n" id="nAll">읽기 대기</div><div class="k">전체 회원</div></div>
+      <div class="stat"><div class="n" id="nPaid">읽기 대기</div><div class="k">유료 구독</div></div>
+      <div class="stat"><div class="n" id="nFound">읽기 대기</div><div class="k">창립 멤버</div></div>
+      <div class="stat"><div class="n" id="nWait">읽기 대기</div><div class="k">사전등록</div></div>
     </div>
     <div class="note" id="statNote"></div>
   </div>
 
-  <div class="card">
+  <div class="card" id="recentCard" hidden>
     <h2>최근 가입</h2>
     <div class="scroll"><table id="tbl">
       <thead><tr><th>가입</th><th>수단</th><th>등급</th><th>창립</th><th>id</th></tr></thead>
@@ -147,6 +166,11 @@ pre{background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:9px;
       누가 누구인지가 아닙니다. 개별 문의 대응이 필요하면 그때 Supabase 콘솔에서
       한 건씩 보는 것이 낫습니다 — 목록으로 늘어놓으면 그 화면 하나가 유출 지점이 됩니다.
     </div>
+  </div>
+
+  <div class="card" id="healthCard" hidden>
+    <h2>수집기 운영 관제 <button class="ghost" id="reloadHealth" type="button">다시 확인</button></h2>
+    <div id="collectorHealth"><p class="health-loading">관리자 확인 뒤 불러옵니다.</p></div>
   </div>
 
   <!-- 개발할 수 있는 것 — ⚠️ 목록의 원본은 js/ui-dev.js 다. 여기 따로 적지 않는다.
@@ -205,7 +229,7 @@ pre{background:rgba(0,0,0,.34);border:1px solid var(--line);border-radius:9px;
 import { CONFIG } from './js/config.local.js';
 
 const $ = s => document.querySelector(s);
-const fmt = n => (n == null ? '—' : n.toLocaleString('ko-KR'));
+const fmt = n => (n == null ? '읽기 실패' : n.toLocaleString('ko-KR'));
 
 /* ⚠️ 관리자 uid 는 **코드에 두지 않는다.** 코드에 두면 그건 그냥 주석이고,
    진짜 판정은 데이터베이스가 한다. 여기서는 화면을 정리하는 용도로만 쓴다. */
@@ -265,10 +289,22 @@ $('#todo').innerHTML = `
     화면에서 등급을 바꿀 수 있으면 그 화면이 곧 취약점이 됩니다.`;
 
 let client = null, user = null;
+let healthLoader = null;
+
+async function showCollectorHealth() {
+  const card = $('#healthCard');
+  if (!card) return;
+  card.hidden = false;
+  healthLoader ||= import('./js/admin-health.js?v=20260814-n1');
+  const { loadCollectorHealth } = await healthLoader;
+  await loadCollectorHealth($('#collectorHealth'));
+}
 
 async function boot() {
   if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY) {
-    $('#who').textContent = 'Supabase 키가 없습니다 — config.local.js 를 확인하세요';
+    $('#who').textContent = '로그인 서비스를 준비 중입니다';
+    $('#gateMsg').textContent = '현재 관리자 로그인을 사용할 수 없습니다. 잠시 후 다시 확인해 주세요.';
+    $('#inGoogle').hidden = true;
     return;
   }
   const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
@@ -287,27 +323,41 @@ async function paint() {
     $('#who').textContent = '로그인하지 않았습니다';
     inBtn.hidden = false; outBtn.hidden = true;
     $('#adminNav').hidden = true;
+    $('#memberCard').hidden = true;
+    $('#recentCard').hidden = true;
     $('#gateMsg').textContent = '관리자 계정으로 로그인해야 아래 값이 보입니다.';
     hideDev();
     return;
   }
   inBtn.hidden = true; outBtn.hidden = false;
   /* ⚠️ uid 를 보여주는 이유: 위 SQL 에 붙여넣을 값이다. 비밀이 아니다. */
-  $('#who').innerHTML = `${user.email || user.id} · <code>${user.id}</code>`;
+  $('#who').replaceChildren(document.createTextNode(`${user.email || user.id} · `));
+  const uidCode = document.createElement('code');
+  uidCode.textContent = user.id;
+  $('#who').append(uidCode);
 
   /* ⚠️⚠️ 예전에는 `ADMIN_UIDS.length === 0` 이면 **누구나 통과**였다.
      목록을 안 채워 두면 로그인한 사람 아무나 이 화면을 보게 된다 —
      비어 있을 때 열리는 것은 위험한 기본값이다. 반대로 바꿨다.
      ⚠️ 그래도 이건 **화면 가림**이지 잠금이 아니다. 실제 차단은 Supabase RLS 다. */
-  const known = ADMIN_UIDS.includes(user.id)
-    || String(user.email || '').toLowerCase() === 'contentsdalur@gmail.com';
+  const known = ADMIN_UIDS.includes(user.id);
   $('#adminNav').hidden = !known;
   $('#gateMsg').innerHTML = known
     ? '로그인했습니다. 아래 값이 비어 있으면 <b>RLS 정책이 아직 없거나 관리자로 등록되지 않은 것</b>입니다.'
     : '⚠️ 이 계정은 관리자 목록에 없습니다. 아래 값은 <b>Supabase RLS 가 막습니다.</b>';
 
-  if (known) showDev(); else hideDev();
-  await load();
+  if (known) {
+    $('#memberCard').hidden = false;
+    $('#recentCard').hidden = false;
+    showDev();
+    showCollectorHealth();
+    await load();
+  } else {
+    hideDev();
+    $('#healthCard').hidden = true;
+    $('#memberCard').hidden = true;
+    $('#recentCard').hidden = true;
+  }
 }
 
 async function load() {
@@ -342,27 +392,57 @@ async function load() {
     .select('id,provider,tier,founding_member,created_at')
     .order('created_at', { ascending: false }).limit(20);
   const tb = $('#tbody');
+  const statusRow = (message, color) => {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 5;
+    td.style.color = color;
+    td.textContent = message;
+    tr.append(td);
+    tb.replaceChildren(tr);
+  };
   if (error) {
-    tb.innerHTML = `<tr><td colspan="5" style="color:var(--bad)">읽지 못했습니다 — ${error.message}</td></tr>`;
+    statusRow(`읽지 못했습니다 — ${error.message}`, 'var(--bad)');
     return;
   }
   if (!data?.length) {
-    tb.innerHTML = '<tr><td colspan="5" style="color:var(--fog)">표시할 회원이 없습니다</td></tr>';
+    statusRow('표시할 회원이 없습니다', 'var(--fog)');
     return;
   }
-  tb.innerHTML = data.map(r => `<tr>
-    <td>${new Date(r.created_at).toLocaleDateString('ko-KR')}</td>
-    <td>${r.provider || '—'}</td>
-    <td><span class="pill ${r.tier === 'paid' ? 'paid' : 'free'}">${r.tier || 'free'}</span></td>
-    <td>${r.founding_member ? '★' : ''}</td>
-    <td style="color:var(--fog)">${String(r.id).slice(0, 8)}…</td>
-  </tr>`).join('');
+  const rows = data.map(record => {
+    const tr = document.createElement('tr');
+    const values = [
+      new Date(record.created_at).toLocaleDateString('ko-KR'),
+      record.provider || '기록 없음',
+    ];
+    values.forEach(value => {
+      const td = document.createElement('td');
+      td.textContent = value;
+      tr.append(td);
+    });
+    const tierCell = document.createElement('td');
+    const tier = document.createElement('span');
+    tier.className = `pill ${record.tier === 'paid' ? 'paid' : 'free'}`;
+    tier.textContent = record.tier || 'free';
+    tierCell.append(tier);
+    tr.append(tierCell);
+    const founder = document.createElement('td');
+    founder.textContent = record.founding_member ? '★' : '';
+    tr.append(founder);
+    const id = document.createElement('td');
+    id.style.color = 'var(--fog)';
+    id.textContent = `${String(record.id).slice(0, 8)}…`;
+    tr.append(id);
+    return tr;
+  });
+  tb.replaceChildren(...rows);
 }
 
 $('#inGoogle').onclick = () => client?.auth.signInWithOAuth({
   provider: 'google', options: { redirectTo: location.href },
 });
 $('#out').onclick = async () => { await client?.auth.signOut(); location.reload(); };
+$('#reloadHealth').onclick = () => showCollectorHealth();
 
 boot();
 </script>

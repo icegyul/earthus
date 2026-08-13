@@ -22,6 +22,7 @@
 
 import json
 import os
+import re
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -39,6 +40,7 @@ BASE = "https://apihub.kma.go.kr/api/typ01/url/"
 UA = {"User-Agent": "earthus/0.1 (+globe app)"}
 DST = "events/kma-warn.json"
 REG_CACHE = "events/kma-warn-regions.json"
+HIERARCHY_CACHE = "events/kma-warn-region-hierarchy.json"
 STATE = "events/kma-warn-state.json"        # 지금 열려 있는 사건
 EPISODES = "events/kma-warn-episodes.json"  # 끝난 사건 기록
 STN_ZONE = "events/kma-warn-stations.json"  # 관측지점 → 특보구역 (앱이 '내 구역'을 찾는 데 쓴다)
@@ -151,6 +153,120 @@ def regions(refresh=False):
                                       ensure_ascii=False, separators=(",", ":")).encode(),
                       ContentType="application/json; charset=utf-8")
     return out
+
+
+def parse_region_hierarchy(txt):
+    """``wrn_reg.php`` 공식 구역표를 계층 정본으로 바꾼다.
+
+    API 문서의 출력 순서는 REG_ID, TM_ST, TM_ED, REG_SP, REG_UP, REG_KO,
+    REG_NAME 순이다. 좌표가 없는 API이므로 geometry를 만들지 않는다.
+    """
+    out, rejected = {}, 0
+    parsed_rows = []
+    for raw_line in txt.splitlines():
+        line = raw_line.strip().rstrip("=").strip().rstrip(",")
+        if not line or line.startswith("#"):
+            continue
+        if "," in line:
+            parsed_rows.append([value.strip() for value in line.split(",")])
+            continue
+        # 이 endpoint의 운영 응답은 help 문서와 달리 고정폭이다. 앞 5개 필드는
+        # 공백 없는 코드/시각이고, 두 이름 필드는 2칸 이상 공백으로 나뉜다.
+        head = line.split(maxsplit=5)
+        if len(head) < 6:
+            parsed_rows.append(head)
+            continue
+        names = re.split(r"\s{2,}", head[5].strip(), maxsplit=1)
+        parsed_rows.append(head[:5] + names)
+
+    for f in parsed_rows:
+        if len(f) < 7:
+            rejected += 1
+            continue
+        reg_id, tm_st, tm_ed, reg_sp, reg_up, reg_ko, reg_name = f[:7]
+        if not reg_id or reg_id == "REG_ID" or not reg_id[:1] in ("L", "S"):
+            continue
+        if reg_id in out:
+            # 같은 코드의 유효기간 revision이 여러 개면 종료가 가장 늦은 행을 보존한다.
+            if str(out[reg_id].get("validToKst") or "") >= str(tm_ed or ""):
+                continue
+        source_parent = reg_up if reg_up and reg_up != "00000000" else None
+        out[reg_id] = {
+            "id": reg_id,
+            # S2000000은 기상청 원표에서 자기 자신을 parent로 쓰는 특수 root다.
+            # 원값은 보존하되 그래프에서는 root로 정규화해 모든 하위 해역을 cycle로 버리지 않는다.
+            "parentId": None if source_parent == reg_id else source_parent,
+            "sourceParentId": source_parent,
+            "name": reg_name or reg_ko,
+            "shortName": reg_ko or None,
+            "regionType": "LAND" if reg_id.startswith("L") else "SEA",
+            "regionProperties": reg_sp or None,
+            "validFromKst": tm_st or None,
+            "validToKst": tm_ed or None,
+            "geometry": None,
+            "geometryStatus": "OFFICIAL_POLYGON_API_NOT_AVAILABLE",
+        }
+    # 순환·없는 parent는 안전 판정에서 쓰지 못하게 명시적으로 거절한다.
+    for reg_id, item in list(out.items()):
+        parent = item.get("parentId")
+        if item.get("sourceParentId") == reg_id:
+            item["parentStatus"] = "SELF_ROOT_NORMALIZED"
+        elif parent and parent not in out:
+            item["parentStatus"] = "PARENT_NOT_IN_CURRENT_TABLE"
+        else:
+            item["parentStatus"] = "ROOT" if not parent else "MAPPED"
+        seen, cursor = {reg_id}, parent
+        while cursor and cursor in out:
+            if cursor in seen:
+                item["parentStatus"] = "CYCLE_REJECTED"
+                rejected += 1
+                break
+            seen.add(cursor)
+            cursor = out[cursor].get("parentId")
+    return out, rejected
+
+
+def official_region_hierarchy(refresh=False):
+    """공식 ID/계층을 하루 캐시한다. polygon 부재는 그대로 보존한다."""
+    try:
+        if refresh:
+            raise KeyError("refresh")
+        cached = load(HIERARCHY_CACHE, {})
+        generated = datetime.fromisoformat(str(cached["generated"]).replace("Z", "+00:00"))
+        if (datetime.now(timezone.utc) - generated).total_seconds() < 86400 and cached.get("regions"):
+            return cached
+    except Exception:                                    # noqa: BLE001
+        pass
+
+    raw = get("wrn_reg.php", tmfc=0, disp=0, help=1)
+    table, rejected = parse_region_hierarchy(raw)
+    if not table:
+        # 인증키는 query에만 있고 응답에는 없다. provider의 공개 오류/형식 앞부분만 남긴다.
+        visible = [line.strip() for line in raw.splitlines()
+                   if line.strip() and not line.lstrip().startswith("#")]
+        sample = " | ".join(visible[:3])[:360]
+        raise RuntimeError(f"official warning hierarchy table empty: {sample}")
+    generated = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    doc = {
+        "schemaVersion": "earthus.kma-warning-region-hierarchy.v1",
+        "generated": generated,
+        "sourceObservedAt": generated,
+        "source": "기상청 API허브 특보구역 (wrn_reg.php)",
+        "sourceUrl": "https://apihub.kma.go.kr/apiList.do?seqApi=10&seqApiSub=288",
+        "license": "공공누리 제1유형 (출처표시)",
+        "revision": f"wrn-reg:{generated}",
+        "count": len(table),
+        "rejected": rejected,
+        "geometryAvailable": False,
+        "geometryStatus": "OFFICIAL_POLYGON_API_NOT_AVAILABLE",
+        "limitations": {
+            "ko": "공식 구역 ID와 상하위 계층입니다. 이 공개 API에는 polygon 좌표가 없어 위치 포함 판정에는 쓰지 않습니다.",
+            "en": "Official region IDs and hierarchy. This public API has no polygon coordinates and is not used for point containment.",
+        },
+        "regions": list(sorted(table.values(), key=lambda item: item["id"])),
+    }
+    put(HIERARCHY_CACHE, doc, 86400)
+    return doc
 
 
 def load(key, default):
@@ -291,6 +407,13 @@ def handler(event, context):
         print("[warn] 구역 좌표 실패 —", repr(e)[:80])
         reg = {}
 
+    hierarchy = None
+    try:
+        hierarchy = official_region_hierarchy(refresh=bool(event.get("refreshHierarchy")))
+    except Exception as e:                               # noqa: BLE001
+        # 공식 hierarchy 보조 파일 실패가 현재 특보 실황까지 지우게 하지 않는다.
+        print("[warn] 공식 구역 계층 실패 —", repr(e)[:420])
+
     # (구역, 종류) 별로 가장 최근 발표만 남긴다. 순서가 뒤섞여도 pure reducer가 정한다.
     parsed = []
     for f in raw:
@@ -358,6 +481,14 @@ def handler(event, context):
             "method": "NEAREST_KMA_STATION_ZONE",
             "officialBoundaryPolygon": False,
             "exactRegionIdRequiredForHardGate": True,
+            "officialHierarchy": {
+                "available": bool(hierarchy and hierarchy.get("regions")),
+                "key": HIERARCHY_CACHE,
+                "revision": hierarchy.get("revision") if hierarchy else None,
+                "count": hierarchy.get("count") if hierarchy else None,
+                "geometryAvailable": False,
+                "authoritativePointContainment": False,
+            },
         },
         "activeCount": len(active),
         "upcomingCount": len(upcoming),

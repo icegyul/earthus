@@ -18,7 +18,8 @@
 | Source family | Adapter coverage | region/freshness | 권리·재배포 | P0 판정 |
 |---|---|---|---|---|
 | 기상청 APIHub·공공데이터 | `kma-*`, `khoa-coast`, `air-korea`, `forest-fire`, `quake-asia`, `typhoon-official`, `gts-global` 일부 | 한국·근해, adapter별 상이 | 다수 공공누리 제1유형. 실제 dataset별 표기 재확인 | `APPROVED_FREE`, dataset별 gate |
-| 기상청 기상특보 조회서비스 | 신규 Hard Gate 후보 | 178개 시·군·44개 해역, 발표/대치/해제 | 무료·공공누리 제1유형, 개발/운영 자동승인 | fixture·지역코드 대조 전 `UNKNOWN` |
+| 기상청 Wind Profiler | `kma-upper` | 19지점 응답·L 약 5km/H 약 12km·10분 UTC, 운영 3,234 고도행 | 공공누리 제1유형 출처표시, source/time/QC 보존 | 무료 display `APPROVED_FREE`; Skew-T·유료 export 별도 gate |
+| 기상청 기상특보 조회서비스 | `kma-warn` Hard Gate | 공식 계층 414개(육상 301·해역 113), 발표/대치/해제 | 무료·공공누리 제1유형 | hierarchy `APPROVED_FREE`; polygon authoritative mapping `UNKNOWN` |
 | 일본 기상청 JMA/VAAC | `jma-amedas`, `jma-warn`, `lightning`, `quake-asia`, `tokyo-vaac`, `typhoon-official` | 일본·서태평양 | 출처와 Japan Public Data License 범위 기록 | 재배포 범위별 `CONDITIONAL` |
 | 대만 CWA | `cwa-observations` | 대만 관측 | 인증 parameter와 CWA Open Data 조건 | `CONDITIONAL` |
 | Open-Meteo hosted API | `air-grid`, `air-state`, `atmos-transport-spike`, `cyclone-analog`, `fx-grid`, `kma-verify`, `marine-ea`, `marine-grid`, `pressure-grid`, `wind-grid` | 전지구·모델별 | 데이터 CC BY 4.0과 hosted API 이용권은 별도. 무료 endpoint는 비상업용 | `BLOCKED_PAID` |

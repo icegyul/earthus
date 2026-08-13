@@ -38,6 +38,8 @@ import boto3
 
 DST_BUCKET = os.environ["CACHE_BUCKET"]
 DST_REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
+STATUS_DST = "wind/status/marine-ea.json"
+COLLECTOR_REVISION = "marine-ea.2026-08-14.n1"
 API = "https://marine-api.open-meteo.com/v1/marine"
 OISST_DAILY = ("https://psl.noaa.gov/thredds/dodsC/Datasets/noaa.oisst.v2.highres/"
                "sst.day.mean.{year}.nc.ascii")
@@ -68,6 +70,56 @@ VARS = [
     ("ocean_current_velocity", "cur", 2),
     ("ocean_current_direction", "cdir", 0),
 ]
+
+
+def _previous_success():
+    """직전 성공시각만 이어받는다. 상태 파일이 없거나 손상되면 추측하지 않는다."""
+    try:
+        body = dst.get_object(Bucket=DST_BUCKET, Key=STATUS_DST)["Body"].read(32768)
+        doc = json.loads(body)
+        value = doc.get("lastSuccessAt") if isinstance(doc, dict) else None
+        return value if isinstance(value, str) and value.endswith("Z") else None
+    except Exception:  # noqa: BLE001 — 첫 실행·옛 배포에는 상태 파일이 없다.
+        return None
+
+
+def write_status(started_at, state, reason, output_written, **details):
+    """last-good 해양 격자와 이번 실행 상태를 분리해 기록한다.
+
+    ⚠️ Lambda timeout은 Python 예외가 아니라 프로세스 강제 종료다. 제한시간 직전
+    스스로 중단해 이 heartbeat를 남겨야 옛 자료가 정상처럼 보이지 않는다.
+    """
+    completed = datetime.now(timezone.utc)
+    previous_success = _previous_success()
+    last_success = (completed.strftime("%Y-%m-%dT%H:%M:%SZ")
+                    if state == "SUCCEEDED" else previous_success)
+    doc = {
+        "schema": 2,
+        "collector": "marine-ea",
+        "revision": COLLECTOR_REVISION,
+        "generated": completed.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "lastAttemptAt": started_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "lastSuccessAt": last_success,
+        "state": state,
+        "reason": reason,
+        "outputKey": "ocean/marine-ea.json",
+        "lastGood": "ocean/marine-ea.json" if last_success else None,
+        "outputWritten": bool(output_written),
+        "latencyMs": round((completed - started_at).total_seconds() * 1000),
+        "quota": "UNKNOWN",
+        "estimatedCost": "UNKNOWN",
+    }
+    doc.update({key: value for key, value in details.items() if value is not None})
+    body = json.dumps(doc, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    dst.put_object(Bucket=DST_BUCKET, Key=STATUS_DST, Body=body,
+                   ContentType="application/json; charset=utf-8", CacheControl="no-cache")
+    return doc
+
+
+def deadline_near(context, reserve_ms=90000):
+    """상태 기록과 현재 batch 종료에 필요한 시간을 남긴다."""
+    remaining = getattr(context, "get_remaining_time_in_millis", lambda: 600000)()
+    return remaining < reserve_ms
 
 
 def _oisst_text(url):
@@ -174,6 +226,7 @@ def fetch_batch(pts, tries=4):
 
 
 def handler(event, context):
+    started_at = datetime.now(timezone.utc)
     # OISST 편차는 Open-Meteo 모델 격자와 독립된 NOAA 일별 관측 자료다.
     # 운영 수집이 429 재시도 중일 때도 이 좁은 재생성 경로는 모델 API를 건드리지 않는다.
     if (event or {}).get("only") == "sst_anom":
@@ -194,6 +247,14 @@ def handler(event, context):
     sea = fail = 0
 
     for i in range(0, len(order), BATCH):
+        if deadline_near(context):
+            reason = "lambda-deadline-near-before-complete-grid"
+            write_status(started_at, "FAILED", reason, False,
+                         processedPointCount=i, totalPointCount=n,
+                         sampleCount=sea, missing=fail,
+                         sourceObservedAt=None)
+            return {"ok": False, "status": "FAILED", "reason": reason,
+                    "processed": i, "total": n}
         chunk = order[i:i + BATCH]
         try:
             res = fetch_batch(chunk)
@@ -219,6 +280,10 @@ def handler(event, context):
 
     # ⚠️ 지구의 약 70%가 바다다. 격자점의 절반도 안 차면 무언가 잘못된 것이다.
     if sea < n * 0.35:
+        reason = f"usable-grid-too-small:{sea}/{n}"
+        write_status(started_at, "FAILED", reason, False,
+                     processedPointCount=n, totalPointCount=n,
+                     sampleCount=sea, missing=fail)
         raise RuntimeError(f"바다 격자를 너무 못 채움 ({sea}/{n})")
 
     # 수온 편차는 모델값에 다른 기관의 평년장을 억지로 빼지 않는다. 같은 NOAA
@@ -251,6 +316,11 @@ def handler(event, context):
                        ContentType="application/json",
                        CacheControl="public, max-age=21600")
     counts = {f: sum(1 for v in out[f] if v is not None) for _, f, _ in VARS}
+    write_status(started_at, "SUCCEEDED", "marine-grid-written", True,
+                 dataGenerated=doc["time"], sourceObservedAt=doc["time"],
+                 processedPointCount=n, totalPointCount=n,
+                 sampleCount=sea, missing=fail, failureCount=fail,
+                 outputBytes=len(body), anomalySampleCount=anomaly["sea"] if anomaly else 0)
     anom_note = (f" · OISST 편차 {anomaly['sea']}칸 {anomaly['observed']}"
                  if anomaly else " · OISST 편차 보류")
     print(f"[out] {nx}x{ny} 바다 {sea} 실패 {fail} {len(body)/1024:.0f}KB  {counts}{anom_note}")

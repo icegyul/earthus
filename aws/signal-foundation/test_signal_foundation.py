@@ -136,6 +136,10 @@ class CanonicalGoldenTest(unittest.TestCase):
         self.assertIsNone(signal["value"])
         self.assertEqual(signal["missingReason"], "REGION_UNMAPPED")
         self.assertEqual(signal["quality"]["status"], "UNKNOWN")
+        self.assertEqual(signal["quality"]["warningKind"], "호우")
+        self.assertEqual(signal["quality"]["warningLevel"], "경보")
+        self.assertEqual(signal["region"]["sourceParentRegionCode"], "S0000000")
+        self.assertEqual(signal["region"]["sourceParentRegionName"], "전국")
 
     def test_can_08_revision_supersedes_previous(self):
         source = fixture("source-kma-warning.json")

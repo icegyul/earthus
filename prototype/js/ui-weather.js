@@ -134,7 +134,7 @@ export const weatherPanel = {
         + `<i>${ko ? '특보 · 산 · 바다 · 생활기상 · 기록' : 'Warnings · mountains · sea · records'}</i>`
         + `<span>›</span>`);
       b.onclick = async () => {
-        const { koreaPanel } = await import('./ui-korea.js');
+        const { koreaPanel } = await import('./ui-korea.js?v=20260814-n5');
         this.close();
         koreaPanel.open();
       };

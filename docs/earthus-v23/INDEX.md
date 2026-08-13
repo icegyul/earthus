@@ -1,8 +1,8 @@
 # EARTHUS v2.3 P0 실행 문서
 
-> 기준일: 2026-08-12 KST
-> 상태: **P0 완료 · PR-10 shadow · KMA Live/TPW 운영 공개 · 공개 Decision flag off**
-> 제품 코드 착수 관문: 2026-08-16 사용량 리셋 확인과 PD 승인
+> 기준일: 2026-08-14 KST
+> 상태: **N1/N5 운영 · N2 계층/N3 dual-read 검증 · N6/N7 shadow · 공개 Decision flag off**
+> 종료 판정: [`RELEASE-2026-08-14-N1-N7-CLOSEOUT.md`](RELEASE-2026-08-14-N1-N7-CLOSEOUT.md)
 
 이 디렉터리는 `EARTHUS_Product_Development_Spec_v2.3_FINAL_CODEX_HANDOFF.docx`의
 P0 필수 산출물을 저장소 현실에 맞춰 고정한다. AETHERUS에서 진행 중인 코드는 덮어쓰지
@@ -43,12 +43,13 @@ P0 필수 산출물을 저장소 현실에 맞춰 고정한다. AETHERUS에서 �
 31. [`RUNBOOK.md`](RUNBOOK.md)
 32. [`adr/`](adr/)
 33. [`../earthus-next-reset/README.md`](../earthus-next-reset/README.md) — 다음 사용량 리셋 실행 패키지
+34. [`RELEASE-2026-08-14-N1-N7-CLOSEOUT.md`](RELEASE-2026-08-14-N1-N7-CLOSEOUT.md)
+35. [`N4-UI-MATRIX-2026-08-14.md`](N4-UI-MATRIX-2026-08-14.md)
 
-## 지금 할 수 있는 일
+## 현재 완료·대기 원칙
 
-- 저장소·운영 화면·데이터소스·권리·환경 차이를 문서와 fixture 후보로 고정한다.
-- `UNKNOWN`, `BLOCKED`, `STALE`, `POLICY_BLOCKED` 상태를 없애지 않고 목록화한다.
-- 8월 16일에 실행할 PR의 entry/exit/non-scope를 준비한다.
+- N1~N5의 통제 가능한 운영 개선과 N6~N7 shadow contract는 종료 판정 문서까지 고정했다.
+- `UNKNOWN`, `BLOCKED`, `STALE`, `POLICY_BLOCKED`를 외부 증거 없이 완료로 바꾸지 않는다.
 - PD가 직접 승인한 TPW 단독 slice는 운영 실자료·화면 검수 뒤 `TPW_READY=true`로 공개했다.
 - PD가 `다음꺼 진행해`로 승인한 PR-01은 대표 3 source의 비공개 canonical shadow를
   로컬 구현·검증하되 Lambda·schedule·reader 전환은 하지 않는다.
@@ -57,13 +58,12 @@ P0 필수 산출물을 저장소 현실에 맞춰 고정한다. AETHERUS에서 �
 - 세 번째 `계속 진행해`로 승인한 PR-03은 첫 Earth/Style/Data/Evidence/Decision URL 상태와
   뒤로가기를 운영 정적 파일에 반영했다. TPW는 화면 계약만 함께 배포했고 flag는 계속 꺼져 있다.
 
-## 지금 하지 않는 일
+## 계속 금지하는 일
 
-- EARTHUS/AETHERUS 통합 기능 코딩(TPW와 PR-01/02/03 로컬 예외 외)
-- 운영 Lambda·schedule·TPW S3 산출물·Supabase 변경
 - `SALES_OPEN=true` 또는 판매·구독 문구 확장
 - SNS 자동 게시 또는 외부 계정 작업
 - AETHERUS 작업 파일 `tools/verify_celestial_bodies.py` 덮어쓰기
+- 공식 polygon·권리·RLS·provider 성공·실기기 결과를 추정해 flag를 여는 일
 
 ## P0 판정
 

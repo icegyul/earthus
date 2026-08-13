@@ -39,7 +39,7 @@ import { decisionRail } from './decision-rail.js';
 import { continuousContours } from './continuous-contours.js';
 import { warn } from './warn.js';
 import { warnUI } from './ui-warn.js';
-import { koreaPanel } from './ui-korea.js';
+import { koreaPanel } from './ui-korea.js?v=20260814-n5';
 import { japanPanel } from './ui-japan.js';
 import { mountainPanel } from './ui-mountain.js';
 import { surfPanel } from './ui-surf.js';

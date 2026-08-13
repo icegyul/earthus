@@ -20,6 +20,7 @@
 
 import json
 import os
+import re
 from datetime import datetime, timedelta, timezone
 
 import boto3
@@ -29,6 +30,11 @@ REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 s3 = boto3.client("s3", region_name=REGION)
 
 DST = "wind/health.json"
+HEALTH_SCHEMA = 2
+HEALTH_REVISION = "earthus.collector-health.2026-08-14.n1"
+OPERATIONAL_STATES = (
+    "HEALTHY", "AGING", "STALE", "PARTIAL", "FAILED", "POLICY_BLOCKED", "UNKNOWN",
+)
 
 # ── 감시 대상 ────────────────────────────────────────────────────
 #   key      : S3 객체
@@ -144,8 +150,8 @@ WATCH = [
      "ko": "바다거북 이동경로 (국립해양생물자원관)"},
     # ⚠️ 전지구 해양 격자(5°)로는 한반도가 두세 칸이라 서해·동해가 안 보였다.
     #    동아시아만 0.5° 로 따로 잰다.
-    {"key": "ocean/marine-ea.json", "everyMin": 60, "graceMin": 120,
-     "ko": "동아시아 해양 격자 (0.5°)"},
+    {"key": "wind/status/marine-ea.json", "everyMin": 60, "graceMin": 120,
+     "ko": "동아시아 해양 격자 (0.5°)", "collectorStatus": True},
     # ⚠️ 관측 자료 본문만 감시하면 두 종류의 고장을 놓친다.
     #    CWA는 인증/일부 feed 실패가, ASCAT은 정상적인 위성 비통과가 last-good 뒤에 숨는다.
     #    수집기가 별도로 남기는 heartbeat의 실행 결과와 나이를 함께 본다.
@@ -153,6 +159,48 @@ WATCH = [
      "ko": "대만 CWA 관측 수집 실행", "collectorStatus": True},
     {"key": "wind/status/ascat-observations.json", "everyMin": 240, "graceMin": 180,
      "ko": "NOAA ASCAT 해상풍 수집 실행", "collectorStatus": True},
+
+    # ── 예약 실행 전수 커버리지 ───────────────────────────────
+    # 화면의 대표 파일만 보던 시절에는 아래 수집기들이 죽어도 health가 계속 초록이었다.
+    # EventBridge 예약 실행의 주 출력은 빠짐없이 감시하고, 주기가 긴 기준값은 그 주기에 맞춘다.
+    {"key": "archive/air-evidence/latest.json", "everyMin": 60, "graceMin": 90,
+     "ko": "대기질 근거 보관", "critical": True},
+    {"key": "celestrak/catalog.json.gz", "everyMin": 1440, "graceMin": 720,
+     "ko": "위성 궤도 카탈로그"},
+    {"key": "wind/fx-ea.json", "everyMin": 360, "graceMin": 180,
+     "ko": "동아시아 예보 격자"},
+    {"key": "wind/gts-global.json", "everyMin": 60, "graceMin": 90,
+     "ko": "전지구 지상 관측 GTS"},
+    {"key": "wind/kma-aws.json", "everyMin": 60, "graceMin": 60,
+     "ko": "기상청 AWS 시간 관측"},
+    {"key": "wind/kma-aws-min.json", "everyMin": 10, "graceMin": 25,
+     "ko": "기상청 AWS 10분 관측"},
+    {"key": "wind/kma-life.json", "everyMin": 180, "graceMin": 180,
+     "ko": "기상청 생활기상지수"},
+    {"key": "wind/kma-mountain.json", "everyMin": 180, "graceMin": 150,
+     "ko": "기상청 산악예보"},
+    {"key": "wind/kma-normal.json", "everyMin": 43200, "graceMin": 2880,
+     "ko": "기상청 평년값"},
+    {"key": "ocean/kma-buoy.json", "everyMin": 30, "graceMin": 60,
+     "ko": "기상청 해양부이"},
+    {"key": "wind/kma-radar.json", "everyMin": 5, "graceMin": 20,
+     "ko": "기상청 레이더 메타"},
+    {"key": "wind/kma-upper.json", "everyMin": 720, "graceMin": 240,
+     "ko": "기상청 상층관측"},
+    {"key": "wind/kma-upper-wind.json", "everyMin": 720, "graceMin": 240,
+     "ko": "기상청 연직바람관측"},
+    {"key": "ocean/lab-reports.json", "everyMin": 15, "graceMin": 45,
+     "ko": "해양 LAB 보고서 색인"},
+    {"key": "ocean/obis-summary.json", "everyMin": 10080, "graceMin": 1440,
+     "ko": "OBIS 생물다양성 주간 요약"},
+    {"key": "events/regional-news.json", "everyMin": 30, "graceMin": 60,
+     "ko": "지역 재난 뉴스"},
+    {"key": "events/volcanic-ash-vaac.json", "everyMin": 30, "graceMin": 60,
+     "ko": "도쿄 VAAC 화산재 공지"},
+    {"key": "archive/vaac-validation/latest.json", "everyMin": 60, "graceMin": 90,
+     "ko": "화산재 근거 검증", "critical": True},
+    {"key": "wind/tpw-ea.json", "everyMin": 60, "graceMin": 90,
+     "ko": "동아시아 대기 중 총수증기량"},
 ]
 
 # ── 축적형: **있어야 할 파일이 실제로 있는가** ─────────────────
@@ -276,11 +324,66 @@ def collector_status_of(key):
         if not isinstance(doc, dict):
             return None
         return {name: doc.get(name) for name in (
-            "state", "reason", "outputWritten", "dataGenerated",
-            "stationCount", "cellCount", "failureCount",
+            "state", "reason", "outputWritten", "dataGenerated", "sourceObservedAt",
+            "lastAttemptAt", "lastSuccessAt", "lastGood", "latencyMs", "revision",
+            "stationCount", "cellCount", "sampleCount", "missing", "rejected",
+            "failureCount", "httpStatus", "quota", "estimatedCost",
         )}
     except Exception:                                        # noqa: BLE001
         return None
+
+
+def output_metadata_of(key):
+    """큰 공개 JSON의 앞부분에서 공통 운영 메타만 읽는다.
+
+    파일 전체를 내려받거나 불완전 JSON을 파싱하지 않는다. 찾지 못한 값은 None이며,
+    배열 안의 count를 잘못 집지 않도록 각 후보의 첫 등장만 보수적으로 쓴다.
+    """
+    try:
+        raw = s3.get_object(Bucket=BUCKET, Key=key)["Body"].read(65536)
+        text = raw.decode("utf-8", "replace")
+    except Exception:  # noqa: BLE001
+        return None
+
+    def number_field(name):
+        match = re.search(rf'"{re.escape(name)}"\s*:\s*(-?\d+)', text)
+        return int(match.group(1)) if match else None
+
+    def string_field(name):
+        match = re.search(rf'"{re.escape(name)}"\s*:\s*"([^"\\]{{1,160}})"', text)
+        return match.group(1) if match else None
+
+    sample_count = None
+    for name in ("sampleCount", "stationCount", "levelCount", "cellCount", "count"):
+        sample_count = number_field(name)
+        if sample_count is not None:
+            break
+    missing = None
+    for name in ("missingCount", "failedCells"):
+        missing = number_field(name)
+        if missing is not None:
+            break
+    observed = None
+    for name in ("sourceObservedAt", "observedAt", "observedKst", "observedUtc", "requestedKst"):
+        observed = string_field(name)
+        if observed:
+            digits = re.sub(r"\D", "", observed)
+            if len(digits) in (10, 12, 14) and name in ("observedKst", "requestedKst", "observedUtc"):
+                fmt = {10: "%Y%m%d%H", 12: "%Y%m%d%H%M", 14: "%Y%m%d%H%M%S"}[len(digits)]
+                parsed = datetime.strptime(digits, fmt)
+                if name in ("observedKst", "requestedKst"):
+                    parsed = parsed.replace(tzinfo=timezone(timedelta(hours=9))).astimezone(timezone.utc)
+                else:
+                    parsed = parsed.replace(tzinfo=timezone.utc)
+                observed = parsed.strftime("%Y-%m-%dT%H:%M:%SZ")
+            break
+    return {
+        "sampleCount": sample_count,
+        "missing": missing,
+        "rejected": number_field("rejected"),
+        "sourceObservedAt": observed,
+        "revision": string_field("revision") or string_field("schemaVersion"),
+    }
 
 
 def collector_verdict(freshness_state, status):
@@ -290,6 +393,55 @@ def collector_verdict(freshness_state, status):
     if status.get("state") in ("FAILED", "PARTIAL", "PARTIAL_NO_COVERAGE"):
         return "late" if freshness_state == "ok" else freshness_state
     return freshness_state
+
+
+def operational_state(legacy_state, collector_status=None):
+    """기존 freshness와 실행 heartbeat를 문서의 N1 공통 상태로 정규화한다."""
+    raw = (collector_status or {}).get("state")
+    if raw == "POLICY_BLOCKED":
+        return "POLICY_BLOCKED"
+    if raw == "FAILED" and legacy_state in ("ok", "late"):
+        return "FAILED"
+    if raw in ("PARTIAL", "PARTIAL_NO_COVERAGE"):
+        return "PARTIAL"
+    if legacy_state == "ok":
+        return "HEALTHY"
+    if legacy_state == "late":
+        return "AGING"
+    if legacy_state == "dead":
+        return "STALE"
+    return "UNKNOWN"
+
+
+def add_observability(item, status=None, ref=None):
+    """값을 만들지 않고 N1 필드를 모두 명시한다."""
+    status = status or {}
+    sample_count = status.get("sampleCount")
+    if sample_count is None:
+        sample_count = status.get("stationCount")
+    if sample_count is None:
+        sample_count = status.get("cellCount")
+    attempt = status.get("lastAttemptAt") or item.get("written")
+    # 공개 산출물의 generated는 freshness가 늦었더라도 마지막으로 성공해 보존된 정본 시각이다.
+    # 지연 상태를 HEALTHY로 바꾸지는 않되, 마지막 성공 증거까지 없애면 복구 판단이 더 어려워진다.
+    success = status.get("lastSuccessAt") or item.get("generated")
+    item.update({
+        "operationalState": operational_state(item.get("legacyState"), status),
+        "lastAttemptAt": attempt,
+        "lastSuccessAt": success,
+        "sourceObservedAt": status.get("sourceObservedAt") or status.get("dataGenerated") or item.get("generated"),
+        "age": {"value": item.get("ageMin"), "unit": "min"},
+        "count": sample_count,
+        "missing": status.get("missing"),
+        "rejected": status.get("rejected"),
+        "httpStatus": status.get("httpStatus"),
+        "latency": {"value": status.get("latencyMs"), "unit": "ms"},
+        "lastGood": status.get("lastGood") or (item.get("key") if success else None),
+        "quota": status.get("quota") or "UNKNOWN",
+        "estimatedCost": status.get("estimatedCost") or "UNKNOWN",
+        "revision": status.get("revision") or HEALTH_REVISION,
+    })
+    return item
 
 
 def handler(event=None, context=None):
@@ -304,20 +456,23 @@ def handler(event=None, context=None):
         #    안 바뀐 경우(실패 후 재기록)를 잡기 위해서다.
         ref = gen or lm
         if ref is None:
-            items.append({"key": w["key"], "ko": w["ko"], "state": "missing",
-                          "critical": bool(w.get("critical")),
-                          "ageMin": None, "expectMin": w["everyMin"]})
+            item = {"key": w["key"], "ko": w["ko"], "state": "missing",
+                    "legacyState": "missing", "critical": bool(w.get("critical")),
+                    "ageMin": None, "expectMin": w["everyMin"],
+                    "generated": None, "written": None,
+                    "missingReason": "OUTPUT_OBJECT_NOT_FOUND"}
+            items.append(add_observability(item))
             continue
         a = round(age_min(ref))
         state = verdict(a, w["everyMin"], w["graceMin"])
-        status = collector_status_of(w["key"]) if w.get("collectorStatus") else None
+        status = collector_status_of(w["key"]) if w.get("collectorStatus") else output_metadata_of(w["key"])
         # heartbeat가 제때 왔어도 수집기 자체가 실패/부분실패면 정상으로 숨기지 않는다.
         # NO_COVERAGE와 IDLE은 장애가 아니라 관측 결측/대기 상태라 freshness만 판정한다.
         if w.get("collectorStatus"):
             state = collector_verdict(state, status)
         item = {
             "key": w["key"], "ko": w["ko"],
-            "state": state,
+            "state": state, "legacyState": state,
             "critical": bool(w.get("critical")),
             "ageMin": a, "expectMin": w["everyMin"],
             "generated": gen.strftime("%Y-%m-%dT%H:%MZ") if gen else None,
@@ -335,7 +490,7 @@ def handler(event=None, context=None):
                 "sampleCount": sample_count,
                 "failureCount": status.get("failureCount"),
             })
-        items.append(item)
+        items.append(add_observability(item, status, ref))
 
     for g in EXPECTED:
         slots = g["fn"](NOW)
@@ -347,14 +502,16 @@ def handler(event=None, context=None):
             st = "late"          # 최근 회차가 비었지만 그 전엔 들어왔다
         else:
             st = "dead"          # 최근 3회차가 통째로 비었다 — 사람이 봐야 한다
-        items.append({
+        item = {
             "key": slots[0][1].rsplit("/", 1)[0] + "/",
-            "ko": g["ko"], "state": st, "critical": True,
+            "ko": g["ko"], "state": st, "legacyState": st, "critical": True,
             "ageMin": None, "expectMin": None,
+            "generated": None, "written": None,
             "slots": [{"회차": lab, "있음": any(k2 == k for _, k2 in found)}
                       for lab, k in slots],
             "missing": missing,
-        })
+        }
+        items.append(add_observability(item))
 
     bad = [i for i in items if i["state"] in ("late", "dead", "missing")]
     crit = [i for i in bad if i["critical"]]
@@ -373,8 +530,16 @@ def handler(event=None, context=None):
     items.sort(key=lambda i: (order[i["state"]], not i["critical"], i["ko"]))
 
     doc = {
+        "schema": HEALTH_SCHEMA,
+        "schemaVersion": "earthus.collector-health.v2",
+        "revision": HEALTH_REVISION,
         "generated": NOW.strftime("%Y-%m-%dT%H:%M:00Z"),
+        "count": len(items),
         "overall": overall,
+        "operationalOverall": (
+            "FAILED" if overall == "critical" else
+            "AGING" if overall in ("warn", "minor") else "HEALTHY"
+        ),
         "summary": (f"{len(items)}개 중 정상 {len(items) - len(bad)}개"
                     + (f" · 지연·중단 {len(bad)}개" if bad else "")
                     + (f" (축적형 {len(crit)}개 포함)" if crit else "")),
@@ -390,6 +555,11 @@ def handler(event=None, context=None):
             "ok": "주기 안", "late": "한 번 거름",
             "dead": "반복 실패 — 사람이 봐야 함", "missing": "파일 없음",
         },
+        "operationalStates": list(OPERATIONAL_STATES),
+        "limitations": [
+            "CloudWatch metrics, alarms, log retention and EventBridge target health are UNKNOWN without read permission.",
+            "quota and estimatedCost remain UNKNOWN unless a collector heartbeat supplies measured values.",
+        ],
         "items": items,
     }
 

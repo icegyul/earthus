@@ -32,6 +32,7 @@ const SRC = {
   normal:   `${API.WIND}/kma-normal.json`,      // 평년값 1991–2020
   upperNow: `${API.WIND}/kma-upper.json`,       // 레윈존데 최신 안정도 원값
   upper:    `${API.WIND}/series/upper-daily.json`, // 2010~ 전국 일별 집계
+  windProfiler: `${API.WIND}/kma-upper-wind.json`, // 10분 연직바람 실측, 최대 약 12km
   verify:   `${API.WIND}/series/verify-daily.json`,
   ocean:    `${API.OCEAN}/kma-buoy.json`,       // 해상 194지점
   warn:     `${API.EVENTS}/kma-warn.json`,

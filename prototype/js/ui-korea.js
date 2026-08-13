@@ -6,9 +6,9 @@
 import { i18n } from './i18n.js';
 import { API } from './config.js';
 import { myLocation } from './mylocation.js';
-import { get, nearest, inKorea, normalFor, feelsLike } from './korea.js';
+import { get, nearest, inKorea, normalFor, feelsLike } from './korea.js?v=20260814-n5';
 import { condText } from './kma-fcst.js';
-import { forecastHighlights, nearestForecastHour, parseKmaTime, parseKmaUtcTime, upperAirSummary } from './kma-live-metrics.js';
+import { evidenceTimeline, forecastHighlights, nearestForecastHour, parseKmaTime, parseKmaUtcTime, upperAirSummary, windProfileSummary } from './kma-live-metrics.js?v=20260814-n5';
 import { store } from './store.js';
 import { warn, levelEn } from './warn.js';
 import { warnUI } from './ui-warn.js';
@@ -46,7 +46,7 @@ export const koreaPanel = {
     if (!document.querySelector('link[data-kma-live-style]')) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = new URL('../css/kma-live.css?v=20260812-kmalive1', import.meta.url).href;
+      link.href = new URL('../css/kma-live.css?v=20260814-n5', import.meta.url).href;
       link.dataset.kmaLiveStyle = '1';
       document.head.appendChild(link);
     }
@@ -100,6 +100,22 @@ export const koreaPanel = {
       if (more) more.onclick = () => { this.close(); warnUI.open(); };
       this.body.querySelectorAll('[data-kma-layer]').forEach(button => {
         button.onclick = () => this._openLayer(button.dataset.kmaLayer);
+      });
+      this.body.querySelectorAll('[data-radar-timeline]').forEach(input => {
+        input.oninput = () => {
+          let frames = [];
+          try { frames = JSON.parse(decodeURIComponent(input.dataset.radarTimeline || '')); } catch { return; }
+          const frame = frames[Number(input.value)];
+          const image = this.body.querySelector('[data-radar-frame]');
+          const link = image?.closest('a');
+          const output = this.body.querySelector('[data-radar-time]');
+          if (!frame || !image) return;
+          const path = String(frame.url || '').replace(/^\/wind\//, '');
+          const url = `${API.WIND}/${path}?v=${encodeURIComponent(frame.requestedKst || frame.generated || '')}`;
+          image.src = url;
+          if (link) link.href = url;
+          if (output) output.textContent = `${this._time(frame.requestedKst, true)} KST`;
+        };
       });
     } catch (e) {
       this.body.innerHTML = `<p class="kr-note">${ko ? '자료를 불러오지 못했습니다' : 'Could not load'} — ${esc(e.message)}</p>`;
@@ -301,11 +317,29 @@ export const koreaPanel = {
   /* ── 하늘 (낙뢰 · 비) ─────────────────────────────────── */
   async _sky() {
     const ko = i18n.lang === 'ko';
-    const [lg, aws, radar] = await Promise.all([
-      get('lightning'), get('aws'), get('radar').catch(() => null),
+    const [lg, aws, radar, warning] = await Promise.all([
+      get('lightning'), get('aws'), get('radar').catch(() => null), get('warn').catch(() => null),
     ]);
     const c = myLocation.coords;
     let h = '';
+
+    const timeline = evidenceTimeline({ radar, lightning: lg, aws, warning });
+    const timeLabel = row => row.at ? this._isoTime(row.at) : (ko ? '시각 확인 불가' : 'Time unavailable');
+    const countLabel = row => row.count == null ? (ko ? '표본수 확인 불가' : 'Sample count unavailable')
+      : `n=${Number(row.count).toLocaleString()}`;
+    const names = {
+      RADAR: ko ? '레이더 HSR' : 'Radar HSR', LIGHTNING: ko ? '낙뢰 탐지' : 'Lightning detection',
+      AWS: ko ? '지상 AWS' : 'Ground AWS', WARNING: ko ? '공식 특보' : 'Official warning',
+    };
+    h += `<section class="kr-evidence-time" aria-label="${ko ? '기상 근거 시간축' : 'Weather evidence timeline'}">`
+      + `<header><b>${ko ? '같은 하늘·서로 다른 시각' : 'One sky, separate evidence times'}</b>`
+      + `<span>${ko ? '최신 근거 순' : 'Newest evidence first'}</span></header>`
+      + timeline.map(row => `<div class="kr-evidence-time-row" data-evidence-state="${esc(row.state)}">`
+        + `<strong>${esc(names[row.id] || row.id)}</strong><time datetime="${esc(row.at || '')}">${esc(timeLabel(row))}</time>`
+        + `<span>${esc(countLabel(row))}${row.precision ? ` · ${esc(row.precision)}` : ''}</span></div>`).join('')
+      + `<p>${ko
+        ? '이 줄은 서로 다른 관측·탐지·기관발표의 시각을 비교할 뿐, 값을 섞거나 평균내지 않습니다.'
+        : 'This aligns timestamps only. It never averages or merges unlike observations, detections and bulletins.'}</p></section>`;
 
     /* ⚠️ 낙뢰(G)와 번개(C)를 절대 한 덩어리로 세지 않는다.
        G 는 땅에 떨어진 것이라 사람이 맞을 수 있고, C 는 구름 사이에서만 친 것이다.
@@ -344,14 +378,25 @@ export const koreaPanel = {
     }
 
     if (radar?.image?.url) {
-      const radarUrl = `${API.WIND}/kma-radar.png?v=${encodeURIComponent(radar.generated || radar.requestedKst || '')}`;
+      const frames = Array.isArray(radar.frames) && radar.frames.length ? radar.frames : [{
+        requestedKst: radar.requestedKst, generated: radar.generated, url: radar.image.url,
+        width: radar.image.width, height: radar.image.height,
+      }];
+      const latestFrame = frames[frames.length - 1];
+      const latestPath = String(latestFrame.url || '/wind/kma-radar.png').replace(/^\/wind\//, '');
+      const radarUrl = `${API.WIND}/${latestPath}?v=${encodeURIComponent(latestFrame.requestedKst || latestFrame.generated || '')}`;
       h += `<h4>${ko ? '기상청 HSR 레이더' : 'KMA HSR radar'} <i>${esc(radar.unit || 'mm/h')}</i></h4>`
         + `<figure class="kr-radar"><a href="${esc(radarUrl)}" target="_blank" rel="noopener">`
-        + `<img src="${esc(radarUrl)}" width="${Number(radar.image.width) || 1000}" height="${Number(radar.image.height) || 980}" `
+        + `<img data-radar-frame src="${esc(radarUrl)}" width="${Number(latestFrame.width) || 1000}" height="${Number(latestFrame.height) || 980}" `
         + `loading="lazy" decoding="async" alt="${ko ? '기상청 HSR 레이더 강수량 합성영상' : 'KMA HSR composite radar precipitation'}"></a>`
         + `<figcaption>${ko
           ? '강수세기·국경·행정경계·생산시각을 포함한 기상청 원본 · 누르면 크게 보기'
           : 'Official KMA image with intensity legend, boundaries and production time · tap to enlarge'}</figcaption></figure>`
+        + (frames.length > 1 ? `<div class="kr-radar-timeline"><label>${ko ? '최근 레이더 시간' : 'Recent radar time'} `
+          + `<output data-radar-time>${esc(this._time(latestFrame.requestedKst, true))} KST</output></label>`
+          + `<input type="range" min="0" max="${frames.length - 1}" value="${frames.length - 1}" step="1" `
+          + `data-radar-timeline="${esc(encodeURIComponent(JSON.stringify(frames)))}" `
+          + `aria-label="${ko ? '5분 간격 레이더 영상 선택' : 'Select 5-minute radar frame'}"></div>` : '')
         + this._src(radar);
     } else {
       h += `<p class="kr-note">${ko ? '레이더 최신 영상을 불러오지 못했습니다.' : 'Latest radar image is unavailable.'}</p>`;
@@ -384,7 +429,9 @@ export const koreaPanel = {
   /* ── 상층 대기 관측 ───────────────────────────────────── */
   async _upper() {
     const ko = i18n.lang === 'ko';
-    const [now, series] = await Promise.all([get('upperNow'), get('upper')]);
+    const [now, series, windProfile] = await Promise.all([
+      get('upperNow'), get('upper'), get('windProfiler').catch(() => null),
+    ]);
     const summary = upperAirSummary(now, series);
     const metric = (label, item, unit) => `<div class="kr-upper-metric"><small>${label}</small>`
       + `<b>${item.value == null ? '—' : n1(item.value)}${unit}</b>`
@@ -408,6 +455,28 @@ export const koreaPanel = {
       + `<p>${ko
         ? '백분위는 기상청 관측 이력 안에서 오늘 값보다 낮았던 날의 비율입니다. 위험 확률이나 기상 예보가 아닙니다.'
         : 'Percentiles are the share of historical KMA observation days below today’s value; they are not risk probabilities or forecasts.'}</p></details>`;
+    if (windProfile) {
+      const profile = windProfileSummary(windProfile);
+      const first = profile.stations[0];
+      h += `<h4>${ko ? '연직바람 실측' : 'Vertical wind observations'} <i>${profile.stationCount}${ko ? '지점' : ' stations'} · n=${profile.levelCount.toLocaleString()}</i></h4>`
+        + `<div class="kr-data-ribbon"><b>Wind Profiler</b><span>${esc(this._upperTime(profile.observedUtc))}</span>`
+        + `<span>${ko ? '10분 주기 · 저층/고층 모드' : '10-minute · low/high modes'}</span></div>`
+        + `<div class="kr-profile-stations">${profile.stations.slice(0, 10).map(station => `<div>`
+          + `<b>${ko ? '지점' : 'Station'} ${esc(station.stn)}</b>`
+          + `<span>${station.minHeightM == null ? (ko ? '고도 없음' : 'No height')
+            : `${Math.round(station.minHeightM).toLocaleString()}–${Math.round(station.maxHeightM).toLocaleString()}m`}</span>`
+          + `<em>n=${station.levelCount}${station.missingWind ? ` · ${ko ? '풍속 결측' : 'wind missing'} ${station.missingWind}` : ''}</em></div>`).join('')}</div>`;
+      if (first) h += `<details class="kr-geek kr-profile"><summary>${ko ? `지점 ${esc(first.stn)} 실제 고도별 바람 · 성긴 표본` : `Station ${esc(first.stn)} observed levels · sparse sample`}</summary>`
+        + `<p>${ko ? `전체 ${first.levelCount}개 원 관측행 중 실제 행 최대 12개만 간격을 두고 표시합니다. 고도 사이를 보간하지 않습니다.`
+          : `Shows up to 12 spaced actual rows from ${first.levelCount}; values between levels are not interpolated.`}</p>`
+        + `<div class="kr-profile-levels">${first.sampledLevels.map(level => `<div><span>${Math.round(Number(level.heightM)).toLocaleString()}m · ${esc(level.mode)}</span>`
+          + `<b>${level.windSpeedMs == null ? (ko ? '풍속 결측' : 'wind missing') : `${n1(level.windSpeedMs)} m/s`}</b>`
+          + `<em>${level.windDirectionDeg == null ? (ko ? '풍향 결측' : 'direction missing') : `${Math.round(Number(level.windDirectionDeg))}°`} · QC ${esc(level.qcRaw)}</em></div>`).join('')}</div></details>`;
+      h += this._src(windProfile);
+    } else {
+      h += `<p class="kr-note">${ko ? '연직바람관측 자료를 불러오지 못했습니다. 안정도 지수는 위 자료가 그대로 유효합니다.'
+        : 'Vertical wind observations are unavailable. The stability-index evidence above remains valid.'}</p>`;
+    }
     h += `<div class="kr-actions">${this._mapButton('tpw', '동아시아 수증기 통로', 'East Asia moisture corridor')}</div>`;
     return h + this._src(now) + this._src(series);
   },

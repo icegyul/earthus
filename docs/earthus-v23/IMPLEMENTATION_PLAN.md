@@ -11,6 +11,9 @@
 > Decision UI 공개·판매·예약 실행·SNS는 미승인이다.
 > 후속 계속 지시로 PR-01·02를 서울 private shadow로 수동 배포·검증했다.
 > 둘 모두 schedule·authoritative reader는 없고 DRAFT 정책을 승인으로 바꾸지 않았다.
+> 2026-08-14 N1 수집 health와 N5 시간/상층 판독을 운영 반영했고, N7 evidence-only
+> Intelligence 계약을 shadow로 추가했다. 종료 판정은
+> [`RELEASE-2026-08-14-N1-N7-CLOSEOUT.md`](RELEASE-2026-08-14-N1-N7-CLOSEOUT.md)다.
 
 ## 1. 공통 PR 형식
 

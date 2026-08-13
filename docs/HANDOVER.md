@@ -23,6 +23,16 @@ VoiceOver·열/배터리는 `UNKNOWN`이다. 다음 코드 포인터는 전체 N
 [`earthus-visual-engineering-next/PR01-08-CLOSEOUT.md`](earthus-visual-engineering-next/PR01-08-CLOSEOUT.md)다.
 AETHERUS의 별도 dirty 파일을 stage·deploy·revert하지 않는다.
 
+2026-08-14 PD의 “개발 문서에 있는 거 모두 끝내줘” 지시로 N1~N7을 종료 판정했다.
+수집 health는 운영 61/61 HEALTHY, 공식 특보 계층은 414개, canonical dual-read는 특보 73·
+AWS 736·TPW 3,276 차이 0이다. KMA Live에는 레이더·낙뢰·AWS·특보 원시각 비교,
+최근 1시간 HSR 13프레임 슬라이더, KMA Wind Profiler 19지점·3,234 고도 관측행을 추가했다.
+N6 Decision/개인화/Reservation은 계속 shadow이고, N7 Earthus Intelligence는 원인·경로·
+도착·피해를 만들지 않는 evidence-only co-occurrence shadow다. 공식 polygon, CloudWatch/DLQ/
+log 권한, rights 승인, Supabase tenant A/B, provider 계약, 실기기 검수는 `BLOCKED/UNKNOWN`이다.
+판매·Decision 공개·예약 실행·SNS 자동 게시 flag는 열지 않았다. 정본은
+[`earthus-v23/RELEASE-2026-08-14-N1-N7-CLOSEOUT.md`](earthus-v23/RELEASE-2026-08-14-N1-N7-CLOSEOUT.md)다.
+
 EARTHUS 메뉴·레이어 표현·무료/유료 경계, AETHERUS 정보 구조·모바일·사진관,
 마케팅 스튜디오 공개 이야기관을 한 번에 개편하는 실행 정본은
 [`EARTHUS-AETHERUS-DEV-SPEC-2026-08-16.md`](EARTHUS-AETHERUS-DEV-SPEC-2026-08-16.md)다.

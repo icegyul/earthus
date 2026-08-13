@@ -10,6 +10,11 @@
 - 기상청 Live는 AWS 736개, 97개 대표격자 공식예보, 특보, 낙뢰, HSR 레이더, 상층,
   산악·생활·해양·기후기록을 지연 로딩한다.
 - HSR 레이더는 서울 Lambda와 5분 EventBridge로 갱신하며 검증 실패 시 last-good을 보존한다.
+- HSR 최근 약 1시간은 13개 고정 순환 슬롯으로 보존하며 5분 슬라이더로 판독한다.
+- KMA Wind Profiler 19지점·3,234개 고도 관측행을 상층 탭에서 원 QC·결측과 함께 읽는다.
+- collector health는 운영 61개를 감시하며 2026-08-14 재실행에서 61/61 HEALTHY였다.
+- 대표 운영 화면은 5개 화면 크기와 한국·일본·유럽·북미·남반구·날짜변경선 6개
+  Evidence 지점에서 source 표시·overflow·console을 확인했다.
 - NOAA/NCEP GFS 모델분석 TPW 수증기 통로는 `TPW_READY=true`로 공개됐다.
 - 판매 `SALES_OPEN`, 공개 Decision, 예약 실행, SNS 자동 게시는 닫혀 있다.
 
@@ -21,6 +26,7 @@
 - PR-08 bounded personalization과 5축 UI
 - PR-09 Reservation Impact
 - PR-10 grounded Signal Fusion
+- N7 Cross-domain co-occurrence/Earthus Intelligence
 
 ## Visual 운영 완료
 
@@ -37,9 +43,9 @@ Shadow의 높은 점수·합성 결과·replay 통과는 공개 추천이나 운
 
 ## 현재 중요한 UNKNOWN/BLOCKED
 
-- 기상청 공식 특보 polygon/hierarchy와 authoritative 위치 매핑
+- 기상청 공식 특보 polygon과 authoritative 위치 매핑(공식 414개 계층은 수집 완료)
 - PR-01/02 schedule·retention·비용·dual-read·canary·reader 전환
-- 전체 Lambda 최근 성공·지연·결측·quota·비용·DLQ·alarm·log retention 통합 관측
+- CloudWatch quota·비용·DLQ·alarm·log retention·target 전수(공개 출력 health는 운영 완료)
 - Supabase remote migration checksum, RLS/FORCE RLS, tenant A/B 격리
 - Safari·구형 iPhone 장시간 발열·배터리, VoiceOver/스크린리더
 - Visual의 Safari·지원 최저/최신 iPhone·저사양 Android·VoiceOver·열/배터리 실기기 표

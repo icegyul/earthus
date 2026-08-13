@@ -898,7 +898,7 @@ export const layerBar = {
         + `</span><span class="ly-open-arrow" aria-hidden="true">›</span>`;
       kma.onclick = async () => {
         try {
-          const { koreaPanel } = await import('./ui-korea.js');
+          const { koreaPanel } = await import('./ui-korea.js?v=20260814-n5');
           this.open = false; this.sub = null; this._apply?.();
           koreaPanel.open();
         } catch (error) {

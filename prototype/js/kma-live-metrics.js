@@ -29,6 +29,92 @@ export function parseKmaUtcTime(value) {
   return Number.isFinite(date.getTime()) ? date : null;
 }
 
+function parseEvidenceTime(value, compactZone = 'KST') {
+  if (value instanceof Date && Number.isFinite(value.getTime())) return value;
+  const text = String(value || '').trim();
+  if (!text) return null;
+  if (/^\d{10,14}$/.test(text.replace(/[^0-9]/g, ''))) {
+    return compactZone === 'UTC' ? parseKmaUtcTime(text) : parseKmaTime(text);
+  }
+  const date = new Date(text);
+  return Number.isFinite(date.getTime()) ? date : null;
+}
+
+function evidenceTime(doc, { compactZone = 'KST', itemKeys = [] } = {}) {
+  const direct = [doc?.observedAt, doc?.observedKst, doc?.requestedKst, doc?.issuedAt,
+    doc?.validAt, doc?.generated, doc?.generatedAt];
+  for (const value of direct) {
+    const parsed = parseEvidenceTime(value, compactZone);
+    if (parsed) return parsed;
+  }
+  const values = [];
+  for (const key of itemKeys) {
+    for (const row of doc?.[key] || []) {
+      for (const field of ['tm', 'observedAt', 'issuedAt', 'time']) {
+        const parsed = parseEvidenceTime(row?.[field], compactZone);
+        if (parsed) values.push(parsed);
+      }
+    }
+  }
+  return values.sort((a, b) => b.getTime() - a.getTime())[0] || null;
+}
+
+/**
+ * 서로 다른 기상 근거를 같은 시각으로 둔갑시키지 않는 비교용 시간축.
+ *
+ * 레이더·낙뢰·AWS·특보의 최신 근거시각과 표본수만 정렬한다. 값을 평균하거나
+ * 공간/시간 보간하지 않으며, 시각을 찾을 수 없는 source도 UNKNOWN 행으로 보존한다.
+ */
+export function evidenceTimeline({ radar = null, lightning = null, aws = null, warning = null } = {}, nowMs = Date.now()) {
+  const specs = [
+    {
+      id: 'RADAR', kind: 'OBSERVATION_IMAGERY', doc: radar,
+      at: evidenceTime(radar), count: radar?.image?.bytes != null ? 1 : null,
+      countLabel: 'frame', precision: radar?.updateMinutes ? `${radar.updateMinutes} min` : null,
+    },
+    {
+      id: 'LIGHTNING', kind: 'DETECTION', doc: lightning,
+      at: evidenceTime(lightning, { itemKeys: ['strikes'] }),
+      count: number(lightning?.count) ?? number(lightning?.totalDetected),
+      countLabel: 'detections', precision: lightning?.windowMinutes ? `${lightning.windowMinutes} min window` : null,
+    },
+    {
+      id: 'AWS', kind: 'GROUND_OBSERVATION', doc: aws,
+      at: evidenceTime(aws, { itemKeys: ['stations'] }),
+      count: number(aws?.count) ?? (Array.isArray(aws?.stations) ? aws.stations.length : null),
+      countLabel: 'stations', precision: 'station observations',
+    },
+    {
+      id: 'WARNING', kind: 'OFFICIAL_BULLETIN', doc: warning,
+      at: evidenceTime(warning, { itemKeys: ['warnings', 'items'] }),
+      count: number(warning?.activeCount) ?? number(warning?.count)
+        ?? (Array.isArray(warning?.warnings) ? warning.warnings.length : null),
+      countLabel: 'active records', precision: 'official bulletin',
+    },
+  ];
+  const rows = specs.filter(spec => spec.doc).map(spec => {
+    const atMs = spec.at?.getTime() ?? null;
+    const ageMinutes = atMs == null ? null : Math.max(0, Math.floor((nowMs - atMs) / 60_000));
+    return Object.freeze({
+      id: spec.id,
+      kind: spec.kind,
+      at: spec.at?.toISOString() || null,
+      ageMinutes,
+      count: spec.count,
+      countLabel: spec.countLabel,
+      precision: spec.precision,
+      source: spec.doc.source || spec.doc.sourceEn || null,
+      state: atMs == null ? 'UNKNOWN' : (atMs > nowMs + 5 * 60_000 ? 'FUTURE_CLOCK_SKEW' : 'OBSERVED'),
+    });
+  });
+  rows.sort((a, b) => {
+    if (a.at === null) return 1;
+    if (b.at === null) return -1;
+    return b.at.localeCompare(a.at) || a.id.localeCompare(b.id);
+  });
+  return Object.freeze(rows);
+}
+
 export function nearestForecastHour(point, nowMs = Date.now()) {
   const hours = (point?.hourly || []).map(row => ({ ...row, at: parseKmaTime(row.tm) }))
     .filter(row => row.at && row.at.getTime() >= nowMs - 60 * 60_000);
@@ -95,5 +181,32 @@ export function upperAirSummary(nowDoc, seriesDoc) {
     ki: Object.freeze(metric('ki', today?.ki ?? mean(values('ki')))),
     li: Object.freeze(metric('li', today?.li ?? mean(values('li')))),
     capeMax: Object.freeze(metric('capeMax', today?.capeMax ?? extrema(values('cape'), 'max'))),
+  });
+}
+
+export function windProfileSummary(doc) {
+  const stations = (doc?.stations || []).map(station => {
+    const levels = (station.levels || []).filter(row => number(row.heightM) !== null)
+      .sort((a, b) => number(a.heightM) - number(b.heightM) || String(a.mode).localeCompare(String(b.mode)));
+    const withWind = levels.filter(row => number(row.windSpeedMs) !== null);
+    const strongest = [...withWind].sort((a, b) => number(b.windSpeedMs) - number(a.windSpeedMs))[0] || null;
+    const sampleStep = Math.max(1, Math.ceil(levels.length / 12));
+    return Object.freeze({
+      stn: String(station.stn || ''),
+      levelCount: levels.length,
+      missingWind: levels.length - withWind.length,
+      minHeightM: levels.length ? number(levels[0].heightM) : null,
+      maxHeightM: levels.length ? number(levels[levels.length - 1].heightM) : null,
+      strongest: strongest ? Object.freeze({ heightM: number(strongest.heightM),
+        windSpeedMs: number(strongest.windSpeedMs), mode: strongest.mode }) : null,
+      // 실제 관측 행만 성긴 표본으로 고른다. 고도 사이를 보간해 새 값을 만들지 않는다.
+      sampledLevels: Object.freeze(levels.filter((_row, index) => index % sampleStep === 0).slice(0, 12)),
+    });
+  }).filter(station => station.levelCount > 0).sort((a, b) => a.stn.localeCompare(b.stn));
+  return Object.freeze({
+    observedUtc: doc?.observedUtc || null,
+    stationCount: stations.length,
+    levelCount: stations.reduce((sum, station) => sum + station.levelCount, 0),
+    stations: Object.freeze(stations),
   });
 }

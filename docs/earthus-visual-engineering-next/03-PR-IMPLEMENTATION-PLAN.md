@@ -2,6 +2,8 @@
 
 ## PR-00 — Contract & Measurement Foundation
 
+상태: **2026-08-13 로컬 완료 · 운영 배포 없음**
+
 목표: 현 구현을 바꾸기 전에 요청·CPU·레이어·GPU·유휴 렌더를 수치화한다.
 
 산출물:
@@ -20,6 +22,19 @@
 - 기능 변화·운영 배포 없음.
 
 Stop gate: 기준선 없이 PR-01로 가지 않는다.
+
+완료 증거: [`PR00-CONTRACT-MEASUREMENT-ADR.md`](PR00-CONTRACT-MEASUREMENT-ADR.md)
+
+- 유효 계약 3개, 거절 fixture 5개와 실제 repository module gate를 자동검사한다.
+- 기존 query 불일치 5개는 baseline에 고정했고 신규 불일치 0이다. strict 0은 PR-01 병합
+  전 선행 정리한다.
+- desktop/mobile에서 base/depth 중복 요청 41~49%, OFF 뒤 provider 요청과 texture 잔존을
+  확인했다.
+- 최종 기준선의 mask p95는 0.8~1.2ms, 50ms 초과 0이지만 실제 최저 iPhone 결과는
+  아직 `UNKNOWN`이다.
+
+PR-01 추가 합격 조건: OFF/channel switch 뒤 이전 owner의 accepted request 0,
+30회 교대 뒤 layer/texture 증가 0, orphan task 0.
 
 ## PR-01 — ImageryLayerGroup Lifecycle
 

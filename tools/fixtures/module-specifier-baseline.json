@@ -1,0 +1,11 @@
+{
+  "schema": "earthus.module-specifier-baseline.v1",
+  "note": "PR-00에서 발견한 기존 singleton 부채다. 새 항목 추가는 실패하며 PR-01 전 엄격 모드에서 0으로 줄인다.",
+  "allowed": {
+    "prototype/js/ui.js": ["", "?v=20260812-hudreturn1"],
+    "prototype/js/layers/registry.js": ["", "?v=20260812-photoownership1"],
+    "prototype/js/layerbar.js": ["", "?v=20260812-earthview1"],
+    "prototype/js/space/contracts.js": ["", "?v=20260812-photoownership1"],
+    "prototype/js/ui-charts.js": ["", "?v=20260810-locationchart1"]
+  }
+}

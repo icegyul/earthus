@@ -1,0 +1,87 @@
+{
+  "schema": "earthus.satellite-frame-fixtures.v1",
+  "valid": [
+    {
+      "name": "noaa-gmgsi-global-la8",
+      "expectedFrameId": "NOAA_GMGSI/global-la8/2026-08-13T00:00:00.000Z",
+      "frame": {
+        "schema": "earthus.satellite-frame.v1",
+        "provider": "NOAA_GMGSI",
+        "channel": "global-la8",
+        "observedAt": "2026-08-13T00:00:00Z",
+        "publishedAt": "2026-08-13T00:17:00Z",
+        "area": "GLOBAL",
+        "bbox": { "west": -180, "south": -72.7, "east": 180, "north": 72.7 },
+        "resolutionKm": 2.4,
+        "signalPercent": 63.2,
+        "pixelEncoding": "gray-alpha",
+        "alphaMeaning": "processed-mask",
+        "usable": { "day": true, "night": true },
+        "provenance": {
+          "producer": "NOAA NESDIS",
+          "distributor": "EARTHUS GMGSI collector",
+          "processingVersion": "gmgsi-la8-v1",
+          "sourceUrl": "https://noaa-gmgsi-pds.s3.amazonaws.com/",
+          "licenseId": "NOAA-PUBLIC-DOMAIN"
+        }
+      }
+    },
+    {
+      "name": "gk2a-visible-east-asia",
+      "expectedFrameId": "GK2A/vi006ea/2026-08-13T00:10:00.000Z",
+      "frame": {
+        "schema": "earthus.satellite-frame.v1",
+        "provider": "GK2A",
+        "channel": "vi006ea",
+        "observedAt": "2026-08-13T00:10:00+00:00",
+        "publishedAt": "2026-08-13T00:22:00Z",
+        "area": "EA",
+        "bbox": { "west": 80, "south": 5, "east": 175, "north": 60 },
+        "resolutionKm": 2,
+        "signalPercent": 41.7,
+        "pixelEncoding": "gray-alpha",
+        "alphaMeaning": "processed-mask",
+        "usable": { "day": true, "night": false },
+        "provenance": {
+          "producer": "KMA NMSC",
+          "distributor": "NOAA open data and EARTHUS GK-2A collector",
+          "processingVersion": "gk2a-gray-alpha-v1",
+          "sourceUrl": "https://registry.opendata.aws/noaa-gk2a/",
+          "licenseId": "GK2A-NOAA-OPEN-DATA-REVIEWED-DISPLAY"
+        }
+      }
+    },
+    {
+      "name": "himawari-band13",
+      "expectedFrameId": "HIMAWARI_GIBS/Himawari_AHI_Band13_Clean_Infrared/2026-08-13T00:20:00.000Z",
+      "frame": {
+        "schema": "earthus.satellite-frame.v1",
+        "provider": "HIMAWARI_GIBS",
+        "channel": "Himawari_AHI_Band13_Clean_Infrared",
+        "observedAt": "2026-08-13T00:20:00Z",
+        "publishedAt": null,
+        "area": "GLOBAL",
+        "bbox": { "west": -180, "south": -85.0511, "east": 180, "north": 85.0511 },
+        "resolutionKm": 2,
+        "signalPercent": 29.4,
+        "pixelEncoding": "rgba-palette",
+        "alphaMeaning": "none",
+        "usable": { "day": true, "night": true },
+        "provenance": {
+          "producer": "JMA",
+          "distributor": "NASA GIBS",
+          "processingVersion": "gibs-band13-current",
+          "sourceUrl": "https://gibs.earthdata.nasa.gov/",
+          "licenseId": "NASA-GIBS-SOURCE-SPECIFIC"
+        }
+      }
+    }
+  ],
+  "invalid": [
+    { "name": "missing-observed-at", "from": "noaa-gmgsi-global-la8", "delete": "observedAt", "expectedCode": "ISO_INSTANT_REQUIRED" },
+    { "name": "published-before-observed", "from": "gk2a-visible-east-asia", "set": { "publishedAt": "2026-08-12T23:00:00Z" }, "expectedCode": "PUBLISHED_BEFORE_OBSERVED" },
+    { "name": "visible-rgb-fake-alpha", "from": "himawari-band13", "set": { "pixelEncoding": "visible-rgb", "alphaMeaning": "cloud-confidence" }, "expectedCode": "ALPHA_SEMANTICS_INVALID" },
+    { "name": "insecure-source-url", "from": "himawari-band13", "setProvenance": { "sourceUrl": "http://example.invalid/frame" }, "expectedCode": "HTTPS_URL_REQUIRED" },
+    { "name": "unknown-root-field", "from": "noaa-gmgsi-global-la8", "set": { "rainfallMm": 42 }, "expectedCode": "UNKNOWN_FIELD" }
+  ]
+}

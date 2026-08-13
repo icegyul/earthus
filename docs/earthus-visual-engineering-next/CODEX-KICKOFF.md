@@ -15,7 +15,9 @@ canary/rollback을 닫는다.
 2. 이 폴더의 `README.md` → `01` → `02` → `03` → `04` 순서로 읽는다.
 3. `git status`, 최근 관련 commit, 현재 운영 URL과 배포 증거를 확인한다.
 4. 다른 작업자의 dirty file을 보존하고 task 파일/hunk만 다룬다.
-5. PR-00 기준선 측정부터 시작한다. 측정 없이 PR-01 리팩터링으로 건너뛰지 않는다.
+5. [`PR00-CONTRACT-MEASUREMENT-ADR.md`](PR00-CONTRACT-MEASUREMENT-ADR.md)의 기준선과
+   증거를 확인하고 PR-01에서 이어간다. HEAD나 provider 구조가 바뀌지 않았다면 PR-00을
+   처음부터 반복하지 않는다.
 
 ## 보호할 현재 동작
 
@@ -29,9 +31,9 @@ canary/rollback을 닫는다.
 - 레이어 배타 그룹, HUD, Earth/AETHERUS/해구 route를 깨지 않는다.
 - 무한 애니메이션과 `clampToGround`를 추가하지 않는다.
 
-## 이번 회차의 첫 산출물
+## 현재 완료
 
-PR-00 문서와 코드:
+PR-00 문서와 코드는 로컬 완료됐고 측정 전용이라 운영 배포하지 않았다.
 
 - `SatelliteFrameContract` validator/fixtures
 - 동일 module duplicate URL 검사
@@ -41,6 +43,17 @@ PR-00 문서와 코드:
 - 3초 유휴 render count
 - desktop/mobile 대표 golden capture
 - 다음 PR로 갈 수 있는 측정 기반 ADR
+
+## 이번 회차의 첫 산출물
+
+PR-01 `ImageryLayerGroup`:
+
+- base와 visual sibling의 공통 owner와 ACTIVE/REPLACING/DISPOSING 상태 머신
+- 전환/OFF 시 AbortController, listener, timer, provider 작업의 일괄 취소
+- NOAA/GK-2A/Himawari adapter와 base 관측 우선 failure isolation
+- 30회 교대 soak와 layer/texture 증가 0 증거
+- OFF/channel switch 뒤 이전 owner accepted request 0 증거
+- PR-00의 기존 module query 불일치 5개 strict 0 선행 정리
 
 ## 작업 규칙
 
@@ -57,9 +70,10 @@ PR-00 문서와 코드:
 ## 첫 보고 형식
 
 - 파악한 제품 목적과 보호 동작
-- PR-00에서 측정할 항목과 이유
+- PR-00에서 확인된 중복·잔존 요청·texture 기준선
 - 현재 위험/의존성
 - 변경 파일 예상 범위
 - 완료/중단 게이트
 
-질문이 없어도 안전한 read-only 점검과 PR-00 기준선 수집은 바로 시작한다.
+질문이 없어도 안전한 read-only 점검 뒤 PR-01 완료 조건까지 바로 진행한다. PR-00의
+measurement instrumentation은 기준선 비교용으로 유지하며 production entry에 연결하지 않는다.

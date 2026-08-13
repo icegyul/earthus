@@ -4,7 +4,7 @@
 
 작성일: 2026-08-13
 
-상태: 다음 개발 회차의 실행 기준서
+상태: PR-00 로컬 완료 · 다음 PR-01
 
 적용 범위: 첫 Earth 화면, 천구 배경, NOAA/천리안2A/히마와리9 구름 영상, 관련 성능·보안·배포
 
@@ -30,6 +30,7 @@
 3. [`03-PR-IMPLEMENTATION-PLAN.md`](03-PR-IMPLEMENTATION-PLAN.md) — PR-00~08 구현 순서와 완료 조건
 4. [`04-QUALITY-SECURITY-OPERATIONS.md`](04-QUALITY-SECURITY-OPERATIONS.md) — 성능·보안·실기기·배포 게이트
 5. [`CODEX-KICKOFF.md`](CODEX-KICKOFF.md) — 리셋 후 Codex에게 그대로 줄 시작 지시문
+6. [`PR00-CONTRACT-MEASUREMENT-ADR.md`](PR00-CONTRACT-MEASUREMENT-ADR.md) — 완료된 계약·실측 기준선과 PR-01 결정
 
 ## 3. 변경 불가 원칙
 
@@ -46,15 +47,18 @@
 
 ## 4. 현재 완료와 다음 시작점
 
-현재 운영 구현은 “V1 시각 개선”이다. 다음 회차는 바로 기능을 더 붙이지 말고
-`PR-00 Contract & Measurement Foundation`부터 시작한다. 특히 다음을 먼저 수치로 고정한다.
+현재 운영 구현은 “V1 시각 개선”이다. `PR-00 Contract & Measurement Foundation`은
+2026-08-13 로컬에서 완료했고 운영에는 배포하지 않았다. 기준선에서 다음을 확인했다.
 
-- 동일 타일 중복 요청 수
-- 깊이 마스크 생성 시간과 메인 스레드 장기 작업
-- 전면/상세 레이어 전환 시 살아 있는 ImageryLayer·texture 수
-- 6K/4K 선택 결과와 GPU 메모리 추정치
-- 유휴 Cesium render count
-- Safari/구형 iPhone의 `canvas.filter`, WebP 6K, CORS canvas 동작
+- 구름 base/depth의 동일 타일 중복 기회가 41~49%다.
+- 레이어 전환·OFF 뒤에도 이전 provider request와 texture가 남는다.
+- mask p95는 최종 로컬 desktop/mobile 기준선에서 0.8~1.2ms였고 50ms 장기 작업은 없었다.
+- desktop도 Cesium 내부 GPU 상한을 읽지 못해 6K 대신 4K를 선택한다.
+- 첫 Earth의 3초 유휴 render와 가로 overflow는 desktop/mobile 모두 0이다.
+
+다음 시작점은 `PR-01 ImageryLayerGroup Lifecycle`이다. base와 visual sibling을 같은
+owner/abort/dispose 단위로 만들고, 30회 교대와 OFF 뒤 잔존 요청·layer·texture 0을 먼저
+증명한다. Safari·실제 iPhone과 CORS/filter 실기기 결과는 아직 `UNKNOWN`이다.
 
 ## 5. 최종 완료 정의
 

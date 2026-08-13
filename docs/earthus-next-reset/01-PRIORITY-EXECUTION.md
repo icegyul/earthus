@@ -1,6 +1,18 @@
 # 01 — 다음 개발 우선순위
 
+## 현재 실행 포인터
+
+공통 N0와 Visual PR-00은 2026-08-13 로컬 완료했다. 최근 실제 결함 흐름을 따라 다음은
+[`../earthus-visual-engineering-next/03-PR-IMPLEMENTATION-PLAN.md`](../earthus-visual-engineering-next/03-PR-IMPLEMENTATION-PLAN.md)의
+PR-01 `ImageryLayerGroup Lifecycle`이다. base/depth를 같은 owner로 묶고 전환·OFF 때 이전
+요청·listener·layer·texture를 취소/회수한 뒤, 이 문서의 N1로 돌아온다.
+
+Visual PR-01은 N1을 폐기하거나 완료 처리하지 않는다. 두 작업은 같은 상위 기준을 쓰되
+현재 실제 사용자 문제를 먼저 닫도록 순서만 정한 것이다.
+
 ## N0. 문서·운영 정본 동기화
+
+상태: **2026-08-13 완료**
 
 목적: 오래된 체크박스 때문에 완료 범위를 잘못 말하거나 이미 열린 flag를 다시 잠긴 것으로
 오해하지 않게 한다.

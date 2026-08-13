@@ -44,7 +44,7 @@ assert.match(viewerSource, /earthus-milky-way\/panorama-6000\.webp/);
 assert.match(viewerSource, /maximumTextureSize/);
 assert.match(viewerSource, /earthus-milky-way\/panorama\.webp/);
 assert.match(indexSource, /ESO\/S\. Brunier · CC BY 4\.0/);
-assert.match(mainSource, /layers\/imagery\.js\?v=20260813-clouddepth1/);
+assert.match(mainSource, /layers\/imagery\.js\?v=20260813-satellite-list1/);
 
 const catalogFiles = {
   'space-photos': 'prototype/data/space-photos.json',

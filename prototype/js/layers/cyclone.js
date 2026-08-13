@@ -273,6 +273,8 @@ export const cyclones = {
   _selected: null,
   _spinTimer: null,
   _ensembleVisible: true,
+  _enabled: false,
+  _trackToken: 0,
 
   init() {
     this.ds = new Cesium.CustomDataSource('cyclone');
@@ -317,8 +319,16 @@ export const cyclones = {
   },
 
   set(on) {
-    if (this.ds) this.ds.show = on;
-    if (!on) this._freezeArms();
+    this._enabled = !!on;
+    if (this.ds) this.ds.show = this._enabled;
+    if (!this._enabled) {
+      this._freezeArms();
+      /* 받은 지적: "태풍 선택 해제 해도 태풍이동경로 플레이바는 남아 있어"
+         레이어 OFF는 도형의 show만 false로 바꾸는 일이 아니다. 펼친 경로·선택·예보 시각과
+         플레이바도 같은 기능 묶음이라 함께 닫혀야 한다. 특히 geometry 요청 중 끄면 늦게
+         끝난 showTrack()이 바를 다시 열 수 있으므로 clearTrack()의 token으로 그 요청도 폐기한다. */
+      if (this._selected || this._selStorm) this.clearTrack();
+    }
   },
 
   /** 소용돌이를 현재 모양으로 고정한다 — 꺼진 레이어의 남은 20초도 즉시 끝낸다. */
@@ -1033,9 +1043,12 @@ export const cyclones = {
   },
 
   async showTrack(s) {
+    if (!this._enabled) return;
     if (this._selected === s.id) return;
     const ko = i18n.lang === 'ko';
     this.clearTrack();
+    if (!this._enabled) return;
+    const trackToken = this._trackToken;
     this._selected = s.id;
     this._selStorm = s;   // 타임라인(setFxTime)이 쓴다
 
@@ -1059,6 +1072,9 @@ export const cyclones = {
         g = await r.json();
       } catch (e) { console.warn('[cyclone] GDACS 경로 실패 — 예보선만 그린다:', e.message); }
     }
+    /* 기다리는 동안 레이어를 껐거나 다른 태풍을 골랐으면 이 결과는 이미 오래된 요청이다.
+       여기서 멈추지 않으면 clearTrack() 뒤에 경로와 플레이바가 되살아난다. */
+    if (!this._enabled || trackToken !== this._trackToken) return;
     if (!g) { this._tracks[s.id] = made; power.animate(300); return; }
     const feats = g.features || [];
 
@@ -1156,7 +1172,9 @@ export const cyclones = {
 
     this._tracks[s.id] = made;
     // 예보 타임라인을 연다 — 스크러버·플레이 버튼 (받은 지시)
-    import('../ui-timeline.js').then(m => m.fxTimeline.show(s)).catch(() => {});
+    import('../ui-timeline.js').then(m => {
+      if (this._enabled && trackToken === this._trackToken) m.fxTimeline.show(s);
+    }).catch(() => {});
   },
 
   /* ══ 타임라인 — 예보 시각의 기관별 위치 ═══════════════════════════
@@ -1222,6 +1240,7 @@ export const cyclones = {
   },
 
   clearTrack() {
+    this._trackToken += 1;
     this.setFxTime(null);
     this._selStorm = null;
     import('../ui-timeline.js').then(m => m.fxTimeline.hide()).catch(() => {});

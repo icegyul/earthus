@@ -64,6 +64,7 @@ export const fxTimeline = {
   _i: 0,
   _timer: null,
   _storm: null,
+  _setToken: 0,
 
   /* ── 자료 ── */
   async _load() {
@@ -115,6 +116,7 @@ export const fxTimeline = {
 
   /* ── 시각 적용 ── */
   async set(i) {
+    const setToken = ++this._setToken;
     this._i = Math.max(0, Math.min(N, i));
     if (!this._el) return;
     this._el.querySelector('#fxRange').value = this._i;
@@ -125,6 +127,7 @@ export const fxTimeline = {
       import('./isobars.js'), import('./windfield.js'),
       import('./layers/cyclone.js'), import('./layers/imagery.js?v=20260813-clouddepth1'),
     ]);
+    if (setToken !== this._setToken) return;
 
     if (this._i === 0) {
       // 실황 복귀 — 전부 원래대로
@@ -138,6 +141,9 @@ export const fxTimeline = {
     }
 
     const d = await this._load();
+    /* 자료를 기다리는 동안 태풍 레이어를 끄거나 다른 시각으로 옮겼다면 이 적용은 폐기한다.
+       그렇지 않으면 hide()가 실황으로 닫은 뒤 늦게 도착한 예보가 chip을 다시 켠다. */
+    if (setToken !== this._setToken) return;
     const st = d?.steps?.[this._i];
     if (st) {
       isobars.setOverride(st, d);
@@ -184,6 +190,9 @@ export const fxTimeline = {
   },
   hide() {
     this.pause();
+    /* 진행 중인 비동기 set()을 먼저 무효화한다. 바가 사라져도 옛 요청이 예보 상태를
+       되살리는 경합을 막는 것이 화면을 숨기는 것보다 먼저다. */
+    this._setToken += 1;
     if (!this._el) return;
     this._el.classList.remove('on');
     this._chip.classList.remove('on');

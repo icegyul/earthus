@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="theme-color" content="#071018">
+  <title>AETHERUS 실기기 검증 콘솔</title>
+  <link rel="stylesheet" href="css/aetherus-device-qa.css?v=20260814-1">
+</head>
+<body>
+  <a class="skip-link" href="#qaMain">본문으로 건너뛰기</a>
+  <header class="qa-hero">
+    <div>
+      <p class="eyebrow">AETHERUS DEVICE RELEASE CANDIDATE</p>
+      <h1>실기기 검증 콘솔</h1>
+      <p class="lede">카메라·방향 센서·로컬 저장·삭제를 실제 브라우저에서 검증합니다.
+        성공하지 않은 항목은 <strong>PASS로 표시되지 않습니다.</strong></p>
+    </div>
+    <div class="hero-actions">
+      <a class="button ghost" href="./?aetherus=solar">← AETHERUS로 돌아가기</a>
+      <button class="button primary" id="exportReport" type="button">검증 보고서 JSON 내려받기</button>
+    </div>
+  </header>
+
+  <section class="release-bar" aria-labelledby="releaseHeading">
+    <div>
+      <p class="eyebrow" id="releaseHeading">현재 전환 결정</p>
+      <p class="release-state"><span class="status blocked">BLOCKED</span> 실기기 증거 전에는 공개하지 않음</p>
+    </div>
+    <dl class="summary-grid" id="summaryGrid" aria-live="polite">
+      <div><dt>PASS</dt><dd id="countPass">0</dd></div>
+      <div><dt>FAIL</dt><dd id="countFail">0</dd></div>
+      <div><dt>BLOCKED</dt><dd id="countBlocked">0</dd></div>
+      <div><dt>UNKNOWN</dt><dd id="countUnknown">0</dd></div>
+    </dl>
+  </section>
+
+  <main id="qaMain" class="qa-main">
+    <section class="qa-card" data-check-section="environment">
+      <div class="card-head">
+        <div><p class="step">01</p><h2>환경·보안 기본선</h2></div>
+        <span class="status unknown" data-status-for="environment">UNKNOWN</span>
+      </div>
+      <p>카메라와 센서는 HTTPS 보안 문맥에서만 시작합니다. 기기 환경과 로컬 저장 여부만 기록하며 정확한 위치는 보고서에 넣지 않습니다.</p>
+      <dl class="evidence-list" id="environmentEvidence"></dl>
+      <div class="actions"><button class="button" id="runEnvironment" type="button">환경 다시 검사</button></div>
+    </section>
+
+    <section class="qa-card" data-check-section="location">
+      <div class="card-head">
+        <div><p class="step">02</p><h2>위치 권한·정확도</h2></div>
+        <span class="status unknown" data-status-for="location">UNKNOWN</span>
+      </div>
+      <p>사용자가 누를 때만 위치를 읽습니다. 위도·경도는 메모리에서만 사용하고 정확도·시각만 검증 보고서에 남깁니다.</p>
+      <p class="result-copy" id="locationResult">아직 요청하지 않음</p>
+      <div class="actions"><button class="button" id="requestLocation" type="button">위치 권한 요청</button></div>
+    </section>
+
+    <section class="qa-card wide" data-check-section="skyAr">
+      <div class="card-head">
+        <div><p class="step">03</p><h2>Sky AR 후면 카메라·방향 센서</h2></div>
+        <span class="status unknown" data-status-for="skyAr">UNKNOWN</span>
+      </div>
+      <p>버튼을 눌러야만 iPhone 모션·방향 권한과 후면 카메라를 요청합니다. 화면을 숨기거나 중지하면 트랙과 이벤트 리스너를 즉시 종료합니다.</p>
+      <div class="camera-grid">
+        <div class="camera-stage">
+          <video id="cameraPreview" muted playsinline aria-label="Sky AR 후면 카메라 미리보기"></video>
+          <div class="camera-placeholder" id="cameraPlaceholder">카메라를 시작하면 이곳에 후면 화면이 보입니다.</div>
+          <div class="reticle" aria-hidden="true"><i></i></div>
+        </div>
+        <dl class="evidence-list" id="skyArEvidence"></dl>
+      </div>
+      <div class="actions">
+        <button class="button primary" id="startSkyAr" type="button">Sky AR 시작</button>
+        <button class="button" id="stopSkyAr" type="button" disabled>센서·카메라 중지</button>
+        <button class="button" id="captureFrame" type="button" disabled>현재 화면 로컬 저장</button>
+      </div>
+    </section>
+
+    <section class="qa-card wide" data-check-section="media">
+      <div class="card-head">
+        <div><p class="step">04</p><h2>촬영 원본·로컬 아카이브</h2></div>
+        <span class="status unknown" data-status-for="media">UNKNOWN</span>
+      </div>
+      <p>촬영 화면은 즉시 SHA-256을 계산해 IndexedDB에 불변 원본으로 저장합니다. 서버 전송은 없으며 사용자가 직접 내려받고 삭제해야 합니다.</p>
+      <dl class="evidence-list" id="mediaEvidence"></dl>
+      <div class="actions">
+        <button class="button" id="checkPersistence" type="button">재실행 저장 여부 검사</button>
+        <button class="button" id="exportArchive" type="button" disabled>원본 묶음 내려받기</button>
+        <button class="button danger" id="deleteArchive" type="button" disabled>로컬 원본 삭제</button>
+      </div>
+      <p class="note" id="mediaNote">아직 저장된 검증 원본이 없습니다.</p>
+    </section>
+
+    <section class="qa-card" data-check-section="consent">
+      <div class="card-head">
+        <div><p class="step">05</p><h2>동의·철회·삭제 UX</h2></div>
+        <span class="status unknown" data-status-for="consent">UNKNOWN</span>
+      </div>
+      <p>이 동의는 검증 기기의 localStorage에만 남는 QA 전용 기록입니다. 서버 회원 동의나 마케팅 동의가 아닙니다.</p>
+      <label class="consent-line"><input id="localConsent" type="checkbox"> AETHERUS 실기기 QA용 로컬 기록 저장에 동의</label>
+      <div class="actions">
+        <button class="button" id="saveConsent" type="button">동의 기록</button>
+        <button class="button danger" id="withdrawConsent" type="button">철회하고 로컬 기록 삭제</button>
+      </div>
+      <p class="result-copy" id="consentResult">로컬 동의 상태 확인 중</p>
+    </section>
+
+    <section class="qa-card" data-check-section="astrometry">
+      <div class="card-head">
+        <div><p class="step">06</p><h2>Astrometry·Plate Solving</h2></div>
+        <span class="status unknown" data-status-for="astrometry">UNKNOWN</span>
+      </div>
+      <p>NASA M82에서 파생한 서명 숫자 fixture로 로컬 WCS 솔버를 검증합니다. 임의 사진 별 추출과 운영 전천 카탈로그는 별도 게이트입니다.</p>
+      <dl class="evidence-list" id="astrometryEvidence"></dl>
+      <label class="file-line" for="astrometryFile">임의 천체사진 입력 경계 확인</label>
+      <input id="astrometryFile" type="file" accept="image/*,.fits,.fit,.fts">
+      <div class="actions"><button class="button" id="runAstrometry" type="button">서명 fixture 솔브 실행</button></div>
+    </section>
+
+    <section class="qa-card" data-check-section="ai">
+      <div class="card-head">
+        <div><p class="step">07</p><h2>AI 의도·인용·도구 가드</h2></div>
+        <span class="status unknown" data-status-for="ai">UNKNOWN</span>
+      </div>
+      <p>읽기 전용 의도, 프롬프트 인젝션 차단, 인용 커버리지, 외부 모델 비용 0을 재검증합니다.</p>
+      <dl class="evidence-list" id="aiEvidence"></dl>
+      <div class="actions"><button class="button" id="runAiGate" type="button">AI 레드팀 게이트 실행</button></div>
+    </section>
+
+    <section class="qa-card" data-check-section="remote">
+      <div class="card-head">
+        <div><p class="step">08</p><h2>원격 관측소 Safe Hold</h2></div>
+        <span class="status unknown" data-status-for="remote">UNKNOWN</span>
+      </div>
+      <p>시뮬레이터는 단일 사용 승인, 날씨·돔·마운트 신선도, 타겟 불일치, 비상 정지를 검사하며 물리 명령은 보내지 않습니다.</p>
+      <label class="consent-line"><input id="emergencyStop" type="checkbox" checked> 비상 정지 활성</label>
+      <dl class="evidence-list" id="remoteEvidence"></dl>
+      <div class="actions"><button class="button" id="runRemoteGate" type="button">Safe Hold 시뮬레이션</button></div>
+    </section>
+
+    <section class="qa-card wide" data-check-section="endurance">
+      <div class="card-head">
+        <div><p class="step">09</p><h2>유한 내구성·배터리 관찰</h2></div>
+        <span class="status unknown" data-status-for="endurance">UNKNOWN</span>
+      </div>
+      <p>5분만 실행되는 유한 계측입니다. 배터리 API가 없는 iPhone은 시작·종료 배터리와 발열 상태를 사용자가 직접 기록합니다.</p>
+      <div class="field-grid">
+        <label>시작 배터리 %<input id="batteryStart" type="number" min="0" max="100" inputmode="numeric"></label>
+        <label>종료 배터리 %<input id="batteryEnd" type="number" min="0" max="100" inputmode="numeric"></label>
+        <label>종료 발열<select id="thermalEnd"><option value="UNKNOWN">선택 전</option><option value="NORMAL">정상</option><option value="WARM">따뜻함</option><option value="HOT">뜨거움</option></select></label>
+      </div>
+      <p class="timer" id="enduranceTimer" aria-live="polite">05:00</p>
+      <div class="actions">
+        <button class="button" id="startEndurance" type="button">5분 검사 시작</button>
+        <button class="button" id="finishEndurance" type="button" disabled>지금 종료·판정</button>
+      </div>
+    </section>
+
+    <section class="qa-card wide" data-check-section="manual">
+      <div class="card-head">
+        <div><p class="step">10</p><h2>Safari·iPhone·접근성 수동 검수</h2></div>
+        <span class="status unknown" data-status-for="manual">UNKNOWN</span>
+      </div>
+      <p>자동화로 대체할 수 없는 행동만 직접 확인합니다. 하나라도 FAIL이면 공개 전환을 막습니다.</p>
+      <div class="manual-grid" id="manualChecks">
+        <label><span>VoiceOver 순서·버튼 이름</span><select data-manual="voiceover"><option>UNKNOWN</option><option>PASS</option><option>FAIL</option></select></label>
+        <label><span>200% 확대 내용 유실 없음</span><select data-manual="zoom"><option>UNKNOWN</option><option>PASS</option><option>FAIL</option></select></label>
+        <label><span>세로·가로 회전 배치</span><select data-manual="orientation"><option>UNKNOWN</option><option>PASS</option><option>FAIL</option></select></label>
+        <label><span>버튼 터치·포커스 표시</span><select data-manual="controls"><option>UNKNOWN</option><option>PASS</option><option>FAIL</option></select></label>
+        <label><span>저전력 모드 기능 보존</span><select data-manual="lowPower"><option>UNKNOWN</option><option>PASS</option><option>FAIL</option></select></label>
+        <label><span>잠금·복귀 시 카메라 해제</span><select data-manual="resume"><option>UNKNOWN</option><option>PASS</option><option>FAIL</option></select></label>
+      </div>
+      <label class="issue-line" for="manualIssue">발견한 문제</label>
+      <textarea id="manualIssue" rows="3" maxlength="1000" placeholder="FAIL 재현 순서와 보인 현상을 적으세요."></textarea>
+    </section>
+
+    <section class="qa-card wide gate-card" aria-labelledby="externalGatesHeading">
+      <div class="card-head"><div><p class="step">HARD GATES</p><h2 id="externalGatesHeading">외부 권한·물리 환경</h2></div></div>
+      <div class="gate-list">
+        <article><span class="status blocked">BLOCKED</span><h3>Supabase 사용자 A/B RLS</h3><p>migration·검증기는 준비되었지만 독립 계정 2개로 운영 DB 거절 증거가 필요합니다.</p></article>
+        <article><span class="status blocked">BLOCKED</span><h3>운영 AI 모델</h3><p>모델 계약·비용·실제 평가 데이터 승인 전에는 외부 호출을 0으로 유지합니다.</p></article>
+        <article><span class="status blocked">BLOCKED</span><h3>원격 관측소 HIL</h3><p>물리 돔·마운트·긴급정지 버튼 없이는 드라이버를 열지 않습니다.</p></article>
+        <article><span class="status blocked">BLOCKED</span><h3>공개 전환</h3><p>이 페이지의 실기기 보고서와 canary·rollback 리허설 후에만 메인 UI를 열 수 있습니다.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="qa-footer">
+    <p>이 콘솔은 관측·예보·장비 성공을 약속하지 않습니다. 검증 시각과 기기 증거만 보존합니다.</p>
+  </footer>
+  <script type="module" src="js/aetherus-device-qa.js?v=20260814-2"></script>
+</body>
+</html>

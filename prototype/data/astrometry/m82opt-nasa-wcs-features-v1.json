@@ -1,0 +1,59 @@
+{
+  "schema": "earthus.astrometry-corpus-fixture.v1",
+  "schemaVersion": 1,
+  "fixtureId": "m82opt-nasa-wcs-public-v1",
+  "kind": "PUBLIC_WCS_DERIVED_FEATURE_LIST",
+  "source": {
+    "name": "NASA FITS Support Office · NRAO sample WCS · m82opt.fits",
+    "url": "https://fits.gsfc.nasa.gov/nrao_data/samples/wcs/m82opt.fits",
+    "sha256": "a1b771dcc0c3eae7e3e7365c67b54d0465091b30838e52c823e303e115603cf1",
+    "lastModified": "2007-01-04T22:30:16Z",
+    "originalBundled": false
+  },
+  "oracle": {
+    "width": 558,
+    "height": 262,
+    "bitpix": 16,
+    "ctype": ["RA---ARC", "DEC--ARC"],
+    "crval": [147.927100003, 69.9079999924],
+    "crpix": [301.5, 95.5],
+    "cdelt": [-0.0002247777738, 0.0002273333375],
+    "crota2Deg": 24.26000023,
+    "sourceScaleArcsecPerPixel": 0.8138,
+    "comparisonGateArcsec": 2.5
+  },
+  "extraction": {
+    "method": "3x3 local maximum, 9x9 median sharpness, 10px non-maximum suppression",
+    "excludedRows": "66..204 FITS pixel rows to avoid the extended galaxy core",
+    "minimumSharpnessRaw": 4500,
+    "coordinateConvention": "FITS_1_BASED",
+    "sampleCount": 24,
+    "photometry": "UNAVAILABLE"
+  },
+  "features": [
+    { "id": "m82-f01", "x": 422, "y": 236, "flux": 58599 },
+    { "id": "m82-f02", "x": 278, "y": 227, "flux": 57521 },
+    { "id": "m82-f03", "x": 527, "y": 26, "flux": 55814 },
+    { "id": "m82-f04", "x": 38, "y": 10, "flux": 54195 },
+    { "id": "m82-f05", "x": 371, "y": 50, "flux": 44130 },
+    { "id": "m82-f06", "x": 162, "y": 56, "flux": 38917 },
+    { "id": "m82-f07", "x": 541, "y": 16, "flux": 25525 },
+    { "id": "m82-f08", "x": 87, "y": 26, "flux": 16717 },
+    { "id": "m82-f09", "x": 81, "y": 233, "flux": 13751 },
+    { "id": "m82-f10", "x": 500, "y": 8, "flux": 11774 },
+    { "id": "m82-f11", "x": 422, "y": 11, "flux": 10964 },
+    { "id": "m82-f12", "x": 377, "y": 244, "flux": 9706 },
+    { "id": "m82-f13", "x": 347, "y": 43, "flux": 8448 },
+    { "id": "m82-f14", "x": 162, "y": 212, "flux": 7010 },
+    { "id": "m82-f15", "x": 296, "y": 224, "flux": 6830 },
+    { "id": "m82-f16", "x": 58, "y": 52, "flux": 6740 },
+    { "id": "m82-f17", "x": 404, "y": 13, "flux": 6471 },
+    { "id": "m82-f18", "x": 456, "y": 53, "flux": 6201 },
+    { "id": "m82-f19", "x": 234, "y": 232, "flux": 6111 },
+    { "id": "m82-f20", "x": 336, "y": 231, "flux": 5752 },
+    { "id": "m82-f21", "x": 233, "y": 219, "flux": 5482 },
+    { "id": "m82-f22", "x": 176, "y": 9, "flux": 5482 },
+    { "id": "m82-f23", "x": 375, "y": 228, "flux": 5033 },
+    { "id": "m82-f24", "x": 257, "y": 17, "flux": 5033 }
+  ]
+}

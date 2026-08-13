@@ -1,5 +1,13 @@
 # AETHERUS / EARTHUS Final Closeout — 2026-08-12
 
+> 2026-08-14 AETHERUS device RC follow-up: camera/sensor QA, local RAW
+> persistence/export/delete receipt, local consent withdrawal, Supabase private-data
+> migration/RPC, and principal A/B verifier are now implemented. Production DB
+> application, two-user live RLS evidence, production AI, physical HIL and actual
+> device evidence remain closed. The current evidence and morning procedure are
+> [`RELEASE-2026-08-14-AETHERUS-DEVICE-RC.md`](RELEASE-2026-08-14-AETHERUS-DEVICE-RC.md)
+> and [`../AETHERUS-DEVICE-QA-RUNBOOK-2026-08-14.md`](../AETHERUS-DEVICE-QA-RUNBOOK-2026-08-14.md).
+
 ## Final statement
 
 This repository's implementable, non-authoritative Aetherus/Earthus work is
@@ -40,8 +48,9 @@ to work around and must not be represented as delivered:
 
 1. Source/provider contracts, rights/freshness approval and authenticated live
    adapters.
-2. Supabase schema, consent/deletion/retention and authenticated tenant A/B RLS
-   proof.
+2. Supabase production migration application and authenticated tenant A/B RLS
+   proof. The schema, consent/export/delete RPC and verifier are implemented but
+   are not production evidence until two independent authenticated sessions pass.
 3. Notification dispatch, reservation mutation/cancellation, payment or any
    entitlement action.
 4. External-model credentials, cost approval, real evaluation set, tool

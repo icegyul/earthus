@@ -1,0 +1,168 @@
+/* EARTHUS 심해 탐사 조종 화면
+   배경은 실제 관측 사진이 아니라 제품 전용 탐사 연출이다. 수심·출처·관측 기록은
+   각각 GEBCO/OBIS/문헌 값으로 분리해 표시하며, 장면 이미지를 증거처럼 부르지 않는다. */
+
+body.earthus-dive-open .brand-menu-tab,
+body.earthus-dive-open #scaleRail,
+body.earthus-dive-open #hudShow{display:none!important}
+
+#sceneRoot[data-stage="dive"] .ocean-scene{display:block;padding:0;overflow:hidden;background:#01070d}
+#sceneRoot[data-stage="dive"] .ocean-scene>[data-scene-home]{display:none!important}
+
+#diveExperience.od-dive{
+  --od-cyan:#27bfff;
+  --od-cyan-soft:#86dffc;
+  --od-line:rgba(93,184,222,.25);
+  --od-panel:rgba(2,10,17,.88);
+  --od-depth:.58;
+  position:absolute;inset:0;display:block;width:auto;height:auto;min-height:0;overflow:hidden;
+  color:#edf7fb;background:#01070d;font-family:var(--sans,Inter,"Pretendard Variable",system-ui,sans-serif);
+  isolation:isolate
+}
+#diveExperience.od-dive[hidden]{display:none}
+.od-dive *{box-sizing:border-box}
+.od-dive button,.od-dive input{font:inherit}
+.od-dive button{touch-action:manipulation}
+.od-dive a{color:var(--od-cyan-soft)}
+.od-sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+
+.od-dive-bg{position:absolute;z-index:-3;inset:-2%;background:url('/ocean/scenes/mariana-trench-simulator.jpg') center/cover no-repeat;transform:scale(calc(1.015 + var(--od-depth)*.018));filter:saturate(calc(.82 + var(--od-depth)*.2)) brightness(calc(.82 - var(--od-depth)*.12));transition:transform .5s ease,filter .5s ease}
+.od-dive-shade{position:absolute;z-index:-2;inset:0;background:linear-gradient(180deg,rgba(0,5,10,.76) 0,rgba(1,8,13,.1) 18%,rgba(1,7,12,.08) 62%,rgba(0,4,8,.76) 100%),linear-gradient(90deg,rgba(0,4,8,.62),transparent 27%,transparent 68%,rgba(0,4,8,.62));pointer-events:none}
+.od-dive-grain{position:absolute;z-index:-1;inset:0;opacity:.16;pointer-events:none;background-image:radial-gradient(circle at 18% 24%,rgba(151,220,244,.35) 0 1px,transparent 1.5px),radial-gradient(circle at 73% 62%,rgba(151,220,244,.2) 0 1px,transparent 1.5px);background-size:83px 97px,117px 131px}
+
+.od-dive-header{position:absolute;z-index:8;top:max(14px,env(safe-area-inset-top));right:max(18px,env(safe-area-inset-right));left:max(20px,env(safe-area-inset-left));display:grid;grid-template-columns:minmax(260px,1fr) auto minmax(260px,1fr);align-items:start;gap:20px;pointer-events:none;text-shadow:0 2px 18px #000}
+.od-breadcrumb{display:flex;align-items:center;gap:11px;min-height:44px;color:rgba(226,238,244,.68);font-size:12px;white-space:nowrap;pointer-events:auto}
+.od-breadcrumb button{min-height:44px;padding:0;border:0;background:none;color:#f5fbff;font-size:15px;font-weight:650;letter-spacing:.28em;cursor:pointer}
+.od-breadcrumb i{font-style:normal;color:rgba(166,210,228,.48)}
+.od-dive-title{align-self:start;display:grid;justify-items:center;gap:4px;padding-top:4px;text-align:center;white-space:nowrap}
+.od-dive-title p,.od-dive-title h2{margin:0;max-width:none!important}
+.od-dive-title p{color:#fff;font-size:clamp(23px,2.15vw,38px);font-weight:480;line-height:1;letter-spacing:.28em}
+.od-dive-title h2{color:rgba(225,238,245,.62)!important;font-size:clamp(11px,1.1vw,16px)!important;font-weight:520!important;line-height:1.35!important;letter-spacing:.035em!important}
+.od-dive-utils{justify-self:end;display:flex;gap:8px;pointer-events:auto}
+.od-dive-utils button{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid transparent;border-radius:50%;background:rgba(2,9,15,.32);color:rgba(236,246,250,.78);font-size:18px;cursor:pointer;backdrop-filter:blur(10px)}
+.od-dive-utils button:hover{border-color:var(--od-line);background:rgba(8,25,36,.76);color:#fff}
+.od-dive-utils button:focus-visible,.od-dive button:focus-visible,.od-dive input:focus-visible{outline:2px solid var(--od-cyan);outline-offset:2px}
+
+.od-locator{position:absolute;z-index:3;top:clamp(66px,7vh,94px);left:max(18px,env(safe-area-inset-left));display:grid;justify-items:center;gap:8px;width:clamp(155px,16vw,245px);pointer-events:none}
+.od-locator-globe{position:relative;width:clamp(128px,14vw,214px);aspect-ratio:1;border:1px solid rgba(105,190,224,.42);border-radius:50%;overflow:hidden;background:#06131c url('/data/trench-bathymetry.webp') 88% 50%/340% 170% no-repeat;box-shadow:inset -28px -18px 44px rgba(0,0,0,.76),inset 12px 8px 24px rgba(92,194,234,.13),0 0 36px rgba(29,146,196,.08)}
+.od-locator-globe::before{content:"";position:absolute;inset:0;border-radius:50%;background:repeating-radial-gradient(circle at 50% 50%,transparent 0 24%,rgba(111,190,222,.11) 25% 25.5%,transparent 26% 49%);mix-blend-mode:screen}
+.od-locator-globe::after{content:"";position:absolute;left:61%;top:39%;width:13px;height:13px;border:2px solid var(--od-cyan);border-radius:50%;background:#eafaff;box-shadow:0 0 0 7px rgba(39,191,255,.16),0 0 18px var(--od-cyan)}
+.od-locator-label{display:flex;align-items:center;gap:7px;min-height:40px;padding:0 14px;border:1px solid rgba(65,165,205,.35);border-radius:999px;background:rgba(2,10,17,.72);color:rgba(239,248,251,.84);font-size:12px;backdrop-filter:blur(12px)}
+.od-locator-label::before{content:"⌖";color:var(--od-cyan)}
+
+.od-specimen{position:absolute;z-index:5;left:max(18px,env(safe-area-inset-left));bottom:max(20px,env(safe-area-inset-bottom));display:grid;grid-template-rows:auto minmax(0,1fr) auto;width:clamp(238px,20vw,320px);height:clamp(340px,48vh,450px);padding:15px 17px;border:1px solid rgba(111,195,229,.34);border-radius:15px;background:linear-gradient(150deg,rgba(3,12,20,.94),rgba(1,7,12,.84));box-shadow:0 24px 70px rgba(0,0,0,.4),inset 0 1px rgba(255,255,255,.04);backdrop-filter:blur(16px)}
+.od-specimen-head{display:flex;align-items:center;justify-content:space-between;gap:10px;color:rgba(231,241,246,.66);font-size:11px}
+.od-specimen-nav{display:flex;align-items:center;gap:5px}
+.od-specimen-nav button{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;background:transparent;color:rgba(235,246,250,.72);font-size:24px;cursor:pointer}
+.od-specimen-nav output{min-width:36px;text-align:center;color:rgba(239,247,250,.75);font-size:11px}
+.od-specimen-media{display:grid;place-items:center;min-height:0;overflow:hidden}
+.od-specimen-media img{display:block;width:100%;height:100%;max-height:195px;object-fit:contain;filter:drop-shadow(0 12px 24px rgba(0,0,0,.46))}
+.od-specimen-copy h3{margin:4px 0 3px;color:#fff;font-size:clamp(20px,1.8vw,29px);font-weight:540;line-height:1.12;letter-spacing:-.035em}
+.od-specimen-copy em{display:block;overflow:hidden;color:rgba(199,218,228,.5);font:500 9px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;text-overflow:ellipsis;white-space:nowrap}
+.od-specimen-copy p{margin:9px 0 0;color:rgba(224,236,242,.7);font-size:11px;line-height:1.5}
+.od-specimen-copy small{display:block;margin-top:6px;color:rgba(184,210,222,.48);font-size:9px;line-height:1.4}
+.od-specimen-evidence{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:48px;margin-top:12px;padding:0;border:0;border-top:1px solid rgba(111,195,229,.17);background:transparent;color:rgba(231,242,247,.72);font-size:11px;text-align:left;cursor:pointer}
+.od-specimen-evidence::after{content:"↗";color:var(--od-cyan)}
+
+.od-depth-rail{position:absolute;z-index:4;top:clamp(66px,7vh,88px);right:max(18px,env(safe-area-inset-right));bottom:clamp(198px,26vh,246px);width:clamp(178px,17.5vw,274px);min-height:360px;border:1px solid rgba(87,169,207,.2);border-radius:16px;background:linear-gradient(180deg,rgba(2,10,17,.86),rgba(1,7,12,.76));box-shadow:0 20px 60px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.03);backdrop-filter:blur(13px)}
+#diveExperience #diveCanvas{display:block;width:100%;height:100%;min-height:360px}
+#diveExperience #diveSlider{position:absolute;z-index:3;top:18px;bottom:18px;left:34%;width:44px;height:calc(100% - 36px);margin:0;opacity:.001;writing-mode:vertical-lr;direction:rtl;cursor:ns-resize;accent-color:var(--od-cyan)}
+#diveExperience #diveReadout{position:absolute;z-index:2;right:8px;top:var(--od-marker-y,50%);min-width:84px;padding:0;border:0;border-radius:0;background:none;color:var(--od-cyan);font:560 clamp(22px,2.25vw,36px)/1 ui-monospace,SFMono-Regular,Menlo,monospace;text-align:right;transform:translateY(-50%);text-shadow:0 0 18px rgba(39,191,255,.4);pointer-events:none}
+
+.od-telemetry{position:absolute;z-index:5;right:max(18px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom));width:clamp(266px,21vw,340px);min-height:164px;padding:13px 15px;border:1px solid rgba(91,176,213,.28);border-radius:14px;background:linear-gradient(145deg,rgba(4,16,26,.94),rgba(1,8,14,.9));box-shadow:0 22px 70px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.04);backdrop-filter:blur(16px)}
+.od-telemetry-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px}
+.od-telemetry-head span{color:rgba(237,246,249,.78);font-size:12px;font-weight:560}
+.od-telemetry-head strong{color:var(--od-cyan);font:560 clamp(22px,2vw,32px)/1 ui-monospace,SFMono-Regular,Menlo,monospace}
+.od-telemetry dl{display:grid;grid-template-columns:1fr auto;margin:0}
+.od-telemetry dt,.od-telemetry dd{min-height:34px;margin:0;padding:8px 7px;border-top:1px solid rgba(105,183,216,.11);font-size:11px}
+.od-telemetry dt{color:rgba(198,218,228,.56)}
+.od-telemetry dd{color:rgba(239,247,250,.82);font-variant-numeric:tabular-nums;text-align:right}
+.od-telemetry-source{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:44px;margin-top:3px;padding:7px;border:0;border-top:1px solid rgba(105,183,216,.11);background:none;color:rgba(189,212,222,.58);font-size:9px;text-align:left;cursor:pointer}
+.od-telemetry-source::after{content:"ⓘ";color:rgba(226,242,248,.72);font-size:14px}
+
+.od-controls-wrap{position:absolute;z-index:7;left:50%;bottom:max(18px,env(safe-area-inset-bottom));display:grid;justify-items:center;gap:7px;transform:translateX(-50%)}
+.od-controls{display:grid;grid-template-columns:repeat(5,minmax(78px,1fr));align-items:stretch;min-width:min(620px,50vw);overflow:hidden;border:1px solid rgba(101,191,230,.34);border-radius:16px;background:linear-gradient(180deg,rgba(4,17,28,.94),rgba(1,8,14,.92));box-shadow:0 20px 65px rgba(0,0,0,.44),inset 0 1px rgba(255,255,255,.04);backdrop-filter:blur(18px)}
+.od-controls button{display:grid;grid-template-columns:auto auto;place-content:center;align-items:center;gap:8px;min-width:0;min-height:68px;padding:0 13px;border:0;border-right:1px solid rgba(102,185,219,.16);background:transparent;color:rgba(231,242,247,.72);font-size:11px;cursor:pointer}
+.od-controls button:last-child{border-right:0}
+.od-controls button span{display:grid;place-items:center;width:42px;height:42px;border:1px solid rgba(230,244,249,.6);border-radius:50%;color:#fff;font-size:22px;line-height:1}
+.od-controls button[data-dive-control="speed"]{grid-template-columns:1fr;gap:2px}
+.od-controls button[data-dive-control="speed"] span{width:auto;height:auto;border:0;border-radius:0;font-size:22px}
+.od-controls button:hover{background:rgba(39,191,255,.07);color:#fff}
+.od-controls button.is-active{color:var(--od-cyan)}
+.od-controls button.is-active span{border-color:var(--od-cyan);background:linear-gradient(180deg,rgba(35,128,226,.64),rgba(12,59,128,.72));box-shadow:0 0 24px rgba(39,191,255,.3)}
+.od-motion-status{margin:0;color:rgba(202,218,226,.58);font-size:10px;letter-spacing:.04em;text-shadow:0 1px 9px #000}
+.od-motion-status::before{content:"";display:inline-block;width:7px;height:7px;margin-right:8px;border-radius:50%;background:#f9aa27;box-shadow:0 0 10px rgba(249,170,39,.66)}
+
+.od-dive-drawer{position:absolute;z-index:20;top:max(66px,calc(env(safe-area-inset-top) + 54px));right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));width:min(430px,calc(100vw - 36px));overflow:auto;padding:18px;border:1px solid rgba(99,189,226,.32);border-radius:16px;background:rgba(2,10,17,.97);box-shadow:0 28px 90px rgba(0,0,0,.62);backdrop-filter:blur(24px);scrollbar-width:thin}
+.od-dive-drawer[hidden]{display:none}
+.od-drawer-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.od-drawer-head h3{margin:0;color:#fff;font-size:20px;font-weight:580}
+.od-drawer-head button{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid rgba(109,190,223,.24);border-radius:50%;background:transparent;color:#fff;cursor:pointer}
+.od-dive-drawer>p{color:rgba(211,228,236,.62);font-size:11px;line-height:1.65}
+.od-dive-drawer .od-scene-disclosure{padding:12px;border-left:2px solid var(--od-cyan);background:rgba(39,191,255,.06);color:rgba(230,242,247,.78)}
+#diveExperience #obisSummary{display:block;max-height:none;margin-top:16px;padding:14px;border:1px solid rgba(105,188,222,.18);border-radius:10px;background:rgba(8,24,34,.48);font-size:10px;line-height:1.55}
+#diveExperience #obisSummary h3{margin:0 0 8px;font-size:13px}
+#diveExperience #obisSummary strong{font-size:13px}
+#diveExperience #diveComparisons{display:grid;gap:8px;margin-top:14px;font-size:10px;line-height:1.5}
+#diveExperience #diveComparisons a{min-height:44px;padding:12px;border:1px solid rgba(105,188,222,.16);border-radius:8px;text-decoration:none}
+#diveExperience #diveLimit{margin:14px 0 0;padding-top:14px;border-top:1px solid rgba(105,188,222,.15);color:rgba(207,224,232,.54);font-size:10px;line-height:1.65}
+.od-specimen-source{display:grid;gap:7px;margin-top:15px;padding-top:14px;border-top:1px solid rgba(105,188,222,.15)}
+.od-specimen-source a{display:flex;align-items:center;min-height:44px;font-size:11px;text-decoration:none}
+
+@media(max-width:1120px){
+  .od-dive-header{grid-template-columns:minmax(190px,1fr) auto minmax(190px,1fr)}
+  .od-locator{width:155px}.od-locator-globe{width:128px}
+  .od-specimen{width:230px;height:330px;padding:12px 13px}
+  .od-depth-rail{width:180px}
+  .od-telemetry{width:270px}
+  .od-controls{min-width:500px}.od-controls button{min-height:62px;padding:0 9px}.od-controls button span{width:38px;height:38px}
+}
+
+@media(max-width:760px){
+  #sceneRoot[data-stage="dive"] .ocean-scene{overflow:auto;overscroll-behavior:contain}
+  #diveExperience.od-dive{position:relative;inset:auto;min-height:1420px;overflow:hidden}
+  .od-dive-bg{inset:0 0 auto;height:1030px;background-position:45% center;transform:scale(1.04)}
+  .od-dive-shade{height:1030px;background:linear-gradient(180deg,rgba(0,5,10,.82),rgba(0,5,10,.06) 22%,rgba(0,5,10,.1) 74%,rgba(0,5,10,.88))}
+  .od-dive-grain{height:1030px}
+  .od-dive-header{top:max(8px,env(safe-area-inset-top));right:12px;left:14px;grid-template-columns:1fr auto;gap:5px}
+  .od-breadcrumb{grid-column:1;overflow:hidden;gap:7px;font-size:9px}.od-breadcrumb button{font-size:11px;letter-spacing:.2em}
+  .od-breadcrumb span:last-child{overflow:hidden;text-overflow:ellipsis}
+  .od-dive-title{position:absolute;top:62px;left:50%;width:84vw;transform:translateX(-50%)}
+  .od-dive-title p{font-size:clamp(22px,7.5vw,34px);letter-spacing:.2em}.od-dive-title h2{font-size:11px!important}
+  .od-dive-utils{grid-column:2}.od-dive-utils button:nth-child(2){display:none}
+  .od-locator{top:104px;left:13px;width:92px;gap:3px}.od-locator-globe{width:84px}.od-locator-label{min-height:34px;max-width:100%;padding:0 8px;font-size:9px;white-space:nowrap}
+  .od-depth-rail{top:180px;right:10px;bottom:auto;width:154px;height:655px;min-height:0}
+  #diveExperience #diveCanvas{min-height:0}
+  #diveExperience #diveReadout{right:6px;min-width:72px;font-size:22px}
+  .od-specimen{top:650px;bottom:auto;left:14px;width:232px;height:318px;padding:12px 13px}
+  .od-specimen-media img{max-height:142px}.od-specimen-copy h3{font-size:23px}
+  .od-telemetry{top:990px;right:14px;bottom:auto;left:14px;width:auto;min-height:240px;padding:15px 17px}
+  .od-telemetry-head span{font-size:14px}.od-telemetry-head strong{font-size:30px}
+  .od-telemetry dt,.od-telemetry dd{min-height:42px;padding:12px 8px;font-size:13px}
+  .od-controls-wrap{top:1250px;right:14px;bottom:auto;left:14px;transform:none}
+  .od-controls{grid-template-columns:repeat(5,1fr);width:100%;min-width:0;border-radius:15px}
+  .od-controls button{grid-template-columns:1fr;gap:5px;min-height:92px;padding:7px 2px;font-size:10px}.od-controls button span{width:44px;height:44px;margin:auto;font-size:23px}
+  .od-motion-status{font-size:9px}
+  .od-dive-drawer{top:max(60px,calc(env(safe-area-inset-top) + 50px));right:0;bottom:0;width:100%;max-width:none;border-width:1px 0 0;border-radius:16px 16px 0 0;padding-bottom:max(18px,env(safe-area-inset-bottom))}
+}
+
+@media(max-width:390px){
+  #diveExperience.od-dive{min-height:1385px}
+  .od-depth-rail{width:140px;height:620px}
+  .od-specimen{top:624px;width:210px;height:300px}.od-specimen-media img{max-height:128px}
+  .od-telemetry{top:946px}.od-controls-wrap{top:1210px}
+}
+
+@media(orientation:landscape) and (max-height:560px) and (min-width:561px){
+  #diveExperience.od-dive{position:absolute;inset:0;min-height:0;overflow:hidden}
+  .od-dive-header{top:max(4px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right))}
+  .od-breadcrumb{font-size:9px}.od-breadcrumb button{font-size:11px}.od-dive-title{padding-top:7px}.od-dive-title p{font-size:20px}.od-dive-title h2{font-size:9px!important}
+  .od-locator{display:none}
+  .od-specimen{top:58px;bottom:12px;left:max(12px,env(safe-area-inset-left));width:190px;height:auto;padding:9px 10px}.od-specimen-media img{max-height:92px}.od-specimen-copy h3{font-size:17px}.od-specimen-copy p{margin-top:4px}.od-specimen-copy small{display:none}.od-specimen-evidence{min-height:44px;margin-top:4px}
+  .od-depth-rail{top:56px;right:max(12px,env(safe-area-inset-right));bottom:128px;width:152px;min-height:0}
+  #diveExperience #diveCanvas{min-height:0}
+  .od-telemetry{right:max(12px,env(safe-area-inset-right));bottom:10px;width:250px;min-height:110px;padding:8px 10px}.od-telemetry-head{margin-bottom:3px}.od-telemetry dl{grid-template-columns:repeat(3,1fr)}.od-telemetry dt,.od-telemetry dd{min-height:28px;padding:6px 4px;font-size:9px}.od-telemetry-source{display:none}
+  .od-controls-wrap{bottom:max(10px,env(safe-area-inset-bottom))}.od-controls{min-width:440px}.od-controls button{min-height:52px}.od-controls button span{width:36px;height:36px}.od-motion-status{display:none}
+}
+
+@media(prefers-reduced-motion:reduce){.od-dive-bg{transition:none}.od-controls button{transition:none}}

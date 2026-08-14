@@ -1,0 +1,102 @@
+{
+  "schema": "earthus.aetherus-culture-catalog.v1",
+  "revision": "fixture-only-v1",
+  "fixtureOnly": true,
+  "generatedAt": "2026-08-14T12:00:00Z",
+  "items": [
+    {
+      "id": "culture-lit-fixture", "status": "VERIFIED", "sourceProvider": "fixture-culture",
+      "sourceAssetId": "fixture-lit-1", "celestialObjectId": "mars", "workType": "LITERATURE",
+      "title": "Fixture Red World", "creator": "Fixture Author", "releaseYear": 1901,
+      "relationType": "DIRECT_MENTION",
+      "relationSummary": { "text": "Editorial fixture summary connecting the work to Mars.", "authorship": "EARTHUS_EDITORIAL" },
+      "quotation": null, "media": {},
+      "rights": { "status": "PUBLIC_DOMAIN", "creditText": "Fixture public-domain record",
+        "sourceUrl": "https://example.test/rights/lit", "verifiedAt": "2026-08-14T09:00:00Z", "license": "PUBLIC_DOMAIN" },
+      "sources": [{ "id": "source-lit", "authority": "PRIMARY", "title": "Fixture primary record",
+        "url": "https://example.test/sources/lit", "verifiedAt": "2026-08-14T09:00:00Z" }],
+      "createdAt": "2026-08-14T09:00:00Z", "updatedAt": "2026-08-14T09:00:00Z"
+    },
+    {
+      "id": "culture-film-fixture", "status": "VERIFIED", "sourceProvider": "fixture-culture",
+      "sourceAssetId": "fixture-film-1", "celestialObjectId": "mars", "workType": "FILM",
+      "title": "Fixture Orbit Film", "creator": "Fixture Studio", "releaseYear": 2001,
+      "relationType": "SETTING",
+      "relationSummary": { "text": "Editorial fixture summary describing Mars as the setting.", "authorship": "EARTHUS_EDITORIAL" },
+      "quotation": null,
+      "media": { "officialTrailerUrl": "https://example.test/official/trailer-film" },
+      "rights": { "status": "EMBED_ONLY", "creditText": "Fixture studio official trailer",
+        "sourceUrl": "https://example.test/rights/film", "verifiedAt": "2026-08-14T09:00:00Z" },
+      "sources": [{ "id": "source-film", "authority": "OFFICIAL", "title": "Fixture official film page",
+        "url": "https://example.test/sources/film", "verifiedAt": "2026-08-14T09:00:00Z" }],
+      "createdAt": "2026-08-14T09:00:00Z", "updatedAt": "2026-08-14T09:00:00Z"
+    },
+    {
+      "id": "culture-drama-fixture", "status": "VERIFIED", "sourceProvider": "fixture-culture",
+      "sourceAssetId": "fixture-drama-1", "celestialObjectId": "moon", "workType": "DRAMA",
+      "title": "Fixture Moon Drama", "creator": "Fixture Network", "releaseYear": 2011,
+      "relationType": "MOTIF",
+      "relationSummary": { "text": "Editorial fixture summary describing a lunar motif.", "authorship": "EARTHUS_EDITORIAL" },
+      "quotation": null, "media": { "officialStillUrl": "https://example.test/official/still-drama" },
+      "rights": { "status": "METADATA_ONLY", "creditText": "Fixture network metadata",
+        "sourceUrl": "https://example.test/rights/drama", "verifiedAt": "2026-08-14T09:00:00Z" },
+      "sources": [{ "id": "source-drama", "authority": "OFFICIAL", "title": "Fixture official drama page",
+        "url": "https://example.test/sources/drama", "verifiedAt": "2026-08-14T09:00:00Z" }],
+      "createdAt": "2026-08-14T09:00:00Z", "updatedAt": "2026-08-14T09:00:00Z"
+    },
+    {
+      "id": "culture-myth-fixture", "status": "VERIFIED", "sourceProvider": "fixture-culture",
+      "sourceAssetId": "fixture-myth-1", "celestialObjectId": "mars", "workType": "MYTH",
+      "title": "Fixture Sky Myth", "creator": "Fixture Tradition", "releaseYear": null,
+      "relationType": "NAMESAKE",
+      "relationSummary": { "text": "Editorial fixture summary recording a namesake relationship.", "authorship": "EARTHUS_EDITORIAL" },
+      "quotation": null, "media": {},
+      "rights": { "status": "PUBLIC_DOMAIN", "creditText": "Fixture public-domain tradition",
+        "sourceUrl": "https://example.test/rights/myth", "verifiedAt": "2026-08-14T09:00:00Z", "license": "PUBLIC_DOMAIN" },
+      "sources": [{ "id": "source-myth", "authority": "PRIMARY", "title": "Fixture primary myth record",
+        "url": "https://example.test/sources/myth", "verifiedAt": "2026-08-14T09:00:00Z" }],
+      "createdAt": "2026-08-14T09:00:00Z", "updatedAt": "2026-08-14T09:00:00Z"
+    },
+    {
+      "id": "culture-game-fixture", "status": "VERIFIED", "sourceProvider": "fixture-culture",
+      "sourceAssetId": "fixture-game-1", "celestialObjectId": "mars", "workType": "GAME",
+      "title": "Fixture Mars Game", "creator": "Fixture Publisher", "releaseYear": 2021,
+      "relationType": "SETTING",
+      "relationSummary": { "text": "Editorial fixture summary describing the fictional setting.", "authorship": "EARTHUS_EDITORIAL" },
+      "quotation": null, "media": { "officialStillUrl": "https://example.test/official/game-still",
+        "cachedUrl": "https://cdn.example.test/culture/game-still.jpg" },
+      "rights": { "status": "LICENSED", "creditText": "Fixture licensed asset",
+        "sourceUrl": "https://example.test/rights/game", "verifiedAt": "2026-08-14T09:00:00Z",
+        "license": "FIXTURE-LICENSE-1", "scope": "DISPLAY_AND_CACHE_FIXTURE_ONLY" },
+      "sources": [{ "id": "source-game", "authority": "OFFICIAL", "title": "Fixture official game page",
+        "url": "https://example.test/sources/game", "verifiedAt": "2026-08-14T09:00:00Z" }],
+      "createdAt": "2026-08-14T09:00:00Z", "updatedAt": "2026-08-14T09:00:00Z"
+    },
+    {
+      "id": "culture-music-fixture", "status": "VERIFIED", "sourceProvider": "fixture-culture",
+      "sourceAssetId": "fixture-music-1", "celestialObjectId": "moon", "workType": "MUSIC",
+      "title": "Fixture Lunar Composition", "creator": "Fixture Composer", "releaseYear": 1991,
+      "relationType": "INSPIRED_BY",
+      "relationSummary": { "text": "Editorial fixture summary describing documented inspiration.", "authorship": "EARTHUS_EDITORIAL" },
+      "quotation": null, "media": {},
+      "rights": { "status": "CC_BY", "creditText": "Fixture Composer · CC BY 4.0",
+        "sourceUrl": "https://example.test/rights/music", "verifiedAt": "2026-08-14T09:00:00Z",
+        "license": "CC BY 4.0" },
+      "sources": [{ "id": "source-music", "authority": "PRIMARY", "title": "Fixture composer statement",
+        "url": "https://example.test/sources/music", "verifiedAt": "2026-08-14T09:00:00Z" }],
+      "createdAt": "2026-08-14T09:00:00Z", "updatedAt": "2026-08-14T09:00:00Z"
+    },
+    {
+      "id": "culture-art-fixture", "status": "VERIFIED", "sourceProvider": "fixture-culture",
+      "sourceAssetId": "fixture-art-1", "celestialObjectId": "moon", "workType": "ART",
+      "title": "Fixture Restricted Artwork", "creator": "Fixture Artist", "releaseYear": 2025,
+      "relationType": "MOTIF",
+      "relationSummary": { "text": "Editorial fixture summary held behind a rights gate.", "authorship": "EARTHUS_EDITORIAL" },
+      "quotation": null, "media": {},
+      "rights": { "status": "RESTRICTED" },
+      "sources": [{ "id": "source-art", "authority": "SECONDARY", "title": "Fixture art reference",
+        "url": "https://example.test/sources/art", "verifiedAt": "2026-08-14T09:00:00Z" }],
+      "createdAt": "2026-08-14T09:00:00Z", "updatedAt": "2026-08-14T09:00:00Z"
+    }
+  ]
+}

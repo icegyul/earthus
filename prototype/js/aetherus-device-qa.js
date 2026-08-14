@@ -13,6 +13,10 @@ import {
   runAstrometrySolveJob,
 } from './space/astrometry.js';
 import {
+  extractStarFeatures,
+  rgbaToLuminance,
+} from './space/astrometry-feature-extractor.js';
+import {
   classifyAiIntent,
   createEvidenceLedger,
   composeEvidenceAnswerPlan,
@@ -25,7 +29,7 @@ import {
   consumeRemoteAuthorization,
 } from './space/remote-observatory.js';
 
-const RELEASE_REVISION = 'aetherus-device-qa-20260814-r2';
+const RELEASE_REVISION = 'aetherus-device-qa-20260814-r3';
 const REPORT_SCHEMA = 'aetherus.device-qa-report.v1';
 const CONSENT_KEY = 'aetherus.device-qa.local-consent.v1';
 const ARCHIVE_POINTER_KEY = 'aetherus.device-qa.archive-pointer.v1';
@@ -685,7 +689,7 @@ async function runAstrometry() {
       networkRequestCount: result.diagnostics?.networkRequestCount ?? null,
       originalUploadCount: result.diagnostics?.originalUploadCount ?? null,
       productionCatalog: 'BLOCKED_LICENSE_AND_FULL_SKY_ARTIFACT_REQUIRED',
-      arbitraryImageFeatureExtractor: 'NOT_RELEASED',
+      arbitraryImageFeatureExtractor: 'LOCAL_RELEASED_BROWSER_IMAGES',
     };
     renderEvidence('astrometryEvidence', [
       ['서명 manifest', verification.status],
@@ -694,7 +698,7 @@ async function runAstrometry() {
       ['P95 잔차', Number.isFinite(evidence.p95Arcsec) ? `${evidence.p95Arcsec.toFixed(4)} arcsec` : '—'],
       ['원본 업로드', evidence.originalUploadCount],
       ['운영 전천 카탈로그', 'BLOCKED'],
-      ['임의 사진 별 추출', 'NOT RELEASED'],
+      ['임의 사진 별 추출', 'LOCAL RELEASED'],
     ]);
     setCheck('astrometry', enginePassed ? 'BLOCKED' : 'FAIL', evidence);
   } catch (error) {
@@ -705,30 +709,107 @@ async function runAstrometry() {
   }
 }
 
+async function decodeAstrometryImage(file) {
+  if (!file.type.startsWith('image/')) throw new Error('BROWSER_IMAGE_DECODER_REQUIRED');
+  let image;
+  if (typeof createImageBitmap === 'function') {
+    image = await createImageBitmap(file);
+  } else {
+    image = await new Promise((resolve, reject) => {
+      const element = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      element.onload = () => { URL.revokeObjectURL(objectUrl); resolve(element); };
+      element.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('IMAGE_DECODE_FAILED')); };
+      element.src = objectUrl;
+    });
+  }
+  try {
+    const sourceWidth = image.width || image.naturalWidth;
+    const sourceHeight = image.height || image.naturalHeight;
+    if (!(sourceWidth > 0 && sourceHeight > 0)) throw new Error('IMAGE_DIMENSIONS_INVALID');
+    const dimensionScale = Math.min(1, 1024 / Math.max(sourceWidth, sourceHeight));
+    const pixelScale = Math.min(1, Math.sqrt(1_048_576 / (sourceWidth * sourceHeight)));
+    const scale = Math.min(dimensionScale, pixelScale);
+    const width = Math.max(3, Math.round(sourceWidth * scale));
+    const height = Math.max(3, Math.round(sourceHeight * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) throw new Error('CANVAS_2D_UNAVAILABLE');
+    context.drawImage(image, 0, 0, width, height);
+    const rgba = context.getImageData(0, 0, width, height).data;
+    return {
+      sourceWidth,
+      sourceHeight,
+      extraction: extractStarFeatures({
+        width,
+        height,
+        luminance: rgbaToLuminance({ width, height, rgba }),
+      }),
+    };
+  } finally {
+    image.close?.();
+  }
+}
+
 async function inspectAstrometryFile() {
   const file = byId('astrometryFile').files?.[0];
   if (!file) return;
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  const digest = await observationMediaSha256(bytes);
-  report.checks.astrometry.evidence.userInputBoundary = {
-    mediaType: file.type || 'application/octet-stream',
-    byteLength: file.size,
-    sha256: digest,
-    originalFilenameStored: false,
-    uploaded: false,
-    solved: false,
-    reason: 'ARBITRARY_IMAGE_FEATURE_EXTRACTOR_AND_PRODUCTION_INDEX_NOT_RELEASED',
-  };
-  const current = report.checks.astrometry.evidence;
-  renderEvidence('astrometryEvidence', [
-    ['사용자 입력 digest', digest],
-    ['크기·유형', `${file.size.toLocaleString()} bytes / ${file.type || '미지정'}`],
-    ['원본 업로드', '0'],
-    ['임의 사진 솔브', 'BLOCKED'],
-    ['로컬 fixture 엔진', current.localEngine || '미실행'],
-  ]);
-  setCheck('astrometry', current.localEngine === 'FAIL' ? 'FAIL' : 'BLOCKED', current);
-  byId('astrometryFile').value = '';
+  renderEvidence('astrometryEvidence', [['상태', '로컬 이미지 해독·별 추출 중…']]);
+  try {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const [digest, decoded] = await Promise.all([
+      observationMediaSha256(bytes),
+      decodeAstrometryImage(file),
+    ]);
+    const current = report.checks.astrometry.evidence;
+    current.userInputBoundary = {
+      mediaType: file.type || 'application/octet-stream',
+      byteLength: file.size,
+      sha256: digest,
+      sourceDimensions: [decoded.sourceWidth, decoded.sourceHeight],
+      extractionDimensions: [decoded.extraction.image.width, decoded.extraction.image.height],
+      extractedFeatureCount: decoded.extraction.features.length,
+      extractionThreshold: decoded.extraction.diagnostics.threshold,
+      originalFilenameStored: false,
+      uploaded: false,
+      featureExtraction: 'PASS',
+      solved: false,
+      solveReason: 'PRODUCTION_FULL_SKY_INDEX_BLOCKED_LICENSE_AND_ARTIFACT_REQUIRED',
+    };
+    renderEvidence('astrometryEvidence', [
+      ['사용자 입력 digest', digest],
+      ['원본 크기', `${decoded.sourceWidth}×${decoded.sourceHeight}`],
+      ['로컬 추출 크기', `${decoded.extraction.image.width}×${decoded.extraction.image.height}`],
+      ['추출 별', decoded.extraction.features.length],
+      ['원본 업로드', '0'],
+      ['별 추출', 'PASS · LOCAL'],
+      ['전천 솔브', 'BLOCKED · CATALOG'],
+      ['로컬 fixture 엔진', current.localEngine || '미실행'],
+    ]);
+    setCheck('astrometry', current.localEngine === 'FAIL' ? 'FAIL' : 'BLOCKED', current);
+  } catch (error) {
+    const current = report.checks.astrometry.evidence;
+    current.userInputBoundary = {
+      mediaType: file.type || 'application/octet-stream',
+      byteLength: file.size,
+      originalFilenameStored: false,
+      uploaded: false,
+      featureExtraction: 'BLOCKED',
+      reason: safeError(error),
+    };
+    renderEvidence('astrometryEvidence', [
+      ['로컬 별 추출', 'BLOCKED'],
+      ['이유', safeError(error)],
+      ['지원 입력', '브라우저가 해독할 수 있는 image/*'],
+      ['원본 업로드', '0'],
+      ['로컬 fixture 엔진', current.localEngine || '미실행'],
+    ]);
+    setCheck('astrometry', current.localEngine === 'FAIL' ? 'FAIL' : 'BLOCKED', current);
+  } finally {
+    byId('astrometryFile').value = '';
+  }
 }
 
 function runAiGate() {

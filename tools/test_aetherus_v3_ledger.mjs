@@ -20,7 +20,15 @@ for (let position = 0; position < 296; position += 1) {
 }
 const allowed = new Set(['VERIFIED_EXISTING', 'IMPLEMENT', 'BLOCKED_EXTERNAL', 'NOT_APPLICABLE']);
 assert.equal(ledger.entries.every(entry => allowed.has(entry.status)), true);
-assert.equal(ledger.entries.every(entry => entry.productionStatus === 'NOT_RELEASED'), true);
+const allowedProduction = new Set([
+  'DEPLOYED_GATED', 'BLOCKED_EXTERNAL', 'IMPLEMENTATION_REQUIRED', 'NOT_APPLICABLE',
+]);
+assert.equal(ledger.entries.every(entry => allowedProduction.has(entry.productionStatus)), true);
+assert.equal(ledger.entries.filter(entry => entry.status === 'VERIFIED_EXISTING')
+  .every(entry => entry.productionStatus === 'DEPLOYED_GATED'), true);
+assert.equal(ledger.entries.filter(entry => entry.status === 'BLOCKED_EXTERNAL')
+  .every(entry => entry.productionStatus === 'BLOCKED_EXTERNAL'), true);
+assert.equal(ledger.entries.some(entry => entry.productionStatus === 'NOT_RELEASED'), false);
 assert.equal(ledger.entries.filter(entry => entry.status === 'BLOCKED_EXTERNAL')
   .every(entry => entry.blockers.length > 0), true);
 assert.equal(ledger.entries.filter(entry => entry.status === 'VERIFIED_EXISTING')
@@ -35,4 +43,6 @@ assert.equal(countSum, 296);
 assert.equal(ledger.counts.VERIFIED_EXISTING, 200);
 assert.equal(ledger.counts.IMPLEMENT, 0);
 assert.equal(ledger.counts.BLOCKED_EXTERNAL, 96);
+assert.equal(ledger.entries.filter(entry => entry.productionStatus === 'DEPLOYED_GATED').length, 200);
+assert.equal(ledger.entries.filter(entry => entry.productionStatus === 'BLOCKED_EXTERNAL').length, 96);
 console.log(`PASS: Aetherus v3 ledger 296/296, ${JSON.stringify(ledger.counts)}`);

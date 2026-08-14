@@ -8,7 +8,14 @@ const indexPath = path.join(root,
   'work/aetherus-v3.0-master-package/IMPLEMENTATION_SHEET_INDEX.json');
 const outputJson = path.join(root, 'docs/earthus-v23/AETHERUS_V3_SHEET_LEDGER.json');
 const outputMarkdown = path.join(root, 'docs/earthus-v23/AETHERUS_V3_SHEET_LEDGER.md');
-const sheets = JSON.parse(await readFile(indexPath, 'utf8'));
+const publicOutputJson = path.join(root, 'prototype/data/aetherus/v3-sheet-ledger.json');
+const cultureFixturePath = path.join(root, 'tools/fixtures/aetherus-culture-v1.json');
+const publicCultureFixturePath = path.join(root, 'prototype/data/aetherus/culture-fixture.v1.json');
+const [sheetsText, cultureFixtureText] = await Promise.all([
+  readFile(indexPath, 'utf8'),
+  readFile(cultureFixturePath, 'utf8'),
+]);
+const sheets = JSON.parse(sheetsText);
 
 const numbers = values => new Set(values.flatMap(value => {
   if (Number.isInteger(value)) return [value];
@@ -233,12 +240,19 @@ function blockersFor(sheet, status) {
 }
 
 function nextActionFor(sheet, status) {
-  if (status === 'VERIFIED_EXISTING') return 'Re-run linked tests and preserve the production gate.';
+  if (status === 'VERIFIED_EXISTING') return 'Keep the deployed artifact hash-verified; preserve any named runtime gate.';
   if (status === 'BLOCKED_EXTERNAL') return 'Do not simulate the blocker; collect the named external evidence first.';
   if (sheet >= 115 && sheet <= 132) return 'Implement a private local Mission Control layout/revision contract before UI wiring.';
   if (sheet >= 215 && sheet <= 232) return 'Map the seed model to existing schema, then add migration/API contract tests.';
   if (sheet >= 233 && sheet <= 262) return 'Add the smallest fail-closed policy contract and a failure fixture.';
   return 'Implement domain + API/fallback + UI contract + tests as one local shadow batch.';
+}
+
+function productionStatusFor(status) {
+  if (status === 'VERIFIED_EXISTING') return 'DEPLOYED_GATED';
+  if (status === 'BLOCKED_EXTERNAL') return 'BLOCKED_EXTERNAL';
+  if (status === 'NOT_APPLICABLE') return 'NOT_APPLICABLE';
+  return 'IMPLEMENTATION_REQUIRED';
 }
 
 const entries = sheets.map(sheet => {
@@ -255,7 +269,7 @@ const entries = sheets.map(sheet => {
     evidence,
     blockers: blockersFor(sheet.sheet, status),
     nextAction: nextActionFor(sheet.sheet, status),
-    productionStatus: 'NOT_RELEASED',
+    productionStatus: productionStatusFor(status),
   };
 });
 
@@ -269,22 +283,30 @@ const counts = Object.fromEntries([...allowedStatuses].map(status =>
 const ledger = {
   schema: 'earthus.aetherus-v3-sheet-ledger.v1',
   source: 'work/aetherus-v3.0-master-package/IMPLEMENTATION_SHEET_INDEX.json',
-  generatedAt: '2026-08-14T12:00:00Z',
+  generatedAt: '2026-08-14T13:47:35Z',
   statusMeaning: {
     VERIFIED_EXISTING: 'Current repository local evidence exists; production may still be blocked.',
     IMPLEMENT: 'A concrete local implementation or evidence gap remains.',
     BLOCKED_EXTERNAL: 'External authority, account, rights, device, or operating evidence is required.',
     NOT_APPLICABLE: 'Confirmed outside the product scope; none assigned in this baseline.',
   },
+  productionStatusMeaning: {
+    DEPLOYED_GATED: 'The verified static artifact is deployed; named runtime, rights, device, or data gates remain closed.',
+    BLOCKED_EXTERNAL: 'No deployment claim; rights, account, device, infrastructure, or operating evidence is still required.',
+    IMPLEMENTATION_REQUIRED: 'A concrete repository implementation remains before deployment.',
+    NOT_APPLICABLE: 'Confirmed outside the product scope.',
+  },
   counts,
   entries,
 };
 await writeFile(outputJson, `${JSON.stringify(ledger, null, 2)}\n`);
+await writeFile(publicOutputJson, `${JSON.stringify(ledger, null, 2)}\n`);
+await writeFile(publicCultureFixturePath, cultureFixtureText);
 
 const rows = entries.map(entry => {
   const evidence = [...entry.evidence.files, ...entry.evidence.tests].slice(0, 3).join('<br>');
   const blocker = entry.blockers.join('; ') || '—';
-  return `| ${String(entry.sheet).padStart(3, '0')} | ${entry.title.replaceAll('|', '\\|')} | ${entry.status} | ${evidence} | ${blocker} |`;
+  return `| ${String(entry.sheet).padStart(3, '0')} | ${entry.title.replaceAll('|', '\\|')} | ${entry.status} | ${entry.productionStatus} | ${evidence} | ${blocker} |`;
 }).join('\n');
 const markdown = `# Aetherus v3.0 Implementation Sheet Ledger — 296 sheets
 
@@ -294,18 +316,20 @@ const markdown = `# Aetherus v3.0 Implementation Sheet Ledger — 296 sheets
 - 총 296개, 번호 001–296 연속.
 - \`VERIFIED_EXISTING\` ${counts.VERIFIED_EXISTING}, \`IMPLEMENT\` ${counts.IMPLEMENT},
   \`BLOCKED_EXTERNAL\` ${counts.BLOCKED_EXTERNAL}, \`NOT_APPLICABLE\` ${counts.NOT_APPLICABLE}.
-- 모든 행의 \`productionStatus\`는 \`NOT_RELEASED\`다. 로컬 검증을 운영 승인으로 읽지 않는다.
+- \`VERIFIED_EXISTING\` 200개 정적 산출물은 운영 해시 검증 뒤 \`DEPLOYED_GATED\`로 기록한다.
+  이는 파일 배포 완료를 뜻하며, 권리·실데이터·계정·기기·판매 gate 승인까지 뜻하지 않는다.
+- 외부 증거가 필요한 \`BLOCKED_EXTERNAL\` 96개는 배포 누락이 아니라 외부 관문으로 분리한다.
 - 이 파일은 \`tools/build_aetherus_v3_ledger.mjs\`로 index에서 재생성한다.
 
 ## 다음 결정
 
-1. \`VERIFIED_EXISTING\`은 링크된 테스트를 현재 HEAD에서 다시 통과해야 유지한다.
+1. \`VERIFIED_EXISTING\`은 링크된 테스트와 운영 파일 SHA-256 대조를 통과해야 \`DEPLOYED_GATED\`를 유지한다.
 2. \`IMPLEMENT\`는 domain + API/fallback + UI contract + test를 한 배치로 닫는다.
 3. \`BLOCKED_EXTERNAL\`은 값을 추정하거나 fixture 성공을 운영 성공으로 바꾸지 않는다.
 4. 현재 첫 신규 묶음인 Sheet 151–163 Culture Layer는 합성 fixture 로컬 계약만 완료했다.
 
-| Sheet | 제목 | 상태 | 현재 증거 후보 | 외부 blocker |
-|---:|---|---|---|---|
+| Sheet | 제목 | 구현 상태 | 배포 상태 | 현재 증거 후보 | 외부 blocker |
+|---:|---|---|---|---|---|
 ${rows}
 `;
 await writeFile(outputMarkdown, markdown);

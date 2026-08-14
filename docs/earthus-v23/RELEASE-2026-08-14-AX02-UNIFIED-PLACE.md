@@ -1,10 +1,10 @@
-# AX-02 Unified Place Detail — 검증 및 운영 반영 대기
+# AX-02 Unified Place Detail — 운영 반영 완료
 
 > 검증일: 2026-08-14 12:43 KST
 >
-> 코드 상태: LOCAL VERIFIED
+> 코드 상태: VERIFIED
 >
-> 운영 상태: 배포 대상 운영 경로의 사용자 명시 승인 대기
+> 운영 상태: OPERATING (`2026-08-14 13:24 KST`)
 >
 > 공개 경계: `DECISION_CORE_READY=false`, 판매·예약 실행·SNS 자동 게시 변경 0
 
@@ -45,6 +45,9 @@ Activity Score, Forecast Confidence 숫자, 혼잡, 재고, 폐쇄, “가도 �
 | 접근성 | 활동·질의 44px, 닫기/내리기 독립 44px, 모바일 overflow 0 |
 | 런타임 | page error 0 |
 | 문법/whitespace | 변경 ES module `node --check`, `git diff --check` PASS |
+| 운영 자동검사 | `https://earthus.net/` 1280×900·390×844 PASS |
+| 운영 실클릭 | 첫 화면 hidden→통합 패널 opacity 1→부모 close 한 번 뒤 opacity 0 PASS |
+| 통합 내용 | 현재 날씨·파도·5개 활동·Safety 한 장에서 확인 |
 
 실제 Safari·구형 iPhone·VoiceOver·열/배터리는 이번 환경에서 측정하지 않았으므로
 `UNKNOWN`을 유지한다.
@@ -52,7 +55,7 @@ Activity Score, Forecast Confidence 숫자, 혼잡, 재고, 폐쇄, “가도 �
 ## 4. 운영 반영 상태
 
 아래 7개 파일을 `s3://earthus-cache-kr/app/`에 명시 MIME·`no-cache`로 올리고
-CloudFront `E193CZEBLWEB56`을 무효화할 계획이다.
+CloudFront `E193CZEBLWEB56`의 해당 7개 경로를 무효화했다.
 
 - `index.html`
 - `css/decision-rail.css`
@@ -62,25 +65,27 @@ CloudFront `E193CZEBLWEB56`을 무효화할 계획이다.
 - `js/onboard.js`
 - `js/ui.js`
 
-보안 승인 단계가 이 정확한 운영 경로의 사용자 명시 승인을 요구해 업로드를 실행하지
-않았다. 따라서 이 문서에는 invalidation ID나 live SHA를 적지 않는다. 승인 뒤 위 7개만
-배포하고 local/live SHA-256·MIME·`Cache-Control`·운영 첫 Earth/지점 클릭을 다시 확인해야
-`OPERATING`으로 바꿀 수 있다.
+1차 무효화 ID는 `IA1052T8VAQWF1SD38ZZGT2WQF`다. 운영 실클릭에서 일부 백그라운드
+WebView가 `#sheet`의 opacity 전환을 멈출 수 있는 신호를 발견해 장소 상세의 열기·닫기를
+즉시 반영하도록 보강했고, 최종 CSS 무효화 ID는 `I49UB5GFX64HO7JJO6U1V5Z7RF`다.
+배포 계정에는 `cloudfront:GetInvalidation` 권한이 없어 waiter 조회는 `AccessDenied`였지만,
+캐시 우회 운영 URL에서 local/live SHA-256 7/7, 명시 MIME, `Cache-Control: no-cache`를
+확인했다. 최종 운영 자동검사와 실제 지구 클릭·한 번 닫기도 통과했다.
 
-## 5. 로컬 SHA-256
+## 5. 로컬·운영 SHA-256
 
-| 파일 | SHA-256 |
-|---|---|
-| `index.html` | `3dbe3fac72ce161ffb30d5bf1a09581f9c49adb7364f0367d19bf97d56f3ee6a` |
-| `css/decision-rail.css` | `cbab61aca2a98cf1164ca0cd188a1aa2da92285c1f420b3742e644e2261c6799` |
-| `js/changelog.js` | `14a1c3e31e5cc82caa60ade02e13b8ffddd74df84e8bcd4531d64a389271649e` |
-| `js/decision-rail.js` | `82c2830d68ad4f12d8ec7f401a9eb3cc652cc4bd1f9894b64fb972e2a133f5e7` |
-| `js/main.js` | `dbc50099b664746ca8f0c7f58ff1cecc3b4f1e9d0bea27833edf15b1adfa2c8a` |
-| `js/onboard.js` | `128f4c59400adab82625feccd1dffb157f731ccf9ed77096376547e815317788` |
-| `js/ui.js` | `53772a796932eb4239eec1d94a3ecd0a68e0d0573d9c6b93d1305f20020bebec` |
+| 파일 | 로컬·운영 공통 SHA-256 | 운영 Content-Type |
+|---|---|---|
+| `index.html` | `3dbe3fac72ce161ffb30d5bf1a09581f9c49adb7364f0367d19bf97d56f3ee6a` | `text/html; charset=utf-8` |
+| `css/decision-rail.css` | `fa68c4ecd967b558c02a5e12168c889067017c5cc064140c6b66b319c78bd45d` | `text/css; charset=utf-8` |
+| `js/changelog.js` | `14a1c3e31e5cc82caa60ade02e13b8ffddd74df84e8bcd4531d64a389271649e` | `text/javascript; charset=utf-8` |
+| `js/decision-rail.js` | `82c2830d68ad4f12d8ec7f401a9eb3cc652cc4bd1f9894b64fb972e2a133f5e7` | `text/javascript; charset=utf-8` |
+| `js/main.js` | `dbc50099b664746ca8f0c7f58ff1cecc3b4f1e9d0bea27833edf15b1adfa2c8a` | `text/javascript; charset=utf-8` |
+| `js/onboard.js` | `128f4c59400adab82625feccd1dffb157f731ccf9ed77096376547e815317788` | `text/javascript; charset=utf-8` |
+| `js/ui.js` | `53772a796932eb4239eec1d94a3ecd0a68e0d0573d9c6b93d1305f20020bebec` | `text/javascript; charset=utf-8` |
 
 ## 6. 롤백
 
-운영 반영 뒤 문제가 생기면 위 7개 경로만 AX-01 검증 object version으로 복원하고 같은
+운영에서 문제가 생기면 위 7개 경로만 AX-01 검증 object version으로 복원하고 같은
 CloudFront 경로를 무효화한다. Safety reader·KMA 수집기·Decision Core flag·판매 설정은
 이번 변경 범위가 아니므로 건드리지 않는다.

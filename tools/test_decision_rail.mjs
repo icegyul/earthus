@@ -76,6 +76,8 @@ try {
   await selectPoint(page, { lat: 37.5665, lon: 126.978 });
   await page.locator('#decisionRail[data-safety="danger"]').waitFor({ timeout: 10_000 });
   assert.equal(await page.locator('#sheet.up').count(), 1, '선택 장소 상세 시트가 열리지 않았다');
+  assert.equal(await page.locator('#sheet').evaluate(sheet => getComputedStyle(sheet).opacity), '1',
+    '장소 상세 시트가 opacity 전환 0에 멈췄다');
   assert.equal(await page.locator('#sheet.is-place-detail').count(), 1, '장소 상세 통합 폭이 적용되지 않았다');
   assert.equal(await page.locator('#decisionRailPanel').isVisible(), true);
   assert.equal(await page.locator('#sheet').evaluate(sheet => sheet.contains(document.getElementById('decisionRail'))), true,
@@ -102,6 +104,8 @@ try {
   await page.locator('#sheetClose').click();
   await page.waitForFunction(() => !document.getElementById('sheet').classList.contains('up'));
   await page.locator('#sheet').waitFor({ state: 'hidden' });
+  assert.equal(await page.locator('#sheet').evaluate(sheet => getComputedStyle(sheet).opacity), '0',
+    '장소 상세 시트 닫힘이 opacity 전환 1에 멈췄다');
   assert.equal(await page.locator('#decisionRail').isVisible(), false, '한 번 닫은 뒤 활동 판단이 화면에 남았다');
   await selectPoint(page, { lat: 37.5665, lon: 126.978 });
   await page.locator('#decisionRail[data-safety="danger"]').waitFor({ timeout: 10_000 });

@@ -194,8 +194,10 @@ SHA/MIME를 통과했고 무효화는 `IDZOUE4HBCRSEG51ZA2C8RH1TI`다. 설계 �
 [`earthus-v23/AX_DECISION_RAIL.md`](earthus-v23/AX_DECISION_RAIL.md)와
 [`earthus-v23/RELEASE-2026-08-14-AX02-UNIFIED-PLACE.md`](earthus-v23/RELEASE-2026-08-14-AX02-UNIFIED-PLACE.md)다.
 `DECISION_CORE_READY=false`, 점수·혼잡·재고·폐쇄·예약 실행 금지는 그대로다.
-AX-02는 현재 로컬 45/45와 실화면까지 통과했지만 운영 S3 정확한 경로 승인을 기다리는
-`LOCAL VERIFIED` 상태다. invalidation/live SHA가 문서에 생기기 전에는 운영 완료로 부르지 않는다.
+AX-02는 운영 S3에 정확한 7개 파일만 반영했고 로컬·운영 SHA 7/7, MIME·`no-cache`, 운영
+1280×900·390×844 자동검사와 실제 지구 클릭·한 번 닫기를 통과했다. 장소 상세는 일부
+백그라운드 WebView의 opacity 전환 정지를 피하도록 즉시 열고 닫는다. 최종 CloudFront
+무효화는 `I49UB5GFX64HO7JJO6U1V5Z7RF`이며 현재 상태는 `OPERATING`이다.
 
 PD의 다음 **“해”** 지시로 PR-09 Reservation Impact의 순수 shadow 계약을 구현했다.
 최초 v1이 공급자 snapshot 차이만 다룬 공백을 독립 검수에서 발견해 v1.1로 보강했다.

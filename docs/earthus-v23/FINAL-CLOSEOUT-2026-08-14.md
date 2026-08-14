@@ -89,6 +89,8 @@
 제거하고 장소·날씨·활동·Safety를 `#sheet` 하나로 통합했다. 전체 45/45와 실제 지구 클릭,
 1280×900·390×844, 한 번 닫기, 터치 영역 분리를 통과했다.
 
-이 교정은 현재 `LOCAL VERIFIED`이며 운영 S3 정확한 경로 승인 전에는 `OPERATING`으로
-부르지 않는다. 배포 대상과 SHA는
+이 교정은 운영 S3에 정확한 7개 파일만 반영했다. local/live SHA-256 7/7, MIME·`no-cache`,
+운영 1280×900·390×844 자동검사, 실제 지구 클릭과 부모 close 한 번을 통과했다. 열기·닫기
+opacity 1/0도 회귀 단언으로 고정했다. 최종 CloudFront 무효화는
+`I49UB5GFX64HO7JJO6U1V5Z7RF`이고 현재 상태는 `OPERATING`이다. 배포 증거는
 [`RELEASE-2026-08-14-AX02-UNIFIED-PLACE.md`](RELEASE-2026-08-14-AX02-UNIFIED-PLACE.md)에 있다.

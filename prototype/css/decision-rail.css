@@ -53,7 +53,10 @@
 .dr-actions button:active{transform:translateY(1px)}
 
 /* 지점 상세만 폭을 조금 넓힌다. 다른 사건·위성 시트의 익숙한 폭은 건드리지 않는다. */
-#sheet.is-place-detail{max-width:min(760px,calc(100vw - 24px));padding:22px 26px 25px}
+#sheet.is-place-detail{max-width:min(760px,calc(100vw - 24px));padding:22px 26px 25px;transition:none}
+/* ⚠️ 일부 백그라운드 WebView가 base #sheet의 opacity 전환을 0에서 멈췄다.
+   장소 상세는 안전 판단을 가리는 전환보다 즉시 표시를 우선한다. */
+#sheet.is-place-detail.up{opacity:1;visibility:visible;transform:translateY(0)}
 #sheet.is-place-detail #sheetTitle{font-size:25px;line-height:1.25;letter-spacing:-.035em}
 /* 기존 13px 점에 44px 가상 터치판을 겹쳐 얹어 빨강을 눌러도 노랑이
    가로채는 구간이 있었다. 통합 시트에서는 버튼 자체를 44px로 분리하고 점만 그린다. */

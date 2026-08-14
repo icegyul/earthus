@@ -96,7 +96,7 @@
 }
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Widgets/widgets.css">
-<link rel="stylesheet" href="css/app.css?v=20260814-aetherusv3">
+<link rel="stylesheet" href="css/app.css?v=20260814-oceanv1">
 <link rel="stylesheet" href="css/account.css?v=20260813-publicui1">
 <link rel="stylesheet" href="css/ask.css?v=20260814-ax1">
 <link rel="stylesheet" href="css/readability.css?v=20260812-contours1">
@@ -478,6 +478,13 @@
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9.2"/><ellipse cx="12" cy="12" rx="4" ry="9.2"/><path d="M2.9 12h18.2"/></svg></span>
       <span class="mm-label" data-i18n="m.layers">지구 스타일</span><span class="mm-chev">‹</span>
     </button>
+    <!-- Ocean Vertical은 EARTHUS의 해양 제품 진입점이다. 레이어 목록이나 개발
+         canary에 숨기지 않고, 실제 서핑·낚시·해양생물·다이빙 화면으로 연결한다. -->
+    <button class="mm-item mm-ocean-entry" type="button" data-act="ocean">
+      <span class="mm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.8 9.2c1.8 0 1.8-1.7 3.6-1.7S8.2 9.2 10 9.2s1.8-1.7 3.6-1.7 1.8 1.7 3.6 1.7S19 7.5 20.8 7.5"/><path d="M2.8 14c1.8 0 1.8-1.7 3.6-1.7S8.2 14 10 14s1.8-1.7 3.6-1.7 1.8 1.7 3.6 1.7 1.8-1.7 3.6-1.7"/><path d="M2.8 18.8c1.8 0 1.8-1.7 3.6-1.7s1.8 1.7 3.6 1.7 1.8-1.7 3.6-1.7 1.8 1.7 3.6 1.7 1.8-1.7 3.6-1.7"/></svg></span>
+      <span class="mm-label"><b>OCEAN</b><small>서핑 · 낚시 · 해양생물 · Dive</small></span>
+      <span class="mm-badge mm-free">무료</span>
+    </button>
     <!-- 우주·심해에서는 지구 레이어를 끄지 않고 이 한 줄로만 접는다.
          ⚠️ 장면 전환이 레이어 상태를 바꾸면 지구로 돌아왔을 때 사용자의 선택이 사라진다. -->
     <button class="mm-item mm-scene-fold" type="button" data-scene-earth-fold hidden>
@@ -654,6 +661,15 @@
     <div class="traffic one"><button class="tl close" data-close="outSheet" aria-label="닫기"><span>×</span></button></div>
     <h3>취미</h3>
     <div id="outBody"></div>
+  </div>
+
+  <!-- Ocean Vertical 운영 허브. 검사용 canary가 아니라 사용자가 실제 기능으로
+       들어가는 공개 화면이다. 제공하지 못하는 AIS 위치·서버 저장은 가짜 값이나
+       가짜 버튼을 만들지 않고 같은 화면에서 사유를 분명히 보여 준다. -->
+  <div id="oceanSheet" class="sheet-panel tall ocean-sheet" aria-hidden="true" inert data-nosnippet>
+    <div class="traffic one"><button class="tl close" data-close="oceanSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="oceanTitle">OCEAN <span class="ocean-free-badge">FREE</span></h3>
+    <div id="oceanBody"></div>
   </div>
 
   <div id="mtSheet" class="sheet-panel tall keep-open" aria-hidden="true" inert data-nosnippet>
@@ -1170,7 +1186,7 @@
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"
         integrity="sha384-J3D70NIZSVUuhQbp4W22OKF/xNWQjCEXmLxpnBp4CNDaQ+TbS1mmDZ2W3wlgqpKj"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script type="module" src="js/main.js?v=20260814-aetherusv3"></script>
+<script type="module" src="js/main.js?v=20260814-oceanv1"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

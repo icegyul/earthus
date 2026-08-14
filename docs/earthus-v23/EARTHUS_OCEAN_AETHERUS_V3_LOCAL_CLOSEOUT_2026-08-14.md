@@ -1,5 +1,9 @@
 # Earthus Ocean · Aetherus v3.0 Local Closeout — 2026-08-14
 
+> 이 문서는 공개 전 로컬 종료점의 역사 기록이다. 같은 날 후속 PD 지시로 Ocean 운영 허브와
+> 공개 가능 기능을 배포했다. 현재 상태는 `RELEASE-2026-08-14-OCEAN-PUBLIC.md`와
+> `OCEAN_CHAPTER_LEDGER.md`를 정본으로 본다.
+
 ## 결론
 
 요청 문서 기준으로 로컬에서 안전하게 구현·검증할 수 있는 범위를 닫았다.

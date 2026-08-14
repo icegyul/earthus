@@ -58,6 +58,15 @@ LAB iPhone 세로·가로·desktop `14/14`, 실제 JPEG 로컬 추출·원본 up
 정본은
 [`earthus-v23/RELEASE-2026-08-14-AETHERUS-PUBLIC-SAFE.md`](earthus-v23/RELEASE-2026-08-14-AETHERUS-PUBLIC-SAFE.md)다.
 
+후속 PD 지시로 해양 구현물도 canary에만 두지 않고 실제 서비스에 공개했다. EARTHUS 1단 메뉴의
+`OCEAN`과 `/?ocean=hub`·`/ocean.html`에서 오늘의 바다 6개 레이어, Surf, Fishing,
+Marine Life, Dive, My Ocean 6위젯 관제판, Vessels 미지원 상태를 볼 수 있다. 사용 가능한 기능은
+전부 무료이며 결제·구독 UI가 없다. Ocean 운영 자산 73개는 live/local SHA-256과 MIME이 일치하고,
+390×844·768×900·1280×720 실제 Chrome에서 overflow 0·44px·메뉴→레이어/Surf 연결을 확인했다.
+AIS·개인 기록·사진 업로드·알림·계정 동기화는 없는 provider/server를 꾸미지 않고 gate 상태를
+화면에 공개한다. 정본은
+[`earthus-v23/RELEASE-2026-08-14-OCEAN-PUBLIC.md`](earthus-v23/RELEASE-2026-08-14-OCEAN-PUBLIC.md)다.
+
 EARTHUS 메뉴·레이어 표현·무료/유료 경계, AETHERUS 정보 구조·모바일·사진관,
 마케팅 스튜디오 공개 이야기관을 한 번에 개편하는 실행 정본은
 [`EARTHUS-AETHERUS-DEV-SPEC-2026-08-16.md`](EARTHUS-AETHERUS-DEV-SPEC-2026-08-16.md)다.

@@ -47,6 +47,7 @@ import { mountainPanel } from './ui-mountain.js';
 import { surfPanel } from './ui-surf.js';
 import { fishPanel } from './ui-fishing.js';
 import { outdoorPanel } from './ui-outdoor.js';
+import { oceanPanel } from './ui-ocean.js?v=20260814-oceanv1';
 import { paraPanel } from './ui-para.js';
 import { apiKeysPanel } from './ui-apikeys.js';
 import { eventPanel } from './ui-events.js';
@@ -159,6 +160,7 @@ async function boot() {
   const sceneParams = new URLSearchParams(location.search);
   const diveParam = sceneParams.get('dive');
   const oceanRoute = sceneParams.get('ocean') === '1';
+  const oceanHubRoute = sceneParams.get('ocean') === 'hub' || sceneParams.get('ocean-hub') === '1';
   /* 잘못된 수동 URL에 두 서비스 route가 섞여도 장면 복원기가 경쟁하지 않는다.
      해구(좌표 계약) > Earth의 명시 상태 > AETHERUS 순으로 하나만 선택한다. */
   const earthRouteRequested = hasEarthRoute(sceneParams);
@@ -288,7 +290,8 @@ async function boot() {
      카메라를 지구 첫 화면으로 빼앗으면 딥링크가 0m에서 멈춘 것처럼 보인다. */
   /* Earth Data/Evidence 딥링크도 이미 '사용자가 원하는 화면'이다. 이 경로에서
      아름다운 첫 화면용 intro를 시작하면 읽는 동안 30fps Cesium 렌더가 남는다. */
-  let userEngaged = !!(diveParam || oceanRoute || earthRouteRequested || aetherusRoute?.stage);
+  let userEngaged = !!(diveParam || oceanRoute || oceanHubRoute
+    || earthRouteRequested || aetherusRoute?.stage);
   let geoTookOver = false;
   /* 지구뿐 아니라 메뉴·검색을 먼저 누른 것도 "이미 사용 중"이다.
      그 뒤 위치 응답이나 인트로가 카메라를 움직이면 조작을 빼앗고 발열도 남긴다. */
@@ -354,6 +357,7 @@ async function boot() {
     power.animate(1700);
   });
   layerBar.onAction('sat', () => satPanel.open());
+  layerBar.onAction('ocean', () => oceanPanel.open());
   /* 나가기 전에 — 서핑·낚시·해구·산·하늘을 한자리에 모았다 (ui-outdoor.js 머리말 참고).
      ⚠️ 옛 메뉴 항목(surf/mountain/sky)도 그대로 살려 둔다. 검색·코치마크·딥링크가
         그 이름으로 부르고 있어, 지우면 조용히 안 열린다. */
@@ -500,6 +504,40 @@ async function boot() {
     if (!go) { console.warn(`[취미] '${act}' 를 여는 곳이 없습니다 — main.js 의 표를 보세요`); return; }
     go();
   });
+  oceanPanel.init(async action => {
+    /* Ocean 허브는 이미 운영 중인 실제 화면의 한 진입점이다. 같은 기능을 두 벌로
+       구현하지 않고, 지도·패널의 정본으로 이동한다. */
+    if (action.startsWith('layer:')) {
+      const id = action.slice('layer:'.length);
+      await sceneMgr.to('earth', { stage: 'surface' });
+      store.setLayer(id, true);
+      return;
+    }
+    const go = {
+      surf: () => surfPanel.open(),
+      fishing: () => fishPanel.open(),
+      dive: () => sceneMgr.to('earth', { stage: 'trench' }),
+      turtle: async () => {
+        turtleMod = (await import('./ui-turtle.js')).turtlePanel;
+        turtleMod.open();
+      },
+      seabird: async () => {
+        seabirdMod = (await import('./ui-seabird.js')).seabirdPanel;
+        seabirdMod.open();
+      },
+      migbird: async () => {
+        migbirdMod = (await import('./ui-migbird.js')).migbirdPanel;
+        migbirdMod.open();
+      },
+      ecobird: async () => {
+        ecobirdMod = (await import('./ui-ecobird.js')).ecobirdPanel;
+        ecobirdMod.open();
+      },
+    }[action];
+    if (!go) { console.warn(`[Ocean] '${action}' 연결이 없습니다`); return; }
+    await go();
+  });
+  if (oceanHubRoute) queueMicrotask(() => oceanPanel.open());
   warn.init();
   apiKeysPanel.init();
   document.getElementById('btnApi')?.addEventListener('click', () => apiKeysPanel.open());

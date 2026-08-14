@@ -757,7 +757,7 @@ export const layerBar = {
        지구로 돌아가는 길을 숨기면 두 세계가 한 공간이라는 구조가 끊긴다. */
     const hiddenAway = [];
     const sceneFiltered = [
-      '[data-open="earth"]', '[data-act="sat"]', '[data-act="flight"]',
+      '[data-open="earth"]', '[data-act="ocean"]', '[data-act="sat"]', '[data-act="flight"]',
       '[data-act="outdoor"]', '[data-act="earth-home"]', '[data-act="earth-surface"]',
       '[data-act="locate"]', '[data-act="globe"]',
     ];

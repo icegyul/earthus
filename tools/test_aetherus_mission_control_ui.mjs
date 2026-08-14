@@ -61,11 +61,14 @@ try {
           id: 'launch-a', name: 'Falcon 9 Block 5 | Verified Test Mission',
           window_start: '2026-08-16T01:12:00Z', window_end: '2026-08-16T01:27:00Z',
           status: { name: 'Go for Launch', description: 'Current T-0 confirmed by reliable sources.' },
-          webcast_live: false,
+          webcast_live: true,
           launch_service_provider: { name: 'SpaceX' },
           pad: { name: 'SLC-40', latitude: 28.56, longitude: -80.57,
             location: { name: 'Cape Canaveral SFS, FL, USA' } },
-          mission: { name: 'Verified Test Mission', type: 'Communications' },
+          mission: { name: 'Verified Test Mission', type: 'Communications', vid_urls: [{
+            url: 'https://www.youtube.com/watch?v=earthus-mission-control-fixture',
+            title: 'Verified provider stream',
+          }] },
         },
         {
           id: 'launch-b', name: 'Ariane 6 | Test Payload',
@@ -144,11 +147,40 @@ try {
     assert.match(evidence.countdown, /^(T-|예정 시각 경과)/);
     assert.equal(evidence.forbidden, false, `${item.name} paywall or invented mission copy present`);
     assert.ok(evidence.canvasWidth > 0, `${item.name} 3D canvas did not initialize`);
+    assert.equal(await page.locator('[data-launch-marker]').getAttribute('data-widget'), 'NEXT_LAUNCH');
+    assert.equal(await page.locator('[data-launch-marker]').evaluate(node => !node.hidden), true);
+    for (const widget of ['LIVE', 'COUNTDOWN', 'MISSION_TIMELINE', 'PAYLOAD_STATUS', 'SATELLITE_PASS',
+      'SPACE_WEATHER', 'EARTH_WEATHER', 'AURORA', 'KOREA_SPACE', 'SPACEX', 'STARSHIP', 'JWST']) {
+      assert.equal(await page.locator(`[data-widget="${widget}"]`).count(), 1,
+        `${item.name} ${widget} widget shell missing`);
+    }
+    assert.match(await page.locator('[data-widget="MISSION_TIMELINE"]').textContent(), /일정 등록/);
+    assert.match(await page.locator('[data-widget="PAYLOAD_STATUS"]').textContent(), /Verified Test Mission/);
+    assert.match(await page.locator('[data-widget="EARTH_WEATHER"]').textContent(), /지구에서 위치 선택/);
+    assert.match(await page.locator('[data-widget="LIVE"]').textContent(), /LL2에서 LIVE 상태 수신/);
+    assert.equal(await page.locator('[data-widget="LIVE"] a').getAttribute('href'),
+      'https://www.youtube.com/watch?v=earthus-mission-control-fixture');
 
-    await page.locator('[data-mission-edit]:visible').first().click();
+    if (item.name === 'desktop') {
+      await page.locator('[data-follow-launch]').click();
+      assert.equal(await page.locator('[data-following-count]').textContent(), '1');
+      assert.match(await page.locator('[data-following-list]').textContent(), /Verified Test Mission/);
+      await page.locator('[data-unfollow-launch]').click();
+      assert.equal(await page.locator('[data-following-count]').textContent(), '0');
+      await page.locator('.mission-add-widget').click();
+    } else {
+      await page.locator('[data-mission-edit]:visible').first().click();
+    }
+
     await page.locator('[data-mission-editor]').waitFor({ state: 'visible' });
+    await page.locator('[data-layout-toggle="EARTH_WEATHER"]').click();
+    assert.equal(await page.locator('[data-widget="EARTH_WEATHER"]').evaluate(node => node.hidden), true);
+    await page.locator('[data-layout-toggle="EARTH_WEATHER"]').click();
+    assert.equal(await page.locator('[data-widget="EARTH_WEATHER"]').evaluate(node => node.hidden), false);
     await page.locator('[data-layout-size="SPACE_WEATHER"]').click();
     assert.equal(await page.locator('[data-widget="SPACE_WEATHER"]').evaluate(node => node.classList.contains('is-wide')), true);
+    await page.locator('[data-layout-move="SPACE_WEATHER"][data-direction="down"]').click();
+    const movedOrder = await page.locator('[data-widget="SPACE_WEATHER"]').evaluate(node => node.style.order);
     await page.locator('.mission-room-picker [data-room="WEATHER_CENTER"]').click();
     await page.locator('[data-mission-editor-close]').first().click();
 
@@ -179,6 +211,15 @@ try {
     await page.locator('[data-mission-editor-close]').first().click();
     assert.equal(await page.locator('[data-widget="SPACE_WEATHER"]').evaluate(node => node.classList.contains('is-wide')), true,
       `${item.name} SPACE_CONTROL layout did not persist independently`);
+    assert.equal(await page.locator('[data-widget="SPACE_WEATHER"]').evaluate(node => node.style.order), movedOrder,
+      `${item.name} SPACE_CONTROL reorder did not persist independently`);
+    await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 });
+    await page.locator('#aetherusMissionControl').waitFor({ state: 'visible', timeout: 30_000 });
+    await page.waitForFunction(() => document.querySelector('[data-mission-kp-value]')?.textContent === 'Kp 4.25');
+    assert.equal(await page.locator('[data-widget="SPACE_WEATHER"]').evaluate(node => node.classList.contains('is-wide')), true,
+      `${item.name} resized layout did not survive reconnect`);
+    assert.equal(await page.locator('[data-widget="SPACE_WEATHER"]').evaluate(node => node.style.order), movedOrder,
+      `${item.name} reordered layout did not survive reconnect`);
     await page.locator('[data-mission-edit]:visible').first().click();
     await page.locator('[data-layout-reset]').click();
     await page.locator('[data-mission-editor-close]').first().click();

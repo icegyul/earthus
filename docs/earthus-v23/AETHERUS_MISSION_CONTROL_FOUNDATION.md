@@ -8,7 +8,10 @@ NOAA SWPC OVATION 오로라 모델, HST/JWST provenance 사진 수·최신 JWST 
 payload/timeline의 명시적 결측 상태가 실제 화면에서 동작한다. Satellite Tracking room에서는
 사용자가 위치를 허용한 뒤 최신 위성 카탈로그의 ISS 궤도 요소로 48시간 통과를 기기에서 계산하며,
 LL2 한 응답을 Korea Space·SpaceX·Starship 위젯에 출처 그대로 분류한다. 4개 room은 서로 다른
-기본 위젯과 숨김·resize·reorder 상태를 기기별로 독립 저장한다. 준비된 화면은 `FREE_OPEN`이며
+기본 위젯과 Following·Next Launch를 포함한 숨김·resize·reorder 상태를 기기별로 독립 저장한다.
+LIVE 위젯은 임의 영상이나 발사와 무관한 일반 링크를 넣지 않고, LL2가 해당 발사에
+`webcast_live=true`와 HTTPS 송출 URL을 함께 준 경우에만 그 URL을 연결한다. 준비된 화면은
+`FREE_OPEN`이며
 결제·PRO 표시는 없다. F 키/화면 버튼 전체화면, E 편집, 1–4 room 전환, 필터의 실제 mouse 동작,
 dialog focus trap·ARIA announcement가 연결됐다. 사진·Kp·OVATION·LL2는 출처별 마지막 성공 응답과
 저장 시각을 기기에 보관하고 provider 실패 때 `CACHED`로 고정 표시한다. 위치 좌표와 ISS 계산
@@ -36,7 +39,9 @@ dialog focus trap·ARIA announcement가 연결됐다. 사진·Kp·OVATION·LL2�
 
 `tools/test_aetherus_mission_control_ui.mjs`가 실제 route 진입, 3D canvas, LL2/Kp/provenance 표시,
 OVATION·Korea Space·SpaceX·Starship·JWST 위젯, 위치 허용 후 ISS 통과 계산, room별 독립
-레이아웃 resize·reset·저장, 390×844·754×402·1440×900 반응형과 44px 입력을 Chrome에서 검증한다.
+레이아웃 숨김·resize·reorder·reset, room별 독립 상태와 재접속 저장, Following 추가·해제,
+Next Launch·LIVE·Countdown·Timeline·Payload·Weather 전 위젯, 390×844·754×402·1440×900
+반응형·전체화면 지구본·44px 입력을 Chrome에서 검증한다.
 `tools/test_aetherus_mission_control_live_sources.mjs`는 목 응답 없이 NOAA SWPC·LL2·Earthus
 provenance 카탈로그의 현재 응답이 실제 브라우저 위젯에 들어오는지 검증한다.
 `tools/test_aetherus_mission_control_offline_accessibility.mjs`는 전체화면 진입·종료, 1–4/E/F 키,

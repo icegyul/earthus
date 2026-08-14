@@ -32,9 +32,11 @@ try {
     : { status: 200, contentType: 'application/json', body: JSON.stringify({ results: [{
       id: 'launch-accessibility', name: 'Falcon 9 | Accessibility Test Mission',
       window_start: '2026-08-16T01:12:00Z', status: { name: 'Go for Launch' },
-      webcast_live: false, launch_service_provider: { name: 'SpaceX' },
+      webcast_live: true, launch_service_provider: { name: 'SpaceX' },
       pad: { name: 'SLC-40', location: { name: 'Cape Canaveral SFS, FL, USA' } },
-      mission: { name: 'Accessibility Test Mission', type: 'Technology' },
+      mission: { name: 'Accessibility Test Mission', type: 'Technology', vid_urls: [{
+        url: 'https://www.youtube.com/watch?v=earthus-offline-fixture', title: 'Fixture stream',
+      }] },
     }] }) }));
 
   const url = new URL(base); url.search = 'aetherus=3&solar=1';

@@ -20,7 +20,7 @@ const ROOM_TEMPLATES = Object.freeze([
   ['SATELLITE_TRACKING', 'SATELLITE TRACKING', '⌁'],
 ]);
 const EDITABLE_WIDGETS = Object.freeze([
-  ['FOLLOWING', 'Following'], ['LIVE', 'Live Stream'], ['COUNTDOWN', 'Countdown'],
+  ['FOLLOWING', 'Following'], ['NEXT_LAUNCH', 'Next Launch'], ['LIVE', 'Live Stream'], ['COUNTDOWN', 'Countdown'],
   ['MISSION_TIMELINE', 'Mission Timeline'], ['PAYLOAD_STATUS', 'Payload Status'],
   ['UPCOMING_LAUNCHES', 'Upcoming Launches'], ['TONIGHT', 'Tonight Above Me'],
   ['SPACE_WEATHER', 'Space Weather'], ['EARTH_WEATHER', 'Earth Weather'],
@@ -52,7 +52,7 @@ const DEFAULT_STATE = Object.freeze({
   activeFilter: 'all',
 });
 const FILTER_WIDGETS = Object.freeze({
-  launches: Object.freeze(['FOLLOWING', 'LIVE', 'COUNTDOWN', 'MISSION_TIMELINE', 'PAYLOAD_STATUS',
+  launches: Object.freeze(['FOLLOWING', 'NEXT_LAUNCH', 'LIVE', 'COUNTDOWN', 'MISSION_TIMELINE', 'PAYLOAD_STATUS',
     'UPCOMING_LAUNCHES', 'KOREA_SPACE', 'SPACEX', 'STARSHIP']),
   satellites: Object.freeze(['SATELLITE_PASS']),
   iss: Object.freeze(['SATELLITE_PASS']),
@@ -77,7 +77,7 @@ function ensureStylesheet() {
   const link = document.createElement('link');
   link.id = STYLE_ID;
   link.rel = 'stylesheet';
-  link.href = new URL('../../css/aetherus-dashboard.css?v=20260815-mc12', import.meta.url).href;
+  link.href = new URL('../../css/aetherus-dashboard.css?v=20260815-mc13', import.meta.url).href;
   document.head.append(link);
 }
 
@@ -245,7 +245,8 @@ function buildMarkup() {
         <span class="mission-orbit-label mission-orbit-label-a">HUBBLE · 궤도 도식</span>
         <span class="mission-orbit-label mission-orbit-label-b">JWST · L2 도식</span>
       </div>
-      <div class="mission-launch-marker" data-launch-marker hidden>
+      <div class="mission-launch-marker" data-widget="NEXT_LAUNCH" data-launch-marker hidden
+        role="group" aria-label="Next Launch">
         <span aria-hidden="true">△</span><b data-launch-name>발사 일정</b>
         <small><span data-launch-site>위치 미수신</span> · <span data-launch-marker-state>일정</span></small>
       </div>
@@ -343,6 +344,13 @@ function normalizeLaunches(value) {
     provider: item.launch_service_provider?.name || '운영기관 미수신',
     site: item.pad?.location?.name || item.pad?.name || '발사장 미수신',
     missionType: item.mission?.type || null, missionName: item.mission?.name || null,
+    videoUrls: (Array.isArray(item.mission?.vid_urls) ? item.mission.vid_urls : []).map(video => {
+      const rawUrl = typeof video === 'string' ? video : video?.url;
+      try {
+        const parsed = new URL(rawUrl); if (parsed.protocol !== 'https:') return null;
+        return { url: parsed.href, title: String(video?.title || video?.publisher || '발사 송출 열기') };
+      } catch { return null; }
+    }).filter(Boolean),
   }));
 }
 
@@ -425,13 +433,25 @@ function renderMissionData(mission, data, state) {
   liveBody.replaceChildren();
   const liveCopy = document.createElement('div'); liveCopy.className = 'mission-live-copy';
   const liveTitle = document.createElement('strong');
-  liveTitle.textContent = next?.webcastLive ? '공식 생중계 편성 확인 필요' : '현재 확인된 생중계 없음';
+  liveTitle.textContent = next?.webcastLive ? 'LL2에서 LIVE 상태 수신' : '현재 LIVE 상태 미수신';
   const liveMeta = document.createElement('p');
-  liveMeta.textContent = '임의 영상·LIVE 표시는 사용하지 않습니다.';
-  const liveLink = document.createElement('a');
-  liveLink.href = 'https://www.nasa.gov/live/'; liveLink.target = '_blank';
-  liveLink.rel = 'noopener noreferrer'; liveLink.textContent = 'NASA 공식 LIVE ↗';
-  liveCopy.append(liveTitle, liveMeta, liveLink); liveBody.append(liveCopy);
+  liveMeta.textContent = next?.webcastLive
+    ? `${next.name} · Launch Library 2 · ${retrieved}`
+    : 'LL2 webcast_live=true인 해당 발사에 연결된 송출만 표시합니다.';
+  liveCopy.append(liveTitle, liveMeta);
+  const liveVideo = next?.videoUrls?.[0];
+  if (next?.webcastLive && liveVideo) {
+    const liveLink = document.createElement('a');
+    liveLink.href = liveVideo.url; liveLink.target = '_blank';
+    liveLink.rel = 'noopener noreferrer'; liveLink.textContent = `${liveVideo.title} ↗`;
+    liveCopy.append(liveLink);
+  } else if (next?.webcastLive) {
+    const missingLink = document.createElement('p');
+    missingLink.className = 'mission-widget-empty';
+    missingLink.textContent = '이 발사에 연결된 HTTPS 송출 URL은 미수신입니다.';
+    liveCopy.append(missingLink);
+  }
+  liveBody.append(liveCopy);
   stateBadge(mission, 'LIVE', next?.webcastLive ? sourceBadge(data, 'launches', ready.label) : unavailable);
 
   const countdownBody = mission.querySelector('[data-widget-body="COUNTDOWN"]');
@@ -571,7 +591,7 @@ function renderMissionData(mission, data, state) {
   stateBadge(mission, 'CONTROL_ROOMS', { label: 'DEVICE LOCAL', state: 'ready' });
 
   const marker = mission.querySelector('[data-launch-marker]');
-  marker.hidden = !next;
+  marker.hidden = !next || currentRoomLayout(state).hidden.includes('NEXT_LAUNCH');
   if (next) {
     setText(marker, '[data-launch-name]', next.name);
     setText(marker, '[data-launch-site]', next.site);

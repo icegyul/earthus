@@ -478,12 +478,12 @@
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9.2"/><ellipse cx="12" cy="12" rx="4" ry="9.2"/><path d="M2.9 12h18.2"/></svg></span>
       <span class="mm-label" data-i18n="m.layers">지구 스타일</span><span class="mm-chev">‹</span>
     </button>
-    <!-- Ocean Vertical은 EARTHUS의 해양 제품 진입점이다. 레이어 목록이나 개발
-         canary에 숨기지 않고, 실제 서핑·낚시·해양생물·다이빙 화면으로 연결한다. -->
+    <!-- Ocean Vertical은 취미 모음이 아니라 EARTHUS의 1차 해양 제품이다.
+         무료 운영 기간에도 가격 배지는 붙이지 않고 실제 해양 허브로 바로 연다. -->
     <button class="mm-item mm-ocean-entry" type="button" data-act="ocean">
       <span class="mm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.8 9.2c1.8 0 1.8-1.7 3.6-1.7S8.2 9.2 10 9.2s1.8-1.7 3.6-1.7 1.8 1.7 3.6 1.7S19 7.5 20.8 7.5"/><path d="M2.8 14c1.8 0 1.8-1.7 3.6-1.7S8.2 14 10 14s1.8-1.7 3.6-1.7 1.8 1.7 3.6 1.7 1.8-1.7 3.6-1.7"/><path d="M2.8 18.8c1.8 0 1.8-1.7 3.6-1.7s1.8 1.7 3.6 1.7 1.8-1.7 3.6-1.7 1.8 1.7 3.6 1.7 1.8-1.7 3.6-1.7"/></svg></span>
-      <span class="mm-label"><b>OCEAN</b><small>서핑 · 낚시 · 해양생물 · Dive</small></span>
-      <span class="mm-badge mm-free">무료</span>
+      <span class="mm-label"><b>OCEAN</b><small>오늘의 바다 · 서핑 · 낚시 · 해양생물 · 심해 · 선박</small></span>
+      <span class="mm-chev">›</span>
     </button>
     <!-- 우주·심해에서는 지구 레이어를 끄지 않고 이 한 줄로만 접는다.
          ⚠️ 장면 전환이 레이어 상태를 바꾸면 지구로 돌아왔을 때 사용자의 선택이 사라진다. -->
@@ -668,7 +668,7 @@
        가짜 버튼을 만들지 않고 같은 화면에서 사유를 분명히 보여 준다. -->
   <div id="oceanSheet" class="sheet-panel tall ocean-sheet" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="oceanSheet" aria-label="닫기"><span>×</span></button></div>
-    <h3 id="oceanTitle">OCEAN <span class="ocean-free-badge">FREE</span></h3>
+    <h3 id="oceanTitle">OCEAN</h3>
     <div id="oceanBody"></div>
   </div>
 

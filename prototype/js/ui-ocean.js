@@ -1,6 +1,7 @@
-/* Earthus Ocean 세부 자료.
+/* Earthus Ocean 1차 제품 허브.
  *
- * 취미의 바다 범주에서 해양 레이어와 공식 선박 화면을 연다.
+ * 메인 OCEAN 진입점에서 해양 레이어와 각 Vertical을 열고, 취미 패널은 같은
+ * 실행 경로를 부르는 보조 바로가기만 제공한다.
  * 이 파일은 관측값이나 안전 결론을 새로 만들지 않는다.
  * 선박 위치는 권리 미확인 좌표를 복제하지 않고 일반 공개된 공식 운영 화면으로 연결한다.
  */
@@ -68,10 +69,9 @@ export const oceanPanel = {
 
   init(run) {
     this._run = run;
-    /* 유료 서비스 개시 전에는 FREE 배지나 결제 안내를 별도 상품처럼 노출하지 않는다. */
+    /* 유료 서비스 개시 전에는 가격 배지나 결제 안내를 별도 상품처럼 노출하지 않는다. */
     const title = $('#oceanTitle');
     if (title) title.textContent = 'OCEAN';
-    document.querySelector('[data-act="ocean"] .mm-free')?.remove();
     document.addEventListener('click', async event => {
       const back = event.target.closest('[data-ocean-view="home"]');
       if (back) { this._view = 'home'; this.render(); return; }

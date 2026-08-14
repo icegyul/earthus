@@ -60,9 +60,10 @@ try {
 
     await page.getByRole('button', { name: /My Ocean FREE/ }).click();
     await page.waitForSelector('#oceanBody .ocean-widget-grid');
+    assert.equal(await page.locator('#oceanBody .ocean-widget-grid > button').count(), 6);
     assert.equal(await page.locator('#oceanBody').getByText('VESSEL', { exact: true }).count(), 1);
-    await page.getByRole('button', { name: /OCEAN 전체/ }).click();
-    await page.getByRole('button', { name: /Vessels FREE/ }).click();
+    await page.screenshot({ path: `/private/tmp/ocean-my-${item.name}.png` });
+    await page.getByRole('button', { name: /VESSEL FREE/ }).click();
     assert.match(await page.locator('#oceanBody').innerText(), /Vessels · FREE/);
     assert.equal(await page.getByRole('link', { name: /실시간 선박 위치 LIVE/ })
       .getAttribute('href'), 'https://mtis.komsa.or.kr/stg/traffic/liveSea');

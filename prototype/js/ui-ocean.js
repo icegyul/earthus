@@ -151,19 +151,25 @@ export const oceanPanel = {
 
   myView(ko) {
     const widgets = [
-      ['SAFETY', ko ? '공식 낙뢰·태풍·통제 우선' : 'Official lightning, cyclone and closure first', 'LIVE'],
-      ['SURF', ko ? '해변 조건 화면 연결' : 'Connected surf conditions', 'LIVE'],
-      ['FISHING', ko ? '물때·해양 조건 화면 연결' : 'Connected tide and marine conditions', 'LIVE'],
-      ['MARINE LIFE', ko ? '공개 관찰·문헌 도감 연결' : 'Public records and reference atlas', 'LIVE'],
-      ['DIVE', ko ? 'GEBCO 수심·해구 연결' : 'GEBCO depth and trenches', 'LIVE'],
-      ['VESSEL', ko ? '공식 실시간 선박 화면 연결' : 'Official live vessel screen', 'FREE'],
+      { action: 'safety', badge: 'LIVE', ko: 'SAFETY', en: 'SAFETY',
+        subKo: '기상청 낙뢰·태풍·특보·해양 관측 열기',
+        subEn: 'Open KMA lightning, cyclone, warning and marine observations' },
+      { action: 'surf', badge: 'LIVE', ko: 'SURF', en: 'SURF',
+        subKo: '해변 조건 화면 열기', subEn: 'Open surf conditions' },
+      { action: 'fishing', badge: 'LIVE', ko: 'FISHING', en: 'FISHING',
+        subKo: '물때·해양 조건 화면 열기', subEn: 'Open tide and marine conditions' },
+      { view: 'life', badge: 'LIVE', ko: 'MARINE LIFE', en: 'MARINE LIFE',
+        subKo: '공개 관찰·문헌 도감 열기', subEn: 'Open public records and reference atlas' },
+      { action: 'dive', badge: 'LIVE', ko: 'DIVE', en: 'DIVE',
+        subKo: 'GEBCO 수심·해구 열기', subEn: 'Open GEBCO depth and trenches' },
+      { view: 'vessel', badge: 'FREE', ko: 'VESSEL', en: 'VESSEL',
+        subKo: '공식 실시간 선박 화면 열기', subEn: 'Open official live vessel screen' },
     ];
     return `<button type="button" class="ocean-back" data-ocean-view="home">← ${ko ? 'OCEAN 전체' : 'All Ocean'}</button>
       <section class="ocean-access"><b>My Ocean · ${ko ? '무료 관제판' : 'Free control board'}</b><span>${ko
         ? '현재 제공되는 해양 화면을 한곳에서 엽니다.'
         : 'Open every currently available Ocean surface from one place.'}</span></section>
-      <div class="ocean-widget-grid">${widgets.map(([name, description, state]) =>
-        `<article><span>${name}</span><b>${description}</b><em data-state="${state}">${state}</em></article>`).join('')}</div>
+      <div class="ocean-widget-grid">${widgets.map(item => buttonCard(item, ko)).join('')}</div>
       <p class="ocean-trust">${ko
         ? '이 관제판은 지금 무료입니다. 계정 간 레이아웃 동기화·개인 기록·사진 업로드·조건 알림은 운영 서버가 연결되기 전까지 저장 완료로 꾸며내지 않습니다.'
         : 'This board is free. Cross-account layout sync, private records, photo uploads and alerts are not represented as saved before the operating server exists.'}</p>`;

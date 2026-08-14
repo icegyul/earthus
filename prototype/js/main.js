@@ -514,6 +514,7 @@ async function boot() {
       return;
     }
     const go = {
+      safety: () => koreaPanel.open(),
       surf: () => surfPanel.open(),
       fishing: () => fishPanel.open(),
       dive: () => sceneMgr.to('earth', { stage: 'trench' }),

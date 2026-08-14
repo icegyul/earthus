@@ -24,6 +24,12 @@ for (const layer of ['sst', 'sstanom', 'wave', 'swell', 'current', 'buoy']) {
   assert.match(hub, new RegExp(`id: '${layer}'`), `missing ${layer} public layer entry`);
 }
 for (const label of ['Marine Life', 'My Ocean', 'Vessels']) assert.match(hub, new RegExp(label));
+for (const action of ['safety', 'surf', 'fishing', 'dive']) {
+  assert.match(hub, new RegExp(`action: '${action}'`), `missing clickable My Ocean ${action} card`);
+}
+assert.match(main, /safety: \(\) => koreaPanel\.open\(\)/);
+assert.match(hub, /widgets\.map\(item => buttonCard\(item, ko\)\)/);
+assert.doesNotMatch(hub, /<article><span>\$\{name\}/);
 assert.match(hub, /Vessels · FREE/);
 assert.match(hub, /https:\/\/mtis\.komsa\.or\.kr\/stg\/traffic\/liveSea/);
 assert.match(hub, /실시간 선박 위치|Live vessel positions/);

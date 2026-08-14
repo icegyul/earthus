@@ -2,13 +2,16 @@
  *
  * 해양 구현물을 개발 canary와 문서에만 두지 않고, 운영 중인 실제 지도·서핑·낚시·
  * 심해·생태 화면으로 연결한다. 이 파일은 관측값이나 안전 결론을 새로 만들지 않는다.
- * 선박 provider와 계정 서버가 없을 때는 가짜 마커·저장 성공을 만들지 않고 상태를 보인다.
+ * 선박 위치는 권리 미확인 좌표를 복제하지 않고 일반 공개된 공식 운영 화면으로 연결한다.
  */
 
 import { i18n } from './i18n.js';
 import { store } from './store.js';
 
 const $ = selector => document.querySelector(selector);
+
+const MTIS_LIVE_VESSEL_URL = 'https://mtis.komsa.or.kr/stg/traffic/liveSea';
+const MTIS_HOME_URL = 'https://mtis.komsa.or.kr/';
 
 const LAYERS = [
   { id: 'sst', ko: '해수면 온도', en: 'Sea temperature', metaKo: '모델 · 유효시각', metaEn: 'Model · valid time' },
@@ -35,9 +38,9 @@ const MODULES = [
   { view: 'my', badge: 'FREE', ko: 'My Ocean', en: 'My Ocean',
     subKo: '안전·서핑·낚시·생태·Dive·선박을 한 관제판에서',
     subEn: 'Safety, surf, fishing, life, dive and vessel in one board' },
-  { view: 'vessel', badge: 'GATED', ko: 'Vessels', en: 'Vessels',
-    subKo: '지원 범위·라이선스 상태 · 가짜 현재 위치 없음',
-    subEn: 'Coverage and licence status · no fabricated live positions' },
+  { view: 'vessel', badge: 'FREE', ko: 'Vessels', en: 'Vessels',
+    subKo: '공식 실시간 선박 위치 · 교통량 · 여객선 운항',
+    subEn: 'Official live vessel positions, traffic and passenger services' },
 ];
 
 function buttonCard(item, ko) {
@@ -46,6 +49,13 @@ function buttonCard(item, ko) {
     + `<span class="ocean-module-top"><b>${ko ? item.ko : item.en}</b>`
     + `<em data-state="${item.badge}">${item.badge}</em></span>`
     + `<span>${ko ? item.subKo : item.subEn}</span></button>`;
+}
+
+function officialCard({ href, badge, ko, en, subKo, subEn }, isKo) {
+  return `<a class="ocean-module" href="${href}" target="_blank" rel="noopener noreferrer">`
+    + `<span class="ocean-module-top"><b>${isKo ? ko : en}</b>`
+    + `<em data-state="${badge}">${badge}</em></span>`
+    + `<span>${isKo ? subKo : subEn}</span></a>`;
 }
 
 function statusLine(id, ko) {
@@ -146,7 +156,7 @@ export const oceanPanel = {
       ['FISHING', ko ? '물때·해양 조건 화면 연결' : 'Connected tide and marine conditions', 'LIVE'],
       ['MARINE LIFE', ko ? '공개 관찰·문헌 도감 연결' : 'Public records and reference atlas', 'LIVE'],
       ['DIVE', ko ? 'GEBCO 수심·해구 연결' : 'GEBCO depth and trenches', 'LIVE'],
-      ['VESSEL', ko ? '권리 승인 전 위치 미제공' : 'No positions before rights approval', 'GATED'],
+      ['VESSEL', ko ? '공식 실시간 선박 화면 연결' : 'Official live vessel screen', 'FREE'],
     ];
     return `<button type="button" class="ocean-back" data-ocean-view="home">← ${ko ? 'OCEAN 전체' : 'All Ocean'}</button>
       <section class="ocean-access"><b>My Ocean · ${ko ? '무료 관제판' : 'Free control board'}</b><span>${ko
@@ -161,16 +171,21 @@ export const oceanPanel = {
 
   vesselView(ko) {
     return `<button type="button" class="ocean-back" data-ocean-view="home">← ${ko ? 'OCEAN 전체' : 'All Ocean'}</button>
-      <section class="ocean-access ocean-gated"><b>Vessels · UNAVAILABLE</b><span>${ko
-        ? '현재 위치 provider의 상업 이용·재배포·캐시 권리가 승인되지 않았습니다.'
-        : 'Commercial use, redistribution and cache rights for a live-position provider are not approved.'}</span></section>
-      <div class="ocean-vessel-state">
-        <dl><dt>${ko ? '현재 위치' : 'Live positions'}</dt><dd>0 · ${ko ? '가짜 마커 없음' : 'no fabricated markers'}</dd>
-          <dt>${ko ? '상태' : 'Status'}</dt><dd>UNAVAILABLE</dd>
-          <dt>${ko ? '표시 조건' : 'Release condition'}</dt><dd>${ko ? 'coverage · freshness · redistribution 권리 승인' : 'coverage, freshness and redistribution approval'}</dd></dl>
-        <p>${ko
-          ? '공식·허용 provider가 연결되면 수신 시각과 지연 상태를 함께 표시합니다. 그 전에는 화면을 비워 두는 대신 왜 제공되지 않는지 공개합니다.'
-          : 'When an approved provider is connected, reception time and delay state will be shown together. Until then, the reason for unavailability stays public.'}</p>
-      </div>`;
+      <section class="ocean-access"><b>Vessels · FREE</b><span>${ko
+        ? '실시간 선박 위치와 해양 교통을 공식 운영 화면에서 바로 확인합니다.'
+        : 'Open official live vessel positions and marine traffic directly.'}</span></section>
+      <div class="ocean-module-grid">
+        ${officialCard({ href: MTIS_LIVE_VESSEL_URL, badge: 'LIVE',
+          ko: '실시간 선박 위치', en: 'Live vessel positions',
+          subKo: '한국해양교통안전공단 MTIS · 용도·톤수·격자별 조회 ↗',
+          subEn: 'KOMSA MTIS · filter by use, tonnage and grid ↗' }, ko)}
+        ${officialCard({ href: MTIS_HOME_URL, badge: 'LIVE',
+          ko: '여객선 위치 · 운항', en: 'Passenger vessel position · service',
+          subKo: 'MTIS 여객선 교통정보서비스(PATIS)에서 확인 ↗',
+          subEn: 'Open the MTIS passenger transportation service (PATIS) ↗' }, ko)}
+      </div>
+      <p class="ocean-trust">${ko
+        ? '출처: 한국해양교통안전공단 해양교통안전정보시스템(MTIS) · 위치 수신시각은 공식 화면에서 확인'
+        : 'Source: Korea Maritime Transportation Safety Authority MTIS · check reception time on the official screen'}</p>`;
   },
 };

@@ -62,9 +62,14 @@ try {
     await page.waitForSelector('#oceanBody .ocean-widget-grid');
     assert.equal(await page.locator('#oceanBody').getByText('VESSEL', { exact: true }).count(), 1);
     await page.getByRole('button', { name: /OCEAN 전체/ }).click();
-    await page.getByRole('button', { name: /Vessels GATED/ }).click();
-    assert.match(await page.locator('#oceanBody').innerText(), /UNAVAILABLE/);
-    assert.match(await page.locator('#oceanBody').innerText(), /가짜 마커 없음/);
+    await page.getByRole('button', { name: /Vessels FREE/ }).click();
+    assert.match(await page.locator('#oceanBody').innerText(), /Vessels · FREE/);
+    assert.equal(await page.getByRole('link', { name: /실시간 선박 위치 LIVE/ })
+      .getAttribute('href'), 'https://mtis.komsa.or.kr/stg/traffic/liveSea');
+    assert.equal(await page.getByRole('link', { name: /여객선 위치 · 운항 LIVE/ })
+      .getAttribute('target'), '_blank');
+    assert.doesNotMatch(await page.locator('#oceanBody').innerText(), /UNAVAILABLE|권리 승인 전/);
+    await page.screenshot({ path: `/private/tmp/ocean-vessel-${item.name}.png` });
 
     await page.getByRole('button', { name: /OCEAN 전체/ }).click();
     await page.getByRole('button', { name: /파고 큰 쪽 파도 평균/ }).click();

@@ -358,7 +358,7 @@ async function boot() {
   });
   layerBar.onAction('sat', () => satPanel.open());
   layerBar.onAction('ocean', () => oceanPanel.open());
-  /* 나가기 전에 — 서핑·낚시·해구·산·하늘을 한자리에 모았다 (ui-outdoor.js 머리말 참고).
+  /* 취미 — 바다·생물 관측·땅과 하늘을 한자리에 모았다 (ui-outdoor.js 머리말 참고).
      ⚠️ 옛 메뉴 항목(surf/mountain/sky)도 그대로 살려 둔다. 검색·코치마크·딥링크가
         그 이름으로 부르고 있어, 지우면 조용히 안 열린다. */
   layerBar.onAction('outdoor', () => outdoorPanel.open());
@@ -476,11 +476,15 @@ async function boot() {
      그건 다른 경로다. 실제로 바다거북이 그렇게 빠져서 **눌러도 아무 일이
      없었다.** `?.()` 가 오류까지 삼켜 콘솔에도 안 찍혔다.
      → 카드를 추가하면 **반드시 이 표에도 넣는다.** */
+  /* 수정(2026-08-15): OCEAN 독립 메뉴는 없앴다. 바다 세부 화면까지 이 표에서
+     직접 열어 같은 기능을 두 허브에 반복하지 않는다. */
   outdoorPanel.init(act => {
     const go = {
+      'ocean-layers': () => oceanPanel.open('layers'),
       surf: () => surfPanel.open(),
       fishing: () => fishPanel.open(),
       trench: openFeaturedDive,
+      vessel: () => oceanPanel.open('vessel'),
       para: () => paraPanel.open(),
       mountain: () => mountainPanel.open(),
       sky: () => skyPanel.open(),
@@ -518,6 +522,7 @@ async function boot() {
       return;
     }
     const go = {
+      hobby: () => outdoorPanel.open(),
       safety: () => koreaPanel.open(),
       surf: () => surfPanel.open(),
       fishing: () => fishPanel.open(),
@@ -823,7 +828,9 @@ function onPick(ev) {
      패널을 닫아도 마커는 남지만, 위험 polygon이나 특보 범위로 오해하지 않게
      지점 좌표만 보낸다. 클러스터는 위에서 확대로 소비하므로 제외다. */
   const decisionPoint = ground();
-  if (decisionPoint) {
+  /* 활동 패널은 빈 지구를 눌러 일반 장소를 고른 경우에만 연다.
+     부이·관측소·해구 같은 엔티티는 그 장비/관측의 상세 화면만 보여야 한다. */
+  if (decisionPoint && !picked?.id) {
     document.dispatchEvent(new CustomEvent('earthus:decision-point', {
       detail: { point: decisionPoint, pickedId: String(picked?.id?.id || '') || null },
     }));

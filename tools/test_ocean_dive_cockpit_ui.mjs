@@ -23,8 +23,17 @@ try {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`${base}?ocean=hub`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-    await page.locator('#outSheet.up').waitFor({ timeout: 30_000 });
-    await page.locator('#outSheet [data-out-act="trench"]').click();
+    await page.waitForFunction(() => (
+      document.querySelector('#outSheet.up') || document.querySelector('#oceanSheet.up')
+    ), { timeout: 30_000 });
+    const oceanEntry = await page.evaluate(() => (
+      document.querySelector('#outSheet.up') ? 'hobby' : 'ocean'
+    ));
+    if (oceanEntry === 'hobby') {
+      await page.locator('#outSheet [data-out-act="trench"]').click();
+    } else {
+      await page.locator('#oceanSheet [data-ocean-act="dive"]').click();
+    }
     await page.locator('#sceneRoot.active[data-stage="dive"]').waitFor({ timeout: 30_000 });
     await page.locator('#diveExperience').waitFor({ state: 'visible' });
     await page.locator('#diveEnglishTitle').filter({ hasText: 'MARIANA TRENCH' }).waitFor();

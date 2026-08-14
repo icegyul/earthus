@@ -25,7 +25,7 @@ import {
   consumeRemoteAuthorization,
 } from './space/remote-observatory.js';
 
-const RELEASE_REVISION = 'aetherus-device-qa-20260814-r1';
+const RELEASE_REVISION = 'aetherus-device-qa-20260814-r2';
 const REPORT_SCHEMA = 'aetherus.device-qa-report.v1';
 const CONSENT_KEY = 'aetherus.device-qa.local-consent.v1';
 const ARCHIVE_POINTER_KEY = 'aetherus.device-qa.archive-pointer.v1';
@@ -57,7 +57,7 @@ const report = {
     supabasePrincipalABRls: { status: 'BLOCKED', reason: 'TWO_AUTHENTICATED_PRODUCTION_PRINCIPALS_REQUIRED' },
     productionAiModel: { status: 'BLOCKED', reason: 'MODEL_CONTRACT_COST_AND_REAL_EVAL_NOT_APPROVED' },
     remoteObservatoryHil: { status: 'BLOCKED', reason: 'PHYSICAL_DOME_MOUNT_ESTOP_HIL_REQUIRED' },
-    publicRelease: { status: 'BLOCKED', reason: 'DEVICE_REPORT_CANARY_AND_ROLLBACK_REHEARSAL_REQUIRED' },
+    publicRelease: { status: 'BLOCKED', reason: 'COMPLETE_DEVICE_REPORT_AND_EXTERNAL_GATES_REQUIRED' },
   },
   releaseDecision: 'BLOCKED',
   limitations: [
@@ -79,6 +79,7 @@ let enduranceStartedAt = null;
 let enduranceDeadline = null;
 let enduranceHiddenCount = 0;
 let consentLifecycleVerified = false;
+const viewportHistory = [];
 
 function copyJson(value) {
   return JSON.parse(JSON.stringify(value));
@@ -149,6 +150,23 @@ function writeJsonStorage(key, value) {
 
 function removeStorage(key) {
   try { localStorage.removeItem(key); } catch (_) { /* storage may be denied */ }
+}
+
+function recordViewportState(trigger = 'INITIAL') {
+  const entry = {
+    trigger,
+    recordedAtUtc: utcNow(),
+    viewport: `${window.innerWidth}×${window.innerHeight}`,
+    orientationType: window.screen?.orientation?.type || null,
+    orientationAngle: Number(window.screen?.orientation?.angle ?? window.orientation ?? 0) || 0,
+  };
+  const previous = viewportHistory[viewportHistory.length - 1];
+  if (previous
+    && previous.viewport === entry.viewport
+    && previous.orientationType === entry.orientationType
+    && previous.orientationAngle === entry.orientationAngle) return;
+  viewportHistory.push(entry);
+  if (viewportHistory.length > 12) viewportHistory.shift();
 }
 
 async function runEnvironment() {
@@ -858,11 +876,19 @@ function tickEndurance() {
 
 async function startEndurance() {
   if (enduranceTimer) window.clearTimeout(enduranceTimer);
+  const startRaw = byId('batteryStart').value.trim();
+  if (!navigator.getBattery && startRaw === '') {
+    setCheck('endurance', 'BLOCKED', { reason: 'BATTERY_START_REQUIRED' });
+    byId('enduranceResult').textContent = 'iPhone에서는 시작 배터리 %를 먼저 입력해야 합니다.';
+    byId('batteryStart').focus();
+    return;
+  }
   enduranceStartedAt = Date.now();
   enduranceDeadline = enduranceStartedAt + 5 * 60 * 1000;
   enduranceHiddenCount = 0;
   byId('startEndurance').disabled = true;
   byId('finishEndurance').disabled = false;
+  byId('enduranceResult').textContent = '5분 동안 화면 상태와 숨김 횟수를 계측하고 있습니다.';
   setCheck('endurance', 'UNKNOWN', { state: 'RUNNING', startedAtUtc: utcNow(), plannedSeconds: 300 });
   if (navigator.getBattery) {
     try {
@@ -884,8 +910,10 @@ async function finishEndurance(automatic = false) {
       if (!byId('batteryEnd').value) byId('batteryEnd').value = String(Math.round(battery.level * 100));
     } catch (_) { /* manual entry remains authoritative */ }
   }
-  const start = Number(byId('batteryStart').value);
-  const end = Number(byId('batteryEnd').value);
+  const startRaw = byId('batteryStart').value.trim();
+  const endRaw = byId('batteryEnd').value.trim();
+  const start = startRaw === '' ? Number.NaN : Number(startRaw);
+  const end = endRaw === '' ? Number.NaN : Number(endRaw);
   const thermal = byId('thermalEnd').value;
   const batteryValid = Number.isFinite(start) && Number.isFinite(end)
     && start >= 0 && start <= 100 && end >= 0 && end <= 100;
@@ -905,6 +933,11 @@ async function finishEndurance(automatic = false) {
     boundedTimer: true,
   };
   byId('enduranceTimer').textContent = formatDuration(Math.max(0, 300 - durationSeconds));
+  byId('enduranceResult').textContent = pass
+    ? `5분 검사 PASS · 배터리 ${start}% → ${end}% · 발열 ${thermal}`
+    : thermal === 'HOT'
+      ? '발열이 뜨거움으로 기록되어 FAIL입니다.'
+      : '시작·종료 배터리와 종료 발열을 모두 기록해야 판정할 수 있습니다.';
   byId('startEndurance').disabled = false;
   byId('finishEndurance').disabled = true;
   enduranceStartedAt = null;
@@ -918,11 +951,23 @@ function evaluateManualChecks() {
     select.value,
   ]);
   const values = entries.map(([, value]) => value);
+  const issue = byId('manualIssue').value.trim();
+  const hasFailure = values.includes('FAIL');
   const status = values.includes('FAIL') ? 'FAIL'
     : values.every(value => value === 'PASS') ? 'PASS' : 'UNKNOWN';
+  const failureDescriptionProvided = !hasFailure || issue.length > 0;
+  byId('manualIssue').required = hasFailure;
+  byId('manualResult').textContent = hasFailure && !failureDescriptionProvided
+    ? 'FAIL 재현 순서와 보인 현상을 입력해야 원인을 수정할 수 있습니다.'
+    : status === 'PASS'
+      ? '수동 검수 6개 항목을 모두 PASS로 기록했습니다.'
+      : 'FAIL을 선택하면 재현 순서와 보인 현상을 함께 기록해야 합니다.';
   setCheck('manual', status, {
     attestations: Object.fromEntries(entries),
-    issue: byId('manualIssue').value.trim() || null,
+    issue: issue || null,
+    failureDescriptionProvided,
+    reason: hasFailure && !failureDescriptionProvided ? 'FAILURE_DESCRIPTION_REQUIRED' : null,
+    viewportHistory: copyJson(viewportHistory),
     attestedAtUtc: status === 'UNKNOWN' ? null : utcNow(),
   });
 }
@@ -954,8 +999,11 @@ function bindEvents() {
   byId('startEndurance').addEventListener('click', startEndurance);
   byId('finishEndurance').addEventListener('click', () => finishEndurance(false));
   byId('manualChecks').addEventListener('change', evaluateManualChecks);
-  byId('manualIssue').addEventListener('change', evaluateManualChecks);
+  byId('manualIssue').addEventListener('input', evaluateManualChecks);
   byId('exportReport').addEventListener('click', exportReport);
+  window.addEventListener('resize', () => recordViewportState('RESIZE'), { passive: true });
+  window.addEventListener('orientationchange', () => recordViewportState('ORIENTATION_CHANGE'), { passive: true });
+  window.screen?.orientation?.addEventListener?.('change', () => recordViewportState('SCREEN_ORIENTATION_CHANGE'));
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') {
       if (skyRuntime && !byId('stopSkyAr').disabled) stopSkyAr('DOCUMENT_HIDDEN');
@@ -970,6 +1018,7 @@ function bindEvents() {
 
 async function initialize() {
   bindEvents();
+  recordViewportState('INITIAL');
   renderSummary();
   renderEvidence('skyArEvidence', skyEvidenceRows());
   renderEvidence('mediaEvidence', [['상태', '저장 전']]);

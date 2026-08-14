@@ -149,11 +149,12 @@
       </div>
       <p>5분만 실행되는 유한 계측입니다. 배터리 API가 없는 iPhone은 시작·종료 배터리와 발열 상태를 사용자가 직접 기록합니다.</p>
       <div class="field-grid">
-        <label>시작 배터리 %<input id="batteryStart" type="number" min="0" max="100" inputmode="numeric"></label>
-        <label>종료 배터리 %<input id="batteryEnd" type="number" min="0" max="100" inputmode="numeric"></label>
+        <label>시작 배터리 %<input id="batteryStart" type="number" min="0" max="100" inputmode="numeric" required></label>
+        <label>종료 배터리 %<input id="batteryEnd" type="number" min="0" max="100" inputmode="numeric" required></label>
         <label>종료 발열<select id="thermalEnd"><option value="UNKNOWN">선택 전</option><option value="NORMAL">정상</option><option value="WARM">따뜻함</option><option value="HOT">뜨거움</option></select></label>
       </div>
       <p class="timer" id="enduranceTimer" aria-live="polite">05:00</p>
+      <p class="note" id="enduranceResult" aria-live="polite">시작 배터리를 입력한 뒤 검사를 시작하세요.</p>
       <div class="actions">
         <button class="button" id="startEndurance" type="button">5분 검사 시작</button>
         <button class="button" id="finishEndurance" type="button" disabled>지금 종료·판정</button>
@@ -176,6 +177,7 @@
       </div>
       <label class="issue-line" for="manualIssue">발견한 문제</label>
       <textarea id="manualIssue" rows="3" maxlength="1000" placeholder="FAIL 재현 순서와 보인 현상을 적으세요."></textarea>
+      <p class="note" id="manualResult" aria-live="polite">FAIL을 선택하면 재현 순서와 보인 현상을 함께 기록해야 합니다.</p>
     </section>
 
     <section class="qa-card wide gate-card" aria-labelledby="externalGatesHeading">
@@ -184,7 +186,7 @@
         <article><span class="status blocked">BLOCKED</span><h3>Supabase 사용자 A/B RLS</h3><p>migration·검증기는 준비되었지만 독립 계정 2개로 운영 DB 거절 증거가 필요합니다.</p></article>
         <article><span class="status blocked">BLOCKED</span><h3>운영 AI 모델</h3><p>모델 계약·비용·실제 평가 데이터 승인 전에는 외부 호출을 0으로 유지합니다.</p></article>
         <article><span class="status blocked">BLOCKED</span><h3>원격 관측소 HIL</h3><p>물리 돔·마운트·긴급정지 버튼 없이는 드라이버를 열지 않습니다.</p></article>
-        <article><span class="status blocked">BLOCKED</span><h3>공개 전환</h3><p>이 페이지의 실기기 보고서와 canary·rollback 리허설 후에만 메인 UI를 열 수 있습니다.</p></article>
+        <article><span class="status blocked">BLOCKED</span><h3>공개 전환</h3><p>canary·rollback은 PASS했습니다. 완전한 실기기 보고서와 나머지 외부 관문을 통과한 뒤에만 메인 UI를 열 수 있습니다.</p></article>
       </div>
     </section>
   </main>
@@ -192,6 +194,6 @@
   <footer class="qa-footer">
     <p>이 콘솔은 관측·예보·장비 성공을 약속하지 않습니다. 검증 시각과 기기 증거만 보존합니다.</p>
   </footer>
-  <script type="module" src="js/aetherus-device-qa.js?v=20260814-2"></script>
+  <script type="module" src="js/aetherus-device-qa.js?v=20260814-3"></script>
 </body>
 </html>

@@ -184,8 +184,8 @@ async function boot() {
     if (Number.isFinite(lat) && Number.isFinite(lon) && lat >= -90 && lat <= 90) {
       queueMicrotask(async () => {
         try {
-          await sceneMgr.to('earth', { stage: 'trench' });
-          await trenchGlobe.openAt(lat, lon);
+          await sceneMgr.to('ocean', { stage: 'dive' });
+          await trenchCards.openDiveAt(lat, lon, `${lat.toFixed(2)}, ${lon.toFixed(2)}`);
         } catch (error) {
           console.warn('[dive-link]', error.message);
         }
@@ -467,6 +467,10 @@ async function boot() {
   surfPanel.init();
   fishPanel.init();
   paraPanel.init();
+  const openFeaturedDive = async () => {
+    await sceneMgr.to('ocean', { stage: 'dive' });
+    await trenchCards.openFeaturedDive();
+  };
   /* ⚠️⚠️ **취미 카드는 layerBar 를 거치지 않는다.** 여기 이 표가 전부다.
      위쪽에 `layerBar.onAction('turtle', …)` 을 등록해 뒀다고 열리지 않는다 —
      그건 다른 경로다. 실제로 바다거북이 그렇게 빠져서 **눌러도 아무 일이
@@ -476,7 +480,7 @@ async function boot() {
     const go = {
       surf: () => surfPanel.open(),
       fishing: () => fishPanel.open(),
-      trench: () => sceneMgr.to('earth', { stage: 'trench' }),
+      trench: openFeaturedDive,
       para: () => paraPanel.open(),
       mountain: () => mountainPanel.open(),
       sky: () => skyPanel.open(),
@@ -517,7 +521,7 @@ async function boot() {
       safety: () => koreaPanel.open(),
       surf: () => surfPanel.open(),
       fishing: () => fishPanel.open(),
-      dive: () => sceneMgr.to('earth', { stage: 'trench' }),
+      dive: openFeaturedDive,
       turtle: async () => {
         turtleMod = (await import('./ui-turtle.js')).turtlePanel;
         turtleMod.open();

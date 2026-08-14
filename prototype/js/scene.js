@@ -78,7 +78,11 @@ export const sceneMgr = {
     // 지구 전용 로딩 토스트가 우주 사진 제목·썸네일 위를 덮지 않게 장면을 body에도 표시한다.
     document.body.classList.toggle('scene-space', next === 'space');
 
-    if (next !== 'space') {
+    // 해구 영역을 둘러보는 trench stage는 기존 지구본을 유지한다. 반면 dive stage는
+    // 수심 기둥·생물 사진·슬라이더가 있는 독립 심해 장면을 보여준다. 둘 다 ocean으로
+    // 뭉뚱그리면 DIVE 버튼을 눌러도 지구본만 남는 문제가 다시 생긴다.
+    const standaloneScene = next === 'space' || (next === 'ocean' && stage === 'dive');
+    if (!standaloneScene) {
       root?.classList.remove('active');
       root?.setAttribute('aria-hidden', 'true');
       if (root) { root.hidden = true; root.inert = true; }

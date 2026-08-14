@@ -17,15 +17,31 @@ export const trenchCards = {
   },
 
   async load() {
+    if (this.data) return this.data;
     try {
       const response = await fetch('/data/trenches.json', { cache: 'no-cache' });
       if (!response.ok) throw new Error(`TRENCHES_${response.status}`);
       this.data = await response.json();
       this.render();
+      return this.data;
     } catch (error) {
       console.warn('[trench-cards]', error.message);
       this.root.textContent = i18n.lang === 'ko' ? '해구 자료를 불러오지 못했습니다.' : 'Trench data is unavailable.';
+      return null;
     }
+  },
+
+  async openDiveAt(lat, lon, name) {
+    const { diveScene } = await import('./divescene.js');
+    await diveScene.open({ lat, lon, name });
+  },
+
+  async openFeaturedDive() {
+    const data = this.data || await this.load();
+    const item = data?.items?.[0];
+    if (!item) throw new Error('FEATURED_TRENCH_UNAVAILABLE');
+    const ko = i18n.lang === 'ko';
+    await this.openDiveAt(item.lat, item.lon, item.name[ko ? 'ko' : 'en']);
   },
 
   render() {

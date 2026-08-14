@@ -6,9 +6,10 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = file => readFile(path.join(root, file), 'utf8');
-const [html, main, hub, css, redirect, sw] = await Promise.all([
+const [html, main, hub, css, redirect, sw, scene, trenchCards, ui] = await Promise.all([
   read('prototype/index.html'), read('prototype/js/main.js'), read('prototype/js/ui-ocean.js'),
   read('prototype/css/app.css'), read('prototype/ocean.html'), read('prototype/sw.js'),
+  read('prototype/js/scene.js'), read('prototype/js/ocean/trenchcards.js'), read('prototype/js/ui.js'),
 ]);
 
 assert.match(html, /data-act="ocean"/);
@@ -28,6 +29,13 @@ for (const action of ['safety', 'surf', 'fishing', 'dive']) {
   assert.match(hub, new RegExp(`action: '${action}'`), `missing clickable My Ocean ${action} card`);
 }
 assert.match(main, /safety: \(\) => koreaPanel\.open\(\)/);
+assert.match(main, /dive: openFeaturedDive/);
+assert.match(main, /sceneMgr\.to\('ocean', \{ stage: 'dive' \}\)/);
+assert.match(scene, /next === 'ocean' && stage === 'dive'/);
+assert.match(trenchCards, /async openFeaturedDive\(\)/);
+assert.match(trenchCards, /await this\.openDiveAt\(item\.lat, item\.lon/);
+assert.match(ui, /sceneMgr\.to\('ocean', \{ stage: 'dive' \}\)/);
+assert.match(ui, /diveScene\.open\(\{ lat: m\.lat, lon: m\.lon, name \}\)/);
 assert.match(hub, /widgets\.map\(item => buttonCard\(item, ko\)\)/);
 assert.doesNotMatch(hub, /<article><span>\$\{name\}/);
 assert.match(hub, /Vessels · FREE/);

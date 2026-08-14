@@ -58,6 +58,41 @@ try {
     assert.equal(state.freeText, false, `${item.name} Ocean 홈에 삭제한 무료 안내 문구가 남았다`);
     assert.equal(state.homeTrust, false, `${item.name} Ocean 홈에 삭제한 해명 문단이 남았다`);
 
+    await page.getByRole('button', { name: /Dive · 심해 LIVE/ }).click();
+    await page.waitForSelector('#sceneRoot.active [data-scene-view="ocean"].current #diveExperience:not([hidden])');
+    await page.waitForFunction(() => {
+      const source = document.getElementById('diveSource')?.textContent || '';
+      return source.includes('GEBCO 2026') && !source.includes('읽는 중');
+    });
+    const diveState = await page.evaluate(() => {
+      const root = document.getElementById('sceneRoot');
+      const canvas = document.getElementById('diveCanvas');
+      const box = canvas.getBoundingClientRect();
+      const slider = document.getElementById('diveSlider');
+      slider.value = String(Math.min(1000, Number(slider.max)));
+      slider.dispatchEvent(new Event('input', { bubbles: true }));
+      return {
+        hidden: root.hidden,
+        inert: root.inert,
+        canvas: { width: box.width, height: box.height },
+        source: document.getElementById('diveSource').textContent,
+        title: document.getElementById('diveTitle').textContent,
+        readout: document.getElementById('diveReadout').textContent,
+      };
+    });
+    assert.equal(diveState.hidden, false);
+    assert.equal(diveState.inert, false);
+    assert.ok(diveState.canvas.width >= 240 && diveState.canvas.height >= 240,
+      `${item.name} dive canvas is not visible: ${JSON.stringify(diveState.canvas)}`);
+    assert.match(diveState.title, /마리아나 해구 · 챌린저 해연/);
+    assert.match(diveState.source, /해저 [\d,]+m · GEBCO 2026/);
+    assert.doesNotMatch(diveState.readout, /^0 m/);
+    await page.screenshot({ path: `/private/tmp/ocean-dive-${item.name}.png` });
+    await page.locator('[data-scene-view="ocean"] [data-scene-home]').click();
+    await page.waitForFunction(() => document.getElementById('sceneRoot').hidden);
+
+    await page.locator('#menuTab').click();
+    await page.locator('#menuMain [data-act="ocean"]').click();
     await page.getByRole('button', { name: /My Ocean FREE/ }).click();
     await page.waitForSelector('#oceanBody .ocean-widget-grid');
     assert.equal(await page.locator('#oceanBody .ocean-widget-grid > button').count(), 6);

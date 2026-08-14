@@ -43,6 +43,8 @@ try {
         accessBanner: !!sheet.querySelector('#oceanBody > .ocean-access'),
         freeText: sheet.textContent.includes('지금 모든 사용 가능 기능 무료')
           || sheet.textContent.includes('결제·구독 화면 없음'),
+        homeTrust: !!sheet.querySelector('#oceanBody > .ocean-trust')
+          || sheet.textContent.includes('출조·입수 가능 여부를 예보하지 않습니다'),
       };
     });
     assert.ok(state.overflow <= 0, `${item.name} horizontal overflow ${state.overflow}`);
@@ -54,6 +56,7 @@ try {
     assert.equal(state.menuEntry, true);
     assert.equal(state.accessBanner, false, `${item.name} Ocean 홈에 무료 안내 박스가 남았다`);
     assert.equal(state.freeText, false, `${item.name} Ocean 홈에 삭제한 무료 안내 문구가 남았다`);
+    assert.equal(state.homeTrust, false, `${item.name} Ocean 홈에 삭제한 해명 문단이 남았다`);
 
     await page.getByRole('button', { name: /My Ocean FREE/ }).click();
     await page.waitForSelector('#oceanBody .ocean-widget-grid');

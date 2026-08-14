@@ -114,10 +114,7 @@ export const oceanPanel = {
         <header><div><small>VERTICALS</small><h4>${ko ? '무엇을 하러 왔나요' : 'What are you here to do?'}</h4></div>
           <p>${ko ? '같은 지구본과 같은 출처 계약을 씁니다.' : 'All modules share the same globe and source contract.'}</p></header>
         <div class="ocean-module-grid">${MODULES.map(item => buttonCard(item, ko)).join('')}</div>
-      </section>
-      <p class="ocean-trust">${ko
-        ? 'Earthus는 출조·입수 가능 여부를 예보하지 않습니다. 공식 통제 자료가 없으면 “통제 없음”이 아니라 “확인되지 않음”으로 표시합니다.'
-        : 'Earthus does not forecast whether departure or water entry is safe. Missing official closure data is shown as “unverified,” never “no closure.”'}</p>`;
+      </section>`;
   },
 
   lifeView(ko) {

@@ -9,9 +9,9 @@ const read = file => readFile(path.join(root, file), 'utf8');
 const [scene, css, assetReadme, backgroundStat, amphipodStat] = await Promise.all([
   read('prototype/js/ocean/divescene.js'),
   read('prototype/css/ocean-dive.css'),
-  read('prototype/ocean/scenes/README.md'),
-  stat(path.join(root, 'prototype/ocean/scenes/mariana-trench-simulator.jpg')),
-  stat(path.join(root, 'prototype/ocean/scenes/hadal-amphipod-illustration.jpg')),
+  read('prototype/img/ocean-dive-assets.md'),
+  stat(path.join(root, 'prototype/img/ocean-mariana-trench-simulator.jpg')),
+  stat(path.join(root, 'prototype/img/ocean-hadal-amphipod-illustration.jpg')),
 ]);
 
 assert.match(scene, /MARIANA TRENCH/);
@@ -28,7 +28,7 @@ assert.match(scene, /requestAnimationFrame\(tick\)/);
 assert.match(scene, /cancelAnimationFrame\(this\._raf\)/);
 assert.doesNotMatch(scene, /Math\.random|setInterval|clampToGround/);
 
-assert.match(css, /mariana-trench-simulator\.jpg/);
+assert.match(css, /img\/ocean-mariana-trench-simulator\.jpg/);
 assert.match(css, /min-height:44px/);
 assert.match(css, /env\(safe-area-inset-bottom\)/);
 assert.match(css, /@media\(max-width:760px\)/);

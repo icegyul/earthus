@@ -10,7 +10,7 @@ import { oceanDepth } from './depth.js';
 import { obisSummary } from './obis.js';
 
 const STYLE_ID = 'earthusOceanDiveStyles';
-const STYLE_URL = '/css/ocean-dive.css?v=20260815-cockpit2';
+const STYLE_URL = '/css/ocean-dive.css?v=20260815-cockpit3';
 const DEFAULT_DEPTH_M = 6420;
 const SPEEDS = [1, 2, 4];
 const EVEREST = {
@@ -25,7 +25,7 @@ const HADAL_SPECIMEN = {
   depthKind: 'literature-range',
   depthMin: 6800,
   depthMax: 11000,
-  thumb: '/ocean/scenes/hadal-amphipod-illustration.jpg',
+  thumb: '/img/ocean-hadal-amphipod-illustration.jpg',
   illustration: true,
   credit: 'Earthus 시각화 · 관측 사진 아님',
   license: 'Earthus project asset',
@@ -134,7 +134,7 @@ export const diveScene = {
             <button type="button" data-specimen-next aria-label="다음 생물">›</button>
           </div>
         </header>
-        <div class="od-specimen-media"><img id="diveSpecimenImage" src="/ocean/scenes/hadal-amphipod-illustration.jpg" alt="초심해 단각류 시각화"></div>
+        <div class="od-specimen-media"><img id="diveSpecimenImage" src="/img/ocean-hadal-amphipod-illustration.jpg" alt="초심해 단각류 시각화"></div>
         <div class="od-specimen-copy">
           <h3 id="diveSpecimenName">초심해 단각류</h3>
           <em id="diveSpecimenSci">Hirondellea gigas</em>

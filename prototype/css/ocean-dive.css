@@ -26,7 +26,7 @@ body.earthus-dive-open #hudShow{display:none!important}
 .od-dive a{color:var(--od-cyan-soft)}
 .od-sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 
-.od-dive-bg{position:absolute;z-index:-3;inset:-2%;background:url('/ocean/scenes/mariana-trench-simulator.jpg') center/cover no-repeat;transform:scale(calc(1.015 + var(--od-depth)*.018));filter:saturate(calc(.82 + var(--od-depth)*.2)) brightness(calc(.82 - var(--od-depth)*.12));transition:transform .5s ease,filter .5s ease}
+.od-dive-bg{position:absolute;z-index:-3;inset:-2%;background:url('/img/ocean-mariana-trench-simulator.jpg') center/cover no-repeat;transform:scale(calc(1.015 + var(--od-depth)*.018));filter:saturate(calc(.82 + var(--od-depth)*.2)) brightness(calc(.82 - var(--od-depth)*.12));transition:transform .5s ease,filter .5s ease}
 .od-dive-shade{position:absolute;z-index:-2;inset:0;background:linear-gradient(180deg,rgba(0,5,10,.76) 0,rgba(1,8,13,.1) 18%,rgba(1,7,12,.08) 62%,rgba(0,4,8,.76) 100%),linear-gradient(90deg,rgba(0,4,8,.62),transparent 27%,transparent 68%,rgba(0,4,8,.62));pointer-events:none}
 .od-dive-grain{position:absolute;z-index:-1;inset:0;opacity:.16;pointer-events:none;background-image:radial-gradient(circle at 18% 24%,rgba(151,220,244,.35) 0 1px,transparent 1.5px),radial-gradient(circle at 73% 62%,rgba(151,220,244,.2) 0 1px,transparent 1.5px);background-size:83px 97px,117px 131px}
 

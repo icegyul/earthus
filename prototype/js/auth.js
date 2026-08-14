@@ -151,7 +151,7 @@ export const auth = {
   },
 
   /** 동의 기록 저장 — 언제/무엇에 동의했는지 남겨야 분쟁 시 근거가 된다 */
-  async saveConsent({ tos, privacy, over14, marketing, location }) {
+  async saveConsent({ tos, privacy, over14, marketing, location, usage }) {
     /* ⚠️⚠️ **성공/실패를 반드시 돌려준다.** 예전에는 오류를 경고만 찍고
        조용히 성공처럼 끝냈다 — 서버에 동의 기록이 없는데 사용자에게는
        "가입 완료"라고 말하고 있었다. 분쟁 때 근거가 되는 기록이라 이건
@@ -164,13 +164,23 @@ export const auth = {
       over_14: !!over14,
       marketing_agreed: !!marketing,
       location_agreed: !!location,
-      tos_version: CONFIG.LEGAL_VERSION,
-      privacy_version: CONFIG.LEGAL_VERSION,
+      usage_agreed: !!usage,
+      tos_version: CONFIG.TERMS_VERSION || CONFIG.LEGAL_VERSION,
+      privacy_version: CONFIG.PRIVACY_VERSION || CONFIG.LEGAL_VERSION,
       agreed_at: new Date().toISOString(),
     });
     if (error) {
       console.warn('[auth] consent', error.message);
       return { ok: false, reason: error.message };
+    }
+    /* 이용행태 동의를 끄면 브라우저 queue만 멈추는 것으로는 부족하다.
+       방금 저장한 최신 철회 이력을 DB가 확인한 뒤 기존 event를 실제 삭제한다. */
+    if (!usage) {
+      const { error: withdrawError } = await this.client.rpc('earthus_withdraw_usage_consent');
+      if (withdrawError) {
+        console.warn('[auth] usage consent withdrawal', withdrawError.message);
+        return { ok: false, reason: 'analytics-withdraw-failed' };
+      }
     }
     return { ok: true };
   },
@@ -190,10 +200,14 @@ export const auth = {
   /** 개인정보 열람권 — 내 데이터 내려받기 (개인정보보호법 제35조) */
   async exportMyData() {
     if (!this.client || !this.user) throw new Error('NOT_SIGNED_IN');
-    const [profile, consents] = await Promise.all([
+    const [profile, consents, analytics] = await Promise.all([
       this.client.from('profiles').select('*').eq('id', this.user.id),
       this.client.from('consents').select('*').eq('user_id', this.user.id),
+      this.client.rpc('earthus_export_my_analytics'),
     ]);
+    if (profile.error) throw profile.error;
+    if (consents.error) throw consents.error;
+    if (analytics.error) throw analytics.error;
     return {
       exported_at: new Date().toISOString(),
       account: {
@@ -204,6 +218,7 @@ export const auth = {
       },
       profile: profile.data ?? [],
       consents: consents.data ?? [],
+      usage_analytics: analytics.data ?? [],
     };
   },
 
@@ -271,7 +286,7 @@ export const waitlist = {
     const { error } = await auth.client.from('waitlist').insert({
       email: clean,
       marketing_agreed: !!marketing,
-      privacy_version: CONFIG.LEGAL_VERSION,
+      privacy_version: CONFIG.PRIVACY_VERSION || CONFIG.LEGAL_VERSION,
       created_at: new Date().toISOString(),
     });
     if (error) {
@@ -322,7 +337,7 @@ export const interest = {
     const { error } = await auth.client.from('service_interest').insert({
       service, email: clean,
       user_id: auth.user?.id || null,
-      privacy_version: CONFIG.LEGAL_VERSION,
+      privacy_version: CONFIG.PRIVACY_VERSION || CONFIG.LEGAL_VERSION,
       created_at: new Date().toISOString(),
     });
     if (error) {

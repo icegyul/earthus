@@ -17,6 +17,10 @@
   Evidence 지점에서 source 표시·overflow·console을 확인했다.
 - NOAA/NCEP GFS 모델분석 TPW 수증기 통로는 `TPW_READY=true`로 공개됐다.
 - 판매 `SALES_OPEN`, 공개 Decision, 예약 실행, SNS 자동 게시는 닫혀 있다.
+- 선택 이용행태는 2026-08-14 공고·2026-08-21 시행이다. 그 전에는 브라우저와 DB가 수집을
+  차단한다. 시행 뒤 로그인·로컬 선택동의·최신 서버동의가 모두 맞을 때 허용목록 event만
+  저장한다. FORCE RLS, 익명 401, 365일 만료, 철회 삭제, 본인 export와 session 주체 A/B
+  rollback 검증이 운영에서 통과했다.
 
 ## Shadow
 
@@ -46,7 +50,7 @@ Shadow의 높은 점수·합성 결과·replay 통과는 공개 추천이나 운
 - 기상청 공식 특보 polygon과 authoritative 위치 매핑(공식 414개 계층은 수집 완료)
 - PR-01/02 schedule·retention·비용·dual-read·canary·reader 전환
 - CloudWatch quota·비용·DLQ·alarm·log retention·target 전수(공개 출력 health는 운영 완료)
-- Supabase remote migration checksum, RLS/FORCE RLS, tenant A/B 격리
+- Supabase 기존 전체 relation의 policy/function ACL·private Storage와 실제 OAuth 2계정 UI A/B
 - Safari·구형 iPhone 장시간 발열·배터리, VoiceOver/스크린리더
 - Visual의 Safari·지원 최저/최신 iPhone·저사양 Android·VoiceOver·열/배터리 실기기 표
 - 활동곡선 도메인 승인, 실제 사용자 preference 저장·철회·삭제

@@ -85,6 +85,7 @@ create table if not exists public.consents (
   over_14          boolean not null,            -- 필수 (만 14세 이상)
   marketing_agreed boolean not null default false,  -- 선택
   location_agreed  boolean not null default false,  -- 선택
+  usage_agreed     boolean not null default false,  -- 선택 (이용 행태 분석)
   tos_version      text,
   privacy_version  text,
   agreed_at        timestamptz not null default now()
@@ -97,6 +98,9 @@ create policy "consents_select_own" on public.consents
 create policy "consents_insert_own" on public.consents
   for insert with check (auth.uid() = user_id);
 -- update/delete 정책 없음 = 아무도 못 고치고 못 지운다 (이력 보존)
+
+-- 선택 이용행태 분석의 event table·RLS·허용목록 trigger·철회 삭제·내보내기는
+-- migrations/20260814193000_earthus_usage_analytics.sql 이 정본이다.
 
 
 -- ═══════════════════════════════════════════════════════════

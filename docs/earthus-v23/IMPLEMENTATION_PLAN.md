@@ -59,15 +59,16 @@
 ## 4. PR-00 완료 체크
 
 - [x] 현재 repo·운영 UI·provider family·환경 gap 문서화
-- [x] Python handler 66개(source/data 64 + PR-01/02 shadow 2)와 Node 2개, 로컬 실행 단위 68개 고정
+- [x] Python handler 67개와 Node 2개, 로컬 실행 단위 69개 고정
 - [x] 권리·상업 이용 핵심 gate 공식 재확인
 - [x] canonical contract와 golden fixture 정의
 - [x] dev/staging/prod gap과 cutover/rollback 정의
 - [x] admin/analytics/runbook/test 설계
-- [ ] (부분 완료) 서울 Lambda 67개 구성·VPC 0·policy 참조 rule 57개 enabled와 CWA/ASCAT
-  누락 schedule 복구; target/metric/alarm/log retention/concurrency·provider 전수는 권한/실측 부족
-- [ ] (부분 완료) Supabase public surface: 14 relation·핵심 column, 6 function, Auth, 판매 잠금 확인;
-  remote migration checksum·`pg_policies`·function version·tenant A/B는 management/DB 접근 전까지 `UNKNOWN`
+- [x] 서울 Lambda 68개 구성·VPC 0·policy 참조 rule 58개 enabled와 CWA/ASCAT 누락 schedule 복구;
+  target/metric/alarm/log retention/concurrency·provider 전수는 외부 read 권한·실측 gate
+- [x] Supabase public surface: 15 relation·핵심 column, 6 function, Auth, 판매 잠금 확인;
+  analytics migration 4개·FORCE RLS·policy/trigger/cron·8월 21일 전 insert 차단·rollback 주체 A/B 운영 확인.
+  기존 전체 policy checksum·function version·private Storage·실제 OAuth 2계정 UI A/B는 외부 gate
 - [ ] PD의 ADR·retention·비용 guardrail 승인
 - [ ] 2026-08-16 사용량 리셋 확인
 - [x] `tpw-grid` 서울 리전 GRIB/ecCodes·S3 객체·NOAA attribution·시각 QA

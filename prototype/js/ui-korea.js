@@ -6,7 +6,7 @@
 import { i18n } from './i18n.js';
 import { API } from './config.js';
 import { myLocation } from './mylocation.js';
-import { get, nearest, inKorea, normalFor, feelsLike } from './korea.js?v=20260814-n5';
+import { get, nearest, inKorea, normalFor, feelsLike } from './korea.js';
 import { condText } from './kma-fcst.js';
 import { evidenceTimeline, forecastHighlights, nearestForecastHour, parseKmaTime, parseKmaUtcTime, upperAirSummary, windProfileSummary } from './kma-live-metrics.js?v=20260814-n5';
 import { store } from './store.js';

@@ -7,13 +7,13 @@
 | 자원 | local/dev | staging | production | 현재 gap |
 |---|---|---|---|---|
 | 정적 앱 | `prototype/` 직접 실행 | 별도 자원 확인 안 됨 | S3 `earthus-cache-kr/app/` + CloudFront | staging 없음 |
-| Lambda | 로컬 68개 실행 단위/fixture | 별도 계정·함수 확인 안 됨 | 서울 67개, x86_64, VPC 0, Active/Successful 67 | target/metric/alarm/log retention/concurrency 읽기 권한 부재 |
+| Lambda | 로컬 69개 실행 단위/fixture | 별도 계정·함수 확인 안 됨 | 서울 68개, x86_64, VPC 0, Active/Successful 68 | target/metric/alarm/log retention/concurrency 읽기 권한 부재 |
 | 데이터 버킷 | fixture/로컬 파일 | 별도 버킷 확인 안 됨 | `earthus-cache-kr`, `us-east-2` | Lambda↔bucket cross-region 비용 |
-| Supabase | 로컬 SQL | 별도 project 확인 안 됨 | 도쿄 project public surface·14 relation·6 function 확인 | migration/policy/version·tenant A/B 읽기 접근 부재 |
+| Supabase | 로컬 SQL·analytics 계약 시험 | 별도 project 확인 안 됨 | 도쿄 project public surface·15 relation·6 function; analytics 4 migration/RLS 확인 | 기존 전체 policy/version·실제 OAuth 2계정 UI A/B는 외부 gate |
 | 설정 | `config.local.js` gitignore | 미정 | 같은 파일의 운영값 | 환경별 생성/검증 manifest 없음 |
 | 비밀 | 로컬 사용자 보관 | 미정 | AWS env/SSM, Supabase secrets | secretRef inventory 없음 |
 | callback | localhost 후보 | 미정 | earthus.net | OAuth/결제 환경 분리 미확인 |
-| analytics | 수집 없음 | 수집 없음 | 수집 없음 | consent UI와 event pipeline 분리 |
+| analytics | 허용목록 계약·금지값 시험 | 별도 자원 없음 | 8월 21일 이후 로그인+선택동의+최신 서버동의 때만 수집 | 시행 전·비동의·비로그인 0, 365일·철회 삭제·내보내기 |
 
 ## 2. 목표 환경 계약
 
@@ -62,7 +62,7 @@ AWS 공식 문서에 따르면 VPC에 연결한 Lambda는 private subnet→NAT/e
 
 근거: <https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc-internet.html>
 
-현재 67개 운영 Lambda는 모두 VPC 미연결이라 private subnet/NAT 체크 대상은 아니다.
+현재 68개 운영 Lambda는 모두 VPC 미연결이라 private subnet/NAT 체크 대상은 아니다.
 PR-00A/01/02와 CWA/ASCAT 일부 provider는 서울 함수에서 호출했지만, 전체 provider의
 DNS/TLS/error body/429/quota/비용 전수 검사는 `PENDING`이다. 근거는
 `AWS_PRODUCTION_INVENTORY.md`다.

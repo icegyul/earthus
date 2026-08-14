@@ -21,12 +21,12 @@ const EXPECTED_ORIGIN = 'https://earthus.net';
 const KNOWN_RELATIONS = [
   'profiles', 'consents', 'waitlist', 'feature_requests', 'reports',
   'service_interest', 'plans', 'orders', 'push_subscriptions', 'alert_spots',
-  'alert_sent', 'admins', 'member_invites', 'member_access_audit',
+  'alert_sent', 'admins', 'member_invites', 'member_access_audit', 'analytics_events',
 ];
 
 const RELATION_COLUMNS = {
   profiles: 'id,email,provider,display_name,tier,founding_member,subscription_id,subscription_ends,manual_access_until,manual_access_kind,manual_access_reason,created_at,updated_at',
-  consents: 'id,user_id,tos_agreed,privacy_agreed,over_14,marketing_agreed,location_agreed,tos_version,privacy_version,agreed_at',
+  consents: 'id,user_id,tos_agreed,privacy_agreed,over_14,marketing_agreed,location_agreed,usage_agreed,tos_version,privacy_version,agreed_at',
   waitlist: 'id,email,marketing_agreed,privacy_version,created_at',
   feature_requests: 'id,body,lang,status,votes,hidden,user_id,created_at',
   reports: 'id,target_type,target_id,reason,user_id,created_at',
@@ -39,7 +39,9 @@ const RELATION_COLUMNS = {
   admins: 'id,note,created_at',
   member_invites: 'id,email,kind,reason,starts_at,ends_at,created_by,claimed_by,claimed_at,revoked_by,revoked_at,created_at',
   member_access_audit: 'id,actor_id,target_user_id,invite_id,action,detail,created_at',
+  analytics_events: 'event_id,user_id,event_name,event_version,occurred_at,session_pseudonym,consent_version,privacy_version,catalog_version,retention_version,surface,properties,created_at,expires_at',
 };
+const ANON_DENIED_RELATIONS = new Set(['analytics_events']);
 
 const KNOWN_FUNCTIONS = [
   'checkout', 'payment-confirm', 'payment-refund', 'push-tick',
@@ -153,6 +155,19 @@ async function audit() {
       headers: publicHeaders,
     });
     const raw = await bodyText(response);
+    if (ANON_DENIED_RELATIONS.has(relation)) {
+      if (![401, 403].includes(response.status)) {
+        fail(`${relation} anonymous access unexpectedly returned ${response.status}`);
+      }
+      relations.push({
+        relation,
+        status: response.status,
+        expectedColumnCount: columns.split(',').length,
+        anonymousVisibleCount: 0,
+        boundary: 'TABLE_PRIVILEGE_DENIED',
+      });
+      continue;
+    }
     if (![200, 206].includes(response.status)) {
       fail(`${relation} public boundary returned ${response.status}: ${JSON.stringify(safeErrorBody(raw))}`);
     }

@@ -24,6 +24,7 @@ import { auth } from './auth.js';
 import { CONFIG } from './config.local.js';   // ⚠️ config.js 가 아니다 — CONFIG 는 여기 있다
 import { initAccount, loginSheet, consentSheet, accountSheet,
          legalView, waitlistUI } from './ui-account.js';
+import { analytics } from './analytics.js';
 import { renderChangelog } from './changelog.js';
 import { satPanel } from './ui-sat.js';
 // 별보기 근거 베타는 서비스워커의 이전 Sky 패널 캐시를 재사용하면 공개 화면에
@@ -428,6 +429,7 @@ async function boot() {
 
   await chrome.init();
   await initAccount();
+  await analytics.init();
   satPanel.init();
   skyPanel.init();
   await flightPanel.init();

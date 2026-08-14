@@ -1,16 +1,18 @@
 # ANALYTICS EVENT CATALOG — EARTHUS v2.3
 
-> 상태: **DESIGN ONLY · COLLECTION DISABLED**
-> 현재 `cUsage` 동의 UI는 있지만 event emitter/수집 backend는 확인되지 않았다.
+> 상태: **IMPLEMENTED · CONSENT-GATED** (2026-08-14)
+> 동의하지 않은 방문자와 비로그인 방문자는 network event가 0이다. 운영 DB migration,
+> FORCE RLS·익명 거절·rollback 주체 A/B를 먼저 통과했고 그 뒤 정적 앱을 공개한다.
+> 방침은 2026-08-14 공고·2026-08-21 시행이며, 시행 전에는 브라우저와 DB가 수집을 막는다.
 
 ## 1. 수집 선행조건
 
 - 이용 행태 동의가 명시적으로 켜져 있음
-- catalogVersion·consentVersion·retentionVersion 승인
+- catalogVersion·consentVersion·retentionVersion 고정
 - delete/export 경로와 철회 후 수집 중단 시험
 - 정밀 위치·자유문구·건강/민감 상태 금지
-- staging synthetic event로 schema 검증
-- PD 승인 전 production endpoint 없음
+- 브라우저 allowlist와 DB trigger가 동일 event/property/value 형식만 허용
+- production DB migration·RLS 적용 후에만 emitter가 동작
 
 ## 2. 공통 schema
 
@@ -21,7 +23,7 @@
   "eventVersion": 1,
   "occurredAt": "2026-08-12T00:00:00Z",
   "sessionPseudonym": "rotating-id",
-  "userPseudonym": null,
+  "userId": "authenticated auth.uid()",
   "consentVersion": "...",
   "catalogVersion": "earthus.analytics.v1",
   "surface": "earth",
@@ -29,7 +31,7 @@
 }
 ```
 
-## 3. v1 후보 event
+## 3. v1 운영 event
 
 | event | 허용 properties | 금지 |
 |---|---|---|
@@ -56,15 +58,14 @@ rawProviderPayload, preciseCameraState, sensitiveSpeciesCoordinate
 
 필요한 분석은 bucket/enum으로 설계하고 원문을 수집하지 않는다.
 
-## 5. 보존 제안
+## 5. 보존·철회
 
-아래 값은 현재 운영 정책이 아니라 승인 대기 제안이다.
-
-- raw consented event: 30일
-- pseudonymous aggregate: 최대 13개월
-- experiment assignment: 실험 종료+30일
-- delete request: active store와 aggregate 재식별 가능 키 제거
-- 최소 집계 인원 미만 segment: 보고하지 않음
+- 원 event: 365일. DB가 `expires_at`을 강제하고 매일 KST 00:37 물리 삭제한다.
+- 철회: 최신 서버 동의가 `usage_agreed=false`임을 RPC가 확인하고 본인 event를 즉시 삭제한다.
+- 내보내기: 계정 화면의 기존 `내 데이터 내려받기` JSON에 본인 event를 포함한다.
+- 동의 전·로그아웃·동의 버전 불일치: emitter OFF, 메모리 queue 즉시 폐기.
+- 좌표·자유문구·연락처·토큰·provider 원문: 브라우저와 DB에서 모두 거절.
+- pseudonymous aggregate와 실험 assignment 저장소는 만들지 않았다.
 
 ## 6. 실험 금지 surface
 
@@ -86,4 +87,20 @@ rawProviderPayload, preciseCameraState, sensitiveSpeciesCoordinate
 2. 동의 후 catalog event만 전송
 3. 철회 즉시 emitter off와 queue 폐기
 4. 다른 기기/세션의 consent version 불일치 시 수집 중단
-5. delete/export 결과와 audit receipt 제공
+5. 본인 event delete/export 결과 확인
+
+## 8. 구현 정본
+
+- 브라우저 계약: `prototype/js/analytics-contract.js`
+- consent gate·emitter: `prototype/js/analytics.js`
+- 동의 저장·철회·내보내기: `prototype/js/auth.js`, `prototype/js/ui-account.js`
+- DB/RLS/trigger/retention: `prototype/supabase/migrations/20260814193000_earthus_usage_analytics.sql`
+- 값 수준 방어·방침 전환: `20260814194500_earthus_usage_analytics_value_guard.sql`,
+  `20260814200000_earthus_privacy_version_20260814.sql`,
+  `20260814201500_earthus_privacy_effective_20260821.sql`
+- 정적 계약 시험: `tools/test_usage_analytics.mjs`
+
+운영 프로젝트의 auth 사용자가 현재 1명이어서 두 번째 OAuth 사용자 UI A/B는 외부 계정
+게이트다. 대신 기존 사용자 A와 DB session 전용 별도 JWT 주체 B로 허용 insert·교차 select/
+insert 차단·금지 필드·철회 삭제를 한 transaction 안에서 검증하고 rollback해 운영 행은
+변경하지 않았다. 실제 OAuth 2계정 UI A/B 전에는 분석 결과를 제품 의사결정 근거로 사용하지 않는다.

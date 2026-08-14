@@ -19,3 +19,15 @@ select cron.schedule(
   '17 15 * * *',
   $cron$select public.expire_subscriptions();$cron$
 );
+
+-- 선택 이용행태 원 event는 보존정책(365일)을 넘기지 않는다.
+-- migration에도 같은 idempotent 등록문이 있어 신규·기존 프로젝트가 동일해진다.
+select cron.unschedule(jobid)
+  from cron.job
+ where jobname = 'earthus-purge-expired-analytics';
+
+select cron.schedule(
+  'earthus-purge-expired-analytics',
+  '37 15 * * *',
+  $cron$delete from public.analytics_events where expires_at <= now();$cron$
+);

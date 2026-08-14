@@ -2,7 +2,8 @@
 
 > 고정일: 2026-08-14 KST
 > 목적: 다음 사용량 리셋 직후 재조사 없이 가장 급한 운영 기반부터 이어서 개발
-> 상태: N1 운영·N2 계층·N3 dual-read·N4 대표 화면·N5 판독 완료, N6~N7 shadow, 외부 gate 대기
+> 상태: 코드 제어 범위 종료, N1 운영·N2 계층·N3 dual-read·N4 대표 화면·N5 판독 완료,
+> N6~N7 shadow, 선택 이용행태 8월 21일 시행 대기, 외부 gate 대기
 
 ## 읽는 순서
 
@@ -23,7 +24,7 @@
 
 ## 다음 시작 한 줄
 
-> HANDOVER와 `RELEASE-2026-08-14-N1-N7-CLOSEOUT.md`를 읽고 운영 상태를 재확인하라.
+> HANDOVER와 `FINAL-CLOSEOUT-2026-08-14.md`를 읽고 운영 상태를 재확인하라.
 > 다음 코딩은 외부 gate가 실제로 열린 항목만 시작한다. AETHERUS 별도 변경을 건드리거나
 > 안전·판매·예약·SNS flag를 열지 마라.
 
@@ -42,7 +43,7 @@
 Visual 종료 결과는
 [`../earthus-visual-engineering-next/PR01-08-CLOSEOUT.md`](../earthus-visual-engineering-next/PR01-08-CLOSEOUT.md)에 있다.
 전체 종료 판정은
-[`../earthus-v23/RELEASE-2026-08-14-N1-N7-CLOSEOUT.md`](../earthus-v23/RELEASE-2026-08-14-N1-N7-CLOSEOUT.md)다.
+[`../earthus-v23/FINAL-CLOSEOUT-2026-08-14.md`](../earthus-v23/FINAL-CLOSEOUT-2026-08-14.md)다.
 
 ## 완료와 미완료를 부르는 법
 

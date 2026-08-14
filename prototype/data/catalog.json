@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "generated": "2026-08-05T18:57:00Z",
+ "generated": "2026-08-14T00:04:00Z",
  "note": {
   "ko": "earthus 가 쓰는 자료의 목록이다. 사람(보고서 '자료와 방법'), 파이프라인(access 로 실제 수집), 챗 라우터(keywords 로 질문 연결)가 모두 이 파일 하나를 쓴다. 인용문은 doi.org 서지정보에서 생성하며, GVP처럼 DOI 메타데이터가 현재 판과 다를 때는 기관이 직접 제시한 인용문을 쓴다. 라이선스가 'UNVERIFIED' 인 항목은 공개 배포 전에 반드시 확인해야 한다. 'WIKIMEDIA-PER-FILE' 은 파일별 조건을 각각 표시해야 한다.",
   "en": "The list of sources earthus uses. One file serves humans (the report's Data and Methods section), pipelines (fetching via access), and the chat router (matching questions via keywords). Citations use doi.org metadata, except when an agency's current official citation supersedes stale DOI metadata. Entries marked 'UNVERIFIED' must be checked before any public redistribution. 'WIKIMEDIA-PER-FILE' requires displaying each file's own terms."
@@ -27,7 +27,7 @@
   "OWN": 4,
   "A": 5,
   "B": 3,
-  "C": 17
+  "C": 18
  },
  "datasets": [
   {

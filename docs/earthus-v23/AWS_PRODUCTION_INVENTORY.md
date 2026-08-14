@@ -1,6 +1,6 @@
 # AWS PRODUCTION INVENTORY — EARTHUS v2.3
 
-> 실측 시각: 2026-08-12 22:34~22:36 KST
+> 최초 실측: 2026-08-12 22:34~22:36 KST · 재감사: 2026-08-14 09:09 KST
 >
 > 범위: AWS `ap-northeast-2` Lambda/EventBridge와 `us-east-2` 자료 객체
 >
@@ -8,12 +8,12 @@
 
 ## 1. 결론
 
-- 로컬 실행 단위는 **68개**다. Python `handler.py` 66개와 Node `index.mjs` 2개다.
-- 서울 리전에는 **67개**가 배포돼 있다. 로컬 전용은 `news-brief` 하나이고 운영에만 있는
+- 로컬 실행 단위는 **69개**다. Python `handler.py` 67개와 Node `index.mjs` 2개다.
+- 서울 리전에는 **68개**가 배포돼 있다. 로컬 전용은 `news-brief` 하나이고 운영에만 있는
   함수는 없다. `news-brief`는 AI key·자료 근거·권리·비용·출력 검수 전에는 배포하지 않는다.
-- 67개 모두 `Active`이며 마지막 코드/설정 갱신 상태는 `Successful`이다.
-- Lambda resource policy가 가리키는 EventBridge 규칙은 **57개**이고, 직접 `DescribeRule`로
-  57개 모두 `ENABLED`임을 확인했다.
+- 68개 모두 `Active`이며 마지막 코드/설정 갱신 상태는 `Successful`이다.
+- Lambda resource policy가 가리키는 EventBridge 규칙은 **58개**이고, 직접 `DescribeRule`로
+  58개 모두 `ENABLED`임을 확인했다.
 - `aws/schedules.sh`에는 있었지만 운영 규칙이 없던 `cwa-observations`와
   `ascat-observations` 규칙을 복구했다. 규칙 생성·target 등록·Lambda invoke permission은
   성공했다.
@@ -25,18 +25,18 @@
 
 | 항목 | 실측값 | 판정 |
 |---|---:|---|
-| 로컬 실행 단위 | 68 | Python 66 + Node 2 |
-| 서울 배포 함수 | 67 | `news-brief`만 local-only |
-| runtime | Python 3.12 65, Node 20 1, Node 22 1 | 현재 구성값 |
-| architecture | x86_64 67 | arm64 없음 |
-| 상태 | Active/Successful 67 | 구성 조회 시점 정상 |
+| 로컬 실행 단위 | 69 | Python 67 + Node 2 |
+| 서울 배포 함수 | 68 | `news-brief`만 local-only |
+| runtime | Python 3.12 66, Node 20 1, Node 22 1 | 현재 구성값 |
+| architecture | x86_64 68 | arm64 없음 |
+| 상태 | Active/Successful 68 | 구성 조회 시점 정상 |
 | VPC 연결 | 0 | 공공 API egress는 Lambda 기본 네트워크 경로 |
 | DLQ 설정 | 0 | 실패 격리 공백 |
 | X-Ray Active | 0 | trace 공백 |
-| log group 이름 설정 | 67 | 실제 log group 존재·보존기간과는 다른 값 |
+| log group 이름 설정 | 68 | 실제 log group 존재·보존기간과는 다른 값 |
 | Function URL | 3 | 아래 공개 surface 별도 검토 |
 | layer | 0 | 모두 Zip package |
-| ephemeral storage | 기본 512MB 66, `gk2a-clouds` 2,048MB 1 | 현재 구성값 |
+| ephemeral storage | 함수별 감사 JSON 정본 | 512~2,048MB; 비밀값 미포함 |
 
 timeout은 30~900초, memory는 256~2,048MB에 분포한다. 전체 분포와 함수별 비밀이 아닌
 구성은 아래 읽기 전용 명령으로 다시 만들 수 있다.
@@ -63,10 +63,10 @@ jq '.summary, .permissionProbes, .unknown' /tmp/earthus-aws-runtime.json
 
 resource policy에서 확인한 결과는 다음과 같다.
 
-- EventBridge를 참조하는 함수: 56개
-- Lambda policy의 rule reference: 57개
-- unique rule: 57개
-- `DescribeRule` 결과: `ENABLED` 57개
+- EventBridge를 참조하는 함수: 57개
+- Lambda policy의 rule reference: 58개
+- unique rule: 58개
+- `DescribeRule` 결과: `ENABLED` 58개
 
 한 함수가 둘 이상의 rule을 가질 수 있으므로 함수 수와 규칙 수는 같지 않다. 또한 현재
 권한으로 `ListRules`와 `ListTargetsByRule`을 호출할 수 없어, Lambda policy가 참조하지 않는
@@ -96,7 +96,7 @@ ASCAT 실행은 Lambda 자체 오류 없이 끝났지만 결과가
 
 ## 5. 네트워크 실측 범위
 
-67개 함수 모두 VPC에 연결되지 않았다. 따라서 현재 운영 공공 API 호출은 private subnet/NAT
+68개 함수 모두 VPC에 연결되지 않았다. 따라서 현재 운영 공공 API 호출은 private subnet/NAT
 경로가 아니라 Lambda 기본 인터넷 경로를 쓴다. 이 사실은 “provider 응답 정상”을 뜻하지
 않는다.
 
@@ -163,4 +163,5 @@ source SHA-256은 로컬과 운영 zip 내부가 3/3 일치했고 모두 Active/
 | collector heartbeat·health 구분·운영 source hash | 통과 |
 | target 전수·최근 성공·metrics·alarm·retention | 권한 부족 `UNKNOWN` |
 | provider 전수 응답·quota·비용 | 미완료 |
-| PR-00 AWS inventory 전체 승인 | **부분 완료** |
+| PR-00 AWS inventory 코드 제어 범위 | **완료** |
+| CloudWatch/target/log/IAM read·DLQ/비용 승인 | **외부 권한·운영 승인 gate** |

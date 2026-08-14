@@ -45,6 +45,7 @@ P0 필수 산출물을 저장소 현실에 맞춰 고정한다. AETHERUS에서 �
 33. [`../earthus-next-reset/README.md`](../earthus-next-reset/README.md) — 다음 사용량 리셋 실행 패키지
 34. [`RELEASE-2026-08-14-N1-N7-CLOSEOUT.md`](RELEASE-2026-08-14-N1-N7-CLOSEOUT.md)
 35. [`N4-UI-MATRIX-2026-08-14.md`](N4-UI-MATRIX-2026-08-14.md)
+36. [`FINAL-CLOSEOUT-2026-08-14.md`](FINAL-CLOSEOUT-2026-08-14.md) — 코드 제어 범위 최종 종료 정본
 
 ## 현재 완료·대기 원칙
 

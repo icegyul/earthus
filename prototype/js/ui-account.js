@@ -225,6 +225,9 @@ export const consentSheet = {
     localStorage.setItem('earthus.consent', CONFIG.LEGAL_VERSION);
     localStorage.setItem('earthus.consent.location', payload.location ? '1' : '0');
     localStorage.setItem('earthus.consent.usage', payload.usage ? '1' : '0');
+    document.dispatchEvent(new CustomEvent('earthus:usage-consent', {
+      detail: { enabled: payload.usage },
+    }));
     $('#consentSheet').classList.remove('up');
     this._resolve?.(payload);
     toast('가입이 완료되었습니다');

@@ -21,8 +21,8 @@ assert.match(layerbar, /VIIRS 최신 완성일 낮 참고/,
   '메뉴는 고정 전날이 아니라 화면에 실제 선택된 완성일을 설명해야 한다');
 assert.doesNotMatch(css, /body\.panel-open #tcLoading\.on/,
   '위성 선택 시트가 열린 동안 로딩바를 숨기면 안 된다');
-assert.match(index, /app\.css\?v=20260813-visualrelease1/,
-  '운영 브라우저가 로딩바 CSS 수정본을 즉시 받아야 한다');
+assert.match(index, /app\.css\?v=20260813-publicui1/,
+  '운영 브라우저가 로딩바를 포함한 현재 공개 UI CSS를 즉시 받아야 한다');
 assert.match(imagery, /if \(on\) this\._imgLoading\(true, 'NOAA 전지구 구름'\)/,
   '이미 받은 NOAA로 복귀할 때도 전환 표시가 필요하다');
 

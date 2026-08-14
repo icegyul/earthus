@@ -1,8 +1,8 @@
 # CURRENT STATE — EARTHUS v2.3
 
-> 조사 시각: 2026-08-13 KST
-> Git 기준: `main` · KMA Live 기준 커밋 `1d21df1`, 후속 해안선 보강은 별도 릴리스
-> 근거: 저장소 정적 조사, `docs/HANDOVER.md`, 2026-08-12~13 운영 화면 실측
+> 조사 시각: 2026-08-14 KST
+> Git 기준: `main` · 최종 코드 제어 범위 closeout
+> 근거: 저장소 정적 조사, 운영 AWS/Supabase, `docs/HANDOVER.md`, 운영 화면 실측
 
 ## 1. 제품과 저장소
 
@@ -12,14 +12,14 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 
 | 영역 | 현재 확인값 | 판정 |
 |---|---|---|
-| 프런트 | `prototype/` 정적 파일 29개, `prototype/js/` 최상위 101개 | 빌드 없음 |
+| 프런트 | `prototype/` 정적 파일 31개, `prototype/js/` 최상위 137개 | 빌드 없음 |
 | 레이어 코드 | `prototype/js/layers/` 25개 | 기존 구조 보존 |
-| Lambda 실행 단위 | 로컬 68개·서울 배포 67개 | Python 66 + Node 2; `news-brief`만 local-only |
+| Lambda 실행 단위 | 로컬 69개 | Python 67 + Node 2; 운영 수는 `AWS_PRODUCTION_INVENTORY.md`와 live audit 정본 |
 | Supabase 함수 | 로컬/운영 endpoint 6개 | 익명·publishable-key fail-closed 경계 실측 |
-| Supabase migration | 로컬 timestamp 4개 | 후속 column/relation 존재; remote version/checksum은 `UNKNOWN` |
+| Supabase migration | 로컬 timestamp 9개 | 운영 8개 적용; AETHERUS private-data 1개는 카나리 전 보류 |
 | 배포 | S3 정적 업로드 + CloudFront 무효화 | 파일별 Content-Type 필수 |
 | 판매 | `SALES_OPEN=false` | 유지 |
-| 행태 분석 | 사용 동의 UI는 있으나 event 수집 구현은 없음 | catalog 승인 전 수집 금지 |
+| 행태 분석 | 선택 동의·로그인·서버 최신 동의가 모두 맞을 때 allowlist event만 수집 | FORCE RLS·익명 401·365일 cron·철회 삭제·export 운영 검증 |
 
 ## 2. 2026-08-12~13 운영 화면 실측
 
@@ -47,8 +47,8 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
   실제 기기 10~15분 열/배터리 검수는 아직 남아 있다.
 - 모바일 메뉴는 열면 화면의 큰 부분을 덮는다. 선택 뒤 닫힘은 통과했지만 터치·포커스 복귀,
   작은 본문 크기와 실제 구형 iPhone 발열은 미검증이다.
-- 태양계로 들어가도 URL은 `https://earthus.net/` 그대로다. 새로고침·공유가 동일 장면을
-  복원한다는 증거가 없다.
+- AETHERUS 공유 URL 계약 v3는 장면·대상·관측자·UTC·정밀도·24시간 계획을 복원하고
+  v1/v2와 기존 `?solar=1` 주소도 읽는다. 회귀검사는 통과했으며 실제 기기 공유 검수는 별도다.
 - EARTHUS와 AETHERUS의 코드·상태가 같은 앱 안에 있으므로 timer/render/network 소유권을
   장면별로 계측해야 한다.
 - 운영 화면의 숫자와 출처 표시는 확인했지만 모든 레이어의 `source/time/unit/n/missing`을
@@ -68,12 +68,12 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 
 | 항목 | 문서 상태 | 현재 코드/화면 | 처리 |
 |---|---|---|---|
-| Lambda 수 | HANDOVER 과거값 54개 | 로컬 68·서울 67 | Python 66 + Node 2; shadow 2개 배포, `news-brief`만 미배포 |
+| Lambda 수 | HANDOVER 과거값 54개 | 로컬 69·서울 68 | Python 67 + Node 2; `news-brief`만 미배포 |
 | Supabase 경로 | `supabase/functions/` | `prototype/supabase/functions/` | HANDOVER 저장소 지도 수정 완료 |
 | AETHERUS 모바일 선택 | 선택 뒤 메뉴가 닫히지 않음 | 태양계 선택 뒤 닫힘 확인 | 과거 gap을 완료로 갱신 |
-| AETHERUS URL | 복원되지 않음 | 태양계 선택 뒤에도 `/` | gap 유지 |
-| Analytics | 미구현 | 동의 UI만 있고 event emitter 없음 | 수집 금지 유지 |
-| 통합 착수 | 8월 16일 | 현재 8월 12일 | 문서·검증만 진행 |
+| AETHERUS URL | 과거 미구현 | 공유 URL 계약 v3·구버전 fallback·상호배제 구현 | 정적 회귀 통과; 실기기 공유 외부 gate |
+| Analytics | 과거 동의 UI만 존재 | allowlist emitter·server consent·RLS·철회/delete/export·문서별 버전 구현 | 운영 migration 4개·rollback A/B·익명 401·8월 21일 전 insert 차단 통과 |
+| 통합 착수 | 8월 16일 | 현재 8월 14일 | 코드 제어 범위 종료, 외부 gate만 대기 |
 | TPW 단독 slice | 8월 12일 구현, 8월 13일 공개 승인 | 서울 collector·3,276 격자·결측 0·운영 UI | `TPW_READY=true`; 모델분석 고지, 판매/Decision은 계속 off |
 | Signal Foundation | PR-01 | 서울 최소권한 private shadow·3 source·stable ID·익명 403 검증 | schedule·authoritative reader 미승인 |
 | Rights/Freshness | PR-02 | 서울 private shadow·DRAFT 24 operation BLOCK·schema·재현성 검증 | source 승인·Control Plane·schedule·reader 미승인 |
@@ -98,8 +98,8 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
 
 ## 6. 운영 전 확인이 필요한 것
 
-- AWS 서울 리전 67개 함수의 runtime·architecture·VPC·timeout·memory와 Lambda policy가
-  참조한 EventBridge rule 57개 enabled는 전수 확인했다. target 상세·최근 성공·CloudWatch
+- AWS 서울 리전 68개 함수의 runtime·architecture·VPC·timeout·memory와 Lambda policy가
+  참조한 EventBridge rule 58개 enabled는 전수 확인했다. target 상세·최근 성공·CloudWatch
   metric/alarm·log retention·concurrency는 read 권한 부재로 `UNKNOWN`이다.
 - `cwa-observations`·`ascat-observations` 누락 schedule은 복구했다. CWA는 갱신됐고 ASCAT은
   최신 궤도에 활성 태풍 주변 usable cell이 없어 last-good이 유지됐다. 두 collector는
@@ -107,8 +107,9 @@ AWS Lambda가 정규화해 S3 JSON/PNG로 저장한다.
   정본은 `AWS_PRODUCTION_INVENTORY.md`다.
 - 서울 Lambda에서 JMA·Open-Meteo를 포함한 나머지 provider 실제 응답·quota·비용 전수 확인
 - S3 공개/비공개 prefix와 객체별 Content-Type/Cache-Control/권리 만료
-- Supabase remote migration checksum, `pg_policies`/FORCE RLS, Edge Function version,
-  private Storage·tenant A/B는 management/DB 읽기 접근 전까지 `UNKNOWN`
+- Supabase analytics migration 이력·3 policy·FORCE RLS·trigger·retention cron·익명 권한은
+  운영 DB에서 확인했다. AETHERUS private migration, Edge Function version, private Storage와
+  실제 OAuth 2계정 UI A/B는 별도 외부 gate다.
 - 판매 관련 서버 gate, 약관, 통신판매업 정보, 창립 멤버 할인 checkout
 - 390×844/430×932/768×1024/1280×720/1440×900 전체 조합
 

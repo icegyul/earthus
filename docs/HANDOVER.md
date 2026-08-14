@@ -1,7 +1,7 @@
 # earthus 업무 인수인계
 
 > 새 AI 도구(코덱스 등)나 새 작업자가 이 저장소에서 일을 시작할 때 읽는 문서.
-> 2026-08-05 작성. 2026-08-06 운영 상태 반영. 작성 시점 최신 커밋: d3b1520.
+> 2026-08-05 작성. 2026-08-14 코드 제어 범위 최종 종료 상태까지 반영.
 
 ## 0. 한 줄 요약
 
@@ -9,7 +9,7 @@
 1인(김정우 PD, 상호 달루어/dalur) 운영. 2026-08-04 정식 오픈, 현재 전 기능 무료.
 호칭은 **"PD"** (사장님 아님).
 
-### 다음 통합 작업 — 2026-08-16 착수 예정
+### 현재 종료점과 다음 외부 관문
 
 2026-08-13 현재 다음 사용량 리셋의 짧은 실행 정본은
 [`earthus-next-reset/README.md`](earthus-next-reset/README.md)다. 남은 운영 공백, 이번 작업에서
@@ -19,7 +19,8 @@ base/sibling owner·abort·dispose, shared tile cache/worker, source golden, 재
 6K/4K/2K sky, 자동/낮음/끔, SRI·입력 상한, 30회 교대·context loss·rollback을 2026-08-13
 운영 반영했다. 중복 tile 0, mask p95 1.6~4.1ms, OFF 뒤 sibling/cache/idle 0, 30회
 layer/texture 증가 0, 34개 S3 SHA 일치를 확인했다. Safari·실제 iPhone·저사양 Android·
-VoiceOver·열/배터리는 `UNKNOWN`이다. 다음 코드 포인터는 전체 N1 수집기 운영 관제다. 근거는
+VoiceOver·열/배터리는 `UNKNOWN`이다. N1~N7과 선택 이용행태 분석까지 코드로 통제 가능한
+범위는 닫혔다. 다음 코딩은 외부 관문이 실제로 열린 항목만 시작한다. 근거는
 [`earthus-visual-engineering-next/PR01-08-CLOSEOUT.md`](earthus-visual-engineering-next/PR01-08-CLOSEOUT.md)다.
 AETHERUS의 별도 dirty 파일을 stage·deploy·revert하지 않는다.
 
@@ -75,9 +76,10 @@ authoritative reader 전환은 미승인이다. 실행 정본은
 [`earthus-v23/RIGHTS_FRESHNESS.md`](earthus-v23/RIGHTS_FRESHNESS.md), 운영 증거는
 [`earthus-v23/RELEASE-2026-08-12-PR02-SHADOW.md`](earthus-v23/RELEASE-2026-08-12-PR02-SHADOW.md)다.
 
-후속 **“계속 진행해”** 지시로 AWS 운영 인벤토리를 실제 서울 리전과 대조했다. 로컬 실행
-단위는 Python 66+Node 2=68개, 서울 배포는 `news-brief`를 제외한 67개다. runtime·VPC 0·
-구성 상태와 Lambda policy가 참조한 EventBridge 57개 enabled를 확인했고, 운영에 없던
+후속 **“계속 진행해”** 지시로 AWS 운영 인벤토리를 실제 서울 리전과 대조했다. 2026-08-14
+재감사 기준 로컬 실행 단위는 Python 67+Node 2=69개, 서울 배포는 `news-brief`를 제외한
+68개다. runtime·VPC 0·구성 상태와 Lambda policy가 참조한 EventBridge 58개 enabled를
+확인했고, 운영에 없던
 `cwa-observations` 10분·`ascat-observations` 4시간 rule을 복구했다. 두 수집기는 last-good과
 분리된 공개 heartbeat를 남기며 `health`가 CWA 성공, ASCAT 위성 비통과, 부분실패·실패·지연을
 서로 다르게 보존한다. target 전수·CloudWatch metric/alarm·log retention은 읽기 권한 부재로
@@ -239,9 +241,9 @@ prototype/        ← 서비스 전체 (정적 웹앱, 빌드 없음, 그대로 
     store.js      상태 (layers on/off, select, tier)  config.js  주소·레이어 정의
     config.local.js  ⚠️ gitignore 됨. 비밀 아닌 공개키·설정 (아래 §7)
   css/app.css     스타일 전부
-  legal/          이용약관·개인정보처리방침 (시행 2026-08-04)
+  legal/          이용약관·개인정보처리방침 (현재/공고/시행일은 각 문서 머리말이 정본)
   events/·obs/    (없음 — 데이터는 전부 S3 에서 옴)
-aws/              Python handler.py 66개 + Node index.mjs 2개 (로컬 실행 단위 68)
+aws/              Python handler.py 67개 + Node index.mjs 2개 (로컬 실행 단위 69)
   deploy-python.sh  Lambda 배포   schedules.sh  EventBridge 등록
   fx-grid/        예보 격자(타임라인용)  cyclone-analog/  IBTrACS 유사경로
 docs/
@@ -306,8 +308,8 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
 
 - **source/data Python handler 64개** (aws/ 폴더당 하나) → S3 JSON → 앱이 fetch.
   별도로 서울 수동 shadow Lambda `signal-foundation`, `source-governance` 2개가 있어
-  Python `handler.py`는 총 66개다. Node 실행 단위 `celestrak-proxy`, `spot-air`까지
-  로컬은 68개이며 서울에는 `news-brief`를 제외한 67개가 배포돼 있다.
+  Python `handler.py`는 총 67개다. Node 실행 단위 `celestrak-proxy`, `spot-air`까지
+  로컬은 69개이며 서울에는 `news-brief`를 제외한 68개가 배포돼 있다.
   스키마는 각 handler.py 상단 주석과 `docs/earthus-v23/schema/`에 있다.
 - 새 Lambda: `bash aws/deploy-python.sh 폴더명` (requirements.txt 없으면 빈 파일이라도 둘 것 —
   없으면 NetCDF 용 30MB 기본 의존성이 딸려간다). 스케줄은 schedules.sh 패턴으로 EventBridge.
@@ -346,13 +348,16 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
   SALES_OPEN(현재 false), 결제 함수 URL.
 - 서버 비밀(토스 시크릿, VAPID 개인키, 틱 토큰): Supabase Edge Function secrets / AWS SSM.
   **service_role 키는 어떤 클라이언트 파일에도 넣지 않는다.**
-- Supabase 프로젝트: ltpupicvdijxkrxxsfky (도쿄 ap-northeast-1). 로컬 SQL은 14개
+- Supabase 프로젝트: ltpupicvdijxkrxxsfky (도쿄 ap-northeast-1). 운영 분석 migration은
+  `usage_agreed`와 `analytics_events`를 추가했고 익명 권한 0, FORCE RLS·3 policy·trigger·
+  개인정보처리방침 2026-08-21 새 insert와 2026-08-21 00:00 KST 이전 차단, 365일 cron을
+  DB에서 확인했다. 기존 로컬 SQL은 14개
   table 모두 RLS enable을 선언하고, 운영 publishable key에서 `plans` 외 알려진
   private relation은 0행만 보였다. 그러나 운영 `pg_policies`/FORCE RLS 정의는 미확인이다.
-- 2026-08-12 publishable-key read-only audit로 14 relation의 핵심 column과 6 Edge Function
+- 2026-08-14 publishable-key read-only audit로 15 relation의 핵심 column과 6 Edge Function
   endpoint, Auth setting, `checkout=SALES_CLOSED`, 나머지 인증/토큰 차단을 확인했다.
-  다만 remote migration checksum, `pg_policies`, FORCE RLS, function version, private Storage,
-  tenant A/B는 management/DB 읽기 접근이 없어 `UNKNOWN`이다. 정본은
+  analytics migration 4개 이력과 RLS·session 주체 A/B rollback은 DB로 확인했다. 기존 전체 relation의 policy checksum,
+  function version, private Storage와 실제 OAuth 사용자 2계정 A/B는 별도 외부 gate다. 정본은
   [`earthus-v23/SUPABASE_PRODUCTION_INVENTORY.md`](earthus-v23/SUPABASE_PRODUCTION_INVENTORY.md)다.
 - 로그인: Supabase Auth. ⚠️ `auth.init()` 은 중복 호출 방지 promise 가드가 있다 —
   건드리면 GoTrueClient 가 두 개 생겨 로그인이 안 붙는 버그가 재발한다.
@@ -541,16 +546,26 @@ PD 몫 (자격·전화가 필요한 것):
   확인했다. 기존 배포 스크립트가 300초로 덮어쓰며 실제 타임아웃이 난 적이 있어,
   `aws/ecobird/timeout-seconds.txt`의 900초 예외를 다음 배포에도 보존하게 고쳤다.
 
-개발 몫 (착수 안 됨):
-- 이용 행태 수집 (동의는 받는데 수집 코드가 없음)
-- 야간 하층운(BTD) 운영 밤 자료는 2026-08-06 02:46 KST에 눈·화소로 확인함.
+개발 몫 최종 판정 (2026-08-14):
+- 이용 행태 수집 — **완료**. 로그인+선택 동의+최신 서버 동의 3중 gate, event/property
+  allowlist, 좌표·자유문구·연락처·토큰 금지, FORCE RLS, 365일 cron 삭제, 철회 즉시
+  delete와 계정 export를 운영 Supabase에 적용했다. 운영 DB에서 허용 insert·금지 필드·
+  교차 주체 차단·철회 삭제를 rollback A/B로 확인했고 익명 REST는 401이다. 실제 OAuth
+  사용자 2계정 UI 검수는 현재 auth 사용자 1명이라 외부 계정 게이트로 남는다.
+- 야간 하층운(BTD) — **완료**. 운영 밤 자료는 2026-08-06 02:46 KST에 눈·화소로 확인함.
   낮 영역은 비고 전체 등위도 격자의 1.5%가 표시 문턱을 넘었다. 이 값은 실제 구름
   면적이 아니며 지상 관측 대조 전까지 화면에서 계속 `낮은 물구름 후보`로만 부른다.
   NOAA 원본의 상위 2비트 품질 플래그도 good pixel만 보간하도록 보강함.
-- 공공데이터 라이선스 전수 점검
-- CCTV·NHK 임베드 검토 (출처·이용조건 확인 후에만)
-- 태풍 정보창 뉴스: 일본 매체가 번호(台風9号)로 불러 이름 검색에 안 잡히는 한계 —
-  태풍 번호 매핑이 있으면 개선 가능
+- 공공데이터 라이선스 전수 점검 — **완료**. 67/67 Python handler와 공통 카탈로그 30개를
+  고정 검사한다. 완료는 미확인 권리를 승인했다는 뜻이 아니며 GVP·Wikimedia·CelesTrak,
+  Nevada·provider 계약 항목은 `UNKNOWN/BLOCKED` gate를 유지한다.
+- CCTV·NHK — **검토 완료**. CCTV는 승인 source가 없어 미구현, NHK는 iframe이 아닌
+  `noopener` 공식 페이지 외부 링크만 사용한다.
+- 태풍 정보창 뉴스 — **완료**. 같은 JMA 공식 레코드의 `YYNN`을 검증해 일본식
+  `台風N号`·`台風第N号` headline을 이름과 함께 찾고, 본문·이미지는 복제하지 않는다.
+
+정본: `docs/earthus-v23/FINAL-CLOSEOUT-2026-08-14.md`,
+`docs/earthus-v23/ANALYTICS_EVENT_CATALOG.md`, `docs/earthus-v23/DATA_SOURCE_MATRIX.md`.
 
 ## 10. 확인·검증 방법
 

@@ -73,8 +73,9 @@
 
 - Base Activity 5 profile, Forecast Confidence, Safety 우선, shared Base cache,
   private bounded delta, 5축 UI, Reservation Impact diff/dedup/correction 계약이 자동검사를 통과했다.
-- consent 저장/철회/삭제, Supabase RLS tenant A/B, 공식 운영·폐쇄·재고 provider,
-  알림 전달/변경/취소/결제 확인 경로가 없으므로 `DECISION_CORE_READY=false`다.
+- 선택 이용행태 consent 저장/철회/삭제·본인 export와 해당 event의 Supabase RLS 주체 A/B
+  rollback 검증은 완료했다. Decision preference 저장, 공식 운영·폐쇄·재고 provider,
+  알림 전달/변경/취소/결제 확인 경로는 없으므로 `DECISION_CORE_READY=false`다.
 - 예약 action, provider action, payment action은 모두 `null/false`다.
 
 ### N7 Earthus Intelligence — `SHADOW`
@@ -92,7 +93,8 @@
 - `SALES_OPEN=false`, `DECISION_CORE_READY=false`, default TPW/Decision fail-closed,
   SNS 자동 게시 금지 상태를 회귀검사했다.
 - TPW만 별도 검증 승인에 따라 운영 true다.
-- CloudWatch/DLQ/log/Supabase tenant A/B/DR/실기기 접근성은 외부 증거가 없어 미승인이다.
+- CloudWatch/DLQ/log/DR/실기기 접근성과 Decision/B2B 전체 tenant 격리는 외부 증거가 없어
+  미승인이다. 선택 이용행태 저장소의 session 주체 A/B 격리는 별도 rollback 검증을 통과했다.
 
 ## 4. 자동검사 증거
 
@@ -128,7 +130,7 @@
 1. 기상청 공식 특보 polygon/multipolygon 제공 또는 서면 정본 지정
 2. source별 operation 권리 승인과 서명된 governance registry
 3. CloudWatch/DLQ/log/target read·alarm write 권한과 알림 채널
-4. Supabase 실제 두 사용자 tenant A/B, RLS/FORCE RLS, retention/delete 증거
+4. Supabase 실제 OAuth 두 사용자 UI A/B와 Decision/B2B 전체 tenant·routine ACL 전수 증거
 5. 활동곡선 도메인 검토, reservation provider 계약, 가격/재고/취소 sandbox
 6. Safari/iPhone/Android/VoiceOver/열·배터리 물리 실기기 검수
 7. 유료 API/SLA/export의 tenant·quota·cost·audit·DR·법적 승인

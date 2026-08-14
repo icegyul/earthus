@@ -40,7 +40,9 @@ try {
         rect: { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom },
         targets, closeHit: { width: closeHit.width, height: closeHit.height },
         menuEntry: !!document.querySelector('#menuMain [data-act="ocean"]'),
-        freeText: sheet.textContent.includes('지금 모든 사용 가능 기능 무료'),
+        accessBanner: !!sheet.querySelector('#oceanBody > .ocean-access'),
+        freeText: sheet.textContent.includes('지금 모든 사용 가능 기능 무료')
+          || sheet.textContent.includes('결제·구독 화면 없음'),
       };
     });
     assert.ok(state.overflow <= 0, `${item.name} horizontal overflow ${state.overflow}`);
@@ -50,7 +52,8 @@ try {
       `${item.name} has an Ocean target below 44px`);
     assert.deepEqual(state.closeHit, { width: '44px', height: '44px' });
     assert.equal(state.menuEntry, true);
-    assert.equal(state.freeText, true);
+    assert.equal(state.accessBanner, false, `${item.name} Ocean 홈에 무료 안내 박스가 남았다`);
+    assert.equal(state.freeText, false, `${item.name} Ocean 홈에 삭제한 무료 안내 문구가 남았다`);
 
     await page.getByRole('button', { name: /My Ocean FREE/ }).click();
     await page.waitForSelector('#oceanBody .ocean-widget-grid');

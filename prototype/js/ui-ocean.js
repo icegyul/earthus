@@ -102,10 +102,6 @@ export const oceanPanel = {
     if (this._view === 'my') { root.innerHTML = this.myView(ko); return; }
     if (this._view === 'life') { root.innerHTML = this.lifeView(ko); return; }
     root.innerHTML = `
-      <section class="ocean-access" aria-label="Ocean 이용 정책">
-        <b>${ko ? '지금 모든 사용 가능 기능 무료' : 'All currently available features are free'}</b>
-        <span>${ko ? '결제·구독 화면 없음 · 출처와 관측/유효 시각은 항상 표시' : 'No payment or subscription screen · source and observation/valid time stay visible'}</span>
-      </section>
       <section class="ocean-section">
         <header><div><small>NOW</small><h4>${ko ? '오늘의 바다' : 'Today’s ocean'}</h4></div>
           <p>${ko ? '원하는 자료만 한 장씩 켭니다.' : 'Turn on only the layer you need.'}</p></header>

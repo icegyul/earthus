@@ -25,7 +25,7 @@ for (const layer of ['sst', 'sstanom', 'wave', 'swell', 'current', 'buoy']) {
 }
 for (const label of ['Marine Life', 'My Ocean', 'Vessels']) assert.match(hub, new RegExp(label));
 assert.match(hub, /no fabricated live positions|가짜 현재 위치 없음/);
-assert.match(hub, /결제·구독 화면 없음/);
+assert.doesNotMatch(hub, /지금 모든 사용 가능 기능 무료|결제·구독 화면 없음/);
 assert.match(css, /\.ocean-layer,.ocean-module,.ocean-back\{ min-height:44px/);
 assert.match(redirect, /location\.replace\('\/\?ocean=hub'\)/);
 assert.match(sw, /earthus-shell-2026-08-14-oceanv1/);

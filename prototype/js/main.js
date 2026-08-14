@@ -5,7 +5,7 @@ import { initViewer, viewer, scene, cameraHeight, onCameraIdle, flyTo, setAmbien
 import { alarms } from './alarms.js';
 import { windField } from './windfield.js';
 import { myLocation } from './mylocation.js';
-import { layerBar } from './layerbar.js';
+import { layerBar } from './layerbar.js?v=20260814-aetherusv3';
 import { search } from './search.js';
 import { onboard } from './onboard.js';
 import { weatherPanel } from './ui-weather.js';
@@ -53,7 +53,7 @@ import { eventPanel } from './ui-events.js';
 import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
-import { cosmic3d } from './space/cosmic3d.js';
+import { cosmic3d } from './space/cosmic3d.js?v=20260814-aetherusv3';
 import { decodeAetherusRoute, replaceAetherusRoute } from './space/route-state.js';
 import { trenchCards } from './ocean/trenchcards.js';
 import { trenchGlobe } from './ocean/trenchglobe.js';
@@ -251,7 +251,7 @@ async function boot() {
      기존 은하·태양계·사진관의 실제 이동 동작은 하나도 줄이지 않는다. */
   document.addEventListener('aetherus:route', async event => {
     const route = event.detail;
-    if (route === 'galaxy-structure') {
+    if (route === 'galaxy-structure' || route === 'milkyway') {
       await sceneMgr.to('space', { stage: 'milkyway' });
       document.dispatchEvent(new CustomEvent('aetherus:galaxy-guide'));
       return;
@@ -262,7 +262,7 @@ async function boot() {
       }));
       return;
     }
-    const stage = { galaxies: 'galaxies', milkyway: 'milkyway', solar: 'solar' }[route];
+    const stage = { galaxies: 'galaxies', solar: 'solar' }[route];
     if (stage) await sceneMgr.to('space', { stage });
   });
   activeBar.init();       // 지금 켜진 레이어 줄 (감사 3차)

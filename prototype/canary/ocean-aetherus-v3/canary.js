@@ -1,4 +1,4 @@
-const REVISION = '20260814-2';
+const REVISION = '20260814-4';
 const asset = path => `${path}?v=${REVISION}`;
 const expect = (condition, message) => { if (!condition) throw new Error(message); };
 const loadJson = async path => {
@@ -88,7 +88,7 @@ const tests = [
   { id: 'space-culture', domain: 'space', title: 'Culture 151–163',
     asset: '/js/space/culture-reference.js', run: async () => {
       const [module, fixture] = await Promise.all([loadModule('/js/space/culture-reference.js'),
-        loadJson('/tools/fixtures/aetherus-culture-v1.json')]);
+        loadJson('/data/aetherus/culture-fixture.v1.json')]);
       const catalog = module.validateCultureCatalog(fixture);
       expect(catalog.fixtureOnly === true && catalog.items.length === 7, 'CULTURE_FIXTURE_INVALID');
       return '7 fixture work types · rights gate · no live catalog';

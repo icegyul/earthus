@@ -33,7 +33,7 @@ try {
         id: card.dataset.test, detail: card.querySelector('.card__detail')?.textContent,
       })),
       columns: getComputedStyle(document.querySelector('#oceanGrid')).gridTemplateColumns.split(' ').length,
-      notReleased: document.querySelector('.guard strong')?.textContent,
+      deploymentState: document.querySelector('.guard strong')?.textContent,
       robots: document.querySelector('meta[name="robots"]')?.content,
       smallButtons: [...document.querySelectorAll('button')].some(button => {
         const rect = button.getBoundingClientRect(); return rect.height < 44 || rect.width < 44;
@@ -48,7 +48,7 @@ try {
     assert.equal(state.columns, viewport.columns, `${viewport.name}: columns`);
     assert.ok(state.overflow <= 0, `${viewport.name}: horizontal overflow ${state.overflow}`);
     assert.equal(state.smallButtons, false, `${viewport.name}: control under 44px`);
-    assert.equal(state.notReleased, 'NOT RELEASED');
+    assert.equal(state.deploymentState, 'DEPLOYED · GATED');
     assert.match(state.robots, /noindex/);
     await page.screenshot({ path: `/private/tmp/ocean-aetherus-v3-canary-${viewport.name}.png`,
       fullPage: true });

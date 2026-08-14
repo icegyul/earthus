@@ -2563,3 +2563,81 @@ body.tc-ui-off #actBar{opacity:0;pointer-events:none;transition:opacity .2s}
   .cosmic-guide strong{font-size:11px}.cosmic-guide span{font-size:8px}
   #cosmicEarthReturn{left:42px;top:max(12px,env(safe-area-inset-top));font-size:9px}
 }
+
+/* ══════════ AETHERUS v3 운영 화면 ═══════════════════════════════
+   네 가지 경험을 제품 내비게이션으로 묶고, 사진관에서는 사진이 화면의 주인공이 된다.
+   기존 Three.js 장면과 출처 계약은 유지하며 정보 계층만 바꾼다. */
+body.aetherus-open .brand-menu-tab{display:none}
+.cosmic-experience-nav{
+  position:absolute;z-index:7;top:max(12px,env(safe-area-inset-top));
+  right:max(16px,env(safe-area-inset-right));left:max(16px,env(safe-area-inset-left));
+  display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;gap:12px;
+  min-height:54px;padding:5px 7px;border:1px solid rgba(167,211,226,.18);border-radius:12px;
+  background:rgba(5,10,16,.84);box-shadow:0 18px 54px rgba(0,12,22,.36),inset 0 1px rgba(255,255,255,.04);
+  backdrop-filter:blur(22px);touch-action:auto
+}
+.cosmic-experience-nav>strong{color:#f4fbff;font:640 14px/1 var(--sans);letter-spacing:.08em;white-space:nowrap}
+.cosmic-experience-nav>strong small{margin-left:4px;color:#88c9dc;font:650 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em}
+.cosmic-experience-nav>div{display:flex;justify-content:center;min-width:0;overflow-x:auto;scrollbar-width:none}
+.cosmic-experience-nav>div::-webkit-scrollbar{display:none}
+.cosmic-experience-nav button{min-height:44px;padding:0 13px;border:0;border-radius:7px;background:transparent;color:rgba(226,238,244,.66);font:590 12px/1 var(--sans);white-space:nowrap;cursor:pointer;transition:background .2s ease,color .2s ease,transform .16s ease}
+.cosmic-experience-nav button:hover,.cosmic-experience-nav button.current{background:rgba(136,201,220,.12);color:#f6fdff}
+.cosmic-experience-nav button.current{box-shadow:inset 0 -2px #88c9dc}
+.cosmic-experience-nav button:active{transform:translateY(1px)}
+.cosmic-experience-nav button:focus-visible{outline:2px solid #88c9dc;outline-offset:1px}
+.cosmic-hud{top:max(92px,calc(env(safe-area-inset-top) + 82px))}
+.cosmic-body-picker{top:max(128px,calc(env(safe-area-inset-top) + 116px))}
+.cosmic-craft-picker{top:max(166px,calc(env(safe-area-inset-top) + 154px))}
+#cosmicEarthReturn{display:none}
+
+.cosmic-photo-info{
+  top:max(82px,calc(env(safe-area-inset-top) + 72px));right:max(18px,env(safe-area-inset-right));
+  bottom:max(18px,env(safe-area-inset-bottom));left:max(18px,env(safe-area-inset-left));
+  width:auto;max-width:none;padding:0;overflow:hidden;border-color:rgba(136,201,220,.2);border-radius:14px;
+  background:rgba(3,8,13,.97);box-shadow:0 28px 90px rgba(0,8,16,.56);text-shadow:none;touch-action:auto
+}
+.cosmic-photo-info:not([hidden]){display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+.cosmic-photo-toolbar{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:18px;margin:0;padding:8px 12px;border-bottom:1px solid rgba(136,201,220,.13)}
+.cosmic-photo-heading{display:grid;gap:3px;min-width:150px}
+.cosmic-photo-heading small{color:#78b8ca;font:650 8px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.11em}
+.cosmic-photo-heading strong{color:#f2f9fc;font-size:16px;font-weight:640;letter-spacing:-.02em}
+.cosmic-photo-filters{justify-self:end}
+.cosmic-photo-stage{display:grid;grid-template-columns:minmax(0,1.72fr) minmax(280px,.72fr);min-height:0}
+.cosmic-photo-hero{display:grid;place-items:center;min-width:0;min-height:0;margin:0;padding:14px;background:radial-gradient(circle at 48% 42%,#0b141d 0,#03070b 68%)}
+#cosmicPhotoImage{width:100%;height:100%;max-height:none;aspect-ratio:auto;object-fit:contain;border-radius:4px;background:transparent;filter:drop-shadow(0 20px 42px rgba(0,0,0,.38))}
+.cosmic-photo-image-status{width:100%;min-height:100%;border-radius:4px}
+.cosmic-photo-copy{min-width:0;overflow-y:auto;padding:clamp(20px,3vw,42px);border-left:1px solid rgba(136,201,220,.12);background:linear-gradient(145deg,rgba(13,24,32,.95),rgba(4,9,14,.98));scrollbar-width:thin}
+.cosmic-photo-copy>#cosmicPhotoMeta{margin:0 0 13px;color:#86cfe2;font:650 11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.035em}
+.cosmic-photo-copy h2{margin:0 0 26px;font-size:clamp(31px,3.6vw,58px);font-weight:560;line-height:.98;letter-spacing:-.055em;text-wrap:balance}
+.cosmic-photo-copy>p{max-width:56ch;margin:10px 0;color:rgba(226,237,243,.7);font-size:14px;line-height:1.62;text-wrap:pretty}
+.cosmic-photo-copy>#cosmicPhotoLimit{color:rgba(196,217,226,.55);font-size:12px}
+.cosmic-photo-copy>a{display:inline-flex;align-items:center;min-height:44px;margin-top:12px;color:#98dcef;font-size:13px;text-decoration:none}
+.cosmic-photo-copy>a::after{content:' ↗';margin-left:5px}
+.cosmic-photo-list{grid-auto-columns:minmax(168px,220px);gap:9px;height:92px;margin:0;padding:10px 13px;overflow-x:auto;border-top:1px solid rgba(136,201,220,.13);background:#050b11}
+.cosmic-photo-list button{grid-template-columns:66px minmax(0,1fr);min-height:70px;padding:6px;border-radius:6px;transition:border-color .2s ease,background .2s ease,transform .16s ease}
+.cosmic-photo-list button:active{transform:translateY(1px)}
+.cosmic-photo-list img{width:66px;height:56px;border-radius:3px}
+.cosmic-photo-list b{font-size:12px}.cosmic-photo-list small{font-size:10px}
+
+@media(max-width:760px){
+  .cosmic-experience-nav{grid-template-columns:auto minmax(0,1fr) auto;gap:5px;padding:4px 5px}
+  .cosmic-experience-nav>strong{justify-self:center;font-size:13px}
+  .cosmic-experience-nav>div{grid-column:1/-1;grid-row:2;justify-content:flex-start;width:100%;padding-top:3px;border-top:1px solid rgba(136,201,220,.1)}
+  .cosmic-experience-nav button{min-height:44px;padding:0 11px;font-size:12px}
+  .cosmic-hud{top:max(116px,calc(env(safe-area-inset-top) + 106px));max-width:84vw}
+  .cosmic-body-picker{top:max(156px,calc(env(safe-area-inset-top) + 144px));max-width:90vw}
+  .cosmic-craft-picker{top:max(196px,calc(env(safe-area-inset-top) + 184px));max-width:90vw}
+  .cosmic-photo-info{top:max(112px,calc(env(safe-area-inset-top) + 102px));right:0;bottom:0;left:0;border-width:1px 0 0;border-radius:14px 14px 0 0}
+  .cosmic-photo-info:not([hidden]){display:block;overflow-y:auto}
+  .cosmic-photo-toolbar{position:sticky;z-index:2;top:0;grid-template-columns:auto minmax(0,1fr);gap:6px;padding:7px 9px;background:rgba(3,8,13,.96);backdrop-filter:blur(18px)}
+  .cosmic-photo-heading{display:none}
+  .cosmic-photo-filters{justify-self:end;max-width:100%}
+  .cosmic-photo-stage{display:block}
+  .cosmic-photo-hero{height:min(42vh,430px);padding:8px}
+  .cosmic-photo-copy{overflow:visible;padding:20px 18px 25px;border-top:1px solid rgba(136,201,220,.12);border-left:0}
+  .cosmic-photo-copy h2{margin-bottom:18px;font-size:clamp(30px,9vw,44px)}
+  .cosmic-photo-copy>p{font-size:14px;line-height:1.58}
+  .cosmic-photo-list{height:96px;grid-auto-columns:154px;padding:10px 9px max(10px,env(safe-area-inset-bottom))}
+  .cosmic-photo-list button{grid-template-columns:58px minmax(0,1fr)}
+  .cosmic-photo-list img{width:58px;height:56px}
+}

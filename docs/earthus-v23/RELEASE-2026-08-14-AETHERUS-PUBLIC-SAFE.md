@@ -87,6 +87,37 @@ Supabase migration은 이 manifest에 넣지 않았다. 같은 작업 폴더의 
 운영 Chrome 재검사도 공개 상태 화면 3개 viewport 14/14, 임의 사진 로컬 별 추출,
 Device QA 세로·가로 배치를 모두 통과했다.
 
+## 공개 Aetherus v3 화면·사진관 후속 배포
+
+> 후속 검증: 2026-08-14 23:09 KST
+>
+> 운영 화면: <https://earthus.net/?aetherus=3&solar=1&photo=hubble-ngc4654-2026&telescope=all>
+
+초기 Public Safe manifest에서 분리했던 메인 화면은 별도 실제 UI 검증 뒤 운영에 반영했다.
+
+- 장면 안에 `오늘의 태양계`, `우주 사진관`, `우리은하`, `우주의 크기` 네 경험을 고정했다.
+- 사진관을 대형 원본 중심 화면과 출처·공개일·권리 정보 열로 재구성했다.
+- NASA 2026년 공식 공개 사진 9점을 추가해 총 59점으로 갱신했다.
+  - HST: 1 → 9
+  - JWST: 49 → 50
+- 전체 첫 항목은 HST NGC 4654(2026-07-24), JWST 필터 첫 항목은
+  Beta Pictoris NIRSpec IFU(2026-07-15)다.
+- 사진·좌표는 NASA Science와 SIMBAD 정본을 사용하고, 크레딧·공개일·공식 원본 링크를
+  항목별로 보존했다.
+- 공개 화면·카탈로그·신규 미리보기/썸네일 24개 파일을 배포하고 CloudFront invalidation
+  `I1PE1U3AK7HLYD8CSEO1RJDHYC`를 생성했다.
+- 일반 운영 URL과 cache-busting URL에서 HTML, CSS, JS 3개, JSON, HST/JWST 미리보기의
+  SHA-256이 로컬과 일치했다.
+- 실제 Chrome 검증은 iPhone 세로 390×844, 가로 754×402, desktop 1280×720에서
+  horizontal overflow 0, nav control 44px, HST/JWST 전환과 URL 복원을 통과했다.
+- 운영 설정은 `MONETIZATION_MODE=FREE_OPEN`, `SALES_OPEN=false`,
+  `SHOW_SUBSCRIBE=false`를 유지했다.
+
+후속 검증 중 Ocean × Aetherus canary의 문화 fixture가 개발용 `/tools/fixtures/`를 참조해
+공개 환경에서 404가 나는 문제도 확인했다. 공개 경로 `/data/aetherus/culture-fixture.v1.json`로
+수정하고 invalidation `I4W9JVS30IGMIT2NXUBAKUM1B4`를 생성했다. 운영 canary에서 mobile과
+desktop 모두 22/22 PASS, overflow 0을 다시 확인했다.
+
 ## 롤백
 
 `tools/deploy_aetherus_public_safe.sh`가 읽는 manifest의 직전 커밋 파일만 같은 S3 경로에

@@ -12,9 +12,12 @@ const json = async relativePath => JSON.parse(await read(relativePath));
 const document = await json('prototype/data/space-photos.json');
 assert.equal(document.contract.owner, 'aetherus');
 assert.deepEqual(document.contract.surfaces, ['photo-gallery', 'sky-position']);
-assert.equal(document.items.length, 50);
-assert.equal(document.items.filter(item => item.telescope === 'HST').length, 1);
-assert.equal(document.items.filter(item => item.telescope === 'JWST').length, 49);
+assert.equal(document.items.length, 59);
+assert.equal(document.items.filter(item => item.telescope === 'HST').length, 9);
+assert.equal(document.items.filter(item => item.telescope === 'JWST').length, 50);
+assert.equal(document.items[0].id, 'hubble-ngc4654-2026');
+assert.equal(document.items.find(item => item.telescope === 'JWST')?.id, 'webb-beta-pictoris-2026');
+assert.ok(document.items.slice(0, 9).every(item => item.preview && item.positionSource));
 
 const moduleSource = (await read('prototype/js/space/photo-catalog.js'))
   .replace(
@@ -25,10 +28,10 @@ const photoCatalog = await import(`data:text/javascript;base64,${Buffer.from(mod
 
 assert.equal(photoCatalog.normalizeAetherusTelescope('jwst'), 'JWST');
 assert.equal(photoCatalog.normalizeAetherusTelescope('roman'), 'ALL');
-assert.equal(photoCatalog.filterAetherusPhotos(document.items, 'HST').length, 1);
-assert.equal(photoCatalog.filterAetherusPhotos(document.items, 'JWST').length, 49);
+assert.equal(photoCatalog.filterAetherusPhotos(document.items, 'HST').length, 9);
+assert.equal(photoCatalog.filterAetherusPhotos(document.items, 'JWST').length, 50);
 assert.equal(photoCatalog.resolveAetherusPhoto(document.items, 'southern-ring-jwst')?.telescope, 'JWST');
-assert.deepEqual(photoCatalog.aetherusPhotoCounts(document.items), { ALL: 50, HST: 1, JWST: 49 });
+assert.deepEqual(photoCatalog.aetherusPhotoCounts(document.items), { ALL: 59, HST: 9, JWST: 50 });
 
 const originalFetch = globalThis.fetch;
 let requests = 0;
@@ -69,4 +72,4 @@ assert.match(search, /aetherus-photo/);
 assert.match(search, /'hst'/);
 assert.match(search, /'jwst'/);
 
-console.log('PASS: Aetherus owns 50 photos; HST=1, JWST=49; shared load, retry, menu and search migration');
+console.log('PASS: Aetherus owns 59 photos; HST=9, JWST=50; 2026 official observations lead the gallery');

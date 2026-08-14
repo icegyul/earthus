@@ -96,7 +96,7 @@
 }
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Widgets/widgets.css">
-<link rel="stylesheet" href="css/app.css?v=20260813-publicui1">
+<link rel="stylesheet" href="css/app.css?v=20260814-aetherusv3">
 <link rel="stylesheet" href="css/account.css?v=20260813-publicui1">
 <link rel="stylesheet" href="css/ask.css?v=20260814-ax1">
 <link rel="stylesheet" href="css/readability.css?v=20260812-contours1">
@@ -187,6 +187,19 @@
     <section class="scene-view space-scene" data-scene-view="space" aria-label="우주 탐험 기반 장면">
       <div id="cosmicExperience" class="cosmic-experience" hidden>
         <canvas id="cosmicCanvas" tabindex="0" aria-label="지구에서 태양계, 은하수, 은하들까지 이어지는 회전 가능한 3D 로그 스케일"></canvas>
+        <!-- AETHERUS v3의 제품 전환과 네 가지 경험은 장면 안에서 항상 같은 자리에 둔다.
+             기존 세로 손잡이는 지구 화면의 진입점으로만 남고, 우주 안에서는 이 앱바가 정본이다. -->
+        <nav id="cosmicExperienceNav" class="cosmic-experience-nav" aria-label="AETHERUS 경험">
+          <button type="button" data-aetherus-nav="earth">← EARTHUS</button>
+          <strong>AETHERUS <small>v3.0</small></strong>
+          <div role="group" aria-label="우주 탐험 선택">
+            <button type="button" data-aetherus-nav="solar">오늘의 태양계</button>
+            <button type="button" data-aetherus-nav="photos">우주 사진관</button>
+            <button type="button" data-aetherus-nav="milkyway">우리은하</button>
+            <button type="button" data-aetherus-nav="galaxies">우주의 크기</button>
+          </div>
+          <button type="button" data-aetherus-nav="menu" aria-label="AETHERUS 전체 메뉴">메뉴</button>
+        </nav>
         <div id="cosmicLabels" class="cosmic-labels" aria-hidden="true"></div>
         <nav id="cosmicBodyPicker" class="cosmic-body-picker" aria-label="달과 행성 선택" hidden></nav>
         <nav id="cosmicCraftPicker" class="cosmic-craft-picker" aria-label="우주망원경과 탐사선 선택" hidden></nav>
@@ -233,20 +246,30 @@
         <aside id="cosmicPhotoInfo" class="cosmic-photo-info" aria-live="polite" hidden>
           <header class="cosmic-photo-toolbar">
             <button id="cosmicPhotoBack" type="button">← 3D 우주</button>
+            <div class="cosmic-photo-heading">
+              <small>AETHERUS / OFFICIAL OBSERVATIONS</small>
+              <strong>우주 사진관</strong>
+            </div>
             <div id="cosmicPhotoFilters" class="cosmic-photo-filters" role="tablist" aria-label="망원경 필터">
-              <button type="button" role="tab" data-telescope="ALL">전체 <span>50</span></button>
-              <button type="button" role="tab" data-telescope="HST">허블 <span>1</span></button>
-              <button type="button" role="tab" data-telescope="JWST">제임스웹 <span>49</span></button>
+              <button type="button" role="tab" data-telescope="ALL">전체 <span>59</span></button>
+              <button type="button" role="tab" data-telescope="HST">허블 <span>9</span></button>
+              <button type="button" role="tab" data-telescope="JWST">제임스웹 <span>50</span></button>
             </div>
           </header>
-          <img id="cosmicPhotoImage" alt="" loading="lazy" decoding="async">
-          <p id="cosmicPhotoImageStatus" class="cosmic-photo-image-status" role="status" hidden></p>
-          <p id="cosmicPhotoMeta"></p>
-          <h2 id="cosmicPhotoTitle"></h2>
-          <p id="cosmicPhotoCredit"></p>
-          <p id="cosmicPhotoLimit"></p>
-          <a id="cosmicPhotoSource" target="_blank" rel="noopener noreferrer">공식 원본</a>
-          <button id="cosmicPhotoRetry" class="cosmic-photo-retry" type="button" hidden>다시 시도</button>
+          <div class="cosmic-photo-stage">
+            <figure class="cosmic-photo-hero">
+              <img id="cosmicPhotoImage" alt="" loading="lazy" decoding="async">
+              <p id="cosmicPhotoImageStatus" class="cosmic-photo-image-status" role="status" hidden></p>
+            </figure>
+            <section class="cosmic-photo-copy" aria-labelledby="cosmicPhotoTitle">
+              <p id="cosmicPhotoMeta"></p>
+              <h2 id="cosmicPhotoTitle"></h2>
+              <p id="cosmicPhotoCredit"></p>
+              <p id="cosmicPhotoLimit"></p>
+              <a id="cosmicPhotoSource" target="_blank" rel="noopener noreferrer">공식 원본</a>
+              <button id="cosmicPhotoRetry" class="cosmic-photo-retry" type="button" hidden>다시 시도</button>
+            </section>
+          </div>
           <nav id="cosmicPhotoList" class="cosmic-photo-list" role="listbox" aria-label="우주 사진 목록"></nav>
         </aside>
         <aside id="cosmicCraftInfo" class="cosmic-craft-info" aria-live="polite" hidden>
@@ -1147,7 +1170,7 @@
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"
         integrity="sha384-J3D70NIZSVUuhQbp4W22OKF/xNWQjCEXmLxpnBp4CNDaQ+TbS1mmDZ2W3wlgqpKj"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script type="module" src="js/main.js?v=20260814-unifiedplace1"></script>
+<script type="module" src="js/main.js?v=20260814-aetherusv3"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "prototype/data/space-photos.json"
-EXPECTED = {"HST": 1, "JWST": 49}
+EXPECTED = {"HST": 9, "JWST": 50}
 
 
 def main() -> None:
@@ -34,9 +34,17 @@ def main() -> None:
 
         thumbnail = ROOT / "prototype" / str(item.get("thumb", ""))
         assert thumbnail.is_file() and thumbnail.stat().st_size > 0, f"{item['id']} 썸네일 누락"
+        if item.get("preview"):
+            preview = ROOT / "prototype" / str(item["preview"])
+            assert preview.is_file() and preview.stat().st_size > 20_000, f"{item['id']} 미리보기 누락"
+
+    for item in items[:9]:
+        assert str(item.get("positionSource", "")).startswith("https://"), \
+            f"{item['id']} 좌표 출처 누락"
+        assert item.get("preview"), f"{item['id']} 미리보기 경로 누락"
 
     assert counts == EXPECTED, f"망원경별 사진 수 불일치: {counts}"
-    print("PASS: HST 1 + JWST 49; coordinates, release dates, credits, sources and thumbnails present")
+    print("PASS: HST 9 + JWST 50; coordinates, release dates, credits, sources and images present")
 
 
 if __name__ == "__main__":

@@ -44,6 +44,20 @@ Hard Gate를 유지하면서 `공식 특보 · 추천 제한 / 현상 · 등급 
 첫 Earth·통합 장소·산불 상세를 확인했다. 정본은
 [`earthus-v23/RELEASE-2026-08-14-PUBLIC-COPY-CLEANUP.md`](earthus-v23/RELEASE-2026-08-14-PUBLIC-COPY-CLEANUP.md)다.
 
+같은 날 PD가 `NOT_RELEASED`에 남겨 둔 구현 산출물을 전수 확인하고 배포하도록 지시했다.
+Aetherus v3 원장 296개를 실제 파일 배포와 외부 운영 관문으로 분리해, 운영 SHA가 확인된
+`VERIFIED_EXISTING` 200개는 `DEPLOYED_GATED`, 계정·권리·실기기·운영 증거가 필요한 96개는
+`BLOCKED_EXTERNAL`로 기록했다. 구현 행이 참조하는 정적 산출물은 운영 `34/34`, canary 배포
+묶음은 SHA·MIME·cache header `45/45`, 브라우저는 mobile/desktop 각각 `22/22`를 확인했다.
+추가로 메인 Earth와 진행 중인 Aetherus 장면은 건드리지 않고 공개 LAB·실기기 QA·로컬
+별 추출·fail-closed 계약 57개만 별도 배포했다. 운영 `57/57` SHA·MIME·cache header,
+LAB iPhone 세로·가로·desktop `14/14`, 실제 JPEG 로컬 추출·원본 upload 0을 확인했다.
+이는 파일 배포 완료이며 판매·권리·RLS·실기기·Decision·예약·자동 게시 gate 개방이 아니다.
+후속으로 Aetherus v3 네 경험 내비게이션과 2026년 공식 HST/JWST 사진 9점을 운영에 배포해
+사진관을 59점(HST 9, JWST 50)으로 갱신했고, 일반 운영 URL 해시와 실제 Chrome 전환을 확인했다.
+정본은
+[`earthus-v23/RELEASE-2026-08-14-AETHERUS-PUBLIC-SAFE.md`](earthus-v23/RELEASE-2026-08-14-AETHERUS-PUBLIC-SAFE.md)다.
+
 EARTHUS 메뉴·레이어 표현·무료/유료 경계, AETHERUS 정보 구조·모바일·사진관,
 마케팅 스튜디오 공개 이야기관을 한 번에 개편하는 실행 정본은
 [`EARTHUS-AETHERUS-DEV-SPEC-2026-08-16.md`](EARTHUS-AETHERUS-DEV-SPEC-2026-08-16.md)다.

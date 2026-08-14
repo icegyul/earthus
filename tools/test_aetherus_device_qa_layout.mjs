@@ -22,6 +22,7 @@ try {
     });
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
+    page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
     await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 30_000 });
     await page.locator('[data-status-for="environment"]').waitFor();
     const layout = await page.evaluate(() => {

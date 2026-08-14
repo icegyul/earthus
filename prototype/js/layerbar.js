@@ -549,11 +549,10 @@ const QUICK_IDS = [
 /* AETHERUS는 반대쪽 레일도, EARTHUS 안의 카테고리도 아니다.
    EARTHUS 바로 아래 독립 손잡이가 이 목록을 같은 2단 패널에 그린다. */
 const AETHERUS_ROUTES = [
-  { id: 'galaxies', ko: '은하들', en: 'Galaxies' },
-  { id: 'milkyway', ko: '은하수', en: 'Milky Way' },
-  { id: 'galaxy-structure', ko: '우리은하 구조', en: 'Spiral arms' },
-  { id: 'solar', ko: '태양계', en: 'Solar system' },
-  { id: 'photos', ko: '우주 사진관', en: 'Space photo gallery', count: 50 },
+  { id: 'solar', ko: '오늘의 태양계', en: 'Solar system today' },
+  { id: 'photos', ko: '우주 사진관', en: 'Official photo gallery' },
+  { id: 'milkyway', ko: '우리은하 이해하기', en: 'Understand the Milky Way' },
+  { id: 'galaxies', ko: '우주의 크기', en: 'Scale of the universe' },
 ];
 
 export const layerBar = {
@@ -982,8 +981,8 @@ export const layerBar = {
   _renderAetherus(strip, ko) {
     const intro = el('p', 'aetherus-menu-intro');
     intro.textContent = ko
-      ? '사진은 Aetherus 사진관에서 보고, 위치는 보조 3D 하늘에서 확인합니다.'
-      : 'View images in the Aetherus gallery and use the 3D sky as a position aid.';
+      ? '공식 관측 사진과 태양계·우리은하·우주의 크기를 네 가지 흐름으로 탐험합니다.'
+      : 'Explore official observations, the Solar System, the Milky Way and the scale of the universe.';
     strip.appendChild(intro);
     AETHERUS_ROUTES.forEach(route => {
       const button = el('button', 'aetherus-route');

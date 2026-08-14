@@ -215,6 +215,7 @@ export const cosmic3d = {
     store.on('scene', (next, stage) => {
       const visible = next === 'space';
       this.root.hidden = !visible;
+      document.body.classList.toggle('aetherus-open', visible);
       if (!visible) {
         this.closeSkyARProbe({ hide: true });
         if (this._frame) cancelAnimationFrame(this._frame);
@@ -248,6 +249,7 @@ export const cosmic3d = {
       this.updateHud(); this.updateLabels(); this.render();
     });
     this.root.hidden = store.scene !== 'space';
+    document.body.classList.toggle('aetherus-open', store.scene === 'space');
     this.updateHud();
     if (store.scene === 'space') this._activationPromise = this.activate(store.sceneStage);
     document.addEventListener('aetherus:galaxy-guide', () => this.openGalaxyGuide());
@@ -2865,7 +2867,7 @@ export const cosmic3d = {
         ? '미리보기 이미지를 불러오지 못했습니다. 공식 원본 링크를 이용해 주세요.'
         : 'Preview unavailable. Use the official original link.';
     };
-    image.src = `/${photo.thumb}`;
+    image.src = `/${photo.preview || photo.thumb}`;
     image.alt = `${photo.name[isKo ? 'ko' : 'en']} · ${photo.telescope}`;
     document.getElementById('cosmicPhotoMeta').textContent = `${photo.telescope} · ${photo.date} · ${isKo ? '공개일' : 'release date'}`;
     document.getElementById('cosmicPhotoTitle').textContent = photo.name[isKo ? 'ko' : 'en'];
@@ -3012,6 +3014,17 @@ export const cosmic3d = {
       if (event.key === 'ArrowDown') { this.pitch = clamp(this.pitch - .08, this._detailBody || this._photoMode || this._solarMotionMode ? -1.48 : .035, 1.48); this.render(); }
     });
     document.getElementById('cosmicEarthReturn')?.addEventListener('click', () => this.exitToEarth());
+    document.getElementById('cosmicExperienceNav')?.querySelectorAll('[data-aetherus-nav]').forEach(button => {
+      button.addEventListener('click', () => {
+        const route = button.dataset.aetherusNav;
+        if (route === 'earth') { this.exitToEarth(); return; }
+        if (route === 'menu') {
+          document.getElementById('aetherusTab')?.click();
+          return;
+        }
+        document.dispatchEvent(new CustomEvent('aetherus:route', { detail: route }));
+      });
+    });
     document.getElementById('cosmicBodyBack')?.addEventListener('click', () => this.closeBody());
     document.getElementById('cosmicAstronomyNow')?.addEventListener('click', () => this.recalculateAstronomyNow());
     document.getElementById('cosmicAstronomyLocation')?.addEventListener('click', () => this.useAstronomyLocation());
@@ -3489,6 +3502,7 @@ export const cosmic3d = {
       document.getElementById('cosmicHint').textContent = '';
       document.getElementById('cosmicNote').textContent = this._galaxyGuideCatalog?.limitations?.[isKo ? 'ko' : 'en'] || '';
       this.root.dataset.stage = 'galaxy-guide';
+      this.updateExperienceNav('milkyway');
       return;
     }
     if (this._solarMotionMode) {
@@ -3501,6 +3515,7 @@ export const cosmic3d = {
         : 'Planets form 3D trails while moving with the Sun rather than orbiting a fixed point';
       document.getElementById('cosmicNote').textContent = this._motionCatalog?.limitations?.[isKo ? 'ko' : 'en'] || '';
       this.root.dataset.stage = 'solar-motion';
+      this.updateExperienceNav('milkyway');
       return;
     }
     if (this._photoMode) {
@@ -3518,6 +3533,7 @@ export const cosmic3d = {
         ? '표식 거리는 같은 비율이 아님 · 날짜는 관측일이 아닌 공개일'
         : 'Marker distance is not to scale · dates are release dates, not observation times';
       this.root.dataset.stage = 'photo';
+      this.updateExperienceNav('photos');
       return;
     }
     if (this._detailBody) {
@@ -3535,6 +3551,7 @@ export const cosmic3d = {
         : `${this._bodyCatalog.positionNotice.en} · NASA/JPL/USGS and Solar System Scope visualization · not for analysis`;
       if (surfaceNote) document.getElementById('cosmicNote').textContent += ` · ${surfaceNote}`;
       this.root.dataset.stage = 'body';
+      this.updateExperienceNav('solar');
       return;
     }
     if (this._selectedCraft) {
@@ -3546,6 +3563,7 @@ export const cosmic3d = {
       document.getElementById('cosmicHint').textContent = craft.method[isKo ? 'ko' : 'en'];
       document.getElementById('cosmicNote').textContent = this._craftCatalog.positionNotice[isKo ? 'ko' : 'en'];
       this.root.dataset.stage = 'craft';
+      this.updateExperienceNav('solar');
       return;
     }
     const copy = {
@@ -3575,5 +3593,18 @@ export const cosmic3d = {
       document.getElementById('cosmicNote').textContent = copy.note;
     }
     this.root.dataset.stage = stage;
+    this.updateExperienceNav(stage);
+  },
+
+  updateExperienceNav(route) {
+    document.getElementById('cosmicExperienceNav')?.querySelectorAll('[data-aetherus-nav]')
+      .forEach(button => {
+        const active = button.dataset.aetherusNav === route;
+        button.classList.toggle('current', active);
+        if (['earth', 'menu'].includes(button.dataset.aetherusNav)) {
+          button.removeAttribute('aria-current');
+        } else if (active) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
+      });
   },
 };

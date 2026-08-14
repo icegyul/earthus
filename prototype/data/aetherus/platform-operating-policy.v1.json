@@ -1,0 +1,28 @@
+{
+  "schema": "earthus.platform-operating-policy.v1",
+  "revision": "earthus-aetherus-local-shadow-2026-08-14",
+  "status": "DRAFT",
+  "productionEnabled": false,
+  "components": {
+    "API_GATEWAY": "LOCAL_CONTRACT",
+    "AUTH_SESSION": "EXTERNAL_REQUIRED",
+    "ENTITLEMENT": "EXTERNAL_REQUIRED",
+    "EARTH_PROVIDER_ADAPTER": "LOCAL_CONTRACT",
+    "SPACE_PROVIDER_ADAPTER": "LOCAL_CONTRACT",
+    "MEDIA_PROVIDER_ADAPTER": "LOCAL_CONTRACT",
+    "EVENT_INGESTION": "LOCAL_CONTRACT",
+    "OBSERVATION_INGESTION": "LOCAL_CONTRACT",
+    "JOB_QUEUE": "LOCAL_CONTRACT",
+    "CACHE": "LOCAL_CONTRACT",
+    "ANALYTICS_EVENT_BUS": "LOCAL_CONTRACT",
+    "OBSERVABILITY": "EXTERNAL_REQUIRED",
+    "FEATURE_FLAG": "LOCAL_CONTRACT",
+    "CONFIGURATION": "LOCAL_CONTRACT",
+    "SECRETS": "EXTERNAL_REQUIRED",
+    "RATE_LIMIT": "LOCAL_CONTRACT"
+  },
+  "cache": { "maxStaleSeconds": 3600 },
+  "rateLimit": { "defaultRequests": 120, "windowSeconds": 60 },
+  "approvedAt": null,
+  "approvedBy": null
+}

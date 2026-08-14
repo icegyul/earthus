@@ -1,0 +1,18 @@
+{
+  "schema": "earthus.aetherus-security-policy.v1",
+  "revision": "aetherus-security-local-shadow-2026-08-14",
+  "status": "DRAFT",
+  "productionEnabled": false,
+  "tokenPolicy": { "accessTokenSeconds": 900, "refreshTokenSeconds": 2592000, "signedUrlMaxSeconds": 900 },
+  "rolePermissions": {
+    "ADMIN": ["CONFIG_READ", "AUDIT_READ", "ROLE_ASSIGN"],
+    "EDITOR": ["CATALOG_EDIT", "EDITORIAL_OVERRIDE"],
+    "MODERATOR": ["MODERATION_TRIAGE", "CONTENT_HIDE"],
+    "USER": ["OWN_OBSERVATION_READ", "OWN_OBSERVATION_WRITE", "OWN_OBSERVATION_DELETE"]
+  },
+  "abuseRateLimit": { "reports": 10, "windowSeconds": 3600 },
+  "oauthEvidence": null,
+  "scannerEvidence": null,
+  "approvedAt": null,
+  "approvedBy": null
+}

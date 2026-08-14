@@ -1,5 +1,7 @@
 // 앱 상태 — 티어, 레이어 on/off, 카메라 상태
 import { LAYER_DEFS, TIER, T } from './config.js';
+import { CONFIG } from './config.local.js';
+import { decideCapabilityAccess, isFreeOpenMode } from './access-mode.js';
 
 const LS_TIER = 'earthus.tier';
 const LS_LAYERS = 'earthus.layers';
@@ -137,16 +139,22 @@ export const store = {
     this.emit('tier', t);
   },
   isPaid() { return this.tier === TIER.PAID; },
+  isFreeOpen() { return isFreeOpenMode(CONFIG.MONETIZATION_MODE); },
 
   /** 이 레이어를 지금 쓸 수 있는가 (구현 여부만 본다 — 레이어는 전부 무료다) */
   canUse(def) {
     if (def.blocked) return false;
-    return def.tier === TIER.FREE || this.isPaid();
+    if (def.tier === TIER.FREE) return true;
+    return decideCapabilityAccess({ mode: CONFIG.MONETIZATION_MODE,
+      paidEntitled: this.isPaid() }).allowed;
   },
 
   /** 이 "기능"을 쓸 수 있는가 (PAID_CAP).
       ⚠️ 레이어와 다르다. 레이어는 무료, 기능이 유료다. */
-  can(cap) { return this.isPaid(); },
+  can(cap) {
+    return decideCapabilityAccess({ mode: CONFIG.MONETIZATION_MODE,
+      paidEntitled: this.isPaid(), available: !!cap }).allowed;
+  },
 
   /* ── 장면 ─────────────────────────────────────────────── */
   setScene(next, stage = next) {

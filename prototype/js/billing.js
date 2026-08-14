@@ -16,6 +16,7 @@
 import { auth } from './auth.js';
 import { CONFIG } from './config.local.js';
 import { i18n } from './i18n.js';
+import { salesAllowed } from './access-mode.js';
 
 /* ── 요금제 ────────────────────────────────────────────────────
    ⚠️ 가격은 config.local.js 에서 덮어쓸 수 있게 둔다.
@@ -223,7 +224,9 @@ export const billing = {
        엔드포인트를 쓰므로, 유료 customer-api 전환 또는 셀프호스팅을 검증했다는
        두 번째 스위치 없이는 SALES_OPEN만 켜도 결제를 시작하지 못하게 막는다.
        GVP도 인용만으로 상업 이용할 수 없고 사전 서면 허가가 필요하다. */
-    if (!CONFIG.SALES_OPEN) throw new Error('NOT_AVAILABLE');
+    if (!salesAllowed({ mode: CONFIG.MONETIZATION_MODE, salesOpen: CONFIG.SALES_OPEN })) {
+      throw new Error('NOT_AVAILABLE');
+    }
     if (CONFIG.OPEN_METEO_COMMERCIAL_READY !== true) {
       throw new Error('DATA_LICENSE_NOT_READY');
     }

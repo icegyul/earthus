@@ -1,0 +1,14 @@
+{
+  "schema": "earthus.aetherus-spotlight-policy.v1",
+  "revision": "aetherus-spotlight-local-shadow-2026-08-14",
+  "status": "DRAFT",
+  "productionEnabled": false,
+  "hubs": [
+    { "id": "korea-space", "kind": "COUNTRY", "countryCode": "KR", "organizationId": null,
+      "localePriority": ["ko-KR", "en"] },
+    { "id": "spacex", "kind": "ORGANIZATION", "countryCode": "US", "organizationId": "spacex",
+      "localePriority": ["en", "ko-KR"] }
+  ],
+  "approvedAt": null,
+  "approvedBy": null
+}

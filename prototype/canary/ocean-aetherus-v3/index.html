@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Earthus Ocean · Aetherus v3 Canary</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23071016'/%3E%3Ccircle cx='11' cy='17' r='7' fill='%2355d5c8'/%3E%3Ccircle cx='22' cy='13' r='6' fill='%23b8a4ff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./canary.css?v=20260814-2">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero__eyebrow">EARTHUS CANARY · LOCAL SHADOW</div>
+    <h1>Ocean × Aetherus v3</h1>
+    <p>배포된 계약 모듈과 정책 파일을 브라우저에서 직접 다시 검사합니다.</p>
+    <div class="guard" role="status">
+      <strong>NOT RELEASED</strong>
+      <span>사용 가능한 기능은 무료 · 결제 OFF · 권리·안전·위치·원격 제어 gate 유지</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="control-panel" aria-labelledby="test-title">
+      <div>
+        <p class="section-label">BROWSER CONTRACT CHECK</p>
+        <h2 id="test-title">배포 상태 검사</h2>
+        <p id="checkedAt">아직 실행하지 않았습니다.</p>
+      </div>
+      <div class="actions">
+        <button type="button" data-run="all">전체 다시 검사</button>
+        <button type="button" data-run="ocean">Ocean만</button>
+        <button type="button" data-run="space">Aetherus만</button>
+        <button type="button" class="secondary" id="downloadReport" disabled>결과 JSON</button>
+      </div>
+    </section>
+
+    <section class="summary" aria-live="polite" aria-atomic="true">
+      <div><span id="passCount">0</span><small>PASS</small></div>
+      <div><span id="failCount">0</span><small>FAIL</small></div>
+      <div><span id="pendingCount">22</span><small>PENDING</small></div>
+      <div><span>CLOSED</span><small>PRODUCTION GATE</small></div>
+    </section>
+
+    <section class="domain" aria-labelledby="ocean-title">
+      <div class="domain__heading ocean-heading">
+        <div><p class="section-label">EARTHUS VERTICAL</p><h2 id="ocean-title">Ocean</h2></div>
+        <p>관측·안전·Fishing·Surf·Marine Life·My Ocean·Vessel·확장 gate</p>
+      </div>
+      <div class="grid" id="oceanGrid"></div>
+    </section>
+
+    <section class="domain" aria-labelledby="space-title">
+      <div class="domain__heading space-heading">
+        <div><p class="section-label">AETHERUS V3</p><h2 id="space-title">Space</h2></div>
+        <p>Culture부터 Satellite·API·DB·Infra·Security·Release QA까지</p>
+      </div>
+      <div class="grid" id="spaceGrid"></div>
+    </section>
+
+    <section class="limits" aria-labelledby="limits-title">
+      <p class="section-label">EXTERNAL GATES</p>
+      <h2 id="limits-title">이 페이지가 증명하지 않는 것</h2>
+      <ul>
+        <li>Provider 상업 이용·재배포·캐시 권리 승인</li>
+        <li>운영 API·인증·RLS·CDN·결제·알림</li>
+        <li>실제 iPhone·iPad·Mac·Vision Pro 센서·성능·발열</li>
+        <li>운영 공개와 판매를 허용하는 PD 승인</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <a href="/">Earthus로 돌아가기</a>
+    <span>Canary revision 20260814-2</span>
+  </footer>
+  <script type="module" src="./canary.js?v=20260814-2"></script>
+</body>
+</html>

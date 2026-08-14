@@ -1,0 +1,40 @@
+{
+  "schema": "earthus.ais-provider-manifest.v1",
+  "revision": "2026-08-14-draft-1",
+  "entries": [
+    {
+      "id": "ais-regional-public-contract-slot",
+      "status": "DRAFT",
+      "featureFlag": "OFF",
+      "latencyClass": "LIVE",
+      "coverage": { "status": "DRAFT", "polygons": [] },
+      "redistribution": false,
+      "cacheTTLSeconds": 0,
+      "historyAllowed": false,
+      "attribution": null,
+      "termsUrl": null,
+      "licenseRevision": null,
+      "reviewedAt": null,
+      "rateLimit": { "minZoom": 8, "maxBboxAreaDeg2": 1, "maxPositionsPerRequest": 500 },
+      "freshness": null,
+      "external": { "allowed": false, "vesselUrlTemplate": null }
+    },
+    {
+      "id": "ais-commercial-global-contract-slot",
+      "status": "DRAFT",
+      "featureFlag": "OFF",
+      "latencyClass": "LIVE",
+      "coverage": { "status": "DRAFT", "polygons": [] },
+      "redistribution": false,
+      "cacheTTLSeconds": 0,
+      "historyAllowed": false,
+      "attribution": null,
+      "termsUrl": null,
+      "licenseRevision": null,
+      "reviewedAt": null,
+      "rateLimit": { "minZoom": 8, "maxBboxAreaDeg2": 1, "maxPositionsPerRequest": 500 },
+      "freshness": null,
+      "external": { "allowed": false, "vesselUrlTemplate": null }
+    }
+  ]
+}

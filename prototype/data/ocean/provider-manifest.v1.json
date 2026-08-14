@@ -1,0 +1,95 @@
+{
+  "schema": "earthus.ocean-provider-manifest.v1",
+  "revision": 1,
+  "entries": [
+    {
+      "sourceId": "open-meteo-marine",
+      "provider": "Open-Meteo",
+      "dataset": "Marine Weather API model grid",
+      "provenance": "FORECAST",
+      "rightsStatus": "DRAFT",
+      "license": null,
+      "sourceUrl": "https://marine-api.open-meteo.com/v1/marine",
+      "allowedOperations": [],
+      "freshnessPolicy": null,
+      "evidenceRefs": [
+        "aws/marine-grid/handler.py",
+        "aws/marine-ea/handler.py"
+      ]
+    },
+    {
+      "sourceId": "kma-marine-observation",
+      "provider": "Korea Meteorological Administration",
+      "dataset": "API Hub sea_obs and kma_buoy",
+      "provenance": "MEASURED",
+      "rightsStatus": "DRAFT",
+      "license": "Source output currently declares KOGL Type 1; approval evidence must be attached before public operation is enabled",
+      "sourceUrl": "https://apihub.kma.go.kr/",
+      "allowedOperations": [],
+      "freshnessPolicy": null,
+      "evidenceRefs": [
+        "aws/kma-ocean/handler.py"
+      ]
+    },
+    {
+      "sourceId": "noaa-ndbc-osmc",
+      "provider": "NOAA NDBC and NOAA OSMC/GTS",
+      "dataset": "Global buoy observations",
+      "provenance": "MEASURED",
+      "rightsStatus": "DRAFT",
+      "license": null,
+      "sourceUrl": "https://www.ndbc.noaa.gov/",
+      "allowedOperations": [],
+      "freshnessPolicy": null,
+      "evidenceRefs": [
+        "aws/ocean-solar/handler.py",
+        "prototype/js/layers/ocean.js"
+      ]
+    },
+    {
+      "sourceId": "earthus-lightning-official",
+      "provider": "Korea Meteorological Administration and Japan Meteorological Agency",
+      "dataset": "Earthus relay of official KMA/JMA lightning detection",
+      "provenance": "MEASURED",
+      "rightsStatus": "DRAFT",
+      "license": "Source output declares attribution terms; coverage and public reuse evidence remain under review",
+      "sourceUrl": "https://earthus.net/events/lightning.json",
+      "allowedOperations": [],
+      "freshnessPolicy": null,
+      "evidenceRefs": [
+        "aws/lightning/handler.py",
+        "aws/kma-lightning/handler.py",
+        "prototype/js/layers/lightning.js"
+      ]
+    },
+    {
+      "sourceId": "earthus-typhoon-official",
+      "provider": "KMA, JMA and NHC",
+      "dataset": "Agency-separated official tropical cyclone positions and forecasts",
+      "provenance": "FORECAST",
+      "rightsStatus": "DRAFT",
+      "license": "Agency-specific reuse and derived-area display evidence must be reviewed before public operation",
+      "sourceUrl": "https://earthus.net/events/typhoon-official.json",
+      "allowedOperations": [],
+      "freshnessPolicy": null,
+      "evidenceRefs": [
+        "aws/typhoon-official/handler.py"
+      ]
+    },
+    {
+      "sourceId": "official-coast-closure",
+      "provider": "Local beach and coast management authorities",
+      "dataset": "Official entry and operating closure notices",
+      "provenance": "MEASURED",
+      "rightsStatus": "DRAFT",
+      "license": null,
+      "sourceUrl": null,
+      "allowedOperations": [],
+      "freshnessPolicy": null,
+      "evidenceRefs": [
+        "aws/khoa-coast/handler.py",
+        "prototype/js/ocean/safety-adapters.js"
+      ]
+    }
+  ]
+}

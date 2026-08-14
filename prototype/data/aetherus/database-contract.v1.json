@@ -1,0 +1,41 @@
+{
+  "schema": "earthus.aetherus-database-contract.v1",
+  "revision": "aetherus-db-local-shadow-2026-08-14",
+  "status": "DRAFT",
+  "productionEnabled": false,
+  "tables": [
+    { "name": "CelestialObject", "primaryKey": "id", "columns": ["id", "type", "source_id", "ra_deg", "dec_deg"], "controls": ["SOURCE_REQUIRED"] },
+    { "name": "Observation", "primaryKey": "id", "columns": ["id", "celestial_object_id", "observed_at", "source_id"], "controls": ["APPEND_ONLY", "SOURCE_REQUIRED"] },
+    { "name": "MediaAsset", "primaryKey": "id", "columns": ["id", "source_url", "rights_record_id", "checksum_sha256"], "controls": ["RIGHTS_REQUIRED"] },
+    { "name": "CultureReference", "primaryKey": "id", "columns": ["id", "celestial_object_id", "rights_record_id", "source_id"], "controls": ["RIGHTS_REQUIRED", "SOURCE_REQUIRED"] },
+    { "name": "LaunchEvent", "primaryKey": "id", "columns": ["id", "mission_id", "status", "asserted_at", "source_id"], "controls": ["SOURCE_REQUIRED"] },
+    { "name": "LaunchSite", "primaryKey": "id", "columns": ["id", "name", "geometry", "source_id"], "controls": ["SOURCE_REQUIRED"] },
+    { "name": "Rocket", "primaryKey": "id", "columns": ["id", "name", "version", "source_id"], "controls": ["SOURCE_REQUIRED"] },
+    { "name": "Mission", "primaryKey": "id", "columns": ["id", "name", "source_id"], "controls": ["SOURCE_REQUIRED"] },
+    { "name": "Payload", "primaryKey": "id", "columns": ["id", "mission_id", "status", "source_id"], "controls": ["SOURCE_REQUIRED"] },
+    { "name": "SatelliteObject", "primaryKey": "id", "columns": ["id", "norad_id", "status", "source_id"], "controls": ["SOURCE_REQUIRED"] },
+    { "name": "OrbitSnapshot", "primaryKey": "id", "columns": ["id", "satellite_object_id", "epoch", "source_id"], "controls": ["APPEND_ONLY", "SOURCE_REQUIRED"] },
+    { "name": "UserObservation", "primaryKey": "id", "columns": ["id", "owner_id", "observed_at", "location_ref", "deleted_at"], "controls": ["RLS_OWNER", "SOFT_DELETE"] },
+    { "name": "MediaRendition", "primaryKey": "id", "columns": ["id", "media_asset_id", "format", "checksum_sha256"], "controls": ["CHECKSUM_REQUIRED"] },
+    { "name": "MissionControlProfile", "primaryKey": "id", "columns": ["id", "owner_id", "revision", "deleted_at"], "controls": ["RLS_OWNER", "SOFT_DELETE"] },
+    { "name": "MissionControlWidget", "primaryKey": "id", "columns": ["id", "profile_id", "revision", "deleted_at"], "controls": ["RLS_OWNER", "SOFT_DELETE"] },
+    { "name": "Follow", "primaryKey": "id", "columns": ["id", "owner_id", "target_type", "target_id", "deleted_at"], "controls": ["RLS_OWNER", "SOFT_DELETE"] },
+    { "name": "AlertRule", "primaryKey": "id", "columns": ["id", "owner_id", "target_type", "enabled", "deleted_at"], "controls": ["RLS_OWNER", "SOFT_DELETE"] },
+    { "name": "Entitlement", "primaryKey": "id", "columns": ["id", "owner_id", "tier", "status", "asserted_at"], "controls": ["SERVER_AUTHORITY"] },
+    { "name": "ProviderSource", "primaryKey": "id", "columns": ["id", "authority", "source_url", "rights_record_id"], "controls": ["RIGHTS_REQUIRED"] },
+    { "name": "RightsRecord", "primaryKey": "id", "columns": ["id", "status", "source_url", "checked_at"], "controls": ["HUMAN_REVIEW"] },
+    { "name": "IngestionJob", "primaryKey": "id", "columns": ["id", "provider_source_id", "idempotency_key", "state"], "controls": ["IDEMPOTENT"] },
+    { "name": "AuditLog", "primaryKey": "id", "columns": ["id", "actor_ref", "action", "occurred_at"], "controls": ["APPEND_ONLY"] },
+    { "name": "Notification", "primaryKey": "id", "columns": ["id", "owner_id", "state", "created_at", "deleted_at"], "controls": ["RLS_OWNER", "SOFT_DELETE"] },
+    { "name": "SearchDocument", "primaryKey": "id", "columns": ["id", "object_type", "object_id", "content_revision"], "controls": ["NO_PRIVATE_FIELDS"] }
+  ],
+  "indexes": [
+    { "name": "launch_site_geo_gist", "kind": "GIST_GEO", "table": "LaunchSite", "columns": ["geometry"] },
+    { "name": "celestial_object_radec", "kind": "BTREE_COMPOSITE", "table": "CelestialObject", "columns": ["ra_deg", "dec_deg"] },
+    { "name": "search_document_object", "kind": "BTREE_COMPOSITE", "table": "SearchDocument", "columns": ["object_type", "object_id"] }
+  ],
+  "retention": { "softDeleteDays": 30, "auditMinimumDays": 365 },
+  "migrationEvidence": null,
+  "approvedAt": null,
+  "approvedBy": null
+}

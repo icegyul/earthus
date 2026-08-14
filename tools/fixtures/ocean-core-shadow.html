@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <link rel="icon" href="data:,">
+  <title>Ocean Core local shadow review</title>
+  <style>
+    :root { color-scheme: dark; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 0; background: #07131a; color: #e7f3f6; }
+    main { width: min(100%, 1040px); margin: 0 auto; padding: 24px; }
+    .fixture-warning { margin: 0 0 16px; color: #ffcc80; font-weight: 750; letter-spacing: .03em; }
+    nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    button { min-width: 112px; min-height: 44px; padding: 10px 14px; border: 1px solid #45606a;
+      border-radius: 4px; background: #10242d; color: inherit; font: inherit; cursor: pointer; }
+    button[aria-pressed="true"] { border-color: #6dd8e5; background: #173944; }
+    .ocean-core-shadow { min-width: 0; border: 1px solid #29444d; background: #0b1b22; padding: 24px; }
+    .ocean-core-shadow header { border-bottom: 1px solid #29444d; padding-bottom: 16px; }
+    .ocean-core-shadow small { color: #83dbe4; letter-spacing: .12em; }
+    h2 { margin: 8px 0; font-size: clamp(1.55rem, 4vw, 2.5rem); }
+    h3 { margin-top: 28px; font-size: 1rem; color: #a8cbd1; }
+    p, li, dd { overflow-wrap: anywhere; line-height: 1.55; }
+    dl { display: grid; grid-template-columns: minmax(90px, 150px) 1fr; gap: 8px 16px; }
+    dt { color: #9db9bf; } dd { margin: 0; font-weight: 700; }
+    ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
+      padding: 0; list-style: none; }
+    li { min-width: 0; padding: 12px; border-left: 3px solid #3b6973; background: #0d222a; }
+    code, time { color: #b9dbe0; font: .86rem ui-monospace, SFMono-Regular, Menlo, monospace; }
+    footer { margin-top: 28px; padding-top: 16px; border-top: 1px solid #29444d; color: #ffcc80; }
+    [data-state="BLOCKED"] header { border-top: 5px solid #ff6b5f; }
+    [data-state="UNKNOWN"] header { border-top: 5px solid #ffcc80; }
+    [data-state="NO_BLOCKING_EVIDENCE"] header { border-top: 5px solid #6dd8e5; }
+    @media (max-width: 620px) {
+      main { padding: 14px; }
+      .ocean-core-shadow { padding: 16px; }
+      ul { grid-template-columns: minmax(0, 1fr); }
+      button { flex: 1 1 100px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="fixture-warning">FIXTURE ONLY · 운영 관측 또는 공개 화면이 아닙니다.</p>
+    <nav aria-label="검수 상태 선택">
+      <button type="button" data-mode="blocked">차단</button>
+      <button type="button" data-mode="unknown">자료 불명</button>
+      <button type="button" data-mode="clear">차단 근거 미확인</button>
+    </nav>
+    <div id="oceanShadowHost"></div>
+  </main>
+  <script type="module" src="./ocean-core-shadow-harness.js"></script>
+</body>
+</html>

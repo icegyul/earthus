@@ -1,0 +1,16 @@
+{
+  "schema": "earthus.aetherus-api-policy.v1",
+  "revision": "aetherus-api-local-shadow-2026-08-14",
+  "status": "DRAFT",
+  "productionEnabled": false,
+  "apiVersion": "v1",
+  "basePath": "/api/v1",
+  "maxPageSize": 100,
+  "idempotency": {
+    "minKeyLength": 8,
+    "maxKeyLength": 128,
+    "ttlSeconds": 86400
+  },
+  "approvedAt": null,
+  "approvedBy": null
+}

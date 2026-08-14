@@ -85,7 +85,11 @@ export const CONFIG = {
         이 파일은 브라우저로 그대로 내려갑니다.                            */
   CHECKOUT_URL: '',   // 예: https://xxxx.supabase.co/functions/v1/checkout
   CONFIRM_URL:  '',   // 예: https://xxxx.supabase.co/functions/v1/payment-confirm
-  SALES_OPEN: false,  // ⚠️ 통신판매업 신고·상품 검증이 끝나기 전에는 true 금지
+  /* PD가 "유료서비스 시작하자"라고 명시하기 전까지 FREE_OPEN 고정.
+     FREE_OPEN에서는 준비된 기능을 모두 무료로 열고 결제는 닫는다.
+     권리·안전·개인정보·provider 미준비 gate는 이 값과 관계없이 유지한다. */
+  MONETIZATION_MODE: 'FREE_OPEN',
+  SALES_OPEN: false,  // ⚠️ MONETIZATION_MODE=PAID와 법/상품 검증 전에는 true 금지
   /* 구독 안내 화면으로 가는 문. false 면 설정의 '구독'·'사전등록' 줄과
      유료 안내 팝업이 아예 안 뜬다. SALES_OPEN(결제)과 별개의 스위치다. */
   SHOW_SUBSCRIBE: false,

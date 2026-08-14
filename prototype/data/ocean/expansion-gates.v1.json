@@ -1,0 +1,53 @@
+{
+  "schema": "earthus.ocean-expansion-gates.v1",
+  "evaluatedAt": "2026-08-14T12:00:00Z",
+  "overall": "BLOCKED_EXTERNAL",
+  "gates": [
+    {
+      "id": "G1",
+      "name": "INTEREST_VALIDATION",
+      "status": "CLOSED",
+      "requiredEvidence": ["vessel_menu_mau", "vessel_search_count", "approved_external_link_conversion"],
+      "evidence": null,
+      "reason": "ANALYTICS_POLICY_AND_MEASUREMENT_NOT_APPROVED"
+    },
+    {
+      "id": "G2",
+      "name": "COST_VALIDATION",
+      "status": "CLOSED",
+      "requiredEvidence": ["approved_arpu", "provider_cost_per_user", "monthly_call_forecast", "concurrent_user_forecast"],
+      "evidence": null,
+      "reason": "PROVIDER_QUOTE_AND_APPROVED_REVENUE_MODEL_MISSING"
+    },
+    {
+      "id": "G3",
+      "name": "CONTRACT_REVIEW",
+      "status": "CLOSED",
+      "requiredEvidence": ["commercial_use", "display_right", "redistribution_right", "cache_right", "history_right", "legal_approval"],
+      "evidence": null,
+      "reason": "AIS_AND_BOOKING_RIGHTS_NOT_APPROVED"
+    },
+    {
+      "id": "G4",
+      "name": "TECHNICAL_EXPANSION",
+      "status": "CLOSED",
+      "requiredEvidence": ["stream_ingestion_load_test", "geofence_accuracy_test", "history_retention_test", "provider_failure_drill", "cost_guardrail"],
+      "evidence": null,
+      "reason": "G3_AND_OPERATING_TESTS_MISSING"
+    },
+    {
+      "id": "G5",
+      "name": "B2B_READINESS",
+      "status": "CLOSED",
+      "requiredEvidence": ["port_or_logistics_contract", "signed_sla", "support_owner", "incident_process", "data_processing_review"],
+      "evidence": null,
+      "reason": "NO_SIGNED_B2B_CONTRACT_OR_SLA"
+    }
+  ],
+  "capabilities": [
+    { "id": "GLOBAL_AIS", "productionEnabled": false, "requires": ["G1", "G2", "G3", "G4"] },
+    { "id": "VESSEL_GEOFENCE_ALERT", "productionEnabled": false, "requires": ["G1", "G2", "G3", "G4"] },
+    { "id": "OCEAN_BOOKING", "productionEnabled": false, "requires": ["G1", "G2", "G3", "G4"] },
+    { "id": "PORT_LOGISTICS_B2B", "productionEnabled": false, "requires": ["G1", "G2", "G3", "G4", "G5"] }
+  ]
+}

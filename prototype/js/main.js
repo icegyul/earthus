@@ -22,6 +22,7 @@ import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast 
 import { i18n } from './i18n.js';
 import { auth } from './auth.js';
 import { CONFIG } from './config.local.js';   // ⚠️ config.js 가 아니다 — CONFIG 는 여기 있다
+import { subscriptionUiAllowed } from './access-mode.js';
 import { initAccount, loginSheet, consentSheet, accountSheet,
          legalView, waitlistUI } from './ui-account.js';
 import { analytics } from './analytics.js';
@@ -522,7 +523,8 @@ async function boot() {
   /* 구독 — ⚠️ 늦게 불러온다(안 여는 사람에게 짐이 되면 안 된다). */
   /* ⚠️ CONFIG.SHOW_SUBSCRIBE 가 false 면 **줄 자체를 없앤다.**
      숨기기(hidden)만 하면 소스에 남고 키보드 탭에도 걸린다. */
-  if (CONFIG.SHOW_SUBSCRIBE) {
+  if (subscriptionUiAllowed({ mode: CONFIG.MONETIZATION_MODE,
+    showSubscribe: CONFIG.SHOW_SUBSCRIBE })) {
     document.getElementById('btnSubscribe')?.addEventListener('click', async () => {
       const { subscribeSheet } = await import('./ui-subscribe.js');
       subscribeSheet.open();

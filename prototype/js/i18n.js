@@ -18,6 +18,7 @@ const KO = {
   soon: '준비 중',
   blockedProxy: '서버 프록시 필요 (AWS 연결 후)',
   blockedAuth: '연구자 계정 필요',
+  blockedProvider: '자료 제공사 연결 준비 중',
   blockedPaid: '유료 API — Phase 2',
   close: '닫기',
   now: '지금',
@@ -74,6 +75,7 @@ const EN = {
   soon: 'Coming soon',
   blockedProxy: 'Needs server proxy (after AWS)',
   blockedAuth: 'Needs researcher account',
+  blockedProvider: 'Data provider connection in preparation',
   blockedPaid: 'Paid API — Phase 2',
   close: 'Close',
   now: 'now',
@@ -197,7 +199,7 @@ export const i18n = {
     'wl.lead':  { ko: '사전등록 항목은 이메일 주소 하나입니다. 유료 서비스가 열리는 날 안내해 드립니다.',
                   en: 'Pre-registration collects one email address. We will write when the paid service opens.' },
     'wl.h1':    { ko: '출시 때 함께 여는 것', en: 'What opens at launch' },
-    /* ⚠️ 항공기·선박은 지금 자료원이 없다 (config.js 에서 blocked:'paid').
+    /* ⚠️ 항공기·선박은 지금 자료원이 없다 (config.js 에서 blocked:'provider').
        "곧"이라고 쓰지 않고 "지금은 아직 없습니다"를 문장 안에 넣어 둔다. */
     'wl.i0':    { ko: '항공기 · 선박 실시간 위치 — 유료 자료 제공사 계약 후 공개',
                   en: 'Live aircraft & ship positions — opens after the paid data-provider contract' },

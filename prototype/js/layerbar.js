@@ -1065,7 +1065,7 @@ export const layerBar = {
       if (!it.ready || !def || def.blocked) {
         b.classList.add('blocked');
         b.onclick = () => toast(ko ? '아직 준비 중입니다' : 'Coming soon');
-      } else if (def.tier === TIER.PAID && !store.isPaid()) {
+      } else if (!store.canUse(def)) {
         /* 잠긴 레이어를 누르면 토스트 한 줄만 뜨고 끝이었다.
            "구독하고 열기"라고 써놓고 열 방법을 안 주면 안내가 아니다. */
         b.classList.add('locked');

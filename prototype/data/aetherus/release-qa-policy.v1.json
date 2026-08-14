@@ -1,0 +1,16 @@
+{
+  "schema": "earthus.aetherus-release-qa-policy.v1",
+  "revision": "aetherus-release-qa-local-shadow-2026-08-14",
+  "status": "DRAFT",
+  "productionEnabled": false,
+  "evidenceBySheet": {
+    "279": ["tools/test_aetherus_database_contract.mjs", "tools/test_aetherus_infrastructure_contract.mjs"],
+    "284": ["tools/test_aetherus_mission_control.mjs", "tools/test_aetherus_platform_operating_contract.mjs"],
+    "286": ["tools/test_aetherus_sky_ar.mjs", "tools/test_aetherus_release_qa_contract.mjs"],
+    "291": ["tools/test_aetherus_release_qa_contract.mjs"],
+    "295": ["tools/test_aetherus_release_qa_contract.mjs", "docs/earthus-v23/AETHERUS_RELEASE_DATA_ROLLBACK_HOTFIX.md"]
+  },
+  "releaseCandidateEvidence": null,
+  "approvedAt": null,
+  "approvedBy": null
+}

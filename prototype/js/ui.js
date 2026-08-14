@@ -7,6 +7,7 @@ import { i18n } from './i18n.js';
 import { LAYER_DEFS, TIER, T, GLOBAL_EVENT, PAID_CAP } from './config.js';
 /* ⚠️ CONFIG 는 config.local.js 에 있다 (git 제외 대상). billing.js·auth.js 와 같은 출처. */
 import { CONFIG } from './config.local.js';
+import { subscriptionUiAllowed } from './access-mode.js';
 import { registry, pointLayers } from './layers/registry.js';
 import { fetchWeather, wxText } from './layers/weather.js';
 import { lookupPlace, lookupWaves, lookupWaveModel, compass, seaState } from './place.js';
@@ -191,9 +192,10 @@ export const chips = {
         if (d.blocked) {
           b.classList.add('blocked');
           b.title = d.blocked === 'proxy' ? i18n.t.blockedProxy
-            : d.blocked === 'auth' ? i18n.t.blockedAuth : i18n.t.blockedPaid;
+            : d.blocked === 'auth' ? i18n.t.blockedAuth
+              : d.blocked === 'provider' ? i18n.t.blockedProvider : i18n.t.blockedPaid;
           b.onclick = () => toast(b.title);
-        } else if (d.tier === TIER.PAID && !store.isPaid()) {
+        } else if (!store.canUse(d)) {
           b.classList.add('locked');
           b.title = i18n.t.locked;
           b.onclick = () => toast(i18n.t.unlock);
@@ -210,7 +212,7 @@ export const chips = {
   sync() {
     document.querySelectorAll('#chips .chip').forEach(b => {
       const d = LAYER_DEFS.find(x => x.id === b.dataset.id);
-      if (d && !d.blocked && (d.tier === TIER.FREE || store.isPaid())) {
+      if (d && store.canUse(d)) {
         b.classList.toggle('on', store.isOn(d.id));
       }
     });
@@ -1338,7 +1340,8 @@ function renderPaidHint(rows, cap) {
   box.innerHTML = `<div class="ph-head">✦ ${TXT[0]}</div><p>${TXT[1]}</p>`;
   /* ⚠️ 구독을 감춰 둔 동안에는 버튼 대신 '준비 중' 한 줄만.
      누를 곳이 없으면 안 만든다 — 눌러도 아무 일 없는 버튼이 제일 나쁘다. */
-  if (CONFIG.SHOW_SUBSCRIBE) {
+  if (subscriptionUiAllowed({ mode: CONFIG.MONETIZATION_MODE,
+    showSubscribe: CONFIG.SHOW_SUBSCRIBE })) {
     const btn = el('button', 'ph-btn', ko ? '구독 알아보기' : 'See subscription');
     btn.onclick = async () => {
       const { subscribeSheet } = await import('./ui-subscribe.js');
@@ -1814,7 +1817,8 @@ function renderTierRow(ko) {
      '무료' 배지만 남겨 두면 "돈 내면 뭔가 있나"를 묻게 만든다 —
      팔 물건이 준비되기 전에는 묻게 하지 않는 편이 낫다.
      단, **이미 결제한 분**에게는 상태와 관리 버튼이 계속 보여야 한다. */
-  if (!CONFIG.SHOW_SUBSCRIBE && !paid) {
+  if (!subscriptionUiAllowed({ mode: CONFIG.MONETIZATION_MODE,
+    showSubscribe: CONFIG.SHOW_SUBSCRIBE }) && !paid) {
     box.style.display = 'none';
     /* 받은 지시: "유료메뉴로 진행된다고 안내하고" — 파는 대신 알린다.
        사전등록 줄이 바로 아래에 있으므로 갈 곳도 함께 가리킨다. */

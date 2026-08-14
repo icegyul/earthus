@@ -1,0 +1,9 @@
+{
+  "schema": "earthus.aetherus-satellite-policy.v1",
+  "revision": "2026-08-14-draft-1",
+  "status": "DRAFT",
+  "productionEnabled": false,
+  "orbitFreshness": { "freshSeconds": 21600, "staleSeconds": 86400, "maxUseSeconds": 259200 },
+  "approvedAt": null,
+  "approvedBy": null
+}

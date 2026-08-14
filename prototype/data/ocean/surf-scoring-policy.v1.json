@@ -1,0 +1,10 @@
+{
+  "schema": "earthus.ocean-surf-scoring-policy.v1",
+  "revision": 1,
+  "status": "DRAFT",
+  "effectiveAt": null,
+  "approvedBy": null,
+  "sourceRefs": [],
+  "skills": {},
+  "note": "No production thresholds are approved. A DRAFT policy must return score=null."
+}

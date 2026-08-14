@@ -1,0 +1,11 @@
+{
+  "schema": "earthus.aetherus-mission-control-policy.v1",
+  "revision": "2026-08-14-draft-1",
+  "status": "DRAFT",
+  "productionEnabled": false,
+  "editFeature": "MISSION_CONTROL_EDIT",
+  "maxRooms": 8,
+  "maxWidgetsPerRoom": 16,
+  "approvedAt": null,
+  "approvedBy": null
+}

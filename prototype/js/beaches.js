@@ -20,6 +20,7 @@ import { distKm } from './korea.js';
 /* 일본 해변 이름을 기기 언어에 맞춰 고른다 */
 import { jpName } from './jpname.js';
 import { i18n } from './i18n.js';
+import { openMeteoTimeToIso } from './ocean/observation-contract.js';
 
 const SRC = 'data/beaches.json';
 const JP_SRC = 'data/jp/beaches.json';
@@ -79,11 +80,14 @@ export function shortRegion(r) {
    ⚠️ 예보 곡선의 봉우리·골을 찾는 것이지 조화분해가 아니다. 시간 간격이 1시간이라
       실제 만조 시각과 최대 30분쯤 어긋날 수 있다 — 화면에 그렇게 적는다.
    ⚠️ 못 내면 null. 지어내지 않는다. */
-function tideOf(hourly) {
+function tideOf(hourly, utcOffsetSeconds = null) {
   const t = hourly?.time, h = hourly?.sea_level_height_msl;
   if (!t?.length || !h?.length) return null;
   const now = Date.now();
-  const pts = t.map((x, i) => ({ at: new Date(x).getTime(), v: h[i] }))
+  const pts = t.map((x, i) => ({
+    at: Date.parse(openMeteoTimeToIso(x, { utc_offset_seconds: utcOffsetSeconds }) || ''),
+    v: h[i],
+  }))
     .filter(x => x.v != null && Number.isFinite(x.at));
   if (pts.length < 6) return null;
 
@@ -215,7 +219,8 @@ export const beaches = {
         // 조위는 시간별로 받아야 만조·간조를 낼 수 있다 (현재값 하나로는 못 낸다)
         hourly: 'sea_level_height_msl',
         forecast_days: '2',
-        timezone: 'auto',
+        timezone: 'GMT',
+        cell_selection: 'sea',
       });
       try {
         const r = await fetchT(`${API.MARINE}?${q}`);
@@ -233,8 +238,8 @@ export const beaches = {
             swellPeriod: c.swell_wave_period,
             windH: c.wind_wave_height, windPeriod: c.wind_wave_period,
             sst: c.sea_surface_temperature,
-            at: c.time,
-            tide: tideOf(row.hourly),
+            at: openMeteoTimeToIso(c.time, row),
+            tide: tideOf(row.hourly, row.utc_offset_seconds),
           });
         });
       } catch (e) {                                        // noqa

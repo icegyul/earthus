@@ -310,8 +310,8 @@ export const LAYER_DEFS = [
   { id:'news',     kind:'event',   tier:TIER.FREE, on:false, group:'events' },
   { id:'wildlife', kind:'line',    tier:TIER.FREE, on:false, group:'nature', blocked:'auth'  },
   { id:'plastic',  kind:'imagery', tier:TIER.FREE, on:false, group:'ocean',  blocked:'proxy' },
-  { id:'flight',   kind:'point',   tier:TIER.FREE, on:false, group:'transit',blocked:'paid'  },
-  { id:'ship',     kind:'point',   tier:TIER.FREE, on:false, group:'transit',blocked:'paid'  },
+  { id:'flight',   kind:'point',   tier:TIER.FREE, on:false, group:'transit',blocked:'provider' },
+  { id:'ship',     kind:'point',   tier:TIER.FREE, on:false, group:'transit',blocked:'provider' },
 ];
 
 /* ── 이벤트 전지구 노출 임계 (§5-10) ──────────────────────────── */

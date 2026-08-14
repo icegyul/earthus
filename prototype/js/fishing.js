@@ -27,6 +27,7 @@ import { distKm } from './korea.js';
 /* 일본 지점 이름을 기기 언어에 맞춰 */
 import { jpName } from './jpname.js';
 import { i18n } from './i18n.js';
+import { openMeteoTimeToIso } from './ocean/observation-contract.js';
 
 const SRC = 'data/fishing.json';
 const JP_SRC = 'data/jp/fishing.json';
@@ -80,11 +81,14 @@ function askPoint(s) {
 /* 시간별 조위에서 오늘의 조차·다음 만조/간조를 낸다.
    ⚠️ 예보 곡선의 봉우리·골을 찾는 것이지 조화분해가 아니다.
       시간 간격이 1시간이라 실제 시각과 최대 30분쯤 어긋난다 — 화면에 그렇게 적는다. */
-function tideOf(hourly) {
+function tideOf(hourly, utcOffsetSeconds = null) {
   const t = hourly?.time, h = hourly?.sea_level_height_msl;
   if (!t?.length || !h?.length) return null;
   const now = Date.now();
-  const pts = t.map((x, i) => ({ at: new Date(x).getTime(), v: h[i] }))
+  const pts = t.map((x, i) => ({
+    at: Date.parse(openMeteoTimeToIso(x, { utc_offset_seconds: utcOffsetSeconds }) || ''),
+    v: h[i],
+  }))
     .filter(x => x.v != null && Number.isFinite(x.at));
   if (pts.length < 12) return null;
 
@@ -142,6 +146,14 @@ function tideOf(hourly) {
     rising: next.length ? next[0].kind === 'high' : null,
     days: ranges.length,
   };
+}
+
+/** Open-Meteo 해류 기본 단위는 km/h다. 단위를 확인한 값만 m/s로 화면에 넘긴다. */
+export function currentVelocityMs(value, sourceUnit) {
+  if (value == null || !Number.isFinite(Number(value))) return null;
+  if (sourceUnit === 'm/s') return Number(value);
+  if (sourceUnit === 'km/h') return Number(value) / 3.6;
+  return null;
 }
 
 /** 지금 나가도 되는가 — **값의 전달이지 판정이 아니다.**
@@ -273,7 +285,9 @@ export const fishing = {
         current: MARINE_FIELDS,
         hourly: 'sea_level_height_msl',
         forecast_days: String(N_DAYS),
-        timezone: 'auto',
+        timezone: 'GMT',
+        wind_speed_unit: 'ms',
+        cell_selection: 'sea',
       });
       try {
         const r = await fetchT(`${API.MARINE}?${q}`);
@@ -286,15 +300,17 @@ export const fishing = {
           if (!s || !c) return;
           /* ⚠️ 파고가 없어도 조위는 있을 수 있다(항구 안쪽). 통째로 버리지 않는다 —
              물때만 알려주는 것도 낚시에는 쓸모가 있다. */
-          const tide = tideOf(row.hourly);
+          const tide = tideOf(row.hourly, row.utc_offset_seconds);
           if (c.wave_height == null && !tide) return;
           this._sea.set(s.name, {
             waveH: c.wave_height, wavePeriod: c.wave_period,
             swellH: c.swell_wave_height, swellPeriod: c.swell_wave_period,
             windH: c.wind_wave_height,
             sst: c.sea_surface_temperature,
-            cur: c.ocean_current_velocity,
-            at: c.time, tide,
+            cur: currentVelocityMs(c.ocean_current_velocity,
+              row.current_units?.ocean_current_velocity),
+            curSourceUnit: row.current_units?.ocean_current_velocity || null,
+            at: openMeteoTimeToIso(c.time, row), tide,
           });
         });
       } catch (e) {                                          // noqa

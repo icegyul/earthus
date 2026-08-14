@@ -1,0 +1,11 @@
+{
+  "schema": "earthus.aetherus-rendition-policy.v1",
+  "revision": "2026-08-14-draft-1",
+  "status": "DRAFT",
+  "productionEnabled": false,
+  "formatPreference": ["AVIF", "WEBP", "JPEG"],
+  "deepZoom": { "tileSize": 256, "overlap": 1, "minDimension": 4096, "format": "WEBP" },
+  "queue": { "maxAttempts": 3, "maxQueuedBytes": 536870912, "maxConcurrent": 4 },
+  "approvedAt": null,
+  "approvedBy": null
+}

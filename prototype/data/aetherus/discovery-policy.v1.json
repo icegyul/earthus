@@ -1,0 +1,16 @@
+{
+  "schema": "earthus.discovery-policy.v1",
+  "revision": "earthus-aetherus-discovery-local-shadow-2026-08-14",
+  "status": "DRAFT",
+  "productionEnabled": false,
+  "telescopeProviders": [
+    {
+      "id": "fixture-telescope-provider",
+      "status": "DRAFT",
+      "sourceUrl": "https://example.test/telescope-catalog",
+      "rightsRecordId": "rights-fixture-telescope"
+    }
+  ],
+  "approvedAt": null,
+  "approvedBy": null
+}

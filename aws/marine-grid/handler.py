@@ -70,13 +70,27 @@ def fetch_batch(pts, tries=4):
         "longitude": ",".join(f"{p[1]:.2f}" for p in pts),
         "current": ",".join(v[0] for v in VARS),
         "timezone": "UTC",
+        # Open-Meteo 해류 기본값은 km/h다. 출력 계약은 m/s이므로 요청부터 고정한다.
+        "wind_speed_unit": "ms",
+        "cell_selection": "sea",
     })
     wait = 8
     for attempt in range(tries):
         try:
             with urllib.request.urlopen(f"{API}?{q}", timeout=45) as r:
                 d = json.load(r)
-            return d if isinstance(d, list) else [d]
+            rows = d if isinstance(d, list) else [d]
+            for item in rows:
+                current = (item or {}).get("current") or {}
+                value = current.get("ocean_current_velocity")
+                if value is None:
+                    continue
+                unit = ((item or {}).get("current_units") or {}).get("ocean_current_velocity")
+                if unit == "km/h":
+                    current["ocean_current_velocity"] = value / 3.6
+                elif unit != "m/s":
+                    raise ValueError(f"해류 단위 불명: {unit!r}")
+            return rows
         except urllib.error.HTTPError as e:
             if e.code != 429 or attempt == tries - 1:
                 raise

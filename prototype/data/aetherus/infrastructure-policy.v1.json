@@ -1,0 +1,30 @@
+{
+  "schema": "earthus.aetherus-infrastructure-policy.v1",
+  "revision": "aetherus-infrastructure-local-shadow-2026-08-14",
+  "status": "DRAFT",
+  "productionEnabled": false,
+  "cache": { "hotSeconds": 300, "warmSeconds": 86400, "staleWhileRevalidateSeconds": 3600 },
+  "storage": {
+    "prefixes": {
+      "publicRendition": "public/renditions/",
+      "privateOriginal": "private/originals/",
+      "quarantine": "quarantine/"
+    },
+    "lifecycle": { "privateOriginalDays": 365, "quarantineDays": 30 }
+  },
+  "providers": [
+    {
+      "id": "fixture-space-provider",
+      "requestLimit": 60,
+      "windowSeconds": 60,
+      "failureThreshold": 3,
+      "retryAttempts": 3,
+      "backoffSeconds": [1, 5, 30],
+      "schedule": "DRAFT_NOT_SCHEDULED"
+    }
+  ],
+  "autoscaling": { "cpuScaleOutPercent": 70, "queueDepthScaleOut": 100, "minReplicas": 1, "maxReplicas": 4 },
+  "infrastructureEvidence": null,
+  "approvedAt": null,
+  "approvedBy": null
+}

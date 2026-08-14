@@ -13,6 +13,7 @@ import { billing, PLANS, PAID_FEATURES, FREE_FEATURES } from './billing.js';
 import { i18n } from './i18n.js';
 import { CONFIG } from './config.local.js';
 import { toast } from './ui.js';
+import { salesAllowed, subscriptionUiAllowed } from './access-mode.js';
 
 const $ = s => document.querySelector(s);
 const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
@@ -44,7 +45,8 @@ export const subscribeSheet = {
   open(reason) {
     /* ⚠️⚠️ **마지막 방어선.** 진입점을 다 지워도 딥링크·옛 코드가 부를 수 있다.
        여기서 막으면 어느 경로로 와도 안 열린다. (2026-08-06) */
-    if (!CONFIG.SHOW_SUBSCRIBE) return;
+    if (!subscriptionUiAllowed({ mode: CONFIG.MONETIZATION_MODE,
+      showSubscribe: CONFIG.SHOW_SUBSCRIBE })) return;
     this._reason = reason || null;
     $('#subSheet').classList.add('up');
     this.render();
@@ -199,13 +201,15 @@ export const subscribeSheet = {
           Smithsonian GVP도 상업 이용은 사전 허가가 필요하다. 둘 다 검증하지 않으면 안 열린다. */
     const dataReady = CONFIG.OPEN_METEO_COMMERCIAL_READY === true
       && CONFIG.GVP_COMMERCIAL_READY === true;
-    const salesReady = CONFIG.SALES_OPEN && dataReady;
+    const salesReady = salesAllowed({ mode: CONFIG.MONETIZATION_MODE,
+      salesOpen: CONFIG.SALES_OPEN }) && dataReady;
     const provs = salesReady ? billing.providers() : [];
     if (!provs.length) {
       /* ⚠️ 여기가 지금 상태다. 버튼을 눌러도 결제가 안 되므로,
          "곧 됩니다"가 아니라 "무엇이 없어서 안 되는지"를 쓴다. */
       const box = el('div', 'pay-pending');
-      const dataBlocked = CONFIG.SALES_OPEN && !dataReady;
+      const dataBlocked = salesAllowed({ mode: CONFIG.MONETIZATION_MODE,
+        salesOpen: CONFIG.SALES_OPEN }) && !dataReady;
       box.innerHTML = `<b>${ko ? '결제 준비 중' : 'Payments in preparation'}</b>`
         + `<p>${dataBlocked
           ? (ko

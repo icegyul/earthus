@@ -6,7 +6,9 @@
 ## 0. 한 줄 요약
 
 **earthus (earthus.net)** — 공공 관측 자료를 3D 지구본에 실시간으로 보여주는 웹 서비스.
-1인(김정우 PD, 상호 달루어/dalur) 운영. 2026-08-04 정식 오픈, 현재 전 기능 무료.
+1인(김정우 PD, 상호 달루어/dalur) 운영. 2026-08-04 정식 오픈, 현재 사용 가능한 전 기능 무료.
+2026-08-14 PD 지시로 **"유료서비스 시작하자" 명시 전까지 `MONETIZATION_MODE=FREE_OPEN`**이다.
+미준비·권리·안전·개인정보 gate는 무료 여부와 별개로 계속 닫힌다.
 호칭은 **"PD"** (사장님 아님).
 
 ### 현재 종료점과 다음 외부 관문
@@ -401,9 +403,14 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
 
 ## 8. 지금 상태와 잠긴 것
 
-- 2026-08-04 정식 오픈. 전 기능 무료. **유료 판매는 SALES_OPEN=false 로 잠김** —
+- 2026-08-04 정식 오픈. 사용 가능한 전 기능 무료.
+  **`MONETIZATION_MODE=FREE_OPEN`, `SALES_OPEN=false`, `SHOW_SUBSCRIBE=false`**로 고정한다.
+  PD가 "유료서비스 시작하자"라고 명시하기 전에는 유료 mode나 구독 잠금을 열지 않는다.
+  상세 정본은 [`earthus-v23/FREE-ACCESS-POLICY-2026-08-14.md`](earthus-v23/FREE-ACCESS-POLICY-2026-08-14.md)다.
+  **유료 판매는 SALES_OPEN=false 로 잠김** —
   통신판매업 신고(신고번호) 전에는 열지 않는다. 열 때: config.local.js 의
-  SALES_OPEN=true + 약관·처리방침의 자리표시자 3곳(주소·전화·신고번호) 채우기.
+  `MONETIZATION_MODE=PAID` + SALES_OPEN=true + 약관·처리방침의 자리표시자
+  3곳(주소·전화·신고번호) 채우기. 창립 멤버 반값 checkout 검증도 필수다.
 - Personal Pro 요금(2026-08-05 결정): **월 ₩5,900/$4.99 · 연 ₩49,000/$39**.
   화면 표시값은 `billing.js`, 실제 청구 정본은 Supabase `plans` 표다 — 둘을 항상 함께 바꾼다.
 - 판매 가능 상태를 만드는 현재 실행 정본은

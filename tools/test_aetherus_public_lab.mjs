@@ -37,8 +37,8 @@ for (const id of ['free-access', 'culture', 'mission', 'media', 'launch', 'satel
 assert.doesNotMatch(js, /fetch\(['"]https?:\/\//i);
 assert.doesNotMatch(js, /WebSocket|EventSource|navigator\.sendBeacon/);
 assert.equal(ledger.entries.length, 296);
-assert.equal(ledger.entries.filter(entry => entry.productionStatus === 'LOCAL_EVIDENCE_ONLY').length, 181);
-assert.equal(ledger.entries.filter(entry => entry.productionStatus === 'PARTIAL_RUNTIME').length, 15);
+assert.equal(ledger.entries.filter(entry => entry.productionStatus === 'LOCAL_EVIDENCE_ONLY').length, 183);
+assert.equal(ledger.entries.filter(entry => entry.productionStatus === 'PARTIAL_RUNTIME').length, 13);
 assert.equal(ledger.entries.filter(entry => entry.productionStatus === 'BLOCKED_EXTERNAL').length, 100);
 assert.equal(ledger.entries.some(entry => entry.productionStatus === 'NOT_RELEASED'), false);
 
@@ -63,4 +63,4 @@ assert.match(qaJs, /originalFilenameStored:\s*false/);
 assert.match(qaJs, /uploaded:\s*false/);
 assert.doesNotMatch(`${html}\n${qaHtml}\n${qaJs}\n${ledgerText}`, /NOT[ _-]RELEASED/i);
 
-console.log(`PASS: AETHERUS public safe lab, ${manifestRows.length} selective files, ledger 181 local evidence / 15 partial runtime / 100 external blocked`);
+console.log(`PASS: AETHERUS public safe lab, ${manifestRows.length} selective files, ledger 183 local evidence / 13 partial runtime / 100 external blocked`);

@@ -2060,15 +2060,22 @@ body.is-ambient #windLegend.on{ opacity:0; }
            font-variant-numeric:tabular-nums; min-width:30px; text-align:right }
 .sf-rgnote{ color:var(--dim); font-size:11px; line-height:1.65; margin:8px 0 0 }
 
-/* ── 나가기 전에 ──
-   서핑·낚시·산·하늘을 묶은 자리.
+/* ── 취미 ──
+   바다·생물 관측·땅과 하늘을 범주로 나눈 자리.
    ⚠️ 이름을 "추천"으로 하지 않았다 — 우리는 권하지 않는다(ui-outdoor.js 머리말). */
 .out-lead{ color:var(--dim); font-size:12.5px; line-height:1.7; margin:0 0 14px }
 .out-lead b{ color:var(--fog); font-weight:600 }
+.out-groups{display:grid;gap:20px}
+.out-group{padding-top:16px;border-top:1px solid var(--line)}
+.out-group:first-child{padding-top:0;border-top:0}
+.out-group-head{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:9px;align-items:baseline;margin:0 0 10px}
+.out-group-head small{color:var(--c);font:650 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em}
+.out-group-head h4{margin:0;color:var(--paper);font-size:16px;font-weight:650;letter-spacing:-.01em}
+.out-group-head p{grid-column:2;margin:4px 0 0;color:var(--dim);font-size:11px;line-height:1.5;word-break:keep-all}
 .out-grid{ display:grid; grid-template-columns:1fr 1fr; gap:9px }
-@media (max-width:400px){ .out-grid{ grid-template-columns:1fr } }
+@media (max-width:330px){ .out-grid{ grid-template-columns:1fr } }
 .out-card{
-  display:flex; flex-direction:column; align-items:flex-start; gap:5px;
+  min-height:92px;display:flex; flex-direction:column; align-items:flex-start; gap:5px;
   padding:14px 14px 13px; cursor:pointer; text-align:left;
   background:rgba(255,255,255,.035); border:1px solid var(--line);
   border-radius:13px; color:inherit;
@@ -2076,22 +2083,18 @@ body.is-ambient #windLegend.on{ opacity:0; }
 }
 .out-card:hover{ background:rgba(255,255,255,.075); border-color:color-mix(in srgb, var(--c) 45%, transparent) }
 .out-ico{ color:var(--c); line-height:0; margin-bottom:2px }
-.out-card b{ font-size:14.5px; font-weight:600 }
-.out-card span:last-child{ color:var(--dim); font-size:11.5px; line-height:1.5 }
+.out-card b{ font-size:14.5px; font-weight:600; word-break:keep-all }
+.out-card span:last-child{ color:var(--dim); font-size:11.5px; line-height:1.5; word-break:keep-all }
 .out-note{ color:var(--dim); font-size:11px; line-height:1.7; margin:14px 0 0 }
 .out-note b{ color:var(--fog); font-weight:600 }
 
 /* ── OCEAN 공개 허브 ────────────────────────────────────────
-   개발 canary가 아니라 실제 Surf/Fishing/Marine Life/Dive 화면의 운영 진입점이다. */
+   독립 OCEAN 메뉴가 여는 해양 레이어·Vertical 화면이며 취미 패널은 보조 바로가기다. */
 .mm-ocean-entry{ border-block:1px solid rgba(79,208,224,.13) }
 .mm-ocean-entry .mm-ico{ color:#65dce5 }
 .mm-label small{ display:block; margin-top:2px; color:var(--dim); font-size:9.5px; font-weight:450 }
-.mm-free{ color:#79e6c2!important; background:rgba(60,190,145,.12)!important; border-color:rgba(60,190,145,.22)!important }
 .ocean-sheet{ --ocean:#64dce4; --ocean-soft:rgba(100,220,228,.1); }
 .ocean-sheet>h3{ display:flex; align-items:center; gap:9px; letter-spacing:.09em }
-.ocean-free-badge{ display:inline-flex; min-height:24px; align-items:center; padding:0 8px; border-radius:999px;
-  color:#8ceac8; background:rgba(72,195,153,.1); border:1px solid rgba(72,195,153,.25);
-  font-size:9px; letter-spacing:.12em }
 .ocean-access{ display:flex; flex-direction:column; gap:5px; margin:2px 0 18px; padding:13px 14px;
   border:1px solid rgba(100,220,228,.24); border-radius:13px; background:var(--ocean-soft) }
 .ocean-access b{ color:#c9f8fb; font-size:13px }

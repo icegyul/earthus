@@ -5,7 +5,7 @@ import { initViewer, viewer, scene, cameraHeight, onCameraIdle, flyTo, setAmbien
 import { alarms } from './alarms.js';
 import { windField } from './windfield.js';
 import { myLocation } from './mylocation.js';
-import { layerBar } from './layerbar.js?v=20260814-aetherusv3';
+import { layerBar } from './layerbar.js?v=20260815-freeentry1';
 import { search } from './search.js';
 import { onboard } from './onboard.js';
 import { weatherPanel } from './ui-weather.js';
@@ -32,7 +32,7 @@ import { satPanel } from './ui-sat.js';
 // 나타나지 않는다. 화면 계약이 바뀔 때만 revision을 올려 새 모듈을 받는다.
 import { skyPanel } from './ui-sky.js';
 import { flightPanel } from './ui-flight.js';
-import { subscribeSheet, demandSheet } from './ui-subscribe.js';
+import { subscribeSheet } from './ui-subscribe.js';
 import { communityPanel } from './ui-community.js';
 import { askPanel } from './ask/panel.js';
 import { sourceNote } from './ui-source.js';
@@ -580,8 +580,8 @@ async function boot() {
   } else {
     document.getElementById('btnSubscribe')?.remove();
   }
-  /* 사전등록은 별개 스위치다 — 결제는 닫아 두고 이것만 여는 상태가 있다. */
-  if (!CONFIG.SHOW_WAITLIST) document.getElementById('btnWaitlist')?.remove();
+  /* PD가 유료서비스 시작을 지시하기 전 FREE_OPEN에서는 사전등록·가격 예고도 노출하지 않는다. */
+  if (!CONFIG.SHOW_WAITLIST || store.isFreeOpen()) document.getElementById('btnWaitlist')?.remove();
   const showDevRow = () => {
     if (location.hash !== '#dev') return;
     document.getElementById('rowDev')?.removeAttribute('hidden');

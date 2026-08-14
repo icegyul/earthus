@@ -195,13 +195,12 @@ export const ITEMS = [
     sky:'#1a0e06', paint:'heatdome' },
   { id:'phenomena', ko:'해양 환류', en:'Ocean gyres', sub:'5개 해역', subEn:'5 basins',
     ready:true, sky:'#06141a', paint:'gyre' },
-  /* 항공기·선박은 유료 API 라 가입자가 모여야 열린다.
-     '준비 중'으로 흐려두면 언제 열릴지 알 수 없어 보인다 —
-     누르면 "몇 명 모이면 연다"를 숫자로 보여주고 관심 등록을 받는다. */
-  { id:'flight', ko:'항공기', en:'Aircraft', sub:'선착순 오픈', subEn:'Unlock at goal',
-    ready:true, demand:'flight', sky:'#0a1018', paint:'flightlayer' },
-  { id:'ship', ko:'선박', en:'Ships', sub:'선착순 오픈', subEn:'Unlock at goal',
-    ready:true, demand:'ship', sky:'#06121a', paint:'shiplayer' },
+  /* FREE_OPEN 기간에는 없는 글로벌 provider를 결제 대기 경로로 꾸미지 않는다.
+     항공기는 실제 항로·내 비행기 도구, 선박은 KOMSA MTIS 공식 화면으로 곧장 연다. */
+  { id:'flight', ko:'항공기', en:'Aircraft', sub:'항로·내 비행기 추적', subEn:'Route · my flight tracking',
+    ready:true, open:'flight', sky:'#0a1018', paint:'flightlayer' },
+  { id:'ship', ko:'선박', en:'Ships', sub:'공식 실시간 위치', subEn:'Official live positions',
+    ready:true, open:'vessel', sky:'#06121a', paint:'shiplayer' },
 ];
 
 /* 썸네일 — 구(球) 느낌만 나면 된다. 실제 지구를 렌더할 필요는 없다. */
@@ -1049,13 +1048,22 @@ export const layerBar = {
       s2.className = 'ly-sub'; s2.textContent = ko ? it.sub : it.subEn;
       b.append(n, s2);
 
-      /* 선착순 오픈 대기 항목 — 잠긴 것도, 준비 중인 것도 아니다.
-         왜 아직 없는지와 언제 열리는지를 숫자로 보여준다. */
-      if (it.demand) {
-        b.classList.add('demand');
+      if (it.open) {
+        b.classList.add('open');
         b.onclick = async () => {
-          const { demandSheet } = await import('./ui-subscribe.js');
-          demandSheet.open(it.demand);
+          try {
+            this.open = false; this.sub = null; this._apply?.();
+            if (it.open === 'flight') {
+              const { flightPanel } = await import('./ui-flight.js');
+              await flightPanel.open();
+            } else if (it.open === 'vessel') {
+              const { oceanPanel } = await import('./ui-ocean.js');
+              oceanPanel.open('vessel');
+            }
+          } catch (error) {
+            console.warn(`[layerbar] ${it.open} 화면을 못 열었습니다`, error?.message || error);
+            toast(ko ? '화면을 열지 못했습니다' : 'Could not open this view');
+          }
         };
         strip.appendChild(b);
         return;

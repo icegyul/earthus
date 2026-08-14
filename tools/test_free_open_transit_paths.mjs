@@ -12,17 +12,19 @@ const cases = [
   { name: 'desktop', width: 1440, height: 900 },
 ];
 const sourceOverrides = await Promise.all([
-  ['**/js/layerbar.js*', process.env.EARTHUS_LAYERBAR_CANDIDATE],
-  ['**/js/ui.js*', process.env.EARTHUS_UI_CANDIDATE],
-].filter(([, file]) => file).map(async ([url, file]) => [url, await readFile(file, 'utf8')]));
+  ['**/js/layerbar.js*', process.env.EARTHUS_LAYERBAR_CANDIDATE, 'text/javascript; charset=utf-8'],
+  ['**/js/ui.js*', process.env.EARTHUS_UI_CANDIDATE, 'text/javascript; charset=utf-8'],
+  ['**/css/account.css*', process.env.EARTHUS_ACCOUNT_CANDIDATE, 'text/css; charset=utf-8'],
+].filter(([, file]) => file)
+  .map(async ([url, file, contentType]) => [url, await readFile(file, 'utf8'), contentType]));
 
 const browser = await chromium.launch({ headless: true, executablePath });
 try {
   for (const item of cases) {
     const page = await browser.newPage({ viewport: { width: item.width, height: item.height }, serviceWorkers: 'block' });
-    for (const [url, body] of sourceOverrides) {
+    for (const [url, body, contentType] of sourceOverrides) {
       await page.route(url, route => route.fulfill({ status: 200,
-        contentType: 'text/javascript; charset=utf-8', body }));
+        contentType, body }));
     }
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -43,6 +45,31 @@ try {
     assert.doesNotMatch(await flight.innerText(), /선착순|유료|구독|잠김/);
     await flight.click();
     await page.locator('#flightSheet.up').waitFor();
+    await page.waitForFunction(() => !document.querySelector('#menuSub')?.classList.contains('open'));
+    await page.waitForTimeout(450);
+    const flightLayout = await page.locator('#flightSheet').evaluate(sheet => {
+      const rect = sheet.getBoundingClientRect();
+      const controls = [...sheet.querySelectorAll('button,a,input')]
+        .filter(node => node.getClientRects().length).map(node => {
+          const rectangle = node.getBoundingClientRect();
+          const before = getComputedStyle(node, '::before');
+          const beforeWidth = Number.parseFloat(before.width) || 0;
+          const beforeHeight = Number.parseFloat(before.height) || 0;
+          return {
+            name: node.getAttribute('aria-label') || node.textContent?.trim() || node.placeholder || node.tagName,
+            width: Math.max(rectangle.width, beforeWidth),
+            height: Math.max(rectangle.height, beforeHeight),
+          };
+        });
+      return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+        minimumControl: Math.min(...controls.map(control => Math.min(control.width, control.height))),
+        controls };
+    });
+    assert.ok(flightLayout.left >= -0.5 && flightLayout.right <= item.width + 0.5
+      && flightLayout.top >= -0.5 && flightLayout.bottom <= item.height + 0.5,
+    `${item.name} flight sheet outside viewport: ${JSON.stringify(flightLayout)}`);
+    assert.ok(flightLayout.minimumControl >= 44,
+      `${item.name} flight control below 44px: ${JSON.stringify(flightLayout.controls)}`);
     assert.equal(await page.locator('#demandSheet.up').count(), 0);
     assert.equal(await page.locator('#waitlistSheet.up').count(), 0);
     await page.screenshot({ path: `/tmp/earthus-free-open-flight-${item.name}.png`, fullPage: true });
@@ -54,6 +81,8 @@ try {
     assert.doesNotMatch(await vessel.innerText(), /선착순|유료|구독|잠김/);
     await vessel.click();
     await page.locator('#oceanSheet.up').waitFor();
+    await page.waitForFunction(() => !document.querySelector('#menuSub')?.classList.contains('open'));
+    await page.waitForTimeout(450);
     assert.equal(await page.getByRole('link', { name: /실시간 선박 위치/ })
       .getAttribute('href'), 'https://mtis.komsa.or.kr/stg/traffic/liveSea');
     assert.equal(await page.locator('#demandSheet.up').count(), 0);

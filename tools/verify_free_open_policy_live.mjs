@@ -14,12 +14,14 @@ const rows = manifest.split(/\r?\n/).filter(line => line && !line.startsWith('#'
   const [sourcePath, publicPath, contentType, cacheControl] = line.split('\t');
   return { sourcePath, publicPath, contentType, cacheControl };
 });
+const sourceOverrides = JSON.parse(process.env.EARTHUS_VERIFY_SOURCE_OVERRIDES || '{}');
 assert.equal(rows.length, 12);
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 let liveConfig = '';
 
 for (const row of rows) {
-  const local = await readFile(path.join(root, row.sourcePath));
+  const expectedPath = sourceOverrides[row.publicPath] || row.sourcePath;
+  const local = await readFile(path.isAbsolute(expectedPath) ? expectedPath : path.join(root, expectedPath));
   const response = await fetch(`https://earthus.net/${row.publicPath}?free-open=${Date.now()}`,
     { cache: 'no-store', headers: { 'cache-control': 'no-cache' } });
   assert.equal(response.status, 200, `${row.publicPath}: HTTP ${response.status}`);

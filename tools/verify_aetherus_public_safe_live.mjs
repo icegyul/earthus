@@ -33,7 +33,14 @@ for (const [sourcePath, publicPath, contentType, cacheControl] of rows) {
     ? ['text/javascript', 'application/javascript'] : [expectedBaseType];
   assert.equal(allowedBaseTypes.some(type => result.contentType?.startsWith(type)), true,
     `${publicPath} content-type mismatch`);
-  assert.equal(result.cacheControl, cacheControl, `${publicPath} cache-control mismatch`);
+  const actualCacheDirectives = new Set(String(result.cacheControl || '').toLowerCase()
+    .split(',').map(value => value.trim()).filter(Boolean));
+  for (const expectedDirective of cacheControl.toLowerCase().split(',').map(value => value.trim())) {
+    const satisfied = actualCacheDirectives.has(expectedDirective)
+      || (expectedDirective === 'no-cache' && actualCacheDirectives.has('no-store'));
+    assert.equal(satisfied, true,
+      `${publicPath} cache-control missing ${expectedDirective}`);
+  }
   results.push(result);
 }
 

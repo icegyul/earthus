@@ -45,6 +45,10 @@ assert.match(css, /min-height:\s*44px/);
 assert.match(css, /:focus-visible/);
 assert.match(css, /prefers-reduced-motion/);
 assert.doesNotMatch(css, /animation:\s*[^;]*infinite/i);
+assert.match(css, /orientation:\s*landscape[\s\S]*min-width:\s*561px[\s\S]*max-height:\s*560px/);
+assert.match(css, /margin-left:\s*max\(14px, env\(safe-area-inset-left\)\)/);
+assert.match(css, /\.qa-main\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/);
+assert.match(css, /\.camera-stage\s*\{[\s\S]*?min-height:\s*190px[\s\S]*?aspect-ratio:\s*16 \/ 9/);
 
 assert.match(js, /createBrowserSkyARRuntime/);
 assert.match(js, /createIndexedDbObservationMediaRepository/);

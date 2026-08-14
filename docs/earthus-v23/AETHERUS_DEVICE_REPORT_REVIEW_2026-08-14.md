@@ -38,6 +38,12 @@ Release decision: BLOCKED
 회전 FAIL의 원인을 보고서에서 구분할 화면 상태도 없었다. RC r2는 초기·resize·orientation
 change 시점의 viewport, orientation type, angle을 최대 12개까지만 기록한다.
 
+PD의 실기기 피드백으로 가로 화면이 불편한 원인도 확인했다. 754×402 iPhone 가로가 기존
+850px 이하 규칙에서 세로 전용 한 열로 유지되고 있었다. 가로·짧은 화면 전용 규칙에서
+카드를 두 열로 복원하고, 카메라는 16:9·최대 240px, 상단과 간격은 압축하며 좌우 safe area를
+보존했다. Headless Chrome 실제 배치는 세로 402×754 한 열·overflow 0, 가로 754×402 두 열·
+overflow 0·카메라 426×240·모든 조작부 44px 이상으로 통과했다.
+
 ## 남은 관문
 
 1. 수정된 RC r2에서 배터리 시작·종료 값을 입력해 5분 검사를 다시 실행한다.

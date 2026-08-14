@@ -376,6 +376,114 @@ input[type="file"] { margin-top: 8px; }
   .actions .button, .hero-actions .button { width: 100%; }
 }
 
+/* iPhone landscape — 짧은 높이에서 세로 전용 한 열 배치를 유지하면
+   카메라와 카드가 화면을 과도하게 차지한다. 좌우 safe area를 지키면서
+   폭을 다시 사용하고, 기능이나 증거 행은 숨기지 않는다. */
+@media (orientation: landscape) and (min-width: 561px) and (max-height: 560px) {
+  .qa-hero,
+  .release-bar,
+  .qa-main,
+  .qa-footer {
+    width: auto;
+    margin-left: max(14px, env(safe-area-inset-left));
+    margin-right: max(14px, env(safe-area-inset-right));
+  }
+
+  .qa-hero {
+    align-items: center;
+    flex-direction: row;
+    gap: 16px;
+    padding: max(12px, env(safe-area-inset-top)) 0 12px;
+  }
+
+  .qa-hero > div:first-child { flex: 1; min-width: 0; }
+  .qa-hero .eyebrow { margin-bottom: 3px; font-size: .6rem; }
+  .qa-hero h1 { font-size: clamp(1.8rem, 5vw, 2.55rem); }
+  .lede { margin-top: 7px; font-size: .78rem; line-height: 1.4; }
+
+  .hero-actions {
+    display: grid;
+    flex: 0 0 min(250px, 35vw);
+    min-width: 180px;
+    gap: 6px;
+  }
+
+  .hero-actions .button { width: 100%; padding: 7px 11px; font-size: .76rem; }
+
+  .release-bar {
+    align-items: center;
+    flex-direction: row;
+    gap: 14px;
+    padding: 11px 14px;
+    border-radius: 15px;
+  }
+
+  .release-bar > div:first-child { flex: 1; min-width: 0; }
+  .release-bar .eyebrow { margin-bottom: 2px; font-size: .6rem; }
+  .release-state { font-size: .78rem; }
+  .summary-grid { flex: 0 0 min(290px, 42vw); }
+  .summary-grid div { min-width: 48px; padding: 3px 6px; }
+  .summary-grid dd { font-size: 1.05rem; }
+
+  .qa-main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 10px 0 26px;
+  }
+
+  .qa-card { padding: 15px; border-radius: 15px; }
+  .qa-card.wide { grid-column: 1 / -1; }
+  .card-head { gap: 10px; }
+  .step { margin-bottom: 3px; font-size: .62rem; }
+  h2 { font-size: 1.08rem; }
+  h3 { font-size: .9rem; }
+  .qa-card > p:not(.step):not(.timer) { margin: 9px 0; font-size: .78rem; line-height: 1.45; }
+
+  .actions { gap: 6px; margin-top: 12px; }
+  .actions .button { width: auto; padding: 7px 12px; font-size: .78rem; }
+
+  .evidence-list {
+    grid-template-columns: minmax(105px, .72fr) minmax(0, 1.28fr);
+    margin-top: 10px;
+    font-size: .76rem;
+  }
+
+  .evidence-list dt,
+  .evidence-list dd { padding: 6px 0; }
+
+  .camera-grid {
+    grid-template-columns: minmax(0, 1.25fr) minmax(220px, .75fr);
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .camera-stage {
+    min-height: 190px;
+    max-height: 240px;
+    aspect-ratio: 16 / 9;
+    border-radius: 14px;
+  }
+
+  .camera-placeholder { padding: 18px; font-size: .8rem; }
+  .reticle { width: 42px; height: 42px; }
+  .reticle::before { height: 52px; }
+  .reticle::after { width: 52px; }
+  .reticle i { inset: 18px; }
+
+  .field-grid { gap: 8px; margin-top: 12px; }
+  .field-grid label { font-size: .75rem; }
+  .manual-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+  .manual-grid label { grid-template-columns: minmax(0, 1fr) 96px; gap: 8px; font-size: .76rem; }
+  .manual-grid select { margin-top: 0; }
+  .gate-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+  .gate-list article { padding: 12px; border-radius: 12px; }
+  .gate-list p { font-size: .75rem; }
+  .consent-line, .file-line, .issue-line { margin-top: 12px; }
+  .result-copy, .note { padding: 9px 10px; }
+  .timer { margin: 14px 0 6px; font-size: 2.5rem; }
+  .qa-footer { padding-bottom: max(18px, env(safe-area-inset-bottom)); font-size: .74rem; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; }
 }

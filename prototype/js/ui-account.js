@@ -14,6 +14,29 @@ import { CONFIG } from './config.local.js';
 
 const $ = s => document.querySelector(s);
 const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c; if (x != null) n.textContent = x; return n; };
+const AUTH_CONSENT_INTENT_KEY = 'earthus.auth.consent-intent.v1';
+const AUTH_CONSENT_INTENT_TTL = 30 * 60_000;
+
+/* 약관은 앱 부팅이나 저장 세션 복원만으로 열지 않는다. 사용자가 이 탭에서 실제로
+   로그인/가입을 시작한 뒤 OAuth가 돌아온 경우만 이어서 연다. sessionStorage는 같은 탭의
+   OAuth 왕복에는 남지만 새 탭·다음 방문에는 따라가지 않아 첫 Earth를 다시 막지 않는다. */
+export const authConsentIntent = {
+  mark() {
+    try { sessionStorage.setItem(AUTH_CONSENT_INTENT_KEY, String(Date.now())); return true; }
+    catch { return false; }
+  },
+  clear() {
+    try { sessionStorage.removeItem(AUTH_CONSENT_INTENT_KEY); } catch { /* 저장소 차단 */ }
+  },
+  consume() {
+    try {
+      const startedAt = Number(sessionStorage.getItem(AUTH_CONSENT_INTENT_KEY));
+      sessionStorage.removeItem(AUTH_CONSENT_INTENT_KEY);
+      return Number.isFinite(startedAt) && startedAt > 0
+        && Date.now() - startedAt >= 0 && Date.now() - startedAt <= AUTH_CONSENT_INTENT_TTL;
+    } catch { return false; }
+  },
+};
 
 /* ══════════════════════════════════════════════════════════════
    최소 마크다운 렌더러 — 법적 문서용 (표가 있어야 해서 필요)
@@ -134,9 +157,11 @@ export const loginSheet = {
   close() { $('#loginSheet').classList.remove('up'); },
 
   async go(provider) {
+    authConsentIntent.mark();
     try {
       await auth.signIn(provider);   // OAuth 리디렉션 — 여기서 페이지를 떠난다
     } catch (e) {
+      authConsentIntent.clear();
       if (e.message === 'AUTH_NOT_CONFIGURED') {
         toast('현재 로그인을 이용할 수 없습니다. 공개 자료는 로그인 없이 이용하실 수 있습니다.');
       } else {
@@ -391,6 +416,11 @@ function toast(msg) {
 export async function initAccount() {
   await auth.init();
 
+  const continueExplicitAuth = async user => {
+    if (!user || !authConsentIntent.consume()) return;
+    if (consentSheet.needed()) await consentSheet.open();
+  };
+
   auth.onChange(async (user) => {
     // 로그인 상태를 티어에 반영. 게스트/무료 회원은 free, 구독자는 paid.
     store.setTier(auth.isPaid() ? 'paid' : 'free');
@@ -404,11 +434,13 @@ export async function initAccount() {
       document.getElementById('loginSheet')?.classList.remove('up');
     }
 
-    // 최초 로그인이면 동의 화면
-    if (user && consentSheet.needed()) {
-      await consentSheet.open();
-    }
+    /* ⚠️ 저장돼 있던 세션의 INITIAL_SESSION도 여기로 온다. 그것을 신규 가입으로 읽어
+       첫 Earth 위에 약관을 덮지 않는다. 이 탭의 명시적 OAuth 왕복만 동의를 잇는다. */
+    await continueExplicitAuth(user);
   });
+
+  // OAuth 반환 세션이 구독 등록보다 먼저 복원된 경우에도 명시적 intent는 한 번만 소비한다.
+  await continueExplicitAuth(auth.user);
 
   renderBusinessInfo();
   /* ⚠️ 사전등록 시트는 지금 열 수 있는 문이 없다 (SHOW_SUBSCRIBE=false).

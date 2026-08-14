@@ -199,6 +199,14 @@ AX-02는 운영 S3에 정확한 7개 파일만 반영했고 로컬·운영 SHA 7
 백그라운드 WebView의 opacity 전환 정지를 피하도록 즉시 열고 닫는다. 최종 CloudFront
 무효화는 `I49UB5GFX64HO7JJO6U1V5Z7RF`이며 현재 상태는 `OPERATING`이다.
 
+같은 날 운영 실화면에서 로그인/가입을 누르지 않았는데 약관 동의가 첫 Earth를 덮는 문제가
+확인됐다. Supabase 저장 세션 복원을 신규 가입으로 오판하고 기기 localStorage 동의 버전만
+본 것이 원인이었다. 이제 앱 부팅·저장 세션 복원은 약관을 열지 않고, 사용자가 이 탭에서
+명시적으로 OAuth를 시작해 돌아온 30분 intent만 한 번 소비해 동의를 잇는다. 게스트 설정의
+동의 관리도 숨겼으며 약관·처리방침 열람은 유지한다. 운영 SHA 2/2와 게스트·복원 세션·명시적
+intent 분기를 통과했고 무효화는 `IE8MNQ19IOOVYLCITRAMYX9MVL`이다. 증거는
+[`earthus-v23/RELEASE-2026-08-14-GUEST-CONSENT.md`](earthus-v23/RELEASE-2026-08-14-GUEST-CONSENT.md)다.
+
 PD의 다음 **“해”** 지시로 PR-09 Reservation Impact의 순수 shadow 계약을 구현했다.
 최초 v1이 공급자 snapshot 차이만 다룬 공백을 독립 검수에서 발견해 v1.1로 보강했다.
 예약 장소·활동·시간창과 이전/현재 Decision의 Safety·Confidence·signal revision, 승인 provider

@@ -422,11 +422,11 @@ async function boot() {
         배경 카메라가 90초 움직이며 렌더를 계속 요구할 수 있었다. */
   if (store.scene === 'earth' && !geoTookOver && !userEngaged) intro.start();
 
-  /* ⚠️ 안전망 — 정보성 시트(업데이트·설정·사전등록)는 첫 화면에 절대 떠 있지 않게 한다.
+  /* ⚠️ 안전망 — 정보성 시트(업데이트·설정·사전등록·약관)는 첫 화면에 절대 떠 있지 않게 한다.
      이들은 오직 메뉴에서 눌러야 열리는데, 어떤 이유로든(옛 캐시·경로) 열린 채 들어오면
      하단에 인포창이 계속 떠 있는 것처럼 보인다. 여기서 무조건 닫는다.
-     ⚠️ 동의창(consentSheet)은 제외 — 로그인 직후 떠야 하는 법적 화면이라 건드리지 않는다. */
-  ['changelogSheet', 'settings', 'waitlistSheet'].forEach(
+     명시적으로 로그인/가입을 시작한 OAuth 반환이면 initAccount가 뒤에서 다시 연다. */
+  ['changelogSheet', 'settings', 'waitlistSheet', 'consentSheet'].forEach(
     id => document.getElementById(id)?.classList.remove('up'));
 
   await chrome.init();
@@ -575,9 +575,11 @@ function bindAccountUI() {
   const paintAuthRows = () => {
     const login = document.getElementById('btnLoginRow');
     const acc   = document.getElementById('btnAccount');
+    const consent = document.getElementById('btnConsent');
     const on    = !!auth.user;
     if (login) login.hidden = on;
     if (acc)   acc.style.display = on ? '' : 'none';
+    if (consent) consent.style.display = on ? '' : 'none';
     if (acc && on) {
       /* 유료면 줄에 표시를 남긴다 — 결제했는데 아무 티가 안 나면 불안하다. */
       acc.querySelector('span').textContent = auth.isPaid() ? '계정 · 구독 중' : '계정';
@@ -611,6 +613,7 @@ function bindAccountUI() {
   $('#btnTerms').onclick    = () => { close('settings'); legalView.open('terms'); };
   $('#btnPrivacy').onclick  = () => { close('settings'); legalView.open('privacy'); };
   $('#btnConsent').onclick  = () => {
+    if (!auth.user) return;
     close('settings');
     document.querySelectorAll('.sheet-panel.up').forEach(p => p.classList.remove('up'));
     consentSheet.open(true);   // 검토(review) 모드 — 안 눌러도 로그아웃 안 됨

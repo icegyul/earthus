@@ -67,6 +67,7 @@ try {
   await page.locator('#decisionRail[data-ready="true"]').waitFor({ state: 'attached' });
 
   assert.equal(await page.locator('#decisionRail').isHidden(), true, '첫 Earth에 판단 UI가 노출됐다');
+  assert.equal(await page.locator('#consentSheet.up').count(), 0, '게스트 첫 Earth에 약관 동의가 자동 노출됐다');
   assert.equal(await page.locator('#decisionRailHandle').count(), 0, '선택 전 판단 CTA가 DOM에 남았다');
   await page.waitForTimeout(2800);
   assert.equal(await page.locator('#coach.on').count(), 0, '첫 Earth에 코치마크가 자동 노출됐다');
@@ -146,6 +147,33 @@ try {
   assert.ok(await mobile.locator('.brand-menu-tab').evaluateAll(nodes => nodes.every(node => getComputedStyle(node).pointerEvents === 'none')),
     '펼친 판단 패널 위로 브랜드 손잡이가 남았다');
   await mobile.screenshot({ path: '/tmp/earthus-ax-mobile.png', fullPage: true });
+
+  const authFlow = await context.newPage();
+  await authFlow.goto(target, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+  await authFlow.locator('#decisionRail[data-ready="true"]').waitFor({ state: 'attached' });
+  await authFlow.evaluate(async () => {
+    const [{ auth }, { authConsentIntent }] = await Promise.all([
+      import('./js/auth.js'), import('./js/ui-account.js'),
+    ]);
+    localStorage.removeItem('earthus.consent');
+    authConsentIntent.clear();
+    auth.user = { id: 'qa-restored-session' };
+    auth.profile = { id: 'qa-restored-session', tier: 'free' };
+    auth.emit();
+  });
+  await authFlow.waitForTimeout(100);
+  assert.equal(await authFlow.locator('#consentSheet.up').count(), 0,
+    '저장 세션 복원을 신규 가입으로 오판해 약관을 자동 노출했다');
+  await authFlow.evaluate(async () => {
+    const [{ auth }, { authConsentIntent }] = await Promise.all([
+      import('./js/auth.js'), import('./js/ui-account.js'),
+    ]);
+    authConsentIntent.mark();
+    auth.emit();
+  });
+  await authFlow.locator('#consentSheet.up').waitFor({ state: 'visible' });
+  assert.equal(await authFlow.locator('#consentSheet.up').count(), 1,
+    '명시적 로그인/가입 반환 뒤 약관이 이어지지 않았다');
 
   console.log(`decision rail AX: PASS (${target})`);
 } finally {

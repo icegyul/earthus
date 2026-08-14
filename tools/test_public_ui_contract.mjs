@@ -7,6 +7,7 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const read = path => readFileSync(join(root, path), 'utf8');
 const html = read('prototype/index.html');
 const account = read('prototype/js/ui-account.js');
+const main = read('prototype/js/main.js');
 const ui = read('prototype/js/ui.js');
 const scene = read('prototype/js/scene.js');
 const i18n = read('prototype/js/i18n.js');
@@ -23,6 +24,16 @@ for (const leak of [
 }
 assert.match(html, /id="loginNotice"[^>]*hidden[^>]*>[\s\S]*?공개 자료는 로그인 없이/);
 assert.match(account, /button\.disabled = !configured/);
+assert.match(account, /authConsentIntent\.mark\(\)/,
+  'explicit login must mark the consent continuation intent');
+assert.match(account, /!authConsentIntent\.consume\(\)/,
+  'restored sessions must not be treated as explicit signup');
+assert.equal(/if \(user && consentSheet\.needed\(\)\)/.test(account), false,
+  'restored sessions still auto-open the consent sheet');
+assert.match(main, /\['changelogSheet', 'settings', 'waitlistSheet', 'consentSheet'\]/,
+  'boot safety must close a stale consent sheet');
+assert.match(main, /if \(consent\) consent\.style\.display = on \? '' : 'none'/,
+  'guest settings still expose consent management');
 
 const legalLinks = [...html.matchAll(/<a href="([^"]+)" data-legal="(terms|privacy)"/g)];
 assert.ok(legalLinks.length >= 6, 'all legal entry points must have real fallback links');

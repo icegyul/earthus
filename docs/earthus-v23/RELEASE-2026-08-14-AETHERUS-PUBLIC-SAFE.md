@@ -118,6 +118,22 @@ Device QA 세로·가로 배치를 모두 통과했다.
 수정하고 invalidation `I4W9JVS30IGMIT2NXUBAKUM1B4`를 생성했다. 운영 canary에서 mobile과
 desktop 모두 22/22 PASS, overflow 0을 다시 확인했다.
 
+## 최종 배포 헤더 감사
+
+23:14 KST 재감사에서 canary JavaScript 바이트는 일치했지만 `Content-Type`이
+`application/javascript`로 덮인 것을 확인했다. 현재 revision 4 canary manifest 45개를
+명시 MIME과 `Cache-Control: no-cache`로 다시 배포하고 invalidation
+`I1987HQKWAQ3JFWFY149LOZ9S3`를 생성했다.
+
+- canary 운영 SHA·MIME·cache header: `45/45 PASS`
+- canary mobile/desktop: 각각 `22/22 PASS`, overflow `0`
+- Public Safe 57개 재배포 invalidation: `IZ39KQTQUO8Z1Y494OTDDKNKD`
+- Public Safe 운영 SHA·MIME·cache header: `57/57 PASS`
+- 메인 Aetherus v3·사진관 운영 SHA: `24/24 PASS`
+
+`cloudfront:GetInvalidation` 권한은 없어 waiter 상태 조회는 할 수 없지만, 각 경로를
+cache-busting 운영 요청으로 다시 받아 새 바이트·MIME·cache header의 실제 전파를 검증했다.
+
 ## 롤백
 
 `tools/deploy_aetherus_public_safe.sh`가 읽는 manifest의 직전 커밋 파일만 같은 S3 경로에

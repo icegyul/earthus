@@ -47,6 +47,27 @@ async function selectPoint(page, point) {
   }), point);
 }
 
+async function selectBuoyFromMap(page) {
+  await page.waitForFunction(() => !!window.__e?.store);
+  await page.evaluate(() => {
+    const buoy = {
+      id: 'buoy-7810215', kind: 'buoy', name: '부이 7810215',
+      lat: 21.5, lon: 125.9, _buoyId: '7810215', _ndbc: false,
+      _obsAt: '2026-08-14T14:30:00Z',
+      _obs: { waterTemp: 29.7, waveHeight: null, wavePeriod: null },
+      data: {
+        '수온': '29.7°C', '관측소': 'NDBC 7810215',
+        '부이 종류': 'DRIFTING BUOYS (GENERIC)',
+      },
+    };
+    /* 실제 지도 클릭 순서: ground 좌표 이벤트가 먼저, 엔티티 선택이 바로 뒤다. */
+    document.dispatchEvent(new CustomEvent('earthus:decision-point', {
+      detail: { point: { lat: buoy.lat, lon: buoy.lon }, pickedId: buoy.id },
+    }));
+    window.__e.store.select(buoy);
+  });
+}
+
 const browser = await chromium.launch({ headless: true, executablePath });
 try {
   const context = await browser.newContext({
@@ -122,6 +143,24 @@ try {
   await page.locator('#decisionRail[data-safety="outside"]').waitFor({ timeout: 5_000 });
   assert.match(await page.locator('#decisionRailSafetyState').textContent(), /현지 공식 특보 연결 전/);
   assert.match(await page.locator('#decisionRailSafety').textContent(), /기상청 적용 범위 밖/);
+
+  await selectBuoyFromMap(page);
+  await page.locator('#sheet.up').waitFor();
+  await page.waitForTimeout(150);
+  assert.equal(await page.locator('#decisionRail').isVisible(), false,
+    '해양 부이를 방문 장소로 오인해 활동 판단을 노출했다');
+  assert.equal(await page.locator('#sheet.is-place-detail').count(), 0,
+    '해양 부이에 일반 장소 상세 레이아웃을 적용했다');
+  assert.match(await page.locator('#sheet').textContent(), /NDBC 7810215/,
+    '활동 판단을 숨기면서 부이 관측 정보까지 없앴다');
+  assert.equal(await page.locator('.buoy-compare').count(), 1,
+    '부이 실측·파랑 모델 대조 카드가 한 장이 아니다');
+  await selectBuoyFromMap(page);
+  await page.waitForTimeout(50);
+  assert.equal(await page.locator('.buoy-compare').count(), 1,
+    '같은 부이를 다시 열 때 실측·모델 대조 카드가 중복됐다');
+  assert.equal(await page.locator('#decisionRail').isVisible(), false,
+    '반복 선택 뒤 해양 부이에 활동 판단이 다시 나타났다');
   assert.deepEqual(runtimeErrors, [], `runtime errors: ${runtimeErrors.join(' | ')}`);
   await selectPoint(page, { lat: 37.5665, lon: 126.978 });
   await page.locator('#decisionRail[data-safety="danger"]').waitFor({ timeout: 10_000 });

@@ -1508,6 +1508,7 @@ const DYNAMIC_BLOCKS = [
   '.st-block',
   '.fire-view',     // 산불 위성 영상 + 주변 뉴스
   '.buoy-cam',      // 부이 카메라 사진
+  '.buoy-compare',  // 부이 실측·파랑 모델 대조 (같은 부이를 다시 눌러도 한 장만)
   '.bf-in-sheet',   // AI 브리핑 카드
   '.sat-img',       // 위성 개념도
   '.passes',        // 통과 예보

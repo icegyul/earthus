@@ -25,6 +25,16 @@ const ACTIVITIES = Object.freeze({
 const $ = id => document.getElementById(id);
 const finitePoint = point => point && Number.isFinite(Number(point.lat)) && Number.isFinite(Number(point.lon));
 
+/* 활동 판단은 사람이 방문하려고 고른 일반 장소에만 붙인다.
+   ⚠️ 좌표가 있다고 전부 장소가 아니다. 부이·관측소·위성·태풍 같은 관측/현상
+      엔티티에 야구·캠핑·등산을 붙이면 장비를 여행지로 오인하게 만든다.
+   현재 일반 장소 선택의 정본은 빈 지구를 누를 때 만드는 lazy `stations` 항목이다. */
+function isActivityPlace(selected) {
+  return finitePoint(selected)
+    && selected.kind === 'stations'
+    && selected.data?._lazy === true;
+}
+
 function safetyTone(gate) {
   if (gate?.gate === 'OFFICIAL_WARNING_ACTIVE') return gate.status === 'DANGER' ? 'danger' : 'warning';
   return gate?.reason === 'KMA_OUT_OF_COVERAGE' ? 'outside' : 'unknown';
@@ -74,7 +84,12 @@ export const decisionRail = {
        프로그래밍으로 다른 항목을 연 뒤 이전 장소 판단이 아래에 남는다.
        선택 정본(store)에 좌표가 없으면 숨기고, 좌표가 있으면 같은 통합 시트에 맞춘다. */
     store.on('select', selected => {
-      if (!finitePoint(selected)) { this.hide(); return; }
+      if (!isActivityPlace(selected)) {
+        /* 지도 pick 이벤트가 store.select보다 먼저 온다. 부이를 누른 순간 잠깐 시작된
+           특보 조회도 여기서 무효화해야, 늦게 끝난 응답이 활동 UI를 다시 열지 않는다. */
+        this.clearContext();
+        return;
+      }
       const lat = Number(selected.lat), lon = Number(selected.lon);
       if (this.point?.lat === lat && this.point?.lon === lon) {
         this.show();
@@ -100,6 +115,23 @@ export const decisionRail = {
     if (!this.root || !this.panel) return;
     this.root.hidden = true;
     this.panel.hidden = true;
+  },
+
+  clearContext() {
+    this.requestId += 1;
+    this.point = null;
+    this.activity = null;
+    this.safety = null;
+    if (this.root) {
+      this.root.dataset.state = 'empty';
+      this.root.dataset.safety = 'idle';
+    }
+    if (this.marker && viewer?.entities) {
+      viewer.entities.remove(this.marker);
+      this.marker = null;
+      scene.requestRender();
+    }
+    this.hide();
   },
 
   selectPoint(detail = {}) {

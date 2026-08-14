@@ -30,9 +30,10 @@ Release decision: BLOCKED
 빈 number input에 `Number('')`를 적용해 배터리 미입력을 `0% → 0%`로 해석하고
 내구성 검사를 PASS로 만들고 있었다. RC r2에서는 시작·종료 값이 모두 실제로 입력되어야
 배터리 증거를 인정하며, Battery Status API가 없는 iPhone은 시작값 입력 전 검사를 시작하지 않는다.
+5분 타이머가 끝났을 때 종료값이 없으면 자동 판정을 닫지 않고 종료 배터리·발열 입력을 기다린다.
 
 수동 FAIL인데 재현 설명이 비어도 보고서가 생성되던 공백도 있었다. RC r2에서는 FAIL을
-선택하면 재현 설명이 필요하다는 상태와 reason code를 보고서에 남긴다.
+선택하면 재현 설명 없이는 보고서 내려받기를 진행하지 않는다.
 
 회전 FAIL의 원인을 보고서에서 구분할 화면 상태도 없었다. RC r2는 초기·resize·orientation
 change 시점의 viewport, orientation type, angle을 최대 12개까지만 기록한다.

@@ -919,6 +919,26 @@ async function finishEndurance(automatic = false) {
     && start >= 0 && start <= 100 && end >= 0 && end <= 100;
   const fullDuration = durationSeconds >= 290;
   const thermalKnown = thermal !== 'UNKNOWN';
+  if (automatic && (!batteryValid || !thermalKnown)) {
+    const pendingEvidence = {
+      state: 'AWAITING_FINAL_OBSERVATION',
+      durationSeconds,
+      automaticTimerCompleted: true,
+      completedFullFiveMinutes: fullDuration,
+      batteryStartPercent: Number.isFinite(start) ? start : null,
+      batteryEndPercent: Number.isFinite(end) ? end : null,
+      thermalEnd: thermal,
+      hiddenCount: enduranceHiddenCount,
+      boundedTimer: true,
+    };
+    byId('enduranceTimer').textContent = '00:00';
+    byId('enduranceResult').textContent = '5분 완료 · 종료 배터리와 발열을 입력한 뒤 지금 종료·판정을 누르세요.';
+    byId('startEndurance').disabled = true;
+    byId('finishEndurance').disabled = false;
+    enduranceDeadline = null;
+    setCheck('endurance', 'BLOCKED', pendingEvidence);
+    return;
+  }
   const pass = fullDuration && batteryValid && thermalKnown && thermal !== 'HOT';
   const status = pass ? 'PASS' : (thermal === 'HOT' ? 'FAIL' : 'BLOCKED');
   const evidence = {
@@ -974,6 +994,12 @@ function evaluateManualChecks() {
 
 function exportReport() {
   evaluateManualChecks();
+  if (report.checks.manual.status === 'FAIL'
+    && report.checks.manual.evidence.reason === 'FAILURE_DESCRIPTION_REQUIRED') {
+    byId('manualResult').textContent = 'FAIL 재현 설명을 입력한 뒤 보고서를 내려받으세요.';
+    byId('manualIssue').focus();
+    return;
+  }
   report.completedAtUtc = utcNow();
   report.releaseDecision = 'BLOCKED';
   report.releaseDecisionReason = 'EXTERNAL_HARD_GATES_AND_HUMAN_RELEASE_APPROVAL_REQUIRED';

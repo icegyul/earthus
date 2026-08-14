@@ -207,6 +207,12 @@ AX-02는 운영 S3에 정확한 7개 파일만 반영했고 로컬·운영 SHA 7
 intent 분기를 통과했고 무효화는 `IE8MNQ19IOOVYLCITRAMYX9MVL`이다. 증거는
 [`earthus-v23/RELEASE-2026-08-14-GUEST-CONSENT.md`](earthus-v23/RELEASE-2026-08-14-GUEST-CONSENT.md)다.
 
+같은 날 산불 상세마다 화산·가스플레어·화전·구름·위성 통과 한계를 장문으로 붙여 관측값을
+밀어내던 문구를 제거했다. FRP·화선 길이·탐지 픽셀·최근 관측·위성·위성 영상은 유지하고,
+열점을 과단정하지 않는 원칙은 내부 코드에만 남겼다. 운영 산불 상세와 SHA 2/2를 통과했고
+무효화는 `IB36PVNDHF3NPVAUZ0AIB8ISY0`이다. 증거는
+[`earthus-v23/RELEASE-2026-08-14-WILDFIRE-COPY.md`](earthus-v23/RELEASE-2026-08-14-WILDFIRE-COPY.md)다.
+
 PD의 다음 **“해”** 지시로 PR-09 Reservation Impact의 순수 shadow 계약을 구현했다.
 최초 v1이 공급자 snapshot 차이만 다룬 공백을 독립 검수에서 발견해 v1.1로 보강했다.
 예약 장소·활동·시간창과 이전/현재 Decision의 Safety·Confidence·signal revision, 승인 provider

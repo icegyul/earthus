@@ -12,6 +12,7 @@ const ui = read('prototype/js/ui.js');
 const scene = read('prototype/js/scene.js');
 const i18n = read('prototype/js/i18n.js');
 const outdoor = read('prototype/js/ui-outdoor.js');
+const wildfire = read('prototype/js/layers/wildfire.js');
 
 const publicAuthText = html + '\n' + account;
 for (const leak of [
@@ -76,6 +77,10 @@ assert.equal(/<p class="out-note">/.test(outdoor), false,
   'hobby picker must not render a footer disclaimer block');
 assert.equal(outdoor.includes('We report conditions. We never tell you it is safe to go.'), false,
   'English hobby footer disclaimer remains');
+assert.equal((ui + wildfire).includes('열점이 모두 산불은 아닙니다'), false,
+  'wildfire detail still renders the rejected hotspot disclaimer');
+assert.equal(ui.includes('wildfires.note()'), false,
+  'wildfire detail still appends a global disclaimer block');
 
 const panels = [...html.matchAll(/<div id="[^"]+" class="sheet-panel[^"]*"([^>]*)>/g)];
 assert.ok(panels.length >= 30, 'expected all public sheet panels in the contract');

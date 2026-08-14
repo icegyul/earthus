@@ -566,7 +566,6 @@ export const sheet = {
     if (m.kind === 'volcano' && m.data?._currentEruption === true) {
       renderAgencyLive(m.name, rows);
     }
-    // 산불 — 위성 열점의 한계를 반드시 함께 알린다
     /* 부이 → 실제 카메라 사진 + 무엇을 하는 곳인지
        ⚠️ NDBC 의 buoycam.php 는 최신 사진 한 장을 직접 준다 (image/jpeg, 안정적인 주소).
           실측: 41001 호에서 6방향 파노라마(2880×300)를 받았고, 사진 아래에
@@ -601,11 +600,6 @@ export const sheet = {
 
     if (m.kind === 'wildfire') {
       renderFireView(m, rows);
-      import('./layers/wildfire.js').then(({ wildfires }) => {
-        const p = el('p', 'sheet-note', wildfires.note());
-        p.style.whiteSpace = 'pre-line';
-        rows.parentElement.appendChild(p);
-      });
     }
     // 일본 지진이면 기관 대조 결과 (USGS vs 일본 기상청)
     if (m.kind === 'quake' && m.data?._jma) renderAgencyCheck(m.data._jma, rows);

@@ -9,7 +9,7 @@
 //
 // ⚠️ 열점 = 산불이 아니다. 화산·가스플레어·화전도 잡힌다.
 //    구름에 가리면 안 보이고, 위성이 지나갈 때만 본다.
-//    "탐지 없음"은 "불이 없음"이 아니다 — 시트에 그대로 쓴다.
+//    "탐지 없음"은 "불이 없음"이 아니다 — 내부 판정에서만 이 한계를 지킨다.
 
 import { PointLayer } from './pointLayer.js';
 import { API } from '../config.js';
@@ -107,12 +107,5 @@ export const wildfires = {
   headline() {
     const it = this.layer?.items || [];
     return it.length && it[0].data._frp >= 10000 ? it[0] : null;
-  },
-
-  note() {
-    const ko = i18n.lang === 'ko';
-    return ko
-      ? `NASA FIRMS 위성(VIIRS 375m) 24시간 탐지입니다. 열점 ${(this.meta?.detections || 0).toLocaleString()}개를 ${(this.meta?.fires || 0).toLocaleString()}건의 화재로 묶었습니다.\n⚠️ 열점이 모두 산불은 아닙니다 — 화산·가스플레어·화전도 잡힙니다. 구름에 가리면 보이지 않고, 위성이 지나갈 때만 관측하므로 "표시 없음"이 "불이 없음"을 뜻하지 않습니다.`
-      : `NASA FIRMS (VIIRS 375m), 24h. ${(this.meta?.detections || 0).toLocaleString()} hotspots grouped into ${(this.meta?.fires || 0).toLocaleString()} fires.\n⚠️ Not every hotspot is a wildfire — volcanoes, gas flares and agricultural burning also register. Clouds hide fires and satellites only see at overpass, so "nothing shown" does not mean "no fire".`;
   },
 };

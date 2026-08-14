@@ -23,7 +23,7 @@ const numbers = values => new Set(values.flatMap(value => {
   return Array.from({ length: end - start + 1 }, (_, index) => start + index);
 }));
 
-// VERIFIED_EXISTING means current-repository local evidence exists. It never means production/provider/device approval.
+// VERIFIED_EXISTING means current-repository local evidence exists. It never means a completed runtime.
 const verified = numbers([
   [1, 11], [14, 18], [21, 24],
   [26, 36], [40, 61],
@@ -39,6 +39,10 @@ const verified = numbers([
   239, 240,
   [277, 286], 291, 294, 295, 296,
 ]);
+
+// 실제 UI가 생겼지만 해당 Sheet의 서버 동기화·offline·알림·전체 widget acceptance가
+// 아직 닫히지 않은 범위다. 계약 파일만으로 VERIFIED_EXISTING으로 되돌리지 않는다.
+const partialRuntime = numbers([[115, 125], 127, 128, 129, 131]);
 
 // These sheets need authority/evidence that cannot be synthesized safely in this repository.
 const blocked = numbers([
@@ -160,10 +164,11 @@ function evidenceFor(sheet) {
     tests: ['tools/test_aetherus_foundation.mjs'],
   };
   if (sheet <= 132) return {
-    files: ['prototype/js/space/mission-control.js',
+    files: ['prototype/js/space/aetherus-dashboard.js', 'prototype/css/aetherus-dashboard.css',
+      'prototype/js/space/mission-control.js',
       'prototype/data/aetherus/mission-control-policy.v1.json',
       'docs/earthus-v23/AETHERUS_MISSION_CONTROL_FOUNDATION.md'],
-    tests: ['tools/test_aetherus_mission_control.mjs'],
+    tests: ['tools/test_aetherus_mission_control_ui.mjs', 'tools/test_aetherus_mission_control.mjs'],
   };
   if (sheet <= 150) return {
     files: ['prototype/js/space/observation-media.js', 'prototype/js/space/observation-session.js',
@@ -240,7 +245,8 @@ function blockersFor(sheet, status) {
 }
 
 function nextActionFor(sheet, status) {
-  if (status === 'VERIFIED_EXISTING') return 'Keep the deployed artifact hash-verified; preserve any named runtime gate.';
+  if (status === 'VERIFIED_EXISTING') return 'Audit the linked local evidence against the actual runtime acceptance criteria; do not call it complete from contract tests alone.';
+  if (status === 'PARTIAL_RUNTIME') return 'Finish every widget in the sheet, account sync/offline/fullscreen/alerts as applicable, then rerun real-browser acceptance.';
   if (status === 'BLOCKED_EXTERNAL') return 'Do not simulate the blocker; collect the named external evidence first.';
   if (sheet >= 115 && sheet <= 132) return 'Implement a private local Mission Control layout/revision contract before UI wiring.';
   if (sheet >= 215 && sheet <= 232) return 'Map the seed model to existing schema, then add migration/API contract tests.';
@@ -249,15 +255,17 @@ function nextActionFor(sheet, status) {
 }
 
 function productionStatusFor(status) {
-  if (status === 'VERIFIED_EXISTING') return 'DEPLOYED_GATED';
+  if (status === 'VERIFIED_EXISTING') return 'LOCAL_EVIDENCE_ONLY';
+  if (status === 'PARTIAL_RUNTIME') return 'PARTIAL_RUNTIME';
   if (status === 'BLOCKED_EXTERNAL') return 'BLOCKED_EXTERNAL';
   if (status === 'NOT_APPLICABLE') return 'NOT_APPLICABLE';
   return 'IMPLEMENTATION_REQUIRED';
 }
 
 const entries = sheets.map(sheet => {
-  const status = verified.has(sheet.sheet) ? 'VERIFIED_EXISTING'
-    : blocked.has(sheet.sheet) ? 'BLOCKED_EXTERNAL' : 'IMPLEMENT';
+  const status = blocked.has(sheet.sheet) ? 'BLOCKED_EXTERNAL'
+    : partialRuntime.has(sheet.sheet) ? 'PARTIAL_RUNTIME'
+      : verified.has(sheet.sheet) ? 'VERIFIED_EXISTING' : 'IMPLEMENT';
   const evidence = evidenceFor(sheet.sheet);
   return {
     sheet: sheet.sheet,
@@ -273,7 +281,8 @@ const entries = sheets.map(sheet => {
   };
 });
 
-const allowedStatuses = new Set(['VERIFIED_EXISTING', 'IMPLEMENT', 'BLOCKED_EXTERNAL', 'NOT_APPLICABLE']);
+const allowedStatuses = new Set(['VERIFIED_EXISTING', 'PARTIAL_RUNTIME', 'IMPLEMENT',
+  'BLOCKED_EXTERNAL', 'NOT_APPLICABLE']);
 if (entries.length !== 296 || entries.some((entry, index) => entry.sheet !== index + 1)
   || entries.some(entry => !allowedStatuses.has(entry.status))) {
   throw new Error('Aetherus ledger integrity failed');
@@ -281,17 +290,19 @@ if (entries.length !== 296 || entries.some((entry, index) => entry.sheet !== ind
 const counts = Object.fromEntries([...allowedStatuses].map(status =>
   [status, entries.filter(entry => entry.status === status).length]));
 const ledger = {
-  schema: 'earthus.aetherus-v3-sheet-ledger.v1',
+  schema: 'earthus.aetherus-v3-sheet-ledger.v2',
   source: 'work/aetherus-v3.0-master-package/IMPLEMENTATION_SHEET_INDEX.json',
-  generatedAt: '2026-08-14T13:47:35Z',
+  generatedAt: '2026-08-14T17:39:03Z',
   statusMeaning: {
-    VERIFIED_EXISTING: 'Current repository local evidence exists; production may still be blocked.',
+    VERIFIED_EXISTING: 'Current repository local evidence exists; this is not a runtime-complete verdict.',
+    PARTIAL_RUNTIME: 'A user-visible runtime exists, but one or more sheet acceptance items remain incomplete.',
     IMPLEMENT: 'A concrete local implementation or evidence gap remains.',
     BLOCKED_EXTERNAL: 'External authority, account, rights, device, or operating evidence is required.',
     NOT_APPLICABLE: 'Confirmed outside the product scope; none assigned in this baseline.',
   },
   productionStatusMeaning: {
-    DEPLOYED_GATED: 'The verified static artifact is deployed; named runtime, rights, device, or data gates remain closed.',
+    LOCAL_EVIDENCE_ONLY: 'Contract, fixture, file, or test evidence exists locally; deployment and product completion are not inferred.',
+    PARTIAL_RUNTIME: 'A user-visible surface is available, but the sheet is not accepted as complete.',
     BLOCKED_EXTERNAL: 'No deployment claim; rights, account, device, infrastructure, or operating evidence is still required.',
     IMPLEMENTATION_REQUIRED: 'A concrete repository implementation remains before deployment.',
     NOT_APPLICABLE: 'Confirmed outside the product scope.',
@@ -314,19 +325,22 @@ const markdown = `# Aetherus v3.0 Implementation Sheet Ledger — 296 sheets
 
 - 정본: \`${ledger.source}\`
 - 총 296개, 번호 001–296 연속.
-- \`VERIFIED_EXISTING\` ${counts.VERIFIED_EXISTING}, \`IMPLEMENT\` ${counts.IMPLEMENT},
-  \`BLOCKED_EXTERNAL\` ${counts.BLOCKED_EXTERNAL}, \`NOT_APPLICABLE\` ${counts.NOT_APPLICABLE}.
-- \`VERIFIED_EXISTING\` 200개 정적 산출물은 운영 해시 검증 뒤 \`DEPLOYED_GATED\`로 기록한다.
-  이는 파일 배포 완료를 뜻하며, 권리·실데이터·계정·기기·판매 gate 승인까지 뜻하지 않는다.
-- 외부 증거가 필요한 \`BLOCKED_EXTERNAL\` 96개는 배포 누락이 아니라 외부 관문으로 분리한다.
+- \`VERIFIED_EXISTING\` ${counts.VERIFIED_EXISTING}, \`PARTIAL_RUNTIME\` ${counts.PARTIAL_RUNTIME},
+  \`IMPLEMENT\` ${counts.IMPLEMENT}, \`BLOCKED_EXTERNAL\` ${counts.BLOCKED_EXTERNAL},
+  \`NOT_APPLICABLE\` ${counts.NOT_APPLICABLE}.
+- \`VERIFIED_EXISTING\`은 코드·fixture·test 등 로컬 증거가 있다는 뜻일 뿐, 배포 또는 제품
+  완료 판정이 아니다. 계약 테스트만으로 런타임 완료를 주장하지 않는다.
+- Mission Control의 사용자 화면이 연결된 15개 시트는 \`PARTIAL_RUNTIME\`이다. 실제 브라우저
+  진입·레이아웃 저장은 검증했지만 sheet별 남은 widget·sync·offline 항목 때문에 완료가 아니다.
+- 외부 증거가 필요한 \`BLOCKED_EXTERNAL\` ${counts.BLOCKED_EXTERNAL}개는 배포 누락이 아니라 외부 관문으로 분리한다.
 - 이 파일은 \`tools/build_aetherus_v3_ledger.mjs\`로 index에서 재생성한다.
 
 ## 다음 결정
 
-1. \`VERIFIED_EXISTING\`은 링크된 테스트와 운영 파일 SHA-256 대조를 통과해야 \`DEPLOYED_GATED\`를 유지한다.
-2. \`IMPLEMENT\`는 domain + API/fallback + UI contract + test를 한 배치로 닫는다.
+1. \`VERIFIED_EXISTING\`은 실제 화면·데이터·실패 상태·기기 acceptance를 다시 대조한다.
+2. \`PARTIAL_RUNTIME\`과 \`IMPLEMENT\`는 domain + API/fallback + UI + real-browser test를 한 배치로 닫는다.
 3. \`BLOCKED_EXTERNAL\`은 값을 추정하거나 fixture 성공을 운영 성공으로 바꾸지 않는다.
-4. 현재 첫 신규 묶음인 Sheet 151–163 Culture Layer는 합성 fixture 로컬 계약만 완료했다.
+4. Sheet 151–163 Culture Layer는 합성 fixture 로컬 계약이며 제품 완료가 아니다.
 
 | Sheet | 제목 | 구현 상태 | 배포 상태 | 현재 증거 후보 | 외부 blocker |
 |---:|---|---|---|---|---|

@@ -2,10 +2,11 @@
 
 ## 상태
 
-`LOCAL_SHADOW_COMPLETE / SERVER_SYNC_ALERT_ENTITLEMENT_EXTERNAL`. 승인 reference의 중앙 3D Earth
-우선, Following/launch/payload/pass/weather/spotlight/JWST 위젯, 4개 room template, multiple room,
-revision/conflict, 반응형, Mission Mode, freshness/offline 상태와 키보드 명령 계약을 구현했다.
-운영 policy는 `DRAFT + productionEnabled=false`다.
+`PARTIAL_RUNTIME / SERVER_SYNC_ALERT_EXTERNAL`. 승인 reference의 중앙 3D Earth 중심 레이아웃을
+메인 Aetherus route에 연결했다. Launch Library 2 일정·카운트다운, NOAA SWPC Kp 관측,
+HST/JWST provenance 사진 수, Following, payload/timeline의 명시적 결측 상태, 4개 room 선택,
+위젯 숨김·resize·reorder와 기기 로컬 저장이 실제 화면에서 동작한다. 준비된 화면은 `FREE_OPEN`이며
+결제·PRO 표시는 없다. 운영 동기화 policy는 계속 `DRAFT + productionEnabled=false`다.
 
 ## 보호 계약
 
@@ -26,10 +27,14 @@ revision/conflict, 반응형, Mission Mode, freshness/offline 상태와 키보�
 
 ## 검증과 닫힌 gate
 
-`tools/test_aetherus_mission_control.mjs`가 template geometry, mobile/tablet/desktop, device conflict,
+`tools/test_aetherus_mission_control_ui.mjs`가 실제 route 진입, 3D canvas, LL2/Kp/provenance 표시,
+레이아웃 resize·reset·저장, 390×844·754×402·1440×900 반응형과 44px 입력을 Chrome에서 검증한다.
+`tools/test_aetherus_mission_control.mjs`는 template geometry, mobile/tablet/desktop, device conflict,
 owner denial, exact/Ocean state 차단, Mission Mode, fresh/stale/unavailable, export/delete,
 운영 DRAFT policy 차단과 network/timer/animation 0을 검증한다.
 
-다음은 미완료다: 실제 3D/UI wiring, durable sync/transaction, server entitlement/receipt,
-multi-monitor, 알림 센터, 실제 offline cache, keyboard/mouse/screen-reader 실브라우저,
-Mission Control 판매·공개. 외부 gate 전에는 메인 route에 연결하지 않는다.
+다음은 미완료다: Satellite Pass, Aurora, Korea Space, SpaceX, Starship, JWST 전용 위젯의 실제
+데이터 연결, room별 서로 다른 저장 배치, durable account sync/transaction, fullscreen control room,
+multi-monitor, 알림 센터, 실제 offline cache, 전체 keyboard/mouse/screen-reader acceptance.
+이 항목이 닫히기 전에는 Sheets 115–132 전체 완료로 판정하지 않는다. 유료 gate는 사용하지 않으며
+PD가 유료서비스 시작을 명시할 때만 별도 구현한다.

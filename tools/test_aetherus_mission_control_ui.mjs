@@ -29,11 +29,36 @@ try {
         { time_tag: '2026-08-15T00:14:00Z', kp_index: 4.25 },
       ]),
     }));
+    await page.route('https://ll.thespacedevs.com/**', route => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ results: [
+        {
+          id: 'launch-a', name: 'Falcon 9 Block 5 | Verified Test Mission',
+          window_start: '2026-08-16T01:12:00Z', window_end: '2026-08-16T01:27:00Z',
+          status: { name: 'Go for Launch', description: 'Current T-0 confirmed by reliable sources.' },
+          webcast_live: false,
+          launch_service_provider: { name: 'SpaceX' },
+          pad: { name: 'SLC-40', latitude: 28.56, longitude: -80.57,
+            location: { name: 'Cape Canaveral SFS, FL, USA' } },
+          mission: { name: 'Verified Test Mission', type: 'Communications' },
+        },
+        {
+          id: 'launch-b', name: 'Ariane 6 | Test Payload',
+          window_start: '2026-08-18T12:00:00Z', window_end: '2026-08-18T13:00:00Z',
+          status: { name: 'To Be Confirmed' }, webcast_live: false,
+          launch_service_provider: { name: 'Arianespace' },
+          pad: { name: 'ELA-4', location: { name: 'Kourou, French Guiana' } },
+          mission: { name: 'Test Payload', type: 'Technology' },
+        },
+      ] }),
+    }));
     const url = new URL(base);
     url.search = 'aetherus=3&solar=1';
     await page.goto(url.href, { waitUntil: 'domcontentloaded', timeout: 30_000 });
     await page.locator('#aetherusMissionControl').waitFor({ state: 'visible', timeout: 30_000 });
     await page.waitForFunction(() => document.querySelector('[data-mission-kp-value]')?.textContent === 'Kp 4.25');
+    await page.waitForFunction(() => document.querySelector('[data-launch-name]')?.textContent?.includes('Verified Test Mission'));
 
     const evidence = await page.evaluate(() => {
       const mission = document.querySelector('#aetherusMissionControl');
@@ -54,8 +79,10 @@ try {
         kp: mission.querySelector('[data-mission-kp-value]').textContent,
         kpTime: mission.querySelector('[data-mission-kp-time]').textContent,
         photo: mission.querySelector('[data-mission-photo-count]').textContent,
+        launch: mission.querySelector('[data-launch-name]').textContent,
+        countdown: mission.querySelector('[data-widget-body="COUNTDOWN"] .mission-countdown').textContent,
         stage: document.querySelector('#cosmicExperience').dataset.stage,
-        forbidden: /\bPRO\b|T-\d|결제|구독/.test(mission.textContent),
+        forbidden: /\bPRO\b|결제|구독|누리호 5차/.test(mission.textContent),
         canvasWidth: document.querySelector('#cosmicCanvas').width,
       };
     });
@@ -71,8 +98,17 @@ try {
     assert.equal(evidence.kp, 'Kp 4.25', `${item.name} NOAA observation missing`);
     assert.match(evidence.kpTime, /2026-08-15/);
     assert.match(evidence.photo, /^59장/);
-    assert.equal(evidence.forbidden, false, `${item.name} paywall or invented countdown copy present`);
+    assert.match(evidence.launch, /Verified Test Mission/);
+    assert.match(evidence.countdown, /^(T-|예정 시각 경과)/);
+    assert.equal(evidence.forbidden, false, `${item.name} paywall or invented mission copy present`);
     assert.ok(evidence.canvasWidth > 0, `${item.name} 3D canvas did not initialize`);
+
+    await page.locator('[data-mission-edit]:visible').first().click();
+    await page.locator('[data-mission-editor]').waitFor({ state: 'visible' });
+    await page.locator('[data-layout-size="SPACE_WEATHER"]').click();
+    assert.equal(await page.locator('[data-widget="SPACE_WEATHER"]').evaluate(node => node.classList.contains('is-wide')), true);
+    await page.locator('[data-layout-reset]').click();
+    await page.locator('[data-mission-editor-close]').first().click();
 
     await page.locator('[data-aetherus-nav="solar"]').click();
     await page.locator('#aetherusMissionControl').waitFor({ state: 'hidden' });

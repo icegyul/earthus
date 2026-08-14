@@ -3,6 +3,10 @@
 > 이 문서는 공개 전 로컬 종료점의 역사 기록이다. 같은 날 후속 PD 지시로 Ocean 운영 허브와
 > 공개 가능 기능을 배포했다. 현재 상태는 `RELEASE-2026-08-14-OCEAN-PUBLIC.md`와
 > `OCEAN_CHAPTER_LEDGER.md`를 정본으로 본다.
+>
+> **2026-08-15 정정:** 아래 `VERIFIED_EXISTING 200 / IMPLEMENT 0`은 제품 완료 수치가 아니다.
+> 계약·fixture·단위 테스트를 런타임 완료처럼 집계한 잘못된 기준이었으며, v2 ledger가 이를
+> `LOCAL_EVIDENCE_ONLY 181 / PARTIAL_RUNTIME 15 / BLOCKED_EXTERNAL 100`으로 교체한다.
 
 ## 결론
 

@@ -10,7 +10,7 @@ import { oceanDepth } from './depth.js';
 import { obisSummary } from './obis.js';
 
 const STYLE_ID = 'earthusOceanDiveStyles';
-const STYLE_URL = '/css/ocean-dive.css?v=20260815-cockpit3';
+const STYLE_URL = '/css/ocean-dive.css?v=20260815-cockpit6';
 const DEFAULT_DEPTH_M = 6420;
 const SPEEDS = [1, 2, 4];
 const EVEREST = {

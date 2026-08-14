@@ -155,14 +155,14 @@ body.earthus-dive-open #hudShow{display:none!important}
 
 @media(orientation:landscape) and (max-height:560px) and (min-width:561px){
   #diveExperience.od-dive{position:absolute;inset:0;min-height:0;overflow:hidden}
-  .od-dive-header{top:max(4px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right))}
-  .od-breadcrumb{font-size:9px}.od-breadcrumb button{font-size:11px}.od-dive-title{padding-top:7px}.od-dive-title p{font-size:20px}.od-dive-title h2{font-size:9px!important}
+  .od-dive-header{top:max(4px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));grid-template-columns:minmax(190px,1fr) auto minmax(190px,1fr)}
+  .od-breadcrumb{grid-column:auto;font-size:9px}.od-breadcrumb button{font-size:11px}.od-dive-title{position:static;top:auto;left:auto;width:auto;padding-top:7px;transform:none}.od-dive-title p{font-size:20px}.od-dive-title h2{font-size:9px!important}.od-dive-utils{grid-column:auto}
   .od-locator{display:none}
   .od-specimen{top:58px;bottom:12px;left:max(12px,env(safe-area-inset-left));width:190px;height:auto;padding:9px 10px}.od-specimen-media img{max-height:92px}.od-specimen-copy h3{font-size:17px}.od-specimen-copy p{margin-top:4px}.od-specimen-copy small{display:none}.od-specimen-evidence{min-height:44px;margin-top:4px}
   .od-depth-rail{top:56px;right:max(12px,env(safe-area-inset-right));bottom:128px;width:152px;min-height:0}
   #diveExperience #diveCanvas{min-height:0}
-  .od-telemetry{right:max(12px,env(safe-area-inset-right));bottom:10px;width:250px;min-height:110px;padding:8px 10px}.od-telemetry-head{margin-bottom:3px}.od-telemetry dl{grid-template-columns:repeat(3,1fr)}.od-telemetry dt,.od-telemetry dd{min-height:28px;padding:6px 4px;font-size:9px}.od-telemetry-source{display:none}
-  .od-controls-wrap{bottom:max(10px,env(safe-area-inset-bottom))}.od-controls{min-width:440px}.od-controls button{min-height:52px}.od-controls button span{width:36px;height:36px}.od-motion-status{display:none}
+  .od-telemetry{top:auto;right:max(12px,env(safe-area-inset-right));bottom:10px;left:auto;width:min(250px,28vw);min-height:110px;padding:8px 10px}.od-telemetry-head{margin-bottom:3px}.od-telemetry-head span{font-size:10px;white-space:nowrap}.od-telemetry dl{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto auto}.od-telemetry dt,.od-telemetry dd{min-height:28px;padding:6px 4px;font-size:9px;text-align:center}.od-telemetry dt:nth-of-type(1),.od-telemetry dd:nth-of-type(1){grid-column:1}.od-telemetry dt:nth-of-type(2),.od-telemetry dd:nth-of-type(2){grid-column:2}.od-telemetry dt:nth-of-type(3),.od-telemetry dd:nth-of-type(3){grid-column:3}.od-telemetry dt{grid-row:1}.od-telemetry dd{grid-row:2}.od-telemetry-source{display:none}
+  .od-controls-wrap{top:auto;right:auto;bottom:max(10px,env(safe-area-inset-bottom));left:calc(50% - 8px);transform:translateX(-50%)}.od-controls{grid-template-columns:repeat(5,minmax(0,1fr));min-width:min(440px,42vw)}.od-controls button{grid-template-columns:1fr;gap:1px;min-height:52px;padding:2px}.od-controls button span{width:36px;height:36px;margin:auto}.od-motion-status{display:none}
 }
 
 @media(prefers-reduced-motion:reduce){.od-dive-bg{transition:none}.od-controls button{transition:none}}

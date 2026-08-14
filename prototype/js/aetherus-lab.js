@@ -1,4 +1,4 @@
-const REVISION = 'aetherus-public-safe-20260814-r1';
+const REVISION = 'aetherus-public-safe-20260815-r2';
 const asset = path => `${path}?v=${REVISION}`;
 const expect = (condition, message) => { if (!condition) throw new Error(message); };
 const loadJson = async path => {
@@ -139,12 +139,13 @@ function renderLedger(ledger) {
   expect(ledger.entries.length === 296, 'LEDGER_LENGTH_INVALID');
   expect(!ledger.entries.some(entry => entry.productionStatus === 'NOT_RELEASED'),
     'UNCLASSIFIED_NOT_RELEASED_REMAINS');
-  const deployed = ledger.entries.filter(entry => entry.productionStatus === 'DEPLOYED_GATED').length;
+  const localEvidence = ledger.entries.filter(entry => entry.productionStatus === 'LOCAL_EVIDENCE_ONLY').length;
+  const partial = ledger.entries.filter(entry => entry.productionStatus === 'PARTIAL_RUNTIME').length;
   const blocked = ledger.entries.filter(entry => entry.productionStatus === 'BLOCKED_EXTERNAL').length;
   const implement = ledger.entries.filter(entry => entry.productionStatus === 'IMPLEMENTATION_REQUIRED').length;
-  document.querySelector('#deployedCount').textContent = String(deployed);
+  document.querySelector('#deployedCount').textContent = String(localEvidence);
   document.querySelector('#blockedCount').textContent = String(blocked);
-  document.querySelector('#implementCount').textContent = String(implement);
+  document.querySelector('#implementCount').textContent = String(partial + implement);
 
   const groups = new Map();
   for (const entry of ledger.entries.filter(item => item.productionStatus === 'BLOCKED_EXTERNAL')) {
@@ -205,11 +206,12 @@ function downloadReport() {
     schema: 'earthus.aetherus-public-safe-report.v1',
     revision: REVISION,
     checkedAtUtc: state.checkedAtUtc,
-    publicStaticContractsDeployed: true,
+    publicStaticContractsAvailable: true,
+    productCompletionInferred: false,
     externalOperationsEnabled: false,
     ledger: state.ledger ? { counts: state.ledger.counts,
-      productionStatuses: Object.fromEntries(['DEPLOYED_GATED', 'BLOCKED_EXTERNAL',
-        'IMPLEMENTATION_REQUIRED'].map(status => [status,
+      productionStatuses: Object.fromEntries(['LOCAL_EVIDENCE_ONLY', 'PARTIAL_RUNTIME',
+        'BLOCKED_EXTERNAL', 'IMPLEMENTATION_REQUIRED'].map(status => [status,
         state.ledger.entries.filter(entry => entry.productionStatus === status).length])) } : null,
     results: [...state.results.values()],
   };

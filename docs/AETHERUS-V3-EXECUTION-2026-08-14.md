@@ -8,11 +8,12 @@
 Implementation Sheet와 Ocean 0–51장은 현재 저장소의 구현·검증 증거에 먼저 연결하고,
 증거가 없는 차이만 작은 배치로 구현한다.
 
-현재 단계는 **AETHERUS_LOCAL_SCOPE_COMPLETE / OCEAN_O0–O6_LOCAL_SHADOW_COMPLETE /
-CANARY_DEPLOYED_NOT_RELEASED / EXTERNAL_GATES_CLOSED**다. 메인과 분리된 canary 배포·검증 결과는
-`docs/earthus-v23/RELEASE-2026-08-14-OCEAN-AETHERUS-V3-CANARY.md`에 기록한다. Ocean의 provider 권리·운영
-freshness·서버/RLS·공개 UI gate는 아직 닫혀 있다. 이 문서는 판매, 알림 전송, 외부 provider 연결, 운영 AI, 원격 장비
-제어, 유료 AIS 또는 메인 Aetherus 공개를 승인하지 않는다.
+2026-08-15 정정: 이전의 `AETHERUS_LOCAL_SCOPE_COMPLETE` 판정은 철회한다. 계약 모듈·fixture·
+단위 테스트가 있다는 사실을 실제 제품 구현·배포 완료로 잘못 집계했다. 현재 원장은
+`VERIFIED_EXISTING 181 / PARTIAL_RUNTIME 15 / BLOCKED_EXTERNAL 100`이며,
+`VERIFIED_EXISTING`도 로컬 증거일 뿐 완료 판정이 아니다. Mission Control은 실제 사용자 화면과
+브라우저 검증이 연결됐지만 sheet 전체가 닫히지 않아 `PARTIAL_RUNTIME`이다. Ocean은 공개 경로와
+심해 조종 화면을 실제 브라우저로 재검증하되 provider 권리·운영 freshness·서버/RLS gate는 유지한다.
 
 2026-08-14 PD 결정에 따라 `MONETIZATION_MODE=FREE_OPEN`을 적용한다. PD가
 "유료서비스 시작하자"라고 명시하기 전까지 준비된 Ocean·Aetherus 기능은
@@ -99,8 +100,10 @@ Vessel license/coverage gate를 로컬 섀도우로 구현했다. 0–51장 판�
 **현재 결과**
 
 296개 시트 전부를 `docs/earthus-v23/AETHERUS_V3_SHEET_LEDGER.{json,md}`에 연결했다.
-현재 분포는 `VERIFIED_EXISTING 200 / IMPLEMENT 0 / BLOCKED_EXTERNAL 96 /
-NOT_APPLICABLE 0`이다. 모든 행은 `productionStatus=NOT_RELEASED`이며, 원장은
+현재 분포는 `VERIFIED_EXISTING 181 / PARTIAL_RUNTIME 15 / IMPLEMENT 0 /
+BLOCKED_EXTERNAL 100 / NOT_APPLICABLE 0`이다. `VERIFIED_EXISTING`은
+`productionStatus=LOCAL_EVIDENCE_ONLY`, Mission Control 사용자 화면 범위는
+`productionStatus=PARTIAL_RUNTIME`이며, 원장은
 `tools/build_aetherus_v3_ledger.mjs`로 정본 index에서 재생성된다.
 
 첫 신규 구현 묶음은 Sheet 151–163 Culture Layer다. 실제 작품 사실 대신 합성 fixture로
@@ -165,8 +168,8 @@ subscription, Sky direction/Vision state, timezone/DST와 data rollback/hotfix �
 - 첫 `IMPLEMENT` 시트의 domain + API + UI/fallback + test 묶음
 - 배치별 release/rollback 범위
 
-현재 산출물: ledger 296/296 (`IMPLEMENT 0`), 12개 local-shadow 배치,
-Ocean 0–51장/OT-001–015 원장과 O0–O6 계약/테스트.
+현재 산출물: ledger 296/296 (로컬 증거 181, 부분 런타임 15, 외부 차단 100),
+12개 local-shadow 배치, Ocean 0–51장/OT-001–015 원장과 O0–O6 계약/테스트.
 최종 로컬 인수 결과는
 `docs/earthus-v23/EARTHUS_OCEAN_AETHERUS_V3_LOCAL_CLOSEOUT_2026-08-14.md`에 기록한다.
 

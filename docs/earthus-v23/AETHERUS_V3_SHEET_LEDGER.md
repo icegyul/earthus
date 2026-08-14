@@ -4,14 +4,14 @@
 
 - 정본: `work/aetherus-v3.0-master-package/IMPLEMENTATION_SHEET_INDEX.json`
 - 총 296개, 번호 001–296 연속.
-- `VERIFIED_EXISTING` 181, `PARTIAL_RUNTIME` 15,
+- `VERIFIED_EXISTING` 183, `PARTIAL_RUNTIME` 13,
   `IMPLEMENT` 0, `BLOCKED_EXTERNAL` 100,
   `NOT_APPLICABLE` 0.
 - `VERIFIED_EXISTING`은 코드·fixture·test 등 로컬 증거가 있다는 뜻일 뿐, 배포 또는 제품
   완료 판정이 아니다. 계약 테스트만으로 런타임 완료를 주장하지 않는다.
-- Mission Control의 사용자 화면이 연결된 15개 시트는 `PARTIAL_RUNTIME`이다. 실제 브라우저
-  진입·room별 레이아웃 저장·공식 데이터 위젯은 검증했지만 sync·fullscreen·offline·전체
-  접근성 acceptance가 남아 있어 완료가 아니다.
+- Mission Control의 사용자 화면이 연결된 13개 시트는 `PARTIAL_RUNTIME`이다. 실제 브라우저
+  진입·room별 레이아웃 저장·공식 데이터 위젯·fullscreen·키보드·출처별 offline cache는
+  검증했지만 durable sync·알림·전체 실기기 접근성 acceptance가 남아 있어 전체 완료가 아니다.
 - 외부 증거가 필요한 `BLOCKED_EXTERNAL` 100개는 배포 누락이 아니라 외부 관문으로 분리한다.
 - 이 파일은 `tools/build_aetherus_v3_ledger.mjs`로 index에서 재생성한다.
 
@@ -152,9 +152,9 @@
 | 126 | 레이아웃 동기화 / Control Room 슬롯 | BLOCKED_EXTERNAL | BLOCKED_EXTERNAL | prototype/js/space/aetherus-dashboard.js<br>prototype/css/aetherus-dashboard.css<br>prototype/js/space/mission-control.js | external authority or operating evidence required |
 | 127 | Space 관제센터 템플릿 / Weather 관제센터 템플릿 | PARTIAL_RUNTIME | PARTIAL_RUNTIME | prototype/js/space/aetherus-dashboard.js<br>prototype/css/aetherus-dashboard.css<br>prototype/js/space/mission-control.js | — |
 | 128 | Satellite 관제센터 템플릿 / Astronomy 관제센터 템플릿 | PARTIAL_RUNTIME | PARTIAL_RUNTIME | prototype/js/space/aetherus-dashboard.js<br>prototype/css/aetherus-dashboard.css<br>prototype/js/space/mission-control.js | — |
-| 129 | 전체화면 Control Room mode / 키보드·마우스 조작 | PARTIAL_RUNTIME | PARTIAL_RUNTIME | prototype/js/space/aetherus-dashboard.js<br>prototype/css/aetherus-dashboard.css<br>prototype/js/space/mission-control.js | — |
+| 129 | 전체화면 Control Room mode / 키보드·마우스 조작 | VERIFIED_EXISTING | LOCAL_EVIDENCE_ONLY | prototype/js/space/aetherus-dashboard.js<br>prototype/css/aetherus-dashboard.css<br>prototype/js/space/mission-control.js | — |
 | 130 | 다중 모니터 고려 / 관제센터 알림센터 | BLOCKED_EXTERNAL | BLOCKED_EXTERNAL | prototype/js/space/aetherus-dashboard.js<br>prototype/css/aetherus-dashboard.css<br>prototype/js/space/mission-control.js | external authority or operating evidence required |
-| 131 | 관제센터 data freshness / 관제센터 offline fallback | PARTIAL_RUNTIME | PARTIAL_RUNTIME | prototype/js/space/aetherus-dashboard.js<br>prototype/css/aetherus-dashboard.css<br>prototype/js/space/mission-control.js | — |
+| 131 | 관제센터 data freshness / 관제센터 offline fallback | VERIFIED_EXISTING | LOCAL_EVIDENCE_ONLY | prototype/js/space/aetherus-dashboard.js<br>prototype/css/aetherus-dashboard.css<br>prototype/js/space/mission-control.js | — |
 | 132 | 관제센터 유료 gate | BLOCKED_EXTERNAL | BLOCKED_EXTERNAL | prototype/js/space/aetherus-dashboard.js<br>prototype/css/aetherus-dashboard.css<br>prototype/js/space/mission-control.js | external authority or operating evidence required |
 | 133 | Aetherus+ 업로드 권한 / upload session | BLOCKED_EXTERNAL | BLOCKED_EXTERNAL | prototype/js/space/observation-media.js<br>prototype/js/space/observation-session.js<br>prototype/js/space/personal-universe.js | authenticated server principal; private storage/worker/moderation infrastructure; two-principal operating evidence |
 | 134 | signed upload URL / 원본 MIME 검사 | BLOCKED_EXTERNAL | BLOCKED_EXTERNAL | prototype/js/space/observation-media.js<br>prototype/js/space/observation-session.js<br>prototype/js/space/personal-universe.js | authenticated server principal; private storage/worker/moderation infrastructure; two-principal operating evidence |

@@ -183,6 +183,30 @@ try {
     await page.locator('[data-layout-reset]').click();
     await page.locator('[data-mission-editor-close]').first().click();
 
+    await page.locator('[data-mission-fullscreen]').click();
+    await page.waitForFunction(() => document.fullscreenElement?.id === 'cosmicExperience');
+    const fullscreenEvidence = await page.evaluate(() => {
+      const mission = document.querySelector('#aetherusMissionControl').getBoundingClientRect();
+      const center = document.querySelector('.mission-center').getBoundingClientRect();
+      const canvas = document.querySelector('#cosmicCanvas').getBoundingClientRect();
+      return {
+        missionTop: mission.top, missionRight: mission.right,
+        centerWidth: center.width, centerHeight: center.height,
+        canvasVisible: canvas.width > 0 && canvas.height > 0,
+        overflow: document.documentElement.scrollWidth - innerWidth,
+      };
+    });
+    assert.ok(fullscreenEvidence.missionTop >= 61 && fullscreenEvidence.missionTop <= 63,
+      `${item.name} fullscreen navigation overlap`);
+    assert.ok(fullscreenEvidence.missionRight <= item.width + 0.5,
+      `${item.name} fullscreen outside viewport`);
+    assert.ok(fullscreenEvidence.centerWidth > 200 && fullscreenEvidence.centerHeight > 150,
+      `${item.name} fullscreen Earth stage collapsed`);
+    assert.equal(fullscreenEvidence.canvasVisible, true, `${item.name} fullscreen 3D canvas missing`);
+    assert.ok(fullscreenEvidence.overflow <= 0, `${item.name} fullscreen overflow ${fullscreenEvidence.overflow}`);
+    await page.keyboard.press('KeyF');
+    await page.waitForFunction(() => !document.fullscreenElement);
+
     await page.locator('[data-aetherus-nav="solar"]').click();
     await page.locator('#aetherusMissionControl').waitFor({ state: 'hidden' });
     await page.locator('[data-aetherus-nav="solar"].current').waitFor({ timeout: 5_000 });

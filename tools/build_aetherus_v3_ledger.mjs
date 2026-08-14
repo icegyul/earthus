@@ -40,9 +40,11 @@ const verified = numbers([
   [277, 286], 291, 294, 295, 296,
 ]);
 
-// 실제 UI가 생겼지만 해당 Sheet의 서버 동기화·offline·알림·전체 widget acceptance가
+// 실제 UI가 생겼지만 해당 Sheet의 서버 동기화·알림·전체 widget acceptance가
 // 아직 닫히지 않은 범위다. 계약 파일만으로 VERIFIED_EXISTING으로 되돌리지 않는다.
-const partialRuntime = numbers([[115, 125], 127, 128, 129, 131]);
+// Sheet 129의 fullscreen/keyboard·mouse와 131의 freshness/offline fallback은
+// 실제 브라우저 장애 회귀까지 통과했으므로 해당 sheet 항목의 로컬 증거는 닫혔다.
+const partialRuntime = numbers([[115, 125], 127, 128]);
 
 // These sheets need authority/evidence that cannot be synthesized safely in this repository.
 const blocked = numbers([
@@ -170,6 +172,7 @@ function evidenceFor(sheet) {
       'docs/earthus-v23/AETHERUS_MISSION_CONTROL_FOUNDATION.md'],
     tests: ['tools/test_aetherus_mission_control_ui.mjs',
       'tools/test_aetherus_mission_control_live_sources.mjs',
+      'tools/test_aetherus_mission_control_offline_accessibility.mjs',
       'tools/test_aetherus_mission_control.mjs'],
   };
   if (sheet <= 150) return {
@@ -294,7 +297,7 @@ const counts = Object.fromEntries([...allowedStatuses].map(status =>
 const ledger = {
   schema: 'earthus.aetherus-v3-sheet-ledger.v2',
   source: 'work/aetherus-v3.0-master-package/IMPLEMENTATION_SHEET_INDEX.json',
-  generatedAt: '2026-08-14T17:39:03Z',
+  generatedAt: '2026-08-14T18:27:45Z',
   statusMeaning: {
     VERIFIED_EXISTING: 'Current repository local evidence exists; this is not a runtime-complete verdict.',
     PARTIAL_RUNTIME: 'A user-visible runtime exists, but one or more sheet acceptance items remain incomplete.',
@@ -332,9 +335,9 @@ const markdown = `# Aetherus v3.0 Implementation Sheet Ledger — 296 sheets
   \`NOT_APPLICABLE\` ${counts.NOT_APPLICABLE}.
 - \`VERIFIED_EXISTING\`은 코드·fixture·test 등 로컬 증거가 있다는 뜻일 뿐, 배포 또는 제품
   완료 판정이 아니다. 계약 테스트만으로 런타임 완료를 주장하지 않는다.
-- Mission Control의 사용자 화면이 연결된 15개 시트는 \`PARTIAL_RUNTIME\`이다. 실제 브라우저
-  진입·room별 레이아웃 저장·공식 데이터 위젯은 검증했지만 sync·fullscreen·offline·전체
-  접근성 acceptance가 남아 있어 완료가 아니다.
+- Mission Control의 사용자 화면이 연결된 13개 시트는 \`PARTIAL_RUNTIME\`이다. 실제 브라우저
+  진입·room별 레이아웃 저장·공식 데이터 위젯·fullscreen·키보드·출처별 offline cache는
+  검증했지만 durable sync·알림·전체 실기기 접근성 acceptance가 남아 있어 전체 완료가 아니다.
 - 외부 증거가 필요한 \`BLOCKED_EXTERNAL\` ${counts.BLOCKED_EXTERNAL}개는 배포 누락이 아니라 외부 관문으로 분리한다.
 - 이 파일은 \`tools/build_aetherus_v3_ledger.mjs\`로 index에서 재생성한다.
 

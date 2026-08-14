@@ -45,15 +45,19 @@ for (let sheet = 151; sheet <= 163; sheet += 1) {
 for (let sheet = 115; sheet <= 132; sheet += 1) {
   const entry = ledger.entries[sheet - 1];
   if ([126, 130, 132].includes(sheet)) assert.equal(entry.status, 'BLOCKED_EXTERNAL');
+  else if ([129, 131].includes(sheet)) {
+    assert.equal(entry.status, 'VERIFIED_EXISTING');
+    assert.ok(entry.evidence.tests.includes('tools/test_aetherus_mission_control_offline_accessibility.mjs'));
+  }
   else assert.equal(entry.status, 'PARTIAL_RUNTIME');
 }
 const countSum = Object.values(ledger.counts).reduce((sum, count) => sum + count, 0);
 assert.equal(countSum, 296);
-assert.equal(ledger.counts.VERIFIED_EXISTING, 181);
-assert.equal(ledger.counts.PARTIAL_RUNTIME, 15);
+assert.equal(ledger.counts.VERIFIED_EXISTING, 183);
+assert.equal(ledger.counts.PARTIAL_RUNTIME, 13);
 assert.equal(ledger.counts.IMPLEMENT, 0);
 assert.equal(ledger.counts.BLOCKED_EXTERNAL, 100);
-assert.equal(ledger.entries.filter(entry => entry.productionStatus === 'LOCAL_EVIDENCE_ONLY').length, 181);
-assert.equal(ledger.entries.filter(entry => entry.productionStatus === 'PARTIAL_RUNTIME').length, 15);
+assert.equal(ledger.entries.filter(entry => entry.productionStatus === 'LOCAL_EVIDENCE_ONLY').length, 183);
+assert.equal(ledger.entries.filter(entry => entry.productionStatus === 'PARTIAL_RUNTIME').length, 13);
 assert.equal(ledger.entries.filter(entry => entry.productionStatus === 'BLOCKED_EXTERNAL').length, 100);
 console.log(`PASS: Aetherus v3 ledger 296/296, ${JSON.stringify(ledger.counts)}`);

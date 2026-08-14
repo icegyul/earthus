@@ -1,7 +1,7 @@
 {
   "schema": "earthus.aetherus-v3-sheet-ledger.v2",
   "source": "work/aetherus-v3.0-master-package/IMPLEMENTATION_SHEET_INDEX.json",
-  "generatedAt": "2026-08-14T17:39:03Z",
+  "generatedAt": "2026-08-14T18:27:45Z",
   "statusMeaning": {
     "VERIFIED_EXISTING": "Current repository local evidence exists; this is not a runtime-complete verdict.",
     "PARTIAL_RUNTIME": "A user-visible runtime exists, but one or more sheet acceptance items remain incomplete.",
@@ -17,8 +17,8 @@
     "NOT_APPLICABLE": "Confirmed outside the product scope."
   },
   "counts": {
-    "VERIFIED_EXISTING": 181,
-    "PARTIAL_RUNTIME": 15,
+    "VERIFIED_EXISTING": 183,
+    "PARTIAL_RUNTIME": 13,
     "IMPLEMENT": 0,
     "BLOCKED_EXTERNAL": 100,
     "NOT_APPLICABLE": 0
@@ -2937,6 +2937,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -2965,6 +2966,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -2993,6 +2995,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3021,6 +3024,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3049,6 +3053,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3077,6 +3082,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3105,6 +3111,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3133,6 +3140,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3161,6 +3169,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3189,6 +3198,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3217,6 +3227,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3245,6 +3256,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3275,6 +3287,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3303,6 +3316,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3319,7 +3333,7 @@
         "키보드·마우스 조작"
       ],
       "kind": "mission_control",
-      "status": "PARTIAL_RUNTIME",
+      "status": "VERIFIED_EXISTING",
       "evidence": {
         "files": [
           "prototype/js/space/aetherus-dashboard.js",
@@ -3331,12 +3345,13 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
       "blockers": [],
-      "nextAction": "Finish every widget in the sheet, account sync/offline/fullscreen/alerts as applicable, then rerun real-browser acceptance.",
-      "productionStatus": "PARTIAL_RUNTIME"
+      "nextAction": "Audit the linked local evidence against the actual runtime acceptance criteria; do not call it complete from contract tests alone.",
+      "productionStatus": "LOCAL_EVIDENCE_ONLY"
     },
     {
       "sheet": 130,
@@ -3359,6 +3374,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3377,7 +3393,7 @@
         "관제센터 offline fallback"
       ],
       "kind": "mission_control",
-      "status": "PARTIAL_RUNTIME",
+      "status": "VERIFIED_EXISTING",
       "evidence": {
         "files": [
           "prototype/js/space/aetherus-dashboard.js",
@@ -3389,12 +3405,13 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
       "blockers": [],
-      "nextAction": "Finish every widget in the sheet, account sync/offline/fullscreen/alerts as applicable, then rerun real-browser acceptance.",
-      "productionStatus": "PARTIAL_RUNTIME"
+      "nextAction": "Audit the linked local evidence against the actual runtime acceptance criteria; do not call it complete from contract tests alone.",
+      "productionStatus": "LOCAL_EVIDENCE_ONLY"
     },
     {
       "sheet": 132,
@@ -3416,6 +3433,7 @@
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
           "tools/test_aetherus_mission_control_live_sources.mjs",
+          "tools/test_aetherus_mission_control_offline_accessibility.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },

@@ -11,6 +11,7 @@ import { fetchT } from '../net.js';
 const STYLE_ID = 'aetherusMissionControlStyle';
 const PHOTO_CATALOG = '/data/space-photos.json';
 const STORAGE_KEY = 'earthus:aetherus-mission-control-layout:v1';
+const DATA_CACHE_KEY = 'earthus:aetherus-mission-control-public-data:v1';
 const REFRESH_MS = 5 * 60 * 1000;
 const ROOM_TEMPLATES = Object.freeze([
   ['SPACE_CONTROL', 'SPACE CONTROL', '◈'],
@@ -48,6 +49,15 @@ const ROOM_DEFAULTS = Object.freeze({
 const DEFAULT_STATE = Object.freeze({
   activeRoom: 'SPACE_CONTROL',
   followingLaunchId: null,
+  activeFilter: 'all',
+});
+const FILTER_WIDGETS = Object.freeze({
+  launches: Object.freeze(['FOLLOWING', 'LIVE', 'COUNTDOWN', 'MISSION_TIMELINE', 'PAYLOAD_STATUS',
+    'UPCOMING_LAUNCHES', 'KOREA_SPACE', 'SPACEX', 'STARSHIP']),
+  satellites: Object.freeze(['SATELLITE_PASS']),
+  iss: Object.freeze(['SATELLITE_PASS']),
+  weather: Object.freeze(['SPACE_WEATHER', 'AURORA', 'EARTH_WEATHER']),
+  astronomy: Object.freeze(['TONIGHT', 'JWST']),
 });
 
 function defaultRoomLayouts() {
@@ -67,7 +77,7 @@ function ensureStylesheet() {
   const link = document.createElement('link');
   link.id = STYLE_ID;
   link.rel = 'stylesheet';
-  link.href = new URL('../../css/aetherus-dashboard.css?v=20260815-mc11', import.meta.url).href;
+  link.href = new URL('../../css/aetherus-dashboard.css?v=20260815-mc12', import.meta.url).href;
   document.head.append(link);
 }
 
@@ -126,6 +136,7 @@ function safeStoredState() {
         ? parsed.activeRoom : DEFAULT_STATE.activeRoom,
       rooms,
       followingLaunchId: typeof parsed.followingLaunchId === 'string' ? parsed.followingLaunchId : null,
+      activeFilter: 'all',
     };
   } catch {
     return { ...DEFAULT_STATE, rooms: defaults };
@@ -147,13 +158,42 @@ function saveState(state) {
   }
 }
 
+function safeDataCache() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(DATA_CACHE_KEY) || 'null');
+    if (!parsed || parsed.version !== 1 || typeof parsed.sources !== 'object') return {};
+    return parsed.sources;
+  } catch {
+    return {};
+  }
+}
+
+function saveDataCache(sources) {
+  try {
+    localStorage.setItem(DATA_CACHE_KEY, JSON.stringify({ version: 1, sources }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function cacheEntry(value, retrievedAt = new Date()) {
+  return { retrievedAt: new Date(retrievedAt).toISOString(), value };
+}
+
+function validCachedSource(sources, name, validate) {
+  const entry = sources?.[name];
+  if (!entry || !Number.isFinite(Date.parse(entry.retrievedAt || '')) || !validate(entry.value)) return null;
+  return entry;
+}
+
 function routeButton(route, icon, label) {
   return `<button type="button" data-mission-route="${route}"><span aria-hidden="true">${icon}</span>`
     + `<b>${label}</b><i aria-hidden="true">›</i></button>`;
 }
 
 function widgetShell(type, title, className = '') {
-  return `<article class="mission-widget ${className}" data-widget="${type}">`
+  return `<article class="mission-widget ${className}" data-widget="${type}" aria-label="${title}">`
     + `<header><b>${title}</b><span data-widget-state="${type}">자료 확인 중</span></header>`
     + `<div class="mission-widget-body" data-widget-body="${type}"></div></article>`;
 }
@@ -186,14 +226,19 @@ function buildMarkup() {
     <section class="mission-center">
       <div class="mission-center-tools">
         <div class="mission-filter" role="group" aria-label="관제 자료 필터">
-          <button type="button" class="current" data-mission-filter="all">전체</button>
-          <button type="button" data-mission-filter="launches">발사</button>
-          <button type="button" data-mission-filter="satellites">위성</button>
-          <button type="button" data-mission-filter="iss">ISS</button>
-          <button type="button" data-mission-filter="weather">날씨</button>
-          <button type="button" data-mission-filter="astronomy">천문</button>
+          <button type="button" class="current" data-mission-filter="all" aria-pressed="true">전체</button>
+          <button type="button" data-mission-filter="launches" aria-pressed="false">발사</button>
+          <button type="button" data-mission-filter="satellites" aria-pressed="false">위성</button>
+          <button type="button" data-mission-filter="iss" aria-pressed="false">ISS</button>
+          <button type="button" data-mission-filter="weather" aria-pressed="false">날씨</button>
+          <button type="button" data-mission-filter="astronomy" aria-pressed="false">천문</button>
         </div>
-        <button type="button" class="mission-edit-button" data-mission-edit>레이아웃 편집</button>
+        <div class="mission-center-actions">
+          <span class="mission-source-mode" data-mission-source-mode>자료 확인 중</span>
+          <button type="button" class="mission-fullscreen-button" data-mission-fullscreen
+            aria-label="관제센터 전체화면, 단축키 F" aria-pressed="false">⛶</button>
+          <button type="button" class="mission-edit-button" data-mission-edit>레이아웃 편집</button>
+        </div>
       </div>
       <div class="mission-orbit-diagram" aria-label="실시간 위치가 아닌 궤도 구조 도식">
         <i class="mission-orbit mission-orbit-a"></i><i class="mission-orbit mission-orbit-b"></i>
@@ -237,7 +282,8 @@ function buildMarkup() {
       ${widgetShell('JWST', 'JWST')}
     </section>
 
-    <aside class="mission-editor mission-surface" data-mission-editor hidden aria-label="미션 컨트롤 레이아웃 편집">
+    <aside class="mission-editor mission-surface" data-mission-editor hidden role="dialog" aria-modal="true"
+      aria-label="미션 컨트롤 레이아웃 편집">
       <header><span><b>레이아웃 편집</b><small>현재 기기 저장 · 계정 동기화 전</small></span>
         <button type="button" data-mission-editor-close aria-label="편집 닫기">×</button></header>
       <div class="mission-room-picker" data-room-picker></div>
@@ -245,7 +291,7 @@ function buildMarkup() {
       <footer><button type="button" data-layout-reset>기본 배치 복원</button>
         <button type="button" data-mission-editor-close>완료</button></footer>
     </aside>
-    <p class="mission-announcement" data-mission-announcement aria-live="polite"></p>`;
+    <p class="mission-announcement" data-mission-announcement aria-live="polite" aria-atomic="true"></p>`;
   return mission;
 }
 
@@ -296,8 +342,6 @@ function normalizeLaunches(value) {
     statusDescription: item.status?.description || '', webcastLive: item.webcast_live === true,
     provider: item.launch_service_provider?.name || '운영기관 미수신',
     site: item.pad?.location?.name || item.pad?.name || '발사장 미수신',
-    latitude: Number.isFinite(Number(item.pad?.latitude)) ? Number(item.pad.latitude) : null,
-    longitude: Number.isFinite(Number(item.pad?.longitude)) ? Number(item.pad.longitude) : null,
     missionType: item.mission?.type || null, missionName: item.mission?.name || null,
   }));
 }
@@ -338,6 +382,14 @@ function stateBadge(root, type, value) {
   node.dataset.state = value.state;
 }
 
+function sourceBadge(data, source, liveLabel) {
+  if (data.sourceModes?.[source] === 'cached') {
+    const retrievedAt = data.sourceRetrievedAt?.[source];
+    return { label: `CACHED · ${formatKst(retrievedAt)}`, state: 'cached' };
+  }
+  return { label: liveLabel, state: 'ready' };
+}
+
 function renderRows(container, rows, emptyCopy) {
   container.replaceChildren();
   if (!rows.length) {
@@ -361,6 +413,13 @@ function renderMissionData(mission, data, state) {
   const retrieved = data.launchRetrievedAt ? formatKst(data.launchRetrievedAt) : '조회 시각 미수신';
   const unavailable = { label: 'UNAVAILABLE', state: 'unavailable' };
   const ready = { label: 'READY', state: 'ready' };
+  const cachedSources = Object.entries(data.sourceModes || {})
+    .filter(([, mode]) => mode === 'cached').map(([source]) => source);
+  const liveSources = Object.values(data.sourceModes || {}).filter(mode => mode === 'live').length;
+  setText(mission, '[data-mission-source-mode]', cachedSources.length
+    ? `오프라인 캐시 ${cachedSources.length} · 마지막 성공 시각 유지`
+    : (liveSources ? `공식·공개 자료 ${liveSources}개 연결` : '자료 확인 중'));
+  mission.dataset.sourceMode = cachedSources.length ? 'cached' : (liveSources ? 'live' : 'unavailable');
 
   const liveBody = mission.querySelector('[data-widget-body="LIVE"]');
   liveBody.replaceChildren();
@@ -373,7 +432,7 @@ function renderMissionData(mission, data, state) {
   liveLink.href = 'https://www.nasa.gov/live/'; liveLink.target = '_blank';
   liveLink.rel = 'noopener noreferrer'; liveLink.textContent = 'NASA 공식 LIVE ↗';
   liveCopy.append(liveTitle, liveMeta, liveLink); liveBody.append(liveCopy);
-  stateBadge(mission, 'LIVE', next?.webcastLive ? ready : unavailable);
+  stateBadge(mission, 'LIVE', next?.webcastLive ? sourceBadge(data, 'launches', ready.label) : unavailable);
 
   const countdownBody = mission.querySelector('[data-widget-body="COUNTDOWN"]');
   countdownBody.replaceChildren();
@@ -383,26 +442,27 @@ function renderMissionData(mission, data, state) {
   const countdownTime = document.createElement('small');
   countdownTime.textContent = next ? `${formatKst(next.scheduledAt)} KST · ${next.status}` : 'Launch Library 2 응답 없음';
   countdownBody.append(countdownName, countdown, countdownTime);
-  stateBadge(mission, 'COUNTDOWN', next ? ready : unavailable);
+  stateBadge(mission, 'COUNTDOWN', next ? sourceBadge(data, 'launches', ready.label) : unavailable);
 
   renderRows(mission.querySelector('[data-widget-body="MISSION_TIMELINE"]'), next ? [
     { title: '일정 등록', copy: formatKst(next.scheduledAt) + ' KST', tail: next.status },
     { title: '발사 세부 타임라인', copy: '공식 이벤트 단계 미수신', tail: '—' },
     { title: '궤도 투입·분리', copy: '확인 전에는 표시하지 않음', tail: '—' },
   ] : [], '검증 가능한 미션 타임라인이 없습니다.');
-  stateBadge(mission, 'MISSION_TIMELINE', next ? ready : unavailable);
+  stateBadge(mission, 'MISSION_TIMELINE', next ? sourceBadge(data, 'launches', ready.label) : unavailable);
 
   renderRows(mission.querySelector('[data-widget-body="PAYLOAD_STATUS"]'), next ? [
     { title: next.missionName || 'Payload manifest 미수신', copy: next.missionType || '임무 유형 미수신', tail: '예정' },
     { title: '분리·첫 교신 상태', copy: '공식 확인 전에는 비워 둠', tail: '—' },
   ] : [], '검증 가능한 payload 자료가 없습니다.');
-  stateBadge(mission, 'PAYLOAD_STATUS', next ? { label: 'SCHEDULED', state: 'ready' } : unavailable);
+  stateBadge(mission, 'PAYLOAD_STATUS', next ? sourceBadge(data, 'launches', 'SCHEDULED') : unavailable);
 
   renderRows(mission.querySelector('[data-widget-body="UPCOMING_LAUNCHES"]'), launches.slice(0, 4).map(item => ({
     title: item.name, copy: `${formatKst(item.scheduledAt)} KST · ${item.provider}`,
     tail: countdownLabel(item.scheduledAt),
   })), '발사 일정 응답이 없습니다.');
-  stateBadge(mission, 'UPCOMING_LAUNCHES', launches.length ? { label: `LL2 · ${retrieved}`, state: 'ready' } : unavailable);
+  stateBadge(mission, 'UPCOMING_LAUNCHES', launches.length
+    ? sourceBadge(data, 'launches', `LL2 · ${retrieved}`) : unavailable);
 
   const tonight = mission.querySelector('[data-widget-body="TONIGHT"]');
   renderRows(tonight, [], '사용자 위치를 선택하지 않아 통과 시각을 계산하지 않았습니다.');
@@ -417,7 +477,7 @@ function renderMissionData(mission, data, state) {
   kpCopy.dataset.missionKpTime = '';
   kpCopy.textContent = data.kp ? `NOAA SWPC · ${formatKst(data.kp.observedAt)} KST` : 'NOAA SWPC 응답 없음';
   spaceWeather.append(kpValue, kpCopy);
-  stateBadge(mission, 'SPACE_WEATHER', data.kp ? { label: 'OBSERVED', state: 'ready' } : unavailable);
+  stateBadge(mission, 'SPACE_WEATHER', data.kp ? sourceBadge(data, 'kp', 'OBSERVED') : unavailable);
 
   const aurora = mission.querySelector('[data-widget-body="AURORA"]');
   aurora.replaceChildren();
@@ -429,7 +489,7 @@ function renderMissionData(mission, data, state) {
     ? `NOAA SWPC OVATION 모델 · ${formatKst(data.aurora.forecastAt || data.aurora.observedAt)} KST · 격자 n=${data.aurora.sampleCount}`
     : 'NOAA SWPC OVATION 응답 없음';
   aurora.append(auroraValue, auroraCopy);
-  stateBadge(mission, 'AURORA', data.aurora ? { label: 'MODEL', state: 'ready' } : unavailable);
+  stateBadge(mission, 'AURORA', data.aurora ? sourceBadge(data, 'aurora', 'MODEL') : unavailable);
 
   const earthWeather = mission.querySelector('[data-widget-body="EARTH_WEATHER"]');
   earthWeather.replaceChildren();
@@ -461,21 +521,24 @@ function renderMissionData(mission, data, state) {
     title: item.name, copy: `${formatKst(item.scheduledAt)} KST · ${item.site}`,
     tail: countdownLabel(item.scheduledAt),
   })), 'LL2 현재 응답에 확인된 한국 발사 일정이 없습니다.');
-  stateBadge(mission, 'KOREA_SPACE', koreaLaunches.length ? { label: 'LL2', state: 'ready' } : unavailable);
+  stateBadge(mission, 'KOREA_SPACE', koreaLaunches.length
+    ? sourceBadge(data, 'launches', 'LL2') : unavailable);
 
   const spacexLaunches = providerLaunches(launches, /spacex|falcon|dragon/i);
   renderRows(mission.querySelector('[data-widget-body="SPACEX"]'), spacexLaunches.slice(0, 3).map(item => ({
     title: item.name, copy: `${formatKst(item.scheduledAt)} KST · ${item.status}`,
     tail: countdownLabel(item.scheduledAt),
   })), 'LL2 현재 응답에 확인된 SpaceX 일정이 없습니다.');
-  stateBadge(mission, 'SPACEX', spacexLaunches.length ? { label: 'LL2', state: 'ready' } : unavailable);
+  stateBadge(mission, 'SPACEX', spacexLaunches.length
+    ? sourceBadge(data, 'launches', 'LL2') : unavailable);
 
   const starshipLaunches = providerLaunches(launches, /starship|super heavy/i);
   renderRows(mission.querySelector('[data-widget-body="STARSHIP"]'), starshipLaunches.slice(0, 3).map(item => ({
     title: item.name, copy: `${formatKst(item.scheduledAt)} KST · ${item.status}`,
     tail: countdownLabel(item.scheduledAt),
   })), 'LL2 현재 응답에 확인된 Starship 일정이 없습니다.');
-  stateBadge(mission, 'STARSHIP', starshipLaunches.length ? { label: 'LL2', state: 'ready' } : unavailable);
+  stateBadge(mission, 'STARSHIP', starshipLaunches.length
+    ? sourceBadge(data, 'launches', 'LL2') : unavailable);
 
   const jwstBody = mission.querySelector('[data-widget-body="JWST"]'); jwstBody.replaceChildren();
   const jwst = latestTelescopePhoto(data.photos, 'JWST');
@@ -488,7 +551,7 @@ function renderMissionData(mission, data, state) {
     const title = document.createElement('b'); title.textContent = jwst.name?.ko || jwst.name?.en || jwst.id;
     const meta = document.createElement('small'); meta.textContent = `${jwst.date || '공개일 미수신'} · ${jwst.credit || 'credit 미수신'}`;
     copy.append(title, meta); card.append(image, copy); jwstBody.append(card);
-    stateBadge(mission, 'JWST', { label: `PROVENANCE · ${jwst.date || 'DATE N/A'}`, state: 'ready' });
+    stateBadge(mission, 'JWST', sourceBadge(data, 'photos', `PROVENANCE · ${jwst.date || 'DATE N/A'}`));
   } else {
     const empty = document.createElement('p'); empty.className = 'mission-widget-empty';
     empty.textContent = 'JWST provenance 사진 목록을 받지 못했습니다.'; jwstBody.append(empty);
@@ -501,6 +564,7 @@ function renderMissionData(mission, data, state) {
     const button = document.createElement('button'); button.type = 'button';
     button.className = 'mission-room-row'; button.dataset.room = id;
     button.classList.toggle('current', state.activeRoom === id);
+    button.setAttribute('aria-pressed', state.activeRoom === id ? 'true' : 'false');
     button.innerHTML = `<span aria-hidden="true">${icon}</span><b>${title}</b><i>${state.activeRoom === id ? 'ACTIVE' : ''}</i>`;
     rooms.append(button);
   });
@@ -542,6 +606,7 @@ function renderEditor(mission, state) {
   ROOM_TEMPLATES.forEach(([id, title]) => {
     const button = document.createElement('button'); button.type = 'button'; button.dataset.room = id;
     button.classList.toggle('current', state.activeRoom === id); button.textContent = title;
+    button.setAttribute('aria-pressed', state.activeRoom === id ? 'true' : 'false');
     roomPicker.append(button);
   });
   const list = mission.querySelector('[data-editor-widgets]'); list.replaceChildren();
@@ -550,10 +615,14 @@ function renderEditor(mission, state) {
     const name = document.createElement('b'); name.textContent = title;
     const visibility = document.createElement('button'); visibility.type = 'button';
     visibility.dataset.layoutToggle = id; visibility.textContent = layout.hidden.includes(id) ? '표시' : '숨김';
+    visibility.setAttribute('aria-label', `${title} 위젯 ${visibility.textContent}`);
     const size = document.createElement('button'); size.type = 'button';
     size.dataset.layoutSize = id; size.textContent = layout.wide.includes(id) ? '기본 크기' : '넓게';
+    size.setAttribute('aria-label', `${title} 위젯 ${size.textContent}`);
     const up = document.createElement('button'); up.type = 'button'; up.dataset.layoutMove = id; up.dataset.direction = 'up'; up.textContent = '↑';
     const down = document.createElement('button'); down.type = 'button'; down.dataset.layoutMove = id; down.dataset.direction = 'down'; down.textContent = '↓';
+    up.setAttribute('aria-label', `${title} 위젯 위로 이동`);
+    down.setAttribute('aria-label', `${title} 위젯 아래로 이동`);
     const isBottom = BOTTOM_WIDGETS.includes(id);
     size.hidden = !isBottom; up.hidden = !isBottom; down.hidden = !isBottom;
     row.append(name, visibility, size, up, down); list.append(row);
@@ -571,6 +640,24 @@ function applyLayout(mission, state) {
   });
   mission.dataset.room = state.activeRoom;
   renderEditor(mission, state);
+  applyFilter(mission, state);
+}
+
+function applyFilter(mission, state) {
+  const allowed = FILTER_WIDGETS[state.activeFilter] || null;
+  mission.querySelectorAll('[data-widget]').forEach(widget => {
+    widget.classList.toggle('is-filtered-out', Boolean(allowed) && !allowed.includes(widget.dataset.widget));
+  });
+  mission.querySelectorAll('[data-mission-filter]').forEach(button => {
+    const current = button.dataset.missionFilter === state.activeFilter;
+    button.classList.toggle('current', current);
+    button.setAttribute('aria-pressed', current ? 'true' : 'false');
+  });
+  mission.dataset.filter = state.activeFilter;
+}
+
+function fullscreenElement() {
+  return document.fullscreenElement || document.webkitFullscreenElement || null;
 }
 
 export function createAetherusMissionControl({ root, onRoute, onCraft }) {
@@ -579,7 +666,9 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
   const mission = buildMarkup(); root.append(mission);
   const state = safeStoredState();
   const data = { launches: [], launchRetrievedAt: null, kp: null, aurora: null,
-    photos: null, satellitePass: null };
+    photos: null, satellitePass: null,
+    sourceModes: { photos: 'unavailable', kp: 'unavailable', aurora: 'unavailable', launches: 'unavailable' },
+    sourceRetrievedAt: { photos: null, kp: null, aurora: null, launches: null } };
   let lastRefresh = 0; let refreshPromise = null;
 
   const announce = copy => { setText(mission, '[data-mission-announcement]', copy); };
@@ -591,11 +680,23 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
   // 편집기 안쪽 목록은 설정을 적용할 때마다 교체된다. 편집기 자체에서 먼저
   // 이벤트를 받아야 크기·표시·순서 버튼이 다시 그려진 뒤에도 일관되게 동작한다.
   const editor = mission.querySelector('[data-mission-editor]');
+  let editorReturnFocus = null;
+  const closeEditor = () => {
+    editor.hidden = true; mission.classList.remove('is-editing');
+    editorReturnFocus?.focus?.(); editorReturnFocus = null;
+    announce('레이아웃 편집을 닫았습니다.');
+  };
+  const openEditor = trigger => {
+    editorReturnFocus = trigger || document.activeElement;
+    editor.hidden = false; mission.classList.add('is-editing');
+    renderEditor(mission, state); mission.querySelector('[data-mission-editor-close]')?.focus();
+    announce('레이아웃 편집 대화상자를 열었습니다.');
+  };
   const handleEditorClick = event => {
     if (event.__aetherusEditorHandled) return;
     event.__aetherusEditorHandled = true;
     if (event.target.closest('[data-mission-editor-close]')) {
-      event.stopPropagation(); editor.hidden = true; mission.classList.remove('is-editing'); return;
+      event.stopPropagation(); closeEditor(); return;
     }
     const roomButton = event.target.closest('.mission-room-picker [data-room]');
     const room = roomButton?.dataset.room;
@@ -657,6 +758,32 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
   const menuRoot = document.getElementById('menuSub');
   if (menuRoot) new MutationObserver(decorateMenu).observe(menuRoot, { childList: true, subtree: true });
 
+  const syncFullscreenState = () => {
+    const active = fullscreenElement() === root;
+    mission.classList.toggle('is-fullscreen', active);
+    const button = mission.querySelector('[data-mission-fullscreen]');
+    button?.setAttribute('aria-pressed', active ? 'true' : 'false');
+    if (button) button.setAttribute('aria-label', `${active ? '관제센터 전체화면 종료' : '관제센터 전체화면'}, 단축키 F`);
+  };
+  const toggleFullscreen = async () => {
+    try {
+      if (fullscreenElement() === root) {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if (!exit) throw new Error('이 브라우저는 전체화면 종료를 지원하지 않습니다.');
+        await exit.call(document); announce('관제센터 전체화면을 종료했습니다.');
+      } else {
+        const request = root.requestFullscreen || root.webkitRequestFullscreen;
+        if (!request) throw new Error('이 브라우저는 전체화면을 지원하지 않습니다.');
+        await request.call(root); announce('관제센터 전체화면입니다. F 키로 종료할 수 있습니다.');
+      }
+      syncFullscreenState();
+    } catch (error) {
+      announce(error?.message || '전체화면을 전환하지 못했습니다.');
+    }
+  };
+  document.addEventListener('fullscreenchange', syncFullscreenState);
+  document.addEventListener('webkitfullscreenchange', syncFullscreenState);
+
   const calculateSatellitePass = async () => {
     data.satellitePass = { status: 'loading', message: '위치와 최신 위성 궤도 요소를 확인하고 있습니다.' };
     renderMissionData(mission, data, state);
@@ -696,13 +823,12 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
     if (craft) { onCraft(craft); return; }
     const filter = event.target.closest('[data-mission-filter]');
     if (filter) {
-      mission.querySelectorAll('[data-mission-filter]').forEach(button => button.classList.toggle('current', button === filter));
+      state.activeFilter = filter.dataset.missionFilter; applyFilter(mission, state);
       announce(`${filter.textContent.trim()} 자료 필터를 선택했습니다.`); return;
     }
+    if (event.target.closest('[data-mission-fullscreen]')) { toggleFullscreen(); return; }
     if (event.target.closest('[data-mission-edit]')) {
-      mission.querySelector('[data-mission-editor]').hidden = false;
-      mission.classList.add('is-editing');
-      renderEditor(mission, state); mission.querySelector('[data-mission-editor-close]')?.focus(); return;
+      openEditor(event.target.closest('[data-mission-edit]')); return;
     }
     const roomButton = event.target.closest('.mission-room-row[data-room]');
     const room = roomButton?.dataset.room;
@@ -716,10 +842,41 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
     }
   });
 
+  const handleKeyboard = event => {
+    if (mission.hidden || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+    const typing = event.target instanceof HTMLElement
+      && (event.target.matches('input,textarea,select') || event.target.isContentEditable);
+    if (!editor.hidden) {
+      if (event.key === 'Escape') { event.preventDefault(); closeEditor(); return; }
+      if (event.key === 'Tab') {
+        const focusable = [...editor.querySelectorAll('button:not([disabled]),a[href],input,select,textarea')]
+          .filter(node => !node.hidden && node.getClientRects().length);
+        if (!focusable.length) return;
+        const first = focusable[0]; const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault(); last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault(); first.focus();
+        }
+      }
+      return;
+    }
+    if (typing) return;
+    if (event.code === 'KeyF') { event.preventDefault(); toggleFullscreen(); return; }
+    if (event.code === 'KeyE') { event.preventDefault(); openEditor(document.activeElement); return; }
+    const roomIndex = ['Digit1', 'Digit2', 'Digit3', 'Digit4'].indexOf(event.code);
+    if (roomIndex >= 0) {
+      event.preventDefault(); const [room, title] = ROOM_TEMPLATES[roomIndex];
+      state.activeRoom = room; persistAndRender(`${title} 룸을 적용했습니다.`);
+    }
+  };
+  document.addEventListener('keydown', handleKeyboard);
+
   const refresh = async ({ force = false } = {}) => {
     if (refreshPromise) return refreshPromise;
     const now = Date.now(); if (!force && now - lastRefresh < REFRESH_MS) return null;
     lastRefresh = now;
+    const previousCache = safeDataCache();
     refreshPromise = Promise.allSettled([
       fetchT(PHOTO_CATALOG, { cache: 'no-cache' }).then(response => {
         if (!response.ok) throw new Error(`PHOTO_${response.status}`); return response.json();
@@ -734,24 +891,54 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
         if (!response.ok) throw new Error(`LAUNCH_${response.status}`); return response.json();
       }),
     ]).then(([photos, kp, aurora, launches]) => {
-      data.photos = photos.status === 'fulfilled' && Array.isArray(photos.value?.items) ? photos.value : null;
+      const refreshedAt = new Date();
+      const nextCache = { ...previousCache };
+      const useSource = (name, liveValue, validate) => {
+        if (validate(liveValue)) {
+          const entry = cacheEntry(liveValue, refreshedAt); nextCache[name] = entry;
+          data.sourceModes[name] = 'live'; data.sourceRetrievedAt[name] = entry.retrievedAt;
+          return liveValue;
+        }
+        const cached = validCachedSource(previousCache, name, validate);
+        if (cached) {
+          data.sourceModes[name] = 'cached'; data.sourceRetrievedAt[name] = cached.retrievedAt;
+          return cached.value;
+        }
+        data.sourceModes[name] = 'unavailable'; data.sourceRetrievedAt[name] = null;
+        return null;
+      };
+
+      const livePhotos = photos.status === 'fulfilled' ? photos.value : null;
+      data.photos = useSource('photos', livePhotos, value => Array.isArray(value?.items));
+
       const rows = kp.status === 'fulfilled' && Array.isArray(kp.value)
         ? kp.value.filter(row => row?.kp_index != null && row?.time_tag) : [];
       const latest = rows[rows.length - 1]; const value = Number(latest?.kp_index);
-      data.kp = latest && Number.isFinite(value) ? { value, observedAt: latest.time_tag } : null;
-      data.aurora = aurora.status === 'fulfilled' ? normalizeAurora(aurora.value) : null;
-      data.launches = launches.status === 'fulfilled' ? normalizeLaunches(launches.value) : [];
-      data.launchRetrievedAt = launches.status === 'fulfilled' ? new Date() : null;
+      const liveKp = latest && Number.isFinite(value) ? { value, observedAt: latest.time_tag } : null;
+      data.kp = useSource('kp', liveKp, item => Number.isFinite(Number(item?.value)) && Boolean(item?.observedAt));
+
+      const liveAurora = aurora.status === 'fulfilled' ? normalizeAurora(aurora.value) : null;
+      data.aurora = useSource('aurora', liveAurora,
+        item => Number.isFinite(Number(item?.max)) && Number(item?.sampleCount) > 0);
+
+      const liveLaunches = launches.status === 'fulfilled' ? normalizeLaunches(launches.value) : null;
+      data.launches = useSource('launches', liveLaunches,
+        items => Array.isArray(items) && items.every(item => item?.id && item?.scheduledAt)) || [];
+      data.launchRetrievedAt = data.sourceRetrievedAt.launches;
+      saveDataCache(nextCache);
       if (data.photos) {
         const hst = data.photos.items.filter(item => item.telescope === 'HST').length;
         const jwst = data.photos.items.filter(item => item.telescope === 'JWST').length;
         mission.dataset.photoCount = String(data.photos.items.length);
         mission.dataset.photoSummary = `HST ${hst} / JWST ${jwst}`;
-        setText(mission, '[data-mission-photo-count]', `${data.photos.items.length}장 · HST ${hst} / JWST ${jwst}`);
+        setText(mission, '[data-mission-photo-count]',
+          `${data.photos.items.length}장 · HST ${hst} / JWST ${jwst}${data.sourceModes.photos === 'cached' ? ' · 캐시' : ''}`);
       } else {
         setText(mission, '[data-mission-photo-count]', '사진 목록 미수신');
       }
       renderMissionData(mission, data, state);
+      const cachedCount = Object.values(data.sourceModes).filter(mode => mode === 'cached').length;
+      if (cachedCount) announce(`연결되지 않은 ${cachedCount}개 자료는 마지막 성공 캐시와 저장 시각을 표시합니다.`);
     }).finally(() => { refreshPromise = null; });
     return refreshPromise;
   };
@@ -765,8 +952,11 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
         setText(mission, '[data-mission-device-time]', formatKst(new Date(), true));
         refresh().catch(error => console.warn('[aetherus-mission]', error.message));
       } else {
-        mission.querySelector('[data-mission-editor]').hidden = true;
-        mission.classList.remove('is-editing');
+        editor.hidden = true; mission.classList.remove('is-editing'); editorReturnFocus = null;
+        if (fullscreenElement() === root) {
+          const exit = document.exitFullscreen || document.webkitExitFullscreen;
+          exit?.call(document).catch?.(() => {});
+        }
       }
       decorateMenu();
     },

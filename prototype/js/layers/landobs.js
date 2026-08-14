@@ -136,8 +136,8 @@ export const landObs = {
       if (s.obs) d[ko ? '관측 시각' : 'Observed'] = s.obs.replace('T', ' ').replace(':00Z', ' UTC');
 
       d['_note'] = ko
-        ? '공항에 설치된 계기의 **실황**입니다. 예보가 아닙니다.'
-        : 'A **live reading** from an instrument at the airport — not a forecast.';
+        ? '자료 유형 · 공항 계기 **실황 관측**'
+        : 'Data type · airport instrument **observation**';
 
       return {
         id: `land-${s.id}`,
@@ -175,8 +175,8 @@ export const landObs = {
         ? (g.source || '세계기상통신망(GTS) 지상관측')
         : (g.sourceEn || 'GTS SYNOP surface observations');
       d['_note'] = ko
-        ? '세계기상통신망(GTS)으로 들어온 지상 **실황 관측**입니다. 예보가 아닙니다. 좌표를 붙이지 못한 WMO 번호는 원자료에서 제외됩니다.'
-        : 'A ground **observation** reported through GTS SYNOP — not a forecast. WMO ids without a coordinate match are excluded upstream.';
+        ? '자료 유형 · GTS SYNOP 지상 **실황 관측** · 좌표 매핑 완료 WMO 지점'
+        : 'Data type · GTS SYNOP surface **observation** · coordinate-matched WMO stations';
       items.push({
         id: `gts-${s.id}`,
         // 수천 곳의 라벨은 읽을 수 없고 발열만 만든다. 점을 눌러 상세를 연다.
@@ -202,8 +202,8 @@ export const landObs = {
       if (s.observed) d[ko ? '관측 시각' : 'Observed'] = s.observed;
       d[ko ? '출처' : 'Source'] = c.source || 'Taiwan CWA Open Data';
       d['_note'] = ko
-        ? '대만 중앙기상서(CWA)의 지상 **실황 관측**입니다. 예보가 아닙니다.'
-        : 'A ground **observation** from Taiwan CWA — not a forecast.';
+        ? '자료 유형 · 대만 중앙기상서(CWA) 지상 **실황 관측**'
+        : 'Data type · Taiwan CWA surface **observation**';
       items.push({
         id: `cwa-${s.id}`,
         name: '',
@@ -231,8 +231,8 @@ export const landObs = {
       if (k.observedKst) d[ko ? '관측 시각(KST)' : 'Observed (KST)'] = k.observedKst;
       d[ko ? '출처' : 'Source'] = ko ? (k.source || '기상청 지상관측') : (k.sourceEn || 'KMA surface observations');
       d['_note'] = ko
-        ? '기상청 ASOS 정시 **실황 관측**입니다. 예보가 아닙니다.'
-        : 'An hourly **observation** from the KMA ASOS network — not a forecast.';
+        ? '자료 유형 · 기상청 ASOS 정시 **실황 관측**'
+        : 'Data type · hourly KMA ASOS **observation**';
       items.push({
         id: `kma-asos-${s.id}`,
         name: `${s.name}${s.temp_c != null ? ` ${i18n.temp(s.temp_c, 0)}` : ''}`,
@@ -269,9 +269,9 @@ export const landObs = {
       if (a.timeJst) d[ko ? '관측 시각(JST)' : 'Observed (JST)'] = a.timeJst;
       d[ko ? '출처' : 'Source'] = a.source || 'JMA AMeDAS';
       d['_note'] = ko
-        ? 'JMA AMeDAS의 10분 **실황 관측**입니다. 예보가 아닙니다.'
-          + (nm.mark === 'tr' ? ' 한국어 지명은 영문 표기의 변환이며 공식 번역이 아닙니다.' : '')
-        : 'A 10-minute **observation** from JMA AMeDAS — not a forecast.';
+        ? '자료 유형 · JMA AMeDAS 10분 **실황 관측**'
+          + (nm.mark === 'tr' ? ' · 한글 지명은 영문 기반 변환' : '')
+        : 'Data type · JMA AMeDAS 10-minute **observation**';
       items.push({
         id: `jma-amedas-${s.id}`,
         name: `${nm.text}${s.temp != null ? ` ${i18n.temp(s.temp, 0)}` : ''}`,

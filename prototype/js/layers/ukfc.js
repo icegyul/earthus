@@ -151,13 +151,11 @@ export const ukForecast = {
 
       d['_note'] = ko
         ? (s.summit
-            ? '영국 기상청(Met Office) **예보**입니다. 관측이 아닙니다.\n'
-              + '산 정상 지점입니다 — 모델이 실제 표고를 반영합니다 (벤네비스 오차 1m).'
-            : '영국 기상청(Met Office) **예보**입니다. 관측이 아닙니다.\n'
-              + '같은 지역의 「지상 관측소」와 값이 다를 수 있습니다 — 그쪽은 실측입니다.')
+            ? '자료 유형 · 영국 기상청 **예보** · 산 정상 좌표·실제 표고 반영'
+            : '자료 유형 · 영국 기상청 **예보** · 인근 지상 관측소는 실황')
         : (s.summit
-            ? 'A Met Office **forecast**, not an observation.\nSummit location — the model resolves the true elevation.'
-            : 'A Met Office **forecast**, not an observation.\nMay differ from “Ground stations” nearby, which are live readings.');
+            ? 'Data type · Met Office **forecast** · summit coordinate and elevation'
+            : 'Data type · Met Office **forecast** · nearby ground stations are observations');
       d['_lic'] = 'Powered by Met Office data';
 
       return {

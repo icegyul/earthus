@@ -632,9 +632,8 @@ export const surfPanel = {
           : `Largest swell by sea · sampled at ${REGION_SAMPLES} points per region`}</p>
         ${items}
         <p class="sf-rgnote">${ko
-          ? '⚠️ 권역 전체를 잰 값이 아닙니다. 그 안에서도 만·방파제에 따라 크게 다릅니다 — '
-            + '보고 싶은 바다를 누르거나 지도를 확대하면 해변별로 나옵니다.'
-          : '⚠️ Not a survey of the whole region. Tap a sea or zoom in for individual beaches.'}</p>
+          ? `권역별 ${REGION_SAMPLES}개 표본 · 바다 선택 시 해변별 표시`
+          : `${REGION_SAMPLES} samples per region · select a sea for beach detail`}</p>
       </div>`;
   },
 
@@ -669,9 +668,8 @@ export const surfPanel = {
           b.km != null ? ` · ${b.km}km` : ''}${
           markKo && ko ? ` · ${markKo}` : ''}</span>
       </header>${jp ? `<p class="sf-nofacing">${ko
-        ? '⚠️ 이 해변은 <b>바다 방향을 내지 못했습니다</b> — 스웰이 들어오는지 판단하지 '
-          + '않습니다. 아래 파도·주기·수온은 그대로 잰 값입니다.'
-        : '⚠️ Shore orientation unknown — we do not judge swell exposure here.'}</p>` : ''}`;
+        ? '바다 방향 자료 없음 · 파도·주기·수온 표시'
+        : 'Shore orientation unavailable · waves, period and temperature shown'}</p>` : ''}`;
 
     if (!sea) {
       return `<article class="mt-card" data-sf-beach="${esc(b.name)}">${head}
@@ -774,7 +772,7 @@ export const surfPanel = {
   _how(ko) {
     const P = SURF_RULES.PERIOD;
     return `<div class="mt-note">${ko ? `
-      <b>파고만으로는 아무 말도 안 됩니다.</b><br>
+      <b>파고는 주기와 함께 읽습니다.</b><br>
       파고 1.5m · 주기 6초 → 잡파. 파고 1.5m · 주기 14초 → 좋은 너울.
       같은 1.5m 인데 완전히 다릅니다.
       <br><br>
@@ -786,15 +784,14 @@ export const surfPanel = {
       <b>바람은 파면을 만들거나 부숩니다.</b> 육지에서 바다로 부는 육풍은
       파면을 세워 깔끔하게 하고, 바다에서 불어오는 해풍은 뭉갭니다.
       ` : `
-      <b>Wave height alone says nothing.</b><br>
+      <b>Read wave height with period.</b><br>
       1.5 m at 6 s is chop; 1.5 m at 14 s is a good groundswell.
-      <br><br><b>And it has to reach the beach.</b> A south swell does not enter a
-      north-facing beach, so we compare swell direction against the
+      <br><br><b>Swell direction must face the beach.</b> We compare swell direction with the
       <b>shore orientation</b> of ${beaches.meta?.withFacing ?? 0} beaches,
       computed from OpenStreetMap coastlines.
       <br><br><b>Wind shapes or ruins the face.</b> Offshore cleans it up; onshore blows it out.`}
       <br><br>
-      <b>${ko ? '주기 구분 (저희 기준)' : 'Period bands (ours)'}</b><br>
+      <b>${ko ? '주기 표시 구간' : 'Period display bands'}</b><br>
       ${P.map(p => `· ~${p.max}s ${ko ? p.ko : p.en}`).join('<br>')}
     </div>`;
   },
@@ -802,18 +799,8 @@ export const surfPanel = {
   _foot(ko) {
     const m = beaches.meta || {};
     return `<p class="mt-foot">
-      ${ko ? `⚠️ <b>“타기 좋다”고 말하지 않습니다.</b> 이안류·조류·수심·바닥은 저희가
-        모르는 값이고, 모르면서 권할 수 없습니다. 파도·바람·방향만 있는 그대로 놓습니다.
-        <br>⚠️ 스웰 노출·바람 구간과 주기 구분은 <b>저희가 정한 표시 기준</b>입니다.
-        확실한 것은 “90°를 넘으면 육지가 막는다” 하나뿐이고 그 안을 어떻게 나눌지는 판단입니다.
-        <br>⚠️ 해변 방향은 해안선에서 계산한 값이라 <b>실제 지형과 다를 수 있습니다</b>
-        (본토 해안 90%가 기대 방향과 맞는 것까지 확인했습니다).
-        방파제·이안제가 있는 곳은 특히 다릅니다.
-        <br><small>${esc(m.source || '')} · ${esc(m.license || '')} · 파랑 Open-Meteo 해양</small>`
-      : `⚠️ <b>We never say “good to surf.”</b> Rips, currents, depth and bottom are
-        unknown to us. Only waves, wind and orientation are stated as they are.
-        <br>⚠️ The exposure/wind/period bands are <b>ours</b>, not a standard.
-        <br><small>${esc(m.source || '')} · ${esc(m.license || '')}</small>`}
+      ${ko ? `표시 기준 · 파도 · 바람 · 해안선 방향<br><small>${esc(m.source || '')} · ${esc(m.license || '')} · 파랑 Open-Meteo 해양</small>`
+      : `Display inputs · waves · wind · shoreline orientation<br><small>${esc(m.source || '')} · ${esc(m.license || '')}</small>`}
     </p>`;
   },
 };
@@ -845,13 +832,8 @@ export function swimWarn(ko, rip) {
         그게 제일 위험하다. 모를 때는 **모른다고 크게** 적는다. */
   if (!rip || rip.stale || !rip.grade) {
     return `<p class="mt-danger">${ko
-      ? '⚠️ <b>입수 통제 여부는 여기서 알 수 없습니다.</b> 해수욕장 통제는 대개 '
-        + '<b>이안류</b>로 정해지는데, 이안류를 재는 해수욕장은 <b>전국에 열 곳뿐</b>이고 '
-        + '여기는 그중에 없습니다. <b>잔잔해 보여도 통제 중일 수 있습니다</b> — '
-        + '현장 안내와 안전요원 지시를 따르세요.'
-      : '⚠️ <b>We cannot tell you if the water is closed.</b> Closures are usually driven by '
-        + '<b>rip currents</b>, and only <b>ten beaches nationwide</b> are measured — this is '
-        + 'not one of them. <b>Calm-looking does not mean open</b> — follow on-site signage.'}</p>`;
+      ? '<b>입수 상태 미연결</b> · 현장 안내와 안전요원 지시를 따르세요.'
+      : '<b>Water-entry status unavailable</b> · follow on-site signs and lifeguards.'}</p>`;
   }
 
   const col = RIP_COLOR[rip.grade] || '#f87171';
@@ -879,13 +861,11 @@ export function swimWarn(ko, rip) {
     <b class="rip-grade">${ko ? rip.grade : gEn}</b>
     ${ko
       ? `<b>이안류 ${rip.grade}</b> — ${whose}, ${when} 관측${worse}<br>`
-        + `<small>국립해양조사원이 매긴 등급입니다. 저희가 계산한 값이 아닙니다.</small><br>`
-        + `⚠️ <b>등급과 무관하게, 들어가도 되는지는 저희가 판단하지 않습니다.</b> `
-        + `입수 통제는 해수욕장 관리 주체가 정합니다 — 현장 안내와 안전요원 지시를 따르세요.`
+        + `<small>등급 출처 · 국립해양조사원</small><br>`
+        + `<b>입수 통제</b> · 현장 안내와 안전요원 지시를 따르세요.`
       : `<b>Rip current: ${gEn}</b> — ${whose}, observed ${when}${worse}<br>`
         + `<small>Graded by KHOA, not computed by us.</small><br>`
-        + `⚠️ <b>Whatever the grade, we do not judge whether it is safe to enter.</b> `
-        + `Closure is decided on site — follow signage and lifeguards.`}
+        + `<b>Water-entry status</b> · follow signage and lifeguards.`}
   </p>`;
 }
 

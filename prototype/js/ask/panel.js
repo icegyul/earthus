@@ -57,8 +57,8 @@ export const askPanel = {
     note.appendChild(el('b', null, ko ? '선택한 맥락' : 'Selected context'));
     note.appendChild(el('p', null, [label, coordinates, activity].filter(Boolean).map(esc).join(' · ')));
     note.appendChild(el('p', 'ask-note', ko
-      ? '현재 물어보기는 태풍·지진·수온 등 연결된 자료만 찾습니다. Activity Score를 알고 있는 척 답하지 않습니다.'
-      : 'Ask searches only connected datasets such as cyclones, earthquakes and ocean temperature. It does not pretend to know an unpublished Activity Score.'));
+      ? '연결 자료: 태풍 · 지진 · 수온 · 기상 관측'
+      : 'Connected data: cyclones · earthquakes · ocean temperature · weather observations'));
     this.log.appendChild(note);
     this.scroll();
   },
@@ -72,9 +72,6 @@ export const askPanel = {
     n.appendChild(el('p', null, ko
       ? '지구에서 지금 일어나는 일을 물어보세요. 화면이 그쪽으로 이동하고, 자료와 출처를 같이 보여드립니다.'
       : 'Ask what is happening on Earth right now. The globe moves there, and you get the data with its source.'));
-    n.appendChild(el('p', 'ask-note', ko
-      ? '이 기능은 우리가 가진 자료만 찾아서 보여줍니다. 답을 지어내지 않고, 모르면 모른다고 합니다.'
-      : 'This searches only the data we hold. It does not invent answers; when it does not know, it says so.'));
     this.log.appendChild(n);
     this.chips(ask.examples());
   },
@@ -155,16 +152,16 @@ export const askPanel = {
       // ⚠️ 라이선스 미확인은 반드시 화면에 드러낸다. 조용히 두면 공개 때 사고가 난다.
       if (s.license?.status === 'unverified') {
         body.appendChild(el('p', 'ask-warn', ko
-          ? '⚠️ 이 자료는 재배포 조건이 확인되지 않았습니다. 인용은 가능하지만 자료 자체를 다시 배포하기 전에 확인이 필요합니다.'
-          : '⚠️ Redistribution terms for this source are unverified. Citing is fine; redistributing the data itself needs checking first.'));
+          ? '라이선스: 재배포 조건 확인 필요'
+          : 'Licence: redistribution terms require review'));
       } else if (s.license?.status === 'per-item') {
         body.appendChild(el('p', 'ask-warn', ko
-          ? '⚠️ 이 소스는 항목마다 라이선스가 다릅니다. 표시된 저작자·라이선스·원본 페이지를 각각 확인해야 합니다.'
-          : '⚠️ Each item from this source has its own licence. Check the displayed creator, licence, and original file page for every item.'));
+          ? '라이선스: 항목별 저작자·조건 적용'
+          : 'Licence: creator and terms vary by item'));
       } else if (s.license?.status === 'restricted') {
         body.appendChild(el('p', 'ask-warn', ko
-          ? '⚠️ 이 자료는 비상업 이용 조건입니다. 출처를 인용해도 상업 이용은 별도 허가가 필요합니다.'
-          : '⚠️ This source is restricted to non-commercial use. Attribution does not replace the separate permission required for commercial use.'));
+          ? '라이선스: 비상업 이용'
+          : 'Licence: non-commercial use'));
       }
       d.appendChild(body);
       n.appendChild(d);

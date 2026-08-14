@@ -65,8 +65,8 @@ export function safetyActions(context = {}) {
     : region === 'jp'
       ? (ko ? '전화 버튼은 일본 번호입니다. 일본 밖에서는 현지 긴급번호와 당국 발표를 따르세요.'
             : 'These are Japanese numbers. Outside Japan, use local emergency numbers and follow local authorities.')
-      : (ko ? '이 지역의 긴급번호를 임의로 표시하지 않습니다. 현지 당국 발표와 현지 긴급번호를 따르세요.'
-            : 'No emergency number is guessed for this location. Follow local authorities and use the local emergency number.');
+      : (ko ? '긴급번호 · 현지 당국 공식 번호 확인'
+            : 'Emergency number · check the official local number');
   section.appendChild(note);
   return section;
 }

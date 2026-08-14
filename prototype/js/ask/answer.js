@@ -212,8 +212,8 @@ export const ask = {
         kind: 'pending',
         title: ko ? '수증기 통로는 검증 중입니다' : 'Moisture corridor is being verified',
         lines: [ko
-          ? '실제 NOAA 격자 파일·출처·시각·화면 검수가 끝나기 전에는 값을 보여주지 않습니다.'
-          : 'Values stay unavailable until the live NOAA grid, attribution, timestamps, and screen QA are verified.'],
+          ? '공개 조건 · NOAA 실격자 · 출처 · 관측 시각 · 화면 검수'
+          : 'Release gate · live NOAA grid · attribution · timestamps · screen QA'],
         items: [], source: router.citation(ds.id), why: p.why, layer: layerId,
       };
     }
@@ -248,19 +248,19 @@ export const ask = {
                 : `${areaName} ${nm}: mean ${f(g.mean)}${g.unit}, max ${f(g.hi.v)}${g.unit}`));
         if (g.nearest) {
           lines.push(ko
-            ? `⚠️ 그 지역이 격자(${g.res}°)보다 작아서 **가장 가까운 격자점**(${g.hi.lat.toFixed(0)}°, ${g.hi.lon.toFixed(0)}°) 값을 보여드립니다.`
-            : `⚠️ That area is smaller than the ${g.res}° grid, so this is the **nearest grid point** (${g.hi.lat.toFixed(0)}°, ${g.hi.lon.toFixed(0)}°).`);
+            ? `대표 격자점 ${g.hi.lat.toFixed(0)}°, ${g.hi.lon.toFixed(0)}°`
+            : `Representative grid point ${g.hi.lat.toFixed(0)}°, ${g.hi.lon.toFixed(0)}°`);
         }
         lines.push(ko
           ? `격자점 ${g.n}개 기준 · 자료 시각 ${(g.time || '').replace('T', ' ').replace(':00:00Z', ' UTC')}`
           : `From ${g.n} grid points · data time ${(g.time || '').replace('T', ' ')}`);
         const approxKm = Math.round((g.res || 0) * 111);
         lines.push(ko
-          ? `⚠️ ${g.res}° 격자(약 ${approxKm}km) 값입니다. 동네 단위 값이 아닙니다 — 지점 값은 관측소나 부이를 눌러 보세요.`
-          : `⚠️ These are ${g.res}° grid values (~${approxKm} km). Not neighbourhood-level — tap a station or buoy for point readings.`);
+          ? `공간 해상도 ${g.res}°(약 ${approxKm}km) · 지점값은 관측소·부이에서 확인`
+          : `Spatial resolution ${g.res}° (~${approxKm} km) · use stations or buoys for point readings`);
         if (layerId === 'tpw') lines.push(ko
-          ? '⚠️ 대기 기둥 전체의 수증기량을 나타내는 NOAA GFS 모델 분석장입니다. 위성 관측이나 강수량이 아니며, 이 값만으로 비를 판정하지 않습니다.'
-          : '⚠️ NOAA GFS model analysis of water vapour through the whole atmospheric column. It is neither satellite observation nor rainfall, and cannot by itself determine rain.');
+          ? '자료 종류: NOAA GFS 대기 전층 수증기 모델 분석'
+          : 'Data type: NOAA GFS total-column water-vapour model analysis');
       }
       /* ── 평년 대비 ─────────────────────────────────────────
          ⚠️ 해수면온도만 답할 수 있다. 다른 값은 평년 기준선이 아직 없다.
@@ -278,17 +278,17 @@ export const ask = {
             /* ⚠️ 같은 달력 날짜와 비교했다는 사실을 밝힌다.
                이걸 안 밝히면 연평균과 비교한 것과 구분되지 않는다. */
             lines.push(ko
-              ? `⚠️ **같은 달력 날짜**(연중 ${an.doy}일째)의 평년값과 비교한 값입니다. 연평균이 아닙니다.`
-              : `⚠️ Compared against the normal for the **same calendar day** (day ${an.doy} of the year), not an annual mean.`);
+              ? `비교 기준: 같은 달력일(연중 ${an.doy}일째) 평년값`
+              : `Comparison baseline: same calendar day (day ${an.doy})`);
           } else {
             lines.push(ko
-              ? '평년값을 불러오지 못해 비교를 하지 않았습니다. 없는 값을 지어내지 않습니다.'
-              : 'The climatology could not be loaded, so no comparison was made. We do not fabricate it.');
+              ? '평년 비교 자료를 불러오지 못했습니다.'
+              : 'Climatology data could not be loaded.');
           }
         } else {
           lines.push(ko
-            ? '⚠️ 평년 기준선은 지금 **해수면온도**만 있습니다. 이 값은 아직 평년과 비교할 수 없습니다.'
-            : '⚠️ A climatology baseline exists only for **sea surface temperature** so far. This value cannot yet be compared against normal.');
+            ? '평년 비교 지원 자료: 해수면온도'
+            : 'Climatology comparison currently supports sea-surface temperature');
         }
       }
       return { ok: true, kind: 'grid', title: nm, lines, items: [], count: null,
@@ -334,9 +334,6 @@ export const ask = {
               : `Nothing in the ${placeName} area in the data we currently have.`)
         : (ko ? '지금 받은 자료에는 해당하는 것이 없습니다.'
               : 'Nothing matching in the data we currently have.'));
-      if (box) lines.push(ko
-        ? '화면은 그 지역으로 옮겼습니다. 자료가 없는 것과 사건이 없는 것은 다를 수 있습니다.'
-        : 'The view has moved there. Note that "no data" and "no event" are not the same thing.');
     } else {
       top3 = [...scoped].sort((a, b) => b.sort - a.sort).slice(0, 3);
       /* ⚠️⚠️ **자료의 기간을 말한다.** (감사 P1-8)
@@ -356,13 +353,13 @@ export const ask = {
     // ── 6. 아직 못 하는 것은 못 한다고 말한다 ──
     if (p.intent === 'compare') {
       lines.push(ko
-        ? '⚠️ "평년과 비교"는 아직 답할 수 없습니다. 평년 기준선을 만드는 중이라, 그때까지는 "지금 값"만 보여드립니다.'
-        : '⚠️ Comparison against normal is not available yet — the climatology baseline is still being built. Until then only current values are shown.');
+        ? '현재값 표시 · 평년 기준선 준비 중'
+        : 'Current value shown · climatology baseline in preparation');
     }
     if (p.intent === 'explain') {
       lines.push(ko
-        ? '⚠️ "왜"에는 답하지 않습니다. 원인은 자료로 판정해야 하는데 우리가 가진 것으로는 판정할 수 없습니다. 대신 관측된 값을 보여드립니다.'
-        : '⚠️ We do not answer "why". Causation has to be established from data we do not have. Observed values are shown instead.');
+        ? '원인 분석 자료 미연결 · 관측값 표시'
+        : 'Causal-analysis data not connected · observations shown');
     }
 
     return {

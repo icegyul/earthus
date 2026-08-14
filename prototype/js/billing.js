@@ -86,10 +86,10 @@ export const FREE_FEATURES = [
   /* ⚠️⚠️ **안전 정보는 영원히 무료다.** 이건 요금제 문제가 아니라 원칙이다.
      특보·지진·쓰나미·이안류 위험·낙뢰 위치를 결제 뒤에 두면 사람이 다칠 수 있다.
      이 줄을 지우자는 제안이 나오면 그때도 지우지 않는다. */
-  { ko: '⚠️ 안전 정보는 언제나 무료 — 특보·지진·쓰나미·이안류 위험·낙뢰',
-    en: '⚠️ Safety information is always free — warnings, quakes, tsunami, rip currents, lightning' },
-  { ko: '⚠️ 이안류·지진 안전 알림도 무료 — 한 곳까지 알려드립니다',
-    en: '⚠️ Rip-current and earthquake safety alerts are free too — for one saved place' },
+  { ko: ' 안전 정보는 언제나 무료 — 특보·지진·쓰나미·이안류 위험·낙뢰',
+    en: ' Safety information is always free — warnings, quakes, tsunami, rip currents, lightning' },
+  { ko: ' 이안류·지진 안전 알림도 무료 — 한 곳까지 알려드립니다',
+    en: ' Rip-current and earthquake safety alerts are free too — for one saved place' },
   { ko: '출처 · 관측 지점 수 · 판단 기준 · 한계 — 전부 공개',
     en: 'Sources, sample sizes, thresholds and limits — all shown' },
   { ko: '이벤트 뉴스 교차검증 — 신뢰도 점수와 근거까지',
@@ -105,8 +105,8 @@ export const FREE_FEATURES = [
 /* 왜 이렇게 갈랐는지 사용자에게도 밝힌다.
    ⚠️ "유료가 더 좋다"가 아니라 "무료로 줄 수 있는 건 다 준다"가 우리 입장이다. */
 export const TIER_RATIONALE = {
-  ko: '지금 지구에서 무슨 일이 일어나고 있는지, 그리고 그걸 저희가 어떻게 아는지(출처·관측 지점 수·판단 기준·한계)는 전부 무료입니다. 다른 곳에서도 공개된 자료를 결제 뒤에 숨기지 않고, 안전에 관한 정보는 어떤 경우에도 유료로 돌리지 않습니다.\n구독은 셋에만 해당합니다 — 저희만 쌓고 있는 과거, 사용자마다 따로 계산해야 하는 기능, 여러 곳을 동시에 지켜보는 양. 아직 완성되지 않은 것은 아래에 「준비 중」이라고 표시합니다.',
-  en: 'What is happening right now — and how we know it (sources, sample sizes, thresholds, limits) — is free. We do not paywall data that is public elsewhere, and safety information is never behind payment. Subscription covers only three things: the past that only we accumulate, what we must compute per user, and the volume of watching many places. Anything unfinished is marked "coming soon" below.',
+  ko: '무료 · 현재 지구 자료 · 출처 · 관측 지점 수 · 판단 기준 · 안전 정보\n구독 · 장기 이력 · 사용자별 계산 · 여러 장소 동시 감시',
+  en: 'Free · current Earth data · sources · sample sizes · thresholds · safety information\nSubscription · long-term history · per-user compute · multi-place monitoring',
 };
 
 /* ── 결제 제공자 어댑터 ────────────────────────────────────────

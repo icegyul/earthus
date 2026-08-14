@@ -70,16 +70,9 @@ export const seabirdPanel = {
     const from = yrs.length ? yrs[0][0] : '';
     const to = yrs.length ? yrs[yrs.length - 1][0] : '';
 
-    /* ── ⚠️ 맨 위: 이게 무엇이 **아닌지** ───────────────────── */
     body.appendChild(el('div', 'sb-warn',
-      `<b>${ko ? '⚠️ 지금 있는 새가 아닙니다' : '⚠️ Not live positions'}</b>`
-      + `<p>${ko
-        ? `조사하러 나간 해에 <b>그 자리에서 센 숫자</b>입니다. `
-          + `${esc(from)}~${esc(to)}년 자료라 지금 거기 있다는 뜻이 아닙니다.<br>`
-          + `<b>⚠️ 빈 바다는 "새가 없다"가 아니라 "조사를 안 했다"는 뜻입니다.</b> `
-          + `정점이 ${(_data.stations || []).length}곳뿐입니다.`
-        : `Counts made at survey stations in the survey year (${esc(from)}–${esc(to)}). `
-          + `Empty sea means "not surveyed", not "no birds".`}</p>`));
+      `<b>${ko ? '조사 기록' : 'Survey records'}</b>`
+      + `<p>${esc(from)}–${esc(to)} · ${(_data.stations || []).length}${ko ? '개 조사정점 · 조사 당시 개체수' : ' stations · counts at survey time'}</p>`));
 
     // 한눈에
     const sum = el('div', 'sb-sum');
@@ -102,8 +95,8 @@ export const seabirdPanel = {
     /* 멸종위기부터 보여준다. ⚠️ 흔한 새를 위에 두면 이게 안 보인다. */
     if (endangered.length) {
       body.appendChild(el('p', 'sb-h', ko
-        ? `⚠️ 멸종위기 ${endangered.length}종이 이 바다에서 관측됐습니다`
-        : `⚠️ ${endangered.length} endangered species recorded here`));
+        ? `멸종위기 ${endangered.length}종 관측 기록`
+        : `${endangered.length} endangered species records`));
       body.appendChild(this._rows(endangered, ko));
     }
 
@@ -175,6 +168,8 @@ export const seabirdPanel = {
     if (!_data || !window.Cesium || !viewer) return;
     const C = window.Cesium;
     const ko = i18n.lang === 'ko';
+    const years = _data.years || [];
+    const period = years.length ? `${years[0][0]}–${years[years.length - 1][0]}` : '';
     let st = (_data.stations || []).filter((s) => s.lat != null);
     /* 종을 골랐으면 **그 종이 실제로 나온 정점만** 남긴다.
        ⚠️ 개체수는 정점 전체 합이라 그대로 쓴다 — 종별 개체수는 자료에 없다.
@@ -207,9 +202,7 @@ export const seabirdPanel = {
           + `${ko ? '기록' : 'Records'} ${n0(s.records)}${ko ? '건' : ''} · `
           + `${ko ? '종' : 'species'} ${n0(s.species)}<br>`
           + `${ko ? '센 개체' : 'Individuals'} <b>${n0(s.individuals)}</b><br>`
-          + `<hr style="opacity:.2"><b style="color:#f0a878">⚠️ ${ko
-              ? '조사한 해에 센 숫자입니다. 지금 여기 있다는 뜻이 아닙니다.'
-              : 'Counted during survey years — not current.'}</b><br>`
+          + `<hr style="opacity:.2"><b>${ko ? `조사 기간 ${esc(period)}` : `Survey period ${esc(period)}`}</b><br>`
           + `<small style="opacity:.6">${esc(_data.source || '')}</small></div>`,
       }));
     });

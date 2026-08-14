@@ -341,7 +341,7 @@ export const narrative = {
         num: ko ? `CAPE ${Math.round(c.cape)} J/kg · 습도 ${Math.round(rh)}%` : '',
         why: ko ? '공기가 위로 솟구치려는 힘이 세고 물기도 많으면, 소나기가 한번 서면 '
                 + '갑자기 굵어질 수 있습니다. '
-                + '⚠️ 이건 지금 상태이지 비가 온다는 예보가 아닙니다.' : '' });
+                + ' 자료 유형은 현재 대기 상태입니다.' : '' });
     }
 
     /* ── 상태 전이 — ⚠️⚠️ **이게 가장 앞선다.** ────────────────
@@ -358,8 +358,7 @@ export const narrative = {
         cands.push({ w: 999, level: 'event',
           head: ko ? `한반도가 **${w}에서 벗어났습니다**` : `Left ${w}`,
           num: ko ? `${st.date} 판정 · 어제와 비교` : st.date,
-          why: ko ? '남·중·북 세 곳 중 둘 이상에서 그 상태가 사라졌고, '
-                  + '이틀 연속 확인해 알려드립니다. ⚠️ 하루 변덕으로는 쓰지 않습니다.' : '' });
+          why: ko ? '판정 기준 · 남·중·북 세 곳 중 두 곳 이상 · 이틀 연속' : '' });
       } else {
         const w = pub.entered.map(x => L[x] || x).join('·');
         cands.push({ w: 998, level: 'event',
@@ -394,13 +393,12 @@ export const narrative = {
         why: ko
           ? '더워진 공기는 부풀어 오릅니다. 그래서 하늘이 얼마나 부풀었는지를 재면 '
             + '아래가 얼마나 뜨거운지를 알 수 있습니다. '
-            + '⚠️ "열돔"은 공식 기상 용어가 아니라 언론 표현입니다. '
-            + '저희는 <b>약 5.9km 상공(500hPa)의 높이가 예년 열 번 중 한 번 있을까 하게 클 때</b> '
-            + '그렇게 부르고, <b>약 12km 상공(200hPa)까지 그러면</b> "이중"이라고 씁니다 — '
+            + ' 열돔 표시 기준은 <b>약 5.9km 상공(500hPa)의 높이가 예년 상위 10%</b>, '
+            + '<b>약 12km 상공(200hPa)까지 같은 조건이면</b> 이중 열돔입니다 — '
             + '뜨거운 공기가 두 겹으로 덮였다는 뜻입니다. '
             + '뚜껑이 덮이면 공기가 눌려 내려오면서 데워지고, 구름이 못 생겨 '
             + '햇볕이 그대로 들어옵니다. '
-            + '⚠️ 남·중·북 세 곳 중 둘 이상에서 나와야 "한반도"라고 씁니다.'
+            + ' 남·중·북 세 곳 중 둘 이상에서 나와야 "한반도"라고 씁니다.'
           : '' });
     }
 
@@ -414,7 +412,7 @@ export const narrative = {
         why: ko
           ? '머리 위 하늘을 통째로 쥐어짰을 때 나올 물의 깊이입니다(가강수량). '
             + (many ? '많으면 소나기가 굵어지기 쉽습니다.' : '적으면 소나기가 커지기 어렵습니다.')
-            + ' ⚠️ 땅바닥에서 재는 습도와는 다른 값입니다 — '
+            + '  땅바닥에서 재는 습도와는 다른 값입니다 — '
             + '발밑만 눅눅하고 하늘은 마를 수 있습니다.'
           : '' });
     }
@@ -452,24 +450,23 @@ export const narrative = {
     }
     if (dome) {
       sources.push(ko
-        ? '상층 고도 평년 — NOAA NCEP/NCAR 재분석 1995~2026 · ⚠️ 재분석은 모델이 '
-          + '관측을 끌어안아 만든 값이지 순수 실측이 아닙니다'
-        : 'Upper-air normals — NOAA NCEP/NCAR Reanalysis (not pure observation)');
+        ? '상층 고도 평년 · NOAA NCEP/NCAR 재분석 1995~2026'
+        : 'Upper-air normals · NOAA NCEP/NCAR Reanalysis 1995–2026');
     }
 
     const caveats = [];
     if (nrm?.tooFar) {
       caveats.push(ko
-        ? `⚠️ 가장 가까운 관측소가 ${Math.round(nrm.km)}km 떨어져 있어 **평년 대비는 내지 않았습니다.**`
-        : '⚠️ Nearest station too far — no normal comparison.');
+        ? ` 가장 가까운 관측소가 ${Math.round(nrm.km)}km 떨어져 있어 **평년 대비는 내지 않았습니다.**`
+        : ' Nearest station too far — no normal comparison.');
     } else if (nrm?.doy && nrm.station?.a != null) {
       caveats.push(ko
         ? `평년 비교는 ${nrm.doy.name} 관측소(${nrm.km}km, ${Math.round(nrm.station.a)}m) 기준입니다.`
         : '');
     }
     caveats.push(ko
-      ? '⚠️ 이 글은 **예보가 아닙니다.** 지금 잰 값과 30년 기록을 견준 것입니다.'
-      : '⚠️ Not a forecast — measured values compared against 30 years.');
+      ? '비교 유형 · 현재값과 30년 관측 기록'
+      : 'Comparison · current value and 30-year observations');
 
     /* ══ 문단 — 원고처럼 ═══════════════════════════════════════
        받은 요청: 영상 스크립트를 보여주며 "이런 식으로 원고 작성 해달라는거야".
@@ -521,13 +518,13 @@ export const narrative = {
         S(dome === 2 && mine.vals.pH200 != null
           ? vary(1, [
               `더 높은 하늘(약 12km)도 똑같이 부풀어 있습니다. 뜨거운 공기가 한 겹이 `
-                + `아니라 **두 겹**으로 덮여 있다는 뜻이고, 저희는 이걸 이중 열돔이라 부릅니다.`,
+                + `아니라 **두 겹**으로 덮인 이중 열돔 표시입니다.`,
               `약 12km 상공도 같은 모양으로 부풀어 있습니다. 아래위 **두 겹**이 함께 `
-                + `덮인 상태 — 저희는 이걸 이중 열돔이라 부릅니다.`,
+                + `덮인 이중 열돔 표시입니다.`,
             ])
           : vary(1, [
-              `뜨거운 공기가 뚜껑처럼 덮여 있는 셈이고, 저희는 이걸 열돔이라 부릅니다.`,
-              `말하자면 뜨거운 공기 덮개가 얹힌 상태입니다 — 저희는 이걸 열돔이라 부릅니다.`,
+              `뜨거운 공기가 뚜껑처럼 덮인 열돔 표시입니다.`,
+              `뜨거운 공기 덮개가 얹힌 열돔 표시입니다.`,
             ]));
         S(vary(2, [
           '뚜껑이 덮이면 구름이 잘 생기지 않습니다. 햇볕이 가려지지 않고 그대로 내리쬐고, '
@@ -554,7 +551,7 @@ export const narrative = {
           S(`다만 하늘의 물기는 적습니다. 머리 위 하늘을 통째로 쥐어짜도 물 `
             + `${mine.vals.tcwv?.toFixed(0)}mm 밖에 안 나옵니다 — `
             + `평소 이맘때는 ${mine.vals.tcwvNormal}mm 입니다. `
-            + `⚠️ 아래에 나오는 습도(${rh != null ? Math.round(rh) + '%' : '—'})와는 다른 이야기입니다. `
+            + ` 아래에 나오는 습도(${rh != null ? Math.round(rh) + '%' : '—'})와는 다른 이야기입니다. `
             + `발밑은 눅눅한데 하늘은 말라 있습니다.`);
         }
       }
@@ -613,7 +610,7 @@ export const narrative = {
         } else {
           S(`${spring}. 소나기가 설 수 있는 상태입니다.`);
         }
-        S('⚠️ 힘이 감겨 있다고 반드시 터지는 것은 아닙니다. '
+        S(' 힘이 감겨 있다고 반드시 터지는 것은 아닙니다. '
           + '찬 공기가 들어오거나, 산을 타고 오르거나, 바닷바람이 부딪치는 것 같은 '
           + '방아쇠가 있어야 실제로 소나기가 됩니다.');
       }
@@ -653,7 +650,7 @@ export const narrative = {
         if (pTmax) bits.push(`낮 ${tmax.toFixed(1)}°C(평년 ${cell.tmax.q[3]}°C)`);
         if (pHm) bits.push(`습도 ${Math.round(rh)}%(평년 ${cell.hm.q[3]}%)`);
         S(`오늘은 눈에 띄는 것이 없습니다. ${bits.join(' · ')} 로 예년 그 언저리입니다.`);
-        S('⚠️ 평범한 날은 평범하다고 적습니다. 매일 극적인 척하면 진짜 위험한 날에 '
+        S(' 평범한 날은 평범하다고 적습니다. 매일 극적인 척하면 진짜 위험한 날에 '
           + '아무도 믿지 않기 때문입니다.');
       }
     }

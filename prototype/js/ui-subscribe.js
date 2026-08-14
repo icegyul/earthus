@@ -127,7 +127,7 @@ export const subscribeSheet = {
       <h4>곧 열릴 것 <span class="sub-soon-tag">준비 중</span></h4>
       <p>지구를 되감아 보는 기능과 내 지점의 지난 기록입니다.
          <b>자료를 2026년 7월 27일부터 쌓고 있어서</b> 아직 기간이 짧습니다 —
-         충분히 모이면 엽니다. <b>준비 중인 것에는 돈을 받지 않습니다.</b></p>
+         충분히 모이면 엽니다. <b>준비 중 기능 · 무료</b></p>
 
       <h4>안전 정보는 계속 무료입니다</h4>
       <p>특보·지진·쓰나미·이안류·낙뢰, 그리고 모든 레이어와
@@ -135,10 +135,8 @@ export const subscribeSheet = {
          유료는 <b>여러 곳을 동시에 지켜보는 양</b>과 <b>계산이 드는 것</b>뿐입니다.</p>
 
       <h4>왜 돈을 받나</h4>
-      <p>자료는 공공기관이 공개한 것이라 누구나 받을 수 있습니다.
-         우리가 하는 일은 그 자료를 <b>믿어도 되는지까지 말하는 것</b>입니다 —
-         출처, 관측 시각, 표본 수, 판단 기준, 그리고 <b>우리가 모르는 것</b>까지.
-         혼자 만들고 있고, 서버비와 개발 시간은 계속 듭니다.</p>
+      <p>구독 비용은 <b>자료 검증·사용자별 계산·장기 보관·다중 장소 감시</b>에 사용됩니다.
+         공개 항목에는 출처, 관측 시각, 표본 수와 판단 기준이 함께 표시됩니다.</p>
 
       <h4>초기에 결제해 주시면</h4>
       <ul>
@@ -154,10 +152,9 @@ export const subscribeSheet = {
         <li><b>Orbit tracks and pass predictions</b> over your location</li>
       </ul>
 
-      <h4>Coming <span class="sub-soon-tag">not yet</span></h4>
-      <p>Rewinding Earth and your spot's own history. <b>We have been archiving since
-         27 July 2026</b>, so the record is still short — we open it when there is enough.
-         <b>We do not charge for what is not ready.</b></p>
+      <h4>Coming <span class="sub-soon-tag">in preparation</span></h4>
+      <p>Rewinding Earth and your spot's own history. <b>Archive start: 27 July 2026.</b>
+         The record opens after enough history accumulates. Coming-soon features are free.</p>
 
       <h4>Safety stays free</h4>
       <p>Warnings, quakes, tsunami, rip currents, lightning — plus every layer and every
@@ -166,9 +163,9 @@ export const subscribeSheet = {
          <b>work that actually costs compute</b>.</p>
 
       <h4>Why we charge</h4>
-      <p>The data is public; anyone can fetch it. What we do is tell you <b>whether you
-         can trust it</b> — source, observation time, sample size, thresholds, and
-         <b>what we do not know</b>. One person builds this; servers and time cost money.</p>
+      <p>Subscription funds <b>data validation, per-user compute, long-term storage,
+         and multi-place monitoring</b>. Public results include source, observation time,
+         sample size and thresholds.</p>
 
       <h4>If you subscribe early</h4>
       <ul>
@@ -187,12 +184,6 @@ export const subscribeSheet = {
       ul.appendChild(li);
     });
     feat.appendChild(ul);
-    if (PAID_FEATURES.some(f => f.soon)) {
-      feat.appendChild(el('p', 'sky-note', ko
-        ? '「준비 중」은 아직 동작하지 않는 기능입니다. 지금 결제하셔도 그 기능은 완성된 뒤에 열립니다 — 그 점을 미리 말씀드립니다.'
-        : 'Items marked "coming soon" do not work yet. Subscribing now does not enable them until they ship — we would rather say so up front.'));
-    }
-
     feat.appendChild(el('h4', null, ko ? '구독하지 않아도 계속 무료' : 'Always free'));
     const ul2 = el('ul', 'feat-list');
     FREE_FEATURES.forEach(f => ul2.appendChild(el('li', 'free', ko ? f.ko : f.en)));
@@ -215,17 +206,17 @@ export const subscribeSheet = {
          "곧 됩니다"가 아니라 "무엇이 없어서 안 되는지"를 쓴다. */
       const box = el('div', 'pay-pending');
       const dataBlocked = CONFIG.SALES_OPEN && !dataReady;
-      box.innerHTML = `<b>${ko ? '결제 준비 중' : 'Payments not live yet'}</b>`
+      box.innerHTML = `<b>${ko ? '결제 준비 중' : 'Payments in preparation'}</b>`
         + `<p>${dataBlocked
           ? (ko
-            ? '상업 이용이 가능한 기상 API 경로와 GVP 화산 자료 허가를 검증하는 중입니다. 조건을 모두 충족하기 전에는 유료 판매를 열지 않습니다.<br>'
+            ? '유료 판매 공개 조건 · 상업 이용 기상 API · GVP 화산 자료 허가 검증<br>'
               + '<b>지금 보시는 기능은 모두 무료입니다.</b>'
             : 'We are validating a weather API route licensed for commercial use and commercial permission for GVP volcano data. Paid sales stay closed until both are ready.<br>'
               + '<b>Everything you see now is free.</b>')
           : (ko
-            ? '통신판매업 신고 절차를 밟고 있습니다. 신고가 끝나기 전에는 유료 판매를 열지 않습니다 — 법으로 그렇게 되어 있고, 저희도 그게 맞다고 봅니다.<br>'
+      ? '통신판매업 신고 절차 진행 중 · 완료 후 유료 판매 시작<br>'
               + '<b>지금 보시는 기능은 모두 무료입니다.</b> 사전등록해 두시면 결제가 열리는 즉시 알려드리고, 초기 구독자 혜택을 함께 드립니다.'
-            : 'We are completing our mail-order business registration. We will not open paid sales before it is done.<br>'
+            : 'Mail-order business registration in progress · paid sales open after completion.<br>'
               + '<b>Everything you see now is free.</b> Register and we will tell you the moment it opens, with early-subscriber benefits.')}</p>`;
       body.appendChild(box);
 
@@ -258,8 +249,8 @@ export const subscribeSheet = {
         ? '앱스토어·구글플레이 구독은 기간이 끝나기 전에 해지하지 않으면 자동으로 갱신됩니다. 해지는 결제하신 곳에서 언제든 가능하며, 남은 기간까지는 계속 이용하실 수 있습니다. 표시 금액은 부가세 포함입니다.'
         : 'App Store and Google Play subscriptions renew automatically unless cancelled before the period ends. Cancel any time where you purchased; access continues until the period ends. Prices include VAT where applicable.')
       : (ko
-        ? '카드 결제는 정해진 기간만큼 쓰는 이용권입니다. 자동으로 갱신되지 않으므로 해지 절차도 없습니다. 기간이 끝나면 무료로 돌아가고, 필요하시면 다시 결제하시면 됩니다. 남은 기간이 있는 상태에서 다시 결제하면 그 뒤에 이어 붙습니다. 표시 금액은 부가세 포함입니다.'
-        : 'Card payment buys a pass for a fixed period. It does not auto-renew, so there is nothing to cancel. When it ends you return to the free tier. Buying again while time remains extends from that date. Prices include VAT where applicable.')));
+        ? '카드 결제 · 기간형 이용권 · 자동갱신 없음 · 기간 종료 후 무료 전환 · 기간 중 재결제 시 종료일 연장 · 부가세 포함'
+        : 'Card payment · fixed-term pass · manual renewal · free tier after expiry · repurchase extends the end date · VAT included where applicable')));
   },
 
   async go(providerKey) {
@@ -282,7 +273,7 @@ export const subscribeSheet = {
       const MSG = {
         NOT_AVAILABLE:  ['이 기기에서는 아직 결제할 수 없습니다', 'Payments unavailable on this device'],
         NOT_CONFIGURED: ['결제 수단이 아직 연결되지 않았습니다', 'Payments are not connected yet'],
-        DATA_LICENSE_NOT_READY: ['상업 이용 가능한 기상 자료 경로를 확인하기 전에는 결제를 열지 않습니다',
+        DATA_LICENSE_NOT_READY: ['결제 준비 조건 · 상업 이용 가능한 기상 자료 경로 확인',
                                  'Payments stay closed until the commercial weather-data route is verified'],
         NOT_SIGNED_IN:  ['로그인이 필요합니다', 'Please sign in first'],
         SOLD_OUT:       ['창립회원 모집이 마감되었습니다', 'Founding membership is sold out'],
@@ -358,8 +349,8 @@ export const demandSheet = {
     body.appendChild(form);
 
     body.appendChild(el('p', 'sky-note', ko
-      ? '목표 인원을 채우면 데이터 제공사와 계약을 진행합니다. 계약과 연동에 시간이 걸리므로 달성 즉시 열리지는 않습니다 — 진행 상황은 등록하신 메일로 알려드립니다. 이메일은 이 안내 외의 목적으로 쓰지 않습니다.'
-      : 'When the goal is met we begin contracting with the data provider. Contracting and integration take time, so it will not open the moment the number is reached — we will email you with progress. Your address is used only for this notice.'));
+      ? '진행 순서 · 목표 달성 → 데이터 제공사 계약 → 연동 → 공개 · 진행 안내: 등록 이메일'
+      : 'Sequence · target reached → data-provider contract → integration → launch · updates: registered email'));
   },
 
   async submit(ev) {

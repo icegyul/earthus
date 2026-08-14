@@ -994,16 +994,16 @@ export const cyclones = {
     if (hasAnalog) {
       rows.push(row('rgba(255,255,255,.55)', false,
         ko ? '흰 실선 다발' : 'Faint white lines',
-        ko ? '과거 비슷했던 태풍들이 간 길 — 예보 아님'
-           : 'where past similar storms went — not a forecast'));
+        ko ? '과거 유사 태풍 경로'
+           : 'historical similar-storm tracks'));
     }
     if (this._canSeeEarthusEstimate() && (analog.get(s.id, s.name)?.guidance?.steps || []).length > 1) {
       const guide = analog.get(s.id, s.name).guidance;
       const last = guide.steps[guide.steps.length - 1];
       rows.push(row('#ff4d5f', true,
         ko ? 'EARTHUS 자료 종합선 · 구독/관리자' : 'EARTHUS multi-source guidance · subscriber/admin',
-        ko ? `기관·ECMWF·이동·다층 지향류 종합 · +${last.h}시간 · ${last.confidence} · 공식 예보 아님`
-           : `Agencies, ECMWF, motion and deep-layer flow · +${last.h} h · ${last.confidence} · not official`));
+        ko ? `비공식 분석선 · 기관·ECMWF·이동·다층 지향류 · +${last.h}시간 · ${last.confidence}`
+           : `Unofficial analysis · agencies, ECMWF, motion and deep-layer flow · +${last.h} h · ${last.confidence}`));
     }
     box.innerHTML = `<div class="tcl-mini"><b>${ko ? '태풍 진로 안내' : 'Cyclone track guide'}</b>`
       + `<span>${ko ? '펼치기' : 'Expand'}</span></div>`
@@ -1278,8 +1278,8 @@ export const cyclones = {
       d[ko ? '경로 기록' : 'Track from'] = (s.from || '').slice(0, 16).replace('T', ' ');
       d[ko ? '출처' : 'Source'] = 'Global Disaster Awareness and Coordination System, GDACS · CC BY 4.0';
       d['_note'] = ko
-        ? 'GDACS 실시간 목록에서 빠진 폭풍입니다. 화면의 경로는 **우리가 매시간 기록한 위치**이며 공식 베스트트랙이 아닙니다. 목록에서 빠진 이유(약화·상륙·온대저기압화)는 자료에 나오지 않아 표시하지 않습니다. GDACS 영향 추정은 자동 모델 산출물이며 지역 당국의 공식 경보가 아닙니다.'
-        : 'This storm has dropped out of the GDACS live list. The track shown is **our own hourly record**, not an official best track. GDACS does not say why a storm leaves the list, so we do not claim a reason. GDACS impact estimates are automated model outputs, not official alerts from local authorities.';
+        ? '경로 유형 · Earthus 시간별 보관 위치 · 출처 GDACS · 지역 경보는 관할 기관 발표 확인'
+        : 'Track type · Earthus hourly archive · source GDACS · check local authorities for warnings';
       return { title: `${s.name}`, rows: d };
     }
     /* ⚠️ GDACS 가 응답하지 않아 우리 보관본으로 그리고 있는 경우.
@@ -1287,8 +1287,8 @@ export const cyclones = {
        이 둘을 섞으면 "끝난 태풍"이라고 잘못 말하게 된다. */
     if (s.stale) {
       d[ko ? '상태' : 'Status'] = ko
-        ? '⚠️ GDACS 응답 없음 — 마지막으로 받은 위치입니다'
-        : '⚠️ GDACS not responding — last received position';
+        ? ' GDACS 응답 없음 — 마지막으로 받은 위치입니다'
+        : ' GDACS not responding — last received position';
       d[ko ? '마지막 수신' : 'Last received'] =
         (s.lastSeen || '').slice(0, 16).replace('T', ' ');
     }
@@ -1347,8 +1347,8 @@ export const cyclones = {
         }
         if (g.downgrade) {
           bits.push(ko
-            ? `⚠️ **+${g.downgrade.h}시간에 ${g.downgrade.toKo || g.downgrade.to}로 바뀔 것**으로 봅니다.`
-            : `⚠️ Change to ${g.downgrade.to} at +${g.downgrade.h} h.`);
+            ? ` **+${g.downgrade.h}시간에 ${g.downgrade.toKo || g.downgrade.to}로 바뀔 것**으로 봅니다.`
+            : ` Change to ${g.downgrade.to} at +${g.downgrade.h} h.`);
         }
         if (g.basinNote) bits.push(ko ? `(${g.basinNote.ko})` : `(${g.basinNote.en})`);
         d[`${ko ? g.agencyKo : g.agency} 예보 · ${fmt(g.issue)} 발표`] = bits.join(' ');
@@ -1361,10 +1361,9 @@ export const cyclones = {
           ? `${e.agencyKo} — +${e.h}시간에 ${e.toKo || e.to}`
           : `${e.agency} — ${e.to} at +${e.h} h`;
       }
-      d[ko ? '⚠️ 기관 비교' : '⚠️ Agencies'] = ko
-        ? `${ags.length}개 기관의 발표를 **그대로** 옮겼습니다. 서로 다를 수 있으며 `
-          + '저희가 하나로 합치거나 평균 내지 않습니다. 실제 대응은 기상청 발표를 따르세요.'
-        : `${ags.length} agencies, relayed verbatim and not merged.`;
+      d[ko ? ' 기관 비교' : ' Agencies'] = ko
+        ? `${ags.length}개 기관 원문 · 기관별 선 분리 · 대응은 기상청 발표`
+        : `${ags.length} agency bulletins · separate tracks · follow official warnings`;
     }
 
     /* ECMWF 앙상블은 공식 통보문 아래에 따로 둔다.
@@ -1439,7 +1438,7 @@ export const cyclones = {
       }).join(' / ');
       if (times) d[ko ? '관측 자료원·시각' : 'Observation sources · time'] = times;
       if ((se.missing || []).length) {
-        d[ko ? '⚠️ 못 받은 관측망' : '⚠️ Unavailable observation feeds'] = (se.missing || [])
+        d[ko ? ' 못 받은 관측망' : ' Unavailable observation feeds'] = (se.missing || [])
           .map(x => srcName[x] || x).join(' · ');
       }
     }
@@ -1540,10 +1539,10 @@ export const cyclones = {
           const ev = guide.evidence || {};
           d[ko ? 'EARTHUS 자료 종합선 · 구독/관리자'
                : 'EARTHUS multi-source guidance · subscriber/admin'] = ko
-            ? `KMA·JMA·ECMWF와 최근 이동·500/700/850hPa 환경류를 +${last.h}시간까지 종합했습니다. `
-              + `끝 시각 미래 입력 ${last.coreN}개(${last.sourceFamilyN}개 자료군) · 앙상블 ${last.ensembleN}개 · 자료 간 분산 ${last.spreadKm}km · 신뢰 ${last.confidence}. 공식 예보가 아닙니다.`
-            : `Combined KMA, JMA, ECMWF, recent motion and 500/700/850 hPa flow through +${last.h} h. `
-              + `${last.coreN} future inputs across ${last.sourceFamilyN} source families, ${last.ensembleN} ensemble members, ${last.spreadKm} km spread, ${last.confidence} confidence. Not official.`;
+            ? `비공식 분석선 · KMA·JMA·ECMWF·최근 이동·500/700/850hPa 환경류 · +${last.h}시간 · `
+              + `미래 입력 ${last.coreN}개(${last.sourceFamilyN}개 자료군) · 앙상블 ${last.ensembleN}개 · 자료 간 분산 ${last.spreadKm}km · 신뢰 ${last.confidence}`
+            : `Unofficial analysis · KMA, JMA, ECMWF, recent motion and 500/700/850 hPa flow · +${last.h} h · `
+              + `${last.coreN} future inputs across ${last.sourceFamilyN} source families · ${last.ensembleN} ensemble members · ${last.spreadKm} km spread · ${last.confidence} confidence`;
           d[ko ? '현재 근거 자료' : 'Current evidence'] = ko
             ? `신선한 지상·부이 ${ev.surfaceFreshN || 0}곳 · ASCAT 해상풍 ${ev.satelliteWindFreshN || 0}셀 · 해수면 수온 ${ev.seaSurfaceTemperatureN || 0}곳. 관측은 좌표를 임의로 밀지 않고 신뢰등급을 제한합니다.`
             : `${ev.surfaceFreshN || 0} fresh surface/buoy sites · ${ev.satelliteWindFreshN || 0} ASCAT cells · ${ev.seaSurfaceTemperatureN || 0} SST sites. Observations gate confidence rather than displace coordinates.`;
@@ -1571,21 +1570,21 @@ export const cyclones = {
     }
 
     d['_note'] = (s.stale
-      ? (ko ? '⚠️ 지금 GDACS(전지구 재난경보시스템)가 응답하지 않아, 저희가 보관해 둔 마지막 경로를 보여드리고 있습니다. 현재 위치·강도는 그 이후 달라졌을 수 있습니다. 실제 대응은 기상청 발표를 따르세요. '
-            : '⚠️ GDACS is not responding, so this shows the last track we archived. Current position and intensity may have changed since. ')
+      ? (ko ? ' 자료 상태 · GDACS 연결 지연 · 마지막 보관 경로 · 기상청 발표 확인. '
+            : ' Data status · GDACS delayed · last archived track · check official warnings. ')
       : '') + (ko
-      ? 'GDACS 영향 추정은 자동 모델 산출물이며 지역 당국의 공식 경보가 아닙니다. 점선 원뿔은 예보 범위입니다. 실제 경로는 달라질 수 있습니다.'
+      ? '자료 유형 · GDACS 자동 영향 모델 · 점선 원뿔 예보 범위.'
         + (an && an.matches
-            ? ' ⚠️ 「과거 유사 사례」는 예보가 아닙니다 — 위치·진행방향·강도가 비슷했던 과거 태풍이 이후 어디로 갔는지 센 기록입니다. 판정 기준은 우리가 정한 값이며 공인 표준이 아닙니다. 실제 대응은 기상청 공식 발표를 따르세요.'
+            ? ' 과거 유사 사례 · 위치·방향·강도 유사 기록의 이후 이동 집계.'
             : '')
-      : 'GDACS impact estimates are automated model outputs, not official alerts from local authorities. The dotted cone is a forecast range — the actual track may differ.'
+      : 'Data type · GDACS automated impact model · dotted cone forecast range.'
         + (an && an.matches
-            ? ' ⚠️ "Past analogues" is not a forecast — it counts where similar past storms went. Follow official warnings.'
+            ? ' Past analogues · later movement of records with similar location, direction and intensity.'
             : ''));
     if (se) {
       d['_note'] += ko
-        ? ' 주변 표면 관측은 현재 상태를 확인하는 근거입니다. 이 앱은 아직 관측소 연쇄를 자체 진로 예측이나 기관별 우열 판단으로 사용하지 않습니다.'
-        : ' Nearby surface observations are evidence for current conditions. Earthus does not use station chains to issue its own track forecast or rank agencies.';
+        ? ' 주변 표면 관측 · 현재 상태 참고.'
+        : ' Nearby surface observations · current-condition reference.';
     }
     return { title: `${s.name}`, rows: d };
   },

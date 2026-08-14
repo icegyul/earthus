@@ -15,37 +15,37 @@ function reasonCopy(gate, ko) {
   switch (gate?.reason) {
     case 'PROVIDER_UNAVAILABLE':
       return ko
-        ? ['자료 상태 확인 불가', '기상청 특보 자료를 받지 못했습니다. 현재 상태를 단정하지 않습니다.']
-        : ['Warning status unavailable', 'KMA warning data could not be loaded. Current conditions are not inferred.'];
+        ? ['특보 자료 연결 실패', '기상청 공식 특보에서 현재 상태를 확인하세요.']
+        : ['Warning feed unavailable', 'Check current status in official KMA warnings.'];
     case 'PROVIDER_DELAY':
       return ko
-        ? ['자료 지연 · 안전 판정 아님', '마지막 특보 자료가 45분 넘게 갱신되지 않아 현재 발효 상태를 단정하지 않습니다.']
-        : ['Delayed data · not a safety finding', 'The last warning snapshot is over 45 minutes old, so current status is not inferred.'];
+        ? ['특보 자료 지연', '마지막 수신 후 45분 이상 · 기상청 공식 특보 확인']
+        : ['Warning feed delayed', 'More than 45 minutes since last receipt · check official KMA warnings'];
     case 'TIME_IN_FUTURE':
     case 'TIME_MISSING':
       return ko
-        ? ['시각 검증 실패 · 안전 판정 아님', '출처 시각을 검증하지 못해 현재 특보 상태로 사용하지 않습니다.']
-        : ['Time check failed · not a safety finding', 'The source time could not be verified, so this is not used as current warning status.'];
+        ? ['특보 자료 시각 오류', '출처 시각 확인 실패 · 기상청 공식 특보 확인']
+        : ['Warning time unavailable', 'Source time check failed · check official KMA warnings'];
     case 'LOCATION_MISSING':
       return ko
-        ? ['위치 확인 전 · 안전 판정 아님', '위치가 없어 내 특보구역과 대조하지 못했습니다. 아래 전국 특보를 직접 확인하세요.']
-        : ['Location unavailable · not a safety finding', 'Your location could not be matched to a warning zone. Check the nationwide list below.'];
+        ? ['위치 필요', '내 특보구역 대조를 위해 위치를 선택하세요.']
+        : ['Location needed', 'Choose a location to match a warning zone.'];
     case 'REGION_UNMAPPED':
       return ko
-        ? ['구역 매핑 실패 · 안전 판정 아님', '60km 안에서 대응 관측지점을 찾지 못했습니다. 결측을 무특보나 안전으로 바꾸지 않습니다.']
-        : ['Region unmapped · not a safety finding', 'No corresponding station was found within 60 km. Missing data is not treated as no warning or safe.'];
+        ? ['특보 구역 연결 실패', '60km 안의 대응 관측지점 없음 · 기상청 공식 특보 확인']
+        : ['Warning zone unmapped', 'No matching station within 60 km · check official KMA warnings'];
     case 'KMA_OUT_OF_COVERAGE':
       return ko
         ? ['기상청 적용 범위 밖', '이 판정은 한국 기상청 특보에만 적용됩니다. 현지 공식 기관의 안내를 확인하세요.']
         : ['Outside KMA coverage', 'This gate covers Korean KMA warnings only. Check your local authority.'];
     case 'NO_MATCH_NOT_SAFE':
       return ko
-        ? ['안전 판정 아님', '근사한 내 구역 코드와 정확히 일치하는 발효 특보를 찾지 못했습니다. 특보가 없거나 안전하다는 뜻이 아닙니다.']
-        : ['Not a safety finding', 'No active warning exactly matched the approximated zone code. This does not mean no warning or safe.'];
+        ? ['근사 구역 대조', '일치 특보 0건 · 기상청 공식 특보에서 확인']
+        : ['Approximate-zone match', '0 matching warnings · verify in official KMA warnings'];
     default:
       return ko
-        ? ['판정 보류', '공식 특보 근거를 확인하기 전에는 안전 상태를 만들지 않습니다.']
-        : ['Decision held', 'No safe state is created before official warning evidence is verified.'];
+        ? ['특보 확인 중', '기상청 공식 특보 연결 대기']
+        : ['Checking warnings', 'Waiting for official KMA warning data'];
   }
 }
 
@@ -57,11 +57,13 @@ export function safetyGateMarkup(gate, lang = 'ko') {
   const [fallbackTitle, fallbackBody] = reasonCopy(gate, ko);
   const count = Array.isArray(gate?.warnings) ? gate.warnings.length : 0;
   const zone = gate?.zone;
-  const title = active ? (ko ? '공식 특보 우선 · 추천 제한' : 'Official warning first · recommendation restricted') : fallbackTitle;
+  const title = active ? (ko ? '공식 특보 · 추천 제한' : 'Official warning · recommendation restricted') : fallbackTitle;
   const body = active
-    ? (ko
-      ? `최근접 관측소의 특보구역 코드와 같은 기상청 발효 특보 ${count}건을 확인했습니다. 활동 점수가 높아도 긍정 추천보다 먼저 제한합니다.`
-      : `${count} active KMA warning(s) exactly match the nearest station's warning-zone code. This restriction overrides any positive activity score.`)
+    ? (gate.warnings || []).slice(0, 3).map(warning => [
+      ko ? warning.kind : (warning.kindEn || warning.kind),
+      warning.level,
+      warning.region || zone?.name,
+    ].filter(Boolean).join(' · ')).join(' / ') || `${count}${ko ? '건' : ''}`
     : fallbackBody;
   const level = active ? (ko ? '제한' : 'RESTRICT') : (out ? (ko ? '범위 밖' : 'OUTSIDE') : 'UNKNOWN');
   const mapped = zone?.mapped
@@ -75,9 +77,9 @@ export function safetyGateMarkup(gate, lang = 'ko') {
     : (ko ? '출처 자료 없음' : 'No source data');
 
   return `<section class="safety-gate safety-gate--${state}" data-safety-status="${esc(gate?.status || 'UNKNOWN')}" aria-label="${esc(title)}">`
-    + `<header><span>${ko ? 'SAFETY ENGINE' : 'SAFETY ENGINE'}</span><strong>${esc(level)}</strong></header>`
+    + `<header><span>${ko ? '기상 안전' : 'WEATHER SAFETY'}</span><strong>${esc(level)}</strong></header>`
     + `<h4>${esc(title)}</h4><p>${esc(body)}</p>`
-    + (mapped ? `<small>${esc(mapped)}<br>${ko ? '이 매핑은 공식 구역 경계 polygon이 아닌 근사입니다.' : 'This mapping is an approximation, not an official zone-boundary polygon.'}</small>` : '')
+    + (mapped ? `<small>${esc(mapped)}<br>${ko ? '대조 방식 · 최근접 공식 관측지점' : 'Match method · nearest official station'}</small>` : '')
     + `<small>${evidenceLine}</small>`
     + `<a href="${KMA_WARNING_URL}" target="_blank" rel="noopener noreferrer">${ko ? '기상청 공식 특보에서 확인 ↗' : 'Check official KMA warnings ↗'}</a>`
     + `</section>`;

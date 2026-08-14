@@ -153,8 +153,8 @@ export const launchPads = {
       rows[`${i + 1}. ${m.name}`] = when;
     });
     rows['_note'] = ko
-      ? '표시된 원은 발사대 위치를 가리키는 표시이며 실제 부지 크기가 아닙니다. 좌표와 발사대 이름은 The Space Devs(LL2) 자료를 그대로 옮긴 것입니다.'
-      : 'The circle marks the pad location; it is not the real site footprint. Coordinates and pad names come from The Space Devs (LL2).';
+      ? '위치 표시 원 · 부지 규모 미반영 · 좌표·이름 출처 The Space Devs(LL2)'
+      : 'Location marker · site footprint omitted · coordinates and names from The Space Devs (LL2)';
     return { title: p.name, rows };
   },
 };

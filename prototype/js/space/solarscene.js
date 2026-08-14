@@ -138,8 +138,8 @@ export const solarScene = {
       ? (ko ? '실제 크기는 1픽셀보다 작아 위치표시만 보입니다 · 안쪽 태양계는 확대 창' : 'True sizes are subpixel; only location markers remain · inner system is an inset')
       : (ko ? '행성 크기 과장됨 · 안쪽 태양계는 확대 창' : 'Planet sizes exaggerated · inner system is an inset');
     document.getElementById('solarLimit').textContent = ko
-      ? '교육용 근사 위치입니다. 제임스웹은 태양–지구 L2 부근(실제로는 헤일로 궤도), 보이저는 JPL 2026-08-10 기준시점+등속 추정이며 ±5년만 표시합니다. 관측 조준·우주비행에는 Horizons를 사용하세요.'
-      : 'Educational approximations. Webb is near Sun–Earth L2 (actually on a halo orbit); Voyager uses the JPL 2026-08-10 epoch plus linear motion and is shown only within ±5 years. Use Horizons for pointing or spaceflight.';
+      ? '교육용 근사 위치 · 제임스웹: 태양–지구 L2 부근 헤일로 궤도 · 보이저: JPL 2026-08-10 기준+등속 추정, ±5년 · 정밀 계산: JPL Horizons'
+      : 'Educational approximation · Webb: halo orbit near Sun–Earth L2 · Voyager: JPL 2026-08-10 epoch plus linear motion, ±5 years · precision source: JPL Horizons';
   },
 
   draw() {

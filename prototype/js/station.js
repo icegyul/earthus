@@ -121,7 +121,7 @@ function renderSparkline(selector, rows, field, className, rangeSelector, unit) 
   const values = rows.map(row => Number(row[field])).filter(Number.isFinite);
   if (!values.length) {
     chart.append(svg('text', { x: 320, y: 92, 'text-anchor': 'middle', class: 'chart-empty' }, '아직 기록된 값이 없습니다'));
-    $(rangeSelector).textContent = '결측은 0으로 표시하지 않습니다.';
+    $(rangeSelector).textContent = '결측 · 빈칸';
     return;
   }
   const width = 640, height = 180, pad = 20;
@@ -169,8 +169,8 @@ function renderReadiness() {
   const rows = stationHistory();
   $('#nowReady').textContent = rows.length ? `제공 중 · ${rows.length}시각` : '자료 축적 시작';
   if (!since) {
-    $('#monthNote').textContent = '공개 기록 시작일을 확인할 수 없어 날짜를 만들지 않습니다.';
-    $('#yearNote').textContent = '공개 기록 시작일을 확인할 수 없어 날짜를 만들지 않습니다.';
+    $('#monthNote').textContent = '공개 기록 시작일 · 확인 대기';
+    $('#yearNote').textContent = '공개 기록 시작일 · 확인 대기';
     return;
   }
   $('#monthNote').textContent = `${since} 시작 · 빠르면 ${addDays(since, 30)} 이후 실제 30일 충족 여부를 계산합니다.`;

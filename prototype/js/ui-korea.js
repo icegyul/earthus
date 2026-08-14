@@ -283,8 +283,8 @@ export const koreaPanel = {
       + rows(ko ? '바람 강한 곳' : 'Strongest wind', highlights.windiest, 'ws', 'm/s')
       + `</div>`;
     h += `<p class="kr-note">${ko
-      ? '이 순위는 97개 대표격자의 같은 예보시각 원값 비교입니다. 실제 관측 순위가 아니며, 사용자 위치의 정확한 5km 칸과 다를 수 있습니다.'
-      : 'Ranks compare raw values at the same forecast hour across 97 representative grids. They are not observation rankings and may differ from your exact 5 km cell.'}</p>`;
+      ? '자료 유형 · 같은 예보시각 97개 대표격자 원값 순위 · 사용자 위치는 해당 5km 격자에서 확인'
+      : 'Data type · raw-value ranking across 97 representative grids at one forecast hour · use the local 5 km grid for your point'}</p>`;
     return h + this._src(doc);
   },
 
@@ -338,8 +338,8 @@ export const koreaPanel = {
         + `<strong>${esc(names[row.id] || row.id)}</strong><time datetime="${esc(row.at || '')}">${esc(timeLabel(row))}</time>`
         + `<span>${esc(countLabel(row))}${row.precision ? ` · ${esc(row.precision)}` : ''}</span></div>`).join('')
       + `<p>${ko
-        ? '이 줄은 서로 다른 관측·탐지·기관발표의 시각을 비교할 뿐, 값을 섞거나 평균내지 않습니다.'
-        : 'This aligns timestamps only. It never averages or merges unlike observations, detections and bulletins.'}</p></section>`;
+        ? '표시 방식 · 관측·탐지·기관 발표 시각 개별 정렬'
+        : 'Display · observation, detection and bulletin times aligned separately'}</p></section>`;
 
     /* ⚠️ 낙뢰(G)와 번개(C)를 절대 한 덩어리로 세지 않는다.
        G 는 땅에 떨어진 것이라 사람이 맞을 수 있고, C 는 구름 사이에서만 친 것이다.
@@ -369,8 +369,8 @@ export const koreaPanel = {
       // ⚠️ 잘렸으면 반드시 알린다. 조용히 자르면 "이만큼뿐"으로 읽힌다.
       if (lg.truncated) {
         h += `<p class="kr-note">${ko
-          ? `⚠️ 탐지 ${lg.totalDetected}회 중 최근 ${lg.count}회만 표시합니다.`
-          : `⚠️ Showing the most recent ${lg.count} of ${lg.totalDetected} detected.`}</p>`;
+          ? ` 탐지 ${lg.totalDetected}회 중 최근 ${lg.count}회만 표시합니다.`
+          : ` Showing the most recent ${lg.count} of ${lg.totalDetected} detected.`}</p>`;
       }
       h += ground.slice(-8).reverse().map(s =>
         `<div class="kr-row"><span>⚡ ${esc(hhmmss(s.tm))} <i>${s.lat.toFixed(2)}, ${s.lon.toFixed(2)}</i></span>`
@@ -422,8 +422,8 @@ export const koreaPanel = {
     return h + `<div class="kr-actions">${this._mapButton('lightning', '낙뢰 지도', 'Lightning map')}</div>`
       + this._src(lg)
       + `<p class="kr-note">${ko
-        ? '‘지금 비 오는 곳’ 숫자는 지상 관측소 실측이고, 위 HSR은 레이더 합성영상입니다. 성격이 다른 두 값을 섞어 평균내지 않습니다.'
-        : '“Raining now” numbers are ground-station observations; HSR above is composite radar imagery. The two are not averaged together.'}</p>`;
+        ? '자료 유형 · 지금 비 오는 곳: 지상 관측소 · HSR: 레이더 합성영상 · 각각 표시'
+        : 'Data type · raining now: ground stations · HSR: composite radar · displayed separately'}</p>`;
   },
 
   /* ── 상층 대기 관측 ───────────────────────────────────── */
@@ -453,8 +453,8 @@ export const koreaPanel = {
     h += `<details class="kr-geek"><summary>${ko ? '지수 읽는 법 · 덕후 노트' : 'How to read the indices'}</summary>`
       + Object.entries(now.fields || {}).map(([key, value]) => `<p><b>${esc(key.toUpperCase())}</b> ${esc(value)}</p>`).join('')
       + `<p>${ko
-        ? '백분위는 기상청 관측 이력 안에서 오늘 값보다 낮았던 날의 비율입니다. 위험 확률이나 기상 예보가 아닙니다.'
-        : 'Percentiles are the share of historical KMA observation days below today’s value; they are not risk probabilities or forecasts.'}</p></details>`;
+        ? '백분위 · 기상청 관측 이력 중 오늘 값보다 낮았던 날의 비율'
+        : 'Percentile · share of historical KMA observation days below today’s value'}</p></details>`;
     if (windProfile) {
       const profile = windProfileSummary(windProfile);
       const first = profile.stations[0];
@@ -498,8 +498,8 @@ export const koreaPanel = {
       + peaks.slice(0, 20).map(p =>
           `<div class="kr-row"><span>${esc(p.name)} <i>${Math.round(p.alt)}m</i></span><b>${n1(p.temp_c)}°C</b></div>`).join('')
       + `<p class="kr-note">${ko
-          ? '⚠️ 관측값이 아니라 예보입니다. 등산 계획은 기상청 공식 발표를 확인하세요.'
-          : '⚠️ These are forecasts, not observations. Check official KMA announcements before hiking.'}</p>`
+          ? ' 관측값이 아니라 예보입니다. 등산 계획은 기상청 공식 발표를 확인하세요.'
+          : ' These are forecasts, not observations. Check official KMA announcements before hiking.'}</p>`
       + this._src(d);
   },
 
@@ -554,8 +554,8 @@ export const koreaPanel = {
         /* ⚠️ 10~25°C 에서는 체감온도라는 개념을 쓰지 않는다. 왜 같은지 적어 준다. */
         if (f.kind === 'plain') {
           h += `<p class="kr-note">${ko
-            ? '기온이 10~25°C 사이라 체감온도를 따로 계산하지 않습니다 — 이 구간에서는 기온이 곧 체감온도입니다.'
-            : 'Between 10 and 25 °C no separate apparent temperature is defined.'}</p>`;
+            ? '10~25°C · 체감온도 표기값 = 기온'
+            : '10–25 °C · apparent-temperature display = air temperature'}</p>`;
         }
       }
     }
@@ -586,8 +586,8 @@ export const koreaPanel = {
       const miss = (lf.missingRegions || {})[key];
       if (miss && miss.length) {
         out += `<p class="kr-note">${ko
-          ? `⚠️ ${miss.join('·')}${hasJong(miss[miss.length - 1]) ? '은' : '는'} 이 지수 자료에 지역이 등록돼 있지 않아 값이 없습니다.`
-          : `⚠️ ${miss.join(', ')} are not registered in this dataset.`}</p>`;
+          ? ` ${miss.join('·')}${hasJong(miss[miss.length - 1]) ? '은' : '는'} 이 지수 자료에 지역이 등록돼 있지 않아 값이 없습니다.`
+          : ` ${miss.join(', ')} are not registered in this dataset.`}</p>`;
       }
       return out;
     };
@@ -645,10 +645,10 @@ export const koreaPanel = {
     }
 
     out += `<p class="kr-note">${ko
-      ? `⚠️ 지도에 칠한 대기질 색은 유럽 <b>모델값</b>이고 이 숫자는 <b>실측</b>입니다 — 둘이 다를 수 있습니다. `
+      ? ` 지도에 칠한 대기질 색은 유럽 <b>모델값</b>이고 이 숫자는 <b>실측</b>입니다 — 둘이 다를 수 있습니다. `
         + `전국 ${air.count}곳이 ${esc(air.observedKst || '')} 기준으로 잰 값이고, `
         + `등급은 <b>환경부가 매긴 것</b>을 그대로 옮깁니다.`
-      : `⚠️ The map's air colour is a European <b>model</b>; these are <b>measurements</b> from `
+      : ` The map's air colour is a European <b>model</b>; these are <b>measurements</b> from `
         + `${air.count} stations (${esc(air.observedKst || '')} KST). Grades are the Ministry of Environment's.`}</p>`;
     return out;
   },
@@ -675,12 +675,12 @@ export const koreaPanel = {
 
     out += `<p class="kr-note">${ko
       ? (hi > 0
-          ? `⚠️ 이 지역 산림의 <b>${n1(hi)}%</b>가 산림청 기준 <b>3~4단계</b>(높은 쪽)입니다.`
+          ? ` 이 지역 산림의 <b>${n1(hi)}%</b>가 산림청 기준 <b>3~4단계</b>(높은 쪽)입니다.`
           : `지금은 산림 대부분이 <b>1단계</b>(가장 낮은 쪽)입니다.`)
-        + ` ⚠️ 이 숫자는 <b>행정구역 전체의 평균</b>이라 능선·골짜기마다 다릅니다. `
+        + `  이 숫자는 <b>행정구역 전체의 평균</b>이라 능선·골짜기마다 다릅니다. `
         + `단계는 <b>산림청이 나눈 것</b>을 그대로 옮깁니다.`
-        + (mine ? '' : ' ⚠️ 위치를 몰라 전국 값을 보여드립니다.')
-      : (hi > 0 ? `⚠️ <b>${n1(hi)}%</b> of forest here is at the agency's steps 3–4.`
+        + (mine ? '' : '  위치를 몰라 전국 값을 보여드립니다.')
+      : (hi > 0 ? ` <b>${n1(hi)}%</b> of forest here is at the agency's steps 3–4.`
                 : 'Most forest is at step 1 (lowest).')
         + ' Values are area averages; the steps are the Forest Service’s own.'}</p>`;
     out += this._src(fire);

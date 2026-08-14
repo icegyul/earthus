@@ -34,6 +34,14 @@ log 권한, rights 승인, Supabase tenant A/B, provider 계약, 실기기 검�
 판매·Decision 공개·예약 실행·SNS 자동 게시 flag는 열지 않았다. 정본은
 [`earthus-v23/RELEASE-2026-08-14-N1-N7-CLOSEOUT.md`](earthus-v23/RELEASE-2026-08-14-N1-N7-CLOSEOUT.md)다.
 
+같은 날 PD가 공개 화면의 AI식 해명·면책 문구를 전부 걷어내도록 지시했다. 공개 JS 48개에서
+긴 방어문장과 경고 아이콘을 제거하고 출처·시각·자료 유형·상태 라벨로 바꿨다. 기상 안전은
+Hard Gate를 유지하면서 `공식 특보 · 추천 제한 / 현상 · 등급 · 지역 / 출처 · 시각`으로
+축약했다. 내부 `⚠️⚠️` 사고 기록, 공식 원문, 실제 안전 행동, 법정 고지는 보존했다.
+`tools/audit_defensive_copy.mjs --check` 0건, 운영 파일 48/48 바이트 일치, 운영 Chrome의
+첫 Earth·통합 장소·산불 상세를 확인했다. 정본은
+[`earthus-v23/RELEASE-2026-08-14-PUBLIC-COPY-CLEANUP.md`](earthus-v23/RELEASE-2026-08-14-PUBLIC-COPY-CLEANUP.md)다.
+
 EARTHUS 메뉴·레이어 표현·무료/유료 경계, AETHERUS 정보 구조·모바일·사진관,
 마케팅 스튜디오 공개 이야기관을 한 번에 개편하는 실행 정본은
 [`EARTHUS-AETHERUS-DEV-SPEC-2026-08-16.md`](EARTHUS-AETHERUS-DEV-SPEC-2026-08-16.md)다.

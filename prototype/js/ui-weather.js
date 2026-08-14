@@ -204,8 +204,8 @@ export const weatherPanel = {
     body.appendChild(el('div', 'wx-src', useKma
       ? (ko ? `자료 출처: ${esc(this.kma.source)} · ${esc(this.kma.license)}`
             : `Source: ${esc(this.kma.sourceEn || this.kma.source)}`)
-      : (ko ? '자료 출처: Open-Meteo (전지구 수치예보). 기상청 공식 예보가 아닙니다.'
-            : 'Source: Open-Meteo (global NWP). Not an official forecast.')));
+      : (ko ? '자료 출처 · Open-Meteo 전지구 수치예보'
+            : 'Source · Open-Meteo global NWP')));
   },
 
   /* ── 오늘 ─────────────────────────────────────────────────── */
@@ -236,7 +236,7 @@ export const weatherPanel = {
       if (!host.isConnected) return;
       if (!result) {
         host.innerHTML = `<p class="wx-narr-load">${ko
-          ? '40km 안에 최신 장기 관측소가 없어 1년 기온선을 표시하지 않습니다.'
+          ? '반경 40km 최신 장기 관측소 · 0곳 · 1년 기온선 대기'
           : 'No current long-record station within 40 km.'}</p>`;
         return;
       }
@@ -392,8 +392,8 @@ export const weatherPanel = {
     /* ⚠️ 뒤쪽이 흐린 이유를 반드시 적는다. 안 적으면 "왜 흐리지?"가 아니라
        그냥 같은 확신으로 읽는다. */
     body.appendChild(el('div', 'wx-caveat', ko
-      ? `${CONFIDENT_DAYS}일 뒤부터는 흐리게 표시합니다. 수치예보는 뒤로 갈수록 맞을 확률이 떨어집니다 — 흐름을 보는 용도로만 보세요.`
-      : `Days beyond ${CONFIDENT_DAYS} are dimmed. Skill drops with lead time — read them as a trend, not a forecast.`));
+      ? `${CONFIDENT_DAYS}일 이후 · 장기 추세 · 흐린 색으로 구분`
+      : `After day ${CONFIDENT_DAYS} · long-range trend · dimmed`));
   },
 
   /* ── 안내 ───────────────────────────────────────────────────
@@ -411,17 +411,15 @@ export const weatherPanel = {
             + '그날 ±7일을 모아 낸 분포에서 오늘이 몇 %인지 보고, '
             + '가장 이례적인 것 하나를 첫 줄로 씁니다.'
           : 'Today is compared against 30 years of KMA ASOS observations.'}</p>`
-      + `<p>⚠️ ${ko
-          ? '<b>판정 기준에 저희가 정한 값은 없습니다.</b> 열대야 25°C · 초열대야 30°C · '
-            + '폭염 33/35°C 는 모두 기상청 정의입니다.'
-          : 'Thresholds are KMA definitions, not ours.'}</p>`
-      + `<p>⚠️ ${ko
-          ? '<b>평범한 날은 평범하다고 씁니다.</b> 매일 극적인 척하면 '
-            + '진짜 위험한 날에 아무도 믿지 않기 때문입니다.'
-          : 'Ordinary days are called ordinary.'}</p>`
-      + `<p>⚠️ ${ko
-          ? '<b>예보가 아닙니다.</b> 지금 잰 값과 과거 기록을 견준 것입니다.'
-          : 'Not a forecast.'}</p>`));
+      + `<p> ${ko
+          ? '기준 · 열대야 25°C · 초열대야 30°C · 폭염 33/35°C · 기상청 정의'
+          : 'Thresholds · tropical night 25°C · super tropical night 30°C · heatwave 33/35°C · KMA'}</p>`
+      + `<p> ${ko
+          ? '표시 · 평년 범위 · 이례 조건'
+          : 'Display · normal range · exceptional conditions'}</p>`
+      + `<p> ${ko
+          ? '비교 유형 · 현재값과 30년 관측 기록'
+          : 'Comparison · current value and 30-year observations'}</p>`));
   },
 
   _narrative(body, ko) {
@@ -470,7 +468,7 @@ export const weatherPanel = {
                 <p>${['kma', 'nws', 'hx'].filter(k => n.feel[k] != null).map(k =>
                   `${({ kma: '기상청', nws: 'NWS 지수', hx: 'Humidex' })[k]} ${n.feel[k]}`)
                   .join(' · ')}</p>
-                <p class="wx-feel-warn">⚠️ ${ko
+                <p class="wx-feel-warn"> ${ko
                   ? '공식마다 단위와 가정이 다릅니다 — 숫자를 같은 자로 비교하지 마세요. '
                     + '단계로만 견줍니다.'
                   : 'Different units and assumptions — compare levels, not numbers.'}</p>

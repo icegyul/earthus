@@ -165,12 +165,10 @@ export const mountainPanel = {
       ? `<b>같은 산에 관측소가 있는 봉우리</b>입니다. 기상청 <b>예보</b>와
          실제로 <b>잰 값</b>을 나란히 놓았습니다 —
          둘이 다르면 그 차이를 적습니다.
-         <br>⚠️ 환산은 고도 1km 당 <b>${m.lapse}도</b>(ECMWF 기준)로 했고,
-         환산 거리가 ${mountain.EXTRAPOLATE_MAX_M}m 를 넘으면 아예 하지 않습니다.`
+         <br>환산 기준 · 고도 1km당 <b>${m.lapse}도</b>(ECMWF) · 최대 ${mountain.EXTRAPOLATE_MAX_M}m`
       : `<b>Peaks with a station on the same mountain.</b> The KMA <b>forecast</b>
          sits next to what was actually <b>measured</b>.
-         <br>⚠️ Extrapolated at <b>${m.lapse}°C/km</b> (ECMWF), and not at all
-         beyond ${mountain.EXTRAPOLATE_MAX_M} m.`}</div>`;
+         <br>Extrapolation · <b>${m.lapse}°C/km</b> (ECMWF) · max ${mountain.EXTRAPOLATE_MAX_M} m`}</div>`;
   },
 
   _card(p, ko) {
@@ -240,10 +238,9 @@ export const mountainPanel = {
             `<span class="sac" data-k="${x.key}">${esc(x.ko)} ${x.km}km</span>`).join('')}</p>` : ''}
           ${tr.named.length ? `<p class="mt-trailnames">${tr.named.map(esc).join(' · ')}</p>` : ''}
         ` : ''}
-        <p class="mt-trailwarn">⚠️ ${ko
-          ? 'OpenStreetMap 에 그려진 길입니다. <b>폐쇄·낙석·출입통제는 담겨 있지 않습니다</b> — '
-            + '국립공원 통제 구간이 그대로 그려져 있을 수 있습니다. 길 안내로 쓰지 마세요.'
-          : 'Paths as mapped in OpenStreetMap. Closures and access restrictions are not included.'}</p>
+        <p class="mt-trailwarn">${ko
+          ? '등산로 · OpenStreetMap · 폐쇄·출입통제는 국립공원 현장 정보 확인'
+          : 'Trails · OpenStreetMap · check park notices for closures and access'}</p>
       </div>`;
 
     return `
@@ -284,18 +281,13 @@ export const mountainPanel = {
     const m = mountain.meta || {};
     return `<p class="mt-foot">
       ${ko
-        ? `⚠️ <b>정상 값은 예보입니다.</b> 실측이 아닙니다.
-           85개 봉우리 중 같은 산에 관측소가 있는 곳은 <b>${m.withHigh ?? 0}곳</b>뿐이고,
-           나머지는 비교할 실측이 없습니다.
-           <br>⚠️ 위에 적은 표시 기준(바람 ${mountain.MARK.windMs} m/s,
-           고도차 ${mountain.MARK.dropC}도 등)은 <b>저희가 정한 값</b>이며
-           기상청 특보 기준이 아닙니다.
-           <br><b>등산 계획은 반드시 기상청 공식 발표를 확인하세요.</b>
+        ? `정상 예보 · 실측 비교 봉우리 <b>${m.withHigh ?? 0}/85곳</b>
+           <br>표시 기준 · 바람 ${mountain.MARK.windMs}m/s · 고도차 ${mountain.MARK.dropC}도
+           <br><b>등산 전 기상청 공식 발표를 확인하세요.</b>
            <br><small>${esc(m.source || '')} · ${esc(m.obsSource || '')}</small>`
-        : `⚠️ <b>Summit values are forecasts, not measurements.</b>
-           Only <b>${m.withHigh ?? 0}</b> of 85 peaks have a station on the same mountain.
-           <br>⚠️ The highlight thresholds above are <b>ours</b>, not official KMA warning criteria.
-           <br><b>Always check official KMA announcements before hiking.</b>
+        : `Summit forecast · measured comparison on <b>${m.withHigh ?? 0}/85 peaks</b>
+           <br>Display thresholds · wind ${mountain.MARK.windMs}m/s · elevation delta ${mountain.MARK.dropC}°C
+           <br><b>Check official KMA announcements before hiking.</b>
            <br><small>${esc(m.source || '')} · ${esc(m.obsSource || '')}</small>`}
     </p>`;
   },

@@ -63,17 +63,11 @@ export const migbirdPanel = {
     body.innerHTML = '';
     const names = (_data.species || []).map(([n]) => n);
 
-    /* ── ⚠️ 맨 위: 이게 경로가 아니라는 것 ─────────────────── */
     body.appendChild(el('div', 'mb-warn',
-      `<b>${ko ? '⚠️ 날아간 길이 아닙니다' : '⚠️ Not flight paths'}</b>`
+      `<b>${ko ? '이동 기록 표시' : 'Movement record display'}</b>`
       + `<p>${ko
-        ? '자료에는 <b>떠난 곳</b>과 <b>도착한 곳</b> 두 지점만 있습니다. '
-          + '가운데를 이은 선은 보기 쉬우라고 그은 것이지 실제 경로가 아닙니다.<br>'
-          + '<b>⚠️ 도착지는 원으로 그렸습니다.</b> "중국 지린성"처럼 성(省) 단위로만 '
-          + '적혀 있어서입니다 — 지린성은 남한의 두 배입니다. '
-          + '<b>원이 클수록 "이 안 어딘가"라는 뜻</b>이지, 가운데에 갔다는 뜻이 아닙니다.'
-        : 'Only departure and arrival places are recorded. Lines are drawn for legibility, '
-          + 'not actual routes. Arrival areas are circles because the source gives provinces.'}</p>`));
+        ? '출발·도착 두 지점을 직선으로 연결 · 도착 범위는 원의 반경으로 표시'
+        : 'Departure and arrival joined by a straight line · arrival extent shown as a radius'}</p>`));
 
     const sum = el('div', 'sb-sum');
     const yrs = _data.years || [];
@@ -180,7 +174,7 @@ export const migbirdPanel = {
             ? `${p.name} — 도착 ${p.n}건`
             : `${p.name} — ${p.n} arrivals`)
             + (birdsAt(p.name) ? ` · ${birdsAt(p.name)}` : '')
-            + (ko ? ` · ⚠️ 반경 약 ${p.r}km 안 어딘가입니다` : ` · within ~${p.r} km`),
+            + (ko ? ` · 범위 반경 약 ${p.r}km` : ` · radius ~${p.r} km`),
           position: C.Cartesian3.fromDegrees(p.lon, p.lat),
           ellipse: {
             semiMajorAxis: p.r * 1000, semiMinorAxis: p.r * 1000,
@@ -200,10 +194,7 @@ export const migbirdPanel = {
           },
           description: `<div style="font:14px/1.7 -apple-system,sans-serif"><b>${esc(p.name)}</b><br>`
             + `${ko ? '도착 기록' : 'Arrivals'} ${p.n}${ko ? '건' : ''}<hr style="opacity:.2">`
-            + `<b style="color:#f0a878">⚠️ ${ko
-                ? `반경 약 ${p.r}km 원입니다. <b>이 안 어딘가</b>라는 뜻이지 `
-                  + '가운데에 갔다는 뜻이 아닙니다.'
-                : `Circle of ~${p.r} km — somewhere inside, not the centre.`}</b></div>`,
+            + `<b>${ko ? `도착 범위 · 반경 약 ${p.r}km` : `Arrival extent · radius ~${p.r} km`}</b></div>`,
         }));
       }
     });
@@ -244,9 +235,7 @@ export const migbirdPanel = {
         description: `<div style="font:14px/1.7 -apple-system,sans-serif">`
           + `<b>${esc(t.spc)}</b> <small style="opacity:.6">${esc(t.tag)}</small><hr style="opacity:.2">`
           + `${esc(t.from)} → ${esc(t.to)}<br>${ko ? '떠난 날' : 'Left'} ${esc(t.on)} (${esc(t.yr)})`
-          + `<hr style="opacity:.2"><b style="color:#f0a878">⚠️ ${ko
-              ? '두 지점만 있는 자료입니다. 이 선은 실제로 날아간 길이 아닙니다.'
-              : 'Only two points are recorded — this line is not the actual route.'}</b></div>`,
+          + `<hr style="opacity:.2"><b>${ko ? '출발·도착 직선 연결' : 'Straight line between departure and arrival'}</b></div>`,
       }));
     });
 

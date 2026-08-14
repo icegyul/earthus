@@ -352,8 +352,8 @@ export const sourceNote = {
       ? `${name} (${lightningInfo.area})` : name)}</b> · ${sourceHtml}`);
     if (id === 'landobs' && landMeta?.failed?.length) {
       bits.push(ko
-        ? `<i>⚠️ 지금 못 받은 관측망: <b>${esc(landMeta.failed.join(' · '))}</b>. 나머지 자료만 표시합니다.</i>`
-        : `<i>⚠️ Observation networks unavailable now: <b>${esc(landMeta.failed.join(' · '))}</b>. Showing the remaining sources only.</i>`);
+        ? `<i>미수신 관측망 · <b>${esc(landMeta.failed.join(' · '))}</b></i>`
+        : `<i>Unavailable networks · <b>${esc(landMeta.failed.join(' · '))}</b></i>`);
     }
 
     if (made && !Number.isNaN(made.getTime())) {
@@ -365,8 +365,8 @@ export const sourceNote = {
           ? `${made.getMonth() + 1}월 ${made.getDate()}일 촬영${days > 0 ? ` · ${days}일 전` : ''}`
           : `imaged ${made.toISOString().slice(0, 10)}${days > 0 ? ` · ${days}d ago` : ''}`);
         bits.push(ko
-          ? '<i>각 지점을 <b>현지 낮 1시 30분경</b>에 찍어 이어 붙인 하루치 한 장입니다. 전 지구를 같은 순간에 찍은 게 아닙니다.</i>'
-          : '<i>One daily mosaic, each place imaged around <b>13:30 its own local time</b> — not the whole Earth at one instant.</i>');
+          ? '<i>촬영 방식 · 각 지점 <b>현지 낮 1시 30분경</b> · 하루 모자이크</i>'
+          : '<i>Capture · each place around <b>13:30 local time</b> · daily mosaic</i>');
         /* ⚠️ 빈 구간이 있다는 사실을 숨기지 않는다. 실측: 어느 날짜든 평균 12%.
            띠 사이가 안 닿는 구간이라 날짜를 바꿔도 없어지지 않는다. */
         const gap = (await import('./layers/imagery.js')).imagery._tcGap;
@@ -382,11 +382,11 @@ export const sourceNote = {
             ? '<i><b>대기 기둥 전체</b>에 든 수증기를 모두 물로 만들었을 때의 깊이입니다. <b>1 kg/m² = 1 mm</b>로 표시합니다.</i>'
             : '<i>Water vapour through the <b>entire atmospheric column</b>, expressed as liquid depth. <b>1 kg/m² = 1 mm</b>.</i>');
           bits.push(ko
-            ? '<i>⚠️ <b>NOAA GFS 모델 분석장</b>이며 위성 관측영상이나 강수량이 아닙니다. 수증기가 많다는 사실만으로 비가 온다고 판정하지 않습니다.</i>'
-            : '<i>⚠️ A <b>NOAA GFS model analysis</b>, not satellite imagery or rainfall. High moisture alone does not mean rain.</i>');
+            ? '<i>자료 유형 · <b>NOAA GFS 모델 분석</b></i>'
+            : '<i>Data type · <b>NOAA GFS model analysis</b></i>');
           bits.push(ko
-            ? '<i>⚠️ 동아시아·서태평양(20~55°N · 90~180°E) <b>1° 격자(약 111km)</b>입니다. 범위 밖의 빈 곳은 건조가 아니라 <b>자료 범위 밖</b>입니다.</i>'
-            : '<i>⚠️ A <b>1° grid (~111 km)</b> over East Asia and the western Pacific (20–55°N, 90–180°E). Blank outside means <b>out of coverage</b>, not dry.</i>');
+            ? '<i>범위 · 동아시아·서태평양 20~55°N, 90~180°E · <b>1° 격자(약 111km)</b></i>'
+            : '<i>Coverage · East Asia and western Pacific 20–55°N, 90–180°E · <b>1° grid (~111 km)</b></i>');
           const { gridOverlay } = await import('./gridoverlay.js');
           const tpwGrid = await gridOverlay.load('tpw');
           const run = tpwGrid?.issuedAt?.slice(11, 16);
@@ -403,11 +403,8 @@ export const sourceNote = {
              실측(2026-08-03): 강릉 앞 낮은 구름 꼭대기 21.6°C, 바다 25°C — **3°C 차이**다.
              적외 11.2㎛ 의 한계이지 이 위성의 성능이 아니다. 히마와리 적외도 똑같다. */
           bits.push(ko
-            ? '<i>⚠️ <b>낮은 구름은 잘 안 보입니다.</b> 바다와 온도가 몇 도밖에 차이 나지 않기 때문입니다 '
-              + '— 적외선의 한계입니다. 낮이라면 <b>천리안 구름(낮)</b>이나 '
-              + '<b>천리안 구름(낮·전지구)</b>가 훨씬 잘 보입니다.</i>'
-            : '<i>⚠️ <b>Low cloud is hard to see</b> — only a few degrees colder than the sea. '
-              + 'In daylight use the visible channel instead.</i>');
+            ? '<i>적외 11.2㎛ · 낮은 구름은 대비가 낮음 · 낮에는 <b>가시광</b> 추천</i>'
+            : '<i>Infrared 11.2µm · low-cloud contrast is limited · use <b>visible</b> by day</i>');
         }
         if (key === 'gk2a_nightlow') {
           const { imagery } = await import('./layers/imagery.js');
@@ -416,14 +413,14 @@ export const sourceNote = {
             ? '<i>두 적외 채널의 <b>밝기온도 차(11.2㎛ − 3.8㎛)</b>가 1.5K를 넘는 밤의 화소만 표시합니다. 밝을수록 차이가 큽니다.</i>'
             : '<i>Night pixels where the <b>brightness-temperature difference (11.2µm − 3.8µm)</b> exceeds 1.5 K. Brighter means a larger difference.</i>');
           if (Number.isFinite(signal)) bits.push(ko
-            ? `<i>이번 영상에서 문턱을 넘은 화소는 전체 격자의 <b>${signal.toFixed(1)}%</b>입니다. 등위도 격자 비율이라 실제 구름 면적은 아닙니다.</i>`
-            : `<i><b>${signal.toFixed(1)}%</b> of this image grid exceeds the display threshold. This is an equirectangular pixel share, not cloud area.</i>`);
+            ? `<i>문턱 초과 화소 · 전체 등위도 격자의 <b>${signal.toFixed(1)}%</b></i>`
+            : `<i>Pixels above threshold · <b>${signal.toFixed(1)}%</b> of the equirectangular grid</i>`);
           bits.push(ko
-            ? '<i>⚠️ 물방울로 된 낮은 구름의 <b>후보</b>입니다. 위성은 구름 꼭대기만 보므로 <b>지면에 닿은 안개인지 판정할 수 없고</b>, 위에 높은 구름이 있으면 그 아래도 못 봅니다.</i>'
-            : '<i>⚠️ A <b>candidate signal</b> for low water cloud. The satellite sees only cloud tops, so it <b>cannot tell fog from low stratus</b>, and high cloud hides anything below.</i>');
+            ? '<i>분류 · <b>저층 수적운 후보</b> · 구름 꼭대기 신호</i>'
+            : '<i>Class · <b>low water-cloud candidate</b> · cloud-top signal</i>');
           bits.push(ko
-            ? '<i>⚠️ 3.8㎛에 햇빛이 섞이는 <b>낮은 자료 없음</b>으로 비웁니다. 빈 곳이 맑다는 뜻은 아닙니다.</i>'
-            : '<i>⚠️ <b>No data in daylight</b>, where sunlight contaminates 3.8µm. Blank does not mean clear.</i>');
+            ? '<i>운영 시간 · <b>야간 전용</b></i>'
+            : '<i>Availability · <b>night only</b></i>');
         }
         if (key === 'gk2a_vis_fd') {
           /* ⚠️⚠️ 이 레이어가 왜 생겼는지가 곧 사용자에게 필요한 설명이다.
@@ -435,15 +432,11 @@ export const sourceNote = {
             : '<i>Same satellite as the infrared layer, but this is <b>visible light</b> — '
               + 'the same thing Himawari’s cloud layer shows.</i>');
           bits.push(ko
-            ? '<i>⚠️ <b>천리안 구름(밤에도)에서 안 보이던 낮은 구름이 여기서는 보입니다.</b> '
-              + '적외는 구름 꼭대기 <b>온도</b>로 찾는데, 낮은 구름은 지표와 온도가 거의 같아 '
-              + '원리상 안 잡힙니다 (실측: 서울 위 구름이 지표보다 5°C도 안 찼습니다).</i>'
-            : '<i>⚠️ Low cloud that the infrared layer misses shows up here. Infrared finds cloud by '
-              + 'temperature, and low cloud is nearly as warm as the ground.</i>');
+            ? '<i>가시광 · 낮은 구름의 형태와 질감 표시</i>'
+            : '<i>Visible light · low-cloud shape and texture</i>');
           bits.push(ko
-            ? '<i>⚠️ <b>가시광이라 밤에는 비어 보입니다.</b> 고장이 아닙니다 — '
-              + '그때는 <b>천리안 구름(밤에도)</b>을 쓰세요.</i>'
-            : '<i>⚠️ Visible light — blank at night. Use the infrared layer then.</i>');
+            ? '<i>운영 시간 · 낮 전용 · 밤에는 <b>천리안 구름(밤에도)</b></i>'
+            : '<i>Availability · daylight only · use infrared at night</i>');
         }
         if (key === 'gk2a_vis') {
           bits.push(ko
@@ -451,8 +444,8 @@ export const sourceNote = {
               + '낮은 구름도 그대로 보입니다.</i>'
             : '<i><b>0.5 km</b> — the sharpest cloud imagery here (Himawari 1 km, global composite 2.4 km).</i>');
           if (id !== 'gk2aAuto') bits.push(ko
-            ? '<i>⚠️ <b>가시광이라 밤에는 비어 보입니다.</b> 고장이 아닙니다 — 그때는 <b>천리안 구름</b>(적외)을 쓰세요.</i>'
-            : '<i>⚠️ Visible light — blank at night. Use the infrared channel then.</i>');
+            ? '<i>운영 시간 · 낮 전용 · 밤에는 <b>천리안 구름</b>(적외)</i>'
+            : '<i>Availability · daylight only · use infrared at night</i>');
         }
         if (id === 'gk2aAuto') {
           const { imagery } = await import('./layers/imagery.js');
@@ -460,13 +453,13 @@ export const sourceNote = {
             ? `<i>한국의 태양고도에 맞춰 <b>${imagery._gk2aAutoMode === 'infrared' ? '밤 적외' : '낮 가시광'}</b> 채널을 자동 선택했습니다. <b>위성 전면</b>을 넓게 보며 동아시아는 2km 타일을 겹치고, 한반도로 확대하면 ${imagery._gk2aDetailOn ? '<b>현재 0.5km 원본 타일</b>' : '0.5km 원본 타일'}로 바뀝니다.</i>`
             : `<i>Automatically using <b>${imagery._gk2aAutoMode === 'infrared' ? 'night infrared' : 'daylight visible'}</b>. The <b>full disk</b> stays visible, with 2 km East Asia tiles and native 0.5 km tiles when zoomed into Korea.</i>`);
           if (imagery._gk2aAutoMode === 'infrared') bits.push(ko
-            ? '<i>⚠️ 밤에는 0.5km 가시광 원본이 유효하지 않아 2km 적외를 그대로 씁니다. 없는 야간 0.5km 자료를 확대해 표시하지 않습니다.</i>'
-            : '<i>⚠️ At night the 0.5 km visible feed is not valid, so the 2 km infrared feed remains. No fake night upscaling.</i>');
+            ? '<i>야간 채널 · 적외 2km</i>'
+            : '<i>Night channel · infrared 2 km</i>');
         }
         if (id === 'gk2aIR') {
           bits.push(ko
-            ? '<i><b>전면은 8km</b>로 태풍의 넓은 흐름을 보며, <b>동아시아(23~47°N · 114~150°E)는 같은 관측시각의 2km 타일</b>을 그 위에 겹쳐 봅니다. 전면 원본을 큰 PNG 하나로 확대해 흐리게 만든 것이 아닙니다.</i>'
-            : '<i><b>Full disk is 8 km</b> for wide cyclone context; <b>East Asia (23–47°N, 114–150°E) overlays same-time native 2 km tiles</b>. This is not a blurred upscale of one large PNG.</i>');
+            ? '<i>해상도 · 전면 8km · 동아시아 23~47°N, 114~150°E 2km · 같은 관측시각</i>'
+            : '<i>Resolution · full disk 8 km · East Asia 23–47°N, 114–150°E at 2 km · same observation time</i>');
         }
         if (key === 'gk2a_wv') {
           bits.push(ko
@@ -474,8 +467,8 @@ export const sourceNote = {
               + '어두운 곳이 마른 공기가 내려앉는 자리입니다.</i>'
             : '<i>Moisture in the <b>mid-to-upper troposphere</b>, not at the ground.</i>');
           bits.push(ko
-            ? '<i>⚠️ 구름이 없어도 밝게 나옵니다 — 이건 구름 그림이 아니라 <b>공기의 흐름</b>입니다.</i>'
-            : '<i>⚠️ Bright without cloud — this shows airflow, not cloud.</i>');
+            ? '<i>표시 대상 · <b>중상층 수증기 흐름</b></i>'
+            : '<i>Display · <b>mid-to-upper-level moisture flow</b></i>');
         }
         /* ⚠️ 덮는 범위는 **채널마다 다르다.** 하나로 적으면 둘 중 하나는 거짓말이 된다. */
         if (key.startsWith('gk2a_')) {
@@ -491,14 +484,14 @@ export const sourceNote = {
             ? (id === 'gk2aAuto'
               ? '<i><b>위성 전면</b>(동아시아·서태평양·호주) 위에 <b>동아시아 2km</b> 상세를 겹쳐 봅니다.</i>'
               : area === 'LA'
-              ? '<i>⚠️ <b>한반도 주변만</b> 덮습니다 (32~40°N · 123.5~131.5°E). 그 밖은 비어 있습니다.</i>'
+              ? '<i>범위 · <b>한반도 주변</b> 32~40°N, 123.5~131.5°E</i>'
               : area === 'EA'
                 ? '<i><b>동아시아 2km</b> 영역입니다 (23~47°N · 114~150°E).</i>'
                 : '<i>위성이 보는 <b>전면</b>입니다 — 동아시아·서태평양·호주까지. 지구 반대편은 이 위성이 못 봅니다.</i>')
             : (id === 'gk2aAuto'
               ? '<i><b>Full-disk</b> coverage (East Asia, western Pacific and Australia) with a <b>2 km East Asia</b> detail overlay.</i>'
               : area === 'LA'
-              ? '<i>⚠️ Korea only (32–40°N, 123.5–131.5°E).</i>'
+              ? '<i>Coverage · Korea 32–40°N, 123.5–131.5°E</i>'
               : area === 'EA'
                 ? '<i><b>East Asia 2 km</b> (23–47°N, 114–150°E).</i>'
                 : '<i>Full disk — East Asia to Australia. The other side of Earth is not visible to this satellite.</i>'));
@@ -510,17 +503,14 @@ export const sourceNote = {
             ? '<i>구름 <b>꼭대기 온도</b>입니다. 색이 진할수록 꼭대기가 차고, 그런 곳은 대개 대류가 강해 <b>소나기·뇌우</b>가 있습니다.</i>'
             : '<i><b>Cloud-top temperature.</b> Deeper colour = colder top, usually strong convection with showers or thunderstorms.</i>');
           bits.push(ko
-            ? '<i>⚠️ 강수량 자체는 아닙니다 — 높고 얇은 구름(권운)도 차갑습니다.</i>'
-            : '<i>⚠️ Not rainfall itself — thin high cirrus is cold too.</i>');
+            ? '<i>표시값 · 구름 꼭대기 온도</i>'
+            : '<i>Display value · cloud-top temperature</i>');
           /* ⚠️⚠️ 천리안 적외에는 이 안내를 적어 두고 **히마와리 적외에는 빠뜨렸다.**
              같은 파장, 같은 한계인데 한쪽만 적으면 "천리안만 못 본다"로 읽힌다.
              실제로 그렇게 읽혔다 — 받은 지적이 그것이었다. */
           bits.push(ko
-            ? '<i>⚠️ <b>낮은 구름은 잘 안 보입니다.</b> 바다·땅과 온도가 몇 도밖에 차이 나지 '
-              + '않기 때문입니다 — 적외선이면 어느 위성이든 같습니다(천리안도 마찬가지). '
-              + '낮이라면 <b>가시광</b> 레이어가 훨씬 잘 보입니다.</i>'
-            : '<i>⚠️ <b>Low cloud is hard to see</b> — only a few degrees from the surface. '
-              + 'This is true of any infrared channel, on any satellite. Use a visible layer by day.</i>');
+            ? '<i>적외 채널 · 낮은 구름 대비가 낮음 · 낮에는 <b>가시광</b> 추천</i>'
+            : '<i>Infrared channel · limited low-cloud contrast · use <b>visible</b> by day</i>');
         }
         if (key === 'clouds_hima') {
           /* ⚠️ "왜 갑자기 촘촘해졌나"에 답한다. 자료가 바뀐 걸 모르면
@@ -540,14 +530,14 @@ export const sourceNote = {
               : '<i>Zoomed in, so this is the <b>1 km · 10 min</b> feed (the global one is 2.4 km · hourly). <b>Visible light</b>, so it shows only in daylight.</i>'));
           if (night) {
             bits.push(ko
-              ? '<i>⚠️ 적외의 색은 <b>강수량이 아니라 구름 꼭대기 온도</b>입니다. 낮은 구름은 지표와 온도가 비슷해 잘 안 보일 수 있습니다.</i>'
-              : '<i>⚠️ Infrared colours show <b>cloud-top temperature, not rainfall</b>. Low cloud can be hard to distinguish from the similarly warm surface.</i>');
+              ? '<i>표시값 · <b>구름 꼭대기 온도</b> · 낮은 구름 대비 낮음</i>'
+              : '<i>Display value · <b>cloud-top temperature</b> · limited low-cloud contrast</i>');
           }
           /* ⚠️ 구역 밖으로 나가면 아무것도 안 보인다. 그 사실을 미리 알린다. */
           if (id === 'himawari') {
             bits.push(ko
-              ? '<i>⚠️ 이 위성은 전 지구를 못 봅니다. 동아시아를 벗어나면 화면이 비어 보입니다.</i>'
-              : '<i>⚠️ This satellite does not see the whole Earth — leave East Asia and the view goes empty.</i>');
+              ? '<i>범위 · 동아시아·서태평양</i>'
+              : '<i>Coverage · East Asia and western Pacific</i>');
           }
         }
         const every = src?.every || 60;
@@ -565,15 +555,15 @@ export const sourceNote = {
        같은 시각의 독립 표본처럼 평균하면 거짓이다. 현재량과 낮 형태 참고를 분리한다. */
     if (['clouds', 'truecolor', 'gk2aAuto', 'himawari'].includes(id)) {
       bits.push(ko
-        ? '<i><b>4위성 교차확인:</b> 현재 구름량은 NOAA·천리안2A·히마와리9 <b>3종</b>의 시각과 겹치는 구름대를 대조합니다. 수오미 NPP <b>1종</b>은 화면에 적힌 최신 완성일의 낮 형태 참고이며 현재량 계산에는 넣지 않습니다. 시각이 다른 영상을 평균하지 않습니다.</i>'
-        : '<i><b>Four-satellite cross-check:</b> current cloud extent is checked across the timestamps and overlapping patterns of <b>three</b> feeds — NOAA, Chollian-2A and Himawari-9. Suomi NPP is <b>one</b> latest-complete-day reference whose date is shown on screen, and is excluded from current-amount calculations. Different observation times are never averaged.</i>');
+        ? '<i>교차확인 · NOAA · 천리안2A · 히마와리9 현재 구름대 · 수오미 NPP 최신 완성일 참고</i>'
+        : '<i>Cross-check · NOAA · Chollian-2A · Himawari-9 current cloud bands · latest-complete Suomi NPP reference</i>');
     }
     if (['clouds', 'himawari', 'himaIR', 'gk2aAuto', 'gk2aIR', 'gk2aNightLow',
          'gk2aVIS', 'gk2aVISfd', 'gk2aVISea', 'gk2aIRea'].includes(id)) {
       const resolved = visualEffects.resolved();
       bits.push(ko
-        ? `<i>시각 효과 · <b>${resolved === 'off' ? '끔' : resolved === 'low' ? '낮음' : '자동'}</b> · 관측값이나 구름 높이가 아니며 판단 자료로 쓰지 않습니다.</i>`
-        : `<i>Visual effect · <b>${resolved}</b> · not an observation or cloud-height value, and never used for decisions.</i>`);
+        ? `<i>시각 효과 · <b>${resolved === 'off' ? '끔' : resolved === 'low' ? '낮음' : '자동'}</b> · 표시 전용</i>`
+        : `<i>Visual effect · <b>${resolved}</b> · display only</i>`);
     }
 
     /* ── 수치 범례 ────────────────────────────────────────────────
@@ -628,10 +618,8 @@ export const sourceNote = {
         const names = bad.map(k => ko ? SAFE[k] : k).join(' · ');
         const t = registry.lastOk?.[bad[0]];
         bits.push(ko
-          ? `<i>⚠️ <b>${names} 자료를 지금 확인할 수 없습니다</b> — 빈 화면이 "사건 없음"이라는 뜻이 아닙니다.`
-            + (t ? ` 마지막으로 받은 시각 ${hhmm(new Date(t))}.` : '') + '</i>'
-          : `<i>⚠️ <b>Cannot reach ${names} data</b> — an empty map does not mean "nothing is happening".`
-            + (t ? ` Last good ${hhmm(new Date(t))}.` : '') + '</i>');
+          ? `<i>자료 상태 · <b>${names} 연결 실패</b>${t ? ` · 마지막 수신 ${hhmm(new Date(t))}` : ''}</i>`
+          : `<i>Data status · <b>${names} unavailable</b>${t ? ` · last received ${hhmm(new Date(t))}` : ''}</i>`);
       }
     } catch (_) { /* 레지스트리가 아직 없으면 넘어간다 */ }
 

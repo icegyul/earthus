@@ -186,7 +186,7 @@ export const lightning = {
       sources: j.sources || [{ id: 'KMA', ko: '기상청' }],
       degraded: only === 'KMA',
       note: j.note || {
-        ko: '최근 낙뢰입니다. ⚠️ 지금은 한국 자료만 들어오고 있습니다.',
+        ko: '최근 낙뢰입니다.  지금은 한국 자료만 들어오고 있습니다.',
         en: 'Recent lightning. Korea only at the moment.',
       },
     };

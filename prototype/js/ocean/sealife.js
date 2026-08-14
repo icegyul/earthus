@@ -89,7 +89,7 @@ export const seaLife = {
     const size = document.createElement('p');
     size.textContent = `${sizeLabel(item, ko)}: ${formatSize(item, ko)}`;
     const warning = document.createElement('p');
-    warning.textContent = ko ? '관측·문헌 기록 기반 — 이 자리에 지금 있다는 뜻이 아닙니다.' : 'Based on observation and literature records — not evidence that it is here now.';
+    warning.textContent = ko ? '자료 유형 · 관측·문헌 기록' : 'Data type · observation and literature records';
     const note = document.createElement('p'); note.textContent = item.note[ko ? 'ko' : 'en'];
     const sources = document.createElement('p');
     const depthLink = document.createElement('a'); depthLink.href = item.depthSourceUrl;
@@ -104,11 +104,11 @@ export const seaLife = {
 
 function depthLabel(item, ko) {
   if (item.depthKind !== 'observation-depth') {
-    return ko ? '문헌 범위 · 현위치 아님' : 'Literature range · not a live sighting';
+    return ko ? '문헌 깊이 범위' : 'Literature depth range';
   }
   return ko
     ? `단일 관측 · ±${item.displayWindowM}m 탐색창 · 현위치 아님`
-    : `Single record · ±${item.displayWindowM}m discovery window · not live`;
+    : `Single record · ±${item.displayWindowM}m discovery window`;
 }
 
 function observationRank(item) {

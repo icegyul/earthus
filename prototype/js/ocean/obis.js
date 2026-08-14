@@ -59,17 +59,15 @@ export const obisSummary = {
     }
     if (this.current.error) {
       this.root.append(this.p(ko
-        ? 'OBIS 해역 요약을 불러오지 못했습니다. 자료가 0건이라는 뜻이 아닙니다.'
-        : 'The OBIS area summary is unavailable. This does not mean there are zero records.'));
-      this.root.append(this.limit(ko ? '기록 없음 ≠ 생물 없음' : 'No records ≠ no life'));
+        ? '자료 상태 · OBIS 해역 요약 연결 실패'
+        : 'Data status · OBIS area summary unavailable'));
       return;
     }
     const cell = this.current.cell;
     if (!cell) {
       this.root.append(this.p(ko
-        ? '이 5도 해역은 이번 요약 대상에 아직 포함되지 않았습니다. 자료 없음으로 판정하지 않습니다.'
-        : 'This 5-degree cell is not yet included in this summary. It is not classified as having no records.'));
-      this.root.append(this.limit(ko ? '기록 없음 ≠ 생물 없음' : 'No records ≠ no life'));
+        ? '자료 범위 · 현재 OBIS 5도 요약 범위 밖'
+        : 'Coverage · outside the current OBIS 5-degree summary'));
       return;
     }
     const bounds = cell.bounds;
@@ -97,8 +95,8 @@ export const obisSummary = {
       ? `기록 연도 ${years} · API 조회 ${cell.retrievedAt.slice(0, 10)} · 표본 n=${cell.records.toLocaleString()}`
       : `Record years ${years} · API accessed ${cell.retrievedAt.slice(0, 10)} · sample n=${cell.records.toLocaleString()}`));
     this.root.append(this.limit(ko
-      ? '기록 없음 ≠ 생물 없음. 조사 시기·장소·노력이 고르지 않으며, 기록 수는 개체수나 지금의 분포가 아닙니다.'
-      : 'No records ≠ no life. Sampling is uneven across time, place and effort; counts are not abundance or current distribution.'));
+      ? '자료 특성 · 조사 기록 수 · 조사 시기·장소·노력에 따라 분포'
+      : 'Data type · survey-record counts · sampling varies by time, place and effort'));
     const links = document.createElement('p'); links.className = 'obis-links';
     links.append(this.link('https://api.obis.org/', ko ? 'OBIS API·출처' : 'OBIS API & source'),
       document.createTextNode(' · '),

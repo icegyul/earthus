@@ -101,12 +101,12 @@ export const stationSheet = {
         wrap.appendChild(row);
       });
       wrap.appendChild(el('p', 'st-note', ko
-        ? '⚠️ 위 5일치 그래프는 이 관측소가 잰 값이 아니라, **이 좌표에 대한 기상 모델 재구성값**(Open-Meteo)입니다. 위쪽 실황은 관측소 계기 값입니다. 둘의 출처가 다릅니다.'
-        : '⚠️ The five-day charts are **a weather-model reconstruction for this coordinate** (Open-Meteo), not readings from this station. The live values above come from the station instrument. Different sources.'));
+        ? '5일 그래프 · 이 좌표의 Open-Meteo 기상 모델 재구성값 · 위 실황: 관측소 계기값'
+        : 'Five-day chart · Open-Meteo model reconstruction for this coordinate · live values above: station instruments'));
     } else if (data.err) {
       wrap.appendChild(el('p', 'st-note', ko
-        ? `5일치를 불러오지 못했습니다 (${esc(data.err)}). 없는 값을 지어내지 않습니다.`
-        : `Could not load the five-day history (${esc(data.err)}). We do not fabricate missing values.`));
+        ? `5일 자료 연결 실패 · ${esc(data.err)}`
+        : `Five-day data unavailable · ${esc(data.err)}`));
     }
 
     // ── 주변 사진 ──
@@ -123,8 +123,8 @@ export const stationSheet = {
       wrap.appendChild(grid);
       /* ⚠️ 이 문장을 빼면 안 된다. 사진이 관측소를 찍은 것이라고 오해하게 된다. */
       wrap.appendChild(el('p', 'st-note', ko
-        ? '⚠️ 관측소를 찍은 사진이 아니라 **이 좌표 반경 3km 안에서 찍힌 공개 사진**입니다 (Wikimedia Commons). 저작자와 라이선스는 각 사진에 표시했습니다.'
-        : '⚠️ These are **public photos taken within 3 km of this coordinate** (Wikimedia Commons) — not photographs of the station itself. Author and licence are shown on each.'));
+        ? 'Wikimedia Commons · 이 좌표 반경 3km 공개 사진 · 저작자·라이선스 개별 표시'
+        : 'Wikimedia Commons · public photos within 3 km of this coordinate · author and licence shown per image'));
     }
   },
 

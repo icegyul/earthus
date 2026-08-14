@@ -465,12 +465,12 @@ export const chartsPanel = {
     body.appendChild(el('div', 'ch-leg', legendOf(s3, ko)));
     body.appendChild(el('p', 'ch-note', esc(rangeNote(s3, ko, I.source))));
     body.appendChild(el('p', 'ch-note', mk(ko
-      ? `단위는 백만 km². ⚠️ **면적(extent)** 입니다 — 해빙 농도 15% 이상인 격자칸의 넓이를 통째로 센 값이고, 실제 얼음이 덮은 넓이(area)와는 20~30% 차이가 납니다.\n`
-        + `⚠️ 1979~1987년은 위성이 이틀에 한 번 훑어 빈 날이 많습니다. 그 날을 앞뒤 값으로 메우지 않았습니다 — 메우면 그때도 자료가 촘촘했던 것처럼 보입니다.\n`
-        + `⚠️ 올해 곡선은 ${esc(poles[this._pole]?.last || '')}까지입니다. ${this._pole === 'antarctic' ? '남극 최대는 9월이라 올해 최댓값은 아직 나오지 않았습니다.' : '북극 최소는 9월이라 올해 최솟값은 아직 나오지 않았습니다.'}`
-      : `Units: million km². ⚠️ This is **extent** — the whole area of grid cells with at least 15% ice concentration, which differs from ice *area* by 20–30%.\n`
-        + `⚠️ From 1979 to 1987 the satellite sampled every other day; those gaps are left empty rather than filled, which would imply a denser record than existed.\n`
-        + `⚠️ This year's curve runs to ${esc(poles[this._pole]?.last || '')}. ${this._pole === 'antarctic' ? "The Antarctic maximum falls in September, so this year's peak has not happened yet." : "The Arctic minimum falls in September, so this year's low has not happened yet."}`)));
+      ? `단위는 백만 km².  **면적(extent)** 입니다 — 해빙 농도 15% 이상인 격자칸의 넓이를 통째로 센 값이고, 실제 얼음이 덮은 넓이(area)와는 20~30% 차이가 납니다.\n`
+        + ` 1979~1987년은 위성이 이틀에 한 번 훑어 빈 날이 많습니다. 그 날을 앞뒤 값으로 메우지 않았습니다 — 메우면 그때도 자료가 촘촘했던 것처럼 보입니다.\n`
+        + ` 올해 곡선은 ${esc(poles[this._pole]?.last || '')}까지입니다. ${this._pole === 'antarctic' ? '남극 최대는 9월이라 올해 최댓값은 아직 나오지 않았습니다.' : '북극 최소는 9월이라 올해 최솟값은 아직 나오지 않았습니다.'}`
+      : `Units: million km².  This is **extent** — the whole area of grid cells with at least 15% ice concentration, which differs from ice *area* by 20–30%.\n`
+        + ` From 1979 to 1987 the satellite sampled every other day; those gaps are left empty rather than filled, which would imply a denser record than existed.\n`
+        + ` This year's curve runs to ${esc(poles[this._pole]?.last || '')}. ${this._pole === 'antarctic' ? "The Antarctic maximum falls in September, so this year's peak has not happened yet." : "The Arctic minimum falls in September, so this year's low has not happened yet."}`)));
   },
 
   /** 대륙 버튼 + 그 대륙의 해마다 한 줄 곡선 */
@@ -530,8 +530,8 @@ export const chartsPanel = {
     const s2 = spaghetti(isKR ? KR.series : L.series[this._region], opt);
     if (!s2) {
       body.appendChild(el('p', 'ch-note', ko
-        ? '이 지역은 아직 자료가 두 해 미만이라 곡선을 그리지 않습니다.'
-        : 'Fewer than two years here yet, so no curve is drawn.'));
+        ? '자료 기간 · 2년 미만 · 추세 곡선 준비 중'
+        : 'Data period · under 2 years · trend curve pending'));
       return;
     }
     const w2 = el('div', 'ch-wrap', s2.svg);
@@ -542,24 +542,16 @@ export const chartsPanel = {
     if (isKR) {
       const st = (KR.stations || []).map(x => x.name).join(' · ');
       body.appendChild(el('p', 'ch-note', mk(ko
-        ? `**기상청 관측**입니다 (NOAA GHCN-Daily 경유 — 기상청 API는 인증키가 필요해 공개 경로를 씁니다).\n`
-          + `관측소 ${(KR.stations || []).length}곳: ${esc(st)}\n`
-          + `⚠️ **전국 평균 기온이 아닙니다** — 기상청 공식 전국 평균과는 관측소 구성이 달라 값이 조금 다릅니다.\n`
-          + `⚠️ 관측소 구성을 1973년부터 고정했습니다. 관측소가 늘고 줄면 기온이 변하지 않아도 평균이 튀기 때문입니다.\n`
-          + `⚠️ 서울은 빠져 있습니다 — 서울 관측소 자료가 2025년 8월에서 끊겨 있어, 넣으면 그해부터 평균이 튑니다.`
-        : `**Korea Meteorological Administration observations**, obtained via NOAA GHCN-Daily (the KMA API requires a key, so the open route is used).\n`
-          + `${(KR.stations || []).length} stations: ${esc(st)}\n`
-          + `⚠️ **Not the national mean temperature** — the KMA's official figure uses a different station set.\n`
-          + `⚠️ The station set is fixed from 1973 so the average does not jump when stations come and go.\n`
-          + `⚠️ Seoul is excluded: its record stops in August 2025, and including it would make the average jump from that year.`)));
+        ? `자료 · 기상청 관측 / NOAA GHCN-Daily · 고정 관측소 ${(KR.stations || []).length}곳 · ${esc(st)} · 1973년~ · 서울 제외`
+        : `Data · KMA observations / NOAA GHCN-Daily · ${(KR.stations || []).length} fixed stations · ${esc(st)} · from 1973 · Seoul excluded`)));
     } else {
       body.appendChild(el('p', 'ch-note', mk(ko
         ? `${esc(names[this._region] || this._region)}\n`
-          + `⚠️ **육지만** 담긴 자료라 바다가 섞이지 않습니다 — 진짜 대륙 평균입니다.\n`
-          + `⚠️ 일평균은 (일최고+일최저)/2 입니다. CPC 가 최고·최저만 주기 때문이고, 시간별 평균과는 조금 다릅니다.`
+          + ` 자료 범위 · **육지 격자** · 대륙 평균\n`
+          + ` 일평균은 (일최고+일최저)/2 입니다. CPC 가 최고·최저만 주기 때문이고, 시간별 평균과는 조금 다릅니다.`
         : `${esc(names[this._region] || this._region)}\n`
-          + `⚠️ The dataset is **land only**, so no ocean is mixed in — these are true continental means.\n`
-          + `⚠️ Daily mean is (daily max + daily min) / 2, because CPC supplies only max and min.`)));
+          + ` Coverage · **land grid** · continental mean.\n`
+          + ` Daily mean is (daily max + daily min) / 2, because CPC supplies only max and min.`)));
     }
   },
 
@@ -615,8 +607,8 @@ export const chartsPanel = {
     } else {
       body.appendChild(el('div', 'ch-h', ko ? '일별 해수면온도 (준비 중)' : 'Daily SST (being built)'));
       body.appendChild(el('p', 'ch-note', ko
-        ? '1982년부터의 일별 자료를 지금 모으고 있습니다. 다 모이면 해마다 한 줄인 곡선이 여기 나옵니다. 없는 값을 미리 그려두지 않습니다.'
-        : 'Daily values back to 1982 are being collected now. When they are in, one line per year will appear here. We do not draw a placeholder curve.'));
+        ? '자료 준비 · 1982년부터의 일별 자료 수집 중 · 완료 후 연도별 곡선 표시'
+        : 'Data preparation · collecting daily values from 1982 · yearly curves after completion'));
     }
 
     // ── ①-1 해빙 면적 (북극 · 남극) ──
@@ -636,8 +628,8 @@ export const chartsPanel = {
              r => i18n.temp(r.v, 1) + (r.n <= 2 ? (ko ? ` · 격자 ${r.n}칸` : ` · ${r.n} cell`) : ''))));
       const t = (d.regions.time || '').replace('T', ' ').replace(':00:00Z', ' UTC');
       body.appendChild(el('p', 'ch-note', mk(ko
-        ? `자료 시각 ${esc(t)} · 5° 격자의 면적가중 평균입니다.\n⚠️ 상자 범위라 바다가 섞여 있습니다. 그래서 "대륙 평균"이 아니라 "지역 평균"이라고 적습니다.`
-        : `Data time ${esc(t)} · area-weighted mean of the 5° grid.\n⚠️ These are bounding boxes, so ocean is included — hence “region”, not “continent”, average.`)));
+        ? `자료 시각 ${esc(t)} · 5° 격자 면적가중 평균 · 상자 범위의 육지·바다를 포함한 지역 평균`
+        : `Data time ${esc(t)} · area-weighted mean of 5° grid · regional bounding boxes include land and ocean`)));
       if (d.regions.sst) {
         body.appendChild(el('p', 'ch-note', ko
           ? `참고 — 전지구 해수면온도 평균 ${i18n.temp(d.regions.sst.mean, 2)} (바다 격자 ${d.regions.sst.n}칸)`
@@ -666,8 +658,8 @@ export const chartsPanel = {
       }
       /* ⚠️ 이 문장을 빼면 안 된다. "그 나라 평균 기온"으로 읽히면 틀린 정보가 된다. */
       body.appendChild(el('p', 'ch-note', mk(ko
-        ? `공항에 설치된 계기 ${d.countries.total.toLocaleString()}곳의 실황을 나라별로 묶은 것입니다.\n⚠️ **그 나라의 평균 기온이 아닙니다** — 공항 위치에 있는 관측소들의 평균입니다. 관측소가 3곳 미만인 나라는 뺐고, 부호를 모르는 ${d.countries.unknown}곳도 뺐습니다. 나라 이름을 지어내지 않습니다.`
-        : `Live readings from ${d.countries.total.toLocaleString()} airport instruments, grouped by country.\n⚠️ **This is not a country's average temperature** — it is the mean of stations that happen to sit at airports. Countries with fewer than three stations are excluded, as are ${d.countries.unknown} stations whose code we do not map. We do not invent country names.`)));
+        ? `자료 범위 · 공항 관측소 ${d.countries.total.toLocaleString()}곳 · 국가별 관측소 평균 · 3곳 이상 국가 · 국가 코드 미매핑 ${d.countries.unknown}곳 제외`
+        : `Coverage · ${d.countries.total.toLocaleString()} airport stations · mean by station country · countries with 3+ stations · ${d.countries.unknown} unmapped codes excluded`)));
     }
 
     // ── ④ 우리만 가진 자료 ──
@@ -684,7 +676,7 @@ export const chartsPanel = {
       ]).map(([t, why, when]) =>
         `<div class="ch-o"><b>${esc(t)}</b><p>${esc(why)}</p><span>${esc(when)}</span></div>`).join('')));
     body.appendChild(el('p', 'ch-note', ko
-      ? '예보 검증은 지점·시각별 사례와 일별 집계를 공개하고 있습니다. 태풍 소멸 후 경로와 산불 생애주기는 아직 추세 그래프를 만들 만큼 쌓이지 않아 곡선을 그리지 않습니다.'
-      : 'Forecast verification is live with station-time cases and daily aggregates. Post-dissipation storm tracks and wildfire lifecycles are not yet long enough for trend charts, so no curve is drawn for them.'));
+      ? '자료 상태 · 예보 검증 운영 중 · 태풍 소멸 후 경로와 산불 생애주기 추세 표본 축적 중'
+      : 'Data status · forecast verification live · post-dissipation tracks and wildfire lifecycle trend samples accumulating'));
   },
 };

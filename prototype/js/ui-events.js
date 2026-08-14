@@ -99,7 +99,7 @@ function summarize(e, ko) {
     return `${when} ${where}에서 발생한 사안을 「${kind}」으로 분류했습니다. `
       + `보도 문서 ${e.sources.toLocaleString()}건 · 언급 ${e.mentions.toLocaleString()}회`
       + (e.merged > 1 ? ` · 같은 사건으로 판단해 ${e.merged}건을 합쳤습니다` : '')
-      + `. 저희가 링크로 확인한 서로 다른 매체는 ${n}곳입니다.`;
+      + `. 링크 기준 서로 다른 매체 ${n}곳입니다.`;
   }
   return `Classified as ${kind} at ${where} ${when}. `
     + `${e.sources.toLocaleString()} source documents, ${e.mentions.toLocaleString()} mentions`
@@ -241,15 +241,15 @@ export const eventPanel = {
     const rows = this.show === 'confirmed' ? conf : [...conf, ...unconf];
     if (!rows.length) {
       body.appendChild(el('p', 'sky-dim', ko
-        ? '지금은 확정 등급을 통과한 사건이 없습니다. 기준을 낮추지 않고 그대로 둡니다 — 검증되지 않은 것을 확정처럼 보여주지 않기 위해서입니다.'
-        : 'No events currently clear the confirmed threshold. We do not lower the bar — showing unverified events as confirmed is the failure we are avoiding.'));
+        ? '확정 기준 충족 사건 0건'
+        : '0 events meet the confirmed threshold'));
     }
 
     rows.forEach(e => body.appendChild(this.card(e, ko)));
 
     body.appendChild(el('p', 'sky-note', ko
-      ? '분류는 GDELT 의 자동 코딩(CAMEO)에서 나옵니다. 사람이 확인한 사실이 아니며, 기사 문장의 형태를 분류하는 체계라 오분류가 있습니다 — 산불 기사의 "소방대가 불길과 사투"가 무력 충돌로 코딩된 사례를 확인해 재난 보도로 따로 분류했습니다. 기사 본문은 저작권상 싣지 않고 원문으로 연결합니다.'
-      : 'Classifications come from GDELT’s automatic CAMEO coding — not human-verified. CAMEO codes sentence patterns, so misclassification happens: we found wildfire coverage (“firefighters battle the blaze”) coded as armed conflict and split it into a disaster category. Article text is never reproduced — only linked.'));
+      ? '분류 · GDELT CAMEO 자동 코딩 · 산불 문장의 무력 충돌 오분류 보정 · 표시 범위 제목·원문 링크'
+      : 'Classification · GDELT CAMEO automatic coding · armed-conflict correction for wildfire wording · display: headline and source link'));
   },
 
   /* ── 브리핑 목록 ────────────────────────────────────────────
@@ -321,12 +321,12 @@ export const eventPanel = {
     const failed = Object.keys(j.failed || {});
     if (failed.length) {
       body.appendChild(el('p', 'sky-note', ko
-        ? `⚠️ 이번 수집에서 ${failed.join('·')} 는 받지 못했습니다.`
-        : `⚠️ ${failed.join(', ')} did not respond in this collection.`));
+        ? ` 이번 수집에서 ${failed.join('·')} 는 받지 못했습니다.`
+        : ` ${failed.join(', ')} did not respond in this collection.`));
     }
     body.appendChild(el('p', 'sky-note', ko
-      ? '저작권 때문에 제목과 링크만 싣습니다 — 본문도 요약도 저장하지 않습니다. 제목은 매체가 쓴 원문 그대로이며 번역하지 않았습니다. 읽으시려면 제목을 눌러 원문으로 가세요.'
-      : 'Only titles and links are carried — no article text, no summaries. Titles are as published, untranslated. Tap a title to read the original.'));
+      ? '표시 범위 · 매체 원문 제목 · 원문 링크 · 제목을 눌러 기사 보기'
+      : 'Display · publisher headline · source link · tap the headline to read'));
   },
 
   /* ── 경고 — 지금 위험한 것만 ────────────────────────────────
@@ -342,8 +342,8 @@ export const eventPanel = {
         ? '✓ 지금 진행 중인 경고가 없습니다.'
         : '✓ No active warnings right now.'));
       body.appendChild(el('p', 'sky-note', ko
-        ? '규모 4.5 이상 지진, 쓰나미 경보, 대형 산불이 생기면 여기에 올라옵니다. 화산 정적 목록은 현재 분화로 간주하지 않습니다. 비어 있는 것은 정상입니다.'
-        : 'M4.5+ quakes, tsunami alerts and large wildfires appear here. The static volcano list is not treated as current eruption data. Empty is normal.'));
+        ? '대상 · 규모 4.5 이상 지진 · 쓰나미 경보 · 대형 산불 · 현재 0건'
+        : 'Scope · M4.5+ earthquakes · tsunami alerts · large wildfires · current count 0'));
       return;
     }
 
@@ -453,8 +453,8 @@ export const eventPanel = {
       /* 한 곳뿐인데 문서 수가 많으면 신디케이트다. 그걸 말해준다. */
       if (byHost.size === 1 && e.sources >= 10) {
         box.appendChild(el('div', 'ev-syndicate', ko
-          ? `⚠️ 보도 문서는 ${e.sources.toLocaleString()}건이지만 저희가 수집한 링크는 한 매체뿐입니다. 같은 통신사 기사가 여러 지역지에 재게재된 경우로 보입니다 — 문서 수가 많다는 것이 곧 독립적으로 교차검증되었다는 뜻은 아닙니다.`
-          : `⚠️ ${e.sources.toLocaleString()} source documents but only one distinct outlet in our links — likely one wire story syndicated across local papers. A high document count does not mean independent verification.`));
+          ? `보도 문서 ${e.sources.toLocaleString()}건 · 링크 매체 1곳 · 동일 기사 재게재 가능성`
+          : `${e.sources.toLocaleString()} documents · 1 linked outlet · possible syndication`));
       }
       card.appendChild(box);
     }

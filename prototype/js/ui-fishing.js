@@ -508,9 +508,8 @@ export const fishPanel = {
             <em>${r.swell == null ? '' : '너울 ' + r.swell.toFixed(1) + 'm'}</em>
           </button>`).join('')}
         <p class="sf-rgnote">${ko
-          ? '⚠️ 조차가 클수록 물이 크게 갑니다. 권역 전체를 잰 값이 아닙니다 — '
-            + '바다를 누르거나 지도를 확대하면 지점별로 나옵니다.'
-          : '⚠️ Sampled, not a full survey. Tap a sea or zoom in.'}</p>
+          ? `권역별 ${REGION_SAMPLES}개 표본 · 바다 선택 시 지점별 표시`
+          : `${REGION_SAMPLES} samples per region · select a sea for point detail`}</p>
       </div>`;
   },
 
@@ -575,8 +574,8 @@ export const fishPanel = {
           ? `이번 ${t.days}일 중 가장 큰 날은 ${v(t.maxRangeM, 2)}m 입니다`
           : `Largest in the next ${t.days} days: ${v(t.maxRangeM, 2)} m`}</p>` : ''}
         ${!t.matters ? `<p class="fs-cmp">${ko
-          ? '⚠️ 이 바다는 조차가 작아 물때의 영향이 크지 않습니다'
-          : '⚠️ Small tidal range here — tide matters less'}</p>` : ''}
+          ? '조차 작음 · 물때 영향 낮음'
+          : 'Small tidal range · lower tide influence'}</p>` : ''}
       </div>`;
 
     const trio = `
@@ -605,32 +604,20 @@ export const fishPanel = {
   _how(ko) {
     if (!ko) {
       return `<div class="mt-foot">
-        <p>We report three things and nothing more: how much the water moves (tidal range),
-        whether it is dangerous to go out now (swell and wind), and how cold the water is.</p>
-        <p><b>We never say the fishing is good.</b> Catch depends on things we cannot see.</p>
-        <p><b>Tide numbers (몇 물) are not shown</b> because the west-coast and south-coast
-        conventions disagree by a day. We give the measured tidal range instead — which is
-        what those numbers stand for.</p></div>`;
+        <p>Inputs · tidal range · swell · wind · sea temperature</p>
+        <p>Tide display · forecast range and next high/low water</p></div>`;
     }
     return `<div class="mt-foot">
-      <p><b>이 화면이 말하는 것은 셋뿐입니다.</b><br>
+      <p><b>표시 자료</b><br>
         ① 물이 얼마나 움직이는가 (조차)<br>
         ② 지금 나가면 위험한가 (너울·바람)<br>
         ③ 물이 얼마나 찬가 (수온)</p>
-      <p>⚠️ <b>"잘 나온다"고 말하지 않습니다.</b> 조황은 어군·미끼·시기·그날의 운이
-        섞인 값이고, 그건 우리가 아는 값이 아닙니다. 무슨 고기가 나오는지도 적지 않습니다.</p>
-      <p>⚠️ <b>물때 번호(몇 물)는 적지 않습니다.</b> 서해식(8물때)과 남해식(7물때)이
-        하루씩 어긋나고 지역마다 부르는 법이 또 다릅니다. 틀린 물때를 적으면 그날 하루를
-        통째로 버리게 만듭니다. 대신 <b>실제 조위 예보에서 잰 조차</b>를 적습니다 —
-        물때 번호가 대신 말하려던 것이 바로 그 값입니다.</p>
-      <p>⚠️ <b>만조·간조 시각은 최대 30분쯤 어긋납니다.</b> 예보 곡선이 1시간 간격이라
-        봉우리를 정확히 짚지 못합니다. 물때표 대신 쓰지 마세요.</p>
+      <p>물때 · 조위 예보의 실제 조차와 다음 만조·간조 · 시간 해상도 1시간</p>
       <p><b>안전 문턱</b><br>
         너울 ${FISH_RULES.swellWatchM}m 이상 — 갯바위·방파제에서 조심<br>
         너울 ${FISH_RULES.swellDangerM}m 이상 — 올라가지 말 것<br>
         바람 ${FISH_RULES.windDangerMs}m/s 이상 — 배는 대부분 못 뜸</p>
-      <p>⚠️ 낮은 값이 나와도 <b>"안전합니다"라고 말하지 않습니다.</b> 발판·이끼·조류·수심,
-        혼자인지, 구명조끼를 입었는지 — 우리가 모르는 것이 훨씬 많습니다.</p>
+      <p>현장 안전 · 발판 · 조류 · 구명조끼 확인</p>
     </div>`;
   },
 
@@ -640,9 +627,7 @@ export const fishPanel = {
       <p>${ko
         ? '지점 자료 OpenStreetMap (ODbL) · 바다 자료 Open-Meteo 해양 · 바람 기상청 AWS'
         : 'Spots: OpenStreetMap (ODbL) · Sea: Open-Meteo Marine · Wind: KMA AWS'}</p>
-      <p>⚠️ ${ko
-        ? (m.note?.ko || '')
-        : (m.note?.en || '')}</p>
+      ${m.generated ? `<p>${ko ? '자료 시각' : 'Data time'} · ${esc(m.generated)}</p>` : ''}
     </div>`;
   },
 };

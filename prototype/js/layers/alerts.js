@@ -26,7 +26,7 @@ import { levelEn } from '../warn.js';
 
 /* 종류별 색. kma-warn 이 이미 색·아이콘을 실어 보내므로 그걸 먼저 쓰고,
    없는 종류만 여기서 채운다. */
-const FALLBACK = { icon: '⚠️', color: '#fa5252' };
+const FALLBACK = { icon: '', color: '#fa5252' };
 
 /* 라벨을 붙일 대표 도시 — 특별·광역·특별자치시와 도청 소재지급.
    특보가 전국에 깔리면(폭염철에 실제로 그렇다) 라벨 수백 장이 지도를 덮어
@@ -134,7 +134,7 @@ export const alerts = {
         d[ko ? '출처' : 'Source'] = x._src;
         items.push({
           id: `br-${i}`, lat: x.lat, lon: x.lon,
-          name: `⚠️ ${ko ? '기상경보' : 'Warning'}`,
+          name: ` ${ko ? '기상경보' : 'Warning'}`,
           color: '#ffd166', radius: 5.4, data: d,
         });
       });
@@ -182,8 +182,8 @@ export const alerts = {
       sources, byKind, count: items.length, noCoords,
       /* ⚠️ 어디까지 덮는지 분명히 적는다. 비어 있는 나라는 '경보가 없다'가 아니다. */
       coverage: ko
-        ? '지금 받는 곳: 한국(기상청)·미국(NWS)·브라질(INMET). 다른 나라가 비어 있는 것은 경보가 없어서가 아니라 아직 그 나라 자료를 받지 않아서입니다.'
-        : 'Currently covering Korea (KMA), the United States (NWS) and Brazil (INMET). Empty elsewhere means we do not yet ingest that country, not that there are no warnings.',
+        ? '자료 범위 · 한국 기상청 · 미국 NWS · 브라질 INMET'
+        : 'Coverage · Korea KMA · United States NWS · Brazil INMET',
     };
     this.layer.setData(items);
     return items.length;

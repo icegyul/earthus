@@ -75,8 +75,8 @@ export const skyPanel = {
         ? '내 위치를 켜면 선택한 한국 좌표의 특보 근거와 별보기 자료 연결 상태를 확인합니다.'
         : 'Enable location to check official-warning evidence and data readiness for your selected Korean coordinates.'));
       wrap.appendChild(el('p', 'sky-note', ko
-        ? '이 베타는 장소 추천이나 예약 화면이 아닙니다. 자료가 없으면 “좋음”으로 바꾸지 않습니다.'
-        : 'This beta is not a place recommendation or reservation screen. Missing data is never shown as good conditions.'));
+        ? '별보기 근거 6요소 연결 상태'
+        : 'Connection status for six stargazing factors'));
       return wrap;
     }
 
@@ -109,8 +109,8 @@ export const skyPanel = {
     add(ko ? '특보 기준시각(KST)' : 'Warning time (KST)', generated);
     wrap.appendChild(rows);
     wrap.appendChild(el('p', 'sky-note', ko
-      ? '필요한 6개 항목: 구름량·시정·습도·강수확률·달 밝기·천문박명 여유. 각 항목에 출처·시각·개정번호가 모두 있어야 합니다. 현재는 이 자료가 모두 연결되지 않아 추천을 공개하지 않습니다.'
-      : 'The six required factors are cloud cover, visibility, humidity, precipitation probability, moon illumination, and astronomical-darkness margin. Each needs a source, time, and revision. A public recommendation remains disabled until all are connected.'));
+      ? '근거 항목 · 구름량 · 시정 · 습도 · 강수확률 · 달 밝기 · 천문박명 여유 · 출처·시각·개정번호'
+      : 'Evidence factors · cloud · visibility · humidity · rain probability · moonlight · astronomical darkness · source/time/revision'));
     return wrap;
   },
 
@@ -148,8 +148,8 @@ export const skyPanel = {
     wrap.appendChild(row);
 
     wrap.appendChild(el('p', 'sky-note', ko
-      ? '태양 영상은 NASA SDO 의 193Å 극자외선 관측입니다. 플레어가 났다고 반드시 오로라가 보이는 것은 아닙니다 — 태양풍이 지구에 닿기까지 1~3일이 걸리고 방향에 따라 비껴가기도 합니다. 예보는 NOAA SWPC 를 보세요.'
-      : 'Image: NASA SDO 193Å extreme-UV. A flare does not guarantee aurora — the solar wind takes 1–3 days to arrive and may miss Earth entirely. See NOAA SWPC for forecasts.'));
+      ? '관측 · NASA SDO 193Å 극자외선 · 오로라 예보 NOAA SWPC'
+      : 'Observation · NASA SDO 193Å extreme-UV · aurora forecast NOAA SWPC'));
     const a = el('a', 'sky-link', ko ? 'NOAA 우주기상 예보 ↗' : 'NOAA space weather forecast ↗');
     a.href = 'https://www.swpc.noaa.gov/products/aurora-30-minute-forecast';
     a.target = '_blank'; a.rel = 'noopener';
@@ -218,7 +218,7 @@ export const skyPanel = {
     wrap.appendChild(el('p', 'sky-note', ko
       ? '유성우는 하늘 한 지점에서 사방으로 뻗어 나오는 것처럼 보입니다. 그 자리가 높이 떠 있을수록 많이 보입니다. '
       + '예상 개수는 그 높이와 달빛을 함께 따진 어림값입니다. '
-      + '⚠️ ZHR 은 「구름 한 점 없고 불빛도 없는 하늘에서, 그 자리가 바로 머리 위에 있을 때」의 개수라 '
+      + ' ZHR 은 「구름 한 점 없고 불빛도 없는 하늘에서, 그 자리가 바로 머리 위에 있을 때」의 개수라 '
       + '실제 도시에서는 이보다 훨씬 적게 보입니다. 자료: 국제유성기구(IMO) 유성우 달력.'
       : 'Expected counts are estimates from radiant altitude and moonlight. ZHR assumes a perfectly dark sky with the radiant overhead, so city skies show far fewer. Source: IMO meteor shower calendar.'));
     return wrap;
@@ -269,12 +269,12 @@ export const skyPanel = {
     });
 
     wrap.appendChild(el('p', 'sky-note', ko
-      ? '내 위치에서 몇 시에 어떻게 보이는지는 이 앱이 계산하지 않습니다. 지방 상황은 정밀 계산이 필요해, 잘못 안내하면 헛걸음하게 됩니다 — NASA 지도에서 확인하세요. 자료: NASA GSFC 5천년 일·월식 목록(Espenak & Meeus).'
-      : 'Local circumstances are not computed here — getting them wrong would send you to the wrong place at the wrong time. Check the NASA map. Source: NASA GSFC Five Millennium Canon (Espenak & Meeus).'));
+      ? '지역별 시각·가시 범위 · NASA 상세 지도 · 자료 NASA GSFC 5천년 일·월식 목록'
+      : 'Local time and visibility · NASA detail map · source NASA GSFC Five Millennium Canon'));
 
     wrap.appendChild(el('p', 'sky-warn', ko
-      ? '⚠️ 일식은 맨눈이나 일반 선글라스로 보면 안 됩니다. 부분식 단계에서는 반드시 인증된 일식 안경(ISO 12312-2)을 쓰세요.'
-      : '⚠️ Never look at a partial solar eclipse without certified eclipse glasses (ISO 12312-2). Sunglasses are not enough.'));
+      ? ' 일식은 맨눈이나 일반 선글라스로 보면 안 됩니다. 부분식 단계에서는 반드시 인증된 일식 안경(ISO 12312-2)을 쓰세요.'
+      : ' Never look at a partial solar eclipse without certified eclipse glasses (ISO 12312-2). Sunglasses are not enough.'));
     return wrap;
   },
 };

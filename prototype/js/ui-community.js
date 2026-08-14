@@ -148,10 +148,10 @@ export const communityPanel = {
 
     /* ⚠️⚠️ 이 문단을 지우면 안 된다. 숫자만 보면 "땅이 갈라지고 있다"로 읽힌다. */
     body.appendChild(el('p', 'cr-note', ko
-      ? '⚠️ 이 움직임의 대부분은 <b>판 전체가 함께 가는 것</b>입니다. 한반도가 연 3cm '
+      ? ' 이 움직임의 대부분은 <b>판 전체가 함께 가는 것</b>입니다. 한반도가 연 3cm '
         + '동남동으로 가는 것은 유라시아판이 그렇게 가기 때문이지, 땅이 찢어지고 '
         + '있어서가 아닙니다. 우리도 그 위에 얹혀 같이 갑니다.'
-      : '⚠️ Most of this is whole-plate drift, not local deformation.'));
+      : ' Most of this is whole-plate drift, not local deformation.'));
 
     /* 큰 지진이 실제로 땅을 얼마나 옮겼는지 — 우리가 직접 재 본 값 */
     const ex = el('div', 'cr-case');
@@ -165,16 +165,8 @@ export const communityPanel = {
 
     /* ⚠️⚠️ 못 하는 것 — 크게, 먼저 */
     body.appendChild(el('div', 'cr-cant', ko
-      ? '<b>⚠️ 이걸로 못 하는 것</b><br>'
-        + '· <b>실시간이 아닙니다.</b> 최종 좌표가 약 <b>한 달</b> 늦습니다. '
-        + '지진 나고 바로는 못 봅니다.<br>'
-        + '· <b>중소 지진은 안 보입니다.</b> M5.8은 M9.0보다 에너지가 6만 배 작아 '
-        + '변위가 일일 관측 잡음(수 mm)에 묻힙니다.<br>'
-        + '· ⚠️ <b>안 보이는 것과 안 움직인 것은 다릅니다.</b> 작은 값을 '
-        + '"지진 때문"이라고 말하지 않습니다 — 2011년에도 잡음으로 1~2cm가 나왔습니다.'
-      : '<b>⚠️ What this cannot do</b><br>· Not real time — final solutions lag ~1 month.<br>'
-        + '· Quakes below ~M6 are lost in daily noise.<br>'
-        + '· Invisible is not the same as motionless.'));
+      ? '<b>자료 범위</b><br>· 최종 좌표 약 <b>한 달 지연</b><br>· 중소 지진 변위는 일일 관측 잡음 범위<br>· 분석 단위 · 월간 GNSS 위치 변화'
+      : '<b>Data scope</b><br>· Final positions lag about <b>one month</b><br>· Smaller-quake displacement sits within daily noise<br>· Analysis unit · monthly GNSS position change'));
 
     body.appendChild(el('p', 'cr-src', ko
       ? `자료: 네바다 측지연구소(UNR) MIDAS 속도장 · 관측점 ${d.count.toLocaleString()}곳 · `
@@ -205,8 +197,8 @@ export const communityPanel = {
 
     if (!picks?.length) {
       body.appendChild(el('p', 'sky-note', ko
-        ? '격자 자료를 아직 못 받았습니다. 잠시 뒤 다시 열어 주세요. 없는 값을 지어내지 않습니다.'
-        : 'The grids have not loaded yet. Try again shortly — we do not fill in values we do not have.'));
+        ? '격자 자료 연결 대기 · 잠시 뒤 다시 열어 주세요.'
+        : 'Grid data pending · try again shortly.'));
       return;
     }
 
@@ -247,8 +239,8 @@ export const communityPanel = {
 
     const t = (picks[0]?.time || '').replace('T', ' ').replace(':00:00Z', ' UTC');
     body.appendChild(el('p', 'sky-note', ko
-      ? `자료 시각 ${t} · 5° 격자(약 550km)에서 찾은 값입니다. 눌러 보면 그 자리로 갑니다.\n⚠️ 격자 해상도 안에서의 최댓값이라, 더 좁은 곳의 극값은 이보다 클 수 있습니다.`
-      : `Data time ${t} · found on a 5° grid (~550 km). Tap to fly there.\n⚠️ These are extremes at grid resolution; a smaller area may hold a higher value.`));
+      ? `자료 시각 ${t} · 5° 격자(약 550km)에서 찾은 값입니다. 눌러 보면 그 자리로 갑니다.\n 격자 해상도 안에서의 최댓값이라, 더 좁은 곳의 극값은 이보다 클 수 있습니다.`
+      : `Data time ${t} · found on a 5° grid (~550 km). Tap to fly there.\n These are extremes at grid resolution; a smaller area may hold a higher value.`));
   },
 
   /* ── 자료 그래프 ────────────────────────────────────────────
@@ -274,12 +266,11 @@ export const communityPanel = {
 
   /* ── 개발 요청 ─────────────────────────────────────────────── */
   renderRequests(body, ko) {
-    /* 1인 개발이라는 걸 먼저 말한다. 기대치를 맞춰야 실망이 안 쌓인다. */
     body.appendChild(el('div', 'req-intro',
-      `<b>${ko ? '무엇이 불편하신가요?' : 'What is not working for you?'}</b>
+      `<b>${ko ? '무엇이 불편하신가요?' : 'What should improve?'}</b>
        <p>${ko
-        ? 'earthus 는 기획자 한 사람이 만들고 있습니다. 그래서 모든 요청을 다 만들어 드리지는 못합니다 — 유료 데이터가 필요하거나, 혼자 감당하기 어려운 것은 시간이 오래 걸리거나 못 할 수도 있습니다. 그래도 올려주시면 <b>최대한 만들어 보겠습니다.</b> 공감이 많은 것부터 손을 댑니다.'
-        : 'earthus is built by one person. I cannot build everything — some things need paid data or are simply too big for one pair of hands, and those may take a long time or not happen. Still, post it and <b>I will do my best to build it.</b> Most-upvoted items get worked on first.'}</p>`));
+        ? '불편한 점과 필요한 기능을 남겨 주세요. <b>공감이 많은 요청부터 검토합니다.</b>'
+        : 'Share what feels difficult and what you need. <b>Most-upvoted requests are reviewed first.</b>'}</p>`));
 
     // 작성 폼
     const form = el('form', 'req-form');

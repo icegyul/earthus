@@ -457,8 +457,8 @@ export const phenomena = {
     const msg = String(err?.message || err || '');
     if (/\b429\b/.test(msg)) {
       return ko
-        ? '자료를 주는 곳(Open-Meteo)이 잠깐 요청을 막아서 재지 못했습니다 (호출 제한 429). 잠시 뒤 다시 켜면 측정합니다.'
-        : 'The data source (Open-Meteo) briefly refused more requests, so this was not measured (rate limit, 429). Toggle the layer again in a moment.';
+        ? 'Open-Meteo 호출 제한(429) · 범위 미측정 · 잠시 뒤 다시 시도'
+        : 'Open-Meteo rate limit (429) · extent pending · retry shortly';
     }
     if (err?.name === 'TimeoutError' || /timeout|abort/i.test(msg)) {
       return ko

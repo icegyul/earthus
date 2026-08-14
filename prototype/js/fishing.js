@@ -193,9 +193,9 @@ export function safety(sea, wind, spot, ko) {
   if (exposed && out.level !== 'low') {
     out.lines.push(ko
       ? (spot.kind === 'island'
-          ? '⚠️ 섬·갯바위는 물이 차면 나올 길이 없어집니다. 물때를 먼저 보세요.'
-          : '⚠️ 테트라포드는 젖으면 미끄럽고, 빠지면 혼자 못 올라옵니다.')
-      : '⚠️ Exposed spot — check the tide before going.');
+          ? ' 섬·갯바위는 물이 차면 나올 길이 없어집니다. 물때를 먼저 보세요.'
+          : ' 테트라포드는 젖으면 미끄럽고, 빠지면 혼자 못 올라옵니다.')
+      : ' Exposed spot — check the tide before going.');
   }
   return out;
 }

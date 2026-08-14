@@ -170,14 +170,14 @@ export const tsunami = {
     /* ⚠️ 등급 파싱에 실패한 경우 반드시 알린다.
        "정보"인지 "경보"인지 모르는 채로 조용히 보여주면 안 된다. */
     if (t.parsed === false) {
-      d[ko ? '⚠️ 주의' : '⚠️ Note'] = ko
+      d[ko ? ' 주의' : ' Note'] = ko
         ? '이 발표의 등급을 자동으로 읽지 못했습니다. 반드시 원문 게시문을 확인하세요.'
         : 'The alert level could not be parsed automatically — read the bulletin.';
     }
 
     d['_note'] = ko
-      ? '태평양쓰나미경보센터(PTWC)·국립쓰나미경보센터(NTWC)·미국 국립기상청(NWS) 발표를 그대로 옮긴 것입니다. 등급은 발표 기관이 정한 것이며 저희가 다시 매기지 않습니다. 이 세 기관이 태평양·카리브 전역을 다루지만 모든 나라의 자국 경보를 대체하지는 않습니다 — 실제 대피는 거주 국가 기관 지시를 따르세요.'
-      : 'Copied verbatim from PTWC, NTWC and the US NWS. Levels are set by the issuing centre, not by us. These centres cover the Pacific and Caribbean but do not replace your own country’s alerts — follow your national authority for evacuation.';
+      ? '출처 · PTWC · NTWC · 미국 NWS · 등급은 발표 기관 원문 · 대피는 거주 국가 기관 지시'
+      : 'Source · PTWC · NTWC · US NWS · issuing-centre level · follow national evacuation orders';
     return { title: ko ? t.level.ko : t.level.en, rows: d };
   },
 };

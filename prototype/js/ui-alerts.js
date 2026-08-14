@@ -70,22 +70,22 @@ export const alertsSheet = {
     const ko = i18n.lang === 'ko';
     body.innerHTML = '';
 
-    /* ── 1. 못 하는 것부터 ─────────────────────────────────── */
+    /* ── 1. 알림 조건 ──────────────────────────────────────── */
     body.appendChild(el('div', 'al-limits',
-      `<b>${ko ? '⚠️ 먼저 알아 두실 것' : '⚠️ Before you turn this on'}</b>`
+      `<b>${ko ? '알림 조건' : 'Alert setup'}</b>`
       + `<ul>`
       + `<li>${ko
-          ? '알림은 <b>저장해 두신 지점</b> 기준입니다. 앱이 닫히면 지금 어디 계신지 알 수 없어서, <b>해변에 도착하셨다고 알아서 오지 않습니다.</b>'
-          : 'Alerts are based on <b>saved places</b>. The web cannot track you in the background, so arriving somewhere does not trigger anything.'}</li>`
+          ? '기준 위치 · <b>저장한 지점</b>'
+          : 'Location · <b>saved places</b>'}</li>`
       + `<li>${ko
-          ? '<b>아이폰은 홈 화면에 추가</b>해야 알림이 옵니다. 사파리 탭에서는 오지 않습니다.'
-          : '<b>On iPhone you must add this to the Home Screen</b> — Safari tabs receive nothing.'}</li>`
+          ? '아이폰 · <b>홈 화면에 추가</b>'
+          : 'iPhone · <b>Add to Home Screen</b>'}</li>`
       + `<li>${ko
-          ? '기기가 절전 중이면 <b>늦게 도착할 수 있습니다.</b> 도착 시각은 저희가 정하지 못합니다.'
-          : 'Delivery can be delayed while the device sleeps. We do not control timing.'}</li>`
+          ? '도착 시각 · 운영체제와 절전 상태에 따라 지연 가능'
+          : 'Delivery · may be delayed by device power state'}</li>`
       + `<li>${ko
-          ? '⚠️ <b>알림을 대피 수단으로 쓰지 마세요.</b> 공식 경보(기상청·지자체 재난문자)를 대신하지 않습니다.'
-          : '⚠️ Do not rely on this for evacuation. It does not replace official warnings.'}</li>`
+          ? '대피 기준 · <b>기상청·지자체 공식 경보</b>'
+          : 'Evacuation · <b>official local warnings</b>'}</li>`
       + `</ul>`));
 
     /* '켜짐'은 서버가 실제로 도는지 말해 주지 않는다. 공개 health 산출물의 마지막
@@ -101,8 +101,8 @@ export const alertsSheet = {
         : (Number.isFinite(at) ? `${new Date(at).toISOString().slice(0, 16).replace('T', ' ')} UTC` : '—');
       const text = h.unavailable
         ? (ko
-            ? '<b>발송 서버 상태를 이 화면에서 확인하지 못했습니다.</b><span>네트워크 문제일 수도 있습니다. 공식 경보를 함께 확인하세요.</span>'
-            : '<b>This screen could not check the delivery server.</b><span>It may be a network issue. Check official warnings too.</span>')
+            ? '<b>발송 서버 상태 · 확인 지연</b><span>대피 기준 · 공식 경보</span>'
+            : '<b>Delivery server · check delayed</b><span>Evacuation source · official warnings</span>')
         : ok
           ? (ko
               ? `<b>발송 서버 최근 확인</b><span>${esc(stamp)} · 정상 실행</span>`
@@ -134,7 +134,7 @@ export const alertsSheet = {
       };
       body.appendChild(b);
       body.appendChild(el('p', 'sky-note', ko
-        ? '⚠️ 로그인이 필요한 이유: 알림 주소를 계정에 묶어야 <b>남이 내 알림을 지우거나 훔쳐보지 못합니다.</b>'
+        ? ' 로그인이 필요한 이유: 알림 주소를 계정에 묶어야 <b>남이 내 알림을 지우거나 훔쳐보지 못합니다.</b>'
         : 'Sign-in ties the push address to your account so nobody else can read or delete it.'));
       return;
     }
@@ -186,8 +186,8 @@ export const alertsSheet = {
       body.appendChild(el('p', 'al-sync', ko ? '저장한 장소를 확인하는 중…' : 'Checking saved places…'));
     } else if (this._spotsError) {
       const sync = el('div', 'al-sync warn', ko
-        ? '<span>⚠️ 저장 장소 목록의 최신 상태를 확인하지 못했습니다. 아래 목록은 이전에 받은 내용일 수 있습니다.</span>'
-        : '<span>⚠️ Could not refresh saved places. The list below may be from an earlier load.</span>');
+        ? '<span> 저장 장소 목록의 최신 상태를 확인하지 못했습니다. 아래 목록은 이전에 받은 내용일 수 있습니다.</span>'
+        : '<span> Could not refresh saved places. The list below may be from an earlier load.</span>');
       const retry = el('button', null, ko ? '다시 확인' : 'Retry');
       retry.onclick = () => {
         this._spotsLoading = true;
@@ -199,8 +199,8 @@ export const alertsSheet = {
       body.appendChild(sync);
     } else if (!this._spots.length) {
       body.appendChild(el('p', 'sky-note', ko
-        ? '⚠️ <b>지점이 없으면 알림도 없습니다.</b> 지켜볼 곳을 한 곳 이상 저장해 주세요.'
-        : '⚠️ <b>No places, no alerts.</b> Save at least one place to watch.'));
+        ? ' <b>지점이 없으면 알림도 없습니다.</b> 지켜볼 곳을 한 곳 이상 저장해 주세요.'
+        : ' <b>No places, no alerts.</b> Save at least one place to watch.'));
     }
 
     this._spots.forEach((sp) => {
@@ -387,13 +387,12 @@ export const alertsSheet = {
     } else if (!this._spotsLoading && !this._spotsError && !paid && this._spots.length >= max) {
       body.appendChild(el('p', 'sky-note', ko
         ? '무료로는 한 곳을 지켜봅니다. 구독하면 20곳까지 늘어납니다. '
-          + '⚠️ 알림 자체(이안류·지진·특보)는 <b>무료로도 그대로 옵니다</b> — 곳 수만 다릅니다.'
+          + ' 알림 자체(이안류·지진·특보)는 <b>무료로도 그대로 옵니다</b> — 곳 수만 다릅니다.'
         : 'Free covers one place; subscribing raises it to 20. The alerts themselves are free either way.'));
     }
 
     body.appendChild(el('p', 'sub-legal', ko
-      ? '⚠️ 이안류·지진 등급은 <b>기관이 매긴 것</b>을 그대로 옮깁니다. 저희가 판단하지 않습니다. '
-        + '대피 여부는 기상청·지자체 공식 발표와 현장 안내를 따르세요.'
+      ? '등급 출처 · 발표 기관 원문 · 대피는 기상청·지자체 발표와 현장 안내'
       : 'Grades come from the issuing agency, unchanged. Follow official announcements for any decision to evacuate.'));
   },
 };

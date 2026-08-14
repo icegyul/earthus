@@ -377,7 +377,7 @@ export const sheet = {
       addRow(rows, ko3 ? '식심 시각' : 'Greatest eclipse',
         at.toISOString().slice(0, 16).replace('T', ' ') + ' UTC');
       /* ⚠️ 좌표만 적어두면 "거기로 가라"로 읽힌다. 바다면 바다라고 먼저 말한다. */
-      addRow(rows, ko3 ? '식심 위치 (관측지 아님)' : 'Greatest point (not a viewing site)',
+      addRow(rows, ko3 ? '식심 위치' : 'Greatest point',
         fmtCoord(e.lat, e.lon));
       if (e.central) addRow(rows, ko3 ? '⭐ 개기식을 볼 수 있는 곳' : '⭐ Where totality passes',
         e.central);
@@ -388,11 +388,11 @@ export const sheet = {
       addRow(rows, ko3 ? '상세 지도' : 'Detail map',
         `<a href="${nasaLink({ ...e, kind: 'solar' })}" target="_blank" rel="noopener">NASA ↗</a>`, true);
       rows.parentElement.appendChild(noteEl(ko3
-        ? '지도의 점은 **관측 장소가 아닙니다.** 달그림자 중심이 지구에 가장 가깝게 스치는 순간의 좌표(식심)이며, 대개 바다 한가운데입니다. 실제로 개기식을 보려면 위의 「개기식을 볼 수 있는 곳」으로 가야 합니다. 개기대(띠)는 그리지 않습니다 — 좌표 자료가 없어 원으로 대신하면 실제와 다르게 읽힙니다. 내 위치에서의 시각은 NASA 지도에서 확인하세요. 자료: NASA GSFC 5천년 일식 목록.'
-        : 'The marker is the single greatest-eclipse point. The path of totality is not drawn — approximating it with a circle would misrepresent it. Check the NASA map for your location. Source: NASA GSFC Five Millennium Canon.'));
+        ? '표식 · 식심 좌표 · 개기대와 내 위치 시각은 NASA 상세 지도 · 자료 NASA GSFC 5천년 일식 목록'
+        : 'Marker · greatest-eclipse coordinate · path and local time in NASA detail map · source NASA GSFC Five Millennium Canon'));
       rows.parentElement.appendChild(el('p', 'sheet-note', ko3
-        ? '⚠️ 부분식 단계에서는 반드시 인증된 일식 안경(ISO 12312-2)을 쓰세요. 선글라스로는 안 됩니다.'
-        : '⚠️ Use certified eclipse glasses (ISO 12312-2) during partial phases. Sunglasses are not enough.'));
+        ? ' 부분식 단계에서는 반드시 인증된 일식 안경(ISO 12312-2)을 쓰세요. 선글라스로는 안 됩니다.'
+        : ' Use certified eclipse glasses (ISO 12312-2) during partial phases. Sunglasses are not enough.'));
       box.classList.remove('down'); box.classList.add('up');
       return;
     }
@@ -743,8 +743,8 @@ function renderEventSources(e, rows) {
   let html = '';
   if (e.status !== 'confirmed') {
     html += `<div class="ev-warn">${ko
-      ? '아직 교차검증이 충분하지 않은 자동 수집 결과입니다. 사실 여부가 확인되지 않았습니다.'
-      : 'Automatically collected and not yet cross-verified. Treat as unconfirmed.'}</div>`;
+      ? '검증 상태 · 자동 수집 · 교차확인 전'
+      : 'Verification · automated collection · before cross-check'}</div>`;
   }
   html += `<div class="of-t">${ko
         ? `원문 보도 · 서로 다른 매체 ${byHost.size}곳`
@@ -756,8 +756,8 @@ function renderEventSources(e, rows) {
          }).join('')
        + (byHost.size === 1 && e.sources >= 10
            ? `<div class="ev-syndicate">${ko
-               ? `⚠️ 보도 문서는 ${e.sources.toLocaleString()}건이지만 수집된 링크는 한 매체뿐입니다. 같은 기사가 여러 곳에 재게재된 경우로 보입니다 — 문서 수가 많다는 것이 독립적 교차검증을 뜻하지는 않습니다.`
-               : `⚠️ ${e.sources.toLocaleString()} documents but only one distinct outlet — likely one story syndicated. A high count is not independent verification.`}</div>`
+               ? `보도 문서 ${e.sources.toLocaleString()}건 · 링크 매체 1곳 · 동일 기사 재게재 가능성`
+               : `${e.sources.toLocaleString()} documents · 1 linked outlet · possible syndication`}</div>`
            : '')
        + `<div class="of-note">${ko
            ? 'GDELT 가 자동 수집한 보도입니다. 저작권상 본문은 싣지 않고 원문으로 연결합니다.'
@@ -892,10 +892,10 @@ function renderFireView(m, rows) {
       cap.textContent = (ko
         ? `${day} 위성 영상 (NASA VIIRS, 약 360km 폭). 흰 줄기가 연기, 붉은 점이 위성이 잡은 열입니다. `
           + (day !== date ? `요청한 ${date} 영상은 아직 합성되지 않아 가장 최근 것을 보여줍니다. ` : '')
-          + '⚠️ 위성이 지나간 순간의 모습이며, 구름에 가리면 불이 안 보입니다.'
+          + ' 위성이 지나간 순간의 모습이며, 구름에 가리면 불이 안 보입니다.'
         : `Satellite view for ${day} (NASA VIIRS, ~360 km across). White streaks are smoke, red marks detected heat. `
           + (day !== date ? `Imagery for ${date} isn’t composited yet, so this is the most recent available. ` : '')
-          + '⚠️ This is the moment of overpass; cloud cover hides fire.');
+          + ' This is the moment of overpass; cloud cover hides fire.');
       a.href = `https://worldview.earthdata.nasa.gov/?v=${(m.lon - 3).toFixed(2)},${(m.lat - 3).toFixed(2)},${(m.lon + 3).toFixed(2)},${(m.lat + 3).toFixed(2)}&t=${day}`;
       a.textContent = ko ? 'NASA Worldview 에서 크게 보기 (날짜 이동 가능) ↗'
                          : 'Open in NASA Worldview (scrub by date) ↗';
@@ -992,8 +992,8 @@ function renderBuoyModel(m, rows) {
         <div><dt>${ko ? '사용 격자' : 'Model grid'}</dt><dd>${grid}</dd></div>
       </dl>
       <p class="buc-note">${comparable
-        ? (ko ? '양수는 모델값이 실측보다 높다는 뜻입니다. 한 시각의 대조이며 기관 순위나 장기 정확도 평가는 아닙니다.'
-              : 'Positive means the model is higher than observed. This is one timestamp, not an agency ranking or long-term skill score.')
+        ? (ko ? '차이 · 모델−실측 · 동일 시각 비교'
+              : 'Difference · model minus observed · same-time comparison')
         : (ko ? '관측과 모델의 시각 차이가 2시간을 넘거나 시각이 없어, 두 값을 나란히만 보여주고 차이는 계산하지 않았습니다.'
               : 'The timestamps are over two hours apart or unavailable, so values are shown side by side without a difference.')}</p>`;
   }).catch(() => {
@@ -1055,8 +1055,8 @@ function renderBuoyCam(m, rows) {
     h.alt = m._meta2?.type || (ko ? '부이 종류' : 'Buoy type');
     h.src = `https://www.ndbc.noaa.gov${ph}`;
     const hc = el('div', 'bc-cap', ko
-      ? `같은 종류(${esc(m._meta2.type || '')})의 부이 사진입니다 — 이 부이를 직접 찍은 것은 아닙니다.`
-      : `A photo of the same buoy type (${esc(m._meta2.type || '')}) — not this individual buoy.`);
+      ? `사진 종류 · 같은 모델 ${esc(m._meta2.type || '')}`
+      : `Photo type · same model ${esc(m._meta2.type || '')}`);
     h.onerror = () => { h.remove(); hc.remove(); };
     box.append(h, hc);
     anyPhoto = true;
@@ -1104,10 +1104,10 @@ function renderBuoyCam(m, rows) {
       });
       wrap.appendChild(el('div', 'bc-cap', ko
         ? '차트는 NOAA NDBC 가 제공하는 최근 5일 그래프입니다. '
-          + '⚠️ 5일은 그날그날의 날씨를 보는 데는 충분하지만 연구·논문용으로는 짧습니다 — '
+          + ' 5일은 그날그날의 날씨를 보는 데는 충분하지만 연구·논문용으로는 짧습니다 — '
           + '계절 변동이나 추세를 보려면 아래 「연도별 전체 이력」에서 원자료를 받으세요.'
         : 'Charts are NOAA NDBC’s own 5-day plots. '
-          + '⚠️ Five days is enough to read the current weather but too short for research — '
+          + ' Five days is enough to read the current weather but too short for research — '
           + 'for seasonal variation or trends, download the raw archive linked below.'));
       box.appendChild(wrap);
       anyPhoto = true;
@@ -1174,8 +1174,8 @@ function renderAgencyCheck(jc, rows) {
   if (!jc.found) {
     box.innerHTML = `<div class="ac-head">${ko ? '기관 대조' : 'Agency cross-check'}</div>`
       + `<div class="ac-none">${ko
-        ? '일본 기상청 발표에서 대응하는 지진을 찾지 못했습니다. 기상청은 일본에서 진도가 관측된 지진만 발표하므로, 먼 바다·쿠릴·오가사와라 지역은 대조되지 않습니다. 표시된 값은 미국 지질조사국(USGS) 해입니다.'
-        : 'No matching JMA bulletin. JMA publishes only quakes felt in Japan, so remote offshore events are not cross-checked. The values shown are the USGS solution.'}</div>`;
+        ? 'JMA 대응 발표 0건 · 적용 범위: 일본 진도 관측 지진 · 표시값: 미국 지질조사국(USGS)'
+        : 'JMA matching bulletin 0 · scope: earthquakes with observed intensity in Japan · displayed solution: USGS'}</div>`;
     rows.parentElement.appendChild(box);
     return;
   }
@@ -1475,8 +1475,8 @@ async function renderSatImage(sat, rows) {
     drawSchematic(cv, sat, sat.color);
     box.appendChild(cv);
     box.appendChild(el('div', 'sat-cap',
-      ko ? '개념도 — 실제 사진이 아닙니다. 크기·궤도만 반영했습니다.'
-         : 'Schematic — not a photo. Reflects size and orbit only.'));
+      ko ? '표시 유형 · 개념도 · 크기·궤도 반영'
+         : 'Display type · schematic · size and orbit reflected'));
   }
 }
 
@@ -1753,8 +1753,8 @@ export const settings = {
       ['auto', ko ? '자동' : 'Auto'], ['low', ko ? '낮음' : 'Low'], ['off', ko ? '끔' : 'Off'],
     ], visualEffects.mode, value => { visualEffects.set(value); this.render(); });
     $('#visualFxHint').textContent = ko
-      ? '구름 관측 화소·출처·시각은 그대로입니다. 그림자·명암만 바꾸며 위험·추천·예약 판단에는 쓰지 않습니다.'
-      : 'Observation pixels, source and time stay unchanged. Only shadow/relief changes; it is never a safety, recommendation or reservation input.';
+      ? '시각 효과 · 그림자·명암 · 원자료·출처·시각 유지 · 위험·추천·예약 입력 제외'
+      : 'Visual effect · shadow and relief · source pixels/time unchanged · excluded from safety, recommendation and reservation inputs';
 
     /* ── 요금제 ──
        ⚠️ 예전엔 여기에 "무료 사용자 / 구독 사용자" 토글이 그대로 있었다.
@@ -1974,8 +1974,8 @@ function renderRainBars(w) {
     }).join('') + '</div>'
     /* 강수는 "확률"로만 말한다 — 사용자 지시. 단정하면 안 틀릴 수가 없다. */
     + `<div class="rb-note">${ko
-        ? '확률은 그 시간에 비가 올 가능성입니다. mm 는 오는 경우의 예상 강수량이며, 확률이 낮으면 실제로 안 올 수 있습니다.'
-        : 'Percentages are the chance of rain in that hour. mm is the expected amount if it does rain — a low chance means it may not.'}</div>`;
+        ? '확률 · 해당 시간 강수 가능성 · mm · 강수 시 예상량'
+        : 'Probability · chance of rain in that hour · mm · expected amount when rain occurs'}</div>`;
 }
 
 export function toast(msg) {

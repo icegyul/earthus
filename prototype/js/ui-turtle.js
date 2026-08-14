@@ -82,23 +82,17 @@ export const turtlePanel = {
     const ko = i18n.lang === 'ko';
     body.innerHTML = '';
 
-    /* ── ⚠️ 맨 위: 이게 무엇이 아닌지 ─────────────────────────
-       받은 요청 그대로 — "추적이 종료된 수신기에 대해서만 조회" 를 화면에 적는다. */
     body.appendChild(el('div', 'tt-warn',
-      `<b>${ko ? '⚠️ 지금 위치가 아닙니다' : '⚠️ Not current positions'}</b>`
+      `<b>${ko ? '완료된 추적 경로' : 'Completed tracking routes'}</b>`
       + `<p>${ko
-        ? '국립해양생물자원관은 <b>추적이 종료된 수신기에 대해서만</b> 자료를 공개합니다. '
-          + '여기 보이는 것은 <b>이미 끝난 추적의 지나간 경로</b>입니다 — '
-          + '그 거북이 지금 그 자리에 있다는 뜻이 아닙니다.<br>'
-          + '<small>가장 최근 추적도 몇 해 전에 끝난 것일 수 있습니다. 개체마다 날짜를 함께 적었습니다.</small>'
-        : 'The agency publishes <b>only completed trackers</b>. These are past routes — '
-          + 'not where the turtle is now.'}</p>`));
+        ? '국립해양생물자원관 · 종료된 수신기 · 개체별 추적 날짜 표시'
+        : 'MABIK · completed trackers · dates shown per individual'}</p>`));
 
     const T = _data.turtles || [];
     if (!T.length) {
       body.appendChild(el('p', 'kr-note', ko
-        ? '지금 받아온 개체가 없습니다. ⚠️ 바다거북이 없다는 뜻이 아니라 저희가 못 받았다는 뜻입니다.'
-        : 'No individuals loaded — that means we could not fetch, not that none exist.'));
+        ? '받은 추적 기록 0건'
+        : '0 tracking records received'));
     }
 
     // 종별 요약 — ⚠️ 세는 것은 '변경'이 아니다. 값을 바꾸지 않는다.
@@ -157,7 +151,7 @@ export const turtlePanel = {
 
       const info = ko
         ? `🐢 ${t.nameKo} · ${String(t.first?.at || '').slice(0, 10)}~${String(t.last?.at || '').slice(0, 10)}`
-          + ` · ${t.points}점 · ⚠️ 추적이 끝난 경로입니다`
+          + ` · ${t.points}점 · 완료된 추적`
         : `${t.nameKo} · ${t.points} pts · tracking ended`;
       /* 경로선 — ⚠️ 전체를 볼 때는 흐리게. 45마리를 진하게 그으면 바다가 안 보인다. */
       this._ents.push(viewer.entities.add({
@@ -196,10 +190,7 @@ export const turtlePanel = {
           + (t.releasedWhere ? `${ko ? '방류' : 'Released'} ${esc(t.releasedAt || '')} · ${esc(t.releasedWhere)}<br>` : '')
           + (t.caughtWhere ? `${ko ? '확보' : 'Found'} ${esc(t.caughtAt || '')} · ${esc(t.caughtWhere)}<br>` : '')
           + (t.weightKg ? `${ko ? '몸무게' : 'Weight'} ${esc(t.weightKg)}kg · ${ko ? '길이' : 'Length'} ${esc(t.lengthCm)}cm<br>` : '')
-          + `<hr style="opacity:.2">`
-          + `<b style="color:#f0a878">⚠️ ${ko
-              ? '여기가 <b>추적이 끝난 자리</b>입니다. 지금 이 거북이 여기 있다는 뜻이 아닙니다.'
-              : 'This is where tracking ended — not where the turtle is now.'}</b><br>`
+          + `<hr style="opacity:.2"><b>${ko ? '마지막 수신점' : 'Last received point'}</b><br>`
           + `<small style="opacity:.6">${esc(_data.source || '')} · ${esc(_data.license || '')}</small>`
           + `</div>`,
       }));

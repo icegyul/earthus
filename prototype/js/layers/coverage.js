@@ -149,19 +149,19 @@ export const coverage = {
     const s = this.stats;
     if (!s) return '';
     const miss = this.missing?.length
-      ? (ko ? `\n⚠️ ${this.missing.join('·')} 자료를 못 받아 빠졌습니다 — 실제보다 더 비어 보입니다.`
-            : `\n⚠️ ${this.missing.join(', ')} could not be loaded, so this looks emptier than it is.`)
+      ? (ko ? `\n ${this.missing.join('·')} 자료를 못 받아 빠졌습니다 — 실제보다 더 비어 보입니다.`
+            : `\n ${this.missing.join(', ')} could not be loaded, so this looks emptier than it is.`)
       : '';
     return (ko
       ? `관측점 ${s.points.toLocaleString()}곳 (해양 부이 ${this.sourceCounts?.buoy?.toLocaleString?.() || 0} · 공항 METAR ${this.sourceCounts?.metar?.toLocaleString?.() || 0} · 세계 지상관측 GTS ${this.sourceCounts?.gts?.toLocaleString?.() || 0})을 10° 격자에 센 것입니다. `
         + `${s.cells}칸 중 **${s.empty}칸(${s.emptyPct}%)에 관측점이 하나도 없습니다.**\n`
-        + `⚠️ 면적당 개수로 나눴습니다 — 같은 10° 칸이라도 극지는 좁아서, 안 나누면 극지가 실제보다 촘촘해 보입니다.\n`
+        + ` 면적당 개수로 나눴습니다 — 같은 10° 칸이라도 극지는 좁아서, 안 나누면 극지가 실제보다 촘촘해 보입니다.\n`
         + `색이 진할수록 관측이 없는 곳입니다 — 촘촘한 곳은 일부러 비워 두었습니다. 화면에 남는 붉은 자리가 곧 구멍입니다.\n`
-        + `⚠️ 관측소 수는 신뢰도가 아닙니다. 바다 위 수온처럼 위성이 촘촘히 보는 값도 있습니다. 여기서는 센 것만 말합니다.`
+        + `자료 의미 · 관측점 분포 밀도 · 신뢰도는 자료 종류별 별도 평가`
       : `${s.points.toLocaleString()} observation points (ocean buoys ${this.sourceCounts?.buoy?.toLocaleString?.() || 0} · airport METAR ${this.sourceCounts?.metar?.toLocaleString?.() || 0} · global GTS ${this.sourceCounts?.gts?.toLocaleString?.() || 0}) counted on a 10° grid. `
         + `**${s.empty} of ${s.cells} cells (${s.emptyPct}%) contain no observation point at all.**\n`
-        + `⚠️ Counts are divided by cell area: without that, the poles look denser than they are.\n`
+        + ` Counts are divided by cell area: without that, the poles look denser than they are.\n`
         + `The stronger the colour, the fewer observations: dense areas are deliberately left clear, so what remains on screen is the gap.\n`
-        + `⚠️ Station count is not confidence — some values, like sea surface temperature, are watched densely by satellite. This layer reports only what it counted.`) + miss;
+        + `Meaning · observation-point density · confidence is evaluated separately by data type.`) + miss;
   },
 };

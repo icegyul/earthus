@@ -84,7 +84,7 @@ export function decisionPanelMarkup(model, { personalVisible = true, synthetic =
       </div>
       <button type="button" class="du-close" data-decision-close aria-label="${esc(close)}">×</button>
     </div>
-    ${synthetic ? `<p class="du-synthetic" role="note">${lang === 'en' ? 'Synthetic development data — never an observation or recommendation.' : '합성 개발 자료 · 실제 관측·안전·예약·추천이 아닙니다.'}</p>` : ''}
+    ${synthetic ? `<p class="du-synthetic" role="note">${lang === 'en' ? 'Synthetic development data' : '합성 개발 자료'}</p>` : ''}
     <p class="du-recommendation" data-state="${esc(model.recommendation.state)}">
       <strong>${esc(model.recommendation.label)}</strong>
       <span>${esc(model.recommendation.reason)}</span>
@@ -95,8 +95,8 @@ export function decisionPanelMarkup(model, { personalVisible = true, synthetic =
     ${model.personal ? `<button type="button" class="du-personal-toggle" data-personal-toggle aria-pressed="${personalVisible}">${personalVisible ? esc(personal) : esc(restore)}</button>` : ''}
     ${contributionMarkup(model)}
     <p class="du-foot">${lang === 'en'
-      ? 'Safety, official closure, availability and confidence are never changed by personalization.'
-      : '개인화는 안전·공식 폐쇄·예약 사실·예보 자료 신뢰도를 바꾸지 않습니다.'}</p>
+      ? 'Personalization scope · preference fit only'
+      : '개인화 범위 · 취향 적합도'}</p>
   </section>`;
 }
 
@@ -119,12 +119,12 @@ export function decisionCompareMarkup(compare) {
     </section>`;
   }
   return `<section class="decision-ui decision-ui--compare" role="region" aria-labelledby="decisionUiTitle">
-    <div class="du-head"><div><span class="du-kicker">COMPARE · NO SINGLE WINNER</span><h2 id="decisionUiTitle" tabindex="-1">${esc(title)}</h2></div><button type="button" class="du-close" data-decision-close aria-label="${esc(close)}">×</button></div>
+    <div class="du-head"><div><span class="du-kicker">AXIS COMPARISON</span><h2 id="decisionUiTitle" tabindex="-1">${esc(title)}</h2></div><button type="button" class="du-close" data-decision-close aria-label="${esc(close)}">×</button></div>
     <div class="du-compare-head"><strong>${esc(compare.left.label)}</strong><strong>${esc(compare.right.label)}</strong></div>
     <div class="du-compare-grid">${compare.rows.map(row => `<article data-axis="${row.key}">
       <h3>${esc(row.label)}</h3>${compareCell(row.left)}${compareCell(row.right)}
     </article>`).join('')}</div>
-    <p class="du-foot">${lang === 'en' ? 'No winner is calculated. Compare each axis and its evidence.' : '단일 승자를 계산하지 않습니다. 축별 상태와 근거를 따로 비교하세요.'}</p>
+    <p class="du-foot">${lang === 'en' ? 'Compare each axis and its evidence.' : '축별 상태와 근거 비교'}</p>
   </section>`;
 }
 

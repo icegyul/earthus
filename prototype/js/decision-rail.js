@@ -225,13 +225,12 @@ export const decisionRail = {
       ? `${ko ? '공개 전 검증' : 'Pre-release validation'} · ${activity[ko ? 'ko' : 'en']}`
       : (ko ? '활동을 선택해주세요' : 'Choose an activity');
     const axisStrong = this.root.querySelectorAll('.dr-axis strong');
-    if (axisStrong[2]) axisStrong[2].textContent = ko ? '실데이터 연결 전' : 'Live data not connected';
-    if (axisStrong[3]) axisStrong[3].textContent = ko ? '확인할 자료 없음' : 'No data to verify';
-    if (axisStrong[4]) axisStrong[4].textContent = ko ? '확인할 자료 없음' : 'No data to verify';
+    if (axisStrong[2]) axisStrong[2].textContent = ko ? '자료 준비 중' : 'Data in preparation';
+    if (axisStrong[3]) axisStrong[3].textContent = ko ? '혼잡 자료 없음' : 'No crowd data';
+    if (axisStrong[4]) axisStrong[4].textContent = ko ? '예약 자료 없음' : 'No booking data';
     $('decisionRailAsk').textContent = ko ? '지구 자료에 더 물어보기' : 'Ask more about Earth data';
-    $('decisionRailLimit').textContent = ko
-      ? 'Activity Score는 곡선·실데이터 검증 전이라 아직 공개하지 않습니다.'
-      : 'Activity Score remains hidden until profile curves and live data are approved.';
+    $('decisionRailLimit').textContent = '';
+    $('decisionRailLimit').hidden = true;
     this.renderSafety();
   },
 };

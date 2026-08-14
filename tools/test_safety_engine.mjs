@@ -144,8 +144,10 @@ test('미래 발효 revision은 UPCOMING으로 분리한다', () => {
   assert.equal(state.state, 'UPCOMING');
 });
 test('화면 계약은 UNKNOWN과 근사 한계를 숨기지 않는다', () => {
-  assert.match(ui, /특보가 없거나 안전하다는 뜻이 아닙니다/);
-  assert.match(ui, /공식 구역 경계 polygon이 아닌 근사/);
+  assert.match(ui, /근사 구역 대조/);
+  assert.match(ui, /일치 특보 0건 · 기상청 공식 특보에서 확인/);
+  assert.match(ui, /대조 방식 · 최근접 공식 관측지점/);
+  assert.match(ui, /기상청 공식 특보에서 확인/);
   assert.match(ui, /n=\$\{esc\(evidence\.n/);
   assert.doesNotMatch(warnUi + koreaUi, /발효 중인 특보가 없습니다|No active warnings in your area|No warnings in your area/);
 });
@@ -153,7 +155,8 @@ test('활성 공식 특보 UI는 제한·출처·시각·n·공식 CTA를 함께
   const gate = engine.evaluateWarningSafety({ snapshot: snapshot(), zones, coords, nowMs: NOW });
   const html = gateUi.safetyGateMarkup(gate, 'ko');
   assert.match(html, /data-safety-status="WARNING"/);
-  assert.match(html, /공식 특보 우선 · 추천 제한/);
+  assert.match(html, /공식 특보 · 추천 제한/);
+  assert.match(html, /폭염 · 주의 · 김포시/);
   assert.match(html, /n=1/);
   assert.match(html, /2026-08-12 11:10 KST/);
   assert.match(html, /weather\.go\.kr\/w\/special-report\/overall\.do/);

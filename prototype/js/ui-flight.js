@@ -140,8 +140,8 @@ export const flightPanel = {
     wrap.appendChild(btn);
 
     wrap.appendChild(el('p', 'sky-note', ko
-      ? '대권항로(지구 위 최단거리)를 그립니다. 실제 항로는 제트기류·영공 제한·항로점 때문에 이보다 휘어집니다. 소요시간은 순항속도 860 km/h 와 이착륙 여유를 더한 어림값입니다.'
-      : 'This is the great-circle path. Real routes bend for jet streams, airspace limits and waypoints. Duration assumes 860 km/h cruise plus ground time.'));
+      ? '표시 경로 · 대권항로 · 소요시간 계산: 순항 860km/h+이착륙 여유 · 실제 운항: 제트기류·영공·항로점 반영'
+      : 'Display · great-circle path · duration: 860 km/h cruise plus ground time · operations reflect jet streams, airspace and waypoints'));
     return wrap;
   },
 
@@ -173,13 +173,13 @@ export const flightPanel = {
          · 수수료를 받는다는 것 (표시광고법·FTC 가 요구한다. '제휴' 배지 + 문구) */
     const affiliated = links.some(l => l.affiliate);
     wrap.appendChild(el('p', 'sky-note', ko
-      ? 'earthus 는 항공권을 판매하지 않습니다. 예약·결제·환불은 해당 판매처와 항공사의 약관을 따르며, 우리는 예약 내용을 받지 않습니다.'
+      ? '연결 방식 · 외부 판매처 · 예약·결제·환불은 판매처와 항공사 약관 적용'
         + (affiliated
-          ? ' 「제휴」 표시가 있는 링크로 예약이 성사되면 판매처로부터 수수료를 받습니다. 수수료는 표시 순서에 영향을 주지 않습니다 — 수수료가 없는 곳도 함께 보여드립니다.'
+          ? ' 제휴 수수료 · 「제휴」 링크 예약 성사 시 수령 · 정렬 기준과 분리'
           : '')
-      : 'earthus does not sell tickets; booking, payment and refunds follow the seller’s and airline’s terms, and we receive no booking details.'
+      : 'Link type · external seller · booking, payment and refunds follow seller and airline terms.'
         + (affiliated
-          ? ' Links marked “ad” earn us a commission if you book. Commission does not affect the order shown — non-paying options are listed too.'
+          ? ' Affiliate fee · earned on completed bookings through “ad” links · separate from sort order.'
           : '')));
     return wrap;
   },
@@ -207,8 +207,8 @@ export const flightPanel = {
     if (this.candidates) {
       if (!this.candidates.length) {
         wrap.appendChild(el('p', 'sky-dim', ko
-          ? '이 항로 주변에서 그 번호의 비행기를 못 찾았습니다. 아직 이륙하지 않았거나, 대양 한가운데라 수신이 안 되거나, 호출부호가 다를 수 있습니다.'
-          : 'No aircraft with that number along this route. It may not have departed, may be out of receiver range, or use a different callsign.'));
+          ? '검색 결과 0건 · 미출발·수신 범위·호출부호 확인'
+          : 'Search result 0 · check departure, receiver coverage and callsign'));
       } else {
         wrap.appendChild(el('p', 'sky-dim', ko
           ? '아래에서 내 비행기를 고르세요. 고른 뒤에는 그 기체만 추적합니다.'
@@ -227,8 +227,8 @@ export const flightPanel = {
     }
 
     wrap.appendChild(el('p', 'sky-note', ko
-      ? '위치는 adsb.lol 의 자원봉사 ADS-B 수신망에서 옵니다 (ODbL 1.0). 지상 수신기가 닿는 곳만 보이므로 대양·극지 구간은 신호가 끊깁니다 — 그때는 마지막 수신 위치와 경과 시간을 보여드리고, 가지 않은 길을 이어 그리지 않습니다. 30초마다 갱신합니다.'
-      : 'Positions come from adsb.lol’s volunteer ADS-B network (ODbL 1.0). Ground receivers only, so ocean and polar gaps are normal — we then show the last received position and how long ago, and never draw a path we did not observe. Refreshed every 30 s.'));
+      ? '출처 · adsb.lol 자원봉사 ADS-B 수신망(ODbL 1.0) · 대양·극지 수신 공백 · 마지막 수신 위치·경과시간 표시 · 30초 갱신'
+      : 'Source · adsb.lol volunteer ADS-B network (ODbL 1.0) · ocean/polar coverage gaps · last reception and age shown · 30 s refresh'));
     return wrap;
   },
 
@@ -316,7 +316,7 @@ export const flightPanel = {
       /* ⚠️ 비상 코드는 절대 가공하지 않고 그대로 보여준다.
          7700 일반비상 / 7600 통신두절 / 7500 납치 (§4-11) */
       if (s.emergency) {
-        add(ko ? '⚠️ 비상 신호' : '⚠️ Emergency', s.emergency);
+        add(ko ? ' 비상 신호' : ' Emergency', s.emergency);
       }
       add(ko ? '기체 주소' : 'ICAO address', (s.hex || '').toUpperCase());
       wrap.appendChild(dl);

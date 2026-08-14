@@ -69,13 +69,10 @@ export const ecobirdPanel = {
 
     body.innerHTML = `
       <div class="sb-warn">
-        <b>${ko ? '⚠️ 지금 새가 있는 곳이 아닙니다' : '⚠️ Not live bird positions'}</b>
+        <b>${ko ? '조사 기록' : 'Survey records'}</b>
         <p>${ko
-          ? '기관의 조사 기록을 약 5km 칸으로 묶었습니다. <b>점 크기는 기록 건수</b>이며 '
-            + '새의 개체수가 아닙니다.<br><b>빈 칸은 “새가 없다”가 아니라 '
-            + '“위치가 있는 조사 기록이 없다”는 뜻입니다.</b>'
-          : 'Survey records are grouped into ~5 km cells. Dot size is the number of records, '
-            + 'not bird abundance. Empty cells mean no located survey record, not no birds.'}</p>
+          ? '약 5km 격자 · <b>점 크기 = 기록 건수</b>'
+          : '~5 km grid · <b>dot size = record count</b>'}</p>
       </div>
       <div class="sb-sum">
         <div class="sb-cell"><b>${n0(data.records)}</b><em>${ko ? '받은 기록' : 'records received'}</em></div>
@@ -84,7 +81,7 @@ export const ecobirdPanel = {
         <div class="sb-cell"><b>${n0(cells.length)}</b><em>${ko ? '5km 조사 칸' : '5 km cells'}</em></div>
       </div>
       <p class="sb-note">${ko
-        ? `⚠️ 위치가 없어 지도에 못 올린 기록 ${n0(data.noLocation)}건 · 좌표 이상 ${n0(data.dropped)}건 · 못 받은 기록 ${n0(data.truncated)}건`
+        ? `미표시 · 위치 없음 ${n0(data.noLocation)}건 · 좌표 이상 ${n0(data.dropped)}건 · 미수신 ${n0(data.truncated)}건`
         : `${n0(data.noLocation)} records have no source location · ${n0(data.dropped)} invalid coordinates · ${n0(data.truncated)} not received`}</p>
       <p class="sb-h">${ko ? '많이 기록된 종' : 'Most recorded species'}</p>
       <div class="sb-list">${species.slice(0, 30).map(([name, count]) => `
@@ -96,7 +93,7 @@ export const ecobirdPanel = {
         ${esc(data.source || '')} · ${esc(data.license || '')}<br>
         ${ko
           ? `자료 갱신 ${esc(updated)} · 공공누리 제1유형은 출처를 밝히면 상업적 이용과 가공을 허용합니다. `
-            + `다만 이 API는 <b>제3자 권리 포함</b>으로 표시됩니다. earthus는 권리 범위를 서면으로 확인하기 전까지 유료 가공물과 원자료 CSV/API를 제공하지 않습니다.`
+            + `제3자 권리 포함 · 유료 가공물·원자료 CSV/API는 권리 범위 확인 후 제공`
           : `Updated ${esc(updated)} · KOGL Type 1 permits commercial use and adaptation with attribution. `
             + `This API is also marked <b>as including third-party rights</b>, so earthus withholds paid derivatives and raw CSV/API exports until the rights scope is confirmed in writing.`}<br>
         ${licenseLinks}<br>
@@ -118,8 +115,8 @@ export const ecobirdPanel = {
       const scale = Math.sqrt((cell.n || 0) / max);
       points.add({
         id: { _pick: ko
-          ? `에코뱅크 약 5km 조사 칸 · 기록 ${n0(cell.n)}건 · 기록된 종 ${n0(cell.spc)}종 · 현재 위치 아님`
-          : `EcoBank ~5 km survey cell · ${n0(cell.n)} records · ${n0(cell.spc)} species · not live` },
+          ? `에코뱅크 약 5km 조사 칸 · 기록 ${n0(cell.n)}건 · 기록된 종 ${n0(cell.spc)}종`
+          : `EcoBank ~5 km survey cell · ${n0(cell.n)} records · ${n0(cell.spc)} species` },
         position: C.Cartesian3.fromDegrees(cell.lon, cell.lat, 1800),
         /* 5km 칸이 서로 붙어 있으므로 크게 그리면 남한이 한 덩어리로 덮인다.
            기록이 가장 많은 칸도 9px 아래로 제한하고, 대부분은 작은 점으로 남긴다. */

@@ -118,8 +118,8 @@ function explainBlocks(ko) {
   ];
   const wrap = div('tc-exp');
   wrap.appendChild(div('sheet-note',
-    ko ? '⚠️ 아래는 일반 원리 설명입니다. 이 태풍에 대한 예보가 아닙니다 — 실제 대응은 기상청 발표를 따르세요.'
-       : '⚠️ General principles, not a forecast for this storm — follow official warnings.'));
+    ko ? '태풍의 일반 원리 · 대응 기준은 기상청 공식 발표'
+       : 'General cyclone principles · follow official warnings'));
   S.forEach(([t, body]) => {
     const d = document.createElement('details');
     d.className = 'tc-fold';

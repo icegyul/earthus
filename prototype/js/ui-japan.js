@@ -131,9 +131,7 @@ export const japanPanel = {
     const ko = i18n.lang === 'ko';
     return `<p class="kr-note">${ko ? '일본 기상청 (JMA)' : 'Japan Meteorological Agency'}`
       + (extra ? ` · ${esc(extra)}` : '')
-      + `<br>${ko
-        ? '⚠️ 이 경로는 JMA 방재 사이트가 쓰는 공개 JSON 이고 <b>정식 API 로 규격을 보장한 것은 아닙니다.</b> 구조가 바뀌면 공지 없이 끊길 수 있습니다.'
-        : '⚠️ These are the public JSON feeds behind JMA’s disaster-prevention site, not a guaranteed API.'}</p>`;
+      + '</p>';
   },
 
   /* ── 특보 ───────────────────────────────────────────────
@@ -149,17 +147,9 @@ export const japanPanel = {
     if (!w) return '';
 
     if (!w.live) {
-      return `<div class="jp-warn-dead"><b>${ko ? '⚠️ 특보를 확인할 수 없습니다' : '⚠️ Warnings unavailable'}</b>`
-        + `<p>${ko
-          ? `일본 기상청 특보 자료가 <b>${esc(w.feedLatestJst || '?')}</b> 이후 갱신되지 않고 있습니다`
-            + `${w.feedAgeHours ? ` (약 ${Math.round(w.feedAgeHours / 24)}일)` : ''}.<br>`
-            + `<b>지금 일본에 특보가 없다는 뜻이 아닙니다</b> — 저희가 확인할 수 없다는 뜻입니다. `
-            + `일본 기상청 발표나 현지 안내를 확인하세요.<br>`
-            + `<small>같은 사이트의 지진·낙뢰 자료는 정상입니다. 저희는 계속 확인하고 있으며, `
-            + `다시 들어오면 자동으로 여기에 나옵니다.</small>`
-          : `The JMA warning feed has not updated since ${esc(w.feedLatestJst || '?')}. `
-            + `<b>This does not mean there are no warnings</b> — we cannot check. `
-            + `<small>We keep polling; it will appear here automatically if it resumes.</small>`}</p></div>`;
+      return `<div class="jp-warn-dead"><b>${ko ? '특보 자료 지연' : 'Warning feed delayed'}</b>`
+        + `<p>${ko ? `마지막 갱신 ${esc(w.feedLatestJst || '?')} · 일본 기상청 발표 확인`
+          : `Last update ${esc(w.feedLatestJst || '?')} · check JMA announcements`}</p></div>`;
     }
 
     const items = w.items || [];
@@ -176,10 +166,8 @@ export const japanPanel = {
         + `<b>${(x.codes || []).map((c) => esc(String(c))).join(' · ')}</b></div>`;
     }).join('');
     h += `<p class="kr-note">${ko
-      ? '⚠️ 특보 <b>종류는 번호로만</b> 나옵니다. 일본 기상청이 종류를 코드로만 주고 '
-        + '공개된 대조표를 찾지 못해, 저희가 이름을 지어 붙이지 않았습니다. '
-        + '정확한 내용은 일본 기상청 발표를 보세요.'
-      : '⚠️ Warning types are shown as JMA codes; no public lookup table was found and we will not invent names.'}</p>`;
+      ? '종류 · JMA 특보 코드'
+      : 'Type · JMA warning code'}</p>`;
     return h;
   },
 
@@ -217,11 +205,9 @@ export const japanPanel = {
          6km 옆 관측소를 두고 40km 밖 값을 말하면서 조용히 있으면 안 된다. */
       if (any && any !== near && any.km + 3 < near.km) {
         const an = nameOf(any);
-        h += `<p class="kr-note">⚠️ ${ko
-          ? `더 가까운 관측소(${esc(an.text)} · ${Math.round(any.km)}km)가 있지만 <b>기온을 재지 않아</b> `
-            + `${Math.round(near.km)}km 떨어진 곳의 값을 보여드립니다.`
-          : `A closer station (${esc(an.text)}, ${Math.round(any.km)} km) does not measure temperature, `
-            + `so this is from ${Math.round(near.km)} km away.`}</p>`;
+        h += `<p class="kr-note">${ko
+          ? `기온 관측소 · ${Math.round(near.km)}km · 인근 ${esc(an.text)}는 기온 미관측`
+          : `Temperature station · ${Math.round(near.km)} km · nearer ${esc(an.text)} has no temperature sensor`}</p>`;
       }
       if (nm.tr) h += this._trNote();
       /* ⚠️ **없는 항목을 0 으로 읽지 않게** 그 지점이 무엇을 안 재는지 적는다. */
@@ -231,9 +217,7 @@ export const japanPanel = {
         near.pres == null ? (ko ? '기압' : 'pressure') : null,
       ].filter(Boolean);
       if (missing.length) {
-        h += `<p class="kr-note">⚠️ ${ko
-          ? `이 관측소는 ${missing.join('·')}을(를) 재지 않습니다 — 값이 0 인 것이 아니라 없는 것입니다.`
-          : `This station does not measure ${missing.join(', ')} — absent, not zero.`}</p>`;
+        h += `<p class="kr-note">${ko ? `미관측 항목 · ${missing.join(' · ')}` : `Unmeasured · ${missing.join(' · ')}`}</p>`;
       }
     } else {
       h += `<p class="kr-note">${ko
@@ -266,10 +250,8 @@ export const japanPanel = {
     h += `<p class="kr-note">${ko
       ? `전국 ${d.count}지점이 10분마다 잰 값입니다 (${esc(d.timeJst || '')} JST`
         + `${age != null ? ` · ${Math.round(age)}분 전` : ''}).<br>`
-        + `⚠️ 지점마다 재는 항목이 다릅니다 — 기온 ${d.have?.temp}곳 · 바람 ${d.have?.wind}곳 · `
-        + `기압 ${d.have?.pres}곳입니다. 없는 항목은 그 지점이 안 재는 것입니다.<br>`
-        + `⚠️ 전국 평균을 내지 않습니다 — 일본은 남북 2,000km 가 넘어 평균이 아무 곳도 설명하지 못합니다.`
-      : `${d.count} stations, every 10 minutes (${esc(d.timeJst || '')} JST). Not all stations measure all elements.`}</p>`;
+        + `기온 ${d.have?.temp}곳 · 바람 ${d.have?.wind}곳 · 기압 ${d.have?.pres}곳`
+      : `${d.count} stations · 10-minute observations (${esc(d.timeJst || '')} JST) · temperature ${d.have?.temp} · wind ${d.have?.wind} · pressure ${d.have?.pres}`}</p>`;
     return h + this._src(ko ? 'AMeDAS 자동관측망' : 'AMeDAS');
   },
 
@@ -312,9 +294,8 @@ export const japanPanel = {
     }).join('');
 
     h += `<p class="kr-note">${ko
-      ? '⚠️ <b>규모</b>는 지진 자체의 크기이고 <b>진도</b>는 그 자리에서 얼마나 흔들렸나입니다 — 다른 값입니다.<br>'
-        + '⚠️ 속보로 들어온 것은 나중에 값이 바뀔 수 있습니다.'
-      : '⚠️ Magnitude is the quake’s size; intensity is how strongly a place shook — different numbers.'}</p>`;
+      ? '<b>규모</b> · 지진 크기　<b>진도</b> · 지점별 흔들림'
+      : '<b>Magnitude</b> · event size　<b>Intensity</b> · shaking by place'}</p>`;
     return h + this._src(ko ? '진원·진도 정보' : 'Hypocentre / intensity');
   },
 
@@ -338,12 +319,8 @@ export const japanPanel = {
     h += `<div class="kr-row"><span>${ko ? '같은 시각 · 한국' : 'Same window · Korea'}</span><b>${d.korea ?? 0}${ko ? '회' : ''}</b></div>`;
 
     h += `<p class="kr-note">${ko
-      ? '⚠️⚠️ <b>일본 기상청은 낙뢰의 종류를 공개하지 않습니다.</b> 땅에 떨어진 것(낙뢰)과 '
-        + '구름 사이에서만 친 것(번개)을 구분해 주지 않습니다 — 기상청(한국)은 구분해 줍니다. '
-        + '짐작해서 나누면 그 순간 거짓이 되므로 여기서는 나누지 않습니다.<br>'
-        + '⚠️ 세기(kA)도 공개되지 않습니다.'
-      : '⚠️ JMA does not publish strike type (cloud-to-ground vs cloud-to-cloud) or peak current, '
-        + 'so neither is shown. KMA does publish both for Korea.'}</p>`;
+      ? 'JMA 제공 항목 · 발생 시각 · 좌표'
+      : 'JMA fields · time · coordinates'}</p>`;
     return h + this._src(ko ? '낙뢰 관측 (liden)' : 'Lightning (liden)');
   },
 
@@ -377,13 +354,8 @@ export const japanPanel = {
       }).join('');
 
     h += `<p class="kr-note">${ko
-      ? `일본 해변 ${pts.length}곳입니다 (OpenStreetMap 에서 저희가 정리했습니다).<br>`
-        + '⚠️⚠️ <b>이안류 지수는 일본에 없습니다.</b> 한국은 국립해양조사원이 해수욕장 10곳의 '
-        + '이안류를 재서 공개하는데, 일본은 그런 공개 자료를 찾지 못했습니다 — '
-        + '없는 것이 아니라 <b>저희가 못 찾은 것</b>입니다.<br>'
-        + '⚠️ 파도·바람은 서핑 화면에서 전 세계 모델값으로 봅니다.'
-      : `${pts.length} beaches from OpenStreetMap. ⚠️ No rip-current index is available for Japan — `
-        + 'Korea publishes one for ten beaches; we could not find a Japanese equivalent.'}</p>`;
+      ? `일본 해변 ${pts.length}곳 · OpenStreetMap · 파도·바람은 서핑 화면`
+      : `${pts.length} beaches · OpenStreetMap · waves and wind in Surf`}</p>`;
     return h;
   },
 
@@ -422,21 +394,14 @@ export const japanPanel = {
     }
     h += `<h4>${ko ? '가장 높은 산' : 'Highest peaks'}</h4>`
       + top.map((x) => `<div class="kr-row"><span>${esc(nameOf(x).text)}</span><b>${x.alt}m</b></div>`).join('');
-    h += `<p class="kr-note">⚠️ ${ko
-      ? '<b>2km 안의 봉우리는 하나로 묶었습니다.</b> 안 묶으면 상위 아홉 곳이 전부 후지산 분화구 테두리라 3,700m 급 산이 아홉 개인 것처럼 보입니다. 이 묶음은 <b>저희가 만든 것</b>이지 공식 목록이 아닙니다.'
-      : 'Peaks within 2 km are merged — otherwise the top nine are all points on Fuji’s crater rim. This grouping is ours, not an official list.'}</p>`;
+    h += `<p class="kr-note">${ko ? '표시 기준 · 봉우리 간 2km 묶음' : 'Display grouping · peaks within 2 km'}</p>`;
 
     /* ⚠️⚠️ **한국 산 화면과 같은 것을 만들지 않는다.** 그 화면의 값어치는
        "기상청 산악예보와 실제 관측이 얼마나 벌어지나"인데, 일본에는 그 짝이 없다.
        비슷하게 생긴 빈 화면을 만드는 것보다 없다고 적는 게 낫다. */
     h += `<p class="kr-note">${ko
-      ? `일본 산 ${list.length}곳입니다 (${esc(d.source || 'OpenStreetMap')}, 해발 ${d.minAlt ?? ''}m 이상).<br>`
-        + '⚠️⚠️ <b>한국 산 화면처럼 예보와 실측을 견주지 못합니다.</b> 그 화면의 값어치는 '
-        + '기상청 산악예보와 실제 관측이 얼마나 벌어지는지인데, 일본에는 산 정상 예보의 '
-        + '공개 짝이 없습니다. 그래서 여기서는 위치와 높이만 보여드립니다.<br>'
-        + '⚠️ 가장 가까운 AMeDAS 관측소 기온은 산 아래 값입니다 — 정상 기온이 아닙니다.'
-      : `${list.length} peaks (${esc(d.source || 'OpenStreetMap')}). ⚠️ Unlike the Korean screen we `
-        + 'cannot compare summit forecast against observation — Japan publishes no summit forecast we could find.'}</p>`;
+      ? `일본 산 ${list.length}곳 · 해발 ${d.minAlt ?? ''}m 이상 · ${esc(d.source || 'OpenStreetMap')}`
+      : `${list.length} peaks · elevation ${d.minAlt ?? ''} m+ · ${esc(d.source || 'OpenStreetMap')}`}</p>`;
     return h;
   },
 
@@ -445,7 +410,6 @@ export const japanPanel = {
   _trNote() {
     const ko = i18n.lang === 'ko';
     if (!ko) return '';
-    return `<p class="kr-note">⚠️ 한글 이름은 외래어 표기법에 따라 <b>저희가 옮긴 것</b>입니다. `
-      + `공식 한국어 표기가 따로 있을 수 있습니다.</p>`;
+    return '<p class="kr-note">한글 표기 · 영문명 기반 변환</p>';
   },
 };

@@ -40,8 +40,8 @@ export const trenchCards = {
     );
     const limit = document.createElement('p'); limit.className = 'trench-limit';
     limit.textContent = ko
-      ? '문헌의 최심부 범위와 이 앱의 GEBCO 2026 약 11km 격자값은 해상도·측정법이 달라 서로 다를 수 있습니다. 항해·안전에 사용하지 마세요.'
-      : 'Published deepest ranges and this app’s ~11km GEBCO 2026 cells can differ because resolution and methods differ. Never use for navigation or safety.';
+      ? 'GEBCO 2026 약 11km 격자 · 문헌 최심부와 해상도·측정법 차이 · 항해·안전 자료는 공식 해도 이용'
+      : 'GEBCO 2026 ~11 km grid · resolution and method differ from published deepest ranges · use official charts for navigation and safety';
     this.root.append(limit);
   },
 

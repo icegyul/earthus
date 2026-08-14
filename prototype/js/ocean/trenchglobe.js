@@ -295,8 +295,8 @@ export const trenchGlobe = {
       const offset = LIFE_LABEL_OFFSETS[index];
       this.speciesLabels.add({
         id: { _pick: ko
-          ? `${item.name.ko} · 문헌 ${depthLabel} · 이 해구의 현재 관측 아님`
-          : `${item.name.en} · literature ${depthLabel} · not a live record here` },
+          ? `${item.name.ko} · 문헌 ${depthLabel}`
+          : `${item.name.en} · literature ${depthLabel}` },
         position,
         text: `${item.name[ko ? 'ko' : 'en']}\n${depthLabel}`,
         font: '500 11px system-ui,sans-serif',
@@ -333,8 +333,8 @@ export const trenchGlobe = {
       + `<span>${area}</span>`
       + `<strong>${ko ? '확대 단계의 가상 수심' : 'Virtual depth from zoom'} ${depth.toLocaleString()}m</strong>`
       + `<small>${ko
-        ? `현재 수심 부근의 문헌 최대·관측 수심 표식 ${speciesCount}종 · 이 위치의 현재 관측 아님<br>${this.footprints.limitations.ko}<br>${this.selected.source}`
-        : `${speciesCount} literature maximum/observed-depth markers near this depth · not a live record here<br>${this.footprints.limitations.en}<br>${this.selected.source}`}</small>`;
+        ? `현재 수심 부근 문헌 최대·관측 수심 표식 ${speciesCount}종<br>${this.footprints.limitations.ko}<br>${this.selected.source}`
+        : `${speciesCount} literature maximum/observed-depth markers near this depth<br>${this.footprints.limitations.en}<br>${this.selected.source}`}</small>`;
   },
 
   renderOverviewHud() {
@@ -345,8 +345,8 @@ export const trenchGlobe = {
     this.hud.innerHTML = `<b>${ko ? '지구의 깊은 해구 영역' : 'Earth’s deep trench regions'}</b>`
       + `<span>${this.footprints.features.length}${ko ? '개 연결 영역' : ' connected regions'} · ${totalArea.toLocaleString()} km²</span>`
       + `<small>${ko
-        ? 'GEBCO 2026 약 11km 격자에서 6,000m보다 깊고 최심점과 연결된 영역입니다.<br>영역을 누르거나 그 안으로 확대하면 현재 수심 부근의 문헌 최대·관측 수심 표식이 나타납니다. 공식 해구 경계는 아닙니다.'
-        : 'GEBCO 2026 ~11 km cells deeper than 6,000 m and connected to a catalogued deep point.<br>Tap a region or zoom inside it to see literature maximum/observed-depth markers near the current depth. Not an official trench boundary.'}</small>`;
+        ? '자료 · GEBCO 2026 약 11km 격자 · 6,000m 이상 연결 영역<br>확대하면 문헌 최대·관측 수심 표식 표시'
+        : 'Data · GEBCO 2026 ~11 km grid · connected regions deeper than 6,000 m<br>Zoom for literature maximum and observed-depth markers'}</small>`;
   },
 
 };

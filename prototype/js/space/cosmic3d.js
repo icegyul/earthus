@@ -1925,8 +1925,8 @@ export const cosmic3d = {
           : 'No grid sample in this 24-hour window satisfies both geometry constraints.';
         const note = document.createElement('small');
         note.textContent = isKo
-          ? '관측 불가 결론이 아닙니다. 날씨·현지 지평선·달·장비는 평가하지 않았습니다.'
-          : 'This is not an unobservable claim; weather, local horizon, Moon, and equipment were not evaluated.';
+          ? '계산 격자 교집합 0 · 미평가: 날씨·현지 지평선·달·장비'
+          : 'Grid intersection 0 · unevaluated: weather, local horizon, Moon and equipment';
         item.append(note); windows.append(item);
       } else {
         plan.windows.forEach((window, index) => {
@@ -1940,8 +1940,8 @@ export const cosmic3d = {
       document.getElementById('cosmicPlannerEvidence').textContent =
         `${plan.revision} · ${isKo ? '계산 격자' : 'calculation grid'} ${plan.evidence.calculationSampleCount} · ${isKo ? '관측 n 해당 없음' : 'observation n not applicable'}`;
       document.getElementById('cosmicPlannerLimits').textContent = isKo
-        ? '제한된 기하 후보 · 날씨·빛공해·현지 지평선·달·장비 미포함 · 성공률·안전·이동·조준 판정 아님 · JSON은 계획 데이터만 포함'
-        : 'Limited geometry candidate · no weather, light pollution, local horizon, Moon, or equipment · not a success, safety, travel, or pointing claim · JSON contains plan data only';
+        ? '기하 조건 후보 · 미포함: 날씨·빛공해·현지 지평선·달·장비 · 용도: 관측 계획 JSON'
+        : 'Geometry candidate · excluded: weather, light pollution, local horizon, Moon and equipment · output: planning JSON';
     }
     document.getElementById('cosmicPlannerDownload').disabled = !this._offlinePlanManifest;
     this.renderObservationSession();
@@ -1992,7 +1992,7 @@ export const cosmic3d = {
 
   sessionErrorText(code, isKo = ko()) {
     const messages = {
-      SESSION_INDEXEDDB_UNAVAILABLE: ['이 브라우저는 기기 로컬 세션 저장을 지원하지 않습니다.', 'This browser does not support device-local session storage.'],
+      SESSION_INDEXEDDB_UNAVAILABLE: ['기기 로컬 세션 저장 · 브라우저 미지원', 'Device-local session storage · browser unsupported'],
       SESSION_STORAGE_PRESSURE: ['저장 공간이 부족해 전이를 기록하지 않았습니다. 기존 기록은 그대로입니다.', 'Storage is full; the transition was not written and existing records remain unchanged.'],
       SESSION_REVISION_CONFLICT: ['다른 탭에서 세션이 먼저 바뀌었습니다. 최신 체크포인트를 다시 읽었습니다.', 'Another tab changed the session first. The latest checkpoint was reloaded.'],
       SESSION_OWNER_CONFLICT: ['다른 기기 소유 분기와 충돌해 자동 병합하지 않았습니다.', 'A different device-owner branch conflicted; it was not auto-merged.'],
@@ -2152,8 +2152,8 @@ export const cosmic3d = {
     if (this._sessionShellStatus) evidenceParts.push(`offline shell ${this._sessionShellStatus}`);
     document.getElementById('cosmicSessionEvidence').textContent = evidenceParts.join(' · ');
     const baseLimit = isKo
-      ? 'LOCAL ONLY · 서버 upload/pull 미구현 · 자동 병합 없음 · 기기 기록 시각은 관측 증거 n이 아님 · 장비 명령 없음'
-      : 'LOCAL ONLY · server upload/pull not implemented · no automatic merge · device action times are not observation evidence n · no device command';
+      ? 'LOCAL ONLY · 서버 동기화 미연결 · 병합 수동 · 기기 행동 시각 별도 기록 · 장비 제어 미연결'
+      : 'LOCAL ONLY · server sync pending · manual merge · device-action times recorded separately · device control pending';
     const errorText = this._observationSessionError
       ? ` · ${this.sessionErrorText(this._observationSessionError, isKo)}` : '';
     document.getElementById('cosmicSessionLimits').textContent = `${baseLimit}${errorText}`;
@@ -2396,8 +2396,8 @@ export const cosmic3d = {
       SECURE_CONTEXT_REQUIRED: ['HTTPS에서만 센서와 카메라를 요청할 수 있습니다.', 'Sensors and camera require HTTPS.'],
       ORIENTATION_SENSOR_UNAVAILABLE: ['이 브라우저에서 방향 센서를 사용할 수 없습니다.', 'Orientation sensors are unavailable in this browser.'],
       CAMERA_API_UNAVAILABLE: ['이 브라우저에서 카메라 API를 사용할 수 없습니다.', 'The camera API is unavailable in this browser.'],
-      ORIENTATION_PERMISSION_DENIED: ['방향 센서 권한이 거부되었습니다. 자동으로 다시 묻지 않습니다.', 'Orientation permission was denied. It will not be requested again automatically.'],
-      PERMISSION_DENIED: ['카메라 권한이 거부되었습니다. 자동으로 다시 묻지 않습니다.', 'Camera permission was denied. It will not be requested again automatically.'],
+      ORIENTATION_PERMISSION_DENIED: ['방향 센서 권한 · 거부 · 다시 요청 버튼으로 실행', 'Orientation permission · denied · use the button to request again'],
+      PERMISSION_DENIED: ['카메라 권한 · 거부 · 다시 요청 버튼으로 실행', 'Camera permission · denied · use the button to request again'],
       CAMERA_NOT_FOUND: ['사용할 수 있는 카메라를 찾지 못했습니다.', 'No usable camera was found.'],
       CAMERA_NOT_READABLE: ['다른 앱 또는 기기 오류 때문에 카메라를 열지 못했습니다.', 'The camera could not be opened because of another app or device error.'],
       DOCUMENT_HIDDEN: ['화면이 숨겨져 센서와 카메라를 해제했습니다.', 'Sensors and camera were released when the page became hidden.'],
@@ -2576,11 +2576,11 @@ export const cosmic3d = {
       coordinates.append(dt, dd);
     });
     document.getElementById('cosmicAstronomyHorizon').textContent = observation.horizon === 'above'
-      ? (isKo ? '기하학적 지평선 위 · 관측 가능 판정은 아님' : 'Above geometric horizon · not an observability claim')
-      : (isKo ? '기하학적 지평선 아래 · 현재 관측 가능 판정은 아님' : 'Below geometric horizon · not an observability claim');
+      ? (isKo ? '기하학적 지평선 위' : 'Above geometric horizon')
+      : (isKo ? '기하학적 지평선 아래' : 'Below geometric horizon');
     document.getElementById('cosmicAstronomyLimit').textContent = isKo
-      ? '계산값 · n 해당 없음 · 대기굴절·시차·현지 지평선·주광·날씨 미포함 · 망원경 조준용 아님'
-      : 'Calculated · n not applicable · no refraction, parallax, local horizon, daylight, or weather · not for telescope pointing';
+      ? '계산값 · 미포함: 대기굴절·시차·현지 지평선·주광·날씨 · 정밀 조준: 천문 장비용 계산 사용'
+      : 'Calculated · excluded: refraction, parallax, local horizon, daylight and weather · precision pointing: use instrument-grade calculation';
     this.showObservationPlanner();
     this.renderSkyARProbe();
   },
@@ -2831,8 +2831,8 @@ export const cosmic3d = {
       ? '네트워크 또는 데이터 계약을 확인한 뒤 다시 시도해 주세요.'
       : 'Check the network or data contract, then try again.';
     document.getElementById('cosmicPhotoLimit').textContent = isKo
-      ? '검증되지 않은 사진은 대신 표시하지 않습니다.'
-      : 'Unverified images are not substituted.';
+      ? '검증 사진 0건 · 공식 원본 링크 이용'
+      : 'Validated images 0 · use the official source link';
     document.getElementById('cosmicPhotoSource').hidden = true;
     const retry = document.getElementById('cosmicPhotoRetry');
     retry.hidden = false; retry.textContent = isKo ? '다시 시도' : 'Try again';

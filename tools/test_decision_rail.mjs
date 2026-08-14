@@ -87,7 +87,7 @@ try {
   assert.equal(await page.locator('#decisionRailClose').count(), 0, '활동 판단 전용 닫기 버튼이 남았다');
   assert.equal(await page.locator('.dr-axis').count(), 5, '5축이 아니다');
   assert.equal(await page.locator('.dr-axis').first().getAttribute('class'), 'dr-axis dr-axis--safety');
-  assert.match(await page.locator('#decisionRailSafety').textContent(), /공식 특보 우선/);
+  assert.match(await page.locator('#decisionRailSafety').textContent(), /공식 특보/);
   assert.match(await page.locator('#decisionRailSafetyState').textContent(), /추천 제한/);
   assert.equal(await page.locator('#decisionRailSafety').getAttribute('data-safety-status'), null);
   assert.equal(await page.locator('#decisionRailSafety [data-safety-status="DANGER"]').count(), 1);
@@ -114,7 +114,7 @@ try {
   await page.locator('#decisionRailAsk').click();
   await page.locator('#askSheet.up').waitFor();
   assert.match(await page.locator('.ask-context').textContent(), /선택한 맥락/);
-  assert.match(await page.locator('.ask-context').textContent(), /Activity Score를 알고 있는 척 답하지 않습니다/);
+  assert.match(await page.locator('.ask-context').textContent(), /연결 자료: 태풍 · 지진 · 수온 · 기상 관측/);
   await page.locator('.ask-close').click();
   await page.waitForFunction(() => !document.getElementById('askSheet').classList.contains('up'));
 

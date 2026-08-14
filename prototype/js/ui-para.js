@@ -234,9 +234,9 @@ export const paraPanel = {
         <p class="mt-times">${ko
           ? `활공장 <b>${m.count}곳</b> · 바람 Open-Meteo`
           : `${m.count} sites · wind from Open-Meteo`}</p>
-        <div class="pg-warn">⚠️ ${ko
-          ? '좌표는 <b>그 산의 정상</b>이지 이륙장이 아닙니다. 찾아가는 좌표로 쓰지 마세요.'
-          : 'Coordinates are the summit, not the launch platform.'}</div>
+        <div class="pg-warn">${ko
+          ? '좌표 기준 · <b>산 정상</b> · 이륙장 위치는 현장 정보 확인'
+          : 'Coordinate basis · <b>summit</b> · check local launch information'}</div>
         <div class="mt-list">${list.map(s => this._card(s, ko)).join('')}</div>
         ${this._foot(ko)}`}
     `;
@@ -296,33 +296,24 @@ export const paraPanel = {
           <span class="s">${n.rain ? (ko ? `비 ${v(n.rain)}mm` : `rain ${v(n.rain)}mm`) : ''}</span>
         </div>
       </div>
-      <p class="pg-note">⚠️ ${ko
-        ? '이 바람은 <b>지상 10m</b> 값입니다. 이륙장 높이의 바람은 다릅니다 — 산이 바람을 조이고 돌립니다.'
-        : 'Wind is at 10 m above ground; ridge-top wind differs.'}</p>
+      <p class="pg-note">${ko ? '풍속 기준 높이 · <b>지상 10m</b>' : 'Wind reference height · <b>10 m AGL</b>'}</p>
     </article>`;
   },
 
   _how(ko) {
     if (!ko) {
-      return `<div class="mt-foot"><p>We report wind, gusts and cloud base. We never say it is
-        flyable — we do not know the launch direction, your rating, or your wing.</p></div>`;
+      return '<div class="mt-foot"><p>Inputs · 10 m wind · gust · cloud base · temperature</p></div>';
     }
     return `<div class="mt-foot">
-      <p>⚠️⚠️ <b>"날기 좋다"고 말하지 않습니다.</b> 이륙 가능 여부는 등급·날개·경험에
-        달렸고, 무엇보다 <b>이륙장이 어느 쪽을 보는지를 우리가 모릅니다</b> —
-        정풍이어야 뜨는데 그 방향이 공개 자료에 없습니다.</p>
-      <p><b>바람 구간 (저희 기준입니다 — 협회 공식 기준이 아닙니다)</b><br>
+      <p><b>바람 표시 구간</b><br>
         ${PARA_RULES.lightMs}m/s 미만 — 약함, 이륙이 어려울 수 있음<br>
         ${PARA_RULES.lightMs}~${PARA_RULES.okHiMs}m/s — 흔히 말하는 적정 구간<br>
         ${PARA_RULES.okHiMs}~${PARA_RULES.strongMs}m/s — 센 편<br>
         ${PARA_RULES.strongMs}m/s 이상 — 강함<br>
         ${PARA_RULES.dangerMs}m/s 이상 — 대부분 비행을 접음</p>
-      <p>⚠️⚠️ <b>평균 풍속보다 돌풍 차이가 더 위험합니다.</b> 6m/s 평균에 돌풍 7m/s 는
-        다룰 만하지만, 4m/s 평균에 돌풍 12m/s 는 날개가 접힙니다.
-        차이가 ${PARA_RULES.gustDanger}m/s 이상이면 그렇게 적습니다.</p>
-      <p><b>구름 밑면</b>은 기온과 이슬점 차이로 냅니다 (기온−이슬점) × 125m.<br>
-        ⚠️ 항공기상에서 쓰는 표준 근사지만 <b>근사</b>입니다 — 실제와 수백 m 어긋납니다.</p>
-      <p>⚠️ 바람은 <b>지상 10m</b> 값입니다. 능선 위는 지형이 바람을 조이고 돌려 더 셉니다.</p>
+      <p>돌풍 경계 · 평균보다 ${PARA_RULES.gustDanger}m/s 이상 높을 때 강조</p>
+      <p>구름 밑면 근사 · (기온−이슬점) × 125m</p>
+      <p>풍속 기준 높이 · <b>지상 10m</b></p>
     </div>`;
   },
 
@@ -331,7 +322,7 @@ export const paraPanel = {
     return `<div class="mt-foot">
       <p>${ko ? '위치 OpenStreetMap (ODbL) · 바람 Open-Meteo'
               : 'Locations: OpenStreetMap (ODbL) · Wind: Open-Meteo'}</p>
-      <p>⚠️ ${esc(ko ? (m.note?.ko || '') : (m.note?.en || ''))}</p>
+      ${m.generated ? `<p>${ko ? '자료 시각' : 'Data time'} · ${esc(m.generated)}</p>` : ''}
     </div>`;
   },
 };

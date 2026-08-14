@@ -46,6 +46,7 @@ try {
     await flight.click();
     await page.locator('#flightSheet.up').waitFor();
     await page.waitForFunction(() => !document.querySelector('#menuSub')?.classList.contains('open'));
+    await page.locator('#flightSheet .ap-input').first().waitFor({ timeout: 15_000 });
     await page.waitForTimeout(450);
     const flightLayout = await page.locator('#flightSheet').evaluate(sheet => {
       const rect = sheet.getBoundingClientRect();

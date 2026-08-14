@@ -2,9 +2,9 @@
 
 > 작성: 2026-08-10
 > 통합 착수 예정: 2026-08-16 사용량 리셋 확인 후
-> 상태: **계획 확정 · TPW와 PR-01/02 shadow·PR-03 Earth View State 로컬 구현 · 운영 전환 전**
+> 상태: **계획 확정 · TPW와 PR-01/02 shadow·PR-03 Earth View State 로컬 구현 · 철새 레이더 문서 설계 추가·구현 미착수·`productionStatus=NOT_RELEASED` · 운영 전환 전**
 > 범위: EARTHUS 메뉴·레이어 표현·무료/유료 경계, AETHERUS 정보 구조·디자인,
-> 마케팅 스튜디오 공개 이야기관, 통합 검증·배포
+> 마케팅 스튜디오 공개 이야기관, 한국 중심 철새 레이더, 통합 검증·배포
 > 이 문서와 과거 문서가 충돌하면 가격·판매 상태는
 > [`MONETIZATION-PRIORITY-2026-08-05.md`](MONETIZATION-PRIORITY-2026-08-05.md),
 > 구현 순서와 화면 개편은 이 문서를 따른다.
@@ -19,7 +19,8 @@
 - **EARTHUS**: 지금 지구에서 실제로 관측·발표된 것을 출처와 시각까지 확인하는 서비스
 - **AETHERUS**: 검증된 우주 자료를 사진·태양계·우리은하의 흐름으로 탐험하는 서비스
 - **이야기**: 마케팅 스튜디오에서 사람이 공개 승인한 이미지·영상을 누구나 보는 무료 기록관
-- **Personal Pro**: 원자료 자체가 아니라 시간 축적, 개인화 계산, 2차 분석, 추적·내보내기에 과금
+- **Personal Pro(향후)**: 판매 승인 전에는 구현된 기능을 무료 개방하고, 승인 뒤 원자료가 아니라
+  시간 축적·개인화 계산·2차 분석·추적·내보내기를 유료 전환 후보로 삼음
 
 완료란 코드가 생긴 상태가 아니다. 데스크톱·모바일 실제 화면 검증, 데이터 검증,
 운영 배포, 운영 파일 확인, 선택 커밋까지 마친 상태다.
@@ -33,6 +34,8 @@
 - Cesium·Three.js 기반을 프레임워크 전환 명목으로 갈아엎지 않는다.
 - `SALES_OPEN=false`를 유지한다. 유료 기능이 보인다는 이유만으로 판매를 열지 않는다.
 - 에코뱅크 자료의 유료 가공·CSV/API는 제3자 권리 범위를 서면 확인하기 전까지 보류한다.
+- eBird API 키 발급과 연결 성공을 상업 이용 승인으로 보지 않는다. Cornell의 서면 회신으로
+  허용 범위가 확정되기 전에는 eBird 운영 수집·공개 표시·장기 보관·유료 가공을 열지 않는다.
 
 ---
 
@@ -79,6 +82,26 @@
 
 ## 2. 무료와 유료의 단일 기준
 
+### 2-0. 현재 접근 상태 — `OPEN_FREE`
+
+EARTHUS는 아직 유료 서비스를 운영하지 않는다. 따라서 이 문서에서 `Personal Pro`, `Pro`,
+`유료 후보`로 분류한 기능도 **실제로 구현되어 공개 승인을 받으면 현재는 무료로 개방한다.**
+판매 승인을 받기 전에는 구독 여부·결제 entitlement·무료/Pro 수량 차이로 기능을 막지 않는다.
+
+현재 무료 개방은 외부 자료 권리를 우회하지 않는다. source의 display/cache/history/derivative/
+alert/export operation이 승인되지 않았거나 민감정보·안전·개인정보 gate를 통과하지 못한 기능은
+무료라도 공개하지 않는다. 비용·남용 방지를 위한 공통 rate limit과 공정 사용 상한은 모든 사용자에게
+동일하게 적용할 수 있지만, 이를 숨은 유료벽으로 사용하지 않는다.
+
+향후 유료 전환은 다음이 모두 충족된 뒤 별도 배치로 한다.
+
+1. 해당 source의 상업 이용·유료 파생 operation 서면 승인
+2. 통신판매업·약관·사업자 정보·checkout·환불·창립 멤버 할인 검증
+3. 서버 entitlement와 기존 무료 사용자 전환 정책 검증
+4. PD의 `SALES_OPEN=true` 명시 승인
+
+그 전까지 접근 정본은 `OPEN_FREE`, 판매 정본은 `SALES_OPEN=false`다.
+
 ### 2-1. 무료 — 자료의 존재와 판단 근거
 
 | 무료 항목 | 이유 |
@@ -86,12 +109,12 @@
 | 현재 관측·기관 발표·기본 지도 레이어 | 공공 자료 접근 자체를 막아 팔지 않는다. |
 | 출처·발표/관측 시각·갱신 시각·단위·`n`·결측·한계 | 신뢰의 근거이므로 상세가 아니라 기본이다. |
 | 특보·지진·쓰나미·이안류·낙뢰 등 안전 정보 | 영구 무료 원칙이다. |
-| 지점 하나 저장과 기본 현재값 | 제품 가치를 결제 전에 실제로 확인하게 한다. |
+| 현재 구현·권리 승인된 저장·이력·비교 기능 | `OPEN_FREE` 동안 구독 없이 제품 가치를 실제로 확인하게 한다. |
 | 기본 AETHERUS 탐험과 NASA/ESA/JPL 사진 | 교육·탐험 입구이며 출처와 크레딧을 항상 노출한다. |
 | 공개 이야기관 | 이미 공개 승인한 SNS 이미지·영상을 모아 보여주는 기능이다. |
 | 분석 상품의 방법론·샘플·제한된 미리보기 | 계산을 숨겨 결과만 파는 구조를 만들지 않는다. |
 
-### 2-2. 유료 — 시간, 개인화, 계산, 양, 내보내기
+### 2-2. 향후 유료 전환 후보 — 시간, 개인화, 계산, 양, 내보내기
 
 | 유료 상품군 | 판매하는 값 | 무료 경계 |
 |---|---|---|
@@ -125,12 +148,17 @@
 - 서버 entitlement와 화면 잠금이 같은지 확인
 - 창립 멤버 500 반값 경로를 서버 checkout에서 검증
 - 통신판매업·약관·사업자 정보가 갖춰질 때까지 `SALES_OPEN=false`
+- eBird: 2026-08-14 API 신청 과정에서 상업 라이선스 검토를 함께 신청했다는 PD 기록은 있으나,
+  Cornell의 서면 회신·허용 operation·표시/캐시/보관/가공/유료 알림/내보내기 범위가
+  확정되기 전까지 source state는 `PENDING_PROVIDER_REVIEW`다.
 
 ---
 
-## 3. 유료 기능 제작 단위
+## 3. 향후 유료 전환 후보 제작 단위
 
 각 상품은 반드시 `자료 → 계산 → 화면 → 검증 → 가격 → 매출 경로`를 한 묶음으로 설계한다.
+다만 현재는 구현·권리 승인된 기능을 `OPEN_FREE`로 개방하고, 가격·매출 경로는 향후 전환 판단을
+위한 설계와 사용량 측정값으로만 보존한다.
 
 ### P1. 항공기·선박 Track
 
@@ -148,7 +176,7 @@
 
 - **자료**: `forecast/`, `verify/`, ECMWF/GFS/KMA 관측 아카이브
 - **계산**: 날짜·지점·모델·선행시간·변수별 ME/MAE/RMSE, 분포, paired 비교
-- **화면**: LAB의 무료 오늘 사례 → Pro 분석 작업대와 기간 비교
+- **화면**: 현재 `OPEN_FREE` 분석 작업대와 기간 비교 → 향후 무료 기본/Pro 경계 후보
 - **검증**: 원행, manifest, SHA-256, README, 표준 라이브러리 검증기
 - **가격**: Personal Pro 포함, 기관용 대량 추출은 별도 견적 후보
 - **매출 경로**: 무료 사례 → 기간/지역 확장 → 내보내기·재현 묶음
@@ -159,7 +187,7 @@
 
 - **자료**: ASOS 96지점의 실제 축적 이력
 - **계산**: 30일 범위, 같은 계절/같은 날짜, 지점 간 비교, 결측률
-- **화면**: 무료 지점 1곳 → Pro 다지점 보드와 기간 차트
+- **화면**: 현재 지점·다지점·기간 차트 `OPEN_FREE` → 향후 1곳 기본/다지점 Pro 경계 후보
 - **검증**: 화면에 고정 기간을 약속하지 않고 실제 보유 시작·종료일로 계산
 - **가격**: Personal Pro 포함
 - **매출 경로**: 기기 저장 1곳 → 계정 동기화·여러 지점·기간 분석
@@ -168,7 +196,7 @@
 
 - **자료**: 예보 검증·관측·태풍 아카이브 등 이용조건이 확인된 자료만
 - **계산**: 사용자가 고른 범위의 차트·표·방법론·재현 파일
-- **화면**: LAB/Research에서 선택 → 결과 미리보기 → Pro 내보내기
+- **화면**: LAB/Research에서 선택 → 현재 허용된 내보내기 `OPEN_FREE` → 향후 Pro 경계 후보
 - **검증**: 원행·manifest·README·검증기·결측/변조 실패 시험
 - **가격**: Pro 포함 범위와 기관/교육용 별도 상품을 사용량 측정 후 분리
 - **매출 경로**: 공개 샘플 → 개인 Pro → 수업/기관 반복 구매
@@ -305,12 +333,12 @@ Earth Style 안에는 **판독 모드**를 둔다. 전지구 감상과 사건 �
 | 수온 편차 | Windy는 색상 의미가 즉시 읽힘 | 1991–2020 기준 명시 | 0 중심 발산 팔레트, 양/음 등치선, 기준 기간 상시 표시 |
 | 파고·너울 | Windy는 방향·주기·경로 계획이 강함 | 부이 최대/유의/평균 실측과 안전 경고 | 높이 색대+등치선, 방향 화살표·주기, 모델과 실측 이중 패널 |
 | 해류 | Windy는 흐름 애니메이션이 직관적 | `조류/물때`와 다름을 명시 | 표층 흐름·자료시각·단위 고정, 물때로 오해하지 않게 함 |
-| 관측소 | Windy는 지점 패널·meteogram 연결이 강함 | 출처·실제 축적 범위·재현 분석 | 공통 지점 패널, 1곳 무료·다지점/기간 Pro 연결 |
+| 관측소 | Windy는 지점 패널·meteogram 연결이 강함 | 출처·실제 축적 범위·재현 분석 | 현재 공통 지점·다지점/기간 `OPEN_FREE`, 향후 승인 뒤 Pro 경계 후보 |
 | 오로라·일식 | Windy의 특화 플러그인 접근성이 좋음 | 지구와 우주 서비스 연결 | AETHERUS 이동 CTA를 두되 관측/예정 표현을 구분 |
 | 항공기·선박 | Windy는 항공 기상·경로 도구가 성숙 | 위치 자료와 한국·일본 기상을 결합할 가능성 | `Track` 유료 허브, 공급자 이용조건과 지연 표시를 먼저 해결 |
 | Alert | Windy는 즐겨찾기·조건 알림이 강함 | 한국·일본 기관 안전 자료와 무료 원칙 | 현재 사건→지도→저장 장소 알림의 세 단계로 단순화 |
 | News | Windy의 커뮤니티/플러그인과 성격이 다름 | 기관 자료를 실제 사건과 연결 | 기사와 EARTHUS 제작 이야기를 분리 |
-| LAB | Windy의 모델 비교보다 재현성과 과거 예보 보관이 강점 | 예보-관측 원행과 검증기 | 무료 사례→Pro 기간 분석→내보내기의 경로를 명확히 함 |
+| LAB | Windy의 모델 비교보다 재현성과 과거 예보 보관이 강점 | 예보-관측 원행과 검증기 | 현재 기간 분석·허용 내보내기 `OPEN_FREE`, 향후 전환 경계를 명확히 함 |
 
 아래 표는 2026-08-11 운영 `전체 레이어` 목록을 빠짐없이 구현 단위로 묶은 것이다. 한 행에 묶여도
 각 항목은 별도 on/off, 출처, 시각, 실패 상태를 유지한다.
@@ -589,10 +617,13 @@ sceneUrl, credit, alt, status
 
 - Track 허브 UI와 수요/준비 상태
 - 기존 billing 약속과 실제 entitlement 대조
-- 예보 검증·관측소·Research의 무료 미리보기/Pro 경계
+- 예보 검증·관측소·Research의 현재 `OPEN_FREE`와 향후 Pro 경계
 - 유료 기능이 준비되지 않은 경우 결제 CTA 대신 정확한 준비 상태
+- `SALES_OPEN=false`에서는 구현·권리 승인된 기능을 구독 여부와 무관하게 개방
+- 향후 유료 전환 시 기존 사용자·저장 데이터·알림 설정을 잃지 않는 migration과 rollback 설계
 
-완료: 클라이언트 표시만으로 유료 권한이 열리지 않고 `SALES_OPEN=false`에서도 과장된 판매 문구가 없다.
+완료: `SALES_OPEN=false`에서 결제 CTA·구독 잠금 없이 승인된 기능이 열리고, 향후
+`PERSONAL_PRO` 전환 계약과 rollback은 문서·fixture로만 준비돼 있다.
 
 ### 배치 6 — 통합 검수와 운영 배포
 
@@ -615,7 +646,7 @@ sceneUrl, credit, alt, status
 - 메뉴 전환 뒤 이전 장면의 타이머·렌더·오버레이가 남지 않음
 - 브라우저 뒤로/앞으로, 새로고침, 복사 URL
 - 이야기 필터와 `이 장면 열기`
-- 무료/Pro/비로그인/판매 닫힘 상태
+- `OPEN_FREE`/비로그인/판매 닫힘 상태와 향후 `PERSONAL_PRO` fixture
 
 ### 9-2. 시각
 
@@ -723,7 +754,7 @@ sceneUrl, credit, alt, status
 | 1 | 산불 연기·화산재 이동 | 위성 탐지, 방출 고도, 풍향·풍속, 850/700/500hPa 바람, 기관 확산 모델 | 현재 탐지·공식 경보·관측/모델 구분 지도 | 이동 참고선·도달 가능 시간대·고도별 비교·종료 보고서 | 연기/화산재 모델 재표시 조건, 항공·건강 문구와 책임 범위 |
 | 2 | 황사·미세먼지 유입 | 발원 위성, 850/700/500hPa 바람, PM·가시거리 관측소 도달 연쇄 | 현재 실측·공식 예보·모델 격자 구분 | 유입 경로·관측소 도달 순서·관심 지역 비교·종료 보고서 | AirKorea/CAMS 등 재표시 조건, 건강 판정 금지 |
 | 3 | 해류 표류 | 표층 해류, 바람, 파고·너울, 부이, 과거 공개 표류 사례 | 부이·해류·파고 현재값 | 중심 참고선·가능 범위·다일 비교·PDF | 구조·조난 용도가 아닌 공개 부이/환경 사례부터, 자료 재배포 조건 |
-| 4 | 철새 이동 | 공개·허용된 관측 기록, 계절, 바람, 기온, 일조, 서식 환경 | 격자화한 과거/현재 관측과 출처 | 종별 이동 가능 통로·관심 권역·계절 비교·종료 보고서 | 에코뱅크 이용조건, 민감 종·정확 좌표 비공개 규칙 |
+| 4 | 철새 이동 | 공개·허용된 관측 기록, 공식 위치추적, 계절, 바람, 기온, 일조, 서식 환경 | 격자화한 현재 관찰 보고·종/시각/사진·출처 | 관심종 감시·장기 이력·계절 비교·재현 보고서 | eBird 상업 이용 서면 회신, 에코뱅크 제3자 권리, 사진별 라이선스, 민감종 좌표 규칙 |
 | 5 | 해파리·적조 확산 | 수온, 해류, 염분, 위성 해색, 허용된 관측·신고 | 현재 관측·공식 속보·환경장 | 확산 참고 범위·해안 접근 가능성·다일 비교·종료 보고서 | 생물종/적조 판별 한계, 신고 자료 권리, 양식업 손해 판정 금지 |
 | 6 | 오로라 관측 가능 지역 | 태양풍, Kp, 구름, 달빛, 광공해, 위도 | 현재 우주 날씨·구름·관측 조건 | 내 위치·시간 맞춤 가능성 지도·촬영 창·종료 보고서 | 오로라 발생과 지상 관측 가능성을 구분, 개인 위치 처리 |
 | 7 | 위성·우주잔해 재진입 | 공식 궤도, 대기저항, 태양활동, 기관 재진입 발표 | 공식 통과선·기관 발표와 출처 | 통과 가능 띠·재진입 시간 범위·종료 보고서 | 정확한 추락점 표현 금지, CelesTrak/Space-Track/기관 이용조건과 안전 책임 |
@@ -747,12 +778,14 @@ sceneUrl, credit, alt, status
 
 1. 자료원별 이용조건·시각 지연·공간 해상도·재표시 가능 범위를 표로 확정한다.
 2. 과거 사건 최소 10건에서 입력 시각과 종료 관측을 보존해, 기준선 대비 오차·누락·가짜 정밀도를 측정한다.
-3. 무료 현재 지도와 Pro 분석 화면을 분리하고, 출처·시각·한계·표본을 양쪽에 모두 표시한다.
+3. 현재는 지도와 분석 화면을 `OPEN_FREE`로 제공하되 향후 무료 기본/Pro 경계 계약을 분리하고,
+   출처·시각·한계·표본은 어떤 access mode에서도 모두 표시한다.
 4. 종료 보고서가 실제 사건 자료로 생성되고, 계산식·원본 경로·결측·검증 결과가 재현될 때만 다음 대상에 확장한다.
 
 모든 대상의 종료 보고서는 [`LAB-REPORT-CONTRACT.md`](LAB-REPORT-CONTRACT.md)를 따르고
 `LAB > 분석 보고서`에 합류한다. 태풍을 포함하면 공통 보고서 종류는 8개다. LAB 공개 색인은
-실제 생성된 보고서만 노출하며, 유료 원행과 계산 회차를 공개 JSON에 넣지 않는다.
+실제 생성된 보고서만 노출한다. 원행과 계산 회차는 현재 무료 여부와 무관하게 source의
+redistribution/export 권리가 허용한 범위에서만 공개한다.
 
 ---
 
@@ -793,6 +826,7 @@ sceneUrl, credit, alt, status
 - 모든 의미 있는 상태를 URL로 다시 열 수 있는가?
 - 무료 자료의 근거와 안전 정보가 결제창 뒤로 가지 않았는가?
 - 항공기·선박 유료 약속이 실제 라이선스·데이터·권한과 일치하는가?
+- 철새 화면이 관찰 보고·공식 이동 확인·자료 부족을 구분하고, eBird 권리 상태보다 넓게 열리지 않았는가?
 - 이야기관은 무료이며 사람 승인 없이 공개·SNS 게시되지 않는가?
 - 검증·운영 배포·운영 확인·선택 커밋까지 끝났는가?
 
@@ -985,3 +1019,673 @@ gate는 [`earthus-v23/EARTH_VIEW_STATE.md`](earthus-v23/EARTH_VIEW_STATE.md)를 
 동시에 진행 중인 AETHERUS route v3와 foundation·astronomy·photo 시험은 같은 revision으로
 동기화해 재통과했다. 다만 다기기·cache-busting·rollback gate 전에는 PR-03 정적 파일을
 운영 배포하지 않는다.
+
+---
+
+## 19. 2026-08-14 한국 중심 철새 레이더 개발 패키지
+
+### 19-1. 제품 목적과 이번 문서의 상태
+
+현재 조류 화면은 전국 조사 기록을 5km 격자에 점으로 집계하거나, 제한된 철새 이동 사례와
+바닷새 조사 지점을 별도 레이어로 보여준다. 전지구 화면에서 원을 보는 것만으로는 그 지점에서
+무슨 종이 언제 관찰됐고 어떤 모습인지 알 수 없어, 사용자가 원의 의미를 확인하거나 다음 행동으로
+이어가기 어렵다.
+
+새 기능의 목적은 **한국을 기준으로 철새의 최근 관찰 보고와 검증된 이동 근거를 읽는
+`한국 중심 철새 레이더`**를 만드는 것이다. 사용자는 지점을 눌러 종·관찰시각·보고 수·사진·출처를
+확인하고, 종을 선택해 북쪽 번식권부터 한국·일본·동남아시아·대양주까지 같은 종의 지역별 보고
+변화를 시간순으로 볼 수 있어야 한다.
+
+이 장은 개발 사양이며 구현 완료 기록이 아니다.
+
+- 현재 상태: `SPEC_READY / IMPLEMENTATION_NOT_STARTED / productionStatus=NOT_RELEASED`
+- eBird API 키: AWS SSM SecureString 등록 및 서버 측 복호화·인증 시험 성공
+- eBird 상업 라이선스: PD가 API 신청 과정에서 검토 신청, provider 회신 대기
+- 운영 Lambda·EventBridge·S3 공개 파일: 미구현·미배포
+- 공개 UI·Personal Pro·푸시 알림: 미구현·미배포
+- `SALES_OPEN`: 계속 `false`
+- 배포 대상: 현재 없음. collector·reader·UI·flag가 생긴 뒤 BIRD-08 gate에서만 선택 배포
+
+코드·AWS·화면은 이 장의 권리·자료·검증 gate를 통과한 배치만 순서대로 연다. API 키가 있다는
+이유로 다음 배치를 자동 승인하지 않는다.
+
+### 19-2. 사용자가 얻게 될 경험
+
+첫 경험은 “원들이 많다”가 아니라 다음 세 질문에 즉시 답해야 한다.
+
+1. **지금 어디에서 어떤 새가 보고됐나?**
+2. **그 보고는 언제, 몇 건, 어떤 자료원에서 들어왔나?**
+3. **이 종의 한국과 다른 지역 보고는 시간에 따라 어떻게 달라졌나?**
+
+화면은 여섯 영역으로 구성한다.
+
+| 영역 | 무료 화면 | 핵심 동작 |
+|---|---|---|
+| 지금 관찰 | 최근 관찰 보고의 지역·종·시각·출처 | 국가→권역→관찰지점으로 확대 |
+| 이번 가을 | 한국·일본의 겨울철새 최근 보고 목록 | 종·지역·날짜 필터, 첫 보고의 정확한 뜻 확인 |
+| 종별 여정 | 같은 종의 국가/권역별 일자 변화 | 날짜 슬라이더, 관찰 보고와 공식 추적 구분 |
+| 전국 조사 | 기존 에코뱅크 5km 격자 조사 | 기존 기능 보존, 셀 선택 시 종 목록 확장 |
+| 바닷새 | 기존 조사 정점·연도·종 | 기존 기능 보존, 현재 관찰로 오해하지 않게 함 |
+| 내 관심새 | 저장한 종·지역과 최근 변화 | 현재는 구현·권리 승인된 감시·알림을 무료 개방, 향후 판매 승인 뒤 Pro 전환 후보 |
+
+첫 Earth 화면을 새 데이터로 덮지 않는다. 사용자가 `취미 → 새`를 연 뒤에만 자료와 사진을
+지연 로딩한다. 새 허브를 추가하더라도 기존 `전국 조류 조사`, `철새 이동`, `바닷새` reader는
+동일 데이터를 계속 읽을 수 있게 두고, 통합 reader가 검증된 뒤 별도 PR에서 중복 진입점을 정리한다.
+
+### 19-3. 지도 표현 계약
+
+확대 수준에 따라 한 가지 원 기호를 반복하지 않는다.
+
+| 확대 수준 | 표현 | 금지 |
+|---|---|---|
+| 동아시아·전지구 | 국가/권역 카드와 최근 보고 시각, 종 수, 자료 상태 | 국가 중심에 의미 없는 동일 원 배치 |
+| 국가 | 실제 집계 셀 또는 행정권역별 보고 밀도·종 다양성 | 관찰이 없는 곳을 `새 없음`으로 표시 |
+| 지역 | 일반종의 공개 가능한 관찰지점·핫스폿 | 민감종·비공개 위치의 정확 좌표 |
+| 선택 지점 | 종 카드 목록, 관찰시각, 보고 수, 사진, 출처 | 종 목록 없는 숫자 원, 출처 없는 사진 |
+
+기호의 의미는 동시에 세 개를 넘지 않는다.
+
+- 색: 마지막 관찰 보고의 경과 시간
+- 크기: 해당 화면 범위의 보고 레코드 수
+- 외곽선/보조 숫자: 서로 다른 종 수
+
+모든 범례에 집계 기간, 유효 레코드 `n`, 위치 비공개/결측 수와 마지막 갱신시각을 표시한다.
+국가별 eBird 사용자 수와 체크리스트 밀도가 다르므로 보고 수를 개체수·서식 밀도·국가 간 우열로
+표현하지 않는다.
+
+시간 재생은 사용자가 눌렀을 때만 하루 단위로 유한 재생하고 마지막 프레임에서 멈춘다.
+무한 애니메이션과 `clampToGround`는 사용하지 않는다. 정지 뒤 Cesium idle render가 0으로
+돌아와야 한다.
+
+### 19-4. 지점 선택 상세 계약
+
+셀·지점·관찰 카드를 선택하면 기존 공용 시트 한 장에서 다음 순서로 보여준다.
+
+1. 지역명과 좌표 공개 수준
+2. 집계 기간과 마지막 관찰시각
+3. 서로 다른 종 수와 전체 보고 레코드 `n`
+4. 종별 카드
+5. 자료원·갱신시각·누락/제외 수
+
+종별 카드 필드는 다음과 같다.
+
+| 필드 | 표시 규칙 |
+|---|---|
+| 한국명 | 승인된 한국명 사전이 있을 때만 표시 |
+| 영어명·학명 | provider taxonomy와 taxonomy version을 보존 |
+| 사진 | 상업 표시가 허용된 사진만, 촬영자·라이선스·원문 링크 필수 |
+| 최근 관찰시각 | source timezone과 UTC를 함께 보존하고 화면은 현지 시각 우선 |
+| 보고 개체수 | `howMany`가 있을 때만 표시, 없으면 0으로 바꾸지 않음 |
+| 보고 상태 | 검토됨·미검토·비공개 위치를 서로 다른 상태로 표시 |
+| 표본 | 레코드 수와 서로 다른 관찰지 수를 분리 |
+| 출처 | eBird 또는 공식 국내 자료명과 원문 링크 |
+
+사진이 없으면 임의 생성 이미지나 비슷한 종 사진으로 채우지 않는다. `허용된 사진 없음` 상태를
+사용하고 텍스트·학명·출처는 계속 보여준다.
+
+### 19-5. 관찰 보고·도착·이동의 용어
+
+같은 종이 다른 지역에서 연속 관찰됐다고 같은 개체의 이동으로 연결하지 않는다. 화면과 데이터의
+상태는 아래 세 종류만 사용한다.
+
+| 상태 | 필요한 근거 | 허용 문구 |
+|---|---|---|
+| `RECENT_OBSERVATION` | provider 관찰 레코드 | `최근 관찰 보고` |
+| `EARTHUS_SEASON_FIRST_REPORT` | Earthus가 보유한 해당 시즌 아카이브 내 최초 레코드 | `Earthus 보유 기록상 이번 시즌 첫 보고` |
+| `OFFICIAL_TRACK_CONFIRMED` | 위치추적·가락지 재관찰 등 공식 개체 이동 자료 | `공식 위치추적으로 확인된 이동` |
+
+금지 문구:
+
+- `도착 확정` — eBird 단일 관찰만으로 사용 금지
+- `이 새가 한국에서 호주로 이동` — 같은 개체 근거가 없으면 금지
+- `새가 없다` — 관찰 레코드가 없거나 API가 비었을 때 금지
+- `평년보다 빠르다` — 동일 방법의 충분한 다년 기준선과 `n`이 없으면 금지
+- `올해 많이 왔다` — 노력량·체크리스트 분모 없이 보고 건수만으로 금지
+
+관찰 레코드의 국가별 순서를 지도에서 보여줄 때는 선이나 화살표가 아니라 날짜별 셀 변화로
+표현한다. 실선 경로는 공식 개체 추적 자료에만 사용한다. 공식 추적 자료도 표본 개체 수와
+추적 기간을 함께 표시하며 종 전체의 단일 경로로 확대하지 않는다.
+
+### 19-6. 1차 국가·지역 수집 범위
+
+1차 수집 범위는 EAAFP의 동아시아–대양주 철새이동경로 22개 국가·지역에 대만과 국내 공식
+위치추적에서 확인된 서남·아프리카 경로 4개국을 더한 27개 region이다. 이는 “한국의 모든
+철새가 27곳을 모두 간다”는 뜻이 아니라, 한국 관련 종의 관찰 변화를 확인할 1차 수집 경계다.
+
+| 역할 | eBird region code | 지역 |
+|---|---|---|
+| 북쪽 번식·출발권 | `US-AK`, `RU`, `MN` | 미국 알래스카, 러시아, 몽골 |
+| 동아시아 핵심권 | `CN`, `KP`, `KR`, `JP`, `TW` | 중국, 북한, 한국, 일본, 대만 |
+| 동남·남아시아 이동/월동권 | `BD`, `BN`, `KH`, `ID`, `LA`, `MY`, `MM`, `PH`, `SG`, `TL`, `TH`, `VN` | 방글라데시, 브루나이, 캄보디아, 인도네시아, 라오스, 말레이시아, 미얀마, 필리핀, 싱가포르, 동티모르, 태국, 베트남 |
+| 대양주 월동권 | `PG`, `AU`, `NZ` | 파푸아뉴기니, 호주, 뉴질랜드 |
+| 국내 추적 장거리 확장권 | `IN`, `LK`, `MZ`, `TZ` | 인도, 스리랑카, 모잠비크, 탄자니아 |
+
+2026-08-14 read-only 연결 시험에서 27개 region 모두 region info와 최근 30일 관찰 endpoint가
+HTTP 200을 반환했고 `maxResults=1` 표본 레코드가 존재했다. 이는 API 연결과 최소 자료 존재만
+확인한 결과다. 국가 전체의 완전성, 종별 대표성, 상업 이용 허가, 재배포 가능성은 확인한 것이 아니다.
+
+국가 전체 코드는 데이터 수집 partition의 최종 단위가 아니다. 러시아·중국·호주·미국처럼 넓거나
+보고량이 많은 지역은 provider subnational region으로 나눠 호출하고, 한 응답이 endpoint 상한에
+닿으면 더 작은 권역으로 재분할한다. 북한처럼 표본이 적은 지역은 별도 `LOW_COVERAGE` 상태를
+표시하며 주변 국가 자료로 메우지 않는다.
+
+1차 범위 밖 국가도 한국 표지 개체·공식 위치추적·검증된 연구 근거가 추가되면
+`species-route evidence`를 먼저 등록한 뒤 region을 확장한다. 단순히 같은 종이 유럽에 분포한다는
+이유만으로 유럽을 한국 이동경로에 연결하지 않는다.
+
+### 19-7. 자료원과 역할 분리
+
+| source | 현재 역할 | 공개 가능 범위 | 남은 관문 |
+|---|---|---|---|
+| eBird API 2.0 | 최근 30일 관찰 보고 | provider 승인 범위 안의 파생 화면 | 상업 이용 서면 회신, 캐시·이력·유료 기능 범위 |
+| 국립생태원 에코뱅크 | 국내 과거 조류 조사 | 현재 무료 5km 격자 집계 | 제3자 권리 범위, 유료 가공·CSV/API 보류 |
+| 기존 migbird | 공개된 국내 철새 이동 요약 | 출처가 있는 사례·장소·시기 | 원본 GPS 트랙·재배포 범위 |
+| 기존 seabird | 국내 바닷새 정점 조사 | 연도·정점·종 집계 | 현재 관찰과 구분, 사진 별도 권리 |
+| 국립생물자원관·환경부 발표 | 공식 위치추적·가락지 이동 근거 | 발표에 포함된 경로와 표본 | 원본 트랙 사용은 별도 문의 |
+| EAAFP | 이동경로 국가·중요 서식지 근거 | 공식 문서 인용·링크 | 개별 site dataset 권리 확인 |
+| iNaturalist·Wikimedia 후보 | 종 사진 | `CC0`·`CC BY` 등 상업 허용 파일만 | 사진별 creator/license/source 고정 |
+| Macaulay/eBird media | 관찰 사진·음원 | 기본 사용 금지 | 개별 미디어 또는 Cornell 상업 허가 |
+
+eBird API 인증과 자료 이용조건은 다음 공식 문서를 정본 근거로 둔다.
+
+- API Terms: <https://www.birds.cornell.edu/home/ebird-api-terms-of-use/>
+- Data Access Terms: <https://www.birds.cornell.edu/home/ebird-data-access-terms-of-use/>
+- Data use help: <https://support.ebird.org/en/support/solutions/articles/48001078113>
+- API reference: <https://documenter.getpostman.com/view/664302/S1ENwy59>
+
+이동권·국내 추적 근거:
+
+- EAAFP 22개국 정의: <https://eaaflyway.net/wp-content/uploads/2020/06/EAAFP-Partnership-Doc-Updated-postMOP10-2020_04.pdf>
+- 한국 번식 벙어리뻐꾸기 필리핀·인도네시아 이동: <https://m.me.go.kr/home/web/board/read.do?boardId=1434630&boardMasterId=1&menuId=10525>
+- 중국 번식·한국 기착·호주 월동 추적: <https://m.me.go.kr/m/mob/board/read.do?boardId=1605110&boardMasterId=1&menuId=11>
+- 한국 번식 두견이 중국·인도·스리랑카·모잠비크 이동: <https://me.go.kr/home/web/board/read.do?boardId=1755440&boardMasterId=1>
+
+### 19-8. 권리 상태와 승인 gate
+
+2026-08-14 현재 source registry 제안 상태는 다음과 같다.
+
+```text
+sourceId: ebird-api-v2
+status: PENDING_PROVIDER_REVIEW
+evidence: PD가 API 신청 과정에서 상업 라이선스 검토 신청했다고 기록
+credential: ssm:/earthus/ebird/api-key
+credentialValueInDocs: FORBIDDEN
+```
+
+operation별 기본 상태:
+
+| operation | 현재 | 승인 뒤 확인할 내용 |
+|---|---|---|
+| 서버 연결 시험 | `ALLOW_TEST_ONLY` | 키 보안·요청량·응답 오류 |
+| 운영 정기 수집 | `BLOCK` | 호출 주기·rate limit·지역 분할 |
+| 원 응답 캐시 | `BLOCK` | 캐시 기간·보관 위치·삭제 의무 |
+| 장기 이력 보관 | `BLOCK` | 보관 기간·파생 archive 허용 범위 |
+| 무료 화면 표시 | `BLOCK` | attribution·원문 링크·필드 범위 |
+| 무료 개인화·비교·알림 | `BLOCK` | 파생 기능·무료 서비스 내 제공 범위 |
+| 향후 유료 개인화·비교·알림 | `BLOCK` | 파생 기능·수익화 허용 범위 |
+| CSV/API 내보내기 | `BLOCK` | 재배포·API resale·행 제한 |
+| 사진·음원 표시 | `BLOCK_SEPARATE_MEDIA_RIGHTS` | 미디어별 저작권·상업 이용 동의 |
+
+Cornell 회신을 받으면 이메일 내용만 붙여넣지 않고 아래 필드를 registry에 기록한다.
+
+- 허가 주체와 담당자
+- 회신 원문 보관 위치와 증거 URL/문서 ID
+- 허용 product와 법인/사업자 주체
+- display/cache/history/derivative/freeAlert/paidAlert/export/APIResale/media별 상태
+- 출처 표기 문구와 링크
+- 요청량·보관기간·삭제·재검토 조건
+- `approvedAt`, `effectiveAt`, `expiresAt/reviewAt`
+- `approvedBy`, `rollbackVersion`
+
+회신이 일부 operation만 허용하면 허용된 범위만 연다. 예를 들어 무료 display와 freeAlert만
+허용되면 현재 `OPEN_FREE` 화면·알림은 열 수 있지만 향후 paidAlert·유료 비교·내보내기 전환은
+계속 `BLOCK`이다. 사용료가 없거나 데이터가 무료라는 사실을 허가 범위로 대체하지 않는다.
+
+### 19-9. 서버 수집 구조
+
+API 키는 브라우저·정적 JS·공개 JSON·로그에 절대 들어가지 않는다. 제안 수집 단위는
+`aws/ebird-observations/`지만 실제 폴더 생성은 BIRD-01 착수 때 한다.
+
+```text
+EventBridge (승인 뒤에만 활성)
+  → Lambda ebird-observations
+      → SSM /earthus/ebird/api-key 복호화
+      → region/subnational partition 호출
+      → schema 검사·중복 제거·민감 위치 처리
+      → private raw immutable archive
+      → daily canonical observation
+      → public derived summary
+      → health/freshness 별도 기록
+```
+
+제안 S3 경로:
+
+```text
+archive/birds/ebird/raw/<received-date>/<region>/<request-id>.json       private
+archive/birds/ebird/canonical/<observation-date>/<region>.json          private
+archive/birds/ebird/rollup/<observation-date>/<region>.json             private
+events/birds/recent-summary.json                                        public derived
+events/birds/species/<species-code>.json                                public derived, lazy
+health/ebird-observations.json                                          public health only
+```
+
+공개 JSON에는 API 키, observer 이름, checklist 원문 전체, 민감종 정확 좌표, 비공개 location,
+원 응답 전체를 넣지 않는다. 원 응답 보관 자체가 허가되지 않으면 raw archive writer를 만들지 않고
+허용된 최소 파생 필드만 처리한 뒤 메모리에서 폐기한다.
+
+제안 수집 주기는 권리·rate limit 승인 뒤 확정한다.
+
+- 핵심권 `KR/JP/CN/TW`: 최대 6시간 후보
+- 나머지 region: 하루 1회 후보
+- taxonomy/region 목록: 하루 또는 주 1회 캐시 후보
+- 실패: last-good 공개 파일 보존, health에 오류·마지막 성공·다음 재시도 기록
+- API 429/5xx: 지수 backoff와 provider가 요구하는 재시도 규칙 적용
+
+주기는 제품 요구가 아니라 provider 한도와 비용 측정으로 결정한다. 최근 30일 endpoint를 매번
+겹쳐 읽고 stable observation key로 중복 제거하며, 수정·검토 상태 변화는 revision으로 남긴다.
+
+### 19-10. canonical 관찰 스키마
+
+최소 canonical record는 다음 필드를 갖는다.
+
+```json
+{
+  "schemaVersion": 1,
+  "observationId": "provider-stable-or-derived-id",
+  "sourceId": "ebird-api-v2",
+  "regionCode": "KR",
+  "subregionCode": null,
+  "speciesCode": "provider-code",
+  "commonName": null,
+  "scientificName": null,
+  "koreanName": null,
+  "taxonomyVersion": null,
+  "observedAt": "UTC ISO 8601",
+  "observedAtLocal": "source local datetime",
+  "receivedAt": "UTC ISO 8601",
+  "count": null,
+  "location": {
+    "publicPrecision": "CELL_5KM|ADMIN_REGION|PROVIDER_RESTRICTED",
+    "lat": null,
+    "lon": null,
+    "locationId": null,
+    "locationName": null
+  },
+  "review": {
+    "valid": null,
+    "reviewed": null,
+    "provisional": null
+  },
+  "sensitive": false,
+  "sourceUrl": null,
+  "rightsRevision": "pending",
+  "missingReasons": []
+}
+```
+
+`observationId`는 provider가 안정 ID를 주면 그대로 사용하고, 없으면 provider·checklist/submission·
+species·observedAt·location의 정규화 조합으로 만든다. 해시를 썼다는 이유로 개인정보를 공개
+가능하게 보지 않는다.
+
+시간은 원 local datetime과 UTC를 함께 보존한다. 날짜변경선, DST, timezone 미확정은 fixture로
+검사하고 timezone을 알 수 없으면 임의 변환하지 않는다. 미래 시각, region boundary 밖 좌표,
+count 음수, taxonomy 미일치는 quarantine에 보내고 공개 집계에서 제외한다.
+
+### 19-11. 집계와 완전성
+
+화면용 rollup은 아래 값을 분리한다.
+
+- `recordCount`: 관찰 레코드 수
+- `distinctSpeciesCount`: 서로 다른 종 수
+- `distinctLocationCount`: 서로 다른 공개 가능 위치 수
+- `countKnownN`: 개체수가 기입된 레코드 수
+- `individualCountSum`: `count`가 있는 행만 합산한 참고값
+- `missingCountN`: 개체수 결측 레코드 수
+- `privateLocationN`: 비공개/민감 위치 수
+- `rejectedN`: schema·좌표·시각 오류로 제외된 수
+- `sourceMaxResultsHit`: endpoint 결과 상한 도달 여부
+
+`individualCountSum`을 실제 개체군 크기로 부르지 않는다. 같은 개체의 중복 보고, 관찰 노력량,
+체크리스트 수, 지역별 사용자 밀도가 다르기 때문이다. complete checklist와 effort 분모가 없는 API
+응답으로 출현 확률·증감률·국가 간 비교를 계산하지 않는다.
+
+endpoint 상한에 닿거나 partition 일부가 실패하면 public snapshot은 `PARTIAL`이다. 일부 성공분을
+완전한 국가 현황처럼 보여주지 않고 누락 partition 수를 함께 표시한다. 전부 실패하면 last-good을
+유지하되 `마지막 성공 시각`과 `현재 갱신 실패`를 분리한다.
+
+### 19-12. 민감종·좌표·관찰자 보호
+
+- provider가 이미 위치를 제한하면 절대 복원하거나 다른 source와 조합해 좁히지 않는다.
+- 일반종 공개 위치도 전지구/국가 화면에서는 집계 셀만 사용한다.
+- 민감종은 provider 공개 정밀도 또는 행정권역 중 더 거친 수준을 사용한다.
+- 둥지·번식지·희귀종 위치는 사용자 알림에도 정확 좌표를 넣지 않는다.
+- observer 이름·계정·자유문구는 수집 최소화하고 공개·analytics에 넣지 않는다.
+- 사용자 관심종·관심지역은 private profile이며 다른 사용자·관리자 기본 목록에 노출하지 않는다.
+- 화면 캡처·공유 URL에도 민감종 point와 개인 watchlist를 직렬화하지 않는다.
+
+위치 일반화 규칙은 코드 상수가 아니라 versioned policy로 두고, species sensitivity 목록과 provider
+정책이 바뀌면 이전 공개 cache를 재생성·무효화할 수 있어야 한다.
+
+### 19-13. 사진 계약
+
+새 카드의 사진은 관찰 이해에 중요하지만 관찰 API와 미디어 권리는 별개다.
+
+사진 registry 최소 필드:
+
+```text
+speciesCode, scientificName, assetUrl, sourcePageUrl, creator,
+licenseCode, licenseUrl, commercialUse, derivativesAllowed,
+attributionText, verifiedAt, reviewer, checksum
+```
+
+자동 선택 대상은 `CC0`, `CC BY`처럼 상업 이용이 명확한 파일로 제한한다. `CC BY-NC`, 권리 미상,
+출처 페이지가 사라진 파일, 생성형 이미지, 종 동정이 검증되지 않은 사진은 사용하지 않는다.
+`CC BY-SA`는 전체 산출물에 미치는 조건을 별도 법률/라이선스 검토한 뒤 사용한다.
+
+관찰 레코드에 사진이 연결돼 있어도 Macaulay/eBird media 허가가 따로 없으면 썸네일을 복제하지
+않는다. 대신 관찰 원문으로 가는 링크만 둘 수 있는지 provider 회신 범위에서 확인한다.
+
+### 19-14. 현재 무료 개방과 향후 Personal Pro 전환
+
+철새 레이더의 최초 공개 접근 모드는 `BIRD_ACCESS_MODE=OPEN_FREE`다. eBird를 포함한 각 source가
+해당 operation을 허용하고 기능 검증이 끝나면, 아래 기능을 구독 여부와 무관하게 무료로 개방한다.
+
+- 현재 공개 가능한 관찰 보고 전체
+- 지점 선택 종 목록·관찰시각·사진·출처
+- 최근 24시간·7일·실제로 보유한 장기 이력과 되감기
+- 공식 위치추적 경로와 표본
+- 여러 관심종·관심지역 저장과 계정 동기화
+- 검토된 새 보고의 푸시 알림·quiet hours·빈도 설정
+- 여러 국가·권역 동시 감시
+- 개인 주간 철새 보고서
+- 사용자 조건 비교와 권리상 허용된 CSV/PDF/재현 묶음
+- 자료 상태·결측·`n`·방법론
+
+무료 개방 중에도 API·export·알림 폭주를 막기 위한 공통 상한은 둘 수 있다. 이 상한은 운영 안정과
+provider 약관을 위한 것이며 결제 유도용 차등이 아니다. 실제 비용·사용량·유지비는 19-22에서
+측정해 향후 전환 근거로 보관한다.
+
+향후 Cornell의 유료 파생 operation 승인, Earthus 판매 요건, checkout·entitlement·기존 사용자
+전환 정책이 모두 검증되면 `BIRD_ACCESS_MODE=PERSONAL_PRO`를 별도 release로 검토한다. 그때도
+현재 관찰·종·시각·출처·`n`·결측·공식 이동 근거는 무료로 유지하고, 장기 이력·다중 감시·개인화·
+알림·보고서·대량 내보내기만 Pro 후보로 다시 나눈다.
+
+Personal Pro 가격은 기존 상품 정본을 따르고 이 문서에서 새 가격을 만들지 않는다. 승인 전에는
+Pro 배지·잠금·결제 CTA를 표시하지 않는다. raw/API 재배포는 무료 여부와 무관하게 provider가
+허용하지 않으면 만들지 않는다.
+
+### 19-15. 관심새·알림 계약
+
+알림은 `희귀종을 잡으러 가라`가 아니라 사용자가 명시적으로 저장한 종·지역에 새로 들어온
+검토 상태의 관찰 보고를 전달한다.
+
+기본 trigger 후보:
+
+```text
+watch species/region match
+AND new canonical revision
+AND reviewed=true
+AND valid=true
+AND rights operation freeAlert|paidAlert matches current access mode
+AND (BIRD_ACCESS_MODE=OPEN_FREE OR valid server entitlement)
+AND sensitive-location policy applied
+AND not deduplicated
+AND user opt-in/quiet-hours/daily-cap passed
+```
+
+미검토 관찰은 기본 푸시 대상에서 제외한다. 향후 사용자가 미검토 보고도 받도록 고를 수 있게
+하더라도 제목과 본문에 `미검토 관찰 보고`를 고정한다. 같은 checklist/revision의 중복 알림을
+막고, 검토 결과가 바뀌면 이전 notificationId와 연결한 정정 알림을 보낸다.
+
+알림 본문에는 종, 공개 가능한 지역 수준, 관찰시각, 검토 상태, 출처 링크를 포함한다. 정확히
+볼 수 있다는 보장, 도착 확정, 이동 방향, 개체군 증가를 쓰지 않는다.
+
+### 19-16. 주말 탐조 브리핑 후보
+
+반복 사용의 첫 핵심 기능은 `내 철새 감시대`와 `주말 탐조 브리핑`이다. 최초에는 무료 개방하고,
+향후 판매 승인 뒤 Personal Pro 전환 후보로 검토한다. 브리핑은 예측기가 아니라 사용자가 고른
+지역의 공개 자료를 한 장에 정렬한다.
+
+- 최근 48시간 관심종 관찰 보고
+- 공개 가능한 관찰지와 마지막 보고시각
+- 공식 일출·일몰
+- 공식 조석·기상 관측/기관 예보
+- 보호구역·출입·안전 공식 정보
+- 각 자료의 갱신시각·출처·`n`·누락
+
+`볼 확률`, `최적 장소`, `반드시 볼 수 있음`을 계산하지 않는다. 관찰지 순위가 필요하면 거리·
+최근 보고시각처럼 사용자가 확인 가능한 축을 나란히 보여주고 승자를 자동 선정하지 않는다.
+제휴 관광·숙박·장비가 붙더라도 관찰지 자료 순서와 추천 근거를 광고비로 바꾸지 않는다.
+
+### 19-17. URL·상태·공유
+
+Earth View State 계약을 확장하되 개인 상태와 공개 상태를 분리한다.
+
+```text
+?earthView=data&layer=birds-recent&birdRegion=KR&birdDate=2026-08-14
+?earthView=evidence&layer=birds-recent&birdSpecies=<code>&birdCell=<public-cell-id>
+```
+
+URL에는 API 키, observer, exact sensitive point, private watchlist, entitlement를 넣지 않는다.
+잘못된 region/species/date는 빈 화면이 아니라 가장 가까운 공개 가능한 bird state로 낮춘다.
+30일을 넘는 날짜는 실제 archive와 현재 access mode가 허용할 때만 복원한다. `OPEN_FREE`에서는
+구독 entitlement 없이 열고, 향후 `PERSONAL_PRO` 전환 뒤에만 서버 entitlement를 확인한다.
+
+### 19-18. 성능·접근성
+
+- 전지구 집계는 `PointPrimitiveCollection` 또는 동등한 단일 collection을 사용한다.
+- 종 상세·사진은 선택 뒤 lazy load한다.
+- 초기 public summary는 gzip 기준 목표 크기와 최대 레코드 수를 BIRD-03 실측 뒤 고정한다.
+- 화면 밖 entity·photo 요청을 만들지 않는다.
+- 재생은 유한하며 정지 뒤 requestRenderMode idle을 복구한다.
+- 모바일 390×844에서 시트가 지도와 닫기 버튼을 가리지 않는다.
+- 마커는 키보드/스크린리더가 읽을 수 있는 동일 목록 UI를 함께 제공한다.
+- 색만으로 최신성·검토 상태를 구분하지 않고 텍스트·아이콘·범례를 같이 쓴다.
+- 사진에는 한국어 대체텍스트와 촬영자 크레딧을 둔다.
+
+### 19-19. 개발 배치
+
+각 배치는 이전 배치의 완료 증거가 없으면 시작하지 않는다.
+
+#### BIRD-00 — 권리·source 계약
+
+- Cornell 서면 회신 수신·범위 분해
+- eBird display/cache/history/derivative/freeAlert/paidAlert/export/media operation 등록
+- 에코뱅크·NIBR·사진 source 권리 상태 연결
+- region 27개와 species-route evidence registry 작성
+- 산출물: rights matrix, source registry entry, rollback version
+- 완료: 필요한 operation만 `APPROVED`, 나머지는 명시적 `BLOCK`
+
+#### BIRD-01 — 수집기 fixture·연결
+
+- SSM server-only key reader
+- region/subregion partition, timeout, retry, 429 처리
+- 200/401/403/404/429/5xx fixture
+- secret redaction과 로그 검사
+- 실제 API는 read-only manual canary만 수행
+- 완료: 키가 코드·로그·산출물에 없고 27개 region 최소 표본 통과
+
+#### BIRD-02 — canonical·archive shadow
+
+- observation schema, timezone, taxonomy, stable ID, revision
+- 민감 위치·비공개 위치 처리
+- raw 보관 허용 여부에 따른 writer 분기
+- private/no-store shadow archive
+- 완료: 익명 접근 403, 동일 입력 재처리 checksum 동일, 공개 reader 미연결
+
+#### BIRD-03 — 공개 집계 reader
+
+- 국가/권역/셀/종/일 rollup
+- endpoint 상한·partial partition·결측·거절 수
+- last-good과 health 분리
+- payload·비용·호출량 측정
+- 완료: source 샘플 대조, `n` 보존, 허용 범위보다 넓은 필드 0
+
+#### BIRD-04 — 무료 새 허브·지점 상세
+
+- `지금 관찰`, `이번 가을`, 기존 `전국 조사`, `바닷새`
+- 확대 수준별 표현과 종 카드
+- 사진 registry·크레딧·무사진 상태
+- 출처·관찰시각·`n`·결측·검토 상태
+- 완료: 데스크톱·390×844 실제 선택/닫기/URL/오류 화면 통과
+
+#### BIRD-05 — 종별 여정·공식 추적
+
+- 날짜별 지역 관찰 변화
+- 공식 위치추적 경로와 표본
+- 관찰 보고 선 없음, 공식 추적만 실선
+- `Earthus 보유 기록상 첫 보고` 계산
+- 완료: 서로 다른 개체를 연결하는 표현 0, 공식 사례 fixture 대조
+
+#### BIRD-06 — 관심새·알림
+
+- private watchlist, opt-in, quiet hours, daily cap
+- reviewed/valid trigger와 dedup·정정
+- 민감 위치 일반화
+- `OPEN_FREE` 무잠금과 향후 `PERSONAL_PRO` server entitlement 분기
+- 완료: 교차 사용자 차단, 권리 BLOCK에서 발송 0, 중복/정정 fixture 통과
+
+#### BIRD-07 — 장기 비교·보고서·내보내기
+
+- 실제 보유 기간만 30일·계절·연도 비교
+- 개인 주간 보고서
+- 허용된 파생 CSV/PDF/manifest/reproducibility bundle
+- 원자료 재배포 차단
+- 완료: manifest checksum·행 수·출처·방법 재현, 권리와 현재 access mode gate
+
+#### BIRD-08 — 통합 검수·canary·release
+
+- 기존 ecobird/migbird/seabird 회귀
+- query 없는 첫 Earth 무변경
+- 데스크톱·모바일·저사양·오류·발열·접근성
+- AWS 비용·API 호출량·429·last-good·rollback rehearsal
+- 운영 flag-off 배포 → 내부 canary → PD 공개 승인
+- 완료: 운영 파일·MIME·캐시·CloudFront·실제 UI·rollback 증거
+
+### 19-20. 자동검사와 Golden scenario
+
+최소 자동검사:
+
+- 권리 `PENDING/BLOCKED/EXPIRED`에서 collector schedule·public writer·free/paid alert 0
+- SSM 값이 stdout/stderr/exception/public JSON에 나타나지 않음
+- region 27개 code와 subregion cache schema
+- 동일 observation 중복 제거와 revision 대치
+- timezone·DST·날짜변경선·미래 시각 quarantine
+- region boundary 밖 좌표와 비정상 count 제외
+- sensitive/private location 공개 정밀도 제한
+- endpoint 상한 도달 시 `PARTIAL`
+- 한 partition 실패 시 누락 수 보존
+- 모든 공개 값에 source·observed/received/generated 시각·`n`
+- count 결측을 0으로 바꾸지 않음
+- unreviewed/invalid 기본 알림 0
+- 같은 notification dedup과 review 정정 연결
+- eBird media 권리 없을 때 thumbnail 요청 0
+- 사진 creator/license/source 누락 시 표시 0
+- 관찰 보고 사이 화살표/실선 0
+- 공식 track의 표본·기간·출처 누락 시 경로 표시 0
+- archive가 없는 날짜를 비교·첫 보고로 생성하지 않음
+- CSV/API 권리 BLOCK에서 export 0
+- 다른 사용자 watchlist 접근 0
+
+Golden scenario:
+
+| ID | 상황 | 기대 결과 |
+|---|---|---|
+| BIRD-GS-01 | KR 검토 완료 일반종 1건 | 공개 셀·종·시각·출처·n 표시 |
+| BIRD-GS-02 | 민감종 정확 좌표 응답 | 정확 좌표 폐기/비공개, 거친 권역만 표시 |
+| BIRD-GS-03 | 같은 observation 재수집 | 중복 0, received revision만 규칙대로 갱신 |
+| BIRD-GS-04 | provider가 기존 기록 검토 취소 | 기존 표시/알림과 연결한 정정 상태 |
+| BIRD-GS-05 | 중국 partition 일부 429 | 국가 snapshot `PARTIAL`, 누락 partition 표시 |
+| BIRD-GS-06 | API 전체 실패 | last-good 유지, 현재 실패와 마지막 성공시각 분리 |
+| BIRD-GS-07 | 사진 권리 미확정 | 사진 없이 종 정보 표시, 외부 이미지 요청 0 |
+| BIRD-GS-08 | 같은 종이 RU→CN→KR 날짜순 보고 | 날짜별 셀 변화만 표시, 개체 이동선 없음 |
+| BIRD-GS-09 | NIBR 위치추적 개체 경로 | 표본·기간·출처가 있는 공식 실선 표시 |
+| BIRD-GS-10 | `OPEN_FREE`·freeAlert 승인·사용자 opt-in | 구독 없이 정상 발송, 결제 CTA 없음 |
+| BIRD-GS-11 | freeAlert/paidAlert 권리 미승인 | access mode와 무관하게 서버 발송 0 |
+
+### 19-21. 실제 화면 검수
+
+반드시 실제 상호작용 상태를 검수한다.
+
+- 첫 Earth → 취미 → 새 → 지금 관찰
+- 전지구 → 국가 → 권역 → 셀 → 종 카드
+- 종 선택 → 날짜 변경 → 뒤로/앞으로 → 새로고침 복원
+- 사진 있음/없음/실패/권리 만료
+- 검토됨/미검토/민감 위치/자료 없음/부분 수집
+- 기존 전국 조사·철새 이동·바닷새 on/off와 닫기
+- 1280×900, 390×844, 실제 iPhone, 저사양 Android
+- 10분 탐색 뒤 발열·메모리·idle render
+- 키보드·스크린리더 목록과 모바일 터치 44px
+- 공개 URL에 개인 watchlist·민감 좌표가 없는지 확인
+
+### 19-22. 비용·운영 관측
+
+운영 전 7일 shadow에서 다음을 측정한다.
+
+- region/partition별 요청 수·응답 바이트·429/5xx
+- Lambda duration·memory·timeout·재시도
+- S3 raw/canonical/rollup 일 증가량
+- public summary gzip 크기와 CloudFront 전송량
+- 종 상세 사진 요청량과 실패율
+- 알림 후보/실제 발송/dedup/정정 수
+- provider 호출 비용 또는 제한, AWS 월 예상비
+
+비용을 줄이기 위해 표본을 버리거나 국가를 조용히 누락하지 않는다. 주기를 낮추면 화면에 실제
+갱신 주기와 마지막 성공시각을 표시한다. 상한·비용이 예상보다 크면 region 우선순위와 access
+mode를 조정하기 전에 PD에게 측정값과 선택지를 제시한다.
+
+### 19-23. 공개·판매·중지 gate
+
+최초 무료 공개에 필요한 조건:
+
+- eBird display/cache/history 중 실제 사용하는 operation의 서면 승인
+- attribution·원문 링크·민감종 규칙 반영
+- 27개 region completeness/partial 표시 검증
+- 기존 생물 레이어 회귀와 실제 모바일 검수
+- `BIRDS_RECENT_READY=true`에 대한 PD 승인
+- `BIRD_ACCESS_MODE=OPEN_FREE`, 결제 CTA·구독 잠금 0
+
+향후 Personal Pro 전환에 추가로 필요한 조건:
+
+- derivative/paidAlert/export 중 실제 상품 operation 승인
+- server entitlement·RLS·알림 opt-in·quiet hours·daily cap
+- 실제 보유 이력과 방법론·샘플
+- 통신판매업·약관·checkout·창립 멤버 할인 검증
+- `SALES_OPEN=true`는 별도 판매 승인에서만 변경
+- 기존 무료 사용자의 저장 종·지역·알림·보고서 접근 전환과 고지·rollback 검증
+- 전환 전까지 `BIRD_ACCESS_MODE=OPEN_FREE` 유지
+
+즉시 중지 조건:
+
+- provider 허가 철회·만료·범위 불일치
+- API 키 노출 의심
+- 민감종 정확 좌표 공개
+- original dataset 또는 미허용 media 재배포
+- partial/지연 자료를 완전·현재 자료로 표시
+- 관찰 보고를 개체 이동·도착 확정으로 표현
+- 429 지속·비용 상한 초과·last-good 오염
+
+중지 시 EventBridge rule을 끄고 public flag를 내리며 last-good도 권리 철회 대상이면 즉시 비공개로
+전환한다. 기존 ecobird/migbird/seabird reader로 돌아가는 rollback을 실제로 연습한다.
+
+### 19-24. 완료 판정
+
+다음 질문에 모두 `예`여야 철새 레이더 개발 완료다.
+
+- 사용자가 원을 누르지 않아도 지도의 색·크기·숫자 의미를 범례로 이해하는가?
+- 선택한 지점에서 종·사진·관찰시각·보고 수·검토 상태·출처를 확인할 수 있는가?
+- 사진이 없거나 권리가 없을 때 가짜 사진을 만들지 않는가?
+- 관찰 보고와 공식 개체 이동 경로가 시각적으로 구분되는가?
+- 서로 다른 관찰 개체를 하나의 이동선으로 연결하지 않는가?
+- 국가별 표본 편차·누락·부분 수집이 보이는가?
+- 민감종과 개인 watchlist가 정확 좌표·공유 URL·analytics에서 보호되는가?
+- API 키가 클라이언트·문서·로그·공개 JSON에 없는가?
+- 무료 현재 자료의 출처·시각·`n`·한계가 결제창 뒤로 가지 않는가?
+- Pro 기능이 Earthus의 실제 축적·개인화·알림·비교 가치를 제공하는가?
+- eBird 서면 허가가 operation별로 기록되고 허가보다 넓게 열리지 않았는가?
+- 기존 생물 레이어와 첫 Earth의 화면·성능이 유지되는가?
+- 실제 모바일·오류·발열·접근성·rollback까지 검증했는가?
+- 운영 배포·운영 파일 확인·실제 UI 확인·선택 커밋까지 끝났는가?
+
+2026-08-14 현재 위 질문의 답은 대부분 `아니오/미구현`이며, 이 장을 추가한 것은 완료가 아니라
+개발 범위와 중지선을 고정한 것이다. 다음 작업은 Cornell 회신을 기록하는 BIRD-00부터 시작한다.

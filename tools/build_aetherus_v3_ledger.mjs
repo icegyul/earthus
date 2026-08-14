@@ -120,7 +120,8 @@ function evidenceFor(sheet) {
     files: ['prototype/js/space/satellite-object-contract.js',
       'prototype/data/aetherus/satellite-policy.v1.json',
       'docs/earthus-v23/AETHERUS_SATELLITE_FOUNDATION.md'],
-    tests: ['tools/test_aetherus_satellite_contract.mjs'],
+    tests: ['tools/test_aetherus_satellite_contract.mjs',
+      'tools/test_aetherus_free_satellite_ui.mjs'],
   };
   if ([137, 138, 139, 140, 239, 240, 281].includes(sheet)) return {
     files: ['prototype/js/space/media-rendition-policy.js',
@@ -297,7 +298,7 @@ const counts = Object.fromEntries([...allowedStatuses].map(status =>
 const ledger = {
   schema: 'earthus.aetherus-v3-sheet-ledger.v2',
   source: 'work/aetherus-v3.0-master-package/IMPLEMENTATION_SHEET_INDEX.json',
-  generatedAt: '2026-08-14T18:27:45Z',
+  generatedAt: '2026-08-14T18:49:08Z',
   statusMeaning: {
     VERIFIED_EXISTING: 'Current repository local evidence exists; this is not a runtime-complete verdict.',
     PARTIAL_RUNTIME: 'A user-visible runtime exists, but one or more sheet acceptance items remain incomplete.',

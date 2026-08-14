@@ -51,6 +51,10 @@ for (let sheet = 115; sheet <= 132; sheet += 1) {
   }
   else assert.equal(entry.status, 'PARTIAL_RUNTIME');
 }
+for (let sheet = 91; sheet <= 101; sheet += 1) {
+  assert.ok(ledger.entries[sheet - 1].evidence.tests
+    .includes('tools/test_aetherus_free_satellite_ui.mjs'));
+}
 const countSum = Object.values(ledger.counts).reduce((sum, count) => sum + count, 0);
 assert.equal(countSum, 296);
 assert.equal(ledger.counts.VERIFIED_EXISTING, 183);

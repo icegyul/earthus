@@ -48,7 +48,7 @@ try {
     assert.ok(evidence.minimumControlHeight >= 44,
       `${item.name} control below 44px: ${evidence.minimumControlHeight}`);
     assert.deepEqual([evidence.pass, evidence.deployed, evidence.blocked, evidence.implement],
-      ['14', '181', '100', '15'], `${item.name}: ${evidence.checkedAt}; ${evidence.failedCards.join(' | ')}`);
+      ['14', '183', '100', '13'], `${item.name}: ${evidence.checkedAt}; ${evidence.failedCards.join(' | ')}`);
     assert.ok(evidence.gateCount >= 1, `${item.name} external gate summary missing`);
     assert.deepEqual(errors, [], `${item.name} page errors: ${errors.join(' | ')}`);
     await page.screenshot({ path: `/tmp/aetherus-lab-${item.name}.png`, fullPage: true });

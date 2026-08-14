@@ -22,12 +22,36 @@ try {
     });
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'geolocation', { configurable: true, value: {
+        getCurrentPosition(success) {
+          success({ coords: { latitude: 37.5665, longitude: 126.978, accuracy: 25 } });
+        },
+      } });
+    });
     await page.route('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json', route => route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify([
         { time_tag: '2026-08-15T00:14:00Z', kp_index: 4.25 },
       ]),
+    }));
+    await page.route('https://services.swpc.noaa.gov/json/ovation_aurora_latest.json', route => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        'Observation Time': '2026-08-15T00:00:00Z', 'Forecast Time': '2026-08-15T00:30:00Z',
+        coordinates: [[126, 67, 8], [127, 68, 15], [128, 69, 4]],
+      }),
+    }));
+    await page.route('**/celestrak/catalog.json.gz', route => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ generated: '2026-08-15T00:00:00Z', groups: { stations: [{
+        n: 'ISS (ZARYA)', id: '25544',
+        l1: '1 25544U 98067A   26226.50000000  .00010000  00000-0  18000-3 0  9999',
+        l2: '2 25544  51.6400 120.0000 0005000  80.0000 280.0000 15.50000000450000',
+      }] } }),
     }));
     await page.route('https://ll.thespacedevs.com/**', route => route.fulfill({
       status: 200,
@@ -50,6 +74,20 @@ try {
           launch_service_provider: { name: 'Arianespace' },
           pad: { name: 'ELA-4', location: { name: 'Kourou, French Guiana' } },
           mission: { name: 'Test Payload', type: 'Technology' },
+        },
+        {
+          id: 'launch-c', name: 'Nuri | Korea Verified Mission',
+          window_start: '2026-08-20T02:00:00Z', status: { name: 'To Be Confirmed' },
+          webcast_live: false, launch_service_provider: { name: 'KARI' },
+          pad: { name: 'LC-2', location: { name: 'Naro Space Center, Korea' } },
+          mission: { name: 'Korea Verified Mission', type: 'Technology' },
+        },
+        {
+          id: 'launch-d', name: 'Starship | Integrated Flight Test',
+          window_start: '2026-08-21T03:00:00Z', status: { name: 'To Be Confirmed' },
+          webcast_live: false, launch_service_provider: { name: 'SpaceX' },
+          pad: { name: 'OLP-A', location: { name: 'Starbase, Texas' } },
+          mission: { name: 'Integrated Flight Test', type: 'Test Flight' },
         },
       ] }),
     }));
@@ -78,6 +116,8 @@ try {
         activeRoute: document.querySelector('[data-aetherus-nav].current')?.dataset.aetherusNav,
         kp: mission.querySelector('[data-mission-kp-value]').textContent,
         kpTime: mission.querySelector('[data-mission-kp-time]').textContent,
+        aurora: mission.querySelector('[data-mission-aurora-value]').textContent,
+        auroraTime: mission.querySelector('[data-mission-aurora-time]').textContent,
         photo: mission.querySelector('[data-mission-photo-count]').textContent,
         launch: mission.querySelector('[data-launch-name]').textContent,
         countdown: mission.querySelector('[data-widget-body="COUNTDOWN"] .mission-countdown').textContent,
@@ -97,6 +137,8 @@ try {
     assert.equal(evidence.stage, 'mission', `${item.name} mission stage missing`);
     assert.equal(evidence.kp, 'Kp 4.25', `${item.name} NOAA observation missing`);
     assert.match(evidence.kpTime, /2026-08-15/);
+    assert.equal(evidence.aurora, '최대 15');
+    assert.match(evidence.auroraTime, /NOAA SWPC OVATION 모델/);
     assert.match(evidence.photo, /^59장/);
     assert.match(evidence.launch, /Verified Test Mission/);
     assert.match(evidence.countdown, /^(T-|예정 시각 경과)/);
@@ -107,6 +149,37 @@ try {
     await page.locator('[data-mission-editor]').waitFor({ state: 'visible' });
     await page.locator('[data-layout-size="SPACE_WEATHER"]').click();
     assert.equal(await page.locator('[data-widget="SPACE_WEATHER"]').evaluate(node => node.classList.contains('is-wide')), true);
+    await page.locator('.mission-room-picker [data-room="WEATHER_CENTER"]').click();
+    await page.locator('[data-mission-editor-close]').first().click();
+
+    assert.equal(await page.locator('[data-widget="AURORA"]').evaluate(node => !node.hidden), true);
+    assert.equal(await page.locator('[data-widget="SPACE_WEATHER"]').evaluate(node => node.classList.contains('is-wide')), false,
+      `${item.name} room-specific layout leaked from SPACE_CONTROL`);
+    await page.locator('[data-mission-edit]:visible').first().click();
+    await page.locator('.mission-room-picker [data-room="ASTRONOMY_LAB"]').click();
+    await page.locator('[data-mission-editor-close]').first().click();
+    assert.equal(await page.locator('[data-widget="JWST"]').evaluate(node => !node.hidden), true);
+    assert.match(await page.locator('[data-widget="JWST"]').textContent(), /PROVENANCE/);
+    await page.locator('[data-mission-edit]:visible').first().click();
+    await page.locator('.mission-room-picker [data-room="SATELLITE_TRACKING"]').click();
+    await page.locator('[data-mission-editor-close]').first().click();
+    for (const widget of ['SATELLITE_PASS', 'KOREA_SPACE', 'SPACEX', 'STARSHIP']) {
+      assert.equal(await page.locator(`[data-widget="${widget}"]`).evaluate(node => !node.hidden), true,
+        `${item.name} ${widget} missing from satellite room`);
+    }
+    assert.match(await page.locator('[data-widget="KOREA_SPACE"]').textContent(), /Korea Verified Mission/);
+    assert.match(await page.locator('[data-widget="SPACEX"]').textContent(), /Verified Test Mission/);
+    assert.match(await page.locator('[data-widget="STARSHIP"]').textContent(), /Integrated Flight Test/);
+    if (item.name !== 'iphone-landscape') {
+      await page.locator('[data-mission-satellite-pass]').click();
+      await page.waitForFunction(() => document.querySelector('[data-widget-state="SATELLITE_PASS"]')?.textContent === 'ISS · CALCULATED');
+    }
+    await page.locator('[data-mission-edit]:visible').first().click();
+    await page.locator('.mission-room-picker [data-room="SPACE_CONTROL"]').click();
+    await page.locator('[data-mission-editor-close]').first().click();
+    assert.equal(await page.locator('[data-widget="SPACE_WEATHER"]').evaluate(node => node.classList.contains('is-wide')), true,
+      `${item.name} SPACE_CONTROL layout did not persist independently`);
+    await page.locator('[data-mission-edit]:visible').first().click();
     await page.locator('[data-layout-reset]').click();
     await page.locator('[data-mission-editor-close]').first().click();
 

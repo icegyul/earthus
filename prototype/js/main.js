@@ -54,7 +54,7 @@ import { eventPanel } from './ui-events.js';
 import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
 import { initSkyframeDiagnostic } from './space/skyframe.js';
-import { cosmic3d } from './space/cosmic3d.js?v=20260814-aetherusv3';
+import { cosmic3d } from './space/cosmic3d.js?v=20260815-mc11';
 import { decodeAetherusRoute, replaceAetherusRoute } from './space/route-state.js';
 import { trenchCards } from './ocean/trenchcards.js';
 import { trenchGlobe } from './ocean/trenchglobe.js';

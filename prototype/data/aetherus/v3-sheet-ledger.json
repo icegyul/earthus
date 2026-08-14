@@ -2936,6 +2936,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -2963,6 +2964,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -2990,6 +2992,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3017,6 +3020,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3044,6 +3048,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3071,6 +3076,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3098,6 +3104,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3125,6 +3132,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3152,6 +3160,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3179,6 +3188,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3206,6 +3216,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3233,6 +3244,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3262,6 +3274,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3289,6 +3302,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3316,6 +3330,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3343,6 +3358,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3372,6 +3388,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },
@@ -3398,6 +3415,7 @@
         ],
         "tests": [
           "tools/test_aetherus_mission_control_ui.mjs",
+          "tools/test_aetherus_mission_control_live_sources.mjs",
           "tools/test_aetherus_mission_control.mjs"
         ]
       },

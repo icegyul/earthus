@@ -168,7 +168,9 @@ function evidenceFor(sheet) {
       'prototype/js/space/mission-control.js',
       'prototype/data/aetherus/mission-control-policy.v1.json',
       'docs/earthus-v23/AETHERUS_MISSION_CONTROL_FOUNDATION.md'],
-    tests: ['tools/test_aetherus_mission_control_ui.mjs', 'tools/test_aetherus_mission_control.mjs'],
+    tests: ['tools/test_aetherus_mission_control_ui.mjs',
+      'tools/test_aetherus_mission_control_live_sources.mjs',
+      'tools/test_aetherus_mission_control.mjs'],
   };
   if (sheet <= 150) return {
     files: ['prototype/js/space/observation-media.js', 'prototype/js/space/observation-session.js',
@@ -331,7 +333,8 @@ const markdown = `# Aetherus v3.0 Implementation Sheet Ledger — 296 sheets
 - \`VERIFIED_EXISTING\`은 코드·fixture·test 등 로컬 증거가 있다는 뜻일 뿐, 배포 또는 제품
   완료 판정이 아니다. 계약 테스트만으로 런타임 완료를 주장하지 않는다.
 - Mission Control의 사용자 화면이 연결된 15개 시트는 \`PARTIAL_RUNTIME\`이다. 실제 브라우저
-  진입·레이아웃 저장은 검증했지만 sheet별 남은 widget·sync·offline 항목 때문에 완료가 아니다.
+  진입·room별 레이아웃 저장·공식 데이터 위젯은 검증했지만 sync·fullscreen·offline·전체
+  접근성 acceptance가 남아 있어 완료가 아니다.
 - 외부 증거가 필요한 \`BLOCKED_EXTERNAL\` ${counts.BLOCKED_EXTERNAL}개는 배포 누락이 아니라 외부 관문으로 분리한다.
 - 이 파일은 \`tools/build_aetherus_v3_ledger.mjs\`로 index에서 재생성한다.
 

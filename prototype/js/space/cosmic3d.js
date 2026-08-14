@@ -40,7 +40,7 @@ import {
   normalizeAetherusTelescope,
   resolveAetherusPhoto,
 } from './photo-catalog.js';
-import { createAetherusMissionControl } from './aetherus-dashboard.js?v=20260815-mc10';
+import { createAetherusMissionControl } from './aetherus-dashboard.js?v=20260815-mc11';
 
 const IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const BODY_ORDER = ['sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];

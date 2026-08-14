@@ -271,7 +271,9 @@ async function boot() {
                  아름다운 지구와 기초 정보만 보여주고 싶어."
      칩 자체는 살려 둔다 — 코치마크가 참조하고, 나중에 다른 자리에 쓸 수 있다.
      지금은 그리지 않을 뿐이다. */
-  onboard.init({ chips: false });   // 첫 실행 코치마크만 (await 하지 않는다)
+  /* 첫 화면은 지구·날짜·시각·현재 날씨만 감상하게 한다.
+     ⚠️ 선택 전 활동 CTA와 같은 이유로 코치마크도 자동 노출하지 않는다. */
+  onboard.init({ chips: false, coach: false });
   weatherPanel.init();    // 하단 온도 탭 → 내 자리 날씨 시트
 
   // 내 위치 — 실패해도 조용히 넘어간다 (HTTP 접속·권한 거부 등)
@@ -879,17 +881,17 @@ function onPick(ev) {
     } catch (_) { clearEarthPoint(); }
   })();
 
-  // 빈 곳 탭 → Explore 상태면 그 지점 날씨 (§10 Phase1-5)
-  if (store.mode === 'explore') {
-    const g = ground();
-    if (g) {
-      store.select({
-        id: 'pt', kind: 'stations',
-        name: `${g.lat.toFixed(2)}, ${g.lon.toFixed(2)}`,
-        lat: g.lat, lon: g.lon, data: { _lazy: true },
-      });
-      return;
-    }
+  /* 빈 지구 탭 → 확대 여부와 무관하게 그 지점의 통합 상세를 연다.
+     예전에는 Explore에서만 날씨 시트가 열리고, 첫 지구에서는 별도 판단 레일만
+     튀어나와 같은 장소를 두 창으로 닫아야 했다. 이제 의도적으로 장소를 누르면
+     장소·날씨·활동·Safety가 #sheet 하나에서 이어진다. */
+  if (decisionPoint) {
+    store.select({
+      id: 'pt', kind: 'stations',
+      name: `${decisionPoint.lat.toFixed(2)}, ${decisionPoint.lon.toFixed(2)}`,
+      lat: decisionPoint.lat, lon: decisionPoint.lon, data: { _lazy: true },
+    });
+    return;
   }
   store.clearSelect();
 }

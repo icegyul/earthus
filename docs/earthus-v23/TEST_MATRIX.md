@@ -121,10 +121,12 @@
 - PR-08 390×844/430×932/768×1024/1280×900 실제 합성 화면: overflow 0,
   Safety first, 44px target, focus/Escape, 개인화 off/on, source/time/revision/n, console error 0
 - production-like local entry flag off: Decision UI JS/CSS request 0, host DOM 0, Earth container 1
-- AX-01 판단 레일: 첫 Earth 접힘, 서울 호우경보 `DANGER`·추천 제한, 일본에 한국 Safety
-  오적용 0, 5 profile/5축, Activity Score 숫자 노출 0, `DECISION_CORE_READY=false` 자산 요청 0
-- AX-01 1280×900·390×844 실화면: 가로 overflow 0, 44px 표적, Safety first, 펼친 패널과
-  EARTHUS/AETHERUS 손잡이 충돌 0, 패널 재선택 스크롤 복귀, runtime error 0
+- AX-02 통합 장소 상세: 첫 Earth 판단 CTA/코치 0, 서울 호우경보 `DANGER`·추천 제한,
+  일본에 한국 Safety 오적용 0, 5 profile/5축, Activity Score 숫자 노출 0,
+  `DECISION_CORE_READY=false` 자산 요청 0
+- AX-02 1280×900·390×844 실화면: 장소·날씨·활동·Safety 부모 `#sheet` 1개,
+  전용 판단 close 0, 상단 close 1회 종료, 가로 overflow 0, 44px 표적, Safety first,
+  EARTHUS/AETHERUS 손잡이 충돌 0, runtime error 0
 - Safari·구형 iPhone·screen reader·idle/released render owner 실제 계측은 남은 gate
 
 이 기준선은 PR-08 shadow 완료와 PR-11 운영 전후 비교 기준이다.

@@ -12,6 +12,7 @@ import { warn } from './warn.js';
 import { safetyGateMarkup } from './safety-gate-ui.js';
 import { askPanel } from './ask/panel.js';
 import { viewer, scene } from './viewer.js';
+import { store } from './store.js';
 
 const ACTIVITIES = Object.freeze({
   BASEBALL_SPECTATOR: { ko: '야구 관람', en: 'Baseball spectator', icon: '⚾' },
@@ -54,8 +55,6 @@ export const decisionRail = {
     this.panel = $('decisionRailPanel');
     if (!this.root || !this.panel) return this;
 
-    $('decisionRailHandle')?.addEventListener('click', () => this.setOpen(!this.root.classList.contains('is-open')));
-    $('decisionRailClose')?.addEventListener('click', () => this.setOpen(false));
     this.root.querySelectorAll('[data-activity]').forEach(button => {
       button.addEventListener('click', () => this.selectActivity(button.dataset.activity));
     });
@@ -71,25 +70,36 @@ export const decisionRail = {
     });
 
     document.addEventListener('earthus:decision-point', event => this.selectPoint(event.detail));
+    /* 시트는 검색·지도·레이어 등 여러 길에서 열린다. 지도 이벤트만 믿으면
+       프로그래밍으로 다른 항목을 연 뒤 이전 장소 판단이 아래에 남는다.
+       선택 정본(store)에 좌표가 없으면 숨기고, 좌표가 있으면 같은 통합 시트에 맞춘다. */
+    store.on('select', selected => {
+      if (!finitePoint(selected)) { this.hide(); return; }
+      const lat = Number(selected.lat), lon = Number(selected.lon);
+      if (this.point?.lat === lat && this.point?.lon === lon) {
+        this.show();
+        return;
+      }
+      this.selectPoint({ point: { lat, lon } });
+    });
     document.addEventListener('earthus:warn', () => {
       if (this.point) this.loadSafety(this.point, { refresh: false });
     });
     i18n.onChange(() => this.render());
-    this.render();
+    this.hide();
     this.root.dataset.ready = 'true';
     return this;
   },
 
-  setOpen(open) {
-    const on = !!open;
-    this.root.classList.toggle('is-open', on);
-    document.body.classList.toggle('decision-rail-open', on);
-    this.panel.hidden = !on;
-    $('decisionRailHandle')?.setAttribute('aria-expanded', String(on));
-    if (on) {
-      document.dispatchEvent(new CustomEvent('earthus:close-menu'));
-      $('decisionRailTitle')?.focus?.({ preventScroll: true });
-    }
+  show() {
+    this.root.hidden = false;
+    this.panel.hidden = false;
+  },
+
+  hide() {
+    if (!this.root || !this.panel) return;
+    this.root.hidden = true;
+    this.panel.hidden = true;
   },
 
   selectPoint(detail = {}) {
@@ -100,8 +110,7 @@ export const decisionRail = {
     this.safety = null;
     this.root.dataset.state = 'selected';
     this.root.dataset.safety = 'loading';
-    this.setOpen(true);
-    this.panel.scrollTop = 0;
+    this.show();
     this.drawMarker('unknown');
     this.render();
     this.loadSafety(this.point);
@@ -180,27 +189,18 @@ export const decisionRail = {
     if (!this.root) return;
     const ko = i18n.lang === 'ko';
     const context = $('decisionRailContext');
-    const empty = $('decisionRailEmpty');
     const activity = ACTIVITIES[this.activity];
     const place = this.point ? describePlace(this.point.lat, this.point.lon, ko) : null;
 
     $('decisionRailTitle').textContent = ko ? '이 장소의 활동 조건' : 'Activity conditions here';
-    $('decisionRailClose').setAttribute('aria-label', ko ? '활동 조건 접기' : 'Collapse activity conditions');
     this.root.setAttribute('aria-label', ko ? '이 장소의 활동 조건' : 'Activity conditions here');
 
     if (!this.point) {
-      $('decisionRailHandleTitle').textContent = ko ? '장소를 눌러 조건 확인' : 'Tap a place to check conditions';
-      $('decisionRailHandleNote').textContent = ko ? '공식 특보를 먼저 확인합니다' : 'Official warnings are checked first';
-      empty.hidden = false;
-      context.hidden = true;
-      empty.querySelector('b').textContent = ko ? '지구본에서 궁금한 장소를 눌러보세요.' : 'Tap a place on the globe.';
-      empty.querySelector('p').textContent = ko
-        ? '선택한 지점의 공식 특보부터 확인하고, 없는 자료는 없다고 표시합니다.'
-        : 'Earthus checks official warnings first and labels missing data instead of filling it in.';
+      this.hide();
       return;
     }
 
-    empty.hidden = true;
+    this.show();
     context.hidden = false;
     $('decisionRailPlace').textContent = place.text;
     $('decisionRailCoords').textContent = `${latLonText(this.point.lat, this.point.lon, ko)} · ${ko ? '가까운 지명 기준' : 'nearest-place reference'}`;
@@ -232,9 +232,6 @@ export const decisionRail = {
     $('decisionRailLimit').textContent = ko
       ? 'Activity Score는 곡선·실데이터 검증 전이라 아직 공개하지 않습니다.'
       : 'Activity Score remains hidden until profile curves and live data are approved.';
-    $('decisionRailHandleTitle').textContent = activity
-      ? `${place.text} · ${activity[ko ? 'ko' : 'en']}` : place.text;
-    $('decisionRailHandleNote').textContent = safetyLabel(this.safety, ko);
     this.renderSafety();
   },
 };

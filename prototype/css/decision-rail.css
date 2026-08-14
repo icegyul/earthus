@@ -1,82 +1,78 @@
-/* EARTHUS AX-01 — 챗보다 지도 맥락을 먼저 쓰는 판단 레일.
-   첫 Earth는 깨끗하게 남기고, 사용자가 누른 지점에서만 펼쳐진다. */
-#decisionRail[hidden]{display:none}
+/* EARTHUS AX-02 — 장소 날씨와 판단 근거를 한 정보 시트에 잇는다.
+   ⚠️ 첫 Earth에서는 #decisionRail 자체가 hidden 이다. 선택 전 안내 손잡이·CTA를
+      다시 만들지 말 것. 닫기는 부모 #sheet의 한 버튼만 사용한다. */
+#decisionRail[hidden],.dr-panel[hidden],#decisionRailContext[hidden]{display:none}
+
+/* 같은 장소의 자료이므로 별도 모달처럼 보이지 않게 한 문서의 다음 장으로 잇는다. */
 #decisionRail{
-  position:fixed;z-index:19;left:50%;bottom:max(9px,env(safe-area-inset-bottom));
-  width:min(520px,calc(100vw - 124px));transform:translateX(-50%);
-  color:#f3f8fa;font-family:var(--sans);pointer-events:none;
+  clear:both;margin:24px 0 0;padding:22px 0 2px;border-top:1px solid rgba(224,240,246,.16);
+  color:#f3f8fa;font-family:var(--sans);
 }
-.dr-handle,.dr-panel{pointer-events:auto}
-.dr-handle{
-  display:grid;grid-template-columns:28px minmax(0,1fr) 20px;align-items:center;gap:10px;
-  width:100%;min-height:50px;padding:7px 12px 7px 10px;border:1px solid rgba(224,240,246,.2);
-  border-top-color:rgba(238,249,252,.42);border-radius:11px;background:rgba(3,10,15,.84);
-  -webkit-backdrop-filter:blur(18px) saturate(115%);backdrop-filter:blur(18px) saturate(115%);
-  box-shadow:0 14px 44px rgba(0,10,17,.38),inset 0 1px 0 rgba(255,255,255,.035);
-  color:inherit;text-align:left;cursor:pointer;transition:border-color .18s,background .18s,transform .18s;
-}
-.dr-handle:hover{border-color:rgba(164,229,243,.45);background:rgba(4,13,19,.92)}
-.dr-handle:active{transform:translateY(1px)}
-.dr-handle:focus-visible,.dr-close:focus-visible,.dr-activity button:focus-visible,.dr-actions button:focus-visible{
-  outline:2px solid #a6e8f5;outline-offset:2px;
-}
-.dr-mark{position:relative;display:grid;place-items:center;width:28px;height:28px;border:1px solid rgba(166,232,245,.62);border-radius:50%}
-.dr-mark:before,.dr-mark:after{content:"";position:absolute;background:rgba(166,232,245,.72)}
-.dr-mark:before{width:8px;height:1px;left:-4px;box-shadow:24px 0 0 rgba(166,232,245,.72)}
-.dr-mark:after{width:1px;height:8px;top:-4px;box-shadow:0 24px 0 rgba(166,232,245,.72)}
-.dr-mark i{display:block;width:5px;height:5px;border-radius:50%;background:#a6e8f5;box-shadow:0 0 14px rgba(166,232,245,.58)}
-.dr-handle-copy{min-width:0}.dr-handle-copy strong,.dr-handle-copy small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dr-handle-copy strong{font-size:12.5px;font-weight:630;letter-spacing:-.015em}.dr-handle-copy small{margin-top:3px;color:rgba(222,237,243,.5);font-size:9.5px;font-weight:520}
-.dr-chevron{color:rgba(224,239,245,.46);font-size:15px;text-align:center;transition:transform .18s}
-#decisionRail.is-open .dr-chevron{transform:rotate(180deg)}
-#decisionRail[data-safety="warning"] .dr-handle{border-color:rgba(255,181,91,.55)}
-#decisionRail[data-safety="danger"] .dr-handle{border-color:rgba(255,105,96,.62);box-shadow:0 14px 44px rgba(34,5,4,.45),inset 0 1px 0 rgba(255,255,255,.04)}
-#decisionRail[data-safety="warning"] .dr-mark,#decisionRail[data-safety="danger"] .dr-mark{border-color:currentColor;color:#ffb56f}
-#decisionRail[data-safety="danger"] .dr-mark{color:#ff6960}.dr-panel[hidden]{display:none}
-.dr-panel{
-  position:absolute;right:0;bottom:58px;left:0;max-height:min(72dvh,660px);overflow:auto;
-  padding:15px 15px 16px;border:1px solid rgba(224,240,246,.19);border-top-color:rgba(238,249,252,.43);
-  border-radius:14px;background:rgba(3,10,15,.94);-webkit-backdrop-filter:blur(22px) saturate(115%);
-  backdrop-filter:blur(22px) saturate(115%);box-shadow:0 22px 74px rgba(0,8,14,.58);scrollbar-width:thin;
-}
-.dr-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}
-.dr-kicker{display:block;margin-bottom:5px;color:rgba(166,232,245,.68);font:650 8.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em}
-.dr-head h2{margin:0;font-size:20px;font-weight:570;line-height:1.12;letter-spacing:-.04em;text-wrap:balance}
-.dr-close{flex:none;width:44px;height:44px;margin:-8px -8px 0 0;border:0;border-radius:8px;background:transparent;color:rgba(235,245,248,.6);font:300 24px/1 var(--sans);cursor:pointer}
-.dr-close:hover{background:rgba(255,255,255,.07);color:#fff}
-.dr-empty{padding:12px 2px 5px}.dr-empty b{display:block;font-size:14px;font-weight:620}.dr-empty p{max-width:52ch;margin:8px 0 0;color:rgba(218,233,239,.56);font-size:11px;line-height:1.6;text-wrap:pretty}
-.dr-place{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 11px;border-left:2px solid #a6e8f5;background:rgba(166,232,245,.055)}
-.dr-place strong,.dr-place span{display:block}.dr-place strong{font-size:13px;font-weight:620;line-height:1.35;text-wrap:pretty}.dr-place div>span{margin-top:4px;color:rgba(216,231,237,.5);font:550 9px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
-.dr-now{flex:none;padding:4px 6px;border:1px solid rgba(166,232,245,.27);border-radius:4px;color:#a6e8f5;font:650 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em}
-.dr-activity{margin:14px 0 0;padding:0;border:0}.dr-activity legend{margin-bottom:8px;color:rgba(235,245,249,.8);font-size:11px;font-weight:620}
-.dr-activity-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
-.dr-activity button{min-height:44px;padding:7px 5px;border:1px solid rgba(229,241,246,.12);border-radius:7px;background:rgba(238,247,250,.045);color:rgba(226,238,243,.7);font:600 10px/1.3 var(--sans);cursor:pointer;transition:border-color .18s,background .18s,color .18s,transform .18s}
-.dr-activity button:hover{border-color:rgba(166,232,245,.37);color:#fff}.dr-activity button:active{transform:translateY(1px)}
-.dr-activity button[aria-pressed="true"]{border-color:rgba(166,232,245,.68);background:rgba(166,232,245,.13);color:#fff}
-.dr-time-note,.dr-limit{margin:8px 1px 0;color:rgba(208,224,231,.44);font-size:9.5px;line-height:1.5;text-wrap:pretty}
-.dr-safety{margin-top:13px}.dr-skeleton{min-height:74px;padding:12px;border-left:2px solid rgba(166,232,245,.58);background:rgba(166,232,245,.045);color:rgba(222,237,242,.62);font-size:11px;line-height:1.5}
-.dr-safety .safety-gate{margin:0}.dr-safety .safety-gate h4{font-size:13px}.dr-safety .safety-gate p{font-size:10.5px}.dr-safety .safety-gate small{font-size:9px}.dr-safety .safety-gate a{min-height:44px;align-items:center}
-.dr-axes{margin-top:13px}.dr-axes h3{margin:0 0 7px;color:rgba(228,240,245,.72);font-size:10.5px;font-weight:650}
-.dr-axes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.dr-axes h3,.dr-axis--safety{grid-column:1/-1}
-.dr-axis{min-height:49px;padding:8px 9px;border-left:1px solid rgba(166,232,245,.27);background:rgba(238,247,250,.035)}
-.dr-axis span,.dr-axis strong{display:block}.dr-axis span{color:rgba(203,221,228,.43);font:650 8px/1.25 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.025em}.dr-axis strong{margin-top:5px;color:rgba(232,242,246,.8);font-size:10px;font-weight:620;line-height:1.3}
+.dr-panel{position:static;width:100%;overflow:visible}
+.dr-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
+.dr-kicker{display:block;margin-bottom:7px;color:rgba(166,232,245,.68);font:650 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.09em}
+.dr-head h2{margin:0;font-size:20px;font-weight:560;line-height:1.2;letter-spacing:-.035em;text-wrap:balance}
+.dr-now{flex:none;padding:6px 8px;border:1px solid rgba(166,232,245,.27);border-radius:6px;color:#a6e8f5;font:650 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em}
+
+/* 상단 정보 시트가 실제 국가·도시·날씨를 맡고, 이 줄은 판단 좌표가 같은지만 확인한다. */
+.dr-place-line{display:flex;flex-wrap:wrap;gap:5px 10px;margin:0;padding:10px 12px;border-left:2px solid #a6e8f5;background:rgba(166,232,245,.055)}
+.dr-place-line strong{font-size:12px;font-weight:620;line-height:1.45}
+.dr-place-line span{color:rgba(216,231,237,.5);font:550 9px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+
+.dr-activity{margin:16px 0 0;padding:0;border:0}
+.dr-activity legend{margin-bottom:9px;color:rgba(235,245,249,.84);font-size:12px;font-weight:620}
+.dr-activity-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.dr-activity button{min-width:44px;min-height:48px;padding:8px 6px;border:1px solid rgba(229,241,246,.13);border-radius:9px;background:rgba(238,247,250,.045);color:rgba(226,238,243,.72);font:600 10.5px/1.35 var(--sans);cursor:pointer;transition:border-color .18s,background .18s,color .18s,transform .18s}
+.dr-activity button:hover{border-color:rgba(166,232,245,.38);color:#fff}
+.dr-activity button:active{transform:translateY(1px)}
+.dr-activity button[aria-pressed="true"]{border-color:rgba(166,232,245,.7);background:rgba(166,232,245,.14);color:#fff}
+.dr-activity button:focus-visible,.dr-actions button:focus-visible{outline:2px solid #a6e8f5;outline-offset:2px}
+
+.dr-time-note,.dr-limit{margin:9px 1px 0;color:rgba(208,224,231,.46);font-size:10px;line-height:1.55;text-wrap:pretty}
+.dr-safety{margin-top:15px}
+.dr-skeleton{min-height:76px;padding:13px;border-left:2px solid rgba(166,232,245,.58);background:rgba(166,232,245,.045);color:rgba(222,237,242,.64);font-size:11px;line-height:1.55}
+.dr-safety .safety-gate{margin:0}
+.dr-safety .safety-gate h4{font-size:14px}
+.dr-safety .safety-gate p{font-size:11px}
+.dr-safety .safety-gate small{font-size:9.5px}
+.dr-safety .safety-gate a{min-height:44px;align-items:center}
+
+.dr-axes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:15px}
+.dr-axes h3{grid-column:1/-1;margin:0 0 1px;color:rgba(228,240,245,.74);font-size:11px;font-weight:650}
+.dr-axis{min-height:54px;padding:10px 11px;border-left:1px solid rgba(166,232,245,.28);background:rgba(238,247,250,.035)}
+.dr-axis--safety{grid-column:1/-1}
+.dr-axis span,.dr-axis strong{display:block}
+.dr-axis span{color:rgba(203,221,228,.45);font:650 8.5px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.025em}
+.dr-axis strong{margin-top:6px;color:rgba(232,242,246,.82);font-size:10.5px;font-weight:620;line-height:1.35}
 #decisionRail[data-safety="warning"] .dr-axis--safety{border-left-color:#ffb56f;background:rgba(255,181,111,.06)}
 #decisionRail[data-safety="danger"] .dr-axis--safety{border-left-color:#ff6960;background:rgba(255,105,96,.07)}
-.dr-actions{display:flex;margin-top:13px}.dr-actions button{min-height:44px;padding:0 13px;border:1px solid rgba(166,232,245,.3);border-radius:7px;background:rgba(166,232,245,.075);color:#ddf7fb;font:620 10.5px/1 var(--sans);cursor:pointer;transition:border-color .18s,background .18s,transform .18s}
-.dr-actions button:hover{border-color:rgba(166,232,245,.62);background:rgba(166,232,245,.13)}.dr-actions button:active{transform:translateY(1px)}
-body.scene-space #decisionRail,body.ocean-globe #decisionRail,body.panel-open #decisionRail{opacity:0;pointer-events:none}
-body.scene-space #decisionRail *,body.ocean-globe #decisionRail *,body.panel-open #decisionRail *{pointer-events:none}
-/* 모바일에서 104px 세로 브랜드 손잡이가 펼친 판단 근거를 가리지 않게 자리를 비운다. */
-body.decision-rail-open .brand-menu-tab{opacity:0;pointer-events:none}
-@media(max-width:820px){
-  #decisionRail{right:7px;bottom:max(7px,env(safe-area-inset-bottom));left:7px;width:auto;transform:none}
-  .dr-panel{max-height:min(66dvh,620px)}
-  body.earth-data-view #decisionRail:not(.is-open){right:10px;bottom:max(205px,calc(env(safe-area-inset-bottom) + 193px));left:auto;width:min(270px,calc(100vw - 20px))}
-  body.earth-data-view #decisionRail.is-open{top:max(64px,calc(env(safe-area-inset-top) + 54px));bottom:auto}
-  body.earth-data-view #decisionRail.is-open .dr-panel{top:58px;bottom:auto;max-height:calc(100dvh - 136px)}
+
+.dr-actions{display:flex;margin-top:15px}
+.dr-actions button{min-width:44px;min-height:44px;padding:0 14px;border:1px solid rgba(166,232,245,.31);border-radius:8px;background:rgba(166,232,245,.08);color:#ddf7fb;font:620 11px/1 var(--sans);cursor:pointer;transition:border-color .18s,background .18s,transform .18s}
+.dr-actions button:hover{border-color:rgba(166,232,245,.63);background:rgba(166,232,245,.14)}
+.dr-actions button:active{transform:translateY(1px)}
+
+/* 지점 상세만 폭을 조금 넓힌다. 다른 사건·위성 시트의 익숙한 폭은 건드리지 않는다. */
+#sheet.is-place-detail{max-width:min(760px,calc(100vw - 24px));padding:22px 26px 25px}
+#sheet.is-place-detail #sheetTitle{font-size:25px;line-height:1.25;letter-spacing:-.035em}
+/* 기존 13px 점에 44px 가상 터치판을 겹쳐 얹어 빨강을 눌러도 노랑이
+   가로채는 구간이 있었다. 통합 시트에서는 버튼 자체를 44px로 분리하고 점만 그린다. */
+#sheet.is-place-detail .traffic{gap:0;margin:-12px -12px 0 0;padding:0}
+#sheet.is-place-detail .tl{width:44px;height:44px;background-color:transparent;background-repeat:no-repeat;background-position:center}
+#sheet.is-place-detail .tl::before{width:44px;height:44px}
+#sheet.is-place-detail .tl.close{background-image:radial-gradient(circle,#ff5f57 0 7px,transparent 8px)}
+#sheet.is-place-detail .tl.min{background-image:radial-gradient(circle,#febc2e 0 7px,transparent 8px)}
+#sheet.is-place-detail .tl span{opacity:.72}
+body.panel-open .brand-menu-tab{opacity:0;pointer-events:none}
+
+@media(max-width:620px){
+  #sheet.is-place-detail{right:8px;left:8px;max-width:none;padding:18px 18px 21px}
+  .dr-activity-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
-@media(max-width:520px){
-  .dr-panel{padding:14px 12px 15px}.dr-activity-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.dr-activity button{font-size:9.5px}
-  .dr-handle-copy strong{font-size:12px}.dr-handle-copy small{font-size:9px}
+@media(max-width:420px){
+  .dr-head h2{font-size:18px}
+  .dr-axes{grid-template-columns:1fr}
+  .dr-axes h3,.dr-axis--safety{grid-column:1}
+  .dr-activity button{font-size:10px}
 }
-@media(prefers-reduced-motion:reduce){.dr-handle,.dr-chevron,.dr-activity button,.dr-actions button{transition:none}}
+@media(prefers-reduced-motion:reduce){.dr-activity button,.dr-actions button{transition:none}}

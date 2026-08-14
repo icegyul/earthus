@@ -81,3 +81,14 @@
 - 운영 브라우저: 첫 Earth에서 메뉴·Data/Evidence/Decision 닫힘, 아름다운 지구본 유지,
   가로 overflow 0, 개발자 문구 0, 약관 링크 2개, 이용행태 기본 OFF, guest analytics request 0,
   JavaScript page error 0.
+
+## 7. 12:43 실화면 교정 — AX-02
+
+위 종료 뒤 PD 실화면 검수에서 AX-01의 접힌 판단 손잡이가 첫 Earth를 가리고, 장소 날씨와
+판단 패널을 두 번 닫아야 하는 결함이 확인됐다. 로컬 AX-02는 선택 전 손잡이·자동 코치를
+제거하고 장소·날씨·활동·Safety를 `#sheet` 하나로 통합했다. 전체 45/45와 실제 지구 클릭,
+1280×900·390×844, 한 번 닫기, 터치 영역 분리를 통과했다.
+
+이 교정은 현재 `LOCAL VERIFIED`이며 운영 S3 정확한 경로 승인 전에는 `OPERATING`으로
+부르지 않는다. 배포 대상과 SHA는
+[`RELEASE-2026-08-14-AX02-UNIFIED-PLACE.md`](RELEASE-2026-08-14-AX02-UNIFIED-PLACE.md)에 있다.

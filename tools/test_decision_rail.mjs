@@ -40,9 +40,11 @@ async function mockWarnings(page) {
 }
 
 async function selectPoint(page, point) {
-  await page.evaluate(value => document.dispatchEvent(new CustomEvent('earthus:decision-point', {
-    detail: { point: value },
-  })), point);
+  await page.waitForFunction(() => !!window.__e?.store);
+  await page.evaluate(value => window.__e.store.select({
+    id: 'qa-point', kind: 'stations', name: 'QA point',
+    lat: value.lat, lon: value.lon, data: { _lazy: true },
+  }), point);
 }
 
 const browser = await chromium.launch({ headless: true, executablePath });
@@ -53,7 +55,6 @@ try {
     permissions: ['geolocation'],
     serviceWorkers: 'block',
   });
-  await context.addInitScript(() => localStorage.setItem('earthus.coachDone', '1'));
   const page = await context.newPage();
   const runtimeErrors = [];
   const decisionUiRequests = [];
@@ -63,16 +64,24 @@ try {
   });
   await mockWarnings(page);
   await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  await page.locator('#decisionRail[data-ready="true"] #decisionRailHandle').waitFor({ state: 'visible' });
+  await page.locator('#decisionRail[data-ready="true"]').waitFor({ state: 'attached' });
 
-  assert.equal(await page.locator('#decisionRailHandleTitle').textContent(), '장소를 눌러 조건 확인');
-  assert.equal(await page.locator('#decisionRailPanel').isHidden(), true, '첫 Earth에서 판단 패널이 자동으로 펼쳐졌다');
+  assert.equal(await page.locator('#decisionRail').isHidden(), true, '첫 Earth에 판단 UI가 노출됐다');
+  assert.equal(await page.locator('#decisionRailHandle').count(), 0, '선택 전 판단 CTA가 DOM에 남았다');
+  await page.waitForTimeout(2800);
+  assert.equal(await page.locator('#coach.on').count(), 0, '첫 Earth에 코치마크가 자동 노출됐다');
   assert.equal(await page.locator('#decisionUiHost').count(), 0, 'Shadow Decision UI host가 생겼다');
   assert.deepEqual(decisionUiRequests, [], 'Shadow Decision UI asset을 요청했다');
 
   await selectPoint(page, { lat: 37.5665, lon: 126.978 });
   await page.locator('#decisionRail[data-safety="danger"]').waitFor({ timeout: 10_000 });
+  assert.equal(await page.locator('#sheet.up').count(), 1, '선택 장소 상세 시트가 열리지 않았다');
+  assert.equal(await page.locator('#sheet.is-place-detail').count(), 1, '장소 상세 통합 폭이 적용되지 않았다');
   assert.equal(await page.locator('#decisionRailPanel').isVisible(), true);
+  assert.equal(await page.locator('#sheet').evaluate(sheet => sheet.contains(document.getElementById('decisionRail'))), true,
+    '활동 판단이 장소 상세 시트 밖에 분리됐다');
+  assert.equal(await page.locator('#sheetClose:visible').count(), 1, '통합 시트 닫기 버튼이 하나가 아니다');
+  assert.equal(await page.locator('#decisionRailClose').count(), 0, '활동 판단 전용 닫기 버튼이 남았다');
   assert.equal(await page.locator('.dr-axis').count(), 5, '5축이 아니다');
   assert.equal(await page.locator('.dr-axis').first().getAttribute('class'), 'dr-axis dr-axis--safety');
   assert.match(await page.locator('#decisionRailSafety').textContent(), /공식 특보 우선/);
@@ -86,9 +95,16 @@ try {
   const outputValues = await page.locator('.dr-axis strong').allTextContents();
   assert.ok(outputValues.every(value => !/^\s*\d+(?:\.\d+)?\s*%?\s*$/.test(value)), '검증 전 점수를 노출했다');
 
-  const targets = await page.locator('.dr-activity button, #decisionRailAsk, #decisionRailClose').evaluateAll(nodes =>
+  const targets = await page.locator('.dr-activity button, #decisionRailAsk').evaluateAll(nodes =>
     nodes.map(node => ({ width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height })));
   assert.ok(targets.every(targetItem => targetItem.height >= 44 && targetItem.width >= 44), '44px 터치 표적을 위반했다');
+
+  await page.locator('#sheetClose').click();
+  await page.waitForFunction(() => !document.getElementById('sheet').classList.contains('up'));
+  await page.locator('#sheet').waitFor({ state: 'hidden' });
+  assert.equal(await page.locator('#decisionRail').isVisible(), false, '한 번 닫은 뒤 활동 판단이 화면에 남았다');
+  await selectPoint(page, { lat: 37.5665, lon: 126.978 });
+  await page.locator('#decisionRail[data-safety="danger"]').waitFor({ timeout: 10_000 });
 
   await page.locator('#decisionRailAsk').click();
   await page.locator('#askSheet.up').waitFor();
@@ -111,14 +127,15 @@ try {
   await mobile.setViewportSize({ width: 390, height: 844 });
   await mockWarnings(mobile);
   await mobile.goto(target, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  await mobile.locator('#decisionRail[data-ready="true"] #decisionRailHandle').waitFor({ state: 'visible' });
+  await mobile.locator('#decisionRail[data-ready="true"]').waitFor({ state: 'attached' });
+  assert.equal(await mobile.locator('#decisionRail').isHidden(), true, '모바일 첫 Earth에 판단 UI가 노출됐다');
   await selectPoint(mobile, { lat: 37.5665, lon: 126.978 });
   await mobile.locator('#decisionRail[data-safety="danger"]').waitFor({ timeout: 10_000 });
   await mobile.locator('[data-activity="HIKING"]').click();
   const layout = await mobile.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
     innerWidth: window.innerWidth,
-    panel: document.getElementById('decisionRailPanel').getBoundingClientRect().toJSON(),
+    panel: document.getElementById('sheet').getBoundingClientRect().toJSON(),
   }));
   assert.ok(layout.scrollWidth <= layout.innerWidth, `mobile overflow ${layout.scrollWidth} > ${layout.innerWidth}`);
   assert.ok(layout.panel.left >= 0 && layout.panel.right <= layout.innerWidth, 'mobile panel이 화면 밖으로 나갔다');

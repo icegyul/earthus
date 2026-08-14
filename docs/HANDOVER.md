@@ -182,8 +182,20 @@ Score·Confidence 숫자·혼잡·재고·폐쇄·개인화·예약 행동은 �
 SHA/MIME를 통과했고 무효화는 `IDZOUE4HBCRSEG51ZA2C8RH1TI`다. 설계 정본은
 [`earthus-v23/AX_DECISION_RAIL.md`](earthus-v23/AX_DECISION_RAIL.md), 운영 증거는
 [`earthus-v23/RELEASE-2026-08-14-AX01.md`](earthus-v23/RELEASE-2026-08-14-AX01.md)다. 다음은
-`STARGAZING` live decision canary의 source/curve/rights/rollback gate며, PD의 명시적 flag 승인 전에는
+ `STARGAZING` live decision canary의 source/curve/rights/rollback gate며, PD의 명시적 flag 승인 전에는
 이번 상태 문구를 점수로 바꾸지 않는다.
+
+2026-08-14 PD 실화면 검수에서 AX-01의 **접힌 손잡이도 첫 Earth를 가리고**, 장소 날씨와
+판단 레일이 두 화면·두 닫기로 갈라지는 문제가 확인됐다. AX-02는 선택 전 손잡이와 자동
+코치마크를 완전히 제거했다. 지구를 누르면 확대 여부와 무관하게 국가·좌표·날씨·강수·파도·
+5개 활동·공식 특보 Safety가 기존 `#sheet` 한 장에서 이어지고, 별도 판단 close 없이 상단
+닫기 한 번으로 끝난다. 빨강 닫기와 노랑 내리기의 겹친 가상 터치판도 독립 44px 영역으로
+수정했다. AX-01 배포 문서는 당시 이력이며 현재 UI 정본은
+[`earthus-v23/AX_DECISION_RAIL.md`](earthus-v23/AX_DECISION_RAIL.md)와
+[`earthus-v23/RELEASE-2026-08-14-AX02-UNIFIED-PLACE.md`](earthus-v23/RELEASE-2026-08-14-AX02-UNIFIED-PLACE.md)다.
+`DECISION_CORE_READY=false`, 점수·혼잡·재고·폐쇄·예약 실행 금지는 그대로다.
+AX-02는 현재 로컬 45/45와 실화면까지 통과했지만 운영 S3 정확한 경로 승인을 기다리는
+`LOCAL VERIFIED` 상태다. invalidation/live SHA가 문서에 생기기 전에는 운영 완료로 부르지 않는다.
 
 PD의 다음 **“해”** 지시로 PR-09 Reservation Impact의 순수 shadow 계약을 구현했다.
 최초 v1이 공급자 snapshot 차이만 다룬 공백을 독립 검수에서 발견해 v1.1로 보강했다.

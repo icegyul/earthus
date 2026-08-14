@@ -51,7 +51,7 @@ const SHORT = {
 export const onboard = {
   _items: [],
 
-  /* @param {{chips?:boolean}} opt
+  /* @param {{chips?:boolean,coach?:boolean}} opt
      ⚠️ 첫 화면에서 칩을 끄기 위해 옵션을 받는다. 받은 지시:
         "밑에 최고파도 최고 수온 그런거 다 빼줘. 처음 보자마자 아름다운 지구와
          기초 정보만 보여주고 싶어."
@@ -63,7 +63,9 @@ export const onboard = {
          그동안 코치마크가 안 뜨면 "아무것도 없는 앱"으로 보인다. */
       this.chips().catch(e => console.warn('[볼거리] ', e.message));
     }
-    this.coach();
+    /* 첫 화면을 지구·날짜·시각·날씨만 두라는 제품 결정이 우선한다.
+       false면 첫 방문이어도 안내 카드를 자동으로 올리지 않는다. */
+    if (opt.coach !== false) this.coach();
     return this;
   },
 

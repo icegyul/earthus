@@ -240,6 +240,9 @@ export const sheet = {
 
   async open(m) {
     const box = $('#sheet');
+    /* 지점 날씨와 활동 판단은 한 장에서 읽는다. 지점 상세만 폭을 넓히고,
+       다음에 위성·사건을 열면 반드시 원래 폭으로 되돌린다. */
+    box.classList.toggle('is-place-detail', !!m.data?._lazy);
     $('#sheetKind').textContent = i18n.t.L[m.kind] || i18n.t.L[m._layerId] || m.kind;
     $('#sheetKind').className = 'kind' + (m.kind === 'quake' ? ' evt' : '');
     $('#sheetTitle').textContent = m.name;

@@ -40,6 +40,7 @@ import {
   normalizeAetherusTelescope,
   resolveAetherusPhoto,
 } from './photo-catalog.js';
+import { createAetherusMissionControl } from './aetherus-dashboard.js?v=20260815-mc1';
 
 const IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const BODY_ORDER = ['sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
@@ -186,6 +187,10 @@ export const cosmic3d = {
   _galaxyGuideCatalog: null,
   _galaxyGuideMode: false,
   _galaxyGuideAnchors: new Map(),
+  _dashboardOpen: false,
+  _dashboardObjectState: null,
+  _dashboardEarthTexturePromise: null,
+  _dashboardEarthTexture: null,
   _renderCount: 0,
 
   init() {
@@ -210,13 +215,23 @@ export const cosmic3d = {
     this.buildBodyPicker();
     this.ensureObservationSessionUi();
     this.ensureSkyARProbeUi();
+    this.dashboard = createAetherusMissionControl({
+      root: this.root,
+      onRoute: route => this.navigateDashboardRoute(route),
+      onCraft: id => {
+        this.closeDashboard(false);
+        this.selectCraft(id);
+      },
+    });
     this.bindInput();
     new ResizeObserver(() => this.render()).observe(this.root);
     store.on('scene', (next, stage) => {
       const visible = next === 'space';
+      const entering = visible && this.root.hidden;
       this.root.hidden = !visible;
       document.body.classList.toggle('aetherus-open', visible);
       if (!visible) {
+        this.closeDashboard(false);
         this.closeSkyARProbe({ hide: true });
         if (this._frame) cancelAnimationFrame(this._frame);
         this._frame = 0; this.cancelSolarMotionReplay();
@@ -230,7 +245,15 @@ export const cosmic3d = {
         this.emitRouteState();
         return;
       }
-      this._activationPromise = this.activate(stage);
+      if (stage !== 'solar' && this._dashboardOpen) this.closeDashboard(false);
+      this._activationPromise = this.activate(stage).then(() => {
+        // AETHERUS를 새로 열었을 때의 첫 화면은 미션 컨트롤이다. 이미 우주 안에서
+        // 태양계를 고른 경우에는 사용자가 요청한 3D 태양계로 그대로 이동한다.
+        if (entering && stage === 'solar' && !this._photoMode && !this._detailBody && !this._selectedCraft) {
+          this.openDashboard();
+        }
+        return this;
+      });
     });
     i18n.onChange(() => {
       this.buildBodyPicker();
@@ -253,7 +276,133 @@ export const cosmic3d = {
     this.updateHud();
     if (store.scene === 'space') this._activationPromise = this.activate(store.sceneStage);
     document.addEventListener('aetherus:galaxy-guide', () => this.openGalaxyGuide());
+    document.addEventListener('aetherus:route', event => {
+      if (event.detail === 'mission') {
+        this.navigateDashboardRoute('mission');
+      } else if (this._dashboardOpen) this.closeDashboard(false);
+    });
     return this;
+  },
+
+  navigateDashboardRoute(route) {
+    if (route === 'mission') {
+      if (store.scene !== 'space') {
+        sceneMgr.to('space', { stage: 'solar' }).then(() => this.openDashboard());
+      } else this.openDashboard();
+      return;
+    }
+    this.closeDashboard(false);
+    this.updateExperienceNav(route);
+    document.dispatchEvent(new CustomEvent('aetherus:route', { detail: route }));
+  },
+
+  openDashboard() {
+    if (!this.root || store.scene !== 'space') return;
+    if (this._solarMotionMode) this.closeSolarMotion(false);
+    if (this._galaxyGuideMode) this.closeGalaxyGuide(false);
+    if (this._photoMode) this.closePhotoAtlas(false);
+    if (this._detailBody) this.closeBody(false);
+    if (this._selectedCraft) this.closeCraft(false);
+    if (this._frame) cancelAnimationFrame(this._frame);
+    this._frame = 0;
+    this.root.classList.remove('is-moving');
+    this._dashboardOpen = true;
+    this.level = this.target = .04;
+    this._stage = 'solar';
+    this.yaw = .58;
+    this.pitch = .28;
+    this.dashboard?.setOpen(true);
+    this.loadDashboardEarthTexture();
+    this.updateHud();
+    this.render();
+    this.emitRouteState();
+  },
+
+  closeDashboard(render = true) {
+    if (!this._dashboardOpen && !this.root?.classList.contains('is-dashboard')) return;
+    this._dashboardOpen = false;
+    this.dashboard?.setOpen(false);
+    this.setDashboardObjectVisibility(false);
+    if (render) {
+      this.updateHud();
+      this.render();
+      this.emitRouteState();
+    }
+  },
+
+  setDashboardObjectVisibility(active) {
+    if (!this.solarGroup || !this.planetMeshes) return;
+    if (active && !this._dashboardObjectState) {
+      const earthMaterial = this.earthMesh.material;
+      this._dashboardObjectState = {
+        sun: this.sun.visible,
+        sunGlow: this.sunGlow.visible,
+        moon: this.moonGroup.visible,
+        planets: Object.fromEntries(Object.entries(this.planetMeshes).map(([id, mesh]) => [id, mesh.visible])),
+        orbits: (this.orbitLines || []).map(line => line.visible),
+        spacecraft: this.spacecraftGroup.visible,
+        earthMap: earthMaterial.map,
+        earthEmissiveMap: earthMaterial.emissiveMap,
+        earthEmissive: earthMaterial.emissive.clone(),
+        earthEmissiveIntensity: earthMaterial.emissiveIntensity,
+        earthRotationY: this.earthMesh.rotation.y,
+      };
+    }
+    if (active) {
+      this.sun.visible = false;
+      this.sunGlow.visible = false;
+      Object.entries(this.planetMeshes).forEach(([id, mesh]) => { mesh.visible = id === 'earth'; });
+      this.moonGroup.visible = false;
+      (this.orbitLines || []).forEach(line => { line.visible = false; });
+      this.spacecraftGroup.visible = false;
+      if (this._dashboardEarthTexture) {
+        this.earthMesh.material.map = this._dashboardEarthTexture;
+        this.earthMesh.material.emissiveMap = this._dashboardEarthTexture;
+      }
+      this.earthMesh.material.emissive.set(0x686868);
+      this.earthMesh.material.emissiveIntensity = .72;
+      this.earthMesh.material.needsUpdate = true;
+      this.earthMesh.rotation.y = this._dashboardObjectState.earthRotationY - 3.48;
+      return;
+    }
+    if (!this._dashboardObjectState) return;
+    this.sun.visible = this._dashboardObjectState.sun;
+    this.sunGlow.visible = this._dashboardObjectState.sunGlow;
+    this.moonGroup.visible = this._dashboardObjectState.moon;
+    Object.entries(this.planetMeshes).forEach(([id, mesh]) => {
+      mesh.visible = this._dashboardObjectState.planets[id] ?? true;
+    });
+    (this.orbitLines || []).forEach((line, index) => {
+      line.visible = this._dashboardObjectState.orbits[index] ?? true;
+    });
+    this.spacecraftGroup.visible = this._dashboardObjectState.spacecraft;
+    this.earthMesh.material.map = this._dashboardObjectState.earthMap;
+    this.earthMesh.material.emissiveMap = this._dashboardObjectState.earthEmissiveMap;
+    this.earthMesh.material.emissive.copy(this._dashboardObjectState.earthEmissive);
+    this.earthMesh.material.emissiveIntensity = this._dashboardObjectState.earthEmissiveIntensity;
+    this.earthMesh.material.needsUpdate = true;
+    this.earthMesh.rotation.y = this._dashboardObjectState.earthRotationY;
+    this._dashboardObjectState = null;
+  },
+
+  loadDashboardEarthTexture() {
+    if (this._dashboardEarthTexture) return Promise.resolve(this._dashboardEarthTexture);
+    if (this._dashboardEarthTexturePromise) return this._dashboardEarthTexturePromise;
+    if (!this._ready) return Promise.resolve(null);
+    this._dashboardEarthTexturePromise = this.loadSurfaceTexture(planetTextureUrl('detail/earth.webp'))
+      .then(texture => {
+        this._dashboardEarthTexture = texture;
+        if (this._dashboardOpen) {
+          this.setDashboardObjectVisibility(true);
+          this.render();
+        }
+        return texture;
+      })
+      .catch(error => {
+        console.warn('[aetherus-mission-earth]', error?.message || 'texture load failed');
+        return null;
+      });
+    return this._dashboardEarthTexturePromise;
   },
 
   routeState() {
@@ -458,6 +607,7 @@ export const cosmic3d = {
     const positions = planetPositions(new Date());
     this.planetMeshes = {};
     this.orbitMaterials = [];
+    this.orbitLines = [];
     const displayPoint = point => {
       const actualRadius = Math.hypot(point.x, point.y, point.z);
       const scale = solarDisplayRadius(actualRadius) / Math.max(actualRadius, .00001);
@@ -502,7 +652,7 @@ export const cosmic3d = {
         transparent: true, opacity: id === 'earth' ? .38 : .16, depthWrite: false,
       });
       const line = new T.LineLoop(orbitGeometry, orbitMaterial);
-      this.solarGroup.add(line); this.orbitMaterials.push(orbitMaterial);
+      this.solarGroup.add(line); this.orbitMaterials.push(orbitMaterial); this.orbitLines.push(line);
     });
     this.earthMesh = this.planetMeshes.earth;
     this.makeEarthMoon(new Date());
@@ -788,6 +938,7 @@ export const cosmic3d = {
   selectCraft(id) {
     const entry = this._craftMarkers.get(id);
     if (!entry) return;
+    if (this._dashboardOpen) this.closeDashboard(false);
     if (this._solarMotionMode) this.closeSolarMotion(false);
     if (this._photoMode) this.closePhotoAtlas(false);
     if (this._detailBody) this.closeBody(false);
@@ -1468,6 +1619,7 @@ export const cosmic3d = {
   async selectBody(id) {
     if (id === 'earth') { this.exitToEarth(); return; }
     try {
+      if (this._dashboardOpen) this.closeDashboard(false);
       await this.ensureEngine();
       const catalog = await this.loadBodyCatalog();
       const body = catalog.bodies.find(item => item.id === id);
@@ -2664,7 +2816,8 @@ export const cosmic3d = {
   updateBodyPicker() {
     if (!this.bodyPicker) return;
     const visible = store.scene === 'space' && stageFor(this.level) === 'solar'
-      && !this._photoMode && !this._solarMotionMode && !this._selectedCraft && (this._detailBody || this.level > .22);
+      && !this._dashboardOpen && !this._photoMode && !this._solarMotionMode && !this._selectedCraft
+      && (this._detailBody || this.level > .22);
     this.bodyPicker.hidden = !visible;
     this.bodyPicker.querySelectorAll('[data-body]').forEach(button => {
       button.classList.toggle('on', button.dataset.body === this._detailBody?.id);
@@ -2674,7 +2827,7 @@ export const cosmic3d = {
   updateCraftPicker() {
     if (!this.craftPicker) return;
     const visible = !!this._craftCatalog && store.scene === 'space' && stageFor(this.level) === 'solar'
-      && !this._photoMode && !this._solarMotionMode && !this._detailBody && this.level > .22;
+      && !this._dashboardOpen && !this._photoMode && !this._solarMotionMode && !this._detailBody && this.level > .22;
     this.craftPicker.hidden = !visible;
     this.craftPicker.querySelectorAll('[data-craft]').forEach(button => {
       button.classList.toggle('on', button.dataset.craft === this._selectedCraft?.id);
@@ -2705,6 +2858,7 @@ export const cosmic3d = {
   async openPhotoAtlas(telescope = 'ALL', photoId = null, { refresh = false } = {}) {
     const normalized = normalizeAetherusTelescope(telescope);
     try {
+      if (this._dashboardOpen) this.closeDashboard(false);
       // EARTHUS 검색에서 처음 우주로 넘어오는 경로는 sceneMgr.to()가 끝나도
       // 뒤의 catalogue 준비와 기본 animateTo가 남아 있을 수 있다. 그보다 먼저
       // 사진관을 열면 늦게 도착한 animateTo가 closePhotoAtlas()를 호출해 패널을 숨긴다.
@@ -2921,6 +3075,9 @@ export const cosmic3d = {
     this.root.addEventListener('wheel', event => {
       if (store.scene !== 'space') return;
       event.preventDefault();
+      // 미션 컨트롤에서는 휠이 우주 단계 전환을 뜻하지 않는다. 태양계 탭을 눌러
+      // 탐험 장면으로 들어간 뒤에만 연속 줌을 사용한다.
+      if (this._dashboardOpen) return;
       if (this._solarMotionMode) {
         this._motionDistance = clamp(this._motionDistance + Math.sign(event.deltaY) * 7, 88, 230);
         this.render(); return;
@@ -3018,10 +3175,13 @@ export const cosmic3d = {
       button.addEventListener('click', () => {
         const route = button.dataset.aetherusNav;
         if (route === 'earth') { this.exitToEarth(); return; }
+        if (route === 'mission') { this.openDashboard(); return; }
         if (route === 'menu') {
           document.getElementById('aetherusTab')?.click();
           return;
         }
+        if (this._dashboardOpen) this.closeDashboard(false);
+        this.updateExperienceNav(route);
         document.dispatchEvent(new CustomEvent('aetherus:route', { detail: route }));
       });
     });
@@ -3182,6 +3342,38 @@ export const cosmic3d = {
     this.resize();
     const T = this.THREE;
     const level = this.level;
+    if (this._dashboardOpen) {
+      this.setDashboardObjectVisibility(true);
+      this.photoGroup.visible = false;
+      this.galaxyGroup.visible = false;
+      this.clusterGroup.visible = false;
+      this.bodyDetailGroup.visible = false;
+      this.solarMotionGroup.visible = false;
+      this.galaxyGuideGroup.visible = false;
+      this.solarGroup.visible = true;
+      this.solarGroup.position.set(0, 0, 0);
+      this.solarGroup.scale.setScalar(1);
+      this.ambientLight.intensity = .58;
+      if (this.camera.fov !== 44) { this.camera.fov = 44; this.camera.updateProjectionMatrix(); }
+      const target = this.earthMesh.position.clone();
+      const compact = matchMedia('(max-width:760px)').matches;
+      const portrait = window.innerHeight >= window.innerWidth;
+      const distance = compact ? (portrait ? 2.82 : 1.74) : 1.95;
+      const cosPitch = Math.cos(this.pitch);
+      const direction = new T.Vector3(
+        Math.sin(this.yaw) * cosPitch,
+        Math.sin(this.pitch),
+        Math.cos(this.yaw) * cosPitch,
+      );
+      this.camera.position.copy(target).addScaledVector(direction, distance);
+      this.camera.lookAt(target);
+      this.sunLight.position.copy(target).add(new T.Vector3(4.2, 2.6, 5.2));
+      this.background.position.copy(this.camera.position).multiplyScalar(.08);
+      this.renderer.render(this.world, this.camera);
+      this.updateHud(); this.updateLabels(); this.updateBodyPicker(); this.updateCraftPicker(); this.updateMotionControl();
+      return;
+    }
+    this.setDashboardObjectVisibility(false);
     if (this._photoMode) {
       this.solarGroup.visible = false;
       this.galaxyGroup.visible = false;
@@ -3336,7 +3528,10 @@ export const cosmic3d = {
     if (!this._ready || !this.labels) return;
     const stage = stageFor(this.level);
     this.labels.querySelectorAll('[data-cosmic-label]').forEach(label => { label.hidden = true; });
-    if (this._solarMotionMode) {
+    if (this._dashboardOpen) {
+      // 근접 지구 카메라에서는 태양계용 탐사선 모형의 과장 크기를 쓰지 않는다.
+      // 미션 컨트롤 DOM의 얇은 궤도선이 위치 도식임을 명시한다.
+    } else if (this._solarMotionMode) {
       this.placeLabel('motion-sun', this.motionSun, ko() ? '태양 · 함께 전진' : 'Sun · moving with us', -18, -18);
       ['earth', 'jupiter', 'neptune'].forEach((id, index) => {
         this.placeLabel(`motion-${id}`, this._motionPlanetMeshes.get(id), PLANETS[id][ko() ? 'ko' : 'en'], 5, (index - 1) * 9);
@@ -3494,6 +3689,21 @@ export const cosmic3d = {
     if (!this.root) return;
     const stage = stageFor(this.level);
     const isKo = ko();
+    if (this._dashboardOpen) {
+      document.getElementById('cosmicStage').textContent = isKo ? '미션 컨트롤' : 'Mission Control';
+      document.getElementById('cosmicScale').textContent = isKo
+        ? '3D 지구 · 공식 자료 연결 · 출처와 자료 시각 표시'
+        : '3D Earth · official sources · provenance and source time';
+      document.getElementById('cosmicHint').textContent = isKo
+        ? '태양계·우주 사진·은하수·은하로 이동할 수 있습니다'
+        : 'Continue to the Solar System, space photos, Milky Way, and galaxies';
+      document.getElementById('cosmicNote').textContent = isKo
+        ? '허블·제임스웹 표식은 현재 위치가 아닌 궤도 구조 도식'
+        : 'Hubble and Webb markers are orbital schematics, not live positions';
+      this.root.dataset.stage = 'mission';
+      this.updateExperienceNav('mission');
+      return;
+    }
     if (this._galaxyGuideMode) {
       document.getElementById('cosmicStage').textContent = isKo ? '우리은하 구조' : 'Milky Way structure';
       document.getElementById('cosmicScale').textContent = isKo

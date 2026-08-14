@@ -59,6 +59,12 @@ const FILTER_WIDGETS = Object.freeze({
   weather: Object.freeze(['SPACE_WEATHER', 'AURORA', 'EARTH_WEATHER']),
   astronomy: Object.freeze(['TONIGHT', 'JWST']),
 });
+const STATUS_SOURCES = Object.freeze([
+  ['launches', '발사 일정', 'Launch Library 2'],
+  ['kp', 'Kp 관측', 'NOAA SWPC'],
+  ['aurora', '오로라 모델', 'NOAA SWPC OVATION'],
+  ['photos', '우주 사진 원장', 'Earthus provenance catalogue'],
+]);
 
 function defaultRoomLayouts() {
   return Object.fromEntries(Object.entries(ROOM_DEFAULTS).map(([room, preset]) => [room, {
@@ -77,7 +83,7 @@ function ensureStylesheet() {
   const link = document.createElement('link');
   link.id = STYLE_ID;
   link.rel = 'stylesheet';
-  link.href = new URL('../../css/aetherus-dashboard.css?v=20260815-mc13', import.meta.url).href;
+  link.href = new URL('../../css/aetherus-dashboard.css?v=20260815-mc14', import.meta.url).href;
   document.head.append(link);
 }
 
@@ -235,6 +241,9 @@ function buildMarkup() {
         </div>
         <div class="mission-center-actions">
           <span class="mission-source-mode" data-mission-source-mode>자료 확인 중</span>
+          <button type="button" class="mission-status-button" data-mission-status-open
+            aria-label="관제 알림센터, 단축키 N" aria-haspopup="dialog" aria-expanded="false">
+            <span aria-hidden="true">◌</span><i data-mission-status-count hidden>0</i></button>
           <button type="button" class="mission-fullscreen-button" data-mission-fullscreen
             aria-label="관제센터 전체화면, 단축키 F" aria-pressed="false">⛶</button>
           <button type="button" class="mission-edit-button" data-mission-edit>레이아웃 편집</button>
@@ -291,6 +300,14 @@ function buildMarkup() {
       <div class="mission-editor-widgets" data-editor-widgets></div>
       <footer><button type="button" data-layout-reset>기본 배치 복원</button>
         <button type="button" data-mission-editor-close>완료</button></footer>
+    </aside>
+    <aside class="mission-status-panel mission-surface" data-mission-status hidden role="dialog"
+      aria-label="관제 알림센터">
+      <header><span><b>관제 알림센터</b><small>현재 화면의 공식·공개 자료 상태</small></span>
+        <button type="button" data-mission-status-close aria-label="알림센터 닫기">×</button></header>
+      <div class="mission-status-list" data-mission-status-list></div>
+      <footer><small>화면 내 상태 · 푸시 발송 아님</small>
+        <button type="button" data-mission-status-refresh>자료 새로고침</button></footer>
     </aside>
     <p class="mission-announcement" data-mission-announcement aria-live="polite" aria-atomic="true"></p>`;
   return mission;
@@ -413,6 +430,59 @@ function renderRows(container, rows, emptyCopy) {
     const tail = document.createElement('i'); tail.textContent = row.tail || '';
     item.append(main, tail); container.append(item);
   });
+}
+
+function renderStatusCenter(mission, data, state) {
+  const list = mission.querySelector('[data-mission-status-list]');
+  if (!list) return;
+  list.replaceChildren();
+  const launches = data.launches || [];
+  const next = launches[0] || null;
+  const following = state.followingLaunchId
+    ? launches.find(item => item.id === state.followingLaunchId) : null;
+  const rows = [];
+
+  if (next?.webcastLive) {
+    rows.push({ state: 'live', badge: 'LIVE', title: next.name,
+      copy: `LL2 webcast_live=true · ${formatKst(data.launchRetrievedAt)} KST` });
+  }
+  if (following) {
+    rows.push({ state: 'following', badge: 'FOLLOWING', title: following.name,
+      copy: `${formatKst(following.scheduledAt)} KST · ${following.status}` });
+  } else if (next) {
+    rows.push({ state: 'info', badge: 'NEXT', title: next.name,
+      copy: `${formatKst(next.scheduledAt)} KST · ${next.status}` });
+  }
+
+  STATUS_SOURCES.forEach(([id, title, provider]) => {
+    const mode = data.sourceModes?.[id] || 'unavailable';
+    let evidenceTime = data.sourceRetrievedAt?.[id];
+    if (id === 'kp' && data.kp?.observedAt) evidenceTime = data.kp.observedAt;
+    if (id === 'aurora' && (data.aurora?.forecastAt || data.aurora?.observedAt)) {
+      evidenceTime = data.aurora.forecastAt || data.aurora.observedAt;
+    }
+    rows.push({ state: mode, badge: mode === 'live' ? 'LIVE' : (mode === 'cached' ? 'CACHED' : '미수신'),
+      title, copy: evidenceTime ? `${provider} · ${formatKst(evidenceTime)} KST` : `${provider} · 시각 미수신` });
+  });
+
+  rows.forEach(row => {
+    const item = document.createElement('article');
+    item.className = 'mission-status-row'; item.dataset.state = row.state;
+    const marker = document.createElement('i'); marker.setAttribute('aria-hidden', 'true');
+    const copy = document.createElement('span');
+    const title = document.createElement('b'); title.textContent = row.title;
+    const meta = document.createElement('small'); meta.textContent = row.copy;
+    const badge = document.createElement('em'); badge.textContent = row.badge;
+    copy.append(title, meta); item.append(marker, copy, badge); list.append(item);
+  });
+
+  const attentionCount = Object.values(data.sourceModes || {})
+    .filter(mode => mode === 'cached' || mode === 'unavailable').length + (next?.webcastLive ? 1 : 0);
+  const badge = mission.querySelector('[data-mission-status-count]');
+  if (badge) { badge.textContent = String(attentionCount); badge.hidden = attentionCount === 0; }
+  const button = mission.querySelector('[data-mission-status-open]');
+  if (button) button.setAttribute('aria-label', attentionCount
+    ? `관제 알림센터, 확인 항목 ${attentionCount}개, 단축키 N` : '관제 알림센터, 단축키 N');
 }
 
 function renderMissionData(mission, data, state) {
@@ -618,6 +688,7 @@ function renderMissionData(mission, data, state) {
     copy.textContent = '팔로우할 검증 일정이 없습니다.'; followingList.append(copy);
   }
   setText(mission, '[data-following-count]', following ? '1' : '0');
+  renderStatusCenter(mission, data, state);
 }
 
 function renderEditor(mission, state) {
@@ -700,13 +771,20 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
   // 편집기 안쪽 목록은 설정을 적용할 때마다 교체된다. 편집기 자체에서 먼저
   // 이벤트를 받아야 크기·표시·순서 버튼이 다시 그려진 뒤에도 일관되게 동작한다.
   const editor = mission.querySelector('[data-mission-editor]');
+  const statusPanel = mission.querySelector('[data-mission-status]');
   let editorReturnFocus = null;
+  let statusReturnFocus = null;
   const closeEditor = () => {
     editor.hidden = true; mission.classList.remove('is-editing');
     editorReturnFocus?.focus?.(); editorReturnFocus = null;
     announce('레이아웃 편집을 닫았습니다.');
   };
   const openEditor = trigger => {
+    if (!statusPanel.hidden) {
+      statusPanel.hidden = true; mission.classList.remove('is-status-open');
+      mission.querySelector('[data-mission-status-open]')?.setAttribute('aria-expanded', 'false');
+      statusReturnFocus = null;
+    }
     editorReturnFocus = trigger || document.activeElement;
     editor.hidden = false; mission.classList.add('is-editing');
     renderEditor(mission, state); mission.querySelector('[data-mission-editor-close]')?.focus();
@@ -761,6 +839,24 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
   };
   editor.addEventListener('click', handleEditorClick, true);
   editor.onclick = handleEditorClick;
+
+  const closeStatus = ({ restoreFocus = true } = {}) => {
+    statusPanel.hidden = true; mission.classList.remove('is-status-open');
+    mission.querySelector('[data-mission-status-open]')?.setAttribute('aria-expanded', 'false');
+    if (restoreFocus) statusReturnFocus?.focus?.();
+    statusReturnFocus = null;
+    announce('관제 알림센터를 닫았습니다.');
+  };
+  const openStatus = trigger => {
+    if (!editor.hidden) {
+      editor.hidden = true; mission.classList.remove('is-editing'); editorReturnFocus = null;
+    }
+    statusReturnFocus = trigger || document.activeElement;
+    statusPanel.hidden = false; mission.classList.add('is-status-open');
+    mission.querySelector('[data-mission-status-open]')?.setAttribute('aria-expanded', 'true');
+    statusPanel.querySelector('[data-mission-status-close]')?.focus();
+    announce('현재 자료 상태를 표시하는 관제 알림센터를 열었습니다.');
+  };
 
   const decorateMenu = () => {
     const list = document.querySelector('#menuSub .aetherus-menu-list'); if (!list) return;
@@ -834,6 +930,17 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
   };
 
   mission.addEventListener('click', event => {
+    if (event.target.closest('[data-mission-status-open]')) {
+      if (statusPanel.hidden) openStatus(event.target.closest('[data-mission-status-open]'));
+      else closeStatus();
+      return;
+    }
+    if (event.target.closest('[data-mission-status-close]')) { closeStatus(); return; }
+    if (event.target.closest('[data-mission-status-refresh]')) {
+      refresh({ force: true }).then(() => announce('관제 자료 상태를 새로고침했습니다.'))
+        .catch(() => announce('일부 자료를 새로고침하지 못해 마지막 성공 상태를 유지합니다.'));
+      return;
+    }
     if (event.target.closest('[data-mission-satellite-pass]')) {
       calculateSatellitePass(); return;
     }
@@ -866,6 +973,23 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
     if (mission.hidden || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
     const typing = event.target instanceof HTMLElement
       && (event.target.matches('input,textarea,select') || event.target.isContentEditable);
+    if (!statusPanel.hidden) {
+      if (event.key === 'Escape' || event.code === 'KeyN') {
+        event.preventDefault(); closeStatus(); return;
+      }
+      if (event.key === 'Tab') {
+        const focusable = [...statusPanel.querySelectorAll('button:not([disabled]),a[href]')]
+          .filter(node => !node.hidden && node.getClientRects().length);
+        if (!focusable.length) return;
+        const first = focusable[0]; const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault(); last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault(); first.focus();
+        }
+      }
+      return;
+    }
     if (!editor.hidden) {
       if (event.key === 'Escape') { event.preventDefault(); closeEditor(); return; }
       if (event.key === 'Tab') {
@@ -882,6 +1006,9 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
       return;
     }
     if (typing) return;
+    if (event.code === 'KeyN') {
+      event.preventDefault(); openStatus(mission.querySelector('[data-mission-status-open]')); return;
+    }
     if (event.code === 'KeyF') { event.preventDefault(); toggleFullscreen(); return; }
     if (event.code === 'KeyE') { event.preventDefault(); openEditor(document.activeElement); return; }
     const roomIndex = ['Digit1', 'Digit2', 'Digit3', 'Digit4'].indexOf(event.code);
@@ -973,6 +1100,8 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
         refresh().catch(error => console.warn('[aetherus-mission]', error.message));
       } else {
         editor.hidden = true; mission.classList.remove('is-editing'); editorReturnFocus = null;
+        if (!statusPanel.hidden) closeStatus({ restoreFocus: false });
+        mission.classList.remove('is-status-open');
         if (fullscreenElement() === root) {
           const exit = document.exitFullscreen || document.webkitExitFullscreen;
           exit?.call(document).catch?.(() => {});

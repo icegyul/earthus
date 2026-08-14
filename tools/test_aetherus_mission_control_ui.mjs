@@ -161,6 +161,36 @@ try {
     assert.equal(await page.locator('[data-widget="LIVE"] a').getAttribute('href'),
       'https://www.youtube.com/watch?v=earthus-mission-control-fixture');
 
+    const statusButton = page.locator('[data-mission-status-open]');
+    assert.match(await statusButton.getAttribute('aria-label'), /관제 알림센터/);
+    await statusButton.click();
+    await page.locator('[data-mission-status]').waitFor({ state: 'visible' });
+    const statusEvidence = await page.locator('[data-mission-status]').evaluate(panel => ({
+      text: panel.textContent,
+      rows: panel.querySelectorAll('.mission-status-row').length,
+      outside: (() => {
+        const rect = panel.getBoundingClientRect();
+        return rect.left < -0.5 || rect.right > innerWidth + 0.5 || rect.top < -0.5 || rect.bottom > innerHeight + 0.5;
+      })(),
+      forbidden: /예보|안전 판정|결제|구독|\bPRO\b/.test(panel.textContent),
+    }));
+    assert.equal(statusEvidence.rows, 6, `${item.name} status center evidence rows`);
+    assert.match(statusEvidence.text, /Verified Test Mission/);
+    assert.match(statusEvidence.text, /Launch Library 2/);
+    assert.match(statusEvidence.text, /NOAA SWPC/);
+    assert.match(statusEvidence.text, /Earthus provenance catalogue/);
+    assert.equal(statusEvidence.outside, false, `${item.name} status center outside viewport`);
+    assert.equal(statusEvidence.forbidden, false, `${item.name} invented or paid status copy`);
+    await page.screenshot({ path: `/tmp/aetherus-mission-status-${item.name}.png`, fullPage: true });
+    await page.locator('[data-mission-status-close]').click();
+    await page.locator('[data-mission-status]').waitFor({ state: 'hidden' });
+    if (item.name === 'desktop') {
+      await page.keyboard.press('KeyN');
+      await page.locator('[data-mission-status]').waitFor({ state: 'visible' });
+      await page.keyboard.press('Escape');
+      await page.locator('[data-mission-status]').waitFor({ state: 'hidden' });
+    }
+
     if (item.name === 'desktop') {
       await page.locator('[data-follow-launch]').click();
       assert.equal(await page.locator('[data-following-count]').textContent(), '1');

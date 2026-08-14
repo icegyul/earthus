@@ -29,7 +29,7 @@ assert.match(html, /class="cosmic-photo-copy"/);
 assert.match(html, /app\.css\?v=20260814-oceanv1/);
 assert.match(html, /main\.js\?v=20260814-oceanv1/);
 assert.match(main, /layerbar\.js\?v=20260814-aetherusv3/);
-assert.match(main, /cosmic3d\.js\?v=20260815-mc13/);
+assert.match(main, /cosmic3d\.js\?v=20260815-mc14/);
 assert.match(cosmic, /photo\.preview \|\| photo\.thumb/);
 assert.match(cosmic, /updateExperienceNav\('milkyway'\)/);
 assert.match(css, /\.cosmic-experience-nav button\{[^}]*min-height:44px/s);

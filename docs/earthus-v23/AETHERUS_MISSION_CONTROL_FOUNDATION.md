@@ -15,7 +15,9 @@ LIVE 위젯은 임의 영상이나 발사와 무관한 일반 링크를 넣지 �
 결제·PRO 표시는 없다. F 키/화면 버튼 전체화면, E 편집, 1–4 room 전환, 필터의 실제 mouse 동작,
 dialog focus trap·ARIA announcement가 연결됐다. 사진·Kp·OVATION·LL2는 출처별 마지막 성공 응답과
 저장 시각을 기기에 보관하고 provider 실패 때 `CACHED`로 고정 표시한다. 위치 좌표와 ISS 계산
-결과는 이 cache에 저장하지 않는다. 운영 동기화 policy는 계속 `DRAFT + productionEnabled=false`다.
+결과는 이 cache에 저장하지 않는다. 화면 내 관제 알림센터는 LL2 LIVE·다음/팔로우 일정과
+4개 자료원의 LIVE/CACHED/미수신·근거 시각만 표시하며 푸시를 발송하지 않는다. 운영 동기화
+policy는 계속 `DRAFT + productionEnabled=false`다.
 
 ## 보호 계약
 
@@ -51,7 +53,7 @@ dialog focus trap, ARIA, mouse filter, 출처 4개 성공 cache 생성과 provid
 owner denial, exact/Ocean state 차단, Mission Mode, fresh/stale/unavailable, export/delete,
 운영 DRAFT policy 차단과 network/timer/animation 0을 검증한다.
 
-다음은 미완료다: durable account sync/transaction, multi-monitor, 알림 센터,
+다음은 미완료다: durable account sync/transaction, multi-monitor, 서버 푸시 알림 발송·정정,
 실기기 VoiceOver 등 전체 screen-reader acceptance. Satellite Pass는 현재 사용자가
 버튼으로 허용한 위치의 ISS 한 기만 계산하며 서버 알림·계정 위치 저장을 하지 않는다.
 이 항목이 닫히기 전에는 Sheets 115–132 전체 완료로 판정하지 않는다. 유료 gate는 사용하지 않으며

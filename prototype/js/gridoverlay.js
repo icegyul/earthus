@@ -300,7 +300,8 @@ const SOURCE_OF = {
   pressure: 'wind', rain: 'wind',
   tpw: 'tpw',
   pm25: 'air', pm10: 'air', dust: 'air', ozone: 'air', uv: 'air', aqi: 'air',
-  sst: 'marine', wave: 'marine', swell: 'marine', current: 'marine',
+  /* 해수면온도는 NOAA 일별 관측판이다. 파고·너울·해류의 모델판과 섞지 않는다. */
+  sst: 'sstGlobal', wave: 'marine', swell: 'marine', current: 'marine',
   sstanom: 'marine',
 };
 
@@ -335,6 +336,9 @@ const SRC_URL = {
   tpw:    () => `${API.TPW}/tpw-ea.json`,
   air:    () => `${API.AIR}/air.json`,
   marine: () => `${API.MARINE_GRID}/marine.json`,
+  /* NOAA OISST 0.25° 일별 관측을 서버에서 1° 원격자 표본으로 축약한 전지구판.
+     5° 파랑모델판의 결측 꼭짓점 때문에 지중해가 통째로 사라졌던 문제를 분리한다. */
+  sstGlobal: () => `${API.MARINE_GRID}/sst-global.json`,
   /* ⚠️⚠️ 전지구 해양 격자는 **5° = 약 550km** 다. 한반도 전체가 두세 칸이라
      서해·동해·남해가 한 칸에 뭉개진다 — 화면에서는 "남해에만 자료가 있는 것"처럼 보인다.
      동아시아만 **0.5°(약 55km)** 로 따로 만든다. 10배 촘촘하다.
@@ -356,7 +360,7 @@ export const gridOverlay = {
   _labelState: null,
   _rendered: {},
 
-  /** @param src 'wind' | 'air' | 'marine' */
+  /** @param src 'wind' | 'air' | 'marine' | 'sstGlobal' */
   async load(src = 'wind') {
     const got = this.grids[src];
     if (got && Date.now() - (this._fetchedAt[src] || 0) < 30 * 60_000) return got;
@@ -391,6 +395,9 @@ export const gridOverlay = {
   _desiredSource(key) {
     const base = SOURCE_OF[key] || 'wind';
     if (!this._eastAsiaView()) return base;
+    /* 동아시아에서는 이미 받는 NOAA OISST 0.5° 관측판을 함께 쓴다.
+       전지구 2°판보다 촘촘하고, SST와 편차가 같은 날짜·같은 원격자다. */
+    if (key === 'sst') return 'sstAnomEa';
     if (key === 'sstanom') return 'sstAnomEa';
     if (base === 'marine' && key !== 'sstanom') return 'marineEa';
     if (key === 'pressure') return 'pressureEa';
@@ -511,9 +518,12 @@ export const gridOverlay = {
 
       /* 단계색은 경계가 목적이다. 저해상도 캔버스를 다시 선형 확대하면 색 사이에
          존재하지 않는 중간색이 생기므로 nearest-neighbour로 키운다. 원자료 자체의
-         공간 보간은 위 루프에서 한 번만 하고, 범례 경계를 그대로 보존한다. */
+         공간 보간은 위 루프에서 한 번만 하고, 범례 경계를 그대로 보존한다.
+         ⚠️ 1° SST 전지구판을 무조건 3배로 키우면 폭 4,320px이 되어 일부 모바일의
+            4,096px GPU 텍스처 한도를 넘는다. 원판 크기에 따라 1~3배로 제한한다. */
       const soft = document.createElement('canvas');
-      soft.width = W * 3; soft.height = H * 3;
+      const upscale = Math.max(1, Math.min(3, Math.floor(4096 / Math.max(W, H))));
+      soft.width = W * upscale; soft.height = H * upscale;
       const sc = soft.getContext('2d');
       sc.imageSmoothingEnabled = !scale.stepped;
       if (!scale.stepped) sc.imageSmoothingQuality = 'high';

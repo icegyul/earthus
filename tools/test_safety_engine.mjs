@@ -50,6 +50,13 @@ test('60km 안에 지점이 없으면 REGION_UNMAPPED다', () => {
 test('한국 밖은 KMA 적용 범위 밖이다', () => {
   assert.equal(engine.resolveWarningZone({ lat: 35.68, lon: 139.76 }, zones).status, 'OUT_OF_COVERAGE');
 });
+test('일본 좌표는 KMA snapshot이 없어도 연결 실패가 아니라 범위 밖이다', () => {
+  const gate = engine.evaluateWarningSafety({
+    snapshot: null, zones: null, coords: { lat: 35.452, lon: 133.362 }, nowMs: NOW,
+  });
+  assert.equal(gate.reason, 'KMA_OUT_OF_COVERAGE');
+  assert.equal(gate.applies, false);
+});
 test('30분 이내 자료만 FRESH다', () => {
   assert.equal(engine.warningFreshness(snapshot(), NOW).status, 'FRESH');
 });
@@ -155,11 +162,21 @@ test('활성 공식 특보 UI는 제한·출처·시각·n·공식 CTA를 함께
   const gate = engine.evaluateWarningSafety({ snapshot: snapshot(), zones, coords, nowMs: NOW });
   const html = gateUi.safetyGateMarkup(gate, 'ko');
   assert.match(html, /data-safety-status="WARNING"/);
-  assert.match(html, /공식 특보 · 추천 제한/);
-  assert.match(html, /폭염 · 주의 · 김포시/);
+  assert.match(html, /폭염 주의 발효 중/);
+  assert.match(html, /김포시 · 활동 전 기상청 발표를 확인하세요/);
+  assert.doesNotMatch(html, /추천 제한/);
   assert.match(html, /n=1/);
   assert.match(html, /2026-08-12 11:10 KST/);
   assert.match(html, /weather\.go\.kr\/w\/special-report\/overall\.do/);
+});
+test('일본 범위 밖 UI는 KMA 링크 대신 JMA 특보로 보낸다', () => {
+  const gate = engine.evaluateWarningSafety({
+    snapshot: null, zones: null, coords: { lat: 35.452, lon: 133.362 }, nowMs: NOW,
+  });
+  const html = gateUi.safetyGateMarkup(gate, 'ko', { countryCode: 'JP' });
+  assert.match(html, /이 좌표는 일본입니다/);
+  assert.match(html, /jma\.go\.jp\/bosai\/map\.html#contents=warning/);
+  assert.doesNotMatch(html, /weather\.go\.kr/);
 });
 test('Safety UI는 독립 CSS와 versioned entry로 배포된다', () => {
   assert.match(css, /\.safety-gate--danger/);

@@ -147,6 +147,11 @@ export const i18n = {
     /* ⚠️ 한때 '레이어'로 바꿨다가 되돌렸다 (받은 지시). 감사에서는 '스타일'이
        테마 고르는 곳으로 읽힌다고 했지만, PD 판단은 '지구 스타일'이다. */
     'm.layers':   { ko: '지구 스타일',      en: 'Earth style' },
+    'm.menuTitle':{ ko: '지구 메뉴',         en: 'Earth menu' },
+    'm.menuObserve':{ ko: '지구 보기',       en: 'View Earth' },
+    'm.menuDiscover':{ ko: '읽고 분석',      en: 'Read & analyse' },
+    'm.menuActivities':{ ko: '활동',         en: 'Activities' },
+    'm.menuMove':{ ko: '이동',               en: 'Move' },
     'm.sat':      { ko: '인공위성',          en: 'Satellites' },
     'm.alert':    { ko: '경보·재난',         en: 'Alerts' },
     'm.explore':  { ko: '탐색·활동',         en: 'Explore & activities' },
@@ -154,7 +159,8 @@ export const i18n = {
     'm.lab':      { ko: 'LAB',               en: 'LAB' },
     'm.ask':      { ko: '물어보기',          en: 'Ask' },
     'm.flight':   { ko: '항공편',            en: 'Flights' },
-    'm.outdoor':  { ko: '취미',              en: 'Outdoors' },
+    'm.outdoor':  { ko: '취미',              en: 'Hobbies' },
+    'm.outdoorSub':{ ko: '바다 · 생물 관측 · 땅과 하늘', en: 'Ocean · wildlife records · land & sky' },
     'm.earth':    { ko: '지구',              en: 'Earth' },
     'm.surface':  { ko: '수면',              en: 'Surface' },
     'm.trench':   { ko: '해구',              en: 'Trenches' },

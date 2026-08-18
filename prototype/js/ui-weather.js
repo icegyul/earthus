@@ -19,6 +19,8 @@
 //    그게 관측인지 우리 추측인지 아무도 구분할 수 없게 된다.
 //
 // ⚠️ 예보 자료는 Open-Meteo 다. 기상청이 아니다 — 화면에 그렇게 적는다.
+// ⚠️⚠️ 2026-08-15 정정: 한국의 '오늘'은 기상청 동네예보가 1순위이고,
+//    Open-Meteo 는 한국 밖 또는 기상청 자료를 못 받은 동안의 폴백이다.
 
 import { i18n } from './i18n.js';
 /* ⚠️ inJapan 만 정적으로 가져온다 — render() 는 async 가 아니라
@@ -28,6 +30,66 @@ import { chrome } from './ui.js';
 import { wxText } from './layers/weather.js';
 import { myLocation } from './mylocation.js';
 import { kmaFcst, condText } from './kma-fcst.js';
+// weather-summary 모듈이 없을 때 fallback 하도록 동적 로딩
+let weatherSummary = {
+  kmaWeatherSymbol: (sky, pty) => {
+    if ([2, 6].includes(Number(pty))) return '🌨️';
+    if ([3, 7].includes(Number(pty))) return '❄️';
+    if ([1, 4, 5].includes(Number(pty))) return '🌧️';
+    if (Number(sky) === 1) return '☀️';
+    if (Number(sky) === 3) return '🌤️';
+    return '☁️';
+  },
+  summarizeKma: (kma, ko = true) => {
+    const now = kma?.now || {};
+    const today = new Date();
+    const ymd = `${String(today.getFullYear())}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+    const hours = Array.isArray(kma?.hours) ? kma.hours : [];
+    const todays = hours.filter(h => String(h?.tm || '').startsWith(ymd));
+    const n = todays[0] || hours[0] || now;
+    const hi = (todays.map(v => Number(v?.t)).filter(Number.isFinite).reduce((a, b) => Math.max(a, b), -Infinity));
+    const lo = (todays.map(v => Number(v?.t)).filter(Number.isFinite).reduce((a, b) => Math.min(a, b), Infinity));
+    const condition = condText(n.sky, n.pty, ko);
+    return {
+      today: {
+        label: ko ? '오늘' : 'Today',
+        icon: weatherSummary.kmaWeatherSymbol(n.sky, n.pty),
+        headline: ko ? `현재 ${condition}` : `Now ${condition}`,
+        detail: `${ko ? '강수확률' : 'Rain chance'} ${Math.round(Number(n?.pop || 0))}%`,
+        tmax: hi > -Infinity ? hi : now.tmax,
+        tmin: lo < Infinity ? lo : now.tmin,
+      },
+      tomorrow: null,
+    };
+  },
+  wmoWeatherSymbol: (code) => {
+    const c = Number(code);
+    if (c === 0) return '☀️';
+    if ([1, 2].includes(c)) return '🌤️';
+    if (c === 3 || [45, 48].includes(c)) return '☁️';
+    if ((c >= 71 && c <= 77) || [85, 86].includes(c)) return '❄️';
+    if (c >= 95) return '⛈️';
+    if ((c >= 51 && c <= 67) || (c >= 80 && c <= 82)) return '🌧️';
+    return '☁️';
+  },
+};
+let weatherSummaryLoader;
+function loadWeatherSummary() {
+  if (weatherSummaryLoader) return weatherSummaryLoader;
+  weatherSummaryLoader = import('./weather-summary.js')
+    .then(mod => {
+      weatherSummary = {
+        kmaWeatherSymbol: mod.kmaWeatherSymbol || weatherSummary.kmaWeatherSymbol,
+        summarizeKma: mod.summarizeKma || weatherSummary.summarizeKma,
+        wmoWeatherSymbol: mod.wmoWeatherSymbol || weatherSummary.wmoWeatherSymbol,
+      };
+    })
+    .catch(() => {
+      // 실패해도 운영은 멈추지 않음
+    })
+    .finally(() => { weatherSummaryLoader = null; });
+}
+loadWeatherSummary();
 
 const $ = s => document.querySelector(s);
 const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c;
@@ -50,6 +112,8 @@ export const weatherPanel = {
   tab: 'today',
   /* 한국이면 기상청 동네예보를 담아 둔다 (없으면 null → Open-Meteo 로 돌아간다) */
   kma: null,
+  kmaKey: '',
+  kmaRequestKey: '',
 
   init() {
     /* 하단 온도 덩어리를 누를 수 있게 한다.
@@ -70,7 +134,10 @@ export const weatherPanel = {
     });
     // 위치명은 날씨보다 늦게 도착할 수 있다. 시트가 열린 뒤 도착해도 제목을 갱신한다.
     document.addEventListener('earthus:place', () => {
-      if ($('#wxSheet')?.classList.contains('up')) this.render();
+      if (!$('#wxSheet')?.classList.contains('up')) return;
+      this._dropStaleKma();
+      this.render();
+      this._loadKma();
     });
     return this;
   },
@@ -79,17 +146,41 @@ export const weatherPanel = {
     if (tab) this.tab = tab;
     document.querySelectorAll('.sheet-panel.up').forEach(p => p.classList.remove('up'));
     $('#wxSheet')?.classList.add('up');
+    this._dropStaleKma();
     this.render();
     if (!chrome.place.name && !chrome.isDefault) chrome.reverseName(chrome.place.lat, chrome.place.lon);
     /* 아직 안 받았으면 받아 온다 (위치 권한을 늦게 준 경우) */
     if (!chrome.wx) chrome.loadWeather().then(() => this.render());
     /* 한국이면 기상청 예보를 덧대 온다.
        ⚠️ 먼저 그리고 나서 덧댄다 — 기상청을 기다리느라 화면이 비어 있으면 안 된다. */
-    kmaFcst.at(chrome.place.lat, chrome.place.lon).then(k => {
-      if (!k) return;
+    this._loadKma();
+  },
+
+  _placeKey() {
+    const p = chrome.place;
+    return p?.lat == null || p?.lon == null ? '' : `${Number(p.lat).toFixed(4)},${Number(p.lon).toFixed(4)}`;
+  },
+
+  _dropStaleKma() {
+    /* ⚠️ 위치를 옮긴 직후 이전 지점 예보가 한 프레임이라도 보이면 출처가 섞인다. */
+    if (this.kmaKey && this.kmaKey !== this._placeKey()) this.kma = null;
+  },
+
+  _loadKma() {
+    const key = this._placeKey();
+    if (!key || (this.kma && this.kmaKey === key) || this.kmaRequestKey === key) return;
+    const { lat, lon } = chrome.place;
+    this.kmaRequestKey = key;
+    kmaFcst.at(lat, lon).then(k => {
+      if (this.kmaRequestKey === key) this.kmaRequestKey = '';
+      if (!k || this._placeKey() !== key) return;
       this.kma = k;
+      this.kmaKey = key;
       this.render();
-    }).catch(() => { /* 실패하면 Open-Meteo 그대로 */ });
+    }).catch(() => {
+      if (this.kmaRequestKey === key) this.kmaRequestKey = '';
+      /* 실패하면 Open-Meteo 그대로 */
+    });
   },
 
   close() { $('#wxSheet')?.classList.remove('up'); },
@@ -215,61 +306,115 @@ export const weatherPanel = {
        숫자 위에 "그래서 오늘이 어떤 날인가" 한 문단이 먼저 온다.
        ⚠️ 처음엔 별도 '안내' 탭에 넣었다. 그건 아무도 안 누른다 —
           '내 위치'를 누르면 바로 이 탭이 열리는데 거기 없으면 없는 것과 같다. */
+    /* ⚠️⚠️ 2026-08-15 실제 화면에서 위 결정이 잘못 작동했다.
+       기온·습도 평년 비교가 비·눈·하늘 예보보다 먼저 나오고, 큰 장기 차트가 현재
+       날씨를 아래로 밀었다. '내 위치'의 첫 질문은 지금·오늘·내일이다. 서술은 없애지
+       않되 공식 예보 뒤의 배경 설명으로 내리고, 장기 기록은 맨 아래 참고로 접는다. */
+
+    // 한국이면 기상청 동네예보를 가장 먼저 그린다 (공식·가까운 대표 지점)
+    if (this.kma?.now) this._todayKma(body, ko);
+    else this._todayMeteo(body, wx, ko);
+
     this._narrative(body, ko);
     this._annualClimate(body, ko);
-
-    // 한국이면 기상청 동네예보로 그린다 (공식·5km)
-    if (this.kma?.now) { this._todayKma(body, ko); return; }
-    this._todayMeteo(body, wx, ko);
   },
 
   _annualClimate(body, ko) {
-    const host = el('section', 'wx-climate');
-    host.innerHTML = `<p class="wx-narr-load">${ko ? '1년 기온 기록을 불러오는 중…' : 'Loading annual temperature record…'}</p>`;
-    body.appendChild(host);
+    const details = el('details', 'wx-climate');
+    details.innerHTML = `<summary><span>${ko ? '장기 기온 차트' : 'Long-term temperature chart'}</span>`
+      + `<small>${ko ? '오늘·내일 예보 아래의 별도 참고 자료' : 'Separate reference below today and tomorrow'}</small><b aria-hidden="true">⌄</b></summary>`;
+    const host = el('div', 'wx-climate-body');
+    host.innerHTML = `<p class="wx-narr-load">${ko ? '열면 장기 기록을 불러옵니다.' : 'Open to load the record.'}</p>`;
+    details.appendChild(host);
+    body.appendChild(details);
     const p = chrome.place;
     if (!p || p.lat == null) return;
-    Promise.all([
-      import('./location-climate.js').then(m => m.climateSeriesAt(p.lat, p.lon)),
-      import('./ui-charts.js'),
-    ]).then(([result, chart]) => {
-      if (!host.isConnected) return;
-      if (!result) {
-        host.innerHTML = `<p class="wx-narr-load">${ko
-          ? '반경 40km 최신 장기 관측소 · 0곳 · 1년 기온선 대기'
-          : 'No current long-record station within 40 km.'}</p>`;
-        return;
-      }
-      const graph = chart.spaghetti(result.data.series, { step: 10 });
-      if (!graph) return;
-      const station = result.station;
-      const altitude = Number.isFinite(station.alt) ? ` · ${Math.round(station.alt)}m` : '';
-      host.innerHTML = `<h4>${ko ? `${station.name} 관측소 1년 기온` : `${station.name} station annual temperature`}</h4>`
-        + `<p class="wx-climate-sub">${ko
-          ? `현재 위치에서 약 ${station.km}km${altitude} · 올해와 10년 간격 비교`
-          : `About ${station.km} km away${altitude} · this year and 10-year steps`}</p>`
-        + `<div class="ch-wrap">${graph.svg}</div>`
-        + `<div class="ch-leg">${chart.legendOf(graph, ko)}</div>`
-        + `<p class="ch-note">${esc(chart.rangeNote(graph, ko, result.data.source))}</p>`
-        + `<p class="ch-note">${esc(result.data.method)}</p>`;
-      chart.makeZoomable(host.querySelector('.ch-wrap'), graph.W, graph.H);
-    }).catch(error => {
-      if (host.isConnected) host.innerHTML = `<p class="wx-narr-load">${ko
-        ? '1년 기온 기록을 불러오지 못했습니다.' : 'Could not load annual temperature record.'}<br><small>${esc(error.message)}</small></p>`;
+    let loaded = false;
+    details.addEventListener('toggle', () => {
+      if (!details.open || loaded) return;
+      loaded = true;
+      host.innerHTML = `<p class="wx-narr-load">${ko ? '1년 기온 기록을 불러오는 중…' : 'Loading annual temperature record…'}</p>`;
+      Promise.all([
+        import('./location-climate.js').then(m => m.climateSeriesAt(p.lat, p.lon)),
+        import('./ui-charts.js'),
+      ]).then(([result, chart]) => {
+        if (!host.isConnected) return;
+        if (!result) {
+          host.innerHTML = `<p class="wx-narr-load">${ko
+            ? '반경 40km 안에 비교 가능한 장기 관측소가 없습니다.'
+            : 'No current long-record station within 40 km.'}</p>`;
+          return;
+        }
+        if (result.unavailable && result.reason === 'station-mismatch') {
+          const expected = result.expectedStation;
+          const reference = result.referenceStation;
+          host.innerHTML = `<div class="wx-climate-unavailable"><b>${ko
+            ? `${esc(expected.name)} 화면에 ${esc(reference.name)} 장기 차트를 대신 표시하지 않습니다.`
+            : `We do not substitute ${esc(reference.name)} for ${esc(expected.name)}.`}</b>`
+            + `<p>${ko
+              ? `${esc(expected.name)} ASOS는 약 ${expected.km}km에 있지만, 현재 연속 장기 곡선은 `
+                + `${esc(reference.name)}(약 ${reference.km}km)만 확인됩니다. 다른 도시의 기록을 `
+                + `내 위치 날씨처럼 보이지 않게 막았습니다.`
+              : `The local ASOS is about ${expected.km} km away, while the verified continuous `
+                + `series is ${reference.name}, about ${reference.km} km away.`}</p>`
+            + `<p>${ko
+              ? `위의 ‘오늘의 배경’은 ${esc(expected.name)} ASOS 평년 분포를 사용합니다.`
+              : `Today in context still uses the local ${expected.name} ASOS normals.`}</p></div>`;
+          return;
+        }
+        const graph = chart.spaghetti(result.data.series, { step: 10 });
+        if (!graph) return;
+        const station = result.station;
+        const altitude = Number.isFinite(station.alt) ? ` · ${Math.round(station.alt)}m` : '';
+        host.innerHTML = `<p class="wx-climate-warning">${ko
+          ? `현재 ${esc(chrome.place.name || '선택 위치')}의 날씨가 아닙니다. 비교 가능한 가장 가까운 장기 기록입니다.`
+          : 'This is not current weather. It is the nearest available long-term record.'}</p>`
+          + `<h4>${ko ? `참고 · ${station.name} 관측소 1년 기온` : `Reference · ${station.name} annual temperature`}</h4>`
+          + `<p class="wx-climate-sub">${ko
+            ? `현재 위치에서 약 ${station.km}km${altitude} · 올해와 10년 간격 비교`
+            : `About ${station.km} km away${altitude} · this year and 10-year steps`}</p>`
+          + `<div class="ch-wrap">${graph.svg}</div>`
+          + `<div class="ch-leg">${chart.legendOf(graph, ko)}</div>`
+          + `<p class="ch-note">${esc(chart.rangeNote(graph, ko, result.data.source))}</p>`
+          + `<p class="ch-note">${esc(result.data.method)}</p>`;
+        chart.makeZoomable(host.querySelector('.ch-wrap'), graph.W, graph.H);
+      }).catch(error => {
+        if (host.isConnected) host.innerHTML = `<p class="wx-narr-load">${ko
+          ? '1년 기온 기록을 불러오지 못했습니다.' : 'Could not load annual temperature record.'}<br><small>${esc(error.message)}</small></p>`;
+      });
     });
   },
 
   /** 기상청 동네예보판 — 항목이 Open-Meteo 와 달라 따로 그린다 */
   _todayKma(body, ko) {
     const k = this.kma, n = k.now;
-    const today = (k.hours[0]?.tm || '').slice(0, 8);
-    const dd = k.days[today] || {};
+    const forecast = weatherSummary.summarizeKma ? weatherSummary.summarizeKma(k, ko) : null;
+    const today = forecast?.today;
+    const dd = today || {};
+    const place = chrome.place.name || k.name;
+    const condition = condText(n.sky, n.pty, ko);
+    const forecastHour = String(n.tm || '').slice(8, 10);
 
-    body.appendChild(el('div', 'wx-now',
-      `<div class="wn-t">${i18n.temp(n.t)}</div>`
-      + `<div class="wn-r"><b>${esc(condText(n.sky, n.pty, ko))}</b>`
+    /* 현재 상태와 오늘의 핵심을 한 덩어리로 읽는다.
+       ⚠️ 원인 문장은 넣지 않는다. 이 데이터가 증명하는 것은 하늘·강수·시각뿐이다. */
+    const hero = el('section', 'wx-hero');
+    hero.innerHTML = `<div class="wx-hero-copy">`
+      + `<p class="wx-hero-kicker">${ko ? `${esc(place)} · 오늘 날씨` : `${esc(place)} · today`}</p>`
+      + `<div class="wx-hero-title"><span aria-hidden="true">${today?.icon || weatherSummary.kmaWeatherSymbol(n.sky, n.pty)}</span>`
+      + `<h3>${esc(today?.headline || condition)}</h3></div>`
+      + `${today?.detail ? `<p class="wx-hero-detail">${esc(today.detail)}</p>` : ''}`
+      + `</div><div class="wx-current">`
+      + `<b>${i18n.temp(n.t)}</b><span>${forecastHour
+        ? `${forecastHour}${ko ? '시 예보' : ':00 forecast'} · ` : ''}${esc(condition)}</span>`
       + `<i>${dd.tmax != null ? `${ko ? '최고' : 'H'} ${i18n.temp(dd.tmax)}` : ''}`
-      + `${dd.tmin != null ? ` · ${ko ? '최저' : 'L'} ${i18n.temp(dd.tmin)}` : ''}</i></div>`));
+      + `${dd.tmin != null ? ` · ${ko ? '최저' : 'L'} ${i18n.temp(dd.tmin)}` : ''}</i></div>`;
+    body.appendChild(hero);
+
+    /* ⚠️ 어느 지점 기준인지 위에서 바로 밝힌다. 아래까지 내려가야 보이면
+       서울 화면에서 인천 값이 나온 것처럼 또 오해하게 된다. */
+    body.appendChild(el('div', 'wx-basis', ko
+      ? `기상청 ${esc(k.name)} 지점 · 현재 위치에서 약 ${k.km}km · ${fmtBase(k.baseKst)} 발표`
+      : `KMA ${esc(k.name)} · about ${k.km} km away · issued ${fmtBase(k.baseKst)}`));
 
     const rows = [];
     if (n.rh != null) rows.push([ko ? '습도' : 'Humidity', `${Math.round(n.rh)}%`]);
@@ -285,36 +430,52 @@ export const weatherPanel = {
       body.appendChild(g);
     }
 
-    // 시간별 강수확률 — 12시간
-    const next = k.hours.slice(0, 12);
+    // 시간별 하늘·강수 — 하루를 가려 버리지 않도록 앞으로 24시간을 가로로 훑는다.
+    const next = k.hours.slice(0, 24);
     if (next.length) {
-      body.appendChild(el('div', 'wx-sub', ko ? '시간별 강수확률' : 'Hourly rain chance'));
-      const bars = el('div', 'wx-bars');
+      body.appendChild(el('div', 'wx-section-title',
+        `<b>${ko ? '앞으로 24시간' : 'Next 24 hours'}</b><span>${ko ? '옆으로 넘겨 보기' : 'Scroll'}</span>`));
+      const hours = el('div', 'wx-hours');
+      const firstDay = String(next[0].tm).slice(0, 8);
       next.forEach(h => {
         const p = h.pop ?? 0;
-        bars.appendChild(el('div', 'wxb',
-          `<span class="wxb-v" style="height:${Math.max(3, p)}%"></span>`
-          + `<span class="wxb-p">${Math.round(p)}</span>`
-          + `<span class="wxb-h">${String(h.tm).slice(8, 10)}</span>`));
+        const day = String(h.tm).slice(0, 8);
+        const hour = String(h.tm).slice(8, 10);
+        const label = day === firstDay ? `${hour}시` : `${ko ? '내일 ' : '+1 '}${hour}시`;
+        const text = condText(h.sky, h.pty, ko);
+        hours.appendChild(el('div', 'wxh',
+          `<span class="wxh-time">${esc(label)}</span>`
+          + `<span class="wxh-icon" aria-hidden="true">${weatherSummary.kmaWeatherSymbol(h.sky, h.pty)}</span>`
+          + `<span class="wxh-cond">${esc(text)}</span>`
+          + `<b>${i18n.temp(h.t, 0)}</b>`
+          + `<i>${Math.round(p)}%</i>`));
       });
-      body.appendChild(bars);
+      body.appendChild(hours);
     }
 
-    /* ⚠️ 어느 지점 기준인지 반드시 적는다. 내가 선 자리의 격자가 아니다. */
-    body.appendChild(el('div', 'wx-where', ko
-      ? `기상청 ${esc(k.name)} 지점 기준 (약 ${k.km}km) · ${fmtBase(k.baseKst)} 발표`
-      : `KMA ${esc(k.name)} station (~${k.km} km) · issued ${fmtBase(k.baseKst)}`));
+    if (forecast?.tomorrow) {
+      const t = forecast.tomorrow;
+      body.appendChild(el('section', 'wx-tomorrow',
+        `<span class="wx-tomorrow-icon" aria-hidden="true">${t.icon}</span>`
+        + `<div><b>${esc(t.headline)}</b><p>${esc(t.detail)}</p></div>`
+        + `<i>${t.tmax != null ? `${ko ? '최고' : 'H'} ${i18n.temp(t.tmax)}` : ''}`
+        + `${t.tmin != null ? `<br>${ko ? '최저' : 'L'} ${i18n.temp(t.tmin)}` : ''}</i>`));
+    }
   },
 
   /** Open-Meteo 판 (한국 밖, 또는 기상청을 못 받았을 때) */
   _todayMeteo(body, wx, ko) {
     const c = wx.current, d = wx.daily;
 
-    body.appendChild(el('div', 'wx-now',
-      `<div class="wn-t">${i18n.temp(c.temperature_2m)}</div>`
-      + `<div class="wn-r"><b>${esc(wxText(c.weather_code))}</b>`
+    const condition = wxText(c.weather_code);
+    const hero = el('section', 'wx-hero');
+    hero.innerHTML = `<div class="wx-hero-copy"><p class="wx-hero-kicker">${ko ? '현재 날씨' : 'Current weather'}</p>`
+      + `<div class="wx-hero-title"><span aria-hidden="true">${weatherSummary.wmoWeatherSymbol(c.weather_code)}</span>`
+      + `<h3>${esc(condition)}</h3></div></div>`
+      + `<div class="wx-current"><b>${i18n.temp(c.temperature_2m)}</b><span>${esc(condition)}</span>`
       + `<i>${ko ? '최고' : 'H'} ${i18n.temp(d.temperature_2m_max[0])} · `
-      + `${ko ? '최저' : 'L'} ${i18n.temp(d.temperature_2m_min[0])}</i></div>`));
+      + `${ko ? '최저' : 'L'} ${i18n.temp(d.temperature_2m_min[0])}</i></div>`;
+    body.appendChild(hero);
 
     // 값 몇 개 — 없는 값은 줄을 아예 만들지 않는다
     const rows = [];
@@ -336,24 +497,38 @@ export const weatherPanel = {
       body.appendChild(g);
     }
 
-    // 시간별 강수확률 — 있는 만큼만
+    // 시간별 하늘·강수 — 있는 만큼만
     const h = wx.hourly;
     if (h?.time?.length && h.precipitation_probability) {
       const now = Date.now();
       const idx = h.time.map((t, i) => [new Date(t).getTime(), i])
-        .filter(([t]) => t >= now - 3600_000).slice(0, 12).map(([, i]) => i);
+        .filter(([t]) => t >= now - 3600_000).slice(0, 24).map(([, i]) => i);
       if (idx.length) {
-        body.appendChild(el('div', 'wx-sub', ko ? '시간별 강수확률' : 'Hourly rain chance'));
-        const bars = el('div', 'wx-bars');
+        body.appendChild(el('div', 'wx-section-title',
+          `<b>${ko ? '앞으로 24시간' : 'Next 24 hours'}</b><span>${ko ? '옆으로 넘겨 보기' : 'Scroll'}</span>`));
+        const hours = el('div', 'wx-hours');
         idx.forEach(i => {
           const p = h.precipitation_probability[i] ?? 0;
           const hh = h.time[i].slice(11, 13);
-          bars.appendChild(el('div', 'wxb',
-            `<span class="wxb-v" style="height:${Math.max(3, p)}%"></span>`
-            + `<span class="wxb-p">${p}</span><span class="wxb-h">${hh}</span>`));
+          const code = h.weather_code?.[i];
+          hours.appendChild(el('div', 'wxh',
+            `<span class="wxh-time">${hh}${ko ? '시' : ':00'}</span>`
+            + `<span class="wxh-icon" aria-hidden="true">${weatherSummary.wmoWeatherSymbol(code)}</span>`
+            + `<span class="wxh-cond">${esc(wxText(code))}</span>`
+            + `<b>${i18n.temp(h.temperature_2m?.[i], 0)}</b><i>${p}%</i>`));
         });
-        body.appendChild(bars);
+        body.appendChild(hours);
       }
+    }
+
+    if (d.time?.[1]) {
+      const code = d.weather_code?.[1];
+      body.appendChild(el('section', 'wx-tomorrow',
+        `<span class="wx-tomorrow-icon" aria-hidden="true">${weatherSummary.wmoWeatherSymbol(code)}</span>`
+        + `<div><b>${ko ? '내일' : 'Tomorrow'} · ${esc(wxText(code))}</b>`
+        + `<p>${ko ? '강수확률 최고' : 'Rain chance up to'} ${d.precipitation_probability_max?.[1] ?? '—'}%</p></div>`
+        + `<i>${ko ? '최고' : 'H'} ${i18n.temp(d.temperature_2m_max[1])}<br>`
+        + `${ko ? '최저' : 'L'} ${i18n.temp(d.temperature_2m_min[1])}</i>`));
     }
   },
 
@@ -405,12 +580,16 @@ export const weatherPanel = {
      여기는 **어떻게 읽는지**만 적는다. */
   _noteTab(body, ko) {
     body.appendChild(el('div', 'mt-foot',
-      `<p><b>${ko ? '오늘 첫 줄은 어떻게 나오나' : 'How the headline works'}</b></p>`
+      `<p><b>${ko ? '오늘 첫 카드는 어떻게 나오나' : 'How the first card works'}</b></p>`
       + `<p>${ko
-          ? '지금 잰 값을 <b>1995~2026년 기상청 ASOS 실측</b>과 견줍니다. '
-            + '그날 ±7일을 모아 낸 분포에서 오늘이 몇 %인지 보고, '
-            + '가장 이례적인 것 하나를 첫 줄로 씁니다.'
-          : 'Today is compared against 30 years of KMA ASOS observations.'}</p>`
+          ? '한국에서는 <b>기상청 동네예보</b>의 하늘상태·강수형태·강수확률·시간당 강수량으로 '
+            + '지금, 오늘, 내일을 먼저 씁니다. 비의 원인은 공식 근거가 없으면 붙이지 않습니다.'
+          : 'Current, today, and tomorrow come first from official forecast fields.'}</p>`
+      + `<p><b>${ko ? '오늘의 배경은 무엇인가' : 'What is Today in context?'}</b></p>`
+      + `<p>${ko
+          ? '그 아래에서 지금 값을 <b>1995~2026년 기상청 ASOS 실측</b>과 견줍니다. '
+            + '그날 ±7일 분포에서 기온·습도가 평년과 얼마나 다른지 따로 설명합니다.'
+          : 'Below the forecast, current temperature and humidity are compared with KMA observations.'}</p>`
       + `<p> ${ko
           ? '기준 · 열대야 25°C · 초열대야 30°C · 폭염 33/35°C · 기상청 정의'
           : 'Thresholds · tropical night 25°C · super tropical night 30°C · heatwave 33/35°C · KMA'}</p>`
@@ -423,6 +602,9 @@ export const weatherPanel = {
   },
 
   _narrative(body, ko) {
+    body.appendChild(el('div', 'wx-section-title wx-context-title',
+      `<b>${ko ? '오늘의 배경' : 'Today in context'}</b>`
+      + `<span>${ko ? '기온·습도를 평년과 비교' : 'Temperature and humidity vs normal'}</span>`));
     const box = el('div', 'wx-narr');
     box.innerHTML = `<p class="wx-narr-load">${ko ? '오늘이 어떤 날인지 보는 중…' : 'Reading today…'}</p>`;
     body.appendChild(box);

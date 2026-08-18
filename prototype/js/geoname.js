@@ -281,18 +281,28 @@ function distText(km, ko) {
 
 /**
  * 좌표를 사람이 알아듣는 문장으로.
+ * @param {{nameKo?:string,nameEn?:string}|null} knownCountry 좌표 면 판정으로 확인한 국가.
+ *   있으면 가까운 다른 나라 도시의 국적을 빌려 쓰지 않는다.
  * @returns {{ text, country, near, km, dir, lat, lon }}
  */
-export function describePlace(lat, lon, ko = true) {
+export function describePlace(lat, lon, ko = true, knownCountry = null) {
   const L = ((lon + 180) % 360 + 360) % 360 - 180;
+  const fixedCountry = knownCountry && (ko ? knownCountry.nameKo : knownCountry.nameEn);
   let best = null;
   for (const p of P) {
+    if (fixedCountry && (ko ? p[2] : p[3]) !== fixedCountry) continue;
     const d = distKm(lat, L, p[4], p[5]);
     if (!best || d < best.d) best = { p, d };
   }
+  /* 표에 기준 도시가 없는 나라라면 국가명까지만 말한다. 가까운 외국 도시를 끌어와
+     그 나라 도시처럼 보이게 하는 것보다 좌표를 함께 보여주는 편이 정직하다. */
+  if (!best) {
+    return { text: fixedCountry, country: fixedCountry, near: null, km: null,
+      dir: null, lat, lon: L };
+  }
   const [nameKo, nameEn, ctryKo, ctryEn, plat, plon] = best.p;
   const near = ko ? nameKo : nameEn;
-  const country = ko ? ctryKo : ctryEn;
+  const country = fixedCountry || (ko ? ctryKo : ctryEn);
   // 기준점에서 **목표를 향한** 방위를 말한다 ("은자메나에서 북동쪽")
   const dir = dirName(bearing(plat, plon, lat, L), ko);
   const km = best.d;
@@ -300,16 +310,16 @@ export function describePlace(lat, lon, ko = true) {
   let text;
   if (km < 10) {
     text = ko ? `${country} · ${near}` : `${near}, ${country}`;
-  } else if (km <= 600) {
+  } else if (km <= (fixedCountry ? 200 : 600)) {
     // 그 나라 안이거나 바로 근처 — 나라 이름을 앞세운다
     text = ko ? `${country} · ${near}에서 ${dir}쪽 ${distText(km, ko)}`
               : `${country} · ${distText(km, ko)} ${dir} of ${near}`;
-  } else {
+  } else if (!fixedCountry) {
     /* 600km 을 넘으면 그 나라라고 말하지 않는다 — 십중팔구 바다나 오지다.
        ⚠️ 여기서 나라 이름을 붙이면 태평양 한가운데를 '미국'이라 부르게 된다. */
     text = ko ? `${near}에서 ${dir}쪽 ${distText(km, ko)}`
               : `${distText(km, ko)} ${dir} of ${near}`;
-  }
+  } else text = country;
   return { text, country, near, km, dir, lat, lon: L };
 }
 

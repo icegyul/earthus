@@ -6,6 +6,7 @@ import { dirname, join } from 'node:path';
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const read = path => readFileSync(join(root, path), 'utf8');
 const html = read('prototype/index.html');
+const appCss = read('prototype/css/app.css');
 const account = read('prototype/js/ui-account.js');
 const main = read('prototype/js/main.js');
 const ui = read('prototype/js/ui.js');
@@ -68,11 +69,41 @@ assert.match(ui, /날씨 자료를 불러오지 못했습니다/);
 
 const coreIndex = html.indexOf('data-open="earth"');
 const alertIndex = html.indexOf('data-open="alert"');
-const moreIndex = html.indexOf('id="menuMore"');
+const discoverIndex = html.indexOf('id="mmDiscoverTitle"');
 const newsIndex = html.indexOf('data-act="news"');
-assert.ok(coreIndex >= 0 && coreIndex < alertIndex && alertIndex < moreIndex && moreIndex < newsIndex,
-  'core Earth menu must precede secondary exploration actions');
-assert.match(html, /id="menuMore"[\s\S]*?data-act="news"[\s\S]*?data-act="outdoor"[\s\S]*?<\/details>/);
+const activitiesIndex = html.indexOf('id="mmActivitiesTitle"');
+const outdoorIndex = html.indexOf('data-act="outdoor"');
+const flightIndex = html.indexOf('data-act="flight"');
+const moveIndex = html.indexOf('id="mmMoveTitle"');
+assert.ok(coreIndex >= 0 && coreIndex < alertIndex && alertIndex < discoverIndex && discoverIndex < newsIndex,
+  'Earth viewing actions must precede reading and analysis');
+assert.ok(newsIndex < activitiesIndex && activitiesIndex < outdoorIndex
+  && outdoorIndex < flightIndex && flightIndex < moveIndex,
+  'reading, activities, and movement groups must stay distinct');
+assert.match(html, /id="mmActivitiesTitle"[^>]*data-i18n="m\.menuActivities">활동</);
+assert.match(html, /data-act="outdoor"[\s\S]*?data-i18n="m\.outdoor">취미</);
+assert.equal((html.match(/data-act="ocean"/g) || []).length, 1,
+  'OCEAN must have one independent first-class main-menu entry');
+const mainMenuMarkup = html.slice(html.indexOf('<nav id="menuMain"'), html.indexOf('</nav>'));
+assert.equal(/무료|\bFREE\b|\bFree\b/.test(mainMenuMarkup), false,
+  'access-price copy remains in the main menu');
+for (const group of ["id: 'ocean'", "id: 'life'", "id: 'land-sky'"]) {
+  assert.ok(outdoor.includes(group), `hobby category missing: ${group}`);
+}
+assert.match(outdoor, /acts: \['ocean-layers', 'surf', 'fishing', 'trench', 'vessel'\]/);
+assert.match(outdoor, /acts: \['turtle', 'seabird', 'migbird', 'ecobird'\]/);
+assert.match(outdoor, /acts: \['para', 'mountain', 'sky'\]/);
+assert.match(html, /id="menuClose"[^>]*aria-label="메뉴 닫기"/);
+assert.match(html, /class="mm-move-grid"[\s\S]*?data-act="earth-home"[\s\S]*?data-act="locate"[\s\S]*?data-act="globe"/);
+assert.equal(html.includes('id="menuMore"'), false, 'secondary actions are still hidden in an accordion');
+assert.match(appCss, /\.mm-close\{[\s\S]*?width:44px;height:44px/,
+  'menu close control is smaller than the touch target contract');
+assert.match(appCss, /\.mm-move-item\{[\s\S]*?min-height:58px/,
+  'movement controls do not preserve a comfortable touch target');
+assert.match(appCss, /\.out-card\{[\s\S]*?min-height:92px/,
+  'hobby controls do not preserve a comfortable touch target');
+assert.match(appCss, /#menuTab\.open \+ #aetherusTab:not\(\.open\)\{opacity:0;pointer-events:none\}/,
+  'AETHERUS handle still overlays the open EARTHUS menu');
 assert.equal(/<p class="out-note">/.test(outdoor), false,
   'hobby picker must not render a footer disclaimer block');
 assert.equal(outdoor.includes('We report conditions. We never tell you it is safe to go.'), false,

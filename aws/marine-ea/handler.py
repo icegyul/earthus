@@ -187,9 +187,13 @@ def oisst_anomaly_ea(now):
                 raise ValueError(f"바다 격자 부족 ({count}/{nx * ny})")
             return {
                 "observed": f"{observed.isoformat()}T00:00:00Z", "doy": doy + 1,
+                "time": f"{observed.isoformat()}T00:00:00Z",
                 "res": 0.5, "lat0": 23.125, "lon0": 114.125, "nx": nx, "ny": ny,
                 "source": "NOAA OISST v2.1 daily observation minus 1991-2020 daily climatology",
-                "period": "1991-2020", "sstAnom": diff, "sea": count,
+                "attribution": "NOAA PSL OISST v2.1",
+                "period": "1991-2020", "sst": current, "sstAnom": diff, "sea": count,
+                "units": {"sst": "°C", "sstAnom": "°C"},
+                "vars": ["sst", "sstAnom"],
             }
         except Exception as exc:  # noqa: BLE001
             last_error = exc

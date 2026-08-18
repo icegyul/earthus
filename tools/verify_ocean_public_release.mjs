@@ -13,6 +13,8 @@ const files = [
   ['prototype/css/app.css', 'css/app.css', 'text/css'],
   ['prototype/js/main.js', 'js/main.js', 'text/javascript'],
   ['prototype/js/layerbar.js', 'js/layerbar.js', 'text/javascript'],
+  ['prototype/js/i18n.js', 'js/i18n.js', 'text/javascript'],
+  ['prototype/js/ui-outdoor.js', 'js/ui-outdoor.js', 'text/javascript'],
   ['prototype/js/ui-ocean.js', 'js/ui-ocean.js', 'text/javascript'],
   ['prototype/sw.js', 'sw.js', 'text/javascript'],
   ['prototype/ocean.html', 'ocean.html', 'text/html'],
@@ -51,7 +53,10 @@ const hub = await fetch(`${baseUrl}/?ocean=hub&ocean-release=${revision}`, { cac
 assert.equal(hub.status, 200);
 const html = await hub.text();
 assert.match(html, /data-act="ocean"/);
+assert.match(html, /data-act="outdoor"/);
+assert.match(html, /바다 · 생물 관측 · 땅과 하늘/);
+assert.doesNotMatch(html.match(/<nav id="menuMain"[\s\S]*?<\/nav>/)?.[0] || '', /무료|\bFREE\b/i);
 assert.match(html, /20260814-oceanv1/);
 
 console.log(`PASS: ${files.length} Ocean operating assets have exact live/local SHA-256 and MIME`);
-console.log(`PASS: ${baseUrl}/?ocean=hub exposes the public OCEAN entry`);
+console.log(`PASS: ${baseUrl}/?ocean=hub exposes the first-class public Ocean hub without price copy`);

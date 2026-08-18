@@ -29,6 +29,37 @@ const zoneSnapshot = {
   generated: stamp,
   stations: [{ name: '서울', lat: 37.5665, lon: 126.978, zone: 'L1100000', zoneName: '서울특별시' }],
 };
+const kmaForecastSnapshot = {
+  source: '기상청 단기예보', sourceEn: 'KMA short-range forecast', license: '공공누리 제1유형',
+  points: [{
+    name: '서울', lat: 37.5665, lon: 126.978, baseKst: stamp,
+    hourly: [
+      { tm: stamp, t: 28, reh: 78, ws: 2.4, pop: 60, sky: 4, pty: 1 },
+      { tm: String(Number(stamp) + 100).padStart(12, '0'), t: 27, reh: 82, ws: 2.8, pop: 80, sky: 4, pty: 1 },
+    ],
+  }],
+};
+const weatherSnapshot = {
+  timezone_abbreviation: 'KST',
+  current: {
+    time: '2026-08-15T01:00', temperature_2m: 27.6, apparent_temperature: 30.4,
+    relative_humidity_2m: 79, precipitation: 0.8, weather_code: 61,
+    surface_pressure: 1006, wind_speed_10m: 8.2, wind_direction_10m: 180, is_day: 0,
+  },
+  hourly: {
+    time: Array.from({ length: 13 }, (_, i) => `2026-08-15T${String(i + 1).padStart(2, '0')}:00`),
+    precipitation_probability: [60, 80, 70, 50, 30, 20, 10, 10, 20, 20, 30, 40, 40],
+    precipitation: [0.8, 1.2, 0.8, 0.4, 0.2, 0, 0, 0, 0, 0, 0.1, 0.2, 0.2],
+    weather_code: Array(13).fill(61), temperature_2m: Array(13).fill(27),
+  },
+  daily: {
+    time: Array.from({ length: 7 }, (_, i) => `2026-08-${String(15 + i).padStart(2, '0')}`),
+    weather_code: Array(7).fill(61), temperature_2m_max: Array(7).fill(31),
+    temperature_2m_min: Array(7).fill(24), precipitation_sum: Array(7).fill(4),
+    precipitation_probability_max: Array(7).fill(80),
+    sunrise: Array(7).fill('2026-08-15T05:45'), sunset: Array(7).fill('2026-08-15T19:25'),
+  },
+};
 
 async function mockWarnings(page) {
   await page.route('**/kma-warn-stations.json*', route => route.fulfill({
@@ -36,6 +67,20 @@ async function mockWarnings(page) {
   }));
   await page.route('**/kma-warn.json*', route => route.fulfill({
     status: 200, contentType: 'application/json; charset=utf-8', body: JSON.stringify(warningSnapshot),
+  }));
+  await page.route('**/kma-fcst.json*', route => route.fulfill({
+    status: 200, contentType: 'application/json; charset=utf-8', body: JSON.stringify(kmaForecastSnapshot),
+  }));
+  await page.route('**/api.open-meteo.com/v1/forecast*', route => route.fulfill({
+    status: 200, contentType: 'application/json; charset=utf-8', body: JSON.stringify(weatherSnapshot),
+  }));
+  /* 육지에도 Marine 최근접 격자가 응답하는 실제 실패 조건을 고정한다. */
+  await page.route('**/marine-api.open-meteo.com/v1/marine*', route => route.fulfill({
+    status: 200, contentType: 'application/json; charset=utf-8',
+    body: JSON.stringify({ current: {
+      wave_height: 0.4, wave_direction: 20, wave_period: 5.2,
+      swell_wave_height: 0.3, swell_wave_direction: 340,
+    } }),
   }));
 }
 
@@ -95,6 +140,16 @@ try {
   assert.equal(await page.locator('#decisionUiHost').count(), 0, 'Shadow Decision UI host가 생겼다');
   assert.deepEqual(decisionUiRequests, [], 'Shadow Decision UI asset을 요청했다');
 
+  await selectPoint(page, { lat: 36.327, lon: 128.236 });
+  await page.waitForFunction(() => document.getElementById('sheetTitle')?.textContent === '경상북도 구미시');
+  assert.equal(await page.locator('#decisionRailPlace').textContent(), '경상북도 구미시');
+  assert.match(await page.locator('#decisionRailCoords').textContent(), /geoBoundaries 2020 시·군·구 경계 참조/);
+  assert.doesNotMatch(await page.locator('#sheetTitle').textContent(), /부산|북서쪽|150 km/,
+    '한국 좌표를 부산 최근접점 거리 문구로 표시했다');
+  await page.locator('#sheet').screenshot({ path: '/tmp/earthus-gumi-place.png' });
+  await page.locator('#sheetClose').click();
+  await page.locator('#sheet').waitFor({ state: 'hidden' });
+
   await selectPoint(page, { lat: 37.5665, lon: 126.978 });
   await page.locator('#decisionRail[data-safety="danger"]').waitFor({ timeout: 10_000 });
   assert.equal(await page.locator('#sheet.up').count(), 1, '선택 장소 상세 시트가 열리지 않았다');
@@ -106,20 +161,33 @@ try {
     '활동 판단이 장소 상세 시트 밖에 분리됐다');
   assert.equal(await page.locator('#sheetClose:visible').count(), 1, '통합 시트 닫기 버튼이 하나가 아니다');
   assert.equal(await page.locator('#decisionRailClose').count(), 0, '활동 판단 전용 닫기 버튼이 남았다');
-  assert.equal(await page.locator('.dr-axis').count(), 5, '5축이 아니다');
-  assert.equal(await page.locator('.dr-axis').first().getAttribute('class'), 'dr-axis dr-axis--safety');
-  assert.match(await page.locator('#decisionRailSafety').textContent(), /공식 특보/);
-  assert.match(await page.locator('#decisionRailSafetyState').textContent(), /추천 제한/);
+  assert.equal(await page.locator('.dr-axis').count(), 0, '사용자에게 의미 없는 판단 5축이 남았다');
+  assert.doesNotMatch(await page.locator('#decisionRail').textContent(), /판단 근거 5축|추천 제한|혼잡 자료 없음|예약 자료 없음/);
+  assert.match(await page.locator('#decisionRailSafety').textContent(), /호우 경보 발효 중/);
   assert.equal(await page.locator('#decisionRailSafety').getAttribute('data-safety-status'), null);
   assert.equal(await page.locator('#decisionRailSafety [data-safety-status="DANGER"]').count(), 1);
+  await page.waitForFunction(() => document.getElementById('decisionRailWeatherMeta')?.textContent.includes('기상청 5km'));
+  assert.match(await page.locator('#decisionRailWeatherTemp').textContent(), /28\.0°C/);
+  assert.match(await page.locator('#decisionRailRain').textContent(), /60%/);
+  assert.match(await page.locator('#decisionRailNextRain').textContent(), /80%/);
+  assert.match(await page.locator('#decisionRailWeatherMeta').textContent(), /기상청 5km 동네예보 · 서울/);
+  assert.equal(await page.locator('#sheet .sheet-cta').filter({ hasText: '여기서 잠수' }).count(), 0,
+    '한국 육지에 Marine 최근접 격자를 근거로 잠수 버튼을 노출했다');
+  assert.doesNotMatch(await page.locator('#sheetRows').textContent(), /파고|파향|파주기|너울/,
+    '한국 육지에 가까운 바다의 파랑값을 붙였다');
 
   await page.locator('[data-activity="STARGAZING"]').click();
   assert.equal(await page.locator('[data-activity="STARGAZING"]').getAttribute('aria-pressed'), 'true');
-  assert.match(await page.locator('#decisionRailFitState').textContent(), /공개 전 검증 · 별보기/);
-  const outputValues = await page.locator('.dr-axis strong').allTextContents();
-  assert.ok(outputValues.every(value => !/^\s*\d+(?:\.\d+)?\s*%?\s*$/.test(value)), '검증 전 점수를 노출했다');
+  assert.match(await page.locator('#decisionRailActivityTitle').textContent(), /별보기/);
+  assert.match(await page.locator('#decisionRailActivitySignals').textContent(), /하늘 상태/);
+  assert.match(await page.locator('#decisionRailActivitySignals').textContent(), /12시간 최고 강수확률/);
+  assert.match(await page.locator('#decisionRailActivitySignals').textContent(), /습도/);
+  assert.equal(await page.locator('[data-activity="WATER"]:visible').count(), 0,
+    '육지 지점에 물가 활동을 노출했다');
+  const activityLabels = await page.locator('.dr-activity button:visible b').allTextContents();
+  assert.deepEqual(activityLabels, ['산책·러닝', '자전거', '등산', '캠핑', '별보기']);
 
-  const targets = await page.locator('.dr-activity button, #decisionRailAsk').evaluateAll(nodes =>
+  const targets = await page.locator('.dr-activity button:visible, #decisionRailAsk').evaluateAll(nodes =>
     nodes.map(node => ({ width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height })));
   assert.ok(targets.every(targetItem => targetItem.height >= 44 && targetItem.width >= 44), '44px 터치 표적을 위반했다');
 
@@ -141,7 +209,6 @@ try {
 
   await selectPoint(page, { lat: 35.6762, lon: 139.6503 });
   await page.locator('#decisionRail[data-safety="outside"]').waitFor({ timeout: 5_000 });
-  assert.match(await page.locator('#decisionRailSafetyState').textContent(), /현지 공식 특보 연결 전/);
   assert.match(await page.locator('#decisionRailSafety').textContent(), /기상청 적용 범위 밖/);
 
   await selectBuoyFromMap(page);
@@ -165,7 +232,7 @@ try {
   await selectPoint(page, { lat: 37.5665, lon: 126.978 });
   await page.locator('#decisionRail[data-safety="danger"]').waitFor({ timeout: 10_000 });
   await page.waitForTimeout(250);
-  await page.screenshot({ path: '/tmp/earthus-ax-desktop.png', fullPage: true });
+  await page.locator('#decisionRailPanel').screenshot({ path: '/tmp/earthus-ax-desktop.png' });
 
   const mobile = await context.newPage();
   await mobile.setViewportSize({ width: 390, height: 844 });
@@ -185,7 +252,7 @@ try {
   assert.ok(layout.panel.left >= 0 && layout.panel.right <= layout.innerWidth, 'mobile panel이 화면 밖으로 나갔다');
   assert.ok(await mobile.locator('.brand-menu-tab').evaluateAll(nodes => nodes.every(node => getComputedStyle(node).pointerEvents === 'none')),
     '펼친 판단 패널 위로 브랜드 손잡이가 남았다');
-  await mobile.screenshot({ path: '/tmp/earthus-ax-mobile.png', fullPage: true });
+  await mobile.locator('#decisionRailPanel').screenshot({ path: '/tmp/earthus-ax-mobile.png' });
 
   const authFlow = await context.newPage();
   await authFlow.goto(target, { waitUntil: 'domcontentloaded', timeout: 30_000 });

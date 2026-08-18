@@ -2,6 +2,7 @@
 // ⚠️ UNKNOWN을 "특보 없음"으로 순화하지 않는다. 이 문구 자체가 안전 계약이다.
 
 const KMA_WARNING_URL = 'https://www.weather.go.kr/w/special-report/overall.do';
+const JMA_WARNING_URL = 'https://www.jma.go.jp/bosai/map.html#contents=warning';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -11,7 +12,7 @@ function compactTime(raw) {
   return s || '—';
 }
 
-function reasonCopy(gate, ko) {
+function reasonCopy(gate, ko, countryCode) {
   switch (gate?.reason) {
     case 'PROVIDER_UNAVAILABLE':
       return ko
@@ -35,6 +36,9 @@ function reasonCopy(gate, ko) {
         ? ['특보 구역 연결 실패', '60km 안의 대응 관측지점 없음 · 기상청 공식 특보 확인']
         : ['Warning zone unmapped', 'No matching station within 60 km · check official KMA warnings'];
     case 'KMA_OUT_OF_COVERAGE':
+      if (countryCode === 'JP') return ko
+        ? ['한국 기상청 적용 범위 밖', '이 좌표는 일본입니다. 일본 기상청 특보를 확인하세요.']
+        : ['Outside KMA coverage', 'This coordinate is in Japan. Check Japan Meteorological Agency warnings.'];
       return ko
         ? ['기상청 적용 범위 밖', '이 판정은 한국 기상청 특보에만 적용됩니다. 현지 공식 기관의 안내를 확인하세요.']
         : ['Outside KMA coverage', 'This gate covers Korean KMA warnings only. Check your local authority.'];
@@ -49,23 +53,29 @@ function reasonCopy(gate, ko) {
   }
 }
 
-export function safetyGateMarkup(gate, lang = 'ko') {
+export function safetyGateMarkup(gate, lang = 'ko', context = {}) {
   const ko = lang === 'ko';
+  const countryCode = String(context?.countryCode || '').toUpperCase();
   const active = gate?.gate === 'OFFICIAL_WARNING_ACTIVE';
   const out = gate?.reason === 'KMA_OUT_OF_COVERAGE';
   const state = active ? (gate.status === 'DANGER' ? 'danger' : 'warning') : (out ? 'outside' : 'unknown');
-  const [fallbackTitle, fallbackBody] = reasonCopy(gate, ko);
+  const [fallbackTitle, fallbackBody] = reasonCopy(gate, ko, countryCode);
   const count = Array.isArray(gate?.warnings) ? gate.warnings.length : 0;
+  const firstWarning = active ? gate.warnings?.[0] : null;
   const zone = gate?.zone;
-  const title = active ? (ko ? '공식 특보 · 추천 제한' : 'Official warning · recommendation restricted') : fallbackTitle;
+  const title = active
+    ? (firstWarning
+      ? `${ko ? firstWarning.kind : (firstWarning.kindEn || firstWarning.kind)} ${firstWarning.level || ''} ${ko ? '발효 중' : 'in effect'}`.trim()
+      : (ko ? '공식 특보 발효 중' : 'Official warning in effect'))
+    : fallbackTitle;
   const body = active
-    ? (gate.warnings || []).slice(0, 3).map(warning => [
-      ko ? warning.kind : (warning.kindEn || warning.kind),
-      warning.level,
-      warning.region || zone?.name,
-    ].filter(Boolean).join(' · ')).join(' / ') || `${count}${ko ? '건' : ''}`
+    ? `${[...new Set((gate.warnings || []).map(warning => warning.region || zone?.name).filter(Boolean))].join(' · ')}`
+      + `${count > 1 ? ` · ${ko ? `특보 ${count}건` : `${count} warnings`}` : ''}`
+      + `${ko ? ' · 활동 전 기상청 발표를 확인하세요.' : ' · Check the official bulletin before outdoor activity.'}`
     : fallbackBody;
-  const level = active ? (ko ? '제한' : 'RESTRICT') : (out ? (ko ? '범위 밖' : 'OUTSIDE') : 'UNKNOWN');
+  const level = active
+    ? (count > 1 ? `${count}${ko ? '건' : ''}` : (firstWarning?.level || (ko ? '특보' : 'WARNING')))
+    : (out ? (ko ? '범위 밖' : 'OUTSIDE') : 'UNKNOWN');
   const mapped = zone?.mapped
     ? (ko
       ? `구역 근사: ${zone.name || zone.id} · ${zone.station || '관측지점'} 약 ${Math.round(zone.km)}km · 공식 관측지점 ${zone.stationCount ?? '—'}개 표본`
@@ -75,12 +85,17 @@ export function safetyGateMarkup(gate, lang = 'ko') {
   const evidenceLine = evidence.source
     ? `${ko ? '출처' : 'Source'}: ${esc(ko ? evidence.source : (evidence.sourceEn || evidence.source))} · n=${esc(evidence.n ?? '—')} · ${esc(compactTime(evidence.observedKst || evidence.generated))}`
     : (ko ? '출처 자료 없음' : 'No source data');
+  const officialLink = out && countryCode === 'JP'
+    ? { url: JMA_WARNING_URL, text: ko ? '일본 기상청 특보에서 확인 ↗' : 'Check JMA warnings ↗' }
+    : out
+      ? null
+      : { url: KMA_WARNING_URL, text: ko ? '기상청 공식 특보에서 확인 ↗' : 'Check official KMA warnings ↗' };
 
   return `<section class="safety-gate safety-gate--${state}" data-safety-status="${esc(gate?.status || 'UNKNOWN')}" aria-label="${esc(title)}">`
     + `<header><span>${ko ? '기상 안전' : 'WEATHER SAFETY'}</span><strong>${esc(level)}</strong></header>`
     + `<h4>${esc(title)}</h4><p>${esc(body)}</p>`
     + (mapped ? `<small>${esc(mapped)}<br>${ko ? '대조 방식 · 최근접 공식 관측지점' : 'Match method · nearest official station'}</small>` : '')
     + `<small>${evidenceLine}</small>`
-    + `<a href="${KMA_WARNING_URL}" target="_blank" rel="noopener noreferrer">${ko ? '기상청 공식 특보에서 확인 ↗' : 'Check official KMA warnings ↗'}</a>`
+    + (officialLink ? `<a href="${officialLink.url}" target="_blank" rel="noopener noreferrer">${officialLink.text}</a>` : '')
     + `</section>`;
 }

@@ -152,14 +152,16 @@ export function evaluateWarningSafety({ snapshot, zones, coords, nowMs = Date.no
   const zone = resolveWarningZone(coords, zones);
   const out = baseResult(snapshot, freshness, zone);
 
-  if (!snapshot) {
-    out.reason = 'PROVIDER_UNAVAILABLE';
-    return out;
-  }
+  /* 한국 밖 좌표는 KMA 자료를 받았는지보다 적용 범위가 먼저다. 예전 순서는 일본에서
+     KMA 파일이 아직 없으면 '기상청 연결 실패'를 내보내 한국 자료 문제처럼 보였다. */
   if (zone.status === 'OUT_OF_COVERAGE') {
     out.applies = false;
     out.blocksPositiveRecommendation = false;
     out.reason = zone.reason;
+    return out;
+  }
+  if (!snapshot) {
+    out.reason = 'PROVIDER_UNAVAILABLE';
     return out;
   }
   if (!zone.mapped) {

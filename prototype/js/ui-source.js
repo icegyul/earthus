@@ -98,7 +98,9 @@ const SRC = {
   aqi:      { ko: 'Copernicus CAMS — 유럽 기준 AQI', en: 'Copernicus CAMS — European AQI', every: 60 },
   uv:       { ko: 'Copernicus CAMS — 자외선 지수', en: 'Copernicus CAMS — UV index', every: 60 },
   ozone:    { ko: 'Copernicus CAMS — 오존', en: 'Copernicus CAMS — ozone', every: 60 },
-  sst:      { ko: 'Open-Meteo 해양 (파랑모델)', en: 'Open-Meteo Marine', every: 60 },
+  sst:      { ko: 'NOAA OISST v2.1 일별 관측', en: 'NOAA OISST v2.1 daily observation',
+              url: 'https://psl.noaa.gov/data/gridded/data.noaa.oisst.v2.highres.html',
+              every: 1440 },
   /* 동아시아 확대에서는 NOAA 일별 관측과 같은 날짜 평년을 같은 0.5° 칸에서 뺀다.
      전지구 축척은 관측 격자가 아직 5°여서 기존 Open-Meteo 계산값을 표시한다. */
   sstanom:  { ko: '동아시아 확대: NOAA OISST 일별 관측 − 같은 날짜 평년(1991–2020, 0.5°) · 전지구: Open-Meteo 계산', en: 'East Asia: NOAA OISST daily observation minus same-day 1991–2020 normal (0.5°); global: Open-Meteo calculation', every: 60 },
@@ -281,10 +283,13 @@ export const sourceNote = {
     try {
       const { gridOverlay } = await import('./gridoverlay.js');
       const SOURCE_MAP = { pm25: 'air', pm10: 'air', dust: 'air', aqi: 'air', uv: 'air', ozone: 'air',
-                           sst: 'marine', sstanom: 'marine', wave: 'marine', swell: 'marine',
+                           sst: 'sstGlobal', sstanom: 'marine', wave: 'marine', swell: 'marine',
                            current: 'marine', tpw: 'tpw' };
       if (id in SOURCE_MAP || ['temp', 'tmax', 'tmin', 'humidity', 'fog', 'drought', 'wind', 'windfc'].includes(id)) {
-        const g = await gridOverlay.load(SOURCE_MAP[id] || 'wind');
+        /* 확대 보강판이 실제로 그려졌다면 그 판의 시각을 적는다. 전지구판 시각을
+           동아시아 0.5° 화면에 붙이면 출처·관측시각 계약이 어긋난다. */
+        const rendered = gridOverlay.renderedOf(id);
+        const g = rendered?.grid || await gridOverlay.load(SOURCE_MAP[id] || 'wind');
         if (g?.time) made = new Date(g.time);
       } else if (id === 'truecolor') {
         const { imagery } = await import('./layers/imagery.js');
@@ -377,6 +382,14 @@ export const sourceNote = {
         }
       } else {
         bits.push(ko ? `${hhmm(made)} 자료` : `data ${hhmm(made)}`);
+        if (id === 'sst') {
+          const { gridOverlay } = await import('./gridoverlay.js');
+          const shown = gridOverlay.renderedOf('sst')?.grid;
+          const resolution = Number(shown?.res);
+          bits.push(ko
+            ? `<i>자료 유형 · <b>위성·부이 결합 일별 관측</b>${Number.isFinite(resolution) ? ` · 화면 격자 ${resolution}°` : ''} · 육지는 결측으로 유지</i>`
+            : `<i>Data type · <b>daily satellite and buoy observation</b>${Number.isFinite(resolution) ? ` · display grid ${resolution}°` : ''} · land remains missing</i>`);
+        }
         if (id === 'tpw') {
           bits.push(ko
             ? '<i><b>대기 기둥 전체</b>에 든 수증기를 모두 물로 만들었을 때의 깊이입니다. <b>1 kg/m² = 1 mm</b>로 표시합니다.</i>'

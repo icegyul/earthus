@@ -436,11 +436,14 @@
 /* ══════════ 커뮤니티 ══════════ */
 .comm-tabs{ display:flex; gap:6px; margin-bottom:16px; }
 .comm-tab{
-  flex:1; padding:9px 12px; border-radius:9px; cursor:pointer;
+  flex:1; min-height:44px; padding:9px 12px; border-radius:9px; cursor:pointer;
   font:400 13px/1 inherit; color:var(--fog);
   background:rgba(242,245,248,.05); border:1px solid var(--line);
+  transition:background .18s ease,color .18s ease,transform .12s ease;
 }
 .comm-tab.on{ background:var(--paper); color:#0b0f17; border-color:var(--paper); font-weight:500; }
+.comm-tab:active{ transform:scale(.98); }
+.comm-tab:focus-visible{ outline:2px solid #9fe6f5; outline-offset:2px; }
 
 /* 소식 카드 */
 .fd-card{

@@ -8,6 +8,32 @@ import { fetchT } from './net.js';
 import { i18n } from './i18n.js';
 import { describePlace } from './geoname.js';
 
+let countryAt = async () => null;
+let koreaAdminAt = async () => null;
+let referenceLoader = null;
+let referencesReady = false;
+
+function loadPlaceReference() {
+  if (referencesReady) return Promise.resolve();
+  if (referenceLoader) return referenceLoader;
+
+  referenceLoader = Promise.all([
+    import('./country-reference.js')
+      .then(({ countryAt: fn }) => { countryAt = fn; })
+      .catch(() => { countryAt = async () => null; }),
+    import('./korea-admin-reference.js')
+      .then(({ koreaAdminAt: fn }) => { koreaAdminAt = fn; })
+      .catch(() => { koreaAdminAt = async () => null; }),
+  ]).then(() => { referencesReady = true; })
+    .catch(() => {
+      countryAt = async () => null;
+      koreaAdminAt = async () => null;
+      referencesReady = true;
+    });
+
+  return referenceLoader;
+}
+
 /* 결과를 캐시한다. 같은 지역을 여러 번 탭하는 일이 잦고,
    무료 API 라 불필요한 호출을 줄이는 게 예의다. 0.05° ≈ 5km 단위로 묶는다. */
 const cache = new Map();
@@ -19,16 +45,41 @@ const key = (lat, lon) => `${(lat / 0.05 | 0)},${(lon / 0.05 | 0)}`;
  * 지구본을 탭한 임의 좌표는 외부로 보내지 않고 우리 오프라인 지명표로 설명한다.
  */
 export async function lookupPlace(lat, lon, { deviceCurrent = false } = {}) {
+  await loadPlaceReference();
   const lang = i18n.lang === 'ko' ? 'ko' : 'en';
   if (!deviceCurrent) {
-    const p = describePlace(lat, lon, lang === 'ko');
+    /* ⚠️ 가까운 도시의 나라와 탭한 좌표의 나라는 다르다. 35.452N, 133.362E는
+       일본인데 기존 지명표의 최근접점이 부산이라 대한민국으로 표시됐다.
+       국가 면 판정과 주변 지명 설명을 분리하고, 면 판정 실패 시 국가는 비워 둔다. */
+    const boundaryCountry = await countryAt(lat, lon);
+    const koreaAdmin = boundaryCountry?.code === 'KR' ? await koreaAdminAt(lat, lon) : null;
+    if (koreaAdmin) {
+      const region = lang === 'ko' ? koreaAdmin.regionKo : koreaAdmin.regionEn;
+      const city = lang === 'ko' ? koreaAdmin.nameKo : koreaAdmin.nameEn;
+      const detail = [...new Set([region, city].filter(Boolean))].join(lang === 'ko' ? ' ' : ', ');
+      return {
+        country: lang === 'ko' ? boundaryCountry.nameKo : boundaryCountry.nameEn,
+        countryCode: boundaryCountry.code,
+        region, city, detail,
+        isOcean: false,
+        approximate: true,
+        reference: {
+          ko: `geoBoundaries ${koreaAdmin.boundaryYear} 시·군·구 경계 참조`,
+          en: `geoBoundaries ${koreaAdmin.boundaryYear} municipality reference`,
+        },
+      };
+    }
+    const p = describePlace(lat, lon, lang === 'ko', boundaryCountry);
     return {
-      country: p.km <= 600 ? p.country : null,
-      countryCode: null, region: null, city: null,
+      country: boundaryCountry ? (lang === 'ko' ? boundaryCountry.nameKo : boundaryCountry.nameEn) : null,
+      countryCode: boundaryCountry?.code || null, region: null, city: null,
       detail: p.text,
       /* 오프라인 기준점만으로 육지/바다를 판정하지 않는다. 모르면 null이다. */
-      isOcean: null,
+      isOcean: boundaryCountry ? false : null,
       approximate: true,
+      reference: boundaryCountry ? {
+        ko: 'Natural Earth 국가 경계 참조', en: 'Natural Earth country reference',
+      } : null,
     };
   }
 

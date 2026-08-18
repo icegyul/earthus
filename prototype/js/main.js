@@ -954,8 +954,21 @@ function onPick(ev) {
 // 언어 변경 → 데이터 라벨 재생성
 i18n.onChange(() => { if (registry.ready) registry.refreshAll(); });
 
+function finishLoading(message = '지구를 불러오는 중…') {
+  const loadingEl = document.getElementById('loading');
+  if (!loadingEl) return;
+
+  const textEl = loadingEl.querySelector('.load-text');
+  if (textEl) textEl.textContent = message;
+  else loadingEl.textContent = message;
+
+  loadingEl.classList.remove('gone');
+  loadingEl.classList.add('gone');
+  setTimeout(() => loadingEl.remove(), 700);
+}
+
 boot().catch(e => {
   console.error(e);
-  const l = document.getElementById('loading');
-  if (l) l.textContent = '초기화 실패: ' + e.message;
+  const msg = e && e.message ? `초기화 실패: ${e.message}` : '초기화 실패: 알 수 없는 오류';
+  finishLoading(msg);
 });

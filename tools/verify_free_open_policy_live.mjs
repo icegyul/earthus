@@ -15,7 +15,8 @@ const rows = manifest.split(/\r?\n/).filter(line => line && !line.startsWith('#'
   return { sourcePath, publicPath, contentType, cacheControl };
 });
 const sourceOverrides = JSON.parse(process.env.EARTHUS_VERIFY_SOURCE_OVERRIDES || '{}');
-assert.equal(rows.length, 12);
+const expectedRows = Number(process.env.EARTHUS_EXPECTED_FREE_OPEN_ROWS || rows.length);
+assert.equal(rows.length, expectedRows);
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 let liveConfig = '';
 

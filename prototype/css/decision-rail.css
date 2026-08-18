@@ -1,55 +1,76 @@
-/* EARTHUS AX-02 — 장소 날씨와 판단 근거를 한 정보 시트에 잇는다.
+/* 장소 날씨와 활동 확인값을 한 정보 시트에 잇는다.
    ⚠️ 첫 Earth에서는 #decisionRail 자체가 hidden 이다. 선택 전 안내 손잡이·CTA를
       다시 만들지 말 것. 닫기는 부모 #sheet의 한 버튼만 사용한다. */
 #decisionRail[hidden],.dr-panel[hidden],#decisionRailContext[hidden]{display:none}
 
-/* 같은 장소의 자료이므로 별도 모달처럼 보이지 않게 한 문서의 다음 장으로 잇는다. */
+/* 같은 장소의 자료이므로 별도 대시보드가 아니라 한 문서의 다음 장으로 잇는다. */
 #decisionRail{
-  clear:both;margin:24px 0 0;padding:22px 0 2px;border-top:1px solid rgba(224,240,246,.16);
+  clear:both;margin:30px 0 0;padding:27px 0 4px;border-top:1px solid rgba(224,240,246,.14);
   color:#f3f8fa;font-family:var(--sans);
 }
 .dr-panel{position:static;width:100%;overflow:visible}
-.dr-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
-.dr-kicker{display:block;margin-bottom:7px;color:rgba(166,232,245,.68);font:650 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.09em}
-.dr-head h2{margin:0;font-size:20px;font-weight:560;line-height:1.2;letter-spacing:-.035em;text-wrap:balance}
-.dr-now{flex:none;padding:6px 8px;border:1px solid rgba(166,232,245,.27);border-radius:6px;color:#a6e8f5;font:650 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em}
+.dr-head{max-width:620px;margin:0 0 19px}
+.dr-kicker{display:block;margin-bottom:7px;color:#a6e8f5;font-size:10.5px;font-weight:650;letter-spacing:.035em}
+.dr-head h2{margin:0;font-size:23px;font-weight:610;line-height:1.18;letter-spacing:-.045em;text-wrap:balance}
+.dr-lead{margin:9px 0 0;color:rgba(220,233,239,.56);font-size:11.5px;line-height:1.65;text-wrap:pretty}
 
-/* 상단 정보 시트가 실제 국가·도시·날씨를 맡고, 이 줄은 판단 좌표가 같은지만 확인한다. */
-.dr-place-line{display:flex;flex-wrap:wrap;gap:5px 10px;margin:0;padding:10px 12px;border-left:2px solid #a6e8f5;background:rgba(166,232,245,.055)}
-.dr-place-line strong{font-size:12px;font-weight:620;line-height:1.45}
-.dr-place-line span{color:rgba(216,231,237,.5);font:550 9px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+/* 상단 정보 시트와 같은 좌표인지 확인하는 한 줄. 별도 위치 카드처럼 키우지 않는다. */
+.dr-place-line{display:flex;flex-wrap:wrap;align-items:baseline;gap:5px 11px;margin:0 0 15px;padding:0 0 13px;border-bottom:1px solid rgba(224,240,246,.1)}
+.dr-place-line strong{font-size:12.5px;font-weight:620;line-height:1.45}
+.dr-place-line span{color:rgba(216,231,237,.46);font:550 9px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
 
-.dr-activity{margin:16px 0 0;padding:0;border:0}
-.dr-activity legend{margin-bottom:9px;color:rgba(235,245,249,.84);font-size:12px;font-weight:620}
+/* 사용자가 이 지점을 보는 첫 이유는 날씨다. 활동 선택보다 먼저 한 화면에 둔다. */
+.dr-weather{display:grid;grid-template-columns:minmax(180px,.9fr) minmax(280px,1.35fr);overflow:hidden;border:1px solid rgba(166,232,245,.16);border-radius:16px;background:radial-gradient(circle at 8% 0,rgba(94,177,204,.13),transparent 46%),rgba(9,19,29,.48)}
+.dr-weather-main{display:flex;align-items:center;gap:14px;min-height:128px;padding:20px 21px;border-right:1px solid rgba(224,240,246,.1)}
+.dr-weather-icon{display:grid;place-items:center;flex:none;width:52px;height:52px;font-size:33px;filter:saturate(.78)}
+.dr-weather-main div{min-width:0}
+.dr-weather-main div>span{display:block;color:rgba(211,229,236,.52);font-size:9.5px;font-weight:620;letter-spacing:.04em}
+.dr-weather-main strong{display:block;margin-top:4px;font-size:32px;font-weight:530;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.05em}
+.dr-weather-main em{display:block;margin-top:8px;color:#d9edf3;font-size:12px;font-style:normal;font-weight:560}
+.dr-weather-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0}
+.dr-weather-grid div{padding:15px 17px;border-bottom:1px solid rgba(224,240,246,.08)}
+.dr-weather-grid div:nth-child(odd){border-right:1px solid rgba(224,240,246,.08)}
+.dr-weather-grid dt{color:rgba(211,226,233,.46);font-size:9.5px;line-height:1.3}
+.dr-weather-grid dd{margin:6px 0 0;color:#edf7fa;font-size:16px;font-weight:590;line-height:1.2;font-variant-numeric:tabular-nums}
+.dr-weather-meta{grid-column:1/-1;margin:0;padding:10px 14px;border-top:1px solid rgba(224,240,246,.08);color:rgba(202,221,229,.46);font:540 9px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
+
+.dr-safety{margin-top:14px}
+.dr-skeleton{min-height:62px;padding:13px 15px;border-left:3px solid rgba(166,232,245,.5);background:rgba(166,232,245,.045);color:rgba(222,237,242,.64);font-size:11px;line-height:1.55}
+.dr-safety .safety-gate{margin:0;padding:13px 15px;border-width:0 0 0 3px;border-radius:0 11px 11px 0;background:rgba(9,16,27,.62)}
+.dr-safety .safety-gate header{margin-bottom:6px}
+.dr-safety .safety-gate h4{font-size:13.5px}
+.dr-safety .safety-gate p{max-width:65ch;font-size:10.5px}
+.dr-safety .safety-gate small{font-size:9px}
+.dr-safety .safety-gate a{min-height:44px;margin-top:1px;font-size:10.5px}
+
+.dr-activity{margin:24px 0 0;padding:0;border:0}
+.dr-activity legend{color:#eef7fa;font-size:14px;font-weight:640;letter-spacing:-.02em}
+.dr-activity>p{margin:6px 0 11px;color:rgba(210,227,234,.48);font-size:10.5px;line-height:1.55}
 .dr-activity-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
-.dr-activity button{min-width:44px;min-height:48px;padding:8px 6px;border:1px solid rgba(229,241,246,.13);border-radius:9px;background:rgba(238,247,250,.045);color:rgba(226,238,243,.72);font:600 10.5px/1.35 var(--sans);cursor:pointer;transition:border-color .18s,background .18s,color .18s,transform .18s}
-.dr-activity button:hover{border-color:rgba(166,232,245,.38);color:#fff}
+.dr-activity button{display:flex;align-items:center;justify-content:flex-start;gap:8px;min-width:44px;min-height:58px;padding:9px 11px;border:1px solid rgba(229,241,246,.11);border-radius:10px;background:rgba(238,247,250,.035);color:rgba(226,238,243,.7);cursor:pointer;transition:border-color .18s,background .18s,color .18s,transform .18s}
+.dr-activity button[hidden]{display:none}
+.dr-activity button span{flex:none;color:#a6e8f5;font-size:17px;font-weight:400}
+.dr-activity button b{font:610 10.5px/1.35 var(--sans);text-align:left}
+.dr-activity button:hover{border-color:rgba(166,232,245,.34);background:rgba(166,232,245,.06);color:#fff}
 .dr-activity button:active{transform:translateY(1px)}
-.dr-activity button[aria-pressed="true"]{border-color:rgba(166,232,245,.7);background:rgba(166,232,245,.14);color:#fff}
+.dr-activity button[aria-pressed="true"]{border-color:rgba(166,232,245,.58);background:rgba(166,232,245,.13);color:#fff}
 .dr-activity button:focus-visible,.dr-actions button:focus-visible{outline:2px solid #a6e8f5;outline-offset:2px}
 
-.dr-time-note,.dr-limit{margin:9px 1px 0;color:rgba(208,224,231,.46);font-size:10px;line-height:1.55;text-wrap:pretty}
-.dr-safety{margin-top:15px}
-.dr-skeleton{min-height:76px;padding:13px;border-left:2px solid rgba(166,232,245,.58);background:rgba(166,232,245,.045);color:rgba(222,237,242,.64);font-size:11px;line-height:1.55}
-.dr-safety .safety-gate{margin:0}
-.dr-safety .safety-gate h4{font-size:14px}
-.dr-safety .safety-gate p{font-size:11px}
-.dr-safety .safety-gate small{font-size:9.5px}
-.dr-safety .safety-gate a{min-height:44px;align-items:center}
+.dr-focus{margin-top:9px;padding:16px 17px 17px;border-left:3px solid rgba(166,232,245,.72);border-radius:0 13px 13px 0;background:rgba(166,232,245,.055)}
+.dr-focus>header{display:flex;align-items:center;gap:11px}
+.dr-focus>header>span{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:rgba(166,232,245,.1);color:#a6e8f5;font-size:20px}
+.dr-focus header small{display:block;color:rgba(204,223,231,.47);font-size:8.5px;line-height:1.2}
+.dr-focus h3{margin:3px 0 0;font-size:14px;font-weight:640;letter-spacing:-.025em}
+.dr-focus>p{max-width:65ch;margin:10px 0 0;color:rgba(220,234,239,.65);font-size:10.5px;line-height:1.6;text-wrap:pretty}
+.dr-focus-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:13px 0 0;background:rgba(224,240,246,.08)}
+.dr-focus-grid div{min-height:60px;padding:11px 12px;background:#111d28}
+.dr-focus-grid dt{color:rgba(204,223,231,.45);font-size:9px;line-height:1.3}
+.dr-focus-grid dd{margin:7px 0 0;color:#f0f8fa;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.dr-focus .dr-focus-alert{margin-top:12px;padding-top:11px;border-top:1px solid rgba(255,181,111,.28);color:#ffd29a}
 
-.dr-axes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:15px}
-.dr-axes h3{grid-column:1/-1;margin:0 0 1px;color:rgba(228,240,245,.74);font-size:11px;font-weight:650}
-.dr-axis{min-height:54px;padding:10px 11px;border-left:1px solid rgba(166,232,245,.28);background:rgba(238,247,250,.035)}
-.dr-axis--safety{grid-column:1/-1}
-.dr-axis span,.dr-axis strong{display:block}
-.dr-axis span{color:rgba(203,221,228,.45);font:650 8.5px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.025em}
-.dr-axis strong{margin-top:6px;color:rgba(232,242,246,.82);font-size:10.5px;font-weight:620;line-height:1.35}
-#decisionRail[data-safety="warning"] .dr-axis--safety{border-left-color:#ffb56f;background:rgba(255,181,111,.06)}
-#decisionRail[data-safety="danger"] .dr-axis--safety{border-left-color:#ff6960;background:rgba(255,105,96,.07)}
-
-.dr-actions{display:flex;margin-top:15px}
-.dr-actions button{min-width:44px;min-height:44px;padding:0 14px;border:1px solid rgba(166,232,245,.31);border-radius:8px;background:rgba(166,232,245,.08);color:#ddf7fb;font:620 11px/1 var(--sans);cursor:pointer;transition:border-color .18s,background .18s,transform .18s}
-.dr-actions button:hover{border-color:rgba(166,232,245,.63);background:rgba(166,232,245,.14)}
+.dr-actions{display:flex;margin-top:14px}
+.dr-actions button{min-width:44px;min-height:44px;padding:0 3px;border:0;border-bottom:1px solid rgba(166,232,245,.38);border-radius:0;background:transparent;color:#cbeff5;font:610 10.5px/1 var(--sans);cursor:pointer;transition:border-color .18s,color .18s,transform .18s}
+.dr-actions button:hover{border-color:#a6e8f5;color:#fff}
 .dr-actions button:active{transform:translateY(1px)}
 
 /* 지점 상세만 폭을 조금 넓힌다. 다른 사건·위성 시트의 익숙한 폭은 건드리지 않는다. */
@@ -70,12 +91,15 @@ body.panel-open .brand-menu-tab{opacity:0;pointer-events:none}
 
 @media(max-width:620px){
   #sheet.is-place-detail{right:8px;left:8px;max-width:none;padding:18px 18px 21px}
-  .dr-activity-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .dr-weather{grid-template-columns:1fr}
+  .dr-weather-main{min-height:105px;border-right:0;border-bottom:1px solid rgba(224,240,246,.1)}
+  .dr-activity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:420px){
-  .dr-head h2{font-size:18px}
-  .dr-axes{grid-template-columns:1fr}
-  .dr-axes h3,.dr-axis--safety{grid-column:1}
-  .dr-activity button{font-size:10px}
+  .dr-head h2{font-size:21px}
+  .dr-weather-main{padding:17px}
+  .dr-weather-main strong{font-size:29px}
+  .dr-weather-grid div{padding:13px}
+  .dr-focus-grid div{min-height:56px;padding:10px 9px}
 }
 @media(prefers-reduced-motion:reduce){.dr-activity button,.dr-actions button{transition:none}}

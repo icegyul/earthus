@@ -1,6 +1,7 @@
 # source_path	public_path	content_type	cache_control
 prototype/canary/ocean-aetherus-v3/index.html	canary/ocean-aetherus-v3/index.html	text/html; charset=utf-8	no-cache
 prototype/canary/ocean-aetherus-v3/canary.js	canary/ocean-aetherus-v3/canary.js	text/javascript; charset=utf-8	no-cache
+prototype/canary/ocean-aetherus-v3/canary.css	canary/ocean-aetherus-v3/canary.css	text/css; charset=utf-8	no-cache
 prototype/js/access-mode.js	js/access-mode.js	text/javascript; charset=utf-8	no-cache
 prototype/js/store.js	js/store.js	text/javascript; charset=utf-8	no-cache
 prototype/js/config.js	js/config.js	text/javascript; charset=utf-8	no-cache
@@ -11,3 +12,10 @@ prototype/js/main.js	js/main.js	text/javascript; charset=utf-8	no-cache
 prototype/js/ui.js	js/ui.js	text/javascript; charset=utf-8	no-cache
 prototype/js/layerbar.js	js/layerbar.js	text/javascript; charset=utf-8	no-cache
 prototype/js/i18n.js	js/i18n.js	text/javascript; charset=utf-8	no-cache
+prototype/js/place.js	js/place.js	text/javascript; charset=utf-8	no-cache
+prototype/js/ui-weather.js	js/ui-weather.js	text/javascript; charset=utf-8	no-cache
+prototype/js/weather-summary.js	js/weather-summary.js	text/javascript; charset=utf-8	no-cache
+prototype/js/country-reference.js	js/country-reference.js	text/javascript; charset=utf-8	no-cache
+prototype/js/korea-admin-reference.js	js/korea-admin-reference.js	text/javascript; charset=utf-8	no-cache
+prototype/data/country-reference.json	data/country-reference.json	application/json; charset=utf-8	no-cache
+prototype/data/korea-admin-reference.json	data/korea-admin-reference.json	application/json; charset=utf-8	no-cache

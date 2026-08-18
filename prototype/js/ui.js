@@ -481,6 +481,10 @@ export const sheet = {
           lookupWaves(m.lat, m.lon),
         ]);
         const c = w.current, F = i18n.t.F;
+        /* Marine API는 육지 좌표에도 가장 가까운 바다 격자를 돌려줄 수 있다.
+           국가 면 안으로 확인된 좌표에서 그 값을 파도·잠수로 보여주면 사용자는
+           육지에서 잠수하라는 화면을 보게 된다. 바다로 남은 좌표에서만 쓴다. */
+        const showSea = !!sea && !pl?.country && pl?.isOcean !== false;
         rows.innerHTML = '';
 
         // ── 어디인가 ──
@@ -507,7 +511,7 @@ export const sheet = {
         addRow(rows, F.precip, `${c.precipitation} mm`);
 
         // ── 바다면 파도 ──
-        if (sea) {
+        if (showSea) {
           addRow(rows, ko ? '파고' : 'Wave height',
             `${sea.wave_height} m · ${seaState(sea.wave_height)}`);
           addRow(rows, ko ? '파향' : 'Wave direction',
@@ -529,11 +533,17 @@ export const sheet = {
 
         renderForecast(w);
         renderRainBars(w);
+        document.dispatchEvent(new CustomEvent('earthus:place-conditions', {
+          detail: {
+            point: { lat: m.lat, lon: m.lon }, weather: w, place: pl,
+            sea: showSea ? sea : null,
+          },
+        }));
 
         // 바다를 누른 좌표에서만 수심 기둥으로 이어 준다.
         // ⚠️ 파도 응답이 없더라도 역지오코딩이 바다로 판정했으면 진입할 수 있다.
         //    역으로 육지에는 버튼을 노출하지 않는다.
-        if (pl?.isOcean === true || sea) {
+        if (pl?.isOcean === true || showSea) {
           const dive = el('button', 'sheet-cta', ko ? '🤿 여기서 잠수' : '🤿 Dive here');
           dive.onclick = async () => {
             dive.disabled = true;
@@ -553,6 +563,9 @@ export const sheet = {
         }
       } catch (e) {
         rows.innerHTML = `<dt>—</dt><dd>${e.message}</dd>`;
+        document.dispatchEvent(new CustomEvent('earthus:place-conditions', {
+          detail: { point: { lat: m.lat, lon: m.lon }, error: e.message },
+        }));
       }
       return;
     }

@@ -182,9 +182,9 @@ export const stats = {
   /** 전지구 + 대륙별 지금 기온·수온 */
   async regions() {
     const { gridOverlay } = await import('./gridoverlay.js');
-    const [wind, marine] = await Promise.all([
+    const [wind, sstGrid] = await Promise.all([
       gridOverlay.load('wind').catch(() => null),
-      gridOverlay.load('marine').catch(() => null),
+      gridOverlay.load('sstGlobal').catch(() => null),
     ]);
     const ko = i18n.lang === 'ko';
     const out = [];
@@ -200,11 +200,11 @@ export const stats = {
       });
     }
     let sst = null;
-    if (marine) {
-      const m = boxMean(marine, 'sst', null);
+    if (sstGrid) {
+      const m = boxMean(sstGrid, 'sst', null);
       if (m) sst = { mean: m.mean, n: m.n };
     }
-    return { rows: out, sst, time: wind?.time || marine?.time };
+    return { rows: out, sst, time: wind?.time || sstGrid?.time };
   },
 
   /** 국가별 — 지상 관측소 평균.

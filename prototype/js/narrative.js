@@ -428,7 +428,10 @@ export const narrative = {
       if (pTmax) bits.push(ko ? `낮 ${tmax.toFixed(1)}°C(평년 ${cell.tmax.q[3]}°C)` : '');
       if (pHm) bits.push(ko ? `습도 ${Math.round(rh)}%(평년 ${cell.hm.q[3]}%)` : '');
       pick = { level: 'calm',
-        head: ko ? '특별한 것이 없는 날입니다' : 'Nothing unusual today',
+        /* ⚠️⚠️ 이전 문구 "특별한 것이 없는 날"은 기온·습도 비교 하나를 하루 전체의
+           평가처럼 단정했다. 비 예보가 있어도 이 문장이 떠 실제 화면과 충돌했다.
+           비교 범위를 문장 안에 박아 하늘·강수 판단으로 오해하지 않게 한다. */
+        head: ko ? '오늘의 기온·습도는 평년과 비슷합니다' : 'Temperature and humidity are near normal',
         num: bits.join(' · '),
         why: ko ? '기온·습도 모두 평년 범위 안에 있습니다.' : '' };
     }
@@ -623,7 +626,10 @@ export const narrative = {
       if (tc?.length) {
         const near = tc.map(x => ({ ...x, km: Math.round(km(lat, lon, x.lat, x.lon)) }))
           .sort((a, b) => a.km - b.km)[0];
-        if (near && near.km < 3500) {
+        /* ⚠️⚠️ 2,757km 밖 태풍까지 개인 날씨 본문에 넣자, 마치 오늘 비의 원인인 것처럼
+           읽혔다. 거리는 인과관계가 아니다. 아주 가까운 경우에도 위치 사실만 적고,
+           영향·진로는 기관 예보선에서 확인하게 한다. */
+        if (near && near.km < 800) {
           /* ⚠️ 태풍 이름은 로마자가 많다(Dolphin·Genevieve). 받침 규칙이 안 통하므로
              로마자면 "가"로 둔다 — "Genevieve 이"가 실측 화면에 나왔다. */
           /* ⚠️ 이름을 **한글로 끝내** 조사를 맞춘다. 로마자 이름은 괄호로 뺀다. */
@@ -634,12 +640,9 @@ export const narrative = {
           const tcGuide = `태풍 화면에서 기관별 예보를 보세요.`;
           S(vary(5, [
             `지금 ${who} ${near.km.toLocaleString()}km 떨어져 있습니다. `
-              + `태풍은 이 뜨거운 공기 덩어리의 가장자리를 따라 빙 돌아 움직입니다. `
-              + `그래서 어디쯤 있느냐에 따라 더위를 더 키우기도 하고, `
-              + `비구름을 몰고 오기도 합니다. ` + tcGuide,
+              + `이 거리만으로 오늘 날씨에 영향을 준다고 말할 수는 없습니다. ` + tcGuide,
             `${near.km.toLocaleString()}km 밖에는 지금 ${who} 있습니다. `
-              + `태풍은 이 더운 공기 덩어리의 가장자리를 타고 돌기 때문에, `
-              + `위치에 따라 더위를 키우기도 하고 비구름을 끌고 오기도 합니다. ` + tcGuide,
+              + `현재 위치와 거리만 확인한 값이며 영향 여부는 단정하지 않습니다. ` + tcGuide,
           ]));
         }
       }
@@ -649,9 +652,8 @@ export const narrative = {
         const bits = [];
         if (pTmax) bits.push(`낮 ${tmax.toFixed(1)}°C(평년 ${cell.tmax.q[3]}°C)`);
         if (pHm) bits.push(`습도 ${Math.round(rh)}%(평년 ${cell.hm.q[3]}%)`);
-        S(`오늘은 눈에 띄는 것이 없습니다. ${bits.join(' · ')} 로 예년 그 언저리입니다.`);
-        S(' 평범한 날은 평범하다고 적습니다. 매일 극적인 척하면 진짜 위험한 날에 '
-          + '아무도 믿지 않기 때문입니다.');
+        S(`기온·습도만 놓고 보면 ${bits.join(' · ')}로 예년 이맘때와 비슷합니다.`);
+        S('비·눈·구름은 위 기상청 예보에서 시간별로 따로 보여드립니다.');
       }
     }
 

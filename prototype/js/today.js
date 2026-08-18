@@ -20,13 +20,13 @@ import { API } from './config.js';
 import { describePlace, latLonText, miniMap } from './geoname.js';
 
 /* 무엇을 뽑을까 — 격자에서 최댓값(또는 최솟값)을 찾는다.
-   ⚠️ 5° 격자라 "어느 나라"까지는 못 말한다. 위경도와 대략의 해역만 적는다. */
+   ⚠️ 전지구 축약 격자라 "어느 나라"까지는 못 말한다. 위경도와 대략의 해역만 적는다. */
 const PICKS = [
   { id: 'wave',  src: 'marine', field: 'wave',  unit: 'm',
     ko: '가장 파도가 높은 바다', en: 'Roughest sea', mode: 'max', fix: 1 },
-  { id: 'sst',   src: 'marine', field: 'sst',   unit: '°C',
+  { id: 'sst',   src: 'sstGlobal', field: 'sst',   unit: '°C',
     ko: '가장 따뜻한 바다', en: 'Warmest sea', mode: 'max', fix: 1 },
-  { id: 'sstc',  src: 'marine', field: 'sst',   unit: '°C',
+  { id: 'sstc',  src: 'sstGlobal', field: 'sst',   unit: '°C',
     ko: '가장 차가운 바다', en: 'Coldest sea', mode: 'min', fix: 1 },
   { id: 'temp',  src: 'wind',   field: 't',     unit: '°C',
     ko: '가장 더운 곳', en: 'Hottest place', mode: 'max', fix: 1 },
@@ -68,7 +68,7 @@ export const today = {
     const { gridOverlay } = await import('./gridoverlay.js');
 
     const grids = {};
-    await Promise.all(['wind', 'air', 'marine'].map(async src => {
+    await Promise.all(['wind', 'air', 'marine', 'sstGlobal'].map(async src => {
       try { grids[src] = await gridOverlay.load(src); } catch (_) { grids[src] = null; }
     }));
 

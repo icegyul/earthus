@@ -567,10 +567,7 @@ export const layerBar = {
   init() {
     const tab = $('#menuTab'), aetherusTab = $('#aetherusTab');
     const main = $('#menuMain'), sub = $('#menuSub');
-    const more = main.querySelector('.mm-more');
-    more?.addEventListener('toggle', () => {
-      more.querySelector('summary')?.setAttribute('aria-expanded', String(more.open));
-    });
+    const closeButton = $('#menuClose');
 
     const apply = () => {
       const aetherusOpen = this.open && this.sub === 'aetherus';
@@ -608,6 +605,25 @@ export const layerBar = {
     };
     this._apply = apply;
 
+    const closeEarthusMenu = ({ restoreFocus = false } = {}) => {
+      if (!this.open) return;
+      const wasEarthStyle = this.sub === 'earth';
+      this.open = false;
+      this.sub = null;
+      apply();
+      if (wasEarthStyle) {
+        document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
+          detail: { view: 'earth', reason: 'style-closed' },
+        }));
+      }
+      if (restoreFocus) queueMicrotask(() => tab.focus());
+    };
+
+    if (closeButton) {
+      closeButton.onclick = () => closeEarthusMenu({ restoreFocus: true });
+      closeButton.setAttribute('aria-label', i18n.lang === 'ko' ? '메뉴 닫기' : 'Close menu');
+    }
+
     tab.onclick = () => {
       const wasEarthusOpen = this.open && this.sub !== 'aetherus';
       const wasEarthStyle = this.open && this.sub === 'earth';
@@ -616,7 +632,6 @@ export const layerBar = {
       /* ⚠️ 열 때도 2단을 접는다. 닫을 때만 접으면 한 번 '지구'를 펼친 뒤로는
          메뉴를 열 때마다 2단이 따라 나온다 — "누르기 전엔 안 보인다"가 깨진다. */
       this.sub = null;
-      if (this.open) main.querySelector('.mm-more')?.removeAttribute('open');
       apply();
       if (wasEarthStyle) {
         document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
@@ -635,14 +650,20 @@ export const layerBar = {
       apply();
     };
     document.addEventListener('earthus:close-menu', () => {
-      if (!this.open) return;
-      const wasEarthStyle = this.sub === 'earth';
-      this.open = false; this.sub = null; apply();
-      if (wasEarthStyle) {
-        document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
-          detail: { view: 'earth', reason: 'style-closed' },
-        }));
+      closeEarthusMenu();
+    });
+
+    document.addEventListener('keydown', ev => {
+      if (ev.key !== 'Escape' || !this.open) return;
+      ev.preventDefault();
+      if (this.sub && this.sub !== 'aetherus') {
+        const opener = main.querySelector(`[data-open="${this.sub}"]`);
+        this.sub = null;
+        apply();
+        queueMicrotask(() => opener?.focus());
+        return;
       }
+      closeEarthusMenu({ restoreFocus: true });
     });
 
     /* data-open 을 가진 1단 항목(지구·Alert)은 2단을 토글한다.
@@ -702,6 +723,7 @@ export const layerBar = {
     store.on('scene', next => this._renderSceneFilter(next));
     store.on('tier', () => this.render(this.sub || 'earth'));
     i18n.onChange(() => {
+      closeButton?.setAttribute('aria-label', i18n.lang === 'ko' ? '메뉴 닫기' : 'Close menu');
       this.render(this.sub || 'earth');
       this._renderSceneFilter(store.scene);
     });
@@ -756,7 +778,7 @@ export const layerBar = {
        지구로 돌아가는 길을 숨기면 두 세계가 한 공간이라는 구조가 끊긴다. */
     const hiddenAway = [];
     const sceneFiltered = [
-      '[data-open="earth"]', '[data-act="ocean"]', '[data-act="sat"]', '[data-act="flight"]',
+      '[data-open="earth"]', '[data-act="sat"]', '[data-act="flight"]',
       '[data-act="outdoor"]', '[data-act="earth-home"]', '[data-act="earth-surface"]',
       '[data-act="locate"]', '[data-act="globe"]',
     ];

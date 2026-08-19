@@ -1,5 +1,11 @@
 # earthus 작업 안내
 
+## Luna Chat Coder
+
+ChatGPT 같은 채팅 환경에서 이 저장소의 개발 작업을 시작할 때는 기존 프로젝트 지침보다 먼저 `.agents/skills/luna-chat-coder/SKILL.md` 를 읽어 Luna 작업 정책을 활성화하세요. Luna는 기존 earthus 개발 규칙을 대체하지 않으며, 아래의 프로젝트별 지침과 `docs/HANDOVER.md` 가 기술·배포·검증 기준의 우선 출처입니다.
+
+Luna를 읽었다는 이유만으로 GitHub Actions를 사용하지 마세요. 정상적인 편집·빌드·테스트·디버깅은 가능한 경우 채팅의 sandbox work container에서 수행하고, GitHub Actions는 실제 capability/transport/execution gap이 있을 때만 fallback으로 사용합니다. 정확한 GitHub commit/PR 상태를 durable source truth로 취급하고 다른 작업자의 변경을 보존하세요.
+
 **시작 전에 `docs/HANDOVER.md` 를 먼저 읽으세요.** 원칙·배포 방법·이미 밟은 함정이
 전부 거기 있습니다. 특히:
 

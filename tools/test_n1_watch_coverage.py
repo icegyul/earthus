@@ -31,6 +31,7 @@ SCHEDULED_OUTPUTS = {
     "events/quake-asia.json", "events/regional.json", "events/regional-news.json",
     "events/sea-turtle.json", "events/social-drafts.json", "wind/tpw-ea.json",
     "events/typhoon-official.json", "events/world-alerts.json",
+    "app/tourism/health.json",
 }
 
 

@@ -290,9 +290,21 @@ def handler(event, context):
         put_json(OUTPUT_KEY, snapshot, "public, max-age=120")
         stamp = started.strftime("%Y/%m/%d/%H%M%S")
         put_json(f"app/tourism/history/{stamp}.json", snapshot, "public, max-age=31536000, immutable")
+        observed_times = [place.get("provenance", {}).get("observedAt")
+                          for place in snapshot["places"]
+                          if place.get("provenance", {}).get("observedAt")]
         health = {
             "schemaVersion": "earthus.tourism-health.v1", "generatedAt": received_at,
-            "state": "OK" if not errors else "DEGRADED", "mode": mode,
+            "state": "SUCCEEDED" if not errors else "PARTIAL", "mode": mode,
+            "reason": ("PARTIAL_PROVIDER_ERRORS" if errors else
+                       "SAMPLE_KEY_LIMITS_COVERAGE" if mode == "SAMPLE" else None),
+            "lastAttemptAt": received_at, "lastSuccessAt": received_at,
+            "sourceObservedAt": max(observed_times) if observed_times else None,
+            "outputWritten": True, "sampleCount": len(snapshot["places"]),
+            "missing": max(0, 121 - snapshot["coverage"]["available"]),
+            "rejected": len(errors), "failureCount": len(errors),
+            "quota": "UNKNOWN", "estimatedCost": "UNKNOWN",
+            "revision": "tourism-flow-collector.v1",
             "requested": len(requested), "responses": len(responses), "errors": errors,
             "coverage": snapshot["coverage"],
             "providers": {
@@ -305,8 +317,20 @@ def handler(event, context):
         return {"ok": True, "mode": mode, "places": len(snapshot["places"]),
                 "live": snapshot["quality"]["live"], "errors": len(errors)}
     except Exception as error:
+        last_success = None
+        try:
+            previous = json.loads(s3.get_object(Bucket=BUCKET, Key=HEALTH_KEY)["Body"].read())
+            last_success = previous.get("lastSuccessAt")
+        except Exception:  # 첫 실패거나 이전 health가 손상됐으면 성공 시각을 만들지 않는다.
+            pass
         health = {"schemaVersion": "earthus.tourism-health.v1", "generatedAt": received_at,
-                  "state": "ERROR", "mode": mode, "reason": str(error)[:120],
+                  "state": "FAILED", "mode": mode, "reason": str(error)[:120],
+                  "lastAttemptAt": received_at, "lastSuccessAt": last_success,
+                  "sourceObservedAt": None, "outputWritten": False,
+                  "sampleCount": 0, "missing": 121 if mode == "FULL" else 1,
+                  "rejected": len(errors), "failureCount": max(1, len(errors)),
+                  "quota": "UNKNOWN", "estimatedCost": "UNKNOWN",
+                  "revision": "tourism-flow-collector.v1",
                   "providers": {"seoulPopulation": {"state": "UNAVAILABLE"}}}
         put_json(HEALTH_KEY, health, "no-cache")
         raise

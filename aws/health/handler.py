@@ -31,7 +31,7 @@ s3 = boto3.client("s3", region_name=REGION)
 
 DST = "wind/health.json"
 HEALTH_SCHEMA = 2
-HEALTH_REVISION = "earthus.collector-health.2026-08-14.n1"
+HEALTH_REVISION = "earthus.collector-health.2026-08-20.tourism1"
 OPERATIONAL_STATES = (
     "HEALTHY", "AGING", "STALE", "PARTIAL", "FAILED", "POLICY_BLOCKED", "UNKNOWN",
 )
@@ -144,6 +144,10 @@ WATCH = [
     #    **파일이 안 갱신되는 것**이 사고다 — 그러면 아무에게도 안 가고 있다.
     {"key": "events/push-tick.json", "everyMin": 5, "graceMin": 20,
      "ko": "알림 발송 (웹푸시)"},
+    # ⚠️ 관광 화면이 마지막 성공 snapshot을 계속 보여줄 수 있으므로 별도 heartbeat를 본다.
+    #    실패 health 자체는 새 파일이다. LastModified만 보면 실패 직후를 정상으로 오판한다.
+    {"key": "app/tourism/health.json", "everyMin": 5, "graceMin": 20,
+     "ko": "서울 관광 인구 흐름 수집 실행", "collectorStatus": True},
     # ⚠️ 추적이 끝난 자료라 거의 안 바뀐다. 하루 한 번이면 충분하고,
     #    더 자주 부르면 개발계정 트래픽(10,000/일)만 먹는다 — 한 번에 약 961회 부른다.
     {"key": "events/sea-turtle.json", "everyMin": 1440, "graceMin": 720,
@@ -424,7 +428,10 @@ def add_observability(item, status=None, ref=None):
     attempt = status.get("lastAttemptAt") or item.get("written")
     # 공개 산출물의 generated는 freshness가 늦었더라도 마지막으로 성공해 보존된 정본 시각이다.
     # 지연 상태를 HEALTHY로 바꾸지는 않되, 마지막 성공 증거까지 없애면 복구 판단이 더 어려워진다.
-    success = status.get("lastSuccessAt") or item.get("generated")
+    # heartbeat가 lastSuccessAt=null을 명시했다면 방금 실패한 시각을 성공으로 만들지 않는다.
+    # 일반 공개 산출물(heartbeat 아님)은 기존 generated를 마지막 성공 근거로 쓴다.
+    success = (status.get("lastSuccessAt") if "lastSuccessAt" in status
+               else item.get("generated"))
     item.update({
         "operationalState": operational_state(item.get("legacyState"), status),
         "lastAttemptAt": attempt,

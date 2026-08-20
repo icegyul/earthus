@@ -75,6 +75,26 @@ class TourismCollectorTest(unittest.TestCase):
         output = next(item for item in self.fake.puts if item["Key"] == "app/tourism/seoul-flow.json")
         self.assertEqual(output["ContentType"], "application/json; charset=utf-8")
         self.assertTrue(any(item["Key"].startswith("app/tourism/history/202") for item in self.fake.puts))
+        health = json.loads(self.fake.objects["app/tourism/health.json"])
+        self.assertEqual(health["state"], "SUCCEEDED")
+        self.assertTrue(health["outputWritten"])
+        self.assertEqual(health["sampleCount"], 1)
+        self.assertEqual(health["missing"], 120)
+        self.assertEqual(health["failureCount"], 0)
+        self.assertEqual(health["lastAttemptAt"], health["lastSuccessAt"])
+        self.assertIsNotNone(health["sourceObservedAt"])
+
+    def test_failed_run_writes_failed_heartbeat_without_fake_success(self):
+        self.module.fetch_area = lambda name, key: (_ for _ in ()).throw(RuntimeError("fixture provider down"))
+        with self.assertRaisesRegex(RuntimeError, "SEOUL_PROVIDER_NO_RESPONSES"):
+            self.module.handler({}, None)
+        health = json.loads(self.fake.objects["app/tourism/health.json"])
+        self.assertEqual(health["state"], "FAILED")
+        self.assertFalse(health["outputWritten"])
+        self.assertEqual(health["sampleCount"], 0)
+        self.assertEqual(health["failureCount"], 1)
+        self.assertIsNone(health["lastSuccessAt"])
+        self.assertIsNotNone(health["lastAttemptAt"])
 
     def test_stale_provider_value_never_keeps_live_label(self):
         place = catalog()[8]

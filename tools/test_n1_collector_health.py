@@ -5,6 +5,7 @@ import importlib.util
 import io
 import json
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -16,14 +17,21 @@ os.environ.setdefault("CACHE_REGION", "us-east-2")
 class FakeS3:
     def __init__(self):
         self.objects = {}
+        self.modified = {}
 
     def put_object(self, Bucket, Key, Body, **kwargs):  # noqa: N803
         raw = Body if isinstance(Body, bytes) else Body.encode("utf-8")
         self.objects[Key] = raw
+        self.modified[Key] = datetime.now(timezone.utc)
         return {"ETag": "fixture"}
 
     def get_object(self, Bucket, Key):  # noqa: N803
         return {"Body": io.BytesIO(self.objects[Key])}
+
+    def head_object(self, Bucket, Key):  # noqa: N803
+        if Key not in self.objects:
+            raise KeyError(Key)
+        return {"LastModified": self.modified[Key]}
 
 
 def load(name, relative):
@@ -111,6 +119,13 @@ def health_common_states():
     assert stale_output["lastSuccessAt"] == "2026-08-13T20:00Z"
     assert stale_output["lastGood"] == "stale.json"
 
+    failed_heartbeat = module.add_observability({
+        "key": "failed.json", "legacyState": "late", "ageMin": 1,
+        "generated": "2026-08-14T00:02Z", "written": "2026-08-14T00:02Z",
+    }, {"state": "FAILED", "lastAttemptAt": "2026-08-14T00:02:00Z", "lastSuccessAt": None})
+    assert failed_heartbeat["operationalState"] == "FAILED"
+    assert failed_heartbeat["lastSuccessAt"] is None, "failed attempts are not successful observations"
+
     module.s3 = FakeS3()
     module.s3.objects["wind/fixture.json"] = json.dumps({
         "schemaVersion": "earthus.fixture.v1", "generated": "2026-08-14T00:00:00Z",
@@ -124,7 +139,33 @@ def health_common_states():
     assert metadata["revision"] == "earthus.fixture.v1"
 
 
+def tourism_heartbeat_is_visible_in_aggregate_health():
+    module = load("earthus_tourism_health", "aws/health/handler.py")
+    key = "app/tourism/health.json"
+    module.WATCH = [{"key": key, "everyMin": 5, "graceMin": 20,
+                     "ko": "서울 관광 인구 흐름 수집 실행", "collectorStatus": True}]
+    module.EXPECTED = []
+    module.s3 = FakeS3()
+    module.s3.objects[key] = json.dumps({
+        "schemaVersion": "earthus.tourism-health.v1", "generatedAt": "2026-08-20T09:00:00Z",
+        "state": "SUCCEEDED", "lastAttemptAt": "2026-08-20T09:00:00Z",
+        "lastSuccessAt": "2026-08-20T09:00:00Z", "sourceObservedAt": "2026-08-20T08:55:00Z",
+        "outputWritten": True, "sampleCount": 1, "missing": 120, "failureCount": 0,
+        "quota": "UNKNOWN", "estimatedCost": "UNKNOWN", "revision": "tourism-flow-collector.v1",
+    }).encode("utf-8")
+    module.s3.modified[key] = datetime.now(timezone.utc)
+
+    module.handler()
+    doc = decode(module.s3, module.DST)
+    item = next(item for item in doc["items"] if item["key"] == key)
+    assert item["state"] == "ok" and item["operationalState"] == "HEALTHY"
+    assert item["collectorState"] == "SUCCEEDED" and item["count"] == 1
+    assert item["missing"] == 120 and item["lastSuccessAt"] == "2026-08-20T09:00:00Z"
+    assert item["sourceObservedAt"] == "2026-08-20T08:55:00Z"
+
+
 if __name__ == "__main__":
     marine_deadline_and_success()
     health_common_states()
-    print("N1 collector health tests: 30 passed")
+    tourism_heartbeat_is_visible_in_aggregate_health()
+    print("N1 collector health tests: 39 passed")

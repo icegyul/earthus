@@ -104,7 +104,7 @@ try {
     });
     assert.match(tourismPanel.text, /광화문·덕수궁/);
     assert.match(tourismPanel.text, /1\/121|광화문·덕수궁 1곳만 공식 조회/);
-    assert.match(tourismPanel.text, /수집기 OK · SAMPLE/);
+    assert.match(tourismPanel.text, /수집기 SUCCEEDED · SAMPLE/);
     assert.match(tourismPanel.text, /서울특별시 실시간 인구데이터/);
     assert.match(tourismPanel.text, /운영시간[\s\S]{0,50}(확인되지 않|없습니다)/);
     assert.doesNotMatch(tourismPanel.text, /안전합니다|가도 됩니다|수용 가능/);

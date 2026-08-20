@@ -1,0 +1,122 @@
+name: Aetherus visual QA 6bf3a90c
+
+on:
+  pull_request:
+    branches:
+      - codex/aetherus-coordinate-core-v1
+
+permissions:
+  contents: read
+
+jobs:
+  visual-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      EXPECTED_APP_SHA: a7a4a6ecc1d4d0d86a59a5963fb760e2b912028e
+      FEATURE_BRANCH: codex/aetherus-coordinate-core-v1
+      AETHERUS_QA_URL: http://127.0.0.1:8799
+      AETHERUS_QA_OUT: ${{ github.workspace }}/qa-artifacts
+    steps:
+      - name: Checkout exact QA head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Verify application source identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = '${{ github.event.pull_request.head.sha }}'
+          git fetch origin "$FEATURE_BRANCH"
+          current_feature="$(git rev-parse "origin/$FEATURE_BRANCH")"
+          test "$current_feature" = "$EXPECTED_APP_SHA" || {
+            echo "Feature branch moved: expected $EXPECTED_APP_SHA, found $current_feature" >&2
+            exit 42
+          }
+          git merge-base --is-ancestor "$EXPECTED_APP_SHA" HEAD
+          unexpected="$(git diff --name-only "$EXPECTED_APP_SHA"...HEAD | grep -Ev '^(.github/workflows/mission-aetherus-visual-qa-6bf3a90c.yml|.missions/aetherus-visual-qa-6bf3a90c.mjs|.missions/aetherus-visual-qa-clean-6bf3a90c.mjs|.missions/aetherus-startup-diagnostic-6bf3a90c.mjs)$' || true)"
+          test -z "$unexpected" || {
+            echo "QA branch contains application changes:" >&2
+            echo "$unexpected" >&2
+            exit 43
+          }
+
+      - name: Prepare Chromium QA runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/aetherus-qa qa-artifacts
+          npm install --prefix /tmp/aetherus-qa --no-audit --no-fund playwright@1.55.0
+          chrome=''
+          for candidate in google-chrome-stable google-chrome chromium-browser chromium; do
+            if command -v "$candidate" >/dev/null 2>&1; then
+              chrome="$(command -v "$candidate")"
+              break
+            fi
+          done
+          if [ -n "$chrome" ]; then
+            "$chrome" --version
+            cat > /tmp/aetherus-qa/chrome-webgl <<EOF
+          #!/usr/bin/env bash
+          set -e
+          args=()
+          for arg in "\$@"; do
+            [ "\$arg" = '--use-gl=swiftshader' ] && continue
+            args+=("\$arg")
+          done
+          exec "$chrome" --enable-unsafe-swiftshader --use-gl=angle --use-angle=swiftshader "\${args[@]}"
+          EOF
+            chmod +x /tmp/aetherus-qa/chrome-webgl
+            echo "CHROME_BIN=/tmp/aetherus-qa/chrome-webgl" >> "$GITHUB_ENV"
+          else
+            /tmp/aetherus-qa/node_modules/.bin/playwright install --with-deps chromium
+          fi
+
+      - name: Start local Earthus server
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp prototype/js/config.local.example.js prototype/js/config.local.js
+          python3 -m http.server 8799 --bind 127.0.0.1 --directory prototype > qa-server.log 2>&1 &
+          echo $! > /tmp/aetherus-qa-server.pid
+          for attempt in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:8799/ >/dev/null; then exit 0; fi
+            sleep .25
+          done
+          cat qa-server.log >&2
+          exit 1
+
+      - name: Diagnose Aetherus startup state
+        shell: bash
+        run: node .missions/aetherus-startup-diagnostic-6bf3a90c.mjs
+
+      - name: Run clean desktop and mobile journey QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          node .missions/aetherus-visual-qa-clean-6bf3a90c.mjs
+
+      - name: Show QA report
+        if: always()
+        shell: bash
+        run: |
+          for report in qa-artifacts/report-clean.json qa-artifacts/report-clean.partial.json; do
+            if [ -f "$report" ]; then cat "$report"; fi
+          done
+          if [ -f qa-server.log ]; then
+            echo '--- server log tail ---'
+            tail -80 qa-server.log || true
+          fi
+
+      - name: Upload screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aetherus-visual-qa-clean-6bf3a90c
+          path: |
+            qa-artifacts
+            qa-server.log
+          if-no-files-found: warn
+          retention-days: 2

@@ -30,10 +30,12 @@ aws lambda add-permission --function-name "$FUNCTION" --region "$REGION" \
 # KTO 지역별 방문 지표는 최근 7일을 매일 재수집한다. 다만 공식 인증·계약 Smoke와
 # raw/normalized 적재 확인 전에는 실행하면 안 되므로 규칙을 DISABLED로 만든다.
 # KTO P0 Smoke Test 통과 후 운영자가 enable-rule로 한 번만 승격한다.
+# 서울 관광 5분 수집과 같은 시각을 피한다. 같은 Lambda에서 KTO 키 호출이 겹치면
+# provider 할당량을 불필요하게 소진할 수 있다.
 KTO_VISITOR_RULE="tourism-flow-kto-visitors-daily"
 KTO_VISITOR_TARGETS="[{\"Id\":\"1\",\"Arn\":\"${ARN}\",\"Input\":\"{\\\"task\\\":\\\"KTO_VISITORS_DAILY\\\"}\"}]"
 aws events put-rule --name "$KTO_VISITOR_RULE" --region "$REGION" \
-  --schedule-expression 'cron(35 19 * * ? *)' \
+  --schedule-expression 'cron(37 19 * * ? *)' \
   --description 'earthus · KTO 지역별 방문 지표 최근 7일 재수집' \
   --state DISABLED >/dev/null
 KTO_FAILED_TARGETS="$(aws events put-targets --rule "$KTO_VISITOR_RULE" --region "$REGION" \

@@ -256,6 +256,41 @@ class FakeHttpResponse:
 
 
 class KtoProviderHttpTest(unittest.TestCase):
+    def test_rate_limit_retry_honors_provider_retry_after_header(self):
+        module = load_kto_provider(self)
+        pauses = []
+        calls = []
+
+        def open_url(request, timeout):
+            calls.append(request.full_url)
+            if len(calls) == 1:
+                raise urllib.error.HTTPError(
+                    request.full_url,
+                    429,
+                    "rate limited",
+                    {"Retry-After": "7"},
+                    io.BytesIO(b""),
+                )
+            return FakeHttpResponse({
+                "response": {
+                    "header": {"resultCode": "00", "resultMsg": "NORMAL_SERVICE"},
+                    "body": {"items": {"item": []}, "totalCount": 0},
+                },
+            })
+
+        result = module.call_kto(
+            "related",
+            "areaBasedList1",
+            {"baseYm": "202608", "areaCd": "1", "signguCd": "11110"},
+            environ={"DATA_GO_KR_SERVICE_KEY": "fixture-secret", "KTO_MAX_RETRIES": "1"},
+            open_url=open_url,
+            sleep=pauses.append,
+        )
+
+        self.assertEqual(result["items"], [])
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(pauses, [7.0])
+
     def test_server_error_retries_then_returns_the_real_normalized_response(self):
         module = load_kto_provider(self)
         try:
@@ -362,6 +397,37 @@ class KtoProviderHttpTest(unittest.TestCase):
         self.assertEqual([entry[2]["pageNo"] for entry in calls], [1, 2])
         self.assertTrue(all(entry[2]["numOfRows"] == 2 for entry in calls))
         self.assertEqual(business_params, {"baseYm": "202608", "areaCd": "1"})
+
+    def test_pagination_spaces_provider_requests_by_the_configured_interval(self):
+        module = load_kto_provider(self)
+        pauses = []
+        calls = []
+
+        def call(service, operation, params):
+            calls.append(dict(params))
+            page = params["pageNo"]
+            return {
+                "resultCode": "00",
+                "resultMsg": "NORMAL_SERVICE",
+                "pageNo": page,
+                "numOfRows": 1,
+                "totalCount": 2,
+                "items": [{"id": str(page)}],
+            }
+
+        items = module.fetch_all_pages(
+            "related",
+            "areaBasedList1",
+            {"baseYm": "202608", "areaCd": "1", "signguCd": "11110"},
+            page_size=1,
+            call=call,
+            environ={"KTO_PAGE_INTERVAL_MS": "1200"},
+            sleep=pauses.append,
+        )
+
+        self.assertEqual(items, [{"id": "1"}, {"id": "2"}])
+        self.assertEqual([entry["pageNo"] for entry in calls], [1, 2])
+        self.assertEqual(pauses, [1.2])
 
 
 if __name__ == "__main__":

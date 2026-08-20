@@ -252,6 +252,20 @@ def normalize_tour_api_envelope(payload):
     }
 
 
+def _retry_delay_seconds(error, attempt):
+    """429에는 provider가 명시한 최소 대기 시간을 우선한다."""
+    exponential = min(30.0, 0.25 * (2 ** attempt))
+    if not isinstance(error, urllib.error.HTTPError) or error.code != 429:
+        return exponential
+    headers = error.headers or {}
+    raw_value = headers.get("Retry-After")
+    try:
+        retry_after = float(raw_value)
+    except (TypeError, ValueError):
+        return exponential
+    return min(60.0, max(exponential, retry_after, 0.0))
+
+
 def call_kto(service, operation, params=None, environ=None, open_url=None, sleep=None):
     """KTO를 서버에서 호출하고 승인된 재시도 범위 안에서 정규화한다."""
     env = os.environ if environ is None else environ
@@ -266,6 +280,7 @@ def call_kto(service, operation, params=None, environ=None, open_url=None, sleep
     )
 
     for attempt in range(max_retries + 1):
+        retry_delay = None
         try:
             with opener(request, timeout=timeout_seconds) as response:
                 payload = json.loads(response.read().decode("utf-8"))
@@ -274,6 +289,7 @@ def call_kto(service, operation, params=None, environ=None, open_url=None, sleep
             retryable = error.code == 429 or error.code >= 500
             health = "QUOTA_EXHAUSTED" if error.code == 429 else "DEGRADED" if retryable else "UNAVAILABLE"
             wrapped = KtoTransportError(error.code, health, retryable)
+            retry_delay = _retry_delay_seconds(error, attempt)
         except (urllib.error.URLError, TimeoutError, OSError):
             # 원본 예외에는 request.full_url이 포함될 수 있어 그대로 전달하지 않는다.
             wrapped = KtoTransportError(None, "DEGRADED", True)
@@ -284,24 +300,29 @@ def call_kto(service, operation, params=None, environ=None, open_url=None, sleep
 
         if not wrapped.retryable or attempt >= max_retries:
             raise wrapped
-        pause(min(2.0, 0.25 * (2 ** attempt)))
+        pause(retry_delay if retry_delay is not None else min(30.0, 0.25 * (2 ** attempt)))
 
     raise KtoTransportError(None, "UNAVAILABLE", False)
 
 
-def fetch_all_pages(service, operation, params=None, page_size=100, call=None, environ=None):
+def fetch_all_pages(service, operation, params=None, page_size=100, call=None, environ=None, sleep=None):
     """원래 업무 파라미터를 바꾸지 않고 TourAPI의 모든 페이지를 수집한다."""
     base_params = dict(params or {})
+    env = os.environ if environ is None else environ
     size = max(1, min(1000, int(page_size)))
+    interval_seconds = max(0.0, min(60.0, int(env.get("KTO_PAGE_INTERVAL_MS") or 1000) / 1000))
+    pause = time.sleep if sleep is None else sleep
     caller = call or (lambda selected_service, selected_operation, selected_params: call_kto(
         selected_service,
         selected_operation,
         selected_params,
-        environ=environ,
+        environ=env,
     ))
     items = []
     page_no = 1
     while page_no <= 10000:
+        if page_no > 1 and interval_seconds:
+            pause(interval_seconds)
         page = caller(service, operation, {
             **base_params,
             "pageNo": page_no,

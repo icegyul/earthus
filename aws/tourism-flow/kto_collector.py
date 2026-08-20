@@ -29,6 +29,17 @@ PUBLIC_TTL_SECONDS = {
 }
 SUMMARY_KEY = "app/tourism/kto/summary.json"
 HEALTH_KEY = "app/tourism/kto/health.json"
+KTO_PROVIDER_LEASE_KEY = "archive/tourism/kto/locks/provider.json"
+KTO_PROVIDER_LEASE_SECONDS = 900
+
+
+class KtoSyncBusy(RuntimeError):
+    """같은 공공데이터포털 키를 쓰는 KTO 수집이 이미 진행 중이다."""
+
+    health_state = "DEGRADED"
+
+    def __init__(self):
+        super().__init__("KTO_SYNC_BUSY")
 
 
 def _canonical_bytes(value):
@@ -43,7 +54,16 @@ def _safe_params(params):
     }
 
 
-def _put_json(s3_client, bucket, key, document, cache_control, private=False):
+def _put_json(
+    s3_client,
+    bucket,
+    key,
+    document,
+    cache_control,
+    private=False,
+    if_none_match=False,
+    if_match=None,
+):
     args = {
         "Bucket": bucket,
         "Key": key,
@@ -53,15 +73,81 @@ def _put_json(s3_client, bucket, key, document, cache_control, private=False):
     }
     if private:
         args["ServerSideEncryption"] = "AES256"
+    if if_none_match:
+        args["IfNoneMatch"] = "*"
+    if if_match:
+        args["IfMatch"] = if_match
     s3_client.put_object(**args)
 
 
-def _read_json(s3_client, bucket, key):
+def _read_json_with_etag(s3_client, bucket, key):
     try:
-        raw = s3_client.get_object(Bucket=bucket, Key=key)["Body"].read()
-        return json.loads(raw.decode("utf-8") if isinstance(raw, bytes) else raw)
+        response = s3_client.get_object(Bucket=bucket, Key=key)
+        raw = response["Body"].read()
+        return json.loads(raw.decode("utf-8") if isinstance(raw, bytes) else raw), response.get("ETag")
     except Exception:
+        return None, None
+
+
+def _read_json(s3_client, bucket, key):
+    document, _ = _read_json_with_etag(s3_client, bucket, key)
+    return document
+
+
+def _parse_utc(value):
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
         return None
+    return parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed.astimezone(timezone.utc)
+
+
+def _lease_error_code(error):
+    response = getattr(error, "response", None)
+    code = response.get("Error", {}).get("Code") if isinstance(response, dict) else None
+    return str(code or "")
+
+
+def _lease_is_live(document, at):
+    expires_at = _parse_utc((document or {}).get("expiresAt"))
+    return expires_at is not None and expires_at > at
+
+
+def _acquire_provider_lease(s3_client, bucket, fetched_at):
+    """S3 조건부 쓰기로 공용 KTO 인증키의 동시 수집을 하나로 제한한다.
+
+    ⚠️ 이 Lambda 역할에는 DeleteObject가 없다. 만료된 lease는 ETag가 같은 경우에만
+    PutObject로 교체해, 권한을 넓히지 않고도 원자적인 단일 수집을 유지한다.
+    """
+    now = _parse_utc(fetched_at) or datetime.now(timezone.utc)
+    current, current_etag = _read_json_with_etag(s3_client, bucket, KTO_PROVIDER_LEASE_KEY)
+    # 잠금 문서가 훼손됐을 때 이를 "만료"로 간주하면 공용 키 호출이 겹칠 수 있다.
+    if current is not None and not isinstance(current, dict):
+        raise KtoSyncBusy()
+    if _lease_is_live(current, now):
+        raise KtoSyncBusy()
+
+    document = {
+        "schemaVersion": "earthus.kto-provider-lease.v1",
+        "provider": "KTO",
+        "leaseScope": "KTO_SHARED_PROVIDER_KEY",
+        "acquiredAt": now.isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "expiresAt": (now + timedelta(seconds=KTO_PROVIDER_LEASE_SECONDS)).isoformat(
+            timespec="seconds"
+        ).replace("+00:00", "Z"),
+    }
+    try:
+        _put_json(
+            s3_client, bucket, KTO_PROVIDER_LEASE_KEY, document,
+            "private, no-store", private=True,
+            if_none_match=current is None,
+            if_match=current_etag if current is not None else None,
+        )
+    except Exception as error:
+        if _lease_error_code(error) in ("412", "PreconditionFailed", "ConditionalRequestConflict"):
+            raise KtoSyncBusy() from None
+        raise
+    return document
 
 
 def _summary_state(services):
@@ -243,9 +329,16 @@ def _utc_now():
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
-def handle_event(event, s3_client, bucket, fetched_at=None, call=None, environ=None):
+def handle_event(event, s3_client, bucket, fetched_at=None, call=None, environ=None, _lease=None):
     """명시된 KTO Operation 하나만 실행한다."""
     payload = event if isinstance(event, dict) else {}
+    if _lease is None:
+        acquired_at = fetched_at or _utc_now()
+        lease = _acquire_provider_lease(s3_client, bucket, acquired_at)
+        return handle_event(
+            payload, s3_client=s3_client, bucket=bucket, fetched_at=acquired_at,
+            call=call, environ=environ, _lease=lease,
+        )
     if payload.get("task") == "KTO_VISITORS_DAILY":
         raw_as_of = payload.get("asOf") or fetched_at or _utc_now()
         try:
@@ -274,6 +367,7 @@ def handle_event(event, s3_client, bucket, fetched_at=None, call=None, environ=N
                 fetched_at=fetched_at or _utc_now(),
                 call=call,
                 environ=environ,
+                _lease=_lease,
             ))
         return {"ok": True, "provider": "KTO", "task": "KTO_VISITORS_DAILY", "jobs": len(results)}
     if payload.get("task") != "KTO_SYNC":

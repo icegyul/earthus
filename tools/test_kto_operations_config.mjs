@@ -4,7 +4,8 @@ import { readFile } from 'node:fs/promises';
 const source = await readFile(new URL('../aws/configure-tourism-flow-operations.sh', import.meta.url), 'utf8');
 
 assert.match(source, /tourism-flow-kto-visitors-daily/);
-assert.match(source, /cron\(35 19 \* \* \? \*\)/);
+assert.match(source, /cron\(37 19 \* \* \? \*\)/);
+assert.match(source, /서울 관광 5분 수집과 같은 시각을 피한다/);
 assert.match(source, /KTO_VISITORS_DAILY/);
 assert.match(source, /--state DISABLED/);
 assert.match(source, /KTO P0 Smoke[^\n]*통과/);

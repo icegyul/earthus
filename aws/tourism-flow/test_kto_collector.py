@@ -5,14 +5,27 @@ import unittest
 from pathlib import Path
 
 
+class ConditionalPutFailed(RuntimeError):
+    response = {"Error": {"Code": "PreconditionFailed"}}
+
+
 class FakeS3:
     def __init__(self):
         self.puts = []
         self.objects = {}
+        self.delete_calls = []
 
     def put_object(self, **kwargs):
+        if kwargs.get("IfNoneMatch") == "*" and kwargs["Key"] in self.objects:
+            raise ConditionalPutFailed(kwargs["Key"])
+        if kwargs.get("IfMatch") and kwargs.get("IfMatch") != self._etag(kwargs["Key"]):
+            raise ConditionalPutFailed(kwargs["Key"])
         self.puts.append(kwargs)
         self.objects[kwargs["Key"]] = kwargs["Body"]
+
+    @staticmethod
+    def _etag(key):
+        return f'"fixture-{key}"'
 
     def get_object(self, Bucket, Key):  # noqa: N803
         if Key not in self.objects:
@@ -23,7 +36,11 @@ class FakeS3:
             def read(self):
                 return value
 
-        return {"Body": Body()}
+        return {"Body": Body(), "ETag": self._etag(Key)}
+
+    def delete_object(self, Bucket, Key):  # noqa: N803
+        self.delete_calls.append({"Bucket": Bucket, "Key": Key})
+        self.objects.pop(Key, None)
 
 
 def load_collector(testcase):
@@ -199,7 +216,8 @@ class KtoCollectorWriteOrderTest(unittest.TestCase):
             )
 
         keys = [entry["Key"] for entry in fake_s3.puts]
-        self.assertTrue(keys[0].startswith(
+        raw_keys = [key for key in keys if key.startswith("archive/tourism/kto/raw/")]
+        self.assertTrue(raw_keys[0].startswith(
             "archive/tourism/kto/raw/concentration/tatsCnctrRatedList/"
         ))
         self.assertNotIn("app/tourism/kto/concentration/tatsCnctrRatedList.json", keys)
@@ -233,6 +251,108 @@ class KtoCollectorWriteOrderTest(unittest.TestCase):
         self.assertTrue(all(params == {
             "startYmd": "20260813", "endYmd": "20260819",
         } for _, _, params in calls))
+
+    def test_active_provider_lease_deduplicates_a_second_kto_sync_before_any_external_call(self):
+        collector = load_collector(self)
+        fake_s3 = FakeS3()
+        fake_s3.objects["archive/tourism/kto/locks/provider.json"] = json.dumps({
+            "provider": "KTO",
+            "expiresAt": "2026-08-20T12:15:00Z",
+        }).encode("utf-8")
+        calls = []
+
+        def call(*args):
+            calls.append(args)
+            return {"resultCode": "00", "items": []}
+
+        with self.assertRaisesRegex(RuntimeError, "KTO_SYNC_BUSY"):
+            collector.handle_event(
+                {
+                    "task": "KTO_SYNC",
+                    "service": "concentration",
+                    "operation": "tatsCnctrRatedList",
+                    "params": {"areaCd": "51", "signguCd": "51130"},
+                },
+                s3_client=fake_s3,
+                bucket="fixture-bucket",
+                fetched_at="2026-08-20T12:00:00Z",
+                call=call,
+            )
+
+        self.assertEqual(calls, [])
+
+    def test_provider_lease_never_deletes_the_current_conditional_lock(self):
+        collector = load_collector(self)
+        fake_s3 = FakeS3()
+
+        result = collector.handle_event(
+            {
+                "task": "KTO_SYNC",
+                "service": "concentration",
+                "operation": "tatsCnctrRatedList",
+                "params": {"areaCd": "51", "signguCd": "51130"},
+            },
+            s3_client=fake_s3,
+            bucket="fixture-bucket",
+            fetched_at="2026-08-20T12:00:00Z",
+            call=lambda *_: {"resultCode": "00", "items": []},
+        )
+
+        self.assertTrue(result["ok"])
+        self.assertIn(
+            "archive/tourism/kto/locks/provider.json",
+            fake_s3.objects,
+        )
+        self.assertEqual(fake_s3.delete_calls, [])
+
+    def test_expired_provider_lease_is_replaced_by_etag_without_delete_permission(self):
+        collector = load_collector(self)
+        fake_s3 = FakeS3()
+        lock_key = "archive/tourism/kto/locks/provider.json"
+        fake_s3.objects[lock_key] = json.dumps({
+            "provider": "KTO",
+            "expiresAt": "2026-08-20T11:59:00Z",
+        }).encode("utf-8")
+
+        result = collector.handle_event(
+            {
+                "task": "KTO_SYNC",
+                "service": "concentration",
+                "operation": "tatsCnctrRatedList",
+                "params": {"areaCd": "51", "signguCd": "51130"},
+            },
+            s3_client=fake_s3,
+            bucket="fixture-bucket",
+            fetched_at="2026-08-20T12:00:00Z",
+            call=lambda *_: {"resultCode": "00", "items": []},
+        )
+
+        self.assertTrue(result["ok"])
+        lock_put = [entry for entry in fake_s3.puts if entry["Key"] == lock_key][-1]
+        self.assertEqual(lock_put["IfMatch"], FakeS3._etag(lock_key))
+        self.assertEqual(fake_s3.delete_calls, [])
+
+    def test_malformed_provider_lease_fails_closed_without_an_external_call(self):
+        collector = load_collector(self)
+        fake_s3 = FakeS3()
+        fake_s3.objects["archive/tourism/kto/locks/provider.json"] = b"[]"
+        calls = []
+
+        with self.assertRaisesRegex(RuntimeError, "KTO_SYNC_BUSY"):
+            collector.handle_event(
+                {
+                    "task": "KTO_SYNC",
+                    "service": "concentration",
+                    "operation": "tatsCnctrRatedList",
+                    "params": {"areaCd": "51", "signguCd": "51130"},
+                },
+                s3_client=fake_s3,
+                bucket="fixture-bucket",
+                fetched_at="2026-08-20T12:00:00Z",
+                call=lambda *args: calls.append(args),
+            )
+
+        self.assertEqual(calls, [])
 
 
 if __name__ == "__main__":

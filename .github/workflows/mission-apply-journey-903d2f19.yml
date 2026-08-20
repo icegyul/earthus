@@ -35,10 +35,14 @@ jobs:
             echo "Target branch moved: expected $EXPECTED_BASE, found $remote_head" >&2
             exit 42
           }
-          cat \
-            .missions/aetherus-journey-903d2f19/part-00.b64 \
-            .missions/aetherus-journey-903d2f19/part-01.b64 \
-            > /tmp/change.patch.gz.b64
+          chunk_dir='.missions/aetherus-journey-903d2f19-v2'
+          echo '1426449f32c82d78ca56baa4d97ade83e7b702d70e713f392b26a7132a9ef18f  '"$chunk_dir"'/chunk-00.b64' | sha256sum -c -
+          echo 'bafae8f9c269f558e0d5af2d2d9f57945e5470b9ed22d069b1900bbfecf92438  '"$chunk_dir"'/chunk-01.b64' | sha256sum -c -
+          echo '08ecd7a17f549c22580e65ffd1cbc31cbc1172a9beee3df9fab94abe376e012e  '"$chunk_dir"'/chunk-02.b64' | sha256sum -c -
+          echo '4aba43ad19058c56fb7907f6cdd7f26b8467ef4b2bf4173b78a0796bb971fff8  '"$chunk_dir"'/chunk-03.b64' | sha256sum -c -
+          echo '591b2472d8af0d3141315484043c8f98f2ccf3c5dc8d244aeffa00a693c0cd88  '"$chunk_dir"'/chunk-04.b64' | sha256sum -c -
+          echo 'ad059198c9cfa8466426c94d0fedeb3ef65e893f19fd283e91590207ed2139fd  '"$chunk_dir"'/chunk-05.b64' | sha256sum -c -
+          cat "$chunk_dir"/chunk-0{0,1,2,3,4,5}.b64 > /tmp/change.patch.gz.b64
           echo "$PATCH_B64_SHA256  /tmp/change.patch.gz.b64" | sha256sum -c -
           base64 -d /tmp/change.patch.gz.b64 | gunzip > /tmp/change.patch
           echo "$PATCH_SHA256  /tmp/change.patch" | sha256sum -c -

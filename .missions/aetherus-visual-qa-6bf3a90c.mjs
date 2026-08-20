@@ -45,15 +45,22 @@ async function clickSolarNav(page, { fromMission = false } = {}) {
 }
 
 async function wheel(page, count, deltaY) {
+  // page.mouse.wheel()은 캔버스 위에 겹친 HUD/패널을 hit-test해서 그 DOM으로 갈 수 있다.
+  // 제품 리스너는 cosmicExperience(root)의 wheel bubbling 계약이므로 실제 canvas에서
+  // cancelable WheelEvent를 만들어 같은 bubbling 경로를 검증한다.
   const canvas = page.locator('#cosmicCanvas');
-  const box = await canvas.boundingBox();
-  if (!box) throw new Error('COSMIC_CANVAS_NO_BOUNDING_BOX');
-  await page.mouse.move(box.x + box.width * .55, box.y + box.height * .52);
+  await canvas.waitFor({ state: 'visible', timeout: 20_000 });
   for (let index = 0; index < count; index += 1) {
-    await page.mouse.wheel(0, deltaY);
-    await pause(160);
+    await canvas.dispatchEvent('wheel', {
+      deltaY,
+      deltaX: 0,
+      deltaMode: 0,
+      bubbles: true,
+      cancelable: true,
+    });
+    await pause(180);
   }
-  await pause(850);
+  await pause(1_100);
 }
 
 async function snapshotState(page, label) {

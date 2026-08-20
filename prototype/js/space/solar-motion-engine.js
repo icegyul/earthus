@@ -23,6 +23,7 @@ import {
 import {
   AU_PER_KPC,
   GALACTOCENTRIC_MODEL,
+  solarSystemBarycenterDisplacementGalactic,
   solarSystemBarycenterGalactocentricAt,
   solarVelocityDirectionGalactic,
 } from './galactocentric.js';
@@ -62,12 +63,18 @@ function fallbackHeliocentricIcrf(at) {
   })]));
 }
 
-function samplePhysicalState(at, referenceAt, ephemerisProvider) {
+function samplePhysicalState(at, referenceAt, referenceSunBarycentric, ephemerisProvider) {
   const sunBarycentric = ephemerisProvider?.barycentricIcrfState?.('sun', at) || null;
   const ssb = solarSystemBarycenterGalactocentricAt({
     at,
     referenceAt,
     sunBarycentricIcrfAu: sunBarycentric?.position || null,
+  });
+  const displacement = solarSystemBarycenterDisplacementGalactic({
+    at,
+    referenceAt,
+    sunBarycentricIcrfAu: sunBarycentric?.position || null,
+    referenceSunBarycentricIcrfAu: referenceSunBarycentric?.position || null,
   });
 
   let provider = 'jpl-table1-heliocentric-ecliptic-v1';
@@ -89,8 +96,9 @@ function samplePhysicalState(at, referenceAt, ephemerisProvider) {
   return Object.freeze({
     at: at.toISOString(),
     provider,
-    ssbBridge: ssb.bridge,
+    ssbBridge: displacement.bridge,
     ssbGalactocentricKpc: ssb.positionKpc,
+    ssbDisplacementKpc: displacement.displacementKpc,
     sunBarycentricIcrfAu: sunBarycentric?.position || null,
     planets,
   });
@@ -114,22 +122,26 @@ export function buildSolarMotionModel({
   const start = new Date(end.getTime() - durationDays * DAY_MS);
   const directionGalactic = normalizeVector(solarVelocityDirectionGalactic());
   const directionRender = normalizeVector(toAetherusRender(directionGalactic));
+  const referenceSunBarycentric = ephemerisProvider?.barycentricIcrfState?.('sun', end) || null;
   const physicalSamples = Array.from({ length: sampleCount }, (_, index) => {
     const progress = index / (sampleCount - 1);
     const at = new Date(start.getTime() + progress * durationDays * DAY_MS);
     return Object.freeze({
       progress,
-      state: samplePhysicalState(at, end, ephemerisProvider),
+      state: samplePhysicalState(at, end, referenceSunBarycentric, ephemerisProvider),
     });
   });
+
+  // 절대 Galactocentric 위치는 약 8 kpc인데 1년 변위는 ~10^-7 kpc다.
+  // 절대좌표의 차로 trail을 만들면 유효자릿수가 손실되므로 reference 기준 국소 변위를 쓴다.
   const centerMidpointKpc = midpoint(
-    physicalSamples[0].state.ssbGalactocentricKpc,
-    physicalSamples[physicalSamples.length - 1].state.ssbGalactocentricKpc,
+    physicalSamples[0].state.ssbDisplacementKpc,
+    physicalSamples[physicalSamples.length - 1].state.ssbDisplacementKpc,
   );
 
   const timeSamples = physicalSamples.map(({ progress, state }) => {
     const center = solarTrailCenterRender({
-      physicalKpc: state.ssbGalactocentricKpc,
+      physicalKpc: state.ssbDisplacementKpc,
       midpointKpc: centerMidpointKpc,
       halfTravelSceneUnits: halfTravel,
       fallbackDirectionGalactic: directionGalactic,
@@ -159,6 +171,7 @@ export function buildSolarMotionModel({
       ephemerisProvider: state.provider,
       ssbBridge: state.ssbBridge,
       ssbGalactocentricKpc: Object.freeze({ ...state.ssbGalactocentricKpc }),
+      ssbDisplacementKpc: Object.freeze({ ...state.ssbDisplacementKpc }),
       centerPhysicalDisplacementKpc: center.physicalDisplacementKpc,
       centerDisplayGalactic: center.displayGalactic,
       sunRender: center.render,
@@ -167,8 +180,8 @@ export function buildSolarMotionModel({
   });
 
   const providerSet = [...new Set(timeSamples.map(sample => sample.ephemerisProvider))];
-  const firstCenter = timeSamples[0].ssbGalactocentricKpc;
-  const lastCenter = timeSamples[timeSamples.length - 1].ssbGalactocentricKpc;
+  const firstCenter = timeSamples[0].ssbDisplacementKpc;
+  const lastCenter = timeSamples[timeSamples.length - 1].ssbDisplacementKpc;
   const physicalTravelDistanceAu = Math.hypot(
     lastCenter.x - firstCenter.x,
     lastCenter.y - firstCenter.y,
@@ -193,12 +206,12 @@ export function buildSolarMotionModel({
     galactocentric: Object.freeze({
       model: GALACTOCENTRIC_MODEL.id,
       referenceAt: end.toISOString(),
-      centerMidpointKpc: Object.freeze(centerMidpointKpc),
+      centerMidpointDisplacementKpc: Object.freeze(centerMidpointKpc),
     }),
     display: Object.freeze({
       halfTravelSceneUnits: halfTravel,
       orbitRadiusMode: 'radial-log-compressed-separate-from-physics',
-      trailMode: 'galactocentric-displacement-direction-exaggerated',
+      trailMode: 'galactocentric-local-displacement-direction-exaggerated',
       bodySizes: 'renderer-controlled-not-to-scale',
     }),
     limitations: Object.freeze([
@@ -245,7 +258,7 @@ export function solarMotionSelfTest() {
     earth.physicalGalacticAu.z,
   );
   return Object.freeze({
-    ok: directionError < 1e-8 && physicalRadius > .95 && physicalRadius < 1.05,
+    ok: directionError < 1e-10 && physicalRadius > .95 && physicalRadius < 1.05,
     directionError,
     earthPhysicalRadiusAu: physicalRadius,
     endAt: model.endAt,

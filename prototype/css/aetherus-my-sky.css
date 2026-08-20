@@ -1,0 +1,20 @@
+.cosmic-my-sky-info{position:absolute;z-index:5;left:max(48px,calc(env(safe-area-inset-left) + 32px));bottom:max(28px,calc(env(safe-area-inset-bottom) + 20px));width:min(330px,calc(100vw - 96px));padding:14px 15px;border:1px solid rgba(131,224,242,.28);border-left-color:rgba(131,224,242,.82);border-radius:12px;background:linear-gradient(110deg,rgba(2,8,14,.94),rgba(4,14,23,.78));backdrop-filter:blur(16px);box-shadow:0 24px 70px rgba(0,0,0,.35);color:#edf8fb;text-shadow:0 1px 8px #000}
+.cosmic-my-sky-info[hidden]{display:none}
+.cosmic-my-sky-info>button:first-child{min-height:44px;padding:0;border:0;background:none;color:#83e0f2;font:650 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;cursor:pointer}
+.cosmic-my-sky-info>p{margin:8px 0;color:rgba(222,237,244,.72);font-size:11px;line-height:1.5}
+.cosmic-my-sky-info>#cosmicMySkyKind{color:#83e0f2;font:650 9px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em}
+.cosmic-my-sky-info h2{margin:3px 0 8px;font-size:28px;font-weight:530;line-height:1.05;letter-spacing:-.04em}
+.cosmic-my-sky-info>#cosmicMySkyDirection{color:#eefaff;font:650 12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}
+.cosmic-my-sky-info>#cosmicMySkyStatus{padding:8px 9px;border-left:2px solid #83e0f2;background:rgba(131,224,242,.07);color:#edfaff;font-weight:650}
+.cosmic-my-sky-info>#cosmicMySkyLimit{color:rgba(218,231,238,.56);font-size:10px}
+.cosmic-my-sky-take{width:100%;min-height:46px;margin-top:7px;border:1px solid rgba(131,224,242,.52);border-radius:9px;background:rgba(131,224,242,.11);color:#eaffff;font:750 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;cursor:pointer}
+.cosmic-my-sky-take:hover{border-color:#83e0f2;background:rgba(131,224,242,.18)}
+.cosmic-my-sky-info button:focus-visible{outline:2px solid #83e0f2;outline-offset:2px}
+.cosmic-experience.is-my-sky .cosmic-body-picker,.cosmic-experience.is-my-sky .cosmic-craft-picker,.cosmic-experience.is-my-sky .cosmic-motion-open,.cosmic-experience.is-my-sky .cosmic-guide{display:none}
+.cosmic-experience[data-stage="my-sky"] .cosmic-hud p{color:#e8fbff}
+.cosmic-labels span[data-cosmic-label^="my-sky-"]{border-left-color:rgba(131,224,242,.88);background:rgba(1,8,13,.72);color:#ecfbff}
+.cosmic-labels span[data-cosmic-label="my-sky-target"]{border-left-color:#fff;background:rgba(3,14,22,.88);font-size:10px}
+.cosmic-experience.is-my-sky #cosmicCanvas{cursor:grab}
+.cosmic-experience.is-my-sky #cosmicCanvas:active{cursor:grabbing}
+@media(max-width:560px){.cosmic-my-sky-info{left:max(14px,env(safe-area-inset-left));right:max(14px,env(safe-area-inset-right));bottom:max(74px,calc(env(safe-area-inset-bottom) + 64px));width:auto;padding:12px 13px}.cosmic-my-sky-info h2{font-size:24px}.cosmic-my-sky-info>#cosmicMySkyLimit{display:none}}
+@media(prefers-reduced-motion:reduce){.cosmic-my-sky-info,.cosmic-my-sky-take{transition:none!important}}

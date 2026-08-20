@@ -30,6 +30,11 @@ import {
 import { assertAetherusCatalog } from '../prototype/js/space/contracts.js';
 import { solarOrbitDisplayRadius, solarOrbitOffsetRender } from '../prototype/js/space/scale-bridge.js';
 import { parseHorizonsVectorResult } from '../aws/aetherus-ephemeris/horizons-parser.mjs';
+import {
+  cameraYawPitchForDirection,
+  horizontalToMySkyDirection,
+  skyJourneySelfTest,
+} from '../prototype/js/space/sky-journey.js';
 
 function close(actual, expected, tolerance = 1e-10, label = 'value') {
   assert.ok(Math.abs(actual - expected) <= tolerance,
@@ -95,6 +100,12 @@ async function main() {
     Math.hypot(12.9, 245.6, 7.78), 1e-12, 'velocity rotation preserves magnitude');
   assert.equal(ephemerisProviderSelfTest().ok, true, 'Hermite ephemeris interpolation');
   assert.equal(solarMotionSelfTest().ok, true, 'fallback solar motion');
+  assert.equal(skyJourneySelfTest().ok, true, 'observer-local My Sky bridge');
+  const northSky = horizontalToMySkyDirection({ altitudeDeg: 0, azimuthDeg: 0 });
+  close(northSky.z, -1, 1e-12, 'north maps to camera -Z');
+  const eastSky = horizontalToMySkyDirection({ altitudeDeg: 0, azimuthDeg: 90 });
+  const eastView = cameraYawPitchForDirection(eastSky);
+  close(eastView.yaw, Math.PI / 2, 1e-12, 'east camera yaw');
 
   // Solar close-up과 Solar Motion은 같은 Galactic world frame과 같은 Experience 반지름을 쓴다.
   // 그래야 줌아웃 중 현재 행성 점과 지난 1년 trail의 마지막 점이 좌표상 정확히 포개진다.
@@ -196,6 +207,7 @@ async function main() {
       'horizons-provider-fixture',
       'mars-my-sky-vector-path',
       'jupiter-my-sky-vector-path',
+      'observer-local-my-sky-render-bridge',
       'ssb-solar-motion-path',
       'horizons-csv-parser',
       'solar-motion-catalog-contract',

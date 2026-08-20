@@ -99,6 +99,39 @@ export function solarSystemBarycenterGalactocentricAt({
   });
 }
 
+// Experience trail은 8 kpc짜리 절대 위치 두 개를 빼서 1년의 ~10^-7 kpc 변위를 얻으면 안 된다.
+// 큰 수의 차로 유효 자릿수가 사라지므로, 기준시각에서의 작은 국소 변위를 직접 계산한다.
+// Horizons Sun state가 양 끝에 있으면 Sun의 SSB wobble 변화도 같은 작은 벡터에서 제거한다.
+export function solarSystemBarycenterDisplacementGalactic({
+  at,
+  referenceAt,
+  sunBarycentricIcrfAu = null,
+  referenceSunBarycentricIcrfAu = null,
+  model = GALACTOCENTRIC_MODEL,
+} = {}) {
+  const date = normalizedDate(at);
+  const reference = normalizedDate(referenceAt);
+  const elapsedDays = (date.getTime() - reference.getTime()) / DAY_MS;
+  const solarMotion = scaleVector(solarVelocityGalacticKpcPerDay(model), elapsedDays);
+  if (!sunBarycentricIcrfAu || !referenceSunBarycentricIcrfAu) {
+    return Object.freeze({
+      displacementKpc: Object.freeze(solarMotion),
+      bridge: 'sun-as-ssb-fallback',
+      model: model.id,
+    });
+  }
+  const sunWobbleDeltaIcrfAu = subtractVectors(
+    sunBarycentricIcrfAu,
+    referenceSunBarycentricIcrfAu,
+  );
+  const sunWobbleDeltaGalacticKpc = auVectorToKpc(icrfToGalactic(sunWobbleDeltaIcrfAu));
+  return Object.freeze({
+    displacementKpc: Object.freeze(subtractVectors(solarMotion, sunWobbleDeltaGalacticKpc)),
+    bridge: 'jpl-sun-barycentric-to-ssb',
+    model: model.id,
+  });
+}
+
 export function barycentricIcrfToGalactocentric({
   barycentricIcrfAu,
   ssbGalactocentricKpc,
@@ -112,16 +145,19 @@ export function barycentricIcrfToGalactocentric({
 
 export function galactocentricSelfTest() {
   const reference = '2026-08-20T00:00:00.000Z';
-  const start = sunGalactocentricAt(reference, { referenceAt: reference });
-  const end = sunGalactocentricAt('2026-08-21T00:00:00.000Z', { referenceAt: reference });
+  const displacement = solarSystemBarycenterDisplacementGalactic({
+    at: '2026-08-21T00:00:00.000Z',
+    referenceAt: reference,
+  }).displacementKpc;
   const velocity = solarVelocityGalacticKpcPerDay();
   const error = Math.max(
-    Math.abs((end.x - start.x) - velocity.x),
-    Math.abs((end.y - start.y) - velocity.y),
-    Math.abs((end.z - start.z) - velocity.z),
+    Math.abs(displacement.x - velocity.x),
+    Math.abs(displacement.y - velocity.y),
+    Math.abs(displacement.z - velocity.z),
   );
+  const absolute = sunGalactocentricAt(reference, { referenceAt: reference });
   return Object.freeze({
-    ok: error < 1e-15 && start.x < -8 && start.z > 0,
+    ok: error < 1e-18 && absolute.x < -8 && absolute.z > 0,
     errorKpc: error,
     model: GALACTOCENTRIC_MODEL.id,
   });

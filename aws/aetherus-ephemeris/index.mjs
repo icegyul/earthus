@@ -11,6 +11,7 @@
 
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { gzipSync } from 'node:zlib';
+import { parseHorizonsVectorResult } from './horizons-parser.mjs';
 
 const BUCKET = process.env.CACHE_BUCKET;
 const REGION = process.env.CACHE_REGION || process.env.AWS_REGION;
@@ -54,7 +55,7 @@ function horizonsCalendar(date) {
   return date.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
 }
 
-function buildHorizonsUrl(command, start, stop) {
+export function buildHorizonsUrl(command, start, stop) {
   const params = new URLSearchParams({
     format: 'json',
     COMMAND: `'${command}'`,
@@ -77,39 +78,6 @@ function buildHorizonsUrl(command, start, stop) {
     STEP_SIZE: `'${STEP_HOURS} h'`,
   });
   return `${HORIZONS_URL}?${params.toString()}`;
-}
-
-function jdToUnixMs(jd) {
-  return Math.round((Number(jd) - 2_440_587.5) * DAY_MS);
-}
-
-// VEC_TABLE=2 + CSV_FORMAT=YES + VEC_LABELS=NO 계약:
-// JD, calendar, X, Y, Z, VX, VY, VZ
-export function parseHorizonsVectorResult(result, body = 'body') {
-  const text = String(result || '');
-  const start = text.indexOf('$$SOE');
-  const stop = text.indexOf('$$EOE');
-  if (start < 0 || stop <= start) throw new Error(`HORIZONS_VECTOR_BLOCK_MISSING:${body}`);
-  const block = text.slice(start + 5, stop);
-  const samples = [];
-  for (const rawLine of block.split(/\r?\n/)) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith('*')) continue;
-    const fields = line.split(',').map(value => value.trim());
-    if (fields.length < 8) continue;
-    const jd = Number(fields[0]);
-    const vector = fields.slice(2, 8).map(Number);
-    if (!Number.isFinite(jd) || vector.some(value => !Number.isFinite(value))) continue;
-    const timeMs = jdToUnixMs(jd);
-    samples.push([timeMs, ...vector]);
-  }
-  if (samples.length < 2) throw new Error(`HORIZONS_VECTOR_ROWS_TOO_FEW:${body}:${samples.length}`);
-  for (let index = 1; index < samples.length; index += 1) {
-    if (!(samples[index][0] > samples[index - 1][0])) {
-      throw new Error(`HORIZONS_VECTOR_TIME_NOT_MONOTONIC:${body}`);
-    }
-  }
-  return samples;
 }
 
 async function fetchHorizonsBody(body, command, start, stop) {

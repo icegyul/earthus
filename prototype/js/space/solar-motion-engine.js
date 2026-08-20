@@ -26,6 +26,7 @@ import {
   solarSystemBarycenterDisplacementGalactic,
   solarSystemBarycenterGalactocentricAt,
   solarVelocityDirectionGalactic,
+  solarVelocityGalacticKms,
 } from './galactocentric.js';
 import {
   composeSolarExperienceRender,
@@ -120,8 +121,7 @@ export function buildSolarMotionModel({
   if (!Number.isFinite(halfTravel) || halfTravel <= 0) throw new RangeError('POSITIVE_TRAVEL_SCENE_SCALE_REQUIRED');
 
   const start = new Date(end.getTime() - durationDays * DAY_MS);
-  const directionGalactic = normalizeVector(solarVelocityDirectionGalactic());
-  const directionRender = normalizeVector(toAetherusRender(directionGalactic));
+  const nominalDirectionGalactic = normalizeVector(solarVelocityDirectionGalactic());
   const referenceSunBarycentric = ephemerisProvider?.barycentricIcrfState?.('sun', end) || null;
   const physicalSamples = Array.from({ length: sampleCount }, (_, index) => {
     const progress = index / (sampleCount - 1);
@@ -134,10 +134,20 @@ export function buildSolarMotionModel({
 
   // 절대 Galactocentric 위치는 약 8 kpc인데 1년 변위는 ~10^-7 kpc다.
   // 절대좌표의 차로 trail을 만들면 유효자릿수가 손실되므로 reference 기준 국소 변위를 쓴다.
-  const centerMidpointKpc = midpoint(
-    physicalSamples[0].state.ssbDisplacementKpc,
-    physicalSamples[physicalSamples.length - 1].state.ssbDisplacementKpc,
-  );
+  const firstDisplacement = physicalSamples[0].state.ssbDisplacementKpc;
+  const lastDisplacement = physicalSamples[physicalSamples.length - 1].state.ssbDisplacementKpc;
+  const travelVectorKpc = subtractVectors(lastDisplacement, firstDisplacement);
+  const travelLengthKpc = Math.hypot(travelVectorKpc.x, travelVectorKpc.y, travelVectorKpc.z);
+  const directionGalactic = travelLengthKpc > 0
+    ? normalizeVector(travelVectorKpc)
+    : nominalDirectionGalactic;
+  const directionRender = normalizeVector(toAetherusRender(directionGalactic));
+  const centerMidpointKpc = midpoint(firstDisplacement, lastDisplacement);
+  const providerSet = [...new Set(physicalSamples.map(sample => sample.state.provider))];
+  const hasHorizons = providerSet.some(value => value.includes('horizons'));
+  const directionModel = hasHorizons
+    ? 'astropy-v4-solar-velocity+jpl-sun-barycentric-ssb-displacement'
+    : SOLAR_MOTION_DIRECTION_MODEL;
 
   const timeSamples = physicalSamples.map(({ progress, state }) => {
     const center = solarTrailCenterRender({
@@ -179,29 +189,23 @@ export function buildSolarMotionModel({
     });
   });
 
-  const providerSet = [...new Set(timeSamples.map(sample => sample.ephemerisProvider))];
-  const firstCenter = timeSamples[0].ssbDisplacementKpc;
-  const lastCenter = timeSamples[timeSamples.length - 1].ssbDisplacementKpc;
-  const physicalTravelDistanceAu = Math.hypot(
-    lastCenter.x - firstCenter.x,
-    lastCenter.y - firstCenter.y,
-    lastCenter.z - firstCenter.z,
-  ) * AU_PER_KPC;
   return Object.freeze({
     schema: 'earthus.solar-motion-model.v3',
     generatedAt: end.toISOString(),
     startAt: start.toISOString(),
     endAt: end.toISOString(),
     spanDays: durationDays,
-    physicalTravelDistanceAu,
+    physicalTravelDistanceAu: travelLengthKpc * AU_PER_KPC,
     samples: Object.freeze(timeSamples),
     ephemerisProviders: Object.freeze(providerSet),
     direction: Object.freeze({
-      model: SOLAR_MOTION_DIRECTION_MODEL,
+      model: directionModel,
+      nominalModel: SOLAR_MOTION_DIRECTION_MODEL,
       frame: SOLAR_MOTION_FRAME,
       galactic: Object.freeze(directionGalactic),
+      nominalGalactic: Object.freeze(nominalDirectionGalactic),
       render: Object.freeze(directionRender),
-      speedKms: Object.freeze({ ...GALACTOCENTRIC_MODEL.sunVelocityKms }),
+      velocityGalacticKms: Object.freeze(solarVelocityGalacticKms()),
     }),
     galactocentric: Object.freeze({
       model: GALACTOCENTRIC_MODEL.id,
@@ -215,10 +219,11 @@ export function buildSolarMotionModel({
       bodySizes: 'renderer-controlled-not-to-scale',
     }),
     limitations: Object.freeze([
-      providerSet.some(value => value.includes('horizons'))
+      hasHorizons
         ? 'jpl-horizons-6h-state-vectors-cubic-hermite-between-cache-nodes'
         : 'planet-ephemeris-jpl-table-1-approximation-1800-2050',
-      'galactocentric-transform-uses-aetherus-translated-galactic-axes-not-full-astropy-tilt-roll',
+      'galactocentric-transform-uses-aetherus-galactic-aligned-translation-not-full-astropy-coordinate-transform',
+      'astropy-galactocentric-velocity-inverse-height-tilted-before-use',
       'solar-galactocentric-motion-linearized-over-short-display-span',
       'orbit-radius-visually-compressed',
       'solar-travel-distance-visually-exaggerated',

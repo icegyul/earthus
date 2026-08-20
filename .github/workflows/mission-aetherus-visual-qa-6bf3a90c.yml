@@ -36,7 +36,7 @@ jobs:
             exit 42
           }
           git merge-base --is-ancestor "$EXPECTED_APP_SHA" HEAD
-          unexpected="$(git diff --name-only "$EXPECTED_APP_SHA"...HEAD | grep -Ev '^(.github/workflows/mission-aetherus-visual-qa-6bf3a90c.yml|.missions/aetherus-visual-qa-6bf3a90c.mjs)$' || true)"
+          unexpected="$(git diff --name-only "$EXPECTED_APP_SHA"...HEAD | grep -Ev '^(.github/workflows/mission-aetherus-visual-qa-6bf3a90c.yml|.missions/aetherus-visual-qa-6bf3a90c.mjs|.missions/aetherus-startup-diagnostic-6bf3a90c.mjs)$' || true)"
           test -z "$unexpected" || {
             echo "QA branch contains application changes:" >&2
             echo "$unexpected" >&2
@@ -47,7 +47,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/aetherus-qa
+          mkdir -p /tmp/aetherus-qa qa-artifacts
           npm install --prefix /tmp/aetherus-qa --no-audit --no-fund playwright@1.55.0
           chrome=''
           for candidate in google-chrome-stable google-chrome chromium-browser chromium; do
@@ -81,6 +81,10 @@ jobs:
           done
           cat qa-server.log >&2
           exit 1
+
+      - name: Diagnose Aetherus startup state
+        shell: bash
+        run: node .missions/aetherus-startup-diagnostic-6bf3a90c.mjs
 
       - name: Run desktop and mobile journey QA
         shell: bash

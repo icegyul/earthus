@@ -1,0 +1,42 @@
+name: Aetherus latest source 6e31a8c2
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  supply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Verify source parent
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = 'a7a4a6ecc1d4d0d86a59a5963fb760e2b912028e'
+          printf '%s\n' "$(git rev-parse HEAD)" > SOURCE_SHA.txt
+      - name: Archive exact source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git archive --format=tar HEAD | gzip -6 > earthus-source-latest.tar.gz
+          sha256sum earthus-source-latest.tar.gz SOURCE_SHA.txt > SHA256SUMS.txt
+      - name: Upload source
+        uses: actions/upload-artifact@v4
+        with:
+          name: earthus-source-latest-6e31a8c2
+          path: |
+            earthus-source-latest.tar.gz
+            SOURCE_SHA.txt
+            SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 1

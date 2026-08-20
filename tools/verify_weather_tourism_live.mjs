@@ -43,20 +43,21 @@ try {
       }, { once: true });
     });
     await tourismButton.click();
-    await page.waitForFunction(() => window.__tourismLiveSnapshot?.places?.length === 1,
+    await page.waitForFunction(() => window.__tourismLiveSnapshot?.places?.length === 121,
       null, { timeout: 20_000 });
     await page.waitForTimeout(1_600);
 
     const tourism = await page.evaluate(async () => {
       const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js', location.href).href);
       const snapshot = window.__tourismLiveSnapshot;
-      const place = snapshot.places[0];
-      const entity = tourismFlow.ds.entities.values[0];
+      const place = snapshot.places.find(item => item.code === 'POI009');
+      const entity = tourismFlow.ds.entities.getById(`tourism:${place.code}`);
       return {
         state: snapshot.state,
         mode: snapshot.provider?.mode,
         coverage: snapshot.coverage,
         healthMode: snapshot.health?.mode,
+        credentialPool: snapshot.health?.credentialPool,
         healthAccessibility: snapshot.health?.providers?.tourismAccessibility?.state,
         code: place.code,
         observedAt: place.provenance?.observedAt,
@@ -68,17 +69,20 @@ try {
       };
     });
     assert.ok(['LIVE', 'DEGRADED', 'STALE'].includes(tourism.state), JSON.stringify(tourism));
-    assert.equal(tourism.mode, 'SAMPLE');
-    assert.equal(tourism.coverage.available, 1);
+    assert.equal(tourism.mode, 'FULL');
+    assert.equal(tourism.coverage.available, 121);
     assert.equal(tourism.coverage.total, 121);
-    assert.equal(tourism.coverage.fullCoverage, false);
-    assert.equal(tourism.healthMode, 'SAMPLE');
+    assert.equal(tourism.coverage.fullCoverage, true);
+    assert.equal(tourism.healthMode, 'FULL');
+    assert.equal(tourism.credentialPool?.configured, 3);
+    assert.equal(tourism.credentialPool?.used, 3);
+    assert.deepEqual(tourism.credentialPool?.slots?.map(slot => slot.requested), [41, 40, 40]);
     assert.equal(tourism.healthAccessibility, 'UNAVAILABLE');
     assert.equal(tourism.code, 'POI009');
     assert.ok(Date.parse(tourism.observedAt) > 0);
     assert.equal(tourism.sourceName, '서울특별시 실시간 인구데이터');
     assert.ok(tourism.forecastCount > 0);
-    assert.equal(tourism.entityCount, 1);
+    assert.equal(tourism.entityCount, 121);
     assert.ok(tourism.height > 0);
     assert.match(tourism.label, /광화문·덕수궁/);
 
@@ -87,7 +91,7 @@ try {
         import(new URL('js/layers/tourism-flow.js', location.href).href),
         import(new URL('js/ui-tourism.js', location.href).href),
       ]);
-      await tourismSheet.open(tourismFlow.snapshot.places[0]);
+      await tourismSheet.open(tourismFlow.snapshot.places.find(place => place.code === 'POI009'));
     });
     await page.locator('#tourismSheet.up').waitFor({ timeout: 10_000 });
     await page.waitForTimeout(1_000);
@@ -103,8 +107,8 @@ try {
       };
     });
     assert.match(tourismPanel.text, /광화문·덕수궁/);
-    assert.match(tourismPanel.text, /1\/121|광화문·덕수궁 1곳만 공식 조회/);
-    assert.match(tourismPanel.text, /수집기 SUCCEEDED · SAMPLE/);
+    assert.match(tourismPanel.text, /121\/121|서울시 공식 121\/121곳 응답/);
+    assert.match(tourismPanel.text, /수집기 SUCCEEDED · FULL/);
     assert.match(tourismPanel.text, /서울특별시 실시간 인구데이터/);
     assert.match(tourismPanel.text, /운영시간[\s\S]{0,50}(확인되지 않|없습니다)/);
     assert.doesNotMatch(tourismPanel.text, /안전합니다|가도 됩니다|수용 가능/);

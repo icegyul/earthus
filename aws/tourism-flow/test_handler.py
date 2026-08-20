@@ -4,6 +4,7 @@ import os
 import sys
 import types
 import unittest
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -54,11 +55,21 @@ class TourismCollectorTest(unittest.TestCase):
         self.fake = FakeS3()
         self.fake.objects["app/data/tourism/seoul-121-catalog.v1.json"] = json.dumps({"places": catalog()}).encode()
         sys.modules["boto3"] = types.SimpleNamespace(client=lambda *args, **kwargs: self.fake)
-        os.environ.pop("SEOUL_OPEN_DATA_KEY", None)
+        self.module = self.load_module()
+
+    def load_module(self, keys=(), legacy_key=None):
+        for name in ("SEOUL_OPEN_DATA_KEY", "SEOUL_OPEN_DATA_KEY_1",
+                     "SEOUL_OPEN_DATA_KEY_2", "SEOUL_OPEN_DATA_KEY_3"):
+            os.environ.pop(name, None)
+        if legacy_key:
+            os.environ["SEOUL_OPEN_DATA_KEY"] = legacy_key
+        for index, key in enumerate(keys, 1):
+            os.environ[f"SEOUL_OPEN_DATA_KEY_{index}"] = key
         path = Path(__file__).with_name("handler.py")
         spec = importlib.util.spec_from_file_location("tourism_handler_test", path)
-        self.module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(self.module)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
 
     def test_sample_mode_is_one_official_place_and_writes_evidence(self):
         now = datetime.now(timezone.utc)
@@ -95,6 +106,68 @@ class TourismCollectorTest(unittest.TestCase):
         self.assertEqual(health["failureCount"], 1)
         self.assertIsNone(health["lastSuccessAt"])
         self.assertIsNotNone(health["lastAttemptAt"])
+
+    def test_full_mode_distributes_121_places_across_all_three_keys(self):
+        keys = ("fixture-key-one", "fixture-key-two", "fixture-key-three")
+        self.module = self.load_module(keys=keys)
+        now = datetime.now(timezone.utc)
+        places_by_name = {place["nameKo"]: place for place in catalog()}
+        calls = []
+
+        def fetch(name, key):
+            calls.append((name, key))
+            return raw(places_by_name[name], now)
+
+        self.module.fetch_area = fetch
+        result = self.module.handler({}, None)
+
+        self.assertEqual(result["mode"], "FULL")
+        self.assertEqual(result["keysConfigured"], 3)
+        self.assertEqual(result["keysUsed"], 3)
+        self.assertEqual(len(calls), 121)
+        self.assertEqual(Counter(key for _, key in calls), {
+            "fixture-key-one": 41,
+            "fixture-key-two": 40,
+            "fixture-key-three": 40,
+        })
+        health = json.loads(self.fake.objects["app/tourism/health.json"])
+        self.assertEqual(health["credentialPool"]["configured"], 3)
+        self.assertEqual(health["credentialPool"]["used"], 3)
+        self.assertEqual([slot["requested"] for slot in health["credentialPool"]["slots"]],
+                         [41, 40, 40])
+        public_bytes = b"\n".join(self.fake.objects.values())
+        for key in keys:
+            self.assertNotIn(key.encode(), public_bytes)
+
+    def test_legacy_single_key_still_enables_full_collection(self):
+        self.module = self.load_module(legacy_key="fixture-legacy-key")
+        now = datetime.now(timezone.utc)
+        places_by_name = {place["nameKo"]: place for place in catalog()}
+        self.module.fetch_area = lambda name, key: raw(places_by_name[name], now)
+
+        result = self.module.handler({}, None)
+
+        self.assertEqual(result["mode"], "FULL")
+        self.assertEqual(result["keysConfigured"], 1)
+        self.assertEqual(result["keysUsed"], 1)
+
+    def test_provider_error_never_serializes_a_credential(self):
+        secret = "fixture-secret-must-not-leak"
+        self.module = self.load_module(legacy_key=secret)
+        now = datetime.now(timezone.utc)
+        places_by_name = {place["nameKo"]: place for place in catalog()}
+
+        def fetch(name, key):
+            if name == "장소 1":
+                raise RuntimeError(f"provider failed at http://example.invalid/{key}/json")
+            return raw(places_by_name[name], now)
+
+        self.module.fetch_area = fetch
+        result = self.module.handler({}, None)
+
+        self.assertEqual(result["errors"], 1)
+        public_bytes = b"\n".join(self.fake.objects.values())
+        self.assertNotIn(secret.encode(), public_bytes)
 
     def test_stale_provider_value_never_keeps_live_label(self):
         place = catalog()[8]

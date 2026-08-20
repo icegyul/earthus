@@ -8,6 +8,8 @@
 
 ⚠️ 서울시 API는 한 번에 한 장소만 조회한다. 발급 키가 없을 때는 서울시가
    공개한 ``sample`` 키로 광화문·덕수궁 한 곳만 조회하며 121곳처럼 보이게 하지 않는다.
+⚠️ 일반 인증키 3개는 ``SEOUL_OPEN_DATA_KEY_1..3``에서 읽어 장소 순서대로 균등
+   분배한다. 키 값은 오류·health·공개 산출물에 절대 기록하지 않는다.
 ⚠️ 집계 인구에서 이동 방향·법적 수용력·안전 판정을 만들지 않는다.
 """
 
@@ -25,7 +27,14 @@ import boto3
 
 BUCKET = os.environ.get("CACHE_BUCKET", "earthus-cache-kr")
 REGION = os.environ.get("CACHE_REGION", "us-east-2")
-SEOUL_KEY = os.environ.get("SEOUL_OPEN_DATA_KEY", "").strip()
+LEGACY_SEOUL_KEY = os.environ.get("SEOUL_OPEN_DATA_KEY", "").strip()
+SEOUL_KEYS = tuple(filter(None, (
+    os.environ.get("SEOUL_OPEN_DATA_KEY_1", "").strip(),
+    os.environ.get("SEOUL_OPEN_DATA_KEY_2", "").strip(),
+    os.environ.get("SEOUL_OPEN_DATA_KEY_3", "").strip(),
+)))
+if not SEOUL_KEYS and LEGACY_SEOUL_KEY:
+    SEOUL_KEYS = (LEGACY_SEOUL_KEY,)
 CATALOG_KEY = "app/data/tourism/seoul-121-catalog.v1.json"
 OUTPUT_KEY = "app/tourism/seoul-flow.json"
 HEALTH_KEY = "app/tourism/health.json"
@@ -35,6 +44,7 @@ SOURCE_URL = "https://data.seoul.go.kr/dataList/OA-21778/A/1/datasetView.do"
 LEVEL_RANK = {"여유": 1, "보통": 2, "약간 붐빔": 3, "붐빔": 4}
 LEVEL_COLOR = {1: "#48d7a0", 2: "#f0cf63", 3: "#f39a54", 4: "#ef5a67"}
 USER_AGENT = "earthus-tourism-flow/1.0 (+https://earthus.net)"
+PROCESSOR_VERSION = "tourism-flow-collector.v2"
 
 s3 = boto3.client("s3", region_name=REGION)
 
@@ -86,6 +96,14 @@ def fetch_area(name, key):
     if result.get("CODE") not in (None, "INFO-000"):
         raise RuntimeError(f"SEOUL_PROVIDER_{result.get('CODE', 'UNKNOWN')}")
     return doc
+
+
+def safe_error_reason(error):
+    value = str(error)
+    if value.startswith("SEOUL_PROVIDER_") or value.startswith("OFFICIAL_CATALOG_"):
+        if all(character.isalnum() or character in "_-" for character in value):
+            return value[:80]
+    return type(error).__name__.upper()[:80]
 
 
 def official_rows(raw):
@@ -151,7 +169,7 @@ def normalize(raw, place, received_at, now):
         "provenance": {
             "sourceId": "seoul-citydata-ppltn", "sourceName": "서울특별시 실시간 인구데이터",
             "sourceUrl": SOURCE_URL, "observedAt": observed_at, "receivedAt": received_at,
-            "schemaVersion": "earthus.tourism-flow.v1", "processorVersion": "tourism-flow-collector.v1",
+            "schemaVersion": "earthus.tourism-flow.v1", "processorVersion": PROCESSOR_VERSION,
             "license": "공공누리 제1유형", "redisplay": "출처표시 · 상업적 이용 및 변경 가능",
         },
     }
@@ -269,21 +287,33 @@ def build_snapshot(responses, catalog, mode, received_at, now, error_count=0):
 def handler(event, context):
     started = datetime.now(timezone.utc)
     received_at = iso(started)
-    mode = "FULL" if SEOUL_KEY else "SAMPLE"
-    provider_key = SEOUL_KEY or "sample"
+    mode = "FULL" if SEOUL_KEYS else "SAMPLE"
+    provider_keys = SEOUL_KEYS or ("sample",)
+    key_stats = [{"slot": index + 1, "requested": 0, "responses": 0, "errors": 0}
+                 for index in range(len(SEOUL_KEYS))]
     errors = []
     try:
         catalog = load_catalog()
         requested = catalog if mode == "FULL" else [next(place for place in catalog if place["code"] == "POI009")]
         responses = []
         with ThreadPoolExecutor(max_workers=10 if mode == "FULL" else 1) as pool:
-            futures = {pool.submit(fetch_area, place["nameKo"], provider_key): place for place in requested}
+            futures = {}
+            for index, place in enumerate(requested):
+                slot_index = index % len(provider_keys)
+                if mode == "FULL":
+                    key_stats[slot_index]["requested"] += 1
+                future = pool.submit(fetch_area, place["nameKo"], provider_keys[slot_index])
+                futures[future] = (place, slot_index)
             for future in as_completed(futures):
-                place = futures[future]
+                place, slot_index = futures[future]
                 try:
                     responses.append(future.result())
+                    if mode == "FULL":
+                        key_stats[slot_index]["responses"] += 1
                 except Exception as error:  # provider 오류는 장소명과 코드만 기록한다. 키는 기록하지 않는다.
-                    errors.append({"code": place["code"], "reason": str(error)[:80]})
+                    if mode == "FULL":
+                        key_stats[slot_index]["errors"] += 1
+                    errors.append({"code": place["code"], "reason": safe_error_reason(error)})
         if not responses:
             raise RuntimeError("SEOUL_PROVIDER_NO_RESPONSES")
         snapshot = build_snapshot(responses, catalog, mode, received_at, started, len(errors))
@@ -293,6 +323,11 @@ def handler(event, context):
         observed_times = [place.get("provenance", {}).get("observedAt")
                           for place in snapshot["places"]
                           if place.get("provenance", {}).get("observedAt")]
+        credential_pool = {
+            "configured": len(SEOUL_KEYS),
+            "used": sum(slot["requested"] > 0 for slot in key_stats),
+            "slots": key_stats,
+        }
         health = {
             "schemaVersion": "earthus.tourism-health.v1", "generatedAt": received_at,
             "state": "SUCCEEDED" if not errors else "PARTIAL", "mode": mode,
@@ -304,7 +339,7 @@ def handler(event, context):
             "missing": max(0, 121 - snapshot["coverage"]["available"]),
             "rejected": len(errors), "failureCount": len(errors),
             "quota": "UNKNOWN", "estimatedCost": "UNKNOWN",
-            "revision": "tourism-flow-collector.v1",
+            "revision": PROCESSOR_VERSION, "credentialPool": credential_pool,
             "requested": len(requested), "responses": len(responses), "errors": errors,
             "coverage": snapshot["coverage"],
             "providers": {
@@ -315,7 +350,9 @@ def handler(event, context):
         }
         put_json(HEALTH_KEY, health, "no-cache")
         return {"ok": True, "mode": mode, "places": len(snapshot["places"]),
-                "live": snapshot["quality"]["live"], "errors": len(errors)}
+                "live": snapshot["quality"]["live"], "errors": len(errors),
+                "keysConfigured": credential_pool["configured"],
+                "keysUsed": credential_pool["used"]}
     except Exception as error:
         last_success = None
         try:
@@ -324,13 +361,18 @@ def handler(event, context):
         except Exception:  # 첫 실패거나 이전 health가 손상됐으면 성공 시각을 만들지 않는다.
             pass
         health = {"schemaVersion": "earthus.tourism-health.v1", "generatedAt": received_at,
-                  "state": "FAILED", "mode": mode, "reason": str(error)[:120],
+                  "state": "FAILED", "mode": mode, "reason": safe_error_reason(error),
                   "lastAttemptAt": received_at, "lastSuccessAt": last_success,
                   "sourceObservedAt": None, "outputWritten": False,
                   "sampleCount": 0, "missing": 121 if mode == "FULL" else 1,
                   "rejected": len(errors), "failureCount": max(1, len(errors)),
                   "quota": "UNKNOWN", "estimatedCost": "UNKNOWN",
-                  "revision": "tourism-flow-collector.v1",
+                  "revision": PROCESSOR_VERSION,
+                  "credentialPool": {
+                      "configured": len(SEOUL_KEYS),
+                      "used": sum(slot["requested"] > 0 for slot in key_stats),
+                      "slots": key_stats,
+                  },
                   "providers": {"seoulPopulation": {"state": "UNAVAILABLE"}}}
         put_json(HEALTH_KEY, health, "no-cache")
         raise

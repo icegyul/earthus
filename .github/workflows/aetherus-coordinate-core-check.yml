@@ -1,0 +1,82 @@
+name: Aetherus coordinate core check
+
+on:
+  push:
+    branches:
+      - codex/aetherus-coordinate-core-v1
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact branch head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax check changed JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in \
+            prototype/js/space/coordinates.js \
+            prototype/js/space/kepler.js \
+            prototype/js/space/galactocentric.js \
+            prototype/js/space/scale-bridge.js \
+            prototype/js/space/ephemeris-provider.js \
+            prototype/js/space/astronomy.js \
+            prototype/js/space/solar-motion-engine.js \
+            prototype/js/space/skyframe.js \
+            prototype/js/space/cosmic3d.js \
+            prototype/js/space/cosmic3d-legacy.js
+          do
+            cp "$file" /tmp/check.mjs
+            node --check /tmp/check.mjs
+          done
+          node --check aws/aetherus-ephemeris/index.mjs
+          node --check aws/aetherus-ephemeris/horizons-parser.mjs
+
+      - name: Coordinate and ephemeris regression checks
+        run: node --experimental-default-type=module tools/test_aetherus_coordinate_core.mjs
+
+      - name: Verify live JPL Horizons vector wire format
+        shell: bash
+        run: |
+          node --experimental-default-type=module <<'NODE'
+          import { parseHorizonsVectorResult } from './aws/aetherus-ephemeris/horizons-parser.mjs';
+          const params = new URLSearchParams({
+            format: 'json', COMMAND: "'10'", OBJ_DATA: "'NO'", MAKE_EPHEM: "'YES'",
+            EPHEM_TYPE: "'VECTORS'", CENTER: "'@0'", REF_PLANE: "'FRAME'",
+            REF_SYSTEM: "'ICRF'", OUT_UNITS: "'AU-D'", VEC_TABLE: "'2'",
+            VEC_CORR: "'NONE'", CSV_FORMAT: "'YES'", VEC_LABELS: "'NO'",
+            CAL_TYPE: "'GREGORIAN'", TIME_DIGITS: "'SECONDS'", TIME_TYPE: "'UT'",
+            START_TIME: "'2026-08-20 00:00:00'", STOP_TIME: "'2026-08-20 12:00:00'",
+            STEP_SIZE: "'6 h'",
+          });
+          const response = await fetch(`https://ssd.jpl.nasa.gov/api/horizons.api?${params}`,
+            { headers: { Accept: 'application/json', 'User-Agent': 'earthus-aetherus-ci/1.0' } });
+          if (!response.ok) throw new Error(`HORIZONS_HTTP_${response.status}`);
+          const payload = await response.json();
+          if (payload.error) throw new Error(`HORIZONS_API:${payload.error}`);
+          const samples = parseHorizonsVectorResult(payload.result, 'sun');
+          if (samples.length < 2) throw new Error('HORIZONS_TOO_FEW_SAMPLES');
+          console.log(JSON.stringify({
+            source: payload.signature?.source || null,
+            version: payload.signature?.version || payload.version || null,
+            samples: samples.length,
+            first: new Date(samples[0][0]).toISOString(),
+            last: new Date(samples.at(-1)[0]).toISOString(),
+          }));
+          NODE
+
+      - name: Diff whitespace check
+        run: git diff --check origin/main...HEAD

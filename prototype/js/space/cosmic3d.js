@@ -5,11 +5,18 @@
 // 원래 장면 구현은 cosmic3d-legacy.js에 동일 blob으로 보존한다.
 
 import { cosmic3d } from './cosmic3d-legacy.js';
-import { planetOrbit, planetPositions } from './kepler.js';
+import { planetOrbit } from './kepler.js';
 import {
   radialDisplayVector,
   toAetherusRender,
 } from './coordinates.js';
+import {
+  calculateMarsObservationFromGeocentricIcrf,
+} from './astronomy.js';
+import {
+  createMajorEphemerisService,
+  HORIZONS_PROVIDER_ID,
+} from './ephemeris-provider.js';
 import {
   buildSolarMotionModel,
   solarMotionSample,
@@ -31,11 +38,13 @@ const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, v
 const solarDisplayRadius = au => 3.5 + 7 * Math.log1p(Math.max(0, Number(au)) * 1.4);
 const roundedNow = () => new Date(Math.floor(Date.now() / 1000) * 1000);
 const ko = () => document.documentElement.lang !== 'en';
+const majorEphemeris = createMajorEphemerisService();
 
 const legacyMakeSolarSystem = cosmic3d.makeSolarSystem;
 const legacyActivate = cosmic3d.activate;
 const legacyOpenSolarMotion = cosmic3d.openSolarMotion;
 const legacyShowSolarMotionInfo = cosmic3d.showSolarMotionInfo;
+const legacyCalculateAstronomy = cosmic3d.calculateAstronomy;
 
 function threeVector(T, value) {
   return new T.Vector3(value.x, value.y, value.z);
@@ -52,28 +61,63 @@ function setLineGeometry(T, line, points) {
   line.geometry = new T.BufferGeometry().setFromPoints(points);
 }
 
+cosmic3d.ephemerisStatus = function ephemerisStatus() {
+  return majorEphemeris.status();
+};
+
+cosmic3d.ensureMajorEphemeris = function ensureMajorEphemeris({ refresh = false } = {}) {
+  if (this._majorEphemerisPromise && !refresh) return this._majorEphemerisPromise;
+  this._majorEphemerisPromise = majorEphemeris.preload({ refresh }).then(catalog => {
+    if (!catalog || !this._ready) return catalog;
+    const at = roundedNow();
+    this.refreshSolarSystemAt(at, false);
+    if (this._motionCatalog) this.buildSolarMotion();
+    if (this._detailBody?.id === 'mars') {
+      this.calculateAstronomy();
+      this.showAstronomy(this._detailBody);
+    }
+    if (location.hash === '#dev' && this.canvas) {
+      const status = majorEphemeris.status();
+      this.canvas.dataset.ephemerisProvider = status.providerId;
+      this.canvas.dataset.ephemerisGeneratedAt = status.generatedAt || '';
+      this.canvas.dataset.ephemerisCoverage = status.coverage
+        ? `${status.coverage.startAt}/${status.coverage.endAt}` : '';
+    }
+    this.render();
+    return catalog;
+  }).finally(() => {
+    this._majorEphemerisPromise = null;
+  });
+  return this._majorEphemerisPromise;
+};
+
 // 실제 행성 좌표는 물리 프레임 그대로 유지하고, 마지막 순간에만 Three.js y-up으로 바꾼다.
 // 기존 구현의 (x,z,y)는 반사(det=-1)를 만들어 태양계의 손잡이를 뒤집었다. 정본 변환은
 // coordinates.js의 (x,z,-y)이며, 시각 반지름 압축도 그 전에 radial 단계로만 적용한다.
+// Horizons cache가 준비되면 현재 위치는 @0 barycentric state에서 Sun을 뺀 실제 ICRF vector를
+// ecliptic J2000으로 되돌려 표시한다. 없거나 coverage 밖이면 Table 1 fallback으로 내려간다.
 cosmic3d.refreshSolarSystemAt = function refreshSolarSystemAt(at = roundedNow(), render = false) {
   if (!this.THREE || !this.solarGroup || !this.planetMeshes) return false;
   const T = this.THREE;
   const date = at instanceof Date ? new Date(at.getTime()) : new Date(at);
   if (!Number.isFinite(date.getTime())) throw new RangeError('VALID_SOLAR_EPOCH_REQUIRED');
-  const positions = planetPositions(date);
 
   IDS.forEach((id, index) => {
-    const point = positions[id];
+    const state = majorEphemeris.heliocentricEclipticState(id, date);
+    const point = state.position;
     const rendered = solarRenderPoint(point);
     const mesh = this.planetMeshes[id];
     if (mesh) {
       mesh.position.set(rendered.x, rendered.y, rendered.z);
-      mesh.userData.physicalFrame = point.frame?.orientation || 'ecliptic-j2000';
-      mesh.userData.physicalOrigin = point.frame?.origin || 'sun';
-      mesh.userData.ephemerisAt = point.at;
-      mesh.userData.ephemerisProvider = point.provider;
+      mesh.userData.physicalFrame = state.orientation;
+      mesh.userData.physicalOrigin = state.origin;
+      mesh.userData.ephemerisAt = state.at;
+      mesh.userData.ephemerisProvider = state.provider;
+      mesh.userData.ephemerisFallbackReason = state.fallbackReason || null;
     }
 
+    // 전체 궤도선은 현재 위치 provider와 별개다. JPL Table 1의 osculating shape를
+    // 읽기 쉬운 guide로 유지하고, 현재 천체 점만 Horizons state로 정확도를 올린다.
     const orbit = planetOrbit(id, date, 150).map(sample => threeVector(T, solarRenderPoint(sample)));
     setLineGeometry(T, this.orbitLines?.[index], orbit);
   });
@@ -85,6 +129,7 @@ cosmic3d.refreshSolarSystemAt = function refreshSolarSystemAt(at = roundedNow(),
     this.canvas.dataset.solarEpoch = this._solarEpochAt;
     this.canvas.dataset.solarPhysicalFrame = 'heliocentric-ecliptic-j2000';
     this.canvas.dataset.solarRenderFrame = 'aetherus-right-handed-y-up';
+    this.canvas.dataset.ephemerisProvider = majorEphemeris.providerId;
   }
   if (render) this.render();
   return true;
@@ -95,24 +140,23 @@ cosmic3d.makeSolarSystem = function makeSolarSystemCanonical() {
   this.refreshSolarSystemAt(roundedNow(), false);
 };
 
-// 장면에 다시 들어올 때마다 현재 UTC로 행성 좌표를 갱신한다. 무한 rAF로 행성을 계속
-// 돌리지 않는다. 태양계 시간척도에서는 재진입/명시적 렌더 시 갱신이 발열 대비 충분하며,
-// 향후 SimulationClock이 들어오면 이 메서드만 해당 clock provider에 연결하면 된다.
+// 장면에 다시 들어올 때마다 현재 UTC로 위치를 갱신한다. 첫 프레임은 로컬 Table 1로 즉시
+// 열고, Horizons cache는 뒤에서 한 번만 읽어 같은 장면을 업그레이드한다. 네트워크 때문에
+// 우주 진입을 막거나 무한 rAF를 돌리지 않는다.
 cosmic3d.activate = async function activateCanonical(stage) {
   const result = await legacyActivate.call(this, stage);
   if (!this._ready) return result;
   this.refreshSolarSystemAt(roundedNow(), false);
   if (this._craftCatalog) this.buildSpacecraft();
-  // solar-motion.json은 속도/출처 계약만 유지한다. 실제 행성 표본 시간은 항상 현재 UTC로
-  // 끝나는 지난 1년 창으로 다시 생성한다.
   if (this._motionCatalog) this.buildSolarMotion();
   this.render();
+  void this.ensureMajorEphemeris();
   return result;
 };
 
-// 태양계 전진 장면을 화면 X축용 가짜 나선에서 Galactic ICRS 기준으로 교체한다.
-// 행성 공전면은 황도 J2000 → ICRF/J2000 → Galactic 회전을 거치므로 실제 방향 관계가
-// 보존된다. 궤도 반지름과 천체 크기만 Experience 시각 스케일로 별도 과장한다.
+// 태양계 전진 장면은 Galactocentric solar velocity 3-vector와 SSB bridge를 쓴다.
+// Horizons cache가 있으면 @0 Sun state로 SSB를 복원하고 행성도 같은 barycentric frame에서
+// 가져온다. 없으면 Table 1 planet position만 fallback하고 은하 운동 방향은 그대로 유지한다.
 cosmic3d.buildSolarMotion = function buildSolarMotionCanonical() {
   if (!this._motionCatalog || !this.solarMotionGroup || !this.THREE) return;
   this.clearSolarMotion();
@@ -120,6 +164,7 @@ cosmic3d.buildSolarMotion = function buildSolarMotionCanonical() {
   const model = buildSolarMotionModel({
     endAt: roundedNow(),
     spanDays: Number(this._motionCatalog.displaySpanDays) || 365.25,
+    ephemerisProvider: majorEphemeris,
   });
   this._solarMotionModel = model;
   this._motionSunPoints = model.samples.map(sample => threeVector(T, sample.sunRender));
@@ -143,7 +188,7 @@ cosmic3d.buildSolarMotion = function buildSolarMotionCanonical() {
     }),
   );
   directionLine.computeLineDistances();
-  directionLine.userData.coordinateFrame = 'galactic-icrs';
+  directionLine.userData.coordinateFrame = model.direction.frame;
   directionLine.userData.directionModel = model.direction.model;
   this.solarMotionGroup.add(directionLine);
 
@@ -153,7 +198,7 @@ cosmic3d.buildSolarMotion = function buildSolarMotionCanonical() {
   );
   directionMarker.position.copy(lastSun).addScaledVector(direction, 5);
   directionMarker.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), direction);
-  directionMarker.userData.coordinateFrame = 'galactic-icrs';
+  directionMarker.userData.coordinateFrame = model.direction.frame;
   this.solarMotionGroup.add(directionMarker);
   this.motionDirectionMarker = directionMarker;
 
@@ -168,7 +213,7 @@ cosmic3d.buildSolarMotion = function buildSolarMotionCanonical() {
       opacity: id === 'earth' ? .94 : .66,
       depthWrite: false,
     }));
-    line.userData.coordinateFrame = 'galactic-icrs';
+    line.userData.coordinateFrame = model.direction.frame;
     line.userData.displayScale = 'orbit-radial-log-compressed';
     this.solarMotionGroup.add(line);
 
@@ -179,7 +224,7 @@ cosmic3d.buildSolarMotion = function buildSolarMotionCanonical() {
     );
     planet.position.copy(points[0]);
     planet.userData.motionBody = id;
-    planet.userData.physicalFrame = 'heliocentric-ecliptic-j2000';
+    planet.userData.ephemerisProvider = model.samples[0].planets[id].provider;
     this.solarMotionGroup.add(planet);
     this._motionPaths.set(id, { points, line });
     this._motionPlanetMeshes.set(id, planet);
@@ -206,11 +251,13 @@ cosmic3d.buildSolarMotion = function buildSolarMotionCanonical() {
   this.solarMotionGroup.add(this.motionSunGlow);
 
   if (location.hash === '#dev' && this.canvas) {
-    this.canvas.dataset.motionPhysicalFrame = 'heliocentric-ecliptic-j2000';
-    this.canvas.dataset.motionGalacticFrame = 'galactic-icrs';
+    this.canvas.dataset.motionPhysicalFrame = 'heliocentric-icrf-j2000';
+    this.canvas.dataset.motionGalacticFrame = model.direction.frame;
     this.canvas.dataset.motionDirectionModel = model.direction.model;
     this.canvas.dataset.motionStartAt = model.startAt;
     this.canvas.dataset.motionEndAt = model.endAt;
+    this.canvas.dataset.motionEphemerisProviders = model.ephemerisProviders.join(',');
+    this.canvas.dataset.motionSsbBridge = model.samples.at(-1)?.ssbBridge || '';
   }
   this.setSolarMotionProgress(0, false);
 };
@@ -230,20 +277,23 @@ cosmic3d.setSolarMotionProgress = function setSolarMotionProgressCanonical(value
   });
 
   const elapsedDays = Math.round(model.spanDays * progress);
-  const distance = Number(this._motionCatalog.distanceAu || 0) * progress;
+  const distance = model.physicalTravelDistanceAu * progress;
   const utc = sample.at.replace('T', ' ').replace('.000Z', 'Z');
   const status = document.getElementById('cosmicMotionDistance');
   if (status) status.textContent = ko()
-    ? `${utc} · 지난 ${elapsedDays}일 · 태양 진행 약 ${distance.toFixed(1)} AU`
-    : `${utc} · ${elapsedDays} days into trail · Sun travels about ${distance.toFixed(1)} AU`;
+    ? `${utc} · 지난 ${elapsedDays}일 · 태양계 진행 약 ${distance.toFixed(1)} AU`
+    : `${utc} · ${elapsedDays} days into trail · Solar System travels about ${distance.toFixed(1)} AU`;
   const bar = document.getElementById('cosmicMotionProgress');
   if (bar) bar.style.transform = `scaleX(${progress})`;
-  if (location.hash === '#dev' && this.canvas) this.canvas.dataset.motionUtc = sample.at;
+  if (location.hash === '#dev' && this.canvas) {
+    this.canvas.dataset.motionUtc = sample.at;
+    this.canvas.dataset.motionEphemerisProvider = sample.ephemerisProvider;
+    this.canvas.dataset.motionSsbBridge = sample.ssbBridge;
+  }
   if (updateScreen) this.render();
 };
 
-// Galactic +Y는 Aetherus 렌더 좌표에서 -Z로 보인다. 물리 축을 화면에 맞춰 돌리는 대신
-// 카메라를 옆으로 옮겨 나선 궤적을 읽게 한다. 과학 좌표와 연출 카메라를 분리한다.
+// Galactic velocity를 화면 축에 돌려 맞추지 않는다. 카메라만 옆으로 이동한다.
 cosmic3d.openSolarMotion = async function openSolarMotionCanonical() {
   const result = await legacyOpenSolarMotion.call(this);
   if (this._solarMotionMode) {
@@ -261,15 +311,52 @@ cosmic3d.showSolarMotionInfo = function showSolarMotionInfoCanonical() {
   const isKo = ko();
   const start = model.startAt.slice(0, 10);
   const end = model.endAt.replace('T', ' ').replace('.000Z', 'Z');
+  const horizons = model.ephemerisProviders.includes(HORIZONS_PROVIDER_ID);
   const kind = document.getElementById('cosmicMotionKind');
   const title = document.getElementById('cosmicMotionTitle');
   const replay = document.getElementById('cosmicMotionReplay');
+  const limit = document.getElementById('cosmicMotionLimit');
   if (kind) kind.textContent = isKo
-    ? `LIVE 기준 · ${start} → ${end} · Galactic ICRS`
-    : `LIVE window · ${start} → ${end} · Galactic ICRS`;
-  if (title) title.textContent = isKo ? '움직이는 태양계 · 실제 방향 관계' : 'Moving Solar System · physical orientation';
+    ? `LIVE 기준 · ${start} → ${end} · SSB → Galactocentric`
+    : `LIVE window · ${start} → ${end} · SSB → Galactocentric`;
+  if (title) title.textContent = isKo
+    ? '움직이는 태양계 · 실제 좌표 방향'
+    : 'Moving Solar System · physical coordinate orientation';
   if (replay) replay.textContent = isKo ? '지난 1년 다시 보기' : 'Replay the past year';
+  if (limit) limit.textContent = isKo
+    ? `${horizons ? 'JPL Horizons @0 ICRF 상태벡터' : 'JPL Table 1 위치 fallback'} · SSB/은하 방향 보존 · 이동거리·궤도·천체 크기는 보기 위해 각각 확대`
+    : `${horizons ? 'JPL Horizons @0 ICRF state vectors' : 'JPL Table 1 position fallback'} · SSB/galactic orientation preserved · travel distance, orbit radii and body sizes independently exaggerated for display`;
   this.setSolarMotionProgress(this._motionProgress, false);
+};
+
+// 기존 계산을 즉시 보여준 뒤 Horizons cache가 이미 로드돼 있으면 같은 observer/time을
+// geometric geocentric ICRF state로 교체한다. UI/공유 URL precision=explorer는 그대로여서
+// 상대방이 cache를 못 받았을 때도 기능이 깨지지 않는다.
+cosmic3d.calculateAstronomy = function calculateAstronomyCanonical() {
+  legacyCalculateAstronomy.call(this);
+  if (this._detailBody?.id !== 'mars' || !this._astronomyAt) return this._astronomyObservation;
+  const state = majorEphemeris.geocentricIcrfState('mars', this._astronomyAt);
+  if (!state) return this._astronomyObservation;
+  try {
+    this._astronomyObservation = calculateMarsObservationFromGeocentricIcrf({
+      observer: this._astronomyObserver,
+      at: this._astronomyAt,
+      geocentricIcrfAu: state.position,
+      provider: state,
+    });
+    this._astronomyObserver = this._astronomyObservation.observer;
+    this._astronomyAt = this._astronomyObservation.time.utc;
+    this._astronomyPrecision = 'explorer';
+    this._astronomyError = null;
+    this.updateObservationPlanFreshness();
+    if (location.hash === '#dev' && this.canvas) {
+      this.canvas.dataset.astronomyVectorProvider = state.provider;
+      this.canvas.dataset.astronomyInterpolation = state.interpolation?.kind || '';
+    }
+  } catch (error) {
+    console.warn('[aetherus-astronomy-horizons]', error?.message || error);
+  }
+  return this._astronomyObservation;
 };
 
 export { cosmic3d };

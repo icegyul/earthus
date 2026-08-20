@@ -10,17 +10,34 @@ import { validateKtoSummary } from '../kto-tourism-contract.js';
 
 const IS_LOCAL = ['127.0.0.1', 'localhost'].includes(location.hostname);
 
+function kstTime(value) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return '—';
+  return new Intl.DateTimeFormat('ko-KR', {
+    hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Seoul',
+  }).format(date);
+}
+
+function newestObservedAt(snapshot) {
+  return (snapshot?.places || [])
+    .map(place => place?.provenance?.observedAt)
+    .filter(value => Number.isFinite(Date.parse(value)))
+    .sort((left, right) => Date.parse(right) - Date.parse(left))[0] || null;
+}
+
 export const tourismFlow = {
   ds: null,
   snapshot: null,
   selectedAt: null,
   _abort: null,
   _focusedOnce: false,
+  _mapUi: null,
 
   init() {
     this.ds = new Cesium.CustomDataSource('tourism-flow');
     viewer.dataSources.add(this.ds);
     this.ds.show = false;
+    this._ensureMapUi();
     document.addEventListener('earthus:tourism-time', event => {
       this.selectedAt = event.detail?.at || null;
       this.renderAt(this.selectedAt);
@@ -72,7 +89,12 @@ export const tourismFlow = {
         // 사용자가 레이어를 직접 켠 시점의 이동이 마지막 의도이므로 기존 flight를 먼저 끊는다.
         viewer.camera.cancelFlight();
         viewer.camera.flyTo({
-          destination: Cesium.Cartesian3.fromDegrees(126.978, 37.5665, 260_000),
+          destination: Cesium.Cartesian3.fromDegrees(126.978, 37.5665, 190_000),
+          orientation: {
+            heading: Cesium.Math.toRadians(18),
+            pitch: Cesium.Math.toRadians(-52),
+            roll: 0,
+          },
           duration: 1.2,
           complete: () => this.applyVisibility(),
         });
@@ -93,7 +115,7 @@ export const tourismFlow = {
     if (!this.ds) return;
     this.ds.entities.removeAll();
     if (!store.isOn('tourism') || !this.snapshot?.places) {
-      this.ds.show = false;
+      this.applyVisibility();
       return;
     }
     for (const place of this.snapshot.places) {
@@ -109,8 +131,9 @@ export const tourismFlow = {
         ),
         cylinder: {
           length: visual.heightMeters,
-          topRadius: visual.radiusMeters * 0.72,
-          bottomRadius: visual.radiusMeters,
+          // 장소별 공식 등급 기둥을 가늘게 남겨, 서로 다른 장소를 하나의 면적값처럼 합치지 않는다.
+          topRadius: visual.radiusMeters * 0.34,
+          bottomRadius: visual.radiusMeters * 0.46,
           material: color,
           outline: true,
           outlineColor: color.withAlpha(Math.min(1, visual.alpha + 0.22)),
@@ -118,6 +141,8 @@ export const tourismFlow = {
         },
         label: {
           text: `${place.nameKo}\n${state} · ${visual.level}`,
+          // 지도 전체는 기둥 밀도를 읽는 화면이다. 상세 명칭은 기둥 선택 뒤 시트에서만 연다.
+          show: false,
           font: '500 12px ui-monospace, SFMono-Regular, Menlo, monospace',
           fillColor: Cesium.Color.WHITE,
           outlineColor: Cesium.Color.BLACK.withAlpha(0.88),
@@ -134,6 +159,69 @@ export const tourismFlow = {
     viewer.scene.requestRender();
   },
 
+  _ensureMapUi() {
+    if (this._mapUi?.isConnected) return this._mapUi;
+    const template = document.createElement('template');
+    template.innerHTML = '<section id="tourismMapUi" aria-hidden="true" data-nosnippet></section>';
+    this._mapUi = template.content.firstElementChild;
+    document.body.append(this._mapUi);
+    return this._mapUi;
+  },
+
+  _timelineOptions() {
+    const forecastTimes = [...new Set((this.snapshot?.places || []).flatMap(place =>
+      (place.forecast || []).map(row => row.at),
+    ).filter(value => Number.isFinite(Date.parse(value))))]
+      .sort((left, right) => Date.parse(left) - Date.parse(right));
+    return [null, ...forecastTimes];
+  },
+
+  _renderMapUi() {
+    const node = this._ensureMapUi();
+    const visible = Boolean(this.ds?.show && this.snapshot?.places?.length);
+    node.setAttribute('aria-hidden', String(!visible));
+    if (!visible) return;
+
+    const coverage = this.snapshot.coverage || {};
+    const observedAt = newestObservedAt(this.snapshot);
+    const forecastMode = Boolean(this.selectedAt);
+    const timeline = this._timelineOptions();
+    const quality = this.snapshot.quality || {};
+    const currentEvidenceLabel = quality.live > 0
+      ? (quality.stale > 0 ? '서울시 공식 관측 · 일부 지난 관측' : '서울시 공식 관측')
+      : quality.degraded > 0 ? '서울시 제한된 공식 관측'
+        : quality.stale > 0 ? '서울시 지난 공식 관측'
+          : '서울시 공식 관측 자료 없음';
+    const timeLabel = forecastMode ? '예측 시각' : '관측';
+    node.innerHTML = `
+      <header class="tm-title">
+        <small>EARTHUS · TOURISM</small>
+        <h2>서울 관광 흐름</h2>
+        <p><i aria-hidden="true"></i>${forecastMode ? '서울시 공식 예측' : currentEvidenceLabel} · ${coverage.available ?? '—'}/${coverage.total ?? '—'}곳 · ${timeLabel} ${kstTime(forecastMode ? this.selectedAt : observedAt)} KST</p>
+        <span>기둥 하나는 서울시가 구분한 한 관광지입니다.</span>
+      </header>
+      <aside class="tm-legend" aria-label="관광지 혼잡 등급 범례">
+        <b>기둥 높이·색</b>
+        <ol>
+          <li class="tm-rank4">붐빔</li>
+          <li class="tm-rank3">약간 붐빔</li>
+          <li class="tm-rank2">보통</li>
+          <li class="tm-rank1">여유</li>
+        </ol>
+      </aside>
+      <nav class="tm-timeline" aria-label="서울 관광 흐름 시각 선택">
+        <span>${forecastMode ? '공식 예측 시각' : '공식 관측 시각'}</span>
+        <div>${timeline.map(at => `<button type="button" data-tourism-map-time="${at || ''}" aria-pressed="${String((at || null) === this.selectedAt)}" aria-label="${at ? `공식 예측 ${kstTime(at)} KST` : '현재 공식 관측'}"><i aria-hidden="true"></i><time>${at ? kstTime(at) : '현재'}</time></button>`).join('')}</div>
+      </nav>`;
+    node.querySelectorAll('[data-tourism-map-time]').forEach(button => {
+      button.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('earthus:tourism-time', {
+          detail: { at: button.dataset.tourismMapTime || null },
+        }));
+      });
+    });
+  },
+
   set(on) {
     if (!on) {
       this._abort?.abort();
@@ -146,6 +234,7 @@ export const tourismFlow = {
   applyVisibility() {
     if (!this.ds) return;
     this.ds.show = store.isOn('tourism') && store.height <= 2_500_000;
+    this._renderMapUi();
   },
 
   count() {

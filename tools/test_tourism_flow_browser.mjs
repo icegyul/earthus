@@ -7,7 +7,11 @@ const executablePath = process.env.EARTHUS_CHROME
   || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const observed = new Date(Date.now() - 3 * 60_000).toISOString();
 const received = new Date().toISOString();
-const forecastAt = new Date(Date.now() + 60 * 60_000).toISOString();
+const forecasts = Array.from({ length: 9 }, (_, index) => ({
+  at: new Date(Date.now() + (index + 1) * 60 * 60_000).toISOString(),
+  level: '여유', rank: 1, populationRange: { min: 5000, max: 5500 },
+  sourceType: 'OFFICIAL_FORECAST',
+}));
 const place = {
   id: 'earthus:tourism:seoul:POI009', code: 'POI009', category: '고궁·문화유산',
   nameKo: '광화문·덕수궁', nameEn: 'Gwanghwamun & Deoksugung Palace',
@@ -16,8 +20,7 @@ const place = {
   official: { level: '붐빔', rank: 4, message: '서울시 기관 설명',
     populationRange: { min: 40000, max: 42000 }, color: '#ef5a67', replacement: false,
     sourceType: 'OFFICIAL_OBSERVATION' },
-  forecast: [{ at: forecastAt, level: '여유', rank: 1,
-    populationRange: { min: 5000, max: 5500 }, sourceType: 'OFFICIAL_FORECAST' }],
+  forecast: forecasts,
   flow: { scalarTrend: { state: 'READY', direction: 'INCREASING', perHour: 900,
     relativePerHour: 0.02, flowDirection: null, method: 'robust pairwise median slope', sampleCount: 3 },
     direction: { state: 'UNAVAILABLE', value: null,
@@ -115,6 +118,30 @@ try {
     assert.equal(initial.show, true);
     assert.equal(initial.length, 6800);
     assert.match(initial.label, /LIVE · 붐빔/);
+    const mapOverlay = await page.evaluate(() => {
+      const node = document.getElementById('tourismMapUi');
+      const controls = [...node?.querySelectorAll('[data-tourism-map-time]') || []].map(button => {
+        const rect = button.getBoundingClientRect();
+        return { pressed: button.getAttribute('aria-pressed'), width: rect.width, height: rect.height };
+      });
+      return { present: Boolean(node), hidden: node?.getAttribute('aria-hidden'), text: node?.innerText || '', controls };
+    });
+    assert.equal(mapOverlay.present, true);
+    assert.equal(mapOverlay.hidden, 'false');
+    assert.match(mapOverlay.text, /서울 관광 흐름/);
+    assert.match(mapOverlay.text, /공식 관측/);
+    assert.match(mapOverlay.text, /기둥 높이·색/);
+    assert.equal(mapOverlay.controls.length, place.forecast.length + 1,
+      `${viewport.name} map timeline must retain every official forecast timestamp`);
+    assert.ok(mapOverlay.controls.every(item => item.width >= 43.9 && item.height >= 43.9),
+      `${viewport.name} map time target violation: ${JSON.stringify(mapOverlay.controls)}`);
+
+    await page.locator('#tourismMapUi [data-tourism-map-time]').nth(1).click();
+    const mapForecastLength = await page.evaluate(async () => {
+      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js', location.href).href);
+      return tourismFlow.ds.entities.values[0].cylinder.length.getValue();
+    });
+    assert.equal(mapForecastLength, 1400);
 
     // 실제 상세 화면을 열고 기관 예측 시각을 누르면 같은 3D 기둥이 바뀐다.
     await page.evaluate(async current => {
@@ -164,6 +191,7 @@ try {
       return { show: tourismFlow.ds.show, count: tourismFlow.count(), abort: tourismFlow._abort };
     });
     assert.deepEqual(off, { show: false, count: 0, abort: null });
+    assert.equal(await page.locator('#tourismMapUi').getAttribute('aria-hidden'), 'true');
     assert.deepEqual(runtimeErrors, []);
     await page.screenshot({ path: `/private/tmp/earthus-tourism-flow-${viewport.name}.png`, fullPage: true });
     await context.close();

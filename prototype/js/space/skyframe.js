@@ -1,10 +1,15 @@
 // 천구 좌표(RA/Dec) → Cesium 지구고정 좌표 변환
 //
+// 좌표 벡터 생성은 coordinates.js를 정본으로 사용하고, 이 파일은 Cesium의
+// ICRF → Earth-fixed 자세 행렬 연결만 담당한다. 즉 천문 수학과 렌더러 축을 섞지 않는다.
+//
 // 출처: CesiumJS Transforms 공식 문서
 // https://cesium.com/learn/cesiumjs/ref-doc/Transforms.html
 // ⚠️ computeIcrfToFixedMatrix()는 지구 자세 자료가 아직 안 왔으면 undefined다.
 //    그때 근사 좌표를 만들어내지 않는다. 직전 60초 안의 정상 행렬만 잠깐 재사용하고,
 //    그것도 없으면 자료를 기다린다고 명시한다.
+
+import { vectorFromRaDec } from './coordinates.js';
 
 const SKY_RADIUS_M = 300_000_000;
 const LAST_MATRIX_MAX_AGE_S = 60;
@@ -12,20 +17,8 @@ let lastMatrix = null;
 let lastMatrixDate = null;
 
 export function radecToIcrf(raDeg, decDeg, radius = SKY_RADIUS_M) {
-  if (!Number.isFinite(raDeg) || raDeg < 0 || raDeg >= 360) {
-    throw new RangeError('RA_OUT_OF_RANGE');
-  }
-  if (!Number.isFinite(decDeg) || decDeg < -90 || decDeg > 90) {
-    throw new RangeError('DEC_OUT_OF_RANGE');
-  }
-  const ra = Cesium.Math.toRadians(raDeg);
-  const dec = Cesium.Math.toRadians(decDeg);
-  const cosDec = Math.cos(dec);
-  return new Cesium.Cartesian3(
-    radius * cosDec * Math.cos(ra),
-    radius * cosDec * Math.sin(ra),
-    radius * Math.sin(dec),
-  );
+  const vector = vectorFromRaDec(raDeg, decDeg, radius);
+  return new Cesium.Cartesian3(vector.x, vector.y, vector.z);
 }
 
 export function icrfToFixedPosition(icrf, date, options = {}) {

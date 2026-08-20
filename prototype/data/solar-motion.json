@@ -14,15 +14,15 @@
   "source": "NASA Science · Solar System Facts",
   "sourceUrl": "https://science.nasa.gov/solar-system/solar-system-facts/",
   "method": {
-    "ko": "NASA가 제시한 태양계의 은하 공전 속도 약 829,000 km/h에 365.25일을 곱해 48.6 AU를 계산했습니다. 각 행성 위치는 JPL의 1800–2050 근사 궤도요소로 같은 1년을 표본화했습니다.",
-    "en": "48.6 AU is calculated from NASA's approximate galactic orbital speed of 829,000 km/h over 365.25 days. Planet positions sample the same year with JPL's 1800–2050 approximate orbital elements."
+    "ko": "NASA가 제시한 태양계의 은하 공전 속도 약 829,000 km/h에 365.25일을 적용해 약 48.6 AU의 1년 진행 거리를 사용합니다. 화면의 행성 위치는 실행 시점 UTC로 끝나는 지난 365.25일을 JPL 1800–2050 근사 궤도요소로 표본화하고, 황도 J2000→ICRF/J2000→Galactic ICRS 회전으로 실제 공전면의 방향 관계를 보존합니다. 태양 진행축은 Galactic l=90°, b=0°의 국소 원운동 접선 근사입니다.",
+    "en": "The one-year travel distance of about 48.6 AU uses NASA's approximate galactic orbital speed of 829,000 km/h over 365.25 days. Planet positions sample the 365.25 days ending at runtime UTC with JPL's 1800–2050 approximate orbital elements, then rotate Ecliptic J2000→ICRF/J2000→Galactic ICRS so the orbital-plane orientation is preserved. The solar travel axis uses the local circular-orbit tangent approximation at Galactic l=90°, b=0°."
   },
   "limitations": {
-    "ko": "전진 방향을 화면 축에 맞추고 행성 궤도 반지름을 로그 압축한 교육 도식입니다. 실제 황도면과 은하 공전 방향 사이 각도, 행성·태양 크기, 은하 궤도의 1년 곡률은 같은 비율이 아닙니다. 항법·관측 조준에 사용할 수 없습니다.",
-    "en": "Educational diagram: the travel direction is aligned to the screen and orbital radii are logarithmically compressed. The true ecliptic-to-galactic orientation, body sizes, and one-year galactic curvature are not to scale. Not for navigation or observation pointing."
+    "ko": "황도면과 Galactic 기준축의 방향 관계는 보존하지만 태양의 정확한 U/V/W 상태벡터·은하 퍼텐셜·1년 은하 궤도 곡률은 모델링하지 않습니다. 행성 궤도 반지름은 가독성을 위해 로그 압축하고 천체 크기는 과장합니다. 현재 행성 천체력은 JPL Table 1 근사식이며 항법·망원경 정밀 조준용이 아닙니다.",
+    "en": "The ecliptic-to-Galactic orientation is preserved, but the Sun's full U/V/W state vector, Galactic potential, and one-year Galactic curvature are not modeled. Planet orbit radii are logarithmically compressed for readability and body sizes are enlarged. Current planet ephemerides use the JPL Table 1 approximation and are not for navigation or precision telescope pointing."
   },
   "displayLimit": {
-    "ko": "진행 방향 정렬 · 궤도 반지름 로그 압축 · 천체 크기 과장. 실제 황도면 각도와 은하 궤도 곡률은 같은 비율이 아니며 항법용이 아닙니다.",
-    "en": "Direction aligned, orbital radii log-compressed, body sizes enlarged. True orientation and galactic curvature are not to scale; not for navigation."
+    "ko": "Galactic ICRS 방향 관계 보존 · 태양 진행축은 국소 원운동 접선 근사 · 궤도 반지름 로그 압축 · 천체 크기 과장 · 정밀 조준용 아님",
+    "en": "Galactic ICRS orientation preserved · solar travel axis uses a local circular-tangent approximation · orbit radii log-compressed · body sizes enlarged · not for precision pointing"
   }
 }

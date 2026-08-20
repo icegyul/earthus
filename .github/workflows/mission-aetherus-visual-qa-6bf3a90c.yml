@@ -57,8 +57,21 @@ jobs:
             fi
           done
           if [ -n "$chrome" ]; then
-            echo "CHROME_BIN=$chrome" >> "$GITHUB_ENV"
             "$chrome" --version
+            # Chrome 151부터 신뢰되지 않은 software WebGL fallback은 opt-in이다.
+            # 제품 코드는 건드리지 않고 QA 실행기에서만 ANGLE+SwiftShader를 명시한다.
+            cat > /tmp/aetherus-qa/chrome-webgl <<EOF
+          #!/usr/bin/env bash
+          set -e
+          args=()
+          for arg in "\$@"; do
+            [ "\$arg" = '--use-gl=swiftshader' ] && continue
+            args+=("\$arg")
+          done
+          exec "$chrome" --enable-unsafe-swiftshader --use-gl=angle --use-angle=swiftshader "\${args[@]}"
+          EOF
+            chmod +x /tmp/aetherus-qa/chrome-webgl
+            echo "CHROME_BIN=/tmp/aetherus-qa/chrome-webgl" >> "$GITHUB_ENV"
           else
             /tmp/aetherus-qa/node_modules/.bin/playwright install --with-deps chromium
             echo 'Using Playwright-managed Chromium'

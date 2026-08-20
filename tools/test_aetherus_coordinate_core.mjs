@@ -7,7 +7,11 @@ import {
   coordinateSelfTest,
   toAetherusRender,
 } from '../prototype/js/space/coordinates.js';
-import { galactocentricSelfTest } from '../prototype/js/space/galactocentric.js';
+import {
+  galactocentricHeightTiltRad,
+  galactocentricSelfTest,
+  solarVelocityGalacticKms,
+} from '../prototype/js/space/galactocentric.js';
 import {
   createMajorEphemerisService,
   ephemerisProviderSelfTest,
@@ -81,6 +85,11 @@ async function main() {
   assert.deepEqual(toAetherusRender({ x: 1, y: 2, z: 3 }), { x: 1, y: 3, z: -2 });
   assert.equal(coordinateSelfTest().ok, true, 'canonical coordinate round trips');
   assert.equal(galactocentricSelfTest().ok, true, 'Galactocentric linear bridge');
+  assert.ok(galactocentricHeightTiltRad() > 0 && galactocentricHeightTiltRad() < .01,
+    'Astropy solar-height tilt must be small and explicit');
+  const alignedVelocity = solarVelocityGalacticKms();
+  close(Math.hypot(alignedVelocity.x, alignedVelocity.y, alignedVelocity.z),
+    Math.hypot(12.9, 245.6, 7.78), 1e-12, 'velocity rotation preserves magnitude');
   assert.equal(ephemerisProviderSelfTest().ok, true, 'Hermite ephemeris interpolation');
   assert.equal(solarMotionSelfTest().ok, true, 'fallback solar motion');
 
@@ -118,6 +127,7 @@ async function main() {
   assert.ok(preciseMotion.ephemerisProviders.includes(HORIZONS_PROVIDER_ID));
   assert.equal(preciseMotion.samples.at(-1).ssbBridge, 'jpl-sun-barycentric-to-ssb');
   assert.ok(preciseMotion.physicalTravelDistanceAu > 0);
+  assert.match(preciseMotion.direction.model, /jpl-sun-barycentric-ssb-displacement/);
 
   const vectorFixture = [
     'JPL/HORIZONS synthetic regression fixture',
@@ -144,6 +154,7 @@ async function main() {
       'coordinate-roundtrip',
       'right-handed-render-map',
       'galactocentric-bridge',
+      'astropy-height-tilt-axis-conversion',
       'hermite-interpolation',
       'horizons-provider-fixture',
       'mars-my-sky-vector-path',

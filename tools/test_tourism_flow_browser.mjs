@@ -116,7 +116,7 @@ try {
     });
     assert.equal(initial.count, 1, JSON.stringify(initial));
     assert.equal(initial.show, true);
-    assert.equal(initial.length, 6800);
+    assert.equal(initial.length, 17600);
     assert.match(initial.label, /LIVE · 붐빔/);
     const mapOverlay = await page.evaluate(() => {
       const node = document.getElementById('tourismMapUi');
@@ -141,7 +141,7 @@ try {
       const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js', location.href).href);
       return tourismFlow.ds.entities.values[0].cylinder.length.getValue();
     });
-    assert.equal(mapForecastLength, 1400);
+    assert.equal(mapForecastLength, 6200);
 
     // 실제 상세 화면을 열고 기관 예측 시각을 누르면 같은 3D 기둥이 바뀐다.
     await page.evaluate(async current => {
@@ -162,7 +162,7 @@ try {
           return { text: node.textContent.trim().slice(0, 28), width: rect.width, height: rect.height };
         }) };
     });
-    assert.equal(forecast.length, 1400);
+    assert.equal(forecast.length, 6200);
     assert.match(forecast.text, /공식 예측/);
     assert.match(forecast.text, /운영시간[\s\S]{0,40}입장 가능 여부[\s\S]{0,30}(확인되지 않|없습니다)/);
     assert.match(forecast.text, /1\/121|광화문·덕수궁 1곳만 공식 조회/);

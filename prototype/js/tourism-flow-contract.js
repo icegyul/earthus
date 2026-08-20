@@ -21,7 +21,7 @@ const LEVEL_RANK = Object.freeze({
   'relaxed': 1, 'normal': 2, 'slightly crowded': 3, 'crowded': 4,
 });
 
-const LEVEL_COLOR = Object.freeze({ 1: '#48d7a0', 2: '#f0cf63', 3: '#f39a54', 4: '#ef5a67' });
+const LEVEL_COLOR = Object.freeze({ 1: '#f5d58a', 2: '#f7aa45', 3: '#ef672e', 4: '#d93222' });
 
 function numberOrNull(value) {
   const n = Number(value);
@@ -315,14 +315,21 @@ export function towerVisual(item, at = null) {
   }
   const rank = Number(evidence?.rank);
   if (![1, 2, 3, 4].includes(rank)) return null;
-  const heights = { 1: 1400, 2: 2800, 3: 4600, 4: 6800 };
+  const range = evidence?.populationRange;
+  const min = numberOrNull(range?.min), max = numberOrNull(range?.max);
+  const midpoint = min != null && max != null ? (min + max) / 2 : null;
+  // 높이는 기관이 제공한 추정 인구 범위의 중간값만 사용한다. 서울시 구역마다 면적이
+  // 다르므로 이를 수용력·안전 밀도로 해석하지 않으며, 색만 기관 혼잡 등급을 보존한다.
+  const quantifiedHeight = midpoint == null ? null
+    : Math.round(Math.max(2_600, Math.min(24_000, Math.sqrt(midpoint) * 88 - 200)) / 100) * 100;
+  const fallbackHeights = { 1: 4_800, 2: 8_400, 3: 14_000, 4: 21_000 };
   return Object.freeze({
-    heightMeters: heights[rank], radiusMeters: 650,
-    color: LEVEL_COLOR[rank], alpha: item.state === DATA_STATE.STALE ? 0.28 : 0.72,
+    heightMeters: quantifiedHeight ?? fallbackHeights[rank], radiusMeters: 120,
+    color: LEVEL_COLOR[rank], alpha: item.state === DATA_STATE.STALE ? 0.66 : 0.9,
     level: evidence.level, rank, sourceType,
     at: evidenceAt ? new Date(evidenceAt).toISOString() : null,
     live: sourceType === SOURCE_TYPE.OFFICIAL_OBSERVATION && item.state === DATA_STATE.LIVE,
     animated: false,
-    legendKo: '기둥 높이·색 = 서울시 기관 혼잡 등급(범주형)',
+    legendKo: '기둥 높이 = 서울시 공식 추정 인구 범위 · 색 = 기관 혼잡 등급',
   });
 }

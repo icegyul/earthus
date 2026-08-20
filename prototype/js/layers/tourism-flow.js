@@ -1,5 +1,5 @@
 // 관광·인간 흐름 3D Density Tower.
-// 기관의 범주형 혼잡 등급만 높이와 색으로 옮기며, 이동 방향은 그리지 않는다.
+// 기관의 추정 인구 범위는 높이로, 범주형 혼잡 등급은 색으로 옮기며 이동 방향은 그리지 않는다.
 
 import { API } from '../config.js';
 import { fetchT } from '../net.js';
@@ -7,6 +7,7 @@ import { store } from '../store.js';
 import { viewer } from '../viewer.js';
 import { towerVisual, validateTourismSnapshot } from '../tourism-flow-contract.js';
 import { validateKtoSummary } from '../kto-tourism-contract.js';
+import { tourismMapStyle } from './tourism-map-style.js';
 
 const IS_LOCAL = ['127.0.0.1', 'localhost'].includes(location.hostname);
 
@@ -89,10 +90,12 @@ export const tourismFlow = {
         // 사용자가 레이어를 직접 켠 시점의 이동이 마지막 의도이므로 기존 flight를 먼저 끊는다.
         viewer.camera.cancelFlight();
         viewer.camera.flyTo({
-          destination: Cesium.Cartesian3.fromDegrees(126.978, 37.5665, 190_000),
+          // flyTo의 좌표는 카메라 위치다. 서울 중심을 기둥 화면 중앙에 두기 위해
+          // 남서쪽 상공에서 북동쪽(heading 22°)을 보도록 출발 위치를 둔다.
+          destination: Cesium.Cartesian3.fromDegrees(126.77, 37.1575, 70_000),
           orientation: {
-            heading: Cesium.Math.toRadians(18),
-            pitch: Cesium.Math.toRadians(-52),
+            heading: Cesium.Math.toRadians(22),
+            pitch: Cesium.Math.toRadians(-55),
             roll: 0,
           },
           duration: 1.2,
@@ -131,13 +134,11 @@ export const tourismFlow = {
         ),
         cylinder: {
           length: visual.heightMeters,
-          // 장소별 공식 등급 기둥을 가늘게 남겨, 서로 다른 장소를 하나의 면적값처럼 합치지 않는다.
-          topRadius: visual.radiusMeters * 0.34,
-          bottomRadius: visual.radiusMeters * 0.46,
+          // 장소별 공식 값을 가는 기둥으로 남겨, 서로 다른 장소를 하나의 면적값처럼 합치지 않는다.
+          topRadius: visual.radiusMeters * 0.24,
+          bottomRadius: visual.radiusMeters * 0.32,
           material: color,
-          outline: true,
-          outlineColor: color.withAlpha(Math.min(1, visual.alpha + 0.22)),
-          outlineWidth: 1,
+          outline: false,
         },
         label: {
           text: `${place.nameKo}\n${state} · ${visual.level}`,
@@ -199,6 +200,7 @@ export const tourismFlow = {
         <h2>서울 관광 흐름</h2>
         <p><i aria-hidden="true"></i>${forecastMode ? '서울시 공식 예측' : currentEvidenceLabel} · ${coverage.available ?? '—'}/${coverage.total ?? '—'}곳 · ${timeLabel} ${kstTime(forecastMode ? this.selectedAt : observedAt)} KST</p>
         <span>기둥 하나는 서울시가 구분한 한 관광지입니다.</span>
+        <small class="tm-map-credit">지도 · Esri · 경계·도로</small>
       </header>
       <aside class="tm-legend" aria-label="관광지 혼잡 등급 범례">
         <b>기둥 높이·색</b>
@@ -208,6 +210,7 @@ export const tourismFlow = {
           <li class="tm-rank2">보통</li>
           <li class="tm-rank1">여유</li>
         </ol>
+        <span>높이=공식 추정 인구 범위<br>색=기관 혼잡 등급</span>
       </aside>
       <nav class="tm-timeline" aria-label="서울 관광 흐름 시각 선택">
         <span>${forecastMode ? '공식 예측 시각' : '공식 관측 시각'}</span>
@@ -227,6 +230,9 @@ export const tourismFlow = {
       this._abort?.abort();
       this._abort = null;
       this.selectedAt = null;
+      tourismMapStyle.set(false);
+    } else {
+      tourismMapStyle.set(true);
     }
     this.applyVisibility();
   },
@@ -234,6 +240,7 @@ export const tourismFlow = {
   applyVisibility() {
     if (!this.ds) return;
     this.ds.show = store.isOn('tourism') && store.height <= 2_500_000;
+    tourismMapStyle.set(this.ds.show);
     this._renderMapUi();
   },
 

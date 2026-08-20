@@ -20,13 +20,28 @@ async function waitForRoot(page) {
   await page.waitForSelector('#cosmicCanvas', { state: 'visible', timeout: 30_000 });
 }
 
-async function clickSolarNav(page) {
-  const solar = page.locator('[data-aetherus-nav="solar"]');
+async function waitForInitialMissionControl(page) {
+  // 첫 space 진입은 activate()가 끝난 뒤 Mission Control을 연다. root가 보였다는 것만으로
+  // activation 완료로 간주하면 SOLAR 클릭 뒤 늦게 도착한 openDashboard()와 경합한다.
+  await page.waitForFunction(() => {
+    const root = document.getElementById('cosmicExperience');
+    const nav = document.getElementById('cosmicExperienceNav');
+    return root?.dataset.stage === 'mission'
+      && root.classList.contains('is-dashboard')
+      && nav
+      && !nav.hidden;
+  }, { timeout: 40_000 });
+  await pause(450);
+}
+
+async function clickSolarNav(page, { fromMission = false } = {}) {
+  if (fromMission) await waitForInitialMissionControl(page);
+  const solar = page.locator('#cosmicExperienceNav [data-aetherus-nav="solar"]');
   await solar.waitFor({ state: 'visible', timeout: 20_000 });
   await solar.click();
   await page.waitForFunction(() => !document.getElementById('cosmicExperience')?.classList.contains('is-dashboard'),
     { timeout: 20_000 });
-  await pause(350);
+  await pause(650);
 }
 
 async function wheel(page, count, deltaY) {
@@ -49,6 +64,7 @@ async function snapshotState(page, label) {
     return {
       label: stageLabel,
       rootStage: root?.dataset.stage || null,
+      rootClass: root?.className || null,
       coordinateJourney: canvas?.dataset.coordinateJourney || null,
       coordinateJourneyOpacity: canvas?.dataset.coordinateJourneyOpacity || null,
       solarWorldFrame: canvas?.dataset.solarWorldFrame || null,
@@ -60,6 +76,7 @@ async function snapshotState(page, label) {
       hintText: document.getElementById('cosmicHint')?.textContent?.trim() || null,
       noteText: document.getElementById('cosmicNote')?.textContent?.trim() || null,
       bodyPickerHidden: document.getElementById('cosmicBodyPicker')?.hidden ?? null,
+      solarNavCurrent: document.querySelector('#cosmicExperienceNav [data-aetherus-nav="solar"]')?.classList.contains('current') ?? null,
       canvasWidth: canvas?.getBoundingClientRect().width || 0,
       canvasHeight: canvas?.getBoundingClientRect().height || 0,
       overflowX: Math.max(0, html.scrollWidth - window.innerWidth),
@@ -142,12 +159,12 @@ async function runProfile(browser, profile) {
 
   await page.goto(`${baseUrl}/?aetherus=4&solar=1#dev`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
   await waitForRoot(page);
-  await clickSolarNav(page);
+  await clickSolarNav(page, { fromMission: true });
 
   // 태양계가 읽히는 거리까지 먼저 이동한다.
   await wheel(page, 2, 900);
   const solar = await snapshotState(page, 'solar');
-  if (solar.rootStage !== 'solar') throw new Error(`${profile.name}:EXPECTED_SOLAR_GOT_${solar.rootStage}`);
+  if (solar.rootStage !== 'solar') throw new Error(`${profile.name}:EXPECTED_SOLAR_GOT_${solar.rootStage}:${solar.rootClass}`);
   if (solar.solarWorldFrame !== 'galactic-icrs') throw new Error(`${profile.name}:SOLAR_WORLD_FRAME_${solar.solarWorldFrame}`);
   if (!(solar.canvasWidth > 100 && solar.canvasHeight > 100)) throw new Error(`${profile.name}:CANVAS_ZERO_SIZE`);
   await screenshot(page, `${profile.name}-solar`);

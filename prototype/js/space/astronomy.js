@@ -1,19 +1,11 @@
-// Aetherus Astronomy Vertical Slice — 화성·태양 관측자 기준 계산
+// Aetherus Astronomy Vertical Slice — 화성·태양 관측자 기준 계산.
 //
-// 입력: target + observer geodetic lat/lon + UTC instant
-// 출력: J2000/ICRF 근사 RA·Dec, 거리, 기하학적 고도·방위각, 정밀도/출처 계약
+// 기본값은 JPL Table 1 Explorer 계산을 유지한다. 서버에서 캐시한 Horizons @0 ICRF
+// state vector가 준비되면 같은 출력 스키마에 geometric geocentric vector를 주입해
+// RA/Dec 원천을 업그레이드한다. 공유 URL의 precision=explorer 계약은 그대로 유지한다.
 //
-// 정본 출처:
-// - NASA/JPL approximate planetary positions, Table 1 (1800–2050)
-//   https://ssd.jpl.nasa.gov/planets/approx_pos.html
-// - NASA/JPL Horizons observer ephemeris comparison
-//   https://ssd-api.jpl.nasa.gov/doc/horizons.html
-//
-// ⚠️ Explorer 등급이다. Table 1의 태양중심 근사식을 지구중심 방향으로 바꾸며,
-//    광행차·장동·시차·대기 굴절·지형 지평선·날씨·주광을 계산하지 않는다.
-//    망원경 조준이나 항해에 쓰지 않고 JPL Horizons/SPICE를 사용해야 한다.
-//
-// ⚠️ 축 회전/GMST/수평 좌표 수학은 coordinates.js만 정본으로 사용한다.
+// Horizons state는 VEC_CORR=NONE이므로 '보이는 위치(apparent)'가 아니라 geometric vector다.
+// 수평 좌표도 현지 굴절·지형·날씨·주광·정밀 topocentric parallax를 포함하지 않는다.
 
 import { planetPosition } from './kepler.js';
 import {
@@ -22,6 +14,7 @@ import {
   RAD2DEG,
   eclipticToIcrf,
   equatorialToHorizontal as canonicalEquatorialToHorizontal,
+  finiteVector,
   gmstDegrees as canonicalGmstDegrees,
   julianDate,
   normalizeObserver as normalizeCoordinateObserver,
@@ -82,9 +75,8 @@ export function normalizeAstronomyObserver(observer = DEFAULT_ASTRONOMY_OBSERVER
   });
 }
 
-// JPL의 출력 RA·Dec는 ICRF/J2000이지만 고도·방위각은 관측일의 적도 좌표계로
-// 환산된다. J2000 좌표를 그대로 지역 항성시에 넣으면 특히 천정 부근의 방위각이
-// 1° 넘게 벌어질 수 있다. IAU 1976 저차 세차식을 수평 좌표 변환에만 적용한다.
+// J2000 RA/Dec를 관측일 평균 적도/분점으로 옮기는 저차 세차식.
+// Horizons apparent observer ephemeris를 대체하는 것이 아니다.
 export function precessJ2000ToDate({ raDeg, decDeg, at }) {
   const date = normalizedDate(at);
   const centuries = (julianDate(date) - 2_451_545.0) / 36_525;
@@ -111,9 +103,9 @@ export function precessJ2000ToDate({ raDeg, decDeg, at }) {
   });
 }
 
-function observationCoordinatesFromGeocentricEcliptic(ecliptic, observer, date) {
-  const equatorial = eclipticToIcrf(ecliptic);
-  const { raDeg, decDeg, distance: distanceAu } = raDecFromVector(equatorial);
+function observationCoordinatesFromGeocentricIcrf(icrf, observer, date) {
+  const vector = finiteVector(icrf, 'GEOCENTRIC_ICRF');
+  const { raDeg, decDeg, distance: distanceAu } = raDecFromVector(vector);
   const equatorialOfDate = precessJ2000ToDate({ raDeg, decDeg, at: date });
   const horizontal = canonicalEquatorialToHorizontal({
     raDeg: equatorialOfDate.raDeg,
@@ -122,6 +114,47 @@ function observationCoordinatesFromGeocentricEcliptic(ecliptic, observer, date) 
     at: date,
   });
   return { raDeg, decDeg, distanceAu, equatorialOfDate, horizontal };
+}
+
+function observationCoordinatesFromGeocentricEcliptic(ecliptic, observer, date) {
+  return observationCoordinatesFromGeocentricIcrf(eclipticToIcrf(ecliptic), observer, date);
+}
+
+function observationResult({
+  target,
+  observer,
+  date,
+  coordinates,
+  frame,
+  sourceFrame,
+  precision,
+  provenance,
+  time,
+}) {
+  return Object.freeze({
+    schema: 'earthus.astronomy-observation.v3',
+    target,
+    observer,
+    time: Object.freeze({
+      utc: date.toISOString(),
+      julianDateUtc: julianDate(date),
+      inputScale: 'UTC',
+      ...time,
+    }),
+    coordinates: Object.freeze({
+      raDeg: coordinates.raDeg,
+      decDeg: coordinates.decDeg,
+      distanceAu: coordinates.distanceAu,
+      frame,
+      frameContract: FRAME.GEOCENTRIC_ICRF_J2000,
+      sourceFrame,
+      equatorialOfDate: coordinates.equatorialOfDate,
+      horizontal: coordinates.horizontal,
+    }),
+    horizon: coordinates.horizontal.altitudeDeg >= 0 ? 'above' : 'below',
+    precision: Object.freeze(precision),
+    provenance: Object.freeze(provenance),
+  });
 }
 
 export function calculateMarsObservation({ observer, at = new Date(), precision = 'explorer' } = {}) {
@@ -133,29 +166,17 @@ export function calculateMarsObservation({ observer, at = new Date(), precision 
   const ecliptic = relativePosition(mars, earth);
   const coordinates = observationCoordinatesFromGeocentricEcliptic(ecliptic, normalizedObserver, date);
 
-  return Object.freeze({
-    schema: 'earthus.astronomy-observation.v2',
+  return observationResult({
     target: 'mars',
     observer: normalizedObserver,
-    time: Object.freeze({
-      utc: date.toISOString(),
-      julianDateUtc: julianDate(date),
-      inputScale: 'UTC',
-      dynamicsApproximation: 'UTC used as JDTDB at Explorer precision',
-    }),
-    coordinates: Object.freeze({
-      raDeg: coordinates.raDeg,
-      decDeg: coordinates.decDeg,
-      distanceAu: coordinates.distanceAu,
-      frame: 'approximate-ICRF-J2000-geocentric',
-      frameContract: FRAME.GEOCENTRIC_ICRF_J2000,
-      sourceFrame: FRAME.GEOCENTRIC_ECLIPTIC_J2000,
-      equatorialOfDate: coordinates.equatorialOfDate,
-      horizontal: coordinates.horizontal,
-    }),
-    horizon: coordinates.horizontal.altitudeDeg >= 0 ? 'above' : 'below',
-    precision: Object.freeze({
+    date,
+    coordinates,
+    frame: 'approximate-ICRF-J2000-geocentric',
+    sourceFrame: FRAME.GEOCENTRIC_ECLIPTIC_J2000,
+    time: { dynamicsApproximation: 'UTC used as JDTDB at Explorer precision' },
+    precision: {
       tier: ASTRONOMY_PRECISION.tier,
+      providerTier: 'jpl-table1-approximation',
       comparisonGateDeg: ASTRONOMY_PRECISION.comparisonGateDeg,
       validFrom: ASTRONOMY_PRECISION.validFrom,
       validUntil: ASTRONOMY_PRECISION.validUntil,
@@ -166,8 +187,8 @@ export function calculateMarsObservation({ observer, at = new Date(), precision 
         'no-topocentric-parallax-or-refraction',
         'no-local-horizon-daylight-weather',
       ]),
-    }),
-    provenance: Object.freeze({
+    },
+    provenance: {
       kind: 'calculated',
       sampleCount: null,
       sampleReason: 'deterministic calculation, not an observation sample',
@@ -175,14 +196,59 @@ export function calculateMarsObservation({ observer, at = new Date(), precision 
       sourceUrl: 'https://ssd.jpl.nasa.gov/planets/approx_pos.html',
       comparisonSource: 'NASA/JPL Horizons observer ephemeris',
       comparisonUrl: 'https://ssd-api.jpl.nasa.gov/doc/horizons.html',
-    }),
+    },
   });
 }
 
-// Observation Planner의 주광 경계에만 쓰는 태양 중심의 기하학적 위치다.
-// Earth/Moon barycenter 근사 벡터의 반대 방향을 사용하므로 일출·일몰 시각이나
-// 태양 관측 안전 판정으로 승격하지 않는다. -18° 기준의 의미는 USNO 정의를 따르되,
-// 현지 지평선·굴절이 없는 15분 계산 격자라는 제한을 Planner가 함께 표시한다.
+export function calculateMarsObservationFromGeocentricIcrf({
+  observer,
+  at = new Date(),
+  geocentricIcrfAu,
+  provider = null,
+} = {}) {
+  const date = normalizedDate(at);
+  const normalizedObserver = normalizeAstronomyObserver(observer);
+  const coordinates = observationCoordinatesFromGeocentricIcrf(
+    geocentricIcrfAu,
+    normalizedObserver,
+    date,
+  );
+  return observationResult({
+    target: 'mars',
+    observer: normalizedObserver,
+    date,
+    coordinates,
+    frame: 'ICRF-J2000-geocentric-geometric',
+    sourceFrame: FRAME.GEOCENTRIC_ICRF_J2000,
+    time: {
+      sourceTimeScale: 'UT',
+      dynamicsApproximation: null,
+    },
+    precision: {
+      tier: ASTRONOMY_PRECISION.tier,
+      providerTier: 'jpl-horizons-geometric-vectors',
+      comparisonGateDeg: ASTRONOMY_PRECISION.comparisonGateDeg,
+      interpolation: provider?.interpolation?.kind || 'server-cache-provider',
+      limitations: Object.freeze([
+        'horizons-vector-correction-none-geometric-not-apparent',
+        'horizontal-uses-iau1976-precession-only',
+        'no-topocentric-parallax-or-refraction',
+        'no-local-horizon-daylight-weather',
+      ]),
+    },
+    provenance: {
+      kind: 'calculated-from-state-vector',
+      sampleCount: null,
+      sampleReason: 'deterministic state-vector interpolation, not an observation sample',
+      sourceName: 'NASA/JPL Horizons · barycentric ICRF state-vector cache',
+      sourceUrl: 'https://ssd-api.jpl.nasa.gov/doc/horizons.html',
+      provider: provider?.provider || 'jpl-horizons-ssb-icrf-hermite-v1',
+      interpolation: provider?.interpolation || null,
+    },
+  });
+}
+
+// Planner의 주광 경계에만 쓰는 태양 위치. 기본 경로는 Table 1 fallback이다.
 export function calculateSunObservation({ observer, at = new Date(), precision = 'explorer' } = {}) {
   if (precision !== 'explorer') throw new RangeError('PRECISION_TIER_UNAVAILABLE');
   const date = normalizedDate(at);
@@ -191,29 +257,17 @@ export function calculateSunObservation({ observer, at = new Date(), precision =
   const ecliptic = scaleVector(earth, -1);
   const coordinates = observationCoordinatesFromGeocentricEcliptic(ecliptic, normalizedObserver, date);
 
-  return Object.freeze({
-    schema: 'earthus.astronomy-observation.v2',
+  return observationResult({
     target: 'sun',
     observer: normalizedObserver,
-    time: Object.freeze({
-      utc: date.toISOString(),
-      julianDateUtc: julianDate(date),
-      inputScale: 'UTC',
-      dynamicsApproximation: 'UTC used as JDTDB at Explorer precision',
-    }),
-    coordinates: Object.freeze({
-      raDeg: coordinates.raDeg,
-      decDeg: coordinates.decDeg,
-      distanceAu: coordinates.distanceAu,
-      frame: 'approximate-ICRF-J2000-geocentric',
-      frameContract: FRAME.GEOCENTRIC_ICRF_J2000,
-      sourceFrame: FRAME.GEOCENTRIC_ECLIPTIC_J2000,
-      equatorialOfDate: coordinates.equatorialOfDate,
-      horizontal: coordinates.horizontal,
-    }),
-    horizon: coordinates.horizontal.altitudeDeg >= 0 ? 'above' : 'below',
-    precision: Object.freeze({
+    date,
+    coordinates,
+    frame: 'approximate-ICRF-J2000-geocentric',
+    sourceFrame: FRAME.GEOCENTRIC_ECLIPTIC_J2000,
+    time: { dynamicsApproximation: 'UTC used as JDTDB at Explorer precision' },
+    precision: {
       tier: ASTRONOMY_PRECISION.tier,
+      providerTier: 'jpl-table1-approximation',
       comparisonGateDeg: ASTRONOMY_PRECISION.comparisonGateDeg,
       validFrom: ASTRONOMY_PRECISION.validFrom,
       validUntil: ASTRONOMY_PRECISION.validUntil,
@@ -224,8 +278,8 @@ export function calculateSunObservation({ observer, at = new Date(), precision =
         'no-topocentric-parallax-or-refraction',
         'no-local-horizon-weather-or-solar-safety',
       ]),
-    }),
-    provenance: Object.freeze({
+    },
+    provenance: {
       kind: 'calculated',
       sampleCount: null,
       sampleReason: 'deterministic calculation, not an observation sample',
@@ -233,6 +287,51 @@ export function calculateSunObservation({ observer, at = new Date(), precision =
       sourceUrl: 'https://ssd.jpl.nasa.gov/planets/approx_pos.html',
       definitionSource: 'U.S. Naval Observatory · Rise, Set, and Twilight Definitions',
       definitionUrl: 'https://aa.usno.navy.mil/faq/RST_defs',
-    }),
+    },
+  });
+}
+
+export function calculateSunObservationFromGeocentricIcrf({
+  observer,
+  at = new Date(),
+  geocentricIcrfAu,
+  provider = null,
+} = {}) {
+  const date = normalizedDate(at);
+  const normalizedObserver = normalizeAstronomyObserver(observer);
+  const coordinates = observationCoordinatesFromGeocentricIcrf(
+    geocentricIcrfAu,
+    normalizedObserver,
+    date,
+  );
+  return observationResult({
+    target: 'sun',
+    observer: normalizedObserver,
+    date,
+    coordinates,
+    frame: 'ICRF-J2000-geocentric-geometric',
+    sourceFrame: FRAME.GEOCENTRIC_ICRF_J2000,
+    time: { sourceTimeScale: 'UT', dynamicsApproximation: null },
+    precision: {
+      tier: ASTRONOMY_PRECISION.tier,
+      providerTier: 'jpl-horizons-geometric-vectors',
+      comparisonGateDeg: ASTRONOMY_PRECISION.comparisonGateDeg,
+      interpolation: provider?.interpolation?.kind || 'server-cache-provider',
+      limitations: Object.freeze([
+        'horizons-vector-correction-none-geometric-not-apparent',
+        'horizontal-uses-iau1976-precession-only',
+        'no-topocentric-parallax-or-refraction',
+        'no-local-horizon-weather-or-solar-safety',
+      ]),
+    },
+    provenance: {
+      kind: 'calculated-from-state-vector',
+      sampleCount: null,
+      sampleReason: 'deterministic state-vector interpolation, not an observation sample',
+      sourceName: 'NASA/JPL Horizons · barycentric ICRF state-vector cache',
+      sourceUrl: 'https://ssd-api.jpl.nasa.gov/doc/horizons.html',
+      provider: provider?.provider || 'jpl-horizons-ssb-icrf-hermite-v1',
+      interpolation: provider?.interpolation || null,
+    },
   });
 }

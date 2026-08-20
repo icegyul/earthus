@@ -27,6 +27,7 @@ import {
 import {
   solarOrbitDisplayRadius,
 } from './scale-bridge.js';
+import { installMySkyController } from './my-sky-controller.js';
 
 const IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const MOTION_BODY = Object.freeze({
@@ -529,5 +530,7 @@ cosmic3d.calculateAstronomy = function calculateAstronomyCanonical() {
   }
   return this._astronomyObservation;
 };
+
+installMySkyController(cosmic3d, { astronomyTargets, ko });
 
 export { cosmic3d };

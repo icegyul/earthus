@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - codex/aetherus-coordinate-core-v1
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read

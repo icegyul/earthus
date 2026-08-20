@@ -1,0 +1,29 @@
+{
+  "authParameter": "serviceKey",
+  "baseUrl": "https://apis.data.go.kr/B551011/TatsCnctrRateService",
+  "capturedAt": "2026-08-20T12:55:08.287330Z",
+  "contractVersion": "earthus.kto-contract.v1",
+  "method": "GET",
+  "officialApiTitle": "한국관광공사_관광지 집중률 방문자 추이 예측 정보",
+  "officialApiVersion": "1.0.0",
+  "officialReferenceUrl": "https://www.data.go.kr/data/15128555/openapi.do",
+  "operation": "tatsCnctrRatedList",
+  "optionalParameters": [
+    "_type",
+    "tAtsNm"
+  ],
+  "productionReady": false,
+  "provider": "KTO",
+  "requiredParameters": [
+    "MobileApp",
+    "MobileOS",
+    "areaCd",
+    "numOfRows",
+    "pageNo",
+    "serviceKey",
+    "signguCd"
+  ],
+  "schemaHash": "65039a74acb306c8944d224b89ac1662bd20d67166517c28c1e594a7bb155859",
+  "secretAlias": "DATA_GO_KR_SERVICE_KEY",
+  "service": "concentration"
+}

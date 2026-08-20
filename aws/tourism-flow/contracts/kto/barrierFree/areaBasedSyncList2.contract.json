@@ -1,0 +1,40 @@
+{
+  "authParameter": "serviceKey",
+  "baseUrl": "https://apis.data.go.kr/B551011/KorWithService2",
+  "capturedAt": "2026-08-20T12:55:08.287330Z",
+  "contractVersion": "earthus.kto-contract.v1",
+  "method": "GET",
+  "officialApiTitle": "한국관광공사_무장애 여행 정보",
+  "officialApiVersion": "1.0.0",
+  "officialReferenceUrl": "https://www.data.go.kr/data/15101897/openapi.do",
+  "operation": "areaBasedSyncList2",
+  "optionalParameters": [
+    "_type",
+    "areaCode",
+    "arrange",
+    "cat1",
+    "cat2",
+    "cat3",
+    "contentTypeId",
+    "lDongRegnCd",
+    "lDongSignguCd",
+    "lclsSystm1",
+    "lclsSystm2",
+    "lclsSystm3",
+    "modifiedtime",
+    "numOfRows",
+    "pageNo",
+    "showflag",
+    "sigunguCode"
+  ],
+  "productionReady": false,
+  "provider": "KTO",
+  "requiredParameters": [
+    "MobileApp",
+    "MobileOS",
+    "serviceKey"
+  ],
+  "schemaHash": "130584b4bb3a1edd7375ec802672d50e49be0fc0296a672d14540d86f89c2fac",
+  "secretAlias": "DATA_GO_KR_SERVICE_KEY",
+  "service": "barrierFree"
+}

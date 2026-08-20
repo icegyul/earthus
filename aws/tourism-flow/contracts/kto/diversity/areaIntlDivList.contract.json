@@ -1,0 +1,30 @@
+{
+  "authParameter": "serviceKey",
+  "baseUrl": "https://apis.data.go.kr/B551011/AreaTarDivService",
+  "capturedAt": "2026-08-20T12:55:08.287330Z",
+  "contractVersion": "earthus.kto-contract.v1",
+  "method": "GET",
+  "officialApiTitle": "한국관광공사_지역별 관광 다양성",
+  "officialApiVersion": "1.0.0",
+  "officialReferenceUrl": "https://www.data.go.kr/data/15151365/openapi.do",
+  "operation": "areaIntlDivList",
+  "optionalParameters": [
+    "_type",
+    "intlDivIxCd",
+    "numOfRows",
+    "pageNo",
+    "signguCd"
+  ],
+  "productionReady": false,
+  "provider": "KTO",
+  "requiredParameters": [
+    "MobileApp",
+    "MobileOS",
+    "areaCd",
+    "baseYm",
+    "serviceKey"
+  ],
+  "schemaHash": "9248f70d7c49c8da7169362c205d13a3795f66c0eb6ac1dfd457cf4c42b82f5e",
+  "secretAlias": "DATA_GO_KR_SERVICE_KEY",
+  "service": "diversity"
+}

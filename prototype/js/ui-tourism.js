@@ -9,6 +9,7 @@ import { get as getKorea } from './korea.js';
 import { loadWeatherInputsV7 } from './weather-data-v7.js';
 import { buildWeatherCardModel } from './weather-contract-v7.js';
 import { evaluateBestTime, rankAlternatives } from './tourism-flow-contract.js';
+import { ktoStateLabel, ktoSummaryRows } from './kto-tourism-contract.js';
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({
@@ -153,6 +154,8 @@ export const tourismSheet = {
     const coverage = this.snapshot?.coverage || {};
     const quality = this.snapshot?.quality || {};
     const health = this.snapshot?.health || null;
+    const ktoRows = ktoSummaryRows(this.snapshot?.ktoSummary || null);
+    const barrierFree = ktoRows.find(row => row.id === 'barrierFree');
 
     $('#tourismTitle').textContent = ko ? '관광 흐름' : 'Tourism flow';
     body.innerHTML = `
@@ -212,11 +215,31 @@ export const tourismSheet = {
           : `<p>${ko ? '현재 공식 실시간 근거로 비교할 다른 장소가 없습니다.' : 'No other place has comparable current official evidence.'}</p>`}
       </section>
 
+      <section class="tf-card tf-kto">
+        <header><small>KTO DATASETS</small><h4>${ko ? '한국관광공사 공식 자료' : 'Official Korea Tourism data'}</h4></header>
+        <p>${ko
+          ? '관광지 상대 집중률 예측, 과거 방문 지표, 차량 이동 기반 연관성, 무장애·웰니스·영문 관광정보와 지역 분석지수를 서로 다른 근거로 표시합니다. 상대 집중률과 방문 지표는 실시간 인구가 아닙니다.'
+          : 'Relative concentration forecasts, historical visitor metrics, mobility relationships, official content and regional indices remain separate evidence types. They are not live population.'}</p>
+        <div class="tf-kto-list">
+          ${ktoRows.map(row => `<article data-kto-service="${esc(row.id)}" data-state="${esc(row.state)}">
+            <div><b>${esc(ko ? row.labelKo : row.labelEn)}</b><span>${esc(ktoStateLabel(row.state, ko))}</span></div>
+            <small>${row.operationCount
+              ? `${ko ? '수집 작업' : 'Operations'} ${number(row.availableCount)}/${number(row.operationCount)} · ${ko ? '항목' : 'items'} ${number(row.itemCount)}`
+              : (ko ? '공식 수집 결과가 아직 없습니다.' : 'No official collection result yet.')}</small>
+            ${row.updatedAt ? `<time>${timeText(row.updatedAt, ko)}</time>` : ''}
+            ${row.sourceUrl ? `<a href="${esc(row.sourceUrl)}" target="_blank" rel="noopener noreferrer">${ko ? '공식 데이터셋 ↗' : 'Official dataset ↗'}</a>` : ''}
+          </article>`).join('')}
+        </div>
+        <p>${this.snapshot?.ktoSummary
+          ? `${ko ? '한국관광공사 요약 수신' : 'KTO summary received'} · ${timeText(this.snapshot.ktoSummary.generatedAt, ko)}`
+          : (ko ? '한국관광공사 수집 결과가 연결되기 전 상태입니다. 값을 만들거나 서울시 자료로 대신 채우지 않습니다.' : 'KTO collection is not connected yet; no value is fabricated or substituted from Seoul data.')}</p>
+      </section>
+
       <section class="tf-card tf-access">
         <header><small>ACCESSIBILITY</small><h4>${ko ? '접근성·운영정보' : 'Accessibility & operations'}</h4></header>
         <p>${ko
-          ? '서울시 실시간 인구 API 응답에는 휠체어 접근성, 운영시간, 휴관, 입장 가능 여부가 없습니다. 제공되지 않은 값을 추정하지 않습니다.'
-          : 'The Seoul population API does not include wheelchair access, hours, closure or admission. Missing fields are not inferred.'}</p>
+          ? `서울시 실시간 인구 API 응답에는 휠체어 접근성, 운영시간, 휴관, 입장 가능 여부가 없습니다. 한국관광공사 무장애 자료 상태는 “${ktoStateLabel(barrierFree?.state, true)}”이지만, 이 장소와 공식 콘텐츠 ID로 연결되기 전에는 접근 가능 판정을 만들지 않습니다.`
+          : `The Seoul population API does not include accessibility, hours, closure or admission. KTO barrier-free data is “${ktoStateLabel(barrierFree?.state, false)}”, but no accessibility verdict is created until this place has a verified official content-ID link.`}</p>
       </section>
 
       <section class="tf-card tf-ops">

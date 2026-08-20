@@ -88,8 +88,14 @@ else
 fi
 # boto3/botocore 는 Lambda 런타임에 이미 있다 — 넣으면 용량만 커진다.
 cp "$DIR"/*.py "$TMP"/
+# 관광 수집기는 공식 Swagger에서 고정한 Operation 계약을 런타임 검증에 쓴다.
+# 계약에는 키나 업무 응답값이 없고, 요청 파라미터명·응답 필드명만 들어 있다.
+if [ -d "$DIR/contracts" ]; then
+  cp -R "$DIR/contracts" "$TMP"/
+fi
 # 테스트/문서 파일을 빼서 용량을 줄인다
 find "$TMP" -type d \( -name tests -o -name test -o -name __pycache__ \) -prune -exec rm -rf {} + 2>/dev/null || true
+find "$TMP" -maxdepth 1 -name "test_*.py" -delete 2>/dev/null || true
 find "$TMP" -name "*.pyc" -delete 2>/dev/null || true
 
 (cd "$TMP" && zip -qr /tmp/${FN}.zip .)

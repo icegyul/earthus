@@ -6,6 +6,7 @@ import { fetchT } from '../net.js';
 import { store } from '../store.js';
 import { viewer } from '../viewer.js';
 import { towerVisual, validateTourismSnapshot } from '../tourism-flow-contract.js';
+import { validateKtoSummary } from '../kto-tourism-contract.js';
 
 const IS_LOCAL = ['127.0.0.1', 'localhost'].includes(location.hostname);
 
@@ -50,6 +51,18 @@ export const tourismFlow = {
         });
         if (healthResponse.ok) snapshot.health = await healthResponse.json();
       } catch (_) { /* health 보조 파일 실패가 현재 공식 관측까지 지우면 안 된다. */ }
+      try {
+        const ktoResponse = await fetchT(`${API.TOURISM}/kto/summary.json`, {
+          timeout: 5_000, signal: controller.signal, cache: 'no-cache',
+        });
+        if (ktoResponse.ok) {
+          const ktoSummary = await ktoResponse.json();
+          validateKtoSummary(ktoSummary);
+          snapshot.ktoSummary = ktoSummary;
+        }
+      } catch (_) {
+        // KTO 미연결·계약 불일치는 서울시 현재 관측을 지우지 않고 별도 상태로 보여준다.
+      }
       this.snapshot = snapshot;
       this.renderAt(this.selectedAt);
       document.dispatchEvent(new CustomEvent('earthus:tourism-snapshot', { detail: snapshot }));

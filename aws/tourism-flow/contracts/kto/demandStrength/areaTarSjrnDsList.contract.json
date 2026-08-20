@@ -1,0 +1,30 @@
+{
+  "authParameter": "serviceKey",
+  "baseUrl": "https://apis.data.go.kr/B551011/AreaTarDemDsService",
+  "capturedAt": "2026-08-20T12:55:08.287330Z",
+  "contractVersion": "earthus.kto-contract.v1",
+  "method": "GET",
+  "officialApiTitle": "한국관광공사_지역별 관광 수요 강도",
+  "officialApiVersion": "1.0.0",
+  "officialReferenceUrl": "https://www.data.go.kr/data/15151868/openapi.do",
+  "operation": "areaTarSjrnDsList",
+  "optionalParameters": [
+    "_type",
+    "numOfRows",
+    "pageNo",
+    "signguCd",
+    "tarSjrnDsIxCd"
+  ],
+  "productionReady": false,
+  "provider": "KTO",
+  "requiredParameters": [
+    "MobileApp",
+    "MobileOS",
+    "areaCd",
+    "baseYm",
+    "serviceKey"
+  ],
+  "schemaHash": "799c314cdf920cb3462a82902889fb9b952813cb4ac3fc8cbbab18a6013b9400",
+  "secretAlias": "DATA_GO_KR_SERVICE_KEY",
+  "service": "demandStrength"
+}

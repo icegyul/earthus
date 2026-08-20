@@ -1,0 +1,24 @@
+{
+  "capturedAt": "2026-08-20T12:55:08.287330Z",
+  "envelopeFields": [
+    "resultCode",
+    "resultMsg",
+    "pageNo",
+    "numOfRows",
+    "totalCount",
+    "items"
+  ],
+  "itemFields": {
+    "contentid": "string",
+    "cpyrhtDivCd": "string",
+    "imgname": "string",
+    "originimgurl": "string",
+    "serialnum": "string",
+    "smallimageurl": "string"
+  },
+  "officialReferenceUrl": "https://www.data.go.kr/data/15101897/openapi.do",
+  "operation": "detailImage2",
+  "provider": "KTO",
+  "schemaVersion": "earthus.kto-schema.v1",
+  "service": "barrierFree"
+}

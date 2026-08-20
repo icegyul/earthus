@@ -169,6 +169,63 @@ class TourismCollectorTest(unittest.TestCase):
         public_bytes = b"\n".join(self.fake.objects.values())
         self.assertNotIn(secret.encode(), public_bytes)
 
+    def test_kto_status_lists_approved_services_without_exposing_the_secret(self):
+        secret = "fixture-kto-secret-must-not-leak"
+        os.environ["DATA_GO_KR_SERVICE_KEY"] = secret
+        now = datetime.now(timezone.utc)
+        self.module.fetch_area = lambda name, key: raw(catalog()[8], now)
+        try:
+            result = self.module.handler({"task": "KTO_STATUS"}, None)
+        finally:
+            os.environ.pop("DATA_GO_KR_SERVICE_KEY", None)
+
+        self.assertEqual(result.get("provider"), "KTO")
+        self.assertTrue(result.get("keyConfigured"))
+        self.assertEqual(len(result.get("services", [])), 9)
+        self.assertNotIn(secret, json.dumps(result, ensure_ascii=False))
+
+    def test_kto_sync_is_routed_without_starting_the_seoul_collection(self):
+        calls = []
+
+        class Collector:
+            @staticmethod
+            def handle_event(event, **kwargs):
+                calls.append((event, kwargs))
+                return {"ok": True, "provider": "KTO"}
+
+        self.module.load_local_module = lambda name: Collector if name == "kto_collector" else None
+        self.module.fetch_area = lambda *args: self.fail("Seoul collector must not run for KTO_SYNC")
+        event = {
+            "task": "KTO_SYNC",
+            "service": "concentration",
+            "operation": "tatsCnctrRatedList",
+            "params": {"areaCd": "51", "signguCd": "51130"},
+        }
+
+        result = self.module.handler(event, None)
+
+        self.assertEqual(result, {"ok": True, "provider": "KTO"})
+        self.assertEqual(calls[0][0], event)
+        self.assertIs(calls[0][1]["s3_client"], self.fake)
+        self.assertEqual(calls[0][1]["bucket"], self.module.BUCKET)
+
+    def test_kto_daily_job_uses_the_same_isolated_collector_route(self):
+        calls = []
+
+        class Collector:
+            @staticmethod
+            def handle_event(event, **kwargs):
+                calls.append(event)
+                return {"ok": True, "task": event["task"]}
+
+        self.module.load_local_module = lambda name: Collector if name == "kto_collector" else None
+        self.module.fetch_area = lambda *args: self.fail("Seoul collector must not run for KTO job")
+
+        result = self.module.handler({"task": "KTO_VISITORS_DAILY"}, None)
+
+        self.assertEqual(result, {"ok": True, "task": "KTO_VISITORS_DAILY"})
+        self.assertEqual(calls, [{"task": "KTO_VISITORS_DAILY"}])
+
     def test_stale_provider_value_never_keeps_live_label(self):
         place = catalog()[8]
         now = datetime.now(timezone.utc)

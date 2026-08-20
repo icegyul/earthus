@@ -1,0 +1,38 @@
+{
+  "capturedAt": "2026-08-20T12:55:08.287330Z",
+  "envelopeFields": [
+    "resultCode",
+    "resultMsg",
+    "pageNo",
+    "numOfRows",
+    "totalCount",
+    "items"
+  ],
+  "itemFields": {
+    "baseAddr": "string",
+    "contentId": "string",
+    "contentTypeId": "string",
+    "cpyrhtDivCd": "string",
+    "detailAddr": "string",
+    "dist": "string",
+    "lDongRegnCd": "string",
+    "lDongSignguCd": "string",
+    "langDivCd": "string",
+    "mapX": "string",
+    "mapY": "string",
+    "mdfcnDt": "string",
+    "mlevel": "string",
+    "orgImage": "string",
+    "regDt": "string",
+    "tel": "string",
+    "thumbImage": "string",
+    "title": "string",
+    "wellnessThemaCd": "string",
+    "zipCd": "string"
+  },
+  "officialReferenceUrl": "https://www.data.go.kr/data/15144030/openapi.do",
+  "operation": "locationBasedList",
+  "provider": "KTO",
+  "schemaVersion": "earthus.kto-schema.v1",
+  "service": "wellness"
+}

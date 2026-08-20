@@ -1,0 +1,27 @@
+{
+  "capturedAt": "2026-08-20T12:55:08.287330Z",
+  "envelopeFields": [
+    "resultCode",
+    "resultMsg",
+    "pageNo",
+    "numOfRows",
+    "totalCount",
+    "items"
+  ],
+  "itemFields": {
+    "code": "string",
+    "lclsSystm1Cd": "string",
+    "lclsSystm1Nm": "string",
+    "lclsSystm2Cd": "string",
+    "lclsSystm2Nm": "string",
+    "lclsSystm3Cd": "string",
+    "lclsSystm3Nm": "string",
+    "name": "string",
+    "rnum": "string"
+  },
+  "officialReferenceUrl": "https://www.data.go.kr/data/15101897/openapi.do",
+  "operation": "lclsSystmCode2",
+  "provider": "KTO",
+  "schemaVersion": "earthus.kto-schema.v1",
+  "service": "barrierFree"
+}

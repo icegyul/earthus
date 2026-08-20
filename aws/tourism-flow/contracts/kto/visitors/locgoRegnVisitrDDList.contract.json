@@ -1,0 +1,27 @@
+{
+  "authParameter": "serviceKey",
+  "baseUrl": "https://apis.data.go.kr/B551011/DataLabService",
+  "capturedAt": "2026-08-20T12:55:08.287330Z",
+  "contractVersion": "earthus.kto-contract.v1",
+  "method": "GET",
+  "officialApiTitle": "한국관광공사_빅데이터_지역별 방문자수_GW",
+  "officialApiVersion": "1.0.0",
+  "officialReferenceUrl": "https://www.data.go.kr/data/15101972/openapi.do",
+  "operation": "locgoRegnVisitrDDList",
+  "optionalParameters": [
+    "numOfRows",
+    "pageNo"
+  ],
+  "productionReady": false,
+  "provider": "KTO",
+  "requiredParameters": [
+    "MobileApp",
+    "MobileOS",
+    "endYmd",
+    "serviceKey",
+    "startYmd"
+  ],
+  "schemaHash": "ab6b4b29765c010ebe50c12ef776f69502c1688895baece3623df3e4d4cdc930",
+  "secretAlias": "DATA_GO_KR_SERVICE_KEY",
+  "service": "visitors"
+}

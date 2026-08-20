@@ -1,0 +1,43 @@
+{
+  "capturedAt": "2026-08-20T12:55:08.287330Z",
+  "envelopeFields": [
+    "resultCode",
+    "resultMsg",
+    "pageNo",
+    "numOfRows",
+    "totalCount",
+    "items"
+  ],
+  "itemFields": {
+    "addr1": "string",
+    "addr2": "string",
+    "areacode": "string",
+    "cat1": "string",
+    "cat2": "string",
+    "cat3": "string",
+    "contentid": "string",
+    "contenttypeid": "string",
+    "cpyrhtDivCd": "string",
+    "createdtime": "string",
+    "firstimage": "string",
+    "firstimage2": "string",
+    "lDongRegnCd": "string",
+    "lDongSignguCd": "string",
+    "lclsSystm1": "string",
+    "lclsSystm2": "string",
+    "lclsSystm3": "string",
+    "mapx": "string",
+    "mapy": "string",
+    "mlevel": "string",
+    "modifiedtime": "string",
+    "sigungucode": "string",
+    "tel": "string",
+    "title": "string",
+    "zipcode": "string"
+  },
+  "officialReferenceUrl": "https://www.data.go.kr/data/15101753/openapi.do",
+  "operation": "areaBasedList2",
+  "provider": "KTO",
+  "schemaVersion": "earthus.kto-schema.v1",
+  "service": "english"
+}

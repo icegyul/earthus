@@ -16,12 +16,15 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import os
 import statistics
+import sys
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import boto3
 
@@ -47,6 +50,50 @@ USER_AGENT = "earthus-tourism-flow/1.0 (+https://earthus.net)"
 PROCESSOR_VERSION = "tourism-flow-collector.v2"
 
 s3 = boto3.client("s3", region_name=REGION)
+
+
+def load_local_module(name):
+    """Lambda와 경로 기반 단위테스트에서 같은 로컬 모듈을 읽는다."""
+    try:
+        return __import__(name)
+    except ModuleNotFoundError:
+        path = Path(__file__).with_name(f"{name}.py")
+        spec = importlib.util.spec_from_file_location(f"earthus_{name}", path)
+        module = importlib.util.module_from_spec(spec)
+        module_folder = str(path.parent)
+        inserted = module_folder not in sys.path
+        if inserted:
+            sys.path.insert(0, module_folder)
+        try:
+            spec.loader.exec_module(module)
+        finally:
+            if inserted:
+                sys.path.remove(module_folder)
+        return module
+
+
+def kto_status():
+    provider = load_local_module("kto_provider")
+    aliases = (
+        name for name in ("DATA_GO_KR_SERVICE_KEY", "DATA_GO_KR_KEY")
+        if str(os.environ.get(name) or "").strip()
+    )
+    configured_alias = next(aliases, None)
+    return {
+        "schemaVersion": "earthus.kto-status.v1",
+        "provider": "KTO",
+        "keyConfigured": configured_alias is not None,
+        "configuredAlias": configured_alias,
+        "services": [
+            {
+                "id": service,
+                "baseUrl": config["base_url"],
+                "operations": list(config["operations"]),
+                "productionReady": False,
+            }
+            for service, config in provider.KTO_SERVICES.items()
+        ],
+    }
 
 
 def iso(value: datetime) -> str:
@@ -285,6 +332,18 @@ def build_snapshot(responses, catalog, mode, received_at, now, error_count=0):
 
 
 def handler(event, context):
+    event = event if isinstance(event, dict) else {}
+    task = str(event.get("task") or "").upper()
+    if task == "KTO_STATUS":
+        return kto_status()
+    if task.startswith("KTO_"):
+        collector = load_local_module("kto_collector")
+        return collector.handle_event(
+            event,
+            s3_client=s3,
+            bucket=BUCKET,
+            environ=os.environ,
+        )
     started = datetime.now(timezone.utc)
     received_at = iso(started)
     mode = "FULL" if SEOUL_KEYS else "SAMPLE"

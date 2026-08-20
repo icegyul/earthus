@@ -38,6 +38,27 @@ const snapshot = {
   places: [place], source: { name: '서울특별시 실시간 인구데이터',
     url: 'https://data.seoul.go.kr/dataList/OA-21778/A/1/datasetView.do', license: '공공누리 제1유형' },
 };
+const ktoSummary = {
+  schemaVersion: 'earthus.kto-summary.v1', provider: 'KTO', generatedAt: received, state: 'PARTIAL',
+  services: {
+    concentration: {
+      sourceName: '한국관광공사 관광지 집중률 방문자 추이 예측 정보',
+      sourceUrl: 'https://www.data.go.kr/data/15128555/openapi.do', updatedAt: received,
+      operations: { tatsCnctrRatedList: { state: 'AVAILABLE',
+        semanticType: 'RELATIVE_CONCENTRATION_FORECAST', sourceType: 'PROVIDER_FORECAST',
+        updatedAt: received, itemCount: 5,
+        path: '/tourism/kto/concentration/tatsCnctrRatedList.json' } },
+    },
+    barrierFree: {
+      sourceName: '한국관광공사 무장애 여행 정보',
+      sourceUrl: 'https://www.data.go.kr/data/15101897/openapi.do', updatedAt: received,
+      operations: { areaBasedSyncList2: { state: 'AVAILABLE',
+        semanticType: 'OFFICIAL_BARRIER_FREE_TOURISM_CONTENT', sourceType: 'OFFICIAL_INFORMATION',
+        updatedAt: received, itemCount: 20,
+        path: '/tourism/kto/barrierFree/areaBasedSyncList2.json' } },
+    },
+  },
+};
 
 const browser = await chromium.launch({ headless: true, executablePath });
 try {
@@ -54,6 +75,9 @@ try {
       status: 200, contentType: 'application/json; charset=utf-8',
       body: JSON.stringify({ schemaVersion: 'earthus.tourism-health.v1', generatedAt: received,
         state: 'OK', mode: 'SAMPLE', coverage: snapshot.coverage }),
+    }));
+    await page.route('**/tourism/kto/summary.json*', route => route.fulfill({
+      status: 200, contentType: 'application/json; charset=utf-8', body: JSON.stringify(ktoSummary),
     }));
     await page.goto(target, { waitUntil: 'domcontentloaded', timeout: 30_000 });
     await page.waitForFunction(() => window.__e?.store, null, { timeout: 30_000 });
@@ -117,10 +141,17 @@ try {
     assert.match(forecast.text, /1\/121|광화문·덕수궁 1곳만 공식 조회/);
     assert.match(forecast.text, /자료 운영 상태/);
     assert.match(forecast.text, /수집기 OK · SAMPLE/);
+    assert.match(forecast.text, /한국관광공사 공식 자료/);
+    assert.match(forecast.text, /관광지 상대 집중률 예측/);
+    assert.match(forecast.text, /실시간 인구가 아닙니다/);
+    assert.match(forecast.text, /공식 무장애 여행 정보[\s\S]{0,80}자료 있음/);
+    assert.match(forecast.text, /공식 콘텐츠 ID로 연결되기 전에는 접근 가능 판정을 만들지 않습니다/);
     assert.doesNotMatch(forecast.text, /안전합니다|가도 됩니다|수용 가능/);
     assert.ok(forecast.overflow <= 0, `${viewport.name} horizontal overflow: ${forecast.overflow}`);
     assert.ok(forecast.targets.every(item => item.width >= 43.9 && item.height >= 43.9),
       `${viewport.name} 44px target violation: ${JSON.stringify(forecast.targets.filter(item => item.width < 43.9 || item.height < 43.9))}`);
+    await page.locator('#tourismSheet .tf-kto').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: `/private/tmp/earthus-tourism-kto-${viewport.name}.png` });
 
     // 레이어 OFF 뒤에는 보이지 않고 추가 provider 요청도 일어나지 않는다.
     await page.evaluate(async () => {

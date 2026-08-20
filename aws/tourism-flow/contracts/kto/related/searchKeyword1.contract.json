@@ -1,0 +1,30 @@
+{
+  "authParameter": "serviceKey",
+  "baseUrl": "https://apis.data.go.kr/B551011/TarRlteTarService1",
+  "capturedAt": "2026-08-20T12:55:08.287330Z",
+  "contractVersion": "earthus.kto-contract.v1",
+  "method": "GET",
+  "officialApiTitle": "한국관광공사_관광지별 연관 관광지 정보",
+  "officialApiVersion": "1.0.0",
+  "officialReferenceUrl": "https://www.data.go.kr/data/15128560/openapi.do",
+  "operation": "searchKeyword1",
+  "optionalParameters": [
+    "_type"
+  ],
+  "productionReady": false,
+  "provider": "KTO",
+  "requiredParameters": [
+    "MobileApp",
+    "MobileOS",
+    "areaCd",
+    "baseYm",
+    "keyword",
+    "numOfRows",
+    "pageNo",
+    "serviceKey",
+    "signguCd"
+  ],
+  "schemaHash": "c137ae9581b3a1ece15e09720a3a8b3b160cc8100fb56b59465ce81754e48aa2",
+  "secretAlias": "DATA_GO_KR_SERVICE_KEY",
+  "service": "related"
+}

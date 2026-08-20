@@ -1,0 +1,29 @@
+{
+  "authParameter": "serviceKey",
+  "baseUrl": "https://apis.data.go.kr/B551011/WellnessTursmService",
+  "capturedAt": "2026-08-20T12:55:08.287330Z",
+  "contractVersion": "earthus.kto-contract.v1",
+  "method": "GET",
+  "officialApiTitle": "한국관광공사_웰니스관광정보",
+  "officialApiVersion": "1.0.0",
+  "officialReferenceUrl": "https://www.data.go.kr/data/15144030/openapi.do",
+  "operation": "ldongCode",
+  "optionalParameters": [
+    "_type",
+    "lDongListYn",
+    "lDongRegnCd",
+    "numOfRows",
+    "pageNo"
+  ],
+  "productionReady": false,
+  "provider": "KTO",
+  "requiredParameters": [
+    "MobileApp",
+    "MobileOS",
+    "langDivCd",
+    "serviceKey"
+  ],
+  "schemaHash": "c27fb6a79153def55c80bca1c2c50f61183984ceaaca1b81de0589f6fc6e479a",
+  "secretAlias": "DATA_GO_KR_SERVICE_KEY",
+  "service": "wellness"
+}

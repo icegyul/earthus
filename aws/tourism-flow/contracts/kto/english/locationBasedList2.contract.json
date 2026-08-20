@@ -1,0 +1,42 @@
+{
+  "authParameter": "serviceKey",
+  "baseUrl": "https://apis.data.go.kr/B551011/EngService2",
+  "capturedAt": "2026-08-20T12:55:08.287330Z",
+  "contractVersion": "earthus.kto-contract.v1",
+  "method": "GET",
+  "officialApiTitle": "한국관광공사_영문 관광정보서비스_GW",
+  "officialApiVersion": "1.0.0",
+  "officialReferenceUrl": "https://www.data.go.kr/data/15101753/openapi.do",
+  "operation": "locationBasedList2",
+  "optionalParameters": [
+    "_type",
+    "areaCode",
+    "arrange",
+    "cat1",
+    "cat2",
+    "cat3",
+    "contentTypeId",
+    "lDongRegnCd",
+    "lDongSignguCd",
+    "lclsSystm1",
+    "lclsSystm2",
+    "lclsSystm3",
+    "modifiedtime",
+    "numOfRows",
+    "pageNo",
+    "sigunguCode"
+  ],
+  "productionReady": false,
+  "provider": "KTO",
+  "requiredParameters": [
+    "MobileApp",
+    "MobileOS",
+    "mapX",
+    "mapY",
+    "radius",
+    "serviceKey"
+  ],
+  "schemaHash": "05563b6ac16225ca9ba3291647eb0691f5cb954d6330bc87b0683136c01bd9c0",
+  "secretAlias": "DATA_GO_KR_SERVICE_KEY",
+  "service": "english"
+}

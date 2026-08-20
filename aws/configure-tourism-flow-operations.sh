@@ -27,6 +27,29 @@ aws lambda add-permission --function-name "$FUNCTION" --region "$REGION" \
   --principal events.amazonaws.com --source-arn "$RULE_ARN" >/dev/null 2>&1 \
   || true
 
+# KTO 지역별 방문 지표는 최근 7일을 매일 재수집한다. 다만 공식 인증·계약 Smoke와
+# raw/normalized 적재 확인 전에는 실행하면 안 되므로 규칙을 DISABLED로 만든다.
+# KTO P0 Smoke Test 통과 후 운영자가 enable-rule로 한 번만 승격한다.
+KTO_VISITOR_RULE="tourism-flow-kto-visitors-daily"
+KTO_VISITOR_TARGETS="[{\"Id\":\"1\",\"Arn\":\"${ARN}\",\"Input\":\"{\\\"task\\\":\\\"KTO_VISITORS_DAILY\\\"}\"}]"
+aws events put-rule --name "$KTO_VISITOR_RULE" --region "$REGION" \
+  --schedule-expression 'cron(35 19 * * ? *)' \
+  --description 'earthus · KTO 지역별 방문 지표 최근 7일 재수집' \
+  --state DISABLED >/dev/null
+KTO_FAILED_TARGETS="$(aws events put-targets --rule "$KTO_VISITOR_RULE" --region "$REGION" \
+  --targets "$KTO_VISITOR_TARGETS" \
+  --query FailedEntryCount --output text)"
+if [ "$KTO_FAILED_TARGETS" != "0" ]; then
+  echo "❌ KTO EventBridge target 연결 실패: ${KTO_FAILED_TARGETS}건" >&2
+  exit 1
+fi
+KTO_RULE_ARN="$(aws events describe-rule --name "$KTO_VISITOR_RULE" --region "$REGION" \
+  --query Arn --output text)"
+aws lambda add-permission --function-name "$FUNCTION" --region "$REGION" \
+  --statement-id "${KTO_VISITOR_RULE}-invoke" --action lambda:InvokeFunction \
+  --principal events.amazonaws.com --source-arn "$KTO_RULE_ARN" >/dev/null 2>&1 \
+  || true
+
 # 수집 payload는 S3 불변 history가 정본이다. CloudWatch 원문 로그는 30일만 둔다.
 if ! aws logs put-retention-policy --log-group-name "/aws/lambda/${FUNCTION}" \
   --retention-in-days 30 --region "$REGION"; then
@@ -36,4 +59,6 @@ if ! aws logs put-retention-policy --log-group-name "/aws/lambda/${FUNCTION}" \
 fi
 
 aws events describe-rule --name "$RULE" --region "$REGION" \
+  --query '{State:State,ScheduleExpression:ScheduleExpression,Arn:Arn}' --output json
+aws events describe-rule --name "$KTO_VISITOR_RULE" --region "$REGION" \
   --query '{State:State,ScheduleExpression:ScheduleExpression,Arn:Arn}' --output json

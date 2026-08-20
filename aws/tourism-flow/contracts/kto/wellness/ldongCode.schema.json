@@ -1,0 +1,25 @@
+{
+  "capturedAt": "2026-08-20T12:55:08.287330Z",
+  "envelopeFields": [
+    "resultCode",
+    "resultMsg",
+    "pageNo",
+    "numOfRows",
+    "totalCount",
+    "items"
+  ],
+  "itemFields": {
+    "code": "string",
+    "lDongRegnCd": "string",
+    "lDongRegnNm": "string",
+    "lDongSignguCd": "string",
+    "lDongSignguNm": "string",
+    "name": "string",
+    "rnum": "string"
+  },
+  "officialReferenceUrl": "https://www.data.go.kr/data/15144030/openapi.do",
+  "operation": "ldongCode",
+  "provider": "KTO",
+  "schemaVersion": "earthus.kto-schema.v1",
+  "service": "wellness"
+}

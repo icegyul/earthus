@@ -1,9 +1,9 @@
 name: Aetherus journey apply 903d2f19
 
 on:
-  push:
+  pull_request:
     branches:
-      - mission/aetherus-journey-903d2f19
+      - codex/aetherus-coordinate-core-v1
 
 permissions:
   contents: write
@@ -18,15 +18,17 @@ jobs:
       PATCH_B64_SHA256: 014ebfe6926c9affc4f43af21cda4f6889fa4d6f1854faa1996b554df6a8e5b1
       PATCH_SHA256: af60cc7af5a43fa097319ab70c31c3ae3f5572629585402f104862619c9e0b8e
     steps:
-      - name: Checkout mission transport
+      - name: Checkout exact mission head
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Verify target base and payload
         shell: bash
         run: |
           set -euo pipefail
+          test "$(git rev-parse HEAD)" = '${{ github.event.pull_request.head.sha }}'
           git fetch origin "$TARGET_BRANCH"
           remote_head="$(git rev-parse "origin/$TARGET_BRANCH")"
           test "$remote_head" = "$EXPECTED_BASE" || {

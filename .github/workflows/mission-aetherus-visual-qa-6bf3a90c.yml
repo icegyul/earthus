@@ -68,6 +68,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # config.local.js는 의도적으로 gitignore되어 있다. QA에서는 비밀값 없는
+          # 정본 예제를 임시 복사해 게스트/FREE_OPEN 부팅 조건만 재현한다.
+          cp prototype/js/config.local.example.js prototype/js/config.local.js
           python3 -m http.server 8799 --bind 127.0.0.1 --directory prototype > qa-server.log 2>&1 &
           echo $! > /tmp/aetherus-qa-server.pid
           for attempt in $(seq 1 40); do

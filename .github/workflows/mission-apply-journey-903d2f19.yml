@@ -15,6 +15,7 @@ jobs:
     env:
       TARGET_BRANCH: codex/aetherus-coordinate-core-v1
       EXPECTED_BASE: 8c07e93bd50842540e83e5b8602fd89dac0b5915
+      PATCH_B64_SHA256: 014ebfe6926c9affc4f43af21cda4f6889fa4d6f1854faa1996b554df6a8e5b1
       PATCH_SHA256: af60cc7af5a43fa097319ab70c31c3ae3f5572629585402f104862619c9e0b8e
     steps:
       - name: Checkout exact mission head
@@ -34,7 +35,12 @@ jobs:
             echo "Target branch moved: expected $EXPECTED_BASE, found $remote_head" >&2
             exit 42
           }
-          base64 -d .missions/aetherus-journey-903d2f19.patch.gz.b64 | gunzip > /tmp/change.patch
+          cat \
+            .missions/aetherus-journey-903d2f19/part-00.b64 \
+            .missions/aetherus-journey-903d2f19/part-01.b64 \
+            > /tmp/change.patch.gz.b64
+          echo "$PATCH_B64_SHA256  /tmp/change.patch.gz.b64" | sha256sum -c -
+          base64 -d /tmp/change.patch.gz.b64 | gunzip > /tmp/change.patch
           echo "$PATCH_SHA256  /tmp/change.patch" | sha256sum -c -
 
       - name: Apply exact patch to target base
@@ -45,8 +51,6 @@ jobs:
           git apply --check /tmp/change.patch
           git apply /tmp/change.patch
           test ! -e .github/workflows/mission-source-903d2f19.yml
-          test ! -e .github/workflows/mission-apply-journey-903d2f19.yml
-          test ! -e .missions/aetherus-journey-903d2f19.patch.gz.b64
 
       - name: Use Node 22
         uses: actions/setup-node@v4

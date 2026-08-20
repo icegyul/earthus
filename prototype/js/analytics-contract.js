@@ -19,6 +19,9 @@ export const ANALYTICS_EVENTS = Object.freeze({
   'error.shown': ['reasonCode', 'surface', 'recoverable'],
   'offline.entered': ['cacheVersion', 'staleBand'],
   'action.proposed': ['actionType', 'confirmationRequired'],
+  'tourism.place_viewed': ['placeClass', 'sourceStatusClass'],
+  'tourism.forecast_selected': ['forecastClass', 'sourceStatusClass'],
+  'tourism.watch_changed': ['state', 'sourceStatusClass'],
 });
 
 export const ANALYTICS_FORBIDDEN_KEYS = Object.freeze([
@@ -37,6 +40,7 @@ const CATEGORY_KEYS = new Set([
   'viewportBucket', 'entryKind', 'state', 'sourceStatusClass', 'evidenceClass',
   'safetyClass', 'confidenceBand', 'impactClass', 'providerResultClass', 'reasonCode',
   'surface', 'staleBand', 'actionType',
+  'placeClass', 'forecastClass',
 ]);
 const BOOLEAN_KEYS = new Set(['recoverable', 'confirmationRequired']);
 

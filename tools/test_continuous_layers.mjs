@@ -91,8 +91,8 @@ assert.match(earthViewState, /state\.layer === 'wind'[\s\S]*continuousColorLayer
   '바람 URL 복원에서 이전 기압·온도 색면을 실제 상태에서도 꺼야 한다');
 assert.match(earthViewState, /reason !== 'time-preset'[\s\S]*continuousColorLayerIds/,
   '단독 바람 선택은 색면을 정리하되 temp+wind 시간 프리셋은 보존해야 한다');
-assert.match(main, /diveParam \|\| oceanRoute \|\| earthRouteRequested \|\| aetherusRoute/,
-  'Earth Data 딥링크에서는 아름다운 첫 화면 intro를 시작하면 안 된다');
+assert.match(main, /diveParam \|\| oceanHubRoute[\s\S]*earthRouteRequested \|\| aetherusRoute/,
+  'Earth Data·legacy Ocean Hub 딥링크에서는 아름다운 첫 화면 intro를 시작하면 안 된다');
 assert.match(readability, /'wind', 'windfc'/,
   '바람도 공통 범례·도시 원격자값·지점 카드 대상이어야 한다');
 assert.match(readability, /rd-contour-meta/,

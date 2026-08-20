@@ -23,6 +23,7 @@ import { lightning } from './lightning.js';
 import { regional } from './regional.js';
 import { alerts } from './alerts.js';
 import { airStations } from './airkr.js';
+import { tourismFlow } from './tourism-flow.js';
 
 /* ── 레이어를 켤 때 그때 받는다 ────────────────────────────────
    ⚠️ 받은 지적: **"처음 접속시 모든 기능 다 꺼줘. 지구 무빙 애니메이션만. 버벅거린다."**
@@ -58,6 +59,7 @@ const LOADERS = {
      엔티티 생성과 설명 문자열 조립이 인트로 회전 중에 일어난다. */
   volcano:   () => volcanoes.load(),
   stations:  () => stations.load(),
+  tourism:   () => tourismFlow.refresh(),
 };
 
 /* 받아 둔 것을 공유하는 레이어 — 한쪽이 받았으면 다른 쪽은 다시 안 받는다 */
@@ -66,7 +68,7 @@ const LOAD_KEY = { heatdome: 'phenomena' };
 /* 켤 때마다 **다시** 받는다. 낡으면 거짓이 되는 자료다:
    해제된 특보를 띄우면 "아직 위험하다"는 거짓이고,
    5분 전 낙뢰를 지금이라고 말하면 뇌우의 위치를 틀리게 알려준다. */
-const ALWAYS_FRESH = new Set(['lightning', 'alerts', 'tsunami']);
+const ALWAYS_FRESH = new Set(['lightning', 'alerts', 'tsunami', 'tourism']);
 
 /* 첫 자료 요청을 미루는 시간.
    ⚠️ 인트로는 줌인 4초 + 그 뒤 회전이다. 예전 값 3,500ms 는 **줌인 한가운데**였다.
@@ -109,6 +111,7 @@ const REFRESH = {
      ⚠️ 더 자주 물어봐야 같은 파일이다 — 190KB 를 헛되이 다시 받을 뿐이다.
         원본 주기보다 촘촘한 폴링은 순수한 발열이다. */
   ukfc: 60 * 60_000,
+  tourism: 5 * 60_000,
 };
 
 export const registry = {
@@ -126,6 +129,7 @@ export const registry = {
     pointLayers.landobs  = landObs.init();
     pointLayers.ukfc     = ukForecast.init();
     pointLayers.poi      = poi.init();
+    pointLayers.tourism  = tourismFlow.init();
     pointLayers.buoy     = buoys.init();
     pointLayers.airkr    = airStations.init();
     pointLayers.lightning = lightning.init();
@@ -184,7 +188,7 @@ export const registry = {
           다시 방문한 사람은 켜 뒀던 것만 순서대로 돌아온다. */
     const seq = ['cyclone', 'phenomena', 'heatdome', 'news', 'wildfire',
                  'launch', 'orbits', 'aurora',
-                 'buoy', 'airkr', 'lightning', 'regional', 'alerts', 'ukfc']
+                 'buoy', 'airkr', 'lightning', 'regional', 'alerts', 'ukfc', 'tourism']
       .filter(id => store.isOn(id));
 
     for (const id of seq) {
@@ -269,6 +273,7 @@ export const registry = {
     on('regional', LOADERS.regional, REFRESH.regional);
     on('alerts',   LOADERS.alerts,   REFRESH.alerts);
     on('ukfc',     LOADERS.ukfc,     REFRESH.ukfc);
+    on('tourism',  LOADERS.tourism,  REFRESH.tourism);
     on('clouds',   () => imagery._addClouds(), REFRESH.clouds);
   },
 
@@ -307,6 +312,7 @@ export const registry = {
     else if (id === 'eclipse') eclipseMarks.set(store.isOn(id));
     else if (id === 'phenomena') phenomena.set(store.isOn(id));
     else if (id === 'heatdome') phenomena.setHeat(store.isOn(id));
+    else if (id === 'tourism') tourismFlow.set(store.isOn(id));
     else if (pointLayers[id]) pointLayers[id].applyVisibility();
     if (id === 'launch') launchPads.set(store.isOn('launch'));
 
@@ -387,6 +393,7 @@ export const registry = {
   /** 카메라가 멈췄을 때 — 뷰포트 기반 로딩 (§5-1) */
   onCameraIdle() {
     poi.refresh();
+    tourismFlow.applyVisibility();
     wind.refresh();
     gridOverlay.refreshResolution();
   },

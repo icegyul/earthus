@@ -128,6 +128,9 @@ const SRC = {
               url: 'https://www.gdeltproject.org/', every: 30 },
   poi:      { ko: '© OpenStreetMap contributors · ODbL 1.0',
               en: '© OpenStreetMap contributors · ODbL 1.0', every: 60 },
+  tourism:  { ko: '서울특별시 실시간 인구데이터 · 공공누리 제1유형',
+              en: 'Seoul Metropolitan Government real-time population · KOGL Type 1',
+              url: 'https://data.seoul.go.kr/dataList/OA-21778/A/1/datasetView.do', every: 5 },
   orbits:   { ko: 'CelesTrak OMM JSON + SATCAT · 하루 1회 캐시',
               en: 'CelesTrak OMM JSON + SATCAT · cached daily', every: 1440 },
 };
@@ -144,7 +147,7 @@ const PRIORITY = ['gk2aAuto', 'gk2aNightLow', 'gk2aIR', 'gk2aVIS', 'gk2aVISea', 
                   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone',
                   'sst', 'wave', 'swell', 'current', 'wind', 'windfc',
                   'coverage', 'ukfc', 'landobs', 'buoy', 'lightning', 'wildfire', 'cyclone', 'quake', 'tsunami', 'aurora', 'news',
-                  'poi', 'orbits'];
+                  'tourism', 'poi', 'orbits'];
 
 /* 지구 표면을 통째로 칠하는 레이어들 — 화면을 지배하므로 출처도 이쪽이 우선이다.
    ⚠️ 점·선 레이어(산불·지진·태풍·낙뢰)는 여기 넣지 않는다. 그것들은 위에 얹히는 것이라

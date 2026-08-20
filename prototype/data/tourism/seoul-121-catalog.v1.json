@@ -1,0 +1,1832 @@
+{
+  "schemaVersion": "earthus.tourism-place-catalog.v1",
+  "generatedFrom": "서울시 2026-04-02 공식 배포 XLSX·SHP",
+  "source": {
+    "publisher": "서울특별시",
+    "dataset": "서울시 실시간 도시데이터",
+    "datasetUrl": "https://data.seoul.go.kr/dataList/OA-21285/F/1/datasetView.do",
+    "files": [
+      "서울시 주요 121장소 목록.xlsx",
+      "서울시 주요 121장소 영역.zip"
+    ],
+    "license": "공공누리 제1유형",
+    "redisplay": "출처표시 · 상업적 이용 및 변경 가능"
+  },
+  "places": [
+    {
+      "code": "POI001",
+      "category": "관광특구",
+      "nameKo": "강남 MICE 관광특구",
+      "nameEn": "Gangnam MICE Special Tourist Zone",
+      "lat": 37.5109994,
+      "lon": 127.0600607,
+      "bbox": [
+        127.057005,
+        37.507891,
+        127.062893,
+        37.513903
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI002",
+      "category": "관광특구",
+      "nameKo": "동대문 관광특구",
+      "nameEn": "Dongdaemun Fashion Town Special Tourist Zone",
+      "lat": 37.5673111,
+      "lon": 127.0110232,
+      "bbox": [
+        127.004277,
+        37.564573,
+        127.018004,
+        37.569757
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI003",
+      "category": "관광특구",
+      "nameKo": "명동 관광특구",
+      "nameEn": "Myeong-dong Namdaemun Bukchang-dong Da-dong Mugyo-dong Special Tourist Zone",
+      "lat": 37.5641494,
+      "lon": 126.9818508,
+      "bbox": [
+        126.975627,
+        37.557681,
+        126.988797,
+        37.569293
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI004",
+      "category": "관광특구",
+      "nameKo": "이태원 관광특구",
+      "nameEn": "Itaewon Special Tourist Zone",
+      "lat": 37.5344393,
+      "lon": 126.9943774,
+      "bbox": [
+        126.98806,
+        37.530237,
+        127.002713,
+        37.538937
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI005",
+      "category": "관광특구",
+      "nameKo": "잠실 관광특구",
+      "nameEn": "Jamsil Special Tourist Zone",
+      "lat": 37.5164794,
+      "lon": 127.1152741,
+      "bbox": [
+        127.092721,
+        37.505837,
+        127.130953,
+        37.525913
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI006",
+      "category": "관광특구",
+      "nameKo": "종로·청계 관광특구",
+      "nameEn": "Jongno Cheonggye Special Toruist Zone",
+      "lat": 37.5700017,
+      "lon": 126.9973704,
+      "bbox": [
+        126.977512,
+        37.568127,
+        127.01566,
+        37.573045
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI007",
+      "category": "관광특구",
+      "nameKo": "홍대 관광특구",
+      "nameEn": "HongDae Culture & Arts Special Tourist Zone",
+      "lat": 37.5539193,
+      "lon": 126.921276,
+      "bbox": [
+        126.911679,
+        37.547864,
+        126.931641,
+        37.561793
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI008",
+      "category": "고궁·문화유산",
+      "nameKo": "경복궁",
+      "nameEn": "Gyeongbokgung Palace",
+      "lat": 37.5798759,
+      "lon": 126.9767642,
+      "bbox": [
+        126.9736,
+        37.575702,
+        126.980127,
+        37.583738
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI009",
+      "category": "고궁·문화유산",
+      "nameKo": "광화문·덕수궁",
+      "nameEn": "Gwanghwamun & Deoksugung Palace",
+      "lat": 37.5709309,
+      "lon": 126.9771868,
+      "bbox": [
+        126.9732507,
+        37.5627171,
+        126.9830744,
+        37.5775077
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI010",
+      "category": "고궁·문화유산",
+      "nameKo": "보신각",
+      "nameEn": "Bosingak",
+      "lat": 37.5705862,
+      "lon": 126.9834153,
+      "bbox": [
+        126.98053,
+        37.568475,
+        126.985883,
+        37.572679
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI011",
+      "category": "고궁·문화유산",
+      "nameKo": "서울 암사동 유적",
+      "nameEn": "Amsa Prehistoric Settlement Site",
+      "lat": 37.5606334,
+      "lon": 127.130763,
+      "bbox": [
+        127.127988,
+        37.557991,
+        127.132878,
+        37.563836
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI012",
+      "category": "고궁·문화유산",
+      "nameKo": "창덕궁·종묘",
+      "nameEn": "Changdeokgung Palace & Jongmyo Shrine",
+      "lat": 37.5786953,
+      "lon": 126.9933513,
+      "bbox": [
+        126.987674,
+        37.570451,
+        127.000317,
+        37.587636
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI013",
+      "category": "인구밀집지역",
+      "nameKo": "가산디지털단지역",
+      "nameEn": "Gasan Digital Complex station",
+      "lat": 37.4808901,
+      "lon": 126.8801067,
+      "bbox": [
+        126.871763,
+        37.474937,
+        126.889885,
+        37.486672
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI014",
+      "category": "인구밀집지역",
+      "nameKo": "강남역",
+      "nameEn": "Gangnam station",
+      "lat": 37.4988566,
+      "lon": 127.0281337,
+      "bbox": [
+        127.022828,
+        37.492532,
+        127.033389,
+        37.505017
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI015",
+      "category": "인구밀집지역",
+      "nameKo": "건대입구역",
+      "nameEn": "Konkuk University station",
+      "lat": 37.5399698,
+      "lon": 127.0682041,
+      "bbox": [
+        127.062844,
+        37.536878,
+        127.074479,
+        37.544121
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI016",
+      "category": "인구밀집지역",
+      "nameKo": "고덕역",
+      "nameEn": "Godeok station",
+      "lat": 37.5534551,
+      "lon": 127.1548711,
+      "bbox": [
+        127.152809,
+        37.551704,
+        127.156572,
+        37.555383
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI017",
+      "category": "인구밀집지역",
+      "nameKo": "고속터미널역",
+      "nameEn": "Express Bus Terminal station",
+      "lat": 37.5048141,
+      "lon": 127.0058548,
+      "bbox": [
+        127.001074,
+        37.502213,
+        127.010416,
+        37.507387
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI018",
+      "category": "인구밀집지역",
+      "nameKo": "교대역",
+      "nameEn": "Seoul National University of Education station",
+      "lat": 37.4922009,
+      "lon": 127.0139571,
+      "bbox": [
+        127.010827,
+        37.487856,
+        127.017914,
+        37.495247
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI019",
+      "category": "인구밀집지역",
+      "nameKo": "구로디지털단지역",
+      "nameEn": "Guro Digital Complex station",
+      "lat": 37.4838778,
+      "lon": 126.8961829,
+      "bbox": [
+        126.890743,
+        37.480512,
+        126.902915,
+        37.487878
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI020",
+      "category": "인구밀집지역",
+      "nameKo": "구로역",
+      "nameEn": "Guro station",
+      "lat": 37.5023484,
+      "lon": 126.8821168,
+      "bbox": [
+        126.879794,
+        37.50027,
+        126.884179,
+        37.504456
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI021",
+      "category": "인구밀집지역",
+      "nameKo": "군자역",
+      "nameEn": "Gunja station",
+      "lat": 37.5563158,
+      "lon": 127.0801941,
+      "bbox": [
+        127.076406,
+        37.554054,
+        127.084827,
+        37.558843
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI023",
+      "category": "인구밀집지역",
+      "nameKo": "대림역",
+      "nameEn": "Daerim station",
+      "lat": 37.492667,
+      "lon": 126.8955414,
+      "bbox": [
+        126.890503,
+        37.488765,
+        126.900397,
+        37.496093
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI024",
+      "category": "인구밀집지역",
+      "nameKo": "동대문역",
+      "nameEn": "Dongdaemun station",
+      "lat": 37.5714824,
+      "lon": 127.0096587,
+      "bbox": [
+        127.006667,
+        37.569635,
+        127.012645,
+        37.573693
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI025",
+      "category": "인구밀집지역",
+      "nameKo": "뚝섬역",
+      "nameEn": "Ttukseom station",
+      "lat": 37.5482904,
+      "lon": 127.0461362,
+      "bbox": [
+        127.03927,
+        37.545482,
+        127.050683,
+        37.551597
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI026",
+      "category": "인구밀집지역",
+      "nameKo": "미아사거리역",
+      "nameEn": "Miasageori station",
+      "lat": 37.6121954,
+      "lon": 127.0307414,
+      "bbox": [
+        127.027938,
+        37.607801,
+        127.035058,
+        37.616611
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI027",
+      "category": "인구밀집지역",
+      "nameKo": "발산역",
+      "nameEn": "Balsan station",
+      "lat": 37.5591522,
+      "lon": 126.8391764,
+      "bbox": [
+        126.833173,
+        37.555356,
+        126.845719,
+        37.563356
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI029",
+      "category": "인구밀집지역",
+      "nameKo": "사당역",
+      "nameEn": "Sadang station",
+      "lat": 37.4779304,
+      "lon": 126.9812643,
+      "bbox": [
+        126.977907,
+        37.473551,
+        126.985543,
+        37.480759
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI030",
+      "category": "인구밀집지역",
+      "nameKo": "삼각지역",
+      "nameEn": "Samgakji station",
+      "lat": 37.5353417,
+      "lon": 126.9738865,
+      "bbox": [
+        126.971842,
+        37.533994,
+        126.975908,
+        37.537021
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI031",
+      "category": "인구밀집지역",
+      "nameKo": "서울대입구역",
+      "nameEn": "Seoul National University station",
+      "lat": 37.4806124,
+      "lon": 126.9530606,
+      "bbox": [
+        126.950149,
+        37.47804,
+        126.955818,
+        37.483562
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI032",
+      "category": "인구밀집지역",
+      "nameKo": "서울식물원·마곡나루역",
+      "nameEn": "Seoul Botanic Park·Magongnaru station",
+      "lat": 37.5675967,
+      "lon": 126.8310607,
+      "bbox": [
+        126.824394,
+        37.563421,
+        126.837587,
+        37.572566
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI033",
+      "category": "인구밀집지역",
+      "nameKo": "서울역",
+      "nameEn": "Seoul station",
+      "lat": 37.5565961,
+      "lon": 126.973034,
+      "bbox": [
+        126.969171,
+        37.553087,
+        126.976858,
+        37.559701
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI034",
+      "category": "인구밀집지역",
+      "nameKo": "선릉역",
+      "nameEn": "Seolleung station",
+      "lat": 37.5060542,
+      "lon": 127.0498076,
+      "bbox": [
+        127.041813,
+        37.501267,
+        127.05725,
+        37.511181
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI035",
+      "category": "인구밀집지역",
+      "nameKo": "성신여대입구역",
+      "nameEn": "Sungshin Women's University station",
+      "lat": 37.5923894,
+      "lon": 127.0168527,
+      "bbox": [
+        127.014663,
+        37.590444,
+        127.018941,
+        37.594603
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI036",
+      "category": "인구밀집지역",
+      "nameKo": "수유역",
+      "nameEn": "Suyu station",
+      "lat": 37.6414842,
+      "lon": 127.025695,
+      "bbox": [
+        127.022123,
+        37.635899,
+        127.030855,
+        37.645696
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI037",
+      "category": "인구밀집지역",
+      "nameKo": "신논현역·논현역",
+      "nameEn": "Sinnonhyeon·Nonhyeon station",
+      "lat": 37.5080802,
+      "lon": 127.0234056,
+      "bbox": [
+        127.019827,
+        37.504423,
+        127.026503,
+        37.511506
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI038",
+      "category": "인구밀집지역",
+      "nameKo": "신도림역",
+      "nameEn": "Sindorim station",
+      "lat": 37.5090983,
+      "lon": 126.8902011,
+      "bbox": [
+        126.887921,
+        37.507597,
+        126.89234,
+        37.510445
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI039",
+      "category": "인구밀집지역",
+      "nameKo": "신림역",
+      "nameEn": "Sillim station",
+      "lat": 37.484676,
+      "lon": 126.9293341,
+      "bbox": [
+        126.926044,
+        37.480874,
+        126.933433,
+        37.487742
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI040",
+      "category": "인구밀집지역",
+      "nameKo": "신촌·이대역",
+      "nameEn": "Sinchon·Ewha Womans University station",
+      "lat": 37.5570345,
+      "lon": 126.9389691,
+      "bbox": [
+        126.932096,
+        37.553186,
+        126.946643,
+        37.560241
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI041",
+      "category": "인구밀집지역",
+      "nameKo": "양재역",
+      "nameEn": "Yangjae station",
+      "lat": 37.4853388,
+      "lon": 127.0339693,
+      "bbox": [
+        127.029375,
+        37.481821,
+        127.038052,
+        37.488519
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI042",
+      "category": "인구밀집지역",
+      "nameKo": "역삼역",
+      "nameEn": "Yeoksam station",
+      "lat": 37.5003923,
+      "lon": 127.038185,
+      "bbox": [
+        127.032894,
+        37.49646,
+        127.044439,
+        37.5041
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI043",
+      "category": "인구밀집지역",
+      "nameKo": "연신내역",
+      "nameEn": "Yeonsinnae station",
+      "lat": 37.6186613,
+      "lon": 126.920732,
+      "bbox": [
+        126.917877,
+        37.616031,
+        126.925494,
+        37.621038
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI044",
+      "category": "인구밀집지역",
+      "nameKo": "오목교역·목동운동장",
+      "nameEn": "Omokgyo·Mok-dong Stadium station",
+      "lat": 37.5288108,
+      "lon": 126.8766422,
+      "bbox": [
+        126.869315,
+        37.522138,
+        126.886989,
+        37.537931
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI045",
+      "category": "인구밀집지역",
+      "nameKo": "왕십리역",
+      "nameEn": "Wangsimni station",
+      "lat": 37.562216,
+      "lon": 127.0389009,
+      "bbox": [
+        127.035613,
+        37.557965,
+        127.041664,
+        37.565931
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI046",
+      "category": "인구밀집지역",
+      "nameKo": "용산역",
+      "nameEn": "Yongsan station",
+      "lat": 37.5302561,
+      "lon": 126.9608225,
+      "bbox": [
+        126.954507,
+        37.52484,
+        126.968141,
+        37.535463
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI047",
+      "category": "인구밀집지역",
+      "nameKo": "이태원역",
+      "nameEn": "Itaewon station",
+      "lat": 37.5341858,
+      "lon": 126.9930483,
+      "bbox": [
+        126.990084,
+        37.532871,
+        126.99566,
+        37.535605
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI048",
+      "category": "인구밀집지역",
+      "nameKo": "장지역",
+      "nameEn": "Jangji station",
+      "lat": 37.4787496,
+      "lon": 127.1232726,
+      "bbox": [
+        127.116869,
+        37.476237,
+        127.127855,
+        37.482511
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI049",
+      "category": "인구밀집지역",
+      "nameKo": "장한평역",
+      "nameEn": "Janghanpyeong station",
+      "lat": 37.5618041,
+      "lon": 127.0647851,
+      "bbox": [
+        127.057975,
+        37.558103,
+        127.07113,
+        37.565172
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI050",
+      "category": "인구밀집지역",
+      "nameKo": "천호역",
+      "nameEn": "Cheonho station",
+      "lat": 37.5392396,
+      "lon": 127.125015,
+      "bbox": [
+        127.121997,
+        37.536942,
+        127.127842,
+        37.541419
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI051",
+      "category": "인구밀집지역",
+      "nameKo": "총신대입구(이수)역",
+      "nameEn": "Chongshin University(Isu) station",
+      "lat": 37.4860024,
+      "lon": 126.9810419,
+      "bbox": [
+        126.97821,
+        37.482754,
+        126.98354,
+        37.489992
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI052",
+      "category": "인구밀집지역",
+      "nameKo": "충정로역",
+      "nameEn": "Chungjeongno station",
+      "lat": 37.559696,
+      "lon": 126.9636903,
+      "bbox": [
+        126.96035,
+        37.556947,
+        126.967626,
+        37.562259
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI053",
+      "category": "인구밀집지역",
+      "nameKo": "합정역",
+      "nameEn": "Hapjeong station",
+      "lat": 37.5493757,
+      "lon": 126.9117329,
+      "bbox": [
+        126.904976,
+        37.545448,
+        126.918403,
+        37.554189
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI054",
+      "category": "인구밀집지역",
+      "nameKo": "혜화역",
+      "nameEn": "Hyehwa station",
+      "lat": 37.582481,
+      "lon": 127.0017621,
+      "bbox": [
+        126.997523,
+        37.579578,
+        127.004677,
+        37.585161
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI055",
+      "category": "인구밀집지역",
+      "nameKo": "홍대입구역(2호선)",
+      "nameEn": "Hongik University station(Line 2)",
+      "lat": 37.5567598,
+      "lon": 126.9229991,
+      "bbox": [
+        126.92068,
+        37.55432,
+        126.925745,
+        37.558964
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI056",
+      "category": "인구밀집지역",
+      "nameKo": "회기역",
+      "nameEn": "Hoegi station",
+      "lat": 37.5905406,
+      "lon": 127.0561625,
+      "bbox": [
+        127.049756,
+        37.587713,
+        127.062452,
+        37.592979
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI058",
+      "category": "발달상권",
+      "nameKo": "가락시장",
+      "nameEn": "Garak Market",
+      "lat": 37.4934683,
+      "lon": 127.1118957,
+      "bbox": [
+        127.103644,
+        37.489645,
+        127.119248,
+        37.497185
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI059",
+      "category": "발달상권",
+      "nameKo": "가로수길",
+      "nameEn": "Garosu-gil",
+      "lat": 37.521389,
+      "lon": 127.0235718,
+      "bbox": [
+        127.017816,
+        37.516112,
+        127.028465,
+        37.527166
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI060",
+      "category": "발달상권",
+      "nameKo": "광장(전통)시장",
+      "nameEn": "Gwangjang(Traditional) Market",
+      "lat": 37.570002,
+      "lon": 126.9999007,
+      "bbox": [
+        126.997852,
+        37.568843,
+        127.002034,
+        37.571007
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI061",
+      "category": "발달상권",
+      "nameKo": "김포공항",
+      "nameEn": "Gimpo Airport",
+      "lat": 37.562272,
+      "lon": 126.8025996,
+      "bbox": [
+        126.79369,
+        37.555373,
+        126.808346,
+        37.569769
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI063",
+      "category": "발달상권",
+      "nameKo": "노량진",
+      "nameEn": "Noryangjin",
+      "lat": 37.5138937,
+      "lon": 126.9440553,
+      "bbox": [
+        126.935093,
+        37.510852,
+        126.955604,
+        37.516601
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI064",
+      "category": "발달상권",
+      "nameKo": "덕수궁길·정동길",
+      "nameEn": "Deoksugung-gil·Jeongdong-gil",
+      "lat": 37.5663492,
+      "lon": 126.9717786,
+      "bbox": [
+        126.96791,
+        37.564184,
+        126.977097,
+        37.568746
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI066",
+      "category": "발달상권",
+      "nameKo": "북촌한옥마을",
+      "nameEn": "Bukchon Hanok Village",
+      "lat": 37.5822357,
+      "lon": 126.9840012,
+      "bbox": [
+        126.979224,
+        37.575402,
+        126.989806,
+        37.590409
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI067",
+      "category": "발달상권",
+      "nameKo": "서촌",
+      "nameEn": "Seochon",
+      "lat": 37.5803675,
+      "lon": 126.9695755,
+      "bbox": [
+        126.963796,
+        37.575906,
+        126.974233,
+        37.584405
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI068",
+      "category": "발달상권",
+      "nameKo": "성수카페거리",
+      "nameEn": "Seongsu Cafe Street",
+      "lat": 37.5429665,
+      "lon": 127.0565961,
+      "bbox": [
+        127.049527,
+        37.539186,
+        127.064235,
+        37.546891
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI070",
+      "category": "인구밀집지역",
+      "nameKo": "쌍문역",
+      "nameEn": "Ssangmun-dong station",
+      "lat": 37.6476565,
+      "lon": 127.0340315,
+      "bbox": [
+        127.030093,
+        37.64287,
+        127.037437,
+        37.651373
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI071",
+      "category": "발달상권",
+      "nameKo": "압구정로데오거리",
+      "nameEn": "Apgujeong Rodeo Street",
+      "lat": 37.5254954,
+      "lon": 127.0387342,
+      "bbox": [
+        127.0331,
+        37.521523,
+        127.047342,
+        37.52917
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI072",
+      "category": "발달상권",
+      "nameKo": "여의도",
+      "nameEn": "Yeouido",
+      "lat": 37.5250221,
+      "lon": 126.9255312,
+      "bbox": [
+        126.909806,
+        37.515575,
+        126.944297,
+        37.536043
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI073",
+      "category": "발달상권",
+      "nameKo": "연남동",
+      "nameEn": "Yeonnam-dong",
+      "lat": 37.5616173,
+      "lon": 126.922338,
+      "bbox": [
+        126.916289,
+        37.557572,
+        126.928141,
+        37.565273
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI074",
+      "category": "발달상권",
+      "nameKo": "영등포 타임스퀘어",
+      "nameEn": "Yeongdeungpo Time square",
+      "lat": 37.516863,
+      "lon": 126.906151,
+      "bbox": [
+        126.901091,
+        37.513417,
+        126.912427,
+        37.519983
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI076",
+      "category": "발달상권",
+      "nameKo": "용리단길",
+      "nameEn": "Yongnidan-gil",
+      "lat": 37.5311859,
+      "lon": 126.9712947,
+      "bbox": [
+        126.968825,
+        37.529308,
+        126.973499,
+        37.533101
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI077",
+      "category": "발달상권",
+      "nameKo": "이태원 앤틱가구거리",
+      "nameEn": "Itaewon Antiques street",
+      "lat": 37.5322279,
+      "lon": 126.9939068,
+      "bbox": [
+        126.989935,
+        37.529391,
+        126.996719,
+        37.534521
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI078",
+      "category": "발달상권",
+      "nameKo": "인사동",
+      "nameEn": "Insa-dong",
+      "lat": 37.5738632,
+      "lon": 126.9860635,
+      "bbox": [
+        126.983002,
+        37.570187,
+        126.990606,
+        37.577413
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI079",
+      "category": "발달상권",
+      "nameKo": "창동 신경제 중심지",
+      "nameEn": "Changdong New Economic Center",
+      "lat": 37.6561469,
+      "lon": 127.0547034,
+      "bbox": [
+        127.04205,
+        37.651118,
+        127.066974,
+        37.66202
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI080",
+      "category": "발달상권",
+      "nameKo": "청담동 명품거리",
+      "nameEn": "Cheongdam-dong Luxury Fashion street",
+      "lat": 37.5258321,
+      "lon": 127.0437672,
+      "bbox": [
+        127.039137,
+        37.523192,
+        127.048285,
+        37.528902
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI081",
+      "category": "발달상권",
+      "nameKo": "청량리 제기동 일대 전통시장",
+      "nameEn": "Traditional market in Cheongnyangni Jegi-dong",
+      "lat": 37.5808294,
+      "lon": 127.0399802,
+      "bbox": [
+        127.034915,
+        37.578205,
+        127.045902,
+        37.583136
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI082",
+      "category": "발달상권",
+      "nameKo": "해방촌·경리단길",
+      "nameEn": "Haebangchon·Gyeongnidan-gil",
+      "lat": 37.5423711,
+      "lon": 126.9871847,
+      "bbox": [
+        126.982939,
+        37.538291,
+        126.993703,
+        37.54703
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI083",
+      "category": "발달상권",
+      "nameKo": "DDP(동대문디자인플라자)",
+      "nameEn": "DDP(Dongdaemun Design Plaza)",
+      "lat": 37.5669879,
+      "lon": 127.0102888,
+      "bbox": [
+        127.00772,
+        37.565488,
+        127.012702,
+        37.568746
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI084",
+      "category": "발달상권",
+      "nameKo": "DMC(디지털미디어시티)",
+      "nameEn": "DMC(Digital Media City)",
+      "lat": 37.5792783,
+      "lon": 126.8917967,
+      "bbox": [
+        126.882035,
+        37.572982,
+        126.902086,
+        37.586551
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI085",
+      "category": "공원",
+      "nameKo": "강서한강공원",
+      "nameEn": "Gangseo Hangang Park",
+      "lat": 37.5865146,
+      "lon": 126.8185501,
+      "bbox": [
+        126.810661,
+        37.580846,
+        126.829369,
+        37.591335
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI086",
+      "category": "공원",
+      "nameKo": "고척돔",
+      "nameEn": "Gocheok Dome",
+      "lat": 37.4976717,
+      "lon": 126.8670222,
+      "bbox": [
+        126.864872,
+        37.495092,
+        126.868982,
+        37.499645
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI087",
+      "category": "공원",
+      "nameKo": "광나루한강공원",
+      "nameEn": "Gwangnaru Hangang Park",
+      "lat": 37.5539872,
+      "lon": 127.1298187,
+      "bbox": [
+        127.101475,
+        37.524005,
+        127.164991,
+        37.575424
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI088",
+      "category": "공원",
+      "nameKo": "광화문광장",
+      "nameEn": "Gwanghwamun Square",
+      "lat": 37.5734093,
+      "lon": 126.9769205,
+      "bbox": [
+        126.974396,
+        37.57032,
+        126.97913,
+        37.576187
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI089",
+      "category": "공원",
+      "nameKo": "국립중앙박물관·용산가족공원",
+      "nameEn": "The National Museum of Korea·Yongsan Family Park",
+      "lat": 37.5227672,
+      "lon": 126.9814262,
+      "bbox": [
+        126.976707,
+        37.519923,
+        126.985805,
+        37.525265
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI090",
+      "category": "공원",
+      "nameKo": "난지한강공원",
+      "nameEn": "Nanji Hangang Park",
+      "lat": 37.566502,
+      "lon": 126.8773291,
+      "bbox": [
+        126.86406,
+        37.558395,
+        126.892062,
+        37.574749
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI091",
+      "category": "공원",
+      "nameKo": "남산공원",
+      "nameEn": "Namsan Park",
+      "lat": 37.5515768,
+      "lon": 126.9937613,
+      "bbox": [
+        126.976548,
+        37.540905,
+        127.00837,
+        37.561359
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI092",
+      "category": "공원",
+      "nameKo": "노들섬",
+      "nameEn": "Nodeul island",
+      "lat": 37.517556,
+      "lon": 126.9586573,
+      "bbox": [
+        126.954938,
+        37.516051,
+        126.962531,
+        37.519182
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI093",
+      "category": "공원",
+      "nameKo": "뚝섬한강공원",
+      "nameEn": "Ttukseom Hangang Park",
+      "lat": 37.5291841,
+      "lon": 127.071514,
+      "bbox": [
+        127.058689,
+        37.526462,
+        127.089032,
+        37.533301
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI094",
+      "category": "공원",
+      "nameKo": "망원한강공원",
+      "nameEn": "Mangwon Hangang Park",
+      "lat": 37.553281,
+      "lon": 126.8992685,
+      "bbox": [
+        126.89184,
+        37.546054,
+        126.910168,
+        37.560501
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI095",
+      "category": "공원",
+      "nameKo": "반포한강공원",
+      "nameEn": "Banpo Hangang Park",
+      "lat": 37.5098251,
+      "lon": 126.9946736,
+      "bbox": [
+        126.980254,
+        37.504326,
+        127.007443,
+        37.517378
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI096",
+      "category": "공원",
+      "nameKo": "북서울꿈의숲",
+      "nameEn": "Dream Forest",
+      "lat": 37.6218523,
+      "lon": 127.0411161,
+      "bbox": [
+        127.03593,
+        37.615084,
+        127.046434,
+        37.629523
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI098",
+      "category": "공원",
+      "nameKo": "서리풀공원·몽마르뜨공원",
+      "nameEn": "Seoripul Park·Montmartre Park",
+      "lat": 37.4915827,
+      "lon": 127.0026823,
+      "bbox": [
+        126.996715,
+        37.482697,
+        127.010345,
+        37.503182
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI100",
+      "category": "공원",
+      "nameKo": "서울대공원",
+      "nameEn": "Seoul Grand Park",
+      "lat": 37.429007,
+      "lon": 127.0171565,
+      "bbox": [
+        127.001378,
+        37.415511,
+        127.030378,
+        37.439841
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI101",
+      "category": "공원",
+      "nameKo": "서울숲공원",
+      "nameEn": "Seoul Forest",
+      "lat": 37.5429634,
+      "lon": 127.0376496,
+      "bbox": [
+        127.027507,
+        37.537185,
+        127.043986,
+        37.551178
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI102",
+      "category": "공원",
+      "nameKo": "아차산",
+      "nameEn": "Achasan",
+      "lat": 37.5668419,
+      "lon": 127.1028106,
+      "bbox": [
+        127.088022,
+        37.550848,
+        127.120841,
+        37.579419
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI103",
+      "category": "공원",
+      "nameKo": "양화한강공원",
+      "nameEn": "Yanghwa Hangang Park",
+      "lat": 37.5413045,
+      "lon": 126.8981847,
+      "bbox": [
+        126.889701,
+        37.535308,
+        126.906827,
+        37.547402
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI104",
+      "category": "공원",
+      "nameKo": "어린이대공원",
+      "nameEn": "Children's Grand Park",
+      "lat": 37.5490609,
+      "lon": 127.0813584,
+      "bbox": [
+        127.074127,
+        37.545108,
+        127.089696,
+        37.553105
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI105",
+      "category": "공원",
+      "nameKo": "여의도한강공원",
+      "nameEn": "Yeouido Hangang Park",
+      "lat": 37.5289867,
+      "lon": 126.9282226,
+      "bbox": [
+        126.909216,
+        37.51783,
+        126.94392,
+        37.535852
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI106",
+      "category": "공원",
+      "nameKo": "월드컵공원",
+      "nameEn": "World Cup Park",
+      "lat": 37.5701878,
+      "lon": 126.8842009,
+      "bbox": [
+        126.865775,
+        37.559764,
+        126.899714,
+        37.580025
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI107",
+      "category": "공원",
+      "nameKo": "응봉산",
+      "nameEn": "Eungbongsan",
+      "lat": 37.5482148,
+      "lon": 127.0304669,
+      "bbox": [
+        127.024543,
+        37.543868,
+        127.03565,
+        37.554455
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI108",
+      "category": "공원",
+      "nameKo": "이촌한강공원",
+      "nameEn": "Ichon Hangang Park",
+      "lat": 37.5194009,
+      "lon": 126.9666502,
+      "bbox": [
+        126.951069,
+        37.514401,
+        126.983013,
+        37.530414
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI109",
+      "category": "공원",
+      "nameKo": "잠실종합운동장",
+      "nameEn": "Jamsil (Seoul) Sports Complex",
+      "lat": 37.514522,
+      "lon": 127.0736486,
+      "bbox": [
+        127.069736,
+        37.510832,
+        127.078144,
+        37.518059
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI110",
+      "category": "공원",
+      "nameKo": "잠실한강공원",
+      "nameEn": "Jamsil Hangang Park",
+      "lat": 37.5192337,
+      "lon": 127.0842972,
+      "bbox": [
+        127.067691,
+        37.516972,
+        127.101916,
+        37.523759
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI111",
+      "category": "공원",
+      "nameKo": "잠원한강공원",
+      "nameEn": "Jamwon Hangang Park",
+      "lat": 37.52381,
+      "lon": 127.0147272,
+      "bbox": [
+        127.00624,
+        37.516489,
+        127.023719,
+        37.532178
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI112",
+      "category": "공원",
+      "nameKo": "청계산",
+      "nameEn": "Cheonggyesan",
+      "lat": 37.440739,
+      "lon": 127.0500179,
+      "bbox": [
+        127.034752,
+        37.428286,
+        127.069837,
+        37.456649
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI114",
+      "category": "발달상권",
+      "nameKo": "북창동 먹자골목",
+      "nameEn": "Bukchang-dong food alley",
+      "lat": 37.5622631,
+      "lon": 126.9784956,
+      "bbox": [
+        126.976006,
+        37.560316,
+        126.981548,
+        37.564054
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI115",
+      "category": "발달상권",
+      "nameKo": "남대문시장",
+      "nameEn": "Namdaemun Market",
+      "lat": 37.5599163,
+      "lon": 126.9785302,
+      "bbox": [
+        126.975627,
+        37.557681,
+        126.982126,
+        37.561756
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI116",
+      "category": "발달상권",
+      "nameKo": "익선동",
+      "nameEn": "Ikseon-dong",
+      "lat": 37.5726607,
+      "lon": 126.9896282,
+      "bbox": [
+        126.987261,
+        37.570193,
+        126.992129,
+        37.575666
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI117",
+      "category": "인구밀집지역",
+      "nameKo": "신정네거리역",
+      "nameEn": "Shinjeongnegeori Station",
+      "lat": 37.5213069,
+      "lon": 126.8552785,
+      "bbox": [
+        126.851562,
+        37.518699,
+        126.859866,
+        37.522912
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI118",
+      "category": "인구밀집지역",
+      "nameKo": "잠실새내역",
+      "nameEn": "Jamsil Saenae Station",
+      "lat": 37.510413,
+      "lon": 127.0826558,
+      "bbox": [
+        127.078313,
+        37.507756,
+        127.088921,
+        37.512301
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI119",
+      "category": "인구밀집지역",
+      "nameKo": "잠실역",
+      "nameEn": "Jamsil Station",
+      "lat": 37.5119968,
+      "lon": 127.1003659,
+      "bbox": [
+        127.094746,
+        37.50983,
+        127.106142,
+        37.514774
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI120",
+      "category": "발달상권",
+      "nameKo": "잠실롯데타워·석촌호수",
+      "nameEn": "Jamsil Lotte Tower·SeokchonhosuLake",
+      "lat": 37.5115594,
+      "lon": 127.1033061,
+      "bbox": [
+        127.092721,
+        37.505837,
+        127.115651,
+        37.51746
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI121",
+      "category": "발달상권",
+      "nameKo": "송리단길·호수단길",
+      "nameEn": "Songridan-gil·Hosudan-gil",
+      "lat": 37.5080474,
+      "lon": 127.1063151,
+      "bbox": [
+        127.097223,
+        37.504156,
+        127.11224,
+        37.511925
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI122",
+      "category": "발달상권",
+      "nameKo": "신촌 스타광장",
+      "nameEn": "Shinchon Star Plaza",
+      "lat": 37.556509,
+      "lon": 126.9369308,
+      "bbox": [
+        126.935968,
+        37.55534,
+        126.937882,
+        37.557694
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI123",
+      "category": "공원",
+      "nameKo": "보라매공원",
+      "nameEn": "Boramae Park",
+      "lat": 37.4929632,
+      "lon": 126.9200583,
+      "bbox": [
+        126.915565,
+        37.490516,
+        126.92412,
+        37.496183
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI124",
+      "category": "공원",
+      "nameKo": "서대문독립공원",
+      "nameEn": "Seodaemun Independence Park",
+      "lat": 37.5740906,
+      "lon": 126.9566045,
+      "bbox": [
+        126.953792,
+        37.571611,
+        126.960035,
+        37.576786
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI125",
+      "category": "공원",
+      "nameKo": "안양천",
+      "nameEn": "Anyangcheon River",
+      "lat": 37.5186675,
+      "lon": 126.8796972,
+      "bbox": [
+        126.877014,
+        37.513666,
+        126.882129,
+        37.523984
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI126",
+      "category": "공원",
+      "nameKo": "여의서로",
+      "nameEn": "Yeouiseoro",
+      "lat": 37.5327007,
+      "lon": 126.9145846,
+      "bbox": [
+        126.909806,
+        37.5264352,
+        126.9227484,
+        37.536043
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI127",
+      "category": "공원",
+      "nameKo": "올림픽공원",
+      "nameEn": "Olympic Park",
+      "lat": 37.5194081,
+      "lon": 127.1224107,
+      "bbox": [
+        127.112787,
+        37.512331,
+        127.130953,
+        37.525913
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI128",
+      "category": "공원",
+      "nameKo": "홍제폭포",
+      "nameEn": "Hongje Waterfall",
+      "lat": 37.5807787,
+      "lon": 126.9369529,
+      "bbox": [
+        126.936011,
+        37.579752,
+        126.937856,
+        37.581569
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI129",
+      "category": "공원",
+      "nameKo": "송현녹지광장",
+      "nameEn": "Songhyeon Green Plaza",
+      "lat": 37.5778572,
+      "lon": 126.9837109,
+      "bbox": [
+        126.9795488,
+        37.5755856,
+        126.9893177,
+        37.5800631
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI130",
+      "category": "인구밀집지역",
+      "nameKo": "시의회 앞",
+      "nameEn": "City Council",
+      "lat": 37.5670684,
+      "lon": 126.9769377,
+      "bbox": [
+        126.9757685,
+        37.5637222,
+        126.9781032,
+        37.5703508
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    },
+    {
+      "code": "POI131",
+      "category": "인구밀집지역",
+      "nameKo": "숭례문",
+      "nameEn": "Sungnyemun Gate",
+      "lat": 37.5604864,
+      "lon": 126.9757305,
+      "bbox": [
+        126.9732352,
+        37.5580404,
+        126.9776445,
+        37.5629624
+      ],
+      "geometrySource": "서울시 주요 121장소 영역"
+    }
+  ]
+}

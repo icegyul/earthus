@@ -59,6 +59,9 @@ create table if not exists public.alert_spots (
   quake       boolean not null default true,   -- 가까운 지진
   warn        boolean not null default true,   -- 기상특보
   tsunami     boolean not null default true,
+  tourism     boolean not null default false,
+  tourism_place_code text check (tourism_place_code is null or tourism_place_code ~ '^POI[0-9]{3}$'),
+  tourism_min_rank integer not null default 3 check (tourism_min_rank between 1 and 4),
   -- 지진은 규모·거리 기준이 사람마다 다르다
   quake_min_mag  numeric(3,1) not null default 3.5 check (quake_min_mag >= 0),
   quake_max_km   integer not null default 150 check (quake_max_km > 0),
@@ -70,15 +73,14 @@ create policy spot_all on public.alert_spots
 create index if not exists idx_spot_user on public.alert_spots(user_id);
 
 -- ⚠️⚠️ **지점 개수 제한을 트리거로 막는다.**
---    무료는 1곳, 유료는 20곳이다. 클라이언트에서 막으면 우회할 수 있고,
+--    현재 FREE_OPEN 정책은 누구나 20곳이다. 클라이언트에서 막으면 우회할 수 있고,
 --    무제한이면 한 사람이 수천 곳을 넣어 발송 비용을 터뜨릴 수 있다.
 create or replace function public.spot_limit()
 returns trigger language plpgsql security definer set search_path = public as $$
-declare n integer; tier text;
+declare n integer;
 begin
   select count(*) into n from public.alert_spots where user_id = new.user_id;
-  select p.tier into tier from public.profiles p where p.id = new.user_id;
-  if n >= (case when tier = 'paid' then 20 else 1 end) then
+  if n >= 20 then
     raise exception 'SPOT_LIMIT';
   end if;
   return new;
@@ -129,12 +131,14 @@ returns table (
   user_id uuid, endpoint text, p256dh text, auth text, lang text,
   spot_id bigint, label text, lat double precision, lon double precision,
   rip boolean, quake boolean, warn boolean, tsunami boolean,
-  quake_min_mag numeric, quake_max_km integer, tier text
+  quake_min_mag numeric, quake_max_km integer,
+  tourism boolean, tourism_place_code text, tourism_min_rank integer, tier text
 ) language sql security definer stable set search_path = public as $$
   select s.user_id, s.endpoint, s.p256dh, s.auth, s.lang,
          a.id, a.label, a.lat, a.lon,
          a.rip, a.quake, a.warn, a.tsunami,
          a.quake_min_mag, a.quake_max_km,
+         a.tourism, a.tourism_place_code, a.tourism_min_rank,
          coalesce(p.tier, 'free')
     from public.push_subscriptions s
     join public.alert_spots a on a.user_id = s.user_id

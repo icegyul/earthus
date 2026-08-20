@@ -1,0 +1,209 @@
+{
+  "schemaVersion": "earthus.tourism-flow.v1",
+  "generatedAt": "2026-08-20T07:17:23.777Z",
+  "state": "STALE",
+  "provider": {
+    "id": "seoul-citydata-ppltn",
+    "mode": "SAMPLE",
+    "endpointClass": "OFFICIAL_PUBLIC_API"
+  },
+  "coverage": {
+    "available": 1,
+    "total": 121,
+    "fullCoverage": false,
+    "noteKo": "서울시 샘플 키 범위 · 광화문·덕수궁 1곳만 공식 조회"
+  },
+  "quality": {
+    "live": 0,
+    "degraded": 0,
+    "stale": 1,
+    "unavailable": 0,
+    "withOfficialForecast": 1,
+    "withDirectionEvidence": 0
+  },
+  "places": [
+    {
+      "id": "earthus:tourism:seoul:POI009",
+      "code": "POI009",
+      "category": "고궁·문화유산",
+      "nameKo": "광화문·덕수궁",
+      "nameEn": "Gwanghwamun & Deoksugung Palace",
+      "state": "STALE",
+      "stateLabelKo": "지난 관측",
+      "reasonCodes": [
+        "OBSERVATION_STALE"
+      ],
+      "observedAgeMinutes": 42.4,
+      "position": {
+        "lat": 37.5709309,
+        "lon": 126.9771868,
+        "source": "서울시 주요 121장소 영역"
+      },
+      "official": {
+        "level": "보통",
+        "rank": 2,
+        "message": "사람이 몰려있을 수 있지만 크게 붐비지는 않아요. 도보 이동에 큰 제약이 없어요.",
+        "populationRange": {
+          "min": 40000,
+          "max": 42000
+        },
+        "color": "#f0cf63",
+        "replacement": false,
+        "sourceType": "OFFICIAL_OBSERVATION"
+      },
+      "forecast": [
+        {
+          "at": "2026-08-20T08:00:00.000Z",
+          "level": "약간 붐빔",
+          "rank": 3,
+          "populationRange": {
+            "min": 38000,
+            "max": 40000
+          },
+          "sourceType": "OFFICIAL_FORECAST"
+        },
+        {
+          "at": "2026-08-20T09:00:00.000Z",
+          "level": "약간 붐빔",
+          "rank": 3,
+          "populationRange": {
+            "min": 36000,
+            "max": 38000
+          },
+          "sourceType": "OFFICIAL_FORECAST"
+        },
+        {
+          "at": "2026-08-20T10:00:00.000Z",
+          "level": "보통",
+          "rank": 2,
+          "populationRange": {
+            "min": 30000,
+            "max": 32000
+          },
+          "sourceType": "OFFICIAL_FORECAST"
+        },
+        {
+          "at": "2026-08-20T11:00:00.000Z",
+          "level": "보통",
+          "rank": 2,
+          "populationRange": {
+            "min": 24000,
+            "max": 26000
+          },
+          "sourceType": "OFFICIAL_FORECAST"
+        },
+        {
+          "at": "2026-08-20T12:00:00.000Z",
+          "level": "여유",
+          "rank": 1,
+          "populationRange": {
+            "min": 20000,
+            "max": 22000
+          },
+          "sourceType": "OFFICIAL_FORECAST"
+        },
+        {
+          "at": "2026-08-20T13:00:00.000Z",
+          "level": "여유",
+          "rank": 1,
+          "populationRange": {
+            "min": 14000,
+            "max": 16000
+          },
+          "sourceType": "OFFICIAL_FORECAST"
+        },
+        {
+          "at": "2026-08-20T14:00:00.000Z",
+          "level": "여유",
+          "rank": 1,
+          "populationRange": {
+            "min": 10000,
+            "max": 12000
+          },
+          "sourceType": "OFFICIAL_FORECAST"
+        },
+        {
+          "at": "2026-08-20T15:00:00.000Z",
+          "level": "여유",
+          "rank": 1,
+          "populationRange": {
+            "min": 7500,
+            "max": 8000
+          },
+          "sourceType": "OFFICIAL_FORECAST"
+        },
+        {
+          "at": "2026-08-20T16:00:00.000Z",
+          "level": "여유",
+          "rank": 1,
+          "populationRange": {
+            "min": 5000,
+            "max": 5500
+          },
+          "sourceType": "OFFICIAL_FORECAST"
+        },
+        {
+          "at": "2026-08-20T17:00:00.000Z",
+          "level": "여유",
+          "rank": 1,
+          "populationRange": {
+            "min": 4000,
+            "max": 4500
+          },
+          "sourceType": "OFFICIAL_FORECAST"
+        },
+        {
+          "at": "2026-08-20T18:00:00.000Z",
+          "level": "여유",
+          "rank": 1,
+          "populationRange": {
+            "min": 4000,
+            "max": 4500
+          },
+          "sourceType": "OFFICIAL_FORECAST"
+        },
+        {
+          "at": "2026-08-20T19:00:00.000Z",
+          "level": "여유",
+          "rank": 1,
+          "populationRange": {
+            "min": 3500,
+            "max": 4000
+          },
+          "sourceType": "OFFICIAL_FORECAST"
+        }
+      ],
+      "flow": {
+        "scalarTrend": {
+          "state": "UNAVAILABLE",
+          "direction": "UNKNOWN",
+          "perHour": null,
+          "flowDirection": null,
+          "method": "robust pairwise median slope",
+          "reason": "관측 이력이 3개 미만입니다."
+        },
+        "direction": {
+          "state": "UNAVAILABLE",
+          "value": null,
+          "reason": "OD 또는 이동 경로 근거가 없어 방향 화살표를 만들지 않습니다."
+        }
+      },
+      "provenance": {
+        "sourceId": "seoul-citydata-ppltn",
+        "sourceName": "서울특별시 실시간 인구데이터",
+        "sourceUrl": "https://data.seoul.go.kr/dataList/OA-21778/A/1/datasetView.do",
+        "observedAt": "2026-08-20T06:35:00.000Z",
+        "receivedAt": "2026-08-20T07:17:23.777Z",
+        "schemaVersion": "earthus.tourism-flow.v1",
+        "processorVersion": "tourism-flow-contract.v1",
+        "license": "공공누리 제1유형",
+        "redisplay": "출처표시 · 상업적 이용 및 변경 가능"
+      }
+    }
+  ],
+  "source": {
+    "name": "서울특별시 실시간 인구데이터",
+    "url": "https://data.seoul.go.kr/dataList/OA-21778/A/1/datasetView.do",
+    "license": "공공누리 제1유형"
+  }
+}

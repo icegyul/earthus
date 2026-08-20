@@ -89,6 +89,10 @@ assert.match(uiSource, /this\._placeKey\(\) !== key/, 'late forecast responses m
 assert.doesNotMatch(narrativeSource, /head:\s*ko\s*\?\s*'특별한 것이 없는 날입니다'/);
 assert.doesNotMatch(narrativeSource, /S\(`오늘은 눈에 띄는 것이 없습니다/);
 assert.match(narrativeSource, /기온·습도는 평년과 비슷합니다/);
+for (const unsupported of ['남하 방향', '소나기 전이', '남쪽 이동 예정 구간']) {
+  assert.equal(narrativeSource.includes(unsupported), false,
+    `narrative invents an unsupported cyclone/cloud direction: ${unsupported}`);
+}
 assert.match(cssSource, /\.wxh\{[^}]*min-height:105px/s);
 assert.match(cssSource, /\.wx-climate>summary\{[^}]*min-height:52px/s);
 assert.match(cssSource, /\.wx-climate-unavailable\{/);

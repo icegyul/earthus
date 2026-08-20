@@ -82,15 +82,17 @@ assert.ok(newsIndex < activitiesIndex && activitiesIndex < outdoorIndex
   'reading, activities, and movement groups must stay distinct');
 assert.match(html, /id="mmActivitiesTitle"[^>]*data-i18n="m\.menuActivities">활동</);
 assert.match(html, /data-act="outdoor"[\s\S]*?data-i18n="m\.outdoor">취미</);
-assert.equal((html.match(/data-act="ocean"/g) || []).length, 1,
-  'OCEAN must have one independent first-class main-menu entry');
+assert.equal((html.match(/data-act="ocean"/g) || []).length, 0,
+  'independent OCEAN entry must be removed after Hobby consolidation');
 const mainMenuMarkup = html.slice(html.indexOf('<nav id="menuMain"'), html.indexOf('</nav>'));
 assert.equal(/무료|\bFREE\b|\bFree\b/.test(mainMenuMarkup), false,
   'access-price copy remains in the main menu');
-for (const group of ["id: 'ocean'", "id: 'life'", "id: 'land-sky'"]) {
+for (const group of ["id: 'ocean-data'", "id: 'ocean-activity'", "id: 'deep-sea'", "id: 'life'", "id: 'land-sky'"]) {
   assert.ok(outdoor.includes(group), `hobby category missing: ${group}`);
 }
-assert.match(outdoor, /acts: \['ocean-layers', 'surf', 'fishing', 'trench', 'vessel'\]/);
+assert.match(outdoor, /acts: \['layer:sst', 'layer:sstanom', 'layer:wave', 'layer:swell', 'layer:current', 'layer:buoy'\]/);
+assert.match(outdoor, /acts: \['surf', 'fishing', 'vessel', 'my-ocean'\]/);
+assert.match(outdoor, /acts: \['dive', 'trench'\]/);
 assert.match(outdoor, /acts: \['turtle', 'seabird', 'migbird', 'ecobird'\]/);
 assert.match(outdoor, /acts: \['para', 'mountain', 'sky'\]/);
 assert.match(html, /id="menuClose"[^>]*aria-label="메뉴 닫기"/);
@@ -123,6 +125,6 @@ for (const [, attrs] of panels) {
 
 assert.match(html, /id="hud" hidden aria-hidden="true"/);
 assert.match(html, /id="hudShow" hidden aria-hidden="true"/);
-assert.match(ui, /location\.hash === '#dev'/);
+assert.match(ui, /location\.hash\.startsWith\('#dev'\)/);
 
 console.log(`public UI contract OK · legal links ${legalLinks.length} · sealed panels ${panels.length}`);

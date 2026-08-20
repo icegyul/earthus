@@ -15,7 +15,7 @@
 //
 // ⚠️ **안전 알림은 무료 사용자에게도 보낸다.** 이안류·지진·특보는 사람이 다치는
 //    일이라 결제 뒤에 두지 않는다 (billing.js 의 FREE_FEATURES 참고).
-//    유료로 갈리는 것은 **지점 개수**(1곳 vs 20곳)뿐이고, 그건 DB 트리거가 막는다.
+//    현재 FREE_OPEN 정책에서는 관광 혼잡 지켜보기까지 무료이며, DB는 비용 보호용 20곳 상한만 둔다.
 //
 // 배포
 //   supabase functions deploy push-tick --no-verify-jwt
@@ -101,11 +101,12 @@ Deno.serve(async (req) => {
   const admin = createClient(Deno.env.get('SUPABASE_URL')!,
                              Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-  const [coast, quake, warn, warnZones, targets] = await Promise.all([
+  const [coast, quake, warn, warnZones, tourism, targets] = await Promise.all([
     grab('events/coast-kr.json'),
     grab('events/quake-asia.json'),
     grab('events/kma-warn.json'),
     grab('events/kma-warn-stations.json'),
+    grab('tourism/seoul-flow.json'),
     admin.rpc('push_targets').then((r) => r.data ?? []),
   ]);
 
@@ -134,6 +135,16 @@ Deno.serve(async (req) => {
   const activeWarns = warnFresh ? ((warn?.active ?? []) as any[]) : [];
   const warnStations = ((warnZones?.stations ?? []) as any[]).filter((s) =>
     s.lat != null && s.lon != null && s.zone);
+  /* 관광 알림도 STALE이면 보내지 않는다. snapshot 전체와 장소가 모두 LIVE이고
+     관측 시각이 20분 안쪽일 때만 서울시 공식 현재 등급을 전달한다. */
+  const tourismGenerated = Date.parse(String(tourism?.generatedAt ?? ''));
+  const tourismFresh = tourism?.state === 'LIVE' && Number.isFinite(tourismGenerated)
+    && Date.now() - tourismGenerated <= 20 * 60_000;
+  const tourismPlaces = tourismFresh ? ((tourism?.places ?? []) as any[]).filter((place) => {
+    const observed = Date.parse(String(place?.provenance?.observedAt ?? ''));
+    return place?.state === 'LIVE' && Number.isFinite(observed)
+      && Date.now() - observed <= 20 * 60_000;
+  }) : [];
 
   for (const t of targets as any[]) {
     const ko = (t.lang ?? 'ko') === 'ko';
@@ -210,6 +221,28 @@ Deno.serve(async (req) => {
       }
     }
 
+    // ── 관광 혼잡 ──────────────────────────────────────────
+    if (t.tourism && t.tourism_place_code && tourismPlaces.length) {
+      const place = tourismPlaces.find((item) => item.code === t.tourism_place_code);
+      const rank = Number(place?.official?.rank);
+      const threshold = Math.min(4, Math.max(1, Number(t.tourism_min_rank ?? 3)));
+      if (place && Number.isInteger(rank) && rank >= threshold) {
+        const observed = String(place.provenance.observedAt);
+        const bucket = Math.floor(Date.now() / (3 * 3600_000));
+        const level = String(place.official.level || '');
+        jobs.push({
+          // 같은 등급은 3시간 cooldown, 등급이 오르면 rank가 달라져 다시 알린다.
+          key: `tourism:${place.code}:rank${rank}:bucket${bucket}`,
+          title: ko ? `관광 혼잡 ${level} — ${place.nameKo}` : `Tourism crowd: ${level} — ${place.nameEn || place.nameKo}`,
+          body: ko
+            ? `서울시 공식 현재 등급 · 관측 ${observed}. 운영시간·입장 가능·안전을 뜻하지 않습니다.`
+            : `Official Seoul current level · observed ${observed}. Not an opening, admission or safety decision.`,
+          urgent: false,
+          tag: `tourism-${place.code}`,
+        });
+      }
+    }
+
     // ── 보내기 ──────────────────────────────────────────────
     for (const j of jobs) {
       // ⚠️⚠️ **먼저 자리를 잡는다.** 이미 보냈으면 여기서 false 가 나온다.
@@ -223,7 +256,7 @@ Deno.serve(async (req) => {
         await webpush.sendNotification(
           { endpoint: t.endpoint, keys: { p256dh: t.p256dh, auth: t.auth } },
           JSON.stringify({ title: j.title, body: j.body, urgent: j.urgent,
-                           tag: j.tag, url: '/' }),
+                           tag: j.tag, url: j.tag.startsWith('tourism-') ? '/?view=data&layer=tourism' : '/' }),
           { TTL: 3600 },
         );
         stat.sent++;

@@ -59,6 +59,8 @@ export const API = {
   MARINE_GRID: CDN + '/ocean',
   // 이벤트 뉴스 — Lambda(gdelt-events)가 GDELT 원본을 받아 신뢰도 점수를 매겨 올린다 (§5-2)
   EVENTS: CDN + '/events',
+  // 관광·인간 흐름 — 서울시 공식 실시간 인구를 서버에서 정규화한 공개 스냅샷.
+  TOURISM: CDN + '/tourism',
   // LAB 종료 보고서 공통 목록. 실제 보고서가 생긴 현상만 이 경로에 합류한다.
   ANALYSIS: CDN + '/ocean',
   // 해양 관측 부이 / 태양 영상 — Lambda(ocean-solar)가 30분마다 올린다.
@@ -266,6 +268,7 @@ export const LAYER_DEFS = [
   { id:'coverage', kind:'coverage', tier:TIER.FREE, on:false, group:'weather' },
   { id:'volcano',  kind:'point',   tier:TIER.FREE, on:false, group:'hazard' },
   { id:'launch',   kind:'point',   tier:TIER.FREE, on:false, group:'space' },
+  { id:'tourism',  kind:'tower',   tier:TIER.FREE, on:false, group:'travel' },
   { id:'poi',      kind:'point',   tier:TIER.FREE, on:false, group:'travel' },
   { id:'phenomena',kind:'point',   tier:TIER.FREE, on:false, group:'learn' },
   /* 열돔 — '자연현상'에서 떼어냈다.

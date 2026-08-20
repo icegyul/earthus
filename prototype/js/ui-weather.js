@@ -30,6 +30,13 @@ import { chrome } from './ui.js';
 import { wxText } from './layers/weather.js';
 import { myLocation } from './mylocation.js';
 import { kmaFcst, condText } from './kma-fcst.js';
+import { get as getKorea } from './korea.js';
+import { warn } from './warn.js';
+import { lookupWaves } from './place.js';
+import { fetchWeather } from './layers/weather.js';
+import { safetyGateMarkup } from './safety-gate-ui.js';
+import { loadWeatherInputsV7 } from './weather-data-v7.js';
+import { buildWeatherCardModel, DATA_STATE, SOURCE_TYPE } from './weather-contract-v7.js';
 // weather-summary 모듈이 없을 때 fallback 하도록 동적 로딩
 let weatherSummary = {
   kmaWeatherSymbol: (sky, pty) => {
@@ -114,6 +121,11 @@ export const weatherPanel = {
   kma: null,
   kmaKey: '',
   kmaRequestKey: '',
+  model: null,
+  modelKey: '',
+  modelRequestKey: '',
+  modelErrors: {},
+  selectedAt: null,
 
   init() {
     /* 하단 온도 덩어리를 누를 수 있게 한다.
@@ -136,8 +148,9 @@ export const weatherPanel = {
     document.addEventListener('earthus:place', () => {
       if (!$('#wxSheet')?.classList.contains('up')) return;
       this._dropStaleKma();
+      this._dropStaleModel();
       this.render();
-      this._loadKma();
+      this._loadV7();
     });
     return this;
   },
@@ -147,13 +160,13 @@ export const weatherPanel = {
     document.querySelectorAll('.sheet-panel.up').forEach(p => p.classList.remove('up'));
     $('#wxSheet')?.classList.add('up');
     this._dropStaleKma();
+    this._dropStaleModel();
     this.render();
     if (!chrome.place.name && !chrome.isDefault) chrome.reverseName(chrome.place.lat, chrome.place.lon);
     /* 아직 안 받았으면 받아 온다 (위치 권한을 늦게 준 경우) */
-    if (!chrome.wx) chrome.loadWeather().then(() => this.render());
-    /* 한국이면 기상청 예보를 덧대 온다.
-       ⚠️ 먼저 그리고 나서 덧댄다 — 기상청을 기다리느라 화면이 비어 있으면 안 된다. */
-    this._loadKma();
+    /* Weather Card v7는 관측·공식예보·모델·특보를 같은 요청 키로 묶는다.
+       ⚠️ 한 Provider가 늦거나 실패해도 다른 근거까지 비우지 않는다. */
+    this._loadV7();
   },
 
   _placeKey() {
@@ -164,6 +177,53 @@ export const weatherPanel = {
   _dropStaleKma() {
     /* ⚠️ 위치를 옮긴 직후 이전 지점 예보가 한 프레임이라도 보이면 출처가 섞인다. */
     if (this.kmaKey && this.kmaKey !== this._placeKey()) this.kma = null;
+  },
+
+  _dropStaleModel() {
+    if (this.modelKey && this.modelKey !== this._placeKey()) {
+      this.model = null;
+      this.modelKey = '';
+      this.selectedAt = null;
+    }
+  },
+
+  async _loadV7() {
+    const key = this._placeKey();
+    if (!key || (this.model && this.modelKey === key) || this.modelRequestKey === key) return;
+    const place = normalizeWeatherPlace(chrome.place);
+    this.modelRequestKey = key;
+    this.render();
+    try {
+      const inputs = await loadWeatherInputsV7(place, {
+        fetchWeather: async (lat, lon) => {
+          if (this._placeKey() === key && chrome.wx) return chrome.wx;
+          const value = await fetchWeather(lat, lon);
+          if (this._placeKey() === key) chrome.wx = value;
+          return value;
+        },
+        fetchKmaForecast: (lat, lon) => kmaFcst.at(lat, lon),
+        fetchKorea: name => getKorea(name),
+        fetchWarningGate: point => warn.safetyAt(point),
+        fetchMarine: (lat, lon) => lookupWaves(lat, lon),
+      });
+      if (this._placeKey() !== key) return;
+      this.model = buildWeatherCardModel({ ...inputs, now: new Date().toISOString() });
+      this.modelKey = key;
+      this.modelErrors = inputs.errors || {};
+      this.kma = inputs.kmaForecast || null;
+      this.kmaKey = inputs.kmaForecast ? key : '';
+      document.dispatchEvent(new CustomEvent('earthus:weather-model', {
+        detail: { point: { lat: place.lat, lon: place.lon }, model: this.model },
+      }));
+    } catch (error) {
+      if (this._placeKey() === key) {
+        this.model = null;
+        this.modelErrors = { weatherCard: error?.message || 'WEATHER_CARD_FAILED' };
+      }
+    } finally {
+      if (this.modelRequestKey === key) this.modelRequestKey = '';
+      if (this._placeKey() === key) this.render();
+    }
   },
 
   _loadKma() {
@@ -193,6 +253,9 @@ export const weatherPanel = {
 
     $('#wxTitle').textContent = chrome.place.name
       || (chrome.isDefault ? chrome.defaultName : (ko ? '위치 확인 중…' : 'Locating…'));
+
+    this._renderV7(body, ko);
+    return;
 
     // 탭
     const tabs = el('div', 'comm-tabs');
@@ -297,6 +360,98 @@ export const weatherPanel = {
             : `Source: ${esc(this.kma.sourceEn || this.kma.source)}`)
       : (ko ? '자료 출처 · Open-Meteo 전지구 수치예보'
             : 'Source · Open-Meteo global NWP')));
+  },
+
+  _renderV7(body, ko) {
+    body.dataset.weatherCardV7 = '';
+    if (!this.model) {
+      const loading = el('section', 'wcv7-skeleton');
+      loading.setAttribute('data-weather-card-v7', '');
+      loading.setAttribute('aria-busy', 'true');
+      loading.innerHTML = `<div></div><div></div><div></div><p>${ko
+        ? '관측·예보·특보의 출처와 시각을 확인하는 중…'
+        : 'Checking observation, forecast, warning sources and times…'}</p>`;
+      body.appendChild(loading);
+      if (!this.modelRequestKey && this.modelErrors.weatherCard) {
+        loading.classList.add('is-error');
+        loading.querySelector('p').textContent = ko
+          ? '현재 위치의 날씨 근거를 불러오지 못했습니다.'
+          : 'Weather evidence for this location is unavailable.';
+      }
+      return;
+    }
+
+    const model = this.model;
+    const sourceMap = new Map(model.sources.map(source => [source.id, source]));
+    const activeHour = this.selectedAt
+      ? model.hourly.find(hour => hour.validAt === this.selectedAt) || null : null;
+    const root = body;
+    root.classList.add('wcv7');
+    root.setAttribute('data-weather-card-v7', '');
+
+    root.appendChild(renderHero(model, sourceMap, ko, activeHour));
+
+    const warning = el('section', 'wcv7-alert');
+    warning.dataset.weatherSection = 'official-warning';
+    warning.innerHTML = safetyGateMarkup(model.warningGate, ko ? 'ko' : 'en', {
+      countryCode: inKorea(model.location.lat, model.location.lon) ? 'KR' : null,
+    });
+    root.appendChild(warning);
+
+    root.appendChild(this._renderHourly(model, ko));
+    root.appendChild(renderDaily(model, ko));
+    root.appendChild(renderIntelligence(model, ko, activeHour));
+    root.appendChild(renderDetails(model, sourceMap, ko));
+    root.appendChild(renderSources(model, ko));
+    root.appendChild(renderEarthActions(model, ko));
+    root.querySelectorAll('.wcv7-detail-toggle').forEach(button => {
+      button.addEventListener('click', () => {
+        const card = button.closest('.wcv7-detail');
+        const expanded = !card.classList.contains('is-expanded');
+        card.classList.toggle('is-expanded', expanded);
+        button.setAttribute('aria-expanded', String(expanded));
+        card.querySelector('.wcv7-detail-body').hidden = !expanded;
+      });
+    });
+    root.querySelectorAll('[data-weather-layer]').forEach(button => {
+      button.addEventListener('click', () => document.dispatchEvent(new CustomEvent(
+        'earthus:weather-layer-request', { detail: { id: button.dataset.weatherLayer } },
+      )));
+    });
+  },
+
+  _renderHourly(model, ko) {
+    const section = el('section', 'wcv7-section wcv7-hourly');
+    section.dataset.weatherSection = 'hourly';
+    section.innerHTML = `<header><div><small>${ko ? '공식 예보' : 'OFFICIAL FORECAST'}</small>`
+      + `<h4>${ko ? '앞으로 24시간' : 'Next 24 hours'}</h4></div>`
+      + `<span>${ko ? '시간을 누르면 지구와 카드가 함께 이동합니다' : 'Choose a time to sync Earth and cards'}</span></header>`;
+    const rail = el('div', 'wcv7-hour-rail');
+    model.hourly.slice(0, 24).forEach((hour, index) => {
+      const button = el('button', 'wcv7-hour');
+      button.type = 'button';
+      button.dataset.weatherTime = hour.validAt || '';
+      const selected = this.selectedAt
+        ? hour.validAt === this.selectedAt : index === 0;
+      button.setAttribute('aria-pressed', String(selected));
+      const condition = weatherCondition(hour.condition, ko);
+      button.innerHTML = `<time>${hourLabel(hour.validAt, model.location.timezone, ko)}</time>`
+        + `<span aria-hidden="true">${condition.icon}</span>`
+        + `<b>${temperature(hour.temperature, ko)}</b>`
+        + `<em>${valueText(hour.precipitationProbability, 0)}</em>`;
+      button.addEventListener('click', () => {
+        this.selectedAt = hour.validAt;
+        this.render();
+        document.dispatchEvent(new CustomEvent('earthus:weather-time', {
+          detail: { validAt: hour.validAt, location: model.location, hour },
+        }));
+      });
+      rail.appendChild(button);
+    });
+    if (!rail.children.length) rail.appendChild(el('p', 'wcv7-empty', ko
+      ? '시간별 예보 자료가 없습니다.' : 'Hourly forecast is unavailable.'));
+    section.appendChild(rail);
+    return section;
   },
 
   /* ── 오늘 ─────────────────────────────────────────────────── */
@@ -683,6 +838,369 @@ export const weatherPanel = {
           : `Based on a default location — location permission not granted`)));
   },
 };
+
+const WEATHER_REGION_ALIASES = Object.freeze([
+  ['서울', '서울'], ['부산', '부산'], ['대구', '대구'], ['인천', '인천'],
+  ['광주', '광주'], ['대전', '대전'], ['울산', '울산'], ['세종', '세종'],
+  ['경기', '경기'], ['강원', '강원'], ['충북', '충북'], ['충청북', '충북'],
+  ['충남', '충남'], ['충청남', '충남'], ['전북', '전북'], ['전라북', '전북'],
+  ['전남', '전남'], ['전라남', '전남'], ['경북', '경북'], ['경상북', '경북'],
+  ['경남', '경남'], ['경상남', '경남'], ['제주', '제주'],
+]);
+
+function normalizeWeatherPlace(place = {}) {
+  const name = String(place.name || place.region || '');
+  const region = place.region || WEATHER_REGION_ALIASES.find(([prefix]) => name.startsWith(prefix))?.[1] || null;
+  return {
+    name: place.name || null,
+    lat: Number(place.lat),
+    lon: Number(place.lon),
+    region,
+  };
+}
+
+function renderHero(model, sourceMap, ko, activeHour = null) {
+  const section = el('section', 'wcv7-hero');
+  section.dataset.weatherSection = 'hero';
+  const current = model.current;
+  const temperaturePoint = activeHour?.temperature || current.temperature;
+  const conditionPoint = activeHour?.condition || current.condition;
+  const source = sourceMap.get(temperaturePoint.sourceRef);
+  const condition = weatherCondition(conditionPoint, ko);
+  const time = evidenceTime(temperaturePoint, model.location.timezone, ko);
+  section.innerHTML = `<div class="wcv7-eyebrow"><span>${activeHour
+    ? (ko ? '선택 시각' : 'SELECTED TIME') : (ko ? '지금' : 'NOW')}</span>`
+    + `<b class="wcv7-badge ${sourceTypeClass(temperaturePoint.sourceType)}">`
+    + `${sourceTypeLabel(temperaturePoint.sourceType, ko)}</b></div>`
+    + `<div class="wcv7-hero-main"><div class="wcv7-hero-condition">`
+    + `<span aria-hidden="true">${condition.icon}</span><div><strong>${esc(condition.label)}</strong>`
+    + `<small>${esc(model.location.name || (ko ? '선택 위치' : 'Selected location'))}</small></div></div>`
+    + `<div class="wcv7-temperature">${temperature(temperaturePoint, ko)}</div></div>`
+    + `<div class="wcv7-evidence"><b>${esc(ko ? (source?.label || '출처 확인 중')
+      : (source?.labelEn || source?.label || 'Source pending'))}</b>`
+    + `<span>${esc(time)}</span>${stateNotice(temperaturePoint, ko)}</div>`;
+  return section;
+}
+
+function renderDaily(model, ko) {
+  const section = el('section', 'wcv7-section wcv7-daily');
+  section.dataset.weatherSection = '10-day';
+  section.innerHTML = `<header><div><small>${ko ? '공식·모델 구분' : 'OFFICIAL / MODEL'}</small>`
+    + `<h4>${ko ? '10일 날씨' : '10-day weather'}</h4></div>`
+    + `<span>${ko ? '항목별 출처가 다르면 각각 표시합니다' : 'Each field keeps its own source label'}</span></header>`;
+  const list = el('div', 'wcv7-day-list');
+  model.daily.slice(0, 10).forEach((day, index) => {
+    const row = el('article', 'wcv7-day');
+    const condition = weatherCondition(day.condition, ko);
+    const maxType = day.temperatureMax?.sourceType;
+    const minType = day.temperatureMin?.sourceType;
+    row.innerHTML = `<div class="wcv7-day-date"><b>${dayLabel(day.date, index, ko)}</b>`
+      + `<span>${shortDate(day.date, ko)}</span></div>`
+      + `<div class="wcv7-day-condition"><span aria-hidden="true">${condition.icon}</span>`
+      + `<small>${esc(condition.label)}</small></div>`
+      + `<div class="wcv7-day-temp"><span>${ko ? '최저' : 'L'} ${temperature(day.temperatureMin, ko)}</span>`
+      + `<b>${ko ? '최고' : 'H'} ${temperature(day.temperatureMax, ko)}</b></div>`
+      + `<div class="wcv7-day-rain"><span>${ko ? '강수' : 'Rain'} ${valueText(day.precipitationProbability, 0)}</span>`
+      + `<small>${valueText(day.precipitation, 1)}</small></div>`
+      + `<div class="wcv7-day-sources">${fieldBadge(minType, ko)}${maxType === minType ? '' : fieldBadge(maxType, ko)}</div>`;
+    list.appendChild(row);
+  });
+  if (!list.children.length) list.appendChild(el('p', 'wcv7-empty', ko
+    ? '10일 예보 자료가 없습니다.' : '10-day forecast is unavailable.'));
+  section.appendChild(list);
+  return section;
+}
+
+function renderIntelligence(model, ko, activeHour = null) {
+  const section = el('section', 'wcv7-section wcv7-intelligence');
+  section.dataset.weatherSection = 'intelligence';
+  const active = model.warningGate?.gate === 'OFFICIAL_WARNING_ACTIVE';
+  const unknown = model.warningGate?.status === 'UNKNOWN' || model.warningGate?.gate === 'UNKNOWN';
+  let title;
+  let body;
+  if (active) {
+    title = ko ? '공식 특보를 먼저 확인하세요' : 'Check the official warning first';
+    body = ko
+      ? '특보가 발효 중이므로 이 카드에서는 야외 활동에 대한 긍정 추천을 만들지 않습니다.'
+      : 'An official warning is active, so this card does not create a positive outdoor recommendation.';
+  } else if (unknown) {
+    title = ko ? '특보 상태를 확인할 수 없습니다' : 'Warning status is unavailable';
+    body = ko
+      ? '공식 특보 확인 전에는 안전하다고 단정하거나 활동을 추천하지 않습니다.'
+      : 'Earthus does not declare conditions safe or recommend activity before official warning verification.';
+  } else {
+    title = ko ? '관측과 예보를 분리해 읽으세요' : 'Read observations and forecasts separately';
+    body = ko
+      ? '현재 수치는 관측, 앞으로의 값은 공식 예보 또는 모델입니다. 원인이나 안전 결론은 자료가 증명하는 범위 밖에서 덧붙이지 않습니다.'
+      : 'Current values are observations; future values are official or model forecasts. No unsupported cause or safety conclusion is added.';
+  }
+  const selected = activeHour
+    ? (ko
+      ? `선택한 시각 ${formatInstant(activeHour.validAt, model.location.timezone, true)} · `
+        + `${sourceTypeLabel(activeHour.sourceType, true)} · 기온 ${temperature(activeHour.temperature, true)} · `
+        + `강수확률 ${valueText(activeHour.precipitationProbability, 0)}`
+      : `Selected ${formatInstant(activeHour.validAt, model.location.timezone, false)} · `
+        + `${sourceTypeLabel(activeHour.sourceType, false)} · ${temperature(activeHour.temperature, false)} · `
+        + `rain ${valueText(activeHour.precipitationProbability, 0)}`)
+    : null;
+  section.innerHTML = `<header><div><small>EARTHUS WEATHER INTELLIGENCE</small>`
+    + `<h4>${esc(title)}</h4></div></header><p>${esc(body)}</p>`
+    + (selected ? `<p class="wcv7-selected-fact">${esc(selected)}</p>` : '');
+  return section;
+}
+
+function renderDetails(model, sourceMap, ko) {
+  const section = el('section', 'wcv7-section wcv7-details');
+  section.dataset.weatherSection = 'details';
+  section.innerHTML = `<header><div><small>${ko ? '값·단위·근거' : 'VALUE / UNIT / EVIDENCE'}</small>`
+    + `<h4>${ko ? '상세 날씨' : 'Weather details'}</h4></div>`
+    + `<span>${ko ? '카드를 누르면 근거가 펼쳐집니다' : 'Open a card for evidence'}</span></header>`;
+  const current = model.current;
+  const air = model.details.airQuality;
+  const uv = model.details.uv;
+  const sun = model.details.sun;
+  const waves = model.details.waves;
+  const today = model.daily[0];
+  const items = [
+    {
+      icon: '☔', title: ko ? '비·눈' : 'Rain & snow',
+      summary: `${ko ? '최근 60분' : 'Past 60 min'} ${valueText(current.precipitation60m, 1)}`,
+      points: [current.precipitation15m, current.precipitation60m, today?.precipitationProbability, today?.precipitation],
+      body: `${ko ? '최근 15분' : 'Past 15 min'} ${valueText(current.precipitation15m, 1)} · `
+        + `${ko ? '오늘 확률' : 'Today probability'} ${valueText(today?.precipitationProbability, 0)} · `
+        + `${ko ? '오늘 합계' : 'Today total'} ${valueText(today?.precipitation, 1)}`,
+    },
+    {
+      icon: '↗', title: ko ? '바람' : 'Wind', summary: valueText(current.windSpeed, 1),
+      points: [current.windSpeed, current.windDirection, current.windGust],
+      body: `${ko ? '풍향' : 'Direction'} ${valueText(current.windDirection, 0)} · `
+        + `${ko ? '최대 순간풍속' : 'Gust'} ${valueText(current.windGust, 1)}`,
+    },
+    {
+      icon: '◌', title: ko ? '공기질' : 'Air quality',
+      summary: air.grade || `${ko ? '자료 없음' : 'Unavailable'}`,
+      points: [air.pm10, air.pm25, air.index],
+      body: `PM10 ${valueText(air.pm10, 0)} · PM2.5 ${valueText(air.pm25, 0)} · `
+        + `${ko ? '통합지수' : 'Index'} ${valueText(air.index, 0)}`
+        + `${air.stationName ? ` · ${esc(air.stationName)} ${air.stationDistanceKm ?? '—'}km` : ''}`,
+    },
+    {
+      icon: '☀', title: ko ? '자외선' : 'UV',
+      summary: `${uv.level || (ko ? '자료 없음' : 'Unavailable')} ${valueText(uv.value, 0)}`.trim(),
+      points: [uv.value], body: ko
+        ? '기상청 생활기상지수 예보값입니다. 피부 영향은 개인 조건에 따라 다릅니다.'
+        : 'Official life-weather index forecast. Personal effects vary.',
+    },
+    {
+      icon: '≈', title: ko ? '체감·습도' : 'Feels like & humidity',
+      summary: `${ko ? '습도' : 'Humidity'} ${valueText(current.humidity, 0)}`,
+      points: [current.feelsLike, current.humidity, current.dewPoint],
+      body: `${ko ? '체감' : 'Feels like'} ${valueText(current.feelsLike, 1)} · `
+        + `${ko ? '이슬점' : 'Dew point'} ${valueText(current.dewPoint, 1)}. `
+        + (current.feelsLike?.dataState === DATA_STATE.NOT_SUPPORTED
+          ? (ko ? '관측값만으로 체감온도를 임의 계산하지 않았습니다.' : 'No apparent temperature was invented from observation fields.') : ''),
+    },
+    {
+      icon: '◎', title: ko ? '기압·가시거리' : 'Pressure & visibility',
+      summary: valueText(current.pressure, 0), points: [current.pressure],
+      body: `${ko ? '현지기압' : 'Surface pressure'} ${valueText(current.pressure, 0)} · `
+        + (ko ? '현재 관측과 같은 기준의 가시거리 자료는 제공되지 않습니다.'
+          : 'Visibility on the same observational basis is unavailable.'),
+    },
+    {
+      icon: '◐', title: ko ? '해·달' : 'Sun & moon',
+      summary: `${clockText(sun.sunrise?.value, model.location.timezone)}–${clockText(sun.sunset?.value, model.location.timezone)}`,
+      points: [sun.sunrise, sun.sunset],
+      body: `${ko ? '해뜸' : 'Sunrise'} ${clockText(sun.sunrise?.value, model.location.timezone)} · `
+        + `${ko ? '해짐' : 'Sunset'} ${clockText(sun.sunset?.value, model.location.timezone)} · `
+        + (ko ? '달 위상은 현재 계약에서 제공하지 않습니다.' : 'Moon phase is not provided by the current contract.'),
+    },
+    {
+      icon: '≋', title: ko ? '파도·조석' : 'Waves & tide',
+      summary: waves?.wave_height != null ? `${waves.wave_height} m` : (ko ? '해상 자료 없음' : 'Marine data unavailable'),
+      points: [],
+      body: waves?.wave_height != null
+        ? `${ko ? '모델 파고' : 'Model wave height'} ${waves.wave_height} m · `
+          + `${ko ? '주기' : 'Period'} ${waves.wave_period ?? '—'} s · `
+          + `${ko ? '유효시각' : 'Valid'} ${esc(waves.time || '—')} · `
+          + (ko ? '조석은 제공하지 않습니다.' : 'Tide is not provided.')
+        : (ko ? '육지이거나 해상 모델값이 없습니다. 조석을 0으로 표시하지 않습니다.'
+          : 'This is land or marine model data is absent. Missing tide is not shown as zero.'),
+    },
+  ];
+  const grid = el('div', 'wcv7-detail-grid');
+  items.forEach((item, index) => {
+    const card = el('article', 'wcv7-detail');
+    const point = item.points.find(candidate => candidate?.sourceRef);
+    const source = sourceMap.get(point?.sourceRef);
+    const bodyId = `wcv7-detail-${index}`;
+    card.innerHTML = `<button type="button" class="wcv7-detail-toggle" aria-expanded="false" aria-controls="${bodyId}">`
+      + `<span class="wcv7-detail-icon" aria-hidden="true">${item.icon}</span>`
+      + `<span><b>${esc(item.title)}</b><small>${esc(item.summary)}</small></span><i aria-hidden="true">＋</i></button>`
+      + `<div id="${bodyId}" class="wcv7-detail-body" hidden><p>${item.body}</p>`
+      + `<small>${source ? `${esc(sourceTypeLabel(source.sourceType, ko))} · ${esc(ko ? source.label : source.labelEn)}`
+        : (ko ? '해당 값의 출처 자료 없음' : 'No source record for this value')}</small></div>`;
+    grid.appendChild(card);
+  });
+  section.appendChild(grid);
+  return section;
+}
+
+function renderSources(model, ko) {
+  const section = el('section', 'wcv7-section wcv7-sources');
+  section.dataset.weatherSection = 'sources';
+  section.innerHTML = `<header><div><small>PROVENANCE</small><h4>${ko ? '출처·시각·상태' : 'Sources, times, status'}</h4></div></header>`;
+  const list = el('div', 'wcv7-source-list');
+  model.sources.forEach(source => {
+    const article = el('article', 'wcv7-source');
+    const time = source.observedAt || source.issuedAt || source.receivedAt;
+    const meta = [
+      sourceTypeLabel(source.sourceType, ko),
+      formatInstant(time, model.location.timezone, ko),
+      source.distanceKm != null ? `${source.distanceKm}km` : null,
+      source.n != null ? `n=${source.n}` : null,
+      dataStateLabel(source.dataState, ko),
+    ].filter(Boolean).join(' · ');
+    article.innerHTML = `<div><b>${esc(ko ? source.label : (source.labelEn || source.label))}</b>`
+      + `<span>${esc(meta)}</span></div><small>${esc(source.license)}</small>`;
+    list.appendChild(article);
+  });
+  if (!list.children.length) list.appendChild(el('p', 'wcv7-empty', ko
+    ? '출처 자료가 없습니다.' : 'No source records.'));
+  section.appendChild(list);
+  return section;
+}
+
+function renderEarthActions(model, ko) {
+  const section = el('section', 'wcv7-section wcv7-earth');
+  section.dataset.weatherSection = 'earth';
+  section.innerHTML = `<header><div><small>EARTH SYNC</small><h4>${ko ? '지구에서 함께 보기' : 'View on Earth'}</h4></div>`
+    + `<span>${ko ? '카드는 닫지 않고 레이어를 엽니다' : 'Open a layer without losing this card'}</span></header>`
+    + `<div class="wcv7-earth-actions">`
+    + `<button type="button" data-weather-layer="rain">${ko ? '강수' : 'Rain'}</button>`
+    + `<button type="button" data-weather-layer="wind">${ko ? '바람' : 'Wind'}</button>`
+    + `<button type="button" data-weather-layer="pm25">PM2.5</button></div>`;
+  return section;
+}
+
+function fieldBadge(type, ko) {
+  return `<span class="wcv7-badge ${sourceTypeClass(type)}">${esc(sourceTypeLabel(type, ko))}</span>`;
+}
+
+function sourceTypeClass(type) {
+  return `is-${String(type || 'unknown').toLowerCase().replaceAll('_', '-')}`;
+}
+
+function sourceTypeLabel(type, ko) {
+  const labels = {
+    [SOURCE_TYPE.OBSERVED]: ko ? '관측' : 'Observed',
+    [SOURCE_TYPE.OFFICIAL_FORECAST]: ko ? '공식 예보' : 'Official forecast',
+    [SOURCE_TYPE.OFFICIAL_WARNING]: ko ? '공식 특보' : 'Official warning',
+    [SOURCE_TYPE.MODEL_FORECAST]: ko ? '모델 예보' : 'Model forecast',
+    [SOURCE_TYPE.EARTHUS_ESTIMATE]: ko ? 'Earthus 추정' : 'Earthus estimate',
+  };
+  return labels[type] || (ko ? '출처 미확인' : 'Source unknown');
+}
+
+function dataStateLabel(state, ko) {
+  const labels = {
+    [DATA_STATE.AVAILABLE]: ko ? '사용 가능' : 'Available',
+    [DATA_STATE.MISSING]: ko ? '자료 없음' : 'Missing',
+    [DATA_STATE.STALE]: ko ? '지연' : 'Stale',
+    [DATA_STATE.ESTIMATED]: ko ? '추정' : 'Estimated',
+    [DATA_STATE.INVALID]: ko ? '시각 오류' : 'Invalid',
+    [DATA_STATE.NOT_SUPPORTED]: ko ? '미지원' : 'Not supported',
+    [DATA_STATE.CONFLICTING]: ko ? '상충' : 'Conflicting',
+  };
+  return labels[state] || state || (ko ? '상태 미확인' : 'Unknown state');
+}
+
+function stateNotice(point, ko) {
+  if (!point || point.dataState === DATA_STATE.AVAILABLE) return '';
+  return `<strong class="wcv7-state is-${esc(String(point.dataState || '').toLowerCase())}">`
+    + `${esc(dataStateLabel(point.dataState, ko))}</strong>`;
+}
+
+function weatherCondition(point, ko) {
+  const value = point?.value ?? point;
+  if (value && (value.sky != null || value.precipitationType != null)) {
+    const label = condText(value.sky, value.precipitationType, ko);
+    return { label, icon: weatherSummary.kmaWeatherSymbol(value.sky, value.precipitationType) };
+  }
+  if (value && value.weatherCode != null) {
+    const label = wxText(value.weatherCode);
+    return { label, icon: weatherSummary.wmoWeatherSymbol(value.weatherCode) };
+  }
+  return { label: ko ? '상태 자료 없음' : 'Condition unavailable', icon: '—' };
+}
+
+function temperature(point, ko) {
+  if (!point || point.value == null || !Number.isFinite(Number(point.value))) return ko ? '—' : '—';
+  return `${Math.round(Number(point.value))}°C`;
+}
+
+function valueText(point, digits = 1) {
+  if (!point || point.value == null || !Number.isFinite(Number(point.value))) return '—';
+  const value = Number(point.value).toFixed(digits).replace(/\.0$/, '');
+  const unit = point.unit || '';
+  return unit && !['%', '°C', '°'].includes(unit) ? `${value} ${unit}` : `${value}${unit}`;
+}
+
+function evidenceTime(point, timezone, ko) {
+  const type = sourceTypeLabel(point?.sourceType, ko);
+  const at = point?.observedAt || point?.issuedAt || point?.validAt;
+  return `${type} · ${formatInstant(at, timezone, ko)}`;
+}
+
+function formatInstant(value, timezone, ko) {
+  if (!value) return ko ? '시각 없음' : 'Time unavailable';
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return ko ? '시각 오류' : 'Invalid time';
+  try {
+    return new Intl.DateTimeFormat(ko ? 'ko-KR' : 'en-US', {
+      timeZone: timezone || 'UTC', month: 'numeric', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: !ko,
+    }).format(date);
+  } catch (_) {
+    return date.toISOString().slice(0, 16).replace('T', ' ');
+  }
+}
+
+function clockText(value, timezone) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return String(value).slice(11, 16) || '—';
+  try {
+    return new Intl.DateTimeFormat(i18n.lang === 'ko' ? 'ko-KR' : 'en-US', {
+      timeZone: timezone || 'UTC', hour: '2-digit', minute: '2-digit', hour12: false,
+    }).format(date);
+  } catch (_) { return String(value).slice(11, 16) || '—'; }
+}
+
+function hourLabel(value, timezone, ko) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return '—';
+  try {
+    return new Intl.DateTimeFormat(ko ? 'ko-KR' : 'en-US', {
+      timeZone: timezone || 'UTC', weekday: 'short', hour: '2-digit', hour12: !ko,
+    }).format(date);
+  } catch (_) { return value.slice(11, 16); }
+}
+
+function dayLabel(value, index, ko) {
+  if (index === 0) return ko ? '오늘' : 'Today';
+  if (!value) return ko ? `${index + 1}일` : `Day ${index + 1}`;
+  const date = new Date(`${value}T12:00:00Z`);
+  try { return new Intl.DateTimeFormat(ko ? 'ko-KR' : 'en-US', { weekday: 'short' }).format(date); }
+  catch (_) { return value; }
+}
+
+function shortDate(value, ko) {
+  if (!value) return '—';
+  const [year, month, day] = String(value).split('-');
+  return ko ? `${Number(month)}.${Number(day)}` : `${month}/${day}/${String(year).slice(2)}`;
+}
 
 /** '202608020500' → '8/2 05시' — 언제 발표된 예보인지 밝힌다 */
 function fmtBase(s) {

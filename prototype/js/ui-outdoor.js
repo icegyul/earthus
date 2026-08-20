@@ -103,20 +103,39 @@ function card(item, ko) {
 
 export const outdoorPanel = {
   _run: null,
+  _bound: false,
+  _pending: null,
+
+  _bind() {
+    if (this._bound) return;
+    this._bound = true;
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-out-act]');
+      if (!b) return;
+      const action = b.dataset.outAct;
+      /* 지구본이 먼저 뜨고 부가 초기화가 이어지는 짧은 구간에도 메뉴는 눌릴 수 있다.
+         실행 표가 붙기 전의 첫 선택을 버리지 않고, init 직후 한 번 이어서 연다. */
+      if (!this._run) { this._pending = action; return; }
+      this.close();
+      this._run(action);
+    });
+  },
 
   /** @param run (act)=>void — 고른 것을 실제로 여는 쪽 */
   init(run) {
     this._run = run;
-    document.addEventListener('click', (e) => {
-      const b = e.target.closest('[data-out-act]');
-      if (!b) return;
+    this._bind();
+    if (this._pending) {
+      const action = this._pending;
+      this._pending = null;
       this.close();
-      this._run?.(b.dataset.outAct);
-    });
+      this._run(action);
+    }
     return this;
   },
 
   open() {
+    this._bind();
     const ko = i18n.lang === 'ko';
     const body = $('#outBody');
     if (body) {

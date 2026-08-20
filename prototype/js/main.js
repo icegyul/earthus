@@ -9,6 +9,9 @@ import { layerBar } from './layerbar.js?v=20260815-freeentry1';
 import { search } from './search.js';
 import { onboard } from './onboard.js';
 import { weatherPanel } from './ui-weather.js';
+import { tourismSheet } from './ui-tourism.js';
+import { createWeatherEarthSync } from './weather-earth-sync.js';
+import { createWeatherMomentLayer } from './weather-moment-layer.js';
 import { power } from './power.js';
 import { panels } from './panels.js';
 import { intro } from './intro.js';
@@ -236,6 +239,13 @@ async function boot() {
     canOpenLayer: id => layerBar.canOpenLayer(id),
     foreignRouteActive: !!diveParam || oceanRoute,
   });
+  const weatherMomentLayer = createWeatherMomentLayer({
+    viewer, Cesium: globalThis.Cesium, power, language: () => i18n.lang,
+  });
+  createWeatherEarthSync({
+    eventTarget: document, sceneMgr, store, flyTo,
+    renderMoment: detail => weatherMomentLayer.show(detail),
+  }).init();
   layerBar.onAction('earth-home', () => sceneMgr.to('earth', { stage: 'earth' }));
   layerBar.onAction('earth-surface', async () => {
     await sceneMgr.to('earth', { stage: 'surface' });
@@ -278,6 +288,7 @@ async function boot() {
      ⚠️ 선택 전 활동 CTA와 같은 이유로 코치마크도 자동 노출하지 않는다. */
   onboard.init({ chips: false, coach: false });
   weatherPanel.init();    // 하단 온도 탭 → 내 자리 날씨 시트
+  tourismSheet.init();    // 서울시 공식 혼잡 3D 기둥 → 관광 흐름 시트
 
   // 내 위치 — 실패해도 조용히 넘어간다 (HTTP 접속·권한 거부 등)
   windField.init();
@@ -846,6 +857,7 @@ function onPick(ev) {
   if (picked?.id?._fishRegion) { fishPanel.openRegion(picked.id._fishRegion); return; }
   if (picked?.id?._paraSite) { paraPanel.focus(picked.id._paraSite); return; }
   if (picked?.id?._trench) { trenchGlobe.focus(picked.id._trench); return; }
+  if (picked?.id?._tourism) { tourismSheet.open(picked.id._tourism); return; }
 
   /* 철새·거북·바닷새 — 누르면 무엇인지 한 줄로 말한다.
      받은 요청: "거북이나 새 선을 누르면 어떤 새인지 나오게 해줘"

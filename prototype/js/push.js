@@ -202,13 +202,13 @@ export const push = {
     return name;
   },
 
-  /** 지점별 알림 종류와 사용자가 정한 지진 수신 기준을 바꾼다.
-   *  ⚠️ 허용한 다섯 필드만 보낸다. 객체를 그대로 update 하면 user_id·좌표까지
+  /** 지점별 알림 종류와 사용자가 정한 수신 기준을 바꾼다.
+   *  ⚠️ 허용한 필드만 보낸다. 객체를 그대로 update 하면 user_id·좌표까지
    *     실수로 덮을 수 있고, 안전 알림 설정에서 그런 광범위 쓰기는 필요 없다. */
   async updateSpot(id, values = {}) {
     if (!auth.client || !auth.user) throw new Error('NOT_SIGNED_IN');
     const patch = {};
-    ['rip', 'quake', 'warn'].forEach((key) => {
+    ['rip', 'quake', 'warn', 'tourism'].forEach((key) => {
       if (typeof values[key] === 'boolean') patch[key] = values[key];
     });
     const mag = Number(values.quake_min_mag);
@@ -218,6 +218,14 @@ export const push = {
     const radius = Number(values.quake_max_km);
     if (values.quake_max_km != null && Number.isInteger(radius) && radius > 0 && radius <= 20_000) {
       patch.quake_max_km = radius;
+    }
+    if (values.tourism_place_code != null && /^POI\d{3}$/.test(String(values.tourism_place_code))) {
+      patch.tourism_place_code = String(values.tourism_place_code);
+    }
+    const tourismRank = Number(values.tourism_min_rank);
+    if (values.tourism_min_rank != null && Number.isInteger(tourismRank)
+        && tourismRank >= 1 && tourismRank <= 4) {
+      patch.tourism_min_rank = tourismRank;
     }
     if (!Object.keys(patch).length) return;
     const { error } = await auth.client.from('alert_spots').update(patch).eq('id', id);

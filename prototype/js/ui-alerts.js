@@ -7,8 +7,8 @@
 //      · **아이폰은 홈 화면에 추가해야만** 알림이 온다
 //      · 기기가 절전 중이면 늦게 온다 — "즉시"라고 쓰지 않는다
 //
-// ⚠️ 안전 알림(이안류·지진·특보·쓰나미)은 **무료**다. 유료로 갈리는 것은
-//    지켜볼 지점 개수뿐이다 (무료 1곳 · 유료 20곳). billing.js 참고.
+// ⚠️ 현재 FREE_OPEN 정책에서는 안전 알림과 관광 혼잡 지켜보기를 모두 무료로 열고,
+//    비용 폭주 방지를 위한 서버 상한 20곳만 둔다. 판매가 다시 열리기 전에는 잠그지 않는다.
 
 import { i18n } from './i18n.js';
 import { auth } from './auth.js';
@@ -177,8 +177,7 @@ export const alertsSheet = {
     body.appendChild(row);
 
     /* ── 4. 지켜볼 지점 ────────────────────────────────────── */
-    const paid = auth.isPaid?.();
-    const max = paid ? 20 : 1;
+    const max = 20;
     body.appendChild(el('h4', null,
       `${ko ? '지켜볼 곳' : 'Places to watch'} <i style="font-style:normal;opacity:.55">${this._spots.length}/${max}</i>`));
 
@@ -212,7 +211,8 @@ export const alertsSheet = {
         `<div><b>${esc(sp.label)}</b>`
         + `<i>${sp.lat.toFixed(3)}, ${sp.lon.toFixed(3)}`
         + ` · ${[sp.rip && (ko ? '이안류' : 'rip'), sp.quake && (ko ? '지진' : 'quake'),
-                 sp.warn && (ko ? '특보' : 'warnings')].filter(Boolean).join(' · ')}</i></div>`
+                 sp.warn && (ko ? '특보' : 'warnings'),
+                 sp.tourism && (ko ? '관광 혼잡' : 'tourism crowd')].filter(Boolean).join(' · ')}</i></div>`
         + `<span aria-hidden="true">›</span>`);
       go.title = ko ? `${sp.label} 지도에서 보기` : `Show ${sp.label} on map`;
       go.onclick = () => {
@@ -269,7 +269,8 @@ export const alertsSheet = {
       let quakeRule = null;
       [['rip', ko ? '이안류' : 'Rip current'],
        ['quake', ko ? '지진' : 'Quake'],
-       ['warn', ko ? '기상특보' : 'Weather warning']].forEach(([key, label]) => {
+       ['warn', ko ? '기상특보' : 'Weather warning'],
+       ['tourism', ko ? '관광 혼잡' : 'Tourism crowd']].forEach(([key, label]) => {
         const chip = el('label', 'al-type' + (sp[key] ? ' on' : ''));
         const input = document.createElement('input');
         input.type = 'checkbox';
@@ -336,6 +337,37 @@ export const alertsSheet = {
       quakeRule.append(ruleTitle, magLabel, kmLabel,
         el('small', null, ko ? '내가 정하는 수신 기준 · 기관 경보 등급 아님' : 'Your delivery filter · not an agency warning level'));
       r.appendChild(quakeRule);
+
+      if (sp.tourism && sp.tourism_place_code) {
+        const tourismRule = el('div', 'al-quake-rule');
+        const title = el('span', 'al-rule-title', ko ? '관광 혼잡 수신 기준' : 'Tourism crowd filter');
+        const label = el('label', null, ko ? '서울시 등급' : 'Seoul level');
+        const select = document.createElement('select');
+        const current = Number(sp.tourism_min_rank ?? 3);
+        [[2, ko ? '보통 이상' : 'Normal or above'],
+         [3, ko ? '약간 붐빔 이상' : 'Slightly crowded or above'],
+         [4, ko ? '붐빔만' : 'Crowded only']].forEach(([value, text]) => {
+          select.appendChild(new Option(text, String(value), false, value === current));
+        });
+        select.setAttribute('aria-label', ko ? `${sp.label} 관광 혼잡 최소 등급` : `${sp.label} minimum tourism crowd level`);
+        select.onchange = async () => {
+          const before = Number(sp.tourism_min_rank ?? 3);
+          select.disabled = true;
+          try {
+            const value = Number(select.value);
+            await push.updateSpot(sp.id, { tourism_min_rank: value });
+            sp.tourism_min_rank = value;
+          } catch (error) {
+            select.value = String(before);
+            toast(`${ko ? '관광 혼잡 기준 저장 실패' : 'Could not save tourism filter'}: ${error.message}`);
+          } finally { select.disabled = false; }
+        };
+        label.appendChild(select);
+        tourismRule.append(title, label, el('small', null, ko
+          ? '서울시 공식 현재 혼잡 등급 · 운영·안전 판단 아님'
+          : 'Official Seoul current crowd level · not an operation or safety decision'));
+        r.appendChild(tourismRule);
+      }
       body.appendChild(r);
     });
 
@@ -351,7 +383,7 @@ export const alertsSheet = {
           this._load();
         } catch (e) {
           toast(e.message === 'SPOT_LIMIT'
-            ? (ko ? `지켜볼 곳은 ${max}곳까지입니다${paid ? '' : ' (구독하면 20곳)'}`
+            ? (ko ? `지켜볼 곳은 ${max}곳까지입니다`
                   : `Limit is ${max} place${max > 1 ? 's' : ''}`)
             : `${ko ? '저장 실패' : 'Failed'}: ${e.message}`);
         }
@@ -384,11 +416,10 @@ export const alertsSheet = {
         saveAt(c);
       };
       body.appendChild(addMe);
-    } else if (!this._spotsLoading && !this._spotsError && !paid && this._spots.length >= max) {
+    } else if (!this._spotsLoading && !this._spotsError && this._spots.length >= max) {
       body.appendChild(el('p', 'sky-note', ko
-        ? '무료로는 한 곳을 지켜봅니다. 구독하면 20곳까지 늘어납니다. '
-          + ' 알림 자체(이안류·지진·특보)는 <b>무료로도 그대로 옵니다</b> — 곳 수만 다릅니다.'
-        : 'Free covers one place; subscribing raises it to 20. The alerts themselves are free either way.'));
+        ? '현재 공개 정책의 지켜볼 곳 상한은 20곳입니다. 안전 알림과 관광 혼잡 알림은 모두 무료입니다.'
+        : 'The current public limit is 20 watched places. Safety and tourism crowd alerts are free.'));
     }
 
     body.appendChild(el('p', 'sub-legal', ko

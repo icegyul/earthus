@@ -6,6 +6,7 @@ import { API, C } from '../config.js';
 import { fetchT } from '../net.js';
 import { i18n } from '../i18n.js';
 import { store } from '../store.js';
+import { buildWeatherQueryV7 } from '../weather-contract-v7.js';
 
 const CITIES = [
   ['서울',37.5665,126.9780],['인천',37.4563,126.7052],['부산',35.1796,129.0756],
@@ -46,16 +47,7 @@ export function wxText(code) {
 }
 
 export async function fetchWeather(lat, lon) {
-  const q = new URLSearchParams({
-    latitude: lat.toFixed(4), longitude: lon.toFixed(4),
-    current: 'temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m,is_day',
-    // 강수확률은 hourly 에만 있다 (current 에 없음). 12시간치를 받아 시트에 막대로 보여준다.
-    hourly: 'precipitation_probability,precipitation,weather_code,temperature_2m',
-    daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,sunrise,sunset',
-    // ⚠️ 14일을 받는다(요청). Open-Meteo 최대는 16일이다.
-    //    기존 지점 시트의 renderForecast 는 Math.min(7,…) 으로 잘라 쓰므로 영향 없다.
-    timezone: 'auto', forecast_days: '14', forecast_hours: '13',
-  });
+  const q = buildWeatherQueryV7(lat, lon);
   const res = await fetchT(`${API.METEO}?${q}`);
   if (!res.ok) throw new Error('meteo ' + res.status);
   return res.json();

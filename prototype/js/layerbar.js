@@ -195,6 +195,8 @@ export const ITEMS = [
     sky:'#1a0e06', paint:'heatdome' },
   { id:'phenomena', ko:'해양 환류', en:'Ocean gyres', sub:'5개 해역', subEn:'5 basins',
     ready:true, sky:'#06141a', paint:'gyre' },
+  { id:'tourism', ko:'관광 흐름', en:'Tourism flow', sub:'서울시 공식 혼잡 · 3D 기둥', subEn:'Official Seoul crowd · 3D towers',
+    ready:true, sky:'#081b1b', paint:'tourism' },
   /* FREE_OPEN 기간에는 없는 글로벌 provider를 결제 대기 경로로 꾸미지 않는다.
      항공기는 실제 항로·내 비행기 도구, 선박은 KOMSA MTIS 공식 화면으로 곧장 연다. */
   { id:'flight', ko:'항공기', en:'Aircraft', sub:'항로·내 비행기 추적', subEn:'Route · my flight tracking',
@@ -270,6 +272,7 @@ export function drawThumb(cv, kind) {
     eclipse: () => { bg(['#0b0b14', '#020208']); corona(); },
     flightlayer: () => { bg(['#0a1c2e', '#04101c']); tracks('#8fd0ff'); },
     shiplayer: () => { bg(['#062232', '#03111a']); waves('#7fb8d8'); tracks('#bfe4f5'); },
+    tourism: () => { band(['#48d7a0', '#f0cf63', '#f39a54', '#ef5a67']); },
     /* 열돔 — 안이 진하고 바깥으로 옅어지는 넓은 열 덩어리 */
     heatdome: () => { bg(['#2a1206', '#140803']); heatBlob('#ff6b3d'); },
     /* 환류 — 도는 타원 흐름 두 개 */
@@ -479,6 +482,8 @@ const CATEGORIES = [
     ids: ['flight', 'ship'] },
   { id: 'events',  ko: '이벤트',     en: 'Events',
     ids: ['news'] },
+  { id: 'travel',  ko: '여행',       en: 'Travel',
+    ids: ['tourism', 'poi'] },
 ];
 
 /* ── Alert 묶음 ──────────────────────────────────────────────

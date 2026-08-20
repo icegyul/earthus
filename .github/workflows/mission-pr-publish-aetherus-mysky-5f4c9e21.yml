@@ -1,0 +1,68 @@
+name: Aetherus My Sky PR publish 5f4c9e21
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Verify mission source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = '0a957b76bedc25f022bd9fbdd5885296600597a3'
+          test "$(git rev-parse HEAD)" = '${{ github.event.pull_request.head.sha }}'
+
+      - name: Recover exact verified patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          awk '/<<'"'"'B64'"'"'/{copy=1;next} /^[[:space:]]*B64$/{copy=0} copy {sub(/^[[:space:]]+/, ""); print}' \
+            .github/workflows/mission-publish-aetherus-mysky-5f4c9e21.yml > /tmp/aetherus.patch.gz.b64
+          base64 -d /tmp/aetherus.patch.gz.b64 > /tmp/aetherus.patch.gz
+          test "$(sha256sum /tmp/aetherus.patch.gz | cut -d' ' -f1)" = 'd155cdc4d7a5f2c1746674fb88e73052d7a1c22c3bb23dab61aa53a4be26539f'
+          gzip -dc /tmp/aetherus.patch.gz > /tmp/aetherus.patch
+          test "$(sha256sum /tmp/aetherus.patch | cut -d' ' -f1)" = 'b6fb5ee09d7f56bbe2376a0eb486a7a9b2fd0806c2753ec8809dd974df41fc62'
+          git apply --check /tmp/aetherus.patch
+          git apply /tmp/aetherus.patch
+          rm -f \
+            .github/workflows/mission-publish-aetherus-mysky-5f4c9e21.yml \
+            .github/workflows/mission-pr-publish-aetherus-mysky-5f4c9e21.yml
+
+      - name: Verify Aetherus screen integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check prototype/js/space/cosmic3d.js
+          node --check prototype/js/space/my-sky-controller.js
+          node --check prototype/js/space/sky-journey.js
+          node --experimental-default-type=module tools/test_aetherus_coordinate_core.mjs
+          node --experimental-default-type=module tools/test_aetherus_v3_public_ui.mjs
+          node --experimental-default-type=module tools/test_aetherus_astronomy.mjs
+          node --experimental-default-type=module tools/test_aetherus_observation_planner.mjs
+          node --experimental-default-type=module tools/test_aetherus_sky_ar.mjs
+          node --experimental-default-type=module tools/test_aetherus_foundation.mjs
+          git diff --check
+
+      - name: Commit verified screen journey
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'earthus-aetherus-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git commit -m '내 하늘과 태양계 화면이 좌표 코어와 분리되어 있던 문제를 연결'
+          git push origin HEAD:codex/aetherus-coordinate-core-v1

@@ -1,0 +1,112 @@
+name: Aetherus journey apply 903d2f19
+
+on:
+  push:
+    branches:
+      - mission/aetherus-journey-903d2f19
+
+permissions:
+  contents: write
+
+jobs:
+  apply-test-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TARGET_BRANCH: codex/aetherus-coordinate-core-v1
+      EXPECTED_BASE: 8c07e93bd50842540e83e5b8602fd89dac0b5915
+      PATCH_B64_SHA256: 014ebfe6926c9affc4f43af21cda4f6889fa4d6f1854faa1996b554df6a8e5b1
+      PATCH_SHA256: af60cc7af5a43fa097319ab70c31c3ae3f5572629585402f104862619c9e0b8e
+    steps:
+      - name: Checkout mission transport
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify target base and payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$TARGET_BRANCH"
+          remote_head="$(git rev-parse "origin/$TARGET_BRANCH")"
+          test "$remote_head" = "$EXPECTED_BASE" || {
+            echo "Target branch moved: expected $EXPECTED_BASE, found $remote_head" >&2
+            exit 42
+          }
+          cp .missions/aetherus-journey-903d2f19.patch.gz.b64 /tmp/change.patch.gz.b64
+          echo "$PATCH_B64_SHA256  /tmp/change.patch.gz.b64" | sha256sum -c -
+          base64 -d /tmp/change.patch.gz.b64 | gunzip > /tmp/change.patch
+          echo "$PATCH_SHA256  /tmp/change.patch" | sha256sum -c -
+
+      - name: Apply exact patch to target base
+        shell: bash
+        run: |
+          set -euo pipefail
+          git checkout --detach "$EXPECTED_BASE"
+          git apply --check /tmp/change.patch
+          git apply /tmp/change.patch
+          test ! -e .github/workflows/mission-source-903d2f19.yml
+          test ! -e .github/workflows/mission-apply-journey-903d2f19.yml
+          test ! -e .missions/aetherus-journey-903d2f19.patch.gz.b64
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax check changed modules
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in \
+            prototype/js/space/astronomy.js \
+            prototype/js/space/cosmic3d-legacy.js \
+            prototype/js/space/cosmic3d.js \
+            prototype/js/space/route-state.js \
+            prototype/js/space/scale-bridge.js
+          do
+            cp "$file" /tmp/check.mjs
+            node --check /tmp/check.mjs
+          done
+
+      - name: Run Aetherus coordinate and UI contract tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --experimental-default-type=module tools/test_aetherus_coordinate_core.mjs
+          node --experimental-default-type=module tools/test_aetherus_astronomy.mjs
+          node --experimental-default-type=module tools/test_aetherus_foundation.mjs
+          node --experimental-default-type=module tools/test_aetherus_observation_planner.mjs
+          node --experimental-default-type=module tools/test_aetherus_sky_ar.mjs
+          node --experimental-default-type=module tools/test_aetherus_v3_public_ui.mjs
+          node --experimental-default-type=module tools/test_aetherus_mission_control.mjs
+          git diff --check
+
+      - name: Commit verified application change
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'earthus-chat-coder'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git commit -m '태양계와 은하가 다른 화면 좌표를 쓰던 구조를 연속 좌표 여정으로 교체'
+          git diff --check "$EXPECTED_BASE"..HEAD
+
+      - name: Publish only if target did not move
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "$TARGET_BRANCH"
+          remote_head="$(git rev-parse "origin/$TARGET_BRANCH")"
+          test "$remote_head" = "$EXPECTED_BASE" || {
+            echo "Target branch moved during verification: expected $EXPECTED_BASE, found $remote_head" >&2
+            exit 43
+          }
+          git push origin "HEAD:$TARGET_BRANCH"
+
+      - name: Cleanup mission branch
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git push origin --delete mission/aetherus-journey-903d2f19

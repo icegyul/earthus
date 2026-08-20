@@ -1,28 +1,39 @@
-// Aetherus Solar Motion Engine — 물리 좌표와 화면 연출을 분리한 순수 계산 모듈.
+// Aetherus Solar Motion Engine — SSB/Galactocentric/Experience scale bridge.
 //
-// 1) 행성 위치: kepler.js의 JPL Table 1 근사 태양중심 황도 J2000 좌표
-// 2) 방향 변환: 황도 J2000 → ICRF/J2000 → IAU/ICRS Galactic
-// 3) 태양의 1년 진행 방향: 국소 원운동 접선(+Galactic Y, l=90°, b=0°) 근사
-// 4) 화면 연출: 태양 진행 거리와 행성 궤도 반지름을 서로 독립적으로 압축/확대
+// 정밀 provider가 준비되면:
+//   JPL Horizons @0 barycentric ICRF → Sun/SSB bridge → Galactocentric short-span motion
+//   planet barycentric ICRF - Sun barycentric ICRF → heliocentric orbit orientation
 //
-// 중요: +Galactic Y는 태양의 정확한 3차원 속도벡터가 아니다. 은하 원반의 국소
-// 원운동 방향을 나타내는 과학적 기준축이다. Sun peculiar motion(U,V,W), 은하 퍼텐셜,
-// 장기 곡률은 별도 Galactic Dynamics provider에서 추가해야 한다.
+// provider가 없으면:
+//   JPL Table 1 heliocentric ecliptic fallback을 쓰되, 태양 진행 방향은 더 이상 화면 X축이나
+//   l=90° 단일축이 아니라 Astropy v4.0 Galactocentric solar velocity 3-vector를 사용한다.
+//
+// 화면에서는 실제 1년 은하 이동 거리와 행성 궤도 크기를 각각 독립 확대한다.
+// 방향/handedness는 물리 좌표에서 유지하고, 확대율은 scale-bridge.js에만 존재한다.
 
 import { planetPositions } from './kepler.js';
 import {
   DAY_MS,
-  addVectors,
-  eclipticToGalactic,
+  eclipticToIcrf,
+  icrfToGalactic,
   normalizeVector,
-  radialDisplayVector,
-  scaleVector,
+  subtractVectors,
   toAetherusRender,
-  vectorFromGalactic,
 } from './coordinates.js';
+import {
+  AU_PER_KPC,
+  GALACTOCENTRIC_MODEL,
+  solarSystemBarycenterGalactocentricAt,
+  solarVelocityDirectionGalactic,
+} from './galactocentric.js';
+import {
+  composeSolarExperienceRender,
+  solarOrbitOffsetRender,
+  solarTrailCenterRender,
+} from './scale-bridge.js';
 
-export const SOLAR_MOTION_DIRECTION_MODEL = 'local-galactic-circular-tangent-l90-b0';
-export const SOLAR_MOTION_FRAME = 'galactic-icrs-local-sun';
+export const SOLAR_MOTION_DIRECTION_MODEL = 'astropy-v4-galactocentric-solar-velocity-linearized';
+export const SOLAR_MOTION_FRAME = 'galactocentric-aetherus-v1';
 
 const DEFAULT_SAMPLES = 145;
 const DEFAULT_SPAN_DAYS = 365.25;
@@ -36,19 +47,53 @@ function normalizedDate(value) {
   return new Date(Math.floor(date.getTime() / 1000) * 1000);
 }
 
-export function defaultOrbitDisplayRadius(au) {
-  const radius = Number(au);
-  if (!Number.isFinite(radius) || radius < 0) throw new RangeError('ORBIT_RADIUS_AU_REQUIRED');
-  return 2.1 + Math.log1p(radius) * 5.7;
+function midpoint(a, b) {
+  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2 };
 }
 
-export function solarMotionDirectionGalactic() {
-  return normalizeVector(vectorFromGalactic(90, 0));
+function fallbackHeliocentricIcrf(at) {
+  const ecliptic = planetPositions(at);
+  return Object.fromEntries(Object.entries(ecliptic).map(([id, point]) => [id, Object.freeze({
+    id,
+    position: Object.freeze(eclipticToIcrf(point)),
+    provider: 'jpl-table1-heliocentric-ecliptic-v1',
+    origin: 'sun',
+    orientation: 'icrf-j2000',
+  })]));
 }
 
-function sampleCenter(direction, progress, halfTravelSceneUnits) {
-  const signedDistance = (progress * 2 - 1) * halfTravelSceneUnits;
-  return scaleVector(direction, signedDistance);
+function samplePhysicalState(at, referenceAt, ephemerisProvider) {
+  const sunBarycentric = ephemerisProvider?.barycentricIcrfState?.('sun', at) || null;
+  const ssb = solarSystemBarycenterGalactocentricAt({
+    at,
+    referenceAt,
+    sunBarycentricIcrfAu: sunBarycentric?.position || null,
+  });
+
+  let provider = 'jpl-table1-heliocentric-ecliptic-v1';
+  let planets;
+  if (ephemerisProvider) {
+    planets = {};
+    for (const id of ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune']) {
+      const state = ephemerisProvider.heliocentricIcrfState?.(id, at);
+      if (!state) {
+        planets = null;
+        break;
+      }
+      planets[id] = state;
+      if (state.provider?.includes('horizons')) provider = state.provider;
+    }
+  }
+  if (!planets) planets = fallbackHeliocentricIcrf(at);
+
+  return Object.freeze({
+    at: at.toISOString(),
+    provider,
+    ssbBridge: ssb.bridge,
+    ssbGalactocentricKpc: ssb.positionKpc,
+    sunBarycentricIcrfAu: sunBarycentric?.position || null,
+    planets,
+  });
 }
 
 export function buildSolarMotionModel({
@@ -56,7 +101,7 @@ export function buildSolarMotionModel({
   spanDays = DEFAULT_SPAN_DAYS,
   samples = DEFAULT_SAMPLES,
   halfTravelSceneUnits = DEFAULT_HALF_TRAVEL_SCENE_UNITS,
-  orbitDisplayRadius = defaultOrbitDisplayRadius,
+  ephemerisProvider = null,
 } = {}) {
   const end = normalizedDate(endAt);
   const durationDays = Number(spanDays);
@@ -67,57 +112,103 @@ export function buildSolarMotionModel({
   if (!Number.isFinite(halfTravel) || halfTravel <= 0) throw new RangeError('POSITIVE_TRAVEL_SCENE_SCALE_REQUIRED');
 
   const start = new Date(end.getTime() - durationDays * DAY_MS);
-  const directionGalactic = solarMotionDirectionGalactic();
+  const directionGalactic = normalizeVector(solarVelocityDirectionGalactic());
   const directionRender = normalizeVector(toAetherusRender(directionGalactic));
-  const timeSamples = Array.from({ length: sampleCount }, (_, index) => {
+  const physicalSamples = Array.from({ length: sampleCount }, (_, index) => {
     const progress = index / (sampleCount - 1);
     const at = new Date(start.getTime() + progress * durationDays * DAY_MS);
-    const heliocentricEcliptic = planetPositions(at);
-    const centerGalacticDisplay = sampleCenter(directionGalactic, progress, halfTravel);
-    const planets = Object.fromEntries(Object.entries(heliocentricEcliptic).map(([id, physical]) => {
-      const galacticPhysical = eclipticToGalactic(physical);
-      const galacticDisplayOffset = radialDisplayVector(galacticPhysical, orbitDisplayRadius);
-      const galacticDisplay = addVectors(centerGalacticDisplay, galacticDisplayOffset);
+    return Object.freeze({
+      progress,
+      state: samplePhysicalState(at, end, ephemerisProvider),
+    });
+  });
+  const centerMidpointKpc = midpoint(
+    physicalSamples[0].state.ssbGalactocentricKpc,
+    physicalSamples[physicalSamples.length - 1].state.ssbGalactocentricKpc,
+  );
+
+  const timeSamples = physicalSamples.map(({ progress, state }) => {
+    const center = solarTrailCenterRender({
+      physicalKpc: state.ssbGalactocentricKpc,
+      midpointKpc: centerMidpointKpc,
+      halfTravelSceneUnits: halfTravel,
+      fallbackDirectionGalactic: directionGalactic,
+      progress,
+    });
+    const planets = Object.fromEntries(Object.entries(state.planets).map(([id, planetState]) => {
+      const physicalIcrfAu = planetState.position;
+      const physicalGalacticAu = icrfToGalactic(physicalIcrfAu);
+      const orbit = solarOrbitOffsetRender(physicalGalacticAu);
+      const combined = composeSolarExperienceRender({
+        centerRender: center.render,
+        orbitRender: orbit.render,
+      });
       return [id, Object.freeze({
         id,
-        physicalEclipticJ2000Au: Object.freeze({ x: physical.x, y: physical.y, z: physical.z }),
-        physicalGalacticAu: Object.freeze(galacticPhysical),
-        displayGalactic: Object.freeze(galacticDisplay),
-        render: Object.freeze(toAetherusRender(galacticDisplay)),
+        provider: planetState.provider || state.provider,
+        physicalHeliocentricIcrfAu: Object.freeze({ ...physicalIcrfAu }),
+        physicalGalacticAu: Object.freeze(physicalGalacticAu),
+        orbitDisplayGalactic: orbit.displayGalactic,
+        render: combined.render,
+        scaleMode: combined.scaleMode,
       })];
     }));
     return Object.freeze({
       progress,
-      at: at.toISOString(),
-      centerGalacticDisplay: Object.freeze(centerGalacticDisplay),
-      sunRender: Object.freeze(toAetherusRender(centerGalacticDisplay)),
+      at: state.at,
+      ephemerisProvider: state.provider,
+      ssbBridge: state.ssbBridge,
+      ssbGalactocentricKpc: Object.freeze({ ...state.ssbGalactocentricKpc }),
+      centerPhysicalDisplacementKpc: center.physicalDisplacementKpc,
+      centerDisplayGalactic: center.displayGalactic,
+      sunRender: center.render,
       planets: Object.freeze(planets),
     });
   });
 
+  const providerSet = [...new Set(timeSamples.map(sample => sample.ephemerisProvider))];
+  const firstCenter = timeSamples[0].ssbGalactocentricKpc;
+  const lastCenter = timeSamples[timeSamples.length - 1].ssbGalactocentricKpc;
+  const physicalTravelDistanceAu = Math.hypot(
+    lastCenter.x - firstCenter.x,
+    lastCenter.y - firstCenter.y,
+    lastCenter.z - firstCenter.z,
+  ) * AU_PER_KPC;
   return Object.freeze({
-    schema: 'earthus.solar-motion-model.v2',
+    schema: 'earthus.solar-motion-model.v3',
     generatedAt: end.toISOString(),
     startAt: start.toISOString(),
     endAt: end.toISOString(),
     spanDays: durationDays,
+    physicalTravelDistanceAu,
     samples: Object.freeze(timeSamples),
+    ephemerisProviders: Object.freeze(providerSet),
     direction: Object.freeze({
       model: SOLAR_MOTION_DIRECTION_MODEL,
       frame: SOLAR_MOTION_FRAME,
       galactic: Object.freeze(directionGalactic),
       render: Object.freeze(directionRender),
+      speedKms: Object.freeze({ ...GALACTOCENTRIC_MODEL.sunVelocityKms }),
+    }),
+    galactocentric: Object.freeze({
+      model: GALACTOCENTRIC_MODEL.id,
+      referenceAt: end.toISOString(),
+      centerMidpointKpc: Object.freeze(centerMidpointKpc),
     }),
     display: Object.freeze({
       halfTravelSceneUnits: halfTravel,
       orbitRadiusMode: 'radial-log-compressed-separate-from-physics',
+      trailMode: 'galactocentric-displacement-direction-exaggerated',
       bodySizes: 'renderer-controlled-not-to-scale',
     }),
     limitations: Object.freeze([
-      'planet-ephemeris-jpl-table-1-approximation-1800-2050',
-      'solar-direction-local-galactic-circular-tangent-not-full-uvw-state-vector',
-      'galactic-curvature-omitted-over-one-year',
+      providerSet.some(value => value.includes('horizons'))
+        ? 'jpl-horizons-6h-state-vectors-cubic-hermite-between-cache-nodes'
+        : 'planet-ephemeris-jpl-table-1-approximation-1800-2050',
+      'galactocentric-transform-uses-aetherus-translated-galactic-axes-not-full-astropy-tilt-roll',
+      'solar-galactocentric-motion-linearized-over-short-display-span',
       'orbit-radius-visually-compressed',
+      'solar-travel-distance-visually-exaggerated',
       'body-sizes-not-to-scale',
     ]),
   });
@@ -139,11 +230,7 @@ export function solarMotionSelfTest() {
   });
   const first = model.samples[0];
   const last = model.samples[2];
-  const delta = {
-    x: last.sunRender.x - first.sunRender.x,
-    y: last.sunRender.y - first.sunRender.y,
-    z: last.sunRender.z - first.sunRender.z,
-  };
+  const delta = subtractVectors(last.sunRender, first.sunRender);
   const direction = normalizeVector(delta);
   const expected = model.direction.render;
   const directionError = Math.max(
@@ -158,9 +245,10 @@ export function solarMotionSelfTest() {
     earth.physicalGalacticAu.z,
   );
   return Object.freeze({
-    ok: directionError < 1e-10 && physicalRadius > .95 && physicalRadius < 1.05,
+    ok: directionError < 1e-8 && physicalRadius > .95 && physicalRadius < 1.05,
     directionError,
     earthPhysicalRadiusAu: physicalRadius,
     endAt: model.endAt,
+    provider: model.ephemerisProviders,
   });
 }

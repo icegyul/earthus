@@ -1,0 +1,48 @@
+name: Aetherus source supply 903d2f19
+
+on:
+  push:
+    branches:
+      - codex/aetherus-coordinate-core-v1
+
+permissions:
+  contents: read
+
+jobs:
+  supply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout complete source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify mission base
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_parent='8656c098309b6a9942f4a05daa9518228f5689e9'
+          actual_parent="$(git rev-parse HEAD^)"
+          test "$actual_parent" = "$expected_parent"
+          printf '%s\n' "$(git rev-parse HEAD)" > SOURCE_SHA.txt
+
+      - name: Build exact source transports
+        shell: bash
+        run: |
+          set -euo pipefail
+          git bundle create earthus-source.bundle HEAD
+          git archive --format=tar HEAD | gzip -9 > earthus-source.tar.gz
+          sha256sum earthus-source.bundle earthus-source.tar.gz SOURCE_SHA.txt > SHA256SUMS.txt
+
+      - name: Upload source artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: earthus-source-903d2f19
+          path: |
+            earthus-source.bundle
+            earthus-source.tar.gz
+            SOURCE_SHA.txt
+            SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 1

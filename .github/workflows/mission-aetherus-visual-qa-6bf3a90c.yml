@@ -36,7 +36,7 @@ jobs:
             exit 42
           }
           git merge-base --is-ancestor "$EXPECTED_APP_SHA" HEAD
-          unexpected="$(git diff --name-only "$EXPECTED_APP_SHA"...HEAD | grep -Ev '^(.github/workflows/mission-aetherus-visual-qa-6bf3a90c.yml|.missions/aetherus-visual-qa-6bf3a90c.mjs|.missions/aetherus-startup-diagnostic-6bf3a90c.mjs)$' || true)"
+          unexpected="$(git diff --name-only "$EXPECTED_APP_SHA"...HEAD | grep -Ev '^(.github/workflows/mission-aetherus-visual-qa-6bf3a90c.yml|.missions/aetherus-visual-qa-6bf3a90c.mjs|.missions/aetherus-visual-qa-clean-6bf3a90c.mjs|.missions/aetherus-startup-diagnostic-6bf3a90c.mjs)$' || true)"
           test -z "$unexpected" || {
             echo "QA branch contains application changes:" >&2
             echo "$unexpected" >&2
@@ -58,8 +58,6 @@ jobs:
           done
           if [ -n "$chrome" ]; then
             "$chrome" --version
-            # Chrome 151부터 신뢰되지 않은 software WebGL fallback은 opt-in이다.
-            # 제품 코드는 건드리지 않고 QA 실행기에서만 ANGLE+SwiftShader를 명시한다.
             cat > /tmp/aetherus-qa/chrome-webgl <<EOF
           #!/usr/bin/env bash
           set -e
@@ -74,22 +72,17 @@ jobs:
             echo "CHROME_BIN=/tmp/aetherus-qa/chrome-webgl" >> "$GITHUB_ENV"
           else
             /tmp/aetherus-qa/node_modules/.bin/playwright install --with-deps chromium
-            echo 'Using Playwright-managed Chromium'
           fi
 
       - name: Start local Earthus server
         shell: bash
         run: |
           set -euo pipefail
-          # config.local.js는 의도적으로 gitignore되어 있다. QA에서는 비밀값 없는
-          # 정본 예제를 임시 복사해 게스트/FREE_OPEN 부팅 조건만 재현한다.
           cp prototype/js/config.local.example.js prototype/js/config.local.js
           python3 -m http.server 8799 --bind 127.0.0.1 --directory prototype > qa-server.log 2>&1 &
           echo $! > /tmp/aetherus-qa-server.pid
           for attempt in $(seq 1 40); do
-            if curl -fsS http://127.0.0.1:8799/ >/dev/null; then
-              exit 0
-            fi
+            if curl -fsS http://127.0.0.1:8799/ >/dev/null; then exit 0; fi
             sleep .25
           done
           cat qa-server.log >&2
@@ -99,19 +92,19 @@ jobs:
         shell: bash
         run: node .missions/aetherus-startup-diagnostic-6bf3a90c.mjs
 
-      - name: Run desktop and mobile journey QA
+      - name: Run clean desktop and mobile journey QA
         shell: bash
         run: |
           set -euo pipefail
-          node .missions/aetherus-visual-qa-6bf3a90c.mjs
+          node .missions/aetherus-visual-qa-clean-6bf3a90c.mjs
 
       - name: Show QA report
         if: always()
         shell: bash
         run: |
-          if [ -f qa-artifacts/report.json ]; then
-            cat qa-artifacts/report.json
-          fi
+          for report in qa-artifacts/report-clean.json qa-artifacts/report-clean.partial.json; do
+            if [ -f "$report" ]; then cat "$report"; fi
+          done
           if [ -f qa-server.log ]; then
             echo '--- server log tail ---'
             tail -80 qa-server.log || true
@@ -121,7 +114,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: aetherus-visual-qa-6bf3a90c
+          name: aetherus-visual-qa-clean-6bf3a90c
           path: |
             qa-artifacts
             qa-server.log

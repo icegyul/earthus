@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {
   coordinateSelfTest,
+  eclipticToGalactic,
   toAetherusRender,
 } from '../prototype/js/space/coordinates.js';
 import {
@@ -18,6 +19,7 @@ import {
   HORIZONS_PROVIDER_ID,
 } from '../prototype/js/space/ephemeris-provider.js';
 import {
+  calculateMajorBodyObservationFromGeocentricIcrf,
   calculateMarsObservationFromGeocentricIcrf,
   DEFAULT_ASTRONOMY_OBSERVER,
 } from '../prototype/js/space/astronomy.js';
@@ -26,6 +28,7 @@ import {
   solarMotionSelfTest,
 } from '../prototype/js/space/solar-motion-engine.js';
 import { assertAetherusCatalog } from '../prototype/js/space/contracts.js';
+import { solarOrbitDisplayRadius, solarOrbitOffsetRender } from '../prototype/js/space/scale-bridge.js';
 import { parseHorizonsVectorResult } from '../aws/aetherus-ephemeris/horizons-parser.mjs';
 
 function close(actual, expected, tolerance = 1e-10, label = 'value') {
@@ -93,6 +96,26 @@ async function main() {
   assert.equal(ephemerisProviderSelfTest().ok, true, 'Hermite ephemeris interpolation');
   assert.equal(solarMotionSelfTest().ok, true, 'fallback solar motion');
 
+  // Solar close-up과 Solar Motion은 같은 Galactic world frame과 같은 Experience 반지름을 쓴다.
+  // 그래야 줌아웃 중 현재 행성 점과 지난 1년 trail의 마지막 점이 좌표상 정확히 포개진다.
+  const eclipticSeed = { x: .82, y: .51, z: .12 };
+  const galacticSeed = eclipticToGalactic(eclipticSeed);
+  const radius = Math.hypot(galacticSeed.x, galacticSeed.y, galacticSeed.z);
+  const displayRadius = solarOrbitDisplayRadius(radius);
+  const expectedDisplay = toAetherusRender({
+    x: galacticSeed.x / radius * displayRadius,
+    y: galacticSeed.y / radius * displayRadius,
+    z: galacticSeed.z / radius * displayRadius,
+  });
+  const motionDisplay = solarOrbitOffsetRender(galacticSeed).render;
+  close(motionDisplay.x, expectedDisplay.x, 1e-12, 'journey display x');
+  close(motionDisplay.y, expectedDisplay.y, 1e-12, 'journey display y');
+  close(motionDisplay.z, expectedDisplay.z, 1e-12, 'journey display z');
+  const eclipticNorthInGalacticRender = toAetherusRender(eclipticToGalactic({ x: 0, y: 0, z: 1 }));
+  assert.ok(Math.abs(eclipticNorthInGalacticRender.x) > .05
+    && Math.abs(eclipticNorthInGalacticRender.z) > .5,
+  'ecliptic plane must remain physically tilted inside the Galactic render world');
+
   const fixture = fakeHorizonsCatalog();
   const service = createMajorEphemerisService({
     url: 'fixture://horizons',
@@ -116,6 +139,18 @@ async function main() {
   assert.equal(observation.precision.providerTier, 'jpl-horizons-geometric-vectors');
   assert.ok(Number.isFinite(observation.coordinates.raDeg));
   assert.ok(Number.isFinite(observation.coordinates.horizontal.altitudeDeg));
+
+  const jupiterGeo = service.geocentricIcrfState('jupiter', middleAt);
+  const jupiterObservation = calculateMajorBodyObservationFromGeocentricIcrf({
+    target: 'jupiter',
+    observer: DEFAULT_ASTRONOMY_OBSERVER,
+    at: middleAt,
+    geocentricIcrfAu: jupiterGeo.position,
+    provider: jupiterGeo,
+  });
+  assert.equal(jupiterObservation.target, 'jupiter');
+  assert.equal(jupiterObservation.precision.providerTier, 'jpl-horizons-geometric-vectors');
+  assert.ok(Number.isFinite(jupiterObservation.coordinates.horizontal.azimuthDeg));
 
   const preciseMotion = buildSolarMotionModel({
     endAt: '2026-08-20T06:00:00.000Z',
@@ -156,8 +191,11 @@ async function main() {
       'galactocentric-bridge',
       'astropy-height-tilt-axis-conversion',
       'hermite-interpolation',
+      'solar-to-motion-display-alignment',
+      'physical-ecliptic-tilt-in-galactic-world',
       'horizons-provider-fixture',
       'mars-my-sky-vector-path',
+      'jupiter-my-sky-vector-path',
       'ssb-solar-motion-path',
       'horizons-csv-parser',
       'solar-motion-catalog-contract',

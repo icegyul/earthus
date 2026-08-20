@@ -43,6 +43,7 @@ import {
 import { createAetherusMissionControl } from './aetherus-dashboard.js?v=20260815-mc14';
 
 const IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
+const ASTRONOMY_BODY_IDS = new Set(['sun', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune']);
 const BODY_ORDER = ['sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const SOLAR_LABEL_ORDER = ['sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const SURFACE_IDS = ['sun', ...IDS, 'moon'];
@@ -407,7 +408,7 @@ export const cosmic3d = {
 
   routeState() {
     if (store.scene !== 'space') return null;
-    const astronomy = this._detailBody?.id === 'mars' && this._astronomyObservation ? {
+    const astronomy = ASTRONOMY_BODY_IDS.has(this._detailBody?.id) && this._astronomyObservation ? {
       observer: this._astronomyObservation.observer,
       at: this._astronomyObservation.time.utc,
       precision: this._astronomyObservation.precision.tier,
@@ -437,7 +438,7 @@ export const cosmic3d = {
     if (store.scene !== 'space') return false;
     if (route.issues?.length) console.warn('[aetherus-route]', route.issues.join(','));
     if (route.target) {
-      this._pendingAstronomyRoute = route.target === 'mars' ? route : null;
+      this._pendingAstronomyRoute = ASTRONOMY_BODY_IDS.has(route.target) ? route : null;
       await this.selectBody(route.target);
       const restored = this._detailBody?.id === route.target;
       if (restored && route.target === 'mars' && route.plan === GEOMETRY_24H_PLAN) {
@@ -865,8 +866,10 @@ export const cosmic3d = {
     this.clearSpacecraft();
     const T = this.THREE;
     const earth = this.earthMesh.position.clone();
-    const outward = earth.clone().setY(0).normalize();
-    const tangent = new T.Vector3(-outward.z, 0, outward.x);
+    const outward = earth.clone().normalize();
+    const eclipticUp = this.coordinateEclipticNormalRender?.()
+      || new T.Vector3(0, 1, 0);
+    const tangent = new T.Vector3().crossVectors(eclipticUp, outward).normalize();
     const addPath = (points, color, opacity, dashed = false) => {
       const material = dashed
         ? new T.LineDashedMaterial({ color, transparent: true, opacity, dashSize: .55, gapSize: .42, depthWrite: false })
@@ -888,7 +891,7 @@ export const cosmic3d = {
         for (let index = 0; index <= 64; index += 1) {
           const angle = index / 64 * Math.PI * 2;
           points.push(earth.clone().addScaledVector(tangent, Math.cos(angle) * 1.35)
-            .add(new T.Vector3(0, Math.sin(angle) * .65, 0)));
+            .addScaledVector(eclipticUp, Math.sin(angle) * .65));
         }
         addPath(points, 0x8bd8ec, .42);
         addMarker(craft, points[9], 0x8bd8ec, { radius: .3 });
@@ -899,7 +902,7 @@ export const cosmic3d = {
         for (let index = 0; index <= 64; index += 1) {
           const angle = index / 64 * Math.PI * 2;
           points.push(center.clone().addScaledVector(tangent, Math.cos(angle) * .72)
-            .add(new T.Vector3(0, Math.sin(angle) * .92, 0)));
+            .addScaledVector(eclipticUp, Math.sin(angle) * .92));
         }
         addPath(points, 0xbdaeff, .42);
         addMarker(craft, points[12], 0xbdaeff, { radius: .34 });
@@ -908,7 +911,8 @@ export const cosmic3d = {
         const elapsedDays = (Date.now() - epoch) / DAY_MS;
         const withinRange = Math.abs(elapsedDays) <= 365.25 * 5;
         const values = craft.pos.map((value, index) => value + craft.vel[index] * (withinRange ? elapsedDays : 0));
-        const actual = new T.Vector3(values[0], values[2], values[1]);
+        const actual = this.coordinateEclipticVectorToRender?.(values)
+          || new T.Vector3(values[0], values[2], values[1]);
         const distanceAu = actual.length();
         // 보이저를 실제 140~170 AU에 두면 행성 전체가 점 하나가 된다. 방향은 보존하고
         // 해왕성 바깥 거리는 로그로 압축하며 카드에 실제 AU와 기준시각을 함께 밝힌다.
@@ -1929,7 +1933,7 @@ export const cosmic3d = {
   },
 
   prepareAstronomy(body) {
-    if (body.id !== 'mars') {
+    if (!ASTRONOMY_BODY_IDS.has(body.id)) {
       this.clearAstronomy();
       this._pendingAstronomyRoute = null;
       return;
@@ -2673,11 +2677,12 @@ export const cosmic3d = {
   showAstronomy(body) {
     const section = document.getElementById('cosmicAstronomy');
     if (!section || !this.bodyInfo) return;
-    const active = body?.id === 'mars';
+    const active = ASTRONOMY_BODY_IDS.has(body?.id);
+    const plannerEligible = body?.id === 'mars';
     section.hidden = !active;
     const skyAROpen = document.getElementById('cosmicSkyAROpen');
-    if (skyAROpen) skyAROpen.hidden = !active;
-    if (!active && this._skyAROpen) this.closeSkyARProbe({ hide: true });
+    if (skyAROpen) skyAROpen.hidden = !plannerEligible;
+    if (!plannerEligible && this._skyAROpen) this.closeSkyARProbe({ hide: true });
     this.bodyInfo.classList.toggle('has-astronomy', active);
     document.body.classList.toggle('aetherus-astronomy-open', active);
     if (!active) return;
@@ -2686,16 +2691,26 @@ export const cosmic3d = {
     const observation = this._astronomyObservation;
     const coordinates = document.getElementById('cosmicAstronomyCoordinates');
     coordinates.replaceChildren();
-    document.getElementById('cosmicAstronomyTitle').textContent = isKo ? '지금 하늘에서' : 'In the sky now';
-    document.getElementById('cosmicAstronomyTier').textContent = 'EXPLORER';
+    const bodyName = PLANETS[body.id]?.[isKo ? 'ko' : 'en'] || body.id;
+    document.getElementById('cosmicAstronomyTitle').textContent = isKo
+      ? `지금 하늘에서 · ${bodyName}` : `In the sky now · ${bodyName}`;
+    document.getElementById('cosmicAstronomyTier').textContent = this._astronomyObservation?.precision?.providerTier
+      === 'jpl-horizons-geometric-vectors' ? 'HORIZONS' : 'EXPLORER';
     const source = document.getElementById('cosmicAstronomySource');
     source.textContent = isKo ? 'NASA/JPL 계산 근거' : 'NASA/JPL calculation basis';
-    source.href = 'https://ssd.jpl.nasa.gov/planets/approx_pos.html';
+    source.href = this._astronomyObservation?.provenance?.sourceUrl
+      || 'https://ssd.jpl.nasa.gov/planets/approx_pos.html';
     document.getElementById('cosmicAstronomyNow').textContent = isKo ? '지금 다시 계산' : 'Recalculate now';
     document.getElementById('cosmicAstronomyLocation').textContent = isKo
-      ? '내 위치 사용 · URL에 약 1km 위치 포함'
-      : 'Use my location · adds ~1 km location to URL';
-    this.showObservationPlanner();
+      ? 'WHERE IS IT? · 내 하늘에서 보기'
+      : 'WHERE IS IT? · View from my sky';
+    const plannerBuild = document.getElementById('cosmicPlannerBuild');
+    if (plannerBuild) plannerBuild.hidden = !plannerEligible;
+    if (plannerEligible) this.showObservationPlanner();
+    else {
+      const planner = document.getElementById('cosmicPlanner');
+      if (planner) planner.hidden = true;
+    }
 
     if (!observation) {
       document.getElementById('cosmicAstronomyContext').textContent = isKo
@@ -2704,7 +2719,7 @@ export const cosmic3d = {
       document.getElementById('cosmicAstronomyHorizon').textContent = isKo
         ? '계산할 수 없음' : 'Calculation unavailable';
       document.getElementById('cosmicAstronomyLimit').textContent = this._astronomyError || 'ASTRONOMY_CALCULATION_FAILED';
-      this.showObservationPlanner();
+      if (plannerEligible) this.showObservationPlanner();
       return;
     }
 
@@ -2732,15 +2747,16 @@ export const cosmic3d = {
     document.getElementById('cosmicAstronomyHorizon').textContent = observation.horizon === 'above'
       ? (isKo ? '기하학적 지평선 위' : 'Above geometric horizon')
       : (isKo ? '기하학적 지평선 아래' : 'Below geometric horizon');
+    const horizons = observation.precision?.providerTier === 'jpl-horizons-geometric-vectors';
     document.getElementById('cosmicAstronomyLimit').textContent = isKo
-      ? '계산값 · 미포함: 대기굴절·시차·현지 지평선·주광·날씨 · 정밀 조준: 천문 장비용 계산 사용'
-      : 'Calculated · excluded: refraction, parallax, local horizon, daylight and weather · precision pointing: use instrument-grade calculation';
-    this.showObservationPlanner();
-    this.renderSkyARProbe();
+      ? `${horizons ? 'JPL Horizons 기하 상태벡터' : 'JPL Table 1 근사 계산'} · 미포함: 대기굴절·정밀 시차·현지 지평선·주광·날씨`
+      : `${horizons ? 'JPL Horizons geometric state vector' : 'JPL Table 1 approximation'} · excludes refraction, precise parallax, local horizon, daylight and weather`;
+    if (plannerEligible) this.showObservationPlanner();
+    if (plannerEligible) this.renderSkyARProbe();
   },
 
   recalculateAstronomyNow() {
-    if (this._detailBody?.id !== 'mars') return;
+    if (!ASTRONOMY_BODY_IDS.has(this._detailBody?.id)) return;
     this._astronomyAt = astronomyNow();
     this.calculateAstronomy();
     this.showAstronomy(this._detailBody);
@@ -2748,7 +2764,7 @@ export const cosmic3d = {
   },
 
   async useAstronomyLocation() {
-    if (this._detailBody?.id !== 'mars') return;
+    if (!ASTRONOMY_BODY_IDS.has(this._detailBody?.id)) return;
     const button = document.getElementById('cosmicAstronomyLocation');
     if (button) button.disabled = true;
     try {
@@ -3520,6 +3536,9 @@ export const cosmic3d = {
     this.camera.lookAt(target);
     this.sunLight.position.copy(this.solarGroup.position);
     this.background.position.copy(this.camera.position).multiplyScalar(.08);
+    // 좌표계 adapter가 Solar → Galactic 연속 줌 사이에 실제 방향의 trail을 겹칠 수 있게
+    // 마지막 렌더 직전에 한 번만 훅을 연다. 기본 legacy 단독 실행에서는 아무 일도 없다.
+    this.applyCoordinateJourneyOverlay?.({ level, reframe, solarScale, solarOpacity, galaxyOpacity });
     this.renderer.render(this.world, this.camera);
     this.updateHud(); this.updateLabels(); this.updateBodyPicker(); this.updateCraftPicker(); this.updateMotionControl();
   },

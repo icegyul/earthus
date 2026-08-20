@@ -15,9 +15,13 @@ async function importBrowserModule(relativePath) {
 
 async function importAstronomy() {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'aetherus-astronomy-'));
-  const kepler = await readFile(path.join(ROOT, 'prototype/js/space/kepler.js'), 'utf8');
+  const coordinates = await readFile(path.join(ROOT, 'prototype/js/space/coordinates.js'), 'utf8');
+  const kepler = (await readFile(path.join(ROOT, 'prototype/js/space/kepler.js'), 'utf8'))
+    .replace("'./coordinates.js'", "'./coordinates.mjs'");
   const astronomy = (await readFile(path.join(ROOT, 'prototype/js/space/astronomy.js'), 'utf8'))
-    .replace("'./kepler.js'", "'./kepler.mjs'");
+    .replace("'./kepler.js'", "'./kepler.mjs'")
+    .replace("'./coordinates.js'", "'./coordinates.mjs'");
+  await writeFile(path.join(directory, 'coordinates.mjs'), coordinates);
   await writeFile(path.join(directory, 'kepler.mjs'), kepler);
   await writeFile(path.join(directory, 'astronomy.mjs'), astronomy);
   return import(pathToFileURL(path.join(directory, 'astronomy.mjs')).href);
@@ -70,14 +74,14 @@ const encoded = routes.encodeAetherusRoute({
   at: fixture.rows[0].utc,
   precision: 'explorer',
 }, 'https://earthus.net/?lang=ko#dev');
-assert.equal(encoded.searchParams.get('aetherus'), '3');
+assert.equal(encoded.searchParams.get('aetherus'), '4');
 assert.equal(encoded.searchParams.get('observer'), '37.46,126.71');
 assert.equal(encoded.searchParams.get('at'), fixture.rows[0].utc);
 assert.equal(encoded.searchParams.get('precision'), 'explorer');
 assert.ok(!encoded.href.includes('accuracy'));
 
 const decoded = routes.decodeAetherusRoute(encoded);
-assert.equal(decoded.version, 3);
+assert.equal(decoded.version, 4);
 assert.deepEqual(decoded.observer, { id: null, source: 'shared', lat: 37.46, lon: 126.71 });
 assert.equal(decoded.at, fixture.rows[0].utc);
 assert.equal(decoded.precision, 'explorer');
@@ -95,7 +99,21 @@ const invalidObserver = routes.decodeAetherusRoute('?aetherus=2&solar=1&target=m
 assert.ok(invalidObserver.issues.includes('INVALID_OBSERVER'));
 assert.equal(invalidObserver.observer, null);
 
-const unsupported = routes.decodeAetherusRoute('?aetherus=4&solar=1');
+const jupiter = astronomy.calculateMajorBodyObservation({
+  target: 'jupiter', observer: fixture.observer, at: fixture.rows[0].utc,
+});
+assert.equal(jupiter.target, 'jupiter');
+assert.ok(Number.isFinite(jupiter.coordinates.raDeg));
+assert.ok(Number.isFinite(jupiter.coordinates.horizontal.azimuthDeg));
+
+const jupiterRoute = routes.decodeAetherusRoute(
+  `?aetherus=4&solar=1&target=jupiter&observer=37.46,126.71&at=${encodeURIComponent(fixture.rows[0].utc)}&precision=explorer`,
+);
+assert.equal(jupiterRoute.target, 'jupiter');
+assert.equal(jupiterRoute.observer.source, 'shared');
+assert.equal(jupiterRoute.issues.length, 0);
+
+const unsupported = routes.decodeAetherusRoute('?aetherus=5&solar=1');
 assert.deepEqual([...unsupported.issues], ['UNSUPPORTED_VERSION']);
 
-console.log(`PASS: ${fixture.rows.length} JPL Mars fixtures, 3 engine failures, and 5 astronomy route/privacy cases`);
+console.log(`PASS: ${fixture.rows.length} JPL Mars fixtures, generic Jupiter My Sky, 3 engine failures, and 6 astronomy route/privacy cases`);

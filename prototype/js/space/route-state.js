@@ -1,12 +1,13 @@
-// Aetherus 공유 URL 계약 v3.
-// v1·v2·기존 ?solar=1, ?space=milkyway|galaxies 주소를 계속 읽고,
-// v2의 대상·관측자·UTC·정밀도에 v3의 결정론적 24시간 계획 상태를 추가한다.
+// Aetherus 공유 URL 계약 v4.
+// v1·v2·v3·기존 ?solar=1, ?space=milkyway|galaxies 주소를 계속 읽고,
+// v4에서는 Mars에만 묶였던 observer/UTC My Sky 상태를 주요 행성으로 확장한다.
+// v3의 결정론적 24시간 계획은 계속 Mars 전용이다.
 // 관측 좌표는 사용자가 명시적으로 '내 위치 사용'을 눌렀을 때만
 // 소수점 둘째 자리(약 1km)로 공유 URL에 넣는다. localStorage에는 저장하지 않는다.
 
-export const AETHERUS_ROUTE_VERSION = 3;
+export const AETHERUS_ROUTE_VERSION = 4;
 
-const SUPPORTED_VERSIONS = new Set(['1', '2', '3']);
+const SUPPORTED_VERSIONS = new Set(['1', '2', '3', '4']);
 const ROUTE_KEYS = [
   'aetherus', 'space', 'solar', 'target', 'photo', 'telescope', 'craft',
   'observer', 'at', 'precision', 'plan',
@@ -15,6 +16,9 @@ const STAGES = new Set(['solar', 'milkyway', 'galaxies']);
 const TELESCOPES = new Set(['all', 'hst', 'jwst']);
 const PRECISIONS = new Set(['explorer']);
 const PLANS = new Set(['geometry24h']);
+const ASTRONOMY_TARGETS = new Set([
+  'sun', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune',
+]);
 const ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,79}$/;
 const UTC_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
 const MIN_ASTRONOMY_MS = Date.parse('1800-01-01T00:00:00.000Z');
@@ -137,14 +141,14 @@ export function decodeAetherusRoute(input) {
     target = null; photo = null; telescope = null; craft = null;
   }
   const hasAstronomy = !!(observer || at || precision);
-  if (hasAstronomy && target !== 'mars') {
+  if (hasAstronomy && !ASTRONOMY_TARGETS.has(target)) {
     issues.push('ORPHAN_ASTRONOMY_STATE');
     observer = null; at = null; precision = null;
   }
   if (plan && target !== 'mars') {
     issues.push('ORPHAN_PLAN_STATE');
     plan = null;
-  } else if (plan && rawVersion !== '3') {
+  } else if (plan && (!rawVersion || Number(rawVersion) < 3)) {
     issues.push('PLAN_REQUIRES_V3');
     plan = null;
   } else if (plan && !(observer && at && precision)) {
@@ -172,8 +176,8 @@ export function decodeAetherusRoute(input) {
 function requireAstronomy(state, target) {
   const hasAstronomy = !!(state.observer || state.at || state.precision);
   if (!hasAstronomy) return { observer: null, at: null, precision: null };
-  if (target !== 'mars') {
-    throw new AetherusRouteError('ORPHAN_ASTRONOMY_STATE', 'Astronomy state currently requires target=mars');
+  if (!ASTRONOMY_TARGETS.has(target)) {
+    throw new AetherusRouteError('ORPHAN_ASTRONOMY_STATE', 'Astronomy state requires a supported Solar System target');
   }
   const observer = typeof state.observer === 'string'
     ? routeObserver(state.observer)

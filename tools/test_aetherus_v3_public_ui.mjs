@@ -8,14 +8,16 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = relativePath => readFile(path.join(ROOT, relativePath), 'utf8');
 
-const [html, css, main, cosmic, layerbar, catalogSource] = await Promise.all([
+const [html, css, main, cosmicAdapter, cosmicLegacy, layerbar, catalogSource] = await Promise.all([
   read('prototype/index.html'),
   read('prototype/css/app.css'),
   read('prototype/js/main.js'),
   read('prototype/js/space/cosmic3d.js'),
+  read('prototype/js/space/cosmic3d-legacy.js'),
   read('prototype/js/layerbar.js'),
   read('prototype/data/space-photos.json'),
 ]);
+const cosmic = `${cosmicAdapter}\n${cosmicLegacy}`;
 const catalog = JSON.parse(catalogSource);
 
 for (const route of ['solar', 'photos', 'milkyway', 'galaxies']) {

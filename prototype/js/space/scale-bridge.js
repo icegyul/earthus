@@ -23,7 +23,10 @@ export const SCALE_BRIDGE = Object.freeze({
 export function solarOrbitDisplayRadius(au) {
   const radius = Number(au);
   if (!Number.isFinite(radius) || radius < 0) throw new RangeError('ORBIT_RADIUS_AU_REQUIRED');
-  return 2.1 + Math.log1p(radius) * 5.7;
+  // 태양계 근접 뷰와 Solar Motion이 같은 화면 반지름 함수를 써야 현재 행성 점과
+  // 과거 trail 끝점이 정확히 포개진다. 물리 AU는 그대로 두고 이 함수에서만
+  // Experience용 반지름을 만든다.
+  return 3.5 + 7 * Math.log1p(radius * 1.4);
 }
 
 export function solarOrbitOffsetRender(physicalGalacticAu) {

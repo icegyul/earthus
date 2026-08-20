@@ -47,6 +47,11 @@ export const ASTRONOMY_PRECISION = Object.freeze({
   }),
 });
 
+export const ASTRONOMY_TARGETS = Object.freeze([
+  'sun', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune',
+]);
+const ASTRONOMY_TARGET_SET = new Set(ASTRONOMY_TARGETS);
+
 export const gmstDegrees = canonicalGmstDegrees;
 export const equatorialToHorizontal = canonicalEquatorialToHorizontal;
 
@@ -224,6 +229,111 @@ export function calculateMarsObservationFromGeocentricIcrf({
       sourceTimeScale: 'UT',
       dynamicsApproximation: null,
     },
+    precision: {
+      tier: ASTRONOMY_PRECISION.tier,
+      providerTier: 'jpl-horizons-geometric-vectors',
+      comparisonGateDeg: ASTRONOMY_PRECISION.comparisonGateDeg,
+      interpolation: provider?.interpolation?.kind || 'server-cache-provider',
+      limitations: Object.freeze([
+        'horizons-vector-correction-none-geometric-not-apparent',
+        'horizontal-uses-iau1976-precession-only',
+        'no-topocentric-parallax-or-refraction',
+        'no-local-horizon-daylight-weather',
+      ]),
+    },
+    provenance: {
+      kind: 'calculated-from-state-vector',
+      sampleCount: null,
+      sampleReason: 'deterministic state-vector interpolation, not an observation sample',
+      sourceName: 'NASA/JPL Horizons · barycentric ICRF state-vector cache',
+      sourceUrl: 'https://ssd-api.jpl.nasa.gov/doc/horizons.html',
+      provider: provider?.provider || 'jpl-horizons-ssb-icrf-hermite-v1',
+      interpolation: provider?.interpolation || null,
+    },
+  });
+}
+
+export function calculateMajorBodyObservation({
+  target,
+  observer,
+  at = new Date(),
+  precision = 'explorer',
+} = {}) {
+  const id = String(target || '').toLowerCase();
+  if (!ASTRONOMY_TARGET_SET.has(id)) throw new RangeError(`ASTRONOMY_TARGET_UNAVAILABLE:${id || 'empty'}`);
+  if (id === 'mars') return calculateMarsObservation({ observer, at, precision });
+  if (id === 'sun') return calculateSunObservation({ observer, at, precision });
+  if (precision !== 'explorer') throw new RangeError('PRECISION_TIER_UNAVAILABLE');
+
+  const date = normalizedDate(at);
+  const normalizedObserver = normalizeAstronomyObserver(observer);
+  const body = planetPosition(id, date);
+  const earth = planetPosition('earth', date);
+  const ecliptic = relativePosition(body, earth);
+  const coordinates = observationCoordinatesFromGeocentricEcliptic(ecliptic, normalizedObserver, date);
+  return observationResult({
+    target: id,
+    observer: normalizedObserver,
+    date,
+    coordinates,
+    frame: 'approximate-ICRF-J2000-geocentric',
+    sourceFrame: FRAME.GEOCENTRIC_ECLIPTIC_J2000,
+    time: { dynamicsApproximation: 'UTC used as JDTDB at Explorer precision' },
+    precision: {
+      tier: ASTRONOMY_PRECISION.tier,
+      providerTier: 'jpl-table1-approximation',
+      comparisonGateDeg: ASTRONOMY_PRECISION.comparisonGateDeg,
+      validFrom: ASTRONOMY_PRECISION.validFrom,
+      validUntil: ASTRONOMY_PRECISION.validUntil,
+      limitations: Object.freeze([
+        'j2000-ra-dec-no-light-time-aberration-nutation',
+        'horizontal-uses-iau1976-precession-only',
+        'no-topocentric-parallax-or-refraction',
+        'no-local-horizon-daylight-weather',
+      ]),
+    },
+    provenance: {
+      kind: 'calculated',
+      sampleCount: null,
+      sampleReason: 'deterministic calculation, not an observation sample',
+      sourceName: 'NASA/JPL Solar System Dynamics · Approximate Positions of the Planets',
+      sourceUrl: 'https://ssd.jpl.nasa.gov/planets/approx_pos.html',
+      comparisonSource: 'NASA/JPL Horizons observer ephemeris',
+      comparisonUrl: 'https://ssd-api.jpl.nasa.gov/doc/horizons.html',
+    },
+  });
+}
+
+export function calculateMajorBodyObservationFromGeocentricIcrf({
+  target,
+  observer,
+  at = new Date(),
+  geocentricIcrfAu,
+  provider = null,
+} = {}) {
+  const id = String(target || '').toLowerCase();
+  if (!ASTRONOMY_TARGET_SET.has(id)) throw new RangeError(`ASTRONOMY_TARGET_UNAVAILABLE:${id || 'empty'}`);
+  if (id === 'mars') {
+    return calculateMarsObservationFromGeocentricIcrf({ observer, at, geocentricIcrfAu, provider });
+  }
+  if (id === 'sun') {
+    return calculateSunObservationFromGeocentricIcrf({ observer, at, geocentricIcrfAu, provider });
+  }
+  const date = normalizedDate(at);
+  const normalizedObserver = normalizeAstronomyObserver(observer);
+  const coordinates = observationCoordinatesFromGeocentricIcrf(
+    geocentricIcrfAu,
+    normalizedObserver,
+    date,
+  );
+  return observationResult({
+    target: id,
+    observer: normalizedObserver,
+    date,
+    coordinates,
+    frame: 'ICRF-J2000-geocentric-geometric',
+    sourceFrame: FRAME.GEOCENTRIC_ICRF_J2000,
+    time: { sourceTimeScale: 'UT', dynamicsApproximation: null },
     precision: {
       tier: ASTRONOMY_PRECISION.tier,
       providerTier: 'jpl-horizons-geometric-vectors',

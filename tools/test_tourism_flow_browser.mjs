@@ -391,7 +391,15 @@ try {
     assert.ok(forecast.overflow <= 0, `${viewport.name} horizontal overflow: ${forecast.overflow}`);
     assert.ok(forecast.targets.every(item => item.width >= 43.9 && item.height >= 43.9),
       `${viewport.name} 44px target violation: ${JSON.stringify(forecast.targets.filter(item => item.width < 43.9 || item.height < 43.9))}`);
-    await page.locator('#tourismSheet .tf-kto').scrollIntoViewIfNeeded();
+    // 시각 버튼은 tourismSheet를 비동기로 다시 그린다. 이전 .tf-kto handle을 잡은 채
+    // 스크롤하면 rerender 사이에 detach될 수 있으므로 현재 DOM을 매 poll마다 다시 찾는다.
+    await page.waitForFunction(() => {
+      const current = document.querySelector('#tourismSheet.up .tf-kto');
+      if (!current?.isConnected) return false;
+      current.scrollIntoView({ block: 'center', inline: 'nearest' });
+      return current.isConnected
+        && document.querySelector('#tourismSheet.up .tf-kto') === current;
+    });
     await page.screenshot({ path: `/private/tmp/earthus-tourism-kto-${viewport.name}.png` });
 
     // 레이어 OFF 뒤에는 보이지 않고 추가 provider 요청도 일어나지 않는다.

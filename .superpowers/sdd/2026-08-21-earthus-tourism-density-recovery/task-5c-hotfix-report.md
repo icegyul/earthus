@@ -9,6 +9,9 @@
 - **Release: NOT DEPLOYED.** This turn did not fetch, rebase, push, deploy, invalidate CloudFront, or
   edit the SDD ledger. Production remains on the Task 5B bytes until a separately authorized release.
 - The official snapshot used for verification remains honestly classified as `STALE`.
+- **Fix round 1: VERIFIED LOCAL.** OFF now invalidates the whole tourism activation generation, so a
+  delayed health/KTO completion cannot assign state, emit events, rebuild cells, reopen UI, or move
+  the camera after a newer activation has taken ownership.
 
 ## Root cause and TDD proof
 
@@ -31,6 +34,38 @@ After the fix:
 tourism auxiliary sidecar browser: PASS
   (success/failure canonical 121 audit identical)
 ```
+
+### Fix round 1 — OFF/abort activation race
+
+The auxiliary catches previously swallowed `AbortError` and continued the same activation. Aborting
+the request did not revoke the async function's ownership, so an old run could pass through canonical
+snapshot/sidecar assignment, events, entity rendering, and first-focus camera code after OFF. A later
+fresh ON could also be overwritten by that stale completion.
+
+The new browser regression delays a successful health `json()` in one fresh context and a successful
+KTO `json()` in another. In each case it turns tourism OFF, completes a fresh subsequent ON, turns OFF
+again, and only then releases the old response.
+
+```text
+RED: AssertionError: health: stale snapshot replaced fresh state
+GREEN: tourism activation race browser: PASS
+       (health/KTO stale completions ignored)
+```
+
+`tourismFlow` now gives each refresh an activation generation and treats a run as current only while
+the generation, controller identity, non-aborted signal, and store ON state all match. That guard is
+checked after canonical fetch/JSON, local fallback, both auxiliary fetch/JSON/catch boundaries, event
+boundaries, and ADM2 completion. OFF increments the generation before aborting. A dead abort returns
+without creating a null/`UNAVAILABLE` sidecar, while ordinary live 404 auxiliary responses still
+produce the existing explicit unavailable UI for the current activation.
+
+The regression proves that after stale completion:
+
+- the fresh canonical snapshot and auxiliary object identities remain current;
+- snapshot, auxiliary, and unavailable-error event counts do not change;
+- the fresh density entities are neither cleared nor rebuilt;
+- the map UI remains hidden after OFF and the camera flight count does not change;
+- a fresh subsequent ON still loads all 121 canonical places and successful health/KTO sidecars.
 
 The test verifies all of the following:
 
@@ -77,6 +112,7 @@ Runtime/cache wiring:
 Tests and verifiers:
 
 - `tools/test_tourism_auxiliary_sidecar_browser.mjs` (new)
+- `tools/test_tourism_activation_race_browser.mjs` (new in fix round 1)
 - `tools/test_tourism_density_release_manifest.mjs`
 - `tools/test_tourism_density_visual_browser.mjs`
 - `tools/test_tourism_flow_browser.mjs`
@@ -87,6 +123,9 @@ Tests and verifiers:
 - `tools/verify_weather_tourism_live.mjs`
 
 This report is the only changed documentation file. The deployment script itself was not changed.
+Fix round 1 additionally changes only `prototype/js/layers/tourism-flow.js`, the new race regression,
+and the `.tf-kto` synchronization inside `tools/test_tourism_flow_browser.mjs`. The release token stays
+`20260821-tourism-density2`, and the deploy manifest remains exactly 15 assets.
 
 ## Verification evidence
 
@@ -104,6 +143,20 @@ tourism density live allocation gate: PASS (exact canonical 121-place audit)
 tourism official 121-place catalog: PASS
 tourism density release manifest: PASS (15 scoped uploads, token 2)
 ```
+
+Fix-round-1 race and stability gates:
+
+```text
+tourism activation race browser: PASS (delayed health and delayed KTO cases)
+tourism auxiliary sidecar browser: PASS ×3
+  each run exercised both HTTP 200 and 404 auxiliary paths with identical canonical 121 audit
+tourism flow browser: PASS ×3
+  each run completed mobile and desktop behavior without a detached .tf-kto action
+```
+
+The `.tf-kto` test no longer acts on an element retained across an asynchronous sheet rerender. It
+reacquires the current connected element after rerender and performs the scroll in the same browser
+evaluation; no whole-test retry or assertion weakening was added.
 
 Actual Chrome gates:
 
@@ -140,6 +193,15 @@ desktop: cells 2313, labels 10, occupied bins 1513, runtime errors 0
 mobile: cells 768, labels 6, occupied bins 439, runtime errors 0
 desktop/mobile/reload: PASS with service-worker controller
 tourism density live: PASS
+```
+
+Fix-round-1 local token-2 verification repeated the same gate with exact local bytes:
+
+```text
+asset bytes: PASS (15/15, release 20260821-tourism-density2)
+desktop: cells 2313, labels 10, occupied bins 1513, runtime errors 0
+mobile: cells 768, labels 6, occupied bins 439, runtime errors 0
+desktop/mobile/reload: PASS with service-worker controller
 ```
 
 Syntax and hygiene:

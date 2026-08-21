@@ -61,6 +61,7 @@ export const tourismFlow = {
   auxiliary: Object.freeze({ health: null, ktoSummary: null }),
   selectedAt: null,
   _abort: null,
+  _activationGeneration: 0,
   _focusedOnce: false,
   _mapUi: null,
   _adminByPlaceId: new Map(),
@@ -99,17 +100,25 @@ export const tourismFlow = {
     this._abort?.abort();
     const controller = new AbortController();
     this._abort = controller;
+    const generation = ++this._activationGeneration;
+    const isCurrentActivation = () => store.isOn('tourism')
+      && !controller.signal.aborted
+      && this._abort === controller
+      && this._activationGeneration === generation;
     try {
       let response = await fetchT(`${API.TOURISM}/seoul-flow.json`, {
         timeout: 12_000, signal: controller.signal, cache: 'no-cache',
       });
+      if (!isCurrentActivation()) return null;
       if (!response.ok && IS_LOCAL) {
         response = await fetchT('data/tourism/seoul-flow.sample.v1.json', {
           timeout: 5_000, signal: controller.signal, cache: 'no-cache',
         });
+        if (!isCurrentActivation()) return null;
       }
       if (!response.ok) throw new Error(`tourism HTTP ${response.status}`);
       const snapshot = await response.json();
+      if (!isCurrentActivation()) return null;
       validateTourismSnapshot(snapshot);
       let health = null;
       let ktoSummary = null;
@@ -117,20 +126,31 @@ export const tourismFlow = {
         const healthResponse = await fetchT(`${API.TOURISM}/health.json`, {
           timeout: 5_000, signal: controller.signal, cache: 'no-cache',
         });
-        if (healthResponse.ok) health = await healthResponse.json();
-      } catch (_) { /* health 보조 파일 실패가 현재 공식 관측까지 지우면 안 된다. */ }
+        if (!isCurrentActivation()) return null;
+        if (healthResponse.ok) {
+          health = await healthResponse.json();
+          if (!isCurrentActivation()) return null;
+        }
+      } catch (error) {
+        if (error?.name === 'AbortError' || !isCurrentActivation()) return null;
+        /* health 보조 파일 실패가 현재 공식 관측까지 지우면 안 된다. */
+      }
       try {
         const ktoResponse = await fetchT(`${API.TOURISM}/kto/summary.json`, {
           timeout: 5_000, signal: controller.signal, cache: 'no-cache',
         });
+        if (!isCurrentActivation()) return null;
         if (ktoResponse.ok) {
           ktoSummary = await ktoResponse.json();
+          if (!isCurrentActivation()) return null;
           validateKtoSummary(ktoSummary);
         }
-      } catch (_) {
+      } catch (error) {
+        if (error?.name === 'AbortError' || !isCurrentActivation()) return null;
         ktoSummary = null;
         // KTO 미연결·계약 불일치는 서울시 현재 관측을 지우지 않고 별도 상태로 보여준다.
       }
+      if (!isCurrentActivation()) return null;
       // ⚠️⚠️ 공식 121곳 snapshot에 health/KTO를 덧붙이면 엄격한 공식 스키마 검증이
       // 운영에서만 실패했다. 보조 응답은 별도 sidecar로 보존하고 정본 bytes는 건드리지 않는다.
       const auxiliary = Object.freeze({ health, ktoSummary });
@@ -144,8 +164,11 @@ export const tourismFlow = {
         return [place.id, await koreaAdminAt(lat, lon)];
       }));
       this.renderAt(this.selectedAt);
+      if (!isCurrentActivation()) return null;
       document.dispatchEvent(new CustomEvent('earthus:tourism-snapshot', { detail: snapshot }));
+      if (!isCurrentActivation()) return null;
       document.dispatchEvent(new CustomEvent('earthus:tourism-auxiliary', { detail: auxiliary }));
+      if (!isCurrentActivation()) return null;
       if (!this._focusedOnce && snapshot.places?.some(place => place.position)) {
         this._focusedOnce = true;
         // 첫 화면 위치·인트로 flight가 아직 남아 있으면 관광지 확대와 다시 경쟁한다.
@@ -165,13 +188,13 @@ export const tourismFlow = {
         });
       }
       const adminEntries = await adminEntriesPromise;
-      if (controller.signal.aborted || this.snapshot !== snapshot) return null;
+      if (!isCurrentActivation() || this.snapshot !== snapshot) return null;
       // 행정 경계 파일 실패는 셀을 지우지 않는다. 라벨 모듈이 공식 관광지명으로 되돌아간다.
       this._adminByPlaceId = new Map(adminEntries.filter(([id]) => id));
       this.renderAt(this.selectedAt);
       return snapshot;
     } catch (error) {
-      if (error?.name === 'AbortError') return null;
+      if (error?.name === 'AbortError' || !isCurrentActivation()) return null;
       document.dispatchEvent(new CustomEvent('earthus:tourism-error', {
         detail: { code: 'TOURISM_SNAPSHOT_UNAVAILABLE' },
       }));
@@ -366,6 +389,9 @@ export const tourismFlow = {
   set(on) {
     const cameraController = viewer.scene.screenSpaceCameraController;
     if (!on) {
+      // OFF는 요청 취소뿐 아니라 이미 응답을 받은 오래된 활성화의 소유권도 끝낸다.
+      // 일부 응답의 json()이 abort 뒤 성공해도 새 ON의 상태·카메라를 덮지 못해야 한다.
+      this._activationGeneration += 1;
       this._abort?.abort();
       this._abort = null;
       this.selectedAt = null;

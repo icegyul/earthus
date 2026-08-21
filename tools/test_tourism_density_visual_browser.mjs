@@ -349,7 +349,7 @@ const viewLevels = [
 async function collectView(page) {
   return page.evaluate(async () => {
     const [{ tourismFlow }, { viewer }] = await Promise.all([
-      import(new URL('js/layers/tourism-flow.js?v=20260821-density-lod1', location.href).href),
+      import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href).href),
       import(new URL('js/viewer.js', location.href).href),
     ]);
     viewer.render();
@@ -522,7 +522,7 @@ try {
     await page.locator('#layerStrip [data-id="tourism"]').first().click();
     await page.waitForFunction(async () => {
       const { tourismFlow } = await import(new URL(
-        'js/layers/tourism-flow.js?v=20260821-density-lod1', location.href,
+        'js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href,
       ).href);
       return tourismFlow.ds?.show && tourismFlow.snapshot?.places?.length === 121
         && tourismFlow.ds.entities.values.length > 0 && tourismFlow._abort === null;
@@ -532,7 +532,7 @@ try {
 
     await page.evaluate(async () => {
       const [{ tourismFlow }, { viewer }] = await Promise.all([
-        import(new URL('js/layers/tourism-flow.js?v=20260821-density-lod1', location.href).href),
+        import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href).href),
         import(new URL('js/viewer.js', location.href).href),
       ]);
       window.__tourismDensityE2E = { rebuildCount: 0, requestRenderCount: 0 };

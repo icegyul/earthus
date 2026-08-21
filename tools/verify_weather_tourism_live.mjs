@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from '/Users/fiftyfy14/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs';
 
-const release = '20260821-v8p3-3';
+const release = '20260821-tourism-density1';
 const target = process.env.EARTHUS_LIVE_URL || `https://earthus.net/?release=${release}`;
 const executablePath = process.env.EARTHUS_CHROME
   || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -27,9 +27,9 @@ try {
       weatherCss: document.querySelector('link[href*="weather-card-v7.css"]')?.getAttribute('href'),
       tourismCss: document.querySelector('link[href*="tourism-flow.css"]')?.getAttribute('href'),
     }));
-    assert.match(releaseAssets.main || '', /20260821-v8p3-3/);
+    assert.match(releaseAssets.main || '', /20260821-tourism-density1/);
     assert.match(releaseAssets.weatherCss || '', /20260820-wcv7-1/);
-    assert.match(releaseAssets.tourismCss || '', /20260821-tourism-map3/);
+    assert.match(releaseAssets.tourismCss || '', /20260821-tourism-density1/);
 
     // 공개 메뉴를 통해 실제 운영 관광 스냅샷을 받는다. 네트워크 fixture를 쓰지 않는다.
     await page.locator('#menuTab').click();
@@ -47,7 +47,7 @@ try {
       null, { timeout: 20_000 });
     await page.waitForFunction(async () => {
       const { tourismFlow } = await import(new URL(
-        'js/layers/tourism-flow.js?v=20260821-relief-hotfix1', location.href,
+        'js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href,
       ).href);
       return (tourismFlow.ds?.entities?.values?.length ?? 0) > 0;
     }, null, { timeout: 20_000 });
@@ -55,12 +55,12 @@ try {
 
     const tourism = await page.evaluate(async () => {
       const { tourismFlow } = await import(new URL(
-        'js/layers/tourism-flow.js?v=20260821-relief-hotfix1', location.href,
+        'js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href,
       ).href);
       const snapshot = window.__tourismLiveSnapshot;
       const place = snapshot.places.find(item => item.state !== 'UNAVAILABLE');
-      const entity = tourismFlow.ds.entities.getById(`tourism:${place.code}`);
-      const dimensions = entity.box.dimensions.getValue();
+      const entities = tourismFlow.ds.entities.values;
+      const heights = entities.map(entity => entity.box.dimensions.getValue().z);
       return {
         state: snapshot.state,
         mode: snapshot.provider?.mode,
@@ -74,10 +74,12 @@ try {
         nameKo: place.nameKo,
         forecastCount: place.forecast?.length || 0,
         entityCount: tourismFlow.ds.entities.values.length,
-        height: dimensions.z,
-        footprint: [dimensions.x, dimensions.y],
-        hasCylinder: Boolean(entity.cylinder),
-        label: entity.label.text.getValue(),
+        minHeight: Math.min(...heights),
+        maxHeight: Math.max(...heights),
+        allDensityBoxes: entities.every(entity => Boolean(entity.box)
+          && !entity.cylinder && entity._tourismVisual?.valueMeaning === 'REGIONAL_VISUAL_ALLOCATION'),
+        title: document.querySelector('.tm-title h2')?.textContent?.trim() || '',
+        labelCount: tourismFlow.labelDs.entities.values.length,
       };
     });
     assert.ok(['LIVE', 'DEGRADED', 'STALE'].includes(tourism.state), JSON.stringify(tourism));
@@ -97,16 +99,17 @@ try {
     assert.ok(Date.parse(tourism.observedAt) > 0);
     assert.equal(tourism.sourceName, '서울특별시 실시간 인구데이터');
     assert.ok(tourism.forecastCount > 0);
-    assert.equal(tourism.entityCount, tourism.coverage.available);
-    assert.ok(tourism.height > 0);
-    assert.deepEqual(tourism.footprint, [420, 420]);
-    assert.equal(tourism.hasCylinder, false);
-    assert.ok(tourism.label.includes(tourism.nameKo));
+    assert.ok(tourism.entityCount > tourism.coverage.available);
+    assert.ok(tourism.entityCount <= (viewport.name === 'mobile' ? 900 : 2500));
+    assert.ok(tourism.minHeight >= 12 && tourism.maxHeight <= 180);
+    assert.equal(tourism.allDensityBoxes, true);
+    assert.equal(tourism.title, '서울 관광 밀도');
+    assert.ok(tourism.labelCount >= 1 && tourism.labelCount <= 12);
 
     await page.evaluate(async () => {
       const [{ tourismFlow }, { tourismSheet }] = await Promise.all([
-        import(new URL('js/layers/tourism-flow.js?v=20260821-relief-hotfix1', location.href).href),
-        import(new URL('js/ui-tourism.js?v=20260821-v8p3-1', location.href).href),
+        import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href).href),
+        import(new URL('js/ui-tourism.js?v=20260821-tourism-density1', location.href).href),
       ]);
       await tourismSheet.open(tourismFlow.snapshot.places.find(place => place.state !== 'UNAVAILABLE'));
     });
@@ -178,7 +181,7 @@ try {
       keys: await caches.keys(),
     }));
     assert.match(cacheState.controller, /\/sw\.js$/);
-    assert.ok(cacheState.keys.includes('earthus-shell-2026-08-20-weather-tourism1'),
+    assert.ok(cacheState.keys.includes('earthus-shell-2026-08-21-tourism-density1'),
       JSON.stringify(cacheState));
     assert.deepEqual(pageErrors, []);
     await page.screenshot({ path: `/private/tmp/earthus-weather-tourism-live-${viewport.name}.png` });

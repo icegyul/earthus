@@ -17,7 +17,8 @@ const RANK_BANDS = Object.freeze({
 });
 
 export function scoreToHeight(score) {
-  const s = Math.min(1, Math.max(0, Number(score)));
+  const value = Number(score);
+  const s = Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 0;
   return 12 + 168 * (s ** 0.70);
 }
 

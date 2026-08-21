@@ -65,6 +65,8 @@ for (const item of places) {
 assert.ok(result.cells.every(cell => cell.valueMeaning === 'REGIONAL_VISUAL_ALLOCATION'));
 assert.ok(result.cells.every(cell => cell.heightMeters >= 12 && cell.heightMeters <= 180));
 assert.ok(scoreToHeight(0.79) < scoreToHeight(0.80));
+// 비유한 입력이 Cesium box 높이까지 전파되어 DeveloperError를 만드는 회귀를 잡는다.
+assert.equal(scoreToHeight(Number.NaN), 12);
 assert.ok(result.cells.every(cell => !('flowDirection' in cell)));
 
 const kernel3 = buildTourismDensityGrid([places[0]], null, { kernelSize: 3, cellMeters: 95 });

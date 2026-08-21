@@ -23,7 +23,7 @@ import { lightning } from './lightning.js';
 import { regional } from './regional.js';
 import { alerts } from './alerts.js';
 import { airStations } from './airkr.js';
-import { tourismFlow } from './tourism-flow.js?v=20260821-density-lod1';
+import { tourismFlow } from './tourism-flow.js?v=20260821-tourism-density1';
 
 /* ── 레이어를 켤 때 그때 받는다 ────────────────────────────────
    ⚠️ 받은 지적: **"처음 접속시 모든 기능 다 꺼줘. 지구 무빙 애니메이션만. 버벅거린다."**

@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from '/Users/fiftyfy14/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs';
 
-const release = '20260821-v8p3-2';
+const release = '20260821-v8p3-3';
 const target = process.env.EARTHUS_LIVE_URL || `https://earthus.net/?release=${release}`;
 const executablePath = process.env.EARTHUS_CHROME
   || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -27,7 +27,7 @@ try {
       weatherCss: document.querySelector('link[href*="weather-card-v7.css"]')?.getAttribute('href'),
       tourismCss: document.querySelector('link[href*="tourism-flow.css"]')?.getAttribute('href'),
     }));
-    assert.match(releaseAssets.main || '', /20260821-v8p3-2/);
+    assert.match(releaseAssets.main || '', /20260821-v8p3-3/);
     assert.match(releaseAssets.weatherCss || '', /20260820-wcv7-1/);
     assert.match(releaseAssets.tourismCss || '', /20260821-tourism-map3/);
 
@@ -47,7 +47,7 @@ try {
       null, { timeout: 20_000 });
     await page.waitForFunction(async () => {
       const { tourismFlow } = await import(new URL(
-        'js/layers/tourism-flow.js?v=20260821-v8p3-1', location.href,
+        'js/layers/tourism-flow.js?v=20260821-relief-hotfix1', location.href,
       ).href);
       return (tourismFlow.ds?.entities?.values?.length ?? 0) > 0;
     }, null, { timeout: 20_000 });
@@ -55,7 +55,7 @@ try {
 
     const tourism = await page.evaluate(async () => {
       const { tourismFlow } = await import(new URL(
-        'js/layers/tourism-flow.js?v=20260821-v8p3-1', location.href,
+        'js/layers/tourism-flow.js?v=20260821-relief-hotfix1', location.href,
       ).href);
       const snapshot = window.__tourismLiveSnapshot;
       const place = snapshot.places.find(item => item.state !== 'UNAVAILABLE');
@@ -105,7 +105,7 @@ try {
 
     await page.evaluate(async () => {
       const [{ tourismFlow }, { tourismSheet }] = await Promise.all([
-        import(new URL('js/layers/tourism-flow.js?v=20260821-v8p3-1', location.href).href),
+        import(new URL('js/layers/tourism-flow.js?v=20260821-relief-hotfix1', location.href).href),
         import(new URL('js/ui-tourism.js?v=20260821-v8p3-1', location.href).href),
       ]);
       await tourismSheet.open(tourismFlow.snapshot.places.find(place => place.state !== 'UNAVAILABLE'));

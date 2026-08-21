@@ -1,16 +1,51 @@
-// 관광·인간 흐름 3D Relief.
-// 기관의 추정 인구 범위는 도시 전체에서도 읽히는 표시 블록 높이로, 범주형 혼잡 등급은 색으로 옮긴다.
-// 고정 바닥 셀은 실제 건물·구역 면적이 아니며, OD 근거가 없으므로 이동 방향은 그리지 않는다.
+// 관광·인간 흐름 3D 밀도.
+// 기관의 추정 인구 범위는 여러 공유 셀에 보존해 배분하고, 범주형 혼잡 등급은 높이와 색으로 옮긴다.
+// 셀은 실제 구역 면적·수용력·OD가 아닌 지역 표시용 배분이므로 이동 방향을 그리지 않는다.
 
 import { API } from '../config.js';
 import { fetchT } from '../net.js';
 import { store } from '../store.js';
 import { viewer } from '../viewer.js';
-import { towerVisual, validateTourismSnapshot } from '../tourism-flow-contract.js';
+import { resolveTourismEvidence, validateTourismSnapshot } from '../tourism-flow-contract.js';
+import { buildTourismDensityGrid, DENSITY_LIMITS } from '../tourism-density-grid.js';
+import {
+  buildTourismLabelCandidates, selectNonOverlappingLabels,
+} from '../tourism-density-labels.js';
+import { koreaAdminAt } from '../korea-admin-reference.js';
 import { validateKtoSummary } from '../kto-tourism-contract.js';
 import { tourismMapStyle } from './tourism-map-style.js';
 
 const IS_LOCAL = ['127.0.0.1', 'localhost'].includes(location.hostname);
+export const TOURISM_LOD = Object.freeze({
+  overview: Object.freeze({ minCameraHeight: 18_000, kernelSize: 5, cellMeters: 320 }),
+  district: Object.freeze({ minCameraHeight: 6_000, kernelSize: 5, cellMeters: 170 }),
+  detail: Object.freeze({ minCameraHeight: 0, kernelSize: 5, cellMeters: 95 }),
+});
+
+function lodForCameraHeight(value) {
+  const height = Number(value);
+  if (!Number.isFinite(height) || height >= TOURISM_LOD.overview.minCameraHeight) return 'overview';
+  if (height >= TOURISM_LOD.district.minCameraHeight) return 'district';
+  return 'detail';
+}
+
+function placeInsideRectangle(place, rectangle) {
+  if (!rectangle) return true;
+  const lat = Number(place?.position?.lat);
+  const lon = Number(place?.position?.lon);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return false;
+  return Cesium.Rectangle.contains(rectangle, Cesium.Cartographic.fromDegrees(lon, lat));
+}
+
+function dominantPlace(cell, placesById) {
+  const allocations = [...(cell?.allocations || [])].sort((left, right) =>
+    Number(right.allocatedPopulation || 0) - Number(left.allocatedPopulation || 0)
+      || Number(right.weight || 0) - Number(left.weight || 0)
+      || Number(right.rank || 0) - Number(left.rank || 0)
+      || String(left.placeId || '').localeCompare(String(right.placeId || '')),
+  );
+  return placesById.get(allocations[0]?.placeId) || null;
+}
 
 function kstTime(value) {
   const date = new Date(value);
@@ -29,21 +64,38 @@ function newestObservedAt(snapshot) {
 
 export const tourismFlow = {
   ds: null,
+  labelDs: null,
   snapshot: null,
   selectedAt: null,
   _abort: null,
   _focusedOnce: false,
   _mapUi: null,
+  _adminByPlaceId: new Map(),
+  _moveEndRemove: null,
+  _postRenderRemove: null,
+  _timeListenerBound: false,
 
   init() {
+    if (this.ds && this.labelDs) return this;
     this.ds = new Cesium.CustomDataSource('tourism-flow');
+    this.labelDs = new Cesium.CustomDataSource('tourism-density-labels');
     viewer.dataSources.add(this.ds);
+    viewer.dataSources.add(this.labelDs);
     this.ds.show = false;
+    this.labelDs.show = false;
     this._ensureMapUi();
-    document.addEventListener('earthus:tourism-time', event => {
-      this.selectedAt = event.detail?.at || null;
-      this.renderAt(this.selectedAt);
-    });
+    if (!this._timeListenerBound) {
+      this._timeListenerBound = true;
+      document.addEventListener('earthus:tourism-time', event => {
+        this.selectedAt = event.detail?.at || null;
+        this.renderAt(this.selectedAt);
+      });
+    }
+    if (!this._moveEndRemove) {
+      this._moveEndRemove = viewer.camera.moveEnd.addEventListener(() => {
+        if (store.isOn('tourism') && this.snapshot?.places) this.renderAt(this.selectedAt);
+      });
+    }
     return this;
   },
 
@@ -83,6 +135,13 @@ export const tourismFlow = {
         // KTO 미연결·계약 불일치는 서울시 현재 관측을 지우지 않고 별도 상태로 보여준다.
       }
       this.snapshot = snapshot;
+      this._adminByPlaceId = new Map();
+      const adminEntriesPromise = Promise.all((snapshot.places || []).map(async place => {
+        const lat = Number(place?.position?.lat);
+        const lon = Number(place?.position?.lon);
+        if (!place?.id || !Number.isFinite(lat) || !Number.isFinite(lon)) return [place?.id, null];
+        return [place.id, await koreaAdminAt(lat, lon)];
+      }));
       this.renderAt(this.selectedAt);
       document.dispatchEvent(new CustomEvent('earthus:tourism-snapshot', { detail: snapshot }));
       if (!this._focusedOnce && snapshot.places?.some(place => place.position)) {
@@ -100,9 +159,14 @@ export const tourismFlow = {
             roll: 0,
           },
           duration: 1.2,
-          complete: () => this.applyVisibility(),
+          complete: () => this.renderAt(this.selectedAt),
         });
       }
+      const adminEntries = await adminEntriesPromise;
+      if (controller.signal.aborted || this.snapshot !== snapshot) return null;
+      // 행정 경계 파일 실패는 셀을 지우지 않는다. 라벨 모듈이 공식 관광지명으로 되돌아간다.
+      this._adminByPlaceId = new Map(adminEntries.filter(([id]) => id));
+      this.renderAt(this.selectedAt);
       return snapshot;
     } catch (error) {
       if (error?.name === 'AbortError') return null;
@@ -116,50 +180,120 @@ export const tourismFlow = {
   },
 
   renderAt(at = null) {
-    if (!this.ds) return;
+    if (!this.ds || !this.labelDs) return;
+    this._postRenderRemove?.();
+    this._postRenderRemove = null;
     this.ds.entities.removeAll();
+    this.labelDs.entities.removeAll();
     if (!store.isOn('tourism') || !this.snapshot?.places) {
       this.applyVisibility();
       return;
     }
-    for (const place of this.snapshot.places) {
-      const visual = towerVisual(place, at);
-      if (!visual) continue;
-      const color = Cesium.Color.fromCssColorString(visual.color).withAlpha(visual.alpha);
-      const forecast = visual.sourceType === 'OFFICIAL_FORECAST';
-      const state = place.state === 'LIVE' && !forecast ? 'LIVE' : forecast ? '공식 예측' : place.stateLabelKo;
+
+    const cameraHeight = viewer.camera.positionCartographic?.height;
+    const lod = lodForCameraHeight(cameraHeight);
+    const settings = TOURISM_LOD[lod];
+    const isMobile = Math.min(window.innerWidth, viewer.canvas?.clientWidth || window.innerWidth) <= 640;
+    const rectangle = lod === 'detail'
+      ? viewer.camera.computeViewRectangle(viewer.scene.globe.ellipsoid) : null;
+    const renderPlaces = this.snapshot.places.filter(place =>
+      resolveTourismEvidence(place, at) && (lod !== 'detail' || placeInsideRectangle(place, rectangle)),
+    );
+    const maxCells = isMobile ? DENSITY_LIMITS.mobile : DENSITY_LIMITS.desktop;
+    const grid = buildTourismDensityGrid(renderPlaces, at, {
+      lod: isMobile ? 'mobile' : 'district',
+      kernelSize: settings.kernelSize,
+      cellMeters: settings.cellMeters,
+      maxCells,
+    });
+    const placesById = new Map(renderPlaces.map(place => [place.id, place]));
+    for (const cell of grid.cells) {
+      const place = dominantPlace(cell, placesById);
+      if (!place) continue;
+      const color = Cesium.Color.fromCssColorString(cell.color).withAlpha(cell.alpha);
       this.ds.entities.add({
-        id: `tourism:${place.code}`,
+        id: cell.id,
         position: Cesium.Cartesian3.fromDegrees(
-          place.position.lon, place.position.lat, visual.heightMeters / 2,
+          cell.lon, cell.lat, cell.heightMeters / 2,
         ),
         box: {
-          // 모든 장소의 바닥을 같은 크기로 둔다. 공식 구역·건물 면적을 아는 척하지 않고,
-          // 가는 '머리숱' 기둥 대신 장소별 상대 높이를 읽는 표시 셀만 만든다.
           dimensions: new Cesium.Cartesian3(
-            visual.footprintMeters, visual.footprintMeters, visual.heightMeters,
+            cell.cellMeters * 0.92, cell.cellMeters * 0.92, cell.heightMeters,
           ),
           material: color,
           outline: false,
         },
-        label: {
-          text: `${place.nameKo}\n${state} · ${visual.level}`,
-          // 지도 전체는 블록 밀도를 읽는 화면이다. 상세 명칭은 블록 선택 뒤 시트에서만 연다.
-          show: false,
-          font: '500 12px ui-monospace, SFMono-Regular, Menlo, monospace',
-          fillColor: Cesium.Color.WHITE,
-          outlineColor: Cesium.Color.BLACK.withAlpha(0.88),
-          outlineWidth: 3,
-          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-          pixelOffset: new Cesium.Cartesian2(0, -12),
-          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 850_000),
-        },
         _tourism: place,
-        _tourismVisual: visual,
+        _tourismContributors: cell.allocations,
+        _tourismVisual: cell,
+      });
+    }
+
+    const labelLimit = isMobile ? 8 : lod === 'detail' ? 12 : 10;
+    const candidates = buildTourismLabelCandidates(renderPlaces, this._adminByPlaceId, {
+      lod, limit: labelLimit,
+    });
+    for (const candidate of candidates) {
+      this.labelDs.entities.add({
+        id: `tourism-label:${candidate.id}`,
+        position: Cesium.Cartesian3.fromDegrees(candidate.lon, candidate.lat, 205),
+        label: {
+          text: candidate.text,
+          show: false,
+          font: candidate.kind === 'district'
+            ? '700 13px system-ui, -apple-system, sans-serif'
+            : '600 12px system-ui, -apple-system, sans-serif',
+          fillColor: Cesium.Color.WHITE,
+          outlineColor: Cesium.Color.BLACK.withAlpha(0.9),
+          outlineWidth: 4,
+          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+          pixelOffset: new Cesium.Cartesian2(0, -10),
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        },
+        _tourismLabelCandidate: candidate,
       });
     }
     this.applyVisibility();
+    this._layoutLabelsOnce(labelLimit);
     viewer.scene.requestRender();
+  },
+
+  _layoutLabelsOnce(limit) {
+    if (!this.labelDs?.show || !this.labelDs.entities.values.length) return;
+    const scene = viewer.scene;
+    const canvas = scene.canvas;
+    let remove = null;
+    remove = scene.postRender.addEventListener(() => {
+      remove?.();
+      if (this._postRenderRemove === remove) this._postRenderRemove = null;
+      const entities = this.labelDs.entities.values;
+      const candidates = entities.map(entity => entity._tourismLabelCandidate);
+      const projectedRects = new Map();
+      entities.forEach((entity, index) => {
+        const candidate = candidates[index];
+        const position = entity.position?.getValue(Cesium.JulianDate.now());
+        const screen = position ? Cesium.SceneTransforms.worldToWindowCoordinates(scene, position) : null;
+        const width = Math.max(44, candidate.text.length * 13 + 16);
+        const height = 24;
+        projectedRects.set(candidate.id, {
+          left: screen?.x - width / 2,
+          top: screen?.y - height,
+          right: screen?.x + width / 2,
+          bottom: screen?.y,
+          viewportWidth: canvas.clientWidth,
+          viewportHeight: canvas.clientHeight,
+          visible: Boolean(screen),
+        });
+      });
+      const selectedIds = new Set(selectNonOverlappingLabels(
+        candidates, projectedRects, limit,
+      ).map(candidate => candidate.id));
+      entities.forEach(entity => {
+        entity.label.show = selectedIds.has(entity._tourismLabelCandidate.id);
+      });
+      scene.requestRender();
+    });
+    this._postRenderRemove = remove;
   },
 
   _ensureMapUi() {
@@ -199,9 +333,9 @@ export const tourismFlow = {
     node.innerHTML = `
       <header class="tm-title">
         <small>EARTHUS · TOURISM</small>
-        <h2>서울 관광 흐름</h2>
+        <h2>서울 관광 밀도</h2>
         <p><i aria-hidden="true"></i>${forecastMode ? '서울시 공식 예측' : currentEvidenceLabel} · ${coverage.available ?? '—'}/${coverage.total ?? '—'}곳 · ${timeLabel} ${kstTime(forecastMode ? this.selectedAt : observedAt)} KST</p>
-        <span>블록 하나는 한 관광지입니다 · 바닥은 실제 면적이 아닌 고정 표시 셀</span>
+        <span>공식 장소값을 공유 셀에 배분한 지역 표시입니다 · 실제 구역 면적이나 이동량이 아닙니다</span>
         <small class="tm-map-credit">지도 · Esri · 경계·도로</small>
       </header>
       <aside class="tm-legend" aria-label="관광지 혼잡 등급 범례">
@@ -240,8 +374,9 @@ export const tourismFlow = {
   },
 
   applyVisibility() {
-    if (!this.ds) return;
+    if (!this.ds || !this.labelDs) return;
     this.ds.show = store.isOn('tourism') && store.height <= 2_500_000;
+    this.labelDs.show = this.ds.show;
     tourismMapStyle.set(this.ds.show);
     this._renderMapUi();
   },

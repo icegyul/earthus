@@ -123,9 +123,26 @@ try {
 
     // 공개 메뉴에서 실제 레이어를 켠다.
     await page.locator('#menuTab').click();
+    const travelMenuText = (await page.locator('#menuMain [data-open="travel"]').innerText())
+      .replace(/\s+/g, ' ').trim();
+    assert.match(travelMenuText, /관광 밀도/);
+    assert.doesNotMatch(travelMenuText, /관광 흐름/);
+    assert.equal((await page.locator('#tourismTitle').textContent()).trim(), '관광 밀도');
+    await page.locator('#menuMain [data-open="travel"]').click();
+    const travelPanel = page.locator('#layerStrip');
+    await travelPanel.locator('.ly-purpose-intro').waitFor({ state: 'visible' });
+    const travelPanelText = (await travelPanel.innerText()).replace(/\s+/g, ' ').trim();
+    assert.match(travelPanelText, /관광 밀도/);
+    assert.match(travelPanelText, /지역 밀도 셀/);
+    assert.doesNotMatch(travelPanelText, /관광 흐름|3D 블록/);
+    await page.keyboard.press('Escape');
     await page.locator('#menuMain [data-open="earth"]').click();
     const tourismButton = page.locator('#layerStrip [data-id="tourism"]').first();
     await tourismButton.waitFor({ state: 'visible' });
+    const tourismMenuText = (await tourismButton.innerText()).replace(/\s+/g, ' ').trim();
+    assert.match(tourismMenuText, /관광 밀도/);
+    assert.match(tourismMenuText, /지역 밀도 셀/);
+    assert.doesNotMatch(tourismMenuText, /관광 흐름|3D 블록/);
     await tourismButton.click();
     await page.waitForTimeout(1600);
     await page.waitForFunction(async () => {

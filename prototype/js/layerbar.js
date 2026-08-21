@@ -195,7 +195,7 @@ export const ITEMS = [
     sky:'#1a0e06', paint:'heatdome' },
   { id:'phenomena', ko:'해양 환류', en:'Ocean gyres', sub:'5개 해역', subEn:'5 basins',
     ready:true, sky:'#06141a', paint:'gyre' },
-  { id:'tourism', ko:'관광 흐름', en:'Tourism flow', sub:'서울시 공식 혼잡 · 3D 블록', subEn:'Official Seoul crowd · 3D relief',
+  { id:'tourism', ko:'관광 밀도', en:'Tourism density', sub:'서울시 공식 혼잡 · 지역 밀도 셀', subEn:'Official Seoul crowd · regional density cells',
     ready:true, sky:'#081b1b', paint:'tourism' },
   { id:'poi', ko:'명소', en:'Places', sub:'박물관·천문대·아쿠아리움 · 확대 후', subEn:'Museums, observatories and aquariums · zoom in',
     ready:true, sky:'#0c1b14', paint:'poi' },
@@ -951,8 +951,8 @@ export const layerBar = {
     if (isTravel) {
       const intro = el('p', 'ly-purpose-intro');
       intro.textContent = ko
-        ? '관광 흐름과 명소를 여행 목적에 맞게 빠르게 켭니다.'
-        : 'Turn on tourism flow and places from a travel-focused entrance.';
+        ? '관광 밀도와 명소를 여행 목적에 맞게 빠르게 켭니다.'
+        : 'Turn on tourism density and places from a travel-focused entrance.';
       strip.appendChild(intro);
       order.flatMap(group => group.items).forEach(it => this._item(strip, it, ko, 'ly-purpose-item'));
       const note = el('p', 'ly-purpose-note');

@@ -172,6 +172,16 @@ export function resolveActiveSourceId(isOn) {
     || null;
 }
 
+export function compactActiveSources(entries, ko = true) {
+  const unique = [...new Set(entries
+    .map(entry => String(entry ?? '').trim())
+    .filter(Boolean))];
+  const visible = unique.slice(0, 2);
+  if (unique.length > 2) visible.push(ko
+    ? `외 ${unique.length - 2}` : `and ${unique.length - 2} more`);
+  return visible.join(' · ');
+}
+
 function hhmm(d) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
@@ -383,12 +393,17 @@ export const sourceNote = {
     const activeSources = [id === 'tourism'
       ? (ko ? '서울특별시 실시간 인구데이터' : 'Seoul Metropolitan Government real-time population')
       : rawSourceText];
-    if (store.isOn('lightning') && id !== 'lightning') activeSources.push(lightningInfo.agencies);
-    const uniqueSources = [...new Set(activeSources.filter(Boolean))];
-    const compactSources = uniqueSources.slice(0, 2);
-    if (uniqueSources.length > 2) compactSources.push(ko
-      ? `외 ${uniqueSources.length - 2}` : `and ${uniqueSources.length - 2} more`);
-    this.root.dataset.inlineSource = [compactSources.join(' · '),
+    PRIORITY.forEach(activeId => {
+      if (activeId === id || PAINT.includes(activeId) || !store.isOn(activeId)) return;
+      if (activeId === 'lightning') {
+        activeSources.push(lightningInfo.agencies);
+      } else if (activeId === 'landobs' && failedLand.size) {
+        activeSources.push(availableLand);
+      } else {
+        activeSources.push(ko ? SRC[activeId]?.ko : SRC[activeId]?.en);
+      }
+    });
+    this.root.dataset.inlineSource = [compactActiveSources(activeSources, ko),
       made && !Number.isNaN(made.getTime())
         ? (ko ? `${hhmm(made)} 자료` : `data ${hhmm(made)}`) : null]
       .filter(Boolean).join(' · ');

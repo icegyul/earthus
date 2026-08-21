@@ -23,7 +23,9 @@ function clone(value) {
 
 const contracts = await importBrowserModule('prototype/js/space/contracts.js');
 const routes = await importBrowserModule('prototype/js/space/route-state.js');
-const cosmicSource = await readFile(path.join(ROOT, 'prototype/js/space/cosmic3d.js'), 'utf8');
+const cosmicAdapterSource = await readFile(path.join(ROOT, 'prototype/js/space/cosmic3d.js'), 'utf8');
+const cosmicLegacySource = await readFile(path.join(ROOT, 'prototype/js/space/cosmic3d-legacy.js'), 'utf8');
+const cosmicSource = `${cosmicAdapterSource}\n${cosmicLegacySource}`;
 const uiSource = await readFile(path.join(ROOT, 'prototype/js/ui.js'), 'utf8');
 const viewerSource = await readFile(path.join(ROOT, 'prototype/js/viewer.js'), 'utf8');
 const skyPanoramaSource = await readFile(path.join(ROOT, 'prototype/js/sky-panorama.js'), 'utf8');
@@ -128,7 +130,7 @@ assert.equal(conflict.stage, 'milkyway');
 assert.equal(conflict.target, null);
 assert.ok(conflict.issues.includes('CONFLICTING_DETAIL'));
 
-const unsupported = routes.decodeAetherusRoute('?aetherus=4&solar=1');
+const unsupported = routes.decodeAetherusRoute('?aetherus=5&solar=1');
 assert.equal(unsupported.stage, null);
 assert.deepEqual([...unsupported.issues], ['UNSUPPORTED_VERSION']);
 
@@ -137,7 +139,7 @@ const encoded = routes.encodeAetherusRoute(
   'https://earthus.net/?lang=ko&space=galaxies&craft=voyager-1#dev',
 );
 assert.equal(encoded.searchParams.get('lang'), 'ko');
-assert.equal(encoded.searchParams.get('aetherus'), '3');
+assert.equal(encoded.searchParams.get('aetherus'), '4');
 assert.equal(encoded.searchParams.get('solar'), '1');
 assert.equal(encoded.searchParams.get('space'), null);
 assert.equal(encoded.searchParams.get('photo'), 'southern-ring-jwst');
@@ -163,4 +165,4 @@ assert.throws(
   error => error.code === 'CONFLICTING_DETAIL',
 );
 
-console.log('PASS: 6 Aetherus catalogue contracts, 5 failure fixtures, and 13 route-state cases (v3 encoder, v1 reader)');
+console.log('PASS: 6 Aetherus catalogue contracts, 5 failure fixtures, and 13 route-state cases (v4 encoder, v1 reader)');

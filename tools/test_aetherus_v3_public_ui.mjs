@@ -8,14 +8,18 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = relativePath => readFile(path.join(ROOT, relativePath), 'utf8');
 
-const [html, css, main, cosmic, layerbar, catalogSource] = await Promise.all([
+const [html, css, mySkyCss, main, cosmicAdapter, mySkyController, cosmicLegacy, layerbar, catalogSource] = await Promise.all([
   read('prototype/index.html'),
   read('prototype/css/app.css'),
+  read('prototype/css/aetherus-my-sky.css'),
   read('prototype/js/main.js'),
   read('prototype/js/space/cosmic3d.js'),
+  read('prototype/js/space/my-sky-controller.js'),
+  read('prototype/js/space/cosmic3d-legacy.js'),
   read('prototype/js/layerbar.js'),
   read('prototype/data/space-photos.json'),
 ]);
+const cosmic = `${cosmicAdapter}\n${mySkyController}\n${cosmicLegacy}`;
 const catalog = JSON.parse(catalogSource);
 
 for (const route of ['solar', 'photos', 'milkyway', 'galaxies']) {
@@ -32,6 +36,15 @@ assert.match(main, /layerbar\.js\?v=20260815-freeentry1/);
 assert.match(main, /cosmic3d\.js\?v=20260815-mc14/);
 assert.match(cosmic, /photo\.preview \|\| photo\.thumb/);
 assert.match(cosmic, /updateExperienceNav\('milkyway'\)/);
+assert.match(cosmic, /openMySky/);
+assert.match(cosmic, /horizontalToMySkyDirection/);
+assert.match(cosmic, /TAKE ME THERE/);
+assert.match(cosmicAdapter, /installMySkyController/);
+assert.match(mySkyController, /cosmicMySkyInfo/);
+assert.match(mySkyController, /cosmicMySkyTake/);
+assert.match(mySkyController, /\/css\/aetherus-my-sky\.css/);
+assert.match(mySkyCss, /\.cosmic-my-sky-info\{/);
+assert.match(mySkyCss, /\.cosmic-experience\.is-my-sky/);
 assert.match(css, /\.cosmic-experience-nav button\{[^}]*min-height:44px/s);
 assert.match(css, /@media\(max-width:760px\)/);
 

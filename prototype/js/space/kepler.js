@@ -4,11 +4,21 @@
 // "Keplerian Elements for Approximate Positions of the Major Planets"
 // https://ssd.jpl.nasa.gov/planets/approx_pos.html
 // Table 1 (1800 AD–2050 AD). 상수는 표의 요소와 세기당 변화율을 그대로 옮겼다.
-// ⚠️ 근사식이다. 항해·관측 조준·우주비행에 쓰지 말고 JPL Horizons를 써야 한다.
+// ⚠️ 근사식이다. 항해·관측 조준·우주비행에 쓰지 말고 JPL Horizons/SPICE를 써야 한다.
+//
+// 좌표 계약은 coordinates.js가 정본이다. 이 모듈은 위치 공급자이며 화면 축 변환을 하지 않는다.
+
+import {
+  FRAME,
+  julianDate as canonicalJulianDate,
+} from './coordinates.js';
 
 const DEG = Math.PI / 180;
-const DAY_MS = 86_400_000;
 const J2000 = 2_451_545.0;
+
+export const KEPLER_POSITION_FRAME = FRAME.HELIOCENTRIC_ECLIPTIC_J2000;
+export const KEPLER_PROVIDER = 'nasa-jpl-approximate-major-planets-table-1';
+export const julianDate = canonicalJulianDate;
 
 // [a, e, I, L, long.peri., long.node.] / [각 세기당 변화율]
 export const PLANET_ELEMENTS = Object.freeze({
@@ -36,10 +46,10 @@ const wrapRadians = angle => {
     : wrapped < -Math.PI ? wrapped + Math.PI * 2 : wrapped;
 };
 
-export function julianDate(date) {
-  const value = date instanceof Date ? date : new Date(date);
-  if (!Number.isFinite(value.getTime())) throw new RangeError('VALID_DATE_REQUIRED');
-  return value.getTime() / DAY_MS + 2_440_587.5;
+function normalizedDate(value) {
+  const date = value instanceof Date ? new Date(value.getTime()) : new Date(value);
+  if (!Number.isFinite(date.getTime())) throw new RangeError('VALID_DATE_REQUIRED');
+  return date;
 }
 
 function elementsAt(id, date) {
@@ -70,7 +80,8 @@ function coordinates(elements, eccentricAnomaly) {
 }
 
 export function planetPosition(id, date = new Date()) {
-  const elements = elementsAt(id, date);
+  const at = normalizedDate(date);
+  const elements = elementsAt(id, at);
   const [, e, , longitudeDeg, perihelionDeg] = elements;
   const meanAnomaly = wrapRadians((longitudeDeg - perihelionDeg) * DEG);
   let eccentricAnomaly = meanAnomaly + e * Math.sin(meanAnomaly);
@@ -82,15 +93,28 @@ export function planetPosition(id, date = new Date()) {
   }
 
   const { x, y, z } = coordinates(elements, eccentricAnomaly);
-  return { id, x, y, z, au: Math.hypot(x, y, z), longitudeDeg: (Math.atan2(y, x) / DEG + 360) % 360 };
+  return {
+    id,
+    x,
+    y,
+    z,
+    au: Math.hypot(x, y, z),
+    longitudeDeg: (Math.atan2(y, x) / DEG + 360) % 360,
+    frame: KEPLER_POSITION_FRAME,
+    at: at.toISOString(),
+    provider: KEPLER_PROVIDER,
+    precision: 'explorer-approximate',
+  };
 }
 
 export function planetOrbit(id, date = new Date(), samples = 180) {
-  const elements = elementsAt(id, date);
+  const at = normalizedDate(date);
+  const elements = elementsAt(id, at);
   return Array.from({ length: samples + 1 }, (_, index) =>
     coordinates(elements, index / samples * Math.PI * 2));
 }
 
 export function planetPositions(date = new Date()) {
-  return Object.fromEntries(Object.keys(PLANET_ELEMENTS).map(id => [id, planetPosition(id, date)]));
+  const at = normalizedDate(date);
+  return Object.fromEntries(Object.keys(PLANET_ELEMENTS).map(id => [id, planetPosition(id, at)]));
 }

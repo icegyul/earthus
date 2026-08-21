@@ -15,11 +15,15 @@ async function importBrowserModule(relativePath) {
 
 async function importPlannerModules() {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'aetherus-planner-'));
-  const kepler = await readFile(path.join(ROOT, 'prototype/js/space/kepler.js'), 'utf8');
+  const coordinates = await readFile(path.join(ROOT, 'prototype/js/space/coordinates.js'), 'utf8');
+  const kepler = (await readFile(path.join(ROOT, 'prototype/js/space/kepler.js'), 'utf8'))
+    .replace("'./coordinates.js'", "'./coordinates.mjs'");
   const astronomy = (await readFile(path.join(ROOT, 'prototype/js/space/astronomy.js'), 'utf8'))
-    .replace("'./kepler.js'", "'./kepler.mjs'");
+    .replace("'./kepler.js'", "'./kepler.mjs'")
+    .replace("'./coordinates.js'", "'./coordinates.mjs'");
   const planner = (await readFile(path.join(ROOT, 'prototype/js/space/observation-planner.js'), 'utf8'))
     .replace(/'\.\/astronomy\.js(?:\?v=[^']+)?'/, "'./astronomy.mjs'");
+  await writeFile(path.join(directory, 'coordinates.mjs'), coordinates);
   await writeFile(path.join(directory, 'kepler.mjs'), kepler);
   await writeFile(path.join(directory, 'astronomy.mjs'), astronomy);
   await writeFile(path.join(directory, 'observation-planner.mjs'), planner);
@@ -133,12 +137,12 @@ const encoded = routes.encodeAetherusRoute({
   precision: 'explorer',
   plan: planner.GEOMETRY_24H_PLAN,
 }, 'https://earthus.net/?lang=ko');
-assert.equal(encoded.searchParams.get('aetherus'), '3');
+assert.equal(encoded.searchParams.get('aetherus'), '4');
 assert.equal(encoded.searchParams.get('plan'), 'geometry24h');
 assert.equal(encoded.searchParams.get('observer'), '37.46,126.71');
 assert.ok(!encoded.href.includes('accuracy'));
 const decoded = routes.decodeAetherusRoute(encoded);
-assert.equal(decoded.version, 3);
+assert.equal(decoded.version, 4);
 assert.equal(decoded.plan, 'geometry24h');
 
 const oldPlanRoute = routes.decodeAetherusRoute(
@@ -154,4 +158,4 @@ assert.throws(() => routes.encodeAetherusRoute({
   stage: 'solar', target: 'mars', plan: 'geometry24h',
 }), error => error?.code === 'INCOMPLETE_PLAN_INPUT');
 
-console.log(`PASS: deterministic ${first.revision}, ${first.windows.length} candidate window(s), natural NO_FEASIBLE ${naturalNoFeasible.startAt}, STALE, offline manifest, route v3, desktop Node p95 ${desktopNodeP95Ms.toFixed(2)}ms`);
+console.log(`PASS: deterministic ${first.revision}, ${first.windows.length} candidate window(s), natural NO_FEASIBLE ${naturalNoFeasible.startAt}, STALE, offline manifest, route v4, desktop Node p95 ${desktopNodeP95Ms.toFixed(2)}ms`);

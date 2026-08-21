@@ -3,26 +3,26 @@
   "schemaVersion": 1,
   "contract": {
     "provenance": "simulation",
-    "time": { "referenceDate": "calculation-reference-date" },
+    "time": { "referenceDate": "model-parameter-review-date" },
     "rights": { "scope": "source", "required": ["source", "sourceUrl"] }
   },
-  "referenceDate": "2026-08-10",
+  "referenceDate": "2026-08-20",
   "displaySpanDays": 365.25,
-  "galacticSpeedKph": 829000,
-  "distanceAu": 48.5769882017,
+  "galacticSpeedKph": 885821.6679,
+  "distanceAu": 51.9065726,
   "galacticOrbitYears": 230000000,
-  "source": "NASA Science · Solar System Facts",
-  "sourceUrl": "https://science.nasa.gov/solar-system/solar-system-facts/",
+  "source": "Astropy · Galactocentric v4.0 parameter set",
+  "sourceUrl": "https://docs.astropy.org/en/stable/coordinates/galactocentric.html",
   "method": {
-    "ko": "NASA가 제시한 태양계의 은하 공전 속도 약 829,000 km/h에 365.25일을 곱해 48.6 AU를 계산했습니다. 각 행성 위치는 JPL의 1800–2050 근사 궤도요소로 같은 1년을 표본화했습니다.",
-    "en": "48.6 AU is calculated from NASA's approximate galactic orbital speed of 829,000 km/h over 365.25 days. Planet positions sample the same year with JPL's 1800–2050 approximate orbital elements."
+    "ko": "태양의 은하중심 기준 속도는 Astropy Galactocentric v4.0의 (12.9,245.6,7.78) km/s 파라미터를 고정해 사용합니다. 이 성분은 Astropy의 태양 높이 보정(H tilt) 이후 좌표이므로 z_sun/R0로 얻은 작은 tilt를 역회전해 Aetherus Galactic 축에 맞춘 뒤, 실행 시점 UTC로 끝나는 지난 365.25일의 태양계 질량중심 이동을 단기 선형화합니다. 서버의 JPL Horizons @0 ICRF 상태벡터 캐시가 있으면 태양의 SSB 상태 변화로 질량중심 wobble까지 보정하고 행성도 같은 barycentric frame에서 가져옵니다. 캐시가 없거나 범위 밖이면 행성 위치만 JPL Table 1 근사식으로 폴백합니다.",
+    "en": "Solar Galactocentric motion fixes the Astropy Galactocentric v4.0 velocity parameters (12.9,245.6,7.78) km/s. Because those components are defined after Astropy's solar-height H tilt, Aetherus inverse-rotates that small z_sun/R0 tilt into its Galactic-aligned axes before short-span linearizing the Solar-System-barycenter motion over the 365.25 days ending at runtime UTC. When the server-side JPL Horizons @0 ICRF state-vector cache is available, the changing Sun barycentric state also corrects the SSB wobble and planets come from the same barycentric frame. When the cache is unavailable or out of coverage, only planet positions fall back to the JPL Table 1 approximation."
   },
   "limitations": {
-    "ko": "전진 방향을 화면 축에 맞추고 행성 궤도 반지름을 로그 압축한 교육 도식입니다. 실제 황도면과 은하 공전 방향 사이 각도, 행성·태양 크기, 은하 궤도의 1년 곡률은 같은 비율이 아닙니다. 항법·관측 조준에 사용할 수 없습니다.",
-    "en": "Educational diagram: the travel direction is aligned to the screen and orbital radii are logarithmically compressed. The true ecliptic-to-galactic orientation, body sizes, and one-year galactic curvature are not to scale. Not for navigation or observation pointing."
+    "ko": "Aetherus 은하중심 좌표는 Astropy v4.0의 거리·태양 높이·속도 파라미터를 사용하지만 전체 Astropy 좌표 변환을 복제하지 않고 IAU Galactic 축에 정렬한 평행이동 프레임입니다. 태양 높이에 따른 속도축 tilt는 역보정하지만 1년 은하 운동은 단기 선형화입니다. Horizons 캐시는 6시간 상태벡터 노드 사이를 위치·속도 Hermite 보간하며, 화면에서는 태양계 이동 거리·행성 궤도 반지름·천체 크기를 각각 독립적으로 과장합니다. 항법·우주비행·망원경 정밀 조준용이 아닙니다.",
+    "en": "The Aetherus Galactocentric bridge uses the Astropy v4.0 distance, solar-height and velocity parameters but remains a translated frame aligned to IAU Galactic axes rather than a reproduction of Astropy's full coordinate transform. The velocity-axis solar-height tilt is inverse-corrected, while one-year Galactic motion is still short-span linearized. The Horizons cache uses position/velocity Hermite interpolation between six-hour state-vector nodes, while Solar-System travel distance, orbit radii and body sizes are independently exaggerated for display. Not for navigation, flight dynamics or precision telescope pointing."
   },
   "displayLimit": {
-    "ko": "진행 방향 정렬 · 궤도 반지름 로그 압축 · 천체 크기 과장. 실제 황도면 각도와 은하 궤도 곡률은 같은 비율이 아니며 항법용이 아닙니다.",
-    "en": "Direction aligned, orbital radii log-compressed, body sizes enlarged. True orientation and galactic curvature are not to scale; not for navigation."
+    "ko": "SSB→Galactic-aligned 3D 방향 보존 · Horizons 캐시 우선/Table 1 폴백 · 이동거리·궤도·천체 크기만 별도 시각 확대 · 정밀 조준용 아님",
+    "en": "SSB→Galactic-aligned 3D orientation preserved · Horizons cache first/Table 1 fallback · only travel distance, orbit radii and body sizes are independently display-scaled · not for precision pointing"
   }
 }

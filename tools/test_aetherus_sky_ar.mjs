@@ -15,10 +15,14 @@ async function importSkyAR() {
 
 async function importAstronomy() {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'aetherus-sky-ar-astronomy-'));
-  const kepler = await readFile(path.join(ROOT, 'prototype/js/space/kepler.js'), 'utf8');
+  const coordinates = await readFile(path.join(ROOT, 'prototype/js/space/coordinates.js'), 'utf8');
+  const kepler = (await readFile(path.join(ROOT, 'prototype/js/space/kepler.js'), 'utf8'))
+    .replace("'./coordinates.js'", "'./coordinates.mjs'");
   const astronomy = (await readFile(path.join(ROOT, 'prototype/js/space/astronomy.js'), 'utf8'))
-    .replace("'./kepler.js'", "'./kepler.mjs'");
+    .replace("'./kepler.js'", "'./kepler.mjs'")
+    .replace("'./coordinates.js'", "'./coordinates.mjs'");
   await Promise.all([
+    writeFile(path.join(directory, 'coordinates.mjs'), coordinates),
     writeFile(path.join(directory, 'kepler.mjs'), kepler),
     writeFile(path.join(directory, 'astronomy.mjs'), astronomy),
   ]);
@@ -317,7 +321,7 @@ assert.equal(cancelledRuntime.diagnostics().liveTrackCount, 0);
 
 const source = await readFile(path.join(ROOT, 'prototype/js/space/sky-ar.js'), 'utf8');
 assert.doesNotMatch(source, /requestAnimationFrame|setInterval|\bfetch\s*\(/);
-const integration = await readFile(path.join(ROOT, 'prototype/js/space/cosmic3d.js'), 'utf8');
+const integration = `${await readFile(path.join(ROOT, 'prototype/js/space/cosmic3d.js'), 'utf8')}\n${await readFile(path.join(ROOT, 'prototype/js/space/cosmic3d-legacy.js'), 'utf8')}`;
 assert.match(integration, /window\.location\.hash === '#dev'/);
 assert.match(integration, /import\('\.\/sky-ar\.js'\)/);
 assert.doesNotMatch(integration, /import\('\.\/sky-ar\.js\?v=/,

@@ -120,6 +120,10 @@ try {
       })}`);
     }
     await page.locator('#loading').waitFor({ state: 'detached', timeout: 30_000 });
+    const minimumZoomDistanceBeforeTourism = await page.evaluate(async () => {
+      const { viewer } = await import(new URL('js/viewer.js', location.href).href);
+      return viewer.scene.screenSpaceCameraController.minimumZoomDistance;
+    });
 
     // 공개 메뉴에서 실제 레이어를 켠다.
     await page.locator('#menuTab').click();
@@ -168,6 +172,9 @@ try {
         storeHeight: store.height, cameraHeight: viewer.camera.positionCartographic.height,
         cameraPitchDegrees: Cesium.Math.toDegrees(viewer.camera.pitch), intro: intro._active,
         maxHeight: Math.max(...heights), minHeight: Math.min(...heights),
+        minimumZoomDistance: viewer.scene.screenSpaceCameraController.minimumZoomDistance,
+        nonBoxGraphics: tourismFlow.ds.entities.values.filter(entity =>
+          !entity.box || entity.polyline || entity.corridor || entity.wall).length,
         cellMeters: tourismFlow.ds.entities.values[0]?._tourismVisual?.cellMeters,
         title: document.querySelector('#tourismMapUi h2')?.textContent?.trim(),
         dominantName: tourismFlow.ds.entities.values[0]?._tourism?.nameKo,
@@ -185,6 +192,8 @@ try {
     assert.equal(initial.cellMeters, 320);
     assert.equal(initial.show, true);
     assert.equal(initial.labelShow, true);
+    assert.equal(initial.minimumZoomDistance, 4_000);
+    assert.equal(initial.nonBoxGraphics, 0);
     assert.equal(initial.dominantName, place.nameKo);
     assert.ok(initial.contributorCount >= 1);
     assert.ok(initial.cameraHeight <= 28_000,
@@ -205,7 +214,7 @@ try {
         return tourismFlow.ds.entities.values[0]?._tourismVisual?.cellMeters;
       };
       const district = observe(12_000);
-      const detail = observe(3_000);
+      const detail = observe(4_000);
       viewer.camera.setView({
         destination: Cesium.Cartesian3.fromDegrees(126.89, 37.36, 26_000),
         orientation: { heading: Cesium.Math.toRadians(22), pitch: Cesium.Math.toRadians(-52), roll: 0 },
@@ -359,10 +368,13 @@ try {
     });
     const off = await page.evaluate(async () => {
       const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-density-lod1', location.href).href);
+      const { viewer } = await import(new URL('js/viewer.js', location.href).href);
       return { show: tourismFlow.ds.show, labelShow: tourismFlow.labelDs.show,
-        count: tourismFlow.count(), abort: tourismFlow._abort };
+        count: tourismFlow.count(), abort: tourismFlow._abort,
+        minimumZoomDistance: viewer.scene.screenSpaceCameraController.minimumZoomDistance };
     });
-    assert.deepEqual(off, { show: false, labelShow: false, count: 0, abort: null });
+    assert.deepEqual(off, { show: false, labelShow: false, count: 0, abort: null,
+      minimumZoomDistance: minimumZoomDistanceBeforeTourism });
     assert.equal(await page.locator('#tourismMapUi').getAttribute('aria-hidden'), 'true');
     assert.deepEqual(runtimeErrors, []);
     await page.screenshot({ path: `/private/tmp/earthus-tourism-flow-${viewport.name}.png`, fullPage: true });

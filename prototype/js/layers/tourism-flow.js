@@ -67,6 +67,7 @@ export const tourismFlow = {
   _postRenderRemove: null,
   _timeListenerBound: false,
   _renderSourceCount: 0,
+  _minimumZoomDistanceBeforeTourism: null,
 
   init() {
     if (this.ds && this.labelDs) return this;
@@ -355,12 +356,25 @@ export const tourismFlow = {
   },
 
   set(on) {
+    const cameraController = viewer.scene.screenSpaceCameraController;
     if (!on) {
       this._abort?.abort();
       this._abort = null;
       this.selectedAt = null;
       tourismMapStyle.set(false);
+      if (this._minimumZoomDistanceBeforeTourism != null) {
+        cameraController.minimumZoomDistance = this._minimumZoomDistanceBeforeTourism;
+        this._minimumZoomDistanceBeforeTourism = null;
+      }
     } else {
+      // 관광 detail LOD는 4km다. 전역 8km 제한을 그대로 두면 정의만 있고 사용자가
+      // 도달할 수 없는 단계가 되므로, 레이어가 켜진 동안에만 낮추고 OFF에서 정확히 복원한다.
+      if (this._minimumZoomDistanceBeforeTourism == null) {
+        this._minimumZoomDistanceBeforeTourism = cameraController.minimumZoomDistance;
+      }
+      cameraController.minimumZoomDistance = Math.min(
+        this._minimumZoomDistanceBeforeTourism, 4_000,
+      );
       tourismMapStyle.set(true);
     }
     this.applyVisibility();

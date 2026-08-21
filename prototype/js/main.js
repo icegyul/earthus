@@ -9,7 +9,7 @@ import { layerBar } from './layerbar.js';
 import { search } from './search.js';
 import { onboard } from './onboard.js';
 import { weatherPanel } from './ui-weather.js';
-import { tourismSheet } from './ui-tourism.js?v=20260821-v8p3-1';
+import { tourismSheet } from './ui-tourism.js?v=20260821-tourism-density1';
 import { createWeatherEarthSync } from './weather-earth-sync.js';
 import { createWeatherMomentLayer } from './weather-moment-layer.js';
 import { power } from './power.js';

@@ -40,6 +40,7 @@ const uploads = [
   ['js/tourism-density-labels.js', 'text/javascript; charset=utf-8'],
   ['js/layers/tourism-flow.js', 'text/javascript; charset=utf-8'],
   ['js/layers/registry.js', 'text/javascript; charset=utf-8'],
+  ['js/main.js', 'text/javascript; charset=utf-8'],
   ['js/ui-tourism.js', 'text/javascript; charset=utf-8'],
   ['js/ui-source.js', 'text/javascript; charset=utf-8'],
   ['js/v8/provenance-dock.js', 'text/javascript; charset=utf-8'],

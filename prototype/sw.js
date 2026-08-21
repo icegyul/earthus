@@ -70,7 +70,8 @@ self.addEventListener('activate', (e) => {
           if (response) await current.put(request, response);
         }
       }
-      await Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)));
+      await Promise.all(keys.filter(key => key !== CACHE && LEGACY_CACHES.has(key))
+        .map(key => caches.delete(key)));
     })
       .then(() => self.clients.claim())
   );

@@ -5,6 +5,8 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '/Users/fiftyfy14/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs';
+import { assertOfficialTourismSnapshot } from './tourism-official-snapshot-validator.mjs';
+import { validateCanonicalTourismAllocationAudit } from './tourism-density-release-contract.mjs';
 
 const RELEASE = '20260821-tourism-density1';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -33,6 +35,7 @@ const assets = Object.freeze([
   ['js/tourism-density-labels.js', 'text/javascript'],
   ['js/layers/tourism-flow.js', 'text/javascript'],
   ['js/layers/registry.js', 'text/javascript'],
+  ['js/main.js', 'text/javascript'],
   ['js/ui-tourism.js', 'text/javascript'],
   ['js/ui-source.js', 'text/javascript'],
   ['js/v8/provenance-dock.js', 'text/javascript'],
@@ -53,60 +56,9 @@ for (const [publicPath, mime] of assets) {
 }
 console.log(`asset bytes: PASS (${assets.length}/${assets.length}, release ${RELEASE})`);
 
-const catalogByCode = new Map(catalog.places.map(place => [place.code, place]));
-assert.equal(catalog.schemaVersion, 'earthus.tourism-place-catalog.v1');
-assert.equal(catalog.source?.publisher, '서울특별시');
-assert.equal(catalogByCode.size, 121);
-
 function assertOfficialFullSnapshot(snapshot) {
-  assert.equal(snapshot?.schemaVersion, 'earthus.tourism-flow.v1');
-  assert.deepEqual(snapshot?.provider, {
-    id: 'seoul-citydata-ppltn', mode: 'FULL', endpointClass: 'OFFICIAL_PUBLIC_API',
-  });
-  assert.equal(snapshot?.source?.name, '서울특별시 실시간 인구데이터');
-  assert.equal(snapshot?.source?.url,
-    'https://data.seoul.go.kr/dataList/OA-21778/A/1/datasetView.do');
-  assert.equal(snapshot?.coverage?.available, 121);
-  assert.equal(snapshot?.coverage?.total, 121);
-  assert.equal(snapshot?.coverage?.requested, 121);
-  assert.equal(snapshot?.coverage?.responses, 121);
-  assert.equal(snapshot?.coverage?.errorCount, 0);
-  assert.equal(snapshot?.coverage?.fullCoverage, true);
-  assert.equal(snapshot?.places?.length, 121);
-
-  const ids = new Set();
-  const codes = new Set();
-  for (const place of snapshot.places) {
-    const canonical = catalogByCode.get(place.code);
-    assert.ok(canonical, `unknown official code ${place.code}`);
-    assert.equal(place.id, `earthus:tourism:seoul:${place.code}`);
-    assert.equal(ids.has(place.id), false, `duplicate official id ${place.id}`);
-    assert.equal(codes.has(place.code), false, `duplicate official code ${place.code}`);
-    ids.add(place.id);
-    codes.add(place.code);
-    assert.equal(place.nameKo, canonical.nameKo);
-    assert.equal(place.nameEn, canonical.nameEn);
-    assert.equal(place.category, canonical.category);
-    assert.ok(Math.abs(place.position.lat - canonical.lat) <= 1e-6);
-    assert.ok(Math.abs(place.position.lon - canonical.lon) <= 1e-6);
-    assert.equal(place.position.source, '서울시 주요 121장소 영역');
-    assert.equal(place.provenance?.sourceId, 'seoul-citydata-ppltn');
-    assert.equal(place.provenance?.sourceName, '서울특별시 실시간 인구데이터');
-    assert.equal(place.provenance?.sourceUrl,
-      'https://data.seoul.go.kr/dataList/OA-21778/A/1/datasetView.do');
-    assert.equal(place.official?.sourceType, 'OFFICIAL_OBSERVATION');
-    assert.ok(place.forecast?.every(row => row.sourceType === 'OFFICIAL_FORECAST'));
-    assert.equal(place.flow?.direction?.state, 'UNAVAILABLE');
-    assert.equal(place.flow?.direction?.value, null);
-    assert.equal(place.flow?.scalarTrend?.flowDirection, null);
-    for (const forbidden of ['od', 'links', 'edges', 'flowLines', 'route', 'path', 'vector']) {
-      assert.equal(Object.hasOwn(place, forbidden), false, `${place.code} contains ${forbidden}`);
-    }
-  }
-  assert.equal(ids.size, 121);
-  assert.equal(codes.size, 121);
+  return assertOfficialTourismSnapshot(snapshot, catalog);
 }
-
 async function configureContext(context) {
   if (!localSnapshot) return;
   await context.route('**/js/config.local.js', route => route.fulfill({
@@ -208,6 +160,9 @@ async function collect(page) {
       item.weight += Number(row.weight);
       audit.set(row.placeId, item);
     }
+    const allocationAudit = [...audit.entries()]
+      .map(([placeId, row]) => ({ placeId, ...row }))
+      .sort((left, right) => left.placeId.localeCompare(right.placeId));
     const sourceWeightErrors = [...audit.entries()].filter(([, row]) =>
       row.count < 9 || row.count > 25 || Math.abs(row.weight - 1) > 1e-9,
     ).map(([placeId, row]) => ({ placeId, ...row }));
@@ -244,6 +199,7 @@ async function collect(page) {
       snapshot: tourismFlow.snapshot,
       sourcePlaceCount: tourismFlow.snapshot.places.length,
       renderSourceCount: tourismFlow._renderSourceCount,
+      allocationAudit,
       densityCellCount: cells.length,
       occupiedScreenBins: new Set(projected.map(point =>
         `${Math.floor(point.x / 12)}:${Math.floor(point.y / 12)}`)).size,
@@ -273,9 +229,16 @@ async function collect(page) {
 }
 
 function assertOverview(result, viewport) {
-  assertOfficialFullSnapshot(result.snapshot);
+  const official = assertOfficialFullSnapshot(result.snapshot);
+  const allocation = validateCanonicalTourismAllocationAudit(
+    official.canonicalPlaceIds, result.allocationAudit,
+  );
   assert.equal(result.sourcePlaceCount, 121);
   assert.equal(result.renderSourceCount, 121);
+  assert.deepEqual(allocation.errors, [],
+    `${viewport.name} canonical allocation audit ${JSON.stringify(allocation.errors)}`);
+  assert.deepEqual(result.allocationAudit, allocation.audit,
+    `${viewport.name} allocation audit must contain the exact sorted canonical 121 place IDs`);
   assert.ok(result.densityCellCount >= viewport.minCells && result.densityCellCount <= viewport.maxCells,
     `${viewport.name} density cells ${result.densityCellCount}`);
   assert.ok(result.occupiedScreenBins >= 363, `${viewport.name} occupied bins ${result.occupiedScreenBins}`);
@@ -314,6 +277,7 @@ function stableCore(result) {
     sourceText: result.sourceText,
     labelTexts: result.labels.map(label => label.text),
     sourceWeightErrors: result.sourceWeightErrors,
+    allocationAudit: result.allocationAudit,
   };
 }
 

@@ -120,6 +120,11 @@ try {
       })}`);
     }
     await page.locator('#loading').waitFor({ state: 'detached', timeout: 30_000 });
+    const tourismUiModuleUrl = await page.evaluate(() => performance.getEntriesByType('resource')
+      .map(entry => entry.name)
+      .find(url => /\/js\/ui-tourism\.js\?v=/.test(url)) || '');
+    assert.match(tourismUiModuleUrl, /\/js\/ui-tourism\.js\?v=20260821-tourism-density1$/,
+      `${viewport.name} production main must load the final tourism UI module identity`);
     const minimumZoomDistanceBeforeTourism = await page.evaluate(async () => {
       const { viewer } = await import(new URL('js/viewer.js', location.href).href);
       return viewer.scene.screenSpaceCameraController.minimumZoomDistance;

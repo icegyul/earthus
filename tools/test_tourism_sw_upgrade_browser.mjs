@@ -7,8 +7,11 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from '/Users/fiftyfy14/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../prototype');
-const currentCache = 'earthus-shell-2026-08-21-tourism-density1';
-const previousCache = 'earthus-shell-2026-08-20-weather-tourism1';
+const currentCache = 'earthus-shell-2026-08-21-tourism-density2';
+const legacyCaches = [
+  'earthus-shell-2026-08-21-tourism-density1',
+  'earthus-shell-2026-08-20-weather-tourism1',
+];
 const unrelatedCache = 'earthus-unrelated-test-cache';
 const mime = pathname => pathname.endsWith('.js') ? 'text/javascript; charset=utf-8'
   : pathname.endsWith('.webmanifest') ? 'application/manifest+json'
@@ -47,12 +50,14 @@ try {
   const context = await browser.newContext({ serviceWorkers: 'allow' });
   const page = await context.newPage();
   await page.goto(`${origin}/__sw-upgrade-fixture.html`);
-  await page.evaluate(async ({ previousCache, unrelatedCache }) => {
-    const previous = await caches.open(previousCache);
-    await previous.put('/js/legacy-tourism.js', new Response('legacy'));
+  await page.evaluate(async ({ legacyCaches, unrelatedCache }) => {
+    for (const [index, cacheName] of legacyCaches.entries()) {
+      const previous = await caches.open(cacheName);
+      await previous.put(`/js/legacy-tourism-${index}.js`, new Response('legacy'));
+    }
     const unrelated = await caches.open(unrelatedCache);
     await unrelated.put('/sentinel.txt', new Response('keep'));
-  }, { previousCache, unrelatedCache });
+  }, { legacyCaches, unrelatedCache });
   await page.evaluate(async () => {
     const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
     await navigator.serviceWorker.ready;
@@ -69,10 +74,12 @@ try {
   });
   const cachesAfter = await page.evaluate(() => caches.keys());
   assert.ok(cachesAfter.includes(currentCache), 'current shell cache must be retained');
-  assert.equal(cachesAfter.includes(previousCache), false, 'previous shell cache must be deleted');
+  for (const cacheName of legacyCaches) {
+    assert.equal(cachesAfter.includes(cacheName), false, `${cacheName} must be deleted`);
+  }
   assert.ok(cachesAfter.includes(unrelatedCache), 'activation must not delete unrelated cache namespaces');
   await context.close();
-  console.log(`tourism service worker upgrade: PASS (${previousCache} deleted, current retained)`);
+  console.log(`tourism service worker upgrade: PASS (${legacyCaches.join(', ')} deleted, current retained)`);
 } finally {
   await browser.close();
   await new Promise(resolve => server.close(resolve));

@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from '/Users/fiftyfy14/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs';
 
-const release = '20260821-tourism-density1';
+const release = '20260821-tourism-density2';
 const target = process.env.EARTHUS_LIVE_URL || `https://earthus.net/?release=${release}`;
 const executablePath = process.env.EARTHUS_CHROME
   || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -27,9 +27,9 @@ try {
       weatherCss: document.querySelector('link[href*="weather-card-v7.css"]')?.getAttribute('href'),
       tourismCss: document.querySelector('link[href*="tourism-flow.css"]')?.getAttribute('href'),
     }));
-    assert.match(releaseAssets.main || '', /20260821-tourism-density1/);
+    assert.match(releaseAssets.main || '', /20260821-tourism-density2/);
     assert.match(releaseAssets.weatherCss || '', /20260820-wcv7-1/);
-    assert.match(releaseAssets.tourismCss || '', /20260821-tourism-density1/);
+    assert.match(releaseAssets.tourismCss || '', /20260821-tourism-density2/);
 
     // 공개 메뉴를 통해 실제 운영 관광 스냅샷을 받는다. 네트워크 fixture를 쓰지 않는다.
     await page.locator('#menuTab').click();
@@ -47,7 +47,7 @@ try {
       null, { timeout: 20_000 });
     await page.waitForFunction(async () => {
       const { tourismFlow } = await import(new URL(
-        'js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href,
+        'js/layers/tourism-flow.js?v=20260821-tourism-density2', location.href,
       ).href);
       return (tourismFlow.ds?.entities?.values?.length ?? 0) > 0;
     }, null, { timeout: 20_000 });
@@ -55,9 +55,10 @@ try {
 
     const tourism = await page.evaluate(async () => {
       const { tourismFlow } = await import(new URL(
-        'js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href,
+        'js/layers/tourism-flow.js?v=20260821-tourism-density2', location.href,
       ).href);
       const snapshot = window.__tourismLiveSnapshot;
+      const auxiliary = tourismFlow.auxiliary;
       const place = snapshot.places.find(item => item.state !== 'UNAVAILABLE');
       const entities = tourismFlow.ds.entities.values;
       const heights = entities.map(entity => entity.box.dimensions.getValue().z);
@@ -65,9 +66,11 @@ try {
         state: snapshot.state,
         mode: snapshot.provider?.mode,
         coverage: snapshot.coverage,
-        healthMode: snapshot.health?.mode,
-        credentialPool: snapshot.health?.credentialPool,
-        healthAccessibility: snapshot.health?.providers?.tourismAccessibility?.state,
+        healthMode: auxiliary?.health?.mode,
+        credentialPool: auxiliary?.health?.credentialPool,
+        healthAccessibility: auxiliary?.health?.providers?.tourismAccessibility?.state,
+        canonicalHasAuxiliaryKeys: Object.hasOwn(snapshot, 'health')
+          || Object.hasOwn(snapshot, 'ktoSummary'),
         code: place.code,
         observedAt: place.provenance?.observedAt,
         sourceName: place.provenance?.sourceName,
@@ -83,6 +86,7 @@ try {
       };
     });
     assert.ok(['LIVE', 'DEGRADED', 'STALE'].includes(tourism.state), JSON.stringify(tourism));
+    assert.equal(tourism.canonicalHasAuxiliaryKeys, false, JSON.stringify(tourism));
     assert.ok(['FULL', 'SAMPLE'].includes(tourism.mode), JSON.stringify(tourism));
     assert.ok(tourism.coverage.available > 0);
     assert.equal(tourism.coverage.total, 121);
@@ -108,8 +112,8 @@ try {
 
     await page.evaluate(async () => {
       const [{ tourismFlow }, { tourismSheet }] = await Promise.all([
-        import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href).href),
-        import(new URL('js/ui-tourism.js?v=20260821-tourism-density1', location.href).href),
+        import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density2', location.href).href),
+        import(new URL('js/ui-tourism.js?v=20260821-tourism-density2', location.href).href),
       ]);
       await tourismSheet.open(tourismFlow.snapshot.places.find(place => place.state !== 'UNAVAILABLE'));
     });
@@ -181,7 +185,7 @@ try {
       keys: await caches.keys(),
     }));
     assert.match(cacheState.controller, /\/sw\.js$/);
-    assert.ok(cacheState.keys.includes('earthus-shell-2026-08-21-tourism-density1'),
+    assert.ok(cacheState.keys.includes('earthus-shell-2026-08-21-tourism-density2'),
       JSON.stringify(cacheState));
     assert.deepEqual(pageErrors, []);
     await page.screenshot({ path: `/private/tmp/earthus-weather-tourism-live-${viewport.name}.png` });

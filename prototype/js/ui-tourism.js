@@ -50,6 +50,7 @@ function trendText(trend, ko) {
 
 export const tourismSheet = {
   snapshot: null,
+  auxiliary: Object.freeze({ health: null, ktoSummary: null }),
   place: null,
   selectedAt: null,
   safety: null,
@@ -65,6 +66,10 @@ export const tourismSheet = {
         this.place = this.snapshot.places.find(place => place.id === this.place.id) || this.place;
         this.render();
       }
+    });
+    document.addEventListener('earthus:tourism-auxiliary', event => {
+      this.auxiliary = event.detail || Object.freeze({ health: null, ktoSummary: null });
+      if (this.place) this.render();
     });
     document.addEventListener('earthus:tourism-error', event => {
       this.errorCode = event.detail?.code || 'TOURISM_SNAPSHOT_UNAVAILABLE';
@@ -153,8 +158,9 @@ export const tourismSheet = {
     const stateClass = place.state.toLocaleLowerCase();
     const coverage = this.snapshot?.coverage || {};
     const quality = this.snapshot?.quality || {};
-    const health = this.snapshot?.health || null;
-    const ktoRows = ktoSummaryRows(this.snapshot?.ktoSummary || null);
+    const health = this.auxiliary?.health || null;
+    const ktoSummary = this.auxiliary?.ktoSummary || null;
+    const ktoRows = ktoSummaryRows(ktoSummary);
     const barrierFree = ktoRows.find(row => row.id === 'barrierFree');
 
     $('#tourismTitle').textContent = ko ? '관광 밀도' : 'Tourism density';
@@ -232,8 +238,8 @@ export const tourismSheet = {
             ${row.sourceUrl ? `<a href="${esc(row.sourceUrl)}" target="_blank" rel="noopener noreferrer">${ko ? '공식 데이터셋 ↗' : 'Official dataset ↗'}</a>` : ''}
           </article>`).join('')}
         </div>
-        <p>${this.snapshot?.ktoSummary
-          ? `${ko ? '한국관광공사 요약 수신' : 'KTO summary received'} · ${timeText(this.snapshot.ktoSummary.generatedAt, ko)}`
+        <p>${ktoSummary
+          ? `${ko ? '한국관광공사 요약 수신' : 'KTO summary received'} · ${timeText(ktoSummary.generatedAt, ko)}`
           : (ko ? '한국관광공사 수집 결과가 연결되기 전 상태입니다. 값을 만들거나 서울시 자료로 대신 채우지 않습니다.' : 'KTO collection is not connected yet; no value is fabricated or substituted from Seoul data.')}</p>
       </section>
 

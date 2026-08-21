@@ -8,7 +8,7 @@ import { chromium } from '/Users/fiftyfy14/.cache/codex-runtimes/codex-primary-r
 import { assertOfficialTourismSnapshot } from './tourism-official-snapshot-validator.mjs';
 import { validateCanonicalTourismAllocationAudit } from './tourism-density-release-contract.mjs';
 
-const RELEASE = '20260821-tourism-density1';
+const RELEASE = '20260821-tourism-density2';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const target = new URL(process.env.EARTHUS_LIVE_URL
   || `https://earthus.net/?earth=1&earthView=data&earthLayer=tourism&release=${RELEASE}`);
@@ -17,6 +17,12 @@ const executablePath = process.env.EARTHUS_CHROME
   || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const snapshotPath = process.env.EARTHUS_TOURISM_SNAPSHOT || null;
 const localSnapshot = snapshotPath ? await readFile(snapshotPath, 'utf8') : null;
+const localHealth = localSnapshot ? await readFile(
+  process.env.EARTHUS_TOURISM_HEALTH || '/private/tmp/earthus-tourism-health.json', 'utf8',
+) : null;
+const localKtoSummary = localSnapshot ? await readFile(
+  process.env.EARTHUS_TOURISM_KTO_SUMMARY || '/private/tmp/earthus-tourism-kto-summary.json', 'utf8',
+) : null;
 const localConfig = await readFile(
   new URL('../prototype/js/config.local.example.js', import.meta.url), 'utf8',
 );
@@ -69,8 +75,12 @@ async function configureContext(context) {
   await context.route('**/tourism/seoul-flow.json*', route => route.fulfill({
     status: 200, contentType: 'application/json; charset=utf-8', body: localSnapshot,
   }));
-  await context.route('**/tourism/health.json*', route => route.fulfill({ status: 404, body: '{}' }));
-  await context.route('**/tourism/kto/summary.json*', route => route.fulfill({ status: 404, body: '{}' }));
+  await context.route('**/tourism/health.json*', route => route.fulfill({
+    status: 200, contentType: 'application/json; charset=utf-8', body: localHealth,
+  }));
+  await context.route('**/tourism/kto/summary.json*', route => route.fulfill({
+    status: 200, contentType: 'application/json; charset=utf-8', body: localKtoSummary,
+  }));
 }
 
 async function openTourism(page) {
@@ -142,7 +152,7 @@ async function moveCamera(page, height) {
   await page.evaluate(async nextHeight => {
     const [{ viewer }, { tourismFlow }] = await Promise.all([
       import(new URL('js/viewer.js', location.href).href),
-      import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href).href),
+      import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density2', location.href).href),
     ]);
     await new Promise((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error(`camera moveEnd timeout ${nextHeight}`)), 8_000);
@@ -236,6 +246,7 @@ async function collect(page) {
     const heights = cells.map(entity => entity.box.dimensions.getValue(viewer.clock.currentTime).z);
     return {
       snapshot: tourismFlow.snapshot,
+      auxiliary: tourismFlow.auxiliary,
       sourcePlaceCount: tourismFlow.snapshot.places.length,
       renderSourceCount: tourismFlow._renderSourceCount,
       allocationAudit,
@@ -273,6 +284,11 @@ function assertOverview(result, viewport) {
     official.canonicalPlaceIds, result.allocationAudit,
   );
   assert.equal(result.sourcePlaceCount, 121);
+  if (localSnapshot) {
+    assert.equal(result.auxiliary?.health?.state, 'SUCCEEDED');
+    assert.equal(result.auxiliary?.health?.mode, 'FULL');
+    assert.equal(result.auxiliary?.ktoSummary?.provider, 'KTO');
+  }
   assert.equal(result.renderSourceCount, 121);
   assert.deepEqual(allocation.errors, [],
     `${viewport.name} canonical allocation audit ${JSON.stringify(allocation.errors)}`);
@@ -360,7 +376,8 @@ try {
       caches: await caches.keys(),
     }));
     assert.match(serviceWorker.controller, /\/sw\.js$/);
-    assert.ok(serviceWorker.caches.includes('earthus-shell-2026-08-21-tourism-density1'));
+    assert.ok(serviceWorker.caches.includes('earthus-shell-2026-08-21-tourism-density2'));
+    assert.equal(serviceWorker.caches.includes('earthus-shell-2026-08-21-tourism-density1'), false);
     assert.equal(serviceWorker.caches.includes('earthus-shell-2026-08-20-weather-tourism1'), false);
     assert.deepEqual(runtimeErrors, []);
     await page.screenshot({

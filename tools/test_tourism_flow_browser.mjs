@@ -123,7 +123,7 @@ try {
     const tourismUiModuleUrl = await page.evaluate(() => performance.getEntriesByType('resource')
       .map(entry => entry.name)
       .find(url => /\/js\/ui-tourism\.js\?v=/.test(url)) || '');
-    assert.match(tourismUiModuleUrl, /\/js\/ui-tourism\.js\?v=20260821-tourism-density1$/,
+    assert.match(tourismUiModuleUrl, /\/js\/ui-tourism\.js\?v=20260821-tourism-density2$/,
       `${viewport.name} production main must load the final tourism UI module identity`);
     const minimumZoomDistanceBeforeTourism = await page.evaluate(async () => {
       const { viewer } = await import(new URL('js/viewer.js', location.href).href);
@@ -178,7 +178,7 @@ try {
     await page.waitForTimeout(1600);
     await page.waitForFunction(async () => {
       const { store } = window.__e;
-      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href).href);
+      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density2', location.href).href);
       return store.isOn('tourism') && tourismFlow.snapshot?.places?.length === 2
         && tourismFlow.ds?.entities?.values?.length > 0 && tourismFlow.ds.show;
     }, null, { timeout: 15_000 });
@@ -189,7 +189,7 @@ try {
         import(new URL('js/viewer.js', location.href).href),
         import(new URL('js/intro.js', location.href).href),
       ]);
-      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href).href);
+      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density2', location.href).href);
       const heights = tourismFlow.ds.entities.values.map(entity => entity.box.dimensions.getValue().z);
       return { cellCount: tourismFlow.count(), rawCellCount: tourismFlow.ds.entities.values.length,
         labelCount: tourismFlow.labelDs?.entities?.values?.length ?? 0, tourismOn: store.isOn('tourism'),
@@ -205,7 +205,11 @@ try {
         cellMeters: tourismFlow.ds.entities.values[0]?._tourismVisual?.cellMeters,
         title: document.querySelector('#tourismMapUi h2')?.textContent?.trim(),
         dominantName: tourismFlow.ds.entities.values[0]?._tourism?.nameKo,
-        contributorCount: tourismFlow.ds.entities.values[0]?._tourismContributors?.length };
+        contributorCount: tourismFlow.ds.entities.values[0]?._tourismContributors?.length,
+        canonicalHasAuxiliaryKeys: Object.hasOwn(tourismFlow.snapshot, 'health')
+          || Object.hasOwn(tourismFlow.snapshot, 'ktoSummary'),
+        auxiliaryHealthState: tourismFlow.auxiliary?.health?.state,
+        auxiliaryKtoProvider: tourismFlow.auxiliary?.ktoSummary?.provider };
     });
     initial.runtimeErrors = [...runtimeErrors];
     initial.consoleErrors = [...consoleErrors];
@@ -223,13 +227,16 @@ try {
     assert.equal(initial.nonBoxGraphics, 0);
     assert.equal(initial.dominantName, place.nameKo);
     assert.ok(initial.contributorCount >= 1);
+    assert.equal(initial.canonicalHasAuxiliaryKeys, false);
+    assert.equal(initial.auxiliaryHealthState, 'OK');
+    assert.equal(initial.auxiliaryKtoProvider, 'KTO');
     assert.ok(initial.cameraHeight <= 28_000,
       `${viewport.name} tourism relief is too far away: ${JSON.stringify(initial)}`);
     assert.ok(initial.cameraPitchDegrees >= -58 && initial.cameraPitchDegrees <= -45,
       `${viewport.name} tourism relief needs an oblique view: ${JSON.stringify(initial)}`);
     const lodCells = await page.evaluate(async current => {
       const [{ tourismFlow }, { viewer }] = await Promise.all([
-        import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href).href),
+        import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density2', location.href).href),
         import(new URL('js/viewer.js', location.href).href),
       ]);
       const observe = height => {
@@ -290,7 +297,7 @@ try {
 
     await page.locator('#tourismMapUi [data-tourism-map-time]').nth(1).click();
     const mapForecast = await page.evaluate(async () => {
-      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href).href);
+      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density2', location.href).href);
       const allocations = tourismFlow.ds.entities.values.flatMap(entity => entity._tourismContributors || []);
       return {
         height: Math.max(...tourismFlow.ds.entities.values.map(entity => entity.box.dimensions.getValue().z)),
@@ -311,7 +318,7 @@ try {
     await page.waitForTimeout(250);
     const pickedCell = await page.evaluate(async () => {
       const [{ tourismFlow }, { viewer }] = await Promise.all([
-        import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href).href),
+        import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density2', location.href).href),
         import(new URL('js/viewer.js', location.href).href),
       ]);
       viewer.render();
@@ -354,7 +361,7 @@ try {
     assert.match(await page.locator('#tourismBody').innerText(), new RegExp(place.nameKo));
     await page.locator('#tourismSheet [data-tourism-time]').nth(1).click();
     const forecast = await page.evaluate(async () => {
-      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href).href);
+      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density2', location.href).href);
       const body = document.getElementById('tourismBody');
       return { height: tourismFlow.ds.entities.values[0].box.dimensions.getValue().z,
         text: body.innerText, overflow: document.documentElement.scrollWidth - innerWidth,
@@ -394,7 +401,7 @@ try {
       store.toggle('tourism');
     });
     const off = await page.evaluate(async () => {
-      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density1', location.href).href);
+      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-tourism-density2', location.href).href);
       const { viewer } = await import(new URL('js/viewer.js', location.href).href);
       return { show: tourismFlow.ds.show, labelShow: tourismFlow.labelDs.show,
         count: tourismFlow.count(), abort: tourismFlow._abort,

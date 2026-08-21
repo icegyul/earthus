@@ -58,6 +58,7 @@ export const tourismFlow = {
   ds: null,
   labelDs: null,
   snapshot: null,
+  auxiliary: Object.freeze({ health: null, ktoSummary: null }),
   selectedAt: null,
   _abort: null,
   _focusedOnce: false,
@@ -110,25 +111,31 @@ export const tourismFlow = {
       if (!response.ok) throw new Error(`tourism HTTP ${response.status}`);
       const snapshot = await response.json();
       validateTourismSnapshot(snapshot);
+      let health = null;
+      let ktoSummary = null;
       try {
         const healthResponse = await fetchT(`${API.TOURISM}/health.json`, {
           timeout: 5_000, signal: controller.signal, cache: 'no-cache',
         });
-        if (healthResponse.ok) snapshot.health = await healthResponse.json();
+        if (healthResponse.ok) health = await healthResponse.json();
       } catch (_) { /* health 보조 파일 실패가 현재 공식 관측까지 지우면 안 된다. */ }
       try {
         const ktoResponse = await fetchT(`${API.TOURISM}/kto/summary.json`, {
           timeout: 5_000, signal: controller.signal, cache: 'no-cache',
         });
         if (ktoResponse.ok) {
-          const ktoSummary = await ktoResponse.json();
+          ktoSummary = await ktoResponse.json();
           validateKtoSummary(ktoSummary);
-          snapshot.ktoSummary = ktoSummary;
         }
       } catch (_) {
+        ktoSummary = null;
         // KTO 미연결·계약 불일치는 서울시 현재 관측을 지우지 않고 별도 상태로 보여준다.
       }
+      // ⚠️⚠️ 공식 121곳 snapshot에 health/KTO를 덧붙이면 엄격한 공식 스키마 검증이
+      // 운영에서만 실패했다. 보조 응답은 별도 sidecar로 보존하고 정본 bytes는 건드리지 않는다.
+      const auxiliary = Object.freeze({ health, ktoSummary });
       this.snapshot = snapshot;
+      this.auxiliary = auxiliary;
       this._adminByPlaceId = new Map();
       const adminEntriesPromise = Promise.all((snapshot.places || []).map(async place => {
         const lat = Number(place?.position?.lat);
@@ -138,6 +145,7 @@ export const tourismFlow = {
       }));
       this.renderAt(this.selectedAt);
       document.dispatchEvent(new CustomEvent('earthus:tourism-snapshot', { detail: snapshot }));
+      document.dispatchEvent(new CustomEvent('earthus:tourism-auxiliary', { detail: auxiliary }));
       if (!this._focusedOnce && snapshot.places?.some(place => place.position)) {
         this._focusedOnce = true;
         // 첫 화면 위치·인트로 flight가 아직 남아 있으면 관광지 확대와 다시 경쟁한다.

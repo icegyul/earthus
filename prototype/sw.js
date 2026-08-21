@@ -15,8 +15,9 @@
  *     시작하면 그 화성 세션 복원에 필요한 exact catalog/detail texture만 제한 저장한다.
  */
 
-const CACHE = 'earthus-shell-2026-08-21-tourism-density1';
+const CACHE = 'earthus-shell-2026-08-21-tourism-density2';
 const LEGACY_CACHES = new Set([
+  'earthus-shell-2026-08-21-tourism-density1',
   'earthus-shell-2026-08-20-weather-tourism1',
   'earthus-shell-2026-08-20-hobby-ocean1',
   'earthus-shell-2026-08-13-publicui1',

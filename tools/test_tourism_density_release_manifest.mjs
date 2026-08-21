@@ -68,4 +68,20 @@ assert.deepEqual(calls.at(-1), [
 ], 'deploy must invalidate only the root alias and exact scoped public paths');
 assert.equal(calls.length, uploads.length + 1, 'no extra aws calls are allowed');
 
-console.log(`tourism density release manifest: PASS (${uploads.length} scoped uploads)`);
+const [indexHtml, mainModule, registryModule, serviceWorker] = await Promise.all([
+  readFile(path.join(root, 'prototype/index.html'), 'utf8'),
+  readFile(path.join(root, 'prototype/js/main.js'), 'utf8'),
+  readFile(path.join(root, 'prototype/js/layers/registry.js'), 'utf8'),
+  readFile(path.join(root, 'prototype/sw.js'), 'utf8'),
+]);
+for (const [name, source] of [
+  ['index.html', indexHtml], ['main.js', mainModule], ['registry.js', registryModule],
+]) {
+  assert.match(source, /20260821-tourism-density2/, `${name} must use release token 2`);
+  assert.doesNotMatch(source, /20260821-tourism-density1/, `${name} must not retain release token 1`);
+}
+assert.match(serviceWorker, /const CACHE = 'earthus-shell-2026-08-21-tourism-density2'/);
+assert.match(serviceWorker, /'earthus-shell-2026-08-21-tourism-density1'/,
+  'density1 must remain only as an explicit legacy cleanup cache');
+
+console.log(`tourism density release manifest: PASS (${uploads.length} scoped uploads, token 2)`);

@@ -20,9 +20,156 @@ const snapshot = snapshotPath
     return response.json();
   });
 
-assert.equal(snapshot.coverage?.available, 121, 'full official snapshot coverage is required');
-assert.equal(snapshot.coverage?.fullCoverage, true, 'partial snapshot must not pass density QA');
-assert.equal(snapshot.places?.length, 121, 'full official snapshot must contain 121 places');
+const OFFICIAL_SNAPSHOT_CONTRACT = Object.freeze({
+  schemaVersion: 'earthus.tourism-flow.v1',
+  providerId: 'seoul-citydata-ppltn',
+  providerMode: 'FULL',
+  endpointClass: 'OFFICIAL_PUBLIC_API',
+  sourceName: '서울특별시 실시간 인구데이터',
+  sourceUrl: 'https://data.seoul.go.kr/dataList/OA-21778/A/1/datasetView.do',
+  positionSource: '서울시 주요 121장소 영역',
+});
+const FORBIDDEN_MOVEMENT_SHAPE_KEYS = new Set([
+  'od', 'origin', 'destination', 'link', 'links', 'edge', 'edges',
+  'flowLine', 'flowLines',
+]);
+
+function requireOfficial(condition, code) {
+  if (!condition) throw new Error(code);
+}
+
+function assertNoMovementShapes(value) {
+  if (!value || typeof value !== 'object') return;
+  for (const [key, child] of Object.entries(value)) {
+    if (FORBIDDEN_MOVEMENT_SHAPE_KEYS.has(key)) throw new Error('MOVEMENT_SHAPE_FORBIDDEN');
+    if (key === 'flowDirection' && child != null) {
+      throw new Error('MOVEMENT_DIRECTION_FORBIDDEN');
+    }
+    assertNoMovementShapes(child);
+  }
+}
+
+function assertOfficialFullSnapshot(candidate) {
+  requireOfficial(candidate?.schemaVersion === OFFICIAL_SNAPSHOT_CONTRACT.schemaVersion,
+    'OFFICIAL_SCHEMA_INVALID');
+  requireOfficial(candidate?.provider?.id === OFFICIAL_SNAPSHOT_CONTRACT.providerId,
+    'OFFICIAL_PROVIDER_INVALID');
+  requireOfficial(candidate?.provider?.mode === OFFICIAL_SNAPSHOT_CONTRACT.providerMode,
+    'OFFICIAL_PROVIDER_MODE_INVALID');
+  requireOfficial(candidate?.provider?.endpointClass === OFFICIAL_SNAPSHOT_CONTRACT.endpointClass,
+    'OFFICIAL_ENDPOINT_INVALID');
+  requireOfficial(candidate?.source?.name === OFFICIAL_SNAPSHOT_CONTRACT.sourceName
+    && candidate?.source?.url === OFFICIAL_SNAPSHOT_CONTRACT.sourceUrl,
+  'OFFICIAL_SOURCE_URL_INVALID');
+  requireOfficial(candidate?.coverage?.available === 121
+    && candidate?.coverage?.total === 121
+    && candidate?.coverage?.requested === 121
+    && candidate?.coverage?.responses === 121
+    && candidate?.coverage?.errorCount === 0
+    && candidate?.coverage?.fullCoverage === true,
+  'OFFICIAL_COVERAGE_INVALID');
+  requireOfficial(Array.isArray(candidate?.places) && candidate.places.length === 121,
+    'OFFICIAL_PLACE_COUNT_INVALID');
+
+  const ids = new Set();
+  const codes = new Set();
+  for (const place of candidate.places) {
+    requireOfficial(typeof place?.id === 'string', 'OFFICIAL_PLACE_ID_INVALID');
+    requireOfficial(!ids.has(place.id), 'OFFICIAL_PLACE_ID_DUPLICATE');
+    ids.add(place.id);
+    requireOfficial(typeof place?.code === 'string' && /^POI\d{3}$/.test(place.code),
+      'OFFICIAL_PLACE_CODE_INVALID');
+    requireOfficial(!codes.has(place.code), 'OFFICIAL_PLACE_CODE_DUPLICATE');
+    codes.add(place.code);
+  }
+  for (const place of candidate.places) {
+    requireOfficial(place.id === `earthus:tourism:seoul:${place.code}`,
+      'OFFICIAL_PLACE_ID_INVALID');
+    requireOfficial(place?.position?.source === OFFICIAL_SNAPSHOT_CONTRACT.positionSource
+      && place?.provenance?.sourceId === OFFICIAL_SNAPSHOT_CONTRACT.providerId
+      && place?.provenance?.sourceName === OFFICIAL_SNAPSHOT_CONTRACT.sourceName
+      && place?.provenance?.sourceUrl === OFFICIAL_SNAPSHOT_CONTRACT.sourceUrl
+      && place?.provenance?.schemaVersion === OFFICIAL_SNAPSHOT_CONTRACT.schemaVersion,
+    'OFFICIAL_PLACE_PROVENANCE_INVALID');
+    requireOfficial(place?.official?.sourceType === 'OFFICIAL_OBSERVATION',
+      'OFFICIAL_OBSERVATION_SOURCE_TYPE_INVALID');
+    requireOfficial(Array.isArray(place?.forecast)
+      && place.forecast.every(row => row?.sourceType === 'OFFICIAL_FORECAST'),
+    'OFFICIAL_FORECAST_SOURCE_TYPE_INVALID');
+    requireOfficial(place?.flow?.direction?.state === 'UNAVAILABLE'
+      && place?.flow?.direction?.value == null
+      && place?.flow?.scalarTrend?.flowDirection == null,
+    'MOVEMENT_DIRECTION_FORBIDDEN');
+    assertNoMovementShapes(place);
+  }
+}
+
+const invalidOfficialSnapshotCases = [
+  ['schema', /OFFICIAL_SCHEMA_INVALID/, candidate => {
+    candidate.schemaVersion = 'earthus.synthetic-tourism.v1';
+  }],
+  ['provider', /OFFICIAL_PROVIDER_INVALID/, candidate => {
+    candidate.provider.id = 'self-declared-synthetic-provider';
+  }],
+  ['provider mode', /OFFICIAL_PROVIDER_MODE_INVALID/, candidate => {
+    candidate.provider.mode = 'SAMPLE';
+  }],
+  ['endpoint contract', /OFFICIAL_ENDPOINT_INVALID/, candidate => {
+    candidate.provider.endpointClass = 'SYNTHETIC_FIXTURE';
+  }],
+  ['public source URL', /OFFICIAL_SOURCE_URL_INVALID/, candidate => {
+    candidate.source.url = 'https://example.test/self-declared.json';
+  }],
+  ['unique place IDs', /OFFICIAL_PLACE_ID_DUPLICATE/, candidate => {
+    candidate.places[1].id = candidate.places[0].id;
+  }],
+  ['unique place codes', /OFFICIAL_PLACE_CODE_DUPLICATE/, candidate => {
+    candidate.places[1].code = candidate.places[0].code;
+  }],
+  ['per-place provenance', /OFFICIAL_PLACE_PROVENANCE_INVALID/, candidate => {
+    candidate.places[0].provenance.sourceId = 'synthetic-provider';
+  }],
+  ['observation source type', /OFFICIAL_OBSERVATION_SOURCE_TYPE_INVALID/, candidate => {
+    candidate.places[0].official.sourceType = 'SYNTHETIC_OBSERVATION';
+  }],
+  ['forecast source type', /OFFICIAL_FORECAST_SOURCE_TYPE_INVALID/, candidate => {
+    candidate.places[0].forecast[0].sourceType = 'SYNTHETIC_FORECAST';
+  }],
+  ['OD shape', /MOVEMENT_SHAPE_FORBIDDEN/, candidate => {
+    candidate.places[0].od = [{ from: 'POI001', to: 'POI002' }];
+  }],
+  ['direction shape', /MOVEMENT_DIRECTION_FORBIDDEN/, candidate => {
+    candidate.places[0].flow.direction = { state: 'READY', value: { bearing: 90 } };
+  }],
+  ['link shape', /MOVEMENT_SHAPE_FORBIDDEN/, candidate => {
+    candidate.places[0].links = [{ to: 'POI002' }];
+  }],
+  ['edge shape', /MOVEMENT_SHAPE_FORBIDDEN/, candidate => {
+    candidate.places[0].edges = [{ from: 'POI001', to: 'POI002' }];
+  }],
+  ['flow-line shape', /MOVEMENT_SHAPE_FORBIDDEN/, candidate => {
+    candidate.places[0].flowLines = [[126.9, 37.5], [127.0, 37.6]];
+  }],
+];
+const acceptedInvalidSnapshots = [];
+const wrongInvalidSnapshotErrors = [];
+for (const [label, expectedError, mutate] of invalidOfficialSnapshotCases) {
+  const candidate = structuredClone(snapshot);
+  mutate(candidate);
+  try {
+    assertOfficialFullSnapshot(candidate);
+    acceptedInvalidSnapshots.push(label);
+  } catch (error) {
+    if (!expectedError.test(String(error?.message || error))) {
+      wrongInvalidSnapshotErrors.push({ label, error: String(error?.message || error) });
+    }
+  }
+}
+assert.deepEqual(acceptedInvalidSnapshots, [],
+  `invalid 121-row snapshots accepted by official visual QA: ${acceptedInvalidSnapshots.join(', ')}`);
+assert.deepEqual(wrongInvalidSnapshotErrors, [],
+  `invalid snapshots rejected for the wrong reason: ${JSON.stringify(wrongInvalidSnapshotErrors)}`);
+assertOfficialFullSnapshot(snapshot);
 const forecastAt = [...new Set(snapshot.places.flatMap(place =>
   (place.forecast || []).filter(row => row.rank === 4).map(row => row.at),
 ))].sort()[0];
@@ -31,6 +178,7 @@ console.log(`snapshot: ${JSON.stringify({
   input: snapshotPath || snapshotUrl,
   loadedAt,
   generatedAt: snapshot.generatedAt,
+  state: snapshot.state,
   sourceUrl: snapshot.source?.url,
   available: snapshot.coverage.available,
 })}`);
@@ -99,6 +247,24 @@ async function collectView(page) {
     }, {});
     const sourceToggle = document.querySelector('#provenanceDock .pd-toggle');
     const sourceStyle = sourceToggle ? getComputedStyle(sourceToggle) : null;
+    const timeline = document.querySelector('.tm-timeline');
+    const sourceRect = sourceToggle?.getBoundingClientRect() || null;
+    const timelineRect = timeline?.getBoundingClientRect() || null;
+    const rect = value => value ? {
+      left: value.left, top: value.top, right: value.right, bottom: value.bottom,
+      width: value.width, height: value.height,
+    } : null;
+    const intersects = (left, right) => Boolean(left && right
+      && left.left < right.right && left.right > right.left
+      && left.top < right.bottom && left.bottom > right.top);
+    const visibleTimelineControlRects = [...(timeline?.querySelectorAll('button') || [])]
+      .filter(button => {
+        const style = getComputedStyle(button);
+        const bounds = button.getBoundingClientRect();
+        return style.display !== 'none' && style.visibility !== 'hidden'
+          && bounds.width > 0 && bounds.height > 0;
+      })
+      .map(button => button.getBoundingClientRect());
     return {
       sourcePlaceCount: tourismFlow.snapshot.places.length,
       renderSourceCount: tourismFlow._renderSourceCount,
@@ -129,6 +295,15 @@ async function collectView(page) {
       sourceBackground: sourceStyle?.backgroundColor || null,
       sourceBorder: sourceStyle?.borderTopWidth || null,
       sourceRadius: sourceStyle?.borderRadius || null,
+      sourceRect: rect(sourceRect),
+      timelineRect: rect(timelineRect),
+      visibleTimelineControlCount: visibleTimelineControlRects.length,
+      sourceInsideViewport: Boolean(sourceRect
+        && sourceRect.left >= 0 && sourceRect.top >= 0
+        && sourceRect.right <= innerWidth && sourceRect.bottom <= innerHeight),
+      sourceTimelineOverlap: intersects(sourceRect, timelineRect),
+      sourceTimelineControlOverlap: visibleTimelineControlRects
+        .some(controlRect => intersects(sourceRect, controlRect)),
       counters: { ...window.__tourismDensityE2E },
     };
   });
@@ -234,6 +409,14 @@ try {
         `${viewport.name} ${level.name} duplicate labels`);
       assert.equal(levels[level.name].overflow, 0,
         `${viewport.name} ${level.name} horizontal overflow`);
+      assert.equal(levels[level.name].sourceInsideViewport, true,
+        `${viewport.name} ${level.name} source toggle must stay inside viewport: ${JSON.stringify(levels[level.name])}`);
+      assert.ok(levels[level.name].visibleTimelineControlCount > 0,
+        `${viewport.name} ${level.name} timeline controls must remain visible`);
+      assert.equal(levels[level.name].sourceTimelineOverlap, false,
+        `${viewport.name} ${level.name} source toggle must not overlap timeline: ${JSON.stringify(levels[level.name])}`);
+      assert.equal(levels[level.name].sourceTimelineControlOverlap, false,
+        `${viewport.name} ${level.name} source toggle must not overlap visible timeline controls: ${JSON.stringify(levels[level.name])}`);
       if (level.name === 'overview' || level.name === 'detail') {
         await page.evaluate(at => document.dispatchEvent(new CustomEvent('earthus:tourism-time', {
           detail: { at },

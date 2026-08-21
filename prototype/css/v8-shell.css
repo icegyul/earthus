@@ -94,6 +94,12 @@
 }
 #provenanceDock .pd-credits[hidden]{display:none!important}
 
+/* 받은 지적: 관광 출처 한 줄이 하단 시각 선택과 겹쳤다.
+   관광 화면에서만 같은 좌하단 축을 유지한 채 시각 선택 높이 위로 올린다. */
+body:has(#tourismMapUi[aria-hidden="false"]) #provenanceDock{
+  bottom:max(88px,calc(env(safe-area-inset-bottom) + 78px));
+}
+
 @media (max-width:640px){
   #provenanceDock{width:min(270px,calc(100vw - 76px));left:max(8px,env(safe-area-inset-left));bottom:max(8px,env(safe-area-inset-bottom))}
   #provenanceDock .pd-toggle{padding:6px 4px}

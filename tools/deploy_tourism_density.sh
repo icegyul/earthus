@@ -32,6 +32,8 @@ upload js/tourism-density-grid.js 'text/javascript; charset=utf-8'
 upload js/tourism-density-labels.js 'text/javascript; charset=utf-8'
 upload js/layers/tourism-flow.js 'text/javascript; charset=utf-8'
 upload js/layers/registry.js 'text/javascript; charset=utf-8'
+upload js/i18n.js 'text/javascript; charset=utf-8'
+upload js/layerbar.js 'text/javascript; charset=utf-8'
 upload js/main.js 'text/javascript; charset=utf-8'
 upload js/ui-tourism.js 'text/javascript; charset=utf-8'
 upload js/ui-source.js 'text/javascript; charset=utf-8'
@@ -42,6 +44,7 @@ aws cloudfront create-invalidation \
   --paths '/' '/index.html' '/sw.js' '/css/tourism-flow.css' '/css/v8-shell.css' \
     '/js/tourism-flow-contract.js' '/js/tourism-density-grid.js' \
     '/js/tourism-density-labels.js' '/js/layers/tourism-flow.js' \
-    '/js/layers/registry.js' '/js/main.js' '/js/ui-tourism.js' '/js/ui-source.js' \
+    '/js/layers/registry.js' '/js/i18n.js' '/js/layerbar.js' '/js/main.js' \
+    '/js/ui-tourism.js' '/js/ui-source.js' \
     '/js/v8/provenance-dock.js' \
   --output json

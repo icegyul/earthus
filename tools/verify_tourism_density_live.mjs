@@ -35,6 +35,8 @@ const assets = Object.freeze([
   ['js/tourism-density-labels.js', 'text/javascript'],
   ['js/layers/tourism-flow.js', 'text/javascript'],
   ['js/layers/registry.js', 'text/javascript'],
+  ['js/i18n.js', 'text/javascript'],
+  ['js/layerbar.js', 'text/javascript'],
   ['js/main.js', 'text/javascript'],
   ['js/ui-tourism.js', 'text/javascript'],
   ['js/ui-source.js', 'text/javascript'],
@@ -96,6 +98,43 @@ async function openTourism(page) {
   await page.waitForFunction(() => /^출처:\s*서울특별시 실시간 인구데이터 · \d{2}:\d{2} 자료$/.test(
     document.querySelector('#provenanceDock .pd-toggle')?.innerText?.replace(/\s+/g, ' ').trim() || '',
   ), null, { timeout: 10_000 });
+  await page.evaluate(() => document.dispatchEvent(new CustomEvent('earthus:close-menu')));
+}
+
+async function assertPublicMenuCopy(page) {
+  await page.waitForFunction(() => window.__e?.store, null, { timeout: 30_000 });
+  await page.locator('#loading').waitFor({ state: 'detached', timeout: 30_000 });
+  await page.locator('#menuTab').click();
+  const travelButton = page.locator('#menuMain [data-open="travel"]');
+  const koreanMenu = (await travelButton.innerText()).replace(/\s+/g, ' ').trim();
+  assert.match(koreanMenu, /관광 밀도/);
+  assert.doesNotMatch(koreanMenu, /관광 흐름|3D 블록/);
+  assert.equal((await page.locator('#tourismTitle').textContent()).trim(), '관광 밀도');
+
+  await page.evaluate(async () => {
+    const { i18n } = await import(new URL('js/i18n.js', location.href).href);
+    i18n.setLang('en');
+  });
+  const englishMenu = (await travelButton.innerText()).replace(/\s+/g, ' ').trim();
+  assert.match(englishMenu, /Tourism density/);
+  assert.doesNotMatch(englishMenu, /Tourism flow|3D blocks?/i);
+  await travelButton.click();
+  const englishPanel = (await page.locator('#layerStrip').innerText()).replace(/\s+/g, ' ').trim();
+  assert.match(englishPanel, /Tourism density/);
+  assert.match(englishPanel, /regional density cells/);
+  assert.doesNotMatch(englishPanel, /Tourism flow|3D blocks?/i);
+  await page.keyboard.press('Escape');
+
+  await page.evaluate(async () => {
+    const { i18n } = await import(new URL('js/i18n.js', location.href).href);
+    i18n.setLang('ko');
+  });
+  await travelButton.click();
+  const koreanPanel = (await page.locator('#layerStrip').innerText()).replace(/\s+/g, ' ').trim();
+  assert.match(koreanPanel, /관광 밀도/);
+  assert.match(koreanPanel, /지역 밀도 셀/);
+  assert.doesNotMatch(koreanPanel, /관광 흐름|3D 블록/);
+  await page.keyboard.press('Escape');
   await page.evaluate(() => document.dispatchEvent(new CustomEvent('earthus:close-menu')));
 }
 
@@ -294,6 +333,7 @@ try {
     page.on('pageerror', error => runtimeErrors.push(error.message));
 
     await page.goto(target.href, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    await assertPublicMenuCopy(page);
     await openTourism(page);
     await moveCamera(page, 26_000);
     const initial = await collect(page);
@@ -308,6 +348,7 @@ try {
     await page.evaluate(() => navigator.serviceWorker.ready);
     await page.reload({ waitUntil: 'domcontentloaded', timeout: 30_000 });
     await page.waitForFunction(() => navigator.serviceWorker?.controller, null, { timeout: 15_000 });
+    await assertPublicMenuCopy(page);
     await openTourism(page);
     await moveCamera(page, 26_000);
     const reloaded = await collect(page);

@@ -137,6 +137,28 @@ try {
     assert.match(travelMenuText, /관광 밀도/);
     assert.doesNotMatch(travelMenuText, /관광 흐름/);
     assert.equal((await page.locator('#tourismTitle').textContent()).trim(), '관광 밀도');
+
+    // i18n.js와 layerbar.js가 함께 최신이어야 영어 공개 메뉴도 같은 제품명을 쓴다.
+    await page.evaluate(async () => {
+      const { i18n } = await import(new URL('js/i18n.js', location.href).href);
+      i18n.setLang('en');
+    });
+    const englishTravelMenuText = (await page.locator('#menuMain [data-open="travel"]').innerText())
+      .replace(/\s+/g, ' ').trim();
+    assert.match(englishTravelMenuText, /Tourism density/);
+    assert.doesNotMatch(englishTravelMenuText, /Tourism flow|3D blocks?/i);
+    await page.locator('#menuMain [data-open="travel"]').click();
+    const englishTravelPanelText = (await page.locator('#layerStrip').innerText())
+      .replace(/\s+/g, ' ').trim();
+    assert.match(englishTravelPanelText, /Tourism density/);
+    assert.match(englishTravelPanelText, /regional density cells/);
+    assert.doesNotMatch(englishTravelPanelText, /Tourism flow|3D blocks?/i);
+    await page.keyboard.press('Escape');
+    await page.evaluate(async () => {
+      const { i18n } = await import(new URL('js/i18n.js', location.href).href);
+      i18n.setLang('ko');
+    });
+
     await page.locator('#menuMain [data-open="travel"]').click();
     const travelPanel = page.locator('#layerStrip');
     await travelPanel.locator('.ly-purpose-intro').waitFor({ state: 'visible' });

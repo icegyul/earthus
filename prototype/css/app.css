@@ -641,12 +641,6 @@ body.scene-space #hud,body.scene-space #hudShow{top:max(66px,calc(env(safe-area-
 .mm-space-route.mm-soon{cursor:default;color:rgba(242,245,248,.58);opacity:.72}
 .mm-space-route.mm-soon:hover{background:none;opacity:.72}
 .mm-state{font:600 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#8bd8ec;white-space:nowrap}
-.mm-scene-fold{color:rgba(242,245,248,.72);background:rgba(255,255,255,.025)}
-/* `.mm-item{display:flex}`가 hidden의 기본 display:none보다 강해지는 환경을 막는다. */
-.mm-scene-fold[hidden]{display:none}
-.mm-scene-fold .mm-label{display:grid;gap:3px}
-.mm-scene-fold .mm-label b{font-size:11px;font-weight:550;color:var(--paper)}
-.mm-scene-fold .mm-label small{font-size:8.5px;line-height:1.25;color:var(--fog)}
 .mm-ico{ width:22px; line-height:0; flex:none; display:grid; place-items:center; }
 .mm-brand-ico{display:grid;place-items:center;width:19px;height:19px;border:1px solid rgba(139,216,236,.68);border-radius:50%;color:#9fe6f5;font:650 11px/19px ui-monospace,SFMono-Regular,Menlo,monospace}
 .mm-label{ flex:1; }
@@ -786,15 +780,6 @@ body.scene-space #hud,body.scene-space #hudShow{top:max(66px,calc(env(safe-area-
   grid-column:1/-1; margin-top:2px; padding:2px;
   font-size:9.5px; letter-spacing:.06em; opacity:.42;
 }
-.ly-all-toggle{
-  grid-column:1/-1; min-height:44px; display:flex; align-items:center;
-  justify-content:space-between; padding:0 11px; margin-top:4px; border-radius:9px;
-  color:rgba(242,245,248,.78); background:rgba(255,255,255,.035);
-  border:1px solid rgba(255,255,255,.10); cursor:pointer; font-size:10.5px;
-}
-.ly-all-toggle i{ font-style:normal; font-size:15px; opacity:.5; }
-.ly-all-toggle:hover{ background:rgba(255,255,255,.07); }
-.ly-all-toggle:focus-visible{ outline:2px solid #9fe6f5; outline-offset:2px; }
 .ly-search{ grid-column:1/-1; display:block; }
 .ly-search input{
   width:100%; min-height:44px; padding:0 11px; border-radius:9px;
@@ -2201,10 +2186,8 @@ body.is-ambient #windLegend.on{ opacity:0; }
 .out-note{ color:var(--dim); font-size:11px; line-height:1.7; margin:14px 0 0 }
 .out-note b{ color:var(--fog); font-weight:600 }
 
-/* ── OCEAN 공개 허브 ────────────────────────────────────────
-   독립 OCEAN 메뉴가 여는 해양 레이어·Vertical 화면이며 취미 패널은 보조 바로가기다. */
-.mm-ocean-entry{ border-block:1px solid rgba(79,208,224,.13) }
-.mm-ocean-entry .mm-ico{ color:#65dce5 }
+/* ── 취미 안의 바다 상세 화면 ──────────────────────────────
+   My Ocean·선박처럼 한 단계 더 필요한 내부 화면이다. 1단 OCEAN 메뉴는 없다. */
 .mm-label small{ display:block; margin-top:2px; color:var(--dim); font-size:9.5px; font-weight:450 }
 .ocean-sheet{ --ocean:#64dce4; --ocean-soft:rgba(100,220,228,.1); }
 .ocean-sheet>h3{ display:flex; align-items:center; gap:9px; letter-spacing:.09em }

@@ -10,7 +10,7 @@
 }
 .dr-panel{position:static;width:100%;overflow:visible}
 .dr-head{max-width:620px;margin:0 0 19px}
-.dr-kicker{display:block;margin-bottom:7px;color:#a6e8f5;font-size:10.5px;font-weight:650;letter-spacing:.035em}
+.dr-kicker{display:block;margin-bottom:7px;color:#a6e8f5;font-size:10.5px;font-weight:650;letter-spacing:.035em;white-space: normal;word-break: normal}
 .dr-head h2{margin:0;font-size:23px;font-weight:610;line-height:1.18;letter-spacing:-.045em;text-wrap:balance}
 .dr-lead{margin:9px 0 0;color:rgba(220,233,239,.56);font-size:11.5px;line-height:1.65;text-wrap:pretty}
 

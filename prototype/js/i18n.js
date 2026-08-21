@@ -146,7 +146,7 @@ export const i18n = {
   STATIC: {
     /* ⚠️ 한때 '레이어'로 바꿨다가 되돌렸다 (받은 지시). 감사에서는 '스타일'이
        테마 고르는 곳으로 읽힌다고 했지만, PD 판단은 '지구 스타일'이다. */
-    'm.layers':   { ko: '지구 스타일',      en: 'Earth style' },
+    'm.layers':   { ko: '전체레이어',      en: 'All layers' },
     'm.menuTitle':{ ko: '지구 메뉴',         en: 'Earth menu' },
     'm.menuObserve':{ ko: '지구 보기',       en: 'View Earth' },
     'm.menuDiscover':{ ko: '읽고 분석',      en: 'Read & analyse' },
@@ -159,6 +159,8 @@ export const i18n = {
     'm.lab':      { ko: 'LAB',               en: 'LAB' },
     'm.ask':      { ko: '물어보기',          en: 'Ask' },
     'm.flight':   { ko: '항공편',            en: 'Flights' },
+    'm.travel':   { ko: '여행',              en: 'Travel' },
+    'm.travelSub':{ ko: '관광 흐름 · 명소',  en: 'Tourism flow · places' },
     'm.outdoor':  { ko: '취미',              en: 'Hobbies' },
     'm.outdoorSub':{ ko: '바다 · 생물 관측 · 땅과 하늘', en: 'Ocean · wildlife records · land & sky' },
     'm.earth':    { ko: '지구',              en: 'Earth' },

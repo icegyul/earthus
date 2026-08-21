@@ -195,8 +195,10 @@ export const ITEMS = [
     sky:'#1a0e06', paint:'heatdome' },
   { id:'phenomena', ko:'해양 환류', en:'Ocean gyres', sub:'5개 해역', subEn:'5 basins',
     ready:true, sky:'#06141a', paint:'gyre' },
-  { id:'tourism', ko:'관광 흐름', en:'Tourism flow', sub:'서울시 공식 혼잡 · 3D 기둥', subEn:'Official Seoul crowd · 3D towers',
+  { id:'tourism', ko:'관광 흐름', en:'Tourism flow', sub:'서울시 공식 혼잡 · 3D 블록', subEn:'Official Seoul crowd · 3D relief',
     ready:true, sky:'#081b1b', paint:'tourism' },
+  { id:'poi', ko:'명소', en:'Places', sub:'박물관·천문대·아쿠아리움 · 확대 후', subEn:'Museums, observatories and aquariums · zoom in',
+    ready:true, sky:'#0c1b14', paint:'poi' },
   /* FREE_OPEN 기간에는 없는 글로벌 provider를 결제 대기 경로로 꾸미지 않는다.
      항공기는 실제 항로·내 비행기 도구, 선박은 KOMSA MTIS 공식 화면으로 곧장 연다. */
   { id:'flight', ko:'항공기', en:'Aircraft', sub:'항로·내 비행기 추적', subEn:'Route · my flight tracking',
@@ -475,15 +477,23 @@ const CATEGORIES = [
   { id: 'ocean',   ko: '해양',       en: 'Ocean',
     ids: ['sst', 'sstanom', 'wave', 'swell', 'current', 'phenomena'] },
   { id: 'station', ko: '관측소',     en: 'Stations',
-    ids: ['landobs', 'ukfc', 'buoy', 'coverage'] },
+    ids: ['landobs', 'ukfc', 'buoy'] },
+  /* 사람·도시는 지구를 읽는 데이터 계층이다. 여행 메뉴는 이 레이어를 다시 쓰는
+     목적별 입구일 뿐, 별도 관광 엔진이나 복제 상태를 만들지 않는다. */
+  { id: 'human',  ko: '사람·도시',   en: 'People & cities',
+    ids: ['tourism', 'poi', 'coverage'] },
   { id: 'sky',     ko: '하늘·우주',  en: 'Sky & space',
     ids: ['aurora', 'eclipse'] },
   { id: 'move',    ko: '이동',       en: 'Movement',
     ids: ['flight', 'ship'] },
   { id: 'events',  ko: '이벤트',     en: 'Events',
     ids: ['news'] },
-  { id: 'travel',  ko: '여행',       en: 'Travel',
-    ids: ['tourism', 'poi'] },
+];
+
+/* 여행은 목적별 입구다. 같은 tourism/poi 레이어를 켜므로 지구 레이어 상태·시간·출처가
+   그대로 이어지고, 여행 화면만의 별도 값이나 중복 수집기를 만들지 않는다. */
+const TRAVEL_CATEGORIES = [
+  { id: 'travel', ko: '여행', en: 'Travel', ids: ['tourism', 'poi'] },
 ];
 
 /* ── Alert 묶음 ──────────────────────────────────────────────
@@ -561,7 +571,6 @@ const AETHERUS_ROUTES = [
 
 export const layerBar = {
   open: false,      // 1단
-  showAll: false,
   query: '',
   /* 2단 — 어떤 목록을 펼쳤나. null · 'earth'(지구 스타일) · 'alert'(재난)
      ⚠️ 예전엔 불리언이었다. 2단이 하나뿐이라는 전제였는데 Alert 가 생기며 깨졌다.
@@ -678,6 +687,9 @@ export const layerBar = {
         const k = b.dataset.open;
         const wasEarthStyle = this.sub === 'earth';
         this.sub = (this.sub === k) ? null : k;
+        if (this.sub === 'earth') {
+          this.query = '';
+        }
         if (this.sub) this.render(this.sub);
         apply();
         if (this.sub === 'earth') {
@@ -691,23 +703,6 @@ export const layerBar = {
         }
       };
     });
-
-    const earthFold = main.querySelector('[data-scene-earth-fold]');
-    if (earthFold) {
-      earthFold.onclick = async () => {
-        /* 우주·심해에서 지구 레이어를 접어 보일 뿐 상태는 건드리지 않는다.
-           이 줄을 누른 행동만 지구 복귀 의사로 본다. */
-        const { sceneMgr } = await import('./scene.js');
-        await sceneMgr.to('earth');
-        this.open = true;
-        this.sub = 'earth';
-        this.render('earth');
-        this._apply?.();
-        document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
-          detail: { view: 'style', reason: 'earth-fold' },
-        }));
-      };
-    }
 
     // 바깥을 누르면 닫는다 — 지구를 조작하려는 것이므로
     document.addEventListener('pointerdown', ev => {
@@ -746,6 +741,7 @@ export const layerBar = {
   showEarthStyle() {
     this.open = true;
     this.sub = 'earth';
+    this.query = '';
     this.render('earth');
     this._apply?.();
   },
@@ -756,34 +752,17 @@ export const layerBar = {
     this._apply?.();
   },
 
-  _activeEarthLayerCount() {
-    // ITEMS에 실제 메뉴로 공개한 레이어만 센다. 숨은 내부 상태를 숫자에 섞지 않는다.
-    return ITEMS.reduce((count, item) => count + (store.isOn(item.id) ? 1 : 0), 0);
-  },
-
   _renderSceneFilter(next = 'earth') {
     const main = $('#menuMain');
     if (!main) return;
     const away = next === 'space';
     const space = next === 'space';
-    const fold = main.querySelector('[data-scene-earth-fold]');
-    if (fold) {
-      fold.hidden = !away || space;
-      const count = this._activeEarthLayerCount();
-      const label = fold.querySelector('[data-scene-earth-count]');
-      const hint = fold.querySelector('[data-scene-earth-hint]');
-      if (label) label.textContent = i18n.lang === 'ko'
-        ? `지구 레이어 ${count}개 켜짐`
-        : `${count} Earth layer${count === 1 ? '' : 's'} on`;
-      if (hint) hint.textContent = i18n.lang === 'ko' ? '지구로 돌아가 보기' : 'Return to Earth';
-      fold.setAttribute('aria-label', `${label?.textContent || ''}. ${hint?.textContent || ''}`);
-    }
 
     /* EARTHUS는 우주에서도 전체 메뉴를 유지한다. 장면이 브랜드를 바꾸거나
        지구로 돌아가는 길을 숨기면 두 세계가 한 공간이라는 구조가 끊긴다. */
     const hiddenAway = [];
     const sceneFiltered = [
-      '[data-open="earth"]', '[data-act="sat"]', '[data-act="flight"]',
+      '[data-open="earth"]', '[data-open="travel"]', '[data-act="sat"]', '[data-act="flight"]',
       '[data-act="outdoor"]', '[data-act="earth-home"]', '[data-act="earth-surface"]',
       '[data-act="locate"]', '[data-act="globe"]',
     ];
@@ -810,13 +789,14 @@ export const layerBar = {
     if (b) b.onclick = () => { fn(); this.open = false; this.sub = null; this._apply(); };
   },
 
-  /** 2단 목록을 그린다. kind: 'earth'(레이어) | 'alert'(재난) | 'aetherus'(우주) */
+  /** 2단 목록을 그린다. kind: 'earth'(레이어) | 'travel'(여행) | 'alert'(재난) | 'aetherus'(우주) */
   render(kind = 'earth') {
     const strip = $('#layerStrip');
     if (!strip) return;
     strip.innerHTML = '';
     const ko = i18n.lang === 'ko';
     const isAlert = kind === 'alert';
+    const isTravel = kind === 'travel';
     const isAetherus = kind === 'aetherus';
     strip.classList.toggle('aetherus-menu-list', isAetherus);
     document.querySelector('#menuSub')?.classList.toggle('aetherus-open', isAetherus);
@@ -827,7 +807,8 @@ export const layerBar = {
        안에 기온·바람·대기질·바다·관측소가 다 들어 있는데 '스타일'이라고 하면
        테마를 고르는 곳처럼 읽힌다 — 실제 이름은 레이어가 맞다. */
     if (head) head.textContent = isAetherus ? 'AETHERUS'
-      : isAlert ? (ko ? '경보·재난' : 'Alerts') : (ko ? '레이어' : 'Layers');
+      : isAlert ? (ko ? '경보·재난' : 'Alerts')
+        : isTravel ? (ko ? '여행' : 'Travel') : (ko ? '레이어' : 'Layers');
 
     if (isAetherus) {
       this._renderAetherus(strip, ko);
@@ -840,13 +821,13 @@ export const layerBar = {
           '그 밖에'로 수거돼 지구 스타일에 그대로 다시 나타난다. */
     const placed = new Set();
     const order = [];
-    (isAlert ? ALERT_CATEGORIES : CATEGORIES).forEach(c => {
+    (isAlert ? ALERT_CATEGORIES : isTravel ? TRAVEL_CATEGORIES : CATEGORIES).forEach(c => {
       const items = c.ids.map(id => ITEMS.find(x => x.id === id)).filter(Boolean);
       if (!items.length) return;
       items.forEach(x => placed.add(x.id));
       order.push({ cat: c, items });
     });
-    if (!isAlert) {
+    if (!isAlert && !isTravel) {
       const rest = ITEMS.filter(x => !placed.has(x.id) && !ALERT_IDS.has(x.id));
       if (rest.length) {
         order.push({ cat: { id: 'etc', ko: '그 밖에', en: 'Other' }, items: rest });
@@ -912,7 +893,7 @@ export const layerBar = {
       strip.appendChild(el('div', 'ly-gap'));
     }
 
-    if (!isAlert) {
+    if (!isAlert && !isTravel) {
       /* 받은 지적: 기상청 자료는 이미 9개 수집기가 살아 있는데 날씨 상세의 작은 링크
          뒤에 숨어 있어 업데이트가 사용자 눈에는 '별거 없음'으로 보였다. 데이터 레이어와
          성격이 다른 관측·공식예보·특보 탐색판이므로 스위치가 아닌 공개 입구로 둔다. */
@@ -967,7 +948,19 @@ export const layerBar = {
       strip.appendChild(el('div', 'ly-gap'));
     }
 
-    if (isAlert) {
+    if (isTravel) {
+      const intro = el('p', 'ly-purpose-intro');
+      intro.textContent = ko
+        ? '관광 흐름과 명소를 여행 목적에 맞게 빠르게 켭니다.'
+        : 'Turn on tourism flow and places from a travel-focused entrance.';
+      strip.appendChild(intro);
+      order.flatMap(group => group.items).forEach(it => this._item(strip, it, ko, 'ly-purpose-item'));
+      const note = el('p', 'ly-purpose-note');
+      note.textContent = ko
+        ? '여행에서 켠 레이어는 지구 레이어와 같은 상태를 사용합니다.'
+        : 'Layers enabled here use the same state as Earth layers.';
+      strip.appendChild(note);
+    } else if (isAlert) {
       order.forEach(({ items }, i) => {
         if (i) strip.appendChild(el('div', 'ly-gap'));
         items.forEach(it => this._item(strip, it, ko));
@@ -980,26 +973,15 @@ export const layerBar = {
         .forEach(it => this._item(strip, it, ko, 'ly-quick-item'));
 
       const allItems = order.flatMap(x => x.items).filter(it => !QUICK_IDS.includes(it.id));
-      const more = el('button', 'ly-all-toggle');
-      more.type = 'button'; more.setAttribute('aria-expanded', String(this.showAll));
-      more.innerHTML = `<span>${this.showAll
-        ? (ko ? '전체 레이어 접기' : 'Hide all layers')
-        : (ko ? `전체 레이어 보기 · ${allItems.length}개 더` : `All layers · ${allItems.length} more`)}</span>`
-        + `<i aria-hidden="true">${this.showAll ? '−' : '+'}</i>`;
-      more.onclick = () => { this.showAll = !this.showAll; this.render('earth'); };
-      strip.appendChild(more);
-
-      if (this.showAll) {
-        const search = el('label', 'ly-search');
-        search.innerHTML = `<input type="search" aria-label="${ko ? '전체 레이어 검색' : 'Search all layers'}"`
-          + ` value="${this.query.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"`
-          + ` placeholder="${ko ? '레이어 이름 검색' : 'Search layers'}" autocomplete="off">`;
-        const input = search.querySelector('input');
-        input.oninput = () => { this.query = input.value; this._filterAll(strip); };
-        strip.appendChild(search);
-        allItems.forEach(it => this._item(strip, it, ko, 'ly-all-item'));
-        this._filterAll(strip);
-      }
+      const search = el('label', 'ly-search');
+      search.innerHTML = `<input type="search" aria-label="${ko ? '전체 레이어 검색' : 'Search all layers'}"`
+        + ` value="${this.query.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"`
+        + ` placeholder="${ko ? '레이어 이름 검색' : 'Search layers'}" autocomplete="off">`;
+      const input = search.querySelector('input');
+      input.oninput = () => { this.query = input.value; this._filterAll(strip); };
+      strip.appendChild(search);
+      allItems.forEach(it => this._item(strip, it, ko, 'ly-all-item'));
+      this._filterAll(strip);
     }
     this.sync();
   },
@@ -1084,7 +1066,7 @@ export const layerBar = {
               const { flightPanel } = await import('./ui-flight.js');
               await flightPanel.open();
             } else if (it.open === 'vessel') {
-              const { oceanPanel } = await import('./ui-ocean.js');
+              const { oceanPanel } = await import('./ui-ocean.js?v=20260821-v8p3-1');
               oceanPanel.open('vessel');
             }
           } catch (error) {

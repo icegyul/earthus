@@ -124,18 +124,22 @@ assert.throws(() => flow.validateTourismSnapshot({
 }), /STALE_CANNOT_BE_LIVE/);
 
 const towerNow = flow.towerVisual(item, null);
-assert.equal(towerNow.heightMeters, 17600);
-assert.equal(towerNow.radiusMeters, 120);
+assert.equal(towerNow.heightMeters, 164);
+assert.equal(towerNow.footprintMeters, 420);
+assert.equal(towerNow.primitive, 'AREA_MARKER');
+assert.equal(towerNow.footprintMeaning, 'FIXED_DISPLAY_CELL_NOT_OFFICIAL_AREA');
 assert.equal(towerNow.color, '#f7aa45');
 assert.equal(towerNow.sourceType, 'OFFICIAL_OBSERVATION');
 assert.equal(towerNow.animated, false);
 assert.match(towerNow.legendKo, /기관 혼잡 등급/);
 const towerAt = flow.towerVisual(item, '2026-08-20T12:00:00Z');
-assert.equal(towerAt.heightMeters, 12600);
+assert.equal(towerAt.heightMeters, 120);
 assert.equal(towerAt.color, '#f5d58a');
 assert.equal(towerAt.sourceType, 'OFFICIAL_FORECAST');
 assert.equal(towerAt.at, '2026-08-20T12:00:00.000Z');
 assert.equal(flow.towerVisual(stale, null).live, false);
 assert.equal(flow.towerVisual(missingCoord, null), null);
+assert.ok(towerNow.heightMeters >= 8 && towerNow.heightMeters <= 180);
+assert.equal('radiusMeters' in towerNow, false, 'thin cylinder geometry must not return');
 
 console.log('tourism flow contract: PASS');

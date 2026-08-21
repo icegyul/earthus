@@ -30,7 +30,7 @@ try {
       document.querySelector('#outSheet.up') ? 'hobby' : 'ocean'
     ));
     if (oceanEntry === 'hobby') {
-      await page.locator('#outSheet [data-out-act="trench"]').click();
+      await page.locator('#outSheet [data-out-act="dive"]').click();
     } else {
       await page.locator('#oceanSheet [data-ocean-act="dive"]').click();
     }

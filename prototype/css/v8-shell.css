@@ -1,0 +1,168 @@
+/* EARTHUS v8 화면 셸 — 데이터 시각화 위에 꼭 필요한 조작만 남긴다. */
+
+/* 좌측 하단 출처 Dock.
+   기본은 현재 화면의 첫 출처 한 줄, 탭하면 시각·상태·보조 출처 전체를 연다.
+   지도·천구 크레딧은 이용 조건이므로 접혀 있어도 pd-credits에 계속 보인다. */
+#provenanceDock{
+  position:fixed;
+  z-index:18;
+  left:max(10px,env(safe-area-inset-left));
+  bottom:max(10px,env(safe-area-inset-bottom));
+  display:grid;
+  gap:5px;
+  width:min(370px,calc(100vw - 82px));
+  color:rgba(239,246,248,.82);
+  font-family:var(--sans,system-ui,sans-serif);
+  text-shadow:0 1px 4px rgba(0,0,0,.72);
+  pointer-events:none;
+}
+#provenanceDock[hidden]{display:none!important}
+#provenanceDock .pd-toggle{
+  display:grid;
+  grid-template-columns:14px minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  min-height:42px;
+  padding:7px 9px;
+  border:1px solid rgba(181,211,220,.17);
+  border-radius:10px;
+  background:linear-gradient(135deg,rgba(5,11,15,.82),rgba(7,15,20,.58));
+  box-shadow:0 8px 28px rgba(0,0,0,.22);
+  backdrop-filter:blur(14px) saturate(115%);
+  color:inherit;
+  text-align:left;
+  cursor:pointer;
+  pointer-events:auto;
+  transition:border-color .16s ease,background .16s ease;
+}
+#provenanceDock .pd-toggle:hover,
+#provenanceDock .pd-toggle[aria-expanded="true"]{
+  border-color:rgba(117,226,210,.38);
+  background:linear-gradient(135deg,rgba(7,19,24,.9),rgba(7,18,23,.72));
+}
+#provenanceDock .pd-toggle:focus-visible{outline:2px solid #75e2d2;outline-offset:2px}
+#provenanceDock .pd-mark{
+  width:12px;
+  height:12px;
+  border:1px solid rgba(117,226,210,.72);
+  border-radius:50%;
+  box-shadow:inset 0 0 0 3px rgba(117,226,210,.1),0 0 10px rgba(117,226,210,.14);
+}
+#provenanceDock .pd-copy{display:grid;gap:2px;min-width:0}
+#provenanceDock .pd-label{
+  color:rgba(117,226,210,.78);
+  font:650 7.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+#provenanceDock .pd-summary{
+  overflow:hidden;
+  color:rgba(239,246,248,.68);
+  font-size:9px;
+  line-height:1.35;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#provenanceDock .pd-count{
+  min-width:19px;
+  padding:3px 5px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:999px;
+  color:rgba(239,246,248,.45);
+  font:650 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  text-align:center;
+}
+#provenanceDock #srcNote{
+  position:static!important;
+  left:auto!important;
+  bottom:auto!important;
+  z-index:auto;
+  display:flex;
+  max-width:none!important;
+  max-height:min(30vh,260px);
+  overflow:auto;
+  gap:5px;
+  padding:10px 11px;
+  border:1px solid rgba(181,211,220,.16);
+  border-radius:10px;
+  background:rgba(4,10,14,.88);
+  box-shadow:0 12px 34px rgba(0,0,0,.28);
+  backdrop-filter:blur(16px) saturate(115%);
+  color:rgba(239,246,248,.56);
+  font-size:9px;
+  line-height:1.5;
+  text-shadow:none;
+  pointer-events:auto;
+}
+#provenanceDock #srcNote[hidden]{display:none!important}
+#provenanceDock #srcNote>span{display:block!important}
+#provenanceDock #srcNote a,
+#provenanceDock .pd-credits a{color:inherit;text-decoration:none;pointer-events:auto}
+#provenanceDock #srcNote a:hover,
+#provenanceDock .pd-credits a:hover{color:rgba(239,246,248,.82);text-decoration:underline}
+#provenanceDock .pd-credits{
+  display:grid;
+  gap:1px;
+  padding-inline:5px;
+  color:rgba(239,246,248,.34);
+  font-size:7px;
+  line-height:1.3;
+  pointer-events:auto;
+}
+#provenanceDock .pd-credits[hidden]{display:none!important}
+
+@media (max-width:640px){
+  #provenanceDock{width:min(270px,calc(100vw - 76px));left:max(8px,env(safe-area-inset-left));bottom:max(8px,env(safe-area-inset-bottom))}
+  #provenanceDock .pd-toggle{min-height:40px;padding:6px 8px}
+  #provenanceDock .pd-summary{font-size:8px}
+  #provenanceDock #srcNote{max-height:24vh;padding:9px;font-size:8px}
+  #provenanceDock .pd-credits{font-size:6.5px}
+}
+
+@media (min-width:1600px){
+  #provenanceDock{left:18px;bottom:16px;width:min(430px,34vw)}
+  #provenanceDock .pd-summary,#provenanceDock #srcNote{font-size:11px}
+  #provenanceDock .pd-credits{font-size:8.5px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  #provenanceDock .pd-toggle{transition:none}
+}
+
+/* 목적별 여행 입구. 실제 스위치는 기존 Earth layer와 동일한 .ly를 재사용한다. */
+.ly-purpose-intro,.ly-purpose-note{
+  margin:0;
+  padding:10px 11px;
+  color:rgba(239,246,248,.5);
+  font-size:9px;
+  line-height:1.55;
+}
+.ly-purpose-intro{border-bottom:1px solid rgba(255,255,255,.08)}
+.ly-purpose-note{border-top:1px solid rgba(255,255,255,.08);color:rgba(117,226,210,.52)}
+.ly-purpose-item{border-color:rgba(117,226,210,.1)}
+
+/* Ocean Engine은 실제 수심/벡터 가용성만 보여준다. 미연결 컨트롤은 disabled 상태다. */
+.ocean-engine-state{
+  display:grid;
+  gap:11px;
+  margin-top:12px;
+  padding:14px;
+  border:1px solid rgba(100,220,228,.16);
+  border-radius:12px;
+  background:linear-gradient(145deg,rgba(5,22,29,.72),rgba(4,12,18,.5));
+}
+.ocean-engine-state>header{display:flex;align-items:end;justify-content:space-between;gap:12px}
+.ocean-engine-state>header small{color:rgba(100,220,228,.74);font:650 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em}
+.ocean-engine-state>header h4{margin:5px 0 0;font-size:14px}
+.ocean-engine-state>header p,.ocean-engine-note{margin:0;color:rgba(242,245,248,.46);font-size:8.5px;line-height:1.5}
+.ocean-depth-levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.ocean-depth-levels>span{display:grid;gap:4px;padding:9px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(255,255,255,.025)}
+.ocean-depth-levels>span[data-available="true"]{border-color:rgba(100,220,228,.35);background:rgba(100,220,228,.08)}
+.ocean-depth-levels b{font:650 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace}
+.ocean-depth-levels small{color:rgba(242,245,248,.42);font-size:7.5px}
+.ocean-engine-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.ocean-engine-actions button{display:grid;gap:4px;min-height:44px;padding:8px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(255,255,255,.025);color:rgba(242,245,248,.34);text-align:left}
+.ocean-engine-actions b{font:650 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em}
+.ocean-engine-actions span{font-size:7.5px}
+@media (max-width:480px){.ocean-engine-actions{grid-template-columns:1fr}}

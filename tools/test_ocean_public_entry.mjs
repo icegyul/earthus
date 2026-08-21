@@ -12,21 +12,21 @@ const [html, main, hub, outdoor, css, redirect, sw, scene, trenchCards, ui] = aw
   read('prototype/js/scene.js'), read('prototype/js/ocean/trenchcards.js'), read('prototype/js/ui.js'),
 ]);
 
-assert.match(html, /data-act="ocean"/);
+assert.doesNotMatch(html, /data-act="ocean"/);
 assert.match(html, /data-act="outdoor"/);
 assert.match(html, /id="oceanSheet"/);
-assert.match(html, /js\/main\.js\?v=20260814-oceanv1/);
-assert.match(main, /import \{ oceanPanel \} from '.\/ui-ocean\.js\?v=20260814-oceanv1'/);
-assert.match(main, /layerBar\.onAction\('ocean', \(\) => oceanPanel\.open\(\)\)/);
-assert.match(main, /if \(oceanHubRoute\) queueMicrotask\(\(\) => oceanPanel\.open\(\)\)/);
-assert.match(main, /sceneParams\.get\('ocean'\) === 'hub'/);
+assert.match(html, /js\/main\.js\?v=20260821-v8p3-2/);
+assert.match(main, /import \{ oceanPanel \} from '.\/ui-ocean\.js\?v=20260821-v8p3-1'/);
+assert.doesNotMatch(main, /layerBar\.onAction\('ocean'/);
+assert.match(main, /if \(oceanHubRoute\) queueMicrotask\(\(\) => outdoorPanel\.open\(\)\)/);
+assert.match(main, /const oceanHubRoute = oceanRoute === 'hub'/);
 for (const action of ['surf', 'fishing', 'dive', 'turtle', 'seabird', 'migbird', 'ecobird']) {
   assert.match(main, new RegExp(`${action}:`), `missing ${action} operating route`);
 }
 for (const layer of ['sst', 'sstanom', 'wave', 'swell', 'current', 'buoy']) {
-  assert.match(hub, new RegExp(`id: '${layer}'`), `missing ${layer} public layer entry`);
+  assert.match(outdoor, new RegExp(`act: 'layer:${layer}'`), `missing ${layer} Hobby layer entry`);
 }
-for (const action of ['ocean-layers', 'surf', 'fishing', 'trench', 'vessel',
+for (const action of ['surf', 'fishing', 'dive', 'trench', 'vessel', 'my-ocean',
   'turtle', 'seabird', 'migbird', 'ecobird', 'para', 'mountain', 'sky']) {
   assert.match(outdoor, new RegExp(`'${action}'`), `missing categorized hobby route: ${action}`);
 }
@@ -37,7 +37,9 @@ assert.match(trenchCards, /async openFeaturedDive\(\)/);
 assert.match(trenchCards, /await this\.openDiveAt\(item\.lat, item\.lon/);
 assert.match(ui, /sceneMgr\.to\('ocean', \{ stage: 'dive' \}\)/);
 assert.match(ui, /diveScene\.open\(\{ lat: m\.lat, lon: m\.lon, name \}\)/);
-assert.doesNotMatch(hub, /My Ocean/);
+assert.match(hub, /myView\(ko\)/);
+assert.match(hub, /ko: 'SAFETY'/);
+assert.match(hub, /ko: 'MARINE LIFE'/);
 assert.match(hub, /Marine Life/);
 assert.match(hub, /ko: 'Vessels', en: 'Vessels'/);
 assert.match(hub, /https:\/\/mtis\.komsa\.or\.kr\/stg\/traffic\/liveSea/);
@@ -48,7 +50,7 @@ assert.doesNotMatch(hub, /무료|\bFREE\b|\bFree\b|\bfree\b/);
 assert.doesNotMatch(hub, /출조·입수 가능 여부를 예보하지 않습니다|does not forecast whether departure/);
 assert.match(css, /\.ocean-layer,.ocean-module,.ocean-back\{ min-height:44px/);
 assert.match(redirect, /location\.replace\('\/\?ocean=hub'\)/);
-assert.match(sw, /earthus-shell-2026-08-14-oceanv1/);
+assert.match(sw, /earthus-shell-2026-08-20-hobby-ocean1/);
 assert.doesNotMatch(hub, /Math\.random|setInterval|requestAnimationFrame|clampToGround/);
 
-console.log('PASS: Ocean is a first-class menu with six layers, vertical routes, hobby shortcuts and official vessel entry');
+console.log('PASS: Ocean is consolidated into five Hobby categories with six layers, vertical routes, My Ocean and official vessels');

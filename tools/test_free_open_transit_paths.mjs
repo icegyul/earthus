@@ -35,8 +35,8 @@ try {
       await page.locator('#menuMain.open').waitFor();
       await page.locator('#menuMain [data-open="earth"]').click();
       await page.locator('#menuSub.open').waitFor();
-      const toggle = page.locator('#menuSub .ly-all-toggle');
-      if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click();
+      // 전체 레이어는 두 번째 펼치기 동작 없이 처음부터 모두 보여야 한다.
+      assert.equal(await page.locator('#menuSub .ly-all-toggle').count(), 0);
     };
 
     await openAllLayers();

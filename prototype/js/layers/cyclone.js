@@ -21,6 +21,7 @@ import { i18n } from '../i18n.js';
 import { mapLabel } from '../maplabel.js';
 import { power } from '../power.js';
 import { auth } from '../auth.js';
+import { cycloneOuterRings } from './cyclone-geometry.js';
 
 const ALERT = {
   Red:    { color: '#ff4d4d', ko: 'GDACS 적색 영향 추정', en: 'GDACS red impact estimate' },
@@ -1081,17 +1082,22 @@ export const cyclones = {
     // ── 예보 원뿔 (앞으로 갈 범위) ──
     // 점선·반투명으로 "확정이 아님"을 시각적으로 알린다
     feats.filter(f => f.properties?.Class === 'Poly_Cones').forEach((f, i) => {
-      const ring = f.geometry?.coordinates?.[0];
-      if (!ring?.length) return;
-      made.push(this.ds.entities.add({
-        id: `tc:${s.id}:cone${i}`,
-        polygon: {
-          hierarchy: Cesium.Cartesian3.fromDegreesArray(ring.flat()),
-          material: col.withAlpha(0.13),
-          outline: true, outlineColor: col.withAlpha(0.45),
-          height: 0,
-        },
-      }));
+      /* ⚠️⚠️ 받은 오류: "태풍 LALA를 누르면 origin has a NaN component".
+         날짜변경선을 넘는 정상 GeoJSON은 원뿔을 MultiPolygon 여러 조각으로 보낸다.
+         예전 코드는 Polygon처럼 coordinates[0]만 한 단계 펼쳐 좌표 숫자 대신
+         좌표 배열을 Cesium에 넘겼고, 그 값이 NaN 원점이 되어 렌더러를 멈췄다.
+         조각을 합치거나 빈 좌표를 메우지 않고 검증된 바깥 고리만 각각 그린다. */
+      cycloneOuterRings(f.geometry).forEach((ring, part) => {
+        made.push(this.ds.entities.add({
+          id: `tc:${s.id}:cone${i}:${part}`,
+          polygon: {
+            hierarchy: Cesium.Cartesian3.fromDegreesArray(ring.flat()),
+            material: col.withAlpha(0.13),
+            outline: true, outlineColor: col.withAlpha(0.45),
+            height: 0,
+          },
+        }));
+      });
     });
 
     // ── 지나온 경로 (실선) ──

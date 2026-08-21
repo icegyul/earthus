@@ -1889,20 +1889,23 @@ export const hud = {
     /* 받은 지적(2026-08-12): "HUD가 없어졌고" — 그래서 접힌 손잡이로 복구했었다.
        후속 공개화면 검수(2026-08-13)에서 고도·FPS·해상도가 일반 기능처럼 수집되고
        미완성 화면으로 읽히는 문제가 확인됐다. 기능은 보존하되 이제 #dev에서만 연다. */
+    const isDevMode = () => location.hash.startsWith('#dev');
     const showHud = (on, remember = true) => {
-      const enabled = location.hash === '#dev';
+      const enabled = isDevMode();
       const panel = $('#hud');
       const handle = $('#hudShow');
+      const showHandle = enabled && !on;
       panel.hidden = !enabled || !on;
-      handle.hidden = !enabled || on;
+      handle.hidden = !showHandle;
+      handle.style.setProperty('display', showHandle ? 'block' : 'none', 'important');
       panel.setAttribute('aria-hidden', String(!enabled || !on));
-      handle.setAttribute('aria-hidden', String(!enabled || on));
+      handle.setAttribute('aria-hidden', String(!showHandle));
       if (remember) localStorage.setItem('earthus.hud', on ? 'on' : 'off');
     };
     /* 공개 주소에서는 손잡이까지 숨긴다. 개발자는 #dev에서만 열 수 있다.
        초기 HTML을 수집한 방문자에게 고도·FPS 같은 내부 측정값을 제품 기능처럼
        보이게 했던 것이 문제였다. */
-    const restore = () => showHud(location.hash === '#dev'
+    const restore = () => showHud(isDevMode()
       && localStorage.getItem('earthus.hud') === 'on', false);
     restore();
     window.addEventListener('hashchange', restore);

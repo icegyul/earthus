@@ -1,5 +1,6 @@
-// 관광·인간 흐름 3D Density Tower.
-// 기관의 추정 인구 범위는 높이로, 범주형 혼잡 등급은 색으로 옮기며 이동 방향은 그리지 않는다.
+// 관광·인간 흐름 3D Relief.
+// 기관의 추정 인구 범위는 낮은 표시 블록 높이로, 범주형 혼잡 등급은 색으로 옮긴다.
+// 고정 바닥 셀은 실제 건물·구역 면적이 아니며, OD 근거가 없으므로 이동 방향은 그리지 않는다.
 
 import { API } from '../config.js';
 import { fetchT } from '../net.js';
@@ -90,9 +91,9 @@ export const tourismFlow = {
         // 사용자가 레이어를 직접 켠 시점의 이동이 마지막 의도이므로 기존 flight를 먼저 끊는다.
         viewer.camera.cancelFlight();
         viewer.camera.flyTo({
-          // flyTo의 좌표는 카메라 위치다. 서울 중심을 기둥 화면 중앙에 두기 위해
+          // flyTo의 좌표는 카메라 위치다. 서울 중심을 블록 화면 중앙에 두기 위해
           // 남서쪽 상공에서 북동쪽(heading 22°)을 보도록 출발 위치를 둔다.
-          destination: Cesium.Cartesian3.fromDegrees(126.77, 37.1575, 70_000),
+          destination: Cesium.Cartesian3.fromDegrees(126.77, 37.1575, 38_000),
           orientation: {
             heading: Cesium.Math.toRadians(22),
             pitch: Cesium.Math.toRadians(-55),
@@ -132,17 +133,18 @@ export const tourismFlow = {
         position: Cesium.Cartesian3.fromDegrees(
           place.position.lon, place.position.lat, visual.heightMeters / 2,
         ),
-        cylinder: {
-          length: visual.heightMeters,
-          // 장소별 공식 값을 가는 기둥으로 남겨, 서로 다른 장소를 하나의 면적값처럼 합치지 않는다.
-          topRadius: visual.radiusMeters * 0.24,
-          bottomRadius: visual.radiusMeters * 0.32,
+        box: {
+          // 모든 장소의 바닥을 같은 크기로 둔다. 공식 구역·건물 면적을 아는 척하지 않고,
+          // 가는 '머리숱' 기둥 대신 장소별 상대 높이를 읽는 표시 셀만 만든다.
+          dimensions: new Cesium.Cartesian3(
+            visual.footprintMeters, visual.footprintMeters, visual.heightMeters,
+          ),
           material: color,
           outline: false,
         },
         label: {
           text: `${place.nameKo}\n${state} · ${visual.level}`,
-          // 지도 전체는 기둥 밀도를 읽는 화면이다. 상세 명칭은 기둥 선택 뒤 시트에서만 연다.
+          // 지도 전체는 블록 밀도를 읽는 화면이다. 상세 명칭은 블록 선택 뒤 시트에서만 연다.
           show: false,
           font: '500 12px ui-monospace, SFMono-Regular, Menlo, monospace',
           fillColor: Cesium.Color.WHITE,
@@ -199,18 +201,18 @@ export const tourismFlow = {
         <small>EARTHUS · TOURISM</small>
         <h2>서울 관광 흐름</h2>
         <p><i aria-hidden="true"></i>${forecastMode ? '서울시 공식 예측' : currentEvidenceLabel} · ${coverage.available ?? '—'}/${coverage.total ?? '—'}곳 · ${timeLabel} ${kstTime(forecastMode ? this.selectedAt : observedAt)} KST</p>
-        <span>기둥 하나는 서울시가 구분한 한 관광지입니다.</span>
+        <span>블록 하나는 한 관광지입니다 · 바닥은 실제 면적이 아닌 고정 표시 셀</span>
         <small class="tm-map-credit">지도 · Esri · 경계·도로</small>
       </header>
       <aside class="tm-legend" aria-label="관광지 혼잡 등급 범례">
-        <b>기둥 높이·색</b>
+        <b>블록 높이·색</b>
         <ol>
           <li class="tm-rank4">붐빔</li>
           <li class="tm-rank3">약간 붐빔</li>
           <li class="tm-rank2">보통</li>
           <li class="tm-rank1">여유</li>
         </ol>
-        <span>높이=공식 추정 인구 범위<br>색=기관 혼잡 등급</span>
+        <span>높이=공식 추정 인구 범위<br>색=기관 혼잡 등급<br>바닥=고정 표시 셀</span>
       </aside>
       <nav class="tm-timeline" aria-label="서울 관광 흐름 시각 선택">
         <span>${forecastMode ? '공식 예측 시각' : '공식 관측 시각'}</span>

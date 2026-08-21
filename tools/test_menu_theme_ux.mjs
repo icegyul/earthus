@@ -11,7 +11,9 @@ const cases = [
   { name: 'desktop', width: 1280, height: 720 },
 ].filter(item => !process.env.EARTHUS_UX_CASE || item.name === process.env.EARTHUS_UX_CASE);
 const expectedGroups = {
-  ocean: ['ocean-layers', 'surf', 'fishing', 'trench', 'vessel'],
+  'ocean-data': ['layer:sst', 'layer:sstanom', 'layer:wave', 'layer:swell', 'layer:current', 'layer:buoy'],
+  'ocean-activity': ['surf', 'fishing', 'vessel', 'my-ocean'],
+  'deep-sea': ['dive', 'trench'],
   life: ['turtle', 'seabird', 'migbird', 'ecobird'],
   'land-sky': ['para', 'mountain', 'sky'],
 };
@@ -28,6 +30,20 @@ try {
       }
     });
     await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+
+    const unexpectedInitialUi = await page.evaluate(() => [
+      '#trenchGlobeHud', '#hudShow', '#srcNote', '#coach', '#tcLegend',
+      '#sfHere', '#fsHere', '#mapOff', '#fxChip', '#actBar',
+    ].filter(selector => {
+      const node = document.querySelector(selector);
+      if (!node) return false;
+      const style = getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      return style.display !== 'none' && style.visibility !== 'hidden'
+        && Number(style.opacity) !== 0 && rect.width > 0 && rect.height > 0;
+    }));
+    assert.deepEqual(unexpectedInitialUi, [],
+      `${viewport.name} hidden overlays leaked on first Earth: ${unexpectedInitialUi.join(', ')}`);
 
     await page.locator('#menuTab').click();
     await page.waitForSelector('#menuMain.open');
@@ -92,32 +108,39 @@ try {
       };
     });
     assert.deepEqual(hobby.groups, expectedGroups, `${viewport.name} hobby category mapping changed`);
-    assert.equal(hobby.cards.length, 12);
+    assert.equal(hobby.cards.length, 19);
     assert.equal(new Set(hobby.cards.map(card => card.action)).size, hobby.cards.length,
       `${viewport.name} hobby has duplicated actions`);
     assert.ok(hobby.cards.every(card => card.width >= 44 && card.height >= 44),
       `${viewport.name} hobby target below 44px`);
     assert.ok(hobby.overflow <= 0, `${viewport.name} hobby horizontal overflow ${hobby.overflow}`);
-    assert.match(hobby.text, /바다/);
+    assert.match(hobby.text, /바다 관측·지도/);
+    assert.match(hobby.text, /바다 활동/);
+    assert.match(hobby.text, /심해 탐험/);
     assert.match(hobby.text, /생물 관측/);
     assert.match(hobby.text, /땅과 하늘/);
     assert.doesNotMatch(hobby.text, /무료|\bFREE\b/i);
     await page.screenshot({ path: `/private/tmp/earthus-hobby-open-${viewport.name}.png` });
 
-    await page.locator('#outSheet [data-out-act="ocean-layers"]').click();
+    await page.locator('#outSheet [data-out-act="my-ocean"]').click();
     await page.waitForSelector('#oceanSheet.up');
-    const layers = await page.evaluate(() => {
+    await page.waitForTimeout(450);
+    const myOcean = await page.evaluate(() => {
       const root = document.querySelector('#oceanSheet');
-      const targets = [...root.querySelectorAll('.ocean-layer,.ocean-back')].map(target => {
+      const targets = [...root.querySelectorAll('.ocean-widget-grid .ocean-module,.ocean-back')].map(target => {
         const rect = target.getBoundingClientRect();
         return { width: rect.width, height: rect.height };
       });
-      return { count: root.querySelectorAll('.ocean-layer').length, targets, text: root.innerText };
+      return { count: root.querySelectorAll('.ocean-widget-grid .ocean-module').length, targets, text: root.innerText };
     });
-    assert.equal(layers.count, 6);
-    assert.ok(layers.targets.every(target => target.width >= 44 && target.height >= 44),
-      `${viewport.name} ocean layer target below 44px`);
-    assert.doesNotMatch(layers.text, /Surf|Fishing|My Ocean|무료|\bFREE\b/i);
+    assert.equal(myOcean.count, 6);
+    assert.ok(myOcean.targets.every(target => target.width >= 44 && target.height >= 44),
+      `${viewport.name} My Ocean target below 44px`);
+    assert.match(myOcean.text, /SAFETY/);
+    assert.match(myOcean.text, /MARINE LIFE/);
+    assert.match(myOcean.text, /VESSEL/);
+    assert.doesNotMatch(myOcean.text, /결제|구독/i);
+    await page.screenshot({ path: `/private/tmp/earthus-my-ocean-${viewport.name}.png` });
     await page.locator('#oceanSheet [data-ocean-act="hobby"]').click();
     await page.waitForSelector('#outSheet.up');
 
@@ -146,7 +169,7 @@ try {
     await page.waitForSelector('#flightSheet.up');
     assert.deepEqual(errors, [], `${viewport.name} console/page errors: ${errors.join(' | ')}`);
     await page.close();
-    console.log(`${viewport.name}: PASS · one Hobby entry, 3 categories, 12 unique routes, no free label`);
+    console.log(`${viewport.name}: PASS · one Hobby entry, 5 categories, 19 unique routes, no free label`);
   }
 } finally {
   await browser.close();

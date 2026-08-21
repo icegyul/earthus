@@ -197,7 +197,7 @@ export const tourismSheet = {
             <time>${timeText(row.at, ko).replace(' KST', '')}</time><b>${esc(row.level || '—')}</b></button>`).join('')}
         </div>
         ${selectedForecast ? `<p class="tf-selected"><b>${timeText(selectedForecast.at, ko)}</b> · ${esc(selectedForecast.level)} · ${population(selectedForecast.populationRange, ko)}</p>` : ''}
-        <p>${ko ? '시간을 누르면 서울 3D 기둥도 같은 기관 예측 시각으로 바뀝니다.' : 'Selecting a time updates the Seoul 3D towers to the same agency forecast.'}</p>
+        <p>${ko ? '시간을 누르면 서울 3D 블록도 같은 기관 예측 시각으로 바뀝니다.' : 'Selecting a time updates the Seoul 3D relief blocks to the same agency forecast.'}</p>
       </section>
 
       <section class="tf-card tf-best" data-state="${esc(best.state)}">

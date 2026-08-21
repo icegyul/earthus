@@ -11,9 +11,7 @@
  * ⚠️ 네 화면은 묻는 것이 같다: "지금 저기 조건이 어떤가."
  *    따로 두면 메뉴만 길어지고, 하나를 쓰는 사람이 나머지를 못 찾는다.
  *
- * 수정(2026-08-15): OCEAN은 독립 1차 제품으로 유지한다. 취미 패널의 바다 항목은
- * 활동에서 찾아 들어오는 보조 바로가기이며, 별도 엔진을 만들지 않고 OCEAN과 같은
- * 실행 경로를 호출한다.
+ * 바다 항목은 취미 카테고리로 통합되어 같은 실행 경로를 공유한다.
  */
 
 import { i18n } from './i18n.js';
@@ -23,10 +21,30 @@ const $ = s => document.querySelector(s);
 /* ⚠️ 부제는 **그 화면이 실제로 답하는 질문**이다. 기능 이름을 다시 쓰지 않는다 —
    "서핑 · 서핑 정보" 같은 줄은 아무것도 알려주지 않는다. */
 const ITEMS = [
-  { act: 'ocean-layers', ko: '바다 지도', en: 'Ocean map',
-    subKo: '수온 · 파고 · 너울 · 해류 · 부이', subEn: 'Temperature · waves · swell · current · buoys',
+  { act: 'layer:sst', ko: '해수면 온도', en: 'Sea temperature',
+    subKo: '모델 · 유효시각', subEn: 'Model · valid time',
+    color: '#4fd0e0',
+    ico: '<path d="M8.2 4.2v10.1a4.2 4.2 0 1 0 7.6 0V4.2a3.8 3.8 0 0 0-7.6 0z"/><path d="M12 7.2v9.5" stroke-linecap="round"/>' },
+  { act: 'layer:sstanom', ko: '수온 편차', en: 'SST anomaly',
+    subKo: '1991–2020 평년 대비', subEn: 'vs 1991–2020 normal',
+    color: '#73c8e7',
+    ico: '<path d="M4 8h7M7.5 4.5v7M14 16h6" stroke-linecap="round"/><circle cx="12" cy="12" r="9"/>' },
+  { act: 'layer:wave', ko: '파고', en: 'Waves',
+    subKo: '큰 쪽 파도 평균', subEn: 'Significant height',
     color: '#4fd0e0',
     ico: '<path d="M2.4 8.2c1.6 0 1.6-1.5 3.2-1.5s1.6 1.5 3.2 1.5 1.6-1.5 3.2-1.5 1.6 1.5 3.2 1.5 1.6-1.5 3.2-1.5 1.6 1.5 3.2 1.5"/><path d="M2.4 13.2c1.6 0 1.6-1.5 3.2-1.5s1.6 1.5 3.2 1.5 1.6-1.5 3.2-1.5 1.6 1.5 3.2 1.5 1.6-1.5 3.2-1.5 1.6 1.5 3.2 1.5"/><path d="M2.4 18.2c1.6 0 1.6-1.5 3.2-1.5s1.6 1.5 3.2 1.5 1.6-1.5 3.2-1.5 1.6 1.5 3.2 1.5 1.6-1.5 3.2-1.5 1.6 1.5 3.2 1.5"/>' },
+  { act: 'layer:swell', ko: '너울', en: 'Swell',
+    subKo: '먼바다에서 온 긴 파도', subEn: 'Long-period waves from offshore',
+    color: '#65d6e7',
+    ico: '<path d="M2.5 15.5c3.2 0 3.2-5.5 6.4-5.5s3.2 5.5 6.4 5.5 3.2-5.5 6.2-5.5"/><path d="M3 19h18" stroke-linecap="round"/>' },
+  { act: 'layer:current', ko: '해류', en: 'Ocean current',
+    subKo: '표층 흐름 · 조류 아님', subEn: 'Surface flow · not tide',
+    color: '#51b8d1',
+    ico: '<path d="M3 7h14l-3-3M21 17H7l3 3" stroke-linecap="round" stroke-linejoin="round"/>' },
+  { act: 'layer:buoy', ko: '해양 부이', en: 'Ocean buoys',
+    subKo: '기기 실측 · 관측시각', subEn: 'Measured · observation time',
+    color: '#8bd8e6',
+    ico: '<path d="M9 5h6l1.5 10h-9z"/><path d="M12 5V2M4 18c2 0 2 1.5 4 1.5S10 18 12 18s2 1.5 4 1.5 2-1.5 4-1.5" stroke-linecap="round"/>' },
   { act: 'surf', ko: '서핑', en: 'Surf',
     subKo: '이 해변에 너울이 들어오는가', subEn: 'Is the swell reaching this beach',
     color: '#4fd0e0',
@@ -35,6 +53,14 @@ const ITEMS = [
     subKo: '물때와 안전 · 방파제 · 섬', subEn: 'Tide and safety · breakwaters · islands',
     color: '#e0d18a',
     ico: '<path d="M15.4 4.2v11.2a4 4 0 0 1-8 0v-1.6" stroke-linecap="round"/><path d="M12.6 4.2h5.6" stroke-linecap="round"/><circle cx="18.6" cy="4.2" r="1.4"/>' },
+  { act: 'my-ocean', ko: 'My Ocean', en: 'My Ocean',
+    subKo: '안전·서핑·낚시·생태·Dive·선박 한눈에', subEn: 'Safety · surf · fishing · life · dive · vessels',
+    color: '#75d6df',
+    ico: '<rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/>' },
+  { act: 'dive', ko: 'Dive · 심해', en: 'Dive · Deep sea',
+    subKo: 'GEBCO 2026 수심 기둥과 심해 생물', subEn: 'GEBCO 2026 depth column and deep-sea life',
+    color: '#578fc8',
+    ico: '<path d="M5 4v6c0 5 3 9 7 11 4-2 7-6 7-11V4"/><path d="M8 8h8M12 8v8" stroke-linecap="round"/>' },
   { act: 'trench', ko: '해구', en: 'Trenches',
     subKo: '지구의 가장 깊은 바다로 들어가기', subEn: 'Explore Earth’s deepest ocean regions',
     color: '#57b9d0',
@@ -80,9 +106,18 @@ const ITEMS = [
 ];
 
 const GROUPS = [
-  { id: 'ocean', kicker: 'OCEAN', ko: '바다', en: 'Ocean',
-    noteKo: '바다 상태와 해양 활동', noteEn: 'Ocean conditions and activities', color: '#4fd0e0',
-    acts: ['ocean-layers', 'surf', 'fishing', 'trench', 'vessel'] },
+  { id: 'ocean-data', kicker: 'OCEAN DATA', ko: '바다 관측·지도', en: 'Ocean data & maps',
+    noteKo: '모델 자료와 기기 실측을 구분해 한 장씩 켭니다.',
+    noteEn: 'Open model data and instrument observations one layer at a time.', color: '#4fd0e0',
+    acts: ['layer:sst', 'layer:sstanom', 'layer:wave', 'layer:swell', 'layer:current', 'layer:buoy'] },
+  { id: 'ocean-activity', kicker: 'OCEAN ACTIVITY', ko: '바다 활동', en: 'Ocean activities',
+    noteKo: '서핑·낚시 조건과 공식 선박 화면, 해양 관제판',
+    noteEn: 'Surf and fishing conditions, official vessel tools and the ocean board.', color: '#65d6e7',
+    acts: ['surf', 'fishing', 'vessel', 'my-ocean'] },
+  { id: 'deep-sea', kicker: 'DEEP SEA', ko: '심해 탐험', en: 'Deep-sea exploration',
+    noteKo: 'GEBCO 격자 수심과 출처가 있는 해구·생물 자료',
+    noteEn: 'GEBCO grid depth with sourced trench and species records.', color: '#578fc8',
+    acts: ['dive', 'trench'] },
   { id: 'life', kicker: 'RECORDS', ko: '생물 관측', en: 'Wildlife records',
     noteKo: '현재 위치가 아닌 조사·이동 기록', noteEn: 'Survey and movement records, not current positions', color: '#7fd8c8',
     acts: ['turtle', 'seabird', 'migbird', 'ecobird'] },

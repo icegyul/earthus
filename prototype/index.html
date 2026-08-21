@@ -11,6 +11,12 @@
      ⚠️ 지우면 소유확인이 풀린다. 수집 요청도 함께 막힌다. -->
 <meta name="naver-site-verification" content="44b70d7a27ce76ed8cc7a7bbc33e9952e0ff0bd4" />
 <meta name="description" content="Where Earth Becomes One — 지구가 하나 되는 곳, earthus. 전 세계 기상·해양·재난 관측 자료를 3D 지구본 위에 실시간으로. 모든 값에 출처와 관측 시각을 함께 표시합니다.">
+<meta name="keywords" content="지구본,날씨,해양,재난,기상,태풍,강수,위성,관측,earthus,Where Earth Becomes One">
+<meta name="geo.region" content="KR">
+<meta name="geo.position" content="35.9078;127.7669">
+<meta name="geo.placename" content="대한민국">
+<meta name="geo.country" content="South Korea">
+<meta name="ICBM" content="35.9078,127.7669">
 <meta name="application-name" content="earthus">
 <meta name="apple-mobile-web-app-title" content="earthus">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -35,16 +41,19 @@
 <meta property="og:site_name" content="earthus">
 <meta property="og:title" content="earthus — 지금 지구의 날씨·바다·재난">
 <meta property="og:description" content="Where Earth Becomes One — 지구가 하나 되는 곳, earthus. 전 세계 기상·해양·재난 관측 자료를 3D 지구본 위에 실시간으로. 모든 값에 출처와 관측 시각을 함께 표시합니다.">
-<meta property="og:image" content="https://earthus.net/og.png">
+<meta property="og:image" content="https://earthus.net/og-latest.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="earthus — 지금 지구의 날씨·바다·재난">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:secure_url" content="https://earthus.net/og-latest.png">
 <meta property="og:locale" content="ko_KR">
 <meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="earthus — 지금 지구의 날씨·바다·재난">
 <meta name="twitter:description" content="Where Earth Becomes One — 지구가 하나 되는 곳. 전 세계 기상·해양·재난 관측 자료를 3D 지구본 위에 실시간으로.">
-<meta name="twitter:image" content="https://earthus.net/og.png">
+<meta name="twitter:image" content="https://earthus.net/og-latest.png">
+<meta name="twitter:image:alt" content="earthus 링크 미리보기">
 <link rel="canonical" href="https://earthus.net/">
 <!-- 구조화 데이터 — 검색엔진·AI 답변엔진이 "이게 무엇인지"를 추측하지 않게 한다.
      ⚠️ 여기 적는 것은 전부 사실이어야 한다. 없는 기능을 적으면 그게 곧 거짓 표시다. -->
@@ -79,6 +88,7 @@
         "price": "0",
         "priceCurrency": "KRW"
       },
+      "logo": "https://earthus.net/og-latest.png",
       "provider": {
         "@id": "https://earthus.net/#dalur"
       },
@@ -96,7 +106,7 @@
 }
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Widgets/widgets.css">
-<link rel="stylesheet" href="css/app.css?v=20260814-oceanv1">
+<link rel="stylesheet" href="css/app.css?v=20260820-hobby-ocean1">
 <link rel="stylesheet" href="css/weather-card-v7.css?v=20260820-wcv7-1">
 <link rel="stylesheet" href="css/tourism-flow.css?v=20260821-tourism-map3">
 <link rel="stylesheet" href="css/account.css?v=20260815-flighttap1">
@@ -104,6 +114,7 @@
 <link rel="stylesheet" href="css/readability.css?v=20260812-contours1">
 <link rel="stylesheet" href="css/safety.css?v=20260812-safety1">
 <link rel="stylesheet" href="css/decision-rail.css?v=20260814-ax2">
+<link rel="stylesheet" href="css/v8-shell.css?v=20260821-v8p3-1">
   <!-- ⚠️ AI 학습 거부 — robots.txt 와 같은 방침이다(학습 금지, 인용 허용).
        메타 태그는 자발적 준수라 강제력이 없다. 실제 근거는 이용약관 제11조다. -->
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
@@ -489,20 +500,6 @@
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9.2"/><ellipse cx="12" cy="12" rx="4" ry="9.2"/><path d="M2.9 12h18.2"/></svg></span>
       <span class="mm-label" data-i18n="m.layers">지구 스타일</span><span class="mm-chev">‹</span>
     </button>
-    <!-- Ocean Vertical은 취미 모음이 아니라 EARTHUS의 1차 해양 제품이다.
-         운영 기간에도 가격 배지는 붙이지 않고 실제 해양 허브로 바로 연다. -->
-    <button class="mm-item mm-ocean-entry" type="button" data-act="ocean">
-      <span class="mm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.8 9.2c1.8 0 1.8-1.7 3.6-1.7S8.2 9.2 10 9.2s1.8-1.7 3.6-1.7 1.8 1.7 3.6 1.7S19 7.5 20.8 7.5"/><path d="M2.8 14c1.8 0 1.8-1.7 3.6-1.7S8.2 14 10 14s1.8-1.7 3.6-1.7 1.8 1.7 3.6 1.7 1.8-1.7 3.6-1.7"/><path d="M2.8 18.8c1.8 0 1.8-1.7 3.6-1.7s1.8 1.7 3.6 1.7 1.8-1.7 3.6-1.7 1.8 1.7 3.6 1.7 1.8-1.7 3.6-1.7"/></svg></span>
-      <span class="mm-label"><b>OCEAN</b><small>오늘의 바다 · 서핑 · 낚시 · 해양생물 · 심해 · 선박</small></span>
-      <span class="mm-chev">›</span>
-    </button>
-    <!-- 우주·심해에서는 지구 레이어를 끄지 않고 이 한 줄로만 접는다.
-         ⚠️ 장면 전환이 레이어 상태를 바꾸면 지구로 돌아왔을 때 사용자의 선택이 사라진다. -->
-    <button class="mm-item mm-scene-fold" type="button" data-scene-earth-fold hidden>
-      <span class="mm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9.2"/><path d="M7.8 9.2h8.4M7.8 12h8.4M7.8 14.8h5.2"/></svg></span>
-      <span class="mm-label"><b data-scene-earth-count>지구 레이어 0개 켜짐</b><small data-scene-earth-hint>지구로 돌아가 보기</small></span>
-      <span class="mm-chev" aria-hidden="true">‹</span>
-    </button>
     <button class="mm-item" data-act="sat">
       <span class="mm-ico"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4.4" transform="rotate(-30 12 12)"/></svg></span>
       <span class="mm-label" data-i18n="m.sat">인공위성</span><span class="mm-badge" id="satCount"></span>
@@ -540,11 +537,15 @@
 
     <section class="mm-section" aria-labelledby="mmActivitiesTitle">
       <h2 id="mmActivitiesTitle" class="mm-section-title" data-i18n="m.menuActivities">활동</h2>
+    <!-- 여행은 별도 데이터 제품이 아니라 사람·도시 레이어를 목적에 맞게 다시 여는 입구다. -->
+    <button class="mm-item" type="button" data-open="travel">
+      <span class="mm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 21s6.5-6.2 6.5-12A6.5 6.5 0 1 0 5.5 9C5.5 14.8 12 21 12 21z"/><circle cx="12" cy="9" r="2.2"/></svg></span>
+      <span class="mm-label"><b data-i18n="m.travel">여행</b><small data-i18n="m.travelSub">관광 흐름 · 명소</small></span>
+      <span class="mm-chev">‹</span>
+    </button>
     <!-- 취미 — 바다·생물 관측·땅과 하늘을 한 문에서 고른다.
          ⚠️ 네 화면이 묻는 것은 같다: "지금 저기 조건이 어떤가".
-            따로 두면 메뉴만 길어지고, 서로를 못 찾는다.
-         수정(2026-08-15): OCEAN은 독립 제품으로 유지하고, 이 패널은 같은 실행
-         경로로 들어가는 활동별 보조 바로가지만 제공한다. -->
+            따로 두면 메뉴만 길어지고, 서로를 못 찾는다. -->
     <button class="mm-item" type="button" data-act="outdoor">
       <span class="mm-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3.4 20.2h17.2"/><path d="M6.2 20.2 12 5.6l5.8 14.6"/><path d="M9.4 13.4h5.2" stroke-linecap="round"/><path d="M2.8 9.2c1.5 0 1.5-1.4 3-1.4s1.5 1.4 3 1.4" stroke-linecap="round"/></svg></span>
       <span class="mm-label"><b data-i18n="m.outdoor">취미</b><small data-i18n="m.outdoorSub">바다 · 생물 관측 · 땅과 하늘</small></span>
@@ -676,20 +677,18 @@
   </div>
 
   <!-- 취미 — 바다·생물 관측·땅과 하늘을 묶은 보조 바로가기.
-       ⚠️ 이름을 "추천"으로 하지 않았다. 우리는 권하지 않는다 — 조건을 옮길 뿐이다.
-       OCEAN 독립 메뉴와 같은 실행 경로를 사용하며 별도 해양 제품을 만들지 않는다. -->
+       ⚠️ 이름을 "추천"으로 하지 않았다. 우리는 권하지 않는다 — 조건을 옮길 뿐이다. -->
   <div id="outSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="outSheet" aria-label="닫기"><span>×</span></button></div>
     <h3 data-i18n="m.outdoor">취미</h3>
     <div id="outBody"></div>
   </div>
 
-  <!-- Ocean Vertical 운영 허브. 검사용 canary가 아니라 사용자가 실제 기능으로
-       들어가는 공개 화면이다. 제공하지 못하는 AIS 위치·서버 저장은 가짜 값이나
-       가짜 버튼을 만들지 않고 같은 화면에서 사유를 분명히 보여 준다. -->
+  <!-- 취미 안의 My Ocean·선박처럼 한 단계 더 필요한 화면만 쓰는 내부 시트.
+       ⚠️ 1단 OCEAN 메뉴를 되살리는 용도가 아니다. 모든 공개 진입은 취미에서 시작한다. -->
   <div id="oceanSheet" class="sheet-panel tall ocean-sheet" aria-hidden="true" inert data-nosnippet>
     <div class="traffic one"><button class="tl close" data-close="oceanSheet" aria-label="닫기"><span>×</span></button></div>
-    <h3 id="oceanTitle">OCEAN</h3>
+    <h3 id="oceanTitle">바다 도구</h3>
     <div id="oceanBody"></div>
   </div>
 
@@ -1222,7 +1221,7 @@
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"
         integrity="sha384-J3D70NIZSVUuhQbp4W22OKF/xNWQjCEXmLxpnBp4CNDaQ+TbS1mmDZ2W3wlgqpKj"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script type="module" src="js/main.js?v=20260821-tourism-map2"></script>
+<script type="module" src="js/main.js?v=20260821-v8p3-2"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

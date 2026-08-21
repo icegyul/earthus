@@ -86,13 +86,13 @@ const HINTS = {                       // 설명만 우리가 붙인다 (메뉴�
   news:     { ko: '지구에서 지금 일어나는 일',  en: "What's happening on Earth" },
   community:{ ko: '오늘의 지구 · 자료 그래프',  en: 'Earth today · data graphs' },
   ask:      { ko: '자료에 물어보기',            en: 'Ask the data' },
-  outdoor:  { ko: '철새 · 바닷새 · 바다거북',   en: 'Migratory birds, seabirds, turtles' },
+  outdoor:  { ko: '해양 관측 · 서핑 · 낚시 · 심해 · 생물 · 선박', en: 'Ocean data, surf, fishing, deep sea, wildlife and vessels' },
   locate:   { ko: '내가 있는 곳으로',           en: 'Go to my location' },
   globe:    { ko: '멀리서 지구 전체',           en: 'Whole Earth' },
 };
 const EN_LABEL = {                    // 메뉴 라벨은 한국어라 영어만 따로
   sat: 'Satellites', news: 'News', community: 'LAB', ask: 'Ask', flight: 'Flights',
-  outdoor: 'Outdoors', locate: 'My location', globe: 'Whole Earth', settings: 'Settings',
+  outdoor: 'Hobbies', locate: 'My location', globe: 'Whole Earth', settings: 'Settings',
 };
 function liveActions() {
   return [...document.querySelectorAll('#menuMain [data-act]')]
@@ -106,7 +106,7 @@ function liveActions() {
 }
 /* 2단을 여는 것(지구 스타일·Alert)은 data-open 이라 따로 둔다 */
 const OPENS = [
-  { open: 'earth', ko: '지구 스타일', en: 'Earth style', hint: '바탕·기상·해양·대기질·생물' },
+  { open: 'earth', ko: '전체레이어', en: 'All layers', hint: '바탕·기상·해양·대기질·생물' },
   { open: 'alert', ko: 'Alert',       en: 'Alert',       hint: '태풍·지진·특보 레이어' },
 ];
 

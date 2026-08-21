@@ -293,8 +293,8 @@ export function validateTourismSnapshot(snapshot) {
 }
 
 /**
- * 3D 기둥은 기관의 네 단계만 범주형 높이로 옮긴다.
- * 인구/면적을 법적 수용력 또는 안전 밀도로 해석하지 않는다.
+ * 고정 크기 3D 표시 셀은 기관 추정 인구 범위를 낮은 상대 높이로 옮긴다.
+ * 바닥 크기는 공식 구역·건물 면적이 아니며, 인구/면적을 수용력이나 안전 밀도로 해석하지 않는다.
  */
 export function towerVisual(item, at = null) {
   if (!item?.position || item.state === DATA_STATE.UNAVAILABLE) return null;
@@ -318,18 +318,19 @@ export function towerVisual(item, at = null) {
   const range = evidence?.populationRange;
   const min = numberOrNull(range?.min), max = numberOrNull(range?.max);
   const midpoint = min != null && max != null ? (min + max) / 2 : null;
-  // 높이는 기관이 제공한 추정 인구 범위의 중간값만 사용한다. 서울시 구역마다 면적이
-  // 다르므로 이를 수용력·안전 밀도로 해석하지 않으며, 색만 기관 혼잡 등급을 보존한다.
-  const quantifiedHeight = midpoint == null ? null
-    : Math.round(Math.max(2_600, Math.min(24_000, Math.sqrt(midpoint) * 88 - 200)) / 100) * 100;
-  const fallbackHeights = { 1: 4_800, 2: 8_400, 3: 14_000, 4: 21_000 };
+  // 50,000명 이상은 같은 상단 높이로 눌러 극단값이 도시 전체를 가리지 않게 한다.
+  // 짝수 미터로 반올림하는 것은 표시 안정화일 뿐 실제 건물 높이라는 뜻이 아니다.
+  const quantifiedHeight = midpoint == null ? null : Math.round((8 + 172
+    * Math.sqrt(Math.min(50_000, Math.max(0, midpoint)) / 50_000)) / 2) * 2;
+  const fallbackHeights = { 1: 44, 2: 84, 3: 132, 4: 172 };
   return Object.freeze({
-    heightMeters: quantifiedHeight ?? fallbackHeights[rank], radiusMeters: 120,
+    heightMeters: quantifiedHeight ?? fallbackHeights[rank], footprintMeters: 420,
+    primitive: 'AREA_MARKER', footprintMeaning: 'FIXED_DISPLAY_CELL_NOT_OFFICIAL_AREA',
     color: LEVEL_COLOR[rank], alpha: item.state === DATA_STATE.STALE ? 0.66 : 0.9,
     level: evidence.level, rank, sourceType,
     at: evidenceAt ? new Date(evidenceAt).toISOString() : null,
     live: sourceType === SOURCE_TYPE.OFFICIAL_OBSERVATION && item.state === DATA_STATE.LIVE,
     animated: false,
-    legendKo: '기둥 높이 = 서울시 공식 추정 인구 범위 · 색 = 기관 혼잡 등급',
+    legendKo: '블록 높이 = 서울시 공식 추정 인구 범위 · 색 = 기관 혼잡 등급 · 바닥 = 고정 표시 셀',
   });
 }

@@ -11,7 +11,9 @@ const cases = [
   { name: 'desktop', width: 1280, height: 720 },
 ];
 const expectedGroups = {
-  ocean: ['ocean-layers', 'surf', 'fishing', 'trench', 'vessel'],
+  'ocean-data': ['layer:sst', 'layer:sstanom', 'layer:wave', 'layer:swell', 'layer:current', 'layer:buoy'],
+  'ocean-activity': ['surf', 'fishing', 'vessel', 'my-ocean'],
+  'deep-sea': ['dive', 'trench'],
   life: ['turtle', 'seabird', 'migbird', 'ecobird'],
   'land-sky': ['para', 'mountain', 'sky'],
 };
@@ -29,11 +31,11 @@ try {
     });
 
     await page.goto(`${baseUrl}?ocean=hub`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-    await page.waitForSelector('#oceanSheet.up', { timeout: 30_000 });
+    await page.waitForSelector('#outSheet.up', { timeout: 30_000 });
     const hub = await page.evaluate(() => {
-      const sheet = document.querySelector('#oceanSheet');
+      const sheet = document.querySelector('#outSheet');
       const rect = sheet.getBoundingClientRect();
-      const targets = [...sheet.querySelectorAll('.ocean-layer,.ocean-module')].map(element => {
+      const targets = [...sheet.querySelectorAll('.out-card')].map(element => {
         const box = element.getBoundingClientRect();
         return { width: box.width, height: box.height };
       });
@@ -45,53 +47,28 @@ try {
         targets,
         text: sheet.innerText,
         closeHit: { width: closeHit.width, height: closeHit.height },
-        layers: sheet.querySelectorAll('.ocean-layer').length,
-        modules: sheet.querySelectorAll('.ocean-module').length,
+        groups: sheet.querySelectorAll('[data-out-group]').length,
+        cards: sheet.querySelectorAll('[data-out-act]').length,
         oceanMenuEntries: document.querySelectorAll('#menuMain [data-act="ocean"]').length,
       };
     });
     assert.ok(hub.overflow <= 0, `${item.name} horizontal overflow ${hub.overflow}`);
     assert.ok(hub.rect.left >= 0 && hub.rect.right <= item.width + 0.5,
-      `${item.name} Ocean sheet outside viewport`);
+      `${item.name} Hobby sheet outside viewport`);
     assert.ok(hub.targets.every(target => target.width >= 44 && target.height >= 44),
       `${item.name} has an Ocean target below 44px`);
     assert.deepEqual(hub.closeHit, { width: '44px', height: '44px' });
-    assert.equal(hub.layers, 6, `${item.name} Ocean layer count changed`);
-    assert.equal(hub.modules, 5, `${item.name} Ocean vertical count changed`);
-    assert.equal(hub.oceanMenuEntries, 1, `${item.name} first-class OCEAN menu is missing`);
+    assert.equal(hub.groups, 5, `${item.name} Hobby group count changed`);
+    assert.equal(hub.cards, 19, `${item.name} Hobby route count changed`);
+    assert.equal(hub.oceanMenuEntries, 0, `${item.name} independent OCEAN menu remains`);
     assert.doesNotMatch(hub.text, /무료|\bFREE\b/i);
     await page.screenshot({ path: `/private/tmp/earthus-ocean-hub-${item.name}.png` });
 
-    const layers = await page.evaluate(() => {
-      const sheet = document.querySelector('#oceanSheet');
-      const targets = [...sheet.querySelectorAll('.ocean-layer,.ocean-back')].map(element => {
-        const box = element.getBoundingClientRect();
-        return { width: box.width, height: box.height };
-      });
-      return {
-        count: sheet.querySelectorAll('.ocean-layer').length,
-        targets,
-        text: sheet.innerText,
-        overflow: document.documentElement.scrollWidth - innerWidth,
-      };
-    });
-    assert.equal(layers.count, 6);
-    assert.ok(layers.targets.every(target => target.width >= 44 && target.height >= 44),
-      `${item.name} has an Ocean target below 44px`);
-    assert.ok(layers.overflow <= 0, `${item.name} ocean layer overflow ${layers.overflow}`);
-    assert.doesNotMatch(layers.text, /My Ocean|무료|\bFREE\b/i);
-
-    await page.getByRole('button', { name: /파고 큰 쪽 파도 평균/ }).click();
-    await page.waitForFunction(() => !document.querySelector('#oceanSheet').classList.contains('up'));
+    await page.locator('#outSheet [data-out-act="layer:wave"]').click();
+    await page.waitForFunction(() => !document.querySelector('#outSheet').classList.contains('up'));
     assert.equal(await page.evaluate(async () =>
       (await import(new URL('js/store.js', location.href).href)).store.isOn('wave')), true);
 
-    await page.locator('#menuTab').click();
-    await page.waitForSelector('#menuMain.open');
-    await page.locator('#menuMain [data-act="ocean"]').click();
-    await page.waitForSelector('#oceanSheet.up');
-    assert.match(await page.locator('#oceanSheet').innerText(), /오늘의 바다/);
-    await page.locator('#oceanSheet [data-close="oceanSheet"]').click();
     await page.locator('#menuTab').click();
     await page.waitForSelector('#menuMain.open');
     await page.locator('#menuMain [data-act="outdoor"]').click();
@@ -131,7 +108,7 @@ try {
     await page.waitForSelector('#sfSheet.up');
     assert.deepEqual(errors, [], `${item.name} console/page errors: ${errors.join(' | ')}`);
     await page.close();
-    console.log(`${item.name}: PASS · first-class Ocean hub and Hobby shortcuts remain usable`);
+    console.log(`${item.name}: PASS · legacy Ocean route, categorized Hobby and live cards remain usable`);
   }
 } finally {
   await browser.close();

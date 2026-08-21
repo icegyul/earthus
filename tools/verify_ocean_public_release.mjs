@@ -52,11 +52,11 @@ for (const [localPath, publicPath, expectedType] of files) {
 const hub = await fetch(`${baseUrl}/?ocean=hub&ocean-release=${revision}`, { cache: 'no-store' });
 assert.equal(hub.status, 200);
 const html = await hub.text();
-assert.match(html, /data-act="ocean"/);
+assert.doesNotMatch(html, /data-act="ocean"/);
 assert.match(html, /data-act="outdoor"/);
 assert.match(html, /바다 · 생물 관측 · 땅과 하늘/);
 assert.doesNotMatch(html.match(/<nav id="menuMain"[\s\S]*?<\/nav>/)?.[0] || '', /무료|\bFREE\b/i);
-assert.match(html, /20260814-oceanv1/);
+assert.match(html, /20260820-hobby-ocean1/);
 
 console.log(`PASS: ${files.length} Ocean operating assets have exact live/local SHA-256 and MIME`);
-console.log(`PASS: ${baseUrl}/?ocean=hub exposes the first-class public Ocean hub without price copy`);
+console.log(`PASS: ${baseUrl}/?ocean=hub opens the categorized Hobby hub without an independent Ocean menu`);

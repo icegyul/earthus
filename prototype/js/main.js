@@ -5,11 +5,11 @@ import { initViewer, viewer, scene, cameraHeight, onCameraIdle, flyTo, setAmbien
 import { alarms } from './alarms.js';
 import { windField } from './windfield.js';
 import { myLocation } from './mylocation.js';
-import { layerBar } from './layerbar.js?v=20260821-tourism-map2';
+import { layerBar } from './layerbar.js';
 import { search } from './search.js';
 import { onboard } from './onboard.js';
 import { weatherPanel } from './ui-weather.js';
-import { tourismSheet } from './ui-tourism.js?v=20260821-tourism-map2';
+import { tourismSheet } from './ui-tourism.js?v=20260821-v8p3-1';
 import { createWeatherEarthSync } from './weather-earth-sync.js';
 import { createWeatherMomentLayer } from './weather-moment-layer.js';
 import { power } from './power.js';
@@ -19,7 +19,7 @@ import { renderQuality } from './render-quality.js';
 import { store } from './store.js';
 import { earthViewState } from './earth-view-state.js';
 import { hasEarthRoute } from './earth-route-state.js';
-import { registry } from './layers/registry.js?v=20260821-tourism-map2';
+import { registry } from './layers/registry.js';
 import { imagery } from './layers/imagery.js';
 import { chrome, chips, sheet, banner, settings, hud, bindModeTransition, toast } from './ui.js';
 import { i18n } from './i18n.js';
@@ -50,7 +50,7 @@ import { mountainPanel } from './ui-mountain.js';
 import { surfPanel } from './ui-surf.js';
 import { fishPanel } from './ui-fishing.js';
 import { outdoorPanel } from './ui-outdoor.js';
-import { oceanPanel } from './ui-ocean.js?v=20260814-oceanv1';
+import { oceanPanel } from './ui-ocean.js?v=20260821-v8p3-1';
 import { paraPanel } from './ui-para.js';
 import { apiKeysPanel } from './ui-apikeys.js';
 import { eventPanel } from './ui-events.js';
@@ -61,6 +61,7 @@ import { cosmic3d } from './space/cosmic3d.js?v=20260815-mc14';
 import { decodeAetherusRoute, replaceAetherusRoute } from './space/route-state.js';
 import { trenchCards } from './ocean/trenchcards.js';
 import { trenchGlobe } from './ocean/trenchglobe.js';
+import { createV8Runtime } from './v8/runtime-coordinator.js';
 
 /* 늦게 불러오는 바다거북 모듈을 붙잡아 두는 곳.
    ⚠️⚠️ **모듈 바깥에 둔다.** 켜는 쪽은 boot(), 끄는 쪽(OFF·HAS_MARKS)은
@@ -161,13 +162,23 @@ async function boot() {
   // 수심 장면을 공유하거나 동일 좌표로 재현할 수 있게 한다.
   // ⚠️ 좌표만 받고 수심은 반드시 배포된 GEBCO 격자에서 다시 읽는다.
   const sceneParams = new URLSearchParams(location.search);
+  const clearLegacyOceanRoute = () => {
+    // 이전 오퍼레이션에서 `?ocean=1` 이 캐시되어 다음 접속을
+    // 해구 진입 상태로 남기는 일이 있었음. 기본 진입은 지구로 복귀한다.
+    if (sceneParams.get('ocean') !== '1') return;
+    sceneParams.delete('ocean');
+    const next = `${location.pathname}${sceneParams.toString() ? `?${sceneParams}` : ''}${location.hash}`;
+    history.replaceState(history.state, '', next);
+  };
+  clearLegacyOceanRoute();
+
   const diveParam = sceneParams.get('dive');
-  const oceanRoute = sceneParams.get('ocean') === '1';
-  const oceanHubRoute = sceneParams.get('ocean') === 'hub' || sceneParams.get('ocean-hub') === '1';
+  const oceanRoute = sceneParams.get('ocean');
+  const oceanHubRoute = oceanRoute === 'hub' || sceneParams.get('ocean-hub') === '1';
   /* 잘못된 수동 URL에 두 서비스 route가 섞여도 장면 복원기가 경쟁하지 않는다.
      해구(좌표 계약) > Earth의 명시 상태 > AETHERUS 순으로 하나만 선택한다. */
   const earthRouteRequested = hasEarthRoute(sceneParams);
-  const aetherusRoute = diveParam || oceanRoute || earthRouteRequested
+  const aetherusRoute = diveParam || earthRouteRequested
     ? null : decodeAetherusRoute(sceneParams);
   let aetherusRouteSyncReady = !aetherusRoute?.stage;
   const syncAetherusRoute = state => {
@@ -194,10 +205,6 @@ async function boot() {
         }
       });
     }
-  } else if (oceanRoute) {
-    queueMicrotask(() => sceneMgr.to('earth', { stage: 'trench' }).catch(error => {
-      console.warn('[ocean-link]', error.message);
-    }));
   } else if (aetherusRoute?.stage) {
     queueMicrotask(async () => {
       try {
@@ -231,13 +238,18 @@ async function boot() {
      영어로 저장해 둔 사용자가 새로고침했을 때 메뉴만 한국어로 돌아온다. */
   i18n.applyStatic();
   layerBar.init();
+  /* v8 엔진은 기존 store·레이어를 복제하지 않고 실제 상태만 정규화한다.
+     진단 손잡이는 값 수정 기능 없이 snapshot만 노출한다. */
+  const v8Runtime = createV8Runtime({ eventTarget: document }).init(store);
+  window.__e = window.__e || {};
+  window.__e.v8 = Object.freeze({ snapshot: () => v8Runtime.snapshot() });
   earthViewState.init({
     layerBar,
     sceneMgr,
     sourceNote,
     flyTo,
     canOpenLayer: id => layerBar.canOpenLayer(id),
-    foreignRouteActive: !!diveParam || oceanRoute,
+    foreignRouteActive: !!diveParam,
   });
   const weatherMomentLayer = createWeatherMomentLayer({
     viewer, Cesium: globalThis.Cesium, power, language: () => i18n.lang,
@@ -288,7 +300,7 @@ async function boot() {
      ⚠️ 선택 전 활동 CTA와 같은 이유로 코치마크도 자동 노출하지 않는다. */
   onboard.init({ chips: false, coach: false });
   weatherPanel.init();    // 하단 온도 탭 → 내 자리 날씨 시트
-  tourismSheet.init();    // 서울시 공식 혼잡 3D 기둥 → 관광 흐름 시트
+  tourismSheet.init();    // 서울시 공식 혼잡 저층 3D 블록 → 관광 흐름 시트
 
   // 내 위치 — 실패해도 조용히 넘어간다 (HTTP 접속·권한 거부 등)
   windField.init();
@@ -301,7 +313,7 @@ async function boot() {
      카메라를 지구 첫 화면으로 빼앗으면 딥링크가 0m에서 멈춘 것처럼 보인다. */
   /* Earth Data/Evidence 딥링크도 이미 '사용자가 원하는 화면'이다. 이 경로에서
      아름다운 첫 화면용 intro를 시작하면 읽는 동안 30fps Cesium 렌더가 남는다. */
-  let userEngaged = !!(diveParam || oceanRoute || oceanHubRoute
+  let userEngaged = !!(diveParam || oceanHubRoute
     || earthRouteRequested || aetherusRoute?.stage);
   let geoTookOver = false;
   /* 지구뿐 아니라 메뉴·검색을 먼저 누른 것도 "이미 사용 중"이다.
@@ -368,7 +380,6 @@ async function boot() {
     power.animate(1700);
   });
   layerBar.onAction('sat', () => satPanel.open());
-  layerBar.onAction('ocean', () => oceanPanel.open());
   /* 취미 — 바다·생물 관측·땅과 하늘을 한자리에 모았다 (ui-outdoor.js 머리말 참고).
      ⚠️ 옛 메뉴 항목(surf/mountain/sky)도 그대로 살려 둔다. 검색·코치마크·딥링크가
         그 이름으로 부르고 있어, 지우면 조용히 안 열린다. */
@@ -490,12 +501,18 @@ async function boot() {
   /* 수정(2026-08-15): OCEAN 독립 메뉴는 없앴다. 바다 세부 화면까지 이 표에서
      직접 열어 같은 기능을 두 허브에 반복하지 않는다. */
   outdoorPanel.init(act => {
+    if (act.startsWith('layer:')) {
+      const id = act.slice('layer:'.length);
+      sceneMgr.to('earth', { stage: 'surface' }).then(() => store.setLayer(id, true));
+      return;
+    }
     const go = {
-      'ocean-layers': () => oceanPanel.open('layers'),
       surf: () => surfPanel.open(),
       fishing: () => fishPanel.open(),
-      trench: openFeaturedDive,
       vessel: () => oceanPanel.open('vessel'),
+      'my-ocean': () => oceanPanel.open('my'),
+      dive: openFeaturedDive,
+      trench: () => sceneMgr.to('earth', { stage: 'trench' }),
       para: () => paraPanel.open(),
       mountain: () => mountainPanel.open(),
       sky: () => skyPanel.open(),
@@ -524,8 +541,6 @@ async function boot() {
     go();
   });
   oceanPanel.init(async action => {
-    /* Ocean 허브는 이미 운영 중인 실제 화면의 한 진입점이다. 같은 기능을 두 벌로
-       구현하지 않고, 지도·패널의 정본으로 이동한다. */
     if (action.startsWith('layer:')) {
       const id = action.slice('layer:'.length);
       await sceneMgr.to('earth', { stage: 'surface' });
@@ -555,10 +570,10 @@ async function boot() {
         ecobirdMod.open();
       },
     }[action];
-    if (!go) { console.warn(`[Ocean] '${action}' 연결이 없습니다`); return; }
+    if (!go) { console.warn(`[바다 도구] '${action}' 연결이 없습니다`); return; }
     await go();
   });
-  if (oceanHubRoute) queueMicrotask(() => oceanPanel.open());
+  if (oceanHubRoute) queueMicrotask(() => outdoorPanel.open());
   warn.init();
   apiKeysPanel.init();
   document.getElementById('btnApi')?.addEventListener('click', () => apiKeysPanel.open());

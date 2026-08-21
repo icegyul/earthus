@@ -21,6 +21,7 @@
 import { i18n } from './i18n.js';
 import { visualEffects } from './visual-effect-settings.js';
 import { store } from './store.js';
+import { attachProvenanceDock } from './v8/provenance-dock.js';
 
 const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c =>
@@ -192,6 +193,7 @@ export const sourceNote = {
     if (!this.root) return this;
     this.root.setAttribute('role', 'status');
     this.root.setAttribute('aria-live', 'polite');
+    this._dock = attachProvenanceDock(this.root);
     store.on('layer', () => this.render());
     store.on('scene', () => this.render());
     i18n.onChange(() => this.render());

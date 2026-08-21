@@ -18,34 +18,36 @@ try {
     const page = await browser.newPage({ viewport: { width: item.width, height: item.height } });
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.goto(`${base}?ocean=hub`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-    await page.locator('#oceanSheet.up').waitFor({ timeout: 30_000 });
+    await page.goto(`${base}ocean.html`, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    await page.waitForURL(url => url.searchParams.get('ocean') === 'hub', { timeout: 30_000 });
+    await page.locator('#outSheet.up').waitFor({ timeout: 30_000 });
 
     const home = await page.evaluate(() => {
-      const sheet = document.querySelector('#oceanSheet');
-      const targets = [...sheet.querySelectorAll('.ocean-layer,.ocean-module,.ocean-back')]
+      const sheet = document.querySelector('#outSheet');
+      const targets = [...sheet.querySelectorAll('.out-card')]
         .filter(node => node.getClientRects().length)
         .map(node => node.getBoundingClientRect());
       return {
-        title: document.querySelector('#oceanTitle')?.textContent.trim(),
+        title: sheet.querySelector('h3')?.textContent.trim(),
         text: sheet.innerText,
-        layers: sheet.querySelectorAll('[data-ocean-layer]').length,
-        moduleNames: [...sheet.querySelectorAll('.ocean-module b')].map(node => node.textContent.trim()),
-        freeMenuBadge: document.querySelectorAll('[data-act="ocean"] .mm-free').length,
+        groups: sheet.querySelectorAll('[data-out-group]').length,
+        cards: sheet.querySelectorAll('[data-out-act]').length,
+        oceanMenuEntries: document.querySelectorAll('[data-act="ocean"]').length,
         minimumControl: Math.min(...targets.map(box => Math.min(box.width, box.height))),
         overflow: document.documentElement.scrollWidth - innerWidth,
       };
     });
-    assert.equal(home.title, 'OCEAN');
-    assert.equal(home.layers, 6);
-    assert.deepEqual(home.moduleNames, ['Surf', 'Fishing', 'Dive · 심해', 'Marine Life', 'Vessels']);
-    assert.equal(home.freeMenuBadge, 0);
+    assert.equal(home.title, '취미');
+    assert.equal(home.groups, 5);
+    assert.equal(home.cards, 19);
+    assert.equal(home.oceanMenuEntries, 0);
     assert.ok(home.minimumControl >= 44, `${item.name} control below 44px: ${home.minimumControl}`);
     assert.ok(home.overflow <= 0, `${item.name} horizontal overflow ${home.overflow}`);
-    assert.doesNotMatch(home.text, /무료|\bFREE\b|UNAVAILABLE|GATED|권리 승인 전|My Ocean|결제|구독/i);
+    assert.match(home.text, /My Ocean/);
+    assert.doesNotMatch(home.text, /무료|\bFREE\b|UNAVAILABLE|GATED|권리 승인 전|결제|구독/i);
     assert.doesNotMatch(home.text, /출조·입수 가능 여부|does not forecast whether departure/i);
 
-    await page.getByRole('button', { name: /Vessels/ }).click();
+    await page.locator('#outSheet [data-out-act="vessel"]').click();
     await page.locator('#oceanBody a').first().waitFor();
     const vessel = await page.evaluate(() => ({
       text: document.querySelector('#oceanBody').innerText,
@@ -62,7 +64,7 @@ try {
     await page.screenshot({ path: `/tmp/earthus-ocean-clean-${item.name}.png`, fullPage: true });
     assert.deepEqual(errors, [], `${item.name} page errors: ${errors.join(' | ')}`);
     await page.close();
-    console.log(`${item.name}: PASS · clean Ocean hub · 6 layers · official vessels`);
+    console.log(`${item.name}: PASS · legacy Ocean link opens categorized Hobby · official vessels`);
   }
 } finally {
   await browser.close();

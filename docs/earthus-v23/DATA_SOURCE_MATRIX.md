@@ -1,9 +1,9 @@
 # DATA SOURCE MATRIX — EARTHUS v2.3
 
-> 코드 스냅샷: 2026-08-14
+> 코드 스냅샷: 2026-08-21
 > 규칙: 출처 문자열만 있다고 권리가 승인된 것은 아니다. `display`, `cache`, `history`,
 > `derivative`, `redistribution`, `paidExport`, `AI`를 별도 gate로 판단한다.
-> 감사 결과: `aws/*/handler.py` **67/67** 인벤토리 일치, 공통 카탈로그 **30개** 재생성,
+> 감사 결과: `aws/*/handler.py` **68/68** 인벤토리 일치, 공통 카탈로그 **30개** 재생성,
 > 그중 개별 조건/확인이 필요한 3개(GVP·Wikimedia·CelesTrak)는 승인으로 바꾸지 않았다.
 
 ## 1. 상태 코드
@@ -31,6 +31,7 @@
 | NOAA/NWS/NHC/USGS/NASA | `archiver`, `ascat-observations`, `cyclone-analog`, `eclipse-path`, `gk2a-clouds`, `gmgsi-clouds`, `gts-global`, `land-stations`, `ocean-solar`, `tpw-grid`, `tsunami-intl`, `wildfire`, `world-alerts` | 전지구/미국/해양. TPW는 GFS 0.25°→1° 동아시아 | 미국 정부 자료가 많지만 dataset·이미지별 metadata/제3자 credit 확인. TPW는 NOAA/NCEP 원본 직접 | TPW `APPROVED_FREE`, 그 외 dataset별 `CONDITIONAL` |
 | Esri World Boundaries and Places | PR-04 read mode reference tiles | 전지구 경계·지명, zoom에 따른 coverage | 화면 표시 중 Esri·Garmin·HERE·OSM·GIS community attribution 직접 노출. EARTHUS cache/history/export/derivative/AI 금지 | display-only `CONDITIONAL` |
 | Natural Earth coastline | Data View 흰색 해안선 정적 reference | 전지구 1:110m, 동아시아 110–155°E·15–55°N 1:10m | 모든 raster/vector가 public domain. pinned source commit과 화면 출처 보존 | 시각 reference `APPROVED_FREE`; 영토·안전 geometry 금지 |
+| 서울특별시·한국관광공사 | `tourism-flow` | 서울 121개 주요 장소·KTO 계약별 범위 | 서울 실시간 인구는 공공누리 제1유형 출처표시. KTO 응답은 작업별 계약·표시 조건과 제3자 권리를 승계 | 현재 승인된 무료 display만 `CONDITIONAL`; 유료 파생·재판매는 별도 gate |
 | adsb.lol | `flight-track` | 공급 coverage와 지연에 따름 | API·공개 DB ODbL, attribution/share-alike. 운영 사용은 공급자 연락 권고 | `CONDITIONAL`, SLA 판매 금지 |
 | 에코뱅크 | `ecobank`, `ecobird` | 한국 생태 조사 | 제1유형 표기와 제3자 권리 포함 | `BLOCKED_PAID` |
 | 바다거북 | `sea-turtle` | 공개 이동 경로 | 공공누리 제4유형: 비상업·변경금지 | `BLOCKED_PAID`, 파생/정밀좌표 제한 |
@@ -44,10 +45,10 @@
 | Anthropic API | `news-brief` | 내부 요약 | 모델 이용조건·개인정보·비용·근거 claim 계약 필요 | 사용자 사실 생성 금지, `UNKNOWN` |
 | 내부 파생·운영 | `air-evidence-archive`, `health`, `lab-report-index`, `mountain-verify`, `push-tick`, `signal-foundation`, `source-governance`, `social-draft`, `vaac-validation` | 입력과 동일 | 새 권리를 만들지 않으며 가장 엄격한 입력 권리를 승계 | `INTERNAL` |
 
-## 3. 67개 handler 인벤토리
+## 3. 68개 handler 인벤토리
 
 아래 목록은 현재 `aws/*/handler.py`를 빠짐없이 고정한 것이다. 이 중 source/data handler는
-65개이고 `signal-foundation`, `source-governance`는 기존 출력을 읽는 shadow processor다.
+66개이고 `signal-foundation`, `source-governance`는 기존 출력을 읽는 shadow processor다.
 `tools/test_data_source_matrix.mjs`가 실제 디렉터리와 이 목록의 누락·중복을 막는다.
 
 ```text
@@ -66,7 +67,8 @@ marine-grid           metoffice-uk         migbird              mountain-verify
 news-brief            obis-summary         ocean-depth          ocean-solar
 pressure-grid         push-tick            quake-asia           regional-hazards
 regional-news         sea-turtle           seabird              signal-foundation
-social-draft          source-governance    tokyo-vaac           tpw-grid
+social-draft          source-governance    tokyo-vaac           tourism-flow
+tpw-grid
 tsunami-intl          typhoon-official     vaac-validation       wildfire
 wind-grid             world-alerts
 ```

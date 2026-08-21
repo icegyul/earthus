@@ -11,7 +11,7 @@ const cyclone = fs.readFileSync(path.join(root, 'prototype/js/ui-cyclone.js'), '
 const actual = fs.readdirSync(path.join(root, 'aws'), { withFileTypes: true })
   .filter(entry => entry.isDirectory() && fs.existsSync(path.join(root, 'aws', entry.name, 'handler.py')))
   .map(entry => entry.name).sort();
-const inventoryBlock = matrix.match(/## 3\. 67개 handler 인벤토리[\s\S]*?```text\n([\s\S]*?)\n```/);
+const inventoryBlock = matrix.match(/## 3\. \d+개 handler 인벤토리[\s\S]*?```text\n([\s\S]*?)\n```/);
 assert.ok(inventoryBlock, 'handler inventory block missing');
 const documented = inventoryBlock[1].trim().split(/\s+/).sort();
 assert.deepEqual(documented, actual, 'DATA_SOURCE_MATRIX handler inventory drifted');

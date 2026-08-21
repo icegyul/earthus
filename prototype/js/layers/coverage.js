@@ -1,4 +1,4 @@
-// 관측망 밀도 — "지구의 어디를 아무도 안 보고 있나"
+// 관측 공백 — "지구의 어디를 아무도 안 보고 있나"
 //
 // 왜 이 그림인가
 //   다른 레이어는 전부 "무엇이 있는가"를 보여준다. 이건 **없음**을 보여준다.
@@ -22,7 +22,8 @@ import { API } from '../config.js';
 import { i18n } from '../i18n.js';
 
 /* 세는 격자 — 지도 격자(5°)보다 굵게 잡는다.
-   ⚠️ 5° 로 세면 대부분 칸이 0~1 이라 얼룩만 보인다. 10° 가 "빈 곳"이 읽히는 크기다. */
+   ⚠️ 5° 로 세면 대부분 칸이 0~1 이라 얼룩만 보인다. 통계는 10° 로 세되,
+      화면에는 칸 경계를 그대로 노출하지 않고 부드러운 연속면으로 보간한다. */
 const RES = 10;
 const NX = 36, NY = 16;          // 경도 360/10, 위도 -80~80
 const LAT0 = -80, LON0 = -180;
@@ -32,22 +33,34 @@ const LAT0 = -80, LON0 = -180;
       실측 분포: 중앙값 4.1, 상위 1% 108, 최대 237 — 대부분 칸이 눈금 위쪽에 몰려
       전부 같은 색이 됐다. 그리고 무엇보다 **이 레이어의 요점은 촘촘함이 아니라 빈 곳**이다.
 
-   그래서 뒤집었다: **빈 곳만 칠하고 촘촘한 곳은 비운다.**
-      관측점 0    → 붉게, 진하게 (아무도 안 보는 곳)
-      드문 곳     → 옅은 주황
-      보통 이상   → 거의 투명 (지구가 그대로 보인다)
-   그러면 화면에 남는 것이 곧 "구멍"이다. */
-const LEVELS = [
-  { max: 0,    rgb: [200, 70, 60],   a: 205 },   // 하나도 없음
-  { max: 1,    rgb: [200, 120, 60],  a: 150 },   // 적도 환산 1곳 미만
-  { max: 4,    rgb: [190, 160, 80],  a: 95 },    // 드묾
-  { max: 12,   rgb: [140, 170, 150], a: 45 },    // 보통
-  { max: 1e9,  rgb: [120, 170, 200], a: 16 },    // 촘촘 — 거의 안 보이게
-];
+   처음 구현은 관측점 0인 10° 칸을 알파 205의 붉은 사각형으로 칠했다.
+   ⚠️ 그 결과 의미보다 먼저 거대한 붉은 '멍'으로 읽혔다. 통계 격자는 유지하되
+      표현은 낮은 불투명도의 호박빛 연속면으로 만든다. 빨강은 재난·경보에 남긴다. */
+const GAP_RGB = [226, 184, 112];
+const MAX_ALPHA = 60;
+const DENSE_AT = 12;
 
-function levelAt(v) {
-  for (const L of LEVELS) if (v <= L.max) return L;
-  return LEVELS[LEVELS.length - 1];
+function densityAt(dens, ix, iy) {
+  const x = ((ix % NX) + NX) % NX;
+  const y = Math.max(0, Math.min(NY - 1, iy));
+  return dens[y * NX + x];
+}
+
+function smoothDensity(dens, gx, gy) {
+  const x0 = Math.floor(gx), y0 = Math.floor(gy);
+  const tx = gx - x0, ty = gy - y0;
+  const a = densityAt(dens, x0, y0);
+  const b = densityAt(dens, x0 + 1, y0);
+  const c = densityAt(dens, x0, y0 + 1);
+  const d = densityAt(dens, x0 + 1, y0 + 1);
+  return (a * (1 - tx) + b * tx) * (1 - ty)
+       + (c * (1 - tx) + d * tx) * ty;
+}
+
+function gapAlpha(density) {
+  /* 밀도 편차가 커서 로그로 눌러야 한 관측소가 있는 칸도 갑자기 투명해지지 않는다. */
+  const observed = Math.min(1, Math.log1p(Math.max(0, density)) / Math.log1p(DENSE_AT));
+  return Math.round(MAX_ALPHA * Math.pow(1 - observed, 1.25));
 }
 
 export const coverage = {
@@ -88,20 +101,20 @@ export const coverage = {
       emptyPct: Math.round(empty / (NX * NY) * 100),
     };
 
-    // 캔버스로 칠해 한 장으로 얹는다 (격자 레이어와 같은 방식)
-    const S = 6;                                   // 칸당 화소
+    // 통계 격자 경계를 보이지 않게 연속면으로 보간한 뒤 한 장으로 얹는다.
+    const S = 12;                                  // 통계 칸당 화소
     const cv = document.createElement('canvas');
     cv.width = NX * S; cv.height = NY * S;
     const g = cv.getContext('2d');
     const img = g.createImageData(cv.width, cv.height);
     for (let y = 0; y < cv.height; y++) {
-      const iy = NY - 1 - Math.floor(y / S);       // 캔버스는 위가 북쪽
+      const gy = NY - (y + 0.5) / S - 0.5;         // 캔버스는 위가 북쪽
       for (let x = 0; x < cv.width; x++) {
-        const ix = Math.floor(x / S);
-        const L = levelAt(dens[iy * NX + ix]);
+        const gx = (x + 0.5) / S - 0.5;
+        const alpha = gapAlpha(smoothDensity(dens, gx, gy));
         const o = (y * cv.width + x) * 4;
-        img.data[o] = L.rgb[0]; img.data[o + 1] = L.rgb[1]; img.data[o + 2] = L.rgb[2];
-        img.data[o + 3] = L.a;
+        img.data[o] = GAP_RGB[0]; img.data[o + 1] = GAP_RGB[1]; img.data[o + 2] = GAP_RGB[2];
+        img.data[o + 3] = alpha;
       }
     }
     g.putImageData(img, 0, 0);
@@ -112,7 +125,7 @@ export const coverage = {
         rectangle: Cesium.Rectangle.fromDegrees(LON0, LAT0, LON0 + 360, LAT0 + NY * RES),
         tileWidth: cv.width, tileHeight: cv.height,
       }));
-    this.layer.alpha = 0.95;
+    this.layer.alpha = 0.82;
   },
 
   /** 관측점 좌표를 모은다. ⚠️ 못 받은 자료원은 조용히 빼고, 무엇을 뺐는지 남긴다. */
@@ -156,12 +169,12 @@ export const coverage = {
       ? `관측점 ${s.points.toLocaleString()}곳 (해양 부이 ${this.sourceCounts?.buoy?.toLocaleString?.() || 0} · 공항 METAR ${this.sourceCounts?.metar?.toLocaleString?.() || 0} · 세계 지상관측 GTS ${this.sourceCounts?.gts?.toLocaleString?.() || 0})을 10° 격자에 센 것입니다. `
         + `${s.cells}칸 중 **${s.empty}칸(${s.emptyPct}%)에 관측점이 하나도 없습니다.**\n`
         + ` 면적당 개수로 나눴습니다 — 같은 10° 칸이라도 극지는 좁아서, 안 나누면 극지가 실제보다 촘촘해 보입니다.\n`
-        + `색이 진할수록 관측이 없는 곳입니다 — 촘촘한 곳은 일부러 비워 두었습니다. 화면에 남는 붉은 자리가 곧 구멍입니다.\n`
+        + `옅은 호박빛이 남는 곳일수록 관측점이 드뭅니다 — 10° 통계 칸의 경계는 부드럽게 이어 표시합니다. 촘촘한 곳은 일부러 비워 두었습니다.\n`
         + `자료 의미 · 관측점 분포 밀도 · 신뢰도는 자료 종류별 별도 평가`
       : `${s.points.toLocaleString()} observation points (ocean buoys ${this.sourceCounts?.buoy?.toLocaleString?.() || 0} · airport METAR ${this.sourceCounts?.metar?.toLocaleString?.() || 0} · global GTS ${this.sourceCounts?.gts?.toLocaleString?.() || 0}) counted on a 10° grid. `
         + `**${s.empty} of ${s.cells} cells (${s.emptyPct}%) contain no observation point at all.**\n`
         + ` Counts are divided by cell area: without that, the poles look denser than they are.\n`
-        + `The stronger the colour, the fewer observations: dense areas are deliberately left clear, so what remains on screen is the gap.\n`
+        + `A soft amber field marks sparse observations; 10° statistical-cell boundaries are blended into a continuous surface. Dense areas are deliberately left clear.\n`
         + `Meaning · observation-point density · confidence is evaluated separately by data type.`) + miss;
   },
 };

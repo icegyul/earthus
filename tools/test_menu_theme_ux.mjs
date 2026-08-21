@@ -32,7 +32,7 @@ try {
     await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
     const unexpectedInitialUi = await page.evaluate(() => [
-      '#trenchGlobeHud', '#hudShow', '#srcNote', '#coach', '#tcLegend',
+      '#trenchGlobeHud', '#srcNote', '#coach', '#tcLegend',
       '#sfHere', '#fsHere', '#mapOff', '#fxChip', '#actBar',
     ].filter(selector => {
       const node = document.querySelector(selector);

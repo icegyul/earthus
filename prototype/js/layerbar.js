@@ -176,7 +176,7 @@ export const ITEMS = [
   { id:'ukfc', ko:'영국 예보', en:'UK forecast', sub:'영국 기상청 · 36곳', subEn:'Met Office · 36 sites', ready:true,
     sky:'#0c1622', paint:'ukfc' },
   /* ⚠️ 이건 자료를 보여주는 레이어가 아니라 **자료가 없는 곳**을 보여주는 레이어다. */
-  { id:'coverage', ko:'관측망 밀도', en:'Observation coverage', sub:'빈 곳 찾기', subEn:'Where nobody looks', ready:true,
+  { id:'coverage', ko:'관측 공백', en:'Observation gaps', sub:'관측 적은 곳', subEn:'Sparse observations', ready:true,
     sky:'#0a0e14', paint:'coverage' },
 
   { id:'buoy', ko:'해양 부이', en:'Buoys', sub:'파고·수온', subEn:'Waves', ready:true,

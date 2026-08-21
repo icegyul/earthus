@@ -1878,37 +1878,32 @@ function renderTierRow(ko) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   개발용 HUD
+   접이식 상태 HUD
    ══════════════════════════════════════════════════════════════ */
 export const hud = {
   init() {
-    /* ⚠️ 개발용 HUD 는 기본으로 숨긴다.
+    /* ⚠️ 상태 HUD 는 기본으로 접어 둔다.
        고도·프레임·해상도·레이어 ID 가 상시로 떠 있으면 아무리 폰트를 다듬어도
        "개발 도구를 켜둔 화면"으로 보인다. 리빙어스와 가장 크게 벌어지던 지점이다.
-       필요할 때만 켜고, 선택은 기억한다. */
+       필요할 때만 열고, 선택은 기억한다. */
     /* 받은 지적(2026-08-12): "HUD가 없어졌고" — 그래서 접힌 손잡이로 복구했었다.
        후속 공개화면 검수(2026-08-13)에서 고도·FPS·해상도가 일반 기능처럼 수집되고
-       미완성 화면으로 읽히는 문제가 확인됐다. 기능은 보존하되 이제 #dev에서만 연다. */
-    const isDevMode = () => location.hash.startsWith('#dev');
+       미완성 화면으로 읽히는 문제가 확인됐다. 패널은 접어 두되, 공개 주소에서도
+       사용자가 다시 열 수 있는 손잡이까지 없애면 "HUD가 사라진" 상태가 된다. */
     const showHud = (on, remember = true) => {
-      const enabled = isDevMode();
       const panel = $('#hud');
       const handle = $('#hudShow');
-      const showHandle = enabled && !on;
-      panel.hidden = !enabled || !on;
+      const showHandle = !on;
+      panel.hidden = !on;
       handle.hidden = !showHandle;
       handle.style.setProperty('display', showHandle ? 'block' : 'none', 'important');
-      panel.setAttribute('aria-hidden', String(!enabled || !on));
+      panel.setAttribute('aria-hidden', String(!on));
       handle.setAttribute('aria-hidden', String(!showHandle));
       if (remember) localStorage.setItem('earthus.hud', on ? 'on' : 'off');
     };
-    /* 공개 주소에서는 손잡이까지 숨긴다. 개발자는 #dev에서만 열 수 있다.
-       초기 HTML을 수집한 방문자에게 고도·FPS 같은 내부 측정값을 제품 기능처럼
-       보이게 했던 것이 문제였다. */
-    const restore = () => showHud(isDevMode()
-      && localStorage.getItem('earthus.hud') === 'on', false);
+    /* 공개 주소에서도 손잡이는 남긴다. 패널 자체는 사용자가 열었을 때만 보인다. */
+    const restore = () => showHud(localStorage.getItem('earthus.hud') === 'on', false);
     restore();
-    window.addEventListener('hashchange', restore);
     $('#hudHide').onclick = () => showHud(false);
     $('#hudShow').onclick = () => showHud(true);
     document.querySelectorAll('#hud [data-jump]').forEach(b => {

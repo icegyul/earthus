@@ -125,6 +125,11 @@ for (const [, attrs] of panels) {
 
 assert.match(html, /id="hud" hidden aria-hidden="true"/);
 assert.match(html, /id="hudShow" hidden aria-hidden="true"/);
-assert.match(ui, /location\.hash\.startsWith\('#dev'\)/);
+assert.match(ui, /const showHandle = !on/,
+  'public HUD must leave a folded handle when the panel is closed');
+assert.match(ui, /localStorage\.getItem\('earthus\.hud'\) === 'on'/,
+  'public HUD preference must survive reload');
+assert.doesNotMatch(ui, /location\.hash\.startsWith\('#dev'\)/,
+  'public HUD must not disappear behind a #dev-only gate');
 
 console.log(`public UI contract OK · legal links ${legalLinks.length} · sealed panels ${panels.length}`);

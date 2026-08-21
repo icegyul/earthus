@@ -292,11 +292,8 @@ export function validateTourismSnapshot(snapshot) {
   return true;
 }
 
-/**
- * 고정 크기 3D 표시 셀은 기관 추정 인구 범위를 읽을 수 있는 상대 높이로 옮긴다.
- * 바닥 크기는 공식 구역·건물 면적이 아니며, 인구/면적을 수용력이나 안전 밀도로 해석하지 않는다.
- */
-export function towerVisual(item, at = null) {
+/** 현재 관측 또는 요청 시각 45분 이내의 가장 가까운 공식 예측만 선택한다. */
+export function resolveTourismEvidence(item, at = null) {
   if (!item?.position || item.state === DATA_STATE.UNAVAILABLE) return null;
   let evidence = item.official;
   let evidenceAt = item.provenance?.observedAt || null;
@@ -315,24 +312,30 @@ export function towerVisual(item, at = null) {
   }
   const rank = Number(evidence?.rank);
   if (![1, 2, 3, 4].includes(rank)) return null;
-  const range = evidence?.populationRange;
-  const min = numberOrNull(range?.min), max = numberOrNull(range?.max);
-  const midpoint = min != null && max != null ? (min + max) / 2 : null;
-  // 50,000명 이상은 같은 상단 높이로 눌러 극단값이 도시 전체를 가리지 않게 한다.
-  // 폭보다 높이를 크게 두어 도시 전체 시점에서도 옆면이 사라지지 않게 한다.
-  // 단, 최대 세로/가로 비율을 4 이하로 둔다. 이 표시는 실제 건물 높이가 아니다.
-  // 짝수 미터로 반올림하는 것은 표시 안정화일 뿐 실제 건물 높이라는 뜻이 아니다.
-  const quantifiedHeight = midpoint == null ? null : Math.round((260 + 1340
-    * Math.sqrt(Math.min(50_000, Math.max(0, midpoint)) / 50_000)) / 2) * 2;
-  const fallbackHeights = { 1: 360, 2: 720, 3: 1120, 4: 1520 };
+  const parsedAt = Date.parse(evidenceAt);
   return Object.freeze({
-    heightMeters: quantifiedHeight ?? fallbackHeights[rank], footprintMeters: 420,
-    primitive: 'AREA_MARKER', footprintMeaning: 'FIXED_DISPLAY_CELL_NOT_OFFICIAL_AREA',
-    color: LEVEL_COLOR[rank], alpha: item.state === DATA_STATE.STALE ? 0.66 : 0.9,
-    level: evidence.level, rank, sourceType,
-    at: evidenceAt ? new Date(evidenceAt).toISOString() : null,
+    level: evidence.level, rank, populationRange: evidence.populationRange,
+    sourceType, at: Number.isFinite(parsedAt) ? new Date(parsedAt).toISOString() : null,
     live: sourceType === SOURCE_TYPE.OFFICIAL_OBSERVATION && item.state === DATA_STATE.LIVE,
+  });
+}
+
+/**
+ * @deprecated 한 release 동안만 유지하는 이전 단일-기둥 adapter.
+ * 새 renderer는 tourism-density-grid.js의 공유 셀만 사용한다.
+ */
+export function towerVisual(item, at = null) {
+  const evidence = resolveTourismEvidence(item, at);
+  if (!evidence) return null;
+  const scoreByRank = { 1: 0.34, 2: 0.59, 3: 0.79, 4: 1.00 };
+  const score = scoreByRank[evidence.rank];
+  return Object.freeze({
+    heightMeters: 12 + 168 * (score ** 0.70), footprintMeters: 95,
+    primitive: 'AREA_MARKER', footprintMeaning: 'DEPRECATED_REGIONAL_VISUAL_CELL',
+    color: LEVEL_COLOR[evidence.rank], alpha: item.state === DATA_STATE.STALE ? 0.66 : 0.9,
+    score, deprecated: true,
+    ...evidence,
     animated: false,
-    legendKo: '블록 높이 = 서울시 공식 추정 인구 범위 · 색 = 기관 혼잡 등급 · 바닥 = 고정 표시 셀',
+    legendKo: '이전 단일 셀 adapter · 새 지도는 공식 추정 인구를 보존한 지역 표시 grid를 사용합니다.',
   });
 }

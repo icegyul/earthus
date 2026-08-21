@@ -123,23 +123,21 @@ assert.throws(() => flow.validateTourismSnapshot({
   places: [{ ...snapshot.places[0], state: flow.DATA_STATE.STALE, stateLabelKo: 'LIVE' }],
 }), /STALE_CANNOT_BE_LIVE/);
 
+const evidence = flow.resolveTourismEvidence(item, null);
+assert.equal(evidence.sourceType, 'OFFICIAL_OBSERVATION');
+assert.equal(evidence.rank, 2);
+assert.equal(evidence.at, '2026-08-20T06:35:00.000Z');
+assert.equal(flow.resolveTourismEvidence(item, '2026-08-20T12:00:00Z').sourceType,
+  'OFFICIAL_FORECAST');
+assert.equal(flow.resolveTourismEvidence(item, '2026-08-20T15:00:00Z').sourceType,
+  'OFFICIAL_OBSERVATION');
+assert.equal(flow.resolveTourismEvidence(missingCoord, null), null);
+
 const towerNow = flow.towerVisual(item, null);
-assert.ok(towerNow.heightMeters / towerNow.footprintMeters >= 3,
-  `current relief must keep readable side faces: ${JSON.stringify(towerNow)}`);
-assert.ok(towerNow.heightMeters / towerNow.footprintMeters <= 4,
-  `current relief must remain a block rather than a hairline: ${JSON.stringify(towerNow)}`);
-assert.equal(towerNow.primitive, 'AREA_MARKER');
-assert.equal(towerNow.footprintMeaning, 'FIXED_DISPLAY_CELL_NOT_OFFICIAL_AREA');
-assert.equal(towerNow.color, '#f7aa45');
+assert.equal(towerNow.deprecated, true);
 assert.equal(towerNow.sourceType, 'OFFICIAL_OBSERVATION');
+assert.equal(towerNow.heightMeters >= 12 && towerNow.heightMeters <= 180, true);
 assert.equal(towerNow.animated, false);
-assert.match(towerNow.legendKo, /기관 혼잡 등급/);
-const towerAt = flow.towerVisual(item, '2026-08-20T12:00:00Z');
-assert.ok(towerAt.heightMeters / towerAt.footprintMeters >= 2,
-  `forecast relief must keep readable side faces: ${JSON.stringify(towerAt)}`);
-assert.equal(towerAt.color, '#f5d58a');
-assert.equal(towerAt.sourceType, 'OFFICIAL_FORECAST');
-assert.equal(towerAt.at, '2026-08-20T12:00:00.000Z');
 assert.equal(flow.towerVisual(stale, null).live, false);
 assert.equal(flow.towerVisual(missingCoord, null), null);
 assert.equal('radiusMeters' in towerNow, false, 'thin cylinder geometry must not return');

@@ -1,5 +1,5 @@
 // 관광·인간 흐름 3D Relief.
-// 기관의 추정 인구 범위는 낮은 표시 블록 높이로, 범주형 혼잡 등급은 색으로 옮긴다.
+// 기관의 추정 인구 범위는 도시 전체에서도 읽히는 표시 블록 높이로, 범주형 혼잡 등급은 색으로 옮긴다.
 // 고정 바닥 셀은 실제 건물·구역 면적이 아니며, OD 근거가 없으므로 이동 방향은 그리지 않는다.
 
 import { API } from '../config.js';
@@ -93,10 +93,10 @@ export const tourismFlow = {
         viewer.camera.flyTo({
           // flyTo의 좌표는 카메라 위치다. 서울 중심을 블록 화면 중앙에 두기 위해
           // 남서쪽 상공에서 북동쪽(heading 22°)을 보도록 출발 위치를 둔다.
-          destination: Cesium.Cartesian3.fromDegrees(126.77, 37.1575, 38_000),
+          destination: Cesium.Cartesian3.fromDegrees(126.89, 37.36, 26_000),
           orientation: {
             heading: Cesium.Math.toRadians(22),
-            pitch: Cesium.Math.toRadians(-55),
+            pitch: Cesium.Math.toRadians(-52),
             roll: 0,
           },
           duration: 1.2,

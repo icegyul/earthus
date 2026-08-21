@@ -95,7 +95,7 @@ try {
     await page.waitForTimeout(1600);
     await page.waitForFunction(async () => {
       const { store } = window.__e;
-      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-v8p3-1', location.href).href);
+      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-relief-hotfix1', location.href).href);
       return store.isOn('tourism') && tourismFlow.snapshot?.places?.length === 1
         && tourismFlow.ds?.entities?.values?.length === 1 && tourismFlow.ds.show;
     }, null, { timeout: 15_000 });
@@ -106,18 +106,25 @@ try {
         import(new URL('js/viewer.js', location.href).href),
         import(new URL('js/intro.js', location.href).href),
       ]);
-      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-v8p3-1', location.href).href);
+      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-relief-hotfix1', location.href).href);
       const entity = tourismFlow.ds.entities.values[0];
       return { count: tourismFlow.count(), show: tourismFlow.ds.show,
-        storeHeight: store.height, cameraHeight: viewer.camera.positionCartographic.height, intro: intro._active,
+        storeHeight: store.height, cameraHeight: viewer.camera.positionCartographic.height,
+        cameraPitchDegrees: Cesium.Math.toDegrees(viewer.camera.pitch), intro: intro._active,
         height: entity.box.dimensions.getValue().z,
         footprint: entity.box.dimensions.getValue().x,
         label: entity.label.text.getValue() };
     });
     assert.equal(initial.count, 1, JSON.stringify(initial));
     assert.equal(initial.show, true);
-    assert.equal(initial.height, 164);
-    assert.equal(initial.footprint, 420);
+    assert.ok(initial.cameraHeight <= 28_000,
+      `${viewport.name} tourism relief is too far away: ${JSON.stringify(initial)}`);
+    assert.ok(initial.cameraPitchDegrees >= -58 && initial.cameraPitchDegrees <= -45,
+      `${viewport.name} tourism relief needs an oblique view: ${JSON.stringify(initial)}`);
+    assert.ok(initial.height / initial.footprint >= 3,
+      `${viewport.name} tourism relief collapsed into flat squares: ${JSON.stringify(initial)}`);
+    assert.ok(initial.height / initial.footprint <= 4,
+      `${viewport.name} tourism relief became hairline towers: ${JSON.stringify(initial)}`);
     assert.match(initial.label, /LIVE · 붐빔/);
     const mapOverlay = await page.evaluate(() => {
       const node = document.getElementById('tourismMapUi');
@@ -141,10 +148,11 @@ try {
 
     await page.locator('#tourismMapUi [data-tourism-map-time]').nth(1).click();
     const mapForecastLength = await page.evaluate(async () => {
-      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-v8p3-1', location.href).href);
+      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-relief-hotfix1', location.href).href);
       return tourismFlow.ds.entities.values[0].box.dimensions.getValue().z;
     });
-    assert.equal(mapForecastLength, 64);
+    assert.ok(mapForecastLength / initial.footprint >= 1.5,
+      `${viewport.name} forecast relief collapsed into flat squares: ${mapForecastLength}`);
 
     // 실제 상세 화면을 열고 기관 예측 시각을 누르면 같은 3D 블록이 바뀐다.
     await page.evaluate(async current => {
@@ -156,7 +164,7 @@ try {
     await page.locator('#tourismSheet.up').waitFor();
     await page.locator('#tourismSheet [data-tourism-time]').nth(1).click();
     const forecast = await page.evaluate(async () => {
-      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-v8p3-1', location.href).href);
+      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-relief-hotfix1', location.href).href);
       const body = document.getElementById('tourismBody');
       return { height: tourismFlow.ds.entities.values[0].box.dimensions.getValue().z,
         text: body.innerText, overflow: document.documentElement.scrollWidth - innerWidth,
@@ -165,7 +173,8 @@ try {
           return { text: node.textContent.trim().slice(0, 28), width: rect.width, height: rect.height };
         }) };
     });
-    assert.equal(forecast.height, 64);
+    assert.ok(forecast.height / initial.footprint >= 1.5,
+      `${viewport.name} sheet forecast relief collapsed into flat squares: ${forecast.height}`);
     assert.match(forecast.text, /공식 예측/);
     assert.match(forecast.text, /운영시간[\s\S]{0,40}입장 가능 여부[\s\S]{0,30}(확인되지 않|없습니다)/);
     assert.match(forecast.text, /1\/121|광화문·덕수궁 1곳만 공식 조회/);
@@ -190,7 +199,7 @@ try {
       store.toggle('tourism');
     });
     const off = await page.evaluate(async () => {
-      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-v8p3-1', location.href).href);
+      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-relief-hotfix1', location.href).href);
       return { show: tourismFlow.ds.show, count: tourismFlow.count(), abort: tourismFlow._abort };
     });
     assert.deepEqual(off, { show: false, count: 0, abort: null });

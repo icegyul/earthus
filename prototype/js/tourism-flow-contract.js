@@ -293,7 +293,7 @@ export function validateTourismSnapshot(snapshot) {
 }
 
 /**
- * 고정 크기 3D 표시 셀은 기관 추정 인구 범위를 낮은 상대 높이로 옮긴다.
+ * 고정 크기 3D 표시 셀은 기관 추정 인구 범위를 읽을 수 있는 상대 높이로 옮긴다.
  * 바닥 크기는 공식 구역·건물 면적이 아니며, 인구/면적을 수용력이나 안전 밀도로 해석하지 않는다.
  */
 export function towerVisual(item, at = null) {
@@ -319,10 +319,12 @@ export function towerVisual(item, at = null) {
   const min = numberOrNull(range?.min), max = numberOrNull(range?.max);
   const midpoint = min != null && max != null ? (min + max) / 2 : null;
   // 50,000명 이상은 같은 상단 높이로 눌러 극단값이 도시 전체를 가리지 않게 한다.
+  // 폭보다 높이를 크게 두어 도시 전체 시점에서도 옆면이 사라지지 않게 한다.
+  // 단, 최대 세로/가로 비율을 4 이하로 둔다. 이 표시는 실제 건물 높이가 아니다.
   // 짝수 미터로 반올림하는 것은 표시 안정화일 뿐 실제 건물 높이라는 뜻이 아니다.
-  const quantifiedHeight = midpoint == null ? null : Math.round((8 + 172
+  const quantifiedHeight = midpoint == null ? null : Math.round((260 + 1340
     * Math.sqrt(Math.min(50_000, Math.max(0, midpoint)) / 50_000)) / 2) * 2;
-  const fallbackHeights = { 1: 44, 2: 84, 3: 132, 4: 172 };
+  const fallbackHeights = { 1: 360, 2: 720, 3: 1120, 4: 1520 };
   return Object.freeze({
     heightMeters: quantifiedHeight ?? fallbackHeights[rank], footprintMeters: 420,
     primitive: 'AREA_MARKER', footprintMeaning: 'FIXED_DISPLAY_CELL_NOT_OFFICIAL_AREA',

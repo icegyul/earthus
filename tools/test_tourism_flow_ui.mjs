@@ -31,8 +31,6 @@ assert.match(layer, /id="tourismMapUi"/);
 assert.match(layer, /tourismMapStyle/);
 assert.match(layer, /tourismMapStyle\.set\(true\)/);
 assert.match(layer, /tourismMapStyle\.set\(false\)/);
-assert.match(layer, /fromDegrees\(126\.77, 37\.1575, 38_000\)/);
-assert.match(layer, /pitch:\s*Cesium\.Math\.toRadians\(-55\)/);
 assert.match(layer, /data-tourism-map-time/);
 assert.match(layer, /공식 관측/);
 assert.match(layer, /블록 높이·색/);

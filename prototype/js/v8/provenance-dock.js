@@ -24,9 +24,7 @@ export function attachProvenanceDock(root) {
   toggle.className = 'pd-toggle';
   toggle.setAttribute('aria-controls', root.id);
   toggle.setAttribute('aria-expanded', 'false');
-  toggle.innerHTML = '<span class="pd-mark" aria-hidden="true"></span>'
-    + '<span class="pd-copy"><b class="pd-label"></b><span class="pd-summary"></span></span>'
-    + '<span class="pd-count" aria-hidden="true"></span>';
+  toggle.innerHTML = '<b class="pd-label"></b><span class="pd-summary"></span>';
 
   const credits = document.createElement('div');
   credits.className = 'pd-credits';
@@ -39,8 +37,9 @@ export function attachProvenanceDock(root) {
     const rows = directSourceRows(root);
     const ko = koreanUi();
     const visible = root.classList.contains('on') && rows.length > 0;
-    const label = ko ? '출처' : 'Source';
-    const summary = compactText(rows[0]) || (ko ? '자료 출처 확인' : 'View data source');
+    const label = ko ? '출처:' : 'Source:';
+    const summary = root.dataset.inlineSource || compactText(rows[0])
+      || (ko ? '자료 출처 확인' : 'View data source');
 
     dock.hidden = !visible;
     dock.lang = ko ? 'ko' : 'en';
@@ -51,7 +50,6 @@ export function attachProvenanceDock(root) {
       : (ko ? '출처 상세 보기' : 'View source details'));
     toggle.querySelector('.pd-label').textContent = label;
     toggle.querySelector('.pd-summary').textContent = summary;
-    toggle.querySelector('.pd-count').textContent = String(rows.length);
     root.hidden = !expanded;
 
     // 지도·천구처럼 화면에 항상 붙어 있어야 하는 크레딧은 접힌 상태에서도 남긴다.
@@ -79,7 +77,10 @@ export function attachProvenanceDock(root) {
   });
 
   const observer = new MutationObserver(sync);
-  observer.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+  observer.observe(root, {
+    childList: true, subtree: true, attributes: true,
+    attributeFilter: ['class', 'data-inline-source'],
+  });
   sync();
 
   const controller = Object.freeze({

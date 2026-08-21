@@ -157,7 +157,7 @@ export const tourismSheet = {
     const ktoRows = ktoSummaryRows(this.snapshot?.ktoSummary || null);
     const barrierFree = ktoRows.find(row => row.id === 'barrierFree');
 
-    $('#tourismTitle').textContent = ko ? '관광 흐름' : 'Tourism flow';
+    $('#tourismTitle').textContent = ko ? '관광 밀도' : 'Tourism density';
     body.innerHTML = `
       <section class="tf-hero ${stateClass}">
         <div class="tf-state"><b>${esc(place.stateLabelKo)}</b><span>${esc(place.category || '')}</span></div>
@@ -197,7 +197,9 @@ export const tourismSheet = {
             <time>${timeText(row.at, ko).replace(' KST', '')}</time><b>${esc(row.level || '—')}</b></button>`).join('')}
         </div>
         ${selectedForecast ? `<p class="tf-selected"><b>${timeText(selectedForecast.at, ko)}</b> · ${esc(selectedForecast.level)} · ${population(selectedForecast.populationRange, ko)}</p>` : ''}
-        <p>${ko ? '시간을 누르면 서울 3D 블록도 같은 기관 예측 시각으로 바뀝니다.' : 'Selecting a time updates the Seoul 3D relief blocks to the same agency forecast.'}</p>
+        <p>${ko
+          ? '시간을 누르면 서울 지역 밀도 셀도 같은 기관 예측 시각으로 바뀝니다. 지역 밀도 셀은 공식 장소값을 주변 지역에 시각 배분한 표시이며 실제 구역 면적·이동량이 아닙니다.'
+          : 'Selecting a time updates the Seoul regional density cells to the same agency forecast. The cells visually allocate official place values across nearby areas; they are not actual boundaries or movement volumes.'}</p>
       </section>
 
       <section class="tf-card tf-best" data-state="${esc(best.state)}">
@@ -265,7 +267,7 @@ export const tourismSheet = {
         <a href="${esc(place.provenance?.sourceUrl)}" target="_blank" rel="noopener noreferrer">${ko ? '공식 데이터셋 ↗' : 'Official dataset ↗'}</a>
         <em>${esc(this.snapshot?.coverage?.noteKo || '')}</em>
       </section>
-      ${this.errorCode ? `<p class="tf-error">${ko ? '최신 관광 흐름 자료를 다시 확인해야 합니다.' : 'Latest tourism flow data needs rechecking.'}</p>` : ''}`;
+      ${this.errorCode ? `<p class="tf-error">${ko ? '최신 관광 밀도 자료를 다시 확인해야 합니다.' : 'Latest tourism density data needs rechecking.'}</p>` : ''}`;
 
     body.querySelectorAll('[data-tourism-time]').forEach(button => {
       button.onclick = () => {

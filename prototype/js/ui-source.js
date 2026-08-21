@@ -161,6 +161,17 @@ const PAINT = ['gk2aAuto', 'gk2aNightLow', 'gk2aIR', 'gk2aVIS', 'gk2aVISea', 'gk
                'sst', 'sstanom', 'wave', 'swell', 'current', 'wind', 'windfc',
                'clouds'];
 
+/* 화면을 지배하는 기능 맥락은 단순한 페인트 레이어보다 먼저 고른다.
+   관광 밀도가 켜진 동안 기본 구름은 남아 있어도 관광 출처가 현재 화면의 근거다. */
+const CONTEXT_PRIORITY = ['tourism'];
+
+export function resolveActiveSourceId(isOn) {
+  return CONTEXT_PRIORITY.find(isOn)
+    || PAINT.find(isOn)
+    || PRIORITY.find(isOn)
+    || null;
+}
+
 function hhmm(d) {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
@@ -199,6 +210,10 @@ export const sourceNote = {
     i18n.onChange(() => this.render());
     /* 확대하면 자료가 바뀐다 (전지구 합성 ↔ 히마와리). 그때 바로 다시 그린다. */
     document.addEventListener('earthus:imagery', () => this.render());
+    document.addEventListener('earthus:tourism-snapshot', event => {
+      this._tourismSnapshot = event.detail || null;
+      this.render();
+    });
     /* 1분마다 다시 그린다 — "다음 갱신까지 몇 분"이 줄어드는 게 보여야 한다.
        ⚠️ 렌더를 요청하지 않는다. 이건 DOM 이라 지구본 그리기와 무관하다(발열). */
     this._timer = setInterval(() => this.render(), 60_000);
@@ -210,6 +225,7 @@ export const sourceNote = {
      받은 감사: "지구의 한 지점을 누르면 해당 위치의 값을 함께 보여준다."
      ⚠️ 격자 밖이거나 값이 없으면 null 로 지운다 — 옛 값이 남으면 거짓말이 된다. */
   _pointVal: null,
+  _tourismSnapshot: null,
   setPoint(id, v) {
     this._pointVal = (v == null || !Number.isFinite(v)) ? null
       : { id, v: Math.round(v * 10) / 10 };
@@ -218,6 +234,7 @@ export const sourceNote = {
 
   async render() {
     if (!this.root) return;
+    delete this.root.dataset.inlineSource;
     const ko = i18n.lang === 'ko';
     const sky = skyCredit(ko);
     let esriVisible = false;
@@ -225,14 +242,14 @@ export const sourceNote = {
       const { imagery } = await import('./layers/imagery.js');
       esriVisible = (imagery.detail?.alpha || 0) > 0.02;
     } catch (_) { /* 기본면이 아직 만들어지기 전일 수 있다 */ }
-    /* ⚠️⚠️ **지구를 칠하고 있는 레이어를 먼저 고른다.** (감사 P1-2)
+    /* ⚠️⚠️ **현재 기능 맥락을 먼저, 그다음 지구를 칠하는 레이어를 고른다.** (감사 P1-2)
        예전에는 PRIORITY 순서만 봤는데 그 목록에서 구름이 기온보다 앞이라,
        기온을 켜서 지구가 기온색으로 바뀌어도 좌하단은 계속
        "구름 · NOAA GMGSI"라고 적고 있었다 — 화면과 출처가 어긋난 것이다.
-       면을 칠하는 레이어(PAINT)가 켜져 있으면 그것을 주 레이어로 삼고,
-       없을 때만 예전 순서로 돌아간다. */
+       관광처럼 화면 전체의 의미를 바꾸는 맥락이 있으면 그것을 우선하고,
+       그 밖에는 면을 칠하는 레이어(PAINT), 마지막으로 예전 순서로 돌아간다. */
     const painted = PAINT.find(x => store.isOn(x));
-    const id = painted || PRIORITY.find(x => store.isOn(x));
+    const id = resolveActiveSourceId(x => store.isOn(x));
     if (!id && !esriVisible) {
       this.root.innerHTML = sky;
       this.root.classList.toggle('on', !!sky);
@@ -281,7 +298,9 @@ export const sourceNote = {
       } catch (_) { /* 아직 없을 수 있다 */ }
     }
     const src = SRC[key];
-    const name = i18n.t.L?.[id] || id;
+    const name = id === 'tourism'
+      ? (ko ? '서울 관광 밀도' : 'Seoul tourism density')
+      : (i18n.t.L?.[id] || id);
 
     // 자료 시각 — 격자·영상은 파일에 시각이 들어 있다
     let made = null, landMeta = null, lightningMeta = null;
@@ -325,6 +344,11 @@ export const sourceNote = {
       } else if (id === 'orbits') {
         const { orbits } = await import('./layers/space.js');
         if (orbits._catalog?.generated) made = new Date(orbits._catalog.generated);
+      } else if (id === 'tourism') {
+        const observed = (this._tourismSnapshot?.places || [])
+          .map(place => Date.parse(place?.provenance?.observedAt || ''))
+          .filter(Number.isFinite);
+        if (observed.length) made = new Date(Math.max(...observed));
       } else if (id === 'landobs') {
         /* 세 관측망은 시각 필드 이름이 서로 다르다. landobs.refresh()가 가장 최근
            생성 시각으로 합친 meta.generated를 다시 쓴다 — 현재 시각을 지어 넣지 않는다. */
@@ -351,10 +375,23 @@ export const sourceNote = {
       ['JMA AMeDAS', 'JMA AMeDAS', 'JMA AMeDAS'],
     ].filter(([id]) => !failedLand.has(id)).map(x => x[ko ? 1 : 2]).join(' + ');
     const lightningInfo = lightningSummary(lightningMeta, ko);
-    const sourceText = esc(id === 'landobs' && failedLand.size
+    const rawSourceText = id === 'landobs' && failedLand.size
       ? availableLand : id === 'lightning'
         ? lightningInfo.agencies
-        : (ko ? src?.ko : src?.en)) || '—';
+        : (ko ? src?.ko : src?.en);
+    const sourceText = esc(rawSourceText) || '—';
+    const activeSources = [id === 'tourism'
+      ? (ko ? '서울특별시 실시간 인구데이터' : 'Seoul Metropolitan Government real-time population')
+      : rawSourceText];
+    if (store.isOn('lightning') && id !== 'lightning') activeSources.push(lightningInfo.agencies);
+    const uniqueSources = [...new Set(activeSources.filter(Boolean))];
+    const compactSources = uniqueSources.slice(0, 2);
+    if (uniqueSources.length > 2) compactSources.push(ko
+      ? `외 ${uniqueSources.length - 2}` : `and ${uniqueSources.length - 2} more`);
+    this.root.dataset.inlineSource = [compactSources.join(' · '),
+      made && !Number.isNaN(made.getTime())
+        ? (ko ? `${hhmm(made)} 자료` : `data ${hhmm(made)}`) : null]
+      .filter(Boolean).join(' · ');
     const sourceHtml = src?.url
       ? `<a href="${esc(src.url)}" target="_blank" rel="noopener noreferrer">${sourceText}</a>`
       : sourceText;

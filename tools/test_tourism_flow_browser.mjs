@@ -205,14 +205,28 @@ try {
         const rect = button.getBoundingClientRect();
         return { pressed: button.getAttribute('aria-pressed'), width: rect.width, height: rect.height };
       });
-      return { present: Boolean(node), hidden: node?.getAttribute('aria-hidden'), text: node?.innerText || '', controls };
+      const sourceToggle = document.querySelector('#provenanceDock .pd-toggle');
+      const sourceStyle = sourceToggle ? getComputedStyle(sourceToggle) : null;
+      return {
+        present: Boolean(node), hidden: node?.getAttribute('aria-hidden'), text: node?.innerText || '', controls,
+        sourceText: sourceToggle?.innerText?.replace(/\s+/g, ' ').trim() || '',
+        sourceBackground: sourceStyle?.backgroundColor || null,
+        sourceBorder: sourceStyle?.borderTopWidth || null,
+        sourceRadius: sourceStyle?.borderRadius || null,
+      };
     });
     assert.equal(mapOverlay.present, true);
     assert.equal(mapOverlay.hidden, 'false');
     assert.match(mapOverlay.text, /서울 관광 밀도/);
     assert.match(mapOverlay.text, /공식 관측/);
-    assert.match(mapOverlay.text, /블록 높이·색/);
-    assert.match(mapOverlay.text, /고정 표시 셀/);
+    assert.match(mapOverlay.text, /높이·색 = 관광 혼잡도/);
+    assert.match(mapOverlay.text, /여유[\s\S]*보통[\s\S]*혼잡[\s\S]*매우 혼잡/);
+    assert.doesNotMatch(mapOverlay.text, /서울 관광 흐름|블록 하나는 한 관광지|고정 표시 셀/);
+    assert.match(mapOverlay.sourceText, /^출처:\s*서울특별시 실시간 인구데이터 · \d{2}:\d{2} 자료$/);
+    assert.doesNotMatch(mapOverlay.sourceText, /NOAA GMGSI/);
+    assert.equal(mapOverlay.sourceBackground, 'rgba(0, 0, 0, 0)');
+    assert.equal(mapOverlay.sourceBorder, '0px');
+    assert.equal(mapOverlay.sourceRadius, '0px');
     assert.equal(mapOverlay.controls.length, place.forecast.length + 1,
       `${viewport.name} map timeline must retain every official forecast timestamp`);
     assert.ok(mapOverlay.controls.every(item => item.width >= 43.9 && item.height >= 43.9),
@@ -306,6 +320,9 @@ try {
     assert.match(forecast.text, /자료 운영 상태/);
     assert.match(forecast.text, /수집기 OK · SAMPLE/);
     assert.match(forecast.text, /한국관광공사 공식 자료/);
+    assert.match(forecast.text, /지역 밀도 셀/);
+    assert.match(forecast.text, /지역(?:에)? 시각 배분|지역 표시/);
+    assert.doesNotMatch(forecast.text, /3D 블록/);
     assert.match(forecast.text, /관광지 상대 집중률 예측/);
     assert.match(forecast.text, /실시간 인구가 아닙니다/);
     assert.match(forecast.text, /공식 무장애 여행 정보[\s\S]{0,80}자료 있음/);

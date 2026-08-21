@@ -331,20 +331,17 @@ export const tourismFlow = {
         <small>EARTHUS · TOURISM</small>
         <h2>서울 관광 밀도</h2>
         <p><i aria-hidden="true"></i>${forecastMode ? '서울시 공식 예측' : currentEvidenceLabel} · ${forecastMode ? this._renderSourceCount : (coverage.available ?? '—')}/${coverage.total ?? '—'}곳 · ${timeLabel} ${kstTime(forecastMode ? this.selectedAt : observedAt)} KST</p>
-        <span>공식 장소값을 공유 셀에 배분한 지역 표시입니다 · 실제 구역 면적이나 이동량이 아닙니다</span>
-        <small class="tm-map-credit">지도 · Esri · 경계·도로</small>
       </header>
       <aside class="tm-legend" aria-label="관광지 혼잡 등급 범례">
-        <b>블록 높이·색</b>
+        <b>높이·색 = 관광 혼잡도</b>
         <ol>
-          <li class="tm-rank4">붐빔</li>
-          <li class="tm-rank3">약간 붐빔</li>
-          <li class="tm-rank2">보통</li>
           <li class="tm-rank1">여유</li>
+          <li class="tm-rank2">보통</li>
+          <li class="tm-rank3">혼잡</li>
+          <li class="tm-rank4">매우 혼잡</li>
         </ol>
-        <span>높이=공식 추정 인구 범위<br>색=기관 혼잡 등급<br>바닥=고정 표시 셀</span>
       </aside>
-      <nav class="tm-timeline" aria-label="서울 관광 흐름 시각 선택">
+      <nav class="tm-timeline" aria-label="서울 관광 밀도 시각 선택">
         <span>${forecastMode ? '공식 예측 시각' : '공식 관측 시각'}</span>
         <div>${timeline.map(at => `<button type="button" data-tourism-map-time="${at || ''}" aria-pressed="${String((at || null) === this.selectedAt)}" aria-label="${at ? `공식 예측 ${kstTime(at)} KST` : '현재 공식 관측'}"><i aria-hidden="true"></i><time>${at ? kstTime(at) : '현재'}</time></button>`).join('')}</div>
       </nav>`;

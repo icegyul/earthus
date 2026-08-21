@@ -18,60 +18,42 @@
 }
 #provenanceDock[hidden]{display:none!important}
 #provenanceDock .pd-toggle{
-  display:grid;
-  grid-template-columns:14px minmax(0,1fr) auto;
+  display:flex;
   align-items:center;
-  gap:8px;
-  width:100%;
-  min-height:42px;
-  padding:7px 9px;
-  border:1px solid rgba(181,211,220,.17);
-  border-radius:10px;
-  background:linear-gradient(135deg,rgba(5,11,15,.82),rgba(7,15,20,.58));
-  box-shadow:0 8px 28px rgba(0,0,0,.22);
-  backdrop-filter:blur(14px) saturate(115%);
+  gap:4px;
+  width:max-content;
+  max-width:100%;
+  min-height:44px;
+  padding:7px 5px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  backdrop-filter:none;
   color:inherit;
   text-align:left;
   cursor:pointer;
   pointer-events:auto;
-  transition:border-color .16s ease,background .16s ease;
+  transition:color .16s ease;
 }
 #provenanceDock .pd-toggle:hover,
 #provenanceDock .pd-toggle[aria-expanded="true"]{
-  border-color:rgba(117,226,210,.38);
-  background:linear-gradient(135deg,rgba(7,19,24,.9),rgba(7,18,23,.72));
+  color:rgba(255,255,255,.94);
 }
 #provenanceDock .pd-toggle:focus-visible{outline:2px solid #75e2d2;outline-offset:2px}
-#provenanceDock .pd-mark{
-  width:12px;
-  height:12px;
-  border:1px solid rgba(117,226,210,.72);
-  border-radius:50%;
-  box-shadow:inset 0 0 0 3px rgba(117,226,210,.1),0 0 10px rgba(117,226,210,.14);
-}
-#provenanceDock .pd-copy{display:grid;gap:2px;min-width:0}
 #provenanceDock .pd-label{
+  flex:0 0 auto;
   color:rgba(117,226,210,.78);
-  font:650 7.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
-  letter-spacing:.14em;
-  text-transform:uppercase;
+  font:650 9px/1.35 var(--sans,system-ui,sans-serif);
 }
 #provenanceDock .pd-summary{
+  min-width:0;
   overflow:hidden;
   color:rgba(239,246,248,.68);
   font-size:9px;
   line-height:1.35;
   text-overflow:ellipsis;
   white-space:nowrap;
-}
-#provenanceDock .pd-count{
-  min-width:19px;
-  padding:3px 5px;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:999px;
-  color:rgba(239,246,248,.45);
-  font:650 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
-  text-align:center;
 }
 #provenanceDock #srcNote{
   position:static!important;
@@ -114,7 +96,7 @@
 
 @media (max-width:640px){
   #provenanceDock{width:min(270px,calc(100vw - 76px));left:max(8px,env(safe-area-inset-left));bottom:max(8px,env(safe-area-inset-bottom))}
-  #provenanceDock .pd-toggle{min-height:40px;padding:6px 8px}
+  #provenanceDock .pd-toggle{padding:6px 4px}
   #provenanceDock .pd-summary{font-size:8px}
   #provenanceDock #srcNote{max-height:24vh;padding:9px;font-size:8px}
   #provenanceDock .pd-credits{font-size:6.5px}

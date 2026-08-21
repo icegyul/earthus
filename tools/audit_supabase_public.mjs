@@ -22,6 +22,7 @@ const KNOWN_RELATIONS = [
   'profiles', 'consents', 'waitlist', 'feature_requests', 'reports',
   'service_interest', 'plans', 'orders', 'push_subscriptions', 'alert_spots',
   'alert_sent', 'admins', 'member_invites', 'member_access_audit', 'analytics_events',
+  'earthus_forecast_revisions', 'earthus_forecast_release_audit',
 ];
 
 const RELATION_COLUMNS = {
@@ -40,12 +41,17 @@ const RELATION_COLUMNS = {
   member_invites: 'id,email,kind,reason,starts_at,ends_at,created_by,claimed_by,claimed_at,revoked_by,revoked_at,created_at',
   member_access_audit: 'id,actor_id,target_user_id,invite_id,action,detail,created_at',
   analytics_events: 'event_id,user_id,event_name,event_version,occurred_at,session_pseudonym,consent_version,privacy_version,catalog_version,retention_version,surface,properties,created_at,expires_at',
+  earthus_forecast_revisions: 'id,scope_key,schema_version,data_class,access_class,release_state,sample_gate,skill_gate,freshness_gate,rights_gate,rollback_gate,issued_at,valid_from,valid_until,published_at,source_refs,outputs,created_by,created_at,updated_at',
+  earthus_forecast_release_audit: 'id,revision_id,previous_release_state,next_release_state,gate_snapshot,actor_id,changed_at',
 };
-const ANON_DENIED_RELATIONS = new Set(['analytics_events']);
+const ANON_DENIED_RELATIONS = new Set([
+  'analytics_events', 'earthus_forecast_revisions', 'earthus_forecast_release_audit',
+]);
 
 const KNOWN_FUNCTIONS = [
   'checkout', 'payment-confirm', 'payment-refund', 'push-tick',
   'social-admin', 'member-admin',
+  'forecast-v8',
 ];
 
 function fail(message) {
@@ -116,7 +122,7 @@ function staticInventory() {
   const migrations = fs.readdirSync(path.join(SUPABASE_ROOT, 'migrations'))
     .filter(name => name.endsWith('.sql')).sort();
   const functions = fs.readdirSync(path.join(SUPABASE_ROOT, 'functions'), { withFileTypes: true })
-    .filter(entry => entry.isDirectory()).map(entry => entry.name).sort();
+    .filter(entry => entry.isDirectory() && entry.name !== '_shared').map(entry => entry.name).sort();
   return {
     declaredTables: [...tables].sort(),
     declaredRlsTables: [...rls].sort(),
@@ -193,6 +199,7 @@ async function audit() {
 
   const functionChecks = [];
   for (const name of KNOWN_FUNCTIONS) {
+    const method = name === 'forecast-v8' ? 'GET' : 'POST';
     const options = await fetch(`${baseUrl}/functions/v1/${name}`, {
       method: 'OPTIONS',
       headers: {
@@ -201,19 +208,19 @@ async function audit() {
       },
     });
     const withoutCredentials = await fetch(`${baseUrl}/functions/v1/${name}`, {
-      method: 'POST',
+      method,
       headers: { 'content-type': 'application/json', Origin: EXPECTED_ORIGIN },
-      body: '{}',
+      ...(method === 'POST' ? { body: '{}' } : {}),
     });
     const withoutCredentialsBody = await bodyText(withoutCredentials);
     const withApiKey = await fetch(`${baseUrl}/functions/v1/${name}`, {
-      method: 'POST',
+      method,
       headers: {
         apikey: publishableKey,
         'content-type': 'application/json',
         Origin: EXPECTED_ORIGIN,
       },
-      body: '{}',
+      ...(method === 'POST' ? { body: '{}' } : {}),
     });
     const withApiKeyBody = await bodyText(withApiKey);
     functionChecks.push({
@@ -234,6 +241,7 @@ async function audit() {
     'push-tick': [403, 403, null],
     'social-admin': [401, 401, 'NO_AUTH'],
     'member-admin': [401, 401, 'NO_AUTH'],
+    'forecast-v8': [401, 401, null],
   };
   for (const check of functionChecks) {
     const [noCredentialStatus, publishableKeyStatus, error] = expected[check.function];

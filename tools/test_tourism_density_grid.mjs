@@ -16,7 +16,9 @@ const flowUrl = `data:text/javascript;base64,${Buffer.from(flowSource).toString(
 const gridUrl = `data:text/javascript;base64,${Buffer.from(
   gridSource.replace("'./tourism-flow-contract.js'", `'${flowUrl}'`),
 ).toString('base64')}`;
-const { DENSITY_LIMITS, buildTourismDensityGrid, densityBand, scoreToHeight } = await import(gridUrl);
+const {
+  DENSITY_LIMITS, buildTourismDensityGrid, densityBand, dominantPlaceForCell, scoreToHeight,
+} = await import(gridUrl);
 
 function place(id, rank, lat, lon, state = 'LIVE') {
   const ranges = {
@@ -103,5 +105,20 @@ for (let index = 1; index < orderedScores.length; index++) {
   assert.ok(scoreToHeight(orderedScores[index]) >= scoreToHeight(orderedScores[index - 1]));
   assert.ok(order.indexOf(orderedBands[index]) >= order.indexOf(orderedBands[index - 1]));
 }
+
+// 큰 셀에 같은 장소의 kernel 행이 여러 개 합쳐져도 행 하나가 아니라 장소별 합계로 고른다.
+assert.equal(typeof dominantPlaceForCell, 'function');
+const dominantPlaces = new Map([
+  ['summed', { id: 'summed', nameKo: '합계 우세 장소' }],
+  ['single', { id: 'single', nameKo: '단일 행 우세 장소' }],
+]);
+const mergedCell = {
+  allocations: [
+    { placeId: 'summed', allocatedPopulation: 30, weight: 0.2, rank: 2 },
+    { placeId: 'single', allocatedPopulation: 55, weight: 0.3, rank: 3 },
+    { placeId: 'summed', allocatedPopulation: 30, weight: 0.2, rank: 2 },
+  ],
+};
+assert.equal(dominantPlaceForCell(mergedCell, dominantPlaces)?.id, 'summed');
 
 console.log('tourism density grid: PASS');

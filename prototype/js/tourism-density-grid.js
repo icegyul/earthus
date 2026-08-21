@@ -161,6 +161,28 @@ function aggregateCells(contributions, cellMeters) {
   }));
 }
 
+export function dominantPlaceForCell(cell, placesById) {
+  const totals = new Map();
+  for (const allocation of Array.isArray(cell?.allocations) ? cell.allocations : []) {
+    const placeId = allocation?.placeId;
+    if (!placeId || !placesById?.has(placeId)) continue;
+    const row = totals.get(placeId) || {
+      placeId, allocatedPopulation: 0, weight: 0, rank: 0,
+    };
+    row.allocatedPopulation += finiteNumber(allocation.allocatedPopulation) ?? 0;
+    row.weight += finiteNumber(allocation.weight) ?? 0;
+    row.rank = Math.max(row.rank, finiteNumber(allocation.rank) ?? 0);
+    totals.set(placeId, row);
+  }
+  const dominant = [...totals.values()].sort((left, right) =>
+    right.allocatedPopulation - left.allocatedPopulation
+      || right.weight - left.weight
+      || right.rank - left.rank
+      || String(left.placeId).localeCompare(String(right.placeId)),
+  )[0];
+  return placesById?.get(dominant?.placeId) || null;
+}
+
 export function buildTourismDensityGrid(places, at = null, options = {}) {
   const settings = resolveOptions(options);
   const built = buildContributions(places, at, settings.kernelSize, settings.requestedCellMeters);

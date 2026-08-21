@@ -35,14 +35,23 @@ const place = {
     processorVersion: 'tourism-flow-collector.v1', license: '공공누리 제1유형',
     redisplay: '출처표시 · 상업적 이용 및 변경 가능' },
 };
+const observationOnlyPlace = {
+  ...place,
+  id: 'earthus:tourism:seoul:POI010', code: 'POI010', nameKo: '예측 없는 공식 장소',
+  nameEn: 'Official place without forecast',
+  position: { ...place.position, lat: 37.5742, lon: 126.9810 },
+  official: { ...place.official, level: '보통', rank: 2,
+    populationRange: { min: 9_000, max: 9_500 } },
+  forecast: [],
+};
 const snapshot = {
   schemaVersion: 'earthus.tourism-flow.v1', generatedAt: received, state: 'LIVE',
   provider: { id: 'seoul-citydata-ppltn', mode: 'SAMPLE', endpointClass: 'OFFICIAL_PUBLIC_API' },
-  coverage: { available: 1, total: 121, requested: 1, responses: 1, errorCount: 0,
-    fullCoverage: false, noteKo: '서울시 샘플 키 범위 · 광화문·덕수궁 1곳만 공식 조회' },
-  quality: { live: 1, degraded: 0, stale: 0, unavailable: 0,
+  coverage: { available: 2, total: 121, requested: 2, responses: 2, errorCount: 0,
+    fullCoverage: false, noteKo: '서울시 샘플 키 범위 · 공식 2곳 조회' },
+  quality: { live: 2, degraded: 0, stale: 0, unavailable: 0,
     withOfficialForecast: 1, withDirectionEvidence: 0 },
-  places: [place], source: { name: '서울특별시 실시간 인구데이터',
+  places: [place, observationOnlyPlace], source: { name: '서울특별시 실시간 인구데이터',
     url: 'https://data.seoul.go.kr/dataList/OA-21778/A/1/datasetView.do', license: '공공누리 제1유형' },
 };
 const ktoSummary = {
@@ -122,7 +131,7 @@ try {
     await page.waitForFunction(async () => {
       const { store } = window.__e;
       const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-density-lod1', location.href).href);
-      return store.isOn('tourism') && tourismFlow.snapshot?.places?.length === 1
+      return store.isOn('tourism') && tourismFlow.snapshot?.places?.length === 2
         && tourismFlow.ds?.entities?.values?.length > 0 && tourismFlow.ds.show;
     }, null, { timeout: 15_000 });
 
@@ -149,7 +158,7 @@ try {
     });
     initial.runtimeErrors = [...runtimeErrors];
     initial.consoleErrors = [...consoleErrors];
-    assert.ok(initial.cellCount >= 9 && initial.cellCount <= 25, JSON.stringify(initial));
+    assert.ok(initial.cellCount >= 9 && initial.cellCount <= 50, JSON.stringify(initial));
     assert.ok(initial.labelCount >= 1 && initial.labelCount <= 12, JSON.stringify(initial));
     assert.ok(initial.visibleLabelCount >= 1 && initial.visibleLabelCount <= initial.labelCount,
       JSON.stringify(initial));
@@ -213,21 +222,69 @@ try {
     await page.screenshot({ path: `/private/tmp/earthus-tourism-relief-${viewport.name}.png` });
 
     await page.locator('#tourismMapUi [data-tourism-map-time]').nth(1).click();
-    const mapForecastLength = await page.evaluate(async () => {
+    const mapForecast = await page.evaluate(async () => {
       const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-density-lod1', location.href).href);
-      return Math.max(...tourismFlow.ds.entities.values.map(entity => entity.box.dimensions.getValue().z));
+      const allocations = tourismFlow.ds.entities.values.flatMap(entity => entity._tourismContributors || []);
+      return {
+        height: Math.max(...tourismFlow.ds.entities.values.map(entity => entity.box.dimensions.getValue().z)),
+        sourceTypes: [...new Set(allocations.map(row => row.sourceType))],
+        placeIds: [...new Set(allocations.map(row => row.placeId))],
+        uiText: document.getElementById('tourismMapUi')?.innerText || '',
+      };
     });
-    assert.ok(mapForecastLength >= 12 && mapForecastLength <= 180,
-      `${viewport.name} forecast density height out of range: ${mapForecastLength}`);
-    assert.ok(mapForecastLength < initial.maxHeight,
-      `${viewport.name} official forecast did not recalculate density: ${mapForecastLength}`);
+    assert.ok(mapForecast.height >= 12 && mapForecast.height <= 180,
+      `${viewport.name} forecast density height out of range: ${JSON.stringify(mapForecast)}`);
+    assert.ok(mapForecast.height < initial.maxHeight,
+      `${viewport.name} official forecast did not recalculate density: ${JSON.stringify(mapForecast)}`);
+    assert.deepEqual(mapForecast.sourceTypes, ['OFFICIAL_FORECAST'], JSON.stringify(mapForecast));
+    assert.deepEqual(mapForecast.placeIds, [place.id], JSON.stringify(mapForecast));
+    assert.match(mapForecast.uiText, /서울시 공식 예측 · 1\/121곳/);
 
-    // 실제 상세 화면을 열고 기관 예측 시각을 누르면 같은 3D 블록이 바뀐다.
-    await page.evaluate(async current => {
-      const { tourismSheet } = await import(new URL('js/ui-tourism.js?v=20260821-v8p3-1', location.href).href);
-      await tourismSheet.open(current);
-    }, place);
+    // 실제 Cesium canvas에서 밀도 셀을 집어 main.js의 기존 picker 경로로 상세 화면을 연다.
+    await page.waitForTimeout(250);
+    const pickedCell = await page.evaluate(async () => {
+      const [{ tourismFlow }, { viewer }] = await Promise.all([
+        import(new URL('js/layers/tourism-flow.js?v=20260821-density-lod1', location.href).href),
+        import(new URL('js/viewer.js', location.href).href),
+      ]);
+      viewer.render();
+      viewer.scene.requestRender();
+      await new Promise(resolve => viewer.scene.postRender.addEventListener(function once() {
+        viewer.scene.postRender.removeEventListener(once);
+        resolve();
+      }));
+      const canvas = viewer.scene.canvas;
+      const bounds = canvas.getBoundingClientRect();
+      let unobscured = null;
+      for (const entity of tourismFlow.ds.entities.values) {
+        const world = entity.position?.getValue(viewer.clock.currentTime);
+        const center = world
+          ? Cesium.SceneTransforms.worldToWindowCoordinates(viewer.scene, world) : null;
+        if (!center) continue;
+        for (let y = Math.max(8, center.y - 18);
+          y <= Math.min(bounds.height - 8, center.y + 18); y += 3) {
+          for (let x = Math.max(8, center.x - 18);
+            x <= Math.min(bounds.width - 8, center.x + 18); x += 3) {
+            const position = new Cesium.Cartesian2(x, y);
+            const picks = viewer.scene.drillPick(position, 8, 8);
+            const density = picks.find(result => result?.id?._tourism);
+            if (!density) continue;
+            const candidate = { x: bounds.left + x, y: bounds.top + y,
+              nameKo: density.id._tourism.nameKo, entityId: density.id.id,
+              obscuredByLabel: Boolean(picks[0]?.id?._tourismLabelCandidate) };
+            if (candidate.obscuredByLabel) return candidate;
+            unobscured ||= candidate;
+          }
+        }
+      }
+      return unobscured;
+    });
+    assert.ok(pickedCell?.nameKo,
+      `${viewport.name} rendered density cell was not pickable: ${JSON.stringify(pickedCell)}`);
+    assert.equal(pickedCell.nameKo, place.nameKo);
+    await page.mouse.click(pickedCell.x, pickedCell.y);
     await page.locator('#tourismSheet.up').waitFor();
+    assert.match(await page.locator('#tourismBody').innerText(), new RegExp(place.nameKo));
     await page.locator('#tourismSheet [data-tourism-time]').nth(1).click();
     const forecast = await page.evaluate(async () => {
       const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js?v=20260821-density-lod1', location.href).href);
@@ -245,7 +302,7 @@ try {
       `${viewport.name} sheet forecast did not recalculate density: ${forecast.height}`);
     assert.match(forecast.text, /공식 예측/);
     assert.match(forecast.text, /운영시간[\s\S]{0,40}입장 가능 여부[\s\S]{0,30}(확인되지 않|없습니다)/);
-    assert.match(forecast.text, /1\/121|광화문·덕수궁 1곳만 공식 조회/);
+    assert.match(forecast.text, /2\/121|공식 2곳 조회/);
     assert.match(forecast.text, /자료 운영 상태/);
     assert.match(forecast.text, /수집기 OK · SAMPLE/);
     assert.match(forecast.text, /한국관광공사 공식 자료/);

@@ -81,4 +81,24 @@ assert.equal(selected[0].id, 'label-0');
 assert.ok(!selected.some(label => label.id === 'label-1'));
 assert.ok(!selected.some(label => label.id === 'label-13'));
 
+// 화면 밖의 상위 후보가 먼저 limit을 차지해 화면 안의 하위 후보를 지우는 회귀를 잡는다.
+const viewportPlaces = [
+  place('offscreen-high-a', '화면 밖 A', 4, 4_000, 4_200, 37.70, 127.20, '2026-08-20T06:35:00Z'),
+  place('offscreen-high-b', '화면 밖 B', 4, 3_800, 4_000, 37.71, 127.21, '2026-08-20T06:35:00Z'),
+  place('visible-low-a', '화면 안 A', 2, 400, 500, 37.57, 126.97, '2026-08-20T06:35:00Z'),
+  place('visible-low-b', '화면 안 B', 1, 200, 300, 37.58, 126.98, '2026-08-20T06:35:00Z'),
+];
+const visibleIds = new Set(['visible-low-a', 'visible-low-b']);
+const viewportCandidates = buildTourismLabelCandidates(viewportPlaces, new Map(), {
+  lod: 'district', limit: 2, isVisible: item => visibleIds.has(item.id),
+});
+const viewportRects = new Map(viewportCandidates.map((candidate, index) => [candidate.id, {
+  left: 20 + index * 80, top: 20, right: 80 + index * 80, bottom: 44,
+  viewportWidth: 390, viewportHeight: 844, visible: true,
+}]));
+assert.deepEqual(
+  selectNonOverlappingLabels(viewportCandidates, viewportRects, 2).map(label => label.placeId),
+  ['visible-low-a', 'visible-low-b'],
+);
+
 console.log('tourism density labels: PASS');

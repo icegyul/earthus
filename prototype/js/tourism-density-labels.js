@@ -48,10 +48,12 @@ export function buildTourismLabelCandidates(places, adminByPlaceId, options = {}
   const lod = ['overview', 'district', 'detail'].includes(options?.lod) ? options.lod : 'overview';
   const fallbackLimit = lod === 'detail' ? 12 : 10;
   const limit = Math.max(0, Math.floor(finite(options?.limit) ?? fallbackLimit));
+  const isVisible = typeof options?.isVisible === 'function' ? options.isVisible : () => true;
   const eligible = (Array.isArray(places) ? places : []).filter(place =>
     place?.id && String(place?.nameKo || '').trim()
       && Number.isFinite(Number(place?.position?.lat))
-      && Number.isFinite(Number(place?.position?.lon)),
+      && Number.isFinite(Number(place?.position?.lon))
+      && isVisible(place),
   );
 
   if (lod !== 'overview') {

@@ -7,7 +7,9 @@ import { fetchT } from '../net.js';
 import { store } from '../store.js';
 import { viewer } from '../viewer.js';
 import { resolveTourismEvidence, validateTourismSnapshot } from '../tourism-flow-contract.js';
-import { buildTourismDensityGrid, DENSITY_LIMITS } from '../tourism-density-grid.js';
+import {
+  buildTourismDensityGrid, DENSITY_LIMITS, dominantPlaceForCell,
+} from '../tourism-density-grid.js';
 import {
   buildTourismLabelCandidates, selectNonOverlappingLabels,
 } from '../tourism-density-labels.js';
@@ -37,16 +39,6 @@ function placeInsideRectangle(place, rectangle) {
   return Cesium.Rectangle.contains(rectangle, Cesium.Cartographic.fromDegrees(lon, lat));
 }
 
-function dominantPlace(cell, placesById) {
-  const allocations = [...(cell?.allocations || [])].sort((left, right) =>
-    Number(right.allocatedPopulation || 0) - Number(left.allocatedPopulation || 0)
-      || Number(right.weight || 0) - Number(left.weight || 0)
-      || Number(right.rank || 0) - Number(left.rank || 0)
-      || String(left.placeId || '').localeCompare(String(right.placeId || '')),
-  );
-  return placesById.get(allocations[0]?.placeId) || null;
-}
-
 function kstTime(value) {
   const date = new Date(value);
   if (!Number.isFinite(date.getTime())) return '—';
@@ -74,6 +66,7 @@ export const tourismFlow = {
   _moveEndRemove: null,
   _postRenderRemove: null,
   _timeListenerBound: false,
+  _renderSourceCount: 0,
 
   init() {
     if (this.ds && this.labelDs) return this;
@@ -194,11 +187,13 @@ export const tourismFlow = {
     const lod = lodForCameraHeight(cameraHeight);
     const settings = TOURISM_LOD[lod];
     const isMobile = Math.min(window.innerWidth, viewer.canvas?.clientWidth || window.innerWidth) <= 640;
-    const rectangle = lod === 'detail'
-      ? viewer.camera.computeViewRectangle(viewer.scene.globe.ellipsoid) : null;
-    const renderPlaces = this.snapshot.places.filter(place =>
-      resolveTourismEvidence(place, at) && (lod !== 'detail' || placeInsideRectangle(place, rectangle)),
-    );
+    const rectangle = viewer.camera.computeViewRectangle(viewer.scene.globe.ellipsoid);
+    const renderPlaces = this.snapshot.places.filter(place => {
+      const evidence = resolveTourismEvidence(place, at);
+      if (!evidence || (at && evidence.sourceType !== 'OFFICIAL_FORECAST')) return false;
+      return lod !== 'detail' || placeInsideRectangle(place, rectangle);
+    });
+    this._renderSourceCount = renderPlaces.length;
     const maxCells = isMobile ? DENSITY_LIMITS.mobile : DENSITY_LIMITS.desktop;
     const grid = buildTourismDensityGrid(renderPlaces, at, {
       lod: isMobile ? 'mobile' : 'district',
@@ -208,7 +203,7 @@ export const tourismFlow = {
     });
     const placesById = new Map(renderPlaces.map(place => [place.id, place]));
     for (const cell of grid.cells) {
-      const place = dominantPlace(cell, placesById);
+      const place = dominantPlaceForCell(cell, placesById);
       if (!place) continue;
       const color = Cesium.Color.fromCssColorString(cell.color).withAlpha(cell.alpha);
       this.ds.entities.add({
@@ -232,6 +227,7 @@ export const tourismFlow = {
     const labelLimit = isMobile ? 8 : lod === 'detail' ? 12 : 10;
     const candidates = buildTourismLabelCandidates(renderPlaces, this._adminByPlaceId, {
       lod, limit: labelLimit,
+      isVisible: place => placeInsideRectangle(place, rectangle),
     });
     for (const candidate of candidates) {
       this.labelDs.entities.add({
@@ -334,7 +330,7 @@ export const tourismFlow = {
       <header class="tm-title">
         <small>EARTHUS · TOURISM</small>
         <h2>서울 관광 밀도</h2>
-        <p><i aria-hidden="true"></i>${forecastMode ? '서울시 공식 예측' : currentEvidenceLabel} · ${coverage.available ?? '—'}/${coverage.total ?? '—'}곳 · ${timeLabel} ${kstTime(forecastMode ? this.selectedAt : observedAt)} KST</p>
+        <p><i aria-hidden="true"></i>${forecastMode ? '서울시 공식 예측' : currentEvidenceLabel} · ${forecastMode ? this._renderSourceCount : (coverage.available ?? '—')}/${coverage.total ?? '—'}곳 · ${timeLabel} ${kstTime(forecastMode ? this.selectedAt : observedAt)} KST</p>
         <span>공식 장소값을 공유 셀에 배분한 지역 표시입니다 · 실제 구역 면적이나 이동량이 아닙니다</span>
         <small class="tm-map-credit">지도 · Esri · 경계·도로</small>
       </header>

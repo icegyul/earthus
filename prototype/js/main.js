@@ -872,7 +872,11 @@ function onPick(ev) {
   if (picked?.id?._fishRegion) { fishPanel.openRegion(picked.id._fishRegion); return; }
   if (picked?.id?._paraSite) { paraPanel.focus(picked.id._paraSite); return; }
   if (picked?.id?._trench) { trenchGlobe.focus(picked.id._trench); return; }
-  if (picked?.id?._tourism) { tourismSheet.open(picked.id._tourism); return; }
+  const tourismPlace = picked?.id?._tourism
+    || (picked?.id?._tourismLabelCandidate
+      ? scene.drillPick(ev.position, 8, 16, 16).find(result => result?.id?._tourism)?.id?._tourism
+      : null);
+  if (tourismPlace) { tourismSheet.open(tourismPlace); return; }
 
   /* 철새·거북·바닷새 — 누르면 무엇인지 한 줄로 말한다.
      받은 요청: "거북이나 새 선을 누르면 어떤 새인지 나오게 해줘"

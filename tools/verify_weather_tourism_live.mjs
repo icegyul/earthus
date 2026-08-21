@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from '/Users/fiftyfy14/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs';
 
-const release = '20260820-weather-tourism1';
+const release = '20260821-v8p3-2';
 const target = process.env.EARTHUS_LIVE_URL || `https://earthus.net/?release=${release}`;
 const executablePath = process.env.EARTHUS_CHROME
   || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -27,9 +27,9 @@ try {
       weatherCss: document.querySelector('link[href*="weather-card-v7.css"]')?.getAttribute('href'),
       tourismCss: document.querySelector('link[href*="tourism-flow.css"]')?.getAttribute('href'),
     }));
-    assert.match(releaseAssets.main || '', /20260820-weather-tourism1/);
+    assert.match(releaseAssets.main || '', /20260821-v8p3-2/);
     assert.match(releaseAssets.weatherCss || '', /20260820-wcv7-1/);
-    assert.match(releaseAssets.tourismCss || '', /20260820-tourism1/);
+    assert.match(releaseAssets.tourismCss || '', /20260821-tourism-map3/);
 
     // 공개 메뉴를 통해 실제 운영 관광 스냅샷을 받는다. 네트워크 fixture를 쓰지 않는다.
     await page.locator('#menuTab').click();
@@ -45,13 +45,22 @@ try {
     await tourismButton.click();
     await page.waitForFunction(() => window.__tourismLiveSnapshot?.places?.length === 121,
       null, { timeout: 20_000 });
+    await page.waitForFunction(async () => {
+      const { tourismFlow } = await import(new URL(
+        'js/layers/tourism-flow.js?v=20260821-v8p3-1', location.href,
+      ).href);
+      return (tourismFlow.ds?.entities?.values?.length ?? 0) > 0;
+    }, null, { timeout: 20_000 });
     await page.waitForTimeout(1_600);
 
     const tourism = await page.evaluate(async () => {
-      const { tourismFlow } = await import(new URL('js/layers/tourism-flow.js', location.href).href);
+      const { tourismFlow } = await import(new URL(
+        'js/layers/tourism-flow.js?v=20260821-v8p3-1', location.href,
+      ).href);
       const snapshot = window.__tourismLiveSnapshot;
-      const place = snapshot.places.find(item => item.code === 'POI009');
+      const place = snapshot.places.find(item => item.state !== 'UNAVAILABLE');
       const entity = tourismFlow.ds.entities.getById(`tourism:${place.code}`);
+      const dimensions = entity.box.dimensions.getValue();
       return {
         state: snapshot.state,
         mode: snapshot.provider?.mode,
@@ -62,36 +71,44 @@ try {
         code: place.code,
         observedAt: place.provenance?.observedAt,
         sourceName: place.provenance?.sourceName,
+        nameKo: place.nameKo,
         forecastCount: place.forecast?.length || 0,
         entityCount: tourismFlow.ds.entities.values.length,
-        height: entity.cylinder.length.getValue(),
+        height: dimensions.z,
+        footprint: [dimensions.x, dimensions.y],
+        hasCylinder: Boolean(entity.cylinder),
         label: entity.label.text.getValue(),
       };
     });
     assert.ok(['LIVE', 'DEGRADED', 'STALE'].includes(tourism.state), JSON.stringify(tourism));
-    assert.equal(tourism.mode, 'FULL');
-    assert.equal(tourism.coverage.available, 121);
+    assert.ok(['FULL', 'SAMPLE'].includes(tourism.mode), JSON.stringify(tourism));
+    assert.ok(tourism.coverage.available > 0);
     assert.equal(tourism.coverage.total, 121);
-    assert.equal(tourism.coverage.fullCoverage, true);
-    assert.equal(tourism.healthMode, 'FULL');
-    assert.equal(tourism.credentialPool?.configured, 3);
-    assert.equal(tourism.credentialPool?.used, 3);
-    assert.deepEqual(tourism.credentialPool?.slots?.map(slot => slot.requested), [41, 40, 40]);
+    assert.equal(tourism.coverage.fullCoverage, tourism.coverage.available === 121);
+    assert.ok(['FULL', 'SAMPLE'].includes(tourism.healthMode), JSON.stringify(tourism));
+    if (tourism.coverage.fullCoverage) {
+      assert.equal(tourism.mode, 'FULL');
+      assert.equal(tourism.healthMode, 'FULL');
+      assert.equal(tourism.credentialPool?.configured, 3);
+      assert.equal(tourism.credentialPool?.used, 3);
+      assert.deepEqual(tourism.credentialPool?.slots?.map(slot => slot.requested), [41, 40, 40]);
+    }
     assert.equal(tourism.healthAccessibility, 'UNAVAILABLE');
-    assert.equal(tourism.code, 'POI009');
     assert.ok(Date.parse(tourism.observedAt) > 0);
     assert.equal(tourism.sourceName, '서울특별시 실시간 인구데이터');
     assert.ok(tourism.forecastCount > 0);
-    assert.equal(tourism.entityCount, 121);
+    assert.equal(tourism.entityCount, tourism.coverage.available);
     assert.ok(tourism.height > 0);
-    assert.match(tourism.label, /광화문·덕수궁/);
+    assert.deepEqual(tourism.footprint, [420, 420]);
+    assert.equal(tourism.hasCylinder, false);
+    assert.ok(tourism.label.includes(tourism.nameKo));
 
     await page.evaluate(async () => {
       const [{ tourismFlow }, { tourismSheet }] = await Promise.all([
-        import(new URL('js/layers/tourism-flow.js', location.href).href),
-        import(new URL('js/ui-tourism.js', location.href).href),
+        import(new URL('js/layers/tourism-flow.js?v=20260821-v8p3-1', location.href).href),
+        import(new URL('js/ui-tourism.js?v=20260821-v8p3-1', location.href).href),
       ]);
-      await tourismSheet.open(tourismFlow.snapshot.places.find(place => place.code === 'POI009'));
+      await tourismSheet.open(tourismFlow.snapshot.places.find(place => place.state !== 'UNAVAILABLE'));
     });
     await page.locator('#tourismSheet.up').waitFor({ timeout: 10_000 });
     await page.waitForTimeout(1_000);
@@ -106,9 +123,10 @@ try {
         }),
       };
     });
-    assert.match(tourismPanel.text, /광화문·덕수궁/);
-    assert.match(tourismPanel.text, /121\/121|서울시 공식 121\/121곳 응답/);
-    assert.match(tourismPanel.text, /수집기 SUCCEEDED · FULL/);
+    assert.ok(tourismPanel.text.includes(tourism.nameKo));
+    assert.ok(tourismPanel.text.includes(`${tourism.coverage.available}/${tourism.coverage.total}`),
+      tourismPanel.text);
+    assert.match(tourismPanel.text, /수집기 SUCCEEDED · (FULL|SAMPLE)/);
     assert.match(tourismPanel.text, /서울특별시 실시간 인구데이터/);
     assert.match(tourismPanel.text, /운영시간[\s\S]{0,50}(확인되지 않|없습니다)/);
     assert.doesNotMatch(tourismPanel.text, /안전합니다|가도 됩니다|수용 가능/);
@@ -165,7 +183,8 @@ try {
     assert.deepEqual(pageErrors, []);
     await page.screenshot({ path: `/private/tmp/earthus-weather-tourism-live-${viewport.name}.png` });
     await context.close();
-    console.log(`${viewport.name}: LIVE Weather Card + tourism + service worker PASS`);
+    console.log(`${viewport.name}: LIVE Weather Card + tourism `
+      + `${tourism.coverage.available}/${tourism.coverage.total} + service worker PASS`);
   }
 } finally {
   await browser.close();

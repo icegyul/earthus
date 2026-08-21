@@ -1,6 +1,10 @@
 # EARTHUS v8 master package
 
-상태: `LOCAL_IMPLEMENTED` · `NOT_DEPLOYED` · `SALES_CLOSED`
+상태: `STATIC_OPERATING` · `FORECAST_BOUNDARY_OPERATING` ·
+`FORECAST_OUTPUT_NOT_RELEASED` · `PAID_E2E_NOT_ACCEPTED` · `SALES_CLOSED`
+
+운영 배포와 검증 증거는 `PRODUCTION-RELEASE-2026-08-21.md`에 기록한다.
+`PHASE-3-LOCAL-CLOSEOUT-2026-08-21.md`는 배포 직전 로컬 상태를 보존한 기록이다.
 
 이 디렉터리는 EARTHUS v7의 강한 기반을 유지하면서 Visual Earth 경험을 v8로
 재구성하는 정본 안내다. mapped.earth는 데이터 표현과 상호작용을 검토하는 참고일 뿐,
@@ -65,6 +69,7 @@
 docs/earthus-v8/
   README.md
   PHASE-3-LOCAL-CLOSEOUT-2026-08-21.md
+  PRODUCTION-RELEASE-2026-08-21.md
 
 prototype/js/v8/
   truth-contract.js
@@ -83,8 +88,12 @@ prototype/js/v8/
 
 prototype/js/layers/
   tourism-flow.js
-  travel.js
   registry.js
+
+prototype/js/
+  layerbar.js
+  ui-tourism.js
+  ui-outdoor.js
 
 prototype/supabase/functions/
   _shared/forecast-v8-policy.js

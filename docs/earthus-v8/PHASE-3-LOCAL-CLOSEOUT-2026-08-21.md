@@ -1,5 +1,8 @@
 # EARTHUS v8 Phase 3 local closeout — 2026-08-21
 
+> 이 문서는 운영 배포 직전의 로컬 상태를 보존한 시점 기록이다. 이후 배포 결과는
+> `PRODUCTION-RELEASE-2026-08-21.md`를 따른다.
+
 ## 결론
 
 Phase 3 코드는 격리 worktree에서 구현·검사됐지만 운영 배포하지 않았다.

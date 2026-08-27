@@ -114,10 +114,14 @@ Allow: /llms.txt
 Allow: /shots/
 Allow: /legal/
 
-# ⚠️⚠️ 관리자 화면. noindex 메타도 넣었지만 그건 **읽어 주는 크롤러에게만** 통한다.
-#    여기서도 막는다. ⚠️ 이건 보안이 아니라 예의다 —
-#    실제 보호는 Supabase RLS 가 한다(admin.html 안의 SQL 참고).
+# ⚠️⚠️ 비공개/직원용 화면. noindex 메타와 함께 이중으로 색인을 막는다.
+# 이 규칙 자체는 인증 수단이 아니다. 실제 보호는 Supabase JWT/RBAC/RLS가 담당한다.
 Disallow: /admin.html
+Disallow: /members.html
+Disallow: /providers.html
+Disallow: /studio.html
+Disallow: /lab-reports.html
+Disallow: /v2/
 
 # ⚠️⚠️ 결제 복귀 페이지. 주소에 **주문번호와 결제키**가 실려 온다.
 #    색인되면 그 값이 검색 결과에 남는다. noindex 메타도 함께 넣었다.

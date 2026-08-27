@@ -1,8 +1,22 @@
-// earthus 회원관리 — 관리자만 회원 조회·유료 초대·연장·취소.
-// ⚠️ service_role은 이 함수 밖으로 내보내지 않는다. 클라이언트 UID 목록은 화면 가림일 뿐,
-// 여기서 SOCIAL_ADMIN_UIDS와 로그인 JWT를 다시 확인하는 것이 실제 변경 경계다.
+// EARTHUS member administration — server-enforced membership + staff RBAC.
+// Security boundary:
+// - browser UID/email/config is never an authorization input
+// - authenticated JWT resolves the actor
+// - public.staff_roles is the only staff-role authority
+// - service_role never leaves this Edge Function
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+
+type StaffRole = 'SUPER_ADMIN' | 'DEVELOPER' | 'OPERATIONS';
+type Capability =
+  | 'member.read'
+  | 'member.write'
+  | 'staff.manage'
+  | 'provider.read'
+  | 'provider.secret.write'
+  | 'sns.read'
+  | 'sns.publish'
+  | 'feature_gate.manage';
 
 const CORS = {
   'Access-Control-Allow-Origin': Deno.env.get('APP_ORIGIN') ?? 'https://earthus.net',
@@ -13,22 +27,62 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
   status, headers: { ...CORS, 'Content-Type': 'application/json; charset=utf-8' },
 });
 const cleanEmail = (value: unknown) => String(value ?? '').trim().toLowerCase();
+const validRoles = new Set<StaffRole>(['SUPER_ADMIN', 'DEVELOPER', 'OPERATIONS']);
+
+function roleCapabilities(roles: StaffRole[]) {
+  const has = (role: StaffRole) => roles.includes(role);
+  return {
+    member_read: has('SUPER_ADMIN') || has('OPERATIONS'),
+    member_write: has('SUPER_ADMIN') || has('OPERATIONS'),
+    staff_manage: has('SUPER_ADMIN'),
+    provider_read: has('SUPER_ADMIN') || has('DEVELOPER') || has('OPERATIONS'),
+    provider_secret_write: has('SUPER_ADMIN') || has('DEVELOPER'),
+    sns_read: has('SUPER_ADMIN') || has('DEVELOPER') || has('OPERATIONS'),
+    sns_publish: has('SUPER_ADMIN') || has('OPERATIONS'),
+    feature_gate_manage: has('SUPER_ADMIN'),
+  };
+}
+
+type StaffContext = Awaited<ReturnType<typeof context>>;
+
+function requireCapability(ctx: StaffContext, capability: Capability) {
+  const key = capability.replaceAll('.', '_') as keyof ReturnType<typeof roleCapabilities>;
+  if (!ctx.capabilities[key]) throw new Error('FORBIDDEN');
+}
 
 async function context(req: Request) {
   const authz = req.headers.get('Authorization') ?? '';
   if (!authz.startsWith('Bearer ')) throw new Error('NO_AUTH');
-  const url = Deno.env.get('SUPABASE_URL')!;
-  const anon = createClient(url, Deno.env.get('SUPABASE_ANON_KEY')!, {
+
+  const url = Deno.env.get('SUPABASE_URL');
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
+  const serviceRole = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!url || !anonKey || !serviceRole) throw new Error('SERVER_CONFIG');
+
+  const sessionClient = createClient(url, anonKey, {
     global: { headers: { Authorization: authz } },
+    auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data: { user } } = await anon.auth.getUser();
-  if (!user) throw new Error('NO_AUTH');
-  const admins = (Deno.env.get('SOCIAL_ADMIN_UIDS') ?? '').split(',').map(x => x.trim()).filter(Boolean);
-  const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-  const { data: dbAdmin } = await admin.from('admins').select('id').eq('id', user.id).maybeSingle();
-  const owner = String(user.email ?? '').toLowerCase() === 'contentsdalur@gmail.com';
-  if (!admins.includes(user.id) && !dbAdmin && !owner) throw new Error('NOT_ADMIN');
-  return { user, admin };
+  const { data: userData, error: userError } = await sessionClient.auth.getUser();
+  const user = userData?.user;
+  if (userError || !user) throw new Error('NO_AUTH');
+
+  const admin = createClient(url, serviceRole, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data: roleRows, error: roleError } = await admin
+    .from('staff_roles').select('role').eq('user_id', user.id);
+  if (roleError) throw new Error('RBAC_NOT_READY');
+
+  const roles = (roleRows ?? [])
+    .map((row: any) => String(row.role) as StaffRole)
+    .filter((role: StaffRole) => validRoles.has(role));
+  const capabilities = roleCapabilities(roles);
+  return { user, admin, roles, capabilities };
+}
+
+function publicContext(ctx: StaffContext) {
+  return { roles: ctx.roles, capabilities: ctx.capabilities };
 }
 
 async function allUsers(admin: any) {
@@ -42,31 +96,87 @@ async function allUsers(admin: any) {
   return out;
 }
 
-async function list(admin: any, query: string) {
+function canonicalMembership(profile: any, now = Date.now()) {
+  if (Date.parse(profile?.subscription_ends ?? '') > now) return 'paid';
+  if (Date.parse(profile?.manual_access_until ?? '') > now) return 'invite';
+  if (['free', 'paid', 'invite'].includes(profile?.membership_class)) return profile.membership_class;
+  return profile?.tier === 'paid' ? 'paid' : 'free';
+}
+
+async function list(admin: any, query: string, classFilter: string, stateFilter: string) {
   const users = await allUsers(admin);
   const ids = users.map(x => x.id);
   const { data: profiles, error } = ids.length
-    ? await admin.from('profiles').select('id,provider,tier,founding_member,subscription_ends,manual_access_until,manual_access_kind,manual_access_reason,created_at').in('id', ids)
+    ? await admin.from('profiles').select(
+        'id,provider,tier,membership_class,account_state,founding_member,subscription_ends,manual_access_until,manual_access_kind,manual_access_reason,created_at,updated_at'
+      ).in('id', ids)
     : { data: [], error: null };
   if (error) throw error;
+
   const byId = new Map((profiles ?? []).map((x: any) => [x.id, x]));
   const q = cleanEmail(query);
-  const rows = users.map((u: any) => ({
-    id: u.id, email: u.email ?? null, lastSignInAt: u.last_sign_in_at ?? null,
-    ...(byId.get(u.id) ?? { tier: 'free', created_at: u.created_at }),
-  })).filter((x: any) => !q || cleanEmail(x.email).includes(q) || x.id.startsWith(q))
-    .sort((a: any, b: any) => String(b.created_at).localeCompare(String(a.created_at))).slice(0, 200);
+  const wantedClass = ['free', 'paid', 'invite'].includes(classFilter) ? classFilter : '';
+  const wantedState = ['active', 'invited', 'suspended', 'cancelled', 'expired'].includes(stateFilter) ? stateFilter : '';
   const now = Date.now();
+
+  let rows = users.map((u: any) => {
+    const profile: any = byId.get(u.id) ?? { tier: 'free', account_state: 'active', created_at: u.created_at };
+    return {
+      id: u.id,
+      email: u.email ?? null,
+      provider: profile.provider ?? u.app_metadata?.provider ?? null,
+      lastSignInAt: u.last_sign_in_at ?? null,
+      ...profile,
+      membership_class: canonicalMembership(profile, now),
+      account_state: profile.account_state ?? 'active',
+    };
+  }).filter((x: any) =>
+    (!q || cleanEmail(x.email).includes(q) || x.id.startsWith(q)) &&
+    (!wantedClass || x.membership_class === wantedClass) &&
+    (!wantedState || x.account_state === wantedState)
+  ).sort((a: any, b: any) => String(b.created_at).localeCompare(String(a.created_at)))
+   .slice(0, 200);
+
+  const visibleIds = rows.map((row: any) => row.id);
+  const { data: staffRows, error: staffError } = visibleIds.length
+    ? await admin.from('staff_roles').select('user_id,role').in('user_id', visibleIds)
+    : { data: [], error: null };
+  if (staffError) throw staffError;
+  const staffById = new Map<string, string[]>();
+  for (const row of staffRows ?? []) {
+    const list = staffById.get(row.user_id) ?? [];
+    list.push(row.role);
+    staffById.set(row.user_id, list);
+  }
+  rows = rows.map((row: any) => ({ ...row, staff_roles: (staffById.get(row.id) ?? []).sort() }));
+
+  const allProfiles = users.map((u: any) => byId.get(u.id) ?? { tier: 'free' });
+  const classes = allProfiles.map((p: any) => canonicalMembership(p, now));
   const stats = {
     all: users.length,
-    paid: (profiles ?? []).filter((x: any) => x.tier === 'paid').length,
-    payment: (profiles ?? []).filter((x: any) => Date.parse(x.subscription_ends ?? '') > now).length,
-    invited: (profiles ?? []).filter((x: any) => Date.parse(x.manual_access_until ?? '') > now).length,
+    free: classes.filter((x: string) => x === 'free').length,
+    paid: classes.filter((x: string) => x === 'paid').length,
+    invite: classes.filter((x: string) => x === 'invite').length,
   };
-  const { data: pending } = await admin.from('member_invites')
-    .select('id,email,kind,reason,starts_at,ends_at,created_at').is('claimed_at', null).is('revoked_at', null)
+
+  const { data: pending, error: pendingError } = await admin.from('member_invites')
+    .select('id,email,kind,reason,starts_at,ends_at,created_at')
+    .is('claimed_at', null).is('revoked_at', null)
     .gt('ends_at', new Date().toISOString()).order('created_at', { ascending: false }).limit(100);
+  if (pendingError) throw pendingError;
   return { rows, stats, pending: pending ?? [] };
+}
+
+async function audit(admin: any, actor: string, action: string, detail: Record<string, unknown>, targetUserId?: string | null, objectKind?: string | null, objectId?: string | null) {
+  const { error } = await admin.from('admin_audit_log').insert({
+    actor_id: actor,
+    action,
+    target_user_id: targetUserId ?? null,
+    object_kind: objectKind ?? null,
+    object_id: objectId ?? null,
+    detail,
+  });
+  if (error) console.error('[member-admin] audit write failed', error.message);
 }
 
 async function grant(admin: any, actor: string, body: any) {
@@ -85,7 +195,7 @@ async function grant(admin: any, actor: string, body: any) {
   const target = users.find((u: any) => cleanEmail(u.email) === email);
   if (target) {
     const { data: before } = await admin.from('profiles')
-      .select('manual_access_until').eq('id', target.id).maybeSingle();
+      .select('manual_access_until,subscription_ends').eq('id', target.id).maybeSingle();
     const oldEnd = Date.parse(before?.manual_access_until ?? '');
     const chosenEnd = new Date(Math.max(Number.isFinite(oldEnd) ? oldEnd : 0, endsAt.getTime())).toISOString();
     const { error } = await admin.from('profiles').update({
@@ -98,13 +208,18 @@ async function grant(admin: any, actor: string, body: any) {
       action: Number.isFinite(oldEnd) ? 'grant_extended' : 'grant_applied',
       detail: { email, kind, reason, ends_at: chosenEnd, permanent },
     });
+    await audit(admin, actor, 'member.invite_grant', { kind, reason, ends_at: chosenEnd, permanent }, target.id, 'profile', target.id);
     return { ok: true, applied: true, userId: target.id, endsAt: chosenEnd };
   }
 
   if (permanent) throw new Error('SIGN_UP_FIRST_FOR_PERMANENT');
   const { data: old } = await admin.from('member_invites').select('id')
     .eq('email', email).is('claimed_at', null).is('revoked_at', null).maybeSingle();
-  if (old?.id) await admin.from('member_invites').update({ revoked_at: new Date().toISOString(), revoked_by: actor }).eq('id', old.id);
+  if (old?.id) {
+    const { error } = await admin.from('member_invites')
+      .update({ revoked_at: new Date().toISOString(), revoked_by: actor }).eq('id', old.id);
+    if (error) throw error;
+  }
   const { data: invite, error } = await admin.from('member_invites').insert({
     email, kind, reason, ends_at: endsAt.toISOString(), created_by: actor,
   }).select('id').single();
@@ -113,13 +228,17 @@ async function grant(admin: any, actor: string, body: any) {
     actor_id: actor, invite_id: invite.id, action: 'invite_created',
     detail: { email, kind, reason, ends_at: endsAt.toISOString() },
   });
+  await audit(admin, actor, 'member.invite_created', { kind, reason, ends_at: endsAt.toISOString() }, null, 'member_invite', String(invite.id));
   return { ok: true, applied: false, inviteId: invite.id, endsAt: endsAt.toISOString() };
 }
 
 async function revoke(admin: any, actor: string, userId: string, reason: string) {
   if (!userId) throw new Error('BAD_USER');
-  const { data: profile } = await admin.from('profiles')
+  const cleanReason = String(reason ?? '').trim().slice(0, 300);
+  if (cleanReason.length < 2) throw new Error('BAD_REASON');
+  const { data: profile, error: readError } = await admin.from('profiles')
     .select('subscription_ends,manual_access_until').eq('id', userId).maybeSingle();
+  if (readError) throw readError;
   if (!profile?.manual_access_until) return { ok: true, already: true };
   const paymentActive = Date.parse(profile.subscription_ends ?? '') > Date.now();
   const { error } = await admin.from('profiles').update({
@@ -129,25 +248,83 @@ async function revoke(admin: any, actor: string, userId: string, reason: string)
   if (error) throw error;
   await admin.from('member_access_audit').insert({
     actor_id: actor, target_user_id: userId, action: 'grant_revoked',
-    detail: { reason: reason.slice(0, 300), payment_remains: paymentActive },
+    detail: { reason: cleanReason, payment_remains: paymentActive },
   });
+  await audit(admin, actor, 'member.invite_revoked', { reason: cleanReason, payment_remains: paymentActive }, userId, 'profile', userId);
   return { ok: true, paymentRemains: paymentActive };
+}
+
+async function setAccountState(admin: any, actor: string, target: string, nextState: string, reason: string) {
+  const states = ['active', 'invited', 'suspended', 'cancelled', 'expired'];
+  if (!target || !states.includes(nextState)) throw new Error('BAD_STATE');
+  const { data: before, error: readError } = await admin.from('profiles').select('account_state').eq('id', target).maybeSingle();
+  if (readError) throw readError;
+  if (!before) throw new Error('MEMBER_NOT_FOUND');
+  const cleanReason = String(reason ?? '').trim().slice(0, 300);
+  const { error } = await admin.from('profiles').update({ account_state: nextState }).eq('id', target);
+  if (error) throw error;
+  await audit(admin, actor, 'member.account_state', { from: before.account_state ?? 'active', to: nextState, reason: cleanReason }, target, 'profile', target);
+  return { ok: true };
+}
+
+async function setRole(admin: any, actor: string, target: string, role: StaffRole, enabled: boolean) {
+  if (!target || !validRoles.has(role)) throw new Error('BAD_ROLE');
+  const { data: targetUser, error: targetError } = await admin.auth.admin.getUserById(target);
+  if (targetError || !targetUser?.user) throw new Error('MEMBER_NOT_FOUND');
+  if (enabled) {
+    const { error } = await admin.from('staff_roles').upsert({ user_id: target, role, granted_by: actor }, { onConflict: 'user_id,role' });
+    if (error) throw error;
+  } else {
+    if (target === actor && role === 'SUPER_ADMIN') {
+      const { count, error: countError } = await admin.from('staff_roles')
+        .select('*', { count: 'exact', head: true }).eq('role', 'SUPER_ADMIN');
+      if (countError) throw countError;
+      if ((count ?? 0) <= 1) throw new Error('LAST_SUPER_ADMIN');
+    }
+    const { error } = await admin.from('staff_roles').delete().eq('user_id', target).eq('role', role);
+    if (error) throw error;
+  }
+  await audit(admin, actor, 'staff.role', { role, enabled }, target, 'staff_role', role);
+  return { ok: true };
 }
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return json({ error: 'METHOD' }, 405);
   try {
-    const { user, admin } = await context(req);
+    const ctx = await context(req);
     const body = await req.json().catch(() => ({}));
-    const action = String(body.action ?? 'list');
-    if (action === 'list') return json(await list(admin, String(body.query ?? '')));
-    if (action === 'grant') return json(await grant(admin, user.id, body));
-    if (action === 'revoke') return json(await revoke(admin, user.id, String(body.userId ?? ''), String(body.reason ?? '')));
+    const action = String(body.action ?? 'context');
+
+    if (action === 'context') return json({ ok: true, viewer: publicContext(ctx) });
+    if (action === 'list') {
+      requireCapability(ctx, 'member.read');
+      const data = await list(ctx.admin, String(body.query ?? ''), String(body.classFilter ?? ''), String(body.stateFilter ?? ''));
+      return json({ ...data, viewer: publicContext(ctx) });
+    }
+    if (action === 'grant') {
+      requireCapability(ctx, 'member.write');
+      return json(await grant(ctx.admin, ctx.user.id, body));
+    }
+    if (action === 'revoke') {
+      requireCapability(ctx, 'member.write');
+      return json(await revoke(ctx.admin, ctx.user.id, String(body.userId ?? ''), String(body.reason ?? '')));
+    }
+    if (action === 'set_state') {
+      requireCapability(ctx, 'member.write');
+      return json(await setAccountState(ctx.admin, ctx.user.id, String(body.userId ?? ''), String(body.state ?? ''), String(body.reason ?? '')));
+    }
+    if (action === 'set_role') {
+      requireCapability(ctx, 'staff.manage');
+      return json(await setRole(ctx.admin, ctx.user.id, String(body.userId ?? ''), String(body.role ?? '') as StaffRole, body.enabled === true));
+    }
     return json({ error: 'BAD_ACTION' }, 400);
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    const status = message === 'NO_AUTH' ? 401 : message === 'NOT_ADMIN' ? 403 : 400;
+    const status = message === 'NO_AUTH' ? 401
+      : message === 'FORBIDDEN' || message === 'NOT_ADMIN' ? 403
+      : message === 'SERVER_CONFIG' || message === 'RBAC_NOT_READY' ? 503
+      : 400;
     console.error('[member-admin]', message);
     return json({ error: message }, status);
   }

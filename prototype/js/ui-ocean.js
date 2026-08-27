@@ -1,9 +1,10 @@
 /* 취미 안의 바다 상세 화면.
  *
  * 1단 OCEAN 메뉴는 없고 취미가 유일한 공개 진입점이다. 이 시트는 My Ocean과
- * 선박처럼 카드 안에서 한 단계 더 필요한 화면만 담당한다.
+ * 항로처럼 카드 안에서 한 단계 더 필요한 화면만 담당한다.
  * 이 파일은 관측값이나 안전 결론을 새로 만들지 않는다.
- * 선박 위치는 권리 미확인 좌표를 복제하지 않고 일반 공개된 공식 운영 화면으로 연결한다.
+ * 상용 선박 위치를 Earthus 자체 실시간 추적으로 표현하지 않고, 공식 운영 화면은
+ * Route Intelligence와 분리된 참고 링크로만 제공한다.
  */
 
 import { i18n } from './i18n.js';
@@ -51,11 +52,11 @@ const MODULES = [
     subKo: '심해 생물 · 바다거북 · 바닷새 관측 기록',
     subEn: 'Deep-sea life · sea turtles · seabird records' },
   { view: 'my', badge: 'BOARD', ko: 'My Ocean', en: 'My Ocean',
-    subKo: '안전 · 서핑 · 낚시 · 생태 · Dive · 선박',
-    subEn: 'Safety · surf · fishing · life · dive · vessels' },
-  { view: 'vessel', badge: 'LIVE', ko: 'Vessels', en: 'Vessels',
-    subKo: '공식 실시간 선박 위치 · 여객선 운항',
-    subEn: 'Official live vessel positions · passenger services' },
+    subKo: '안전 · 서핑 · 낚시 · 생태 · Dive · 항로',
+    subEn: 'Safety · surf · fishing · life · dive · routes' },
+  { view: 'route', badge: 'INTEL', ko: '항로', en: 'Routes',
+    subKo: '북극항로 · 주요 무역항로 · 연구항로 Intelligence',
+    subEn: 'Arctic · trade · research route intelligence' },
 ];
 
 function buttonCard(item, ko) {
@@ -71,6 +72,13 @@ function officialCard({ href, badge, ko, en, subKo, subEn }, isKo) {
     + `<span class="ocean-module-top"><b>${isKo ? ko : en}</b>`
     + `<em data-state="${badge}">${badge}</em></span>`
     + `<span>${isKo ? subKo : subEn}</span></a>`;
+}
+
+function routeInfoCard({ badge, ko, en, subKo, subEn }, isKo) {
+  return `<article class="ocean-module ocean-route-card">`
+    + `<span class="ocean-module-top"><b>${isKo ? ko : en}</b>`
+    + `<em data-state="${badge}">${badge}</em></span>`
+    + `<span>${isKo ? subKo : subEn}</span></article>`;
 }
 
 function statusLine(id, ko) {
@@ -149,7 +157,7 @@ export const oceanPanel = {
     const root = $('#oceanBody');
     if (!root) return;
     const ko = i18n.lang === 'ko';
-    if (this._view === 'vessel') { root.innerHTML = this.vesselView(ko); return; }
+    if (['route', 'vessel'].includes(this._view)) { root.innerHTML = this.routeView(ko); return; }
     if (this._view === 'my') { root.innerHTML = this.myView(ko); return; }
     if (this._view === 'life') { root.innerHTML = this.lifeView(ko); return; }
     if (this._view === 'home') { root.innerHTML = this.homeView(ko); return; }
@@ -213,8 +221,8 @@ export const oceanPanel = {
         subKo: '심해 생물·바다거북·조류 기록', subEn: 'Deep-sea life, turtles and bird records' },
       { action: 'dive', badge: 'LIVE', ko: 'DIVE', en: 'DIVE',
         subKo: 'GEBCO 2026 수심·해구', subEn: 'GEBCO 2026 depth and trenches' },
-      { view: 'vessel', badge: 'LIVE', ko: 'VESSEL', en: 'VESSEL',
-        subKo: '공식 선박 위치·여객선 운항', subEn: 'Official vessel positions and passenger services' },
+      { view: 'route', badge: 'INTEL', ko: 'ROUTES', en: 'ROUTES',
+        subKo: '북극·무역·연구 항로 Intelligence', subEn: 'Arctic, trade and research route intelligence' },
     ];
     return `<button type="button" class="ocean-back" data-ocean-act="hobby">← ${ko ? '취미' : 'Hobbies'}</button>
       <section class="ocean-section">
@@ -224,20 +232,42 @@ export const oceanPanel = {
       </section>`;
   },
 
-  vesselView(ko) {
+  routeView(ko) {
+    const routes = [
+      { badge: 'FLAGSHIP', ko: '북극항로', en: 'Arctic Routes',
+        subKo: 'NSR · NWP · 검증 가능한 극지 회랑 · 해빙·위성·기상·파고·위험·뉴스·계절 비교를 한 화면에 결합',
+        subEn: 'NSR · NWP · sourced polar corridors · combine sea ice, satellite, weather, waves, hazards, news and seasonal comparison' },
+      { badge: 'INTEL', ko: '주요 무역항로', en: 'Trade Routes',
+        subKo: '수에즈 · 파나마 · 말라카 · 희망봉 등 · 항로·병목·항만·기상·파고·위험·관련 뉴스',
+        subEn: 'Suez · Panama · Malacca · Cape routes · corridors, chokepoints, ports, weather, waves, hazards and related news' },
+      { badge: 'RECORD', ko: '연구항로', en: 'Research Routes',
+        subKo: '공개된 탐사·해양관측 임무의 항로와 관측 지점 · 위성·해양·기후 자료와 연구 업데이트',
+        subEn: 'Published expedition and ocean-observation routes · stations, satellite/ocean/climate context and mission updates' },
+    ];
     return `<button type="button" class="ocean-back" data-ocean-act="hobby">← ${ko ? '취미' : 'Hobbies'}</button>
-      <div class="ocean-module-grid">
-        ${officialCard({ href: MTIS_LIVE_VESSEL_URL, badge: 'LIVE',
-          ko: '실시간 선박 위치', en: 'Live vessel positions',
-          subKo: '한국해양교통안전공단 MTIS · 용도·톤수·격자별 조회 ↗',
-          subEn: 'KOMSA MTIS · filter by use, tonnage and grid ↗' }, ko)}
-        ${officialCard({ href: MTIS_HOME_URL, badge: 'LIVE',
-          ko: '여객선 위치 · 운항', en: 'Passenger vessel position · service',
-          subKo: 'MTIS 여객선 교통정보서비스(PATIS)에서 확인 ↗',
-          subEn: 'Open the MTIS passenger transportation service (PATIS) ↗' }, ko)}
-      </div>
+      <section class="ocean-section">
+        <header><div><small>ROUTE INTELLIGENCE</small><h4>${ko ? '선박이 아니라 항로를 본다' : 'Track route context, not commercial vessels'}</h4></div>
+          <p>${ko
+            ? 'Earthus의 핵심은 상용 선박 좌표 복제가 아니라 항로 주변 조건을 지구 위에서 함께 읽는 것입니다.'
+            : 'Earthus focuses on route conditions on the globe instead of republishing commercial vessel positions.'}</p></header>
+        <div class="ocean-module-grid">${routes.map(item => routeInfoCard(item, ko)).join('')}</div>
+      </section>
+      <section class="ocean-section">
+        <header><div><small>REFERENCE</small><h4>${ko ? '공식 선박 위치 참고' : 'Official vessel references'}</h4></div>
+          <p>${ko ? '필요할 때만 공식 운영 화면으로 이동합니다.' : 'Open official operational services only when needed.'}</p></header>
+        <div class="ocean-module-grid">
+          ${officialCard({ href: MTIS_LIVE_VESSEL_URL, badge: 'REFERENCE',
+            ko: 'MTIS 선박 위치', en: 'MTIS vessel positions',
+            subKo: '한국해양교통안전공단 공식 화면에서 위치·수신시각 확인 ↗',
+            subEn: 'Check positions and reception time on the official KOMSA MTIS screen ↗' }, ko)}
+          ${officialCard({ href: MTIS_HOME_URL, badge: 'REFERENCE',
+            ko: '여객선 위치 · 운항', en: 'Passenger vessel position · service',
+            subKo: 'MTIS 여객선 교통정보서비스(PATIS)에서 확인 ↗',
+            subEn: 'Open the MTIS passenger transportation service (PATIS) ↗' }, ko)}
+        </div>
+      </section>
       <p class="ocean-trust">${ko
-        ? '출처: 한국해양교통안전공단 해양교통안전정보시스템(MTIS) · 위치 수신시각은 공식 화면에서 확인'
-        : 'Source: Korea Maritime Transportation Safety Authority MTIS · check reception time on the official screen'}</p>`;
+        ? '제품 원칙 · Earthus는 상용 선박의 실시간 좌표를 자체 추적한다고 표시하지 않습니다. 항로별 해빙·기상·해양·위험·뉴스는 각 원본의 출처와 유효시각을 유지하고, 공식 운항 상태가 없으면 개방·폐쇄·안전 여부를 단정하지 않습니다.'
+        : 'Product rule · Earthus does not claim to track commercial vessels itself. Route sea-ice, weather, ocean, hazard and news context keeps source and valid time, and no open/closed/safe state is inferred without an authoritative operational source.'}</p>`;
   },
 };

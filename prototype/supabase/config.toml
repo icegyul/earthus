@@ -15,30 +15,30 @@
 project_id = "ltpupicvdijxkrxxsfky"
 
 [functions.checkout]
-verify_jwt = true          # ⚠️ 주문을 만드는 함수다. 로그인 확인이 반드시 필요하다.
+verify_jwt = true
 
 [functions.payment-confirm]
-verify_jwt = true          # ⚠️ 돈이 움직인다. 더더욱 필요하다.
+verify_jwt = true
 
 [functions.payment-refund]
-verify_jwt = true          # ⚠️ 서비스 역할로만 호출하고, 함수 안에서도 다시 대조한다.
+verify_jwt = true
 
 [functions.push-tick]
-# ⚠️⚠️ 여기만 false 다. 사용자가 아니라 **우리 Lambda 가 주기적으로** 부르기 때문에
-#    로그인 토큰이 없다. 대신 함수 안에서 PUSH_TICK_TOKEN 을 직접 검사한다 —
-#    그 토큰이 없으면 아무나 불러 알림을 쏟아부을 수 있다. 절대 빼지 말 것.
+# 사용자 대신 우리 주기 실행기가 호출한다. 함수 내부 PUSH_TICK_TOKEN 검증 필수.
 verify_jwt = false
 
 [functions.social-admin]
-# JWT를 플랫폼 게이트에서도 확인하고, 함수 안에서 SOCIAL_ADMIN_UIDS와 다시 대조한다.
-# 키 저장, 미디어 업로드 준비, 게시 모두 관리자 본인 요청만 허용한다.
+# 플랫폼 JWT + 함수 내부 staff RBAC를 모두 통과해야 한다.
 verify_jwt = true
 
 [functions.member-admin]
-# 회원 이메일과 유료 자격을 다룬다. 플랫폼 JWT 확인 뒤 함수 안에서 관리자 UID를 재검증한다.
+# 회원/초대/직원 역할을 다룬다. 함수 내부 staff_roles capability가 실제 변경 경계다.
+verify_jwt = true
+
+[functions.provider-admin]
+# API/provider 자격증명을 다룬다. 원문 secret은 Edge Function 밖으로 다시 반환하지 않는다.
 verify_jwt = true
 
 [functions.forecast-v8]
-# Earthus 자체 예보 payload는 유료 전용이다. 게이트웨이 JWT + 함수 내부 getUser +
-# 서버 소유 entitlement 만료 시각을 모두 통과해야 한다. 공식 예보·경보는 이 경로를 쓰지 않는다.
+# Earthus 자체 예보 payload는 유료 전용이다. 게이트웨이 JWT + 함수 내부 entitlement를 통과해야 한다.
 verify_jwt = true

@@ -1,13 +1,17 @@
-// 항공편 패널 — 예약 · 예상 항로 · 내 비행기 추적
+// 항공편 패널 — 검색·예약 · Airport Intelligence · 예상 항로 · 내 비행기 추적
 //
 // 흐름
 //   1) 출발/도착 공항을 고른다 → 대권항로와 거리·소요시간이 바로 나온다 (계산만, 네트워크 불필요)
-//   2) 예매는 판매처로 넘긴다 — 우리는 항공권을 팔지 않는다
-//   3) 탑승일에 편명 숫자를 넣으면 항로 위의 후보를 찾아준다 → 내 비행기를 고른다
-//   4) 고른 뒤에는 그 기체만 추적한다
+//   2) 출발·도착 공항의 상황을 Airport Intelligence 항목으로 묶어 보여준다.
+//      실제 경유편 itinerary가 연결되면 검증된 경유 공항에 같은 구조를 이어 붙인다.
+//   3) 예매는 판매처로 넘긴다 — 우리는 항공권을 팔지 않는다
+//   4) 탑승일에 편명 숫자를 넣으면 항로 위의 후보를 찾아준다 → 내 비행기를 고른다
+//   5) 고른 뒤에는 그 기체만 추적한다
 //
-// ⚠️ 3번에서 우리가 자동으로 확정하지 않는 이유는 flight.js 머리말에 적어두었다.
+// ⚠️ 편명 후보를 우리가 자동으로 임의 확정하지 않는 이유는 flight.js 머리말에 적어두었다.
 //    요약: 편명→호출부호 변환표가 금방 낡아 엉뚱한 비행기를 잡을 수 있다.
+// ⚠️ Airport Intelligence도 같은 원칙을 쓴다. 지연·결항·게이트·활주로·터미널은
+//    신뢰 가능한 운영 피드가 연결된 항목만 표시하고, 없는 값을 추정해서 만들지 않는다.
 
 import { i18n } from './i18n.js';
 import { toast } from './ui.js';
@@ -71,6 +75,7 @@ export const flightPanel = {
     body.appendChild(this.pickerBlock(ko));
     if (this.from && this.to) {
       body.appendChild(this.routeBlock(ko));
+      body.appendChild(this.airportIntelligenceBlock(ko));
       body.appendChild(this.bookBlock(ko));
       body.appendChild(this.findBlock(ko));
     }
@@ -142,6 +147,61 @@ export const flightPanel = {
     wrap.appendChild(el('p', 'sky-note', ko
       ? '표시 경로 · 대권항로 · 소요시간 계산: 순항 860km/h+이착륙 여유 · 실제 운항: 제트기류·영공·항로점 반영'
       : 'Display · great-circle path · duration: 860 km/h cruise plus ground time · operations reflect jet streams, airspace and waypoints'));
+    return wrap;
+  },
+
+  /* ── 공항 Intelligence ─────────────────────────────────────── */
+  airportIntelligenceBlock(ko) {
+    const wrap = el('section', 'sky-sec airport-intelligence');
+    wrap.appendChild(el('h4', null, ko ? '공항 Intelligence' : 'Airport Intelligence'));
+    wrap.appendChild(el('p', 'sky-dim', ko
+      ? '예약 전과 이동 중에 출발·경유·도착 공항에서 실제로 필요한 상황을 한 흐름으로 묶습니다.'
+      : 'Bundle the conditions that matter at departure, transfer and arrival airports before and during travel.'));
+
+    const appendAirport = (roleKo, roleEn, airport) => {
+      const head = el('div', 'tr-head');
+      head.innerHTML = `<b>${ko ? roleKo : roleEn} · ${airport.iata}</b>`
+        + `<span>${airport.city || airport.name} · ${airport.name}</span>`;
+      wrap.appendChild(head);
+
+      const dl = el('dl', 'sky-rows');
+      const add = (k, v) => { dl.appendChild(el('dt', null, k)); dl.appendChild(el('dd', null, v)); };
+      add(ko ? '시간·기상' : 'Time · weather', ko
+        ? '정확한 현지시간 · 출발/도착 시각대 예보 · 체감 · 강수'
+        : 'Exact local time · forecast around departure/arrival window · feels-like · precipitation');
+      add(ko ? '바람·시정' : 'Wind · visibility', ko
+        ? '바람·돌풍 · 시정 · 안개 · 비·눈·뇌우'
+        : 'Wind/gusts · visibility · fog · rain/snow · thunderstorms');
+      add(ko ? '위험' : 'Hazards', ko
+        ? '공식 특보 · 태풍 · 폭설 · 산불 · 지진 등 공항 영향권 사건'
+        : 'Official warnings · cyclones · heavy snow · wildfire · earthquakes affecting the airport area');
+      add(ko ? '공항·이동' : 'Airport · access', ko
+        ? '공항철도·대중교통·도로·파업 이슈 · 검증된 운영 공지만 사용'
+        : 'Rail/transit/road/strike issues · verified operational notices only');
+      add(ko ? '운항' : 'Operations', ko
+        ? '지연·결항·게이트·활주로·터미널은 신뢰 가능한 운영 피드가 연결된 항목만 표시'
+        : 'Delay/cancellation/gate/runway/terminal only when a trustworthy operational feed is connected');
+      add(ko ? '관련 뉴스' : 'Related news', ko
+        ? '공항·도시 주변의 운항·교통·재난 관련 최신 기사 · 출처·시각 유지'
+        : 'Current airport/city operations, transport and hazard news · source and time preserved');
+      wrap.appendChild(dl);
+
+      const focus = el('button', 'btn-secondary', ko
+        ? `${airport.iata} 공항 지구본에서 보기`
+        : `View ${airport.iata} on globe`);
+      focus.onclick = () => {
+        flyTo(airport.lon, airport.lat, 420_000);
+        this.close();
+      };
+      wrap.appendChild(focus);
+    };
+
+    appendAirport('출발', 'DEPARTURE', this.from);
+    appendAirport('도착', 'ARRIVAL', this.to);
+
+    wrap.appendChild(el('p', 'sky-note', ko
+      ? '경유 원칙 · 현재 출발/도착 입력만으로 경유 공항을 추정하지 않습니다. 실제 항공편 itinerary/구간 데이터가 연결되면 확인된 경유 공항만 출발과 도착 사이에 같은 Intelligence 카드로 자동 추가합니다.'
+      : 'Transfer rule · do not infer a transfer airport from origin/destination alone. When real itinerary/segment data is connected, only confirmed transfer airports are inserted between departure and arrival with the same intelligence card.'));
     return wrap;
   },
 

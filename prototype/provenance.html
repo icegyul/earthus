@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>earthus 자료 출처와 시간 표기 원칙 | Provenance</title>
+<meta name="description" content="earthus가 관측·공식 예보·수치모델 가이던스·Earthus 계산값을 어떻게 구분하고 출처, 발표 시각, 유효 시각, 단위와 불확실성을 표시하는지 설명합니다.">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<link rel="canonical" href="https://earthus.net/provenance.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="earthus">
+<meta property="og:title" content="earthus 자료 출처와 시간 표기 원칙">
+<meta property="og:description" content="공식 관측·공식 예보·모델 가이던스·Earthus 계산값을 구분하는 provenance 원칙입니다.">
+<meta property="og:url" content="https://earthus.net/provenance.html">
+<meta property="og:image" content="https://earthus.net/og-latest.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{color-scheme:dark;--bg:#071018;--panel:#0d1822;--text:#edf5fa;--muted:#a8bac6;--line:#263846;--accent:#83d8ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.75 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}main{max-width:880px;margin:auto;padding:56px 22px 90px}a{color:var(--accent)}h1{font-size:clamp(28px,5vw,48px);line-height:1.15;margin:.2em 0 .5em}h2{margin-top:2.2em;font-size:24px}h3{font-size:18px;margin-bottom:.2em}.lead{font-size:18px;color:var(--muted)}.box{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:18px 0}.code{font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:#c9e9f8;word-break:break-word}.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font:12px ui-monospace,SFMono-Regular,Menlo,monospace;margin-right:5px}.muted{color:var(--muted)}table{width:100%;border-collapse:collapse;margin:16px 0}th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--line);padding:10px 8px}th{color:var(--muted);font-size:13px}footer{margin-top:54px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+</style>
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"TechArticle",
+  "headline":"earthus 자료 출처와 시간 표기 원칙",
+  "description":"earthus의 공식 관측, 공식 예보, 모델 가이던스, Earthus 계산값 provenance 분류와 시간·단위·불확실성 표시 원칙",
+  "inLanguage":"ko",
+  "url":"https://earthus.net/provenance.html",
+  "isPartOf":{"@type":"WebSite","name":"earthus","url":"https://earthus.net/"},
+  "publisher":{"@type":"Organization","name":"달루어"}
+}
+</script>
+</head>
+<body><main>
+<p><a href="/">← earthus</a></p>
+<h1>자료 출처와 시간 표기 원칙</h1>
+<p class="lead">earthus는 서로 성격이 다른 관측, 공식 예보, 수치모델 자료와 계산 결과를 한 종류의 정보처럼 섞지 않습니다. 화면의 값은 가능한 범위에서 <strong>누가 만든 자료인지</strong>, <strong>언제 발표·관측됐는지</strong>, <strong>언제까지 유효한지</strong>를 함께 전달합니다.</p>
+
+<h2>네 가지 provenance 분류</h2>
+<section class="box"><h3><span class="tag">OFFICIAL_OBSERVATION</span> 공식 관측</h3><p>기상·해양·대기·위성·재난 관측기관이 실제로 관측하거나 탐지해 공개한 자료입니다. 관측 시각과 제공기관을 우선 표시합니다.</p></section>
+<section class="box"><h3><span class="tag">OFFICIAL_FORECAST</span> 공식 예보</h3><p>기상청 등 책임 있는 공식기관이 발표한 미래 예보·특보·태풍 진로와 같은 자료입니다. earthus 자체 결과처럼 표현하지 않고 발표기관과 발표 시각을 표시합니다.</p></section>
+<section class="box"><h3><span class="tag">MODEL_GUIDANCE</span> 모델 가이던스</h3><p>ECMWF IFS·AIFS, KIM 계열처럼 수치예보 또는 AI 수치모델이 산출한 원자료·앙상블 정보를 뜻합니다. 공식 예보와 시각적으로 분리하고, 모델명·실행 시각(run)·예측 유효시각·앙상블 구성 또는 불확실성을 함께 표시하는 것을 원칙으로 합니다.</p></section>
+<section class="box"><h3><span class="tag">EARTHUS_DERIVED</span> Earthus 계산·분석</h3><p>여러 공개자료에서 earthus가 거리, 변화량, 비교값, 유사사례, 집계값 등을 계산한 경우입니다. 원자료와 계산 결과를 구분하고 계산에 사용한 출처와 기준시각을 남깁니다. 별도 법적·품질 검증이 필요한 자체 미래예측 기능은 공개 여부를 기능 게이트로 분리합니다.</p></section>
+
+<h2>한 값에 함께 붙는 정보</h2>
+<table><thead><tr><th>필드</th><th>뜻</th></tr></thead><tbody>
+<tr><td class="code">source / provider</td><td>자료 제공기관 또는 모델 시스템</td></tr>
+<tr><td class="code">provenance_class</td><td>공식 관측·공식 예보·모델 가이던스·Earthus 계산 중 어느 종류인지</td></tr>
+<tr><td class="code">issued_at</td><td>기관 또는 모델이 자료를 발표·생성한 시각</td></tr>
+<tr><td class="code">observed_at</td><td>실제 관측 시각. 관측 자료가 아닐 때는 생략될 수 있습니다.</td></tr>
+<tr><td class="code">valid_at / valid_range</td><td>예보·모델 자료가 가리키는 유효 시각 또는 기간</td></tr>
+<tr><td class="code">updated_at</td><td>earthus가 해당 자료를 마지막으로 갱신한 시각</td></tr>
+<tr><td class="code">unit</td><td>°C, m/s, hPa, %, m 등 값의 단위</td></tr>
+<tr><td class="code">geo</td><td>국가·지역·지점·좌표 또는 적용 공간 범위</td></tr>
+<tr><td class="code">confidence / uncertainty</td><td>원자료가 제공하는 확률·분산 또는 검증된 불확실성 정보. 근거가 없으면 임의 퍼센트를 만들지 않습니다.</td></tr>
+</tbody></table>
+
+<h2>태풍과 장기 모델 자료</h2>
+<p>태풍처럼 시간 범위에 따라 정보의 성격이 달라지는 경우, 공식기관의 진로와 장기 수치모델 신호를 하나의 선으로 이어 붙이지 않습니다. 공식 발표 구간은 <strong>OFFICIAL_FORECAST</strong>, 그 밖의 수치모델·앙상블 정보는 <strong>MODEL_GUIDANCE</strong>로 별도 표기합니다. 발생 전 신호는 이미 발생한 공식 태풍으로 표현하지 않습니다.</p>
+
+<h2>오래된 자료와 원본 장애</h2>
+<p>원본 제공기관이 일시적으로 응답하지 않을 때 마지막 정상 자료를 사용할 수 있지만, 이 경우 최신 자료인 것처럼 시각을 바꾸지 않습니다. <strong>현상이 종료됨</strong>과 <strong>원본을 새로 받지 못함</strong>도 다른 상태로 취급합니다.</p>
+
+<h2>검색·AI 답변에서 인용할 때</h2>
+<p>earthus의 설명이나 화면을 인용할 때는 가능하면 <strong>earthus</strong>와 함께 실제 원자료 제공기관, 자료의 기준시각을 같이 확인해 주세요. 긴급 재난 대응과 실제 항해·운항 판단은 해당 책임기관의 최신 공식 발표를 우선해야 합니다.</p>
+
+<footer>관련 문서: <a href="/intro.html">earthus 소개</a> · <a href="/llms.txt">llms.txt</a> · <a href="/legal/data-license.ko.md">자료 이용 조건</a></footer>
+</main></body></html>

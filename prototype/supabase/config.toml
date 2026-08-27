@@ -28,7 +28,7 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.social-admin]
-# 플랫폼 JWT + 함수 내부 staff RBAC를 모두 통과해야 한다.
+# 플랫폼 JWT + 서버 관리자 검증을 모두 통과해야 한다. Earthus 2.0 staff_roles 통합은 pre-device P0에서 완료한다.
 verify_jwt = true
 
 [functions.member-admin]
@@ -37,6 +37,10 @@ verify_jwt = true
 
 [functions.provider-admin]
 # API/provider 자격증명을 다룬다. 원문 secret은 Edge Function 밖으로 다시 반환하지 않는다.
+verify_jwt = true
+
+[functions.provider-validate]
+# KMA/KTO/AirKorea 등 allow-list 공식 endpoint에만 최소 read-only 검증 요청을 보낸다.
 verify_jwt = true
 
 [functions.forecast-v8]

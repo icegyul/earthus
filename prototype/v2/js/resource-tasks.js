@@ -252,4 +252,22 @@
     get,
     active,
   });
+
+  /* The v2 shell is intentionally a classic-script bootstrap. Provider bridges are
+     ES modules, so start them here after the shared task contract exists. This also
+     fixes the earlier state where provider-runtime.js existed but was never loaded
+     by prototype/v2/index.html. */
+  if (!window.__earthusV2ProviderModulesBootstrapped) {
+    window.__earthusV2ProviderModulesBootstrapped = true;
+    queueMicrotask(() => {
+      Promise.allSettled([
+        import('./provider-runtime.js'),
+        import('./route-intelligence.js'),
+      ]).then(results => {
+        results.forEach(result => {
+          if (result.status === 'rejected') console.error('[v2 runtime module]', result.reason);
+        });
+      });
+    });
+  }
 })();

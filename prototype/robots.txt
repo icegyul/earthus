@@ -107,9 +107,9 @@ Disallow: /
 User-agent: *
 Allow: /$
 Allow: /index.html
-# 소개 페이지 — 앱은 화면을 전부 JS 로 그리는 한 장짜리라 크롤러가 읽을 글이 적다.
-# 이 페이지가 "earthus 가 무엇인가"에 답하는 정적 본문이다. 화면 캡처도 함께 연다.
+# 소개·provenance 페이지 — 앱은 화면을 전부 JS로 그리는 한 장짜리라 크롤러가 읽을 글이 적다.
 Allow: /intro.html
+Allow: /provenance.html
 Allow: /llms.txt
 Allow: /shots/
 Allow: /legal/

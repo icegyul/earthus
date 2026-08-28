@@ -21,10 +21,11 @@ This branch is intentionally isolated because the remote GitHub baseline is olde
 - Cloud distribution/time is observed data. The shell's 12 km placement is explicitly `DISPLAY_ONLY_NOT_CTH`; it is not exposed as observed cloud-top height.
 - Reuses existing observed-cloud-derived visual shadow code. The shadow remains explicitly visual-only and is not treated as cloud height, irradiance, or hazard truth.
 - Adds `OCEAN -> Bathymetry / Trench` mode. It uses TopoBathy3D negative elevation directly, separates a local 0 m sea surface, enables an oblique camera, and reads a provider terrain sample near the Challenger Deep region.
-- Trench mode fails closed when combined real bathymetry is unavailable.
+- Adds `OCEAN -> Underwater` mode. It opens only after a real negative TopoBathy3D provider sample is returned, chooses camera depth from that real sample, disables terrain collision only for the underwater scene, limits globe translucency to the trench region, and restores collision/translucency/fog/background/underground color on exit/dispose.
+- Trench and Underwater modes fail closed when combined real bathymetry or a valid provider depth sample is unavailable.
 - Provider/truth state is visible on-screen instead of silently substituting synthetic fixtures.
-- Cleanup closes cloud refresh timers, Cesium camera listeners, document listeners, primitives/entities, added imagery layers, and V2 source UI across retry/dispose.
-- Leaving the trench feature restores the normal Earth scene instead of retaining stale trench state.
+- Cleanup closes cloud refresh timers, Cesium camera listeners, document listeners, primitives/entities, added imagery layers, underwater scene overrides, and V2 source UI across retry/dispose.
+- Leaving trench/underwater restores the normal Earth scene instead of retaining stale ocean-depth state.
 
 ## Files
 
@@ -38,19 +39,19 @@ This branch is intentionally isolated because the remote GitHub baseline is olde
 - `EllipsoidTerrainProvider` absent from the V2 bootstrap HTML
 - `NaturalEarthII` absent from the V2 bootstrap HTML
 - Real runtime import present
-- `Bathymetry / Trench` feature present
+- `Bathymetry / Trench` and `Underwater` features present
 - No synthetic terrain/bathymetry/trench fixture is used in the new runtime
 
 ## Not yet closed / do not claim complete
 
 1. Real GK2A CTH (cloud-top-height) L1 geometry is not wired from a verified provider in this remote baseline.
 2. Real NWP cloud vertical density/base/top L2 volume is not wired from a verified provider in this remote baseline.
-3. Actual deployed Chrome/Safari/iPhone/Android visual evidence has not been produced from this isolated branch.
+3. Actual deployed Chrome/Safari/iPhone/Android visual evidence has not been produced from this isolated branch, including the new underwater camera path.
 4. Real-device FPS, memory, battery, thermal, context-loss, and repeated mode-transition acceptance are not yet evidenced.
 5. Because the user's latest local canonical repository is newer than this GitHub branch, local integration must preserve that worktree and audit conflicts before applying these changes.
 
 Until those gates are closed, the honest status is:
 
-`REAL TERRAIN + REAL BATHYMETRY + OBSERVED CLOUD SHELL FOUNDATION: IMPLEMENTED ON ISOLATED BRANCH`
+`REAL TERRAIN + REAL BATHYMETRY + REAL-BATHY UNDERWATER + OBSERVED CLOUD SHELL FOUNDATION: IMPLEMENTED ON ISOLATED BRANCH`
 
 `TRUE 3D CTH/NWP CLOUD + REAL-DEVICE PRODUCTION ACCEPTANCE: NOT YET CLOSED`

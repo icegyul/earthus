@@ -56,6 +56,7 @@ jobs:
         run: |
           bash -n aws/gk2a-clouds/deploy_cth_into_existing.sh
           bash -n aws/gfs-cloud-volume/deploy.sh
+          bash -n tools/deploy-real-living-earth-data.sh
 
       - name: No second viewer in new runtime
         shell: bash

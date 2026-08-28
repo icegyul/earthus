@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Overlay CTH generation onto the already-deployed, proven gk2a-clouds Lambda.
-# Existing package dependencies/layers/environment are preserved.
 AWS_REGION="${AWS_REGION:-ap-northeast-2}"
+CACHE_REGION="${CACHE_REGION:-}"
 FUNCTION_NAME="${FUNCTION_NAME:-gk2a-clouds}"
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 WORK="$(mktemp -d)"
@@ -34,11 +33,16 @@ aws lambda update-function-configuration --region "$AWS_REGION" --function-name 
 aws lambda wait function-updated --region "$AWS_REGION" --function-name "$FUNCTION_NAME"
 
 if [[ -n "${CACHE_BUCKET:-}" ]]; then
-  python3 - "$AWS_REGION" "$FUNCTION_NAME" "$CACHE_BUCKET" "$WORK/env.json" <<'PY'
+  python3 - "$AWS_REGION" "$FUNCTION_NAME" "$CACHE_BUCKET" "$CACHE_REGION" "$WORK/env.json" <<'PY'
 import json,subprocess,sys
-region,name,bucket,out=sys.argv[1:]
+region,name,bucket,cache_region,out=sys.argv[1:]
 raw=subprocess.check_output(['aws','lambda','get-function-configuration','--region',region,'--function-name',name,'--query','Environment.Variables','--output','json'])
-env=json.loads(raw or b'{}') or {}; env['CACHE_BUCKET']=bucket; env.setdefault('CACHE_REGION',region)
+env=json.loads(raw or b'{}') or {}
+env['CACHE_BUCKET']=bucket
+if cache_region:
+    env['CACHE_REGION']=cache_region
+elif not env.get('CACHE_REGION'):
+    env['CACHE_REGION']=region
 open(out,'w').write(json.dumps({'Variables':env}))
 PY
   aws lambda update-function-configuration --region "$AWS_REGION" --function-name "$FUNCTION_NAME" --environment "file://$WORK/env.json" >/dev/null
@@ -59,7 +63,11 @@ PY
 
 BUCKET="${CACHE_BUCKET:-$(aws lambda get-function-configuration --region "$AWS_REGION" --function-name "$FUNCTION_NAME" --query 'Environment.Variables.CACHE_BUCKET' --output text)}"
 [[ -n "$BUCKET" && "$BUCKET" != "None" ]] || { echo 'CACHE_BUCKET unresolved' >&2; exit 3; }
-aws s3api head-object --region "$AWS_REGION" --bucket "$BUCKET" --key clouds/gk2a/cth/manifest.json >/dev/null
-aws s3api head-object --region "$AWS_REGION" --bucket "$BUCKET" --key clouds/gk2a/cth/grid.json >/dev/null
+if [[ -z "$CACHE_REGION" ]]; then
+  CACHE_REGION="$(aws lambda get-function-configuration --region "$AWS_REGION" --function-name "$FUNCTION_NAME" --query 'Environment.Variables.CACHE_REGION' --output text 2>/dev/null || true)"
+  case "$CACHE_REGION" in None|null|'') CACHE_REGION="$AWS_REGION" ;; esac
+fi
+aws s3api head-object --region "$CACHE_REGION" --bucket "$BUCKET" --key clouds/gk2a/cth/manifest.json >/dev/null
+aws s3api head-object --region "$CACHE_REGION" --bucket "$BUCKET" --key clouds/gk2a/cth/grid.json >/dev/null
 
 echo "GK2A REAL CTH PRODUCER READY: $FUNCTION_NAME"

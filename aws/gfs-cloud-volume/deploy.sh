@@ -69,7 +69,9 @@ aws events put-targets --region "$AWS_REGION" --rule "$RULE_NAME" --targets "Id=
 aws lambda add-permission --region "$AWS_REGION" --function-name "$FUNCTION_NAME" \
   --statement-id "${RULE_NAME}-invoke" --action lambda:InvokeFunction --principal events.amazonaws.com --source-arn "$RULE_ARN" >/dev/null 2>&1 || true
 
-aws lambda invoke --region "$AWS_REGION" --function-name "$FUNCTION_NAME" --payload '{}' "$BUILD/invoke.json" >/dev/null
+aws lambda invoke --region "$AWS_REGION" --function-name "$FUNCTION_NAME" \
+  --cli-binary-format raw-in-base64-out \
+  --payload '{}' "$BUILD/invoke.json" >/dev/null
 cat "$BUILD/invoke.json"
 python3 - "$BUILD/invoke.json" <<'PY'
 import json,sys

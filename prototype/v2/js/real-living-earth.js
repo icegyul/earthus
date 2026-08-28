@@ -2,6 +2,7 @@
 import { initViewer, viewer as sharedViewer, scene as sharedScene, gibsProvider, setAmbientView } from '../../js/viewer.js';
 import { API } from '../../js/config.js';
 import { buildCloudShadowAlpha } from '../../js/cloud-shadow.js';
+import { Gk2aCthReliefRuntime } from './gk2a-cth-relief.js';
 
 const TOPO_BATHY_URL='https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/TopoBathy3D/ImageServer';
 const LAND_TERRAIN_URL='https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer';
@@ -13,7 +14,7 @@ const TRENCH=Object.freeze({lon:142.20,lat:11.35,surfaceRadiusM:185_000,cameraHe
 let viewer=null,scene=null,terrainProvider=null;
 let terrainTruth='UNINITIALIZED',activeMode='EARTH';
 let baseLayer=null,detailLayer=null,cityLightsLayer=null,cloudShadowLayer=null;
-let cloudShell=null,cloudMeta=null,cloudTimer=null,cloudGeneration=0;
+let cloudShell=null,cloudMeta=null,cloudTimer=null,cloudGeneration=0,cthRelief=null,cthMeta=null;
 let trenchSurface=null,trenchSample=null,sourceBadge=null,underwaterRestore=null;
 let featureRequestHandler=null,earthClickHandler=null,cameraReadoutRemove=null,cameraDetailRemove=null;
 
@@ -25,12 +26,13 @@ const announce=message=>document.dispatchEvent(new CustomEvent('earthus:v2-real-
 function badge(extra=''){
   if(!sourceBadge?.isConnected){
     sourceBadge=document.createElement('div');sourceBadge.id='earthusV2RealSources';sourceBadge.setAttribute('aria-live','polite');
-    Object.assign(sourceBadge.style,{position:'fixed',left:'18px',bottom:'76px',zIndex:'4',maxWidth:'min(520px,calc(100vw - 36px))',padding:'6px 9px',border:'1px solid rgba(188,220,238,.11)',borderRadius:'10px',background:'rgba(2,8,12,.54)',backdropFilter:'blur(12px)',color:'#78909c',font:'8px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace',pointerEvents:'none'});
+    Object.assign(sourceBadge.style,{position:'fixed',left:'18px',bottom:'76px',zIndex:'4',maxWidth:'min(650px,calc(100vw - 36px))',padding:'6px 9px',border:'1px solid rgba(188,220,238,.11)',borderRadius:'10px',background:'rgba(2,8,12,.54)',backdropFilter:'blur(12px)',color:'#78909c',font:'8px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace',pointerEvents:'none'});
     document.body.append(sourceBadge);
   }
   const t=terrainTruth==='ESRI_TOPOBATHY3D'?'TERRAIN/BATHY: Esri TopoBathy3D':terrainTruth==='ESRI_TERRAIN3D'?'TERRAIN: Esri Terrain3D · bathymetry unavailable':'TERRAIN: ellipsoid fallback';
-  const c=cloudMeta?.time?`CLOUD: NOAA GMGSI ${cloudMeta.time} · observed shell`:'CLOUD: loading / unavailable';
-  sourceBadge.textContent=`${t} · ${c}${extra?` · ${extra}`:''}`;
+  const c=cloudMeta?.time?`CLOUD L0: NOAA GMGSI ${cloudMeta.time}`:'CLOUD L0: loading / unavailable';
+  const r=cthMeta?.validAt?` · CLOUD L1: GK2A CTH ${cthMeta.validAt}`:'';
+  sourceBadge.textContent=`${t} · ${c}${r}${extra?` · ${extra}`:''}`;
 }
 
 function sunFixedAt(iso){
@@ -87,9 +89,26 @@ async function loadCloud({force=false}={}){
     const normalized=normalizeCloud(await imageFromBlob(await ir.blob()),meta);if(generation!==cloudGeneration)return cloudMeta;
     const shadow=shadowCanvas(normalized.rgba,normalized.canvas.width,normalized.canvas.height,meta);removeCloud();cloudShadowLayer=addShadow(shadow,meta);cloudShell=addCloudShell(normalized.canvas,meta);
     cloudMeta=Object.freeze({time:meta.time,source:'NOAA_NESDIS_GMGSI',truthClass:'OBSERVED_2D_SHELL',heightClass:'DISPLAY_ONLY_NOT_CTH'});badge();scene.requestRender();return cloudMeta;
-  }catch(error){console.warn('[v2-real-earth/cloud]',error?.message||error);badge('cloud unavailable');return null}
+  }catch(error){console.warn('[v2-real-earth/cloud]',error?.message||error);badge('cloud L0 unavailable');return null}
 }
 function scheduleCloud(){clearTimeout(cloudTimer);cloudTimer=setTimeout(async()=>{if(document.visibilityState==='visible')await loadCloud({force:true});scheduleCloud()},CLOUD_REFRESH_MS)}
+
+async function showRealCth(){
+  if(!cthRelief)cthRelief=new Gk2aCthReliefRuntime({viewer,Cesium});
+  try{
+    cthMeta=await cthRelief.show();
+    if(cloudShell)cloudShell.show=false;if(cloudShadowLayer)cloudShadowLayer.show=false;
+    viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(132,34,4_300_000),duration:1.15});
+    badge('CTH: source metres · no vertical exaggeration');
+    announce(`천리안2A 실제 운정고도 3D · ${cthMeta.validAt}`);
+    return true;
+  }catch(error){
+    cthRelief?.hide();console.warn('[v2-real-earth/cth]',error?.message||error);badge('CTH artifact unavailable · L0 shell retained');
+    if(cloudShell)cloudShell.show=true;if(cloudShadowLayer)cloudShadowLayer.show=true;
+    announce('실제 GK2A CTH 산출물이 아직 배포되지 않아 관측 구름 Shell로 유지합니다.');return false;
+  }
+}
+function hideRealCth(){cthRelief?.hide()}
 
 async function installTerrain(){
   try{terrainProvider=await Cesium.ArcGISTiledElevationTerrainProvider.fromUrl(TOPO_BATHY_URL);viewer.terrainProvider=terrainProvider;terrainTruth='ESRI_TOPOBATHY3D'}
@@ -115,7 +134,7 @@ async function sampleDepth(){
 }
 
 async function enterTrench(){
-  if(terrainTruth!=='ESRI_TOPOBATHY3D'){announce('실제 Bathymetry Provider가 준비되지 않아 해구 모드를 열지 않았습니다.');badge('TRENCH blocked');return false}
+  hideRealCth();if(terrainTruth!=='ESRI_TOPOBATHY3D'){announce('실제 Bathymetry Provider가 준비되지 않아 해구 모드를 열지 않았습니다.');badge('TRENCH blocked');return false}
   restoreUnderwater();activeMode='TRENCH';if(cloudShell)cloudShell.show=false;if(cloudShadowLayer)cloudShadowLayer.show=false;if(cityLightsLayer)cityLightsLayer.show=false;if(baseLayer)baseLayer.alpha=.34;if(detailLayer)detailLayer.alpha=.18;
   addTrenchSurface(.18);scene.screenSpaceCameraController.enableTilt=true;scene.screenSpaceCameraController.enableLook=false;
   viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(TRENCH.lon,TRENCH.lat-1.25,TRENCH.cameraHeightM),orientation:{heading:0,pitch:Cesium.Math.toRadians(-62),roll:0},duration:1.25});
@@ -123,7 +142,7 @@ async function enterTrench(){
 }
 
 async function enterUnderwater(){
-  if(terrainTruth!=='ESRI_TOPOBATHY3D'){announce('실제 Bathymetry Provider가 없어 수중 카메라를 열지 않았습니다.');badge('UNDERWATER blocked');return false}
+  hideRealCth();if(terrainTruth!=='ESRI_TOPOBATHY3D'){announce('실제 Bathymetry Provider가 없어 수중 카메라를 열지 않았습니다.');badge('UNDERWATER blocked');return false}
   const sample=await sampleDepth();if(!(sample?.depthM>1200)){announce('검증 가능한 실제 해저 수심을 읽지 못해 수중 카메라를 열지 않았습니다.');badge('UNDERWATER blocked · provider sample unavailable');return false}
   trenchSample=sample;activeMode='UNDERWATER';if(cloudShell)cloudShell.show=false;if(cloudShadowLayer)cloudShadowLayer.show=false;if(cityLightsLayer)cityLightsLayer.show=false;if(baseLayer)baseLayer.alpha=.26;if(detailLayer)detailLayer.alpha=.08;addTrenchSurface(.10);prepareUnderwater();
   const cameraDepth=Math.min(3500,Math.max(650,sample.depthM*.34));scene.screenSpaceCameraController.enableTilt=true;scene.screenSpaceCameraController.enableLook=true;
@@ -131,11 +150,11 @@ async function enterUnderwater(){
   badge(`UNDERWATER: real bathymetry · camera ${Math.round(cameraDepth).toLocaleString()}m below 0m · seafloor sample ${Math.round(sample.depthM).toLocaleString()}m`);announce('실제 Bathymetry 수심 안으로 진입했습니다 · 수면 0m와 해저 Terrain을 분리해 봅니다.');scene.requestRender();return true;
 }
 
-function enterEarth(){restoreUnderwater();activeMode='EARTH';removeTrench();scene.screenSpaceCameraController.enableTilt=false;scene.screenSpaceCameraController.enableLook=false;if(cloudShell)cloudShell.show=true;if(cloudShadowLayer)cloudShadowLayer.show=true;if(cityLightsLayer)cityLightsLayer.show=true;if(baseLayer)baseLayer.alpha=1;setAmbientView(127,25,.52);badge();scene.requestRender()}
+function enterEarth(){restoreUnderwater();activeMode='EARTH';hideRealCth();removeTrench();scene.screenSpaceCameraController.enableTilt=false;scene.screenSpaceCameraController.enableLook=false;if(cloudShell)cloudShell.show=true;if(cloudShadowLayer)cloudShadowLayer.show=true;if(cityLightsLayer)cityLightsLayer.show=true;if(baseLayer)baseLayer.alpha=1;setAmbientView(127,25,.52);badge();scene.requestRender()}
 
 function installBridge(){
   if(featureRequestHandler)return;
-  featureRequestHandler=async event=>{const{menu,feature}=event.detail||{};if(menu==='WEATHER'&&feature==='Clouds'){enterEarth();await loadCloud({force:true});return}if(menu==='OCEAN'&&feature==='Bathymetry / Trench'){await enterTrench();return}if(menu==='OCEAN'&&feature==='Underwater'){await enterUnderwater();return}if(activeMode!=='EARTH')enterEarth()};
+  featureRequestHandler=async event=>{const{menu,feature}=event.detail||{};if(menu==='WEATHER'&&feature==='Clouds'){enterEarth();await loadCloud({force:true});await showRealCth();return}if(menu==='OCEAN'&&feature==='Bathymetry / Trench'){await enterTrench();return}if(menu==='OCEAN'&&feature==='Underwater'){await enterUnderwater();return}if(activeMode!=='EARTH'||cthRelief?.visible)enterEarth()};
   earthClickHandler=event=>{if(event.target?.closest?.('#home,[data-menu="EARTH"]'))enterEarth()};
   document.addEventListener('earthus:v2-feature-request',featureRequestHandler);document.addEventListener('click',earthClickHandler,true);
 }
@@ -146,8 +165,8 @@ export async function bootRealLivingEarth({containerId='g',task=null}={}){
   scene.globe.depthTestAgainstTerrain=true;scene.globe.enableLighting=true;scene.globe.showGroundAtmosphere=true;if('dynamicAtmosphereLighting'in scene.globe)scene.globe.dynamicAtmosphereLighting=true;if('dynamicAtmosphereLightingFromSun'in scene.globe)scene.globe.dynamicAtmosphereLightingFromSun=true;scene.sun.show=true;scene.moon.show=false;scene.fog.enabled=false;viewer.clock.shouldAnimate=false;viewer.clock.currentTime=Cesium.JulianDate.now();
   progress(task,'imagery',42,'NASA GIBS + Esri World Imagery');installImagery();progress(task,'terrain',58,'Esri WorldElevation3D TopoBathy3D');await installTerrain();setAmbientView(127,25,.52);installReadout();installBridge();
   progress(task,'cloud',72,'NOAA NESDIS GMGSI observed cloud shell');loadCloud().finally(()=>scene.requestRender());scheduleCloud();badge();scene.requestRender();
-  return Object.freeze({viewer,scene,terrainTruth,cloudTruth:()=>cloudMeta,enterEarth,enterTrench,enterUnderwater,refreshClouds:()=>loadCloud({force:true}),trenchSample:()=>trenchSample,dispose(){
-    clearTimeout(cloudTimer);cloudGeneration++;restoreUnderwater();removeCloud();removeTrench();cameraReadoutRemove?.();cameraReadoutRemove=null;cameraDetailRemove?.();cameraDetailRemove=null;
+  return Object.freeze({viewer,scene,terrainTruth,cloudTruth:()=>cloudMeta,cthTruth:()=>cthMeta,enterEarth,enterTrench,enterUnderwater,showRealCth,refreshClouds:()=>loadCloud({force:true}),trenchSample:()=>trenchSample,dispose(){
+    clearTimeout(cloudTimer);cloudGeneration++;restoreUnderwater();cthRelief?.dispose();cthRelief=null;cthMeta=null;removeCloud();removeTrench();cameraReadoutRemove?.();cameraReadoutRemove=null;cameraDetailRemove?.();cameraDetailRemove=null;
     if(featureRequestHandler){document.removeEventListener('earthus:v2-feature-request',featureRequestHandler);featureRequestHandler=null}if(earthClickHandler){document.removeEventListener('click',earthClickHandler,true);earthClickHandler=null}
     for(const layer of[cityLightsLayer,detailLayer,baseLayer]){if(!layer||!viewer?.imageryLayers)continue;try{viewer.imageryLayers.remove(layer,true)}catch(_){}}baseLayer=detailLayer=cityLightsLayer=null;sourceBadge?.remove?.();sourceBadge=null;activeMode='EARTH';
   }});

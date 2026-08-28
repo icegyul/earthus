@@ -10,48 +10,103 @@ Replace the V2 preview's smooth ellipsoid + NaturalEarthII model-globe path with
 
 This branch is intentionally isolated because the remote GitHub baseline is older than the current local canonical EARTHUS V2 worktree. Do not force-merge or overwrite the newer local worktree. Rebase/cherry-pick the relevant changes into the current local canonical source after auditing the local tree.
 
-## Implemented
+## Implemented render path
 
-- V2 bootstrap no longer creates its own `Cesium.EllipsoidTerrainProvider` or attaches Cesium `NaturalEarthII` as the production Earth path.
+- V2 bootstrap no longer creates its own `Cesium.EllipsoidTerrainProvider` or attaches Cesium `NaturalEarthII` as the product Earth path.
 - Reuses the canonical `prototype/js/viewer.js` singleton via `initViewer()`; no second Cesium Viewer is created by the new runtime.
-- Attempts real combined land + seafloor elevation with Esri `WorldElevation3D/TopoBathy3D` through `Cesium.ArcGISTiledElevationTerrainProvider.fromUrl()`.
-- Falls back to Esri `Terrain3D` for real land terrain if TopoBathy3D is unavailable; only then falls back to the existing ellipsoid instead of inventing elevation.
-- Uses NASA GIBS Blue Marble Shaded Relief Bathymetry as global context, Esri World Imagery for closer land detail, and VIIRS City Lights for night context.
-- Loads the existing EARTHUS NOAA NESDIS GMGSI observed cloud product (`API.CLOUDS/meta.json` + `global.png`) and renders it on a separate atmospheric shell instead of painting it on the ground.
-- Cloud distribution/time is observed data. The shell's 12 km placement is explicitly `DISPLAY_ONLY_NOT_CTH`; it is not exposed as observed cloud-top height.
-- Reuses existing observed-cloud-derived visual shadow code. The shadow remains explicitly visual-only and is not treated as cloud height, irradiance, or hazard truth.
-- Adds `OCEAN -> Bathymetry / Trench` mode. It uses TopoBathy3D negative elevation directly, separates a local 0 m sea surface, enables an oblique camera, and reads a provider terrain sample near the Challenger Deep region.
-- Adds `OCEAN -> Underwater` mode. It opens only after a real negative TopoBathy3D provider sample is returned, chooses camera depth from that real sample, disables terrain collision only for the underwater scene, limits globe translucency to the trench region, and restores collision/translucency/fog/background/underground color on exit/dispose.
-- Trench and Underwater modes fail closed when combined real bathymetry or a valid provider depth sample is unavailable.
-- Provider/truth state is visible on-screen instead of silently substituting synthetic fixtures.
-- Cleanup closes cloud refresh timers, Cesium camera listeners, document listeners, primitives/entities, added imagery layers, underwater scene overrides, and V2 source UI across retry/dispose.
-- Leaving trench/underwater restores the normal Earth scene instead of retaining stale ocean-depth state.
+- Real combined land + seafloor elevation path: Esri `WorldElevation3D/TopoBathy3D` through `Cesium.ArcGISTiledElevationTerrainProvider.fromUrl()`.
+- Real land fallback: Esri `Terrain3D`; only then the canonical ellipsoid fallback, never invented elevation.
+- NASA GIBS Blue Marble Shaded Relief Bathymetry for global context, Esri World Imagery for close detail, VIIRS City Lights for night context.
+- Existing EARTHUS NOAA NESDIS GMGSI observed cloud product renders on a separate atmospheric shell. Its 12 km shell placement is explicitly display-only and never exposed as observed CTH.
+- `OCEAN -> Bathymetry / Trench`: uses negative TopoBathy3D elevation, separates a local 0 m sea surface, and reads a real provider depth sample.
+- `OCEAN -> Underwater`: opens only after a valid negative TopoBathy3D depth sample. Collision/translucency/fog/background/underground-color changes are local to the mode and are restored on exit/dispose.
 
-## Files
+## Real cloud fidelity ladder implemented
 
-- `prototype/v2/index.html`
-- `prototype/v2/js/real-living-earth.js`
+The V2 Clouds action now uses this strict order:
 
-## Static verification completed
+1. `VOLUME` — bounded Cesium `VoxelPrimitive` volume from NOAA NCEP GFS 0.50 degree NWP vertical cloud structure.
+2. `CTH_RELIEF` — GK-2A AMI Level 2 official cloud-top-height mesh at source CTh metre heights, no vertical exaggeration.
+3. `SHELL` — observed NOAA NESDIS GMGSI global cloud shell.
 
-- V2 inline JavaScript: `node --check` PASS
-- `real-living-earth.js`: `node --check` PASS
-- `EllipsoidTerrainProvider` absent from the V2 bootstrap HTML
-- `NaturalEarthII` absent from the V2 bootstrap HTML
-- Real runtime import present
-- `Bathymetry / Trench` and `Underwater` features present
-- No synthetic terrain/bathymetry/trench fixture is used in the new runtime
+There is no synthetic cloud fallback.
 
-## Not yet closed / do not claim complete
+### GK-2A CTH producer
 
-1. Real GK2A CTH (cloud-top-height) L1 geometry is not wired from a verified provider in this remote baseline.
-2. Real NWP cloud vertical density/base/top L2 volume is not wired from a verified provider in this remote baseline.
-3. Actual deployed Chrome/Safari/iPhone/Android visual evidence has not been produced from this isolated branch, including the new underwater camera path.
-4. Real-device FPS, memory, battery, thermal, context-loss, and repeated mode-transition acceptance are not yet evidenced.
-5. Because the user's latest local canonical repository is newer than this GitHub branch, local integration must preserve that worktree and audit conflicts before applying these changes.
+Files:
+- `aws/gk2a-clouds/cth_pipeline.py`
+- `aws/gk2a-clouds/combined_handler.py`
+- `aws/gk2a-clouds/deploy_cth_into_existing.sh`
+- `prototype/v2/js/gk2a-cth-relief.js`
 
-Until those gates are closed, the honest status is:
+Truth contract:
+- official Level 2 `CTh` only;
+- units must explicitly be km or m;
+- `CTH_flag == 0` when the quality flag exists;
+- invalid/missing cells do not generate triangles;
+- direct lat/lon grids are preferred;
+- otherwise the existing EARTHUS-verified GK2A GEOS scan convention is used to recover geography;
+- source CTh height is preserved with no display exaggeration;
+- output declares `OBSERVED_DERIVED_OFFICIAL_L2`, `synthetic:false`.
 
-`REAL TERRAIN + REAL BATHYMETRY + REAL-BATHY UNDERWATER + OBSERVED CLOUD SHELL FOUNDATION: IMPLEMENTED ON ISOLATED BRANCH`
+The existing scheduled `gk2a-clouds` Lambda can be preserved and overlaid with the CTH producer instead of creating a parallel satellite ingestion system. CTH failure is fail-soft: the existing observed satellite imagery remains valid and V2 falls back to the shell.
 
-`TRUE 3D CTH/NWP CLOUD + REAL-DEVICE PRODUCTION ACCEPTANCE: NOT YET CLOSED`
+### NOAA GFS true vertical volume producer
+
+Files:
+- `aws/gfs-cloud-volume/handler.py`
+- `aws/gfs-cloud-volume/requirements.txt`
+- `aws/gfs-cloud-volume/deploy.sh`
+- `prototype/v2/js/gfs-cloud-volume.js`
+
+Truth contract:
+- NCEP NOMADS GFS 0.50 degree source;
+- bounded East Asia request only;
+- pressure-level `TCDC`, `HGT`, plus `CLWMR` and `ICMR` provenance statistics;
+- TCDC cloud fraction is resampled by real GFS HGT onto a bounded uniform geometric-altitude axis;
+- missing TCDC/HGT causes the build to fail instead of becoming invented clear sky;
+- GRIB horizontal axes are normalized to voxel west->east / south->north orientation;
+- output density is UINT8 representation of model TCDC fraction;
+- output declares `MODELLED_NWP`, `production:true`, `synthetic:false`;
+- browser renderer uses Cesium `VoxelPrimitive` in the existing Viewer.
+
+## Fail-closed behavior
+
+- No real TopoBathy3D -> Trench/Underwater does not open.
+- No valid provider depth sample -> Underwater does not open.
+- No GFS volume artifact or no Cesium voxel runtime -> try real GK2A CTH.
+- No valid GK2A CTH artifact -> retain observed NOAA GMGSI shell.
+- No layer invents terrain, bathymetry, trench depth, CTH, or NWP cloud density.
+
+## Automated verification
+
+Workflow: `.github/workflows/real-living-earth-ci.yml`
+
+GitHub Actions run `33221087958`: **SUCCESS**.
+
+Verified by CI:
+- Python syntax for GK2A CTH / combined handler / GFS volume producer;
+- JavaScript syntax for GK2A relief / GFS voxel / real-living-earth runtime;
+- V2 product bootstrap contains no direct `new Cesium.EllipsoidTerrainProvider` model path;
+- V2 product bootstrap contains no `NaturalEarthII` model path;
+- real runtime import exists;
+- Bathymetry / Trench and Underwater entries exist;
+- cloud truth labels and fallback ladder exist;
+- deployment helper shell syntax passes;
+- no second Cesium Viewer constructor exists in the new V2 runtime.
+
+## Still required before the word COMPLETE may be used
+
+1. Execute the GK2A producer against the actual deployed AWS runtime and prove `clouds/gk2a/cth/manifest.json` + `grid.json` from a current real Level 2 frame.
+2. Execute the GFS producer and prove `clouds/gfs/volume/east-asia/manifest.json` + `density.u8` from a current NOMADS cycle.
+3. Render those artifacts in the actual browser and capture visual evidence for Earth, CTH, Volume, Trench, and Underwater.
+4. Run Chrome/Safari and physical iPhone/Android acceptance: FPS, memory/GPU texture bytes, battery/thermal, context loss, and repeated mode transitions.
+5. Integrate into the user's newer local canonical worktree without resetting or overwriting its newer uncommitted/committed work.
+
+Current honest status:
+
+`REAL TERRAIN + REAL BATHYMETRY + UNDERWATER + OBSERVED CLOUD SHELL + REAL GK2A CTH PRODUCER/RENDERER + REAL GFS NWP VOXEL PRODUCER/RENDERER: IMPLEMENTED ON ISOLATED BRANCH`
+
+`STATIC / TRUTH-CONTRACT CI: PASS`
+
+`LIVE AWS ARTIFACT + BROWSER/PHYSICAL-DEVICE ACCEPTANCE: NOT YET CLOSED`

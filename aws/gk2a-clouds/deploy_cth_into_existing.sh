@@ -2,13 +2,7 @@
 set -euo pipefail
 
 # Overlay CTH generation onto the already-deployed, proven gk2a-clouds Lambda.
-# The existing deployment package/layers/environment are preserved.
-# Required: AWS credentials with lambda:GetFunction/UpdateFunction* and S3 HeadObject.
-# Optional:
-#   AWS_REGION=ap-northeast-2
-#   FUNCTION_NAME=gk2a-clouds
-#   CACHE_BUCKET=<only needed if not already in function environment>
-
+# Existing package dependencies/layers/environment are preserved.
 AWS_REGION="${AWS_REGION:-ap-northeast-2}"
 FUNCTION_NAME="${FUNCTION_NAME:-gk2a-clouds}"
 ROOT="$(cd "$(dirname "$0")" && pwd)"
@@ -23,7 +17,6 @@ for name in ['cth_pipeline.py','combined_handler.py']:
     print(name, 'syntax PASS')
 PY
 
-# Preserve every dependency/file in the currently running package, then overlay only our source.
 CODE_URL="$(aws lambda get-function --region "$AWS_REGION" --function-name "$FUNCTION_NAME" --query 'Code.Location' --output text)"
 curl -fsSL "$CODE_URL" -o "$WORK/current.zip"
 unzip -q "$WORK/current.zip" -d "$WORK/package"
@@ -40,7 +33,6 @@ aws lambda wait function-updated --region "$AWS_REGION" --function-name "$FUNCTI
 aws lambda update-function-configuration --region "$AWS_REGION" --function-name "$FUNCTION_NAME" --handler combined_handler.handler >/dev/null
 aws lambda wait function-updated --region "$AWS_REGION" --function-name "$FUNCTION_NAME"
 
-# Only inject CACHE_BUCKET when operator explicitly supplied it; otherwise preserve existing env untouched.
 if [[ -n "${CACHE_BUCKET:-}" ]]; then
   python3 - "$AWS_REGION" "$FUNCTION_NAME" "$CACHE_BUCKET" "$WORK/env.json" <<'PY'
 import json,subprocess,sys
@@ -53,10 +45,17 @@ PY
   aws lambda wait function-updated --region "$AWS_REGION" --function-name "$FUNCTION_NAME"
 fi
 
-# Execute CTH-only diagnostic mode without removing normal channels from existing metadata.
 aws lambda invoke --region "$AWS_REGION" --function-name "$FUNCTION_NAME" \
-  --payload '{"channels":[],"cth":true}' "$WORK/invoke.json" >/dev/null
+  --payload '{"cthOnly":true}' "$WORK/invoke.json" >/dev/null
 cat "$WORK/invoke.json"
+
+python3 - "$WORK/invoke.json" <<'PY'
+import json,sys
+r=json.load(open(sys.argv[1]))
+if r.get('cthReady') is not True:
+    raise SystemExit('GK2A CTH diagnostic failed: '+str(r.get('cthError')))
+print('GK2A CTH diagnostic PASS', (r.get('cth') or {}).get('validAt'))
+PY
 
 BUCKET="${CACHE_BUCKET:-$(aws lambda get-function-configuration --region "$AWS_REGION" --function-name "$FUNCTION_NAME" --query 'Environment.Variables.CACHE_BUCKET' --output text)}"
 [[ -n "$BUCKET" && "$BUCKET" != "None" ]] || { echo 'CACHE_BUCKET unresolved' >&2; exit 3; }

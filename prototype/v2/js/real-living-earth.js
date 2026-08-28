@@ -3,6 +3,7 @@ import { initViewer, viewer as sharedViewer, scene as sharedScene, gibsProvider,
 import { API } from '../../js/config.js';
 import { buildCloudShadowAlpha } from '../../js/cloud-shadow.js';
 import { Gk2aCthReliefRuntime } from './gk2a-cth-relief.js';
+import { GfsCloudVolumeRuntime } from './gfs-cloud-volume.js';
 
 const TOPO_BATHY_URL='https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/TopoBathy3D/ImageServer';
 const LAND_TERRAIN_URL='https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer';
@@ -12,9 +13,9 @@ const CLOUD_REFRESH_MS=20*60_000;
 const TRENCH=Object.freeze({lon:142.20,lat:11.35,surfaceRadiusM:185_000,cameraHeightM:360_000});
 
 let viewer=null,scene=null,terrainProvider=null;
-let terrainTruth='UNINITIALIZED',activeMode='EARTH';
+let terrainTruth='UNINITIALIZED',activeMode='EARTH',cloudFidelity='SHELL';
 let baseLayer=null,detailLayer=null,cityLightsLayer=null,cloudShadowLayer=null;
-let cloudShell=null,cloudMeta=null,cloudTimer=null,cloudGeneration=0,cthRelief=null,cthMeta=null;
+let cloudShell=null,cloudMeta=null,cloudTimer=null,cloudGeneration=0,cthRelief=null,cthMeta=null,cloudVolume=null,volumeMeta=null;
 let trenchSurface=null,trenchSample=null,sourceBadge=null,underwaterRestore=null;
 let featureRequestHandler=null,earthClickHandler=null,cameraReadoutRemove=null,cameraDetailRemove=null;
 
@@ -26,138 +27,47 @@ const announce=message=>document.dispatchEvent(new CustomEvent('earthus:v2-real-
 function badge(extra=''){
   if(!sourceBadge?.isConnected){
     sourceBadge=document.createElement('div');sourceBadge.id='earthusV2RealSources';sourceBadge.setAttribute('aria-live','polite');
-    Object.assign(sourceBadge.style,{position:'fixed',left:'18px',bottom:'76px',zIndex:'4',maxWidth:'min(650px,calc(100vw - 36px))',padding:'6px 9px',border:'1px solid rgba(188,220,238,.11)',borderRadius:'10px',background:'rgba(2,8,12,.54)',backdropFilter:'blur(12px)',color:'#78909c',font:'8px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace',pointerEvents:'none'});
+    Object.assign(sourceBadge.style,{position:'fixed',left:'18px',bottom:'76px',zIndex:'4',maxWidth:'min(700px,calc(100vw - 36px))',padding:'6px 9px',border:'1px solid rgba(188,220,238,.11)',borderRadius:'10px',background:'rgba(2,8,12,.54)',backdropFilter:'blur(12px)',color:'#78909c',font:'8px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace',pointerEvents:'none'});
     document.body.append(sourceBadge);
   }
   const t=terrainTruth==='ESRI_TOPOBATHY3D'?'TERRAIN/BATHY: Esri TopoBathy3D':terrainTruth==='ESRI_TERRAIN3D'?'TERRAIN: Esri Terrain3D · bathymetry unavailable':'TERRAIN: ellipsoid fallback';
   const c=cloudMeta?.time?`CLOUD L0: NOAA GMGSI ${cloudMeta.time}`:'CLOUD L0: loading / unavailable';
-  const r=cthMeta?.validAt?` · CLOUD L1: GK2A CTH ${cthMeta.validAt}`:'';
-  sourceBadge.textContent=`${t} · ${c}${r}${extra?` · ${extra}`:''}`;
+  const r=cthMeta?.validAt?` · L1 GK2A CTH ${cthMeta.validAt}`:'';
+  const v=volumeMeta?.cloudState?.validAt?` · L2 GFS VOLUME ${volumeMeta.cloudState.validAt}`:'';
+  sourceBadge.textContent=`${t} · ${c}${r}${v} · ACTIVE ${cloudFidelity}${extra?` · ${extra}`:''}`;
 }
 
 function sunFixedAt(iso){
-  const time=Cesium.JulianDate.fromIso8601(iso);
-  const inertial=Cesium.Simon1994PlanetaryPositions.computeSunPositionInEarthInertialFrame(time,new Cesium.Cartesian3());
-  let m=Cesium.Transforms.computeIcrfToFixedMatrix(time,new Cesium.Matrix3());
-  if(!Cesium.defined(m))m=Cesium.Transforms.computeTemeToPseudoFixedMatrix(time,new Cesium.Matrix3());
-  const fixed=Cesium.Matrix3.multiplyByVector(m,inertial,new Cesium.Cartesian3());Cesium.Cartesian3.normalize(fixed,fixed);return[fixed.x,fixed.y,fixed.z];
+  const time=Cesium.JulianDate.fromIso8601(iso),inertial=Cesium.Simon1994PlanetaryPositions.computeSunPositionInEarthInertialFrame(time,new Cesium.Cartesian3());let m=Cesium.Transforms.computeIcrfToFixedMatrix(time,new Cesium.Matrix3());if(!Cesium.defined(m))m=Cesium.Transforms.computeTemeToPseudoFixedMatrix(time,new Cesium.Matrix3());const fixed=Cesium.Matrix3.multiplyByVector(m,inertial,new Cesium.Cartesian3());Cesium.Cartesian3.normalize(fixed,fixed);return[fixed.x,fixed.y,fixed.z];
 }
-
-async function imageFromBlob(blob){
-  const url=URL.createObjectURL(blob);try{const image=new Image();image.crossOrigin='anonymous';await new Promise((ok,no)=>{image.onload=ok;image.onerror=()=>no(new Error('CLOUD_IMAGE_DECODE_FAILED'));image.src=url});return image}finally{URL.revokeObjectURL(url)}
-}
-
-function normalizeCloud(image,meta){
-  const cv=document.createElement('canvas');cv.width=image.naturalWidth||image.width;cv.height=image.naturalHeight||image.height;
-  const cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(image,0,0);const px=cx.getImageData(0,0,cv.width,cv.height),d=px.data;
-  if(meta.format==='la8')for(let i=0;i<d.length;i+=4){const l=90+d[i]*165/255;d[i]=d[i+1]=d[i+2]=Math.round(l);d[i+3]=Math.round(255*Math.pow(d[i+3]/255,.78))}
-  else for(let i=0;i<d.length;i+=4){const a=Math.round(255*Math.pow(d[i]/255,.78));d[i]=d[i+1]=d[i+2]=255;d[i+3]=a}
-  cx.putImageData(px,0,0);return{canvas:cv,rgba:px.data};
-}
-
-function shadowCanvas(rgba,w,h,meta){
-  const r=buildCloudShadowAlpha({rgba,sourceWidth:w,sourceHeight:h,north:Cesium.Math.toRadians(meta.north),south:Cesium.Math.toRadians(meta.south),sun:sunFixedAt(meta.time)});
-  const a=document.createElement('canvas');a.width=r.width;a.height=r.height;const ac=a.getContext('2d'),im=ac.createImageData(r.width,r.height);
-  for(let i=0;i<r.alpha.length;i++){const p=i*4;im.data[p]=im.data[p+1]=im.data[p+2]=0;im.data[p+3]=Math.round(r.alpha[i]*.32)}ac.putImageData(im,0,0);
-  const b=document.createElement('canvas');b.width=a.width;b.height=a.height;const bc=b.getContext('2d');bc.filter='blur(1.5px)';bc.drawImage(a,0,0);return b;
-}
-
-function removeCloud(){
-  if(cloudShell){try{scene.primitives.remove(cloudShell)}catch(_){}cloudShell=null}
-  if(cloudShadowLayer){try{viewer.imageryLayers.remove(cloudShadowLayer,true)}catch(_){}cloudShadowLayer=null}
-}
-
-function addCloudShell(canvas,meta){
-  const rect=Cesium.Rectangle.fromDegrees(-180,meta.south,180,meta.north);
-  const material=Cesium.Material.fromType('Image',{image:canvas,repeat:new Cesium.Cartesian2(1,1),color:Cesium.Color.WHITE.withAlpha(.92),transparent:true});
-  const p=new Cesium.Primitive({geometryInstances:new Cesium.GeometryInstance({geometry:new Cesium.RectangleGeometry({rectangle:rect,height:CLOUD_SHELL_DISPLAY_HEIGHT_M,granularity:Cesium.Math.toRadians(1),vertexFormat:Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT})}),appearance:new Cesium.EllipsoidSurfaceAppearance({aboveGround:true,faceForward:true,translucent:true,material}),asynchronous:false,show:activeMode==='EARTH'});
-  scene.primitives.add(p);return p;
-}
-
-function addShadow(canvas,meta){
-  const provider=new Cesium.SingleTileImageryProvider({url:canvas.toDataURL('image/png'),rectangle:Cesium.Rectangle.fromDegrees(-180,meta.south,180,meta.north),tileWidth:canvas.width,tileHeight:canvas.height,credit:meta.credit||'NOAA NESDIS GMGSI'});
-  const layer=viewer.imageryLayers.addImageryProvider(provider);layer.alpha=.28;layer.show=activeMode==='EARTH';return layer;
-}
-
-async function loadCloud({force=false}={}){
-  const generation=++cloudGeneration;
-  try{
-    const mr=await fetch(`${API.CLOUDS}/meta.json`,{cache:'no-cache'});if(!mr.ok)throw new Error(`GMGSI_META_${mr.status}`);const meta=await mr.json();
-    if(!meta?.time||!Number.isFinite(Number(meta.south))||!Number.isFinite(Number(meta.north)))throw new Error('GMGSI_META_INVALID');
-    if(!force&&cloudMeta?.time===meta.time&&cloudShell)return cloudMeta;
-    const ir=await fetch(`${API.CLOUDS}/global.png?t=${encodeURIComponent(meta.time)}`,{cache:'no-cache'});if(!ir.ok)throw new Error(`GMGSI_IMAGE_${ir.status}`);
-    const normalized=normalizeCloud(await imageFromBlob(await ir.blob()),meta);if(generation!==cloudGeneration)return cloudMeta;
-    const shadow=shadowCanvas(normalized.rgba,normalized.canvas.width,normalized.canvas.height,meta);removeCloud();cloudShadowLayer=addShadow(shadow,meta);cloudShell=addCloudShell(normalized.canvas,meta);
-    cloudMeta=Object.freeze({time:meta.time,source:'NOAA_NESDIS_GMGSI',truthClass:'OBSERVED_2D_SHELL',heightClass:'DISPLAY_ONLY_NOT_CTH'});badge();scene.requestRender();return cloudMeta;
-  }catch(error){console.warn('[v2-real-earth/cloud]',error?.message||error);badge('cloud L0 unavailable');return null}
-}
+async function imageFromBlob(blob){const url=URL.createObjectURL(blob);try{const image=new Image();image.crossOrigin='anonymous';await new Promise((ok,no)=>{image.onload=ok;image.onerror=()=>no(new Error('CLOUD_IMAGE_DECODE_FAILED'));image.src=url});return image}finally{URL.revokeObjectURL(url)}}
+function normalizeCloud(image,meta){const cv=document.createElement('canvas');cv.width=image.naturalWidth||image.width;cv.height=image.naturalHeight||image.height;const cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(image,0,0);const px=cx.getImageData(0,0,cv.width,cv.height),d=px.data;if(meta.format==='la8')for(let i=0;i<d.length;i+=4){const l=90+d[i]*165/255;d[i]=d[i+1]=d[i+2]=Math.round(l);d[i+3]=Math.round(255*Math.pow(d[i+3]/255,.78))}else for(let i=0;i<d.length;i+=4){const a=Math.round(255*Math.pow(d[i]/255,.78));d[i]=d[i+1]=d[i+2]=255;d[i+3]=a}cx.putImageData(px,0,0);return{canvas:cv,rgba:px.data}}
+function shadowCanvas(rgba,w,h,meta){const r=buildCloudShadowAlpha({rgba,sourceWidth:w,sourceHeight:h,north:Cesium.Math.toRadians(meta.north),south:Cesium.Math.toRadians(meta.south),sun:sunFixedAt(meta.time)});const a=document.createElement('canvas');a.width=r.width;a.height=r.height;const ac=a.getContext('2d'),im=ac.createImageData(r.width,r.height);for(let i=0;i<r.alpha.length;i++){const p=i*4;im.data[p]=im.data[p+1]=im.data[p+2]=0;im.data[p+3]=Math.round(r.alpha[i]*.32)}ac.putImageData(im,0,0);const b=document.createElement('canvas');b.width=a.width;b.height=a.height;const bc=b.getContext('2d');bc.filter='blur(1.5px)';bc.drawImage(a,0,0);return b}
+function removeCloud(){if(cloudShell){try{scene.primitives.remove(cloudShell)}catch(_){}cloudShell=null}if(cloudShadowLayer){try{viewer.imageryLayers.remove(cloudShadowLayer,true)}catch(_){}cloudShadowLayer=null}}
+function addCloudShell(canvas,meta){const rect=Cesium.Rectangle.fromDegrees(-180,meta.south,180,meta.north),material=Cesium.Material.fromType('Image',{image:canvas,repeat:new Cesium.Cartesian2(1,1),color:Cesium.Color.WHITE.withAlpha(.92),transparent:true}),p=new Cesium.Primitive({geometryInstances:new Cesium.GeometryInstance({geometry:new Cesium.RectangleGeometry({rectangle:rect,height:CLOUD_SHELL_DISPLAY_HEIGHT_M,granularity:Cesium.Math.toRadians(1),vertexFormat:Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT})}),appearance:new Cesium.EllipsoidSurfaceAppearance({aboveGround:true,faceForward:true,translucent:true,material}),asynchronous:false,show:activeMode==='EARTH'&&cloudFidelity==='SHELL'});scene.primitives.add(p);return p}
+function addShadow(canvas,meta){const provider=new Cesium.SingleTileImageryProvider({url:canvas.toDataURL('image/png'),rectangle:Cesium.Rectangle.fromDegrees(-180,meta.south,180,meta.north),tileWidth:canvas.width,tileHeight:canvas.height,credit:meta.credit||'NOAA NESDIS GMGSI'}),layer=viewer.imageryLayers.addImageryProvider(provider);layer.alpha=.28;layer.show=activeMode==='EARTH'&&cloudFidelity==='SHELL';return layer}
+async function loadCloud({force=false}={}){const generation=++cloudGeneration;try{const mr=await fetch(`${API.CLOUDS}/meta.json`,{cache:'no-cache'});if(!mr.ok)throw new Error(`GMGSI_META_${mr.status}`);const meta=await mr.json();if(!meta?.time||!Number.isFinite(Number(meta.south))||!Number.isFinite(Number(meta.north)))throw new Error('GMGSI_META_INVALID');if(!force&&cloudMeta?.time===meta.time&&cloudShell)return cloudMeta;const ir=await fetch(`${API.CLOUDS}/global.png?t=${encodeURIComponent(meta.time)}`,{cache:'no-cache'});if(!ir.ok)throw new Error(`GMGSI_IMAGE_${ir.status}`);const normalized=normalizeCloud(await imageFromBlob(await ir.blob()),meta);if(generation!==cloudGeneration)return cloudMeta;const shadow=shadowCanvas(normalized.rgba,normalized.canvas.width,normalized.canvas.height,meta);removeCloud();cloudShadowLayer=addShadow(shadow,meta);cloudShell=addCloudShell(normalized.canvas,meta);cloudMeta=Object.freeze({time:meta.time,source:'NOAA_NESDIS_GMGSI',truthClass:'OBSERVED_2D_SHELL',heightClass:'DISPLAY_ONLY_NOT_CTH'});badge();scene.requestRender();return cloudMeta}catch(error){console.warn('[v2-real-earth/cloud]',error?.message||error);badge('cloud L0 unavailable');return null}}
 function scheduleCloud(){clearTimeout(cloudTimer);cloudTimer=setTimeout(async()=>{if(document.visibilityState==='visible')await loadCloud({force:true});scheduleCloud()},CLOUD_REFRESH_MS)}
-
-async function showRealCth(){
+function hideCloud3d(){cloudVolume?.hide();cthRelief?.hide();cloudFidelity='SHELL';if(cloudShell)cloudShell.show=activeMode==='EARTH';if(cloudShadowLayer)cloudShadowLayer.show=activeMode==='EARTH'}
+async function showBestCloud3d(){
+  if(!cloudVolume)cloudVolume=new GfsCloudVolumeRuntime({viewer,Cesium});
+  try{volumeMeta=await cloudVolume.show();cthRelief?.hide();cloudFidelity='VOLUME';if(cloudShell)cloudShell.show=false;if(cloudShadowLayer)cloudShadowLayer.show=false;const a=volumeMeta.anchor;viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(a.longitudeDeg,a.latitudeDeg,2_100_000),duration:1.15});badge('VOLUME: GFS TCDC + HGT · modelled NWP');announce(`NOAA GFS 실제 수직 구름 Volume · ${volumeMeta.cloudState.validAt}`);return 'VOLUME'}catch(error){cloudVolume?.hide();console.warn('[v2-real-earth/volume]',error?.message||error)}
   if(!cthRelief)cthRelief=new Gk2aCthReliefRuntime({viewer,Cesium});
-  try{
-    cthMeta=await cthRelief.show();
-    if(cloudShell)cloudShell.show=false;if(cloudShadowLayer)cloudShadowLayer.show=false;
-    viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(132,34,4_300_000),duration:1.15});
-    badge('CTH: source metres · no vertical exaggeration');
-    announce(`천리안2A 실제 운정고도 3D · ${cthMeta.validAt}`);
-    return true;
-  }catch(error){
-    cthRelief?.hide();console.warn('[v2-real-earth/cth]',error?.message||error);badge('CTH artifact unavailable · L0 shell retained');
-    if(cloudShell)cloudShell.show=true;if(cloudShadowLayer)cloudShadowLayer.show=true;
-    announce('실제 GK2A CTH 산출물이 아직 배포되지 않아 관측 구름 Shell로 유지합니다.');return false;
-  }
-}
-function hideRealCth(){cthRelief?.hide()}
-
-async function installTerrain(){
-  try{terrainProvider=await Cesium.ArcGISTiledElevationTerrainProvider.fromUrl(TOPO_BATHY_URL);viewer.terrainProvider=terrainProvider;terrainTruth='ESRI_TOPOBATHY3D'}
-  catch(error){console.warn('[v2-real-earth/terrain] TopoBathy3D:',error?.message||error);try{terrainProvider=await Cesium.ArcGISTiledElevationTerrainProvider.fromUrl(LAND_TERRAIN_URL);viewer.terrainProvider=terrainProvider;terrainTruth='ESRI_TERRAIN3D'}catch(e){console.warn('[v2-real-earth/terrain] Terrain3D:',e?.message||e);terrainProvider=viewer.terrainProvider;terrainTruth='ELLIPSOID_FALLBACK'}}
-  badge();scene.requestRender();return terrainTruth;
+  try{cthMeta=await cthRelief.show();cloudFidelity='CTH_RELIEF';if(cloudShell)cloudShell.show=false;if(cloudShadowLayer)cloudShadowLayer.show=false;viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(132,34,4_300_000),duration:1.15});badge('CTH: source metres · no vertical exaggeration');announce(`천리안2A 실제 운정고도 3D · ${cthMeta.validAt}`);return 'CTH_RELIEF'}catch(error){cthRelief?.hide();console.warn('[v2-real-earth/cth]',error?.message||error)}
+  cloudFidelity='SHELL';if(cloudShell)cloudShell.show=true;if(cloudShadowLayer)cloudShadowLayer.show=true;badge('3D cloud artifacts unavailable · observed shell retained');announce('실제 3D 구름 산출물이 아직 서버에 없어서 NOAA 관측 Shell로 유지합니다.');return 'SHELL';
 }
 
-function installImagery(){
-  baseLayer=viewer.imageryLayers.addImageryProvider(gibsProvider({layer:'BlueMarble_ShadedRelief_Bathymetry',level:8,ext:'jpeg'}));baseLayer.dayAlpha=1;baseLayer.nightAlpha=.1;
-  detailLayer=viewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({url:ESRI_IMAGERY,maximumLevel:19,credit:'Powered by Esri · Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community'}));
-  cityLightsLayer=viewer.imageryLayers.addImageryProvider(gibsProvider({layer:'VIIRS_CityLights_2012',level:8,ext:'jpeg'}));cityLightsLayer.dayAlpha=0;cityLightsLayer.nightAlpha=.82;cityLightsLayer.brightness=1.35;
-  const update=()=>{const h=viewer.camera.positionCartographic?.height??24_000_000,d=1-smooth(2_000_000,8_000_000,h),depthMode=activeMode==='TRENCH'||activeMode==='UNDERWATER';detailLayer.alpha=depthMode?Math.min(.28,d):d;baseLayer.alpha=depthMode?.34:1;cityLightsLayer.show=activeMode==='EARTH'};
-  cameraDetailRemove?.();cameraDetailRemove=viewer.camera.changed.addEventListener(update);update();
-}
-
+async function installTerrain(){try{terrainProvider=await Cesium.ArcGISTiledElevationTerrainProvider.fromUrl(TOPO_BATHY_URL);viewer.terrainProvider=terrainProvider;terrainTruth='ESRI_TOPOBATHY3D'}catch(error){console.warn('[v2-real-earth/terrain] TopoBathy3D:',error?.message||error);try{terrainProvider=await Cesium.ArcGISTiledElevationTerrainProvider.fromUrl(LAND_TERRAIN_URL);viewer.terrainProvider=terrainProvider;terrainTruth='ESRI_TERRAIN3D'}catch(e){console.warn('[v2-real-earth/terrain] Terrain3D:',e?.message||e);terrainProvider=viewer.terrainProvider;terrainTruth='ELLIPSOID_FALLBACK'}}badge();scene.requestRender();return terrainTruth}
+function installImagery(){baseLayer=viewer.imageryLayers.addImageryProvider(gibsProvider({layer:'BlueMarble_ShadedRelief_Bathymetry',level:8,ext:'jpeg'}));baseLayer.dayAlpha=1;baseLayer.nightAlpha=.1;detailLayer=viewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({url:ESRI_IMAGERY,maximumLevel:19,credit:'Powered by Esri · Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community'}));cityLightsLayer=viewer.imageryLayers.addImageryProvider(gibsProvider({layer:'VIIRS_CityLights_2012',level:8,ext:'jpeg'}));cityLightsLayer.dayAlpha=0;cityLightsLayer.nightAlpha=.82;cityLightsLayer.brightness=1.35;const update=()=>{const h=viewer.camera.positionCartographic?.height??24_000_000,d=1-smooth(2_000_000,8_000_000,h),depthMode=activeMode==='TRENCH'||activeMode==='UNDERWATER';detailLayer.alpha=depthMode?Math.min(.28,d):d;baseLayer.alpha=depthMode?.34:1;cityLightsLayer.show=activeMode==='EARTH'};cameraDetailRemove?.();cameraDetailRemove=viewer.camera.changed.addEventListener(update);update()}
 function removeTrench(){if(trenchSurface){try{viewer.entities.remove(trenchSurface)}catch(_){}trenchSurface=null}trenchSample=null}
 function addTrenchSurface(alpha=.18){removeTrench();trenchSurface=viewer.entities.add({id:'earthus-v2-zero-meter-ocean-surface',position:Cesium.Cartesian3.fromDegrees(TRENCH.lon,TRENCH.lat),ellipse:{semiMajorAxis:TRENCH.surfaceRadiusM,semiMinorAxis:TRENCH.surfaceRadiusM,height:0,material:Cesium.Color.fromCssColorString('#164e68').withAlpha(alpha),outline:true,outlineColor:Cesium.Color.fromCssColorString('#8dd9e8').withAlpha(.22)}});return trenchSurface}
 function restoreUnderwater(){if(!underwaterRestore||!scene)return;const r=underwaterRestore,cc=scene.screenSpaceCameraController,g=scene.globe,t=g.translucency;cc.enableCollisionDetection=r.collision;t.enabled=r.translucencyEnabled;t.frontFaceAlpha=r.frontFaceAlpha;t.backFaceAlpha=r.backFaceAlpha;t.rectangle=r.rectangle;g.undergroundColor=r.undergroundColor;scene.fog.enabled=r.fogEnabled;scene.backgroundColor=r.backgroundColor;underwaterRestore=null}
 function prepareUnderwater(){restoreUnderwater();const cc=scene.screenSpaceCameraController,g=scene.globe,t=g.translucency;underwaterRestore={collision:cc.enableCollisionDetection,translucencyEnabled:t.enabled,frontFaceAlpha:t.frontFaceAlpha,backFaceAlpha:t.backFaceAlpha,rectangle:t.rectangle,undergroundColor:g.undergroundColor,fogEnabled:scene.fog.enabled,backgroundColor:scene.backgroundColor};cc.enableCollisionDetection=false;t.enabled=true;t.rectangle=Cesium.Rectangle.fromDegrees(TRENCH.lon-3.5,TRENCH.lat-3.5,TRENCH.lon+3.5,TRENCH.lat+3.5);t.frontFaceAlpha=.18;t.backFaceAlpha=.92;g.undergroundColor=Cesium.Color.fromCssColorString('#031017');scene.backgroundColor=Cesium.Color.fromCssColorString('#01070b');scene.fog.enabled=true}
-async function sampleDepth(){
-  if(terrainTruth!=='ESRI_TOPOBATHY3D'||!terrainProvider)return null;const p=Cesium.Cartographic.fromDegrees(TRENCH.lon,TRENCH.lat);
-  try{let s=null;if(typeof Cesium.sampleTerrainMostDetailed==='function')try{[s]=await Cesium.sampleTerrainMostDetailed(terrainProvider,[p])}catch(_){}if(!s&&typeof Cesium.sampleTerrain==='function')[s]=await Cesium.sampleTerrain(terrainProvider,12,[p]);const h=Number(s?.height);return Number.isFinite(h)?Object.freeze({heightM:h,depthM:h<0?-h:0,source:'ESRI_TOPOBATHY3D_PROVIDER_SAMPLE'}):null}catch(e){console.warn('[v2-real-earth/trench-sample]',e?.message||e);return null}
-}
-
-async function enterTrench(){
-  hideRealCth();if(terrainTruth!=='ESRI_TOPOBATHY3D'){announce('실제 Bathymetry Provider가 준비되지 않아 해구 모드를 열지 않았습니다.');badge('TRENCH blocked');return false}
-  restoreUnderwater();activeMode='TRENCH';if(cloudShell)cloudShell.show=false;if(cloudShadowLayer)cloudShadowLayer.show=false;if(cityLightsLayer)cityLightsLayer.show=false;if(baseLayer)baseLayer.alpha=.34;if(detailLayer)detailLayer.alpha=.18;
-  addTrenchSurface(.18);scene.screenSpaceCameraController.enableTilt=true;scene.screenSpaceCameraController.enableLook=false;
-  viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(TRENCH.lon,TRENCH.lat-1.25,TRENCH.cameraHeightM),orientation:{heading:0,pitch:Cesium.Math.toRadians(-62),roll:0},duration:1.25});
-  trenchSample=await sampleDepth();const sample=trenchSample?.depthM>0?`PROVIDER SAMPLE ${Math.round(trenchSample.depthM).toLocaleString()}m below 0m`:'PROVIDER SAMPLE unavailable';badge(`TRENCH: real bathymetry · 0m surface separated · ${sample}`);announce('실제 TopoBathy3D 기반 해구 보기 · 수심은 Provider 표본값만 표시합니다.');scene.requestRender();return true;
-}
-
-async function enterUnderwater(){
-  hideRealCth();if(terrainTruth!=='ESRI_TOPOBATHY3D'){announce('실제 Bathymetry Provider가 없어 수중 카메라를 열지 않았습니다.');badge('UNDERWATER blocked');return false}
-  const sample=await sampleDepth();if(!(sample?.depthM>1200)){announce('검증 가능한 실제 해저 수심을 읽지 못해 수중 카메라를 열지 않았습니다.');badge('UNDERWATER blocked · provider sample unavailable');return false}
-  trenchSample=sample;activeMode='UNDERWATER';if(cloudShell)cloudShell.show=false;if(cloudShadowLayer)cloudShadowLayer.show=false;if(cityLightsLayer)cityLightsLayer.show=false;if(baseLayer)baseLayer.alpha=.26;if(detailLayer)detailLayer.alpha=.08;addTrenchSurface(.10);prepareUnderwater();
-  const cameraDepth=Math.min(3500,Math.max(650,sample.depthM*.34));scene.screenSpaceCameraController.enableTilt=true;scene.screenSpaceCameraController.enableLook=true;
-  viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(TRENCH.lon,TRENCH.lat-0.18,-cameraDepth),orientation:{heading:Cesium.Math.toRadians(18),pitch:Cesium.Math.toRadians(-14),roll:0},duration:1.35});
-  badge(`UNDERWATER: real bathymetry · camera ${Math.round(cameraDepth).toLocaleString()}m below 0m · seafloor sample ${Math.round(sample.depthM).toLocaleString()}m`);announce('실제 Bathymetry 수심 안으로 진입했습니다 · 수면 0m와 해저 Terrain을 분리해 봅니다.');scene.requestRender();return true;
-}
-
-function enterEarth(){restoreUnderwater();activeMode='EARTH';hideRealCth();removeTrench();scene.screenSpaceCameraController.enableTilt=false;scene.screenSpaceCameraController.enableLook=false;if(cloudShell)cloudShell.show=true;if(cloudShadowLayer)cloudShadowLayer.show=true;if(cityLightsLayer)cityLightsLayer.show=true;if(baseLayer)baseLayer.alpha=1;setAmbientView(127,25,.52);badge();scene.requestRender()}
-
-function installBridge(){
-  if(featureRequestHandler)return;
-  featureRequestHandler=async event=>{const{menu,feature}=event.detail||{};if(menu==='WEATHER'&&feature==='Clouds'){enterEarth();await loadCloud({force:true});await showRealCth();return}if(menu==='OCEAN'&&feature==='Bathymetry / Trench'){await enterTrench();return}if(menu==='OCEAN'&&feature==='Underwater'){await enterUnderwater();return}if(activeMode!=='EARTH'||cthRelief?.visible)enterEarth()};
-  earthClickHandler=event=>{if(event.target?.closest?.('#home,[data-menu="EARTH"]'))enterEarth()};
-  document.addEventListener('earthus:v2-feature-request',featureRequestHandler);document.addEventListener('click',earthClickHandler,true);
-}
+async function sampleDepth(){if(terrainTruth!=='ESRI_TOPOBATHY3D'||!terrainProvider)return null;const p=Cesium.Cartographic.fromDegrees(TRENCH.lon,TRENCH.lat);try{let s=null;if(typeof Cesium.sampleTerrainMostDetailed==='function')try{[s]=await Cesium.sampleTerrainMostDetailed(terrainProvider,[p])}catch(_){}if(!s&&typeof Cesium.sampleTerrain==='function')[s]=await Cesium.sampleTerrain(terrainProvider,12,[p]);const h=Number(s?.height);return Number.isFinite(h)?Object.freeze({heightM:h,depthM:h<0?-h:0,source:'ESRI_TOPOBATHY3D_PROVIDER_SAMPLE'}):null}catch(e){console.warn('[v2-real-earth/trench-sample]',e?.message||e);return null}}
+async function enterTrench(){hideCloud3d();if(terrainTruth!=='ESRI_TOPOBATHY3D'){announce('실제 Bathymetry Provider가 준비되지 않아 해구 모드를 열지 않았습니다.');badge('TRENCH blocked');return false}restoreUnderwater();activeMode='TRENCH';if(cloudShell)cloudShell.show=false;if(cloudShadowLayer)cloudShadowLayer.show=false;if(cityLightsLayer)cityLightsLayer.show=false;if(baseLayer)baseLayer.alpha=.34;if(detailLayer)detailLayer.alpha=.18;addTrenchSurface(.18);scene.screenSpaceCameraController.enableTilt=true;scene.screenSpaceCameraController.enableLook=false;viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(TRENCH.lon,TRENCH.lat-1.25,TRENCH.cameraHeightM),orientation:{heading:0,pitch:Cesium.Math.toRadians(-62),roll:0},duration:1.25});trenchSample=await sampleDepth();const sample=trenchSample?.depthM>0?`PROVIDER SAMPLE ${Math.round(trenchSample.depthM).toLocaleString()}m below 0m`:'PROVIDER SAMPLE unavailable';badge(`TRENCH: real bathymetry · 0m surface separated · ${sample}`);announce('실제 TopoBathy3D 기반 해구 보기 · 수심은 Provider 표본값만 표시합니다.');scene.requestRender();return true}
+async function enterUnderwater(){hideCloud3d();if(terrainTruth!=='ESRI_TOPOBATHY3D'){announce('실제 Bathymetry Provider가 없어 수중 카메라를 열지 않았습니다.');badge('UNDERWATER blocked');return false}const sample=await sampleDepth();if(!(sample?.depthM>1200)){announce('검증 가능한 실제 해저 수심을 읽지 못해 수중 카메라를 열지 않았습니다.');badge('UNDERWATER blocked · provider sample unavailable');return false}trenchSample=sample;activeMode='UNDERWATER';if(cloudShell)cloudShell.show=false;if(cloudShadowLayer)cloudShadowLayer.show=false;if(cityLightsLayer)cityLightsLayer.show=false;if(baseLayer)baseLayer.alpha=.26;if(detailLayer)detailLayer.alpha=.08;addTrenchSurface(.10);prepareUnderwater();const cameraDepth=Math.min(3500,Math.max(650,sample.depthM*.34));scene.screenSpaceCameraController.enableTilt=true;scene.screenSpaceCameraController.enableLook=true;viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(TRENCH.lon,TRENCH.lat-0.18,-cameraDepth),orientation:{heading:Cesium.Math.toRadians(18),pitch:Cesium.Math.toRadians(-14),roll:0},duration:1.35});badge(`UNDERWATER: real bathymetry · camera ${Math.round(cameraDepth).toLocaleString()}m below 0m · seafloor sample ${Math.round(sample.depthM).toLocaleString()}m`);announce('실제 Bathymetry 수심 안으로 진입했습니다 · 수면 0m와 해저 Terrain을 분리해 봅니다.');scene.requestRender();return true}
+function enterEarth(){restoreUnderwater();activeMode='EARTH';hideCloud3d();removeTrench();scene.screenSpaceCameraController.enableTilt=false;scene.screenSpaceCameraController.enableLook=false;if(cityLightsLayer)cityLightsLayer.show=true;if(baseLayer)baseLayer.alpha=1;setAmbientView(127,25,.52);badge();scene.requestRender()}
+function installBridge(){if(featureRequestHandler)return;featureRequestHandler=async event=>{const{menu,feature}=event.detail||{};if(menu==='WEATHER'&&feature==='Clouds'){enterEarth();await loadCloud({force:true});await showBestCloud3d();return}if(menu==='OCEAN'&&feature==='Bathymetry / Trench'){await enterTrench();return}if(menu==='OCEAN'&&feature==='Underwater'){await enterUnderwater();return}if(activeMode!=='EARTH'||cloudFidelity!=='SHELL')enterEarth()};earthClickHandler=event=>{if(event.target?.closest?.('#home,[data-menu="EARTH"]'))enterEarth()};document.addEventListener('earthus:v2-feature-request',featureRequestHandler);document.addEventListener('click',earthClickHandler,true)}
 function installReadout(){cameraReadoutRemove?.();cameraReadoutRemove=scene.postRender.addEventListener(()=>{const p=viewer.camera.positionCartographic;if(!p)return;const la=Cesium.Math.toDegrees(p.latitude),lo=Cesium.Math.toDegrees(p.longitude),c=document.getElementById('coord'),a=document.getElementById('alt');if(c)c.textContent=`${Math.abs(la).toFixed(1)}°${la>=0?'N':'S'} · ${Math.abs(lo).toFixed(1)}°${lo>=0?'E':'W'}`;if(a)a.textContent=`ALT ${Math.round(p.height/1000).toLocaleString()} km`})}
 
 export async function bootRealLivingEarth({containerId='g',task=null}={}){
@@ -165,9 +75,5 @@ export async function bootRealLivingEarth({containerId='g',task=null}={}){
   scene.globe.depthTestAgainstTerrain=true;scene.globe.enableLighting=true;scene.globe.showGroundAtmosphere=true;if('dynamicAtmosphereLighting'in scene.globe)scene.globe.dynamicAtmosphereLighting=true;if('dynamicAtmosphereLightingFromSun'in scene.globe)scene.globe.dynamicAtmosphereLightingFromSun=true;scene.sun.show=true;scene.moon.show=false;scene.fog.enabled=false;viewer.clock.shouldAnimate=false;viewer.clock.currentTime=Cesium.JulianDate.now();
   progress(task,'imagery',42,'NASA GIBS + Esri World Imagery');installImagery();progress(task,'terrain',58,'Esri WorldElevation3D TopoBathy3D');await installTerrain();setAmbientView(127,25,.52);installReadout();installBridge();
   progress(task,'cloud',72,'NOAA NESDIS GMGSI observed cloud shell');loadCloud().finally(()=>scene.requestRender());scheduleCloud();badge();scene.requestRender();
-  return Object.freeze({viewer,scene,terrainTruth,cloudTruth:()=>cloudMeta,cthTruth:()=>cthMeta,enterEarth,enterTrench,enterUnderwater,showRealCth,refreshClouds:()=>loadCloud({force:true}),trenchSample:()=>trenchSample,dispose(){
-    clearTimeout(cloudTimer);cloudGeneration++;restoreUnderwater();cthRelief?.dispose();cthRelief=null;cthMeta=null;removeCloud();removeTrench();cameraReadoutRemove?.();cameraReadoutRemove=null;cameraDetailRemove?.();cameraDetailRemove=null;
-    if(featureRequestHandler){document.removeEventListener('earthus:v2-feature-request',featureRequestHandler);featureRequestHandler=null}if(earthClickHandler){document.removeEventListener('click',earthClickHandler,true);earthClickHandler=null}
-    for(const layer of[cityLightsLayer,detailLayer,baseLayer]){if(!layer||!viewer?.imageryLayers)continue;try{viewer.imageryLayers.remove(layer,true)}catch(_){}}baseLayer=detailLayer=cityLightsLayer=null;sourceBadge?.remove?.();sourceBadge=null;activeMode='EARTH';
-  }});
+  return Object.freeze({viewer,scene,terrainTruth,cloudTruth:()=>cloudMeta,cthTruth:()=>cthMeta,volumeTruth:()=>volumeMeta,cloudFidelity:()=>cloudFidelity,enterEarth,enterTrench,enterUnderwater,showBestCloud3d,refreshClouds:()=>loadCloud({force:true}),trenchSample:()=>trenchSample,dispose(){clearTimeout(cloudTimer);cloudGeneration++;restoreUnderwater();cloudVolume?.dispose();cloudVolume=null;volumeMeta=null;cthRelief?.dispose();cthRelief=null;cthMeta=null;removeCloud();removeTrench();cameraReadoutRemove?.();cameraReadoutRemove=null;cameraDetailRemove?.();cameraDetailRemove=null;if(featureRequestHandler){document.removeEventListener('earthus:v2-feature-request',featureRequestHandler);featureRequestHandler=null}if(earthClickHandler){document.removeEventListener('click',earthClickHandler,true);earthClickHandler=null}for(const layer of[cityLightsLayer,detailLayer,baseLayer]){if(!layer||!viewer?.imageryLayers)continue;try{viewer.imageryLayers.remove(layer,true)}catch(_){}}baseLayer=detailLayer=cityLightsLayer=null;sourceBadge?.remove?.();sourceBadge=null;activeMode='EARTH';cloudFidelity='SHELL'}});
 }

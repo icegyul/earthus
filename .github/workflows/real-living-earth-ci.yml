@@ -25,9 +25,9 @@ jobs:
 
       - name: JavaScript syntax
         run: |
+          node --check prototype/js/sky-panorama.js
           node --check prototype/v2/js/gk2a-cth-relief.js
           node --check prototype/v2/js/gfs-cloud-volume.js
-          node --check prototype/v2/js/ocean-water-surface.js
           node --check prototype/v2/js/real-living-earth.js
 
       - name: Truth-first V2 bootstrap contract
@@ -62,32 +62,43 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ! grep -F 'PerInstanceColorAppearance' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'MaterialAppearance' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'MaterialSupport.TEXTURED' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'OBSERVED_2D_GMGSI_DRAPED_ON_OBSERVED_CTH' prototype/v2/js/gk2a-cth-relief.js
+          grep -F "Object.freeze({id:'0-3km',minM:0,maxM:3000})" prototype/v2/js/gk2a-cth-relief.js
+          grep -F "Object.freeze({id:'16-25km',minM:16000,maxM:25001})" prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'OBSERVED_2D_GMGSI_MASKED_BY_OBSERVED_CTH_BANDS' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'SOURCE_CTH_ALTITUDE_BANDS_NO_TRIANGLE_MESH' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'medianHeightM' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'EllipsoidSurfaceAppearance' prototype/v2/js/gk2a-cth-relief.js
           grep -F "observedBaseUrl='/clouds'" prototype/v2/js/gk2a-cth-relief.js
+          ! grep -F 'PrimitiveType.TRIANGLES' prototype/v2/js/gk2a-cth-relief.js
+          ! grep -F 'GeometryAttribute' prototype/v2/js/gk2a-cth-relief.js
+          ! grep -F 'PerInstanceColorAppearance' prototype/v2/js/gk2a-cth-relief.js
           grep -F 'fsInput.voxel.travelDistance' prototype/v2/js/gfs-cloud-volume.js
           grep -F '1.0-exp(-extinction*travel)' prototype/v2/js/gfs-cloud-volume.js
           grep -F "renderModel:'STEP_AWARE_OPTICAL_ALPHA_FROM_GFS_TCDC'" prototype/v2/js/gfs-cloud-volume.js
           grep -F 'this.primitive.stepSize=.72' prototype/v2/js/gfs-cloud-volume.js
           ! grep -Ei 'fbm|proceduralNoise|noise3d|simplex|perlin' prototype/v2/js/gfs-cloud-volume.js
 
-      - name: Physical surface fidelity contract
+      - name: Physical Earth and bathymetry fidelity contract
         shell: bash
         run: |
           set -euo pipefail
           grep -F "terrainProvider?.hasWaterMask===true" prototype/v2/js/real-living-earth.js
           grep -F 'scene.globe.showWaterEffect=supported' prototype/v2/js/real-living-earth.js
+          grep -F "NASA_GIBS_4326_WMS='https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi'" prototype/v2/js/real-living-earth.js
+          grep -F 'new Cesium.WebMapServiceImageryProvider' prototype/v2/js/real-living-earth.js
+          grep -F 'new Cesium.GeographicTilingScheme()' prototype/v2/js/real-living-earth.js
           grep -F 'setObservedShadow(.13,true)' prototype/v2/js/real-living-earth.js
-          grep -F 'setObservedShadow(.16,true)' prototype/v2/js/real-living-earth.js
+          grep -F 'setObservedShadow(.14,true)' prototype/v2/js/real-living-earth.js
           grep -F 'scene.highDynamicRange=true' prototype/v2/js/real-living-earth.js
-          grep -F "import { OceanWaterSurfaceRuntime }" prototype/v2/js/real-living-earth.js
-          grep -F "C.Material.fromType('Water'" prototype/v2/js/ocean-water-surface.js
-          grep -F 'waterNormalsSmall.jpg' prototype/v2/js/ocean-water-surface.js
-          grep -F 'MaterialSupport.ALL.vertexFormat' prototype/v2/js/ocean-water-surface.js
-          grep -F 'OCEAN_WATER_RADIUS_GATE' prototype/v2/js/ocean-water-surface.js
-          ! grep -F "id:'earthus-v2-zero-meter-ocean-surface'" prototype/v2/js/real-living-earth.js
+          grep -F 'g.undergroundColor=undefined' prototype/v2/js/real-living-earth.js
+          grep -F 'g.backFaceCulling=false' prototype/v2/js/real-living-earth.js
+          grep -F 'globalThis.__earthusSkyPanorama?.hide?.()' prototype/v2/js/real-living-earth.js
+          grep -F "pitch:Cesium.Math.toRadians(-50)" prototype/v2/js/real-living-earth.js
+          grep -F 'globalThis.__earthusSkyPanorama = controller' prototype/js/sky-panorama.js
+          grep -F 'panorama.show = false' prototype/js/sky-panorama.js
+          ! grep -F 'OceanWaterSurfaceRuntime' prototype/v2/js/real-living-earth.js
+          ! grep -F "C.Material.fromType('Water'" prototype/v2/js/real-living-earth.js
+          ! grep -F 'EllipseGeometry' prototype/v2/js/real-living-earth.js
 
       - name: Official GK2A EA LCC contract
         shell: bash

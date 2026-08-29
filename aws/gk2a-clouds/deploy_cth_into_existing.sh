@@ -12,7 +12,7 @@ for bin in aws python3 curl unzip zip; do command -v "$bin" >/dev/null || { echo
 
 python3 - <<PY
 import ast, pathlib
-for name in ['cth_pipeline.py','combined_handler.py']:
+for name in ['cth_pipeline.py','cth_pipeline_lcc.py','combined_handler.py']:
     ast.parse((pathlib.Path(r'$ROOT')/name).read_text())
     print(name, 'syntax PASS')
 PY
@@ -22,6 +22,7 @@ curl -fsSL "$CODE_URL" -o "$WORK/current.zip"
 unzip -q "$WORK/current.zip" -d "$WORK/package"
 cp "$ROOT/handler.py" "$WORK/package/handler.py"
 cp "$ROOT/cth_pipeline.py" "$WORK/package/cth_pipeline.py"
+cp "$ROOT/cth_pipeline_lcc.py" "$WORK/package/cth_pipeline_lcc.py"
 cp "$ROOT/combined_handler.py" "$WORK/package/combined_handler.py"
 (
   cd "$WORK/package"
@@ -94,7 +95,7 @@ r=json.load(open(sys.argv[1]))
 if r.get('cthReady') is not True:
     raise SystemExit('GK2A CTH diagnostic failed: '+str(r.get('cthError')))
 cth=r.get('cth') or {}
-print('GK2A CTH diagnostic PASS', cth.get('validAt'), cth.get('sourceTransport'), cth.get('sourceId'))
+print('GK2A CTH diagnostic PASS', cth.get('validAt'), cth.get('sourceTransport'), cth.get('sourceId'), cth.get('geolocationMethod'))
 PY
 
 BUCKET="${CACHE_BUCKET:-$(aws lambda get-function-configuration --region "$AWS_REGION" --function-name "$FUNCTION_NAME" --query 'Environment.Variables.CACHE_BUCKET' --output text)}"

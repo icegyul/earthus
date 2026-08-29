@@ -2,13 +2,13 @@
 """Drop-in scheduled entrypoint for existing gk2a-clouds Lambda.
 
 Normal scheduled executions keep the proven imagery pipeline and then add truth-gated
-CTH.  Explicit cthOnly diagnostic calls bypass imagery completely so deployment
+CTH. Explicit cthOnly diagnostic calls bypass imagery completely so deployment
 verification cannot accidentally trigger the full legacy satellite render workload.
 """
 import json
 
 from handler import handler as imagery_handler
-from cth_pipeline import run as run_cth
+from cth_pipeline_lcc import run as run_cth
 
 
 def handler(event=None, context=None):
@@ -38,22 +38,20 @@ def handler(event=None, context=None):
     imagery = imagery_handler(event, context)
     cth = None
     cth_error = None
-    # Normal EventBridge executions include CTH unless explicitly disabled.
     if event.get('cth') is not False:
         try:
             cth = run_cth()
-        except Exception as exc:  # existing real satellite imagery remains valid
+        except Exception as exc:
             cth_error = str(exc)[:240]
             print('[gk2a-cth] fail-soft:', repr(exc))
 
-    result = {
+    return {
         'ok': bool(imagery.get('ok')),
         'imagery': imagery,
         'cth': cth,
         'cthReady': bool(cth),
         'cthError': cth_error,
     }
-    return result
 
 
 def lambda_handler(event=None, context=None):

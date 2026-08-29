@@ -28,6 +28,7 @@ jobs:
           node --check prototype/js/sky-panorama.js
           node --check prototype/v2/js/gk2a-cth-relief.js
           node --check prototype/v2/js/gfs-cloud-volume.js
+          node --check prototype/v2/js/polar-imagery-cap.js
           node --check prototype/v2/js/real-living-earth.js
           node --check tools/test_v2_real_living_earth_browser.mjs
 
@@ -84,6 +85,26 @@ jobs:
           grep -F 'this.primitive.stepSize=.72' prototype/v2/js/gfs-cloud-volume.js
           ! grep -Ei 'fbm|proceduralNoise|noise3d|simplex|perlin' prototype/v2/js/gfs-cloud-volume.js
 
+      - name: Polar stereographic imagery-only contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F "import { PolarImageryCapRuntime } from './polar-imagery-cap.js'" prototype/v2/js/real-living-earth.js
+          grep -F "epsg:'EPSG:3413'" prototype/v2/js/polar-imagery-cap.js
+          grep -F "epsg:'EPSG:3031'" prototype/v2/js/polar-imagery-cap.js
+          grep -F 'wms/epsg3413/best/wms.cgi' prototype/v2/js/polar-imagery-cap.js
+          grep -F 'wms/epsg3031/best/wms.cgi' prototype/v2/js/polar-imagery-cap.js
+          grep -F 'C.CircleGeometry' prototype/v2/js/polar-imagery-cap.js
+          grep -F 'MaterialSupport.TEXTURED.vertexFormat' prototype/v2/js/polar-imagery-cap.js
+          grep -F 'NASA_GIBS_POLAR_STEREOGRAPHIC_IMAGERY_ONLY' prototype/v2/js/polar-imagery-cap.js
+          grep -F 'polarSurface=new PolarImageryCapRuntime' prototype/v2/js/real-living-earth.js
+          grep -F 'polarTruth=await polarSurface.load()' prototype/v2/js/real-living-earth.js
+          grep -F 'polarTruth:()=>polarTruth' prototype/v2/js/real-living-earth.js
+          grep -F 'POLAR: NASA GIBS EPSG3413/3031 imagery-only' prototype/v2/js/real-living-earth.js
+          ! grep -F 'gibsStaticWmsUrl' prototype/v2/js/real-living-earth.js
+          ! grep -F "for(const [south,north] of [[84.35,90],[-90,-84.35]])" prototype/v2/js/real-living-earth.js
+          ! grep -F 'polarCaps=[]' prototype/v2/js/real-living-earth.js
+
       - name: Physical Earth and bathymetry fidelity contract
         shell: bash
         run: |
@@ -94,9 +115,6 @@ jobs:
           grep -F "layers:'BlueMarble_NextGeneration'" prototype/v2/js/real-living-earth.js
           grep -F 'new Cesium.WebMapServiceImageryProvider' prototype/v2/js/real-living-earth.js
           grep -F 'new Cesium.GeographicTilingScheme()' prototype/v2/js/real-living-earth.js
-          grep -F "for(const [south,north] of [[84.35,90],[-90,-84.35]])" prototype/v2/js/real-living-earth.js
-          grep -F "height:75" prototype/v2/js/real-living-earth.js
-          grep -F 'POLAR: NASA GIBS BMG imagery-only fill' prototype/v2/js/real-living-earth.js
           grep -F 'setObservedShadow(.13,true)' prototype/v2/js/real-living-earth.js
           grep -F 'setObservedShadow(.14,true)' prototype/v2/js/real-living-earth.js
           grep -F 'scene.highDynamicRange=true' prototype/v2/js/real-living-earth.js

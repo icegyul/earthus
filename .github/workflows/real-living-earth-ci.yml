@@ -71,6 +71,17 @@ jobs:
           grep -F 'kma-nmsc-ea-lcc-wgs84-official-2km' aws/gk2a-clouds/cth_pipeline_lcc.py
           grep -F 'from cth_pipeline_lcc import run as run_cth' aws/gk2a-clouds/combined_handler.py
 
+      - name: GFS ecCodes field alias contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F "'TCC': 'TCDC'" aws/gfs-cloud-volume/handler.py
+          grep -F "'GH': 'HGT'" aws/gfs-cloud-volume/handler.py
+          grep -F "level_type == 'isobaricInhPa'" aws/gfs-cloud-volume/handler.py
+          grep -F "level_type == 'isobaricInPa'" aws/gfs-cloud-volume/handler.py
+          grep -F "'aliasContract': {'tcc': 'TCDC', 'gh': 'HGT'}" aws/gfs-cloud-volume/handler.py
+          grep -F 'GFS_CLOUD_TOO_FEW_VERTICAL_LEVELS:' aws/gfs-cloud-volume/handler.py
+
       - name: Deployment helper syntax and AWS CLI v2 payload contract
         shell: bash
         run: |

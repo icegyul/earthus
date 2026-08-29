@@ -29,54 +29,40 @@ async function pageState(page){return page.evaluate(()=>{
   const rt=window.__earthusV2,viewer=rt?.viewer,canvas=document.querySelector('.cesium-widget canvas'),fallback=document.querySelector('.fallback');let renderer=null,max3d=null;
   try{const gl=viewer?.scene?.context?._gl||canvas?.getContext('webgl2'),ext=gl?.getExtension('WEBGL_debug_renderer_info');renderer=ext?String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)||''):String(gl?.getParameter(gl.RENDERER)||'');max3d=gl?Number(gl.getParameter(gl.MAX_3D_TEXTURE_SIZE)||0):null}catch(_){}
   const layers=[];if(viewer?.imageryLayers)for(let i=0;i<viewer.imageryLayers.length;i++){const l=viewer.imageryLayers.get(i),p=l.imageryProvider;layers.push({index:i,show:l.show,alpha:l.alpha,dayAlpha:l.dayAlpha,nightAlpha:l.nightAlpha,provider:p?.constructor?.name||null,ready:p?.ready??null,url:p?.url||p?._resource?.url||null})}
-  return {
-    sourceBadge:document.getElementById('earthusV2RealSources')?.textContent||null,
-    dataC:document.documentElement.dataset.c||null,
-    fallbackDisplay:fallback?getComputedStyle(fallback).display:null,
-    cloudFidelity:rt?.realEarth?.cloudFidelity?.()||null,
-    waterTruth:rt?.realEarth?.waterTruth?.()||null,
-    trenchSample:rt?.realEarth?.trenchSample?.()||null,
-    cameraHeight:viewer?.camera?.positionCartographic?.height??null,
-    imageryLayers:viewer?.imageryLayers?.length??null,
-    imageryLayerDetails:layers,
-    primitives:viewer?.scene?.primitives?.length??null,
-    globeTilesLoaded:viewer?.scene?.globe?.tilesLoaded??null,
-    canvas:canvas?{cssWidth:canvas.clientWidth,cssHeight:canvas.clientHeight,width:canvas.width,height:canvas.height}:null,
-    webgl2:!!canvas?.getContext('webgl2'),renderer,max3d,
-  }
+  return {sourceBadge:document.getElementById('earthusV2RealSources')?.textContent||null,dataC:document.documentElement.dataset.c||null,fallbackDisplay:fallback?getComputedStyle(fallback).display:null,cloudFidelity:rt?.realEarth?.cloudFidelity?.()||null,waterTruth:rt?.realEarth?.waterTruth?.()||null,trenchSample:rt?.realEarth?.trenchSample?.()||null,cameraHeight:viewer?.camera?.positionCartographic?.height??null,imageryLayers:viewer?.imageryLayers?.length??null,imageryLayerDetails:layers,primitives:viewer?.scene?.primitives?.length??null,globeTilesLoaded:viewer?.scene?.globe?.tilesLoaded??null,canvas:canvas?{cssWidth:canvas.clientWidth,cssHeight:canvas.clientHeight,width:canvas.width,height:canvas.height}:null,webgl2:!!canvas?.getContext('webgl2'),renderer,max3d}
 })}
-async function snapshot(page,name){const state=await pageState(page);await page.screenshot({path:path.join(outputRoot,`${name}.png`),fullPage:false,timeout:120000,animations:'disabled'});return state}
+async function snapshot(page,cdp,name){const state=await pageState(page);await page.evaluate(()=>window.__earthusV2?.viewer?.scene?.requestRender?.());await page.waitForTimeout(250);const {data}=await cdp.send('Page.captureScreenshot',{format:'png',fromSurface:true,captureBeyondViewport:false});fs.writeFileSync(path.join(outputRoot,`${name}.png`),Buffer.from(data,'base64'));return state}
 
 fs.mkdirSync(outputRoot,{recursive:true});
 const server=localServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const port=server.address().port;
 const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
-const page=await browser.newPage({viewport:{width:1600,height:1000},deviceScaleFactor:1});page.setDefaultTimeout(120000);
+const page=await browser.newPage({viewport:{width:1600,height:1000},deviceScaleFactor:1});page.setDefaultTimeout(60000);const cdp=await page.context().newCDPSession(page);
 const pageErrors=[];page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)));const consoleErrors=[];page.on('console',msg=>{if(msg.type()==='error')consoleErrors.push(msg.text())});
 const responses=[],requestFailures=[];page.on('response',response=>{const url=response.url();if(/gibs\.earthdata\.nasa\.gov|arcgisonline\.com|elevation3d\.arcgis\.com|\/clouds\//.test(url)||response.status()>=400)responses.push({status:response.status(),url})});page.on('requestfailed',request=>requestFailures.push({url:request.url(),error:request.failure()?.errorText||null}));
 const states={};
 try{
   await page.goto(`http://127.0.0.1:${port}/v2/`,{waitUntil:'domcontentloaded',timeout:60000});
   await waitFor(page,()=>!!window.__earthusV2?.realEarth&&document.documentElement.dataset.c==='1',60000);
-  await page.waitForTimeout(8000);states.earth=await snapshot(page,'01-earth');
+  await page.waitForTimeout(8000);states.earth=await snapshot(page,cdp,'01-earth');
   assert.equal(states.earth.fallbackDisplay,'none','CSS fallback globe is still covering Cesium');
   assert.match(states.earth.sourceBadge||'',/TERRAIN\/BATHY: Esri TopoBathy3D|TERRAIN: Esri Terrain3D/,'real terrain provider did not initialize');
 
   await page.evaluate(()=>window.__earthusV2.requestFeature('WEATHER','Clouds'));
   await waitFor(page,()=>['VOLUME','CTH_RELIEF'].includes(window.__earthusV2?.realEarth?.cloudFidelity?.()),60000);
-  await page.waitForTimeout(5000);states.clouds=await snapshot(page,'02-clouds');
+  await page.waitForTimeout(5000);states.clouds=await snapshot(page,cdp,'02-clouds');
   assert.notEqual(states.clouds.cloudFidelity,'SHELL','3D cloud fidelity fell back to shell');
 
   await page.evaluate(()=>window.__earthusV2.requestFeature('OCEAN','Bathymetry / Trench'));
   await waitFor(page,()=>Number(window.__earthusV2?.realEarth?.trenchSample?.()?.depthM)>0,45000);
-  await page.waitForTimeout(3000);states.trench=await snapshot(page,'03-trench');
+  await page.waitForTimeout(3000);states.trench=await snapshot(page,cdp,'03-trench');
   assert.ok(states.trench.trenchSample?.depthM>0,'real trench depth sample unavailable');
 
   await page.evaluate(()=>window.__earthusV2.requestFeature('OCEAN','Underwater'));
   await waitFor(page,()=>Number(window.__earthusV2?.viewer?.camera?.positionCartographic?.height)<-100,45000);
-  await page.waitForTimeout(3000);states.underwater=await snapshot(page,'04-underwater');
+  await page.waitForTimeout(3000);states.underwater=await snapshot(page,cdp,'04-underwater');
   assert.ok(states.underwater.cameraHeight<-100,'underwater camera did not enter below 0m');
   assert.equal(pageErrors.length,0,`page errors: ${pageErrors.join('\n')}`);
   fs.writeFileSync(path.join(outputRoot,'state.json'),JSON.stringify({ok:true,states,pageErrors,consoleErrors,responses:responses.slice(-300),requestFailures:requestFailures.slice(-100)},null,2));
   console.log('V2 REAL LIVING EARTH BROWSER VISUAL: PASS');console.log(JSON.stringify(states,null,2));
-}catch(error){if(!states.failure)try{states.failure=await pageState(page)}catch(_){}fs.writeFileSync(path.join(outputRoot,'state.json'),JSON.stringify({ok:false,error:String(error?.stack||error),states,pageErrors,consoleErrors,responses:responses.slice(-300),requestFailures:requestFailures.slice(-100)},null,2));try{await page.screenshot({path:path.join(outputRoot,'99-failure.png'),fullPage:false,timeout:60000,animations:'disabled'})}catch(_){}throw error
+}catch(error){if(!states.failure)try{states.failure=await pageState(page)}catch(_){}fs.writeFileSync(path.join(outputRoot,'state.json'),JSON.stringify({ok:false,error:String(error?.stack||error),states,pageErrors,consoleErrors,responses:responses.slice(-300),requestFailures:requestFailures.slice(-100)},null,2));try{const {data}=await cdp.send('Page.captureScreenshot',{format:'png',fromSurface:true,captureBeyondViewport:false});fs.writeFileSync(path.join(outputRoot,'99-failure.png'),Buffer.from(data,'base64'))}catch(_){}throw error
 }finally{await browser.close();await new Promise(resolve=>server.close(resolve))}

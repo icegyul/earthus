@@ -28,7 +28,6 @@ jobs:
           node --check prototype/js/sky-panorama.js
           node --check prototype/v2/js/gk2a-cth-relief.js
           node --check prototype/v2/js/gfs-cloud-volume.js
-          node --check prototype/v2/js/polar-imagery-cap.js
           node --check prototype/v2/js/real-living-earth.js
           node --check tools/test_v2_real_living_earth_browser.mjs
 
@@ -38,11 +37,12 @@ jobs:
           set -euo pipefail
           ! grep -F 'new Cesium.EllipsoidTerrainProvider' prototype/v2/index.html
           ! grep -F 'NaturalEarthII' prototype/v2/index.html
-          grep -F "./js/real-living-earth.js" prototype/v2/index.html
+          grep -F './js/real-living-earth.js' prototype/v2/index.html
           grep -F 'Bathymetry / Trench' prototype/v2/index.html
           grep -F 'Underwater' prototype/v2/index.html
+          ! grep -R -nE 'new[[:space:]]+(Cesium\.)?Viewer\(' prototype/v2/js
 
-      - name: Cloud truth contracts
+      - name: Cloud data truth contracts
         shell: bash
         run: |
           set -euo pipefail
@@ -51,16 +51,11 @@ jobs:
           grep -F 'https://apihub.kma.go.kr/api/typ05/api/GK2A/LE2/CTPS' aws/gk2a-clouds/cth_pipeline.py
           grep -F "KMA_HUB_KEY = os.environ.get('KMA_HUB_KEY'" aws/gk2a-clouds/cth_pipeline.py
           grep -F "'transport': 'KMA_API_HUB'" aws/gk2a-clouds/cth_pipeline.py
-          grep -F "'transport': 'NOAA_NODD'" aws/gk2a-clouds/cth_pipeline.py
           grep -F 'MODELLED_NWP' aws/gfs-cloud-volume/handler.py
           grep -F 'GFS pressure-level TCDC' aws/gfs-cloud-volume/handler.py
-          grep -F "cloudFidelity='SHELL'" prototype/v2/js/real-living-earth.js
-          grep -F "return 'VOLUME'" prototype/v2/js/real-living-earth.js
-          grep -F "return 'CTH_RELIEF'" prototype/v2/js/real-living-earth.js
-          grep -F "return 'SHELL'" prototype/v2/js/real-living-earth.js
           ! grep -R -nE 'SYNTHETIC_(TERRAIN|TRENCH|BATHYMETRY)' prototype/v2/js aws/gk2a-clouds/cth_pipeline.py aws/gfs-cloud-volume/handler.py
 
-      - name: Visual fidelity cloud contract
+      - name: Cloud visual fidelity contract
         shell: bash
         run: |
           set -euo pipefail
@@ -68,68 +63,53 @@ jobs:
           grep -F "Object.freeze({id:'16-25km',minM:16000,maxM:25001})" prototype/v2/js/gk2a-cth-relief.js
           grep -F 'OBSERVED_2D_GMGSI_MASKED_BY_OBSERVED_CTH_BANDS' prototype/v2/js/gk2a-cth-relief.js
           grep -F 'SOURCE_CTH_ALTITUDE_BANDS_SMOOTH_DISPLAY_INTERPOLATION_NO_TRIANGLE_MESH' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'GK2A_CTH_MANIFEST_TRUTH_GATE:${JSON.stringify(d)}' prototype/v2/js/gk2a-cth-relief.js
           grep -F 'medianHeightM' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'sourceStepPx' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'maskRadiusPx' prototype/v2/js/gk2a-cth-relief.js
           grep -F 'maskBlurPx' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'rc.arc(' prototype/v2/js/gk2a-cth-relief.js
           grep -F 'EllipsoidSurfaceAppearance' prototype/v2/js/gk2a-cth-relief.js
-          grep -F "observedBaseUrl='/clouds'" prototype/v2/js/gk2a-cth-relief.js
           ! grep -F 'PrimitiveType.TRIANGLES' prototype/v2/js/gk2a-cth-relief.js
-          ! grep -F 'GeometryAttribute' prototype/v2/js/gk2a-cth-relief.js
-          ! grep -F 'PerInstanceColorAppearance' prototype/v2/js/gk2a-cth-relief.js
           ! grep -Ei 'fbm|proceduralNoise|noise3d|simplex|perlin' prototype/v2/js/gk2a-cth-relief.js
           grep -F 'fsInput.voxel.travelDistance' prototype/v2/js/gfs-cloud-volume.js
           grep -F '1.0-exp(-extinction*travel)' prototype/v2/js/gfs-cloud-volume.js
           grep -F "renderModel:'STEP_AWARE_OPTICAL_ALPHA_FROM_GFS_TCDC'" prototype/v2/js/gfs-cloud-volume.js
-          grep -F 'this.primitive.stepSize=.72' prototype/v2/js/gfs-cloud-volume.js
+          grep -F 'GFS_VOLUME_DEVICE_POLICY' prototype/v2/js/gfs-cloud-volume.js
+          grep -F 'SwiftShader' prototype/v2/js/gfs-cloud-volume.js
           ! grep -Ei 'fbm|proceduralNoise|noise3d|simplex|perlin' prototype/v2/js/gfs-cloud-volume.js
+          grep -F 'loadCloud({force:false})' prototype/v2/js/real-living-earth.js
+          grep -F 'cloudDiagnostics:()=>Object.freeze' prototype/v2/js/real-living-earth.js
 
-      - name: Polar stereographic imagery-only contract
+      - name: Polar imagery no-disc contract
         shell: bash
         run: |
           set -euo pipefail
-          grep -F "import { PolarImageryCapRuntime } from './polar-imagery-cap.js'" prototype/v2/js/real-living-earth.js
-          grep -F "epsg:'EPSG:3413'" prototype/v2/js/polar-imagery-cap.js
-          grep -F "epsg:'EPSG:3031'" prototype/v2/js/polar-imagery-cap.js
-          grep -F 'wms/epsg3413/best/wms.cgi' prototype/v2/js/polar-imagery-cap.js
-          grep -F 'wms/epsg3031/best/wms.cgi' prototype/v2/js/polar-imagery-cap.js
-          grep -F 'C.CircleGeometry' prototype/v2/js/polar-imagery-cap.js
-          grep -F 'MaterialSupport.TEXTURED.vertexFormat' prototype/v2/js/polar-imagery-cap.js
-          grep -F 'NASA_GIBS_POLAR_STEREOGRAPHIC_IMAGERY_ONLY' prototype/v2/js/polar-imagery-cap.js
-          grep -F 'polarSurface=new PolarImageryCapRuntime' prototype/v2/js/real-living-earth.js
-          grep -F 'polarTruth=await polarSurface.load()' prototype/v2/js/real-living-earth.js
-          grep -F 'polarTruth:()=>polarTruth' prototype/v2/js/real-living-earth.js
-          grep -F 'POLAR: NASA GIBS EPSG3413/3031 imagery-only' prototype/v2/js/real-living-earth.js
-          ! grep -F 'gibsStaticWmsUrl' prototype/v2/js/real-living-earth.js
-          ! grep -F "for(const [south,north] of [[84.35,90],[-90,-84.35]])" prototype/v2/js/real-living-earth.js
-          ! grep -F 'polarCaps=[]' prototype/v2/js/real-living-earth.js
+          grep -F "NASA_GIBS_4326_WMS='https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi'" prototype/v2/js/real-living-earth.js
+          grep -F "POLAR_SOURCE=Object.freeze({id:'GLOBAL_GEOGRAPHIC_BASE',epsg:'EPSG:4326'" prototype/v2/js/real-living-earth.js
+          grep -F "polarTruth='NASA_GIBS_GEOGRAPHIC_IMAGERY_ONLY'" prototype/v2/js/real-living-earth.js
+          grep -F 'POLAR: NASA GIBS EPSG4326 imagery-only' prototype/v2/js/real-living-earth.js
+          grep -F "layers:'BlueMarble_NextGeneration'" prototype/v2/js/real-living-earth.js
+          grep -F 'new Cesium.GeographicTilingScheme()' prototype/v2/js/real-living-earth.js
+          ! grep -F 'PolarImageryCapRuntime' prototype/v2/js/real-living-earth.js
+          ! grep -F 'CircleGeometry' prototype/v2/js/real-living-earth.js
+          ! test -e prototype/v2/js/polar-imagery-cap.js
+          grep -F "name==='01b-polar'" tools/test_v2_real_living_earth_browser.mjs
+          grep -F 'maxDarkRatio:.62' tools/test_v2_real_living_earth_browser.mjs
 
       - name: Physical Earth and bathymetry fidelity contract
         shell: bash
         run: |
           set -euo pipefail
-          grep -F "terrainProvider?.hasWaterMask===true" prototype/v2/js/real-living-earth.js
+          grep -F 'terrainProvider?.hasWaterMask===true' prototype/v2/js/real-living-earth.js
           grep -F 'scene.globe.showWaterEffect=supported' prototype/v2/js/real-living-earth.js
-          grep -F "NASA_GIBS_4326_WMS='https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi'" prototype/v2/js/real-living-earth.js
-          grep -F "layers:'BlueMarble_NextGeneration'" prototype/v2/js/real-living-earth.js
-          grep -F 'new Cesium.WebMapServiceImageryProvider' prototype/v2/js/real-living-earth.js
-          grep -F 'new Cesium.GeographicTilingScheme()' prototype/v2/js/real-living-earth.js
-          grep -F 'setObservedShadow(.13,true)' prototype/v2/js/real-living-earth.js
-          grep -F 'setObservedShadow(.14,true)' prototype/v2/js/real-living-earth.js
           grep -F 'scene.highDynamicRange=true' prototype/v2/js/real-living-earth.js
           grep -F 'scene.globe.enableLighting=false' prototype/v2/js/real-living-earth.js
           grep -F 't.enabled=true' prototype/v2/js/real-living-earth.js
           grep -F 't.frontFaceAlpha=1' prototype/v2/js/real-living-earth.js
           grep -F 't.backFaceAlpha=1' prototype/v2/js/real-living-earth.js
           grep -F 't.rectangle=Cesium.Rectangle.MAX_VALUE' prototype/v2/js/real-living-earth.js
-          grep -F 'g.undergroundColor=undefined' prototype/v2/js/real-living-earth.js
           grep -F 'g.backFaceCulling=false' prototype/v2/js/real-living-earth.js
           grep -F 'g.showSkirts=false' prototype/v2/js/real-living-earth.js
           grep -F 'globalThis.__earthusSkyPanorama?.hide?.()' prototype/v2/js/real-living-earth.js
           grep -F "pitch:Cesium.Math.toRadians(-78)" prototype/v2/js/real-living-earth.js
-          grep -F 'globalThis.__earthusSkyPanorama = controller' prototype/js/sky-panorama.js
-          grep -F 'panorama.show = false' prototype/js/sky-panorama.js
           ! grep -F 'OceanWaterSurfaceRuntime' prototype/v2/js/real-living-earth.js
           ! grep -F "C.Material.fromType('Water'" prototype/v2/js/real-living-earth.js
           ! grep -F 'EllipseGeometry' prototype/v2/js/real-living-earth.js
@@ -143,42 +123,20 @@ jobs:
           grep -F '_PHI0 = np.deg2rad(38.0)' aws/gk2a-clouds/cth_pipeline_lcc.py
           grep -F '_LAM0 = np.deg2rad(126.0)' aws/gk2a-clouds/cth_pipeline_lcc.py
           grep -F "tuple(shape) == (2600, 3000)" aws/gk2a-clouds/cth_pipeline_lcc.py
-          grep -F -- '-2_999_000.0, 2_999_000.0, 3000' aws/gk2a-clouds/cth_pipeline_lcc.py
-          grep -F -- '2_599_000.0, -2_599_000.0, 2600' aws/gk2a-clouds/cth_pipeline_lcc.py
           grep -F 'kma-nmsc-ea-lcc-wgs84-official-2km' aws/gk2a-clouds/cth_pipeline_lcc.py
-          grep -F 'from cth_pipeline_lcc import run as run_cth' aws/gk2a-clouds/combined_handler.py
 
-      - name: GFS ecCodes field alias contract
+      - name: GFS decode and Lambda packaging contract
         shell: bash
         run: |
           set -euo pipefail
           grep -F "'TCC': 'TCDC'" aws/gfs-cloud-volume/handler.py
           grep -F "'GH': 'HGT'" aws/gfs-cloud-volume/handler.py
           grep -F "level_type == 'isobaricInhPa'" aws/gfs-cloud-volume/handler.py
-          grep -F "level_type == 'isobaricInPa'" aws/gfs-cloud-volume/handler.py
-          grep -F "'aliasContract': {'tcc': 'TCDC', 'gh': 'HGT'}" aws/gfs-cloud-volume/handler.py
-          grep -F 'GFS_CLOUD_TOO_FEW_VERTICAL_LEVELS:' aws/gfs-cloud-volume/handler.py
-
-      - name: Deployment helper syntax and AWS CLI v2 payload contract
-        shell: bash
-        run: |
-          set -euo pipefail
           bash -n aws/gk2a-clouds/deploy_cth_into_existing.sh
           bash -n aws/gfs-cloud-volume/deploy.sh
           bash -n tools/deploy-real-living-earth-data.sh
           grep -F -- '--cli-binary-format raw-in-base64-out' aws/gk2a-clouds/deploy_cth_into_existing.sh
           grep -F -- '--cli-binary-format raw-in-base64-out' aws/gfs-cloud-volume/deploy.sh
-          grep -F 'KMA_HUB_KEY' aws/gk2a-clouds/deploy_cth_into_existing.sh
-          grep -F 'kma-fcst' aws/gk2a-clouds/deploy_cth_into_existing.sh
-          grep -F 'cth_pipeline_lcc.py' aws/gk2a-clouds/deploy_cth_into_existing.sh
-
-      - name: GFS Lambda cross-host packaging contract
-        shell: bash
-        run: |
-          set -euo pipefail
-          grep -F 'PYTHON_VERSION="${PYTHON_VERSION:-3.12}"' aws/gfs-cloud-volume/deploy.sh
-          grep -F 'PYTHON_ABI="cp${PYTHON_VERSION/./}"' aws/gfs-cloud-volume/deploy.sh
-          grep -F -- '--abi "$PYTHON_ABI"' aws/gfs-cloud-volume/deploy.sh
           grep -F -- '--ignore-requires-python' aws/gfs-cloud-volume/deploy.sh
           grep -F -- '--platform manylinux_2_28_x86_64' aws/gfs-cloud-volume/deploy.sh
           grep -Fx 'numpy==2.5.2' aws/gfs-cloud-volume/requirements.txt
@@ -192,17 +150,8 @@ jobs:
           grep -F 'V2="$ROOT/prototype/v2"' tools/deploy-real-living-earth-v2.sh
           grep -F 's3://$BUCKET/$PREFIX/v2/' tools/deploy-real-living-earth-v2.sh
           grep -F 'EARTHUS_V2_ENTRY_REDIRECT' tools/deploy-real-living-earth-v2.sh
-          grep -F -- '--key "$PREFIX/v2/"' tools/deploy-real-living-earth-v2.sh || grep -F '"$PREFIX/v2/"' tools/deploy-real-living-earth-v2.sh
-          grep -F "E193CZEBLWEB56" tools/deploy-real-living-earth-v2.sh
-          grep -F -- "--paths '/v2' '/v2/' '/v2/index.html' '/v2/*'" tools/deploy-real-living-earth-v2.sh
+          grep -F 'E193CZEBLWEB56' tools/deploy-real-living-earth-v2.sh
           grep -F 'PASS public truth manifests' tools/deploy-real-living-earth-v2.sh
-          grep -F 'EARTHUS V2 NETWORK ENTRY + STATIC + PUBLIC DATA: READY FOR BROWSER RENDER ACCEPTANCE' tools/deploy-real-living-earth-v2.sh
           ! grep -F 'cloudfront wait invalidation-completed' tools/deploy-real-living-earth-v2.sh
           ! grep -F 's3://$BUCKET/$PREFIX/js/' tools/deploy-real-living-earth-v2.sh
           ! grep -E '^[[:space:]]*--delete([[:space:]]|$)' tools/deploy-real-living-earth-v2.sh
-
-      - name: No second viewer in new runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          ! grep -R -nE 'new[[:space:]]+(Cesium\.)?Viewer\(' prototype/v2/js

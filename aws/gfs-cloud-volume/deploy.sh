@@ -9,6 +9,7 @@ FUNCTION_NAME="${FUNCTION_NAME:-earthus-gfs-cloud-volume}"
 RULE_NAME="${RULE_NAME:-earthus-gfs-cloud-volume-3h}"
 SCHEDULE_EXPRESSION="${SCHEDULE_EXPRESSION:-rate(3 hours)}"
 PYTHON_VERSION="${PYTHON_VERSION:-3.12}"
+PYTHON_ABI="cp${PYTHON_VERSION/./}"
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 BUILD="$(mktemp -d)"
 trap 'rm -rf "$BUILD"' EXIT
@@ -23,15 +24,23 @@ export CACHE_REGION
 
 echo "Lambda region: $AWS_REGION"
 echo "Cache region:  $CACHE_REGION"
+echo "Host Python:   $(python3 -c 'import sys; print("%d.%d.%d" % sys.version_info[:3])')"
+echo "Target Python: $PYTHON_VERSION / $PYTHON_ABI / manylinux_2_28_x86_64"
 
+# Build for the Lambda runtime, not for the operator Mac.  The host may be Python 3.9,
+# while the Lambda runtime is Python 3.12.  Pin the target ABI/platform explicitly and
+# ignore host Requires-Python evaluation; pip still installs only binary cp312/Linux wheels.
 python3 -m pip install \
   --disable-pip-version-check \
   --platform manylinux_2_28_x86_64 \
   --implementation cp \
   --python-version "$PYTHON_VERSION" \
+  --abi "$PYTHON_ABI" \
+  --ignore-requires-python \
   --only-binary=:all: \
   --target "$BUILD/package" \
   -r "$ROOT/requirements.txt"
+
 cp "$ROOT/handler.py" "$BUILD/package/handler.py"
 (
   cd "$BUILD/package"

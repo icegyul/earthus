@@ -107,6 +107,19 @@ jobs:
           grep -Fx 'numpy==2.5.2' aws/gfs-cloud-volume/requirements.txt
           grep -Fx 'eccodes==2.48.0' aws/gfs-cloud-volume/requirements.txt
 
+      - name: Isolated V2 deployment boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n tools/deploy-real-living-earth-v2.sh
+          grep -F 'V2="$ROOT/prototype/v2"' tools/deploy-real-living-earth-v2.sh
+          grep -F 's3://$BUCKET/$PREFIX/v2/' tools/deploy-real-living-earth-v2.sh
+          grep -F "E193CZEBLWEB56" tools/deploy-real-living-earth-v2.sh
+          grep -F "--paths '/v2' '/v2/' '/v2/*'" tools/deploy-real-living-earth-v2.sh
+          grep -F 'PASS public truth manifests' tools/deploy-real-living-earth-v2.sh
+          ! grep -F 's3://$BUCKET/$PREFIX/js/' tools/deploy-real-living-earth-v2.sh
+          ! grep -E '^[[:space:]]*--delete([[:space:]]|$)' tools/deploy-real-living-earth-v2.sh
+
       - name: No second viewer in new runtime
         shell: bash
         run: |

@@ -33,6 +33,11 @@
 #resourceLoading.failed{border-color:rgba(240,100,90,.32)}#resourceLoading.failed .resource-load-bar i{background:#f0645a;width:100%}
 .resource-load-error{display:none;margin-top:7px;font-size:8px;line-height:1.45;color:#ffaaa2}.failed .resource-load-error{display:block}
 
+/* Numeric unquoted CSS attribute values are not valid identifiers in selectors.
+   The inline V2 rule used html[data-c=1], so the decorative fallback globe remained
+   above the real Cesium canvas even after boot set documentElement.dataset.c='1'. */
+html[data-c="1"] .fallback{display:none!important}
+
 @keyframes earthusBrandIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 @keyframes earthusIndeterminate{0%{transform:translateX(-110%)}50%{transform:translateX(90%)}100%{transform:translateX(285%)}}
 @media(max-width:760px){#resourceLoading{top:max(58px,calc(env(safe-area-inset-top) + 45px));width:calc(100vw - 20px)}}

@@ -1,0 +1,44 @@
+name: EARTHUS V2 Real Living Earth Visual Browser
+
+on:
+  push:
+    branches:
+      - earthus-v2/real-living-earth-render
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visual-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Browser test syntax
+        run: node --check tools/test_v2_real_living_earth_browser.mjs
+
+      - name: Install pinned Chromium runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Capture real living earth visual evidence
+        env:
+          EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
+          EARTHUS_V2_VISUAL_OUTPUT: ${{ github.workspace }}/output/v2-real-living-earth-visual
+        run: node tools/test_v2_real_living_earth_browser.mjs
+
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-real-living-earth-visual-${{ github.sha }}
+          path: output/v2-real-living-earth-visual
+          if-no-files-found: error
+          retention-days: 7

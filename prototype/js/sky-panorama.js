@@ -32,7 +32,10 @@ export function installMilkyWayPanorama(scene) {
     Number(sessionStorage.getItem('earthus.webglFallbackLevel') || 0))); } catch (_) { }
   const add = () => {
     const selected = selectSkyVariant(scene, { fallbackLevel });
-    const url = `space/skybox/earthus-milky-way/${selected.file}`;
+    /* Resolve from this module, not from the document URL. EARTHUS V2 lives under
+       /v2/, so a document-relative "space/..." incorrectly became /v2/space/....
+       Module-relative resolution keeps the canonical /space/ asset for both 1.0 and V2. */
+    const url = new URL(`../space/skybox/earthus-milky-way/${selected.file}`, import.meta.url).href;
     const token = ++loadToken;
     const image = new Image();
     image.onload = () => {

@@ -19,6 +19,7 @@ jobs:
         run: |
           python3 -m py_compile \
             aws/gk2a-clouds/cth_pipeline.py \
+            aws/gk2a-clouds/cth_pipeline_lcc.py \
             aws/gk2a-clouds/combined_handler.py \
             aws/gfs-cloud-volume/handler.py
 
@@ -56,6 +57,20 @@ jobs:
           grep -F "return 'SHELL'" prototype/v2/js/real-living-earth.js
           ! grep -R -nE 'SYNTHETIC_(TERRAIN|TRENCH|BATHYMETRY)' prototype/v2/js aws/gk2a-clouds/cth_pipeline.py aws/gfs-cloud-volume/handler.py
 
+      - name: Official GK2A EA LCC contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F '_PHI1 = np.deg2rad(30.0)' aws/gk2a-clouds/cth_pipeline_lcc.py
+          grep -F '_PHI2 = np.deg2rad(60.0)' aws/gk2a-clouds/cth_pipeline_lcc.py
+          grep -F '_PHI0 = np.deg2rad(38.0)' aws/gk2a-clouds/cth_pipeline_lcc.py
+          grep -F '_LAM0 = np.deg2rad(126.0)' aws/gk2a-clouds/cth_pipeline_lcc.py
+          grep -F "tuple(shape) == (2600, 3000)" aws/gk2a-clouds/cth_pipeline_lcc.py
+          grep -F -- '-2_999_000.0, 2_999_000.0, 3000' aws/gk2a-clouds/cth_pipeline_lcc.py
+          grep -F -- '2_599_000.0, -2_599_000.0, 2600' aws/gk2a-clouds/cth_pipeline_lcc.py
+          grep -F 'kma-nmsc-ea-lcc-wgs84-official-2km' aws/gk2a-clouds/cth_pipeline_lcc.py
+          grep -F 'from cth_pipeline_lcc import run as run_cth' aws/gk2a-clouds/combined_handler.py
+
       - name: Deployment helper syntax and AWS CLI v2 payload contract
         shell: bash
         run: |
@@ -67,6 +82,7 @@ jobs:
           grep -F -- '--cli-binary-format raw-in-base64-out' aws/gfs-cloud-volume/deploy.sh
           grep -F 'KMA_HUB_KEY' aws/gk2a-clouds/deploy_cth_into_existing.sh
           grep -F 'kma-fcst' aws/gk2a-clouds/deploy_cth_into_existing.sh
+          grep -F 'cth_pipeline_lcc.py' aws/gk2a-clouds/deploy_cth_into_existing.sh
 
       - name: No second viewer in new runtime
         shell: bash

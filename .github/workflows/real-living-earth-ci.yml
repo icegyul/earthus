@@ -27,6 +27,7 @@ jobs:
         run: |
           node --check prototype/v2/js/gk2a-cth-relief.js
           node --check prototype/v2/js/gfs-cloud-volume.js
+          node --check prototype/v2/js/ocean-water-surface.js
           node --check prototype/v2/js/real-living-earth.js
 
       - name: Truth-first V2 bootstrap contract
@@ -71,6 +72,22 @@ jobs:
           grep -F "renderModel:'STEP_AWARE_OPTICAL_ALPHA_FROM_GFS_TCDC'" prototype/v2/js/gfs-cloud-volume.js
           grep -F 'this.primitive.stepSize=.72' prototype/v2/js/gfs-cloud-volume.js
           ! grep -Ei 'fbm|proceduralNoise|noise3d|simplex|perlin' prototype/v2/js/gfs-cloud-volume.js
+
+      - name: Physical surface fidelity contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F "terrainProvider?.hasWaterMask===true" prototype/v2/js/real-living-earth.js
+          grep -F 'scene.globe.showWaterEffect=supported' prototype/v2/js/real-living-earth.js
+          grep -F 'setObservedShadow(.13,true)' prototype/v2/js/real-living-earth.js
+          grep -F 'setObservedShadow(.16,true)' prototype/v2/js/real-living-earth.js
+          grep -F 'scene.highDynamicRange=true' prototype/v2/js/real-living-earth.js
+          grep -F "import { OceanWaterSurfaceRuntime }" prototype/v2/js/real-living-earth.js
+          grep -F "C.Material.fromType('Water'" prototype/v2/js/ocean-water-surface.js
+          grep -F 'waterNormalsSmall.jpg' prototype/v2/js/ocean-water-surface.js
+          grep -F 'MaterialSupport.ALL.vertexFormat' prototype/v2/js/ocean-water-surface.js
+          grep -F 'OCEAN_WATER_RADIUS_GATE' prototype/v2/js/ocean-water-surface.js
+          ! grep -F "id:'earthus-v2-zero-meter-ocean-surface'" prototype/v2/js/real-living-earth.js
 
       - name: Official GK2A EA LCC contract
         shell: bash

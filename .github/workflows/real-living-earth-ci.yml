@@ -84,6 +84,18 @@ jobs:
           grep -F 'kma-fcst' aws/gk2a-clouds/deploy_cth_into_existing.sh
           grep -F 'cth_pipeline_lcc.py' aws/gk2a-clouds/deploy_cth_into_existing.sh
 
+      - name: GFS Lambda cross-host packaging contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F 'PYTHON_VERSION="${PYTHON_VERSION:-3.12}"' aws/gfs-cloud-volume/deploy.sh
+          grep -F 'PYTHON_ABI="cp${PYTHON_VERSION/./}"' aws/gfs-cloud-volume/deploy.sh
+          grep -F -- '--abi "$PYTHON_ABI"' aws/gfs-cloud-volume/deploy.sh
+          grep -F -- '--ignore-requires-python' aws/gfs-cloud-volume/deploy.sh
+          grep -F -- '--platform manylinux_2_28_x86_64' aws/gfs-cloud-volume/deploy.sh
+          grep -Fx 'numpy==2.5.2' aws/gfs-cloud-volume/requirements.txt
+          grep -Fx 'eccodes==2.48.0' aws/gfs-cloud-volume/requirements.txt
+
       - name: No second viewer in new runtime
         shell: bash
         run: |

@@ -115,7 +115,7 @@ jobs:
           grep -F 'V2="$ROOT/prototype/v2"' tools/deploy-real-living-earth-v2.sh
           grep -F 's3://$BUCKET/$PREFIX/v2/' tools/deploy-real-living-earth-v2.sh
           grep -F "E193CZEBLWEB56" tools/deploy-real-living-earth-v2.sh
-          grep -F "--paths '/v2' '/v2/' '/v2/*'" tools/deploy-real-living-earth-v2.sh
+          grep -F -- "--paths '/v2' '/v2/' '/v2/*'" tools/deploy-real-living-earth-v2.sh
           grep -F 'PASS public truth manifests' tools/deploy-real-living-earth-v2.sh
           ! grep -F 's3://$BUCKET/$PREFIX/js/' tools/deploy-real-living-earth-v2.sh
           ! grep -E '^[[:space:]]*--delete([[:space:]]|$)' tools/deploy-real-living-earth-v2.sh

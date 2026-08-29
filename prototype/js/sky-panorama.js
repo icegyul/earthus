@@ -28,8 +28,29 @@ export function installMilkyWayPanorama(scene) {
   let panorama = null;
   let loadToken = 0;
   let fallbackLevel = 0;
+  let visible = true;
   try { fallbackLevel = Math.max(0, Math.min(2,
     Number(sessionStorage.getItem('earthus.webglFallbackLevel') || 0))); } catch (_) { }
+
+  const controller = {
+    get variant() { return selectSkyVariant(scene, { fallbackLevel }); },
+    get visible() { return visible; },
+    fallback() { fallbackLevel = Math.min(2, fallbackLevel + 1); return add(); },
+    hide() {
+      visible = false;
+      if (panorama) panorama.show = false;
+      scene.skyBox.show = false;
+      scene.requestRender();
+    },
+    show() {
+      visible = true;
+      if (panorama) panorama.show = true;
+      else add();
+      scene.skyBox.show = false;
+      scene.requestRender();
+    },
+  };
+
   const add = () => {
     const selected = selectSkyVariant(scene, { fallbackLevel });
     /* Resolve from this module, not from the document URL. EARTHUS V2 lives under
@@ -50,6 +71,7 @@ export function installMilkyWayPanorama(scene) {
         radius: 500_000_000,
         credit: '<a href="https://www.eso.org/public/images/eso0932a/" target="_blank" rel="noopener">ESO/S. Brunier · CC BY 4.0</a>',
       }));
+      panorama.show = visible;
       scene.skyBox.show = false;
       scene.requestRender();
     };
@@ -64,10 +86,11 @@ export function installMilkyWayPanorama(scene) {
       add();
     } else {
       console.warn('[sky]', reason); // URL·query·위치정보는 기록하지 않는다.
-      scene.skyBox.show = true;
+      scene.skyBox.show = visible;
       scene.requestRender();
     }
   };
+  globalThis.__earthusSkyPanorama = controller;
   add();
   const canvas = scene.canvas;
   canvas.addEventListener('webglcontextlost', event => {
@@ -100,6 +123,5 @@ export function installMilkyWayPanorama(scene) {
     /* 정상 브라우저 자동 복구 경로. reload가 먼저 시작됐으면 이 callback은 폐기된다. */
     if (!scene.isDestroyed?.()) { add(); scene.requestRender(); }
   });
-  return { get variant() { return selectSkyVariant(scene, { fallbackLevel }); },
-    fallback() { fallbackLevel = Math.min(2, fallbackLevel + 1); return add(); } };
+  return controller;
 }

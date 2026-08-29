@@ -44,6 +44,10 @@ jobs:
           set -euo pipefail
           grep -F 'OBSERVED_DERIVED_OFFICIAL_L2' aws/gk2a-clouds/cth_pipeline.py
           grep -F 'CTH_flag' aws/gk2a-clouds/cth_pipeline.py
+          grep -F 'https://apihub.kma.go.kr/api/typ05/api/GK2A/LE2/CTPS' aws/gk2a-clouds/cth_pipeline.py
+          grep -F "KMA_HUB_KEY = os.environ.get('KMA_HUB_KEY'" aws/gk2a-clouds/cth_pipeline.py
+          grep -F "'transport': 'KMA_API_HUB'" aws/gk2a-clouds/cth_pipeline.py
+          grep -F "'transport': 'NOAA_NODD'" aws/gk2a-clouds/cth_pipeline.py
           grep -F 'MODELLED_NWP' aws/gfs-cloud-volume/handler.py
           grep -F 'GFS pressure-level TCDC' aws/gfs-cloud-volume/handler.py
           grep -F "cloudFidelity='SHELL'" prototype/v2/js/real-living-earth.js
@@ -61,6 +65,8 @@ jobs:
           bash -n tools/deploy-real-living-earth-data.sh
           grep -F -- '--cli-binary-format raw-in-base64-out' aws/gk2a-clouds/deploy_cth_into_existing.sh
           grep -F -- '--cli-binary-format raw-in-base64-out' aws/gfs-cloud-volume/deploy.sh
+          grep -F 'KMA_HUB_KEY' aws/gk2a-clouds/deploy_cth_into_existing.sh
+          grep -F 'kma-fcst' aws/gk2a-clouds/deploy_cth_into_existing.sh
 
       - name: No second viewer in new runtime
         shell: bash

@@ -57,6 +57,21 @@ jobs:
           grep -F "return 'SHELL'" prototype/v2/js/real-living-earth.js
           ! grep -R -nE 'SYNTHETIC_(TERRAIN|TRENCH|BATHYMETRY)' prototype/v2/js aws/gk2a-clouds/cth_pipeline.py aws/gfs-cloud-volume/handler.py
 
+      - name: Visual fidelity cloud contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -F 'PerInstanceColorAppearance' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'MaterialAppearance' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'MaterialSupport.TEXTURED' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'OBSERVED_2D_GMGSI_DRAPED_ON_OBSERVED_CTH' prototype/v2/js/gk2a-cth-relief.js
+          grep -F "observedBaseUrl='/clouds'" prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'fsInput.voxel.travelDistance' prototype/v2/js/gfs-cloud-volume.js
+          grep -F '1.0-exp(-extinction*travel)' prototype/v2/js/gfs-cloud-volume.js
+          grep -F "renderModel:'STEP_AWARE_OPTICAL_ALPHA_FROM_GFS_TCDC'" prototype/v2/js/gfs-cloud-volume.js
+          grep -F 'this.primitive.stepSize=.72' prototype/v2/js/gfs-cloud-volume.js
+          ! grep -Ei 'fbm|proceduralNoise|noise3d|simplex|perlin' prototype/v2/js/gfs-cloud-volume.js
+
       - name: Official GK2A EA LCC contract
         shell: bash
         run: |

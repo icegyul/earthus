@@ -114,9 +114,13 @@ jobs:
           bash -n tools/deploy-real-living-earth-v2.sh
           grep -F 'V2="$ROOT/prototype/v2"' tools/deploy-real-living-earth-v2.sh
           grep -F 's3://$BUCKET/$PREFIX/v2/' tools/deploy-real-living-earth-v2.sh
+          grep -F 'EARTHUS_V2_ENTRY_REDIRECT' tools/deploy-real-living-earth-v2.sh
+          grep -F -- '--key "$PREFIX/v2/"' tools/deploy-real-living-earth-v2.sh || grep -F '"$PREFIX/v2/"' tools/deploy-real-living-earth-v2.sh
           grep -F "E193CZEBLWEB56" tools/deploy-real-living-earth-v2.sh
-          grep -F -- "--paths '/v2' '/v2/' '/v2/*'" tools/deploy-real-living-earth-v2.sh
+          grep -F -- "--paths '/v2' '/v2/' '/v2/index.html' '/v2/*'" tools/deploy-real-living-earth-v2.sh
           grep -F 'PASS public truth manifests' tools/deploy-real-living-earth-v2.sh
+          grep -F 'EARTHUS V2 NETWORK ENTRY + STATIC + PUBLIC DATA: READY FOR BROWSER RENDER ACCEPTANCE' tools/deploy-real-living-earth-v2.sh
+          ! grep -F 'cloudfront wait invalidation-completed' tools/deploy-real-living-earth-v2.sh
           ! grep -F 's3://$BUCKET/$PREFIX/js/' tools/deploy-real-living-earth-v2.sh
           ! grep -E '^[[:space:]]*--delete([[:space:]]|$)' tools/deploy-real-living-earth-v2.sh
 

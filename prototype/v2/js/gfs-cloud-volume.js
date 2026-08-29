@@ -2,6 +2,20 @@
  * No procedural cloud coverage is generated. Density is the modelled TCDC field
  * supplied by aws/gfs-cloud-volume/handler.py after HGT-based vertical resampling.
  */
+function volumeBlockReason(viewer){
+  const nav=globalThis.navigator||{},ua=String(nav.userAgent||'');
+  if(/Android|iPhone|iPad|iPod|Mobile/i.test(ua))return 'MOBILE_DEVICE';
+  if(nav.connection?.saveData===true)return 'SAVE_DATA';
+  const memory=Number(nav.deviceMemory||0),cores=Number(nav.hardwareConcurrency||0);
+  if(memory>0&&memory<=4)return `DEVICE_MEMORY_${memory}`;
+  if(cores>0&&cores<=4)return `CPU_CORES_${cores}`;
+  let gl=null;try{gl=viewer?.scene?.context?._gl||viewer?.scene?.canvas?.getContext?.('webgl2')}catch(_){}
+  if(gl){
+    try{const ext=gl.getExtension('WEBGL_debug_renderer_info'),renderer=ext?String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)||''):'';if(/SwiftShader|llvmpipe|software rasterizer/i.test(renderer))return `SOFTWARE_GPU_${renderer.replace(/\s+/g,'_').slice(0,80)}` }catch(_){}
+    try{const max3d=Number(gl.getParameter(gl.MAX_3D_TEXTURE_SIZE)||0);if(max3d>0&&max3d<256)return `MAX_3D_TEXTURE_${max3d}`}catch(_){}
+  }
+  return null;
+}
 function enuScaledMatrix(C,anchor,sizeM){
   const center=(anchor.bottomM+anchor.topM)*.5,origin=C.Cartesian3.fromDegrees(anchor.longitudeDeg,anchor.latitudeDeg,center),enu=C.Transforms.eastNorthUpToFixedFrame(origin),scale=C.Matrix4.fromScale(new C.Cartesian3(sizeM.eastWestM*.5,sizeM.northSouthM*.5,(anchor.topM-anchor.bottomM)*.5));return C.Matrix4.multiply(enu,scale,new C.Matrix4());
 }
@@ -26,16 +40,17 @@ void fragmentMain(FragmentInput fsInput, inout czm_modelMaterial material){
   return new C.CustomShader(options);
 }
 export class GfsCloudVolumeRuntime{
-  constructor({viewer,Cesium,baseUrl='/clouds/gfs/volume/east-asia'}={}){if(!viewer||viewer.isDestroyed?.())throw new Error('GFS_VOLUME_VIEWER_REQUIRED');this.viewer=viewer;this.C=Cesium||globalThis.Cesium;this.baseUrl=baseUrl.replace(/\/$/,'');this.primitive=null;this.shader=null;this.manifest=null;this.generation=0;this.visible=false}
+  constructor({viewer,Cesium,baseUrl='/clouds/gfs/volume/east-asia'}={}){if(!viewer||viewer.isDestroyed?.())throw new Error('GFS_VOLUME_VIEWER_REQUIRED');this.viewer=viewer;this.C=Cesium||globalThis.Cesium;this.baseUrl=baseUrl.replace(/\/$/,'');this.primitive=null;this.shader=null;this.manifest=null;this.generation=0;this.visible=false;this.deviceBlockReason=null}
   async load({force=false}={}){
+    this.deviceBlockReason=volumeBlockReason(this.viewer);if(this.deviceBlockReason)throw new Error(`GFS_VOLUME_DEVICE_POLICY:${this.deviceBlockReason}`);
     if(!this.C.VoxelPrimitive||!this.C.VoxelContent)throw new Error('CESIUM_VOXEL_RUNTIME_UNAVAILABLE');const generation=++this.generation;if(this.primitive&&!force)return this.manifest;
     const mr=await fetch(`${this.baseUrl}/manifest.json?t=${Date.now()}`,{cache:'no-cache'});if(!mr.ok)throw new Error(`GFS_VOLUME_MANIFEST_${mr.status}`);const m=await mr.json();this.#validate(m);
     const dr=await fetch(new URL(m.densityUrl,`${location.origin}${this.baseUrl}/`).href,{cache:'no-cache'});if(!dr.ok)throw new Error(`GFS_VOLUME_DENSITY_${dr.status}`);const buf=await dr.arrayBuffer();if(generation!==this.generation)return null;if(buf.byteLength!==m.byteLength||buf.byteLength>4*1024*1024)throw new Error('GFS_VOLUME_BYTE_GATE');
-    this.#destroy();const density=new Uint8Array(buf),provider=inlineProvider(this.C,m,density);this.shader=shader(this.C);this.primitive=this.viewer.scene.primitives.add(new this.C.VoxelPrimitive({provider,customShader:this.shader,calculateStatistics:true}));this.primitive.depthTest=true;this.primitive.screenSpaceError=4;this.primitive.stepSize=.72;this.primitive.show=this.visible;this.primitive.disableUpdate=!this.visible;this.manifest=Object.freeze({...m,renderModel:'STEP_AWARE_OPTICAL_ALPHA_FROM_GFS_TCDC'});this.viewer.scene.requestRender();return this.manifest;
+    this.#destroy();const density=new Uint8Array(buf),provider=inlineProvider(this.C,m,density);this.shader=shader(this.C);this.primitive=this.viewer.scene.primitives.add(new this.C.VoxelPrimitive({provider,customShader:this.shader,calculateStatistics:true}));this.primitive.depthTest=true;this.primitive.screenSpaceError=4;this.primitive.stepSize=.72;this.primitive.show=this.visible;this.primitive.disableUpdate=!this.visible;this.manifest=Object.freeze({...m,renderModel:'STEP_AWARE_OPTICAL_ALPHA_FROM_GFS_TCDC',devicePolicy:'DESKTOP_HARDWARE_GPU_ONLY'});this.viewer.scene.requestRender();return this.manifest;
   }
   #validate(m){const s=m.cloudState,d=m.dimensions,a=m.anchor,z=m.altitudeAxisM;if(m.ready!==true||m.production!==true||m.synthetic===true||m.encoding!=='UINT8_0_255'||s?.truthClass!=='MODELLED_NWP'||s?.sourceId!=='NOAA_NCEP_GFS_0P50_NOMADS'||s?.volume?.densityReady!==true||s?.volume?.verticalStructureReady!==true)throw new Error('GFS_VOLUME_TRUTH_GATE');if(!d||![d.x,d.y,d.z].every(Number.isFinite)||d.x*d.y*d.z<=0||d.x*d.y*d.z>4*1024*1024)throw new Error('GFS_VOLUME_DIMENSION_GATE');if(!a||!Number.isFinite(a.bottomM)||!Number.isFinite(a.topM)||a.bottomM>=a.topM)throw new Error('GFS_VOLUME_ALTITUDE_GATE');if(!Array.isArray(z)||z.length!==d.z)throw new Error('GFS_VOLUME_Z_AXIS_GATE')}
   async show(){this.visible=true;if(!this.primitive)await this.load();if(this.primitive){this.primitive.show=true;this.primitive.disableUpdate=false}this.viewer.scene.requestRender();return this.manifest}
   hide(){this.visible=false;if(this.primitive){this.primitive.show=false;this.primitive.disableUpdate=true}this.viewer.scene.requestRender()}
   #destroy(){if(this.primitive){try{this.viewer.scene.primitives.remove(this.primitive)}catch(_){}this.primitive=null}if(this.shader&&!this.shader.isDestroyed?.())try{this.shader.destroy?.()}catch(_){}this.shader=null}
-  dispose(){this.generation++;this.#destroy();this.manifest=null;this.visible=false}
+  dispose(){this.generation++;this.#destroy();this.manifest=null;this.visible=false;this.deviceBlockReason=null}
 }

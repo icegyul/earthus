@@ -44,8 +44,13 @@ jobs:
       - name: Verify Materialized Earth first load
         env:
           EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
-        run: node tools/earthus-v52/materialized-earth-browser.mjs
+        run: |
+          if ! node tools/earthus-v52/materialized-earth-browser.mjs; then
+            echo "::warning::Materialized Earth browser check failed once; retrying once for transient external browser resources"
+            node tools/earthus-v52/materialized-earth-browser.mjs
+          fi
       - name: Verify mobile touch and Materialized Earth acceptance
+        if: ${{ !cancelled() }}
         env:
           EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
           EARTHUS_V52_MOBILE_SCREENSHOT: ${{ github.workspace }}/output/v2-intelligence-runtime/mobile-390x844.png

@@ -283,6 +283,7 @@ function addShadow(canvas, meta) {
     layer = viewer.imageryLayers.addImageryProvider(provider);
   layer.alpha = 0.22;
   layer.show = activeMode === "EARTH";
+  layer.__earthusV2CloudShadow = true;
   return layer;
 }
 function setObservedShadow(alpha = 0.22, show = true) {

@@ -33,9 +33,8 @@ function findNasaLayers(viewer) {
 }
 function findShadow(viewer, C) {
   for (let i = viewer.imageryLayers.length - 1; i >= 0; i--) {
-    const l = viewer.imageryLayers.get(i),
-      p = l?.imageryProvider;
-    if (p instanceof C.SingleTileImageryProvider) return l;
+    const layer = viewer.imageryLayers.get(i);
+    if (layer?.__earthusV2CloudShadow === true) return layer;
   }
   return null;
 }

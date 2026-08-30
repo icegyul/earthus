@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 
 import {
   MaterializedEarthService,
@@ -78,6 +80,7 @@ const report = Object.freeze({
   gpuRequiredForBaseEarth: false,
   capacity,
 });
-const output = process.env.EARTHUS_V52_LOAD_OUTPUT || '/private/tmp/earthus-v52-load-replay.json';
+const output = process.env.EARTHUS_V52_LOAD_OUTPUT
+  || path.join(os.tmpdir(), 'earthus-v52-load-replay.json');
 await fs.writeFile(output, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 console.log('V52 LOAD REPLAY: PASS', JSON.stringify(report));

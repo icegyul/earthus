@@ -11,8 +11,10 @@
  * - surface scene readiness through the existing resource-task loading UI
  * - expose truth/quality/fetch policy to the existing Earth Intelligence panel
  */
-import { buildPlanetExecutionPlan } from "../../js/earthus2/v04/core/planet-intelligence-orchestrator.js";
-import { deviceNetworkProfile } from "../../js/earthus2/v04/core/device-network-governor.js";
+// V2-local deployment adapters preserve FND-017/FND-018 ownership without
+// requiring or mutating production-root `/js` objects.
+import { buildPlanetExecutionPlan } from "./v52/planet-intelligence-orchestrator.js";
+import { deviceNetworkProfile } from "./v52/device-network-governor.js";
 import { createComputePolicyRegistry } from "./v52/compute-policy-registry.js";
 import { resolveIntelligenceLod } from "./v52/intelligence-lod-policy.js";
 

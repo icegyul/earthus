@@ -29,6 +29,7 @@
   let lastFailed = null;
   let fidelityStarted = false;
   let intelligenceStarted = false;
+  let seasonalStarted = false;
 
   const $ = id => document.getElementById(id);
   const stageText = stage => STAGE_KO[stage] || String(stage || '자료 처리 중…');
@@ -50,6 +51,16 @@
     import(url).catch(error => {
       intelligenceStarted = false;
       console.warn('[v2/intelligence]', error?.message || error);
+    });
+  }
+
+  function startSeasonalCurrentEarth() {
+    if (seasonalStarted) return;
+    seasonalStarted = true;
+    const url = new URL('./js/current-earth-seasonal.js?v=20260830-current-earth-1', location.href).href;
+    import(url).then(mod => mod.installWhenReady({ timeoutMs: 45000 })).catch(error => {
+      seasonalStarted = false;
+      console.warn('[v2/current-earth-seasonal]', error?.message || error);
     });
   }
 
@@ -79,6 +90,7 @@
     if (task.status === 'SUCCEEDED') {
       startVisualFidelity();
       startIntelligence();
+      startSeasonalCurrentEarth();
       setTimeout(() => root.classList.add('gone'), 250);
     }
   }

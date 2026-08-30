@@ -30,8 +30,11 @@ jobs:
           node --check prototype/v2/js/gfs-cloud-volume.js
           node --check prototype/v2/js/polar-geographic-cap.js
           node --check prototype/v2/js/trench-bathymetry-mesh.js
+          node --check prototype/v2/js/visual-fidelity-controller.js
+          node --check prototype/v2/js/loading-ui.js
           node --check prototype/v2/js/real-living-earth.js
           node --check tools/test_v2_real_living_earth_visual_readpixels.mjs
+          node --check tools/test_v2_mountain_terrain_browser.mjs
 
       - name: Truth-first V2 bootstrap contract
         shell: bash
@@ -92,7 +95,7 @@ jobs:
           grep -F 'terrainProvider?.hasWaterMask===true' prototype/v2/js/real-living-earth.js
           grep -F 'scene.globe.showWaterEffect=supported' prototype/v2/js/real-living-earth.js
 
-      - name: Polar stereographic UV and seam contract
+      - name: Polar stereographic UV and no-data repair contract
         shell: bash
         run: |
           set -euo pipefail
@@ -101,20 +104,22 @@ jobs:
           grep -F "endpoint:'https://gibs.earthdata.nasa.gov/wms/epsg3031/best/wms.cgi'" prototype/v2/js/polar-geographic-cap.js
           grep -F "id:'EPSG:3413'" prototype/v2/js/polar-geographic-cap.js
           grep -F "id:'EPSG:3031'" prototype/v2/js/polar-geographic-cap.js
-          grep -F 'latTs:70,lon0:-45' prototype/v2/js/polar-geographic-cap.js
-          grep -F 'latTs:-71,lon0:0' prototype/v2/js/polar-geographic-cap.js
           grep -F 'function project(config,lonDeg,latDeg)' prototype/v2/js/polar-geographic-cap.js
-          grep -F 'function featherTexture' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'function imageSignal(image)' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'centerMean' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'centerDarkRatio' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'function repairCenterNoData(image)' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'SOURCE_ANNULUS_INTERPOLATION_ONLY_IF_NODATA' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'async function loadBest(config)' prototype/v2/js/polar-geographic-cap.js
           grep -F "seamClass:'RADIAL_ALPHA_FEATHER'" prototype/v2/js/polar-geographic-cap.js
           grep -F 'GEODETIC_MESH_WITH_POLAR_STEREOGRAPHIC_UV' prototype/v2/js/polar-geographic-cap.js
           grep -F 'NASA_GIBS_POLAR_STEREOGRAPHIC_HOLE_FILL_IMAGERY_ONLY' prototype/v2/js/polar-geographic-cap.js
           grep -F 'primitiveType:C.PrimitiveType.TRIANGLES' prototype/v2/js/polar-geographic-cap.js
           ! grep -F 'C.CircleGeometry' prototype/v2/js/polar-geographic-cap.js
-          ! grep -F 'new C.RectangleGeometry' prototype/v2/js/polar-geographic-cap.js
           grep -F "new Set(['EPSG:3413','EPSG:3031'])" tools/test_v2_real_living_earth_visual_readpixels.mjs
           grep -F 'gl.readPixels' tools/test_v2_real_living_earth_visual_readpixels.mjs
 
-      - name: Sampled trench mesh visual fidelity contract
+      - name: Sampled trench mesh natural appearance contract
         shell: bash
         run: |
           set -euo pipefail
@@ -123,20 +128,46 @@ jobs:
           grep -F "sourceId:'ESRI_WORLDELEVATION3D_TOPOBATHY3D'" prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'synthetic:false' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'verticalExaggeration:1' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F "colorModel:'ACTUAL_DEPTH_RAMP_PLUS_ACTUAL_SLOPE_HILLSHADE_GEOMETRY_UNCHANGED'" prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'function bathyTexture' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'meanSlopeDeg' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'maxSlopeDeg' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'NASA_GIBS_REFERENCE_BATHYMETRY_DRAPED_ON_ACTUAL_SAMPLED_GEOMETRY' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'NASA_GIBS_BATHYMETRY_REFERENCE_PLUS_ACTUAL_SLOPE_HILLSHADE_GEOMETRY_UNCHANGED' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'function slopeField' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'function referenceTexture' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'GeometryPipeline.computeNormal' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'flat:false' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'deepestCoordinate' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'lonSpan=3.0,latSpan=2.4,nx=55,ny=45' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'sampleTerrain(terrainProvider,samplingLevel,points)' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'sampleTerrainMostDetailed' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'new C.MaterialAppearance' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'function prepareTrenchReveal' prototype/v2/js/real-living-earth.js
           grep -F 'async function ensureTrenchMesh' prototype/v2/js/real-living-earth.js
           grep -F 'g.depthTestAgainstTerrain=false' prototype/v2/js/real-living-earth.js
           grep -F 'trenchMeshTruth:()=>trenchMeshMeta' prototype/v2/js/real-living-earth.js
-          grep -F "truthClass==='ESRI_TOPOBATHY3D_SAMPLED_SEAFLOOR_MESH'" tools/test_v2_real_living_earth_visual_readpixels.mjs
-          grep -F "states.trench.trenchMesh?.truthClass,'ESRI_TOPOBATHY3D_SAMPLED_SEAFLOOR_MESH'" tools/test_v2_real_living_earth_visual_readpixels.mjs
+
+      - name: Camera-aware visual fidelity controller contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F "new URL('./js/visual-fidelity-controller.js', location.href)" prototype/v2/js/loading-ui.js
+          grep -F 'installWhenReady({ timeoutMs: 45000 })' prototype/v2/js/loading-ui.js
+          grep -F 'function shellAlpha' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'function shadowAlpha' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'polarFade=1-smooth(70,82.2,lat)' prototype/v2/js/visual-fidelity-controller.js
+          grep -F "terrain==='ESRI_TOPOBATHY3D'&&h<500_000" prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'function aimAtActualDeepest' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'real.trenchMeshTruth?.()' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'scene.globe.show=false' prototype/v2/js/visual-fidelity-controller.js
+          grep -F "scene.backgroundColor=C.Color.fromCssColorString('#01070b')" prototype/v2/js/visual-fidelity-controller.js
+
+      - name: Mountain visual evidence contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F "assert.equal(state.settled,true,'imagery/terrain tiles never reached stable loaded state')" tools/test_v2_mountain_terrain_browser.mjs
+          grep -F "assert.equal(state.runtime.tilesLoaded,true,'capture attempted with globe tilesLoaded=false')" tools/test_v2_mountain_terrain_browser.mjs
+          grep -F 'chromaMean' tools/test_v2_mountain_terrain_browser.mjs
+          grep -F 'localEdgeMean' tools/test_v2_mountain_terrain_browser.mjs
+          grep -F 'state.metrics.chromaMean>.035' tools/test_v2_mountain_terrain_browser.mjs
+          grep -F 'state.metrics.localEdgeMean>.006' tools/test_v2_mountain_terrain_browser.mjs
 
       - name: Underwater restoration contract
         shell: bash

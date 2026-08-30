@@ -25,14 +25,6 @@ export const VIEW_SCOPE = Object.freeze({
 });
 
 const DYNAMIC_PRIMARY = new Set(['FLOW', 'VOLUME', 'PULSE', 'TRACK', 'TOWER']);
-const SCOPE_ORDER = Object.freeze([
-  VIEW_SCOPE.GLOBAL,
-  VIEW_SCOPE.CONTINENT,
-  VIEW_SCOPE.COUNTRY,
-  VIEW_SCOPE.REGION,
-  VIEW_SCOPE.LOCAL,
-  VIEW_SCOPE.UNDERWATER,
-]);
 const STAY_RANGE = Object.freeze({
   [VIEW_SCOPE.GLOBAL]: [5_000_000, Infinity],
   [VIEW_SCOPE.CONTINENT]: [1_300_000, 6_800_000],
@@ -246,7 +238,6 @@ export function installProgressivePlanetIntelligence({ viewer, realEarth, tasks 
   let snapshot = null;
   let refinementTask = null;
   let refinementTimer = null;
-  let lastCameraChangeAt = performance.now();
   let stableTimer = null;
   let moving = false;
   let batteryPct = 100;
@@ -286,6 +277,7 @@ export function installProgressivePlanetIntelligence({ viewer, realEarth, tasks 
     globe.preloadSiblings = policy.preloadSiblings;
     if ('requestRenderMode' in scene) scene.requestRenderMode = policy.requestRenderMode;
   }
+
   function applyPolicy(policy) {
     enforcePolicy(policy);
     scene.requestRender();
@@ -354,16 +346,16 @@ export function installProgressivePlanetIntelligence({ viewer, realEarth, tasks 
   }
 
   function markMoving() {
-    lastCameraChangeAt = performance.now();
-    if (!moving) { moving = true; update('camera-moving'); }
+    if (!moving) {
+      moving = true;
+      update('camera-moving');
+    }
     clearTimeout(stableTimer);
     stableTimer = setTimeout(() => {
       if (disposed) return;
-      if (performance.now() - lastCameraChangeAt >= 220) {
-        moving = false;
-        update('camera-stable');
-      }
-    }, 240);
+      moving = false;
+      update('camera-stable');
+    }, 360);
   }
 
   function onFeature(event) {
@@ -373,7 +365,11 @@ export function installProgressivePlanetIntelligence({ viewer, realEarth, tasks 
   }
 
   const removeChanged = viewer.camera.changed.addEventListener(markMoving);
-  const removeMoveEnd = viewer.camera.moveEnd?.addEventListener?.(() => { moving = false; update('camera-move-end'); });
+  const removeMoveEnd = viewer.camera.moveEnd?.addEventListener?.(() => {
+    clearTimeout(stableTimer);
+    moving = false;
+    update('camera-move-end');
+  });
   // The legacy visual-fidelity controller also writes globe LOD. Because this
   // adapter is the FND-017 execution authority, re-assert the current policy
   // after render without scheduling another frame. This prevents policy drift
@@ -393,7 +389,10 @@ export function installProgressivePlanetIntelligence({ viewer, realEarth, tasks 
     globalThis.navigator.getBattery().then(battery => {
       if (disposed) return;
       batteryPct = clamp(finite(battery.level, 1) * 100, 0, 100);
-      const onBattery = () => { batteryPct = clamp(finite(battery.level, 1) * 100, 0, 100); update('battery'); };
+      const onBattery = () => {
+        batteryPct = clamp(finite(battery.level, 1) * 100, 0, 100);
+        update('battery');
+      };
       battery.addEventListener?.('levelchange', onBattery);
     }).catch(() => {});
   }
@@ -406,7 +405,10 @@ export function installProgressivePlanetIntelligence({ viewer, realEarth, tasks 
     version: INTELLIGENCE_RUNTIME_VERSION,
     update,
     snapshot: () => snapshot,
-    setIntent(menu, feature = null) { selected = { menu: String(menu || 'EARTH'), feature }; return update('set-intent'); },
+    setIntent(menu, feature = null) {
+      selected = { menu: String(menu || 'EARTH'), feature };
+      return update('set-intent');
+    },
     dispose() {
       if (disposed) return;
       disposed = true;

@@ -27,9 +27,20 @@
   let installed = false;
   let resourceHideTimer = null;
   let lastFailed = null;
+  let fidelityStarted = false;
 
   const $ = id => document.getElementById(id);
   const stageText = stage => STAGE_KO[stage] || String(stage || '자료 처리 중…');
+
+  function startVisualFidelity() {
+    if (fidelityStarted) return;
+    fidelityStarted = true;
+    const url = new URL('./js/visual-fidelity-controller.js', location.href).href;
+    import(url).then(mod => mod.installWhenReady({ timeoutMs: 45000 })).catch(error => {
+      fidelityStarted = false;
+      console.warn('[v2/visual-fidelity]', error?.message || error);
+    });
+  }
 
   function setBar(root, task) {
     const bar = root?.querySelector('[data-task-bar]');
@@ -54,7 +65,10 @@
       : [task.provider, task.stage].filter(Boolean).join(' · ');
     setBar(root, task);
     if (actions) actions.classList.toggle('on', task.status === 'FAILED');
-    if (task.status === 'SUCCEEDED') setTimeout(() => root.classList.add('gone'), 250);
+    if (task.status === 'SUCCEEDED') {
+      startVisualFidelity();
+      setTimeout(() => root.classList.add('gone'), 250);
+    }
   }
 
   function chooseResource(active) {

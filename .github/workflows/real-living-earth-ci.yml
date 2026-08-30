@@ -94,11 +94,16 @@ jobs:
           ! grep -F 'C.CircleGeometry' prototype/v2/js/polar-geographic-cap.js
 
       - name: V5.2 runtime economics contracts
-        run: |
-          node --test tools/earthus-v52/runtime-economics.test.mjs
-          node --test tools/earthus-v52/weather-typhoon-slice.test.mjs
-          node --test tools/earthus-v52/current-earth-png.test.mjs
-          node tools/earthus-v52/load-replay.mjs
+        run: node --test tools/earthus-v52/runtime-economics.test.mjs
+
+      - name: V5.2 Weather Typhoon materialization contracts
+        run: node --test tools/earthus-v52/weather-typhoon-slice.test.mjs
+
+      - name: V5.2 Current Earth PNG contracts
+        run: node --test tools/earthus-v52/current-earth-png.test.mjs
+
+      - name: V5.2 load replay
+        run: node tools/earthus-v52/load-replay.mjs
 
       - name: Canonical imagery and materialized browser entrypoints
         shell: bash

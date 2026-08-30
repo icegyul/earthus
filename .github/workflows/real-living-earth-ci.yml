@@ -114,7 +114,7 @@ jobs:
           grep -F "new Set(['EPSG:3413','EPSG:3031'])" tools/test_v2_real_living_earth_visual_readpixels.mjs
           grep -F 'gl.readPixels' tools/test_v2_real_living_earth_visual_readpixels.mjs
 
-      - name: Sampled trench mesh truth contract
+      - name: Sampled trench mesh visual fidelity contract
         shell: bash
         run: |
           set -euo pipefail
@@ -123,10 +123,14 @@ jobs:
           grep -F "sourceId:'ESRI_WORLDELEVATION3D_TOPOBATHY3D'" prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'synthetic:false' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'verticalExaggeration:1' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F "colorModel:'ANALYTIC_DEPTH_RAMP_GEOMETRY_UNCHANGED'" prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F "colorModel:'ACTUAL_DEPTH_RAMP_PLUS_ACTUAL_SLOPE_HILLSHADE_GEOMETRY_UNCHANGED'" prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'function bathyTexture' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'meanSlopeDeg' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'maxSlopeDeg' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'lonSpan=3.0,latSpan=2.4,nx=55,ny=45' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'sampleTerrain(terrainProvider,samplingLevel,points)' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'sampleTerrainMostDetailed' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'new C.MaterialAppearance' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'flat:true' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'function prepareTrenchReveal' prototype/v2/js/real-living-earth.js
           grep -F 'async function ensureTrenchMesh' prototype/v2/js/real-living-earth.js
           grep -F 'g.depthTestAgainstTerrain=false' prototype/v2/js/real-living-earth.js

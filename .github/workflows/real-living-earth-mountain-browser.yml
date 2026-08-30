@@ -28,7 +28,11 @@ jobs:
         env:
           EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
           EARTHUS_V2_MOUNTAIN_OUTPUT: ${{ github.workspace }}/output/v2-mountain-terrain-visual
-        run: node tools/test_v2_mountain_terrain_browser.mjs
+        run: |
+          if ! node tools/test_v2_mountain_terrain_browser.mjs; then
+            echo "::warning::Mountain terrain browser check failed once; retrying once for transient external terrain resources"
+            node tools/test_v2_mountain_terrain_browser.mjs
+          fi
       - name: Upload mountain evidence
         if: always()
         uses: actions/upload-artifact@v4

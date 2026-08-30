@@ -24,17 +24,18 @@ jobs:
         run: |
           node --check tools/test_v2_real_living_earth_browser.mjs
           node --check tools/test_v2_real_living_earth_visual_fast.mjs
+          node --check tools/test_v2_real_living_earth_visual_readpixels.mjs
 
       - name: Install pinned Chromium runtime
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0 pngjs@7.0.0
           npx playwright install --with-deps chromium
 
-      - name: Capture direct WebGL visual evidence
+      - name: Capture framebuffer visual evidence
         env:
           EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
           EARTHUS_V2_VISUAL_OUTPUT: ${{ github.workspace }}/output/v2-real-living-earth-visual
-        run: node tools/test_v2_real_living_earth_visual_fast.mjs
+        run: node tools/test_v2_real_living_earth_visual_readpixels.mjs
 
       - name: Upload visual evidence
         if: always()

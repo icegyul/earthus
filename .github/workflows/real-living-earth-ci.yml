@@ -109,6 +109,8 @@ jobs:
           grep -F '__earthusV2UnderwaterBathymetryPrimitive' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'SOURCE_LUMINANCE_AND_SATURATION_GRADE_ONLY' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'NASA_GIBS_REFERENCE_BATHYMETRY_DRAPED_ON_ACTUAL_SAMPLED_GEOMETRY' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'hillshadeAlpha:underwater?.36:.16' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'targetMean:underwater?.18:.12' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'GeometryPipeline.computeNormal' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'flat:false' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'cull:false' prototype/v2/js/trench-bathymetry-mesh.js
@@ -131,12 +133,13 @@ jobs:
           grep -F 'function aimAtActualDeepest' prototype/v2/js/visual-fidelity-controller.js
           grep -F 'function ensureUnderwaterDetail' prototype/v2/js/visual-fidelity-controller.js
           grep -F "role:'underwater-detail'" prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'lonSpan:1.25,latSpan:1.0,nx:97,ny:79,samplingLevel:12' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'lonSpan:1.05,latSpan:.84,nx:129,ny:105,samplingLevel:13' prototype/v2/js/visual-fidelity-controller.js
           grep -F '__earthusV2UnderwaterDetailMeta' prototype/v2/js/visual-fidelity-controller.js
           grep -F 'scene.globe.show=false' prototype/v2/js/visual-fidelity-controller.js
           grep -F 'detailPrimitive.show=true' prototype/v2/js/visual-fidelity-controller.js
           grep -F 'trenchPrimitive.show=false' prototype/v2/js/visual-fidelity-controller.js
           grep -F 'applyUnderwaterLight' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'underwaterLightDirection' prototype/v2/js/visual-fidelity-controller.js
           grep -F 'new C.DirectionalLight' prototype/v2/js/visual-fidelity-controller.js
 
       - name: Browser evidence contracts are strict
@@ -151,10 +154,11 @@ jobs:
           grep -F 'visualReady' tools/test_v2_mountain_terrain_browser.mjs
           grep -F 'visuallyStable' tools/test_v2_mountain_terrain_browser.mjs
           ! grep -F 'assert.equal(state.runtime.tilesLoaded,true' tools/test_v2_mountain_terrain_browser.mjs
-          grep -F 'underwaterDetail?.grid?.nx>=97' tools/test_v2_underwater_terrain_browser.mjs
-          grep -F 'underwaterDetail?.grid?.ny>=79' tools/test_v2_underwater_terrain_browser.mjs
-          grep -F 'underwaterDetail?.spacing?.eastWestM<1800' tools/test_v2_underwater_terrain_browser.mjs
-          grep -F 'underwaterDetail?.triangleCount>14000' tools/test_v2_underwater_terrain_browser.mjs
+          grep -F 'underwaterDetail?.grid?.nx>=129' tools/test_v2_underwater_terrain_browser.mjs
+          grep -F 'underwaterDetail?.grid?.ny>=105' tools/test_v2_underwater_terrain_browser.mjs
+          grep -F 'underwaterDetail?.spacing?.eastWestM<1000' tools/test_v2_underwater_terrain_browser.mjs
+          grep -F 'underwaterDetail?.triangleCount>25000' tools/test_v2_underwater_terrain_browser.mjs
+          grep -F 'appearanceToneMap?.hillshadeAlpha>=.35' tools/test_v2_underwater_terrain_browser.mjs
           grep -F 'localEdgeMean' tools/test_v2_underwater_terrain_browser.mjs
 
       - name: Lambda packaging and deployment helpers

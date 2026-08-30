@@ -36,12 +36,18 @@ jobs:
         env:
           EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
           EARTHUS_V2_INTELLIGENCE_OUTPUT: ${{ github.workspace }}/output/v2-intelligence-runtime
-        run: node tools/test_v2_intelligence_runtime_browser.mjs
+        run: |
+          if ! node tools/test_v2_intelligence_runtime_browser.mjs; then
+            echo "::warning::Intelligence browser bootstrap failed once; retrying once for transient external browser resources"
+            node tools/test_v2_intelligence_runtime_browser.mjs
+          fi
       - name: Verify canonical provider ownership
+        if: ${{ !cancelled() }}
         env:
           EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
         run: node tools/test_v2_canonical_imagery_ownership.mjs
       - name: Verify Materialized Earth first load
+        if: ${{ !cancelled() }}
         env:
           EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
         run: |

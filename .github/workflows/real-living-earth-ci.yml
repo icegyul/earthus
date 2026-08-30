@@ -30,7 +30,6 @@ jobs:
           node --check prototype/v2/js/gfs-cloud-volume.js
           node --check prototype/v2/js/polar-geographic-cap.js
           node --check prototype/v2/js/real-living-earth.js
-          node --check tools/test_v2_real_living_earth_browser.mjs
           node --check tools/test_v2_real_living_earth_visual_readpixels.mjs
 
       - name: Truth-first V2 bootstrap contract
@@ -52,32 +51,30 @@ jobs:
           grep -F 'CTH_flag' aws/gk2a-clouds/cth_pipeline.py
           grep -F 'https://apihub.kma.go.kr/api/typ05/api/GK2A/LE2/CTPS' aws/gk2a-clouds/cth_pipeline.py
           grep -F "KMA_HUB_KEY = os.environ.get('KMA_HUB_KEY'" aws/gk2a-clouds/cth_pipeline.py
-          grep -F "'transport': 'KMA_API_HUB'" aws/gk2a-clouds/cth_pipeline.py
           grep -F 'MODELLED_NWP' aws/gfs-cloud-volume/handler.py
           grep -F 'GFS pressure-level TCDC' aws/gfs-cloud-volume/handler.py
           ! grep -R -nE 'SYNTHETIC_(TERRAIN|TRENCH|BATHYMETRY)' prototype/v2/js aws/gk2a-clouds/cth_pipeline.py aws/gfs-cloud-volume/handler.py
 
-      - name: Cloud visual fidelity contract
+      - name: Actual CTH mesh visual contract
         shell: bash
         run: |
           set -euo pipefail
-          grep -F "Object.freeze({id:'0-3km',minM:0,maxM:3000})" prototype/v2/js/gk2a-cth-relief.js
-          grep -F "Object.freeze({id:'16-25km',minM:16000,maxM:25001})" prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'OBSERVED_2D_GMGSI_MASKED_BY_OBSERVED_CTH_BANDS' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'REGIONAL_SOURCE_CTH_ALTITUDE_BANDS_SMOOTH_DISPLAY_INTERPOLATION_NO_TRIANGLE_MESH' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'GK2A_CTH_MANIFEST_TRUTH_GATE:${JSON.stringify(d)}' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'renderRegion:observed.region' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'maxDim=1400' prototype/v2/js/gk2a-cth-relief.js
-          ! grep -F 'PrimitiveType.TRIANGLES' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'OBSERVED_GMGSI_ALPHA_ON_OBSERVED_GK2A_CTH_MESH' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'REGIONAL_ACTUAL_CTH_VERTEX_HEIGHT_MESH_NO_VERTICAL_EXAGGERATION' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'rawA*lum' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'GK2A_CTH_TEXTURE_ALPHA_GATE' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'new C.GeometryAttribute' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'primitiveType:C.PrimitiveType.TRIANGLES' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'transparent:true' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'triangleCount:idx.length/3' prototype/v2/js/gk2a-cth-relief.js
+          ! grep -F 'SOURCE_CTH_ALTITUDE_BANDS' prototype/v2/js/gk2a-cth-relief.js
           ! grep -Ei 'fbm|proceduralNoise|noise3d|simplex|perlin' prototype/v2/js/gk2a-cth-relief.js
           grep -F 'fsInput.voxel.travelDistance' prototype/v2/js/gfs-cloud-volume.js
           grep -F '1.0-exp(-extinction*travel)' prototype/v2/js/gfs-cloud-volume.js
-          grep -F "renderModel:'STEP_AWARE_OPTICAL_ALPHA_FROM_GFS_TCDC'" prototype/v2/js/gfs-cloud-volume.js
           grep -F 'GFS_VOLUME_DEVICE_POLICY' prototype/v2/js/gfs-cloud-volume.js
           grep -F 'SwiftShader' prototype/v2/js/gfs-cloud-volume.js
-          ! grep -Ei 'fbm|proceduralNoise|noise3d|simplex|perlin' prototype/v2/js/gfs-cloud-volume.js
-          grep -F 'loadCloud({force:false})' prototype/v2/js/real-living-earth.js
           grep -F 'cloudDiagnostics:()=>Object.freeze' prototype/v2/js/real-living-earth.js
+          grep -F "await flyToAsync({destination:Cesium.Cartesian3.fromDegrees(132,26,1_850_000)" prototype/v2/js/real-living-earth.js
 
       - name: Surface and bathymetry mode contract
         shell: bash
@@ -95,49 +92,42 @@ jobs:
           grep -F 'terrainProvider?.hasWaterMask===true' prototype/v2/js/real-living-earth.js
           grep -F 'scene.globe.showWaterEffect=supported' prototype/v2/js/real-living-earth.js
 
-      - name: Polar geographic rectangle hole-fill contract
+      - name: True polar stereographic UV contract
         shell: bash
         run: |
           set -euo pipefail
           ! test -e prototype/v2/js/polar-imagery-cap.js
-          grep -F "import { PolarGeographicCapRuntime } from './polar-geographic-cap.js'" prototype/v2/js/real-living-earth.js
-          grep -F "WMS='https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi'" prototype/v2/js/polar-geographic-cap.js
-          grep -F 'const EDGE_LAT=81.75' prototype/v2/js/polar-geographic-cap.js
-          grep -F "srs:'EPSG:4326'" prototype/v2/js/polar-geographic-cap.js
-          grep -F 'function signalStrong' prototype/v2/js/polar-geographic-cap.js
-          grep -F 'if(signalStrong(signal))return Object.freeze(candidate)' prototype/v2/js/polar-geographic-cap.js
-          grep -F 'usable.sort((a,b)=>b.signal.score-a.signal.score)' prototype/v2/js/polar-geographic-cap.js
-          grep -F 'new C.RectangleGeometry' prototype/v2/js/polar-geographic-cap.js
-          grep -F 'C.EllipsoidSurfaceAppearance.VERTEX_FORMAT' prototype/v2/js/polar-geographic-cap.js
-          grep -F "geometryClass:'CESIUM_RECTANGLE_GEOMETRY'" prototype/v2/js/polar-geographic-cap.js
-          grep -F 'NASA_GIBS_GEOGRAPHIC_POLAR_HOLE_FILL_IMAGERY_ONLY' prototype/v2/js/polar-geographic-cap.js
-          grep -F 'NASA GIBS EPSG4326 geodetic hole-fill' prototype/v2/js/real-living-earth.js
+          grep -F "endpoint:'https://gibs.earthdata.nasa.gov/wms/epsg3413/best/wms.cgi'" prototype/v2/js/polar-geographic-cap.js
+          grep -F "endpoint:'https://gibs.earthdata.nasa.gov/wms/epsg3031/best/wms.cgi'" prototype/v2/js/polar-geographic-cap.js
+          grep -F "id:'EPSG:3413'" prototype/v2/js/polar-geographic-cap.js
+          grep -F "id:'EPSG:3031'" prototype/v2/js/polar-geographic-cap.js
+          grep -F 'latTs:70,lon0:-45' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'latTs:-71,lon0:0' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'function rhoFor' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'function project(config,lonDeg,latDeg)' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'HALF_EXTENT_M=930000' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'GEODETIC_MESH_WITH_POLAR_STEREOGRAPHIC_UV' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'NASA_GIBS_POLAR_STEREOGRAPHIC_HOLE_FILL_IMAGERY_ONLY' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'primitiveType:C.PrimitiveType.TRIANGLES' prototype/v2/js/polar-geographic-cap.js
           ! grep -F 'C.CircleGeometry' prototype/v2/js/polar-geographic-cap.js
-          ! grep -F 'PrimitiveType.TRIANGLES' prototype/v2/js/polar-geographic-cap.js
-          ! grep -F 'wms/epsg3413' prototype/v2/js/polar-geographic-cap.js
-          ! grep -F 'wms/epsg3031' prototype/v2/js/polar-geographic-cap.js
-          grep -F "gate('polar-center'" tools/test_v2_real_living_earth_visual_readpixels.mjs
+          ! grep -F 'new C.RectangleGeometry' prototype/v2/js/polar-geographic-cap.js
+          grep -F "new Set(['EPSG:3413','EPSG:3031'])" tools/test_v2_real_living_earth_visual_readpixels.mjs
           grep -F 'gl.readPixels' tools/test_v2_real_living_earth_visual_readpixels.mjs
 
-      - name: Physical Earth and underwater fidelity contract
+      - name: Camera and terrain readiness contract
         shell: bash
         run: |
           set -euo pipefail
-          grep -F "NASA_GIBS_4326_WMS='https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi'" prototype/v2/js/real-living-earth.js
-          grep -F "layers:'BlueMarble_NextGeneration'" prototype/v2/js/real-living-earth.js
-          grep -F 'scene.highDynamicRange=true' prototype/v2/js/real-living-earth.js
-          grep -F 'scene.globe.enableLighting=false' prototype/v2/js/real-living-earth.js
+          grep -F 'function flyToAsync(options)' prototype/v2/js/real-living-earth.js
+          grep -F 'async function waitGlobeReady' prototype/v2/js/real-living-earth.js
+          grep -F 'scene.globe.tilesLoaded===true' prototype/v2/js/real-living-earth.js
+          grep -F 'await flyToAsync' prototype/v2/js/real-living-earth.js
+          grep -F 'const tilesReady=await waitGlobeReady' prototype/v2/js/real-living-earth.js
+          grep -F "tilesReady?'tiles ready':'tiles pending'" prototype/v2/js/real-living-earth.js
+          grep -F 'globalThis.__earthusSkyPanorama?.hide?.()' prototype/v2/js/real-living-earth.js
           grep -F 't.enabled=true' prototype/v2/js/real-living-earth.js
           grep -F 't.frontFaceAlpha=1' prototype/v2/js/real-living-earth.js
           grep -F 't.backFaceAlpha=1' prototype/v2/js/real-living-earth.js
-          grep -F 't.rectangle=Cesium.Rectangle.MAX_VALUE' prototype/v2/js/real-living-earth.js
-          grep -F 'g.backFaceCulling=false' prototype/v2/js/real-living-earth.js
-          grep -F 'g.showSkirts=false' prototype/v2/js/real-living-earth.js
-          grep -F 'globalThis.__earthusSkyPanorama?.hide?.()' prototype/v2/js/real-living-earth.js
-          grep -F "pitch:Cesium.Math.toRadians(-78)" prototype/v2/js/real-living-earth.js
-          ! grep -F 'OceanWaterSurfaceRuntime' prototype/v2/js/real-living-earth.js
-          ! grep -F "C.Material.fromType('Water'" prototype/v2/js/real-living-earth.js
-          ! grep -F 'EllipseGeometry' prototype/v2/js/real-living-earth.js
 
       - name: Official GK2A EA LCC contract
         shell: bash

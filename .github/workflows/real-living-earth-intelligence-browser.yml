@@ -25,6 +25,8 @@ jobs:
           node --check prototype/v2/js/progressive-planet-intelligence.js
           node --check prototype/v2/js/intelligence-runtime-bootstrap.js
           node --check tools/test_v2_intelligence_runtime_browser.mjs
+          node --check tools/test_v2_canonical_imagery_ownership.mjs
+          node --check tools/earthus-v52/materialized-earth-browser.mjs
       - name: Install browser runtime
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
@@ -34,6 +36,14 @@ jobs:
           EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
           EARTHUS_V2_INTELLIGENCE_OUTPUT: ${{ github.workspace }}/output/v2-intelligence-runtime
         run: node tools/test_v2_intelligence_runtime_browser.mjs
+      - name: Verify canonical provider ownership
+        env:
+          EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
+        run: node tools/test_v2_canonical_imagery_ownership.mjs
+      - name: Verify Materialized Earth first load
+        env:
+          EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
+        run: node tools/earthus-v52/materialized-earth-browser.mjs
       - name: Upload intelligence evidence
         if: always()
         uses: actions/upload-artifact@v4

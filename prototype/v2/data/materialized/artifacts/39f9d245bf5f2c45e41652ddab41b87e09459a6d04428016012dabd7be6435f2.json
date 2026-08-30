@@ -1,0 +1,180 @@
+{
+  "artifactId": "ma_39f9d245bf5f2c45e41652ddab41b87e09459a6d04428016012dabd7be6435f2",
+  "contentHash": "sha256:39f9d245bf5f2c45e41652ddab41b87e09459a6d04428016012dabd7be6435f2",
+  "generatedAt": "2026-08-30T15:14:32.793Z",
+  "freshUntil": null,
+  "staleUntil": null,
+  "schemaVersion": "earthus.materialized.v5.2",
+  "productType": "EVENT_CAPSULE_SUMMARY",
+  "spatialScope": "GLOBAL",
+  "spatialKey": "TYPHOON",
+  "targetTime": "2026-08-30T14:25:00.000Z",
+  "policyVersion": "5.2.0",
+  "modelVersion": "official-agency-cache-v1",
+  "dataRevision": "17b32f8e34250d539b0ef83ad571224375bf9344083d030dd25590c5e5f2c374",
+  "dependencyFingerprint": "c70873baf1b299bb902e029bf9cd04299b766f7b9c1c898f431a87211e1c3e9e",
+  "truthState": "OFFICIAL_FORECAST",
+  "sourceRefs": [
+    "KMA",
+    "JMA",
+    "NHC"
+  ],
+  "confidenceClass": "AGENCY_REPORTED",
+  "uncertaintyRef": null,
+  "shareScope": "PUBLIC",
+  "entitlementClass": null,
+  "payload": {
+    "generatedAt": "2026-08-30T14:25:00.000Z",
+    "source": "기상청(KMA) · 일본 기상청(JMA) · 미국 NHC",
+    "events": [
+      {
+        "eventId": "typhoon:ETAU",
+        "name": "Etau",
+        "truthState": "OFFICIAL_FORECAST",
+        "officialAgencies": [
+          "JMA"
+        ],
+        "firstIssuedBy": "JMA",
+        "firstIssuedAt": "2026-08-30T13:10:00.000Z",
+        "revisions": [
+          {
+            "agency": "JMA",
+            "issuedAt": "2026-08-30T13:10:00.000Z",
+            "horizonHours": 48,
+            "steps": [
+              {
+                "horizonHours": 0,
+                "validAt": "2026-08-30T12:00:00.000Z",
+                "latitude": 31.1,
+                "longitude": 166,
+                "windMs": 18,
+                "category": "TS"
+              },
+              {
+                "horizonHours": 24,
+                "validAt": "2026-08-31T12:00:00.000Z",
+                "latitude": 35.2,
+                "longitude": 167.5,
+                "windMs": 20,
+                "category": "TS"
+              },
+              {
+                "horizonHours": 48,
+                "validAt": "2026-09-01T12:00:00.000Z",
+                "latitude": 45.2,
+                "longitude": 172.1,
+                "windMs": 23,
+                "category": "LOW"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "eventId": "typhoon:BANG-LANG",
+        "name": "Bang-lang",
+        "truthState": "OFFICIAL_FORECAST",
+        "officialAgencies": [
+          "JMA"
+        ],
+        "firstIssuedBy": "JMA",
+        "firstIssuedAt": "2026-08-30T12:50:00.000Z",
+        "revisions": [
+          {
+            "agency": "JMA",
+            "issuedAt": "2026-08-30T12:50:00.000Z",
+            "horizonHours": 48,
+            "steps": [
+              {
+                "horizonHours": 0,
+                "validAt": "2026-08-30T12:00:00.000Z",
+                "latitude": 34.5,
+                "longitude": 166.3,
+                "windMs": 23,
+                "category": "TS"
+              },
+              {
+                "horizonHours": 12,
+                "validAt": "2026-08-31T00:00:00.000Z",
+                "latitude": 35.6,
+                "longitude": 165.5,
+                "windMs": 20,
+                "category": "TS"
+              },
+              {
+                "horizonHours": 24,
+                "validAt": "2026-08-31T12:00:00.000Z",
+                "latitude": 38.4,
+                "longitude": 166.2,
+                "windMs": 23,
+                "category": "TS"
+              },
+              {
+                "horizonHours": 48,
+                "validAt": "2026-09-01T12:00:00.000Z",
+                "latitude": 52.4,
+                "longitude": 169.7,
+                "windMs": 20,
+                "category": "LOW"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "eventId": "typhoon:KARINA",
+        "name": "Karina",
+        "truthState": "OFFICIAL_FORECAST",
+        "officialAgencies": [
+          "NHC"
+        ],
+        "firstIssuedBy": "NHC",
+        "firstIssuedAt": "2026-08-30T09:00:00.000Z",
+        "revisions": [
+          {
+            "agency": "NHC",
+            "issuedAt": "2026-08-30T09:00:00.000Z",
+            "horizonHours": 0,
+            "steps": [
+              {
+                "horizonHours": 0,
+                "validAt": "2026-08-30T09:00:00.000Z",
+                "latitude": 17.3,
+                "longitude": -121.1,
+                "windMs": 36,
+                "category": "HU"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "eventId": "typhoon:LOWELL",
+        "name": "Lowell",
+        "truthState": "OFFICIAL_FORECAST",
+        "officialAgencies": [
+          "NHC"
+        ],
+        "firstIssuedBy": "NHC",
+        "firstIssuedAt": "2026-08-30T09:00:00.000Z",
+        "revisions": [
+          {
+            "agency": "NHC",
+            "issuedAt": "2026-08-30T09:00:00.000Z",
+            "horizonHours": 0,
+            "steps": [
+              {
+                "horizonHours": 0,
+                "validAt": "2026-08-30T09:00:00.000Z",
+                "latitude": 13.2,
+                "longitude": -139.1,
+                "windMs": 23.1,
+                "category": "TS"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

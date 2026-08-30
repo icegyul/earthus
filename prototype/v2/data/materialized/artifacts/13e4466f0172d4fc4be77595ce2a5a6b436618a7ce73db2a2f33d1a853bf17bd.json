@@ -1,0 +1,45 @@
+{
+  "artifactId": "ma_13e4466f0172d4fc4be77595ce2a5a6b436618a7ce73db2a2f33d1a853bf17bd",
+  "contentHash": "sha256:13e4466f0172d4fc4be77595ce2a5a6b436618a7ce73db2a2f33d1a853bf17bd",
+  "generatedAt": "2026-08-30T15:14:32.793Z",
+  "freshUntil": null,
+  "staleUntil": null,
+  "schemaVersion": "earthus.materialized.v5.2",
+  "productType": "GLOBAL_DIGEST",
+  "spatialScope": "GLOBAL",
+  "spatialKey": "GLOBAL",
+  "targetTime": "2026-08-30T14:25:00.000Z",
+  "policyVersion": "5.2.0",
+  "modelVersion": "earthus-digest-v1",
+  "dataRevision": "437d1a5779df2d19c8bd08319dc6e40058aca0747077a35842ffd2f39ce12d86",
+  "dependencyFingerprint": "6b8f2a7b785b56d002ec0dd2709450e5c3c98a8c863a42601a97a33d541ab157",
+  "truthState": "DERIVED",
+  "sourceRefs": [
+    "KMA_API_HUB_AWS",
+    "OPEN_METEO_GFS_ECMWF",
+    "KMA",
+    "JMA",
+    "NHC"
+  ],
+  "confidenceClass": "EVIDENCE_BOUND_SUMMARY",
+  "uncertaintyRef": null,
+  "shareScope": "PUBLIC",
+  "entitlementClass": null,
+  "payload": {
+    "activeEventCount": 4,
+    "changedRegionCount": 1,
+    "primaryEventIds": [
+      "typhoon:ETAU",
+      "typhoon:BANG-LANG",
+      "typhoon:KARINA",
+      "typhoon:LOWELL"
+    ],
+    "weatherArtifactRef": "ma_7f7e3e7df55437a6c67f9faf54748786680f2b5931a51bee66cfab1266bc618b",
+    "eventArtifactRef": "ma_39f9d245bf5f2c45e41652ddab41b87e09459a6d04428016012dabd7be6435f2",
+    "freshness": {
+      "observedAt": "2026-08-30T13:25:00.000Z",
+      "forecastAt": "2026-08-30T15:00:00.000Z",
+      "eventGeneratedAt": "2026-08-30T14:25:00.000Z"
+    }
+  }
+}

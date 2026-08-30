@@ -95,71 +95,23 @@ jobs:
           grep -F "seamClass:'RADIAL_ALPHA_FEATHER'" prototype/v2/js/polar-geographic-cap.js
           ! grep -F 'C.CircleGeometry' prototype/v2/js/polar-geographic-cap.js
 
-      - name: Refined actual trench contract
-        shell: bash
+      - name: V5.2 runtime economics contracts
         run: |
-          set -euo pipefail
-          grep -F 'ESRI_TOPOBATHY3D_SAMPLED_SEAFLOOR_MESH' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F "sourceId:'ESRI_WORLDELEVATION3D_TOPOBATHY3D'" prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'synthetic:false' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'verticalExaggeration:1' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'nx=81,ny=65,samplingLevel=11' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F "role='overview'" prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F "role==='underwater-detail'" prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F '__earthusV2UnderwaterBathymetryPrimitive' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'SOURCE_LUMINANCE_AND_SATURATION_GRADE_ONLY' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'NASA_GIBS_REFERENCE_BATHYMETRY_DRAPED_ON_ACTUAL_SAMPLED_GEOMETRY' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'hillshadeAlpha:underwater?.36:.16' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'targetMean:underwater?.18:.12' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'GeometryPipeline.computeNormal' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'flat:false' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'cull:false' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'deepestCoordinate' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'sampleTerrain(terrainProvider,samplingLevel,points)' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F 'sampleTerrainMostDetailed' prototype/v2/js/trench-bathymetry-mesh.js
+          node --test tools/earthus-v52/runtime-economics.test.mjs
+          node --test tools/earthus-v52/weather-typhoon-slice.test.mjs
+          node --test tools/earthus-v52/current-earth-png.test.mjs
+          node tools/earthus-v52/load-replay.mjs
 
-      - name: Camera-aware visual fidelity contract
+      - name: Canonical imagery and materialized browser entrypoints
         shell: bash
         run: |
           set -euo pipefail
-          grep -F "new URL('./js/visual-fidelity-controller.js', location.href)" prototype/v2/js/loading-ui.js
-          grep -F 'installWhenReady({ timeoutMs: 45000 })' prototype/v2/js/loading-ui.js
-          grep -F "import { TrenchBathymetryMeshRuntime }" prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'function shellAlpha' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'function shadowAlpha' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'maximumScreenSpaceError=1.25' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'function aimAtTrench' prototype/v2/js/visual-fidelity-controller.js
-          grep -F '78_000' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'function aimAtActualDeepest' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'function ensureUnderwaterDetail' prototype/v2/js/visual-fidelity-controller.js
-          grep -F "role:'underwater-detail'" prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'lonSpan:1.05,latSpan:.84,nx:129,ny:105,samplingLevel:13' prototype/v2/js/visual-fidelity-controller.js
-          grep -F '__earthusV2UnderwaterDetailMeta' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'scene.globe.show=false' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'detailPrimitive.show=true' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'trenchPrimitive.show=false' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'applyUnderwaterLight' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'underwaterLightDirection' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'new C.DirectionalLight' prototype/v2/js/visual-fidelity-controller.js
-
-      - name: Browser evidence contracts are strict
-        shell: bash
-        run: |
-          set -euo pipefail
-          grep -F 'gl.readPixels' tools/test_v2_real_living_earth_visual_readpixels.mjs
-          grep -F "SOURCE_LUMINANCE_AND_SATURATION_GRADE_ONLY" tools/test_v2_real_living_earth_visual_readpixels.mjs
-          grep -F 'grid?.nx>=81' tools/test_v2_real_living_earth_visual_readpixels.mjs
-          grep -F 'triangleCount>9000' tools/test_v2_real_living_earth_visual_readpixels.mjs
-          grep -F 'maximumScreenSpaceError' tools/test_v2_mountain_terrain_browser.mjs
-          grep -F 'visualReady' tools/test_v2_mountain_terrain_browser.mjs
-          grep -F 'visuallyStable' tools/test_v2_mountain_terrain_browser.mjs
-          ! grep -F 'assert.equal(state.runtime.tilesLoaded,true' tools/test_v2_mountain_terrain_browser.mjs
-          grep -F 'underwaterDetail?.grid?.nx>=129' tools/test_v2_underwater_terrain_browser.mjs
-          grep -F 'underwaterDetail?.grid?.ny>=105' tools/test_v2_underwater_terrain_browser.mjs
-          grep -F 'underwaterDetail?.spacing?.eastWestM<1000' tools/test_v2_underwater_terrain_browser.mjs
-          grep -F 'underwaterDetail?.triangleCount>25000' tools/test_v2_underwater_terrain_browser.mjs
-          grep -F 'appearanceToneMap?.hillshadeAlpha>=.35' tools/test_v2_underwater_terrain_browser.mjs
-          grep -F 'localEdgeMean' tools/test_v2_underwater_terrain_browser.mjs
+          node --check tools/test_v2_canonical_imagery_ownership.mjs
+          node --check tools/earthus-v52/materialized-earth-browser.mjs
+          grep -F "detailImageryLayer" prototype/v2/js/real-living-earth.js
+          ! grep -F "sessionDetailLayer" prototype/v2/js/visual-fidelity-controller.js
+          grep -F "materialized-earth-runtime.js" prototype/v2/js/loading-ui.js
+          grep -F "C1_MATERIALIZED_SHARED" prototype/v2/data/materialized/current.json
 
       - name: Lambda packaging and deployment helpers
         shell: bash

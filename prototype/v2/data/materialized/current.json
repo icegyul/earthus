@@ -1,0 +1,355 @@
+{
+  "schemaVersion": "earthus.materialized-current.v5.2",
+  "generatedAt": "2026-08-30T15:14:32.800Z",
+  "computeClass": "C1_MATERIALIZED_SHARED",
+  "shareScope": "PUBLIC",
+  "earthVersion": {
+    "earthVersion": "ev_ba7833a481e5ed2ef648655f",
+    "parentVersion": null,
+    "createdAt": "2026-08-30T14:25:00.000Z",
+    "rootManifestHash": "sha256:0307f3d5abea1ed1a1b1cff8e085df1f03b9751e52e42ad6b2eb3cb94e225f6c",
+    "artifacts": {
+      "GLOBAL/digest": "sha256:13e4466f0172d4fc4be77595ce2a5a6b436618a7ce73db2a2f33d1a853bf17bd",
+      "GLOBAL/typhoon-events": "sha256:39f9d245bf5f2c45e41652ddab41b87e09459a6d04428016012dabd7be6435f2",
+      "KR/weather": "sha256:7f7e3e7df55437a6c67f9faf54748786680f2b5931a51bee66cfab1266bc618b"
+    }
+  },
+  "artifactRefs": [
+    {
+      "productType": "GLOBAL_DIGEST",
+      "spatialKey": "GLOBAL",
+      "artifactId": "ma_13e4466f0172d4fc4be77595ce2a5a6b436618a7ce73db2a2f33d1a853bf17bd",
+      "contentHash": "sha256:13e4466f0172d4fc4be77595ce2a5a6b436618a7ce73db2a2f33d1a853bf17bd",
+      "path": "./artifacts/13e4466f0172d4fc4be77595ce2a5a6b436618a7ce73db2a2f33d1a853bf17bd.json"
+    },
+    {
+      "productType": "REGION_SNAPSHOT",
+      "spatialKey": "KR",
+      "artifactId": "ma_7f7e3e7df55437a6c67f9faf54748786680f2b5931a51bee66cfab1266bc618b",
+      "contentHash": "sha256:7f7e3e7df55437a6c67f9faf54748786680f2b5931a51bee66cfab1266bc618b",
+      "path": "./artifacts/7f7e3e7df55437a6c67f9faf54748786680f2b5931a51bee66cfab1266bc618b.json"
+    },
+    {
+      "productType": "EVENT_CAPSULE_SUMMARY",
+      "spatialKey": "TYPHOON",
+      "artifactId": "ma_39f9d245bf5f2c45e41652ddab41b87e09459a6d04428016012dabd7be6435f2",
+      "contentHash": "sha256:39f9d245bf5f2c45e41652ddab41b87e09459a6d04428016012dabd7be6435f2",
+      "path": "./artifacts/39f9d245bf5f2c45e41652ddab41b87e09459a6d04428016012dabd7be6435f2.json"
+    }
+  ],
+  "globalDigest": {
+    "artifactId": "ma_13e4466f0172d4fc4be77595ce2a5a6b436618a7ce73db2a2f33d1a853bf17bd",
+    "contentHash": "sha256:13e4466f0172d4fc4be77595ce2a5a6b436618a7ce73db2a2f33d1a853bf17bd",
+    "generatedAt": "2026-08-30T15:14:32.793Z",
+    "freshUntil": null,
+    "staleUntil": null,
+    "schemaVersion": "earthus.materialized.v5.2",
+    "productType": "GLOBAL_DIGEST",
+    "spatialScope": "GLOBAL",
+    "spatialKey": "GLOBAL",
+    "targetTime": "2026-08-30T14:25:00.000Z",
+    "policyVersion": "5.2.0",
+    "modelVersion": "earthus-digest-v1",
+    "dataRevision": "437d1a5779df2d19c8bd08319dc6e40058aca0747077a35842ffd2f39ce12d86",
+    "dependencyFingerprint": "6b8f2a7b785b56d002ec0dd2709450e5c3c98a8c863a42601a97a33d541ab157",
+    "truthState": "DERIVED",
+    "sourceRefs": [
+      "KMA_API_HUB_AWS",
+      "OPEN_METEO_GFS_ECMWF",
+      "KMA",
+      "JMA",
+      "NHC"
+    ],
+    "confidenceClass": "EVIDENCE_BOUND_SUMMARY",
+    "uncertaintyRef": null,
+    "shareScope": "PUBLIC",
+    "entitlementClass": null,
+    "payload": {
+      "activeEventCount": 4,
+      "changedRegionCount": 1,
+      "primaryEventIds": [
+        "typhoon:ETAU",
+        "typhoon:BANG-LANG",
+        "typhoon:KARINA",
+        "typhoon:LOWELL"
+      ],
+      "weatherArtifactRef": "ma_7f7e3e7df55437a6c67f9faf54748786680f2b5931a51bee66cfab1266bc618b",
+      "eventArtifactRef": "ma_39f9d245bf5f2c45e41652ddab41b87e09459a6d04428016012dabd7be6435f2",
+      "freshness": {
+        "observedAt": "2026-08-30T13:25:00.000Z",
+        "forecastAt": "2026-08-30T15:00:00.000Z",
+        "eventGeneratedAt": "2026-08-30T14:25:00.000Z"
+      }
+    }
+  },
+  "regionSnapshot": {
+    "artifactId": "ma_7f7e3e7df55437a6c67f9faf54748786680f2b5931a51bee66cfab1266bc618b",
+    "contentHash": "sha256:7f7e3e7df55437a6c67f9faf54748786680f2b5931a51bee66cfab1266bc618b",
+    "generatedAt": "2026-08-30T15:14:32.792Z",
+    "freshUntil": null,
+    "staleUntil": null,
+    "schemaVersion": "earthus.materialized.v5.2",
+    "productType": "REGION_SNAPSHOT",
+    "spatialScope": "COUNTRY",
+    "spatialKey": "KR",
+    "targetTime": "2026-08-30T13:25:00.000Z",
+    "policyVersion": "5.2.0",
+    "modelVersion": "earthus-weather-cache-v1",
+    "dataRevision": "eae1e3cfdd5ef4e3e801d1916c904e0945bd4ae6d182b31b02088fd81d975730",
+    "dependencyFingerprint": "4b931ae00f7423db2d3d2aa4719883a978224f834afccfee821b382215f79cc4",
+    "truthState": "OBSERVED",
+    "sourceRefs": [
+      "KMA_API_HUB_AWS",
+      "OPEN_METEO_GFS_ECMWF"
+    ],
+    "confidenceClass": "SOURCE_REPORTED",
+    "uncertaintyRef": null,
+    "shareScope": "PUBLIC",
+    "entitlementClass": null,
+    "payload": {
+      "observation": {
+        "truthState": "OBSERVED",
+        "source": "기상청 지상관측 (API허브)",
+        "observedAt": "2026-08-30T13:25:00.000Z",
+        "stationCount": 97,
+        "positionedStationCount": 97
+      },
+      "forecast": {
+        "truthState": "MODEL_SIGNAL",
+        "source": "Open-Meteo (GFS·ECMWF 모델 예보)",
+        "validAt": "2026-08-30T15:00:00.000Z",
+        "grid": {
+          "nx": 51,
+          "ny": 31,
+          "steps": 21
+        },
+        "units": {
+          "mslp": "hPa",
+          "uv": "m/s"
+        }
+      }
+    }
+  },
+  "eventCapsule": {
+    "artifactId": "ma_39f9d245bf5f2c45e41652ddab41b87e09459a6d04428016012dabd7be6435f2",
+    "contentHash": "sha256:39f9d245bf5f2c45e41652ddab41b87e09459a6d04428016012dabd7be6435f2",
+    "generatedAt": "2026-08-30T15:14:32.793Z",
+    "freshUntil": null,
+    "staleUntil": null,
+    "schemaVersion": "earthus.materialized.v5.2",
+    "productType": "EVENT_CAPSULE_SUMMARY",
+    "spatialScope": "GLOBAL",
+    "spatialKey": "TYPHOON",
+    "targetTime": "2026-08-30T14:25:00.000Z",
+    "policyVersion": "5.2.0",
+    "modelVersion": "official-agency-cache-v1",
+    "dataRevision": "17b32f8e34250d539b0ef83ad571224375bf9344083d030dd25590c5e5f2c374",
+    "dependencyFingerprint": "c70873baf1b299bb902e029bf9cd04299b766f7b9c1c898f431a87211e1c3e9e",
+    "truthState": "OFFICIAL_FORECAST",
+    "sourceRefs": [
+      "KMA",
+      "JMA",
+      "NHC"
+    ],
+    "confidenceClass": "AGENCY_REPORTED",
+    "uncertaintyRef": null,
+    "shareScope": "PUBLIC",
+    "entitlementClass": null,
+    "payload": {
+      "generatedAt": "2026-08-30T14:25:00.000Z",
+      "source": "기상청(KMA) · 일본 기상청(JMA) · 미국 NHC",
+      "events": [
+        {
+          "eventId": "typhoon:ETAU",
+          "name": "Etau",
+          "truthState": "OFFICIAL_FORECAST",
+          "officialAgencies": [
+            "JMA"
+          ],
+          "firstIssuedBy": "JMA",
+          "firstIssuedAt": "2026-08-30T13:10:00.000Z",
+          "revisions": [
+            {
+              "agency": "JMA",
+              "issuedAt": "2026-08-30T13:10:00.000Z",
+              "horizonHours": 48,
+              "steps": [
+                {
+                  "horizonHours": 0,
+                  "validAt": "2026-08-30T12:00:00.000Z",
+                  "latitude": 31.1,
+                  "longitude": 166,
+                  "windMs": 18,
+                  "category": "TS"
+                },
+                {
+                  "horizonHours": 24,
+                  "validAt": "2026-08-31T12:00:00.000Z",
+                  "latitude": 35.2,
+                  "longitude": 167.5,
+                  "windMs": 20,
+                  "category": "TS"
+                },
+                {
+                  "horizonHours": 48,
+                  "validAt": "2026-09-01T12:00:00.000Z",
+                  "latitude": 45.2,
+                  "longitude": 172.1,
+                  "windMs": 23,
+                  "category": "LOW"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "eventId": "typhoon:BANG-LANG",
+          "name": "Bang-lang",
+          "truthState": "OFFICIAL_FORECAST",
+          "officialAgencies": [
+            "JMA"
+          ],
+          "firstIssuedBy": "JMA",
+          "firstIssuedAt": "2026-08-30T12:50:00.000Z",
+          "revisions": [
+            {
+              "agency": "JMA",
+              "issuedAt": "2026-08-30T12:50:00.000Z",
+              "horizonHours": 48,
+              "steps": [
+                {
+                  "horizonHours": 0,
+                  "validAt": "2026-08-30T12:00:00.000Z",
+                  "latitude": 34.5,
+                  "longitude": 166.3,
+                  "windMs": 23,
+                  "category": "TS"
+                },
+                {
+                  "horizonHours": 12,
+                  "validAt": "2026-08-31T00:00:00.000Z",
+                  "latitude": 35.6,
+                  "longitude": 165.5,
+                  "windMs": 20,
+                  "category": "TS"
+                },
+                {
+                  "horizonHours": 24,
+                  "validAt": "2026-08-31T12:00:00.000Z",
+                  "latitude": 38.4,
+                  "longitude": 166.2,
+                  "windMs": 23,
+                  "category": "TS"
+                },
+                {
+                  "horizonHours": 48,
+                  "validAt": "2026-09-01T12:00:00.000Z",
+                  "latitude": 52.4,
+                  "longitude": 169.7,
+                  "windMs": 20,
+                  "category": "LOW"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "eventId": "typhoon:KARINA",
+          "name": "Karina",
+          "truthState": "OFFICIAL_FORECAST",
+          "officialAgencies": [
+            "NHC"
+          ],
+          "firstIssuedBy": "NHC",
+          "firstIssuedAt": "2026-08-30T09:00:00.000Z",
+          "revisions": [
+            {
+              "agency": "NHC",
+              "issuedAt": "2026-08-30T09:00:00.000Z",
+              "horizonHours": 0,
+              "steps": [
+                {
+                  "horizonHours": 0,
+                  "validAt": "2026-08-30T09:00:00.000Z",
+                  "latitude": 17.3,
+                  "longitude": -121.1,
+                  "windMs": 36,
+                  "category": "HU"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "eventId": "typhoon:LOWELL",
+          "name": "Lowell",
+          "truthState": "OFFICIAL_FORECAST",
+          "officialAgencies": [
+            "NHC"
+          ],
+          "firstIssuedBy": "NHC",
+          "firstIssuedAt": "2026-08-30T09:00:00.000Z",
+          "revisions": [
+            {
+              "agency": "NHC",
+              "issuedAt": "2026-08-30T09:00:00.000Z",
+              "horizonHours": 0,
+              "steps": [
+                {
+                  "horizonHours": 0,
+                  "validAt": "2026-08-30T09:00:00.000Z",
+                  "latitude": 13.2,
+                  "longitude": -139.1,
+                  "windMs": 23.1,
+                  "category": "TS"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "telemetry": {
+    "events": 2,
+    "dropped": 0,
+    "leaders": 0,
+    "followers": 0,
+    "executions": 1
+  },
+  "directInfraCost": {
+    "status": "INSUFFICIENT_RATE_DATA",
+    "total": null,
+    "currency": null,
+    "rateVersion": "UNCONFIGURED",
+    "missingRates": [
+      "storageOp",
+      "providerApiUnit"
+    ],
+    "components": {
+      "cpuCoreSeconds": 0,
+      "gpuSeconds": 0,
+      "memoryGbSeconds": 0,
+      "storageGbHours": 0,
+      "storageOps": null,
+      "egressGb": 0,
+      "providerApiUnits": null,
+      "llmInputTokens": 0,
+      "llmOutputTokens": 0
+    }
+  },
+  "sourceReceipts": [
+    {
+      "id": "kmaAws",
+      "url": "https://earthus-cache-kr.s3.us-east-2.amazonaws.com/wind/kma-aws.json"
+    },
+    {
+      "id": "fxEa",
+      "url": "https://earthus-cache-kr.s3.us-east-2.amazonaws.com/wind/fx-ea.json"
+    },
+    {
+      "id": "typhoonOfficial",
+      "url": "https://earthus-cache-kr.s3.us-east-2.amazonaws.com/events/typhoon-official.json"
+    }
+  ]
+}

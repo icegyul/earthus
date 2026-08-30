@@ -50,8 +50,13 @@ async function getImsSnapshot() {
     });
     const imageResponse = await sourceFetch(`${IMS_SERVICE}/exportImage?${params}`);
     const bytes = Buffer.from(await imageResponse.arrayBuffer());
-    assert.ok(bytes.length > 10_000, `IMS_IMAGE_TOO_SMALL:${bytes.length}`);
     assert.deepEqual([...bytes.subarray(0,4)], [0x89,0x50,0x4e,0x47], 'IMS_NOT_PNG');
+    // Sparse transparent IMS rasters compress well below 10 KiB on quiet days.
+    // The former byte-count gate rejected a valid 2048x1024 PNG and made the
+    // Earthus cache shim return 502 even though every NOAA request succeeded.
+    assert.ok(bytes.length >= 1024, `IMS_IMAGE_TRUNCATED:${bytes.length}`);
+    assert.equal(bytes.readUInt32BE(16), 2048, 'IMS_IMAGE_WIDTH_MISMATCH');
+    assert.equal(bytes.readUInt32BE(20), 1024, 'IMS_IMAGE_HEIGHT_MISMATCH');
     const sha256 = createHash('sha256').update(bytes).digest('hex');
     return {
       bytes,
@@ -151,7 +156,8 @@ try {
       viewerCount:document.querySelectorAll('.cesium-viewer').length,
       canvasCount:document.querySelectorAll('#g .cesium-widget canvas').length,
       truthState:current?.truthState?.(), validAt:current?.validAt?.(), scope:current?.scope?.(), receipt:current?.receipt?.(), diagnostics:current?.diagnostics?.(),
-      layerShow:layer?.show, layerAlpha:layer?.alpha, providerType:layer?.imageryProvider?.constructor?.name || null,
+      layerShow:layer?.show, layerAlpha:layer?.alpha,
+      providerIsSingleTile:layer?.imageryProvider instanceof Cesium.SingleTileImageryProvider,
       intelScope:intel?.context?.viewScope || null, terrainTruth:window.__earthusV2?.realEarth?.terrainTruth?.() || null,
     };
   });
@@ -162,7 +168,9 @@ try {
   assert.equal(state.intelScope, 'GLOBAL');
   assert.equal(state.layerShow, true);
   assert.ok(state.layerAlpha >= .4 && state.layerAlpha <= .65, `layerAlpha:${state.layerAlpha}`);
-  assert.equal(state.providerType, 'SingleTileImageryProvider');
+  // Cesium's production bundle minifies constructor names (for example `y_`).
+  // Assert the runtime contract instead of a build-dependent class name.
+  assert.equal(state.providerIsSingleTile, true);
   assert.equal(evidence.upstreamBrowserRequests.length, 0, 'BROWSER_DIRECT_PROVIDER_ACCESS_FORBIDDEN');
   assert.ok(evidence.browserCacheResponses.some(r => r.status === 200 && /snow-ice\.png/.test(r.url)), 'EARTHUS_CACHE_IMAGE_RESPONSE_MISSING');
   assert.ok(sourceEvidence.some(r => r.status === 200 && /exportImage/i.test(r.url)), 'IMS_EXPORT_IMAGE_SOURCE_MISSING');

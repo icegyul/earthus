@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "earthus.provider-receipt.v1",
+  "source": "NOAA_USNIC_IMS_1KM",
+  "provider": "NOAA / U.S. National Ice Center",
+  "product": "Interactive Multisensor Snow and Ice Mapping System (IMS) 1 km",
+  "truthState": "OBSERVED",
+  "semanticMeaning": "SNOW_ICE_EXTENT_NOT_DEPTH",
+  "spatialCoverage": "NORTHERN_HEMISPHERE_0_TO_90N",
+  "nominalResolutionM": 1000,
+  "updateCadence": "DAILY_00UTC_SERVICE",
+  "validAt": "2026-08-29T22:23:09.000Z",
+  "retrievedAt": "2026-08-30T15:34:16.958Z",
+  "sourceUrl": "https://mapservices.weather.noaa.gov/raster/rest/services/obs/usnic_ims_snow_ice_1km/ImageServer",
+  "rasterFunction": "rft_usnic_ims_1km",
+  "sha256": "99400c40b189b3e21cb2bf49e4c4da264856006436e8c74ab33f17d16173ab79",
+  "bytes": 8222,
+  "dimensions": {
+    "width": 2048,
+    "height": 1024
+  },
+  "rights": {
+    "credit": "National Oceanic & Atmospheric Administration, U.S. National Ice Center, National Weather Service",
+    "sourcePublic": true
+  },
+  "caveat": "Context layer only; not snow depth/SWE and not an emergency decision surface."
+}

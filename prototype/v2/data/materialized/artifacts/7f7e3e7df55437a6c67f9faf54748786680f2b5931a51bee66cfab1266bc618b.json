@@ -1,0 +1,48 @@
+{
+  "artifactId": "ma_7f7e3e7df55437a6c67f9faf54748786680f2b5931a51bee66cfab1266bc618b",
+  "contentHash": "sha256:7f7e3e7df55437a6c67f9faf54748786680f2b5931a51bee66cfab1266bc618b",
+  "generatedAt": "2026-08-30T15:14:32.792Z",
+  "freshUntil": null,
+  "staleUntil": null,
+  "schemaVersion": "earthus.materialized.v5.2",
+  "productType": "REGION_SNAPSHOT",
+  "spatialScope": "COUNTRY",
+  "spatialKey": "KR",
+  "targetTime": "2026-08-30T13:25:00.000Z",
+  "policyVersion": "5.2.0",
+  "modelVersion": "earthus-weather-cache-v1",
+  "dataRevision": "eae1e3cfdd5ef4e3e801d1916c904e0945bd4ae6d182b31b02088fd81d975730",
+  "dependencyFingerprint": "4b931ae00f7423db2d3d2aa4719883a978224f834afccfee821b382215f79cc4",
+  "truthState": "OBSERVED",
+  "sourceRefs": [
+    "KMA_API_HUB_AWS",
+    "OPEN_METEO_GFS_ECMWF"
+  ],
+  "confidenceClass": "SOURCE_REPORTED",
+  "uncertaintyRef": null,
+  "shareScope": "PUBLIC",
+  "entitlementClass": null,
+  "payload": {
+    "observation": {
+      "truthState": "OBSERVED",
+      "source": "기상청 지상관측 (API허브)",
+      "observedAt": "2026-08-30T13:25:00.000Z",
+      "stationCount": 97,
+      "positionedStationCount": 97
+    },
+    "forecast": {
+      "truthState": "MODEL_SIGNAL",
+      "source": "Open-Meteo (GFS·ECMWF 모델 예보)",
+      "validAt": "2026-08-30T15:00:00.000Z",
+      "grid": {
+        "nx": 51,
+        "ny": 31,
+        "steps": 21
+      },
+      "units": {
+        "mslp": "hPa",
+        "uv": "m/s"
+      }
+    }
+  }
+}

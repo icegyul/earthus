@@ -13,6 +13,7 @@
 
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { createHash } from 'node:crypto';
+import { validateImsPng } from './png-contract.mjs';
 
 const SERVICE = 'https://mapservices.weather.noaa.gov/raster/rest/services/obs/usnic_ims_snow_ice_1km/ImageServer';
 const RASTER_FUNCTION = 'rft_usnic_ims_1km';
@@ -79,9 +80,7 @@ export async function fetchImsSnapshot() {
   const response = await fetch(url, { headers: { 'User-Agent': USER_AGENT }, cache: 'no-store' });
   if (!response.ok) throw new Error(`IMS_EXPORT_${response.status}`);
   const bytes = Buffer.from(await response.arrayBuffer());
-  if (bytes.length < 10_000 || bytes[0] !== 0x89 || bytes[1] !== 0x50 || bytes[2] !== 0x4e || bytes[3] !== 0x47) {
-    throw new Error(`IMS_EXPORT_INVALID_PNG:${bytes.length}`);
-  }
+  validateImsPng(bytes);
 
   const retrievedAt = new Date().toISOString();
   const sha256 = createHash('sha256').update(bytes).digest('hex');

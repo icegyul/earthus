@@ -30,6 +30,7 @@
   let fidelityStarted = false;
   let intelligenceStarted = false;
   let seasonalStarted = false;
+  let materializedStarted = false;
 
   const $ = id => document.getElementById(id);
   const stageText = stage => STAGE_KO[stage] || String(stage || '자료 처리 중…');
@@ -64,6 +65,16 @@
     });
   }
 
+  function startMaterializedEarth() {
+    if (materializedStarted) return;
+    materializedStarted = true;
+    const url = new URL('./js/materialized-earth-runtime.js?v=20260831-v52', location.href).href;
+    import(url).catch(error => {
+      materializedStarted = false;
+      console.warn('[v2/materialized-earth]', error?.message || error);
+    });
+  }
+
   function setBar(root, task) {
     const bar = root?.querySelector('[data-task-bar]');
     if (!root || !bar) return;
@@ -91,6 +102,7 @@
       startVisualFidelity();
       startIntelligence();
       startSeasonalCurrentEarth();
+      startMaterializedEarth();
       setTimeout(() => root.classList.add('gone'), 250);
     }
   }

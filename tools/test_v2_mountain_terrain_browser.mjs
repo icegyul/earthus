@@ -1,38 +1,619 @@
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import http from 'node:http';
-import path from 'node:path';
-import {fileURLToPath,pathToFileURL} from 'node:url';
-import {PNG} from 'pngjs';
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import http from "node:http";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { PNG } from "pngjs";
 
-const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const prototypeRoot=path.join(root,'prototype');
-const out=path.resolve(process.env.EARTHUS_V2_MOUNTAIN_OUTPUT||path.join(root,'output/v2-mountain-terrain-visual'));
-const moduleRef=process.env.EARTHUS_PLAYWRIGHT_MODULE;
-const {chromium}=moduleRef?await import(pathToFileURL(path.resolve(moduleRef)).href):await import('playwright');
-const CLOUD='https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
-const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json','.css':'text/css; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp'};
-const VIEWPORT={width:1280,height:800};
-const SOKCHO={lon:128.6019575219,lat:38.1906064639};
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const prototypeRoot = path.join(root, "prototype");
+const out = path.resolve(
+  process.env.EARTHUS_V2_MOUNTAIN_OUTPUT ||
+    path.join(root, "output/v2-mountain-terrain-visual"),
+);
+const moduleRef = process.env.EARTHUS_PLAYWRIGHT_MODULE;
+const { chromium } = moduleRef
+  ? await import(pathToFileURL(path.resolve(moduleRef)).href)
+  : await import("playwright");
+const CLOUD = "https://earthus-cache-kr.s3.us-east-2.amazonaws.com";
+const MIME = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".json": "application/json",
+  ".css": "text/css; charset=utf-8",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+};
+const VIEWPORT = { width: 1280, height: 800 };
+const SOKCHO = { lon: 128.6019575219, lat: 38.1906064639 };
 
-function server(){return http.createServer(async(req,res)=>{let p;try{p=decodeURIComponent(new URL(req.url,'http://x').pathname)}catch{res.writeHead(400).end();return}if(p.startsWith('/clouds/')){try{const r=await fetch(CLOUD+p,{cache:'no-store'}),b=Buffer.from(await r.arrayBuffer());res.writeHead(r.status,{'Content-Type':r.headers.get('content-type')||'application/octet-stream','Access-Control-Allow-Origin':'*','Cache-Control':'no-store'}).end(b)}catch(e){res.writeHead(502).end(String(e))}return}if(p==='/'||p==='/v2'||p==='/v2/')p='/v2/index.html';const f=path.resolve(prototypeRoot,'.'+p);if(!f.startsWith(prototypeRoot+path.sep)){res.writeHead(403).end();return}fs.readFile(f,(e,b)=>e?res.writeHead(404).end():res.writeHead(200,{'Content-Type':MIME[path.extname(f)]||'application/octet-stream','Cache-Control':'no-store','Access-Control-Allow-Origin':'*'}).end(b))})}
-async function wait(page,fn,ms=70000){const end=Date.now()+ms;while(Date.now()<end){try{if(await page.evaluate(fn))return true}catch{}await page.waitForTimeout(180)}throw new Error('PVR01A_WAIT_TIMEOUT')}
-async function canvasPixels(page){const b64=await page.evaluate(()=>{const v=window.__earthusV2?.viewer,s=v?.scene,c=s?.canvas;if(!v||!s||!c)throw new Error('CESIUM_CANVAS_MISSING');globalThis.__earthusV2VisualFidelityController?.update?.();s.requestRender();s.render();const gl=s.context?._gl,w=gl?.drawingBufferWidth,h=gl?.drawingBufferHeight;if(!(w>0&&h>0))throw new Error(`CESIUM_GL_SIZE:${w}x${h}`);const raw=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,raw);const flipped=new Uint8ClampedArray(raw.length),row=w*4;for(let y=0;y<h;y++)flipped.set(raw.subarray((h-1-y)*row,(h-y)*row),y*row);const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d');if(!cx)throw new Error('FRAMEBUFFER_2D_CONTEXT_MISSING');cx.putImageData(new ImageData(flipped,w,h),0,0);return cv.toDataURL('image/png').split(',')[1]});return Buffer.from(b64,'base64')}
-function metrics(buf){const p=PNG.sync.read(buf),d=p.data,L=(x,y)=>{const i=(y*p.width+x)*4;return(.2126*d[i]+.7152*d[i+1]+.0722*d[i+2])/255};let n=0,sum=0,sum2=0,dark=0,chroma=0,edge=0,edgeN=0;const vals=[],x0=Math.floor(p.width*.08),x1=Math.floor(p.width*.92),y0=Math.floor(p.height*.08),y1=Math.floor(p.height*.92);for(let y=y0;y<y1;y+=2)for(let x=x0;x<x1;x+=2){const i=(y*p.width+x)*4,l=L(x,y),r=d[i]/255,g=d[i+1]/255,b=d[i+2]/255;n++;sum+=l;sum2+=l*l;vals.push(l);chroma+=Math.max(r,g,b)-Math.min(r,g,b);if(l<.02)dark++;if(x+4<x1&&y+4<y1){edge+=(Math.abs(l-L(x+4,y))+Math.abs(l-L(x,y+4)))*.5;edgeN++}}vals.sort((a,b)=>a-b);const cells=[];for(let row=0;row<3;row++)for(let col=0;col<4;col++){const xa=Math.floor(x0+(x1-x0)*col/4),xb=Math.floor(x0+(x1-x0)*(col+1)/4),ya=Math.floor(y0+(y1-y0)*row/3),yb=Math.floor(y0+(y1-y0)*(row+1)/3);let e=0,en=0;for(let y=ya;y+4<yb;y+=2)for(let x=xa;x+4<xb;x+=2){const l=L(x,y);e+=(Math.abs(l-L(x+4,y))+Math.abs(l-L(x,y+4)))*.5;en++}cells.push(e/Math.max(1,en))}const mean=sum/n,std=Math.sqrt(Math.max(0,sum2/n-mean*mean)),p10=vals[Math.floor(vals.length*.1)]||0,p90=vals[Math.floor(vals.length*.9)]||0,texturedCellCount=cells.filter(v=>v>.004).length;return{width:p.width,height:p.height,mean,std,range:p90-p10,darkRatio:dark/n,chromaMean:chroma/n,localEdgeMean:edge/Math.max(1,edgeN),texturedCellCount,texturedCellRatio:texturedCellCount/cells.length,cellEdgeMeans:cells}}
-const ready={global:m=>m.mean>.015&&m.std>.045&&m.range>.13&&m.chromaMean>.02&&m.localEdgeMean>.002,regional:m=>m.mean>.02&&m.std>.04&&m.range>.10&&m.chromaMean>.02&&m.localEdgeMean>.003,close:m=>m.mean>.025&&m.std>.045&&m.range>.11&&m.chromaMean>.035&&m.localEdgeMean>.006&&m.darkRatio<.78&&m.texturedCellCount>=6,coast:m=>m.mean>.02&&m.std>.035&&m.range>.09&&m.chromaMean>.025&&m.localEdgeMean>.004&&m.texturedCellCount>=5};
-async function waitTiles(page,{minimumMs=800,timeoutMs=12000}={}){const start=Date.now();let streak=0;while(Date.now()-start<timeoutMs){await page.evaluate(()=>{globalThis.__earthusV2VisualFidelityController?.update?.();window.__earthusV2?.viewer?.scene?.requestRender?.()});await page.waitForTimeout(260);const loaded=await page.evaluate(()=>window.__earthusV2?.viewer?.scene?.globe?.tilesLoaded===true);streak=loaded?streak+1:0;if(Date.now()-start>=minimumMs&&streak>=3){await page.waitForTimeout(500);return true}}return false}
-async function settle(page,gate,{minimumMs=2500,requireTiles=false}={}){await page.waitForTimeout(minimumMs);const tilesReady=requireTiles?await waitTiles(page,{minimumMs:700,timeoutMs:12000}):true;if(requireTiles&&!tilesReady)await page.waitForTimeout(2500);const buf=await canvasPixels(page),m=metrics(buf);return{settled:gate(m),tilesReady,buf,metrics:m}}
-async function runtimeState(page){return page.evaluate(()=>{const v=window.__earthusV2.viewer,p=v.camera.positionCartographic,g=v.scene.globe,r=window.__earthusV2.realEarth;return{terrain:r.terrainTruth(),cameraHeight:p.height,longitudeDeg:Cesium.Math.toDegrees(p.longitude),latitudeDeg:Cesium.Math.toDegrees(p.latitude),pitchDeg:Cesium.Math.toDegrees(v.camera.pitch),maximumScreenSpaceError:g.maximumScreenSpaceError,preloadSiblings:g.preloadSiblings,tilesLoaded:g.tilesLoaded,badge:document.getElementById('earthusV2RealSources')?.textContent||null}})}
-async function setNadir(page,lon,lat,height){await page.evaluate(({lon,lat,height})=>{const v=window.__earthusV2.viewer;v.camera.cancelFlight?.();v.camera.setView({destination:Cesium.Cartesian3.fromDegrees(lon,lat,height),orientation:{heading:0,pitch:Cesium.Math.toRadians(-90),roll:0}});globalThis.__earthusV2VisualFidelityController?.update?.();v.scene.requestRender()},{lon,lat,height})}
-async function lookAt(page,{destination,target}){return page.evaluate(({destination,target})=>{const v=window.__earthusV2.viewer,C=Cesium,d=C.Cartesian3.fromDegrees(destination.lon,destination.lat,destination.height),t=C.Cartesian3.fromDegrees(target.lon,target.lat,target.height),direction=C.Cartesian3.normalize(C.Cartesian3.subtract(t,d,new C.Cartesian3()),new C.Cartesian3()),surfaceUp=C.Ellipsoid.WGS84.geodeticSurfaceNormal(d,new C.Cartesian3()),right=C.Cartesian3.normalize(C.Cartesian3.cross(direction,surfaceUp,new C.Cartesian3()),new C.Cartesian3()),up=C.Cartesian3.normalize(C.Cartesian3.cross(right,direction,new C.Cartesian3()),new C.Cartesian3());v.camera.cancelFlight?.();v.camera.setView({destination:d,orientation:{direction,up}});globalThis.__earthusV2VisualFidelityController?.update?.();v.scene.requestRender();const screen=C.SceneTransforms.worldToWindowCoordinates(v.scene,t);return screen?{x:screen.x,y:screen.y}:null},{destination,target})}
-async function sampleGrid(page,{lon0,lat0,dx,dy,nx=9,ny=9}){return page.evaluate(async q=>{const C=Cesium,v=window.__earthusV2.viewer,provider=v.terrainProvider,makePoints=()=>{const points=[];for(let y=0;y<q.ny;y++)for(let x=0;x<q.nx;x++)points.push(C.Cartographic.fromDegrees(q.lon0+q.dx*x,q.lat0+q.dy*y));return points},bounded=(promise,ms)=>new Promise((resolve,reject)=>{let settled=false;const timer=setTimeout(()=>{if(!settled){settled=true;reject(new Error('TERRAIN_SAMPLE_TIMEOUT'))}},ms);Promise.resolve(promise).then(value=>{if(settled)return;settled=true;clearTimeout(timer);resolve(value)},error=>{if(settled)return;settled=true;clearTimeout(timer);reject(error)})});let sampled=null;if(C.sampleTerrainMostDetailed)try{sampled=await bounded(C.sampleTerrainMostDetailed(provider,makePoints()),12000)}catch{}if(!sampled&&C.sampleTerrain)try{sampled=await bounded(C.sampleTerrain(provider,12,makePoints()),12000)}catch{}const valid=(sampled||[]).filter(p=>Number.isFinite(Number(p.height))),hs=valid.map(p=>Number(p.height));if(!valid.length)throw new Error('TERRAIN_SAMPLE_MISSING');const highest=valid.reduce((a,b)=>Number(b.height)>Number(a.height)?b:a,valid[0]),lowest=valid.reduce((a,b)=>Number(b.height)<Number(a.height)?b:a,valid[0]);return{sampleCount:valid.length,minHeightM:Math.min(...hs),maxHeightM:Math.max(...hs),reliefM:Math.max(...hs)-Math.min(...hs),highest:{lon:C.Math.toDegrees(highest.longitude),lat:C.Math.toDegrees(highest.latitude),height:Number(highest.height)},lowest:{lon:C.Math.toDegrees(lowest.longitude),lat:C.Math.toDegrees(lowest.latitude),height:Number(lowest.height)}}},{lon0,lat0,dx,dy,nx,ny})}
-async function captureView(page,state,{name,gate,minMs=3500,requireTiles=false}){console.log(`PVR01A CAPTURE ${name}`);const result=await settle(page,gate,{minimumMs:minMs,requireTiles});if(result.buf)fs.writeFileSync(path.join(out,`${name}.png`),result.buf);const runtime=await runtimeState(page),meta={name,settled:result.settled,tilesReady:result.tilesReady,metrics:result.metrics,runtime,url:page.url(),branch:process.env.GITHUB_REF_NAME||null,head:process.env.GITHUB_SHA||null,timestamp:new Date().toISOString(),provider:runtime.terrain,truthState:runtime.terrain,qualityTier:'PVR-01A_BROWSER_ACCEPTANCE',browser:'Chromium / Playwright WebGL framebuffer',viewport:VIEWPORT};state.views[name]=meta;assert.equal(runtime.terrain,'ESRI_TERRAIN3D',`${name}:terrain:${runtime.terrain}`);assert.equal(result.settled,true,`${name}:visual gate failed:${JSON.stringify(result.metrics)}`);return meta}
+function server() {
+  return http.createServer(async (req, res) => {
+    let p;
+    try {
+      p = decodeURIComponent(new URL(req.url, "http://x").pathname);
+    } catch {
+      res.writeHead(400).end();
+      return;
+    }
+    if (p.startsWith("/clouds/")) {
+      try {
+        const r = await fetch(CLOUD + p, { cache: "no-store" }),
+          b = Buffer.from(await r.arrayBuffer());
+        res
+          .writeHead(r.status, {
+            "Content-Type":
+              r.headers.get("content-type") || "application/octet-stream",
+            "Access-Control-Allow-Origin": "*",
+            "Cache-Control": "no-store",
+          })
+          .end(b);
+      } catch (e) {
+        res.writeHead(502).end(String(e));
+      }
+      return;
+    }
+    if (p === "/" || p === "/v2" || p === "/v2/") p = "/v2/index.html";
+    const f = path.resolve(prototypeRoot, "." + p);
+    if (!f.startsWith(prototypeRoot + path.sep)) {
+      res.writeHead(403).end();
+      return;
+    }
+    fs.readFile(f, (e, b) =>
+      e
+        ? res.writeHead(404).end()
+        : res
+            .writeHead(200, {
+              "Content-Type":
+                MIME[path.extname(f)] || "application/octet-stream",
+              "Cache-Control": "no-store",
+              "Access-Control-Allow-Origin": "*",
+            })
+            .end(b),
+    );
+  });
+}
+async function wait(page, fn, ms = 70000) {
+  const end = Date.now() + ms;
+  while (Date.now() < end) {
+    try {
+      if (await page.evaluate(fn)) return true;
+    } catch {}
+    await page.waitForTimeout(180);
+  }
+  throw new Error("PVR01A_WAIT_TIMEOUT");
+}
+async function canvasPixels(page) {
+  const b64 = await page.evaluate(() => {
+    const v = window.__earthusV2?.viewer,
+      s = v?.scene,
+      c = s?.canvas;
+    if (!v || !s || !c) throw new Error("CESIUM_CANVAS_MISSING");
+    globalThis.__earthusV2VisualFidelityController?.update?.();
+    s.requestRender();
+    s.render();
+    const gl = s.context?._gl,
+      w = gl?.drawingBufferWidth,
+      h = gl?.drawingBufferHeight;
+    if (!(w > 0 && h > 0)) throw new Error(`CESIUM_GL_SIZE:${w}x${h}`);
+    const raw = new Uint8Array(w * h * 4);
+    gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, raw);
+    const flipped = new Uint8ClampedArray(raw.length),
+      row = w * 4;
+    for (let y = 0; y < h; y++)
+      flipped.set(raw.subarray((h - 1 - y) * row, (h - y) * row), y * row);
+    const cv = document.createElement("canvas");
+    cv.width = w;
+    cv.height = h;
+    const cx = cv.getContext("2d");
+    if (!cx) throw new Error("FRAMEBUFFER_2D_CONTEXT_MISSING");
+    cx.putImageData(new ImageData(flipped, w, h), 0, 0);
+    return cv.toDataURL("image/png").split(",")[1];
+  });
+  return Buffer.from(b64, "base64");
+}
+function metrics(buf, region = { x0: 0.08, x1: 0.92, y0: 0.08, y1: 0.92 }) {
+  const p = PNG.sync.read(buf),
+    d = p.data,
+    L = (x, y) => {
+      const i = (y * p.width + x) * 4;
+      return (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255;
+    };
+  let n = 0,
+    sum = 0,
+    sum2 = 0,
+    dark = 0,
+    chroma = 0,
+    edge = 0,
+    edgeN = 0;
+  const vals = [],
+    x0 = Math.floor(p.width * region.x0),
+    x1 = Math.floor(p.width * region.x1),
+    y0 = Math.floor(p.height * region.y0),
+    y1 = Math.floor(p.height * region.y1);
+  for (let y = y0; y < y1; y += 2)
+    for (let x = x0; x < x1; x += 2) {
+      const i = (y * p.width + x) * 4,
+        l = L(x, y),
+        r = d[i] / 255,
+        g = d[i + 1] / 255,
+        b = d[i + 2] / 255;
+      n++;
+      sum += l;
+      sum2 += l * l;
+      vals.push(l);
+      chroma += Math.max(r, g, b) - Math.min(r, g, b);
+      if (l < 0.02) dark++;
+      if (x + 4 < x1 && y + 4 < y1) {
+        edge += (Math.abs(l - L(x + 4, y)) + Math.abs(l - L(x, y + 4))) * 0.5;
+        edgeN++;
+      }
+    }
+  vals.sort((a, b) => a - b);
+  const cells = [];
+  for (let row = 0; row < 3; row++)
+    for (let col = 0; col < 4; col++) {
+      const xa = Math.floor(x0 + ((x1 - x0) * col) / 4),
+        xb = Math.floor(x0 + ((x1 - x0) * (col + 1)) / 4),
+        ya = Math.floor(y0 + ((y1 - y0) * row) / 3),
+        yb = Math.floor(y0 + ((y1 - y0) * (row + 1)) / 3);
+      let e = 0,
+        en = 0;
+      for (let y = ya; y + 4 < yb; y += 2)
+        for (let x = xa; x + 4 < xb; x += 2) {
+          const l = L(x, y);
+          e += (Math.abs(l - L(x + 4, y)) + Math.abs(l - L(x, y + 4))) * 0.5;
+          en++;
+        }
+      cells.push(e / Math.max(1, en));
+    }
+  const mean = sum / n,
+    std = Math.sqrt(Math.max(0, sum2 / n - mean * mean)),
+    p10 = vals[Math.floor(vals.length * 0.1)] || 0,
+    p90 = vals[Math.floor(vals.length * 0.9)] || 0,
+    texturedCellCount = cells.filter((v) => v > 0.004).length;
+  return {
+    width: p.width,
+    height: p.height,
+    mean,
+    std,
+    range: p90 - p10,
+    darkRatio: dark / n,
+    chromaMean: chroma / n,
+    localEdgeMean: edge / Math.max(1, edgeN),
+    texturedCellCount,
+    texturedCellRatio: texturedCellCount / cells.length,
+    cellEdgeMeans: cells,
+  };
+}
+const ready = {
+  global: (m) =>
+    m.mean > 0.015 &&
+    m.std > 0.045 &&
+    m.range > 0.13 &&
+    m.chromaMean > 0.02 &&
+    m.localEdgeMean > 0.002,
+  regional: (m) =>
+    m.mean > 0.02 &&
+    m.std > 0.04 &&
+    m.range > 0.1 &&
+    m.chromaMean > 0.02 &&
+    m.localEdgeMean > 0.003,
+  close: (m) =>
+    m.mean > 0.025 &&
+    m.std > 0.045 &&
+    m.range > 0.11 &&
+    m.chromaMean > 0.035 &&
+    m.localEdgeMean > 0.006 &&
+    m.darkRatio < 0.78 &&
+    m.texturedCellCount >= 6,
+  coast: (m) =>
+    m.mean > 0.02 &&
+    m.std > 0.035 &&
+    m.range > 0.09 &&
+    m.chromaMean > 0.025 &&
+    m.localEdgeMean > 0.004 &&
+    m.texturedCellCount >= 5,
+};
+async function waitTiles(page, { minimumMs = 800, timeoutMs = 12000 } = {}) {
+  const start = Date.now();
+  let streak = 0;
+  while (Date.now() - start < timeoutMs) {
+    await page.evaluate(() => {
+      globalThis.__earthusV2VisualFidelityController?.update?.();
+      window.__earthusV2?.viewer?.scene?.requestRender?.();
+    });
+    await page.waitForTimeout(260);
+    const loaded = await page.evaluate(
+      () => window.__earthusV2?.viewer?.scene?.globe?.tilesLoaded === true,
+    );
+    streak = loaded ? streak + 1 : 0;
+    if (Date.now() - start >= minimumMs && streak >= 3) {
+      await page.waitForTimeout(500);
+      return true;
+    }
+  }
+  return false;
+}
+async function settle(
+  page,
+  gate,
+  { minimumMs = 2500, requireTiles = false, metricRegion = undefined } = {},
+) {
+  await page.waitForTimeout(minimumMs);
+  const tilesReady = requireTiles
+    ? await waitTiles(page, { minimumMs: 700, timeoutMs: 12000 })
+    : true;
+  if (requireTiles && !tilesReady) await page.waitForTimeout(2500);
+  const deadline = Date.now() + 30000;
+  let buf = null;
+  let m = null;
+  do {
+    await page.evaluate(() => {
+      globalThis.__earthusV2VisualFidelityController?.update?.();
+      window.__earthusV2?.viewer?.scene?.requestRender?.();
+    });
+    await page.waitForTimeout(650);
+    buf = await canvasPixels(page);
+    m = metrics(buf, metricRegion);
+    if (gate(m)) return { settled: true, tilesReady, buf, metrics: m };
+  } while (Date.now() < deadline);
+  return { settled: false, tilesReady, buf, metrics: m };
+}
+async function runtimeState(page) {
+  return page.evaluate(() => {
+    const v = window.__earthusV2.viewer,
+      p = v.camera.positionCartographic,
+      g = v.scene.globe,
+      r = window.__earthusV2.realEarth;
+    return {
+      terrain: r.terrainTruth(),
+      cameraHeight: p.height,
+      longitudeDeg: Cesium.Math.toDegrees(p.longitude),
+      latitudeDeg: Cesium.Math.toDegrees(p.latitude),
+      pitchDeg: Cesium.Math.toDegrees(v.camera.pitch),
+      maximumScreenSpaceError: g.maximumScreenSpaceError,
+      preloadSiblings: g.preloadSiblings,
+      tilesLoaded: g.tilesLoaded,
+      badge:
+        document.getElementById("earthusV2RealSources")?.textContent || null,
+    };
+  });
+}
+async function setNadir(page, lon, lat, height) {
+  await page.evaluate(
+    ({ lon, lat, height }) => {
+      const v = window.__earthusV2.viewer;
+      v.camera.cancelFlight?.();
+      v.camera.setView({
+        destination: Cesium.Cartesian3.fromDegrees(lon, lat, height),
+        orientation: { heading: 0, pitch: Cesium.Math.toRadians(-90), roll: 0 },
+      });
+      globalThis.__earthusV2VisualFidelityController?.update?.();
+      v.scene.requestRender();
+    },
+    { lon, lat, height },
+  );
+}
+async function lookAt(page, { destination, target }) {
+  return page.evaluate(
+    ({ destination, target }) => {
+      const v = window.__earthusV2.viewer,
+        C = Cesium,
+        d = C.Cartesian3.fromDegrees(
+          destination.lon,
+          destination.lat,
+          destination.height,
+        ),
+        t = C.Cartesian3.fromDegrees(target.lon, target.lat, target.height),
+        direction = C.Cartesian3.normalize(
+          C.Cartesian3.subtract(t, d, new C.Cartesian3()),
+          new C.Cartesian3(),
+        ),
+        surfaceUp = C.Ellipsoid.WGS84.geodeticSurfaceNormal(
+          d,
+          new C.Cartesian3(),
+        ),
+        right = C.Cartesian3.normalize(
+          C.Cartesian3.cross(direction, surfaceUp, new C.Cartesian3()),
+          new C.Cartesian3(),
+        ),
+        up = C.Cartesian3.normalize(
+          C.Cartesian3.cross(right, direction, new C.Cartesian3()),
+          new C.Cartesian3(),
+        );
+      v.camera.cancelFlight?.();
+      v.camera.setView({ destination: d, orientation: { direction, up } });
+      globalThis.__earthusV2VisualFidelityController?.update?.();
+      v.scene.requestRender();
+      const screen = C.SceneTransforms.worldToWindowCoordinates(v.scene, t);
+      return screen ? { x: screen.x, y: screen.y } : null;
+    },
+    { destination, target },
+  );
+}
+async function sampleGrid(page, { lon0, lat0, dx, dy, nx = 9, ny = 9 }) {
+  return page.evaluate(
+    async (q) => {
+      const C = Cesium,
+        v = window.__earthusV2.viewer,
+        provider = v.terrainProvider,
+        makePoints = () => {
+          const points = [];
+          for (let y = 0; y < q.ny; y++)
+            for (let x = 0; x < q.nx; x++)
+              points.push(
+                C.Cartographic.fromDegrees(
+                  q.lon0 + q.dx * x,
+                  q.lat0 + q.dy * y,
+                ),
+              );
+          return points;
+        },
+        bounded = (promise, ms) =>
+          new Promise((resolve, reject) => {
+            let settled = false;
+            const timer = setTimeout(() => {
+              if (!settled) {
+                settled = true;
+                reject(new Error("TERRAIN_SAMPLE_TIMEOUT"));
+              }
+            }, ms);
+            Promise.resolve(promise).then(
+              (value) => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timer);
+                resolve(value);
+              },
+              (error) => {
+                if (settled) return;
+                settled = true;
+                clearTimeout(timer);
+                reject(error);
+              },
+            );
+          });
+      let sampled = null;
+      if (C.sampleTerrainMostDetailed)
+        try {
+          sampled = await bounded(
+            C.sampleTerrainMostDetailed(provider, makePoints()),
+            12000,
+          );
+        } catch {}
+      if (!sampled && C.sampleTerrain)
+        try {
+          sampled = await bounded(
+            C.sampleTerrain(provider, 12, makePoints()),
+            12000,
+          );
+        } catch {}
+      const valid = (sampled || []).filter((p) =>
+          Number.isFinite(Number(p.height)),
+        ),
+        hs = valid.map((p) => Number(p.height));
+      if (!valid.length) throw new Error("TERRAIN_SAMPLE_MISSING");
+      const highest = valid.reduce(
+          (a, b) => (Number(b.height) > Number(a.height) ? b : a),
+          valid[0],
+        ),
+        lowest = valid.reduce(
+          (a, b) => (Number(b.height) < Number(a.height) ? b : a),
+          valid[0],
+        );
+      return {
+        sampleCount: valid.length,
+        minHeightM: Math.min(...hs),
+        maxHeightM: Math.max(...hs),
+        reliefM: Math.max(...hs) - Math.min(...hs),
+        highest: {
+          lon: C.Math.toDegrees(highest.longitude),
+          lat: C.Math.toDegrees(highest.latitude),
+          height: Number(highest.height),
+        },
+        lowest: {
+          lon: C.Math.toDegrees(lowest.longitude),
+          lat: C.Math.toDegrees(lowest.latitude),
+          height: Number(lowest.height),
+        },
+      };
+    },
+    { lon0, lat0, dx, dy, nx, ny },
+  );
+}
+async function captureView(
+  page,
+  state,
+  { name, gate, minMs = 3500, requireTiles = false, metricRegion = undefined },
+) {
+  console.log(`PVR01A CAPTURE ${name}`);
+  const result = await settle(page, gate, {
+    minimumMs: minMs,
+    requireTiles,
+    metricRegion,
+  });
+  if (result.buf) fs.writeFileSync(path.join(out, `${name}.png`), result.buf);
+  const runtime = await runtimeState(page),
+    meta = {
+      name,
+      settled: result.settled,
+      tilesReady: result.tilesReady,
+      metrics: result.metrics,
+      runtime,
+      url: page.url(),
+      branch: process.env.GITHUB_REF_NAME || null,
+      head: process.env.GITHUB_SHA || null,
+      timestamp: new Date().toISOString(),
+      provider: runtime.terrain,
+      truthState: runtime.terrain,
+      qualityTier: "PVR-01A_BROWSER_ACCEPTANCE",
+      browser: "Chromium / Playwright WebGL framebuffer",
+      viewport: VIEWPORT,
+    };
+  state.views[name] = meta;
+  assert.equal(
+    runtime.terrain,
+    "ESRI_TERRAIN3D",
+    `${name}:terrain:${runtime.terrain}`,
+  );
+  assert.equal(
+    result.settled,
+    true,
+    `${name}:visual gate failed:${JSON.stringify(result.metrics)}`,
+  );
+  return meta;
+}
 
-fs.mkdirSync(out,{recursive:true});const srv=server();await new Promise(r=>srv.listen(0,'127.0.0.1',r));const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});const page=await browser.newPage({viewport:VIEWPORT,deviceScaleFactor:1});page.setDefaultTimeout(110000);const state={ok:false,views:{},samples:{}};
-try{await page.goto(`http://127.0.0.1:${srv.address().port}/v2/`,{waitUntil:'domcontentloaded',timeout:60000});await wait(page,()=>document.documentElement.dataset.c==='1'&&!!window.__earthusV2?.realEarth,60000);await wait(page,()=>!!globalThis.__earthusV2VisualFidelityController,50000);await page.evaluate(()=>window.__earthusV2.realEarth.enterEarth());
-await setNadir(page,112,24,29_000_000);const global=await captureView(page,state,{name:'01-global-earth',gate:ready.global,minMs:3000});assert.ok(global.metrics.std>.045&&global.metrics.range>.13);
-await setNadir(page,108,32,7_000_000);const asia=await captureView(page,state,{name:'02-asia',gate:ready.regional,minMs:3500});assert.ok(asia.metrics.localEdgeMean>.003);
-await setNadir(page,127.7,36.2,950_000);const korea=await captureView(page,state,{name:'03-korea-land',gate:ready.regional,minMs:4500});assert.ok(korea.metrics.localEdgeMean>.003);
-console.log('PVR01A SAMPLE seorak');const seorak=await sampleGrid(page,{lon0:128.28,lat0:37.92,dx:.055,dy:.045,nx:9,ny:9});state.samples.seorak=seorak;assert.ok(seorak.sampleCount>=70);assert.ok(seorak.maxHeightM>1200,`seorak max:${seorak.maxHeightM}`);assert.ok(seorak.reliefM>700,`seorak relief:${seorak.reliefM}`);const sm=seorak.highest,smScreen=await lookAt(page,{destination:{lon:sm.lon-.18,lat:sm.lat-.28,height:48_000},target:sm});state.samples.seorak.targetScreen=smScreen;assert.ok(smScreen&&Math.abs(smScreen.x-640)<14&&Math.abs(smScreen.y-400)<14,`seorak center:${JSON.stringify(smScreen)}`);const mountain=await captureView(page,state,{name:'04-korea-mountain',gate:ready.close,minMs:5000,requireTiles:true});assert.ok(mountain.metrics.texturedCellCount>=6);assert.ok(mountain.runtime.maximumScreenSpaceError>=1&&mountain.runtime.maximumScreenSpaceError<=1.5);assert.equal(mountain.runtime.preloadSiblings,false);
-console.log('PVR01A SAMPLE coast');const coast=await sampleGrid(page,{lon0:128.46,lat0:38.12,dx:.035,dy:.035,nx:9,ny:5});state.samples.sokchoCoast=coast;assert.ok(coast.sampleCount>=40);assert.ok(coast.reliefM>250,`coast relief:${coast.reliefM}`);assert.ok(coast.minHeightM<100,`coast min:${coast.minHeightM}`);const coastScreen=await lookAt(page,{destination:{lon:SOKCHO.lon-.18,lat:SOKCHO.lat-.15,height:38_000},target:{lon:SOKCHO.lon,lat:SOKCHO.lat,height:0}});state.samples.sokchoCoast.target={...SOKCHO,screen:coastScreen};assert.ok(coastScreen&&Math.abs(coastScreen.x-640)<14&&Math.abs(coastScreen.y-400)<14,`coast center:${JSON.stringify(coastScreen)}`);const coastal=await captureView(page,state,{name:'05-korea-coast',gate:ready.coast,minMs:4500,requireTiles:true});assert.ok(coastal.metrics.texturedCellCount>=5);assert.equal(coastal.runtime.terrain,'ESRI_TERRAIN3D');
-state.ok=true;state.status='BROWSER_VERIFIED';fs.writeFileSync(path.join(out,'state.json'),JSON.stringify(state,null,2));console.log('PVR-01A REAL TERRAIN: BROWSER_VERIFIED',JSON.stringify(state));}catch(error){state.error=String(error?.stack||error);state.status='REAL_DATA_WIRED';fs.writeFileSync(path.join(out,'state.json'),JSON.stringify(state,null,2));throw error}finally{await browser.close();await new Promise(r=>srv.close(r))}
+fs.mkdirSync(out, { recursive: true });
+const srv = server();
+await new Promise((r) => srv.listen(0, "127.0.0.1", r));
+const browser = await chromium.launch({
+  headless: true,
+  args: [
+    "--use-gl=angle",
+    "--use-angle=swiftshader",
+    "--enable-webgl",
+    "--ignore-gpu-blocklist",
+  ],
+});
+const page = await browser.newPage({
+  viewport: VIEWPORT,
+  deviceScaleFactor: 1,
+});
+page.setDefaultTimeout(110000);
+const state = { ok: false, views: {}, samples: {} };
+try {
+  await page.goto(`http://127.0.0.1:${srv.address().port}/v2/`, {
+    waitUntil: "domcontentloaded",
+    timeout: 60000,
+  });
+  await wait(
+    page,
+    () =>
+      document.documentElement.dataset.c === "1" &&
+      !!window.__earthusV2?.realEarth,
+    60000,
+  );
+  await wait(
+    page,
+    () => !!globalThis.__earthusV2VisualFidelityController,
+    50000,
+  );
+  await page.evaluate(() => window.__earthusV2.realEarth.enterEarth());
+  await setNadir(page, 112, 24, 29_000_000);
+  const global = await captureView(page, state, {
+    name: "01-global-earth",
+    gate: ready.global,
+    minMs: 3000,
+    metricRegion: { x0: 0.3, x1: 0.7, y0: 0.12, y1: 0.88 },
+  });
+  assert.ok(global.metrics.std > 0.045 && global.metrics.range > 0.13);
+  await setNadir(page, 108, 32, 7_000_000);
+  const asia = await captureView(page, state, {
+    name: "02-asia",
+    gate: ready.regional,
+    minMs: 3500,
+  });
+  assert.ok(asia.metrics.localEdgeMean > 0.003);
+  await setNadir(page, 127.7, 36.2, 950_000);
+  const korea = await captureView(page, state, {
+    name: "03-korea-land",
+    gate: ready.regional,
+    minMs: 4500,
+  });
+  assert.ok(korea.metrics.localEdgeMean > 0.003);
+  console.log("PVR01A SAMPLE seorak");
+  const seorak = await sampleGrid(page, {
+    lon0: 128.28,
+    lat0: 37.92,
+    dx: 0.055,
+    dy: 0.045,
+    nx: 9,
+    ny: 9,
+  });
+  state.samples.seorak = seorak;
+  assert.ok(seorak.sampleCount >= 70);
+  assert.ok(seorak.maxHeightM > 1200, `seorak max:${seorak.maxHeightM}`);
+  assert.ok(seorak.reliefM > 700, `seorak relief:${seorak.reliefM}`);
+  const sm = seorak.highest,
+    smScreen = await lookAt(page, {
+      destination: { lon: sm.lon - 0.18, lat: sm.lat - 0.28, height: 48_000 },
+      target: sm,
+    });
+  state.samples.seorak.targetScreen = smScreen;
+  assert.ok(
+    smScreen &&
+      Math.abs(smScreen.x - 640) < 14 &&
+      Math.abs(smScreen.y - 400) < 14,
+    `seorak center:${JSON.stringify(smScreen)}`,
+  );
+  const mountain = await captureView(page, state, {
+    name: "04-korea-mountain",
+    gate: ready.close,
+    minMs: 5000,
+    requireTiles: true,
+  });
+  assert.ok(mountain.metrics.texturedCellCount >= 6);
+  assert.ok(
+    mountain.runtime.maximumScreenSpaceError >= 1 &&
+      mountain.runtime.maximumScreenSpaceError <= 1.5,
+  );
+  assert.equal(mountain.runtime.preloadSiblings, false);
+  console.log("PVR01A SAMPLE coast");
+  const coast = await sampleGrid(page, {
+    lon0: 128.46,
+    lat0: 38.12,
+    dx: 0.035,
+    dy: 0.035,
+    nx: 9,
+    ny: 5,
+  });
+  state.samples.sokchoCoast = coast;
+  assert.ok(coast.sampleCount >= 40);
+  assert.ok(coast.reliefM > 250, `coast relief:${coast.reliefM}`);
+  assert.ok(coast.minHeightM < 100, `coast min:${coast.minHeightM}`);
+  const coastScreen = await lookAt(page, {
+    destination: {
+      lon: SOKCHO.lon - 0.18,
+      lat: SOKCHO.lat - 0.15,
+      height: 38_000,
+    },
+    target: { lon: SOKCHO.lon, lat: SOKCHO.lat, height: 0 },
+  });
+  state.samples.sokchoCoast.target = { ...SOKCHO, screen: coastScreen };
+  assert.ok(
+    coastScreen &&
+      Math.abs(coastScreen.x - 640) < 14 &&
+      Math.abs(coastScreen.y - 400) < 14,
+    `coast center:${JSON.stringify(coastScreen)}`,
+  );
+  const coastal = await captureView(page, state, {
+    name: "05-korea-coast",
+    gate: ready.coast,
+    minMs: 4500,
+    requireTiles: true,
+  });
+  assert.ok(coastal.metrics.texturedCellCount >= 5);
+  assert.equal(coastal.runtime.terrain, "ESRI_TERRAIN3D");
+  state.ok = true;
+  state.status = "BROWSER_VERIFIED";
+  fs.writeFileSync(
+    path.join(out, "state.json"),
+    JSON.stringify(state, null, 2),
+  );
+  console.log("PVR-01A REAL TERRAIN: BROWSER_VERIFIED", JSON.stringify(state));
+} catch (error) {
+  state.error = String(error?.stack || error);
+  state.status = "REAL_DATA_WIRED";
+  fs.writeFileSync(
+    path.join(out, "state.json"),
+    JSON.stringify(state, null, 2),
+  );
+  throw error;
+} finally {
+  await browser.close();
+  await new Promise((r) => srv.close(r));
+}

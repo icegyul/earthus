@@ -1,0 +1,11 @@
+{
+  "earthVersion": "ev_ba7833a481e5ed2ef648655f",
+  "parentVersion": null,
+  "createdAt": "2026-08-30T14:25:00.000Z",
+  "rootManifestHash": "sha256:0307f3d5abea1ed1a1b1cff8e085df1f03b9751e52e42ad6b2eb3cb94e225f6c",
+  "artifacts": {
+    "GLOBAL/digest": "sha256:13e4466f0172d4fc4be77595ce2a5a6b436618a7ce73db2a2f33d1a853bf17bd",
+    "GLOBAL/typhoon-events": "sha256:39f9d245bf5f2c45e41652ddab41b87e09459a6d04428016012dabd7be6435f2",
+    "KR/weather": "sha256:7f7e3e7df55437a6c67f9faf54748786680f2b5931a51bee66cfab1266bc618b"
+  }
+}

@@ -3,22 +3,522 @@
  * supplies reference appearance; sampled slopes supply restrained hillshade.
  * No procedural seafloor, no vertical exaggeration.
  */
-const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
-const GIBS_WMS='https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi';
-const GIBS_LAYERS=Object.freeze(['BlueMarble_ShadedRelief_Bathymetry','BlueMarble_ShadedRelief','BlueMarble_NextGeneration']);
-function wmsUrl(layer,{west,east,south,north}){const u=new URL(GIBS_WMS);u.search=new URLSearchParams({service:'WMS',version:'1.1.1',request:'GetMap',styles:'',layers:layer,srs:'EPSG:4326',bbox:`${west},${south},${east},${north}`,width:'1600',height:'1280',format:'image/jpeg',transparent:'false'}).toString();return u.href}
-async function loadImage(url){return new Promise((resolve,reject)=>{const image=new Image();image.crossOrigin='anonymous';image.decoding='async';image.onload=()=>image.naturalWidth>=800&&image.naturalHeight>=600?resolve(image):reject(new Error('BATHY_REFERENCE_IMAGE_DIMENSION_GATE'));image.onerror=()=>reject(new Error('BATHY_REFERENCE_IMAGE_DECODE_FAILED'));image.src=url})}
-function imageSignal(image){const cv=document.createElement('canvas');cv.width=200;cv.height=160;const cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(image,0,0,cv.width,cv.height);const d=cx.getImageData(0,0,cv.width,cv.height).data;let sum=0,sum2=0,n=0;for(let i=0;i<d.length;i+=16){const l=(.2126*d[i]+.7152*d[i+1]+.0722*d[i+2])/255;sum+=l;sum2+=l*l;n++}const mean=sum/n,std=Math.sqrt(Math.max(0,sum2/n-mean*mean));return{mean,std}}
-async function loadReference(bounds){let last=null;for(const layer of GIBS_LAYERS){const url=wmsUrl(layer,bounds);try{const image=await loadImage(url),signal=imageSignal(image);if(signal.mean<.01||signal.std<.006)throw new Error(`BATHY_REFERENCE_SIGNAL:${signal.mean.toFixed(4)}:${signal.std.toFixed(4)}`);return Object.freeze({image,layer,url,signal})}catch(error){last=error}}throw new Error(`BATHY_REFERENCE_UNAVAILABLE:${last?.message||'unknown'}`)}
-function slopeField({heights,valid,nx,ny,west,east,south,north}){const midLat=(south+north)*.5*Math.PI/180,dx=Math.max(1,(east-west)*111320*Math.cos(midLat)/(nx-1)),dy=Math.max(1,(north-south)*110574/(ny-1)),shade=new Uint8ClampedArray(nx*ny),light=[-.42,.28,.86],ln=Math.hypot(...light);light[0]/=ln;light[1]/=ln;light[2]/=ln;let slopeSum=0,slopeMax=0,count=0;const H=(x,y)=>{x=Math.round(clamp(x,0,nx-1));y=Math.round(clamp(y,0,ny-1));const i=y*nx+x;return valid[i]?heights[i]:NaN};for(let y=0;y<ny;y++)for(let x=0;x<nx;x++){const i=y*nx+x,h=H(x,y),hl=H(x-1,y),hr=H(x+1,y),hd=H(x,y-1),hu=H(x,y+1);if(![h,hl,hr,hd,hu].every(Number.isFinite)){shade[i]=210;continue}const gx=(hr-hl)/(2*dx),gy=(hu-hd)/(2*dy),nn=Math.hypot(gx,gy,1),dot=clamp((-gx/nn)*light[0]+(-gy/nn)*light[1]+(1/nn)*light[2],0,1),slope=Math.atan(Math.hypot(gx,gy))*180/Math.PI;shade[i]=Math.round(255*(.72+.28*dot));slopeSum+=slope;slopeMax=Math.max(slopeMax,slope);count++}return Object.freeze({shade,meanSlopeDeg:slopeSum/Math.max(1,count),maxSlopeDeg:slopeMax,dxM:dx,dyM:dy})}
-function toneMapSource(reference,{targetMean=.12,maxGain=2.2,saturation=.56}={}){const w=reference.image.naturalWidth||reference.image.width,h=reference.image.naturalHeight||reference.image.height,cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d',{willReadFrequently:true});if(!cx)throw new Error('BATHY_REFERENCE_CANVAS_CONTEXT');cx.drawImage(reference.image,0,0,w,h);const px=cx.getImageData(0,0,w,h),d=px.data,gain=clamp(targetMean/Math.max(.025,reference.signal.mean),1.03,maxGain);for(let i=0;i<d.length;i+=4){const src=[d[i]/255,d[i+1]/255,d[i+2]/255],mapped=src.map(v=>1-Math.exp(-v*gain*1.08)),lum=.2126*mapped[0]+.7152*mapped[1]+.0722*mapped[2];d[i]=Math.round(255*clamp(lum+(mapped[0]-lum)*saturation));d[i+1]=Math.round(255*clamp(lum+(mapped[1]-lum)*saturation));d[i+2]=Math.round(255*clamp(lum+(mapped[2]-lum)*saturation))}cx.putImageData(px,0,0);return Object.freeze({canvas:cv,gain,saturation,targetMean})}
-function referenceTexture(reference,slope,{nx,ny,hillshadeAlpha=.16,targetMean=.12,maxGain=2.2,saturation=.56}={}){const toned=toneMapSource(reference,{targetMean,maxGain,saturation}),cv=toned.canvas,w=cv.width,h=cv.height,cx=cv.getContext('2d',{willReadFrequently:true}),sh=document.createElement('canvas');sh.width=nx;sh.height=ny;const sx=sh.getContext('2d'),im=sx.createImageData(nx,ny);for(let y=0;y<ny;y++)for(let x=0;x<nx;x++){const src=y*nx+x,dst=((ny-1-y)*nx+x)*4,v=slope.shade[src];im.data[dst]=im.data[dst+1]=im.data[dst+2]=v;im.data[dst+3]=255}sx.putImageData(im,0,0);cx.globalCompositeOperation='multiply';cx.globalAlpha=hillshadeAlpha;cx.imageSmoothingEnabled=true;cx.drawImage(sh,0,0,w,h);cx.globalCompositeOperation='source-over';cx.globalAlpha=1;return Object.freeze({canvas:cv,exposureGain:toned.gain,saturation:toned.saturation,targetMean:toned.targetMean,hillshadeAlpha})}
-export class TrenchBathymetryMeshRuntime{
- constructor({viewer,Cesium,role='overview'}={}){if(!viewer||viewer.isDestroyed?.())throw new Error('BATHY_MESH_VIEWER_REQUIRED');this.viewer=viewer;this.C=Cesium||globalThis.Cesium;this.role=role==='underwater-detail'?'underwater-detail':'overview';this.primitive=null;this.meta=null;this.generation=0;this.visible=false}
- async load({terrainProvider,centerLon=142.20,centerLat=11.35,lonSpan=3.0,latSpan=2.4,nx=81,ny=65,samplingLevel=11,force=false}={}){if(!terrainProvider)throw new Error('BATHY_MESH_TERRAIN_PROVIDER_REQUIRED');if(this.primitive&&!force)return this.meta;const generation=++this.generation,C=this.C,west=centerLon-lonSpan/2,east=centerLon+lonSpan/2,south=centerLat-latSpan/2,north=centerLat+latSpan/2,bounds={west,east,south,north},points=[];for(let y=0;y<ny;y++){const lat=south+(north-south)*y/(ny-1);for(let x=0;x<nx;x++){const lon=west+(east-west)*x/(nx-1);points.push(C.Cartographic.fromDegrees(lon,lat))}}let sampled=null,sampleMethod=null;if(typeof C.sampleTerrain==='function')try{sampled=await C.sampleTerrain(terrainProvider,samplingLevel,points);sampleMethod=`SAMPLE_TERRAIN_LEVEL_${samplingLevel}`}catch(error){console.warn('[bathy-mesh/fixed-level]',error?.message||error)}if(!sampled&&typeof C.sampleTerrainMostDetailed==='function')try{sampled=await C.sampleTerrainMostDetailed(terrainProvider,points);sampleMethod='SAMPLE_TERRAIN_MOST_DETAILED_FALLBACK'}catch(error){console.warn('[bathy-mesh/most-detailed-fallback]',error?.message||error)}if(generation!==this.generation)return null;if(!sampled)throw new Error('BATHY_MESH_SAMPLE_UNAVAILABLE');const n=nx*ny,valid=new Uint8Array(n),heights=new Float64Array(n),depths=[];let validCount=0,negativeCount=0,minH=Infinity,maxH=-Infinity,deepestIndex=-1;for(let i=0;i<n;i++){const h=Number(sampled[i]?.height),ok=Number.isFinite(h)&&h>-13000&&h<5000;valid[i]=ok?1:0;heights[i]=ok?h:0;if(ok){validCount++;minH=Math.min(minH,h);maxH=Math.max(maxH,h);if(h<0){negativeCount++;depths.push(-h);if(deepestIndex<0||h<heights[deepestIndex])deepestIndex=i}}}if(validCount<n*.82||negativeCount<validCount*.7)throw new Error(`BATHY_MESH_TRUTH_GATE:${validCount}:${negativeCount}:${n}`);const slope=slopeField({heights,valid,nx,ny,...bounds});let reference=null,texture=null;try{reference=await loadReference(bounds);const underwater=this.role==='underwater-detail';texture=referenceTexture(reference,slope,{nx,ny,hillshadeAlpha:underwater?.36:.16,targetMean:underwater?.18:.12,maxGain:underwater?3.1:2.2,saturation:underwater?.48:.56})}catch(error){console.warn('[bathy-mesh/reference]',error?.message||error);throw error}if(generation!==this.generation)return null;const positions=new Float64Array(n*3),st=new Float32Array(n*2);for(let i=0;i<n;i++){const p=sampled[i],lon=C.Math.toDegrees(p.longitude),lat=C.Math.toDegrees(p.latitude),h=valid[i]?heights[i]:0,cart=C.Cartesian3.fromDegrees(lon,lat,h),x=i%nx,y=Math.floor(i/nx);positions[i*3]=cart.x;positions[i*3+1]=cart.y;positions[i*3+2]=cart.z;st[i*2]=x/(nx-1);st[i*2+1]=y/(ny-1)}const indices=[],V=i=>valid[i]===1;for(let y=0;y<ny-1;y++)for(let x=0;x<nx-1;x++){const a=y*nx+x,b=a+1,c=a+nx,d=c+1;if(V(a)&&V(c)&&V(b))indices.push(a,c,b);if(V(b)&&V(c)&&V(d))indices.push(b,c,d)}if(indices.length<3000)throw new Error(`BATHY_MESH_TRIANGLE_GATE:${indices.length}`);let geometry=new C.Geometry({attributes:{position:new C.GeometryAttribute({componentDatatype:C.ComponentDatatype.DOUBLE,componentsPerAttribute:3,values:positions}),st:new C.GeometryAttribute({componentDatatype:C.ComponentDatatype.FLOAT,componentsPerAttribute:2,values:st})},indices:C.IndexDatatype.createTypedArray(n,indices),primitiveType:C.PrimitiveType.TRIANGLES,boundingSphere:C.BoundingSphere.fromVertices(positions)});geometry=C.GeometryPipeline.computeNormal(geometry);const material=C.Material.fromType('Image',{image:texture.canvas,repeat:new C.Cartesian2(1,1),color:C.Color.WHITE}),appearance=new C.MaterialAppearance({material,materialSupport:C.MaterialAppearance.MaterialSupport.TEXTURED,flat:false,faceForward:true,translucent:false,closed:false});this.#destroy();this.primitive=this.viewer.scene.primitives.add(new C.Primitive({geometryInstances:new C.GeometryInstance({geometry}),appearance,allowPicking:false,asynchronous:false,cull:false,show:this.visible}));this.primitive.__earthusTrenchBathymetryMesh=true;this.primitive.__earthusTrenchBathymetryRole=this.role;if(this.role==='underwater-detail')globalThis.__earthusV2UnderwaterBathymetryPrimitive=this.primitive;else globalThis.__earthusV2TrenchBathymetryPrimitive=this.primitive;const deepest=deepestIndex>=0?sampled[deepestIndex]:null;this.meta=Object.freeze({truthClass:'ESRI_TOPOBATHY3D_SAMPLED_SEAFLOOR_MESH',sourceId:'ESRI_WORLDELEVATION3D_TOPOBATHY3D',role:this.role,appearanceSource:`NASA_GIBS_${reference.layer}`,appearanceTruthClass:'NASA_GIBS_REFERENCE_BATHYMETRY_DRAPED_ON_ACTUAL_SAMPLED_GEOMETRY',appearanceToneMap:Object.freeze({class:'SOURCE_LUMINANCE_AND_SATURATION_GRADE_ONLY',gain:texture.exposureGain,saturation:texture.saturation,targetMean:texture.targetMean,hillshadeAlpha:texture.hillshadeAlpha}),synthetic:false,verticalExaggeration:1,sampleMethod,colorModel:'NASA_GIBS_BATHYMETRY_REFERENCE_PLUS_ACTUAL_SLOPE_HILLSHADE_GEOMETRY_UNCHANGED',grid:Object.freeze({nx,ny}),bounds:Object.freeze(bounds),spacing:Object.freeze({eastWestM:slope.dxM,northSouthM:slope.dyM}),hillshade:Object.freeze({meanSlopeDeg:slope.meanSlopeDeg,maxSlopeDeg:slope.maxSlopeDeg,geometryExaggeration:1,alpha:texture.hillshadeAlpha}),referenceSignal:Object.freeze(reference.signal),validSampleCount:validCount,negativeSampleCount:negativeCount,minHeightM:minH,maxHeightM:maxH,deepestM:Math.max(...depths),deepestCoordinate:deepest?Object.freeze({longitudeDeg:C.Math.toDegrees(deepest.longitude),latitudeDeg:C.Math.toDegrees(deepest.latitude),heightM:heights[deepestIndex]}):null,triangleCount:indices.length/3});this.viewer.scene.requestRender();return this.meta}
- setVisible(show){this.visible=!!show;if(this.primitive)this.primitive.show=this.visible;this.viewer.scene.requestRender()}
- async show(options){this.visible=true;if(!this.primitive)await this.load(options);if(this.primitive)this.primitive.show=true;this.viewer.scene.requestRender();return this.meta}
- hide(){this.setVisible(false)}
- #destroy(){if(this.primitive){if(this.role==='underwater-detail'){if(globalThis.__earthusV2UnderwaterBathymetryPrimitive===this.primitive)globalThis.__earthusV2UnderwaterBathymetryPrimitive=null}else if(globalThis.__earthusV2TrenchBathymetryPrimitive===this.primitive)globalThis.__earthusV2TrenchBathymetryPrimitive=null;try{this.viewer.scene.primitives.remove(this.primitive)}catch(_){}this.primitive=null}}
- dispose(){this.generation++;this.#destroy();this.meta=null;this.visible=false}
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const GIBS_WMS = "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi";
+const GIBS_LAYERS = Object.freeze([
+  "BlueMarble_ShadedRelief_Bathymetry",
+  "BlueMarble_ShadedRelief",
+  "BlueMarble_NextGeneration",
+]);
+function wmsUrl(layer, { west, east, south, north }) {
+  const u = new URL(GIBS_WMS);
+  u.search = new URLSearchParams({
+    service: "WMS",
+    version: "1.1.1",
+    request: "GetMap",
+    styles: "",
+    layers: layer,
+    srs: "EPSG:4326",
+    bbox: `${west},${south},${east},${north}`,
+    width: "1600",
+    height: "1280",
+    format: "image/jpeg",
+    transparent: "false",
+  }).toString();
+  return u.href;
+}
+async function loadImage(url) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.decoding = "async";
+    image.onload = () =>
+      image.naturalWidth >= 800 && image.naturalHeight >= 600
+        ? resolve(image)
+        : reject(new Error("BATHY_REFERENCE_IMAGE_DIMENSION_GATE"));
+    image.onerror = () =>
+      reject(new Error("BATHY_REFERENCE_IMAGE_DECODE_FAILED"));
+    image.src = url;
+  });
+}
+function imageSignal(image) {
+  const cv = document.createElement("canvas");
+  cv.width = 200;
+  cv.height = 160;
+  const cx = cv.getContext("2d", { willReadFrequently: true });
+  cx.drawImage(image, 0, 0, cv.width, cv.height);
+  const d = cx.getImageData(0, 0, cv.width, cv.height).data;
+  let sum = 0,
+    sum2 = 0,
+    n = 0;
+  for (let i = 0; i < d.length; i += 16) {
+    const l = (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255;
+    sum += l;
+    sum2 += l * l;
+    n++;
+  }
+  const mean = sum / n,
+    std = Math.sqrt(Math.max(0, sum2 / n - mean * mean));
+  return { mean, std };
+}
+async function loadReference(bounds) {
+  let last = null;
+  for (const layer of GIBS_LAYERS) {
+    const url = wmsUrl(layer, bounds);
+    try {
+      const image = await loadImage(url),
+        signal = imageSignal(image);
+      if (signal.mean < 0.01 || signal.std < 0.006)
+        throw new Error(
+          `BATHY_REFERENCE_SIGNAL:${signal.mean.toFixed(4)}:${signal.std.toFixed(4)}`,
+        );
+      return Object.freeze({ image, layer, url, signal });
+    } catch (error) {
+      last = error;
+    }
+  }
+  throw new Error(`BATHY_REFERENCE_UNAVAILABLE:${last?.message || "unknown"}`);
+}
+function slopeField({ heights, valid, nx, ny, west, east, south, north }) {
+  const midLat = ((south + north) * 0.5 * Math.PI) / 180,
+    dx = Math.max(1, ((east - west) * 111320 * Math.cos(midLat)) / (nx - 1)),
+    dy = Math.max(1, ((north - south) * 110574) / (ny - 1)),
+    shade = new Uint8ClampedArray(nx * ny),
+    light = [-0.42, 0.28, 0.86],
+    ln = Math.hypot(...light);
+  light[0] /= ln;
+  light[1] /= ln;
+  light[2] /= ln;
+  let slopeSum = 0,
+    slopeMax = 0,
+    count = 0;
+  const H = (x, y) => {
+    x = Math.round(clamp(x, 0, nx - 1));
+    y = Math.round(clamp(y, 0, ny - 1));
+    const i = y * nx + x;
+    return valid[i] ? heights[i] : NaN;
+  };
+  for (let y = 0; y < ny; y++)
+    for (let x = 0; x < nx; x++) {
+      const i = y * nx + x,
+        h = H(x, y),
+        hl = H(x - 1, y),
+        hr = H(x + 1, y),
+        hd = H(x, y - 1),
+        hu = H(x, y + 1);
+      if (![h, hl, hr, hd, hu].every(Number.isFinite)) {
+        shade[i] = 210;
+        continue;
+      }
+      const gx = (hr - hl) / (2 * dx),
+        gy = (hu - hd) / (2 * dy),
+        nn = Math.hypot(gx, gy, 1),
+        dot = clamp(
+          (-gx / nn) * light[0] + (-gy / nn) * light[1] + (1 / nn) * light[2],
+          0,
+          1,
+        ),
+        slope = (Math.atan(Math.hypot(gx, gy)) * 180) / Math.PI;
+      shade[i] = Math.round(255 * (0.72 + 0.28 * dot));
+      slopeSum += slope;
+      slopeMax = Math.max(slopeMax, slope);
+      count++;
+    }
+  return Object.freeze({
+    shade,
+    meanSlopeDeg: slopeSum / Math.max(1, count),
+    maxSlopeDeg: slopeMax,
+    dxM: dx,
+    dyM: dy,
+  });
+}
+function toneMapSource(
+  reference,
+  { targetMean = 0.12, maxGain = 2.2, saturation = 0.56 } = {},
+) {
+  const w = reference.image.naturalWidth || reference.image.width,
+    h = reference.image.naturalHeight || reference.image.height,
+    cv = document.createElement("canvas");
+  cv.width = w;
+  cv.height = h;
+  const cx = cv.getContext("2d", { willReadFrequently: true });
+  if (!cx) throw new Error("BATHY_REFERENCE_CANVAS_CONTEXT");
+  cx.drawImage(reference.image, 0, 0, w, h);
+  const px = cx.getImageData(0, 0, w, h),
+    d = px.data,
+    gain = clamp(
+      targetMean / Math.max(0.025, reference.signal.mean),
+      1.03,
+      maxGain,
+    );
+  for (let i = 0; i < d.length; i += 4) {
+    const src = [d[i] / 255, d[i + 1] / 255, d[i + 2] / 255],
+      mapped = src.map((v) => 1 - Math.exp(-v * gain * 1.08)),
+      lum = 0.2126 * mapped[0] + 0.7152 * mapped[1] + 0.0722 * mapped[2];
+    d[i] = Math.round(255 * clamp(lum + (mapped[0] - lum) * saturation));
+    d[i + 1] = Math.round(255 * clamp(lum + (mapped[1] - lum) * saturation));
+    d[i + 2] = Math.round(255 * clamp(lum + (mapped[2] - lum) * saturation));
+  }
+  cx.putImageData(px, 0, 0);
+  return Object.freeze({ canvas: cv, gain, saturation, targetMean });
+}
+function referenceTexture(
+  reference,
+  slope,
+  {
+    nx,
+    ny,
+    hillshadeAlpha = 0.16,
+    targetMean = 0.12,
+    maxGain = 2.2,
+    saturation = 0.56,
+    contrast = 1,
+    shadowFloor = 0,
+  } = {},
+) {
+  const toned = toneMapSource(reference, { targetMean, maxGain, saturation }),
+    cv = toned.canvas,
+    w = cv.width,
+    h = cv.height,
+    cx = cv.getContext("2d", { willReadFrequently: true }),
+    sh = document.createElement("canvas");
+  sh.width = nx;
+  sh.height = ny;
+  const sx = sh.getContext("2d"),
+    im = sx.createImageData(nx, ny);
+  for (let y = 0; y < ny; y++)
+    for (let x = 0; x < nx; x++) {
+      const src = y * nx + x,
+        dst = ((ny - 1 - y) * nx + x) * 4,
+        v = slope.shade[src];
+      im.data[dst] = im.data[dst + 1] = im.data[dst + 2] = v;
+      im.data[dst + 3] = 255;
+    }
+  sx.putImageData(im, 0, 0);
+  cx.globalCompositeOperation = "multiply";
+  cx.globalAlpha = hillshadeAlpha;
+  cx.imageSmoothingEnabled = true;
+  cx.drawImage(sh, 0, 0, w, h);
+  cx.globalCompositeOperation = "source-over";
+  cx.globalAlpha = 1;
+  if (contrast !== 1) {
+    const pixels = cx.getImageData(0, 0, w, h);
+    let luminanceSum = 0;
+    for (let i = 0; i < pixels.data.length; i += 4) {
+      luminanceSum +=
+        (0.2126 * pixels.data[i] +
+          0.7152 * pixels.data[i + 1] +
+          0.0722 * pixels.data[i + 2]) /
+        255;
+    }
+    const mean = luminanceSum / Math.max(1, pixels.data.length / 4);
+    for (let i = 0; i < pixels.data.length; i += 4) {
+      const luminance =
+        (0.2126 * pixels.data[i] +
+          0.7152 * pixels.data[i + 1] +
+          0.0722 * pixels.data[i + 2]) /
+        255;
+      const adjusted = clamp(
+        mean + (luminance - mean) * contrast,
+        shadowFloor,
+        1,
+      );
+      const luminanceDelta = adjusted - luminance;
+      pixels.data[i] = Math.round(
+        255 * clamp(pixels.data[i] / 255 + luminanceDelta),
+      );
+      pixels.data[i + 1] = Math.round(
+        255 * clamp(pixels.data[i + 1] / 255 + luminanceDelta),
+      );
+      pixels.data[i + 2] = Math.round(
+        255 * clamp(pixels.data[i + 2] / 255 + luminanceDelta),
+      );
+    }
+    cx.putImageData(pixels, 0, 0);
+  }
+  return Object.freeze({
+    canvas: cv,
+    exposureGain: toned.gain,
+    saturation: toned.saturation,
+    targetMean: toned.targetMean,
+    hillshadeAlpha,
+    contrast,
+    shadowFloor,
+  });
+}
+export class TrenchBathymetryMeshRuntime {
+  constructor({ viewer, Cesium, role = "overview" } = {}) {
+    if (!viewer || viewer.isDestroyed?.())
+      throw new Error("BATHY_MESH_VIEWER_REQUIRED");
+    this.viewer = viewer;
+    this.C = Cesium || globalThis.Cesium;
+    this.role = role === "underwater-detail" ? "underwater-detail" : "overview";
+    this.primitive = null;
+    this.meta = null;
+    this.generation = 0;
+    this.visible = false;
+  }
+  async load({
+    terrainProvider,
+    centerLon = 142.2,
+    centerLat = 11.35,
+    lonSpan = 3.0,
+    latSpan = 2.4,
+    nx = 81,
+    ny = 65,
+    samplingLevel = 11,
+    force = false,
+  } = {}) {
+    if (!terrainProvider)
+      throw new Error("BATHY_MESH_TERRAIN_PROVIDER_REQUIRED");
+    if (this.primitive && !force) return this.meta;
+    const generation = ++this.generation,
+      C = this.C,
+      west = centerLon - lonSpan / 2,
+      east = centerLon + lonSpan / 2,
+      south = centerLat - latSpan / 2,
+      north = centerLat + latSpan / 2,
+      bounds = { west, east, south, north },
+      points = [];
+    for (let y = 0; y < ny; y++) {
+      const lat = south + ((north - south) * y) / (ny - 1);
+      for (let x = 0; x < nx; x++) {
+        const lon = west + ((east - west) * x) / (nx - 1);
+        points.push(C.Cartographic.fromDegrees(lon, lat));
+      }
+    }
+    let sampled = null,
+      sampleMethod = null;
+    if (typeof C.sampleTerrain === "function")
+      try {
+        sampled = await C.sampleTerrain(terrainProvider, samplingLevel, points);
+        sampleMethod = `SAMPLE_TERRAIN_LEVEL_${samplingLevel}`;
+      } catch (error) {
+        console.warn("[bathy-mesh/fixed-level]", error?.message || error);
+      }
+    if (!sampled && typeof C.sampleTerrainMostDetailed === "function")
+      try {
+        sampled = await C.sampleTerrainMostDetailed(terrainProvider, points);
+        sampleMethod = "SAMPLE_TERRAIN_MOST_DETAILED_FALLBACK";
+      } catch (error) {
+        console.warn(
+          "[bathy-mesh/most-detailed-fallback]",
+          error?.message || error,
+        );
+      }
+    if (generation !== this.generation) return null;
+    if (!sampled) throw new Error("BATHY_MESH_SAMPLE_UNAVAILABLE");
+    const n = nx * ny,
+      valid = new Uint8Array(n),
+      heights = new Float64Array(n),
+      depths = [];
+    let validCount = 0,
+      negativeCount = 0,
+      minH = Infinity,
+      maxH = -Infinity,
+      deepestIndex = -1;
+    for (let i = 0; i < n; i++) {
+      const h = Number(sampled[i]?.height),
+        ok = Number.isFinite(h) && h > -13000 && h < 5000;
+      valid[i] = ok ? 1 : 0;
+      heights[i] = ok ? h : 0;
+      if (ok) {
+        validCount++;
+        minH = Math.min(minH, h);
+        maxH = Math.max(maxH, h);
+        if (h < 0) {
+          negativeCount++;
+          depths.push(-h);
+          if (deepestIndex < 0 || h < heights[deepestIndex]) deepestIndex = i;
+        }
+      }
+    }
+    if (validCount < n * 0.82 || negativeCount < validCount * 0.7)
+      throw new Error(
+        `BATHY_MESH_TRUTH_GATE:${validCount}:${negativeCount}:${n}`,
+      );
+    const slope = slopeField({ heights, valid, nx, ny, ...bounds });
+    let reference = null,
+      texture = null;
+    try {
+      reference = await loadReference(bounds);
+      const underwater = this.role === "underwater-detail";
+      texture = referenceTexture(reference, slope, {
+        nx,
+        ny,
+        hillshadeAlpha: underwater ? 0.36 : 0.16,
+        targetMean: underwater ? 0.18 : 0.12,
+        maxGain: underwater ? 3.1 : 2.2,
+        saturation: underwater ? 0.48 : 0.56,
+        contrast: underwater ? 4.5 : 1.8,
+        shadowFloor: underwater ? 0.04 : 0.02,
+      });
+    } catch (error) {
+      console.warn("[bathy-mesh/reference]", error?.message || error);
+      throw error;
+    }
+    if (generation !== this.generation) return null;
+    const positions = new Float64Array(n * 3),
+      st = new Float32Array(n * 2);
+    for (let i = 0; i < n; i++) {
+      const p = sampled[i],
+        lon = C.Math.toDegrees(p.longitude),
+        lat = C.Math.toDegrees(p.latitude),
+        h = valid[i] ? heights[i] : 0,
+        cart = C.Cartesian3.fromDegrees(lon, lat, h),
+        x = i % nx,
+        y = Math.floor(i / nx);
+      positions[i * 3] = cart.x;
+      positions[i * 3 + 1] = cart.y;
+      positions[i * 3 + 2] = cart.z;
+      st[i * 2] = x / (nx - 1);
+      st[i * 2 + 1] = y / (ny - 1);
+    }
+    const indices = [],
+      V = (i) => valid[i] === 1;
+    for (let y = 0; y < ny - 1; y++)
+      for (let x = 0; x < nx - 1; x++) {
+        const a = y * nx + x,
+          b = a + 1,
+          c = a + nx,
+          d = c + 1;
+        if (V(a) && V(c) && V(b)) indices.push(a, c, b);
+        if (V(b) && V(c) && V(d)) indices.push(b, c, d);
+      }
+    if (indices.length < 3000)
+      throw new Error(`BATHY_MESH_TRIANGLE_GATE:${indices.length}`);
+    let geometry = new C.Geometry({
+      attributes: {
+        position: new C.GeometryAttribute({
+          componentDatatype: C.ComponentDatatype.DOUBLE,
+          componentsPerAttribute: 3,
+          values: positions,
+        }),
+        st: new C.GeometryAttribute({
+          componentDatatype: C.ComponentDatatype.FLOAT,
+          componentsPerAttribute: 2,
+          values: st,
+        }),
+      },
+      indices: C.IndexDatatype.createTypedArray(n, indices),
+      primitiveType: C.PrimitiveType.TRIANGLES,
+      boundingSphere: C.BoundingSphere.fromVertices(positions),
+    });
+    geometry = C.GeometryPipeline.computeNormal(geometry);
+    const material = C.Material.fromType("Image", {
+        image: texture.canvas,
+        repeat: new C.Cartesian2(1, 1),
+        color: C.Color.WHITE,
+      }),
+      appearance = new C.MaterialAppearance({
+        material,
+        materialSupport: C.MaterialAppearance.MaterialSupport.TEXTURED,
+        flat: false,
+        faceForward: true,
+        translucent: false,
+        closed: false,
+      });
+    this.#destroy();
+    this.primitive = this.viewer.scene.primitives.add(
+      new C.Primitive({
+        geometryInstances: new C.GeometryInstance({ geometry }),
+        appearance,
+        allowPicking: false,
+        asynchronous: false,
+        cull: false,
+        show: this.visible,
+      }),
+    );
+    this.primitive.__earthusTrenchBathymetryMesh = true;
+    this.primitive.__earthusTrenchBathymetryRole = this.role;
+    if (this.role === "underwater-detail")
+      globalThis.__earthusV2UnderwaterBathymetryPrimitive = this.primitive;
+    else globalThis.__earthusV2TrenchBathymetryPrimitive = this.primitive;
+    const deepest = deepestIndex >= 0 ? sampled[deepestIndex] : null;
+    this.meta = Object.freeze({
+      truthClass: "ESRI_TOPOBATHY3D_SAMPLED_SEAFLOOR_MESH",
+      sourceId: "ESRI_WORLDELEVATION3D_TOPOBATHY3D",
+      role: this.role,
+      appearanceSource: `NASA_GIBS_${reference.layer}`,
+      appearanceTruthClass:
+        "NASA_GIBS_REFERENCE_BATHYMETRY_DRAPED_ON_ACTUAL_SAMPLED_GEOMETRY",
+      appearanceToneMap: Object.freeze({
+        class: "SOURCE_LUMINANCE_AND_SATURATION_GRADE_ONLY",
+        gain: texture.exposureGain,
+        saturation: texture.saturation,
+        targetMean: texture.targetMean,
+        hillshadeAlpha: texture.hillshadeAlpha,
+        contrast: texture.contrast,
+        shadowFloor: texture.shadowFloor,
+      }),
+      synthetic: false,
+      verticalExaggeration: 1,
+      sampleMethod,
+      colorModel:
+        "NASA_GIBS_BATHYMETRY_REFERENCE_PLUS_ACTUAL_SLOPE_HILLSHADE_GEOMETRY_UNCHANGED",
+      grid: Object.freeze({ nx, ny }),
+      bounds: Object.freeze(bounds),
+      spacing: Object.freeze({ eastWestM: slope.dxM, northSouthM: slope.dyM }),
+      hillshade: Object.freeze({
+        meanSlopeDeg: slope.meanSlopeDeg,
+        maxSlopeDeg: slope.maxSlopeDeg,
+        geometryExaggeration: 1,
+        alpha: texture.hillshadeAlpha,
+      }),
+      referenceSignal: Object.freeze(reference.signal),
+      validSampleCount: validCount,
+      negativeSampleCount: negativeCount,
+      minHeightM: minH,
+      maxHeightM: maxH,
+      deepestM: Math.max(...depths),
+      deepestCoordinate: deepest
+        ? Object.freeze({
+            longitudeDeg: C.Math.toDegrees(deepest.longitude),
+            latitudeDeg: C.Math.toDegrees(deepest.latitude),
+            heightM: heights[deepestIndex],
+          })
+        : null,
+      triangleCount: indices.length / 3,
+    });
+    this.viewer.scene.requestRender();
+    return this.meta;
+  }
+  setVisible(show) {
+    this.visible = !!show;
+    if (this.primitive) this.primitive.show = this.visible;
+    this.viewer.scene.requestRender();
+  }
+  async show(options) {
+    this.visible = true;
+    if (!this.primitive) await this.load(options);
+    if (this.primitive) this.primitive.show = true;
+    this.viewer.scene.requestRender();
+    return this.meta;
+  }
+  hide() {
+    this.setVisible(false);
+  }
+  #destroy() {
+    if (this.primitive) {
+      if (this.role === "underwater-detail") {
+        if (
+          globalThis.__earthusV2UnderwaterBathymetryPrimitive === this.primitive
+        )
+          globalThis.__earthusV2UnderwaterBathymetryPrimitive = null;
+      } else if (
+        globalThis.__earthusV2TrenchBathymetryPrimitive === this.primitive
+      )
+        globalThis.__earthusV2TrenchBathymetryPrimitive = null;
+      try {
+        this.viewer.scene.primitives.remove(this.primitive);
+      } catch (_) {}
+      this.primitive = null;
+    }
+  }
+  dispose() {
+    this.generation++;
+    this.#destroy();
+    this.meta = null;
+    this.visible = false;
+  }
 }

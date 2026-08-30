@@ -32,6 +32,13 @@ for path in \
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+ROOT_ORIGIN="${PUBLIC_ORIGIN%/}"
+for root_path in / /index.html /sw.js; do
+  safe_name="$(printf '%s' "$root_path" | sed 's#^/$#root#; s#^/##; s#/#_#g')"
+  curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "$ROOT_ORIGIN$root_path" \
+    -o "$TMP/root-before-$safe_name"
+done
+
 cat > "$TMP/v2-entry.html" <<'EOF'
 <!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta http-equiv="refresh" content="0;url=/v2/"><title>EARTHUS V2</title></head><body><script>location.replace('/v2/')</script><a href="/v2/">EARTHUS V2</a><!-- EARTHUS_V2_ENTRY_REDIRECT --></body></html>
 EOF
@@ -54,11 +61,49 @@ print('PASS CloudFront target', d['Id'], want, '/app')
 PY
 
 echo '== 2/5 Upload V2 only =='
-# No --delete: preserve any independently deployed V2 evidence/assets until explicitly audited.
-aws s3 sync "$V2/" "s3://$BUCKET/$PREFIX/v2/" \
-  --region "$S3_REGION" \
-  --exclude '.DS_Store' \
-  --cache-control 'public, max-age=60'
+# Upload only files tracked by the exact source commit. This excludes ignored
+# config.local.js and unrelated untracked package/evidence files. No --delete.
+DEPLOY_FILES=()
+while IFS= read -r path; do DEPLOY_FILES+=("$path"); done < <(
+  git -C "$ROOT" ls-files prototype/v2 \
+    | sed 's#^prototype/v2/##' \
+    | grep -vE '(^README\.md$|/package\.json$|^package\.json$)'
+)
+
+content_type(){
+  case "$1" in
+    *.html) echo 'text/html; charset=utf-8' ;;
+    *.js|*.mjs) echo 'text/javascript; charset=utf-8' ;;
+    *.css) echo 'text/css; charset=utf-8' ;;
+    *.json) echo 'application/json; charset=utf-8' ;;
+    *.png) echo 'image/png' ;;
+    *.jpg|*.jpeg) echo 'image/jpeg' ;;
+    *.webp) echo 'image/webp' ;;
+    *) echo 'application/octet-stream' ;;
+  esac
+}
+
+cache_control(){
+  case "$1" in
+    index.html|data/materialized/current.json|data/materialized/earth-version.json|data/current-earth/snow-ice.meta.json)
+      echo 'no-cache, max-age=0, must-revalidate' ;;
+    data/materialized/artifacts/*)
+      echo 'public, max-age=31536000, immutable' ;;
+    data/current-earth/snow-ice.png)
+      echo 'public, max-age=1800, stale-while-revalidate=21600' ;;
+    *) echo 'public, max-age=60' ;;
+  esac
+}
+
+for path in "${DEPLOY_FILES[@]}"; do
+  [[ -f "$V2/$path" ]] || { echo "tracked V2 file missing: $path" >&2; exit 2; }
+  aws s3 cp "$V2/$path" "s3://$BUCKET/$PREFIX/v2/$path" \
+    --region "$S3_REGION" \
+    --content-type "$(content_type "$path")" \
+    --cache-control "$(cache_control "$path")" \
+    --only-show-errors
+  echo "PASS wrote s3://$BUCKET/$PREFIX/v2/$path"
+done
 
 # CloudFront uses the S3 REST origin with OriginPath=/app. A request for /v2/
 # therefore asks S3 for the literal key app/v2/. Put the real V2 HTML at all
@@ -84,17 +129,12 @@ aws s3api put-object \
 echo "PASS wrote s3://$BUCKET/$PREFIX/v2"
 
 echo '== 3/5 S3 byte-for-byte proof =='
-for path in \
-  index.html \
-  js/real-living-earth.js \
-  js/gk2a-cth-relief.js \
-  js/gfs-cloud-volume.js
-  do
-    mkdir -p "$TMP/remote/$(dirname "$path")"
-    aws s3 cp "s3://$BUCKET/$PREFIX/v2/$path" "$TMP/remote/$path" --region "$S3_REGION" --only-show-errors
-    cmp "$V2/$path" "$TMP/remote/$path"
-    echo "PASS s3://$BUCKET/$PREFIX/v2/$path"
-  done
+for path in "${DEPLOY_FILES[@]}"; do
+  mkdir -p "$TMP/remote/$(dirname "$path")"
+  aws s3 cp "s3://$BUCKET/$PREFIX/v2/$path" "$TMP/remote/$path" --region "$S3_REGION" --only-show-errors
+  cmp "$V2/$path" "$TMP/remote/$path"
+  echo "PASS s3://$BUCKET/$PREFIX/v2/$path"
+done
 aws s3 cp "s3://$BUCKET/$PREFIX/v2/" "$TMP/remote-v2-slash.html" --region "$S3_REGION" --only-show-errors
 cmp "$V2/index.html" "$TMP/remote-v2-slash.html"
 echo "PASS s3://$BUCKET/$PREFIX/v2/ is V2 HTML"
@@ -152,7 +192,12 @@ fi
 for path in \
   /v2/js/real-living-earth.js \
   /v2/js/gk2a-cth-relief.js \
-  /v2/js/gfs-cloud-volume.js
+  /v2/js/gfs-cloud-volume.js \
+  /v2/js/materialized-earth-runtime.js \
+  /v2/js/v52/compute-policy-registry.js \
+  /v2/js/v52/intelligence-lod-policy.js \
+  /v2/data/current-earth/snow-ice.meta.json \
+  /v2/data/materialized/current.json
   do
     curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "$ORIGIN$path" -o "$TMP/$(basename "$path")"
     echo "PASS $ORIGIN$path"
@@ -177,5 +222,13 @@ print('PASS public truth manifests')
 print('GK2A',cth.get('validAt'),cth.get('width'),cth.get('height'))
 print('GFS',state.get('validAt'),gfs.get('dimensions'),gfs.get('byteLength'))
 PY
+
+for root_path in / /index.html /sw.js; do
+  safe_name="$(printf '%s' "$root_path" | sed 's#^/$#root#; s#^/##; s#/#_#g')"
+  curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "$ORIGIN$root_path" \
+    -o "$TMP/root-after-$safe_name"
+  cmp "$TMP/root-before-$safe_name" "$TMP/root-after-$safe_name"
+  echo "PASS unchanged production root $root_path"
+done
 
 echo 'EARTHUS V2 NETWORK ENTRY + STATIC + PUBLIC DATA: READY FOR BROWSER RENDER ACCEPTANCE'

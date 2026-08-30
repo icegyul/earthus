@@ -165,7 +165,10 @@ export function installVisualFidelityController({ runtime = null } = {}) {
       if (detail) {
         rememberLayer(detail);
         detail.show = true;
-        detail.alpha = 1;
+        // Keep the NASA source base visible when ArcGIS detail tiles are still
+        // refining or externally throttled. A fully opaque not-yet-detailed
+        // layer produced the uniform mountain frame seen on remote runners.
+        detail.alpha = 0.82;
         detail.brightness = 0.97;
         detail.saturation = 0.92;
         detail.contrast = 1.035;

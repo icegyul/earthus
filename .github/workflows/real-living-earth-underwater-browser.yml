@@ -1,0 +1,39 @@
+name: EARTHUS V2 Underwater Terrain Visual Browser
+
+on:
+  push:
+    branches:
+      - earthus-v2/real-living-earth-render
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  underwater-visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax
+        run: node --check tools/test_v2_underwater_terrain_browser.mjs
+      - name: Install browser runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0 pngjs@7.0.0
+          npx playwright install chromium
+      - name: Capture actual underwater terrain evidence
+        env:
+          EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
+          EARTHUS_V2_UNDERWATER_OUTPUT: ${{ github.workspace }}/output/v2-underwater-terrain-visual
+        run: node tools/test_v2_underwater_terrain_browser.mjs
+      - name: Upload underwater evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-underwater-terrain-visual-${{ github.sha }}
+          path: output/v2-underwater-terrain-visual
+          if-no-files-found: error
+          retention-days: 7

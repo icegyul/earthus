@@ -1,0 +1,41 @@
+name: EARTHUS V2 Current Earth Seasonal Browser
+
+on:
+  push:
+    branches:
+      - earthus-v2/real-living-earth-render
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  current-earth-seasonal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax
+        run: |
+          node --check prototype/v2/js/current-earth-seasonal.js
+          node --check tools/test_v2_current_earth_seasonal_browser.mjs
+      - name: Install browser runtime
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install chromium
+      - name: Verify observed Current Earth
+        env:
+          EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
+          EARTHUS_V2_CURRENT_EARTH_OUTPUT: ${{ github.workspace }}/output/v2-current-earth-seasonal
+        run: node tools/test_v2_current_earth_seasonal_browser.mjs
+      - name: Upload Current Earth evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-current-earth-seasonal-${{ github.sha }}
+          path: output/v2-current-earth-seasonal
+          if-no-files-found: error
+          retention-days: 7

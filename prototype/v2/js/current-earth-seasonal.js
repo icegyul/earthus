@@ -1,57 +1,21 @@
 /* EARTHUS V2 — Current Earth seasonal surface.
  *
  * Lightweight GLOBAL/CONTINENT context only. This module never creates a Viewer,
- * never blocks the base Earth, and never upgrades provider truth on failure.
+ * never blocks the base Earth, and never calls the upstream NOAA provider from the
+ * browser. Provider access is adapter-first: AWS cache adapter -> S3/CloudFront ->
+ * /v2/data/current-earth/* -> browser.
  *
  * NOAA / U.S. National Ice Center IMS is an analyst-produced, daily Northern
  * Hemisphere snow/ice analysis. It is useful as an OBSERVED context layer, not as
  * an emergency decision surface and not as snow-depth/SWE truth.
  */
 
-const IMS_SERVICE = 'https://mapservices.weather.noaa.gov/raster/rest/services/obs/usnic_ims_snow_ice_1km/ImageServer';
-const IMS_RASTER_FUNCTION = 'rft_usnic_ims_1km';
+const PUBLIC_META = '/v2/data/current-earth/snow-ice.meta.json';
+const PUBLIC_IMAGE = '/v2/data/current-earth/snow-ice.png';
 const CREDIT = 'NOAA · U.S. National Ice Center · IMS Snow and Ice Analysis';
-const VERSION = 'earthus.current-earth-seasonal.v1';
+const VERSION = 'earthus.current-earth-seasonal.v1.1';
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-const finite = (value, fallback = null) => Number.isFinite(Number(value)) ? Number(value) : fallback;
-
-function buildExportUrl() {
-  const params = new URLSearchParams({
-    bbox: '-180,0,180,90',
-    bboxSR: '4326',
-    imageSR: '4326',
-    size: '2048,1024',
-    format: 'png32',
-    transparent: 'true',
-    interpolation: 'RSP_NearestNeighbor',
-    renderingRule: JSON.stringify({ rasterFunction: IMS_RASTER_FUNCTION }),
-    f: 'image',
-  });
-  return `${IMS_SERVICE}/exportImage?${params.toString()}`;
-}
-
-async function readLatestCatalogTimestamp(signal) {
-  try {
-    const params = new URLSearchParams({
-      where: '1=1',
-      outFields: 'idp_filedate,idp_ingestdate,idp_validtime',
-      orderByFields: 'idp_filedate DESC',
-      resultRecordCount: '1',
-      returnGeometry: 'false',
-      f: 'json',
-    });
-    const response = await fetch(`${IMS_SERVICE}/query?${params.toString()}`, { cache: 'no-store', signal });
-    if (!response.ok) return null;
-    const json = await response.json();
-    const attrs = json?.features?.[0]?.attributes || null;
-    if (!attrs) return null;
-    const epoch = finite(attrs.idp_validtime, finite(attrs.idp_filedate, finite(attrs.idp_ingestdate)));
-    return epoch == null ? null : new Date(epoch).toISOString();
-  } catch (_) {
-    return null;
-  }
-}
 
 function alphaForScope(scope) {
   return ({ GLOBAL: .52, CONTINENT: .44, COUNTRY: .26, REGION: 0, LOCAL: 0, UNDERWATER: 0 })[scope] ?? .38;
@@ -59,6 +23,14 @@ function alphaForScope(scope) {
 
 function scopeFromRuntime() {
   return globalThis.__earthusV2Intelligence?.snapshot?.()?.context?.viewScope || 'GLOBAL';
+}
+
+function validateReceipt(receipt) {
+  if (receipt?.source !== 'NOAA_USNIC_IMS_1KM') throw new Error('CURRENT_EARTH_RECEIPT_SOURCE_MISMATCH');
+  if (receipt?.truthState !== 'OBSERVED') throw new Error('CURRENT_EARTH_RECEIPT_TRUTH_MISMATCH');
+  if (receipt?.semanticMeaning !== 'SNOW_ICE_EXTENT_NOT_DEPTH') throw new Error('CURRENT_EARTH_RECEIPT_SEMANTIC_MISMATCH');
+  if (!receipt?.sha256 || typeof receipt.sha256 !== 'string') throw new Error('CURRENT_EARTH_RECEIPT_SHA_REQUIRED');
+  return receipt;
 }
 
 export async function installSeasonalCurrentEarth({ viewer, tasks = null, signal = null } = {}) {
@@ -73,7 +45,7 @@ export async function installSeasonalCurrentEarth({ viewer, tasks = null, signal
   let task = null;
   let layer = null;
   let disposed = false;
-  let latestValidAt = null;
+  let receipt = null;
   let truthState = 'INSUFFICIENT_DATA';
   let errorMessage = null;
   let scope = scopeFromRuntime();
@@ -81,22 +53,19 @@ export async function installSeasonalCurrentEarth({ viewer, tasks = null, signal
   try {
     task = tasks?.begin?.('current-earth-seasonal', {
       label: 'Current Earth · Snow & Ice',
-      provider: 'NOAA · USNIC IMS 1 km',
+      provider: 'Earthus cache · NOAA USNIC IMS 1 km',
       stage: 'observed snow/ice surface',
       indeterminate: true,
       retryable: true,
       cancellable: false,
     }) || null;
 
-    const metadataResponse = await fetch(`${IMS_SERVICE}?f=json`, { cache: 'no-store', signal: abort.signal });
-    if (!metadataResponse.ok) throw new Error(`IMS_METADATA_${metadataResponse.status}`);
-    const metadata = await metadataResponse.json();
-    if (!String(metadata?.name || '').includes('usnic_ims_snow_ice_1km')) throw new Error('IMS_METADATA_IDENTITY_MISMATCH');
-    const functions = Array.isArray(metadata?.rasterFunctionInfos) ? metadata.rasterFunctionInfos.map(item => item?.name) : [];
-    if (!functions.includes(IMS_RASTER_FUNCTION)) throw new Error('IMS_RASTER_FUNCTION_UNAVAILABLE');
+    const metaResponse = await fetch(PUBLIC_META, { cache: 'no-store', signal: abort.signal });
+    if (!metaResponse.ok) throw new Error(`CURRENT_EARTH_META_${metaResponse.status}`);
+    receipt = validateReceipt(await metaResponse.json());
 
-    latestValidAt = await readLatestCatalogTimestamp(abort.signal);
-    const provider = await C.SingleTileImageryProvider.fromUrl(buildExportUrl(), {
+    const imageUrl = `${PUBLIC_IMAGE}?v=${encodeURIComponent(receipt.sha256.slice(0, 16))}`;
+    const provider = await C.SingleTileImageryProvider.fromUrl(imageUrl, {
       rectangle: C.Rectangle.fromDegrees(-180, 0, 180, 90),
       credit: CREDIT,
     });
@@ -110,7 +79,7 @@ export async function installSeasonalCurrentEarth({ viewer, tasks = null, signal
     layer.gamma = 1.02;
     layer.show = layer.alpha > .01;
     truthState = 'OBSERVED';
-    task?.complete?.({ stage: latestValidAt ? `IMS ${latestValidAt}` : 'IMS current daily analysis' });
+    task?.complete?.({ stage: receipt.validAt ? `IMS ${receipt.validAt}` : 'IMS current daily analysis' });
     viewer.scene.requestRender();
   } catch (error) {
     errorMessage = String(error?.message || error);
@@ -133,22 +102,28 @@ export async function installSeasonalCurrentEarth({ viewer, tasks = null, signal
     version: VERSION,
     source: 'NOAA_USNIC_IMS_1KM',
     truthState: () => truthState,
-    validAt: () => latestValidAt,
+    validAt: () => receipt?.validAt || null,
+    receipt: () => receipt,
     scope: () => scope,
     layer: () => layer,
     diagnostics: () => Object.freeze({
-      service: IMS_SERVICE,
-      rasterFunction: IMS_RASTER_FUNCTION,
-      validAt: latestValidAt,
+      metaUrl: PUBLIC_META,
+      imageUrl: PUBLIC_IMAGE,
+      validAt: receipt?.validAt || null,
+      retrievedAt: receipt?.retrievedAt || null,
+      sha256: receipt?.sha256 || null,
       truthState,
       error: errorMessage,
       semanticMeaning: 'SNOW_ICE_EXTENT_NOT_DEPTH',
       operationalCaveat: 'CONTEXT_ONLY_NOT_EMERGENCY_DECISION_SURFACE',
+      upstreamBrowserAccess: false,
     }),
     async refresh() {
       if (disposed) return false;
-      latestValidAt = await readLatestCatalogTimestamp(abort.signal);
-      return latestValidAt;
+      const response = await fetch(PUBLIC_META, { cache: 'no-store', signal: abort.signal });
+      if (!response.ok) return false;
+      receipt = validateReceipt(await response.json());
+      return receipt;
     },
     dispose() {
       if (disposed) return;

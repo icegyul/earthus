@@ -29,6 +29,7 @@ jobs:
           node --check prototype/v2/js/gk2a-cth-relief.js
           node --check prototype/v2/js/gfs-cloud-volume.js
           node --check prototype/v2/js/polar-geographic-cap.js
+          node --check prototype/v2/js/trench-bathymetry-mesh.js
           node --check prototype/v2/js/real-living-earth.js
           node --check tools/test_v2_real_living_earth_visual_readpixels.mjs
 
@@ -55,18 +56,18 @@ jobs:
           grep -F 'GFS pressure-level TCDC' aws/gfs-cloud-volume/handler.py
           ! grep -R -nE 'SYNTHETIC_(TERRAIN|TRENCH|BATHYMETRY)' prototype/v2/js aws/gk2a-clouds/cth_pipeline.py aws/gfs-cloud-volume/handler.py
 
-      - name: Actual CTH mesh visual contract
+      - name: Continuous actual CTH mesh visual contract
         shell: bash
         run: |
           set -euo pipefail
-          grep -F 'OBSERVED_GMGSI_ALPHA_ON_OBSERVED_GK2A_CTH_MESH' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'REGIONAL_ACTUAL_CTH_VERTEX_HEIGHT_MESH_NO_VERTICAL_EXAGGERATION' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'rawA*lum' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'GK2A_CTH_TEXTURE_ALPHA_GATE' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'new C.GeometryAttribute' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'OBSERVED_GMGSI_ALPHA_MASKED_BY_VALID_GK2A_CTH_ON_CONTINUOUS_SUPPORT_MESH' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'ACTUAL_CTH_VERTICES_WITH_TRANSPARENT_NEIGHBOUR_SUPPORT_NO_VERTICAL_EXAGGERATION' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'function validMask' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'function supportHeights' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'actualCthVertexCount:support.sourceValidCount' prototype/v2/js/gk2a-cth-relief.js
+          grep -F 'validMaskRadiusPx' prototype/v2/js/gk2a-cth-relief.js
           grep -F 'primitiveType:C.PrimitiveType.TRIANGLES' prototype/v2/js/gk2a-cth-relief.js
           grep -F 'transparent:true' prototype/v2/js/gk2a-cth-relief.js
-          grep -F 'triangleCount:idx.length/3' prototype/v2/js/gk2a-cth-relief.js
           ! grep -F 'SOURCE_CTH_ALTITUDE_BANDS' prototype/v2/js/gk2a-cth-relief.js
           ! grep -Ei 'fbm|proceduralNoise|noise3d|simplex|perlin' prototype/v2/js/gk2a-cth-relief.js
           grep -F 'fsInput.voxel.travelDistance' prototype/v2/js/gfs-cloud-volume.js
@@ -74,9 +75,8 @@ jobs:
           grep -F 'GFS_VOLUME_DEVICE_POLICY' prototype/v2/js/gfs-cloud-volume.js
           grep -F 'SwiftShader' prototype/v2/js/gfs-cloud-volume.js
           grep -F 'cloudDiagnostics:()=>Object.freeze' prototype/v2/js/real-living-earth.js
-          grep -F "await flyToAsync({destination:Cesium.Cartesian3.fromDegrees(132,26,1_850_000)" prototype/v2/js/real-living-earth.js
 
-      - name: Surface and bathymetry mode contract
+      - name: Surface and bathymetry provider separation
         shell: bash
         run: |
           set -euo pipefail
@@ -92,7 +92,7 @@ jobs:
           grep -F 'terrainProvider?.hasWaterMask===true' prototype/v2/js/real-living-earth.js
           grep -F 'scene.globe.showWaterEffect=supported' prototype/v2/js/real-living-earth.js
 
-      - name: True polar stereographic UV contract
+      - name: Polar stereographic UV and seam contract
         shell: bash
         run: |
           set -euo pipefail
@@ -103,9 +103,9 @@ jobs:
           grep -F "id:'EPSG:3031'" prototype/v2/js/polar-geographic-cap.js
           grep -F 'latTs:70,lon0:-45' prototype/v2/js/polar-geographic-cap.js
           grep -F 'latTs:-71,lon0:0' prototype/v2/js/polar-geographic-cap.js
-          grep -F 'function rhoFor' prototype/v2/js/polar-geographic-cap.js
           grep -F 'function project(config,lonDeg,latDeg)' prototype/v2/js/polar-geographic-cap.js
-          grep -F 'HALF_EXTENT_M=930000' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'function featherTexture' prototype/v2/js/polar-geographic-cap.js
+          grep -F "seamClass:'RADIAL_ALPHA_FEATHER'" prototype/v2/js/polar-geographic-cap.js
           grep -F 'GEODETIC_MESH_WITH_POLAR_STEREOGRAPHIC_UV' prototype/v2/js/polar-geographic-cap.js
           grep -F 'NASA_GIBS_POLAR_STEREOGRAPHIC_HOLE_FILL_IMAGERY_ONLY' prototype/v2/js/polar-geographic-cap.js
           grep -F 'primitiveType:C.PrimitiveType.TRIANGLES' prototype/v2/js/polar-geographic-cap.js
@@ -114,20 +114,40 @@ jobs:
           grep -F "new Set(['EPSG:3413','EPSG:3031'])" tools/test_v2_real_living_earth_visual_readpixels.mjs
           grep -F 'gl.readPixels' tools/test_v2_real_living_earth_visual_readpixels.mjs
 
-      - name: Camera and terrain readiness contract
+      - name: Sampled trench mesh truth contract
         shell: bash
         run: |
           set -euo pipefail
-          grep -F 'function flyToAsync(options)' prototype/v2/js/real-living-earth.js
-          grep -F 'async function waitGlobeReady' prototype/v2/js/real-living-earth.js
-          grep -F 'scene.globe.tilesLoaded===true' prototype/v2/js/real-living-earth.js
-          grep -F 'await flyToAsync' prototype/v2/js/real-living-earth.js
-          grep -F 'const tilesReady=await waitGlobeReady' prototype/v2/js/real-living-earth.js
-          grep -F "tilesReady?'tiles ready':'tiles pending'" prototype/v2/js/real-living-earth.js
-          grep -F 'globalThis.__earthusSkyPanorama?.hide?.()' prototype/v2/js/real-living-earth.js
+          grep -F "import { TrenchBathymetryMeshRuntime } from './trench-bathymetry-mesh.js'" prototype/v2/js/real-living-earth.js
+          grep -F 'ESRI_TOPOBATHY3D_SAMPLED_SEAFLOOR_MESH' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F "sourceId:'ESRI_WORLDELEVATION3D_TOPOBATHY3D'" prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'synthetic:false' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'verticalExaggeration:1' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F "colorModel:'ANALYTIC_DEPTH_RAMP_GEOMETRY_UNCHANGED'" prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'sampleTerrainMostDetailed' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'new C.MaterialAppearance' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'flat:true' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F 'function prepareTrenchReveal' prototype/v2/js/real-living-earth.js
+          grep -F 'async function ensureTrenchMesh' prototype/v2/js/real-living-earth.js
+          grep -F 'g.depthTestAgainstTerrain=false' prototype/v2/js/real-living-earth.js
+          grep -F 'trenchMeshTruth:()=>trenchMeshMeta' prototype/v2/js/real-living-earth.js
+          grep -F "truthClass==='ESRI_TOPOBATHY3D_SAMPLED_SEAFLOOR_MESH'" tools/test_v2_real_living_earth_visual_readpixels.mjs
+          grep -F "states.trench.trenchMesh?.truthClass,'ESRI_TOPOBATHY3D_SAMPLED_SEAFLOOR_MESH'" tools/test_v2_real_living_earth_visual_readpixels.mjs
+
+      - name: Underwater restoration contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F 'function restoreTrenchReveal' prototype/v2/js/real-living-earth.js
+          grep -F 'function restoreUnderwater' prototype/v2/js/real-living-earth.js
+          grep -F 'function prepareUnderwater' prototype/v2/js/real-living-earth.js
           grep -F 't.enabled=true' prototype/v2/js/real-living-earth.js
           grep -F 't.frontFaceAlpha=1' prototype/v2/js/real-living-earth.js
           grep -F 't.backFaceAlpha=1' prototype/v2/js/real-living-earth.js
+          grep -F 'g.backFaceCulling=false' prototype/v2/js/real-living-earth.js
+          grep -F 'globalThis.__earthusSkyPanorama?.hide?.()' prototype/v2/js/real-living-earth.js
+          grep -F 'trenchMesh?.setVisible(true)' prototype/v2/js/real-living-earth.js
+          grep -F 'trenchMesh?.hide()' prototype/v2/js/real-living-earth.js
 
       - name: Official GK2A EA LCC contract
         shell: bash

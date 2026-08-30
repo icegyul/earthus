@@ -36,6 +36,7 @@ jobs:
           node --check tools/test_v2_real_living_earth_visual_readpixels.mjs
           node --check tools/test_v2_mountain_terrain_browser.mjs
           node --check tools/test_v2_trench_mesh_browser.mjs
+          node --check tools/test_v2_underwater_terrain_browser.mjs
 
       - name: Single-viewer truth-first bootstrap
         shell: bash
@@ -103,6 +104,9 @@ jobs:
           grep -F 'synthetic:false' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'verticalExaggeration:1' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'nx=81,ny=65,samplingLevel=11' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F "role='overview'" prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F "role==='underwater-detail'" prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F '__earthusV2UnderwaterBathymetryPrimitive' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'SOURCE_LUMINANCE_AND_SATURATION_GRADE_ONLY' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'NASA_GIBS_REFERENCE_BATHYMETRY_DRAPED_ON_ACTUAL_SAMPLED_GEOMETRY' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'GeometryPipeline.computeNormal' prototype/v2/js/trench-bathymetry-mesh.js
@@ -111,7 +115,6 @@ jobs:
           grep -F 'deepestCoordinate' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'sampleTerrain(terrainProvider,samplingLevel,points)' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'sampleTerrainMostDetailed' prototype/v2/js/trench-bathymetry-mesh.js
-          grep -F '__earthusV2TrenchBathymetryPrimitive' prototype/v2/js/trench-bathymetry-mesh.js
 
       - name: Camera-aware visual fidelity contract
         shell: bash
@@ -119,19 +122,22 @@ jobs:
           set -euo pipefail
           grep -F "new URL('./js/visual-fidelity-controller.js', location.href)" prototype/v2/js/loading-ui.js
           grep -F 'installWhenReady({ timeoutMs: 45000 })' prototype/v2/js/loading-ui.js
+          grep -F "import { TrenchBathymetryMeshRuntime }" prototype/v2/js/visual-fidelity-controller.js
           grep -F 'function shellAlpha' prototype/v2/js/visual-fidelity-controller.js
           grep -F 'function shadowAlpha' prototype/v2/js/visual-fidelity-controller.js
           grep -F 'maximumScreenSpaceError=1.25' prototype/v2/js/visual-fidelity-controller.js
           grep -F 'function aimAtTrench' prototype/v2/js/visual-fidelity-controller.js
           grep -F '78_000' prototype/v2/js/visual-fidelity-controller.js
           grep -F 'function aimAtActualDeepest' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'applyUnderwaterTerrainGrade' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'scene.globe.show=true' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'scene.globe.maximumScreenSpaceError=1.05' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'scene.globe.depthTestAgainstTerrain=true' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'function ensureUnderwaterDetail' prototype/v2/js/visual-fidelity-controller.js
+          grep -F "role:'underwater-detail'" prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'lonSpan:1.25,latSpan:1.0,nx:97,ny:79,samplingLevel:12' prototype/v2/js/visual-fidelity-controller.js
+          grep -F '__earthusV2UnderwaterDetailMeta' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'scene.globe.show=false' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'detailPrimitive.show=true' prototype/v2/js/visual-fidelity-controller.js
           grep -F 'trenchPrimitive.show=false' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'detail.saturation=.92' prototype/v2/js/visual-fidelity-controller.js
-          ! grep -F 'scene.globe.show=false' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'applyUnderwaterLight' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'new C.DirectionalLight' prototype/v2/js/visual-fidelity-controller.js
 
       - name: Browser evidence contracts are strict
         shell: bash
@@ -145,8 +151,11 @@ jobs:
           grep -F 'visualReady' tools/test_v2_mountain_terrain_browser.mjs
           grep -F 'visuallyStable' tools/test_v2_mountain_terrain_browser.mjs
           ! grep -F 'assert.equal(state.runtime.tilesLoaded,true' tools/test_v2_mountain_terrain_browser.mjs
-          grep -F 'chromaMean' tools/test_v2_mountain_terrain_browser.mjs
-          grep -F 'localEdgeMean' tools/test_v2_mountain_terrain_browser.mjs
+          grep -F 'underwaterDetail?.grid?.nx>=97' tools/test_v2_underwater_terrain_browser.mjs
+          grep -F 'underwaterDetail?.grid?.ny>=79' tools/test_v2_underwater_terrain_browser.mjs
+          grep -F 'underwaterDetail?.spacing?.eastWestM<1800' tools/test_v2_underwater_terrain_browser.mjs
+          grep -F 'underwaterDetail?.triangleCount>14000' tools/test_v2_underwater_terrain_browser.mjs
+          grep -F 'localEdgeMean' tools/test_v2_underwater_terrain_browser.mjs
 
       - name: Lambda packaging and deployment helpers
         shell: bash

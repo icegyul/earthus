@@ -104,9 +104,9 @@ jobs:
           grep -F "WMS='https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi'" prototype/v2/js/polar-geographic-cap.js
           grep -F 'const EDGE_LAT=81.75' prototype/v2/js/polar-geographic-cap.js
           grep -F "srs:'EPSG:4326'" prototype/v2/js/polar-geographic-cap.js
-          grep -F 'async function loadBest' prototype/v2/js/polar-geographic-cap.js
-          grep -F 'dynamicRange' prototype/v2/js/polar-geographic-cap.js
-          grep -F 'candidates.sort((a,b)=>b.signal.score-a.signal.score)' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'function signalStrong' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'if(signalStrong(signal))return Object.freeze(candidate)' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'usable.sort((a,b)=>b.signal.score-a.signal.score)' prototype/v2/js/polar-geographic-cap.js
           grep -F 'new C.RectangleGeometry' prototype/v2/js/polar-geographic-cap.js
           grep -F 'C.EllipsoidSurfaceAppearance.VERTEX_FORMAT' prototype/v2/js/polar-geographic-cap.js
           grep -F "geometryClass:'CESIUM_RECTANGLE_GEOMETRY'" prototype/v2/js/polar-geographic-cap.js

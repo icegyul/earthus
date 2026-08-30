@@ -27,6 +27,7 @@ jobs:
           node --check tools/test_v2_intelligence_runtime_browser.mjs
           node --check tools/test_v2_canonical_imagery_ownership.mjs
           node --check tools/earthus-v52/materialized-earth-browser.mjs
+          node --check tools/earthus-v52/mobile-acceptance.mjs
       - name: Install browser runtime
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
@@ -44,6 +45,11 @@ jobs:
         env:
           EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
         run: node tools/earthus-v52/materialized-earth-browser.mjs
+      - name: Verify mobile touch and Materialized Earth acceptance
+        env:
+          EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
+          EARTHUS_V52_MOBILE_SCREENSHOT: ${{ github.workspace }}/output/v2-intelligence-runtime/mobile-390x844.png
+        run: node tools/earthus-v52/mobile-acceptance.mjs
       - name: Upload intelligence evidence
         if: always()
         uses: actions/upload-artifact@v4

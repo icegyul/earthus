@@ -94,9 +94,18 @@ try {
     rect: document.querySelector('#intel')?.getBoundingClientRect(),
     body: document.querySelector('#body')?.innerText || '',
     overflow: document.documentElement.scrollWidth - innerWidth,
+    targets: [
+      document.querySelector('#close'),
+      ...document.querySelectorAll('#intel nav button'),
+    ].map(button => {
+      const rect = button?.getBoundingClientRect();
+      return { label: button?.textContent?.trim() || '', width: rect?.width || 0, height: rect?.height || 0 };
+    }),
   }));
   assert.ok(panel.rect.left >= 0 && panel.rect.right <= 390);
   assert.ok(panel.overflow <= 0);
+  assert.ok(panel.targets.every(target => target.width >= 44 && target.height >= 44),
+    `MOBILE_INTELLIGENCE_PANEL_TARGET:${JSON.stringify(panel.targets)}`);
   assert.match(panel.body, /EVENTS\s+4/);
   assert.equal(errors.length, 0, errors.join('\n'));
   const output = process.env.EARTHUS_V52_MOBILE_SCREENSHOT || '/private/tmp/earthus-v52-mobile.png';

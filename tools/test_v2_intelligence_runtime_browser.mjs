@@ -50,23 +50,27 @@ async function setHeight(page, height) {
       destination: Cesium.Cartesian3.fromDegrees(127.8, 36.4, heightM),
       orientation: { heading: 0, pitch: Cesium.Math.toRadians(-90), roll: 0 },
     });
-    // Programmatic setView is an explicit navigation command. Notify the
-    // Intelligence controller in the same turn instead of relying on Cesium's
-    // percentageChanged camera event, which is intended for interactive motion.
     globalThis.__earthusV2Intelligence?.update?.('acceptance-camera-setView');
     v.scene.requestRender();
   }, height);
 }
 
 async function waitScope(page, scope) {
-  await wait(page, expected => {
+  const end = Date.now() + 25000;
+  while (Date.now() < end) {
+    try {
+      const matched = await page.evaluate(expected => {
+        const s = globalThis.__earthusV2Intelligence?.snapshot?.();
+        return s?.context?.viewScope === expected && s?.context?.cameraState === 'STABLE';
+      }, scope);
+      if (matched) break;
+    } catch {}
+    await page.waitForTimeout(160);
+  }
+  const state = await page.evaluate(() => {
     const s = globalThis.__earthusV2Intelligence?.snapshot?.();
-    return s?.context?.viewScope === expected && s?.context?.cameraState === 'STABLE';
-  }, 25000, `SCOPE_TIMEOUT:${scope}`);
-  return page.evaluate(() => {
-    const s = globalThis.__earthusV2Intelligence.snapshot();
-    const v = window.__earthusV2.viewer;
-    return {
+    const v = window.__earthusV2?.viewer;
+    return s && v ? {
       scope: s.context.viewScope,
       truthState: s.context.truthState,
       quality: s.executionPlan.quality,
@@ -80,8 +84,10 @@ async function waitScope(page, scope) {
       readiness: s.readiness,
       cameraState: s.context.cameraState,
       altitudeM: s.context.spatialContext.altitudeM,
-    };
+    } : null;
   });
+  if (!state || state.scope !== scope || state.cameraState !== 'STABLE') throw new Error(`SCOPE_TIMEOUT:${scope}`);
+  return state;
 }
 
 fs.mkdirSync(out, { recursive: true });

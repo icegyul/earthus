@@ -50,6 +50,10 @@ async function setHeight(page, height) {
       destination: Cesium.Cartesian3.fromDegrees(127.8, 36.4, heightM),
       orientation: { heading: 0, pitch: Cesium.Math.toRadians(-90), roll: 0 },
     });
+    // Programmatic setView is an explicit navigation command. Notify the
+    // Intelligence controller in the same turn instead of relying on Cesium's
+    // percentageChanged camera event, which is intended for interactive motion.
+    globalThis.__earthusV2Intelligence?.update?.('acceptance-camera-setView');
     v.scene.requestRender();
   }, height);
 }
@@ -75,6 +79,7 @@ async function waitScope(page, scope) {
       liveRequestRenderMode: v.scene.requestRenderMode,
       readiness: s.readiness,
       cameraState: s.context.cameraState,
+      altitudeM: s.context.spatialContext.altitudeM,
     };
   });
 }
@@ -160,6 +165,19 @@ try {
   console.log('EARTHUS INTELLIGENCE RUNTIME: RUNTIME_WIRED');
   console.log(JSON.stringify(evidence, null, 2));
 } catch (error) {
+  try {
+    evidence.failureSnapshot = await page.evaluate(() => {
+      const s = globalThis.__earthusV2Intelligence?.snapshot?.();
+      const v = window.__earthusV2?.viewer;
+      return {
+        snapshot: s || null,
+        cameraHeightM: v?.camera?.positionCartographic?.height ?? null,
+        liveSse: v?.scene?.globe?.maximumScreenSpaceError ?? null,
+        livePreloadSiblings: v?.scene?.globe?.preloadSiblings ?? null,
+        liveRequestRenderMode: v?.scene?.requestRenderMode ?? null,
+      };
+    });
+  } catch {}
   evidence.error = String(error?.stack || error);
   fs.writeFileSync(path.join(out, 'state.json'), JSON.stringify(evidence, null, 2));
   throw error;

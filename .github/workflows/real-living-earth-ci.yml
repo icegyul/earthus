@@ -31,6 +31,7 @@ jobs:
           node --check prototype/v2/js/polar-geographic-cap.js
           node --check prototype/v2/js/real-living-earth.js
           node --check tools/test_v2_real_living_earth_browser.mjs
+          node --check tools/test_v2_real_living_earth_visual_readpixels.mjs
 
       - name: Truth-first V2 bootstrap contract
         shell: bash
@@ -94,23 +95,29 @@ jobs:
           grep -F 'terrainProvider?.hasWaterMask===true' prototype/v2/js/real-living-earth.js
           grep -F 'scene.globe.showWaterEffect=supported' prototype/v2/js/real-living-earth.js
 
-      - name: Polar geodetic hole-fill contract
+      - name: Polar geographic rectangle hole-fill contract
         shell: bash
         run: |
           set -euo pipefail
           ! test -e prototype/v2/js/polar-imagery-cap.js
           grep -F "import { PolarGeographicCapRuntime } from './polar-geographic-cap.js'" prototype/v2/js/real-living-earth.js
           grep -F "WMS='https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi'" prototype/v2/js/polar-geographic-cap.js
-          grep -F 'const EDGE_LAT=82.5' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'const EDGE_LAT=81.75' prototype/v2/js/polar-geographic-cap.js
           grep -F "srs:'EPSG:4326'" prototype/v2/js/polar-geographic-cap.js
-          grep -F 'POLAR_GEOGRAPHIC_IMAGE_SIGNAL' prototype/v2/js/polar-geographic-cap.js
-          grep -F 'C.Cartesian3.fromDegrees' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'async function loadBest' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'dynamicRange' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'candidates.sort((a,b)=>b.signal.score-a.signal.score)' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'new C.RectangleGeometry' prototype/v2/js/polar-geographic-cap.js
+          grep -F 'C.EllipsoidSurfaceAppearance.VERTEX_FORMAT' prototype/v2/js/polar-geographic-cap.js
+          grep -F "geometryClass:'CESIUM_RECTANGLE_GEOMETRY'" prototype/v2/js/polar-geographic-cap.js
           grep -F 'NASA_GIBS_GEOGRAPHIC_POLAR_HOLE_FILL_IMAGERY_ONLY' prototype/v2/js/polar-geographic-cap.js
           grep -F 'NASA GIBS EPSG4326 geodetic hole-fill' prototype/v2/js/real-living-earth.js
           ! grep -F 'C.CircleGeometry' prototype/v2/js/polar-geographic-cap.js
+          ! grep -F 'PrimitiveType.TRIANGLES' prototype/v2/js/polar-geographic-cap.js
           ! grep -F 'wms/epsg3413' prototype/v2/js/polar-geographic-cap.js
           ! grep -F 'wms/epsg3031' prototype/v2/js/polar-geographic-cap.js
-          grep -F 'maxDarkRatio:.45' tools/test_v2_real_living_earth_browser.mjs
+          grep -F "gate('polar-center'" tools/test_v2_real_living_earth_visual_readpixels.mjs
+          grep -F 'gl.readPixels' tools/test_v2_real_living_earth_visual_readpixels.mjs
 
       - name: Physical Earth and underwater fidelity contract
         shell: bash

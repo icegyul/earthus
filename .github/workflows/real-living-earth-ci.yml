@@ -111,6 +111,7 @@ jobs:
           grep -F 'deepestCoordinate' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'sampleTerrain(terrainProvider,samplingLevel,points)' prototype/v2/js/trench-bathymetry-mesh.js
           grep -F 'sampleTerrainMostDetailed' prototype/v2/js/trench-bathymetry-mesh.js
+          grep -F '__earthusV2TrenchBathymetryPrimitive' prototype/v2/js/trench-bathymetry-mesh.js
 
       - name: Camera-aware visual fidelity contract
         shell: bash
@@ -124,8 +125,13 @@ jobs:
           grep -F 'function aimAtTrench' prototype/v2/js/visual-fidelity-controller.js
           grep -F '78_000' prototype/v2/js/visual-fidelity-controller.js
           grep -F 'function aimAtActualDeepest' prototype/v2/js/visual-fidelity-controller.js
-          grep -F 'scene.globe.show=false' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'applyUnderwaterTerrainGrade' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'scene.globe.show=true' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'scene.globe.maximumScreenSpaceError=1.05' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'scene.globe.depthTestAgainstTerrain=true' prototype/v2/js/visual-fidelity-controller.js
+          grep -F 'trenchPrimitive.show=false' prototype/v2/js/visual-fidelity-controller.js
           grep -F 'detail.saturation=.92' prototype/v2/js/visual-fidelity-controller.js
+          ! grep -F 'scene.globe.show=false' prototype/v2/js/visual-fidelity-controller.js
 
       - name: Browser evidence contracts are strict
         shell: bash
@@ -136,7 +142,9 @@ jobs:
           grep -F 'grid?.nx>=81' tools/test_v2_real_living_earth_visual_readpixels.mjs
           grep -F 'triangleCount>9000' tools/test_v2_real_living_earth_visual_readpixels.mjs
           grep -F 'maximumScreenSpaceError' tools/test_v2_mountain_terrain_browser.mjs
-          grep -F 'tilesLoaded,true' tools/test_v2_mountain_terrain_browser.mjs
+          grep -F 'visualReady' tools/test_v2_mountain_terrain_browser.mjs
+          grep -F 'visuallyStable' tools/test_v2_mountain_terrain_browser.mjs
+          ! grep -F 'assert.equal(state.runtime.tilesLoaded,true' tools/test_v2_mountain_terrain_browser.mjs
           grep -F 'chromaMean' tools/test_v2_mountain_terrain_browser.mjs
           grep -F 'localEdgeMean' tools/test_v2_mountain_terrain_browser.mjs
 

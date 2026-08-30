@@ -28,6 +28,7 @@
   let resourceHideTimer = null;
   let lastFailed = null;
   let fidelityStarted = false;
+  let intelligenceStarted = false;
 
   const $ = id => document.getElementById(id);
   const stageText = stage => STAGE_KO[stage] || String(stage || '자료 처리 중…');
@@ -39,6 +40,16 @@
     import(url).then(mod => mod.installWhenReady({ timeoutMs: 45000 })).catch(error => {
       fidelityStarted = false;
       console.warn('[v2/visual-fidelity]', error?.message || error);
+    });
+  }
+
+  function startIntelligence() {
+    if (intelligenceStarted) return;
+    intelligenceStarted = true;
+    const url = new URL('./js/intelligence-runtime-bootstrap.js?v=20260830-intel51', location.href).href;
+    import(url).catch(error => {
+      intelligenceStarted = false;
+      console.warn('[v2/intelligence]', error?.message || error);
     });
   }
 
@@ -67,6 +78,7 @@
     if (actions) actions.classList.toggle('on', task.status === 'FAILED');
     if (task.status === 'SUCCEEDED') {
       startVisualFidelity();
+      startIntelligence();
       setTimeout(() => root.classList.add('gone'), 250);
     }
   }

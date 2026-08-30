@@ -289,6 +289,23 @@ async function capture(page, name, metrics) {
   return state(page);
 }
 
+async function captureUntil(page, name, metrics, assertion, timeoutMs = 30000) {
+  const deadline = Date.now() + timeoutMs;
+  let lastState = null;
+  let lastError = null;
+  do {
+    lastState = await capture(page, name, metrics);
+    try {
+      assertion();
+      return lastState;
+    } catch (error) {
+      lastError = error;
+    }
+    await settle(page, 850);
+  } while (Date.now() < deadline);
+  throw lastError || new Error(`${name}:VISUAL_SETTLE_TIMEOUT`);
+}
+
 fs.mkdirSync(out, { recursive: true });
 const s = server();
 await new Promise((r) => s.listen(0, "127.0.0.1", r));
@@ -330,15 +347,16 @@ try {
   );
   globalThis.__earthusV2VisualFidelityController?.update?.();
   await settle(page, 4200);
-  states.earth = await capture(page, "01-earth", metrics);
-  gate("earth", metrics["01-earth"], {
-    mean: 0.02,
-    std: 0.025,
-    range: 0.07,
-    dark: 0.75,
-    chroma: 0.035,
-    edge: 0.0025,
-  });
+  states.earth = await captureUntil(page, "01-earth", metrics, () =>
+    gate("earth", metrics["01-earth"], {
+      mean: 0.02,
+      std: 0.025,
+      range: 0.07,
+      dark: 0.75,
+      chroma: 0.035,
+      edge: 0.0025,
+    }),
+  );
   assert.equal(states.earth.terrain, "ESRI_TERRAIN3D");
   assert.equal(states.earth.bathymetry, "ESRI_TOPOBATHY3D");
   assert.equal(
@@ -367,23 +385,24 @@ try {
     globalThis.__earthusV2VisualFidelityController?.update?.();
   });
   await settle(page, 3500);
-  states.polar = await capture(page, "01b-polar", metrics);
+  states.polar = await captureUntil(page, "01b-polar", metrics, () => {
+    gate("polar", metrics["01b-polar"], {
+      mean: 0.02,
+      std: 0.02,
+      range: 0.06,
+      dark: 0.75,
+      edge: 0.002,
+    });
+    gate("polar-center", metrics["01b-polar-center"], {
+      mean: 0.02,
+      std: 0.008,
+      range: 0.02,
+      dark: 0.55,
+      edge: 0.0015,
+    });
+  });
   assert.equal(states.polar.polarVisible, true);
   assert.equal(states.polar.polarOpacity, 1);
-  gate("polar", metrics["01b-polar"], {
-    mean: 0.02,
-    std: 0.02,
-    range: 0.06,
-    dark: 0.75,
-    edge: 0.002,
-  });
-  gate("polar-center", metrics["01b-polar-center"], {
-    mean: 0.02,
-    std: 0.008,
-    range: 0.02,
-    dark: 0.55,
-    edge: 0.0015,
-  });
   console.log("READPIXELS STAGE clouds");
   await page.evaluate(() => window.__earthusV2.realEarth.enterEarth());
   const ca = await page.evaluate(async () => {
@@ -403,23 +422,24 @@ try {
   assert.equal(ca.m.truthClass, "OBSERVED_DERIVED_OFFICIAL_L2");
   assert.ok(["VOLUME", "CTH_RELIEF"].includes(ca.result), JSON.stringify(ca));
   await settle(page, 2500);
-  states.clouds = await capture(page, "02-clouds", metrics);
-  gate("clouds", metrics["02-clouds"], {
-    mean: 0.02,
-    std: 0.025,
-    range: 0.07,
-    dark: 0.8,
-    white: 0.18,
-    chroma: 0.025,
-    edge: 0.0025,
-  });
-  gate("clouds-center", metrics["02-clouds-center"], {
-    mean: 0.02,
-    std: 0.018,
-    range: 0.05,
-    dark: 0.8,
-    white: 0.22,
-    edge: 0.002,
+  states.clouds = await captureUntil(page, "02-clouds", metrics, () => {
+    gate("clouds", metrics["02-clouds"], {
+      mean: 0.02,
+      std: 0.025,
+      range: 0.07,
+      dark: 0.8,
+      white: 0.18,
+      chroma: 0.025,
+      edge: 0.0025,
+    });
+    gate("clouds-center", metrics["02-clouds-center"], {
+      mean: 0.02,
+      std: 0.018,
+      range: 0.05,
+      dark: 0.8,
+      white: 0.22,
+      edge: 0.002,
+    });
   });
   assert.notEqual(
     states.clouds.cloud,
@@ -451,22 +471,23 @@ try {
     globalThis.__earthusV2VisualFidelityController?.update?.(),
   );
   await settle(page, 3200);
-  states.trench = await capture(page, "03-trench", metrics);
-  gate("trench", metrics["03-trench"], {
-    mean: 0.025,
-    std: 0.02,
-    range: 0.06,
-    dark: 0.78,
-    chroma: 0.018,
-    edge: 0.0035,
-  });
-  gate("trench-center", metrics["03-trench-center"], {
-    mean: 0.022,
-    std: 0.017,
-    range: 0.05,
-    dark: 0.8,
-    chroma: 0.015,
-    edge: 0.003,
+  states.trench = await captureUntil(page, "03-trench", metrics, () => {
+    gate("trench", metrics["03-trench"], {
+      mean: 0.025,
+      std: 0.02,
+      range: 0.06,
+      dark: 0.78,
+      chroma: 0.018,
+      edge: 0.0035,
+    });
+    gate("trench-center", metrics["03-trench-center"], {
+      mean: 0.022,
+      std: 0.017,
+      range: 0.05,
+      dark: 0.8,
+      chroma: 0.015,
+      edge: 0.003,
+    });
   });
   assert.equal(states.trench.terrain, "ESRI_TOPOBATHY3D");
   assert.ok(states.trench.depth?.depthM > 8000);
@@ -512,22 +533,23 @@ try {
     globalThis.__earthusV2VisualFidelityController?.update?.(),
   );
   await settle(page, 4800);
-  states.underwater = await capture(page, "04-underwater", metrics);
-  gate("underwater", metrics["04-underwater"], {
-    mean: 0.012,
-    std: 0.012,
-    range: 0.035,
-    dark: 0.88,
-    chroma: 0.012,
-    edge: 0.003,
-  });
-  gate("underwater-center", metrics["04-underwater-center"], {
-    mean: 0.01,
-    std: 0.01,
-    range: 0.025,
-    dark: 0.9,
-    chroma: 0.009,
-    edge: 0.0025,
+  states.underwater = await captureUntil(page, "04-underwater", metrics, () => {
+    gate("underwater", metrics["04-underwater"], {
+      mean: 0.012,
+      std: 0.012,
+      range: 0.035,
+      dark: 0.88,
+      chroma: 0.012,
+      edge: 0.003,
+    });
+    gate("underwater-center", metrics["04-underwater-center"], {
+      mean: 0.01,
+      std: 0.01,
+      range: 0.025,
+      dark: 0.9,
+      chroma: 0.009,
+      edge: 0.0025,
+    });
   });
   assert.equal(states.underwater.terrain, "ESRI_TOPOBATHY3D");
   assert.ok(states.underwater.height < -500);

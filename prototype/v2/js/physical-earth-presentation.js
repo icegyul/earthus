@@ -34,15 +34,29 @@ export function terrainPresentationForHeight(heightM, style = 'REAL') {
   });
 }
 
+/* 1.0의 setAmbientView(127, 25, 0.52)와 동일한 시점 계약 (PD 2026-09-01:
+ * 기울어진 부감이 북반구로 쏠려 조작이 어려움 → 1.0 수직 정면 시점으로 통일).
+ * 고도는 지구가 화면 세로의 globeFraction을 차지하도록 화면적응 계산한다. */
 export function physicalAmbientCamera({ mobile = false } = {}) {
   return Object.freeze({
-    longitudeDeg: 112,
-    latitudeDeg: mobile ? 14 : 18,
-    heightM: mobile ? 16_200_000 : 14_500_000,
-    headingDeg: -8,
-    pitchDeg: mobile ? -82 : -80,
+    longitudeDeg: 127,
+    latitudeDeg: 25,
+    globeFraction: mobile ? 0.6 : 0.52,
+    fallbackHeightM: 20_000_000,
+    headingDeg: 0,
+    pitchDeg: -90,
     rollDeg: 0,
   });
+}
+
+export function fitGlobeHeightM({ fovRad, aspect, fraction }) {
+  const R = 6_371_000;
+  const fovY = aspect > 1
+    ? 2 * Math.atan(Math.tan(fovRad / 2) / aspect)
+    : fovRad;
+  const sin = Math.sin((fovY * fraction) / 2);
+  if (!(sin > 0) || sin >= 1) return 24_000_000;
+  return Math.max(8_000_000, R / sin - R);
 }
 
 export class PhysicalEarthPresentationRuntime {
@@ -119,11 +133,19 @@ export class PhysicalEarthPresentationRuntime {
   setAmbientCamera() {
     const mobile = matchMedia('(max-width:760px)').matches;
     const camera = physicalAmbientCamera({ mobile });
+    let heightM = camera.fallbackHeightM;
+    try {
+      heightM = fitGlobeHeightM({
+        fovRad: this.viewer.camera.frustum.fov,
+        aspect: this.scene.canvas.clientWidth / this.scene.canvas.clientHeight,
+        fraction: camera.globeFraction,
+      });
+    } catch (_) {}
     this.viewer.camera.setView({
       destination: this.C.Cartesian3.fromDegrees(
         camera.longitudeDeg,
         camera.latitudeDeg,
-        camera.heightM,
+        heightM,
       ),
       orientation: {
         heading: this.C.Math.toRadians(camera.headingDeg),

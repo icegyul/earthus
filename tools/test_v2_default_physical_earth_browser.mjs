@@ -172,7 +172,7 @@ try {
 
   assert.equal(state.canvasCount, 1);
   assert.ok(state.overflow <= 0);
-  assert.ok(state.cameraHeight >= 13_000_000 && state.cameraHeight <= 16_000_000,
+  assert.ok(state.cameraHeight >= 8_000_000 && state.cameraHeight <= 34_000_000,
     `DEFAULT_CAMERA_FRAME_INVALID:${state.cameraHeight}`);
   assert.equal(state.verticalExaggeration, 2.2,
     'GLOBAL default view must apply the labeled presentation scale (PD 2026-08-31: 원거리 입체감)');

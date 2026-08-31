@@ -33,6 +33,12 @@ Luna를 읽었다는 이유만으로 GitHub Actions를 사용하지 마세요. �
 공통 기반(A) → 우주 사진(B1·2) → 심해 수심 기둥(C1·2) 순서. 주차별 완료 조건 명시.
 ⚠️ 크레딧 없는 사진·"관측 기록" 문구 누락은 기능이 돼도 검수에서 돌려보냅니다.
 
+**AETHERUS 사진관·발사 캡슐 (2026-08-31 PD 결정)** — 지침 확정, 구현 미착수.
+정본: [`docs/AETHERUS-PR-14-SKY-FIRST-USER-PHOTO-PLACEMENT-2026-08-31.md`](docs/AETHERUS-PR-14-SKY-FIRST-USER-PHOTO-PLACEMENT-2026-08-31.md),
+[`docs/AETHERUS-PR-15-LAUNCH-MOMENT-CAPSULE-2026-08-31.md`](docs/AETHERUS-PR-15-LAUNCH-MOMENT-CAPSULE-2026-08-31.md),
+[`docs/AETHERUS-V2-V06-ADDENDUM-01-SKY-MEDIA-ENGINES-2026-08-31.md`](docs/AETHERUS-V2-V06-ADDENDUM-01-SKY-MEDIA-ENGINES-2026-08-31.md) (부록은 PD 채택 대기).
+⚠️ 하늘 뷰가 1차 경험 — DEV-SPEC §6의 갤러리 우선 문구는 SUPERSEDED.
+
 **마케팅 스튜디오** — `prototype/studio.html` (미착수).
 사양은 [`docs/MARKETING-STUDIO-SPEC.md`](docs/MARKETING-STUDIO-SPEC.md) 에 전부 있습니다.
 

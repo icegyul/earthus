@@ -624,8 +624,9 @@ async function installImagery() {
   );
   baseLayer.dayAlpha = 1;
   baseLayer.nightAlpha = 0.1;
-  baseLayer.brightness = 0.98;
-  baseLayer.saturation = 0.94;
+  baseLayer.brightness = 0.8;
+  baseLayer.saturation = 0.46;
+  baseLayer.contrast = 1.05;
   let detailProvider = null;
   try {
     detailProvider =
@@ -643,9 +644,9 @@ async function installImagery() {
     });
   }
   detailLayer = viewer.imageryLayers.addImageryProvider(detailProvider);
-  detailLayer.brightness = 0.97;
-  detailLayer.contrast = 1.02;
-  detailLayer.saturation = 0.94;
+  detailLayer.brightness = 0.92;
+  detailLayer.contrast = 1.04;
+  detailLayer.saturation = 0.72;
   globalThis.__earthusV2CanonicalEsriImageryLayer = detailLayer;
   cityLightsLayer = viewer.imageryLayers.addImageryProvider(
     gibsProvider({ layer: "VIIRS_CityLights_2012", level: 8, ext: "jpeg" }),

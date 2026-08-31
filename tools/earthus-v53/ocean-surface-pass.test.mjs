@@ -46,10 +46,10 @@ test('ocean surface accepts only the pinned public-domain mask and static render
 });
 
 test('camera grazing angle increases Fresnel response without animation or wave truth', () => {
-  assert.deepEqual(fresnelResponse(1), { fresnel: 0, alpha: 0.1, specular: 0.08 });
-  assert.deepEqual(fresnelResponse(0), { fresnel: 1, alpha: 0.35, specular: 0.5 });
+  assert.deepEqual(fresnelResponse(1), { fresnel: 0, alpha: 0.34, specular: 0.08 });
+  assert.deepEqual(fresnelResponse(0), { fresnel: 1, alpha: 0.62, specular: 0.5 });
   const middle = fresnelResponse(0.5);
-  assert.ok(middle.alpha > 0.1 && middle.alpha < 0.35);
+  assert.ok(middle.alpha > 0.34 && middle.alpha < 0.62);
   assert.ok(middle.specular > 0.08 && middle.specular < 0.5);
 });
 

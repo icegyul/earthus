@@ -11,7 +11,7 @@ export function terrainPresentationForHeight(heightM) {
   const t = smooth(((Number.isFinite(height) ? height : 10_800_000) - 900_000) / 9_900_000);
   return Object.freeze({
     verticalExaggeration: 1,
-    detailImageryAlpha: Math.round((1 - 0.62 * t) * 100) / 100,
+    detailImageryAlpha: Math.round((1 - 0.78 * t) * 100) / 100,
   });
 }
 
@@ -56,18 +56,21 @@ export class PhysicalEarthPresentationRuntime {
               float alpine = smoothstep(1400.0, 4800.0, height);
               float slope = smoothstep(0.03, 0.72, materialInput.slope);
               float distanceClass = smoothstep(1800000.0, 12000000.0, length(materialInput.positionToEyeEC));
-              vec3 low = vec3(0.035, 0.075, 0.055);
-              vec3 mid = vec3(0.24, 0.31, 0.20);
-              vec3 high = vec3(0.82, 0.84, 0.78);
-              material.diffuse = mix(mix(low, mid, foothill), high, alpine) * (1.0 - slope * 0.42);
+              vec3 low = vec3(0.048, 0.088, 0.058);
+              vec3 mid = vec3(0.295, 0.298, 0.178);
+              vec3 high = vec3(0.855, 0.862, 0.800);
+              vec3 rock = vec3(0.235, 0.198, 0.152);
+              vec3 tint = mix(mix(low, mid, foothill), high, alpine);
+              tint = mix(tint, rock, slope * 0.38);
+              material.diffuse = tint * (1.0 - slope * 0.30);
               float localAlpha = 0.10 + foothill * 0.08 + alpine * 0.12 + slope * 0.10;
-              float globalAlpha = 0.50 + foothill * 0.10 + alpine * 0.12 + slope * 0.08;
-              material.alpha = land * clamp(mix(localAlpha, globalAlpha, distanceClass), 0.0, 0.78);
+              float globalAlpha = 0.68 + foothill * 0.10 + alpine * 0.12 + slope * 0.05;
+              material.alpha = land * clamp(mix(localAlpha, globalAlpha, distanceClass), 0.0, 0.88);
               float contourCoord = height / 500.0;
               float contourDistance = min(fract(contourCoord), 1.0 - fract(contourCoord));
               float contourWidth = max(fwidth(contourCoord) * 1.35, 0.012);
               float contour = 1.0 - smoothstep(contourWidth, contourWidth * 2.2, contourDistance);
-              material.emission = vec3(0.48, 0.62, 0.53) * contour * land * distanceClass * 0.34;
+              material.emission = vec3(0.48, 0.62, 0.53) * contour * land * distanceClass * 0.12;
               return material;
             }
           `,

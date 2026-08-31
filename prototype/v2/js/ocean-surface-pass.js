@@ -35,7 +35,7 @@ export function fresnelResponse(viewCosine) {
   const fresnel = Math.pow(1 - cosine, 3);
   return Object.freeze({
     fresnel: round(fresnel),
-    alpha: round(0.1 + fresnel * 0.25),
+    alpha: round(0.34 + fresnel * 0.28),
     specular: round(0.08 + fresnel * 0.42),
   });
 }
@@ -73,7 +73,7 @@ function oceanMaterial(C, { maskUrl, normalUrl }) {
         oceanMask: maskUrl,
         normalMap: normalUrl,
         deepColor: C.Color.fromBytes(2, 22, 37, 255),
-        rimColor: C.Color.fromBytes(55, 130, 165, 255),
+        rimColor: C.Color.fromBytes(42, 104, 138, 255),
       },
       source: `
         uniform sampler2D oceanMask;
@@ -97,7 +97,7 @@ function oceanMaterial(C, { maskUrl, normalUrl }) {
           material.normal = tangentNormal;
           material.specular = mix(0.08, 0.50, fresnel) * mix(0.15, 1.0, sunFacing);
           material.shininess = 8.0;
-          material.alpha = mask * mix(0.10, 0.35, fresnel);
+          material.alpha = mask * mix(0.34, 0.62, fresnel);
           return material;
         }
       `,

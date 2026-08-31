@@ -9,7 +9,7 @@ import {
 test('global terrain stays at source scale while presentation requests real LOD', () => {
   assert.deepEqual(terrainPresentationForHeight(10_800_000), {
     verticalExaggeration: 1,
-    detailImageryAlpha: 0.38,
+    detailImageryAlpha: 0.22,
   });
   assert.deepEqual(terrainPresentationForHeight(900_000), {
     verticalExaggeration: 1,

@@ -18,7 +18,7 @@ const VERSION = 'earthus.current-earth-seasonal.v1.1';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function alphaForScope(scope) {
-  return ({ GLOBAL: .52, CONTINENT: .44, COUNTRY: .26, REGION: 0, LOCAL: 0, UNDERWATER: 0 })[scope] ?? .38;
+  return ({ GLOBAL: .62, CONTINENT: .6, COUNTRY: .34, REGION: 0, LOCAL: 0, UNDERWATER: 0 })[scope] ?? .44;
 }
 
 function scopeFromRuntime() {

@@ -8,7 +8,7 @@ const smooth = value => {
 
 export function terrainPresentationForHeight(heightM) {
   const height = Number(heightM);
-  const t = smooth(((Number.isFinite(height) ? height : 10_800_000) - 900_000) / 9_900_000);
+  const t = smooth(((Number.isFinite(height) ? height : 10_800_000) - 900_000) / 3_300_000);
   return Object.freeze({
     verticalExaggeration: 1,
     detailImageryAlpha: Math.round((1 - 0.78 * t) * 100) / 100,
@@ -55,14 +55,20 @@ export class PhysicalEarthPresentationRuntime {
               float foothill = smoothstep(80.0, 1400.0, height);
               float alpine = smoothstep(1400.0, 4800.0, height);
               float slope = smoothstep(0.03, 0.72, materialInput.slope);
-              float distanceClass = smoothstep(1800000.0, 12000000.0, length(materialInput.positionToEyeEC));
+              float distanceClass = smoothstep(600000.0, 5000000.0, length(materialInput.positionToEyeEC));
+              float slopeAngle = materialInput.slope * 1.5707963;
+              float hillshade = clamp(
+                cos(0.7853982) * cos(slopeAngle)
+                + sin(0.7853982) * sin(slopeAngle) * cos(5.4977871 - materialInput.aspect),
+                0.0, 1.0);
+              float shade = mix(1.0, 0.30 + 0.85 * hillshade, distanceClass);
               vec3 low = vec3(0.048, 0.088, 0.058);
               vec3 mid = vec3(0.295, 0.298, 0.178);
               vec3 high = vec3(0.855, 0.862, 0.800);
               vec3 rock = vec3(0.235, 0.198, 0.152);
               vec3 tint = mix(mix(low, mid, foothill), high, alpine);
               tint = mix(tint, rock, slope * 0.38);
-              material.diffuse = tint * (1.0 - slope * 0.30);
+              material.diffuse = tint * (1.0 - slope * 0.18) * shade;
               float localAlpha = 0.10 + foothill * 0.08 + alpine * 0.12 + slope * 0.10;
               float globalAlpha = 0.68 + foothill * 0.10 + alpine * 0.12 + slope * 0.05;
               material.alpha = land * clamp(mix(localAlpha, globalAlpha, distanceClass), 0.0, 0.88);

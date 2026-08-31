@@ -85,7 +85,8 @@ function oceanMaterial(C, { maskUrl, normalUrl }) {
           czm_material material = czm_getDefaultMaterial(materialInput);
           float mask = texture(oceanMask, materialInput.st).r;
           vec3 sampledNormal = texture(normalMap, materialInput.st).rgb * 2.0 - 1.0;
-          vec3 tangentNormal = normalize(vec3(sampledNormal.xy * 0.003, 1.0));
+          float farView = smoothstep(1500000.0, 6000000.0, length(materialInput.positionToEyeEC));
+          vec3 tangentNormal = normalize(vec3(sampledNormal.xy * 0.003 * (1.0 - farView), 1.0));
           vec3 normalEC = normalize(materialInput.tangentToEyeMatrix * tangentNormal);
           vec3 baseNormalEC = normalize(materialInput.normalEC);
           vec3 viewEC = normalize(materialInput.positionToEyeEC);

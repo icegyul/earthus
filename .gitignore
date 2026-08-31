@@ -2,6 +2,8 @@
 prototype/js/config.local.js
 
 .DS_Store
+# macOS AppleDouble 메타파일 — Mac→Windows 복사 때 대량 생성돼 git pack 인덱스까지 오염시켰다 (2026-08-31, 96,093개 삭제).
+._*
 node_modules/
 *.log
 

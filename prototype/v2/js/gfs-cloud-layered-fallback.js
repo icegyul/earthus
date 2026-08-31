@@ -7,6 +7,7 @@ const BANDS = Object.freeze([
 ]);
 
 export const REAL_CLOUD_FIDELITY_LADDER = Object.freeze([
+  'GLOBAL_LAYERED',
   'VOLUME',
   'LAYERED',
   'CTH_RELIEF',

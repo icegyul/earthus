@@ -11,6 +11,7 @@ import { buildCloudShadowAlpha } from "../../js/cloud-shadow.js";
 import { Gk2aCthReliefRuntime } from "./gk2a-cth-relief.js";
 import { GfsCloudVolumeRuntime } from "./gfs-cloud-volume.js";
 import { GfsCloudLayeredFallbackRuntime } from "./gfs-cloud-layered-fallback.js";
+import { GfsCloudGlobalLowRuntime } from "./gfs-cloud-global-low.js";
 import { GlobalTerrainReliefPass } from "./global-terrain-relief-pass.js";
 import { OceanSurfacePass } from "./ocean-surface-pass.js";
 import { PhysicalAtmosphereLightRuntime } from "./physical-atmosphere-light.js";
@@ -54,6 +55,8 @@ let cloudMeta = null,
   cthMeta = null,
   cloudVolume = null,
   volumeMeta = null,
+  cloudGlobalLow = null,
+  globalLowMeta = null,
   cloudLayered = null,
   layeredMeta = null,
   physicalPresentation = null,
@@ -64,6 +67,7 @@ let cloudMeta = null,
   globalReliefError = null,
   oceanSurfaceError = null,
   lastVolumeError = null,
+  lastGlobalLowError = null,
   lastLayeredError = null,
   lastCthError = null;
 let trenchSample = null,
@@ -410,6 +414,7 @@ function scheduleCloud() {
   }, CLOUD_REFRESH_MS);
 }
 function hideCloud3d() {
+  cloudGlobalLow?.hide();
   cloudVolume?.hide();
   cloudLayered?.hide();
   cthRelief?.hide();
@@ -417,12 +422,42 @@ function hideCloud3d() {
   setObservedShadow(0, false);
 }
 async function showBestCloud3d({ focus = true } = {}) {
+  lastGlobalLowError = null;
   lastVolumeError = null;
   lastLayeredError = null;
   lastCthError = null;
+  const cameraHeightM = viewer.camera.positionCartographic?.height ?? Infinity;
+  if (cameraHeightM >= 5_000_000) {
+    if (!cloudGlobalLow)
+      cloudGlobalLow = new GfsCloudGlobalLowRuntime({
+        viewer,
+        Cesium,
+        allowLocalArtifact:
+          globalThis.__earthusV2AllowLocalGlobalCloudArtifact === true,
+      });
+    try {
+      globalLowMeta = await cloudGlobalLow.show();
+      cloudVolume?.hide();
+      cloudLayered?.hide();
+      cthRelief?.hide();
+      cloudFidelity = "GLOBAL_LAYERED";
+      setObservedShadow(0.09, true);
+      badge("GLOBAL L0: real GFS 1.0° TCDC + HGT · low/mid/high");
+      announce(`NOAA GFS 전지구 실제 수직 자료 기반 저해상도 3개 고도층 · ${globalLowMeta.validAt}`);
+      return "GLOBAL_LAYERED";
+    } catch (error) {
+      lastGlobalLowError = String(error?.message || error);
+      cloudGlobalLow?.hide();
+      console.warn("[v2-real-earth/global-cloud]", lastGlobalLowError);
+    }
+  } else {
+    lastGlobalLowError = "NOT_REQUESTED_BELOW_GLOBAL_SCOPE";
+    cloudGlobalLow?.hide();
+  }
   if (!cloudVolume) cloudVolume = new GfsCloudVolumeRuntime({ viewer, Cesium });
   try {
     volumeMeta = await cloudVolume.show();
+    cloudGlobalLow?.hide();
     cloudLayered?.hide();
     cthRelief?.hide();
     cloudFidelity = "VOLUME";
@@ -454,6 +489,7 @@ async function showBestCloud3d({ focus = true } = {}) {
     cloudLayered = new GfsCloudLayeredFallbackRuntime({ viewer, Cesium });
   try {
     layeredMeta = await cloudLayered.show();
+    cloudGlobalLow?.hide();
     cloudVolume?.hide();
     cthRelief?.hide();
     cloudFidelity = "LAYERED";
@@ -477,6 +513,7 @@ async function showBestCloud3d({ focus = true } = {}) {
   if (!cthRelief) cthRelief = new Gk2aCthReliefRuntime({ viewer, Cesium });
   try {
     cthMeta = await cthRelief.show();
+    cloudGlobalLow?.hide();
     cloudLayered?.hide();
     cloudFidelity = "CTH_RELIEF";
     setObservedShadow(0.13, true);
@@ -499,7 +536,7 @@ async function showBestCloud3d({ focus = true } = {}) {
   cloudFidelity = "OFF";
   setObservedShadow(0, false);
   badge(
-    `3D CLOUD OFF · VOLUME ${lastVolumeError || "unknown"} · LAYERED ${lastLayeredError || "unknown"} · CTH ${lastCthError || "unknown"}`,
+    `3D CLOUD OFF · GLOBAL ${lastGlobalLowError || "unknown"} · VOLUME ${lastVolumeError || "unknown"} · LAYERED ${lastLayeredError || "unknown"} · CTH ${lastCthError || "unknown"}`,
   );
   announce("검증 가능한 실제 3D 구름 산출물이 없어 구름 렌더를 끕니다.");
   return "OFF";
@@ -919,6 +956,7 @@ async function activateDefaultPhysicalEarth({ resetCamera = true } = {}) {
     ? "PROVIDER_WATER_MASK"
     : "NO_WATER_MASK";
   cloudVolume?.hide();
+  cloudGlobalLow?.hide();
   cloudLayered?.hide();
   cthRelief?.hide();
   cloudFidelity = "OFF";
@@ -974,6 +1012,7 @@ function enterEarth({ upgrade = true } = {}) {
   activeMode = "EARTH";
   if (upgrade) {
     cloudVolume?.hide();
+    cloudGlobalLow?.hide();
     cloudLayered?.hide();
     cthRelief?.hide();
     cloudFidelity = "OFF";
@@ -1139,11 +1178,13 @@ export async function bootRealLivingEarth({
     setAtmosphereTime: (timeIso) => atmosphereLight?.setTime?.(timeIso) || null,
     cloudDiagnostics: () =>
       Object.freeze({
+        global: lastGlobalLowError,
         volume: lastVolumeError,
         layered: lastLayeredError,
         cth: lastCthError,
       }),
     layeredCloudTruth: () => layeredMeta,
+    globalCloudTruth: () => globalLowMeta,
     detailImageryLayer: () => detailLayer,
     enterEarth,
     enterTrench,
@@ -1163,13 +1204,16 @@ export async function bootRealLivingEarth({
       cloudVolume?.dispose();
       cloudVolume = null;
       volumeMeta = null;
+      cloudGlobalLow?.dispose();
+      cloudGlobalLow = null;
+      globalLowMeta = null;
       cloudLayered?.dispose();
       cloudLayered = null;
       layeredMeta = null;
       cthRelief?.dispose();
       cthRelief = null;
       cthMeta = null;
-      lastVolumeError = lastLayeredError = lastCthError = null;
+      lastGlobalLowError = lastVolumeError = lastLayeredError = lastCthError = null;
       physicalPresentation?.dispose();
       physicalPresentation = null;
       globalTerrainRelief?.dispose();

@@ -420,7 +420,7 @@ try {
   assert.equal(ca.m.ready, true);
   assert.equal(ca.m.synthetic, false);
   assert.equal(ca.m.truthClass, "OBSERVED_DERIVED_OFFICIAL_L2");
-  assert.ok(["VOLUME", "LAYERED", "CTH_RELIEF"].includes(ca.result), JSON.stringify(ca));
+  assert.ok(["GLOBAL_LAYERED", "VOLUME", "LAYERED", "CTH_RELIEF"].includes(ca.result), JSON.stringify(ca));
   await settle(page, 2500);
   states.clouds = await captureUntil(page, "02-clouds", metrics, () => {
     gate("clouds", metrics["02-clouds"], {

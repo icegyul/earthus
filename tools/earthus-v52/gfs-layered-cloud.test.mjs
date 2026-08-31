@@ -44,7 +44,8 @@ test('real GFS columns collapse into hand-checked low, mid and high layers', () 
 });
 
 test('production cloud ladder contains only real 3D outputs and terminates at OFF', () => {
-  assert.deepEqual(REAL_CLOUD_FIDELITY_LADDER, ['VOLUME', 'LAYERED', 'CTH_RELIEF', 'OFF']);
+  assert.deepEqual(REAL_CLOUD_FIDELITY_LADDER,
+    ['GLOBAL_LAYERED', 'VOLUME', 'LAYERED', 'CTH_RELIEF', 'OFF']);
   assert.equal(REAL_CLOUD_FIDELITY_LADDER.includes('SHELL'), false);
 });
 

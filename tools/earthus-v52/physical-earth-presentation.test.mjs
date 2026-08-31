@@ -8,15 +8,26 @@ import {
 
 test('far scopes apply labeled presentation scale while close terrain stays at source scale', () => {
   assert.deepEqual(terrainPresentationForHeight(10_800_000), {
+    style: 'REAL',
     verticalExaggeration: 2.2,
     verticalExaggerationClass: 'ESRI_TERRAIN3D_LABELED_PRESENTATION_SCALE_2.2X',
-    detailImageryAlpha: 0.06,
+    detailImageryAlpha: 0.45,
   });
   assert.deepEqual(terrainPresentationForHeight(450_000), {
+    style: 'REAL',
     verticalExaggeration: 1,
     verticalExaggerationClass: 'ESRI_TERRAIN3D_SOURCE_SCALE_1X',
     detailImageryAlpha: 1,
   });
+});
+
+test('DATA style hands the far view to the baked data map instead of photos', () => {
+  assert.equal(terrainPresentationForHeight(10_800_000, 'DATA').detailImageryAlpha, 0.06);
+  assert.equal(terrainPresentationForHeight(450_000, 'DATA').detailImageryAlpha, 1);
+  assert.equal(
+    terrainPresentationForHeight(10_800_000, 'DATA').verticalExaggeration,
+    terrainPresentationForHeight(10_800_000, 'REAL').verticalExaggeration,
+  );
 });
 
 test('physical ambient camera is continental and oblique instead of a distant nadir photo', () => {

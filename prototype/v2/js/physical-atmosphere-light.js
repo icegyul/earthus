@@ -205,9 +205,11 @@ export class PhysicalAtmosphereLightRuntime {
     this.mode = mode;
     const surface = mode === 'EARTH';
     this.scene.globe.enableLighting = surface;
-    /* 지상 대기 헤이즈·안개는 대륙 줌에서 데이터 지도의 색을 씻어낸다
-     * (2026-08-31 mapped.earth 대조). 림 산란은 skyAtmosphere가 유지한다. */
-    this.scene.globe.showGroundAtmosphere = false;
+    /* DATA 스타일에서 지상 대기 헤이즈가 데이터 지도의 색을 씻는다
+     * (2026-08-31 mapped.earth 대조). REAL 스타일은 사실감을 위해 유지.
+     * 안개는 두 스타일 모두 원거리 워시라 끈다. */
+    this.scene.globe.showGroundAtmosphere =
+      surface && globalThis.__earthusV2PresentationStyle !== 'DATA';
     this.scene.fog.enabled = false;
     this.scene.skyAtmosphere.show = surface;
     this.scene.sun.show = surface;

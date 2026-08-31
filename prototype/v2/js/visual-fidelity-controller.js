@@ -413,7 +413,10 @@ export function installVisualFidelityController({ runtime = null } = {}) {
       /* 사진 상세 알파의 정본은 physical-earth-presentation 정책 하나다.
        * (구 램프 0.035~1.0/1.5-8.5Mm는 사진 기본 지구 시절 값 — NE2 데이터
        * 원판 위에서 사진을 98%까지 되올려 지도를 덮었다. 2026-08-31) */
-      const base = terrainPresentationForHeight(h).detailImageryAlpha,
+      const base = terrainPresentationForHeight(
+          h,
+          real.presentationStyle?.() || "REAL",
+        ).detailImageryAlpha,
         polarFade = 1 - smooth(70, 82.2, lat);
       if (terrain === "ESRI_TOPOBATHY3D" && h < 500_000)
         detail.alpha = Math.min(0.08, base);

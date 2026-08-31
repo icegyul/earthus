@@ -187,14 +187,21 @@ export class GlobalTerrainReliefPass {
       credit: 'Derived from Esri WorldElevation3D Terrain3D',
     });
     this.layer = this.viewer.imageryLayers.addImageryProvider(provider);
-    /* 0.76은 사진 기본 지구 시절의 값이다. NE2 데이터 원판(풀해상 릴리프 내장)
-     * 위에서는 저해상 144×72 오버레이가 베일이 되므로 미세 보강만 남긴다. */
-    this.layer.alpha = 0.12;
+    /* REAL(사진 albedo)에서는 릴리프 보강 0.4, DATA(NE2 원판 — 풀해상 릴리프
+     * 내장)에서는 저해상 오버레이가 베일이 되므로 0.12만 남긴다. */
+    this.layer.alpha =
+      globalThis.__earthusV2PresentationStyle === 'DATA' ? 0.12 : 0.4;
     this.layer.brightness = 1;
     this.layer.contrast = 1;
     this.layer.__earthusV2GlobalTerrainRelief = true;
     this.relief = relief;
     this.generatedAt = new Date().toISOString();
+    this.setOverlayAlpha = (alpha) => {
+      if (this.layer) {
+        this.layer.alpha = Math.max(0, Math.min(1, Number(alpha) || 0));
+        this.viewer.scene.requestRender();
+      }
+    };
     this.loadDurationMs = Math.round(performance.now() - startedAt);
     this.error = null;
     if (!this.removeCameraChanged) {

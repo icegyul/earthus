@@ -92,6 +92,19 @@ export function installReferenceHud({ root = globalThis } = {}) {
    * 관측 레이어(구름 등)는 각자의 관측시각을 유지하며 이 바가 예보를 만들지 않는다. */
   const timebar = el("div", "", null);
   timebar.id = "refTimebar";
+  const styleBtn = el("button", "", "");
+  const syncStyleBtn = () => {
+    const style = realEarth.presentationStyle?.() || "REAL";
+    styleBtn.textContent = style === "DATA" ? "데이터 지구" : "사실 지구";
+    styleBtn.title = "표면 전환: 사실(사진 albedo) ↔ 데이터(구운 지도)";
+  };
+  styleBtn.addEventListener("click", () => {
+    const next = (realEarth.presentationStyle?.() || "REAL") === "DATA" ? "REAL" : "DATA";
+    realEarth.setPresentationStyle?.(next);
+    syncStyleBtn();
+  });
+  syncStyleBtn();
+  timebar.append(styleBtn);
   const nowBtn = el("button", "", "Now");
   const range = document.createElement("input");
   range.type = "range";
@@ -151,6 +164,7 @@ export function installReferenceHud({ root = globalThis } = {}) {
       ? "독립 수면 · Fresnel" : "수면 대기";
 
     liveTime.textContent = `${fmtUtc(new Date())} UTC`;
+    syncStyleBtn();
     setTimeout(refresh, REFRESH_MS);
   }
   refresh();

@@ -6,21 +6,31 @@ const smooth = value => {
   return t * t * (3 - 2 * t);
 };
 
-export function terrainPresentationForHeight(heightM) {
+/* 표면 스타일 (정본 §0.6: 사실적인 지구와 과학 시각화를 동시에 유지)
+ * - REAL: 정돈된 반사실적 지구 — 사진 albedo가 실측 3D 지오메트리 위에서
+ *   주도한다 (0A.3 허용 용도). 첫 화면 기본.
+ * - DATA: 구운 데이터 지도가 주도한다. 인텔리전스/레이어 분석용. */
+export const PRESENTATION_STYLES = Object.freeze(['REAL', 'DATA']);
+
+export function terrainPresentationForHeight(heightM, style = 'REAL') {
   const height = Number(heightM);
   const h = Number.isFinite(height) ? height : 10_800_000;
   const t = smooth((h - 450_000) / 1_100_000);
   const deep = smooth((h - 2_000_000) / 8_000_000);
   /* 실제 지구 비율(반지름 대비 최고봉 0.14%)에서는 원거리 실루엣이 물리적으로
    * 보이지 않는다. 원거리 한정 표기된 지형 강조를 적용하고 배지·스냅샷에
-   * 배율을 그대로 노출한다. 근접(≤900km)은 항상 실축 1.0×다. */
+   * 배율을 그대로 노출한다. 근접(≤450km)은 항상 실축 1.0×다. */
   const verticalExaggeration = Math.round((1 + 0.6 * t + 0.6 * deep) * 100) / 100;
+  const detailImageryAlpha = style === 'DATA'
+    ? Math.round((1 - 0.94 * t) * 100) / 100
+    : Math.round((1 - 0.55 * smooth((h - 900_000) / 9_900_000)) * 100) / 100;
   return Object.freeze({
+    style,
     verticalExaggeration,
     verticalExaggerationClass: verticalExaggeration === 1
       ? 'ESRI_TERRAIN3D_SOURCE_SCALE_1X'
       : `ESRI_TERRAIN3D_LABELED_PRESENTATION_SCALE_${verticalExaggeration}X`,
-    detailImageryAlpha: Math.round((1 - 0.94 * t) * 100) / 100,
+    detailImageryAlpha,
   });
 }
 
@@ -42,6 +52,7 @@ export class PhysicalEarthPresentationRuntime {
     this.scene = viewer.scene;
     this.C = Cesium || globalThis.Cesium;
     this.mode = 'EARTH';
+    this.style = 'REAL';
     this.reliefMaterial = null;
     this.removeCameraChanged = null;
     this.original = Object.freeze({
@@ -56,6 +67,7 @@ export class PhysicalEarthPresentationRuntime {
       this.reliefMaterial = new this.C.Material({
         fabric: {
           type: 'EarthusTerrainRelief',
+          uniforms: { dataStyle: this.style === 'DATA' ? 1.0 : 0.0 },
           source: `
             czm_material czm_getMaterial(czm_materialInput materialInput) {
               czm_material material = czm_getDefaultMaterial(materialInput);
@@ -79,8 +91,11 @@ export class PhysicalEarthPresentationRuntime {
               tint = mix(tint, rock, slope * 0.38);
               material.diffuse = tint * (1.0 - slope * 0.18) * shade;
               float localAlpha = 0.10 + foothill * 0.08 + alpine * 0.12 + slope * 0.10;
-              float globalAlpha = 0.24 + foothill * 0.08 + alpine * 0.10 + slope * 0.05;
-              material.alpha = land * clamp(mix(localAlpha, globalAlpha, distanceClass), 0.0, 0.50);
+              float realGlobalAlpha = 0.34 + foothill * 0.10 + alpine * 0.12 + slope * 0.08;
+              float dataGlobalAlpha = 0.24 + foothill * 0.08 + alpine * 0.10 + slope * 0.05;
+              float globalAlpha = mix(realGlobalAlpha, dataGlobalAlpha, dataStyle);
+              float alphaCap = mix(0.62, 0.50, dataStyle);
+              material.alpha = land * clamp(mix(localAlpha, globalAlpha, distanceClass), 0.0, alphaCap);
               float contourCoord = height / 500.0;
               float contourDistance = min(fract(contourCoord), 1.0 - fract(contourCoord));
               float contourWidth = max(fwidth(contourCoord) * 1.35, 0.012);
@@ -134,18 +149,30 @@ export class PhysicalEarthPresentationRuntime {
     this.scene.requestRender();
   }
 
+  setStyle(style) {
+    this.style = PRESENTATION_STYLES.includes(style) ? style : 'REAL';
+    if (this.reliefMaterial)
+      this.reliefMaterial.uniforms.dataStyle = this.style === 'DATA' ? 1.0 : 0.0;
+    this.update();
+    return this.style;
+  }
+
   update() {
     if (this.mode !== 'EARTH') return;
     const height = this.viewer.camera.positionCartographic?.height;
-    const policy = terrainPresentationForHeight(height);
+    const policy = terrainPresentationForHeight(height, this.style);
     this.scene.verticalExaggeration = policy.verticalExaggeration;
     this.scene.requestRender();
   }
 
   snapshot() {
-    const policy = terrainPresentationForHeight(this.viewer.camera.positionCartographic?.height);
+    const policy = terrainPresentationForHeight(
+      this.viewer.camera.positionCartographic?.height,
+      this.style,
+    );
     return Object.freeze({
       mode: this.mode,
+      presentationStyle: this.style,
       terrainScale: policy.verticalExaggeration,
       appliedTerrainScale: this.scene.verticalExaggeration,
       terrainScaleClass: policy.verticalExaggerationClass,

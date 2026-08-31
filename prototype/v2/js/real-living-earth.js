@@ -47,6 +47,7 @@ let polarBaseLayer = null,
   dataBaseLayer = null,
   photoBaseLayer = null,
   presentationStyle = "REAL",
+  rainLayer = null,
   detailLayer = null,
   cityLightsLayer = null,
   cloudShadowLayer = null,
@@ -618,6 +619,28 @@ function updateImageryForView() {
   if (cityLightsLayer) cityLightsLayer.show = true;
   badge();
 }
+function toggleRain() {
+  /* NASA GPM IMERG 실측 강수(30분 산출물, GIBS 'default'=최신 가용 시각).
+   * 관측 필드 표현이다 — 수직 프로파일·미래값을 만들지 않는다 (정본 §18 RAIN=FIELD). */
+  if (rainLayer) {
+    viewer.imageryLayers.remove(rainLayer, true);
+    rainLayer = null;
+    announce("강수 레이어 끔");
+    scene.requestRender();
+    return false;
+  }
+  const provider = gibsProvider({
+    layer: "IMERG_Precipitation_Rate",
+    level: 6,
+    ext: "png",
+  });
+  provider.__earthusV2Source = "NASA_GPM_IMERG_PRECIPITATION_RATE_LATEST";
+  rainLayer = viewer.imageryLayers.addImageryProvider(provider);
+  rainLayer.alpha = 0.85;
+  announce("NASA GPM IMERG 실측 강수 · 최신 30분 산출물 (관측 필드)");
+  scene.requestRender();
+  return true;
+}
 function applyPresentationStyle(style) {
   presentationStyle = style === "DATA" ? "DATA" : "REAL";
   globalThis.__earthusV2PresentationStyle = presentationStyle;
@@ -1114,6 +1137,11 @@ function installBridge() {
       await showBestCloud3d();
       return;
     }
+    if (menu === "WEATHER" && feature === "Rain") {
+      enterEarth({ upgrade: false });
+      toggleRain();
+      return;
+    }
     if (menu === "OCEAN" && feature === "Bathymetry / Trench") {
       await enterTrench();
       return;
@@ -1240,6 +1268,8 @@ export async function bootRealLivingEarth({
     globalCloudTruth: () => globalLowMeta,
     presentationStyle: () => presentationStyle,
     setPresentationStyle: applyPresentationStyle,
+    rainActive: () => !!rainLayer,
+    toggleRain,
     detailImageryLayer: () => detailLayer,
     enterEarth,
     enterTrench,

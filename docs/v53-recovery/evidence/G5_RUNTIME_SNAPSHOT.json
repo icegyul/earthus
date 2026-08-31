@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "earthus.v53.g5-runtime-evidence.v1",
+  "capturedAt": "2026-08-31T03:06:30Z",
+  "repository": {
+    "branch": "earthus-v2/real-living-earth-render",
+    "baseHead": "6385ef8343435629f8d43310e172433a6cf406c6",
+    "workingTree": "DIRTY_PRESERVED",
+    "deployed": false
+  },
+  "gate": {
+    "regionalLayered": "LOCAL_PASS",
+    "globalLowLod3d": "FAIL_NO_GLOBAL_VERTICAL_ARTIFACT",
+    "localTrueVoxel": "NOT_EXECUTED_DEVICE_POLICY",
+    "final": "G5_FAIL_BLOCKED_GLOBAL_INPUT"
+  },
+  "ladder": ["VOLUME", "LAYERED", "CTH_RELIEF", "OFF"],
+  "satelliteShell": {
+    "allowed": false,
+    "attachedPrimitiveCount": 0,
+    "gmgsiRole": "OBSERVATION_INPUT_FOR_VALID_SHADOW_ONLY"
+  },
+  "liveGfsArtifact": {
+    "ready": true,
+    "production": true,
+    "synthetic": false,
+    "truthClass": "MODELLED_NWP",
+    "sourceId": "NOAA_NCEP_GFS_0P50_NOMADS",
+    "validAt": "2026-08-30T18:00:00Z",
+    "manifestSha256": "acda4408097872a3b4d1a1cc5015cd7a4845fd4a6e92cda16504f064f2bc2700",
+    "densitySha256": "aa694815b83d624f7edfad3965b7696af03f0e5fc0a8f05b86aaf8ecd3e00ce7",
+    "byteLength": 209760,
+    "dimensions": { "x": 95, "y": 69, "z": 32 },
+    "boundsDegrees": { "west": 108, "east": 155, "south": 18, "north": 52 }
+  },
+  "layeredRuntime": {
+    "ready": true,
+    "truthClass": "MODELLED_NWP_LAYERED",
+    "freshness": "CURRENT_MODEL_ANALYSIS",
+    "scope": "BOUNDED_REGION",
+    "synthetic": false,
+    "fakeThickness": false,
+    "renderModel": "REAL_GFS_VERTICAL_COLUMNS_COLLAPSED_TO_ZERO_THICKNESS_ALTITUDE_PLANES_WITH_PRESENTATION_ONLY_INTERPOLATION",
+    "texturePresentation": "4X_LINEAR_INTERPOLATION_EDGE_FEATHER_NO_DENSITY_INVENTION",
+    "loadDurationMs": 4896,
+    "layers": [
+      { "id": "LOW", "altitudeM": 1399, "maximumDensity": 255, "meanDensity": 41.624, "coverage": 0.386270 },
+      { "id": "MID", "altitudeM": 4905, "maximumDensity": 255, "meanDensity": 50.645, "coverage": 0.389474 },
+      { "id": "HIGH", "altitudeM": 11916, "maximumDensity": 255, "meanDensity": 73.828, "coverage": 0.508619 }
+    ]
+  },
+  "deviceFallback": {
+    "volume": "GFS_VOLUME_DEVICE_POLICY:SAVE_DATA",
+    "selected": "LAYERED",
+    "layeredError": null,
+    "cthError": null
+  },
+  "runtime": {
+    "viewerCount": 1,
+    "canvasCount": 1,
+    "requestRenderMode": true,
+    "idleFrames1s": 0,
+    "browserErrors": 0
+  },
+  "differentialFrameEvidence": {
+    "cloudOnSha256": "08b8d0d18889d1e76a59f4257621c9c27ce1fc84068bd076d34abb89d7c251eb",
+    "cloudOffSha256": "01d3f2de518acc7b62b19e24c74388227cbe56c4af74ddcd31e803dbe2d73a49",
+    "materiallyDifferent": true
+  },
+  "regression": {
+    "nodeTests": "35_PASS",
+    "g2Default": "PASS_CLOUD_OFF",
+    "trench": "PASS_CLOUD_OFF",
+    "underwater": "PASS_CLOUD_OFF"
+  },
+  "nextGate": "BLOCKED_DO_NOT_START_G6"
+}

@@ -41,13 +41,8 @@ function findShadow(viewer, C) {
 function findCloudShell(viewer, C) {
   const list = viewer.scene.primitives;
   for (let i = 0; i < list.length; i++) {
-    const p = list.get(i),
-      a = p?.appearance;
-    if (
-      a instanceof C.EllipsoidSurfaceAppearance &&
-      a?.material?.type === "Image"
-    )
-      return p;
+    const p = list.get(i);
+    if (p?.__earthusV2ObservedCloudShell === true) return p;
   }
   return null;
 }
@@ -421,7 +416,7 @@ export function installVisualFidelityController({ runtime = null } = {}) {
       else detail.alpha = base * polarFade;
     }
     if (shell) {
-      if (fidelity !== "SHELL") {
+      if (fidelity !== "OBSERVED_2D_INPUT_ONLY") {
         shell.show = false;
       } else {
         const a = shellAlpha(h);
@@ -436,7 +431,7 @@ export function installVisualFidelityController({ runtime = null } = {}) {
     if (shadow) {
       const a = shadowAlpha(h);
       shadow.alpha = clamp(a, 0, 0.22);
-      shadow.show = a > 0.01 && fidelity === "SHELL";
+      shadow.show = a > 0.01 && fidelity !== "OFF";
     }
     const trenchPrimitive = globalThis.__earthusV2TrenchBathymetryPrimitive,
       detailPrimitive = globalThis.__earthusV2UnderwaterBathymetryPrimitive,

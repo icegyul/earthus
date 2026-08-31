@@ -55,11 +55,11 @@ test('VIIRS city light presentation is restrained, night-only and surface-mode-o
 test('cloud shadow is enabled only for a valid observed cloud timestamp', () => {
   const valid = cloudShadowPresentation({
     mode: 'EARTH',
-    cloudFidelity: 'SHELL',
+    cloudFidelity: 'LAYERED',
     cloudMeta: {
       time: '2026-08-31T00:00:00Z',
       source: 'NOAA_NESDIS_GMGSI',
-      truthClass: 'OBSERVED_2D_SHELL',
+      truthClass: 'OBSERVED_2D_INPUT_ONLY',
     },
   });
   assert.deepEqual(valid, {
@@ -69,7 +69,7 @@ test('cloud shadow is enabled only for a valid observed cloud timestamp', () => 
     validAt: '2026-08-31T00:00:00Z',
   });
   assert.equal(cloudShadowPresentation({ mode: 'EARTH', cloudFidelity: 'OFF' }).enabled, false);
-  assert.equal(cloudShadowPresentation({ mode: 'TRENCH', cloudFidelity: 'SHELL', cloudMeta: valid }).enabled, false);
-  assert.equal(cloudShadowPresentation({ mode: 'EARTH', cloudFidelity: 'SHELL' }).status,
+  assert.equal(cloudShadowPresentation({ mode: 'TRENCH', cloudFidelity: 'LAYERED', cloudMeta: valid }).enabled, false);
+  assert.equal(cloudShadowPresentation({ mode: 'EARTH', cloudFidelity: 'LAYERED' }).status,
     'UNAVAILABLE_NO_VALID_OBSERVATION');
 });

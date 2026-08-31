@@ -10,6 +10,7 @@ import { API } from "../../js/config.js";
 import { buildCloudShadowAlpha } from "../../js/cloud-shadow.js";
 import { Gk2aCthReliefRuntime } from "./gk2a-cth-relief.js";
 import { GfsCloudVolumeRuntime } from "./gfs-cloud-volume.js";
+import { GfsCloudLayeredFallbackRuntime } from "./gfs-cloud-layered-fallback.js";
 import { GlobalTerrainReliefPass } from "./global-terrain-relief-pass.js";
 import { OceanSurfacePass } from "./ocean-surface-pass.js";
 import { PhysicalAtmosphereLightRuntime } from "./physical-atmosphere-light.js";
@@ -26,7 +27,6 @@ const LAND_TERRAIN_URL =
   "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
 const ESRI_IMAGERY_SERVICE =
   "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer";
-const CLOUD_SHELL_DISPLAY_HEIGHT_M = 12_000;
 const CLOUD_REFRESH_MS = 20 * 60_000;
 const TRENCH = Object.freeze({ lon: 142.2, lat: 11.35 });
 
@@ -47,14 +47,15 @@ let polarBaseLayer = null,
   cityLightsLayer = null,
   cloudShadowLayer = null,
   polarSurface = null;
-let cloudShell = null,
-  cloudMeta = null,
+let cloudMeta = null,
   cloudTimer = null,
   cloudGeneration = 0,
   cthRelief = null,
   cthMeta = null,
   cloudVolume = null,
   volumeMeta = null,
+  cloudLayered = null,
+  layeredMeta = null,
   physicalPresentation = null,
   globalTerrainRelief = null,
   oceanSurface = null,
@@ -63,6 +64,7 @@ let cloudShell = null,
   globalReliefError = null,
   oceanSurfaceError = null,
   lastVolumeError = null,
+  lastLayeredError = null,
   lastCthError = null;
 let trenchSample = null,
   trenchMesh = null,
@@ -246,56 +248,12 @@ function shadowCanvas(rgba, w, h, meta) {
   return b;
 }
 function removeCloud() {
-  if (cloudShell) {
-    try {
-      scene.primitives.remove(cloudShell);
-    } catch (_) {}
-    cloudShell = null;
-  }
   if (cloudShadowLayer) {
     try {
       viewer.imageryLayers.remove(cloudShadowLayer, true);
     } catch (_) {}
     cloudShadowLayer = null;
   }
-}
-function addCloudShell(canvas, meta) {
-  const rect = Cesium.Rectangle.fromDegrees(-180, meta.south, 180, meta.north),
-    material = Cesium.Material.fromType("Image", {
-      image: canvas,
-      repeat: new Cesium.Cartesian2(1, 1),
-      color: Cesium.Color.WHITE.withAlpha(0.9),
-      transparent: true,
-    }),
-    p = new Cesium.Primitive({
-      geometryInstances: new Cesium.GeometryInstance({
-        geometry: new Cesium.RectangleGeometry({
-          rectangle: rect,
-          height: CLOUD_SHELL_DISPLAY_HEIGHT_M,
-          granularity: Cesium.Math.toRadians(1),
-          vertexFormat: Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT,
-        }),
-      }),
-      appearance: new Cesium.EllipsoidSurfaceAppearance({
-        aboveGround: true,
-        faceForward: true,
-        translucent: true,
-        material,
-      }),
-      asynchronous: false,
-      show: activeMode === "EARTH" && cloudFidelity === "SHELL",
-    });
-  scene.primitives.add(p);
-  return p;
-}
-function setCloudShellPresentation({ show, opacity = 0.5 } = {}) {
-  if (!cloudShell) return;
-  cloudShell.show = !!show && activeMode === "EARTH";
-  const color = cloudShell.appearance?.material?.uniforms?.color;
-  if (color)
-    cloudShell.appearance.material.uniforms.color = Cesium.Color.WHITE.withAlpha(
-      clamp(Number(opacity), 0, 1),
-    );
 }
 function addShadow(canvas, meta) {
   const provider = new Cesium.SingleTileImageryProvider({
@@ -409,7 +367,7 @@ async function loadCloud({ force = false } = {}) {
       !Number.isFinite(Number(meta.north))
     )
       throw new Error("GMGSI_META_INVALID");
-    if (!force && cloudMeta?.time === meta.time && cloudShell) return cloudMeta;
+    if (!force && cloudMeta?.time === meta.time && cloudShadowLayer) return cloudMeta;
     const ir = await fetch(
       `${API.CLOUDS}/global.png?t=${encodeURIComponent(meta.time)}`,
       { cache: "no-cache" },
@@ -428,12 +386,11 @@ async function loadCloud({ force = false } = {}) {
     );
     removeCloud();
     cloudShadowLayer = addShadow(shadow, meta);
-    cloudShell = addCloudShell(normalized.canvas, meta);
     cloudMeta = Object.freeze({
       time: meta.time,
       source: "NOAA_NESDIS_GMGSI",
-      truthClass: "OBSERVED_2D_SHELL",
-      heightClass: "DISPLAY_ONLY_NOT_CTH",
+      truthClass: "OBSERVED_2D_INPUT_ONLY",
+      heightClass: "NO_RENDERED_CLOUD_HEIGHT",
     });
     badge();
     scene.requestRender();
@@ -454,20 +411,21 @@ function scheduleCloud() {
 }
 function hideCloud3d() {
   cloudVolume?.hide();
+  cloudLayered?.hide();
   cthRelief?.hide();
-  cloudFidelity = "SHELL";
-  setCloudShellPresentation({ show: true, opacity: 0.5 });
-  setObservedShadow(0.22, true);
+  cloudFidelity = "OFF";
+  setObservedShadow(0, false);
 }
 async function showBestCloud3d({ focus = true } = {}) {
   lastVolumeError = null;
+  lastLayeredError = null;
   lastCthError = null;
   if (!cloudVolume) cloudVolume = new GfsCloudVolumeRuntime({ viewer, Cesium });
   try {
     volumeMeta = await cloudVolume.show();
+    cloudLayered?.hide();
     cthRelief?.hide();
     cloudFidelity = "VOLUME";
-    setCloudShellPresentation({ show: false });
     setObservedShadow(0.12, true);
     if (focus) {
       const a = volumeMeta.anchor;
@@ -492,11 +450,35 @@ async function showBestCloud3d({ focus = true } = {}) {
     cloudVolume?.hide();
     console.warn("[v2-real-earth/volume]", lastVolumeError);
   }
+  if (!cloudLayered)
+    cloudLayered = new GfsCloudLayeredFallbackRuntime({ viewer, Cesium });
+  try {
+    layeredMeta = await cloudLayered.show();
+    cloudVolume?.hide();
+    cthRelief?.hide();
+    cloudFidelity = "LAYERED";
+    setObservedShadow(0.1, true);
+    if (focus) {
+      await flyToAsync({
+        destination: Cesium.Cartesian3.fromDegrees(131.5, 27.5, 2_200_000),
+        orientation: { heading: 0, pitch: Cesium.Math.toRadians(-56), roll: 0 },
+        duration: 0.9,
+      });
+      await afterRender();
+    }
+    badge("LAYERED: real GFS vertical columns · low/mid/high altitude planes");
+    announce(`NOAA GFS 실제 수직 자료 기반 3개 고도층 · ${layeredMeta.validAt}`);
+    return "LAYERED";
+  } catch (error) {
+    lastLayeredError = String(error?.message || error);
+    cloudLayered?.hide();
+    console.warn("[v2-real-earth/layered]", lastLayeredError);
+  }
   if (!cthRelief) cthRelief = new Gk2aCthReliefRuntime({ viewer, Cesium });
   try {
     cthMeta = await cthRelief.show();
+    cloudLayered?.hide();
     cloudFidelity = "CTH_RELIEF";
-    setCloudShellPresentation({ show: false });
     setObservedShadow(0.13, true);
     if (focus) {
       await flyToAsync({
@@ -514,14 +496,13 @@ async function showBestCloud3d({ focus = true } = {}) {
     cthRelief?.hide();
     console.warn("[v2-real-earth/cth]", lastCthError);
   }
-  cloudFidelity = "SHELL";
-  setCloudShellPresentation({ show: true, opacity: 0.5 });
-  setObservedShadow(0.22, true);
+  cloudFidelity = "OFF";
+  setObservedShadow(0, false);
   badge(
-    `OBSERVED_2D_FALLBACK · GFS ${lastVolumeError || "unknown"} · CTH ${lastCthError || "unknown"}`,
+    `3D CLOUD OFF · VOLUME ${lastVolumeError || "unknown"} · LAYERED ${lastLayeredError || "unknown"} · CTH ${lastCthError || "unknown"}`,
   );
-  announce("실제 3D 구름 산출물 렌더가 실패해 NOAA 관측 Shell로 유지합니다.");
-  return "SHELL";
+  announce("검증 가능한 실제 3D 구름 산출물이 없어 구름 렌더를 끕니다.");
+  return "OFF";
 }
 
 async function installTerrain() {
@@ -843,7 +824,6 @@ async function enterTrench() {
   oceanSurface?.setMode?.("TRENCH");
   atmosphereLight?.setMode?.("TRENCH");
   waterTruth = "NO_WATER_MASK";
-  if (cloudShell) cloudShell.show = false;
   setObservedShadow(0, false);
   scene.globe.maximumScreenSpaceError = 1.2;
   scene.globe.enableLighting = false;
@@ -903,7 +883,6 @@ async function enterUnderwater() {
   oceanSurface?.setMode?.("UNDERWATER");
   atmosphereLight?.setMode?.("UNDERWATER");
   waterTruth = "NO_WATER_MASK";
-  if (cloudShell) cloudShell.show = false;
   setObservedShadow(0, false);
   prepareUnderwater();
   trenchMesh?.setVisible(true);
@@ -940,9 +919,9 @@ async function activateDefaultPhysicalEarth({ resetCamera = true } = {}) {
     ? "PROVIDER_WATER_MASK"
     : "NO_WATER_MASK";
   cloudVolume?.hide();
+  cloudLayered?.hide();
   cthRelief?.hide();
   cloudFidelity = "OFF";
-  setCloudShellPresentation({ show: false });
   setObservedShadow(0, false);
   if (resetCamera) physicalPresentation.setAmbientCamera();
   updateImageryForView();
@@ -995,9 +974,9 @@ function enterEarth({ upgrade = true } = {}) {
   activeMode = "EARTH";
   if (upgrade) {
     cloudVolume?.hide();
+    cloudLayered?.hide();
     cthRelief?.hide();
     cloudFidelity = "OFF";
-    setCloudShellPresentation({ show: false });
     setObservedShadow(0, false);
   } else {
     hideCloud3d();
@@ -1052,7 +1031,7 @@ function installBridge() {
       await enterUnderwater();
       return;
     }
-    if (activeMode !== "EARTH" || cloudFidelity !== "SHELL") enterEarth();
+    if (activeMode !== "EARTH" || cloudFidelity !== "OFF") enterEarth();
   };
   earthClickHandler = (event) => {
     if (event.target?.closest?.('#home,[data-menu="EARTH"]')) enterEarth();
@@ -1161,8 +1140,10 @@ export async function bootRealLivingEarth({
     cloudDiagnostics: () =>
       Object.freeze({
         volume: lastVolumeError,
+        layered: lastLayeredError,
         cth: lastCthError,
       }),
+    layeredCloudTruth: () => layeredMeta,
     detailImageryLayer: () => detailLayer,
     enterEarth,
     enterTrench,
@@ -1182,10 +1163,13 @@ export async function bootRealLivingEarth({
       cloudVolume?.dispose();
       cloudVolume = null;
       volumeMeta = null;
+      cloudLayered?.dispose();
+      cloudLayered = null;
+      layeredMeta = null;
       cthRelief?.dispose();
       cthRelief = null;
       cthMeta = null;
-      lastVolumeError = lastCthError = null;
+      lastVolumeError = lastLayeredError = lastCthError = null;
       physicalPresentation?.dispose();
       physicalPresentation = null;
       globalTerrainRelief?.dispose();

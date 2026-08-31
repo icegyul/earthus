@@ -77,7 +77,7 @@ export function cloudShadowPresentation({
   const valid = mode === 'EARTH'
     && cloudFidelity !== 'OFF'
     && cloudMeta?.source === 'NOAA_NESDIS_GMGSI'
-    && cloudMeta?.truthClass === 'OBSERVED_2D_SHELL'
+    && cloudMeta?.truthClass === 'OBSERVED_2D_INPUT_ONLY'
     && typeof cloudMeta?.time === 'string'
     && Number.isFinite(Date.parse(cloudMeta.time));
   return Object.freeze(valid ? {

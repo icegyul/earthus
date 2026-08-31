@@ -25,6 +25,34 @@
 #toast{position:absolute;top:80px;left:50%;transform:translateX(-50%);padding:9px 13px;border:1px solid var(--l);background:rgba(5,12,18,.85);border-radius:999px;font-size:9px;color:#a9bbc4}.now{position:absolute;left:26px;top:50%;font-size:8px;color:#728690;letter-spacing:.1em}.now i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--g);margin-right:8px}.cam{position:absolute;right:25px;bottom:28px;text-align:right;font:8px ui-monospace,monospace;color:#64808e}
 .fallback{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(circle,#08202f,#02060b 55%);z-index:1}.fallback:after{content:"";width:min(55vw,630px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 33%,#3b7187,#174058 40%,#091d2b 72%);box-shadow:inset -90px -50px 120px #000b,0 0 45px #60cfff26}html[data-c=1] .fallback{display:none}
 #body.grid{height:calc(100% - 124px);overflow:auto;padding-bottom:22px;overscroll-behavior:contain}body:has(#intel:not([hidden])) #earthusV2RealSources{display:none!important}
+/* v2.5.3 승인 레퍼런스 HUD — REF_APPROVED_DIRECTION_Base_Earth / Weather_Ocean */
+#refReadouts{position:absolute;right:24px;top:84px;display:flex;flex-direction:column;gap:16px;text-align:right;pointer-events:none}
+#refReadouts .ro small{display:block;font-size:8px;letter-spacing:.18em;color:#6d808d}
+#refReadouts .ro b{display:block;font-size:15px;font-weight:500;color:#e8f4fa;margin:3px 0 1px}
+#refReadouts .ro span{display:block;font-size:8px;color:#5f7280;border-bottom:1px solid rgba(188,220,238,.18);padding-bottom:6px;min-width:150px}
+body:has(#intel:not([hidden])) #refReadouts{display:none}
+#refLive{position:absolute;left:24px;bottom:24px;display:flex;align-items:center;gap:8px;font-size:10px;color:#9fb2bc;pointer-events:none}
+#refLive i{width:7px;height:7px;border-radius:50%;background:var(--g);box-shadow:0 0 9px var(--g)}
+#refLive b{letter-spacing:.22em;font-weight:500}
+#refTimebar{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);width:min(640px,calc(100vw - 620px));display:flex;align-items:center;gap:12px;padding:8px 14px;border:1px solid var(--l);background:rgba(5,12,18,.55);backdrop-filter:blur(18px);border-radius:999px}
+#refTimebar button{border:1px solid var(--l);background:rgba(255,255,255,.04);border-radius:999px;padding:5px 12px;font-size:9px;color:#cbe7f4;cursor:pointer}
+#refTimebar input{flex:1;accent-color:var(--a);min-width:120px}
+#refTimebar span{font-size:8px;color:#8397a3;white-space:nowrap}
+@media(min-width:761px){
+  .dock{left:20px;top:50%;bottom:auto;right:auto;transform:translateY(-50%);width:58px;height:auto;grid-template-columns:1fr;gap:4px;padding:8px 6px;border-radius:20px}
+  .dock button{height:46px}
+  .dock button b{display:none}
+  #features{left:96px;right:auto;bottom:auto;top:104px;transform:none;width:264px;border-radius:16px}
+  .fh{flex-direction:column;gap:3px}
+  .chips{flex-direction:column;gap:5px;overflow:visible}
+  .chips button{width:100%;text-align:left;padding:11px 13px;border-radius:12px;display:flex;align-items:center;justify-content:space-between}
+  .chips button:after{content:"";width:6px;height:6px;border-radius:50%;background:rgba(130,150,161,.35)}
+  .chips button.on{color:#dff7ff;background:rgba(112,215,255,.1);border-color:rgba(112,215,255,.4)}
+  .chips button.on:after{background:var(--g);box-shadow:0 0 8px var(--g)}
+  .search{left:auto;right:24px;bottom:24px;width:250px}
+  .now{display:none}
+}
+@media(max-width:760px){#refTimebar,#refReadouts{display:none}#refLive{left:14px;bottom:auto;top:58px}}
 @media(max-width:760px){.head{left:14px;right:14px;top:13px}.brand b{font-size:13px}.state{display:none}.dock{left:10px;right:10px;bottom:10px;transform:none;width:auto;height:70px}.dock button b{font-size:6px}.search{left:12px;right:12px;bottom:148px;width:auto;height:44px}#features{left:10px;right:10px;bottom:88px;transform:none;width:auto}.chips button{min-height:44px}#tab{right:10px;width:44px;height:110px}#intel{left:8px;right:8px;top:auto;bottom:86px;width:auto;height:56vh}.now{display:none}.cam{right:14px;bottom:151px}body:has(#intel:not([hidden])) .cam{display:none}#earthusV2RealSources{bottom:196px!important;left:12px!important;right:12px!important;max-width:none!important}}
 </style>
 </head>

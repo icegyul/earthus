@@ -76,6 +76,13 @@
     });
   }
 
+  function startReferenceHud() {
+    const url = new URL('./js/reference-hud.js?v=20260831-refhud1', location.href).href;
+    import(url).then(mod => mod.installReferenceHud()).catch(error => {
+      console.warn('[v2/reference-hud]', error?.message || error);
+    });
+  }
+
   function startGreenfieldSceneBridge() {
     if (greenfieldStarted) return;
     greenfieldStarted = true;
@@ -115,6 +122,7 @@
       startSeasonalCurrentEarth();
       startMaterializedEarth();
       startGreenfieldSceneBridge();
+      startReferenceHud();
       setTimeout(() => root.classList.add('gone'), 250);
     }
   }

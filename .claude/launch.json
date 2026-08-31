@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "earthus-static",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8777", "--directory", "prototype"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tools/dev_static_server.mjs", "8777"],
       "port": 8777
     }
   ]

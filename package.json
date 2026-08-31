@@ -1,0 +1,12 @@
+{
+  "name": "earthus-v2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tools/earthus-v52/*.test.mjs tools/earthus-v53/*.test.mjs",
+    "serve": "node tools/dev_static_server.mjs 8777"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
+  }
+}

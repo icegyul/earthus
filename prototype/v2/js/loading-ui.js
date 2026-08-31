@@ -31,6 +31,7 @@
   let intelligenceStarted = false;
   let seasonalStarted = false;
   let materializedStarted = false;
+  let greenfieldStarted = false;
 
   const $ = id => document.getElementById(id);
   const stageText = stage => STAGE_KO[stage] || String(stage || '자료 처리 중…');
@@ -75,6 +76,16 @@
     });
   }
 
+  function startGreenfieldSceneBridge() {
+    if (greenfieldStarted) return;
+    greenfieldStarted = true;
+    const url = new URL('./js/greenfield-scene-bridge.js?v=20260831-v253', location.href).href;
+    import(url).then(mod => mod.installGreenfieldSceneBridge()).catch(error => {
+      greenfieldStarted = false;
+      console.warn('[v2/greenfield-bridge]', error?.message || error);
+    });
+  }
+
   function setBar(root, task) {
     const bar = root?.querySelector('[data-task-bar]');
     if (!root || !bar) return;
@@ -103,6 +114,7 @@
       startIntelligence();
       startSeasonalCurrentEarth();
       startMaterializedEarth();
+      startGreenfieldSceneBridge();
       setTimeout(() => root.classList.add('gone'), 250);
     }
   }

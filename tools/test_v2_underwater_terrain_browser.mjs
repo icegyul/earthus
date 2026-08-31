@@ -260,6 +260,7 @@ try {
       overviewMesh: r.trenchMeshTruth?.(),
       underwaterDetail: detailMeta,
       sample: r.trenchSample?.(),
+      ocean: r.oceanSurfaceSnapshot?.() || null,
     };
   });
   assert.equal(state.runtime.terrain, "ESRI_TOPOBATHY3D");
@@ -271,6 +272,7 @@ try {
   assert.equal(state.runtime.translucency, true);
   assert.equal(state.runtime.front, 1);
   assert.equal(state.runtime.back, 1);
+  assert.equal(state.runtime.ocean?.visible, false);
   assert.equal(
     state.runtime.underwaterDetail?.truthClass,
     "ESRI_TOPOBATHY3D_SAMPLED_SEAFLOOR_MESH",

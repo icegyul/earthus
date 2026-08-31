@@ -11,6 +11,7 @@ import { buildCloudShadowAlpha } from "../../js/cloud-shadow.js";
 import { Gk2aCthReliefRuntime } from "./gk2a-cth-relief.js";
 import { GfsCloudVolumeRuntime } from "./gfs-cloud-volume.js";
 import { GlobalTerrainReliefPass } from "./global-terrain-relief-pass.js";
+import { OceanSurfacePass } from "./ocean-surface-pass.js";
 import {
   PhysicalEarthPresentationRuntime,
   terrainPresentationForHeight,
@@ -55,8 +56,10 @@ let cloudShell = null,
   volumeMeta = null,
   physicalPresentation = null,
   globalTerrainRelief = null,
+  oceanSurface = null,
   defaultPhysicalReady = false,
   globalReliefError = null,
+  oceanSurfaceError = null,
   lastVolumeError = null,
   lastCthError = null;
 let trenchSample = null,
@@ -120,7 +123,9 @@ function badge(extra = "") {
       ? "BATHY: Esri TopoBathy3D ready"
       : "BATHY: unavailable";
   const w =
-    waterTruth === "PROVIDER_WATER_MASK"
+    waterTruth === "NATURAL_EARTH_MASK_0M_OCEAN_SURFACE"
+      ? "WATER: independent 0m surface · Natural Earth mask · static normal"
+      : waterTruth === "PROVIDER_WATER_MASK"
       ? "WATER: provider mask + reflective waves"
       : "WATER: imagery surface";
   const p =
@@ -832,6 +837,7 @@ async function enterTrench() {
   activeMode = "TRENCH";
   physicalPresentation?.setMode?.("TRENCH");
   globalTerrainRelief?.setMode?.("TRENCH");
+  oceanSurface?.setMode?.("TRENCH");
   waterTruth = "NO_WATER_MASK";
   if (cloudShell) cloudShell.show = false;
   setObservedShadow(0, false);
@@ -890,6 +896,7 @@ async function enterUnderwater() {
   activeMode = "UNDERWATER";
   physicalPresentation?.setMode?.("UNDERWATER");
   globalTerrainRelief?.setMode?.("UNDERWATER");
+  oceanSurface?.setMode?.("UNDERWATER");
   waterTruth = "NO_WATER_MASK";
   if (cloudShell) cloudShell.show = false;
   setObservedShadow(0, false);
@@ -950,6 +957,22 @@ async function activateDefaultPhysicalEarth({ resetCamera = true } = {}) {
       console.warn("[v2-real-earth/global-relief]", globalReliefError);
     }
   }
+  let oceanReady = false;
+  if (terrainTruth === "ESRI_TERRAIN3D") {
+    if (!oceanSurface)
+      oceanSurface = new OceanSurfacePass({ viewer, Cesium });
+    try {
+      oceanSurfaceError = null;
+      await oceanSurface.show();
+      oceanReady = oceanSurface.snapshot().ready === true;
+    } catch (error) {
+      oceanSurfaceError = String(error?.message || error);
+      console.warn("[v2-real-earth/ocean-surface]", oceanSurfaceError);
+    }
+  }
+  waterTruth = oceanReady
+    ? "NATURAL_EARTH_MASK_0M_OCEAN_SURFACE"
+    : "NO_WATER_MASK";
   defaultPhysicalReady = terrainTruth === "ESRI_TERRAIN3D" && reliefReady;
   badge(defaultPhysicalReady
     ? "G2 DEFAULT: Terrain3D 1× + provider-derived global relief material"
@@ -988,8 +1011,9 @@ function enterEarth({ upgrade = true } = {}) {
   polarSurface?.setVisible(false);
   physicalPresentation?.setMode?.("EARTH");
   globalTerrainRelief?.setMode?.("EARTH");
-  waterTruth = terrainProvider?.hasWaterMask === true
-    ? "PROVIDER_WATER_MASK"
+  oceanSurface?.setMode?.("EARTH");
+  waterTruth = oceanSurface?.snapshot?.().ready === true
+    ? "NATURAL_EARTH_MASK_0M_OCEAN_SURFACE"
     : "NO_WATER_MASK";
   updateImageryForView();
   if (physicalPresentation) physicalPresentation.setAmbientCamera();
@@ -1117,6 +1141,7 @@ export async function bootRealLivingEarth({
     defaultPhysicalReady: () => defaultPhysicalReady,
     defaultPhysicalSnapshot: () => physicalPresentation?.snapshot?.() || null,
     globalTerrainReliefSnapshot: () => globalTerrainRelief?.snapshot?.() || null,
+    oceanSurfaceSnapshot: () => oceanSurface?.snapshot?.() || null,
     cloudDiagnostics: () =>
       Object.freeze({
         volume: lastVolumeError,
@@ -1149,8 +1174,11 @@ export async function bootRealLivingEarth({
       physicalPresentation = null;
       globalTerrainRelief?.dispose();
       globalTerrainRelief = null;
+      oceanSurface?.dispose();
+      oceanSurface = null;
       defaultPhysicalReady = false;
       globalReliefError = null;
+      oceanSurfaceError = null;
       polarSurface?.dispose();
       polarSurface = null;
       removeCloud();

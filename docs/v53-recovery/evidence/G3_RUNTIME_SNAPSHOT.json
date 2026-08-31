@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "earthus.v53.g3-runtime-evidence.v1",
+  "capturedAt": "2026-08-31T02:15:00Z",
+  "repository": {
+    "branch": "earthus-v2/real-living-earth-render",
+    "baseHead": "7ecb2464f325eb45d4282b19be27891605f17189",
+    "workingTree": "DIRTY_PRESERVED",
+    "deployed": false
+  },
+  "automatedContract": "PASS",
+  "manualVisualAcceptance": "PASS_G3_ONLY",
+  "viewer": {
+    "viewerCount": 1,
+    "canvasCount": 1,
+    "primitiveCount": 4,
+    "requestRenderMode": true,
+    "idleFrames1s": 0
+  },
+  "terrain": {
+    "truthClass": "ESRI_TERRAIN3D",
+    "globeMaterial": "EarthusTerrainRelief"
+  },
+  "ocean": {
+    "ready": true,
+    "truthClass": "PHYSICAL_0M_OCEAN_SURFACE",
+    "waterTruth": "NATURAL_EARTH_MASK_0M_OCEAN_SURFACE",
+    "materialType": "EarthusOceanSurface",
+    "surfaceTruthHeightM": 0,
+    "presentationOffsetM": 50,
+    "depthPolicy": "DEPTH_TESTED_GLOBAL_PRESENTATION_EPSILON",
+    "minimumVisibleHeightM": 2500000,
+    "mode": "EARTH",
+    "visible": true,
+    "primitiveAttached": true,
+    "animation": false,
+    "synthetic": false,
+    "loadDurationMs": 12,
+    "mask": {
+      "source": "Natural Earth admin 0 countries",
+      "license": "Public domain",
+      "sha256": "05fefcbf59e5018ae580db9f0dbc874153d10025a6ea05b35a2251af4f1f56f1",
+      "bytes": 20056
+    },
+    "normal": {
+      "source": "CesiumJS 1.143 waterNormalsSmall.jpg",
+      "license": "Apache-2.0",
+      "sha256": "b9f9500dc8092a6f007b251db3827c7f4e7741ff5098d060c8abf45f4e0cd4aa",
+      "bytes": 66386,
+      "meaning": "STATIC_RENDERING_ONLY_NOT_OBSERVED_WAVE_DATA"
+    }
+  },
+  "visibilityRegression": {
+    "global": true,
+    "regionalBelow2500km": false,
+    "trench": false,
+    "underwater": false
+  },
+  "errors": {
+    "console": 0,
+    "uncaught": 0,
+    "oceanSurface": null
+  },
+  "differentialFrameEvidence": {
+    "oceanOnSha256": "d0bf852ae63a714afa1578d59aed2bcdca2589bb9449f01cb4957643c5ce50da",
+    "oceanOffSha256": "76b8bac474fdf421ab435b66e3586fbca331363750c1b64fe5ac5127b8bd59f4",
+    "materiallyDifferent": true,
+    "farSideLeakage": false,
+    "oceanGridArtifact": false
+  },
+  "regression": {
+    "nodeTests": "29_PASS",
+    "assetUnittest": "PASS",
+    "g2Default": "PASS",
+    "canonicalImageryOwner": "PASS",
+    "mountainSequence": "PASS",
+    "trench": "PASS_OCEAN_HIDDEN",
+    "underwater": "PASS_OCEAN_HIDDEN"
+  },
+  "deferredGates": {
+    "atmosphere": "G4_NOT_STARTED",
+    "cloud": "G5_NOT_STARTED",
+    "regionStreaming": "G6_NOT_STARTED"
+  },
+  "screenshots": {
+    "oceanOn": "G3_OCEAN_SURFACE_ON.png",
+    "oceanOnSha256": "d0bf852ae63a714afa1578d59aed2bcdca2589bb9449f01cb4957643c5ce50da",
+    "oceanOff": "G3_OCEAN_SURFACE_OFF.png",
+    "oceanOffSha256": "76b8bac474fdf421ab435b66e3586fbca331363750c1b64fe5ac5127b8bd59f4"
+  },
+  "final": "G3_LOCAL_PASS"
+}

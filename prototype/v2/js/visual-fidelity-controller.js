@@ -2,6 +2,7 @@
  * Presentation/LOD only. Provider truth, terrain elevations and cloud heights are untouched.
  */
 import { TrenchBathymetryMeshRuntime } from "./trench-bathymetry-mesh.js";
+import { terrainPresentationForHeight } from "./physical-earth-presentation.js";
 
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 const smooth = (a, b, x) => {
@@ -409,7 +410,10 @@ export function installVisualFidelityController({ runtime = null } = {}) {
       terrain,
     });
     if (detail && !closeSurface) {
-      const base = 0.035 + 0.965 * (1 - smooth(1_500_000, 8_500_000, h)),
+      /* 사진 상세 알파의 정본은 physical-earth-presentation 정책 하나다.
+       * (구 램프 0.035~1.0/1.5-8.5Mm는 사진 기본 지구 시절 값 — NE2 데이터
+       * 원판 위에서 사진을 98%까지 되올려 지도를 덮었다. 2026-08-31) */
+      const base = terrainPresentationForHeight(h).detailImageryAlpha,
         polarFade = 1 - smooth(70, 82.2, lat);
       if (terrain === "ESRI_TOPOBATHY3D" && h < 500_000)
         detail.alpha = Math.min(0.08, base);

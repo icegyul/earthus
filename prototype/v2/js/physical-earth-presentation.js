@@ -9,7 +9,7 @@ const smooth = value => {
 export function terrainPresentationForHeight(heightM) {
   const height = Number(heightM);
   const h = Number.isFinite(height) ? height : 10_800_000;
-  const t = smooth((h - 900_000) / 3_300_000);
+  const t = smooth((h - 450_000) / 1_100_000);
   const deep = smooth((h - 2_000_000) / 8_000_000);
   /* 실제 지구 비율(반지름 대비 최고봉 0.14%)에서는 원거리 실루엣이 물리적으로
    * 보이지 않는다. 원거리 한정 표기된 지형 강조를 적용하고 배지·스냅샷에
@@ -20,7 +20,7 @@ export function terrainPresentationForHeight(heightM) {
     verticalExaggerationClass: verticalExaggeration === 1
       ? 'ESRI_TERRAIN3D_SOURCE_SCALE_1X'
       : `ESRI_TERRAIN3D_LABELED_PRESENTATION_SCALE_${verticalExaggeration}X`,
-    detailImageryAlpha: Math.round((1 - 0.78 * t) * 100) / 100,
+    detailImageryAlpha: Math.round((1 - 0.94 * t) * 100) / 100,
   });
 }
 
@@ -64,7 +64,7 @@ export class PhysicalEarthPresentationRuntime {
               float foothill = smoothstep(80.0, 1400.0, height);
               float alpine = smoothstep(1400.0, 4800.0, height);
               float slope = smoothstep(0.03, 0.72, materialInput.slope);
-              float distanceClass = smoothstep(600000.0, 5000000.0, length(materialInput.positionToEyeEC));
+              float distanceClass = smoothstep(350000.0, 2200000.0, length(materialInput.positionToEyeEC));
               float slopeAngle = materialInput.slope * 1.5707963;
               float hillshade = clamp(
                 cos(0.7853982) * cos(slopeAngle)
@@ -79,8 +79,8 @@ export class PhysicalEarthPresentationRuntime {
               tint = mix(tint, rock, slope * 0.38);
               material.diffuse = tint * (1.0 - slope * 0.18) * shade;
               float localAlpha = 0.10 + foothill * 0.08 + alpine * 0.12 + slope * 0.10;
-              float globalAlpha = 0.68 + foothill * 0.10 + alpine * 0.12 + slope * 0.05;
-              material.alpha = land * clamp(mix(localAlpha, globalAlpha, distanceClass), 0.0, 0.88);
+              float globalAlpha = 0.24 + foothill * 0.08 + alpine * 0.10 + slope * 0.05;
+              material.alpha = land * clamp(mix(localAlpha, globalAlpha, distanceClass), 0.0, 0.50);
               float contourCoord = height / 500.0;
               float contourDistance = min(fract(contourCoord), 1.0 - fract(contourCoord));
               float contourWidth = max(fwidth(contourCoord) * 1.35, 0.012);

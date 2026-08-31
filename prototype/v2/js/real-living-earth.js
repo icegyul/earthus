@@ -616,18 +616,41 @@ function updateImageryForView() {
   badge();
 }
 async function installImagery() {
-  baseLayer = viewer.imageryLayers.addImageryProvider(
-    gibsProvider({
+  /* 원거리 기본 지구 = 구워진 데이터 지도(NE2 SR_W + 국경 + 남색 수심 바다).
+   * 사진이 아니라 지도학 데이터 원판이다 — tools/bake_ne2_base_earth.mjs,
+   * 출처·해시는 assets/physical-earth/ne2-base.receipt.json. */
+  let baseProvider = null;
+  try {
+    const probe = await fetch("/v2/assets/physical-earth/ne2-tiles/0/0/0.jpg", {
+      method: "HEAD",
+      cache: "no-cache",
+    });
+    if (!probe.ok) throw new Error(`NE2_TILES_${probe.status}`);
+    baseProvider = new Cesium.UrlTemplateImageryProvider({
+      url: "/v2/assets/physical-earth/ne2-tiles/{z}/{x}/{y}.jpg?v=20260831-ne2-2",
+      tilingScheme: new Cesium.GeographicTilingScheme(),
+      tileWidth: 256,
+      tileHeight: 256,
+      minimumLevel: 0,
+      maximumLevel: 4,
+      credit:
+        "Natural Earth II (public domain) · EARTHUS baked data map",
+    });
+    baseProvider.__earthusV2Source = "NATURAL_EARTH_II_SR_W_BAKED_DATA_MAP";
+  } catch (error) {
+    console.warn(
+      "[v2-real-earth/imagery] baked base unavailable, GIBS fallback:",
+      error?.message || error,
+    );
+    baseProvider = gibsProvider({
       layer: "BlueMarble_ShadedRelief_Bathymetry",
       level: 8,
       ext: "jpeg",
-    }),
-  );
+    });
+  }
+  baseLayer = viewer.imageryLayers.addImageryProvider(baseProvider);
   baseLayer.dayAlpha = 1;
   baseLayer.nightAlpha = 0.1;
-  baseLayer.brightness = 0.8;
-  baseLayer.saturation = 0.46;
-  baseLayer.contrast = 1.05;
   let detailProvider = null;
   try {
     detailProvider =
@@ -1116,7 +1139,7 @@ export async function bootRealLivingEarth({
     scene.globe.dynamicAtmosphereLighting = true;
   if ("dynamicAtmosphereLightingFromSun" in scene.globe)
     scene.globe.dynamicAtmosphereLightingFromSun = true;
-  if ("highDynamicRange" in scene) scene.highDynamicRange = true;
+  if ("highDynamicRange" in scene) scene.highDynamicRange = false;
   scene.sun.show = true;
   scene.moon.show = false;
   scene.fog.enabled = false;

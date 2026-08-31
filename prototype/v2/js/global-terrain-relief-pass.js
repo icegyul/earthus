@@ -187,7 +187,9 @@ export class GlobalTerrainReliefPass {
       credit: 'Derived from Esri WorldElevation3D Terrain3D',
     });
     this.layer = this.viewer.imageryLayers.addImageryProvider(provider);
-    this.layer.alpha = 0.76;
+    /* 0.76은 사진 기본 지구 시절의 값이다. NE2 데이터 원판(풀해상 릴리프 내장)
+     * 위에서는 저해상 144×72 오버레이가 베일이 되므로 미세 보강만 남긴다. */
+    this.layer.alpha = 0.12;
     this.layer.brightness = 1;
     this.layer.contrast = 1;
     this.layer.__earthusV2GlobalTerrainRelief = true;

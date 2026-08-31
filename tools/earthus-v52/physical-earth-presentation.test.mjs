@@ -10,9 +10,9 @@ test('far scopes apply labeled presentation scale while close terrain stays at s
   assert.deepEqual(terrainPresentationForHeight(10_800_000), {
     verticalExaggeration: 2.2,
     verticalExaggerationClass: 'ESRI_TERRAIN3D_LABELED_PRESENTATION_SCALE_2.2X',
-    detailImageryAlpha: 0.22,
+    detailImageryAlpha: 0.06,
   });
-  assert.deepEqual(terrainPresentationForHeight(900_000), {
+  assert.deepEqual(terrainPresentationForHeight(450_000), {
     verticalExaggeration: 1,
     verticalExaggerationClass: 'ESRI_TERRAIN3D_SOURCE_SCALE_1X',
     detailImageryAlpha: 1,

@@ -352,8 +352,8 @@ try {
       mean: 0.02,
       std: 0.025,
       range: 0.07,
-      dark: 0.75,
-      chroma: 0.035,
+      dark: 0.93,
+      chroma: 0.006,
       edge: 0.0025,
     }),
   );
@@ -390,7 +390,7 @@ try {
       mean: 0.02,
       std: 0.02,
       range: 0.06,
-      dark: 0.75,
+      dark: 0.92,
       edge: 0.002,
     });
     gate("polar-center", metrics["01b-polar-center"], {
@@ -477,7 +477,7 @@ try {
       std: 0.02,
       range: 0.06,
       dark: 0.78,
-      chroma: 0.018,
+      chroma: 0.006,
       edge: 0.0035,
     });
     gate("trench-center", metrics["03-trench-center"], {

@@ -179,7 +179,10 @@ export class PhysicalAtmosphereLightRuntime {
       globe.dynamicAtmosphereLightingFromSun = true;
     if (this.C.SunLight)
       this.scene.light = new this.C.SunLight({ intensity: profile.sunIntensity });
-    if ('highDynamicRange' in this.scene) this.scene.highDynamicRange = true;
+    /* HDR 톤매핑이 어두운 데이터 지도 값을 ~2.2배 들어올려 전면 워시를
+     * 만들었다 (2026-08-31 픽셀 실측: bake 21,44,74 → HDR on 57,102,131 →
+     * HDR off 20,45,69). 데이터 원판 색을 보존하기 위해 끈다. */
+    if ('highDynamicRange' in this.scene) this.scene.highDynamicRange = false;
     this.scene.moon.show = false;
     this.viewer.clock.shouldAnimate = false;
     this.setTime(timeIso);
@@ -202,7 +205,10 @@ export class PhysicalAtmosphereLightRuntime {
     this.mode = mode;
     const surface = mode === 'EARTH';
     this.scene.globe.enableLighting = surface;
-    this.scene.globe.showGroundAtmosphere = surface;
+    /* 지상 대기 헤이즈·안개는 대륙 줌에서 데이터 지도의 색을 씻어낸다
+     * (2026-08-31 mapped.earth 대조). 림 산란은 skyAtmosphere가 유지한다. */
+    this.scene.globe.showGroundAtmosphere = false;
+    this.scene.fog.enabled = false;
     this.scene.skyAtmosphere.show = surface;
     this.scene.sun.show = surface;
     this.applyCityLights();

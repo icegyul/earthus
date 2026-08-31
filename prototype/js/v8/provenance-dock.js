@@ -42,6 +42,9 @@ export function attachProvenanceDock(root) {
       || (ko ? '자료 출처 확인' : 'View data source');
 
     dock.hidden = !visible;
+    /* 독이 숨는 순간 펼침 상태도 버린다 — 남겨 두면 레이어를 껐다 켰을 때
+       사용자가 열지 않았는데 펼쳐진 채 재등장한다. */
+    if (!visible) expanded = false;
     dock.lang = ko ? 'ko' : 'en';
     dock.setAttribute('aria-label', ko ? '현재 화면 자료 출처' : 'Sources for the current view');
     toggle.setAttribute('aria-expanded', String(expanded));
@@ -75,6 +78,11 @@ export function attachProvenanceDock(root) {
       toggle.focus();
     }
   });
+  /* 펼친 상세는 바깥을 눌러도 접힌다 — 예전엔 토글을 다시 정확히 누르는 것 말고는
+     닫을 길이 없어, 모바일에서 좌하단을 계속 덮었다. 캡처 단계라 지도 조작보다 먼저 본다. */
+  document.addEventListener('pointerdown', event => {
+    if (expanded && !dock.contains(event.target)) setExpanded(false);
+  }, true);
 
   const observer = new MutationObserver(sync);
   observer.observe(root, {

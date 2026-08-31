@@ -87,7 +87,11 @@
 #sheet.is-place-detail .tl.close{background-image:radial-gradient(circle,#ff5f57 0 7px,transparent 8px)}
 #sheet.is-place-detail .tl.min{background-image:radial-gradient(circle,#febc2e 0 7px,transparent 8px)}
 #sheet.is-place-detail .tl span{opacity:.72}
-body.panel-open .brand-menu-tab{opacity:0;pointer-events:none}
+/* ⚠️ panel-open 이 아니라 panel-open-modal(panels.js)을 본다 — 서핑·낚시 같은
+   keep-open 지도 화면은 바깥 탭·Esc 로 안 닫혀서, 그때까지 손잡이를 숨기면
+   시트의 × 가 유일한 출구가 됐다. 일반 시트가 떠 있을 때만 숨긴다.
+   visibility 도 함께 꺼서 보이지 않는 버튼이 탭 순서에 남지 않게 한다. */
+body.panel-open-modal .brand-menu-tab{opacity:0;pointer-events:none;visibility:hidden}
 
 @media(max-width:620px){
   #sheet.is-place-detail{right:8px;left:8px;max-width:none;padding:18px 18px 21px}

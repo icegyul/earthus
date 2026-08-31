@@ -334,7 +334,9 @@ function makeMenuMissionButton(onRoute) {
   button.dataset.aetherusRoute = 'mission';
   button.innerHTML = '<span><b>미션 컨트롤</b><small>MISSION CONTROL</small></span><i aria-hidden="true">›</i>';
   button.addEventListener('click', () => {
-    document.getElementById('aetherusTab')?.click(); onRoute('mission');
+    /* aetherusTab.click() 은 토글이라 메뉴가 닫혀 있으면 오히려 연다 —
+       닫기 전용 이벤트로 상태와 무관하게 닫는다 (layerbar 가 받는다). */
+    document.dispatchEvent(new CustomEvent('earthus:close-menu')); onRoute('mission');
   });
   return button;
 }
@@ -971,6 +973,9 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
 
   const handleKeyboard = event => {
     if (mission.hidden || event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+    /* 메뉴 드로어가 미션 위에 열려 있으면 단축키를 먹지 않는다 — 안 그러면
+       보이지 않는 아래 레이어에서 패널이 열리거나 룸이 바뀐다. */
+    if (document.querySelector('#menuSub.open, #menuMain.open')) return;
     const typing = event.target instanceof HTMLElement
       && (event.target.matches('input,textarea,select') || event.target.isContentEditable);
     if (!statusPanel.hidden) {

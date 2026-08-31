@@ -170,7 +170,10 @@
 .legal-body a{ color:var(--teal); }
 
 @media (max-width:520px){
-  .sheet-panel{ padding:20px 17px 18px; max-height:90vh; }
+  /* ⚠️ 90vh 는 폰에서 사실상 전체 화면이었다 — "정보창이 화면을 크게 가린다".
+     지구가 보일 위쪽 1/4을 남기고, 내용은 시트 안에서 스크롤한다.
+     .tall 은 기본 규칙(88vh)의 특이도가 더 높아 여기서 같이 잡아야 적용된다. */
+  .sheet-panel, .sheet-panel.tall{ padding:20px 17px 18px; max-height:min(74dvh, calc(100dvh - 120px)); }
   .legal-body table{ font-size:11px; }
   .legal-body th, .legal-body td{ padding:5px 6px; }
 }

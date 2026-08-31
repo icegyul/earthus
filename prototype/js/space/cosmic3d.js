@@ -939,6 +939,7 @@ export const cosmic3d = {
     const entry = this._craftMarkers.get(id);
     if (!entry) return;
     if (this._dashboardOpen) this.closeDashboard(false);
+    if (this._galaxyGuideMode) this.closeGalaxyGuide(false);
     if (this._solarMotionMode) this.closeSolarMotion(false);
     if (this._photoMode) this.closePhotoAtlas(false);
     if (this._detailBody) this.closeBody(false);
@@ -1270,6 +1271,7 @@ export const cosmic3d = {
       await this.ensureEngine();
       const catalog = await this.loadGalaxyGuideCatalog();
       if (store.scene !== 'space') await sceneMgr.to('space', { stage: 'milkyway' });
+      if (this._dashboardOpen) this.closeDashboard(false);
       if (this._solarMotionMode) this.closeSolarMotion(false);
       if (this._photoMode) this.closePhotoAtlas(false);
       if (this._detailBody) this.closeBody(false);
@@ -1465,6 +1467,7 @@ export const cosmic3d = {
       await this.ensureEngine();
       const catalog = await this.loadSolarMotionCatalog();
       if (!catalog || !this.motionSun) throw new Error('SOLAR_MOTION_UNAVAILABLE');
+      if (this._galaxyGuideMode) this.closeGalaxyGuide(false);
       if (this._photoMode) this.closePhotoAtlas(false);
       if (this._detailBody) this.closeBody(false);
       if (this._selectedCraft) this.closeCraft(false);
@@ -1627,6 +1630,7 @@ export const cosmic3d = {
       // 상세 구를 먼저 단색으로 열지 않는다. 130KB 안팎의 미리보기가 준비될 때까지
       // 태양계를 유지한 뒤 같은 실제 표면을 즉시 확대하고, 상세판만 뒤에서 선명하게 바꾼다.
       await this.loadPlanetTextures();
+      if (this._galaxyGuideMode) this.closeGalaxyGuide(false);
       if (this._solarMotionMode) this.closeSolarMotion(false);
       if (this._selectedCraft) this.closeCraft(false);
       if (this._frame) cancelAnimationFrame(this._frame);
@@ -2864,6 +2868,7 @@ export const cosmic3d = {
       // 사진관을 열면 늦게 도착한 animateTo가 closePhotoAtlas()를 호출해 패널을 숨긴다.
       if (store.scene === 'space') await this._activationPromise;
       await this.ensureEngine();
+      if (this._galaxyGuideMode) this.closeGalaxyGuide(false);
       if (this._solarMotionMode) this.closeSolarMotion(false);
       if (this._detailBody) this.closeBody(false);
       if (this._selectedCraft) this.closeCraft(false);
@@ -3153,6 +3158,8 @@ export const cosmic3d = {
       if (event.key === 'Escape' && this._detailBody) { this.closeBody(); return; }
       if (event.key === 'Escape' && this._selectedCraft) { this.closeCraft(); return; }
       if (event.key === 'Escape' && this._solarMotionMode) { this.closeSolarMotion(); return; }
+      /* 같은 계열 오버레이는 전부 Esc 로 닫힌다 — 은하 안내만 빠져 있었다 */
+      if (event.key === 'Escape' && this._galaxyGuideMode) { this.closeGalaxyGuide(); return; }
       if (event.key === '+' || event.key === '=') {
         if (this._photoMode) { this._photoFov = clamp(this._photoFov - 3, 34, 74); this.render(); }
         else if (this._detailBody) { this._bodyDistance = clamp(this._bodyDistance - 4, 31, 150); this.render(); }
@@ -3293,6 +3300,10 @@ export const cosmic3d = {
 
   syncStage(value = this.level) {
     const stage = stageFor(value);
+    /* 휠·핀치 줌은 animateTo()를 안 거치므로 은하 안내 정리를 여기서 한다 —
+       은하수를 벗어났는데 안내 패널과 is-galaxy-guide 가 남아 다른 패널과 겹쳤다.
+       모든 이동 경로(휠·핀치·키보드)가 이 함수를 지나므로 한 곳에서 막힌다. */
+    if (this._galaxyGuideMode && stage !== 'milkyway') this.closeGalaxyGuide(false);
     if (stage === this._stage && store.sceneStage === stage) return;
     this._stage = stage; this._internalStage = true;
     store.setScene('space', stage);
@@ -3300,6 +3311,7 @@ export const cosmic3d = {
   },
 
   exitToEarth() {
+    if (this._galaxyGuideMode) this.closeGalaxyGuide(false);
     if (this._solarMotionMode) this.closeSolarMotion(false);
     if (this._photoMode) this.closePhotoAtlas(false);
     if (this._detailBody) this.closeBody(false);

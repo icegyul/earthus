@@ -592,6 +592,11 @@ export const layerBar = {
       tab.classList.toggle('open', earthusOpen);
       tab.classList.toggle('sub', earthusOpen && !!this.sub);
       aetherusTab.classList.toggle('open', aetherusOpen);
+      /* AETHERUS 패널이 열리면 EARTHUS 손잡이도 패널 왼쪽으로 옮긴다.
+         그대로 두면 z29 손잡이가 패널(z28) 오른쪽 위에 떠서 항목을 가리고,
+         그 자리를 누르면 메뉴가 갑자기 EARTHUS 로 바뀌었다.
+         CSS 인접 형제 선택자로는 앞 형제(menuTab)를 못 잡아 클래스로 처리한다. */
+      tab.classList.toggle('beside', aetherusOpen);
       /* 2단을 보는 동안 1단은 모바일에서 화면 밖으로 나가므로, 보조기술에도
          같은 한 장 메뉴만 읽힌다. */
       main.setAttribute('aria-hidden', String(!earthusOpen || !!this.sub));
@@ -612,9 +617,11 @@ export const layerBar = {
       seal(sub, !(this.open && this.sub));
       tab.setAttribute('aria-expanded', String(earthusOpen));
       aetherusTab.setAttribute('aria-expanded', String(aetherusOpen));
-      // 열린 쪽 버튼만 펼침 표시
+      // 열린 쪽 버튼만 펼침 표시 — 보조기술에도 같은 상태를 알린다
       main.querySelectorAll('[data-open]').forEach(b => {
         b.classList.toggle('open', this.sub === b.dataset.open);
+        b.setAttribute('aria-expanded', String(this.sub === b.dataset.open));
+        if (!b.hasAttribute('aria-controls')) b.setAttribute('aria-controls', 'menuSub');
       });
     };
     this._apply = apply;
@@ -655,6 +662,9 @@ export const layerBar = {
     };
     aetherusTab.onclick = () => {
       const wasAetherusOpen = this.open && this.sub === 'aetherus';
+      /* '레이어' 2단에서 갈아탈 때도 다른 닫기 경로와 같이 스타일 보기 상태를
+         정리한다 — 빼먹으면 view 가 'style' 로 남아 새로고침 때 저절로 다시 열린다. */
+      const wasEarthStyle = this.open && this.sub === 'earth';
       this.open = !wasAetherusOpen;
       this.sub = this.open ? 'aetherus' : null;
       if (this.open) {
@@ -662,6 +672,11 @@ export const layerBar = {
         this.render('aetherus');
       }
       apply();
+      if (wasEarthStyle) {
+        document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
+          detail: { view: 'earth', reason: 'style-closed' },
+        }));
+      }
     };
     document.addEventListener('earthus:close-menu', () => {
       closeEarthusMenu();
@@ -669,11 +684,23 @@ export const layerBar = {
 
     document.addEventListener('keydown', ev => {
       if (ev.key !== 'Escape' || !this.open) return;
+      /* 검색(z30)이 메뉴 위에 떠 있으면 Esc 는 검색 몫이다 — 같이 반응하면
+         한 번에 두 겹이 사라진다. */
+      if (ev.defaultPrevented) return;
+      if (document.getElementById('searchBox')?.classList.contains('on')) return;
       ev.preventDefault();
       if (this.sub && this.sub !== 'aetherus') {
         const opener = main.querySelector(`[data-open="${this.sub}"]`);
+        /* Esc 로 접는 경로도 다른 닫기 경로처럼 스타일 보기 상태를 정리한다 —
+           빼먹으면 view 가 'style' 로 남아 새로고침 때 스타일 메뉴가 저절로 열린다. */
+        const wasEarthStyle = this.sub === 'earth';
         this.sub = null;
         apply();
+        if (wasEarthStyle) {
+          document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
+            detail: { view: 'earth', reason: 'style-closed' },
+          }));
+        }
         queueMicrotask(() => opener?.focus());
         return;
       }

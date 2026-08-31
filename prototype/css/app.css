@@ -51,6 +51,10 @@ a{color:var(--teal);text-decoration:none}
 #ambient{position:absolute;inset:0;pointer-events:none;
   transition:opacity .55s ease,transform .55s ease}
 #ambient.hidden{opacity:0;transform:translateY(-10px)}
+/* 일반 시트가 떠 있는 동안 시계·온도를 감춘다 — 반투명 시트 뒤로 큰 글자가
+   겹쳐 비쳐서(특히 모바일) 이중 노출처럼 읽혔다. keep-open 지도 화면은
+   panel-open-modal 이 아니어서 그대로 남는다 (panels.js 참고). */
+body.panel-open-modal #ambient{opacity:0;transform:translateY(-10px)}
 
 .amb-top{position:absolute;top:max(40px,env(safe-area-inset-top));left:0;right:0;text-align:center}
 .clock{font-size:clamp(44px,8.6vw,74px);font-weight:200;line-height:1;
@@ -275,9 +279,26 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 .tl.close{ background:#ff5f57; } .tl.close span{ color:#5c0b06; font-weight:700; }
 .tl.min{ background:#febc2e; }  .tl.min span{ color:#6b4700; font-weight:700; }
 .tl:active{ filter:brightness(.82); }
+/* ⚠️ 점 두 개짜리(닫기+내리기)는 13px 점에 44px 가상 터치판을 겹쳐 얹으면
+   판끼리 23px 겹쳐서 빨강(닫기)의 왼쪽 절반을 눌러도 노랑(내리기)이 가로챘다.
+   장소 상세(decision-rail.css)에서 검증한 방식대로 버튼 자체를 44px 로 분리하고
+   점은 배경으로 그린다. 한 개짜리(.one)는 겹칠 상대가 없어 그대로 둔다. */
+.traffic:not(.one){ gap:0; }
+.traffic:not(.one) .tl{
+  width:44px; height:44px;
+  background-color:transparent; background-repeat:no-repeat; background-position:center;
+}
+.traffic:not(.one) .tl::before{ width:44px; height:44px; }
+.traffic:not(.one) .tl.close{ background-image:radial-gradient(circle,#ff5f57 0 7px,transparent 8px); }
+.traffic:not(.one) .tl.min{ background-image:radial-gradient(circle,#febc2e 0 7px,transparent 8px); }
 
 /* 내린 상태 — 화면 밖으로 밀지만 선택은 유지한다 (궤적이 남는다) */
 #sheet.down{transform:translateY(calc(100% + 24px))}
+/* 폰에서는 정보 시트도 지구가 보일 위쪽을 남긴다 (.sheet-panel 모바일 규칙과 동일 취지) */
+@media (max-width:520px){
+  #sheet{max-height:min(70dvh, calc(100dvh - 140px))}
+  #settings{max-height:min(74dvh, calc(100dvh - 120px))}
+}
 #sheetClose:hover{opacity:.8}
 .sheet-cta{
   margin-top:16px;width:100%;min-height:44px;font:500 14px/1 inherit;padding:12px;border-radius:10px;
@@ -328,8 +349,11 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 #hud{
   /* ⚠️ 상태 HUD 는 패널(#sheet 14 / #settings 16 / .sheet-panel 20)보다
      아래에 있어야 한다. 위에 있으면 패널 상단의 닫기(×)를 덮어버려
-     "× 를 눌러도 안 닫힌다"가 된다 (실제로 그랬다). */
-  position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;z-index:11;
+     "× 를 눌러도 안 닫힌다"가 된다 (실제로 그랬다).
+     ⚠️⚠️ 패널들은 .overlay(z10) 스태킹 컨텍스트 **안**이고 HUD 는 body 직속이라,
+     z11 로 두면 루트 기준 비교에서 오히려 시트·검색 전부 **위**에 그려졌다.
+     body 에 남는 한 z 는 10 미만이어야 의도대로 패널 아래가 된다. */
+  position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;z-index:9;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;line-height:1.8;
   background:rgba(0,0,0,.66);backdrop-filter:blur(12px);border:1px solid var(--line);
   padding:9px 12px;border-radius:9px;color:var(--fog);min-width:196px;
@@ -350,7 +374,8 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 #hApi .s-blocked{color:var(--dim);text-decoration:line-through}
 #hudShow:hover{opacity:.9}
 #hudShow{
-  position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;z-index:12;display:none;
+  /* #hud 와 같은 이유로 .overlay(z10)보다 낮게 둔다 — 패널 위로 떠오르면 안 된다 */
+  position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;z-index:9;display:none;
   /* 접혀 있어도 다시 여는 길은 분명히 보이게 한다. */
   font:10px ui-monospace,monospace;cursor:pointer;padding:5px 8px;border-radius:8px;
   background:rgba(0,0,0,.48);color:var(--fog);border:1px solid var(--line);opacity:.62;
@@ -579,8 +604,15 @@ body.scene-space #hud,body.scene-space #hudShow{top:max(66px,calc(env(safe-area-
 #menuTab.open{ transform:translateY(-50%) translateX(calc(-1 * var(--mm-w))); }
 #menuTab.open.sub{ transform:translateY(-50%) translateX(calc(-1 * (var(--mm-w) + var(--ms-w)))); }
 #aetherusTab.open{ transform:translateY(-50%) translateX(calc(-1 * var(--ms-w))); }
-/* EARTHUS 메뉴를 읽는 동안 다른 브랜드 손잡이가 내용 위에 떠서 항목처럼 보이지 않게 한다. */
-#menuTab.open + #aetherusTab:not(.open){opacity:0;pointer-events:none}
+/* 한쪽 메뉴가 열리면 다른 브랜드 손잡이도 패널 왼쪽으로 같이 옮긴다.
+   ⚠️ 예전엔 opacity:0 으로 숨겼다 — 그러면 EARTHUS 를 먼저 닫아야만 AETHERUS 로
+   갈 수 있고, 보이지 않는 버튼이 탭 순서에 남아 유령 포커스가 생겼다.
+   나란히 두면 한 번의 클릭으로 브랜드가 전환된다. */
+#menuTab.open + #aetherusTab:not(.open){ transform:translateY(-50%) translateX(calc(-1 * var(--mm-w))); }
+#menuTab.open.sub + #aetherusTab:not(.open){ transform:translateY(-50%) translateX(calc(-1 * (var(--mm-w) + var(--ms-w)))); }
+/* 반대 방향 — AETHERUS 패널이 열렸을 때의 EARTHUS 손잡이. 앞 형제는 CSS 로 못
+   잡으므로 layerbar apply() 가 .beside 를 토글한다. */
+#menuTab.beside{ transform:translateY(-50%) translateX(calc(-1 * var(--ms-w))); }
 
 /* ── 1단 ── */
 #menuMain{
@@ -720,6 +752,9 @@ body.scene-space #hud,body.scene-space #hudShow{top:max(66px,calc(env(safe-area-
   #menuMain.open.sub-open{transform:translateY(-50%) translateX(100%)}
   #menuSub{right:env(safe-area-inset-right,0px)}
   #menuTab.open.sub{transform:translateY(-50%) translateX(calc(-1 * var(--ms-w)))}
+  /* 좁은 화면에서는 2단이 1단을 대체하므로 반대 손잡이도 2단 폭만큼만 나온다 */
+  #menuTab.open + #aetherusTab:not(.open){transform:translateY(-50%) translateX(calc(-1 * var(--mm-w)))}
+  #menuTab.open.sub + #aetherusTab:not(.open){transform:translateY(-50%) translateX(calc(-1 * var(--ms-w)))}
 }
 
 /* ── 레이어 실제 대기 표시 ────────────────────────────────────
@@ -2407,7 +2442,10 @@ body.is-ambient #windLegend.on{ opacity:0; }
 /* 창을 닫아도 표시가 남아 있으면 뜨는 칩 —
    ⚠️ 이게 없으면 "닫았는데 표시가 안 없어진다"가 된다. 끄는 길이 늘 보여야 한다. */
 #mapOff{
-  position:fixed; z-index:22; right:12px;
+  /* ⚠️ body 직속이라 .overlay(z10) 안의 메뉴(z28)·시트보다 z 가 높으면 그 위에
+     떠 버린다 — 실제로 z22 일 때 메뉴 하단 '내 위치' 버튼을 칩이 가렸다.
+     지도 위 칩이므로 오버레이 UI 전부의 아래(10 미만)에 둔다. */
+  position:fixed; z-index:9; right:12px;
   bottom:max(74px, calc(env(safe-area-inset-bottom) + 62px));
   display:none; padding:8px 14px; border-radius:999px; cursor:pointer;
   background:rgba(12,18,24,.88);

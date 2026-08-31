@@ -167,7 +167,9 @@
 .wcv7 button:focus-visible{outline:2px solid #71c7ff;outline-offset:2px}
 
 @media(max-width:560px){
-  #wxSheet.tall{width:calc(100vw - 16px);max-height:92dvh;padding-left:14px;padding-right:14px}
+  /* ⚠️ 92dvh 는 폰에서 사실상 전체 화면이었다 — 지구가 보일 위쪽을 남긴다
+     (account.css 의 .sheet-panel 모바일 상한과 같은 값). */
+  #wxSheet.tall{width:calc(100vw - 16px);max-height:min(74dvh, calc(100dvh - 120px));padding-left:14px;padding-right:14px}
   #wxBody.wcv7{gap:10px}
   .wcv7-hero{padding:16px}.wcv7-section{padding:14px}
   .wcv7-hero-main{margin:20px 0 16px;gap:8px}

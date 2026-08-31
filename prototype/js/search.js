@@ -163,12 +163,19 @@ export const search = {
     });
 
     i18n.onChange?.(() => { if (this.on) this.render(input.value); });
+
+    /* 메뉴 드로어가 열리면 검색은 닫는다 — 검색 배경 뒤로 메뉴가 흐릿하게
+       겹쳐 보이던 것(⌘K·키보드 경로)의 반대 방향 배타 처리다. */
+    document.addEventListener('earthus:open-menu', () => { if (this.on) this.close(); });
     return this;
   },
 
   open() {
     const box = $('#searchBox'), input = $('#searchInput');
     if (!box) return;
+    /* 검색은 전면 모달이다 — 열 때 메뉴 드로어를 닫는다. 안 닫으면 배경 뒤에
+       메뉴가 겹쳐 보이고, 닫은 뒤 포커스·Esc 순서도 꼬인다. */
+    document.dispatchEvent(new CustomEvent('earthus:close-menu'));
     this.on = true;
     this._returnTo = document.activeElement;   // 닫을 때 여기로 포커스를 돌려준다
     box.classList.add('on');

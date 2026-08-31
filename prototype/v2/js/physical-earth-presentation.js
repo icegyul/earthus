@@ -8,9 +8,18 @@ const smooth = value => {
 
 export function terrainPresentationForHeight(heightM) {
   const height = Number(heightM);
-  const t = smooth(((Number.isFinite(height) ? height : 10_800_000) - 900_000) / 3_300_000);
+  const h = Number.isFinite(height) ? height : 10_800_000;
+  const t = smooth((h - 900_000) / 3_300_000);
+  const deep = smooth((h - 2_000_000) / 8_000_000);
+  /* 실제 지구 비율(반지름 대비 최고봉 0.14%)에서는 원거리 실루엣이 물리적으로
+   * 보이지 않는다. 원거리 한정 표기된 지형 강조를 적용하고 배지·스냅샷에
+   * 배율을 그대로 노출한다. 근접(≤900km)은 항상 실축 1.0×다. */
+  const verticalExaggeration = Math.round((1 + 0.6 * t + 0.6 * deep) * 100) / 100;
   return Object.freeze({
-    verticalExaggeration: 1,
+    verticalExaggeration,
+    verticalExaggerationClass: verticalExaggeration === 1
+      ? 'ESRI_TERRAIN3D_SOURCE_SCALE_1X'
+      : `ESRI_TERRAIN3D_LABELED_PRESENTATION_SCALE_${verticalExaggeration}X`,
     detailImageryAlpha: Math.round((1 - 0.78 * t) * 100) / 100,
   });
 }
@@ -137,8 +146,9 @@ export class PhysicalEarthPresentationRuntime {
     const policy = terrainPresentationForHeight(this.viewer.camera.positionCartographic?.height);
     return Object.freeze({
       mode: this.mode,
-      terrainScale: this.scene.verticalExaggeration,
-      terrainScaleClass: 'ESRI_TERRAIN3D_SOURCE_SCALE_1X',
+      terrainScale: policy.verticalExaggeration,
+      appliedTerrainScale: this.scene.verticalExaggeration,
+      terrainScaleClass: policy.verticalExaggerationClass,
       maximumScreenSpaceError: this.scene.globe.maximumScreenSpaceError,
       detailImageryAlpha: policy.detailImageryAlpha,
       oceanMaterial: null,

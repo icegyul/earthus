@@ -174,9 +174,12 @@ try {
   assert.ok(state.overflow <= 0);
   assert.ok(state.cameraHeight >= 13_000_000 && state.cameraHeight <= 16_000_000,
     `DEFAULT_CAMERA_FRAME_INVALID:${state.cameraHeight}`);
-  assert.equal(state.verticalExaggeration, 1);
+  assert.equal(state.verticalExaggeration, 2.2,
+    'GLOBAL default view must apply the labeled presentation scale (PD 2026-08-31: 원거리 입체감)');
   assert.equal(state.materialType, 'EarthusTerrainRelief');
-  assert.equal(state.defaultPhysical.terrainScale, 1);
+  assert.equal(state.defaultPhysical.terrainScale, 2.2);
+  assert.equal(state.defaultPhysical.terrainScaleClass,
+    'ESRI_TERRAIN3D_LABELED_PRESENTATION_SCALE_2.2X');
   assert.ok(state.defaultPhysical.maximumScreenSpaceError <= 1.25,
     `GLOBAL_TERRAIN_LOD_TOO_COARSE:${state.defaultPhysical.maximumScreenSpaceError}`);
   assert.equal(state.defaultPhysical.reliefMaterialSource, 'ESRI_TERRAIN3D_HEIGHT_SLOPE');

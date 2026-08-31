@@ -122,7 +122,7 @@ function badge(extra = "") {
   const physical = physicalPresentation?.snapshot?.();
   const t =
     terrainTruth === "ESRI_TERRAIN3D"
-      ? `TERRAIN: Esri Terrain3D · source scale ${Number(physical?.terrainScale || 1).toFixed(1)}× · SSE ${Number(physical?.maximumScreenSpaceError || 2).toFixed(2)}`
+      ? `TERRAIN: Esri Terrain3D · ${Number(physical?.terrainScale || 1) > 1 ? `지형 강조 ${Number(physical.terrainScale).toFixed(1)}× (표기)` : "source scale 1.0×"} · SSE ${Number(physical?.maximumScreenSpaceError || 2).toFixed(2)}`
       : terrainTruth === "ESRI_TOPOBATHY3D"
         ? "TERRAIN/BATHY: Esri TopoBathy3D"
         : "TERRAIN: ellipsoid fallback";
@@ -613,6 +613,7 @@ function updateImageryForView() {
   if (baseLayer) baseLayer.alpha = 1;
   if (detailLayer) detailLayer.alpha = d;
   if (cityLightsLayer) cityLightsLayer.show = true;
+  badge();
 }
 async function installImagery() {
   baseLayer = viewer.imageryLayers.addImageryProvider(

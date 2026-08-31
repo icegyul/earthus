@@ -6,13 +6,15 @@ import {
   physicalAmbientCamera,
 } from '../../prototype/v2/js/physical-earth-presentation.js';
 
-test('global terrain stays at source scale while presentation requests real LOD', () => {
+test('far scopes apply labeled presentation scale while close terrain stays at source scale', () => {
   assert.deepEqual(terrainPresentationForHeight(10_800_000), {
-    verticalExaggeration: 1,
+    verticalExaggeration: 2.2,
+    verticalExaggerationClass: 'ESRI_TERRAIN3D_LABELED_PRESENTATION_SCALE_2.2X',
     detailImageryAlpha: 0.22,
   });
   assert.deepEqual(terrainPresentationForHeight(900_000), {
     verticalExaggeration: 1,
+    verticalExaggerationClass: 'ESRI_TERRAIN3D_SOURCE_SCALE_1X',
     detailImageryAlpha: 1,
   });
 });

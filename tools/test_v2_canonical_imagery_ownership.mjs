@@ -83,6 +83,7 @@ const srv = server();
 await new Promise(resolve => srv.listen(0, '127.0.0.1', resolve));
 const browser = await chromium.launch({
   headless: true,
+  executablePath: process.env.EARTHUS_CHROMIUM_EXECUTABLE || undefined,
   args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'],
 });
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });

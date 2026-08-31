@@ -211,7 +211,7 @@ export function buildIntelligenceContext({
 function baseSse(scope) {
   return (
     {
-      [VIEW_SCOPE.GLOBAL]: 3.5,
+      [VIEW_SCOPE.GLOBAL]: 1.05,
       [VIEW_SCOPE.CONTINENT]: 2.8,
       [VIEW_SCOPE.COUNTRY]: 2.15,
       [VIEW_SCOPE.REGION]: 1.55,

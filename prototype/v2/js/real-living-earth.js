@@ -10,6 +10,11 @@ import { API } from "../../js/config.js";
 import { buildCloudShadowAlpha } from "../../js/cloud-shadow.js";
 import { Gk2aCthReliefRuntime } from "./gk2a-cth-relief.js";
 import { GfsCloudVolumeRuntime } from "./gfs-cloud-volume.js";
+import { GlobalTerrainReliefPass } from "./global-terrain-relief-pass.js";
+import {
+  PhysicalEarthPresentationRuntime,
+  terrainPresentationForHeight,
+} from "./physical-earth-presentation.js";
 import { PolarGeographicCapRuntime } from "./polar-geographic-cap.js";
 import { TrenchBathymetryMeshRuntime } from "./trench-bathymetry-mesh.js";
 
@@ -19,8 +24,6 @@ const LAND_TERRAIN_URL =
   "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer";
 const ESRI_IMAGERY_SERVICE =
   "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer";
-const NASA_GIBS_4326_WMS =
-  "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi";
 const CLOUD_SHELL_DISPLAY_HEIGHT_M = 12_000;
 const CLOUD_REFRESH_MS = 20 * 60_000;
 const TRENCH = Object.freeze({ lon: 142.2, lat: 11.35 });
@@ -35,7 +38,7 @@ let terrainTruth = "UNINITIALIZED",
   waterTruth = "NO_WATER_MASK",
   polarTruth = "UNINITIALIZED",
   activeMode = "EARTH",
-  cloudFidelity = "SHELL";
+  cloudFidelity = "OFF";
 let polarBaseLayer = null,
   baseLayer = null,
   detailLayer = null,
@@ -50,6 +53,10 @@ let cloudShell = null,
   cthMeta = null,
   cloudVolume = null,
   volumeMeta = null,
+  physicalPresentation = null,
+  globalTerrainRelief = null,
+  defaultPhysicalReady = false,
+  globalReliefError = null,
   lastVolumeError = null,
   lastCthError = null;
 let trenchSample = null,
@@ -101,9 +108,10 @@ function badge(extra = "") {
     });
     document.body.append(sourceBadge);
   }
+  const physical = physicalPresentation?.snapshot?.();
   const t =
     terrainTruth === "ESRI_TERRAIN3D"
-      ? "TERRAIN: Esri Terrain3D · flat ocean surface"
+      ? `TERRAIN: Esri Terrain3D · source scale ${Number(physical?.terrainScale || 1).toFixed(1)}× · SSE ${Number(physical?.maximumScreenSpaceError || 2).toFixed(2)}`
       : terrainTruth === "ESRI_TOPOBATHY3D"
         ? "TERRAIN/BATHY: Esri TopoBathy3D"
         : "TERRAIN: ellipsoid fallback";
@@ -128,7 +136,13 @@ function badge(extra = "") {
   const v = volumeMeta?.cloudState?.validAt
     ? ` · L2 GFS VOLUME ${volumeMeta.cloudState.validAt}`
     : "";
-  sourceBadge.textContent = `${t} · ${b} · ${w} · ${p} · ${c}${r}${v} · ACTIVE ${cloudFidelity}${extra ? ` · ${extra}` : ""}`;
+  const gr = globalTerrainRelief?.snapshot?.();
+  const relief = gr?.ready
+    ? ` · RELIEF L0: ${gr.sourceId} ${gr.width}×${gr.height}`
+    : globalReliefError
+      ? ` · RELIEF L0: unavailable ${globalReliefError}`
+      : " · RELIEF L0: loading";
+  sourceBadge.textContent = `${t}${relief} · ${b} · ${w} · ${p} · ${c}${r}${v} · ACTIVE ${cloudFidelity}${extra ? ` · ${extra}` : ""}`;
 }
 
 function sunFixedAt(iso) {
@@ -267,6 +281,15 @@ function addCloudShell(canvas, meta) {
   scene.primitives.add(p);
   return p;
 }
+function setCloudShellPresentation({ show, opacity = 0.5 } = {}) {
+  if (!cloudShell) return;
+  cloudShell.show = !!show && activeMode === "EARTH";
+  const color = cloudShell.appearance?.material?.uniforms?.color;
+  if (color)
+    cloudShell.appearance.material.uniforms.color = Cesium.Color.WHITE.withAlpha(
+      clamp(Number(opacity), 0, 1),
+    );
+}
 function addShadow(canvas, meta) {
   const provider = new Cesium.SingleTileImageryProvider({
       url: canvas.toDataURL("image/png"),
@@ -282,7 +305,7 @@ function addShadow(canvas, meta) {
     }),
     layer = viewer.imageryLayers.addImageryProvider(provider);
   layer.alpha = 0.22;
-  layer.show = activeMode === "EARTH";
+  layer.show = activeMode === "EARTH" && cloudFidelity !== "OFF";
   layer.__earthusV2CloudShadow = true;
   return layer;
 }
@@ -426,10 +449,10 @@ function hideCloud3d() {
   cloudVolume?.hide();
   cthRelief?.hide();
   cloudFidelity = "SHELL";
-  if (cloudShell) cloudShell.show = activeMode === "EARTH";
+  setCloudShellPresentation({ show: true, opacity: 0.5 });
   setObservedShadow(0.22, true);
 }
-async function showBestCloud3d() {
+async function showBestCloud3d({ focus = true } = {}) {
   lastVolumeError = null;
   lastCthError = null;
   if (!cloudVolume) cloudVolume = new GfsCloudVolumeRuntime({ viewer, Cesium });
@@ -437,19 +460,21 @@ async function showBestCloud3d() {
     volumeMeta = await cloudVolume.show();
     cthRelief?.hide();
     cloudFidelity = "VOLUME";
-    if (cloudShell) cloudShell.show = false;
+    setCloudShellPresentation({ show: false });
     setObservedShadow(0.12, true);
-    const a = volumeMeta.anchor;
-    await flyToAsync({
-      destination: Cesium.Cartesian3.fromDegrees(
-        a.longitudeDeg,
-        a.latitudeDeg - 5.5,
-        1_650_000,
-      ),
-      orientation: { heading: 0, pitch: Cesium.Math.toRadians(-52), roll: 0 },
-      duration: 0.9,
-    });
-    await afterRender();
+    if (focus) {
+      const a = volumeMeta.anchor;
+      await flyToAsync({
+        destination: Cesium.Cartesian3.fromDegrees(
+          a.longitudeDeg,
+          a.latitudeDeg - 5.5,
+          1_650_000,
+        ),
+        orientation: { heading: 0, pitch: Cesium.Math.toRadians(-52), roll: 0 },
+        duration: 0.9,
+      });
+      await afterRender();
+    }
     badge("VOLUME: GFS TCDC + HGT · step-aware optical alpha");
     announce(
       `NOAA GFS 실제 수직 구름 Volume · ${volumeMeta.cloudState.validAt}`,
@@ -464,14 +489,16 @@ async function showBestCloud3d() {
   try {
     cthMeta = await cthRelief.show();
     cloudFidelity = "CTH_RELIEF";
-    if (cloudShell) cloudShell.show = false;
+    setCloudShellPresentation({ show: false });
     setObservedShadow(0.13, true);
-    await flyToAsync({
-      destination: Cesium.Cartesian3.fromDegrees(132, 26, 1_850_000),
-      orientation: { heading: 0, pitch: Cesium.Math.toRadians(-55), roll: 0 },
-      duration: 0.9,
-    });
-    await afterRender();
+    if (focus) {
+      await flyToAsync({
+        destination: Cesium.Cartesian3.fromDegrees(132, 26, 1_850_000),
+        orientation: { heading: 0, pitch: Cesium.Math.toRadians(-55), roll: 0 },
+        duration: 0.9,
+      });
+      await afterRender();
+    }
     badge("CTH: actual GK2A CTh mesh + observed GMGSI appearance");
     announce(`천리안2A 실제 운정고도 3D mesh · ${cthMeta.validAt}`);
     return "CTH_RELIEF";
@@ -481,9 +508,11 @@ async function showBestCloud3d() {
     console.warn("[v2-real-earth/cth]", lastCthError);
   }
   cloudFidelity = "SHELL";
-  if (cloudShell) cloudShell.show = true;
+  setCloudShellPresentation({ show: true, opacity: 0.5 });
   setObservedShadow(0.22, true);
-  badge(`3D cloud fallback · CTH ${lastCthError || "unknown"}`);
+  badge(
+    `OBSERVED_2D_FALLBACK · GFS ${lastVolumeError || "unknown"} · CTH ${lastCthError || "unknown"}`,
+  );
   announce("실제 3D 구름 산출물 렌더가 실패해 NOAA 관측 Shell로 유지합니다.");
   return "SHELL";
 }
@@ -554,25 +583,13 @@ function updateImageryForView() {
     if (cityLightsLayer) cityLightsLayer.show = false;
     return;
   }
-  const d = 0.035 + 0.965 * (1 - smooth(1_500_000, 8_500_000, h));
+  const d = terrainPresentationForHeight(h).detailImageryAlpha;
   if (polarBaseLayer) polarBaseLayer.alpha = 1;
   if (baseLayer) baseLayer.alpha = 1;
   if (detailLayer) detailLayer.alpha = d;
   if (cityLightsLayer) cityLightsLayer.show = true;
 }
 async function installImagery() {
-  polarBaseLayer = viewer.imageryLayers.addImageryProvider(
-    new Cesium.WebMapServiceImageryProvider({
-      url: NASA_GIBS_4326_WMS,
-      layers: "BlueMarble_NextGeneration",
-      parameters: { transparent: "false", format: "image/jpeg" },
-      tilingScheme: new Cesium.GeographicTilingScheme(),
-      maximumLevel: 2,
-      credit: "NASA GIBS",
-    }),
-  );
-  polarBaseLayer.dayAlpha = 1;
-  polarBaseLayer.nightAlpha = 0.1;
   baseLayer = viewer.imageryLayers.addImageryProvider(
     gibsProvider({
       layer: "BlueMarble_ShadedRelief_Bathymetry",
@@ -813,6 +830,9 @@ async function enterTrench() {
     return false;
   }
   activeMode = "TRENCH";
+  physicalPresentation?.setMode?.("TRENCH");
+  globalTerrainRelief?.setMode?.("TRENCH");
+  waterTruth = "NO_WATER_MASK";
   if (cloudShell) cloudShell.show = false;
   setObservedShadow(0, false);
   scene.globe.maximumScreenSpaceError = 1.2;
@@ -868,6 +888,9 @@ async function enterUnderwater() {
   polarSurface?.setVisible(false);
   trenchSample = sample;
   activeMode = "UNDERWATER";
+  physicalPresentation?.setMode?.("UNDERWATER");
+  globalTerrainRelief?.setMode?.("UNDERWATER");
+  waterTruth = "NO_WATER_MASK";
   if (cloudShell) cloudShell.show = false;
   setObservedShadow(0, false);
   prepareUnderwater();
@@ -894,13 +917,62 @@ async function enterUnderwater() {
   return true;
 }
 
-function enterEarth() {
+async function activateDefaultPhysicalEarth({ resetCamera = true } = {}) {
+  defaultPhysicalReady = false;
+  if (!physicalPresentation)
+    physicalPresentation = new PhysicalEarthPresentationRuntime({ viewer, Cesium });
+  physicalPresentation.install();
+  physicalPresentation.setMode("EARTH");
+  waterTruth = terrainProvider?.hasWaterMask === true
+    ? "PROVIDER_WATER_MASK"
+    : "NO_WATER_MASK";
+  cloudVolume?.hide();
+  cthRelief?.hide();
+  cloudFidelity = "OFF";
+  setCloudShellPresentation({ show: false });
+  setObservedShadow(0, false);
+  if (resetCamera) physicalPresentation.setAmbientCamera();
+  updateImageryForView();
+  let reliefReady = false;
+  if (terrainTruth === "ESRI_TERRAIN3D" && surfaceTerrainProvider) {
+    if (!globalTerrainRelief)
+      globalTerrainRelief = new GlobalTerrainReliefPass({
+        viewer,
+        Cesium,
+        terrainProvider: surfaceTerrainProvider,
+      });
+    try {
+      globalReliefError = null;
+      await globalTerrainRelief.show();
+      reliefReady = globalTerrainRelief.snapshot().ready === true;
+    } catch (error) {
+      globalReliefError = String(error?.message || error);
+      console.warn("[v2-real-earth/global-relief]", globalReliefError);
+    }
+  }
+  defaultPhysicalReady = terrainTruth === "ESRI_TERRAIN3D" && reliefReady;
+  badge(defaultPhysicalReady
+    ? "G2 DEFAULT: Terrain3D 1× + provider-derived global relief material"
+    : `G2 BLOCKED: ${globalReliefError || "global relief unavailable"}`);
+  scene.requestRender();
+  return defaultPhysicalReady;
+}
+
+function enterEarth({ upgrade = true } = {}) {
   restoreUnderwater();
   restoreTrenchReveal();
   trenchMesh?.hide();
   useSurfaceTerrain();
   activeMode = "EARTH";
-  hideCloud3d();
+  if (upgrade) {
+    cloudVolume?.hide();
+    cthRelief?.hide();
+    cloudFidelity = "OFF";
+    setCloudShellPresentation({ show: false });
+    setObservedShadow(0, false);
+  } else {
+    hideCloud3d();
+  }
   trenchSample = null;
   scene.globe.maximumScreenSpaceError = 2;
   scene.globe.enableLighting = true;
@@ -914,17 +986,29 @@ function enterEarth() {
   // Polar stereographic imagery is a focused hole-fill, not a second global
   // skin. The visual controller enables it only for a stable polar view.
   polarSurface?.setVisible(false);
+  physicalPresentation?.setMode?.("EARTH");
+  globalTerrainRelief?.setMode?.("EARTH");
+  waterTruth = terrainProvider?.hasWaterMask === true
+    ? "PROVIDER_WATER_MASK"
+    : "NO_WATER_MASK";
   updateImageryForView();
-  setAmbientView(127, 25, 0.52);
+  if (physicalPresentation) physicalPresentation.setAmbientCamera();
+  else setAmbientView(127, 25, 0.52);
   badge();
   scene.requestRender();
+  if (upgrade)
+    void activateDefaultPhysicalEarth({ resetCamera: false }).catch((error) => {
+      defaultPhysicalReady = false;
+      console.warn("[v2-real-earth/default-physical]", error?.message || error);
+      badge("DEFAULT PHYSICAL upgrade failed");
+    });
 }
 function installBridge() {
   if (featureRequestHandler) return;
   featureRequestHandler = async (event) => {
     const { menu, feature } = event.detail || {};
     if (menu === "WEATHER" && feature === "Clouds") {
-      enterEarth();
+      enterEarth({ upgrade: false });
       await loadCloud({ force: false });
       await showBestCloud3d();
       return;
@@ -1007,11 +1091,11 @@ export async function bootRealLivingEarth({
     62,
     "Terrain3D surface ready · TopoBathy held for ocean depth modes",
   );
-  setAmbientView(127, 25, 0.52);
+  physicalPresentation = new PhysicalEarthPresentationRuntime({ viewer, Cesium });
+  await activateDefaultPhysicalEarth({ resetCamera: true });
   installReadout();
   installBridge();
-  progress(task, "cloud", 72, "NOAA NESDIS GMGSI observed cloud shell");
-  loadCloud().finally(() => scene.requestRender());
+  progress(task, "cloud", 72, "NOAA observation staged off until Cloud selection");
   scheduleCloud();
   badge();
   scene.requestRender();
@@ -1030,8 +1114,14 @@ export async function bootRealLivingEarth({
     cthTruth: () => cthMeta,
     volumeTruth: () => volumeMeta,
     cloudFidelity: () => cloudFidelity,
+    defaultPhysicalReady: () => defaultPhysicalReady,
+    defaultPhysicalSnapshot: () => physicalPresentation?.snapshot?.() || null,
+    globalTerrainReliefSnapshot: () => globalTerrainRelief?.snapshot?.() || null,
     cloudDiagnostics: () =>
-      Object.freeze({ volume: lastVolumeError, cth: lastCthError }),
+      Object.freeze({
+        volume: lastVolumeError,
+        cth: lastCthError,
+      }),
     detailImageryLayer: () => detailLayer,
     enterEarth,
     enterTrench,
@@ -1055,6 +1145,12 @@ export async function bootRealLivingEarth({
       cthRelief = null;
       cthMeta = null;
       lastVolumeError = lastCthError = null;
+      physicalPresentation?.dispose();
+      physicalPresentation = null;
+      globalTerrainRelief?.dispose();
+      globalTerrainRelief = null;
+      defaultPhysicalReady = false;
+      globalReliefError = null;
       polarSurface?.dispose();
       polarSurface = null;
       removeCloud();
@@ -1097,7 +1193,7 @@ export async function bootRealLivingEarth({
       terrainTruth = bathymetryTruth = polarTruth = "UNINITIALIZED";
       waterTruth = "NO_WATER_MASK";
       activeMode = "EARTH";
-      cloudFidelity = "SHELL";
+      cloudFidelity = "OFF";
     },
   });
 }

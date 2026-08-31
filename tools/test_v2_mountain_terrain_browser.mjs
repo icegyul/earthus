@@ -3,7 +3,6 @@ import fs from "node:fs";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { PNG } from "pngjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const prototypeRoot = path.join(root, "prototype");
@@ -15,6 +14,10 @@ const moduleRef = process.env.EARTHUS_PLAYWRIGHT_MODULE;
 const { chromium } = moduleRef
   ? await import(pathToFileURL(path.resolve(moduleRef)).href)
   : await import("playwright");
+const pngModuleRef = process.env.EARTHUS_PNGJS_MODULE;
+const { PNG } = pngModuleRef
+  ? await import(pathToFileURL(path.resolve(pngModuleRef)).href)
+  : await import("pngjs");
 const CLOUD = "https://earthus-cache-kr.s3.us-east-2.amazonaws.com";
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -243,7 +246,7 @@ async function settle(
   { minimumMs = 2500, requireTiles = false, metricRegion = undefined } = {},
 ) {
   await page.waitForTimeout(minimumMs);
-  const tilesReady = requireTiles
+  let tilesReady = requireTiles
     ? await waitTiles(page, { minimumMs: 700, timeoutMs: 12000 })
     : true;
   if (requireTiles && !tilesReady) await page.waitForTimeout(2500);
@@ -258,7 +261,12 @@ async function settle(
     await page.waitForTimeout(650);
     buf = await canvasPixels(page);
     m = metrics(buf, metricRegion);
-    if (gate(m)) return { settled: true, tilesReady, buf, metrics: m };
+    if (gate(m)) {
+      if (!requireTiles || tilesReady)
+        return { settled: true, tilesReady, buf, metrics: m };
+      tilesReady = await waitTiles(page, { minimumMs: 700, timeoutMs: 4000 });
+      if (tilesReady) return { settled: true, tilesReady, buf, metrics: m };
+    }
   } while (Date.now() < deadline);
   return { settled: false, tilesReady, buf, metrics: m };
 }
@@ -277,6 +285,7 @@ async function runtimeState(page) {
       maximumScreenSpaceError: g.maximumScreenSpaceError,
       preloadSiblings: g.preloadSiblings,
       tilesLoaded: g.tilesLoaded,
+      globalRelief: r.globalTerrainReliefSnapshot?.() || null,
       badge:
         document.getElementById("earthusV2RealSources")?.textContent || null,
     };
@@ -472,6 +481,7 @@ const srv = server();
 await new Promise((r) => srv.listen(0, "127.0.0.1", r));
 const browser = await chromium.launch({
   headless: true,
+  executablePath: process.env.EARTHUS_CHROMIUM_EXECUTABLE || undefined,
   args: [
     "--use-gl=angle",
     "--use-angle=swiftshader",
@@ -511,6 +521,8 @@ try {
     metricRegion: { x0: 0.3, x1: 0.7, y0: 0.12, y1: 0.88 },
   });
   assert.ok(global.metrics.std > 0.045 && global.metrics.range > 0.13);
+  assert.equal(global.runtime.globalRelief?.ready, true);
+  assert.equal(global.runtime.globalRelief?.visible, true);
   await setNadir(page, 108, 32, 7_000_000);
   const asia = await captureView(page, state, {
     name: "02-asia",
@@ -518,6 +530,7 @@ try {
     minMs: 3500,
   });
   assert.ok(asia.metrics.localEdgeMean > 0.003);
+  assert.equal(asia.runtime.globalRelief?.visible, true);
   await setNadir(page, 127.7, 36.2, 950_000);
   const korea = await captureView(page, state, {
     name: "03-korea-land",
@@ -525,6 +538,7 @@ try {
     minMs: 4500,
   });
   assert.ok(korea.metrics.localEdgeMean > 0.003);
+  assert.equal(korea.runtime.globalRelief?.visible, false);
   console.log("PVR01A SAMPLE seorak");
   const seorak = await sampleGrid(page, {
     lon0: 128.28,
@@ -557,6 +571,7 @@ try {
     requireTiles: true,
   });
   assert.ok(mountain.metrics.texturedCellCount >= 6);
+  assert.equal(mountain.runtime.globalRelief?.visible, false);
   assert.ok(
     mountain.runtime.maximumScreenSpaceError >= 1 &&
       mountain.runtime.maximumScreenSpaceError <= 1.5,

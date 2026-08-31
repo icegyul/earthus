@@ -3,7 +3,6 @@ import fs from "node:fs";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { PNG } from "pngjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."),
   prototypeRoot = path.join(root, "prototype"),
   out = path.resolve(
@@ -14,6 +13,10 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."),
 const { chromium } = moduleRef
   ? await import(pathToFileURL(path.resolve(moduleRef)).href)
   : await import("playwright");
+const pngModuleRef = process.env.EARTHUS_PNGJS_MODULE;
+const { PNG } = pngModuleRef
+  ? await import(pathToFileURL(path.resolve(pngModuleRef)).href)
+  : await import("pngjs");
 const CLOUD = "https://earthus-cache-kr.s3.us-east-2.amazonaws.com",
   MIME = {
     ".html": "text/html; charset=utf-8",
@@ -171,6 +174,7 @@ const srv = server();
 await new Promise((r) => srv.listen(0, "127.0.0.1", r));
 const browser = await chromium.launch({
   headless: true,
+  executablePath: process.env.EARTHUS_CHROMIUM_EXECUTABLE || undefined,
   args: [
     "--use-gl=angle",
     "--use-angle=swiftshader",

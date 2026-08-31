@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "earthus.v53.g2-runtime-evidence.v2",
+  "capturedAt": "2026-08-31T01:22:20.321Z",
+  "repository": {
+    "branch": "earthus-v2/real-living-earth-render",
+    "baseHead": "aa732dac9ab641d1ac52054cdaddbc247df8a67e",
+    "workingTree": "DIRTY_PRESERVED",
+    "deployed": false
+  },
+  "automatedContract": "PASS",
+  "manualVisualAcceptance": "PASS_G2_ONLY",
+  "viewer": {
+    "canvasCount": 1,
+    "cameraHeightM": 14500000,
+    "scope": "GLOBAL",
+    "region": "ASIA",
+    "requestRenderMode": true,
+    "idleFrames1s": 0
+  },
+  "terrain": {
+    "providerId": "ESRI_TERRAIN3D",
+    "providerUrl": "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer/",
+    "verticalExaggeration": 1,
+    "terrainScaleClass": "ESRI_TERRAIN3D_SOURCE_SCALE_1X",
+    "maximumScreenSpaceError": 1.05,
+    "renderedTileLevels": [2, 2, 2, 2, 1, 2, 2, 1],
+    "terrainRequestCount": 57,
+    "pointSample": {
+      "longitudeDeg": 86.925,
+      "latitudeDeg": 27.9881,
+      "heightM": 8838.812617257028,
+      "screenSpaceReliefPx": 0.3743243173541168
+    },
+    "globalRelief": {
+      "ready": true,
+      "sourceId": "ESRI_WORLDELEVATION3D_TERRAIN3D",
+      "truthClass": "PROVIDER_DERIVED_TERRAIN_MATERIAL",
+      "synthetic": false,
+      "sampleLevel": 2,
+      "width": 144,
+      "height": 72,
+      "sampleCount": 10368,
+      "landSamples": 3710,
+      "minHeightM": -27.024959564208984,
+      "maxHeightM": 5338.3203125,
+      "loadDurationMs": 928,
+      "observedColdLoadDurationMs": 5789,
+      "materialClass": "TERRAIN_HEIGHT_HILLSHADE_MATERIAL_ONLY",
+      "globalVisible": true,
+      "localVisible": false
+    }
+  },
+  "deferredGates": {
+    "ocean": "G3_NOT_STARTED",
+    "atmosphere": "G4_NOT_STARTED",
+    "cloud": "G5_NOT_STARTED"
+  },
+  "resources": {
+    "imageryLayerCount": 5,
+    "primitiveCount": 3,
+    "cloudFidelity": "OFF",
+    "oceanMaterial": null
+  },
+  "errors": {
+    "console": 0,
+    "uncaught": 0,
+    "timeouts": 0,
+    "requestFailures": 0,
+    "httpErrors": 0
+  },
+  "differentialFrameEvidence": {
+    "reliefOnSha256": "38c931a0704a7b67785d9e525c731bea63bd761fd7ed0684b041297f3beb10a0",
+    "reliefOffSha256": "79265e49af7c146cbb480c862ba6c36a63104bed9938fc5447559e68d104b690",
+    "materiallyDifferent": true
+  },
+  "screenshots": {
+    "uiOn": "G2_DEFAULT_UI_ON.png",
+    "uiOnSha256": "cf9d12646440dfbbc1bc401992e25285b939664b8143f2acdb008a15c0f2cc30",
+    "uiOff": "G2_DEFAULT_UI_OFF.png",
+    "uiOffSha256": "38c931a0704a7b67785d9e525c731bea63bd761fd7ed0684b041297f3beb10a0"
+  },
+  "final": "G2_LOCAL_PASS"
+}

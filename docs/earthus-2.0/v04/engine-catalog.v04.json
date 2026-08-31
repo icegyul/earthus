@@ -1,0 +1,2923 @@
+{
+  "schemaVersion": "earthus.engine-catalog.v0.4",
+  "generatedFrom": "v0.3 + specified-next closure + reuse/evidence lock",
+  "engines": [
+    {
+      "id": "ANA-001",
+      "name": "Privacy-Safe Product Telemetry Engine",
+      "category": "Analytics",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Analytics events exist",
+      "action": "Canonical allowlisted event schema without precise location by default",
+      "dependencies": [
+        "SEC-003"
+      ],
+      "module": "analytics/telemetry.js",
+      "definitionOfDone": "Telemetry excludes secrets and unnecessary precise location"
+    },
+    {
+      "id": "ANA-002",
+      "name": "Intelligence Funnel Engine",
+      "category": "Analytics",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Tourism KPI funnel specified",
+      "action": "Compute user progression through intelligence actions",
+      "dependencies": [
+        "ANA-001"
+      ],
+      "module": "analytics/funnel.js",
+      "definitionOfDone": "Only real event data used for KPIs"
+    },
+    {
+      "id": "ANA-003",
+      "name": "Alert Effectiveness Engine",
+      "category": "Analytics",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Notification logs planned/exist",
+      "action": "Measure sent/open/action without inventing delivery state",
+      "dependencies": [
+        "HF-017",
+        "ANA-001"
+      ],
+      "module": "analytics/alert-effectiveness.js",
+      "definitionOfDone": "Effectiveness separated from safety importance"
+    },
+    {
+      "id": "ANA-004",
+      "name": "Engine Cost Attribution Engine",
+      "category": "Analytics",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Cost observability exists at scheduler level",
+      "action": "Attribute compute/storage/egress/request cost per engine",
+      "dependencies": [
+        "OPS-010"
+      ],
+      "module": "analytics/cost-attribution.js",
+      "definitionOfDone": "Cost optimization cannot disable official safety collection"
+    },
+    {
+      "id": "CLD-001",
+      "name": "Satellite Product and Tile Broker",
+      "category": "Cloud",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "GK2A/Himawari/global imagery assets exist",
+      "action": "Select source per product/tile/time/day-night/channel/rights",
+      "dependencies": [
+        "FND-005",
+        "WX-003"
+      ],
+      "module": "cloud/satellite-product-broker.js",
+      "definitionOfDone": "Regional source, state schema, horizon label, uncertainty and mobile thermal evidence are present"
+    },
+    {
+      "id": "CLD-002",
+      "name": "Cloud Top Retrieval",
+      "category": "Cloud",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "IR imagery exists",
+      "action": "IR/profile retrieval with parallax and vertical uncertainty",
+      "dependencies": [
+        "CLD-001",
+        "WX-002"
+      ],
+      "module": "cloud/cloud-state.js",
+      "definitionOfDone": "Regional source, state schema, horizon label, uncertainty and mobile thermal evidence are present"
+    },
+    {
+      "id": "CLD-003",
+      "name": "Cloud Base Retrieval",
+      "category": "Cloud",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "No direct satellite base",
+      "action": "RH/LCL/ceilometer estimate with explicit estimated state",
+      "dependencies": [
+        "CLD-001",
+        "WX-002"
+      ],
+      "module": "cloud/cloud-state.js",
+      "definitionOfDone": "Regional source, state schema, horizon label, uncertainty and mobile thermal evidence are present"
+    },
+    {
+      "id": "CLD-004",
+      "name": "Multilayer Cloud Detection",
+      "category": "Cloud",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "No canonical multilayer state",
+      "action": "Detect persistent cloud layers and ambiguity",
+      "dependencies": [
+        "CLD-002",
+        "CLD-003"
+      ],
+      "module": "cloud/cloud-state.js",
+      "definitionOfDone": "Regional source, state schema, horizon label, uncertainty and mobile thermal evidence are present"
+    },
+    {
+      "id": "CLD-005",
+      "name": "Canonical Cloud State",
+      "category": "Cloud",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Current service stores images/products",
+      "action": "Store compact layer state, retrieval metadata and provenance",
+      "dependencies": [
+        "CLD-001",
+        "CLD-004",
+        "FND-012"
+      ],
+      "module": "cloud/cloud-state.js",
+      "definitionOfDone": "Regional source, state schema, horizon label, uncertainty and mobile thermal evidence are present"
+    },
+    {
+      "id": "CLD-006",
+      "name": "0-6h Cloud Nowcast",
+      "category": "Cloud",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "No 3D cloud nowcast",
+      "action": "Blend observed advection/growth with NWP by horizon",
+      "dependencies": [
+        "CLD-005",
+        "WX-006"
+      ],
+      "module": "weather/nowcast.js",
+      "definitionOfDone": "Regional source, state schema, horizon label, uncertainty and mobile thermal evidence are present"
+    },
+    {
+      "id": "CLD-007",
+      "name": "6h-10d Forecast Cloud Volume",
+      "category": "Cloud",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "NWP clouds exist only as inputs",
+      "action": "Low/mid/high synthesis and ensemble-dominant long range",
+      "dependencies": [
+        "CLD-005",
+        "WX-004"
+      ],
+      "module": "cloud/cloud-forecast.js",
+      "definitionOfDone": "Regional source, state schema, horizon label, uncertainty and mobile thermal evidence are present"
+    },
+    {
+      "id": "CLD-008",
+      "name": "Cloud Confidence and Uncertainty",
+      "category": "Cloud",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "No cloud-specific uncertainty",
+      "action": "Source agreement, retrieval quality and ensemble spread",
+      "dependencies": [
+        "CLD-005",
+        "HF-009"
+      ],
+      "module": "cloud/cloud-forecast.js",
+      "definitionOfDone": "Regional source, state schema, horizon label, uncertainty and mobile thermal evidence are present"
+    },
+    {
+      "id": "CLD-009",
+      "name": "Adaptive Cloud Renderer",
+      "category": "Cloud",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Current clouds are imagery",
+      "action": "Mobile 3-shell; desktop bounded half-volume; 7d+ probability volume",
+      "dependencies": [
+        "CLD-008",
+        "VIS-006",
+        "FND-002"
+      ],
+      "module": "cloud/cloud-render-policy.js",
+      "definitionOfDone": "Regional source, state schema, horizon label, uncertainty and mobile thermal evidence are present"
+    },
+    {
+      "id": "CLD-010",
+      "name": "Procedural Cloud Detail Synthesizer",
+      "category": "Cloud",
+      "priority": "P2",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "New v0.2 proposal",
+      "action": "Generate high-frequency visual detail from compact state, not stored voxels",
+      "dependencies": [
+        "CLD-005",
+        "CLD-009"
+      ],
+      "module": "cloud/procedural-detail.js",
+      "definitionOfDone": "Regional source, state schema, horizon label, uncertainty and mobile thermal evidence are present"
+    },
+    {
+      "id": "DAT-001",
+      "name": "Provider Adapter SDK",
+      "category": "Data Plane",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "1.0 handlers have provider-specific clients",
+      "action": "Standard adapter lifecycle with validate/normalize/health result",
+      "dependencies": [
+        "FND-005",
+        "FND-006"
+      ],
+      "module": "data/provider-adapter-sdk.js",
+      "definitionOfDone": "Provider failure is typed and cannot fabricate normalized data"
+    },
+    {
+      "id": "DAT-002",
+      "name": "Canonical Tile Compiler",
+      "category": "Data Plane",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "S3 JSON/PNG/Grid outputs exist",
+      "action": "Compile quantized Earthus scalar/vector tile manifests",
+      "dependencies": [
+        "FND-012",
+        "DAT-003"
+      ],
+      "module": "data/tile-compiler.js",
+      "definitionOfDone": "Tiles are versioned, bounded and round-trip tested"
+    },
+    {
+      "id": "DAT-003",
+      "name": "Reprojection and Resampling Engine",
+      "category": "Data Plane",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Per-feature grids use different resolutions",
+      "action": "Shared nearest/bilinear foundation; conservative methods remain dataset-specific",
+      "dependencies": [
+        "FND-013"
+      ],
+      "module": "data/reprojection-resampling.js",
+      "definitionOfDone": "No silent unit/coordinate/resolution mismatch"
+    },
+    {
+      "id": "DAT-004",
+      "name": "Time Slice Compiler",
+      "category": "Data Plane",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Feature timelines exist independently",
+      "action": "Align source frames to canonical target slices and evidence modes",
+      "dependencies": [
+        "FND-004",
+        "FND-006"
+      ],
+      "module": "data/time-slice.js",
+      "definitionOfDone": "Observed/forecast/history/scenario slices never mix implicitly"
+    },
+    {
+      "id": "DAT-005",
+      "name": "Multi-tier Cache Coordinator",
+      "category": "Data Plane",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Browser/S3 cache and v0.2 3-frame policy exist",
+      "action": "Coordinate GPU/RAM/disk/CDN frame residency",
+      "dependencies": [
+        "FND-002",
+        "FND-008"
+      ],
+      "module": "data/cache-coordinator.js",
+      "definitionOfDone": "Playback cache remains bounded on mobile"
+    },
+    {
+      "id": "DAT-006",
+      "name": "Adaptive Tile Prefetch Engine",
+      "category": "Data Plane",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Feature-specific prefetch exists",
+      "action": "Prefetch only relevant forward/back time slices by network/memory state",
+      "dependencies": [
+        "DAT-005",
+        "FND-004"
+      ],
+      "module": "data/adaptive-prefetch.js",
+      "definitionOfDone": "No runaway background download"
+    },
+    {
+      "id": "DAT-007",
+      "name": "Revision and Reconciliation Engine",
+      "category": "Data Plane",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Provider revisions/backfills are handler-specific",
+      "action": "Detect same-time provider revisions and controlled backfill windows",
+      "dependencies": [
+        "FND-012"
+      ],
+      "module": "data/revision-engine.js",
+      "definitionOfDone": "Revision is distinguishable from new observation"
+    },
+    {
+      "id": "DAT-008",
+      "name": "Feature Snapshot Store Contract",
+      "category": "Data Plane",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Forecast inputs are not one common immutable object",
+      "action": "Create reproducible feature snapshots for forecast/analysis",
+      "dependencies": [
+        "FND-006",
+        "FND-012"
+      ],
+      "module": "data/feature-snapshot.js",
+      "definitionOfDone": "Every model result can point to an immutable feature snapshot"
+    },
+    {
+      "id": "DAT-009",
+      "name": "Spatial Identity Resolution Engine",
+      "category": "Data Plane",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Place hierarchy and provider mappings exist but no common ambiguity-aware entity resolver",
+      "action": "Resolve provider places into Earthus master entities using external ID first, then normalized name/address/distance scoring",
+      "dependencies": [
+        "FND-005",
+        "GEO-005"
+      ],
+      "module": "data/spatial-identity-resolution.js",
+      "definitionOfDone": "Ambiguous matches remain AMBIGUOUS and provider IDs never silently become Earthus IDs"
+    },
+    {
+      "id": "DAT-010",
+      "name": "Learning Data Factory",
+      "category": "Data Plane",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Forecast, feature snapshots, ground truth and regime engines exist separately",
+      "action": "Build privacy-minimized, rights-gated training examples from forecast -> actual closed loop",
+      "dependencies": [
+        "DAT-008",
+        "HF-007",
+        "INT-004",
+        "FND-006"
+      ],
+      "module": "data/learning-data-factory.js",
+      "definitionOfDone": "No example without ground truth and AI-use rights; user identifiers are removed"
+    },
+    {
+      "id": "FND-001",
+      "name": "Cesium Globe Core Adapter",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "REUSE_AS_IS",
+      "phase": "Wave 0",
+      "existingBasis": "prototype/js/viewer.js; Cesium 1.143",
+      "action": "Freeze renderer contract and expose v2 scene adapter only",
+      "dependencies": [],
+      "module": "adapters/v8-compat.js",
+      "definitionOfDone": "Existing / globe remains unchanged and /v2 can mount without duplicate WebGL context"
+    },
+    {
+      "id": "FND-002",
+      "name": "Thermal and Render Quality Adapter",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "REUSE_AS_IS",
+      "phase": "Wave 0",
+      "existingBasis": "prototype/js/power.js; render-quality.js",
+      "action": "Reuse and bind v2 thermal profiles; rerun real-device gates",
+      "dependencies": [
+        "FND-001"
+      ],
+      "module": "core/resource-governor.js",
+      "definitionOfDone": "30-cycle toggle, context-loss and thermal tests pass"
+    },
+    {
+      "id": "FND-003",
+      "name": "Truth and Evidence Contract Adapter",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "REUSE_AS_IS",
+      "phase": "Wave 0",
+      "existingBasis": "prototype/js/v8/truth-contract.js",
+      "action": "Map v8 data classes to v2 evidence kinds without semantic drift",
+      "dependencies": [],
+      "module": "core/canonical-signal.js",
+      "definitionOfDone": "Official observation/forecast/warning, Earthus analysis and simulation remain distinct"
+    },
+    {
+      "id": "FND-004",
+      "name": "Unified Time Adapter",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "REUSE_WITH_ADAPTER",
+      "phase": "Wave 0",
+      "existingBasis": "prototype/js/v8/unified-time.js",
+      "action": "Extend to LIVE/FORECAST/HISTORY/SCENARIO slices and availability manifests",
+      "dependencies": [
+        "FND-003"
+      ],
+      "module": "adapters/v8-compat.js",
+      "definitionOfDone": "No current/forecast/history state is mixed and time transitions reuse objects"
+    },
+    {
+      "id": "FND-005",
+      "name": "Provider and Source Registry",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "HARDEN",
+      "phase": "Wave 0",
+      "existingBasis": "v8 source-registry + handler constants",
+      "action": "Unify endpoint, schema, rights, freshness, health, quota and provenance",
+      "dependencies": [
+        "FND-003"
+      ],
+      "module": "paid/rights-gate.js",
+      "definitionOfDone": "Every production provider has a versioned contract and status row"
+    },
+    {
+      "id": "FND-006",
+      "name": "Canonical Signal Contract",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "No shared provider observation model in 1.0",
+      "action": "Create immutable canonical signal with geometry/time/evidence/fingerprint",
+      "dependencies": [
+        "FND-003",
+        "FND-005"
+      ],
+      "module": "core/canonical-signal.js",
+      "definitionOfDone": "Every derived value is traceable to source, time, processor and rights"
+    },
+    {
+      "id": "FND-007",
+      "name": "Engine Runtime SDK",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "v8 runtime coordinator is partial",
+      "action": "Provide common lifecycle and adapter contract for all v2 engines",
+      "dependencies": [
+        "FND-001",
+        "FND-002"
+      ],
+      "module": "core/engine-runtime.js",
+      "definitionOfDone": "Every engine can mount, update, measure, suspend and dispose deterministically"
+    },
+    {
+      "id": "FND-008",
+      "name": "Resource Ownership Governor",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "Feature-specific abort/dispose paths exist",
+      "action": "Centralize requests, timers, GPU disposers and one-data-hero ownership",
+      "dependencies": [
+        "FND-007"
+      ],
+      "module": "core/resource-governor.js",
+      "definitionOfDone": "Layer OFF leaves no owned requests, timers or resources"
+    },
+    {
+      "id": "FND-009",
+      "name": "Scene Orchestrator",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "v8 scene-state/runtime coordinator",
+      "action": "Coordinate 6 scene modes, focus, dimming, labels and resource transitions",
+      "dependencies": [
+        "FND-007",
+        "FND-008"
+      ],
+      "module": "core/scene-orchestrator.js",
+      "definitionOfDone": "One primary dynamic engine and one static context engine at most"
+    },
+    {
+      "id": "FND-010",
+      "name": "Truth Budget Engine",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "New v0.2 proposal derived from no-fabricated-precision rule",
+      "action": "Cap visual fidelity from evidence, resolution, confidence, rights and thermal state",
+      "dependencies": [
+        "FND-006"
+      ],
+      "module": "core/truth-budget.js",
+      "definitionOfDone": "Aggregate data can never silently become precision geometry"
+    },
+    {
+      "id": "FND-011",
+      "name": "Visual Manifest and Semantic Linter",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "v8 visual-layer-registry",
+      "action": "Generate menus from one manifest and lint visual truth semantics",
+      "dependencies": [
+        "FND-003",
+        "FND-009",
+        "FND-010"
+      ],
+      "module": "visual/visual-manifest.js + visual/semantic-linter.js",
+      "definitionOfDone": "Red, forecast, simulation and label semantics are consistently enforced"
+    },
+    {
+      "id": "FND-012",
+      "name": "Canonical Signal Lake Index",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "S3 object data plane; no shared observation DB",
+      "action": "Add versioned keys, revision manifest, watermarks and backfill windows",
+      "dependencies": [
+        "FND-006"
+      ],
+      "module": "storage/canonical-lake.js",
+      "definitionOfDone": "Observation and forecast runs are reproducible without replacing S3 data plane"
+    },
+    {
+      "id": "FND-013",
+      "name": "Geospatial Reference Engine",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "WGS84 used per feature; no shared antimeridian engine",
+      "action": "Normalize WGS84, dateline geometries, bounds, centroids and spatial tests",
+      "dependencies": [
+        "FND-006"
+      ],
+      "module": "geo/geospatial-reference.js",
+      "definitionOfDone": "Polygon/MultiPolygon/date-line cases produce stable focus geometry"
+    },
+    {
+      "id": "FND-014",
+      "name": "Country Focus Geometry and Dimming",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "Country reference assets and v8 scene state",
+      "action": "Calculate focus camera, clipping and context dimming without data duplication",
+      "dependencies": [
+        "FND-009",
+        "FND-013"
+      ],
+      "module": "geo/country-focus.js",
+      "definitionOfDone": "Selected country is emphasized while only intersecting tiles are requested"
+    },
+    {
+      "id": "FND-015",
+      "name": "Terrain Source and LOD Broker",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "Existing Cesium terrain and reference builders",
+      "action": "Select global/national/precision DEM and screen-space LOD by budget",
+      "dependencies": [
+        "FND-013",
+        "FND-014"
+      ],
+      "module": "geo/terrain-source-broker.js + geo/terrain-lod.js",
+      "definitionOfDone": "No LOD pop and mobile tile budget is bounded"
+    },
+    {
+      "id": "FND-016",
+      "name": "Paid Intelligence Delivery Shell",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "Supabase plans/orders and v8 entitlement boundary",
+      "action": "Expose NOW/WHY/NEXT/FOR ME/COMPARE/SCENARIO/EVIDENCE as allow/preview/deny",
+      "dependencies": [
+        "FND-003",
+        "FND-005"
+      ],
+      "module": "paid/entitlement.js + paid/intelligence-orchestrator.js",
+      "definitionOfDone": "Official safety is free and premium tabs are previewed, not hidden"
+    },
+    {
+      "id": "FND-017",
+      "name": "Planet Intelligence Orchestrator",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "Scene Orchestrator, Truth Budget, Resource Governor already exist separately",
+      "action": "Compile one execution plan from scene, truth, device/network quality and resource ownership",
+      "dependencies": [
+        "FND-009",
+        "FND-010",
+        "FND-008",
+        "FND-018"
+      ],
+      "module": "core/planet-intelligence-orchestrator.js",
+      "definitionOfDone": "One primary dynamic engine, context layer, fetch policy, degrade warnings and previous-engine disposal are explicit"
+    },
+    {
+      "id": "FND-018",
+      "name": "Device Network Battery Governor",
+      "category": "Foundation",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "Thermal/quality adapter exists but network, battery and reduced motion are not one policy",
+      "action": "Resolve FULL/BALANCED/LITE/STATIC quality from device memory, network, save-data, battery, thermal and accessibility",
+      "dependencies": [
+        "FND-002"
+      ],
+      "module": "core/device-network-governor.js",
+      "definitionOfDone": "Quality policy deterministically lowers cloud/terrain/prefetch/FPS without inventing data"
+    },
+    {
+      "id": "GEO-001",
+      "name": "Terrain/Data Morph Engine",
+      "category": "Geo/Terrain",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Existing terrain plus human relief",
+      "action": "Morph actual terrain to bounded data relief without changing raw values",
+      "dependencies": [
+        "FND-015"
+      ],
+      "module": "geo/terrain-data-morph.js",
+      "definitionOfDone": "Tooltip retains original value and morph reuses geometry"
+    },
+    {
+      "id": "GEO-002",
+      "name": "Bathymetry and Trench Level 1",
+      "category": "Geo/Terrain",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "GEBCO manifest and ocean layers",
+      "action": "Separate sea surface and negative elevation with device gates",
+      "dependencies": [
+        "FND-015"
+      ],
+      "module": "geo/bathymetry-policy.js",
+      "definitionOfDone": "Level 1 sea-surface suppression, depth scale and memory budget pass"
+    },
+    {
+      "id": "GEO-003",
+      "name": "Trench Camera Level 2",
+      "category": "Geo/Terrain",
+      "priority": "P2",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "No production underwater camera",
+      "action": "Country/ocean to trench camera transition and depth labels",
+      "dependencies": [
+        "GEO-002"
+      ],
+      "module": "geo/trench-camera.js",
+      "definitionOfDone": "Level 2 camera choreography targets verified bathymetry without claiming full underwater navigation"
+    },
+    {
+      "id": "GEO-004",
+      "name": "Underwater Camera Level 3",
+      "category": "Geo/Terrain",
+      "priority": "P2",
+      "maturity": "FUTURE_VISION",
+      "phase": "Future",
+      "existingBasis": "Not available in 1.0",
+      "action": "Limited underwater entry with fog/light/particles",
+      "dependencies": [
+        "GEO-003"
+      ],
+      "module": null,
+      "definitionOfDone": "Only opens after Level 2 and device memory gates"
+    },
+    {
+      "id": "GEO-005",
+      "name": "Place Hierarchy Resolver",
+      "category": "Geo/Terrain",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Countries/regions/POIs exist in separate registries",
+      "action": "Resolve Earth->Country->Region->City->District->Spot ancestry",
+      "dependencies": [
+        "FND-013"
+      ],
+      "module": "geo/place-hierarchy.js",
+      "definitionOfDone": "Place ancestry is canonical and provider IDs remain external"
+    },
+    {
+      "id": "HAZ-001",
+      "name": "Unified Official Warning Engine",
+      "category": "Hazard",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "KMA/NWS/regional warning feeds exist",
+      "action": "Normalize active official warnings with severity/source precedence",
+      "dependencies": [
+        "FND-003",
+        "FND-005"
+      ],
+      "module": "hazards/warning-engine.js",
+      "definitionOfDone": "Active official warning cannot be downranked by Earthus"
+    },
+    {
+      "id": "HAZ-002",
+      "name": "Hazard Event Graph",
+      "category": "Hazard",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Hazard layers exist independently",
+      "action": "Link evidence-backed related events without causal overclaim",
+      "dependencies": [
+        "FND-006"
+      ],
+      "module": "hazards/event-graph.js",
+      "definitionOfDone": "Every relation stores evidence/confidence"
+    },
+    {
+      "id": "HAZ-003",
+      "name": "Earthquake Depth Engine",
+      "category": "Hazard",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "USGS/KMA/JMA quake points exist",
+      "action": "Render verified hypocenter depth below terrain with bounded exaggeration",
+      "dependencies": [
+        "FND-013",
+        "VIS-007"
+      ],
+      "module": "hazards/earthquake-depth.js",
+      "definitionOfDone": "Depth visual is not P/S wave prediction"
+    },
+    {
+      "id": "HAZ-004",
+      "name": "Seismic Cluster Context Engine",
+      "category": "Hazard",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Historical quake data exists",
+      "action": "Spatiotemporal clustering for context, not aftershock prediction",
+      "dependencies": [
+        "HAZ-003"
+      ],
+      "module": "hazards/earthquake-depth.js",
+      "definitionOfDone": "Cluster label explicitly says context not prediction"
+    },
+    {
+      "id": "HAZ-005",
+      "name": "Tsunami Official Alert Integrator",
+      "category": "Hazard",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "PTWC/NTWC/JMA/KMA tsunami sources exist",
+      "action": "Separate official alerts, gauge observations, history and simulation",
+      "dependencies": [
+        "HAZ-001"
+      ],
+      "module": "hazards/tsunami-alert.js",
+      "definitionOfDone": "Official alert remains free and primary"
+    },
+    {
+      "id": "HAZ-006",
+      "name": "Tsunami Travel-Time Visualizer",
+      "category": "Hazard",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Official/historical travel-time products may exist",
+      "action": "Render only provided official/model travel-time rings in current phase",
+      "dependencies": [
+        "HAZ-005",
+        "VIS-007"
+      ],
+      "module": "hazards/tsunami-alert.js",
+      "definitionOfDone": "Does not numerically simulate propagation in P1"
+    },
+    {
+      "id": "HAZ-007",
+      "name": "Lightning Cell Tracking Engine",
+      "category": "Hazard",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "KMA lightning points exist",
+      "action": "Cluster recent strokes and track centroid motion as evidence",
+      "dependencies": [
+        "HAZ-002"
+      ],
+      "module": "hazards/lightning-track.js",
+      "definitionOfDone": "Centroid motion is estimated and labeled"
+    },
+    {
+      "id": "HAZ-008",
+      "name": "Wildfire Hotspot Fusion Engine",
+      "category": "Hazard",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "NASA FIRMS wildfire feed exists",
+      "action": "Cluster thermal hotspots without inventing burn perimeter",
+      "dependencies": [
+        "HAZ-002"
+      ],
+      "module": "hazards/wildfire-smoke.js",
+      "definitionOfDone": "Hotspot cluster != official fire perimeter"
+    },
+    {
+      "id": "HAZ-009",
+      "name": "Smoke Exposure Engine",
+      "category": "Hazard",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Wind/air/smoke model inputs available by provider",
+      "action": "Integrate model/observed smoke along areas/routes",
+      "dependencies": [
+        "HAZ-008",
+        "INT-006"
+      ],
+      "module": "hazards/wildfire-smoke.js",
+      "definitionOfDone": "Not medical dose; source kind displayed"
+    },
+    {
+      "id": "HAZ-010",
+      "name": "Cyclone Multi-Agency Track Resolver",
+      "category": "Hazard",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "KMA/JMA/NHC official tracks exist",
+      "action": "Choose regional primary agency and preserve alternates; never average official tracks",
+      "dependencies": [
+        "HAZ-001",
+        "VIS-008"
+      ],
+      "module": "hazards/cyclone-resolver.js",
+      "definitionOfDone": "Agency disagreement remains visible"
+    },
+    {
+      "id": "HAZ-011",
+      "name": "Cross-Agency Event Fusion Engine",
+      "category": "Hazard",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Hazard event graph and agency adapters exist, but duplicate cross-agency events are not canonicalized",
+      "action": "Group likely same events by type/time/distance while preserving agency-specific values and geometry",
+      "dependencies": [
+        "HAZ-001",
+        "HAZ-002"
+      ],
+      "module": "hazards/event-fusion.js",
+      "definitionOfDone": "Agency values are not averaged and conflicting official records remain inspectable"
+    },
+    {
+      "id": "HF-001",
+      "name": "Spatiotemporal Fusion",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Provider-specific mappings exist",
+      "action": "Align space, time, units, resolution and source mapping",
+      "dependencies": [
+        "FND-006",
+        "FND-013",
+        "FND-012"
+      ],
+      "module": "human-flow/spatiotemporal-fusion.js",
+      "definitionOfDone": "Signals are aligned to one snapshot time with explicit staleness rejection and required-variable degradation"
+    },
+    {
+      "id": "HF-002",
+      "name": "Earthus Spatial Cell Registry",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Seoul 121-place registry only",
+      "action": "Canonical area/cell/POI mapping with geometry provenance",
+      "dependencies": [
+        "HF-001"
+      ],
+      "module": "human-flow/spatial-cell-registry.js",
+      "definitionOfDone": "Versionable Earthus cells and provider mappings are registered without using provider IDs as master IDs"
+    },
+    {
+      "id": "HF-003",
+      "name": "Density Algorithm",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Official population ranges exist",
+      "action": "Density and comparable crowd index, separate from renderer",
+      "dependencies": [
+        "HF-002"
+      ],
+      "module": "human-flow/algorithms.js",
+      "definitionOfDone": "Output stores evidence, state, confidence and version; no fabricated direction/capacity"
+    },
+    {
+      "id": "HF-004",
+      "name": "Trend Algorithm",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Timeline samples exist",
+      "action": "EWMA + Theil-Sen + persistence",
+      "dependencies": [
+        "HF-003"
+      ],
+      "module": "human-flow/algorithms.js",
+      "definitionOfDone": "Output stores evidence, state, confidence and version; no fabricated direction/capacity"
+    },
+    {
+      "id": "HF-005",
+      "name": "Evidence-limited Flow Algorithm",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "No verified OD in aggregate data",
+      "action": "Output direction only with OD/graph evidence",
+      "dependencies": [
+        "HF-002"
+      ],
+      "module": "human-flow/algorithms.js",
+      "definitionOfDone": "Output stores evidence, state, confidence and version; no fabricated direction/capacity"
+    },
+    {
+      "id": "HF-006",
+      "name": "Baseline Crowd Forecast v0",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Provider forecast exists; Earthus model output not released",
+      "action": "Explainable baseline + bounded factors before calibration",
+      "dependencies": [
+        "HF-003",
+        "HF-004"
+      ],
+      "module": "human-flow/algorithms.js",
+      "definitionOfDone": "Output stores evidence, state, confidence and version; no fabricated direction/capacity"
+    },
+    {
+      "id": "HF-007",
+      "name": "Ground Truth Verification",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Forecast release control plane exists",
+      "action": "Attach every forecast to actual observation and metrics",
+      "dependencies": [
+        "HF-006",
+        "FND-012"
+      ],
+      "module": "human-flow/forecast-lifecycle.js",
+      "definitionOfDone": "Output stores evidence, state, confidence and version; no fabricated direction/capacity"
+    },
+    {
+      "id": "HF-008",
+      "name": "Calibration Loop v1",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "No unified calibration loop",
+      "action": "Forecast v0 -> shadow -> actual -> calibration -> canary",
+      "dependencies": [
+        "HF-007"
+      ],
+      "module": "human-flow/forecast-lifecycle.js",
+      "definitionOfDone": "Output stores evidence, state, confidence and version; no fabricated direction/capacity"
+    },
+    {
+      "id": "HF-009",
+      "name": "Confidence Engine",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Freshness logic is feature-specific",
+      "action": "Combine quality, coverage, agreement and historical error",
+      "dependencies": [
+        "FND-006",
+        "HF-007"
+      ],
+      "module": "core/confidence.js",
+      "definitionOfDone": "Output stores evidence, state, confidence and version; no fabricated direction/capacity"
+    },
+    {
+      "id": "HF-010",
+      "name": "Anomaly Engine",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "No common anomaly service",
+      "action": "Robust seasonal deviation + persistence + correlated signals",
+      "dependencies": [
+        "HF-003",
+        "HF-004"
+      ],
+      "module": "human-flow/algorithms.js",
+      "definitionOfDone": "Output stores evidence, state, confidence and version; no fabricated direction/capacity"
+    },
+    {
+      "id": "HF-011",
+      "name": "Capacity Engine",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Validated capacity sparse",
+      "action": "Calculate only from validated capacity; otherwise UNKNOWN",
+      "dependencies": [
+        "HF-002"
+      ],
+      "module": "human-flow/algorithms.js",
+      "definitionOfDone": "Output stores evidence, state, confidence and version; no fabricated direction/capacity"
+    },
+    {
+      "id": "HF-012",
+      "name": "Risk Hard-Gate Engine",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Official warning paths exist",
+      "action": "Official emergency and closure override derived scores",
+      "dependencies": [
+        "HF-009"
+      ],
+      "module": "human-flow/algorithms.js",
+      "definitionOfDone": "Output stores evidence, state, confidence and version; no fabricated direction/capacity"
+    },
+    {
+      "id": "HF-013",
+      "name": "Spatial Graph Engine",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "No common graph",
+      "action": "Typed nodes/edges, path and bottleneck foundation",
+      "dependencies": [
+        "HF-002"
+      ],
+      "module": "human-flow/spatial-graph.js",
+      "definitionOfDone": "Output stores evidence, state, confidence and version; no fabricated direction/capacity"
+    },
+    {
+      "id": "HF-014",
+      "name": "Spatial Digital Twin",
+      "category": "Human Flow",
+      "priority": "P2",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "No canonical gate/walkway/safe-zone twin",
+      "action": "Bind verified facilities and status to graph",
+      "dependencies": [
+        "HF-013"
+      ],
+      "module": "human-flow/digital-twin.js",
+      "definitionOfDone": "Digital-twin entities require verified geometry and capacity provenance"
+    },
+    {
+      "id": "HF-015",
+      "name": "Domain Policy Registry",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Policies only in documents",
+      "action": "Separate Tourism/Surf/Fishing/Hiking/etc. from common score",
+      "dependencies": [
+        "HF-012"
+      ],
+      "module": "core/domain-policy.js",
+      "definitionOfDone": "Output stores evidence, state, confidence and version; no fabricated direction/capacity"
+    },
+    {
+      "id": "HF-016",
+      "name": "Best Window Engine",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Recommendation concepts and Watch exist",
+      "action": "Score time windows with official hard gates and alternatives",
+      "dependencies": [
+        "HF-015",
+        "HF-006"
+      ],
+      "module": "core/domain-policy.js",
+      "definitionOfDone": "Output stores evidence, state, confidence and version; no fabricated direction/capacity"
+    },
+    {
+      "id": "HF-017",
+      "name": "Watch and Notification Decision",
+      "category": "Human Flow",
+      "priority": "P1",
+      "maturity": "HARDEN",
+      "phase": "Wave 2",
+      "existingBasis": "Supabase watch/push foundations",
+      "action": "Cooldown, dedupe, confidence, consent, deep link",
+      "dependencies": [
+        "HF-016",
+        "FND-016"
+      ],
+      "module": null,
+      "definitionOfDone": "Output stores evidence, state, confidence and version; no fabricated direction/capacity"
+    },
+    {
+      "id": "HF-018",
+      "name": "Human Flow Scenario",
+      "category": "Human Flow",
+      "priority": "P2",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "No common scenario engine",
+      "action": "Graph/rule what-if isolated from LIVE",
+      "dependencies": [
+        "HF-013",
+        "HF-014"
+      ],
+      "module": "human-flow/scenario.js",
+      "definitionOfDone": "Scenario output is isolated from LIVE state and explicitly SIMULATION"
+    },
+    {
+      "id": "HYD-001",
+      "name": "Hydrography Network",
+      "category": "Hydrology",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "River layers are not a common graph",
+      "action": "Represent main stem, tributaries, basin and downstream path",
+      "dependencies": [
+        "VIS-005",
+        "FND-013"
+      ],
+      "module": "hydrology/hydrography-network.js",
+      "definitionOfDone": "Cloud, precipitation, runoff, river routing and flood remain separate evidence types"
+    },
+    {
+      "id": "HYD-002",
+      "name": "River Visual Network Adapter",
+      "category": "Hydrology",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Feature-specific line renderer",
+      "action": "Bind hydrography hierarchy to DATA NETWORK",
+      "dependencies": [
+        "HYD-001",
+        "VIS-005"
+      ],
+      "module": "hydrology/river-visual-network.js",
+      "definitionOfDone": "River network uses verified hierarchy; direction is hidden unless source evidence exists"
+    },
+    {
+      "id": "HYD-003",
+      "name": "Runoff Engine",
+      "category": "Hydrology",
+      "priority": "P2",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "No runoff engine",
+      "action": "SCS runoff foundation; requires calibrated basin parameters",
+      "dependencies": [
+        "WX-016",
+        "HYD-001"
+      ],
+      "module": "hydrology/runoff-routing.js",
+      "definitionOfDone": "Cloud, precipitation, runoff, river routing and flood remain separate evidence types"
+    },
+    {
+      "id": "HYD-004",
+      "name": "River Routing Engine",
+      "category": "Hydrology",
+      "priority": "P2",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "No routing engine",
+      "action": "Linear reservoir foundation; replace/validate per basin",
+      "dependencies": [
+        "HYD-003"
+      ],
+      "module": "hydrology/runoff-routing.js",
+      "definitionOfDone": "Cloud, precipitation, runoff, river routing and flood remain separate evidence types"
+    },
+    {
+      "id": "HYD-005",
+      "name": "Flood/Inundation Scenario",
+      "category": "Hydrology",
+      "priority": "P2",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Official flood warnings only",
+      "action": "Scenario gate requires DEM, hydrography and calibration",
+      "dependencies": [
+        "HYD-004",
+        "GEO-002"
+      ],
+      "module": "hydrology/runoff-routing.js",
+      "definitionOfDone": "Cloud, precipitation, runoff, river routing and flood remain separate evidence types"
+    },
+    {
+      "id": "HYD-006",
+      "name": "Tsunami Bathymetric Propagation",
+      "category": "Hydrology",
+      "priority": "P2",
+      "maturity": "FUTURE_VISION",
+      "phase": "Wave 4",
+      "existingBasis": "Official alert/travel-time data exists",
+      "action": "Numerical propagation only after bathymetry and validation",
+      "dependencies": [
+        "GEO-003"
+      ],
+      "module": null,
+      "definitionOfDone": "Cloud, precipitation, runoff, river routing and flood remain separate evidence types"
+    },
+    {
+      "id": "INT-001",
+      "name": "Planet State Graph",
+      "category": "Intelligence",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Signals are currently consumed by feature",
+      "action": "Shared graph connecting location/time/domain signals and evidence",
+      "dependencies": [
+        "FND-006",
+        "HAZ-002"
+      ],
+      "module": "intelligence/planet-state-graph.js",
+      "definitionOfDone": "Graph relations do not imply causality without evidence"
+    },
+    {
+      "id": "INT-002",
+      "name": "Cross-Domain Correlation Engine",
+      "category": "Intelligence",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Weather/Human/Ocean signals can share time axis",
+      "action": "Calculate statistical association with minimum sample rule",
+      "dependencies": [
+        "INT-001",
+        "FND-004"
+      ],
+      "module": "intelligence/correlation.js",
+      "definitionOfDone": "Correlation is never phrased as causation"
+    },
+    {
+      "id": "INT-003",
+      "name": "Analog Event Retrieval Engine",
+      "category": "Intelligence",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Historical archive/event capsules planned",
+      "action": "Rank comparable cases using normalized feature distance",
+      "dependencies": [
+        "STO-009",
+        "DAT-008"
+      ],
+      "module": "intelligence/analog-retrieval.js",
+      "definitionOfDone": "Analog similarity exposes features and distance"
+    },
+    {
+      "id": "INT-004",
+      "name": "Regime Detection Engine",
+      "category": "Intelligence",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Trend systems exist per domain",
+      "action": "Classify stable/rising/falling/volatile regimes from time series",
+      "dependencies": [
+        "FND-004"
+      ],
+      "module": "intelligence/regime-detector.js",
+      "definitionOfDone": "Rule is explanatory and domain thresholds remain configurable"
+    },
+    {
+      "id": "INT-005",
+      "name": "Personal Impact Engine",
+      "category": "Intelligence",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Paid Personal Context specified in v0.2",
+      "action": "Map verified signals to saved schedules/places with official gates",
+      "dependencies": [
+        "PAY-005",
+        "HF-012"
+      ],
+      "module": "intelligence/personal-impact.js",
+      "definitionOfDone": "No hidden health or sensitive inference"
+    },
+    {
+      "id": "INT-006",
+      "name": "Route Exposure Engine",
+      "category": "Intelligence",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Routes can be represented as graph/segments",
+      "action": "Integrate weather/air/hazard exposure by segment",
+      "dependencies": [
+        "HF-013",
+        "FND-006"
+      ],
+      "module": "intelligence/route-exposure.js",
+      "definitionOfDone": "Official closures/warnings override route score"
+    },
+    {
+      "id": "INT-007",
+      "name": "Decision Explanation Engine",
+      "category": "Intelligence",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Best Window and Trust Ledger exist",
+      "action": "Return ranked contributions, gates and evidence for every recommendation",
+      "dependencies": [
+        "HF-016",
+        "OPS-018"
+      ],
+      "module": "intelligence/decision-explanation.js",
+      "definitionOfDone": "No recommendation without reason codes"
+    },
+    {
+      "id": "INT-008",
+      "name": "Event Story Orchestrator",
+      "category": "Intelligence",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "DATA STORY became orchestration layer",
+      "action": "Compose time/camera/layer/evidence steps without inventing facts",
+      "dependencies": [
+        "FND-004",
+        "FND-009",
+        "OPS-018"
+      ],
+      "module": "intelligence/story-orchestrator.js",
+      "definitionOfDone": "Story steps retain evidence kind and source refs"
+    },
+    {
+      "id": "OCN-001",
+      "name": "Ocean State Fusion Engine",
+      "category": "Ocean",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "SST/wave/current/buoy layers exist separately",
+      "action": "Canonical ocean state with scalar/vector truth separation",
+      "dependencies": [
+        "WX-002",
+        "FND-006"
+      ],
+      "module": "ocean/ocean-state.js",
+      "definitionOfDone": "Scalar current never becomes a vector without U/V evidence"
+    },
+    {
+      "id": "OCN-002",
+      "name": "Surface Current Vector Engine",
+      "category": "Ocean",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "v8 ocean-engine supports vector contract; current source may be scalar",
+      "action": "Normalize U/V to speed/direction and bind DATA FLOW only when valid",
+      "dependencies": [
+        "OCN-001",
+        "VIS-004"
+      ],
+      "module": "ocean/ocean-state.js",
+      "definitionOfDone": "Direction is unavailable rather than invented when vector data missing"
+    },
+    {
+      "id": "OCN-003",
+      "name": "Wave State Engine",
+      "category": "Ocean",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Wave grid exists",
+      "action": "Normalize Hs/direction/period and controlled visual exaggeration",
+      "dependencies": [
+        "OCN-001",
+        "VIS-003"
+      ],
+      "module": "ocean/wave-engine.js",
+      "definitionOfDone": "Visual wave height clearly marked as visualization"
+    },
+    {
+      "id": "OCN-004",
+      "name": "Swell Arrival Engine",
+      "category": "Ocean",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Swell layer exists",
+      "action": "Deep-water group-velocity ETA foundation with explicit approximation label",
+      "dependencies": [
+        "OCN-003"
+      ],
+      "module": "ocean/swell-arrival.js",
+      "definitionOfDone": "Nearshore effects are never claimed when not modeled"
+    },
+    {
+      "id": "OCN-005",
+      "name": "Tide and Sea-Level Engine",
+      "category": "Ocean",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Tide-gauge/sea-level sources can be added via providers",
+      "action": "Separate observed level, astronomical prediction and residual",
+      "dependencies": [
+        "DAT-001"
+      ],
+      "module": "ocean/tide-sea-level.js",
+      "definitionOfDone": "Observed vs predicted vs residual are separately labeled"
+    },
+    {
+      "id": "OCN-006",
+      "name": "Marine Observation Fusion",
+      "category": "Ocean",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Buoy layer already exists",
+      "action": "Select freshest quality-qualified observation per variable",
+      "dependencies": [
+        "OCN-001",
+        "OPS-005"
+      ],
+      "module": "ocean/marine-observation.js",
+      "definitionOfDone": "No averaging of incompatible sensor variables"
+    },
+    {
+      "id": "OCN-007",
+      "name": "SST Front and Eddy Feature Engine",
+      "category": "Ocean",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "SST and current grids exist",
+      "action": "Detect strong SST gradients and rotation proxy as derived features",
+      "dependencies": [
+        "OCN-001",
+        "DAT-003"
+      ],
+      "module": "ocean/sst-features.js",
+      "definitionOfDone": "Features are DERIVED and not official fronts/eddies unless provider supplies them"
+    },
+    {
+      "id": "OCN-008",
+      "name": "Coastal Exposure Engine",
+      "category": "Ocean",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Wave/swell/weather safety signals exist",
+      "action": "Combine marine exposure with official-warning hard gate",
+      "dependencies": [
+        "OCN-003",
+        "OCN-004",
+        "OCN-005",
+        "HF-012"
+      ],
+      "module": "ocean/coastal-exposure.js",
+      "definitionOfDone": "Official warning overrides convenience/activity scoring"
+    },
+    {
+      "id": "OPS-001",
+      "name": "Provider Health Engine",
+      "category": "Operations/Governance",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "wind/health.json and handler retries exist",
+      "action": "Common health states and freshness SLO",
+      "dependencies": [
+        "FND-005"
+      ],
+      "module": "ops/provider-health.js",
+      "definitionOfDone": "Status is evidence-based; code existence is not promoted to production-active without runtime proof"
+    },
+    {
+      "id": "OPS-002",
+      "name": "Circuit Breaker and Backoff",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "No common circuit breaker",
+      "action": "Common breaker/backoff/last-good policy",
+      "dependencies": [
+        "OPS-001"
+      ],
+      "module": "ops/provider-health.js",
+      "definitionOfDone": "Status is evidence-based; code existence is not promoted to production-active without runtime proof"
+    },
+    {
+      "id": "OPS-003",
+      "name": "Job Dependency DAG",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "60 EventBridge rules but no common DAG",
+      "action": "Declare collector/fusion/forecast/archive dependencies",
+      "dependencies": [
+        "OPS-001"
+      ],
+      "module": "ops/job-dag.js",
+      "definitionOfDone": "Job dependencies topologically validate and cycles/unknown dependencies fail closed"
+    },
+    {
+      "id": "OPS-004",
+      "name": "Dead Letter Recovery",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Lambda DLQ 0 in audit",
+      "action": "DLQ/quarantine/replay for critical providers",
+      "dependencies": [
+        "OPS-003"
+      ],
+      "module": "ops/dead-letter-recovery.js",
+      "definitionOfDone": "Dead-letter items retry only with idempotency and retryable error classes"
+    },
+    {
+      "id": "OPS-005",
+      "name": "Freshness SLO Registry",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Freshness feature-specific",
+      "action": "Per dataset SLA and stale UX contract",
+      "dependencies": [
+        "OPS-001"
+      ],
+      "module": "ops/freshness-slo.js",
+      "definitionOfDone": "Per-dataset freshness rules produce LIVE/STALE/UNAVAILABLE consistently"
+    },
+    {
+      "id": "OPS-006",
+      "name": "ModelOps Lifecycle",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Forecast boundary exists",
+      "action": "Draft/Shadow/Canary/Active/Rollback/Retired gates",
+      "dependencies": [
+        "HF-007"
+      ],
+      "module": "ops/modelops.js",
+      "definitionOfDone": "Status is evidence-based; code existence is not promoted to production-active without runtime proof"
+    },
+    {
+      "id": "OPS-007",
+      "name": "Champion/Challenger Selector",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "New v0.2 proposal",
+      "action": "Select by region/horizon skill plus calibration",
+      "dependencies": [
+        "OPS-006"
+      ],
+      "module": "ops/modelops.js",
+      "definitionOfDone": "Status is evidence-based; code existence is not promoted to production-active without runtime proof"
+    },
+    {
+      "id": "OPS-008",
+      "name": "Country Data Passport Compiler",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "New v0.2 proposal",
+      "action": "Compile data/license/visual/performance/QA readiness",
+      "dependencies": [
+        "FND-014",
+        "PAY-010"
+      ],
+      "module": "ops/readiness-compiler.js",
+      "definitionOfDone": "Status is evidence-based; code existence is not promoted to production-active without runtime proof"
+    },
+    {
+      "id": "OPS-009",
+      "name": "Observation Gap Lens",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "coverage layer exists",
+      "action": "Show what is observed vs model-dependent",
+      "dependencies": [
+        "FND-006"
+      ],
+      "module": "ops/observation-gap.js",
+      "definitionOfDone": "Status is evidence-based; code existence is not promoted to production-active without runtime proof"
+    },
+    {
+      "id": "OPS-010",
+      "name": "Cost Observability",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Cloud cost metrics unverified",
+      "action": "Estimate storage/egress/request/compute cost",
+      "dependencies": [
+        "FND-012"
+      ],
+      "module": "ops/cost-observability.js",
+      "definitionOfDone": "Status is evidence-based; code existence is not promoted to production-active without runtime proof"
+    },
+    {
+      "id": "OPS-011",
+      "name": "Cost-to-Value Scheduler",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "New v0.2 proposal",
+      "action": "Downsample/defer low-value high-cost jobs while preserving safety",
+      "dependencies": [
+        "OPS-010"
+      ],
+      "module": "ops/cost-observability.js",
+      "definitionOfDone": "Status is evidence-based; code existence is not promoted to production-active without runtime proof"
+    },
+    {
+      "id": "OPS-012",
+      "name": "Rollback Engine",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Scoped deployment scripts exist",
+      "action": "Versioned /v2 rollback for app/data/model",
+      "dependencies": [
+        "OPS-003",
+        "OPS-006"
+      ],
+      "module": "ops/rollback-engine.js",
+      "definitionOfDone": "Rollback is blocked without verified artifact or with irreversible migration"
+    },
+    {
+      "id": "OPS-013",
+      "name": "Performance and Thermal Lab",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Contract tests exist; real devices unknown",
+      "action": "Automated 30-cycle/context-loss/30-minute playback evidence",
+      "dependencies": [
+        "FND-002",
+        "FND-008"
+      ],
+      "module": "ops/performance-lab.js",
+      "definitionOfDone": "FPS/frame/memory/thermal acceptance metrics are compiled from runtime samples"
+    },
+    {
+      "id": "OPS-014",
+      "name": "Regional Standards and Localization",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Country-specific formatting is feature-specific",
+      "action": "KR/JP/US/GB unit/time/AQI/warning terminology",
+      "dependencies": [
+        "FND-006"
+      ],
+      "module": "core/localization.js",
+      "definitionOfDone": "Status is evidence-based; code existence is not promoted to production-active without runtime proof"
+    },
+    {
+      "id": "OPS-015",
+      "name": "Platform Delivery Capability Gate",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Current product is PWA; no native projects found",
+      "action": "PWA/wrapper/native/geofence/Vision Pro capability plan",
+      "dependencies": [
+        "FND-001"
+      ],
+      "module": "core/platform-capability.js",
+      "definitionOfDone": "Status is evidence-based; code existence is not promoted to production-active without runtime proof"
+    },
+    {
+      "id": "OPS-016",
+      "name": "Source Governance and Paid Use",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "HARDEN",
+      "phase": "Wave 3",
+      "existingBasis": "v8 rights registry/private shadow exists",
+      "action": "Enforce source rights at display/derivative/export/API boundaries",
+      "dependencies": [
+        "PAY-010",
+        "FND-005"
+      ],
+      "module": null,
+      "definitionOfDone": "Status is evidence-based; code existence is not promoted to production-active without runtime proof"
+    },
+    {
+      "id": "OPS-017",
+      "name": "Fail-Soft Scene Profile Compiler",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "New v0.2 proposal",
+      "action": "Downgrade unavailable or thermally unsafe scenes without fabricating replacement data",
+      "dependencies": [
+        "FND-008",
+        "FND-009",
+        "FND-010"
+      ],
+      "module": "core/fail-soft-scene.js",
+      "definitionOfDone": "Status is evidence-based; code existence is not promoted to production-active without runtime proof"
+    },
+    {
+      "id": "OPS-018",
+      "name": "Trust Ledger Drill-down",
+      "category": "Operations/Governance",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "New v0.2 proposal",
+      "action": "Expose supporting and counter evidence for each derived output or narrative claim",
+      "dependencies": [
+        "FND-003",
+        "FND-006"
+      ],
+      "module": "core/trust-ledger.js",
+      "definitionOfDone": "Status is evidence-based; code existence is not promoted to production-active without runtime proof"
+    },
+    {
+      "id": "OPS-019",
+      "name": "Engine Reuse Enforcement Gate",
+      "category": "Operations/Governance",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "Reuse matrix exists as documentation but no executable new-engine gate exists",
+      "action": "Block NEW engine proposals when catalog/repository reuse candidates exist or Gap Evidence is incomplete",
+      "dependencies": [],
+      "module": "ops/engine-reuse-enforcer.js",
+      "definitionOfDone": "Every NEW engine has catalog search, repository search and capability-gap evidence before implementation"
+    },
+    {
+      "id": "PAY-001",
+      "name": "Entitlement Engine",
+      "category": "Paid/Business",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Plans/orders and v8 boundary exist",
+      "action": "Server-enforced allow/preview/deny with safety-free exception",
+      "dependencies": [
+        "FND-016"
+      ],
+      "module": "paid/entitlement.js",
+      "definitionOfDone": "Official safety stays free; paid value comes from analysis, comparison, personalization and action"
+    },
+    {
+      "id": "PAY-002",
+      "name": "Intelligence Panel Orchestrator",
+      "category": "Paid/Business",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "No shared paid panel",
+      "action": "Build NOW/WHY/NEXT/FOR ME/COMPARE/SCENARIO/EVIDENCE payload",
+      "dependencies": [
+        "PAY-001"
+      ],
+      "module": "paid/intelligence-orchestrator.js",
+      "definitionOfDone": "Official safety stays free; paid value comes from analysis, comparison, personalization and action"
+    },
+    {
+      "id": "PAY-003",
+      "name": "Usage Metering",
+      "category": "Paid/Business",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "No common usage ledger",
+      "action": "Meter restore/report/model/Scenario usage",
+      "dependencies": [
+        "PAY-001"
+      ],
+      "module": "paid/usage-metering.js",
+      "definitionOfDone": "Official safety stays free; paid value comes from analysis, comparison, personalization and action"
+    },
+    {
+      "id": "PAY-004",
+      "name": "Quota Engine",
+      "category": "Paid/Business",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "No quota service",
+      "action": "Enforce plan/feature/period limits",
+      "dependencies": [
+        "PAY-003"
+      ],
+      "module": "paid/usage-metering.js",
+      "definitionOfDone": "Official safety stays free; paid value comes from analysis, comparison, personalization and action"
+    },
+    {
+      "id": "PAY-005",
+      "name": "Personal Context Engine",
+      "category": "Paid/Business",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Saved places/watch partial",
+      "action": "Resolve schedule, place, activity, route with minimal collection",
+      "dependencies": [
+        "PAY-002"
+      ],
+      "module": "paid/personal-context.js",
+      "definitionOfDone": "Only explicitly allowed context fields survive consent-aware minimization"
+    },
+    {
+      "id": "PAY-006",
+      "name": "Comparison Engine",
+      "category": "Paid/Business",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "No common normalizer",
+      "action": "Compare location/time/model/baseline with resolution disclosure",
+      "dependencies": [
+        "FND-006",
+        "PAY-002"
+      ],
+      "module": "paid/comparison.js",
+      "definitionOfDone": "Cross-item comparison blocks semantic/unit mismatch and exposes resolution mismatch"
+    },
+    {
+      "id": "PAY-007",
+      "name": "Scenario Engine",
+      "category": "Paid/Business",
+      "priority": "P2",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "No common scenario runtime",
+      "action": "Isolated what-if runs with quotas and audit log",
+      "dependencies": [
+        "PAY-003",
+        "HF-018"
+      ],
+      "module": "paid/scenario.js",
+      "definitionOfDone": "Scenario execution requires Control/Business, quota and zero LIVE mutation"
+    },
+    {
+      "id": "PAY-008",
+      "name": "Report and API Engine",
+      "category": "Paid/Business",
+      "priority": "P2",
+      "maturity": "HARDEN",
+      "phase": "Wave 4",
+      "existingBasis": "Research report functions have deploy drift",
+      "action": "Evidence-linked export and API quotas",
+      "dependencies": [
+        "PAY-003",
+        "FND-005"
+      ],
+      "module": null,
+      "definitionOfDone": "Official safety stays free; paid value comes from analysis, comparison, personalization and action"
+    },
+    {
+      "id": "PAY-009",
+      "name": "Country Unlock Ledger",
+      "category": "Paid/Business",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "New product idea",
+      "action": "Supporter ledger, readiness and open gates",
+      "dependencies": [
+        "PAY-001",
+        "OPS-008"
+      ],
+      "module": "paid/country-unlock.js",
+      "definitionOfDone": "Official safety stays free; paid value comes from analysis, comparison, personalization and action"
+    },
+    {
+      "id": "PAY-010",
+      "name": "Commercial Rights Gate",
+      "category": "Paid/Business",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Rights are distributed per source",
+      "action": "Block display/cache/derivative/export/resale by source rights",
+      "dependencies": [
+        "FND-005"
+      ],
+      "module": "paid/rights-gate.js",
+      "definitionOfDone": "Official safety stays free; paid value comes from analysis, comparison, personalization and action"
+    },
+    {
+      "id": "PAY-011",
+      "name": "Subscription State Engine",
+      "category": "Paid/Business",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Checkout/payment functions exist but sales closed",
+      "action": "Trial/grace/renewal/expiry/refund entitlement lifecycle",
+      "dependencies": [
+        "PAY-001"
+      ],
+      "module": "paid/subscription-state.js",
+      "definitionOfDone": "Subscription state transitions are explicit and invalid transitions fail closed"
+    },
+    {
+      "id": "PAY-012",
+      "name": "Premium Cache Engine",
+      "category": "Paid/Business",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "No shared premium result cache",
+      "action": "Reuse identical WHY/NEXT/COMPARE calculations",
+      "dependencies": [
+        "PAY-002",
+        "FND-012"
+      ],
+      "module": "paid/premium-cache.js",
+      "definitionOfDone": "Premium analysis cache uses version/context-bound keys and TTL"
+    },
+    {
+      "id": "PAY-013",
+      "name": "Offline Trip Pack",
+      "category": "Paid/Business",
+      "priority": "VNEXT",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "New v0.2 proposal",
+      "action": "Pre-cache official weather, POIs, safety and itinerary for selected trip",
+      "dependencies": [
+        "PAY-005",
+        "PAY-010"
+      ],
+      "module": "paid/offline-trip-pack.js",
+      "definitionOfDone": "Official safety stays free; paid value comes from analysis, comparison, personalization and action"
+    },
+    {
+      "id": "QA-001",
+      "name": "Engine Contract Harness",
+      "category": "Quality",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Many contract tests already exist",
+      "action": "Common async test harness for engine contracts",
+      "dependencies": [
+        "FND-007"
+      ],
+      "module": "qa/contract-harness.js",
+      "definitionOfDone": "Every new engine has deterministic contract tests"
+    },
+    {
+      "id": "QA-002",
+      "name": "Fault Injection Engine",
+      "category": "Quality",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Provider failure paths need systematic proof",
+      "action": "Inject timeout/stale/schema drift/missing/partial fixtures",
+      "dependencies": [
+        "OPS-002",
+        "DAT-001"
+      ],
+      "module": "qa/fault-injection.js",
+      "definitionOfDone": "Fail-soft behavior can be reproduced without production outage"
+    },
+    {
+      "id": "QA-003",
+      "name": "Replay Regression Engine",
+      "category": "Quality",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Archive/replay planned",
+      "action": "Compare canonical replay outputs with tolerances",
+      "dependencies": [
+        "STO-010",
+        "DAT-007"
+      ],
+      "module": "qa/replay-regression.js",
+      "definitionOfDone": "Processor upgrade cannot silently alter historical truth"
+    },
+    {
+      "id": "QA-004",
+      "name": "Launch Gate Compiler",
+      "category": "Quality",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Many separate DoD gates exist",
+      "action": "Compile required PASS/FAIL/UNKNOWN into one release state",
+      "dependencies": [
+        "QA-001"
+      ],
+      "module": "qa/launch-gate.js",
+      "definitionOfDone": "UNKNOWN required evidence blocks completion claim"
+    },
+    {
+      "id": "QA-005",
+      "name": "Completion Evidence Compiler",
+      "category": "Quality",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 0",
+      "existingBasis": "Tests and launch gates exist but code existence can still be mistaken for completion",
+      "action": "Compile mandatory actual-data, runtime, browser/device, screenshot, performance, dispose, regression and reuse evidence",
+      "dependencies": [
+        "QA-001",
+        "OPS-013"
+      ],
+      "module": "qa/completion-evidence.js",
+      "definitionOfDone": "Feature cannot be DONE from files/interfaces/tests alone without runtime acceptance evidence"
+    },
+    {
+      "id": "SEC-001",
+      "name": "Secret Redaction Middleware",
+      "category": "Security",
+      "priority": "P0",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Audit found query/path key exposure risk",
+      "action": "Redact known secret parameters and runtime secret fragments",
+      "dependencies": [
+        "FND-005"
+      ],
+      "module": "security/redaction.js",
+      "definitionOfDone": "Secrets do not appear in logs/errors/telemetry"
+    },
+    {
+      "id": "SEC-002",
+      "name": "Public Endpoint Abuse Guard",
+      "category": "Security",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Audit found Auth NONE function URLs",
+      "action": "Token-bucket foundation for public cost surfaces",
+      "dependencies": [
+        "OPS-010"
+      ],
+      "module": "security/abuse-guard.js",
+      "definitionOfDone": "Abuse protection does not block official safety reads globally"
+    },
+    {
+      "id": "SEC-003",
+      "name": "Privacy Minimization Engine",
+      "category": "Security",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Watch/location data exist; native app not yet fixed",
+      "action": "Allowlist telemetry/profile fields; precise location opt-in only",
+      "dependencies": [
+        "PAY-005"
+      ],
+      "module": "security/privacy-minimization.js",
+      "definitionOfDone": "Precise movement not stored by default"
+    },
+    {
+      "id": "SEC-004",
+      "name": "Access Audit Ledger",
+      "category": "Security",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Supabase access audit exists partially",
+      "action": "Canonical audit decision record for premium/admin/restore actions",
+      "dependencies": [
+        "PAY-001"
+      ],
+      "module": "security/audit-ledger.js",
+      "definitionOfDone": "Sensitive actions leave reasoned audit records"
+    },
+    {
+      "id": "SPC-001",
+      "name": "Earthus-Aetherus Space Event Bridge",
+      "category": "Space",
+      "priority": "P2",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Aetherus is a separate Three.js/runtime boundary",
+      "action": "Handoff launch/satellite event references without merging ownership",
+      "dependencies": [
+        "FND-009"
+      ],
+      "module": "space/space-event-bridge.js",
+      "definitionOfDone": "Earthus and Aetherus runtime ownership remains separate"
+    },
+    {
+      "id": "SPC-002",
+      "name": "Launch Event Lifecycle Engine",
+      "category": "Space",
+      "priority": "P2",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Launch Library/event concepts exist",
+      "action": "Schedule/countdown/hold/ascent/success/failure/satellite handoff state machine",
+      "dependencies": [
+        "SPC-001",
+        "VIS-008"
+      ],
+      "module": "space/launch-event.js",
+      "definitionOfDone": "No trajectory progress without telemetry/evidence"
+    },
+    {
+      "id": "SPC-003",
+      "name": "Celestial Local Context Engine",
+      "category": "Space",
+      "priority": "P2",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 4",
+      "existingBasis": "Local sky/AR concept exists",
+      "action": "Combine provided ephemeris altitude and cloud context for visibility state",
+      "dependencies": [
+        "CLD-005"
+      ],
+      "module": "space/celestial-context.js",
+      "definitionOfDone": "Not a photometric guarantee and no ephemeris invented"
+    },
+    {
+      "id": "STO-001",
+      "name": "Archive Packager",
+      "category": "Storage/Archive",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "S3 archive patterns exist",
+      "action": "Create Zarr/Parquet/JSON/tar.zst day-region package",
+      "dependencies": [
+        "FND-012",
+        "CLD-005"
+      ],
+      "module": "storage/archive-packager.js",
+      "definitionOfDone": "Archive package plan carries schema/processor/time/record/checksum contracts"
+    },
+    {
+      "id": "STO-002",
+      "name": "NAS Archive Agent",
+      "category": "Storage/Archive",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "No NAS agent",
+      "action": "Outbound pull, resume, least privilege and capacity reporting",
+      "dependencies": [
+        "STO-001"
+      ],
+      "module": "storage/nas-archive-agent.js",
+      "definitionOfDone": "NAS outbound-pull state machine supports retry/resume without LIVE service dependency"
+    },
+    {
+      "id": "STO-003",
+      "name": "Archive State Machine",
+      "category": "Storage/Archive",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "No common state machine",
+      "action": "Safe HOT-to-COLD and restore transitions",
+      "dependencies": [
+        "STO-001"
+      ],
+      "module": "storage/archive-state-machine.js",
+      "definitionOfDone": "NAS is never a LIVE dependency and S3 deletion cannot occur before verified shadow test"
+    },
+    {
+      "id": "STO-004",
+      "name": "Archive Verification and Deletion Gate",
+      "category": "Storage/Archive",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "No NAS verification gate",
+      "action": "Checksum/count/size/snapshot/grace/shadow proof",
+      "dependencies": [
+        "STO-003"
+      ],
+      "module": "storage/archive-verification.js",
+      "definitionOfDone": "NAS is never a LIVE dependency and S3 deletion cannot occur before verified shadow test"
+    },
+    {
+      "id": "STO-005",
+      "name": "Archive Catalog",
+      "category": "Storage/Archive",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "No online NAS catalog",
+      "action": "Index region/time/resolution/source/path/restore state",
+      "dependencies": [
+        "STO-003",
+        "FND-012"
+      ],
+      "module": "storage/archive-catalog.js",
+      "definitionOfDone": "Online archive catalog finds assets by dataset/region/time and records restores"
+    },
+    {
+      "id": "STO-006",
+      "name": "Restore Engine",
+      "category": "Storage/Archive",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "No restore orchestration",
+      "action": "NAS -> temporary S3 -> CloudFront only",
+      "dependencies": [
+        "STO-005",
+        "PAY-003"
+      ],
+      "module": "storage/restore-planner.js",
+      "definitionOfDone": "NAS is never a LIVE dependency and S3 deletion cannot occur before verified shadow test"
+    },
+    {
+      "id": "STO-007",
+      "name": "Retention and Storage Governor",
+      "category": "Storage/Archive",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Handler-specific retention",
+      "action": "72h hot, pressure tiers, event exceptions and shadow period",
+      "dependencies": [
+        "STO-004"
+      ],
+      "module": "storage/archive-verification.js",
+      "definitionOfDone": "NAS is never a LIVE dependency and S3 deletion cannot occur before verified shadow test"
+    },
+    {
+      "id": "STO-008",
+      "name": "Delta Cloud Keyframe Pack",
+      "category": "Storage/Archive",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "New v0.2 proposal",
+      "action": "Store keyframes plus deltas to reduce cloud archive growth",
+      "dependencies": [
+        "CLD-005",
+        "STO-001"
+      ],
+      "module": "storage/delta-pack.js",
+      "definitionOfDone": "NAS is never a LIVE dependency and S3 deletion cannot occur before verified shadow test"
+    },
+    {
+      "id": "STO-009",
+      "name": "Event Capsule Builder",
+      "category": "Storage/Archive",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "New v0.2 proposal",
+      "action": "Preserve high-value typhoon/heavy-rain/error cases as replay packages",
+      "dependencies": [
+        "STO-001"
+      ],
+      "module": "storage/event-capsule.js",
+      "definitionOfDone": "NAS is never a LIVE dependency and S3 deletion cannot occur before verified shadow test"
+    },
+    {
+      "id": "STO-010",
+      "name": "Replay Rehydration Engine",
+      "category": "Storage/Archive",
+      "priority": "P2",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "New v0.2 proposal",
+      "action": "Reconstruct service tiles from canonical archive version",
+      "dependencies": [
+        "STO-005",
+        "STO-006"
+      ],
+      "module": "storage/replay-rehydration.js",
+      "definitionOfDone": "NAS is never a LIVE dependency and S3 deletion cannot occur before verified shadow test"
+    },
+    {
+      "id": "VIS-001",
+      "name": "DATA TOWER",
+      "category": "Visual",
+      "priority": "P0",
+      "maturity": "REFACTOR",
+      "phase": "Wave 1",
+      "existingBasis": "prototype tourism radial cylinders",
+      "action": "Use real cells when available; preserve aggregate truth otherwise",
+      "dependencies": [
+        "FND-010"
+      ],
+      "module": "visual/tower.js",
+      "definitionOfDone": "Engine follows common runtime, evidence, LOD and disposal contract"
+    },
+    {
+      "id": "VIS-002",
+      "name": "DATA RELIEF",
+      "category": "Visual",
+      "priority": "P1",
+      "maturity": "REUSE_WITH_ADAPTER",
+      "phase": "Wave 1",
+      "existingBasis": "v8 human-relief.js",
+      "action": "Add terrain/data morph and country clipping",
+      "dependencies": [
+        "GEO-001"
+      ],
+      "module": "geo/terrain-data-morph.js",
+      "definitionOfDone": "Engine follows common runtime, evidence, LOD and disposal contract"
+    },
+    {
+      "id": "VIS-003",
+      "name": "DATA FIELD",
+      "category": "Visual",
+      "priority": "P0",
+      "maturity": "REUSE_WITH_ADAPTER",
+      "phase": "Wave 1",
+      "existingBasis": "Existing weather/ocean canvas grids",
+      "action": "Standardize scalar field, legend and time interpolation",
+      "dependencies": [
+        "FND-011"
+      ],
+      "module": "visual/visual-manifest.js",
+      "definitionOfDone": "Engine follows common runtime, evidence, LOD and disposal contract"
+    },
+    {
+      "id": "VIS-004",
+      "name": "DATA FLOW",
+      "category": "Visual",
+      "priority": "P1",
+      "maturity": "REUSE_WITH_ADAPTER",
+      "phase": "Wave 1",
+      "existingBasis": "v8 shared-flow.js and wind renderer",
+      "action": "Use proven U/V vectors and visible-tile advection",
+      "dependencies": [
+        "FND-011"
+      ],
+      "module": "visual/flow.js",
+      "definitionOfDone": "Engine follows common runtime, evidence, LOD and disposal contract"
+    },
+    {
+      "id": "VIS-005",
+      "name": "DATA NETWORK",
+      "category": "Visual",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Feature-specific line layers only",
+      "action": "Shared node/line renderer contract for rivers, roads and networks",
+      "dependencies": [
+        "FND-011"
+      ],
+      "module": "human-flow/spatial-graph.js",
+      "definitionOfDone": "Engine follows common runtime, evidence, LOD and disposal contract"
+    },
+    {
+      "id": "VIS-006",
+      "name": "DATA VOLUME",
+      "category": "Visual",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Current clouds are imagery",
+      "action": "Three-shell/mobile and bounded half-volume/desktop policy",
+      "dependencies": [
+        "FND-002"
+      ],
+      "module": "visual/volume.js",
+      "definitionOfDone": "Engine follows common runtime, evidence, LOD and disposal contract"
+    },
+    {
+      "id": "VIS-007",
+      "name": "DATA PULSE",
+      "category": "Visual",
+      "priority": "P1",
+      "maturity": "REUSE_WITH_ADAPTER",
+      "phase": "Wave 1",
+      "existingBasis": "Quake/lightning/event entities",
+      "action": "Unify observed/forecast/simulation pulse semantics",
+      "dependencies": [
+        "FND-011"
+      ],
+      "module": "visual/semantic-linter.js",
+      "definitionOfDone": "Engine follows common runtime, evidence, LOD and disposal contract"
+    },
+    {
+      "id": "VIS-008",
+      "name": "DATA TRACK",
+      "category": "Visual",
+      "priority": "P1",
+      "maturity": "REUSE_WITH_ADAPTER",
+      "phase": "Wave 1",
+      "existingBasis": "Cyclone/orbit/motion controllers",
+      "action": "Unify past/current/forecast/scenario paths",
+      "dependencies": [
+        "FND-011"
+      ],
+      "module": "adapters/v8-compat.js",
+      "definitionOfDone": "Engine follows common runtime, evidence, LOD and disposal contract"
+    },
+    {
+      "id": "VIS-009",
+      "name": "DATA BEACON",
+      "category": "Visual",
+      "priority": "P0",
+      "maturity": "REUSE_WITH_ADAPTER",
+      "phase": "Wave 1",
+      "existingBasis": "POI/station/buoy points and clustering",
+      "action": "Minimal point/ring/cluster renderer with label caps",
+      "dependencies": [
+        "FND-011"
+      ],
+      "module": "visual/visual-manifest.js",
+      "definitionOfDone": "Engine follows common runtime, evidence, LOD and disposal contract"
+    },
+    {
+      "id": "VIS-010",
+      "name": "Visual Material Grammar Engine",
+      "category": "Visual",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Neo-Minimal style rules exist",
+      "action": "Map domain/evidence/scene/thermal to material semantics",
+      "dependencies": [
+        "FND-011",
+        "FND-010"
+      ],
+      "module": "visual/material-grammar.js",
+      "definitionOfDone": "Risk styling reserved and scenario styling distinct"
+    },
+    {
+      "id": "VIS-011",
+      "name": "Color and Accessibility Semantics",
+      "category": "Visual",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Color is used across layers",
+      "action": "Add pattern/symbol/text cue so color is never sole state carrier",
+      "dependencies": [
+        "VIS-010"
+      ],
+      "module": "visual/color-accessibility.js",
+      "definitionOfDone": "Accessible state remains understandable without color"
+    },
+    {
+      "id": "VIS-012",
+      "name": "Label and Annotation Budget Engine",
+      "category": "Visual",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "5-8 label rule exists",
+      "action": "Prioritize safety/selection/primary labels under device budget",
+      "dependencies": [
+        "FND-009"
+      ],
+      "module": "visual/label-budget.js",
+      "definitionOfDone": "Safety labels are never evicted by decorative labels"
+    },
+    {
+      "id": "VIS-013",
+      "name": "Picking and Inspection Engine",
+      "category": "Visual",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Cesium layers have ad-hoc click handlers",
+      "action": "Return common pick envelope with value/time/evidence/provenance",
+      "dependencies": [
+        "FND-011"
+      ],
+      "module": "visual/picking-inspection.js",
+      "definitionOfDone": "Picked value can always reveal source and time"
+    },
+    {
+      "id": "VIS-014",
+      "name": "Focus Transition and Camera Choreography",
+      "category": "Visual",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 1",
+      "existingBasis": "Country focus camera design exists",
+      "action": "Bounded smooth transitions with reduced-motion support",
+      "dependencies": [
+        "FND-014"
+      ],
+      "module": "visual/camera-choreography.js",
+      "definitionOfDone": "Camera motion never hides context or causes infinite animation"
+    },
+    {
+      "id": "WX-001",
+      "name": "Weather Detail Information Architecture",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Weather Card v7 exists",
+      "action": "Current -> Brief -> hourly -> 10-day -> radar/precip -> details",
+      "dependencies": [
+        "FND-016"
+      ],
+      "module": "weather/weather-detail-ia.js",
+      "definitionOfDone": "Weather detail order is fixed and deep analysis is preview-gated for free users"
+    },
+    {
+      "id": "WX-002",
+      "name": "Weather Spatiotemporal Fusion",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "KMA/global feeds independent",
+      "action": "Canonical location/time/unit/altitude/evidence snapshot",
+      "dependencies": [
+        "FND-006",
+        "HF-001"
+      ],
+      "module": "weather/weather-spatiotemporal-fusion.js",
+      "definitionOfDone": "Weather signals align by time while official/model/Earthus truth classes remain separated"
+    },
+    {
+      "id": "WX-003",
+      "name": "Observation Quality and Provenance",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "HARDEN",
+      "phase": "Wave 2",
+      "existingBasis": "KMA/AirKorea freshness exists separately",
+      "action": "Shared station/radar/satellite/model QC",
+      "dependencies": [
+        "FND-005",
+        "WX-002"
+      ],
+      "module": null,
+      "definitionOfDone": "Official KMA output and Earthus analysis are labelled separately and calibrated before public probabilities"
+    },
+    {
+      "id": "WX-004",
+      "name": "Multi-Model Ensemble",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Several model adapters exist",
+      "action": "Normalize members, skill weights, spread and agreement",
+      "dependencies": [
+        "WX-002"
+      ],
+      "module": "weather/ensemble.js",
+      "definitionOfDone": "Official KMA output and Earthus analysis are labelled separately and calibrated before public probabilities"
+    },
+    {
+      "id": "WX-005",
+      "name": "Local Bias Correction",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "No canonical bias service",
+      "action": "Correct by location, variable, lead and regime",
+      "dependencies": [
+        "WX-004",
+        "HF-007"
+      ],
+      "module": "weather/ensemble.js",
+      "definitionOfDone": "Official KMA output and Earthus analysis are labelled separately and calibrated before public probabilities"
+    },
+    {
+      "id": "WX-006",
+      "name": "Radar/Satellite Nowcast",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Radar/satellite/lightning inputs exist",
+      "action": "Advection + growth/decay + NWP blend",
+      "dependencies": [
+        "WX-002",
+        "VIS-004"
+      ],
+      "module": "weather/nowcast.js",
+      "definitionOfDone": "Official KMA output and Earthus analysis are labelled separately and calibrated before public probabilities"
+    },
+    {
+      "id": "WX-007",
+      "name": "Weather Event Detector",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Warnings/events feature-specific",
+      "action": "Detect fronts, convergence and rapid cooling as evidence",
+      "dependencies": [
+        "WX-006"
+      ],
+      "module": "weather/weather-event-detector.js",
+      "definitionOfDone": "Detector emits evidence candidates and never self-declares official warnings"
+    },
+    {
+      "id": "WX-008",
+      "name": "Moisture Source Attribution",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "TPW/SST/wind exist",
+      "action": "Trajectory/flux/ascent multi-signal contribution",
+      "dependencies": [
+        "WX-002"
+      ],
+      "module": "weather/moisture-attribution.js",
+      "definitionOfDone": "Official KMA output and Earthus analysis are labelled separately and calibrated before public probabilities"
+    },
+    {
+      "id": "WX-009",
+      "name": "SST Anomaly Support",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "REUSE_WITH_ADAPTER",
+      "phase": "Wave 2",
+      "existingBasis": "OISST/SST anomaly layer exists",
+      "action": "Feed support evidence without claiming SST alone caused rain",
+      "dependencies": [
+        "WX-008"
+      ],
+      "module": "weather/moisture-attribution.js",
+      "definitionOfDone": "Official KMA output and Earthus analysis are labelled separately and calibrated before public probabilities"
+    },
+    {
+      "id": "WX-010",
+      "name": "Cyclone Remnant Interaction",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Official cyclone tracks exist",
+      "action": "Track remnant moisture/front/jet interactions",
+      "dependencies": [
+        "WX-008"
+      ],
+      "module": "weather/cyclone-remnant-interaction.js",
+      "definitionOfDone": "Remnant interaction requires multiple moisture/ascent/front/jet signals before causal language"
+    },
+    {
+      "id": "WX-011",
+      "name": "Forecast Gap Scanner",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "No divergence service",
+      "action": "Official forecast vs persistent calibrated consensus",
+      "dependencies": [
+        "WX-004",
+        "WX-005"
+      ],
+      "module": "weather/forecast-gap.js",
+      "definitionOfDone": "Official KMA output and Earthus analysis are labelled separately and calibrated before public probabilities"
+    },
+    {
+      "id": "WX-012",
+      "name": "Evidence Graph",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "No claim-level graph",
+      "action": "Store supporting/counter evidence and expiry",
+      "dependencies": [
+        "WX-003"
+      ],
+      "module": "weather/evidence-graph.js",
+      "definitionOfDone": "Official KMA output and Earthus analysis are labelled separately and calibrated before public probabilities"
+    },
+    {
+      "id": "WX-013",
+      "name": "Weather Claim Gate",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "No sentence-level gate",
+      "action": "Block unsupported causal or numerical claims",
+      "dependencies": [
+        "WX-012"
+      ],
+      "module": "weather/evidence-graph.js",
+      "definitionOfDone": "Official KMA output and Earthus analysis are labelled separately and calibrated before public probabilities"
+    },
+    {
+      "id": "WX-014",
+      "name": "Weather Narrative Composer",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Weather Brief slot exists",
+      "action": "Compose KMA-labelled summary and Earthus-labelled analysis",
+      "dependencies": [
+        "WX-013",
+        "WX-001"
+      ],
+      "module": "weather/narrative.js",
+      "definitionOfDone": "Official KMA output and Earthus analysis are labelled separately and calibrated before public probabilities"
+    },
+    {
+      "id": "WX-015",
+      "name": "Weather Action Intelligence",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Watch/push foundations exist",
+      "action": "Translate weather to schedule/activity impacts",
+      "dependencies": [
+        "WX-014",
+        "HF-015"
+      ],
+      "module": "weather/weather-action-intelligence.js",
+      "definitionOfDone": "Official gates exclude windows before recommendation scoring"
+    },
+    {
+      "id": "WX-016",
+      "name": "Precipitation State Engine",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Radar/gauge/model exist separately",
+      "action": "Keep precipitation separate from cloud and fuse observed sources",
+      "dependencies": [
+        "WX-002"
+      ],
+      "module": "weather/precipitation.js",
+      "definitionOfDone": "Official KMA output and Earthus analysis are labelled separately and calibrated before public probabilities"
+    },
+    {
+      "id": "WX-017",
+      "name": "Precipitation Nowcast",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "No common precipitation nowcast",
+      "action": "Use scalar advection and growth/decay foundation",
+      "dependencies": [
+        "WX-006",
+        "WX-016"
+      ],
+      "module": "weather/nowcast.js",
+      "definitionOfDone": "Official KMA output and Earthus analysis are labelled separately and calibrated before public probabilities"
+    },
+    {
+      "id": "WX-018",
+      "name": "Rain/Snow Phase Engine",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Phase is source-specific",
+      "action": "Wet-bulb and layer-aware phase foundation",
+      "dependencies": [
+        "WX-002"
+      ],
+      "module": "weather/precipitation.js",
+      "definitionOfDone": "Official KMA output and Earthus analysis are labelled separately and calibrated before public probabilities"
+    },
+    {
+      "id": "WX-019",
+      "name": "Rain Curtain Renderer",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Radar is 2D imagery",
+      "action": "Device-aware curtain plus near particles only when justified",
+      "dependencies": [
+        "WX-016",
+        "VIS-006"
+      ],
+      "module": "weather/precipitation.js",
+      "definitionOfDone": "Official KMA output and Earthus analysis are labelled separately and calibrated before public probabilities"
+    },
+    {
+      "id": "WX-020",
+      "name": "Weather Ground Truth and ModelOps",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 2",
+      "existingBasis": "Forecast boundary exists; outputs not released",
+      "action": "Store run/valid/actual by region and horizon",
+      "dependencies": [
+        "HF-007",
+        "OPS-006"
+      ],
+      "module": "weather/weather-modelops.js",
+      "definitionOfDone": "Weather forecasts produce ground-truth metrics and promotion requires calibration/rollback evidence"
+    },
+    {
+      "id": "WX-021",
+      "name": "Forecast Scenario Cluster Engine",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Multi-model/ensemble members exist but user-facing scenario compression is missing",
+      "action": "Cluster ensemble members into deterministic representative scenarios with member probability",
+      "dependencies": [
+        "WX-004"
+      ],
+      "module": "weather/forecast-scenario-cluster.js",
+      "definitionOfDone": "Scenario clusters preserve member identities and never present cluster probability as official forecast probability"
+    },
+    {
+      "id": "WX-022",
+      "name": "Forecast Reconciliation Engine",
+      "category": "Weather",
+      "priority": "P1",
+      "maturity": "IMPLEMENTED_FOUNDATION",
+      "phase": "Wave 3",
+      "existingBasis": "Official forecast, ensemble and Forecast Gap exist separately",
+      "action": "Keep official baseline primary while exposing calibrated persistent divergence as Earthus Early Signal",
+      "dependencies": [
+        "WX-004",
+        "WX-011"
+      ],
+      "module": "weather/forecast-reconciliation.js",
+      "definitionOfDone": "Official forecast is never overwritten; Early Signal requires persistence and calibration qualification"
+    }
+  ]
+}

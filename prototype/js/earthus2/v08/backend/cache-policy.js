@@ -1,0 +1,2 @@
+export function resolveCachePolicy({dataClass='DEFAULT',safety=false,providerTtlMs=null}={}){const defaults={STATIC:86400000,TOURISM_MONTHLY:86400000,WEATHER_OBS:600000,AIR_QUALITY:600000,HAZARD:60000,NEWS:900000,ACTION:1800000,DEFAULT:300000};const ttl=Math.max(0,Number(providerTtlMs??defaults[dataClass]??defaults.DEFAULT));return {ttlMs:ttl,staleWhileRevalidateMs:safety?0:Math.min(ttl,300000),mustRevalidate:!!safety,cacheable:true}}
+export function isCacheFresh(entry,{now=Date.now()}={}){return !!entry&&Number(entry.storedAt||0)+Number(entry.ttlMs||0)>now}

@@ -1,0 +1,1 @@
+export async function runContractCases(cases){const results=[];for(const c of cases??[]){try{const value=await c.run();const pass=c.assert?!!c.assert(value):true;results.push({id:c.id,pass,value:pass?value:undefined,error:pass?null:'ASSERTION_FAILED'});}catch(e){results.push({id:c.id,pass:false,error:String(e?.message??e)});}}return{pass:results.every(r=>r.pass),results};}

@@ -1,0 +1,21 @@
+import test from 'node:test'; import assert from 'node:assert/strict';
+import { bilinearSample,resampleGrid } from '../../prototype/js/earthus2/v03/data/reprojection-resampling.js';
+import { quantizeScalar,dequantizeScalar } from '../../prototype/js/earthus2/v03/data/tile-compiler.js';
+import { classifyRevision } from '../../prototype/js/earthus2/v03/data/revision-engine.js';
+import { vectorFromUV } from '../../prototype/js/earthus2/v03/ocean/ocean-state.js';
+import { deepWaterGroupVelocity,estimateSwellArrival } from '../../prototype/js/earthus2/v03/ocean/swell-arrival.js';
+import { seaLevelResidual } from '../../prototype/js/earthus2/v03/ocean/tide-sea-level.js';
+import { detectSstFronts } from '../../prototype/js/earthus2/v03/ocean/sst-features.js';
+import { coastalExposure } from '../../prototype/js/earthus2/v03/ocean/coastal-exposure.js';
+
+test('bilinear center averages four corners',()=>assert.equal(bilinearSample({width:2,height:2,values:[0,10,20,30]},.5,.5),15));
+test('resampling keeps requested size',()=>assert.equal(resampleGrid({width:2,height:2,values:[0,1,2,3]},3,4).values.length,12));
+test('quantization roundtrip stays close',()=>{const q=quantizeScalar([0,5,10]);const d=dequantizeScalar(q);assert.ok(Math.abs(d[1]-5)<.01);});
+test('revision same time changed is provider revision',()=>assert.equal(classifyRevision({observedAt:'2026-01-01T00:00:00Z',v:1},{observedAt:'2026-01-01T00:00:00Z',v:2}).state,'PROVIDER_REVISION'));
+test('ocean vector computes speed',()=>assert.equal(vectorFromUV(3,4).speed,5));
+test('swell group velocity positive',()=>assert.ok(deepWaterGroupVelocity(12)>0));
+test('swell ETA is after issue time',()=>assert.ok(Date.parse(estimateSwellArrival({distanceKm:1000,periodS:12,issuedAt:'2026-01-01T00:00:00Z'}).arrivalAt)>Date.parse('2026-01-01T00:00:00Z')));
+test('sea-level residual separated',()=>assert.equal(seaLevelResidual({observedM:2.1,predictedAstronomicalM:1.8}).residualM,.30000000000000004));
+test('SST fronts detect strong gradient',()=>assert.ok(detectSstFronts({width:3,height:3,values:[0,0,10,0,0,10,0,0,10]},{thresholdCPerCell:1}).length>0));
+test('official coastal warning overrides score',()=>assert.equal(coastalExposure({officialWarning:true}).reason,'OFFICIAL_WARNING_GATE'));
+test('missing coastal data is UNKNOWN',()=>assert.equal(coastalExposure({dataAvailable:false}).state,'UNKNOWN'));

@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import {fileURLToPath} from 'node:url';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');const dir=path.join(root,'prototype/js/earthus2/v11');function walk(d){return fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(d,e.name)):[path.join(d,e.name)]);}const js=walk(dir).filter(x=>x.endsWith('.js'));
+test('advanced intelligence contains no random fabricated fallback',()=>{for(const f of js){const s=fs.readFileSync(f,'utf8');assert.equal(/Math\.random\s*\(/.test(s),false,f);}});
+test('advanced intelligence contains no direct external fetch',()=>{for(const f of js){const s=fs.readFileSync(f,'utf8');assert.equal(/\bfetch\s*\(/.test(s),false,f);}});
+test('advanced intelligence does not mark default release ACTIVE',()=>{for(const f of js){const s=fs.readFileSync(f,'utf8');assert.equal(/defaultReleaseState\s*[:=]\s*['\"]ACTIVE/.test(s),false,f);}});
+test('SQL enables RLS on user context',()=>{const s=fs.readFileSync(path.join(dir,'postgres/20260826_v11_advanced_intelligence.sql'),'utf8');assert.match(s,/enable row level security/i);assert.match(s,/auth\.uid\(\) = user_id/);});

@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';
+const ROOT=path.resolve((await import('node:url')).fileURLToPath(new URL('../..', import.meta.url)));const ec=JSON.parse(fs.readFileSync(path.join(ROOT,'docs/earthus-2.0/v07/engine-catalog.v07.json'),'utf8'));const ac=JSON.parse(fs.readFileSync(path.join(ROOT,'docs/earthus-2.0/v07/algorithm-catalog.v07.json'),'utf8'));
+test('v0.7 catalog has exactly 219 engines and unique IDs',()=>{assert.equal(ec.engines.length,219);assert.equal(new Set(ec.engines.map(x=>x.id)).size,219);});
+test('v0.7 catalog has exactly 157 algorithms and unique IDs',()=>{assert.equal(ac.algorithms.length,157);assert.equal(new Set(ac.algorithms.map(x=>x.id)).size,157);});
+test('new backend engines point to real modules',()=>{for(const e of ec.engines.filter(x=>x.phase?.startsWith('Wave BACKEND-'))){const p=path.join(ROOT,'prototype/js/earthus2/v07',e.module);assert.ok(fs.existsSync(p),`${e.id} missing ${p}`);}});
+test('v0.7 does not add visual renderer category',()=>{const news=ec.engines.slice(200);assert.equal(news.some(e=>/renderer/i.test(e.name)||/Visual Renderer/i.test(e.category)),false);});

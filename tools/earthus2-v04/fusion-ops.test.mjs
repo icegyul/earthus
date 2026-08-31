@@ -1,0 +1,22 @@
+import test from 'node:test'; import assert from 'node:assert/strict';
+import { buildSpatiotemporalSnapshot } from '../../prototype/js/earthus2/v04/human-flow/spatiotemporal-fusion.js';
+import { EarthusSpatialCellRegistry } from '../../prototype/js/earthus2/v04/human-flow/spatial-cell-registry.js';
+import { SpatialDigitalTwin } from '../../prototype/js/earthus2/v04/human-flow/digital-twin.js';
+import { runHumanFlowScenario } from '../../prototype/js/earthus2/v04/human-flow/scenario.js';
+import { JobDependencyDag } from '../../prototype/js/earthus2/v04/ops/job-dag.js';
+import { planDeadLetterRecovery } from '../../prototype/js/earthus2/v04/ops/dead-letter-recovery.js';
+import { FreshnessSloRegistry } from '../../prototype/js/earthus2/v04/ops/freshness-slo.js';
+import { buildRollbackPlan } from '../../prototype/js/earthus2/v04/ops/rollback-engine.js';
+import { evaluatePerformanceRun } from '../../prototype/js/earthus2/v04/ops/performance-lab.js';
+
+test('fusion rejects stale required signal',()=>{const s=buildSpatiotemporalSnapshot([{signalId:'x',variable:'temperature',times:{observedAt:'2026-01-01T00:00:00Z'}}],{snapshotAt:'2026-01-01T03:00:00Z',defaultMaxAgeSec:3600,requiredVariables:['temperature']});assert.equal(s.state,'DEGRADED');});
+test('fusion chooses nearest time',()=>{const s=buildSpatiotemporalSnapshot([{signalId:'a',variable:'t',times:{observedAt:'2026-01-01T00:00:00Z'}},{signalId:'b',variable:'t',times:{observedAt:'2026-01-01T00:50:00Z'}}],{snapshotAt:'2026-01-01T01:00:00Z'});assert.equal(s.signals.t.signalId,'b');});
+test('cell registry maps external id',()=>{const r=new EarthusSpatialCellRegistry();r.registerCell({cellId:'c1',geometry:{type:'Polygon',coordinates:[]},areaM2:10});r.mapExternal({provider:'S',service:'P',externalId:'x',cellId:'c1'});assert.equal(r.resolveExternal('S','P','x').cellId,'c1');});
+test('twin rejects capacity without provenance',()=>assert.throws(()=>new SpatialDigitalTwin().add({id:'x',type:'AREA',geometry:{},nominalCapacity:10})));
+test('scenario never mutates baseline',()=>{const b={snapshotId:'s',occupancy:100,validatedCapacity:200};const s=runHumanFlowScenario({baseline:b,occupancyDelta:50});assert.equal(b.occupancy,100);assert.equal(s.occupancy,150);});
+test('job dag orders deps',()=>{const d=new JobDependencyDag();d.add({id:'b',dependsOn:['a']});d.add({id:'a'});assert.deepEqual(d.topologicalOrder(),['a','b']);});
+test('job dag detects cycle',()=>{const d=new JobDependencyDag();d.add({id:'a',dependsOn:['b']});d.add({id:'b',dependsOn:['a']});assert.throws(()=>d.topologicalOrder());});
+test('dlq without idempotency quarantines',()=>assert.equal(planDeadLetterRecovery([{id:'x',attempts:0,errorCode:'TIMEOUT'}])[0].action,'QUARANTINE'));
+test('freshness registry labels stale',()=>{const r=new FreshnessSloRegistry();r.register('x',{liveSec:60,staleSec:300});assert.equal(r.evaluate('x','2026-01-01T00:00:00Z','2026-01-01T00:02:00Z').state,'STALE');});
+test('rollback blocks irreversible migration',()=>assert.equal(buildRollbackPlan({currentVersion:'2',previousStableVersion:'1',reason:'bad',rollbackArtifactVerified:true,dataMigration:{irreversible:true}}).allowed,false));
+test('performance lab passes healthy run',()=>assert.equal(evaluatePerformanceRun([{fps:35,frameMs:25,memoryMb:100,thermalLevel:1},{fps:33,frameMs:28,memoryMb:108,thermalLevel:1}]).pass,true));

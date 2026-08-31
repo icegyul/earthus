@@ -1,0 +1,1 @@
+export function evaluateReleaseEvidence(e={}){const required=['tests','runtimeProbe','rollback','configSnapshot','reuseAudit'];const missing=required.filter(k=>!e[k]);if(e.production&&(!e.browserEvidence||!e.regressionEvidence))missing.push('production_browser_regression');return {allow:missing.length===0,missing,decision:missing.length?'BLOCK':'ALLOW'}}

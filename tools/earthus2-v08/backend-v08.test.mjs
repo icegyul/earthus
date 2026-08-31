@@ -1,0 +1,18 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {compileProviderRegistry,registryDrift,VersionedSchemaRegistry,schemaPublishDecision,JobLeaseTable,acceptFencingToken,buildConsistentSnapshot,runGeoTemporalQuery,SingleFlight,resolveCachePolicy,isCacheFresh,evaluateMigration,verifyRestoreDrill,enforceQueryBudget,buildReadModel} from '../../prototype/js/earthus2/v08/index.js';
+test('registry rejects duplicate operation',()=>assert.throws(()=>compileProviderRegistry([{providerId:'p',operationId:'o',owner:'x',truthClass:'OBSERVED',rights:{},freshnessMs:1},{providerId:'p',operationId:'o',owner:'x',truthClass:'OBSERVED',rights:{},freshnessMs:1}]),/DUPLICATE/));
+test('registry drift reports change',()=>{const a=compileProviderRegistry([{providerId:'p',operationId:'o',owner:'x',truthClass:'OBSERVED',rights:{a:1},freshnessMs:1}]);const b=compileProviderRegistry([{providerId:'p',operationId:'o',owner:'x',truthClass:'OBSERVED',rights:{a:2},freshnessMs:1}]);assert.equal(registryDrift(a,b).drift,true)});
+test('schema hash immutable',()=>{const r=new VersionedSchemaRegistry();r.register({providerId:'p',operationId:'o',version:'1',schemaHash:'a',approved:true});assert.throws(()=>r.register({providerId:'p',operationId:'o',version:'1',schemaHash:'b'}),/CONFLICT/)});
+test('unapproved schema hash blocks',()=>assert.equal(schemaPublishDecision({registered:{schemaHash:'a'},observedHash:'b'}).allow,false));
+test('job lease fences stale worker',()=>{const t=new JobLeaseTable();const a=t.acquire('j','a',{now:0,ttlMs:1}).lease;const b=t.acquire('j','b',{now:2,ttlMs:10}).lease;assert.equal(acceptFencingToken(a.token,b.token),true);assert.throws(()=>t.renew('j','a',a.token,{now:3}),/FENCED/)});
+test('snapshot blocks missing required',()=>assert.equal(buildConsistentSnapshot([],{required:['wind']}).ok,false));
+test('snapshot blocks temporal mismatch',()=>{const x=buildConsistentSnapshot([{key:'a',observedAt:0},{key:'b',observedAt:1000000}],{targetAt:500000,maxSkewMs:100,required:['a','b']});assert.equal(x.ok,false)});
+test('geo query filters bbox and truth',()=>{const out=runGeoTemporalQuery([{id:1,lon:127,lat:37,truthClass:'OBSERVED',type:'AIR',observedAt:'2026-08-26T00:00:00Z'},{id:2,lon:10,lat:10,truthClass:'OBSERVED',type:'AIR',observedAt:'2026-08-26T00:00:00Z'}],{bbox:[120,30,130,40],truthClasses:['OBSERVED']});assert.deepEqual(out.map(x=>x.id),[1])});
+test('singleflight executes once',async()=>{const s=new SingleFlight();let n=0;const fn=async()=>{n++;await new Promise(r=>setTimeout(r,10));return 7};const [a,b]=await Promise.all([s.run('k',fn),s.run('k',fn)]);assert.equal(a,7);assert.equal(b,7);assert.equal(n,1)});
+test('safety cache must revalidate',()=>assert.equal(resolveCachePolicy({dataClass:'HAZARD',safety:true}).mustRevalidate,true));
+test('cache freshness works',()=>assert.equal(isCacheFresh({storedAt:0,ttlMs:100},{now:50}),true));
+test('migration drops protected table blocked',()=>assert.equal(evaluateMigration({operations:[{kind:'DROP_TABLE',table:'profiles'}],protectedTables:['profiles']}).allow,false));
+test('restore requires keys',()=>assert.equal(verifyRestoreDrill({manifest:{checksums:{}},restoredFiles:[],requiredKeys:['a']}).ok,false));
+test('ordinary oversized query blocked',()=>assert.equal(enforceQueryBudget({estimatedRows:20000},{maxRows:100}).allow,false));
+test('safety query budget allowed',()=>assert.equal(enforceQueryBudget({estimatedRows:999999,safety:true},{maxRows:1}).allow,true));
+test('read model latest wins',()=>{const r=buildReadModel([{id:'a',updatedAt:'2026-01-01',v:1},{id:'a',updatedAt:'2026-02-01',v:2}]);assert.equal(r.rows[0].v,2)});

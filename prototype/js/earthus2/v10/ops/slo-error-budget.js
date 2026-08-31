@@ -1,0 +1,2 @@
+export function errorBudget({targetAvailability=0.999,total=0,failed=0}={}){const allowed=Math.max(0,total*(1-targetAvailability));const remaining=allowed-failed;return {allowedFailures:allowed,remaining,burned:remaining<0,burnRatio:allowed?failed/allowed:(failed?Infinity:0)}}
+export function releaseAllowedByBudget(b,{safetyFix=false}={}){if(safetyFix)return {allow:true,reason:'SAFETY_FIX'};return b.burned?{allow:false,reason:'ERROR_BUDGET_BURNED'}:{allow:true,reason:'BUDGET_OK'}}

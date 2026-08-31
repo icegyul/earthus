@@ -1,0 +1,3 @@
+const DEFAULT_KEYS=['serviceKey','key','api_key','apikey','token','access_token','password','secret','signature'];
+export function redactUrl(urlValue,{keys=DEFAULT_KEYS}={}){const url=new URL(urlValue,'https://earthus.invalid/');for(const k of [...url.searchParams.keys()])if(keys.some(x=>x.toLowerCase()===k.toLowerCase()))url.searchParams.set(k,'[REDACTED]');return url.origin==='https://earthus.invalid'?url.pathname+url.search:url.toString();}
+export function redactText(text,secrets=[]){let out=String(text);for(const secret of secrets.filter(Boolean))out=out.split(secret).join('[REDACTED]');return out;}

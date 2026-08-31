@@ -1,0 +1,2 @@
+export function minimizeEventPayload(payload,{allowPreciseLocation=false,allowedKeys=[]}={}){const out={};for(const k of allowedKeys)if(k in (payload??{}))out[k]=payload[k];if(allowPreciseLocation&&payload?.location)out.location=payload.location;else if(payload?.location?.regionId)out.regionId=payload.location.regionId;return out;}
+export function retentionClass(field){if(['preciseLocation','rawRoute','phone','email'].includes(field))return'MINIMIZE_OR_EXPLICIT_CONSENT';if(['watchPlace','savedPlace'].includes(field))return'USER_CONTROLLED';return'PRODUCT_POLICY';}

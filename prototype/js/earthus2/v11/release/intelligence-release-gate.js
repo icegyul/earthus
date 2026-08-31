@@ -1,0 +1,3 @@
+const REQUIREMENTS=Object.freeze({TRAVEL_DISCOVERY:['providerEvidence','truthLabels','safetyGate','offlineBacktest'],POLLUTION_LENS:['providerEvidence','truthLabels','vectorGate','sourceAttributionGuard'],EARTH_PULSE:['providerEvidence','newsDedup','actionLocationGuard','safetyPriority'],FORECAST:['providerEvidence','groundTruth','calibrationMetrics','rollbackPlan'],PERSONAL:['consentBoundary','explicitContextOnly','deletePath']});
+export function evaluateIntelligenceRelease(capability,evidence={}){const req=REQUIREMENTS[capability]||[];const missing=req.filter(k=>evidence[k]!==true);return{capability,allowed:missing.length===0,missing,requirements:req};}
+export { REQUIREMENTS as INTELLIGENCE_RELEASE_REQUIREMENTS };

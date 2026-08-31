@@ -1,0 +1,1 @@
+export function shadowRecord(kind,payload,provenance={}){if(!kind||!provenance.sourceIds?.length)return{accepted:false,reason:'PROVENANCE_REQUIRED'};return{accepted:true,record:{kind,releaseState:'SHADOW',computedAt:new Date().toISOString(),sourceIds:[...new Set(provenance.sourceIds)],observedAt:provenance.observedAt||null,payload:structuredClone(payload)}};}

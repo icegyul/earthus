@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "earthus.frontend-composition.v1",
+  "topMenus": ["EARTH", "WEATHER", "OCEAN", "HAZARD", "HUMAN", "SPACE", "PULSE"],
+  "slots": ["BASE", "PRIMARY", "SECONDARY", "EVENT", "SAFETY", "UI"],
+  "globalRules": {
+    "maxPrimaryDynamic": 1,
+    "maxSecondaryContextDesktop": 1,
+    "maxSecondaryContextMobile": 1,
+    "maxSecondaryContextSafeThermal": 0,
+    "safetyOverlayPersistent": true,
+    "directCrossFeatureEngineControlForbidden": true,
+    "sameMenuSelectionIdempotent": true,
+    "spaceExclusive": true,
+    "pulseIsOrchestrator": true
+  },
+  "allowedContextPairs": [
+    {"primary":"HAZARD","context":"WEATHER","mode":"AUTO_CONTEXT_ONLY","examples":["wildfire smoke wind","typhoon rain wind","flood precipitation"]},
+    {"primary":"HAZARD","context":"OCEAN","mode":"AUTO_CONTEXT_ONLY","examples":["tsunami sea state","storm surge waves"]},
+    {"primary":"HUMAN","context":"WEATHER","mode":"AUTO_CONTEXT_ONLY","examples":["travel discovery","outdoor event","crowd weather impact"]},
+    {"primary":"OCEAN","context":"WEATHER","mode":"AUTO_CONTEXT_ONLY","examples":["wave wind context","oil drift wind context"]},
+    {"primary":"WEATHER","context":"HAZARD","mode":"SAFETY_OVERLAY_ONLY","examples":["official warning beacon"]}
+  ],
+  "forbiddenFullPrimaryPairs": [
+    ["WEATHER","OCEAN"],
+    ["WEATHER","HUMAN"],
+    ["OCEAN","HUMAN"],
+    ["SPACE","EARTH"],
+    ["SPACE","WEATHER"],
+    ["SPACE","OCEAN"],
+    ["SPACE","HAZARD"],
+    ["SPACE","HUMAN"]
+  ]
+}

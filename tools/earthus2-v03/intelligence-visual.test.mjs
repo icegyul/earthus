@@ -1,0 +1,20 @@
+import test from 'node:test'; import assert from 'node:assert/strict';
+import { pearsonCorrelation } from '../../prototype/js/earthus2/v03/intelligence/correlation.js';
+import { rankAnalogs } from '../../prototype/js/earthus2/v03/intelligence/analog-retrieval.js';
+import { detectRegime } from '../../prototype/js/earthus2/v03/intelligence/regime-detector.js';
+import { integrateRouteExposure } from '../../prototype/js/earthus2/v03/intelligence/route-exposure.js';
+import { explainDecision } from '../../prototype/js/earthus2/v03/intelligence/decision-explanation.js';
+import { materialGrammar } from '../../prototype/js/earthus2/v03/visual/material-grammar.js';
+import { semanticStyle } from '../../prototype/js/earthus2/v03/visual/color-accessibility.js';
+import { allocateLabels } from '../../prototype/js/earthus2/v03/visual/label-budget.js';
+import { focusTransition } from '../../prototype/js/earthus2/v03/visual/camera-choreography.js';
+
+test('correlation reports not causation',()=>assert.equal(pearsonCorrelation([1,2,3],[2,4,6]).meaning,'CORRELATION_NOT_CAUSATION'));
+test('analogs rank nearest case first',()=>assert.equal(rankAnalogs({x:1},[{id:'a',x:1.1},{id:'b',x:9}],{features:['x']})[0].candidate.id,'a'));
+test('stable regime detected',()=>assert.equal(detectRegime([10,10.1,9.9,10]).regime,'STABLE'));
+test('route official gate blocks score',()=>assert.equal(integrateRouteExposure([{lengthKm:1,intensity:10,officialGates:[{type:'CLOSED'}]}]).state,'BLOCKED_OR_CAUTION'));
+test('decision hard gate takes precedence',()=>assert.equal(explainDecision({decision:'NO',hardGates:['OFFICIAL_WARNING'],contributions:{weather:-5}}).primaryReason,'OFFICIAL_WARNING'));
+test('simulation uses scenario pattern',()=>assert.equal(materialGrammar({domain:'WEATHER',evidenceKind:'SIMULATION'}).pattern,'SCENARIO_PATTERN'));
+test('style always requires text cue',()=>assert.equal(semanticStyle({}).requiresTextLabel,true));
+test('safety label wins budget',()=>assert.equal(allocateLabels([{id:'a',tier:'CONTEXT'},{id:'s',tier:'SAFETY'}],{max:1})[0].id,'s'));
+test('reduced motion is instant',()=>assert.equal(focusTransition({reducedMotion:true}).durationSeconds,0));

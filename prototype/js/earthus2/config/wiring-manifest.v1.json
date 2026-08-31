@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "earthus.integration-wiring.v1",
+  "generatedFor": "EARTHUS 2.0 /v2 isolated integration",
+  "baselineRemoteMain": "e7a51eb0f01b706f2fdff0e8434e022bf341ee5a",
+  "rules": {
+    "reuseExistingViewerSingleton": true,
+    "newCesiumViewerForbidden": true,
+    "primaryDynamicMax": 1,
+    "secondaryContextMax": 1,
+    "safetyOverlayPersistent": true,
+    "spaceExclusive": true,
+    "pulseOrchestratorOnly": true,
+    "legacyPreviewIsNotProductionBackend": true,
+    "unknownProviderEndpointMustRemainContractCaptureRequired": true
+  },
+  "knownCurrentRouteFamilies": [
+    {"family":"tourism-current","path":"/tourism/seoul-flow.json","status":"PRODUCTION_ACTIVE"},
+    {"family":"tourism-health","path":"/tourism/health.json","status":"PRODUCTION_ACTIVE"},
+    {"family":"tourism-kto","path":"/tourism/kto/**","status":"PARTIAL"},
+    {"family":"weather-air","path":"/wind/**","status":"PRODUCTION_ACTIVE_FAMILY"},
+    {"family":"events","path":"/events/**","status":"PRODUCTION_ACTIVE_FAMILY"},
+    {"family":"clouds","path":"/clouds/**","status":"PRODUCTION_ACTIVE_FAMILY"},
+    {"family":"ocean","path":"/ocean/**","status":"MIXED_RUNTIME_VERIFICATION"}
+  ],
+  "verticalSlices": [
+    {"id":"VS-00","name":"Quiet Earth","provider":"NONE","engine":"Globe Core","frontend":"/v2 shell","doneWhen":"actual Cesium Earth renders with zero v2 dynamic feature layers"},
+    {"id":"VS-01","name":"Menu Scene Runtime","provider":"NONE","engine":"Scene Composition Runtime","frontend":"7 top menus + compatibility rules","doneWhen":"50-cycle switch stress leaves <=1 primary and no v2-owned active layers on EARTH"},
+    {"id":"VS-02","name":"Seoul Population","provider":"Seoul citydata_ppltn","engine":"Human Flow / Relief","frontend":"HUMAN > Tourism/Crowd","doneWhen":"actual provider -> backend -> Cesium -> provenance -> dispose evidence"},
+    {"id":"VS-03","name":"Weather","provider":"KMA + approved model sources","engine":"Weather / Field / Flow","frontend":"WEATHER","doneWhen":"actual current/forecast truth labels and layer disposal"},
+    {"id":"VS-04","name":"Hazard","provider":"official hazard sources","engine":"Event / Pulse / Track","frontend":"HAZARD","doneWhen":"official safety hard gate + approved context only"},
+    {"id":"VS-05","name":"Earth Pulse","provider":"news + official events + public actions","engine":"Earth Pulse Orchestrator","frontend":"PULSE","doneWhen":"event cluster links NEWS/OFFICIAL/OBSERVATION/ACTION without fabricated location"},
+    {"id":"VS-06","name":"Travel Discovery","provider":"KTO + KMA + Seoul","engine":"Travel Discovery","frontend":"HUMAN > Travel","doneWhen":"Discovery/Why Now/Window/One More Place uses traceable real signals"},
+    {"id":"VS-07","name":"Pollution Lens AIR/FIRE","provider":"AirKorea + wildfire + wind","engine":"Pollution Lens","frontend":"HAZARD/WEATHER/PULSE composition","doneWhen":"OBSERVED/REPORTED/DETECTED/MODELLED are visibly distinct"}
+  ]
+}

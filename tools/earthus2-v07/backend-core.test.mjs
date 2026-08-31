@@ -1,0 +1,21 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {createIngestionRun,advanceIngestionRun,isTerminalIngestionState,buildRawArtifactReceipt,validateRawNormalizedLink,inspectSchema,advanceWatermark,reconcileRevision,makeIdempotencyKey,DedupeWindow,evaluateProviderBudget,buildConditionalHeaders,classifyFetchResponse} from '../../prototype/js/earthus2/v07/index.js';
+
+test('ingestion legal transition',()=>{let r=createIngestionRun({runId:'r1',providerId:'kto',operationId:'visitors',requestedAt:1});r=advanceIngestionRun(r,'FETCHING',{at:2});r=advanceIngestionRun(r,'RAW_STORED',{at:3});assert.equal(r.state,'RAW_STORED');assert.equal(r.attempts,1)});
+test('ingestion invalid transition blocked',()=>{const r=createIngestionRun({runId:'r1',providerId:'kto',operationId:'v'});assert.throws(()=>advanceIngestionRun(r,'PUBLISHED'),/INVALID_INGESTION_TRANSITION/)});
+test('terminal states recognized',()=>{assert.equal(isTerminalIngestionState('QUARANTINED'),true);assert.equal(isTerminalIngestionState('FETCHING'),false)});
+test('raw receipt sha256 and deterministic key',async()=>{const a=await buildRawArtifactReceipt('abc',{providerId:'KTO',operationId:'Visitors',runId:'R1',receivedAt:Date.UTC(2026,7,26),extension:'json'});const b=await buildRawArtifactReceipt('abc',{providerId:'KTO',operationId:'Visitors',runId:'R1',receivedAt:Date.UTC(2026,7,26),extension:'json'});assert.equal(a.sha256,b.sha256);assert.match(a.key,/raw\/v1\/kto\/visitors\/2026\/08\/26/)});
+test('raw normalized provenance link',async()=>{const r=await buildRawArtifactReceipt('abc',{providerId:'p',operationId:'o',runId:'r'});assert.equal(validateRawNormalizedLink({rawReceipt:r,normalized:{provenance:{rawHash:r.sha256}}}).ok,true);assert.equal(validateRawNormalizedLink({rawReceipt:r,normalized:{provenance:{rawHash:'x'}}}).ok,false)});
+test('breaking schema drift blocks publish',()=>{const x=inspectSchema({required:{id:'string',value:'number'},optional:{name:'string'}},{id:'a',value:'bad'});assert.equal(x.severity,'BREAKING');assert.equal(x.publishAllowed,false)});
+test('additive schema does not break',()=>{const x=inspectSchema({required:{id:'string'}},{id:'a',extra:1});assert.equal(x.severity,'ADDITIVE');assert.equal(x.publishAllowed,true)});
+test('watermark never regresses',()=>{const x=advanceWatermark('2026-08-26T10:00:00Z','2026-08-26T09:00:00Z');assert.equal(x.reason,'REGRESSION_BLOCKED');assert.equal(x.value,'2026-08-26T10:00:00.000Z')});
+test('higher revision supersedes',()=>{const x=reconcileRevision({id:'a',revision:1,rawHash:'1'},{id:'b',revision:2,rawHash:'2'});assert.equal(x.decision,'ACCEPT_REVISION');assert.equal(x.supersedes,'a')});
+test('same hash is duplicate',()=>{assert.equal(reconcileRevision({rawHash:'x'},{rawHash:'x'}).decision,'DUPLICATE')});
+test('idempotency key requires identity',()=>{assert.throws(()=>makeIdempotencyKey({providerId:'p',operationId:'o'}),/IDEMPOTENCY_ID_OR_HASH_REQUIRED/)});
+test('dedupe detects duplicate',()=>{const d=new DedupeWindow({ttlMs:100});assert.equal(d.checkAndRemember('k',{now:0,rawHash:'h'}).duplicate,false);assert.equal(d.checkAndRemember('k',{now:50,rawHash:'h'}).duplicate,true)});
+test('dedupe detects identity collision',()=>{const d=new DedupeWindow({ttlMs:100});d.checkAndRemember('k',{now:0,rawHash:'a'});assert.equal(d.checkAndRemember('k',{now:1,rawHash:'b'}).collision,true)});
+test('non-safety cannot consume safety reserve',()=>{assert.equal(evaluateProviderBudget({remaining:10,requested:4,reserveForSafety:8,safety:false}).reason,'SAFETY_RESERVE_PROTECTED')});
+test('safety cannot exceed hard quota',()=>{assert.equal(evaluateProviderBudget({remaining:0,requested:1,safety:true}).reason,'HARD_QUOTA_EXHAUSTED')});
+test('conditional headers',()=>{assert.deepEqual(buildConditionalHeaders({etag:'E',lastModified:'D'}),{'If-None-Match':'E','If-Modified-Since':'D'})});
+test('304 classified no parse',()=>{assert.deepEqual(classifyFetchResponse({status:304}).kind,'NOT_MODIFIED')});
+test('429 classified throttled',()=>{assert.equal(classifyFetchResponse({status:429}).kind,'THROTTLED')});

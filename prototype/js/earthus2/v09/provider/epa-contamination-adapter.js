@@ -1,0 +1,3 @@
+import {validateProviderContract,normalizeProviderEnvelope,contractCaptureRequired} from './adapter-contract.js';
+export const PROVIDER_ID='EPA';export const SUPPORTED_OPERATIONS=["TRI", "SUPERFUND"];
+export function buildEPAAdapter(contract){const c=validateProviderContract(contract);if(c.providerId!==PROVIDER_ID)throw new Error('PROVIDER_ID_MISMATCH');return {contract:c,contractCaptureRequired:contractCaptureRequired(c),normalize:(payload,meta={})=>normalizeProviderEnvelope({contract:c,records:payload?.records??payload?.items??[],sourceNative:payload,observedAt:meta.observedAt??payload?.observedAt??null,issuedAt:meta.issuedAt??payload?.issuedAt??null,receivedAt:meta.receivedAt??new Date().toISOString(),quality:meta.quality??'LIVE'})}}

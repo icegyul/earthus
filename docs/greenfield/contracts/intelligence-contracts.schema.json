@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "earthus-intelligence-contracts-v1",
+  "title": "Earthus Intelligence Contracts v1",
+  "$defs": {
+    "EvidenceRef": {
+      "type": "object",
+      "required": [
+        "sourceId",
+        "evidenceClass",
+        "receivedAt"
+      ],
+      "properties": {
+        "sourceId": {
+          "type": "string"
+        },
+        "recordId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidenceClass": {
+          "enum": [
+            "OBSERVATION",
+            "OFFICIAL_FORECAST",
+            "OFFICIAL_WARNING",
+            "MODEL",
+            "AI_INFERENCE",
+            "DERIVED",
+            "SIMULATION"
+          ]
+        },
+        "observedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "epoch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "receivedAt": {
+          "type": "string"
+        },
+        "licenseRef": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "qualityFlags": {
+          "type": "array"
+        },
+        "checksum": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "IntelligenceState": {
+      "type": "object",
+      "required": [
+        "eventId",
+        "truthState",
+        "sourceRefs",
+        "revision"
+      ],
+      "properties": {
+        "eventId": {
+          "type": "string"
+        },
+        "truthState": {
+          "enum": [
+            "OBSERVED",
+            "OFFICIAL_FORECAST",
+            "DERIVED",
+            "MODEL_SIGNAL",
+            "AI_SIGNAL",
+            "SCREENING_ONLY",
+            "SIMULATION_ONLY",
+            "COUNTERFACTUAL",
+            "ATTRIBUTION_RESULT",
+            "VALIDATED_RISK",
+            "INSUFFICIENT_DATA"
+          ]
+        },
+        "sourceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "modelRefs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidenceClass": {
+          "enum": [
+            "UNKNOWN",
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CALIBRATED_NUMERIC"
+          ]
+        },
+        "uncertainty": {},
+        "legalLabel": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "Scenario": {
+      "type": "object",
+      "required": [
+        "scenarioId",
+        "baselineEventId",
+        "status",
+        "interventions",
+        "modelVersion"
+      ],
+      "properties": {
+        "scenarioId": {
+          "type": "string"
+        },
+        "baselineEventId": {
+          "type": "string"
+        },
+        "status": {
+          "const": "COUNTERFACTUAL"
+        },
+        "interventions": {
+          "type": "array",
+          "minItems": 1
+        },
+        "modelVersion": {
+          "type": "string"
+        },
+        "seed": {},
+        "configHash": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assumptions": {
+          "type": "array"
+        },
+        "uncertainty": {}
+      }
+    },
+    "AttributionResult": {
+      "type": "object",
+      "required": [
+        "attributionId",
+        "baselineEventId",
+        "scenarioIds",
+        "methodId",
+        "assumptions",
+        "evidenceRefs"
+      ],
+      "properties": {
+        "attributionId": {
+          "type": "string"
+        },
+        "baselineEventId": {
+          "type": "string"
+        },
+        "scenarioIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "methodId": {
+          "type": "string"
+        },
+        "methodVersion": {
+          "type": "string"
+        },
+        "contributions": {
+          "type": "array"
+        },
+        "assumptions": {
+          "type": "array"
+        },
+        "confidenceClass": {
+          "type": "string"
+        },
+        "uncertainty": {},
+        "evidenceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "legalLabel": {
+          "const": "ATTRIBUTION_RESULT"
+        }
+      }
+    }
+  }
+}

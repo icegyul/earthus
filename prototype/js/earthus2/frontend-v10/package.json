@@ -1,0 +1,6 @@
+{
+  "name": "earthus2-frontend-foundation-v10",
+  "private": true,
+  "type": "module",
+  "scripts": {"test": "node --test tests/*.test.js"}
+}

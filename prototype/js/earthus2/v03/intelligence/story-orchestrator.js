@@ -1,0 +1,2 @@
+const KINDS=new Set(['OBSERVED','OFFICIAL_FORECAST','EARTHUS_ANALYSIS','EARTHUS_FORECAST','HISTORY','SIMULATION']);
+export function buildEventStory(steps){const out=(steps??[]).map((s,i)=>{if(!s.at||!KINDS.has(s.kind)||!s.title)throw new TypeError(`invalid story step ${i}`);return{index:i,at:s.at,kind:s.kind,title:s.title,sourceRefs:[...new Set(s.sourceRefs??[])],camera:s.camera??null,layerIds:[...new Set(s.layerIds??[])]};}).sort((a,b)=>Date.parse(a.at)-Date.parse(b.at));return{steps:out,rule:'NO_INVENTED_VALUES_OR_CAUSAL_TEXT'};}

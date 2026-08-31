@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "defaultReleaseState": "SHADOW",
+  "failClosed": true,
+  "capabilities": [
+    {
+      "id": "EARTH_PULSE",
+      "codeReady": true,
+      "activationRequires": [
+        "real news/official/action feeds",
+        "dedup runtime evidence",
+        "safety priority evidence"
+      ]
+    },
+    {
+      "id": "TRAVEL_DISCOVERY",
+      "codeReady": true,
+      "activationRequires": [
+        "KTO feature materialization",
+        "KMA context",
+        "offline backtest/user test"
+      ]
+    },
+    {
+      "id": "POLLUTION_LENS",
+      "codeReady": true,
+      "activationRequires": [
+        "Air/Fire actual observations",
+        "vector field evidence for transport",
+        "source attribution guard"
+      ]
+    },
+    {
+      "id": "PUBLIC_ACTION",
+      "codeReady": true,
+      "activationRequires": [
+        "official NGO source contracts",
+        "crawl rights/robots review",
+        "location precision verification"
+      ]
+    },
+    {
+      "id": "EARTH_MEMORY",
+      "codeReady": true,
+      "activationRequires": [
+        "historical archive population",
+        "feature scale calibration"
+      ]
+    },
+    {
+      "id": "FORECAST_CALIBRATION",
+      "codeReady": true,
+      "activationRequires": [
+        "actual predictions",
+        "ground truth",
+        "sample-size gate"
+      ]
+    },
+    {
+      "id": "PERSONAL_INTELLIGENCE",
+      "codeReady": true,
+      "activationRequires": [
+        "explicit user context",
+        "consent/RLS E2E",
+        "delete/export E2E"
+      ]
+    }
+  ]
+}

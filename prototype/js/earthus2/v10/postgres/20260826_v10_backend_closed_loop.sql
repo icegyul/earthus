@@ -1,0 +1,8 @@
+-- CONTRACT ONLY. Do not auto-apply to production.
+create table if not exists earthus_provider_registry_version (registry_version text primary key, registry_hash text not null, registry_json jsonb not null, approved_at timestamptz, created_at timestamptz not null default now());
+create table if not exists earthus_schema_registry (provider_id text not null, operation_id text not null, schema_version text not null, schema_hash text not null, schema_json jsonb not null, approved boolean not null default false, primary key(provider_id,operation_id,schema_version));
+create table if not exists earthus_job_lease (job_key text primary key, owner_id text not null, fencing_token bigint not null, expires_at timestamptz not null, updated_at timestamptz not null default now());
+create table if not exists earthus_runtime_probe (probe_id text primary key, route text not null, ok boolean not null, status integer, latency_ms integer, missing_fields jsonb, checked_at timestamptz not null);
+create table if not exists earthus_push_token (user_id uuid not null, device_id text not null, token_ciphertext text not null, platform text, status text not null, updated_at timestamptz not null, primary key(user_id,device_id));
+create table if not exists earthus_notification_receipt (notification_id text not null, token_ref text not null, provider text, status text not null, provider_message_id text, error_code text, occurred_at timestamptz not null, primary key(notification_id,token_ref,occurred_at));
+create table if not exists earthus_incident (incident_id text primary key, severity text not null, state text not null, summary text, opened_at timestamptz not null, resolved_at timestamptz, history jsonb not null default '[]'::jsonb);

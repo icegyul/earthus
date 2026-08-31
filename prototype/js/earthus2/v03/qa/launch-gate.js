@@ -1,0 +1,2 @@
+const STATE=new Set(['PASS','FAIL','UNKNOWN','SKIPPED']);
+export function compileLaunchGate(gates){const rows=(gates??[]).map(g=>{if(!g.id||!STATE.has(g.state))throw new TypeError('gate id/state invalid');return structuredClone(g);});const required=rows.filter(r=>r.required!==false);const failed=required.filter(r=>r.state==='FAIL'),unknown=required.filter(r=>r.state==='UNKNOWN');return{state:failed.length?'FAIL':unknown.length?'UNKNOWN':'PASS',failed:failed.map(x=>x.id),unknown:unknown.map(x=>x.id),gates:rows};}

@@ -1,0 +1,5 @@
+export function compileCompletionEvidence(input,{requireScreenshot=true,requirePerformance=true,requireDispose=true}={}){
+  const checks={usedEngineIds:Array.isArray(input?.usedEngineIds)&&input.usedEngineIds.length>0,usedAlgorithmIds:Array.isArray(input?.usedAlgorithmIds)&&input.usedAlgorithmIds.length>0,actualDataEvidence:input?.actualDataEvidence===true,runtimeInvocationEvidence:input?.runtimeInvocationEvidence===true,testsPass:input?.testsPass===true,browserOrDeviceEvidence:input?.browserOrDeviceEvidence===true,screenshot:!requireScreenshot||input?.screenshotEvidence===true,performance:!requirePerformance||input?.performanceEvidence===true,dispose:!requireDispose||input?.disposeEvidence===true,regression:input?.regressionEvidence===true,noDuplicateEngineEvidence:input?.noDuplicateEngineEvidence===true};
+  const failed=Object.entries(checks).filter(([,v])=>!v).map(([k])=>k);
+  return Object.freeze({status:failed.length?'NOT_DONE':'DONE_EVIDENCE_ACCEPTED',failed:Object.freeze(failed),checks:Object.freeze(checks),codeExistsAloneIsNotCompletion:true});
+}

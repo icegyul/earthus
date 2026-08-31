@@ -1,0 +1,1 @@
+export function makeAuditRecord({actorType='SYSTEM',action,resourceId,decision,reasonCodes=[],at=new Date().toISOString()}={}){if(!action||!decision)throw new TypeError('action and decision required');return Object.freeze({schemaVersion:'earthus.audit.v1',actorType,action,resourceId:resourceId??null,decision,reasonCodes:[...reasonCodes],at});}

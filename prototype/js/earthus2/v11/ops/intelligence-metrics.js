@@ -1,0 +1,1 @@
+export class IntelligenceMetrics {#c=new Map();inc(name,by=1){this.#c.set(name,(this.#c.get(name)||0)+by);}set(name,value){if(Number.isFinite(value))this.#c.set(name,value);}snapshot(){return Object.fromEntries([...this.#c.entries()].sort());}}

@@ -1,0 +1,1 @@
+export function attributeEngineCost(rows){const out={};for(const r of rows??[]){const id=r.engineId??'UNKNOWN';const cost=['computeUsd','storageUsd','egressUsd','requestUsd'].reduce((s,k)=>s+(Number(r[k])||0),0);out[id]=(out[id]??0)+cost;}return Object.fromEntries(Object.entries(out).sort((a,b)=>b[1]-a[1]));}

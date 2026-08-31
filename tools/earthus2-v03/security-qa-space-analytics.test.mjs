@@ -1,0 +1,24 @@
+import test from 'node:test'; import assert from 'node:assert/strict';
+import { redactUrl,redactText } from '../../prototype/js/earthus2/v03/security/redaction.js';
+import { TokenBucket } from '../../prototype/js/earthus2/v03/security/abuse-guard.js';
+import { minimizeEventPayload } from '../../prototype/js/earthus2/v03/security/privacy-minimization.js';
+import { injectFault } from '../../prototype/js/earthus2/v03/qa/fault-injection.js';
+import { compareSnapshots } from '../../prototype/js/earthus2/v03/qa/replay-regression.js';
+import { compileLaunchGate } from '../../prototype/js/earthus2/v03/qa/launch-gate.js';
+import { transitionLaunch,launchTrackProgress } from '../../prototype/js/earthus2/v03/space/launch-event.js';
+import { sanitizeTelemetry } from '../../prototype/js/earthus2/v03/analytics/telemetry.js';
+import { alertEffectiveness } from '../../prototype/js/earthus2/v03/analytics/alert-effectiveness.js';
+import { attributeEngineCost } from '../../prototype/js/earthus2/v03/analytics/cost-attribution.js';
+
+test('URL secret redacted',()=>assert.ok(redactUrl('https://x.test?a=1&serviceKey=abc').includes('%5BREDACTED%5D')));
+test('text secret redacted',()=>assert.equal(redactText('token abc',['abc']),'token [REDACTED]'));
+test('token bucket denies when empty',()=>{let t=0;const b=new TokenBucket({capacity:1,refillPerSecond:1,now:()=>t});assert.equal(b.consume().allowed,true);assert.equal(b.consume().allowed,false);});
+test('precise location omitted by default',()=>assert.equal(minimizeEventPayload({location:{lat:1,lon:2,regionId:'KR'}},{allowedKeys:[]}).location,undefined));
+test('fault injector creates stale record',()=>assert.equal(injectFault({x:1},{type:'STALE'}).observedAt,'2000-01-01T00:00:00Z'));
+test('replay comparator sees equal values',()=>assert.equal(compareSnapshots({x:1},{x:1}).pass,true));
+test('unknown required gate blocks pass',()=>assert.equal(compileLaunchGate([{id:'a',state:'PASS'},{id:'b',state:'UNKNOWN'}]).state,'UNKNOWN'));
+test('launch ascent requires evidence',()=>assert.throws(()=>transitionLaunch('COUNTDOWN','ASCENT'),/evidence/));
+test('launch progress absent without telemetry',()=>assert.equal(launchTrackProgress([{x:1},{x:2}],{}).completed,0));
+test('telemetry drops arbitrary field',()=>assert.equal(sanitizeTelemetry({event:'x',preciseLocation:'secret'}).preciseLocation,undefined));
+test('alert effectiveness calculates open rate',()=>assert.equal(alertEffectiveness([{status:'SENT'},{status:'SENT',openedAt:'x'}]).openRate,.5));
+test('cost attribution sums engine costs',()=>assert.equal(attributeEngineCost([{engineId:'A',computeUsd:1,egressUsd:2}]).A,3));

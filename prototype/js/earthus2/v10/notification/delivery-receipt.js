@@ -1,0 +1,2 @@
+export function recordDelivery({notificationId,tokenId,provider,status,providerMessageId=null,at=Date.now(),errorCode=null}={}){if(!notificationId||!tokenId)throw new Error('DELIVERY_IDS_REQUIRED');return {notificationId,tokenId,provider,status,providerMessageId,at,errorCode}}
+export function deliveryOutcome(receipts=[]){const ok=receipts.filter(x=>['ACCEPTED','DELIVERED','OPENED'].includes(x.status)).length,invalid=receipts.filter(x=>x.status==='INVALID_TOKEN').length;return {total:receipts.length,acceptedOrBetter:ok,invalidTokens:invalid}}

@@ -1,0 +1,21 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {newOutboxEvent,claimOutbox,recordDispatchResult,quarantineRecord,releaseQuarantine,planBackfill,prioritizeReplayJobs,apiOk,apiError,mapProviderError,newTraceId,childTrace,structuredLog,createSecretVaultAdapter,assertNoSecretValueInConfig,buildReleaseConfigSnapshot,compareReleaseSnapshots,evaluatePublishCandidate,promoteLastGoodPointer} from '../../prototype/js/earthus2/v07/index.js';
+
+test('outbox claims eligible events',()=>{const e=newOutboxEvent({id:'1',type:'X',payload:{},createdAt:0});const out=claimOutbox([e],{now:1});assert.equal(out[0].status,'CLAIMED');assert.equal(out[0].attempts,1)});
+test('safety outbox claims first',()=>{const a=newOutboxEvent({id:'a',type:'X',payload:{},createdAt:0});const b=newOutboxEvent({id:'b',type:'X',payload:{},createdAt:1,priority:'SAFETY'});const out=claimOutbox([a,b],{now:2,limit:1});assert.equal(out.find(x=>x.id==='b').status,'CLAIMED')});
+test('outbox retry then delivered',()=>{let e=claimOutbox([newOutboxEvent({id:'1',type:'X',payload:{},createdAt:0})],{now:1})[0];e=recordDispatchResult(e,{ok:false,retryable:true,now:2,delayMs:10});assert.equal(e.status,'RETRY');e=claimOutbox([e],{now:12})[0];e=recordDispatchResult(e,{ok:true,now:13});assert.equal(e.status,'DELIVERED')});
+test('outbox finite retries become dead',()=>{let e={...newOutboxEvent({id:'1',type:'X',payload:{}}),status:'CLAIMED',attempts:8};assert.equal(recordDispatchResult(e,{ok:false,retryable:true,maxAttempts:8}).status,'DEAD')});
+test('quarantine requires evidence to release',()=>{const q=quarantineRecord({id:'q',providerId:'p',reason:'SCHEMA_BREAKING'});assert.throws(()=>releaseQuarantine(q,{}),/EVIDENCE_REQUIRED/);assert.equal(releaseQuarantine(q,{evidence:'contract-v2',validator:'alice'}).status,'RELEASED_FOR_REPLAY')});
+test('backfill bounded chunks',()=>{const c=planBackfill({startAt:'2026-01-01',endAt:'2026-01-04',chunkMs:86400000});assert.equal(c.length,3)});
+test('backfill too large fails',()=>{assert.throws(()=>planBackfill({startAt:'2026-01-01',endAt:'2026-02-01',chunkMs:86400000,maxChunks:2}),/BACKFILL_TOO_LARGE/)});
+test('replay safety priority',()=>{const x=prioritizeReplayJobs([{priority:'RESEARCH',startAt:'2026-01-01'},{priority:'SAFETY',startAt:'2026-01-02'}]);assert.equal(x[0].priority,'SAFETY')});
+test('api success carries metadata',()=>{assert.equal(apiOk({x:1},{traceId:'t'}).meta.traceId,'t')});
+test('provider 429 is typed retryable',()=>{const e=mapProviderError({status:429,traceId:'t'});assert.equal(e.error.code,'RATE_LIMITED');assert.equal(e.error.retryable,true)});
+test('api error redacts secret-looking value',()=>{const e=apiError({message:'token=abc123 failed'});assert.doesNotMatch(e.error.message,/abc123/)});
+test('trace ids and child span',()=>{const t=newTraceId();assert.match(t,/^etr-/);assert.equal(childTrace(t,'fetch').traceId,t)});
+test('structured logs redact secret fields',()=>{const l=structuredLog('info','x',{apiKey:'secret',nested:{authorization:'bearer x'}});assert.equal(l.apiKey,'[REDACTED]');assert.equal(l.nested.authorization,'[REDACTED]')});
+test('secret vault fail closed',async()=>{const v=createSecretVaultAdapter({resolve:async()=>null});await assert.rejects(()=>v.get('KMA_KEY'),/SECRET_MISSING/)});
+test('plaintext secret config forbidden',()=>{assert.throws(()=>assertNoSecretValueInConfig({apiKey:'abc'}),/PLAINTEXT_SECRET_FORBIDDEN/);assert.equal(assertNoSecretValueInConfig({apiKey:'env:KMA_KEY'}),true)});
+test('release snapshot hash stable',async()=>{const a=await buildReleaseConfigSnapshot({b:2,a:1},{releaseId:'r'});const b=await buildReleaseConfigSnapshot({a:1,b:2},{releaseId:'r2'});assert.equal(a.sha256,b.sha256);assert.equal(compareReleaseSnapshots(a,b).same,true)});
+test('publish candidate blocks breaking schema',()=>{assert.equal(evaluatePublishCandidate({rawLinkOk:true,schemaSeverity:'BREAKING',normalizedRef:'x'}).allow,false)});
+test('publish pointer retains previous',()=>{const p=promoteLastGoodPointer({key:'old',version:'1'},{key:'new',version:'2'},{at:1});assert.equal(p.previous.key,'old');assert.equal(p.rollbackSafe,true)});

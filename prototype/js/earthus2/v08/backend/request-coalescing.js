@@ -1,0 +1,1 @@
+export class SingleFlight{constructor(){this.inflight=new Map()} async run(key,fn){if(this.inflight.has(key))return this.inflight.get(key);const p=Promise.resolve().then(fn).finally(()=>this.inflight.delete(key));this.inflight.set(key,p);return p} size(){return this.inflight.size}}

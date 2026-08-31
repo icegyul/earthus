@@ -1,0 +1,179 @@
+# EARTHUS 2.0 ALGORITHM CATALOG v0.8
+
+- Total: **172 Algorithm / Contract**
+- Focus: Backend Reliability · Query Plane · Recovery
+
+| ID | Name | Domain | Priority | Module | Status |
+|---|---|---|---|---|---|
+| ALG-ANA-001 | Alert effectiveness metrics | Analytics | P1 | analytics/alert-effectiveness.js | IMPLEMENTED_FOUNDATION |
+| ALG-ANA-002 | Engine cost attribution | Analytics | P1 | analytics/cost-attribution.js | IMPLEMENTED_FOUNDATION |
+| ALG-CLD-001 | Satellite product/tile source score | Cloud | P1 | cloud/satellite-product-broker.js | IMPLEMENTED_FOUNDATION |
+| ALG-CLD-002 | Cloud-top retrieval | Cloud | P1 | cloud/cloud-state.js | IMPLEMENTED_FOUNDATION |
+| ALG-CLD-003 | Cloud-base retrieval | Cloud | P1 | cloud/cloud-state.js | IMPLEMENTED_FOUNDATION |
+| ALG-CLD-004 | Multilayer detection | Cloud | P1 | cloud/cloud-state.js | IMPLEMENTED_FOUNDATION |
+| ALG-CLD-005 | Cloud density profile | Cloud | P1 | cloud/cloud-state.js | IMPLEMENTED_FOUNDATION |
+| ALG-CLD-006 | Observation/model/ensemble horizon blend | Cloud | P1 | cloud/cloud-forecast.js | IMPLEMENTED_FOUNDATION |
+| ALG-CLD-007 | Cloud uncertainty visual mapping | Cloud | P1 | cloud/cloud-render-policy.js | IMPLEMENTED_FOUNDATION |
+| ALG-CLD-008 | Procedural cloud detail budget | Cloud | P2 | cloud/procedural-detail.js | IMPLEMENTED_FOUNDATION |
+| ALG-CORE-001 | Canonical signal fingerprint | Core | P0 | core/canonical-signal.js | IMPLEMENTED_FOUNDATION |
+| ALG-CORE-002 | Cross-domain confidence | Core | P1 | core/confidence.js | IMPLEMENTED_FOUNDATION |
+| ALG-CORE-003 | Truth budget | Core | P0 | core/truth-budget.js | IMPLEMENTED_FOUNDATION |
+| ALG-CORE-004 | Trust ledger status | Core | P1 | core/trust-ledger.js | IMPLEMENTED_FOUNDATION |
+| ALG-CORE-005 | Device-network-battery adaptive quality | Core | P0 | core/device-network-governor.js | IMPLEMENTED_FOUNDATION |
+| ALG-CORE-006 | Planet execution plan compiler | Core | P0 | core/planet-intelligence-orchestrator.js | IMPLEMENTED_FOUNDATION |
+| ALG-DAT-001 | Bilinear grid resampling | Data Plane | P1 | data/reprojection-resampling.js | IMPLEMENTED_FOUNDATION |
+| ALG-DAT-002 | Canonical time-slice selection | Data Plane | P1 | data/time-slice.js | IMPLEMENTED_FOUNDATION |
+| ALG-DAT-003 | Bounded scalar quantization | Data Plane | P1 | data/tile-compiler.js | IMPLEMENTED_FOUNDATION |
+| ALG-DAT-004 | Revision fingerprint and classification | Data Plane | P1 | data/revision-engine.js | IMPLEMENTED_FOUNDATION |
+| ALG-DAT-005 | Adaptive frame prefetch | Data Plane | P1 | data/adaptive-prefetch.js | IMPLEMENTED_FOUNDATION |
+| ALG-DAT-006 | Ambiguity-aware spatial identity resolution | Data | P1 | data/spatial-identity-resolution.js | IMPLEMENTED_FOUNDATION |
+| ALG-DAT-007 | Ground-truth learning example builder | Data | P1 | data/learning-data-factory.js | IMPLEMENTED_FOUNDATION |
+| ALG-GEO-001 | Antimeridian-safe bounds | Geo | P0 | geo/geospatial-reference.js | IMPLEMENTED_FOUNDATION |
+| ALG-GEO-002 | Country camera fit | Geo | P0 | geo/country-focus.js | IMPLEMENTED_FOUNDATION |
+| ALG-GEO-003 | Terrain source score | Geo | P0 | geo/terrain-source-broker.js | IMPLEMENTED_FOUNDATION |
+| ALG-GEO-004 | Screen-space terrain LOD | Geo | P0 | geo/terrain-lod.js | IMPLEMENTED_FOUNDATION |
+| ALG-GEO-005 | Terrain/data morph | Geo | P1 | geo/terrain-data-morph.js | IMPLEMENTED_FOUNDATION |
+| ALG-GEO-006 | Trench Level-2 camera plan | Geo | P2 | geo/trench-camera.js | IMPLEMENTED_FOUNDATION |
+| ALG-HAZ-001 | Official warning precedence merge | Hazard | P0 | hazards/warning-engine.js | IMPLEMENTED_FOUNDATION |
+| ALG-HAZ-002 | Hypocenter depth visual mapping | Hazard | P1 | hazards/earthquake-depth.js | IMPLEMENTED_FOUNDATION |
+| ALG-HAZ-003 | Seismic context clustering | Hazard | P1 | hazards/earthquake-depth.js | IMPLEMENTED_FOUNDATION |
+| ALG-HAZ-004 | Lightning centroid tracking | Hazard | P1 | hazards/lightning-track.js | IMPLEMENTED_FOUNDATION |
+| ALG-HAZ-005 | Wildfire hotspot clustering | Hazard | P1 | hazards/wildfire-smoke.js | IMPLEMENTED_FOUNDATION |
+| ALG-HAZ-006 | Cyclone agency resolver | Hazard | P1 | hazards/cyclone-resolver.js | IMPLEMENTED_FOUNDATION |
+| ALG-HAZ-007 | Cross-agency hazard event fusion | Hazard | P1 | hazards/event-fusion.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-001 | Density | Human Flow | P1 | human-flow/algorithms.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-002 | Calibrated crowd index | Human Flow | P1 | human-flow/algorithms.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-003 | Persistent trend | Human Flow | P1 | human-flow/algorithms.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-004 | Evidence-limited scalar flow | Human Flow | P1 | human-flow/algorithms.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-005 | Explainable crowd forecast v0 | Human Flow | P1 | human-flow/algorithms.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-006 | Robust anomaly | Human Flow | P1 | human-flow/algorithms.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-007 | Validated capacity pressure | Human Flow | P1 | human-flow/algorithms.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-008 | Risk hard gate | Human Flow | P1 | human-flow/algorithms.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-009 | Shortest path with status/capacity penalties | Human Flow | P1 | human-flow/spatial-graph.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-010 | Forecast verification metrics | Human Flow | P1 | human-flow/forecast-lifecycle.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-011 | Champion/challenger | ModelOps | P1 | human-flow/forecast-lifecycle.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-012 | Spatiotemporal snapshot selection | Human Flow | P1 | human-flow/spatiotemporal-fusion.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-013 | Spatial cell provider mapping | Human Flow | P1 | human-flow/spatial-cell-registry.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-014 | Digital twin capacity provenance gate | Human Flow | P2 | human-flow/digital-twin.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-015 | Scenario isolation | Human Flow | P2 | human-flow/scenario.js | IMPLEMENTED_FOUNDATION |
+| ALG-HYD-001 | SCS runoff foundation | Hydrology | P2 | hydrology/runoff-routing.js | IMPLEMENTED_FOUNDATION |
+| ALG-HYD-002 | Linear reservoir routing foundation | Hydrology | P2 | hydrology/runoff-routing.js | IMPLEMENTED_FOUNDATION |
+| ALG-HYD-003 | River visual semantic LOD | Hydrology | P1 | hydrology/river-visual-network.js | IMPLEMENTED_FOUNDATION |
+| ALG-INT-001 | Cross-domain Pearson association | Intelligence | P1 | intelligence/correlation.js | IMPLEMENTED_FOUNDATION |
+| ALG-INT-002 | Analog feature distance | Intelligence | P1 | intelligence/analog-retrieval.js | IMPLEMENTED_FOUNDATION |
+| ALG-INT-003 | Regime classifier foundation | Intelligence | P1 | intelligence/regime-detector.js | IMPLEMENTED_FOUNDATION |
+| ALG-INT-004 | Route exposure integration | Intelligence | P1 | intelligence/route-exposure.js | IMPLEMENTED_FOUNDATION |
+| ALG-INT-005 | Decision contribution ranking | Intelligence | P1 | intelligence/decision-explanation.js | IMPLEMENTED_FOUNDATION |
+| ALG-OCN-001 | Ocean vector magnitude/direction | Ocean | P1 | ocean/ocean-state.js | IMPLEMENTED_FOUNDATION |
+| ALG-OCN-002 | Wave visual exaggeration | Ocean | P1 | ocean/wave-engine.js | IMPLEMENTED_FOUNDATION |
+| ALG-OCN-003 | Deep-water swell ETA foundation | Ocean | P1 | ocean/swell-arrival.js | IMPLEMENTED_FOUNDATION |
+| ALG-OCN-004 | Sea-level residual | Ocean | P1 | ocean/tide-sea-level.js | IMPLEMENTED_FOUNDATION |
+| ALG-OCN-005 | SST front gradient | Ocean | P1 | ocean/sst-features.js | IMPLEMENTED_FOUNDATION |
+| ALG-OCN-006 | Coastal exposure score | Ocean | P1 | ocean/coastal-exposure.js | IMPLEMENTED_FOUNDATION |
+| ALG-OPS-001 | Provider health state | Operations | P0 | ops/provider-health.js | IMPLEMENTED_FOUNDATION |
+| ALG-OPS-002 | Exponential backoff | Operations | P1 | ops/provider-health.js | IMPLEMENTED_FOUNDATION |
+| ALG-OPS-003 | Cost-to-value schedule | Operations | P1 | ops/cost-observability.js | IMPLEMENTED_FOUNDATION |
+| ALG-OPS-004 | Observation gap lens | Operations | P1 | ops/observation-gap.js | IMPLEMENTED_FOUNDATION |
+| ALG-OPS-005 | Fail-soft scene selection | Operations | P1 | core/fail-soft-scene.js | IMPLEMENTED_FOUNDATION |
+| ALG-OPS-006 | Job DAG topological execution | Ops | P1 | ops/job-dag.js | IMPLEMENTED_FOUNDATION |
+| ALG-OPS-007 | Dead-letter recovery classification | Ops | P1 | ops/dead-letter-recovery.js | IMPLEMENTED_FOUNDATION |
+| ALG-OPS-008 | Freshness SLO state | Ops | P1 | ops/freshness-slo.js | IMPLEMENTED_FOUNDATION |
+| ALG-OPS-009 | Safe rollback planner | Ops | P1 | ops/rollback-engine.js | IMPLEMENTED_FOUNDATION |
+| ALG-OPS-010 | Performance acceptance compiler | Ops | P1 | ops/performance-lab.js | IMPLEMENTED_FOUNDATION |
+| ALG-OPS-011 | New-engine reuse enforcement | Ops | P0 | ops/engine-reuse-enforcer.js | IMPLEMENTED_FOUNDATION |
+| ALG-PAY-001 | Entitlement resolution | Paid | P0 | paid/entitlement.js | IMPLEMENTED_FOUNDATION |
+| ALG-PAY-002 | Country readiness | Paid | P1 | paid/country-unlock.js | IMPLEMENTED_FOUNDATION |
+| ALG-PAY-003 | Offline trip pack selection | Paid | VNEXT | paid/offline-trip-pack.js | IMPLEMENTED_FOUNDATION |
+| ALG-PAY-004 | Personal context minimization | Paid | P1 | paid/personal-context.js | IMPLEMENTED_FOUNDATION |
+| ALG-PAY-005 | Comparison semantic normalization | Paid | P1 | paid/comparison.js | IMPLEMENTED_FOUNDATION |
+| ALG-PAY-006 | Scenario entitlement gate | Paid | P2 | paid/scenario.js | IMPLEMENTED_FOUNDATION |
+| ALG-PAY-007 | Subscription state transition | Paid | P1 | paid/subscription-state.js | IMPLEMENTED_FOUNDATION |
+| ALG-PAY-008 | Premium analysis cache key | Paid | P1 | paid/premium-cache.js | IMPLEMENTED_FOUNDATION |
+| ALG-QA-001 | Required launch-gate compilation | Quality | P0 | qa/launch-gate.js | IMPLEMENTED_FOUNDATION |
+| ALG-QA-002 | Completion evidence gate | Quality | P0 | qa/completion-evidence.js | IMPLEMENTED_FOUNDATION |
+| ALG-SEC-001 | Secret query redaction | Security | P0 | security/redaction.js | IMPLEMENTED_FOUNDATION |
+| ALG-SEC-002 | Token-bucket abuse control | Security | P1 | security/abuse-guard.js | IMPLEMENTED_FOUNDATION |
+| ALG-SPC-001 | Launch lifecycle state machine | Space | P2 | space/launch-event.js | IMPLEMENTED_FOUNDATION |
+| ALG-STO-001 | Archive deletion proof | Storage | P1 | storage/archive-verification.js | IMPLEMENTED_FOUNDATION |
+| ALG-STO-002 | Cloud delta keyframe plan | Storage | P1 | storage/delta-pack.js | IMPLEMENTED_FOUNDATION |
+| ALG-STO-003 | Replay rehydration compatibility | Storage | P2 | storage/replay-rehydration.js | IMPLEMENTED_FOUNDATION |
+| ALG-STO-004 | Archive package manifest plan | Storage | P1 | storage/archive-packager.js | IMPLEMENTED_FOUNDATION |
+| ALG-STO-005 | NAS outbound pull state machine | Storage | P1 | storage/nas-archive-agent.js | IMPLEMENTED_FOUNDATION |
+| ALG-STO-006 | Archive catalog time lookup | Storage | P1 | storage/archive-catalog.js | IMPLEMENTED_FOUNDATION |
+| ALG-VIS-001 | Bounded logarithmic tower mapping | Visual | P0 | visual/tower.js | IMPLEMENTED_FOUNDATION |
+| ALG-VIS-002 | Mass-preserving estimated distribution | Visual | P1 | visual/tower.js | IMPLEMENTED_FOUNDATION |
+| ALG-VIS-003 | Bilinear vector sampling | Visual | P1 | visual/flow.js | IMPLEMENTED_FOUNDATION |
+| ALG-VIS-004 | Adaptive volume render policy | Visual | P1 | visual/volume.js | IMPLEMENTED_FOUNDATION |
+| ALG-VIS-010 | Semantic label budget | Visual | P1 | visual/label-budget.js | IMPLEMENTED_FOUNDATION |
+| ALG-VIS-011 | Semantic material grammar | Visual | P1 | visual/material-grammar.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-001 | Skill-weighted model ensemble | Weather | P1 | weather/ensemble.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-002 | Local bias correction | Weather | P1 | weather/ensemble.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-003 | Semi-Lagrangian nowcast | Weather | P1 | weather/nowcast.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-004 | Evidence-backed claim gate | Weather | P1 | weather/evidence-graph.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-005 | Precipitation observed blend | Weather | P1 | weather/precipitation.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-006 | Rain/snow phase foundation | Weather | P1 | weather/precipitation.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-007 | Forecast gap / Early Signal | Weather | P1 | weather/forecast-gap.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-008 | Moisture source contribution | Weather | P1 | weather/moisture-attribution.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-009 | Weather detail section compiler | Weather | P1 | weather/weather-detail-ia.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-010 | Weather truth-class fusion | Weather | P1 | weather/weather-spatiotemporal-fusion.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-011 | Weather event evidence detector | Weather | P1 | weather/weather-event-detector.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-012 | Cyclone remnant interaction support score | Weather | P1 | weather/cyclone-remnant-interaction.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-013 | Weather action hard-gate ranking | Weather | P1 | weather/weather-action-intelligence.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-014 | Weather forecast verification metrics | Weather | P1 | weather/weather-modelops.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-015 | Ensemble scenario medoid clustering | Weather | P1 | weather/forecast-scenario-cluster.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-016 | Official-vs-derived forecast reconciliation | Weather | P1 | weather/forecast-reconciliation.js | IMPLEMENTED_FOUNDATION |
+| ALG-HF-016 | Watch notification decision with safety priority, confidence, cooldown and dedupe | Human Flow/Action | P1 | human-flow/watch-notification-decision.js | IMPLEMENTED_FOUNDATION |
+| ALG-WX-017 | Observation quality/provenance state and confidence cap | Weather/Data Quality | P1 | weather/observation-quality-provenance.js | IMPLEMENTED_FOUNDATION |
+| ALG-OPS-012 | Source operation governance matrix for paid use | Operations/Governance | P1 | ops/source-governance-paid-use.js | IMPLEMENTED_FOUNDATION |
+| ALG-PAY-009 | Evidence-linked report/API delivery authorization | Paid/Business | P2 | paid/report-api-engine.js | IMPLEMENTED_FOUNDATION |
+| ALG-VIS-012 | Truth-preserving tower spatial mode and stable pool | Visual | P0 | visual/tower-runtime-v2.js | IMPLEMENTED_FOUNDATION |
+| ALG-ACT-001 | Public action source trust resolution | Earth Pulse/Public Action | P0 | action/source-registry.js | IMPLEMENTED_FOUNDATION |
+| ALG-ACT-002 | Public action normalization and classification | Earth Pulse/Public Action | P0 | action/normalization.js | IMPLEMENTED_FOUNDATION |
+| ALG-ACT-003 | Public action status resolution | Earth Pulse/Public Action | P0 | action/status-resolver.js | IMPLEMENTED_FOUNDATION |
+| ALG-ACT-004 | Public action location precision guard | Earth Pulse/Public Action | P0 | action/location-precision.js | IMPLEMENTED_FOUNDATION |
+| ALG-ACT-005 | Public action truth classification | Earth Pulse/Public Action | P0 | action/trust-verification.js | IMPLEMENTED_FOUNDATION |
+| ALG-PUL-001 | Earth Pulse priority with safety override | Earth Pulse | P0 | pulse/earth-pulse-orchestrator.js | IMPLEMENTED_FOUNDATION |
+| ALG-PUL-002 | Pulse scene beacon budget and LOD | Earth Pulse | P0 | pulse/pulse-scene-budget.js | IMPLEMENTED_FOUNDATION |
+| ALG-NEWS-001 | News-to-EarthEvent evidence link | News/Earth Pulse | P0 | news/news-event-linker.js | IMPLEMENTED_FOUNDATION |
+| ALG-TRV-001 | Tourism discovery score with safety gates | Tourism Intelligence | P0 | tourism/discovery.js | IMPLEMENTED_FOUNDATION |
+| ALG-TRV-002 | Travel context reason composition | Tourism Intelligence | P0 | tourism/travel-context.js | IMPLEMENTED_FOUNDATION |
+| ALG-ENV-001 | Pollution evidence state fusion | Environment Intelligence | P0 | environment/pollution-lens.js | IMPLEMENTED_FOUNDATION |
+| ALG-ENV-002 | Pollution transport proof gate | Environment Intelligence | P0 | environment/pollution-lens.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-001 | Legal ingestion-run transition state machine | Backend/Data Plane | P0 | backend/ingestion-run-ledger.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-002 | Raw artifact SHA-256 receipt | Backend/Data Plane | P0 | backend/raw-artifact-store.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-003 | Raw-to-normalized provenance link validation | Backend/Data Plane | P0 | backend/raw-artifact-store.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-004 | Schema drift severity classifier | Backend/Data Plane | P0 | backend/schema-drift.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-005 | Monotonic provider watermark | Backend/Data Plane | P0 | backend/watermark-revision.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-006 | Revision supersession resolver | Backend/Data Plane | P0 | backend/watermark-revision.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-007 | Canonical idempotency-key compiler | Backend/Data Plane | P0 | backend/idempotency-dedup.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-008 | Duplicate versus identity-collision detector | Backend/Data Plane | P0 | backend/idempotency-dedup.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-009 | Provider quota reserve gate | Backend/Data Plane | P0 | backend/provider-budget.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-010 | Conditional HTTP fetch decision | Backend/Data Plane | P1 | backend/conditional-fetch.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-011 | Durable outbox lease and dispatch | Backend/Operations | P0 | backend/outbox-dispatch.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-012 | Quarantine evidence release gate | Backend/Operations | P0 | backend/quarantine.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-013 | Bounded backfill chunk planner | Backend/Operations | P1 | backend/backfill-replay.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-014 | Replay priority ordering | Backend/Operations | P1 | backend/backfill-replay.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-015 | Canonical EarthEvent merge evidence | Backend/Event Intelligence | P0 | backend/canonical-event-store.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-016 | Event lineage acyclic edge insertion | Backend/Event Intelligence | P0 | backend/event-lineage.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-017 | Safe Internal API error mapping | Backend/API | P0 | backend/api-envelope.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-018 | Trace/span correlation and structured log sanitation | Backend/Operations | P0 | backend/trace-correlation.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-019 | Server secret reference validation | Backend/Security | P0 | backend/secret-vault-adapter.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-020 | Release config canonical hash | Backend/Release | P1 | backend/release-config-snapshot.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-021 | Atomic last-good publish gate | Backend/Data Plane | P0 | backend/atomic-publish.js | IMPLEMENTED_FOUNDATION |
+| ALG-NEWS-002 | Governed news-source fetch policy | News/Backend | P0 | news/source-registry.js | IMPLEMENTED_FOUNDATION |
+| ALG-NEWS-003 | Bounded news normalization and clustering | News/Backend | P0 | news/ingestion-cluster.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-022 | Provider registry compile validation | Backend/Governance | P0 | backend/provider-registry-compiler.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-023 | Provider registry drift diff | Backend/Governance | P0 | backend/provider-registry-compiler.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-024 | Immutable schema version/hash registration | Backend/Data Plane | P0 | backend/versioned-schema-registry.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-025 | Schema publish approval gate | Backend/Data Plane | P0 | backend/versioned-schema-registry.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-026 | Distributed lease fencing | Backend/Operations | P0 | backend/distributed-job-lease.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-027 | Cross-source snapshot skew gate | Backend/Data Plane | P0 | backend/snapshot-consistency.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-028 | Geo-temporal bounded query | Backend/Query Plane | P0 | backend/geotemporal-query.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-029 | SingleFlight request coalescing | Backend/Query Plane | P0 | backend/request-coalescing.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-030 | Data-class cache policy resolution | Backend/Query Plane | P0 | backend/cache-policy.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-031 | Synthetic route acceptance probe | Backend/Operations | P0 | backend/synthetic-runtime-probe.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-032 | Migration destructive-change detector | Backend/Release | P0 | backend/migration-compatibility-gate.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-033 | Restore drill manifest verification | Backend/Recovery | P1 | backend/restore-drill-verifier.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-034 | Query resource budget gate | Backend/Query Plane | P0 | backend/query-budget-guard.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-035 | Latest canonical read-model materialization | Backend/Query Plane | P1 | backend/read-model-builder.js | IMPLEMENTED_FOUNDATION |
+| ALG-BCK-036 | Cache freshness predicate | Backend/Query Plane | P0 | backend/cache-policy.js | IMPLEMENTED_FOUNDATION |

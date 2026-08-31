@@ -1,0 +1,3 @@
+import { fnv1a64, stableStringify } from '../../v02/core/math.js';
+export function premiumCacheKey({userScope='ANON',feature,countryId='GLOBAL',context,engineVersions={}}){ if(!feature) throw new TypeError('feature required'); return `premium:${feature}:${countryId}:${fnv1a64(stableStringify({userScope,context,engineVersions}))}`; }
+export class PremiumCache { #rows=new Map(); put(key,value,{ttlSec=300,nowMs=Date.now()}={}){this.#rows.set(key,{value:structuredClone(value),expires:nowMs+ttlSec*1000});} get(key,{nowMs=Date.now()}={}){const r=this.#rows.get(key);if(!r||r.expires<=nowMs){this.#rows.delete(key);return null;}return structuredClone(r.value);} delete(key){return this.#rows.delete(key);} }

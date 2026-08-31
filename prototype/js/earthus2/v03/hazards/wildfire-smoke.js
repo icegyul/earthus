@@ -1,0 +1,5 @@
+function degKm(a,b){const dx=(a.lon-b.lon)*Math.cos(((a.lat+b.lat)/2)*Math.PI/180),dy=a.lat-b.lat;return Math.hypot(dx,dy)*111;}
+export function clusterHotspots(points,{radiusKm=10,maxHours=12}={}){
+  const out=[]; for(const p of points??[]){let c=out.find(c=>degKm(p,c.anchor)<=radiusKm&&Math.abs(Date.parse(p.at)-Date.parse(c.anchor.at))<=maxHours*3600000);if(!c){c={anchor:p,points:[]};out.push(c);}c.points.push(p);}return out.map((c,i)=>({fireClusterId:`fire-${i+1}`,count:c.points.length,centroid:{lat:c.points.reduce((s,p)=>s+p.lat,0)/c.points.length,lon:c.points.reduce((s,p)=>s+p.lon,0)/c.points.length},meaning:'HOTSPOT_CLUSTER_NOT_BURN_PERIMETER'}));
+}
+export function smokeRouteExposure(samples){const valid=(samples??[]).filter(s=>Number.isFinite(s.concentration)&&Number.isFinite(s.segmentKm));const dose=valid.reduce((sum,s)=>sum+s.concentration*s.segmentKm,0);return {weightedExposure:dose,totalKm:valid.reduce((s,x)=>s+x.segmentKm,0),meaning:'MODEL_OR_OBS_EXPOSURE_INDEX_NOT_MEDICAL_DOSE'};}

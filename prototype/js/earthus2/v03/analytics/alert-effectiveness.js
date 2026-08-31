@@ -1,0 +1,1 @@
+export function alertEffectiveness(rows){const n=(status)=>rows.filter(r=>r.status===status||r[status.toLowerCase()+'At']).length;const sent=n('SENT'),opened=n('OPENED'),acted=rows.filter(r=>r.actionAt).length;return{sent,opened,acted,openRate:sent?opened/sent:null,actionRate:sent?acted/sent:null};}

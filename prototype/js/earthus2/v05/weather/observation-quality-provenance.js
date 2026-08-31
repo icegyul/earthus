@@ -1,0 +1,11 @@
+const STATES=new Set(['LIVE','DEGRADED','STALE','UNAVAILABLE']);
+function ageSec(a,n){a=Date.parse(a);n=Date.parse(n);return Number.isFinite(a)&&Number.isFinite(n)?Math.max(0,(n-a)/1000):Infinity}
+export function evaluateObservationQuality(input){
+ if(!input?.sourceId)throw new TypeError('sourceId is required');const now=input.nowIso??new Date().toISOString();const sla=Number.isFinite(input.freshnessSec)?Math.max(1,input.freshnessSec):900;const age=ageSec(input.observedAt,now);const coverage=Number.isFinite(input.coverage)?Math.max(0,Math.min(1,input.coverage)):0;const schemaOk=input.schemaOk!==false,geoOk=input.geolocationOk!==false,rightsOk=input.displayRightsAllowed!==false;let state='LIVE';const reasons=[];
+ if(!rightsOk||!input.observedAt||input.available===false){state='UNAVAILABLE';reasons.push(!rightsOk?'RIGHTS_BLOCKED':'SOURCE_UNAVAILABLE')}
+ else if(age>sla*4){state='STALE';reasons.push('FRESHNESS_EXCEEDED')}
+ else if(age>sla||coverage<.8||!schemaOk||!geoOk||(input.qualityFlags??[]).length){state='DEGRADED';if(age>sla)reasons.push('AGING');if(coverage<.8)reasons.push('LOW_COVERAGE');if(!schemaOk)reasons.push('SCHEMA_DRIFT');if(!geoOk)reasons.push('GEOLOCATION_QUALITY');if((input.qualityFlags??[]).length)reasons.push('SOURCE_FLAGS')}
+ const freshness=Number.isFinite(age)?Math.max(0,1-age/(sla*4)):0;const cap=state==='UNAVAILABLE'?0:state==='STALE'?.25:state==='DEGRADED'?.65:.95;const score=Math.max(0,Math.min(1,freshness*.35+coverage*.3+(schemaOk?.15:0)+(geoOk?.1:0)+(input.stationQcPassed===false?0:.1)));
+ return Object.freeze({state,sourceId:input.sourceId,observedAt:input.observedAt??null,receivedAt:input.receivedAt??null,ageSeconds:Number.isFinite(age)?age:null,coverage,qualityScore:score,confidenceCap:Math.min(cap,score),reasons:[...new Set(reasons)],provenance:Object.freeze({endpointId:input.endpointId??null,schemaVersion:input.schemaVersion??null,processorVersion:input.processorVersion??null,rawHash:input.rawHash??null,rightsClass:input.rightsClass??null,evidenceKind:input.evidenceKind??'OBSERVED'})});
+}
+export function capDerivedConfidence(raw,quality){if(!quality||!STATES.has(quality.state))throw new TypeError('quality result required');return Math.min(Math.max(0,Number(raw)||0),quality.confidenceCap)}

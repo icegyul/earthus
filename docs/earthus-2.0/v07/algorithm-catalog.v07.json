@@ -1,0 +1,3106 @@
+{
+  "schemaVersion": "0.7",
+  "generatedFrom": "EARTHUS 2.0 Engine Foundation v0.7 Backend Data Plane Production Foundation",
+  "algorithms": [
+    {
+      "id": "ALG-ANA-001",
+      "name": "Alert effectiveness metrics",
+      "domain": "Analytics",
+      "priority": "P1",
+      "module": "analytics/alert-effectiveness.js",
+      "formula": "opened/sent and acted/sent",
+      "inputs": [
+        "notification events"
+      ],
+      "outputs": [
+        "open rate",
+        "action rate"
+      ],
+      "guardrails": [
+        "Delivery/open/action states are not inferred"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-ANA-002",
+      "name": "Engine cost attribution",
+      "domain": "Analytics",
+      "priority": "P1",
+      "module": "analytics/cost-attribution.js",
+      "formula": "sum compute+storage+egress+request cost by engine",
+      "inputs": [
+        "cost rows"
+      ],
+      "outputs": [
+        "engine cost map"
+      ],
+      "guardrails": [
+        "Safety collection cannot be disabled solely by cost"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-CLD-001",
+      "name": "Satellite product/tile source score",
+      "domain": "Cloud",
+      "priority": "P1",
+      "module": "cloud/satellite-product-broker.js",
+      "formula": "regional preference + freshness + resolution + angle + time + channel + parallax + reliability + cost",
+      "inputs": [
+        "satellite products/tile/time"
+      ],
+      "outputs": [
+        "primary/secondary/calibration"
+      ],
+      "guardrails": [
+        "Eligibility gates for rights, health, day/night and missing tiles"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-CLD-002",
+      "name": "Cloud-top retrieval",
+      "domain": "Cloud",
+      "priority": "P1",
+      "module": "cloud/cloud-state.js",
+      "formula": "argmin_z |T_profile(z)-BT_IR| + correction/uncertainty",
+      "inputs": [
+        "IR brightness temp",
+        "NWP profile"
+      ],
+      "outputs": [
+        "top height + uncertainty"
+      ],
+      "guardrails": [
+        "Parallax and limb flags"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-CLD-003",
+      "name": "Cloud-base retrieval",
+      "domain": "Cloud",
+      "priority": "P1",
+      "module": "cloud/cloud-state.js",
+      "formula": "first persistent RH/cloud-fraction layer, blended with LCL or ceilometer",
+      "inputs": [
+        "RH/cloud profile",
+        "LCL",
+        "ceilometer"
+      ],
+      "outputs": [
+        "base height + state"
+      ],
+      "guardrails": [
+        "Estimated unless directly observed"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-CLD-004",
+      "name": "Multilayer detection",
+      "domain": "Cloud",
+      "priority": "P1",
+      "module": "cloud/cloud-state.js",
+      "formula": "persistent cloud-fraction intervals above threshold",
+      "inputs": [
+        "vertical cloud profile"
+      ],
+      "outputs": [
+        "layers/multilayer flag"
+      ],
+      "guardrails": [
+        "Thin/ambiguous layers retain flags"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-CLD-005",
+      "name": "Cloud density profile",
+      "domain": "Cloud",
+      "priority": "P1",
+      "module": "cloud/cloud-state.js",
+      "formula": "weighted cloud fraction + RH + optical depth + mask + condensate - uncertainty",
+      "inputs": [
+        "layer variables"
+      ],
+      "outputs": [
+        "density 0..1"
+      ],
+      "guardrails": [
+        "Store state, not rendered voxel texture"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-CLD-006",
+      "name": "Observation/model/ensemble horizon blend",
+      "domain": "Cloud",
+      "priority": "P1",
+      "module": "cloud/cloud-forecast.js",
+      "formula": "alpha(h)*obs + beta(h)*deterministic + gamma(h)*ensemble",
+      "inputs": [
+        "cloud states",
+        "horizon"
+      ],
+      "outputs": [
+        "0-10d state"
+      ],
+      "guardrails": [
+        "7d+ becomes probabilistic and soft"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-CLD-007",
+      "name": "Cloud uncertainty visual mapping",
+      "domain": "Cloud",
+      "priority": "P1",
+      "module": "cloud/cloud-render-policy.js",
+      "formula": "opacity/detail decrease and blur increases with uncertainty/horizon",
+      "inputs": [
+        "confidence",
+        "uncertainty",
+        "horizon"
+      ],
+      "outputs": [
+        "render policy"
+      ],
+      "guardrails": [
+        "Long range must not look current"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-CLD-008",
+      "name": "Procedural cloud detail budget",
+      "domain": "Cloud",
+      "priority": "P2",
+      "module": "cloud/procedural-detail.js",
+      "formula": "detail = confidence*(1-uncertainty)*device*thermal*horizon scale",
+      "inputs": [
+        "cloud state quality",
+        "device",
+        "thermal",
+        "horizon"
+      ],
+      "outputs": [
+        "deterministic visual-only detail plan"
+      ],
+      "guardrails": [
+        "May not change meteorological coverage or meaning"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-CORE-001",
+      "name": "Canonical signal fingerprint",
+      "domain": "Core",
+      "priority": "P0",
+      "module": "core/canonical-signal.js",
+      "formula": "fingerprint = FNV1a64(stable canonical signal without signalId)",
+      "inputs": [
+        "canonical signal"
+      ],
+      "outputs": [
+        "stable fingerprint"
+      ],
+      "guardrails": [
+        "No secret/raw payload inclusion"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-CORE-002",
+      "name": "Cross-domain confidence",
+      "domain": "Core",
+      "priority": "P1",
+      "module": "core/confidence.js",
+      "formula": "weighted quality components with mandatory-source caps",
+      "inputs": [
+        "freshness",
+        "coverage",
+        "agreement",
+        "historical accuracy",
+        "mapping",
+        "stability"
+      ],
+      "outputs": [
+        "confidence + band + reason codes"
+      ],
+      "guardrails": [
+        "Missing mandatory source caps result"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-CORE-003",
+      "name": "Truth budget",
+      "domain": "Core",
+      "priority": "P0",
+      "module": "core/truth-budget.js",
+      "formula": "max fidelity = min(evidence, resolution, confidence, rights, device, thermal)",
+      "inputs": [
+        "evidence",
+        "resolution",
+        "confidence",
+        "rights",
+        "device"
+      ],
+      "outputs": [
+        "allowed visual fidelity"
+      ],
+      "guardrails": [
+        "No fine tower without actual grid"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-CORE-004",
+      "name": "Trust ledger status",
+      "domain": "Core",
+      "priority": "P1",
+      "module": "core/trust-ledger.js",
+      "formula": "support/counter evidence count and confidence produce SUPPORTED/CONTESTED/UNSUPPORTED",
+      "inputs": [
+        "support evidence",
+        "counter evidence"
+      ],
+      "outputs": [
+        "trust ledger"
+      ],
+      "guardrails": [
+        "Every evidence item keeps source, time and provenance"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-CORE-005",
+      "name": "Device-network-battery adaptive quality",
+      "domain": "Core",
+      "priority": "P0",
+      "module": "core/device-network-governor.js",
+      "formula": "quality = min(device memory, network/save-data, battery, thermal, accessibility budget)",
+      "inputs": [
+        "device/network/battery/thermal/accessibility"
+      ],
+      "outputs": [
+        "FULL/BALANCED/LITE/STATIC policy"
+      ],
+      "guardrails": [
+        "Reduce fidelity before fabricating or overfetching"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-CORE-006",
+      "name": "Planet execution plan compiler",
+      "domain": "Core",
+      "priority": "P0",
+      "module": "core/planet-intelligence-orchestrator.js",
+      "formula": "scene + manifest + truth budget + device profile -> one primary execution plan",
+      "inputs": [
+        "scene",
+        "layer manifest",
+        "truth budget",
+        "device profile"
+      ],
+      "outputs": [
+        "engine/fetch/degrade/disposal plan"
+      ],
+      "guardrails": [
+        "One dynamic data hero",
+        "Dispose previous primary"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-DAT-001",
+      "name": "Bilinear grid resampling",
+      "domain": "Data Plane",
+      "priority": "P1",
+      "module": "data/reprojection-resampling.js",
+      "formula": "bilinear interpolation in normalized grid coordinates",
+      "inputs": [
+        "source grid",
+        "target size"
+      ],
+      "outputs": [
+        "resampled grid"
+      ],
+      "guardrails": [
+        "Dataset requiring conservative mass preservation must use a dataset-specific conservative method"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-DAT-002",
+      "name": "Canonical time-slice selection",
+      "domain": "Data Plane",
+      "priority": "P1",
+      "module": "data/time-slice.js",
+      "formula": "nearest valid frame within max staleness window",
+      "inputs": [
+        "records",
+        "target time",
+        "max age"
+      ],
+      "outputs": [
+        "canonical frame or null"
+      ],
+      "guardrails": [
+        "Evidence modes cannot mix implicitly"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-DAT-003",
+      "name": "Bounded scalar quantization",
+      "domain": "Data Plane",
+      "priority": "P1",
+      "module": "data/tile-compiler.js",
+      "formula": "map finite min..max to Qbits with reserved no-data code",
+      "inputs": [
+        "scalar values",
+        "bit depth"
+      ],
+      "outputs": [
+        "quantized values",
+        "min/max metadata"
+      ],
+      "guardrails": [
+        "No-data remains explicit"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-DAT-004",
+      "name": "Revision fingerprint and classification",
+      "domain": "Data Plane",
+      "priority": "P1",
+      "module": "data/revision-engine.js",
+      "formula": "stable object fingerprint; same-time change => provider revision",
+      "inputs": [
+        "previous",
+        "next"
+      ],
+      "outputs": [
+        "revision state",
+        "fingerprints"
+      ],
+      "guardrails": [
+        "Provider revision is not a new observation time"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-DAT-005",
+      "name": "Adaptive frame prefetch",
+      "domain": "Data Plane",
+      "priority": "P1",
+      "module": "data/adaptive-prefetch.js",
+      "formula": "bounded forward/back window from playback/network/memory state",
+      "inputs": [
+        "frame index",
+        "network",
+        "memory"
+      ],
+      "outputs": [
+        "prefetch frame ids"
+      ],
+      "guardrails": [
+        "No unbounded background download"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-DAT-006",
+      "name": "Ambiguity-aware spatial identity resolution",
+      "domain": "Data",
+      "priority": "P1",
+      "module": "data/spatial-identity-resolution.js",
+      "formula": "external exact ID first; else normalized name/address + geodesic proximity score",
+      "inputs": [
+        "provider place",
+        "Earthus candidates"
+      ],
+      "outputs": [
+        "MATCHED/AMBIGUOUS/UNMATCHED"
+      ],
+      "guardrails": [
+        "Ambiguous entity never auto-merges"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-DAT-007",
+      "name": "Ground-truth learning example builder",
+      "domain": "Data",
+      "priority": "P1",
+      "module": "data/learning-data-factory.js",
+      "formula": "forecast + actual + feature snapshot + regime + rights -> privacy-minimized learning row",
+      "inputs": [
+        "forecast",
+        "ground truth",
+        "features",
+        "rights"
+      ],
+      "outputs": [
+        "training example or reject reason"
+      ],
+      "guardrails": [
+        "Ground truth and AI-use rights required",
+        "User identifiers removed"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-GEO-001",
+      "name": "Antimeridian-safe bounds",
+      "domain": "Geo",
+      "priority": "P0",
+      "module": "geo/geospatial-reference.js",
+      "formula": "unwrap longitudes and choose minimum span",
+      "inputs": [
+        "GeoJSON geometry"
+      ],
+      "outputs": [
+        "bounds/centroid/date-line flag"
+      ],
+      "guardrails": [
+        "Polygon and MultiPolygon only for containment"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-GEO-002",
+      "name": "Country camera fit",
+      "domain": "Geo",
+      "priority": "P0",
+      "module": "geo/country-focus.js",
+      "formula": "camera height proportional to geodesic diameter and viewport aspect",
+      "inputs": [
+        "country geometry",
+        "viewport"
+      ],
+      "outputs": [
+        "camera + dimming + clipping"
+      ],
+      "guardrails": [
+        "No global high-resolution download"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-GEO-003",
+      "name": "Terrain source score",
+      "domain": "Geo",
+      "priority": "P0",
+      "module": "geo/terrain-source-broker.js",
+      "formula": "resolution + freshness + continuity + datum + cost + regional priority",
+      "inputs": [
+        "terrain sources",
+        "region/zoom"
+      ],
+      "outputs": [
+        "primary/fallback source"
+      ],
+      "guardrails": [
+        "Rights/coverage/health are eligibility gates"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-GEO-004",
+      "name": "Screen-space terrain LOD",
+      "domain": "Geo",
+      "priority": "P0",
+      "module": "geo/terrain-lod.js",
+      "formula": "SSE = geometricError*viewportHeight/(2*distance*tan(FOV/2))",
+      "inputs": [
+        "tile error",
+        "camera distance",
+        "viewport"
+      ],
+      "outputs": [
+        "selected LOD"
+      ],
+      "guardrails": [
+        "Tile budget cap"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-GEO-005",
+      "name": "Terrain/data morph",
+      "domain": "Geo",
+      "priority": "P1",
+      "module": "geo/terrain-data-morph.js",
+      "formula": "displayZ = lerp(terrainZ, terrainZ + normalizedData*reliefScale, mix)",
+      "inputs": [
+        "terrain elevation",
+        "normalized data"
+      ],
+      "outputs": [
+        "display elevation"
+      ],
+      "guardrails": [
+        "Raw values unchanged and capped"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-GEO-006",
+      "name": "Trench Level-2 camera plan",
+      "domain": "Geo",
+      "priority": "P2",
+      "module": "geo/trench-camera.js",
+      "formula": "overview/close camera heights scale with verified trench depth and viewport; camera remains non-submerged",
+      "inputs": [
+        "target lon/lat/depth",
+        "viewport",
+        "reduced motion"
+      ],
+      "outputs": [
+        "camera waypoints",
+        "depth/source labels"
+      ],
+      "guardrails": [
+        "No full underwater navigation",
+        "No invented seafloor/subduction geometry"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HAZ-001",
+      "name": "Official warning precedence merge",
+      "domain": "Hazard",
+      "priority": "P0",
+      "module": "hazards/warning-engine.js",
+      "formula": "official first, then severity, then latest issue time",
+      "inputs": [
+        "warnings"
+      ],
+      "outputs": [
+        "primary warning",
+        "active list"
+      ],
+      "guardrails": [
+        "Earthus cannot downgrade active official warning"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HAZ-002",
+      "name": "Hypocenter depth visual mapping",
+      "domain": "Hazard",
+      "priority": "P1",
+      "module": "hazards/earthquake-depth.js",
+      "formula": "display radius=Earth radius-depth*bounded exaggeration",
+      "inputs": [
+        "depth",
+        "magnitude"
+      ],
+      "outputs": [
+        "3D depth placement"
+      ],
+      "guardrails": [
+        "Not P/S wave propagation"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HAZ-003",
+      "name": "Seismic context clustering",
+      "domain": "Hazard",
+      "priority": "P1",
+      "module": "hazards/earthquake-depth.js",
+      "formula": "spatiotemporal radius grouping",
+      "inputs": [
+        "earthquakes"
+      ],
+      "outputs": [
+        "context clusters"
+      ],
+      "guardrails": [
+        "Not aftershock prediction"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HAZ-004",
+      "name": "Lightning centroid tracking",
+      "domain": "Hazard",
+      "priority": "P1",
+      "module": "hazards/lightning-track.js",
+      "formula": "spatial cluster then nearest-centroid matching",
+      "inputs": [
+        "lightning points"
+      ],
+      "outputs": [
+        "cell clusters",
+        "motion evidence"
+      ],
+      "guardrails": [
+        "Motion is estimated"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HAZ-005",
+      "name": "Wildfire hotspot clustering",
+      "domain": "Hazard",
+      "priority": "P1",
+      "module": "hazards/wildfire-smoke.js",
+      "formula": "spatiotemporal hotspot radius grouping",
+      "inputs": [
+        "thermal hotspots"
+      ],
+      "outputs": [
+        "hotspot clusters"
+      ],
+      "guardrails": [
+        "Cluster is not burn perimeter"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HAZ-006",
+      "name": "Cyclone agency resolver",
+      "domain": "Hazard",
+      "priority": "P1",
+      "module": "hazards/cyclone-resolver.js",
+      "formula": "region-specific official agency priority; preserve alternates",
+      "inputs": [
+        "agency tracks",
+        "region"
+      ],
+      "outputs": [
+        "primary",
+        "alternates"
+      ],
+      "guardrails": [
+        "Never average official agency tracks"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HAZ-007",
+      "name": "Cross-agency hazard event fusion",
+      "domain": "Hazard",
+      "priority": "P1",
+      "module": "hazards/event-fusion.js",
+      "formula": "group by type + time window + spatial proximity",
+      "inputs": [
+        "agency events"
+      ],
+      "outputs": [
+        "canonical event groups"
+      ],
+      "guardrails": [
+        "Agency geometry/values not averaged",
+        "Conflicts remain inspectable"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-001",
+      "name": "Density",
+      "domain": "Human Flow",
+      "priority": "P1",
+      "module": "human-flow/algorithms.js",
+      "formula": "raw_density = population/effective_area",
+      "inputs": [
+        "population estimate",
+        "validated area"
+      ],
+      "outputs": [
+        "density"
+      ],
+      "guardrails": [
+        "Unknown area -> UNKNOWN"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-002",
+      "name": "Calibrated crowd index",
+      "domain": "Human Flow",
+      "priority": "P1",
+      "module": "human-flow/algorithms.js",
+      "formula": "weighted percentile + relative ratio + robust z + official level",
+      "inputs": [
+        "density history",
+        "official level"
+      ],
+      "outputs": [
+        "0-100 index"
+      ],
+      "guardrails": [
+        "Official level has UI/safety precedence"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-003",
+      "name": "Persistent trend",
+      "domain": "Human Flow",
+      "priority": "P1",
+      "module": "human-flow/algorithms.js",
+      "formula": "EWMA + Theil-Sen slope + persistence filter",
+      "inputs": [
+        "time series"
+      ],
+      "outputs": [
+        "trend/slope/acceleration"
+      ],
+      "guardrails": [
+        "Single spike cannot create trend"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-004",
+      "name": "Evidence-limited scalar flow",
+      "domain": "Human Flow",
+      "priority": "P1",
+      "module": "human-flow/algorithms.js",
+      "formula": "in=max(0,delta)/dt; out=max(0,-delta)/dt",
+      "inputs": [
+        "population series"
+      ],
+      "outputs": [
+        "in/out rate"
+      ],
+      "guardrails": [
+        "No direction without OD/graph evidence"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-005",
+      "name": "Explainable crowd forecast v0",
+      "domain": "Human Flow",
+      "priority": "P1",
+      "module": "human-flow/algorithms.js",
+      "formula": "baseline + trend + event + weather + mobility + provider factor",
+      "inputs": [
+        "feature snapshot"
+      ],
+      "outputs": [
+        "forecast + contributions"
+      ],
+      "guardrails": [
+        "Provider and Earthus forecasts remain distinct"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-006",
+      "name": "Robust anomaly",
+      "domain": "Human Flow",
+      "priority": "P1",
+      "module": "human-flow/algorithms.js",
+      "formula": "abs(current-seasonalMedian)/(1.4826*MAD) with persistence",
+      "inputs": [
+        "current/history/events"
+      ],
+      "outputs": [
+        "anomaly state"
+      ],
+      "guardrails": [
+        "Anomaly is not automatically a disaster"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-007",
+      "name": "Validated capacity pressure",
+      "domain": "Human Flow",
+      "priority": "P1",
+      "module": "human-flow/algorithms.js",
+      "formula": "occupancy/validated_capacity",
+      "inputs": [
+        "occupancy",
+        "validated capacity"
+      ],
+      "outputs": [
+        "pressure"
+      ],
+      "guardrails": [
+        "Never infer legal capacity from area"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-008",
+      "name": "Risk hard gate",
+      "domain": "Human Flow",
+      "priority": "P1",
+      "module": "human-flow/algorithms.js",
+      "formula": "max(official,weather,crowd,capacity,bottleneck)+reliability penalty",
+      "inputs": [
+        "risk signals"
+      ],
+      "outputs": [
+        "SAFE/CAUTION/WARNING/CRITICAL/UNKNOWN"
+      ],
+      "guardrails": [
+        "Official emergency overrides score"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-009",
+      "name": "Shortest path with status/capacity penalties",
+      "domain": "Human Flow",
+      "priority": "P1",
+      "module": "human-flow/spatial-graph.js",
+      "formula": "Dijkstra over verified typed edges",
+      "inputs": [
+        "spatial graph"
+      ],
+      "outputs": [
+        "path/cost"
+      ],
+      "guardrails": [
+        "Closed or inaccessible edges excluded"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-010",
+      "name": "Forecast verification metrics",
+      "domain": "Human Flow",
+      "priority": "P1",
+      "module": "human-flow/forecast-lifecycle.js",
+      "formula": "error=actual-predicted; MAE/RMSE/bias by filters",
+      "inputs": [
+        "forecast",
+        "actual"
+      ],
+      "outputs": [
+        "metrics"
+      ],
+      "guardrails": [
+        "Every forecast keeps issued/target/model version"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-011",
+      "name": "Champion/challenger",
+      "domain": "ModelOps",
+      "priority": "P1",
+      "module": "human-flow/forecast-lifecycle.js",
+      "formula": "relative MAE improvement + calibration improvement",
+      "inputs": [
+        "champion/challenger metrics"
+      ],
+      "outputs": [
+        "promotion decision"
+      ],
+      "guardrails": [
+        "No promotion on accuracy alone"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-012",
+      "name": "Spatiotemporal snapshot selection",
+      "domain": "Human Flow",
+      "priority": "P1",
+      "module": "human-flow/spatiotemporal-fusion.js",
+      "formula": "select nearest valid signal per variable inside variable-specific staleness window",
+      "inputs": [
+        "canonical signals",
+        "snapshot time",
+        "freshness rules"
+      ],
+      "outputs": [
+        "aligned snapshot",
+        "rejections",
+        "missing required variables"
+      ],
+      "guardrails": [
+        "Different timestamps are never merged as equally current"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-013",
+      "name": "Spatial cell provider mapping",
+      "domain": "Human Flow",
+      "priority": "P1",
+      "module": "human-flow/spatial-cell-registry.js",
+      "formula": "provider/service/externalId -> Earthus cell mapping with explicit mapping quality/version",
+      "inputs": [
+        "Earthus cell",
+        "external mapping"
+      ],
+      "outputs": [
+        "stable cell registry",
+        "provider mapping"
+      ],
+      "guardrails": [
+        "Provider external ID is not Earthus master ID"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-014",
+      "name": "Digital twin capacity provenance gate",
+      "domain": "Human Flow",
+      "priority": "P2",
+      "module": "human-flow/digital-twin.js",
+      "formula": "capacity value accepted only with capacity provenance",
+      "inputs": [
+        "twin entity"
+      ],
+      "outputs": [
+        "validated twin entity"
+      ],
+      "guardrails": [
+        "Never infer legal/safe capacity from area alone"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-015",
+      "name": "Scenario isolation",
+      "domain": "Human Flow",
+      "priority": "P2",
+      "module": "human-flow/scenario.js",
+      "formula": "scenario = deep-cloned baseline + explicit deltas; LIVE snapshot is immutable",
+      "inputs": [
+        "baseline",
+        "occupancy delta",
+        "closed edges",
+        "capacity overrides"
+      ],
+      "outputs": [
+        "SIMULATION result"
+      ],
+      "guardrails": [
+        "Scenario never mutates LIVE state"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HYD-001",
+      "name": "SCS runoff foundation",
+      "domain": "Hydrology",
+      "priority": "P2",
+      "module": "hydrology/runoff-routing.js",
+      "formula": "Q=(P-Ia)^2/(P+(1-lambda)S)",
+      "inputs": [
+        "precipitation",
+        "curve number"
+      ],
+      "outputs": [
+        "runoff mm"
+      ],
+      "guardrails": [
+        "Requires basin calibration; scenario only"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HYD-002",
+      "name": "Linear reservoir routing foundation",
+      "domain": "Hydrology",
+      "priority": "P2",
+      "module": "hydrology/runoff-routing.js",
+      "formula": "outflow=storage/K; storage+=inflow-outflow",
+      "inputs": [
+        "inflow",
+        "storage",
+        "K"
+      ],
+      "outputs": [
+        "outflow/storage"
+      ],
+      "guardrails": [
+        "Replace/validate per basin"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HYD-003",
+      "name": "River visual semantic LOD",
+      "domain": "Hydrology",
+      "priority": "P1",
+      "module": "hydrology/river-visual-network.js",
+      "formula": "minimum stream order rises as camera zooms out; line width follows verified stream order",
+      "inputs": [
+        "hydrography segments",
+        "zoom",
+        "basin"
+      ],
+      "outputs": [
+        "DATA NETWORK segments"
+      ],
+      "guardrails": [
+        "No flow direction unless verified"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-INT-001",
+      "name": "Cross-domain Pearson association",
+      "domain": "Intelligence",
+      "priority": "P1",
+      "module": "intelligence/correlation.js",
+      "formula": "Pearson r with minimum valid pair count",
+      "inputs": [
+        "aligned series"
+      ],
+      "outputs": [
+        "r",
+        "n"
+      ],
+      "guardrails": [
+        "Correlation is not causation"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-INT-002",
+      "name": "Analog feature distance",
+      "domain": "Intelligence",
+      "priority": "P1",
+      "module": "intelligence/analog-retrieval.js",
+      "formula": "weighted normalized Euclidean distance",
+      "inputs": [
+        "target features",
+        "historical cases"
+      ],
+      "outputs": [
+        "ranked analogs"
+      ],
+      "guardrails": [
+        "Expose feature basis and distance"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-INT-003",
+      "name": "Regime classifier foundation",
+      "domain": "Intelligence",
+      "priority": "P1",
+      "module": "intelligence/regime-detector.js",
+      "formula": "coefficient of variation + normalized end-to-end slope",
+      "inputs": [
+        "time series"
+      ],
+      "outputs": [
+        "stable/rising/falling/volatile"
+      ],
+      "guardrails": [
+        "Domain thresholds remain configurable"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-INT-004",
+      "name": "Route exposure integration",
+      "domain": "Intelligence",
+      "priority": "P1",
+      "module": "intelligence/route-exposure.js",
+      "formula": "length-weighted hazard intensity with official gates",
+      "inputs": [
+        "route segments",
+        "signals"
+      ],
+      "outputs": [
+        "route exposure"
+      ],
+      "guardrails": [
+        "Official closure/warning overrides score"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-INT-005",
+      "name": "Decision contribution ranking",
+      "domain": "Intelligence",
+      "priority": "P1",
+      "module": "intelligence/decision-explanation.js",
+      "formula": "rank absolute contribution; hard gate first",
+      "inputs": [
+        "decision",
+        "contributions",
+        "gates"
+      ],
+      "outputs": [
+        "primary reason",
+        "ranked factors"
+      ],
+      "guardrails": [
+        "No unexplained recommendation"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OCN-001",
+      "name": "Ocean vector magnitude/direction",
+      "domain": "Ocean",
+      "priority": "P1",
+      "module": "ocean/ocean-state.js",
+      "formula": "speed=sqrt(u^2+v^2); direction=atan2(u,v)",
+      "inputs": [
+        "u",
+        "v"
+      ],
+      "outputs": [
+        "speed",
+        "direction"
+      ],
+      "guardrails": [
+        "No U/V means no flow direction"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OCN-002",
+      "name": "Wave visual exaggeration",
+      "domain": "Ocean",
+      "priority": "P1",
+      "module": "ocean/wave-engine.js",
+      "formula": "display=min(cap,Hs*visualExaggeration)",
+      "inputs": [
+        "significant wave height"
+      ],
+      "outputs": [
+        "display height",
+        "exaggeration"
+      ],
+      "guardrails": [
+        "Clearly labeled as visualization, not fluid simulation"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OCN-003",
+      "name": "Deep-water swell ETA foundation",
+      "domain": "Ocean",
+      "priority": "P1",
+      "module": "ocean/swell-arrival.js",
+      "formula": "group velocity=g*T/(4*pi); eta=distance/cg",
+      "inputs": [
+        "distance",
+        "period"
+      ],
+      "outputs": [
+        "group velocity",
+        "arrival time"
+      ],
+      "guardrails": [
+        "Nearshore refraction/shoaling not included"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OCN-004",
+      "name": "Sea-level residual",
+      "domain": "Ocean",
+      "priority": "P1",
+      "module": "ocean/tide-sea-level.js",
+      "formula": "residual=observed-astronomical prediction",
+      "inputs": [
+        "observed level",
+        "predicted tide"
+      ],
+      "outputs": [
+        "residual"
+      ],
+      "guardrails": [
+        "Observed/predicted/residual kept separate"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OCN-005",
+      "name": "SST front gradient",
+      "domain": "Ocean",
+      "priority": "P1",
+      "module": "ocean/sst-features.js",
+      "formula": "central-difference gradient magnitude threshold",
+      "inputs": [
+        "SST grid"
+      ],
+      "outputs": [
+        "front candidates"
+      ],
+      "guardrails": [
+        "Derived feature, not official ocean-front label"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OCN-006",
+      "name": "Coastal exposure score",
+      "domain": "Ocean",
+      "priority": "P1",
+      "module": "ocean/coastal-exposure.js",
+      "formula": "bounded weighted wave+swell+tide residual+wind; official warning hard gate",
+      "inputs": [
+        "marine conditions",
+        "warning"
+      ],
+      "outputs": [
+        "risk state",
+        "score"
+      ],
+      "guardrails": [
+        "Official warning overrides score"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OPS-001",
+      "name": "Provider health state",
+      "domain": "Operations",
+      "priority": "P0",
+      "module": "ops/provider-health.js",
+      "formula": "auth/schema/quota gates then freshness and failure thresholds",
+      "inputs": [
+        "last success/SLA/failures"
+      ],
+      "outputs": [
+        "health state"
+      ],
+      "guardrails": [
+        "Do not equate job success with source freshness"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OPS-002",
+      "name": "Exponential backoff",
+      "domain": "Operations",
+      "priority": "P1",
+      "module": "ops/provider-health.js",
+      "formula": "min(max, base*2^attempt)*(1+jitter)",
+      "inputs": [
+        "attempt/rates"
+      ],
+      "outputs": [
+        "delay"
+      ],
+      "guardrails": [
+        "No retry for auth/parameter errors at adapter layer"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OPS-003",
+      "name": "Cost-to-value schedule",
+      "domain": "Operations",
+      "priority": "P1",
+      "module": "ops/cost-observability.js",
+      "formula": "value/cost efficiency with hard safety override",
+      "inputs": [
+        "cost/users/value/budget"
+      ],
+      "outputs": [
+        "RUN/DOWNSAMPLE/DEFER"
+      ],
+      "guardrails": [
+        "Safety-critical jobs cannot be deferred for cost"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OPS-004",
+      "name": "Observation gap lens",
+      "domain": "Operations",
+      "priority": "P1",
+      "module": "ops/observation-gap.js",
+      "formula": "observed coverage + station density + freshness + resolution + model coverage",
+      "inputs": [
+        "coverage metrics"
+      ],
+      "outputs": [
+        "knowledge/model-dependence state"
+      ],
+      "guardrails": [
+        "Data absence is not risk absence"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OPS-005",
+      "name": "Fail-soft scene selection",
+      "domain": "Operations",
+      "priority": "P1",
+      "module": "core/fail-soft-scene.js",
+      "formula": "select truthful fallback from data state, vector/grid availability, device and thermal constraints",
+      "inputs": [
+        "requested engine",
+        "data state",
+        "capabilities",
+        "thermal state"
+      ],
+      "outputs": [
+        "fallback scene plan"
+      ],
+      "guardrails": [
+        "Never invent direction, grid or safety state"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OPS-006",
+      "name": "Job DAG topological execution",
+      "domain": "Ops",
+      "priority": "P1",
+      "module": "ops/job-dag.js",
+      "formula": "Kahn topological order over explicit dependencies",
+      "inputs": [
+        "job graph"
+      ],
+      "outputs": [
+        "execution order",
+        "runnable jobs"
+      ],
+      "guardrails": [
+        "Unknown dependency/cycle fails closed"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OPS-007",
+      "name": "Dead-letter recovery classification",
+      "domain": "Ops",
+      "priority": "P1",
+      "module": "ops/dead-letter-recovery.js",
+      "formula": "retry only retryable error + idempotency + attempts < max; else quarantine",
+      "inputs": [
+        "dead-letter messages"
+      ],
+      "outputs": [
+        "RETRY/QUARANTINE plan"
+      ],
+      "guardrails": [
+        "No replay without idempotency key"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OPS-008",
+      "name": "Freshness SLO state",
+      "domain": "Ops",
+      "priority": "P1",
+      "module": "ops/freshness-slo.js",
+      "formula": "age <= live => LIVE; <= stale => STALE; else UNAVAILABLE",
+      "inputs": [
+        "reference time",
+        "SLO"
+      ],
+      "outputs": [
+        "freshness state",
+        "age"
+      ],
+      "guardrails": [
+        "Collector success does not imply LIVE data"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OPS-009",
+      "name": "Safe rollback planner",
+      "domain": "Ops",
+      "priority": "P1",
+      "module": "ops/rollback-engine.js",
+      "formula": "rollback allowed only with verified rollback artifact and reversible data boundary",
+      "inputs": [
+        "current/previous version",
+        "migration state"
+      ],
+      "outputs": [
+        "rollback steps",
+        "blockers"
+      ],
+      "guardrails": [
+        "No automatic production rollback"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OPS-010",
+      "name": "Performance acceptance compiler",
+      "domain": "Ops",
+      "priority": "P1",
+      "module": "ops/performance-lab.js",
+      "formula": "min FPS + p95 frame + memory growth + thermal maxima against budgets",
+      "inputs": [
+        "runtime samples",
+        "budgets"
+      ],
+      "outputs": [
+        "PASS/FAIL",
+        "metrics"
+      ],
+      "guardrails": [
+        "Pure unit tests do not substitute real-device samples"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OPS-011",
+      "name": "New-engine reuse enforcement",
+      "domain": "Ops",
+      "priority": "P0",
+      "module": "ops/engine-reuse-enforcer.js",
+      "formula": "catalog capability-token similarity + mandatory repository/catalog/gap evidence",
+      "inputs": [
+        "new-engine proposal",
+        "catalog",
+        "gap evidence"
+      ],
+      "outputs": [
+        "BLOCK_NEW_ENGINE or reviewable NEW"
+      ],
+      "guardrails": [
+        "Convenience is not a reason to duplicate engines"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-PAY-001",
+      "name": "Entitlement resolution",
+      "domain": "Paid",
+      "priority": "P0",
+      "module": "paid/entitlement.js",
+      "formula": "tier rank + country + rights + quota + safety exception",
+      "inputs": [
+        "user/tier/feature"
+      ],
+      "outputs": [
+        "ALLOW/PREVIEW/DENY"
+      ],
+      "guardrails": [
+        "Official safety always free"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-PAY-002",
+      "name": "Country readiness",
+      "domain": "Paid",
+      "priority": "P1",
+      "module": "paid/country-unlock.js",
+      "formula": "weighted data/license/visual/performance/QA/terrain/localization",
+      "inputs": [
+        "country gates"
+      ],
+      "outputs": [
+        "score/blockers"
+      ],
+      "guardrails": [
+        "Funding alone cannot open a country"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-PAY-003",
+      "name": "Offline trip pack selection",
+      "domain": "Paid",
+      "priority": "VNEXT",
+      "module": "paid/offline-trip-pack.js",
+      "formula": "priority-first bounded packing with official safety override",
+      "inputs": [
+        "trip range",
+        "assets",
+        "entitlement",
+        "byte budget"
+      ],
+      "outputs": [
+        "offline pack plan"
+      ],
+      "guardrails": [
+        "Official safety assets are never excluded by premium status"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-PAY-004",
+      "name": "Personal context minimization",
+      "domain": "Paid",
+      "priority": "P1",
+      "module": "paid/personal-context.js",
+      "formula": "allowlist context fields only after explicit consent",
+      "inputs": [
+        "user context",
+        "consent"
+      ],
+      "outputs": [
+        "minimal context",
+        "dropped fields"
+      ],
+      "guardrails": [
+        "Precise movement/user secrets are not accepted by default"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-PAY-005",
+      "name": "Comparison semantic normalization",
+      "domain": "Paid",
+      "priority": "P1",
+      "module": "paid/comparison.js",
+      "formula": "comparison requires same variable/unit; large resolution mismatch is disclosed",
+      "inputs": [
+        "comparison items"
+      ],
+      "outputs": [
+        "comparable result or block reason"
+      ],
+      "guardrails": [
+        "No misleading cross-variable/unit comparison"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-PAY-006",
+      "name": "Scenario entitlement gate",
+      "domain": "Paid",
+      "priority": "P2",
+      "module": "paid/scenario.js",
+      "formula": "Control/Business + quota + no LIVE mutation",
+      "inputs": [
+        "plan",
+        "quota",
+        "scenario request"
+      ],
+      "outputs": [
+        "allow/deny"
+      ],
+      "guardrails": [
+        "Official safety remains outside paywall"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-PAY-007",
+      "name": "Subscription state transition",
+      "domain": "Paid",
+      "priority": "P1",
+      "module": "paid/subscription-state.js",
+      "formula": "explicit finite-state transition table",
+      "inputs": [
+        "current state",
+        "billing event"
+      ],
+      "outputs": [
+        "next state or invalid transition"
+      ],
+      "guardrails": [
+        "No implicit entitlement from UI state"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-PAY-008",
+      "name": "Premium analysis cache key",
+      "domain": "Paid",
+      "priority": "P1",
+      "module": "paid/premium-cache.js",
+      "formula": "feature+country+versioned user scope/context fingerprint",
+      "inputs": [
+        "feature",
+        "country",
+        "context",
+        "engine versions"
+      ],
+      "outputs": [
+        "cache key"
+      ],
+      "guardrails": [
+        "Entitlement is still checked outside cache"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-QA-001",
+      "name": "Required launch-gate compilation",
+      "domain": "Quality",
+      "priority": "P0",
+      "module": "qa/launch-gate.js",
+      "formula": "required FAIL => FAIL; else required UNKNOWN => UNKNOWN; else PASS",
+      "inputs": [
+        "gate states"
+      ],
+      "outputs": [
+        "release state"
+      ],
+      "guardrails": [
+        "UNKNOWN required evidence blocks completion"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-QA-002",
+      "name": "Completion evidence gate",
+      "domain": "Quality",
+      "priority": "P0",
+      "module": "qa/completion-evidence.js",
+      "formula": "DONE only if engine/algorithm IDs + actual data + runtime + browser/device + tests + visual + performance + dispose + regression + no-duplicate evidence pass",
+      "inputs": [
+        "completion evidence"
+      ],
+      "outputs": [
+        "DONE_EVIDENCE_ACCEPTED/NOT_DONE"
+      ],
+      "guardrails": [
+        "File/class/interface existence alone is never completion"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-SEC-001",
+      "name": "Secret query redaction",
+      "domain": "Security",
+      "priority": "P0",
+      "module": "security/redaction.js",
+      "formula": "replace known secret query keys/values with [REDACTED]",
+      "inputs": [
+        "URL/text",
+        "secret aliases"
+      ],
+      "outputs": [
+        "redacted representation"
+      ],
+      "guardrails": [
+        "Never log original secret"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-SEC-002",
+      "name": "Token-bucket abuse control",
+      "domain": "Security",
+      "priority": "P1",
+      "module": "security/abuse-guard.js",
+      "formula": "capacity + time-based refill - request cost",
+      "inputs": [
+        "requests",
+        "time"
+      ],
+      "outputs": [
+        "allow/deny",
+        "retry-after"
+      ],
+      "guardrails": [
+        "Protect cost surface without changing safety truth"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-SPC-001",
+      "name": "Launch lifecycle state machine",
+      "domain": "Space",
+      "priority": "P2",
+      "module": "space/launch-event.js",
+      "formula": "validated state transitions with telemetry evidence gate",
+      "inputs": [
+        "launch state",
+        "evidence"
+      ],
+      "outputs": [
+        "next state"
+      ],
+      "guardrails": [
+        "No ascent/success/failure progress without evidence"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-STO-001",
+      "name": "Archive deletion proof",
+      "domain": "Storage",
+      "priority": "P1",
+      "module": "storage/archive-verification.js",
+      "formula": "all checksum/count/size/snapshot/grace/shadow checks must pass",
+      "inputs": [
+        "S3/NAS evidence"
+      ],
+      "outputs": [
+        "DELETE_ELIGIBLE/BLOCKED"
+      ],
+      "guardrails": [
+        "No date-only deletion"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-STO-002",
+      "name": "Cloud delta keyframe plan",
+      "domain": "Storage",
+      "priority": "P1",
+      "module": "storage/delta-pack.js",
+      "formula": "keyframes + delta frames; estimate saving and random access penalty",
+      "inputs": [
+        "frame count/size/ratio"
+      ],
+      "outputs": [
+        "pack plan"
+      ],
+      "guardrails": [
+        "Use only after reconstruction validation"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-STO-003",
+      "name": "Replay rehydration compatibility",
+      "domain": "Storage",
+      "priority": "P2",
+      "module": "storage/replay-rehydration.js",
+      "formula": "select overlapping archive chunks only after processor/schema compatibility checks",
+      "inputs": [
+        "archive manifest",
+        "region/time request",
+        "supported versions"
+      ],
+      "outputs": [
+        "rehydration plan"
+      ],
+      "guardrails": [
+        "Never serve directly from NAS"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-STO-004",
+      "name": "Archive package manifest plan",
+      "domain": "Storage",
+      "priority": "P1",
+      "module": "storage/archive-packager.js",
+      "formula": "archive id from dataset/region/time/schema/processor/record contract",
+      "inputs": [
+        "archive metadata"
+      ],
+      "outputs": [
+        "archive manifest plan"
+      ],
+      "guardrails": [
+        "Rendered voxels are not the canonical long-term source"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-STO-005",
+      "name": "NAS outbound pull state machine",
+      "domain": "Storage",
+      "priority": "P1",
+      "module": "storage/nas-archive-agent.js",
+      "formula": "COPY_PENDING -> COPYING -> VERIFYING -> NAS_VERIFIED; failure returns retry state",
+      "inputs": [
+        "archive job",
+        "events"
+      ],
+      "outputs": [
+        "archive transfer state"
+      ],
+      "guardrails": [
+        "LIVE service never directly reads NAS"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-STO-006",
+      "name": "Archive catalog time lookup",
+      "domain": "Storage",
+      "priority": "P1",
+      "module": "storage/archive-catalog.js",
+      "formula": "filter archive metadata by dataset/region and inclusive time range",
+      "inputs": [
+        "catalog",
+        "query"
+      ],
+      "outputs": [
+        "matching archives"
+      ],
+      "guardrails": [
+        "Catalog online even when NAS offline"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-VIS-001",
+      "name": "Bounded logarithmic tower mapping",
+      "domain": "Visual",
+      "priority": "P0",
+      "module": "visual/tower.js",
+      "formula": "height = hMin + boundedLog(value/p95)*(hMax-hMin)",
+      "inputs": [
+        "value",
+        "distribution"
+      ],
+      "outputs": [
+        "height/opacity"
+      ],
+      "guardrails": [
+        "Original value remains visible"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-VIS-002",
+      "name": "Mass-preserving estimated distribution",
+      "domain": "Visual",
+      "priority": "P1",
+      "module": "visual/tower.js",
+      "formula": "cell_i = total*w_i/sum(w), integer remainder by largest fraction",
+      "inputs": [
+        "aggregate total",
+        "approved weights"
+      ],
+      "outputs": [
+        "estimated cells"
+      ],
+      "guardrails": [
+        "Sum must exactly equal provider total; estimated badge"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-VIS-003",
+      "name": "Bilinear vector sampling",
+      "domain": "Visual",
+      "priority": "P1",
+      "module": "visual/flow.js",
+      "formula": "bilinear interpolate U/V over four grid cells",
+      "inputs": [
+        "vector grid",
+        "normalized coordinate"
+      ],
+      "outputs": [
+        "U/V vector"
+      ],
+      "guardrails": [
+        "Missing vector returns null"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-VIS-004",
+      "name": "Adaptive volume render policy",
+      "domain": "Visual",
+      "priority": "P1",
+      "module": "visual/volume.js",
+      "formula": "mode/resolution/ray steps from device, thermal, confidence, uncertainty, horizon",
+      "inputs": [
+        "device",
+        "thermal",
+        "confidence",
+        "uncertainty"
+      ],
+      "outputs": [
+        "shell/volume policy"
+      ],
+      "guardrails": [
+        "Mobile and ECO avoid heavy volume"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-VIS-010",
+      "name": "Semantic label budget",
+      "domain": "Visual",
+      "priority": "P1",
+      "module": "visual/label-budget.js",
+      "formula": "priority=safety>selected>primary>context>decorative",
+      "inputs": [
+        "candidate labels",
+        "device cap"
+      ],
+      "outputs": [
+        "visible labels"
+      ],
+      "guardrails": [
+        "Safety cannot be evicted by decorative labels"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-VIS-011",
+      "name": "Semantic material grammar",
+      "domain": "Visual",
+      "priority": "P1",
+      "module": "visual/material-grammar.js",
+      "formula": "domain+evidence+selection+thermal => material tokens",
+      "inputs": [
+        "scene state"
+      ],
+      "outputs": [
+        "material tokens"
+      ],
+      "guardrails": [
+        "Risk/scenario semantics reserved"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-001",
+      "name": "Skill-weighted model ensemble",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/ensemble.js",
+      "formula": "weighted mean; spread from weighted variance",
+      "inputs": [
+        "model members",
+        "skill/freshness weights"
+      ],
+      "outputs": [
+        "consensus/spread/agreement"
+      ],
+      "guardrails": [
+        "No public probability before calibration"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-002",
+      "name": "Local bias correction",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/ensemble.js",
+      "formula": "corrected = raw - bias(location,variable,lead,regime)",
+      "inputs": [
+        "forecast",
+        "bias"
+      ],
+      "outputs": [
+        "corrected forecast"
+      ],
+      "guardrails": [
+        "Promote after shadow backtest"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-003",
+      "name": "Semi-Lagrangian nowcast",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/nowcast.js",
+      "formula": "field(t+dt)=sample(field, x-u*dt, y-v*dt)+growth-decay",
+      "inputs": [
+        "field",
+        "vector field"
+      ],
+      "outputs": [
+        "advected field"
+      ],
+      "guardrails": [
+        "Lead-time validation required"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-004",
+      "name": "Evidence-backed claim gate",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/evidence-graph.js",
+      "formula": "claim allowed only when required evidence count/confidence and counter evidence rules pass",
+      "inputs": [
+        "claim rules",
+        "evidence"
+      ],
+      "outputs": [
+        "allow/block + confidence"
+      ],
+      "guardrails": [
+        "No invented numbers or unsupported causal claims"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-005",
+      "name": "Precipitation observed blend",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/precipitation.js",
+      "formula": "quality-weighted radar+gauge+model, observed sources define state",
+      "inputs": [
+        "radar/gauge/model rates"
+      ],
+      "outputs": [
+        "rate/intensity/state"
+      ],
+      "guardrails": [
+        "Cloud and precipitation are separate"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-006",
+      "name": "Rain/snow phase foundation",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/precipitation.js",
+      "formula": "wet-bulb + warm/cold layer depth rules",
+      "inputs": [
+        "temperature profile"
+      ],
+      "outputs": [
+        "phase/confidence"
+      ],
+      "guardrails": [
+        "Explicit uncertainty"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-007",
+      "name": "Forecast gap / Early Signal",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/forecast-gap.js",
+      "formula": "gap=consensus-official; require persistence, agreement, skill",
+      "inputs": [
+        "official forecast",
+        "model consensus"
+      ],
+      "outputs": [
+        "NONE/WATCH/EARLY_SIGNAL"
+      ],
+      "guardrails": [
+        "Official warning always wins"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-008",
+      "name": "Moisture source contribution",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/moisture-attribution.js",
+      "formula": "trajectory + flux convergence + TPW + ascent + SST support + radar growth - dry-air counter",
+      "inputs": [
+        "multi-signal evidence"
+      ],
+      "outputs": [
+        "contribution score/state"
+      ],
+      "guardrails": [
+        "SST alone cannot establish cause"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-009",
+      "name": "Weather detail section compiler",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/weather-detail-ia.js",
+      "formula": "fixed CURRENT -> BRIEF -> HOURLY -> 10DAY -> PRECIP/RADAR -> DETAILS -> AQI -> ALERTS -> DEEP order",
+      "inputs": [
+        "available sections",
+        "plan"
+      ],
+      "outputs": [
+        "section/access manifest"
+      ],
+      "guardrails": [
+        "Information order inspired by usability, not copied UI"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-010",
+      "name": "Weather truth-class fusion",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/weather-spatiotemporal-fusion.js",
+      "formula": "spatiotemporal alignment + separate official/Earthus/model partitions",
+      "inputs": [
+        "weather canonical signals"
+      ],
+      "outputs": [
+        "weather snapshot"
+      ],
+      "guardrails": [
+        "Truth classes are not merged into one source type"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-011",
+      "name": "Weather event evidence detector",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/weather-event-detector.js",
+      "formula": "threshold/compound signatures produce candidate evidence only",
+      "inputs": [
+        "precipitation",
+        "pressure tendency",
+        "CAPE",
+        "convergence"
+      ],
+      "outputs": [
+        "event evidence candidates"
+      ],
+      "guardrails": [
+        "Never self-declare official warning"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-012",
+      "name": "Cyclone remnant interaction support score",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/cyclone-remnant-interaction.js",
+      "formula": "weighted proximity+moisture+front+jet+ascent+freshness support",
+      "inputs": [
+        "remnant/moisture/front/jet/ascent"
+      ],
+      "outputs": [
+        "support band",
+        "causal-claim gate"
+      ],
+      "guardrails": [
+        "Causal claim needs multi-signal support"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-013",
+      "name": "Weather action hard-gate ranking",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/weather-action-intelligence.js",
+      "formula": "official gates exclude windows before score/confidence ranking",
+      "inputs": [
+        "official gates",
+        "candidate windows",
+        "activity"
+      ],
+      "outputs": [
+        "recommended window/alternatives"
+      ],
+      "guardrails": [
+        "Convenience never overrides official safety"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-014",
+      "name": "Weather forecast verification metrics",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/weather-modelops.js",
+      "formula": "MAE/RMSE/bias over forecast-ground truth pairs",
+      "inputs": [
+        "forecast/actual records"
+      ],
+      "outputs": [
+        "metrics",
+        "promotion gate"
+      ],
+      "guardrails": [
+        "No promotion without calibration and rollback readiness"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-015",
+      "name": "Ensemble scenario medoid clustering",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/forecast-scenario-cluster.js",
+      "formula": "deterministic k-medoid-like clustering using RMS member-vector distance",
+      "inputs": [
+        "ensemble member trajectories"
+      ],
+      "outputs": [
+        "representative scenarios",
+        "member proportions"
+      ],
+      "guardrails": [
+        "Scenario probability is member share, not official probability"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-016",
+      "name": "Official-vs-derived forecast reconciliation",
+      "domain": "Weather",
+      "priority": "P1",
+      "module": "weather/forecast-reconciliation.js",
+      "formula": "derived consensus gap vs official; Early Signal only with divergence+persistence+calibration",
+      "inputs": [
+        "official",
+        "ensemble",
+        "Earthus",
+        "persistence",
+        "calibration"
+      ],
+      "outputs": [
+        "ALIGNED/DIVERGENT",
+        "Early Signal"
+      ],
+      "guardrails": [
+        "Official baseline is never overwritten"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-HF-016",
+      "name": "Watch notification decision with safety priority, confidence, cooldown and dedupe",
+      "domain": "Human Flow/Action",
+      "priority": "P1",
+      "module": "human-flow/watch-notification-decision.js",
+      "formula": "permission/token -> official safety priority OR confidence gate -> semantic dedupe -> cooldown -> decision",
+      "inputs": [
+        "watch",
+        "consent",
+        "device token",
+        "confidence",
+        "history",
+        "official safety"
+      ],
+      "outputs": [
+        "DECIDED/BLOCKED",
+        "dedupeKey",
+        "collapseKey",
+        "deepLink"
+      ],
+      "guardrails": [
+        "No push without permission/token",
+        "Safety cannot bypass OS permission",
+        "No duplicate unchanged state"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-WX-017",
+      "name": "Observation quality/provenance state and confidence cap",
+      "domain": "Weather/Data Quality",
+      "priority": "P1",
+      "module": "weather/observation-quality-provenance.js",
+      "formula": "state=f(freshness,coverage,schema,geolocation,rights,flags); derived confidence <= quality cap",
+      "inputs": [
+        "observedAt",
+        "freshness SLA",
+        "coverage",
+        "schema",
+        "geolocation",
+        "rights",
+        "flags"
+      ],
+      "outputs": [
+        "LIVE/DEGRADED/STALE/UNAVAILABLE",
+        "qualityScore",
+        "confidenceCap",
+        "provenance"
+      ],
+      "guardrails": [
+        "STALE never displays as LIVE",
+        "Rights fail closed",
+        "Derived confidence cannot exceed input quality"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-OPS-012",
+      "name": "Source operation governance matrix for paid use",
+      "domain": "Operations/Governance",
+      "priority": "P1",
+      "module": "ops/source-governance-paid-use.js",
+      "formula": "explicit rights per display/cache/history/derivative/paidAnalysis/export/apiResale/aiUse",
+      "inputs": [
+        "source rights",
+        "operation"
+      ],
+      "outputs": [
+        "ALLOWED/BLOCKED",
+        "reason",
+        "attribution"
+      ],
+      "guardrails": [
+        "No implied commercial right",
+        "Paid/export/API separate permissions",
+        "Blocked rights fail closed"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-PAY-009",
+      "name": "Evidence-linked report/API delivery authorization",
+      "domain": "Paid/Business",
+      "priority": "P2",
+      "module": "paid/report-api-engine.js",
+      "formula": "every section needs evidence; delivery requires quota + source-operation rights",
+      "inputs": [
+        "sections",
+        "evidence index",
+        "source governance",
+        "quota"
+      ],
+      "outputs": [
+        "report payload",
+        "delivery authorization"
+      ],
+      "guardrails": [
+        "No evidence-free section",
+        "Export/API blocked without rights",
+        "No restricted raw source leakage"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-VIS-012",
+      "name": "Truth-preserving tower spatial mode and stable pool",
+      "domain": "Visual",
+      "priority": "P0",
+      "module": "visual/tower-runtime-v2.js",
+      "formula": "actual cell only with provider geometry evidence; else aggregate cluster or approved estimated distribution",
+      "inputs": [
+        "records",
+        "geometry evidence",
+        "device/thermal budget"
+      ],
+      "outputs": [
+        "stable tower frame",
+        "spatial mode",
+        "pool update"
+      ],
+      "guardrails": [
+        "No fabricated precision",
+        "Estimated distribution must be labelled",
+        "Time updates reuse stable IDs"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-ACT-001",
+      "name": "Public action source trust resolution",
+      "domain": "Earth Pulse/Public Action",
+      "priority": "P0",
+      "module": "action/source-registry.js",
+      "formula": "source type -> explicit trust rank + official flag + allowed operations",
+      "inputs": [
+        "source type",
+        "organization",
+        "rights/operations"
+      ],
+      "outputs": [
+        "trust rank",
+        "official",
+        "allowed operations",
+        "attribution"
+      ],
+      "guardrails": [
+        "Unknown source is never official",
+        "Commercial/redisplay rights remain separate"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-ACT-002",
+      "name": "Public action normalization and classification",
+      "domain": "Earth Pulse/Public Action",
+      "priority": "P0",
+      "module": "action/normalization.js",
+      "formula": "rule-backed activity/topic classification over title+summary while preserving source fields",
+      "inputs": [
+        "title",
+        "summary",
+        "source metadata"
+      ],
+      "outputs": [
+        "activity type",
+        "topics",
+        "canonical action record"
+      ],
+      "guardrails": [
+        "No invented schedule",
+        "No invented location",
+        "Raw/source URL retained"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-ACT-003",
+      "name": "Public action status resolution",
+      "domain": "Earth Pulse/Public Action",
+      "priority": "P0",
+      "module": "action/status-resolver.js",
+      "formula": "cancelled > future start=SCHEDULED > within interval=ACTIVE > open-ended started=ONGOING > ended=COMPLETED > UNKNOWN",
+      "inputs": [
+        "startsAt",
+        "endsAt",
+        "cancelled",
+        "now"
+      ],
+      "outputs": [
+        "action status"
+      ],
+      "guardrails": [
+        "No ACTIVE without published time evidence unless explicit ongoing campaign"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-ACT-004",
+      "name": "Public action location precision guard",
+      "domain": "Earth Pulse/Public Action",
+      "priority": "P0",
+      "module": "action/location-precision.js",
+      "formula": "explicit public address/coordinates > city > region > country > map disabled",
+      "inputs": [
+        "published location fields",
+        "coordinatesExplicitlyPublished"
+      ],
+      "outputs": [
+        "map precision",
+        "public locator"
+      ],
+      "guardrails": [
+        "Never invent exact coordinates",
+        "Private/undisclosed locations are map-disabled"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-ACT-005",
+      "name": "Public action truth classification",
+      "domain": "Earth Pulse/Public Action",
+      "priority": "P0",
+      "module": "action/trust-verification.js",
+      "formula": "official source -> OFFICIAL_ACTION; news/community -> capped reported classes",
+      "inputs": [
+        "source type",
+        "corroboration count"
+      ],
+      "outputs": [
+        "truth class",
+        "confidence cap",
+        "live-label eligibility"
+      ],
+      "guardrails": [
+        "News report cannot become official action",
+        "LIVE requires official + ACTIVE"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-PUL-001",
+      "name": "Earth Pulse priority with safety override",
+      "domain": "Earth Pulse",
+      "priority": "P0",
+      "module": "pulse/earth-pulse-orchestrator.js",
+      "formula": "official safety hard priority; else weighted freshness+confidence+geographic relevance+public interest",
+      "inputs": [
+        "event severity",
+        "freshness",
+        "confidence",
+        "relevance",
+        "interest",
+        "kind"
+      ],
+      "outputs": [
+        "priority score"
+      ],
+      "guardrails": [
+        "Official warning/hazard cannot be displaced by tourism/news/NGO action"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-PUL-002",
+      "name": "Pulse scene beacon budget and LOD",
+      "domain": "Earth Pulse",
+      "priority": "P0",
+      "module": "pulse/pulse-scene-budget.js",
+      "formula": "device/scope base budget × thermal factor, sorted by priority",
+      "inputs": [
+        "device",
+        "scope",
+        "thermal",
+        "events"
+      ],
+      "outputs": [
+        "max beacon count",
+        "selected beacons"
+      ],
+      "guardrails": [
+        "No global pin cloud",
+        "Mobile budget smaller",
+        "Lower-priority events remain accessible in panel"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-NEWS-001",
+      "name": "News-to-EarthEvent evidence link",
+      "domain": "News/Earth Pulse",
+      "priority": "P0",
+      "module": "news/news-event-linker.js",
+      "formula": "topic Jaccard + country/region/city match + time proximity; auto-link only above threshold",
+      "inputs": [
+        "news title/summary/location/time",
+        "candidate EarthEvents"
+      ],
+      "outputs": [
+        "ranked links",
+        "auto-link decision",
+        "clusters"
+      ],
+      "guardrails": [
+        "Low-confidence news remains unlinked",
+        "News text never becomes observation"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-TRV-001",
+      "name": "Tourism discovery score with safety gates",
+      "domain": "Tourism Intelligence",
+      "priority": "P0",
+      "module": "tourism/discovery.js",
+      "formula": "hard gate(closed/restriction/critical hazard) then weighted demand+novelty+relation+diversity+dwell+weather+accessibility",
+      "inputs": [
+        "KTO demand/diversity/relations",
+        "visit signals",
+        "weather",
+        "accessibility",
+        "safety"
+      ],
+      "outputs": [
+        "EARTHUS_DISCOVERY score",
+        "components",
+        "exclusion reason"
+      ],
+      "guardrails": [
+        "Not an official KTO recommendation",
+        "No hidden-gem claim from weak data",
+        "Safety gate precedes score"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-TRV-002",
+      "name": "Travel context reason composition",
+      "domain": "Tourism Intelligence",
+      "priority": "P0",
+      "module": "tourism/travel-context.js",
+      "formula": "select bounded evidence-backed reasons for WHY NOW + visit context",
+      "inputs": [
+        "discovery components",
+        "weather",
+        "visit window",
+        "nearby",
+        "evidence IDs"
+      ],
+      "outputs": [
+        "reasons",
+        "context card",
+        "disclaimer"
+      ],
+      "guardrails": [
+        "No positive claim from missing data",
+        "Maximum concise reason set",
+        "Evidence IDs required for production"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-ENV-001",
+      "name": "Pollution evidence state fusion",
+      "domain": "Environment Intelligence",
+      "priority": "P0",
+      "module": "environment/pollution-lens.js",
+      "formula": "normalize each signal into AIR/FIRE/OCEAN/LAND + OBSERVED/REPORTED/DETECTED/MODELLED",
+      "inputs": [
+        "pollution signals",
+        "source IDs",
+        "timestamps",
+        "confidence"
+      ],
+      "outputs": [
+        "domain layers",
+        "evidence legend"
+      ],
+      "guardrails": [
+        "Detected/modelled are never labelled measured",
+        "Domains remain separate"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-ENV-002",
+      "name": "Pollution transport proof gate",
+      "domain": "Environment Intelligence",
+      "priority": "P0",
+      "module": "environment/pollution-lens.js",
+      "formula": "transport visualization allowed only when transport requested + vector proof + supported evidence kind",
+      "inputs": [
+        "transport field",
+        "vector proof",
+        "evidence kind"
+      ],
+      "outputs": [
+        "allow/block",
+        "transport label"
+      ],
+      "guardrails": [
+        "No fake direction",
+        "Modelled path labelled MODELLED_TRANSPORT",
+        "No source attribution from trajectory alone"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-001",
+      "name": "Legal ingestion-run transition state machine",
+      "domain": "Backend/Data Plane",
+      "priority": "P0",
+      "module": "backend/ingestion-run-ledger.js",
+      "formula": "explicit transition graph PENDING→FETCHING→RAW_STORED→VALIDATING→NORMALIZED→PUBLISHING→PUBLISHED→SUCCEEDED with terminal failure/quarantine",
+      "inputs": [
+        "run state",
+        "next state",
+        "timestamp"
+      ],
+      "outputs": [
+        "updated run + history"
+      ],
+      "guardrails": [
+        "Invalid state jumps fail closed; code existence does not imply production success"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-002",
+      "name": "Raw artifact SHA-256 receipt",
+      "domain": "Backend/Data Plane",
+      "priority": "P0",
+      "module": "backend/raw-artifact-store.js",
+      "formula": "SHA-256(raw bytes) + deterministic provider/operation/date/run object key",
+      "inputs": [
+        "raw bytes",
+        "provider",
+        "operation",
+        "run"
+      ],
+      "outputs": [
+        "immutable receipt + object key"
+      ],
+      "guardrails": [
+        "Raw bytes stay object storage; PostgreSQL stores metadata only"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-003",
+      "name": "Raw-to-normalized provenance link validation",
+      "domain": "Backend/Data Plane",
+      "priority": "P0",
+      "module": "backend/raw-artifact-store.js",
+      "formula": "normalized.provenance.rawHash must equal raw receipt SHA-256",
+      "inputs": [
+        "raw receipt",
+        "normalized envelope"
+      ],
+      "outputs": [
+        "allow/block + reason"
+      ],
+      "guardrails": [
+        "No normalized state without exact raw evidence link"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-004",
+      "name": "Schema drift severity classifier",
+      "domain": "Backend/Data Plane",
+      "priority": "P0",
+      "module": "backend/schema-drift.js",
+      "formula": "required missing/type mismatch=BREAKING; unknown extra fields=ADDITIVE; optional mismatch=WARNING",
+      "inputs": [
+        "explicit schema contract",
+        "payload"
+      ],
+      "outputs": [
+        "severity",
+        "problems",
+        "publishAllowed"
+      ],
+      "guardrails": [
+        "Breaking drift quarantines; additive fields never auto-change contract"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-005",
+      "name": "Monotonic provider watermark",
+      "domain": "Backend/Data Plane",
+      "priority": "P0",
+      "module": "backend/watermark-revision.js",
+      "formula": "candidate time may advance/equal but never move persisted watermark backward",
+      "inputs": [
+        "current watermark",
+        "candidate"
+      ],
+      "outputs": [
+        "new watermark + reason"
+      ],
+      "guardrails": [
+        "Late/older responses cannot roll state backward"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-006",
+      "name": "Revision supersession resolver",
+      "domain": "Backend/Data Plane",
+      "priority": "P0",
+      "module": "backend/watermark-revision.js",
+      "formula": "same hash=duplicate; greater revision/later correction supersedes; ambiguous same revision quarantines",
+      "inputs": [
+        "existing revision",
+        "incoming revision"
+      ],
+      "outputs": [
+        "accept/reject/quarantine + supersedes"
+      ],
+      "guardrails": [
+        "Corrections preserve lineage; no destructive overwrite"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-007",
+      "name": "Canonical idempotency-key compiler",
+      "domain": "Backend/Data Plane",
+      "priority": "P0",
+      "module": "backend/idempotency-dedup.js",
+      "formula": "provider|operation|externalId-or-rawHash|observedAt",
+      "inputs": [
+        "provider metadata",
+        "identity/hash",
+        "time"
+      ],
+      "outputs": [
+        "stable idempotency key"
+      ],
+      "guardrails": [
+        "Missing identity/hash fails closed"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-008",
+      "name": "Duplicate versus identity-collision detector",
+      "domain": "Backend/Data Plane",
+      "priority": "P0",
+      "module": "backend/idempotency-dedup.js",
+      "formula": "same key+same hash=duplicate; same key+different hash=collision",
+      "inputs": [
+        "dedupe window",
+        "key",
+        "raw hash"
+      ],
+      "outputs": [
+        "duplicate/collision decision"
+      ],
+      "guardrails": [
+        "Collision is not silently treated as duplicate"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-009",
+      "name": "Provider quota reserve gate",
+      "domain": "Backend/Data Plane",
+      "priority": "P0",
+      "module": "backend/provider-budget.js",
+      "formula": "hard remaining check + safety reserve protection + cooldown",
+      "inputs": [
+        "remaining quota",
+        "requested",
+        "reserve",
+        "safety",
+        "cooldown"
+      ],
+      "outputs": [
+        "allow/block + remainingAfter"
+      ],
+      "guardrails": [
+        "Safety receives reserved capacity but cannot exceed real hard provider limit"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-010",
+      "name": "Conditional HTTP fetch decision",
+      "domain": "Backend/Data Plane",
+      "priority": "P1",
+      "module": "backend/conditional-fetch.js",
+      "formula": "ETag/Last-Modified validators + status classifier",
+      "inputs": [
+        "fetch state",
+        "response status/headers"
+      ],
+      "outputs": [
+        "NOT_MODIFIED/CHANGED/THROTTLED/RETRYABLE/FATAL"
+      ],
+      "guardrails": [
+        "429/5xx never become empty successful datasets"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-011",
+      "name": "Durable outbox lease and dispatch",
+      "domain": "Backend/Operations",
+      "priority": "P0",
+      "module": "backend/outbox-dispatch.js",
+      "formula": "eligible PENDING/RETRY → CLAIMED lease; success DELIVERED; bounded retry → DEAD",
+      "inputs": [
+        "outbox events",
+        "lease time",
+        "result"
+      ],
+      "outputs": [
+        "updated dispatch state"
+      ],
+      "guardrails": [
+        "At-least-once safe with finite retry and dead-letter outcome"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-012",
+      "name": "Quarantine evidence release gate",
+      "domain": "Backend/Operations",
+      "priority": "P0",
+      "module": "backend/quarantine.js",
+      "formula": "QUARANTINED record may replay only with validator + evidence",
+      "inputs": [
+        "quarantine record",
+        "validator",
+        "evidence"
+      ],
+      "outputs": [
+        "RELEASED_FOR_REPLAY or block"
+      ],
+      "guardrails": [
+        "No automatic release after schema/parser/security failure"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-013",
+      "name": "Bounded backfill chunk planner",
+      "domain": "Backend/Operations",
+      "priority": "P1",
+      "module": "backend/backfill-replay.js",
+      "formula": "split [start,end) by bounded chunkMs with maxChunks",
+      "inputs": [
+        "time window",
+        "chunk size",
+        "max chunks"
+      ],
+      "outputs": [
+        "ordered replay chunks"
+      ],
+      "guardrails": [
+        "Historical work cannot become unbounded job explosion"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-014",
+      "name": "Replay priority ordering",
+      "domain": "Backend/Operations",
+      "priority": "P1",
+      "module": "backend/backfill-replay.js",
+      "formula": "SAFETY → CURRENT_REPAIR → GROUND_TRUTH → BACKFILL → RESEARCH",
+      "inputs": [
+        "replay jobs"
+      ],
+      "outputs": [
+        "priority order"
+      ],
+      "guardrails": [
+        "Research/backfill cannot starve current or safety repair"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-015",
+      "name": "Canonical EarthEvent merge evidence",
+      "domain": "Backend/Event Intelligence",
+      "priority": "P0",
+      "module": "backend/canonical-event-store.js",
+      "formula": "official ID exact match strongest; else topic+location+time threshold; type conflict blocks",
+      "inputs": [
+        "two event candidates"
+      ],
+      "outputs": [
+        "merge score + allow/block"
+      ],
+      "guardrails": [
+        "Low-confidence event remains separate; no false mega-event"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-016",
+      "name": "Event lineage acyclic edge insertion",
+      "domain": "Backend/Event Intelligence",
+      "priority": "P0",
+      "module": "backend/event-lineage.js",
+      "formula": "dedupe edges; self-link forbidden; DERIVED_FROM cycle detection",
+      "inputs": [
+        "existing edges",
+        "candidate edge"
+      ],
+      "outputs": [
+        "new edge set or error"
+      ],
+      "guardrails": [
+        "Derived evidence graph remains auditable and acyclic"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-017",
+      "name": "Safe Internal API error mapping",
+      "domain": "Backend/API",
+      "priority": "P0",
+      "module": "backend/api-envelope.js",
+      "formula": "provider auth/429/5xx → typed public code and bounded redacted message",
+      "inputs": [
+        "provider error"
+      ],
+      "outputs": [
+        "API error envelope"
+      ],
+      "guardrails": [
+        "Provider secrets/raw body are never exposed to client"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-018",
+      "name": "Trace/span correlation and structured log sanitation",
+      "domain": "Backend/Operations",
+      "priority": "P0",
+      "module": "backend/trace-correlation.js",
+      "formula": "shared trace ID + child span + recursive secret-key redaction and size bounds",
+      "inputs": [
+        "trace context",
+        "log fields"
+      ],
+      "outputs": [
+        "safe structured log"
+      ],
+      "guardrails": [
+        "No secret/token/API key values or unbounded payloads in logs"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-019",
+      "name": "Server secret reference validation",
+      "domain": "Backend/Security",
+      "priority": "P0",
+      "module": "backend/secret-vault-adapter.js",
+      "formula": "resolve via injected secret adapter; plaintext secret-like config strings forbidden",
+      "inputs": [
+        "secret reference/config"
+      ],
+      "outputs": [
+        "secret value server-side or fail-closed"
+      ],
+      "guardrails": [
+        "Browser/docs/config snapshot never contain service secrets"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-020",
+      "name": "Release config canonical hash",
+      "domain": "Backend/Release",
+      "priority": "P1",
+      "module": "backend/release-config-snapshot.js",
+      "formula": "sorted canonical JSON → SHA-256",
+      "inputs": [
+        "non-secret config",
+        "release metadata"
+      ],
+      "outputs": [
+        "immutable config snapshot"
+      ],
+      "guardrails": [
+        "Rollback/audit can compare exact runtime config without secret capture"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-BCK-021",
+      "name": "Atomic last-good publish gate",
+      "domain": "Backend/Data Plane",
+      "priority": "P0",
+      "module": "backend/atomic-publish.js",
+      "formula": "raw link + schema + freshness + provider health + normalized ref gate before pointer promotion",
+      "inputs": [
+        "candidate evidence",
+        "current pointer"
+      ],
+      "outputs": [
+        "allow/block then rollback-safe pointer"
+      ],
+      "guardrails": [
+        "Invalid/breaking candidate never replaces last-good"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-NEWS-002",
+      "name": "Governed news-source fetch policy",
+      "domain": "News/Backend",
+      "priority": "P0",
+      "module": "news/source-registry.js",
+      "formula": "enabled + termsReviewed + allowAutomatedFetch required; source rights set storage behavior",
+      "inputs": [
+        "source config"
+      ],
+      "outputs": [
+        "allow/block + rights contract"
+      ],
+      "guardrails": [
+        "No unreviewed automated scraping; snippet/full-text/image rights stay explicit"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    },
+    {
+      "id": "ALG-NEWS-003",
+      "name": "Bounded news normalization and clustering",
+      "domain": "News/Backend",
+      "priority": "P0",
+      "module": "news/ingestion-cluster.js",
+      "formula": "bounded title/summary metadata + token similarity/time/location clustering",
+      "inputs": [
+        "raw article metadata",
+        "source rights"
+      ],
+      "outputs": [
+        "normalized articles + clusters"
+      ],
+      "guardrails": [
+        "Full article storage is off by default; repeated coverage does not create pin spam"
+      ],
+      "status": "IMPLEMENTED_FOUNDATION"
+    }
+  ]
+}

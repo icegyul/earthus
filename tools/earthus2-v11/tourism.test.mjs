@@ -1,0 +1,12 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {buildDiscoveryFeatures,scoreDiscovery,rankDiscoveries,buildWhyNow,scoreTravelWindow,bestTravelWindows,RelatedPlaceGraph,AdvancedIntelligenceService} from '../../prototype/js/earthus2/v11/index.js';
+const rows=['demand','novelty','weather','relation'].map((featureKey,i)=>({subjectId:'p1',featureKey,value:[.8,.9,.85,.7][i],sourceId:'KTO',evidenceKind:'OBSERVED',observedAt:'2026-08-26T00:00:00Z',validAt:'2026-08-26T00:00:00Z'}));
+test('discovery features only use supplied values',()=>{const f=buildDiscoveryFeatures(rows,{subjectId:'p1'});assert.equal(Object.keys(f.features).length,4);assert.equal(f.features.accessibilitySignal,undefined);});
+test('discovery refuses thin evidence',()=>assert.equal(scoreDiscovery({features:{weatherSuitability:.8}}).reason,'INSUFFICIENT_EVIDENCE'));
+test('discovery hard gate beats high score',()=>assert.equal(scoreDiscovery({criticalHazard:true,features:{demandSignal:1,noveltySignal:1,weatherSuitability:1}}).score,null));
+test('discovery computes shadow score when evidence enough',()=>{const r=scoreDiscovery({features:{demandSignal:.8,noveltySignal:.9,weatherSuitability:.85}});assert.equal(r.eligible,true);assert.equal(r.releaseState,'SHADOW');});
+test('why-now never invents unsupported reason',()=>{const r=buildWhyNow({features:{weatherSuitability:.8}});assert.deepEqual(r.reasons.map(x=>x.code),['WEATHER_SUITABLE']);});
+test('best window requires weather and demand',()=>assert.equal(scoreTravelWindow({weatherSuitability:.8}).reason,'MISSING_REQUIRED_SIGNAL'));
+test('best window excludes official restriction',()=>assert.equal(scoreTravelWindow({weatherSuitability:1,demandSuitability:1,officialRestriction:true}).eligible,false));
+test('best windows rank supplied windows',()=>{const x=bestTravelWindows([{id:1,weatherSuitability:.9,demandSuitability:.9},{id:2,weatherSuitability:.4,demandSuitability:.4}]);assert.equal(x[0].row.id,1);});
+test('related place graph requires source',()=>{const g=new RelatedPlaceGraph();assert.equal(g.add({from:'a',to:'b'}).accepted,false);});
+test('advanced service produces no fake travel result with no features',()=>{const s=new AdvancedIntelligenceService();assert.equal(s.travel({placeIds:['p1']}).length,0);});

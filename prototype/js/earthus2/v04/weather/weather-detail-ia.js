@@ -1,0 +1,2 @@
+export const WEATHER_DETAIL_ORDER=Object.freeze(['CURRENT','EARTHUS_WEATHER_BRIEF','HOURLY','TEN_DAY','PRECIPITATION_RADAR','DETAIL_METRICS','AIR_QUALITY','ALERTS','DEEP_ANALYSIS']);
+export function compileWeatherDetailSections(available,{plan='FREE'}={}){ const a=new Set(available??[]); return Object.freeze(WEATHER_DETAIL_ORDER.map(id=>Object.freeze({id,available:a.has(id),access:['DEEP_ANALYSIS'].includes(id)&&plan==='FREE'?'PREVIEW':'ALLOW'}))); }

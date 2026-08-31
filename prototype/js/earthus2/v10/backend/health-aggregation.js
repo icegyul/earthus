@@ -1,0 +1,1 @@
+const rank={HEALTHY:0,DEGRADED:1,STALE:2,DOWN:3,UNKNOWN:4};export function aggregateHealth(items=[]){if(!items.length)return {state:'UNKNOWN',reasons:['NO_SIGNALS']};const worst=[...items].sort((a,b)=>(rank[b.state]??4)-(rank[a.state]??4))[0];return {state:worst.state,reasons:items.filter(x=>x.state!== 'HEALTHY').map(x=>x.reason||x.id||x.state),items}}

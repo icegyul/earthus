@@ -1,0 +1,15 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {eventMergeEvidence,CanonicalEventStore,addLineageEdge,normalizeNewsSource,canFetchNewsSource,normalizeNewsArticle,clusterNewsArticles} from '../../prototype/js/earthus2/v07/index.js';
+
+test('official event id merges strongly',()=>{const x=eventMergeEvidence({officialEventId:'A'},{officialEventId:'A'});assert.equal(x.allow,true);assert.equal(x.score,1)});
+test('type conflict blocks merge',()=>{assert.equal(eventMergeEvidence({eventType:'FIRE'},{eventType:'FLOOD'}).allow,false)});
+test('low evidence remains separate',()=>{assert.equal(eventMergeEvidence({eventType:'FIRE',country:'KR',topics:['forest']},{eventType:'FIRE',country:'US',topics:['tourism']}).allow,false)});
+test('canonical store merges official matches',()=>{const s=new CanonicalEventStore();s.upsert({id:'a',officialEventId:'X',eventType:'FIRE'});const r=s.upsert({id:'b',officialEventId:'X',eventType:'FIRE'},{candidateIds:['a']});assert.equal(r.decision,'MERGED');assert.equal(r.event.id,'a')});
+test('lineage dedup',()=>{let e=addLineageEdge([],{from:'obs1',relation:'OBSERVATION_OF',to:'ev1'});e=addLineageEdge(e,{from:'obs1',relation:'OBSERVATION_OF',to:'ev1'});assert.equal(e.length,1)});
+test('lineage self link blocked',()=>{assert.throws(()=>addLineageEdge([],{from:'a',relation:'DERIVED_FROM',to:'a'}),/SELF_LINEAGE/)});
+test('lineage derived cycle blocked',()=>{let e=addLineageEdge([],{from:'a',relation:'DERIVED_FROM',to:'b'});assert.throws(()=>addLineageEdge(e,{from:'b',relation:'DERIVED_FROM',to:'a'}),/LINEAGE_CYCLE/)});
+test('news source requires reviewed automated policy',()=>{const s=normalizeNewsSource({id:'g',baseUrl:'https://example.org/feed',type:'RSS',policy:{termsReviewed:false,allowAutomatedFetch:true}});assert.equal(canFetchNewsSource(s).allow,false)});
+test('news source approved policy fetches',()=>{const s=normalizeNewsSource({id:'g',baseUrl:'https://example.org/feed',type:'RSS',policy:{termsReviewed:true,allowAutomatedFetch:true}});assert.equal(canFetchNewsSource(s).allow,true)});
+test('news normalization bounded and report truth',()=>{const s=normalizeNewsSource({id:'g',baseUrl:'https://x',policy:{termsReviewed:true,allowAutomatedFetch:true}});const a=normalizeNewsArticle({url:'https://x/1',title:' A  title ',summary:'x'.repeat(1000)},s);assert.equal(a.truthClass,'NEWS_REPORT');assert.ok(a.summary.length<=500);assert.equal(a.fullTextStored,false)});
+test('similar news clusters',()=>{const a={id:'1',title:'Large wildfire spreads in eastern region',publishedAt:'2026-08-26T00:00:00Z',country:'KR',region:'Gyeongbuk'};const b={id:'2',title:'Large wildfire spreads across eastern region',publishedAt:'2026-08-26T01:00:00Z',country:'KR',region:'Gyeongbuk'};assert.equal(clusterNewsArticles([a,b],{threshold:.5}).length,1)});
+test('different news remains separate',()=>{const a={id:'1',title:'Wildfire in Korea',publishedAt:'2026-08-26',country:'KR'};const b={id:'2',title:'Tourism festival opens',publishedAt:'2026-08-26',country:'KR'};assert.equal(clusterNewsArticles([a,b],{threshold:.6}).length,2)});

@@ -1,0 +1,15 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {PushTokenStore,notificationPermission,recordDelivery,deliveryOutcome,fatigueDecision,evaluateWatchTrigger,newIncident,transitionIncident,errorBudget,releaseAllowedByBudget,resolveDegradedMode,featureDecision,evaluateReleaseEvidence,aggregateHealth,chooseProvider} from '../../prototype/js/earthus2/v10/index.js';
+test('invalid push token removed from active',()=>{const s=new PushTokenStore();s.upsert({userId:'u',deviceId:'d',token:'t'});s.invalidate('u','d');assert.equal(s.active('u').length,0)});
+test('revoked consent blocks',()=>assert.equal(notificationPermission({consent:{revokedAt:1,channels:['PUSH']},channel:'PUSH',category:'AIR'}).allow,false));
+test('delivery accepted not opened',()=>{const r=recordDelivery({notificationId:'n',tokenId:'t',provider:'FCM',status:'ACCEPTED'});assert.deepEqual(deliveryOutcome([r]),{total:1,acceptedOrBetter:1,invalidTokens:0})});
+test('fatigue blocks normal but safety overrides',()=>{assert.equal(fatigueDecision([{sentAt:100}],{now:101,cooldownMs:1000}).allow,false);assert.equal(fatigueDecision([{sentAt:100}],{now:101,cooldownMs:1000,safety:true}).allow,true)});
+test('watch low confidence blocks',()=>assert.equal(evaluateWatchTrigger({enabled:true,minConfidence:.8,predicate:()=>true},{confidence:.2}).trigger,false));
+test('official emergency hard triggers',()=>assert.equal(evaluateWatchTrigger({enabled:true},{officialEmergency:true}).trigger,true));
+test('incident invalid transition blocked',()=>{const i=newIncident({id:'x'});assert.throws(()=>transitionIncident(i,'MONITORING'),/INVALID/)});
+test('burned error budget blocks release',()=>{const b=errorBudget({targetAvailability:.99,total:100,failed:5});assert.equal(releaseAllowedByBudget(b).allow,false)});
+test('db down makes read only',()=>assert.equal(resolveDegradedMode({dbHealth:'DOWN'}).mode,'READ_ONLY_LAST_GOOD'));
+test('safety feature always on',()=>assert.equal(featureDecision({mode:'OFF'},{subjectId:'u',entitled:false,safety:true}).enabled,true));
+test('release missing evidence blocks',()=>assert.equal(evaluateReleaseEvidence({tests:true}).allow,false));
+test('health no signals unknown',()=>assert.equal(aggregateHealth([]).state,'UNKNOWN'));
+test('failover preserves truth',()=>{const x=chooseProvider([{id:'fc',enabled:true,health:'HEALTHY',truthClass:'FORECAST',priority:1},{id:'obs',enabled:true,health:'HEALTHY',truthClass:'OBSERVED',priority:2}],{truthRequired:'OBSERVED'});assert.equal(x.provider.id,'obs')});
+test('no truth compatible provider returns none',()=>assert.equal(chooseProvider([{truthClass:'FORECAST',health:'HEALTHY'}],{truthRequired:'OBSERVED'}).provider,null));

@@ -1,0 +1,1 @@
+export function normalizePick(hit){ if(!hit) return null; return {objectId:hit.objectId??null,layerId:hit.layerId??null,position:hit.position??null,value:hit.value??null,unit:hit.unit??null,evidenceKind:hit.evidenceKind??'UNKNOWN',sourceRefs:[...new Set(hit.sourceRefs??[])],observedAt:hit.observedAt??null,validAt:hit.validAt??null,provenanceId:hit.provenanceId??null}; }

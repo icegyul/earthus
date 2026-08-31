@@ -261,6 +261,7 @@ try {
       underwaterDetail: detailMeta,
       sample: r.trenchSample?.(),
       ocean: r.oceanSurfaceSnapshot?.() || null,
+      atmosphere: r.atmosphereLightSnapshot?.() || null,
     };
   });
   assert.equal(state.runtime.terrain, "ESRI_TOPOBATHY3D");
@@ -273,6 +274,9 @@ try {
   assert.equal(state.runtime.front, 1);
   assert.equal(state.runtime.back, 1);
   assert.equal(state.runtime.ocean?.visible, false);
+  assert.equal(state.runtime.atmosphere?.mode, "UNDERWATER");
+  assert.equal(state.runtime.atmosphere?.atmosphere?.show, false);
+  assert.equal(state.runtime.atmosphere?.cityLights?.show, false);
   assert.equal(
     state.runtime.underwaterDetail?.truthClass,
     "ESRI_TOPOBATHY3D_SAMPLED_SEAFLOOR_MESH",

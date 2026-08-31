@@ -12,6 +12,7 @@ import { Gk2aCthReliefRuntime } from "./gk2a-cth-relief.js";
 import { GfsCloudVolumeRuntime } from "./gfs-cloud-volume.js";
 import { GlobalTerrainReliefPass } from "./global-terrain-relief-pass.js";
 import { OceanSurfacePass } from "./ocean-surface-pass.js";
+import { PhysicalAtmosphereLightRuntime } from "./physical-atmosphere-light.js";
 import {
   PhysicalEarthPresentationRuntime,
   terrainPresentationForHeight,
@@ -57,6 +58,7 @@ let cloudShell = null,
   physicalPresentation = null,
   globalTerrainRelief = null,
   oceanSurface = null,
+  atmosphereLight = null,
   defaultPhysicalReady = false,
   globalReliefError = null,
   oceanSurfaceError = null,
@@ -630,6 +632,7 @@ async function installImagery() {
   cityLightsLayer = viewer.imageryLayers.addImageryProvider(
     gibsProvider({ layer: "VIIRS_CityLights_2012", level: 8, ext: "jpeg" }),
   );
+  cityLightsLayer.__earthusV2Source = "NASA_GIBS_VIIRS_CITYLIGHTS_2012";
   cityLightsLayer.dayAlpha = 0;
   cityLightsLayer.nightAlpha = 0.76;
   cityLightsLayer.brightness = 1.1;
@@ -838,6 +841,7 @@ async function enterTrench() {
   physicalPresentation?.setMode?.("TRENCH");
   globalTerrainRelief?.setMode?.("TRENCH");
   oceanSurface?.setMode?.("TRENCH");
+  atmosphereLight?.setMode?.("TRENCH");
   waterTruth = "NO_WATER_MASK";
   if (cloudShell) cloudShell.show = false;
   setObservedShadow(0, false);
@@ -897,6 +901,7 @@ async function enterUnderwater() {
   physicalPresentation?.setMode?.("UNDERWATER");
   globalTerrainRelief?.setMode?.("UNDERWATER");
   oceanSurface?.setMode?.("UNDERWATER");
+  atmosphereLight?.setMode?.("UNDERWATER");
   waterTruth = "NO_WATER_MASK";
   if (cloudShell) cloudShell.show = false;
   setObservedShadow(0, false);
@@ -930,6 +935,7 @@ async function activateDefaultPhysicalEarth({ resetCamera = true } = {}) {
     physicalPresentation = new PhysicalEarthPresentationRuntime({ viewer, Cesium });
   physicalPresentation.install();
   physicalPresentation.setMode("EARTH");
+  atmosphereLight?.setMode?.("EARTH");
   waterTruth = terrainProvider?.hasWaterMask === true
     ? "PROVIDER_WATER_MASK"
     : "NO_WATER_MASK";
@@ -1012,6 +1018,7 @@ function enterEarth({ upgrade = true } = {}) {
   physicalPresentation?.setMode?.("EARTH");
   globalTerrainRelief?.setMode?.("EARTH");
   oceanSurface?.setMode?.("EARTH");
+  atmosphereLight?.setMode?.("EARTH");
   waterTruth = oceanSurface?.snapshot?.().ready === true
     ? "NATURAL_EARTH_MASK_0M_OCEAN_SURFACE"
     : "NO_WATER_MASK";
@@ -1116,6 +1123,13 @@ export async function bootRealLivingEarth({
     "Terrain3D surface ready · TopoBathy held for ocean depth modes",
   );
   physicalPresentation = new PhysicalEarthPresentationRuntime({ viewer, Cesium });
+  atmosphereLight = new PhysicalAtmosphereLightRuntime({
+    viewer,
+    Cesium,
+    cityLightsLayer,
+    cloudShadowState: () => ({ cloudFidelity, cloudMeta }),
+  });
+  atmosphereLight.install({ timeIso: new Date().toISOString() });
   await activateDefaultPhysicalEarth({ resetCamera: true });
   installReadout();
   installBridge();
@@ -1142,6 +1156,8 @@ export async function bootRealLivingEarth({
     defaultPhysicalSnapshot: () => physicalPresentation?.snapshot?.() || null,
     globalTerrainReliefSnapshot: () => globalTerrainRelief?.snapshot?.() || null,
     oceanSurfaceSnapshot: () => oceanSurface?.snapshot?.() || null,
+    atmosphereLightSnapshot: () => atmosphereLight?.snapshot?.() || null,
+    setAtmosphereTime: (timeIso) => atmosphereLight?.setTime?.(timeIso) || null,
     cloudDiagnostics: () =>
       Object.freeze({
         volume: lastVolumeError,
@@ -1176,6 +1192,8 @@ export async function bootRealLivingEarth({
       globalTerrainRelief = null;
       oceanSurface?.dispose();
       oceanSurface = null;
+      atmosphereLight?.dispose();
+      atmosphereLight = null;
       defaultPhysicalReady = false;
       globalReliefError = null;
       oceanSurfaceError = null;

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "earthus.v53.g4-runtime-evidence.v1",
+  "capturedAt": "2026-08-31T02:47:58Z",
+  "repository": {
+    "branch": "earthus-v2/real-living-earth-render",
+    "baseHead": "099ee844e33793c9eaccee776f70264a63da2c75",
+    "workingTree": "DIRTY_PRESERVED",
+    "deployed": false
+  },
+  "automatedContract": "PASS",
+  "manualVisualAcceptance": "PASS_G4_ONLY",
+  "viewer": {
+    "viewerCount": 1,
+    "canvasCount": 1,
+    "requestRenderMode": true,
+    "idleFrames1s": 0
+  },
+  "atmosphere": {
+    "ready": true,
+    "truthClass": "EXPLICIT_EARTH_RAYLEIGH_MIE_PRESENTATION",
+    "timeSource": "CAPTURED_UTC_CESIUM_CLOCK_FROZEN",
+    "shouldAnimate": false,
+    "rayleighCoefficient": [0.0000052, 0.0000121, 0.0000275],
+    "rayleighScaleHeightM": 8000,
+    "mieCoefficient": [0.00002, 0.00002, 0.00002],
+    "mieScaleHeightM": 1200,
+    "mieAnisotropy": 0.82,
+    "perFragmentAtmosphere": true,
+    "dynamicLighting": true,
+    "dynamicLightingFromSun": true
+  },
+  "light": {
+    "terrainLighting": true,
+    "isSunLight": true,
+    "sunLightIntensity": 1.9,
+    "lightingFadeOutDistanceM": 9000000,
+    "lightingFadeInDistanceM": 20000000,
+    "oceanLightingModel": "CESIUM_FIXED_SUN_DIRECTION_SPECULAR"
+  },
+  "phaseEvidence": {
+    "anchor": { "longitudeDeg": 112, "latitudeDeg": 18 },
+    "day": {
+      "timeIso": "2026-08-31T04:00:00.000Z",
+      "sunDirectionFixed": [-0.495993369, 0.855212926, 0.150337717],
+      "cosine": 0.977296,
+      "phase": "DAY",
+      "frameSha256": "a8ff0882a54cf745308e47b1d36e29dcd8f094cd9caeb06276d01752499d3363"
+    },
+    "terminator": {
+      "timeIso": "2026-08-31T10:40:00.000Z",
+      "sunDirectionFixed": [0.928722994, 0.339688998, 0.148610179],
+      "cosine": 0.014584,
+      "phase": "TERMINATOR",
+      "frameSha256": "121f4f59b6b5e94aabc7fe8c6ff282b573cb6c2af06e072f08df450b499f680c"
+    },
+    "night": {
+      "timeIso": "2026-08-31T16:00:00.000Z",
+      "sunDirectionFixed": [0.495642113, -0.855957661, 0.147225605],
+      "cosine": -0.885875,
+      "phase": "NIGHT",
+      "frameSha256": "9bff5a8663e44cbd1a3ae6619c8013f4bedb4302a53c9c33df0260476995087c"
+    }
+  },
+  "cityLights": {
+    "sourceId": "NASA_GIBS_VIIRS_CITYLIGHTS_2012",
+    "truthClass": "STATIC_NASA_VIIRS_2012_NIGHT_CONTEXT",
+    "dayAlpha": 0,
+    "nightAlpha": 0.26,
+    "brightness": 0.82,
+    "contrast": 1.05,
+    "saturation": 0.58
+  },
+  "cloudShadow": {
+    "status": "UNAVAILABLE_NO_VALID_OBSERVATION",
+    "enabled": false,
+    "source": null,
+    "validAt": null
+  },
+  "regression": {
+    "g2Default": "PASS_RELIEF_LOAD_937MS",
+    "g3Ocean": "PASS",
+    "canonicalImageryOwner": "PASS",
+    "mountainSequence": "BROWSER_VERIFIED",
+    "trench": "PASS_ATMOSPHERE_CITY_OCEAN_HIDDEN",
+    "underwater": "PASS_ATMOSPHERE_CITY_OCEAN_HIDDEN"
+  },
+  "deferredGates": {
+    "cloud": "G5_NOT_STARTED",
+    "regionStreaming": "G6_NOT_STARTED"
+  },
+  "final": "G4_LOCAL_PASS"
+}

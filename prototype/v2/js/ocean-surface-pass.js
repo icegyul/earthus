@@ -87,12 +87,15 @@ function oceanMaterial(C, { maskUrl, normalUrl }) {
           vec3 sampledNormal = texture(normalMap, materialInput.st).rgb * 2.0 - 1.0;
           vec3 tangentNormal = normalize(vec3(sampledNormal.xy * 0.003, 1.0));
           vec3 normalEC = normalize(materialInput.tangentToEyeMatrix * tangentNormal);
+          vec3 baseNormalEC = normalize(materialInput.normalEC);
           vec3 viewEC = normalize(materialInput.positionToEyeEC);
+          vec3 sunEC = normalize(czm_sunDirectionEC);
           float facing = abs(dot(normalEC, viewEC));
           float fresnel = pow(1.0 - clamp(facing, 0.0, 1.0), 3.0);
-          material.diffuse = mix(deepColor.rgb, rimColor.rgb, fresnel);
+          float sunFacing = max(dot(baseNormalEC, sunEC), 0.0);
+          material.diffuse = mix(deepColor.rgb, rimColor.rgb, fresnel) * mix(0.38, 1.0, sunFacing);
           material.normal = tangentNormal;
-          material.specular = mix(0.08, 0.50, fresnel);
+          material.specular = mix(0.08, 0.50, fresnel) * mix(0.15, 1.0, sunFacing);
           material.shininess = 8.0;
           material.alpha = mask * mix(0.10, 0.35, fresnel);
           return material;
@@ -229,6 +232,7 @@ export class OceanSurfacePass {
       normalSha256: this.assets?.normal?.hash || null,
       normalBytes: this.assets?.normal?.byteLength || null,
       materialType: this.material?.type || null,
+      lightingModel: 'CESIUM_FIXED_SUN_DIRECTION_SPECULAR',
       surfaceTruthHeightM: 0,
       presentationOffsetM: this.presentationOffsetM,
       depthPolicy: 'DEPTH_TESTED_GLOBAL_PRESENTATION_EPSILON',

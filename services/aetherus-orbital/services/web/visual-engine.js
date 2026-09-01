@@ -112,7 +112,11 @@
       const left=a==='left'?xx:a==='right'?xx-tw:xx-tw/2;this.visualLabels.push({key,x:left,y:y-9,width:tw,height:sub?22:11});ctx.textAlign=a;ctx.fillStyle=accent;ctx.font='600 9px Inter,system-ui';ctx.fillText(text,xx,y);if(sub){ctx.fillStyle='#556875';ctx.font='7px SFMono-Regular,Consolas,monospace';ctx.fillText(sub,xx,y+11)}ctx.restore()
     }
     _glowDot(ctx,x,y,r,color,alpha=1){ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(x,y,0,x,y,r*4);g.addColorStop(0,color);g.addColorStop(.16,color);g.addColorStop(1,'rgba(0,0,0,0)');ctx.globalAlpha=.16*alpha;ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r*4,0,TAU);ctx.fill();ctx.globalAlpha=alpha;ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();ctx.restore()}
-    _ellipse(ctx,cx,cy,rx,ry,rot,color='rgba(129,166,190,.16)',width=1,dash=[]){ctx.save();ctx.translate(cx,cy);ctx.rotate(rot);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,TAU);ctx.stroke();ctx.restore()}
+    _ellipse(ctx,cx,cy,rx,ry,rot,color='rgba(129,166,190,.16)',width=1,dash=[]){
+      // Canvas ellipse() throws IndexSizeError on negative radii; small panes
+      // can drive the log-scaled orbit radius negative, so clamp defensively.
+      rx=Math.abs(rx);ry=Math.abs(ry);if(rx<.5||ry<.5)return;
+      ctx.save();ctx.translate(cx,cy);ctx.rotate(rot);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,TAU);ctx.stroke();ctx.restore()}
     _spaceFocusScreen(w,h){const mobile=w<700,r=Math.min(w,h)*(mobile?.215:.255)*clamp(this.zoom,.82,1.22);return{x:w*(mobile?.5:.48),y:h*(mobile?.54:.55),r}}
     _sunSphere(ctx,x,y,r,t){ctx.save();const halo=ctx.createRadialGradient(x,y,r*.15,x,y,r*3.2);halo.addColorStop(0,'rgba(255,244,203,.98)');halo.addColorStop(.28,'rgba(240,174,65,.34)');halo.addColorStop(1,'rgba(218,112,35,0)');ctx.fillStyle=halo;ctx.beginPath();ctx.arc(x,y,r*3.2,0,TAU);ctx.fill();const g=ctx.createRadialGradient(x-r*.32,y-r*.36,r*.08,x,y,r);g.addColorStop(0,'#fff7cf');g.addColorStop(.38,'#f5c365');g.addColorStop(.82,'#ce702d');g.addColorStop(1,'#6f2f18');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();ctx.globalAlpha=.28;ctx.strokeStyle='#fff0b0';ctx.lineWidth=Math.max(.7,r*.025);for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(x+Math.sin(t*.15+i*1.7)*r*.24,y+Math.cos(t*.11+i*2.1)*r*.22,r*(.18+i*.03),i*.5,i*.5+1.8);ctx.stroke()}ctx.restore()}
     _planetSphere(ctx,id,x,y,r,t){

@@ -11,18 +11,29 @@ AU_KM = 149_597_870.7
 DAY_S = 86400.0
 J2000 = datetime(2000, 1, 1, 12, tzinfo=timezone.utc)
 
-# Low-precision J2000 mean elements suitable for offline research visualization only.
+# Low-precision mean elements suitable for offline research visualization only.
 # Values are intentionally tagged RESEARCH_ONLY; operational ephemerides must use JPL kernels/Horizons.
+#
+# Source: JPL/Standish "Keplerian Elements for Approximate Positions of the
+# Major Planets" Table 1 (valid 1800 AD - 2050 AD), J2000 ecliptic frame.
+# Columns: a[AU], e, I[deg], L0[deg] (mean longitude at J2000),
+#          varpi[deg] (longitude of perihelion), Omega[deg] (asc. node),
+#          L_rate[deg per Julian century].
+# The previous table mixed conventions (its 6th column was the MEAN ANOMALY
+# for Mercury/Venus but was consumed as mean longitude), which misplaced the
+# inner planets by 57-133 deg; caught by angular cross-validation against
+# astropy on 2026-09-01 and replaced with the canonical parameterization.
 PLANET_ELEMENTS = {
-    "MERCURY": (0.387098, 0.205630, 7.00487, 48.331, 29.125, 174.796, 87.9691),
-    "VENUS": (0.723332, 0.006772, 3.39471, 76.680, 54.852, 50.115, 224.701),
-    "EARTH": (1.00000011, 0.01671022, 0.00005, -11.26064, 102.94719, 100.46435, 365.256363004),
-    "MARS": (1.523679, 0.0934, 1.8497, 49.558, 286.502, 355.453, 686.980),
-    "JUPITER": (5.20260, 0.04849, 1.3033, 100.464, 273.867, 34.404, 4332.589),
-    "SATURN": (9.5549, 0.05555, 2.4886, 113.665, 339.392, 49.944, 10759.22),
-    "URANUS": (19.2184, 0.0463, 0.773, 74.006, 96.998857, 313.232, 30688.5),
-    "NEPTUNE": (30.1104, 0.009, 1.770, 131.784, 273.187, 304.880, 60182.0),
+    "MERCURY": (0.38709927, 0.20563593, 7.00497902, 252.25032350, 77.45779628, 48.33076593, 149472.67411175),
+    "VENUS": (0.72333566, 0.00677672, 3.39467605, 181.97909950, 131.60246718, 76.67984255, 58517.81538729),
+    "EARTH": (1.00000261, 0.01671123, -0.00001531, 100.46457166, 102.93768193, 0.0, 35999.37244981),
+    "MARS": (1.52371034, 0.09339410, 1.84969142, -4.55343205, -23.94362959, 49.55953891, 19140.30268499),
+    "JUPITER": (5.20288700, 0.04838624, 1.30439695, 34.39644051, 14.72847983, 100.47390909, 3034.74612775),
+    "SATURN": (9.53667594, 0.05386179, 2.48599187, 49.95424423, 92.59887831, 113.66242448, 1222.49362201),
+    "URANUS": (19.18916464, 0.04725744, 0.77263783, 313.23810451, 170.95427630, 74.01692503, 428.48202785),
+    "NEPTUNE": (30.06992276, 0.00859048, 1.77004347, -55.12002969, 44.96476227, 131.78422574, 218.45945325),
 }
+JULIAN_CENTURY_DAYS = 36525.0
 
 
 def _aware(value: datetime) -> datetime:
@@ -77,9 +88,9 @@ class CelestialState:
 
 class SolarSystemEphemerisEngine:
     id = "E08"
-    version = "0.3"
+    version = "0.4"
     provider = "AETHERUS_OFFLINE_KEPLER_J2000"
-    kernel_version = "mean-elements-j2000-v1"
+    kernel_version = "standish-1800-2050-v2"
 
     def state(self, target: str, epoch_utc: datetime, *, observer: str = "SUN", frame: str = "ICRF_APPROX") -> CelestialState:
         epoch = _aware(epoch_utc)
@@ -90,11 +101,11 @@ class SolarSystemEphemerisEngine:
         if target == "SUN":
             pos = (0.0, 0.0, 0.0)
         elif target in PLANET_ELEMENTS:
-            a, e, inc, node, argp, mean_long, period_days = PLANET_ELEMENTS[target]
-            days = (epoch - J2000).total_seconds() / DAY_S
-            mean_motion = 2*pi/period_days
-            mean_anomaly0 = radians((mean_long - argp - node) % 360.0)
-            m = (mean_anomaly0 + mean_motion * days) % (2*pi)
+            a, e, inc, mean_long0, varpi, node, l_rate_cy = PLANET_ELEMENTS[target]
+            centuries = (epoch - J2000).total_seconds() / DAY_S / JULIAN_CENTURY_DAYS
+            mean_long = mean_long0 + l_rate_cy * centuries
+            argp = varpi - node  # argument of perihelion from longitude of perihelion
+            m = radians((mean_long - varpi) % 360.0)
             ea = _solve_kepler(m, e)
             x = a * (cos(ea) - e)
             y = a * sqrt(1-e*e) * sin(ea)

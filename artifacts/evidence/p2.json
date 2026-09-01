@@ -1,0 +1,57 @@
+{
+  "phase": "p2",
+  "orbital_phase": null,
+  "gate": "PARTIAL",
+  "generated_at": "2026-09-01T04:35:19.966484+00:00",
+  "repository": "git@github.com:icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "f3362040ecbe64236e9238ae4a54399e4e6d2f1e",
+  "tests_space": {
+    "targets": [
+      "tests/unit/test_e08_ephemeris_cross_validation.py",
+      "tests/acceptance"
+    ],
+    "exit_code": 0,
+    "summary": "======================= 285 passed, 2 warnings in 0.67s ======================="
+  },
+  "e08_correction": {
+    "defect": "구 PLANET_ELEMENTS 테이블이 규약 혼선(6열이 수성·금성에선 평균이각, 코드는 평균경도로 소비 → ω+Ω 이중 차감)으로 수성 103°·금성 131° 오배치. 기존 인수 테스트는 |r|만 검사해 각도 오류를 통과시킴.",
+    "fix": "JPL/Standish 근사 원소 Table 1(1800-2050, L·ϖ·Ω + 세기당 L률)로 교체, kernel_version standish-1800-2050-v2. 독립 교차검증(astropy 내장 해석 에페메리스) 8행성 전부 각도차 0.054° 이내.",
+    "regression_guard": "tests/unit/test_e08_ephemeris_cross_validation.py (각도 0.5°·거리 0.5% 상한)"
+  },
+  "live_api": {
+    "routes_total": 91,
+    "space_state": {
+      "http_status": 200,
+      "data_status": "RESEARCH_ONLY",
+      "first_object": {
+        "id": "MERCURY",
+        "kernel_version": "standish-1800-2050-v2",
+        "validation_state": "RESEARCH_ONLY"
+      }
+    },
+    "space_weather": {
+      "http_status": 200,
+      "data_status": "UNAVAILABLE",
+      "warnings": [
+        "Live NOAA SWPC provider has not been network-verified in this environment."
+      ]
+    },
+    "neo": {
+      "http_status": 200,
+      "data_status": "UNAVAILABLE"
+    }
+  },
+  "pwa": {
+    "surface": "services/web (한/영 이중언어) — /app/ 마운트, SPACE 모드 태양계 씬 렌더 확인 (인앱 브라우저)",
+    "dual_api": "PWA가 8100 제품 API + 8000 페이즈 과학 API(catalog/*) 동시 소비 확인 (네트워크 검사)",
+    "visual_fix": "visual-engine.js _ellipse: 첫 프레임 0사이즈 캔버스에서 로그 스케일 궤도 반경이 음수화되어 IndexSizeError로 씬 전체가 죽던 문제 — 반경 클램프 방어로 수정"
+  },
+  "limitations": [
+    "E08은 RESEARCH_ONLY 오프라인 케플러 — 운영 에페메리스는 JPL 커널/Horizons 필요 (엔진 자체 명시)",
+    "우주기상(NOAA SWPC)·NEO는 라이브 프로바이더 미검증 — 정직한 UNAVAILABLE 상태로 서빙됨",
+    "E09~E12 심층 감사는 후속 (구조·정직성 테스트는 인수 매트릭스로 재현됨)",
+    "V2-P3 멀티스케일 비주얼(v2-three 지구 통합)은 별도 트랙"
+  ],
+  "next_allowed": "V2-P3 Multi-Scale Visual (v2-three 지구 ↔ AETHERUS 씬 통합) 또는 V2-P4 CONTROL"
+}

@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "base_url": "http://127.0.0.1:8000",
+  "viewports": {
+    "desktop1440": {
+      "inner_width": 1440,
+      "scroll_width": 1440,
+      "phases": {
+        "P6": "P6 · EXECUTED\nP6 · 2 candidates · f78e1a0a2fc0",
+        "P7": "P7 · EXECUTED\nP7 · DEBRIS-DEVICE-TEST · DEVICE-VALIDATION-EVIDENCE",
+        "P8": "P8 · EXECUTED\nP8 · 12 fragments · 05f86f40e439",
+        "P9": "P9 · EXECUTED\nP9 · 1 visibility windows · f18f99185e45",
+        "P10": "P10 · EXECUTED\nP10 · 1 records · 50b395870da4",
+        "P11": "P11 · EXECUTED\nP11 · SUCCEEDED · a91a7926-40d",
+        "P12": "P12 · EXECUTED\nP12 · LOCAL COMPLETE · 0 external gates"
+      },
+      "screenshot": "artifacts/evidence/p6_p12/staging_desktop1440_p6_p12.png"
+    },
+    "mobile390": {
+      "inner_width": 390,
+      "scroll_width": 390,
+      "phases": {
+        "P6": "P6 · EXECUTED\nP6 · 2 candidates · f78e1a0a2fc0",
+        "P7": "P7 · EXECUTED\nP7 · DEBRIS-DEVICE-TEST · DEVICE-VALIDATION-EVIDENCE",
+        "P8": "P8 · EXECUTED\nP8 · 12 fragments · 05f86f40e439",
+        "P9": "P9 · EXECUTED\nP9 · 1 visibility windows · f18f99185e45",
+        "P10": "P10 · EXECUTED\nP10 · 1 records · 50b395870da4",
+        "P11": "P11 · EXECUTED\nP11 · SUCCEEDED · a91a7926-40d",
+        "P12": "P12 · EXECUTED\nP12 · LOCAL COMPLETE · 0 external gates"
+      },
+      "screenshot": "artifacts/evidence/p6_p12/staging_mobile390_p6_p12.png"
+    }
+  },
+  "console_errors": [],
+  "page_errors": []
+}

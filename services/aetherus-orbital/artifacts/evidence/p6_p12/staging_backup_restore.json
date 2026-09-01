@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "source_database": "aetherus",
+  "restored_database": "aetherus_restore_p6p12",
+  "migration_count": 8,
+  "restored_counts": {
+    "product_record": 10,
+    "protect_ranking": 1,
+    "fragmentation_run": 1,
+    "observation_record": 1,
+    "dataset_manifest": 1,
+    "job_run": 1,
+    "audit_event": 1
+  },
+  "api_restart_health": "healthy",
+  "restored_dataset_manifest_sha256": "d8af322a9c9d90362068540d90a74743ea5683371a85d0dc0e69718d6e057980",
+  "scope": "Disposable staging PostgreSQL pg_dump/pg_restore and API restart; not production backup evidence."
+}

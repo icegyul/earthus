@@ -1,0 +1,98 @@
+{
+  "mode": "PLAYWRIGHT_INPROCESS_FASTAPI_BRIDGE",
+  "modes": {
+    "SPACE": {
+      "data_status": "RESEARCH_ONLY",
+      "validation": "RESEARCH ONLY",
+      "detail_chars": 4190
+    },
+    "CONTROL": {
+      "data_status": "OK",
+      "validation": "OK",
+      "detail_chars": 2088
+    },
+    "ORBIT": {
+      "data_status": "SCREENING_ONLY",
+      "validation": "SCREENING ONLY",
+      "detail_chars": 2893
+    },
+    "INTELLIGENCE": {
+      "data_status": "VALIDATION_PENDING",
+      "validation": "VALIDATION PENDING",
+      "detail_chars": 7295
+    },
+    "ARCHIVE": {
+      "data_status": "OK",
+      "validation": "OK",
+      "detail_chars": 1586
+    }
+  },
+  "console_errors": [],
+  "page_errors": [],
+  "status": "PASS",
+  "space_interaction": {
+    "semantic_zoom": true,
+    "planet_focus": true,
+    "back_navigation": true
+  },
+  "control_truthful_visual": {
+    "missionId": "APOLLO11",
+    "phase": "POST_MISSION",
+    "trajectoryStatus": "UNAVAILABLE",
+    "trajectoryVisible": false,
+    "targetOrbitVisible": false,
+    "trajectoryClass": null,
+    "targetOrbitFrame": null
+  },
+  "orbit_semantic_lod": {
+    "global": {
+      "view": "GLOBAL",
+      "fixtureClass": "VALIDATION_FIXTURE",
+      "visibleObjectCount": 0,
+      "conjunctionVisible": false,
+      "radarSweepVisible": false,
+      "lineMeaning": null,
+      "pc": null
+    },
+    "event": {
+      "view": "EVENT",
+      "fixtureClass": "VALIDATION_FIXTURE",
+      "visibleObjectCount": 2,
+      "conjunctionVisible": true,
+      "radarSweepVisible": false,
+      "lineMeaning": "SCREENING_RELATIVE_GEOMETRY",
+      "pc": null
+    }
+  },
+  "intelligence_narrative": {
+    "packetEventId": "e5db88a1-56c2-44b4-a211-4ebe9bf2d775",
+    "evidenceIds": [
+      "1a55ba36-a3cf-56cb-ace7-e7767bc66d62"
+    ],
+    "revisionNo": 1,
+    "narrativeSections": [
+      "WHAT_HAPPENED",
+      "WHAT_CHANGED",
+      "WHY_IT_MATTERS",
+      "CONFIDENCE",
+      "UNCERTAINTY"
+    ],
+    "staticPipelineDots": false,
+    "confidenceScore": 0.84,
+    "uncertaintyRepresentation": "UNAVAILABLE"
+  },
+  "archive_time_machine": {
+    "stateClass": "ARCHIVED_STATE",
+    "recordIds": [
+      "APOLLO11"
+    ],
+    "timelineYears": [
+      1969,
+      1970
+    ],
+    "hardcodedTimeline": false,
+    "selectedRecordId": "APOLLO11",
+    "cursorUtc": "1969-07-16T13:32:00+00:00"
+  },
+  "universal_time_persisted": true
+}

@@ -1,0 +1,2563 @@
+{
+  "catalog_snapshot": {
+    "request_id": "4a6d6e34-e5b3-4d72-8d68-ecb7e315fc1e",
+    "generated_at": "2026-08-25T03:56:30.741124+00:00",
+    "data_status": "PARTIAL",
+    "data": {
+      "at": "2026-08-25T03:56:30.698141+00:00",
+      "catalog": [
+        {
+          "object_id": "ace0a104-fe7f-4aba-b9c2-bb4adfbb85fb",
+          "catalog_id": "25994",
+          "canonical_name": "TERRA",
+          "cospar_id": "1999-068A",
+          "object_type": "UNKNOWN",
+          "origin_code": null,
+          "status": "OK",
+          "position_status": "OK",
+          "sample_time": "2026-08-25T03:56:30.698141+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1912.4251851165156,
+              -5052.1482346901175,
+              -4567.012875825473
+            ],
+            "v_km_s": [
+              0.4160255553674933,
+              -4.932209697877317,
+              5.63796368399533
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -40.38311487217451,
+            "lon_deg": -101.82992395603344,
+            "alt_km": 704.6370057955883
+          },
+          "provenance": {
+            "orbit_solution_id": "d28cb19f-c1e2-4fb2-b3b8-10638d125d1d",
+            "source_ids": [
+              "celestrak_gp"
+            ],
+            "source_snapshot_at": "2026-08-24T15:42:30.114144+00:00",
+            "retrieved_at": "2026-08-25T02:33:41.085157+00:00",
+            "input_artifact_hashes": [
+              "sha256:b66b74f9f3dbbb23be01d5bac0076961e3dc30e25ab82cecde3228b20cae08c3"
+            ],
+            "quality_grade": "PUBLIC_GP",
+            "model_id": "sgp4-vallado",
+            "model_version": "2.23",
+            "config_hash": "15a4527137f6af6bda094c7402b3713ef12d1ff217345536a336ca8e72c77197",
+            "frame": "TEME",
+            "time_system": "UTC",
+            "data_age_s": 44040.583997,
+            "stale": false,
+            "limitations": [
+              "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+              "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+              "Provider response did not declare OBJECT_TYPE."
+            ]
+          },
+          "warnings": [
+            "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+            "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+            "Provider response did not declare OBJECT_TYPE."
+          ]
+        },
+        {
+          "object_id": "fb585ca9-fdb3-4bff-87a1-244ab3ad8f8b",
+          "catalog_id": "39084",
+          "canonical_name": "LANDSAT 8",
+          "cospar_id": "2013-008A",
+          "object_type": "UNKNOWN",
+          "origin_code": null,
+          "status": "OK",
+          "position_status": "OK",
+          "sample_time": "2026-08-25T03:56:30.698141+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              2913.0291428952314,
+              -2490.9279372007386,
+              -5962.952744830069
+            ],
+            "v_km_s": [
+              3.329299829687897,
+              -5.455449881692307,
+              3.90739240474311
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -57.4252183989927,
+            "lon_deg": -73.09714900203734,
+            "alt_km": 725.545426797159
+          },
+          "provenance": {
+            "orbit_solution_id": "72e1fd5e-1891-4b8d-98ff-cbcae1800af6",
+            "source_ids": [
+              "celestrak_gp"
+            ],
+            "source_snapshot_at": "2026-08-24T15:01:26.380128+00:00",
+            "retrieved_at": "2026-08-25T02:33:42.661427+00:00",
+            "input_artifact_hashes": [
+              "sha256:25a2fe3ae9648bb54beed9f47904b26dade6adb5843df346897924492488f12d"
+            ],
+            "quality_grade": "PUBLIC_GP",
+            "model_id": "sgp4-vallado",
+            "model_version": "2.23",
+            "config_hash": "15a4527137f6af6bda094c7402b3713ef12d1ff217345536a336ca8e72c77197",
+            "frame": "TEME",
+            "time_system": "UTC",
+            "data_age_s": 46504.318013,
+            "stale": false,
+            "limitations": [
+              "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+              "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+              "Provider response did not declare OBJECT_TYPE."
+            ]
+          },
+          "warnings": [
+            "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+            "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+            "Provider response did not declare OBJECT_TYPE."
+          ]
+        },
+        {
+          "object_id": "6ce9e0c6-5241-42cd-a712-4a8320c0a84e",
+          "catalog_id": "27424",
+          "canonical_name": "AQUA",
+          "cospar_id": "2002-022A",
+          "object_type": "UNKNOWN",
+          "origin_code": null,
+          "status": "OK",
+          "position_status": "OK",
+          "sample_time": "2026-08-25T03:56:30.698141+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -5787.242547544461,
+              -2526.9180046193464,
+              3162.6589522237846
+            ],
+            "v_km_s": [
+              2.557929463468012,
+              2.4616113136345232,
+              6.62341554992397
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 26.742273677237677,
+            "lon_deg": 171.02437642389333,
+            "alt_km": 688.7368469898756
+          },
+          "provenance": {
+            "orbit_solution_id": "acf77ef5-f435-428f-b9b1-0daa7c10e267",
+            "source_ids": [
+              "celestrak_gp"
+            ],
+            "source_snapshot_at": "2026-08-24T14:57:18.202176+00:00",
+            "retrieved_at": "2026-08-25T02:33:41.882107+00:00",
+            "input_artifact_hashes": [
+              "sha256:50953b9d36687c9ee65a0af2d7578fa67eb6863f709985006eeb7ed007f67fb1"
+            ],
+            "quality_grade": "PUBLIC_GP",
+            "model_id": "sgp4-vallado",
+            "model_version": "2.23",
+            "config_hash": "15a4527137f6af6bda094c7402b3713ef12d1ff217345536a336ca8e72c77197",
+            "frame": "TEME",
+            "time_system": "UTC",
+            "data_age_s": 46752.495965,
+            "stale": false,
+            "limitations": [
+              "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+              "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+              "Provider response did not declare OBJECT_TYPE."
+            ]
+          },
+          "warnings": [
+            "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+            "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+            "Provider response did not declare OBJECT_TYPE."
+          ]
+        },
+        {
+          "object_id": "7bacf6e3-6d95-481d-9a26-d0cfcd3e5c53",
+          "catalog_id": "40697",
+          "canonical_name": "SENTINEL-2A",
+          "cospar_id": "2015-028A",
+          "object_type": "UNKNOWN",
+          "origin_code": null,
+          "status": "OK",
+          "position_status": "OK",
+          "sample_time": "2026-08-25T03:56:30.698141+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              4771.988485017537,
+              -5269.224461245943,
+              -941.7654844310224
+            ],
+            "v_km_s": [
+              -0.18505876820884434,
+              -1.4633701954558187,
+              7.3091958988554255
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -7.5910926145669455,
+            "lon_deg": -80.39837736104745,
+            "alt_km": 793.2530351156147
+          },
+          "provenance": {
+            "orbit_solution_id": "29de4bd2-7e40-4a84-9cc6-fffb20298166",
+            "source_ids": [
+              "celestrak_gp"
+            ],
+            "source_snapshot_at": "2026-08-24T14:33:03.112128+00:00",
+            "retrieved_at": "2026-08-25T02:33:44.577479+00:00",
+            "input_artifact_hashes": [
+              "sha256:31179ed3b85a15d106040f5d4d8a92ed7a38f49f7b60dd4aa06c91716a7eb909"
+            ],
+            "quality_grade": "PUBLIC_GP",
+            "model_id": "sgp4-vallado",
+            "model_version": "2.23",
+            "config_hash": "15a4527137f6af6bda094c7402b3713ef12d1ff217345536a336ca8e72c77197",
+            "frame": "TEME",
+            "time_system": "UTC",
+            "data_age_s": 48207.586013,
+            "stale": false,
+            "limitations": [
+              "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+              "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+              "Provider response did not declare OBJECT_TYPE."
+            ]
+          },
+          "warnings": [
+            "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+            "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+            "Provider response did not declare OBJECT_TYPE."
+          ]
+        },
+        {
+          "object_id": "a89e99de-7d40-41b8-bcb2-43bc1cf5f6db",
+          "catalog_id": "20580",
+          "canonical_name": "HST",
+          "cospar_id": "1990-037B",
+          "object_type": "UNKNOWN",
+          "origin_code": null,
+          "status": "OK",
+          "position_status": "OK",
+          "sample_time": "2026-08-25T03:56:30.698141+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              3815.5048515186,
+              -5493.590015228559,
+              -1480.6782527034716
+            ],
+            "v_km_s": [
+              6.05029073561496,
+              3.330544528650933,
+              3.2443389309527277
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -12.558224199635871,
+            "lon_deg": -87.78200172622905,
+            "alt_km": 473.41501921039253
+          },
+          "provenance": {
+            "orbit_solution_id": "2c5a9e67-5784-431b-99b6-b2178b840330",
+            "source_ids": [
+              "celestrak_gp"
+            ],
+            "source_snapshot_at": "2026-08-24T13:58:59.715840+00:00",
+            "retrieved_at": "2026-08-25T02:33:39.338179+00:00",
+            "input_artifact_hashes": [
+              "sha256:cb6395acae987653f04ef2b3e172e66b25e052bfddd9fa5a4469ae7a9a958305"
+            ],
+            "quality_grade": "PUBLIC_GP",
+            "model_id": "sgp4-vallado",
+            "model_version": "2.23",
+            "config_hash": "15a4527137f6af6bda094c7402b3713ef12d1ff217345536a336ca8e72c77197",
+            "frame": "TEME",
+            "time_system": "UTC",
+            "data_age_s": 50250.982301,
+            "stale": false,
+            "limitations": [
+              "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+              "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+              "Provider response did not declare OBJECT_TYPE."
+            ]
+          },
+          "warnings": [
+            "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+            "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+            "Provider response did not declare OBJECT_TYPE."
+          ]
+        },
+        {
+          "object_id": "2eab2ed6-4621-4e2b-8e27-b59168979916",
+          "catalog_id": "33591",
+          "canonical_name": "NOAA 19",
+          "cospar_id": "2009-005A",
+          "object_type": "UNKNOWN",
+          "origin_code": null,
+          "status": "OK",
+          "position_status": "OK",
+          "sample_time": "2026-08-25T03:56:30.698141+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -3700.3093775828515,
+              3400.988515260346,
+              5178.422909579871
+            ],
+            "v_km_s": [
+              -2.7053701892085456,
+              4.741735976200003,
+              -5.047654810966112
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 46.02639390648482,
+            "lon_deg": 104.8501637411826,
+            "alt_km": 849.2040014213935
+          },
+          "provenance": {
+            "orbit_solution_id": "4f8e6938-1df7-43ec-ba7f-91c449d164c3",
+            "source_ids": [
+              "celestrak_gp"
+            ],
+            "source_snapshot_at": "2026-08-24T13:43:17.001120+00:00",
+            "retrieved_at": "2026-08-25T02:33:43.733245+00:00",
+            "input_artifact_hashes": [
+              "sha256:15cee43a6f3561bbe8a4bd01dafa885847c908f33a9548b92ea615668ff4d112"
+            ],
+            "quality_grade": "PUBLIC_GP",
+            "model_id": "sgp4-vallado",
+            "model_version": "2.23",
+            "config_hash": "15a4527137f6af6bda094c7402b3713ef12d1ff217345536a336ca8e72c77197",
+            "frame": "TEME",
+            "time_system": "UTC",
+            "data_age_s": 51193.697021,
+            "stale": false,
+            "limitations": [
+              "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+              "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+              "Provider response did not declare OBJECT_TYPE."
+            ]
+          },
+          "warnings": [
+            "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+            "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+            "Provider response did not declare OBJECT_TYPE."
+          ]
+        },
+        {
+          "object_id": "073755de-e91e-413e-8d4d-bfe87e5cd879",
+          "catalog_id": "25544",
+          "canonical_name": "ISS (ZARYA)",
+          "cospar_id": "1998-067A",
+          "object_type": "UNKNOWN",
+          "origin_code": null,
+          "status": "OK",
+          "position_status": "OK",
+          "sample_time": "2026-08-25T03:56:30.698141+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              901.7649349997603,
+              4488.587130980765,
+              5007.333835660561
+            ],
+            "v_km_s": [
+              -6.480874856842972,
+              3.566767434101553,
+              -2.0213913868115005
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 47.742684101954836,
+            "lon_deg": 46.076963762264,
+            "alt_km": 418.3701843081626
+          },
+          "provenance": {
+            "orbit_solution_id": "314741c8-942b-4783-a973-0f7277be2e11",
+            "source_ids": [
+              "celestrak_gp"
+            ],
+            "source_snapshot_at": "2026-08-24T10:26:46.002624+00:00",
+            "retrieved_at": "2026-08-25T02:33:38.471886+00:00",
+            "input_artifact_hashes": [
+              "sha256:fd8ebe0c7cbe86b1973b11ae726bfd667ce02a2a8d1702b3d627328d5c877c6c"
+            ],
+            "quality_grade": "PUBLIC_GP",
+            "model_id": "sgp4-vallado",
+            "model_version": "2.23",
+            "config_hash": "15a4527137f6af6bda094c7402b3713ef12d1ff217345536a336ca8e72c77197",
+            "frame": "TEME",
+            "time_system": "UTC",
+            "data_age_s": 62984.695517,
+            "stale": false,
+            "limitations": [
+              "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+              "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+              "Provider response did not declare OBJECT_TYPE."
+            ]
+          },
+          "warnings": [
+            "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+            "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+            "Provider response did not declare OBJECT_TYPE."
+          ]
+        },
+        {
+          "object_id": "ca7b2452-8bae-475a-8dba-ab3af7dcac7b",
+          "catalog_id": "48274",
+          "canonical_name": "CSS (TIANHE)",
+          "cospar_id": "2021-035A",
+          "object_type": "UNKNOWN",
+          "origin_code": null,
+          "status": "OK",
+          "position_status": "OK",
+          "sample_time": "2026-08-25T03:56:30.698141+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              2681.6409893053337,
+              -5482.196757297389,
+              2917.8990610259525
+            ],
+            "v_km_s": [
+              4.916753113105196,
+              4.464185187115125,
+              3.8568853283118623
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 25.694544842404813,
+            "lon_deg": -96.49765919483157,
+            "alt_km": 390.4570532524258
+          },
+          "provenance": {
+            "orbit_solution_id": "0ecbe055-91ee-4626-9881-0a73ec2557c3",
+            "source_ids": [
+              "celestrak_gp"
+            ],
+            "source_snapshot_at": "2026-08-24T07:47:04.086240+00:00",
+            "retrieved_at": "2026-08-25T02:33:40.208663+00:00",
+            "input_artifact_hashes": [
+              "sha256:5670414073bf7b6ff05cbbf601619670c9a5d22156d5ec3fb6a1c9d058beab7e"
+            ],
+            "quality_grade": "PUBLIC_GP",
+            "model_id": "sgp4-vallado",
+            "model_version": "2.23",
+            "config_hash": "15a4527137f6af6bda094c7402b3713ef12d1ff217345536a336ca8e72c77197",
+            "frame": "TEME",
+            "time_system": "UTC",
+            "data_age_s": 72566.611901,
+            "stale": false,
+            "limitations": [
+              "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+              "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+              "Provider response did not declare OBJECT_TYPE."
+            ]
+          },
+          "warnings": [
+            "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+            "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+            "Provider response did not declare OBJECT_TYPE."
+          ]
+        },
+        {
+          "object_id": "bd749fba-b406-417a-bfe7-b1cfe96a15be",
+          "catalog_id": "123456789",
+          "canonical_name": "PARTIAL TEST OBJECT",
+          "cospar_id": "P1-PARTIAL",
+          "object_type": "PAYLOAD",
+          "origin_code": null,
+          "status": "QUARANTINE",
+          "position_status": "QUARANTINE",
+          "sample_time": null,
+          "state": null,
+          "geodetic": null,
+          "provenance": null,
+          "warnings": [
+            "SGP4 rejected the supplied element set",
+            "Stored GP elements exceed the configured data-age threshold; the rendered position propagates old mean elements.",
+            "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+            "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED."
+          ]
+        },
+        {
+          "object_id": "6d3afd0d-a50a-4ec2-972b-b52a5e9ab4be",
+          "catalog_id": "100000001",
+          "canonical_name": "ISS (ZARYA)",
+          "cospar_id": "1998-067A",
+          "object_type": "UNKNOWN",
+          "origin_code": null,
+          "status": "QUARANTINE",
+          "position_status": "QUARANTINE",
+          "sample_time": null,
+          "state": null,
+          "geodetic": null,
+          "provenance": null,
+          "warnings": [
+            "SGP4 rejected the supplied element set",
+            "Stored GP elements exceed the configured data-age threshold; the rendered position propagates old mean elements.",
+            "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+            "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+            "Provider response did not declare OBJECT_TYPE."
+          ]
+        },
+        {
+          "object_id": "1c70ecc3-661b-45ee-861c-1adcf24bc47c",
+          "catalog_id": "999999999",
+          "canonical_name": "ISS (ZARYA)",
+          "cospar_id": "P1-REPROCESS-TEST",
+          "object_type": "UNKNOWN",
+          "origin_code": null,
+          "status": "QUARANTINE",
+          "position_status": "QUARANTINE",
+          "sample_time": null,
+          "state": null,
+          "geodetic": null,
+          "provenance": null,
+          "warnings": [
+            "SGP4 rejected the supplied element set",
+            "Stored GP elements exceed the configured data-age threshold; the rendered position propagates old mean elements.",
+            "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+            "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+            "Provider response did not declare OBJECT_TYPE."
+          ]
+        }
+      ],
+      "coverage": {
+        "objects_total": 123,
+        "objects_with_solution": 11,
+        "catalog_entries": 11,
+        "positioned_markers": 8,
+        "positioned_ok": 8,
+        "positioned_stale": 0,
+        "unavailable_entries": 3,
+        "unavailable_by_status": {
+          "QUARANTINE": 3
+        },
+        "global_density": "INSUFFICIENT_DATA",
+        "global_density_reason": "Only 11 objects with stored orbit solutions are ingested; the configured global-density threshold is 500. A global density view is not rendered because it would fabricate the orbital population.",
+        "sources": [
+          {
+            "source_id": "celestrak_gp",
+            "last_success_at": "2026-08-25T03:52:54.554671+00:00",
+            "last_attempt_at": "2026-08-25T03:52:54.554671+00:00",
+            "successful_runs": 173,
+            "total_runs": 403,
+            "last_success_age_s": 216.185134
+          },
+          {
+            "source_id": "spacetrack_gp",
+            "last_success_at": "2026-08-25T03:52:54.591768+00:00",
+            "last_attempt_at": "2026-08-25T03:52:54.591768+00:00",
+            "successful_runs": 133,
+            "total_runs": 249,
+            "last_success_age_s": 216.148037
+          }
+        ]
+      }
+    },
+    "provenance": {
+      "model_id": "sgp4-vallado",
+      "model_version": "2.23",
+      "config_hash": "15a4527137f6af6bda094c7402b3713ef12d1ff217345536a336ca8e72c77197",
+      "frame": "TEME",
+      "time_system": "UTC",
+      "position_origin": "Server-side SGP4 propagation of stored OMM orbit solutions; the client never computes positions.",
+      "limitations": [
+        "UT1-UTC approximated as 0.0 s and polar motion neglected; TEME->ITRF uses IAU-1982 GMST only.",
+        "PUBLIC_GP mean elements are not an operational ephemeris."
+      ]
+    },
+    "warnings": [
+      "Some catalog objects could not be rendered; per-object position_status carries the explicit reason."
+    ]
+  },
+  "ephemeris": {
+    "request_id": "8304fd4f-e90c-43a5-a987-cf1759e2ae93",
+    "generated_at": "2026-08-25T03:56:32.377003+00:00",
+    "data_status": "OK",
+    "data": {
+      "object_id": "ace0a104-fe7f-4aba-b9c2-bb4adfbb85fb",
+      "catalog_id": "25994",
+      "sample_count": 91,
+      "window": {
+        "start": "2026-08-25T03:11:32.338000+00:00",
+        "stop": "2026-08-25T04:41:32.338000+00:00",
+        "step_s": 60
+      },
+      "output_sha256": "25f893208f87208c44c25ae97fc8c9709a3d709bcd59148bc21f58149a79de7f",
+      "samples": [
+        {
+          "sample_time": "2026-08-25T03:11:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1941.4633843229399,
+              6139.55128867989,
+              2913.8899008384537
+            ],
+            "v_km_s": [
+              0.15938190207403855,
+              3.2718254735016665,
+              -6.75936542040548
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 24.478458841954094,
+            "lon_deg": 86.25863491978605,
+            "alt_km": 693.3341821526928
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:12:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1927.9618757453256,
+              6323.252965093206,
+              2502.6667432225236
+            ],
+            "v_km_s": [
+              0.2905065610763949,
+              2.849493956525561,
+              -6.9434042286960995
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 20.850913775946836,
+            "lon_deg": 85.41631230500263,
+            "alt_km": 693.0691215882034
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:13:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1906.6256897905776,
+              6481.258741921875,
+              2081.2465856289296
+            ],
+            "v_km_s": [
+              0.42044863736077587,
+              2.415589642266006,
+              -7.0991498189489
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 17.2200885034346,
+            "lon_deg": 84.6017230353436,
+            "alt_km": 692.919410970544
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:14:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1877.5417914879542,
+              6612.927413519915,
+              1651.346769862711
+            ],
+            "v_km_s": [
+              0.5486755814909596,
+              1.9718918741924891,
+              -7.2259640568934245
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 13.586702650755896,
+            "lon_deg": 83.80876274957454,
+            "alt_km": 692.8943865778892
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:15:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1840.8289012418832,
+              6717.7258208363,
+              1214.7193120777144
+            ],
+            "v_km_s": [
+              0.6746618202082763,
+              1.5202214790429416,
+              -7.323329646262678
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 9.951445763899002,
+            "lon_deg": 83.03211294995842,
+            "alt_km": 693.001394960469
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:16:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1796.6370056821422,
+              6795.231100484559,
+              773.1435749764622
+            ],
+            "v_km_s": [
+              0.797891096338362,
+              1.062432751503779,
+              -7.390852594019273
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 6.314987561251105,
+            "lon_deg": 82.26701994765382,
+            "alt_km": 693.2456396340322
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:17:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1745.1467291562706,
+              6845.132446182254,
+              328.4188109999464
+            ],
+            "v_km_s": [
+              0.9178587712293623,
+              0.6004052285896039,
+              -7.428264047364655
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 2.6779847754059074,
+            "lon_deg": 81.50911547519888,
+            "alt_km": 693.630064208045
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:18:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1686.5685686469863,
+              6867.23237170681,
+              -117.64338511971997
+            ],
+            "v_km_s": [
+              1.034074072440977,
+              0.1360353115921276,
+              -7.4354214820662206
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -0.9589142504628129,
+            "lon_deg": 80.75426509027275,
+            "alt_km": 694.1552743350276
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:19:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1621.1419959247523,
+              6861.447468087433,
+              -563.2266750870559
+            ],
+            "v_km_s": [
+              1.1460622697750342,
+              -0.3287722035866153,
+              -7.412309229346089
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -4.5950662863674046,
+            "lon_deg": 79.99843279505104,
+            "alt_km": 694.819500099009
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:20:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1549.1344317388728,
+              6827.808651462623,
+              -1006.5175871813054
+            ],
+            "v_km_s": [
+              1.253366763468494,
+              -0.7921126251743243,
+              -7.359038336680388
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -8.229830468410475,
+            "lon_deg": 79.23755234195526,
+            "alt_km": 695.6185996462973
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:21:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1470.8400977879458,
+              6766.460901804902,
+              -1445.7130979225908
+            ],
+            "v_km_s": [
+              1.3555510694443196,
+              -1.2520898303656394,
+              -7.275845766127518
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -11.86256534461227,
+            "lon_deg": 78.46739654249744,
+            "alt_km": 696.5461040250884
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:22:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1386.5787530743728,
+              6677.662496469213,
+              -1879.028145858027
+            ],
+            "v_km_s": [
+              1.452200687900693,
+              -1.706824634140365,
+              -7.163092941999433
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -15.492624962876564,
+            "lon_deg": 77.68343562043256,
+            "alt_km": 697.5933023666339
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:23:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1296.6943220182195,
+              6561.783746183627,
+              -2304.703039020181
+            ],
+            "v_km_s": [
+              1.5429248431773945,
+              -2.154463002086722,
+              -7.021263667577209
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -19.11935316342136,
+            "lon_deg": 76.88067439424019,
+            "alt_km": 698.7493657349623
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:24:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1201.5534223696386,
+              6419.30524459393,
+              -2721.010719029007
+            ],
+            "v_km_s": [
+              1.627358084720059,
+              -2.5931840506028028,
+              -6.850961437924929
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -22.742075061613512,
+            "lon_deg": 76.05345548225819,
+            "alt_km": 700.001507218114
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:25:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1101.543801505347,
+              6250.8156457311725,
+              -3126.263846637666
+            ],
+            "v_km_s": [
+              1.7051617410100741,
+              -3.0212077822896832,
+              -6.652906182471754
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -26.36008440547318,
+            "lon_deg": 75.195211231256,
+            "alt_km": 701.3351751522569
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:26:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -997.0726901137185,
+              6057.008986729804,
+              -3518.8216757256723
+            ],
+            "v_km_s": [
+              1.7760252204818925,
+              -3.4368025097506574,
+              -6.427930476728809
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -29.97262500124764,
+            "lon_deg": 74.29814127798141,
+            "alt_km": 702.7342757785245
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:27:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -888.5650825622133,
+              5838.681575734528,
+              -3897.0966852477745
+            ],
+            "v_km_s": [
+              1.8396671556429738,
+              -3.838291927185766,
+              -6.176975267140431
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -33.57886360919565,
+            "lon_deg": 73.3527780103112,
+            "alt_km": 704.1814211438677
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:28:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -776.4619533997499,
+              5596.728467155568,
+              -4259.560941393128
+            ],
+            "v_km_s": [
+              1.8958363887815366,
+              -4.224061795926827,
+              -5.9010851565274995
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -37.17785042642817,
+            "lon_deg": 72.3473902992567,
+            "alt_km": 705.6581976802681
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:29:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -661.2184194775615,
+              5332.139548236717,
+              -4604.752165122628
+            ],
+            "v_km_s": [
+              1.9443127997292737,
+              -4.592566217179455,
+              -5.601403299793617
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -40.76846114987976,
+            "lon_deg": 71.2671409114839,
+            "alt_km": 707.1454506346035
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:30:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -543.3018570843362,
+              5045.995262275624,
+              -4931.279483255581
+            ],
+            "v_km_s": [
+              1.9849079780809316,
+              -4.942333472497288,
+              -5.279165960507361
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -44.34931102072764,
+            "lon_deg": 70.0928679746058,
+            "alt_km": 708.6235793736523
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:31:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -423.189983293562,
+              4739.461994779131,
+              -5237.828844297262
+            ],
+            "v_km_s": [
+              2.017465744005997,
+              -5.271971419687347,
+              -4.93569677866002
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -47.918625003464115,
+            "lon_deg": 68.79927632328304,
+            "alt_km": 710.0728385498169
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:32:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -301.3689104278234,
+              4413.78714936,
+              -5523.168083162754
+            ],
+            "v_km_s": [
+              2.041862523274287,
+              -5.580172438713714,
+              -4.572400798385532
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -51.474037021047515,
+            "lon_deg": 67.35217720152154,
+            "alt_km": 711.4736401743394
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:33:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -178.33118217274009,
+              4070.2939403145842,
+              -5786.151621787946
+            ],
+            "v_km_s": [
+              2.058007583318722,
+              -5.865717928520118,
+              -4.190758301819513
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -55.012270204235556,
+            "lon_deg": 65.7041445739681,
+            "alt_km": 712.8068517952852
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:34:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -54.57379943694326,
+              3710.3759285898554,
+              -6025.724795274187
+            ],
+            "v_km_s": [
+              2.0658431380498583,
+              -6.127482361357118,
+              -3.7923184916889476
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -58.52860928457878,
+            "lon_deg": 63.78744315234654,
+            "alt_km": 714.0540862035696
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:35:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              69.4037564211829,
+              3335.4913273160473,
+              -6240.92779562082
+            ],
+            "v_km_s": [
+              2.065344329700264,
+              -6.364436906001588,
+              -3.3786930608454906
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -62.01599283654505,
+            "lon_deg": 61.50206970763404,
+            "alt_km": 715.1979783785218
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:36:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              193.10149588182907,
+              2947.157102282873,
+              -6430.89922723634
+            ],
+            "v_km_s": [
+              2.0565190962106397,
+              -6.575652635090108,
+              -2.951549681949704
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -65.46337328622164,
+            "lon_deg": 58.69466967781777,
+            "alt_km": 716.2224457204284
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:37:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              316.0208824532098,
+              2546.942891750311,
+              -6594.87927023873
+            ],
+            "v_km_s": [
+              2.0394079325790573,
+              -6.76030333454759,
+              -2.5126054451058177
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -68.85258221493184,
+            "lon_deg": 55.11969415548555,
+            "alt_km": 717.1129279881598
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:38:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              437.6667766376888,
+              2136.464768868052,
+              -6732.212449048817
+            ],
+            "v_km_s": [
+              2.0140835542001914,
+              -6.9176679347365235,
+              -2.0636202656474403
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -72.15194684117861,
+            "lon_deg": 50.364848738758525,
+            "alt_km": 717.8566037531964
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:39:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              557.5493570103804,
+              1717.3788687892657,
+              -6842.350004944862
+            ],
+            "v_km_s": [
+              1.9806504695504812,
+              -7.047132583471919,
+              -1.6063902786950885
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -75.30240913358239,
+            "lon_deg": 43.70525890271099,
+            "alt_km": 718.442580587348
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:40:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              675.1860131535695,
+              1291.3749013966867,
+              -6924.851872079903
+            ],
+            "v_km_s": [
+              1.9392444686684125,
+              -7.148192380461589,
+              -1.1427412317925068
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -78.18584828428509,
+            "lon_deg": 33.83817371565996,
+            "alt_km": 718.8620566117625
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:41:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              790.1032055482497,
+              860.1695694233251,
+              -6979.388257004689
+            ],
+            "v_km_s": [
+              1.890032032778837,
+              -7.220452791130088,
+              -0.6745218820281191
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -80.55596957345615,
+            "lon_deg": 18.621153840453164,
+            "alt_km": 719.1084514438262
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:42:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              901.8382878027908,
+              425.4999107688183,
+              -7005.740821995844
+            ],
+            "v_km_s": [
+              1.833209669173537,
+              -7.263630755244335,
+              -0.203597399817856
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -81.94720689446876,
+            "lon_deg": -3.8021093246571818,
+            "alt_km": 719.1775049828275
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:43:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1009.9412867904406,
+              -10.883416944616085,
+              -7003.803472525991
+            ],
+            "v_km_s": [
+              1.7690031741517518,
+              -7.277555502440219,
+              0.2681572218526043
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -81.84281575717313,
+            "lon_deg": -29.928799148314774,
+            "alt_km": 719.0673428728896
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:44:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1113.9766364415707,
+              -447.22289231562223,
+              -6973.582749083142
+            ],
+            "v_km_s": [
+              1.697666825462981,
+              -7.262169082830204,
+              0.738863756638864
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -80.29077231920624,
+            "lon_deg": -51.43581689207066,
+            "alt_km": 718.7785078732804
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:45:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1213.5248609203306,
+              -881.7609094487553,
+              -6915.197823265303
+            ],
+            "v_km_s": [
+              1.61948250442649,
+              -7.21752661646983,
+              1.2066473376308873
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -77.83244758909409,
+            "lon_deg": -65.81533613557288,
+            "alt_km": 718.3139567530925
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:46:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1308.1842029457166,
+              -1312.7465637240002,
+              -6828.880097778673
+            ],
+            "v_km_s": [
+              1.5347587466751984,
+              -7.143796260887703,
+              1.669643059492315
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -74.90350232486145,
+            "lon_deg": -75.16317767635044,
+            "alt_km": 717.6790227123629
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:47:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1397.5721928980397,
+              -1738.442426905011,
+              -6714.972409648665
+            ],
+            "v_km_s": [
+              1.4438297194364744,
+              -7.041258891249172,
+              2.1260025949014953
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -71.72795550187699,
+            "lon_deg": -81.51755659741961,
+            "alt_km": 716.8813437176805
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:48:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1481.3271542116834,
+              -2157.1312940173725,
+              -6573.927835719502
+            ],
+            "v_km_s": [
+              1.3470541224134982,
+              -6.910307483301857,
+              2.57390082850723
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -68.41337563716716,
+            "lon_deg": -86.08697060205525,
+            "alt_km": 715.9307575305484
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:49:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1559.109640363336,
+              -2567.1228837220697,
+              -6406.308099416279
+            ],
+            "v_km_s": [
+              1.2448140087309771,
+              -6.751446185224289,
+              3.0115425088179273
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -65.01401273346765,
+            "lon_deg": -89.54362052418657,
+            "alt_km": 714.8391646036489
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:50:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1630.6037985461649,
+              -2966.760472983175,
+              -6212.781577834179
+            ],
+            "v_km_s": [
+              1.137513522087866,
+              -6.565289061066969,
+              3.437168914734239
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -61.559231005237116,
+            "lon_deg": -92.27191204837679,
+            "alt_km": 713.6203604247021
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:51:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1695.5186548920256,
+              -3354.4274457243273,
+              -5994.120908551857
+            ],
+            "v_km_s": [
+              1.025577546240025,
+              -6.352558485808266,
+              3.8490645289493615
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -58.06601404719001,
+            "lon_deg": -94.50223033444558,
+            "alt_km": 712.2898393002815
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:52:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1753.5893158818926,
+              -3728.553733925325,
+              -5751.2001961852875
+            ],
+            "v_km_s": [
+              0.9094502632331165,
+              -6.114083170297733,
+              4.245563705333109
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -54.54476325111999,
+            "lon_deg": -96.37931058892153,
+            "alt_km": 710.8645719905953
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:53:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1804.578080390831,
+              -4087.622128298483,
+              -5484.991819630962
+            ],
+            "v_km_s": [
+              0.7895936174186009,
+              -5.850795793637643,
+              4.62505731189025
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -51.00216959239522,
+            "lon_deg": -97.99802989106367,
+            "alt_km": 709.3627600264936
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:54:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1848.275456664188,
+              -4430.1744343579985,
+              -5196.562842216099
+            ],
+            "v_km_s": [
+              0.6664856832057282,
+              -5.5637302209430946,
+              4.98599932513971
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -47.44272776800636,
+            "lon_deg": -99.42294554756448,
+            "alt_km": 707.8035699558432
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:55:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1884.5010784352621,
+              -4754.817448423431,
+              -4887.071028585988
+            ],
+            "v_km_s": [
+              0.54061893570908,
+              -5.254018285964241,
+              5.3269133460221365
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -43.86957998231475,
+            "lon_deg": -100.69943975815593,
+            "alt_km": 706.2068511692396
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:56:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1913.1045143872695,
+              -5060.228726955644,
+              -4557.760474102583
+            ],
+            "v_km_s": [
+              0.41249842490857436,
+              -4.922886120746148,
+              5.646399001941052
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -40.285009229894115,
+            "lon_deg": -101.86034423194708,
+            "alt_km": 704.5928413337188
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:57:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1933.965965247559,
+              -5345.1621216640615,
+              -4209.956854795437
+            ],
+            "v_km_s": [
+              0.28263985561185884,
+              -4.571650018312488,
+              5.943138194484755
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -36.69073972142255,
+            "lon_deg": -102.93002799474445,
+            "alt_km": 702.9818638053002
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:58:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1946.9968429922103,
+              -5608.453052130926,
+              -3845.0623084479303
+            ],
+            "v_km_s": [
+              0.15156757733897586,
+              -4.2017118191919725,
+              6.215901147991676
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -33.088126289862046,
+            "lon_deg": -103.92700608937572,
+            "alt_km": 701.3940216832652
+          }
+        },
+        {
+          "sample_time": "2026-08-25T03:59:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1952.1402269408989,
+              -5849.0234873102345,
+              -3464.5499601896136
+            ],
+            "v_km_s": [
+              0.01981249018699173,
+              -3.8145538183579593,
+              6.463552210582067
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -29.4782772693491,
+            "lon_deg": -104.86565456130404,
+            "alt_km": 699.8488933957078
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:00:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1949.3711919411644,
+              -6065.886607240266,
+              -3069.958108934128
+            ],
+            "v_km_s": [
+              -0.11209012528889206,
+              -3.4117331956571286,
+              6.6850553567625814
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -25.862136052748006,
+            "lon_deg": -105.7573713629468,
+            "alt_km": 698.3652348535852
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:01:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1938.6970043783144,
+              -6258.151116694424,
+              -2662.8840940894083
+            ],
+            "v_km_s": [
+              -0.24360284418473138,
+              -2.994875979882091,
+              6.879479339345669
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -22.240536147215643,
+            "lon_deg": -106.61138018934962,
+            "alt_km": 696.9606932651996
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:02:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1920.157182398969,
+              -6425.02518331452,
+              -2244.9778651024067
+            ],
+            "v_km_s": [
+              -0.37418838748544253,
+              -2.5656705640881863,
+              7.046002438307844
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -18.61423874317441,
+            "lon_deg": -107.43530256457555,
+            "alt_km": 695.651537653589
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:03:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1893.823417496229,
+              -6565.819974039241,
+              -1817.9352795103396
+            ],
+            "v_km_s": [
+              -0.5033119528492843,
+              -2.1258607973452346,
+              7.183916755394588
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -14.983958462773293,
+            "lon_deg": -108.23557458666443,
+            "alt_km": 694.4524109571912
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:04:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1859.7993554616912,
+              -6679.9527653644745,
+              -1383.4911581678289
+            ],
+            "v_km_s": [
+              -0.630443570851068,
+              -1.6772386856088675,
+              7.29263200577915
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -11.35038096708636,
+            "lon_deg": -109.01775867636388,
+            "alt_km": 693.3761083143463
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:05:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1818.2202356500802,
+              -6766.949605134185,
+              -943.4121291393525
+            ],
+            "v_km_s": [
+              -0.7550604703508526,
+              -1.2216367415726694,
+              7.371678761858379
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -7.714174896004505,
+            "lon_deg": -109.78678379464662,
+            "alt_km": 692.4333857344509
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:06:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1769.252388509469,
+              -6826.447506141055,
+              -499.4892942993933
+            ],
+            "v_km_s": [
+              -0.8766494357209773,
+              -0.760920029980006,
+              7.420711109249918
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -4.075999871719585,
+            "lon_deg": -110.54713713326959,
+            "alt_km": 691.6328028468852
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:07:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1713.092592383605,
+              -6858.196154771904,
+              -53.5307549140982
+            ],
+            "v_km_s": [
+              -0.9947091380730714,
+              -0.2969779607367705,
+              7.439508681116483
+            ]
+          },
+          "geodetic": {
+            "lat_deg": -0.4365118359627456,
+            "lon_deg": -111.30302375327275,
+            "alt_km": 690.9806028030116
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:08:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1649.9672916725663,
+              -6862.059121216393,
+              392.64596568507295
+            ],
+            "v_km_s": [
+              -1.1087524224055134,
+              0.16828411292671988,
+              7.427978043932058
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 3.203633290797094,
+            "lon_deg": -112.0585065353499,
+            "alt_km": 690.4806317000775
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:09:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1580.131679519685,
+              -6838.0145613057275,
+              837.2215628278979
+            ],
+            "v_km_s": [
+              -1.2183085327512466,
+              0.6329534301966514,
+              7.386153415528547
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 6.843776802609265,
+            "lon_deg": -112.81763649247496,
+            "alt_km": 690.1342991179308
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:10:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1503.8686492557956,
+              -6786.155403791293,
+              1278.3826142029288
+            ],
+            "v_km_s": [
+              -1.3229252579446067,
+              1.0951184286981412,
+              7.31419670450515
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 10.483254504268722,
+            "lon_deg": -113.58458247457062,
+            "alt_km": 689.9405805314673
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:11:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1421.4876198504412,
+              -6706.689020735472,
+              1714.329225686671
+            ],
+            "v_km_s": [
+              -1.4221709815331687,
+              1.552877355923199,
+              7.212396868610975
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 14.121393365770485,
+            "lon_deg": -114.36376806088286,
+            "alt_km": 689.8960615088254
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:12:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1333.323241576506,
+              -6599.93638258789,
+              2143.28261856062
+            ],
+            "v_km_s": [
+              -1.5156366206065708,
+              2.0043468212723203,
+              7.081168598279641
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 17.757506724669174,
+            "lon_deg": -115.16002791203323,
+            "alt_km": 689.9950227528898
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:13:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1239.733988965971,
+              -6466.330703378436,
+              2563.492617989103
+            ],
+            "v_km_s": [
+              -1.60293743986648,
+              2.4476702253531073,
+              6.92105033985465
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 21.3908870778716,
+            "lon_deg": -115.97879208932393,
+            "alt_km": 690.2295642182216
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:14:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1141.100648906312,
+              -6306.415585195306,
+              2973.245003729185
+            ],
+            "v_km_s": [
+              -1.6837147290675876,
+              2.881026005891034,
+              6.732701680959438
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 25.020795244241157,
+            "lon_deg": -116.82631647420571,
+            "alt_km": 690.5897657606374
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:15:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              1037.8247123831304,
+              -6120.842674653838,
+              3370.8686856120826
+            ],
+            "v_km_s": [
+              -1.7576373339679663,
+              3.3026356435205626,
+              6.516900127708106
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 28.646444253432126,
+            "lon_deg": -117.70997995459852,
+            "alt_km": 691.0638810755154
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:16:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              930.3266789071657,
+              -5910.368847337237,
+              3754.742668303718
+            ],
+            "v_km_s": [
+              -1.8244030330699774,
+              3.7107713756775764,
+              6.27453730983052
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 32.266975630147265,
+            "lon_deg": -118.63867985960255,
+            "alt_km": 691.6385610708548
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:17:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              819.0442830625348,
+              -5675.852939135838,
+              4123.302772190451
+            ],
+            "v_km_s": [
+              -1.8837397546499315,
+              4.103763572663226,
+              6.006614655120672
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 35.8814246328522,
+            "lon_deg": -119.62337239282918,
+            "alt_km": 692.2991023166687
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:18:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              704.4306528803189,
+              -5418.252045990465,
+              4475.048079849297
+            ],
+            "v_km_s": [
+              -1.9354066307905289,
+              4.480007736463344,
+              5.714238578792644
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 39.488669181978224,
+            "lon_deg": -120.67782990006684,
+            "alt_km": 693.0297158229478
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:19:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              586.9524098743834,
+              -5138.617415710676,
+              4808.547080403646
+            ],
+            "v_km_s": [
+              -1.9791948872834486,
+              4.837971089893218,
+              5.398615236244051
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 43.08735414999784,
+            "lon_deg": -121.81972838897101,
+            "alt_km": 693.8138111277267
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:20:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              467.0877205846621,
+              -4838.0899572805765,
+              5122.443487036323
+            ],
+            "v_km_s": [
+              -2.0149285702907145,
+              5.176198730836227,
+              5.061044889352836
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 46.675777402454955,
+            "lon_deg": -123.07224960324518,
+            "alt_km": 694.6342905250813
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:21:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              345.32430936292025,
+              -4517.895394366434,
+              5415.4617059702905
+            ],
+            "v_km_s": [
+              -2.0424651124879634,
+              5.493319333536154,
+              4.70291593676401
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 50.25171457294655,
+            "lon_deg": -124.46650639367587,
+            "alt_km": 695.4738482245475
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:22:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              222.15744192264972,
+              -4179.339090616664,
+              5686.411938244919
+            ],
+            "v_km_s": [
+              -2.061695743006699,
+              5.788050385840309,
+              4.325698657718124
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 53.81214219089287,
+            "lon_deg": -126.0453244727876,
+            "alt_km": 696.3152693009788
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:23:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              98.08788887394914,
+              -3823.800574815299,
+              5934.194898544294
+            ],
+            "v_km_s": [
+              -2.0725457468071773,
+              6.059202957758632,
+              3.930938716926874
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 57.352785378114085,
+            "lon_deg": -127.86934102483082,
+            "alt_km": 697.1417234548353
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:24:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -26.380121909651546,
+              -3452.7277940429694,
+              6157.8061381128655
+            ],
+            "v_km_s": [
+              -2.074974580117739,
+              6.305686002509597,
+              3.520250474942248
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 60.86734901559888,
+            "lon_deg": -130.02720343043399,
+            "alt_km": 697.9370488454779
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:25:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -150.74095566622825,
+              -3067.6311227753013,
+              6356.339961353446
+            ],
+            "v_km_s": [
+              -2.0689758492529475,
+              6.526510196183951,
+              3.0953101445821862
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 64.3461483842746,
+            "lon_deg": -132.653341606581,
+            "alt_km": 698.6860215690076
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:26:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -274.48961589262393,
+              -2670.0771553403147,
+              6528.992928016448
+            ],
+            "v_km_s": [
+              -2.054577160467666,
+              6.720791326159005,
+              2.6578488294427522
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 67.77353417721322,
+            "lon_deg": -135.96032904600486,
+            "alt_km": 699.374606714241
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:27:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -397.12377675659974,
+              -2261.6823084515595,
+              6675.066934905508
+            ],
+            "v_km_s": [
+              -2.0318398485248044,
+              6.887753241325328,
+              2.209645475591806
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 71.12274164496021,
+            "lon_deg": -140.3004231770966,
+            "alt_km": 699.9901873315066
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:28:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -518.1457957254713,
+              -1844.1062596728182,
+              6793.971872743062
+            ],
+            "v_km_s": [
+              -2.0008585913728774,
+              7.026730379014947,
+              1.752519762404962
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 74.34487827339218,
+            "lon_deg": -146.28616775133995,
+            "alt_km": 700.5217680775686
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:29:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -637.0646997959993,
+              -1419.0452467310886,
+              6885.227855243332
+            ],
+            "v_km_s": [
+              -1.9617609177758142,
+              7.137169884230255,
+              1.2883249534156633
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 77.34396543539653,
+            "lon_deg": -155.02004296902618,
+            "alt_km": 700.9601507451307
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:30:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -753.3981390897244,
+              -988.2252516923435,
+              6948.467018534383
+            ],
+            "v_km_s": [
+              -1.9147066139611453,
+              7.21863333639853,
+              0.8189407232865061
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 79.92038190621555,
+            "lon_deg": -168.41454585179972,
+            "alt_km": 701.2980793394545
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:31:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -866.6743019366588,
+              -553.3950930528677,
+              6983.434889916116
+            ],
+            "v_km_s": [
+              -1.8598870343910319,
+              7.270798097549831,
+              0.34626597260566755
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 81.6734219613224,
+            "lon_deg": 171.2150951664521,
+            "alt_km": 701.5303528214581
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:32:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -976.4337858276376,
+              -116.31944808062609,
+              6989.991325501892
+            ],
+            "v_km_s": [
+              -1.7975243206889964,
+              7.293458293577138,
+              -0.12778836137269267
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 82.03998382247593,
+            "lon_deg": 145.19852198775237,
+            "alt_km": 701.6539040918424
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:33:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1082.2314188223586,
+              321.22817286790615,
+              6968.111016688461
+            ],
+            "v_km_s": [
+              -1.7278705316284464,
+              7.286525437329874,
+              -0.6013064927358824
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 80.8520838605208,
+            "lon_deg": 121.62243512666299,
+            "alt_km": 701.6678442432267
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:34:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1183.6380261605302,
+              757.4724788396509,
+              6917.88356564573
+            ],
+            "v_km_s": [
+              -1.651206685953505,
+              7.250028698861977,
+              -1.0723749703265295
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 78.58491942015607,
+            "lon_deg": 105.2863794452562,
+            "alt_km": 701.5734715560711
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:35:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1280.2421368734597,
+              1190.6434564893782,
+              6839.513130170149
+            ],
+            "v_km_s": [
+              -1.5678417187577574,
+              7.184114824396049,
+              -1.5390898539789784
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 75.74397610553756,
+            "lon_deg": 94.72975616283875,
+            "alt_km": 701.374245159689
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:36:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1371.6516252181507,
+              1618.983412922042,
+              6733.317638393517
+            ],
+            "v_km_s": [
+              -1.4781113512146686,
+              7.08904770173268,
+              -1.9995638808405962
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 72.60757823404741,
+            "lon_deg": 87.67461331112183,
+            "alt_km": 701.0757237245052
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:37:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1457.4952817149572,
+              2040.7539818343369,
+              6599.72757402357
+            ],
+            "v_km_s": [
+              -1.3823768727093548,
+              6.9652075661210056,
+              -2.4519336177824926
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 69.30895100772874,
+            "lon_deg": 82.68586817297799,
+            "alt_km": 700.6854699965334
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:38:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1537.4243084923467,
+              2454.2430711433985,
+              6439.284333087279
+            ],
+            "v_km_s": [
+              -1.2810238339044384,
+              6.813089837242626,
+              -2.8943665936672027
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 65.91391392617489,
+            "lon_deg": 78.96544483107456,
+            "alt_km": 700.2129224312248
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:39:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1611.1137335428944,
+              2857.7717296353103,
+              6252.63815360441
+            ],
+            "v_km_s": [
+              -1.1744606490183214,
+              6.633303575143487,
+              -3.3250684021254164
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 62.45734437771848,
+            "lon_deg": 76.06309535888718,
+            "alt_km": 699.6692356319409
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:40:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1678.2637383869655,
+              3249.700909354546,
+              6040.5456202909345
+            ],
+            "v_km_s": [
+              -1.0631171056287696,
+              6.426569540860349,
+              -3.7422897616244466
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 58.95905391515693,
+            "lon_deg": 73.71307294798635,
+            "alt_km": 699.0670917471698
+          }
+        },
+        {
+          "sample_time": "2026-08-25T04:41:32.338000+00:00",
+          "state": {
+            "frame": "TEME",
+            "r_km": [
+              -1738.6008935458901,
+              3628.438099552282,
+              5803.866747313507
+            ],
+            "v_km_s": [
+              -0.9474427806488073,
+              6.193717846274772,
+              -4.1443335151771485
+            ]
+          },
+          "geodetic": {
+            "lat_deg": 55.43100129964223,
+            "lon_deg": 71.75077060483225,
+            "alt_km": 698.4204854271838
+          }
+        }
+      ]
+    },
+    "provenance": {
+      "object_id": "ace0a104-fe7f-4aba-b9c2-bb4adfbb85fb",
+      "catalog_id": "25994",
+      "orbit_solution_id": "d28cb19f-c1e2-4fb2-b3b8-10638d125d1d",
+      "source_ids": [
+        "celestrak_gp"
+      ],
+      "source_snapshot_at": "2026-08-24T15:42:30.114144+00:00",
+      "retrieved_at": "2026-08-25T02:33:41.085157+00:00",
+      "input_artifact_hashes": [
+        "sha256:b66b74f9f3dbbb23be01d5bac0076961e3dc30e25ab82cecde3228b20cae08c3"
+      ],
+      "model_id": "sgp4-vallado",
+      "model_version": "2.23",
+      "config_hash": "15a4527137f6af6bda094c7402b3713ef12d1ff217345536a336ca8e72c77197",
+      "quality_grade": "PUBLIC_GP",
+      "frame": "TEME",
+      "time_system": "UTC",
+      "orbit_solution_epoch": "2026-08-24T15:42:30.114144+00:00",
+      "data_age_s": 44042.263802,
+      "stale": false,
+      "limitations": [
+        "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+        "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+        "Provider response did not declare OBJECT_TYPE.",
+        "UT1-UTC approximated as 0.0 s and polar motion neglected; TEME->ITRF uses IAU-1982 GMST only.",
+        "PUBLIC_GP mean elements are not an operational ephemeris."
+      ]
+    },
+    "warnings": [
+      "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+      "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+      "Provider response did not declare OBJECT_TYPE.",
+      "UT1-UTC approximated as 0.0 s and polar motion neglected; TEME->ITRF uses IAU-1982 GMST only.",
+      "PUBLIC_GP mean elements are not an operational ephemeris."
+    ],
+    "persistence": {
+      "propagation_snapshot_rows_stored": 857,
+      "input_hash": "681b14fcea5a28ffa6d06d0eac1a9c98229a5ff172ca27c2b972c8e50f5605cf"
+    }
+  },
+  "captured_urls": [
+    "http://localhost:8000/api/v1/catalog/status",
+    "http://localhost:8000/api/v1/catalog/snapshot",
+    "http://localhost:8000/api/v1/objects/25994/ephemeris?start=2026-08-25T03%3A11%3A32.338Z&stop=2026-08-25T04%3A41%3A32.338Z&step_s=60",
+    "http://localhost:8000/api/v1/objects/25994/ephemeris?start=2026-08-25T03%3A11%3A32.338Z&stop=2026-08-25T04%3A41%3A32.338Z&step_s=60",
+    "http://localhost:8000/api/v1/catalog/snapshot?bbox=-73.83%2C-139.26%2C-4.98%2C-70.40",
+    "http://localhost:8000/api/v1/catalog/snapshot",
+    "http://localhost:8000/api/v1/objects/25994/ephemeris?start=2026-08-25T03%3A11%3A34.717Z&stop=2026-08-25T04%3A41%3A34.717Z&step_s=60"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "checked_at": "2026-08-30T13:12:21.004864+00:00",
+  "providers": [
+    {
+      "source_id": "CELESTRAK_GP",
+      "status": "UNAVAILABLE",
+      "reason": "NETWORK_TIMEOUT",
+      "url": "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=JSON",
+      "error_type": "URLError",
+      "error": "<urlopen error timed out>"
+    },
+    {
+      "source_id": "NASA_JPL_HORIZONS",
+      "status": "PASS_LIVE",
+      "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND=%27499%27&OBJ_DATA=YES&MAKE_EPHEM=YES&EPHEM_TYPE=VECTORS&CENTER=%27500%400%27&START_TIME=%272026-08-30%27&STOP_TIME=%272026-08-31%27&STEP_SIZE=%271+d%27&REF_PLANE=%27FRAME%27&TIME_TYPE=%27TDB%27&VEC_TABLE=2",
+      "retrieved_at": "2026-08-30T13:12:19.148364+00:00",
+      "bytes": 6462
+    },
+    {
+      "source_id": "NOAA_SWPC",
+      "status": "PASS_LIVE",
+      "url": "https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json",
+      "retrieved_at": "2026-08-30T13:12:19.621343+00:00",
+      "bytes": 4635
+    },
+    {
+      "source_id": "LAUNCH_LIBRARY_2",
+      "status": "PASS_LIVE",
+      "url": "https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=1&ordering=net",
+      "retrieved_at": "2026-08-30T13:12:21.004790+00:00",
+      "bytes": 9676
+    }
+  ],
+  "all_live_verified": false
+}

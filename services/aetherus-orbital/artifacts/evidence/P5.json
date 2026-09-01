@@ -1,0 +1,262 @@
+{
+  "phase": "P5",
+  "phase_name": "Intervention Benefit Engine: baseline risk graph, IDEALIZED_REMOVAL counterfactual, direct beneficiary attribution, affected-subgraph equivalence",
+  "generated_at": "2026-08-25T22:44:23.153395+00:00",
+  "version": "0.1.0.post0",
+  "commit": "f047b7a494188290bbcd31f3b883bff044a04214",
+  "scope": {
+    "package_phase_card": "P5 Benefit",
+    "world_com_integration": "NOT_ATTEMPTED",
+    "scientific_features": [
+      "Baseline risk graph built from stored P4 conjunction events with immutable snapshots (append-only DB triggers)",
+      "REMOVE as IDEALIZED_REMOVAL counterfactual simulation only; no actual removal, maneuver, or command path exists",
+      "Benefit_i(s,h,m) = R_i(G0,h,m) - R_i(Gs,h,m) on identical metric/horizon/config inputs",
+      "Metric channel separation preserved: PC (covariance-gated), MAX_PC, CONJUNCTION_EXPOSURE; MISS_DISTANCE stays a feature and is never a benefit number",
+      "Direct beneficiary attribution: non-target objects only, threshold + provenance required, self-benefit structurally excluded",
+      "Affected-subgraph selective recompute vs full recompute equivalence within documented tolerance (exact equality enforced)",
+      "Scenario definitions/runs/benefit results append-only with input/config/model hashes and result_hash determinism",
+      "Explicit INSUFFICIENT_DATA / NO_BASELINE_EDGES / BASELINE_MISSING states for the zero-event live catalog",
+      "Explore UI REMOVE entry wired to the real API chain with browser network evidence"
+    ],
+    "explicitly_out_of_scope": [
+      "No PROTECT reverse ranking or candidate ranking (P6)",
+      "No candidate OCM evaluation or newly-created-risk computation (P6)",
+      "No maneuver commands, payments, or external effects of any kind",
+      "No environment/fragmentation benefit model (EnvironmentBenefit stays NOT_COMPUTED)"
+    ]
+  },
+  "gates": {
+    "git_commit": {
+      "passed": true,
+      "commit": "f047b7a494188290bbcd31f3b883bff044a04214"
+    },
+    "tests": {
+      "name": "tests",
+      "cmd": "/usr/local/bin/python -m pytest -q -p no:cacheprovider",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "sts/integration/test_ca_10k_corpus.py .....                            [ 13%]\ntests/integration/test_ca_service_persistence.py ......                  [ 16%]\ntests/integration/test_celestrak_ingestion.py .                          [ 16%]\ntests/integration/test_conjunctions_api.py ..........                    [ 20%]\ntests/integration/test_identity_conflicts.py ...                         [ 21%]\ntests/integration/test_ingestion_rejections.py .                         [ 21%]\ntests/integration/test_live_provider_evidence.py ss                      [ 22%]\ntests/integration/test_p1_migration_schema.py .                          [ 22%]\ntests/integration/test_p2_golden_cross_validation.py ...                 [ 23%]\ntests/integration/test_p2_migration_schema.py ...                        [ 25%]\ntests/integration/test_p3_catalog_contract.py ......                     [ 27%]\ntests/integration/test_p4_migration_schema.py .....                      [ 29%]\ntests/integration/test_p5_baseline_build.py ....                         [ 30%]\ntests/integration/test_p5_full_vs_selective.py .                         [ 30%]\ntests/integration/test_p5_immutability.py .....                          [ 32%]\ntests/integration/test_p5_migration_schema.py .......                    [ 35%]\ntests/integration/test_partial_ingestion.py .                            [ 35%]\ntests/integration/test_run_artifact_provenance.py .                      [ 36%]\ntests/integration/test_snapshot_versioning.py .                          [ 36%]\ntests/integration/test_spacetrack_ingestion.py ..                        [ 37%]\ntests/unit/test_benefit_engine.py ..........                             [ 40%]\ntests/unit/test_benefit_models.py .........                              [ 44%]\ntests/unit/test_ca_pc.py ....................                            [ 51%]\ntests/unit/test_ca_screen.py .....                                       [ 53%]\ntests/unit/test_ca_tca_solver.py ......                                  [ 55%]\ntests/unit/test_catalog_id_validation.py .........                       [ 58%]\ntests/unit/test_celestrak_client.py ...                                  [ 59%]\ntests/unit/test_ephemeris_api.py ..........                              [ 63%]\ntests/unit/test_evidence_p1.py ...                                       [ 64%]\ntests/unit/test_evidence_p5.py .                                         [ 65%]\ntests/unit/test_evidence_status.py .                                     [ 65%]\ntests/unit/test_explore_catalog_api.py ........                          [ 68%]\ntests/unit/test_explore_service.py ................                      [ 74%]\ntests/unit/test_frames.py ......                                         [ 76%]\ntests/unit/test_identity_resolution.py ....                              [ 77%]\ntests/unit/test_ingestion_api.py .....                                   [ 79%]\ntests/unit/test_ingestion_service.py ......                              [ 81%]\ntests/unit/test_internal_ingestion_api.py ...                            [ 83%]\ntests/unit/test_migration_sql.py ...                                     [ 84%]\ntests/unit/test_no_tle_width_gate.py ..                                  [ 84%]\ntests/unit/test_omm_parser.py .....                                      [ 86%]\ntests/unit/test_provider_contracts.py ...                                [ 87%]\ntests/unit/test_ratelimit_policy.py .....                                [ 89%]\ntests/unit/test_raw_artifact_store.py ..                                 [ 90%]\ntests/unit/test_redaction.py .                                           [ 90%]\ntests/unit/test_sgp4_official_corpus.py ....                             [ 92%]\ntests/unit/test_sgp4_propagator.py ...........                           [ 96%]\ntests/unit/test_spacetrack_client.py ....                                [ 97%]\ntests/unit/test_time_scale.py ......                                     [100%]\n\n================== 270 passed, 5 skipped, 1 warning in 15.60s ==================\n",
+      "stderr_tail": ""
+    },
+    "lint": {
+      "name": "lint",
+      "cmd": "/usr/local/bin/python -m ruff check backend tests quality",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "",
+      "stderr_tail": ""
+    },
+    "type_check": {
+      "name": "type_check",
+      "cmd": "/usr/local/bin/python -m mypy backend",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "Success: no issues found in 56 source files\n",
+      "stderr_tail": ""
+    },
+    "anti_shortcut_audit": {
+      "passed": true,
+      "cmd": "rg -n anti-shortcut-patterns backend frontend",
+      "matches": [],
+      "exit_code": 1
+    },
+    "width_audit": {
+      "passed": true,
+      "cmd": "/usr/local/bin/python quality/check_no_tle_width.py backend",
+      "violations": []
+    },
+    "database": {
+      "passed": true,
+      "missing_tables": [],
+      "extensions": {
+        "pgcrypto": "1.3",
+        "postgis": "3.4.3"
+      },
+      "migrations": [
+        {
+          "name": "001_initial_schema",
+          "content_hash": "07ad94c4fcb4009d48aac536a331dd56c9471d2d72cd66e94ff0c9a32c39b2ec",
+          "applied_at": "2026-08-24T06:59:43.953619+00:00"
+        },
+        {
+          "name": "002_orbit_solution_raw_artifact_versioning",
+          "content_hash": "872bf92e832d6b021f1ba473fcc5492a85974a54fdd6b0b57910f96efe2d90f7",
+          "applied_at": "2026-08-24T06:59:44.243364+00:00"
+        },
+        {
+          "name": "003_ingestion_policy_identity_and_rejections",
+          "content_hash": "85fac502e44101748bad3e7019bf3c92a36498a225d6f02bbe895479a2a14241",
+          "applied_at": "2026-08-24T07:09:52.552347+00:00"
+        },
+        {
+          "name": "004_p2_orbit_time_frames",
+          "content_hash": "f59f3933e1ff7e1a8617ae2b24c9bdf45de203270e3f7b2f6c3c6ef62f7719b4",
+          "applied_at": "2026-08-25T01:21:51.864193+00:00"
+        },
+        {
+          "name": "005_p4_conjunction_assessment",
+          "content_hash": "f7eeab2aab86df06a9210b210da338ed9978775221f59924f14f7deaecd581d5",
+          "applied_at": "2026-08-25T06:23:33.288147+00:00"
+        },
+        {
+          "name": "006_p4_pc_encounter_plane_v2",
+          "content_hash": "73bf06750fe3620e0367913f04a13ec4f7947ebb8f6bd92361c6c914a100d2f8",
+          "applied_at": "2026-08-25T09:20:48.240628+00:00"
+        },
+        {
+          "name": "007_p5_benefit_engine",
+          "content_hash": "2dd59944ec889eb8d79f2b13b0ff210cba6a1dd0a01794539d3b6722045973e9",
+          "applied_at": "2026-08-25T21:53:20.582255+00:00"
+        }
+      ]
+    },
+    "ben001_direct_benefit": {
+      "name": "ben001_direct_benefit",
+      "cmd": "/usr/local/bin/python -m pytest tests/integration/test_benefit_service.py::TestBenefitServiceRemove::test_ben001_direct_benefit_and_provenance tests/unit/test_benefit_engine.py::test_ben001_direct_beneficiary_attribution_exact -q -p no:cacheprovider",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "============================= test session starts ==============================\nplatform linux -- Python 3.11.16, pytest-7.4.4, pluggy-1.6.0\nrootdir: /app\nconfigfile: pytest.ini\nplugins: anyio-4.14.2, cov-4.1.0, asyncio-0.23.3\nasyncio: mode=Mode.AUTO\ncollected 2 items\n\ntests/integration/test_benefit_service.py .                              [ 50%]\ntests/unit/test_benefit_engine.py .                                      [100%]\n\n========================= 2 passed, 1 warning in 0.20s =========================\n",
+      "stderr_tail": ""
+    },
+    "ben003_full_vs_selective": {
+      "name": "ben003_full_vs_selective",
+      "cmd": "/usr/local/bin/python -m pytest tests/integration/test_p5_full_vs_selective.py -q -p no:cacheprovider",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "============================= test session starts ==============================\nplatform linux -- Python 3.11.16, pytest-7.4.4, pluggy-1.6.0\nrootdir: /app\nconfigfile: pytest.ini\nplugins: anyio-4.14.2, cov-4.1.0, asyncio-0.23.3\nasyncio: mode=Mode.AUTO\ncollected 1 item\n\ntests/integration/test_p5_full_vs_selective.py .                         [100%]\n\n========================= 1 passed, 1 warning in 0.22s =========================\n",
+      "stderr_tail": ""
+    },
+    "validation_artifacts": {
+      "passed": true,
+      "simulation_only_labels": true,
+      "artifacts": [
+        "artifacts/evidence/p5/validation-ben001.json",
+        "artifacts/evidence/p5/equivalence-ben003.json"
+      ],
+      "artifact_sha256": {
+        "artifacts/evidence/p5/validation-ben001.json": "e3ec23ef9c559730b1c020130d7ea11a224f5dde4276c49a1de7a3dfcaa8283f",
+        "artifacts/evidence/p5/equivalence-ben003.json": "3615e0c8bfe5f7c4ba43acf08fc1be956950548b4659b5b03c2e32413f245b38"
+      },
+      "ben001_checks": {
+        "neighbor_identified": true,
+        "exposure_benefit_exact": true,
+        "pc_channel_separate": true,
+        "pc_value_computed": true,
+        "target_self_benefit_excluded": true,
+        "non_neighbor_unchanged": true,
+        "provenance_attached": true,
+        "idealized_removal_assumption": true,
+        "run_persisted": true,
+        "result_hash_present": true,
+        "repeat_same_hash": true
+      },
+      "ben003_checks": {
+        "beneficiary_set_identical": true,
+        "metrics_within_tolerance": true,
+        "result_hash_equal": true,
+        "selective_reuses_baseline_edges": true,
+        "both_runs_succeeded": true
+      },
+      "tolerance_abs": 1e-12,
+      "max_abs_metric_delta": 0.0,
+      "performance": {
+        "full_compute_ms_recorded": 10,
+        "affected_compute_ms_recorded": 10,
+        "full_wall_ms_measured": 32.211,
+        "affected_wall_ms_measured": 28.035,
+        "full_peak_memory_bytes": 319801,
+        "affected_peak_memory_bytes": 317893,
+        "note": "Performance figures measure graph assembly cost under IDEALIZED_REMOVAL; they never substitute for the physics-equivalence requirement above."
+      },
+      "accuracy_vs_performance_separated": true
+    },
+    "scenarios_api_contract": {
+      "passed": true,
+      "endpoints": [
+        "POST /api/v1/baselines?horizon_hours=",
+        "GET /api/v1/baselines",
+        "POST /api/v1/scenarios",
+        "POST /api/v1/scenarios/{id}/run",
+        "GET /api/v1/scenarios/{id}/benefits"
+      ],
+      "baseline_data_status": "INSUFFICIENT_DATA",
+      "baseline_status_reason": "NO_OPERATIONAL_CONJUNCTION_EVENTS_IN_HORIZON",
+      "baseline_edge_count": 0,
+      "baseline_edges_available": false,
+      "error_paths": {
+        "invalid_horizon": 422,
+        "unknown_target": 404,
+        "unsupported_kind": 422,
+        "missing_baseline": 422,
+        "unknown_scenario_benefits": 404
+      },
+      "no_fabricated_values": true
+    },
+    "persistence_immutability": {
+      "passed": true,
+      "baselines": 106,
+      "edges": 40,
+      "scenarios": 86,
+      "runs": 106,
+      "benefit_rows_total": 181,
+      "operational_benefit_rows": 0,
+      "simulation_only_benefit_rows": 181,
+      "protected_tables": [
+        "baseline_graph_snapshot",
+        "benefit_result",
+        "conjunction_snapshot",
+        "intervention_scenario",
+        "risk_edge"
+      ],
+      "append_only_mutation_blocked": true,
+      "append_only_trigger_confirmed": true,
+      "append_only_error_excerpt": "(sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.RaiseError'>: baseline_graph_snapshot is append-only; refreshes must INSERT a new row\n[SQL: UPDATE baseline_graph_snapshot SET"
+    },
+    "ui_remove_panel_evidence": {
+      "passed": true,
+      "api_chain_observed": true,
+      "baseline_endpoint_observed": true,
+      "baseline_edges_available": false,
+      "idealized_removal_rendered": true,
+      "no_actual_removal_disclaimer": true,
+      "explicit_state_rendered": true,
+      "run_data_status": null,
+      "network_log_requests": 5,
+      "screenshots": [
+        "remove-confirm.png",
+        "remove-panel.png"
+      ],
+      "har": "artifacts/evidence/p5/remove-panel-network.har"
+    },
+    "configured_secret_leak": {
+      "passed": true
+    }
+  },
+  "api_endpoints": [
+    "POST /api/v1/baselines?horizon_hours=",
+    "GET /api/v1/baselines?include_simulation=",
+    "POST /api/v1/scenarios",
+    "GET /api/v1/scenarios/{scenario_id}",
+    "POST /api/v1/scenarios/{scenario_id}/run?recompute_mode=",
+    "GET /api/v1/scenarios/{scenario_id}/benefits"
+  ],
+  "browser_evidence_dir": "artifacts/evidence/p5",
+  "scientific_status": {
+    "baseline_risk_graph": "AVAILABLE",
+    "remove_counterfactual": "AVAILABLE_IDEALIZED_SIMULATION_ONLY",
+    "direct_beneficiary_attribution": "AVAILABLE",
+    "full_vs_selective_equivalence": "EQUIVALENT_WITHIN_TOLERANCE",
+    "environment_benefit": "NOT_COMPUTED",
+    "pc_channel": "COVARIANCE_GATED_NOT_COMPUTED_WITHOUT_COVARIANCE",
+    "live_catalog_benefit": "NOT_COMPUTED_ZERO_OPERATIONAL_EVENTS"
+  },
+  "limitations": [
+    "The real stored P4 catalog currently contains zero operational conjunction events (residual probe rows are excluded by design); every live benefit request therefore returns an explicit INSUFFICIENT_DATA state instead of numbers.",
+    "All persisted benefit rows come from the SIMULATION_ONLY validation corpus and are labeled as such; they never surface through the operational baseline path.",
+    "Under IDEALIZED_REMOVAL no new propagation occurs in either recompute mode; benchmark numbers measure graph assembly cost and are reported separately from the physics-equivalence requirement.",
+    "PUBLIC_GP sources carry no covariance, so PC-channel edges remain absent in operational baselines by design.",
+    "MAX_PC remains unpopulated until an operational CDM source is ingested."
+  ],
+  "status": "PASSED",
+  "next_allowed_phase": "P6"
+}

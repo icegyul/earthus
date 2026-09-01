@@ -1,0 +1,58 @@
+{
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "inner_width": 390,
+  "scroll_width": {
+    "documentElement": 390,
+    "body": 390,
+    "app": 390
+  },
+  "boxes": {
+    ".brand": {
+      "x": 12,
+      "right": 378,
+      "y": 10,
+      "bottom": 45,
+      "width": 366
+    },
+    "#coverage": {
+      "x": 12,
+      "right": 378,
+      "y": 53,
+      "bottom": 109,
+      "width": 366
+    },
+    ".search": {
+      "x": 12,
+      "right": 378,
+      "y": 117,
+      "bottom": 175,
+      "width": 366
+    },
+    "#list-panel": {
+      "x": 10,
+      "right": 380,
+      "y": 513,
+      "bottom": 834,
+      "width": 370
+    },
+    ".legend": {
+      "x": 10,
+      "right": 380,
+      "y": 709,
+      "bottom": 834,
+      "width": 370
+    },
+    ".lod-indicator": {
+      "x": 10,
+      "right": 224,
+      "y": 586,
+      "bottom": 618,
+      "width": 214
+    }
+  },
+  "overflow_problems": [],
+  "box_problems": []
+}

@@ -1,0 +1,53 @@
+{
+  "base_url": "http://127.0.0.1:8767",
+  "routes": {
+    "/v1/health": {
+      "status": 200,
+      "data_status": null
+    },
+    "/v1/product/summary": {
+      "status": 200,
+      "data_status": "PARTIAL"
+    },
+    "/v1/space/state": {
+      "status": 200,
+      "data_status": "RESEARCH_ONLY"
+    },
+    "/v1/control": {
+      "status": 200,
+      "data_status": "OK"
+    },
+    "/v1/orbit": {
+      "status": 200,
+      "data_status": "SCREENING_ONLY"
+    },
+    "/v1/orbit/render-set": {
+      "status": 200,
+      "data_status": "SCREENING_ONLY"
+    },
+    "/v1/intelligence/important-now": {
+      "status": 200,
+      "data_status": "VALIDATION_PENDING"
+    },
+    "/v1/archive/search": {
+      "status": 200,
+      "data_status": "OK"
+    },
+    "/v1/providers/registry": {
+      "status": 200,
+      "data_status": "VALIDATION_PENDING"
+    },
+    "/v1/my-aetherus": {
+      "status": 200,
+      "data_status": "LOCAL_ONLY"
+    },
+    "/app/": {
+      "status": 200,
+      "data_status": null
+    }
+  },
+  "status": "PASS",
+  "e36_visual_only": true,
+  "pc_without_covariance": null,
+  "restart_persistence": true
+}

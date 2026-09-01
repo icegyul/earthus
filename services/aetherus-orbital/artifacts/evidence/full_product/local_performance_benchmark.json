@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-08-30T22:36:32.855850+00:00",
+  "environment": "FastAPI TestClient / local SQLite / deterministic validation fixtures",
+  "scope_note": "Local API latency evidence only. Browser GPU FPS and production network/database latency are not claimed.",
+  "results": [
+    {
+      "name": "api.object_detail",
+      "iterations": 100,
+      "budget_p95_ms": 500.0,
+      "p50_ms": 0.535,
+      "p95_ms": 0.625,
+      "max_ms": 0.746,
+      "mean_ms": 0.546,
+      "status": "PASS"
+    },
+    {
+      "name": "api.important_now",
+      "iterations": 100,
+      "budget_p95_ms": 800.0,
+      "p50_ms": 0.831,
+      "p95_ms": 0.932,
+      "max_ms": 1.024,
+      "mean_ms": 0.835,
+      "status": "PASS"
+    },
+    {
+      "name": "intelligence.event_revision",
+      "iterations": 100,
+      "budget_p95_ms": 1500.0,
+      "p50_ms": 0.644,
+      "p95_ms": 0.75,
+      "max_ms": 0.822,
+      "mean_ms": 0.656,
+      "status": "PASS"
+    },
+    {
+      "name": "mission_replay.first_frame_proxy",
+      "iterations": 100,
+      "budget_p95_ms": 2000.0,
+      "p50_ms": 0.547,
+      "p95_ms": 0.639,
+      "max_ms": 0.785,
+      "mean_ms": 0.555,
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS"
+}

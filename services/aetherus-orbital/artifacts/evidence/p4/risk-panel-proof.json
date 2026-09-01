@@ -1,0 +1,41 @@
+{
+  "target_catalog_id": "25544",
+  "api_payload": {
+    "request_id": "64381536-417a-4a59-aa36-ff48f5936939",
+    "generated_at": "2026-08-25T09:30:10.398661+00:00",
+    "data_status": "PARTIAL",
+    "status_reason": "NO_EVENTS_AND_PROPAGATION_FAILURES_PRESENT",
+    "data": {
+      "count": 0,
+      "events": []
+    },
+    "provenance": {
+      "screening_run_id": "26d3efb6-6800-475e-9e37-26d097b8a41c",
+      "source_ids": [
+        "celestrak_gp",
+        "spacetrack_gp"
+      ],
+      "model_id": "aetherus-ca-screening",
+      "model_version": "p4-conservative-v1",
+      "config_hash": "b802cedfc27648c80a8f5b552bbc6dfc14cb7e47021eb0e86fb51e30af4384cf",
+      "input_hash": "94f29c884d0b859879300b30b5a0ea43446fdf8e0d605b953005d6c81c53e58b",
+      "window_start": "2026-08-25T09:29:48.218078+00:00",
+      "window_stop": "2026-08-25T11:29:48.218078+00:00",
+      "pairs_before_screening": 28,
+      "pairs_after_coarse": 0,
+      "objects_considered": 11,
+      "objects_propagated": 8,
+      "events_found": 0,
+      "validation_dataset_id": "stored-public-gp-catalog-v1",
+      "validation_dataset_version": "p4"
+    },
+    "warnings": [
+      "Latest screening run recorded 3 propagation failures."
+    ]
+  },
+  "rendered_risk_section": "CONJUNCTION RISK\nNO CONJUNCTION EVENTS \u2014 NO_EVENTS_AND_PROPAGATION_FAILURES_PRESENT. The stored screening results contain no event for this object.\n\nscreening run 26d3efb6 \u00b7 pairs 28\u21920 \u00b7 objects 8 \u00b7 model aetherus-ca-screening vp4-conservative-v1\n\nRisk values come only from GET /api/v1/conjunctions. Pc is computed exclusively from a valid CDM covariance; SOCRATES MaxProbability and screening metrics are separate channels and are never relabelled as Pc.",
+  "network_url_seen": "http://localhost:18000/api/v1/conjunctions?object=25544",
+  "second_target_catalog_id": "25994",
+  "second_rendered_risk_section": "CONJUNCTION RISK\nNO CONJUNCTION EVENTS \u2014 NO_EVENTS_AND_PROPAGATION_FAILURES_PRESENT. The stored screening results contain no event for this object.\n\nscreening run 26d3efb6 \u00b7 pairs 28\u21920 \u00b7 objects 8 \u00b7 model aetherus-ca-screening vp4-conservative-v1\n\nRisk values come only from GET /api/v1/conjunctions. Pc is computed exclusively from a valid CDM covariance; SOCRATES MaxProbability and screening metrics are separate channels and are never relabelled as Pc.",
+  "second_api_data_status": "PARTIAL"
+}

@@ -1,0 +1,72 @@
+{
+  "measured_at": "2026-08-30T13:53:48.651572+00:00",
+  "base_url": "http://localhost:8000",
+  "environment": "Playwright Chromium headless on macOS host",
+  "scope_note": "This is a host/headless browser measurement, not physical iPhone or Android thermal evidence.",
+  "viewports": {
+    "desktop_1440": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "modes": {
+        "SPACE": {
+          "frames": 96,
+          "duration_ms": 2020.3,
+          "fps": 47.518
+        },
+        "CONTROL": {
+          "frames": 79,
+          "duration_ms": 2004.9,
+          "fps": 39.403
+        },
+        "ORBIT": {
+          "frames": 87,
+          "duration_ms": 2025.6,
+          "fps": 42.95
+        },
+        "INTELLIGENCE": {
+          "frames": 88,
+          "duration_ms": 2011.6,
+          "fps": 43.746
+        },
+        "ARCHIVE": {
+          "frames": 94,
+          "duration_ms": 2022.4,
+          "fps": 46.479
+        }
+      }
+    },
+    "mobile_390": {
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "modes": {
+        "SPACE": {
+          "frames": 238,
+          "duration_ms": 2004.8,
+          "fps": 118.715
+        },
+        "CONTROL": {
+          "frames": 237,
+          "duration_ms": 2001.5,
+          "fps": 118.411
+        },
+        "ORBIT": {
+          "frames": 241,
+          "duration_ms": 2001.7,
+          "fps": 120.398
+        },
+        "INTELLIGENCE": {
+          "frames": 236,
+          "duration_ms": 2007.5,
+          "fps": 117.559
+        },
+        "ARCHIVE": {
+          "frames": 241,
+          "duration_ms": 2000.4,
+          "fps": 120.476
+        }
+      }
+    }
+  }
+}

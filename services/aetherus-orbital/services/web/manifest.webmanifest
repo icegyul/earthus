@@ -1,0 +1,14 @@
+{
+  "name": "AETHERUS V2 — Space Intelligence & Visual OS",
+  "short_name": "AETHERUS",
+  "start_url": "/app/",
+  "scope": "/app/",
+  "display": "standalone",
+  "background_color": "#030507",
+  "theme_color": "#05070a",
+  "orientation": "any",
+  "lang": "en",
+  "icons": [
+    {"src":"/app/assets/aetherus-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}

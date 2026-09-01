@@ -1,0 +1,64 @@
+{
+  "status": "PASS",
+  "web_fingerprint": "e56525b853c23e8ebccdc7f079de10c913f6b3a38afc18fe00f102507f4e2031",
+  "locales": {
+    "en": {
+      "SPACE": {
+        "title": "SOLAR SYSTEM",
+        "data_status": "RESEARCH_ONLY"
+      },
+      "CONTROL": {
+        "title": "MISSION CONTROL",
+        "data_status": "OK"
+      },
+      "ORBIT": {
+        "title": "ORBITAL ENVIRONMENT",
+        "data_status": "SCREENING_ONLY"
+      },
+      "INTELLIGENCE": {
+        "title": "INTELLIGENCE CORE",
+        "data_status": "VALIDATION_PENDING"
+      },
+      "ARCHIVE": {
+        "title": "TIME MACHINE / ARCHIVE",
+        "data_status": "OK"
+      }
+    },
+    "ko": {
+      "SPACE": {
+        "title": "태양계",
+        "data_status": "RESEARCH_ONLY"
+      },
+      "CONTROL": {
+        "title": "미션 관제",
+        "data_status": "OK"
+      },
+      "ORBIT": {
+        "title": "궤도 환경",
+        "data_status": "SCREENING_ONLY"
+      },
+      "INTELLIGENCE": {
+        "title": "인텔리전스 코어",
+        "data_status": "VALIDATION_PENDING"
+      },
+      "ARCHIVE": {
+        "title": "타임머신 / 아카이브",
+        "data_status": "OK"
+      }
+    }
+  },
+  "screenshots": [
+    "artifacts/evidence/desktop_v06/desktop1440_en_space.png",
+    "artifacts/evidence/desktop_v06/desktop1440_en_control.png",
+    "artifacts/evidence/desktop_v06/desktop1440_en_orbit.png",
+    "artifacts/evidence/desktop_v06/desktop1440_en_intelligence.png",
+    "artifacts/evidence/desktop_v06/desktop1440_en_archive.png",
+    "artifacts/evidence/desktop_v06/desktop1440_ko_space.png",
+    "artifacts/evidence/desktop_v06/desktop1440_ko_control.png",
+    "artifacts/evidence/desktop_v06/desktop1440_ko_orbit.png",
+    "artifacts/evidence/desktop_v06/desktop1440_ko_intelligence.png",
+    "artifacts/evidence/desktop_v06/desktop1440_ko_archive.png"
+  ],
+  "console_errors": [],
+  "page_errors": []
+}

@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "source_commit": "3c43243",
+  "image_id": "sha256:e363052c5d62f6964cc1a44aaf06f182b7dabf9993dd300866c00a23d4d9dd33",
+  "image_size_bytes": 831673360,
+  "container": "aetherus-staging-api",
+  "container_health": "healthy",
+  "database_container": "aetherus-staging-postgres",
+  "redis_container": "aetherus-staging-redis",
+  "local_url": "http://127.0.0.1:18080/app/",
+  "lan_url": "http://192.168.219.160:18080/app/",
+  "listen": ["0.0.0.0:18080", "[::]:18080"],
+  "lan_html_sha256": "c8c904754cfb4caee1d8a278f601f82257df70ebd3a1981165059ef20239570e",
+  "staging_readiness": {
+    "local_product_complete": true,
+    "staging_ready": true,
+    "blockers": [],
+    "production_ready": false,
+    "production_blockers": ["BLOCKED_PRODUCTION_SECRETS"],
+    "secret_scope": "STAGING_HMAC"
+  },
+  "browser": {
+    "desktop1440": "PASS",
+    "mobile390": "PASS",
+    "console_errors": 0,
+    "page_errors": 0,
+    "horizontal_overflow": 0
+  },
+  "physical_device_confirmation": "PENDING_USER_DEVICE",
+  "production_deployed": false
+}

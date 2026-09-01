@@ -1,0 +1,161 @@
+{
+  "generated_at": "2026-08-30T22:36:33.393495+00:00",
+  "phase": "AETHERUS V2 LOCAL PRODUCT CLOSEOUT",
+  "status": "LOCAL_PRODUCT_COMPLETE",
+  "local_product_complete": true,
+  "staging_package_ready": true,
+  "staging_environment_validated": false,
+  "staging_ready": false,
+  "production_integration_remaining": true,
+  "acceptance": {
+    "required_total": 307,
+    "pass_total": 307,
+    "fail_total": 0,
+    "not_run_total": 0
+  },
+  "registry_api_coverage": {
+    "expected_http_paths": 62,
+    "covered_http_paths": 62,
+    "missing": [],
+    "extra_product_paths": 29
+  },
+  "steps": [
+    {
+      "name": "compile",
+      "command": "/usr/local/bin/python -m compileall -q packages services scripts",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "contracts",
+      "command": "/usr/local/bin/python scripts/validate_contracts.py",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "intelligence_matrix",
+      "command": "/usr/local/bin/python scripts/validate_intelligence_matrix.py",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "foundation_pytest",
+      "command": "/usr/local/bin/python -m pytest -q tests/foundation tests/integration tests/e2e --junitxml /app/artifacts/evidence/full_product/pytest_foundation_closeout.xml",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "master_acceptance",
+      "command": "/usr/local/bin/python -m pytest -q tests/acceptance --junitxml /app/artifacts/evidence/full_product/pytest_master_acceptance_277.xml",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "full_pytest",
+      "command": "/usr/local/bin/python -m pytest -q --junitxml /app/artifacts/evidence/full_product/pytest_full_closeout.xml",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "web_i18n_js",
+      "command": "node --check services/web/i18n.js",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "web_earth_texture_js",
+      "command": "node --check services/web/earth-texture.js",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "web_visual_engine_js",
+      "command": "node --check services/web/visual-engine.js",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "web_js",
+      "command": "node --check services/web/app.js",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "openapi_export",
+      "command": "/usr/local/bin/python scripts/export_openapi.py",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "http_e2e",
+      "command": "/usr/local/bin/python scripts/run_http_e2e.py",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "browser_inprocess_e2e",
+      "command": "/usr/local/bin/python scripts/run_browser_inprocess_e2e.py",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "desktop_bilingual_evidence_check",
+      "command": "verify desktop_v06 evidence fingerprint",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "mobile_bilingual_evidence_check",
+      "command": "verify mobile_v06 evidence fingerprint",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "bilingual_visual_evidence",
+      "command": "/usr/local/bin/python scripts/verify_bilingual_visual_evidence.py",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "visual_evidence",
+      "command": "/usr/local/bin/python scripts/verify_visual_evidence.py",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "backup_restore",
+      "command": "/usr/local/bin/python scripts/verify_local_backup_restore.py",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "performance_benchmark",
+      "command": "/usr/local/bin/python scripts/benchmark_local_product.py",
+      "returncode": 0,
+      "status": "PASS"
+    },
+    {
+      "name": "live_provider_probe",
+      "command": "python scripts/check_live_providers.py",
+      "returncode": null,
+      "status": "SKIPPED_EXTERNAL"
+    }
+  ],
+  "blockers": [
+    "BLOCKED_DOCKER_RUNTIME",
+    "BLOCKED_EXTERNAL_LLM_CREDENTIAL",
+    "BLOCKED_LIVE_PROVIDER_NETWORK",
+    "BLOCKED_POSTGRES_EXECUTION",
+    "BLOCKED_PRODUCTION_SECRETS"
+  ],
+  "scientific_validation_state": "VALIDATION_PENDING",
+  "boundaries": {
+    "operational_pc_without_covariance": "FORBIDDEN",
+    "llm_scientific_calculation": "FORBIDDEN",
+    "automatic_spacecraft_command": "FORBIDDEN",
+    "offline_solar_ephemeris": "RESEARCH_ONLY",
+    "local_validation_orbit": "SCREENING_ONLY",
+    "mobile_horizontal_overflow": "FORBIDDEN",
+    "bilingual_ui": "KO_EN_REQUIRED"
+  }
+}

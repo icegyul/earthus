@@ -17,7 +17,13 @@ def _norm(path: str) -> str:
 
 
 def test_engine_registry_http_surface_is_fully_exposed():
-    registry = yaml.safe_load((ROOT / "config" / "AETHERUS_V2_ENGINE_REGISTRY.yaml").read_text())
+    # encoding must be explicit: the registry is UTF-8 with Korean text and
+    # Windows' locale default (cp949) cannot decode it.
+    registry = yaml.safe_load(
+        (ROOT / "config" / "AETHERUS_V2_ENGINE_REGISTRY.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
     expected = set()
     for section in ("engines", "llm_modules", "platform_services"):
         for item in registry[section]:

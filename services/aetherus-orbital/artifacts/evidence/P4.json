@@ -1,0 +1,264 @@
+{
+  "phase": "P4",
+  "phase_name": "Conjunction Assessment: conservative screening, refined TCA, covariance-gated Pc, provenance",
+  "generated_at": "2026-08-25T09:31:18.556604+00:00",
+  "version": "0.1.0.post0",
+  "commit": "7b89f9f1cefe88774236cb4dc1ee3f00bee475a4",
+  "scope": {
+    "package_phase_card": "P4 Conjunction",
+    "world_com_integration": "NOT_ATTEMPTED",
+    "scientific_features": [
+      "Conservative coarse screening (shell envelopes + aligned-sample cascade with honest margins)",
+      "Refined TCA: coarse samples -> brackets -> squared-distance minimization -> global minimum -> boundary flag -> relative velocity",
+      "Metric channel separation: MISS_DISTANCE screening vs PC vs MAX_PC never merged",
+      "Covariance-gated Pc plugin (Foster-1992 encounter plane); PUBLIC_GP stays NOT_COMPUTED",
+      "CDM parser preserving raw artifact hash and SPEC_EXAMPLE source grades",
+      "conjunction_event stable identity + append-only conjunction_snapshot (DB trigger)",
+      "GET /api/v1/conjunctions served only from stored results with metric_type-threshold enforcement",
+      "POST /api/v1/conjunctions/screen-runs bounded execution over stored solutions",
+      "Explore UI risk panel renders only P4 API results with explicit empty/unavailable states"
+    ],
+    "explicitly_out_of_scope": [
+      "No benefit engine, REMOVE/PROTECT scenarios (P5/P6)",
+      "No operational CDM feed ingestion (TraCSS live path remains future work)",
+      "Synthetic 10k corpus is validation-only and never persisted as operational events"
+    ]
+  },
+  "gates": {
+    "git_commit": {
+      "passed": true,
+      "commit": "7b89f9f1cefe88774236cb4dc1ee3f00bee475a4"
+    },
+    "tests": {
+      "name": "tests",
+      "cmd": "/usr/local/bin/python -m pytest -q -p no:cacheprovider",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "============================= test session starts ==============================\nplatform linux -- Python 3.11.16, pytest-7.4.4, pluggy-1.6.0\nrootdir: /app\nconfigfile: pytest.ini\ntestpaths: tests\nplugins: anyio-4.14.2, cov-4.1.0, asyncio-0.23.3\nasyncio: mode=Mode.AUTO\ncollected 216 items / 2 skipped\n\ntests/test_database.py .....                                             [  2%]\ntests/test_health.py .....                                               [  4%]\ntests/test_migrations.py ....                                            [  6%]\ntests/integration/test_ca_10k_corpus.py .....                            [  8%]\ntests/integration/test_ca_service_persistence.py ......                  [ 11%]\ntests/integration/test_celestrak_ingestion.py .                          [ 12%]\ntests/integration/test_conjunctions_api.py ..........                    [ 16%]\ntests/integration/test_identity_conflicts.py ...                         [ 18%]\ntests/integration/test_ingestion_rejections.py .                         [ 18%]\ntests/integration/test_live_provider_evidence.py ss                      [ 19%]\ntests/integration/test_p1_migration_schema.py .                          [ 19%]\ntests/integration/test_p2_golden_cross_validation.py ...                 [ 21%]\ntests/integration/test_p2_migration_schema.py ...                        [ 22%]\ntests/integration/test_p3_catalog_contract.py ......                     [ 25%]\ntests/integration/test_p4_migration_schema.py .....                      [ 27%]\ntests/integration/test_partial_ingestion.py .                            [ 28%]\ntests/integration/test_run_artifact_provenance.py .                      [ 28%]\ntests/integration/test_snapshot_versioning.py .                          [ 29%]\ntests/integration/test_spacetrack_ingestion.py ..                        [ 30%]\ntests/unit/test_ca_pc.py ....................                            [ 39%]\ntests/unit/test_ca_screen.py .....                                       [ 41%]\ntests/unit/test_ca_tca_solver.py ......                                  [ 44%]\ntests/unit/test_catalog_id_validation.py .........                       [ 48%]\ntests/unit/test_celestrak_client.py ...                                  [ 50%]\ntests/unit/test_ephemeris_api.py ..........                              [ 54%]\ntests/unit/test_evidence_p1.py ...                                       [ 56%]\ntests/unit/test_evidence_status.py .                                     [ 56%]\ntests/unit/test_explore_catalog_api.py ........                          [ 60%]\ntests/unit/test_explore_service.py ................                      [ 67%]\ntests/unit/test_frames.py ......                                         [ 70%]\ntests/unit/test_identity_resolution.py ....                              [ 72%]\ntests/unit/test_ingestion_api.py .....                                   [ 74%]\ntests/unit/test_ingestion_service.py ......                              [ 77%]\ntests/unit/test_internal_ingestion_api.py ...                            [ 78%]\ntests/unit/test_migration_sql.py ...                                     [ 80%]\ntests/unit/test_no_tle_width_gate.py ..                                  [ 81%]\ntests/unit/test_omm_parser.py .....                                      [ 83%]\ntests/unit/test_provider_contracts.py ...                                [ 84%]\ntests/unit/test_ratelimit_policy.py .....                                [ 87%]\ntests/unit/test_raw_artifact_store.py ..                                 [ 87%]\ntests/unit/test_redaction.py .                                           [ 88%]\ntests/unit/test_sgp4_official_corpus.py ....                             [ 90%]\ntests/unit/test_sgp4_propagator.py ...........                           [ 95%]\ntests/unit/test_spacetrack_client.py ....                                [ 97%]\ntests/unit/test_time_scale.py ......                                     [100%]\n\n================== 214 passed, 4 skipped, 1 warning in 14.88s ==================\n",
+      "stderr_tail": ""
+    },
+    "lint": {
+      "name": "lint",
+      "cmd": "/usr/local/bin/python -m ruff check backend tests quality",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "",
+      "stderr_tail": ""
+    },
+    "type_check": {
+      "name": "type_check",
+      "cmd": "/usr/local/bin/python -m mypy backend",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "Success: no issues found in 49 source files\n",
+      "stderr_tail": ""
+    },
+    "anti_shortcut_audit": {
+      "passed": true,
+      "cmd": "rg -n anti-shortcut-patterns backend frontend",
+      "matches": [],
+      "exit_code": 1
+    },
+    "width_audit": {
+      "passed": true,
+      "cmd": "/usr/local/bin/python quality/check_no_tle_width.py backend",
+      "violations": []
+    },
+    "database": {
+      "passed": true,
+      "missing_tables": [],
+      "extensions": {
+        "pgcrypto": "1.3",
+        "postgis": "3.4.3"
+      },
+      "migrations": [
+        {
+          "name": "001_initial_schema",
+          "content_hash": "07ad94c4fcb4009d48aac536a331dd56c9471d2d72cd66e94ff0c9a32c39b2ec",
+          "applied_at": "2026-08-24T06:59:43.953619+00:00"
+        },
+        {
+          "name": "002_orbit_solution_raw_artifact_versioning",
+          "content_hash": "872bf92e832d6b021f1ba473fcc5492a85974a54fdd6b0b57910f96efe2d90f7",
+          "applied_at": "2026-08-24T06:59:44.243364+00:00"
+        },
+        {
+          "name": "003_ingestion_policy_identity_and_rejections",
+          "content_hash": "85fac502e44101748bad3e7019bf3c92a36498a225d6f02bbe895479a2a14241",
+          "applied_at": "2026-08-24T07:09:52.552347+00:00"
+        },
+        {
+          "name": "004_p2_orbit_time_frames",
+          "content_hash": "f59f3933e1ff7e1a8617ae2b24c9bdf45de203270e3f7b2f6c3c6ef62f7719b4",
+          "applied_at": "2026-08-25T01:21:51.864193+00:00"
+        },
+        {
+          "name": "005_p4_conjunction_assessment",
+          "content_hash": "f7eeab2aab86df06a9210b210da338ed9978775221f59924f14f7deaecd581d5",
+          "applied_at": "2026-08-25T06:23:33.288147+00:00"
+        },
+        {
+          "name": "006_p4_pc_encounter_plane_v2",
+          "content_hash": "73bf06750fe3620e0367913f04a13ec4f7947ebb8f6bd92361c6c914a100d2f8",
+          "applied_at": "2026-08-25T09:20:48.240628+00:00"
+        }
+      ]
+    },
+    "ca001_screening_corpus": {
+      "name": "ca001_screening_corpus",
+      "cmd": "/usr/local/bin/python -m pytest tests/integration/test_ca_10k_corpus.py -q -p no:cacheprovider",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "============================= test session starts ==============================\nplatform linux -- Python 3.11.16, pytest-7.4.4, pluggy-1.6.0\nrootdir: /app\nconfigfile: pytest.ini\nplugins: anyio-4.14.2, cov-4.1.0, asyncio-0.23.3\nasyncio: mode=Mode.AUTO\ncollected 5 items\n\ntests/integration/test_ca_10k_corpus.py .....                            [100%]\n\n============================== 5 passed in 14.33s ==============================\n",
+      "stderr_tail": ""
+    },
+    "ca002_tca_tolerance": {
+      "name": "ca002_tca_tolerance",
+      "cmd": "/usr/local/bin/python -m pytest tests/unit/test_ca_tca_solver.py -q -p no:cacheprovider",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "============================= test session starts ==============================\nplatform linux -- Python 3.11.16, pytest-7.4.4, pluggy-1.6.0\nrootdir: /app\nconfigfile: pytest.ini\nplugins: anyio-4.14.2, cov-4.1.0, asyncio-0.23.3\nasyncio: mode=Mode.AUTO\ncollected 6 items\n\ntests/unit/test_ca_tca_solver.py ......                                  [100%]\n\n============================== 6 passed in 0.01s ===============================\n",
+      "stderr_tail": ""
+    },
+    "ca003_pc_covariance_gating": {
+      "name": "ca003_pc_covariance_gating",
+      "cmd": "/usr/local/bin/python -m pytest tests/unit/test_ca_pc.py -q -p no:cacheprovider",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "============================= test session starts ==============================\nplatform linux -- Python 3.11.16, pytest-7.4.4, pluggy-1.6.0\nrootdir: /app\nconfigfile: pytest.ini\nplugins: anyio-4.14.2, cov-4.1.0, asyncio-0.23.3\nasyncio: mode=Mode.AUTO\ncollected 20 items\n\ntests/unit/test_ca_pc.py ....................                            [100%]\n\n============================== 20 passed in 0.04s ==============================\n",
+      "stderr_tail": ""
+    },
+    "conjunctions_api_contract": {
+      "passed": true,
+      "endpoints": [
+        "POST /api/v1/conjunctions/screen-runs?window_hours=",
+        "GET /api/v1/conjunctions",
+        "GET /api/v1/conjunctions?object="
+      ],
+      "run_data_status": "PARTIAL",
+      "run_reason": "NO_EVENTS_AND_PROPAGATION_FAILURES_PRESENT",
+      "objects_considered": 11,
+      "objects_propagated": 8,
+      "pairs_before_screening": 28,
+      "pairs_after_coarse": 0,
+      "propagation_failure_count": 3,
+      "events_found": 0,
+      "list_count": 0,
+      "error_paths": {
+        "threshold_without_metric_type": 422,
+        "unknown_metric_type": 422,
+        "naive_timestamp": 422
+      },
+      "no_fabricated_channels": true
+    },
+    "real_screening_persistence": {
+      "passed": true,
+      "screening_runs": 203,
+      "max_pairs_screened": 28,
+      "all_runs_input_hashed": true,
+      "all_runs_config_hashed": true,
+      "stored_snapshots": 0,
+      "distinct_events": 0,
+      "snapshot_channel_integrity": true,
+      "append_only_mutation_blocked": true,
+      "append_only_error_excerpt": "(sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.RaiseError'>: conjunction_snapshot is append-only; refreshes must INSERT a new snapshot\n[SQL: UPDATE conjunction_snapshot SET "
+    },
+    "ui_risk_panel_evidence": {
+      "passed": true,
+      "target_catalog_id": "25544",
+      "api_data_status": "PARTIAL",
+      "rendered_reflects_api": true,
+      "pc_honesty_note_rendered": true,
+      "static_p3_placeholder_removed": true,
+      "network_log_requests": 6,
+      "screenshots": [
+        "risk-panel.png"
+      ]
+    },
+    "ca_validation_metrics": {
+      "passed": true,
+      "dataset_id": "synthetic-10k-injected-close-pairs-v1",
+      "dataset_version": "p4",
+      "validation_only": true,
+      "objects": 10000,
+      "objects_propagated": 10000,
+      "window_hours": 3.0,
+      "coarse_step_seconds": 30,
+      "refine_step_seconds": 5,
+      "screening_threshold_m": 25000.0,
+      "seed": 20260825,
+      "pairs_before_screening": 49995000,
+      "pairs_after_shell": 1237500,
+      "pairs_after_coarse": 4157,
+      "injected_pairs": 5,
+      "false_negatives": 0,
+      "propagation_failures": [],
+      "runtime_seconds": 14.151,
+      "injected_pair_refined_tcas": [
+        {
+          "primary_catalog_id": "100004",
+          "secondary_catalog_id": "200004",
+          "tca_utc": "2026-08-25T02:33:05.848885+00:00",
+          "miss_distance_m": 4995.087,
+          "relative_speed_mps": 5.589,
+          "boundary_flag": false
+        },
+        {
+          "primary_catalog_id": "100017",
+          "secondary_catalog_id": "200017",
+          "tca_utc": "2026-08-25T02:08:48.640147+00:00",
+          "miss_distance_m": 4995.09,
+          "relative_speed_mps": 5.589,
+          "boundary_flag": false
+        },
+        {
+          "primary_catalog_id": "101001",
+          "secondary_catalog_id": "201001",
+          "tca_utc": "2026-08-25T01:25:24.974120+00:00",
+          "miss_distance_m": 5872.267,
+          "relative_speed_mps": 5.143,
+          "boundary_flag": false
+        },
+        {
+          "primary_catalog_id": "105000",
+          "secondary_catalog_id": "205000",
+          "tca_utc": "2026-08-25T02:51:25.988302+00:00",
+          "miss_distance_m": 9388.087,
+          "relative_speed_mps": 4.077,
+          "boundary_flag": false
+        },
+        {
+          "primary_catalog_id": "107777",
+          "secondary_catalog_id": "207777",
+          "tca_utc": "2026-08-25T00:48:40.009452+00:00",
+          "miss_distance_m": 11805.125,
+          "relative_speed_mps": 3.638,
+          "boundary_flag": false
+        }
+      ]
+    },
+    "configured_secret_leak": {
+      "passed": true
+    }
+  },
+  "api_endpoints": [
+    "POST /api/v1/conjunctions/screen-runs?window_hours=",
+    "GET /api/v1/conjunctions?object=&start=&stop=&source_grade=&metric_type=&threshold_min=&threshold_max=&limit="
+  ],
+  "browser_evidence_dir": "artifacts/evidence/p4",
+  "scientific_status": {
+    "coarse_screening": "AVAILABLE",
+    "refined_tca": "AVAILABLE",
+    "pc_without_covariance": "NOT_COMPUTED",
+    "benefit_engine": "NOT_COMPUTED"
+  },
+  "limitations": [
+    "The real stored catalog contains 8 propagable PUBLIC_GP objects; the 24h/25km screening found zero candidate pairs, which is reported honestly instead of being filled with synthetic conjunctions.",
+    "Three P1 test-residue objects exceed the SGP4 Alpha-5 numeric ceiling and are recorded as explicit propagation failures (PARTIAL).",
+    "PUBLIC_GP OMM carries no covariance; Pc remains NOT_COMPUTED by design.",
+    "Screening executes synchronously under a strict object cap because no worker queue infrastructure exists yet; large-catalog scheduling is deferred.",
+    "SOCRATES MaxProbability is not ingested here; MAX_PC stays a separate, currently unpopulated channel rather than being relabelled from Pc."
+  ],
+  "status": "PASSED",
+  "next_allowed_phase": "P5"
+}

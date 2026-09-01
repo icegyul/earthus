@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "modes": {
+    "space": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 555152,
+      "sha256": "6e5de874ddaa8f1a67d3290a23fd30f9b6db9b897f919b152adda82aa81840df"
+    },
+    "control": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 739348,
+      "sha256": "771d733c342791912fa9cc71732843b1cf8c2cd57928b2f0de4c0c67fb902ae2"
+    },
+    "orbit": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 708897,
+      "sha256": "586a297c2ea8cabd6b7afb492c985d0e96075cfb468e4276efc28643240cc12b"
+    },
+    "intelligence": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 722345,
+      "sha256": "92c0cd8dac339dd4e8e63c1de48580e6c64b7c3b0afe3052cbf4919941836901"
+    },
+    "archive": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 657189,
+      "sha256": "cc3202456aceaf996fbdc0e711605ba0850e99dd0f26d99644ddf465b4300cac"
+    }
+  },
+  "distinct_hashes": true
+}

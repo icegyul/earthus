@@ -1,0 +1,118 @@
+{
+  "schema": "aetherus.phase-evidence.v1",
+  "source_commit": "22ee594",
+  "phases": {
+    "P6": {
+      "status": "PASSED",
+      "tests": [
+        "tests/product/test_p6_protect_ocm_runtime.py"
+      ],
+      "runtime_evidence": [
+        {
+          "data_status": "RESEARCH_ONLY",
+          "result_hash": "f78e1a0a2fc03219d97ce9de3d3825c7062c23efd0d1689507b1ce854fc1dc3e"
+        }
+      ],
+      "gates": [
+        "INPUT_COMPUTE_PERSISTENCE_API_UI_TEST_EVIDENCE"
+      ]
+    },
+    "P7": {
+      "status": "PASSED",
+      "tests": [
+        "tests/product/test_p7_p8_debris_runtime.py::test_genealogy_write_survives_runtime_restart"
+      ],
+      "runtime_evidence": [
+        {
+          "data_status": "OK",
+          "result_hash": null
+        }
+      ],
+      "gates": [
+        "INPUT_COMPUTE_PERSISTENCE_API_UI_TEST_EVIDENCE"
+      ]
+    },
+    "P8": {
+      "status": "PASSED",
+      "tests": [
+        "tests/product/test_p7_p8_debris_runtime.py::test_fragmentation_propagates_every_fragment_and_is_reproducible"
+      ],
+      "runtime_evidence": [
+        {
+          "data_status": "RESEARCH_ONLY",
+          "result_hash": "5d238ee1025cf69f34c981ba3df19330ce806f875f2b5aae453467adbd429c9b"
+        }
+      ],
+      "gates": [
+        "INPUT_COMPUTE_PERSISTENCE_API_UI_TEST_EVIDENCE"
+      ]
+    },
+    "P9": {
+      "status": "PASSED",
+      "tests": [
+        "tests/product/test_p9_observation_runtime.py"
+      ],
+      "runtime_evidence": [
+        {
+          "data_status": "SCREENING_ONLY",
+          "result_hash": "f18f99185e45afa1074b854fb073008786721160ba002a308615c966fa1caf22"
+        }
+      ],
+      "gates": [
+        "INPUT_COMPUTE_PERSISTENCE_API_UI_TEST_EVIDENCE"
+      ]
+    },
+    "P10": {
+      "status": "PASSED",
+      "tests": [
+        "tests/product/test_p10_research_datasets.py"
+      ],
+      "runtime_evidence": [
+        {
+          "data_status": "VALIDATED_PIPELINE",
+          "result_hash": "b0d50ebe8a97a983c4b6a90a2ff3ae3e35ead22e8bf0863ea4f9a64b55ca821a",
+          "download_sha256": {
+            "json": "e33cea1a4a0a5d2f4385372ec62641317a47b9e5fa5283fb45026632621c84d8",
+            "csv": "7026e354697a9bc315810253e6a446a6ad6dd6c1158a8f3071760c0988c28d05"
+          }
+        }
+      ],
+      "gates": [
+        "INPUT_COMPUTE_PERSISTENCE_API_UI_TEST_EVIDENCE"
+      ]
+    },
+    "P11": {
+      "status": "PASSED",
+      "tests": [
+        "tests/product/test_p11_operations_runtime.py"
+      ],
+      "runtime_evidence": [
+        {
+          "data_status": "SUCCEEDED",
+          "result_hash": null
+        }
+      ],
+      "gates": [
+        "INPUT_COMPUTE_PERSISTENCE_API_UI_TEST_EVIDENCE"
+      ]
+    },
+    "P12": {
+      "status": "PASSED",
+      "tests": [
+        "tests/integration/test_p12_hardening.py",
+        "scripts/run_p6_p12_browser_e2e.py"
+      ],
+      "runtime_evidence": [
+        {
+          "data_status": "OK",
+          "health": "healthy",
+          "blockers": []
+        }
+      ],
+      "gates": [
+        "INPUT_COMPUTE_PERSISTENCE_API_UI_TEST_EVIDENCE"
+      ]
+    }
+  },
+  "manifest_hash": "3ff608a92f552632b57107b61394c46d171a8b873ae97abcde9152fd02e4a891"
+}

@@ -1,0 +1,62 @@
+{
+  "phase": "p7",
+  "orbital_phase": "ORB-P7 + ORB-P8 + ORB-P9 (v0.6 product-line revalidation)",
+  "gate": "PARTIAL",
+  "generated_at": "2026-09-01T04:09:59.007382+00:00",
+  "repository": "git@github.com:icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "bc4e2bd31b8f79a614ca9e90dbcfc81e82cca252",
+  "import_source": {
+    "repo": "Aetherus 823_Orbital/aetherus-orbital-environment (local-only)",
+    "branch": "codex/aetherus-v2-v06-integration",
+    "commit": "7ac0357",
+    "clusters": [
+      "packages/ 12종 (domain·foundation·orbit·product·providers·intelligence 등)",
+      "services/api (v0.6 통합 FastAPI) + services/web (한/영 PWA)",
+      "openapi/·db/(계약 참조)·artifacts/evidence(HISTORICAL 84파일)"
+    ],
+    "blob_verification": "이식 전 클러스터 전수 git hash-object 대조 일치"
+  },
+  "tests_p7_p9": {
+    "targets": [
+      "tests/product/test_p7_p8_debris_runtime.py",
+      "tests/product/test_p9_observation_runtime.py"
+    ],
+    "exit_code": 0,
+    "summary": "======================== 4 passed, 2 warnings in 1.23s ========================"
+  },
+  "tests_product_suite": {
+    "targets": [
+      "tests/product",
+      "tests/foundation",
+      "tests/contract",
+      "tests/acceptance",
+      "tests/integration/test_product_orbital_backend.py",
+      "tests/integration/test_product_postgres_runtime.py",
+      "tests/integration/test_v06_package_integrity.py",
+      "tests/integration/test_v06_postgres_schema.py",
+      "tests/integration/test_v06_provider_contracts.py",
+      "tests/integration/test_foundation_intelligence_lineage.py",
+      "tests/integration/test_p12_hardening.py",
+      "tests/integration/test_integrated_app_surface.py"
+    ],
+    "exit_code": 0,
+    "summary": "================= 365 passed, 4 skipped, 4 warnings in 16.31s ================="
+  },
+  "engines_covered": {
+    "E25_genealogy": "typed parent/source-event 관계 (packages/orbit runtime)",
+    "E26_fragmentation": "시드 파편 ΔV + 이체 RK4 전파 + 근접 스크리닝, RESEARCH_ONLY, observed_debris=False, command_path=FORBIDDEN (debris.py 정독 확인)",
+    "E27_reentry": "재진입 revision (runtime + intelligence orchestrator)",
+    "E28_photometry": "회전/광도 (runtime)",
+    "E29_E30_observation": "관측 계획·시민 QA 수명주기 (observation.py)"
+  },
+  "platform_fixes": [
+    "test_registry_api_surface: read_text() 인코딩 미지정 — cp949 기본값이 UTF-8 한국어 YAML을 못 읽는 잠복 버그 수정 (encoding='utf-8')"
+  ],
+  "limitations": [
+    "제품 라인 재검증은 823 게이트 테스트 재현 기준 — P5식 적대 코드 감사는 E26만 정독 수행(실물리 확인), E25/E27~E30 심층 감사는 후속",
+    "phase-line 물리 엔진(P5/P6)과 제품 라인 intervention 엔진(E31~E33 v0.6판)의 정본 일원화는 통합 단계 결정 사항",
+    "브라우저 E2E·라이브 프로바이더 테스트 제외 (playwright 바이너리·자격증명)"
+  ],
+  "next_allowed": "V2-P14/P15 잔여(ORB-P10~P12 재검증: 연구 데이터셋·운영·하드닝) 또는 V2-P2 SPACE 트랙"
+}

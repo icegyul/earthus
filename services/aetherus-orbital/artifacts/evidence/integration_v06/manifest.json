@@ -1,0 +1,70 @@
+{
+  "status": "STAGING_PASS_REAL_DEVICE_READY",
+  "repository_base_sha": "09b4a73652b734d436ec7dc9286bda5602639352",
+  "verified_source_commit": "3c43243",
+  "branch": "codex/aetherus-v2-v06-integration",
+  "input_zip_sha256": "212a500b969c7d2637b7cb0ccdf8e3f7fb6f3f5affc53699a8fd71e6bad05946",
+  "canonical_acceptance": {"passed": 307, "required": 307},
+  "v06_pytest": {"passed": 345, "failed": 0},
+  "integrated_pytest": {"passed": 639, "failed": 0, "skipped": 13},
+  "registry_http": {"expected": 62, "covered": 62, "missing": 0},
+  "openapi_normalized_paths": 91,
+  "legacy_phases": {
+    "P6": "PASSED",
+    "P7": "PASSED",
+    "P8": "PASSED",
+    "P9": "PASSED",
+    "P10": "PASSED",
+    "P11": "PASSED",
+    "P12": "PASSED"
+  },
+  "phase_manifest_sha256": "ada5ebcf051869c65fff55d663930b99e9eef8f8f3e4a6a19c1649f42bbc9ee3",
+  "providers": {
+    "CELESTRAK_GP": "PASS_LIVE",
+    "NASA_JPL_HORIZONS": "PASS_LIVE",
+    "NOAA_SWPC": "PASS_LIVE",
+    "LAUNCH_LIBRARY_2": "PASS_LIVE",
+    "SPACETRACK": "BLOCKED_CREDENTIAL"
+  },
+  "precision": {
+    "sgp4": "2.23_VALIDATED_CORPUS_AND_GOLDEN",
+    "spiceypy": "8.2.0_INSTALLED_VALIDATION_PENDING",
+    "astropy": "7.2.2_INSTALLED_IERS_SOFA_OPERATIONAL_PENDING"
+  },
+  "database": {
+    "postgres_migrations": "001_008_PASS",
+    "namespaced_product_schema": true,
+    "append_only_triggers": true,
+    "dump_restore_restart": "PASS_STAGING_P6_P12",
+    "sqlite_backup_restore": "PASS_LOCAL_ONLY"
+  },
+  "visual": {
+    "web_fingerprint": "6eec028e94c9143d5ee5403ace56e5e0a57ea354d27cc15368832974ba8b28b4",
+    "desktop_en_ko_modes": 10,
+    "mobile_en_ko_modes": 10,
+    "widths": [360, 390, 412, 430],
+    "horizontal_overflow": 0,
+    "console_errors": 0,
+    "page_errors": 0,
+    "minimum_touch_px": 44,
+    "drag": true,
+    "pinch": true,
+    "duplicate_earth_texture_draws": 0,
+    "phase_workspace_desktop_mobile": "PASS",
+    "staging_browser_desktop_mobile": "PASS",
+    "integrated_golden_sha256": "e0a94c89c9f73cafebf8150525109b0fad29fe4ef7e3ec9ca9b4d1423dd519ce"
+  },
+  "openapi_sha256": "be07a4af618fcec2ac72760e15b3c7a7e43bbf8b4e80a16b20e9f6eed40ea81c",
+  "migration_008_sha256": "8a83a744613b32cc087af690fcc365dbe1d26566a9ebf881d4dab8eae6d1a9eb",
+  "staging": {
+    "environment_validated": true,
+    "local_url": "http://127.0.0.1:18080/app/",
+    "lan_url": "http://192.168.219.160:18080/app/",
+    "image_id": "sha256:e363052c5d62f6964cc1a44aaf06f182b7dabf9993dd300866c00a23d4d9dd33",
+    "auth": "SIGNED_HMAC_STAGING_ONLY",
+    "readiness": "PASS"
+  },
+  "staging_environment_validated": true,
+  "production_integration_remaining": true,
+  "real_device_test": "READY_URL_DEPLOYED_PHYSICAL_CONFIRMATION_PENDING"
+}

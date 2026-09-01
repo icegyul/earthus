@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "viewports": {
+    "desktop1440": {
+      "phases": {
+        "P6": "P6 · EXECUTED\nP6 · 2 candidates · f78e1a0a2fc0",
+        "P7": "P7 · EXECUTED\nP7 · DEBRIS-DEVICE-TEST · DEVICE-VALIDATION-EVIDENCE",
+        "P8": "P8 · EXECUTED\nP8 · 12 fragments · 05f86f40e439",
+        "P9": "P9 · EXECUTED\nP9 · 1 visibility windows · f18f99185e45",
+        "P10": "P10 · EXECUTED\nP10 · 1 records · 92f7cece6af9",
+        "P11": "P11 · EXECUTED\nP11 · SUCCEEDED · 0b818a1e-913",
+        "P12": "P12 · EXECUTED\nP12 · HARDENING ACTIVE · 4 external gates"
+      },
+      "screenshot": "artifacts/evidence/p6_p12/desktop1440_p6_p12_workspace.png"
+    },
+    "mobile390": {
+      "phases": {
+        "P6": "P6 · EXECUTED\nP6 · 2 candidates · f78e1a0a2fc0",
+        "P7": "P7 · EXECUTED\nP7 · DEBRIS-DEVICE-TEST · DEVICE-VALIDATION-EVIDENCE",
+        "P8": "P8 · EXECUTED\nP8 · 12 fragments · 05f86f40e439",
+        "P9": "P9 · EXECUTED\nP9 · 1 visibility windows · f18f99185e45",
+        "P10": "P10 · EXECUTED\nP10 · 1 records · 92f7cece6af9",
+        "P11": "P11 · EXECUTED\nP11 · SUCCEEDED · 0b818a1e-913",
+        "P12": "P12 · EXECUTED\nP12 · HARDENING ACTIVE · 4 external gates"
+      },
+      "screenshot": "artifacts/evidence/p6_p12/mobile390_p6_p12_workspace.png"
+    }
+  },
+  "console_errors": [],
+  "page_errors": [],
+  "current": {
+    "viewport": "mobile390",
+    "phase": "P12"
+  }
+}

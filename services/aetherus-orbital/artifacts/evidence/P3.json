@@ -1,0 +1,239 @@
+{
+  "phase": "P3",
+  "phase_name": "Explore UI: API-derived 3D positions, LOD, provenance",
+  "generated_at": "2026-08-25T04:01:08.859439+00:00",
+  "version": "0.1.0.post0",
+  "commit": "211da9222e49bfc9a57dbd0395434a701d6c6631",
+  "scope": {
+    "package_phase_card": "P3 Explore UI",
+    "world_com_integration": "NOT_ATTEMPTED",
+    "scientific_features": [
+      "GET /api/v1/catalog/snapshot: server-side SGP4 positions from stored P1 objects only",
+      "GET /api/v1/catalog/status: honest coverage and global-density states",
+      "Coverage counts positioned markers, catalog entries and unavailable entries as distinct, exact figures",
+      "Viewport (bbox) and limit queries for the mid-zoom LOD",
+      "Explore UI renders only API-derived coordinates (no client propagation)",
+      "Selected-object orbit line built only from GET /objects/{id}/ephemeris samples",
+      "Provenance drawer: source, epoch, retrieved_at, data age, model, frame, config hash, limitations",
+      "Explicit states: loading, API error, provider unavailable, stale, empty catalog, NOT_COMPUTED risk",
+      "LOD global/region/focus with point-size disclaimer legend",
+      "P2 regression fix: ephemeris grid now advances by step_s (was 1s)"
+    ],
+    "explicitly_out_of_scope": [
+      "No conjunction assessment, TCA, or Pc (P4)",
+      "No risk score, benefit engine, REMOVE/PROTECT actions (P5/P6)",
+      "No genealogy, visual assets, or story panels (P7)",
+      "Global density view stays INSUFFICIENT_DATA until the real catalog is large enough"
+    ]
+  },
+  "gates": {
+    "git_commit": {
+      "passed": true,
+      "commit": "211da9222e49bfc9a57dbd0395434a701d6c6631"
+    },
+    "tests": {
+      "name": "tests",
+      "cmd": "/usr/local/bin/python -m pytest -q -p no:cacheprovider",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "============================= test session starts ==============================\nplatform linux -- Python 3.11.16, pytest-7.4.4, pluggy-1.6.0\nrootdir: /app\nconfigfile: pytest.ini\ntestpaths: tests\nplugins: anyio-4.14.2, cov-4.1.0, asyncio-0.23.3\nasyncio: mode=Mode.AUTO\ncollected 158 items / 1 skipped\n\ntests/test_database.py .....                                             [  3%]\ntests/test_health.py .....                                               [  6%]\ntests/test_migrations.py ....                                            [  8%]\ntests/integration/test_celestrak_ingestion.py .                          [  9%]\ntests/integration/test_identity_conflicts.py ...                         [ 11%]\ntests/integration/test_ingestion_rejections.py .                         [ 12%]\ntests/integration/test_live_provider_evidence.py ss                      [ 13%]\ntests/integration/test_p1_migration_schema.py .                          [ 13%]\ntests/integration/test_p2_golden_cross_validation.py ...                 [ 15%]\ntests/integration/test_p2_migration_schema.py ...                        [ 17%]\ntests/integration/test_p3_catalog_contract.py ......                     [ 21%]\ntests/integration/test_partial_ingestion.py .                            [ 22%]\ntests/integration/test_run_artifact_provenance.py .                      [ 22%]\ntests/integration/test_snapshot_versioning.py .                          [ 23%]\ntests/integration/test_spacetrack_ingestion.py ..                        [ 24%]\ntests/unit/test_catalog_id_validation.py .........                       [ 30%]\ntests/unit/test_celestrak_client.py ...                                  [ 32%]\ntests/unit/test_ephemeris_api.py ..........                              [ 38%]\ntests/unit/test_evidence_p1.py ...                                       [ 40%]\ntests/unit/test_evidence_status.py .                                     [ 41%]\ntests/unit/test_explore_catalog_api.py ........                          [ 46%]\ntests/unit/test_explore_service.py ................                      [ 56%]\ntests/unit/test_frames.py ......                                         [ 60%]\ntests/unit/test_identity_resolution.py ....                              [ 62%]\ntests/unit/test_ingestion_api.py .....                                   [ 65%]\ntests/unit/test_ingestion_service.py ......                              [ 69%]\ntests/unit/test_internal_ingestion_api.py ...                            [ 71%]\ntests/unit/test_migration_sql.py ..                                      [ 72%]\ntests/unit/test_no_tle_width_gate.py ..                                  [ 74%]\ntests/unit/test_omm_parser.py .....                                      [ 77%]\ntests/unit/test_provider_contracts.py ...                                [ 79%]\ntests/unit/test_ratelimit_policy.py .....                                [ 82%]\ntests/unit/test_raw_artifact_store.py ..                                 [ 83%]\ntests/unit/test_redaction.py .                                           [ 84%]\ntests/unit/test_sgp4_official_corpus.py ....                             [ 86%]\ntests/unit/test_sgp4_propagator.py ...........                           [ 93%]\ntests/unit/test_spacetrack_client.py ....                                [ 96%]\ntests/unit/test_time_scale.py ......                                     [100%]\n\n================== 156 passed, 3 skipped, 1 warning in 0.96s ===================\n",
+      "stderr_tail": ""
+    },
+    "lint": {
+      "name": "lint",
+      "cmd": "/usr/local/bin/python -m ruff check backend tests quality",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "",
+      "stderr_tail": ""
+    },
+    "type_check": {
+      "name": "type_check",
+      "cmd": "/usr/local/bin/python -m mypy backend",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "Success: no issues found in 39 source files\n",
+      "stderr_tail": ""
+    },
+    "anti_shortcut_audit": {
+      "passed": true,
+      "cmd": "rg -n anti-shortcut-patterns backend frontend",
+      "matches": [],
+      "exit_code": 1
+    },
+    "width_audit": {
+      "passed": true,
+      "cmd": "/usr/local/bin/python quality/check_no_tle_width.py backend",
+      "violations": []
+    },
+    "database": {
+      "passed": true,
+      "missing_tables": [],
+      "extensions": {
+        "pgcrypto": "1.3",
+        "postgis": "3.4.3"
+      },
+      "migrations": [
+        {
+          "name": "001_initial_schema",
+          "content_hash": "07ad94c4fcb4009d48aac536a331dd56c9471d2d72cd66e94ff0c9a32c39b2ec",
+          "applied_at": "2026-08-24T06:59:43.953619+00:00"
+        },
+        {
+          "name": "002_orbit_solution_raw_artifact_versioning",
+          "content_hash": "872bf92e832d6b021f1ba473fcc5492a85974a54fdd6b0b57910f96efe2d90f7",
+          "applied_at": "2026-08-24T06:59:44.243364+00:00"
+        },
+        {
+          "name": "003_ingestion_policy_identity_and_rejections",
+          "content_hash": "85fac502e44101748bad3e7019bf3c92a36498a225d6f02bbe895479a2a14241",
+          "applied_at": "2026-08-24T07:09:52.552347+00:00"
+        },
+        {
+          "name": "004_p2_orbit_time_frames",
+          "content_hash": "f59f3933e1ff7e1a8617ae2b24c9bdf45de203270e3f7b2f6c3c6ef62f7719b4",
+          "applied_at": "2026-08-25T01:21:51.864193+00:00"
+        }
+      ]
+    },
+    "catalog_api_contract": {
+      "passed": true,
+      "endpoint": "GET /api/v1/catalog/snapshot",
+      "status_code": 200,
+      "catalog_entries": 11,
+      "positioned_markers": 8,
+      "unavailable_entries": 3,
+      "unavailable_by_status": {
+        "QUARANTINE": 3
+      },
+      "coverage_consistent": true,
+      "data_status": "PARTIAL",
+      "global_density": "INSUFFICIENT_DATA",
+      "ephemeris_consistency_errors": [],
+      "error_paths": {
+        "invalid_bbox_status": 422,
+        "naive_at_status": 422
+      }
+    },
+    "ephemeris_grid_regression": {
+      "passed": true,
+      "sample_count": 31,
+      "step_s": 120,
+      "observed_gap_seconds": [
+        120.0
+      ]
+    },
+    "frontend_served": {
+      "passed": true,
+      "missing": [],
+      "frontend_dir": "frontend",
+      "vendored_dependencies": [
+        {
+          "path": "frontend/vendor/three.module.js",
+          "project": "three.js r160 (MIT)",
+          "sha256": "76dea8151bc9352aef3528b4262e249b2604f62543828328db978d060d61a495",
+          "excluded_from_anti_shortcut_scan": true
+        }
+      ]
+    },
+    "browser_network_evidence": {
+      "passed": true,
+      "verified_coordinates": 11,
+      "mismatches": [],
+      "network_snapshot_observed": true,
+      "network_ephemeris_observed": true,
+      "mobile_layout": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "overflow_free": true,
+        "boxes_inside_viewport": true,
+        "scroll_width": {
+          "documentElement": 390,
+          "body": 390,
+          "app": 390
+        },
+        "boxes": {
+          ".brand": {
+            "x": 12,
+            "right": 378,
+            "y": 10,
+            "bottom": 45,
+            "width": 366
+          },
+          "#coverage": {
+            "x": 12,
+            "right": 378,
+            "y": 53,
+            "bottom": 109,
+            "width": 366
+          },
+          ".search": {
+            "x": 12,
+            "right": 378,
+            "y": 117,
+            "bottom": 175,
+            "width": 366
+          },
+          "#list-panel": {
+            "x": 10,
+            "right": 380,
+            "y": 513,
+            "bottom": 834,
+            "width": 370
+          },
+          ".legend": {
+            "x": 10,
+            "right": 380,
+            "y": 709,
+            "bottom": 834,
+            "width": 370
+          },
+          ".lod-indicator": {
+            "x": 10,
+            "right": 224,
+            "y": 586,
+            "bottom": 618,
+            "width": 214
+          }
+        }
+      },
+      "screenshots": [
+        "desktop-global.png",
+        "desktop-focus.png",
+        "mobile.png",
+        "error-state.png",
+        "empty-catalog.png"
+      ],
+      "har": "artifacts/evidence/p3/explore-network.har"
+    },
+    "configured_secret_leak": {
+      "passed": true
+    }
+  },
+  "api_endpoints": [
+    "GET /api/v1/catalog/snapshot?at=&bbox=&limit=",
+    "GET /api/v1/catalog/status",
+    "GET /api/v1/objects/{object_id}/ephemeris?start=&stop=&step_s=",
+    "GET / (explore UI shell)",
+    "GET /ui/* (explore UI assets)"
+  ],
+  "browser_evidence_dir": "artifacts/evidence/p3",
+  "scientific_status": {
+    "explore_catalog_positions": "AVAILABLE",
+    "selected_orbit_line": "AVAILABLE",
+    "global_density_view": "INSUFFICIENT_DATA",
+    "conjunction_assessment": "NOT_COMPUTED",
+    "pc_without_covariance": "NOT_COMPUTED"
+  },
+  "limitations": [
+    "The rendered catalog contains only ingested objects; most of the real orbital population is not yet ingested, so the global density view is explicitly INSUFFICIENT_DATA rather than fabricated.",
+    "P1 test-residue objects remain visible with explicit QUARANTINE states; the UI never hides stored records.",
+    "UT1-UTC is assumed 0.0 s and polar motion neglected; assumptions hashed into config_hash.",
+    "PUBLIC_GP mean elements are not an operational ephemeris; stale badges appear beyond the configured age.",
+    "Marker size is a rendering aid and never represents actual object size."
+  ],
+  "status": "PASSED",
+  "next_allowed_phase": "P4"
+}

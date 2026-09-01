@@ -1,0 +1,128 @@
+{
+  "status": "PASS",
+  "desktop": {
+    "en_space": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 555464,
+      "sha256": "25940ea96cdb560ba0bb4408c7f295ef534cda304f56801a7229f4d86ab0593d"
+    },
+    "en_control": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 738394,
+      "sha256": "91bdeec8221f146fe2896fe12185ff6a7c4127f540f5712794ab92d2c5a2ea6e"
+    },
+    "en_orbit": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 708017,
+      "sha256": "e96da0fdf07efd0c3f307ea60f46e5ac6976a61cccecc92b9e595ee02761fe27"
+    },
+    "en_intelligence": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 722393,
+      "sha256": "a784905567c2cc04ef6c5201412e6136a0475dcb5bf0d64dc81ba9d0d1fa2090"
+    },
+    "en_archive": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 657171,
+      "sha256": "1819a6571e595e4c66d0eea8d13fb86985b5165f79e3abafb7eaa0bf38151743"
+    },
+    "ko_space": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 542586,
+      "sha256": "01f6fafe4e1bd1047bb931a1cd04bcc8e78260fb5337274a17295a2cc7d050dc"
+    },
+    "ko_control": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 721725,
+      "sha256": "2561459bdbdbb70ed6a5b712336a2cf3e55cbb7c1d8036236822f487db7d4358"
+    },
+    "ko_orbit": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 696242,
+      "sha256": "f1ff2254646e5f6330c05c7a6d634358735abef27a0a84ebbf6aad5b670b0645"
+    },
+    "ko_intelligence": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 715044,
+      "sha256": "94a6f9d872112058bcd97356446f8dd95c534e1d6fbe6e2c0c41b47935063977"
+    },
+    "ko_archive": {
+      "width": 1440,
+      "height": 900,
+      "bytes": 646285,
+      "sha256": "e2dbb228d9903f4c203ae733e131cf0c4627f4330a7b5376dca5a528fef790bc"
+    }
+  },
+  "mobile": {
+    "en_space": {
+      "width": 390,
+      "height": 844,
+      "bytes": 136442,
+      "sha256": "4d8fcf7f7b0283c260a35e324eb58390f8aa2c7feca319459ed262f0c5f29dbc"
+    },
+    "en_control": {
+      "width": 390,
+      "height": 844,
+      "bytes": 177757,
+      "sha256": "6cce8b8a5182578ec20191fd871b634ba71f8ad694e1108cd3e156d7974f2d0a"
+    },
+    "en_orbit": {
+      "width": 390,
+      "height": 844,
+      "bytes": 177279,
+      "sha256": "28350c72b4f25004b048a133ff1d57da1ba06732d1e3651e27423d1d0889c443"
+    },
+    "en_intelligence": {
+      "width": 390,
+      "height": 844,
+      "bytes": 167791,
+      "sha256": "5df51da3324b458d8c841e07b72d254b07683eec7a3bdcc8442fb6f7ff75ca41"
+    },
+    "en_archive": {
+      "width": 390,
+      "height": 844,
+      "bytes": 170164,
+      "sha256": "acb0a748acab0c7c145a4edfc5c815dd728605eb6d6ba03bf32474bd3a067994"
+    },
+    "ko_space": {
+      "width": 390,
+      "height": 844,
+      "bytes": 134182,
+      "sha256": "270b6d56a48a76962b3c12472f2ab21bca4013316e46ccbe51d59f384b98becc"
+    },
+    "ko_control": {
+      "width": 390,
+      "height": 844,
+      "bytes": 176156,
+      "sha256": "1e32003c0878bdac42a6cd05eb3ac871cd0e37d1c3bfb166104b449b2ba85cee"
+    },
+    "ko_orbit": {
+      "width": 390,
+      "height": 844,
+      "bytes": 175449,
+      "sha256": "84eca6a71a0904c7a989b0b30ee409540c0c0a92b91e0868a2c73f1e6bd4411f"
+    },
+    "ko_intelligence": {
+      "width": 390,
+      "height": 844,
+      "bytes": 167137,
+      "sha256": "526d50a4b17af1aa5ad5dceda0a8bf59b51c3f1516eb5110342f89140b193997"
+    },
+    "ko_archive": {
+      "width": 390,
+      "height": 844,
+      "bytes": 168621,
+      "sha256": "2b151f68371b09e9441901b444c5293731565678d24c1dc0f037161bd56bf7fa"
+    }
+  },
+  "distinct_hashes": true
+}

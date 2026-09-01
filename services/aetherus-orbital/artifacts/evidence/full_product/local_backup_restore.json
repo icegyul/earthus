@@ -1,0 +1,122 @@
+{
+  "backup_sha256": "51bff37ec7b62913526cf3083e9364d8b8aa87b6f2a01962b3698768db2271e6",
+  "generated_at": "2026-08-30T22:36:32.134664+00:00",
+  "limitations": [
+    "This verifies local SQLite backup/restore only; production PostgreSQL/PostGIS backup/restore remains an environment gate."
+  ],
+  "production_postgres_restore_verified": false,
+  "restored_sha256": "51bff37ec7b62913526cf3083e9364d8b8aa87b6f2a01962b3698768db2271e6",
+  "restored_tables": {
+    "canonical_entity": {
+      "rows": 1,
+      "sha256": "5d7963e07f0aef5d5b57bb5e89c662fbad45ef933e027858d79f4902f243584e"
+    },
+    "data_source": {
+      "rows": 1,
+      "sha256": "2a809ea2bf58613d7f15af56a26e1e2a90d8c9db3a3d5b5041daf308ea7e5e76"
+    },
+    "digital_state": {
+      "rows": 1,
+      "sha256": "cebb798ce23f4ef31a07dd4173a47313be688694491fb46d6a2238b2469f3e18"
+    },
+    "event_revision": {
+      "rows": 1,
+      "sha256": "20ec1b2c341f834ef1afa38a22989e726f07e36da4ac45333dc6953ee8de7199"
+    },
+    "evidence": {
+      "rows": 1,
+      "sha256": "9db0dd9f26b484cdfd95b650dfb24f15c51ced38bfab0b3d053dad564a3fe9d2"
+    },
+    "intelligence_event": {
+      "rows": 1,
+      "sha256": "ea5dad8ae201e4e1cd82ff456be97a560e97b175aa62c9558c27ed87920c286d"
+    },
+    "intelligence_packet": {
+      "rows": 1,
+      "sha256": "257f4e4952410561bec81ba0bbc349485e1eb89c8b32433253478ca258bd57f8"
+    },
+    "object_relation": {
+      "rows": 1,
+      "sha256": "fb89f394f6d506ac983a3c05fe51b09de00c6c90fb6a89edc21b8bbb58c3d4c7"
+    },
+    "product_record": {
+      "rows": 6,
+      "sha256": "580b0a984e66bd63cc3524f0d360f719a9d5902369a97348463d22d25cb10611"
+    },
+    "provenance_bundle": {
+      "rows": 1,
+      "sha256": "deae14dc3ad97ac4720ad1c0f3d3a66db4938351eaa14771da1d740bb81412fa"
+    },
+    "raw_artifact": {
+      "rows": 1,
+      "sha256": "18f79010723f973a528ad238cc411321dba1d902459ca706b3010664407862d2"
+    },
+    "snapshot_manifest": {
+      "rows": 1,
+      "sha256": "4120beadd7b95d64a39faef9faa64ed9a99928d6b8e13c6a3719fbedf1518009"
+    },
+    "universe_revision": {
+      "rows": 2,
+      "sha256": "2902afdd32c02439cbceec567019c1c056d794027de1d80591fdea8ee280e3d3"
+    }
+  },
+  "scope": "LOCAL_SQLITE_ACCEPTANCE_ONLY",
+  "source_sha256": "c5d1e21174e3ebbc2abc21ddc662462eb9f3bb5fb08794d9956f1c8fbd85a54d",
+  "source_tables": {
+    "canonical_entity": {
+      "rows": 1,
+      "sha256": "5d7963e07f0aef5d5b57bb5e89c662fbad45ef933e027858d79f4902f243584e"
+    },
+    "data_source": {
+      "rows": 1,
+      "sha256": "2a809ea2bf58613d7f15af56a26e1e2a90d8c9db3a3d5b5041daf308ea7e5e76"
+    },
+    "digital_state": {
+      "rows": 1,
+      "sha256": "cebb798ce23f4ef31a07dd4173a47313be688694491fb46d6a2238b2469f3e18"
+    },
+    "event_revision": {
+      "rows": 1,
+      "sha256": "20ec1b2c341f834ef1afa38a22989e726f07e36da4ac45333dc6953ee8de7199"
+    },
+    "evidence": {
+      "rows": 1,
+      "sha256": "9db0dd9f26b484cdfd95b650dfb24f15c51ced38bfab0b3d053dad564a3fe9d2"
+    },
+    "intelligence_event": {
+      "rows": 1,
+      "sha256": "ea5dad8ae201e4e1cd82ff456be97a560e97b175aa62c9558c27ed87920c286d"
+    },
+    "intelligence_packet": {
+      "rows": 1,
+      "sha256": "257f4e4952410561bec81ba0bbc349485e1eb89c8b32433253478ca258bd57f8"
+    },
+    "object_relation": {
+      "rows": 1,
+      "sha256": "fb89f394f6d506ac983a3c05fe51b09de00c6c90fb6a89edc21b8bbb58c3d4c7"
+    },
+    "product_record": {
+      "rows": 6,
+      "sha256": "580b0a984e66bd63cc3524f0d360f719a9d5902369a97348463d22d25cb10611"
+    },
+    "provenance_bundle": {
+      "rows": 1,
+      "sha256": "deae14dc3ad97ac4720ad1c0f3d3a66db4938351eaa14771da1d740bb81412fa"
+    },
+    "raw_artifact": {
+      "rows": 1,
+      "sha256": "18f79010723f973a528ad238cc411321dba1d902459ca706b3010664407862d2"
+    },
+    "snapshot_manifest": {
+      "rows": 1,
+      "sha256": "4120beadd7b95d64a39faef9faa64ed9a99928d6b8e13c6a3719fbedf1518009"
+    },
+    "universe_revision": {
+      "rows": 2,
+      "sha256": "2902afdd32c02439cbceec567019c1c056d794027de1d80591fdea8ee280e3d3"
+    }
+  },
+  "sqlite_integrity_check": "ok",
+  "status": "PASS",
+  "table_manifest_match": true
+}

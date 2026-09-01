@@ -1,0 +1,183 @@
+{
+  "phase": "P0",
+  "phase_name": "Repository / CI / evidence with user-required real ingestion acceptance",
+  "generated_at": "2026-08-24T04:24:31.791630+00:00",
+  "version": "0.1.0.post0",
+  "commit": "94e9965292a0d34d085448fae1bb7ed4dac11788",
+  "scope": {
+    "package_phase_card": "P0 Repository / CI / evidence",
+    "user_required_acceptance": [
+      "CelesTrak real ingestion",
+      "immutable raw snapshot preservation",
+      "OMM parser",
+      "executable API",
+      "error states"
+    ],
+    "world_com_integration": "NOT_ATTEMPTED"
+  },
+  "gates": {
+    "tests": {
+      "name": "tests",
+      "cmd": "/Volumes/740GB/\u110b\u1170\u11b8/World.com/Aetherus 823_Orbital/aetherus-orbital-environment/.venv/bin/python -m pytest -q -p no:cacheprovider",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "============================= test session starts ==============================\nplatform darwin -- Python 3.12.13, pytest-7.4.4, pluggy-1.6.0\nrootdir: /Volumes/740GB/\u110b\u1170\u11b8/World.com/Aetherus 823_Orbital/aetherus-orbital-environment\nconfigfile: pytest.ini\ntestpaths: tests\nplugins: asyncio-0.23.3, cov-4.1.0, anyio-4.14.2\nasyncio: mode=Mode.AUTO\ncollected 31 items\n\ntests/test_database.py .....                                             [ 16%]\ntests/test_health.py .....                                               [ 32%]\ntests/test_migrations.py ....                                            [ 45%]\ntests/integration/test_celestrak_ingestion.py .                          [ 48%]\ntests/integration/test_snapshot_versioning.py .                          [ 51%]\ntests/unit/test_celestrak_client.py ..                                   [ 58%]\ntests/unit/test_evidence_status.py .                                     [ 61%]\ntests/unit/test_ingestion_api.py ...                                     [ 70%]\ntests/unit/test_ingestion_service.py ..                                  [ 77%]\ntests/unit/test_migration_sql.py .                                       [ 80%]\ntests/unit/test_omm_parser.py ....                                       [ 93%]\ntests/unit/test_raw_artifact_store.py ..                                 [100%]\n\n======================== 31 passed, 1 warning in 0.36s =========================\n",
+      "stderr_tail": ""
+    },
+    "lint": {
+      "name": "lint",
+      "cmd": "/Volumes/740GB/\u110b\u1170\u11b8/World.com/Aetherus 823_Orbital/aetherus-orbital-environment/.venv/bin/python -m ruff check backend tests",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "",
+      "stderr_tail": ""
+    },
+    "type_check": {
+      "name": "type_check",
+      "cmd": "/Volumes/740GB/\u110b\u1170\u11b8/World.com/Aetherus 823_Orbital/aetherus-orbital-environment/.venv/bin/python -m mypy backend",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "Success: no issues found in 16 source files\n",
+      "stderr_tail": ""
+    },
+    "anti_shortcut_audit": {
+      "passed": true,
+      "cmd": "rg -n anti-shortcut-patterns backend",
+      "matches": [],
+      "exit_code": 1
+    },
+    "docker_clean_boot": {
+      "docker_compose_exists": true,
+      "dockerfile_exists": true,
+      "config_cmd": "/opt/homebrew/bin/docker-compose config -q",
+      "config_exit_code": 0,
+      "config_stderr_tail": "",
+      "running_services_cmd": "/opt/homebrew/bin/docker-compose -p aetherus-p0 ps --status running --services",
+      "running_services_exit_code": 0,
+      "running_services": [
+        "api",
+        "postgres",
+        "redis"
+      ],
+      "health_url": "http://127.0.0.1:8000/health",
+      "health_status": 200,
+      "health_body": "{\"status\":\"healthy\",\"version\":\"0.1.0.post0\",\"timestamp\":\"2026-08-24T04:24:31.441821+00:00\",\"phase\":\"P0\",\"services\":{\"database\":\"healthy\",\"api\":\"healthy\"},\"scientific_features\":{\"ingestion\":\"AVAILABLE\",\"orbit_propagation\":\"NOT_COMPUTED\",\"conjunction_assessment\":\"NOT_COMPUTED\",\"benefit_engine\":\"NOT_COMPUTED\"}}",
+      "passed": true
+    },
+    "database": {
+      "passed": true,
+      "missing_tables": [],
+      "extensions": {
+        "pgcrypto": "1.3",
+        "postgis": "3.4.3"
+      },
+      "migrations": [
+        {
+          "name": "001_initial_schema",
+          "content_hash": "07ad94c4fcb4009d48aac536a331dd56c9471d2d72cd66e94ff0c9a32c39b2ec",
+          "applied_at": "2026-08-24T04:17:13.469883+00:00"
+        },
+        {
+          "name": "002_orbit_solution_raw_artifact_versioning",
+          "content_hash": "872bf92e832d6b021f1ba473fcc5492a85974a54fdd6b0b57910f96efe2d90f7",
+          "applied_at": "2026-08-24T04:17:15.276566+00:00"
+        }
+      ]
+    },
+    "real_ingestion": {
+      "passed": true,
+      "source_id": "celestrak_gp",
+      "ingestion_run_id": "6530be43-4277-421c-965e-2a38da4831d1",
+      "ingestion_status": "SUCCEEDED",
+      "record_count": 1,
+      "raw_artifact_id": "3c12b2b0-7974-4ca5-808d-2d238b7043dd",
+      "raw_artifact_path": "artifacts/raw/celestrak_gp/43353e37cc947ec1885f8125f4e359d9ba5c1c753ffff73c662edc694edac793.json",
+      "local_raw_artifact_exists": true,
+      "container_raw_artifact_path": "/app/artifacts/raw/celestrak_gp/43353e37cc947ec1885f8125f4e359d9ba5c1c753ffff73c662edc694edac793.json",
+      "container_raw_artifact_sha256": "43353e37cc947ec1885f8125f4e359d9ba5c1c753ffff73c662edc694edac793",
+      "container_raw_artifact_check_reason": null,
+      "raw_artifact_exists": true,
+      "content_sha256": "43353e37cc947ec1885f8125f4e359d9ba5c1c753ffff73c662edc694edac793",
+      "source_uri": "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=JSON",
+      "object_id": "29b6535b-8bd3-4ed5-a741-072ca704f30d",
+      "catalog_id": "25544",
+      "orbit_solution_id": "b633bf6d-ac80-45ac-91dd-67edde68ceb4",
+      "epoch": "2026-08-23T12:46:38.546976+00:00",
+      "format": "OMM",
+      "frame": "TEME",
+      "time_system": "UTC",
+      "covariance_status": "INSUFFICIENT_DATA",
+      "pc_status": "NOT_COMPUTED"
+    },
+    "api_contract": {
+      "passed": true,
+      "endpoint": "GET /api/v1/objects/25544",
+      "status_code": 200,
+      "payload": {
+        "id": "29b6535b-8bd3-4ed5-a741-072ca704f30d",
+        "catalog_id": "25544",
+        "cospar_id": "1998-067A",
+        "canonical_name": "ISS (ZARYA)",
+        "object_type": "UNKNOWN",
+        "latest_orbit_solution": {
+          "id": "b633bf6d-ac80-45ac-91dd-67edde68ceb4",
+          "epoch": "2026-08-23T12:46:38.546976+00:00",
+          "format": "OMM",
+          "frame": "TEME",
+          "time_system": "UTC",
+          "theory": "SGP4",
+          "mean_elements": {
+            "bstar": 0.00016763247,
+            "eccentricity": 0.00077036,
+            "rev_at_epoch": 58219,
+            "element_set_no": 999,
+            "inclination_deg": 51.6331,
+            "mean_motion_dot": 8.992e-05,
+            "mean_anomaly_deg": 284.2184,
+            "mean_motion_ddot": 0.0,
+            "ra_of_asc_node_deg": 326.7717,
+            "arg_of_pericenter_deg": 75.9661,
+            "mean_motion_rev_per_day": 15.49588782
+          },
+          "covariance_status": "INSUFFICIENT_DATA"
+        },
+        "provenance": {
+          "source_ids": [
+            "celestrak_gp"
+          ],
+          "source_snapshot_at": "2026-08-23T12:46:38.546976+00:00",
+          "retrieved_at": "2026-08-24T04:18:39.301726+00:00",
+          "input_artifact_hashes": [
+            "sha256:43353e37cc947ec1885f8125f4e359d9ba5c1c753ffff73c662edc694edac793"
+          ],
+          "quality_grade": "PUBLIC_GP",
+          "source_uri": "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=JSON",
+          "limitations": [
+            "PUBLIC_GP source; this record is not an operational conjunction assessment.",
+            "No covariance was supplied by this OMM response; Pc is NOT_COMPUTED.",
+            "Provider response did not declare OBJECT_TYPE."
+          ]
+        }
+      }
+    }
+  },
+  "api_endpoints": [
+    "GET /health",
+    "GET /api/v1/status",
+    "POST /api/v1/ingestions/celestrak/omm/{catalog_id}",
+    "GET /api/v1/objects/{object_id}"
+  ],
+  "scientific_status": {
+    "ingestion": "AVAILABLE",
+    "orbit_propagation": "NOT_COMPUTED",
+    "conjunction_assessment": "NOT_COMPUTED",
+    "pc_without_covariance": "NOT_COMPUTED"
+  },
+  "limitations": [
+    "No orbit propagation, conjunction assessment, risk graph, benefit engine, or UI is implemented in P0.",
+    "CelesTrak public GP OMM data has no covariance here; Pc is NOT_COMPUTED.",
+    "Clean Compose boot is a local verification gate, not a production deployment."
+  ],
+  "status": "PASSED",
+  "next_allowed_phase": "P1"
+}

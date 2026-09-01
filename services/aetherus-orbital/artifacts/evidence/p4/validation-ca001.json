@@ -1,0 +1,61 @@
+{
+  "dataset_id": "synthetic-10k-injected-close-pairs-v1",
+  "dataset_version": "p4",
+  "validation_only": true,
+  "objects": 10000,
+  "objects_propagated": 10000,
+  "window_hours": 3.0,
+  "coarse_step_seconds": 30,
+  "refine_step_seconds": 5,
+  "screening_threshold_m": 25000.0,
+  "seed": 20260825,
+  "pairs_before_screening": 49995000,
+  "pairs_after_shell": 1237500,
+  "pairs_after_coarse": 4157,
+  "injected_pairs": 5,
+  "false_negatives": 0,
+  "propagation_failures": [],
+  "runtime_seconds": 14.151,
+  "injected_pair_refined_tcas": [
+    {
+      "primary_catalog_id": "100004",
+      "secondary_catalog_id": "200004",
+      "tca_utc": "2026-08-25T02:33:05.848885+00:00",
+      "miss_distance_m": 4995.087,
+      "relative_speed_mps": 5.589,
+      "boundary_flag": false
+    },
+    {
+      "primary_catalog_id": "100017",
+      "secondary_catalog_id": "200017",
+      "tca_utc": "2026-08-25T02:08:48.640147+00:00",
+      "miss_distance_m": 4995.09,
+      "relative_speed_mps": 5.589,
+      "boundary_flag": false
+    },
+    {
+      "primary_catalog_id": "101001",
+      "secondary_catalog_id": "201001",
+      "tca_utc": "2026-08-25T01:25:24.974120+00:00",
+      "miss_distance_m": 5872.267,
+      "relative_speed_mps": 5.143,
+      "boundary_flag": false
+    },
+    {
+      "primary_catalog_id": "105000",
+      "secondary_catalog_id": "205000",
+      "tca_utc": "2026-08-25T02:51:25.988302+00:00",
+      "miss_distance_m": 9388.087,
+      "relative_speed_mps": 4.077,
+      "boundary_flag": false
+    },
+    {
+      "primary_catalog_id": "107777",
+      "secondary_catalog_id": "207777",
+      "tca_utc": "2026-08-25T00:48:40.009452+00:00",
+      "miss_distance_m": 11805.125,
+      "relative_speed_mps": 3.638,
+      "boundary_flag": false
+    }
+  ]
+}

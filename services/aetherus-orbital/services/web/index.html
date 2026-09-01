@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en" data-locale="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#05070a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="mobile-web-app-capable" content="yes" />
+<link rel="manifest" href="/app/manifest.webmanifest" />
+<link rel="icon" href="/app/assets/aetherus-icon.svg" type="image/svg+xml" />
+<title>AETHERUS V2 — Space Intelligence & Visual OS</title>
+<link rel="stylesheet" href="/app/styles.css" />
+</head>
+<body>
+<div id="app" class="app-shell" data-mode="SPACE">
+  <header class="topbar">
+    <div class="brand" aria-label="Aetherus V2">
+      <span class="brand-mark"><span>A</span></span>
+      <div class="brand-copy">
+        <strong>AETHERUS</strong>
+        <small>SPACE INTELLIGENCE &amp; VISUAL OS</small>
+      </div>
+    </div>
+
+    <nav id="modeNav" class="mode-nav" aria-label="Primary workspace">
+      <button data-mode="SPACE" class="active"><span>01</span><b data-i18n="nav.space">SPACE</b></button>
+      <button data-mode="CONTROL"><span>02</span><b data-i18n="nav.control">CONTROL</b></button>
+      <button data-mode="ORBIT"><span>03</span><b data-i18n="nav.orbit">ORBIT</b></button>
+      <button data-mode="INTELLIGENCE"><span>04</span><b data-i18n="nav.intelligence">INTELLIGENCE</b></button>
+      <button data-mode="ARCHIVE"><span>05</span><b data-i18n="nav.archive">ARCHIVE</b></button>
+    </nav>
+
+    <div class="runtime-cluster">
+      <button class="locale-toggle" id="localeToggle" type="button" aria-label="Switch language"><span class="locale-en">EN</span><i>/</i><span class="locale-ko">KO</span></button>
+      <div class="runtime-state"><span class="status-orb"></span><div><b id="runtimeStatus">LOCAL UNIVERSE</b><small id="runtimeSubstatus">EVIDENCE-LINKED RUNTIME</small></div></div>
+      <button class="icon-button" id="resetNow" title="Return to NOW" aria-label="Return to now"><span class="reset-icon">↻</span></button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="left-rail rail">
+      <div class="rail-hero">
+        <div class="eyebrow" data-i18n="workspace.current">CURRENT WORKSPACE</div>
+        <div class="mode-lockup"><div class="big" id="modeTitle">SPACE</div><span id="modeIndex">01</span></div>
+        <div class="muted" id="scaleLabel">SOLAR SYSTEM VIEW</div>
+      </div>
+
+      <section class="rail-section focus-section">
+        <div class="section-heading"><span data-i18n="focus">FOCUS</span><small data-i18n="persistent">PERSISTENT UNIVERSE</small></div>
+        <div class="focus-card">
+          <div class="focus-dot"></div>
+          <div><b id="focusName">EARTH</b><small id="focusMeta">REFERENCE BODY</small></div>
+        </div>
+      </section>
+
+      <section class="rail-section dynamic-section" id="leftDynamic"></section>
+
+      <section class="rail-section layers-section">
+        <div class="section-heading"><span data-i18n="layers">ACTIVE LAYERS</span><small data-i18n="semantic">SEMANTIC LOD</small></div>
+        <div id="layerList" class="layer-list"></div>
+      </section>
+
+      <section class="rail-section science-state-section">
+        <div class="section-heading"><span data-i18n="science">SCIENTIFIC STATE</span><small data-i18n="visible">VISIBLE AT ALL TIMES</small></div>
+        <div class="science-state-row"><div id="validationState" class="validation-badge research">RESEARCH ONLY</div><div id="dataStatus" class="data-state">UNAVAILABLE</div></div>
+        <p class="muted tiny" id="scientificWarning">Loading scientific boundary…</p>
+      </section>
+    </aside>
+
+    <section class="stage-column">
+      <section class="viewport-wrap" id="viewportWrap">
+        <canvas id="spaceGlCanvas" aria-hidden="true"></canvas>
+        <canvas id="universeCanvas" aria-label="Aetherus universe visualization"></canvas>
+        <div class="vignette"></div>
+        <div class="scanlines" aria-hidden="true"></div>
+
+        <div class="viewport-topline">
+          <div class="scene-title">
+            <div class="eyebrow" id="contextKicker">UNIVERSE / NOW</div>
+            <div id="contextTitle">SOLAR SYSTEM</div>
+            <small id="contextSubtitle">OFFLINE RESEARCH EPHEMERIS · ICRF APPROX</small>
+          </div>
+          <button class="focus-back" id="focusBack" type="button" hidden aria-label="Back to previous space view"><span aria-hidden="true">←</span><b>BACK TO SOLAR SYSTEM</b></button>
+          <div class="scene-tools">
+            <div id="viewControls" class="view-controls"></div>
+            <button class="glass-button" id="toggleLabels" data-active="true" data-i18n="labels">LABELS</button>
+            <button class="glass-button" id="toggleGrid" data-active="true" data-i18n="grid">GRID</button>
+          </div>
+        </div>
+
+        <div class="scene-left-stats" id="sceneLeftStats"></div>
+        <div class="scene-right-stats" id="sceneRightStats"></div>
+
+        <div class="evidence-legend" id="evidenceLegend">
+          <span class="evidence observed" data-i18n="observed">OBSERVED</span>
+          <span class="evidence official" data-i18n="official">OFFICIAL</span>
+          <span class="evidence derived" data-i18n="derived">DERIVED</span>
+          <span class="evidence model" data-i18n="model">MODEL</span>
+          <span class="evidence simulation" data-i18n="simulation">SIMULATION</span>
+        </div>
+
+        <div class="timebar" aria-label="Universal time">
+          <button id="pastBtn" aria-label="Previous day"><span>−24H</span></button>
+          <div class="time-core"><small id="timeModeLabel">UNIVERSAL NOW</small><strong id="timeValue">—</strong></div>
+          <button id="futureBtn" aria-label="Next day"><span>+24H</span></button>
+        </div>
+
+        <div class="scene-caption" id="sceneCaption">
+          <span class="caption-line"></span><span id="captionText">One universe. Evidence first.</span>
+        </div>
+      </section>
+
+      <section class="bottom-deck" id="bottomDeck">
+        <div class="deck-header"><div><span class="eyebrow" data-i18n="universal.workspace">UNIVERSAL WORKSPACE</span><b id="deckTitle" data-i18n="system.overview">SYSTEM OVERVIEW</b></div><div class="deck-meta"><span id="deckMeta" data-i18n="local.product">LOCAL PRODUCT</span><span class="pulse-mini"></span></div></div>
+        <div class="deck-content" id="bottomDynamic"></div>
+      </section>
+    </section>
+
+    <aside class="right-rail rail" id="mobileSheet">
+      <button class="mobile-sheet-handle" id="mobileSheetHandle" type="button" aria-expanded="false"><span class="sheet-grip"></span><b data-i18n="mobile.details">INTELLIGENCE / DETAILS</b><small data-i18n="mobile.swipe">TAP TO EXPAND</small></button>
+      <section class="right-hero">
+        <div class="section-heading"><span data-i18n="important">IMPORTANT NOW</span><small data-i18n="priority">INTELLIGENCE PRIORITY</small></div>
+        <div id="importantNow" class="important-cards"></div>
+      </section>
+
+      <section class="rail-section" id="rightDynamic"></section>
+
+      <section class="rail-section phase-workspace-section">
+        <details class="phase-workspace" id="phaseWorkspace">
+          <summary><span id="phaseWorkspaceTitle" data-i18n="phase.title">P6–P12 VALIDATION WORKSPACE</span><small data-i18n="phase.scope">EXECUTE · PERSIST · VERIFY</small></summary>
+          <div class="phase-workspace-body">
+            <p class="phase-copy" data-i18n="phase.copy">Run research and operations flows against the current Aetherus runtime. No spacecraft command is created.</p>
+            <div class="phase-auth-row">
+              <input id="stagingToken" type="password" autocomplete="off" data-i18n-placeholder="phase.token" placeholder="STAGING TEST TOKEN" aria-label="Staging test token" />
+              <button id="saveStagingToken" type="button" data-i18n="phase.save">SAVE</button>
+            </div>
+            <div class="phase-grid" aria-label="P6 through P12 validation actions">
+              <button type="button" data-phase-run="P6"><b>P6</b><span data-i18n="phase.p6">PROTECT / OCM</span></button>
+              <button type="button" data-phase-run="P7"><b>P7</b><span data-i18n="phase.p7">GENEALOGY</span></button>
+              <button type="button" data-phase-run="P8"><b>P8</b><span data-i18n="phase.p8">FRAGMENTATION</span></button>
+              <button type="button" data-phase-run="P9"><b>P9</b><span data-i18n="phase.p9">OBSERVATION</span></button>
+              <button type="button" data-phase-run="P10"><b>P10</b><span data-i18n="phase.p10">DATASET</span></button>
+              <button type="button" data-phase-run="P11"><b>P11</b><span data-i18n="phase.p11">OPERATIONS</span></button>
+              <button type="button" data-phase-run="P12"><b>P12</b><span data-i18n="phase.p12">HARDENING</span></button>
+            </div>
+            <div class="phase-result" id="phaseResult" data-state="IDLE" role="status" aria-live="polite"><b data-i18n="phase.ready">READY</b><span data-i18n="phase.hint">Select a phase to execute its validation path.</span></div>
+          </div>
+        </details>
+      </section>
+
+      <section class="rail-section provenance-section">
+        <div class="section-heading"><span data-i18n="provenance">PROVENANCE</span><small data-i18n="trust">WHY YOU CAN TRUST THIS</small></div>
+        <div id="provenance" class="provenance-copy">Loading…</div>
+      </section>
+
+      <section class="rail-section inspector-section">
+        <details>
+          <summary><span data-i18n="inspector">Evidence inspector</span> <span data-i18n="raw">RAW</span></summary>
+          <div id="detailPanel" class="detail"></div>
+        </details>
+      </section>
+    </aside>
+  </main>
+
+  <nav class="mobile-nav" id="mobileNav" aria-label="Mobile workspace navigation">
+    <button data-mode="SPACE" class="active"><span class="nav-glyph">◎</span><b data-i18n="nav.space">SPACE</b></button>
+    <button data-mode="CONTROL"><span class="nav-glyph">⌁</span><b data-i18n="nav.control">CONTROL</b></button>
+    <button data-mode="ORBIT"><span class="nav-glyph">◉</span><b data-i18n="nav.orbit">ORBIT</b></button>
+    <button data-mode="INTELLIGENCE"><span class="nav-glyph">◇</span><b data-i18n="nav.intelligence">INTEL</b></button>
+    <button data-mode="ARCHIVE"><span class="nav-glyph">◷</span><b data-i18n="nav.archive">ARCHIVE</b></button>
+  </nav>
+
+  <footer class="statusline">
+    <div class="lineage"><span>REAL / OFFICIAL DATA</span><i>→</i><span>NORMALIZATION</span><i>→</i><span>EVIDENCE</span><i>→</i><span>ENGINES</span><i>→</i><span>INTELLIGENCE</span><i>→</i><span>LLM / UI</span></div>
+    <div class="footer-right"><span id="requestId">—</span><span class="footer-divider"></span><span>V0.6 MOBILE / BILINGUAL</span></div>
+  </footer>
+</div>
+<script src="/app/i18n.js"></script>
+<script src="/app/earth-texture.js"></script>
+<script src="/app/visual-engine.js"></script>
+<script src="/app/app.js"></script>
+</body>
+</html>

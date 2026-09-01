@@ -1,0 +1,141 @@
+{
+  "phase": "P1",
+  "phase_name": "Provider-neutral ingestion and canonical identity",
+  "generated_at": "2026-08-24T13:43:38.855194+00:00",
+  "version": "0.1.0.post0",
+  "commit": "6b7adb5074fe737a31715a8faa2b4ae493035958",
+  "scope": {
+    "world_com_integration": "NOT_ATTEMPTED",
+    "scientific_features": [
+      "No propagation",
+      "No conjunction assessment",
+      "No risk score",
+      "No Pc computation"
+    ]
+  },
+  "gates": {
+    "git_commit": {
+      "passed": true,
+      "commit": "6b7adb5074fe737a31715a8faa2b4ae493035958"
+    },
+    "tests": {
+      "name": "tests",
+      "cmd": "/usr/local/bin/python -m pytest -q -p no:cacheprovider",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "============================= test session starts ==============================\nplatform linux -- Python 3.11.16, pytest-7.4.4, pluggy-1.6.0\nrootdir: /app\nconfigfile: pytest.ini\ntestpaths: tests\nplugins: anyio-4.14.2, cov-4.1.0, asyncio-0.23.3\nasyncio: mode=Mode.AUTO\ncollected 85 items\n\ntests/test_database.py .....                                             [  5%]\ntests/test_health.py .....                                               [ 11%]\ntests/test_migrations.py ....                                            [ 16%]\ntests/integration/test_celestrak_ingestion.py .                          [ 17%]\ntests/integration/test_identity_conflicts.py ...                         [ 21%]\ntests/integration/test_ingestion_rejections.py .                         [ 22%]\ntests/integration/test_live_provider_evidence.py ss                      [ 24%]\ntests/integration/test_p1_migration_schema.py .                          [ 25%]\ntests/integration/test_partial_ingestion.py .                            [ 27%]\ntests/integration/test_run_artifact_provenance.py .                      [ 28%]\ntests/integration/test_snapshot_versioning.py .                          [ 29%]\ntests/integration/test_spacetrack_ingestion.py ..                        [ 31%]\ntests/unit/test_catalog_id_validation.py .........                       [ 42%]\ntests/unit/test_celestrak_client.py ...                                  [ 45%]\ntests/unit/test_evidence_p1.py ...                                       [ 49%]\ntests/unit/test_evidence_status.py .                                     [ 50%]\ntests/unit/test_identity_resolution.py ....                              [ 55%]\ntests/unit/test_ingestion_api.py .....                                   [ 61%]\ntests/unit/test_ingestion_service.py ......                              [ 68%]\ntests/unit/test_internal_ingestion_api.py ...                            [ 71%]\ntests/unit/test_migration_sql.py ..                                      [ 74%]\ntests/unit/test_no_tle_width_gate.py ..                                  [ 76%]\ntests/unit/test_omm_parser.py .....                                      [ 82%]\ntests/unit/test_provider_contracts.py ...                                [ 85%]\ntests/unit/test_ratelimit_policy.py .....                                [ 91%]\ntests/unit/test_raw_artifact_store.py ..                                 [ 94%]\ntests/unit/test_redaction.py .                                           [ 95%]\ntests/unit/test_spacetrack_client.py ....                                [100%]\n\n=================== 83 passed, 2 skipped, 1 warning in 0.64s ===================\n",
+      "stderr_tail": ""
+    },
+    "lint": {
+      "name": "lint",
+      "cmd": "/usr/local/bin/python -m ruff check backend tests quality",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "",
+      "stderr_tail": ""
+    },
+    "type_check": {
+      "name": "type_check",
+      "cmd": "/usr/local/bin/python -m mypy backend",
+      "passed": true,
+      "exit_code": 0,
+      "stdout_tail": "Success: no issues found in 24 source files\n",
+      "stderr_tail": ""
+    },
+    "anti_shortcut_audit": {
+      "passed": true,
+      "cmd": "rg -n anti-shortcut-patterns backend",
+      "matches": [],
+      "exit_code": 1
+    },
+    "width_audit": {
+      "passed": true,
+      "cmd": "/usr/local/bin/python quality/check_no_tle_width.py backend",
+      "violations": []
+    },
+    "database": {
+      "passed": true,
+      "missing_tables": [],
+      "extensions": {
+        "pgcrypto": "1.3",
+        "postgis": "3.4.3"
+      },
+      "migrations": [
+        {
+          "name": "001_initial_schema",
+          "content_hash": "07ad94c4fcb4009d48aac536a331dd56c9471d2d72cd66e94ff0c9a32c39b2ec",
+          "applied_at": "2026-08-24T06:59:43.953619+00:00"
+        },
+        {
+          "name": "002_orbit_solution_raw_artifact_versioning",
+          "content_hash": "872bf92e832d6b021f1ba473fcc5492a85974a54fdd6b0b57910f96efe2d90f7",
+          "applied_at": "2026-08-24T06:59:44.243364+00:00"
+        },
+        {
+          "name": "003_ingestion_policy_identity_and_rejections",
+          "content_hash": "85fac502e44101748bad3e7019bf3c92a36498a225d6f02bbe895479a2a14241",
+          "applied_at": "2026-08-24T07:09:52.552347+00:00"
+        }
+      ]
+    },
+    "celestrak_live": {
+      "passed": true,
+      "source_id": "celestrak_gp",
+      "ingestion_run_id": "5e206854-7ead-4d0b-b004-d4f5ff7f3d07",
+      "ingestion_status": "SUCCEEDED",
+      "record_count": 1,
+      "raw_artifact_id": "97c50344-4ef0-4173-bea5-a3a7649caa95",
+      "content_sha256": "e746e2d57908e8085bc1364a6c6a43c2b1de1f3fd2502d7b1678d6d800e8b414",
+      "raw_artifact_path": "artifacts/raw/celestrak_gp/e746e2d57908e8085bc1364a6c6a43c2b1de1f3fd2502d7b1678d6d800e8b414.json",
+      "raw_artifact_byte_count": 422,
+      "retrieved_at": "2026-08-24T08:12:29.897764+00:00",
+      "object_id": "073755de-e91e-413e-8d4d-bfe87e5cd879",
+      "catalog_id": "25544",
+      "orbit_solution_id": "fdc7e075-94df-4252-ac49-9473d9db0a02",
+      "epoch": "2026-08-23T17:25:14.504448+00:00",
+      "covariance_status": "INSUFFICIENT_DATA",
+      "pc_status": "NOT_COMPUTED"
+    },
+    "spacetrack_live": {
+      "passed": true,
+      "source_id": "spacetrack_gp",
+      "ingestion_run_id": "b16fe06a-6330-48cf-8d34-036a67bf82fd",
+      "ingestion_status": "SUCCEEDED",
+      "record_count": 1,
+      "raw_artifact_id": "6c32276a-e62a-4dc8-b67a-f2928a06aeef",
+      "content_sha256": "0e366a5140bf1086cee5d4a6f0cb2f3cae6a4b6ad602f93c60ecf9833c121e32",
+      "raw_artifact_path": "artifacts/raw/spacetrack_gp/0e366a5140bf1086cee5d4a6f0cb2f3cae6a4b6ad602f93c60ecf9833c121e32.json",
+      "raw_artifact_byte_count": 1133,
+      "retrieved_at": "2026-08-24T13:29:24.779728+00:00",
+      "object_id": "073755de-e91e-413e-8d4d-bfe87e5cd879",
+      "catalog_id": "25544",
+      "orbit_solution_id": "848ba06c-2817-4b16-8c55-0e37e18d76ea",
+      "epoch": "2026-08-24T04:15:18.240480+00:00",
+      "covariance_status": "INSUFFICIENT_DATA",
+      "pc_status": "NOT_COMPUTED"
+    },
+    "api_contract": {
+      "passed": true,
+      "endpoint": "GET /api/v1/objects/25544",
+      "status_code": 200,
+      "catalog_id": "25544"
+    },
+    "configured_secret_leak": {
+      "passed": true
+    }
+  },
+  "api_endpoints": [
+    "POST /api/v1/ingestions/celestrak/omm/{catalog_id}",
+    "POST /api/v1/ingestions/spacetrack/gp/{catalog_id}",
+    "GET /api/v1/objects/{lookup}",
+    "GET /api/v1/objects/resolve?source_id=&source_key=",
+    "GET /internal/ingestion/runs?limit="
+  ],
+  "scientific_status": {
+    "orbit_propagation": "NOT_COMPUTED",
+    "conjunction_assessment": "NOT_COMPUTED",
+    "pc_without_covariance": "NOT_COMPUTED"
+  },
+  "status": "PASSED",
+  "next_allowed_phase": "P2"
+}

@@ -1,0 +1,317 @@
+{
+  "status": "PASS",
+  "web_fingerprint": "e56525b853c23e8ebccdc7f079de10c913f6b3a38afc18fe00f102507f4e2031",
+  "viewports": {
+    "360": {
+      "inner_width": 360,
+      "scroll_width": 360,
+      "locales": {
+        "en": {
+          "SPACE": {
+            "status": "RESEARCH_ONLY",
+            "title": "SOLAR SYSTEM",
+            "scroll_width": 360
+          },
+          "CONTROL": {
+            "status": "OK",
+            "title": "MISSION CONTROL",
+            "scroll_width": 360
+          },
+          "ORBIT": {
+            "status": "SCREENING_ONLY",
+            "title": "ORBITAL ENVIRONMENT",
+            "scroll_width": 360
+          },
+          "INTELLIGENCE": {
+            "status": "VALIDATION_PENDING",
+            "title": "INTELLIGENCE CORE",
+            "scroll_width": 360
+          },
+          "ARCHIVE": {
+            "status": "OK",
+            "title": "TIME MACHINE / ARCHIVE",
+            "scroll_width": 360
+          }
+        },
+        "ko": {
+          "SPACE": {
+            "status": "RESEARCH_ONLY",
+            "title": "태양계",
+            "scroll_width": 360
+          },
+          "CONTROL": {
+            "status": "OK",
+            "title": "미션 관제",
+            "scroll_width": 360
+          },
+          "ORBIT": {
+            "status": "SCREENING_ONLY",
+            "title": "궤도 환경",
+            "scroll_width": 360
+          },
+          "INTELLIGENCE": {
+            "status": "VALIDATION_PENDING",
+            "title": "인텔리전스 코어",
+            "scroll_width": 360
+          },
+          "ARCHIVE": {
+            "status": "OK",
+            "title": "타임머신 / 아카이브",
+            "scroll_width": 360
+          }
+        }
+      },
+      "bottom_nav": true,
+      "sheet": true
+    },
+    "390": {
+      "inner_width": 390,
+      "scroll_width": 390,
+      "locales": {
+        "en": {
+          "SPACE": {
+            "status": "RESEARCH_ONLY",
+            "title": "SOLAR SYSTEM",
+            "scroll_width": 390
+          },
+          "CONTROL": {
+            "status": "OK",
+            "title": "MISSION CONTROL",
+            "scroll_width": 390
+          },
+          "ORBIT": {
+            "status": "SCREENING_ONLY",
+            "title": "ORBITAL ENVIRONMENT",
+            "scroll_width": 390
+          },
+          "INTELLIGENCE": {
+            "status": "VALIDATION_PENDING",
+            "title": "INTELLIGENCE CORE",
+            "scroll_width": 390
+          },
+          "ARCHIVE": {
+            "status": "OK",
+            "title": "TIME MACHINE / ARCHIVE",
+            "scroll_width": 390
+          }
+        },
+        "ko": {
+          "SPACE": {
+            "status": "RESEARCH_ONLY",
+            "title": "태양계",
+            "scroll_width": 390
+          },
+          "CONTROL": {
+            "status": "OK",
+            "title": "미션 관제",
+            "scroll_width": 390
+          },
+          "ORBIT": {
+            "status": "SCREENING_ONLY",
+            "title": "궤도 환경",
+            "scroll_width": 390
+          },
+          "INTELLIGENCE": {
+            "status": "VALIDATION_PENDING",
+            "title": "인텔리전스 코어",
+            "scroll_width": 390
+          },
+          "ARCHIVE": {
+            "status": "OK",
+            "title": "타임머신 / 아카이브",
+            "scroll_width": 390
+          }
+        }
+      },
+      "bottom_nav": true,
+      "sheet": true
+    },
+    "412": {
+      "inner_width": 412,
+      "scroll_width": 412,
+      "locales": {
+        "en": {
+          "SPACE": {
+            "status": "RESEARCH_ONLY",
+            "title": "SOLAR SYSTEM",
+            "scroll_width": 412
+          },
+          "CONTROL": {
+            "status": "OK",
+            "title": "MISSION CONTROL",
+            "scroll_width": 412
+          },
+          "ORBIT": {
+            "status": "SCREENING_ONLY",
+            "title": "ORBITAL ENVIRONMENT",
+            "scroll_width": 412
+          },
+          "INTELLIGENCE": {
+            "status": "VALIDATION_PENDING",
+            "title": "INTELLIGENCE CORE",
+            "scroll_width": 412
+          },
+          "ARCHIVE": {
+            "status": "OK",
+            "title": "TIME MACHINE / ARCHIVE",
+            "scroll_width": 412
+          }
+        },
+        "ko": {
+          "SPACE": {
+            "status": "RESEARCH_ONLY",
+            "title": "태양계",
+            "scroll_width": 412
+          },
+          "CONTROL": {
+            "status": "OK",
+            "title": "미션 관제",
+            "scroll_width": 412
+          },
+          "ORBIT": {
+            "status": "SCREENING_ONLY",
+            "title": "궤도 환경",
+            "scroll_width": 412
+          },
+          "INTELLIGENCE": {
+            "status": "VALIDATION_PENDING",
+            "title": "인텔리전스 코어",
+            "scroll_width": 412
+          },
+          "ARCHIVE": {
+            "status": "OK",
+            "title": "타임머신 / 아카이브",
+            "scroll_width": 412
+          }
+        }
+      },
+      "bottom_nav": true,
+      "sheet": true
+    },
+    "430": {
+      "inner_width": 430,
+      "scroll_width": 430,
+      "locales": {
+        "en": {
+          "SPACE": {
+            "status": "RESEARCH_ONLY",
+            "title": "SOLAR SYSTEM",
+            "scroll_width": 430
+          },
+          "CONTROL": {
+            "status": "OK",
+            "title": "MISSION CONTROL",
+            "scroll_width": 430
+          },
+          "ORBIT": {
+            "status": "SCREENING_ONLY",
+            "title": "ORBITAL ENVIRONMENT",
+            "scroll_width": 430
+          },
+          "INTELLIGENCE": {
+            "status": "VALIDATION_PENDING",
+            "title": "INTELLIGENCE CORE",
+            "scroll_width": 430
+          },
+          "ARCHIVE": {
+            "status": "OK",
+            "title": "TIME MACHINE / ARCHIVE",
+            "scroll_width": 430
+          }
+        },
+        "ko": {
+          "SPACE": {
+            "status": "RESEARCH_ONLY",
+            "title": "태양계",
+            "scroll_width": 430
+          },
+          "CONTROL": {
+            "status": "OK",
+            "title": "미션 관제",
+            "scroll_width": 430
+          },
+          "ORBIT": {
+            "status": "SCREENING_ONLY",
+            "title": "궤도 환경",
+            "scroll_width": 430
+          },
+          "INTELLIGENCE": {
+            "status": "VALIDATION_PENDING",
+            "title": "인텔리전스 코어",
+            "scroll_width": 430
+          },
+          "ARCHIVE": {
+            "status": "OK",
+            "title": "타임머신 / 아카이브",
+            "scroll_width": 430
+          }
+        }
+      },
+      "bottom_nav": true,
+      "sheet": true
+    }
+  },
+  "screenshots": [
+    "artifacts/evidence/mobile_v06/mobile390_en_space.png",
+    "artifacts/evidence/mobile_v06/mobile390_en_control.png",
+    "artifacts/evidence/mobile_v06/mobile390_en_orbit.png",
+    "artifacts/evidence/mobile_v06/mobile390_en_intelligence.png",
+    "artifacts/evidence/mobile_v06/mobile390_en_archive.png",
+    "artifacts/evidence/mobile_v06/mobile390_ko_space.png",
+    "artifacts/evidence/mobile_v06/mobile390_ko_control.png",
+    "artifacts/evidence/mobile_v06/mobile390_ko_orbit.png",
+    "artifacts/evidence/mobile_v06/mobile390_ko_intelligence.png",
+    "artifacts/evidence/mobile_v06/mobile390_ko_intelligence_sheet_open.png",
+    "artifacts/evidence/mobile_v06/mobile390_ko_archive.png"
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "touch_targets": [
+    {
+      "id": "localeToggle",
+      "width": 58,
+      "height": 44
+    },
+    {
+      "id": "resetNow",
+      "width": 44,
+      "height": 44
+    },
+    {
+      "id": "mobileSheetHandle",
+      "width": 372,
+      "height": 52
+    },
+    {
+      "id": "SPACE",
+      "width": 76,
+      "height": 56
+    },
+    {
+      "id": "CONTROL",
+      "width": 76,
+      "height": 56
+    },
+    {
+      "id": "ORBIT",
+      "width": 76,
+      "height": 56
+    },
+    {
+      "id": "INTELLIGENCE",
+      "width": 76,
+      "height": 56
+    },
+    {
+      "id": "ARCHIVE",
+      "width": 76,
+      "height": 56
+    }
+  ],
+  "gestures": {
+    "drag": true,
+    "pinch": true,
+    "planet_focus": true,
+    "back": true
+  }
+}

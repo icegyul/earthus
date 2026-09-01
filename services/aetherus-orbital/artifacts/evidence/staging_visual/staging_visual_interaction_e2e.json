@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "url": "http://127.0.0.1:8000/app/",
+  "desktop": {
+    "SPACE": {
+      "semantic_zoom": true,
+      "planet_focus": true,
+      "back": true
+    },
+    "CONTROL": {
+      "missionId": "APOLLO11",
+      "phase": "POST_MISSION",
+      "trajectoryStatus": "UNAVAILABLE",
+      "trajectoryVisible": false,
+      "targetOrbitVisible": false,
+      "trajectoryClass": null,
+      "targetOrbitFrame": null
+    },
+    "ORBIT": {
+      "global": {
+        "view": "GLOBAL",
+        "fixtureClass": "VALIDATION_FIXTURE",
+        "visibleObjectCount": 0,
+        "conjunctionVisible": false,
+        "radarSweepVisible": false,
+        "lineMeaning": null,
+        "pc": null
+      },
+      "event": {
+        "view": "EVENT",
+        "fixtureClass": "VALIDATION_FIXTURE",
+        "visibleObjectCount": 2,
+        "conjunctionVisible": true,
+        "radarSweepVisible": false,
+        "lineMeaning": "SCREENING_RELATIVE_GEOMETRY",
+        "pc": null
+      }
+    },
+    "INTELLIGENCE": {
+      "packetEventId": "615273c4-59dd-4574-aef0-cd1568e7fc2e",
+      "evidenceIds": [
+        "aeec4fa5-2860-5749-af4c-2c3f8ad37aee"
+      ],
+      "revisionNo": 1,
+      "narrativeSections": [
+        "WHAT_HAPPENED",
+        "WHAT_CHANGED",
+        "WHY_IT_MATTERS",
+        "CONFIDENCE",
+        "UNCERTAINTY"
+      ],
+      "staticPipelineDots": false,
+      "confidenceScore": 0.84,
+      "uncertaintyRepresentation": "UNAVAILABLE"
+    },
+    "ARCHIVE": {
+      "stateClass": "ARCHIVED_STATE",
+      "recordIds": [
+        "APOLLO11"
+      ],
+      "timelineYears": [
+        1969,
+        1970
+      ],
+      "hardcodedTimeline": false,
+      "selectedRecordId": "APOLLO11",
+      "cursorUtc": "1969-07-16T13:32:00+00:00"
+    }
+  },
+  "mobile390": {
+    "five_modes": true,
+    "horizontal_overflow": 0,
+    "bottom_nav": true
+  },
+  "console_errors": [],
+  "page_errors": []
+}

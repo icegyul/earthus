@@ -77,6 +77,10 @@ def create_app(
     repository: LocalFoundationRepository | None = None,
     product: AetherusProductRuntime | None = None,
     orbital_backend=None,
+    space_weather_client=None,
+    neo_client=None,
+    launch_client=None,
+    conjunction_signal_source=None,
 ) -> FastAPI:
     # Preserve the Foundation-test injection seam. Product runtime owns its own repo when not supplied.
     repo = repository or (product.repo if product else LocalFoundationRepository(os.environ.get("AETHERUS_LOCAL_DB", ":memory:")))
@@ -288,6 +292,10 @@ def create_app(
         envelope=envelope,
         jsonable=_jsonable,
         orbital_backend=orbital_backend,
+        space_weather_client=space_weather_client,
+        neo_client=neo_client,
+        launch_client=launch_client,
+        conjunction_signal_source=conjunction_signal_source,
     )
     from services.api.platform_routes import register_platform_routes
     register_platform_routes(app, require_product=require_product, envelope=envelope, jsonable=_jsonable)

@@ -1,3 +1,13 @@
-from .orbital_backend import OrbitalScienceBackend, P5PostgresOrbitalBackend
+from .orbital_backend import (
+    CatalogIdentityRepository,
+    OrbitalScienceBackend,
+    OrbitalScienceCatalogBackend,
+    P5PostgresOrbitalBackend,
+)
 
-__all__ = ["OrbitalScienceBackend", "P5PostgresOrbitalBackend"]
+__all__ = [
+    "CatalogIdentityRepository",
+    "OrbitalScienceBackend",
+    "OrbitalScienceCatalogBackend",
+    "P5PostgresOrbitalBackend",
+]

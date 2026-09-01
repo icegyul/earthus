@@ -106,17 +106,78 @@ def register_registry_routes(
     envelope: Callable[..., dict[str, Any]],
     jsonable: Callable[[Any], Any],
     orbital_backend=None,
+    space_weather_client=None,
+    neo_client=None,
+    launch_client=None,
+    conjunction_signal_source=None,
 ) -> None:
     """Expose the Engine Registry API surface without inventing scientific truth.
 
     Read endpoints return UNAVAILABLE/INSUFFICIENT_DATA when a live/official source is
     absent. Mutating scientific inputs are intentionally limited to explicit local
     validation/simulation paths in this continuation.
+
+    Injected collaborators are all optional so the fixture-only app (and every
+    test that builds it) keeps its existing honest-fixture behaviour; when a
+    collaborator is supplied the route serves real source-backed truth instead.
     """
+
+    async def _live(call: Callable[[], Any], *, unavailable_data: Any):
+        """Run one live-provider call and translate its failures into honest states.
+
+        A provider outage must never become a fabricated value, so every error
+        path returns an explicit status with the provider's own reason.
+        """
+        from backend.ingestion.errors import (
+            InsufficientDataError,
+            ProviderUnavailableError,
+            RateLimitedError,
+        )
+
+        try:
+            result = await call()
+        except RateLimitedError as error:
+            return envelope(
+                unavailable_data,
+                data_status="UNAVAILABLE",
+                warnings=[f"Provider is rate limited; no value is invented. {error}"],
+            )
+        except InsufficientDataError as error:
+            return envelope(
+                unavailable_data,
+                data_status="INSUFFICIENT_DATA",
+                warnings=[str(error)],
+            )
+        except ProviderUnavailableError as error:
+            return envelope(
+                unavailable_data,
+                data_status="UNAVAILABLE",
+                warnings=[str(error)],
+            )
+        payload = result.to_dict()
+        status = payload.pop("status", "OK")
+        notes = payload.pop("notes", [])
+        skipped = payload.get("skipped_row_count") or 0
+        warnings = list(notes)
+        if skipped:
+            warnings.append(
+                f"{skipped} provider rows were skipped and counted, never silently dropped."
+            )
+        return envelope(payload, data_status=status, warnings=warnings)
 
     # E02 — canonical identity
     @app.get("/v1/objects")
-    def objects_list(limit: int = 200):
+    async def objects_list(limit: int = 200, source: str = "AUTO"):
+        """Serve the real operational catalog when the science bridge is wired.
+
+        ``source=FOUNDATION`` still exposes the local foundation entities
+        (missions, launch vehicles) that the product store owns, so neither
+        lineage hides the other.
+        """
+        if orbital_backend is not None and source != "FOUNDATION":
+            catalog = getattr(orbital_backend, "catalog", None)
+            if catalog is not None:
+                return await catalog(limit)
         return envelope([o.model_dump(mode="json") for o in repo.list_canonicals(limit=limit)])
 
     # E03 — provenance
@@ -192,21 +253,73 @@ def register_registry_routes(
 
     # E10 — no current live SWPC source is fabricated in the offline runtime.
     @app.get("/v1/space-weather/current")
-    def space_weather_current():
-        return envelope(None, data_status="UNAVAILABLE", warnings=["Live NOAA SWPC provider has not been network-verified in this environment."])
+    async def space_weather_current():
+        if space_weather_client is None:
+            return envelope(None, data_status="UNAVAILABLE", warnings=["No space-weather provider is configured in this deployment."])
+        return await _live(
+            lambda: space_weather_client.fetch_planetary_k_index(max_samples=180),
+            unavailable_data=None,
+        )
 
     @app.get("/v1/space-weather/history")
-    def space_weather_history():
-        return envelope([], data_status="UNAVAILABLE", warnings=["No historical SWPC archive was ingested into the local evidence store."])
+    async def space_weather_history():
+        if space_weather_client is None:
+            return envelope([], data_status="UNAVAILABLE", warnings=["No space-weather provider is configured in this deployment."])
+        # The 1-minute Kp feed is itself the recent archive SWPC publishes; a
+        # longer history needs a separate ingested dataset, so say so instead of
+        # padding this response.
+        payload = await _live(
+            lambda: space_weather_client.fetch_planetary_k_index(),
+            unavailable_data=[],
+        )
+        payload.setdefault("warnings", []).append(
+            "Recent SWPC 1-minute samples only; no long-term Kp archive is ingested."
+        )
+        return payload
 
-    # E11/E12 — provider adapters exist, but local catalog truth is intentionally empty.
+    @app.get("/v1/space-weather/flares")
+    async def space_weather_flares():
+        if space_weather_client is None:
+            return envelope([], data_status="UNAVAILABLE", warnings=["No space-weather provider is configured in this deployment."])
+        return await _live(
+            lambda: space_weather_client.fetch_latest_xray_flares(),
+            unavailable_data=[],
+        )
+
+    # E11 — NASA/JPL SBDB close-approach data (public, no credential).
     @app.get("/v1/space/neo")
-    def neo_list():
-        return envelope([], data_status="UNAVAILABLE", warnings=["No official/live NEO dataset is ingested in this local package."])
+    async def neo_list(limit: int = 50, dist_max_au: float = 0.05):
+        if neo_client is None:
+            return envelope([], data_status="UNAVAILABLE", warnings=["No NEO provider is configured in this deployment."])
+        return await _live(
+            lambda: neo_client.fetch_close_approaches(limit=limit, dist_max_au=dist_max_au),
+            unavailable_data=[],
+        )
 
     @app.get("/v1/space/neo/{object_id}")
-    def neo_detail(object_id: str):
-        return envelope({"object_id": object_id, "state": None}, data_status="UNAVAILABLE", warnings=["No source-backed NEO state available."])
+    async def neo_detail(object_id: str):
+        if neo_client is None:
+            return envelope({"object_id": object_id, "state": None}, data_status="UNAVAILABLE", warnings=["No NEO provider is configured in this deployment."])
+        payload = await _live(
+            lambda: neo_client.fetch_close_approaches(limit=200),
+            unavailable_data=None,
+        )
+        data = payload.get("data") or {}
+        matches = [
+            row for row in (data.get("approaches") or [])
+            if str(row.get("designation", "")).strip().lower() == object_id.strip().lower()
+        ]
+        if not matches:
+            return envelope(
+                {"object_id": object_id, "approaches": []},
+                data_status="UNAVAILABLE",
+                warnings=[f"No close approach for '{object_id}' in the queried window; nothing is inferred."],
+            )
+        return envelope(
+            {"object_id": object_id, "approaches": matches, "units": data.get("units")},
+            data_status=payload.get("data_status", "OK"),
+            warnings=payload.get("warnings", []),
+        )
 
     @app.get("/v1/space/missions")
     def deep_space_missions():
@@ -214,7 +327,12 @@ def register_registry_routes(
 
     # E14-E19 — Control read surface. No telemetry/model values are invented.
     @app.get("/v1/launches/upcoming")
-    def upcoming_launches():
+    async def upcoming_launches(limit: int = 10):
+        if launch_client is not None:
+            return await _live(
+                lambda: launch_client.fetch_upcoming(limit=limit),
+                unavailable_data=[],
+            )
         p = require_product(); now = p.universe.current_time_utc; out=[]
         for mission in p.missions.list():
             hist=p.launch_schedule.history(mission.mission_id)
@@ -302,7 +420,11 @@ def register_registry_routes(
         return envelope(snap["risk"],data_status=snap["risk"]["validation_state"],warnings=["Pc remains null because covariance is unavailable."])
 
     @app.get("/v1/risk-graph")
-    def risk_graph():
+    async def risk_graph():
+        if orbital_backend is not None:
+            real=getattr(orbital_backend,"risk_graph",None)
+            if real is not None:
+                return await real()
         p=require_product(); edges=[
             p.risk_graph.build_edge("VAL-A","VAL-B",metrics={"screening_score":0.20,"pc":None},evidence_ids=["VALIDATION_FIXTURE"],config_version="validation-v1"),
             p.risk_graph.build_edge("VAL-B","VAL-C",metrics={"screening_score":0.10,"pc":None},evidence_ids=["VALIDATION_FIXTURE"],config_version="validation-v1"),
@@ -310,18 +432,26 @@ def register_registry_routes(
         return envelope({"edges":[jsonable(x) for x in edges],"snapshot_hash":p.risk_graph.snapshot_hash(edges),"fixture_class":"VALIDATION_FIXTURE"},data_status="RESEARCH_ONLY",warnings=["screening_score is not collision probability (Pc)."])
 
     @app.get("/v1/objects/{object_id}/risk")
-    def object_risk(object_id: str):
-        p=require_product();
+    async def object_risk(object_id: str):
+        if orbital_backend is not None:
+            real=getattr(orbital_backend,"object_risk",None)
+            if real is not None:
+                return await real(object_id)
+        p=require_product()
         if object_id not in {"VAL-A","VAL-B","VAL-C"}: raise HTTPException(404,"local risk is only available for VAL-* fixtures")
-        graph=risk_graph()["data"]; score=sum(float(e["metrics"].get("screening_score") or 0) for e in graph["edges"] if object_id in {e["a"],e["b"]})
+        graph=(await risk_graph())["data"]; score=sum(float(e["metrics"].get("screening_score") or 0) for e in graph["edges"] if object_id in {e["a"],e["b"]})
         return envelope({"object_id":object_id,"screening_score":score,"pc":None,"fixture_class":"VALIDATION_FIXTURE"},data_status="RESEARCH_ONLY")
 
     @app.get("/v1/orbit/render-set")
-    def orbit_render_set(
+    async def orbit_render_set(
         view: str = Query(default="GLOBAL", pattern="^(GLOBAL|LEO|MEO|GEO)$"),
         viewport_query: list[str] = Query(default=[]),
         important_ids: list[str] = Query(default=[]),
     ):
+        if orbital_backend is not None:
+            real=getattr(orbital_backend,"render_set",None)
+            if real is not None:
+                return await real(view=view,viewport_query=viewport_query,important_ids=important_ids)
         result=require_product().orbit_render_set(view=view,viewport_query=viewport_query,important_ids=important_ids)
         return envelope(
             result,
@@ -330,7 +460,13 @@ def register_registry_routes(
         )
 
     @app.get("/v1/genealogy/{object_id}")
-    def genealogy(object_id: str):
+    async def genealogy(object_id: str):
+        if orbital_backend is not None:
+            real=getattr(orbital_backend,"genealogy",None)
+            if real is not None:
+                result=await real(object_id)
+                if result is not None:
+                    return result
         rows=require_product().genealogy_timeline(object_id)
         return envelope(rows,data_status="OK" if rows else "UNAVAILABLE",warnings=[] if rows else ["No evidence-backed debris genealogy is stored for this object."])
 
@@ -503,8 +639,28 @@ def register_registry_routes(
         return envelope([e.model_dump(mode="json") for e in packet.evidence],provenance={"event_id":str(event_id)})
 
     @app.get("/v1/intelligence/signals")
-    def intelligence_signals(limit:int=200):
-        return envelope([x.model_dump(mode="json") for x in repo.list_signals(limit)])
+    async def intelligence_signals(limit:int=200, source:str="ALL"):
+        """Serve stored signals plus, when wired, real P4 conjunction signals.
+
+        Conjunction-derived signals are DERIVED evidence computed from stored
+        screening results; they are merged in rather than replacing the store so
+        the fixture lineage stays visible next to the live science.
+        """
+        stored=[x.model_dump(mode="json") for x in repo.list_signals(limit)]
+        if conjunction_signal_source is None or source == "STORED":
+            return envelope(stored)
+        bundle=await conjunction_signal_source(limit=limit)
+        derived=[s.model_dump(mode="json") for s in bundle.signals]
+        if source == "CONJUNCTION":
+            return envelope(derived, data_status=bundle.data_status, warnings=bundle.warnings)
+        warnings=list(bundle.warnings)
+        if bundle.status_reason:
+            warnings.append(f"conjunction signals: {bundle.status_reason}")
+        return envelope(
+            stored + derived,
+            data_status="OK" if (stored or derived) else bundle.data_status,
+            warnings=warnings,
+        )
 
     @app.get("/v1/intelligence/events")
     def intelligence_events(limit:int=200):

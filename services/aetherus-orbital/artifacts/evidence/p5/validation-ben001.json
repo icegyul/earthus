@@ -1,0 +1,49 @@
+{
+  "gate": "BEN-001",
+  "dataset_id": "synthetic-remove-direct-v1",
+  "validation_only": true,
+  "validation_state": "SIMULATION_ONLY",
+  "target_catalog_ids_used": [
+    "20580",
+    "25544",
+    "25994",
+    "27424",
+    "33591",
+    "39084",
+    "48274"
+  ],
+  "scenario_id": "d054cc63-37d8-4eb2-a131-222fa4e7feda",
+  "checks": {
+    "neighbor_identified": true,
+    "exposure_benefit_exact": true,
+    "pc_channel_separate": true,
+    "pc_value_computed": true,
+    "target_self_benefit_excluded": true,
+    "non_neighbor_unchanged": true,
+    "provenance_attached": true,
+    "idealized_removal_assumption": true,
+    "run_persisted": true,
+    "result_hash_present": true,
+    "repeat_same_hash": true
+  },
+  "observed_beneficiaries": [
+    {
+      "beneficiary_catalog_id": "48274",
+      "metric_type": "CONJUNCTION_EXPOSURE",
+      "baseline_value": 5.0,
+      "scenario_value": 3.0,
+      "benefit_value": 2.0,
+      "benefit_class": "DIRECT"
+    },
+    {
+      "beneficiary_catalog_id": "48274",
+      "metric_type": "PC",
+      "baseline_value": 0.00065,
+      "scenario_value": 0.0,
+      "benefit_value": 0.00065,
+      "benefit_class": "DIRECT"
+    }
+  ],
+  "benefits_query_status_code_shape": "SUCCEEDED",
+  "passed": true
+}

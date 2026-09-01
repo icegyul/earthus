@@ -59,6 +59,13 @@ class ScenarioRequest(BaseModel):
         default=None,
         description="Offset-aware ISO-8601 UTC instant for the counterfactual",
     )
+    counterfactual_method: str | None = Field(
+        default=None,
+        description=(
+            "SCREENING_RECOMPUTE_V1 (default; physically re-runs the P4 pipeline) "
+            "or IDEALIZED_REMOVAL (legacy edge-deletion, SIMULATION_ONLY)"
+        ),
+    )
     metric_types: list[str] | None = Field(
         default=None,
         description="Subset of PC, MAX_PC, CONJUNCTION_EXPOSURE; defaults to all three",
@@ -234,7 +241,7 @@ async def health_check():
                 "conjunction_assessment": "AVAILABLE" if db_healthy else "UNAVAILABLE",
                 "pc_without_covariance": "NOT_COMPUTED",
                 "benefit_engine": (
-                    "AVAILABLE_IDEALIZED_SIMULATION" if db_healthy else "UNAVAILABLE"
+                    "AVAILABLE_PHYSICAL_RECOMPUTE" if db_healthy else "UNAVAILABLE"
                 ),
             },
         },
@@ -526,12 +533,15 @@ async def create_scenario(
             "remain future phases",
             {"kind": payload.kind},
         )
+    from backend.benefit.models import METHOD_PHYSICAL
+
     return await service.create_remove_scenario(
         target_ref=payload.target,
         baseline_snapshot_id=payload.baseline_snapshot_id,
         effective_time_raw=payload.effective_time,
         metric_types=payload.metric_types,
         recompute_mode=payload.recompute_mode or "FULL",
+        counterfactual_method=payload.counterfactual_method or METHOD_PHYSICAL,
     )
 
 

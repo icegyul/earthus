@@ -1,0 +1,22 @@
+[
+  {
+    "url": "http://localhost:8000/api/v1/catalog/status",
+    "status": 200
+  },
+  {
+    "url": "http://localhost:8000/api/v1/catalog/snapshot",
+    "status": 200
+  },
+  {
+    "url": "http://localhost:8000/api/v1/objects/25544/ephemeris?start=2026-08-25T21%3A58%3A24.789Z&stop=2026-08-25T23%3A28%3A24.789Z&step_s=60",
+    "status": 200
+  },
+  {
+    "url": "http://localhost:8000/api/v1/conjunctions?object=25544",
+    "status": 200
+  },
+  {
+    "url": "http://localhost:8000/api/v1/baselines",
+    "status": 202
+  }
+]

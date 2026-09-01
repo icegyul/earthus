@@ -23,6 +23,15 @@ P4_TESTS = [
     "tests/integration/test_conjunctions_api.py",
 ]
 CORPUS_TEST = "tests/integration/test_ca_10k_corpus.py"
+P5_TESTS = [
+    "tests/integration/test_p5_physical_counterfactual.py",
+    "tests/unit/test_benefit_engine.py",
+    "tests/integration/test_p5_baseline_build.py",
+    "tests/integration/test_p5_full_vs_selective.py",
+    "tests/integration/test_p5_immutability.py",
+    "tests/integration/test_benefit_service.py",
+    "tests/integration/test_benefit_api.py",
+]
 
 
 def run(cmd: list[str]) -> str:
@@ -46,7 +55,7 @@ def pytest_summary(files: list[str]) -> dict:
 def main() -> None:
     evidence = {
         "phase": "p8",
-        "orbital_phase": "ORB-P4",
+        "orbital_phase": "ORB-P4 + ORB-P5(physical engine)",
         "gate": "PARTIAL",
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "repository": run(["git", "-C", str(REPO_ROOT), "remote", "get-url", "origin"]),
@@ -54,6 +63,21 @@ def main() -> None:
         "commit": run(["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"]),
         "tests_p4_core": pytest_summary(P4_TESTS),
         "tests_10k_corpus": pytest_summary([CORPUS_TEST]),
+        "tests_p5": pytest_summary(P5_TESTS),
+        "p5_physical_engine": {
+            "method": "SCREENING_RECOMPUTE_V1 (backend/benefit/physical.py)",
+            "mechanism": (
+                "G0'와 Gs를 모두 P4 파이프라인(SGP4→coarse→TCA) 실재실행으로 도출."
+                " FULL=전체 재스크리닝, AFFECTED_SUBGRAPH=영향 접촉 쌍만 TCA 재정밀화"
+                " + 비접촉 엣지 재사용 — 두 독립 경로의 result_hash 수치 동등성을"
+                " 합성 궤도 6객체 실파이프라인 corpus로 검증. 신규 엣지 검출 내장."
+            ),
+            "validation_state": "물리 경로 산출물은 PUBLIC_SCREENING, 레거시 엣지삭제형은 명시 옵트인 + SIMULATION_ONLY",
+            "bugs_found_by_corpus": [
+                "P4 conjunction/service.py: prepare_catalog 탈락 객체 존재 시 zip 위치 매핑이 후속 쌍 전부를 엉뚱한 궤도요소에 연결 (identity 매핑으로 수정)",
+                "benefit/repository.py load_operational_event_rows: snapshot_id 미SELECT (실 이벤트 최초 통과 시 KeyError)",
+            ],
+        },
         "scientific_rules_verified": [
             "공분산 결측/무효 → Pc 미계산(PC_UNAVAILABLE), 0 반환 금지 (test_ca_pc: TraCSS CDM invalid/missing covariance 픽스처)",
             "주입 근접쌍 false-negative=0 (10k 코퍼스)",
@@ -70,11 +94,12 @@ def main() -> None:
             ],
         },
         "limitations": [
-            "ORB-P5: NOT STARTED — 구 구현은 엣지삭제형 판정(SIMULATION_ONLY), 물리 재계산 재작성 필요 (P4 파이프라인을 affected 영역에 재실행)",
-            "라이브 카탈로그 소수 객체 — 실 스크리닝 런은 카탈로그 확장 후",
+            "ORB-P6 PROTECT/OCM 미착수 — V2-P8의 나머지 구간이므로 gate PARTIAL 유지",
+            "물리 엔진 대규모(10k) full-vs-selective 성능 벤치마크는 후속 (기능 동등성은 검증 완료)",
+            "BEN-001/BEN-003 정량 검증 corpus의 물리 엔진 재생성은 후속 (823 산출물은 HISTORICAL 보존)",
             "Space-Track CDM 라이브 미검증 (자격증명 부재 — 픽스처 경로만)",
         ],
-        "next_allowed": "ORB-P5 구 Benefit 코드 적대 감사 → 판정에 따라 재작성 또는 재현",
+        "next_allowed": "ORB-P6 PROTECT 역질의·후보 OCM (물리 엔진의 신규 엣지 검출이 OCM 요건을 선반영)",
     }
     EVIDENCE_PATH.parent.mkdir(parents=True, exist_ok=True)
     EVIDENCE_PATH.write_text(

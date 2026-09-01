@@ -20,6 +20,14 @@ IDEALIZED_REMOVAL = "IDEALIZED_REMOVAL"
 AGGREGATION_METHOD = "SUM_INCIDENT_EDGES_V1"
 EXPOSURE_METHOD = "EVENT_COUNT_V1"
 
+#: Counterfactual derivation methods. PHYSICAL re-runs the P4 pipeline over
+#: the intervention-modified object set (the P5-gate-valid path); IDEALIZED
+#: is the legacy edge-deletion research simulation and stays SIMULATION_ONLY
+#: (audit 2026-09-01: docs/audit/P5_BENEFIT_AUDIT_VERDICT.md).
+METHOD_PHYSICAL = "SCREENING_RECOMPUTE_V1"
+METHOD_IDEALIZED = IDEALIZED_REMOVAL
+COUNTERFACTUAL_METHODS = (METHOD_PHYSICAL, METHOD_IDEALIZED)
+
 #: Benefit-capable channels. Higher values mean higher risk, so the spec
 #: formula ``Benefit_i = R_i(G0) - R_i(Gs)`` applies directly. MISS_DISTANCE
 #: is deliberately absent: meters are not a risk score.
@@ -87,16 +95,18 @@ class ScenarioConfig:
         default_factory=lambda: {"PC": 0.0, "MAX_PC": 0.0, "CONJUNCTION_EXPOSURE": 0.0}
     )
     recompute_mode: str = "FULL"  # or AFFECTED_SUBGRAPH
+    counterfactual_method: str = METHOD_IDEALIZED
 
     def to_payload(self) -> dict[str, Any]:
         return {
             "metric_types": list(self.metric_types),
             "thresholds": {key: self.thresholds[key] for key in sorted(self.thresholds)},
             "recompute_mode": self.recompute_mode,
+            "counterfactual_method": self.counterfactual_method,
             "model_id": BENEFIT_MODEL_ID,
             "model_version": BENEFIT_MODEL_VERSION,
             "aggregation": AGGREGATION_METHOD,
-            "assumption": IDEALIZED_REMOVAL,
+            "assumption": self.counterfactual_method,
         }
 
 

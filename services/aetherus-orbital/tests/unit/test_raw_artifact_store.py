@@ -26,7 +26,12 @@ def test_preserves_recorded_provider_bytes_by_content_hash(tmp_path: Path) -> No
     )
 
     assert artifact.content_sha256 == hashlib.sha256(raw).hexdigest()
-    assert artifact.content_sha256 == provenance["content_sha256"]
+    # The provenance sidecar documents two hashes: content_sha256 is the
+    # original HTTP capture, captured_response_sha256 is the source-controlled
+    # fixture after its trailing line ending was normalized. The store must
+    # reproduce whichever bytes it was actually given.
+    expected = provenance.get("captured_response_sha256", provenance["content_sha256"])
+    assert artifact.content_sha256 == expected
     assert artifact.path.read_bytes() == raw
     assert artifact.object_uri.endswith(f"/{artifact.content_sha256}.json")
 

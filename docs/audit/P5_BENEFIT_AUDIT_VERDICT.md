@@ -27,12 +27,22 @@
 
 적용 후 P5 테스트 스위트 44 passed / 11 skipped — 기존 시뮬레이션 기능 회귀 없음.
 
-## P5 유효화 재작성 범위 (다음 작업)
+## P5 유효화 재작성 — 완료 (2026-09-01 저녁)
 
-1. `graph.py`: `apply_idealized_removal`을 대체하는 **물리 counterfactual 빌더** — 타깃을 카탈로그에서 제외한 상태로 `backend/conjunction`의 coarse_screen→find_tca→Pc 파이프라인을 affected 영역에 재실행해 Gs 엣지를 재유도
-2. `service.py:run_scenario`: ConjunctionService(P4) 의존성 주입. FULL(전체 재계산)과 AFFECTED_SUBGRAPH(영향 영역만 재계산+나머지 재사용)를 **실제로 다른 코드 경로**로 구현
-3. 검증 재작성: 동등성 테스트를 "독립 두 경로의 수치 일치"로 교체, corpus를 P4 파이프라인 산출값으로 구성
-4. 재작성 후에만 validation_state에 SIMULATION_ONLY 외 값 허용
+요구 4항목 전부 구현·검증 완료:
+
+1. ✅ **물리 counterfactual 빌더** `backend/benefit/physical.py` (SCREENING_RECOMPUTE_V1): G0′과 Gs를 **둘 다** P4 파이프라인(SGP4→coarse→TCA) 실재실행으로 도출. 타깃은 Gs 입력 카탈로그에서 물리적으로 제외. 신규 생성 엣지 검출 내장(REMOVE에서 비어야 하며, 위반 시 ANOMALOUS 경고+PARTIAL — OCM 일반화 대비)
+2. ✅ **FULL vs AFFECTED_SUBGRAPH 실제 분리**: FULL=전체 재스크리닝, AFFECTED=영향 접촉 쌍만 TCA 재정밀화+비접촉 엣지 재사용(G0′ 이웃으로 영향 집합 자동 보강). 두 독립 경로의 result_hash 수치 동등성이 이제 **진짜 검증**
+3. ✅ **검증 재작성** `tests/integration/test_p5_physical_counterfactual.py`: 합성 궤도 6객체(co-orbital 3 + 별도 셸 2 + 고립 1)가 수집→스크리닝→기준선→물리 counterfactual **전 실파이프라인** 통과. 경로 상이성(재사용 수·TCA 정밀화 수 차이)과 수치 동등성 동시 증명. 레거시 corpus 주입값 의존 제거
+4. ✅ **validation_state 계층**: 물리 경로 = PUBLIC_SCREENING (run·benefit_result·시나리오 그래프 스냅샷), 레거시 엣지삭제형 = 명시 옵트인(`counterfactual_method=IDEALIZED_REMOVAL`) + SIMULATION_ONLY. API 기본값은 물리 엔진
+
+**물리 corpus가 잡아낸 잠복 결함 2건** (823의 옛 corpus로는 도달 불가였던 경로):
+- P4 `conjunction/service.py`: prepare_catalog에서 초기화 실패 객체 탈락 시 `zip` 위치 매핑이 이후 모든 후보 쌍을 **엉뚱한 궤도요소**에 연결 — 격리 객체가 카탈로그 정렬 앞에 있으면 전 쌍 오계산. identity 매핑으로 수정
+- `benefit/repository.py` load_operational_event_rows: `snapshot_id` 미SELECT — 실 운영 이벤트가 처음 기준선을 통과하자 KeyError
+
+회귀: 페이즈 라인 전체 **267 passed / 0 failed**.
+
+**잔여(후속)**: 대규모 full-vs-selective 성능 벤치마크(기능 동등성은 완료), BEN-001/003 정량 corpus의 물리 엔진 재생성, ORB-P6 PROTECT/OCM.
 
 ## 재현 절차 (판정의 지문)
 

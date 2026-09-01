@@ -41,7 +41,7 @@ class TestRealCatalogScreening:
                 await session.execute(
                     text(
                         """
-                        SELECT pc_status, pc_unavailable_reason, covariance_status,
+                        SELECT pc, pc_status, pc_unavailable_reason, covariance_status,
                                miss_distance_m, source_grade, provenance_json
                         FROM conjunction_snapshot
                         WHERE screening_run_id = CAST(:run_id AS uuid)

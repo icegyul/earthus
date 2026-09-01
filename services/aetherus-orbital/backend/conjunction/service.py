@@ -166,8 +166,13 @@ class ConjunctionService:
         ]
         failures.extend(skipped)
 
+        # Map prepared indices back to entries BY IDENTITY, never positionally:
+        # objects that fail SGP4 initialization are dropped by prepare_catalog,
+        # so a positional zip silently shifts every later pairing onto the
+        # wrong elements (latent until an init-failing object sorts first).
+        entry_by_object_id = {entry[0]: entry for entry in entries}
         index_to_entry = {
-            obj.index: entry for obj, entry in zip(prepared.objects, entries, strict=False)
+            obj.index: entry_by_object_id[obj.object_id] for obj in prepared.objects
         }
 
         events: list[dict[str, Any]] = []
@@ -205,7 +210,7 @@ class ConjunctionService:
 
             if tca_result.miss_distance_m > effective_config.screening_threshold_m:
                 continue
-            snapshot_id = await self._persist_event_and_snapshot(
+            event_id, snapshot_id = await self._persist_event_and_snapshot(
                 run_id=run_id,
                 entry_a=entry_a,
                 entry_b=entry_b,
@@ -217,6 +222,7 @@ class ConjunctionService:
             )
             events.append(
                 {
+                    "event_id": event_id,
                     "snapshot_id": snapshot_id,
                     "primary_catalog_id": entry_a[1],
                     "secondary_catalog_id": entry_b[1],
@@ -294,7 +300,7 @@ class ConjunctionService:
         config_hash: str,
         input_hash: str,
         provenance_rows: dict[str, dict[str, Any]],
-    ) -> str:
+    ) -> tuple[str, str]:
         primary_id, secondary_id = sorted([entry_a[0], entry_b[0]])
         primary_catalog = (
             entry_a[1] if entry_a[0] == primary_id else entry_b[1]
@@ -389,7 +395,7 @@ class ConjunctionService:
             "PUBLIC_GP carries no covariance; Pc stays NOT_COMPUTED and is "
             "never estimated from screening metrics."
         )
-        return await self.repository.append_snapshot(
+        return event_id, await self.repository.append_snapshot(
             event_id=event_id,
             snapshot_at=datetime.now(UTC),
             metrics=metrics,

@@ -1,0 +1,7 @@
+TODO
+FIXME
+NotImplemented
+pass\s+#\s*placeholder
+not_implemented
+random.*risk
+SOCRATES.*Pc

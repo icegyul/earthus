@@ -1,0 +1,32 @@
+{
+  "gate": "BEN-003",
+  "dataset_id": "synthetic-remove-equivalence-v1",
+  "validation_only": true,
+  "validation_state": "SIMULATION_ONLY",
+  "objects_in_graph": 7,
+  "baseline_edge_count": 12,
+  "removed_target_edge_count": 3,
+  "tolerance_abs": 1e-12,
+  "max_abs_metric_delta": 0.0,
+  "performance": {
+    "full_compute_ms_recorded": 10,
+    "affected_compute_ms_recorded": 10,
+    "full_wall_ms_measured": 32.211,
+    "affected_wall_ms_measured": 28.035,
+    "full_peak_memory_bytes": 319801,
+    "affected_peak_memory_bytes": 317893,
+    "note": "Performance figures measure graph assembly cost under IDEALIZED_REMOVAL; they never substitute for the physics-equivalence requirement above."
+  },
+  "accuracy_vs_performance_separation": {
+    "equivalence_required": true,
+    "equivalence_passed": true
+  },
+  "checks": {
+    "beneficiary_set_identical": true,
+    "metrics_within_tolerance": true,
+    "result_hash_equal": true,
+    "selective_reuses_baseline_edges": true,
+    "both_runs_succeeded": true
+  },
+  "passed": true
+}

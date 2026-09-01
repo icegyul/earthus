@@ -71,6 +71,7 @@ class BenefitRepository:
                         ce.primary_object_id::text AS primary_object_id,
                         ce.secondary_object_id::text AS secondary_object_id,
                         ce.tca,
+                        cs.id::text AS snapshot_id,
                         cs.snapshot_at,
                         cs.miss_distance_m,
                         cs.relative_speed_mps,
@@ -279,6 +280,7 @@ class BenefitRepository:
                     SELECT *, provenance_json AS provenance
                     FROM baseline_graph_snapshot
                     WHERE validation_state = 'PUBLIC_SCREENING'
+                      AND COALESCE(provenance_json->>'role', '') NOT LIKE 'SCENARIO_%'
                     ORDER BY created_at DESC, id
                     LIMIT 1
                     """
@@ -290,7 +292,14 @@ class BenefitRepository:
     async def list_baselines(
         self, include_simulation: bool, limit: int
     ) -> list[dict[str, Any]]:
-        filters = "" if include_simulation else "WHERE validation_state = 'PUBLIC_SCREENING'"
+        # Scenario-role graphs (G0'/Gs persisted by physical counterfactual
+        # runs) are queryable per scenario but never listed as baselines.
+        role_filter = "COALESCE(provenance_json->>'role', '') NOT LIKE 'SCENARIO_%'"
+        filters = (
+            f"WHERE {role_filter}"
+            if include_simulation
+            else f"WHERE validation_state = 'PUBLIC_SCREENING' AND {role_filter}"
+        )
         async with get_db_session() as session:
             result = await session.execute(
                 text(
@@ -441,6 +450,7 @@ class BenefitRepository:
         recompute_mode: str,
         config_hash: str,
         thresholds: dict[str, float],
+        validation_state: str = "SIMULATION_ONLY",
     ) -> str:
         async with get_db_session() as session:
             result = await session.execute(
@@ -448,10 +458,12 @@ class BenefitRepository:
                     """
                     INSERT INTO scenario_run (
                         scenario_id, started_at, status,
-                        recompute_mode, config_hash, thresholds_json
+                        recompute_mode, config_hash, thresholds_json,
+                        validation_state
                     ) VALUES (
                         CAST(:scenario_id AS uuid), now(), 'RUNNING',
-                        :recompute_mode, :config_hash, CAST(:thresholds AS jsonb)
+                        :recompute_mode, :config_hash, CAST(:thresholds AS jsonb),
+                        :validation_state
                     )
                     RETURNING id::text
                     """
@@ -461,6 +473,7 @@ class BenefitRepository:
                     "recompute_mode": recompute_mode,
                     "config_hash": config_hash,
                     "thresholds": _json(thresholds),
+                    "validation_state": validation_state,
                 },
             )
             return str(result.scalar_one())
@@ -530,7 +543,10 @@ class BenefitRepository:
             )
 
     async def insert_benefit_results(
-        self, run_id: str, attributions: list[BeneficiaryAttribution]
+        self,
+        run_id: str,
+        attributions: list[BeneficiaryAttribution],
+        validation_state: str = "SIMULATION_ONLY",
     ) -> int:
         if not attributions:
             return 0
@@ -547,6 +563,7 @@ class BenefitRepository:
                     "benefit_value": attribution.benefit_value,
                     "horizon": attribution.horizon,
                     "provenance_json": _json(attribution.provenance),
+                    "validation_state": validation_state,
                 }
             )
         async with get_db_session() as session:
@@ -558,13 +575,14 @@ class BenefitRepository:
                         benefit_class, metric_type,
                         baseline_value, scenario_value, benefit_value,
                         confidence, uncertainty_low, uncertainty_high,
-                        horizon, provenance_json
+                        horizon, provenance_json, validation_state
                     ) VALUES (
                         CAST(:run_id AS uuid), CAST(:beneficiary AS uuid),
                         :benefit_class, :metric_type,
                         :baseline_value, :scenario_value, :benefit_value,
                         NULL, NULL, NULL,
-                        :horizon, CAST(:provenance_json AS jsonb)
+                        :horizon, CAST(:provenance_json AS jsonb),
+                        :validation_state
                     )
                     """
                 ),

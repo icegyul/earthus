@@ -1,118 +1,146 @@
-"""What our CDM path actually does with a spec-shaped document.
+"""How far a spec-shaped CDM gets through our pipeline, stated as executable fact.
 
-The repository's only "valid CDM" fixture declares, in its own note, that its
-6x6 covariance matrices are "synthetic validation values constructed for this
-fixture". It is also JSON, TEME, and km2 — which is exactly what our parser and
-Pc gate demand. The one covariance the Pc engine has ever accepted was therefore
-shaped to the engine, not to the standard, and passing it proves nothing about
-whether we could ingest a real Conjunction Data Message.
+Background. The repository's only "valid CDM" fixture declares in its own note
+that its 6x6 covariance matrices are synthetic values constructed for the fixture.
+It is also JSON, TEME and km2 — exactly what our parser and Pc gate demanded. The
+one covariance the Pc engine had ever accepted was therefore shaped to the engine,
+not to the standard, and passing it proved nothing about ingesting a real
+Conjunction Data Message.
 
-These tests remove that circularity by recording, as executable fact, where a
-document shaped the way CCSDS 508.0-B-1 says CDMs are shaped is rejected. They
-are not aspirational: each one asserts the CURRENT behaviour, so the file is a
-truthful map of the gap rather than a wish. When the gap is closed, these tests
-fail loudly and must be rewritten — that is the intended signal.
+The 2026-09-02 audit measured where a document shaped the way CCSDS 508.0-B-1 says
+CDMs are shaped actually died. Five gates, in order: KVN encoding, the 21-element
+lower triangle, the RTN frame, m**2 units, and COMBINED_HBR semantics.
 
-Nothing here claims the fixture is a real CDM. It is spec-SHAPED: KVN encoding,
-per-object RTN covariance as the 21-element lower triangle in m**2, with invented
-numbers. Establishing that we cannot read even the shape is the finding.
+Three of those are now open (backend/conjunction/cdm_kvn.py). This file asserts
+CURRENT behaviour, not aspiration, so it stays a truthful map of the remaining
+gap: when the frame gate is opened it will fail here and must be rewritten. That
+failure is the intended signal, not a regression.
+
+Nothing here claims the fixture is a real CDM. It is spec-SHAPED — KVN, RTN lower
+triangle, m**2, invented numbers.
 """
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
 
 from backend.conjunction.cdm import CdmParseError, parse_cdm
+from backend.conjunction.cdm_kvn import covariance_summary, parse_any_cdm
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "cdm"
 SPEC_SHAPED = FIXTURES / "ccsds_508_kvn_shaped.txt"
 ENGINE_SHAPED = FIXTURES / "tracss_spec_example_cdm_valid.json"
 
+GRADE = "SPEC_SHAPE_FIXTURE"
 
-class TestSpecShapedCdmIsNotIngestible:
-    def test_kvn_encoding_is_rejected_outright(self):
-        """Gate 1 — the parser is JSON-only; real CDMs are KVN or XML."""
-        with pytest.raises(CdmParseError) as caught:
-            parse_cdm(SPEC_SHAPED.read_bytes(), source_grade="SPEC_SHAPE_FIXTURE")
-        assert "JSON" in str(caught.value), (
-            "expected the JSON-only limitation to be the first thing a real CDM hits"
-        )
 
-    def test_the_document_carries_what_pc_needs_yet_cannot_reach_it(self):
-        """The information is present in the file; only our encoding gate blocks it.
+class TestGatesNowOpen:
+    """Gates 1, 2 and 4 — the encoding, the triangle, the units."""
 
-        This separates "the data does not exist" from "we cannot read it". The
-        second is our problem to fix and is worth stating precisely.
+    def test_gate_1_kvn_is_read_by_the_dispatching_entry_point(self):
+        parsed = parse_any_cdm(SPEC_SHAPED.read_bytes(), source_grade=GRADE)
+        assert parsed.tca is not None
+        assert parsed.primary.catalog_id == "30001"
+
+    def test_the_json_only_parser_still_refuses_kvn(self):
+        """parse_cdm is the JSON dialect and stays that way.
+
+        Recorded so nobody mistakes the dispatcher for a widened JSON parser:
+        callers must go through parse_any_cdm to get either dialect.
         """
-        text = SPEC_SHAPED.read_text(encoding="utf-8")
-        for required in ("TCA", "MISS_DISTANCE", "RELATIVE_SPEED", "CR_R", "CT_T", "CN_N"):
-            assert required in text
-        with pytest.raises(CdmParseError):
-            parse_cdm(SPEC_SHAPED.read_bytes(), source_grade="SPEC_SHAPE_FIXTURE")
+        with pytest.raises(CdmParseError, match="JSON"):
+            parse_cdm(SPEC_SHAPED.read_bytes(), source_grade=GRADE)
+
+    def test_gate_2_the_lower_triangle_becomes_a_symmetric_matrix(self):
+        parsed = parse_any_cdm(SPEC_SHAPED.read_bytes(), source_grade=GRADE)
+        covariance = parsed.primary.covariance_km2
+        assert covariance is not None and len(covariance) == 6
+        for row in range(6):
+            for col in range(6):
+                assert covariance[row][col] == covariance[col][row]
+
+    def test_gate_4_position_units_are_converted_exactly(self):
+        parsed = parse_any_cdm(SPEC_SHAPED.read_bytes(), source_grade=GRADE)
+        assert parsed.primary.covariance_unit == "KM2"
+        assert parsed.primary.covariance_km2[0][0] == pytest.approx(4.142e-05)
 
 
-class TestPcGatesAgainstSpecConventions:
-    """Gates 2-4, exercised directly since the parser cannot deliver the document."""
+class TestGatesStillShut:
+    """Gates 3 and 5 — the frame rotation and the HBR convention."""
 
-    def _rtn_lower_triangle_m2(self) -> list[float]:
-        """The 21 elements a CDM actually carries, in the order the standard lists."""
-        return [
-            4.142e01, -8.579e00, 2.533e03, -2.313e01, 1.336e01, 7.098e01,
-            2.520e-03, -5.476e-03, -1.234e-03, 5.457e-06,
-            -1.234e-02, 1.234e-01, 4.321e-03, -1.234e-05, 4.567e-05,
-            1.234e-03, -3.456e-03, 2.345e-03, -1.234e-06, 3.456e-06, 1.234e-05,
-        ]
+    def test_gate_3_rtn_covariance_is_not_rotated_into_teme(self):
+        """Deliberate. A wrong rotation yields plausible Pc, not a visible failure.
 
-    def test_covariance_arrives_as_a_lower_triangle_not_a_matrix(self):
-        """Gate 2 — CDMs publish 21 elements; our type is a 6x6 nested list."""
-        triangle = self._rtn_lower_triangle_m2()
-        assert len(triangle) == 21
-        assert not isinstance(triangle[0], list), (
-            "a CDM lower triangle is flat; ParsedCdm.covariance_km2 expects list[list]"
-        )
+        Rotating RTN to TEME needs the object state vector and correct axis
+        conventions; an error there is silent and produces numbers that look
+        usable. That is the failure mode this project keeps catching, so the
+        frame is reported as published and the Pc gate keeps rejecting it.
+        """
+        parsed = parse_any_cdm(SPEC_SHAPED.read_bytes(), source_grade=GRADE)
+        assert parsed.primary.covariance_reference_frame == "RTN"
 
-    def _square_matrix(self) -> list[list[float]]:
-        """A well-formed 6x6, so only the frame/unit gate can be what rejects."""
-        return [[1.0 if r == c else 0.0 for c in range(6)] for r in range(6)]
-
-    def test_rtn_frame_is_rejected(self):
-        """Gate 3 — Pc accepts TEME only; CDM covariance is RTN by definition."""
         from backend.conjunction.pc import covariance_check
 
         combined, reason = covariance_check(
-            cov_primary=self._square_matrix(),
-            cov_secondary=self._square_matrix(),
-            frame_primary="RTN",
-            frame_secondary="RTN",
-            unit_primary="KM2",
-            unit_secondary="KM2",
+            cov_primary=parsed.primary.covariance_km2,
+            cov_secondary=parsed.secondary.covariance_km2,
+            frame_primary=parsed.primary.covariance_reference_frame,
+            frame_secondary=parsed.secondary.covariance_reference_frame,
+            unit_primary=parsed.primary.covariance_unit,
+            unit_secondary=parsed.secondary.covariance_unit,
         )
         assert combined is None, "RTN covariance was accepted; it must not be"
         assert "FRAME" in reason.upper(), f"unexpected rejection reason: {reason}"
 
-    def test_metre_squared_units_are_rejected(self):
-        """Gate 4 — Pc accepts KM2 only; CDMs publish m**2."""
-        from backend.conjunction.pc import covariance_check
+    def test_gate_5_no_combined_hbr_is_invented(self):
+        """A CDM publishes object dimensions, never a combined hard-body radius."""
+        parsed = parse_any_cdm(SPEC_SHAPED.read_bytes(), source_grade=GRADE)
+        assert parsed.combined_hbr_m is None
+        assert parsed.hbr_semantics is None
+        assert "HBR" not in SPEC_SHAPED.read_text(encoding="utf-8")
 
-        combined, reason = covariance_check(
-            cov_primary=self._square_matrix(),
-            cov_secondary=self._square_matrix(),
-            frame_primary="TEME",
-            frame_secondary="TEME",
-            unit_primary="m**2",
-            unit_secondary="m**2",
+    def test_the_remaining_blockers_are_enumerated_for_the_caller(self):
+        parsed = parse_any_cdm(SPEC_SHAPED.read_bytes(), source_grade=GRADE)
+        summary = covariance_summary(parsed)
+        assert summary["pc_reachable"] is False
+        assert set(summary["blockers"]) == {
+            "primary_frame_RTN",
+            "secondary_frame_RTN",
+            "hbr_semantics_absent",
+        }, (
+            "the blocker set changed; if a gate opened, update this test and the "
+            "audit record rather than loosening the assertion"
         )
-        assert combined is None, "m**2 covariance was accepted; it must not be"
-        assert "UNIT" in reason.upper(), f"unexpected rejection reason: {reason}"
 
-    def test_pc_is_not_computed_without_combined_hbr_semantics(self):
-        """Gate 5 — COMBINED_HBR is required and is not a CDM field."""
-        text = SPEC_SHAPED.read_text(encoding="utf-8")
-        assert "HBR" not in text, (
-            "a CDM carries object dimensions, not a combined-HBR declaration; "
-            "the semantics must be supplied out of band"
+
+class TestNoIngestionPathExists:
+    def test_the_cdm_parsers_have_no_production_caller(self):
+        """Reading a CDM and ingesting one are still separate claims.
+
+        Neither parser is wired into any route, service or ingestion job, so the
+        capability proved above is not yet reachable by the running system. This
+        is recorded rather than implied: a reader who sees a working parser could
+        reasonably assume the pipeline consumes CDMs, and it does not.
+        """
+        service_root = Path(__file__).resolve().parents[2]
+        callers: list[str] = []
+        for directory in ("backend", "packages", "services"):
+            root = service_root / directory
+            if not root.is_dir():
+                continue
+            for path in root.rglob("*.py"):
+                if path.name in {"cdm.py", "cdm_kvn.py"}:
+                    continue
+                text = path.read_text(encoding="utf-8", errors="ignore")
+                if "parse_cdm(" in text or "parse_any_cdm(" in text:
+                    callers.append(str(path.relative_to(service_root)))
+
+        assert not callers, (
+            "a CDM parser now has a production caller — wire the covariance gate "
+            f"into that path and retire this test: {sorted(callers)}"
         )
 
 
@@ -120,11 +148,6 @@ class TestExistingFixtureIsEngineShapedNotSpecShaped:
     """Name the circularity in the one fixture the Pc engine has ever accepted."""
 
     def test_the_valid_fixture_declares_its_covariance_synthetic(self):
-        """The fixture's own admission is the evidence; it must stay findable.
-
-        Matched against the whole document rather than one key, so moving the
-        disclosure between fields cannot quietly erase it.
-        """
         text = ENGINE_SHAPED.read_text(encoding="utf-8").lower()
         assert "synthetic" in text, (
             "the fixture's own disclosure is the evidence that it is not observed "
@@ -133,8 +156,6 @@ class TestExistingFixtureIsEngineShapedNotSpecShaped:
         assert "must never be presented as a live operational conjunction" in text
 
     def test_the_valid_fixture_uses_our_conventions_not_the_standard_s(self):
-        import json
-
         document = json.loads(ENGINE_SHAPED.read_text(encoding="utf-8"))
         assert document.get("ref_frame") == "TEME", (
             "fixture declares the frame our gate wants, not the RTN a CDM carries"
@@ -148,10 +169,8 @@ class TestExistingFixtureIsEngineShapedNotSpecShaped:
 
         A Pc golden case should be reproducible from a document we did not write,
         recorded with its source URI and content hash. No such fixture exists, and
-        that absence is precisely why the frame and unit gaps went unnoticed.
+        that absence is why the frame and unit gaps went unnoticed.
         """
-        import json
-
         externally_sourced = []
         for path in FIXTURES.glob("*.json"):
             document = json.loads(path.read_text(encoding="utf-8"))

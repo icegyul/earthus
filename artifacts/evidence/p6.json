@@ -1,11 +1,11 @@
 {
   "phase": "p6",
-  "orbital_phase": "ORB-P2",
+  "orbital_phase": "ORB-P2 + ORB-P3(partial)",
   "gate": "PARTIAL",
-  "generated_at": "2026-09-01T02:26:55.248945+00:00",
+  "generated_at": "2026-09-01T02:29:12.071113+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "45330ff5fd18a637316d974d25b6e797e3d2f9fb",
+  "commit": "6030c385d71fcd896971a8c17aa9afe09e9c0a8c",
   "tests": {
     "command": "pytest <P2 subset 5 files> -q",
     "exit_code": 0,
@@ -38,9 +38,21 @@
     "sample_count": 11,
     "first_sample_frame": "TEME"
   },
+  "explore_ui": {
+    "ui_index": {
+      "http_status": 200,
+      "bytes": 4448
+    },
+    "catalog_snapshot": {
+      "http_status": 200,
+      "bytes": 4381
+    }
+  },
+  "explore_network_inspection": "인앱 브라우저 네트워크 검사(2026-09-01): /ui/ 로드 시 좌표 소스 요청은 /api/v1/catalog/status·/api/v1/catalog/snapshot 200 두 건뿐, 콘솔 에러 0. ISS 25544는 API 유래 SGP4 마커+데이터 나이 표기, 격리 객체 2건은 위치 없이 UNAVAILABLE 상태 렌더, GLOBAL VIEW: INSUFFICIENT_DATA 배지 표시 확인.",
   "limitations": [
-    "ORB-P3 Explore 3D 미착수 — V2-P6 게이트의 나머지 절반",
-    "테스트 TZ 버그 1건 수정(naive OMM EPOCH를 UTC로 해석) — 소스 823 대비 변경"
+    "playwright e2e(tests/e2e/test_p3_explore_ui.py) 미실행 — 브라우저 바이너리 미설치, 후속",
+    "테스트 TZ 버그 1건 수정(naive OMM EPOCH를 UTC로 해석) — 소스 823 대비 변경",
+    "카탈로그가 소수 객체(수집 1건+테스트 데이터) — 대규모 LOD 검증은 카탈로그 확장 후"
   ],
-  "next_allowed": "ORB-P3 Explore UI를 수락된 P1/P2 API에 연결 (하드코딩 위치 금지 증명 포함)"
+  "next_allowed": "ORB-P4 근접분석 재현 (스크리닝·TCA·공분산 게이트 Pc·CDM)"
 }

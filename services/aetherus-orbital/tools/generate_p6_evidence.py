@@ -74,6 +74,21 @@ def probe_ephemeris() -> dict:
         return {"http_status": None, "error": str(exc)}
 
 
+def probe_ui() -> dict:
+    """/ui/ 정적 서빙과 카탈로그 API를 조회한다 (ORB-P3 표면)."""
+    out: dict = {}
+    for key, url in {
+        "ui_index": "http://127.0.0.1:8000/ui/",
+        "catalog_snapshot": "http://127.0.0.1:8000/api/v1/catalog/snapshot",
+    }.items():
+        try:
+            with urllib.request.urlopen(url, timeout=10) as r:
+                out[key] = {"http_status": r.status, "bytes": len(r.read())}
+        except Exception as exc:  # noqa: BLE001
+            out[key] = {"http_status": None, "error": str(exc)}
+    return out
+
+
 def main() -> None:
     pytest_proc = subprocess.run(
         [sys.executable, "-m", "pytest", *P2_TESTS, "-q", "--no-header"],
@@ -83,7 +98,7 @@ def main() -> None:
     )
     evidence = {
         "phase": "p6",
-        "orbital_phase": "ORB-P2",
+        "orbital_phase": "ORB-P2 + ORB-P3(partial)",
         "gate": "PARTIAL",
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "repository": run(["git", "-C", str(REPO_ROOT), "remote", "get-url", "origin"]),
@@ -105,11 +120,19 @@ def main() -> None:
             " 플랫폼 부동소수점 최하위 비트 서식 차이였다."
         ),
         "live_api": probe_ephemeris(),
+        "explore_ui": probe_ui(),
+        "explore_network_inspection": (
+            "인앱 브라우저 네트워크 검사(2026-09-01): /ui/ 로드 시 좌표 소스 요청은"
+            " /api/v1/catalog/status·/api/v1/catalog/snapshot 200 두 건뿐, 콘솔 에러 0."
+            " ISS 25544는 API 유래 SGP4 마커+데이터 나이 표기, 격리 객체 2건은 위치 없이"
+            " UNAVAILABLE 상태 렌더, GLOBAL VIEW: INSUFFICIENT_DATA 배지 표시 확인."
+        ),
         "limitations": [
-            "ORB-P3 Explore 3D 미착수 — V2-P6 게이트의 나머지 절반",
+            "playwright e2e(tests/e2e/test_p3_explore_ui.py) 미실행 — 브라우저 바이너리 미설치, 후속",
             "테스트 TZ 버그 1건 수정(naive OMM EPOCH를 UTC로 해석) — 소스 823 대비 변경",
+            "카탈로그가 소수 객체(수집 1건+테스트 데이터) — 대규모 LOD 검증은 카탈로그 확장 후",
         ],
-        "next_allowed": "ORB-P3 Explore UI를 수락된 P1/P2 API에 연결 (하드코딩 위치 금지 증명 포함)",
+        "next_allowed": "ORB-P4 근접분석 재현 (스크리닝·TCA·공분산 게이트 Pc·CDM)",
     }
     EVIDENCE_PATH.parent.mkdir(parents=True, exist_ok=True)
     EVIDENCE_PATH.write_text(

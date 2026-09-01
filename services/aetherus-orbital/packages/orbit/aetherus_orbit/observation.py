@@ -83,7 +83,7 @@ class VisibilityResult:
 
 class GroundStationVisibilityEngine:
     id = "E29"
-    model_version = "E29-GMST-WGS84-SCREENING-v1"
+    model_version = "E29-GMST-WGS84-SCREENING-v2"
 
     def compute(
         self,
@@ -113,26 +113,31 @@ class GroundStationVisibilityEngine:
             raise ValueError("station_id is required")
 
         state = np.concatenate((position, velocity))
+        # The first sample's slew rate used to be written as 0.0, which let a pass whose
+        # rate was never computed clear the mount-rate limit as if the mount were still.
+        # One backward propagation step supplies a real prior line of sight instead.
+        previous_los: np.ndarray | None = self._line_of_sight(
+            _rk4(state, -step_s, gravity_mu_km3_s2), station, start - timedelta(seconds=step_s)
+        )
+        previous_dt = step_s
         samples: list[tuple[datetime, float, float]] = []
-        previous_los: np.ndarray | None = None
         current = start
         while current <= end:
             observer = _station_eci(station, current)
             line_of_sight = state[:3] - observer
-            line_norm = float(np.linalg.norm(line_of_sight))
-            los_unit = line_of_sight / line_norm
+            los_unit = line_of_sight / float(np.linalg.norm(line_of_sight))
             zenith = observer / float(np.linalg.norm(observer))
             elevation = degrees(asin(float(np.clip(np.dot(los_unit, zenith), -1.0, 1.0))))
-            mount_rate = 0.0
-            if previous_los is not None:
-                angle = degrees(atan2(float(np.linalg.norm(np.cross(previous_los, los_unit))), float(np.dot(previous_los, los_unit))))
-                mount_rate = angle / step_s
+            angle = degrees(atan2(float(np.linalg.norm(np.cross(previous_los, los_unit))), float(np.dot(previous_los, los_unit))))
+            # Divide by the step actually taken; the final step may be shorter than step_s.
+            mount_rate = angle / previous_dt
             samples.append((current, elevation, mount_rate))
             previous_los = los_unit
             if current == end:
                 break
             dt = min(step_s, (end - current).total_seconds())
             state = _rk4(state, dt, gravity_mu_km3_s2)
+            previous_dt = dt
             current += timedelta(seconds=dt)
 
         windows: list[VisibilityWindow] = []
@@ -153,6 +158,7 @@ class GroundStationVisibilityEngine:
             "propagation_method": "TWO_BODY_RK4",
             "iers_eop_used": False,
             "illumination_computed": False,
+            "mount_rate_method": "BACKWARD_STEP_SEEDED_ANGULAR_DIFFERENCE",
         }
         payload = {
             "object_id": object_id,
@@ -173,6 +179,11 @@ class GroundStationVisibilityEngine:
             provenance=provenance,
             result_hash=_hash(payload),
         )
+
+    @staticmethod
+    def _line_of_sight(state: np.ndarray, station: dict[str, Any], at: datetime) -> np.ndarray:
+        vector = state[:3] - _station_eci(station, at)
+        return vector / float(np.linalg.norm(vector))
 
     @staticmethod
     def _window(samples: list[tuple[datetime, float, float]]) -> VisibilityWindow:

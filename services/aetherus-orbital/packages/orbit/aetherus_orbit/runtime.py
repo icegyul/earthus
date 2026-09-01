@@ -287,15 +287,51 @@ class OrbitalEnvironmentCongestionEngine:
 @dataclass(frozen=True)
 class GenealogyLink:
     child_id:str; parent_id:str|None; origin:str|None; event_time_utc:datetime; evidence_id:str; uncertainty_reason:str|None=None
+    # The engine publishes its own label so no caller has to derive one from ``known``.
+    validation_state:ValidationState=ValidationState.UNVALIDATED
+    evidence_status:str="EVIDENCE_NOT_VERIFIED"
+
 
 class DebrisGenealogyOriginEngine:
+    """Records parent/origin claims and labels each by whether its evidence resolves.
+
+    ``known`` is a caller CLAIM about the parentage, not a verification result, so it
+    can never by itself produce a validated label.  Configure ``evidence_lookup`` to
+    resolve evidence ids; with no resolver every link stays UNVALIDATED.
+    VALIDATED_PIPELINE is never emitted: resolving an evidence id proves the record
+    exists, not that the genealogy pipeline was validated.
+    """
+
     id="E25"
-    def __init__(self): self.links:list[GenealogyLink]=[]
+
+    def __init__(self,*,evidence_lookup:Any=None):
+        self.links:list[GenealogyLink]=[]
+        self._lookup=evidence_lookup
+
+    def _evidence_status(self,evidence_id:str)->str:
+        if self._lookup is None: return "EVIDENCE_RESOLVER_NOT_CONFIGURED"
+        try:
+            record=self._lookup(evidence_id)
+        except Exception as exc:  # a failed lookup is not a pass
+            return f"EVIDENCE_LOOKUP_FAILED:{type(exc).__name__}"
+        return "EVIDENCE_RESOLVED" if record else "EVIDENCE_NOT_FOUND"
+
     def add(self,*,child_id:str,parent_id:str|None,origin:str|None,event_time_utc:datetime,evidence_id:str,known:bool=True)->GenealogyLink:
         if not evidence_id: raise ValueError("evidence required")
         if not known: parent_id=None; origin=None
-        link=GenealogyLink(child_id,parent_id,origin,_aware(event_time_utc),evidence_id,None if known else "UNKNOWN_ORIGIN")
+        status=self._evidence_status(evidence_id)
+        if not known:
+            state=ValidationState.INSUFFICIENT_DATA
+        elif status=="EVIDENCE_RESOLVED":
+            state=ValidationState.VALIDATION_PENDING
+        else:
+            state=ValidationState.UNVALIDATED
+        link=GenealogyLink(
+            child_id,parent_id,origin,_aware(event_time_utc),evidence_id,
+            None if known else "UNKNOWN_ORIGIN",state,status,
+        )
         self.links.append(link); self.links.sort(key=lambda x:x.event_time_utc); return link
+
     def timeline(self,child_id:str)->tuple[GenealogyLink,...]: return tuple(x for x in self.links if x.child_id==child_id)
 
 
@@ -322,65 +358,378 @@ class FragmentationScenarioEngine:
 @dataclass(frozen=True)
 class ReentryEstimate:
     object_id:str; nominal_utc:datetime|None; window_start_utc:datetime|None; window_end_utc:datetime|None; source_id:str|None; grade:SourceGrade; validation_state:ValidationState; version:int
+    # Lineage: without these four fields an estimate cannot be traced back to anything.
+    source_uri:str|None=None
+    retrieved_at_utc:datetime|None=None
+    payload_sha256:str|None=None
+    provenance_status:str="PROVENANCE_MISSING"
+    model_version:str="E27-TIP-INGEST-v2"
+
+
+_REENTRY_PROVENANCE_FIELDS = ("source_uri","retrieved_at_utc","payload_sha256")
+
 
 class ReentryIntelligenceEngine:
+    """Ingests re-entry TIP records and labels them by what was actually verified.
+
+    Two things this engine deliberately does NOT do:
+    * It never returns VALIDATED_PIPELINE.  Nothing here compares the estimate against
+      authoritative reference re-entry events, so that label would be unearned.
+    * It never accepts a source grade from the caller.  Trust is configured once via
+      ``source_registry``; an un-registered source is UNKNOWN, which is the honest value.
+    """
+
     id="E27"
-    def __init__(self): self._history:dict[str,list[ReentryEstimate]]={}
-    def ingest_tip(self,object_id:str,tip:dict[str,Any]|None,*,source_id:str|None=None,grade:SourceGrade=SourceGrade.OFFICIAL_PUBLIC)->ReentryEstimate:
+    model_version="E27-TIP-INGEST-v2"
+
+    def __init__(self,*,source_registry:dict[str,SourceGrade]|None=None):
+        self._history:dict[str,list[ReentryEstimate]]={}
+        self._registry:dict[str,SourceGrade]=dict(source_registry or {})
+
+    @staticmethod
+    def _parse(value:Any)->datetime|None:
+        if value is None: return None
+        if isinstance(value,datetime): return _aware(value)
+        return _aware(datetime.fromisoformat(str(value).replace('Z','+00:00')))
+
+    def _verify(self,tip:dict[str,Any],provenance:dict[str,Any]|None)->tuple[str,datetime|None,str|None,str|None]:
+        """Returns (status, retrieved_at, source_uri, payload_sha256).
+
+        The only thing verifiable here is record integrity: the checksum the fetcher
+        recorded must match the record we were handed.  Publisher authenticity is not
+        checked, so a verified record still only reaches VALIDATION_PENDING.
+        """
+        if not provenance:
+            return "PROVENANCE_MISSING",None,None,None
+        missing=[f for f in _REENTRY_PROVENANCE_FIELDS if not provenance.get(f)]
+        if missing:
+            return f"PROVENANCE_INCOMPLETE:{','.join(missing)}",None,provenance.get("source_uri"),provenance.get("payload_sha256")
+        retrieved=self._parse(provenance["retrieved_at_utc"])
+        uri=str(provenance["source_uri"]); declared=str(provenance["payload_sha256"])
+        if canonical_hash(tip)!=declared:
+            return "CHECKSUM_MISMATCH",retrieved,uri,declared
+        return "INTEGRITY_VERIFIED",retrieved,uri,declared
+
+    def ingest_tip(
+        self,object_id:str,tip:dict[str,Any]|None,*,
+        source_id:str|None=None,provenance:dict[str,Any]|None=None,
+    )->ReentryEstimate:
         seq=self._history.setdefault(object_id,[])
+        version=len(seq)+1
         if not tip:
-            e=ReentryEstimate(object_id,None,None,None,source_id,grade,ValidationState.INSUFFICIENT_DATA,len(seq)+1)
+            e=ReentryEstimate(
+                object_id,None,None,None,source_id,SourceGrade.UNKNOWN,
+                ValidationState.INSUFFICIENT_DATA,version,None,None,None,"NO_TIP",self.model_version,
+            )
+            seq.append(e); return e
+
+        status,retrieved,uri,digest=self._verify(tip,provenance)
+        nominal=self._parse(tip.get('nominal_utc'))
+        start=self._parse(tip.get('window_start_utc'))
+        end=self._parse(tip.get('window_end_utc'))
+        if start is not None and end is not None and end<start:
+            status="INCONSISTENT_WINDOW"
+        if status=="INTEGRITY_VERIFIED":
+            # A grade only exists for a source that trust was configured for beforehand.
+            grade=self._registry.get(str(source_id),SourceGrade.UNKNOWN)
+            state=ValidationState.VALIDATION_PENDING
         else:
-            def parse(x):
-                if x is None:return None
-                if isinstance(x,datetime):return _aware(x)
-                return _aware(datetime.fromisoformat(str(x).replace('Z','+00:00')))
-            e=ReentryEstimate(object_id,parse(tip.get('nominal_utc')),parse(tip.get('window_start_utc')),parse(tip.get('window_end_utc')),source_id,grade,ValidationState.VALIDATED_PIPELINE,len(seq)+1)
+            grade=SourceGrade.UNKNOWN
+            state=ValidationState.UNVALIDATED
+        e=ReentryEstimate(
+            object_id,nominal,start,end,source_id,grade,state,version,
+            uri,retrieved,digest,status,self.model_version,
+        )
         seq.append(e); return e
+
     def history(self,object_id:str)->tuple[ReentryEstimate,...]: return tuple(self._history.get(object_id,()))
 
 
 @dataclass(frozen=True)
 class RotationEstimate:
     period_s:float|None; uncertainty_s:float|None; aliases:tuple[float,...]; validation_state:ValidationState; reason:str
+    # ``uncertainty_s`` is a 1-sigma noise-limited period uncertainty, NOT the search
+    # grid spacing.  The grid spacing is reported separately as ``grid_step_s`` so the
+    # two quantities can never be read as the same thing again.
+    grid_step_s:float|None=None
+    peak_power:float|None=None
+    false_alarm_probability:float|None=None
+    amplitude_mag:float|None=None
+    residual_rms_mag:float|None=None
+    independent_frequencies:int|None=None
+    limitations:tuple[str,...]=()
+    model_version:str="E28-LOMB-SCARGLE-v2"
+
+
+# A single-harmonic model cannot distinguish a double-peaked (two maxima per rotation)
+# lightcurve from a single-peaked one, so the detected photometric period may be half
+# of the true rotation period. This is stated, not silently absorbed into the number.
+_E28_HARMONIC_LIMITATION = (
+    "SINGLE_HARMONIC_MODEL: one sinusoidal harmonic is fitted; a double-peaked lightcurve "
+    "makes the true rotation period twice the reported photometric period."
+)
+_E28_UNCERTAINTY_LIMITATION = (
+    "UNCERTAINTY_IS_NOISE_LIMITED: sigma follows from residual photometric scatter, sample "
+    "count and time span only; aliasing and model mis-specification are not included."
+)
+
 
 class PhotometryRotationIntelligenceEngine:
+    """Lomb-Scargle period search with an explicit false-alarm gate.
+
+    Why a significance gate: the argmax of a periodogram always exists, even for pure
+    noise or a perfectly flat lightcurve.  Reporting that argmax as a rotation period
+    is fabrication.  A period is returned only when the peak survives a false-alarm
+    test against the white-noise null hypothesis.
+    """
+
     id="E28"
-    def estimate(self,times_s:list[float],magnitudes:list[float],*,min_period_s:float=1,max_period_s:float=100,steps:int=300)->RotationEstimate:
+    model_version="E28-LOMB-SCARGLE-v2"
+
+    def _periodogram(self,times_s:list[float],magnitudes:list[float],periods:list[float],ymean:float,variance:float)->list[float]:
+        n=len(times_s); powers=[]
+        for p in periods:
+            w=2*pi/p
+            # Scargle's time offset tau makes the projection invariant to the time origin.
+            s2=sum(sin(2*w*t) for t in times_s); c2=sum(cos(2*w*t) for t in times_s)
+            tau=atan2(s2,c2)/(2*w)
+            cc=0.0; ss=0.0; yc=0.0; ys=0.0
+            for i in range(n):
+                ct=cos(w*(times_s[i]-tau)); st=sin(w*(times_s[i]-tau)); dy=magnitudes[i]-ymean
+                cc+=ct*ct; ss+=st*st; yc+=dy*ct; ys+=dy*st
+            term_c=(yc*yc/cc) if cc>1e-12 else 0.0
+            term_s=(ys*ys/ss) if ss>1e-12 else 0.0
+            powers.append((term_c+term_s)/(2.0*variance))
+        return powers
+
+    @staticmethod
+    def _false_alarm_probability(power:float,independent_frequencies:int)->float:
+        # Standard Scargle result: P(z>z0) = exp(-z0) per independent frequency.
+        try:
+            single=exp(-power)
+        except OverflowError:  # pragma: no cover - exp of a large negative never overflows
+            single=0.0
+        return max(0.0,min(1.0,1.0-(1.0-single)**independent_frequencies))
+
+    def estimate(
+        self,times_s:list[float],magnitudes:list[float],*,
+        min_period_s:float=1,max_period_s:float=100,steps:int=300,
+        max_false_alarm_probability:float=0.01,
+    )->RotationEstimate:
+        if steps<8: raise ValueError("period grid needs at least 8 steps")
+        if not (0<min_period_s<max_period_s): raise ValueError("invalid period search range")
+        if not (0<max_false_alarm_probability<1): raise ValueError("invalid false alarm threshold")
+        grid_step=(max_period_s-min_period_s)/(steps-1)
         if len(times_s)!=len(magnitudes) or len(times_s)<6:
-            return RotationEstimate(None,None,(),ValidationState.INSUFFICIENT_DATA,"TOO_FEW_POINTS")
-        ymean=mean(magnitudes); total=sum((y-ymean)**2 for y in magnitudes) or 1e-12
-        scores=[]
-        for j in range(steps):
-            p=min_period_s+(max_period_s-min_period_s)*j/(steps-1)
-            # Two-harmonic sinusoidal projection score.
-            cs=sum((magnitudes[i]-ymean)*cos(2*pi*times_s[i]/p) for i in range(len(times_s)))
-            sn=sum((magnitudes[i]-ymean)*sin(2*pi*times_s[i]/p) for i in range(len(times_s)))
-            power=(cs*cs+sn*sn)/(len(times_s)*total)
-            scores.append((power,p))
-        scores.sort(reverse=True)
-        best=scores[0]
-        aliases=tuple(round(p,6) for s,p in scores[1:6] if s>=best[0]*0.9)
-        step=(max_period_s-min_period_s)/(steps-1)
-        state=ValidationState.VALIDATION_PENDING if aliases else ValidationState.RESEARCH_ONLY
-        return RotationEstimate(best[1],step,aliases,state,"AMBIGUOUS_ALIASES" if aliases else "PERIODIC_SIGNAL")
+            return RotationEstimate(None,None,(),ValidationState.INSUFFICIENT_DATA,"TOO_FEW_POINTS",grid_step)
+
+        n=len(times_s); span=max(times_s)-min(times_s)
+        if span<=0:
+            return RotationEstimate(None,None,(),ValidationState.INSUFFICIENT_DATA,"ZERO_TIME_SPAN",grid_step)
+        ymean=mean(magnitudes)
+        variance=sum((y-ymean)**2 for y in magnitudes)/(n-1)
+        if variance<=0.0:
+            # A lightcurve with no brightness variation carries no rotation signal at all.
+            # The previous implementation replaced this zero with 1e-12 and returned a period.
+            return RotationEstimate(None,None,(),ValidationState.INSUFFICIENT_DATA,"NO_PHOTOMETRIC_VARIANCE",grid_step)
+
+        periods=[min_period_s+grid_step*j for j in range(steps)]
+        powers=self._periodogram(times_s,magnitudes,periods,ymean,variance)
+        peak_index=max(range(steps),key=lambda j:powers[j])
+        peak_power=powers[peak_index]
+
+        # Independent trials over the searched frequency band, limited by the 1/span
+        # natural frequency resolution.  This is what turns a peak height into a p-value.
+        frequency_resolution=1.0/span
+        band=(1.0/min_period_s)-(1.0/max_period_s)
+        independent=max(1,int(band/frequency_resolution)+1)
+        fap=self._false_alarm_probability(peak_power,independent)
+
+        limitations=[_E28_HARMONIC_LIMITATION,_E28_UNCERTAINTY_LIMITATION]
+        if min_period_s<2.0*(span/(n-1)):
+            limitations.append("BELOW_AVERAGE_NYQUIST: the shortest searched period is under twice the mean sampling interval.")
+
+        if fap>max_false_alarm_probability:
+            return RotationEstimate(
+                None,None,(),ValidationState.INSUFFICIENT_DATA,"NO_SIGNIFICANT_PERIODICITY",
+                grid_step,peak_power,fap,None,None,independent,tuple(limitations),self.model_version,
+            )
+
+        edge=peak_index in (0,steps-1)
+        period=periods[peak_index] if edge else self._refine(periods,powers,peak_index)
+        if edge:
+            limitations.append("PEAK_AT_GRID_EDGE: the true peak may lie outside the searched period range.")
+
+        amplitude,residual_rms=self._sinusoid_fit(times_s,magnitudes,period)
+        uncertainty=self._period_uncertainty(period,amplitude,residual_rms,n,span)
+        if uncertainty is None:
+            limitations.append("UNCERTAINTY_UNAVAILABLE: the fitted amplitude is not positive, so no noise-limited sigma exists.")
+
+        aliases=self._competing_periods(
+            periods,powers,period,frequency_resolution,independent,max_false_alarm_probability,
+        )
+        if aliases or edge:
+            state=ValidationState.RESEARCH_ONLY
+            reason="AMBIGUOUS_ALIASES" if aliases else "PEAK_AT_GRID_EDGE"
+        else:
+            # A single significant peak is still only pending: the pipeline itself has not
+            # been validated against reference lightcurves.
+            state=ValidationState.VALIDATION_PENDING
+            reason="SIGNIFICANT_SINGLE_PEAK"
+        return RotationEstimate(
+            period,uncertainty,aliases,state,reason,grid_step,peak_power,fap,
+            amplitude,residual_rms,independent,tuple(limitations),self.model_version,
+        )
+
+    @staticmethod
+    def _refine(periods:list[float],powers:list[float],index:int)->float:
+        """Sub-grid peak location by parabolic interpolation of the three highest cells."""
+        y0,y1,y2=powers[index-1],powers[index],powers[index+1]
+        denom=y0-2.0*y1+y2
+        if denom==0.0: return periods[index]
+        offset=0.5*(y0-y2)/denom
+        offset=max(-0.5,min(0.5,offset))
+        return periods[index]+offset*(periods[index+1]-periods[index])
+
+    @staticmethod
+    def _sinusoid_fit(times_s:list[float],magnitudes:list[float],period:float)->tuple[float,float]:
+        """Least-squares y = a*cos(wt) + b*sin(wt) + c; returns (amplitude, residual RMS)."""
+        n=len(times_s); w=2*pi/period
+        cs=[cos(w*t) for t in times_s]; sn=[sin(w*t) for t in times_s]
+        # Normal equations for the 3-parameter design matrix.
+        scc=sum(c*c for c in cs); sss=sum(s*s for s in sn); scs=sum(cs[i]*sn[i] for i in range(n))
+        sc=sum(cs); ss=sum(sn)
+        syc=sum(magnitudes[i]*cs[i] for i in range(n)); sys_=sum(magnitudes[i]*sn[i] for i in range(n))
+        sy=sum(magnitudes)
+        m=[[scc,scs,sc],[scs,sss,ss],[sc,ss,float(n)]]
+        rhs=[syc,sys_,sy]
+        solution=_solve3(m,rhs)
+        if solution is None: return 0.0,0.0
+        a,b,c=solution
+        residuals=[magnitudes[i]-(a*cs[i]+b*sn[i]+c) for i in range(n)]
+        dof=max(1,n-3)
+        return sqrt(a*a+b*b),sqrt(sum(r*r for r in residuals)/dof)
+
+    @staticmethod
+    def _period_uncertainty(period:float,amplitude:float,residual_rms:float,n:int,span:float)->float|None:
+        """1-sigma period uncertainty from the frequency error of a fitted sinusoid.
+
+        sigma_f = sqrt(6/N) * sigma_noise / (pi * T * A)   (Montgomery & O'Donoghue 1999)
+        sigma_P = P^2 * sigma_f
+        """
+        if amplitude<=0.0 or span<=0.0: return None
+        sigma_f=sqrt(6.0/n)*residual_rms/(pi*span*amplitude)
+        return period*period*sigma_f
+
+    def _competing_periods(
+        self,periods:list[float],powers:list[float],best_period:float,
+        frequency_resolution:float,independent:int,max_fap:float,
+    )->tuple[float,...]:
+        """Genuinely distinct significant peaks, not neighbouring cells of the same peak.
+
+        A candidate must be a local maximum and be separated from the accepted period by
+        more than the 1/span frequency resolution, otherwise it is the same peak.
+        """
+        best_frequency=1.0/best_period
+        out=[]
+        for j in range(1,len(periods)-1):
+            if not (powers[j]>=powers[j-1] and powers[j]>=powers[j+1]): continue
+            if abs(1.0/periods[j]-best_frequency)<=frequency_resolution: continue
+            if self._false_alarm_probability(powers[j],independent)>max_fap: continue
+            out.append((powers[j],periods[j]))
+        out.sort(reverse=True)
+        return tuple(round(p,6) for _,p in out[:5])
+
+
+def _solve3(matrix:list[list[float]],rhs:list[float])->tuple[float,float,float]|None:
+    """Gaussian elimination with partial pivoting for the 3x3 normal equations."""
+    m=[row[:]+[rhs[i]] for i,row in enumerate(matrix)]
+    for col in range(3):
+        pivot=max(range(col,3),key=lambda r:abs(m[r][col]))
+        if abs(m[pivot][col])<1e-12: return None
+        m[col],m[pivot]=m[pivot],m[col]
+        for r in range(3):
+            if r==col: continue
+            factor=m[r][col]/m[col][col]
+            for c in range(col,4): m[r][c]-=factor*m[col][c]
+    return m[0][3]/m[0][0],m[1][3]/m[1][1],m[2][3]/m[2][2]
 
 
 @dataclass(frozen=True)
 class ObservationRequest:
-    object_id:str; start_utc:datetime; end_utc:datetime; max_elevation_deg:float; sunlit:bool; eclipsed:bool; mount_rate_deg_s:float; information_gain:float
+    object_id:str; start_utc:datetime; end_utc:datetime
+    # Absent inputs stay absent.  A missing elevation or illumination flag used to be
+    # written out as 0 / False, which reads as a measured value.
+    max_elevation_deg:float|None; sunlit:bool|None; eclipsed:bool|None; mount_rate_deg_s:float
+    # Renamed from ``information_gain``: this value is copied from the candidate dict.
+    # No information-theoretic quantity is computed anywhere in this engine.
+    caller_priority:float|None
+    information_gain_status:str="NOT_COMPUTED"
+    illumination_status:str="CALLER_SUPPLIED"
+
+
+@dataclass(frozen=True)
+class ObservationPlanResult:
+    requests:tuple[ObservationRequest,...]
+    rejected:tuple[dict[str,Any],...]
+    ordering_basis:str
+    information_gain_status:str
+
 
 class ObservationPlanningEngine:
+    """Filters candidate passes against a mount-rate limit and orders them.
+
+    The ordering is by a caller-supplied priority, not by computed information gain:
+    an actual expected-information-gain calculation needs a state covariance and the
+    measurement partials, and neither is available at this interface.  The status field
+    says NOT_COMPUTED so no consumer can mistake the ordering for one.
+    """
+
     id="E29"
-    def plan(self,candidates:list[dict[str,Any]],*,mount_rate_limit_deg_s:float)->list[ObservationRequest]:
-        out=[]
+    model_version="E29-CANDIDATE-SCREENING-v2"
+
+    def screen(self,candidates:list[dict[str,Any]],*,mount_rate_limit_deg_s:float)->ObservationPlanResult:
+        if mount_rate_limit_deg_s<=0: raise ValueError("mount rate limit must be positive")
+        accepted:list[ObservationRequest]=[]; rejected:list[dict[str,Any]]=[]
         for c in candidates:
-            if not c.get('visible',False): continue
-            rate=float(c.get('mount_rate_deg_s',0))
-            if rate>mount_rate_limit_deg_s: continue
+            object_id=str(c.get('object_id') or "").strip()
+            if not object_id: raise ValueError("object_id is required for every candidate")
+            if 'visible' not in c:
+                rejected.append({"object_id":object_id,"reason":"VISIBILITY_NOT_SUPPLIED"}); continue
+            if not c['visible']:
+                rejected.append({"object_id":object_id,"reason":"NOT_VISIBLE"}); continue
+            if c.get('mount_rate_deg_s') is None:
+                # An unknown slew rate cannot be screened against the limit; treating it
+                # as 0 would let an unscreenable pass through as if the mount were still.
+                rejected.append({"object_id":object_id,"reason":"MOUNT_RATE_NOT_SUPPLIED"}); continue
+            rate=float(c['mount_rate_deg_s'])
+            if rate>mount_rate_limit_deg_s:
+                rejected.append({"object_id":object_id,"reason":"MOUNT_RATE_EXCEEDS_LIMIT"}); continue
             start,end=_aware(c['start_utc']),_aware(c['end_utc'])
-            out.append(ObservationRequest(str(c['object_id']),start,end,float(c.get('max_elevation_deg',0)),bool(c.get('sunlit')),bool(c.get('eclipsed')),rate,float(c.get('information_gain',0))))
-        return sorted(out,key=lambda x:(-x.information_gain,x.start_utc))
+            if end<=start: raise ValueError("candidate end_utc must follow start_utc")
+            elevation=c.get('max_elevation_deg')
+            priority=c.get('information_gain',c.get('caller_priority'))
+            sunlit=c.get('sunlit'); eclipsed=c.get('eclipsed')
+            accepted.append(ObservationRequest(
+                object_id,start,end,
+                None if elevation is None else float(elevation),
+                None if sunlit is None else bool(sunlit),
+                None if eclipsed is None else bool(eclipsed),
+                rate,
+                None if priority is None else float(priority),
+                "NOT_COMPUTED",
+                "NOT_SUPPLIED" if sunlit is None and eclipsed is None else "CALLER_SUPPLIED",
+            ))
+        # Candidates without a priority are not ranked as "worst"; they sort after the
+        # ranked ones by start time, and their absence stays visible as None.
+        ordered=sorted(
+            accepted,
+            key=lambda x:(x.caller_priority is None,-(x.caller_priority or 0.0),x.start_utc),
+        )
+        return ObservationPlanResult(tuple(ordered),tuple(rejected),"CALLER_SUPPLIED_PRIORITY","NOT_COMPUTED")
+
+    def plan(self,candidates:list[dict[str,Any]],*,mount_rate_limit_deg_s:float)->list[ObservationRequest]:
+        return list(self.screen(candidates,mount_rate_limit_deg_s=mount_rate_limit_deg_s).requests)
 
 
 @dataclass(frozen=True)

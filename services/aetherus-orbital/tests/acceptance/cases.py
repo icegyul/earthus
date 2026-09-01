@@ -239,11 +239,16 @@ def e26(case):
     else:raise AssertionError(case)
 
 def e27(case):
-    e=ReentryIntelligenceEngine();tip={"nominal_utc":T0,"window_start_utc":T0-timedelta(hours=1),"window_end_utc":T0+timedelta(hours=1)};r=e.ingest_tip("O",tip,source_id="TIP",grade=SourceGrade.OFFICIAL_PUBLIC);n=e.ingest_tip("O",None,source_id="TIP")
+    # A grade now comes from a configured source registry plus verified provenance; the
+    # caller can no longer assert OFFICIAL_PUBLIC on a record nobody checked.
+    tip={"nominal_utc":T0,"window_start_utc":T0-timedelta(hours=1),"window_end_utc":T0+timedelta(hours=1)}
+    prov={"source_uri":"https://example.invalid/tip.json","retrieved_at_utc":T0,"payload_sha256":canonical_hash(tip)}
+    e=ReentryIntelligenceEngine(source_registry={"TIP":SourceGrade.OFFICIAL_PUBLIC})
+    r=e.ingest_tip("O",tip,source_id="TIP",provenance=prov);n=e.ingest_tip("O",None,source_id="TIP")
     if case=="TIP parse": assert r.nominal_utc==T0
     elif case=="no TIP -> no fake exact time": assert n.nominal_utc is None and n.validation_state==ValidationState.INSUFFICIENT_DATA
     elif case=="version history": assert [x.version for x in e.history("O")]==[1,2]
-    elif case=="grade visible": assert r.grade==SourceGrade.OFFICIAL_PUBLIC
+    elif case=="grade visible": assert r.grade==SourceGrade.OFFICIAL_PUBLIC and r.provenance_status=="INTEGRITY_VERIFIED" and r.validation_state==ValidationState.VALIDATION_PENDING
     else:raise AssertionError(case)
 
 def e28(case):
@@ -251,7 +256,11 @@ def e28(case):
     if case=="synthetic sinusoid": assert r.period_s is not None and abs(r.period_s-10)<.2
     elif case=="alias ambiguous":
         # Sparse sampling creates competing periods and must not be promoted as precise.
-        x=e.estimate([0,1,2,3,4,5],[0,1,0,-1,0,1],min_period_s=2,max_period_s=10,steps=100); assert x.validation_state in {ValidationState.VALIDATION_PENDING,ValidationState.RESEARCH_ONLY}
+        # Six points cannot beat the false-alarm gate, so INSUFFICIENT_DATA is the honest
+        # outcome here; the old code returned a period with a VALIDATION_PENDING label.
+        x=e.estimate([0,1,2,3,4,5],[0,1,0,-1,0,1],min_period_s=2,max_period_s=10,steps=100)
+        assert x.validation_state in {ValidationState.VALIDATION_PENDING,ValidationState.RESEARCH_ONLY,ValidationState.INSUFFICIENT_DATA}
+        assert x.validation_state!=ValidationState.INSUFFICIENT_DATA or x.period_s is None
     elif case=="too few points": assert e.estimate([0,1],[1,2]).validation_state==ValidationState.INSUFFICIENT_DATA
     elif case=="uncertainty downgrade": assert r.uncertainty_s is not None and r.validation_state in {ValidationState.RESEARCH_ONLY,ValidationState.VALIDATION_PENDING}
     else:raise AssertionError(case)
@@ -261,7 +270,11 @@ def e29(case):
     if case=="known pass": assert p and p[0].object_id=="A"
     elif case=="sun/eclipse flag": assert p[0].sunlit and not p[0].eclipsed
     elif case=="mount limit": assert all(x.mount_rate_deg_s<=1.5 for x in p) and all(x.object_id!="B" for x in p)
-    elif case=="info gain ordering": assert [x.information_gain for x in p]==sorted((x.information_gain for x in p),reverse=True)
+    elif case=="info gain ordering":
+        # The engine never computed information gain; the ordering is by the caller's own
+        # priority value and now says so instead of borrowing the name.
+        assert [x.caller_priority for x in p]==sorted((x.caller_priority for x in p),reverse=True)
+        assert all(x.information_gain_status=="NOT_COMPUTED" for x in p)
     elif case=="no visibility -> no request": assert all(x.object_id!="C" for x in p)
     else:raise AssertionError(case)
 

@@ -50,3 +50,8 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# 자격증명 — 절대 커밋 금지. 예시 파일(.env.example)만 추적한다.
+.env
+.env.*
+!.env.example

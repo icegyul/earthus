@@ -1,0 +1,42 @@
+{
+  "phase": "p9",
+  "gate": "PARTIAL",
+  "generated_at": "2026-09-01T04:41:02.255195+00:00",
+  "repository": "git@github.com:icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "c5f587bac5941029ff54bdfbc8f4ceb5788ee4ef",
+  "tests_intelligence": {
+    "targets": [
+      "tests/unit/test_intelligence_orchestrator.py",
+      "tests/integration/test_foundation_intelligence_lineage.py",
+      "tests/foundation"
+    ],
+    "exit_code": 0,
+    "summary": "======================= 35 passed, 2 warnings in 3.63s ========================"
+  },
+  "live_api": {
+    "important_now": {
+      "http_status": 200,
+      "data_status": "VALIDATION_PENDING"
+    },
+    "signals": {
+      "http_status": 200,
+      "data_status": "OK"
+    },
+    "events": {
+      "http_status": 200,
+      "data_status": "OK"
+    }
+  },
+  "browser_verification": [
+    "INTELLIGENCE 모드: LAUNCH_EVENT(Apollo 11)에 WHAT HAPPENED/WHAT CHANGED/WHY IT MATTERS 3문 + 신뢰도 84% VERY HIGH + 불확실성 '고정 역사 사실에는 수치 불확실성 부적용' 정직 표기",
+    "파이프라인 상태 표면: 근거 융합·신호 승격·LLM 주장 검증(ACTIVE) — E38~E44 노출, 과학 상태 VALIDATION_PENDING 라벨",
+    "ARCHIVE 모드: 1969→2026 타임라인·TIME CURSOR·ARCHIVED 배지, '보관 스냅샷은 재구성/모델 상태와 시각적으로 구분' 명문"
+  ],
+  "limitations": [
+    "LLM 게이트웨이 라이브(L01)는 외부 API 자격증명 부재로 미검증 — 주장 검증기는 픽스처 경로",
+    "인텔리전스는 OFFICIAL 픽스처(Apollo 11) 계보 — 실궤도 이벤트의 신호→이벤트 승격은 라이브 신호원 연결 후",
+    "E38~E44 심층 적대 감사는 후속"
+  ],
+  "next_allowed": "라이브 신호원 연결(P4 근접 이벤트→Intelligence 승격) 또는 잔여 하드닝(CI·E2E)"
+}

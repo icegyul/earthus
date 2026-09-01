@@ -435,7 +435,7 @@ class BenefitService:
             data_status=data_status,
             status_reason=status_reason,
             affected_object_count=len(affected.object_ids),
-            affected_edge_count=counterfactual.removed_edge_count + counterfactual.recomputed_edge_count,
+            affected_edge_count=counterfactual.removed_edge_count + counterfactual.affected_incident_edge_count,
             reused_baseline_edge_count=counterfactual.reused_edge_count,
             baseline_edge_count=len(baseline.edges),
             scenario_edge_count=len(counterfactual.scenario_graph.edges),

@@ -59,8 +59,18 @@ def main() -> None:
             "주입 근접쌍 false-negative=0 (10k 코퍼스)",
             "MaxProbability와 CDM Pc 분리 유지",
         ],
+        "p5_audit": {
+            "verdict": "EDGE_DELETION_SIMULATION_ONLY",
+            "date": "2026-09-01",
+            "record": "docs/audit/P5_BENEFIT_AUDIT_VERDICT.md",
+            "method": "독립 감사 2명(회의적/데이터흐름) + 교차검증자, 전 주장 file:line 재확인",
+            "immediate_actions": [
+                "recomputed_edge_count → affected_incident_edge_count 개명 + docstring SIMULATION_ONLY 명시",
+                "migration 009: scenario_run·benefit_result validation_state DEFAULT 'SIMULATION_ONLY'",
+            ],
+        },
         "limitations": [
-            "ORB-P5 Benefit 미착수 — 구 구현의 엣지삭제형 여부 적대 감사가 선행 조건 (v1.2.1 SIMULATION_ONLY 판정 위험)",
+            "ORB-P5: NOT STARTED — 구 구현은 엣지삭제형 판정(SIMULATION_ONLY), 물리 재계산 재작성 필요 (P4 파이프라인을 affected 영역에 재실행)",
             "라이브 카탈로그 소수 객체 — 실 스크리닝 런은 카탈로그 확장 후",
             "Space-Track CDM 라이브 미검증 (자격증명 부재 — 픽스처 경로만)",
         ],

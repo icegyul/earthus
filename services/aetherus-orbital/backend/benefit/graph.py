@@ -259,7 +259,7 @@ class CounterfactualResult:
     scenario_graph: RiskGraph
     removed_edge_count: int
     reused_edge_count: int
-    recomputed_edge_count: int
+    affected_incident_edge_count: int
 
 
 def apply_idealized_removal(
@@ -268,20 +268,23 @@ def apply_idealized_removal(
     snapshot_id: str,
     affected: AffectedSelection,
 ) -> CounterfactualResult:
-    """Build Gs by deleting every target-incident edge.
+    """Build Gs by deleting every target-incident edge. SIMULATION_ONLY.
 
-    The full mode processes every baseline edge; the selective mode copies
-    unaffected edges verbatim (safe reuse) and re-derives only edges touching
-    the affected set. Both produce identical edge sets by determinism.
+    No physics is recomputed anywhere in this path: kept edges carry their
+    stored P4 metric values verbatim, and no screening/TCA/Pc re-run occurs.
+    Per IMPLEMENTATION_ORDER v1.2.1 this edge-deletion counterfactual does
+    NOT satisfy the P5 gate; a valid P5 requires a state/trajectory
+    intervention plus P4 recomputation over the affected region
+    (audit: docs/audit/P5_BENEFIT_AUDIT_VERDICT.md, 2026-09-01).
     """
     removed = [edge for edge in baseline.edges if edge.involves(target_object_id)]
     kept = [edge for edge in baseline.edges if not edge.involves(target_object_id)]
 
-    recomputed = 0
+    affected_incident = 0
     reused = 0
     for edge in kept:
         if edge.object_a in affected.object_ids or edge.object_b in affected.object_ids:
-            recomputed += 1
+            affected_incident += 1
         else:
             reused += 1
 
@@ -296,7 +299,7 @@ def apply_idealized_removal(
         scenario_graph=scenario_graph,
         removed_edge_count=len(removed),
         reused_edge_count=reused,
-        recomputed_edge_count=recomputed,
+        affected_incident_edge_count=affected_incident,
     )
 
 

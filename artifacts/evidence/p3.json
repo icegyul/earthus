@@ -1,0 +1,65 @@
+{
+  "phase": "p3",
+  "gate": "PARTIAL",
+  "generated_at": "2026-09-01T04:39:35.014725+00:00",
+  "repository": "git@github.com:icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "acb322fa68388f8744f0408ee633e8d34f0b9159",
+  "tests_visual": {
+    "targets": [
+      "tests/product/test_registry_api_surface.py",
+      "tests/product/test_product_runtime.py",
+      "tests/acceptance"
+    ],
+    "exit_code": 0,
+    "summary": "======================= 290 passed, 2 warnings in 3.51s ======================="
+  },
+  "scene_api": {
+    "SPACE": {
+      "http_status": 200,
+      "scale": "SOLAR_SYSTEM_VIEW",
+      "render_object_ids": [
+        "SUN",
+        "EARTH",
+        "MARS"
+      ],
+      "scientific_object_ids": [
+        "SUN",
+        "EARTH",
+        "MARS"
+      ],
+      "scientific_hash": "4997eb1539f14b21a89cd20430509a0171087b68085723e71585e1f77f7d0a7b",
+      "layer_evidence_classes": [
+        "DERIVED"
+      ]
+    },
+    "ORBIT": {
+      "http_status": 200,
+      "scale": "ORBITAL_VIEW",
+      "render_object_ids": [
+        "VAL-A",
+        "VAL-B"
+      ],
+      "scientific_object_ids": [
+        "VAL-A",
+        "VAL-B"
+      ],
+      "scientific_hash": "1ee8cea47e18c60909dd29e29915fa3ae944d211e189ca3c0377fe64c5c7af2f",
+      "layer_evidence_classes": [
+        "MODEL_SIGNAL"
+      ]
+    },
+    "invariant": "render_object_ids와 scientific_object_ids가 scientific_hash로 묶여 렌더 부분집합이 과학 부분집합을 몰래 대체할 수 없음 (절대 규칙 12)"
+  },
+  "browser_verification": [
+    "E34 씬: SPACE 태양계(8행성 궤도 타원)·ORBIT 지구+셸 씬 렌더 확인 (인앱 브라우저, 2026-09-01)",
+    "E35 시맨틱 줌: SOLAR/EARTH/CISLUNAR 스케일 버튼 → EARTH_VIEW 상태 전환 확인",
+    "E36 셸 LOD: ORBIT GLOBAL→LEO 전환 시 LEO 링+VAL-A 마커 표시, scientific set은 2로 불변('hash unchanged' 표시)",
+    "E37 시각 문법: 객체 SCREENING_ONLY·TIME_APPROX 라벨, Pc '사용 불가 — 공분산 필요' 정직 표기가 UI에 노출"
+  ],
+  "limitations": [
+    "E34/E35의 v2-three 실지구(EARTHUS) 통합은 미착수 — 현 씬은 v0.6 캔버스 엔진, '하나의 우주' 통합은 아키텍처 결정 필요 (PD)",
+    "playwright 자동 E2E 미구성 — 브라우저 검증은 세션 수동 기록"
+  ],
+  "next_allowed": "v2-three ↔ AETHERUS 씬 통합 설계 또는 V2-P6 이후 잔여"
+}

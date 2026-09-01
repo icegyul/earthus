@@ -1,0 +1,44 @@
+{
+  "phase": "p4",
+  "gate": "PARTIAL",
+  "generated_at": "2026-09-01T04:39:39.961144+00:00",
+  "repository": "git@github.com:icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "acb322fa68388f8744f0408ee633e8d34f0b9159",
+  "tests_control": {
+    "targets": [
+      "tests/product/test_platform_product_integration.py",
+      "tests/product/test_api_product.py"
+    ],
+    "exit_code": 0,
+    "summary": "======================= 12 passed, 2 warnings in 5.19s ========================"
+  },
+  "mission_api": {
+    "state": {
+      "http_status": 200,
+      "data_status": "OK"
+    },
+    "handover": {
+      "http_status": 200,
+      "data_status": "OK"
+    },
+    "trajectory": {
+      "http_status": 200,
+      "data_status": "UNAVAILABLE",
+      "warnings": [
+        "No source-backed or explicitly modelled trajectory is stored."
+      ]
+    }
+  },
+  "browser_verification": [
+    "CONTROL 모드: Apollo 11/Saturn-V AS-506 OFFICIAL 픽스처, 발사장 마커 28.61°N·80.60°W(케네디) 표시 확인",
+    "정직 상태: '궤적 자료 없음 — No source-backed flight path or target orbit is stored' 및 '모델 텔레메트리는 날조되지 않는다' 문구가 UI에 노출",
+    "MISSION RECORD/REPLAY/MISSION TO ORBIT HANDOVER 워크스페이스 표면 존재",
+    "미션 API 5종(trajectory/handover/objects/window/state) 전부 200 (네트워크 검사)"
+  ],
+  "limitations": [
+    "라이브 발사 일정/텔레메트리 프로바이더 미연결 — OFFICIAL 픽스처(Apollo 11) 경로만 재현",
+    "mission→orbit handover의 실카탈로그 연동은 라이브 미션 데이터 확보 후"
+  ],
+  "next_allowed": "라이브 발사 프로바이더 계약 또는 V2-P9+ 인텔리전스 표면 검증"
+}

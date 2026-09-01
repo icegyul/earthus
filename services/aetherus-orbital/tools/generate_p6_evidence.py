@@ -20,6 +20,15 @@ from backend.orbit.golden import (  # noqa: E402
     recompute_fixture_samples,
 )
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from blocker_class import (  # noqa: E402
+    BUILDABLE_NOW,
+    DECISION_PENDING,
+    EXTERNAL_DATA_GATED,
+    EXTERNAL_PARTNER_GATED,
+    classify,
+)
+
 SERVICE_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = SERVICE_ROOT.parents[1]
 EVIDENCE_PATH = REPO_ROOT / "artifacts" / "evidence" / "p6.json"
@@ -172,6 +181,29 @@ def main() -> None:
         # playwright 바이너리가 없어 브라우저 E2E는 아직 실행되지 않았다.
         "playwright_e2e_run": False,
     }
+    blockers = {
+        'tests_pass': (
+            BUILDABLE_NOW,
+            'P6 테스트 미통과 — 내부 작업',
+        ),
+        'golden_within_tolerance': (
+            BUILDABLE_NOW,
+            '골든 케이스 허용오차 이탈 — 내부 작업',
+        ),
+        'catalog_api_reachable': (
+            BUILDABLE_NOW,
+            '부하 상태에서 카탈로그 API 미응답. 2026-09-02 실측으로 원인이 2차 스크리닝 비용임이 확인됐고, 범위·상한 파라미터가 도입됐다. 외부 의존 없음.',
+        ),
+        'catalog_at_lod_scale': (
+            BUILDABLE_NOW,
+            'LOD 규모 전역 밀도 미산출 — 내부 작업',
+        ),
+        'playwright_e2e_run': (
+            BUILDABLE_NOW,
+            'Playwright E2E 미실행 — 내부 작업',
+        ),
+    }
+    blocker_report = classify(checks, blockers)
     failed = [name for name, ok in checks.items() if not ok]
     evidence = {
         "phase": "p6",
@@ -179,6 +211,8 @@ def main() -> None:
         "gate": "PASS" if not failed else "PARTIAL",
         "failed_checks": failed,
         "checks": checks,
+        # PARTIAL 하나로 뭉치지 않는다: 우리 일과 남의 일을 구분한다.
+        "blockers": blocker_report,
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "repository": run(["git", "-C", str(REPO_ROOT), "remote", "get-url", "origin"]),
         "branch": run(["git", "-C", str(REPO_ROOT), "rev-parse", "--abbrev-ref", "HEAD"]),

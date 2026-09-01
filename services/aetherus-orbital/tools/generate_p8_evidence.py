@@ -15,6 +15,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from blocker_class import BUILDABLE_NOW, classify  # noqa: E402
+
 SERVICE_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = SERVICE_ROOT.parents[1]
 EVIDENCE_PATH = REPO_ROOT / "artifacts" / "evidence" / "p8.json"
@@ -126,10 +129,37 @@ def main() -> None:
         "tests_10k_corpus_pass": tests_corpus.get("exit_code") == 0,
         "tests_p5_pass": tests_p5.get("exit_code") == 0,
         "tests_p6_pass": tests_p6.get("exit_code") == 0,
-        # 공분산 있는 CDM(TraCSS/Space-Track) 없이는 운영 Pc를 낼 수 없다 — 정직하게 미충족.
         "operational_pc_from_cdm_covariance": False,
         "large_scale_benchmark_run": False,
     }
+
+    # 미충족 사유를 원인별로 분류한다. 이전 주석은 운영 Pc 를 "TraCSS/Space-Track
+    # 없이는 불가"로 적어 파트너 차단처럼 보이게 했는데, 2026-09-02 규격 형태 CDM
+    # 실측이 그것을 반증했다 — 파트너 데이터가 도착하기 전에 우리 쪽 관문 5개가
+    # 먼저 거부한다. 우리 일을 남의 일로 적어두면 로드맵이 잘못된 문을 가리킨다.
+    blockers = {
+        "operational_pc_from_cdm_covariance": (
+            BUILDABLE_NOW,
+            "CDM 파서와 Pc 게이트가 규격 문서를 받지 못한다: JSON 전용(cdm.py:61), "
+            "6x6 중첩 공분산 요구(cdm.py:25), TEME 강제(pc.py:72), KM2 강제(pc.py:22), "
+            "COMBINED_HBR 요구(pc.py:154). CCSDS 508.0-B-1 은 KVN/XML 에 21원소 RTN "
+            "하삼각을 m**2 로 싣는다. 파서와 RTN->TEME 회전은 파트너·자격증명 없이 "
+            "지금 만들 수 있으며, 그 전에는 어떤 CDM 도 읽히지 않는다. "
+            "근거: tests/unit/test_cdm_spec_shape_reality.py, "
+            "docs/audit/METRIC_PROVENANCE_HARDENING_2026-09-02.md"
+        ),
+        "large_scale_benchmark_run": (
+            BUILDABLE_NOW,
+            "전 카탈로그 스크리닝 약 40분(2,851객체·약 200만 쌍, 2026-09-02 실측). "
+            "범위·상한 파라미터는 도입됐으나 대규모 벤치마크 자체는 미실행. "
+            "외부 의존 없음."
+        ),
+        "tests_p4_core_pass": (BUILDABLE_NOW, "P4 코어 테스트 미통과 — 내부 작업"),
+        "tests_10k_corpus_pass": (BUILDABLE_NOW, "10k 코퍼스 테스트 미통과 — 내부 작업"),
+        "tests_p5_pass": (BUILDABLE_NOW, "P5 테스트 미통과 — 내부 작업"),
+        "tests_p6_pass": (BUILDABLE_NOW, "P6 테스트 미통과 — 내부 작업"),
+    }
+    blocker_report = classify(checks, blockers)
     failed = [name for name, ok in checks.items() if not ok]
     evidence = {
         "phase": "p8",
@@ -137,6 +167,8 @@ def main() -> None:
         "gate": "PASS" if not failed else "PARTIAL",
         "failed_checks": failed,
         "checks": checks,
+        # PARTIAL 하나로 뭉치지 않는다: 남은 것이 우리 일인지 남의 일인지 구분한다.
+        "blockers": blocker_report,
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "repository": run(["git", "-C", str(REPO_ROOT), "remote", "get-url", "origin"]),
         "branch": run(["git", "-C", str(REPO_ROOT), "rev-parse", "--abbrev-ref", "HEAD"]),

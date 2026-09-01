@@ -13,6 +13,15 @@ import sys
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from blocker_class import (  # noqa: E402
+    BUILDABLE_NOW,
+    DECISION_PENDING,
+    EXTERNAL_DATA_GATED,
+    EXTERNAL_PARTNER_GATED,
+    classify,
+)
+
 SERVICE_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = SERVICE_ROOT.parents[1]
 
@@ -95,12 +104,36 @@ def build_p3() -> dict:
         "scene_unification_done": False,
         "playwright_e2e_run": False,
     }
+    blockers = {
+        "tests_pass": (BUILDABLE_NOW, "P3 시각 테스트 미통과 — 내부 작업"),
+        "scene_api_200": (BUILDABLE_NOW, "SPACE/ORBIT 장면 API 미응답 — 내부 작업"),
+        "render_set_serves_real_catalog": (
+            BUILDABLE_NOW,
+            "렌더 세트가 실 카탈로그 객체 100건에 못 미침 — 내부 작업",
+        ),
+        "earth_link_layer_present": (
+            BUILDABLE_NOW,
+            "지구 연결 레이어 파일 부재 — 내부 작업",
+        ),
+        "scene_unification_done": (
+            DECISION_PENDING,
+            "prototype/ 1.0 장면과 v2-three 장면 중 무엇을 정본으로 삼을지 PD 결정 "
+            "대기. 능력 문제가 아니라 판단 대기이므로 공학 제약으로 적지 않는다.",
+        ),
+        "playwright_e2e_run": (
+            BUILDABLE_NOW,
+            "Playwright E2E 미실행. 러너 설치와 스크립트 작성만 남았고 외부 의존 없음.",
+        ),
+    }
+    blocker_report = classify(checks, blockers)
     failed = [name for name, ok in checks.items() if not ok]
     return {
         "phase": "p3",
         "gate": "PASS" if not failed else "PARTIAL",
         "failed_checks": failed,
         "checks": checks,
+        # PARTIAL 하나로 뭉치지 않는다: 우리 일과 남의 일을 구분한다.
+        "blockers": blocker_report,
         **_common(),
         "tests_visual": tests,
         "scene_api": {
@@ -164,12 +197,31 @@ def build_p4() -> dict:
         # 라이브 텔레메트리 소스와 실미션 handover가 없는 한 참이 될 수 없다.
         "live_telemetry_provider": False,
     }
+    blockers = {
+        "tests_pass": (BUILDABLE_NOW, "P4 미션 테스트 미통과 — 내부 작업"),
+        "mission_api_200": (BUILDABLE_NOW, "미션 API 미응답 — 내부 작업"),
+        "live_launch_schedule": (
+            EXTERNAL_DATA_GATED,
+            "TheSpaceDevs LL2 공개 API. 자격증명은 불필요하나 네트워크 접근과 "
+            "속도제한 준수가 필요하다. 계약이 아니라 접근 문제다.",
+        ),
+        "live_telemetry_provider": (
+            EXTERNAL_PARTNER_GATED,
+            "발사체 상승 단계의 엔진·연료·자세 텔레메트리는 발사 운영자만 보유한다. "
+            "다만 이 판정은 기체 내부 상태에만 해당한다 — 궤적·비행 이벤트·투입 후 "
+            "초기 궤도는 공개 소스로 지금 구축 가능하며, 하나의 체크로 묶어두면 "
+            "구축 가능한 부분까지 파트너 대기로 오독된다.",
+        ),
+    }
+    blocker_report = classify(checks, blockers)
     failed = [name for name, ok in checks.items() if not ok]
     return {
         "phase": "p4",
         "gate": "PASS" if not failed else "PARTIAL",
         "failed_checks": failed,
         "checks": checks,
+        # PARTIAL 하나로 뭉치지 않는다: 우리 일과 남의 일을 구분한다.
+        "blockers": blocker_report,
         **_common(),
         "tests_control": tests,
         "live_launch_schedule": {

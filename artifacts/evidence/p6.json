@@ -3,24 +3,58 @@
   "orbital_phase": "ORB-P2 + ORB-P3(partial)",
   "gate": "PARTIAL",
   "failed_checks": [
-    "catalog_api_reachable",
     "playwright_e2e_run"
   ],
   "checks": {
     "tests_pass": true,
     "golden_within_tolerance": true,
-    "catalog_api_reachable": false,
+    "catalog_api_reachable": true,
     "catalog_at_lod_scale": true,
     "playwright_e2e_run": false
   },
-  "generated_at": "2026-09-01T12:41:50.120198+00:00",
+  "blockers": {
+    "by_check": {
+      "tests_pass": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "golden_within_tolerance": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "catalog_api_reachable": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "catalog_at_lod_scale": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "playwright_e2e_run": {
+        "blocker_class": "BUILDABLE_NOW",
+        "reason": "Playwright E2E 미실행 — 내부 작업"
+      }
+    },
+    "counts": {
+      "BUILDABLE_NOW": 1,
+      "DECISION_PENDING": 0,
+      "EXTERNAL_DATA_GATED": 0,
+      "EXTERNAL_PARTNER_GATED": 0,
+      "NONE": 4
+    },
+    "unmet_buildable_now": [
+      "playwright_e2e_run"
+    ],
+    "unmet_requiring_others": []
+  },
+  "generated_at": "2026-09-01T16:40:43.370127+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "6cb0eed48e508c07a69a17205ffcbb93a77d2e5e",
+  "commit": "5d66cc5d6dfeb14bf5b2a6fffeff2b4f47bdbc85",
   "tests": {
     "command": "pytest <P2 subset 5 files> -q",
     "exit_code": 0,
-    "summary": "======================== 28 passed, 1 warning in 0.28s ========================"
+    "summary": "======================== 28 passed, 1 warning in 0.25s ========================"
   },
   "golden_cross_validation": [
     {
@@ -44,27 +78,42 @@
     }
   ],
   "catalog_scale": {
-    "http_status": null,
-    "error": "timed out",
-    "measurement_source": "DATABASE_DIRECT",
-    "objects_total": 2851,
-    "objects_with_solution": 2797,
+    "http_status": 200,
+    "measurement_source": "CATALOG_STATUS_API",
+    "data_status": "OK",
+    "objects_total": 2975,
+    "objects_with_solution": 2900,
     "global_density": "AVAILABLE",
-    "global_density_reason": "2797 objects with an orbit solution vs configured global-density threshold of 500 (counted directly in PostgreSQL because the API did not answer)"
+    "global_density_reason": "2900 propagable objects meet the configured global-density threshold of 500.",
+    "sources": [
+      {
+        "source_id": "celestrak_gp",
+        "successful_runs": 1088,
+        "total_runs": 1235,
+        "last_success_at": "2026-09-01T16:40:43.155653+00:00"
+      },
+      {
+        "source_id": "spacetrack_gp",
+        "successful_runs": 314,
+        "total_runs": 389,
+        "last_success_at": "2026-09-01T16:33:56.564274+00:00"
+      }
+    ]
   },
   "platform_migration_note": "macOS 기록 골든 대비 Windows 재계산 최대 델타: position 1.819e-12 km, velocity 8.882e-16 km/s, alt 2.728e-12 km, lat/lon 0.0 — 전 항목 허용오차 통과 확인 후, 커밋된 생성기(backend.tools.generate_golden_fixtures)로 동일 raw 아티팩트(e746e2d5…)에서 본 플랫폼 골든을 재생성했다. 바이트 해시 차이는 플랫폼 부동소수점 최하위 비트 서식 차이였다.",
   "live_api": {
-    "http_status": null,
-    "error": "timed out"
+    "http_status": 200,
+    "sample_count": 11,
+    "first_sample_frame": "TEME"
   },
   "explore_ui": {
     "ui_index": {
-      "http_status": null,
-      "error": "timed out"
+      "http_status": 200,
+      "bytes": 4448
     },
     "catalog_snapshot": {
-      "http_status": null,
-      "error": "timed out"
+      "http_status": 200,
+      "bytes": 722495
     }
   },
   "explore_network_inspection": "인앱 브라우저 네트워크 검사(2026-09-01, 파편운 수집 이전 시점의 기록): /ui/ 로드 시 좌표 소스 요청은 /api/v1/catalog/status·/api/v1/catalog/snapshot 200 두 건뿐, 콘솔 에러 0. ISS 25544는 API 유래 SGP4 마커+데이터 나이 표기, 격리 객체 2건은 위치 없이 UNAVAILABLE 상태 렌더, GLOBAL VIEW: INSUFFICIENT_DATA 배지 표시 확인. — 당시의 INSUFFICIENT_DATA는 카탈로그가 임계 미만이어서였고, 현재는 위 catalog_scale 측정이 AVAILABLE을 보고한다. 이 배지 전환 자체의 브라우저 재확인은 후속.",

@@ -13,6 +13,15 @@ import sys
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from blocker_class import (  # noqa: E402
+    BUILDABLE_NOW,
+    DECISION_PENDING,
+    EXTERNAL_DATA_GATED,
+    EXTERNAL_PARTNER_GATED,
+    classify,
+)
+
 SERVICE_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = SERVICE_ROOT.parents[1]
 EVIDENCE_PATH = REPO_ROOT / "artifacts" / "evidence" / "p9.json"
@@ -125,12 +134,41 @@ def main() -> None:
         "llm_gateway_live_verified": False,
         "adversarial_audit_e38_e44": audit_intel["passed"],
     }
+    blockers = {
+        'tests_pass': (
+            BUILDABLE_NOW,
+            '인텔리전스 테스트 미통과 — 내부 작업',
+        ),
+        'intelligence_api_200': (
+            BUILDABLE_NOW,
+            '인텔리전스 API 미응답 — 내부 작업',
+        ),
+        'live_conjunction_signals_present': (
+            BUILDABLE_NOW,
+            '근접 신호 미유입 — 내부 작업',
+        ),
+        'conjunction_events_promoted': (
+            BUILDABLE_NOW,
+            '근접 신호의 이벤트 융합 미구현. 신호는 유입되나 승격 경로가 없다. 외부 의존 없음.',
+        ),
+        'llm_gateway_live_verified': (
+            EXTERNAL_DATA_GATED,
+            'LLM 게이트웨이 라이브 검증에 외부 API 자격증명이 필요하다. 계약이 아니라 키 발급 문제이므로 파트너 차단이 아니다.',
+        ),
+        'adversarial_audit_e38_e44': (
+            BUILDABLE_NOW,
+            'E38~E44 적대 감사 기록 또는 정직성 테스트 미충족 — 내부 작업',
+        ),
+    }
+    blocker_report = classify(checks, blockers)
     failed = [name for name, ok in checks.items() if not ok]
     evidence = {
         "phase": "p9",
         "gate": "PASS" if not failed else "PARTIAL",
         "failed_checks": failed,
         "checks": checks,
+        # PARTIAL 하나로 뭉치지 않는다: 우리 일과 남의 일을 구분한다.
+        "blockers": blocker_report,
         "adversarial_audit": audit_intel,
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "repository": run(["git", "-C", str(REPO_ROOT), "remote", "get-url", "origin"]),

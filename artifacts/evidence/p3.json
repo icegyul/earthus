@@ -13,10 +13,49 @@
     "scene_unification_done": false,
     "playwright_e2e_run": false
   },
-  "generated_at": "2026-09-01T11:20:02.388795+00:00",
+  "blockers": {
+    "by_check": {
+      "tests_pass": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "scene_api_200": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "render_set_serves_real_catalog": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "earth_link_layer_present": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "scene_unification_done": {
+        "blocker_class": "DECISION_PENDING",
+        "reason": "prototype/ 1.0 장면과 v2-three 장면 중 무엇을 정본으로 삼을지 PD 결정 대기. 능력 문제가 아니라 판단 대기이므로 공학 제약으로 적지 않는다."
+      },
+      "playwright_e2e_run": {
+        "blocker_class": "BUILDABLE_NOW",
+        "reason": "Playwright E2E 미실행. 러너 설치와 스크립트 작성만 남았고 외부 의존 없음."
+      }
+    },
+    "counts": {
+      "BUILDABLE_NOW": 1,
+      "DECISION_PENDING": 1,
+      "EXTERNAL_DATA_GATED": 0,
+      "EXTERNAL_PARTNER_GATED": 0,
+      "NONE": 4
+    },
+    "unmet_buildable_now": [
+      "playwright_e2e_run"
+    ],
+    "unmet_requiring_others": []
+  },
+  "generated_at": "2026-09-01T16:46:11.524824+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "af4c0e00136091b9214406a0d3cc4ca616d43622",
+  "commit": "5d66cc5d6dfeb14bf5b2a6fffeff2b4f47bdbc85",
   "tests_visual": {
     "targets": [
       "tests/product/test_registry_api_surface.py",
@@ -24,7 +63,7 @@
       "tests/acceptance"
     ],
     "exit_code": 0,
-    "summary": "======================= 290 passed, 2 warnings in 3.40s ======================="
+    "summary": "======================= 290 passed, 2 warnings in 3.41s ======================="
   },
   "scene_api": {
     "SPACE": {
@@ -67,7 +106,7 @@
       "lod_cap": 2000,
       "render_object_count": 500,
       "scientific_object_count": 500,
-      "scientific_hash": "8cfddefee5d39def9b0ca4be831635eb451f85310822c0b504d6f79876b7c8d1"
+      "scientific_hash": "739300f33f15fa461ba8232f25bb5a28d2f7149a36632ad3b70047303b6131dd"
     },
     "invariant": "render_object_ids와 scientific_object_ids가 scientific_hash로 묶여 렌더 부분집합이 과학 부분집합을 몰래 대체할 수 없음 (절대 규칙 12)"
   },

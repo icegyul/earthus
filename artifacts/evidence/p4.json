@@ -10,26 +10,57 @@
     "live_launch_schedule": true,
     "live_telemetry_provider": false
   },
-  "generated_at": "2026-09-01T11:20:07.943426+00:00",
+  "blockers": {
+    "by_check": {
+      "tests_pass": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "mission_api_200": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "live_launch_schedule": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "live_telemetry_provider": {
+        "blocker_class": "EXTERNAL_PARTNER_GATED",
+        "reason": "발사체 상승 단계의 엔진·연료·자세 텔레메트리는 발사 운영자만 보유한다. 다만 이 판정은 기체 내부 상태에만 해당한다 — 궤적·비행 이벤트·투입 후 초기 궤도는 공개 소스로 지금 구축 가능하며, 하나의 체크로 묶어두면 구축 가능한 부분까지 파트너 대기로 오독된다."
+      }
+    },
+    "counts": {
+      "BUILDABLE_NOW": 0,
+      "DECISION_PENDING": 0,
+      "EXTERNAL_DATA_GATED": 0,
+      "EXTERNAL_PARTNER_GATED": 1,
+      "NONE": 3
+    },
+    "unmet_buildable_now": [],
+    "unmet_requiring_others": [
+      "live_telemetry_provider"
+    ]
+  },
+  "generated_at": "2026-09-01T16:46:18.154335+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "af4c0e00136091b9214406a0d3cc4ca616d43622",
+  "commit": "5d66cc5d6dfeb14bf5b2a6fffeff2b4f47bdbc85",
   "tests_control": {
     "targets": [
       "tests/product/test_platform_product_integration.py",
       "tests/product/test_api_product.py"
     ],
     "exit_code": 0,
-    "summary": "======================= 12 passed, 2 warnings in 4.25s ========================"
+    "summary": "======================= 12 passed, 2 warnings in 4.02s ========================"
   },
   "live_launch_schedule": {
     "http_status": 200,
     "data_status": "OK",
     "source_id": "thespacedevs_ll2_launch_upcoming",
     "source_uri": "https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=10&ordering=net",
-    "raw_sha256": "4067fced71aded6ebafff9a02c7f61db10d74badd26e7b2318c13ec550934a1b",
+    "raw_sha256": "99fb21bbedec4d61c70c648b0483663b65da433e71611e66d95b155716ddc5ad",
     "upstream_http_status": 200,
-    "reported_total": 358,
+    "reported_total": 360,
     "launch_count": 10
   },
   "mission_api": {

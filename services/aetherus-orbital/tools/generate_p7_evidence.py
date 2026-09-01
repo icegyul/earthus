@@ -12,6 +12,15 @@ import sys
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from blocker_class import (  # noqa: E402
+    BUILDABLE_NOW,
+    DECISION_PENDING,
+    EXTERNAL_DATA_GATED,
+    EXTERNAL_PARTNER_GATED,
+    classify,
+)
+
 SERVICE_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = SERVICE_ROOT.parents[1]
 EVIDENCE_PATH = REPO_ROOT / "artifacts" / "evidence" / "p7.json"
@@ -133,6 +142,29 @@ def main() -> None:
         "adversarial_audit_e25_e27_e30": audit_orbit["passed"],
         "playwright_e2e_run": False,
     }
+    blockers = {
+        'tests_p7_p9_pass': (
+            BUILDABLE_NOW,
+            'P7~P9 테스트 미통과 — 내부 작업',
+        ),
+        'product_suite_pass': (
+            BUILDABLE_NOW,
+            '제품 스위트 미통과 — 내부 작업',
+        ),
+        'product_routes_serve_real_catalog': (
+            BUILDABLE_NOW,
+            '제품 라우트가 실 카탈로그를 서빙하지 않음 — 내부 작업',
+        ),
+        'adversarial_audit_e25_e27_e30': (
+            BUILDABLE_NOW,
+            'E25·E27~E30 적대 감사 기록 또는 정직성 테스트 미충족 — 내부 작업',
+        ),
+        'playwright_e2e_run': (
+            BUILDABLE_NOW,
+            'Playwright E2E 미실행 — 내부 작업',
+        ),
+    }
+    blocker_report = classify(checks, blockers)
     failed = [name for name, ok in checks.items() if not ok]
     evidence = {
         "phase": "p7",
@@ -140,6 +172,8 @@ def main() -> None:
         "gate": "PASS" if not failed else "PARTIAL",
         "failed_checks": failed,
         "checks": checks,
+        # PARTIAL 하나로 뭉치지 않는다: 우리 일과 남의 일을 구분한다.
+        "blockers": blocker_report,
         "adversarial_audit": audit_orbit,
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "repository": run(["git", "-C", str(REPO_ROOT), "remote", "get-url", "origin"]),

@@ -13,18 +13,59 @@
     "llm_gateway_live_verified": false,
     "adversarial_audit_e38_e44": true
   },
+  "blockers": {
+    "by_check": {
+      "tests_pass": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "intelligence_api_200": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "live_conjunction_signals_present": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "conjunction_events_promoted": {
+        "blocker_class": "BUILDABLE_NOW",
+        "reason": "근접 신호의 이벤트 융합 미구현. 신호는 유입되나 승격 경로가 없다. 외부 의존 없음."
+      },
+      "llm_gateway_live_verified": {
+        "blocker_class": "EXTERNAL_DATA_GATED",
+        "reason": "LLM 게이트웨이 라이브 검증에 외부 API 자격증명이 필요하다. 계약이 아니라 키 발급 문제이므로 파트너 차단이 아니다."
+      },
+      "adversarial_audit_e38_e44": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      }
+    },
+    "counts": {
+      "BUILDABLE_NOW": 1,
+      "DECISION_PENDING": 0,
+      "EXTERNAL_DATA_GATED": 1,
+      "EXTERNAL_PARTNER_GATED": 0,
+      "NONE": 4
+    },
+    "unmet_buildable_now": [
+      "conjunction_events_promoted"
+    ],
+    "unmet_requiring_others": [
+      "llm_gateway_live_verified"
+    ]
+  },
   "adversarial_audit": {
     "recorded": true,
     "record": "docs\\audit\\ENGINE_ADVERSARIAL_AUDIT_2026-09-01.md",
     "honesty_test": "tests/unit/test_confidence_honesty.py",
     "honesty_test_exit_code": 0,
-    "summary": "======================= 16 passed, 2 warnings in 0.06s ========================",
+    "summary": "======================= 16 passed, 2 warnings in 0.05s ========================",
     "passed": true
   },
-  "generated_at": "2026-09-01T13:10:20.473482+00:00",
+  "generated_at": "2026-09-01T16:41:12.642289+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "84dc4e98e5aea51fa78918308837a437fba80195",
+  "commit": "5d66cc5d6dfeb14bf5b2a6fffeff2b4f47bdbc85",
   "tests_intelligence": {
     "targets": [
       "tests/unit/test_intelligence_orchestrator.py",
@@ -32,7 +73,7 @@
       "tests/foundation"
     ],
     "exit_code": 0,
-    "summary": "======================= 35 passed, 2 warnings in 3.43s ========================"
+    "summary": "======================= 35 passed, 2 warnings in 3.53s ========================"
   },
   "live_api": {
     "important_now": {
@@ -50,9 +91,9 @@
   },
   "pipeline_population": {
     "signals": {
-      "total": 204,
+      "total": 201,
       "by_type_producer_evidence_class": {
-        "OFFICIAL_LAUNCH_FACT|E13_FIXED_OFFICIAL_FIXTURE_ADAPTER|OFFICIAL": 4,
+        "OFFICIAL_LAUNCH_FACT|E13_FIXED_OFFICIAL_FIXTURE_ADAPTER|OFFICIAL": 1,
         "CONJUNCTION_SCREENING_CANDIDATE|P4_CA_SCREENING_ADAPTER|DERIVED": 200
       }
     },

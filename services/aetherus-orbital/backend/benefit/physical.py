@@ -1,23 +1,26 @@
-"""SCREENING_RECOMPUTE_V1 — physical counterfactual engine for REMOVE scenarios.
+"""SCREENING_RECOMPUTE_V1 — physical counterfactual engine (P5/P6).
 
-This module derives the counterfactual by actually re-running the P4 physics
+Counterfactual graphs are derived by actually re-running the P4 physics
 (SGP4 propagation -> conservative coarse screening -> refined TCA) in memory:
 
-* G0' ("baseline-prime"): every propagable stored solution, target included.
-* Gs  (scenario graph):   the same pipeline with the target excluded from the
-  input catalog (FULL), or with only affected-set-touching pairs re-refined and
-  physically-untouched edges reused from G0' (AFFECTED_SUBGRAPH).
+* G0' ("baseline-prime"): every propagable stored solution, unmodified.
+* Gs per intervention:    the same pipeline over the modified object set —
+  REMOVE excludes the object, SUBSTITUTE replaces its mean elements (the
+  candidate-OCM primitive). FULL re-screens everything; AFFECTED_SUBGRAPH
+  re-refines only pairs touching the affected set and reuses the physically
+  untouched G0' edges.
 
-Benefit = R_i(G0') - R_i(Gs) is therefore a difference of two physically
-derived graphs, never a graph-surgery artifact. Newly created edges (possible
-for trajectory-change interventions, impossible for REMOVE under independent
-propagation) are detected and reported instead of being structurally denied.
+Removed, changed and newly created edges are detected by comparing the two
+derived graphs — new edges are impossible for REMOVE under independent
+propagation (asserted, reported as an anomaly if violated) and expected for
+trajectory substitutions, which is exactly the candidate-OCM new-risk signal.
 
 Nothing here writes to the operational conjunction tables: scenario physics is
 computed in memory and persisted only through the risk-graph snapshot path
-with explicit scenario provenance.
+with explicit scenario provenance. Advisory only — no command path exists.
 """
 
+import dataclasses
 import hashlib
 import json
 import time
@@ -41,6 +44,9 @@ from backend.orbit.propagator import Sgp4Propagator
 PHYSICAL_METHOD = METHOD_PHYSICAL
 PHYSICAL_MODEL_VERSION = "p5-physical-recompute-v1"
 
+INTERVENTION_REMOVE = "REMOVE"
+INTERVENTION_SUBSTITUTE = "SUBSTITUTE"
+
 
 @dataclass(frozen=True)
 class SolutionEntry:
@@ -57,6 +63,19 @@ class SolutionEntry:
 
 
 @dataclass(frozen=True)
+class Intervention:
+    """One counterfactual modification of the input catalog."""
+
+    kind: str  # INTERVENTION_REMOVE | INTERVENTION_SUBSTITUTE
+    object_id: str
+    candidate_id: str | None = None
+    element_overrides: dict[str, float] | None = None  # SUBSTITUTE only
+
+    def label(self) -> str:
+        return self.candidate_id or f"{self.kind}:{self.object_id}"
+
+
+@dataclass(frozen=True)
 class PipelineRun:
     """Outcome of one in-memory screening pass over an entry set."""
 
@@ -70,8 +89,50 @@ class PipelineRun:
 
 
 @dataclass(frozen=True)
+class BaselinePrime:
+    """Shared physically derived G0' for one or many interventions."""
+
+    graph: RiskGraph
+    run: PipelineRun
+    input_hash: str
+
+
+@dataclass(frozen=True)
+class EdgeDelta:
+    key: tuple[str, str, str]
+    baseline_value: float | None
+    scenario_value: float | None
+
+
+@dataclass(frozen=True)
+class CandidateOutcome:
+    """One intervention's derived Gs plus the edge comparison ledger."""
+
+    intervention: Intervention
+    scenario_graph: RiskGraph
+    removed_edges: list[EdgeDelta]
+    new_edges: list[EdgeDelta]
+    changed_edges: list[EdgeDelta]
+    reused_edge_count: int
+    recomputed_edge_count: int
+    run: PipelineRun
+
+    @property
+    def removed_edge_keys(self) -> list[tuple[str, str, str]]:
+        return [delta.key for delta in self.removed_edges]
+
+    @property
+    def new_edge_keys(self) -> list[tuple[str, str, str]]:
+        return [delta.key for delta in self.new_edges]
+
+    @property
+    def changed_edge_keys(self) -> list[tuple[str, str, str]]:
+        return [delta.key for delta in self.changed_edges]
+
+
+@dataclass(frozen=True)
 class PhysicalCounterfactual:
-    """Both physically derived graphs plus the comparison ledger."""
+    """Single-REMOVE view kept for the P5 scenario service."""
 
     baseline_prime: RiskGraph
     scenario_graph: RiskGraph
@@ -142,6 +203,28 @@ def recompute_input_hash(
         separators=(",", ":"),
     )
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def apply_intervention(
+    entries: list[SolutionEntry], intervention: Intervention
+) -> list[SolutionEntry]:
+    """Return the modified input catalog; never mutates stored solutions."""
+    if intervention.kind == INTERVENTION_REMOVE:
+        return [e for e in entries if e.object_id != intervention.object_id]
+    if intervention.kind == INTERVENTION_SUBSTITUTE:
+        overrides = intervention.element_overrides or {}
+        modified: list[SolutionEntry] = []
+        for entry in entries:
+            if entry.object_id != intervention.object_id:
+                modified.append(entry)
+                continue
+            new_elements = dataclasses.replace(
+                entry.elements,
+                mean_elements={**entry.elements.mean_elements, **overrides},
+            )
+            modified.append(dataclasses.replace(entry, elements=new_elements))
+        return modified
+    raise ValueError(f"unknown intervention kind: {intervention.kind}")
 
 
 def _screen_entries(
@@ -289,6 +372,131 @@ def _graph_from_rows(
     )
 
 
+def compute_baseline_prime(
+    *,
+    entries: list[SolutionEntry],
+    window_start: datetime,
+    window_stop: datetime,
+    screening_config: ScreeningConfig,
+    graph_config: BaselineConfig,
+    snapshot_label: str,
+    ut1_utc_offset_seconds: float,
+) -> BaselinePrime:
+    """Derive G0' once; every candidate intervention compares against it."""
+    input_hash = recompute_input_hash(entries, screening_config, window_start, window_stop)
+    run = _screen_entries(
+        entries,
+        window_start,
+        window_stop,
+        screening_config,
+        input_hash,
+        ut1_utc_offset_seconds=ut1_utc_offset_seconds,
+    )
+    graph = _graph_from_rows(
+        run.event_rows, snapshot_label, window_start, window_stop, graph_config
+    )
+    return BaselinePrime(graph=graph, run=run, input_hash=input_hash)
+
+
+def derive_candidate(
+    *,
+    entries: list[SolutionEntry],
+    baseline: BaselinePrime,
+    intervention: Intervention,
+    extra_affected_ids: frozenset[str],
+    window_start: datetime,
+    window_stop: datetime,
+    screening_config: ScreeningConfig,
+    graph_config: BaselineConfig,
+    recompute_mode: str,
+    snapshot_label: str,
+    ut1_utc_offset_seconds: float,
+) -> CandidateOutcome:
+    """Derive one intervention's Gs against the shared G0'.
+
+    The affected set is the intervened object plus its G0' neighbors plus any
+    caller-supplied shell candidates; the intervened object itself always sits
+    in the recompute region, so a SUBSTITUTE that moves it into a new orbital
+    neighborhood still gets its new-region pairs refined (coarse candidates
+    touch the object and therefore pass the pair filter).
+    """
+    affected_ids = (
+        frozenset(extra_affected_ids)
+        | baseline.graph.neighbors_of(intervention.object_id)
+        | {intervention.object_id}
+    )
+    modified_entries = apply_intervention(entries, intervention)
+
+    if recompute_mode == "AFFECTED_SUBGRAPH":
+        recompute_ids = affected_ids
+        run = _screen_entries(
+            modified_entries,
+            window_start,
+            window_stop,
+            screening_config,
+            baseline.input_hash,
+            ut1_utc_offset_seconds=ut1_utc_offset_seconds,
+            pair_filter_ids=recompute_ids,
+        )
+        reused_rows = [
+            row
+            for row in baseline.run.event_rows
+            if row["primary_object_id"] not in affected_ids
+            and row["secondary_object_id"] not in affected_ids
+        ]
+        scenario_rows = [*reused_rows, *run.event_rows]
+        reused_count = len(reused_rows)
+    else:
+        run = _screen_entries(
+            modified_entries,
+            window_start,
+            window_stop,
+            screening_config,
+            baseline.input_hash,
+            ut1_utc_offset_seconds=ut1_utc_offset_seconds,
+        )
+        scenario_rows = run.event_rows
+        reused_count = 0
+
+    scenario_graph = _graph_from_rows(
+        scenario_rows, snapshot_label, window_start, window_stop, graph_config
+    )
+
+    baseline_keys = {edge.identity_key(): edge for edge in baseline.graph.edges}
+    scenario_keys = {edge.identity_key(): edge for edge in scenario_graph.edges}
+    removed = [
+        EdgeDelta(key=key, baseline_value=edge.metric_value, scenario_value=None)
+        for key, edge in sorted(baseline_keys.items())
+        if edge.involves(intervention.object_id) and key not in scenario_keys
+    ]
+    new_edges = [
+        EdgeDelta(key=key, baseline_value=None, scenario_value=edge.metric_value)
+        for key, edge in sorted(scenario_keys.items())
+        if key not in baseline_keys
+    ]
+    changed = [
+        EdgeDelta(
+            key=key,
+            baseline_value=baseline_keys[key].metric_value,
+            scenario_value=edge.metric_value,
+        )
+        for key, edge in sorted(scenario_keys.items())
+        if key in baseline_keys
+        and baseline_keys[key].metric_value != edge.metric_value
+    ]
+
+    return CandidateOutcome(
+        intervention=intervention,
+        scenario_graph=scenario_graph,
+        removed_edges=removed,
+        new_edges=new_edges,
+        changed_edges=changed,
+        reused_edge_count=reused_count,
+        recomputed_edge_count=len(run.event_rows),
+        run=run,
+    )
+
+
 def run_physical_counterfactual(
     *,
     entries: list[SolutionEntry],
@@ -303,102 +511,41 @@ def run_physical_counterfactual(
     scenario_snapshot_label: str,
     ut1_utc_offset_seconds: float,
 ) -> PhysicalCounterfactual:
-    """Derive G0' and Gs physically; Gs never sees the target's solution."""
-    input_hash = recompute_input_hash(entries, screening_config, window_start, window_stop)
-
-    baseline_run = _screen_entries(
-        entries,
-        window_start,
-        window_stop,
-        screening_config,
-        input_hash,
+    """Single-REMOVE convenience wrapper used by the P5 scenario service."""
+    baseline = compute_baseline_prime(
+        entries=entries,
+        window_start=window_start,
+        window_stop=window_stop,
+        screening_config=screening_config,
+        graph_config=graph_config,
+        snapshot_label=baseline_snapshot_label,
         ut1_utc_offset_seconds=ut1_utc_offset_seconds,
     )
-    baseline_prime = _graph_from_rows(
-        baseline_run.event_rows,
-        baseline_snapshot_label,
-        window_start,
-        window_stop,
-        graph_config,
+    outcome = derive_candidate(
+        entries=entries,
+        baseline=baseline,
+        intervention=Intervention(
+            kind=INTERVENTION_REMOVE, object_id=target_object_id
+        ),
+        extra_affected_ids=affected_object_ids,
+        window_start=window_start,
+        window_stop=window_stop,
+        screening_config=screening_config,
+        graph_config=graph_config,
+        recompute_mode=recompute_mode,
+        snapshot_label=scenario_snapshot_label,
+        ut1_utc_offset_seconds=ut1_utc_offset_seconds,
     )
-
-    scenario_entries = [e for e in entries if e.object_id != target_object_id]
-    # The affected set is augmented with the target's neighbors as physically
-    # observed in G0' so drift between the stored baseline and current inputs
-    # can never leave a touched pair outside the recompute region.
-    affected_object_ids = (
-        frozenset(affected_object_ids)
-        | baseline_prime.neighbors_of(target_object_id)
-        | {target_object_id}
-    )
-    if recompute_mode == "AFFECTED_SUBGRAPH":
-        # Physically-untouched edges (no endpoint in the affected set) are
-        # reused from G0'; only affected-touching pairs are re-refined.
-        recompute_ids = frozenset(affected_object_ids) - {target_object_id}
-        scenario_run = _screen_entries(
-            scenario_entries,
-            window_start,
-            window_stop,
-            screening_config,
-            input_hash,
-            ut1_utc_offset_seconds=ut1_utc_offset_seconds,
-            pair_filter_ids=recompute_ids,
-        )
-        reused_rows = [
-            row
-            for row in baseline_run.event_rows
-            if row["primary_object_id"] not in affected_object_ids
-            and row["secondary_object_id"] not in affected_object_ids
-        ]
-        scenario_rows = [*reused_rows, *scenario_run.event_rows]
-        reused_count = len(reused_rows)
-        recomputed_count = len(scenario_run.event_rows)
-    else:
-        scenario_run = _screen_entries(
-            scenario_entries,
-            window_start,
-            window_stop,
-            screening_config,
-            input_hash,
-            ut1_utc_offset_seconds=ut1_utc_offset_seconds,
-        )
-        scenario_rows = scenario_run.event_rows
-        reused_count = 0
-        recomputed_count = len(scenario_run.event_rows)
-
-    scenario_graph = _graph_from_rows(
-        scenario_rows,
-        scenario_snapshot_label,
-        window_start,
-        window_stop,
-        graph_config,
-    )
-
-    baseline_keys = {edge.identity_key(): edge for edge in baseline_prime.edges}
-    scenario_keys = {edge.identity_key(): edge for edge in scenario_graph.edges}
-    removed = sorted(
-        key
-        for key, edge in baseline_keys.items()
-        if edge.involves(target_object_id) and key not in scenario_keys
-    )
-    new_edges = sorted(key for key in scenario_keys if key not in baseline_keys)
-    changed = sorted(
-        key
-        for key, edge in scenario_keys.items()
-        if key in baseline_keys
-        and baseline_keys[key].metric_value != edge.metric_value
-    )
-
     return PhysicalCounterfactual(
-        baseline_prime=baseline_prime,
-        scenario_graph=scenario_graph,
-        removed_edge_keys=removed,
-        new_edge_keys=new_edges,
-        changed_edge_keys=changed,
-        reused_edge_count=reused_count,
-        recomputed_edge_count=recomputed_count,
-        baseline_run=baseline_run,
-        scenario_run=scenario_run,
-        input_hash=input_hash,
-        failures=[*baseline_run.failures, *scenario_run.failures],
+        baseline_prime=baseline.graph,
+        scenario_graph=outcome.scenario_graph,
+        removed_edge_keys=outcome.removed_edge_keys,
+        new_edge_keys=outcome.new_edge_keys,
+        changed_edge_keys=outcome.changed_edge_keys,
+        reused_edge_count=outcome.reused_edge_count,
+        recomputed_edge_count=outcome.recomputed_edge_count,
+        baseline_run=baseline.run,
+        scenario_run=outcome.run,
+        input_hash=baseline.input_hash,
+        failures=[*baseline.run.failures, *outcome.run.failures],
     )

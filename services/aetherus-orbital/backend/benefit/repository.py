@@ -374,7 +374,7 @@ class BenefitRepository:
         self,
         *,
         kind: str,
-        target_object_id: str,
+        target_object_id: str | None,
         baseline_snapshot_id: str,
         effective_time: datetime | None,
         parameters: dict[str, Any],
@@ -382,6 +382,7 @@ class BenefitRepository:
         requested_metrics: list[str],
         model_version: str,
         input_hash: str,
+        protected_object_id: str | None = None,
     ) -> str:
         async with get_db_session() as session:
             result = await session.execute(
@@ -393,7 +394,7 @@ class BenefitRepository:
                         parameters, assumptions, status,
                         model_version, input_hash, requested_metrics
                     ) VALUES (
-                        :kind, CAST(:target AS uuid), NULL,
+                        :kind, CAST(:target AS uuid), CAST(:protected AS uuid),
                         :baseline_id, :effective_time,
                         CAST(:parameters AS jsonb), CAST(:assumptions AS jsonb),
                         'DRAFT',
@@ -406,6 +407,7 @@ class BenefitRepository:
                 {
                     "kind": kind,
                     "target": target_object_id,
+                    "protected": protected_object_id,
                     "baseline_id": baseline_snapshot_id,
                     "effective_time": effective_time,
                     "parameters": _json(parameters),
@@ -416,6 +418,31 @@ class BenefitRepository:
                 },
             )
             return str(result.scalar_one())
+
+    async def object_identities(
+        self, object_ids: list[str]
+    ) -> dict[str, dict[str, Any]]:
+        """Canonical catalog_id/name for a bounded id set (payload shaping)."""
+        if not object_ids:
+            return {}
+        async with get_db_session() as session:
+            result = await session.execute(
+                text(
+                    """
+                    SELECT id::text AS object_id, catalog_id, canonical_name
+                    FROM space_object
+                    WHERE id::text = ANY(:ids)
+                    """
+                ),
+                {"ids": object_ids},
+            )
+            return {
+                str(row["object_id"]): {
+                    "catalog_id": row["catalog_id"],
+                    "canonical_name": row["canonical_name"],
+                }
+                for row in result.mappings().all()
+            }
 
     async def get_scenario(self, scenario_id: str) -> dict[str, Any] | None:
         async with get_db_session() as session:
@@ -564,6 +591,11 @@ class BenefitRepository:
                     "horizon": attribution.horizon,
                     "provenance_json": _json(attribution.provenance),
                     "validation_state": validation_state,
+                    "candidate_ref": str(
+                        attribution.provenance.get("candidate_object_id")
+                        or attribution.provenance.get("candidate_id")
+                        or ""
+                    ),
                 }
             )
         async with get_db_session() as session:
@@ -575,14 +607,16 @@ class BenefitRepository:
                         benefit_class, metric_type,
                         baseline_value, scenario_value, benefit_value,
                         confidence, uncertainty_low, uncertainty_high,
-                        horizon, provenance_json, validation_state
+                        horizon, provenance_json, validation_state,
+                        candidate_ref
                     ) VALUES (
                         CAST(:run_id AS uuid), CAST(:beneficiary AS uuid),
                         :benefit_class, :metric_type,
                         :baseline_value, :scenario_value, :benefit_value,
                         NULL, NULL, NULL,
                         :horizon, CAST(:provenance_json AS jsonb),
-                        :validation_state
+                        :validation_state,
+                        :candidate_ref
                     )
                     """
                 ),

@@ -23,6 +23,7 @@ P4_TESTS = [
     "tests/integration/test_conjunctions_api.py",
 ]
 CORPUS_TEST = "tests/integration/test_ca_10k_corpus.py"
+P6_TESTS = ["tests/integration/test_p6_protect_ocm.py"]
 P5_TESTS = [
     "tests/integration/test_p5_physical_counterfactual.py",
     "tests/unit/test_benefit_engine.py",
@@ -55,7 +56,7 @@ def pytest_summary(files: list[str]) -> dict:
 def main() -> None:
     evidence = {
         "phase": "p8",
-        "orbital_phase": "ORB-P4 + ORB-P5(physical engine)",
+        "orbital_phase": "ORB-P4 + ORB-P5(physical engine) + ORB-P6(PROTECT/OCM)",
         "gate": "PARTIAL",
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "repository": run(["git", "-C", str(REPO_ROOT), "remote", "get-url", "origin"]),
@@ -64,6 +65,21 @@ def main() -> None:
         "tests_p4_core": pytest_summary(P4_TESTS),
         "tests_10k_corpus": pytest_summary([CORPUS_TEST]),
         "tests_p5": pytest_summary(P5_TESTS),
+        "tests_p6": pytest_summary(P6_TESTS),
+        "p6_protect_ocm": {
+            "protect": (
+                "PROTECT Y 역질의: G0' 이웃을 후보로 물리 REMOVE counterfactual을"
+                " 후보별 파생(G0' 1회 공유), Benefit(k→Y) 랭킹을 결정론적으로 산출."
+                " kind=PROTECT 시나리오·PUBLIC_SCREENING benefit 행 영속."
+            ),
+            "candidate_ocm": (
+                "후보 기동 = 평균요소 치환(SUBSTITUTE) 후 공통 외부 집합 대상 재실행."
+                " 해소/변경/신규 엣지와 악화 객체를 보고 — 합성 corpus에서 무모한"
+                " 후보가 E/F 셸 진입 시 신규 근접 엣지가 물리로 검출됨을 검증."
+            ),
+            "advisory_boundary": "모든 응답에 ADVISORY_ONLY — 지휘·송신 경로 부존재",
+            "schema": "migrations 010(kind 확장)·011(benefit_result candidate_ref)",
+        },
         "p5_physical_engine": {
             "method": "SCREENING_RECOMPUTE_V1 (backend/benefit/physical.py)",
             "mechanism": (
@@ -94,7 +110,7 @@ def main() -> None:
             ],
         },
         "limitations": [
-            "ORB-P6 PROTECT/OCM 미착수 — V2-P8의 나머지 구간이므로 gate PARTIAL 유지",
+            "OCM 후보는 평균요소 치환 근사 — CCSDS OCM 문서 파싱·기동 델타V 모델은 후속",
             "물리 엔진 대규모(10k) full-vs-selective 성능 벤치마크는 후속 (기능 동등성은 검증 완료)",
             "BEN-001/BEN-003 정량 검증 corpus의 물리 엔진 재생성은 후속 (823 산출물은 HISTORICAL 보존)",
             "Space-Track CDM 라이브 미검증 (자격증명 부재 — 픽스처 경로만)",

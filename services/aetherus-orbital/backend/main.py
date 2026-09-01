@@ -545,6 +545,63 @@ async def create_scenario(
     )
 
 
+class ProtectRankingRequest(BaseModel):
+    """PROTECT reverse-query contract (P6). Advisory only."""
+
+    protected: str = Field(description="Protected catalog_id or canonical object UUID")
+    baseline_snapshot_id: str | None = Field(
+        default=None,
+        description="Baseline to anchor provenance; defaults to the latest operational baseline",
+    )
+    recompute_mode: str | None = Field(
+        default=None, description="FULL or AFFECTED_SUBGRAPH (default)"
+    )
+
+
+class OcmCandidateSpec(BaseModel):
+    candidate_id: str = Field(description="Unique label for this candidate maneuver")
+    element_overrides: dict[str, float] = Field(
+        description="Mean-element substitutions (e.g. mean_motion_rev_per_day)"
+    )
+    note: str | None = None
+
+
+class OcmGroupRequest(BaseModel):
+    """Candidate-OCM group contract (P6). Advisory only — nothing is commanded."""
+
+    target: str = Field(description="Maneuvering object catalog_id or UUID")
+    candidates: list[OcmCandidateSpec] = Field(description="1..8 candidate maneuvers")
+    baseline_snapshot_id: str | None = None
+    recompute_mode: str | None = None
+
+
+@app.post(f"{settings.api_prefix}/v1/protect/rankings", status_code=202)
+async def run_protect_ranking(
+    payload: ProtectRankingRequest,
+    service: BenefitService = Depends(get_benefit_service),
+):
+    """PROTECT Y: rank REMOVE candidates by physically derived Benefit(k->Y)."""
+    return await service.run_protect_ranking(
+        protected_ref=payload.protected,
+        baseline_snapshot_id=payload.baseline_snapshot_id,
+        recompute_mode=payload.recompute_mode or "AFFECTED_SUBGRAPH",
+    )
+
+
+@app.post(f"{settings.api_prefix}/v1/scenarios/ocm-groups", status_code=202)
+async def run_ocm_group(
+    payload: OcmGroupRequest,
+    service: BenefitService = Depends(get_benefit_service),
+):
+    """Evaluate nominal + candidate OCMs; removed/changed/new edges reported."""
+    return await service.run_ocm_group(
+        target_ref=payload.target,
+        candidates_payload=[candidate.model_dump() for candidate in payload.candidates],
+        baseline_snapshot_id=payload.baseline_snapshot_id,
+        recompute_mode=payload.recompute_mode or "AFFECTED_SUBGRAPH",
+    )
+
+
 @app.post(f"{settings.api_prefix}/v1/scenarios/{{scenario_id}}/run", status_code=202)
 async def run_scenario(
     scenario_id: str,

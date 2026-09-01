@@ -44,9 +44,18 @@ from backend.benefit.models import (
     build_scenario_config_hash,
 )
 from backend.benefit.physical import (
+    INTERVENTION_REMOVE,
+    INTERVENTION_SUBSTITUTE,
     PHYSICAL_MODEL_VERSION,
+    Intervention,
     build_entries,
+    compute_baseline_prime,
+    derive_candidate,
     run_physical_counterfactual,
+)
+from backend.benefit.protect import (
+    evaluate_ocm_candidate,
+    rank_protect_candidates,
 )
 from backend.benefit.repository import BenefitRepository, new_baseline_snapshot_id
 from backend.config import settings
@@ -367,7 +376,8 @@ class BenefitService:
             raise ScenarioNotFoundError()
         if scenario["kind"] != "REMOVE":
             raise ScenarioInvalidError(
-                "Only REMOVE scenarios are executable in P5",
+                "Only REMOVE scenarios run through this endpoint; PROTECT uses "
+                "/v1/protect/rankings and CANDIDATE_OCM uses /v1/scenarios/ocm-groups",
                 {"kind": scenario["kind"]},
             )
         mode = recompute_mode or str(
@@ -812,6 +822,913 @@ class BenefitService:
         assert stored_run is not None
         return await self._run_payload(scenario, stored_run, affected=affected)
 
+    # ------------------------------------------------------------------ #
+    # P6: PROTECT reverse ranking / candidate-OCM groups (advisory only)
+    # ------------------------------------------------------------------ #
+
+    async def _persist_scenario_graph(
+        self,
+        *,
+        graph,
+        run_stats,
+        role: str,
+        scenario_id: str,
+        run_id: str,
+        mode: str,
+        stored_baseline_id: str,
+        graph_config: BaselineConfig,
+        config_hash: str,
+        input_hash: str,
+        extra_provenance: dict[str, Any] | None = None,
+    ) -> None:
+        await self.repository.insert_baseline_snapshot(
+            snapshot_id=graph.snapshot_id,
+            horizon_start=graph.horizon_start,
+            horizon_end=graph.horizon_end,
+            event_count=len(run_stats.event_rows),
+            edge_count=len(graph.edges),
+            object_count=len(graph.objects()),
+            model_id=RISK_GRAPH_MODEL_ID,
+            model_version=PHYSICAL_MODEL_VERSION,
+            config_payload=graph_config.to_payload(),
+            config_hash=config_hash,
+            input_hash=input_hash,
+            graph_hash=graph.graph_hash,
+            data_status="OK" if graph.edges else "INSUFFICIENT_DATA",
+            status_reason=None if graph.edges else "NO_RECOMPUTED_EDGES",
+            validation_state=VALIDATION_STATE_OPERATIONAL,
+            provenance={
+                "role": role,
+                "scenario_id": scenario_id,
+                "scenario_run_id": run_id,
+                "counterfactual_method": METHOD_PHYSICAL,
+                "recompute_mode": mode,
+                "pipeline": {
+                    "pairs_before_screening": run_stats.pairs_before_screening,
+                    "pairs_after_coarse": run_stats.pairs_after_coarse,
+                    "tca_refinements": run_stats.tca_refinements,
+                    "objects_propagated": run_stats.objects_propagated,
+                    "compute_ms": run_stats.compute_ms,
+                },
+                "stored_baseline_snapshot_id": stored_baseline_id,
+                **(extra_provenance or {}),
+            },
+        )
+        await self.repository.insert_risk_edges(
+            graph.snapshot_id, list(graph.edges), VALIDATION_STATE_OPERATIONAL
+        )
+
+    async def _resolve_operational_baseline(
+        self, baseline_snapshot_id: str | None
+    ) -> dict[str, Any]:
+        if baseline_snapshot_id is None:
+            latest = await self.repository.latest_operational_baseline()
+            if latest is None:
+                raise BaselineMissingError(
+                    "No operational baseline risk graph exists; build one from "
+                    "stored conjunction results first",
+                    {"hint": "POST /api/v1/baselines"},
+                )
+            baseline_snapshot_id = str(latest["id"])
+        baseline = await self.repository.get_baseline_row(baseline_snapshot_id)
+        if baseline is None:
+            raise BaselineMissingError(
+                "The referenced baseline graph does not exist",
+                {"baseline_snapshot_id": baseline_snapshot_id},
+            )
+        return baseline
+
+    @staticmethod
+    def _shell_extras(
+        envelope: tuple[float, float] | None,
+        envelopes: dict[str, tuple[float, float]],
+        margin_km: float,
+    ) -> frozenset[str]:
+        from backend.benefit.graph import shells_overlap
+
+        if envelope is None:
+            return frozenset()
+        return frozenset(
+            object_id
+            for object_id, candidate in envelopes.items()
+            if shells_overlap(envelope, candidate, margin_km)
+        )
+
+    async def run_protect_ranking(
+        self,
+        *,
+        protected_ref: str,
+        baseline_snapshot_id: str | None = None,
+        recompute_mode: str = "AFFECTED_SUBGRAPH",
+        max_candidates: int = 32,
+    ) -> dict[str, Any]:
+        """PROTECT Y: rank REMOVE candidates by physically derived Benefit(k->Y)."""
+        if recompute_mode not in ("FULL", "AFFECTED_SUBGRAPH"):
+            raise ScenarioInvalidError(
+                "recompute_mode must be FULL or AFFECTED_SUBGRAPH",
+                {"recompute_mode": recompute_mode},
+            )
+        protected = await self.repository.resolve_object(protected_ref)
+        if protected is None:
+            from backend.ingestion.errors import UnknownObjectError
+
+            raise UnknownObjectError(
+                "No canonical object matches the requested protected object"
+            )
+        protected_id = str(protected["object_id"])
+        baseline_row = await self._resolve_operational_baseline(baseline_snapshot_id)
+
+        metrics = METRIC_CHANNELS
+        thresholds = {
+            metric: float(settings.benefit_thresholds.get(metric, 0.0))
+            for metric in metrics
+        }
+        run_config = ScenarioConfig(
+            metric_types=metrics,
+            thresholds=thresholds,
+            recompute_mode=recompute_mode,
+            counterfactual_method=METHOD_PHYSICAL,
+        )
+        config_hash = build_scenario_config_hash(run_config)
+        assumptions = [
+            METHOD_PHYSICAL,
+            "PROTECT is a reverse query: each candidate is evaluated as a "
+            "physically recomputed REMOVE counterfactual and ranked by its "
+            "benefit to the protected object.",
+            "Advisory only: no object is removed, commanded, or altered, and "
+            "no command path exists.",
+        ]
+        parameters = {
+            **run_config.to_payload(),
+            "protected_object_id": protected_id,
+            "protected_catalog_id": protected["catalog_id"],
+            "baseline_graph_hash": baseline_row["graph_hash"],
+            "max_candidates": max_candidates,
+        }
+        scenario_id = await self.repository.create_scenario(
+            kind="PROTECT",
+            target_object_id=None,
+            protected_object_id=protected_id,
+            baseline_snapshot_id=str(baseline_row["id"]),
+            effective_time=None,
+            parameters=parameters,
+            assumptions=assumptions,
+            requested_metrics=list(metrics),
+            model_version=BENEFIT_MODEL_VERSION,
+            input_hash=_scenario_input_hash(parameters, baseline_row["input_hash"]),
+        )
+        run_id = await self.repository.create_scenario_run(
+            scenario_id=scenario_id,
+            recompute_mode=recompute_mode,
+            config_hash=config_hash,
+            thresholds=thresholds,
+            validation_state=VALIDATION_STATE_OPERATIONAL,
+        )
+
+        started = time.perf_counter()
+        tracemalloc.start()
+
+        async def _insufficient(reason: str, message: str) -> dict[str, Any]:
+            _, peak = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
+            await self.repository.finalize_scenario_run(
+                run_id,
+                status="SUCCEEDED",
+                data_status="INSUFFICIENT_DATA",
+                status_reason=reason,
+                affected_object_count=0,
+                affected_edge_count=0,
+                reused_baseline_edge_count=0,
+                baseline_edge_count=0,
+                scenario_edge_count=0,
+                compute_ms=int((time.perf_counter() - started) * 1000),
+                peak_memory_bytes=int(peak),
+                input_hash=str(parameters["baseline_graph_hash"]),
+                model_id=BENEFIT_MODEL_ID,
+                result_hash_value=None,
+                warnings=[_advisory_disclaimer(), {"code": reason, "message": message}],
+                error=None,
+            )
+            return self._protect_payload(
+                scenario_id=scenario_id,
+                run_id=run_id,
+                protected=protected,
+                data_status="INSUFFICIENT_DATA",
+                status_reason=reason,
+                ranking=[],
+                accounting=None,
+                warnings=[_advisory_disclaimer(), {"code": reason, "message": message}],
+                assumptions=assumptions,
+                provenance={
+                    "baseline_snapshot_id": str(baseline_row["id"]),
+                    "config_hash": config_hash,
+                },
+            )
+
+        try:
+            solutions = await ConjunctionRepository().load_screenable_solutions(
+                settings.screening_max_objects
+            )
+            entries, _skipped = build_entries(solutions, to_mean_elements)
+            if all(entry.object_id != protected_id for entry in entries):
+                return await _insufficient(
+                    "PROTECTED_NOT_PROPAGABLE",
+                    "The protected object has no propagable stored solution.",
+                )
+            if len(entries) < 2:
+                return await _insufficient(
+                    "NO_PROPAGABLE_SOLUTIONS",
+                    "Fewer than two propagable solutions exist.",
+                )
+
+            horizon_start = _parse_utc(baseline_row["horizon_start"])
+            horizon_end = _parse_utc(baseline_row["horizon_end"])
+            screening_config = _screening_config_for_window(horizon_start, horizon_end)
+            graph_config = BaselineConfig(
+                horizon_hours=max(
+                    (horizon_end - horizon_start).total_seconds() / 3600.0, 0.01
+                )
+            )
+
+            baseline_prime_id = new_baseline_snapshot_id()
+            baseline_prime = compute_baseline_prime(
+                entries=entries,
+                window_start=horizon_start,
+                window_stop=horizon_end,
+                screening_config=screening_config,
+                graph_config=graph_config,
+                snapshot_label=baseline_prime_id,
+                ut1_utc_offset_seconds=settings.ut1_utc_offset_seconds,
+            )
+            await self._persist_scenario_graph(
+                graph=baseline_prime.graph,
+                run_stats=baseline_prime.run,
+                role="SCENARIO_BASELINE_PRIME",
+                scenario_id=scenario_id,
+                run_id=run_id,
+                mode=recompute_mode,
+                stored_baseline_id=str(baseline_row["id"]),
+                graph_config=graph_config,
+                config_hash=config_hash,
+                input_hash=baseline_prime.input_hash,
+            )
+
+            candidates = sorted(baseline_prime.graph.neighbors_of(protected_id))
+            warnings: list[dict[str, Any]] = [_advisory_disclaimer()]
+            if len(candidates) > max_candidates:
+                warnings.append(
+                    {
+                        "code": "CANDIDATE_CAP_APPLIED",
+                        "message": f"{len(candidates)} candidates truncated to "
+                        f"{max_candidates}; ranking covers the retained set only.",
+                        "dropped": len(candidates) - max_candidates,
+                    }
+                )
+                candidates = candidates[:max_candidates]
+            if not candidates:
+                return await _insufficient(
+                    "NO_BASELINE_EDGES_FOR_PROTECTED",
+                    "The protected object has no incident recomputed edges; no "
+                    "candidate is invented.",
+                )
+
+            envelopes = await self.repository.load_object_envelopes(
+                settings.benefit_max_objects
+            )
+            outcomes = []
+            for candidate_id in candidates:
+                outcome = derive_candidate(
+                    entries=entries,
+                    baseline=baseline_prime,
+                    intervention=Intervention(
+                        kind=INTERVENTION_REMOVE, object_id=candidate_id
+                    ),
+                    extra_affected_ids=self._shell_extras(
+                        envelopes.get(candidate_id),
+                        envelopes,
+                        settings.benefit_shell_margin_km,
+                    ),
+                    window_start=horizon_start,
+                    window_stop=horizon_end,
+                    screening_config=screening_config,
+                    graph_config=graph_config,
+                    recompute_mode=recompute_mode,
+                    snapshot_label=new_baseline_snapshot_id(),
+                    ut1_utc_offset_seconds=settings.ut1_utc_offset_seconds,
+                )
+                await self._persist_scenario_graph(
+                    graph=outcome.scenario_graph,
+                    run_stats=outcome.run,
+                    role="SCENARIO_PROTECT_CANDIDATE",
+                    scenario_id=scenario_id,
+                    run_id=run_id,
+                    mode=recompute_mode,
+                    stored_baseline_id=str(baseline_row["id"]),
+                    graph_config=graph_config,
+                    config_hash=config_hash,
+                    input_hash=baseline_prime.input_hash,
+                    extra_provenance={"candidate_object_id": candidate_id},
+                )
+                outcomes.append(outcome)
+
+            ranks = rank_protect_candidates(
+                baseline_prime, protected_id, outcomes, metrics
+            )
+            _, peak_bytes = tracemalloc.get_traced_memory()
+        finally:
+            if tracemalloc.is_tracing():
+                tracemalloc.stop()
+
+        compute_ms = int((time.perf_counter() - started) * 1000)
+        anomalies = [o for o in outcomes if o.new_edges]
+        if anomalies:
+            warnings.append(
+                {
+                    "code": "ANOMALOUS_NEW_EDGES_FOR_REMOVE",
+                    "message": "One or more REMOVE candidates produced new edges; "
+                    "results are PARTIAL for investigation.",
+                    "candidates": [a.intervention.object_id for a in anomalies],
+                }
+            )
+        failures = [
+            *baseline_prime.run.failures,
+            *(f for o in outcomes for f in o.run.failures),
+        ]
+        if failures:
+            warnings.append(
+                {"code": "PROPAGATION_FAILURES_PRESENT", "failure_count": len(failures)}
+            )
+
+        horizon = horizon_label_from_parts(
+            baseline_prime.graph.horizon_start, baseline_prime.graph.horizon_end
+        )
+        attributions = []
+        for position, rank in enumerate(ranks, start=1):
+            for metric in metrics:
+                benefit_value = rank.benefits.get(metric, 0.0)
+                threshold = thresholds[metric]
+                if not benefit_value > threshold:
+                    continue
+                baseline_value = baseline_prime.graph.object_risk(protected_id, metric)
+                from backend.benefit.models import BeneficiaryAttribution
+
+                attributions.append(
+                    BeneficiaryAttribution(
+                        beneficiary_object_id=protected_id,
+                        benefit_class="DIRECT",
+                        metric_type=metric,
+                        baseline_value=baseline_value,
+                        scenario_value=baseline_value - benefit_value,
+                        benefit_value=benefit_value,
+                        threshold=threshold,
+                        horizon=horizon,
+                        provenance={
+                            "query": "PROTECT",
+                            "candidate_object_id": rank.candidate_object_id,
+                            "rank_position": position,
+                            "scenario_graph_id": rank.scenario_graph_id,
+                            "counterfactual_method": METHOD_PHYSICAL,
+                            "recompute_input_hash": baseline_prime.input_hash,
+                        },
+                    )
+                )
+
+        data_status = "PARTIAL" if (anomalies or failures) else "OK"
+        status_reason = (
+            "ANOMALOUS_NEW_EDGES_FOR_REMOVE"
+            if anomalies
+            else ("COMPLETED_WITH_PROPAGATION_FAILURES" if failures else None)
+        )
+        payload_for_hash = {
+            "query": "PROTECT",
+            "scenario_id": scenario_id,
+            "protected_object_id": protected_id,
+            "candidates": [rank.candidate_object_id for rank in ranks],
+            "metric_types": list(metrics),
+            "thresholds": {key: thresholds[key] for key in sorted(thresholds)},
+        }
+        hash_value = result_hash(payload_for_hash, attributions, baseline_prime.graph)
+
+        await self.repository.finalize_scenario_run(
+            run_id,
+            status="PARTIAL" if data_status == "PARTIAL" else "SUCCEEDED",
+            data_status=data_status,
+            status_reason=status_reason,
+            affected_object_count=len(candidates),
+            affected_edge_count=sum(len(o.removed_edges) for o in outcomes),
+            reused_baseline_edge_count=sum(o.reused_edge_count for o in outcomes),
+            baseline_edge_count=len(baseline_prime.graph.edges),
+            scenario_edge_count=sum(len(o.scenario_graph.edges) for o in outcomes),
+            compute_ms=compute_ms,
+            peak_memory_bytes=int(peak_bytes),
+            input_hash=baseline_prime.input_hash,
+            model_id=BENEFIT_MODEL_ID,
+            result_hash_value=hash_value,
+            warnings=warnings,
+            error=None,
+        )
+        await self.repository.insert_benefit_results(
+            run_id, attributions, validation_state=VALIDATION_STATE_OPERATIONAL
+        )
+
+        identities = await self.repository.object_identities(
+            [rank.candidate_object_id for rank in ranks]
+        )
+        ranking_payload = [
+            {
+                "rank": position,
+                "candidate": {
+                    "object_id": rank.candidate_object_id,
+                    **identities.get(rank.candidate_object_id, {}),
+                },
+                "benefits": rank.benefits,
+                "removed_edge_count": rank.removed_edge_count,
+                "new_edge_count": rank.new_edge_count,
+                "changed_edge_count": rank.changed_edge_count,
+                "scenario_graph_id": rank.scenario_graph_id,
+                "scenario_graph_hash": rank.scenario_graph_hash,
+            }
+            for position, rank in enumerate(ranks, start=1)
+        ]
+        return self._protect_payload(
+            scenario_id=scenario_id,
+            run_id=run_id,
+            protected=protected,
+            data_status=data_status,
+            status_reason=status_reason,
+            ranking=ranking_payload,
+            accounting={
+                "baseline_prime_graph_id": baseline_prime_id,
+                "baseline_prime_graph_hash": baseline_prime.graph.graph_hash,
+                "candidate_count": len(candidates),
+                "recompute_mode": recompute_mode,
+                "compute_ms": compute_ms,
+            },
+            warnings=warnings,
+            assumptions=assumptions,
+            provenance={
+                "baseline_snapshot_id": str(baseline_row["id"]),
+                "baseline_graph_hash": baseline_row["graph_hash"],
+                "config_hash": config_hash,
+                "recompute_input_hash": baseline_prime.input_hash,
+                "result_hash": hash_value,
+                "model_id": BENEFIT_MODEL_ID,
+                "model_version": PHYSICAL_MODEL_VERSION,
+            },
+        )
+
+    def _protect_payload(
+        self,
+        *,
+        scenario_id: str,
+        run_id: str,
+        protected: dict[str, Any],
+        data_status: str,
+        status_reason: str | None,
+        ranking: list[dict[str, Any]],
+        accounting: dict[str, Any] | None,
+        warnings: list[dict[str, Any]],
+        assumptions: list[str],
+        provenance: dict[str, Any],
+    ) -> dict[str, Any]:
+        return {
+            "request_id": str(uuid.uuid4()),
+            "generated_at": _now(),
+            "data_status": data_status,
+            "status_reason": status_reason,
+            "data": {
+                "scenario_id": scenario_id,
+                "run_id": run_id,
+                "kind": "PROTECT",
+                "protected": {
+                    "object_id": str(protected["object_id"]),
+                    "catalog_id": protected.get("catalog_id"),
+                    "canonical_name": protected.get("canonical_name"),
+                },
+                "candidate_count": len(ranking),
+                "ranking": ranking,
+                "accounting": accounting,
+                "assumptions": assumptions,
+            },
+            "provenance": provenance,
+            "warnings": warnings,
+        }
+
+    async def run_ocm_group(
+        self,
+        *,
+        target_ref: str,
+        candidates_payload: list[dict[str, Any]],
+        baseline_snapshot_id: str | None = None,
+        recompute_mode: str = "AFFECTED_SUBGRAPH",
+    ) -> dict[str, Any]:
+        """Evaluate nominal + candidate OCMs against the common external set."""
+        if recompute_mode not in ("FULL", "AFFECTED_SUBGRAPH"):
+            raise ScenarioInvalidError(
+                "recompute_mode must be FULL or AFFECTED_SUBGRAPH",
+                {"recompute_mode": recompute_mode},
+            )
+        if not candidates_payload or len(candidates_payload) > 8:
+            raise ScenarioInvalidError(
+                "An OCM group needs 1..8 candidate maneuvers",
+                {"candidate_count": len(candidates_payload or [])},
+            )
+        seen_ids: set[str] = set()
+        for candidate in candidates_payload:
+            candidate_id = str(candidate.get("candidate_id") or "").strip()
+            overrides = candidate.get("element_overrides")
+            if not candidate_id or candidate_id in seen_ids:
+                raise ScenarioInvalidError(
+                    "Every OCM candidate needs a unique candidate_id",
+                    {"candidate_id": candidate_id},
+                )
+            seen_ids.add(candidate_id)
+            if not isinstance(overrides, dict) or not overrides:
+                raise ScenarioInvalidError(
+                    "element_overrides must be a non-empty numeric mapping",
+                    {"candidate_id": candidate_id},
+                )
+            for key, value in overrides.items():
+                if not isinstance(value, (int, float)) or isinstance(value, bool):
+                    raise ScenarioInvalidError(
+                        "element_overrides values must be numeric",
+                        {"candidate_id": candidate_id, "key": key},
+                    )
+
+        target = await self.repository.resolve_object(target_ref)
+        if target is None:
+            from backend.ingestion.errors import UnknownObjectError
+
+            raise UnknownObjectError(
+                "No canonical object matches the requested maneuver target"
+            )
+        target_id = str(target["object_id"])
+        baseline_row = await self._resolve_operational_baseline(baseline_snapshot_id)
+
+        metrics = METRIC_CHANNELS
+        thresholds = {
+            metric: float(settings.benefit_thresholds.get(metric, 0.0))
+            for metric in metrics
+        }
+        run_config = ScenarioConfig(
+            metric_types=metrics,
+            thresholds=thresholds,
+            recompute_mode=recompute_mode,
+            counterfactual_method=METHOD_PHYSICAL,
+        )
+        config_hash = build_scenario_config_hash(run_config)
+        assumptions = [
+            METHOD_PHYSICAL,
+            "Each candidate substitutes the target's mean elements and re-runs "
+            "the P4 pipeline against the common external object set.",
+            "Removed, changed AND newly created conjunction edges are reported; "
+            "a maneuver's new risk is never hidden.",
+            "Advisory only: no maneuver is commanded and no command path exists.",
+        ]
+        parameters = {
+            **run_config.to_payload(),
+            "target_catalog_id": target["catalog_id"],
+            "target_object_id": target_id,
+            "baseline_graph_hash": baseline_row["graph_hash"],
+            "candidates": candidates_payload,
+        }
+        scenario_id = await self.repository.create_scenario(
+            kind="CANDIDATE_OCM",
+            target_object_id=target_id,
+            baseline_snapshot_id=str(baseline_row["id"]),
+            effective_time=None,
+            parameters=parameters,
+            assumptions=assumptions,
+            requested_metrics=list(metrics),
+            model_version=BENEFIT_MODEL_VERSION,
+            input_hash=_scenario_input_hash(parameters, baseline_row["input_hash"]),
+        )
+        run_id = await self.repository.create_scenario_run(
+            scenario_id=scenario_id,
+            recompute_mode=recompute_mode,
+            config_hash=config_hash,
+            thresholds=thresholds,
+            validation_state=VALIDATION_STATE_OPERATIONAL,
+        )
+
+        started = time.perf_counter()
+        tracemalloc.start()
+        try:
+            solutions = await ConjunctionRepository().load_screenable_solutions(
+                settings.screening_max_objects
+            )
+            entries, _skipped = build_entries(solutions, to_mean_elements)
+            target_entry = next(
+                (entry for entry in entries if entry.object_id == target_id), None
+            )
+            if target_entry is None or len(entries) < 2:
+                _, peak = tracemalloc.get_traced_memory()
+                tracemalloc.stop()
+                reason = (
+                    "TARGET_NOT_PROPAGABLE"
+                    if target_entry is None
+                    else "NO_PROPAGABLE_SOLUTIONS"
+                )
+                await self.repository.finalize_scenario_run(
+                    run_id,
+                    status="SUCCEEDED",
+                    data_status="INSUFFICIENT_DATA",
+                    status_reason=reason,
+                    affected_object_count=0,
+                    affected_edge_count=0,
+                    reused_baseline_edge_count=0,
+                    baseline_edge_count=0,
+                    scenario_edge_count=0,
+                    compute_ms=int((time.perf_counter() - started) * 1000),
+                    peak_memory_bytes=int(peak),
+                    input_hash=str(parameters["baseline_graph_hash"]),
+                    model_id=BENEFIT_MODEL_ID,
+                    result_hash_value=None,
+                    warnings=[_advisory_disclaimer()],
+                    error=None,
+                )
+                return self._ocm_payload(
+                    scenario_id=scenario_id,
+                    run_id=run_id,
+                    target=target,
+                    data_status="INSUFFICIENT_DATA",
+                    status_reason=reason,
+                    nominal=None,
+                    evaluations=[],
+                    warnings=[_advisory_disclaimer()],
+                    assumptions=assumptions,
+                    provenance={"baseline_snapshot_id": str(baseline_row["id"])},
+                )
+
+            horizon_start = _parse_utc(baseline_row["horizon_start"])
+            horizon_end = _parse_utc(baseline_row["horizon_end"])
+            screening_config = _screening_config_for_window(horizon_start, horizon_end)
+            graph_config = BaselineConfig(
+                horizon_hours=max(
+                    (horizon_end - horizon_start).total_seconds() / 3600.0, 0.01
+                )
+            )
+
+            baseline_prime_id = new_baseline_snapshot_id()
+            baseline_prime = compute_baseline_prime(
+                entries=entries,
+                window_start=horizon_start,
+                window_stop=horizon_end,
+                screening_config=screening_config,
+                graph_config=graph_config,
+                snapshot_label=baseline_prime_id,
+                ut1_utc_offset_seconds=settings.ut1_utc_offset_seconds,
+            )
+            await self._persist_scenario_graph(
+                graph=baseline_prime.graph,
+                run_stats=baseline_prime.run,
+                role="SCENARIO_BASELINE_PRIME",
+                scenario_id=scenario_id,
+                run_id=run_id,
+                mode=recompute_mode,
+                stored_baseline_id=str(baseline_row["id"]),
+                graph_config=graph_config,
+                config_hash=config_hash,
+                input_hash=baseline_prime.input_hash,
+            )
+
+            from backend.benefit.graph import orbital_envelope
+
+            envelopes = await self.repository.load_object_envelopes(
+                settings.benefit_max_objects
+            )
+            outcomes = []
+            for candidate in candidates_payload:
+                overrides = {
+                    str(key): float(value)
+                    for key, value in candidate["element_overrides"].items()
+                }
+                new_elements = {**target_entry.elements.mean_elements, **overrides}
+                new_envelope = orbital_envelope(
+                    new_elements.get("mean_motion_rev_per_day"),
+                    new_elements.get("eccentricity"),
+                )
+                extra = self._shell_extras(
+                    envelopes.get(target_id), envelopes, settings.benefit_shell_margin_km
+                ) | self._shell_extras(
+                    new_envelope, envelopes, settings.benefit_shell_margin_km
+                )
+                outcome = derive_candidate(
+                    entries=entries,
+                    baseline=baseline_prime,
+                    intervention=Intervention(
+                        kind=INTERVENTION_SUBSTITUTE,
+                        object_id=target_id,
+                        candidate_id=str(candidate["candidate_id"]),
+                        element_overrides=overrides,
+                    ),
+                    extra_affected_ids=extra,
+                    window_start=horizon_start,
+                    window_stop=horizon_end,
+                    screening_config=screening_config,
+                    graph_config=graph_config,
+                    recompute_mode=recompute_mode,
+                    snapshot_label=new_baseline_snapshot_id(),
+                    ut1_utc_offset_seconds=settings.ut1_utc_offset_seconds,
+                )
+                await self._persist_scenario_graph(
+                    graph=outcome.scenario_graph,
+                    run_stats=outcome.run,
+                    role="SCENARIO_OCM_CANDIDATE",
+                    scenario_id=scenario_id,
+                    run_id=run_id,
+                    mode=recompute_mode,
+                    stored_baseline_id=str(baseline_row["id"]),
+                    graph_config=graph_config,
+                    config_hash=config_hash,
+                    input_hash=baseline_prime.input_hash,
+                    extra_provenance={
+                        "candidate_id": str(candidate["candidate_id"]),
+                        "element_overrides": overrides,
+                    },
+                )
+                outcomes.append(outcome)
+
+            evaluations = [
+                evaluate_ocm_candidate(baseline_prime, outcome, target_id, metrics)
+                for outcome in outcomes
+            ]
+            _, peak_bytes = tracemalloc.get_traced_memory()
+        finally:
+            if tracemalloc.is_tracing():
+                tracemalloc.stop()
+
+        compute_ms = int((time.perf_counter() - started) * 1000)
+        warnings = [_advisory_disclaimer()]
+        failures = [
+            *baseline_prime.run.failures,
+            *(f for o in outcomes for f in o.run.failures),
+        ]
+        if failures:
+            warnings.append(
+                {"code": "PROPAGATION_FAILURES_PRESENT", "failure_count": len(failures)}
+            )
+        new_risk_candidates = [e for e in evaluations if e["new_edge_count"]]
+        if new_risk_candidates:
+            warnings.append(
+                {
+                    "code": "CANDIDATE_CREATES_NEW_CONJUNCTIONS",
+                    "message": "One or more candidate maneuvers create conjunction "
+                    "edges that do not exist in the nominal graph.",
+                    "candidates": [e["candidate_id"] for e in new_risk_candidates],
+                }
+            )
+
+        horizon = horizon_label_from_parts(
+            baseline_prime.graph.horizon_start, baseline_prime.graph.horizon_end
+        )
+        from backend.benefit.models import BeneficiaryAttribution
+
+        attributions = []
+        for outcome in outcomes:
+            all_objects = (
+                baseline_prime.graph.objects() | outcome.scenario_graph.objects()
+            )
+            for object_id in sorted(all_objects):
+                for metric in metrics:
+                    before = baseline_prime.graph.object_risk(object_id, metric)
+                    after = outcome.scenario_graph.object_risk(object_id, metric)
+                    benefit_value = before - after
+                    if not benefit_value > thresholds[metric]:
+                        continue
+                    attributions.append(
+                        BeneficiaryAttribution(
+                            beneficiary_object_id=object_id,
+                            benefit_class="DIRECT",
+                            metric_type=metric,
+                            baseline_value=before,
+                            scenario_value=after,
+                            benefit_value=benefit_value,
+                            threshold=thresholds[metric],
+                            horizon=horizon,
+                            provenance={
+                                "query": "CANDIDATE_OCM",
+                                "candidate_id": outcome.intervention.label(),
+                                "scenario_graph_id": outcome.scenario_graph.snapshot_id,
+                                "counterfactual_method": METHOD_PHYSICAL,
+                                "recompute_input_hash": baseline_prime.input_hash,
+                            },
+                        )
+                    )
+
+        data_status = "PARTIAL" if failures else "OK"
+        status_reason = "COMPLETED_WITH_PROPAGATION_FAILURES" if failures else None
+        payload_for_hash = {
+            "query": "CANDIDATE_OCM",
+            "scenario_id": scenario_id,
+            "target_object_id": target_id,
+            "candidates": [e["candidate_id"] for e in evaluations],
+            "metric_types": list(metrics),
+        }
+        hash_value = result_hash(payload_for_hash, attributions, baseline_prime.graph)
+
+        await self.repository.finalize_scenario_run(
+            run_id,
+            status="PARTIAL" if failures else "SUCCEEDED",
+            data_status=data_status,
+            status_reason=status_reason,
+            affected_object_count=len(
+                {w["object_id"] for e in evaluations for w in e["objects_with_worsened_risk"]}
+            ),
+            affected_edge_count=sum(
+                e["removed_edge_count"] + e["new_edge_count"] + e["changed_edge_count"]
+                for e in evaluations
+            ),
+            reused_baseline_edge_count=sum(o.reused_edge_count for o in outcomes),
+            baseline_edge_count=len(baseline_prime.graph.edges),
+            scenario_edge_count=sum(len(o.scenario_graph.edges) for o in outcomes),
+            compute_ms=compute_ms,
+            peak_memory_bytes=int(peak_bytes),
+            input_hash=baseline_prime.input_hash,
+            model_id=BENEFIT_MODEL_ID,
+            result_hash_value=hash_value,
+            warnings=warnings,
+            error=None,
+        )
+        await self.repository.insert_benefit_results(
+            run_id, attributions, validation_state=VALIDATION_STATE_OPERATIONAL
+        )
+
+        worsened_ids = [
+            w["object_id"] for e in evaluations for w in e["objects_with_worsened_risk"]
+        ]
+        identities = await self.repository.object_identities(worsened_ids)
+        for evaluation in evaluations:
+            for worsened in evaluation["objects_with_worsened_risk"]:
+                worsened.update(identities.get(worsened["object_id"], {}))
+
+        nominal = {
+            "graph_id": baseline_prime_id,
+            "graph_hash": baseline_prime.graph.graph_hash,
+            "edge_count": len(baseline_prime.graph.edges),
+            "target_risk": {
+                metric: baseline_prime.graph.object_risk(target_id, metric)
+                for metric in metrics
+            },
+        }
+        return self._ocm_payload(
+            scenario_id=scenario_id,
+            run_id=run_id,
+            target=target,
+            data_status=data_status,
+            status_reason=status_reason,
+            nominal=nominal,
+            evaluations=evaluations,
+            warnings=warnings,
+            assumptions=assumptions,
+            provenance={
+                "baseline_snapshot_id": str(baseline_row["id"]),
+                "baseline_graph_hash": baseline_row["graph_hash"],
+                "config_hash": config_hash,
+                "recompute_input_hash": baseline_prime.input_hash,
+                "result_hash": hash_value,
+                "model_id": BENEFIT_MODEL_ID,
+                "model_version": PHYSICAL_MODEL_VERSION,
+            },
+        )
+
+    def _ocm_payload(
+        self,
+        *,
+        scenario_id: str,
+        run_id: str,
+        target: dict[str, Any],
+        data_status: str,
+        status_reason: str | None,
+        nominal: dict[str, Any] | None,
+        evaluations: list[dict[str, Any]],
+        warnings: list[dict[str, Any]],
+        assumptions: list[str],
+        provenance: dict[str, Any],
+    ) -> dict[str, Any]:
+        return {
+            "request_id": str(uuid.uuid4()),
+            "generated_at": _now(),
+            "data_status": data_status,
+            "status_reason": status_reason,
+            "data": {
+                "scenario_id": scenario_id,
+                "run_id": run_id,
+                "kind": "CANDIDATE_OCM",
+                "target": {
+                    "object_id": str(target["object_id"]),
+                    "catalog_id": target.get("catalog_id"),
+                    "canonical_name": target.get("canonical_name"),
+                },
+                "nominal": nominal,
+                "candidate_count": len(evaluations),
+                "candidates": evaluations,
+                "assumptions": assumptions,
+            },
+            "provenance": provenance,
+            "warnings": warnings,
+        }
+
     async def scenario_benefits(self, scenario_id: str) -> dict[str, Any]:
         """Serve persisted beneficiaries for the latest completed run."""
         scenario = await self.repository.get_scenario(scenario_id)
@@ -1021,6 +1938,31 @@ class BenefitService:
                 }
             ],
         }
+
+
+def _advisory_disclaimer() -> dict[str, Any]:
+    return {
+        "code": "ADVISORY_ONLY",
+        "message": (
+            "PROTECT/OCM results are physically recomputed counterfactual "
+            "rankings for decision support. No object is removed or commanded; "
+            "no command or transmission path exists in this system."
+        ),
+    }
+
+
+def _screening_config_for_window(
+    window_start: datetime, window_stop: datetime
+) -> ScreeningConfig:
+    return ScreeningConfig(
+        window_hours=max((window_stop - window_start).total_seconds() / 3600.0, 0.01),
+        coarse_step_seconds=settings.screening_coarse_step_seconds,
+        screening_threshold_m=settings.screening_threshold_m,
+        shell_margin_km=settings.screening_shell_margin_km,
+        max_objects=settings.screening_max_objects,
+        hbr_m=settings.screening_hbr_m,
+        refine_step_seconds=settings.screening_refine_step_seconds,
+    )
 
 
 def _physical_disclaimer() -> dict[str, Any]:

@@ -227,11 +227,13 @@ class TestBenefitServiceRemove:
             dataset="simulation-isolation",
         )
         latest = await benefit_repository.latest_operational_baseline()
-        rows = await benefit_repository.list_baselines(include_simulation=True, limit=50)
-        simulations = [
-            row for row in rows if row["validation_state"] == "SIMULATION_ONLY"
-        ]
-        assert simulations, "seeded SIMULATION_ONLY baselines must be listed explicitly"
+        # Page scans are volume-dependent (a busy DB pushes the fixed-id seed
+        # off the newest page); the isolation invariant is checked by identity.
+        seeded = await benefit_repository.get_baseline_row(
+            "bg-test-simulation-isolation"
+        )
+        assert seeded is not None
+        assert seeded["validation_state"] == "SIMULATION_ONLY"
         if latest is not None:
             assert latest["validation_state"] == "PUBLIC_SCREENING"
 

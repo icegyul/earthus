@@ -1,0 +1,169 @@
+{
+  "generated": "2026-09-01",
+  "package_version": "1.2.1",
+  "release_type": "corrective",
+  "correction": "Added the IMPLEMENTATION_ORDER.md file that START_HERE_CODEX.md, README_CODEX.md, and PACKAGE_INDEX.md already required.",
+  "canonical_spec": "MASTER_DEVELOPMENT_SPEC.md",
+  "files": [
+    {
+      "path": "ALGORITHM_SPEC.md",
+      "sha256": "b2b9b1e2aba71ce4e86ca3a946cb609a5a19ddde99d6fe31c9ce063bcd082e14",
+      "bytes": 1875
+    },
+    {
+      "path": "DATA_CONTRACTS.md",
+      "sha256": "38f9957b66445c21866139b6e19b6a8be130bfdc1129b30f479e00ea6521c9a6",
+      "bytes": 1019
+    },
+    {
+      "path": "IMPLEMENTATION_ORDER.md",
+      "sha256": "3f5a3096b97106f871f877160671d52b58141180af660001cdf191c0a687c5af",
+      "bytes": 24583
+    },
+    {
+      "path": "KIPO_FILING_NOTE.md",
+      "sha256": "733c7770adc3ea0a1bf8df245d8211bde6232ac956f83f822fd6e099c0e4c3a1",
+      "bytes": 338
+    },
+    {
+      "path": "MASTER_DEVELOPMENT_SPEC.md",
+      "sha256": "ccc4cbbd63ce9b6ae08263c51a8b8085097a7f568aea3c67d49c10dba5c4b740",
+      "bytes": 116388
+    },
+    {
+      "path": "PACKAGE_INDEX.md",
+      "sha256": "13fde724c11ce4e81e014d856fe6e0f8983da4b99807b0d6c2deb7be2935f5c2",
+      "bytes": 617
+    },
+    {
+      "path": "PATENT_SOURCE_MAP.md",
+      "sha256": "c274e4ccaaa3ae0626ce0889cb0ccda02aa9264737a8ee63e0344e24907ab4f4",
+      "bytes": 423
+    },
+    {
+      "path": "PHASE_TASK_CARDS.md",
+      "sha256": "c35d168951e83a6e3dbebdab4ea6ab744493d1742b46361f863f94306f26e73b",
+      "bytes": 3687
+    },
+    {
+      "path": "QUALITY_GATES.md",
+      "sha256": "828414fe6591199635acba8a8f46d81ff6e44157a49092fa4d8dc189d33558bc",
+      "bytes": 808
+    },
+    {
+      "path": "README_CODEX.md",
+      "sha256": "d7ddf66b575d3cff9b5deb4bda44ef4147f49acceef15b7c0402523332c13983",
+      "bytes": 1282
+    },
+    {
+      "path": "START_HERE_CODEX.md",
+      "sha256": "5188dc310b05988c5a24a4a3b1c7f7155157351307aeaf1bd1a07cad96620fab",
+      "bytes": 2450
+    },
+    {
+      "path": "acceptance_matrix.csv",
+      "sha256": "e04f23c9c8b2589561615809107480a155f346291f44778cd8d1a422e5a1248f",
+      "bytes": 2909
+    },
+    {
+      "path": "docs/Aetherus_Orbital_Environment_개발지침서_v1.1_초상세본.docx",
+      "sha256": "93a3a07709d814b814939ab7e51544c67439fc44d1cf4dafc9fd97d73392545e",
+      "bytes": 529435
+    },
+    {
+      "path": "docs/Aetherus_우주물체_개입효과_특허명세서_마스터_v2.0.docx",
+      "sha256": "aef8f486d4c74d2ac6ba22e879579d4e40f2fd9e4eab71c3ac47d93f0ac56eb5",
+      "bytes": 1933380
+    },
+    {
+      "path": "env.example",
+      "sha256": "e525733e44c17d58a974635ab4bbc550d496d2af43dad53d4ed238d594ba4b1c",
+      "bytes": 276
+    },
+    {
+      "path": "figures/architecture.png",
+      "sha256": "b92de5258a3ec81a7bd6f84ccebba661534270bde936c82c2d4fb5f607508aaf",
+      "bytes": 114910
+    },
+    {
+      "path": "figures/benefit_engine.png",
+      "sha256": "ae1af4ebd8864944653f7ab01bd6e80a3268bb3162cbc40f4f8f756ef57f5668",
+      "bytes": 87114
+    },
+    {
+      "path": "figures/citizen_loop.png",
+      "sha256": "74ad0ebebd509edf24c3b29b7b8385fd9bceeac3d86767fb042ec9fe159067a5",
+      "bytes": 102405
+    },
+    {
+      "path": "figures/product_layers.png",
+      "sha256": "4cf51295de719392ef1b5ab0ff870955f4e63701190605ea95da5a4246f4a5bb",
+      "bytes": 106822
+    },
+    {
+      "path": "figures/quality_gate.png",
+      "sha256": "4585b7994c1507ff97a51f1f103d95e9d112cc39274e3a951014b649df350262",
+      "bytes": 98782
+    },
+    {
+      "path": "openapi.yaml",
+      "sha256": "32629196b87894bd1d80763a2707fb914b7066ab9d82724b7bd0751dc4b092b1",
+      "bytes": 3121
+    },
+    {
+      "path": "schema.sql",
+      "sha256": "c5ec6f67ae863e4eb11eabd2315ca0a75af736fe9e955d94dba85d1e52816818",
+      "bytes": 9186
+    },
+    {
+      "path": "schemas/benefit_result.schema.json",
+      "sha256": "7181f330a1a4defdc7b5be7d84b415523e30f458e225d2de11c0df6bf4ebcfd9",
+      "bytes": 1356
+    },
+    {
+      "path": "schemas/intervention_scenario.schema.json",
+      "sha256": "8ba33ec0514164a4c8ac891942fcc9757315a78a52924ddc3c2e3970edb5135a",
+      "bytes": 1185
+    },
+    {
+      "path": "schemas/observation_submission.schema.json",
+      "sha256": "bba36b2e7692f5134650a0e3768d82ba06f254ff98ca52923778f0988a3a377c",
+      "bytes": 912
+    },
+    {
+      "path": "schemas/space_object.schema.json",
+      "sha256": "2afcac462980df3310f84fe97eef10586c8e412060175a525b292eb67744c02d",
+      "bytes": 1720
+    },
+    {
+      "path": "validation/Aetherus_v1.2_실증_메타데이터.json",
+      "sha256": "a3d431e27c77b016ba9c7b9a133bf2cf10a065eaf754dfe2fd375d87c2a25021",
+      "bytes": 1974
+    },
+    {
+      "path": "validation/Aetherus_v1.2_실증_스크리닝결과.csv",
+      "sha256": "72246efd3e0f4615c0f016398ac38993b1604aa6f3c4f5b3e0c018551cea0dc3",
+      "bytes": 4527
+    },
+    {
+      "path": "validation/Aetherus_v1.3_정량Benefit_검증.csv",
+      "sha256": "029a7ddc55af48217801291e58590fe8aa85580916b1bd6515313b308f712055",
+      "bytes": 938
+    },
+    {
+      "path": "validation/Aetherus_v1.3_정량Benefit_메타데이터.json",
+      "sha256": "129d5e786a5508ebc2a8f187238f3395b85e0afd7d5e2cabe6c62522261f8d06",
+      "bytes": 3540
+    },
+    {
+      "path": "validation/Aetherus_v1.4_TraCSS_CDM_Pc_검증.csv",
+      "sha256": "a21797aebece44e3c260ee16c18e8e97c49d1ee64e59796df7e755f47bbd7799",
+      "bytes": 1038
+    },
+    {
+      "path": "validation/Aetherus_v1.4_TraCSS_CDM_검증_메타데이터.json",
+      "sha256": "6196cdfed4bde0a1c94867ccb90e5009b1b5009a280b68fb4ef3de79a651defa",
+      "bytes": 3049
+    }
+  ]
+}

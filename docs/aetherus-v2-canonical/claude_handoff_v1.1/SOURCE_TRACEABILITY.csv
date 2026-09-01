@@ -1,0 +1,17 @@
+﻿concept,source,implementation,classification
+Engine/AI/Intelligence/LLM separation,INTELLIGENCE_CONCEPT,"E38-E44,L01-L08",SOURCE-DERIVED
+Evidence/Event/Revision/Confidence/Uncertainty,INTELLIGENCE_CONCEPT,"E03,E41-E43",SOURCE-DERIVED
+Counterfactual/Attribution/Decision,INTELLIGENCE_CONCEPT + PATENT,"E31-E33,E44",SOURCE-DERIVED
+Beneficiary Attribution,PATENT_MASTER,"E31,E44",SOURCE-DERIVED
+PROTECT reverse query,PATENT_MASTER,"E33,E44",SOURCE-DERIVED
+Affected Subgraph,PATENT_MASTER + ORBITAL_DEV,E32,SOURCE-DERIVED
+Risk Provenance/Pc separation,PATENT_MASTER + ORBITAL_DEV,"E03,E22",SOURCE-DERIVED
+Orbit/CA/Reentry/Observation/Genealogy,ORBITAL_DEV,E20-E30,SOURCE-DERIVED
+SPACE Solar System domain,USER V2 DIRECTION,"E08-E12,E34-E35",V2-NEW
+CONTROL Mission Control domain,USER V2 DIRECTION + UI REFERENCES,"E13-E19,S03,S06",V2-NEW
+LEO/MEO/GEO Orbital Stack,USER V2 DIRECTION,"E24,E36",V2-NEW
+Universal Time/Persistent Universe State,USER V2 DIRECTION,"E04,E06,E35",V2-NEW
+Subscription/MY AETHERUS,USER V2 DIRECTION,S02-S04,V2-NEW
+LLM tool/control layer,USER V2 DIRECTION + INTELLIGENCE_CONCEPT,L01-L08,V2-NEW/DERIVED
+V2-NEW,Intelligence Connection Matrix,Conversation 2026-08-30,Engine/Intelligence direct/context/tool/consumer boundaries
+V2-NEW,Final Build & Local Execution Plan,Conversation 2026-08-30,What can be built locally vs live/deployment validation

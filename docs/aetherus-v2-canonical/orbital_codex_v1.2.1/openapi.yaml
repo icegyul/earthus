@@ -1,0 +1,73 @@
+openapi: 3.1.0
+info:
+  title: Aetherus Orbital Environment API
+  version: 1.0.0
+servers:
+  - url: /api
+paths:
+  /v1/objects:
+    get:
+      summary: Search canonical space objects
+      parameters:
+        - {name: q, in: query, schema: {type: string}}
+        - {name: object_type, in: query, schema: {type: string}}
+        - {name: origin_code, in: query, schema: {type: string}}
+      responses: {'200': {description: OK}}
+  /v1/objects/{object_id}:
+    get:
+      summary: Object metadata with provenance
+      parameters: [{name: object_id, in: path, required: true, schema: {type: string}}]
+      responses: {'200': {description: OK}, '404': {description: Not found}}
+  /v1/objects/{object_id}/ephemeris:
+    get:
+      summary: Propagated ephemeris; never silently mixes model classes
+      parameters:
+        - {name: object_id, in: path, required: true, schema: {type: string}}
+        - {name: start, in: query, required: true, schema: {type: string, format: date-time}}
+        - {name: stop, in: query, required: true, schema: {type: string, format: date-time}}
+        - {name: step_s, in: query, schema: {type: integer, minimum: 1, maximum: 3600}}
+      responses: {'200': {description: OK}}
+  /v1/conjunctions:
+    get:
+      summary: List conjunction events with source grade and risk provenance
+      responses: {'200': {description: OK}}
+  /v1/scenarios:
+    post:
+      summary: Create intervention scenario; computation is asynchronous
+      responses: {'202': {description: Accepted}, '422': {description: Validation error}}
+  /v1/scenarios/{scenario_id}/run:
+    post:
+      summary: Run baseline/counterfactual comparison
+      responses: {'202': {description: Accepted}}
+  /v1/scenarios/{scenario_id}/benefits:
+    get:
+      summary: Retrieve beneficiary objects and metric-specific benefit values
+      responses: {'200': {description: OK}, '409': {description: Scenario not completed}}
+  /v1/protect/{object_id}/candidates:
+    post:
+      summary: Reverse query - rank candidate interventions for a protected object
+      responses: {'202': {description: Accepted}}
+  /v1/observations/requests:
+    get:
+      summary: Observation missions ranked by scientific information value
+      responses: {'200': {description: OK}}
+  /v1/observations/submissions:
+    post:
+      summary: Submit citizen/research observation; starts QA pipeline
+      responses: {'202': {description: Accepted}}
+  /v1/research/datasets:
+    get:
+      summary: Versioned downloadable research datasets
+      responses: {'200': {description: OK}}
+  /v1/operations/fleets/{fleet_id}/risk:
+    get:
+      summary: Fleet exposure; enterprise authorization required
+      responses: {'200': {description: OK}, '403': {description: Forbidden}}
+  /v1/operations/fleets/{fleet_id}/maneuver-candidates:
+    post:
+      summary: Compare candidate ephemerides/OCMs including newly created risk edges
+      responses: {'202': {description: Accepted}}
+  /v1/orbital-weather/current:
+    get:
+      summary: Research-grade orbital environment summary; non-official labels clearly marked
+      responses: {'200': {description: OK}}

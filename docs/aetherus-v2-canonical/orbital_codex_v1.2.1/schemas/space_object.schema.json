@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpaceObject",
+  "type": "object",
+  "required": [
+    "object_id",
+    "catalog_id",
+    "object_type",
+    "provenance"
+  ],
+  "properties": {
+    "object_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "catalog_id": {
+      "type": "string",
+      "description": "NORAD/SATCAT ID as string; must support >5 digits"
+    },
+    "cospar_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "object_type": {
+      "enum": [
+        "PAYLOAD_ACTIVE",
+        "PAYLOAD_INACTIVE",
+        "ROCKET_BODY",
+        "DEBRIS",
+        "UNKNOWN"
+      ]
+    },
+    "origin_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "launch_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "decay_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "mass_kg": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "rcs_m2": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "status": {
+      "type": "string"
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "source_id",
+        "retrieved_at"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string"
+        },
+        "retrieved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_record_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

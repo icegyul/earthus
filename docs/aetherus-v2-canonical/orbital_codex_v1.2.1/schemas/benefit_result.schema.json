@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BenefitResult",
+  "type": "object",
+  "required": [
+    "scenario_id",
+    "target_object_id",
+    "beneficiary_object_id",
+    "metric_type",
+    "baseline_value",
+    "scenario_value",
+    "benefit_value",
+    "provenance"
+  ],
+  "properties": {
+    "scenario_id": {
+      "type": "string"
+    },
+    "target_object_id": {
+      "type": "string"
+    },
+    "beneficiary_object_id": {
+      "type": "string"
+    },
+    "benefit_class": {
+      "enum": [
+        "DIRECT",
+        "INDIRECT_FRAGMENTATION",
+        "ENVIRONMENT"
+      ]
+    },
+    "metric_type": {
+      "enum": [
+        "PC",
+        "MAX_PC",
+        "MISS_DISTANCE_RISK",
+        "CONJUNCTION_EXPOSURE",
+        "DENSITY",
+        "FRAGMENTATION",
+        "COMPOSITE_RESEARCH"
+      ]
+    },
+    "baseline_value": {
+      "type": "number"
+    },
+    "scenario_value": {
+      "type": "number"
+    },
+    "benefit_value": {
+      "type": "number"
+    },
+    "confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "uncertainty_low": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "uncertainty_high": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "provenance": {
+      "type": "object"
+    }
+  }
+}

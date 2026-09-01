@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ObservationSubmission",
+  "type": "object",
+  "required": [
+    "request_id",
+    "station_id",
+    "observed_at",
+    "measurement_type",
+    "raw_payload_hash"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string"
+    },
+    "station_id": {
+      "type": "string"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "measurement_type": {
+      "enum": [
+        "RA_DEC",
+        "AZ_EL",
+        "RANGE",
+        "RANGE_RATE",
+        "PHOTOMETRY",
+        "IMAGE_ASTROMETRY"
+      ]
+    },
+    "values": {
+      "type": "object"
+    },
+    "time_accuracy_ms": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "equipment": {
+      "type": "object"
+    },
+    "raw_payload_hash": {
+      "type": "string"
+    },
+    "license": {
+      "type": "string"
+    }
+  }
+}

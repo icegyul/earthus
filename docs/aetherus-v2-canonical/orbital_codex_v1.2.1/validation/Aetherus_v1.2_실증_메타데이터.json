@@ -1,0 +1,59 @@
+{
+  "model_version": "ADI-Proto-0.1",
+  "created_kst": "2026-08-23",
+  "H2A_target": {
+    "norad": 33500,
+    "name": "H-2A R/B",
+    "period": 95.77,
+    "inc": 98.2186,
+    "perigee": 534.407,
+    "apogee": 576.789,
+    "epoch": "2026-08-19T13:39:04Z",
+    "source": "Satcat / Space-Track source"
+  },
+  "KITSAT3_target": {
+    "norad": 25756,
+    "name": "KITSAT 3",
+    "period": 98.85,
+    "inc": 98.6144,
+    "perigee": 693.557,
+    "apogee": 714.017,
+    "epoch": "2026-08-14T16:49:19Z",
+    "source": "Satcat / Space-Track source"
+  },
+  "screening_formulas": {
+    "H2A": "0.45*exp(-radial_gap/20)+0.30*exp(-period_diff/1.5)+0.25*exp(-inclination_diff/0.75)",
+    "KITSAT3": "0.65*exp(-radial_gap/20)+0.35*exp(-period_diff/1.5)"
+  },
+  "important": "Scores are dimensionless coarse-screening ranks, not collision probabilities or removal recommendations.",
+  "benchmark": {
+    "benchmark_type": "computational performance only; synthetic orbital states",
+    "catalog_N": 32271,
+    "random_seed": 20260823,
+    "detailed_samples_per_object": 64,
+    "affected_subgraph_count": 758,
+    "candidate_reduction_pct": 97.65114189210126,
+    "full_median_s": 0.5429968230000668,
+    "partial_median_s": 0.012474080000174581,
+    "speedup_x": 43.53000966744379,
+    "top50_agreement_pct": 100.0,
+    "cpu": "AMD EPYC 9V74 (container, 5 vCPU visible)",
+    "python": "3.13.5",
+    "full_times_s": [
+      0.5495792609999626,
+      0.5429968230000668,
+      0.5437997240001096,
+      0.5386406490001718,
+      0.5350691280000319
+    ],
+    "partial_times_s": [
+      0.014122416999725829,
+      0.012471716999698401,
+      0.012474080000174581,
+      0.012559487000089575,
+      0.012461551999876974
+    ],
+    "caution": "Not an orbital-physics accuracy benchmark. It isolates the compute effect of conservative pre-screening before an identical detailed evaluator."
+  },
+  "sha256_before_hash_field": "365ee356d550c6c551f3b7ef4a55eefc3405090f537bed04d1e6080036b948ff"
+}

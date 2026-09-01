@@ -1,0 +1,185 @@
+{
+  "generated_at": "2026-09-01",
+  "audit_mode": "read-only",
+  "repos": {
+    "repo_a": {
+      "path": "D:/## APP/EARTHUS v2_APP",
+      "remotes": [
+        { "name": "origin", "url": "git@github.com:icegyul/earthus.git", "direction": "fetch" },
+        { "name": "origin", "url": "git@github.com:icegyul/earthus.git", "direction": "push" }
+      ],
+      "current_branch": "earthus-v2/real-living-earth-render",
+      "head_sha": "d932142e71ed461f0fb46b039be33555aca04dce",
+      "local_branches": [
+        { "branch": "backup/root-main-20260822", "sha": "7a237cfe812993aecbd108ac30553273e7d5c669" },
+        { "branch": "claude/ecstatic-spence-55a2ad", "sha": "63f6399a4e73a250fb8c366a40feb48a136f93d5" },
+        { "branch": "claude/peaceful-wiles-7632d6", "sha": "fba9c1e69454ebad5030f905f8586af879fe115c" },
+        { "branch": "codex/aetherus-ephemeris-p0", "sha": "2e94f9a3edfddc362159961a9061a03a5b3ed6a7" },
+        { "branch": "codex/aetherus-orbital-p0", "sha": "0bb0e05435ead7057146c4c6384880f0d3e5df81" },
+        { "branch": "codex/api-sns-stage2", "sha": "17152b861071278fad86e9b9c41a645059b05b43" },
+        { "branch": "codex/global-loading-error-stage5", "sha": "db08f079289713f97eca3ed4b17180d64762b752" },
+        { "branch": "codex/member-rbac-stage1", "sha": "c7a7e34ed0d21a8cb4bec50c3be569b928d78908" },
+        { "branch": "codex/newearthus-3d-engine", "sha": "6c71043a5fe53f0e9c0a956f96f6ffde3e25b1e3" },
+        { "branch": "codex/pre-device-test-stage6", "sha": "db08f079289713f97eca3ed4b17180d64762b752" },
+        { "branch": "codex/pre-device-test-stage6-finalize", "sha": "9a68f4c7dc36d1b8cfaa56cf7bcdfc7845968192" },
+        { "branch": "codex/repo-cleanup-2026-08-22", "sha": "dc40f4a0b1c5f1bf3856f2c78c1433062055a7e1" },
+        { "branch": "codex/seo-geo-stage3", "sha": "802ed95ff9ab9a5832bd06f24709089453e63a6d" },
+        { "branch": "codex/typhoon-stage4", "sha": "9758d6365bcbf5b3f76354e3c03c8d26023372f9" },
+        { "branch": "codex/v2-device-deploy-blockers", "sha": "f4ae7775a0866df78c27426efe39a9dad74468da" },
+        { "branch": "codex/v8-tourism-density-recovery", "sha": "5265cc1bac80eed5063e5a191e8fa846f1a1d91f" },
+        { "branch": "earthus-v2/real-living-earth-render", "sha": "d932142e71ed461f0fb46b039be33555aca04dce" },
+        { "branch": "earthus-v8-phase3", "sha": "1a0c8d8e06f601b8d5a69bfe5ec6c2351cdd7903" },
+        { "branch": "main", "sha": "332ea8fbdc7cbda729f8cf73f2ba2787fe768e1d" },
+        { "branch": "worktree-agent-afe114323d65d2357", "sha": "e7a51eb0f01b706f2fdff0e8434e022bf341ee5a" }
+      ],
+      "worktrees": {
+        "total": 19,
+        "healthy": [
+          { "path": "D:/## APP/EARTHUS v2_APP", "head": "d932142e71ed461f0fb46b039be33555aca04dce", "branch": "earthus-v2/real-living-earth-render", "note": "main worktree" },
+          { "path": "D:/## APP/EARTHUS v2_APP/.claude/worktrees/agent-afe114323d65d2357", "head": "e7a51eb0f01b706f2fdff0e8434e022bf341ee5a", "branch": "worktree-agent-afe114323d65d2357" }
+        ],
+        "prunable_broken": [
+          { "path": "/private/tmp/aetherus-orbital-p0-worktree", "head": "0bb0e05435ead7057146c4c6384880f0d3e5df81", "branch": "codex/aetherus-orbital-p0", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/private/tmp/earthus-v2-device-deploy", "head": "9a68f4c7dc36d1b8cfaa56cf7bcdfc7845968192", "branch": null, "detached": true, "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/private/tmp/earthus-v2-device-fix", "head": "f4ae7775a0866df78c27426efe39a9dad74468da", "branch": "codex/v2-device-deploy-blockers", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/private/tmp/earthus-v2-device-preview", "head": "b3ce6faf1f6844366b806776b5f09a29b0990467", "branch": null, "detached": true, "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/private/tmp/earthus-v2-stage6-final-review", "head": "9a68f4c7dc36d1b8cfaa56cf7bcdfc7845968192", "branch": null, "detached": true, "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/private/tmp/earthus-v2-stage6-recovery", "head": "9a68f4c7dc36d1b8cfaa56cf7bcdfc7845968192", "branch": "codex/pre-device-test-stage6-finalize", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/700gb/## APP/EARTHUS v2_APP/.claude/worktrees/codex-earthus-v8-phase3", "head": "1a0c8d8e06f601b8d5a69bfe5ec6c2351cdd7903", "branch": "earthus-v8-phase3", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/700gb/## APP/EARTHUS v2_APP/.claude/worktrees/ecstatic-spence-55a2ad", "head": "63f6399a4e73a250fb8c366a40feb48a136f93d5", "branch": "claude/ecstatic-spence-55a2ad", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/700gb/## APP/EARTHUS v2_APP/.claude/worktrees/peaceful-wiles-7632d6", "head": "fba9c1e69454ebad5030f905f8586af879fe115c", "branch": null, "detached": true, "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/700gb/## APP/EARTHUS v2_APP/.worktrees/api-sns-stage2", "head": "17152b861071278fad86e9b9c41a645059b05b43", "branch": "codex/api-sns-stage2", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/700gb/## APP/EARTHUS v2_APP/.worktrees/global-loading-error-stage5", "head": "db08f079289713f97eca3ed4b17180d64762b752", "branch": "codex/global-loading-error-stage5", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/700gb/## APP/EARTHUS v2_APP/.worktrees/member-rbac-stage1", "head": "c7a7e34ed0d21a8cb4bec50c3be569b928d78908", "branch": "codex/member-rbac-stage1", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/700gb/## APP/EARTHUS v2_APP/.worktrees/newearthus-3d", "head": "6c71043a5fe53f0e9c0a956f96f6ffde3e25b1e3", "branch": "codex/newearthus-3d-engine", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/700gb/## APP/EARTHUS v2_APP/.worktrees/pre-device-test-stage6", "head": "db08f079289713f97eca3ed4b17180d64762b752", "branch": "codex/pre-device-test-stage6", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/700gb/## APP/EARTHUS v2_APP/.worktrees/seo-geo-stage3", "head": "802ed95ff9ab9a5832bd06f24709089453e63a6d", "branch": "codex/seo-geo-stage3", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/700gb/## APP/EARTHUS v2_APP/.worktrees/typhoon-stage4", "head": "9758d6365bcbf5b3f76354e3c03c8d26023372f9", "branch": "codex/typhoon-stage4", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/700gb/웹/earthus-worktrees/aetherus-p0", "head": "2e94f9a3edfddc362159961a9061a03a5b3ed6a7", "branch": "codex/aetherus-ephemeris-p0", "reason": "gitdir file points to non-existent location (macOS path)" }
+        ],
+        "note": "17 of 19 worktrees are broken/prunable leftovers from a previous macOS environment (/private/tmp and /Volumes/700gb paths). NOT pruned per read-only audit policy."
+      },
+      "status_summary": {
+        "total_entries": 43,
+        "modified_count": 3,
+        "modified_files": [
+          ".claude/launch.json",
+          "prototype/data/solar-motion.json",
+          "prototype/js/space/cosmic3d.js"
+        ],
+        "untracked_count": 40,
+        "untracked_top_level_entries": [
+          ".claude/settings.local.json",
+          ".tmp/",
+          ".worktrees/",
+          "AETHERUS_V2/",
+          "Aetherus 823_Orbital/",
+          "Aetherus_Orbital_Environment_Codex_Package_v1.2/",
+          "Codex 이미지 2026년 8월 27일 오후 09_52_40.png",
+          "EARTHUS_1.0_AUDIT_OUTPUT/",
+          "EARTHUS_모두의창업_사업계획서_78-99형식.pptx",
+          "EARTHUS_모두의창업_사업계획서_78-99형식.pptx.inspect.ndjson",
+          "EARTHUS_모두의창업_사업계획서_v1.0.pptx",
+          "EARTHUS_모두의창업_사업계획서_v1.0.pptx.inspect.ndjson",
+          "Earthus v2_5.2/",
+          "docs/earthus-v2/ (ADMIN_RBAC, ALGORITHM, ARCHITECTURE_PRODUCTION, AUDIT, CODEX_HANDOFF_PROMPT.md, ENGINE, FOUNDATION_PACKAGE, INDEX.md, MASTER_SPEC, MISSING_INPUTS.md, README.md, SHA256SUMS, SNS_SEO_GEO, SOURCE_PROVENANCE.csv, UI_UX, VISUAL_STRATEGY)",
+          "docs/earthus-v8/evidence/",
+          "earthus 825/",
+          "output/",
+          "prototype/v2-deploy/",
+          "prototype/v2-three/",
+          "reference/",
+          "services/",
+          "tools/deploy-v2-three.sh",
+          "v2.5.3/",
+          "어스어스 822/",
+          "특허 우주쓰레기/"
+        ]
+      },
+      "stash_count": 0,
+      "last_5_commits": [
+        { "sha": "d932142e", "subject": "시트·메뉴·검색이 두세 장씩 겹쳐 열리고 모바일 정보창이 화면을 다 덮었음" },
+        { "sha": "83df2f6d", "subject": "WEATHER 메뉴의 Rain 칩이 장식일 뿐 실제 강수를 보여주지 못했음" },
+        { "sha": "d8cb2c62", "subject": "기울어진 대륙 부감 기본 시점이 북반구로 쏠려 전구 조작이 어려웠음" },
+        { "sha": "4b40fff4", "subject": "다크 데이터맵 단일 표면이 1.0보다 보기 어렵고 첫인상을 잃었음" },
+        { "sha": "66570d35", "subject": "PD가 지구를 보려면 매번 서버·주소를 수동으로 다뤄야 했음" }
+      ]
+    },
+    "repo_b": {
+      "path": "D:/## APP/EARTHUS v2_APP/Aetherus 823_Orbital/aetherus-orbital-environment",
+      "remotes": [],
+      "remotes_note": "No remotes configured — local-only repository.",
+      "current_branch": "main",
+      "head_sha": "9096ff86b7d4f88bc88a5371da25e35e36de847f",
+      "local_branches": [
+        { "branch": "codex/aetherus-v2-v06-integration", "sha": "7ac03572686100f2aa313c16cf9792ecae92666e" },
+        { "branch": "codex/p1-ingestion-identity", "sha": "1062ad7c241f0842d95cc6444c1a607ee35cbd73" },
+        { "branch": "codex/p2-orbit-time-frames", "sha": "a5b53639f9733264bb3c7606520833c325673273" },
+        { "branch": "codex/p3-explore-ui", "sha": "99802d706a9b0d9e14e9a70c5cc149a278f22219" },
+        { "branch": "codex/p4-conjunction-screening", "sha": "05aee1b3693cf8b6c7adb08447407a9de6bf82ba" },
+        { "branch": "codex/p5-benefit-engine", "sha": "09b4a73652b734d436ec7dc9286bda5602639352" },
+        { "branch": "main", "sha": "9096ff86b7d4f88bc88a5371da25e35e36de847f" }
+      ],
+      "worktrees": {
+        "total": 7,
+        "healthy": [
+          { "path": "D:/## APP/EARTHUS v2_APP/Aetherus 823_Orbital/aetherus-orbital-environment", "head": "9096ff86b7d4f88bc88a5371da25e35e36de847f", "branch": "main", "note": "main worktree" }
+        ],
+        "prunable_broken": [
+          { "path": "/Volumes/700gb/## APP/EARTHUS v2_APP/Aetherus 823_Orbital/aetherus-orbital-environment/.worktrees/codex/aetherus-v2-v06-integration", "head": "7ac03572686100f2aa313c16cf9792ecae92666e", "branch": "codex/aetherus-v2-v06-integration", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/740GB/## APP/EARTHUS v2_APP/Aetherus 823_Orbital/aetherus-orbital-environment/.worktrees/codex/p1-ingestion-identity", "head": "1062ad7c241f0842d95cc6444c1a607ee35cbd73", "branch": "codex/p1-ingestion-identity", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/740GB/## APP/EARTHUS v2_APP/Aetherus 823_Orbital/aetherus-orbital-environment/.worktrees/codex/p2-orbit-time-frames", "head": "a5b53639f9733264bb3c7606520833c325673273", "branch": "codex/p2-orbit-time-frames", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/740GB/## APP/EARTHUS v2_APP/Aetherus 823_Orbital/aetherus-orbital-environment/.worktrees/codex/p3-explore-ui", "head": "99802d706a9b0d9e14e9a70c5cc149a278f22219", "branch": "codex/p3-explore-ui", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/740GB/## APP/EARTHUS v2_APP/Aetherus 823_Orbital/aetherus-orbital-environment/.worktrees/codex/p4-conjunction-screening", "head": "05aee1b3693cf8b6c7adb08447407a9de6bf82ba", "branch": "codex/p4-conjunction-screening", "reason": "gitdir file points to non-existent location (macOS path)" },
+          { "path": "/Volumes/740GB/## APP/EARTHUS v2_APP/Aetherus 823_Orbital/aetherus-orbital-environment/.worktrees/codex/p5-benefit-engine", "head": "09b4a73652b734d436ec7dc9286bda5602639352", "branch": "codex/p5-benefit-engine", "reason": "gitdir file points to non-existent location (macOS path)" }
+        ],
+        "note": "6 of 7 worktrees are broken/prunable leftovers from macOS volumes (/Volumes/700gb, /Volumes/740GB). NOT pruned per read-only audit policy."
+      },
+      "status_summary": {
+        "total_entries": 0,
+        "modified_count": 0,
+        "modified_files": [],
+        "untracked_count": 0,
+        "untracked_top_level_entries": [],
+        "note": "Working tree clean."
+      },
+      "stash_count": 0,
+      "last_5_commits": [
+        { "sha": "9096ff8", "subject": "P1 작업용 격리 경로가 추적되던 문제를 방지" },
+        { "sha": "4f17b5c", "subject": "P1에서 검증 순서가 없던 provider 구현 계획을 추가" },
+        { "sha": "78e19e0", "subject": "P1에서 provider 증거와 identity gate가 분리됐던 설계를 확정" },
+        { "sha": "ee81bb9", "subject": "P0 검증 증거가 초기 리비전을 가리키던 문제를 수정" },
+        { "sha": "94e9965", "subject": "P0에서 증거 없이 통과 처리되던 수집 경로를 실제 검증으로 전환" }
+      ]
+    }
+  },
+  "nested_git_findings": {
+    "under_repo_a_root": [
+      {
+        "path": "D:/## APP/EARTHUS v2_APP/Aetherus 823_Orbital/aetherus-orbital-environment/.git",
+        "type": "full nested git repository",
+        "note": "This is repo B. Its parent folder 'Aetherus 823_Orbital/' is untracked in repo A, so repo B is nested but not a submodule."
+      },
+      {
+        "path": "D:/## APP/EARTHUS v2_APP/reference/abyssal/.git",
+        "type": "full nested git repository",
+        "detail": { "remote_origin": "https://github.com/Token-Gremlin/natural-disasters.git", "branch": "main", "head_sha": "4663b7444d3a0ea5f62242a52762c62afaf2ea5e" },
+        "note": "External reference clone inside untracked reference/ folder."
+      },
+      {
+        "path": "D:/## APP/EARTHUS v2_APP/.aetherus-task5-uv-cache/sdists-v9/.git",
+        "type": "tooling cache git directory",
+        "note": "uv package-manager sdist cache; not a project repository."
+      }
+    ],
+    "dot_worktrees_folder": {
+      "path": "D:/## APP/EARTHUS v2_APP/.worktrees",
+      "entries": ["api-sns-stage2", "global-loading-error-stage5", "member-rbac-stage1", "newearthus-3d", "pre-device-test-stage6", "seo-geo-stage3", "typhoon-stage4"],
+      "detail": "Each entry contains a .git FILE whose gitdir points to '/Volumes/700gb/## APP/EARTHUS v2_APP/.git/worktrees/<name>' — macOS paths that do not exist on this Windows machine. These local folders are orphaned worktree checkouts: their files exist on D: but git cannot resolve them as worktrees. The corresponding branches (codex/api-sns-stage2, codex/global-loading-error-stage5, codex/member-rbac-stage1, codex/newearthus-3d-engine, codex/pre-device-test-stage6, codex/seo-geo-stage3, codex/typhoon-stage4) all exist in repo A with matching tip shas, so no unique commits appear to live only in these folders."
+    },
+    "dot_tmp_folder": {
+      "path": "D:/## APP/EARTHUS v2_APP/.tmp",
+      "detail": "No nested git repositories. Contains capture/diagnostic .mjs scripts (capture_mapped_earth, capture_our_earth, capture_rain, capture_styles, capture_view, check_badge, diag_base, find_overlay, isolate) and working folders (earthus-startup-deck-v1, earthus-template-78-99, member-rbac-runtime, member-rbac-tests, ne2, provider-social-runtime)."
+    }
+  }
+}

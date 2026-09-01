@@ -32,3 +32,8 @@ prototype/.devkey.pem
 #    드라이브에 원본을 두고, 정본 문서만 docs/ 로 관리한다.
 #    로컬 보관 위치: /Volumes/740GB/웹/earthus-local-assets/어스어스 820
 어스어스 820/
+
+# AETHERUS 정본 패키지의 DOCX 원본 — 같은 로드맵 규칙 적용.
+#    원본은 D:\## APP\Earthus v2_DOC\Aetherus v2\ 의 zip에 SHA와 함께 보존.
+#    출처·해시: docs/aetherus-v2-canonical/PROVENANCE.md
+docs/aetherus-v2-canonical/**/*.docx

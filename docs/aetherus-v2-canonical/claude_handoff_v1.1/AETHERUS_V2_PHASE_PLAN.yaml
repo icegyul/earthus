@@ -1,0 +1,151 @@
+version: '1.0'
+phases:
+- id: P0
+  name: Repository Audit & Baseline
+  description: 기존 repo/working tree/source docs/implementation을 inventory하고 파괴적 변경
+    없이 정본 baseline을 만든다.
+  deliverables:
+  - E01-E44 mapping
+  - legacy reuse map
+  - git state
+  - missing inputs
+  hard_gate: audit artifacts complete
+- id: P1
+  name: Foundation Truth Core
+  description: E01~E07, S09/S10/S11 최소 골격.
+  deliverables:
+  - raw storage
+  - canonical identity
+  - provenance
+  - time/frame
+  - snapshot
+  - knowledge graph
+  hard_gate: source→snapshot reproducible
+- id: P2
+  name: SPACE Core
+  description: E08~E12 + 기본 SPACE API.
+  deliverables:
+  - ephemeris
+  - celestial events
+  - space weather context
+  - NEO
+  - deep-space mission
+  hard_gate: Earth→Solar System data path
+- id: P3
+  name: Multi-Scale Visual Foundation
+  description: E34~E37.
+  deliverables:
+  - Earth/Orbital/Cislunar/Solar scene
+  - semantic zoom
+  - shell LOD
+  - visual semantics
+  hard_gate: no fake visual data; scale transition tests
+- id: P4
+  name: Mission Registry & Pre-Launch Control
+  description: E13~E15.
+  deliverables:
+  - mission registry
+  - launch windows
+  - countdown/state machine
+  - basic control widgets
+  hard_gate: schedule revisions + state transitions
+- id: P5
+  name: Live/Modelled Mission Tracking
+  description: E16~E19.
+  deliverables:
+  - telemetry fusion
+  - trajectory
+  - timeline recorder
+  - replay
+  - handover
+  hard_gate: mission→orbit E2E
+- id: P6
+  name: Orbital Core
+  description: E20~E24.
+  deliverables:
+  - propagation
+  - screen/TCA
+  - Pc/provenance
+  - risk graph
+  - shell metrics
+  hard_gate: golden/verification + Orbital Stack API
+- id: P7
+  name: Debris & Observation
+  description: E25~E30.
+  deliverables:
+  - genealogy
+  - fragmentation
+  - reentry
+  - photometry
+  - observation planner
+  - citizen QA
+  hard_gate: research/safety gates
+- id: P8
+  name: Counterfactual Patent Core
+  description: E31~E33.
+  deliverables:
+  - Benefit
+  - Affected Subgraph
+  - PROTECT/OCM
+  hard_gate: full-vs-selective equivalence + new risk
+- id: P9
+  name: Intelligence Foundation
+  description: E38~E40.
+  deliverables:
+  - orchestrator
+  - fusion
+  - classification
+  hard_gate: engine outputs become classified traceable signals
+- id: P10
+  name: Event / Revision / Confidence
+  description: E41~E43.
+  deliverables:
+  - event lifecycle
+  - revision
+  - confidence
+  - uncertainty
+  hard_gate: WHAT CHANGED/HOW SURE E2E
+- id: P11
+  name: Why / Attribution / Decision
+  description: E44.
+  deliverables:
+  - importance
+  - why-it-matters
+  - attribution
+  - decision compare
+  hard_gate: SPACE NOW + Scenario decision packet
+- id: P12
+  name: Personalization & Subscription
+  description: S02~S04.
+  deliverables:
+  - capability
+  - MY AETHERUS
+  - Control Rooms
+  - Follow/Alerts
+  hard_gate: Free/Plus/Pro behavior tests
+- id: P13
+  name: LLM Layer
+  description: L01~L08.
+  deliverables:
+  - gateway/router/tools/context/explanation/claim validator/reports
+  hard_gate: LLM without hallucinated science
+- id: P14
+  name: Research / Operations
+  description: S07/S08.
+  deliverables:
+  - datasets
+  - benchmark
+  - tenant/private fleet
+  - audit
+  hard_gate: tenant isolation + reproducibility
+- id: P15
+  name: Hardening / Staging / Production
+  description: S01/S05/S06/S10~S12.
+  deliverables:
+  - security
+  - observability
+  - load
+  - outage
+  - backup/restore
+  - device acceptance
+  hard_gate: staging evidence then production decision

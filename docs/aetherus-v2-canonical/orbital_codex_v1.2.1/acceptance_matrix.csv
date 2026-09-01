@@ -1,0 +1,20 @@
+﻿id,capability,procedure,pass_condition,anti_shortcut
+ING-001,CelesTrak OMM ingestion,"Fetch one known catalog ID in JSON/OMM, persist raw hash, normalize",Raw artifact + orbit_solution; source/retrieved_at/epoch preserved,No hardcoded satellite state; retry/rate limit tested
+ING-002,6+ digit catalog ID,Ingest catalog id >=100000,No integer-width/TLE-only truncation,Any 5-digit regex in canonical code fails lint
+ORB-001,SGP4 propagation,"Known OMM input, propagate at epoch and +/- interval",Finite TEME state; deterministic output hash,Cross-check against trusted implementation within configured tolerance
+ORB-002,Frame conversion,TEME -> Earth-fixed -> geodetic,lat/lon/alt finite; round-trip bounded,Time/EOP assumptions stored
+CA-001,Coarse screening,Synthetic 10k objects with injected close pair,Injected pair survives filter,False-negative = 0 for test corpus
+CA-002,TCA solver,Two trajectories with known minimum,TCA and miss distance within tolerance,Boundary TCA case tested
+CA-003,Pc computation,CDM fixture with covariance,"Pc finite [0,1], method recorded",No Pc if covariance invalid; status=UNAVAILABLE
+BEN-001,REMOVE direct benefit,"Baseline edge A-B, remove A",B identified; benefit = baseline - scenario,Metric type/provenance attached
+BEN-002,PROTECT reverse query,"Protected Y with candidates A,C",Returns ordered candidates with individual Benefit(k→Y),Ranking reproducible from stored scenario runs
+BEN-003,Affected subgraph equivalence,Compare full recompute vs selective,Selected output within tolerance,Performance benefit recorded separately from physics accuracy
+BEN-004,New risk after candidate maneuver,Candidate reduces edge A but creates edge C,Both benefit and risk increase shown,Net score cannot hide new edge
+PROV-001,Snapshot versioning,Refresh same conjunction data,"Old benefit retained, new version appended",No destructive overwrite
+VIS-001,Visual fallback,No actual debris photo; source launch image exists,Shows launch image with label LAUNCH IMAGE,Never labels as ACTUAL PHOTO
+OBS-001,Visibility planner,Station + object + time window,Pass windows generated with sun/illumination flags,No request outside station constraints
+OBS-002,Submission QA,Bad timestamp + outlier angles,Rejected/quarantined with reason,Does not update orbit solution
+RES-001,Dataset reproducibility,Export dataset version,Manifest includes hashes/model versions/snapshot,Re-import reconstructs same rows
+UI-001,No fake numbers,API returns unavailable risk metric,UI shows unavailable/insufficient data,No generated placeholder percentage
+E2E-001,Explore object,Search -> select -> orbit -> visual -> provenance,All views load from API contracts,Network trace contains no hardcoded metric endpoint bypass
+E2E-002,Scenario,Select debris -> REMOVE -> result,Scenario run persists; beneficiaries shown after compute,UI cannot mark completed before backend SUCCEEDED

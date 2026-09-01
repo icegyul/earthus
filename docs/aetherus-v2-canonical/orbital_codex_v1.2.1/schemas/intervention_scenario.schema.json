@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InterventionScenario",
+  "type": "object",
+  "required": [
+    "scenario_id",
+    "kind",
+    "target_object_id",
+    "baseline_snapshot_id",
+    "model_version"
+  ],
+  "properties": {
+    "scenario_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "kind": {
+      "enum": [
+        "REMOVE",
+        "NUDGE",
+        "LOWER",
+        "OBSERVE_MORE",
+        "DO_NOTHING",
+        "CANDIDATE_OCM"
+      ]
+    },
+    "target_object_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "baseline_snapshot_id": {
+      "type": "string"
+    },
+    "effective_time": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "delta_v_mps": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "number"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "candidate_ocm_uri": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "model_version": {
+      "type": "string"
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

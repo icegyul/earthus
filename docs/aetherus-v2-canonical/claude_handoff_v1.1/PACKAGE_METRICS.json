@@ -1,0 +1,12 @@
+{
+  "package_version": "1.1",
+  "core_engines": 44,
+  "llm_modules": 8,
+  "platform_services": 12,
+  "implementation_phases": 16,
+  "acceptance_cases": 307,
+  "intelligence_connection_modes": 7,
+  "documents": 20,
+  "total_files_excluding_checksums": 35,
+  "combined_directive_chars": 326688
+}

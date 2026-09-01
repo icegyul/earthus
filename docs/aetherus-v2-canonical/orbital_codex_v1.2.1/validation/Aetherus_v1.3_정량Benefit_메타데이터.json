@@ -1,0 +1,90 @@
+{
+  "prototype_version": "ADI-Proto-0.2",
+  "validation_name": "Real-pair metric-specific Benefit(k->i) + Risk Provenance",
+  "source": "CelesTrak SOCRATES Plus public screening",
+  "source_format_note": "SOCRATES MAX_PROB uses fixed spherical radii and a projected covariance ellipse chosen for maximum probability; R/I/C ratio uses 100/300/100 m values per CelesTrak documentation.",
+  "pair": {
+    "target": {
+      "norad": 39771,
+      "name": "H-2A R/B"
+    },
+    "beneficiary": {
+      "norad": 43794,
+      "name": "HAWK-B"
+    }
+  },
+  "snapshots": [
+    {
+      "snapshot_utc": "2026-08-20T10:12:06Z",
+      "window_start": "2026-08-20T10:00:00Z",
+      "window_stop": "2026-08-27T10:00:00Z",
+      "obj1_norad": 43794,
+      "obj1_name": "HAWK-B",
+      "obj1_dse_days": 3.334,
+      "obj2_norad": 39771,
+      "obj2_name": "H-2A R/B",
+      "obj2_dse_days": 3.285,
+      "tca_utc": "2026-08-23T05:32:55.081Z",
+      "min_range_km": 0.124,
+      "relative_speed_km_s": 6.256,
+      "max_probability": 0.0002624,
+      "dilution_threshold_km": 0.032,
+      "risk_metric_type": "SOCRATES_MAX_PROB",
+      "risk_grade": "SCREENING_ONLY",
+      "intervention": "REMOVE 39771 before TCA (idealized counterfactual)",
+      "post_intervention_pairwise_risk": 0.0,
+      "benefit_abs": 0.0002624,
+      "benefit_normalized": 1.0,
+      "beneficiary_norad": 43794,
+      "beneficiary_name": "HAWK-B",
+      "metric_note": "Maximum probability screening metric; not operational CDM collision probability."
+    },
+    {
+      "snapshot_utc": "2026-08-20T22:10:15Z",
+      "window_start": "2026-08-20T22:00:00Z",
+      "window_stop": "2026-08-27T22:00:00Z",
+      "obj1_norad": 43794,
+      "obj1_name": "HAWK-B",
+      "obj1_dse_days": 2.612,
+      "obj2_norad": 39771,
+      "obj2_name": "H-2A R/B",
+      "obj2_dse_days": 2.625,
+      "tca_utc": "2026-08-23T05:32:55.413Z",
+      "min_range_km": 0.09,
+      "relative_speed_km_s": 6.256,
+      "max_probability": 0.0004968,
+      "dilution_threshold_km": 0.023,
+      "risk_metric_type": "SOCRATES_MAX_PROB",
+      "risk_grade": "SCREENING_ONLY",
+      "intervention": "REMOVE 39771 before TCA (idealized counterfactual)",
+      "post_intervention_pairwise_risk": 0.0,
+      "benefit_abs": 0.0004968,
+      "benefit_normalized": 1.0,
+      "beneficiary_norad": 43794,
+      "beneficiary_name": "HAWK-B",
+      "metric_note": "Maximum probability screening metric; not operational CDM collision probability."
+    }
+  ],
+  "snapshot_change": {
+    "max_probability_pct": 89.32926829268295,
+    "min_range_pct": -27.419354838709676,
+    "dse1_reduction_days": 0.722,
+    "dse2_reduction_days": 0.6600000000000001
+  },
+  "interpretation": "The REMOVE counterfactual deletes this pairwise edge, so metric-specific pairwise benefit equals the baseline risk metric. This is a logic/attribution validation, not a real removal feasibility or operational collision-avoidance recommendation.",
+  "cdm_ready_fields": [
+    "TCA",
+    "MISS_DISTANCE",
+    "RELATIVE_SPEED",
+    "COLLISION_PROBABILITY",
+    "COLLISION_PROBABILITY_METHOD",
+    "COLLISION_MAX_PROBABILITY",
+    "COLLISION_MAX_PC_METHOD",
+    "SAT1_COVARIANCE_METHOD",
+    "SAT2_COVARIANCE_METHOD",
+    "DILUTION_STATUS"
+  ],
+  "next_validation": "Run same Benefit pipeline with a releasable CDM/test dataset containing covariance and true Pc.",
+  "csv_sha256": "029a7ddc55af48217801291e58590fe8aa85580916b1bd6515313b308f712055",
+  "json_sha256_pre_manifest_update": "d33db8e7fb6d92d077d20a47fe096c43f1aa802de49d0a3d43dd732e53c0598b"
+}

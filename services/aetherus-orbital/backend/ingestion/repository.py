@@ -338,8 +338,15 @@ class SqlIngestionRepository:
         record: ParsedOmmRecord,
         existing: CanonicalObject | None,
     ) -> IdentityResolution:
-        """Create a new object once or add an alias to an exact catalog match only."""
-        del raw_artifact_id
+        """Create a new object once or add an alias to an exact catalog match only.
+
+        The canonical row itself is still never renamed by a later source; what
+        this path adds is a durable record of what each source declared about
+        the object's metadata, so a missing classification can be filled from a
+        source that actually states it and a disagreement is preserved as a
+        conflict instead of a silent overwrite.
+        """
+        raw_artifact_id_for_metadata = raw_artifact_id
         async with get_db_session() as session:
             matched = existing
             status: Literal["CREATED", "MATCHED"] = "MATCHED"
@@ -383,6 +390,14 @@ class SqlIngestionRepository:
                     matched = _canonical_object(row)
             await _upsert_alias(
                 session, matched.id, source_id, record.catalog_id, record.object_name
+            )
+            matched = await _record_metadata_provenance(
+                session,
+                matched,
+                record=record,
+                source_id=source_id,
+                raw_artifact_id=raw_artifact_id_for_metadata,
+                created=status == "CREATED",
             )
         return IdentityResolution(status=status, object_id=matched.id)
 
@@ -1061,6 +1076,129 @@ class SqlIngestionRepository:
                 "limitations": quality.get("limitations", []),
             },
         }
+
+
+#: Metadata a provider may legitimately state about an object. ``catalog_id`` is
+#: deliberately absent: it is the identity key, not metadata, and is only ever
+#: settled by the identity resolver.
+_METADATA_FIELDS = ("object_type", "cospar_id", "canonical_name")
+
+#: Values that mean "this source did not actually state anything".
+_METADATA_ABSENT = {None, "", "UNKNOWN", "TBA"}
+
+
+def _is_absent(value: Any) -> bool:
+    return value is None or str(value).strip().upper() in {"", "UNKNOWN", "TBA"}
+
+
+async def _record_metadata_provenance(
+    session: Any,
+    matched: CanonicalObject,
+    *,
+    record: ParsedOmmRecord,
+    source_id: str,
+    raw_artifact_id: str,
+    created: bool,
+) -> CanonicalObject:
+    """Record what this source declared, filling only genuine gaps.
+
+    Three outcomes, all durable:
+      * ADOPTED   — the stored field was absent and this source states it, so the
+                    canonical row is completed and the source is recorded.
+      * CONFLICT  — both sides state a value and they differ. The stored value is
+                    left untouched; disagreement is evidence, not a reason to
+                    overwrite (same stance as ``identity_conflict``).
+      * CONFIRMED — both sides agree; recorded so corroboration is visible.
+
+    Grades cannot arbitrate here: CelesTrak GP and Space-Track GP are both
+    PUBLIC_GP, so precedence would be an invention. Gap-filling plus preserved
+    disagreement is defensible without ranking one provider over the other.
+    """
+    incoming = {
+        "object_type": record.object_type,
+        "cospar_id": record.international_designator,
+        "canonical_name": record.object_name,
+    }
+    stored = {
+        "object_type": matched.object_type,
+        "cospar_id": matched.cospar_id,
+        "canonical_name": matched.canonical_name,
+    }
+
+    adopted: dict[str, str] = {}
+    rows: list[dict[str, Any]] = []
+    for field in _METADATA_FIELDS:
+        incoming_value = incoming.get(field)
+        stored_value = stored.get(field)
+        if _is_absent(incoming_value):
+            continue  # the source said nothing; there is nothing to record
+        if created:
+            # The insert already carried this source's values, so nothing is
+            # adopted; recording it as CONFIRMED would falsely imply a second
+            # source agreed, so first authorship is named for what it is.
+            outcome = "ESTABLISHED"
+            reason = f"{source_id} established {field} when the object was created"
+        elif _is_absent(stored_value):
+            adopted[field] = str(incoming_value)
+            outcome = "ADOPTED"
+            reason = f"stored {field} was absent; {source_id} declared it"
+        elif str(stored_value) == str(incoming_value):
+            outcome = "CONFIRMED"
+            reason = f"{source_id} corroborated the stored {field}"
+        else:
+            outcome = "CONFLICT"
+            reason = (
+                f"{source_id} declared a different {field}; the stored value is "
+                "kept and the disagreement is preserved for review"
+            )
+        rows.append(
+            {
+                "object_id": matched.id,
+                "field_name": field,
+                "previous_value": None if stored_value is None else str(stored_value),
+                "incoming_value": str(incoming_value),
+                "outcome": outcome,
+                "reason": reason,
+                "source_id": source_id,
+                "raw_artifact_id": raw_artifact_id,
+                "observed_at": record.epoch,
+            }
+        )
+
+    if not rows:
+        return matched
+
+    await session.execute(
+        text(
+            """
+            INSERT INTO object_metadata_revision (
+                object_id, field_name, previous_value, incoming_value,
+                outcome, reason, source_id, raw_artifact_id, observed_at
+            ) VALUES (
+                CAST(:object_id AS uuid), :field_name, :previous_value, :incoming_value,
+                :outcome, :reason, :source_id, CAST(:raw_artifact_id AS uuid), :observed_at
+            )
+            """
+        ),
+        rows,
+    )
+
+    if not adopted:
+        return matched
+
+    assignments = ", ".join(f"{field} = :{field}" for field in adopted)
+    updated = await session.execute(
+        text(
+            f"""
+            UPDATE space_object SET {assignments}, updated_at = now()
+            WHERE id = CAST(:object_id AS uuid)
+            RETURNING id::text, catalog_id, cospar_id, canonical_name, object_type
+            """
+        ),
+        {**adopted, "object_id": matched.id},
+    )
+    row = updated.mappings().one_or_none()
+    return _canonical_object(row) if row is not None else matched
 
 
 async def _upsert_alias(

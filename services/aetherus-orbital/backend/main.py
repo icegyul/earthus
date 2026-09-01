@@ -179,10 +179,12 @@ app = FastAPI(
     openapi_url=f"{settings.api_prefix}/openapi.json",
 )
 
-# CORS
+# CORS — 명시 오리진에 더해, 로컬 개발 호스트는 포트 불문 허용한다
+# (v2-three dev 정적 서버가 autoPort로 떠서 고정 포트 화이트리스트가 불가).
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -28,7 +28,12 @@ class Settings(BaseSettings):
 
     # API
     api_prefix: str = "/api"
-    cors_origins: list[str] = ["http://localhost:3000"]
+    # v2-three 실지구(dev 정적 서버)가 과학 API를 직접 소비한다 — '하나의 우주' 연결.
+    cors_origins: list[str] = [
+        "http://localhost:3000",
+        "http://localhost:8777",
+        "http://127.0.0.1:8777",
+    ]
 
     # Scientific
     default_data_age_warning_hours: int = 24

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EARTHUS v2 — Three.js 지형 지구</title>
+<link rel="icon" type="image/svg+xml" href="./assets/brand/earthus-appicon.svg" />
+<style>
+  :root {
+    --panel-bg: rgba(10, 16, 24, 0.82);
+    --panel-line: rgba(120, 160, 200, 0.25);
+    --text: #cfe0ee;
+    --text-dim: #7f95a8;
+    --accent: #7FB7F5; /* 브랜드 다크 모드 액센트 (lockup-white 호라이즌 컬러) */
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #030608; }
+  body { font-family: "Segoe UI", "Malgun Gothic", sans-serif; color: var(--text); }
+  #scene { position: fixed; inset: 0; display: block; }
+
+  #panel {
+    position: fixed; top: 14px; right: 14px; width: 252px;
+    background: var(--panel-bg); border: 1px solid var(--panel-line);
+    border-radius: 10px; padding: 14px 16px; backdrop-filter: blur(6px);
+    font-size: 12px; user-select: none;
+  }
+  #panel .brand { display: block; width: 148px; margin: 2px 0 6px; }
+  #panel .sub { color: var(--text-dim); font-size: 11px; margin-bottom: 12px; }
+  .row { margin-bottom: 10px; }
+  .row label { display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--text); }
+  .row label .val { color: var(--accent); font-variant-numeric: tabular-nums; }
+  .row input[type="range"] { width: 100%; accent-color: var(--accent); height: 18px; }
+  .row input[type="range"]:disabled { opacity: 0.35; }
+  .row.toggle { display: flex; align-items: center; gap: 8px; }
+  .row.toggle input { accent-color: var(--accent); }
+  .row.info { color: var(--text-dim); font-size: 11px; line-height: 1.6;
+    padding: 7px 9px; background: rgba(74,144,217,0.08); border-radius: 6px;
+    font-variant-numeric: tabular-nums; }
+  .row.info b { color: var(--text); font-weight: 600; }
+
+  #sim-toggle {
+    width: 100%; padding: 7px 0; margin-bottom: 4px;
+    background: rgba(74,144,217,0.12); color: var(--text);
+    border: 1px solid var(--panel-line); border-radius: 6px;
+    font-size: 11.5px; font-family: inherit; cursor: pointer;
+  }
+  #sim-toggle:hover { background: rgba(74,144,217,0.22); }
+  #sim { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--panel-line); }
+  #sim.open { display: block; }
+  #sim .sim-head { color: var(--text-dim); font-size: 10.5px; margin-bottom: 8px; letter-spacing: 0.5px; }
+
+  #panel .credit { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--panel-line);
+    color: var(--text-dim); font-size: 10px; line-height: 1.5; }
+  #panel .credit a { color: var(--text-dim); }
+
+  #mapview {
+    position: fixed; inset: 0; display: block; background: #0a0f14;
+    opacity: 0; pointer-events: none; transition: opacity 0.35s;
+    overflow: hidden; cursor: grab; z-index: 5;
+  }
+  #mapview.active { opacity: 1; pointer-events: auto; }
+  #mapview.dragging { cursor: grabbing; }
+  #map-tiles { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  #map-tiles img { position: absolute; width: 256px; height: 256px; user-select: none; -webkit-user-drag: none; }
+  #map-exit {
+    position: absolute; top: 14px; left: 14px; z-index: 6;
+    padding: 8px 14px; background: var(--panel-bg); color: var(--text);
+    border: 1px solid var(--panel-line); border-radius: 8px;
+    font-size: 12px; font-family: inherit; cursor: pointer;
+  }
+  #map-exit:hover { background: rgba(74,144,217,0.22); }
+  #map-attrib {
+    position: absolute; right: 8px; bottom: 6px; z-index: 6;
+    font-size: 10px; color: #9db0c0; background: rgba(10,16,24,0.6);
+    padding: 2px 8px; border-radius: 4px;
+  }
+  #map-attrib a { color: #9db0c0; }
+
+  #hud {
+    position: fixed; left: 14px; bottom: 12px; font-size: 11px; color: var(--text-dim);
+    background: var(--panel-bg); border: 1px solid var(--panel-line); border-radius: 8px;
+    padding: 6px 12px; font-variant-numeric: tabular-nums; z-index: 7;
+  }
+
+  .seg { display: flex; gap: 4px; margin-top: 4px; }
+  .seg button {
+    flex: 1; padding: 5px 0; font-size: 11px; font-family: inherit;
+    background: rgba(74,144,217,0.10); border: 1px solid var(--panel-line);
+    color: var(--text); border-radius: 6px; cursor: pointer;
+  }
+  .seg button.on { background: var(--accent); color: #06121f; border-color: var(--accent); font-weight: 600; }
+  .cloud-note { color: var(--text-dim); font-size: 10px; margin-top: 5px; line-height: 1.5; min-height: 13px; }
+
+  #focus-chip {
+    position: fixed; top: 14px; left: 14px; z-index: 7;
+    padding: 8px 14px; background: var(--panel-bg);
+    border: 1px solid var(--panel-line); border-radius: 8px;
+    font-size: 12px; color: var(--text); display: none;
+  }
+  #focus-chip.show { display: block; }
+  .ui-x, .chip-x {
+    background: none; border: none; color: var(--text-dim); cursor: pointer;
+    font-size: 12px; font-family: inherit; padding: 2px 6px; line-height: 1;
+  }
+  .ui-x:hover, .chip-x:hover { color: var(--text); }
+  .fly-head .ui-x { margin-left: auto; }
+  .intel-tabs .ui-x { flex: 0 0 auto; }
+  .chip-x { margin-left: 6px; }
+
+  #c-search {
+    width: 100%; padding: 6px 9px; font-size: 12px; font-family: inherit;
+    background: rgba(74,144,217,0.08); border: 1px solid var(--panel-line);
+    border-radius: 6px; color: var(--text);
+  }
+  #c-search::placeholder { color: var(--text-dim); }
+  #c-search:focus { outline: none; border-color: var(--accent); }
+  .search-hit { padding: 5px 9px; font-size: 11.5px; cursor: pointer; border-radius: 4px; color: var(--text); }
+  .search-hit:hover { background: rgba(74,144,217,0.22); }
+
+  /* ---------- 화면 문법 셸 (§19.12) ---------- */
+  #rail {
+    position: fixed; left: 14px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 6px; z-index: 4;
+  }
+  .rail-item {
+    width: 58px; padding: 8px 0 7px; text-align: center; cursor: pointer;
+    background: var(--panel-bg); border: 1px solid var(--panel-line);
+    border-radius: 10px; color: var(--text); font-family: inherit;
+    backdrop-filter: blur(6px); position: relative;
+  }
+  .rail-item .glyph {
+    display: block; font-size: 15px; font-weight: 600; line-height: 1.2;
+    color: var(--text-dim);
+  }
+  .rail-item .rlabel { display: block; font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .rail-item.active { border-color: var(--sc, var(--accent)); }
+  .rail-item.active .glyph, .rail-item.active .rlabel { color: var(--sc, var(--accent)); }
+  .rail-item .rlock {
+    display: block; font-size: 8px; color: var(--text-dim); margin-top: 2px;
+    letter-spacing: 0.3px; opacity: 0.7; font-variant-numeric: tabular-nums;
+  }
+
+  #flyout {
+    position: fixed; left: 82px; top: 50%; transform: translateY(-50%) translateX(-8px);
+    width: 252px; max-height: 76vh; overflow-y: auto; z-index: 5;
+    background: var(--panel-bg); border: 1px solid var(--panel-line);
+    border-top: 2px solid var(--sc, var(--accent));
+    border-radius: 10px; padding: 10px; backdrop-filter: blur(8px);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s;
+  }
+  #flyout.open { opacity: 1; pointer-events: auto; transform: translateY(-50%) translateX(0); }
+  .fly-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 2px 6px 8px; font-size: 13px; color: var(--sc, var(--accent));
+  }
+  .fly-head span { font-size: 10px; color: var(--text-dim); }
+  .fly-row {
+    display: block; width: 100%; text-align: left; padding: 8px 9px;
+    background: none; border: none; border-top: 1px solid rgba(120,160,200,0.09);
+    cursor: pointer; font-family: inherit; border-radius: 6px;
+  }
+  .fly-row:hover { background: rgba(127,183,245,0.10); }
+  .fly-name { display: block; font-size: 12px; color: var(--text); margin-bottom: 3px; }
+  .fly-row.locked .fly-name { color: var(--text-dim); }
+  .fly-meta { display: flex; align-items: center; gap: 7px; }
+  .fly-meta i { font-style: normal; font-size: 9.5px; color: var(--text-dim); }
+  .fly-note { padding: 8px 6px 2px; font-size: 9px; color: var(--text-dim); line-height: 1.5; }
+
+  #intel {
+    position: fixed; right: 14px; bottom: 14px; z-index: 4;
+    display: flex; flex-direction: column; align-items: flex-end;
+  }
+  #intel-tab {
+    padding: 9px 16px; background: var(--panel-bg); border: 1px solid var(--panel-line);
+    border-radius: 10px; color: var(--accent); font-family: inherit;
+    font-size: 10.5px; letter-spacing: 2px; cursor: pointer; backdrop-filter: blur(6px);
+  }
+  #intel-body { display: none; }
+  #intel.open #intel-body {
+    display: block; width: 372px; max-height: 62vh; overflow-y: auto;
+    margin-bottom: 8px; background: var(--panel-bg); border: 1px solid var(--panel-line);
+    border-radius: 12px; padding: 12px 14px; backdrop-filter: blur(8px);
+  }
+  #intel.open { flex-direction: column-reverse; }
+  .intel-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+  .intel-tabs button {
+    flex: 1; padding: 6px 0; font-size: 10.5px; letter-spacing: 1px; font-family: inherit;
+    background: rgba(74,144,217,0.08); border: 1px solid var(--panel-line);
+    color: var(--text-dim); border-radius: 6px; cursor: pointer;
+  }
+  .intel-tabs button.on { color: var(--accent); border-color: var(--accent); }
+  .card { border: 1px solid rgba(120,160,200,0.16); border-radius: 9px; padding: 10px 12px; margin-bottom: 8px; }
+  .card-h { font-size: 12.5px; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 7px; }
+  .card-b { font-size: 11px; color: var(--text-dim); line-height: 1.65; }
+  .card-b .stat { display: flex; justify-content: space-between; padding: 3px 0; border-top: 1px solid rgba(120,160,200,0.09); color: var(--text); }
+  .card-b .stat .k { color: var(--text-dim); }
+  .card-b .stat .v.na { color: #8a7350; font-size: 10px; letter-spacing: 0.4px; }
+  .badge { font-size: 8.5px; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.6px; font-weight: 600; }
+  .badge.live { background: rgba(64,160,110,0.18); color: #5fd39a; }
+  .badge.stale { background: rgba(190,150,70,0.15); color: #d9b36a; }
+  .badge.demo { background: rgba(90,150,200,0.15); color: #7fb7f5; }
+  .badge.model { background: rgba(150,110,200,0.16); color: #b79aec; }
+  .badge.off { background: rgba(127,183,245,0.14); color: #7fb7f5; }
+  .badge.sim { background: rgba(236,122,166,0.14); color: #ec7aa6; }
+  .badge.na { background: rgba(150,90,70,0.15); color: #d98a6a; }
+  .badge.locked { background: rgba(120,120,130,0.16); color: #9aa4ae; }
+  .paycard { margin-top: 9px; border: 1px dashed rgba(127,183,245,0.35); border-radius: 8px; padding: 9px 11px; font-size: 11px; color: var(--text); }
+  .paycard .paysub { color: var(--text-dim); font-size: 9.5px; margin-top: 4px; line-height: 1.5; }
+  .readiness { margin-top: 7px; border-top: 1px dashed rgba(120,160,200,0.2); padding-top: 7px; }
+
+  #timestrip {
+    position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 10px; z-index: 4;
+    background: var(--panel-bg); border: 1px solid var(--panel-line);
+    border-radius: 10px; padding: 7px 14px; backdrop-filter: blur(6px);
+  }
+  #timestrip input[type="range"] { width: 220px; accent-color: var(--accent); }
+  #ts-now, #ts-play {
+    padding: 4px 10px; font-size: 10.5px; font-family: inherit; cursor: pointer;
+    background: rgba(74,144,217,0.12); border: 1px solid var(--panel-line);
+    color: var(--text); border-radius: 6px;
+  }
+  #ts-play { color: var(--accent); }
+  #ts-label { font-size: 10px; color: var(--text-dim); min-width: 46px; font-variant-numeric: tabular-nums; }
+
+  /* ---------- 해양 시뮬레이션 뷰 ---------- */
+  #simview { position: fixed; inset: 0; z-index: 8; display: none; background: #000; }
+  #simview.active { display: block; }
+  #sim-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #sim-exit {
+    position: absolute; top: 14px; left: 14px; z-index: 9;
+    padding: 8px 14px; background: var(--panel-bg); color: var(--text);
+    border: 1px solid var(--panel-line); border-radius: 8px;
+    font-size: 12px; font-family: inherit; cursor: pointer;
+  }
+  #sim-exit:hover { background: rgba(74,144,217,0.22); }
+  #sim-info {
+    position: absolute; top: 14px; right: 14px; z-index: 9; width: 286px;
+    background: var(--panel-bg); border: 1px solid var(--panel-line);
+    border-radius: 10px; padding: 12px 14px; backdrop-filter: blur(6px);
+    font-size: 12px;
+  }
+  #sim-info .card-h { font-size: 12.5px; font-weight: 600; margin-bottom: 6px; display: flex; gap: 6px; align-items: center; }
+  #sim-info .card-b { font-size: 11px; color: var(--text-dim); line-height: 1.65; }
+  #sim-controls {
+    position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%);
+    z-index: 9; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    background: var(--panel-bg); border: 1px solid var(--panel-line);
+    border-radius: 10px; padding: 9px 16px; backdrop-filter: blur(6px);
+  }
+  #sim-controls label { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-dim); }
+  #sim-controls input[type="range"] { width: 130px; accent-color: var(--accent); }
+  #sim-controls b { color: var(--accent); font-variant-numeric: tabular-nums; min-width: 34px; }
+  .simgo {
+    width: 100%; padding: 8px 0; font-size: 12px; font-family: inherit; cursor: pointer;
+    background: rgba(127,183,245,0.16); border: 1px solid var(--accent);
+    color: var(--accent); border-radius: 6px; font-weight: 600;
+  }
+  .simgo:hover { background: rgba(127,183,245,0.3); }
+
+  /* ---------- 지역 3D 지형 뷰 ---------- */
+  #localview { position: fixed; inset: 0; z-index: 8; display: none; background: #0a0f14; }
+  #localview.active { display: block; }
+  #lt-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #lt-exit, #lt-map {
+    position: absolute; top: 14px; z-index: 9;
+    padding: 8px 14px; background: var(--panel-bg); color: var(--text);
+    border: 1px solid var(--panel-line); border-radius: 8px;
+    font-size: 12px; font-family: inherit; cursor: pointer;
+  }
+  #lt-exit { left: 14px; }
+  #lt-map { left: 110px; }
+  #lt-exit:hover, #lt-map:hover { background: rgba(74,144,217,0.22); }
+  #lt-info {
+    position: absolute; top: 14px; right: 14px; z-index: 9; max-width: 300px;
+    background: var(--panel-bg); border: 1px solid var(--panel-line);
+    border-radius: 10px; padding: 10px 14px; backdrop-filter: blur(6px);
+    font-size: 11px; color: var(--text-dim); line-height: 1.6;
+  }
+  #lt-info b { color: var(--text); }
+  #lt-bar {
+    position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+    z-index: 9; display: flex; align-items: center; gap: 18px;
+    background: var(--panel-bg); border: 1px solid var(--panel-line);
+    border-radius: 10px; padding: 8px 16px; backdrop-filter: blur(6px);
+  }
+  #lt-bar label { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-dim); }
+  #lt-bar input[type="range"] { width: 120px; accent-color: var(--accent); }
+  #lt-bar b { color: var(--accent); font-variant-numeric: tabular-nums; }
+  #lt-attrib { font-size: 9.5px; color: var(--text-dim); }
+  #lt-loading {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    z-index: 9; font-size: 12px; color: var(--text);
+    background: var(--panel-bg); border: 1px solid var(--panel-line);
+    border-radius: 8px; padding: 10px 18px;
+  }
+
+  /* ---------- Earth Intelligence Feed ---------- */
+  .feed-head { font-size: 11px; color: var(--text-dim); letter-spacing: 1px; margin-bottom: 8px; }
+  .feed-head .feed-cnt { color: var(--accent); }
+  .feed-item {
+    display: flex; gap: 10px; align-items: center; padding: 8px 10px;
+    border: 1px solid rgba(120,160,200,0.14); border-radius: 8px;
+    margin-bottom: 6px; cursor: pointer;
+  }
+  .feed-item:hover { background: rgba(74,144,217,0.12); }
+  .feed-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .feed-dot.tc { background: #ffb36a; }
+  .feed-dot.eq { background: #d98a6a; }
+  .feed-dot.a-red { background: #ff5540; box-shadow: 0 0 8px rgba(255,85,64,0.7); }
+  .feed-main { flex: 1; min-width: 0; }
+  .feed-title { font-size: 12px; color: var(--text); }
+  .feed-sub { font-size: 10px; color: var(--text-dim); }
+  .feed-note { font-size: 9.5px; color: var(--text-dim); margin-top: 8px; line-height: 1.5; }
+  .feed-back {
+    background: none; border: none; color: var(--accent); font-size: 11px;
+    cursor: pointer; margin-bottom: 8px; font-family: inherit; padding: 0;
+  }
+  #feedmarks { position: fixed; inset: 0; pointer-events: none; z-index: 3; }
+  .feed-mark {
+    position: absolute; width: 10px; height: 10px; border-radius: 50%;
+    transform: translate(-50%, -50%); pointer-events: auto; cursor: pointer;
+    border: 1.5px solid rgba(255,255,255,0.75);
+  }
+  .feed-mark.tc { background: rgba(255,179,106,0.9); }
+  .feed-mark.eq { background: rgba(217,138,106,0.9); }
+  .feed-mark.a-red { background: #ff5540; animation: feedpulse 1.6s infinite; }
+  .feed-mark.sel { width: 15px; height: 15px; border-color: var(--accent); }
+  @keyframes feedpulse {
+    0%, 100% { box-shadow: 0 0 5px rgba(255,85,64,0.5); }
+    50% { box-shadow: 0 0 16px rgba(255,85,64,0.95); }
+  }
+
+  #labels { position: fixed; inset: 0; pointer-events: none; z-index: 3; }
+  .geo-label {
+    position: absolute; transform: translate(-50%, -50%);
+    font-size: 11px; color: rgba(220,232,244,0.85); letter-spacing: 0.4px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 2px rgba(0,0,0,0.9);
+    white-space: nowrap;
+  }
+  .geo-label.dim { color: rgba(160,175,190,0.28); }
+  .geo-label.sel { color: var(--accent); font-weight: 600; }
+
+  #loading {
+    position: fixed; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px;
+    background: radial-gradient(ellipse at center, #071018 0%, #030608 70%);
+    z-index: 10; transition: opacity 0.5s;
+  }
+  #loading.done { opacity: 0; pointer-events: none; }
+  #loading .lockup { width: 320px; max-width: 70vw; }
+  #loading .bar { width: 260px; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; }
+  #loading .bar i { display: block; height: 100%; width: 0%; background: var(--accent); transition: width 0.15s; }
+  #loading .msg { font-size: 11px; color: var(--text-dim); }
+  #loading .err { color: #e08a7a; font-size: 12px; max-width: 320px; text-align: center; line-height: 1.6; display: none; }
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+
+<div id="panel">
+  <img class="brand" src="./assets/brand/earthus-wordmark-white.svg" alt="EARTHUS" />
+  <div class="sub">실제 고도 변위 + 픽셀 음영 렌더러</div>
+
+  <div class="row">
+    <input type="text" id="c-search" placeholder="국가 검색 (한글/영문)" autocomplete="off" />
+    <div id="search-results"></div>
+  </div>
+
+  <div class="row info" id="sun-info">태양 위치 계산 중…</div>
+
+  <div class="row">
+    <label>구름</label>
+    <div class="seg" id="cloud-seg">
+      <button data-cloud="off" class="on">없음</button>
+      <button data-cloud="obs">관측</button>
+      <button data-cloud="gk2a">천리안</button>
+      <button data-cloud="gfs">모델</button>
+      <button data-cloud="static">정적</button>
+    </div>
+    <div class="cloud-note" id="cloud-note">구름 끔</div>
+  </div>
+
+  <div class="row toggle">
+    <input type="checkbox" id="c-snow" /><label for="c-snow">눈·얼음 (관측)</label>
+  </div>
+  <div class="cloud-note" id="snow-note"></div>
+
+  <div class="row toggle">
+    <input type="checkbox" id="c-rotate" checked /><label for="c-rotate">자동 회전</label>
+  </div>
+
+  <button id="sim-toggle">시뮬레이션 설정 열기 ▾</button>
+  <div id="sim">
+    <div class="sim-head">시뮬레이션 · 표현 튜닝</div>
+    <div class="row">
+      <label>지형 과장 <span class="val" id="v-exagger">50×</span></label>
+      <input type="range" id="c-exagger" min="1" max="80" step="1" value="50" />
+    </div>
+    <div class="row">
+      <label>음영 강도 <span class="val" id="v-shade">1.9</span></label>
+      <input type="range" id="c-shade" min="0" max="2.5" step="0.1" value="1.9" />
+    </div>
+    <div class="row">
+      <label>위성 색 혼합 <span class="val" id="v-photo">65%</span></label>
+      <input type="range" id="c-photo" min="0" max="100" step="5" value="65" />
+    </div>
+    <div class="row toggle">
+      <input type="checkbox" id="c-manual" /><label for="c-manual">수동 조명 (화면 기준)</label>
+    </div>
+    <div class="row">
+      <label>태양 방위각 <span class="val" id="v-sunaz">245°</span></label>
+      <input type="range" id="c-sunaz" min="0" max="360" step="5" value="245" disabled />
+    </div>
+    <div class="row">
+      <label>태양 고도각 <span class="val" id="v-sunel">64°</span></label>
+      <input type="range" id="c-sunel" min="5" max="80" step="1" value="64" disabled />
+    </div>
+  </div>
+
+  <div class="credit">
+    지형: AWS Terrain Tiles (Terrarium)<br/>
+    기본색: Natural Earth II<br/>
+    비교: <a href="../v2/index.html">Cesium v2 지구 열기</a>
+  </div>
+</div>
+
+<div id="focus-chip"></div>
+
+<div id="mapview">
+  <div id="map-tiles"></div>
+  <button id="map-exit">◀ 3D 지구로</button>
+  <div id="map-attrib">위성영상 © Esri · Maxar · Earthstar Geographics</div>
+</div>
+
+<div id="hud">고도 —</div>
+
+<div id="loading">
+  <img class="lockup" src="./assets/brand/earthus-lockup-white.svg" alt="EARTHUS — WHERE EARTH BECOMES ONE" />
+  <div class="bar"><i id="load-fill"></i></div>
+  <div class="msg" id="load-msg">지형 데이터 로딩 준비…</div>
+  <div class="err" id="load-err"></div>
+</div>
+
+<script type="module" src="./js/main.js?v=17"></script>
+</body>
+</html>

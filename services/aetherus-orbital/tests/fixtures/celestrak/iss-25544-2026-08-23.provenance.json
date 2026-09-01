@@ -1,0 +1,13 @@
+{
+  "source_id": "celestrak_gp",
+  "source_uri": "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=JSON",
+  "retrieved_at": "2026-08-24T12:40:40Z",
+  "content_sha256": "8e6ba5348475777fc223c25aa8ce6b66874e26630fb73df08ae9624e392e3917",
+  "captured_response_sha256": "43353e37cc947ec1885f8125f4e359d9ba5c1c753ffff73c662edc694edac793",
+  "media_type": "application/json",
+  "source_grade": "PUBLIC_GP",
+  "notes": [
+    "Captured directly from the public CelesTrak GP endpoint; the source-controlled fixture normalizes its trailing line ending.",
+    "CelesTrak JSON omits redundant OMM mandatory fields; parser defaults are documented by CelesTrak."
+  ]
+}

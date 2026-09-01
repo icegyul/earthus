@@ -35,6 +35,51 @@ def docker_exe() -> str:
     return str(fallback)
 
 
+def run_pytest_subset() -> dict:
+    """P0·P1 테스트 서브셋을 실제 실행해 요약을 기록한다."""
+    files = [
+        "tests/test_health.py",
+        "tests/test_database.py",
+        "tests/test_migrations.py",
+        "tests/unit/test_celestrak_client.py",
+        "tests/unit/test_ingestion_service.py",
+        "tests/unit/test_ingestion_api.py",
+        "tests/unit/test_catalog_id_validation.py",
+        "tests/unit/test_identity_resolution.py",
+        "tests/integration/test_p1_migration_schema.py",
+        "tests/integration/test_celestrak_ingestion.py",
+        "tests/integration/test_ingestion_rejections.py",
+        "tests/integration/test_partial_ingestion.py",
+        "tests/integration/test_run_artifact_provenance.py",
+        "tests/integration/test_identity_conflicts.py",
+        "tests/integration/test_snapshot_versioning.py",
+    ]
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest", *files, "-q", "--no-header"],
+        capture_output=True,
+        text=True,
+        cwd=str(Path(__file__).resolve().parents[1]),
+    )
+    summary = proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else ""
+    return {
+        "command": "pytest <P0/P1 subset 15 files> -q",
+        "exit_code": proc.returncode,
+        "summary": summary,
+    }
+
+
+def probe_health() -> dict:
+    """실행 중인 API의 /health를 조회한다 (서버 미가동이면 명시 기록)."""
+    import urllib.request
+
+    try:
+        with urllib.request.urlopen("http://127.0.0.1:8000/health", timeout=5) as r:
+            return {"endpoint": "/health", "http_status": r.status,
+                    "body": json.loads(r.read().decode("utf-8"))}
+    except Exception as exc:  # noqa: BLE001
+        return {"endpoint": "/health", "http_status": None, "error": str(exc)}
+
+
 async def collect_db() -> dict:
     async with get_db_session() as session:
         ledger = (
@@ -63,7 +108,45 @@ async def collect_db() -> dict:
         sources = (
             await session.execute(text("SELECT count(*) FROM data_source"))
         ).scalar_one()
+        ingestion = (
+            await session.execute(
+                text(
+                    "SELECT (SELECT count(*) FROM ingestion_run),"
+                    " (SELECT count(*) FROM raw_artifact),"
+                    " (SELECT count(*) FROM space_object),"
+                    " (SELECT count(*) FROM orbit_solution)"
+                )
+            )
+        ).one()
+        iss = (
+            await session.execute(
+                text(
+                    "SELECT so.catalog_id, so.canonical_name, os.epoch, os.format,"
+                    " os.frame FROM space_object so"
+                    " JOIN orbit_solution os ON os.object_id = so.id"
+                    " WHERE so.catalog_id = '25544'"
+                    " ORDER BY os.created_at DESC LIMIT 1"
+                )
+            )
+        ).first()
         return {
+            "ingestion_counts": {
+                "ingestion_run": ingestion[0],
+                "raw_artifact": ingestion[1],
+                "space_object": ingestion[2],
+                "orbit_solution": ingestion[3],
+            },
+            "live_ingest_sample": (
+                {
+                    "catalog_id": iss[0],
+                    "canonical_name": iss[1],
+                    "epoch": str(iss[2]),
+                    "format": iss[3],
+                    "frame": iss[4],
+                }
+                if iss
+                else None
+            ),
             "schema_migrations": [
                 {"name": m, "content_hash": h, "execution_time_ms": t}
                 for (m, h, t) in ledger
@@ -111,19 +194,15 @@ def main() -> None:
             ),
         },
         "database": asyncio.run(collect_db()),
-        "tests": {
-            "note": "823 pytest 스위트 미이식 — 자동 테스트는 코드 이식 단계에서 재현 예정",
-            "executed": [
-                "backend.migrations.migrate (8/8 applied)",
-                "contracts JSON parse 19/19 (import 시점)",
-            ],
-        },
+        "tests": run_pytest_subset(),
+        "api": probe_health(),
         "limitations": [
-            "ORB-P0 게이트 중 CI 워크플로·헬스 엔드포인트·클린클론 부트 검증 미완 — 따라서 PARTIAL",
+            "ORB-P0 게이트 중 CI 워크플로·클린클론 부트 검증 미완 — 따라서 PARTIAL",
             "MinIO/S3 어댑터 미기동 — raw 저장 파일시스템 경로",
-            "Space-Track 자격증명 부재 (CelesTrak 무자격 경로로 진행)",
+            "Space-Track 라이브 미검증 (자격증명 부재 — 어댑터 계약·테스트만 재현)",
+            "packages/* 제품 라인 미이식 — 페이즈 라인(backend)만 재현",
         ],
-        "next_allowed": "P1 수집(CelesTrak) 코드 이식 + 테스트 재현, API 헬스 엔드포인트, CI",
+        "next_allowed": "ORB-P2 궤도전파 골든 재현 (P1 관통 증명 완료 후)",
     }
     EVIDENCE_PATH.parent.mkdir(parents=True, exist_ok=True)
     EVIDENCE_PATH.write_text(

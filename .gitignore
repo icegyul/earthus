@@ -40,3 +40,13 @@ docs/aetherus-v2-canonical/**/*.docx
 
 # Python 가상환경 — 기기별 상태, 소스 아님.
 .venv/
+
+# AETHERUS raw provider 스냅샷 — 불변 데이터는 로컬/객체스토리지 보관 (823 정책 동일).
+services/aetherus-orbital/artifacts/raw/
+
+# Python 캐시 — 소스 아님.
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

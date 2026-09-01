@@ -2,10 +2,10 @@
   "phase": "p1",
   "orbital_phase": "ORB-P0",
   "gate": "PARTIAL",
-  "generated_at": "2026-09-01T02:11:32.397305+00:00",
+  "generated_at": "2026-09-01T02:21:36.023686+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "83197d537b06c48a7c7789261e6a67f1c60a559c",
+  "commit": "a7a2c3175bbd4736f993d915dce314cbaed31b91",
   "import_source": {
     "repo": "Aetherus 823_Orbital/aetherus-orbital-environment (local-only)",
     "branch": "codex/aetherus-v2-v06-integration",
@@ -31,6 +31,19 @@
     ]
   },
   "database": {
+    "ingestion_counts": {
+      "ingestion_run": 14,
+      "raw_artifact": 13,
+      "space_object": 6,
+      "orbit_solution": 5
+    },
+    "live_ingest_sample": {
+      "catalog_id": "25544",
+      "canonical_name": "ISS (ZARYA)",
+      "epoch": "2026-08-31 11:11:23.184384+00:00",
+      "format": "OMM",
+      "frame": "TEME"
+    },
     "schema_migrations": [
       {
         "name": "001_initial_schema",
@@ -82,16 +95,37 @@
     "data_source_seed_count": 2
   },
   "tests": {
-    "note": "823 pytest 스위트 미이식 — 자동 테스트는 코드 이식 단계에서 재현 예정",
-    "executed": [
-      "backend.migrations.migrate (8/8 applied)",
-      "contracts JSON parse 19/19 (import 시점)"
-    ]
+    "command": "pytest <P0/P1 subset 15 files> -q",
+    "exit_code": 0,
+    "summary": "======================== 50 passed, 1 warning in 0.54s ========================"
+  },
+  "api": {
+    "endpoint": "/health",
+    "http_status": 200,
+    "body": {
+      "status": "healthy",
+      "version": "0.1.0.post0",
+      "timestamp": "2026-09-01T02:21:38.529827+00:00",
+      "phase": "P5",
+      "services": {
+        "database": "healthy",
+        "api": "healthy"
+      },
+      "scientific_features": {
+        "ingestion": "AVAILABLE",
+        "orbit_propagation": "AVAILABLE",
+        "explore_catalog": "AVAILABLE",
+        "conjunction_assessment": "AVAILABLE",
+        "pc_without_covariance": "NOT_COMPUTED",
+        "benefit_engine": "AVAILABLE_IDEALIZED_SIMULATION"
+      }
+    }
   },
   "limitations": [
-    "ORB-P0 게이트 중 CI 워크플로·헬스 엔드포인트·클린클론 부트 검증 미완 — 따라서 PARTIAL",
+    "ORB-P0 게이트 중 CI 워크플로·클린클론 부트 검증 미완 — 따라서 PARTIAL",
     "MinIO/S3 어댑터 미기동 — raw 저장 파일시스템 경로",
-    "Space-Track 자격증명 부재 (CelesTrak 무자격 경로로 진행)"
+    "Space-Track 라이브 미검증 (자격증명 부재 — 어댑터 계약·테스트만 재현)",
+    "packages/* 제품 라인 미이식 — 페이즈 라인(backend)만 재현"
   ],
-  "next_allowed": "P1 수집(CelesTrak) 코드 이식 + 테스트 재현, API 헬스 엔드포인트, CI"
+  "next_allowed": "ORB-P2 궤도전파 골든 재현 (P1 관통 증명 완료 후)"
 }

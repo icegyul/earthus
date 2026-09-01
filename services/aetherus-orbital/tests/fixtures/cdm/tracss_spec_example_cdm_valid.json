@@ -1,0 +1,51 @@
+{
+  "fixture_provenance": {
+    "derived_from": "NOAA Office of Space Commerce, TraCSS CDM Specification v2.1 public specification example",
+    "source_url": "https://space.commerce.gov/wp-content/uploads/2026/01/TraCSS-Spec-001-v2.1_CDM.pdf",
+    "note": "Identity, TCA, miss distance and relative speed follow the published specification example. The 6x6 covariance matrices are synthetic validation values constructed for this fixture because the original example matrices are not part of the public document. This file is a validation fixture only and must never be presented as a live operational conjunction."
+  },
+  "source_grade": "TRACSS_SPEC_EXAMPLE_NOT_OPERATIONAL",
+  "creation_date": "2025-05-16T02:14:49.000Z",
+  "conjunction_id": "dd8c054b-6bea-48fb-a245-6cb23331b156",
+  "tca": "2025-05-16T11:08:55.944Z",
+  "miss_distance_m": 4899.0,
+  "relative_speed_m_s": 13169.0,
+  "ref_frame": "TEME",
+  "covariance_unit": "km2",
+  "combined_hbr_m": 5.5,
+  "hbr_semantics": "COMBINED_HBR",
+  "obj1": {
+    "norad": "43013",
+    "name": "NOAA 20",
+    "type": "PAYLOAD",
+    "ops_status": "OPERATIONAL_MANEUVERABLE",
+    "covariance_method": "CALCULATED",
+    "covariance_reference_frame": "TEME",
+    "hbr_m": 5.0,
+    "covariance_km2": [
+      [0.81, 0.05, -0.08, 0.0001, -0.00002, 0.00003],
+      [0.05, 0.25, 0.04, -0.00001, 0.00004, -0.00001],
+      [-0.08, 0.04, 3.24, 0.00002, -0.00001, 0.00008],
+      [0.0001, -0.00001, 0.00002, 4e-8, 1e-9, -2e-9],
+      [-0.00002, 0.00004, -0.00001, 1e-9, 5e-8, 1e-9],
+      [0.00003, -0.00001, 0.00008, -2e-9, 1e-9, 9e-8]
+    ]
+  },
+  "obj2": {
+    "norad": "147",
+    "name": "THOR ABLESTAR DEB",
+    "type": "DEBRIS",
+    "ops_status": "N/A",
+    "covariance_method": "CALCULATED",
+    "covariance_reference_frame": "TEME",
+    "hbr_m": 0.5,
+    "covariance_km2": [
+      [1.44, -0.06, 0.09, 0.00008, 0.00001, -0.00002],
+      [-0.06, 0.36, -0.05, 0.00001, 0.00003, 0.00001],
+      [0.09, -0.05, 4.41, -0.00002, 0.00001, 0.00005],
+      [0.00008, 0.00001, -0.00002, 6e-8, -1e-9, 2e-9],
+      [0.00001, 0.00003, 0.00001, -1e-9, 7e-8, -1e-9],
+      [-0.00002, 0.00001, 0.00005, 2e-9, -1e-9, 1.2e-7]
+    ]
+  }
+}

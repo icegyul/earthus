@@ -19,8 +19,17 @@ from sqlalchemy import text  # noqa: E402
 
 from backend.database import get_db_session  # noqa: E402
 
+SERVICE_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = Path(__file__).resolve().parents[3]
 EVIDENCE_PATH = REPO_ROOT / "artifacts" / "evidence" / "p1.json"
+P0_EVIDENCE_PATH = REPO_ROOT / "artifacts" / "evidence" / "p0.json"
+
+# A live provider proof is only credible when the stored raw artifact carries the
+# provider's own host in source_uri — a recorded:// fixture must never satisfy it.
+LIVE_PROVIDER_URI_PREFIXES = {
+    "celestrak_gp": "https://celestrak.org/NORAD/elements/gp.php",
+    "spacetrack_gp": "https://www.space-track.org/basicspacedata/query",
+}
 
 
 def run(cmd: list[str]) -> str:
@@ -78,6 +87,100 @@ def probe_health() -> dict:
                     "body": json.loads(r.read().decode("utf-8"))}
     except Exception as exc:  # noqa: BLE001
         return {"endpoint": "/health", "http_status": None, "error": str(exc)}
+
+
+async def collect_live_providers(session) -> dict:
+    """각 프로바이더의 라이브 응답이 원본→객체→궤도해로 실제 연결돼 있는지 질의한다."""
+    out: dict = {}
+    for source_id, prefix in LIVE_PROVIDER_URI_PREFIXES.items():
+        params = {"sid": source_id, "pfx": f"{prefix}%"}
+        latest = (
+            await session.execute(
+                text(
+                    "SELECT ra.source_uri, ra.content_sha256, ra.retrieved_at,"
+                    " so.catalog_id, os.format"
+                    " FROM raw_artifact ra"
+                    " JOIN orbit_solution os ON os.source_artifact_id = ra.id"
+                    " JOIN space_object so ON so.id = os.object_id"
+                    " WHERE ra.source_id = :sid AND ra.source_uri LIKE :pfx"
+                    " ORDER BY ra.retrieved_at DESC LIMIT 1"
+                ),
+                params,
+            )
+        ).mappings().first()
+        artifact_count = (
+            await session.execute(
+                text(
+                    "SELECT count(*) FROM raw_artifact"
+                    " WHERE source_id = :sid AND source_uri LIKE :pfx"
+                ),
+                params,
+            )
+        ).scalar_one()
+        marked = (
+            await session.execute(
+                text(
+                    "SELECT count(*) FROM ingestion_run"
+                    " WHERE source_id = :sid"
+                    " AND metadata_json ->> 'live_provider_proof' = 'true'"
+                ),
+                {"sid": source_id},
+            )
+        ).scalar_one()
+        out[source_id] = {
+            "live_raw_artifact_count": artifact_count,
+            "linked_to_object_and_orbit": latest is not None,
+            "durable_proof_marked_runs": marked,
+            "latest": (
+                {
+                    "source_uri": latest["source_uri"],
+                    "content_sha256": latest["content_sha256"],
+                    "retrieved_at": str(latest["retrieved_at"]),
+                    "catalog_id": latest["catalog_id"],
+                    "format": latest["format"],
+                }
+                if latest
+                else None
+            ),
+        }
+    return out
+
+
+async def collect_debris_groups(session) -> list[dict]:
+    """파편운 GROUP 수집이 한 요청=한 아티팩트=한 계보 뿌리로 남았는지 확인한다."""
+    rows = (
+        await session.execute(
+            text(
+                "SELECT ra.source_uri, ra.content_sha256, count(DISTINCT so.id) AS objects"
+                " FROM raw_artifact ra"
+                " JOIN orbit_solution os ON os.source_artifact_id = ra.id"
+                " JOIN space_object so ON so.id = os.object_id"
+                " WHERE ra.source_uri LIKE '%GROUP=%'"
+                " GROUP BY ra.source_uri, ra.content_sha256"
+                " ORDER BY objects DESC"
+            )
+        )
+    ).mappings().all()
+    return [
+        {
+            "source_uri": row["source_uri"],
+            "raw_sha256": row["content_sha256"],
+            "objects_from_this_artifact": row["objects"],
+        }
+        for row in rows
+    ]
+
+
+def read_p0_gate() -> dict:
+    """ORB-P0 게이트는 p0 증거 파일의 실행 결과에서만 읽는다 (수기 값 금지)."""
+    if not P0_EVIDENCE_PATH.exists():
+        return {"gate": None, "reason": "artifacts/evidence/p0.json 미생성"}
+    payload = json.loads(P0_EVIDENCE_PATH.read_text(encoding="utf-8"))
+    return {
+        "gate": payload.get("gate"),
+        "failed_checks": payload.get("failed_checks"),
+        "generated_at": payload.get("generated_at"),
+    }
 
 
 async def collect_db() -> dict:
@@ -155,16 +258,45 @@ async def collect_db() -> dict:
             "user_trigger_count": triggers,
             "postgis_version": postgis,
             "data_source_seed_count": sources,
+            "live_providers": await collect_live_providers(session),
+            "debris_group_artifacts": await collect_debris_groups(session),
         }
     raise RuntimeError("DB 세션을 얻지 못함")
 
 
 def main() -> None:
     docker = docker_exe()
+    database = asyncio.run(collect_db())
+    tests = run_pytest_subset()
+    api = probe_health()
+    p0_gate = read_p0_gate()
+    live = database["live_providers"]
+    checks = {
+        "orb_p0_gate_pass": p0_gate.get("gate") == "PASS",
+        "tests_pass": tests.get("exit_code") == 0,
+        "health_endpoint_200": api.get("http_status") == 200,
+        "schemas_applied": all(
+            database["table_counts"].get(schema, 0) > 0
+            for schema in ("public", "aetherus_product")
+        ),
+        "live_ingest_persisted": (
+            database["ingestion_counts"]["space_object"] > 0
+            and database["ingestion_counts"]["orbit_solution"] > 0
+        ),
+        "celestrak_live_linked": live["celestrak_gp"]["linked_to_object_and_orbit"],
+        "spacetrack_live_linked": live["spacetrack_gp"]["linked_to_object_and_orbit"],
+        "product_line_present": (SERVICE_ROOT / "packages").is_dir(),
+    }
+    failed = [name for name, ok in checks.items() if not ok]
+    gate = "PASS" if not failed else "PARTIAL"
+
     evidence = {
         "phase": "p1",
         "orbital_phase": "ORB-P0",
-        "gate": "PARTIAL",
+        "gate": gate,
+        "failed_checks": failed,
+        "checks": checks,
+        "orb_p0_gate": p0_gate,
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "repository": run(["git", "-C", str(REPO_ROOT), "remote", "get-url", "origin"]),
         "branch": run(["git", "-C", str(REPO_ROOT), "rev-parse", "--abbrev-ref", "HEAD"]),
@@ -193,14 +325,15 @@ def main() -> None:
                 + "]"
             ),
         },
-        "database": asyncio.run(collect_db()),
-        "tests": run_pytest_subset(),
-        "api": probe_health(),
+        "database": database,
+        "tests": tests,
+        "api": api,
         "limitations": [
-            "ORB-P0 게이트 중 CI 워크플로·클린클론 부트 검증 미완 — 따라서 PARTIAL",
-            "MinIO/S3 어댑터 미기동 — raw 저장 파일시스템 경로",
-            "Space-Track 라이브 미검증 (자격증명 부재 — 어댑터 계약·테스트만 재현)",
-            "packages/* 제품 라인 미이식 — 페이즈 라인(backend)만 재현",
+            "raw 원본의 정본 저장은 파일시스템 경로 유지 — MinIO/S3 왕복은 ORB-P0 증거(p0.json object_store)에서만 검증됨",
+            "라이브 프로바이더 증명은 durable proof 마커(ingestion_run.metadata_json.live_provider_proof)가 아직 찍히지 않음"
+            " — 본 증거는 실 응답 원본(provider 호스트 source_uri)이 객체·궤도해로 연결된 사실로만 판정한다",
+            "워커(Celery) 잡 왕복 미증명 (ORB-P0 이월 한계, p0.json 참조)",
+            "CI 워크플로는 파일로 존재하나 원격 실행 이력 없음 · 빈 머신 클린클론 부팅 재현은 별도 수행 필요 (ORB-P0 이월)",
         ],
         "next_allowed": "ORB-P2 궤도전파 골든 재현 (P1 관통 증명 완료 후)",
     }

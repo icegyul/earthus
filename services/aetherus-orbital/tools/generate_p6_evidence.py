@@ -4,6 +4,7 @@
 실행: services/aetherus-orbital에서 .venv/Scripts/python tools/generate_p6_evidence.py
 """
 
+import asyncio
 import datetime
 import json
 import subprocess
@@ -82,11 +83,74 @@ def probe_ui() -> dict:
         "catalog_snapshot": "http://127.0.0.1:8000/api/v1/catalog/snapshot",
     }.items():
         try:
-            with urllib.request.urlopen(url, timeout=10) as r:
+            with urllib.request.urlopen(url, timeout=30) as r:
                 out[key] = {"http_status": r.status, "bytes": len(r.read())}
         except Exception as exc:  # noqa: BLE001
             out[key] = {"http_status": None, "error": str(exc)}
     return out
+
+
+async def _catalog_scale_from_db() -> dict:
+    """API가 응답하지 않아도 카탈로그 규모 자체는 DB에서 직접 세어 남긴다."""
+    from sqlalchemy import text
+
+    from backend.config import settings
+    from backend.database import get_db_session
+
+    async with get_db_session() as session:
+        total = (await session.execute(text("SELECT count(*) FROM space_object"))).scalar_one()
+        with_solution = (
+            await session.execute(
+                text("SELECT count(DISTINCT object_id) FROM orbit_solution")
+            )
+        ).scalar_one()
+    threshold = settings.global_density_min_objects
+    return {
+        "measurement_source": "DATABASE_DIRECT",
+        "objects_total": total,
+        "objects_with_solution": with_solution,
+        "global_density": "AVAILABLE" if with_solution >= threshold else "INSUFFICIENT_DATA",
+        "global_density_reason": (
+            f"{with_solution} objects with an orbit solution vs configured"
+            f" global-density threshold of {threshold} (counted directly in PostgreSQL"
+            " because the API did not answer)"
+        ),
+    }
+
+
+def probe_catalog_scale() -> dict:
+    """LOD 검증이 성립할 만큼 카탈로그가 실제로 커졌는지 서버가 세게 한다."""
+    try:
+        with urllib.request.urlopen(
+            "http://127.0.0.1:8000/api/v1/catalog/status", timeout=30
+        ) as r:
+            body = json.loads(r.read().decode("utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        fallback = {"http_status": None, "error": str(exc)}
+        try:
+            fallback.update(asyncio.run(_catalog_scale_from_db()))
+        except Exception as db_error:  # noqa: BLE001
+            fallback["database_fallback_error"] = str(db_error)[:300]
+        return fallback
+    coverage = (body.get("data") or {}).get("coverage") or {}
+    return {
+        "http_status": 200,
+        "measurement_source": "CATALOG_STATUS_API",
+        "data_status": body.get("data_status"),
+        "objects_total": coverage.get("objects_total"),
+        "objects_with_solution": coverage.get("objects_with_solution"),
+        "global_density": coverage.get("global_density"),
+        "global_density_reason": coverage.get("global_density_reason"),
+        "sources": [
+            {
+                "source_id": src.get("source_id"),
+                "successful_runs": src.get("successful_runs"),
+                "total_runs": src.get("total_runs"),
+                "last_success_at": src.get("last_success_at"),
+            }
+            for src in (coverage.get("sources") or [])
+        ],
+    }
 
 
 def main() -> None:
@@ -96,10 +160,25 @@ def main() -> None:
         text=True,
         cwd=str(SERVICE_ROOT),
     )
+    golden = golden_report()
+    catalog_scale = probe_catalog_scale()
+    checks = {
+        "tests_pass": pytest_proc.returncode == 0,
+        "golden_within_tolerance": bool(golden) and all(r["within_tolerance"] for r in golden),
+        # Keep "server unreachable" distinguishable from "catalog too small" — otherwise a
+        # saturated API would be read back as a shrunken catalog.
+        "catalog_api_reachable": catalog_scale.get("http_status") == 200,
+        "catalog_at_lod_scale": (catalog_scale.get("global_density") == "AVAILABLE"),
+        # playwright 바이너리가 없어 브라우저 E2E는 아직 실행되지 않았다.
+        "playwright_e2e_run": False,
+    }
+    failed = [name for name, ok in checks.items() if not ok]
     evidence = {
         "phase": "p6",
         "orbital_phase": "ORB-P2 + ORB-P3(partial)",
-        "gate": "PARTIAL",
+        "gate": "PASS" if not failed else "PARTIAL",
+        "failed_checks": failed,
+        "checks": checks,
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "repository": run(["git", "-C", str(REPO_ROOT), "remote", "get-url", "origin"]),
         "branch": run(["git", "-C", str(REPO_ROOT), "rev-parse", "--abbrev-ref", "HEAD"]),
@@ -111,7 +190,8 @@ def main() -> None:
             if pytest_proc.stdout.strip()
             else "",
         },
-        "golden_cross_validation": golden_report(),
+        "golden_cross_validation": golden,
+        "catalog_scale": catalog_scale,
         "platform_migration_note": (
             "macOS 기록 골든 대비 Windows 재계산 최대 델타: position 1.819e-12 km,"
             " velocity 8.882e-16 km/s, alt 2.728e-12 km, lat/lon 0.0 — 전 항목 허용오차"
@@ -122,15 +202,18 @@ def main() -> None:
         "live_api": probe_ephemeris(),
         "explore_ui": probe_ui(),
         "explore_network_inspection": (
-            "인앱 브라우저 네트워크 검사(2026-09-01): /ui/ 로드 시 좌표 소스 요청은"
-            " /api/v1/catalog/status·/api/v1/catalog/snapshot 200 두 건뿐, 콘솔 에러 0."
-            " ISS 25544는 API 유래 SGP4 마커+데이터 나이 표기, 격리 객체 2건은 위치 없이"
-            " UNAVAILABLE 상태 렌더, GLOBAL VIEW: INSUFFICIENT_DATA 배지 표시 확인."
+            "인앱 브라우저 네트워크 검사(2026-09-01, 파편운 수집 이전 시점의 기록):"
+            " /ui/ 로드 시 좌표 소스 요청은 /api/v1/catalog/status·/api/v1/catalog/snapshot"
+            " 200 두 건뿐, 콘솔 에러 0. ISS 25544는 API 유래 SGP4 마커+데이터 나이 표기,"
+            " 격리 객체 2건은 위치 없이 UNAVAILABLE 상태 렌더, GLOBAL VIEW:"
+            " INSUFFICIENT_DATA 배지 표시 확인. — 당시의 INSUFFICIENT_DATA는 카탈로그가"
+            " 임계 미만이어서였고, 현재는 위 catalog_scale 측정이 AVAILABLE을 보고한다."
+            " 이 배지 전환 자체의 브라우저 재확인은 후속."
         ),
         "limitations": [
-            "playwright e2e(tests/e2e/test_p3_explore_ui.py) 미실행 — 브라우저 바이너리 미설치, 후속",
+            "playwright e2e(tests/e2e/test_p3_explore_ui.py) 미실행 — 브라우저 바이너리 미설치, 후속 (게이트가 PARTIAL인 이유)",
             "테스트 TZ 버그 1건 수정(naive OMM EPOCH를 UTC로 해석) — 소스 823 대비 변경",
-            "카탈로그가 소수 객체(수집 1건+테스트 데이터) — 대규모 LOD 검증은 카탈로그 확장 후",
+            "탐색 UI는 서버 페이지 상한(기본 500)으로 카탈로그를 절단해 렌더 — 절단 사실은 화면에 표기되나 전량 LOD 렌더는 후속",
         ],
         "next_allowed": "ORB-P4 근접분석 재현 (스크리닝·TCA·공분산 게이트 Pc·CDM)",
     }

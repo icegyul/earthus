@@ -2,10 +2,25 @@
   "phase": "p8",
   "orbital_phase": "ORB-P4 + ORB-P5(physical engine) + ORB-P6(PROTECT/OCM)",
   "gate": "PARTIAL",
-  "generated_at": "2026-09-01T04:02:12.866613+00:00",
+  "failed_checks": [
+    "tests_p4_core_pass",
+    "tests_p5_pass",
+    "tests_p6_pass",
+    "operational_pc_from_cdm_covariance",
+    "large_scale_benchmark_run"
+  ],
+  "checks": {
+    "tests_p4_core_pass": false,
+    "tests_10k_corpus_pass": true,
+    "tests_p5_pass": false,
+    "tests_p6_pass": false,
+    "operational_pc_from_cdm_covariance": false,
+    "large_scale_benchmark_run": false
+  },
+  "generated_at": "2026-09-01T13:08:30.234883+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "584441f8b6a57d62df48f472682dcec50c037002",
+  "commit": "84dc4e98e5aea51fa78918308837a437fba80195",
   "tests_p4_core": {
     "files": [
       "tests/unit/test_ca_screen.py",
@@ -15,15 +30,20 @@
       "tests/integration/test_ca_service_persistence.py",
       "tests/integration/test_conjunctions_api.py"
     ],
-    "exit_code": 0,
-    "summary": "================== 51 passed, 1 skipped, 1 warning in 2.45s ==================="
+    "status": "TIMED_OUT",
+    "exit_code": null,
+    "timeout_seconds": 420.0,
+    "elapsed_seconds": 420.0,
+    "summary": ""
   },
   "tests_10k_corpus": {
     "files": [
       "tests/integration/test_ca_10k_corpus.py"
     ],
+    "status": "COMPLETED",
     "exit_code": 0,
-    "summary": "============================= 5 passed in 31.62s =============================="
+    "elapsed_seconds": 11.5,
+    "summary": "============================= 5 passed in 10.28s =============================="
   },
   "tests_p5": {
     "files": [
@@ -35,15 +55,36 @@
       "tests/integration/test_benefit_service.py",
       "tests/integration/test_benefit_api.py"
     ],
-    "exit_code": 0,
-    "summary": "================== 36 passed, 6 skipped, 1 warning in 5.16s ==================="
+    "status": "TIMED_OUT",
+    "exit_code": null,
+    "timeout_seconds": 420.0,
+    "elapsed_seconds": 420.0,
+    "summary": ""
   },
   "tests_p6": {
     "files": [
       "tests/integration/test_p6_protect_ocm.py"
     ],
-    "exit_code": 0,
-    "summary": "======================== 3 passed, 1 warning in 4.36s ========================="
+    "status": "TIMED_OUT",
+    "exit_code": null,
+    "timeout_seconds": 420.0,
+    "elapsed_seconds": 420.0,
+    "summary": ""
+  },
+  "screening_performance": {
+    "record": "docs/audit/DEBRIS_INGESTION_NOTE.md",
+    "largest_completed_screening_run": {
+      "status": "PARTIAL",
+      "started_at": "2026-09-01 12:27:54.843958+00:00",
+      "objects_considered": 2000,
+      "objects_propagated": 1998,
+      "pairs_before_screening": 1995003,
+      "pairs_after_coarse": 51384,
+      "events_found": 3688,
+      "elapsed_seconds": 2397.548013
+    },
+    "measured": "실 파편 규모(1,998 객체·6시간 창·30초 그리드)에서 레벨1 표본거리 스캔이 병목. ThreadPoolExecutor 청크 병렬화로 99.2s→35.9s(2.8배), 후보 48,678건 완전 동일. 필터 체인(false-negative=0 보장)과 후보 순서·해시는 불변.",
+    "worker_env": "AETHERUS_SCREENING_WORKERS (기본 CPU-1, 최대 8, 청크 4개 미만이면 순차)"
   },
   "p6_protect_ocm": {
     "protect": "PROTECT Y 역질의: G0' 이웃을 후보로 물리 REMOVE counterfactual을 후보별 파생(G0' 1회 공유), Benefit(k→Y) 랭킹을 결정론적으로 산출. kind=PROTECT 시나리오·PUBLIC_SCREENING benefit 행 영속.",
@@ -77,9 +118,10 @@
   },
   "limitations": [
     "OCM 후보는 평균요소 치환 근사 — CCSDS OCM 문서 파싱·기동 델타V 모델은 후속",
-    "물리 엔진 대규모(10k) full-vs-selective 성능 벤치마크는 후속 (기능 동등성은 검증 완료)",
+    "물리 엔진 대규모(10k) full-vs-selective 성능 벤치마크는 후속 (FULL↔AFFECTED_SUBGRAPH 기능 동등성은 카탈로그 확대 이전 실행에서 확인된 사실이며, 이번 실행의 P5 스위트 결과는 아래 tests_p5 상태가 말하는 그대로다 — 재확인은 런타임 문제 해결 후)",
     "BEN-001/BEN-003 정량 검증 corpus의 물리 엔진 재생성은 후속 (823 산출물은 HISTORICAL 보존)",
-    "Space-Track CDM 라이브 미검증 (자격증명 부재 — 픽스처 경로만)"
+    "Space-Track 자격증명은 구성·GP 라이브 수신까지 검증됐으나(p1.json live_providers), CDM 클래스(TraCSS 공분산)는 미수신 — 운영 Pc는 여전히 산출 불가이고 Pc는 NOT_COMPUTED 유지 (게이트가 PARTIAL인 이유)",
+    "실 카탈로그 규모(2,000객체 예산·약 200만 쌍)에서 P4/P5/P6 스위트가 시간 예산 내 미완 — 전체 재스크리닝을 함수 스코프 픽스처로 반복 호출하는 구조(tests/integration/test_conjunctions_api.py의 _screened_once)와 라이브 카탈로그를 그대로 소비하는 benefit/counterfactual 경로 때문에 위 largest_completed_screening_run 1회 비용이 테스트마다 재발생한다. 병렬화가 다룬 구간은 레벨1까지이고 TCA 정밀화·이벤트 영속화 구간의 비용은 아직 측정·개선 대상이다 (증거 생성기는 예산 초과 시 값을 지어내지 않고 TIMED_OUT을 기록하고 종료한다)"
   ],
   "next_allowed": "ORB-P6 PROTECT 역질의·후보 OCM (물리 엔진의 신규 엣지 검출이 OCM 요건을 선반영)"
 }

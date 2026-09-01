@@ -1,10 +1,30 @@
 {
   "phase": "p9",
   "gate": "PARTIAL",
-  "generated_at": "2026-09-01T04:41:02.255195+00:00",
+  "failed_checks": [
+    "conjunction_events_promoted",
+    "llm_gateway_live_verified"
+  ],
+  "checks": {
+    "tests_pass": true,
+    "intelligence_api_200": true,
+    "live_conjunction_signals_present": true,
+    "conjunction_events_promoted": false,
+    "llm_gateway_live_verified": false,
+    "adversarial_audit_e38_e44": true
+  },
+  "adversarial_audit": {
+    "recorded": true,
+    "record": "docs\\audit\\ENGINE_ADVERSARIAL_AUDIT_2026-09-01.md",
+    "honesty_test": "tests/unit/test_confidence_honesty.py",
+    "honesty_test_exit_code": 0,
+    "summary": "======================= 16 passed, 2 warnings in 0.06s ========================",
+    "passed": true
+  },
+  "generated_at": "2026-09-01T13:10:20.473482+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "c5f587bac5941029ff54bdfbc8f4ceb5788ee4ef",
+  "commit": "84dc4e98e5aea51fa78918308837a437fba80195",
   "tests_intelligence": {
     "targets": [
       "tests/unit/test_intelligence_orchestrator.py",
@@ -12,7 +32,7 @@
       "tests/foundation"
     ],
     "exit_code": 0,
-    "summary": "======================= 35 passed, 2 warnings in 3.63s ========================"
+    "summary": "======================= 35 passed, 2 warnings in 3.43s ========================"
   },
   "live_api": {
     "important_now": {
@@ -28,15 +48,31 @@
       "data_status": "OK"
     }
   },
+  "pipeline_population": {
+    "signals": {
+      "total": 204,
+      "by_type_producer_evidence_class": {
+        "OFFICIAL_LAUNCH_FACT|E13_FIXED_OFFICIAL_FIXTURE_ADAPTER|OFFICIAL": 4,
+        "CONJUNCTION_SCREENING_CANDIDATE|P4_CA_SCREENING_ADAPTER|DERIVED": 200
+      }
+    },
+    "events": {
+      "total": 1,
+      "by_event_type": {
+        "LAUNCH_EVENT": 1
+      }
+    },
+    "conjunction_derived_signal_count": 200
+  },
   "browser_verification": [
     "INTELLIGENCE 모드: LAUNCH_EVENT(Apollo 11)에 WHAT HAPPENED/WHAT CHANGED/WHY IT MATTERS 3문 + 신뢰도 84% VERY HIGH + 불확실성 '고정 역사 사실에는 수치 불확실성 부적용' 정직 표기",
     "파이프라인 상태 표면: 근거 융합·신호 승격·LLM 주장 검증(ACTIVE) — E38~E44 노출, 과학 상태 VALIDATION_PENDING 라벨",
     "ARCHIVE 모드: 1969→2026 타임라인·TIME CURSOR·ARCHIVED 배지, '보관 스냅샷은 재구성/모델 상태와 시각적으로 구분' 명문"
   ],
   "limitations": [
-    "LLM 게이트웨이 라이브(L01)는 외부 API 자격증명 부재로 미검증 — 주장 검증기는 픽스처 경로",
-    "인텔리전스는 OFFICIAL 픽스처(Apollo 11) 계보 — 실궤도 이벤트의 신호→이벤트 승격은 라이브 신호원 연결 후",
+    "LLM 게이트웨이 라이브(L01)는 외부 API 자격증명 부재로 미검증 — 주장 검증기는 픽스처 경로 (게이트가 PARTIAL인 이유)",
+    "실 P4 근접 신호는 파이프라인에 유입되지만(위 pipeline_population 계수) 이벤트 융합은 아직 미발생 — 이벤트는 여전히 OFFICIAL 발사 픽스처 계보뿐",
     "E38~E44 심층 적대 감사는 후속"
   ],
-  "next_allowed": "라이브 신호원 연결(P4 근접 이벤트→Intelligence 승격) 또는 잔여 하드닝(CI·E2E)"
+  "next_allowed": "근접 신호의 이벤트 융합 검증 또는 잔여 하드닝(LLM 라이브·E2E)"
 }

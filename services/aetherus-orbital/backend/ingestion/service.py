@@ -69,7 +69,13 @@ class IngestionRepository(Protocol):
     async def persist_record(
         self, raw_artifact_id: str, record: ParsedOmmRecord
     ) -> tuple[str, str]:
-        """Persist canonical identity and versioned orbit solution."""
+        """Persist canonical identity and versioned orbit solution.
+
+        An implementation must not overwrite stored object metadata in place: the
+        legacy path has no identity resolver behind it, so a silent update here
+        would break the lineage invariant on a path production merely happens not
+        to be wired to today. Fill only unstated fields and record every claim.
+        """
 
     async def complete_run(self, run_id: str, record_count: int) -> None:
         """Mark a run successful."""
@@ -545,7 +551,13 @@ class IngestionService:
             raise
 
     async def _ingest_legacy_celestrak(self, catalog_id: str) -> PersistedIngestion:
-        """Retain the already-tested P0 compatibility path for non-P1 construction."""
+        """Retain the already-tested P0 compatibility path for non-P1 construction.
+
+        This path predates the identity resolver, so it cannot quarantine a
+        COSPAR disagreement. ``persist_record`` refuses such a record outright
+        rather than attaching it to a possibly wrong object, which surfaces here
+        as a FAILED run with the raw artifact preserved.
+        """
         if self._legacy_provider is None:
             raise ProviderUnavailableError("CelesTrak provider is not configured")
         normalized_catalog_id = ObjectSelector(catalog_id).catalog_id

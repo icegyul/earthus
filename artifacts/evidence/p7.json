@@ -2,10 +2,28 @@
   "phase": "p7",
   "orbital_phase": "ORB-P7 + ORB-P8 + ORB-P9 (v0.6 product-line revalidation)",
   "gate": "PARTIAL",
-  "generated_at": "2026-09-01T04:09:59.007382+00:00",
+  "failed_checks": [
+    "playwright_e2e_run"
+  ],
+  "checks": {
+    "tests_p7_p9_pass": true,
+    "product_suite_pass": true,
+    "product_routes_serve_real_catalog": true,
+    "adversarial_audit_e25_e27_e30": true,
+    "playwright_e2e_run": false
+  },
+  "adversarial_audit": {
+    "recorded": true,
+    "record": "docs\\audit\\ENGINE_ADVERSARIAL_AUDIT_2026-09-01.md",
+    "honesty_test": "tests/unit/test_orbit_engine_honesty.py",
+    "honesty_test_exit_code": 0,
+    "summary": "======================= 28 passed, 2 warnings in 0.17s ========================",
+    "passed": true
+  },
+  "generated_at": "2026-09-01T13:10:14.299177+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "bc4e2bd31b8f79a614ca9e90dbcfc81e82cca252",
+  "commit": "84dc4e98e5aea51fa78918308837a437fba80195",
   "import_source": {
     "repo": "Aetherus 823_Orbital/aetherus-orbital-environment (local-only)",
     "branch": "codex/aetherus-v2-v06-integration",
@@ -23,7 +41,7 @@
       "tests/product/test_p9_observation_runtime.py"
     ],
     "exit_code": 0,
-    "summary": "======================== 4 passed, 2 warnings in 1.23s ========================"
+    "summary": "======================== 4 passed, 2 warnings in 1.25s ========================"
   },
   "tests_product_suite": {
     "targets": [
@@ -41,7 +59,26 @@
       "tests/integration/test_integrated_app_surface.py"
     ],
     "exit_code": 0,
-    "summary": "================= 365 passed, 4 skipped, 4 warnings in 16.31s ================="
+    "summary": "================= 365 passed, 4 skipped, 4 warnings in 15.73s ================="
+  },
+  "science_bridge_live": {
+    "catalog": {
+      "http_status": 200,
+      "data_status": "OK",
+      "sample_object_id": "fc7fb19b-ab50-4663-912c-d5b79658690f",
+      "sample_catalog_id": "300001"
+    },
+    "object_risk": {
+      "http_status": 200,
+      "data_status": "OK",
+      "pc_value": null,
+      "pc_unavailable_reason": null
+    },
+    "genealogy": {
+      "http_status": 200,
+      "data_status": "INSUFFICIENT_DATA",
+      "parent_count": 0
+    }
   },
   "engines_covered": {
     "E25_genealogy": "typed parent/source-event 관계 (packages/orbit runtime)",
@@ -54,9 +91,9 @@
     "test_registry_api_surface: read_text() 인코딩 미지정 — cp949 기본값이 UTF-8 한국어 YAML을 못 읽는 잠복 버그 수정 (encoding='utf-8')"
   ],
   "limitations": [
-    "제품 라인 재검증은 823 게이트 테스트 재현 기준 — P5식 적대 코드 감사는 E26만 정독 수행(실물리 확인), E25/E27~E30 심층 감사는 후속",
-    "phase-line 물리 엔진(P5/P6)과 제품 라인 intervention 엔진(E31~E33 v0.6판)의 정본 일원화는 통합 단계 결정 사항",
-    "브라우저 E2E·라이브 프로바이더 테스트 제외 (playwright 바이너리·자격증명)"
+    "제품 라인 재검증은 823 게이트 테스트 재현 기준 — P5식 적대 코드 감사는 E26만 정독 수행(실물리 확인), E25/E27~E30 심층 감사는 후속 (게이트가 PARTIAL인 이유)",
+    "과학 다리는 조회 계열 7종(ephemeris·conjunction_risk·catalog·render_set·risk_graph·object_risk·genealogy)만 결선 — phase-line 물리 엔진(P5/P6)과 제품 라인 intervention 엔진(E31~E33 v0.6판)의 일원화는 여전히 미결",
+    "브라우저 E2E 미실행 (playwright 바이너리 부재) · LLM 라이브 계층은 자격증명 부재로 제외"
   ],
   "next_allowed": "V2-P14/P15 잔여(ORB-P10~P12 재검증: 연구 데이터셋·운영·하드닝) 또는 V2-P2 SPACE 트랙"
 }

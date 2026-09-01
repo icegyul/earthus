@@ -2,14 +2,25 @@
   "phase": "p6",
   "orbital_phase": "ORB-P2 + ORB-P3(partial)",
   "gate": "PARTIAL",
-  "generated_at": "2026-09-01T02:29:12.071113+00:00",
+  "failed_checks": [
+    "catalog_api_reachable",
+    "playwright_e2e_run"
+  ],
+  "checks": {
+    "tests_pass": true,
+    "golden_within_tolerance": true,
+    "catalog_api_reachable": false,
+    "catalog_at_lod_scale": true,
+    "playwright_e2e_run": false
+  },
+  "generated_at": "2026-09-01T12:41:50.120198+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "6030c385d71fcd896971a8c17aa9afe09e9c0a8c",
+  "commit": "6cb0eed48e508c07a69a17205ffcbb93a77d2e5e",
   "tests": {
     "command": "pytest <P2 subset 5 files> -q",
     "exit_code": 0,
-    "summary": "======================== 28 passed, 1 warning in 0.25s ========================"
+    "summary": "======================== 28 passed, 1 warning in 0.28s ========================"
   },
   "golden_cross_validation": [
     {
@@ -32,27 +43,35 @@
       "within_tolerance": true
     }
   ],
+  "catalog_scale": {
+    "http_status": null,
+    "error": "timed out",
+    "measurement_source": "DATABASE_DIRECT",
+    "objects_total": 2851,
+    "objects_with_solution": 2797,
+    "global_density": "AVAILABLE",
+    "global_density_reason": "2797 objects with an orbit solution vs configured global-density threshold of 500 (counted directly in PostgreSQL because the API did not answer)"
+  },
   "platform_migration_note": "macOS 기록 골든 대비 Windows 재계산 최대 델타: position 1.819e-12 km, velocity 8.882e-16 km/s, alt 2.728e-12 km, lat/lon 0.0 — 전 항목 허용오차 통과 확인 후, 커밋된 생성기(backend.tools.generate_golden_fixtures)로 동일 raw 아티팩트(e746e2d5…)에서 본 플랫폼 골든을 재생성했다. 바이트 해시 차이는 플랫폼 부동소수점 최하위 비트 서식 차이였다.",
   "live_api": {
-    "http_status": 200,
-    "sample_count": 11,
-    "first_sample_frame": "TEME"
+    "http_status": null,
+    "error": "timed out"
   },
   "explore_ui": {
     "ui_index": {
-      "http_status": 200,
-      "bytes": 4448
+      "http_status": null,
+      "error": "timed out"
     },
     "catalog_snapshot": {
-      "http_status": 200,
-      "bytes": 4381
+      "http_status": null,
+      "error": "timed out"
     }
   },
-  "explore_network_inspection": "인앱 브라우저 네트워크 검사(2026-09-01): /ui/ 로드 시 좌표 소스 요청은 /api/v1/catalog/status·/api/v1/catalog/snapshot 200 두 건뿐, 콘솔 에러 0. ISS 25544는 API 유래 SGP4 마커+데이터 나이 표기, 격리 객체 2건은 위치 없이 UNAVAILABLE 상태 렌더, GLOBAL VIEW: INSUFFICIENT_DATA 배지 표시 확인.",
+  "explore_network_inspection": "인앱 브라우저 네트워크 검사(2026-09-01, 파편운 수집 이전 시점의 기록): /ui/ 로드 시 좌표 소스 요청은 /api/v1/catalog/status·/api/v1/catalog/snapshot 200 두 건뿐, 콘솔 에러 0. ISS 25544는 API 유래 SGP4 마커+데이터 나이 표기, 격리 객체 2건은 위치 없이 UNAVAILABLE 상태 렌더, GLOBAL VIEW: INSUFFICIENT_DATA 배지 표시 확인. — 당시의 INSUFFICIENT_DATA는 카탈로그가 임계 미만이어서였고, 현재는 위 catalog_scale 측정이 AVAILABLE을 보고한다. 이 배지 전환 자체의 브라우저 재확인은 후속.",
   "limitations": [
-    "playwright e2e(tests/e2e/test_p3_explore_ui.py) 미실행 — 브라우저 바이너리 미설치, 후속",
+    "playwright e2e(tests/e2e/test_p3_explore_ui.py) 미실행 — 브라우저 바이너리 미설치, 후속 (게이트가 PARTIAL인 이유)",
     "테스트 TZ 버그 1건 수정(naive OMM EPOCH를 UTC로 해석) — 소스 823 대비 변경",
-    "카탈로그가 소수 객체(수집 1건+테스트 데이터) — 대규모 LOD 검증은 카탈로그 확장 후"
+    "탐색 UI는 서버 페이지 상한(기본 500)으로 카탈로그를 절단해 렌더 — 절단 사실은 화면에 표기되나 전량 LOD 렌더는 후속"
   ],
   "next_allowed": "ORB-P4 근접분석 재현 (스크리닝·TCA·공분산 게이트 Pc·CDM)"
 }

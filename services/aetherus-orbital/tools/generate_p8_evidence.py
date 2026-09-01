@@ -4,15 +4,24 @@ P4 테스트·10k 스크리닝 코퍼스를 실제 실행해 artifacts/evidence/
 실행: services/aetherus-orbital에서 .venv/Scripts/python tools/generate_p8_evidence.py
 """
 
+import asyncio
 import datetime
 import json
+import os
 import subprocess
 import sys
+import time
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 SERVICE_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = SERVICE_ROOT.parents[1]
 EVIDENCE_PATH = REPO_ROOT / "artifacts" / "evidence" / "p8.json"
+
+# An evidence generator must terminate: a suite that outruns this budget is recorded
+# as TIMED_OUT rather than left to hang, so the gate never waits on an unbounded run.
+SUITE_TIMEOUT_SECONDS = float(os.environ.get("AETHERUS_EVIDENCE_TEST_TIMEOUT", "900"))
 
 P4_TESTS = [
     "tests/unit/test_ca_screen.py",
@@ -40,32 +49,112 @@ def run(cmd: list[str]) -> str:
 
 
 def pytest_summary(files: list[str]) -> dict:
-    proc = subprocess.run(
-        [sys.executable, "-m", "pytest", *files, "-q", "--no-header"],
-        capture_output=True,
-        text=True,
-        cwd=str(SERVICE_ROOT),
-    )
+    started = time.monotonic()
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-m", "pytest", *files, "-q", "--no-header"],
+            capture_output=True,
+            text=True,
+            cwd=str(SERVICE_ROOT),
+            timeout=SUITE_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        return {
+            "files": files,
+            "status": "TIMED_OUT",
+            "exit_code": None,
+            "timeout_seconds": SUITE_TIMEOUT_SECONDS,
+            "elapsed_seconds": round(time.monotonic() - started, 1),
+            "summary": "",
+        }
     return {
         "files": files,
+        "status": "COMPLETED",
         "exit_code": proc.returncode,
+        "elapsed_seconds": round(time.monotonic() - started, 1),
         "summary": proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else "",
     }
 
 
+async def _latest_screening_cost() -> dict:
+    """실 카탈로그 규모의 스크리닝 비용은 추정하지 않고 저장된 런에서 읽는다."""
+    from sqlalchemy import text
+
+    from backend.database import get_db_session
+
+    async with get_db_session() as session:
+        row = (
+            await session.execute(
+                text(
+                    "SELECT started_at, finished_at, objects_considered, objects_propagated,"
+                    " pairs_before_screening, pairs_after_coarse, events_found, status,"
+                    " EXTRACT(EPOCH FROM (finished_at - started_at)) AS elapsed_seconds"
+                    " FROM screening_run WHERE finished_at IS NOT NULL"
+                    " ORDER BY objects_considered DESC, finished_at DESC LIMIT 1"
+                )
+            )
+        ).mappings().first()
+    if row is None:
+        return {"status": "NO_COMPLETED_SCREENING_RUN"}
+    return {
+        "status": row["status"],
+        "started_at": str(row["started_at"]),
+        "objects_considered": row["objects_considered"],
+        "objects_propagated": row["objects_propagated"],
+        "pairs_before_screening": row["pairs_before_screening"],
+        "pairs_after_coarse": row["pairs_after_coarse"],
+        "events_found": row["events_found"],
+        "elapsed_seconds": float(row["elapsed_seconds"]),
+    }
+
+
+def largest_screening_run() -> dict:
+    try:
+        return asyncio.run(_latest_screening_cost())
+    except Exception as exc:  # noqa: BLE001
+        return {"status": "QUERY_FAILED", "reason": str(exc)[:300]}
+
+
 def main() -> None:
+    tests_p4 = pytest_summary(P4_TESTS)
+    tests_corpus = pytest_summary([CORPUS_TEST])
+    tests_p5 = pytest_summary(P5_TESTS)
+    tests_p6 = pytest_summary(P6_TESTS)
+    screening_cost = largest_screening_run()
+    checks = {
+        "tests_p4_core_pass": tests_p4.get("exit_code") == 0,
+        "tests_10k_corpus_pass": tests_corpus.get("exit_code") == 0,
+        "tests_p5_pass": tests_p5.get("exit_code") == 0,
+        "tests_p6_pass": tests_p6.get("exit_code") == 0,
+        # 공분산 있는 CDM(TraCSS/Space-Track) 없이는 운영 Pc를 낼 수 없다 — 정직하게 미충족.
+        "operational_pc_from_cdm_covariance": False,
+        "large_scale_benchmark_run": False,
+    }
+    failed = [name for name, ok in checks.items() if not ok]
     evidence = {
         "phase": "p8",
         "orbital_phase": "ORB-P4 + ORB-P5(physical engine) + ORB-P6(PROTECT/OCM)",
-        "gate": "PARTIAL",
+        "gate": "PASS" if not failed else "PARTIAL",
+        "failed_checks": failed,
+        "checks": checks,
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "repository": run(["git", "-C", str(REPO_ROOT), "remote", "get-url", "origin"]),
         "branch": run(["git", "-C", str(REPO_ROOT), "rev-parse", "--abbrev-ref", "HEAD"]),
         "commit": run(["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"]),
-        "tests_p4_core": pytest_summary(P4_TESTS),
-        "tests_10k_corpus": pytest_summary([CORPUS_TEST]),
-        "tests_p5": pytest_summary(P5_TESTS),
-        "tests_p6": pytest_summary(P6_TESTS),
+        "tests_p4_core": tests_p4,
+        "tests_10k_corpus": tests_corpus,
+        "tests_p5": tests_p5,
+        "tests_p6": tests_p6,
+        "screening_performance": {
+            "record": "docs/audit/DEBRIS_INGESTION_NOTE.md",
+            "largest_completed_screening_run": screening_cost,
+            "measured": (
+                "실 파편 규모(1,998 객체·6시간 창·30초 그리드)에서 레벨1 표본거리 스캔이 병목."
+                " ThreadPoolExecutor 청크 병렬화로 99.2s→35.9s(2.8배), 후보 48,678건 완전 동일."
+                " 필터 체인(false-negative=0 보장)과 후보 순서·해시는 불변."
+            ),
+            "worker_env": "AETHERUS_SCREENING_WORKERS (기본 CPU-1, 최대 8, 청크 4개 미만이면 순차)",
+        },
         "p6_protect_ocm": {
             "protect": (
                 "PROTECT Y 역질의: G0' 이웃을 후보로 물리 REMOVE counterfactual을"
@@ -111,9 +200,17 @@ def main() -> None:
         },
         "limitations": [
             "OCM 후보는 평균요소 치환 근사 — CCSDS OCM 문서 파싱·기동 델타V 모델은 후속",
-            "물리 엔진 대규모(10k) full-vs-selective 성능 벤치마크는 후속 (기능 동등성은 검증 완료)",
+            "물리 엔진 대규모(10k) full-vs-selective 성능 벤치마크는 후속"
+            " (FULL↔AFFECTED_SUBGRAPH 기능 동등성은 카탈로그 확대 이전 실행에서 확인된 사실이며,"
+            " 이번 실행의 P5 스위트 결과는 아래 tests_p5 상태가 말하는 그대로다 — 재확인은 런타임 문제 해결 후)",
             "BEN-001/BEN-003 정량 검증 corpus의 물리 엔진 재생성은 후속 (823 산출물은 HISTORICAL 보존)",
-            "Space-Track CDM 라이브 미검증 (자격증명 부재 — 픽스처 경로만)",
+            "Space-Track 자격증명은 구성·GP 라이브 수신까지 검증됐으나(p1.json live_providers),"
+            " CDM 클래스(TraCSS 공분산)는 미수신 — 운영 Pc는 여전히 산출 불가이고 Pc는 NOT_COMPUTED 유지 (게이트가 PARTIAL인 이유)",
+            "실 카탈로그 규모(2,000객체 예산·약 200만 쌍)에서 P4/P5/P6 스위트가 시간 예산 내 미완 —"
+            " 전체 재스크리닝을 함수 스코프 픽스처로 반복 호출하는 구조(tests/integration/test_conjunctions_api.py의 _screened_once)와"
+            " 라이브 카탈로그를 그대로 소비하는 benefit/counterfactual 경로 때문에 위 largest_completed_screening_run 1회 비용이 테스트마다 재발생한다."
+            " 병렬화가 다룬 구간은 레벨1까지이고 TCA 정밀화·이벤트 영속화 구간의 비용은 아직 측정·개선 대상이다"
+            " (증거 생성기는 예산 초과 시 값을 지어내지 않고 TIMED_OUT을 기록하고 종료한다)",
         ],
         "next_allowed": "ORB-P6 PROTECT 역질의·후보 OCM (물리 엔진의 신규 엣지 검출이 OCM 요건을 선반영)",
     }

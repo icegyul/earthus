@@ -55,3 +55,6 @@ __pycache__/
 .env
 .env.*
 !.env.example
+
+# 인텔리전스 패키지 캐시 (이전 커밋에서 한 건 누락됐음)
+services/aetherus-orbital/**/__pycache__/

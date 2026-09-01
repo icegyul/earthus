@@ -1,17 +1,36 @@
 {
   "phase": "p4",
   "gate": "PARTIAL",
-  "generated_at": "2026-09-01T04:39:39.961144+00:00",
+  "failed_checks": [
+    "live_telemetry_provider"
+  ],
+  "checks": {
+    "tests_pass": true,
+    "mission_api_200": true,
+    "live_launch_schedule": true,
+    "live_telemetry_provider": false
+  },
+  "generated_at": "2026-09-01T11:20:07.943426+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "acb322fa68388f8744f0408ee633e8d34f0b9159",
+  "commit": "af4c0e00136091b9214406a0d3cc4ca616d43622",
   "tests_control": {
     "targets": [
       "tests/product/test_platform_product_integration.py",
       "tests/product/test_api_product.py"
     ],
     "exit_code": 0,
-    "summary": "======================= 12 passed, 2 warnings in 5.19s ========================"
+    "summary": "======================= 12 passed, 2 warnings in 4.25s ========================"
+  },
+  "live_launch_schedule": {
+    "http_status": 200,
+    "data_status": "OK",
+    "source_id": "thespacedevs_ll2_launch_upcoming",
+    "source_uri": "https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=10&ordering=net",
+    "raw_sha256": "4067fced71aded6ebafff9a02c7f61db10d74badd26e7b2318c13ec550934a1b",
+    "upstream_http_status": 200,
+    "reported_total": 358,
+    "launch_count": 10
   },
   "mission_api": {
     "state": {
@@ -37,8 +56,9 @@
     "미션 API 5종(trajectory/handover/objects/window/state) 전부 200 (네트워크 검사)"
   ],
   "limitations": [
-    "라이브 발사 일정/텔레메트리 프로바이더 미연결 — OFFICIAL 픽스처(Apollo 11) 경로만 재현",
+    "라이브 발사 '일정'만 연결됨(TheSpaceDevs LL2) — 실미션 텔레메트리 프로바이더는 여전히 부존재, CONTROL 미션 경로는 OFFICIAL 픽스처(Apollo 11)",
+    "라이브 발사 일정은 아직 미션 레코드로 승격되지 않음 — /v1/missions는 픽스처 미션만 보유",
     "mission→orbit handover의 실카탈로그 연동은 라이브 미션 데이터 확보 후"
   ],
-  "next_allowed": "라이브 발사 프로바이더 계약 또는 V2-P9+ 인텔리전스 표면 검증"
+  "next_allowed": "라이브 발사 일정→미션 레코드 승격 또는 V2-P9+ 인텔리전스 표면 검증"
 }

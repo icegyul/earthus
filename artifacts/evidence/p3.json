@@ -1,10 +1,22 @@
 {
   "phase": "p3",
   "gate": "PARTIAL",
-  "generated_at": "2026-09-01T04:39:35.014725+00:00",
+  "failed_checks": [
+    "scene_unification_done",
+    "playwright_e2e_run"
+  ],
+  "checks": {
+    "tests_pass": true,
+    "scene_api_200": true,
+    "render_set_serves_real_catalog": true,
+    "earth_link_layer_present": true,
+    "scene_unification_done": false,
+    "playwright_e2e_run": false
+  },
+  "generated_at": "2026-09-01T11:20:02.388795+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "acb322fa68388f8744f0408ee633e8d34f0b9159",
+  "commit": "af4c0e00136091b9214406a0d3cc4ca616d43622",
   "tests_visual": {
     "targets": [
       "tests/product/test_registry_api_surface.py",
@@ -12,7 +24,7 @@
       "tests/acceptance"
     ],
     "exit_code": 0,
-    "summary": "======================= 290 passed, 2 warnings in 3.51s ======================="
+    "summary": "======================= 290 passed, 2 warnings in 3.40s ======================="
   },
   "scene_api": {
     "SPACE": {
@@ -49,7 +61,21 @@
         "MODEL_SIGNAL"
       ]
     },
+    "render_set": {
+      "http_status": 200,
+      "view": "GLOBAL",
+      "lod_cap": 2000,
+      "render_object_count": 500,
+      "scientific_object_count": 500,
+      "scientific_hash": "8cfddefee5d39def9b0ca4be831635eb451f85310822c0b504d6f79876b7c8d1"
+    },
     "invariant": "render_object_ids와 scientific_object_ids가 scientific_hash로 묶여 렌더 부분집합이 과학 부분집합을 몰래 대체할 수 없음 (절대 규칙 12)"
+  },
+  "earth_link_layer": {
+    "path": "prototype/v2-three/js/aetherus-link.js",
+    "present": true,
+    "bytes": 13297,
+    "role": "v2-three 실지구가 과학 API(catalog/snapshot·conjunctions)를 직접 소비 — 위치는 서버 SGP4 스냅샷, 사이 구간은 LINEAR_ADVANCE로 화면에 명시"
   },
   "browser_verification": [
     "E34 씬: SPACE 태양계(8행성 궤도 타원)·ORBIT 지구+셸 씬 렌더 확인 (인앱 브라우저, 2026-09-01)",
@@ -58,8 +84,9 @@
     "E37 시각 문법: 객체 SCREENING_ONLY·TIME_APPROX 라벨, Pc '사용 불가 — 공분산 필요' 정직 표기가 UI에 노출"
   ],
   "limitations": [
-    "E34/E35의 v2-three 실지구(EARTHUS) 통합은 미착수 — 현 씬은 v0.6 캔버스 엔진, '하나의 우주' 통합은 아키텍처 결정 필요 (PD)",
+    "v2-three 실지구는 AETHERUS LINK 레이어로 과학 API를 소비하지만, v0.6 캔버스 씬과의 렌더러 일원화('하나의 우주' 단일 씬)는 미완 — 두 표면이 각자 렌더한다",
+    "/v1/scene/{mode}는 여전히 검증 픽스처 집합(SPACE: SUN/EARTH/MARS, ORBIT: VAL-A/VAL-B)을 서빙 — 실카탈로그는 /v1/orbit/render-set 경로에만 결선됨",
     "playwright 자동 E2E 미구성 — 브라우저 검증은 세션 수동 기록"
   ],
-  "next_allowed": "v2-three ↔ AETHERUS 씬 통합 설계 또는 V2-P6 이후 잔여"
+  "next_allowed": "v2-three ↔ AETHERUS 씬 일원화 설계 또는 V2-P6 이후 잔여"
 }

@@ -8,6 +8,8 @@ the validated corpus).
 """
 
 import math
+import os
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -22,6 +24,30 @@ from backend.orbit.propagator import build_satrec_from_mean_elements
 _EARTH_RADIUS_KM = 6378.137
 _MU_KM3_S2 = 398600.4418
 _PAIR_CHUNK = 4096
+
+#: Real debris families sit in nearly identical shells, so the radial envelope
+#: filter prunes only ~10% of pairs and the level-one sampled-distance scan
+#: dominates a full-catalogue screening (measured 2026-09-01: 1.4 min of a
+#: 1.7 min run over 1,998 objects). The scan is chunk-independent and spends
+#: its time inside NumPy (which releases the GIL), so threads cut wall-clock
+#: without copying the shared position grid and without touching the
+#: conservative filter chain itself.
+_LEVEL_ONE_PARALLEL_MIN_CHUNKS = 4
+
+
+def _level_one_workers(chunk_count: int) -> int:
+    """Bound worker count by chunks and CPUs; 1 keeps the sequential path."""
+    if chunk_count < _LEVEL_ONE_PARALLEL_MIN_CHUNKS:
+        return 1
+    configured = os.environ.get("AETHERUS_SCREENING_WORKERS")
+    if configured:
+        try:
+            requested = int(configured)
+        except ValueError:
+            requested = 0
+        if requested > 0:
+            return min(requested, chunk_count)
+    return max(1, min(chunk_count, (os.cpu_count() or 2) - 1, 8))
 
 
 @dataclass(frozen=True)
@@ -185,9 +211,24 @@ def coarse_screen(
     candidates: list[CandidatePair] = []
     refinement_failures: list[ScreeningFailure] = []
     catalog_by_index = {obj.index: obj.catalog_id for obj in live_objects}
-    for chunk_start in range(0, len(shell_pairs), _PAIR_CHUNK):
-        chunk = shell_pairs[chunk_start : chunk_start + _PAIR_CHUNK]
-        survivors = _level_one_chunk(chunk, positions, velocities, config)
+    chunks = [
+        shell_pairs[start : start + _PAIR_CHUNK]
+        for start in range(0, len(shell_pairs), _PAIR_CHUNK)
+    ]
+
+    def level_one(chunk: list[tuple[int, int]]) -> list[tuple[tuple[int, int], int]]:
+        return _level_one_chunk(chunk, positions, velocities, config)
+
+    workers = _level_one_workers(len(chunks))
+    if workers > 1:
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            # map preserves chunk order, so candidate ordering — and therefore
+            # every downstream hash — stays identical to the sequential path.
+            survivor_sets = list(pool.map(level_one, chunks))
+    else:
+        survivor_sets = [level_one(chunk) for chunk in chunks]
+
+    for survivors in survivor_sets:
         chunk_candidates, failures = _level_two_grouped(
             survivors,
             prepared.satrecs,

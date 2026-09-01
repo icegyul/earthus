@@ -1,0 +1,22 @@
+{
+  "fixture_id": "NASA_APOLLO11_MISSION_OVERVIEW_FIXED_OFFICIAL_FIXTURE_v1",
+  "fixture_class": "FIXED_OFFICIAL_FIXTURE",
+  "capture_method": "Regression fixture derived from the NASA Apollo 11 Mission Overview page; not a live provider response.",
+  "source": {
+    "source_id": "NASA_APOLLO11_MISSION_OVERVIEW",
+    "provider": "NASA",
+    "source_uri": "https://www.nasa.gov/history/apollo-11-mission-overview/",
+    "source_grade": "OFFICIAL_PUBLIC",
+    "license_policy": "PUBLIC_OFFICIAL_WEB_SOURCE_POLICY_VALIDATION_REQUIRED",
+    "access_policy": "PUBLIC"
+  },
+  "record": {
+    "mission_id": "APOLLO11",
+    "mission_name": "Apollo 11",
+    "launch_local": "1969-07-16T09:32:00-04:00",
+    "launch_site": "Launch Pad 39A",
+    "vehicle_name": "Saturn-V AS-506",
+    "payloads": ["Columbia (CSM-107)", "Eagle (LM-5)"],
+    "event_type": "LAUNCH_EVENT"
+  }
+}

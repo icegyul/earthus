@@ -1,41 +1,39 @@
 {
   "target_catalog_id": "25544",
   "api_payload": {
-    "request_id": "64381536-417a-4a59-aa36-ff48f5936939",
-    "generated_at": "2026-08-25T09:30:10.398661+00:00",
-    "data_status": "PARTIAL",
-    "status_reason": "NO_EVENTS_AND_PROPAGATION_FAILURES_PRESENT",
+    "request_id": "05af39fd-0ab9-47b6-bee3-91151e3e72d8",
+    "generated_at": "2026-09-01T11:23:10.685500+00:00",
+    "data_status": "UNAVAILABLE",
+    "status_reason": null,
     "data": {
       "count": 0,
       "events": []
     },
     "provenance": {
-      "screening_run_id": "26d3efb6-6800-475e-9e37-26d097b8a41c",
+      "screening_run_id": "b5b2f953-83b5-4c68-bc9d-edb3ab30a79f",
       "source_ids": [
         "celestrak_gp",
         "spacetrack_gp"
       ],
       "model_id": "aetherus-ca-screening",
       "model_version": "p4-conservative-v1",
-      "config_hash": "b802cedfc27648c80a8f5b552bbc6dfc14cb7e47021eb0e86fb51e30af4384cf",
-      "input_hash": "94f29c884d0b859879300b30b5a0ea43446fdf8e0d605b953005d6c81c53e58b",
-      "window_start": "2026-08-25T09:29:48.218078+00:00",
-      "window_stop": "2026-08-25T11:29:48.218078+00:00",
-      "pairs_before_screening": 28,
+      "config_hash": "baefa2c89c4c92a55297241cb93f3c4935c522fb9d2609c34e141c33e7205993",
+      "input_hash": "43e748daf5e6c388fc062fbb48385956881dd2903f4d27c247c714da588b2513",
+      "window_start": "2026-09-01T11:22:49.803423+00:00",
+      "window_stop": "2026-09-01T17:22:49.803423+00:00",
+      "pairs_before_screening": 0,
       "pairs_after_coarse": 0,
-      "objects_considered": 11,
-      "objects_propagated": 8,
+      "objects_considered": 0,
+      "objects_propagated": 0,
       "events_found": 0,
-      "validation_dataset_id": "stored-public-gp-catalog-v1",
-      "validation_dataset_version": "p4"
+      "validation_dataset_id": null,
+      "validation_dataset_version": null
     },
-    "warnings": [
-      "Latest screening run recorded 3 propagation failures."
-    ]
+    "warnings": []
   },
-  "rendered_risk_section": "CONJUNCTION RISK\nNO CONJUNCTION EVENTS \u2014 NO_EVENTS_AND_PROPAGATION_FAILURES_PRESENT. The stored screening results contain no event for this object.\n\nscreening run 26d3efb6 \u00b7 pairs 28\u21920 \u00b7 objects 8 \u00b7 model aetherus-ca-screening vp4-conservative-v1\n\nRisk values come only from GET /api/v1/conjunctions. Pc is computed exclusively from a valid CDM covariance; SOCRATES MaxProbability and screening metrics are separate channels and are never relabelled as Pc.",
-  "network_url_seen": "http://localhost:18000/api/v1/conjunctions?object=25544",
-  "second_target_catalog_id": "25994",
-  "second_rendered_risk_section": "CONJUNCTION RISK\nNO CONJUNCTION EVENTS \u2014 NO_EVENTS_AND_PROPAGATION_FAILURES_PRESENT. The stored screening results contain no event for this object.\n\nscreening run 26d3efb6 \u00b7 pairs 28\u21920 \u00b7 objects 8 \u00b7 model aetherus-ca-screening vp4-conservative-v1\n\nRisk values come only from GET /api/v1/conjunctions. Pc is computed exclusively from a valid CDM covariance; SOCRATES MaxProbability and screening metrics are separate channels and are never relabelled as Pc.",
-  "second_api_data_status": "PARTIAL"
+  "rendered_risk_section": "CONJUNCTION RISK\nUNAVAILABLE \u2014 no conjunction value exists for this object and none is invented. Pc stays NOT_COMPUTED without covariance.\n\nscreening run b5b2f953 \u00b7 pairs 0\u21920 \u00b7 objects 0 \u00b7 model aetherus-ca-screening vp4-conservative-v1\n\nRisk values come only from GET /api/v1/conjunctions. Pc is computed exclusively from a valid CDM covariance; SOCRATES MaxProbability and screening metrics are separate channels and are never relabelled as Pc.",
+  "network_url_seen": "http://localhost:8000/api/v1/conjunctions?object=25544",
+  "second_target_catalog_id": "310011",
+  "second_rendered_risk_section": "CONJUNCTION RISK\n34560 \u2194 310011\nOK\nTCA (UTC)\t2026-09-01 12:54:17Z\nMiss distance\t14.483 km (screening channel)\nRelative speed\t14.069 km/s\nPc\tNOT_COMPUTED (COVARIANCE_MISSING_PUBLIC_GP) \u2014 covariance is absent for PUBLIC_GP sources, so Pc is never estimated.\nSource grade\tPUBLIC_GP\nSnapshot input hash\t27887733f54ff07c\u2026\n33999 \u2194 310011\nOK\nTCA (UTC)\t2026-09-01 14:23:59Z\nMiss distance\t22.756 km (screening channel)\nRelative speed\t14.451 km/s\nPc\tNOT_COMPUTED (COVARIANCE_MISSING_PUBLIC_GP) \u2014 covariance is absent for PUBLIC_GP sources, so Pc is never estimated.\nSource grade\tPUBLIC_GP\nSnapshot input hash\t27887733f54ff07c\u2026\n\nscreening run b5b2f953 \u00b7 pairs 0\u21920 \u00b7 objects 0 \u00b7 model aetherus-ca-screening vp4-conservative-v1\n\nRisk values come only from GET /api/v1/conjunctions. Pc is computed exclusively from a valid CDM covariance; SOCRATES MaxProbability and screening metrics are separate channels and are never relabelled as Pc.",
+  "second_api_data_status": "OK"
 }

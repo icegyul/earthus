@@ -12,6 +12,7 @@ from sqlalchemy.engine import RowMapping
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.database import get_db_session
+from backend.ingestion.celestrak import CELESTRAK_SOURCE_ID
 from backend.ingestion.errors import IngestionError
 from backend.ingestion.models import (
     CanonicalObject,
@@ -596,7 +597,20 @@ class SqlIngestionRepository:
     async def persist_record(
         self, raw_artifact_id: str, record: ParsedOmmRecord
     ) -> tuple[str, str]:
-        """Persist canonical identity, source alias, and an idempotent OMM orbit solution."""
+        """Persist canonical identity, source alias, and an idempotent OMM orbit solution.
+
+        This legacy P0 path used to update ``object_type``/``cospar_id``/
+        ``canonical_name`` through ``ON CONFLICT DO UPDATE`` and write nothing to
+        ``object_metadata_revision``. Production wiring injects a registry and
+        never reaches here, but one wiring change would have let a later response
+        replace a classification with no trace of who changed it or why — the
+        exact invariant the lineage exists to hold. Since the invariant must not
+        depend on which constructor a caller happens to pick, the path now takes
+        the same route as P1: the canonical row is never overwritten in place,
+        and every metadata claim goes through ``_record_metadata_provenance``
+        (which fills only unstated fields and fails on a COSPAR disagreement this
+        path has no identity resolver to quarantine).
+        """
         async with get_db_session() as session:
             object_result = await session.execute(
                 text(
@@ -607,16 +621,8 @@ class SqlIngestionRepository:
                     VALUES (
                         :catalog_id, :cospar_id, :canonical_name, :object_type, now()
                     )
-                    ON CONFLICT (catalog_id) DO UPDATE SET
-                        cospar_id = COALESCE(EXCLUDED.cospar_id, space_object.cospar_id),
-                        canonical_name = COALESCE(EXCLUDED.canonical_name, space_object.canonical_name),
-                        object_type = CASE
-                            WHEN space_object.object_type = 'UNKNOWN'
-                            THEN EXCLUDED.object_type
-                            ELSE space_object.object_type
-                        END,
-                        updated_at = now()
-                    RETURNING id
+                    ON CONFLICT (catalog_id) DO NOTHING
+                    RETURNING id::text, catalog_id, cospar_id, canonical_name, object_type
                     """
                 ),
                 {
@@ -626,21 +632,33 @@ class SqlIngestionRepository:
                     "object_type": record.object_type,
                 },
             )
-            object_id = str(object_result.scalar_one())
-            await session.execute(
-                text(
-                    """
-                    INSERT INTO space_object_alias (object_id, source_id, source_key, source_name)
-                    VALUES (CAST(:object_id AS uuid), 'celestrak_gp', :source_key, :source_name)
-                    ON CONFLICT (object_id, source_id, source_key) DO UPDATE SET
-                        source_name = EXCLUDED.source_name
-                    """
-                ),
-                {
-                    "object_id": object_id,
-                    "source_key": record.catalog_id,
-                    "source_name": record.object_name,
-                },
+            row = object_result.mappings().one_or_none()
+            created = row is not None
+            if row is None:
+                existing_object = await session.execute(
+                    text(
+                        """
+                        SELECT id::text, catalog_id, cospar_id, canonical_name, object_type
+                        FROM space_object WHERE catalog_id = :catalog_id LIMIT 1
+                        """
+                    ),
+                    {"catalog_id": record.catalog_id},
+                )
+                row = existing_object.mappings().one_or_none()
+                if row is None:
+                    raise RuntimeError("canonical object disappeared during legacy persistence")
+            matched = _canonical_object(row)
+            object_id = matched.id
+            await _upsert_alias(
+                session, object_id, CELESTRAK_SOURCE_ID, record.catalog_id, record.object_name
+            )
+            await _record_metadata_provenance(
+                session,
+                matched,
+                record=record,
+                source_id=CELESTRAK_SOURCE_ID,
+                raw_artifact_id=raw_artifact_id,
+                created=created,
             )
             orbit_result = await session.execute(
                 text(
@@ -1052,6 +1070,13 @@ class SqlIngestionRepository:
             "object_type": row["object_type"],
             "aliases": aliases,
             "identity_status": "CONFLICTED" if open_conflict_count else "CANONICAL",
+            # A contested metadata field used to be served as though it were
+            # settled: the disagreement existed only inside the provenance block
+            # a caller had to think to open. It is now stated at the same level
+            # as identity_status, so a consumer reading object_type cannot miss
+            # that the value is disputed rather than agreed.
+            "metadata_status": metadata_provenance["status"],
+            "disputed_metadata_fields": list(metadata_provenance["disputed_fields"]),
             # Metadata is attributed to the source that actually stated it. The
             # provenance block below describes the latest ORBIT SOLUTION, whose
             # artifact may never have declared these fields, so quoting it for
@@ -1106,6 +1131,41 @@ def _describe_unstated(value: Any) -> str:
     return "was NULL" if value is None else f"was the placeholder {value!r}"
 
 
+class MetadataIdentityGateBypassed(RuntimeError):
+    """A COSPAR disagreement arrived at the metadata layer, which cannot happen."""
+
+
+def _reject_unreachable_cospar_conflict(
+    field: str,
+    *,
+    matched: CanonicalObject,
+    source_id: str,
+    incoming_value: Any,
+) -> None:
+    """Refuse to file a COSPAR disagreement as an ordinary metadata dispute.
+
+    ``ObjectIdentityResolver`` quarantines two stated, unequal COSPAR values as
+    ``CATALOG_CONFLICTING_COSPAR`` (or ``COSPAR_REUSED_DIFFERENT_CATALOG``)
+    before any metadata lineage is written, so this branch is unreachable
+    through the resolver — migration 015 forbids the combination outright.
+
+    Reaching it therefore means the identity gate was bypassed (the legacy
+    ``persist_record`` path, or a concurrent creation that won the catalog_id
+    race with a different COSPAR). That record is about to be attached to an
+    object it may not belong to, and its orbit solution would follow. A metadata
+    CONFLICT row would file an identity conflict under a category no consumer
+    treats as an identity problem, so the run fails loudly instead: nothing is
+    invented, and the raw artifact stays available for reprocessing.
+    """
+    if field != "cospar_id":
+        return
+    raise MetadataIdentityGateBypassed(
+        "COSPAR disagreement reached metadata lineage without identity quarantine "
+        f"(object={matched.id}, catalog_id={matched.catalog_id}, "
+        f"stored={matched.cospar_id!r}, {source_id} declared {incoming_value!r})"
+    )
+
+
 async def _metadata_provenance_payload(session: Any, object_id: str) -> dict[str, Any]:
     """Attribute each metadata field to the artifact that actually declared it.
 
@@ -1113,11 +1173,16 @@ async def _metadata_provenance_payload(session: Any, object_id: str) -> dict[str
     solution's artifact hash and concludes that document classified the object —
     but CelesTrak GP never states OBJECT_TYPE, so the credit would go to a
     response that does not contain the claim.
+
+    A disputed field is reported as such rather than served as settled: ``status``
+    turns DISPUTED and ``disputes`` carries every competing claim with the
+    artifact that made it, so "preserved for review" names a place a reviewer can
+    actually reach.
     """
     result = await session.execute(
         text(
             """
-            SELECT r.field_name, r.incoming_value, r.outcome, r.reason,
+            SELECT r.field_name, r.previous_value, r.incoming_value, r.outcome, r.reason,
                    r.source_id, r.declared_at, r.created_at,
                    ra.content_sha256, ra.source_uri
             FROM object_metadata_revision AS r
@@ -1131,11 +1196,28 @@ async def _metadata_provenance_payload(session: Any, object_id: str) -> dict[str
     rows = [dict(item) for item in result.mappings().all()]
     fields: dict[str, Any] = {}
     disputed: list[str] = []
+    disputes: dict[str, dict[str, Any]] = {}
     for entry in rows:
         field = str(entry["field_name"])
         if entry["outcome"] == "CONFLICT":
             if field not in disputed:
                 disputed.append(field)
+                disputes[field] = {
+                    "field": field,
+                    "stored_value": entry["previous_value"],
+                    "competing_claims": [],
+                }
+            disputes[field]["competing_claims"].append(
+                {
+                    "value": entry["incoming_value"],
+                    "claimed_by": entry["source_id"],
+                    "declared_at": entry["declared_at"].isoformat()
+                    if entry["declared_at"] is not None
+                    else None,
+                    "input_artifact_hash": f"sha256:{entry['content_sha256']}",
+                    "source_uri": entry["source_uri"],
+                }
+            )
             continue
         if entry["outcome"] in {"ESTABLISHED", "ADOPTED"}:
             # The stating claim is what the current value rests on; later
@@ -1154,12 +1236,20 @@ async def _metadata_provenance_payload(session: Any, object_id: str) -> dict[str
         elif entry["outcome"] == "CONFIRMED" and field in fields:
             fields[field]["corroborated_by"].append(entry["source_id"])
     return {
+        "status": "DISPUTED" if disputed else "CONSISTENT",
         "fields": fields,
         "disputed_fields": disputed,
+        "disputes": [disputes[field] for field in disputed],
         "revision_count": len(rows),
         "note": (
             "Each field is credited to the response that stated it. Fields absent "
             "here were never declared by any ingested source."
+        )
+        + (
+            " status=DISPUTED: at least one field below is contested and the value "
+            "served is the stored one, not an adjudicated one."
+            if disputed
+            else ""
         ),
     }
 
@@ -1200,7 +1290,9 @@ async def _record_metadata_provenance(
       * CONFLICT               — both sides state a value and they differ. The
                                  stored value is left untouched; disagreement is
                                  evidence, not licence to overwrite (the stance
-                                 ``identity_conflict`` already takes).
+                                 ``identity_conflict`` already takes). Reachable
+                                 for ``object_type`` and ``canonical_name`` only
+                                 — see ``_reject_unreachable_cospar_conflict``.
       * CONFIRMED              — a *different* source agrees. This is the only
                                  outcome that may be read as corroboration.
       * SAME_SOURCE_REAFFIRMED — the same source repeated itself. Recorded, but
@@ -1262,10 +1354,17 @@ async def _record_metadata_provenance(
                 outcome = "CONFIRMED"
                 reason = f"{source_id} independently agreed with the stored {field}"
         else:
+            _reject_unreachable_cospar_conflict(
+                field, matched=matched, source_id=source_id, incoming_value=incoming_value
+            )
             outcome = "CONFLICT"
+            # The review point named here must exist, or "preserved for review"
+            # is a promise with no address: get_object reports the object as
+            # metadata_status=DISPUTED and lists the competing claims.
             reason = (
                 f"{source_id} declared a different {field}; the stored value is "
-                "kept and the disagreement is preserved for review"
+                "kept and the object is reported as metadata_status=DISPUTED "
+                "with both claims listed"
             )
         rows.append(
             {

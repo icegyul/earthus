@@ -21,14 +21,14 @@
       "x": 12,
       "right": 378,
       "y": 53,
-      "bottom": 109,
+      "bottom": 85,
       "width": 366
     },
     ".search": {
       "x": 12,
       "right": 378,
-      "y": 117,
-      "bottom": 175,
+      "y": 93,
+      "bottom": 150,
       "width": 366
     },
     "#list-panel": {
@@ -47,10 +47,10 @@
     },
     ".lod-indicator": {
       "x": 10,
-      "right": 224,
+      "right": 216,
       "y": 586,
       "bottom": 618,
-      "width": 214
+      "width": 206
     }
   },
   "overflow_problems": [],

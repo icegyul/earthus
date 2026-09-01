@@ -1,0 +1,78 @@
+{
+  "title": "UncertaintyAssessment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "target_type",
+    "target_id",
+    "representation",
+    "computed_at",
+    "policy_version"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "target_type": {
+      "enum": [
+        "SIGNAL",
+        "EVENT",
+        "REVISION",
+        "SCENARIO",
+        "ATTRIBUTION"
+      ]
+    },
+    "target_id": {
+      "type": "string"
+    },
+    "representation": {
+      "enum": [
+        "NONE",
+        "INTERVAL",
+        "COVARIANCE",
+        "DISTRIBUTION",
+        "PERCENTILES",
+        "QUALITATIVE",
+        "UNAVAILABLE"
+      ]
+    },
+    "lower": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "upper": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "units": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "payload": {
+      "type": "object"
+    },
+    "computed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetherus.dev/schemas/UncertaintyAssessment.schema.json"
+}

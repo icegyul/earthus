@@ -1,0 +1,91 @@
+{
+  "title": "Scenario",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "kind",
+    "baseline_snapshot_id",
+    "target_object_ids",
+    "parameters",
+    "assumptions",
+    "model_version",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "kind": {
+      "enum": [
+        "DO_NOTHING",
+        "REMOVE",
+        "NUDGE",
+        "LOWER",
+        "CANDIDATE_OCM",
+        "FRAGMENTATION",
+        "SPACE_WEATHER_SENSITIVITY",
+        "CUSTOM_RESEARCH"
+      ]
+    },
+    "baseline_snapshot_id": {
+      "type": "string"
+    },
+    "target_object_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "protected_object_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "effective_time": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "parameters": {
+      "type": "object"
+    },
+    "assumptions": {
+      "type": "object"
+    },
+    "model_version": {
+      "type": "string"
+    },
+    "config_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "seed": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "status": {
+      "enum": [
+        "DRAFT",
+        "QUEUED",
+        "RUNNING",
+        "SUCCEEDED",
+        "FAILED",
+        "PARTIAL"
+      ]
+    },
+    "evidence_class": {
+      "const": "COUNTERFACTUAL"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetherus.dev/schemas/Scenario.schema.json"
+}

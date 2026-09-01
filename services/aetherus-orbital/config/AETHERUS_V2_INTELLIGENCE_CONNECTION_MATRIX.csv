@@ -1,0 +1,45 @@
+﻿module_id,domain,name,mode,produces_signal,seed_event_candidate,drive_revision,affect_confidence,affect_uncertainty,invoked_by_intelligence,consumes_intelligence,requires_signal_gate,subscription_ui_may_change_science,boundary_note
+E01,FOUNDATION,Source Ingestion & Raw Artifact Engine,EVIDENCE_PROVIDER,True,False,False,True,True,False,False,False,False,원문·수집 상태를 Evidence로 제공. HTTP/parse 성공 자체가 Event가 아님.
+E02,FOUNDATION,Canonical Object Identity Engine,CONTEXT_ONLY,False,False,False,False,False,False,False,False,False,canonical identity/alias context. 이름·ID 자체로 사건/신뢰도 판단 금지.
+E03,FOUNDATION,Evidence & Provenance Engine,EVIDENCE_PROVIDER,True,False,False,True,True,False,False,False,False,provenance/source grade가 E39/E43의 근거가 되지만 독립 Event 생성 금지.
+E04,FOUNDATION,Universal Space Time Engine,CONTEXT_ONLY,False,False,False,False,False,False,False,False,False,시간축/epoch/replay context만 제공. 과학 중요도 판단 금지.
+E05,FOUNDATION,Coordinate & Reference Frame Engine,CONTEXT_ONLY,False,False,False,False,True,False,False,False,False,좌표/프레임 변환 context. 변환 품질은 uncertainty 입력이 될 수 있으나 사건 생성 금지.
+E06,FOUNDATION,Digital State / Snapshot / Version Engine,CONTEXT_ONLY,False,False,True,True,True,False,False,False,False,snapshot/version lineage가 Revision 비교의 기준. 자체로 Event를 생성하지 않음.
+E07,FOUNDATION,Space Knowledge Graph & Archive Engine,CONTEXT_ONLY,False,False,False,True,False,False,False,False,False,Mission/Object/Event 관계 context. 관계 provenance는 설명 근거가 될 수 있음.
+E08,SPACE,Solar System Ephemeris Engine,DIRECT_SIGNAL,True,False,True,True,True,False,False,True,False,천체 상태/ephemeris 변화는 E09 등의 사건 계산에 직접 입력. 단순 위치 갱신은 Signal Gate 통과 전 Event 아님.
+E09,SPACE,Celestial Event Engine,DIRECT_SIGNAL,True,True,True,True,True,False,False,True,False,eclipse/opposition/close approach 등 의미 있는 천체 사건 후보를 생성 가능.
+E10,SPACE,Solar / Space Weather Context Engine,DIRECT_SIGNAL,True,True,True,True,True,False,False,True,False,태양/우주기상 context 변화가 Event/Orbit context Revision을 구동 가능.
+E11,SPACE,NEO / Small Body Tracking Engine,DIRECT_SIGNAL,True,True,True,True,True,False,False,True,False,NEO/small-body tracking의 close-approach/trajectory 변화가 Event 후보가 될 수 있음.
+E12,SPACE,Deep-Space Mission Tracking Engine,DIRECT_SIGNAL,True,True,True,True,True,False,False,True,False,deep-space mission tracking 상태/encounter 변화가 Mission Event Revision을 구동.
+E13,CONTROL,Mission Registry Engine,CONTEXT_ONLY,False,False,False,True,False,False,False,False,False,Mission identity/metadata registry. 일정/상태 사건은 E14/E15가 생성.
+E14,CONTROL,Launch Schedule / Window Engine,DIRECT_SIGNAL,True,True,True,True,False,False,False,True,False,공식 launch window/schedule 변경이 Mission Event Revision을 생성.
+E15,CONTROL,Launch State Machine & Countdown Engine,DIRECT_SIGNAL,True,True,True,True,False,False,False,True,False,COUNTDOWN/LIFTOFF/ASCENT 등 mission state transition이 Event를 생성/갱신.
+E16,CONTROL,Telemetry Fusion Engine,DIRECT_SIGNAL,True,True,True,True,True,False,False,True,False,실제 telemetry/official feed 변화가 Mission Event와 confidence/uncertainty에 직접 입력.
+E17,CONTROL,Launch Trajectory / Flight Dynamics Adapter Engine,DIRECT_SIGNAL,True,True,True,True,True,False,False,True,False,derived/modelled trajectory 차이/flight-dynamics signal을 제공. telemetry와 EvidenceClass 분리 필수.
+E18,CONTROL,Mission Timeline & Recorder Engine,EVIDENCE_PROVIDER,True,False,True,True,False,False,False,False,False,mission timeline/record를 불변 기록하여 Revision/Replay 근거 제공. 자체 판단 금지.
+E19,CONTROL,Mission Replay & Mission-to-Orbit Handover Engine,CONTEXT_ONLY,False,False,False,True,False,False,False,False,False,Replay 및 Mission→Orbit 객체 handover의 lineage/context. Replay가 현재 Event를 생성하면 실패.
+E20,ORBIT,Orbit Propagation & Frames Engine,DIRECT_SIGNAL,True,True,True,True,True,False,False,True,False,orbit state/residual/change signal을 제공. 단순 periodic update는 Signal Gate 전 Event 금지.
+E21,ORBIT,Conjunction Screening & Precise TCA Engine,DIRECT_SIGNAL,True,True,True,True,True,False,False,True,False,screening/TCA 결과는 conjunction Event 후보/Revision의 직접 입력.
+E22,ORBIT,Collision Probability & Risk Provenance Engine,DIRECT_SIGNAL,True,True,True,True,True,False,False,True,False,Pc/MaxP/risk provenance를 metric별 Signal로 제공. covariance 없는 Pc 생성 금지.
+E23,ORBIT,Risk Graph Engine,DIRECT_SIGNAL,True,True,True,True,True,False,False,True,False,metric-specific risk edge/graph delta가 Event 및 scenario 판단에 직접 입력.
+E24,ORBIT,Orbital Environment / Congestion Engine,DIRECT_SIGNAL,True,True,True,True,True,False,False,True,False,shell congestion/activity/re-entry context의 유의 변화가 환경 Event 후보가 될 수 있음.
+E25,ORBIT,Debris Genealogy / Origin Engine,CONTEXT_ONLY,False,False,False,True,True,False,False,False,False,debris origin/genealogy context. 새로운 proven fragmentation relation은 Evidence가 될 수 있으나 자동 위험 Event 생성 금지.
+E26,ORBIT,Fragmentation Scenario Engine,INTELLIGENCE_TOOL,False,False,False,True,True,True,False,False,False,명시적 SIMULATION_ONLY fragmentation scenario. Intelligence/사용자 요청으로 실행; 관측 사실로 승격 금지.
+E27,ORBIT,Re-entry Intelligence Engine,DIRECT_SIGNAL,True,True,True,True,True,False,False,True,False,re-entry watch/prediction revision이 Event/Revision 직접 입력. grade/window 보존.
+E28,ORBIT,Photometry / Rotation Intelligence Engine,DIRECT_SIGNAL,True,True,True,True,True,False,False,True,False,photometry/rotation estimate 및 anomaly signal. estimated label/uncertainty 필수.
+E29,ORBIT,Observation Planning Engine,INTELLIGENCE_TOOL,False,False,False,True,True,True,False,False,False,Evidence gap/low-confidence Event에 대해 Intelligence가 관측계획 계산을 요청.
+E30,ORBIT,Citizen Observation QA & Contribution Engine,EVIDENCE_PROVIDER,True,False,True,True,True,False,False,False,False,QA ACCEPTED 관측만 새 Evidence로 재계산을 촉발. 제출 자체는 Event가 아님.
+E31,ORBIT,Intervention Benefit / Counterfactual Engine,INTELLIGENCE_TOOL,False,False,False,True,True,True,False,False,False,Baseline/Counterfactual Benefit 계산 도구. 결과는 ATTRIBUTION_RESULT/SIMULATION이며 observed Event가 아님.
+E32,ORBIT,Affected Subgraph Engine,COMPUTE_HELPER,False,False,False,False,True,False,False,False,False,E31/E33의 선택적 재계산 최적화. Intelligence에 직접 결과 승격 금지; equivalence 검증 필수.
+E33,ORBIT,PROTECT Reverse Query & Candidate OCM Comparison Engine,INTELLIGENCE_TOOL,False,False,False,True,True,True,False,False,False,PROTECT/OCM decision comparison 도구. 자동 명령/공식 추천으로 승격 금지.
+E34,VISUAL,Multi-Scale Space Scene Engine,CONSUMER_ONLY,False,False,False,False,False,False,True,False,False,멀티스케일 3D 표현. Intelligence/과학 결과를 변경할 권한 없음.
+E35,VISUAL,Semantic Zoom / Camera Focus Engine,CONSUMER_ONLY,False,False,False,False,False,False,True,False,False,Semantic zoom/camera focus. 카메라/LOD가 계산 subset을 변경하면 실패.
+E36,VISUAL,Orbital Shell & LOD Engine,CONSUMER_ONLY,False,False,False,False,False,False,True,False,False,LEO/MEO/GEO shell/LOD 표현. shell 시각값이 risk/confidence를 생성하면 실패.
+E37,VISUAL,Visual Semantics Engine,CONSUMER_ONLY,False,False,False,False,False,False,True,False,False,Reality/Model/Simulation/Uncertainty 시각 문법을 소비. presentation only.
+E38,INTELLIGENCE,Aetherus Intelligence Orchestrator,INTELLIGENCE_CORE,True,True,True,False,False,True,False,False,False,실행 그래프 총괄. 과학값 자체 생성 금지.
+E39,INTELLIGENCE,Evidence Fusion & Cross Validation Intelligence,INTELLIGENCE_CORE,True,False,True,True,True,False,False,False,False,Evidence fusion/cross-validation. source conflict/coverage를 구조화.
+E40,INTELLIGENCE,Signal Classification Intelligence,INTELLIGENCE_CORE,True,True,True,True,True,False,False,False,False,Signal/EvidenceClass 분류와 promotion gate.
+E41,INTELLIGENCE,Event Intelligence Engine,INTELLIGENCE_CORE,True,True,True,True,True,False,False,False,False,Event correlation/new-vs-existing 결정.
+E42,INTELLIGENCE,Revision Intelligence Engine,INTELLIGENCE_CORE,True,False,True,True,True,False,False,False,False,Revision delta/history 관리. 과거 revision 삭제 금지.
+E43,INTELLIGENCE,Confidence & Uncertainty Intelligence Engine,INTELLIGENCE_CORE,True,False,True,True,True,False,False,False,False,Confidence와 Uncertainty를 분리 산출/표현.
+E44,INTELLIGENCE,Importance / Why-It-Matters / Attribution & Decision Intelligence Engine,INTELLIGENCE_CORE,True,False,True,True,True,True,False,False,False,Importance/Why-it-matters/Attribution/Decision을 구조화. command/법적 결론 금지.

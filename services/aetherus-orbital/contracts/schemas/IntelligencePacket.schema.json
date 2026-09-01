@@ -1,0 +1,98 @@
+{
+  "title": "IntelligencePacket",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "packet_id",
+    "generated_at",
+    "event",
+    "revision",
+    "what_happened",
+    "what_changed",
+    "why_it_matters",
+    "evidence",
+    "confidence",
+    "uncertainty",
+    "known_limitations",
+    "allowed_claims",
+    "prohibited_claims"
+  ],
+  "properties": {
+    "packet_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "event": {
+      "$ref": "Event.schema.json"
+    },
+    "revision": {
+      "$ref": "Revision.schema.json"
+    },
+    "what_happened": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "what_changed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "why_it_matters": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "Evidence.schema.json"
+      }
+    },
+    "confidence": {
+      "$ref": "ConfidenceAssessment.schema.json"
+    },
+    "uncertainty": {
+      "$ref": "UncertaintyAssessment.schema.json"
+    },
+    "scenario_results": {
+      "type": "array",
+      "items": {
+        "$ref": "AttributionResult.schema.json"
+      }
+    },
+    "decision_comparisons": {
+      "type": "array",
+      "items": {
+        "$ref": "DecisionComparison.schema.json"
+      }
+    },
+    "known_limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowed_claims": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "prohibited_claims": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetherus.dev/schemas/IntelligencePacket.schema.json"
+}

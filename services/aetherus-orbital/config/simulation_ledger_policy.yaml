@@ -1,0 +1,16 @@
+version: '0.1'
+required_fields:
+- scenario_id
+- baseline_snapshot_id
+- model_version
+- config_version
+- input_hashes
+- assumptions
+- seed_if_used
+- created_at
+- result_hash
+- validation_state
+rules:
+- Simulation and counterfactual results are append-only.
+- A changed baseline produces a new run even when scenario parameters are identical.
+- Replay visualization state never mutates current canonical state.

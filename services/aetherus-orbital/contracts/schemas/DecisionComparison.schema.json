@@ -1,0 +1,59 @@
+{
+  "title": "DecisionComparison",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "baseline_scenario_id",
+    "option_scenario_ids",
+    "criteria",
+    "generated_at",
+    "advisory_only"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "baseline_scenario_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "option_scenario_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "minItems": 1
+    },
+    "criteria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "ranked_options": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "advisory_only": {
+      "const": true
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetherus.dev/schemas/DecisionComparison.schema.json"
+}

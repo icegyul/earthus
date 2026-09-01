@@ -1,0 +1,75 @@
+{
+  "$defs": {
+    "SourceGrade": {
+      "enum": [
+        "OPERATIONAL",
+        "OFFICIAL_PUBLIC",
+        "VALIDATION_FIXTURE",
+        "PUBLIC_SCREENING",
+        "RESEARCH",
+        "USER_OBSERVATION",
+        "UNKNOWN"
+      ],
+      "title": "SourceGrade",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "source_grade": {
+      "$ref": "#/$defs/SourceGrade"
+    },
+    "license_policy": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "License Policy"
+    },
+    "access_policy": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Access Policy"
+    },
+    "stale_after_seconds": {
+      "default": 3600,
+      "minimum": 1,
+      "title": "Stale After Seconds",
+      "type": "integer"
+    },
+    "enabled": {
+      "default": true,
+      "title": "Enabled",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "source_grade"
+  ],
+  "title": "DataSourcePolicy",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetherus.dev/schemas/DataSourcePolicy.schema.json"
+}

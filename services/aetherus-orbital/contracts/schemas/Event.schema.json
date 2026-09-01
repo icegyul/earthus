@@ -1,0 +1,84 @@
+{
+  "title": "IntelligenceEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "event_type",
+    "canonical_key",
+    "status",
+    "object_ids",
+    "first_seen_at",
+    "updated_at",
+    "validation_state"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_type": {
+      "type": "string"
+    },
+    "canonical_key": {
+      "type": "string",
+      "minLength": 8
+    },
+    "status": {
+      "enum": [
+        "OPEN",
+        "WATCH",
+        "ACTIVE",
+        "RESOLVED",
+        "CLOSED"
+      ]
+    },
+    "object_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "mission_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "first_seen_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "current_revision_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "validation_state": {
+      "enum": [
+        "UNVALIDATED",
+        "SCREENING_ONLY",
+        "VALIDATION_PENDING",
+        "VALIDATED_PIPELINE",
+        "RESEARCH_ONLY",
+        "INSUFFICIENT_DATA"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetherus.dev/schemas/Event.schema.json"
+}

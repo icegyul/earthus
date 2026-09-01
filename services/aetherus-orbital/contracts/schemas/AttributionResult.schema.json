@@ -1,0 +1,73 @@
+{
+  "title": "AttributionResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "scenario_id",
+    "metric_type",
+    "subject_object_id",
+    "baseline_value",
+    "scenario_value",
+    "delta",
+    "provenance_evidence_ids"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "scenario_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "metric_type": {
+      "type": "string"
+    },
+    "subject_object_id": {
+      "type": "string"
+    },
+    "baseline_value": {
+      "type": "number"
+    },
+    "scenario_value": {
+      "type": "number"
+    },
+    "delta": {
+      "type": "number"
+    },
+    "units": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "confidence_assessment_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "uncertainty_assessment_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "provenance_evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "minItems": 1
+    },
+    "evidence_class": {
+      "const": "ATTRIBUTION_RESULT"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetherus.dev/schemas/AttributionResult.schema.json"
+}

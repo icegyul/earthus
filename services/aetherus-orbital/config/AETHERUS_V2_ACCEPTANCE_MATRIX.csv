@@ -1,0 +1,308 @@
+test_id,module_id,domain,case,automation,gate,status,evidence_path
+E01-T01,E01,FOUNDATION,duplicate raw hash dedupe,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E01-T02,E01,FOUNDATION,429/backoff policy,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E01-T03,E01,FOUNDATION,partial parse quarantine,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E01-T04,E01,FOUNDATION,secret redaction,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E01-T05,E01,FOUNDATION,source outage stale behavior,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E02-T01,E02,FOUNDATION,6+ digit catalog ID,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E02-T02,E02,FOUNDATION,same catalog renamed alias,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E02-T03,E02,FOUNDATION,COSPAR conflict quarantine,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E02-T04,E02,FOUNDATION,unknown origin not inferred,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E02-T05,E02,FOUNDATION,mission-created object handover,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E03-T01,E03,FOUNDATION,missing source rejects intelligence promotion,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E03-T02,E03,FOUNDATION,hash chain reproducibility,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E03-T03,E03,FOUNDATION,source-grade separation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E03-T04,E03,FOUNDATION,license policy propagation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E04-T01,E04,FOUNDATION,naive datetime rejection,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E04-T02,E04,FOUNDATION,UTC/local roundtrip,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E04-T03,E04,FOUNDATION,replay deterministic cursor,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E04-T04,E04,FOUNDATION,future model vs archived state separation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E05-T01,E05,FOUNDATION,frame roundtrip tolerance,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E05-T02,E05,FOUNDATION,unsupported frame fail,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E05-T03,E05,FOUNDATION,EOP stale downgrade,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E05-T04,E05,FOUNDATION,solar/earth frame consistency fixture,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E06-T01,E06,FOUNDATION,append-only state,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E06-T02,E06,FOUNDATION,same input deterministic hash,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E06-T03,E06,FOUNDATION,archived vs reconstructed label,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E06-T04,E06,FOUNDATION,baseline snapshot immutability,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E07-T01,E07,FOUNDATION,typed relation source required,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E07-T02,E07,FOUNDATION,mission-to-object lineage,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E07-T03,E07,FOUNDATION,time-consistent traversal,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E07-T04,E07,FOUNDATION,unknown relation uncertainty,AUTOMATED,REQUIRED,PASS,artifacts/evidence/foundation/pytest_foundation_integration_e2e.xml
+E08-T01,E08,SPACE,known epoch cross-check,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E08-T02,E08,SPACE,past/future deterministic,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E08-T03,E08,SPACE,provider/kernel version captured,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E08-T04,E08,SPACE,observer/frame explicit,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E09-T01,E09,SPACE,known event fixture,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E09-T02,E09,SPACE,rule version stored,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E09-T03,E09,SPACE,boundary time zone,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E09-T04,E09,SPACE,official vs derived separation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E10-T01,E10,SPACE,source timestamp preserved,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E10-T02,E10,SPACE,observed vs forecast separated,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E10-T03,E10,SPACE,stale handling,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E10-T04,E10,SPACE,drag context is context not direct orbit correction,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E11-T01,E11,SPACE,source grade,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E11-T02,E11,SPACE,close approach timestamp,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E11-T03,E11,SPACE,uncertainty preserved,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E11-T04,E11,SPACE,no impact claim without source,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E12-T01,E12,SPACE,mission status source,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E12-T02,E12,SPACE,trajectory provenance,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E12-T03,E12,SPACE,missing live telemetry -> model/official state label,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E13-T01,E13,CONTROL,duplicate mission merge policy,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E13-T02,E13,CONTROL,source precedence,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E13-T03,E13,CONTROL,payload provisional status,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E13-T04,E13,CONTROL,site coordinates,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E14-T01,E14,CONTROL,window revision history,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E14-T02,E14,CONTROL,TBD vs confirmed,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E14-T03,E14,CONTROL,timezone conversion,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E14-T04,E14,CONTROL,countdown only with resolved window,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E15-T01,E15,CONTROL,invalid transition reject,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E15-T02,E15,CONTROL,countdown pause/hold,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E15-T03,E15,CONTROL,scrub reset,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E15-T04,E15,CONTROL,official event transition evidence,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E16-T01,E16,CONTROL,live vs modelled separation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E16-T02,E16,CONTROL,out-of-order sample handling,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E16-T03,E16,CONTROL,source fail fallback,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E16-T04,E16,CONTROL,unit/schema validation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E17-T01,E17,CONTROL,trajectory source label,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E17-T02,E17,CONTROL,stage separation geometry,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E17-T03,E17,CONTROL,target orbit frame,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E17-T04,E17,CONTROL,model version/assumption,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E18-T01,E18,CONTROL,event order,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E18-T02,E18,CONTROL,revisions preserved,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E18-T03,E18,CONTROL,video timestamp optional,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E18-T04,E18,CONTROL,record hash reproducibility,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E19-T01,E19,CONTROL,replay deterministic,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E19-T02,E19,CONTROL,handover provisional->confirmed,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E19-T03,E19,CONTROL,stage/payload identity,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E19-T04,E19,CONTROL,GO TO LAUNCH / WHERE IS IT NOW relation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E20-T01,E20,ORBIT,known epoch golden,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E20-T02,E20,ORBIT,deterministic hash,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E20-T03,E20,ORBIT,stale flag,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E20-T04,E20,ORBIT,invalid elements -> unavailable,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E20-T05,E20,ORBIT,frame conversion,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E21-T01,E21,ORBIT,injected close pair recall,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E21-T02,E21,ORBIT,known TCA tolerance,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E21-T03,E21,ORBIT,boundary minimum,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E21-T04,E21,ORBIT,multi-minima,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E21-T05,E21,ORBIT,verification corpus metrics,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E22-T01,E22,ORBIT,missing covariance -> null not zero,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E22-T02,E22,ORBIT,Pc bounds,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E22-T03,E22,ORBIT,method mismatch warning,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E22-T04,E22,ORBIT,spec fixture path,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E22-T05,E22,ORBIT,dilution/covariance validity,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E23-T01,E23,ORBIT,edge deterministic,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E23-T02,E23,ORBIT,metric split,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E23-T03,E23,ORBIT,aggregate config version required,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E23-T04,E23,ORBIT,graph snapshot hash,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E24-T01,E24,ORBIT,shell boundaries,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E24-T02,E24,ORBIT,coverage ratio,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E24-T03,E24,ORBIT,source gap partial,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E24-T04,E24,ORBIT,threshold version,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E25-T01,E25,ORBIT,known family links,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E25-T02,E25,ORBIT,unknown origin no inference,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E25-T03,E25,ORBIT,chronological timeline,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E25-T04,E25,ORBIT,multinational separation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E26-T01,E26,ORBIT,fixed seed reproducibility,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E26-T02,E26,ORBIT,assumption exposure,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E26-T03,E26,ORBIT,remove path indirect delta,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E26-T04,E26,ORBIT,model validation state,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E27-T01,E27,ORBIT,TIP parse,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E27-T02,E27,ORBIT,no TIP -> no fake exact time,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E27-T03,E27,ORBIT,version history,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E27-T04,E27,ORBIT,grade visible,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E28-T01,E28,ORBIT,synthetic sinusoid,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E28-T02,E28,ORBIT,alias ambiguous,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E28-T03,E28,ORBIT,too few points,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E28-T04,E28,ORBIT,uncertainty downgrade,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E29-T01,E29,ORBIT,known pass,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E29-T02,E29,ORBIT,sun/eclipse flag,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E29-T03,E29,ORBIT,mount limit,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E29-T04,E29,ORBIT,info gain ordering,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E29-T05,E29,ORBIT,no visibility -> no request,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E30-T01,E30,ORBIT,duplicate dedupe,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E30-T02,E30,ORBIT,bad timestamp quarantine,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E30-T03,E30,ORBIT,outlier reject,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E30-T04,E30,ORBIT,accepted-only hook,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E30-T05,E30,ORBIT,license missing,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E31-T01,E31,ORBIT,direct remove exact delta,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E31-T02,E31,ORBIT,metric channels separated,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E31-T03,E31,ORBIT,same input repeat hash,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E31-T04,E31,ORBIT,no data no fake beneficiary,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E31-T05,E31,ORBIT,new risk surfaced,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E32-T01,E32,ORBIT,injected influence included,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E32-T02,E32,ORBIT,full-vs-selective equivalence,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E32-T03,E32,ORBIT,new OCM path candidate,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E32-T04,E32,ORBIT,rollback on mismatch,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E33-T01,E33,ORBIT,known ranking,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E33-T02,E33,ORBIT,inactive protected object research mode,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E33-T03,E33,ORBIT,new risk penalty,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E33-T04,E33,ORBIT,same-designator exclusion,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E33-T05,E33,ORBIT,candidate provenance,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E34-T01,E34,VISUAL,scale transition continuity,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E34-T02,E34,VISUAL,floating precision budget,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E34-T03,E34,VISUAL,layer source labels,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E34-T04,E34,VISUAL,device profile fallback,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E35-T01,E35,VISUAL,focus persistence across modes,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E35-T02,E35,VISUAL,back navigation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E35-T03,E35,VISUAL,object->event->object,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E35-T04,E35,VISUAL,NOW reset preserves expected focus,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E36-T01,E36,VISUAL,global view object cap,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E36-T02,E36,VISUAL,shell selection focus,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E36-T03,E36,VISUAL,viewport query,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E36-T04,E36,VISUAL,render subset != science subset,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E37-T01,E37,VISUAL,all evidence classes mapped,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E37-T02,E37,VISUAL,screening vs validated distinct,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E37-T03,E37,VISUAL,uncertainty visible,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E37-T04,E37,VISUAL,contrast/accessibility,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E38-T01,E38,INTELLIGENCE,idempotent trigger,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E38-T02,E38,INTELLIGENCE,dependency ordering,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E38-T03,E38,INTELLIGENCE,partial failure recovery,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E38-T04,E38,INTELLIGENCE,no circular task graph,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E38-T05,E38,INTELLIGENCE,replay from event log,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E39-T01,E39,INTELLIGENCE,independent source weighting,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E39-T02,E39,INTELLIGENCE,stale disagreement,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E39-T03,E39,INTELLIGENCE,conflicting official sources preserved,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E39-T04,E39,INTELLIGENCE,missing evidence remains missing,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E40-T01,E40,INTELLIGENCE,class required,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E40-T02,E40,INTELLIGENCE,AI cannot overwrite observed,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E40-T03,E40,INTELLIGENCE,counterfactual cannot become official,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E40-T04,E40,INTELLIGENCE,unknown class quarantine,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E41-T01,E41,INTELLIGENCE,same event correlation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E41-T02,E41,INTELLIGENCE,duplicate suppression,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E41-T03,E41,INTELLIGENCE,new event boundary,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E41-T04,E41,INTELLIGENCE,domain-specific event types,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E41-T05,E41,INTELLIGENCE,insufficient data event allowed,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E42-T01,E42,INTELLIGENCE,append-only revisions,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E42-T02,E42,INTELLIGENCE,change cause linked,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E42-T03,E42,INTELLIGENCE,no-change revision suppression policy,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E42-T04,E42,INTELLIGENCE,rollback/correction lineage,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E43-T01,E43,INTELLIGENCE,confidence != uncertainty,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E43-T02,E43,INTELLIGENCE,missing covariance raises uncertainty/limits claim,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E43-T03,E43,INTELLIGENCE,factor traceability,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E43-T04,E43,INTELLIGENCE,versioned weighting,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E44-T01,E44,INTELLIGENCE,importance reasons traceable,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E44-T02,E44,INTELLIGENCE,change rate can outrank static magnitude under policy,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E44-T03,E44,INTELLIGENCE,decision shows new risk,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E44-T04,E44,INTELLIGENCE,scenario assumptions surfaced,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+E44-T05,E44,INTELLIGENCE,no single-option recommendation without policy,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L01-T01,L01,LLM,provider/tool path success,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L01-T02,L01,LLM,unsupported scientific number hallucination blocked,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L01-T03,L01,LLM,validation/evidence class preserved in response,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L01-T04,L01,LLM,timeout/fallback does not break Intelligence core,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L01-T05,L01,LLM,authorization/private context isolation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L02-T01,L02,LLM,provider/tool path success,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L02-T02,L02,LLM,unsupported scientific number hallucination blocked,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L02-T03,L02,LLM,validation/evidence class preserved in response,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L02-T04,L02,LLM,timeout/fallback does not break Intelligence core,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L02-T05,L02,LLM,authorization/private context isolation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L03-T01,L03,LLM,provider/tool path success,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L03-T02,L03,LLM,unsupported scientific number hallucination blocked,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L03-T03,L03,LLM,validation/evidence class preserved in response,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L03-T04,L03,LLM,timeout/fallback does not break Intelligence core,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L03-T05,L03,LLM,authorization/private context isolation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L04-T01,L04,LLM,provider/tool path success,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L04-T02,L04,LLM,unsupported scientific number hallucination blocked,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L04-T03,L04,LLM,validation/evidence class preserved in response,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L04-T04,L04,LLM,timeout/fallback does not break Intelligence core,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L04-T05,L04,LLM,authorization/private context isolation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L05-T01,L05,LLM,provider/tool path success,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L05-T02,L05,LLM,unsupported scientific number hallucination blocked,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L05-T03,L05,LLM,validation/evidence class preserved in response,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L05-T04,L05,LLM,timeout/fallback does not break Intelligence core,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L05-T05,L05,LLM,authorization/private context isolation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L06-T01,L06,LLM,provider/tool path success,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L06-T02,L06,LLM,unsupported scientific number hallucination blocked,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L06-T03,L06,LLM,validation/evidence class preserved in response,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L06-T04,L06,LLM,timeout/fallback does not break Intelligence core,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L06-T05,L06,LLM,authorization/private context isolation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L07-T01,L07,LLM,provider/tool path success,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L07-T02,L07,LLM,unsupported scientific number hallucination blocked,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L07-T03,L07,LLM,validation/evidence class preserved in response,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L07-T04,L07,LLM,timeout/fallback does not break Intelligence core,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L07-T05,L07,LLM,authorization/private context isolation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L08-T01,L08,LLM,provider/tool path success,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L08-T02,L08,LLM,unsupported scientific number hallucination blocked,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L08-T03,L08,LLM,validation/evidence class preserved in response,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L08-T04,L08,LLM,timeout/fallback does not break Intelligence core,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+L08-T05,L08,LLM,authorization/private context isolation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S01-T01,S01,PLATFORM,happy path contract,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S01-T02,S01,PLATFORM,authorization/capability enforcement,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S01-T03,S01,PLATFORM,failure/data_status propagation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S01-T04,S01,PLATFORM,audit/request-id traceability,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S01-T05,S01,PLATFORM,regression/security check,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S02-T01,S02,PLATFORM,happy path contract,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S02-T02,S02,PLATFORM,authorization/capability enforcement,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S02-T03,S02,PLATFORM,failure/data_status propagation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S02-T04,S02,PLATFORM,audit/request-id traceability,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S02-T05,S02,PLATFORM,regression/security check,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S03-T01,S03,PLATFORM,happy path contract,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S03-T02,S03,PLATFORM,authorization/capability enforcement,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S03-T03,S03,PLATFORM,failure/data_status propagation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S03-T04,S03,PLATFORM,audit/request-id traceability,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S03-T05,S03,PLATFORM,regression/security check,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S04-T01,S04,PLATFORM,happy path contract,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S04-T02,S04,PLATFORM,authorization/capability enforcement,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S04-T03,S04,PLATFORM,failure/data_status propagation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S04-T04,S04,PLATFORM,audit/request-id traceability,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S04-T05,S04,PLATFORM,regression/security check,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S05-T01,S05,PLATFORM,happy path contract,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S05-T02,S05,PLATFORM,authorization/capability enforcement,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S05-T03,S05,PLATFORM,failure/data_status propagation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S05-T04,S05,PLATFORM,audit/request-id traceability,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S05-T05,S05,PLATFORM,regression/security check,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S06-T01,S06,PLATFORM,happy path contract,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S06-T02,S06,PLATFORM,authorization/capability enforcement,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S06-T03,S06,PLATFORM,failure/data_status propagation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S06-T04,S06,PLATFORM,audit/request-id traceability,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S06-T05,S06,PLATFORM,regression/security check,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S07-T01,S07,PLATFORM,happy path contract,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S07-T02,S07,PLATFORM,authorization/capability enforcement,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S07-T03,S07,PLATFORM,failure/data_status propagation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S07-T04,S07,PLATFORM,audit/request-id traceability,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S07-T05,S07,PLATFORM,regression/security check,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S08-T01,S08,PLATFORM,happy path contract,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S08-T02,S08,PLATFORM,authorization/capability enforcement,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S08-T03,S08,PLATFORM,failure/data_status propagation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S08-T04,S08,PLATFORM,audit/request-id traceability,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S08-T05,S08,PLATFORM,regression/security check,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S09-T01,S09,PLATFORM,happy path contract,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S09-T02,S09,PLATFORM,authorization/capability enforcement,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S09-T03,S09,PLATFORM,failure/data_status propagation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S09-T04,S09,PLATFORM,audit/request-id traceability,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S09-T05,S09,PLATFORM,regression/security check,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S10-T01,S10,PLATFORM,happy path contract,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S10-T02,S10,PLATFORM,authorization/capability enforcement,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S10-T03,S10,PLATFORM,failure/data_status propagation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S10-T04,S10,PLATFORM,audit/request-id traceability,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S10-T05,S10,PLATFORM,regression/security check,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S11-T01,S11,PLATFORM,happy path contract,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S11-T02,S11,PLATFORM,authorization/capability enforcement,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S11-T03,S11,PLATFORM,failure/data_status propagation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S11-T04,S11,PLATFORM,audit/request-id traceability,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S11-T05,S11,PLATFORM,regression/security check,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S12-T01,S12,PLATFORM,happy path contract,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S12-T02,S12,PLATFORM,authorization/capability enforcement,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S12-T03,S12,PLATFORM,failure/data_status propagation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S12-T04,S12,PLATFORM,audit/request-id traceability,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+S12-T05,S12,PLATFORM,regression/security check,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-001,E40,INTELLIGENCE,DIRECT_SIGNAL cannot create Event before Signal Gate,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-002,E41,INTELLIGENCE,CONTEXT_ONLY direct Event create request rejected,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-003,E43,INTELLIGENCE,CONSUMER/UI factor cannot mutate scientific Confidence,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-004,E43,INTELLIGENCE,Subscription tier change leaves scientific Confidence/Uncertainty hash unchanged,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-005,E31,ORBIT,Counterfactual Benefit cannot be persisted as OBSERVED,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-006,E26,ORBIT,Fragmentation scenario always carries SIMULATION_ONLY/model/seed/assumption,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-007,E32,ORBIT,Affected Subgraph helper output not exposed directly as Intelligence Event,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-008,E34,VISUAL,3D render/LOD changes leave scientific result hash unchanged,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-009,E35,VISUAL,Camera/Semantic Zoom does not alter science subset,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-010,E36,VISUAL,Orbital shell visibility does not alter risk/conjunction computation set,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-011,E37,VISUAL,Visual semantics cannot relabel MODEL/SIMULATION as OBSERVED,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-012,E19,CONTROL,Historical Replay cannot create current real-world Event,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-013,E30,ORBIT,Rejected/quarantined citizen observation cannot affect Intelligence,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-014,E30,ORBIT,Accepted observation adds Evidence then triggers bounded re-evaluation,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-015,E20,ORBIT,Periodic orbit updates are reduced by change/signal gate before Event candidate,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-016,E16,CONTROL,Telemetry and modelled trajectory remain separate EvidenceClass,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-017,E22,ORBIT,No covariance means no Pc even if UI/LLM requests it,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-018,E38,INTELLIGENCE,Orchestrator invokes INTELLIGENCE_TOOL only through approved contract,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-019,E44,INTELLIGENCE,Decision result is advisory/research and cannot emit spacecraft command,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml
+ICM-020,L06,LLM,Claim validator rejects or qualifies numeric claim absent from Intelligence Packet,AUTOMATED,REQUIRED,PASS,artifacts/evidence/full_product/pytest_master_acceptance_277.xml

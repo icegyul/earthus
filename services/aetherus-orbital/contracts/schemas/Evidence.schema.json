@@ -1,0 +1,96 @@
+{
+  "title": "EvidenceRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "evidence_class",
+    "source_id",
+    "observed_at",
+    "received_at",
+    "checksum_sha256",
+    "source_grade"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "evidence_class": {
+      "enum": [
+        "OBSERVED",
+        "OFFICIAL",
+        "DERIVED",
+        "MODEL_SIGNAL",
+        "AI_SIGNAL",
+        "SIMULATION_ONLY",
+        "COUNTERFACTUAL",
+        "ATTRIBUTION_RESULT"
+      ]
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_record_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "received_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "checksum_sha256": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{64}$"
+    },
+    "source_grade": {
+      "enum": [
+        "OPERATIONAL",
+        "OFFICIAL_PUBLIC",
+        "VALIDATION_FIXTURE",
+        "PUBLIC_SCREENING",
+        "RESEARCH",
+        "USER_OBSERVATION",
+        "UNKNOWN"
+      ]
+    },
+    "quality": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "coordinate_frame": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "license_policy": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "access_policy": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetherus.dev/schemas/Evidence.schema.json"
+}

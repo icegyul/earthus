@@ -1,0 +1,62 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "position_km": {
+      "maxItems": 3,
+      "minItems": 3,
+      "prefixItems": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "title": "Position Km",
+      "type": "array"
+    },
+    "velocity_km_s": {
+      "default": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "maxItems": 3,
+      "minItems": 3,
+      "prefixItems": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "title": "Velocity Km S",
+      "type": "array"
+    },
+    "frame": {
+      "title": "Frame",
+      "type": "string"
+    },
+    "epoch_utc": {
+      "format": "date-time",
+      "title": "Epoch Utc",
+      "type": "string"
+    }
+  },
+  "required": [
+    "position_km",
+    "frame",
+    "epoch_utc"
+  ],
+  "title": "StateVector",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetherus.dev/schemas/StateVector.schema.json"
+}

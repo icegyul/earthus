@@ -1,0 +1,262 @@
+{
+  "$defs": {
+    "EvidenceClass": {
+      "enum": [
+        "OBSERVED",
+        "OFFICIAL",
+        "DERIVED",
+        "MODEL_SIGNAL",
+        "AI_SIGNAL",
+        "SIMULATION_ONLY",
+        "COUNTERFACTUAL",
+        "ATTRIBUTION_RESULT"
+      ],
+      "title": "EvidenceClass",
+      "type": "string"
+    },
+    "EvidenceRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "format": "uuid",
+          "title": "Id",
+          "type": "string"
+        },
+        "evidence_class": {
+          "$ref": "#/$defs/EvidenceClass"
+        },
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "source_record_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Record Id"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "received_at": {
+          "format": "date-time",
+          "title": "Received At",
+          "type": "string"
+        },
+        "checksum_sha256": {
+          "title": "Checksum Sha256",
+          "type": "string"
+        },
+        "source_grade": {
+          "$ref": "#/$defs/SourceGrade"
+        },
+        "quality": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quality"
+        },
+        "coordinate_frame": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Coordinate Frame"
+        },
+        "license_policy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License Policy"
+        },
+        "access_policy": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Access Policy"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "evidence_class",
+        "source_id",
+        "observed_at",
+        "received_at",
+        "checksum_sha256",
+        "source_grade"
+      ],
+      "title": "EvidenceRecord",
+      "type": "object"
+    },
+    "ProvenanceLink": {
+      "additionalProperties": false,
+      "properties": {
+        "parent_type": {
+          "title": "Parent Type",
+          "type": "string"
+        },
+        "parent_id": {
+          "title": "Parent Id",
+          "type": "string"
+        },
+        "relation": {
+          "title": "Relation",
+          "type": "string"
+        },
+        "parent_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Hash"
+        }
+      },
+      "required": [
+        "parent_type",
+        "parent_id",
+        "relation"
+      ],
+      "title": "ProvenanceLink",
+      "type": "object"
+    },
+    "SourceGrade": {
+      "enum": [
+        "OPERATIONAL",
+        "OFFICIAL_PUBLIC",
+        "VALIDATION_FIXTURE",
+        "PUBLIC_SCREENING",
+        "RESEARCH",
+        "USER_OBSERVATION",
+        "UNKNOWN"
+      ],
+      "title": "SourceGrade",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "format": "uuid",
+      "title": "Id",
+      "type": "string"
+    },
+    "evidence": {
+      "$ref": "#/$defs/EvidenceRecord"
+    },
+    "links": {
+      "items": {
+        "$ref": "#/$defs/ProvenanceLink"
+      },
+      "title": "Links",
+      "type": "array"
+    },
+    "engine_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Engine Id"
+    },
+    "engine_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Engine Version"
+    },
+    "model_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Model Version"
+    },
+    "config_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Config Version"
+    },
+    "provenance_hash": {
+      "title": "Provenance Hash",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "evidence",
+    "provenance_hash",
+    "created_at"
+  ],
+  "title": "ProvenanceBundle",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetherus.dev/schemas/ProvenanceBundle.schema.json"
+}

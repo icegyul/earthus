@@ -1,0 +1,32 @@
+version: '0.1'
+rules:
+- event_type: CONJUNCTION_EVENT
+  identity:
+  - sorted_object_ids
+  - tca_bucket
+  revision_if:
+  - metric_change
+  - source_update
+  - confidence_change
+- event_type: LAUNCH_EVENT
+  identity:
+  - mission_id
+  revision_if:
+  - window_change
+  - state_transition
+  - official_update
+- event_type: REENTRY_EVENT
+  identity:
+  - object_id
+  - prediction_episode
+  revision_if:
+  - window_change
+  - grade_change
+  - source_update
+- event_type: SOLAR_EVENT
+  identity:
+  - provider_event_id_or_hash
+  revision_if:
+  - severity_change
+  - new_evidence
+hard_rule: Do not create a new event merely because a periodic state sample arrived.

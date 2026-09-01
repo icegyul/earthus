@@ -1,0 +1,24 @@
+version: '0.1'
+grades:
+  OPERATIONAL:
+    rank: 100
+    description: Contracted/operational-grade source; still requires method-specific
+      validation.
+  OFFICIAL_PUBLIC:
+    rank: 80
+    description: Official public source.
+  VALIDATION_FIXTURE:
+    rank: 75
+    description: Official or frozen validation fixture; not live operational evidence.
+  PUBLIC_SCREENING:
+    rank: 60
+    description: Public screening-grade data; precision claims restricted.
+  RESEARCH:
+    rank: 50
+    description: Research/model-derived source.
+  USER_OBSERVATION:
+    rank: 40
+    description: User/citizen observation pending or after QA according to metadata.
+  UNKNOWN:
+    rank: 0
+    description: Unknown/unclassified source; intelligence promotion blocked.

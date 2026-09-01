@@ -1,0 +1,13 @@
+version: '0.1'
+modes:
+- condition: provider_down
+  behavior: serve last valid snapshot with STALE/PARTIAL; never fabricate
+- condition: intelligence_worker_down
+  behavior: serve existing event/revision read-only; disable new intelligence claims
+- condition: llm_down
+  behavior: core product remains functional; render structured Intelligence Packet
+    without natural-language assistant
+- condition: visual_gpu_degraded
+  behavior: switch FULL->FAST->LIGHT->STATIC without changing scientific state
+- condition: db_write_unavailable
+  behavior: no new science/intelligence writes; explicit degraded read-only mode

@@ -1,0 +1,67 @@
+{
+  "title": "DigitalState",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "entity_id",
+    "state_time",
+    "state_kind",
+    "representation",
+    "source_evidence_ids",
+    "state_hash"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "state_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "state_kind": {
+      "enum": [
+        "REALITY",
+        "ARCHIVED",
+        "RECONSTRUCTED",
+        "MODELLED",
+        "SIMULATION",
+        "COUNTERFACTUAL"
+      ]
+    },
+    "representation": {
+      "type": "string"
+    },
+    "frame": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "time_system": {
+      "type": "string",
+      "default": "UTC"
+    },
+    "source_evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "uniqueItems": true
+    },
+    "state_hash": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{64}$"
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetherus.dev/schemas/DigitalState.schema.json"
+}

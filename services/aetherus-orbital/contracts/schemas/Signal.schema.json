@@ -1,0 +1,105 @@
+{
+  "title": "SignalRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "signal_type",
+    "evidence_class",
+    "producer_module_id",
+    "observed_at",
+    "object_ids",
+    "evidence_ids",
+    "payload"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "signal_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_class": {
+      "enum": [
+        "OBSERVED",
+        "OFFICIAL",
+        "DERIVED",
+        "MODEL_SIGNAL",
+        "AI_SIGNAL",
+        "SIMULATION_ONLY",
+        "COUNTERFACTUAL",
+        "ATTRIBUTION_RESULT"
+      ]
+    },
+    "producer_module_id": {
+      "type": "string",
+      "pattern": "^(E|L|S)[0-9]{2}$"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "object_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "mission_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_hint": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "metric_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "value": {
+      "type": [
+        "number",
+        "string",
+        "boolean",
+        "null"
+      ]
+    },
+    "units": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "significance": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "uniqueItems": true
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetherus.dev/schemas/Signal.schema.json"
+}

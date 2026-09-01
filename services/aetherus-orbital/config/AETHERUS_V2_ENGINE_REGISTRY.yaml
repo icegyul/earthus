@@ -1,0 +1,2190 @@
+version: '1.0'
+engines:
+- id: E01
+  name: Source Ingestion & Raw Artifact Engine
+  domain: FOUNDATION
+  purpose: 공식/계약/공개 우주 데이터를 공급자별 정책을 지키며 수집하고 원문을 불변 저장한 뒤 정규화 파이프라인으로 전달한다.
+  inputs:
+  - provider selector
+  - credentials reference
+  - poll policy
+  - source request metadata
+  outputs:
+  - RawArtifact
+  - IngestionRun
+  - NormalizedCandidateBatch
+  deps: []
+  storage:
+  - data_source
+  - ingestion_run
+  - raw_artifact
+  api:
+  - /internal/providers/health
+  - /internal/ingestion/runs
+  tests:
+  - duplicate raw hash dedupe
+  - 429/backoff policy
+  - partial parse quarantine
+  - secret redaction
+  - source outage stale behavior
+  hooks:
+  - E03 provenance
+  - E06 snapshot
+  - E38 orchestration
+  ui:
+  - 관리자 Provider Health
+  - 일반 UI에는 OK/STALE/PARTIAL/UNAVAILABLE만 노출
+  non_goals:
+  - provider 응답을 곧바로 제품 상태로 간주하지 않음
+  - API key를 로그/DB 평문으로 저장하지 않음
+  intelligence_connection:
+    mode: EVIDENCE_PROVIDER
+    produces_intelligence_signal: true
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: 원문·수집 상태를 Evidence로 제공. HTTP/parse 성공 자체가 Event가 아님.
+- id: E02
+  name: Canonical Object Identity Engine
+  domain: FOUNDATION
+  purpose: NORAD/COSPAR/provider alias를 단일 canonical object로 연결하고 행성·탐사선·발사체·로켓단·위성·파편까지 V2 공통 객체 식별체계를 유지한다.
+  inputs:
+  - provider object record
+  - catalog_id
+  - cospar_id
+  - source alias
+  - mission relation hints
+  outputs:
+  - CanonicalObject
+  - ObjectAlias
+  - IdentityConflict
+  deps:
+  - E01
+  storage:
+  - space_object
+  - space_object_alias
+  - identity_conflict
+  api:
+  - /v1/objects
+  - /v1/objects/{id}
+  tests:
+  - 6+ digit catalog ID
+  - same catalog renamed alias
+  - COSPAR conflict quarantine
+  - unknown origin not inferred
+  - mission-created object handover
+  hooks:
+  - E07 knowledge graph
+  - E19 mission handover
+  - E25 genealogy
+  ui:
+  - Object Detail identity
+  - 검색/필터
+  non_goals:
+  - 이름 유사도만으로 자동 merge 금지
+  - OWNER/ORIGIN/SOURCE 혼합 금지
+  intelligence_connection:
+    mode: CONTEXT_ONLY
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: false
+    may_affect_uncertainty: false
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: canonical identity/alias context. 이름·ID 자체로 사건/신뢰도 판단 금지.
+- id: E03
+  name: Evidence & Provenance Engine
+  domain: FOUNDATION
+  purpose: 모든 관측·공식정보·파생계산·AI 신호·시뮬레이션 결과가 어디서, 언제, 어떤 버전으로 생성되었는지 증명 가능한 계보를 만든다.
+  inputs:
+  - raw artifact refs
+  - engine result metadata
+  - model/config version
+  - license/access policy
+  outputs:
+  - EvidenceRecord
+  - ProvenanceBundle
+  - SourceGrade
+  deps:
+  - E01
+  storage:
+  - evidence
+  - provenance_link
+  - source_grade_registry
+  api:
+  - /v1/evidence/{id}
+  - /v1/provenance/{id}
+  tests:
+  - missing source rejects intelligence promotion
+  - hash chain reproducibility
+  - source-grade separation
+  - license policy propagation
+  hooks:
+  - E39 evidence fusion
+  - E43 confidence
+  - L06 claim validator
+  ui:
+  - Source drawer
+  - Evidence badge
+  - Data age
+  non_goals:
+  - 출처 없는 숫자를 제품 Intelligence로 승격하지 않음
+  intelligence_connection:
+    mode: EVIDENCE_PROVIDER
+    produces_intelligence_signal: true
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: provenance/source grade가 E39/E43의 근거가 되지만 독립 Event 생성 금지.
+- id: E04
+  name: Universal Space Time Engine
+  domain: FOUNDATION
+  purpose: Aetherus 전체에서 PAST/NOW/FUTURE를 단일 UTC 중심 시간축으로 관리하고 기록 시점, 관측 시점, 계산 시점, 시뮬레이션 시점을 구분한다.
+  inputs:
+  - UTC aware timestamps
+  - time scale metadata
+  - user local timezone
+  - replay/scenario cursor
+  outputs:
+  - CanonicalTimeContext
+  - TimelineCursor
+  - TimeWindow
+  deps: []
+  storage:
+  - time_context_manifest
+  - timeline_bookmark
+  api:
+  - /v1/time/now
+  - /v1/time/resolve
+  tests:
+  - naive datetime rejection
+  - UTC/local roundtrip
+  - replay deterministic cursor
+  - future model vs archived state separation
+  hooks:
+  - E06 snapshot
+  - E18 mission timeline
+  - E41 events
+  - E42 revisions
+  ui:
+  - Universal Time Bar
+  - NOW reset
+  - mission replay
+  - scenario time comparison
+  non_goals:
+  - UTC/TAI/UT1 무표기 혼용 금지
+  intelligence_connection:
+    mode: CONTEXT_ONLY
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: false
+    may_affect_uncertainty: false
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: 시간축/epoch/replay context만 제공. 과학 중요도 판단 금지.
+- id: E05
+  name: Coordinate & Reference Frame Engine
+  domain: FOUNDATION
+  purpose: TEME/ITRF/GCRF/ICRF/heliocentric 등 서로 다른 좌표계를 명시적으로 변환하여 지구궤도부터 태양계까지 하나의 시각 경험으로 연결한다.
+  inputs:
+  - state vector
+  - frame
+  - time system
+  - EOP/kernel version
+  outputs:
+  - TransformedState
+  - GeodeticPosition
+  - FrameProvenance
+  deps:
+  - E04
+  storage:
+  - frame_transform_manifest
+  api:
+  - /internal/frames/transform
+  tests:
+  - frame roundtrip tolerance
+  - unsupported frame fail
+  - EOP stale downgrade
+  - solar/earth frame consistency fixture
+  hooks:
+  - E08 ephemeris
+  - E20 orbit
+  - E34 multiscale scene
+  ui:
+  - 좌표표시는 Research mode에서만 상세
+  non_goals:
+  - frame 미상 데이터를 임의 추정해 정밀 위치로 표시하지 않음
+  intelligence_connection:
+    mode: CONTEXT_ONLY
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: false
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: 좌표/프레임 변환 context. 변환 품질은 uncertainty 입력이 될 수 있으나 사건 생성 금지.
+- id: E06
+  name: Digital State / Snapshot / Version Engine
+  domain: FOUNDATION
+  purpose: 특정 시각의 현실·모델·재구성·시나리오 상태를 불변 Snapshot으로 저장하고 새 데이터가 들어와도 과거 상태를 덮어쓰지 않는다.
+  inputs:
+  - canonical objects
+  - evidence refs
+  - engine outputs
+  - time context
+  outputs:
+  - DigitalState
+  - SnapshotManifest
+  - VersionLineage
+  deps:
+  - E02
+  - E03
+  - E04
+  storage:
+  - digital_state
+  - snapshot_manifest
+  - state_version
+  api:
+  - /v1/states/{id}
+  - /v1/snapshots/{id}
+  tests:
+  - append-only state
+  - same input deterministic hash
+  - archived vs reconstructed label
+  - baseline snapshot immutability
+  hooks:
+  - E41 event
+  - E42 revision
+  - E31 benefit
+  - E07 archive
+  ui:
+  - ARCHIVED STATE / RECONSTRUCTED STATE / NOW 표기
+  non_goals:
+  - 현재 데이터로 과거를 재계산한 값을 당시 실제 기록처럼 표시하지 않음
+  intelligence_connection:
+    mode: CONTEXT_ONLY
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: snapshot/version lineage가 Revision 비교의 기준. 자체로 Event를 생성하지 않음.
+- id: E07
+  name: Space Knowledge Graph & Archive Engine
+  domain: FOUNDATION
+  purpose: Mission→Vehicle→Stage→Payload→Space Object→Orbit→Event→Evidence의 관계와 장기 이력을 연결하여 Aetherus의 우주 역사 그래프와
+    Archive를 만든다.
+  inputs:
+  - canonical objects
+  - mission records
+  - event links
+  - genealogy
+  - snapshots
+  outputs:
+  - TypedRelation
+  - ObjectLifeHistory
+  - ArchiveIndex
+  deps:
+  - E02
+  - E06
+  storage:
+  - object_relation
+  - archive_index
+  - collection_manifest
+  api:
+  - /v1/graph/{id}
+  - /v1/archive/search
+  tests:
+  - typed relation source required
+  - mission-to-object lineage
+  - time-consistent traversal
+  - unknown relation uncertainty
+  hooks:
+  - E19 mission handover
+  - E25 genealogy
+  - L04 context composer
+  ui:
+  - HISTORY
+  - GO TO LAUNCH
+  - WHERE IS IT NOW?
+  - Archive
+  non_goals:
+  - 정치적/법적 책임을 origin relation에서 추론하지 않음
+  intelligence_connection:
+    mode: CONTEXT_ONLY
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: true
+    may_affect_uncertainty: false
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: Mission/Object/Event 관계 context. 관계 provenance는 설명 근거가 될 수 있음.
+- id: E08
+  name: Solar System Ephemeris Engine
+  domain: SPACE
+  purpose: 태양·행성·달·선택 천체/탐사선의 현재/과거/미래 위치를 검증된 천문 ephemeris 소스로 계산해 Solar System Digital State를 제공한다.
+  inputs:
+  - ephemeris provider data
+  - kernel/version
+  - time range
+  - target observer
+  outputs:
+  - CelestialState
+  - EphemerisSeries
+  - EphemerisProvenance
+  deps:
+  - E03
+  - E04
+  - E05
+  storage:
+  - celestial_object
+  - celestial_ephemeris_cache
+  api:
+  - /v1/space/ephemeris
+  - /v1/space/objects/{id}
+  tests:
+  - known epoch cross-check
+  - past/future deterministic
+  - provider/kernel version captured
+  - observer/frame explicit
+  hooks:
+  - E09 celestial event
+  - E34 solar scene
+  - E41 event intelligence
+  ui:
+  - 지구→달→태양계 Spatial Ladder
+  - 현재 위치/궤도
+  non_goals:
+  - 행성 CCTV 실시간처럼 표현하지 않음
+  - experience scale을 물리 scale로 오해시키지 않음
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: false
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: 천체 상태/ephemeris 변화는 E09 등의 사건 계산에 직접 입력. 단순 위치 갱신은 Signal Gate 통과 전 Event 아님.
+- id: E09
+  name: Celestial Event Engine
+  domain: SPACE
+  purpose: 일식/월식/행성 접근/합·충/엄폐/중요 관측 시점 등 천체 상태에서 의미 있는 Event 후보를 생성한다.
+  inputs:
+  - E08 ephemerides
+  - event rule/config
+  - official event feeds optional
+  outputs:
+  - CelestialEventCandidate
+  - EventGeometry
+  deps:
+  - E08
+  storage:
+  - celestial_event_candidate
+  api:
+  - /v1/space/events
+  tests:
+  - known event fixture
+  - rule version stored
+  - boundary time zone
+  - official vs derived separation
+  hooks:
+  - E41 event
+  - E44 importance
+  ui:
+  - SPACE NOW
+  - Solar System event markers
+  non_goals:
+  - 공식 천문현상을 자체 모델만으로 official이라고 라벨링하지 않음
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: eclipse/opposition/close approach 등 의미 있는 천체 사건 후보를 생성 가능.
+- id: E10
+  name: Solar / Space Weather Context Engine
+  domain: SPACE
+  purpose: 태양활동·태양풍·지자기·열권/drag context를 수집·정규화하여 Space와 Orbit 양쪽에 설명 가능한 환경 신호를 제공한다.
+  inputs:
+  - official solar/geomagnetic observations
+  - forecast/context feeds
+  - time-aligned orbit context
+  outputs:
+  - SpaceWeatherState
+  - SolarEventSignal
+  - DragContext
+  deps:
+  - E01
+  - E03
+  - E04
+  storage:
+  - space_weather_state
+  - solar_event_signal
+  api:
+  - /v1/space-weather/current
+  - /v1/space-weather/history
+  tests:
+  - source timestamp preserved
+  - observed vs forecast separated
+  - stale handling
+  - drag context is context not direct orbit correction
+  hooks:
+  - E27 reentry
+  - E43 uncertainty
+  - E44 why-it-matters
+  ui:
+  - Space Weather Lab
+  - CONTROL launch context
+  - SPACE Sun panel
+  non_goals:
+  - 공식 우주기상 경보를 대체하지 않음
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: 태양/우주기상 context 변화가 Event/Orbit context Revision을 구동 가능.
+- id: E11
+  name: NEO / Small Body Tracking Engine
+  domain: SPACE
+  purpose: 공개/공식 small-body 궤도 및 근접 자료를 정규화하여 지구근접천체를 SPACE 모드에서 추적하고 Event Intelligence에 연결한다.
+  inputs:
+  - NEO catalog/ephemeris
+  - close approach data
+  - uncertainty/quality metadata
+  outputs:
+  - SmallBodyState
+  - CloseApproachCandidate
+  deps:
+  - E03
+  - E04
+  - E05
+  - E08
+  storage:
+  - small_body
+  - small_body_snapshot
+  api:
+  - /v1/space/neo
+  - /v1/space/neo/{id}
+  tests:
+  - source grade
+  - close approach timestamp
+  - uncertainty preserved
+  - no impact claim without source
+  hooks:
+  - E41 event
+  - E43 uncertainty
+  ui:
+  - Solar System optional layer
+  - Important NEO events
+  non_goals:
+  - 충돌확률/위험을 임의 생성하지 않음
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: NEO/small-body tracking의 close-approach/trajectory 변화가 Event 후보가 될 수 있음.
+- id: E12
+  name: Deep-Space Mission Tracking Engine
+  domain: SPACE
+  purpose: 심우주 탐사선과 주요 우주망원경의 공식 ephemeris/mission state를 SPACE 모드에 연결하여 태양계 객체와 임무의 관계를 추적한다.
+  inputs:
+  - official mission ephemeris/state
+  - mission registry
+  - media/evidence
+  outputs:
+  - DeepSpaceMissionState
+  - MissionEncounter
+  deps:
+  - E03
+  - E07
+  - E08
+  storage:
+  - deep_space_mission_state
+  api:
+  - /v1/space/missions
+  tests:
+  - mission status source
+  - trajectory provenance
+  - missing live telemetry -> model/official state label
+  hooks:
+  - E41 event
+  - E07 graph
+  ui:
+  - SPACE mission markers
+  - JWST/Hubble/planetary mission detail
+  non_goals:
+  - 비공개 telemetry를 추정 생성하지 않음
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: deep-space mission tracking 상태/encounter 변화가 Mission Event Revision을 구동.
+- id: E13
+  name: Mission Registry Engine
+  domain: CONTROL
+  purpose: 발사 임무를 Mission 단위로 등록하고 vehicle/payload/site/organization/target orbit/source를 표준화한다.
+  inputs:
+  - official mission notices
+  - launch provider feeds
+  - manual verified admin input
+  outputs:
+  - Mission
+  - MissionSourceLink
+  - PayloadManifest
+  deps:
+  - E01
+  - E02
+  - E03
+  - E07
+  storage:
+  - mission
+  - mission_payload
+  - launch_site
+  api:
+  - /v1/missions
+  - /v1/missions/{id}
+  tests:
+  - duplicate mission merge policy
+  - source precedence
+  - payload provisional status
+  - site coordinates
+  hooks:
+  - E14 launch window
+  - E18 timeline
+  - E19 handover
+  ui:
+  - CONTROL mission list
+  - Mission detail
+  non_goals:
+  - rumor를 confirmed mission으로 승격하지 않음
+  intelligence_connection:
+    mode: CONTEXT_ONLY
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: true
+    may_affect_uncertainty: false
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: Mission identity/metadata registry. 일정/상태 사건은 E14/E15가 생성.
+- id: E14
+  name: Launch Schedule / Window Engine
+  domain: CONTROL
+  purpose: 발사 예정시간과 window 변경을 Revision 가능한 상태로 관리하고 공식/예상/미정 상태를 구분한다.
+  inputs:
+  - mission registry
+  - official schedule revisions
+  - window constraints
+  outputs:
+  - LaunchWindow
+  - ScheduleRevision
+  deps:
+  - E13
+  - E04
+  storage:
+  - launch_window
+  - launch_schedule_revision
+  api:
+  - /v1/launches/upcoming
+  - /v1/missions/{id}/window
+  tests:
+  - window revision history
+  - TBD vs confirmed
+  - timezone conversion
+  - countdown only with resolved window
+  hooks:
+  - E15 countdown
+  - E42 revision
+  - E44 importance
+  ui:
+  - Next Launches
+  - Countdown
+  - Launch Calendar
+  non_goals:
+  - 불확실한 시간에 정밀 countdown 생성 금지
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: false
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: 공식 launch window/schedule 변경이 Mission Event Revision을 생성.
+- id: E15
+  name: Launch State Machine & Countdown Engine
+  domain: CONTROL
+  purpose: PLANNED→COUNTDOWN→LIFTOFF→ASCENT→SEPARATION→ORBIT_INSERTION→COMPLETE 등 mission operational state를 명시적으로
+    관리한다.
+  inputs:
+  - mission
+  - launch window
+  - official event updates
+  - telemetry events
+  outputs:
+  - MissionOperationalState
+  - CountdownState
+  - StateTransitionLog
+  deps:
+  - E13
+  - E14
+  storage:
+  - mission_state
+  - mission_transition
+  api:
+  - /v1/missions/{id}/state
+  tests:
+  - invalid transition reject
+  - countdown pause/hold
+  - scrub reset
+  - official event transition evidence
+  hooks:
+  - E18 timeline
+  - E38 orchestrator
+  - E41 mission events
+  ui:
+  - Adaptive Control Center
+  - status badge
+  non_goals:
+  - 모델 trajectory만으로 실제 liftoff를 확정하지 않음
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: false
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: COUNTDOWN/LIFTOFF/ASCENT 등 mission state transition이 Event를 생성/갱신.
+- id: E16
+  name: Telemetry Fusion Engine
+  domain: CONTROL
+  purpose: 실제 공개/허가 telemetry, 공식 event updates, 모델 궤적을 서로 다른 EvidenceClass로 병렬 처리하고 가장 신뢰 가능한 현재 mission state를
+    구성한다.
+  inputs:
+  - live telemetry optional
+  - official event feed
+  - modelled trajectory
+  - vehicle metadata
+  outputs:
+  - TelemetrySample
+  - TelemetryState
+  - TelemetrySourceGrade
+  deps:
+  - E03
+  - E04
+  - E13
+  storage:
+  - telemetry_sample
+  - telemetry_session
+  api:
+  - /v1/missions/{id}/telemetry
+  tests:
+  - live vs modelled separation
+  - out-of-order sample handling
+  - source fail fallback
+  - unit/schema validation
+  hooks:
+  - E17 trajectory
+  - E18 recorder
+  - E39 fusion
+  - E43 confidence
+  ui:
+  - LIVE TELEMETRY / MODELLED TRAJECTORY badge
+  - flight metrics
+  non_goals:
+  - 없는 telemetry를 합성해 LIVE로 표시하지 않음
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: 실제 telemetry/official feed 변화가 Mission Event와 confidence/uncertainty에 직접 입력.
+- id: E17
+  name: Launch Trajectory / Flight Dynamics Adapter Engine
+  domain: CONTROL
+  purpose: mission trajectory를 실제 telemetry 또는 명시된 모델/공식 trajectory source로 3D 공간에 제공하며 target orbit과 현재 ascent를
+    연결한다.
+  inputs:
+  - E16 telemetry
+  - official trajectory/ephemeris
+  - vehicle stage data
+  - launch site
+  - target orbit
+  outputs:
+  - FlightPath
+  - StageState
+  - TargetOrbitOverlay
+  deps:
+  - E05
+  - E16
+  storage:
+  - flight_path_artifact
+  - stage_state
+  api:
+  - /v1/missions/{id}/trajectory
+  tests:
+  - trajectory source label
+  - stage separation geometry
+  - target orbit frame
+  - model version/assumption
+  hooks:
+  - E34 visual scene
+  - E19 handover
+  - E41 event
+  ui:
+  - Launch follow camera
+  - target orbit overlay
+  non_goals:
+  - 실제 guidance/command 계산 엔진으로 사용하지 않음
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: derived/modelled trajectory 차이/flight-dynamics signal을 제공. telemetry와 EvidenceClass 분리 필수.
+- id: E18
+  name: Mission Timeline & Recorder Engine
+  domain: CONTROL
+  purpose: 발사 전부터 종료까지 공식 이벤트, telemetry, weather context, timeline milestones를 하나의 불변 Mission Record로 저장한다.
+  inputs:
+  - mission state
+  - telemetry
+  - timeline events
+  - weather/space weather context
+  - stream timestamp refs
+  outputs:
+  - MissionTimeline
+  - MissionRecord
+  - TimelineEvent
+  deps:
+  - E10
+  - E15
+  - E16
+  - E17
+  storage:
+  - mission_timeline_event
+  - mission_record_manifest
+  api:
+  - /v1/missions/{id}/timeline
+  tests:
+  - event order
+  - revisions preserved
+  - video timestamp optional
+  - record hash reproducibility
+  hooks:
+  - E19 replay
+  - E07 archive
+  - E42 revision
+  ui:
+  - Mission Timeline
+  - Event click -> time/camera jump
+  non_goals:
+  - 영상 하나를 Mission Record 전체로 간주하지 않음
+  intelligence_connection:
+    mode: EVIDENCE_PROVIDER
+    produces_intelligence_signal: true
+    may_seed_event_candidate: false
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: false
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: mission timeline/record를 불변 기록하여 Revision/Replay 근거 제공. 자체 판단 금지.
+- id: E19
+  name: Mission Replay & Mission-to-Orbit Handover Engine
+  domain: CONTROL
+  purpose: Mission Record를 시간축과 3D 상태로 재생하고 payload/stage가 orbital object로 전환될 때 canonical object와 lineage를 생성한다.
+  inputs:
+  - mission record
+  - timeline
+  - payload manifest
+  - post-launch catalog matches
+  outputs:
+  - ReplaySession
+  - HandoverRecord
+  - MissionObjectRelation
+  deps:
+  - E02
+  - E04
+  - E07
+  - E18
+  storage:
+  - mission_handover
+  - replay_manifest
+  api:
+  - /v1/missions/{id}/replay
+  - /v1/missions/{id}/objects
+  tests:
+  - replay deterministic
+  - handover provisional->confirmed
+  - stage/payload identity
+  - GO TO LAUNCH / WHERE IS IT NOW relation
+  hooks:
+  - E20 orbit
+  - E25 genealogy
+  - E41 event
+  ui:
+  - REPLAY MISSION
+  - handover to ORBIT
+  non_goals:
+  - 미확인 payload를 확정 catalog object로 자동 merge하지 않음
+  intelligence_connection:
+    mode: CONTEXT_ONLY
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: true
+    may_affect_uncertainty: false
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: Replay 및 Mission→Orbit 객체 handover의 lineage/context. Replay가 현재 Event를 생성하면 실패.
+- id: E20
+  name: Orbit Propagation & Frames Engine
+  domain: ORBIT
+  purpose: OMM/GP/OEM/OCM 등 궤도해를 등급에 맞는 전파모델로 계산하고 현재/미래 상태·데이터 나이·모델·프레임을 함께 반환한다.
+  inputs:
+  - OrbitSolution
+  - target times
+  - model selector
+  - EOP/time data
+  outputs:
+  - StateVectorSeries
+  - GeodeticSeries
+  - PropagationProvenance
+  deps:
+  - E02
+  - E03
+  - E04
+  - E05
+  storage:
+  - orbit_solution
+  - propagation_artifact/cache
+  api:
+  - /v1/objects/{id}/ephemeris
+  tests:
+  - known epoch golden
+  - deterministic hash
+  - stale flag
+  - invalid elements -> unavailable
+  - frame conversion
+  hooks:
+  - E21 conjunction
+  - E24 environment
+  - E34 3D
+  ui:
+  - Object orbit
+  - Data age
+  non_goals:
+  - 브라우저 계산과 backend 결과가 버전 불일치한 이중 truth가 되지 않음
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: orbit state/residual/change signal을 제공. 단순 periodic update는 Signal Gate 전 Event 금지.
+- id: E21
+  name: Conjunction Screening & Precise TCA Engine
+  domain: ORBIT
+  purpose: 대규모 객체 쌍을 보수적으로 coarse screening한 뒤 후보에 대해 최근접 시각/거리/상대속도를 정밀 계산한다.
+  inputs:
+  - propagable object set
+  - screening window
+  - versioned config
+  outputs:
+  - CandidatePair
+  - ConjunctionEventCandidate
+  - TCAResult
+  deps:
+  - E20
+  storage:
+  - conjunction_event
+  - conjunction_snapshot
+  api:
+  - /v1/conjunctions
+  tests:
+  - injected close pair recall
+  - known TCA tolerance
+  - boundary minimum
+  - multi-minima
+  - verification corpus metrics
+  hooks:
+  - E22 Pc
+  - E23 risk graph
+  - E41 event
+  ui:
+  - Conjunction event marker
+  - Event Focus
+  non_goals:
+  - 후보 수가 적다는 이유로 성공 판정 금지
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: screening/TCA 결과는 conjunction Event 후보/Revision의 직접 입력.
+- id: E22
+  name: Collision Probability & Risk Provenance Engine
+  domain: ORBIT
+  purpose: 공분산 등 필요한 조건이 충족될 때만 Pc를 계산하며 MaxProbability/miss distance/기타 metric과 절대 혼동하지 않고 계보를 보존한다.
+  inputs:
+  - relative state at TCA
+  - covariances
+  - HBR
+  - Pc method config
+  - source risk metrics
+  outputs:
+  - RiskMetric
+  - PcResult
+  - QualityFlags
+  - RiskProvenance
+  deps:
+  - E03
+  - E21
+  storage:
+  - risk_metric
+  - risk_provenance
+  api:
+  - /v1/conjunctions/{id}/risk
+  tests:
+  - missing covariance -> null not zero
+  - Pc bounds
+  - method mismatch warning
+  - spec fixture path
+  - dilution/covariance validity
+  hooks:
+  - E23 risk graph
+  - E43 uncertainty
+  - E44 importance
+  ui:
+  - SCREENING_ONLY / VALIDATED_RISK
+  - metric type/method
+  non_goals:
+  - MaxProbability를 Pc로 이름 변경 금지
+  - TLE-only를 정밀 충돌위험으로 승격 금지
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: Pc/MaxP/risk provenance를 metric별 Signal로 제공. covariance 없는 Pc 생성 금지.
+- id: E23
+  name: Risk Graph Engine
+  domain: ORBIT
+  purpose: 객체 간 metric-specific risk edge를 시간지평별로 저장해 향후 Benefit/PROTECT/Revision을 재현 가능한 관계망으로 만든다.
+  inputs:
+  - conjunction metrics
+  - environment features
+  - metric configuration
+  outputs:
+  - RiskEdge
+  - RiskGraphSnapshot
+  - ObjectRiskAggregate optional
+  deps:
+  - E22
+  - E06
+  storage:
+  - risk_edge
+  - risk_graph_manifest
+  api:
+  - /v1/risk-graph
+  - /v1/objects/{id}/risk
+  tests:
+  - edge deterministic
+  - metric split
+  - aggregate config version required
+  - graph snapshot hash
+  hooks:
+  - E31 benefit
+  - E32 affected
+  - E33 protect
+  - E41 events
+  ui:
+  - Research graph
+  - Object risk panel
+  non_goals:
+  - UI용 composite score 때문에 원 metric 삭제 금지
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: metric-specific risk edge/graph delta가 Event 및 scenario 판단에 직접 입력.
+- id: E24
+  name: Orbital Environment / Congestion Engine
+  domain: ORBIT
+  purpose: LEO/MEO/GEO 및 세부 shell별 객체·밀도·활동·conjunction/re-entry context를 원지표에서 계산하여 Orbital Stack Intelligence의
+    기초를 만든다.
+  inputs:
+  - object snapshot
+  - orbit states
+  - conjunction feed
+  - reentry states
+  outputs:
+  - ShellMetric
+  - OrbitalWeatherSnapshot
+  - CoverageMetric
+  deps:
+  - E20
+  - E21
+  - E27
+  storage:
+  - environment_metric
+  - orbital_weather_snapshot
+  api:
+  - /v1/orbital-weather/current
+  - /v1/orbit/shells
+  tests:
+  - shell boundaries
+  - coverage ratio
+  - source gap partial
+  - threshold version
+  hooks:
+  - E36 orbital shell
+  - E44 importance
+  ui:
+  - LEO/MEO/GEO Shell panel
+  - density brightness
+  non_goals:
+  - 단순 object count를 위험이라고 부르지 않음
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: shell congestion/activity/re-entry context의 유의 변화가 환경 Event 후보가 될 수 있음.
+- id: E25
+  name: Debris Genealogy / Origin Engine
+  domain: ORBIT
+  purpose: launch/parent rocket/fragmentation event/object family를 source 기반 관계로 연결하여 WHERE DID IT COME FROM?을 제공한다.
+  inputs:
+  - object metadata
+  - mission handover
+  - fragmentation event
+  - launch metadata
+  outputs:
+  - GenealogyGraph
+  - OriginProfile
+  - FamilyCandidate
+  deps:
+  - E07
+  - E19
+  storage:
+  - object_relation
+  - genealogy_group
+  api:
+  - /v1/genealogy/{id}
+  tests:
+  - known family links
+  - unknown origin no inference
+  - chronological timeline
+  - multinational separation
+  hooks:
+  - E07 archive
+  - E41 event
+  ui:
+  - Object History
+  - Origin Mission
+  non_goals:
+  - owner/origin/legal responsibility 혼합 금지
+  intelligence_connection:
+    mode: CONTEXT_ONLY
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: debris origin/genealogy context. 새로운 proven fragmentation relation은 Evidence가 될 수 있으나 자동 위험 Event
+      생성 금지.
+- id: E26
+  name: Fragmentation Scenario Engine
+  domain: ORBIT
+  purpose: 관측된/가정된 충돌·파편화 조건을 versioned breakup model과 Monte Carlo로 연구 시뮬레이션하여 downstream exposure와 indirect benefit을
+    산출한다.
+  inputs:
+  - parent states
+  - mass/range
+  - relative state
+  - breakup model config
+  - seed policy
+  outputs:
+  - FragmentCohort
+  - FragmentationScenarioResult
+  - ExposureDelta
+  deps:
+  - E20
+  - E23
+  storage:
+  - fragmentation_run
+  - research object store/parquet
+  api:
+  - /v1/scenarios/fragmentation
+  tests:
+  - fixed seed reproducibility
+  - assumption exposure
+  - remove path indirect delta
+  - model validation state
+  hooks:
+  - E31 benefit
+  - E32 affected
+  - E41 event
+  ui:
+  - WHAT IF THEY COLLIDE?
+  - SIMULATION_ONLY badge
+  non_goals:
+  - 가상 fragment를 실제 catalog object로 등록하지 않음
+  intelligence_connection:
+    mode: INTELLIGENCE_TOOL
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: true
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: 명시적 SIMULATION_ONLY fragmentation scenario. Intelligence/사용자 요청으로 실행; 관측 사실로 승격 금지.
+- id: E27
+  name: Re-entry Intelligence Engine
+  domain: ORBIT
+  purpose: decaying/TIP/공식 추정/모델 context를 품질 등급별로 통합하고 re-entry window 변화와 Revision을 보존한다.
+  inputs:
+  - TIP/decay sources
+  - orbit decay trend
+  - space weather context
+  outputs:
+  - ReentryPrediction
+  - ReentryWatch
+  - PredictionRevision
+  deps:
+  - E10
+  - E20
+  storage:
+  - reentry_prediction
+  - reentry_revision
+  api:
+  - /v1/reentry
+  - /v1/reentry/{id}
+  tests:
+  - TIP parse
+  - no TIP -> no fake exact time
+  - version history
+  - grade visible
+  hooks:
+  - E41 event
+  - E42 revision
+  - E43 uncertainty
+  ui:
+  - Re-entry Watch
+  - window visualization
+  non_goals:
+  - 단일 낙하지점 확정 금지
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: re-entry watch/prediction revision이 Event/Revision 직접 입력. grade/window 보존.
+- id: E28
+  name: Photometry / Rotation Intelligence Engine
+  domain: ORBIT
+  purpose: 광도 관측을 QA하고 회전주기 후보/alias/불확실성을 산출하되 형상·자세를 과도하게 단정하지 않는다.
+  inputs:
+  - photometry series
+  - station metadata
+  - uncertainty
+  outputs:
+  - PeriodCandidate
+  - RotationEstimate
+  - PhotometryQuality
+  deps:
+  - E03
+  storage:
+  - photometry_series
+  - rotation_estimate
+  api:
+  - /v1/objects/{id}/rotation
+  tests:
+  - synthetic sinusoid
+  - alias ambiguous
+  - too few points
+  - uncertainty downgrade
+  hooks:
+  - E30 observation
+  - E43 uncertainty
+  ui:
+  - Rotation tab
+  - estimated label
+  non_goals:
+  - highest peak 하나를 확정 회전주기로 단정하지 않음
+  intelligence_connection:
+    mode: DIRECT_SIGNAL
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: true
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: photometry/rotation estimate 및 anomaly signal. estimated label/uncertainty 필수.
+- id: E29
+  name: Observation Planning Engine
+  domain: ORBIT
+  purpose: 위험 관련성·관측가능성·정보이득·데이터 희소성을 결합해 어떤 객체를 언제 어떤 관측소에서 관측할지 후보 요청을 생성한다.
+  inputs:
+  - object uncertainty
+  - station capabilities
+  - visibility geometry
+  - noise model
+  - optional Earthus weather
+  outputs:
+  - ObservationRequest
+  - VisibilityWindow
+  - ExpectedInformationGain
+  deps:
+  - E20
+  - E43
+  storage:
+  - observation_station
+  - observation_request
+  api:
+  - /v1/observations/requests
+  tests:
+  - known pass
+  - sun/eclipse flag
+  - mount limit
+  - info gain ordering
+  - no visibility -> no request
+  hooks:
+  - E38 orchestrator feedback loop
+  - E30 QA
+  ui:
+  - Observation Desk
+  - Why this request
+  non_goals:
+  - 긴급성을 임의 생성하지 않음
+  intelligence_connection:
+    mode: INTELLIGENCE_TOOL
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: true
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: Evidence gap/low-confidence Event에 대해 Intelligence가 관측계획 계산을 요청.
+- id: E30
+  name: Citizen Observation QA & Contribution Engine
+  domain: ORBIT
+  purpose: 시민/대학/천문대 관측을 시간·장비·잔차·중복·라이선스 기준으로 검증하고 ACCEPTED 데이터만 후속 궤도결정 후보로 전달한다.
+  inputs:
+  - observation submission
+  - station/equipment
+  - raw artifact
+  - request context
+  outputs:
+  - QAResult
+  - ValidatedMeasurement
+  - ContributionRecord
+  deps:
+  - E01
+  - E03
+  - E29
+  storage:
+  - observation_submission
+  - observation_qa
+  - contribution
+  api:
+  - /v1/observations/submissions
+  tests:
+  - duplicate dedupe
+  - bad timestamp quarantine
+  - outlier reject
+  - accepted-only hook
+  - license missing
+  hooks:
+  - E38 re-orchestration
+  - E42 revision
+  - E43 confidence
+  ui:
+  - Contribution history
+  - QA status
+  non_goals:
+  - 실제 before/after 근거 없이 개선 퍼센트 생성 금지
+  intelligence_connection:
+    mode: EVIDENCE_PROVIDER
+    produces_intelligence_signal: true
+    may_seed_event_candidate: false
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: QA ACCEPTED 관측만 새 Evidence로 재계산을 촉발. 제출 자체는 Event가 아님.
+- id: E31
+  name: Intervention Benefit / Counterfactual Engine
+  domain: ORBIT
+  purpose: 고정 baseline과 REMOVE/NUDGE/LOWER 등 개입 후 risk graph를 동일 기준으로 비교하여 비대상 수혜 객체별 위험감소량을 귀속한다.
+  inputs:
+  - baseline risk graph
+  - scenario definition
+  - metric config
+  - horizon
+  outputs:
+  - ScenarioRun
+  - BenefitResult
+  - EnvironmentBenefit
+  - NewRiskDelta
+  deps:
+  - E23
+  - E26
+  storage:
+  - intervention_scenario
+  - scenario_run
+  - benefit_result
+  api:
+  - /v1/scenarios
+  - /v1/scenarios/{id}/run
+  - /v1/scenarios/{id}/benefits
+  tests:
+  - direct remove exact delta
+  - metric channels separated
+  - same input repeat hash
+  - no data no fake beneficiary
+  - new risk surfaced
+  hooks:
+  - E32 affected
+  - E33 protect
+  - E44 attribution/decision
+  ui:
+  - SIMULATE REMOVE
+  - Scenario Lab
+  - Benefit visualization
+  non_goals:
+  - remove animation만 구현하고 계산 결과 없는 상태를 완료로 인정하지 않음
+  intelligence_connection:
+    mode: INTELLIGENCE_TOOL
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: true
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: Baseline/Counterfactual Benefit 계산 도구. 결과는 ATTRIBUTION_RESULT/SIMULATION이며 observed Event가 아님.
+- id: E32
+  name: Affected Subgraph Engine
+  domain: ORBIT
+  purpose: 개입으로 바뀔 가능성이 있는 관계만 보수적으로 정밀 재계산하여 대규모 counterfactual 계산 비용을 줄이되 full recompute 등가성으로 정확성을 검증한다.
+  inputs:
+  - baseline graph
+  - scenario path
+  - conservative filter config
+  outputs:
+  - AffectedObjectSet
+  - AffectedEdgeSet
+  - ReuseManifest
+  deps:
+  - E23
+  - E31
+  storage:
+  - scenario_run artifacts
+  - affected_manifest
+  api:
+  - /internal/scenarios/{id}/affected
+  tests:
+  - injected influence included
+  - full-vs-selective equivalence
+  - new OCM path candidate
+  - rollback on mismatch
+  hooks:
+  - E31 benefit
+  - E33 protect
+  - E44 decision
+  ui:
+  - Research performance detail only
+  non_goals:
+  - 속도 향상을 위해 threshold 임의 축소 금지
+  intelligence_connection:
+    mode: COMPUTE_HELPER
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: false
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: E31/E33의 선택적 재계산 최적화. Intelligence에 직접 결과 승격 금지; equivalence 검증 필수.
+- id: E33
+  name: PROTECT Reverse Query & Candidate OCM Comparison Engine
+  domain: ORBIT
+  purpose: 보호대상 Y를 먼저 지정해 개입 후보별 Benefit(k→Y), 신규 위험, confidence를 비교하고 nominal/candidate OCM 차이를 같은 외부 객체집합에서 평가한다.
+  inputs:
+  - protected object
+  - candidate policy
+  - scenario kinds
+  - candidate OCMs optional
+  outputs:
+  - CandidateInterventionRank
+  - EdgeDelta
+  - CandidateSummary
+  - BenefitMatrixSlice
+  deps:
+  - E31
+  - E32
+  storage:
+  - scenario/benefit reuse
+  - candidate_compare_manifest
+  api:
+  - /v1/protect/{id}/candidates
+  - /v1/operations/fleets/{id}/maneuver-candidates
+  tests:
+  - known ranking
+  - inactive protected object research mode
+  - new risk penalty
+  - same-designator exclusion
+  - candidate provenance
+  hooks:
+  - E44 decision comparison
+  - P08 Operations
+  ui:
+  - PROTECT THIS OBJECT
+  - Candidate Comparison
+  non_goals:
+  - 단순 가장 위험한 debris 정렬로 대체 금지
+  - 자동 기동 명령 금지
+  intelligence_connection:
+    mode: INTELLIGENCE_TOOL
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: true
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: PROTECT/OCM decision comparison 도구. 자동 명령/공식 추천으로 승격 금지.
+- id: E34
+  name: Multi-Scale Space Scene Engine
+  domain: VISUAL
+  purpose: Earth/Orbital/Cislunar/Solar System scale을 사용자에게는 연속 우주처럼 보이게 하면서 내부적으로 좌표정밀도·LOD·렌더링 전략을 분리한다.
+  inputs:
+  - digital states
+  - scene mode
+  - camera scale
+  - visual data contracts
+  outputs:
+  - SceneState
+  - RenderableLayerSet
+  deps:
+  - E05
+  - E06
+  - E08
+  - E20
+  storage:
+  - scene config/version
+  api:
+  - frontend scene state
+  tests:
+  - scale transition continuity
+  - floating precision budget
+  - layer source labels
+  - device profile fallback
+  hooks:
+  - E35 camera
+  - E36 shell
+  - E37 semantics
+  ui:
+  - Earth→LEO→MEO→GEO→Moon→Solar System
+  non_goals:
+  - 모든 scale을 하나의 naïve 물리 scale로 강제해 사용성/정밀도 훼손 금지
+  intelligence_connection:
+    mode: CONSUMER_ONLY
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: false
+    may_affect_uncertainty: false
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: true
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: 멀티스케일 3D 표현. Intelligence/과학 결과를 변경할 권한 없음.
+- id: E35
+  name: Semantic Zoom / Camera Focus Engine
+  domain: VISUAL
+  purpose: 카메라 거리와 사용자의 선택 의도에 따라 Universe/Planet/Shell/Object/Event Focus를 전환하고 정보 의미와 UI 밀도를 조정한다.
+  inputs:
+  - camera pose
+  - focus target
+  - mode SPACE/CONTROL/ORBIT
+  - time context
+  outputs:
+  - FocusState
+  - CameraTransition
+  - InformationLOD
+  deps:
+  - E34
+  storage:
+  - focus presets
+  - camera bookmarks optional
+  api:
+  - frontend state machine
+  tests:
+  - focus persistence across modes
+  - back navigation
+  - object->event->object
+  - NOW reset preserves expected focus
+  hooks:
+  - P03 workspace
+  - L03 tool control
+  ui:
+  - Persistent Universe State
+  - smooth focus transitions
+  non_goals:
+  - 페이지 전환 때 우주 상태를 무조건 초기화하지 않음
+  intelligence_connection:
+    mode: CONSUMER_ONLY
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: false
+    may_affect_uncertainty: false
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: true
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: Semantic zoom/camera focus. 카메라/LOD가 계산 subset을 변경하면 실패.
+- id: E36
+  name: Orbital Shell & LOD Engine
+  domain: VISUAL
+  purpose: LEO/MEO/GEO를 반투명 Shell/Band와 데이터 밀도/이벤트 overlay로 표현하고 줌 수준에 따라 cluster→object→orbit를 점진 노출한다.
+  inputs:
+  - shell metrics
+  - object states
+  - camera LOD
+  - event importance
+  outputs:
+  - ShellRenderModel
+  - ObjectRenderSubset
+  - OrbitLineSubset
+  deps:
+  - E24
+  - E34
+  storage:
+  - LOD config/version
+  api:
+  - /v1/orbit/render-set optional
+  tests:
+  - global view object cap
+  - shell selection focus
+  - viewport query
+  - render subset != science subset
+  hooks:
+  - E44 importance
+  - E35 camera
+  ui:
+  - LEO/MEO/GEO Orbital Stack
+  non_goals:
+  - 렌더링 성능 때문에 과학 계산 대상까지 임의 누락 금지
+  intelligence_connection:
+    mode: CONSUMER_ONLY
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: false
+    may_affect_uncertainty: false
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: true
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: LEO/MEO/GEO shell/LOD 표현. shell 시각값이 risk/confidence를 생성하면 실패.
+- id: E37
+  name: Visual Semantics Engine
+  domain: VISUAL
+  purpose: OBSERVED/DERIVED/MODEL/AI_SIGNAL/UNCERTAINTY/SIMULATION/COUNTERFACTUAL/VALIDATED 상태를 일관된 시각 문법으로 표시한다.
+  inputs:
+  - evidence class
+  - validation state
+  - confidence
+  - uncertainty
+  - scene mode
+  outputs:
+  - VisualStyleToken
+  - LegendModel
+  - DisclosureLabel
+  deps:
+  - E03
+  - E40
+  - E43
+  storage:
+  - visual_semantics_version
+  api:
+  - design tokens/config
+  tests:
+  - all evidence classes mapped
+  - screening vs validated distinct
+  - uncertainty visible
+  - contrast/accessibility
+  hooks:
+  - all UI
+  ui:
+  - legend
+  - badges
+  - ghost path
+  - uncertainty envelope
+  non_goals:
+  - 색 하나로 density/risk/importance를 모두 표현하지 않음
+  intelligence_connection:
+    mode: CONSUMER_ONLY
+    produces_intelligence_signal: false
+    may_seed_event_candidate: false
+    may_drive_event_revision: false
+    may_affect_confidence: false
+    may_affect_uncertainty: false
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: true
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: Reality/Model/Simulation/Uncertainty 시각 문법을 소비. presentation only.
+- id: E38
+  name: Aetherus Intelligence Orchestrator
+  domain: INTELLIGENCE
+  purpose: 새 데이터/상태 변화/사용자 시나리오에 따라 어떤 엔진을 어떤 순서로 실행할지 결정하고 결과를 Event/Revision/Scenario 파이프라인으로 연결하는 상위 총괄 런타임이다.
+  inputs:
+  - ingestion events
+  - engine completion events
+  - user commands
+  - schedule triggers
+  outputs:
+  - OrchestrationRun
+  - EngineTaskGraph
+  - IntelligenceUpdateRequest
+  deps:
+  - E01
+  - E06
+  storage:
+  - orchestration_run
+  - task_lineage
+  api:
+  - /internal/intelligence/runs
+  tests:
+  - idempotent trigger
+  - dependency ordering
+  - partial failure recovery
+  - no circular task graph
+  - replay from event log
+  hooks:
+  - E39-E44
+  - job queue
+  ui:
+  - 직접 노출하지 않음; status는 admin/ops
+  non_goals:
+  - 과학결과를 자체 생성하지 않음
+  - LLM이 orchestration source of truth가 되지 않음
+  intelligence_connection:
+    mode: INTELLIGENCE_CORE
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: false
+    may_affect_uncertainty: false
+    may_be_invoked_by_intelligence: true
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: 실행 그래프 총괄. 과학값 자체 생성 금지.
+- id: E39
+  name: Evidence Fusion & Cross Validation Intelligence
+  domain: INTELLIGENCE
+  purpose: 다중 source와 engine result를 시간·품질·출처등급·독립성·일치도 관점에서 비교하고 서로 충돌하는 근거를 숨기지 않은 Evidence Bundle을 만든다.
+  inputs:
+  - EvidenceRecords
+  - engine results
+  - source grades
+  - time alignment
+  outputs:
+  - FusedEvidenceBundle
+  - AgreementMetrics
+  - ConflictFlags
+  deps:
+  - E03
+  - E38
+  storage:
+  - evidence_fusion_run
+  - evidence_conflict
+  api:
+  - /v1/intelligence/events/{id}/evidence
+  tests:
+  - independent source weighting
+  - stale disagreement
+  - conflicting official sources preserved
+  - missing evidence remains missing
+  hooks:
+  - E43 confidence
+  - E41 event
+  - L04 context
+  ui:
+  - Evidence drawer
+  - source agreement explanation
+  non_goals:
+  - 다수결로 사실 확정하지 않음
+  intelligence_connection:
+    mode: INTELLIGENCE_CORE
+    produces_intelligence_signal: true
+    may_seed_event_candidate: false
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: Evidence fusion/cross-validation. source conflict/coverage를 구조화.
+- id: E40
+  name: Signal Classification Intelligence
+  domain: INTELLIGENCE
+  purpose: 관측값·파생계산·모델신호·AI신호·공식예보·시뮬레이션·Counterfactual 등을 강제 분류해 정보 종류가 섞이지 않게 한다.
+  inputs:
+  - engine outputs
+  - AI outputs
+  - official feeds
+  - scenario outputs
+  outputs:
+  - ClassifiedSignal
+  - EvidenceClass
+  - ValidationState
+  deps:
+  - E03
+  - E38
+  storage:
+  - signal
+  - signal_classification
+  api:
+  - /v1/intelligence/signals
+  tests:
+  - class required
+  - AI cannot overwrite observed
+  - counterfactual cannot become official
+  - unknown class quarantine
+  hooks:
+  - E37 visuals
+  - E41 events
+  - L06 claims
+  ui:
+  - Evidence Class badge
+  non_goals:
+  - AI를 Intelligence 자체로 취급하지 않음
+  intelligence_connection:
+    mode: INTELLIGENCE_CORE
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: Signal/EvidenceClass 분류와 promotion gate.
+- id: E41
+  name: Event Intelligence Engine
+  domain: INTELLIGENCE
+  purpose: 수많은 상태/신호 중 사용자가 이해해야 할 의미 있는 사건을 식별하고 기존 Event와 매칭하여 event lifecycle을 관리한다.
+  inputs:
+  - classified signals
+  - digital state changes
+  - domain event candidates
+  - fusion bundle
+  outputs:
+  - IntelligenceEvent
+  - EventCandidateDecision
+  - EventLinks
+  deps:
+  - E39
+  - E40
+  storage:
+  - intelligence_event
+  - event_object_link
+  - event_signal_link
+  api:
+  - /v1/intelligence/events
+  - /v1/intelligence/events/{id}
+  tests:
+  - same event correlation
+  - duplicate suppression
+  - new event boundary
+  - domain-specific event types
+  - insufficient data event allowed
+  hooks:
+  - E42 revision
+  - E44 importance
+  - P04 alerts
+  ui:
+  - SPACE NOW
+  - Mission events
+  - Orbital events
+  non_goals:
+  - 모든 update를 새 Event로 생성하지 않음
+  intelligence_connection:
+    mode: INTELLIGENCE_CORE
+    produces_intelligence_signal: true
+    may_seed_event_candidate: true
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: Event correlation/new-vs-existing 결정.
+- id: E42
+  name: Revision Intelligence Engine
+  domain: INTELLIGENCE
+  purpose: 동일 Event에 새 근거/계산이 들어올 때 무엇이 바뀌었는지, 왜 바뀌었는지, 어떤 결과가 폐기/유지되었는지를 Revision으로 기록한다.
+  inputs:
+  - current event
+  - new signals
+  - previous revision
+  - engine diff
+  outputs:
+  - EventRevision
+  - ChangeSet
+  - RevisionExplanationData
+  deps:
+  - E41
+  - E06
+  storage:
+  - event_revision
+  - revision_delta
+  api:
+  - /v1/intelligence/events/{id}/revisions
+  tests:
+  - append-only revisions
+  - change cause linked
+  - no-change revision suppression policy
+  - rollback/correction lineage
+  hooks:
+  - E43 confidence
+  - E44 importance
+  - L05 explanation
+  ui:
+  - WHAT CHANGED?
+  - Revision timeline
+  non_goals:
+  - 과거 revision destructive overwrite 금지
+  intelligence_connection:
+    mode: INTELLIGENCE_CORE
+    produces_intelligence_signal: true
+    may_seed_event_candidate: false
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: Revision delta/history 관리. 과거 revision 삭제 금지.
+- id: E43
+  name: Confidence & Uncertainty Intelligence Engine
+  domain: INTELLIGENCE
+  purpose: 근거를 얼마나 믿을 수 있는지(Confidence)와 결과 범위가 얼마나 넓은지(Uncertainty)를 분리 계산하고 이유/범위/방법 버전을 함께 저장한다.
+  inputs:
+  - fused evidence
+  - source freshness
+  - coverage
+  - agreement
+  - covariance/model uncertainty
+  - validation state
+  outputs:
+  - ConfidenceAssessment
+  - UncertaintyAssessment
+  - ReasonFactors
+  deps:
+  - E39
+  - E42
+  storage:
+  - confidence_assessment
+  - uncertainty_assessment
+  api:
+  - /v1/intelligence/events/{id}/confidence
+  tests:
+  - confidence != uncertainty
+  - missing covariance raises uncertainty/limits claim
+  - factor traceability
+  - versioned weighting
+  hooks:
+  - E29 observation
+  - E44 importance
+  - L06 validator
+  ui:
+  - HOW SURE ARE WE?
+  - confidence reasons
+  - uncertainty envelope
+  non_goals:
+  - 근거 없는 0-100 신뢰점수 장식 금지
+  intelligence_connection:
+    mode: INTELLIGENCE_CORE
+    produces_intelligence_signal: true
+    may_seed_event_candidate: false
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: false
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: Confidence와 Uncertainty를 분리 산출/표현.
+- id: E44
+  name: Importance / Why-It-Matters / Attribution & Decision Intelligence Engine
+  domain: INTELLIGENCE
+  purpose: Event의 절대값·변화율·신뢰도·최근성·관련성·영향을 종합해 지금 볼 가치와 이유를 구조화하고, Scenario 결과의 Attribution/Decision Comparison을
+    생성한다.
+  inputs:
+  - event revision
+  - confidence/uncertainty
+  - risk/mission/space context
+  - scenario/benefit results
+  - user relevance optional
+  outputs:
+  - ImportanceAssessment
+  - WhyItMattersPacket
+  - AttributionResult
+  - DecisionComparison
+  deps:
+  - E31
+  - E33
+  - E43
+  storage:
+  - importance_assessment
+  - attribution_result
+  - decision_comparison
+  api:
+  - /v1/intelligence/important-now
+  - /v1/intelligence/events/{id}/why
+  - /v1/intelligence/scenarios/{id}/attribution
+  tests:
+  - importance reasons traceable
+  - change rate can outrank static magnitude under policy
+  - decision shows new risk
+  - scenario assumptions surfaced
+  - no single-option recommendation without policy
+  hooks:
+  - L04-L08
+  - P04 alerts
+  - all main UI
+  ui:
+  - WHY IT MATTERS
+  - WHAT IF?
+  - COMPARE
+  - SPACE NOW
+  non_goals:
+  - 법적/운영상 자동 명령·공식 제거추천·확정 인과 증명으로 승격하지 않음
+  intelligence_connection:
+    mode: INTELLIGENCE_CORE
+    produces_intelligence_signal: true
+    may_seed_event_candidate: false
+    may_drive_event_revision: true
+    may_affect_confidence: true
+    may_affect_uncertainty: true
+    may_be_invoked_by_intelligence: true
+    consumes_intelligence_for_presentation: false
+    requires_signal_gate: false
+    may_change_scientific_result_from_subscription_or_ui: false
+    boundary_note: Importance/Why-it-matters/Attribution/Decision을 구조화. command/법적 결론 금지.
+llm_modules:
+- id: L01
+  name: LLM Gateway
+  purpose: OpenAI/Claude/Gemini/enterprise/local 등 모델 공급자를 교체 가능하게 추상화하고 Aetherus 지식의 source of truth를 모델 자체에 두지
+    않는다.
+- id: L02
+  name: Model Router
+  purpose: 질문 난이도·비용·지연·구독 등급에 따라 template/fast/standard/reasoning 경로를 선택한다.
+- id: L03
+  name: Tool Orchestrator
+  purpose: LLM이 Aetherus API/Intelligence tool을 호출하도록 하되 과학 계산은 엔진에 위임하고 tool permission을 capability로 제어한다.
+- id: L04
+  name: Context Composer
+  purpose: 질문과 현재 Universe State에 필요한 Event/Revision/Evidence만 최소 컨텍스트로 조립한다.
+- id: L05
+  name: Explanation Agent
+  purpose: 같은 Intelligence Packet을 일반/애호가/연구자/운영자 수준별 설명으로 변환한다.
+- id: L06
+  name: Claim & Citation Validator
+  purpose: LLM 문장의 핵심 주장마다 Evidence/ValidationState/AllowedClaim을 검사하고 근거 없는 위험·수치·확정 표현을 제거한다.
+- id: L07
+  name: Personal / Workspace Context
+  purpose: Follow, Control Room, Collection, alert preference, role/capability를 질의 문맥에 제한적으로 연결한다.
+- id: L08
+  name: Briefing & Report Generator
+  purpose: Daily Space Brief, Mission Brief, Event Report, Research/Scenario Report를 구조화된 Intelligence만으로 생성한다.
+platform_services:
+- id: S01
+  name: API Gateway / Auth / Request Envelope
+  purpose: request_id/generated_at/data_status/provenance/warnings 공통 envelope, auth, rate limit.
+- id: S02
+  name: Subscription Capability Service
+  purpose: Free/Plus/Pro/Control/Operations/Removal의 capability 기반 권한; 코드 전역 plan 조건문 금지.
+- id: S03
+  name: Workspace / Widget / Control Room Service
+  purpose: Personal/Team Control Room, adaptive widget layout, workspace templates.
+- id: S04
+  name: Follow / Alert Service
+  purpose: Object/Mission/Event/Shell follow와 Revision/Confidence/Window 변화 기반 Intelligence alert.
+- id: S05
+  name: Search / Discovery Service
+  purpose: object/mission/event/archive 통합 검색, canonical ID/alias 지원.
+- id: S06
+  name: Media / Live Stream Resolver
+  purpose: 공식 영상/이미지/라이선스/stream embed metadata를 과학 상태와 분리 관리.
+- id: S07
+  name: Research Dataset / Benchmark Service
+  purpose: versioned dataset, Parquet/CSV/JSON, hash/license manifest, benchmark reproducibility.
+- id: S08
+  name: Operations / Tenant / Audit Service
+  purpose: private fleet, tenant isolation, audit, advisory-only operations.
+- id: S09
+  name: Job Queue / Scheduler
+  purpose: ingest/propagate/screen/scenario/replay/report async jobs, idempotency, retries.
+- id: S10
+  name: Observability / Evidence Manifest
+  purpose: metrics/logs/traces + phase evidence JSON. UI가 보이는 것과 제품 DONE을 분리.
+- id: S11
+  name: Security / License / Data Governance
+  purpose: secret manager, provider terms, private ephemeris, retention, license access policy.
+- id: S12
+  name: Deployment / Backup / DR
+  purpose: dev compose, staging, prod orchestration, backup restore, incident runbook.

@@ -1,0 +1,83 @@
+{
+  "$defs": {
+    "StateKind": {
+      "enum": [
+        "ARCHIVED_STATE",
+        "RECONSTRUCTED_STATE",
+        "NOW",
+        "PREDICTED_MODEL",
+        "SIMULATION",
+        "COUNTERFACTUAL"
+      ],
+      "title": "StateKind",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "mode": {
+      "$ref": "#/$defs/StateKind"
+    },
+    "cursor_utc": {
+      "format": "date-time",
+      "title": "Cursor Utc",
+      "type": "string"
+    },
+    "resolved_from_timezone": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Resolved From Timezone"
+    },
+    "source_time_scale": {
+      "default": "UTC",
+      "title": "Source Time Scale",
+      "type": "string"
+    },
+    "archived_snapshot_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Archived Snapshot Id"
+    },
+    "reconstructed_from_snapshot_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Reconstructed From Snapshot Ids",
+      "type": "array"
+    },
+    "model_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Model Id"
+    }
+  },
+  "required": [
+    "mode",
+    "cursor_utc"
+  ],
+  "title": "CanonicalTimeContext",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aetherus.dev/schemas/CanonicalTimeContext.schema.json"
+}

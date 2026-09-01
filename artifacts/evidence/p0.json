@@ -1,0 +1,102 @@
+{
+  "phase": "p0",
+  "orbital_phase": "ORB-P0",
+  "gate": "PASS",
+  "failed_checks": [],
+  "generated_at": "2026-09-01T11:10:03.075639+00:00",
+  "repository": "git@github.com:icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "ac8a6688b1b0f417e1b79edb31ce3091dfadd26f",
+  "checks": {
+    "infrastructure_healthy": true,
+    "object_store_roundtrip": true,
+    "redis_write_read_expiry": true,
+    "migration_rerun_safe": true,
+    "health_reports_dependencies": true,
+    "tests_pass": true,
+    "bootstrap_assets_present": true,
+    "env_example_secretless": true
+  },
+  "containers": {
+    "aetherus-postgres": {
+      "health": "healthy",
+      "image": "postgis/postgis:15-3.4"
+    },
+    "aetherus-redis": {
+      "health": "healthy",
+      "image": "redis:7-alpine"
+    },
+    "aetherus-minio": {
+      "health": "healthy",
+      "image": "minio/minio:RELEASE.2024-10-13T13-34-11Z"
+    }
+  },
+  "object_store": {
+    "status": "PASS",
+    "endpoint": "http://127.0.0.1:9010",
+    "bucket": "aetherus-p0-roundtrip",
+    "written_sha256": "2bc3b169dafb7bd63dacbd7d369cbd76d40ae2246d3217dd840f3278883a07a4",
+    "read_back_sha256": "2bc3b169dafb7bd63dacbd7d369cbd76d40ae2246d3217dd840f3278883a07a4",
+    "adapter": "boto3 S3 v4 signature against MinIO"
+  },
+  "redis": {
+    "status": "PASS",
+    "write_read": true,
+    "ttl_seconds_observed": 1,
+    "expired_after_ttl": true
+  },
+  "migrations": {
+    "rerun_exit_code": 0,
+    "rerun_is_safe": true,
+    "applied": [
+      "001_initial_schema",
+      "002_orbit_solution_raw_artifact_versioning",
+      "003_ingestion_policy_identity_and_rejections",
+      "004_p2_orbit_time_frames",
+      "005_p4_conjunction_assessment",
+      "006_p4_pc_encounter_plane_v2",
+      "007_p5_benefit_engine",
+      "008_v06_product_schema",
+      "009_p5_simulation_only_demotion",
+      "010_p6_protect_ocm_kinds",
+      "011_p6_benefit_candidate_ref",
+      "012_object_metadata_provenance",
+      "013_metadata_established_outcome",
+      "014_metadata_provenance_corrections"
+    ],
+    "table_counts": {
+      "aetherus_product": 69,
+      "public": 32
+    }
+  },
+  "health_endpoint": {
+    "http_status": 200,
+    "status": "healthy",
+    "services": {
+      "database": "healthy",
+      "api": "healthy"
+    },
+    "reports_dependencies": true
+  },
+  "tests": {
+    "command": "pytest <P0 subset> -q",
+    "exit_code": 0,
+    "summary": "======================== 15 passed, 1 warning in 0.24s ========================"
+  },
+  "bootstrap": {
+    "files_present": {
+      "docker-compose.yml": true,
+      "README.md": true,
+      "Makefile": true,
+      ".env.example": true,
+      "ci_workflow": true,
+      "requirements.txt": true
+    },
+    "env_example_has_no_secrets": true
+  },
+  "limitations": [
+    "워커(Celery) 서비스는 compose에 미기동 — 비과학 잡 왕복 증명은 후속",
+    "CI는 워크플로 파일로 존재하나 이 저장소의 원격에서 실행된 이력은 아직 없음",
+    "클린 클론 부팅은 문서·자산 존재로 확인했을 뿐, 빈 머신에서의 재현은 별도 수행 필요"
+  ]
+}

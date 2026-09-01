@@ -1,0 +1,8 @@
+.git
+.venv
+__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+# Committed raw/reference/evidence artifacts are read-only verification inputs.
+# Runtime-generated artifacts are written to /app/var via the Compose volume.

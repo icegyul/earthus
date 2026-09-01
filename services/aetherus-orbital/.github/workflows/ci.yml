@@ -1,0 +1,182 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Ruff format check
+        run: ruff format --check backend/ quality/
+      
+      - name: Ruff lint
+        run: ruff check backend/ quality/
+      
+      - name: MyPy type check
+        run: mypy backend/
+      
+      - name: Anti-shortcut audit
+        run: |
+          # Detect placeholder patterns forbidden by Quality Gates
+          if grep -r "TODO\|FIXME\|NotImplemented\|pass  # placeholder" backend/ --exclude-dir=__pycache__ --exclude="*.pyc"; then
+            echo "ERROR: Found placeholder patterns in production code"
+            exit 1
+          fi
+          echo "No placeholder patterns found in production code"
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:15-3.4
+        env:
+          POSTGRES_DB: aetherus_test
+          POSTGRES_USER: aetherus
+          POSTGRES_PASSWORD: aetherus_test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run migrations
+        env:
+          DATABASE_URL: postgresql+asyncpg://aetherus:aetherus_test_password@localhost:5432/aetherus_test
+        run: |
+          python -m backend.migrations.migrate
+
+      - name: Validate v0.6 canonical contracts
+        run: |
+          python -m compileall -q packages services scripts
+          python scripts/validate_contracts.py
+          python scripts/validate_intelligence_matrix.py
+      
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql+asyncpg://aetherus:aetherus_test_password@localhost:5432/aetherus_test
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          pytest tests/ -v --tb=short --cov=backend --cov-report=term-missing
+
+  product-browser:
+    name: Product Browser EN-KO Desktop-Mobile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies and Chromium
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+      - name: Run integrated browser acceptance
+        run: |
+          node --check services/web/app.js
+          python scripts/run_browser_inprocess_e2e.py
+          python scripts/run_desktop_bilingual_visual_e2e.py
+          python scripts/run_mobile_bilingual_e2e.py
+          python scripts/verify_bilingual_visual_evidence.py
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        if: always()
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build Docker image
+        run: docker build -t aetherus-api:test .
+      
+      - name: Test Docker compose
+        run: |
+          docker compose up -d
+          sleep 10
+          docker compose ps
+          docker compose exec -T api curl -f http://localhost:8000/health || exit 1
+          docker compose down
+
+  evidence:
+    name: Generate Evidence
+    runs-on: ubuntu-latest
+    needs: [lint, test, docker, product-browser]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Generate P0 evidence
+        run: |
+          python backend/tools/generate_evidence.py --phase P0
+      
+      - name: Upload evidence artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-evidence
+          path: artifacts/evidence/P0.json

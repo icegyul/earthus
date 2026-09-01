@@ -39,9 +39,36 @@ services:
     networks:
       - aetherus
 
+  # 지시서 P0: S3 호환 객체 스토리지 (로컬은 MinIO 허용).
+  # 로컬 파일시스템을 프로덕션 객체 스토리지로 취급하는 것은 금지 지름길이므로,
+  # 어댑터가 실제 S3 계약을 상대로 검증될 수 있게 띄운다.
+  minio:
+    image: minio/minio:RELEASE.2024-10-13T13-34-11Z
+    container_name: aetherus-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: aetherus
+      MINIO_ROOT_PASSWORD: aetherus_dev_password
+    # 9000/9001 은 개발 머신에서 다른 도구가 흔히 선점한다(실측: 127.0.0.1:9000 을
+    # 다른 프로세스가 이미 리슨 중이라 컨테이너 매핑이 가려졌다). 충돌이 적은
+    # 9010/9011 로 노출하고, 기본 엔드포인트도 여기에 맞춘다.
+    ports:
+      - "9010:9000"
+      - "9011:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - aetherus
+
 volumes:
   postgres_data:
   redis_data:
+  minio_data:
 
 networks:
   aetherus:

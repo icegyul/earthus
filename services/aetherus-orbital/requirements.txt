@@ -1,0 +1,51 @@
+# Core API
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Database
+asyncpg==0.29.0
+sqlalchemy[asyncio]==2.0.25
+alembic==1.13.1
+psycopg2-binary==2.9.9
+geoalchemy2==0.14.3
+
+# Cache & Queue
+redis==5.0.1
+celery==5.3.6
+
+# HTTP & Async
+httpx==0.26.0
+aiofiles==23.2.1
+
+# Scientific
+numpy==1.26.3
+scipy==1.12.0
+sgp4==2.23
+
+# Utilities
+python-dateutil==2.8.2
+pytz==2024.1
+
+# Development
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+ruff==0.1.14
+mypy==1.8.0
+black==24.1.1
+
+# Observability
+opentelemetry-api==1.22.0
+opentelemetry-sdk==1.22.0
+opentelemetry-instrumentation-fastapi==0.43b0
+
+# v0.6 product contract / browser / precision integration
+PyYAML>=6.0
+jsonschema>=4.20
+certifi>=2026.7.22
+playwright>=1.45
+spiceypy>=6.0
+astropy>=6.0
+Pillow>=10.0

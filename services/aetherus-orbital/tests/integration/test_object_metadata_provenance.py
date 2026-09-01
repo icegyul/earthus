@@ -217,3 +217,57 @@ async def test_provenance_reaches_the_raw_artifact(tmp_path):
     assert row["outcome"] == "ESTABLISHED"
     assert len(row["content_sha256"]) == 64
     assert row["source_id"] == "spacetrack_gp"
+
+
+@pytest.mark.integration
+async def test_classification_is_not_credited_to_a_silent_artifact(tmp_path):
+    """분류는 그것을 선언한 응답에만 귀속된다.
+
+    적대 감사(2026-09-01)가 잡은 결함의 회귀 방지: object_type 을 최신 궤도해의
+    아티팩트 해시 옆에 실어 보내면, OBJECT_TYPE 을 말한 적 없는 CelesTrak 응답이
+    분류의 근거로 지목된다.
+    """
+    from backend.ingestion.repository import SqlIngestionRepository as _Repo
+
+    catalog_id = str(324000 + uuid.uuid4().int % 900)
+    # Space-Track 이 분류를 선언하고,
+    await _ingest(RecordedProvider("spacetrack_gp", _record(catalog_id, name="PROV DEB E", object_type="DEBRIS", cospar=f"2094-{catalog_id[-3:]}E")), catalog_id, tmp_path)
+    # 그 뒤 CelesTrak 이 (분류 없이) 더 최신 궤도해를 남긴다.
+    await _ingest(RecordedProvider("celestrak_gp", _record(catalog_id, name="PROV DEB E", object_type=None, cospar=f"2094-{catalog_id[-3:]}E")), catalog_id, tmp_path)
+
+    payload = await _Repo().get_object(catalog_id)
+    assert payload["object_type"] == "DEBRIS"
+    stated = payload["metadata_provenance"]["fields"]["object_type"]
+    assert stated["stated_by"] == "spacetrack_gp"
+    # 최신 궤도해는 CelesTrak 이지만 분류의 근거로 지목되어서는 안 된다.
+    assert payload["provenance"]["source_ids"] == ["celestrak_gp"]
+    assert stated["input_artifact_hash"] not in payload["provenance"]["input_artifact_hashes"]
+
+
+@pytest.mark.integration
+async def test_same_source_repeat_is_not_read_as_corroboration(tmp_path):
+    """한 소스의 메아리를 교차 확증으로 적지 않는다."""
+    catalog_id = str(325000 + uuid.uuid4().int % 900)
+    payload = _record(catalog_id, name="PROV DEB F", object_type="DEBRIS", cospar=f"2095-{catalog_id[-3:]}F")
+    await _ingest(RecordedProvider("spacetrack_gp", payload), catalog_id, tmp_path)
+    # 같은 소스가 다시 수집한다 (다른 아티팩트가 되도록 내용을 미세 변경).
+    again = dict(payload)
+    again["MEAN_ANOMALY"] = 12.5
+    await _ingest(RecordedProvider("spacetrack_gp", again), catalog_id, tmp_path)
+
+    outcomes = {r["outcome"] for r in await _revisions(catalog_id) if r["field_name"] == "object_type"}
+    assert "SAME_SOURCE_REAFFIRMED" in outcomes
+    assert "CONFIRMED" not in outcomes
+
+
+@pytest.mark.integration
+async def test_reprocessing_the_same_artifact_does_not_inflate_lineage(tmp_path):
+    """같은 아티팩트 재처리가 계보 행 수를 부풀리지 않는다."""
+    catalog_id = str(326000 + uuid.uuid4().int % 900)
+    payload = _record(catalog_id, name="PROV DEB G", object_type="ROCKET BODY", cospar=f"2096-{catalog_id[-3:]}G")
+    provider = RecordedProvider("spacetrack_gp", payload)
+    await _ingest(provider, catalog_id, tmp_path)
+    first = len(await _revisions(catalog_id))
+    # 동일 내용 = 동일 SHA-256 = 동일 아티팩트로 다시 수집.
+    await _ingest(provider, catalog_id, tmp_path)
+    assert len(await _revisions(catalog_id)) == first

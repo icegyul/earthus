@@ -1041,6 +1041,9 @@ class SqlIngestionRepository:
                 {"object_id": row["object_id"]},
             )
         quality = _json_value(row["quality_json"])
+        metadata_provenance = await _metadata_provenance_payload(
+            session, str(row["object_id"])
+        )
         return {
             "id": row["object_id"],
             "catalog_id": row["catalog_id"],
@@ -1049,6 +1052,11 @@ class SqlIngestionRepository:
             "object_type": row["object_type"],
             "aliases": aliases,
             "identity_status": "CONFLICTED" if open_conflict_count else "CANONICAL",
+            # Metadata is attributed to the source that actually stated it. The
+            # provenance block below describes the latest ORBIT SOLUTION, whose
+            # artifact may never have declared these fields, so quoting it for
+            # them would credit a document that does not contain the claim.
+            "metadata_provenance": metadata_provenance,
             "latest_orbit_solution": {
                 "id": row["orbit_solution_id"],
                 "epoch": row["epoch"].isoformat() if row["epoch"] is not None else None,
@@ -1083,12 +1091,94 @@ class SqlIngestionRepository:
 #: settled by the identity resolver.
 _METADATA_FIELDS = ("object_type", "cospar_id", "canonical_name")
 
-#: Values that mean "this source did not actually state anything".
-_METADATA_ABSENT = {None, "", "UNKNOWN", "TBA"}
+#: Placeholders a provider writes when it declines to state a value. They are
+#: not the same as SQL NULL, and the lineage must not call them "absent" — the
+#: stored row really did hold this token before it was replaced.
+_METADATA_PLACEHOLDERS = frozenset({"", "UNKNOWN", "TBA"})
 
 
-def _is_absent(value: Any) -> bool:
-    return value is None or str(value).strip().upper() in {"", "UNKNOWN", "TBA"}
+def _is_unstated(value: Any) -> bool:
+    """True when the field carries no actual claim (NULL or a placeholder)."""
+    return value is None or str(value).strip().upper() in _METADATA_PLACEHOLDERS
+
+
+def _describe_unstated(value: Any) -> str:
+    return "was NULL" if value is None else f"was the placeholder {value!r}"
+
+
+async def _metadata_provenance_payload(session: Any, object_id: str) -> dict[str, Any]:
+    """Attribute each metadata field to the artifact that actually declared it.
+
+    Without this, a caller reads ``object_type`` next to the latest orbit
+    solution's artifact hash and concludes that document classified the object —
+    but CelesTrak GP never states OBJECT_TYPE, so the credit would go to a
+    response that does not contain the claim.
+    """
+    result = await session.execute(
+        text(
+            """
+            SELECT r.field_name, r.incoming_value, r.outcome, r.reason,
+                   r.source_id, r.declared_at, r.created_at,
+                   ra.content_sha256, ra.source_uri
+            FROM object_metadata_revision AS r
+            JOIN raw_artifact AS ra ON ra.id = r.raw_artifact_id
+            WHERE r.object_id = CAST(:object_id AS uuid)
+            ORDER BY r.created_at
+            """
+        ),
+        {"object_id": object_id},
+    )
+    rows = [dict(item) for item in result.mappings().all()]
+    fields: dict[str, Any] = {}
+    disputed: list[str] = []
+    for entry in rows:
+        field = str(entry["field_name"])
+        if entry["outcome"] == "CONFLICT":
+            if field not in disputed:
+                disputed.append(field)
+            continue
+        if entry["outcome"] in {"ESTABLISHED", "ADOPTED"}:
+            # The stating claim is what the current value rests on; later
+            # agreement is corroboration, recorded separately below.
+            fields[field] = {
+                "value": entry["incoming_value"],
+                "stated_by": entry["source_id"],
+                "outcome": entry["outcome"],
+                "declared_at": entry["declared_at"].isoformat()
+                if entry["declared_at"] is not None
+                else None,
+                "input_artifact_hash": f"sha256:{entry['content_sha256']}",
+                "source_uri": entry["source_uri"],
+                "corroborated_by": [],
+            }
+        elif entry["outcome"] == "CONFIRMED" and field in fields:
+            fields[field]["corroborated_by"].append(entry["source_id"])
+    return {
+        "fields": fields,
+        "disputed_fields": disputed,
+        "revision_count": len(rows),
+        "note": (
+            "Each field is credited to the response that stated it. Fields absent "
+            "here were never declared by any ingested source."
+        ),
+    }
+
+
+async def _sources_that_stated(session: Any, object_id: str) -> dict[str, frozenset[str]]:
+    """Which sources have already made a claim per field, for corroboration checks."""
+    result = await session.execute(
+        text(
+            """
+            SELECT field_name, source_id FROM object_metadata_revision
+            WHERE object_id = CAST(:object_id AS uuid)
+            """
+        ),
+        {"object_id": object_id},
+    )
+    seen: dict[str, set[str]] = {}
+    for row in result.mappings().all():
+        seen.setdefault(str(row["field_name"]), set()).add(str(row["source_id"]))
+    return {field: frozenset(sources) for field, sources in seen.items()}
 
 
 async def _record_metadata_provenance(
@@ -1100,15 +1190,21 @@ async def _record_metadata_provenance(
     raw_artifact_id: str,
     created: bool,
 ) -> CanonicalObject:
-    """Record what this source declared, filling only genuine gaps.
+    """Record what this source declared, filling only unstated fields.
 
-    Three outcomes, all durable:
-      * ADOPTED   — the stored field was absent and this source states it, so the
-                    canonical row is completed and the source is recorded.
-      * CONFLICT  — both sides state a value and they differ. The stored value is
-                    left untouched; disagreement is evidence, not a reason to
-                    overwrite (same stance as ``identity_conflict``).
-      * CONFIRMED — both sides agree; recorded so corroboration is visible.
+    Outcomes, all durable and all deliberately narrow:
+      * ESTABLISHED            — this source created the object and set the value.
+      * ADOPTED                — the stored field stated nothing (NULL or a
+                                 placeholder such as ``UNKNOWN``) and this source
+                                 states it, so the canonical row is completed.
+      * CONFLICT               — both sides state a value and they differ. The
+                                 stored value is left untouched; disagreement is
+                                 evidence, not licence to overwrite (the stance
+                                 ``identity_conflict`` already takes).
+      * CONFIRMED              — a *different* source agrees. This is the only
+                                 outcome that may be read as corroboration.
+      * SAME_SOURCE_REAFFIRMED — the same source repeated itself. Recorded, but
+                                 never presented as a second opinion.
 
     Grades cannot arbitrate here: CelesTrak GP and Space-Track GP are both
     PUBLIC_GP, so precedence would be an invention. Gap-filling plus preserved
@@ -1125,26 +1221,46 @@ async def _record_metadata_provenance(
         "canonical_name": matched.canonical_name,
     }
 
+    prior_sources = await _sources_that_stated(session, matched.id)
+    # The declaration time is when this exact response was received, not the
+    # element EPOCH: OBJECT_TYPE is stated by the provider, not observed at the
+    # instant the orbit state is valid for.
+    declared_at = (
+        await session.execute(
+            text("SELECT retrieved_at FROM raw_artifact WHERE id = CAST(:id AS uuid)"),
+            {"id": raw_artifact_id},
+        )
+    ).scalar_one()
+
     adopted: dict[str, str] = {}
     rows: list[dict[str, Any]] = []
     for field in _METADATA_FIELDS:
         incoming_value = incoming.get(field)
         stored_value = stored.get(field)
-        if _is_absent(incoming_value):
+        if _is_unstated(incoming_value):
             continue  # the source said nothing; there is nothing to record
         if created:
             # The insert already carried this source's values, so nothing is
-            # adopted; recording it as CONFIRMED would falsely imply a second
-            # source agreed, so first authorship is named for what it is.
+            # adopted; calling it CONFIRMED would falsely imply a second source
+            # agreed, so first authorship is named for what it is.
             outcome = "ESTABLISHED"
             reason = f"{source_id} established {field} when the object was created"
-        elif _is_absent(stored_value):
+        elif _is_unstated(stored_value):
             adopted[field] = str(incoming_value)
             outcome = "ADOPTED"
-            reason = f"stored {field} was absent; {source_id} declared it"
+            reason = (
+                f"stored {field} {_describe_unstated(stored_value)}; "
+                f"{source_id} declared {incoming_value!r}"
+            )
         elif str(stored_value) == str(incoming_value):
-            outcome = "CONFIRMED"
-            reason = f"{source_id} corroborated the stored {field}"
+            # Only a different source counts as corroboration; a provider
+            # repeating itself is an echo and must not read as a second opinion.
+            if source_id in prior_sources.get(field, frozenset()):
+                outcome = "SAME_SOURCE_REAFFIRMED"
+                reason = f"{source_id} restated the {field} it had already declared"
+            else:
+                outcome = "CONFIRMED"
+                reason = f"{source_id} independently agreed with the stored {field}"
         else:
             outcome = "CONFLICT"
             reason = (
@@ -1161,7 +1277,7 @@ async def _record_metadata_provenance(
                 "reason": reason,
                 "source_id": source_id,
                 "raw_artifact_id": raw_artifact_id,
-                "observed_at": record.epoch,
+                "declared_at": declared_at,
             }
         )
 
@@ -1173,11 +1289,12 @@ async def _record_metadata_provenance(
             """
             INSERT INTO object_metadata_revision (
                 object_id, field_name, previous_value, incoming_value,
-                outcome, reason, source_id, raw_artifact_id, observed_at
+                outcome, reason, source_id, raw_artifact_id, declared_at
             ) VALUES (
                 CAST(:object_id AS uuid), :field_name, :previous_value, :incoming_value,
-                :outcome, :reason, :source_id, CAST(:raw_artifact_id AS uuid), :observed_at
+                :outcome, :reason, :source_id, CAST(:raw_artifact_id AS uuid), :declared_at
             )
+            ON CONFLICT (object_id, field_name, source_id, raw_artifact_id) DO NOTHING
             """
         ),
         rows,

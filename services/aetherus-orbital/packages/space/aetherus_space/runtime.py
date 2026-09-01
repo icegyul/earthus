@@ -152,6 +152,17 @@ class CelestialEventCandidate:
     validation_state: ValidationState
 
 
+class SeparationUndefinedError(ValueError):
+    """Angular separation cannot be formed from the supplied geometry.
+
+    Subclasses ValueError so existing ``except ValueError`` route handlers keep
+    translating it into an explicit 4xx, while callers that care can catch the
+    specific case.
+    """
+
+    validation_state = ValidationState.INSUFFICIENT_DATA
+
+
 class CelestialEventEngine:
     id = "E09"
     rule_version = "celestial-rules-v1"
@@ -162,7 +173,16 @@ class CelestialEventEngine:
         va, vb = a.position_km, b.position_km
         da = sqrt(sum(v*v for v in va)); db = sqrt(sum(v*v for v in vb))
         if da == 0 or db == 0:
-            return None
+            # A zero-magnitude position vector (e.g. the observer itself) has no
+            # direction, so no angle exists. Returning None here would be read as
+            # "no event", which is a different fact from "not computable"; the two
+            # must stay distinguishable all the way out to the caller.
+            zero = a.object_id if da == 0 else b.object_id
+            raise SeparationUndefinedError(
+                f"INSUFFICIENT_DATA: angular separation is undefined because '{zero}' has a "
+                f"zero-magnitude position vector in observer frame '{a.observer}'; "
+                "this is not the same as 'no close approach'"
+            )
         dot = sum(va[i]*vb[i] for i in range(3)) / (da*db)
         dot = max(-1.0, min(1.0, dot))
         angle = atan2(sqrt(max(0.0, 1-dot*dot)), dot) * 180/pi
@@ -194,24 +214,67 @@ class SpaceWeatherState:
     source_id: str
     source_grade: SourceGrade
     data_status: str
-    drag_context: dict[str, float]
+    drag_context: dict[str, Any]
     direct_orbit_correction: None = None
 
 
+# Indices this engine will report as drag-relevant *context*. Naming them here
+# keeps the pass-through explicit: anything outside this set is carried in
+# measurements/forecasts untouched and is not described as drag context.
+DRAG_RELEVANT_INDICES = ("f107", "kp", "ap")
+
+
 class SpaceWeatherContextEngine:
+    """Normalize a space-weather sample into an explicit, source-graded state.
+
+    This engine performs no physical derivation. The previous version invented
+    f10.7=100 / Kp=2 whenever the payload was empty and pushed them through an
+    unattributed expression (0.5 + f107/200 + kp/10) to publish a
+    'relative_density_factor_hint'. That number had no model name, no version and
+    no unit basis, and it contradicted the sibling ingestion adapter
+    (backend/providers_live/space_weather.py), which states that Kp is a
+    dimensionless 0-9 activity index and must not be converted into anything.
+    Since no citable model backs the expression, the derivation is removed rather
+    than re-labelled: an atmospheric density factor requires a named model
+    (e.g. NRLMSISE-00 / JB2008) fed with its own documented inputs, which this
+    engine does not have.
+    """
+
     id = "E10"
-    def normalize(self, *, observed_at: datetime, received_at: datetime, measurements: dict[str, float] | None, forecasts: dict[str, float] | None, source_id: str, stale_after_seconds: int = 3600, now: datetime | None = None) -> SpaceWeatherState:
+    version = "0.2"
+
+    def normalize(self, *, observed_at: datetime, received_at: datetime, measurements: dict[str, float] | None, forecasts: dict[str, float] | None, source_id: str, source_grade: SourceGrade = SourceGrade.UNKNOWN, stale_after_seconds: int = 3600, now: datetime | None = None) -> SpaceWeatherState:
         observed_at, received_at = _aware(observed_at), _aware(received_at)
         now = _aware(now or datetime.now(timezone.utc))
         age = max(0.0, (now - observed_at).total_seconds())
-        data_status = "STALE" if age > stale_after_seconds else "OK"
         measurements = dict(measurements or {})
         forecasts = dict(forecasts or {})
-        f107 = measurements.get("f107", forecasts.get("f107", 100.0))
-        kp = measurements.get("kp", forecasts.get("kp", 2.0))
-        # Context factor only: never applied as an orbit correction here.
-        drag_context = {"relative_density_factor_hint": max(0.2, min(5.0, 0.5 + f107/200 + kp/10))}
-        return SpaceWeatherState(observed_at, received_at, measurements, forecasts, source_id, SourceGrade.OFFICIAL_PUBLIC, data_status, drag_context)
+        if not measurements and not forecasts:
+            # No sample arrived. Freshness of an empty payload is meaningless, so
+            # do not describe it as OK or STALE.
+            data_status = "INSUFFICIENT_DATA"
+        else:
+            data_status = "STALE" if age > stale_after_seconds else "OK"
+        observed_indices = {
+            name: {"value": measurements[name], "origin": "MEASUREMENT"}
+            for name in DRAG_RELEVANT_INDICES if name in measurements
+        }
+        for name in DRAG_RELEVANT_INDICES:
+            if name not in observed_indices and name in forecasts:
+                observed_indices[name] = {"value": forecasts[name], "origin": "FORECAST"}
+        drag_context = {
+            "status": "OK" if observed_indices else "INSUFFICIENT_DATA",
+            "indices": observed_indices,
+            "density_factor": None,
+            "density_factor_status": "UNAVAILABLE",
+            "density_factor_reason": (
+                "No named atmospheric density model is wired to this engine; a factor "
+                "is not derived from Kp or f10.7 here. Kp is a dimensionless 0-9 "
+                "activity index and is not converted into any other quantity."
+            ),
+            "defaults_substituted": False,
+        }
+        return SpaceWeatherState(observed_at, received_at, measurements, forecasts, source_id, source_grade, data_status, drag_context)
 
 
 @dataclass(frozen=True)
@@ -226,9 +289,37 @@ class SmallBodyState:
     validation_state: ValidationState
 
 
-class SmallBodyTrackingEngine:
+# Validation state a *normalizer* may honestly assign, keyed by the grade of the
+# source the record came from. No entry is VALIDATED_PIPELINE: nothing in this
+# module runs a validation pipeline, so that state must be stamped by whatever
+# actually validates, not by a parser.
+_GRADE_TO_NORMALIZED_STATE = {
+    SourceGrade.OPERATIONAL: ValidationState.VALIDATION_PENDING,
+    SourceGrade.OFFICIAL_PUBLIC: ValidationState.VALIDATION_PENDING,
+    SourceGrade.VALIDATION_FIXTURE: ValidationState.VALIDATION_PENDING,
+    SourceGrade.PUBLIC_SCREENING: ValidationState.SCREENING_ONLY,
+    SourceGrade.RESEARCH: ValidationState.RESEARCH_ONLY,
+    SourceGrade.USER_OBSERVATION: ValidationState.UNVALIDATED,
+    SourceGrade.UNKNOWN: ValidationState.UNVALIDATED,
+}
+
+
+class SmallBodyCloseApproachNormalizer:
+    """Parse one small-body close-approach record into a typed, graded state.
+
+    This is a normalizer, not a tracker: it performs no orbit determination and no
+    propagation, so it cannot confirm or refine an approach. It was previously
+    named ``SmallBodyTrackingEngine`` and stamped VALIDATED_PIPELINE whenever a
+    ``distance_uncertainty_km`` key happened to be present -- the presence of an
+    uncertainty field says nothing about whether anything validated the record.
+    Validation state is now derived from the grade of the source, and the caller
+    must state that grade; an unstated source is UNKNOWN/UNVALIDATED.
+    """
+
     id = "E11"
-    def normalize(self, record: dict[str, Any], *, source_id: str, source_grade: SourceGrade = SourceGrade.OFFICIAL_PUBLIC) -> SmallBodyState:
+    version = "0.2"
+
+    def normalize(self, record: dict[str, Any], *, source_id: str, source_grade: SourceGrade = SourceGrade.UNKNOWN) -> SmallBodyState:
         raw_time = record.get("close_approach_utc")
         if isinstance(raw_time, str):
             raw_time = datetime.fromisoformat(raw_time.replace("Z", "+00:00"))
@@ -242,8 +333,14 @@ class SmallBodyTrackingEngine:
             source_id=source_id,
             source_grade=source_grade,
             impact_claim=impact_claim,
-            validation_state=ValidationState.VALIDATION_PENDING if record.get("distance_uncertainty_km") is None else ValidationState.VALIDATED_PIPELINE,
+            validation_state=_GRADE_TO_NORMALIZED_STATE.get(source_grade, ValidationState.UNVALIDATED),
         )
+
+
+# Compatibility alias: packages/product/aetherus_product/runtime.py still imports
+# the old name. Kept only so that caller keeps working until it is updated; the
+# honest name is SmallBodyCloseApproachNormalizer.
+SmallBodyTrackingEngine = SmallBodyCloseApproachNormalizer
 
 
 @dataclass(frozen=True)
@@ -258,21 +355,54 @@ class DeepSpaceMissionState:
     validation_state: ValidationState
 
 
+class SelfDeclaredTelemetryError(ValueError):
+    """A caller claimed live telemetry without a verified evidence reference."""
+
+
 class DeepSpaceMissionTrackingEngine:
+    """Normalize a deep-space mission state record with honest provenance.
+
+    Two prior behaviours are removed here. (1) A caller-supplied
+    ``live_telemetry=True`` boolean alone promoted the record to LIVE_TELEMETRY /
+    VALIDATED_PIPELINE; services/api/registry_routes.py already refuses exactly
+    that self-declaration for trajectories with a 403, so the engine must not
+    grant it either -- a live claim now requires a verified evidence reference.
+    (2) A missing model version was replaced with the string 'unspecified-model',
+    which fabricates a model identity; None is the truthful value.
+
+    This engine also runs no validation pipeline, so it never emits
+    VALIDATED_PIPELINE; VALIDATION_PENDING is the ceiling for source-backed rows.
+    """
+
     id = "E12"
-    def normalize(self, *, mission_id: str, status: str, epoch_utc: datetime, source_id: str, position_km: tuple[float, float, float] | None = None, live_telemetry: bool = False, model_version: str | None = None) -> DeepSpaceMissionState:
+    version = "0.2"
+
+    def normalize(self, *, mission_id: str, status: str, epoch_utc: datetime, source_id: str, position_km: tuple[float, float, float] | None = None, live_telemetry: bool = False, model_version: str | None = None, telemetry_evidence_id: str | None = None) -> DeepSpaceMissionState:
         epoch = _aware(epoch_utc)
+        limitations: list[str] = []
+        if live_telemetry and not telemetry_evidence_id:
+            raise SelfDeclaredTelemetryError(
+                "live telemetry cannot be self-declared; supply telemetry_evidence_id "
+                "from a verified provider/evidence path"
+            )
         if live_telemetry:
             label = "LIVE_TELEMETRY"
-            validation = ValidationState.VALIDATED_PIPELINE
+            # Evidence is referenced but not verified here, so the row is pending
+            # validation rather than validated.
+            validation = ValidationState.VALIDATION_PENDING
         elif position_km is not None and source_id:
             label = "OFFICIAL_STATE"
-            validation = ValidationState.VALIDATED_PIPELINE
+            validation = ValidationState.VALIDATION_PENDING
         else:
             label = "MODELLED_STATE"
             validation = ValidationState.RESEARCH_ONLY
             if not model_version:
-                model_version = "unspecified-model"
+                # Keep None: naming a model that was never identified would make the
+                # numbers look reproducible when they are not.
+                model_version = None
+                limitations.append(
+                    "Modelled state carries no model identity; results are not reproducible."
+                )
         return DeepSpaceMissionState(
             mission_id=mission_id,
             status=status,
@@ -280,6 +410,12 @@ class DeepSpaceMissionTrackingEngine:
             position_km=position_km,
             state_label=label,
             source_id=source_id,
-            trajectory_provenance={"source_id": source_id, "model_version": model_version, "live_telemetry": live_telemetry},
+            trajectory_provenance={
+                "source_id": source_id,
+                "model_version": model_version,
+                "live_telemetry": live_telemetry,
+                "telemetry_evidence_id": telemetry_evidence_id,
+                "limitations": limitations,
+            },
             validation_state=validation,
         )

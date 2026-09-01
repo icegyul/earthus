@@ -69,15 +69,20 @@ def e09(case):
     else: raise AssertionError(case)
 
 def e10(case):
-    eng=SpaceWeatherContextEngine(); st=eng.normalize(observed_at=T0,received_at=T0+timedelta(seconds=5),measurements={"kp":3},forecasts={"kp":5,"f107":140},source_id="NOAA",now=T0+timedelta(seconds=10))
+    eng=SpaceWeatherContextEngine(); st=eng.normalize(observed_at=T0,received_at=T0+timedelta(seconds=5),measurements={"kp":3},forecasts={"kp":5,"f107":140},source_id="NOAA",source_grade=SourceGrade.OFFICIAL_PUBLIC,now=T0+timedelta(seconds=10))
     if case=="source timestamp preserved": assert st.observed_at==T0 and st.received_at==T0+timedelta(seconds=5)
     elif case=="observed vs forecast separated": assert st.measurements["kp"]==3 and st.forecasts["kp"]==5
-    elif case=="stale handling": assert eng.normalize(observed_at=T0,received_at=T0,measurements={},forecasts={},source_id="NOAA",stale_after_seconds=60,now=T0+timedelta(hours=2)).data_status=="STALE"
-    elif case=="drag context is context not direct orbit correction": assert st.drag_context and st.direct_orbit_correction is None
+    # Staleness is a property of a sample that exists; an empty payload is
+    # INSUFFICIENT_DATA, so this case must carry a real measurement.
+    elif case=="stale handling": assert eng.normalize(observed_at=T0,received_at=T0,measurements={"kp":3},forecasts={},source_id="NOAA",stale_after_seconds=60,now=T0+timedelta(hours=2)).data_status=="STALE"
+    # drag_context reports which indices arrived; it derives no density factor and
+    # never becomes an orbit correction.
+    elif case=="drag context is context not direct orbit correction":
+        assert st.drag_context["indices"]["kp"]["origin"]=="MEASUREMENT" and st.drag_context["density_factor"] is None and st.direct_orbit_correction is None
     else: raise AssertionError(case)
 
 def e11(case):
-    eng=SmallBodyTrackingEngine(); rec={"object_id":"2026 AB","close_approach_utc":T0,"nominal_distance_km":100000,"distance_uncertainty_km":500}
+    eng=SmallBodyCloseApproachNormalizer(); rec={"object_id":"2026 AB","close_approach_utc":T0,"nominal_distance_km":100000,"distance_uncertainty_km":500}
     st=eng.normalize(rec,source_id="JPL",source_grade=SourceGrade.OFFICIAL_PUBLIC)
     if case=="source grade": assert st.source_grade==SourceGrade.OFFICIAL_PUBLIC
     elif case=="close approach timestamp": assert st.close_approach_utc==T0

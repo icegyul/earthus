@@ -37,3 +37,6 @@ prototype/.devkey.pem
 #    원본은 D:\## APP\Earthus v2_DOC\Aetherus v2\ 의 zip에 SHA와 함께 보존.
 #    출처·해시: docs/aetherus-v2-canonical/PROVENANCE.md
 docs/aetherus-v2-canonical/**/*.docx
+
+# Python 가상환경 — 기기별 상태, 소스 아님.
+.venv/

@@ -1,0 +1,97 @@
+{
+  "phase": "p1",
+  "orbital_phase": "ORB-P0",
+  "gate": "PARTIAL",
+  "generated_at": "2026-09-01T02:11:32.397305+00:00",
+  "repository": "git@github.com:icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "83197d537b06c48a7c7789261e6a67f1c60a559c",
+  "import_source": {
+    "repo": "Aetherus 823_Orbital/aetherus-orbital-environment (local-only)",
+    "branch": "codex/aetherus-v2-v06-integration",
+    "commit": "7ac0357",
+    "records": [
+      "docs/audit/imports/p1-7ac0357.md",
+      "docs/audit/imports/p0-infra-7ac0357.md"
+    ]
+  },
+  "infrastructure": {
+    "docker_server_version": "29.7.2",
+    "containers": [
+      {
+        "name": "/aetherus-postgres",
+        "image": "postgis/postgis:15-3.4",
+        "health": "healthy"
+      },
+      {
+        "name": "/aetherus-redis",
+        "image": "redis:7-alpine",
+        "health": "healthy"
+      }
+    ]
+  },
+  "database": {
+    "schema_migrations": [
+      {
+        "name": "001_initial_schema",
+        "content_hash": "07ad94c4fcb4009d48aac536a331dd56c9471d2d72cd66e94ff0c9a32c39b2ec",
+        "execution_time_ms": 303
+      },
+      {
+        "name": "002_orbit_solution_raw_artifact_versioning",
+        "content_hash": "872bf92e832d6b021f1ba473fcc5492a85974a54fdd6b0b57910f96efe2d90f7",
+        "execution_time_ms": 8
+      },
+      {
+        "name": "003_ingestion_policy_identity_and_rejections",
+        "content_hash": "85fac502e44101748bad3e7019bf3c92a36498a225d6f02bbe895479a2a14241",
+        "execution_time_ms": 61
+      },
+      {
+        "name": "004_p2_orbit_time_frames",
+        "content_hash": "f59f3933e1ff7e1a8617ae2b24c9bdf45de203270e3f7b2f6c3c6ef62f7719b4",
+        "execution_time_ms": 8
+      },
+      {
+        "name": "005_p4_conjunction_assessment",
+        "content_hash": "f7eeab2aab86df06a9210b210da338ed9978775221f59924f14f7deaecd581d5",
+        "execution_time_ms": 52
+      },
+      {
+        "name": "006_p4_pc_encounter_plane_v2",
+        "content_hash": "73bf06750fe3620e0367913f04a13ec4f7947ebb8f6bd92361c6c914a100d2f8",
+        "execution_time_ms": 3
+      },
+      {
+        "name": "007_p5_benefit_engine",
+        "content_hash": "2dd59944ec889eb8d79f2b13b0ff210cba6a1dd0a01794539d3b6722045973e9",
+        "execution_time_ms": 82
+      },
+      {
+        "name": "008_v06_product_schema",
+        "content_hash": "8a83a744613b32cc087af690fcc365dbe1d26566a9ebf881d4dab8eae6d1a9eb",
+        "execution_time_ms": 928
+      }
+    ],
+    "table_counts": {
+      "aetherus_product": 69,
+      "public": 31
+    },
+    "user_trigger_count": 39,
+    "postgis_version": "3.4 USE_GEOS=1 USE_PROJ=1 USE_STATS=1",
+    "data_source_seed_count": 2
+  },
+  "tests": {
+    "note": "823 pytest 스위트 미이식 — 자동 테스트는 코드 이식 단계에서 재현 예정",
+    "executed": [
+      "backend.migrations.migrate (8/8 applied)",
+      "contracts JSON parse 19/19 (import 시점)"
+    ]
+  },
+  "limitations": [
+    "ORB-P0 게이트 중 CI 워크플로·헬스 엔드포인트·클린클론 부트 검증 미완 — 따라서 PARTIAL",
+    "MinIO/S3 어댑터 미기동 — raw 저장 파일시스템 경로",
+    "Space-Track 자격증명 부재 (CelesTrak 무자격 경로로 진행)"
+  ],
+  "next_allowed": "P1 수집(CelesTrak) 코드 이식 + 테스트 재현, API 헬스 엔드포인트, CI"
+}

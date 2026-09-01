@@ -1,0 +1,48 @@
+# AETHERUS Orbital — 로컬 개발 인프라 (ORB-P0)
+# 출처: 823 codex/aetherus-v2-v06-integration @ 7ac0357 docker-compose.yml 기반.
+# api 서비스는 코드 이식 전까지 제외 — 인프라(PostGIS·Redis)만 기동한다.
+# 자격증명은 로컬 개발 전용이며 프로덕션에서 재사용하지 않는다.
+services:
+  postgres:
+    image: postgis/postgis:15-3.4
+    container_name: aetherus-postgres
+    environment:
+      POSTGRES_DB: aetherus
+      POSTGRES_USER: aetherus
+      POSTGRES_PASSWORD: aetherus_dev_password
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aetherus"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aetherus
+
+  redis:
+    image: redis:7-alpine
+    container_name: aetherus-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - aetherus
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  aetherus:
+    driver: bridge

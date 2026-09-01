@@ -5,7 +5,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal, Protocol, cast
 
-from backend.ingestion.celestrak import CELESTRAK_SOURCE_ID, celestrak_omm_uri
+from backend.ingestion.celestrak import (
+    CELESTRAK_SOURCE_ID,
+    _validate_group,
+    celestrak_group_uri,
+    celestrak_omm_uri,
+)
 from backend.ingestion.errors import (
     IdentityConflictError,
     IngestionError,
@@ -18,6 +23,8 @@ from backend.ingestion.models import (
     FetchedOmmDocument,
     IdentityResolution,
     ParsedOmmRecord,
+    PersistedGroupIngestion,
+    PersistedGroupMember,
     PersistedIngestion,
     RawArtifactLink,
     ReprocessableRawArtifact,
@@ -28,6 +35,13 @@ from backend.ingestion.providers.base import ObjectSelector, OrbitProvider, Sour
 from backend.ingestion.ratelimit import PolicyDecision
 from backend.ingestion.redaction import Redactor
 from backend.ingestion.storage import RawArtifactStore
+
+
+class GroupOmmProvider(Protocol):
+    """Fetch one documented CelesTrak GROUP response (many records, one artifact)."""
+
+    async def fetch_group(self, group: str) -> FetchedOmmDocument:
+        ...
 
 
 class OmmProvider(Protocol):
@@ -207,6 +221,7 @@ class IngestionService:
         coordinator: PolicyCoordinator | None = None,
         identity_resolver: IdentityResolver | None = None,
         redactor: Redactor | None = None,
+        group_provider: GroupOmmProvider | None = None,
     ) -> None:
         self._legacy_provider = provider
         self.repository = repository
@@ -215,6 +230,7 @@ class IngestionService:
         self._coordinator = coordinator
         self._identity_resolver = identity_resolver
         self._redactor = redactor or Redactor(())
+        self._group_provider = group_provider
 
     async def ingest_catalog_id(self, catalog_id: str) -> PersistedIngestion:
         """Keep the P0 CelesTrak API while P1 uses the provider registry."""
@@ -306,6 +322,164 @@ class IngestionService:
                 await self._record_policy_failure(
                     provider.policy, request_fingerprint, decision, error
                 )
+                await self.repository.fail_run(run_id, self._redact_error(error))
+            raise
+
+    async def ingest_group(self, group: str) -> PersistedGroupIngestion:
+        """Ingest one CelesTrak GROUP response as many canonical records.
+
+        Debris families (Cosmos-1408, Fengyun-1C, Iridium/Cosmos collision
+        fragments, ...) are hundreds of objects that share one provider
+        response. Fetching them per-catalog-id would both violate CelesTrak's
+        usage guidance and fragment the provenance root, so this path preserves
+        exactly one immutable raw artifact and expands it record by record —
+        each row still passes the same parser, identity resolver and rejection
+        quarantine as the single-object path. Nothing is invented for a row
+        that fails: it is quarantined with its reason and counted in the open.
+        """
+        if self._group_provider is None:
+            raise ProviderUnavailableError(
+                "Group ingestion provider is not configured",
+                {"group": group},
+            )
+        if self._identity_resolver is None:
+            raise ProviderUnavailableError("P1 identity resolver is not configured")
+
+        normalized_group = _validate_group(group)
+        source_uri = celestrak_group_uri(normalized_group)
+        run_id = await self.repository.start_run(CELESTRAK_SOURCE_ID, source_uri)
+        p1_repository = _p1_repository(self.repository)
+        run_finished = False
+        try:
+            document = await self._group_provider.fetch_group(normalized_group)
+            if document.source_id != CELESTRAK_SOURCE_ID:
+                raise InsufficientDataError(
+                    "Provider source_id does not match the CelesTrak group source",
+                    {"source_id": document.source_id},
+                )
+            raw_artifact = self.artifact_store.preserve(
+                source_id=document.source_id,
+                retrieved_at=document.retrieved_at,
+                content=document.content,
+                media_type=document.media_type,
+            )
+            raw_link = await p1_repository.record_or_link_raw_artifact(
+                run_id, document, raw_artifact
+            )
+
+            members: list[PersistedGroupMember] = []
+            seen_catalog_ids: set[str] = set()
+            rejection_reasons: dict[str, int] = {}
+            rejection_count = 0
+
+            async def reject(index: int, fragment: str, reason: str, details: dict) -> None:
+                nonlocal rejection_count
+                rejection_count += 1
+                rejection_reasons[reason] = rejection_reasons.get(reason, 0) + 1
+                await p1_repository.record_rejection(
+                    run_id, raw_link.raw_artifact_id, index, fragment, reason, details
+                )
+
+            for candidate in parse_omm_candidates(document.content):
+                if candidate.error is not None:
+                    await reject(
+                        candidate.index,
+                        candidate.fragment,
+                        "PARSE_REJECT",
+                        self._error_details(candidate.error),
+                    )
+                    continue
+                record = candidate.record
+                if record is None:
+                    raise RuntimeError("OMM candidate has neither record nor error")
+                if record.catalog_id in seen_catalog_ids:
+                    await reject(
+                        candidate.index,
+                        candidate.fragment,
+                        "DUPLICATE_CATALOG_IN_GROUP",
+                        {"catalog_id": record.catalog_id},
+                    )
+                    continue
+                resolution = await self._identity_resolver.resolve(
+                    raw_link.raw_artifact_id, document.source_id, record
+                )
+                if resolution.status == "IDENTITY_CONFLICT":
+                    await reject(
+                        candidate.index,
+                        candidate.fragment,
+                        "IDENTITY_CONFLICT",
+                        {"conflict_id": resolution.conflict_id},
+                    )
+                    continue
+                if resolution.status not in {"CREATED", "MATCHED"} or resolution.object_id is None:
+                    await reject(
+                        candidate.index,
+                        candidate.fragment,
+                        "UNKNOWN_OBJECT",
+                        {"catalog_id": record.catalog_id},
+                    )
+                    continue
+                orbit_solution_id = await p1_repository.persist_orbit_solution(
+                    resolution.object_id, raw_link.raw_artifact_id, document.source_id, record
+                )
+                seen_catalog_ids.add(record.catalog_id)
+                members.append(
+                    PersistedGroupMember(
+                        catalog_id=record.catalog_id,
+                        object_id=resolution.object_id,
+                        orbit_solution_id=orbit_solution_id,
+                        canonical_name=record.object_name,
+                        identity_status=resolution.status,
+                    )
+                )
+
+            metadata: dict[str, object] = {
+                "cache_hit": False,
+                "cache_status": "MISS",
+                "raw_artifact_relation": raw_link.relation,
+                "rejected_record_count": rejection_count,
+                "rejection_reasons": rejection_reasons,
+                "source_id": document.source_id,
+                "group": normalized_group,
+                "query_kind": "GROUP",
+            }
+            if not members:
+                await p1_repository.complete_partial_run(run_id, 0, metadata)
+                run_finished = True
+                raise _CompletedPartialRun(
+                    InsufficientDataError(
+                        "Group response contained no usable record",
+                        {
+                            "group": normalized_group,
+                            "rejected_record_count": rejection_count,
+                        },
+                    )
+                )
+            status: Literal["PARTIAL", "SUCCEEDED"] = (
+                "PARTIAL" if rejection_count else "SUCCEEDED"
+            )
+            if status == "PARTIAL":
+                await p1_repository.complete_partial_run(run_id, len(members), metadata)
+            else:
+                await p1_repository.complete_run(run_id, len(members), metadata)
+            run_finished = True
+            return PersistedGroupIngestion(
+                ingestion_run_id=run_id,
+                raw_artifact_id=raw_link.raw_artifact_id,
+                group=normalized_group,
+                source_uri=document.source_uri,
+                retrieved_at=document.retrieved_at,
+                raw_artifact=raw_artifact,
+                members=tuple(members),
+                source_id=document.source_id,
+                status=status,
+                rejected_record_count=rejection_count,
+                rejection_reasons=rejection_reasons,
+            )
+        except _CompletedPartialRun as completed:
+            raise completed.error from completed
+        except Exception as error:
+            if not run_finished:
                 await self.repository.fail_run(run_id, self._redact_error(error))
             raise
 

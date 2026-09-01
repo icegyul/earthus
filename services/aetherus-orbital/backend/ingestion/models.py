@@ -1,6 +1,6 @@
 """Typed values exchanged across the ingestion boundary."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
@@ -10,6 +10,8 @@ from backend.ingestion.providers.base import FetchedOmmDocument
 __all__ = [
     "FetchedOmmDocument",
     "CanonicalObject",
+    "PersistedGroupIngestion",
+    "PersistedGroupMember",
     "IdentityResolution",
     "OmmRecordCandidate",
     "ParsedOmmRecord",
@@ -97,6 +99,76 @@ class ReprocessableRawArtifact:
     media_type: str
     content_sha256: str
     http_status: int
+
+
+@dataclass(frozen=True)
+class PersistedGroupMember:
+    """One accepted record inside a group ingestion."""
+
+    catalog_id: str
+    object_id: str
+    orbit_solution_id: str
+    canonical_name: str | None
+    identity_status: Literal["CREATED", "MATCHED"]
+
+
+@dataclass(frozen=True)
+class PersistedGroupIngestion:
+    """One immutable GROUP snapshot expanded into many canonical records.
+
+    A debris family is one provider response, so the whole cohort shares a
+    single raw artifact (and therefore a single SHA-256 provenance root).
+    """
+
+    ingestion_run_id: str
+    raw_artifact_id: str
+    group: str
+    source_uri: str
+    retrieved_at: datetime
+    raw_artifact: StoredRawArtifact
+    members: tuple[PersistedGroupMember, ...]
+    source_id: str = "celestrak_gp"
+    status: Literal["SUCCEEDED", "PARTIAL"] = "SUCCEEDED"
+    rejected_record_count: int = 0
+    rejection_reasons: dict[str, int] = field(default_factory=dict)
+
+    def to_api_payload(self) -> dict[str, Any]:
+        """Render group provenance without inventing anything about rejected rows."""
+        return {
+            "status": self.status,
+            "ingestion_run_id": self.ingestion_run_id,
+            "group": self.group,
+            "record_count": len(self.members),
+            "rejected_record_count": self.rejected_record_count,
+            "rejection_reasons": self.rejection_reasons,
+            "created_object_count": sum(
+                1 for member in self.members if member.identity_status == "CREATED"
+            ),
+            "objects": [
+                {
+                    "catalog_id": member.catalog_id,
+                    "object_id": member.object_id,
+                    "canonical_name": member.canonical_name,
+                    "identity_status": member.identity_status,
+                    "orbit_solution_id": member.orbit_solution_id,
+                }
+                for member in self.members
+            ],
+            "provenance": {
+                "source_ids": [self.source_id],
+                "source_uri": self.source_uri,
+                "retrieved_at": self.retrieved_at.isoformat(),
+                "input_artifact_hashes": [f"sha256:{self.raw_artifact.content_sha256}"],
+                "source_artifact_uri": self.raw_artifact.object_uri,
+                "quality_grade": "PUBLIC_GP",
+                "limitations": [
+                    "PUBLIC_GP source; these records are not an operational "
+                    "conjunction assessment.",
+                    "No covariance is supplied by GP/OMM, so Pc stays NOT_COMPUTED.",
+                    "One immutable provider response backs every record in this group.",
+                ],
+            },
+        }
 
 
 @dataclass(frozen=True)

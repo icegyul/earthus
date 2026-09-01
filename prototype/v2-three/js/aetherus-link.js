@@ -54,6 +54,7 @@ export class AetherusLink {
     this.loading = false;
     this.entries = [];        // 위치 있는 정본 객체 [{catalog_id,name,r,v,sampleMs}]
     this.hidden = 0;          // 격리/위치불가 — 그리지 않되 반드시 공개
+    this.coverage = null;     // 서버 커버리지 — 절단 사실을 숨기지 않기 위해 보존
     this.conjunctions = [];   // [{a,b,tca,missM,pcStatus}]
     this.snapshotAt = null;
     this.points = null;
@@ -77,6 +78,7 @@ export class AetherusLink {
       this._fetchJson('/v1/conjunctions?limit=12'),
     ]);
     const rows = (snap.data && snap.data.catalog) || [];
+    this.coverage = (snap.data && snap.data.coverage) || null;
     this.entries = [];
     this.hidden = 0;
     for (const row of rows) {
@@ -183,9 +185,11 @@ export class AetherusLink {
     if (!this.on) return { on: false };
     const age = this._ageSeconds();
     const stale = age != null && age > MAX_LINEAR_ADVANCE_S;
+    const total = this.coverage && this.coverage.objects_total;
+    const capped = total && total > this.entries.length ? ` / ${total.toLocaleString()}기` : '';
     return {
       on: true,
-      note: `${this.entries.length}기 정본 · 근접 ${this.conjunctions.length}건 · 서버 산출 ${age == null ? '—' : `${Math.round(age)}s 전`}${stale ? ' · STALE' : ''}${this.lastError ? ' · 갱신 실패' : ''}`,
+      note: `${this.entries.length}기${capped} · 근접 ${this.conjunctions.length}건 · 서버 산출 ${age == null ? '—' : `${Math.round(age)}s 전`}${stale ? ' · STALE' : ''}${this.lastError ? ' · 갱신 실패' : ''}`,
     };
   }
 
@@ -201,11 +205,22 @@ export class AetherusLink {
     const hidden = this.hidden
       ? `<br/>격리/위치불가 ${this.hidden}기는 그리지 않습니다 (지어내지 않음).`
       : '';
+    // 서버가 페이지 상한으로 자른 만큼은 반드시 화면에 적는다 (1.0 원칙: 조용히 버리지 않음).
+    const cov = this.coverage || {};
+    const total = cov.objects_total;
+    const cut = total && total > this.entries.length
+      ? `<br/>정본 카탈로그 ${total.toLocaleString()}기 중 ${this.entries.length}기만 표시 — 서버 페이지 상한입니다. 자른 만큼 여기에 적습니다.`
+        + (cov.objects_with_solution ? ` (전파 가능 ${cov.objects_with_solution.toLocaleString()}기)` : '')
+      : '';
+    const debris = this.entries.filter((e) => /DEB|R\/B/i.test(e.name)).length;
+    const debrisLine = debris
+      ? `<br/>표시분 중 파편·로켓바디 ${debris}기 — 실제 파편운(펑윈-1C·코스모스-2251·이리듐-33·코스모스-1408)에서 수집된 공식 궤도요소입니다.`
+      : '';
     const err = this.lastError ? `<br/>최근 갱신 실패: ${this.lastError} — 마지막 정상 스냅샷을 표시 중.` : '';
     return `AETHERUS 정본 카탈로그 — 위치는 브라우저 계산이 아니라 서버 SGP4 스냅샷`
       + `(raw SHA-256 → 정본 아이덴티티 계보)에서 옵니다.<br/>`
       + `${this.entries.length}기 표시 · 서버 산출 ${age == null ? '—' : `${Math.round(age)}s 전`}`
-      + ` · ${Math.round(SNAPSHOT_INTERVAL_MS / 1000)}s 재조회, 사이 구간은 서버 속도벡터로 선형 보간(LINEAR_ADVANCE)${hidden}<br/>`
+      + ` · ${Math.round(SNAPSHOT_INTERVAL_MS / 1000)}s 재조회, 사이 구간은 서버 속도벡터로 선형 보간(LINEAR_ADVANCE)${cut}${debrisLine}${hidden}<br/>`
       + `근접사건 (P4 보수 스크리닝 → 정밀 TCA):<br/>${conj}${err}<br/>`
       + `자문 전용 — 어떤 명령도 전송하지 않습니다.`;
   }

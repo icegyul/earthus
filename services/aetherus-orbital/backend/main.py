@@ -23,6 +23,7 @@ from backend.conjunction.service import ConjunctionService
 from backend.database import check_db_health, close_db
 from backend.domain.object_identity import ObjectIdentityResolver
 from backend.explore.service import CatalogService
+from backend.ingestion.celestrak import CelesTrakClient
 from backend.ingestion.errors import IngestionError, UnknownObjectError
 from backend.ingestion.providers import provider_for
 from backend.ingestion.ratelimit import AsyncRedis, RateLimitCoordinator
@@ -137,6 +138,7 @@ def get_ingestion_service() -> IngestionService:
             lock_ttl_seconds=settings.redis_lock_ttl_seconds,
         ),
         identity_resolver=ObjectIdentityResolver(repository),
+        group_provider=CelesTrakClient(),
         redactor=Redactor.from_secret_values(
             [
                 settings.spacetrack_identity,
@@ -361,6 +363,22 @@ async def ingest_spacetrack_gp(
 ):
     """Fetch one authenticated Space-Track GP record through the common P1 path."""
     return render_ingestion_result(await service.ingest("spacetrack_gp", catalog_id))
+
+
+@app.post(
+    f"{settings.api_prefix}/v1/ingestions/celestrak/groups/{{group}}", status_code=201
+)
+async def ingest_celestrak_group(
+    group: str,
+    service: IngestionService = Depends(get_ingestion_service),
+):
+    """Ingest one CelesTrak GROUP response (debris families) as many records.
+
+    One provider request backs the whole cohort, so every fragment shares a
+    single immutable raw artifact and its SHA-256 provenance root.
+    """
+    result = await service.ingest_group(group)
+    return JSONResponse(status_code=201, content=result.to_api_payload())
 
 
 def render_ingestion_result(result: Any) -> JSONResponse | dict[str, Any]:

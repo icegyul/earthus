@@ -1,0 +1,46 @@
+{
+  "phase": "p6",
+  "orbital_phase": "ORB-P2",
+  "gate": "PARTIAL",
+  "generated_at": "2026-09-01T02:26:55.248945+00:00",
+  "repository": "git@github.com:icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "45330ff5fd18a637316d974d25b6e797e3d2f9fb",
+  "tests": {
+    "command": "pytest <P2 subset 5 files> -q",
+    "exit_code": 0,
+    "summary": "======================== 28 passed, 1 warning in 0.25s ========================"
+  },
+  "golden_cross_validation": [
+    {
+      "fixture": "p2_golden_25544_20260823T172514_e746e2d57908.json",
+      "raw_artifact_sha256": "e746e2d57908e8085bc1364a6c6a43c2b1de1f3fd2502d7b1678d6d800e8b414",
+      "max_deltas": {
+        "alt_km": 0.0,
+        "lat_deg": 0.0,
+        "lon_deg": 0.0,
+        "position_km": 0.0,
+        "velocity_km_s": 0.0
+      },
+      "tolerance": {
+        "alt_km": 1e-06,
+        "lat_deg": 1e-08,
+        "lon_deg": 1e-08,
+        "position_km": 1e-06,
+        "velocity_km_s": 1e-09
+      },
+      "within_tolerance": true
+    }
+  ],
+  "platform_migration_note": "macOS 기록 골든 대비 Windows 재계산 최대 델타: position 1.819e-12 km, velocity 8.882e-16 km/s, alt 2.728e-12 km, lat/lon 0.0 — 전 항목 허용오차 통과 확인 후, 커밋된 생성기(backend.tools.generate_golden_fixtures)로 동일 raw 아티팩트(e746e2d5…)에서 본 플랫폼 골든을 재생성했다. 바이트 해시 차이는 플랫폼 부동소수점 최하위 비트 서식 차이였다.",
+  "live_api": {
+    "http_status": 200,
+    "sample_count": 11,
+    "first_sample_frame": "TEME"
+  },
+  "limitations": [
+    "ORB-P3 Explore 3D 미착수 — V2-P6 게이트의 나머지 절반",
+    "테스트 TZ 버그 1건 수정(naive OMM EPOCH를 UTC로 해석) — 소스 823 대비 변경"
+  ],
+  "next_allowed": "ORB-P3 Explore UI를 수락된 P1/P2 API에 연결 (하드코딩 위치 금지 증명 포함)"
+}

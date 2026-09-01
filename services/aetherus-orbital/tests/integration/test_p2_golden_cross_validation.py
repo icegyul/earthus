@@ -77,7 +77,13 @@ def test_golden_fixture_input_elements_match_committed_snapshot_bytes():
         assert hashlib.sha256(content).hexdigest() == sha256
         record = json.loads(content)[0]
         assert str(record["NORAD_CAT_ID"]) == fixture["input"]["catalog_id"]
-        snapshot_epoch = datetime.fromisoformat(record["EPOCH"]).astimezone(UTC)
+        # OMM EPOCH is UTC by specification but serialized naive; astimezone()
+        # would reinterpret it in the host's local timezone (breaks off-UTC hosts).
+        snapshot_epoch = datetime.fromisoformat(record["EPOCH"])
+        if snapshot_epoch.tzinfo is None:
+            snapshot_epoch = snapshot_epoch.replace(tzinfo=UTC)
+        else:
+            snapshot_epoch = snapshot_epoch.astimezone(UTC)
         fixture_epoch = datetime.fromisoformat(fixture["input"]["epoch"]).astimezone(UTC)
         assert snapshot_epoch == fixture_epoch
         assert float(record["MEAN_MOTION"]) == pytest.approx(

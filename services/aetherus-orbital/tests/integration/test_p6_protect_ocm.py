@@ -27,7 +27,7 @@ from tests.integration.test_p5_physical_counterfactual import (
 
 async def _prepare_baseline(tmp_path) -> tuple[BenefitService, str]:
     await _seed_corpus(tmp_path)
-    await ConjunctionService().run_screening(window_hours=WINDOW_HOURS)
+    await ConjunctionService().run_screening(window_hours=WINDOW_HOURS, catalog_ids=list(CORPUS))
     benefit = BenefitService()
     baseline = await benefit.build_baseline(horizon_hours=WINDOW_HOURS)
     assert baseline["data_status"] == "OK"
@@ -55,6 +55,7 @@ async def test_protect_ranking_orders_candidates_by_physical_benefit(tmp_path):
 
     # PROTECT A(300001): candidates must be exactly its physical neighbors B, C.
     result = await benefit.run_protect_ranking(
+            catalog_scope=list(CORPUS),
         protected_ref="300001", baseline_snapshot_id=baseline_id
     )
     assert result["data_status"] in ("OK", "PARTIAL")
@@ -109,6 +110,7 @@ async def test_protect_ranking_orders_candidates_by_physical_benefit(tmp_path):
 async def test_protect_edgeless_object_gets_honest_insufficient_data(tmp_path):
     benefit, baseline_id = await _prepare_baseline(tmp_path)
     result = await benefit.run_protect_ranking(
+            catalog_scope=list(CORPUS),
         protected_ref="300004", baseline_snapshot_id=baseline_id  # D: no edges
     )
     assert result["data_status"] == "INSUFFICIENT_DATA"
@@ -132,6 +134,7 @@ async def test_ocm_group_reports_resolved_and_newly_created_edges(tmp_path):
         },
     }
     result = await benefit.run_ocm_group(
+            catalog_scope=list(CORPUS),
         target_ref="300002",
         candidates_payload=[escape, reckless],
         baseline_snapshot_id=baseline_id,

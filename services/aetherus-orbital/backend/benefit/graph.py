@@ -309,6 +309,7 @@ def attribute_direct_beneficiaries(
     target_object_id: str,
     config: ScenarioConfig,
     baseline_provenance: dict[str, Any],
+    counterfactual_channels: frozenset[str] | None = None,
 ) -> list[BeneficiaryAttribution]:
     """Attribute Benefit_i(G0,Gs,h,m) to non-target objects above threshold.
 
@@ -316,6 +317,16 @@ def attribute_direct_beneficiaries(
     exceed a strictly-positive-difference rule; zero-delta objects are never
     beneficiaries. The target itself is structurally excluded.
     """
+    # Which channels the counterfactual construction was able to produce at all.
+    # Deleting edges from the baseline can only drop channels the intervention
+    # itself removed, so its absences are real results; a pipeline re-run can
+    # leave a channel empty for reasons unrelated to the intervention, and
+    # differencing against that would attribute the whole baseline value to an
+    # intervention that did not cause it.
+    producible = (
+        baseline.channels() if counterfactual_channels is None else counterfactual_channels
+    )
+
     attributions: list[BeneficiaryAttribution] = []
     label = horizon_label(baseline.horizon_start, baseline.horizon_end)
     changed_objects = baseline.objects() | scenario.objects()
@@ -331,6 +342,9 @@ def attribute_direct_beneficiaries(
             # non-neighbor would require an indirect model P5 does not have.
             continue
         for metric_type in config.metric_types:
+            if metric_type not in producible and baseline.has_channel(metric_type):
+                # Recorded by channel_parity_warnings(); never silently zeroed.
+                continue
             threshold = float(config.thresholds.get(metric_type, 0.0))
             baseline_value = baseline.object_risk(object_id, metric_type)
             scenario_value = scenario.object_risk(object_id, metric_type)
@@ -358,6 +372,55 @@ def attribute_direct_beneficiaries(
                 )
             )
     return attributions
+
+
+#: 한쪽 그래프에만 존재하는 채널. 개입이 만든 차이가 아니므로 귀속하지 않는다.
+CHANNEL_ABSENT_IN_COUNTERFACTUAL = "CHANNEL_ABSENT_IN_COUNTERFACTUAL"
+CHANNEL_ABSENT_IN_BASELINE = "CHANNEL_ABSENT_IN_BASELINE"
+
+
+def channel_parity_warnings(
+    baseline: RiskGraph,
+    scenario: RiskGraph,
+    metric_types: tuple[str, ...],
+    counterfactual_channels: frozenset[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Report requested channels the counterfactual construction could not produce.
+
+    Not a test of whether the counterfactual graph happens to be missing a
+    channel — under an intervention that is frequently the answer, and a full
+    benefit is then correct. The fault is a channel the baseline carries that
+    the counterfactual path was structurally unable to emit, because the
+    difference would credit the intervention with a change nobody measured.
+
+    ``counterfactual_channels`` names what that path can emit. ``None`` means
+    edge-deletion semantics, where the counterfactual is derived from the
+    baseline and every absence is a genuine consequence of the intervention.
+    """
+    if counterfactual_channels is None:
+        return []
+
+    warnings: list[dict[str, Any]] = []
+    for metric_type in metric_types:
+        if not baseline.has_channel(metric_type):
+            continue
+        if metric_type in counterfactual_channels:
+            continue
+        warnings.append(
+            {
+                "code": CHANNEL_ABSENT_IN_COUNTERFACTUAL,
+                "metric_type": metric_type,
+                "baseline_graph_id": baseline.snapshot_id,
+                "scenario_graph_id": scenario.snapshot_id,
+                "data_status": "INSUFFICIENT_DATA",
+                "message": (
+                    f"the baseline carries {metric_type} but the counterfactual "
+                    "recompute cannot produce that channel, so the two graphs are "
+                    "not comparable on it and no benefit was attributed"
+                ),
+            }
+        )
+    return warnings
 
 
 def result_hash(

@@ -14,12 +14,54 @@ async def client():
         yield async_client
 
 
+#: Objects to screen for these contract tests. Pair count is quadratic, so the
+#: whole catalogue costs ~40 minutes while this bounded slice costs ~11s and
+#: still yields real conjunctions (measured 2026-09-02: 150 objects → 10,878
+#: pairs → 12 events; 400 objects → 100s; 800 objects → over 400s).
+_SCREENING_SCOPE_OBJECTS = 150
+
+
+#: Cache for the one screening run these tests share. Module-scoped async
+#: fixtures cannot be used here: pytest-asyncio gives each test its own event
+#: loop, and a connection opened on a module-scoped loop is then reused from a
+#: different one ("attached to a different loop"). Caching inside a
+#: function-scoped fixture gets the same single run while every DB call still
+#: happens on the loop of the test that made it.
+_SCREENED: dict[str, object] = {}
+
+
 @pytest.fixture
 async def _screened_once():
-    """Ensure at least one real screening run exists before API assertions."""
+    """Ensure one real screening run exists before API assertions.
+
+    Bounded to a slice of the real catalogue rather than synthetic objects, so
+    the endpoint is exercised against genuine screening output, and run once for
+    the whole module instead of once per test.
+
+    The event count is asserted rather than assumed. Several tests here iterate
+    over the returned events, and those loops pass vacuously when screening finds
+    nothing — a scope that produced zero events would silently weaken them.
+    """
+    if "payload" in _SCREENED:
+        return _SCREENED["payload"]
+
+    from backend.conjunction.repository import ConjunctionRepository
     from backend.conjunction.service import ConjunctionService
 
-    await ConjunctionService().run_screening(window_hours=6.0)
+    repository = ConjunctionRepository()
+    catalogue = await repository.load_screenable_solutions(_SCREENING_SCOPE_OBJECTS)
+    catalog_ids = [str(row["catalog_id"]) for row in catalogue]
+
+    payload = await ConjunctionService(repository).run_screening(
+        window_hours=6.0, catalog_ids=catalog_ids
+    )
+    assert payload["data"]["coverage"]["scope"] == "CATALOG_SUBSET"
+    assert payload["data"]["events"], (
+        "the bounded scope produced no conjunctions, so every event assertion in "
+        "this module would pass without examining anything"
+    )
+    _SCREENED["payload"] = payload
+    return payload
 
 
 class TestConjunctionsEndpoint:
@@ -100,7 +142,8 @@ class TestConjunctionsEndpoint:
 class TestScreenRunEndpoint:
     async def test_screen_run_executes_and_reports_provenance(self, client):
         response = await client.post(
-            "/api/v1/conjunctions/screen-runs", params={"window_hours": 2.0}
+            "/api/v1/conjunctions/screen-runs",
+            params={"window_hours": 2.0, "max_objects": _SCREENING_SCOPE_OBJECTS},
         )
         assert response.status_code == 202
         payload = response.json()

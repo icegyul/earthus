@@ -21,9 +21,16 @@ class ConjunctionRepository:
     """Persist screening runs and append-only snapshots; serve stored results only."""
 
     async def load_screenable_solutions(
-        self, max_objects: int
+        self, max_objects: int, catalog_ids: list[str] | None = None
     ) -> list[dict[str, Any]]:
-        """Load every canonical object's newest stored OMM solution."""
+        """Load each canonical object's newest stored OMM solution.
+
+        ``catalog_ids`` bounds the screening population to an explicit set. The
+        pair count grows with the square of the population, so screening the
+        whole catalogue to answer a question about six objects is the dominant
+        cost at real debris scale; callers that know their scope say so, and the
+        run records that it was scoped so nobody reads it as full coverage.
+        """
         async with get_db_session() as session:
             result = await session.execute(
                 text(
@@ -49,11 +56,16 @@ class ConjunctionRepository:
                         LIMIT 1
                     ) AS os ON true
                     LEFT JOIN raw_artifact AS ra ON ra.id = os.source_artifact_id
+                    WHERE :unscoped OR so.catalog_id = ANY(:catalog_ids)
                     ORDER BY so.catalog_id ASC
                     LIMIT :limit
                     """
                 ),
-                {"limit": max_objects},
+                {
+                    "limit": max_objects,
+                    "unscoped": catalog_ids is None,
+                    "catalog_ids": list(catalog_ids or []),
+                },
             )
             return [dict(row) for row in result.mappings().all()]
 
@@ -227,7 +239,8 @@ class ConjunctionRepository:
                         miss_distance_m, relative_speed_mps,
                         pc, pc_method, pc_status, pc_unavailable_reason,
                         covariance_status,
-                        max_pc, max_pc_method,
+                        max_pc, max_pc_method, max_pc_basis, max_pc_status,
+                        max_pc_artifact_id,
                         primary_covariance_json, secondary_covariance_json,
                         dilution_state, tca_boundary_flag,
                         source_grade, validation_state,
@@ -238,7 +251,8 @@ class ConjunctionRepository:
                         :miss_distance_m, :relative_speed_mps,
                         :pc, :pc_method, :pc_status, :pc_unavailable_reason,
                         :covariance_status,
-                        :max_pc, :max_pc_method,
+                        :max_pc, :max_pc_method, :max_pc_basis, :max_pc_status,
+                        CAST(:max_pc_artifact_id AS uuid),
                         CAST(:primary_covariance AS jsonb), CAST(:secondary_covariance AS jsonb),
                         :dilution_state, :boundary_flag,
                         :source_grade, :validation_state,
@@ -251,6 +265,12 @@ class ConjunctionRepository:
                 {
                     "event_id": event_id,
                     "snapshot_at": snapshot_at,
+                    # 공개 GP 스크리닝은 MAX_PC 를 산출하지 않는다. 근거 없는 값이
+                    # 흘러들지 못하도록 기본값을 명시하고, 실제로 산출·수집한
+                    # 호출자만 metrics 로 덮어쓴다. (DB 제약이 최종 방어선이다.)
+                    "max_pc_basis": None,
+                    "max_pc_status": "NOT_COMPUTED",
+                    "max_pc_artifact_id": None,
                     **metrics,
                     "provenance": json.dumps(provenance_payload),
                     "validation_state": provenance_payload.get(
@@ -374,6 +394,11 @@ class ConjunctionRepository:
                 cs.pc, cs.pc_method, cs.pc_status, cs.pc_unavailable_reason,
                 cs.covariance_status,
                 cs.max_pc, cs.max_pc_method,
+                cs.max_pc_basis, cs.max_pc_status,
+                -- 외부에서 관측한 MAX_PC 는 출처 없이는 방어할 수 없다. 궤도해의
+                -- 아티팩트와 별개일 수 있으므로 전용 조인으로 가져온다.
+                max_pc_ra.source_id AS max_pc_source_id,
+                max_pc_ra.content_sha256 AS max_pc_content_sha256,
                 cs.dilution_state, cs.tca_boundary_flag,
                 cs.source_grade, cs.validation_state,
                 cs.model_version, cs.input_hash, cs.provenance_json
@@ -381,6 +406,7 @@ class ConjunctionRepository:
             JOIN space_object AS so_primary ON so_primary.id = ce.primary_object_id
             JOIN space_object AS so_secondary ON so_secondary.id = ce.secondary_object_id
             LEFT JOIN latest_snapshot AS cs ON cs.event_id = ce.id
+            LEFT JOIN raw_artifact AS max_pc_ra ON max_pc_ra.id = cs.max_pc_artifact_id
             WHERE {" AND ".join(filters)}
             ORDER BY ce.tca ASC
             LIMIT :limit

@@ -2,7 +2,9 @@
   "fixture_provenance": {
     "derived_from": "NOAA Office of Space Commerce, TraCSS CDM Specification v2.1 public specification example",
     "source_url": "https://space.commerce.gov/wp-content/uploads/2026/01/TraCSS-Spec-001-v2.1_CDM.pdf",
-    "note": "Identity, TCA, miss distance and relative speed follow the published specification example. The 6x6 covariance matrices are synthetic validation values constructed for this fixture because the original example matrices are not part of the public document. This file is a validation fixture only and must never be presented as a live operational conjunction."
+    "note": "Identity, TCA, miss distance and relative speed follow the published specification example. The 6x6 covariance matrices are synthetic validation values constructed for this fixture because the original example matrices are not part of the public document. This file is a validation fixture only and must never be presented as a live operational conjunction.",
+    "shape_class": "ENGINE_SHAPED",
+    "shape_class_note": "JSON with a 6x6 nested covariance declared TEME/km2 — the exact conventions the Aetherus parser and Pc gate already require. A CCSDS 508.0-B-1 CDM is KVN or XML and carries a 21-element RTN lower triangle in m**2. Passing this fixture therefore demonstrates nothing about ingesting a real CDM; it tests the engine against itself. The measured gap is recorded in tests/unit/test_cdm_spec_shape_reality.py against tests/fixtures/cdm/ccsds_508_kvn_shaped.txt."
   },
   "source_grade": "TRACSS_SPEC_EXAMPLE_NOT_OPERATIONAL",
   "creation_date": "2025-05-16T02:14:49.000Z",
@@ -23,12 +25,54 @@
     "covariance_reference_frame": "TEME",
     "hbr_m": 5.0,
     "covariance_km2": [
-      [0.81, 0.05, -0.08, 0.0001, -0.00002, 0.00003],
-      [0.05, 0.25, 0.04, -0.00001, 0.00004, -0.00001],
-      [-0.08, 0.04, 3.24, 0.00002, -0.00001, 0.00008],
-      [0.0001, -0.00001, 0.00002, 4e-8, 1e-9, -2e-9],
-      [-0.00002, 0.00004, -0.00001, 1e-9, 5e-8, 1e-9],
-      [0.00003, -0.00001, 0.00008, -2e-9, 1e-9, 9e-8]
+      [
+        0.81,
+        0.05,
+        -0.08,
+        0.0001,
+        -2e-05,
+        3e-05
+      ],
+      [
+        0.05,
+        0.25,
+        0.04,
+        -1e-05,
+        4e-05,
+        -1e-05
+      ],
+      [
+        -0.08,
+        0.04,
+        3.24,
+        2e-05,
+        -1e-05,
+        8e-05
+      ],
+      [
+        0.0001,
+        -1e-05,
+        2e-05,
+        4e-08,
+        1e-09,
+        -2e-09
+      ],
+      [
+        -2e-05,
+        4e-05,
+        -1e-05,
+        1e-09,
+        5e-08,
+        1e-09
+      ],
+      [
+        3e-05,
+        -1e-05,
+        8e-05,
+        -2e-09,
+        1e-09,
+        9e-08
+      ]
     ]
   },
   "obj2": {
@@ -40,12 +84,54 @@
     "covariance_reference_frame": "TEME",
     "hbr_m": 0.5,
     "covariance_km2": [
-      [1.44, -0.06, 0.09, 0.00008, 0.00001, -0.00002],
-      [-0.06, 0.36, -0.05, 0.00001, 0.00003, 0.00001],
-      [0.09, -0.05, 4.41, -0.00002, 0.00001, 0.00005],
-      [0.00008, 0.00001, -0.00002, 6e-8, -1e-9, 2e-9],
-      [0.00001, 0.00003, 0.00001, -1e-9, 7e-8, -1e-9],
-      [-0.00002, 0.00001, 0.00005, 2e-9, -1e-9, 1.2e-7]
+      [
+        1.44,
+        -0.06,
+        0.09,
+        8e-05,
+        1e-05,
+        -2e-05
+      ],
+      [
+        -0.06,
+        0.36,
+        -0.05,
+        1e-05,
+        3e-05,
+        1e-05
+      ],
+      [
+        0.09,
+        -0.05,
+        4.41,
+        -2e-05,
+        1e-05,
+        5e-05
+      ],
+      [
+        8e-05,
+        1e-05,
+        -2e-05,
+        6e-08,
+        -1e-09,
+        2e-09
+      ],
+      [
+        1e-05,
+        3e-05,
+        1e-05,
+        -1e-09,
+        7e-08,
+        -1e-09
+      ],
+      [
+        -2e-05,
+        1e-05,
+        5e-05,
+        2e-09,
+        -1e-09,
+        1.2e-07
+      ]
     ]
   }
 }

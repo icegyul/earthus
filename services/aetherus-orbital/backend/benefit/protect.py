@@ -8,7 +8,30 @@ command or transmission path exists anywhere in this module.
 from dataclasses import dataclass
 from typing import Any
 
-from backend.benefit.physical import BaselinePrime, CandidateOutcome
+from backend.benefit.physical import (
+    PHYSICAL_RECOMPUTE_CHANNELS,
+    BaselinePrime,
+    CandidateOutcome,
+)
+
+
+def comparable_metrics(metrics: tuple[str, ...]) -> tuple[str, ...]:
+    """Keep only channels the physical recompute can actually produce.
+
+    PROTECT and OCM both rank candidates by differencing a baseline graph against
+    counterfactuals built by re-running the P4 pipeline on public GP elements.
+    That path has no covariance and therefore never emits PC or MAX_PC, so a
+    baseline carrying either has nothing legitimate to be compared against;
+    including it would report the whole baseline value as the benefit of the
+    intervention. Dropped channels are reported by
+    ``excluded_metrics`` so the omission is visible rather than silent.
+    """
+    return tuple(metric for metric in metrics if metric in PHYSICAL_RECOMPUTE_CHANNELS)
+
+
+def excluded_metrics(metrics: tuple[str, ...]) -> tuple[str, ...]:
+    """Requested channels the physical recompute cannot produce."""
+    return tuple(metric for metric in metrics if metric not in PHYSICAL_RECOMPUTE_CHANNELS)
 
 
 @dataclass(frozen=True)
@@ -35,12 +58,17 @@ def rank_protect_candidates(
     Ordering: primary requested metric descending, then candidate id — fully
     deterministic so equal-benefit candidates never reorder between runs.
     """
+    # Candidate outcomes come from the physical recompute, which cannot emit the
+    # probability channels. Differencing a baseline PC against them would report
+    # the whole baseline value as the benefit of protecting Y.
+    comparable = comparable_metrics(metrics)
+
     ranks: list[ProtectCandidateRank] = []
     for outcome in outcomes:
         benefits = {
             metric: baseline.graph.object_risk(protected_object_id, metric)
             - outcome.scenario_graph.object_risk(protected_object_id, metric)
-            for metric in metrics
+            for metric in comparable
         }
         ranks.append(
             ProtectCandidateRank(
@@ -81,10 +109,11 @@ def evaluate_ocm_candidate(
     value of newly created edges (the new-risk signal a maneuver must never
     hide), and every object whose risk worsened under the candidate.
     """
+    comparable = comparable_metrics(metrics)
     target_delta = {
         metric: baseline.graph.object_risk(target_object_id, metric)
         - outcome.scenario_graph.object_risk(target_object_id, metric)
-        for metric in metrics
+        for metric in comparable
     }
     new_risk = _edges_by_metric(outcome.new_edges, "scenario_value")
     resolved_risk = _edges_by_metric(outcome.removed_edges, "baseline_value")
@@ -93,7 +122,7 @@ def evaluate_ocm_candidate(
     every_object = baseline.graph.objects() | outcome.scenario_graph.objects()
     every_object.discard(target_object_id)
     for object_id in sorted(every_object):
-        for metric in metrics:
+        for metric in comparable:
             before = baseline.graph.object_risk(object_id, metric)
             after = outcome.scenario_graph.object_risk(object_id, metric)
             if after > before:
@@ -109,6 +138,11 @@ def evaluate_ocm_candidate(
 
     return {
         "candidate_id": outcome.intervention.label(),
+        # Requested channels the recompute could not produce. Present even when
+        # empty so a reader can tell "no such channel was asked for" from
+        # "a channel was asked for and quietly dropped".
+        "excluded_metrics": list(excluded_metrics(metrics)),
+        "excluded_metrics_reason": "PHYSICAL_RECOMPUTE_CANNOT_PRODUCE_CHANNEL",
         "element_overrides": outcome.intervention.element_overrides or {},
         "target_risk_delta": target_delta,
         "resolved_edge_risk": resolved_risk,

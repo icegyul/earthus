@@ -8,6 +8,14 @@ from backend.conjunction.repository import ConjunctionRepository
 from backend.conjunction.service import ConjunctionService
 
 
+#: Bound the screening population for these persistence tests. Pair count is
+#: quadratic, so the full ~2,851-object catalogue costs ~40 minutes per call and
+#: this file makes six. A bounded slice of the REAL catalogue keeps every
+#: assertion about persisted state honest while costing seconds (measured
+#: 2026-09-02: 150 objects -> 10,878 pairs -> 12 events, 11.5s).
+SCREENING_SCOPE_OBJECTS = 150
+
+
 @pytest.fixture
 async def repository():
     return ConjunctionRepository()
@@ -18,7 +26,7 @@ class TestRealCatalogScreening:
         self, repository
     ):
         service = ConjunctionService(repository)
-        payload = await service.run_screening(window_hours=6.0)
+        payload = await service.run_screening(window_hours=6.0, max_objects=SCREENING_SCOPE_OBJECTS)
 
         run_id = payload["data"]["screening_run_id"]
         assert run_id
@@ -59,8 +67,8 @@ class TestRealCatalogScreening:
 
     async def test_second_run_appends_snapshot_not_new_event(self, repository):
         service = ConjunctionService(repository)
-        first = await service.run_screening(window_hours=6.0)
-        second = await service.run_screening(window_hours=6.0)
+        first = await service.run_screening(window_hours=6.0, max_objects=SCREENING_SCOPE_OBJECTS)
+        second = await service.run_screening(window_hours=6.0, max_objects=SCREENING_SCOPE_OBJECTS)
         if first["data"]["events_found"] == 0:
             # Nothing to version; the run itself still must exist twice.
             assert first["data"]["screening_run_id"] != second["data"]["screening_run_id"]
@@ -79,7 +87,7 @@ class TestRealCatalogScreening:
         )
 
     async def test_pair_counts_recorded(self, repository):
-        payload = await ConjunctionService(repository).run_screening(window_hours=4.0)
+        payload = await ConjunctionService(repository).run_screening(window_hours=4.0, max_objects=SCREENING_SCOPE_OBJECTS)
         data = payload["data"]
         n_objects = data["objects_propagated"]
         expected_pairs = n_objects * (n_objects - 1) // 2
@@ -96,7 +104,7 @@ class TestExplicitStates:
 
     async def test_insufficient_data_when_no_candidates(self, repository):
         """A tiny window over the real catalog legitimately finds nothing."""
-        payload = await ConjunctionService(repository).run_screening(window_hours=0.05)
+        payload = await ConjunctionService(repository).run_screening(window_hours=0.05, max_objects=SCREENING_SCOPE_OBJECTS)
         if payload["data"]["events_found"] > 0:
             pytest.skip("real catalog produced an event inside the probe window")
         assert payload["data_status"] in {"INSUFFICIENT_DATA", "PARTIAL", "UNAVAILABLE"}

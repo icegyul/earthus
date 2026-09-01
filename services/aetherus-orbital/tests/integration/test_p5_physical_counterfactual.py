@@ -130,7 +130,7 @@ def _accounting(warnings: list[dict]) -> dict:
 async def test_physical_remove_full_vs_affected_independent_equivalence(tmp_path):
     await _seed_corpus(tmp_path)
 
-    screening = await ConjunctionService().run_screening(window_hours=WINDOW_HOURS)
+    screening = await ConjunctionService().run_screening(window_hours=WINDOW_HOURS, catalog_ids=list(CORPUS))
     corpus_events = [
         event
         for event in screening["data"]["events"]
@@ -158,8 +158,8 @@ async def test_physical_remove_full_vs_affected_independent_equivalence(tmp_path
     assert scenario["data"]["parameters"]["counterfactual_method"] == METHOD_PHYSICAL
     assert METHOD_PHYSICAL in scenario["data"]["assumptions"]
 
-    full_run = await benefit.run_scenario(scenario_id, recompute_mode="FULL")
-    fast_run = await benefit.run_scenario(scenario_id, recompute_mode="AFFECTED_SUBGRAPH")
+    full_run = await benefit.run_scenario(scenario_id, recompute_mode="FULL", catalog_scope=list(CORPUS))
+    fast_run = await benefit.run_scenario(scenario_id, recompute_mode="AFFECTED_SUBGRAPH", catalog_scope=list(CORPUS))
     # Quarantined catalog residues fail SGP4 init and are honestly reported,
     # which downgrades an otherwise complete run to PARTIAL — accept both, but
     # only for that explicit reason.
@@ -237,7 +237,7 @@ async def test_physical_remove_full_vs_affected_independent_equivalence(tmp_path
 @pytest.mark.integration
 async def test_idealized_stays_simulation_only_and_labeled(tmp_path):
     await _seed_corpus(tmp_path)
-    await ConjunctionService().run_screening(window_hours=WINDOW_HOURS)
+    await ConjunctionService().run_screening(window_hours=WINDOW_HOURS, catalog_ids=list(CORPUS))
     benefit = BenefitService()
     baseline = await benefit.build_baseline(horizon_hours=WINDOW_HOURS)
     scenario = await benefit.create_remove_scenario(
@@ -251,7 +251,7 @@ async def test_idealized_stays_simulation_only_and_labeled(tmp_path):
     assert "SIMULATION_ONLY: no physics is recomputed on this path." in (
         scenario["data"]["assumptions"]
     )
-    run = await benefit.run_scenario(scenario["data"]["scenario_id"])
+    run = await benefit.run_scenario(scenario["data"]["scenario_id"], catalog_scope=list(CORPUS))
     row = await _run_status(run["data"]["run_id"])
     assert row["validation_state"] == "SIMULATION_ONLY"
 
@@ -260,7 +260,7 @@ async def test_idealized_stays_simulation_only_and_labeled(tmp_path):
 async def test_physical_edgeless_target_yields_honest_insufficient_data(tmp_path):
     """REMOVE of an edge-free object states the fact instead of inventing benefit."""
     await _seed_corpus(tmp_path)
-    await ConjunctionService().run_screening(window_hours=WINDOW_HOURS)
+    await ConjunctionService().run_screening(window_hours=WINDOW_HOURS, catalog_ids=list(CORPUS))
     benefit = BenefitService()
     baseline = await benefit.build_baseline(horizon_hours=WINDOW_HOURS)
 
@@ -271,7 +271,7 @@ async def test_physical_edgeless_target_yields_honest_insufficient_data(tmp_path
         metric_types=None,
         recompute_mode="FULL",
     )
-    run = await benefit.run_scenario(scenario["data"]["scenario_id"])
+    run = await benefit.run_scenario(scenario["data"]["scenario_id"], catalog_scope=list(CORPUS))
     assert run["data_status"] == "INSUFFICIENT_DATA"
     assert run["status_reason"] == "NO_BASELINE_EDGES_FOR_TARGET"
     benefits = await benefit.scenario_benefits(scenario["data"]["scenario_id"])

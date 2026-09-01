@@ -20,6 +20,7 @@ from backend.benefit.errors import (
 from backend.benefit.graph import (
     apply_idealized_removal,
     attribute_direct_beneficiaries,
+    channel_parity_warnings,
     build_baseline_edges,
     default_horizon_bounds,
     result_hash,
@@ -44,6 +45,7 @@ from backend.benefit.models import (
     build_scenario_config_hash,
 )
 from backend.benefit.physical import (
+    PHYSICAL_RECOMPUTE_CHANNELS,
     INTERVENTION_REMOVE,
     INTERVENTION_SUBSTITUTE,
     PHYSICAL_MODEL_VERSION,
@@ -64,6 +66,22 @@ from backend.conjunction.repository import ConjunctionRepository, to_mean_elemen
 
 MAX_HORIZON_HOURS = 168.0
 
+
+
+async def _load_scoped_solutions(catalog_scope: list[str] | None) -> list[dict[str, Any]]:
+    """Load the screening population, optionally bounded to an explicit scope.
+
+    Scoping is sound only when the scope covers every object the intervention can
+    touch. REMOVE deletes a body and can only remove edges, so a scope holding the
+    baseline population is enough. SUBSTITUTE and OCM move a body onto a new orbit
+    and can therefore create edges with objects outside that population; scoping
+    such a run hides those new edges and makes PROTECT under-report the risk the
+    manoeuvre introduces. Callers that cannot guarantee the condition pass None
+    and pay for the full catalogue.
+    """
+    return await ConjunctionRepository().load_screenable_solutions(
+        settings.screening_max_objects, catalog_scope
+    )
 
 class BenefitService:
     """Build baseline risk graphs and run REMOVE counterfactual scenarios."""
@@ -368,9 +386,17 @@ class BenefitService:
         return self._scenario_payload(scenario)
 
     async def run_scenario(
-        self, scenario_id: str, recompute_mode: str | None = None
+        self,
+        scenario_id: str,
+        recompute_mode: str | None = None,
+        catalog_scope: list[str] | None = None,
     ) -> dict[str, Any]:
-        """Execute one immutable scenario run (synchronous, bounded)."""
+        """Execute one immutable scenario run (synchronous, bounded).
+
+        This endpoint only accepts REMOVE, so a ``catalog_scope`` covering the
+        baseline population is sound: deleting a body cannot create edges. See
+        :func:`_load_scoped_solutions` for the condition in full.
+        """
         scenario = await self.repository.get_scenario(scenario_id)
         if scenario is None:
             raise ScenarioNotFoundError()
@@ -426,6 +452,7 @@ class BenefitService:
 
         if method == METHOD_PHYSICAL:
             return await self._run_physical_scenario(
+                catalog_scope=catalog_scope,
                 scenario=scenario,
                 scenario_id=scenario_id,
                 run_id=run_id,
@@ -491,6 +518,13 @@ class BenefitService:
                 ),
             }
         ]
+        # 요청된 채널 중 한쪽 그래프에만 존재하는 것이 있으면 그 채널에는 이득이
+        # 귀속되지 않았다. 침묵하면 "변화 없음"과 구분되지 않으므로 이유를 남긴다.
+        warnings.extend(
+            channel_parity_warnings(
+                baseline, counterfactual.scenario_graph, run_config.metric_types
+            )
+        )
         if not baseline.edges:
             data_status = "INSUFFICIENT_DATA"
             status_reason = "BASELINE_HAS_NO_EDGES"
@@ -547,6 +581,7 @@ class BenefitService:
         metrics: tuple[str, ...],
         thresholds: dict[str, float],
         run_config: ScenarioConfig,
+            catalog_scope: list[str] | None = None,
     ) -> dict[str, Any]:
         """SCREENING_RECOMPUTE_V1: derive G0' and Gs by re-running P4 physics."""
         target_id = str(scenario["target_object_id"])
@@ -591,9 +626,7 @@ class BenefitService:
                     {"baseline_snapshot_id": scenario["baseline_snapshot_id"]},
                 )
 
-            solutions = await ConjunctionRepository().load_screenable_solutions(
-                settings.screening_max_objects
-            )
+            solutions = await _load_scoped_solutions(catalog_scope)
             entries, skipped_inputs = build_entries(solutions, to_mean_elements)
             if all(entry.object_id != target_id for entry in entries):
                 return await _finalize_insufficient(
@@ -660,6 +693,11 @@ class BenefitService:
                     "counterfactual_method": METHOD_PHYSICAL,
                     "recompute_input_hash": counterfactual.input_hash,
                 },
+                # The recompute propagates public GP elements, which carry no
+                # covariance, so it can never emit PC or MAX_PC. Differencing a
+                # baseline that has them against a counterfactual that never
+                # could would publish the entire baseline value as the benefit.
+                counterfactual_channels=PHYSICAL_RECOMPUTE_CHANNELS,
             )
             _, peak_bytes = tracemalloc.get_traced_memory()
         finally:
@@ -710,6 +748,15 @@ class BenefitService:
 
         warnings: list[dict[str, Any]] = [
             _physical_disclaimer(),
+            # G0-prime, not the stored baseline: the physical path compares the
+            # counterfactual against its own re-derived baseline, so parity must
+            # be judged between the two graphs actually differenced.
+            *channel_parity_warnings(
+                counterfactual.baseline_prime,
+                counterfactual.scenario_graph,
+                run_config.metric_types,
+                PHYSICAL_RECOMPUTE_CHANNELS,
+            ),
             {
                 "code": "PHYSICAL_RECOMPUTE_ACCOUNTING",
                 "baseline_prime_graph_id": baseline_prime_id,
@@ -921,6 +968,7 @@ class BenefitService:
         baseline_snapshot_id: str | None = None,
         recompute_mode: str = "AFFECTED_SUBGRAPH",
         max_candidates: int = 32,
+            catalog_scope: list[str] | None = None,
     ) -> dict[str, Any]:
         """PROTECT Y: rank REMOVE candidates by physically derived Benefit(k->Y)."""
         if recompute_mode not in ("FULL", "AFFECTED_SUBGRAPH"):
@@ -1026,9 +1074,7 @@ class BenefitService:
             )
 
         try:
-            solutions = await ConjunctionRepository().load_screenable_solutions(
-                settings.screening_max_objects
-            )
+            solutions = await _load_scoped_solutions(catalog_scope)
             entries, _skipped = build_entries(solutions, to_mean_elements)
             if all(entry.object_id != protected_id for entry in entries):
                 return await _insufficient(
@@ -1321,6 +1367,7 @@ class BenefitService:
         candidates_payload: list[dict[str, Any]],
         baseline_snapshot_id: str | None = None,
         recompute_mode: str = "AFFECTED_SUBGRAPH",
+            catalog_scope: list[str] | None = None,
     ) -> dict[str, Any]:
         """Evaluate nominal + candidate OCMs against the common external set."""
         if recompute_mode not in ("FULL", "AFFECTED_SUBGRAPH"):
@@ -1414,9 +1461,7 @@ class BenefitService:
         started = time.perf_counter()
         tracemalloc.start()
         try:
-            solutions = await ConjunctionRepository().load_screenable_solutions(
-                settings.screening_max_objects
-            )
+            solutions = await _load_scoped_solutions(catalog_scope)
             entries, _skipped = build_entries(solutions, to_mean_elements)
             target_entry = next(
                 (entry for entry in entries if entry.object_id == target_id), None

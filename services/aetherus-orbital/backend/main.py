@@ -460,14 +460,27 @@ async def run_conjunction_screening(
         le=168.0,
         description="Screening window length in hours; defaults to configuration",
     ),
+    max_objects: int | None = Query(
+        default=None,
+        ge=2,
+        description=(
+            "Bound the screening population. Pair count grows with the square of "
+            "the population, so an unbounded run over the full debris catalogue "
+            "takes tens of minutes. Defaults to configuration."
+        ),
+    ),
     service: ConjunctionService = Depends(get_conjunction_service),
 ):
-    """Screen every stored P1/P2 orbit_solution and persist events/snapshots.
+    """Screen stored P1/P2 orbit_solutions and persist events/snapshots.
 
-    The real stored catalog is bounded by configuration, so this executes
-    synchronously; the 10k verification corpus never runs through this route.
+    Runs synchronously despite the 202. That was defensible while the stored
+    catalogue held a handful of objects; after debris ingestion it holds ~2,851,
+    and pair count is quadratic, so an unbounded call occupies the worker for
+    tens of minutes. ``max_objects`` bounds the population until this route is
+    moved onto a job queue; the response's ``coverage`` block records the bound
+    so a partial run is never mistaken for full catalogue coverage.
     """
-    return await service.run_screening(window_hours)
+    return await service.run_screening(window_hours, max_objects=max_objects)
 
 
 @app.get(f"{settings.api_prefix}/v1/conjunctions")

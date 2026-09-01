@@ -1,0 +1,107 @@
+COMMENT ============================================================
+COMMENT SPEC-SHAPED CDM — NOT AN OPERATIONAL CONJUNCTION, NOT A REAL CDM.
+COMMENT
+COMMENT Constructed to the STRUCTURE of CCSDS 508.0-B-1 (Conjunction Data
+COMMENT Message): KVN encoding, per-object RTN covariance expressed as the
+COMMENT 21-element lower triangle in m**2. The numeric values are invented
+COMMENT and carry no physical meaning.
+COMMENT
+COMMENT Its only purpose is to answer one question honestly: does the
+COMMENT Aetherus CDM path accept a document shaped the way the standard
+COMMENT says CDMs are shaped? The existing fixture
+COMMENT tracss_spec_example_cdm_valid.json cannot answer that, because it
+COMMENT was authored in the shape our own parser already wanted (JSON, a
+COMMENT 6x6 nested matrix, TEME, km2) — it tests the engine against itself.
+COMMENT
+COMMENT This file must never be presented as observed data.
+COMMENT ============================================================
+CCSDS_CDM_VERS = 1.0
+CREATION_DATE = 2026-09-01T12:00:00.000
+ORIGINATOR = AETHERUS_SPEC_SHAPE_FIXTURE
+MESSAGE_FOR = SPEC SHAPE CHECK
+MESSAGE_ID = AETHERUS-SPEC-SHAPE-0001
+TCA = 2026-09-02T04:15:33.120
+MISS_DISTANCE = 715 [m]
+RELATIVE_SPEED = 14762 [m/s]
+RELATIVE_POSITION_R = 27.4 [m]
+RELATIVE_POSITION_T = -621.7 [m]
+RELATIVE_POSITION_N = 344.2 [m]
+RELATIVE_VELOCITY_R = -3.1 [m/s]
+RELATIVE_VELOCITY_T = -14755.2 [m/s]
+RELATIVE_VELOCITY_N = 62.8 [m/s]
+COLLISION_PROBABILITY = 1.42E-05
+COLLISION_PROBABILITY_METHOD = FOSTER-1992
+OBJECT = OBJECT1
+OBJECT_DESIGNATOR = 30001
+CATALOG_NAME = SATCAT
+OBJECT_NAME = SPEC SHAPE PRIMARY
+INTERNATIONAL_DESIGNATOR = 2026-001A
+OBJECT_TYPE = PAYLOAD
+EPHEMERIS_NAME = NONE
+COVARIANCE_METHOD = CALCULATED
+MANEUVERABLE = NO
+REF_FRAME = ITRF
+X = 2570.097065 [km]
+Y = 2244.654904 [km]
+Z = 6281.497978 [km]
+X_DOT = 4.418769571 [km/s]
+Y_DOT = 4.833547743 [km/s]
+Z_DOT = -3.526774282 [km/s]
+CR_R = 4.142E+01 [m**2]
+CT_R = -8.579E+00 [m**2]
+CT_T = 2.533E+03 [m**2]
+CN_R = -2.313E+01 [m**2]
+CN_T = 1.336E+01 [m**2]
+CN_N = 7.098E+01 [m**2]
+CRDOT_R = 2.520E-03 [m**2/s]
+CRDOT_T = -5.476E-03 [m**2/s]
+CRDOT_N = -1.234E-03 [m**2/s]
+CRDOT_RDOT = 5.457E-06 [m**2/s**2]
+CTDOT_R = -1.234E-02 [m**2/s]
+CTDOT_T = 1.234E-01 [m**2/s]
+CTDOT_N = 4.321E-03 [m**2/s]
+CTDOT_RDOT = -1.234E-05 [m**2/s**2]
+CTDOT_TDOT = 4.567E-05 [m**2/s**2]
+CNDOT_R = 1.234E-03 [m**2/s]
+CNDOT_T = -3.456E-03 [m**2/s]
+CNDOT_N = 2.345E-03 [m**2/s]
+CNDOT_RDOT = -1.234E-06 [m**2/s**2]
+CNDOT_TDOT = 3.456E-06 [m**2/s**2]
+CNDOT_NDOT = 1.234E-05 [m**2/s**2]
+OBJECT = OBJECT2
+OBJECT_DESIGNATOR = 30002
+CATALOG_NAME = SATCAT
+OBJECT_NAME = SPEC SHAPE SECONDARY
+INTERNATIONAL_DESIGNATOR = 2026-002B
+OBJECT_TYPE = DEBRIS
+EPHEMERIS_NAME = NONE
+COVARIANCE_METHOD = CALCULATED
+MANEUVERABLE = NO
+REF_FRAME = ITRF
+X = 2569.540800 [km]
+Y = 2245.171000 [km]
+Z = 6281.156000 [km]
+X_DOT = -4.319552000 [km/s]
+Y_DOT = -4.930112000 [km/s]
+Z_DOT = 3.401220000 [km/s]
+CR_R = 1.337E+02 [m**2]
+CT_R = -2.211E+01 [m**2]
+CT_T = 8.842E+03 [m**2]
+CN_R = -4.412E+01 [m**2]
+CN_T = 3.310E+01 [m**2]
+CN_N = 1.994E+02 [m**2]
+CRDOT_R = 4.410E-03 [m**2/s]
+CRDOT_T = -8.812E-03 [m**2/s]
+CRDOT_N = -2.210E-03 [m**2/s]
+CRDOT_RDOT = 9.912E-06 [m**2/s**2]
+CTDOT_R = -2.210E-02 [m**2/s]
+CTDOT_T = 2.210E-01 [m**2/s]
+CTDOT_N = 7.740E-03 [m**2/s]
+CTDOT_RDOT = -2.210E-05 [m**2/s**2]
+CTDOT_TDOT = 8.180E-05 [m**2/s**2]
+CNDOT_R = 2.210E-03 [m**2/s]
+CNDOT_T = -6.190E-03 [m**2/s]
+CNDOT_N = 4.200E-03 [m**2/s]
+CNDOT_RDOT = -2.210E-06 [m**2/s**2]
+CNDOT_TDOT = 6.190E-06 [m**2/s**2]
+CNDOT_NDOT = 2.210E-05 [m**2/s**2]

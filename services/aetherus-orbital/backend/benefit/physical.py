@@ -36,6 +36,16 @@ from backend.benefit.models import (
 )
 from backend.conjunction.models import ScreeningConfig
 from backend.conjunction.screen import coarse_screen, prepare_catalog
+
+#: Channels the physical recompute can actually emit.
+#:
+#: Every recomputed row is built from propagated public GP elements, which carry
+#: no covariance, so ``pc`` and ``max_pc`` are always None on this path (see the
+#: row construction below, which records COVARIANCE_MISSING_PUBLIC_GP). Naming
+#: that limit here lets the benefit engine refuse to difference a baseline PC
+#: against a counterfactual that never had one, instead of publishing the whole
+#: baseline value as the benefit of the intervention.
+PHYSICAL_RECOMPUTE_CHANNELS = frozenset({"CONJUNCTION_EXPOSURE"})
 from backend.conjunction.tca import find_tca
 from backend.orbit.errors import PropagationError
 from backend.orbit.frames import FrameAssumptions

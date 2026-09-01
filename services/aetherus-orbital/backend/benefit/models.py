@@ -180,8 +180,42 @@ class RiskGraph:
     def incident_edges(self, object_id: str) -> list[RiskEdge]:
         return [edge for edge in self.edges if edge.involves(object_id)]
 
+    @staticmethod
+    def risk_delta(before: float | None, after: float | None) -> float | None:
+        """Difference two channel risks, refusing when either side lacks the channel.
+
+        ``None`` propagates rather than collapsing to a number: an unknown minus
+        a known is unknown, and reporting it as the full known value would credit
+        an intervention with a change nobody measured.
+        """
+        if before is None or after is None:
+            return None
+        return before - after
+
+    def has_channel(self, metric_type: str) -> bool:
+        """Whether this graph carries the channel at all."""
+        return any(edge.metric_type == metric_type for edge in self.edges)
+
+    def channels(self) -> frozenset[str]:
+        """Every metric channel populated in this graph."""
+        return frozenset(edge.metric_type for edge in self.edges)
+
     def object_risk(self, object_id: str, metric_type: str) -> float:
-        """Aggregate R_i(G,h,m) over incident edges of exactly one channel."""
+        """Aggregate R_i(G,h,m) over incident edges of exactly one channel.
+
+        Zero for an object with no incident edge of the channel. That is the
+        right answer here and must stay: an object that lost its edges because
+        the intervention removed its neighbour genuinely carries no remaining
+        risk, and that is exactly what a benefit looks like.
+
+        Whether a zero is *meaningful* depends on how the counterfactual graph
+        was constructed, which this method cannot see. Deleting edges from the
+        baseline can only remove channels the intervention removed, so its zeros
+        are real. Re-running the pipeline can leave a channel unpopulated for
+        reasons unrelated to the intervention, and differencing against that is
+        a fabrication. The judgement therefore lives where the two graphs meet —
+        see ``attribute_direct_beneficiaries`` and ``channel_parity_warnings``.
+        """
         return sum(
             edge.metric_value
             for edge in self.edges

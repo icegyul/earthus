@@ -39,8 +39,18 @@ class ConjunctionService:
         self,
         window_hours: float | None = None,
         config: ScreeningConfig | None = None,
+        catalog_ids: list[str] | None = None,
+        max_objects: int | None = None,
     ) -> dict[str, Any]:
-        """Execute one bounded screening over every stored P1/P2 solution."""
+        """Execute one bounded screening over stored P1/P2 solutions.
+
+        ``catalog_ids`` narrows the population to an explicit set. Pair count is
+        quadratic in the population, so a caller that only cares about a few
+        objects should say so rather than pay for the whole catalogue. A scoped
+        run is recorded as scoped: ``coverage`` in the payload and the run's
+        config name the restriction, because a subset result must never be read
+        as evidence that the full catalogue was screened.
+        """
         effective_config = config or ScreeningConfig(
             window_hours=settings.screening_window_hours,
             coarse_step_seconds=settings.screening_coarse_step_seconds,
@@ -60,8 +70,15 @@ class ConjunctionService:
                 "Screening window must lie between 0.01 and 168 hours",
                 {"window_hours": requested_window},
             )
+        overrides: dict[str, Any] = {"window_hours": requested_window}
+        if max_objects is not None:
+            # Population bound, distinct from catalog_ids: the caller does not know
+            # which objects exist but does know how much work it can afford. Pair
+            # count is quadratic, so this is the difference between seconds and
+            # tens of minutes on the real catalogue.
+            overrides["max_objects"] = int(max_objects)
         effective_config = ScreeningConfig(
-            **{**effective_config.to_payload(), "window_hours": requested_window}
+            **{**effective_config.to_payload(), **overrides}
         )
         config_hash = build_config_hash(effective_config)
 
@@ -69,7 +86,15 @@ class ConjunctionService:
         window_start = started_at
         window_stop = started_at + timedelta(hours=requested_window)
 
-        loaded = await self.repository.load_screenable_solutions(effective_config.max_objects)
+        loaded = await self.repository.load_screenable_solutions(
+            effective_config.max_objects, catalog_ids
+        )
+        coverage = {
+            "scope": "CATALOG_SUBSET" if catalog_ids is not None else "FULL_CATALOGUE",
+            "requested_catalog_ids": sorted(catalog_ids) if catalog_ids is not None else None,
+            "objects_loaded": len(loaded),
+            "max_objects": effective_config.max_objects,
+        }
         entries: list[tuple[str, str, Any]] = []
         skipped: list[dict[str, Any]] = []
         solution_ids: list[str] = []
@@ -151,6 +176,7 @@ class ConjunctionService:
                 config_hash=config_hash,
                 input_hash=input_hash,
                 warnings=["No stored P1/P2 orbit_solution input could be screened."],
+                coverage=coverage,
             )
 
         prepared = prepare_catalog(entries)
@@ -287,6 +313,7 @@ class ConjunctionService:
             config_hash=config_hash,
             input_hash=input_hash,
             warnings=warnings,
+            coverage=coverage,
         )
 
     async def _persist_event_and_snapshot(
@@ -534,6 +561,49 @@ def _run_input_hash(
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
 
+#: MAX_PC 상태를 COMPUTED 로 부를 수 있는 유일한 근거. 다른 근거로 얻은 값은
+#: 값으로서 유효하되 "우리가 계산했다"고 말해서는 안 된다.
+_MAX_PC_BASIS_COMPUTED_INTERNAL = "COMPUTED_INTERNAL"
+#: 근거가 기록되지 않은 값. 값의 존재로부터 상태를 추론하던 자리를 대신한다 —
+#: 추론은 언제나 우리에게 유리한 방향이었으므로 결함으로 드러내야 한다.
+_MAX_PC_STATUS_BASIS_UNRECORDED = "BASIS_UNRECORDED"
+
+
+def _max_pc_channel(row: dict[str, Any]) -> dict[str, Any]:
+    """Report MAX_PC with the basis it was actually obtained on.
+
+    The status used to be inferred from the value being non-null, which would
+    have credited Aetherus with computing any externally published screening
+    metric the moment one was ingested. Status is now read from storage, and a
+    value whose basis was never recorded is surfaced as a fault rather than
+    guessed in the flattering direction.
+    """
+    value = row["max_pc"]
+    basis = row.get("max_pc_basis")
+    stored_status = row.get("max_pc_status")
+
+    if value is None:
+        status = stored_status or "NOT_COMPUTED"
+    elif basis is None:
+        status = _MAX_PC_STATUS_BASIS_UNRECORDED
+    else:
+        status = stored_status or _MAX_PC_STATUS_BASIS_UNRECORDED
+
+    # 저장 상태가 근거와 모순되면 저장값을 따르지 않는다. COMPUTED 는 우리 계산에만
+    # 허용되며, 그 외의 근거로 COMPUTED 가 적혀 있다면 그것이야말로 기록 결함이다.
+    if status == "COMPUTED" and basis != _MAX_PC_BASIS_COMPUTED_INTERNAL:
+        status = _MAX_PC_STATUS_BASIS_UNRECORDED
+
+    return {
+        "value": value,
+        "method": row["max_pc_method"],
+        "status": status,
+        "basis": basis,
+        "source_id": row.get("max_pc_source_id"),
+        "content_sha256": row.get("max_pc_content_sha256"),
+    }
+
+
 def _event_payload(row: dict[str, Any]) -> dict[str, Any]:
     return {
         "event_id": row["event_id"],
@@ -564,11 +634,7 @@ def _event_payload(row: dict[str, Any]) -> dict[str, Any]:
                     "status": row["pc_status"],
                     "unavailable_reason": row["pc_unavailable_reason"],
                 },
-                "MAX_PC": {
-                    "value": row["max_pc"],
-                    "method": row["max_pc_method"],
-                    "status": "COMPUTED" if row["max_pc"] is not None else "NOT_COMPUTED",
-                },
+                "MAX_PC": _max_pc_channel(row),
                 "MISS_DISTANCE": {
                     "value": row["miss_distance_m"],
                     "unit": "m",
@@ -633,6 +699,7 @@ def _screening_payload(
     config_hash: str,
     input_hash: str,
     warnings: list[str],
+    coverage: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "request_id": str(uuid.uuid4()),
@@ -642,6 +709,8 @@ def _screening_payload(
         "data": {
             "screening_run_id": run_id,
             "window": window,
+            # 부분집합 스크리닝 결과를 전 카탈로그 커버리지로 오독하면 안 된다.
+            "coverage": coverage,
             "objects_considered": objects_considered,
             "objects_propagated": objects_propagated,
             "pairs_before_screening": pairs_before,

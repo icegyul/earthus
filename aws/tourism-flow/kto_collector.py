@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import time
 from datetime import datetime, timedelta, timezone
 
 from kto_pipeline import normalize_kto_snapshot
@@ -29,6 +30,16 @@ PUBLIC_TTL_SECONDS = {
 }
 SUMMARY_KEY = "app/tourism/kto/summary.json"
 HEALTH_KEY = "app/tourism/kto/health.json"
+# 지역 파라미터가 필수인 서비스의 스윕 범위. 코드는 하드코딩하지 않고
+# 공식 방문자수 스냅샷(regionCode)에서만 가져온다.
+REGION_SWEEP_SCOPE = {
+    "related": "SIGUNGU",
+    "localHub": "SIGUNGU",
+    "concentration": "SIGUNGU",
+    "diversity": "SIDO",
+    "demandStrength": "SIDO",
+}
+REGION_SWEEP_NEEDS_BASE_YM = frozenset({"related", "localHub", "diversity", "demandStrength"})
 KTO_PROVIDER_LEASE_KEY = "archive/tourism/kto/locks/provider.json"
 KTO_PROVIDER_LEASE_SECONDS = 900
 
@@ -329,7 +340,217 @@ def _utc_now():
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
-def handle_event(event, s3_client, bucket, fetched_at=None, call=None, environ=None, _lease=None):
+def _default_base_ym(value):
+    """집계 지연을 감안해 기준 시점보다 두 달 전을 기본 조회 월로 쓴다."""
+    now = _parse_utc(value) or datetime.now(timezone.utc)
+    year, month = now.year, now.month - 2
+    if month < 1:
+        month += 12
+        year -= 1
+    return f"{year:04d}{month:02d}"
+
+
+def _published_item_count(s3_client, bucket, service, operation):
+    document = _read_json(s3_client, bucket, f"app/tourism/kto/{service}/{operation}.json")
+    items = (document or {}).get("items")
+    return len(items) if isinstance(items, list) else 0
+
+
+def _run_visitor_window(
+    operation, start_date, end_date, s3_client, bucket, fetched_at, call, environ, _lease, sleep,
+):
+    """지역별 방문자수는 조회 범위를 줘도 시작일 하루만 응답한다.
+
+    하루씩 나눠 호출한 뒤 한 스냅샷으로 합친다. 합계가 비었는데 이미 공개된
+    스냅샷에 값이 있으면 덮어쓰지 않는다. 빈 응답으로 실데이터를 지우면
+    화면에서 근거가 사라지고, 사라진 이유도 남지 않는다.
+    """
+    env = environ or {}
+    page_size = int(env.get("KTO_DEFAULT_PAGE_SIZE") or 100)
+    pacing = max(0.0, min(10.0, float(env.get("KTO_SWEEP_PACING_SECONDS") or 0.2)))
+    pause = time.sleep if sleep is None else sleep
+    items = []
+    failed_days = []
+    day = start_date
+    index = 0
+    while day <= end_date:
+        stamp = day.strftime("%Y%m%d")
+        day_params = {"startYmd": stamp, "endYmd": stamp}
+        if index and pacing:
+            pause(pacing)
+        try:
+            if call is None:
+                day_items = fetch_all_pages(
+                    "visitors", operation, day_params, page_size=page_size, environ=environ,
+                )
+            else:
+                envelope = call("visitors", operation, dict(day_params))
+                day_items = envelope.get("items") if isinstance(envelope, dict) else []
+                day_items = day_items if isinstance(day_items, list) else []
+            items.extend(day_items)
+        except Exception:
+            failed_days.append(stamp)
+        day += timedelta(days=1)
+        index += 1
+
+    day_count = index
+    if failed_days and len(failed_days) == day_count:
+        _update_health(
+            s3_client, bucket, "visitors", operation, fetched_at,
+            "FAILED", environ=environ, reason_code="KTO_VISITOR_WINDOW_ALL_DAYS_FAILED",
+        )
+        raise RuntimeError(f"KTO visitor window failed for all {day_count} days")
+    if not items and _published_item_count(s3_client, bucket, "visitors", operation):
+        _update_health(
+            s3_client, bucket, "visitors", operation, fetched_at,
+            "DEGRADED", environ=environ, reason_code="KTO_VISITOR_WINDOW_EMPTY_KEPT_PRIOR",
+        )
+        return {
+            "ok": True, "provider": "KTO", "service": "visitors", "operation": operation,
+            "published": False, "reasonCode": "EMPTY_RESPONSE_KEPT_PRIOR_SNAPSHOT",
+            "dayCount": day_count, "failedDayCount": len(failed_days),
+        }
+
+    aggregated = {
+        "resultCode": "00",
+        "resultMsg": "NORMAL_SERVICE",
+        "pageNo": 1,
+        "numOfRows": page_size,
+        "totalCount": len(items),
+        "items": items,
+    }
+    result = handle_event(
+        {
+            "task": "KTO_SYNC", "service": "visitors", "operation": operation,
+            "params": {
+                "startYmd": start_date.strftime("%Y%m%d"),
+                "endYmd": end_date.strftime("%Y%m%d"),
+                "dayCount": day_count,
+                "failedDayCount": len(failed_days),
+            },
+        },
+        s3_client=s3_client, bucket=bucket, fetched_at=fetched_at,
+        call=lambda *_: aggregated, environ=environ, _lease=_lease, sleep=sleep,
+    )
+    result.update({"published": True, "dayCount": day_count, "failedDayCount": len(failed_days)})
+    return result
+
+
+def _visitor_region_codes(s3_client, bucket, operation, pattern):
+    document = _read_json(s3_client, bucket, f"app/tourism/kto/visitors/{operation}.json")
+    items = (document or {}).get("items")
+    codes = {
+        str(item.get("regionCode") or "")
+        for item in (items if isinstance(items, list) else [])
+        if isinstance(item, dict)
+    }
+    return sorted(code for code in codes if re.fullmatch(pattern, code))
+
+
+def _run_region_sweep(payload, s3_client, bucket, fetched_at, call, environ, _lease, sleep):
+    """지역 코드가 필수인 서비스 하나를 전 지역에 걸쳐 수집해 스냅샷 하나로 발행한다.
+
+    지역 코드는 하드코딩하지 않는다. 공식 방문자수 정규화 스냅샷의 regionCode
+    (locgo=시군구 5자리, metco=시도 2자리)를 유일한 근거로 쓰므로,
+    방문자수 수집(KTO_VISITORS_DAILY)이 먼저 성공해 있어야 한다.
+    """
+    service = payload.get("service")
+    operation = payload.get("operation")
+    scope = REGION_SWEEP_SCOPE.get(service)
+    if scope is None:
+        raise ValueError(f"KTO_REGION_SWEEP does not cover service: {service}")
+    if operation not in KTO_SERVICES[service]["operations"]:
+        raise ValueError(f"Unknown KTO operation: {service}/{operation}")
+
+    if scope == "SIGUNGU":
+        codes = _visitor_region_codes(s3_client, bucket, "locgoRegnVisitrDDList", r"\d{5}")
+    else:
+        codes = _visitor_region_codes(s3_client, bucket, "metcoRegnVisitrDDList", r"\d{2}")
+    if not codes:
+        raise ValueError(
+            "KTO_REGION_SWEEP has no region codes: run KTO_VISITORS_DAILY first "
+            "so the visitors snapshot provides official regionCode values"
+        )
+    offset = int(payload.get("regionOffset") or 0)
+    max_regions = payload.get("maxRegions")
+    selected = codes[offset:offset + int(max_regions)] if max_regions else codes[offset:]
+    if not selected:
+        raise ValueError("KTO_REGION_SWEEP regionOffset/maxRegions selects no regions")
+
+    # baseYm을 받지 않는 서비스(concentration)에 배치 공통값이 새어 들어가면
+    # 계약에 없는 파라미터를 공급자에게 보내게 된다.
+    if service in REGION_SWEEP_NEEDS_BASE_YM:
+        base_ym = str(payload.get("baseYm") or "") or _default_base_ym(fetched_at)
+        if not re.fullmatch(r"\d{6}", base_ym):
+            raise ValueError("KTO_REGION_SWEEP baseYm must be YYYYMM")
+    else:
+        base_ym = None
+
+    env = environ or {}
+    page_size = int(env.get("KTO_DEFAULT_PAGE_SIZE") or 100)
+    pacing = max(0.0, min(10.0, float(env.get("KTO_SWEEP_PACING_SECONDS") or 0.2)))
+    pause = time.sleep if sleep is None else sleep
+    items = []
+    failed_regions = []
+    for index, code in enumerate(selected):
+        region_params = {"areaCd": code[:2], "signguCd": code} if scope == "SIGUNGU" else {"areaCd": code}
+        if base_ym:
+            region_params["baseYm"] = base_ym
+        if index and pacing:
+            pause(pacing)
+        try:
+            if call is None:
+                region_items = fetch_all_pages(
+                    service, operation, region_params,
+                    page_size=page_size, environ=environ,
+                )
+            else:
+                envelope = call(service, operation, dict(region_params))
+                region_items = envelope.get("items") if isinstance(envelope, dict) else []
+                region_items = region_items if isinstance(region_items, list) else []
+        except Exception:
+            failed_regions.append(code)
+            continue
+        items.extend(region_items)
+    if failed_regions and len(failed_regions) == len(selected):
+        _update_health(
+            s3_client, bucket, service, operation, fetched_at,
+            "FAILED", environ=environ, reason_code="KTO_REGION_SWEEP_ALL_REGIONS_FAILED",
+        )
+        raise RuntimeError(f"KTO_REGION_SWEEP failed for all {len(selected)} regions")
+
+    aggregated = {
+        "resultCode": "00",
+        "resultMsg": "NORMAL_SERVICE",
+        "pageNo": 1,
+        "numOfRows": page_size,
+        "totalCount": len(items),
+        "items": items,
+    }
+    sweep_params = {
+        "regionScope": scope,
+        "regionCount": len(selected),
+        "failedRegionCount": len(failed_regions),
+    }
+    if base_ym:
+        sweep_params["baseYm"] = base_ym
+    result = handle_event(
+        {"task": "KTO_SYNC", "service": service, "operation": operation, "params": sweep_params},
+        s3_client=s3_client, bucket=bucket, fetched_at=fetched_at,
+        call=lambda *_: aggregated, environ=environ, _lease=_lease, sleep=sleep,
+    )
+    result.update({
+        "task": "KTO_REGION_SWEEP",
+        "regionCount": len(selected),
+        "failedRegionCount": len(failed_regions),
+    })
+    return result
+
+
+def handle_event(
+    event, s3_client, bucket, fetched_at=None, call=None, environ=None,
+    _lease=None, sleep=None, monotonic=None,
+):
     """명시된 KTO Operation 하나만 실행한다."""
     payload = event if isinstance(event, dict) else {}
     if _lease is None:
@@ -337,7 +558,7 @@ def handle_event(event, s3_client, bucket, fetched_at=None, call=None, environ=N
         lease = _acquire_provider_lease(s3_client, bucket, acquired_at)
         return handle_event(
             payload, s3_client=s3_client, bucket=bucket, fetched_at=acquired_at,
-            call=call, environ=environ, _lease=lease,
+            call=call, environ=environ, _lease=lease, sleep=sleep, monotonic=monotonic,
         )
     if payload.get("task") == "KTO_VISITORS_DAILY":
         raw_as_of = payload.get("asOf") or fetched_at or _utc_now()
@@ -347,29 +568,74 @@ def handle_event(event, s3_client, bucket, fetched_at=None, call=None, environ=N
             raise ValueError("KTO visitors asOf must be an ISO-8601 timestamp") from error
         if as_of.tzinfo is None:
             as_of = as_of.replace(tzinfo=timezone.utc)
-        end_date = as_of.astimezone(timezone.utc).date() - timedelta(days=1)
-        start_date = end_date - timedelta(days=6)
-        params = {
-            "startYmd": start_date.strftime("%Y%m%d"),
-            "endYmd": end_date.strftime("%Y%m%d"),
-        }
+        # 기본은 어제까지 7일. 공급자 집계 지연으로 최근 창이 비면
+        # lagDays/windowDays로 과거 구간을 명시 재수집한다(최대 90일).
+        lag_days = int(payload.get("lagDays") or 1)
+        window_days = int(payload.get("windowDays") or 7)
+        if not (1 <= lag_days <= 60 and 1 <= window_days <= 90):
+            raise ValueError("KTO visitors lagDays must be 1-60 and windowDays 1-90")
+        end_date = as_of.astimezone(timezone.utc).date() - timedelta(days=lag_days)
+        start_date = end_date - timedelta(days=window_days - 1)
         results = []
         for operation in ("metcoRegnVisitrDDList", "locgoRegnVisitrDDList"):
-            results.append(handle_event(
-                {
-                    "task": "KTO_SYNC",
-                    "service": "visitors",
-                    "operation": operation,
-                    "params": params,
-                },
+            results.append(_run_visitor_window(
+                operation,
+                start_date,
+                end_date,
                 s3_client=s3_client,
                 bucket=bucket,
                 fetched_at=fetched_at or _utc_now(),
                 call=call,
                 environ=environ,
                 _lease=_lease,
+                sleep=sleep,
             ))
-        return {"ok": True, "provider": "KTO", "task": "KTO_VISITORS_DAILY", "jobs": len(results)}
+        return {
+            "ok": True, "provider": "KTO", "task": "KTO_VISITORS_DAILY",
+            "jobs": len(results), "results": results,
+        }
+    if payload.get("task") == "KTO_REGION_SWEEP":
+        return _run_region_sweep(
+            payload, s3_client=s3_client, bucket=bucket,
+            fetched_at=fetched_at or _utc_now(), call=call, environ=environ,
+            _lease=_lease, sleep=sleep,
+        )
+    if payload.get("task") == "KTO_SWEEP_BATCH":
+        # 공용 키 lease가 15분 단위라 Operation마다 호출하면 하루가 걸린다.
+        # 이미 획득한 lease 하나 안에서 여러 스윕을 순서대로 끝낸다.
+        jobs = payload.get("jobs")
+        if not isinstance(jobs, list) or not jobs or len(jobs) > 12:
+            raise ValueError("KTO_SWEEP_BATCH requires a jobs list of 1-12 entries")
+        budget = float(payload.get("budgetSeconds") or 240)
+        if not 30 <= budget <= 280:
+            raise ValueError("KTO_SWEEP_BATCH budgetSeconds must be 30-280")
+        clock = time.monotonic if monotonic is None else monotonic
+        started = clock()
+        completed, failed, skipped = [], [], []
+        for job in jobs:
+            if not isinstance(job, dict):
+                raise ValueError("KTO_SWEEP_BATCH jobs must be objects")
+            label = f"{job.get('service')}/{job.get('operation')}"
+            if clock() - started >= budget:
+                skipped.append(label)
+                continue
+            try:
+                completed.append(_run_region_sweep(
+                    {**payload, **job, "task": "KTO_REGION_SWEEP"},
+                    s3_client=s3_client, bucket=bucket,
+                    fetched_at=fetched_at or _utc_now(), call=call, environ=environ,
+                    _lease=_lease, sleep=sleep,
+                ))
+            except Exception as error:
+                failed.append({"job": label, "reasonCode": type(error).__name__.upper()})
+        return {
+            "ok": not failed and not skipped,
+            "provider": "KTO",
+            "task": "KTO_SWEEP_BATCH",
+            "completed": completed,
+            "failed": failed,
+            "skippedForBudget": skipped,
+        }
     if payload.get("task") != "KTO_SYNC":
         raise ValueError("KTO collector accepts only task=KTO_SYNC")
 

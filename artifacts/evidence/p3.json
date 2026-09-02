@@ -2,8 +2,7 @@
   "phase": "p3",
   "gate": "PARTIAL",
   "failed_checks": [
-    "scene_unification_done",
-    "playwright_e2e_run"
+    "scene_unification_done"
   ],
   "checks": {
     "tests_pass": true,
@@ -11,7 +10,7 @@
     "render_set_serves_real_catalog": true,
     "earth_link_layer_present": true,
     "scene_unification_done": false,
-    "playwright_e2e_run": false
+    "playwright_e2e_run": true
   },
   "blockers": {
     "by_check": {
@@ -36,26 +35,30 @@
         "reason": "prototype/ 1.0 장면과 v2-three 장면 중 무엇을 정본으로 삼을지 PD 결정 대기. 능력 문제가 아니라 판단 대기이므로 공학 제약으로 적지 않는다."
       },
       "playwright_e2e_run": {
-        "blocker_class": "BUILDABLE_NOW",
-        "reason": "Playwright E2E 미실행. 러너 설치와 스크립트 작성만 남았고 외부 의존 없음."
+        "blocker_class": "NONE",
+        "reason": "check is met"
       }
     },
     "counts": {
-      "BUILDABLE_NOW": 1,
+      "BUILDABLE_NOW": 0,
       "DECISION_PENDING": 1,
       "EXTERNAL_DATA_GATED": 0,
       "EXTERNAL_PARTNER_GATED": 0,
-      "NONE": 4
+      "NONE": 5
     },
-    "unmet_buildable_now": [
-      "playwright_e2e_run"
-    ],
+    "unmet_buildable_now": [],
     "unmet_requiring_others": []
   },
-  "generated_at": "2026-09-02T14:32:07.469582+00:00",
-  "repository": "git@github.com:icegyul/earthus.git",
+  "playwright_e2e": {
+    "target": "tests/e2e/test_p3_explore_ui.py",
+    "exit_code": 0,
+    "summary": "2 passed in 14.69s",
+    "ran": true
+  },
+  "generated_at": "2026-09-02T17:27:25.643567+00:00",
+  "repository": "https://github.com/icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "51519f7cbf8bf12af14f1a14c012ec5025ebd9d6",
+  "commit": "548d7c6a3765eb888b875777d21006082c5d6772",
   "tests_visual": {
     "targets": [
       "tests/product/test_registry_api_surface.py",
@@ -63,7 +66,7 @@
       "tests/acceptance"
     ],
     "exit_code": 0,
-    "summary": "======================= 290 passed, 2 warnings in 6.41s ======================="
+    "summary": "======================= 290 passed, 2 warnings in 3.52s ======================="
   },
   "scene_api": {
     "SPACE": {
@@ -106,7 +109,7 @@
       "lod_cap": 2000,
       "render_object_count": 500,
       "scientific_object_count": 500,
-      "scientific_hash": "3855eee33a237f1c6225e88a247baf0f6d82765a385d82ff27820c32d8cfb498"
+      "scientific_hash": "b30b77fc601990b77f02ee6f848a9bfacd8cd6dea369f37dab51d01ecf267dc3"
     },
     "invariant": "render_object_ids와 scientific_object_ids가 scientific_hash로 묶여 렌더 부분집합이 과학 부분집합을 몰래 대체할 수 없음 (절대 규칙 12)"
   },

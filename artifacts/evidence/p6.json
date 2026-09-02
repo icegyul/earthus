@@ -1,16 +1,14 @@
 {
   "phase": "p6",
   "orbital_phase": "ORB-P2 + ORB-P3(partial)",
-  "gate": "PARTIAL",
-  "failed_checks": [
-    "playwright_e2e_run"
-  ],
+  "gate": "PASS",
+  "failed_checks": [],
   "checks": {
     "tests_pass": true,
     "golden_within_tolerance": true,
     "catalog_api_reachable": true,
     "catalog_at_lod_scale": true,
-    "playwright_e2e_run": false
+    "playwright_e2e_run": true
   },
   "blockers": {
     "by_check": {
@@ -31,30 +29,28 @@
         "reason": "check is met"
       },
       "playwright_e2e_run": {
-        "blocker_class": "BUILDABLE_NOW",
-        "reason": "Playwright E2E 미실행 — 내부 작업"
+        "blocker_class": "NONE",
+        "reason": "check is met"
       }
     },
     "counts": {
-      "BUILDABLE_NOW": 1,
+      "BUILDABLE_NOW": 0,
       "DECISION_PENDING": 0,
       "EXTERNAL_DATA_GATED": 0,
       "EXTERNAL_PARTNER_GATED": 0,
-      "NONE": 4
+      "NONE": 5
     },
-    "unmet_buildable_now": [
-      "playwright_e2e_run"
-    ],
+    "unmet_buildable_now": [],
     "unmet_requiring_others": []
   },
-  "generated_at": "2026-09-02T14:21:42.850352+00:00",
-  "repository": "git@github.com:icegyul/earthus.git",
+  "generated_at": "2026-09-02T17:26:23.681032+00:00",
+  "repository": "https://github.com/icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "c75f15f79b40f02d6fbcb3d562bbdf18bf73807c",
+  "commit": "548d7c6a3765eb888b875777d21006082c5d6772",
   "tests": {
     "command": "pytest <P2 subset 5 files> -q",
     "exit_code": 0,
-    "summary": "======================== 28 passed, 1 warning in 0.32s ========================"
+    "summary": "======================== 28 passed, 1 warning in 0.30s ========================"
   },
   "golden_cross_validation": [
     {
@@ -81,28 +77,28 @@
     "http_status": 200,
     "measurement_source": "CATALOG_STATUS_API",
     "data_status": "OK",
-    "objects_total": 19610,
-    "objects_with_solution": 19511,
+    "objects_total": 19786,
+    "objects_with_solution": 19660,
     "global_density": "AVAILABLE",
-    "global_density_reason": "19511 propagable objects meet the configured global-density threshold of 500.",
+    "global_density_reason": "19660 propagable objects meet the configured global-density threshold of 500.",
     "sources": [
       {
         "source_id": "celestrak_gp",
-        "successful_runs": 1474,
-        "total_runs": 1676,
-        "last_success_at": "2026-09-02T14:21:42.530901+00:00"
+        "successful_runs": 2096,
+        "total_runs": 2362,
+        "last_success_at": "2026-09-02T17:26:23.428243+00:00"
       },
       {
         "source_id": "celestrak_socrates",
-        "successful_runs": 25,
-        "total_runs": 25,
-        "last_success_at": "2026-09-02T14:17:53.008626+00:00"
+        "successful_runs": 105,
+        "total_runs": 121,
+        "last_success_at": "2026-09-02T17:22:27.317938+00:00"
       },
       {
         "source_id": "spacetrack_gp",
-        "successful_runs": 454,
-        "total_runs": 553,
-        "last_success_at": "2026-09-02T14:17:53.147695+00:00"
+        "successful_runs": 651,
+        "total_runs": 777,
+        "last_success_at": "2026-09-02T17:22:27.911438+00:00"
       }
     ]
   },
@@ -115,11 +111,11 @@
   "explore_ui": {
     "ui_index": {
       "http_status": 200,
-      "bytes": 4448
+      "bytes": 4707
     },
     "catalog_snapshot": {
       "http_status": 200,
-      "bytes": 740777
+      "bytes": 726511
     }
   },
   "explore_network_inspection": "인앱 브라우저 네트워크 검사(2026-09-01, 파편운 수집 이전 시점의 기록): /ui/ 로드 시 좌표 소스 요청은 /api/v1/catalog/status·/api/v1/catalog/snapshot 200 두 건뿐, 콘솔 에러 0. ISS 25544는 API 유래 SGP4 마커+데이터 나이 표기, 격리 객체 2건은 위치 없이 UNAVAILABLE 상태 렌더, GLOBAL VIEW: INSUFFICIENT_DATA 배지 표시 확인. — 당시의 INSUFFICIENT_DATA는 카탈로그가 임계 미만이어서였고, 현재는 위 catalog_scale 측정이 AVAILABLE을 보고한다. 이 배지 전환 자체의 브라우저 재확인은 후속.",

@@ -72,6 +72,7 @@ def _common() -> dict:
 
 
 def build_p3() -> dict:
+    e2e = playwright_suite("tests/e2e/test_p3_explore_ui.py")
     scene_space = probe("http://127.0.0.1:8100/v1/scene/SPACE")
     scene_orbit = probe("http://127.0.0.1:8100/v1/scene/ORBIT")
     render_set = probe("http://127.0.0.1:8100/v1/orbit/render-set", timeout=40)
@@ -102,7 +103,10 @@ def build_p3() -> dict:
         "earth_link_layer_present": link_layer.is_file(),
         # 씬 일원화(v2-three ↔ v0.6 캔버스)와 playwright E2E가 남아 있는 한 참이 될 수 없다.
         "scene_unification_done": False,
-        "playwright_e2e_run": False,
+        # Measured, not asserted. The explore UI is this phase's visual surface:
+        # tests/e2e/test_p3_explore_ui.py drives it in headless Chromium and
+        # proves every rendered coordinate derives from an API response.
+        "playwright_e2e_run": e2e["ran"],
     }
     blockers = {
         "tests_pass": (BUILDABLE_NOW, "P3 시각 테스트 미통과 — 내부 작업"),
@@ -122,7 +126,7 @@ def build_p3() -> dict:
         ),
         "playwright_e2e_run": (
             BUILDABLE_NOW,
-            "Playwright E2E 미실행. 러너 설치와 스크립트 작성만 남았고 외부 의존 없음.",
+            f"Playwright E2E 미통과 ({e2e['target']}: {e2e['summary'] or 'no output'}) — 내부 작업",
         ),
     }
     blocker_report = classify(checks, blockers)
@@ -134,6 +138,7 @@ def build_p3() -> dict:
         "checks": checks,
         # PARTIAL 하나로 뭉치지 않는다: 우리 일과 남의 일을 구분한다.
         "blockers": blocker_report,
+        "playwright_e2e": e2e,
         **_common(),
         "tests_visual": tests,
         "scene_api": {
@@ -263,6 +268,27 @@ def build_p4() -> dict:
         "next_allowed": "라이브 발사 일정→미션 레코드 승격 또는 V2-P9+ 인텔리전스 표면 검증",
     }
 
+
+
+def playwright_suite(target: str) -> dict:
+    """Run one Playwright E2E suite and report its own exit code.
+
+    Not a pipeline's exit code. A shell pipe reports the last command, which is
+    how a run of ``tail`` once got recorded here as a passing suite.
+    """
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest", target, "-q", "--no-header",
+         "-p", "no:logging", "-o", "addopts="],
+        capture_output=True, text=True, cwd=str(SERVICE_ROOT),
+    )
+    summary = proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else ""
+    return {
+        "target": target,
+        "exit_code": proc.returncode,
+        "summary": summary,
+        # A suite that collected nothing exits 5 and must not read as a pass.
+        "ran": proc.returncode == 0 and "no tests ran" not in summary,
+    }
 
 def main() -> None:
     out_dir = REPO_ROOT / "artifacts" / "evidence"

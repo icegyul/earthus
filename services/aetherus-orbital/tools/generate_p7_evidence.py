@@ -140,6 +140,10 @@ def main() -> None:
         ),
         # E25·E27~E30 적대 감사가 남은 한 참이 될 수 없다 (E26만 정독 완료).
         "adversarial_audit_e25_e27_e30": audit_orbit["passed"],
+        # Still unmet, but not for the reason this used to give. The runner is
+        # installed and three Playwright suites pass; none of them drives a
+        # debris or observation surface, which is what this phase delivers.
+        # Borrowing another phase's suite would attach its evidence to this gate.
         "playwright_e2e_run": False,
     }
     blockers = {
@@ -161,7 +165,10 @@ def main() -> None:
         ),
         'playwright_e2e_run': (
             BUILDABLE_NOW,
-            'Playwright E2E 미실행 — 내부 작업',
+            '이 단계(잔해·관측) 표면을 덮는 Playwright E2E 스위트가 없다. 러너는 설치돼 '
+            '있고 tests/e2e 의 세 스위트는 통과하지만 각각 탐색 UI·위험 패널·REMOVE '
+            '패널을 몬다. 다른 단계의 스위트를 빌려 오면 그 증거가 이 관문에 붙는다. '
+            '외부 의존 없음 — 스위트 작성이 남았다.',
         ),
     }
     blocker_report = classify(checks, blockers)

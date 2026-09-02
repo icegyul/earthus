@@ -41,26 +41,26 @@
       "live_telemetry_provider"
     ]
   },
-  "generated_at": "2026-09-02T14:32:16.486022+00:00",
-  "repository": "git@github.com:icegyul/earthus.git",
+  "generated_at": "2026-09-02T17:27:32.830713+00:00",
+  "repository": "https://github.com/icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "51519f7cbf8bf12af14f1a14c012ec5025ebd9d6",
+  "commit": "548d7c6a3765eb888b875777d21006082c5d6772",
   "tests_control": {
     "targets": [
       "tests/product/test_platform_product_integration.py",
       "tests/product/test_api_product.py"
     ],
     "exit_code": 0,
-    "summary": "======================= 12 passed, 2 warnings in 5.65s ========================"
+    "summary": "======================= 12 passed, 2 warnings in 4.24s ========================"
   },
   "live_launch_schedule": {
     "http_status": 200,
     "data_status": "OK",
     "source_id": "thespacedevs_ll2_launch_upcoming",
     "source_uri": "https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=10&ordering=net",
-    "raw_sha256": "b22d7d62363b7a9d148736520eb73a993847c3f583b14f66f08537e0769f7a45",
+    "raw_sha256": "a7bda5ac4976cdd944321c8467694251eccdab84184fb35c4bb26acf1cabcb94",
     "upstream_http_status": 200,
-    "reported_total": 360,
+    "reported_total": 361,
     "launch_count": 10
   },
   "mission_api": {

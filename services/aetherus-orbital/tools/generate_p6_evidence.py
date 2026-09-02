@@ -162,7 +162,29 @@ def probe_catalog_scale() -> dict:
     }
 
 
+
+def playwright_suite(target: str) -> dict:
+    """Run one Playwright E2E suite and report its own exit code.
+
+    Not a pipeline's exit code. A shell pipe reports the last command, which is
+    how a run of ``tail`` once got recorded here as a passing suite.
+    """
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest", target, "-q", "--no-header",
+         "-p", "no:logging", "-o", "addopts="],
+        capture_output=True, text=True, cwd=str(SERVICE_ROOT),
+    )
+    summary = proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else ""
+    return {
+        "target": target,
+        "exit_code": proc.returncode,
+        "summary": summary,
+        # A suite that collected nothing exits 5 and must not read as a pass.
+        "ran": proc.returncode == 0 and "no tests ran" not in summary,
+    }
+
 def main() -> None:
+    e2e = playwright_suite("tests/e2e/test_p4_risk_panel.py")
     pytest_proc = subprocess.run(
         [sys.executable, "-m", "pytest", *P2_TESTS, "-q", "--no-header"],
         capture_output=True,
@@ -179,7 +201,9 @@ def main() -> None:
         "catalog_api_reachable": catalog_scale.get("http_status") == 200,
         "catalog_at_lod_scale": (catalog_scale.get("global_density") == "AVAILABLE"),
         # playwright 바이너리가 없어 브라우저 E2E는 아직 실행되지 않았다.
-        "playwright_e2e_run": False,
+        # The conjunction risk panel is the browser surface of the Orbital Stack
+        # API this phase delivers, so it is the suite that can speak for it.
+        "playwright_e2e_run": e2e["ran"],
     }
     blockers = {
         'tests_pass': (
@@ -200,7 +224,7 @@ def main() -> None:
         ),
         'playwright_e2e_run': (
             BUILDABLE_NOW,
-            'Playwright E2E 미실행 — 내부 작업',
+            f"Playwright E2E 미통과 ({e2e['target']}: {e2e['summary'] or 'no output'}) — 내부 작업",
         ),
     }
     blocker_report = classify(checks, blockers)

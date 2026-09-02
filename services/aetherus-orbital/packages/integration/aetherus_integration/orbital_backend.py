@@ -65,6 +65,15 @@ class OrbitalScienceCatalogBackend(OrbitalScienceBackend, Protocol):
 
     async def genealogy(self, object_id: str) -> dict | None: ...
 
+    async def physical_counterfactual(
+        self,
+        target_catalog_id: str,
+        *,
+        horizon_hours: float | None,
+        recompute_mode: str,
+        max_objects: int,
+    ) -> dict: ...
+
 
 def _moment(value: datetime | str | None) -> datetime:
     if value is None:
@@ -590,6 +599,101 @@ class P5PostgresOrbitalBackend:
                 "metric_policy": NO_SYNTHETIC_SCORE_NOTE,
             },
             "warnings": warnings,
+        }
+
+    async def validate_counterfactual_target(self, target_catalog_id: str) -> str:
+        """Resolve the target, or refuse with the reason. Fast, and separate.
+
+        The recompute itself is minutes long and therefore runs as a job; a bad
+        identifier must be refused when the request arrives, not discovered when
+        the job fails, so the caller learns immediately which input was wrong.
+        """
+        if target_catalog_id.upper().startswith("VAL-"):
+            raise HTTPException(
+                422,
+                "VAL-* identifiers are research fixtures; the physical "
+                "counterfactual runs on catalogue objects only",
+            )
+        resolved = await self.conjunction_service.repository.resolve_objects_by_catalog(
+            [target_catalog_id]
+        )
+        object_id = resolved.get(target_catalog_id)
+        if object_id is None:
+            raise HTTPException(404, f"no stored object with catalog id {target_catalog_id}")
+        return object_id
+
+    async def physical_counterfactual(
+        self,
+        target_catalog_id: str,
+        *,
+        horizon_hours: float | None = None,
+        recompute_mode: str = "FULL",
+        max_objects: int = 150,
+    ) -> dict:
+        """Run the P5-compliant REMOVE counterfactual for one catalogue object.
+
+        SCREENING_RECOMPUTE_V1: a baseline graph is derived from stored P4
+        results, the object is removed from the propagated set, and the pipeline
+        is re-run over the affected region. Nothing here deletes edges from a
+        stored graph and calls the remainder a scenario.
+
+        The object must exist in the catalogue; a VAL-* fixture is refused so a
+        research-fixture result can never arrive labelled as the physical path.
+        """
+        from backend.benefit.service import BenefitService
+
+        object_id = await self.validate_counterfactual_target(target_catalog_id)
+
+        # Bound the population. Pair count is quadratic and the catalogue holds
+        # ~19k screenable objects, so an unbounded recompute occupies the worker
+        # for tens of minutes — the same cost that made the test suite unusable
+        # before scoping existed. The scope is the target plus the freshest slice
+        # of the catalogue, and the response records what it covered so a bounded
+        # result is never read as a full-catalogue one.
+        population = await self.conjunction_service.repository.load_screenable_solutions(
+            max(2, int(max_objects))
+        )
+        scope = sorted({str(row["catalog_id"]) for row in population} | {target_catalog_id})
+
+        service = BenefitService()
+        baseline = await service.build_baseline(horizon_hours=horizon_hours)
+        scenario = await service.create_remove_scenario(
+            target_ref=target_catalog_id,
+            baseline_snapshot_id=baseline["data"]["baseline_snapshot_id"],
+            effective_time_raw=None,
+            metric_types=None,
+            recompute_mode=recompute_mode,
+        )
+        run = await service.run_scenario(
+            scenario["data"]["scenario_id"],
+            recompute_mode=recompute_mode,
+            catalog_scope=scope,
+        )
+        benefits = await service.scenario_benefits(scenario["data"]["scenario_id"])
+        return {
+            "request_id": run["request_id"],
+            "generated_at": run["generated_at"],
+            "data_status": run["data_status"],
+            "status_reason": run.get("status_reason"),
+            "data": {
+                "engine": "SCREENING_RECOMPUTE_V1",
+                "gate": "P5_COMPLIANT",
+                "target_catalog_id": target_catalog_id,
+                "target_object_id": object_id,
+                "coverage": {
+                    "scope": "CATALOG_SUBSET",
+                    "objects_in_scope": len(scope),
+                    "selection_rule": self.conjunction_service.repository.selection_rule(None, False),
+                },
+                "baseline_snapshot_id": baseline["data"]["baseline_snapshot_id"],
+                "scenario_id": scenario["data"]["scenario_id"],
+                "run": run["data"],
+                "beneficiaries": benefits["data"].get("beneficiaries", []),
+            },
+            "warnings": [
+                *run.get("warnings", []),
+                "Counterfactual result: a simulated intervention, never an observed outcome.",
+            ],
         }
 
     async def genealogy(self, object_id: str) -> dict | None:

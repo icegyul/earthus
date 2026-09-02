@@ -71,7 +71,10 @@
       </div>
     </footer>
 
-    <div id="state-overlay" class="state-overlay" role="alert" aria-live="assertive"></div>
+    <!-- Starts hidden: an empty role="alert" region that is "shown" from page load
+         announces nothing and makes ":not([hidden])" mean "the document parsed",
+         not "a state is on screen". states.js unhides it when it has content. -->
+    <div id="state-overlay" class="state-overlay" role="alert" aria-live="assertive" hidden></div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
   </div>
 

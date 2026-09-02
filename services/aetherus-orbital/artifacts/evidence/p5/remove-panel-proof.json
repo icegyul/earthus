@@ -1,42 +1,45 @@
 {
-  "target_catalog_id": "25544",
+  "target_catalog_id": "43435",
   "baseline_response": {
-    "request_id": "40ba4a22-69df-4c61-b89d-3952c25ad681",
-    "generated_at": "2026-08-25T22:43:25.771447+00:00",
-    "data_status": "INSUFFICIENT_DATA",
-    "status_reason": "NO_OPERATIONAL_CONJUNCTION_EVENTS_IN_HORIZON",
+    "request_id": "9776fcd3-a305-4cbf-9b06-1a36c3ed2ff5",
+    "generated_at": "2026-09-02T15:42:38.170212+00:00",
+    "data_status": "OK",
+    "status_reason": null,
     "data": {
-      "baseline_snapshot_id": "bg-939a5838-4935-4d96-b621-1252740c2eb5",
-      "horizon": "2026-08-25T22:43:25.725729+00:00/2026-08-26T22:43:25.725729+00:00",
-      "event_count": 0,
-      "edge_count": 0,
-      "object_count": 0,
-      "graph_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "edges_available": false
+      "baseline_snapshot_id": "bg-a2d22dc6-c5db-4c4b-9c2c-c4e5ab6a5deb",
+      "horizon": "2026-09-02T15:42:36.051348+00:00/2026-09-03T15:42:36.051348+00:00",
+      "event_count": 15044,
+      "edge_count": 23583,
+      "object_count": 9437,
+      "graph_hash": "67c6fd40892e9b530f0d759784fd4acb1df3277fee81790f9a006edabef9b5d8",
+      "edges_available": true
     },
     "provenance": {
       "model_id": "aetherus-risk-graph",
       "model_version": "p5-baseline-v1",
       "config_hash": "8868c9b7020163781a83fe58cc5605858afc3fd853c2c2cc2367282a44bb2275",
-      "input_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "graph_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "input_hash": "dd22294c1ff2ce867973f9ccd3e95d5248c26e93099324229149aa93b7d096b2",
+      "graph_hash": "67c6fd40892e9b530f0d759784fd4acb1df3277fee81790f9a006edabef9b5d8",
       "validation_state": "PUBLIC_SCREENING",
       "upstream": {
-        "source_grades": [],
+        "source_grades": [
+          "PUBLIC_GP",
+          "PUBLIC_SOCRATES"
+        ],
         "skipped_events": [],
-        "considered_events": 0
+        "considered_events": 15044
       },
       "stale_snapshot_count": 0
     },
     "warnings": []
   },
-  "baseline_edges_available": false,
-  "rendered_benefit_section": "REMOVE SIMULATION\nIDEALIZED_REMOVAL\nINSUFFICIENT_DATA \u2014 The stored P4 catalog contains no operational conjunction events for this horizon, so no REMOVE counterfactual can be computed. No benefit value is substituted.\n{\"status_reason\":\"NO_OPERATIONAL_CONJUNCTION_EVENTS_IN_HORIZON\"}\nReset\n\nValues come only from POST /api/v1/baselines, POST /api/v1/scenarios, POST /api/v1/scenarios/{id}/run and GET /api/v1/scenarios/{id}/benefits. This panel never executes a removal, maneuver, or command.",
-  "scenario_create_status": null,
-  "scenario_run_status_code": null,
-  "run_data_status": null,
-  "run_reason": "NO_OPERATIONAL_CONJUNCTION_EVENTS_IN_HORIZON",
+  "baseline_edges_available": true,
+  "rendered_benefit_section": "REMOVE SIMULATION\nIDEALIZED_REMOVAL\nINSUFFICIENT_DATA \u2014 TARGET_NOT_PROPAGABLE. The stored P4 catalog contains no removable risk edge for this target, so no beneficiary exists and none is invented.\nReset\n\nValues come only from POST /api/v1/baselines, POST /api/v1/scenarios, POST /api/v1/scenarios/{id}/run and GET /api/v1/scenarios/{id}/benefits. This panel never executes a removal, maneuver, or command.",
+  "scenario_create_status": 202,
+  "scenario_run_status_code": 202,
+  "run_data_status": "INSUFFICIENT_DATA",
+  "run_reason": "TARGET_NOT_PROPAGABLE",
   "run_beneficiaries": [],
-  "benefits_status_code": null,
+  "benefits_status_code": 200,
   "screenshot": "remove-panel.png"
 }

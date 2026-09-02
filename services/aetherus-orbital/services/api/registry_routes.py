@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import asyncio
+import uuid
+
 from dataclasses import asdict, is_dataclass
 from datetime import datetime, timezone
 from typing import Any, Callable
@@ -176,6 +179,23 @@ def _decision_new_risk(result: dict) -> float:
         if isinstance(value, (int, float)):
             total += float(value)
     return total
+
+
+#: Accepted counterfactual jobs for this process. The durable record is the
+#: scenario_run row the job creates; this only maps a handle to a running task.
+_COUNTERFACTUAL_JOBS: dict[str, Any] = {}
+
+
+class PhysicalCounterfactualRequest(BaseModel):
+    target_catalog_id: str
+    horizon_hours: float | None = None
+    recompute_mode: str = "FULL"
+    #: Pair count is quadratic; an unbounded recompute over the ~19k-object
+    #: catalogue takes tens of minutes. The response records the coverage.
+    max_objects: int = 150
+    #: Run synchronously instead of accepting a job. Only sensible for a small
+    #: scope or for tooling that can wait minutes.
+    wait: bool = False
 
 
 def register_registry_routes(
@@ -821,9 +841,96 @@ def register_registry_routes(
 
     @app.post("/v1/scenarios/{scenario_id}/run")
     def scenario_run_by_id(scenario_id: str):
+        """Run the research edge-deletion counterfactual on a VAL-* fixture.
+
+        This is the engine the directive calls SIMULATION_ONLY, and the response
+        says so: it is restricted to validation fixtures and every layer labels
+        it RESEARCH_ONLY. For a catalogue object and a P5-compliant result use
+        POST /v1/counterfactual/remove, which re-runs the screening pipeline
+        instead of deleting edges from a stored graph.
+        """
         try: result=require_product().run_scenario_id(scenario_id)
         except KeyError as exc: raise HTTPException(404,"scenario not found") from exc
-        return envelope(result,data_status="RESEARCH_ONLY")
+        return envelope(result,data_status="RESEARCH_ONLY",warnings=[
+            "Edge-deletion counterfactual over validation fixtures. The directive "
+            "classifies this shape as SIMULATION_ONLY and it does not satisfy the "
+            "P5 gate; POST /v1/counterfactual/remove runs the compliant engine.",
+        ])
+
+    @app.post("/v1/counterfactual/remove", status_code=202)
+    async def counterfactual_remove(req: PhysicalCounterfactualRequest):
+        """Accept a P5-compliant REMOVE counterfactual; poll for the result.
+
+        The compliant engine existed only behind /api/v1, so a product client
+        could obtain the research simulation and nothing else. This routes the
+        same SCREENING_RECOMPUTE_V1 path through the science bridge.
+
+        It returns a job rather than a result because the work is genuinely long:
+        measured 2026-09-03, one run over a 150-object scope against a
+        6,394-edge baseline took 446 s. Blocking a request on that is the same
+        mistake POST /v1/conjunctions/screen-runs used to make.
+        """
+        backend = orbital_backend
+        if backend is None or not hasattr(backend, "physical_counterfactual"):
+            return envelope(None, data_status="UNAVAILABLE", warnings=[
+                "No science backend is bound to this deployment; the P5-compliant "
+                "counterfactual needs the stored screening pipeline.",
+            ])
+        # Refuse a bad identifier now, not inside a job the caller will poll for
+        # minutes before learning the input was wrong.
+        if hasattr(backend, "validate_counterfactual_target"):
+            await backend.validate_counterfactual_target(req.target_catalog_id)
+
+        if req.wait:
+            return await backend.physical_counterfactual(
+                req.target_catalog_id,
+                horizon_hours=req.horizon_hours,
+                recompute_mode=req.recompute_mode,
+                max_objects=req.max_objects,
+            )
+
+        job_id = str(uuid.uuid4())
+        job: dict[str, Any] = {
+            "job_id": job_id,
+            "status": "RUNNING",
+            "accepted_at": datetime.now(timezone.utc).isoformat(),
+            "finished_at": None,
+            "poll": "/v1/counterfactual/jobs/" + job_id,
+            "request": req.model_dump(mode="json"),
+            "result": None,
+            "error": None,
+        }
+        _COUNTERFACTUAL_JOBS[job_id] = job
+
+        async def _run() -> None:
+            try:
+                job["result"] = await backend.physical_counterfactual(
+                    req.target_catalog_id,
+                    horizon_hours=req.horizon_hours,
+                    recompute_mode=req.recompute_mode,
+                    max_objects=req.max_objects,
+                )
+                job["status"] = "SUCCEEDED"
+            except Exception as error:  # noqa: BLE001 - the job records its own failure
+                job["status"] = "FAILED"
+                job["error"] = {"type": type(error).__name__, "message": str(error)[:2000]}
+            finally:
+                job["finished_at"] = datetime.now(timezone.utc).isoformat()
+
+        job["_task"] = asyncio.create_task(_run())
+        return envelope(
+            {k: v for k, v in job.items() if not k.startswith("_")},
+            data_status="PENDING",
+            warnings=["Job registry is in-process; this handle does not survive a restart."],
+        )
+
+    @app.get("/v1/counterfactual/jobs/{job_id}")
+    def counterfactual_job(job_id: str):
+        job = _COUNTERFACTUAL_JOBS.get(job_id)
+        if job is None:
+            raise HTTPException(404, "no such counterfactual job in this server process")
+        status = {"RUNNING": "PENDING", "SUCCEEDED": "OK", "FAILED": "FAILED"}[job["status"]]
+        return envelope({k: v for k, v in job.items() if not k.startswith("_")}, data_status=status)
 
     @app.get("/v1/scenarios/{scenario_id}/benefits")
     def scenario_benefits(scenario_id: str):

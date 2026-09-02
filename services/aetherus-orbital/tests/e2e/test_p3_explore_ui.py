@@ -293,7 +293,14 @@ def test_explore_ui_renders_only_api_derived_positions():
             "**/api/v1/catalog/snapshot*", lambda route: route.abort()
         )
         error_page.goto(BASE_URL, wait_until="domcontentloaded")
-        error_page.wait_for_selector("#state-overlay:not([hidden])", timeout=20000)
+        # Wait for the error state itself, not merely for a non-hidden node: the
+        # overlay element exists from parse time, so a bare selector wait can
+        # return an empty div and read '' as the error message.
+        error_page.wait_for_function(
+            "() => { const n = document.getElementById('state-overlay');"
+            " return n && !n.hidden && n.innerText.trim().length > 0; }",
+            timeout=20000,
+        )
         error_text = error_page.locator("#state-overlay").inner_text()
         assert "Catalog unavailable" in error_text
         assert "Retry" in error_text

@@ -436,6 +436,34 @@ class KtoCollectorWriteOrderTest(unittest.TestCase):
         self.assertEqual(raw["request"]["truncatedRegionCount"], 1)
         self.assertEqual(raw["request"]["pageLimitPerRegion"], 1)
 
+    def test_region_sweep_diagnostic_overrides_send_the_codes_and_scope_given(self):
+        collector = load_collector(self)
+        fake_s3 = FakeS3()
+        # 방문자수 스냅샷이 없어도 진단 코드를 직접 주면 호출한다.
+        calls = []
+
+        def call(service, operation, params):
+            calls.append(dict(params))
+            return {"resultCode": "00", "items": []}
+
+        result = collector.handle_event(
+            {
+                "task": "KTO_REGION_SWEEP", "service": "diversity", "operation": "areaTouDivList",
+                "baseYm": "202506", "regionCodes": ["1", "11110"], "regionScope": "SIGUNGU",
+            },
+            s3_client=fake_s3,
+            bucket="fixture-bucket",
+            fetched_at="2026-09-02T15:50:00Z",
+            call=call,
+            sleep=lambda seconds: None,
+        )
+
+        self.assertTrue(result["ok"])
+        self.assertEqual(calls, [
+            {"areaCd": "1", "signguCd": "1", "baseYm": "202506"},
+            {"areaCd": "11", "signguCd": "11110", "baseYm": "202506"},
+        ])
+
     def test_region_sweep_without_a_visitors_snapshot_fails_before_any_external_call(self):
         collector = load_collector(self)
         fake_s3 = FakeS3()

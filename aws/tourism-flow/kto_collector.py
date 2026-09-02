@@ -463,10 +463,23 @@ def _run_region_sweep(payload, s3_client, bucket, fetched_at, call, environ, _le
     scope = REGION_SWEEP_SCOPE.get(service)
     if scope is None:
         raise ValueError(f"KTO_REGION_SWEEP does not cover service: {service}")
+    # 진단용 범위 강제. 시군구 코드를 함께 보내야 응답하는지 확인할 때만 쓴다.
+    scope_override = payload.get("regionScope")
+    if scope_override:
+        if scope_override not in ("SIGUNGU", "SIDO"):
+            raise ValueError("KTO_REGION_SWEEP regionScope must be SIGUNGU or SIDO")
+        scope = scope_override
     if operation not in KTO_SERVICES[service]["operations"]:
         raise ValueError(f"Unknown KTO operation: {service}/{operation}")
 
-    if scope == "SIGUNGU":
+    # 공급자가 어떤 지역코드 체계를 받는지 확인해야 할 때만 코드를 직접 넘긴다.
+    # 평상시 경로는 공식 방문자수 스냅샷만 근거로 쓴다.
+    override = payload.get("regionCodes")
+    if override:
+        if not isinstance(override, list) or not all(isinstance(c, str) for c in override):
+            raise ValueError("KTO_REGION_SWEEP regionCodes must be a list of strings")
+        codes = [c for c in override if re.fullmatch(r"\d{1,5}", c)]
+    elif scope == "SIGUNGU":
         codes = _visitor_region_codes(s3_client, bucket, "locgoRegnVisitrDDList", r"\d{5}")
     else:
         codes = _visitor_region_codes(s3_client, bucket, "metcoRegnVisitrDDList", r"\d{2}")

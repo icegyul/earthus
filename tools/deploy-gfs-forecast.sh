@@ -64,4 +64,4 @@ fi
 
 echo
 echo "완료 — 매니페스트: https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds/gfs-fc/manifest.json"
-echo "  스케줄은 아직 없다. 콘솔 EventBridge 에서 rate(3 hours) 규칙을 $FN 에 붙이면 자동 갱신된다."
+echo "  스케줄: EventBridge 규칙 earthus-gfs-cloud-forecast (rate(3 hours)) 가 이 함수를 부른다 (2026-09-03 생성)."

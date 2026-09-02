@@ -1108,7 +1108,12 @@ void main() {
     // 불투명도가 포화된 넓은 구름대 안에서도 결이 보이게, 두께(연속값)로 밝기를 준다.
     // 두꺼운 핵은 희고 가장자리는 회색 — 위성 영상의 문법과 같다. 값을 바꾸는 게 아니라 밝기만.
     float core = mix(ta.a, tb.a, f);
-    tint = vec3(0.70 + 0.30 * smoothstep(0.35, 1.0, core));
+    // 고층 구름(B)은 운정이 차가워 위성 IR 에서 가장 밝게 보인다 — 밝기에 같이 반영한다.
+    float topBright = max(smoothstep(0.35, 1.0, core), cirrus * 0.9);
+    tint = vec3(0.62 + 0.38 * topBright);
+    // 예보 프레임은 두께가 포화된 구름대가 넓어 밤에 판처럼 보인다 → 밤에만 조금 더 눌러 결을 남긴다.
+    float nightGfs = smoothstep(-0.08, 0.15, dot(n, uSunDir));
+    a *= mix(0.72, 1.0, nightGfs);
   } else {
     if (uBlend > 0.001) {
       vec4 tb = texture2D(uTexB, uv);

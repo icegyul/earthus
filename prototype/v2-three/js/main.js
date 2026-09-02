@@ -1081,7 +1081,11 @@ void main() {
   // 텍스처 색 = 의미 색 (흰색=구름, 파랑=비, 연보라=눈). 휘도 모드(IR)는 백색.
   vec3 tint = mix(t.rgb / max(max(t.r, max(t.g, t.b)), 0.2), vec3(1.0), uAlphaFromLum);
   float day = smoothstep(-0.08, 0.15, dot(n, uSunDir));
-  float lit = 0.22 + 0.85 * clamp(dot(n, uSunDir), 0.0, 1.0);
+  // 밤 바닥값. 예전엔 밝기 0.22 와 알파 0.2 가 곱해져 낮의 4% 로 떨어졌고,
+  // 밤쪽 구름이 사실상 사라졌다 — 구름이 5일간 어디로 가는지 보는 제품에서
+  // 지구 절반이 안 보이는 셈이었다. 자료는 그대로 두고 보이게만 올린다.
+  // (밤 구름도 달빛·도시광에 실제로 보인다. 낮/밤 대비는 남긴다.)
+  float lit = 0.36 + 0.72 * clamp(dot(n, uSunDir), 0.0, 1.0);
   // 릴리프 음영: 운정 고도장의 기울기로 뭉게 입체감 (지형 hillshade와 동일 기법)
   if (uReliefK > 0.001) {
     float eps = 0.0022;
@@ -1093,10 +1097,10 @@ void main() {
     vec3 tN = cross(n, tE);
     vec3 cN = normalize(n - ((hE - hW) * tE + (hN - hS) * tN) * 0.0028);
     float shade = clamp(dot(cN, uSunDir), 0.0, 1.0);
-    lit = 0.20 + 0.90 * mix(clamp(dot(n, uSunDir), 0.0, 1.0), shade, 0.75);
+    lit = 0.34 + 0.76 * mix(clamp(dot(n, uSunDir), 0.0, 1.0), shade, 0.75);
     // 관측 창 안에서 관측상 무운(높이 0)이면 IR 잔상 알파도 억제하지 않고 유지(면적은 IR이 정답일 수 있음)
   }
-  gl_FragColor = vec4(tint * lit, a * uOpacity * (0.2 + 0.8 * day));
+  gl_FragColor = vec4(tint * lit, a * uOpacity * (0.52 + 0.48 * day));
   #include <colorspace_fragment>
 }
 `;

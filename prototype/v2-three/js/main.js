@@ -4,11 +4,11 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES } from './ui-shell.js?v=42';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=46';
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
-import { IntelFeed } from './intel-feed.js?v=4';
-import { LiveLayers } from './live-layers.js?v=21';
+import { IntelFeed } from './intel-feed.js?v=5';
+import { LiveLayers } from './live-layers.js?v=22';
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
 import { PopSculpture } from './pop-sculpture.js?v=13';
@@ -19,10 +19,12 @@ import { GalaxyView } from './galaxy-view.js?v=1';
 import { SkyView } from './sky-view.js?v=1';
 import { AetherusLink } from './aetherus-link.js?v=2';
 import { SeaFloor } from './seafloor.js?v=2';
+import { TravelScene } from './travel.js?v=1';
+import { FlightRoute, routeCardHtml } from './route.js?v=4';
 // 정본 엔진(prototype/js/earthus2/v02)으로 가는 유일한 이음매 — 어휘·신선도·품질 예산의 출처
 import {
   installFetchObserver, ThermalGovernor, scenePlan, layerDataState, layerTruthLine,
-  refreshProviderHealth, providerCardHtml, THERMAL_STATE,
+  refreshProviderHealth, providerCardHtml, providerSnapshot, THERMAL_STATE,
   getRuntime, registerAndMount, broadcastThermal, engineCardHtml, ENGINE_CLASS,
 } from './engine-bridge.js?v=12';
 import { globeAdapter, overlayAdapter, takeoverAdapter } from './engine-adapters.js?v=1';
@@ -2103,6 +2105,7 @@ async function main() {
 
   // 해저 표현: 등심선(셰이더) + 해구 위치(SCUFN) — seafloor는 heightAtJs 선언 뒤에 생성
   let seafloor = null;
+  let travel = null; // 여행 씬 (데이터랩 출품 모듈) — heightAtJs 뒤에 생성
 
   // --- UI 바인딩 ---
   const bind = (id, valId, fmt, apply) => {
@@ -2229,6 +2232,17 @@ async function main() {
       lon = THREE.MathUtils.radToDeg(Math.atan2(p2.x, p2.z));
     }
     // 해구 표시가 켜져 있으면 해구선 우선 — 바다 클릭이 해상 실황으로 새지 않게
+    // 여행 씬이 켜져 있으면 시군구 비콘 우선 — 근거 5줄 카드
+    const tv = travel && travel.pick(lat, lon);
+    if (tv) {
+      focus.clear();
+      lockedNote = { title: `${tv.nameKo} — 왜 지금`, badge: 'DERIVED', body: travel.regionCard(tv) };
+      shell.showTab('now');
+      shell.openIntel();
+      shell.renderIntel();
+      shell.refreshFlyout();
+      return;
+    }
     const tr = seafloor && seafloor.pick(lat, lon);
     if (tr) {
       focus.clear();
@@ -2409,10 +2423,14 @@ async function main() {
   window.__earthusSculpt = popSculpt;
 
   const liveLayers = new LiveLayers(scene, heightAtJs, () => uniforms.uExagger.value, dataBadge);
+  // 항로 — 항공편 추적이 아니라 '구간을 잇는 표현'이다 (js/route.js 머리말 참조)
+  const flightRoute = new FlightRoute(scene, () => uniforms.uExagger.value);
   // 켜 둔 레이어를 원본 갱신 주기에 맞춰 실제로 다시 받는다 (배지만 갱신되던 문제)
   liveLayers.startAutoRefresh(() => { shell.refreshFlyout(); shell.renderIntel(); });
   window.__earthusLive = liveLayers;
   seafloor = new SeaFloor(scene, heightAtJs, dataBadge);
+  travel = new TravelScene(scene, heightAtJs, () => uniforms.uExagger.value);
+  window.__earthusTravel = travel;
   window.__earthusSeafloor = seafloor;
   const satLayer = new SatLayer(scene);
   window.__earthusSat = satLayer;
@@ -2462,6 +2480,11 @@ async function main() {
         o.material.size = Math.max(1, o.userData.baseSize * Math.max(b.particleScale, 0.25));
       });
     },
+  }));
+  registerAndMount('travel', ENGINE_CLASS.DYNAMIC, overlayAdapter({
+    group: () => travel.group,
+    isOn: () => !!travel.mode,
+    disposeAll: () => travel.clear && travel.clear(),
   }));
   registerAndMount('seafloor', ENGINE_CLASS.DYNAMIC, overlayAdapter({
     group: () => seafloor.group,
@@ -2759,6 +2782,12 @@ async function main() {
   // 레이어별 켜짐/꺼짐 등 셸 자체 상태 (신선도는 getLayerState가 정본으로 덧입힌다)
   const baseLayerState = (sid, l) => {
     const id = l.id;
+    if (sid === 'travel') {
+      if (id === 'related') return {};
+      const on = !!(travel && travel.mode === id);
+      const sel = travel && travel.selected;
+      return { on, note: on && sel ? `선택: ${sel.nameKo}` : undefined };
+    }
     const cloudNote = () => document.getElementById('cloud-note').textContent;
     if (sid === 'weather') {
       if (id === 'cloud-off') return { on: clouds.mode === 'off' };
@@ -2930,7 +2959,8 @@ async function main() {
       });
   };
 
-  const shell = initShell({
+  // 셸 훅을 변수로 들고 있는다 — 사건 방의 "지구에 켜기"가 메뉴와 같은 경로로 레이어를 켤 수 있게
+  const shellHooks = {
     onScene: () => { lockedNote = null; },
     onRegion: goRegion,
     onPopCountry: goPopCountry,
@@ -3196,6 +3226,32 @@ async function main() {
             'OBSERVED');
           break;
         }
+        // 여행 씬 — 오늘 발견 · 목적별 (데이터랩 출품 모듈). 모드는 하나만 켜진다.
+        case 'travel/discover':
+        case 'travel/bf':
+        case 'travel/wl':
+        case 'travel/en':
+        case 'travel/visitors': {
+          const mode = key.split('/')[1];
+          travel.setMode(mode).then((st) => {
+            shell.refreshFlyout();
+            if (!st.on) { lockedNote = null; shell.renderIntel(); return; }
+            // 처음 켤 때 한국으로 — 시군구 228곳이 한 화면에 들어오는 거리
+            const KR = { lat: 36.3, lon: 127.8 };
+            let ty = THREE.MathUtils.degToRad(KR.lon);
+            ty += Math.round((orbit.yaw - ty) / (2 * Math.PI)) * 2 * Math.PI;
+            orbit.targetYaw = ty; orbit.targetPitch = THREE.MathUtils.degToRad(KR.lat);
+            if (orbit.targetDist > 1.4 || orbit.targetDist < 1.06) orbit.targetDist = 1.22;
+            orbit.glide = 1.1;
+            note(layer.name, travel.sceneCard(), 'DERIVED');
+          }).catch((e) => note(layer.name, `발견 데이터를 불러오지 못했습니다 — 값을 생성하지 않습니다.<br/>${String((e && e.message) || e)}`, 'UNAVAILABLE'));
+          shell.refreshFlyout();
+          break;
+        }
+        case 'travel/related':
+          travel.ensure().then(() => note(layer.name, travel.relatedCard(), 'HISTORY'))
+            .catch((e) => note(layer.name, `연관 관광지 데이터를 불러오지 못했습니다.<br/>${String((e && e.message) || e)}`, 'UNAVAILABLE'));
+          break;
         // 해구 위치 — GEBCO SCUFN 가제티어 축선
         case 'ocean/trenches':
           seafloor.toggle().then((st) => {
@@ -3299,6 +3355,13 @@ async function main() {
           if (map.active) map.exit();
           showNote('연안 침수 범위', liveLayers.floodDistrictCardHtml() + '<br/>' + liveLayers.card('khoaflood'), 'OFFICIAL_OBSERVATION');
         });
+      } else if (action === 'room-layer' && ds.key) {
+        // 사건 방 줄의 "지구에 켜기" — 메뉴에서 누른 것과 똑같은 경로로 레이어를 켠다
+        const [sid, lid] = String(ds.key).split('/');
+        const sc = SCENES.find((s) => s.id === sid);
+        const layer = sc && sc.layers.find((l) => l.id === lid);
+        if (layer) shellHooks.onLayerAction(sid, layer);
+        else showNote('사건 방', `레이어 ${ds.key}를 메뉴에서 찾지 못했습니다.`, 'UNAVAILABLE');
       } else if (action === 'feed-retry') {
         feed.load().then(() => shell.renderIntel());
         shell.renderIntel();
@@ -3321,8 +3384,32 @@ async function main() {
     onTimeOffset: (ms) => {
       timeOffsetMs = ms;
       clouds.setForecastOffset(ms);
+      liveLayers.setTimeOffset(ms);
+      syncCloudToTime(ms);
     },
-  });
+    // 스트립 문구는 실제 상태에서 만든다. 예전엔 하드코딩이라
+    // 관측 구름을 보고 있어도 "예보구름 MODEL"이라고 말했다.
+    // 스트립은 좁다. 짧은 말은 눈에, 온전한 말은 title 에 둔다.
+    // 다만 '지금이 아닌 것을 지금처럼 보여주는' 경우에는 짧은 쪽에도 경고를 남긴다.
+    timeNote: () => {
+      const ty = liveLayers.state('tyoff').on;
+      let short;
+      if (clouds.mode === 'gfs') short = ty ? '구름·태풍 예보' : '구름 예보';
+      else if (cloudSwitching) short = '예보로 전환 중…';
+      else if (clouds.mode === 'off') short = ty ? '태양·태풍' : '태양만';
+      else short = '⚠ 구름은 관측값 (이 시각 아님)';
+      const full = [
+        '태양 위치: 그 시각으로 다시 계산',
+        clouds.mode === 'off' ? '구름: 꺼짐'
+          : clouds.mode === 'gfs' ? '구름: GFS 예보 (MODEL) — 그 시각의 예보'
+            : '구름: 관측 실황 — 지금 것이며 이 시각의 구름이 아닙니다',
+        ty ? '태풍: 발표기관 공식 예보 경로 위의 그 시각 위치' : '태풍 레이어 꺼짐',
+        '그 밖의 관측 레이어(지진·특보·대기질 등)는 현재값 그대로입니다',
+      ].join('\n');
+      return { short, full };
+    },
+  };
+  const shell = initShell(shellHooks);
 
   // ---------- 크롬 서랍 (검색·설정) — 1.0식 배타성: 하나 열리면 나머지 닫힘 ----------
   const searchDrawer = document.getElementById('search-drawer');
@@ -3529,6 +3616,107 @@ async function main() {
   };
 
   // 국가 검색: 한글/영문 이름 부분 일치 → 선택 시 포커스 이동
+  // 시간을 옮기면 구름도 그 시각의 것이어야 한다.
+  // 관측 구름은 '지금'의 관측이라 미래에는 존재하지 않는다. 그대로 두면 태양만 움직이고,
+  // 더 나쁘게는 없는 구름을 그 시각에 있다고 보여주게 된다 → 예보 구름으로 바꾸고 밝힌다.
+  let cloudBeforeScrub = null;
+  let cloudSwitching = false;
+  const isObservedCloud = (m) => m === 'obs' || (m || '').startsWith('gk2a');
+  const syncCloudToTime = (ms) => {
+    if (cloudSwitching) return;
+    const far = Math.abs(ms) >= 3600000;   // 1시간 이상 옮겼을 때만
+    if (far && isObservedCloud(clouds.mode)) {
+      cloudBeforeScrub = clouds.mode;
+      cloudSwitching = true;
+      clouds.set('gfs').then((ok) => {
+        cloudSwitching = false;
+        if (!ok) { cloudBeforeScrub = null; return; }
+        markCloudBtn('gfs');
+        clouds.setForecastOffset(timeOffsetMs);
+      }).catch(() => { cloudSwitching = false; cloudBeforeScrub = null; });
+    } else if (!far && cloudBeforeScrub && clouds.mode === 'gfs') {
+      const back = cloudBeforeScrub;   // 지금으로 돌아오면 관측을 되돌린다
+      cloudBeforeScrub = null;
+      cloudSwitching = true;
+      clouds.set(back).then(() => { cloudSwitching = false; markCloudBtn(back); })
+        .catch(() => { cloudSwitching = false; });
+    }
+  };
+
+  // ---------- 진단 HUD ----------
+  // 화면만 봐서는 어느 빌드에서 무엇이 켜져 있는지 알 수 없다.
+  // 여기 모아 두면 PD가 통째로 복사해 넘길 수 있다 — 캡처보다 정확하고 빠르다.
+  const hudLine = document.getElementById('hud-line');
+  const hudMore = document.getElementById('hud-more');
+  const hudText = document.getElementById('hud-text');
+  const hudCopy = document.getElementById('hud-copy');
+  const fmtLL = (la, lo) => `${la >= 0 ? 'N' : 'S'}${Math.abs(la).toFixed(2)} ${lo >= 0 ? 'E' : 'W'}${Math.abs(lo).toFixed(2)}`;
+
+  const diagnostics = () => {
+    const ver = (document.querySelector('script[src*="main.js"]') || {}).src || '';
+    const la = THREE.MathUtils.radToDeg(orbit.pitch);
+    const lo = ((THREE.MathUtils.radToDeg(orbit.yaw) + 180) % 360 + 360) % 360 - 180;
+    const alt = Math.round((orbit.dist - 1) * EARTH_RADIUS_M / 1000);
+    const L = [];
+    L.push(`EARTHUS v2 · ${(ver.match(/main\.js\?v=\d+/) || ['버전미상'])[0]}`);
+    L.push(`좌표  ${fmtLL(la, lo)} · 고도 ${alt.toLocaleString()}km · 과장 ${uniforms.uExagger.value}×`);
+    const offMin = Math.round(timeOffsetMs / 60000);
+    const at = new Date(Date.now() + timeOffsetMs);
+    L.push(`시각  ${offMin === 0 ? 'NOW' : `T${offMin > 0 ? '+' : '−'}${Math.floor(Math.abs(offMin) / 60)}:${String(Math.abs(offMin) % 60).padStart(2, '0')}`} = ${at.toISOString().slice(0, 16)}Z`);
+    if (lastSunState) L.push(`태양  직하점 ${fmtLL(lastSunState.declDeg, lastSunState.lonDeg)}`);
+    L.push(`구름  ${clouds.mode}${clouds.mode === 'gfs' && clouds.lastOffsetMs != null ? ` (오프셋 ${Math.round(clouds.lastOffsetMs / 3.6e6)}h 적용)` : ''}`);
+    const cn = (document.querySelector('.cloud-note') || {}).textContent || '';
+    if (cn) L.push(`      ${cn.replace(/\s+/g, ' ').slice(0, 120)}`);
+    const on = liveLayers.activeIds();
+    L.push(`레이어 ${on.length ? on.join(', ') : '없음'} (${on.length}개)`);
+    const extra = [];
+    if (popSculpt.on) extra.push('인구조각');
+    if (quakeHistory.on) extra.push('지진25년');
+    if (map.active) extra.push('지도모드');
+    if (local.active) extra.push('지역3D');
+    if (flightRoute.active()) extra.push('항로');
+    if (extra.length) L.push(`기타  ${extra.join(', ')}`);
+    try {
+      const snap = providerSnapshot();
+      // 아직 한 번도 호출 안 된 소스는 '정상'이 아니라 '미확인'이다.
+      // 정상으로 세면 진단이 고장을 숨긴다 — 실제로 기상청 지상관측 고장을 놓쳤다.
+      const bad = snap.filter((x) => x.state && x.state !== 'HEALTHY');
+      const unknown = snap.filter((x) => !x.state);
+      L.push(`소스  정상 ${snap.length - bad.length - unknown.length} · 이상 ${bad.length} · 미확인 ${unknown.length}`);
+      for (const x of bad) L.push(`      ✕ ${x.label} (${x.state})`);
+    } catch (e) { /* 소스 상태를 못 읽어도 나머지는 유효하다 */ }
+    L.push(`화면  ${window.innerWidth}×${window.innerHeight} · DPR ${window.devicePixelRatio} · 열 ${thermal.state}`);
+    return L.join('\n');
+  };
+
+  let hudTimer = null;
+  hudMore.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = hud.classList.toggle('open');
+    hudMore.textContent = open ? '▴' : '▾';
+    if (hudTimer) { clearInterval(hudTimer); hudTimer = null; }
+    if (open) {
+      hudText.textContent = diagnostics();
+      hudTimer = setInterval(() => { hudText.textContent = diagnostics(); }, 1500);
+    }
+  });
+  hudCopy.addEventListener('click', async () => {
+    const t = diagnostics();
+    try {
+      await navigator.clipboard.writeText(t);
+      hudCopy.textContent = '복사됨';
+    } catch (err) {
+      // 클립보드가 막힌 환경(비보안 컨텍스트 등)에서는 선택이라도 되게 한다
+      const r = document.createRange();
+      r.selectNodeContents(hudText);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(r);
+      hudCopy.textContent = '선택됨 — Ctrl+C';
+    }
+    setTimeout(() => { hudCopy.textContent = '📋 복사'; }, 2000);
+  });
+
   const searchInput = document.getElementById('c-search');
   const searchResults = document.getElementById('search-results');
   // 검색은 나라만이 아니라 도시·공항까지 — 지구본에서 나라 이름만 되는 검색은 반쪽이다.
@@ -3548,9 +3736,100 @@ async function main() {
   };
   searchInput.addEventListener('focus', loadAirports);
 
+  // 구간 전체가 화면에 들어오는 거리 — 보이는 지구의 반각을 이분탐색으로 뒤집는다
+  const fitDistForHalfDeg = (halfDeg) => {
+    const vHalf = (camera.fov * Math.PI) / 360;
+    const hHalf = Math.atan(Math.tan(vHalf) * camera.aspect);
+    let lo = 1;
+    let hi = 60000;
+    for (let i = 0; i < 40; i += 1) {
+      const mid = (lo + hi) / 2;
+      const got = Math.min(DetailTerrain.arcHalfDeg(vHalf, mid), DetailTerrain.arcHalfDeg(hHalf, mid));
+      if (got < halfDeg) lo = mid; else hi = mid;
+    }
+    return 1 + hi / 6371;
+  };
+
+  // 항로를 지구에 얹고, 공항 날씨를 받아 카드로 보여준다.
+  const showRoute = async (stops) => {
+    if (map.active) map.exit();
+    if (local.active) local.close(true);
+    flightRoute.show(stops);
+    // 구간 중심으로 날아가되, 가장 먼 기착지까지 들어오는 거리를 잡는다
+    const c = new THREE.Vector3();
+    const vs = stops.map((st) => {
+      const v = new THREE.Vector3(
+        Math.cos((st.lat * Math.PI) / 180) * Math.sin((st.lon * Math.PI) / 180),
+        Math.sin((st.lat * Math.PI) / 180),
+        Math.cos((st.lat * Math.PI) / 180) * Math.cos((st.lon * Math.PI) / 180),
+      );
+      c.add(v);
+      return v;
+    });
+    // 대권은 두 기착지 사이에서 북(또는 남)으로 부푼다. 기착지만 보고 화면을 잡으면
+    // 정작 선이 화면 밖으로 빠져나간다 → 구간 위의 점도 같이 넣어 잡는다.
+    // (a와 b의 어떤 선형결합이든 정규화하면 그 대권 위에 있다)
+    const pts = [...vs];
+    for (let i = 1; i < vs.length; i += 1) {
+      for (const [wa, wb] of [[3, 1], [1, 1], [1, 3]]) {
+        const m = vs[i - 1].clone().multiplyScalar(wa).addScaledVector(vs[i], wb);
+        if (m.lengthSq() > 1e-9) { m.normalize(); pts.push(m); c.add(m); }
+      }
+    }
+    c.normalize();
+    let maxDeg = 0;
+    for (const v of pts) {
+      maxDeg = Math.max(maxDeg, (Math.acos(Math.min(1, Math.max(-1, v.dot(c)))) * 180) / Math.PI);
+    }
+    const cLat = (Math.asin(Math.min(1, Math.max(-1, c.y))) * 180) / Math.PI;
+    const cLon = (Math.atan2(c.x, c.z) * 180) / Math.PI;
+    let ty = THREE.MathUtils.degToRad(cLon);
+    ty += Math.round((orbit.yaw - ty) / (2 * Math.PI)) * 2 * Math.PI;
+    orbit.targetYaw = ty;
+    orbit.targetPitch = THREE.MathUtils.degToRad(cLat);
+    orbit.targetDist = fitDistForHalfDeg(Math.max(2, maxDeg * 1.25));
+    orbit.glide = 1.4;
+    orbit.autoRotate = false;
+
+    const legs = FlightRoute.computeLegs(stops, Date.now());
+    showNote('항로', '<div class="card"><div class="card-b">공항 날씨 불러오는 중…</div></div>', 'DERIVED');
+    const lastArr = legs.length ? legs[legs.length - 1].arr : Date.now();
+    const days = Math.ceil((lastArr - Date.now()) / 86400000) + 1;
+    const raw = await Promise.all(stops.map((st) => FlightRoute.weatherAt(st, days)));
+    const wx = stops.map((st, i) => ({
+      now: FlightRoute.current(raw[i]),
+      at: i > 0 ? FlightRoute.hourAt(raw[i], legs[i - 1].arr) : null,
+    }));
+    showNote('항로', routeCardHtml(stops, legs, wx, dataBadge), 'DERIVED');
+  };
+
   const renderHits = (q) => {
     searchResults.innerHTML = '';
     if (!q) return;
+    // 두 곳 이상을 적었으면 지점 검색이 아니라 '구간'으로 읽는다.
+    // 예: "인천 > 나리타 > 로스앤젤레스" · "ICN NRT LAX"
+    if (airports) {
+      const rt = FlightRoute.parse(searchInput.value.trim(), airports);
+      if (rt) {
+        const d = document.createElement('div');
+        d.className = 'search-hit';
+        if (rt.error) {
+          d.style.color = 'var(--text-dim)';
+          d.textContent = `항로 — '${rt.error}' 공항을 찾지 못했습니다`;
+          searchResults.appendChild(d);
+          return;
+        }
+        d.textContent = `✈ 항로 ${rt.stops.map((st) => st.iata).join(' → ')} — 경로와 공항 날씨`;
+        d.addEventListener('click', () => {
+          searchResults.innerHTML = '';
+          searchInput.value = '';
+          closeDrawers();
+          showRoute(rt.stops);
+        });
+        searchResults.appendChild(d);
+        return;
+      }
+    }
     const hits = [];
     if (focus.data) {
       for (const f of focus.data.features) {
@@ -4041,12 +4320,14 @@ async function main() {
     satLayer.update(now);
     aethLink.update(now);
     liveLayers.tick(now, altKm);
+    flightRoute.tick(now, camera);
     popSculpt.updateLabels(camera);
     popSculpt.updateScale(altKm);
     quakeHistory.tick(dt);
     // 자동회전 체크박스는 실제 상태를 따라간다 — 지구를 만져서 꺼졌는데 켜진 채로 두면 거짓말이 된다
     if (rotateEl && rotateEl.checked !== orbit.autoRotate) rotateEl.checked = orbit.autoRotate;
     seafloor.update(camera, altKm);
+    travel.update(camera);
     buildLabelCandidates();
     shell.updateLabels(camera, altKm);
     feed.updateMarkers(camera, altKm, (i) => {
@@ -4069,7 +4350,7 @@ async function main() {
         clouds.uniforms.uReliefK.value = 0;
       }
     }
-    hud.textContent = `고도 ${altKm >= 1000 ? `${(altKm / 1000).toFixed(1)}천` : Math.round(altKm)} km · 과장 ${uniforms.uExagger.value}×`;
+    hudLine.textContent = `고도 ${altKm >= 1000 ? `${(altKm / 1000).toFixed(1)}천` : Math.round(altKm)} km · 과장 ${uniforms.uExagger.value}×`;
 
     renderer.render(scene, camera);
   };

@@ -46,6 +46,14 @@ const fetchJson = (path, timeoutMs = 15000, base = S3) =>
     new Promise((_, rej) => setTimeout(() => rej(new Error(`${path} timeout`)), timeoutMs)),
   ]);
 
+// 발표기관의 유효시각 표기 "YYYYMMDDHHmm" (UTC) → ms
+const parseValidUtc = (v) => {
+  const t = String(v || '');
+  if (t.length < 12) return null;
+  const ms = Date.UTC(+t.slice(0, 4), +t.slice(4, 6) - 1, +t.slice(6, 8), +t.slice(8, 10), +t.slice(10, 12));
+  return Number.isFinite(ms) ? ms : null;
+};
+
 const llToV3 = (latDeg, lonDeg, r) => {
   const la = (latDeg * Math.PI) / 180;
   const lo = (lonDeg * Math.PI) / 180;
@@ -1882,6 +1890,7 @@ export class LiveLayers {
   buildTyphoon(d) {
     const g = new THREE.Group();
     const rT = this.aboveCloudsR();
+    const tracks = [];
     (d.storms || []).forEach((s, si) => {
       const ag = (s.agencies || []).find((a) => a.steps && a.steps.length) || {};
       const steps = ag.steps || [];
@@ -1907,8 +1916,73 @@ export class LiveLayers {
       const nowPt = this.makePoints([{ lat: now.lat, lon: now.lon, c: new THREE.Color('#ffffff') }],
         { size: 10, lift: rT - 1.0035, additive: true });
       g.add(nowPt);
+      // 타임 스크럽용: 각 스텝의 유효시각을 붙여 둔다. 이게 있어야 '그 시각의 위치'를 낸다.
+      const timed = steps
+        .map((st) => ({ t: parseValidUtc(st.validUtc), lat: st.lat, lon: st.lon, wind: st.windMs, h: st.h }))
+        .filter((x) => x.t && x.lat != null && x.lon != null);
+      if (timed.length >= 2) tracks.push({ name: ag.name || s.name, color, steps: timed, nowPt });
     });
+    // 시각을 옮겼을 때 그 시각의 예보 위치를 표시할 표식. 관측된 현재 위치(흰 점)와
+    // 구분되게 속 빈 느낌으로 크게 둔다 — 이건 관측이 아니라 공식 '예보' 위치다(15.5).
+    if (tracks.length) {
+      const mg = new THREE.BufferGeometry();
+      mg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(tracks.length * 3), 3));
+      mg.setAttribute('color', new THREE.BufferAttribute(new Float32Array(tracks.length * 3), 3));
+      const mk = new THREE.Points(mg, new THREE.PointsMaterial({
+        size: 18, sizeAttenuation: false, vertexColors: true, map: getDotTex(),
+        alphaTest: 0.05, transparent: true, opacity: 0.9, depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      }));
+      mk.frustumCulled = false;
+      mk.visible = false;
+      g.add(mk);
+      g.userData.tyTracks = tracks;
+      g.userData.tyMarker = mk;
+      g.userData.tyRadius = rT;
+    }
     return g;
+  }
+
+  // 타임 스크럽 → 태풍의 '그 시각' 공식 예보 위치.
+  // 예보 구간 밖(과거이거나 마지막 스텝 이후)이면 표식을 숨긴다. 없는 위치를 만들지 않는다.
+  setTimeOffset(ms) {
+    const l = this.layers.tyoff;
+    const ud = l && l.on && l.obj && l.obj.userData;
+    if (!ud || !ud.tyMarker) return;
+    const mk = ud.tyMarker;
+    const at = Date.now() + (ms || 0);
+    const pos = mk.geometry.attributes.position.array;
+    const col = mk.geometry.attributes.color.array;
+    let shown = 0;
+    ud.tyTracks.forEach((tr, i) => {
+      const st = tr.steps;
+      let p = null;
+      if (at >= st[0].t && at <= st[st.length - 1].t) {
+        for (let k = 1; k < st.length; k += 1) {
+          if (at <= st[k].t) {
+            const f = (at - st[k - 1].t) / Math.max(1, st[k].t - st[k - 1].t);
+            let dLon = st[k].lon - st[k - 1].lon;
+            if (dLon > 180) dLon -= 360; else if (dLon < -180) dLon += 360;  // 날짜변경선
+            p = { lat: st[k - 1].lat + (st[k].lat - st[k - 1].lat) * f, lon: st[k - 1].lon + dLon * f };
+            break;
+          }
+        }
+      }
+      const o = i * 3;
+      if (p) {
+        const v = llToV3(p.lat, p.lon, ud.tyRadius);
+        pos[o] = v.x; pos[o + 1] = v.y; pos[o + 2] = v.z;
+        col[o] = tr.color.r; col[o + 1] = tr.color.g; col[o + 2] = tr.color.b;
+        shown += 1;
+      } else {
+        col[o] = 0; col[o + 1] = 0; col[o + 2] = 0;   // 구간 밖 — 그리지 않는다
+      }
+    });
+    mk.geometry.attributes.position.needsUpdate = true;
+    mk.geometry.attributes.color.needsUpdate = true;
+    mk.visible = shown > 0 && Math.abs(ms || 0) > 60000;
+    // 관측된 '지금' 위치는 지금일 때만 보인다 — 미래 화면에 과거 관측을 남기지 않는다.
+    for (const tr of ud.tyTracks) if (tr.nowPt) tr.nowPt.visible = Math.abs(ms || 0) <= 60000;
   }
 
   metaTyphoon(d) {

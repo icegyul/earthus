@@ -153,7 +153,31 @@
     position: fixed; left: 14px; bottom: 12px; font-size: 11px; color: var(--text-dim);
     background: var(--panel-bg); border: 1px solid var(--panel-line); border-radius: 8px;
     padding: 6px 12px; font-variant-numeric: tabular-nums; z-index: 7;
+    display: flex; align-items: center; gap: 8px;
   }
+  #hud-more {
+    background: none; border: 0; color: var(--text-dim); cursor: pointer;
+    font-family: inherit; font-size: 10px; padding: 0 2px; line-height: 1;
+  }
+  #hud-more:hover, #hud.open #hud-more { color: var(--accent); }
+  #hud-detail { display: none; }
+  #hud.open #hud-detail {
+    display: block; position: absolute; left: 0; bottom: calc(100% + 6px);
+    width: min(430px, calc(100vw - 28px));
+    background: var(--panel-bg); border: 1px solid var(--panel-line); border-radius: 8px;
+    padding: 10px 12px 8px; backdrop-filter: blur(8px);
+  }
+  #hud-text {
+    margin: 0 0 8px; font: 10.5px/1.65 ui-monospace, Consolas, monospace;
+    color: var(--text); white-space: pre-wrap; word-break: break-all;
+    max-height: 46vh; overflow-y: auto; overscroll-behavior: contain;
+  }
+  #hud-copy {
+    padding: 4px 10px; font-size: 10.5px; font-family: inherit; cursor: pointer;
+    background: rgba(74,144,217,0.12); border: 1px solid var(--panel-line);
+    color: var(--text); border-radius: 6px;
+  }
+  #hud-copy:hover { background: rgba(74,144,217,0.26); }
 
   .seg { display: flex; gap: 4px; margin-top: 4px; }
   .seg button {
@@ -746,6 +770,40 @@
     background: none; border: none; color: var(--accent); font-size: 11px;
     cursor: pointer; margin-bottom: 8px; font-family: inherit; padding: 0;
   }
+  /* ---------- 사건 방: 기관 스택 + 현재→다음→행동 ---------- */
+  .card.room { border-color: rgba(255,179,106,0.28); }
+  .room-src {
+    display: grid; grid-template-columns: 96px 1fr auto; gap: 8px; align-items: start;
+    padding: 7px 0; border-top: 1px solid rgba(120,160,200,0.10); color: var(--text);
+  }
+  .room-src.none { opacity: 0.62; }
+  .room-agency { font-size: 11px; font-weight: 600; line-height: 1.35; }
+  .room-what { font-size: 9.5px; color: var(--text-dim); font-weight: 400; margin-top: 2px; line-height: 1.4; }
+  .room-val { font-size: 11px; line-height: 1.45; min-width: 0; }
+  .room-sub { font-size: 9.5px; color: var(--text-dim); margin-top: 2px; line-height: 1.45; }
+  .room-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .room-right .badge { white-space: nowrap; }
+  .room-on {
+    background: rgba(74,144,217,0.10); border: 1px solid rgba(120,160,200,0.22); color: var(--text);
+    font-size: 9.5px; font-family: inherit; padding: 2px 7px; border-radius: 5px; cursor: pointer; white-space: nowrap;
+  }
+  .room-on:hover { background: rgba(74,144,217,0.22); }
+  .room-fusion { margin-top: 8px; font-size: 9.5px; color: var(--text-dim); line-height: 1.5; }
+  .room-fusion code { font-size: 9px; }
+  .room-tl { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .room-tl > div { border-top: 2px solid rgba(120,160,200,0.18); padding-top: 6px; color: var(--text); font-size: 11px; line-height: 1.45; }
+  .room-tl > div.act { border-top-color: #ffb36a; }
+  .room-tlk { font-size: 9.5px; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 4px; }
+  .room-tl > div.act .room-tlk { color: #ffb36a; }
+  .room-tl a { color: var(--accent); }
+  /* ---------- 여행 씬 카드: 왜 지금 5줄 ---------- */
+  .tv-score { font-size: 12px; color: var(--text); margin-bottom: 8px; }
+  .tv-score b { font-size: 18px; color: #F2A2C4; }
+  .tv-score span { font-size: 10px; color: var(--text-dim); }
+  .tv-why { font-size: 9.5px; letter-spacing: 1px; color: var(--text-dim); margin: 4px 0 2px; }
+  .tv-line { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start; padding: 6px 0; border-top: 1px solid rgba(120,160,200,0.10); color: var(--text); font-size: 11px; line-height: 1.45; }
+  .tv-line .badge { margin-top: 1px; white-space: nowrap; }
+  .tv-src { font-size: 9.5px; color: var(--text-dim); margin-top: 2px; }
   #feedmarks { position: fixed; inset: 0; pointer-events: none; z-index: 3; }
   .feed-mark {
     position: absolute; width: 10px; height: 10px; border-radius: 50%;
@@ -762,6 +820,15 @@
   }
 
   #labels { position: fixed; inset: 0; pointer-events: none; z-index: 3; }
+  /* 항로 기착지 — 순항 셸 높이에 찍히므로 지표 라벨(.geo-label)과 구분되게 테두리를 준다 */
+  #route-labels { position: fixed; inset: 0; pointer-events: none; z-index: 4; }
+  .route-label {
+    position: absolute; transform: translate(-50%, -150%); display: none;
+    padding: 2px 7px; border-radius: 10px; white-space: nowrap;
+    font: 600 10px/1.2 ui-monospace, Consolas, monospace; letter-spacing: 0.08em;
+    color: #dfeeff; background: rgba(10,16,24,0.72);
+    border: 1px solid rgba(127,183,245,0.5); backdrop-filter: blur(4px);
+  }
   .geo-label {
     position: absolute; transform: translate(-50%, -50%);
     font-size: 11px; color: rgba(220,232,244,0.85); letter-spacing: 0.4px;
@@ -911,7 +978,8 @@
   <div id="map-attrib">위성영상 © Esri · Maxar · Earthstar Geographics</div>
 </div>
 
-<div id="hud">고도 —</div>
+<div id="hud"><span id="hud-line">고도 —</span><button id="hud-more" title="진단 정보 (상태를 텍스트로 복사)">▾</button>
+  <div id="hud-detail"><pre id="hud-text"></pre><button id="hud-copy">📋 복사</button></div></div>
 
 <div id="loading">
   <img class="lockup" src="./assets/brand/earthus-lockup-white.svg" alt="EARTHUS — WHERE EARTH BECOMES ONE" />
@@ -920,6 +988,6 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=96"></script>
+<script type="module" src="./js/main.js?v=104"></script>
 </body>
 </html>

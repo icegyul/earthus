@@ -84,7 +84,7 @@ export const SCENES = [
       { id: 'surf', name: '해변 271곳·낚시 946곳', state: 'OBSERVED', src: 'OpenStreetMap ODbL', act: true },
       { id: 'isobath', name: '해저 등심선 (등고선)', state: 'OBSERVED', src: 'AWS Terrarium 고도맵', act: true },
       { id: 'trenches', name: '해구 위치 28곳', state: 'OBSERVED', src: 'GEBCO SCUFN 가제티어', act: true },
-      { id: 'vessel', name: '선박', state: 'LOCKED', src: 'KOMSA MTIS', plan: '1.0과 동일: AIS 재배포 안 함(정책)' },
+      { id: 'vessel', name: '선박', state: 'LOCKED', src: 'KOMSA MTIS', plan: '1.0과 동일: AIS 재배포 안 함(정책). 항로 표현은 검색창의 구간 입력으로 대신합니다' },
     ],
   },
   {
@@ -99,7 +99,23 @@ export const SCENES = [
       { id: 'pop', name: '국가 인구 (전 세계 총계)', state: 'OBSERVED', src: 'World Bank SP.POP.TOTL', act: true },
       { id: 'news', name: '지역 뉴스 (지금)', state: 'LIVE', src: '각 지역 매체 RSS', act: true },
       { id: 'travel', name: '여행·관광 POI', state: 'LOCKED', src: 'Overpass API', plan: '공용 서버 응답 불안정(504) — 자체 프록시/캐시 후 연결' },
-      { id: 'flight', name: '항공편 추적', state: 'LOCKED', src: 'adsb.lol', plan: 'API는 정상이나 CORS 헤더 없음 — Lambda 프록시 필요' },
+      { id: 'flight', name: '항공편 추적', state: 'LOCKED', src: 'adsb.lol', plan: 'API는 정상이나 CORS 헤더 없음 — Lambda 프록시 필요. 그동안은 검색창에 «인천 > 나리타 > 로스앤젤레스»처럼 구간을 넣으면 대권 경로와 공항 날씨를 봅니다(추적 아님)' },
+    ],
+  },
+  {
+    // 여행 — 한국관광 데이터랩 출품 모듈(TRAVEL DISCOVERY). 유명한 곳 검색이 아니라
+    // 오늘 갈 곳을 데이터로 발견한다. KTO 데이터에서 유도한 후보는 EARTHUS DISCOVERY 로만 표기.
+    id: 'travel',
+    label: '여행',
+    glyph: '여',
+    accent: '#F2A2C4',
+    layers: [
+      { id: 'discover', name: '오늘 발견 — 시군구 228곳', state: 'DERIVED', src: 'KTO 데이터랩 5종 + 기상청·에어코리아', act: true },
+      { id: 'bf', name: '무장애 여행지 11,644곳', state: 'OBSERVED', src: 'KTO 무장애 여행 정보', act: true },
+      { id: 'wl', name: '웰니스 관광지 202곳', state: 'OBSERVED', src: 'KTO 웰니스관광정보', act: true },
+      { id: 'en', name: '외국인 · 영문 콘텐츠 25,398건', state: 'OBSERVED', src: 'KTO 영문 관광정보', act: true },
+      { id: 'visitors', name: '방문자 스냅샷 (이동통신 · 관광객 아님)', state: 'HISTORY', src: 'KTO 지역별 방문자수', act: true },
+      { id: 'related', name: '하나 더 — 연관 관광지 그래프', state: 'HISTORY', src: 'KTO 관광지별 연관 관광지 (TMAP 이동)', act: true },
     ],
   },
   {
@@ -424,9 +440,11 @@ export function initShell(hooks) {
   };
   const applyTime = () => {
     const m = parseInt(tsRange.value, 10);
+    const n = m !== 0 && hooks.timeNote ? hooks.timeNote(m) : null;
     hooks.onTimeOffset(m * 60000);
     tsLabel.textContent = m === 0 ? 'NOW'
-      : `${fmtOffset(m)} · 태양 LIVE · 예보구름 MODEL · 관측은 STALE`;
+      : `${fmtOffset(m)} · ${n ? n.short : ''}`;
+    strip.title = n ? n.full : '';
   };
   tsRange.addEventListener('input', applyTime);
   strip.querySelector('#ts-now').addEventListener('click', () => {

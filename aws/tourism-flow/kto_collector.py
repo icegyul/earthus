@@ -270,11 +270,12 @@ def sync_operation(
     bucket,
     call=None,
     environ=None,
+    page_size=None,
 ):
     """한 Operation을 호출해 원문을 먼저 쓰고 정규화 결과를 공개한다."""
     if call is None:
         env = environ or {}
-        page_size = int(env.get("KTO_DEFAULT_PAGE_SIZE") or 100)
+        page_size = int(page_size or env.get("KTO_DEFAULT_PAGE_SIZE") or 100)
         paged_items = fetch_all_pages(
             service,
             operation,
@@ -626,12 +627,30 @@ def handle_event(
                 skipped.append(label)
                 continue
             try:
-                completed.append(_run_region_sweep(
-                    {**payload, **job, "task": "KTO_REGION_SWEEP"},
-                    s3_client=s3_client, bucket=bucket,
-                    fetched_at=fetched_at or _utc_now(), call=call, environ=environ,
-                    _lease=_lease, sleep=sleep,
-                ))
+                if REGION_SWEEP_SCOPE.get(job.get("service")):
+                    completed.append(_run_region_sweep(
+                        {**payload, **job, "task": "KTO_REGION_SWEEP"},
+                        s3_client=s3_client, bucket=bucket,
+                        fetched_at=fetched_at or _utc_now(), call=call, environ=environ,
+                        _lease=_lease, sleep=sleep,
+                    ))
+                else:
+                    # 지역 파라미터가 없는 전체 동기화(무장애·웰니스·영문)도
+                    # 같은 lease 안에서 갱신한다. 페이지 크기를 키우지 않으면
+                    # 25,000건짜리 영문 콘텐츠가 페이지 대기만으로 한도를 넘긴다.
+                    env = environ or {}
+                    completed.append(handle_event(
+                        {
+                            "task": "KTO_SYNC",
+                            "service": job.get("service"),
+                            "operation": job.get("operation"),
+                            "params": job.get("params") or {},
+                            "pageSize": int(env.get("KTO_AGGREGATE_PAGE_SIZE") or 1000),
+                        },
+                        s3_client=s3_client, bucket=bucket,
+                        fetched_at=fetched_at or _utc_now(), call=call, environ=environ,
+                        _lease=_lease, sleep=sleep,
+                    ))
             except Exception as error:
                 failed.append({"job": label, "reasonCode": type(error).__name__.upper()})
         return {
@@ -666,6 +685,7 @@ def handle_event(
             bucket=bucket,
             call=call,
             environ=environ,
+            page_size=payload.get("pageSize"),
         )
     except Exception as error:
         health_state = str(getattr(error, "health_state", "FAILED") or "FAILED")

@@ -518,6 +518,49 @@ class KtoCollectorWriteOrderTest(unittest.TestCase):
             ["areaExpDivList", "areaTouDivList"],
         )
 
+    def test_sweep_batch_also_refreshes_whole_catalog_services_that_take_no_region(self):
+        collector = load_collector(self)
+        fake_s3 = FakeS3()
+        self.seed_visitor_snapshot(fake_s3, "metcoRegnVisitrDDList", ["11"])
+        calls = []
+
+        def call(service, operation, params):
+            calls.append((service, operation, dict(params)))
+            if service == "wellness":
+                return {"resultCode": "00", "items": [{
+                    "contentid": "1", "title": "센터", "areacode": "1",
+                }]}
+            return {"resultCode": "00", "items": [{
+                "areaCd": params["areaCd"], "baseYm": params["baseYm"],
+                "touDivIxCd": "1", "touDivIxVal": "0.5",
+            }]}
+
+        result = collector.handle_event(
+            {
+                "task": "KTO_SWEEP_BATCH",
+                "jobs": [
+                    {"service": "diversity", "operation": "areaTouDivList", "baseYm": "202605"},
+                    {"service": "wellness", "operation": "wellnessTursmSyncList"},
+                ],
+            },
+            s3_client=fake_s3,
+            bucket="fixture-bucket",
+            fetched_at="2026-09-02T15:40:00Z",
+            call=call,
+            sleep=lambda seconds: None,
+        )
+
+        self.assertTrue(result["ok"])
+        self.assertEqual(len(result["completed"]), 2)
+        # 전체 동기화 job은 지역 파라미터 없이 그대로 호출된다.
+        wellness = [params for service, _, params in calls if service == "wellness"]
+        self.assertEqual(wellness, [{}])
+        self.assertIn("app/tourism/kto/wellness/wellnessTursmSyncList.json", fake_s3.objects)
+        summary = json.loads(fake_s3.objects["app/tourism/kto/summary.json"])
+        self.assertEqual(
+            summary["services"]["wellness"]["operations"]["wellnessTursmSyncList"]["itemCount"], 1,
+        )
+
     def test_sweep_batch_records_a_failed_job_without_abandoning_the_rest(self):
         collector = load_collector(self)
         fake_s3 = FakeS3()

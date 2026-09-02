@@ -2,10 +2,8 @@
   "phase": "p10",
   "phase_name": "Event / Revision / Confidence",
   "hard_gate": "WHAT CHANGED / HOW SURE E2E",
-  "gate": "PARTIAL",
-  "failed_checks": [
-    "a_revision_has_actually_occurred"
-  ],
+  "gate": "PASS",
+  "failed_checks": [],
   "checks": {
     "tests_pass": true,
     "an_event_exists_to_inspect": true,
@@ -15,7 +13,7 @@
     "confidence_carries_a_grade": true,
     "absent_uncertainty_is_named_not_zeroed": true,
     "no_confidence_score_without_a_grade": true,
-    "a_revision_has_actually_occurred": false
+    "a_revision_has_actually_occurred": true
   },
   "blockers": {
     "by_check": {
@@ -52,26 +50,24 @@
         "reason": "check is met"
       },
       "a_revision_has_actually_occurred": {
-        "blocker_class": "BUILDABLE_NOW",
-        "reason": "이벤트에 개정이 한 번도 일어나지 않았다. WHAT CHANGED 를 E2E 로 보이려면 실제 개정이 하나는 있어야 한다 — 내부 작업"
+        "blocker_class": "NONE",
+        "reason": "check is met"
       }
     },
     "counts": {
-      "BUILDABLE_NOW": 1,
+      "BUILDABLE_NOW": 0,
       "DECISION_PENDING": 0,
       "EXTERNAL_DATA_GATED": 0,
       "EXTERNAL_PARTNER_GATED": 0,
-      "NONE": 8
+      "NONE": 9
     },
-    "unmet_buildable_now": [
-      "a_revision_has_actually_occurred"
-    ],
+    "unmet_buildable_now": [],
     "unmet_requiring_others": []
   },
-  "generated_at": "2026-09-02T16:30:56.834479+00:00",
+  "generated_at": "2026-09-02T17:01:25.802109+00:00",
   "repository": "https://github.com/icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "55f4b1a90db3f8914fad3bccdbf85113b58d2883",
+  "commit": "861857e433d3fddf08f0e1d60891af87ea0d527e",
   "tests_event_revision_confidence": {
     "targets": [
       "tests/unit/test_confidence_honesty.py",
@@ -79,16 +75,25 @@
       "tests/acceptance/test_master_acceptance.py"
     ],
     "exit_code": 0,
-    "summary": "294 passed, 2 warnings in 0.59s"
+    "summary": "297 passed, 2 warnings in 0.53s"
   },
-  "inspected_event_id": "ce9c5771-bf41-4b80-a95e-24715bef0ef1",
+  "inspected_event_id": "06a67433-c1de-4aae-b4fd-c178883deb03",
+  "revision_survey": {
+    "ok": true,
+    "value": {
+      "events_surveyed": 60,
+      "events_with_more_than_one_revision": 54,
+      "max_revisions_on_one_event": 3,
+      "example_revised_event": "06a67433-c1de-4aae-b4fd-c178883deb03"
+    }
+  },
   "revision_lineage": {
     "ok": true,
     "value": {
       "http_status": 200,
-      "revision_count": 1,
+      "revision_count": 3,
       "revisions_are_ordered": true,
-      "each_revision_states_a_change": false
+      "each_revision_states_a_change": true
     }
   },
   "confidence_and_uncertainty": {
@@ -96,7 +101,7 @@
     "value": {
       "http_status": 200,
       "confidence_grade": "HIGH",
-      "confidence_score": 0.75,
+      "confidence_score": 0.6,
       "uncertainty_representation": "UNAVAILABLE",
       "both_present": true,
       "grade_present": true,

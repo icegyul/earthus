@@ -34,10 +34,32 @@ TESTS = [
 PROBES = ["/v1/intelligence/events"]
 
 
-def first_event_id() -> str | None:
-    payload = probe("/v1/intelligence/events")
+def stored_events(limit: int = 60) -> list[str]:
+    payload = probe(f"/v1/intelligence/events?limit={limit}")
     rows = (payload.get("body") or {}).get("data") or []
-    return str(rows[0]["id"]) if rows else None
+    return [str(row["id"]) for row in rows]
+
+
+def revision_survey(event_ids: list[str]) -> dict:
+    """Has a revision happened at all, and to how many events.
+
+    Asking only the first stored event answers a different question - "did this
+    one change" - and would report the gate failed because of which row came
+    back first. The gate asks whether the pipeline has ever recorded a change,
+    so the survey is over the stored events and reports the counts it found.
+    """
+    counts: dict[str, int] = {}
+    for event_id in event_ids:
+        payload = probe(f"/v1/intelligence/events/{event_id}/revisions", timeout=15)
+        rows = (payload.get("body") or {}).get("data") or []
+        counts[event_id] = len(rows)
+    revised = {event_id: n for event_id, n in counts.items() if n > 1}
+    return {
+        "events_surveyed": len(counts),
+        "events_with_more_than_one_revision": len(revised),
+        "max_revisions_on_one_event": max(counts.values(), default=0),
+        "example_revised_event": next(iter(revised), None),
+    }
 
 
 def revision_lineage(event_id: str | None) -> dict:
@@ -49,10 +71,13 @@ def revision_lineage(event_id: str | None) -> dict:
     return {
         "http_status": payload.get("http_status"),
         "revision_count": len(rows),
-        "revisions_are_ordered": [r.get("revision_number") for r in rows]
-        == sorted(r.get("revision_number") for r in rows),
+        # The field is revision_no. Reading a name the payload does not use gave
+        # a list of Nones and a TypeError, which the evidence then recorded as
+        # "lineage unavailable" - a tooling mistake dressed as a finding.
+        "revisions_are_ordered": [r.get("revision_no") for r in rows]
+        == sorted(r.get("revision_no") or 0 for r in rows),
         "each_revision_states_a_change": all(
-            r.get("change_summary") or r.get("changed_fields") or r.get("reason") for r in rows
+            r.get("delta") or r.get("reason_codes") for r in rows
         )
         if rows
         else False,
@@ -92,12 +117,18 @@ def confidence_and_uncertainty(event_id: str | None) -> dict:
 def main() -> None:
     tests = pytest_summary(TESTS)
     build = server_state(PROBES)
-    event_id = first_event_id()
-    revisions = attempt(lambda: revision_lineage(event_id))
-    sureness = attempt(lambda: confidence_and_uncertainty(event_id))
+    event_ids = stored_events()
+    event_id = event_ids[0] if event_ids else None
+    survey = attempt(lambda: revision_survey(event_ids))
+    # Inspect the event that actually has a lineage when there is one; otherwise
+    # the first stored event, so the record still says what was looked at.
+    inspected = (survey.get("value") or {}).get("example_revised_event") or event_id
+    revisions = attempt(lambda: revision_lineage(inspected))
+    sureness = attempt(lambda: confidence_and_uncertainty(inspected))
 
     r = revisions.get("value") or {}
     s = sureness.get("value") or {}
+    v = survey.get("value") or {}
     live = build["state"] == "CURRENT"
 
     checks = {
@@ -109,7 +140,7 @@ def main() -> None:
         "confidence_carries_a_grade": bool(s.get("grade_present")),
         "absent_uncertainty_is_named_not_zeroed": bool(s.get("absence_is_named_not_zeroed")),
         "no_confidence_score_without_a_grade": bool(s.get("no_score_without_a_grade")),
-        "a_revision_has_actually_occurred": (r.get("revision_count") or 0) > 1,
+        "a_revision_has_actually_occurred": (v.get("events_with_more_than_one_revision") or 0) > 0,
     }
     blockers = {
         "tests_pass": (BUILDABLE_NOW, "이벤트/개정/신뢰도 테스트 미통과 — 내부 작업"),
@@ -149,7 +180,8 @@ def main() -> None:
         checks=checks,
         blockers=blockers,
         tests_event_revision_confidence=tests,
-        inspected_event_id=event_id,
+        inspected_event_id=inspected,
+        revision_survey=survey,
         revision_lineage=revisions,
         confidence_and_uncertainty=sureness,
         live_build=build,

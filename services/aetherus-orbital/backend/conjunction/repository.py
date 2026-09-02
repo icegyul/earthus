@@ -456,6 +456,133 @@ class ConjunctionRepository:
             row = result.mappings().one_or_none()
         return _run_dict(dict(row)) if row else None
 
+    #: A single event's refresh history can run to hundreds of snapshots. The
+    #: cap keeps one conjunction from turning a replay into an unbounded write,
+    #: and it is reported so a truncated history is never read as a complete one.
+    HISTORY_SNAPSHOTS_PER_EVENT = 25
+
+    async def events_with_history(
+        self, *, limit: int = 100, min_snapshots: int = 2
+    ) -> list[str]:
+        """Conjunctions that have actually been re-screened, newest activity first.
+
+        A "replay the history" operation that picks events by TCA gets whatever
+        happens to be soonest, and most of those have been screened once. Asking
+        for the events that *have* a history is the difference between replaying
+        a record and replaying a single row two hundred times.
+        """
+        if min_snapshots < 2:
+            raise ValueError("a history needs at least two snapshots")
+        query = text(
+            """
+            SELECT cs.event_id::text AS event_id
+            FROM conjunction_snapshot AS cs
+            JOIN conjunction_event AS ce ON ce.id = cs.event_id
+            WHERE ce.status <> 'RETIRED'
+            GROUP BY cs.event_id
+            HAVING count(*) >= :min_snapshots
+            ORDER BY max(cs.snapshot_at) DESC
+            LIMIT :limit
+            """
+        )
+        async with get_db_session() as session:
+            result = await session.execute(
+                query, {"min_snapshots": int(min_snapshots), "limit": max(1, int(limit))}
+            )
+            return [row[0] for row in result.all()]
+
+    async def list_conjunction_history(
+        self,
+        *,
+        event_ids: list[str],
+        snapshots_per_event: int | None = None,
+    ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+        """Serve each named event joined to its snapshots, oldest first.
+
+        The same columns as :meth:`list_conjunctions`, so every downstream
+        converter works unchanged. Only the snapshot selection differs: that
+        method takes the newest per event, this one takes a bounded run of them
+        in the order they were recorded, which is what makes a revision lineage
+        possible.
+
+        The returned coverage block reports the cap and which events hit it. A
+        truncated history that does not say it was truncated would read as the
+        whole story of a conjunction.
+        """
+        if not event_ids:
+            return [], {"events_requested": 0, "snapshots_per_event": 0, "truncated_events": []}
+        per_event = int(snapshots_per_event or self.HISTORY_SNAPSHOTS_PER_EVENT)
+        if per_event < 1:
+            raise ValueError("snapshots_per_event must be at least 1")
+
+        query = text(
+            f"""
+            WITH ranked AS (
+                SELECT
+                    cs.*,
+                    row_number() OVER (
+                        PARTITION BY cs.event_id ORDER BY cs.snapshot_at ASC, cs.id ASC
+                    ) AS history_position,
+                    count(*) OVER (PARTITION BY cs.event_id) AS history_total
+                FROM conjunction_snapshot AS cs
+                WHERE cs.event_id = ANY(CAST(:event_ids AS uuid[]))
+            )
+            SELECT
+                ce.id::text AS event_id,
+                ce.tca,
+                ce.source_event_id,
+                ce.first_seen_at,
+                ce.last_seen_at,
+                ce.status AS event_status,
+                so_primary.catalog_id AS primary_catalog_id,
+                so_primary.canonical_name AS primary_name,
+                so_primary.id::text AS primary_object_id,
+                so_secondary.catalog_id AS secondary_catalog_id,
+                so_secondary.canonical_name AS secondary_name,
+                so_secondary.id::text AS secondary_object_id,
+                cs.id::text AS snapshot_id,
+                cs.snapshot_at,
+                cs.miss_distance_m,
+                cs.relative_speed_mps,
+                cs.pc, cs.pc_method, cs.pc_status, cs.pc_unavailable_reason,
+                cs.covariance_status,
+                cs.max_pc, cs.max_pc_method,
+                cs.max_pc_basis, cs.max_pc_status,
+                cs.geometry_basis,
+                max_pc_ra.source_id AS max_pc_source_id,
+                max_pc_ra.content_sha256 AS max_pc_content_sha256,
+                cs.dilution_state, cs.tca_boundary_flag,
+                cs.source_grade, cs.validation_state,
+                cs.model_version, cs.input_hash, cs.provenance_json,
+                cs.history_position, cs.history_total
+            FROM ranked AS cs
+            JOIN conjunction_event AS ce ON ce.id = cs.event_id
+            JOIN space_object AS so_primary ON so_primary.id = ce.primary_object_id
+            JOIN space_object AS so_secondary ON so_secondary.id = ce.secondary_object_id
+            LEFT JOIN raw_artifact AS max_pc_ra ON max_pc_ra.id = cs.max_pc_artifact_id
+            WHERE ce.status <> 'RETIRED'
+              AND cs.history_position <= :per_event
+            ORDER BY ce.id, cs.snapshot_at ASC, cs.id ASC
+            """
+        )
+        async with get_db_session() as session:
+            result = await session.execute(
+                query, {"event_ids": list(event_ids), "per_event": per_event}
+            )
+            rows = [dict(row) for row in result.mappings().all()]
+        truncated = sorted(
+            {str(row["event_id"]) for row in rows if (row.get("history_total") or 0) > per_event}
+        )
+        coverage = {
+            "events_requested": len(event_ids),
+            "events_returned": len({str(row["event_id"]) for row in rows}),
+            "snapshots_returned": len(rows),
+            "snapshots_per_event": per_event,
+            "truncated_events": truncated,
+            "order": "SNAPSHOT_AT_ASC",
+        }
+        return rows, coverage
+
     async def list_conjunctions(
         self,
         *,

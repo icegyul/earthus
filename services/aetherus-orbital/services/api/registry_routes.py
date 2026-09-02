@@ -1023,6 +1023,120 @@ def register_registry_routes(
             warnings=warnings,
         )
 
+    @app.post("/v1/intelligence/promote")
+    async def intelligence_promote(limit:int=200):
+        """Promote stored P4 screening candidates into Intelligence Events.
+
+        Every part of this path existed and nothing called it: the signals were
+        built inside the read handler, merged into the response and discarded.
+        So the event store held one fixture launch while two hundred live
+        screening candidates went nowhere, and "what changed" had nothing to
+        change.
+
+        This is a POST because promotion writes. A GET that creates events makes
+        the event store a function of who happened to look at it.
+
+        Running it twice with no new screening creates nothing: the orchestrator
+        refuses a revision whose delta is empty, so ``unchanged`` rises and
+        ``revised`` does not. A revision here means the screening really moved.
+        """
+        if conjunction_signal_source is None:
+            return envelope(None, data_status="UNAVAILABLE", warnings=[
+                "No conjunction signal source is wired to this deployment; there is "
+                "nothing to promote.",
+            ])
+        from aetherus_intelligence.orchestrator import IntelligenceOrchestrator
+        from aetherus_intelligence.packet import IntelligencePacketBuilder
+
+        from aetherus_integration.conjunction_promotion import promote_conjunction_signals
+
+        outcome = await promote_conjunction_signals(
+            signal_source=conjunction_signal_source,
+            repository=repo,
+            orchestrator=IntelligenceOrchestrator(store=repo),
+            packet_builder=IntelligencePacketBuilder(),
+            limit=limit,
+        )
+        payload = outcome.to_payload()
+        warnings = list(payload["warnings"])
+        if outcome.refused:
+            warnings.append(
+                f"{len(outcome.refused)} signal(s) were declined by the promotion gate "
+                "and are listed with their reason; none were promoted silently."
+            )
+        return envelope(
+            payload["data"],
+            data_status=payload["data_status"],
+            provenance=payload["provenance"],
+            warnings=warnings,
+        )
+
+    @app.post("/v1/intelligence/promote/history")
+    async def intelligence_promote_history(limit:int=25, snapshots_per_event:int=25):
+        """Replay each conjunction's stored screening history into its lineage.
+
+        The plain promotion carries the newest snapshot, so an event gets one
+        revision and stops. The screening history was already in the database -
+        the snapshot table is append-only, so every refresh was kept - and
+        nothing read it. This does.
+
+        A revision here still has to clear the material-change policy: repeated
+        screening of identical input differs in the ninth decimal place, and
+        recording that would bury the conjunctions that really moved.
+        """
+        if conjunction_signal_source is None:
+            return envelope(None, data_status="UNAVAILABLE", warnings=[
+                "No conjunction signal source is wired to this deployment.",
+            ])
+        from aetherus_intelligence.orchestrator import IntelligenceOrchestrator
+        from aetherus_intelligence.packet import IntelligencePacketBuilder
+
+        from aetherus_integration.conjunction_promotion import promote_conjunction_signals
+        from aetherus_integration.conjunction_signals import (
+            build_conjunction_history_signals,
+            build_conjunction_signals,
+        )
+
+
+        # Pick the conjunctions that have a history, not the ones whose TCA is
+        # soonest. Ordering by TCA returns mostly once-screened events, and
+        # replaying a single row is not a replay.
+        from backend.conjunction.service import ConjunctionService
+
+        event_ids = await ConjunctionService().repository.events_with_history(limit=limit)
+        if not event_ids:
+            current = await build_conjunction_signals(limit=limit)
+            return envelope(None, data_status="INSUFFICIENT_DATA", warnings=[
+                *current.warnings,
+                "No stored conjunction has been screened more than once, so there "
+                "is no history to replay. This is a statement about the data, not "
+                "a failure: a revision needs a second observation.",
+            ])
+
+        async def _history(*, limit: int = 200):
+            return await build_conjunction_history_signals(
+                event_ids, snapshots_per_event=snapshots_per_event
+            )
+
+        outcome = await promote_conjunction_signals(
+            signal_source=_history,
+            repository=repo,
+            orchestrator=IntelligenceOrchestrator(store=repo),
+            packet_builder=IntelligencePacketBuilder(),
+            limit=limit,
+        )
+        payload = outcome.to_payload()
+        return envelope(
+            {**payload["data"], "events_replayed": len(event_ids)},
+            data_status=payload["data_status"],
+            provenance=payload["provenance"],
+            warnings=[
+                *payload["warnings"],
+                "Replayed from the stored snapshot history; a revision means the "
+                "screening moved by more than the material-change policy allows.",
+            ],
+        )
+
     @app.get("/v1/intelligence/events")
     def intelligence_events(limit:int=200):
         return envelope([x.model_dump(mode="json") for x in repo.list_events(limit)])

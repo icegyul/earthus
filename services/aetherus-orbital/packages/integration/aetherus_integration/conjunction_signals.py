@@ -219,6 +219,35 @@ def signals_from_conjunction_payload(
     )
 
 
+async def build_conjunction_history_signals(
+    event_ids: list[str],
+    service: Any | None = None,
+    *,
+    snapshots_per_event: int | None = None,
+    retrieved_at: datetime | None = None,
+) -> ConjunctionSignalBundle:
+    """Signals for every stored snapshot of the named events, oldest first.
+
+    :func:`build_conjunction_signals` expresses each conjunction's *current*
+    assessment, which is what a client asking "what is out there" wants. It
+    cannot show what changed, because a single row has no before.
+
+    The screening history is already in the database - one row per refresh, kept
+    because the snapshot table is append-only - and until now nothing read it.
+    This reads it in recorded order so the Intelligence lineage can hold the same
+    history the science store already holds.
+    """
+    if service is None:
+        from backend.conjunction.service import ConjunctionService
+
+        service = ConjunctionService()
+
+    payload = await service.list_conjunction_history(
+        event_ids=event_ids, snapshots_per_event=snapshots_per_event
+    )
+    return signals_from_conjunction_payload(payload, retrieved_at=retrieved_at)
+
+
 async def build_conjunction_signals(
     service: Any | None = None,
     *,

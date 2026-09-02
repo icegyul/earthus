@@ -213,3 +213,50 @@ def test_confidence_limitations_reach_the_packet_warnings():
     packet = build([make_evidence()], known_limitations=['fixture only'])
     assert 'fixture only' in packet.known_limitations
     assert any(x.startswith(NOT_APPLIED_PREFIX) for x in packet.known_limitations)
+
+
+class TestAPartialBasisIsStated:
+    """A grade earned on part of the policy must not read like a full one.
+
+    A screening-only conjunction had two of six factors derivable, scored 0.6 as
+    the weighted mean of those two, and was graded HIGH. The score is correct for
+    what it measured and misleading about what it covers, so the fraction is
+    stated on the assessment rather than the score being quietly rescaled.
+    """
+
+    def test_a_partial_assessment_names_the_fraction(self):
+        from aetherus_intelligence.confidence import PARTIAL_BASIS_PREFIX, ConfidenceEngine
+
+        assessment = ConfidenceEngine().assess(
+            "REVISION", "r-1",
+            {"completeness": 1.0, "validation": 0.0},
+            {"completeness": "1 of 1 cited evidence record was supplied",
+             "validation": "event.validation_state is SCREENING_ONLY"},
+        )
+        partial = [x for x in assessment.limitations if x.startswith(PARTIAL_BASIS_PREFIX)]
+        assert partial, "a score from part of the policy did not say so"
+        assert "0.25 of 1 policy weight" in partial[0]
+
+    def test_a_fully_derived_assessment_carries_no_partial_note(self):
+        from aetherus_intelligence.confidence import (
+            DEFAULT_WEIGHTS,
+            PARTIAL_BASIS_PREFIX,
+            ConfidenceEngine,
+        )
+
+        values = dict.fromkeys(DEFAULT_WEIGHTS, 1.0)
+        reasons = {name: f"derived for {name} in this test" for name in DEFAULT_WEIGHTS}
+        assessment = ConfidenceEngine().assess("REVISION", "r-2", values, reasons)
+        assert not [x for x in assessment.limitations if x.startswith(PARTIAL_BASIS_PREFIX)]
+
+    def test_the_score_itself_is_not_adjusted(self):
+        """Rescaling would replace one misleading number with another."""
+        from aetherus_intelligence.confidence import ConfidenceEngine
+
+        assessment = ConfidenceEngine().assess(
+            "REVISION", "r-3",
+            {"completeness": 1.0, "validation": 0.0},
+            {"completeness": "1 of 1 cited evidence record was supplied",
+             "validation": "event.validation_state is SCREENING_ONLY"},
+        )
+        assert assessment.score == pytest.approx(0.6)

@@ -53,10 +53,10 @@
       "live_provider_verified"
     ]
   },
-  "generated_at": "2026-09-02T16:31:04.490490+00:00",
+  "generated_at": "2026-09-02T17:01:49.554335+00:00",
   "repository": "https://github.com/icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "55f4b1a90db3f8914fad3bccdbf85113b58d2883",
+  "commit": "861857e433d3fddf08f0e1d60891af87ea0d527e",
   "tests_llm": {
     "targets": [
       "tests/integration/test_llm_layer_l01_l08.py",

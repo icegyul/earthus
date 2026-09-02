@@ -35,6 +35,11 @@ DEFAULT_WEIGHTS = {
 # Prefix used for the per-factor "we could not derive this" report carried on
 # ConfidenceAssessment.limitations. Callers and the UI can key off it.
 NOT_APPLIED_PREFIX = 'FACTOR_NOT_APPLIED'
+#: Marks a score computed from part of the policy's weight. The score is not
+#: adjusted for it: a grade earned on a sixth of the policy must be readable as
+#: such, and silently rescaling it would replace one misleading number with
+#: another.
+PARTIAL_BASIS_PREFIX = 'CONFIDENCE_PARTIAL_BASIS'
 NOT_COMPUTABLE = 'CONFIDENCE_NOT_COMPUTABLE: no weighted factor had a derivable input'
 
 # Rejected as a factor reason: it describes the weight table, not the value's origin.
@@ -106,6 +111,30 @@ class ConfidenceEngine:
         )
         if not factors:
             limitations.insert(0, NOT_COMPUTABLE)
+
+        # How much of the policy the score actually rests on.
+        #
+        # The score is the weighted mean of the factors that were derivable, so a
+        # packet with two of six factors and a packet with all six land on the
+        # same 0-1 scale and therefore on the same grade. A screening-only
+        # conjunction with no covariance and no cross-validation scored 0.6 and
+        # was graded HIGH, which reads as high confidence in the conjunction
+        # rather than as "high on the sixth of the policy we could apply".
+        #
+        # The score and the grade are left exactly as the policy computes them:
+        # retuning a scoring policy is a product decision, not a repair. What is
+        # added is the fraction, stated wherever the assessment travels, so the
+        # number cannot be read as more than it is.
+        total_weight = sum(float(w) for w in self.weights.values())
+        applied_weight = sum(weight for _value, weight, _reason in factors.values())
+        if factors and total_weight > 0 and applied_weight < total_weight:
+            limitations.insert(
+                0,
+                f'{PARTIAL_BASIS_PREFIX}:{applied_weight:g} of {total_weight:g} policy '
+                f'weight was derivable, so this score and grade rest on part of the '
+                f'policy and are not comparable with a fully derived assessment',
+            )
+
         limitations.extend(extra_limitations or [])
         return conf.model_copy(update={'limitations': [*conf.limitations, *limitations]})
 

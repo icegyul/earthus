@@ -123,6 +123,35 @@ async def _revisions(catalog_id: str) -> list[dict]:
     return [dict(row) for row in rows]
 
 
+async def _fresh_catalog_id(base: int) -> str:
+    """A catalog id verified to be absent from space_object right now.
+
+    Each test used to draw ``base + uuid4().int % 900`` and assume it was new.
+    The database is persistent and the suite has run hundreds of times, so a
+    900-wide band collides: the second ingest then met a pre-existing row and
+    ``assert len(conflicts) == 1`` found two. The test failed for a reason that
+    had nothing to do with what it was testing, and only inside a full run,
+    which is the hardest kind of failure to read.
+
+    Absence is now checked rather than assumed.
+    """
+    for _ in range(200):
+        candidate = str(base + uuid.uuid4().int % 900)
+        async with get_db_session() as session:
+            taken = (
+                await session.execute(
+                    text("SELECT 1 FROM space_object WHERE catalog_id = :cid"),
+                    {"cid": candidate},
+                )
+            ).first()
+        if taken is None:
+            return candidate
+    raise AssertionError(
+        f"no unused catalog id in the {base}-{base + 899} band; the test data has "
+        "filled it and the band needs widening"
+    )
+
+
 async def _object_row(catalog_id: str) -> dict:
     async with get_db_session() as session:
         row = (
@@ -140,7 +169,7 @@ async def _object_row(catalog_id: str) -> dict:
 @pytest.mark.integration
 async def test_absent_classification_is_filled_and_attributed(tmp_path):
     """CelesTrak은 OBJECT_TYPE을 말하지 않고 Space-Track은 말한다."""
-    catalog_id = str(320000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(320000)
 
     # 1) CelesTrak 계열: 분류 없음 -> UNKNOWN 으로 생성된다.
     await _ingest(RecordedProvider("celestrak_gp", _record(catalog_id, name="PROV DEB A", object_type=None, cospar=f"2090-{catalog_id[-3:]}A")), catalog_id, tmp_path)
@@ -163,7 +192,7 @@ async def test_absent_classification_is_filled_and_attributed(tmp_path):
 @pytest.mark.integration
 async def test_disagreement_is_preserved_not_overwritten(tmp_path):
     """나중에 온 소스가 기존 사실을 조용히 갈아치울 수 없다."""
-    catalog_id = str(321000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(321000)
 
     await _ingest(RecordedProvider("spacetrack_gp", _record(catalog_id, name="PROV DEB B", object_type="DEBRIS", cospar=f"2091-{catalog_id[-3:]}B")), catalog_id, tmp_path)
     assert (await _object_row(catalog_id))["object_type"] == "DEBRIS"
@@ -186,7 +215,7 @@ async def test_disagreement_is_preserved_not_overwritten(tmp_path):
 @pytest.mark.integration
 async def test_metadata_lineage_is_append_only(tmp_path):
     """계보는 과학 기록과 같이 고쳐 쓸 수 없다."""
-    catalog_id = str(322000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(322000)
     await _ingest(RecordedProvider("spacetrack_gp", _record(catalog_id, name="PROV DEB C", object_type="ROCKET BODY", cospar=f"2092-{catalog_id[-3:]}C")), catalog_id, tmp_path)
 
     async with get_db_session() as session:
@@ -203,7 +232,7 @@ async def test_metadata_lineage_is_append_only(tmp_path):
 @pytest.mark.integration
 async def test_provenance_reaches_the_raw_artifact(tmp_path):
     """'왜 DEBRIS인가'에 원문 아티팩트까지 답할 수 있어야 한다."""
-    catalog_id = str(323000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(323000)
     await _ingest(RecordedProvider("spacetrack_gp", _record(catalog_id, name="PROV DEB D", object_type="DEBRIS", cospar=f"2093-{catalog_id[-3:]}D")), catalog_id, tmp_path)
 
     async with get_db_session() as session:
@@ -236,7 +265,7 @@ async def test_classification_is_not_credited_to_a_silent_artifact(tmp_path):
     """
     from backend.ingestion.repository import SqlIngestionRepository as _Repo
 
-    catalog_id = str(324000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(324000)
     # Space-Track 이 분류를 선언하고,
     await _ingest(RecordedProvider("spacetrack_gp", _record(catalog_id, name="PROV DEB E", object_type="DEBRIS", cospar=f"2094-{catalog_id[-3:]}E")), catalog_id, tmp_path)
     # 그 뒤 CelesTrak 이 (분류 없이) 더 최신 궤도해를 남긴다.
@@ -254,7 +283,7 @@ async def test_classification_is_not_credited_to_a_silent_artifact(tmp_path):
 @pytest.mark.integration
 async def test_same_source_repeat_is_not_read_as_corroboration(tmp_path):
     """한 소스의 메아리를 교차 확증으로 적지 않는다."""
-    catalog_id = str(325000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(325000)
     payload = _record(catalog_id, name="PROV DEB F", object_type="DEBRIS", cospar=f"2095-{catalog_id[-3:]}F")
     await _ingest(RecordedProvider("spacetrack_gp", payload), catalog_id, tmp_path)
     # 같은 소스가 다시 수집한다 (다른 아티팩트가 되도록 내용을 미세 변경).
@@ -270,7 +299,7 @@ async def test_same_source_repeat_is_not_read_as_corroboration(tmp_path):
 @pytest.mark.integration
 async def test_reprocessing_the_same_artifact_does_not_inflate_lineage(tmp_path):
     """같은 아티팩트 재처리가 계보 행 수를 부풀리지 않는다."""
-    catalog_id = str(326000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(326000)
     payload = _record(catalog_id, name="PROV DEB G", object_type="ROCKET BODY", cospar=f"2096-{catalog_id[-3:]}G")
     provider = RecordedProvider("spacetrack_gp", payload)
     await _ingest(provider, catalog_id, tmp_path)
@@ -314,7 +343,7 @@ async def _ingest_legacy(payload: dict, catalog_id: str, tmp_path) -> None:
 @pytest.mark.integration
 async def test_cospar_disagreement_is_an_identity_conflict_not_a_metadata_dispute(tmp_path):
     """COSPAR 불일치는 신원 층에서 격리되며 메타데이터 충돌로 기록되지 않는다."""
-    catalog_id = str(327000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(327000)
     await _ingest(
         RecordedProvider(
             "spacetrack_gp",
@@ -371,7 +400,7 @@ async def test_schema_refuses_the_unreachable_cospar_conflict_combination(tmp_pa
     012 의 CHECK 는 3필드 x 전 결과값을 허용해, 실제로는 신원 층이 먼저 가져가는
     COSPAR 다툼까지 메타데이터 층이 방어하는 것처럼 보이게 했다.
     """
-    catalog_id = str(328000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(328000)
     await _ingest(
         RecordedProvider(
             "spacetrack_gp",
@@ -414,7 +443,7 @@ async def test_metadata_lineage_fails_loudly_when_the_identity_gate_was_bypassed
     해석기를 거치면 도달할 수 없는 상태를 직접 만들어 확인한다: 그 상황은
     이 레코드가 다른 객체에 붙기 직전이라는 뜻이므로 기록이 아니라 실패다.
     """
-    catalog_id = str(329000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(329000)
     await _ingest(
         RecordedProvider(
             "spacetrack_gp",
@@ -482,7 +511,7 @@ async def test_metadata_lineage_fails_loudly_when_the_identity_gate_was_bypassed
 @pytest.mark.integration
 async def test_disputed_metadata_is_surfaced_as_an_explicit_status(tmp_path):
     """다투어지는 값이 확정된 값처럼 제공되지 않는다."""
-    catalog_id = str(330000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(330000)
     cospar = f"2081-{catalog_id[-3:]}K"
     await _ingest(
         RecordedProvider(
@@ -516,7 +545,7 @@ async def test_disputed_metadata_is_surfaced_as_an_explicit_status(tmp_path):
 @pytest.mark.integration
 async def test_dispute_names_both_claims_and_the_artifact_that_made_them(tmp_path):
     """'preserved for review' 가 가리킬 리뷰 지점이 실제로 존재한다."""
-    catalog_id = str(331000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(331000)
     cospar = f"2082-{catalog_id[-3:]}L"
     await _ingest(
         RecordedProvider(
@@ -558,7 +587,7 @@ async def test_dispute_names_both_claims_and_the_artifact_that_made_them(tmp_pat
 @pytest.mark.integration
 async def test_legacy_path_records_lineage_for_what_it_establishes(tmp_path):
     """레지스트리 없는 P0 경로도 계보를 남긴다."""
-    catalog_id = str(332000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(332000)
     await _ingest_legacy(
         _record(
             catalog_id, name="LEGACY M", object_type="DEBRIS", cospar=f"2083-{catalog_id[-3:]}M"
@@ -580,7 +609,7 @@ async def test_legacy_path_cannot_overwrite_a_stated_value_without_a_trace(tmp_p
     이전 구현의 ON CONFLICT DO UPDATE 는 canonical_name 을 COALESCE 로 갈아치우고
     object_metadata_revision 에는 아무것도 쓰지 않았다.
     """
-    catalog_id = str(333000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(333000)
     cospar = f"2084-{catalog_id[-3:]}N"
     await _ingest(
         RecordedProvider(
@@ -615,7 +644,7 @@ async def test_legacy_path_cannot_overwrite_a_stated_value_without_a_trace(tmp_p
 @pytest.mark.integration
 async def test_legacy_path_fails_instead_of_attaching_a_conflicting_cospar(tmp_path):
     """신원 해석기가 없는 경로는 COSPAR 다툼을 격리할 수 없으므로 명시적으로 실패한다."""
-    catalog_id = str(334000 + uuid.uuid4().int % 900)
+    catalog_id = await _fresh_catalog_id(334000)
     original_cospar = f"2085-{catalog_id[-3:]}O"
     await _ingest(
         RecordedProvider(

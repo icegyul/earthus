@@ -2,14 +2,13 @@
   "phase": "p9",
   "gate": "PARTIAL",
   "failed_checks": [
-    "conjunction_events_promoted",
     "llm_gateway_live_verified"
   ],
   "checks": {
     "tests_pass": true,
     "intelligence_api_200": true,
     "live_conjunction_signals_present": true,
-    "conjunction_events_promoted": false,
+    "conjunction_events_promoted": true,
     "llm_gateway_live_verified": false,
     "adversarial_audit_e38_e44": true
   },
@@ -28,8 +27,8 @@
         "reason": "check is met"
       },
       "conjunction_events_promoted": {
-        "blocker_class": "BUILDABLE_NOW",
-        "reason": "근접 신호의 이벤트 융합 미구현. 신호는 유입되나 승격 경로가 없다. 외부 의존 없음."
+        "blocker_class": "NONE",
+        "reason": "check is met"
       },
       "llm_gateway_live_verified": {
         "blocker_class": "EXTERNAL_DATA_GATED",
@@ -41,15 +40,13 @@
       }
     },
     "counts": {
-      "BUILDABLE_NOW": 1,
+      "BUILDABLE_NOW": 0,
       "DECISION_PENDING": 0,
       "EXTERNAL_DATA_GATED": 1,
       "EXTERNAL_PARTNER_GATED": 0,
-      "NONE": 4
+      "NONE": 5
     },
-    "unmet_buildable_now": [
-      "conjunction_events_promoted"
-    ],
+    "unmet_buildable_now": [],
     "unmet_requiring_others": [
       "llm_gateway_live_verified"
     ]
@@ -59,13 +56,13 @@
     "record": "docs\\audit\\ENGINE_ADVERSARIAL_AUDIT_2026-09-01.md",
     "honesty_test": "tests/unit/test_confidence_honesty.py",
     "honesty_test_exit_code": 0,
-    "summary": "======================= 16 passed, 2 warnings in 0.08s ========================",
+    "summary": "======================= 19 passed, 2 warnings in 0.06s ========================",
     "passed": true
   },
-  "generated_at": "2026-09-02T14:27:04.468598+00:00",
-  "repository": "git@github.com:icegyul/earthus.git",
+  "generated_at": "2026-09-02T17:01:44.224926+00:00",
+  "repository": "https://github.com/icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "c75f15f79b40f02d6fbcb3d562bbdf18bf73807c",
+  "commit": "861857e433d3fddf08f0e1d60891af87ea0d527e",
   "tests_intelligence": {
     "targets": [
       "tests/unit/test_intelligence_orchestrator.py",
@@ -73,7 +70,7 @@
       "tests/foundation"
     ],
     "exit_code": 0,
-    "summary": "======================= 35 passed, 2 warnings in 4.17s ========================"
+    "summary": "======================= 35 passed, 2 warnings in 3.69s ========================"
   },
   "live_api": {
     "important_now": {
@@ -91,19 +88,20 @@
   },
   "pipeline_population": {
     "signals": {
-      "total": 201,
+      "total": 371,
       "by_type_producer_evidence_class": {
-        "OFFICIAL_LAUNCH_FACT|E13_FIXED_OFFICIAL_FIXTURE_ADAPTER|OFFICIAL": 1,
-        "CONJUNCTION_SCREENING_CANDIDATE|P4_CA_SCREENING_ADAPTER|DERIVED": 200
+        "CONJUNCTION_SCREENING_CANDIDATE|P4_CA_SCREENING_ADAPTER|DERIVED": 370,
+        "OFFICIAL_LAUNCH_FACT|E13_FIXED_OFFICIAL_FIXTURE_ADAPTER|OFFICIAL": 1
       }
     },
     "events": {
-      "total": 1,
+      "total": 61,
       "by_event_type": {
+        "CONJUNCTION_SCREENING_CANDIDATE": 60,
         "LAUNCH_EVENT": 1
       }
     },
-    "conjunction_derived_signal_count": 200
+    "conjunction_derived_signal_count": 370
   },
   "browser_verification": [
     "INTELLIGENCE 모드: LAUNCH_EVENT(Apollo 11)에 WHAT HAPPENED/WHAT CHANGED/WHY IT MATTERS 3문 + 신뢰도 84% VERY HIGH + 불확실성 '고정 역사 사실에는 수치 불확실성 부적용' 정직 표기",

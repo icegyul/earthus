@@ -451,6 +451,41 @@ class ConjunctionService:
             input_hash=input_hash,
         )
 
+    async def list_conjunction_history(
+        self,
+        *,
+        event_ids: list[str],
+        snapshots_per_event: int | None = None,
+    ) -> dict[str, Any]:
+        """One payload per stored snapshot of the named events, oldest first.
+
+        Same shape as :meth:`list_conjunctions` so the Intelligence adapter needs
+        no second parser. The coverage block travels with it: a history capped at
+        the per-event limit says so rather than presenting a prefix as the whole
+        record.
+        """
+        rows, coverage = await self.repository.list_conjunction_history(
+            event_ids=event_ids, snapshots_per_event=snapshots_per_event
+        )
+        events = [_event_payload(row) for row in rows]
+        return {
+            "request_id": str(uuid.uuid4()),
+            "generated_at": datetime.now(UTC).isoformat(),
+            "data_status": "OK" if events else "INSUFFICIENT_DATA",
+            "status_reason": None if events else "no stored snapshot for the requested events",
+            "data": {"events": events, "coverage": coverage},
+            "warnings": (
+                [
+                    "History truncated at "
+                    f"{coverage['snapshots_per_event']} snapshots for "
+                    f"{len(coverage['truncated_events'])} event(s); the earliest kept "
+                    "snapshots are shown and the record is not complete."
+                ]
+                if coverage.get("truncated_events")
+                else []
+            ),
+        }
+
     async def list_conjunctions(
         self,
         *,

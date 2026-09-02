@@ -19,8 +19,14 @@ from backend.conjunction.models import (
     build_config_hash,
 )
 from backend.conjunction.repository import ConjunctionRepository, to_mean_elements
-from backend.conjunction.screen import coarse_screen, prepare_catalog
+from backend.conjunction.screen import (
+    CoarseScreenResult,
+    PreparedCatalog,
+    coarse_screen,
+    prepare_catalog,
+)
 from backend.conjunction.tca import find_tca
+from backend.offload import run_screening_off_loop
 from backend.orbit.errors import PropagationError
 from backend.orbit.frames import FrameAssumptions
 from backend.orbit.propagator import Sgp4Propagator
@@ -191,8 +197,12 @@ class ConjunctionService:
                 coverage=coverage,
             )
 
-        prepared = prepare_catalog(entries)
-        screen = coarse_screen(prepared, window_start, window_stop, effective_config)
+        # Off the event loop: this is the whole synchronous cascade, minutes of
+        # NumPy and SGP4 with no await in it. Run inline it holds the loop for
+        # its full duration and the accepted job stops being a background job.
+        prepared, screen = await run_screening_off_loop(
+            _prepare_and_screen, entries, window_start, window_stop, effective_config
+        )
         failures = [
             {
                 "catalog_id": failure.catalog_id,
@@ -218,14 +228,21 @@ class ConjunctionService:
         for candidate in screen.candidates:
             entry_a = index_to_entry[candidate.index_a]
             entry_b = index_to_entry[candidate.index_b]
-            state_a_fn, state_b_fn = _state_functions(entry_a[2], entry_b[2])
             try:
-                tca_result = find_tca(
-                    state_a_fn,
-                    state_b_fn,
-                    window_start=window_start,
-                    window_stop=window_stop,
-                    coarse_step_seconds=max(effective_config.refine_step_seconds, 5),
+                # Also off the loop, per candidate rather than in one batch, so
+                # the persistence awaits below still interleave with the next
+                # candidate's refinement. A 24 h window at the 5 s refine step
+                # is ~35k scalar SGP4 calls for one pair, and building the two
+                # propagators costs a further 2.2 ms - small per candidate, ~24 s
+                # of chopped-up event loop across the 11k candidates a
+                # 5,000-object run produced.
+                tca_result = await run_screening_off_loop(
+                    _refine_tca,
+                    entry_a[2],
+                    entry_b[2],
+                    window_start,
+                    window_stop,
+                    max(effective_config.refine_step_seconds, 5),
                 )
             except PropagationError as error:
                 pair_failures.append(
@@ -570,6 +587,46 @@ class ConjunctionService:
             "provenance": _run_provenance(latest_run),
             "warnings": warnings,
         }
+
+
+def _prepare_and_screen(
+    entries: list[tuple[str, str, Any]],
+    window_start: datetime,
+    window_stop: datetime,
+    config: ScreeningConfig,
+) -> tuple[PreparedCatalog, CoarseScreenResult]:
+    """SGP4 initialization plus the conservative cascade, as one off-loop unit.
+
+    Kept together because the caller needs both halves and ``coarse_screen``
+    consumes the satrecs ``prepare_catalog`` builds; splitting them would ship
+    that catalogue across the boundary twice for nothing.
+    """
+    prepared = prepare_catalog(entries)
+    return prepared, coarse_screen(prepared, window_start, window_stop, config)
+
+
+def _refine_tca(
+    elements_a: Any,
+    elements_b: Any,
+    window_start: datetime,
+    window_stop: datetime,
+    coarse_step_seconds: int,
+) -> TcaResult:
+    """Build the pair's propagators and refine its TCA, as one off-loop unit.
+
+    Construction moved inside the caller's ``except PropagationError``: these
+    elements already built a satrec once in ``prepare_catalog``, so it cannot
+    realistically fail here, and recording a pair failure beats aborting a
+    completed screening run if it ever does.
+    """
+    state_a_fn, state_b_fn = _state_functions(elements_a, elements_b)
+    return find_tca(
+        state_a_fn,
+        state_b_fn,
+        window_start=window_start,
+        window_stop=window_stop,
+        coarse_step_seconds=coarse_step_seconds,
+    )
 
 
 def _state_functions(elements_a, elements_b):

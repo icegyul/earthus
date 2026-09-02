@@ -36,6 +36,7 @@ from backend.ingestion.service import (
     ProviderRegistry,
     build_default_artifact_store,
 )
+from backend.offload import shutdown_screening_executor
 from backend.orbit.repository import OrbitRepository
 from backend.orbit.service import EphemerisService
 from backend.phase_status import load_phase_manifest
@@ -167,6 +168,7 @@ async def lifespan(app: FastAPI):
 
     # Shutdown: Close connections
     logger.info("Shutting down...")
+    shutdown_screening_executor()
     if _redis_client is not None:
         await _redis_client.aclose()
     await close_db()
@@ -490,9 +492,16 @@ async def run_conjunction_screening(
 
     The 202 used to be a lie: the route ran the whole screening synchronously,
     which was defensible with a handful of objects and became a multi-minute
-    worker stall once the catalogue held thousands. Now the default returns a
-    job handle at once and the work runs in the background; ``wait=true`` keeps
-    the old synchronous behaviour for bounded populations and tooling.
+    worker stall once the catalogue held thousands. The task that replaced it
+    returned the handle at once but still computed on the event loop, so the
+    server answered nothing else while a run was in flight - /health measured
+    0.13-9.17 s against a 6.8 ms baseline during a 400-object run. The
+    synchronous cascade now runs on a screening worker thread instead
+    (backend/offload.py), so the handle and the background are both real.
+
+    ``wait=true`` keeps the old synchronous *response* for bounded populations
+    and tooling: the caller still waits for the payload, but the loop no longer
+    does. Runs queue rather than overlap - see screening_max_concurrent_runs.
 
     The job registry is in-process: a job survives only as long as this server
     does, while the durable record is the ``screening_run`` row the job creates.

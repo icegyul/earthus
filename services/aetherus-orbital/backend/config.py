@@ -61,6 +61,11 @@ class Settings(BaseSettings):
     # kept for reproducing historical runs only.
     screening_selection_policy: str = "EPOCH_DESC"
     screening_hbr_m: float = 5.0
+    # How many screening runs may compute at once. Each run is handed to a
+    # worker thread so it cannot block the event loop (backend/offload.py), and
+    # each full-catalogue run holds ~9 GB while already saturating the cores,
+    # so runs queue by default rather than overlapping.
+    screening_max_concurrent_runs: int = 1
     conjunctions_page_limit: int = 200
 
     # P5 intervention benefit engine (IDEALIZED_REMOVAL counterfactuals only)

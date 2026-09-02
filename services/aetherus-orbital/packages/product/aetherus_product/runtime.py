@@ -16,7 +16,7 @@ from .operations import DurableJobService, DurableOperationsService
 
 from aetherus_foundation import FoundationE2EPipeline, LocalFoundationRepository
 from aetherus_space import SolarSystemEphemerisEngine, CelestialEventEngine, SpaceWeatherContextEngine, SmallBodyTrackingEngine, DeepSpaceMissionTrackingEngine
-from aetherus_control import (MissionRegistryEngine, LaunchScheduleWindowEngine, LaunchStateMachineCountdownEngine, TelemetryFusionEngine, LaunchTrajectoryFlightDynamicsAdapterEngine, MissionTimelineRecorderEngine, MissionReplayOrbitHandoverEngine)
+from aetherus_control import (MissionState, MissionRegistryEngine, LaunchScheduleWindowEngine, LaunchStateMachineCountdownEngine, TelemetryFusionEngine, LaunchTrajectoryFlightDynamicsAdapterEngine, MissionTimelineRecorderEngine, MissionReplayOrbitHandoverEngine)
 from aetherus_orbit import (
     OrbitalElements, OrbitPropagationFramesEngine, ConjunctionScreeningPreciseTCAEngine,
     CollisionProbabilityRiskProvenanceEngine, RiskGraphEngine, OrbitalEnvironmentCongestionEngine,
@@ -26,7 +26,7 @@ from aetherus_orbit import (
     FragmentCloudPropagationEngine,
     GroundStationVisibilityEngine,
 )
-from aetherus_visual import MultiScaleSpaceSceneEngine, SemanticScale, VisualSemanticsEngine, SceneLayer, OrbitalShellLODEngine
+from aetherus_visual import MultiScaleSpaceSceneEngine, SemanticScale, VisualSemanticsEngine, SceneLayer, OrbitalShellLODEngine, SemanticZoomCameraFocusEngine
 from aetherus_platform import (
     APIGatewayAuthRequestEnvelopeService, SubscriptionCapabilityService, WorkspaceWidgetControlRoomService,
     FollowAlertService, SearchDiscoveryService, MediaLiveStreamResolver, ResearchDatasetBenchmarkService,
@@ -87,6 +87,7 @@ class AetherusProductRuntime:
         self.missions=MissionRegistryEngine()
         self.launch_schedule=LaunchScheduleWindowEngine()
         self.launch_states:dict[str,LaunchStateMachineCountdownEngine]={}
+        self._zoom_engines:dict[str,SemanticZoomCameraFocusEngine]={}
         self.telemetry_by_mission:dict[str,TelemetryFusionEngine]={}
         self.trajectory=LaunchTrajectoryFlightDynamicsAdapterEngine()
         self.timeline=MissionTimelineRecorderEngine()
@@ -541,6 +542,161 @@ class AetherusProductRuntime:
         title="Aetherus 로컬 근거 브리핑" if locale=="ko" else "Aetherus Local Evidence Briefing"
         briefing=self.briefings.generate([self._apollo["packet"]],title=title,locale=locale)
         return {**asdict(briefing),"data_status":"VALIDATION_PENDING","source":"INTELLIGENCE_PACKET_ONLY","locale":locale}
+
+    # ---- E15/E16: give the per-mission engines a way to come into existence.
+    def ensure_launch_state(self, mission_id:str):
+        """Create the mission's state machine on first use.
+
+        Previously ``launch_states`` was initialised empty and never written to,
+        so /v1/missions/{id}/state could only ever fall through to the registry
+        record. The machine starts at PLANNED — the registry's own starting
+        state — and its countdown is anchored to the real launch-window revision
+        when one exists. It invents no transitions.
+        """
+        machine=self.launch_states.get(mission_id)
+        if machine is None:
+            machine=LaunchStateMachineCountdownEngine()
+            self.launch_states[mission_id]=machine
+        history=self.launch_schedule.history(mission_id)
+        if history:
+            latest=history[-1]
+            if latest.state=="CONFIRMED" and latest.start_utc is not None:
+                machine.start_countdown(latest.start_utc)
+        return machine
+
+    def transition_launch_state(self, mission_id:str, to_state:str, *, at_utc:datetime, evidence_id:str|None=None, official:bool=False, reason:str|None=None):
+        """Record one state transition. Official transitions require evidence."""
+        machine=self.ensure_launch_state(mission_id)
+        transition=machine.transition(MissionState(to_state), at_utc, evidence_id=evidence_id, official=official, reason=reason)
+        self.product_store.append_record(
+            domain="CONTROL",record_type="LAUNCH_STATE_TRANSITION",entity_key=mission_id,
+            payload={"from":transition.from_state.value,"to":transition.to_state.value,
+                     "at_utc":transition.at_utc.isoformat(),"evidence_id":transition.evidence_id,
+                     "reason":transition.reason,"official":official},
+            observed_at=transition.at_utc,
+            evidence_class="OFFICIAL" if official else "MODEL_SIGNAL",
+            validation_state="VALIDATION_PENDING" if official else "RESEARCH_ONLY",
+        )
+        return transition
+
+    def ingest_telemetry(self, mission_id:str, *, timestamp_utc:datetime, metrics:dict[str,float], units:dict[str,str], source_id:str, live:bool, sequence:int|None=None):
+        """Accept one telemetry sample for a mission.
+
+        ``telemetry_by_mission`` had no writer, so the fusion engine could never
+        hold anything. This is the writer. It does not manufacture samples: with
+        no operator or official feed connected the store stays empty and the read
+        route keeps saying so.
+        """
+        fusion=self.telemetry_by_mission.get(mission_id)
+        if fusion is None:
+            fusion=TelemetryFusionEngine()
+            self.telemetry_by_mission[mission_id]=fusion
+        sample=fusion.ingest(timestamp_utc=timestamp_utc,metrics=metrics,units=units,source_id=source_id,live=live,sequence=sequence)
+        self.product_store.append_record(
+            domain="CONTROL",record_type="TELEMETRY_SAMPLE",entity_key=mission_id,
+            payload={"timestamp_utc":sample.timestamp_utc.isoformat(),"metrics":sample.metrics,
+                     "units":sample.units,"source_id":sample.source_id,
+                     "evidence_class":sample.evidence_class.value,"sequence":sample.sequence},
+            observed_at=sample.timestamp_utc,evidence_class=sample.evidence_class.value,
+            validation_state="VALIDATION_PENDING" if live else "RESEARCH_ONLY",
+        )
+        return sample
+
+    # ---- E12: normalise stored deep-space state instead of returning a literal.
+    def deep_space_states(self)->list[dict[str,Any]]:
+        """Every stored deep-space mission state, normalised by E12.
+
+        The route used to return a hardcoded empty list, so the engine was
+        unreachable and the emptiness was a property of the code. Now the engine
+        runs over whatever the store holds; an empty store is an empty result for
+        the honest reason.
+        """
+        records=self.product_store.list_records(domain="SPACE",record_type="DEEP_SPACE_STATE",limit=500)
+        states=[]
+        for record in records:
+            payload=record["payload"]
+            state=self.deep_space.normalize(
+                mission_id=payload["mission_id"],status=payload["status"],
+                epoch_utc=datetime.fromisoformat(payload["epoch_utc"]),source_id=payload["source_id"],
+                position_km=tuple(payload["position_km"]) if payload.get("position_km") else None,
+                live_telemetry=bool(payload.get("live_telemetry",False)),
+                model_version=payload.get("model_version"),
+                telemetry_evidence_id=payload.get("telemetry_evidence_id"),
+            )
+            states.append({
+                "mission_id":state.mission_id,"status":state.status,
+                "epoch_utc":state.epoch_utc.isoformat(),
+                "position_km":list(state.position_km) if state.position_km else None,
+                "source_label":getattr(state,"source_label",None),
+                "validation_state":getattr(getattr(state,"validation_state",None),"value",None),
+                "model_version":getattr(state,"model_version",None),
+                "limitations":list(getattr(state,"limitations",()) or ()),
+            })
+        return states
+
+    # ---- E35: semantic zoom over the current scene.
+    def semantic_zoom(self, mode:str, *, action:str, object_id:str|None=None, event_id:str|None=None, scale:str|None=None)->dict[str,Any]:
+        """Drive E35 against the scene for one mode.
+
+        E35 was not imported anywhere; the visual layer had no focus/back path at
+        all. The scientific object set is untouched by every action here — zoom is
+        a camera concern, and the response repeats the scientific hash so a caller
+        can verify that.
+        """
+        base=self.scene_snapshot(mode)
+        engine=self._zoom_engines.get(mode.upper())
+        if engine is None:
+            scene=self.visual.build(
+                scale=SemanticScale(base["scale"]),scientific_object_ids=list(base["scientific_object_ids"]),
+                render_object_ids=list(base["render_object_ids"]),
+                layers=[SceneLayer(**layer) for layer in base["layers"]],camera_focus=base["camera_focus"],
+            )
+            engine=SemanticZoomCameraFocusEngine(scene)
+            self._zoom_engines[mode.upper()]=engine
+        if action=="focus_object":
+            if not object_id: raise ValueError("focus_object requires object_id")
+            state=engine.focus_object(object_id)
+        elif action=="focus_event":
+            if not event_id: raise ValueError("focus_event requires event_id")
+            state=engine.focus_event(event_id,object_id=object_id)
+        elif action=="switch_mode":
+            if not scale: raise ValueError("switch_mode requires scale")
+            state=engine.switch_mode(SemanticScale(scale))
+        elif action=="back":
+            state=engine.back()
+        else:
+            raise ValueError(f"unknown zoom action: {action}")
+        return {
+            "action":action,"scale":state.scale.value,"camera_focus":state.camera_focus,
+            "selected_object":state.selected_object,"selected_event":state.selected_event,
+            "scientific_object_ids":list(state.scientific_object_ids),
+            "scientific_hash":state.scientific_hash,
+            "scientific_hash_unchanged":state.scientific_hash==base["scientific_hash"],
+        }
+
+    # ---- E37: attach evidence tokens to what the scene draws.
+    def scene_semantics(self, mode:str)->dict[str,Any]:
+        """Visual tokens and badges for one scene, refusing evidence promotion.
+
+        E37 was constructed and never called, so nothing in the product surface
+        carried its tokens. Each layer is tokenised from its own evidence class
+        and checked against the promotion guard, so a MODEL layer can never be
+        drawn as OBSERVED.
+        """
+        scene=self.scene_snapshot(mode)
+        layers=[]
+        for layer in scene["layers"]:
+            evidence=EvidenceClass(layer["evidence_class"]) if not isinstance(layer["evidence_class"],EvidenceClass) else layer["evidence_class"]
+            token=self.visual_semantics.token(evidence)
+            self.visual_semantics.assert_no_promotion(evidence,evidence)
+            layers.append({
+                "layer_id":layer["layer_id"],"evidence_class":evidence.value,
+                "token":{"pattern":token.pattern,"stroke":token.stroke,"opacity":token.opacity,
+                          "badge":token.badge,"uncertainty_style":token.uncertainty_style},
+                "accessible":self.visual_semantics.accessibility_check(token),
+            })
+        return {"mode":mode.upper(),"scale":scene["scale"],"layers":layers,
+                "scientific_hash":scene["scientific_hash"]}
 
     def scene_snapshot(self,mode:str)->dict[str,Any]:
         mode=mode.upper()

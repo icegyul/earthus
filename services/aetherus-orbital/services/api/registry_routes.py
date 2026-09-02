@@ -98,6 +98,86 @@ class CandidateRankingRequest(BaseModel):
     risk_threshold_km: float = Field(default=5.0, gt=0, le=1000)
 
 
+class LaunchStateTransitionRequest(BaseModel):
+    to_state: str
+    at_utc: datetime
+    evidence_id: str | None = None
+    official: bool = False
+    reason: str | None = None
+
+
+class TelemetryIngestRequest(BaseModel):
+    timestamp_utc: datetime
+    metrics: dict[str, float]
+    units: dict[str, str]
+    source_id: str
+    live: bool = False
+    sequence: int | None = None
+
+
+class SemanticZoomRequest(BaseModel):
+    action: str
+    object_id: str | None = None
+    event_id: str | None = None
+    scale: str | None = None
+
+
+class DecisionRequest(BaseModel):
+    baseline_scenario_id: UUID
+    option_scenario_ids: list[str]
+    criteria: list[str]
+    policy: dict[str, float] | None = None
+
+
+def _packet_number(packet, field: str) -> float | None:
+    """Read one numeric input from the stored packet, or report its absence."""
+    for holder in (getattr(packet, "event", None), packet):
+        value = getattr(holder, field, None)
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            return float(value)
+        payload = getattr(holder, "payload", None)
+        if isinstance(payload, dict) and isinstance(payload.get(field), (int, float)):
+            return float(payload[field])
+    return None
+
+
+def _packet_affected_count(packet) -> int | None:
+    event = getattr(packet, "event", None)
+    for field in ("affected_objects", "affected_object_ids", "object_ids"):
+        value = getattr(event, field, None)
+        if isinstance(value, int):
+            return value
+        if isinstance(value, (list, tuple, set)):
+            return len(value)
+    return None
+
+
+def _decision_criteria(result: dict, criteria: list[str]) -> dict[str, float]:
+    """Pull each requested criterion out of a stored execution, if present."""
+    values: dict[str, float] = {}
+    attributions = result.get("attributions") or []
+    for name in criteria:
+        if isinstance(result.get(name), (int, float)):
+            values[name] = float(result[name]); continue
+        deltas = [a.get("delta") for a in attributions
+                  if a.get("metric_type") == name and isinstance(a.get("delta"), (int, float))]
+        if deltas:
+            # A removal lowers risk, so a negative delta is a benefit; score the
+            # benefit rather than the signed delta.
+            values[name] = float(-sum(deltas))
+    return values
+
+
+def _decision_new_risk(result: dict) -> float:
+    new = result.get("new") or result.get("new_edges") or ()
+    total = 0.0
+    for item in new:
+        value = item.get("value") if isinstance(item, dict) else None
+        if isinstance(value, (int, float)):
+            total += float(value)
+    return total
+
+
 def register_registry_routes(
     app: FastAPI,
     *,
@@ -323,7 +403,14 @@ def register_registry_routes(
 
     @app.get("/v1/space/missions")
     def deep_space_missions():
-        return envelope([], data_status="UNAVAILABLE", warnings=["No source-backed deep-space mission state has been ingested."])
+        # E12 normalises whatever has been ingested. The empty case is now a fact
+        # about the store rather than a literal in this function.
+        states=require_product().deep_space_states()
+        return envelope(
+            states,
+            data_status="OK" if states else "UNAVAILABLE",
+            warnings=[] if states else ["No source-backed deep-space mission state has been ingested."],
+        )
 
     # E14-E19 — Control read surface. No telemetry/model values are invented.
     @app.get("/v1/launches/upcoming")
@@ -351,10 +438,59 @@ def register_registry_routes(
     def mission_state(mission_id: str):
         p=require_product(); m=p.missions.get(mission_id)
         if m is None: raise HTTPException(404,"mission not found")
-        machine=p.launch_states.get(mission_id)
-        if machine:
-            return envelope({"mission_id":mission_id,"state":machine.state.value,"transitions":[jsonable(x) for x in machine.history]})
-        return envelope({"mission_id":mission_id,"state":m.status,"source":"MISSION_REGISTRY_RECORD"}, data_status="OK")
+        # E15 now exists for every registered mission instead of only for the
+        # ones nothing ever created. Its countdown is anchored to the real
+        # launch-window revision; transitions come from evidence, never from here.
+        machine=p.ensure_launch_state(mission_id)
+        countdown=p.launch_schedule.countdown_seconds(mission_id, datetime.now(timezone.utc))
+        return envelope({
+            "mission_id":mission_id,
+            "state":machine.state.value,
+            "registry_status":m.status,
+            "transitions":[jsonable(x) for x in machine.history],
+            "countdown_anchor_utc":machine.countdown_anchor.isoformat() if machine.countdown_anchor else None,
+            "countdown_seconds":countdown,
+            "source":"E15_STATE_MACHINE",
+        }, data_status="OK", warnings=[] if machine.history else [
+            "No state transition has been recorded; the machine reports its initial state."
+        ])
+
+    @app.post("/v1/missions/{mission_id}/state")
+    def mission_state_transition(mission_id: str, req: LaunchStateTransitionRequest):
+        p=require_product()
+        if p.missions.get(mission_id) is None: raise HTTPException(404,"mission not found")
+        try:
+            transition=p.transition_launch_state(
+                mission_id, req.to_state, at_utc=req.at_utc,
+                evidence_id=req.evidence_id, official=req.official, reason=req.reason,
+            )
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        return envelope(jsonable(transition),
+                        data_status="OK",
+                        warnings=[] if req.official else ["Unofficial transition; recorded as MODEL_SIGNAL."])
+
+    @app.post("/v1/missions/{mission_id}/telemetry")
+    def mission_telemetry_ingest(mission_id: str, req: TelemetryIngestRequest):
+        """The writer E16 never had.
+
+        ``telemetry_by_mission`` was initialised empty with no code path that
+        could add to it, so the fusion engine was unreachable by construction.
+        This adds the path; it adds no samples. Without an operator or official
+        feed the read route below still reports UNAVAILABLE.
+        """
+        p=require_product()
+        if p.missions.get(mission_id) is None: raise HTTPException(404,"mission not found")
+        try:
+            sample=p.ingest_telemetry(
+                mission_id, timestamp_utc=req.timestamp_utc, metrics=req.metrics,
+                units=req.units, source_id=req.source_id, live=req.live, sequence=req.sequence,
+            )
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        return envelope(jsonable(sample), data_status="OK", warnings=[] if req.live else [
+            "Modelled telemetry: recorded as MODEL_SIGNAL, never as observed."
+        ])
 
     @app.get("/v1/missions/{mission_id}/telemetry")
     def mission_telemetry(mission_id: str):
@@ -565,6 +701,28 @@ def register_registry_routes(
         hook=require_product().citizen_observations.intelligence_hook(obs)
         return envelope({"observation":jsonable(obs),"intelligence_hook":hook},data_status="OK" if obs.status=="ACCEPTED" else obs.status,warnings=[] if obs.status=="ACCEPTED" else [obs.reason or "observation not accepted"])
 
+    @app.post("/v1/scene/{mode}/zoom")
+    def scene_zoom(mode: str, req: SemanticZoomRequest):
+        """E35 camera focus. The scientific object set never changes here."""
+        try:
+            result=require_product().semantic_zoom(
+                mode, action=req.action, object_id=req.object_id,
+                event_id=req.event_id, scale=req.scale,
+            )
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        return envelope(result, data_status="OK", warnings=[] if result["scientific_hash_unchanged"] else [
+            "Scientific hash changed during a visual-only action; investigate before trusting the scene."
+        ])
+
+    @app.get("/v1/scene/{mode}/semantics")
+    def scene_semantics(mode: str):
+        """E37 evidence tokens for what the scene draws, with promotion refused."""
+        try:
+            return envelope(require_product().scene_semantics(mode), data_status="OK")
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+
     @app.get("/v1/scenarios")
     def scenarios_list():
         return envelope(require_product().product_store.list_records(domain="ORBIT",record_type="SCENARIO_SPEC"))
@@ -682,6 +840,91 @@ def register_registry_routes(
         packet=repo.get_packet_for_event(event_id)
         if packet is None: raise HTTPException(404,"event packet not found")
         return envelope({"why_it_matters":packet.why_it_matters,"known_limitations":packet.known_limitations,"allowed_claims":packet.allowed_claims,"prohibited_claims":packet.prohibited_claims},data_status=packet.event.validation_state.value)
+
+    @app.get("/v1/intelligence/events/{event_id}/importance")
+    def intelligence_importance(event_id:UUID):
+        """E44 importance, scored from the stored packet only.
+
+        Every input is read from what is already recorded; an absent input is
+        named in the response instead of being replaced by a default, because a
+        weighted score built on substituted numbers would look derived when it
+        is not.
+        """
+        p=require_product()
+        packet=repo.get_packet_for_event(event_id)
+        if packet is None: raise HTTPException(404,"event packet not found")
+        confidence=getattr(packet.confidence,"score",None)
+        missing=[]
+        if confidence is None: missing.append("confidence.score")
+        magnitude=_packet_number(packet,"magnitude")
+        if magnitude is None: missing.append("event.magnitude")
+        change_rate=_packet_number(packet,"change_rate")
+        if change_rate is None: missing.append("event.change_rate")
+        affected=_packet_affected_count(packet)
+        if affected is None: missing.append("event.affected_objects")
+        if missing:
+            return envelope(None, data_status="INSUFFICIENT_DATA", warnings=[
+                "Importance was not scored; these inputs are absent from the stored "
+                "packet and are not substituted: " + ", ".join(missing)
+            ])
+        result=p.importance_decision.importance(
+            magnitude=magnitude, change_rate=change_rate,
+            affected_objects=affected, confidence=confidence,
+        )
+        return envelope({
+            "event_id":str(event_id),"score":result.score,
+            "reasons":[dict(r) for r in result.reasons],
+            "policy_version":result.policy_version,
+        }, data_status=packet.event.validation_state.value)
+
+    @app.post("/v1/intelligence/decision")
+    def intelligence_decision(req: DecisionRequest):
+        """E44 decision comparison — the directive's P11 decision packet.
+
+        Advisory by construction: the engine strips command-shaped fields and
+        stamps NO_AUTOMATIC_SPACECRAFT_COMMAND, and new risk is subtracted rather
+        than hidden. Options come from stored scenario executions, so a decision
+        can only compare things that were actually run.
+        """
+        p=require_product()
+        options=[]
+        missing=[]
+        for scenario_id in req.option_scenario_ids:
+            execution=p.scenario_execution(scenario_id)
+            if execution is None:
+                missing.append(scenario_id); continue
+            result=execution.get("result",{})
+            options.append({
+                "scenario_id":scenario_id,
+                "criteria":_decision_criteria(result, req.criteria),
+                "new_risk":_decision_new_risk(result),
+                "assumptions":execution.get("assumptions",[]),
+                "provenance":{"result_hash":result.get("result_hash"),
+                              "validation_state":execution.get("validation_state","RESEARCH_ONLY")},
+            })
+        if missing:
+            return envelope(None, data_status="INSUFFICIENT_DATA", warnings=[
+                "These scenarios have no stored execution and cannot be compared: "
+                + ", ".join(missing)
+            ])
+        try:
+            comparison=p.importance_decision.decision(
+                baseline_scenario_id=req.baseline_scenario_id,
+                options=options, criteria=req.criteria, policy=req.policy,
+            )
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        return envelope({
+            "baseline_scenario_id":str(comparison.baseline_scenario_id),
+            "criteria":list(comparison.criteria),
+            "ranked_options":comparison.ranked_options,
+            "advisory_only":comparison.advisory_only,
+            "limitations":list(comparison.limitations),
+            "generated_at":comparison.generated_at.isoformat(),
+        }, data_status="RESEARCH_ONLY", warnings=[
+            "ADVISORY_ONLY decision comparison over counterfactual scenarios; "
+            "never an observed outcome and never a spacecraft command."
+        ])
 
     @app.get("/v1/intelligence/scenarios/{scenario_id}/attribution")
     def intelligence_attribution(scenario_id:str):

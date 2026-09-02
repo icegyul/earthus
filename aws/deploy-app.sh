@@ -44,8 +44,15 @@ aws s3 sync "$SRC" "s3://${BUCKET}/${PREFIX}/" \
 
 # sync 가 추측한 Content-Type 이 틀리면 모듈 로딩이 깨진다.
 # 브라우저는 text/javascript 가 아닌 스크립트를 ES 모듈로 실행하지 않는다.
+# ⚠️ 이 목록은 위 sync 의 --exclude 와 반드시 같아야 한다.
+#    올리지 않은 파일(supabase/, devserver.py …)까지 훑으면 s3 cp 가 404 로 죽고,
+#    set -e 때문에 스크립트가 통째로 멈춘다. 그러면 **뒤의 sw.js no-cache 교정이
+#    실행되지 않아** 서비스워커가 캐시된 채로 나간다. 실제로 그렇게 배포된 적이 있다.
 echo "▸ Content-Type 교정"
-for f in $(cd "$SRC" && find . -name '*.js' | sed 's|^\./||'); do
+for f in $(cd "$SRC" && find . -name '*.js' \
+    -not -path './supabase/*' \
+    -not -path './__pycache__/*' \
+    | sed 's|^\./||'); do
   aws s3 cp "s3://${BUCKET}/${PREFIX}/${f}" "s3://${BUCKET}/${PREFIX}/${f}" \
     --region "$REGION" --metadata-directive REPLACE \
     --content-type 'text/javascript; charset=utf-8' \

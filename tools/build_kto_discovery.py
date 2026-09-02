@@ -30,6 +30,9 @@ SERVICES = {
     "english": "english/areaBasedSyncList2",
     "related": "related/areaBasedList1",
     "visitors": "visitors/locgoRegnVisitrDDList",
+    # 집중률 원본은 164,720행 · 64MB다. 브라우저에 그대로 못 내보내므로
+    # 여기서 시군구별 대표값(평균·최대·관광지 수)으로 줄여 담는다.
+    "concentration": "concentration/tatsCnctrRatedList",
 }
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PLACES = os.path.join(ROOT, "prototype", "v2-three", "data", "kr-places.json")
@@ -187,7 +190,47 @@ def main():
         })
     related = {k: sorted(v, key=lambda x: (x["rank"] or 99))[:5] for k, v in rel.items()}
 
+    # ---- 집중률: 시군구별 대표값 ------------------------------------------------
+    # 상대 집중률은 "가장 붐비는 시기를 100으로 본 예측"이지 사람 수가 아니다.
+    # 그 의미를 잃지 않도록 평균·최대와 대상 관광지 수를 함께 남긴다.
+    conc = {}
+    for it in docs["concentration"].get("items") or []:
+        district = str(it.get("districtCode") or "")
+        rate = it.get("relativeConcentrationRate")
+        if not district or not isinstance(rate, (int, float)):
+            continue
+        bucket = conc.setdefault(district, {"name": it.get("districtName"), "rates": [],
+                                            "spots": set(), "dates": set()})
+        bucket["rates"].append(rate)
+        if it.get("tourismName"):
+            bucket["spots"].add(it["tourismName"])
+        if it.get("targetDate"):
+            bucket["dates"].add(it["targetDate"])
+    conc_matched = 0
+    for code, bucket in conc.items():
+        sido = SIDO.get(code[:2])
+        if not sido:
+            continue
+        cands = [r for r in regions if r["province"].startswith(sido) and r["nameKo"] == bucket["name"]]
+        if len(cands) != 1:
+            continue
+        dates = sorted(bucket["dates"])
+        cands[0]["concentration"] = {
+            "districtCode": code,
+            "mean": round(sum(bucket["rates"]) / len(bucket["rates"]), 2),
+            "max": round(max(bucket["rates"]), 2),
+            "spotCount": len(bucket["spots"]),
+            "rowCount": len(bucket["rates"]),
+            "dateFrom": dates[0] if dates else None,
+            "dateTo": dates[-1] if dates else None,
+        }
+        conc_matched += 1
+
     visitor_days = sorted({d for row in by_region.values() for d in row["days"]})
+    CONCENTRATION_NOTE = (
+        "상대 집중률은 가장 붐비는 시기를 100으로 본 예측 지수이며 실제 인원 수가 아니다. "
+        "여기 담긴 값은 시군구별 평균·최대이고 원본은 관광지·날짜별 행이다."
+    )
     VISITOR_NOTE = (
         "이동통신 기반 방문자수는 관광객과 같지 않다. 집계 단위를 임의로 합산하지 않는다. "
         + ("이 파일의 방문자수는 단일 기준일 스냅샷이다."
@@ -203,6 +246,7 @@ def main():
         "assignment": "무장애·영문·웰니스 좌표를 kr-places 시군구 중심점에 최근접 배정 (60km 초과는 미배정). 행정구역 폴리곤이 아니라 근사다.",
         "notes": {
             "visitors": VISITOR_NOTE,
+            "concentration": CONCENTRATION_NOTE,
             "label": "KTO 데이터에서 유도한 후보는 EARTHUS DISCOVERY 로 표기한다. KTO 공식 추천이 아니다.",
         },
         "provenance": {k: provenance(v) for k, v in docs.items()},
@@ -218,7 +262,8 @@ def main():
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
     size = os.path.getsize(args.out)
     print(f"wrote {args.out} ({size/1024:.0f} KB) · regions {len(regions)} · wellness {len(wellness_points)}"
-          f" · visitors matched {matched}/{len(by_region)} · related sources {len(related)} · unassigned {unassigned}")
+          f" · visitors matched {matched}/{len(by_region)} · related sources {len(related)}"
+          f" · concentration matched {conc_matched}/{len(conc)} · unassigned {unassigned}")
     if unmatched:
         print("visitors unmatched:", ", ".join(unmatched[:12]), "..." if len(unmatched) > 12 else "")
 

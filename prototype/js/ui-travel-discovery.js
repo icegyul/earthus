@@ -43,6 +43,20 @@ function gateLine(region, ko) {
   return `<p class="td-gate">${ko ? '오늘 후보에서 제외' : 'Excluded today'} — ${reasons.join(' · ')}</p>`;
 }
 
+// 집중률은 점수에 넣지 않는다. 상대 지수라 "덜 붐빔"과 단위가 달라 섞으면
+// 무엇으로 고른 것인지 설명할 수 없다. 대신 같은 카드에 근거로 나란히 둔다.
+function concentrationLine(region, ko) {
+  const c = region.concentration;
+  if (!c) return '';
+  return `<p class="td-conc">
+    <b>${ko ? '공사 집중률 예측' : 'KTO concentration forecast'}</b>
+    ${ko ? '평균' : 'mean'} ${c.mean} · ${ko ? '최대' : 'max'} ${c.max}
+    <small>${ko
+      ? `관광지 ${num(c.spotCount)}곳 · ${esc(c.dateFrom)}~${esc(c.dateTo)} · 가장 붐비는 시기를 100으로 본 상대 지수(인원 수 아님)`
+      : `${num(c.spotCount)} spots · ${esc(c.dateFrom)}~${esc(c.dateTo)} · relative index where the busiest period is 100, not a headcount`}</small>
+  </p>`;
+}
+
 function regionCard(region, ko) {
   const { density, quiet, quietKnown, gate } = region.components;
   const visitors = region.visitors;
@@ -65,6 +79,7 @@ function regionCard(region, ko) {
           ? `${ko ? '외지인 방문자' : 'Non-resident visitors'} ${num(region.visitorsDomestic)}${visitors?.date ? ` · ${esc(visitors.date)}` : ''}`
           : (ko ? '방문자 자료 없음 — 중립 0.5로 둠(지어내지 않음)' : 'No visitor data — neutral 0.5, not invented')}</small></li>
     </ul>
+    ${concentrationLine(region, ko)}
     ${region.barrierFreeSample?.length
       ? `<p class="td-sample">${region.barrierFreeSample.slice(0, 3).map(esc).join(' · ')}</p>` : ''}
     ${gateLine(region, ko)}

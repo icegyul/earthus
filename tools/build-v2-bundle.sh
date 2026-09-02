@@ -49,6 +49,25 @@ while IFS= read -r -d '' f; do
     "$f"
 done < <(find "$OUT/js" -name '*.js' -print0)
 
+# v02 말고 다른 엔진 갈래(v03~v11 등)를 불러오는 파일이 새로 들어올 수 있다.
+# v02만 재작성하던 탓에 v11 import가 번들 밖으로 새어 운영이 죽었다(2026-09-03).
+# → 참조된 갈래를 찾아 그 트리를 번들 안으로 복사하고 경로를 바꾼다.
+vers="$(grep -rhoE '\.\./\.\./js/earthus2/[A-Za-z0-9_-]+/' "$OUT/js" 2>/dev/null \
+  | sed -E 's#.*/earthus2/([^/]+)/#\1#' | sort -u || true)"
+for v in $vers; do
+  src_tree="$ROOT/prototype/js/earthus2/$v"
+  if [[ ! -d "$src_tree" ]]; then
+    echo "FAIL 참조된 엔진 갈래가 없습니다: $v" >&2
+    exit 1
+  fi
+  rm -rf "$OUT/engine-$v"
+  cp -r "$src_tree" "$OUT/engine-$v"
+  while IFS= read -r -d '' f; do
+    sed -i -e "s#\.\./\.\./js/earthus2/$v/#../engine-$v/#g" "$f"
+  done < <(find "$OUT/js" -name '*.js' -print0)
+  echo "   엔진 갈래 $v 내부화 → engine-$v/"
+done
+
 echo "== 4/4 번들 무결성 검사 =="
 fail=0
 # 번들 밖을 가리키는 상대 경로가 남아 있으면 프로덕션에서 403이 난다
@@ -82,7 +101,12 @@ if missing:
     sys.exit(1)
 print('PASS 모든 상대 import가 번들 안에 있습니다')
 PYEOF
-[[ $fail -eq 0 ]] || exit 1
+# 실패는 마지막 줄에 다시 찍는다 — tail로 잘라 봐도 놓치지 않게.
+# (호출부에서 `build | tail -1 && deploy` 로 이으면 파이프 종료코드가 실패를 삼킨다)
+if [[ $fail -ne 0 ]]; then
+  echo "FAIL 번들 무결성 검사 실패 — 배포하면 안 됩니다" >&2
+  exit 1
+fi
 
 # index.html과 main.js의 캐시 버전이 소스와 같은지 (스테일 번들 방지)
 src_v="$(grep -o 'main\.js?v=[0-9]*' "$SRC/index.html" | head -1)"

@@ -1022,7 +1022,12 @@ float cloudAmt(vec2 uv) {
   return mix(t.a, dot(t.rgb, vec3(0.3333)), uAlphaFromLum);
 }
 
+uniform float uGfsTop;   // 1이면 uTex 의 B 채널이 운정 높이(DERIVED, 0~16000m)
+
 float cloudHeightM(vec2 uv) {
+  // 예보 프레임은 두께가 아니라 '운정 높이'를 따로 담고 있다.
+  // 두께를 높이로 쓰면 두꺼운 저층운이 높은 산처럼 솟는다 — 그건 거짓이다.
+  if (uGfsTop > 0.5) return texture2D(uTex, uv).b * 16000.0;
   if (uCthRect.z > 0.0) {
     vec2 cuv = (uv - uCthRect.xy) / uCthRect.zw;
     if (cuv.x > 0.0 && cuv.x < 1.0 && cuv.y > 0.0 && cuv.y < 1.0) {
@@ -1166,6 +1171,7 @@ class CloudManager {
       uSunDir: { value: new THREE.Vector3(0, 0, 1) },
       // GFS 프레임 모드: A=구름량(선형) · RG=700hPa 바람. 프레임 사이는 바람으로 이류한다.
       uGfsFrames: { value: 0 },
+      uGfsTop: { value: 0 },
       uAdvectSec: { value: 10800 },
     };
     this.reliefOn = false;
@@ -1649,9 +1655,28 @@ class CloudManager {
     const i0 = this.frameIndexAt(0).i0;
     const texA = await this.frameTexAt(i0);
     this.frameTexAt(Math.min(i0 + 1, frames.length - 1));
+    // 나머지를 배경에서 미리 받는다. 실측: 장당 180ms 네트워크가 스크럽 끊김의 유일한 원인이었고,
+    // 41장 전부라야 7.3MB(GPU 10MB)다. 받아두면 스크럽·재생이 대기 0ms 가 된다.
+    // 현재 시각에서 가까운 것부터 — 사용자가 먼저 볼 곳이다.
+    setTimeout(() => {
+      if (this.gfs !== this.gfs || this.mode !== 'gfs') return;
+      const order = frames.map((_, i) => i).sort((a, b) => Math.abs(a - i0) - Math.abs(b - i0));
+      let k = 0;
+      const pump = () => {
+        if (this.mode !== 'gfs' || !this.gfs || this.gfs.frames !== frames) return;
+        let started = 0;
+        while (k < order.length && started < 4) {          // 한 번에 4장씩
+          const idx = order[k]; k += 1;
+          if (!this.gfs.texCache.has(idx)) { this.frameTexAt(idx); started += 1; }
+        }
+        if (k < order.length) setTimeout(pump, 400);
+        else console.info('[earthus-cloud] 예보 프레임 %d장 프리페치 완료', frames.length);
+      };
+      pump();
+    }, 1200);
     const runKo = mf.run ? mf.run.replace('T', ' ').slice(0, 16) + 'Z' : '';
     return {
-      tex: texA, lum: 0, frames: true,
+      tex: texA, lum: 0, frames: true, relief: true,
       label: `GFS 1.0° 5일 예보 · 구름 두께(CWAT) · ▶ 재생 · 프레임 3시간 · 사이는 700hPa 바람으로 이류한 보간 (NOAA NOMADS · 런 ${runKo})`,
     };
   }
@@ -1674,7 +1699,11 @@ class CloudManager {
       const loader = new THREE.TextureLoader();
       loader.setCrossOrigin('anonymous');
       loader.load(g.frames[i].url, (tex) => {
+        // 360×181 을 지구본에 확대해서 쓴다 — 축소가 없으므로 밉맵은 업로드 비용만 낸다.
         CloudManager.texDefaults(tex);
+        tex.generateMipmaps = false;
+        tex.minFilter = THREE.LinearFilter;
+        tex.needsUpdate = true;
         g.texCache.set(i, tex);
         resolve(tex);
         // 이 프레임을 기다리던 화면이 있으면 지금 반영한다
@@ -1749,7 +1778,7 @@ class CloudManager {
       const offH = Math.round((valid.getTime() - Date.now()) / 3.6e6);
       const pending = (a && a.isTexture && b && b.isTexture) ? '' : ' · <span style="opacity:.7">프레임 받는 중…</span>';
       this.noteEl.innerHTML = `<span class="badge model">MODEL</span> GFS 1.0° 예보 T${offH >= 0 ? '+' : ''}${offH}h · 유효 ${valid.getMonth() + 1}/${valid.getDate()} ${String(valid.getHours()).padStart(2, '0')}시`
-        + `<br/><span style="opacity:.75">구름 <b>두께</b>(연직 구름수 CWAT)로 그림 · 프레임 3시간 간격(NOAA GFS 1.0°, 적도 111km) · 사이는 700hPa 바람으로 이류한 <b>보간</b>이며 모델 출력이 아닙니다</span>${pending}`;
+        + `<br/><span style="opacity:.75">구름 <b>두께</b>(CWAT)로 그리고 <b>운정 높이</b>만큼 세움(DERIVED: 저·중·고층 비율에서 유도) · 프레임 3시간(NOAA GFS 1.0°, 적도 111km) · 사이는 700hPa 바람으로 이류한 <b>보간</b>이며 모델 출력이 아닙니다</span>${pending}`;
       return;
     }
     const hF = Math.max(0, Math.min(this.gfs.HOURS - 1.001, (Date.now() + ms - this.gfs.timeBase) / 3.6e6));
@@ -1815,6 +1844,7 @@ class CloudManager {
     this.earthUniforms.uCloudLum.value = entry.lum;
     this.earthUniforms.uCloudGfs.value = entry.frames ? 1 : 0;
     this.uniforms.uGfsFrames.value = entry.frames ? 1 : 0;
+    this.uniforms.uGfsTop.value = entry.frames ? 1 : 0;
     this.earthUniforms.uCloudShadow.value = 1;
     this.mesh.visible = true;
     this.noteEl.textContent = entry.label;

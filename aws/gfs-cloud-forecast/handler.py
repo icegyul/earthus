@@ -13,7 +13,7 @@
 무엇을 담나 (RGBA, 360×181, 행0=북위90, 열0=서경180):
   A = CWAT 를 log 로 눌러 0~255. A/255 = clamp((log10(cwat) − log10(0.005)) / (log10(2) − log10(0.005)), 0, 1)
       즉 0.005 kg/m² 이하 = 0, 2.0 이상 = 255. 표현 곡선의 나머지는 브라우저 셰이더가 맡는다.
-  B = HCDC 고층 구름 비율 0~100% → 0~255
+  B = 운정 높이 / 16000m → 0~255 (DERIVED — 저/중/고층 비율에서 '가장 높은 층'을 골라 환산)
   R = 700hPa 동서풍 u, G = 남북풍 v — (m/s + 64) / 128 * 255, 0.5 m/s 양자화(PNG 압축용). ±64 m/s
 바람을 같이 담는 이유: 3시간 프레임 사이를 그냥 섞으면 구름이 '이동'하지 않고 '녹았다 생긴다'.
 실제 바람으로 이류(advection)해 사이를 채우면 구름이 실제 방향으로 움직인다.
@@ -71,9 +71,12 @@ def url_for(run, step):
     q = [
         ('file', 'gfs.t%sz.pgrb2.1p00.f%03d' % (run.strftime('%H'), step)),
         ('dir', '/gfs.%s/%s/atmos' % (run.strftime('%Y%m%d'), run.strftime('%H'))),
-        ('var_CWAT', 'on'), ('var_HCDC', 'on'), ('var_UGRD', 'on'), ('var_VGRD', 'on'),
+        ('var_CWAT', 'on'), ('var_LCDC', 'on'), ('var_MCDC', 'on'), ('var_HCDC', 'on'),
+        ('var_UGRD', 'on'), ('var_VGRD', 'on'),
         # NOMADS 필터의 레벨 이름은 인벤토리 문자열 그대로다. 괄호는 역슬래시로 감싼다.
         ('lev_entire_atmosphere_\\(considered_as_a_single_layer\\)', 'on'),
+        ('lev_low_cloud_layer', 'on'),
+        ('lev_middle_cloud_layer', 'on'),
         ('lev_high_cloud_layer', 'on'),
         ('lev_%s_mb' % WIND_LEVEL, 'on'),
     ]
@@ -107,8 +110,11 @@ def pick_run():
 
 # ---------- 해독 → 프레임 ----------
 def fields_from_grib(raw):
-    """CWAT(전층) · HCDC(고층 비율, 순간값) · U · V. 하나라도 없으면 예외."""
-    cw = hc = u = v = None
+    """CWAT(전층) · L/M/H 층별 구름 비율(순간값) · U · V. 하나라도 없으면 예외.
+
+    층별 구름 비율의 레벨타입: 저 214 · 중 224 · 고 234. pdt 0 만 쓴다(pdt 8 은 구간 평균).
+    """
+    cw = lc = mc = hc = u = v = None
     for secs in gl.messages(raw):
         d, g, vals = gl.decode(secs)
         if (g['ni'], g['nj']) != (NI, NJ) or g['lat1'] != 90.0 or g['lon1'] != 0.0 or g['jPositive']:
@@ -116,16 +122,35 @@ def fields_from_grib(raw):
         cat, num, lt, pdt = d['category'], d['number'], d['levelType'], d['pdt']
         if cat == 6 and lt == 200 and pdt == 0:
             cw = vals                                   # 연직 구름수 총량 kg/m²
-        elif cat == 6 and num == 5 and lt == 234 and pdt == 0:
-            hc = vals                                   # 고층 구름 비율 % (구간평균 pdt8 은 버린다)
+        elif cat == 6 and pdt == 0 and lt == 214:
+            lc = vals
+        elif cat == 6 and pdt == 0 and lt == 224:
+            mc = vals
+        elif cat == 6 and pdt == 0 and lt == 234:
+            hc = vals
         elif cat == 2 and num == 2 and lt == 100:
             u = vals
         elif cat == 2 and num == 3 and lt == 100:
             v = vals
-    if cw is None or hc is None or u is None or v is None:
-        raise RuntimeError('GFS_FC_FIELDS_MISSING cw=%s hc=%s u=%s v=%s'
-                           % (cw is not None, hc is not None, u is not None, v is not None))
-    return cw, hc, u, v
+    missing = [n for n, x in (('CWAT', cw), ('LCDC', lc), ('MCDC', mc), ('HCDC', hc),
+                              ('UGRD', u), ('VGRD', v)) if x is None]
+    if missing:
+        raise RuntimeError('GFS_FC_FIELDS_MISSING:%s' % ','.join(missing))
+    return cw, lc, mc, hc, u, v
+
+
+# 층별 구름의 대표 운정 고도(m). GFS 층 정의(저 <2km · 중 2~6km · 고 >6km)의 운정 쪽 값이다.
+TOP_L, TOP_M, TOP_H = 2200.0, 6200.0, 11000.0
+
+
+def _top_height_m(l, m, h):
+    """가장 높은 층부터 덮어 내려온다. 평균이 아니라 '맨 위'를 고른다 —
+    평균을 내면 고층 권운이 있는 곳이 중층으로 내려앉아 3D 가 뭉개진다."""
+    fh = 0.0 if h is None else max(0.0, min(1.0, h / 100.0))
+    fm = 0.0 if m is None else max(0.0, min(1.0, m / 100.0))
+    fl = 0.0 if l is None else max(0.0, min(1.0, l / 100.0))
+    rest = 1.0 - fh
+    return TOP_H * fh + TOP_M * fm * rest + TOP_L * fl * rest * (1.0 - fm)
 
 
 def encode_png_rgba(w, h, rows):
@@ -153,7 +178,7 @@ def _cwat_byte(kg):
     return int(max(0.0, min(1.0, t)) * 255.0 + 0.5)
 
 
-def frame_png(cw, hc, u, v):
+def frame_png(cw, lc, mc, hc, u, v):
     """열을 서경180 부터 시작하게 돌린다(브라우저 텍스처 uv.x=0 이 -180)."""
     rows = []
     half = NI // 2
@@ -165,8 +190,8 @@ def frame_png(cw, hc, u, v):
             o = i * 4
             row[o] = _wind_byte(u[src])
             row[o + 1] = _wind_byte(v[src])
-            h = hc[src]
-            row[o + 2] = 0 if h is None else int(max(0.0, min(100.0, h)) * 2.55 + 0.5)
+            top = _top_height_m(lc[src], mc[src], hc[src])
+            row[o + 2] = int(max(0.0, min(1.0, top / 16000.0)) * 255.0 + 0.5)
             row[o + 3] = _cwat_byte(cw[src])
         rows.append(bytes(row))
     return encode_png_rgba(NI, NJ, rows)
@@ -176,8 +201,8 @@ def build_step(run, step):
     raw = http_get(url_for(run, step))
     if raw[:4] != b'GRIB':
         raise RuntimeError('GFS_FC_NOT_GRIB f%03d' % step)
-    cw, hc, u, v = fields_from_grib(raw)
-    png = frame_png(cw, hc, u, v)
+    cw, lc, mc, hc, u, v = fields_from_grib(raw)
+    png = frame_png(cw, lc, mc, hc, u, v)
     n = float(len(cw))
     return {
         'h': step, 'png': png, 'srcBytes': len(raw),
@@ -238,14 +263,17 @@ def handler(event, context):
         'encoding': {
             'A': 'CWAT column cloud water kg/m², log: cwat = 10^(A/255*%.4f + %.4f); 0 below %.3f, 255 at %.1f'
                  % (_LOG_SPAN, _LOG_LO, CWAT_LO, CWAT_HI),
-            'B': 'HCDC high cloud layer fraction, percent: B/255*100',
+            'B': 'DERIVED cloud top height, metres: B/255*16000 '
+                 '(topmost of LCDC/MCDC/HCDC at %.0f/%.0f/%.0f m; not a GFS output field)'
+                 % (TOP_L, TOP_M, TOP_H),
             'R': 'UGRD %s hPa, m/s: R/255*128-64 (0.5 m/s quantized)' % WIND_LEVEL,
             'G': 'VGRD %s hPa, m/s: G/255*128-64 (0.5 m/s quantized)' % WIND_LEVEL,
         },
         'stepHours': STEP_H,
         'steps': manifest_steps,
         'missingSteps': [s for s, _ in failed],
-        'note': '두께(CWAT)로 그린다. 구름 비율 필드는 지구 절반이 90%라 베일이 된다(실측). '
+        'note': '불투명도는 두께(CWAT), 높이는 층별 비율에서 유도(B=DERIVED). '
+                '구름 비율로 불투명도를 만들면 지구 절반이 90%라 베일이 된다(실측). '
                 '프레임 사이 값은 바람으로 이류한 보간이며 모델 출력이 아니다. 없는 스텝은 만들지 않았다.',
         'decoder': 'grib2lite (pure python, validated against eccodes 2.48)',
         'elapsedS': round(time.time() - t0, 1),

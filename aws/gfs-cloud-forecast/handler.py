@@ -10,11 +10,24 @@
   위성처럼 보이려면 '두께'가 필요하다 → CWAT(연직 구름수 총량, kg/m²). 0.05 초과가 29%,
   0.3 초과가 6.5% 라 짙은 구름만 짙게 나온다. 고층 비율(HCDC)은 권운 베일용으로 따로 담는다.
 
-무엇을 담나 (RGBA, 360×181, 행0=북위90, 열0=서경180):
+왜 두 장으로 나누나: 바람은 매끄러운 장이라 1° 가 필요 없다. 실측으로 한 장에 다 담으면
+195KB 인데 그중 바람이 108KB(55%)다. 바람만 4° 로 빼면 8KB — 사용자당 전송이 43% 준다.
+CDN 전송은 사용자 수에 비례하는 유일한 비용이므로 여기서 아끼는 것이 맞다.
+
+무엇을 담나 — 구름 c{step}.png (RGBA, 360×181, 행0=북위90, 열0=서경180):
   A = CWAT 를 log 로 눌러 0~255. A/255 = clamp((log10(cwat) − log10(0.005)) / (log10(2) − log10(0.005)), 0, 1)
       즉 0.005 kg/m² 이하 = 0, 2.0 이상 = 255. 표현 곡선의 나머지는 브라우저 셰이더가 맡는다.
   B = 운정 높이 / 16000m → 0~255 (DERIVED — 저/중/고층 비율에서 '가장 높은 층'을 골라 환산)
-  R = 700hPa 동서풍 u, G = 남북풍 v — (m/s + 64) / 128 * 255, 0.5 m/s 양자화(PNG 압축용). ±64 m/s
+  R, G = 0 (사용 안 함)
+강수 p{step}.png (RGBA, 360×181 = 1°) — 구름 밑 지표에 비/눈/뇌우를 그리기 위한 자료:
+  R = 강수 강도 mm/h 를 log 로 눌러 0~255 (0.05 이하 = 0, 30 이상 = 255)
+  G = 강수 종류 — 0 비 · 128 어는비/진눈깨비 · 255 눈 (GFS CRAIN/CFRZR/CICEP/CSNOW 그대로)
+  B = 뇌우 가능성 (DERIVED — 대류강수 비율 × CAPE. GFS 출력 필드가 아니다)
+  희소한 장이라 52KB 다(실측). 강수 종류는 관측이 아니라 예보 모델의 판정이다.
+
+바람 w{step}.png (RGBA, 90×46 = 4°):
+  R = 700hPa 동서풍 u, G = 남북풍 v — (m/s + 64) / 128 * 255, 0.5 m/s 양자화. ±64 m/s
+  4° 로 내릴 때는 평균을 낸다 — 이류에 쓰는 값이라 대표값이어야 한다.
 바람을 같이 담는 이유: 3시간 프레임 사이를 그냥 섞으면 구름이 '이동'하지 않고 '녹았다 생긴다'.
 실제 바람으로 이류(advection)해 사이를 채우면 구름이 실제 방향으로 움직인다.
 사이 값은 우리가 보간한 것이므로 브라우저는 그것을 MODEL·보간으로 표기해야 한다.
@@ -46,6 +59,8 @@ WIND_LEVEL = os.environ.get('GFS_FC_WIND_MB', '700')
 BASE = 'https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_1p00.pl'
 UA = 'earthus/2.0 (+https://earthus.net)'
 NI, NJ = 360, 181
+WIND_DIV = 4                          # 바람 다운샘플 배수 → 90×46 (4° 격자)
+WNI, WNJ = NI // WIND_DIV, (NJ + WIND_DIV - 1) // WIND_DIV
 DEADLINE_S = 270
 CWAT_LO, CWAT_HI = 0.005, 2.0        # log 인코딩 범위 (kg/m²)
 _LOG_LO = math.log10(CWAT_LO)
@@ -73,6 +88,9 @@ def url_for(run, step):
         ('dir', '/gfs.%s/%s/atmos' % (run.strftime('%Y%m%d'), run.strftime('%H'))),
         ('var_CWAT', 'on'), ('var_LCDC', 'on'), ('var_MCDC', 'on'), ('var_HCDC', 'on'),
         ('var_UGRD', 'on'), ('var_VGRD', 'on'),
+        ('var_PRATE', 'on'), ('var_CPRAT', 'on'), ('var_CAPE', 'on'),
+        ('var_CRAIN', 'on'), ('var_CSNOW', 'on'), ('var_CFRZR', 'on'), ('var_CICEP', 'on'),
+        ('lev_surface', 'on'),
         # NOMADS 필터의 레벨 이름은 인벤토리 문자열 그대로다. 괄호는 역슬래시로 감싼다.
         ('lev_entire_atmosphere_\\(considered_as_a_single_layer\\)', 'on'),
         ('lev_low_cloud_layer', 'on'),
@@ -110,11 +128,12 @@ def pick_run():
 
 # ---------- 해독 → 프레임 ----------
 def fields_from_grib(raw):
-    """CWAT(전층) · L/M/H 층별 구름 비율(순간값) · U · V. 하나라도 없으면 예외.
+    """CWAT · L/M/H 층별 구름 비율 · U/V 바람 · 강수(PRATE/CPRAT/종류/CAPE). 하나라도 없으면 예외.
 
     층별 구름 비율의 레벨타입: 저 214 · 중 224 · 고 234. pdt 0 만 쓴다(pdt 8 은 구간 평균).
     """
-    cw = lc = mc = hc = u = v = None
+    cw = lc = mc = hc = u = v = cape = None
+    wet = {}
     for secs in gl.messages(raw):
         d, g, vals = gl.decode(secs)
         if (g['ni'], g['nj']) != (NI, NJ) or g['lat1'] != 90.0 or g['lon1'] != 0.0 or g['jPositive']:
@@ -132,11 +151,18 @@ def fields_from_grib(raw):
             u = vals
         elif cat == 2 and num == 3 and lt == 100:
             v = vals
+        elif cat == 1 and lt == 1 and pdt == 0:
+            # 지표 수분 계열: 7=PRATE 37=CPRAT 192=CRAIN 193=CFRZR 194=CICEP 195=CSNOW
+            wet[num] = vals
+        elif cat == 7 and num == 6 and lt == 1 and pdt == 0:
+            cape = vals
     missing = [n for n, x in (('CWAT', cw), ('LCDC', lc), ('MCDC', mc), ('HCDC', hc),
-                              ('UGRD', u), ('VGRD', v)) if x is None]
+                              ('UGRD', u), ('VGRD', v),
+                              ('PRATE', wet.get(7)), ('CSNOW', wet.get(195)),
+                              ('CAPE', cape)) if x is None]
     if missing:
         raise RuntimeError('GFS_FC_FIELDS_MISSING:%s' % ','.join(missing))
-    return cw, lc, mc, hc, u, v
+    return cw, lc, mc, hc, u, v, wet, cape
 
 
 # 층별 구름의 대표 운정 고도(m). GFS 층 정의(저 <2km · 중 2~6km · 고 >6km)의 운정 쪽 값이다.
@@ -178,7 +204,7 @@ def _cwat_byte(kg):
     return int(max(0.0, min(1.0, t)) * 255.0 + 0.5)
 
 
-def frame_png(cw, lc, mc, hc, u, v):
+def cloud_png(cw, lc, mc, hc):
     """열을 서경180 부터 시작하게 돌린다(브라우저 텍스처 uv.x=0 이 -180)."""
     rows = []
     half = NI // 2
@@ -188,8 +214,6 @@ def frame_png(cw, lc, mc, hc, u, v):
         for i in range(NI):
             src = base + ((i + half) % NI)
             o = i * 4
-            row[o] = _wind_byte(u[src])
-            row[o + 1] = _wind_byte(v[src])
             top = _top_height_m(lc[src], mc[src], hc[src])
             row[o + 2] = int(max(0.0, min(1.0, top / 16000.0)) * 255.0 + 0.5)
             row[o + 3] = _cwat_byte(cw[src])
@@ -197,15 +221,92 @@ def frame_png(cw, lc, mc, hc, u, v):
     return encode_png_rgba(NI, NJ, rows)
 
 
+PRATE_LO, PRATE_HI = 0.05, 30.0        # mm/h — log 인코딩 범위
+_PLOG_LO = math.log10(PRATE_LO)
+_PLOG_SPAN = math.log10(PRATE_HI) - _PLOG_LO
+
+
+def _rate_byte(mmh):
+    if mmh is None or mmh <= PRATE_LO:
+        return 0
+    t = (math.log10(mmh) - _PLOG_LO) / _PLOG_SPAN
+    return int(max(0.0, min(1.0, t)) * 255.0 + 0.5)
+
+
+def precip_png(wet, cape):
+    """R=강도 · G=종류 · B=뇌우(DERIVED). 강수 없는 곳은 전부 0 이라 잘 압축된다."""
+    pr = wet.get(7)
+    cp = wet.get(37)
+    snow = wet.get(195)
+    frz = wet.get(193)
+    ice = wet.get(194)
+    rows = []
+    half = NI // 2
+    for j in range(NJ):
+        base = j * NI
+        row = bytearray(NI * 4)
+        for i in range(NI):
+            src = base + ((i + half) % NI)
+            o = i * 4
+            rate = (pr[src] or 0.0) * 3600.0
+            row[o] = _rate_byte(rate)
+            if row[o]:
+                is_snow = bool(snow and snow[src] and snow[src] > 0.5)
+                is_mix = bool((frz and frz[src] and frz[src] > 0.5)
+                              or (ice and ice[src] and ice[src] > 0.5))
+                row[o + 1] = 255 if is_snow else (128 if is_mix else 0)
+                # 뇌우: 대류강수 비율 × CAPE. 둘 다 높아야 한다 — 어느 하나로는 못 정한다.
+                conv = ((cp[src] or 0.0) * 3600.0 / rate) if (cp and rate > 0.01) else 0.0
+                cv = (cape[src] or 0.0) if cape else 0.0
+                row[o + 2] = int(max(0.0, min(1.0, conv * min(1.0, cv / 1500.0))) * 255.0 + 0.5)
+            row[o + 3] = 255
+        rows.append(bytes(row))
+    return encode_png_rgba(NI, NJ, rows)
+
+
+def wind_png(u, v):
+    """바람을 4° 로 평균 다운샘플. 이류에 쓰는 값이라 대표값이어야 한다."""
+    rows = []
+    half = NI // 2
+    for jj in range(WNJ):
+        row = bytearray(WNI * 4)
+        for ii in range(WNI):
+            su = sv = 0.0
+            n = 0
+            for dj in range(WIND_DIV):
+                j = jj * WIND_DIV + dj
+                if j >= NJ:
+                    continue
+                for di in range(WIND_DIV):
+                    i = ii * WIND_DIV + di
+                    if i >= NI:
+                        continue
+                    src = j * NI + ((i + half) % NI)
+                    if u[src] is not None and v[src] is not None:
+                        su += u[src]
+                        sv += v[src]
+                        n += 1
+            o = ii * 4
+            row[o] = _wind_byte(su / n if n else 0.0)
+            row[o + 1] = _wind_byte(sv / n if n else 0.0)
+            row[o + 3] = 255
+        rows.append(bytes(row))
+    return encode_png_rgba(WNI, WNJ, rows)
+
+
 def build_step(run, step):
     raw = http_get(url_for(run, step))
     if raw[:4] != b'GRIB':
         raise RuntimeError('GFS_FC_NOT_GRIB f%03d' % step)
-    cw, lc, mc, hc, u, v = fields_from_grib(raw)
-    png = frame_png(cw, lc, mc, hc, u, v)
+    cw, lc, mc, hc, u, v, wet, cape = fields_from_grib(raw)
+    png = cloud_png(cw, lc, mc, hc)
+    wpng = wind_png(u, v)
+    ppng = precip_png(wet, cape)
     n = float(len(cw))
+    pr = wet.get(7)
     return {
-        'h': step, 'png': png, 'srcBytes': len(raw),
+        'h': step, 'png': png, 'wind': wpng, 'precip': ppng, 'srcBytes': len(raw),
+        'wetGt01': round(sum(1 for x in pr if x and x * 3600 > 0.1) / n, 4),
         'cwatGt005': round(sum(1 for x in cw if x is not None and x > 0.05) / n, 4),
         'cwatGt03': round(sum(1 for x in cw if x is not None and x > 0.3) / n, 4),
     }
@@ -242,13 +343,22 @@ def handler(event, context):
     manifest_steps = []
     for s in sorted(done):
         fr = done[s]
-        key = '%s/%s/f%03d.png' % (PREFIX, run_tag, s)
-        put(key, fr['png'], 'image/png', 'public, max-age=86400, immutable')
+        put('%s/%s/c%03d.png' % (PREFIX, run_tag, s), fr['png'],
+            'image/png', 'public, max-age=86400, immutable')
+        put('%s/%s/w%03d.png' % (PREFIX, run_tag, s), fr['wind'],
+            'image/png', 'public, max-age=86400, immutable')
+        put('%s/%s/p%03d.png' % (PREFIX, run_tag, s), fr['precip'],
+            'image/png', 'public, max-age=86400, immutable')
         manifest_steps.append({
             'h': s,
             'valid': (run + timedelta(hours=s)).strftime('%Y-%m-%dT%H:%M:%SZ'),
-            'file': '%s/f%03d.png' % (run_tag, s),
+            'file': '%s/c%03d.png' % (run_tag, s),
+            'wind': '%s/w%03d.png' % (run_tag, s),
+            'precip': '%s/p%03d.png' % (run_tag, s),
             'bytes': len(fr['png']),
+            'windBytes': len(fr['wind']),
+            'precipBytes': len(fr['precip']),
+            'wetGt01': fr['wetGt01'],
             'cwatGt005': fr['cwatGt005'],
             'cwatGt03': fr['cwatGt03'],
         })
@@ -260,14 +370,21 @@ def handler(event, context):
         'generatedAt': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
         'grid': {'ni': NI, 'nj': NJ, 'lon0': -180.0, 'dLon': 1.0, 'lat0': 90.0, 'dLat': -1.0,
                  'note': 'row 0 = 90N, col 0 = 180W; 1.0° ≈ 111km at equator'},
+        'windGrid': {'ni': WNI, 'nj': WNJ, 'dLon': float(WIND_DIV), 'dLat': float(WIND_DIV),
+                     'note': 'separate low-res file; wind is smooth so 4° suffices '
+                             '(cuts per-user transfer by 43%)'},
         'encoding': {
             'A': 'CWAT column cloud water kg/m², log: cwat = 10^(A/255*%.4f + %.4f); 0 below %.3f, 255 at %.1f'
                  % (_LOG_SPAN, _LOG_LO, CWAT_LO, CWAT_HI),
             'B': 'DERIVED cloud top height, metres: B/255*16000 '
                  '(topmost of LCDC/MCDC/HCDC at %.0f/%.0f/%.0f m; not a GFS output field)'
                  % (TOP_L, TOP_M, TOP_H),
-            'R': 'UGRD %s hPa, m/s: R/255*128-64 (0.5 m/s quantized)' % WIND_LEVEL,
-            'G': 'VGRD %s hPa, m/s: G/255*128-64 (0.5 m/s quantized)' % WIND_LEVEL,
+            'precip.R': 'PRATE mm/h, log: 0 below %.2f, 255 at %.0f' % (PRATE_LO, PRATE_HI),
+            'precip.G': 'type: 0 rain, 128 freezing/sleet, 255 snow (GFS CRAIN/CFRZR/CICEP/CSNOW)',
+            'precip.B': 'DERIVED thunder likelihood = convective share × min(1, CAPE/1500); '
+                        'not a GFS output field',
+            'wind.R': 'UGRD %s hPa, m/s: R/255*128-64 (0.5 m/s quantized, 4° mean)' % WIND_LEVEL,
+            'wind.G': 'VGRD %s hPa, m/s: G/255*128-64 (0.5 m/s quantized, 4° mean)' % WIND_LEVEL,
         },
         'stepHours': STEP_H,
         'steps': manifest_steps,

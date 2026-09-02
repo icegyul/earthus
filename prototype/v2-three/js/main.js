@@ -1065,14 +1065,109 @@ void main() {
 }
 `;
 
+
+// ---------- 강수 셸 (구름 아래·지표 위) ----------
+// 자료: GFS 강수 프레임 p{step}.png — R=강도(log mm/h) · G=종류 · B=뇌우(DERIVED)
+// 종류는 예보 모델의 판정이고 뇌우는 우리가 유도한 값이다. 카드에 그렇게 적는다.
+const PRECIP_VERT = /* glsl */ `
+varying vec3 vUnit;
+void main() {
+  vUnit = normalize(position);
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}`;
+
+const PRECIP_FRAG = /* glsl */ `
+precision mediump float;
+uniform sampler2D uPrecip;
+uniform sampler2D uPrecipB;
+uniform float uBlend;
+uniform float uTime;
+uniform float uOpacity;
+uniform vec3 uSunDir;
+uniform float uAltKm;
+varying vec3 vUnit;
+const float PI = 3.141592653589793;
+
+float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
+
+void main() {
+  vec3 n = normalize(vUnit);
+  float lat = asin(clamp(n.y, -1.0, 1.0));
+  float lon = atan(n.x, n.z);
+  vec2 uv = vec2(lon / (2.0 * PI) + 0.5, lat / PI + 0.5);
+  vec4 p = mix(texture2D(uPrecip, uv), texture2D(uPrecipB, uv), uBlend);
+  float rate = p.r;                       // 0~1 (log mm/h)
+  if (rate < 0.02) discard;               // 강수 없는 곳은 아무것도 그리지 않는다
+  float kind = p.g;                       // 0 비 · 0.5 어는비 · 1 눈
+  float storm = p.b;                      // 뇌우 가능성 (DERIVED)
+
+  // 12프레임 주기. 매끈한 시간 대신 12칸으로 끊어 '떨어지는' 리듬을 만든다.
+  float step12 = floor(fract(uTime * 0.9) * 12.0) / 12.0;
+
+  // 화면 축척에 맞춘 무늬 밀도 — 전역에서 점이 되지 않고 근접에서 성기지 않게
+  float dens = mix(220.0, 46.0, clamp((uAltKm - 200.0) / 9000.0, 0.0, 1.0));
+  vec2 cell = vec2(uv.x * dens * 2.0, uv.y * dens);
+
+  float snowy = smoothstep(0.6, 0.95, kind);
+  float mixy  = smoothstep(0.25, 0.6, kind) * (1.0 - snowy);
+
+  // 비: 아래로 흐르는 짧은 빗금. 눈: 천천히 흔들리며 내리는 점.
+  vec2 fall = vec2(0.0, step12 * (snowy > 0.5 ? 1.0 : 3.0));
+  vec2 q = cell + fall;
+  vec2 gi = floor(q);
+  vec2 gf = fract(q);
+  float r1 = hash(gi);
+  float r2 = hash(gi + 7.3);
+  // 알갱이가 매 칸마다 있으면 커튼이 된다 — 강도에 따라 개수를 늘린다
+  float present = step(1.0 - clamp(rate * 1.25, 0.05, 0.95), r1);
+
+  float shape;
+  if (snowy > 0.5) {
+    vec2 c = vec2(0.5 + 0.28 * sin((step12 * 12.0 + r2 * 6.0)), 0.5);
+    shape = 1.0 - smoothstep(0.10, 0.26, length(gf - c));
+  } else {
+    // 빗금: 살짝 기울어진 짧은 선
+    vec2 d = gf - vec2(0.5 + 0.15 * (r2 - 0.5), 0.5);
+    d.x += d.y * 0.35;
+    shape = (1.0 - smoothstep(0.045, 0.10, abs(d.x))) * (1.0 - smoothstep(0.22, 0.42, abs(d.y)));
+  }
+  float grain = shape * present;
+
+  // 색: 비=푸른빛, 눈=흰빛, 어는비/진눈깨비=연보라
+  vec3 col = mix(vec3(0.58, 0.78, 1.0), vec3(1.0), snowy);
+  col = mix(col, vec3(0.80, 0.76, 1.0), mixy);
+
+  float a = grain * clamp(rate * 1.4, 0.0, 1.0) * 0.85;
+
+  // 뇌우: 12칸 중 한 칸에서만 번쩍인다. 셀마다 위상을 달리해 동시에 번쩍이지 않게.
+  if (storm > 0.12) {
+    vec2 sc = floor(uv * vec2(90.0, 45.0));
+    float phase = hash(sc);
+    float slot = floor(fract(uTime * 0.55 + phase) * 12.0);
+    float flash = step(11.0, slot) * storm;
+    if (flash > 0.0) {
+      float core = 1.0 - smoothstep(0.0, 0.9, length(fract(uv * vec2(90.0, 45.0)) - 0.5));
+      col = mix(col, vec3(1.0, 0.95, 0.62), 0.9);
+      a = max(a, core * flash * 0.75);
+    }
+  }
+
+  // 밤에도 보이게 바닥값을 둔다. 낮/밤 대비는 남긴다.
+  float day = smoothstep(-0.15, 0.20, dot(n, uSunDir));
+  gl_FragColor = vec4(col * (0.55 + 0.45 * day), a * uOpacity);
+  #include <colorspace_fragment>
+}`;
+
 const CLOUD_FRAG = CLOUD_HEIGHT_GLSL + /* glsl */ `
 uniform sampler2D uTexB;
 uniform float uBlend; // 예보 프레임 보간 (0=uTex, 1=uTexB)
 uniform float uOpacity;
 uniform float uReliefK;
 uniform vec3 uSunDir;
-uniform float uGfsFrames;   // 1이면 uTex/uTexB 가 GFS 프레임(A=구름량, RG=바람)
+uniform float uGfsFrames;   // 1이면 uTex/uTexB 가 GFS 구름 프레임(A=두께, B=운정)
 uniform float uAdvectSec;   // 프레임 간격(초). 이류 거리 = 바람 × 시간
+uniform sampler2D uWind;    // 바람은 별도 저해상도(4°) 텍스처 — 매끄러운 장이라 1°가 필요 없다
+uniform sampler2D uWindB;
 varying vec3 vUnit;
 const float PI = 3.141592653589793;
 
@@ -1096,10 +1191,9 @@ void main() {
     // 반라그랑주 이류: 앞 프레임은 바람을 따라 f·dt 만큼 앞으로, 뒤 프레임은 (1-f)·dt 만큼 뒤로 끌어와 섞는다.
     // 그냥 섞으면 구름이 '이동'하지 않고 '녹았다 생긴다'. 사이 값은 보간이며 모델 출력이 아니다.
     float f = uBlend;
-    vec2 dA = windToUv(gfsWind(t), f * uAdvectSec, lat);
+    vec2 dA = windToUv(gfsWind(texture2D(uWind, uv)), f * uAdvectSec, lat);
     vec4 ta = texture2D(uTex, uv - dA);
-    vec4 tb0 = texture2D(uTexB, uv);
-    vec2 dB = windToUv(gfsWind(tb0), (1.0 - f) * uAdvectSec, lat);
+    vec2 dB = windToUv(gfsWind(texture2D(uWindB, uv)), (1.0 - f) * uAdvectSec, lat);
     vec4 tb = texture2D(uTexB, uv + dB);
     // A = 연직 구름수(CWAT)를 log 로 누른 두께. 0.005 kg/m² 이하 0, 2 kg/m² 이상 1.
     // 구름 '비율'로 그리면 지구 절반이 90% 라 베일이 된다(실측) — 두께가 위성과 같은 문법이다.
@@ -1173,9 +1267,34 @@ class CloudManager {
       uGfsFrames: { value: 0 },
       uGfsTop: { value: 0 },
       uAdvectSec: { value: 10800 },
+      uWind: { value: null },
+      uWindB: { value: null },
     };
     this.reliefOn = false;
     this.cthLoaded = false;
+    // 강수 셸: 구름보다 낮고 지표보다 높다. 구름에서 '내리는' 것으로 읽혀야 한다.
+    this.precipUniforms = {
+      uPrecip: { value: null },
+      uPrecipB: { value: null },
+      uBlend: { value: 0 },
+      uTime: { value: 0 },
+      uOpacity: { value: 0.9 },
+      uSunDir: { value: new THREE.Vector3(0, 0, 1) },
+      uAltKm: { value: 1000 },
+    };
+    this.precipMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(1.0016, 192, 96),
+      new THREE.ShaderMaterial({
+        vertexShader: PRECIP_VERT,
+        fragmentShader: PRECIP_FRAG,
+        uniforms: this.precipUniforms,
+        transparent: true,
+        depthWrite: false,
+      }),
+    );
+    this.precipMesh.renderOrder = 3;
+    this.precipMesh.visible = false;
+    scene.add(this.precipMesh);
     this.mesh = new THREE.Mesh(
       new THREE.SphereGeometry(1, 384, 192),
       new THREE.ShaderMaterial({
@@ -1643,7 +1762,10 @@ class CloudManager {
     }
     const frames = mf.steps.map((st) => ({
       h: st.h, t: Date.parse(st.valid), url: `${S3B}/clouds/gfs-fc/${st.file}`,
-    })).filter((f) => Number.isFinite(f.t)).sort((a, b) => a.t - b.t);
+      wind: st.wind ? `${S3B}/clouds/gfs-fc/${st.wind}` : null,
+      precip: st.precip ? `${S3B}/clouds/gfs-fc/${st.precip}` : null,
+    })).filter((f) => Number.isFinite(f.t) && f.wind).sort((a, b) => a.t - b.t);
+    if (!frames.length) return this.loadGfsPoints();
     const stepMs = (mf.stepHours || 3) * 3.6e6;
     this.gfs = {
       frames, stepMs, run: mf.run, texCache: new Map(), mode: 'frames',
@@ -1652,28 +1774,12 @@ class CloudManager {
     this.uniforms.uAdvectSec.value = stepMs / 1000;
     this.lastOffsetMs = 0;
     // 현재 시각에 해당하는 프레임 둘을 먼저 받는다. 나머지는 스크럽할 때 받는다.
+    // 지금 시각에 필요한 두 장만 받는다. 나머지는 사용자가 시간을 만질 때(prefetchFrames).
     const i0 = this.frameIndexAt(0).i0;
-    const texA = await this.frameTexAt(i0);
+    const pairA = await this.frameTexAt(i0);
     this.frameTexAt(Math.min(i0 + 1, frames.length - 1));
-    // 나머지를 배경에서 미리 받는다. 실측: 장당 180ms 네트워크가 스크럽 끊김의 유일한 원인이었고,
-    // 41장 전부라야 7.3MB(GPU 10MB)다. 받아두면 스크럽·재생이 대기 0ms 가 된다.
-    // 현재 시각에서 가까운 것부터 — 사용자가 먼저 볼 곳이다.
-    setTimeout(() => {
-      if (this.gfs !== this.gfs || this.mode !== 'gfs') return;
-      const order = frames.map((_, i) => i).sort((a, b) => Math.abs(a - i0) - Math.abs(b - i0));
-      let k = 0;
-      const pump = () => {
-        if (this.mode !== 'gfs' || !this.gfs || this.gfs.frames !== frames) return;
-        let started = 0;
-        while (k < order.length && started < 4) {          // 한 번에 4장씩
-          const idx = order[k]; k += 1;
-          if (!this.gfs.texCache.has(idx)) { this.frameTexAt(idx); started += 1; }
-        }
-        if (k < order.length) setTimeout(pump, 400);
-        else console.info('[earthus-cloud] 예보 프레임 %d장 프리페치 완료', frames.length);
-      };
-      pump();
-    }, 1200);
+    const texA = pairA && pairA.cloud;
+    if (!texA) return this.loadGfsPoints();
     const runKo = mf.run ? mf.run.replace('T', ' ').slice(0, 16) + 'Z' : '';
     return {
       tex: texA, lum: 0, frames: true, relief: true,
@@ -1690,28 +1796,62 @@ class CloudManager {
   }
 
   // 프레임 텍스처를 받는다(캐시). 아직 안 왔으면 Promise. 온 뒤에 현재 오프셋을 다시 적용한다.
+  // 확대해서 쓰므로 밉맵은 업로드 비용만 낸다(메모리도 34%↑). 끄고 선형 확대만 쓴다.
+  static frameTex(tex) {
+    CloudManager.texDefaults(tex);
+    tex.generateMipmaps = false;
+    tex.minFilter = THREE.LinearFilter;
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  // 한 스텝 = 구름 PNG(1°) + 바람 PNG(4°). 둘 다 와야 그 시각을 그릴 수 있다.
   frameTexAt(i) {
     const g = this.gfs;
     const c = g.texCache.get(i);
-    if (c && c.isTexture) return Promise.resolve(c);
+    if (c && c.cloud) return Promise.resolve(c);
     if (c && c.then) return c;
-    const pr = new Promise((resolve) => {
+    const one = (url) => new Promise((res) => {
       const loader = new THREE.TextureLoader();
       loader.setCrossOrigin('anonymous');
-      loader.load(g.frames[i].url, (tex) => {
-        // 360×181 을 지구본에 확대해서 쓴다 — 축소가 없으므로 밉맵은 업로드 비용만 낸다.
-        CloudManager.texDefaults(tex);
-        tex.generateMipmaps = false;
-        tex.minFilter = THREE.LinearFilter;
-        tex.needsUpdate = true;
-        g.texCache.set(i, tex);
-        resolve(tex);
-        // 이 프레임을 기다리던 화면이 있으면 지금 반영한다
-        if (this.mode === 'gfs' && this.gfs === g) this.setForecastOffset(this.lastOffsetMs || 0);
-      }, undefined, () => { g.texCache.delete(i); resolve(null); });
+      loader.load(url, (tex) => res(CloudManager.frameTex(tex)), undefined, () => res(null));
+    });
+    const pr = Promise.all([
+      one(g.frames[i].url), one(g.frames[i].wind), one(g.frames[i].precip),
+    ]).then(([cloud, wind, precip]) => {
+      if (!cloud || !wind) { g.texCache.delete(i); return null; }
+      const pair = { cloud, wind, precip };
+      g.texCache.set(i, pair);
+      // 이 프레임을 기다리던 화면이 있으면 지금 반영한다
+      if (this.mode === 'gfs' && this.gfs === g) this.setForecastOffset(this.lastOffsetMs || 0);
+      return pair;
     });
     g.texCache.set(i, pr);
     return pr;
+  }
+
+  // 5일치를 배경에서 받아둔다. 실측: 장당 네트워크 대기가 스크럽 끊김의 유일한 원인이었다.
+  // 다만 **시간을 실제로 만진 사람에게만** 한다 — 안 만지는 사람에게 5일치를 내려보내는 건
+  // 그 사람에게도, 사용자 수에 비례하는 우리 CDN 요금에도 낭비다.
+  prefetchFrames() {
+    const g = this.gfs;
+    if (!g || g.mode !== 'frames' || g.prefetching) return;
+    g.prefetching = true;
+    const frames = g.frames;
+    const i0 = this.frameIndexAt(this.lastOffsetMs || 0).i0;
+    const order = frames.map((_, i) => i).sort((a, b) => Math.abs(a - i0) - Math.abs(b - i0));
+    let k = 0;
+    const pump = () => {
+      if (this.mode !== 'gfs' || !this.gfs || this.gfs.frames !== frames) return;
+      let started = 0;
+      while (k < order.length && started < 4) {          // 한 번에 4장씩
+        const idx = order[k]; k += 1;
+        if (!g.texCache.has(idx)) { this.frameTexAt(idx); started += 1; }
+      }
+      if (k < order.length) setTimeout(pump, 400);
+      else console.info('[earthus-cloud] 예보 프레임 %d장 준비 완료', frames.length);
+    };
+    pump();
   }
 
   async loadGfsPoints() {
@@ -1765,18 +1905,28 @@ class CloudManager {
       const i1 = Math.min(i0 + 1, g.frames.length - 1);
       const a = g.texCache.get(i0);
       const b = g.texCache.get(i1);
-      if (!a || !a.isTexture) this.frameTexAt(i0);
-      if (!b || !b.isTexture) this.frameTexAt(i1);
+      const okA = a && a.cloud;
+      const okB = b && b.cloud;
+      if (!okA) this.frameTexAt(i0);
+      if (!okB) this.frameTexAt(i1);
       if (i1 + 1 < g.frames.length) this.frameTexAt(i1 + 1);   // 다음 것도 미리
-      if (a && a.isTexture) {
-        this.uniforms.uTex.value = a;
-        this.earthUniforms.uCloudTex.value = a;
-        this.uniforms.uTexB.value = (b && b.isTexture) ? b : a;
-        this.uniforms.uBlend.value = (b && b.isTexture) ? f : 0;
+      if (okA) {
+        this.uniforms.uTex.value = a.cloud;
+        this.uniforms.uWind.value = a.wind;
+        this.earthUniforms.uCloudTex.value = a.cloud;
+        this.uniforms.uTexB.value = okB ? b.cloud : a.cloud;
+        this.uniforms.uWindB.value = okB ? b.wind : a.wind;
+        this.uniforms.uBlend.value = okB ? f : 0;
+        if (a.precip) {
+          this.precipUniforms.uPrecip.value = a.precip;
+          this.precipUniforms.uPrecipB.value = (okB && b.precip) ? b.precip : a.precip;
+          this.precipUniforms.uBlend.value = (okB && b.precip) ? f : 0;
+          this.precipMesh.visible = true;
+        }
       }
       const valid = new Date(g.frames[0].t + hF * g.stepMs);
       const offH = Math.round((valid.getTime() - Date.now()) / 3.6e6);
-      const pending = (a && a.isTexture && b && b.isTexture) ? '' : ' · <span style="opacity:.7">프레임 받는 중…</span>';
+      const pending = (okA && okB) ? '' : ' · <span style="opacity:.7">프레임 받는 중…</span>';
       this.noteEl.innerHTML = `<span class="badge model">MODEL</span> GFS 1.0° 예보 T${offH >= 0 ? '+' : ''}${offH}h · 유효 ${valid.getMonth() + 1}/${valid.getDate()} ${String(valid.getHours()).padStart(2, '0')}시`
         + `<br/><span style="opacity:.75">구름 <b>두께</b>(CWAT)로 그리고 <b>운정 높이</b>만큼 세움(DERIVED: 저·중·고층 비율에서 유도) · 프레임 3시간(NOAA GFS 1.0°, 적도 111km) · 사이는 700hPa 바람으로 이류한 <b>보간</b>이며 모델 출력이 아닙니다</span>${pending}`;
       return;
@@ -1802,6 +1952,7 @@ class CloudManager {
     this.mode = mode;
     if (mode === 'off') {
       this.mesh.visible = false;
+      this.precipMesh.visible = false;
       this.earthUniforms.uCloudShadow.value = 0;
       this.noteEl.textContent = '구름 끔';
       return true;
@@ -1845,6 +1996,8 @@ class CloudManager {
     this.earthUniforms.uCloudGfs.value = entry.frames ? 1 : 0;
     this.uniforms.uGfsFrames.value = entry.frames ? 1 : 0;
     this.uniforms.uGfsTop.value = entry.frames ? 1 : 0;
+    // 관측 구름(GMGSI/천리안)에는 강수 종류 자료가 없다 — 없는 것을 그리지 않는다.
+    if (!entry.frames) this.precipMesh.visible = false;
     this.earthUniforms.uCloudShadow.value = 1;
     this.mesh.visible = true;
     this.noteEl.textContent = entry.label;
@@ -3566,6 +3719,9 @@ async function main() {
     labelData: () => labelCandidates,
     onTimeOffset: (ms) => {
       timeOffsetMs = ms;
+      // 사용자가 시간을 실제로 만졌다 — 이제부터 5일치를 배경에서 받아둔다.
+      // 만지지 않는 사람에게는 한 장도 더 내려보내지 않는다.
+      if (ms !== 0) clouds.prefetchFrames();
       clouds.setForecastOffset(ms);
       liveLayers.setTimeOffset(ms);
       syncCloudToTime(ms);
@@ -4528,6 +4684,12 @@ async function main() {
       shell.renderIntel();
     });
     clouds.uniforms.uSunDir.value.copy(sun);
+    // 강수 셸: 시간(애니메이션)·태양(밤낮)·고도(무늬 밀도)를 매 프레임 넘긴다
+    if (clouds.precipMesh.visible) {
+      clouds.precipUniforms.uTime.value = now * 0.001;
+      clouds.precipUniforms.uSunDir.value.copy(sun);
+      clouds.precipUniforms.uAltKm.value = altKm;
+    }
     cloudVol.update(camera, sun, altKm);
     if (clouds.mesh.visible) {
       if (clouds.reliefOn) {

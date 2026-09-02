@@ -3,6 +3,8 @@ from hashlib import sha256
 from aetherus_domain.models import SignalRecord
 
 class EventCorrelator:
+    #: E41 — see the note on SignalPromotionGate for why the id moved here.
+    id = "E41"
     def canonical_key(self, signal: SignalRecord)->str:
         objects=','.join(sorted(signal.object_ids)) or '-'
         mission=signal.mission_id or '-'

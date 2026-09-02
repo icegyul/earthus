@@ -8,7 +8,7 @@ from uuid import UUID
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from aetherus_domain import CanonicalTimeContext, EvidenceClass, Scenario, StateKind, StateVector, ValidationState
+from aetherus_domain import CanonicalTimeContext, EvidenceClass, Scenario, SourceGrade, StateKind, StateVector, ValidationState
 from aetherus_foundation import CoordinateReferenceFrameEngine, UniversalSpaceTimeEngine
 
 
@@ -366,6 +366,61 @@ def register_registry_routes(
             unavailable_data=[],
         )
 
+    @app.get("/v1/space/weather/drag-context")
+    async def space_weather_drag_context():
+        """E10 on the product surface, refusing to derive what it cannot.
+
+        The Kp and X-ray routes return the provider payload directly, so E10
+        never ran and its central statement never reached a client: no named
+        atmospheric density model is wired to this service, therefore no density
+        factor is produced. A response that simply omits the factor reads as if
+        it merely happened to be missing today.
+        """
+        if space_weather_client is None:
+            return envelope(None, data_status="UNAVAILABLE", warnings=["No space-weather provider is configured in this deployment."])
+        payload = await _live(lambda: space_weather_client.fetch_planetary_k_index(max_samples=8), unavailable_data=None)
+        data = payload.get("data") or {}
+        samples = data.get("samples") or []
+        if not samples:
+            return envelope(None, data_status=payload.get("data_status", "UNAVAILABLE"),
+                            warnings=payload.get("warnings") or ["No Kp sample was returned by the provider."])
+        latest = samples[-1]
+        observed_raw = latest.get("time_tag")
+        if not observed_raw:
+            return envelope(None, data_status="INSUFFICIENT_DATA",
+                            warnings=["The provider sample carries no time tag; freshness cannot be judged."])
+        observed = datetime.fromisoformat(str(observed_raw).replace("Z", "+00:00"))
+        # Published Kp only. estimated_kp is the provider's own estimate and is
+        # kept distinct from the measured index rather than merged into it.
+        measurements = {}
+        forecasts = {}
+        if isinstance(latest.get("kp_index"), (int, float)):
+            measurements["kp"] = float(latest["kp_index"])
+        elif isinstance(latest.get("estimated_kp"), (int, float)):
+            forecasts["kp"] = float(latest["estimated_kp"])
+        engine = require_product().space_weather
+        state = engine.normalize(
+            observed_at=observed,
+            received_at=datetime.now(timezone.utc),
+            measurements=measurements,
+            forecasts=forecasts,
+            source_id=str(data.get("source_id") or "noaa_swpc"),
+            source_grade=SourceGrade.OFFICIAL_PUBLIC,
+        )
+        drag = getattr(state, "drag_context", None) or {}
+        return envelope(
+            {
+                "observed_at": observed.isoformat(),
+                "indices": drag.get("indices", {}),
+                "density_factor": drag.get("density_factor"),
+                "density_factor_status": drag.get("density_factor_status"),
+                "density_factor_reason": drag.get("density_factor_reason"),
+                "normalized_by": engine.id,
+            },
+            data_status=getattr(state, "data_status", "OK"),
+            warnings=["Kp is a dimensionless activity index and is not converted into any other quantity."],
+        )
+
     # E11 — NASA/JPL SBDB close-approach data (public, no credential).
     @app.get("/v1/space/neo")
     async def neo_list(limit: int = 50, dist_max_au: float = 0.05):
@@ -385,10 +440,41 @@ def register_registry_routes(
             unavailable_data=None,
         )
         data = payload.get("data") or {}
-        matches = [
+        raw_matches = [
             row for row in (data.get("approaches") or [])
             if str(row.get("designation", "")).strip().lower() == object_id.strip().lower()
         ]
+        # E11 normalises each row instead of the route passing provider JSON
+        # through untouched. The engine is what maps source grade onto a
+        # validation state and refuses to promote an unsourced impact claim, so
+        # skipping it dropped exactly the labelling that makes the row honest.
+        engine = require_product().small_bodies
+        matches = []
+        for row in raw_matches:
+            state = engine.normalize(
+                {
+                    "object_id": row.get("designation"),
+                    "close_approach_utc": row.get("close_approach_utc"),
+                    "nominal_distance_km": row.get("nominal_distance_km"),
+                    "distance_uncertainty_km": row.get("distance_uncertainty_km"),
+                    "impact_claim": row.get("impact_claim"),
+                    "impact_claim_source": row.get("impact_claim_source"),
+                },
+                source_id=str(data.get("source_id") or "jpl_sbdb"),
+                source_grade=SourceGrade.OFFICIAL_PUBLIC,
+            )
+            matches.append({
+                **row,
+                "normalized": {
+                    "object_id": state.object_id,
+                    "close_approach_utc": state.close_approach_utc.isoformat() if state.close_approach_utc else None,
+                    "nominal_distance_km": state.nominal_distance_km,
+                    "distance_uncertainty_km": state.distance_uncertainty_km,
+                    "impact_claim": state.impact_claim,
+                    "validation_state": state.validation_state.value,
+                    "normalized_by": engine.id,
+                },
+            })
         if not matches:
             return envelope(
                 {"object_id": object_id, "approaches": []},
@@ -745,6 +831,16 @@ def register_registry_routes(
         if result is None: return envelope(None,data_status="UNAVAILABLE",warnings=["Scenario has not been run."])
         attrs=result.get("result",{}).get("attributions",[])
         return envelope(attrs,data_status="RESEARCH_ONLY",warnings=["ATTRIBUTION_RESULT / COUNTERFACTUAL only; not observed benefit."])
+
+    @app.get("/v1/scenarios/{scenario_id}/affected")
+    def scenario_affected_v1(scenario_id: str):
+        """E32 on the product surface.
+
+        The affected subgraph is part of the directive's P8 gate (full-vs-selective
+        equivalence), so it belongs where a client can see it and not only on the
+        internal surface.
+        """
+        return scenario_affected(scenario_id)
 
     @app.get("/internal/scenarios/{scenario_id}/affected")
     def scenario_affected(scenario_id: str):

@@ -8,6 +8,11 @@ class SignalGatePolicy:
     allow_without_significance_if_event_hint: bool = True
 
 class SignalPromotionGate:
+    #: E40. The identifier lives on the implementation that actually runs. The
+    #: id-bearing copy in advanced.py was constructed in the product runtime and
+    #: called by nobody, so the engine id pointed at dead code while this class
+    #: did the work unlabelled.
+    id = "E40"
     """Prevents periodic/raw/unprovenanced updates from becoming Intelligence Events."""
     def __init__(self, policy: SignalGatePolicy|None=None):
         self.policy=policy or SignalGatePolicy()

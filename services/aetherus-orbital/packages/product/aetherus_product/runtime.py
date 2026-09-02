@@ -38,7 +38,7 @@ from aetherus_llm import (
     LLMGateway, ModelRouter, ToolOrchestrator, ContextComposer, ExplanationAgent,
     ClaimCitationValidator, PersonalWorkspaceContext, BriefingReportGenerator,
 )
-from aetherus_intelligence import (IntelligenceTaskOrchestrator, EvidenceFusionCrossValidationIntelligence, SignalClassificationIntelligence, EventIntelligenceEngine, RevisionIntelligenceEngine, ConfidenceUncertaintyIntelligence, ImportanceAttributionDecisionIntelligence)
+from aetherus_intelligence import (IntelligenceTaskOrchestrator, ImportanceAttributionDecisionIntelligence)
 
 
 @dataclass
@@ -136,11 +136,10 @@ class AetherusProductRuntime:
         self.explainer=ExplanationAgent(self.claim_validator)
         self.briefings=BriefingReportGenerator()
         self.intelligence_tasks=IntelligenceTaskOrchestrator()
-        self.evidence_fusion=EvidenceFusionCrossValidationIntelligence()
-        self.signal_classifier=SignalClassificationIntelligence()
-        self.event_intelligence=EventIntelligenceEngine()
-        self.revision_intelligence=RevisionIntelligenceEngine()
-        self.confidence_intelligence=ConfidenceUncertaintyIntelligence()
+        # E39-E43 are not constructed here. The live path builds its own
+        # (signal_gate, correlation, revision, confidence, packet) and now
+        # carries the engine ids; a second instance here was used by nobody
+        # and could only drift from the one that runs.
         self.importance_decision=ImportanceAttributionDecisionIntelligence()
         self.tool_orchestrator.register("search", self.search.search, scientific=False)
         self.tool_orchestrator.register("scene", self.scene_snapshot, scientific=False)

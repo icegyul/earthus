@@ -42,6 +42,8 @@ _FORBIDDEN_REASONS = {'policy factor', 'policy', 'default', 'n/a', '-'}
 
 
 class ConfidenceEngine:
+    #: E43 (confidence half; UncertaintyEngine carries the other half).
+    id = "E43"
     """Weight policy and missing-input guard in front of the E43 confidence engine.
 
     ``assess`` scores only the factors whose value was actually derived by the
@@ -109,6 +111,9 @@ class ConfidenceEngine:
 
 
 class UncertaintyEngine:
+    #: E43 (uncertainty half; ConfidenceEngine carries the other half).
+    id = "E43"
+
     def unavailable(self, target_type: str, target_id: str, reason: str) -> UncertaintyAssessment:
         return UncertaintyAssessment(
             target_type=target_type,

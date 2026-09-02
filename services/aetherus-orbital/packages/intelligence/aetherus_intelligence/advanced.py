@@ -1,3 +1,19 @@
+"""Reference implementations of E38-E44, SUPERSEDED BY THE LIVE PATH.
+
+Only ``EvidenceFusionCrossValidationIntelligence`` (E39) is still used:
+``packet.py`` constructs it and calls ``fuse()``. The other classes here
+were constructed in ``AetherusProductRuntime.__init__`` and called by
+nobody, while the code that actually ran (``signal_gate``,
+``correlation``, ``revision``, ``confidence``, ``packet``) carried no
+engine id. The identifiers now live on those, and the unused instances
+have been removed from the runtime.
+
+These are kept as the readable reference for each engine's contract, and
+for E44's importance/decision which the live path does not implement.
+Do not wire the rest back in: a second live path can drift from the first
+and then two answers exist for one question.
+"""
+
 from __future__ import annotations
 
 from collections import defaultdict, deque

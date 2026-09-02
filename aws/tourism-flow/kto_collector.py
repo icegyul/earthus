@@ -366,7 +366,10 @@ def _run_visitor_window(
     화면에서 근거가 사라지고, 사라진 이유도 남지 않는다.
     """
     env = environ or {}
-    page_size = int(env.get("KTO_DEFAULT_PAGE_SIZE") or 100)
+    # 결과를 한 스냅샷으로 합치므로 페이지를 잘게 나눌 이유가 없다.
+    # 페이지 간 대기(KTO_PAGE_INTERVAL_MS, 기본 1초)가 지역/날짜 수만큼
+    # 곱해지면 Lambda 실행 한도를 넘긴다.
+    page_size = int(env.get("KTO_AGGREGATE_PAGE_SIZE") or 1000)
     pacing = max(0.0, min(10.0, float(env.get("KTO_SWEEP_PACING_SECONDS") or 0.2)))
     pause = time.sleep if sleep is None else sleep
     items = []
@@ -487,7 +490,10 @@ def _run_region_sweep(payload, s3_client, bucket, fetched_at, call, environ, _le
         base_ym = None
 
     env = environ or {}
-    page_size = int(env.get("KTO_DEFAULT_PAGE_SIZE") or 100)
+    # 결과를 한 스냅샷으로 합치므로 페이지를 잘게 나눌 이유가 없다.
+    # 페이지 간 대기(KTO_PAGE_INTERVAL_MS, 기본 1초)가 지역/날짜 수만큼
+    # 곱해지면 Lambda 실행 한도를 넘긴다.
+    page_size = int(env.get("KTO_AGGREGATE_PAGE_SIZE") or 1000)
     pacing = max(0.0, min(10.0, float(env.get("KTO_SWEEP_PACING_SECONDS") or 0.2)))
     pause = time.sleep if sleep is None else sleep
     items = []

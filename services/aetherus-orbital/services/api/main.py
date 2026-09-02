@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from aetherus_domain import Scenario
+from aetherus_llm import AudienceLevel, ReportType
 from aetherus_foundation import LocalFoundationRepository, SpaceKnowledgeGraphArchiveEngine, UniversalSpaceTimeEngine
 from aetherus_product import AetherusProductRuntime
 from aetherus_providers import CelesTrakGPProvider, JPLHorizonsProvider, NOAASWPCProvider, LaunchLibraryProvider
@@ -251,14 +252,36 @@ def create_app(
         return envelope(result,data_status="RESEARCH_ONLY",warnings=["Simulation/counterfactual output only. screening_score is not Pc and cannot be promoted to observed fact."])
 
     @app.get("/v1/llm/explain")
-    def llm_explain(locale:str="en"):
-        result=require_product().llm_explanation(locale=locale)
-        return envelope(result,data_status=result["data_status"],provenance={"context_source":"INTELLIGENCE_PACKET_ONLY"},warnings=["Local deterministic LLM fallback; no scientific calculation is delegated to the LLM layer."])
+    def llm_explain(locale:str="en",audience:str="ENTHUSIAST",plan:str|None=None):
+        """L05 - the same packet at general/enthusiast/researcher/operator level.
+
+        The level changes which of the packet's statements are shown. It never
+        rewrites a claim into a simpler one, and the validation state and the
+        limitations appear at every level.
+        """
+        try: result=require_product().llm_explanation(locale=locale,audience=audience,plan=plan)
+        except ValueError as exc: raise HTTPException(422,str(exc)) from exc
+        warnings=["Local deterministic LLM fallback; no scientific calculation is delegated to the LLM layer."]
+        routing=result.get("routing") or {}
+        if routing.get("downgraded"):
+            warnings.append(f"Routed to {routing['requested_tier']}, served by {routing['served_tier']}: {routing.get('reason')}")
+        return envelope(result,data_status=result["data_status"],provenance={"context_source":"INTELLIGENCE_PACKET_ONLY","served_tier":routing.get("served_tier")},warnings=warnings)
+
+    @app.get("/v1/llm/audiences")
+    def llm_audiences():
+        """The audience levels this deployment can serve, named by the directive."""
+        return envelope([a.value for a in AudienceLevel])
 
     @app.get("/v1/briefings/current")
-    def briefing_current(locale:str="en"):
-        result=require_product().current_briefing(locale=locale)
-        return envelope(result,data_status=result["data_status"],provenance={"context_source":"INTELLIGENCE_PACKET_ONLY"})
+    def briefing_current(locale:str="en",report_type:str="DAILY_SPACE_BRIEF"):
+        """L08 - Daily Space Brief, Mission Brief, Event Report, Research/Scenario Report."""
+        try: result=require_product().current_briefing(locale=locale,report_type=report_type)
+        except ValueError as exc: raise HTTPException(422,str(exc)) from exc
+        return envelope(result,data_status=result["data_status"],provenance={"context_source":"INTELLIGENCE_PACKET_ONLY"},warnings=list(result.get("warnings") or ()))
+
+    @app.get("/v1/briefings/types")
+    def briefing_types():
+        return envelope([r.value for r in ReportType])
 
     @app.get("/v1/search")
     def search(q:str=Query(min_length=1)): return envelope(require_product().search.search(q))

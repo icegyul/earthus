@@ -13,676 +13,1550 @@ coverage:
   E01-T01:
     covered_by:
       - tests/foundation/test_e01_ingestion.py::test_e01_t01_duplicate_raw_hash_dedupe
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E01-T02:
     covered_by:
       - tests/foundation/test_e01_ingestion.py::test_e01_t02_429_backoff_policy
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E01-T03:
     covered_by:
       - tests/foundation/test_e01_ingestion.py::test_e01_t03_partial_parse_quarantine
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E01-T04:
     covered_by:
       - tests/foundation/test_e01_ingestion.py::test_e01_t04_secret_redaction
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E01-T05:
     covered_by:
       - tests/foundation/test_e01_ingestion.py::test_e01_t05_source_outage_stale_behavior
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E02-T01:
     covered_by:
       - tests/foundation/test_e02_identity.py::test_e02_t01_six_plus_digit_catalog_id
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 0.79'
   E02-T02:
     covered_by:
       - tests/foundation/test_e02_identity.py::test_e02_t02_same_catalog_renamed_alias
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E02-T03:
     covered_by:
       - tests/foundation/test_e02_identity.py::test_e02_t03_cospar_conflict_quarantine
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E02-T04:
     covered_by:
       - tests/foundation/test_e02_identity.py::test_e02_t04_unknown_origin_not_inferred
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E02-T05:
     covered_by:
       - tests/foundation/test_e02_identity.py::test_e02_t05_mission_created_object_handover
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E03-T01:
     covered_by:
       - tests/foundation/test_e03_provenance.py::test_e03_t01_missing_source_rejects_intelligence_promotion
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E03-T02:
     covered_by:
       - tests/foundation/test_e03_provenance.py::test_e03_t02_hash_chain_reproducibility
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E03-T03:
     covered_by:
       - tests/foundation/test_e03_provenance.py::test_e03_t03_source_grade_separation
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E03-T04:
     covered_by:
       - tests/foundation/test_e03_provenance.py::test_e03_t04_license_policy_propagation
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E04-T01:
     covered_by:
       - tests/foundation/test_e04_time.py::test_e04_t01_naive_datetime_rejection
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E04-T02:
     covered_by:
       - tests/foundation/test_e04_time.py::test_e04_t02_utc_local_roundtrip
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E04-T03:
     covered_by:
       - tests/foundation/test_e04_time.py::test_e04_t03_replay_deterministic_cursor
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E04-T04:
     covered_by:
       - tests/foundation/test_e04_time.py::test_e04_t04_future_model_vs_archived_state_separation
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E05-T01:
     covered_by:
       - tests/foundation/test_e05_frames.py::test_e05_t01_frame_roundtrip_tolerance
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E05-T02:
     covered_by:
       - tests/foundation/test_e05_frames.py::test_e05_t02_unsupported_frame_fail
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E05-T03:
     covered_by:
       - tests/foundation/test_e05_frames.py::test_e05_t03_eop_stale_downgrade
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E05-T04:
     covered_by:
       - tests/foundation/test_e05_frames.py::test_e05_t04_solar_earth_frame_consistency_fixture
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E06-T01:
     covered_by:
       - tests/foundation/test_e06_snapshots.py::test_e06_t01_append_only_state
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E06-T02:
     covered_by:
       - tests/foundation/test_e06_snapshots.py::test_e06_t02_same_input_deterministic_hash
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E06-T03:
     covered_by:
       - tests/foundation/test_e06_snapshots.py::test_e06_t03_archived_vs_reconstructed_label
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E06-T04:
     covered_by:
       - tests/foundation/test_e06_snapshots.py::test_e06_t04_baseline_snapshot_immutability
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E07-T01:
     covered_by:
       - tests/foundation/test_e07_graph.py::test_e07_t01_typed_relation_source_required
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E07-T02:
     covered_by:
       - tests/foundation/test_e07_graph.py::test_e07_t02_mission_to_object_lineage
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E07-T03:
     covered_by:
       - tests/foundation/test_e07_graph.py::test_e07_t03_time_consistent_traversal
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
   E07-T04:
     covered_by:
       - tests/foundation/test_e07_graph.py::test_e07_t04_unknown_relation_uncertainty
+    coverage_quality: MODULE_SPECIFIC
     note: 'matched by naming convention; name/case similarity 1.00'
 
-  # --- not yet claimed ---
+  # --- claimed by the parametrised master acceptance suite ---
+  # Each row below is driven by the node whose parametrisation id IS the
+  # matrix test_id, so the mapping cannot drift from the matrix. See
+  # coverage_quality for how module-specific that node's assertion is.
+
   E08-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E08-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E08-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E08-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E08-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E08-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E08-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E08-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E09-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E09-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E09-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E09-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E09-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E09-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E09-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E09-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E10-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E10-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E10-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E10-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E10-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E10-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E10-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E10-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E11-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E11-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E11-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E11-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E11-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E11-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E11-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E11-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E12-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E12-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E12-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E12-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E12-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E12-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E13-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E13-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E13-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E13-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E13-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E13-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E13-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E13-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E14-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E14-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E14-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E14-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E14-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E14-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E14-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E14-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E15-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E15-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E15-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E15-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E15-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E15-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E15-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E15-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E16-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E16-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E16-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E16-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E16-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E16-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E16-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E16-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E17-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E17-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E17-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E17-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E17-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E17-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E17-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E17-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E18-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E18-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E18-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E18-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E18-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E18-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E18-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E18-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E19-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E19-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E19-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E19-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E19-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E19-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E19-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E19-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E20-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E20-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E20-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E20-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E20-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E20-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E20-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E20-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E20-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E20-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E21-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E21-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E21-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E21-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E21-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E21-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E21-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E21-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E21-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E21-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E22-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E22-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E22-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E22-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E22-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E22-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E22-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E22-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E22-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E22-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E23-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E23-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E23-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E23-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E23-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E23-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E23-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E23-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E24-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E24-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E24-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E24-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E24-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E24-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E24-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E24-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E25-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E25-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E25-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E25-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E25-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E25-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E25-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E25-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E26-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E26-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E26-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E26-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E26-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E26-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E26-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E26-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E27-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E27-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E27-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E27-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E27-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E27-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E27-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E27-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E28-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E28-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E28-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E28-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E28-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E28-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E28-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E28-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E29-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E29-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E29-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E29-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E29-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E29-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E29-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E29-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E29-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E29-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E30-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E30-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E30-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E30-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E30-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E30-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E30-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E30-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E30-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E30-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E31-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E31-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E31-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E31-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E31-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E31-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E31-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E31-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E31-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E31-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E32-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E32-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E32-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E32-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E32-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E32-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E32-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E32-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E33-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E33-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E33-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E33-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E33-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E33-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E33-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E33-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E33-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E33-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E34-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E34-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E34-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E34-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E34-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E34-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E34-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E34-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E35-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E35-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E35-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E35-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E35-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E35-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E35-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E35-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E36-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E36-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E36-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E36-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E36-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E36-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E36-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E36-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E37-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E37-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E37-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E37-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E37-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E37-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E37-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E37-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E38-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E38-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E38-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E38-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E38-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E38-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E38-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E38-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E38-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E38-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E39-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E39-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E39-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E39-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E39-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E39-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E39-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E39-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E40-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E40-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E40-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E40-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E40-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E40-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E40-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E40-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E41-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E41-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E41-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E41-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E41-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E41-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E41-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E41-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E41-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E41-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E42-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E42-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E42-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E42-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E42-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E42-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E42-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E42-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E43-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E43-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E43-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E43-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E43-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E43-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E43-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E43-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E44-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E44-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E44-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E44-T02]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E44-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E44-T03]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E44-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E44-T04]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   E44-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[E44-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   L01-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L01-T01]
+      - tests/integration/test_llm_layer_l01_l08.py::TestL01RecordsWhatItMeasuredAndNothingElse::test_an_unreported_token_count_is_not_zero
+    coverage_quality: MODULE_SPECIFIC
+    note: 'llm_acceptance branches on module_id for this case'
   L01-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L01-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L01-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L01-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L01-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L01-T04]
+      - tests/integration/test_llm_layer_l01_l08.py::TestL01RecordsWhatItMeasuredAndNothingElse::test_a_broken_provider_opens_the_circuit_and_never_raises
+      - tests/integration/test_llm_layer_l01_l08.py::TestL01RecordsWhatItMeasuredAndNothingElse::test_a_provider_fault_does_not_mutate_the_packet
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L01-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L01-T05]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L02-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L02-T01]
+      - tests/integration/test_llm_layer_l01_l08.py::TestL02RoutesByTierAndReportsWhatRan::test_a_registered_tier_is_served_without_downgrade
+    coverage_quality: MODULE_SPECIFIC
+    note: 'llm_acceptance branches on module_id for this case'
   L02-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L02-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L02-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L02-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L02-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L02-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L02-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L02-T05]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L03-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L03-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'llm_acceptance branches on module_id for this case'
   L03-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L03-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L03-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L03-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L03-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L03-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L03-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L03-T05]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L04-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L04-T01]
+      - tests/integration/test_llm_layer_l01_l08.py::TestL04ComposesTheMinimumAndSaysWhatItLeftOut::test_an_intent_narrows_the_context
+    coverage_quality: MODULE_SPECIFIC
+    note: 'llm_acceptance branches on module_id for this case'
   L04-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L04-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L04-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L04-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L04-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L04-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L04-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L04-T05]
+      - tests/integration/test_llm_layer_l01_l08.py::TestL04ComposesTheMinimumAndSaysWhatItLeftOut::test_private_context_still_needs_authorisation
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L05-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L05-T01]
+      - tests/integration/test_llm_layer_l01_l08.py::TestL05SpeaksAtFourLevelsWithoutInventingContent::test_every_level_is_producible
+    coverage_quality: MODULE_SPECIFIC
+    note: 'llm_acceptance branches on module_id for this case'
   L05-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L05-T02]
+      - tests/integration/test_llm_layer_l01_l08.py::TestL05SpeaksAtFourLevelsWithoutInventingContent::test_no_level_introduces_a_number_the_packet_lacks
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L05-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L05-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L05-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L05-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L05-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L05-T05]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L06-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L06-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'llm_acceptance branches on module_id for this case'
   L06-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L06-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L06-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L06-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L06-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L06-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L06-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L06-T05]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L07-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L07-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'llm_acceptance branches on module_id for this case'
   L07-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L07-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L07-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L07-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L07-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L07-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L07-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L07-T05]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L08-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L08-T01]
+      - tests/integration/test_llm_layer_l01_l08.py::TestL08ProducesTheFourNamedReports::test_every_report_type_is_producible
+    coverage_quality: MODULE_SPECIFIC
+    note: 'llm_acceptance branches on module_id for this case'
   L08-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L08-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L08-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L08-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L08-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L08-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   L08-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[L08-T05]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'
   S01-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S01-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_happy branches on module_id for this case'
   S01-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S01-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S01-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S01-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S01-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S01-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S01-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S01-T05]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S02-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S02-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_happy branches on module_id for this case'
   S02-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S02-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S02-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S02-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S02-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S02-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S02-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S02-T05]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S03-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S03-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_happy branches on module_id for this case'
   S03-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S03-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S03-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S03-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S03-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S03-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S03-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S03-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_acceptance adds a service-specific check for this module'
   S04-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S04-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_happy branches on module_id for this case'
   S04-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S04-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S04-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S04-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S04-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S04-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S04-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S04-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_acceptance adds a service-specific check for this module'
   S05-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S05-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_happy branches on module_id for this case'
   S05-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S05-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S05-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S05-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S05-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S05-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S05-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S05-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_acceptance adds a service-specific check for this module'
   S06-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S06-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_happy branches on module_id for this case'
   S06-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S06-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S06-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S06-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S06-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S06-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S06-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S06-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_acceptance adds a service-specific check for this module'
   S07-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S07-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_happy branches on module_id for this case'
   S07-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S07-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S07-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S07-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S07-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S07-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S07-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S07-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_acceptance adds a service-specific check for this module'
   S08-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S08-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_happy branches on module_id for this case'
   S08-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S08-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S08-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S08-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S08-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S08-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S08-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S08-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_acceptance adds a service-specific check for this module'
   S09-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S09-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_happy branches on module_id for this case'
   S09-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S09-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S09-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S09-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S09-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S09-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S09-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S09-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_acceptance adds a service-specific check for this module'
   S10-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S10-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_happy branches on module_id for this case'
   S10-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S10-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S10-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S10-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S10-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S10-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S10-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S10-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_acceptance adds a service-specific check for this module'
   S11-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S11-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_happy branches on module_id for this case'
   S11-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S11-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S11-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S11-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S11-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S11-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S11-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S11-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_acceptance adds a service-specific check for this module'
   S12-T01:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S12-T01]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_happy branches on module_id for this case'
   S12-T02:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S12-T02]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S12-T03:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S12-T03]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S12-T04:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S12-T04]
+    coverage_quality: SHARED_ASSERTION
+    note: '_platform_acceptance runs one assertion for this case across S01-S12; the requirement is verified but not per-service'
   S12-T05:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[S12-T05]
+    coverage_quality: MODULE_SPECIFIC
+    note: '_platform_acceptance adds a service-specific check for this module'
   ICM-001:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-001]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-002:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-002]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-003:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-003]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-004:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-004]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-005:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-005]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-006:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-006]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-007:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-007]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-008:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-008]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-009:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-009]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-010:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-010]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-011:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-011]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-012:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-012]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-013:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-013]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-014:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-014]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-015:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-015]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-016:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-016]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-017:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-017]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-018:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-018]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-019:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-019]
+    coverage_quality: MODULE_SPECIFIC
+    note: 'ENGINE_DISPATCH runs a per-module function that branches on this case'
   ICM-020:
-    uncovered_reason: NOT_YET_MAPPED
+    covered_by:
+      - tests/acceptance/test_master_acceptance.py::test_master_acceptance[ICM-020]
+    coverage_quality: SHARED_ASSERTION
+    note: 'llm_acceptance runs one assertion for this case across L01-L08; the directive repeats the same five required tests under all eight layers, so the requirement is verified but not per-layer'

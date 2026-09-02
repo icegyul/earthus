@@ -7,7 +7,7 @@ from dataclasses import dataclass, asdict
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from .storage import LocalProductRepository
 from .postgres_storage import PostgresProductRepository
@@ -37,6 +37,7 @@ from aetherus_domain import EvidenceClass, Scenario, canonical_hash
 from aetherus_llm import (
     LLMGateway, ModelRouter, ToolOrchestrator, ContextComposer, ExplanationAgent,
     ClaimCitationValidator, PersonalWorkspaceContext, BriefingReportGenerator,
+    AudienceLevel, AuditContext, ReportType,
 )
 from aetherus_intelligence import (IntelligenceTaskOrchestrator, ImportanceAttributionDecisionIntelligence)
 
@@ -526,21 +527,38 @@ class AetherusProductRuntime:
             )
         return result
 
-    def llm_explanation(self,locale:str="en")->dict[str,Any]:
-        locale="ko" if str(locale).lower().startswith("ko") else "en"
-        if not self._apollo: return {"text":"설명을 사용할 수 없습니다." if locale=="ko" else "Explanation unavailable.","data_status":"UNAVAILABLE","locale":locale}
-        packet=self._apollo["packet"]
-        prompt=self.explainer.explain(packet,locale=locale)
-        provider,model=self.model_router.route("EXPLANATION")
-        response=self.llm_gateway.generate(provider=provider,prompt=prompt,model=model,packet=packet,authorized=True)
-        return {**asdict(response),"data_status":response.validation_state,"source":"INTELLIGENCE_PACKET_ONLY","scientific_calculation_performed":False,"locale":locale}
+    def llm_explanation(self,locale:str="en",*,audience:str="ENTHUSIAST",plan:str|None=None,request_id:str|None=None)->dict[str,Any]:
+        """L05 at a chosen audience level, routed by L02 and audited by L01.
 
-    def current_briefing(self,locale:str="en")->dict[str,Any]:
+        The response reports the tier that actually served it. A request routed
+        to REASONING and served by the local template says so; claiming the
+        requested tier would misdescribe how the answer was produced.
+        """
         locale="ko" if str(locale).lower().startswith("ko") else "en"
-        if not self._apollo:return {"data_status":"UNAVAILABLE","sections":[],"locale":locale}
+        try: level=AudienceLevel(str(audience).upper())
+        except ValueError as exc: raise ValueError(f"unknown audience level {audience!r}; expected one of {[a.value for a in AudienceLevel]}") from exc
+        if not self._apollo: return {"text":"설명을 사용할 수 없습니다." if locale=="ko" else "Explanation unavailable.","data_status":"UNAVAILABLE","locale":locale,"audience":level.value}
+        packet=self._apollo["packet"]
+        composed=self.explainer.compose(packet,locale=locale,audience=level)
+        prompt=composed["text"]
+        decision=self.model_router.decide("EXPLANATION",plan=plan)
+        audit=AuditContext(request_id=request_id or str(uuid4()),feature="LLM_EXPLANATION",capability="CURRENT")
+        response=self.llm_gateway.generate(provider=decision.provider,prompt=prompt,model=decision.model,packet=packet,authorized=True,audit=audit,decision=decision)
+        return {**asdict(response),"data_status":response.validation_state,"source":"INTELLIGENCE_PACKET_ONLY","scientific_calculation_performed":False,"locale":locale,"audience":level.value,"guardrails":composed["guardrails"]}
+
+    def current_briefing(self,locale:str="en",*,report_type:str="DAILY_SPACE_BRIEF")->dict[str,Any]:
+        """L08 at one of the four report types the directive names."""
+        locale="ko" if str(locale).lower().startswith("ko") else "en"
+        try: rtype=ReportType(str(report_type).upper())
+        except ValueError as exc: raise ValueError(f"unknown report type {report_type!r}; expected one of {[r.value for r in ReportType]}") from exc
+        if not self._apollo:return {"data_status":"UNAVAILABLE","sections":[],"locale":locale,"report_type":rtype.value}
         title="Aetherus 로컬 근거 브리핑" if locale=="ko" else "Aetherus Local Evidence Briefing"
-        briefing=self.briefings.generate([self._apollo["packet"]],title=title,locale=locale)
-        return {**asdict(briefing),"data_status":"VALIDATION_PENDING","source":"INTELLIGENCE_PACKET_ONLY","locale":locale}
+        briefing=self.briefings.generate([self._apollo["packet"]],title=title,locale=locale,report_type=rtype)
+        # The generator's own status wins: a scenario report with no scenario is
+        # INSUFFICIENT_DATA, and overwriting that with VALIDATION_PENDING would
+        # present an empty report as a pending one.
+        status=briefing.data_status if briefing.data_status!="OK" else "VALIDATION_PENDING"
+        return {**asdict(briefing),"data_status":status,"source":"INTELLIGENCE_PACKET_ONLY","locale":locale}
 
     # ---- E15/E16: give the per-mission engines a way to come into existence.
     def ensure_launch_state(self, mission_id:str):

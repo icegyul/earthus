@@ -26,6 +26,7 @@ Run from services/aetherus-orbital:
 from __future__ import annotations
 
 import argparse
+import collections
 import csv
 import datetime
 import json
@@ -167,6 +168,7 @@ def main() -> int:
 
     results: list[dict[str, Any]] = []
     counts = {"PASSED": 0, "FAILED": 0, "NOT_RUN": 0}
+    quality: dict[str, int] = collections.defaultdict(int)
     reasons: dict[str, int] = {}
     for row in matrix:
         test_id = row["test_id"]
@@ -194,9 +196,11 @@ def main() -> int:
                 "evidence_path": str(EVIDENCE.relative_to(REPO_ROOT)),
                 "covered_by": record["covered_by"],
                 "module_run": module,
+                "coverage_quality": record.get("coverage_quality", "UNSPECIFIED"),
                 "note": record.get("note", ""),
             }
         )
+        quality[record.get("coverage_quality", "UNSPECIFIED")] += 1
 
     evidence = {
         "artifact": "acceptance_matrix",
@@ -210,13 +214,23 @@ def main() -> int:
         "claimed_cases": len(claimed),
         "unclaimed_cases": len(matrix) - len(claimed),
         "status_counts": counts,
+        # How module-specific each passing row's assertion is. A matrix that
+        # reports only "307 PASSED" hides that some rows are established by an
+        # assertion shared across a whole family of modules, which verifies the
+        # requirement without verifying that module.
+        "coverage_quality_counts": dict(quality),
         "uncovered_reasons": reasons,
         "modules_run": module_status,
         "executed": not args.skip_run,
         "honesty_note": (
             "status is the exit code of the mapped tests, never a value written by "
             "hand; an unmapped row stays NOT_RUN and is counted, so a partial claim "
-            "can never read as a complete matrix"
+            "can never read as a complete matrix. coverage_quality says how much a "
+            "PASSED row establishes: MODULE_SPECIFIC means the assertion was written "
+            "for that module and case; SHARED_ASSERTION means one assertion covers "
+            "the case across a whole family (L01-L08, or S01-S12), because the "
+            "directive repeats the same required tests under every heading in that "
+            "family - the requirement is verified, the individual module is not"
         ),
         "results": results,
     }
@@ -238,6 +252,11 @@ def main() -> int:
     print(
         f"claimed {len(claimed)}/{len(matrix)} cases  "
         f"PASSED={counts['PASSED']} FAILED={counts['FAILED']} NOT_RUN={counts['NOT_RUN']}"
+        # Printed beside the total on purpose: a green count alone invites the
+        # reading that every row was verified for its own module.
+        + f"\n  of which module-specific={quality.get('MODULE_SPECIFIC', 0)}"
+        f" shared-assertion={quality.get('SHARED_ASSERTION', 0)}"
+        f" unspecified={quality.get('UNSPECIFIED', 0)}"
     )
     if reasons:
         print("unclaimed by reason:", reasons)

@@ -57,8 +57,30 @@ class SubscriptionCapabilityService:
     def authorize(self,plan:str,capability:str)->bool:
         if capability=="PUBLIC_SAFETY": return True
         return capability in self.capabilities(plan)
+    def scientific_view(self,scientific_payload:Any,plan:str)->Any:
+        """The scientific values a plan receives.
+
+        The same for every plan, by contract. The directive puts the paid/free
+        difference in depth, history, personalization, simulation, API and
+        workflow — never in what a number says. This method is the single seam
+        where a plan could touch a scientific value, so it is the seam the
+        regression check below watches.
+        """
+        return scientific_payload
+
     def scientific_hash_unchanged(self,scientific_payload:Any,plans:list[str])->bool:
-        hashes={canonical_hash(scientific_payload) for _ in plans}; return len(hashes)==1
+        """Whether every plan sees the identical scientific payload.
+
+        This used to hash one payload once per plan — ``{h(payload) for _ in
+        plans}`` — which is a set of one identical element and can never have
+        more. It reported success without comparing anything, and an acceptance
+        row for all twelve platform services rested on it.
+
+        It now renders the payload through :meth:`scientific_view` per plan, so
+        the day a paywall reaches a scientific value this returns False.
+        """
+        hashes={canonical_hash(self.scientific_view(scientific_payload,plan)) for plan in plans}
+        return len(hashes)==1
 
 
 class WorkspaceWidgetControlRoomService:

@@ -200,7 +200,7 @@ export const chips = {
           b.title = i18n.t.locked;
           b.onclick = () => toast(i18n.t.unlock);
         } else {
-          if (d.tier === TIER.PAID) b.classList.add('paid');
+          if (d.tier && d.tier !== TIER.FREE) b.classList.add('paid');
           b.classList.toggle('on', store.isOn(d.id));
           b.onclick = () => store.toggle(d.id);
         }
@@ -441,8 +441,8 @@ export const sheet = {
     if (m.kind === 'satellite' && m._satIdx != null) {
       const { orbits } = await import('./layers/space.js');
       const d = orbits.detail(m._satIdx, i18n.lang);
-      // 궤도 추적선은 유료 기능 — 위성 위치 자체는 무료로 보인다
-      if (store.can(PAID_CAP.SAT_DEEP)) orbits.showTrack(m._satIdx);
+      // 궤도 추적선 — 2026-09-02부터 무료. SGP4 는 표준 계산이고 다른 서비스도 그린다.
+      orbits.showTrack(m._satIdx);
       clearForecast();
       if (d) {
         $('#sheetTitle').textContent = d.title;
@@ -456,11 +456,11 @@ export const sheet = {
           const p = noteEl(d.rows._note);
           rows.parentElement.appendChild(p);
         }
-        /* 내 위치 통과 예보는 유료 기능이다.
-           ⚠️ 사용자 좌표마다 SGP4 를 수백 번 돌려야 나오는 값이라
-              "데이터를 가둔 것"이 아니라 실제로 계산이 드는 것이다. */
-        if (store.can(PAID_CAP.PASSES)) renderPasses(orbits.sats[m._satIdx], rows);
-        else renderPaidHint(rows, PAID_CAP.PASSES);
+        /* 내 위치 통과 예보 — 2026-09-02부터 무료.
+           ⚠️ 좌표마다 SGP4 를 수백 번 돌리는 건 맞지만 **브라우저가 돌린다.**
+              우리 서버 비용이 아니고, Heavens-Above 등이 이미 무료로 주는 값이다.
+              알람(PAID_CAP.ALARMS)은 여전히 유료다 — 그건 우리가 보내는 양이다. */
+        renderPasses(orbits.sats[m._satIdx], rows);
       }
       box.classList.remove('down');
       box.classList.add('up');
@@ -1338,12 +1338,11 @@ async function renderFault(detailUrl, rows) {
 function renderPaidHint(rows, cap) {
   const ko = i18n.lang === 'ko';
   const TXT = {
-    [PAID_CAP.PASSES]: ko
-      ? ['내 위치 통과 예보', '이 위성이 내가 있는 곳 위를 언제 지나가는지 계산해 드립니다. 몇 분 전에 알람도 받을 수 있습니다.']
-      : ['Passes over my location', 'We compute when this satellite crosses over you, with an alarm a few minutes ahead.'],
-    [PAID_CAP.SAT_DEEP]: ko
-      ? ['궤도 추적선 · 용도 상세', '어디서 어디로 가는지 선으로 그리고, 무엇을 하는 위성인지 보여드립니다.']
-      : ['Orbit track & mission detail', 'Draws where it came from and where it is going, and what the satellite does.'],
+    /* ⚠️ 위성 통과 예보·궤도 추적선은 2026-09-02에 무료로 풀렸다 — 여기서 지웠다.
+       안 지우고 두면 없어진 유료 기능을 계속 광고하게 된다. */
+    [PAID_CAP.ALARMS]: ko
+      ? ['통과 · 이벤트 알람', '지나가기 몇 분 전에 알려 드립니다. 여러 곳을 동시에 지켜볼 수 있습니다.']
+      : ['Pass & event alarms', 'We notify you minutes before, across several places at once.'],
     [PAID_CAP.HISTORY]: ko
       ? ['되감기 · 이력', '지난 며칠의 지구를 다시 볼 수 있습니다.']
       : ['Rewind & history', 'Replay the past days of Earth.'],

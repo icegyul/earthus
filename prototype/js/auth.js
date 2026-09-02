@@ -7,6 +7,7 @@
 
 import { CONFIG } from './config.local.js';
 import { biometric } from './biometric.js';
+import { TIER, tierAtLeast, normalizeTier } from './access-mode.js';
 
 const PROVIDERS = ['google', 'apple'];   // 이 둘만. 이메일/비밀번호 가입 없음.
 const OWNER_EMAILS = new Set(['contentsdalur@gmail.com']);
@@ -225,7 +226,14 @@ export const auth = {
   /* ── 구독 상태 ──────────────────────────────────────────────
      실제 검증은 Apple/Google 영수증을 서버가 확인해야 한다.
      여기서는 profiles.tier 를 읽기만 한다 — 결제 연동 시 서버가 이 값을 쓴다. */
-  isPaid() { return this.profile?.tier === 'paid'; },
+  /** 지금 등급 — **정규화된 값**을 준다 (레거시 'paid' → explorer).
+      ⚠️ 서버 원값이 필요하면 auth.profile.tier 를 직접 본다. */
+  tier() { return normalizeTier(this.profile?.tier); },
+  /* ⚠️ 2026-09-02 3단계 전환 — 등호 비교를 사다리로 바꿨다.
+     예전 코드는 tier === 'paid' 라 서버가 'explorer'/'intelligence' 를 보내기 시작하면
+     **기존 유료 사용자가 통째로 무료로 떨어진다.** 반대로 사다리는 레거시 'paid' 도 받아준다. */
+  isPaid() { return tierAtLeast(this.tier(), TIER.EXPLORER); },
+  atLeast(tier) { return tierAtLeast(this.tier(), tier); },
   isAdmin() {
     return !!this.user && ((CONFIG.ADMIN_UIDS || []).includes(this.user.id)
       || OWNER_EMAILS.has(String(this.user.email || '').toLowerCase()));

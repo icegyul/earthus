@@ -10,6 +10,7 @@ import { auth, waitlist } from './auth.js';
 import { biometric } from './biometric.js';
 import { store } from './store.js';
 import { i18n } from './i18n.js';
+import { TIER_NAMES } from './billing.js';
 import { CONFIG } from './config.local.js';
 
 const $ = s => document.querySelector(s);
@@ -289,7 +290,9 @@ export const accountSheet = {
     $('#accEmail').textContent = p.email || auth.user?.email || '확인되지 않음';
     $('#accProvider').textContent =
       ({ google: 'Google', apple: 'Apple' })[p.provider] || p.provider || '확인되지 않음';
-    $('#accTier').textContent = auth.isPaid() ? '구독 중' : '무료';
+    /* ⚠️ 3단계가 됐으므로 "구독 중"으로 뭉뚱그리지 않는다 —
+       어느 등급인지 안 보이면 사용자가 자기가 뭘 산 건지 확인할 방법이 없다. */
+    $('#accTier').textContent = TIER_NAMES[auth.tier()]?.ko || '무료';
     $('#accBadge').style.display = auth.isFounding() ? 'inline-block' : 'none';
   },
 
@@ -423,7 +426,7 @@ export async function initAccount() {
 
   auth.onChange(async (user) => {
     // 로그인 상태를 티어에 반영. 게스트/무료 회원은 free, 구독자는 paid.
-    store.setTier(auth.isPaid() ? 'paid' : 'free');
+    store.setTier(auth.tier());   // ⚠️ 불리언으로 눌러 담지 않는다 — 3단계라 등급을 그대로 넘겨야 한다
     accountSheet.render();
 
     /* ⚠️⚠️ **로그인 창을 닫아주는 코드가 없었다.**

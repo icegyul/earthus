@@ -9,7 +9,9 @@
 //    · 백엔드가 없으면 인원수를 0 이 아니라 "집계 전"으로 쓴다 (0 은 거짓이다)
 
 import { auth, interest } from './auth.js';
-import { billing, PLANS, PAID_FEATURES, FREE_FEATURES } from './billing.js';
+import { billing, PLANS, EXPLORER_FEATURES, INTELLIGENCE_FEATURES, FREE_FEATURES,
+  TIER_NAMES, COMMERCIAL_PLAN } from './billing.js';
+import { TIER } from './access-mode.js';
 import { i18n } from './i18n.js';
 import { CONFIG } from './config.local.js';
 import { toast } from './ui.js';
@@ -39,6 +41,9 @@ export const DEMAND_SERVICES = {
 };
 
 export const subscribeSheet = {
+  /* 연 요금이 생겨서(2026-09-02) 기본값을 연간으로 되돌린다.
+     ⚠️ 아래 렌더가 가격 없는 상품은 버튼을 안 만든다 — 기본값이 그런 상품을 가리키면
+        결제 단계에서 UNKNOWN_PLAN 으로 떨어지므로, 기본값을 바꿀 땐 그 상품에 가격이 있는지 본다. */
   plan: 'yearly',
   seats: undefined,          // undefined=아직 안 물어봄 · null=못 셈 · 숫자=남은 자리
 
@@ -65,7 +70,8 @@ export const subscribeSheet = {
     const body = $('#subBody');
     if (!body) return;
     body.innerHTML = '';
-    $('#subTitle').textContent = ko ? 'earthus 구독' : 'earthus Pro';
+    /* ⚠️ 'earthus Pro' 였다 — 등급명에서 PRO 를 떼면서 여기만 남으면 없는 상품명이 된다. */
+    $('#subTitle').textContent = ko ? 'earthus 구독' : 'earthus subscription';
 
     if (this._reason) {
       body.appendChild(el('p', 'sp-lead', this._reason));
@@ -94,6 +100,9 @@ export const subscribeSheet = {
     opts.forEach(([key, label, badge]) => {
       const p = PLANS[key];
       if (!p) return;
+      /* ⚠️ 가격이 없는 상품은 **버튼을 만들지 않는다.** 눌러도 살 수 없는 버튼이
+         제일 나쁘고, p.krw 가 null 이면 아래 '월 ₩0 꼴' 같은 거짓 값도 찍힌다. */
+      if (p.soon || p.krw == null) return;
       const b = el('button', 'plan' + (this.plan === key ? ' on' : ''));
       const perYear = p.period === 'year';
       b.innerHTML = `<div class="pl-name">${label}${badge ? `<em>${badge}</em>` : ''}</div>`
@@ -120,10 +129,8 @@ export const subscribeSheet = {
       <ul>
         <li><b>지켜볼 곳 20군데</b> — 무료는 1곳입니다. 집·부모님 댁·자주 가는 해변까지
             한꺼번에 지켜보고, 특보·지진·이안류가 뜨면 알려 드립니다</li>
-        <li><b>위성 전체 카탈로그</b> — 스타링크를 포함한 전체 목록.
-            무료는 주요 위성만 보입니다</li>
-        <li><b>궤도 추적선과 통과 예보</b> — 고른 위성이 지금 어디를 도는지,
-            내 위치 위를 언제 지나가는지</li>
+        <li><b>태풍 유사사례 중심선</b> — 기상청·JMA·ECMWF를 같은 시각으로 정렬한 참고선.
+            예보가 아니라 <b>여러 공식 자료를 겹쳐 본 것</b>입니다</li>
       </ul>
 
       <h4>곧 열릴 것 <span class="sub-soon-tag">준비 중</span></h4>
@@ -134,11 +141,14 @@ export const subscribeSheet = {
       <h4>안전 정보는 계속 무료입니다</h4>
       <p>특보·지진·쓰나미·이안류·낙뢰, 그리고 모든 레이어와
          출처·관측 시각·표본 수는 <b>구독과 상관없이 그대로</b>입니다.
-         유료는 <b>여러 곳을 동시에 지켜보는 양</b>과 <b>계산이 드는 것</b>뿐입니다.</p>
+         날씨 서술·예보 신뢰도·위성 전체 카탈로그·궤도 추적선·통과 예보도
+         <b>전부 무료</b>입니다 — 다른 곳에서도 볼 수 있는 것은 가두지 않습니다.</p>
 
       <h4>왜 돈을 받나</h4>
-      <p>구독 비용은 <b>자료 검증·사용자별 계산·장기 보관·다중 장소 감시</b>에 사용됩니다.
-         공개 항목에는 출처, 관측 시각, 표본 수와 판단 기준이 함께 표시됩니다.</p>
+      <p>공공자료를 받아 그대로 보여주는 것은 전부 무료입니다.
+         돈을 받는 것은 그 자료를 <b>다시 가공한 것</b>뿐입니다 —
+         <b>분석 보고서·비교 차트·시뮬레이션</b>, 그리고 <b>장기 보관·여러 장소 감시</b>처럼
+         실제로 비용이 나가는 것. 공개 항목에는 출처, 관측 시각, 표본 수와 판단 기준이 함께 표시됩니다.</p>
 
       <h4>초기에 결제해 주시면</h4>
       <ul>
@@ -150,8 +160,8 @@ export const subscribeSheet = {
       <ul>
         <li><b>20 places to watch</b> — free covers one. Home, family, your beach —
             warnings, quakes and rip currents for all of them</li>
-        <li><b>Full satellite catalogue</b>, Starlink included. Free shows major ones only</li>
-        <li><b>Orbit tracks and pass predictions</b> over your location</li>
+        <li><b>Cyclone analogue track</b> — KMA, JMA and ECMWF aligned to one timeline.
+            Not a forecast: <b>official sources laid over each other</b></li>
       </ul>
 
       <h4>Coming <span class="sub-soon-tag">in preparation</span></h4>
@@ -161,12 +171,15 @@ export const subscribeSheet = {
       <h4>Safety stays free</h4>
       <p>Warnings, quakes, tsunami, rip currents, lightning — plus every layer and every
          source, observation time and sample size — are <b>the same with or without a
-         subscription</b>. Paying covers <b>watching many places at once</b> and
-         <b>work that actually costs compute</b>.</p>
+         subscription</b>. Weather narrative, forecast confidence, the full satellite
+         catalogue, orbit tracks and pass predictions are <b>free too</b> — we do not
+         lock what you can already get elsewhere.</p>
 
       <h4>Why we charge</h4>
-      <p>Subscription funds <b>data validation, per-user compute, long-term storage,
-         and multi-place monitoring</b>. Public results include source, observation time,
+      <p>Showing public data as published is always free. We charge only for
+         <b>reworking</b> it — <b>analysis reports, comparison charts and simulation</b> —
+         and for what genuinely costs money to run: <b>long-term storage and
+         multi-place monitoring</b>. Public results include source, observation time,
          sample size and thresholds.</p>
 
       <h4>If you subscribe early</h4>
@@ -176,17 +189,57 @@ export const subscribeSheet = {
       </ul>
     `));
 
-    feat.appendChild(el('h4', null, ko ? '구독하면 열리는 것' : 'Unlocked with Pro'));
-    const ul = el('ul', 'feat-list');
-    PAID_FEATURES.forEach(f => {
-      /* ⚠️⚠️ 아직 못 만든 것을 **만든 것처럼 팔지 않는다.**
-         이 목록은 한때 "지진 알림"을 팔고 있었는데 웹푸시 서버가 없어 알림이 안 갔다. */
-      const li = el('li', f.soon ? 'soon' : 'yes', ko ? f.ko : f.en);
-      if (f.soon) li.appendChild(el('em', 'soon-tag', ko ? ' 준비 중' : ' coming soon'));
-      ul.appendChild(li);
-    });
-    feat.appendChild(ul);
-    feat.appendChild(el('h4', null, ko ? '구독하지 않아도 계속 무료' : 'Always free'));
+    /* ⚠️ 2026-09-02 — v5.3 §1.4 의 3단계로 나눠 보여준다.
+       한 덩어리로 보여주면 **어느 등급을 사야 이게 열리는지**를 알 수 없다.
+       가격이 없는 등급(INTELLIGENCE)은 '가격 준비 중'이라고 분명히 적는다. */
+    const tierBlock = (tier, features) => {
+      const name = TIER_NAMES[tier];
+      if (!name || !features.length) return;
+      const h = el('h4', null, ko ? `${name.ko} — ${name.subKo}` : `${name.en} — ${name.subEn}`);
+      feat.appendChild(h);
+      /* 누구를 위한 등급인지 한 줄 — 지침서 §27 의 "핵심 사용자".
+         ⚠️ "전문가 전용" 같은 자격 표현을 쓰지 않는다. 지침서 기준은 신분이 아니라 깊이다. */
+      if (name.forKo) feat.appendChild(el('p', 'tier-for', ko ? name.forKo : name.forEn));
+      /* 등급에 붙은 상품 중 가격이 하나라도 있으면 값을, 없으면 준비 중을 적는다. */
+      const priced = billing.plansOf(tier).filter(([, pl]) => !pl.soon);
+      feat.appendChild(el('p', 'tier-price', priced.length
+        ? priced.map(([k, pl]) => `${billing.price(k)}${ko ? (pl.period === 'year' ? '/년' : '/월') : (pl.period === 'year' ? '/yr' : '/mo')}`).join(' · ')
+        : (ko ? '가격 준비 중' : 'Pricing coming soon')));
+      const list = el('ul', 'feat-list');
+      features.forEach(f => {
+        /* ⚠️⚠️ 아직 못 만든 것을 **만든 것처럼 팔지 않는다.**
+           이 목록은 한때 "지진 알림"을 팔고 있었는데 웹푸시 서버가 없어 알림이 안 갔다. */
+        const li = el('li', f.soon ? 'soon' : 'yes', ko ? f.ko : f.en);
+        if (f.soon) li.appendChild(el('em', 'soon-tag', ko ? ' 준비 중' : ' coming soon'));
+        list.appendChild(li);
+      });
+      feat.appendChild(list);
+    };
+    tierBlock(TIER.EXPLORER, EXPLORER_FEATURES);
+    tierBlock(TIER.INTELLIGENCE, INTELLIGENCE_FEATURES);
+
+    /* 상업용 · API — 소비자 등급이 아니라서 가격도 결제 버튼도 없다.
+       ⚠️ 여기에 금액을 적지 않는다. 상업 이용은 원자료 라이선스가 건마다 달라서,
+          정찰가를 붙이면 재배포 권리를 못 받은 자료까지 팔겠다는 말이 된다.
+       ⚠️ 연락처(CONFIG.BUSINESS.email)가 아직 비어 있으면 메일 링크를 만들지 않는다 —
+          눌러도 아무 데도 안 가는 링크는 안 만드는 것만 못하다. */
+    const cp = COMMERCIAL_PLAN;
+    feat.appendChild(el('h4', null, ko ? cp.ko : cp.en));
+    feat.appendChild(el('p', 'tier-price', ko ? '별도 문의' : 'Contact us'));
+    feat.appendChild(el('p', 'tier-for', ko ? cp.forKo : cp.forEn));
+    const cul = el('ul', 'feat-list');
+    cp.items.forEach(f => cul.appendChild(el('li', 'yes', ko ? f.ko : f.en)));
+    feat.appendChild(cul);
+    const bizMail = (CONFIG.BUSINESS && CONFIG.BUSINESS.email) || '';
+    feat.appendChild(el('p', 'sky-note', bizMail
+      ? (ko ? `이용 범위·원자료 권리를 확인한 뒤 안내드립니다 — <a href="mailto:${bizMail}">${bizMail}</a>`
+            : `We scope usage and source rights first — <a href="mailto:${bizMail}">${bizMail}</a>`)
+      : (ko ? '이용 범위와 원자료 권리를 확인한 뒤 안내드립니다. 문의 창구는 준비 중입니다.'
+            : 'We scope usage and source rights before quoting. A contact channel is being set up.')));
+    const freeName = TIER_NAMES[TIER.FREE];
+    feat.appendChild(el('h4', null, ko
+      ? `${freeName.ko} — 구독하지 않아도 계속 무료`
+      : `${freeName.en} — always free`));
     const ul2 = el('ul', 'feat-list');
     FREE_FEATURES.forEach(f => ul2.appendChild(el('li', 'free', ko ? f.ko : f.en)));
     feat.appendChild(ul2);

@@ -122,7 +122,7 @@ const POS_INTERVAL_MS = 250;
    틱 예산의 8ms만 쓴다 — 250ms 간격 기준 CPU 약 3.2%다.
 
    ⚠️ 자르면 자른다고 **반드시 화면에 적는다**(satsTotal/satsCapped).
-      유료 기능(SAT_ALL)이라 조용히 80%를 버리면 그건 속이는 것이다. */
+      무료로 풀렸어도 조용히 80%를 버리면 그건 속이는 것이다. */
 const POS_BUDGET_MS = 8;
 const CAP_MIN = 400;       // 느린 폰에서 하한 때문에 예산을 넘지 않게 한다
 const CAP_MAX = 20000;     // 카탈로그 전체(16,123)보다 크면 상한이 없는 것과 같다

@@ -31,18 +31,40 @@ create table if not exists public.plans (
   sort        integer not null default 0
 );
 
+-- ⚠️⚠️ 2026-09-02 — v5.3 §1.4 의 3단계(free / explorer / intelligence)로 바뀌었다.
+--    또 돌려도 안전하도록 if not exists 로 붙인다.
+--    기본값이 'explorer' 인 이유: 기존 상품(Personal Pro)이 그 자리를 승계했기 때문이다.
+alter table public.plans
+  add column if not exists tier text not null default 'explorer'
+  check (tier in ('explorer', 'intelligence'));
+
 alter table public.plans enable row level security;
 -- 가격표는 누구나 읽어야 한다 (로그인 전 요금제 화면).
 create policy plans_read on public.plans for select using (active = true);
 -- 쓰기 정책 없음 = 클라이언트는 못 바꾼다. 관리자는 대시보드/서비스키로.
 
-insert into public.plans (id, name_ko, name_en, krw, usd, period, months, max_seats, sort)
+insert into public.plans (id, name_ko, name_en, krw, usd, period, months, max_seats, sort, tier)
 values
   -- ⚠️⚠️ **금액의 정본은 이 표다.** 화면(billing.js DEFAULT_PLANS)은 표시용일 뿐이고
   --    checkout 함수는 planId 만 받아 금액을 여기서 찾는다. 값을 바꾸면 여기부터 바꾼다.
-  --    2026-08-05 결정: Personal Pro 정가 월 ₩5,900/$4.99 · 연 ₩49,000/$39.
-  ('earthus.pro.monthly',  '한 달 이용권', 'Monthly',        5900,  4.99, 'month',  1, null, 10),
-  ('earthus.pro.yearly',   '1년 이용권',   'Yearly',        49000, 39.00, 'year',  12, null, 20),
+  --
+  -- ⚠️⚠️ 2026-09-02 가격 개정 — 3단계 전환. **읽기 전에 반드시 확인할 것:**
+  --    · EXPLORER      월 ₩9,900   (예전 Personal Pro 월 ₩5,900 에서 인상)
+  --    · INTELLIGENCE  월 ₩49,000
+  --    ⚠️⚠️ ₩49,000 은 **예전 'Personal Pro 연 요금'과 숫자만 같고 뜻이 완전히 다르다.**
+  --       예전: earthus.pro.yearly = 연 ₩49,000 / 지금: earthus.intelligence.monthly = **월** ₩49,000.
+  --       (2026-09-02 확인: ₩49,000 은 인텔리전스 등급의 요금이 맞다.)
+  --       이 둘을 헷갈리면 월 요금을 연 요금으로 받거나 그 반대가 된다. 12배 사고다.
+  --       그래서 아래에서 pro.yearly 를 꺼 둔다 — 같은 숫자가 두 뜻으로 표에 남아 있지 않게.
+  --    ⚠️ 연 요금 = 10개월치(2개월분 할인, 17%) — 2026-09-02 결정.
+  --       ⚠️ 할인율을 키우지 말 것: 창립회원 상품이 연간을 8배 싸게 매겨 월간을 죽였다.
+  --    ⚠️ USD 가격도 아직 없다. 해외 표시가는 환율이 아니라 **결정**이라 비워 둔다.
+  ('earthus.pro.monthly',          '한 달 이용권',        'Monthly',              9900, null, 'month', 1, null, 10, 'explorer'),
+  ('earthus.pro.yearly',           '1년 이용권',          'Yearly',              99000, null, 'year', 12, null, 20, 'explorer'),
+  -- ⚠️ 2026-09-02 재검토: ₩49,000 → ₩29,000. API 가 상업 요금제로 빠지면서
+  --    ₩49,000 을 지탱하던 근거가 이 등급에서 사라졌다. 상업·기관은 별도 문의다.
+  ('earthus.intelligence.monthly', '인텔리전스 한 달',    'Intelligence monthly', 29000, null, 'month', 1, null, 30, 'intelligence'),
+  ('earthus.intelligence.yearly',  '인텔리전스 1년',      'Intelligence yearly', 290000, null, 'year', 12, null, 40, 'intelligence'),
   -- ⚠️ 창립회원(earthus.founding.500)은 **뺐다** (받은 결정).
   --    당시 월 ₩12,000 대비 연 ₩19,000이 월 환산 8배 싸서 아무도 월간을 안 사고,
   --    500명이 다 차도 초기 자금이 950만원에서 멈춘다는 판단이었다.
@@ -53,7 +75,10 @@ values
 on conflict (id) do update
   set krw = excluded.krw, usd = excluded.usd, months = excluded.months,
       name_ko = excluded.name_ko, name_en = excluded.name_en,
-      max_seats = excluded.max_seats, sort = excluded.sort;
+      max_seats = excluded.max_seats, sort = excluded.sort,
+      -- ⚠️ tier 를 빼먹으면 이 스크립트를 다시 돌려도 등급이 안 바뀐다.
+      --    새로 만들 때만 맞고 갱신할 때 틀리는, 제일 늦게 발견되는 종류의 버그다.
+      tier = excluded.tier;
 
 
 -- ═══════════════════════════════════════════════════════════
@@ -109,6 +134,7 @@ language plpgsql security definer set search_path = public as $$
 declare
   o public.orders%rowtype;
   m integer;
+  v_tier text;
   base timestamptz;
   new_ends timestamptz;
 begin
@@ -127,7 +153,11 @@ begin
     return;
   end if;
 
-  select months into m from public.plans where id = o.plan_id;
+  -- ⚠️⚠️ 등급을 'paid' 로 고정하지 않는다 — **상품이 정한 등급을 따른다.**
+  --    고정해 두면 INTELLIGENCE 를 산 사람도 EXPLORER 권한만 받는다.
+  -- ⚠️ 반드시 테이블 별칭을 붙인다 — 이 함수의 OUT 파라미터 이름이 tier 라
+  --    그냥 tier 라고 쓰면 "column reference tier is ambiguous" 로 터진다.
+  select pl.months, pl.tier into m, v_tier from public.plans pl where pl.id = o.plan_id;
   if m is null then
     raise exception 'PLAN_NOT_FOUND';
   end if;
@@ -139,7 +169,7 @@ begin
   new_ends := base + (m || ' months')::interval;
 
   update public.profiles
-     set tier = 'paid',
+     set tier = v_tier,
          subscription_id = p_order_id,
          subscription_ends = new_ends,
          founding_member = founding_member or (o.plan_id like 'earthus.founding%'),
@@ -151,7 +181,7 @@ begin
          approved_at = now(), grants_until = new_ends, updated_at = now()
    where id = p_order_id;
 
-  ok := true; tier := 'paid'; ends := new_ends;
+  ok := true; tier := v_tier; ends := new_ends;
   return next;
 end $$;
 
@@ -211,3 +241,7 @@ grant execute on function public.expire_subscriptions() to service_role;
 
 -- ⚠️ 창립회원을 화면에서 내린다. plans_read 정책이 active = true 만 보여준다.
 update public.plans set active = false where id = 'earthus.founding.500';
+-- ⚠️ earthus.pro.yearly 는 2026-09-02 에 ₩49,000 → ₩99,000 으로 **값이 바뀌었다.**
+--    on conflict 갱신이 이 행의 금액을 덮으므로 스크립트를 다시 돌리면 새 값이 들어간다.
+--    ⚠️ 이미 ₩49,000 으로 결제된 주문이 있다면 그 주문의 금액은 orders.amount 에 따로
+--       박혀 있어 영향받지 않는다. 표를 고쳐도 과거 청구 기록은 바뀌지 않는다.

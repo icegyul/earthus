@@ -127,16 +127,35 @@ export const NEEDS_PROXY = {
              · 되감기·이력 — 우리만 쌓고 있다 (§0, archive 파이프라인)
 
    ⚠️ 레이어의 tier 를 다시 유료로 돌리려면 위 판단을 먼저 뒤집을 것. */
-export const TIER = { FREE: 'free', PAID: 'paid' };
+/* 요금제 사다리의 정본은 access-mode.js 다 — 여기서는 다시 내보내기만 한다.
+   ⚠️ 2026-09-02: v5.3 §1.4 대로 FREE / EXPLORER / INTELLIGENCE 3단계가 됐다(표기에서 PRO 는 뗐다).
+      예전의 TIER.PAID 는 사라졌다. 서버가 보내는 레거시 'paid' 문자열은
+      access-mode.js 의 사다리가 explorer 와 동급으로 읽어주므로 기존 구독자는 그대로 유지된다. */
+export { TIER } from './access-mode.js';
+import { TIER } from './access-mode.js';
 
 /* 유료로 여는 "기능". 레이어가 아니다.
    ⚠️ 여기에 레이어 id 를 넣지 말 것 — 그 순간 위 판단이 무너진다. */
+/* ⚠️⚠️ 2026-09-02 — 위성 3종(satAll · satDeep · passes)을 무료로 풀었다.
+   판정 기준: **다른 데서도 볼 수 있는가.**
+     · Celestrak 카탈로그는 공개고, SGP4 궤도선과 통과 예보는 Heavens-Above 같은
+       무료 서비스가 이미 준다. 우리만 만드는 것이 아니므로 가둘 근거가 없다.
+   ⚠️ 무료로 푼 것이 "성능 가드를 없앤 것"은 아니다. 무거운 그룹의 확인 대화와
+      기기별 표시 수 제한(orbits.satsCapped)은 그대로 남는다 — ui-sat.js 참고.
+   남은 둘은 **돈이 실제로 나가는 것**이라 유료다 (billing.js 기준 ④ 원가). */
 export const PAID_CAP = {
-  PASSES:   'passes',    // 내 위치 위성 통과 예보
-  ALARMS:   'alarms',    // 통과·이벤트 알람
-  SAT_ALL:  'satAll',    // 무거운 위성 그룹 (starlink / all)
-  SAT_DEEP: 'satDeep',   // 궤도 추적선. 용도 상세는 무료로 공개한다.
-  HISTORY:  'history',   // 되감기 · 이력
+  ALARMS:   'alarms',    // 통과·이벤트 알람 — 사용자별로 계산해 보내는 양
+  HISTORY:  'history',   // 되감기 · 이력 — 우리가 쌓는 장기 저장
+};
+
+/* 기능마다 **어느 티어부터 열리는가**. v5.3 §1.4 기준.
+   ⚠️ 여기 없는 기능은 무료다. 목록에 넣는 것이 곧 잠그는 것이므로
+      추가할 때는 billing.js 의 기준(①보고서 ②차트 ③시뮬레이션 ④원가)에 걸리는지 먼저 본다.
+   ⚠️ 둘 다 EXPLORER 다 — v5.3이 Watch/Follow 와 PAST·3D Replay 를 EXPLORER 에 뒀다.
+      INTELLIGENCE 는 그 위(deep history · 비교 · 시나리오 · 보고서)를 맡는다. */
+export const CAP_TIER = {
+  [PAID_CAP.ALARMS]:  TIER.EXPLORER,
+  [PAID_CAP.HISTORY]: TIER.EXPLORER,
 };
 
 /* ── 레이어 정의 ──────────────────────────────────────────────── */

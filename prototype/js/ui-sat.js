@@ -6,9 +6,7 @@
 import { orbits } from './layers/space.js';
 import { SAT_GROUPS } from './layers/satcat.js';
 import { store } from './store.js';
-import { PAID_CAP } from './config.js';
 import { i18n } from './i18n.js';
-import { CONFIG } from './config.local.js';
 
 const $ = s => document.querySelector(s);
 
@@ -134,28 +132,11 @@ export const satPanel = {
       ? [...orbits.selected, g.id]
       : orbits.selected.filter(x => x !== g.id);
 
-    // 무거운 그룹은 승인받고 로드 (요청사항)
-    /* 무거운 그룹(스타링크 8,000 / 전체 16,000)은 유료 기능이다.
-       ⚠️ "데이터가 유료"가 아니라 "대역폭·연산이 유료"다.
-          기본 그룹은 전부 무료로 열려 있다 — 위성을 못 보게 막는 게 아니다. */
-    if (cb.checked && g.heavy && !store.can(PAID_CAP.SAT_ALL)) {
-      cb.checked = false;
-      /* ⚠️ 구독을 감춰 둔 동안 — 이유(대역폭·연산)는 그대로 말하되
-         "구독하면 열린다"는 말은 빼야 한다. 지금은 열 방법이 없다. */
-      if (!CONFIG.SHOW_SUBSCRIBE) {
-        const { toast } = await import('./ui.js');
-        toast(ko
-          ? `${g.ko}는 위성이 약 ${g.est.toLocaleString()}개입니다. 내려받는 양이 커서 아직 열지 않았습니다`
-          : `${g.en} has ~${g.est.toLocaleString()} satellites — too heavy to open yet`);
-        return;
-      }
-      const { subscribeSheet } = await import('./ui-subscribe.js');
-      subscribeSheet.open(ko
-        ? `${g.ko}는 위성이 약 ${g.est.toLocaleString()}개입니다. 내려받는 양과 계산이 커서 구독 기능으로 두었습니다 — 기본 그룹은 모두 무료로 보실 수 있습니다.`
-        : `${g.en} has ~${g.est.toLocaleString()} satellites. The download and computation are heavy, so it is a subscriber feature — all the basic groups stay free.`);
-      return;
-    }
-
+    /* 무거운 그룹(스타링크 8,000 / 전체 16,000)은 **2026-09-02부터 무료**다.
+       Celestrak 카탈로그는 공개고 다른 앱도 다 보여준다 — 우리만 만드는 게 아니라 가둘 근거가 없다.
+       ⚠️ 다만 무거운 건 여전히 사실이다. 유료 게이트만 없앴고 성능 보호는 그대로 둔다:
+          ① 아래 확인 대화  ② renderStatus 의 기기별 표시 수 제한 고지.
+          "무료로 풀었다"와 "아무 경고 없이 16,000개를 그린다"는 다른 말이다. */
     if (cb.checked && g.heavy) {
       const est = orbits.estimate(next);
       const msg = ko
@@ -185,7 +166,7 @@ export const satPanel = {
     }
     const n = orbits.sats.length;
     /* ⚠️ 기기 성능 때문에 잘렸으면 **반드시 그 사실을 적는다.**
-       유료 기능(SAT_ALL)이라 조용히 버리면 속이는 것이 된다.
+       무료로 풀었다고 조용히 버려도 되는 게 아니다 — 켰는데 80%가 없으면 그건 속이는 것이다.
        실측: 위성 1개당 SGP4+좌표변환 0.006ms → 16,123개면 100ms 틱마다 99ms.
        그대로 두면 코어 하나를 통째로 문다. */
     if (orbits.satsCapped) {

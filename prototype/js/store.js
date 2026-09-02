@@ -1,7 +1,7 @@
 // 앱 상태 — 티어, 레이어 on/off, 카메라 상태
-import { LAYER_DEFS, TIER, T } from './config.js';
+import { LAYER_DEFS, TIER, T, CAP_TIER } from './config.js';
 import { CONFIG } from './config.local.js';
-import { decideCapabilityAccess, isFreeOpenMode } from './access-mode.js';
+import { decideCapabilityAccess, isFreeOpenMode, tierAtLeast } from './access-mode.js';
 
 const LS_TIER = 'earthus.tier';
 const LS_LAYERS = 'earthus.layers';
@@ -138,7 +138,10 @@ export const store = {
     localStorage.setItem(LS_TIER, t);
     this.emit('tier', t);
   },
-  isPaid() { return this.tier === TIER.PAID; },
+  /* ⚠️ 이름은 그대로 두되 뜻이 "유료 등급 이상인가"로 바뀌었다 (2026-09-02, 3단계 전환).
+     부르는 쪽이 많아 이름을 바꾸지 않았다. 정확한 단계가 필요하면 atLeast() 를 쓴다. */
+  isPaid() { return tierAtLeast(this.tier, TIER.EXPLORER); },
+  atLeast(tier) { return tierAtLeast(this.tier, tier); },
   isFreeOpen() { return isFreeOpenMode(CONFIG.MONETIZATION_MODE); },
 
   /** 이 레이어를 지금 쓸 수 있는가 (구현 여부만 본다 — 레이어는 전부 무료다) */
@@ -146,14 +149,23 @@ export const store = {
     if (def.blocked) return false;
     if (def.tier === TIER.FREE) return true;
     return decideCapabilityAccess({ mode: CONFIG.MONETIZATION_MODE,
-      paidEntitled: this.isPaid() }).allowed;
+      userTier: this.tier, requiredTier: def.tier }).allowed;
   },
 
   /** 이 "기능"을 쓸 수 있는가 (PAID_CAP).
       ⚠️ 레이어와 다르다. 레이어는 무료, 기능이 유료다. */
   can(cap) {
+    return this.capAccess(cap).allowed;
+  },
+
+  /** can() 과 같은 판정인데 이유와 필요한 티어까지 준다 — 안내 문구가 쓴다. */
+  capAccess(cap) {
+    /* ⚠️ CAP_TIER 에 없는 기능은 무료다. 예전에는 PAID_CAP 에 있기만 하면 유료였는데,
+       그러면 표에서 빼는 것만으로 조용히 잠기는 실수가 난다. 요구 티어를 명시한 것만 잠근다. */
+    const required = CAP_TIER[cap];
+    if (!required) return Object.freeze({ allowed: true, reason: 'NOT_GATED' });
     return decideCapabilityAccess({ mode: CONFIG.MONETIZATION_MODE,
-      paidEntitled: this.isPaid(), available: !!cap }).allowed;
+      available: !!cap, userTier: this.tier, requiredTier: required });
   },
 
   /* ── 장면 ─────────────────────────────────────────────── */

@@ -245,6 +245,7 @@ uniform vec3 uCamPos;
 uniform sampler2D uCloudTex;
 uniform float uCloudShadow;
 uniform float uCloudLum;
+uniform float uCloudGfs;   // 1이면 구름 텍스처 A 가 선형 구름량(GFS 프레임)
 uniform sampler2D uSnowTex;
 uniform float uHasSnow;
 uniform sampler2D uFocusMask;
@@ -373,6 +374,7 @@ void main() {
       );
       vec4 ct = texture2D(uCloudTex, suv);
       float ca = mix(ct.a, dot(ct.rgb, vec3(0.3333)), uCloudLum);
+      if (uCloudGfs > 0.5) ca = smoothstep(0.28, 0.80, ct.a) * 0.92;
       color *= 1.0 - ca * 0.38 * dayMask;
     }
   }
@@ -1064,8 +1066,18 @@ uniform float uBlend; // 예보 프레임 보간 (0=uTex, 1=uTexB)
 uniform float uOpacity;
 uniform float uReliefK;
 uniform vec3 uSunDir;
+uniform float uGfsFrames;   // 1이면 uTex/uTexB 가 GFS 프레임(A=구름량, RG=바람)
+uniform float uAdvectSec;   // 프레임 간격(초). 이류 거리 = 바람 × 시간
 varying vec3 vUnit;
 const float PI = 3.141592653589793;
+
+// 프레임의 RG 채널 → m/s (Lambda 인코딩: (v+64)/128*255)
+vec2 gfsWind(vec4 t) { return t.rg * 128.0 - 64.0; }
+// m/s 바람이 dt 초 동안 옮기는 거리를 equirect uv 단위로
+vec2 windToUv(vec2 w, float dt, float lat) {
+  float cl = max(cos(lat), 0.15);
+  return vec2((w.x * dt) / (6371000.0 * cl) / (2.0 * PI), (w.y * dt) / 6371000.0 / PI);
+}
 
 void main() {
   vec3 n = normalize(vUnit);
@@ -1073,13 +1085,39 @@ void main() {
   float lon = atan(n.x, n.z);
   vec2 uv = vec2(lon / (2.0 * PI) + 0.5, lat / PI + 0.5);
   vec4 t = texture2D(uTex, uv);
-  if (uBlend > 0.001) {
-    vec4 tb = texture2D(uTexB, uv);
-    t = mix(t, tb, uBlend);
+  float a;
+  vec3 tint;
+  if (uGfsFrames > 0.5) {
+    // 반라그랑주 이류: 앞 프레임은 바람을 따라 f·dt 만큼 앞으로, 뒤 프레임은 (1-f)·dt 만큼 뒤로 끌어와 섞는다.
+    // 그냥 섞으면 구름이 '이동'하지 않고 '녹았다 생긴다'. 사이 값은 보간이며 모델 출력이 아니다.
+    float f = uBlend;
+    vec2 dA = windToUv(gfsWind(t), f * uAdvectSec, lat);
+    vec4 ta = texture2D(uTex, uv - dA);
+    vec4 tb0 = texture2D(uTexB, uv);
+    vec2 dB = windToUv(gfsWind(tb0), (1.0 - f) * uAdvectSec, lat);
+    vec4 tb = texture2D(uTexB, uv + dB);
+    // A = 연직 구름수(CWAT)를 log 로 누른 두께. 0.005 kg/m² 이하 0, 2 kg/m² 이상 1.
+    // 구름 '비율'로 그리면 지구 절반이 90% 라 베일이 된다(실측) — 두께가 위성과 같은 문법이다.
+    // 인코딩 하한이 0.005 kg/m² 라 A 는 아주 얇은 구름부터 0 을 벗어난다.
+    // 위성 눈으로 보이는 구름은 대략 0.03 부터 옅게, 0.5 쯤이면 불투명 — 그 구간으로 곡선을 잡는다.
+    // (A 0.28 ≈ 0.03 kg/m², A 0.80 ≈ 0.53 kg/m²). 실측: 이 곡선에서 불투명 0.3 초과가 지구의 ~10%.
+    float thick = smoothstep(0.28, 0.80, mix(ta.a, tb.a, f));
+    // 고층 비율(B)은 권운 베일. 두꺼운 구름이 없는 곳에서만, 아주 옅게.
+    float cirrus = mix(ta.b, tb.b, f);
+    a = clamp(thick * 0.92 + cirrus * 0.06 * (1.0 - thick), 0.0, 1.0);
+    // 불투명도가 포화된 넓은 구름대 안에서도 결이 보이게, 두께(연속값)로 밝기를 준다.
+    // 두꺼운 핵은 희고 가장자리는 회색 — 위성 영상의 문법과 같다. 값을 바꾸는 게 아니라 밝기만.
+    float core = mix(ta.a, tb.a, f);
+    tint = vec3(0.70 + 0.30 * smoothstep(0.35, 1.0, core));
+  } else {
+    if (uBlend > 0.001) {
+      vec4 tb = texture2D(uTexB, uv);
+      t = mix(t, tb, uBlend);
+    }
+    a = mix(t.a, dot(t.rgb, vec3(0.3333)), uAlphaFromLum);
+    // 텍스처 색 = 의미 색 (흰색=구름, 파랑=비, 연보라=눈). 휘도 모드(IR)는 백색.
+    tint = mix(t.rgb / max(max(t.r, max(t.g, t.b)), 0.2), vec3(1.0), uAlphaFromLum);
   }
-  float a = mix(t.a, dot(t.rgb, vec3(0.3333)), uAlphaFromLum);
-  // 텍스처 색 = 의미 색 (흰색=구름, 파랑=비, 연보라=눈). 휘도 모드(IR)는 백색.
-  vec3 tint = mix(t.rgb / max(max(t.r, max(t.g, t.b)), 0.2), vec3(1.0), uAlphaFromLum);
   float day = smoothstep(-0.08, 0.15, dot(n, uSunDir));
   // 밤 바닥값. 예전엔 밝기 0.22 와 알파 0.2 가 곱해져 낮의 4% 로 떨어졌고,
   // 밤쪽 구름이 사실상 사라졌다 — 구름이 5일간 어디로 가는지 보는 제품에서
@@ -1121,6 +1159,9 @@ class CloudManager {
       uCthTex: { value: null },
       uCthRect: { value: new THREE.Vector4(0, 0, 0, 0) },
       uSunDir: { value: new THREE.Vector3(0, 0, 1) },
+      // GFS 프레임 모드: A=구름량(선형) · RG=700hPa 바람. 프레임 사이는 바람으로 이류한다.
+      uGfsFrames: { value: 0 },
+      uAdvectSec: { value: 10800 },
     };
     this.reliefOn = false;
     this.cthLoaded = false;
@@ -1575,7 +1616,71 @@ class CloudManager {
     return CloudManager.texDefaults(new THREE.CanvasTexture(can));
   }
 
+  // GFS 1.0° 프레임 (Lambda gfs-cloud-forecast → S3 clouds/gfs-fc). 41장, 3시간 간격, 5일.
+  // 예전 방식은 Open-Meteo 지점 450개(12°, 적도 1,300km)를 질의해 5일치를 통째로 받았다.
+  // 그건 뭉개져 보였고 그건 표현이 아니라 자료의 성김이었다. 이제 원자료 격자를 그대로 쓴다.
   async loadGfs() {
+    const S3B = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+    let mf = null;
+    try {
+      const r = await fetch(`${S3B}/clouds/gfs-fc/manifest.json`, { cache: 'no-cache' });
+      if (r.ok) mf = await r.json();
+    } catch (e) { mf = null; }
+    if (!mf || !Array.isArray(mf.steps) || mf.steps.length < 2) {
+      console.warn('[earthus-cloud] GFS 프레임 매니페스트 없음 → 지점 방식으로 물러남');
+      return this.loadGfsPoints();
+    }
+    const frames = mf.steps.map((st) => ({
+      h: st.h, t: Date.parse(st.valid), url: `${S3B}/clouds/gfs-fc/${st.file}`,
+    })).filter((f) => Number.isFinite(f.t)).sort((a, b) => a.t - b.t);
+    const stepMs = (mf.stepHours || 3) * 3.6e6;
+    this.gfs = {
+      frames, stepMs, run: mf.run, texCache: new Map(), mode: 'frames',
+      HOURS: frames.length, timeBase: frames[0].t,
+    };
+    this.uniforms.uAdvectSec.value = stepMs / 1000;
+    this.lastOffsetMs = 0;
+    // 현재 시각에 해당하는 프레임 둘을 먼저 받는다. 나머지는 스크럽할 때 받는다.
+    const i0 = this.frameIndexAt(0).i0;
+    const texA = await this.frameTexAt(i0);
+    this.frameTexAt(Math.min(i0 + 1, frames.length - 1));
+    const runKo = mf.run ? mf.run.replace('T', ' ').slice(0, 16) + 'Z' : '';
+    return {
+      tex: texA, lum: 0, frames: true,
+      label: `GFS 1.0° 5일 예보 · 구름 두께(CWAT) · ▶ 재생 · 프레임 3시간 · 사이는 700hPa 바람으로 이류한 보간 (NOAA NOMADS · 런 ${runKo})`,
+    };
+  }
+
+  // 프레임 인덱스: 지금+ms 가 몇 번째 프레임과 그 다음 사이 어디쯤인가
+  frameIndexAt(ms) {
+    const { frames, stepMs } = this.gfs;
+    const hF = Math.max(0, Math.min(frames.length - 1.001, (Date.now() + ms - frames[0].t) / stepMs));
+    const i0 = Math.floor(hF);
+    return { i0, f: hF - i0, hF };
+  }
+
+  // 프레임 텍스처를 받는다(캐시). 아직 안 왔으면 Promise. 온 뒤에 현재 오프셋을 다시 적용한다.
+  frameTexAt(i) {
+    const g = this.gfs;
+    const c = g.texCache.get(i);
+    if (c && c.isTexture) return Promise.resolve(c);
+    if (c && c.then) return c;
+    const pr = new Promise((resolve) => {
+      const loader = new THREE.TextureLoader();
+      loader.setCrossOrigin('anonymous');
+      loader.load(g.frames[i].url, (tex) => {
+        CloudManager.texDefaults(tex);
+        g.texCache.set(i, tex);
+        resolve(tex);
+        // 이 프레임을 기다리던 화면이 있으면 지금 반영한다
+        if (this.mode === 'gfs' && this.gfs === g) this.setForecastOffset(this.lastOffsetMs || 0);
+      }, undefined, () => { g.texCache.delete(i); resolve(null); });
+    });
+    g.texCache.set(i, pr);
+    return pr;
+  }
+
+  async loadGfsPoints() {
     // 5일 예보: 구름+강수(비/눈) 시계열. 1단계 전지구 12°(450지점, 즉시 재생 가능),
     // 2단계 동아시아 4° 상세(태풍·전선 이동용)가 65초 뒤 자동 합류. 분당 한도(위치당 1콜) 준수.
     const HOURS = 120;
@@ -1620,6 +1725,28 @@ class CloudManager {
   setForecastOffset(ms) {
     if (this.mode !== 'gfs' || !this.gfs) return;
     this.lastOffsetMs = ms;
+    if (this.gfs.mode === 'frames') {
+      const g = this.gfs;
+      const { i0, f, hF } = this.frameIndexAt(ms);
+      const i1 = Math.min(i0 + 1, g.frames.length - 1);
+      const a = g.texCache.get(i0);
+      const b = g.texCache.get(i1);
+      if (!a || !a.isTexture) this.frameTexAt(i0);
+      if (!b || !b.isTexture) this.frameTexAt(i1);
+      if (i1 + 1 < g.frames.length) this.frameTexAt(i1 + 1);   // 다음 것도 미리
+      if (a && a.isTexture) {
+        this.uniforms.uTex.value = a;
+        this.earthUniforms.uCloudTex.value = a;
+        this.uniforms.uTexB.value = (b && b.isTexture) ? b : a;
+        this.uniforms.uBlend.value = (b && b.isTexture) ? f : 0;
+      }
+      const valid = new Date(g.frames[0].t + hF * g.stepMs);
+      const offH = Math.round((valid.getTime() - Date.now()) / 3.6e6);
+      const pending = (a && a.isTexture && b && b.isTexture) ? '' : ' · <span style="opacity:.7">프레임 받는 중…</span>';
+      this.noteEl.innerHTML = `<span class="badge model">MODEL</span> GFS 1.0° 예보 T${offH >= 0 ? '+' : ''}${offH}h · 유효 ${valid.getMonth() + 1}/${valid.getDate()} ${String(valid.getHours()).padStart(2, '0')}시`
+        + `<br/><span style="opacity:.75">구름 <b>두께</b>(연직 구름수 CWAT)로 그림 · 프레임 3시간 간격(NOAA GFS 1.0°, 적도 111km) · 사이는 700hPa 바람으로 이류한 <b>보간</b>이며 모델 출력이 아닙니다</span>${pending}`;
+      return;
+    }
     const hF = Math.max(0, Math.min(this.gfs.HOURS - 1.001, (Date.now() + ms - this.gfs.timeBase) / 3.6e6));
     const i0 = Math.floor(hF);
     const texA = this.gfsFrameTex(i0);
@@ -1681,6 +1808,8 @@ class CloudManager {
     }
     this.earthUniforms.uCloudTex.value = entry.tex;
     this.earthUniforms.uCloudLum.value = entry.lum;
+    this.earthUniforms.uCloudGfs.value = entry.frames ? 1 : 0;
+    this.uniforms.uGfsFrames.value = entry.frames ? 1 : 0;
     this.earthUniforms.uCloudShadow.value = 1;
     this.mesh.visible = true;
     this.noteEl.textContent = entry.label;
@@ -2052,6 +2181,7 @@ async function main() {
     uCloudTex: { value: null },
     uCloudShadow: { value: 0 },
     uCloudLum: { value: 0 },
+    uCloudGfs: { value: 0 },
     uSnowTex: { value: null },
     uHasSnow: { value: 0 },
     uFocusMask: { value: null },
@@ -3651,14 +3781,20 @@ async function main() {
         if (!ok) { cloudBeforeScrub = null; return; }
         markCloudBtn('gfs');
         clouds.setForecastOffset(timeOffsetMs);
-      }).catch(() => { cloudSwitching = false; cloudBeforeScrub = null; });
+        refreshTimeLabel();   // 문구가 '⚠ 관측값'에서 '예보'로 바뀌어야 한다
+      }).catch(() => { cloudSwitching = false; cloudBeforeScrub = null; refreshTimeLabel(); });
     } else if (!far && cloudBeforeScrub && clouds.mode === 'gfs') {
       const back = cloudBeforeScrub;   // 지금으로 돌아오면 관측을 되돌린다
       cloudBeforeScrub = null;
       cloudSwitching = true;
-      clouds.set(back).then(() => { cloudSwitching = false; markCloudBtn(back); })
-        .catch(() => { cloudSwitching = false; });
+      clouds.set(back).then(() => { cloudSwitching = false; markCloudBtn(back); refreshTimeLabel(); })
+        .catch(() => { cloudSwitching = false; refreshTimeLabel(); });
     }
+  };
+  // 스트립 문구는 슬라이더 input 때 만들어진다. 모드가 비동기로 바뀐 뒤엔 다시 만들어 줘야 한다.
+  const refreshTimeLabel = () => {
+    const r = document.getElementById('ts-range');
+    if (r) r.dispatchEvent(new Event('input', { bubbles: true }));
   };
 
   // ---------- 진단 HUD ----------

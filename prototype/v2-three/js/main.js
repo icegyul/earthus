@@ -19,7 +19,7 @@ import { GalaxyView } from './galaxy-view.js?v=1';
 import { SkyView } from './sky-view.js?v=1';
 import { AetherusLink } from './aetherus-link.js?v=2';
 import { SeaFloor } from './seafloor.js?v=2';
-import { TravelScene } from './travel.js?v=1';
+import { TravelScene } from './travel.js?v=2';
 // 익명 이용 집계 — 개인 식별자를 보내지 않는다 (날짜·이벤트명·횟수만). usage.js 주석 참조.
 import { usage } from './usage.js?v=1';
 import { FlightRoute, routeCardHtml } from './route.js?v=4';
@@ -4055,6 +4055,9 @@ async function main() {
   cloudSeg.querySelectorAll('button').forEach((btn) => {
     btn.addEventListener('click', () => {
       markCloudBtn(btn.dataset.cloud);
+      // 손으로 고른 것만 기억한다. 시간 스크럽의 자동 전환은 기억하지 않는다 —
+      // 그건 사용자의 선택이 아니라 그 시각을 보여주기 위한 임시 전환이다.
+      try { localStorage.setItem(CLOUD_PREF, btn.dataset.cloud); } catch (e) { /* 저장소가 막힌 환경 */ }
       clouds.set(btn.dataset.cloud).then((ok) => { if (!ok) markCloudBtn('off'); });
     });
   });
@@ -4385,6 +4388,25 @@ async function main() {
   // 링크로 들어왔다면 그 화면을 되살린다 (국가 데이터가 준비된 뒤라 선택도 복원된다)
   const incoming = parseLink();
   if (incoming) applyLink(incoming).catch((e) => console.warn('[earthus-three] 링크 복원 실패', e));
+
+  // 접속하면 지구만 뜨고 구름이 없었다 — 매번 손으로 켜야 했다.
+  // 지구가 뜬 뒤에 전지구 관측 구름(NOAA GMGSI)을 얹는다.
+  // 로딩바 뒤로 미루는 이유: 지형 로딩을 한 프레임도 늦추지 않기 위해서다.
+  // 관측을 기본으로 두는 이유: 첫 화면은 '지금의 지구'여야 하고, GMGSI 는 전지구를
+  // 덮는다(천리안은 동아시아만 본다). 시간을 밀면 예보로 자동 전환된다.
+  const CLOUD_PREF = 'earthus.v2.cloud';
+  let cloudPref = null;
+  try { cloudPref = localStorage.getItem(CLOUD_PREF); } catch (e) { /* 저장소가 막힌 환경 */ }
+  if (!(incoming && incoming.cloud) && cloudPref !== 'off') {
+    // 지난번에 고른 것이 있으면 그것을, 없으면 관측을 켠다. 직접 끈 사람에게는 다시 켜지 않는다.
+    const want = cloudPref || 'obs';
+    setTimeout(() => {
+      markCloudBtn(want);
+      clouds.set(want)
+        .then((ok) => { if (!ok) markCloudBtn('off'); })
+        .catch(() => markCloudBtn('off'));
+    }, 250);
+  }
 
   // 이미 열린 탭 주소창에 링크를 붙여 넣는 경우 — 같은 문서라 새로고침이 안 되므로 직접 반영한다.
   // 우리가 쓴 주소(replaceState)는 hashchange를 일으키지 않으니 되돌이표가 생기지 않는다.

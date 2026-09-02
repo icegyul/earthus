@@ -153,7 +153,44 @@
 | 6 | 발견 피처 materialize: 시군구별 7개 신호 산출 | 미착수 (**남은 핵심**) | `mapKtoSignalToFeature`는 `{placeId, metric, normalizedValue, observedAt}`을 기대하고, `buildDiscoveryFeatures`가 받는 featureKey는 demand·novelty·relation·diversity·dwell·weather·accessibility 7종. 정규화 스냅샷 → 이 행 형태로 바꾸는 계층이 없다 |
 | 7 | 스케줄 등록 (스윕 5종 + barrierFree/english 갱신) | 미착수 | 현재 barrierFree·english는 8/20 자료라 UI 신선도 기준(48시간)을 넘겨 "지난 자료"로 표시된다. 배포 IAM 사용자는 `events:ListTargetsByRule`이 없어 별도 권한 필요 |
 
+### 3.3.1 스냅샷 규모 문제 (집중률·연관 관광지)
+
+**집중률**: 시군구 270곳 전역 스윕이 성공해 164,720행을 받았으나 공개 스냅샷이 **64MB**가 됐다(`app/tourism/kto/concentration/tatsCnctrRatedList.json`, 지역당 약 610행). 브라우저가 받을 크기가 아니다. 현재 UI는 `summary.json`만 읽으므로 화면이 깨지지는 않지만, **이 파일을 프런트에서 직접 fetch 하면 안 된다**. 올바른 해법은 발견 피처 산출 단계에서 서버가 이 원본을 읽어 시군구별 대표값(평균·최대 집중률)으로 줄인 작은 파일을 내보내는 것이다. 그러면 270행이면 충분하다.
+
+**연관 관광지**: 시군구 한 곳(종로구)만으로 1,597행(202606)이다. 270곳을 그대로 합치면 약 40만 행, 100MB를 넘는다.
+
+### 3.3.2 연관 관광지의 커버리지 절충
+
+기준월 탐침에서 `related/areaBasedList1`은 **시군구 한 곳(종로구)만으로 1,597행**(202606)을 돌려줬다. 시군구 270곳을 그대로 합치면 약 40만 행, 정규화 후 100MB를 넘는다. 브라우저에 내보낼 수 있는 크기가 아니고, 지역마다 페이지가 여러 장 생겨 페이지 대기만으로 Lambda 실행 한도를 넘긴다.
+
+당장은 지역당 페이지 상한(`pageLimit`)으로 100행씩만 받아 약 27,000행(영문 관광정보 25,398행과 비슷한 규모)으로 맞췄고, 상한에 걸린 지역 수를 `truncatedRegionCount`로 원문 증거와 결과에 남긴다. **주의: 앞 100행이 "가장 연관성 높은 100개"라는 보장은 없다.** API에 순위 필터 파라미터가 없어 응답 앞부분을 자르는 것뿐이므로, 지역별 대표 연관성으로 쓰려면 아래 중 하나가 필요하다.
+
+- 지역별 파일 분리: `/tourism/kto/related/<signguCd>.json`으로 나눠 저장하고 화면에서 필요한 지역만 불러온다(권장).
+- 수집 후 `rlteRank` 상위 N개만 남겨 발행. 호출 수는 그대로지만 스냅샷이 작아진다.
+
 **일 호출량 실측 기준**: 호출당 약 0.43초, 시군구 270곳 스윕 1회 ≈ 116초 / 270콜. 스윕 3종 = 810콜, 시도 지수 5종 = 90콜, 방문자수 7일 = 14콜. 매일 전부 돌리면 약 914콜로 개발계정 한도(1,000)에 근접하므로, 시군구 스윕은 격일 또는 주 2회로 두는 편이 안전하다.
+
+### 3.3.3 발견 피처 산출 설계 (남은 핵심)
+
+코드는 이미 있고 비어 있는 것은 그 사이를 잇는 계층 하나다.
+
+- 소비 측: `mapKtoSignalToFeature`(`v11/provider/canonical-mappers.js`)는 `{placeId, metric, normalizedValue, sourceId, observedAt, validAt, confidence}`를 받는다.
+- 그 다음: `buildDiscoveryFeatures`(`v11/tourism/discovery-feature-builder.js`)가 받는 `featureKey`는 정확히 7종 — demand · novelty · relation · diversity · dwell · weather · accessibility.
+- 그 다음: `tourismDiscoveryScore`(`v06/tourism/discovery.js`)가 가중합하고, `buildWhyNow`(`v11/tourism/why-now.js`)가 한국어 이유 문구를 만든다.
+
+즉 필요한 것은 **정규화 스냅샷 → 시군구별 7개 신호(0~1)** 변환기 하나다. 주체(subjectId)는 시군구 코드로 잡는다.
+
+| featureKey | 출처 | 산출 |
+|---|---|---|
+| `demand` | 수요 강도(`areaTarExpDsList`) 또는 방문자수 추이 | 지역 간 백분위 |
+| `dwell` | 수요 강도 체류(`areaTarSjrnDsList`) | 지역 간 백분위 |
+| `diversity` | 관광 다양성(`areaTouDivList`) | 지수값 백분위 |
+| `relation` | 연관 관광지 | 지역별 연관 간선 수 또는 상위 순위 밀도 |
+| `novelty` | 방문자수 + 집중률 | 방문 규모가 낮으면서 집중률 예측이 오르는 지역이 높게 |
+| `accessibility` | 무장애 여행 | 지역 내 무장애 콘텐츠 수 백분위 |
+| `weather` | KMA | 기존 예보 적합도 |
+
+주의할 점 셋. (1) 집중률·중심 관광지 원본은 64MB·12.7MB라 이 단계에서 반드시 지역별 대표값으로 줄여 발행한다. (2) 방문자수는 관광객 수가 아니고 집중률은 상대 지수이므로, 정규화 결과에도 `isTouristCount: false` 계열 의미 플래그를 잃지 않고 옮긴다. (3) 산출물은 `EARTHUS DISCOVERY`로 표기하고 공사 공식 추천으로 보이게 하지 않는다(VS-06).
 
 ### 3.4 4주 일정
 

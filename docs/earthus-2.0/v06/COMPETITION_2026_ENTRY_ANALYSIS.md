@@ -77,18 +77,20 @@
 
 ### 2.1 승인받은 공공데이터 10건 대 코드 매핑
 
-| 승인 데이터 | 코드 서비스 id | 계약 | 라이브 상태 (earthus.net/tourism/kto/summary.json, 2026-09-01 19:37Z) |
+| 승인 데이터 | 코드 서비스 id | 세션 시작 (9/1 19:37Z) | **2026-09-02 15:19Z 작업 후** |
 |---|---|---|---|
-| 웰니스관광정보 | `wellness` | 9 op | **AVAILABLE** 202건 (8/20 수집) |
-| 영문 관광정보서비스_GW | `english` | 12 op | **AVAILABLE** 25,398건 (8/20) |
-| 무장애 여행 정보 | `barrierFree` | 11 op | **AVAILABLE** 11,644건 (8/20) |
-| 빅데이터_지역별 방문자수_GW | `visitors` | 2 op | **UNAVAILABLE, 0건** (9/1 일일 수집이 빈 결과) |
-| 관광지 집중률 방문자 추이 예측 | `concentration` | 1 op | UNAVAILABLE 0건 |
-| 관광지별 연관 관광지 | `related` | 2 op | UNAVAILABLE 0건 |
-| 기초지자체 중심 관광지 | `localHub` | 1 op | UNAVAILABLE 0건 |
-| 지역별 관광 다양성 | `diversity` | 3 op | 계약만 있고 **한 번도 수집 안 됨** |
-| 지역별 관광 수요 강도 | `demandStrength` | 2 op | 계약만 있고 **한 번도 수집 안 됨** |
-| 국민체육진흥공단_전국체육시설 | 없음 | 없음 | **코드에 전혀 없음** |
+| 관광지 집중률 방문자 추이 예측 | `concentration` | UNAVAILABLE 0건 | **AVAILABLE 164,720건** (시군구 270곳 전역) |
+| 빅데이터_지역별 방문자수_GW | `visitors` | UNAVAILABLE 0건 | **AVAILABLE 857건** (시군구 807 + 시도 50) |
+| 무장애 여행 정보 | `barrierFree` | AVAILABLE 11,644건 (8/20, 신선도 초과) | **AVAILABLE 11,649건** (당일 갱신) |
+| 웰니스관광정보 | `wellness` | AVAILABLE 202건 (8/20, 신선도 초과) | 202건 — 갱신 실패, `langDivCd` 필수 |
+| 영문 관광정보서비스_GW | `english` | AVAILABLE 25,398건 (8/20, 신선도 초과) | **AVAILABLE 25,405건** (당일 갱신) |
+| 관광지별 연관 관광지 | `related` | UNAVAILABLE 0건 | **AVAILABLE 22,234건** (270곳, 지역당 100행 상한) |
+| 기초지자체 중심 관광지 | `localHub` | UNAVAILABLE 0건 | **AVAILABLE 20,785건** (270곳) |
+| 지역별 관광 다양성 | `diversity` | 한 번도 수집 안 됨 | 여전히 0건 — 202601~202606 전부 빈 응답 |
+| 지역별 관광 수요 강도 | `demandStrength` | 한 번도 수집 안 됨 | 여전히 0건 — 같은 원인 추정 |
+| 국민체육진흥공단_전국체육시설 | 없음 | 코드에 전혀 없음 | 변화 없음 |
+
+화면 기준으로는 여행 시트의 KTO 카드에서 **"자료 있음"이 1개 → 6개**가 됐다(계약 함수 `ktoSummaryRows`로 직접 확인). 나머지 셋 중 웰니스는 파라미터 하나 문제이고, 다양성·수요강도는 공급자 쪽 공표 여부 문제다.
 
 - 수집기: `aws/tourism-flow/kto_provider.py`(9서비스 allowlist, 계약·스키마 드리프트 검사), `kto_collector.py`(S3 lease, raw→normalized→summary), `kto_pipeline.py`(의미 분리 정규화). 키는 Lambda 환경변수 `DATA_GO_KR_SERVICE_KEY`만 사용하고 브라우저에는 노출되지 않는다.
 - 스케줄: `aws/configure-tourism-flow-operations.sh`는 서울 실시간 인구 5분 rule과 KTO visitors 일일 rule(cron 19:37Z)만 만든다. 나머지 7개 서비스는 수동 1회 수집(8/20) 이후 방치.

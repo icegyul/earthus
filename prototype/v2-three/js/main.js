@@ -23,6 +23,7 @@ import { TravelScene } from './travel.js?v=2';
 // 익명 이용 집계 — 개인 식별자를 보내지 않는다 (날짜·이벤트명·횟수만). usage.js 주석 참조.
 import { usage } from './usage.js?v=1';
 import { FlightRoute, routeCardHtml } from './route.js?v=4';
+import { PrecipIcons } from './precip-icons.js?v=4';
 // 정본 엔진(prototype/js/earthus2/v02)으로 가는 유일한 이음매 — 어휘·신선도·품질 예산의 출처
 import {
   installFetchObserver, ThermalGovernor, scenePlan, layerDataState, layerTruthLine,
@@ -1007,11 +1008,47 @@ class MapView {
 // ③ 모델(GFS 5° 격자, Open-Meteo). 모두 같은 구름 셸 셰이더로 렌더.
 // ---------------------------------------------------------------------------
 
+// 1° 격자를 10배 확대하면 이중선형 보간이 마름모꼴로 뭉갠다.
+// Catmull-Rom 으로 이으면 같은 값에서 훨씬 곱게 나온다 — 없는 detail 을 만드는 게 아니라
+// 있는 값 사이를 낫게 잇는 것이다. (셈은 늘지만 텍스처가 작아 부담이 적다)
+const BICUBIC_GLSL = /* glsl */ `
+vec4 cubicW(float v) {
+  vec4 n = vec4(1.0, 2.0, 3.0, 4.0) - v;
+  vec4 s = n * n * n;
+  float x = s.x;
+  float y = s.y - 4.0 * s.x;
+  float z = s.z - 4.0 * s.y + 6.0 * s.x;
+  float w = 6.0 - x - y - z;
+  return vec4(x, y, z, w) * (1.0 / 6.0);
+}
+vec4 texBicubic(sampler2D tex, vec2 uv, vec2 texel) {
+  vec2 size = 1.0 / texel;
+  vec2 c = uv * size - 0.5;
+  vec2 f = fract(c);
+  c = floor(c) + 0.5;
+  vec4 wx = cubicW(f.x);
+  vec4 wy = cubicW(f.y);
+  vec4 sx = vec4(c.x - 1.0, c.x + 1.0, c.x + 1.0, c.x + 3.0);
+  vec4 sy = vec4(c.y - 1.0, c.y + 1.0, c.y + 1.0, c.y + 3.0);
+  vec4 offx = vec4(wx.y / (wx.x + wx.y), wx.w / (wx.z + wx.w), 0.0, 0.0);
+  vec4 offy = vec4(wy.y / (wy.x + wy.y), wy.w / (wy.z + wy.w), 0.0, 0.0);
+  vec2 p0 = vec2((c.x - 1.0 + offx.x) * texel.x, (c.y - 1.0 + offy.x) * texel.y);
+  vec2 p1 = vec2((c.x + 1.0 + offx.y) * texel.x, (c.y - 1.0 + offy.x) * texel.y);
+  vec2 p2 = vec2((c.x - 1.0 + offx.x) * texel.x, (c.y + 1.0 + offy.y) * texel.y);
+  vec2 p3 = vec2((c.x + 1.0 + offx.y) * texel.x, (c.y + 1.0 + offy.y) * texel.y);
+  float gx = wx.x + wx.y;
+  float gy = wy.x + wy.y;
+  return mix(mix(texture2D(tex, p3), texture2D(tex, p2), gx),
+             mix(texture2D(tex, p1), texture2D(tex, p0), gx),
+             gy);
+}
+`;
+
 // 구름 릴리프 (v5.3 P5 CTH_3D_RELIEF 단계): IR 밝기(차가운 운정=밝음=높음)를
 // 고도 근사로 정점 변위 — DERIVED 라벨 필수. 실제 CTH(Lambda) 연결 시 OBSERVED로 승격.
 // 구름 높이 공통 GLSL: CTH 창(관측 운정고도, KMA L2) 안은 실측 미터,
 // 밖은 IR 밝기→고도 근사(DERIVED). 반환 단위: m (0~16000).
-const CLOUD_HEIGHT_GLSL = /* glsl */ `
+const CLOUD_HEIGHT_GLSL = BICUBIC_GLSL + /* glsl */ `
 uniform sampler2D uTex;
 uniform sampler2D uCthTex;
 uniform vec4 uCthRect; // xy=원점(equirect uv), zw=폭/높이. 0폭이면 비활성
@@ -1023,6 +1060,7 @@ float cloudAmt(vec2 uv) {
 }
 
 uniform float uGfsTop;   // 1이면 uTex 의 B 채널이 운정 높이(DERIVED, 0~16000m)
+uniform vec2 uGfsTexel;  // 예보 프레임 1텍셀 크기 — Catmull-Rom 보간에 쓴다
 
 float cloudHeightM(vec2 uv) {
   // 예보 프레임은 두께가 아니라 '운정 높이'를 따로 담고 있다.
@@ -1066,98 +1104,6 @@ void main() {
 `;
 
 
-// ---------- 강수 셸 (구름 아래·지표 위) ----------
-// 자료: GFS 강수 프레임 p{step}.png — R=강도(log mm/h) · G=종류 · B=뇌우(DERIVED)
-// 종류는 예보 모델의 판정이고 뇌우는 우리가 유도한 값이다. 카드에 그렇게 적는다.
-const PRECIP_VERT = /* glsl */ `
-varying vec3 vUnit;
-void main() {
-  vUnit = normalize(position);
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}`;
-
-const PRECIP_FRAG = /* glsl */ `
-precision mediump float;
-uniform sampler2D uPrecip;
-uniform sampler2D uPrecipB;
-uniform float uBlend;
-uniform float uTime;
-uniform float uOpacity;
-uniform vec3 uSunDir;
-uniform float uAltKm;
-varying vec3 vUnit;
-const float PI = 3.141592653589793;
-
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
-
-void main() {
-  vec3 n = normalize(vUnit);
-  float lat = asin(clamp(n.y, -1.0, 1.0));
-  float lon = atan(n.x, n.z);
-  vec2 uv = vec2(lon / (2.0 * PI) + 0.5, lat / PI + 0.5);
-  vec4 p = mix(texture2D(uPrecip, uv), texture2D(uPrecipB, uv), uBlend);
-  float rate = p.r;                       // 0~1 (log mm/h)
-  if (rate < 0.02) discard;               // 강수 없는 곳은 아무것도 그리지 않는다
-  float kind = p.g;                       // 0 비 · 0.5 어는비 · 1 눈
-  float storm = p.b;                      // 뇌우 가능성 (DERIVED)
-
-  // 12프레임 주기. 매끈한 시간 대신 12칸으로 끊어 '떨어지는' 리듬을 만든다.
-  float step12 = floor(fract(uTime * 0.9) * 12.0) / 12.0;
-
-  // 화면 축척에 맞춘 무늬 밀도 — 전역에서 점이 되지 않고 근접에서 성기지 않게
-  float dens = mix(220.0, 46.0, clamp((uAltKm - 200.0) / 9000.0, 0.0, 1.0));
-  vec2 cell = vec2(uv.x * dens * 2.0, uv.y * dens);
-
-  float snowy = smoothstep(0.6, 0.95, kind);
-  float mixy  = smoothstep(0.25, 0.6, kind) * (1.0 - snowy);
-
-  // 비: 아래로 흐르는 짧은 빗금. 눈: 천천히 흔들리며 내리는 점.
-  vec2 fall = vec2(0.0, step12 * (snowy > 0.5 ? 1.0 : 3.0));
-  vec2 q = cell + fall;
-  vec2 gi = floor(q);
-  vec2 gf = fract(q);
-  float r1 = hash(gi);
-  float r2 = hash(gi + 7.3);
-  // 알갱이가 매 칸마다 있으면 커튼이 된다 — 강도에 따라 개수를 늘린다
-  float present = step(1.0 - clamp(rate * 1.25, 0.05, 0.95), r1);
-
-  float shape;
-  if (snowy > 0.5) {
-    vec2 c = vec2(0.5 + 0.28 * sin((step12 * 12.0 + r2 * 6.0)), 0.5);
-    shape = 1.0 - smoothstep(0.10, 0.26, length(gf - c));
-  } else {
-    // 빗금: 살짝 기울어진 짧은 선
-    vec2 d = gf - vec2(0.5 + 0.15 * (r2 - 0.5), 0.5);
-    d.x += d.y * 0.35;
-    shape = (1.0 - smoothstep(0.045, 0.10, abs(d.x))) * (1.0 - smoothstep(0.22, 0.42, abs(d.y)));
-  }
-  float grain = shape * present;
-
-  // 색: 비=푸른빛, 눈=흰빛, 어는비/진눈깨비=연보라
-  vec3 col = mix(vec3(0.58, 0.78, 1.0), vec3(1.0), snowy);
-  col = mix(col, vec3(0.80, 0.76, 1.0), mixy);
-
-  float a = grain * clamp(rate * 1.4, 0.0, 1.0) * 0.85;
-
-  // 뇌우: 12칸 중 한 칸에서만 번쩍인다. 셀마다 위상을 달리해 동시에 번쩍이지 않게.
-  if (storm > 0.12) {
-    vec2 sc = floor(uv * vec2(90.0, 45.0));
-    float phase = hash(sc);
-    float slot = floor(fract(uTime * 0.55 + phase) * 12.0);
-    float flash = step(11.0, slot) * storm;
-    if (flash > 0.0) {
-      float core = 1.0 - smoothstep(0.0, 0.9, length(fract(uv * vec2(90.0, 45.0)) - 0.5));
-      col = mix(col, vec3(1.0, 0.95, 0.62), 0.9);
-      a = max(a, core * flash * 0.75);
-    }
-  }
-
-  // 밤에도 보이게 바닥값을 둔다. 낮/밤 대비는 남긴다.
-  float day = smoothstep(-0.15, 0.20, dot(n, uSunDir));
-  gl_FragColor = vec4(col * (0.55 + 0.45 * day), a * uOpacity);
-  #include <colorspace_fragment>
-}`;
-
 const CLOUD_FRAG = CLOUD_HEIGHT_GLSL + /* glsl */ `
 uniform sampler2D uTexB;
 uniform float uBlend; // 예보 프레임 보간 (0=uTex, 1=uTexB)
@@ -1192,9 +1138,9 @@ void main() {
     // 그냥 섞으면 구름이 '이동'하지 않고 '녹았다 생긴다'. 사이 값은 보간이며 모델 출력이 아니다.
     float f = uBlend;
     vec2 dA = windToUv(gfsWind(texture2D(uWind, uv)), f * uAdvectSec, lat);
-    vec4 ta = texture2D(uTex, uv - dA);
+    vec4 ta = texBicubic(uTex, uv - dA, uGfsTexel);
     vec2 dB = windToUv(gfsWind(texture2D(uWindB, uv)), (1.0 - f) * uAdvectSec, lat);
-    vec4 tb = texture2D(uTexB, uv + dB);
+    vec4 tb = texBicubic(uTexB, uv + dB, uGfsTexel);
     // A = 연직 구름수(CWAT)를 log 로 누른 두께. 0.005 kg/m² 이하 0, 2 kg/m² 이상 1.
     // 구름 '비율'로 그리면 지구 절반이 90% 라 베일이 된다(실측) — 두께가 위성과 같은 문법이다.
     // 인코딩 하한이 0.005 kg/m² 라 A 는 아주 얇은 구름부터 0 을 벗어난다.
@@ -1266,35 +1212,16 @@ class CloudManager {
       // GFS 프레임 모드: A=구름량(선형) · RG=700hPa 바람. 프레임 사이는 바람으로 이류한다.
       uGfsFrames: { value: 0 },
       uGfsTop: { value: 0 },
+      uGfsTexel: { value: new THREE.Vector2(1 / 360, 1 / 181) },
       uAdvectSec: { value: 10800 },
       uWind: { value: null },
       uWindB: { value: null },
     };
     this.reliefOn = false;
     this.cthLoaded = false;
-    // 강수 셸: 구름보다 낮고 지표보다 높다. 구름에서 '내리는' 것으로 읽혀야 한다.
-    this.precipUniforms = {
-      uPrecip: { value: null },
-      uPrecipB: { value: null },
-      uBlend: { value: 0 },
-      uTime: { value: 0 },
-      uOpacity: { value: 0.9 },
-      uSunDir: { value: new THREE.Vector3(0, 0, 1) },
-      uAltKm: { value: 1000 },
-    };
-    this.precipMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(1.0016, 192, 96),
-      new THREE.ShaderMaterial({
-        vertexShader: PRECIP_VERT,
-        fragmentShader: PRECIP_FRAG,
-        uniforms: this.precipUniforms,
-        transparent: true,
-        depthWrite: false,
-      }),
-    );
-    this.precipMesh.renderOrder = 3;
-    this.precipMesh.visible = false;
-    scene.add(this.precipMesh);
+    // 강수는 2D 아이콘으로 찍는다 (js/precip-icons.js). 절차적 렌더는 지구본에서 싸구려로 보였다.
+    this.precip = new PrecipIcons(scene);
+    this.precipTex = null;
     this.mesh = new THREE.Mesh(
       new THREE.SphereGeometry(1, 384, 192),
       new THREE.ShaderMaterial({
@@ -1917,12 +1844,11 @@ class CloudManager {
         this.uniforms.uTexB.value = okB ? b.cloud : a.cloud;
         this.uniforms.uWindB.value = okB ? b.wind : a.wind;
         this.uniforms.uBlend.value = okB ? f : 0;
-        if (a.precip) {
-          this.precipUniforms.uPrecip.value = a.precip;
-          this.precipUniforms.uPrecipB.value = (okB && b.precip) ? b.precip : a.precip;
-          this.precipUniforms.uBlend.value = (okB && b.precip) ? f : 0;
-          this.precipMesh.visible = true;
-        }
+        // 아이콘은 '지금 시각에 가장 가까운' 한 프레임으로 찍는다.
+        // 두 프레임을 섞으면 표식이 두 번 찍혀 겹친다 — 그건 자료가 두 배로 있는 것처럼 보인다.
+        const near = (okB && f > 0.5 && b.precip) ? b.precip : a.precip;
+        this.precipTex = near || null;
+        this.precip.setVisible(!!near);
       }
       const valid = new Date(g.frames[0].t + hF * g.stepMs);
       const offH = Math.round((valid.getTime() - Date.now()) / 3.6e6);
@@ -1952,7 +1878,8 @@ class CloudManager {
     this.mode = mode;
     if (mode === 'off') {
       this.mesh.visible = false;
-      this.precipMesh.visible = false;
+      this.precip.setVisible(false);
+      this.precipTex = null;
       this.earthUniforms.uCloudShadow.value = 0;
       this.noteEl.textContent = '구름 끔';
       return true;
@@ -1997,7 +1924,7 @@ class CloudManager {
     this.uniforms.uGfsFrames.value = entry.frames ? 1 : 0;
     this.uniforms.uGfsTop.value = entry.frames ? 1 : 0;
     // 관측 구름(GMGSI/천리안)에는 강수 종류 자료가 없다 — 없는 것을 그리지 않는다.
-    if (!entry.frames) this.precipMesh.visible = false;
+    if (!entry.frames) { this.precip.setVisible(false); this.precipTex = null; }
     this.earthUniforms.uCloudShadow.value = 1;
     this.mesh.visible = true;
     this.noteEl.textContent = entry.label;
@@ -4684,11 +4611,20 @@ async function main() {
       shell.renderIntel();
     });
     clouds.uniforms.uSunDir.value.copy(sun);
-    // 강수 셸: 시간(애니메이션)·태양(밤낮)·고도(무늬 밀도)를 매 프레임 넘긴다
-    if (clouds.precipMesh.visible) {
-      clouds.precipUniforms.uTime.value = now * 0.001;
-      clouds.precipUniforms.uSunDir.value.copy(sun);
-      clouds.precipUniforms.uAltKm.value = altKm;
+    // 강수 아이콘: 프레임이 바뀌었으면 점을 다시 뽑고, 12칸 애니메이션을 돌린다
+    if (clouds.precipTex) {
+      // 지금 보고 있는 곳과 보이는 범위를 넘긴다 — 멀면 센 비만, 가까우면 시야 안에 촘촘하게.
+      const vHalf = (camera.fov * Math.PI) / 360;
+      const viewDeg = DetailTerrain.arcHalfDeg(Math.atan(Math.tan(vHalf) * camera.aspect), altKm);
+      clouds.precip.build(
+        clouds.precipTex,
+        1.0 + (2500 / 6371000) * uniforms.uExagger.value,
+        altKm,
+        THREE.MathUtils.radToDeg(orbit.pitch),
+        ((THREE.MathUtils.radToDeg(orbit.yaw) + 180) % 360 + 360) % 360 - 180,
+        viewDeg,
+      );
+      clouds.precip.tick(now);
     }
     cloudVol.update(camera, sun, altKm);
     if (clouds.mesh.visible) {

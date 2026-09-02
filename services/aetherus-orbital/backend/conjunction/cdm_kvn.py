@@ -10,13 +10,13 @@ spec-shaped document hits; this module opens three of them:
 * the lower triangle to a symmetric 6x6 matrix,
 * m**2 to km2 (an exact scalar, 1e-6 on position blocks).
 
-It deliberately does NOT open the fourth. A CDM covariance is expressed in RTN,
-and rotating it into TEME requires the object state vector and a correctly
-derived rotation — real orbital mechanics whose errors are silent and produce
-plausible-looking Pc values rather than obvious failures. That is precisely the
-class of defect this project has repeatedly caught, so the frame is carried
-through verbatim and the Pc gate keeps rejecting it. ``covariance_reference_frame``
-says RTN, and it is the caller's job to notice.
+It deliberately does NOT rotate the covariance. A CDM covariance is expressed
+in RTN, and rotating it into TEME requires the object state vector and a
+correctly derived rotation — real orbital mechanics whose errors are silent.
+That transform lives in ``cdm_pc`` with its own invariant tests and method
+identifiers; this parser reports the frame as published and now also captures
+the state vector (``REF_FRAME``, X..Z_DOT) and ``AREA_PC`` that ``cdm_pc``
+needs. ``covariance_reference_frame`` says RTN, and the caller decides.
 
 What this module buys is the honest half: we can now read the document, see what
 it contains, and state exactly what remains. Before, a real CDM died at
@@ -192,6 +192,8 @@ def _object_state(block: dict[str, KvnField], role: str, warnings: list[str]) ->
 
     covariance, unit = _covariance_from_object(block, role, warnings)
     frame = block.get("COVARIANCE_REF_FRAME")
+    position, velocity, state_frame = _state_from_object(block, role, warnings)
+    area = _area_pc(block, role, warnings)
     return CdmObjectState(
         # Not padded to five digits: CelesTrak exhausted five-digit numbers at
         # 69999 and six-digit identifiers are already in circulation.
@@ -206,7 +208,43 @@ def _object_state(block: dict[str, KvnField], role: str, warnings: list[str]) ->
         covariance_method=block["COVARIANCE_METHOD"].value
         if "COVARIANCE_METHOD" in block
         else None,
+        state_position_km=position,
+        state_velocity_km_s=velocity,
+        state_frame=state_frame,
+        area_pc_m2=area,
     )
+
+
+def _state_from_object(
+    block: dict[str, KvnField], role: str, warnings: list[str]
+) -> tuple[tuple[float, float, float] | None, tuple[float, float, float] | None, str | None]:
+    """The state vector as published: km and km/s, in the declared REF_FRAME."""
+    keys = ("X", "Y", "Z", "X_DOT", "Y_DOT", "Z_DOT")
+    if not all(key in block for key in keys):
+        return None, None, None
+    for key in ("X", "Y", "Z"):
+        if block[key].unit not in (None, "km"):
+            warnings.append(f"{role} {key} declares unit {block[key].unit!r}; state left unconverted")
+            return None, None, None
+    for key in ("X_DOT", "Y_DOT", "Z_DOT"):
+        if block[key].unit not in (None, "km/s"):
+            warnings.append(f"{role} {key} declares unit {block[key].unit!r}; state left unconverted")
+            return None, None, None
+    position = tuple(_as_float(block[key], key) for key in ("X", "Y", "Z"))
+    velocity = tuple(_as_float(block[key], key) for key in ("X_DOT", "Y_DOT", "Z_DOT"))
+    frame = block["REF_FRAME"].value.strip().upper() if "REF_FRAME" in block else None
+    return position, velocity, frame  # type: ignore[return-value]
+
+
+def _area_pc(block: dict[str, KvnField], role: str, warnings: list[str]) -> float | None:
+    """AREA_PC in m**2, the only size information a CDM publishes."""
+    if "AREA_PC" not in block:
+        return None
+    field = block["AREA_PC"]
+    if field.unit not in (None, "m**2"):
+        warnings.append(f"{role} AREA_PC declares unit {field.unit!r}; not converted")
+        return None
+    return _as_float(field, "AREA_PC")
 
 
 def _metres(field: KvnField | None, key: str) -> float | None:

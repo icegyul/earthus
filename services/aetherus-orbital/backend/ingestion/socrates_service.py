@@ -25,10 +25,11 @@ Timezone note: SOCRATES TCA strings are naive UTC. They are attached with
 reinterpret them in local time, the nine-hour error this project already shipped
 once with OMM epochs.
 
-Not done here, on purpose: a single transaction around the whole ingest. The
-repository methods each commit, so a mid-run failure leaves the rows written so
-far. The dedup guard makes that recoverable (re-run skips them) and the
-``ingestion_run`` row records the failure, but the write is not atomic.
+Every write of one ingest — artifact, events, snapshots — runs on a single
+transaction. A failure anywhere rolls back all of it; only the ``ingestion_run``
+row, kept outside that transaction on purpose, survives to record the failure.
+A TCA refinement that crosses a minute boundary retires the event it supersedes
+so a pair is never served twice for one physical conjunction.
 """
 
 from __future__ import annotations
@@ -38,6 +39,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.conjunction.repository import ConjunctionRepository
 from backend.database import get_db_session
@@ -90,6 +92,7 @@ class SocratesPersistOutcome:
     events_written: int
     snapshots_written: int
     snapshots_skipped_duplicate: int
+    events_superseded: int
     rows_outside_catalog: int
     tca_parse_failures: tuple[dict[str, str], ...]
     csv_skipped_rows: int
@@ -110,6 +113,7 @@ class SocratesPersistOutcome:
             "events_written": self.events_written,
             "snapshots_written": self.snapshots_written,
             "snapshots_skipped_duplicate": self.snapshots_skipped_duplicate,
+            "events_superseded": self.events_superseded,
             # Expectedly large: SOCRATES covers the full public catalogue and we
             # hold a subset. Reported so a small ingest is never mistaken for a
             # small feed.
@@ -195,6 +199,7 @@ async def _close_ingestion_run(
 
 async def _insert_or_get_artifact(
     *,
+    session: AsyncSession,
     run_id: str,
     source_uri: str,
     retrieved_at: datetime,
@@ -211,7 +216,7 @@ async def _insert_or_get_artifact(
         ),
         "attribution": attribution,
     }
-    async with get_db_session() as session:
+    if True:  # writes run on the caller's transaction
         inserted = await session.execute(
             text(
                 """
@@ -254,9 +259,9 @@ async def _insert_or_get_artifact(
         return str(existing.scalar_one()), False
 
 
-async def _snapshot_exists(event_id: str, input_hash: str) -> bool:
+async def _snapshot_exists(session: AsyncSession, event_id: str, input_hash: str) -> bool:
     """Whether this event already carries a snapshot from these exact bytes."""
-    async with get_db_session() as session:
+    if True:  # reads on the caller's transaction so it sees this run's own writes
         result = await session.execute(
             text(
                 """
@@ -361,7 +366,33 @@ async def _persist(
     stored = store.preserve(
         STORAGE_KEY, result.retrieved_at, result.raw.content, "text/csv"
     )
+    # One transaction for artifact, events and snapshots. A failure anywhere
+    # below rolls all of it back; the ingestion_run row lives outside so the
+    # failure itself stays recorded.
+    async with get_db_session() as session:
+        return await _persist_in_session(
+            session,
+            result,
+            run_id=run_id,
+            stored=stored,
+            repository=repository,
+            source_grade=source_grade,
+            artifact_attribution=artifact_attribution,
+        )
+
+
+async def _persist_in_session(
+    session: AsyncSession,
+    result: SocratesResult,
+    *,
+    run_id: str,
+    stored,
+    repository: ConjunctionRepository,
+    source_grade: str,
+    artifact_attribution: str,
+) -> SocratesPersistOutcome:
     artifact_id, artifact_created = await _insert_or_get_artifact(
+        session=session,
         run_id=run_id,
         source_uri=result.source_uri,
         retrieved_at=result.retrieved_at,
@@ -384,12 +415,13 @@ async def _persist(
         {c.primary_catalog_id for c in result.conjunctions}
         | {c.secondary_catalog_id for c in result.conjunctions}
     )
-    resolved = await repository.resolve_objects_by_catalog(all_ids)
+    resolved = await repository.resolve_objects_by_catalog(all_ids, session=session)
 
     events: list[str] = []
     seen_events: set[str] = set()
     snapshots = 0
     duplicates = 0
+    superseded = 0
     outside = 0
 
     for index, conjunction in enumerate(result.conjunctions):
@@ -403,18 +435,23 @@ async def _persist(
             continue
 
         first, second = _canonical_pair(primary, secondary)
+        source_event_id = _source_event_id(tca)
         event_id = await repository.upsert_event(
             primary_object_id=first,
             secondary_object_id=second,
-            source_event_id=_source_event_id(tca),
+            source_event_id=source_event_id,
             tca=tca,
             screening_run_id=None,
+            session=session,
+        )
+        superseded += await repository.retire_superseded_socrates_events(
+            first, second, source_event_id, tca, session=session
         )
         if event_id not in seen_events:
             seen_events.add(event_id)
             events.append(event_id)
 
-        if await _snapshot_exists(event_id, result.raw_sha256):
+        if await _snapshot_exists(session, event_id, result.raw_sha256):
             duplicates += 1
             continue
 
@@ -456,6 +493,7 @@ async def _persist(
             provenance_payload=provenance,
             model_version=MODEL_VERSION,
             input_hash=result.raw_sha256,
+            session=session,
         )
         snapshots += 1
 
@@ -483,6 +521,7 @@ async def _persist(
         events_written=len(events),
         snapshots_written=snapshots,
         snapshots_skipped_duplicate=duplicates,
+        events_superseded=superseded,
         rows_outside_catalog=outside,
         tca_parse_failures=tuple(tca_failures),
         csv_skipped_rows=len(result.skipped_rows),

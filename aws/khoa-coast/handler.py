@@ -86,12 +86,12 @@ TIDE_CODES = [
 RANK = {"관심": 1, "주의": 2, "경계": 3, "위험": 4}
 
 
-def get(url, params):
+def get(url, params, timeout=25):
     q = urllib.parse.urlencode(params, safe="%")
     # ⚠️ serviceKey 는 이미 URL 인코딩된 문자열이다. urlencode 가 다시 인코딩하면
     #    %2B 가 %252B 가 되어 "등록되지 않은 키"가 된다. 그래서 따로 붙인다.
     req = urllib.request.Request(f"{url}?serviceKey={KEY}&{q}", headers=UA)
-    with urllib.request.urlopen(req, timeout=25) as r:
+    with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.loads(r.read().decode("utf-8"))
 
 
@@ -259,3 +259,290 @@ def handler(event=None, context=None):
           f"조위 {len(tides)}곳 · {len(body)/1024:.0f}KB")
     return {"ok": bool(beaches or tides), "rip": len(beaches),
             "warn": [b["ko"] for b in warn], "tide": len(tides)}
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 정적 수집 2종 (2026-09-02 추가) — 연안 침수 범위 + 미래 해수면 상승 전망
+#
+# 이안류·조위와 달리 이 둘은 **바뀌지 않는 참조자료**다.
+# 15분 스케줄에 태우면 트래픽만 태우므로, 수동 이벤트로만 돈다:
+#   aws lambda invoke --payload '{"khoaFlood":true}'    → ocean/khoa/flood/*.json
+#   ⚠️ 버킷 공개 정책은 app/celestrak/clouds/wind/events/ocean/solar 접두어뿐이다.
+#      khoa/ 에 쓰면 Lambda 는 성공하는데 브라우저는 403 을 본다(실측 2026-09-02).
+#      그래서 ocean/khoa/ 아래에 둔다.
+#   aws lambda invoke --payload '{"khoaSealevel":true}' → ocean/khoa/sealevel-kr.json
+#
+# ■ 주소·규약 (앞사람의 메모 덕에 헤매지 않았다 — 이어서 적는다)
+#   침수    waterlogged/GetWaterloggedApiService        sggCd(5자리)+type=json
+#   해수면  changeClimateRising/GetChangeClimateRisingApiService
+#           ymin/ymax/xmin/xmax + type=json — ⚠️ 미리보기 검증은 1도×1도 제한
+#   ⚠️ 이 두 API 의 형식 파라미터는 resultType 이 아니라 **type** 이다.
+#     (이안류·조위는 resultType — 같은 기관인데 API 마다 다르다)
+#
+# ■ 시군구코드는 API 로 못 얻는다 — KHOA 미리보기 화면(odmiApiViewData.do,
+#   apiId=SV_AP_01_010)의 data-list 에 박힌 70곳을 그대로 옮겼다(2026-09-02).
+#   ⚠️ 이 70곳이 기관이 서비스하는 전부다. 강원 동해안이 아예 없다 —
+#     빠진 곳은 자료가 없는 것이지 침수가 없다는 뜻이 아니다. 화면에 적는다.
+# ═══════════════════════════════════════════════════════════════════
+
+FLOOD_URL = "https://apis.data.go.kr/1192136/waterlogged/GetWaterloggedApiService"
+RISE_URL = "https://apis.data.go.kr/1192136/changeClimateRising/GetChangeClimateRisingApiService"
+
+FLOOD_SGG = {
+    "26110": "부산 중구", "26140": "부산 서구", "26170": "부산 동구",
+    "26200": "부산 영도구", "26230": "부산 부산진구", "26290": "부산 남구",
+    "26350": "부산 해운대구", "26380": "부산 사하구", "26440": "부산 강서구",
+    "26500": "부산 수영구", "26710": "부산 기장군",
+    "28110": "인천 중구", "28140": "인천 동구", "28185": "인천 연수구",
+    "28200": "인천 남동구", "28260": "인천 서구", "28710": "인천 강화군", "28720": "인천 옹진군",
+    "31110": "울산 중구", "31140": "울산 남구", "31170": "울산 동구",
+    "31200": "울산 북구", "31710": "울산 울주군",
+    "41220": "평택시", "41273": "안산시 단원구", "41390": "시흥시",
+    "41570": "김포시", "41590": "화성시",
+    "44180": "보령시", "44200": "아산시", "44210": "서산시", "44270": "당진시",
+    "44770": "서천군", "44800": "홍성군", "44825": "태안군",
+    "46110": "목포시", "46130": "여수시", "46150": "순천시", "46230": "광양시",
+    "46770": "고흥군", "46780": "보성군", "46800": "장흥군", "46810": "강진군",
+    "46820": "해남군", "46830": "영암군", "46840": "무안군", "46860": "함평군",
+    "46870": "영광군", "46890": "완도군", "46900": "진도군", "46910": "신안군",
+    "47130": "경주시",
+    "48121": "창원 의창구", "48123": "창원 성산구", "48125": "창원 마산합포구",
+    "48127": "창원 마산회원구", "48129": "창원 진해구",
+    "48220": "통영시", "48240": "사천시", "48310": "거제시",
+    "48820": "경남 고성군", "48840": "남해군", "48850": "하동군",
+    "50110": "제주시", "50130": "서귀포시",
+    "52130": "군산시", "52210": "김제시", "52790": "고창군", "52800": "부안군",
+}
+
+
+def wkt_multipolygon(s):
+    """WKT MULTIPOLYGON → [[링(평탄 [lon,lat,...])...], ...]. 좌표는 6자리로 줄인다.
+    정식 파서를 안 쓰는 이유: Lambda 의존성을 안 늘리려고.
+    이 소스의 WKT 는 단일 기관 산출물이라 형식이 균일하다 — 그때만 허용되는 지름길."""
+    s = s.strip()
+    if not s.upper().startswith("MULTIPOLYGON"):
+        return None
+    body = s[s.find("((("):].strip()
+    polys = []
+    for poly_txt in body.strip("() ").split(")),(("):
+        rings = []
+        for ring_txt in poly_txt.split("),("):
+            flat = []
+            for pair in ring_txt.replace("(", "").replace(")", "").split(","):
+                xy = pair.split()
+                if len(xy) >= 2:
+                    try:
+                        flat.append(round(float(xy[0]), 6))
+                        flat.append(round(float(xy[1]), 6))
+                    except ValueError:
+                        return None
+            if len(flat) >= 6:
+                rings.append(flat)
+        if rings:
+            polys.append(rings)
+    return polys or None
+
+
+def get_retry(url, params, tries=3, timeout=25):
+    """data.go.kr 게이트웨이는 간헐적으로 SSL 핸드셰이크가 늦다(실측 2026-09-02:
+    6개 동시 호출 중 1개가 25초 타임아웃). 한 번 실패로 전체를 버리지 않고 물러났다 다시 간다."""
+    import time
+    last = None
+    for i in range(tries):
+        try:
+            return get(url, params, timeout=timeout)
+        except Exception as e:                                   # noqa: BLE001
+            last = e
+            time.sleep(1.5 * (i + 1))
+    raise last
+
+
+def _put(key, doc, cache="public, max-age=86400"):
+    body = json.dumps(doc, ensure_ascii=False, separators=(",", ":")).encode()
+    s3.put_object(Bucket=BUCKET, Key=key, Body=body,
+                  ContentType="application/json; charset=utf-8", CacheControl=cache)
+    return len(body)
+
+
+FLOOD_PAGE = 60
+
+
+def collect_flood(codes=None):
+    """연안 침수 범위 — 시군구별 파일 + 색인. 폴리곤은 받은 좌표 그대로(6자리 반올림만).
+    codes 를 주면 그 시군구만 받고 색인은 S3 의 기존 색인과 합친다 —
+    70곳을 한 번에 받으면 Lambda 시간(최대 15분)을 넘길 수 있어 10곳씩 나눠 부른다."""
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z")
+    index = []
+    targets = [c for c in (codes or list(FLOOD_SGG)) if c in FLOOD_SGG]
+
+    def one_sgg(code):
+        rows = []
+        page = 1
+        while True:
+            # ⚠️⚠️ 폴리곤 응답은 크다 — 해운대 199면이 약 6MB. 300건/25초로 받으면 전부 타임아웃이다
+            #    (실측 2026-09-02: 70곳 전부 실패). 60건씩, 120초로 받는다.
+            d = get_retry(FLOOD_URL, {"sggCd": code, "type": "json",
+                                      "numOfRows": FLOOD_PAGE, "pageNo": page}, timeout=120)
+            body = d.get("body") or {}
+            got = items(d)
+            rows += got
+            total = int(body.get("totalCount") or 0)
+            if page * FLOOD_PAGE >= total or not got:
+                return rows, total
+            page += 1
+
+    def build(code):
+        try:
+            rows, total = one_sgg(code)
+        except Exception as e:                                   # noqa: BLE001
+            print(f"[flood] {code} {FLOOD_SGG[code]} 실패: {str(e)[:80]}")
+            return None
+        feats = []
+        classes = {}
+        b = [180.0, 90.0, -180.0, -90.0]
+        for r in rows:
+            geom = wkt_multipolygon(r.get("geom") or "")
+            if not geom:
+                continue
+            cls = (r.get("flodVlCn") or "").strip()
+            classes[cls] = classes.get(cls, 0) + 1
+            for poly in geom:
+                ring = poly[0]
+                xs = ring[0::2]
+                ys = ring[1::2]
+                b = [min(b[0], min(xs)), min(b[1], min(ys)),
+                     max(b[2], max(xs)), max(b[3], max(ys))]
+            feats.append({"v": cls, "g": geom})
+        if not feats:
+            print(f"[flood] {code} {FLOOD_SGG[code]}: 자료 없음(total {total})")
+            return {"sggCd": code, "name": FLOOD_SGG[code], "count": 0}
+        size = _put(f"ocean/khoa/flood/{code}.json", {
+            "generated": now, "sggCd": code, "name": FLOOD_SGG[code],
+            "unit": "m (침수 깊이 구간)", "count": len(feats), "classes": classes,
+            "bbox": [round(x, 5) for x in b],
+            "source": "해양수산부 국립해양조사원 연안 침수 정보 (공공데이터포털)",
+            "license": "공공누리 (출처표시)",
+            "features": feats,
+        })
+        print(f"[flood] {code} {FLOOD_SGG[code]}: {len(feats)}면 · {size//1024}KB")
+        return {"sggCd": code, "name": FLOOD_SGG[code], "count": len(feats),
+                "classes": classes, "bbox": [round(x, 5) for x in b]}
+
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        for rec in ex.map(build, targets):
+            if rec:
+                index.append(rec)
+
+    # 부분 호출이면 기존 색인과 합친다 (같은 시군구는 새 결과로 덮는다)
+    if codes:
+        try:
+            prev = json.loads(s3.get_object(Bucket=BUCKET, Key="ocean/khoa/flood-index.json")["Body"].read())
+            done = {r["sggCd"] for r in index}
+            index = [r for r in (prev.get("districts") or []) if r.get("sggCd") not in done] + index
+        except Exception:                                        # noqa: BLE001
+            pass
+    index.sort(key=lambda r: r["sggCd"])
+
+    covered = [r for r in index if r["count"]]
+    _put("ocean/khoa/flood-index.json", {
+        "generated": now,
+        "districts": index,
+        "coveredCount": len(covered),
+        "totalPolygons": sum(r["count"] for r in index),
+        "source": "해양수산부 국립해양조사원 연안 침수 정보 (공공데이터포털 data.go.kr)",
+        "license": "공공누리 (출처표시)",
+        "note": ("기관이 제공하는 연안 시군구 70곳만 담겨 있습니다. "
+                 "여기 없는 지역(강원 동해안 등)은 자료가 없는 것이지 "
+                 "침수 위험이 없다는 뜻이 아닙니다. 침수값은 깊이 구간(m)이며 "
+                 "기관 산출값을 그대로 옮깁니다."),
+    })
+    print(f"[flood] 색인 {len(index)}곳 (자료 있는 곳 {len(covered)})")
+    return {"ok": True, "districts": len(index), "covered": len(covered)}
+
+
+def collect_sealevel():
+    """미래 해수면 상승 전망 — 1도 타일로 전 해역을 긁어 시나리오·지표별로 묶는다."""
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z")
+
+    def one_box(box):
+        y0, x0 = box
+        rows = []
+        page = 1
+        while True:
+            d = get_retry(RISE_URL, {"ymin": y0, "ymax": y0 + 1, "xmin": x0, "xmax": x0 + 1,
+                               "type": "json", "numOfRows": 300, "pageNo": page})
+            body = d.get("body") or {}
+            got = items(d)
+            rows += got
+            total = int(body.get("totalCount") or 0)
+            if page * 300 >= total or not got:
+                return rows
+            page += 1
+
+    boxes = [(y, x) for y in range(32, 39) for x in range(124, 132)]
+    groups = {}
+    failed = []
+
+    def safe_box(box):
+        try:
+            return box, one_box(box)
+        except Exception as e:                                   # noqa: BLE001
+            print(f"[sealevel] 타일 {box} 실패: {str(e)[:80]}")
+            return box, None
+
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        for box, rows in ex.map(safe_box, boxes):
+            if rows is None:
+                failed.append(list(box))
+                continue
+            for r in rows:
+                ssp = r.get("sspSeCd")
+                ind = r.get("swtrsfPredcSeCd")
+                lat = r.get("lat")
+                lon = r.get("lot")
+                val = r.get("svyVlCnt")
+                if None in (ssp, ind, lat, lon, val):
+                    continue
+                g = groups.setdefault((ssp, ind), {})
+                # 타일 경계가 겹칠 수 있어 좌표로 중복을 없앤다
+                g[(round(float(lat), 5), round(float(lon), 5))] = round(float(val), 3)
+
+    out = []
+    for (ssp, ind), pts in sorted(groups.items()):
+        lats = []
+        lons = []
+        vals = []
+        for (la, lo), v in sorted(pts.items()):
+            lats.append(la)
+            lons.append(lo)
+            vals.append(v)
+        out.append({"ssp": ssp, "indicator": ind, "count": len(vals),
+                    "lat": lats, "lon": lons, "val": vals,
+                    "min": min(vals), "max": max(vals)})
+        print(f"[sealevel] {ssp} {ind}: {len(vals)}점 · {min(vals):.1f}~{max(vals):.1f}")
+
+    size = _put("ocean/khoa/sealevel-kr.json", {
+        "generated": now,
+        "source": "해양수산부 국립해양조사원 — 지역 해양기후 수치모델 기반 미래 해수면 상승 전망",
+        "via": "공공데이터포털 (data.go.kr)",
+        "license": "공공누리 (출처표시)",
+        "grid": "약 0.05° 해역 격자 · 한국 주변(위도 32~39, 경도 124~132)",
+        "valueNote": "svyVlCnt 원값 그대로 — 단위·기준연도는 기관 명세(활용가이드) 기준",
+        "tilesTotal": len(boxes),
+        "tilesFailed": failed,            # 비어 있지 않으면 그 구역은 자료가 빠진 것 — 화면에 밝힌다
+        "groups": out,
+    })
+    print(f"[sealevel] 그룹 {len(out)}개 · {size//1024}KB")
+    return {"ok": bool(out), "groups": len(out), "failedTiles": len(failed),
+            "counts": {f"{g['ssp']}/{g['indicator']}": g["count"] for g in out}}
+
+
+_orig_handler = handler
+
+
+def handler(event=None, context=None):                            # noqa: F811
+    if isinstance(event, dict) and event.get("khoaFlood"):
+        return collect_flood(event.get("codes"))
+    if isinstance(event, dict) and event.get("khoaSealevel"):
+        return collect_sealevel()
+    return _orig_handler(event, context)

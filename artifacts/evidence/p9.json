@@ -59,13 +59,13 @@
     "record": "docs\\audit\\ENGINE_ADVERSARIAL_AUDIT_2026-09-01.md",
     "honesty_test": "tests/unit/test_confidence_honesty.py",
     "honesty_test_exit_code": 0,
-    "summary": "======================= 16 passed, 2 warnings in 0.05s ========================",
+    "summary": "======================= 16 passed, 2 warnings in 0.08s ========================",
     "passed": true
   },
-  "generated_at": "2026-09-01T16:41:12.642289+00:00",
+  "generated_at": "2026-09-02T14:27:04.468598+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "5d66cc5d6dfeb14bf5b2a6fffeff2b4f47bdbc85",
+  "commit": "c75f15f79b40f02d6fbcb3d562bbdf18bf73807c",
   "tests_intelligence": {
     "targets": [
       "tests/unit/test_intelligence_orchestrator.py",
@@ -73,7 +73,7 @@
       "tests/foundation"
     ],
     "exit_code": 0,
-    "summary": "======================= 35 passed, 2 warnings in 3.53s ========================"
+    "summary": "======================= 35 passed, 2 warnings in 4.17s ========================"
   },
   "live_api": {
     "important_now": {

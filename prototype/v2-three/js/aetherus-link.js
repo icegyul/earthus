@@ -72,11 +72,36 @@ export class AetherusLink {
     return res.json();
   }
 
-  async refresh() {
-    const [snap, conj] = await Promise.all([
-      this._fetchJson('/v1/catalog/snapshot'),
-      this._fetchJson('/v1/conjunctions?limit=12'),
+  // 라이브 API가 없을 때(프로덕션엔 상시 서버가 없다) 같은 출처의 S3 스냅샷으로 폴백한다.
+  // PD 결정 ①: 상시 서버 비용 0. 실시간인 척하지 않고 스냅샷 시각을 그대로 표시한다.
+  // tools/publish-aetherus-snapshot.sh 가 /v2/aetherus/ 에 발행한다.
+  async _fetchSnapshotFallback() {
+    const base = './aetherus/';
+    const [man, snap, conj] = await Promise.all([
+      fetch(`${base}manifest.json`, { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)),
+      fetch(`${base}snapshot.json`, { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)),
+      fetch(`${base}conjunctions.json`, { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)),
     ]);
+    if (!snap || !conj) throw new Error('스냅샷 없음');
+    this.fromSnapshot = true;
+    this.snapshotPublishedAt = (man && man.generated_at) || null;
+    this.snapshotPolicy = (man && man.policy) || null;
+    return [snap, conj];
+  }
+
+  async refresh() {
+    let snap;
+    let conj;
+    try {
+      [snap, conj] = await Promise.all([
+        this._fetchJson('/v1/catalog/snapshot'),
+        this._fetchJson('/v1/conjunctions?limit=12'),
+      ]);
+      this.fromSnapshot = false;
+    } catch (liveErr) {
+      this.liveError = String((liveErr && liveErr.message) || liveErr);
+      [snap, conj] = await this._fetchSnapshotFallback();
+    }
     const rows = (snap.data && snap.data.catalog) || [];
     this.coverage = (snap.data && snap.data.coverage) || null;
     this.entries = [];
@@ -189,7 +214,7 @@ export class AetherusLink {
     const capped = total && total > this.entries.length ? ` / ${total.toLocaleString()}기` : '';
     return {
       on: true,
-      note: `${this.entries.length}기${capped} · 근접 ${this.conjunctions.length}건 · 서버 산출 ${age == null ? '—' : `${Math.round(age)}s 전`}${stale ? ' · STALE' : ''}${this.lastError ? ' · 갱신 실패' : ''}`,
+      note: `${this.entries.length}기${capped} · 근접 ${this.conjunctions.length}건 · ${this.fromSnapshot ? 'S3 스냅샷' : '서버'} 산출 ${age == null ? '—' : `${Math.round(age)}s 전`}${stale ? ' · STALE' : ''}${this.lastError ? ' · 갱신 실패' : ''}`,
     };
   }
 
@@ -217,11 +242,17 @@ export class AetherusLink {
       ? `<br/>표시분 중 파편·로켓바디 ${debris}기 — 실제 파편운(펑윈-1C·코스모스-2251·이리듐-33·코스모스-1408)에서 수집된 공식 궤도요소입니다.`
       : '';
     const err = this.lastError ? `<br/>최근 갱신 실패: ${this.lastError} — 마지막 정상 스냅샷을 표시 중.` : '';
+    // 상시 서버가 없는 프로덕션에서는 발행된 스냅샷을 읽는다 — 실시간인 척하지 않는다.
+    const snapLine = this.fromSnapshot
+      ? `<br/><b>정지 스냅샷 모드</b>: 상시 API 서버 대신 발행된 스냅샷을 읽고 있습니다`
+        + `${this.snapshotPublishedAt ? ` (발행 ${new Date(this.snapshotPublishedAt).toLocaleString('ko-KR', { hour12: false })})` : ''}.`
+        + ` 위성은 초당 약 7.5km 이동하므로 <b>위치는 발행 시각 기준</b>이며, 근접사건의 TCA는 미래 시각이라 그대로 유효합니다.`
+      : '';
     return `AETHERUS 정본 카탈로그 — 위치는 브라우저 계산이 아니라 서버 SGP4 스냅샷`
       + `(raw SHA-256 → 정본 아이덴티티 계보)에서 옵니다.<br/>`
       + `${this.entries.length}기 표시 · 서버 산출 ${age == null ? '—' : `${Math.round(age)}s 전`}`
       + ` · ${Math.round(SNAPSHOT_INTERVAL_MS / 1000)}s 재조회, 사이 구간은 서버 속도벡터로 선형 보간(LINEAR_ADVANCE)${cut}${debrisLine}${hidden}<br/>`
-      + `근접사건 (P4 보수 스크리닝 → 정밀 TCA):<br/>${conj}${err}<br/>`
+      + `근접사건 (P4 보수 스크리닝 → 정밀 TCA):<br/>${conj}${err}${snapLine}<br/>`
       + `자문 전용 — 어떤 명령도 전송하지 않습니다.`;
   }
 

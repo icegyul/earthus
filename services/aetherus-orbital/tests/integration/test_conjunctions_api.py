@@ -143,7 +143,7 @@ class TestScreenRunEndpoint:
     async def test_screen_run_executes_and_reports_provenance(self, client):
         response = await client.post(
             "/api/v1/conjunctions/screen-runs",
-            params={"window_hours": 2.0, "max_objects": _SCREENING_SCOPE_OBJECTS},
+            params={"window_hours": 2.0, "max_objects": _SCREENING_SCOPE_OBJECTS, "wait": "true"},
         )
         assert response.status_code == 202
         payload = response.json()
@@ -156,3 +156,37 @@ class TestScreenRunEndpoint:
             "/api/v1/conjunctions/screen-runs", params={"window_hours": 500.0}
         )
         assert response.status_code in {422, 400}
+
+
+    async def test_screen_run_default_is_a_job_that_polls_to_completion(self, client):
+        """The 202 is honest now: accept at once, finish in the background."""
+        import asyncio
+
+        accepted = await client.post(
+            "/api/v1/conjunctions/screen-runs",
+            params={"window_hours": 1.0, "max_objects": 40},
+        )
+        assert accepted.status_code == 202
+        job = accepted.json()
+        assert job["data_status"] == "PENDING"
+        job_id = job["data"]["job_id"]
+        assert job["data"]["poll"].endswith(job_id)
+
+        final = None
+        for _ in range(120):
+            polled = await client.get(f"/api/v1/conjunctions/screen-runs/{job_id}")
+            assert polled.status_code == 200
+            body = polled.json()
+            if body["data"]["status"] != "RUNNING":
+                final = body
+                break
+            await asyncio.sleep(0.5)
+        assert final is not None, "the job never finished"
+        assert final["data"]["status"] == "SUCCEEDED", final["data"].get("error")
+        assert final["data"]["result"]["data"]["screening_run_id"]
+        assert final["data"]["result"]["data"]["coverage"]["objects_loaded"] <= 40
+
+    async def test_unknown_job_is_a_named_404(self, client):
+        missing = await client.get("/api/v1/conjunctions/screen-runs/not-a-job")
+        assert missing.status_code == 404
+        assert missing.json()["status"] == "UNKNOWN_JOB"

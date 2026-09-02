@@ -47,14 +47,14 @@
     ],
     "unmet_requiring_others": []
   },
-  "generated_at": "2026-09-01T16:40:43.370127+00:00",
+  "generated_at": "2026-09-02T14:21:42.850352+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "5d66cc5d6dfeb14bf5b2a6fffeff2b4f47bdbc85",
+  "commit": "c75f15f79b40f02d6fbcb3d562bbdf18bf73807c",
   "tests": {
     "command": "pytest <P2 subset 5 files> -q",
     "exit_code": 0,
-    "summary": "======================== 28 passed, 1 warning in 0.25s ========================"
+    "summary": "======================== 28 passed, 1 warning in 0.32s ========================"
   },
   "golden_cross_validation": [
     {
@@ -81,22 +81,28 @@
     "http_status": 200,
     "measurement_source": "CATALOG_STATUS_API",
     "data_status": "OK",
-    "objects_total": 2975,
-    "objects_with_solution": 2900,
+    "objects_total": 19610,
+    "objects_with_solution": 19511,
     "global_density": "AVAILABLE",
-    "global_density_reason": "2900 propagable objects meet the configured global-density threshold of 500.",
+    "global_density_reason": "19511 propagable objects meet the configured global-density threshold of 500.",
     "sources": [
       {
         "source_id": "celestrak_gp",
-        "successful_runs": 1088,
-        "total_runs": 1235,
-        "last_success_at": "2026-09-01T16:40:43.155653+00:00"
+        "successful_runs": 1474,
+        "total_runs": 1676,
+        "last_success_at": "2026-09-02T14:21:42.530901+00:00"
+      },
+      {
+        "source_id": "celestrak_socrates",
+        "successful_runs": 25,
+        "total_runs": 25,
+        "last_success_at": "2026-09-02T14:17:53.008626+00:00"
       },
       {
         "source_id": "spacetrack_gp",
-        "successful_runs": 314,
-        "total_runs": 389,
-        "last_success_at": "2026-09-01T16:33:56.564274+00:00"
+        "successful_runs": 454,
+        "total_runs": 553,
+        "last_success_at": "2026-09-02T14:17:53.147695+00:00"
       }
     ]
   },
@@ -113,7 +119,7 @@
     },
     "catalog_snapshot": {
       "http_status": 200,
-      "bytes": 722495
+      "bytes": 740777
     }
   },
   "explore_network_inspection": "인앱 브라우저 네트워크 검사(2026-09-01, 파편운 수집 이전 시점의 기록): /ui/ 로드 시 좌표 소스 요청은 /api/v1/catalog/status·/api/v1/catalog/snapshot 200 두 건뿐, 콘솔 에러 0. ISS 25544는 API 유래 SGP4 마커+데이터 나이 표기, 격리 객체 2건은 위치 없이 UNAVAILABLE 상태 렌더, GLOBAL VIEW: INSUFFICIENT_DATA 배지 표시 확인. — 당시의 INSUFFICIENT_DATA는 카탈로그가 임계 미만이어서였고, 현재는 위 catalog_scale 측정이 AVAILABLE을 보고한다. 이 배지 전환 자체의 브라우저 재확인은 후속.",

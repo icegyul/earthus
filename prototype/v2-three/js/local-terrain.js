@@ -74,6 +74,8 @@ export class LocalTerrain {
       drag = { x: e.clientX, y: e.clientY };
     });
     dom.addEventListener('pointerup', () => { drag = null; });
+    // 제스처가 취소돼도 기준점을 버린다 — 안 버리면 다음 터치 첫 프레임에 카메라가 튄다
+    dom.addEventListener('pointercancel', () => { drag = null; });
     dom.addEventListener('wheel', (e) => {
       e.preventDefault();
       this.dist = Math.max(0.12, Math.min(2.4, this.dist * Math.exp(e.deltaY * 0.001)));

@@ -11,10 +11,12 @@ The 2026-09-02 audit measured where a document shaped the way CCSDS 508.0-B-1 sa
 CDMs are shaped actually died. Five gates, in order: KVN encoding, the 21-element
 lower triangle, the RTN frame, m**2 units, and COMBINED_HBR semantics.
 
-Three of those are now open (backend/conjunction/cdm_kvn.py). This file asserts
-CURRENT behaviour, not aspiration, so it stays a truthful map of the remaining
-gap: when the frame gate is opened it will fail here and must be rewritten. That
-failure is the intended signal, not a regression.
+The parser (backend/conjunction/cdm_kvn.py) opens the first three; the
+preparation layer (backend/conjunction/cdm_pc.py) opens the last two by rotating
+RTN covariance with the object state and deriving the combined HBR from AREA_PC.
+The parser-level facts below still hold — it reports RTN, it invents no HBR —
+and the preparation layer's own tests (test_cdm_pc_preparation.py) show the
+spec-shaped document reaching compute_pc as COMPUTED, VALIDATION_PENDING.
 
 Nothing here claims the fixture is a real CDM. It is spec-SHAPED — KVN, RTN lower
 triangle, m**2, invented numbers.

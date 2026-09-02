@@ -85,3 +85,40 @@
 node tools/dev_static_server.mjs 8777
 → http://localhost:8777/v2-three/index.html
 ```
+
+## 2026-09-01 웨이브 2 완료 (배포됨)
+- 구름 3D 승격: CTH 실측(gk2a/cth) 릴리프 + IR 근사(DERIVED) — §42A 위성 셸 FAIL 해소
+- live-layers.js: 부이(수온색)·낙뢰·산불위험·KMA특보·쓰나미·서울121타워·태풍 공식트랙(KMA/JMA/NHC)
+- 태풍 플래그십 1단계: 트랙 카드 → '이 조건으로 바다 시뮬' (풍속→SSHS 초기 카테고리)
+- sat-layer.js: AETHERUS 위성추적 — S3 카탈로그 + SGP4 250ms (261기 + 스타링크 1500/11037 상한명시)
+- CORS 규칙: /events·/ocean = S3 직접, /tourism·/clouds·/celestrak = earthus.net 경유
+- 남은 것: P3 해수면/해저 분리(현 해저릴리프 미관 훼손 위험 — PD 확인 필요), P6 대기 산란,
+  Event Room 확장(PAST·Causal Gate), MY EARTH, GLOF, 바람장/대기질(1.0 /wind), ISS 라벨·위성 클릭
+- /wind 생존 확인(09-01): korea-air-obs 264KB·stations(METAR) 625KB·gts-global 1.3MB·kma-aws 39KB·jp-amedas 266KB 전부 200 (S3 직접, 리스팅만 403) → 다음 웨이브: 바람·대기질·지상관측
+
+## 2026-09-01 P4 UNDERWATER (R-10) 구현
+- trench-view.js: 마리아나 해구 잠수 뷰 — Terrarium z9 실측심(수직 1×, 데이터 최심 10,864m vs 문헌 10,935m),
+  수심 게이지(sqrt 눈금·수층 5구분), 수온(문헌 프로파일)·압력(정수압)·해저까지, 수심대별 관측 생물(문헌),
+  자동 파일럿 하강/상승/속도, 헤드라이트+광 감쇠(연출·지형 불변), 마린 스노, 가상 수심 명시
+- 지구 쪽: 지오메트리가 이미 0m 수면(max(h,0)) + 바다 스펙큘러 → P3 GLOBAL 요구 기충족 확인
+
+## 2026-09-01 오후 — 메뉴·MY EARTH·Event Room 웨이브 (배포됨)
+- 메뉴: 1.0 문법 이식 (좌측 세로 브랜드 손잡이 EARTHUS/AETHERUS + 286px 슬라이드 패널, 도메인 섹션)
+- 대기질(에어코리아 673개소)·바람 관측(AWS+GTS 2,940개소) 잠금 해제
+- MY EARTH 탭: 내 하늘+특보+대기질+바람 통합 (위치는 localStorage만)
+- 구름 근접 각짐 해소: CLOUD_VERT 5탭 평균 + 고도 900~3200km 릴리프 감쇠
+- Event Room 확장: PAST(EQ=USGS 아카이브 30일/300km 실조회, TC=KMA 공식 타임라인),
+  WHY 인과 주장 게이트(근거 없이 원인 말하지 않음), sceneProjection 배지
+- ⚠ 해구(trench-view.js)는 별도 챗 담당 — 이 세션은 수정 금지
+
+## 2026-09-01 밤 — AETHERUS 확장 (배포됨)
+- 발사 일정 (LL2): 발사대 마커 + 다음 6건 카드. ⚠ 비인증 15회/시간 — 세션 1회 로드 유지할 것
+- 오늘의 태양계: kepler.js 이식(JPL Table 1) + solar-view.js (8행성 실위치·날짜 스크럽 ±365일)
+- 배포 번들에 assets/planets 복사 단계 추가됨 (deploy 명령 갱신 필요 시 확인)
+- 남은 AETHERUS: 우주 사진관(59점 중 프리뷰 9점뿐 — 자산 보강 선행), 우리은하·우주의 크기
+
+## 2026-09-01 저녁 — 해양 완성 + 사람 씬 (배포됨)
+- 해양: 해수면온도(NOAA OISST 39,974셀)·유의파고·표층해류(Open-Meteo)·해변271/낚시946 → 선박(AIS 정책)만 잠금
+- 사람: 국가 인구(World Bank SP.POP.TOTL 167개국, 세제곱근 높이)·지역 뉴스(RSS 116건, 지역 대표점)
+- 여행 POI = Overpass 공용서버 504 불안정, 항공편 = adsb.lol CORS 헤더 없음(API 자체는 200) → 둘 다 프록시 필요
+- ⚠ 배포 번들에 engine/ (js/earthus2/v02 61파일) 포함 + 경로 재작성 필수 — 누락 시 프로덕션 403·부팅 실패

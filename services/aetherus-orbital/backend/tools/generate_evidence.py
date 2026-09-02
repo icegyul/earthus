@@ -1652,7 +1652,7 @@ async def check_p4_conjunctions_api() -> dict[str, Any]:
         async with AsyncClient(app=app, base_url="http://evidence") as client:
             run = await client.post(
                 f"{settings.api_prefix}/v1/conjunctions/screen-runs",
-                params={"window_hours": 24},
+                params={"window_hours": 24, "wait": "true"},
             )
             listed = await client.get(f"{settings.api_prefix}/v1/conjunctions")
             filtered = await client.get(

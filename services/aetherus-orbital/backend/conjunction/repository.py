@@ -4,13 +4,31 @@ import json
 from datetime import datetime
 from typing import Any
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.database import get_db_session
 from backend.orbit.models import MeanElements
 from backend.benefit.models import SIMULATION_SOURCE_GRADES
 from backend.config import settings
 from backend.orbit.repository import _json_dict, _numeric_elements
+
+@asynccontextmanager
+async def _scope(session: AsyncSession | None) -> AsyncIterator[AsyncSession]:
+    """Use the caller's session when given, else open (and commit) our own.
+
+    Lets one ingestion run every write inside a single transaction: a failure
+    halfway then leaves nothing behind instead of a committed prefix.
+    """
+    if session is not None:
+        yield session
+        return
+    async with get_db_session() as own:
+        yield own
+
 
 SELECTION_POLICIES = frozenset({"EPOCH_DESC", "CATALOG_ID_ASC"})
 
@@ -230,11 +248,13 @@ class ConjunctionRepository:
                 },
             )
 
-    async def resolve_objects_by_catalog(self, catalog_ids: list[str]) -> dict[str, str]:
+    async def resolve_objects_by_catalog(
+        self, catalog_ids: list[str], session: AsyncSession | None = None
+    ) -> dict[str, str]:
         """Map catalog identifiers onto canonical object UUID strings."""
         if not catalog_ids:
             return {}
-        async with get_db_session() as session:
+        async with _scope(session) as session:
             result = await session.execute(
                 text(
                     """
@@ -253,9 +273,10 @@ class ConjunctionRepository:
         source_event_id: str,
         tca: datetime,
         screening_run_id: str,
+        session: AsyncSession | None = None,
     ) -> str:
         """Return one stable event identity; refreshed runs reuse the same event."""
-        async with get_db_session() as session:
+        async with _scope(session) as session:
             result = await session.execute(
                 text(
                     """
@@ -294,9 +315,10 @@ class ConjunctionRepository:
         provenance_payload: dict[str, Any],
         model_version: str,
         input_hash: str,
+        session: AsyncSession | None = None,
     ) -> str:
         """Append one immutable snapshot row; updates and deletes are blocked in SQL."""
-        async with get_db_session() as session:
+        async with _scope(session) as session:
             result = await session.execute(
                 text(
                     """
@@ -351,6 +373,50 @@ class ConjunctionRepository:
                 },
             )
             return str(result.scalar_one())
+
+    async def retire_superseded_socrates_events(
+        self,
+        primary_object_id: str,
+        secondary_object_id: str,
+        keep_source_event_id: str,
+        tca: datetime,
+        window_minutes: int = 10,
+        session: AsyncSession | None = None,
+    ) -> int:
+        """Retire earlier SOCRATES events of the same pair that this one supersedes.
+
+        SOCRATES event identity is the TCA truncated to the minute. A feed update
+        that refines the TCA across a minute boundary mints a new identity and
+        would leave the old event OPEN beside it, so a pair could be served twice
+        for one physical conjunction. Any other OPEN SOCRATES event of the pair
+        within ``window_minutes`` of the new TCA is the same encounter and is
+        retired; our own screening events (different prefix) are never touched.
+        """
+        async with _scope(session) as session:
+            result = await session.execute(
+                text(
+                    """
+                    UPDATE conjunction_event
+                       SET status = 'RETIRED', last_seen_at = now()
+                     WHERE primary_object_id = CAST(:primary AS uuid)
+                       AND secondary_object_id = CAST(:secondary AS uuid)
+                       AND status = 'OPEN'
+                       AND source_event_id LIKE 'SOCRATES:%'
+                       AND source_event_id <> :keep
+                       AND tca BETWEEN CAST(:tca AS timestamptz) - make_interval(mins => CAST(:window AS int))
+                                   AND CAST(:tca AS timestamptz) + make_interval(mins => CAST(:window AS int))
+                    RETURNING id
+                    """
+                ),
+                {
+                    "primary": primary_object_id,
+                    "secondary": secondary_object_id,
+                    "keep": keep_source_event_id,
+                    "tca": tca,
+                    "window": window_minutes,
+                },
+            )
+            return len(result.fetchall())
 
     async def count_events(self) -> int:
         async with get_db_session() as session:

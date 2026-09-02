@@ -52,13 +52,13 @@
     "record": "docs\\audit\\ENGINE_ADVERSARIAL_AUDIT_2026-09-01.md",
     "honesty_test": "tests/unit/test_orbit_engine_honesty.py",
     "honesty_test_exit_code": 0,
-    "summary": "======================= 28 passed, 2 warnings in 0.18s ========================",
+    "summary": "======================= 28 passed, 2 warnings in 0.23s ========================",
     "passed": true
   },
-  "generated_at": "2026-09-01T16:41:06.194681+00:00",
+  "generated_at": "2026-09-02T14:22:13.030305+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "5d66cc5d6dfeb14bf5b2a6fffeff2b4f47bdbc85",
+  "commit": "c75f15f79b40f02d6fbcb3d562bbdf18bf73807c",
   "import_source": {
     "repo": "Aetherus 823_Orbital/aetherus-orbital-environment (local-only)",
     "branch": "codex/aetherus-v2-v06-integration",
@@ -76,7 +76,7 @@
       "tests/product/test_p9_observation_runtime.py"
     ],
     "exit_code": 0,
-    "summary": "======================== 4 passed, 2 warnings in 1.22s ========================"
+    "summary": "======================== 4 passed, 2 warnings in 1.46s ========================"
   },
   "tests_product_suite": {
     "targets": [
@@ -94,14 +94,14 @@
       "tests/integration/test_integrated_app_surface.py"
     ],
     "exit_code": 0,
-    "summary": "================= 365 passed, 4 skipped, 4 warnings in 15.77s ================="
+    "summary": "================= 365 passed, 4 skipped, 4 warnings in 17.67s ================="
   },
   "science_bridge_live": {
     "catalog": {
       "http_status": 200,
       "data_status": "OK",
-      "sample_object_id": "228be300-aed3-4095-9901-b7b228821abd",
-      "sample_catalog_id": "334559"
+      "sample_object_id": "eb01ddb4-dadf-4a11-98d2-1c2406fbd331",
+      "sample_catalog_id": "43435"
     },
     "object_risk": {
       "http_status": 200,

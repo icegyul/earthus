@@ -52,10 +52,10 @@
     ],
     "unmet_requiring_others": []
   },
-  "generated_at": "2026-09-01T16:46:11.524824+00:00",
+  "generated_at": "2026-09-02T14:32:07.469582+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "5d66cc5d6dfeb14bf5b2a6fffeff2b4f47bdbc85",
+  "commit": "51519f7cbf8bf12af14f1a14c012ec5025ebd9d6",
   "tests_visual": {
     "targets": [
       "tests/product/test_registry_api_surface.py",
@@ -63,7 +63,7 @@
       "tests/acceptance"
     ],
     "exit_code": 0,
-    "summary": "======================= 290 passed, 2 warnings in 3.41s ======================="
+    "summary": "======================= 290 passed, 2 warnings in 6.41s ======================="
   },
   "scene_api": {
     "SPACE": {
@@ -106,14 +106,14 @@
       "lod_cap": 2000,
       "render_object_count": 500,
       "scientific_object_count": 500,
-      "scientific_hash": "739300f33f15fa461ba8232f25bb5a28d2f7149a36632ad3b70047303b6131dd"
+      "scientific_hash": "3855eee33a237f1c6225e88a247baf0f6d82765a385d82ff27820c32d8cfb498"
     },
     "invariant": "render_object_ids와 scientific_object_ids가 scientific_hash로 묶여 렌더 부분집합이 과학 부분집합을 몰래 대체할 수 없음 (절대 규칙 12)"
   },
   "earth_link_layer": {
     "path": "prototype/v2-three/js/aetherus-link.js",
     "present": true,
-    "bytes": 13297,
+    "bytes": 13595,
     "role": "v2-three 실지구가 과학 API(catalog/snapshot·conjunctions)를 직접 소비 — 위치는 서버 SGP4 스냅샷, 사이 구간은 LINEAR_ADVANCE로 화면에 명시"
   },
   "browser_verification": [

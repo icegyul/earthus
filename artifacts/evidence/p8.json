@@ -3,14 +3,16 @@
   "orbital_phase": "ORB-P4 + ORB-P5(physical engine) + ORB-P6(PROTECT/OCM)",
   "gate": "PARTIAL",
   "failed_checks": [
+    "tests_p5_pass",
     "operational_pc_from_cdm_covariance",
     "large_scale_benchmark_run"
   ],
   "checks": {
     "tests_p4_core_pass": true,
     "tests_10k_corpus_pass": true,
-    "tests_p5_pass": true,
+    "tests_p5_pass": false,
     "tests_p6_pass": true,
+    "spec_shaped_cdm_reaches_pc": true,
     "operational_pc_from_cdm_covariance": false,
     "large_scale_benchmark_run": false
   },
@@ -25,16 +27,20 @@
         "reason": "check is met"
       },
       "tests_p5_pass": {
-        "blocker_class": "NONE",
-        "reason": "check is met"
+        "blocker_class": "BUILDABLE_NOW",
+        "reason": "P5 테스트 미통과 — 내부 작업"
       },
       "tests_p6_pass": {
         "blocker_class": "NONE",
         "reason": "check is met"
       },
+      "spec_shaped_cdm_reaches_pc": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
       "operational_pc_from_cdm_covariance": {
-        "blocker_class": "BUILDABLE_NOW",
-        "reason": "CDM 파서와 Pc 게이트가 규격 문서를 받지 못한다: JSON 전용(cdm.py:61), 6x6 중첩 공분산 요구(cdm.py:25), TEME 강제(pc.py:72), KM2 강제(pc.py:22), COMBINED_HBR 요구(pc.py:154). CCSDS 508.0-B-1 은 KVN/XML 에 21원소 RTN 하삼각을 m**2 로 싣는다. 파서와 RTN->TEME 회전은 파트너·자격증명 없이 지금 만들 수 있으며, 그 전에는 어떤 CDM 도 읽히지 않는다. 근거: tests/unit/test_cdm_spec_shape_reality.py, docs/audit/METRIC_PROVENANCE_HARDENING_2026-09-02.md"
+        "blocker_class": "EXTERNAL_DATA_GATED",
+        "reason": "내부 관문 5개는 모두 열렸다(KVN 파서·21원소 하삼각·m**2 변환·RTN->TEME 회전·AREA_PC 기반 HBR; tests/unit/test_cdm_pc_preparation.py 가 규격 형태 문서로 COMPUTED 도달을 실행 검증). 남은 것은 우리가 만들지 않은 CDM 과 그에 대해 공표된 Pc 로 회전·HBR 규약을 대조하는 일이며, 그 골든 케이스는 TraCSS CC0 검증 데이터셋(Google 계정 필요, 20.7GB)에서만 얻을 수 있다. 그 전까지 계산된 Pc 는 VALIDATION_PENDING 이며 운영 등급이 아니다."
       },
       "large_scale_benchmark_run": {
         "blocker_class": "BUILDABLE_NOW",
@@ -44,20 +50,22 @@
     "counts": {
       "BUILDABLE_NOW": 2,
       "DECISION_PENDING": 0,
-      "EXTERNAL_DATA_GATED": 0,
+      "EXTERNAL_DATA_GATED": 1,
       "EXTERNAL_PARTNER_GATED": 0,
       "NONE": 4
     },
     "unmet_buildable_now": [
       "large_scale_benchmark_run",
-      "operational_pc_from_cdm_covariance"
+      "tests_p5_pass"
     ],
-    "unmet_requiring_others": []
+    "unmet_requiring_others": [
+      "operational_pc_from_cdm_covariance"
+    ]
   },
-  "generated_at": "2026-09-01T16:38:09.276504+00:00",
+  "generated_at": "2026-09-02T14:37:03.330184+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "5d66cc5d6dfeb14bf5b2a6fffeff2b4f47bdbc85",
+  "commit": "51519f7cbf8bf12af14f1a14c012ec5025ebd9d6",
   "tests_p4_core": {
     "files": [
       "tests/unit/test_ca_screen.py",
@@ -69,8 +77,8 @@
     ],
     "status": "COMPLETED",
     "exit_code": 0,
-    "elapsed_seconds": 51.6,
-    "summary": "======================= 52 passed, 1 warning in 50.30s ========================"
+    "elapsed_seconds": 91.0,
+    "summary": "============= 53 passed, 1 skipped, 1 warning in 89.55s (0:01:29) ============="
   },
   "tests_10k_corpus": {
     "files": [
@@ -78,8 +86,8 @@
     ],
     "status": "COMPLETED",
     "exit_code": 0,
-    "elapsed_seconds": 11.8,
-    "summary": "============================= 5 passed in 10.58s =============================="
+    "elapsed_seconds": 14.3,
+    "summary": "============================= 5 passed in 12.67s =============================="
   },
   "tests_p5": {
     "files": [
@@ -92,9 +100,9 @@
       "tests/integration/test_benefit_api.py"
     ],
     "status": "COMPLETED",
-    "exit_code": 0,
-    "elapsed_seconds": 12.0,
-    "summary": "================== 36 passed, 6 skipped, 1 warning in 10.77s =================="
+    "exit_code": 1,
+    "elapsed_seconds": 169.3,
+    "summary": "======= 1 failed, 40 passed, 1 skipped, 1 warning in 167.55s (0:02:47) ========"
   },
   "tests_p6": {
     "files": [
@@ -102,20 +110,20 @@
     ],
     "status": "COMPLETED",
     "exit_code": 0,
-    "elapsed_seconds": 6.1,
-    "summary": "======================== 3 passed, 1 warning in 4.93s ========================="
+    "elapsed_seconds": 9.5,
+    "summary": "======================== 3 passed, 1 warning in 7.69s ========================="
   },
   "screening_performance": {
     "record": "docs/audit/DEBRIS_INGESTION_NOTE.md",
     "largest_completed_screening_run": {
       "status": "PARTIAL",
-      "started_at": "2026-09-01 15:44:22.095623+00:00",
+      "started_at": "2026-09-01 18:24:53.064856+00:00",
       "objects_considered": 2000,
       "objects_propagated": 1998,
       "pairs_before_screening": 1995003,
-      "pairs_after_coarse": 24398,
-      "events_found": 2094,
-      "elapsed_seconds": 489.593513
+      "pairs_after_coarse": 2251,
+      "events_found": 1353,
+      "elapsed_seconds": 19.576836
     },
     "measured": "실 파편 규모(1,998 객체·6시간 창·30초 그리드)에서 레벨1 표본거리 스캔이 병목. ThreadPoolExecutor 청크 병렬화로 99.2s→35.9s(2.8배), 후보 48,678건 완전 동일. 필터 체인(false-negative=0 보장)과 후보 순서·해시는 불변.",
     "worker_env": "AETHERUS_SCREENING_WORKERS (기본 CPU-1, 최대 8, 청크 4개 미만이면 순차)"

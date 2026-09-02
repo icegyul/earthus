@@ -40,6 +40,77 @@ export class IntelFeed {
     this._proj = new THREE.Vector3();
     this._camDir = new THREE.Vector3();
     this._frame = 0;
+    this.past = null; // 선택 사건의 과거 맥락 { state, ... }
+    this.onUpdate = null; // 비동기 로드 후 패널 리렌더 콜백 (main.js가 연결)
+  }
+
+  // PAST: 사건 주변의 실제 이력 — 값 생성 없이 공식 아카이브 조회만
+  async loadPast(it) {
+    this.past = { state: 'loading' };
+    if (this.onUpdate) this.onUpdate();
+    try {
+      if (it.kind === 'EQ') {
+        // USGS 아카이브: 반경 300km · 최근 30일 · M2.5+
+        const start = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+        const url = 'https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson'
+          + `&latitude=${it.lat.toFixed(3)}&longitude=${it.lon.toFixed(3)}&maxradiuskm=300`
+          + `&starttime=${start}&minmagnitude=2.5&orderby=magnitude&limit=200`;
+        const j = await Promise.race([
+          fetch(url).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+          new Promise((_, rej) => { setTimeout(() => rej(new Error('timeout')), 12000); }),
+        ]);
+        const fs = j.features || [];
+        const mags = fs.map((f) => f.properties.mag).filter((m) => m != null);
+        const bigger = mags.filter((m) => m >= (it.facts[0] ? parseFloat(String(it.facts[0][1]).slice(1)) : 99)).length;
+        const top = fs.slice(0, 5).map((f) => ({
+          mag: f.properties.mag, place: f.properties.place, t: f.properties.time,
+        }));
+        this.past = {
+          state: 'ready', kind: 'EQ', n: fs.length, maxMag: mags.length ? Math.max(...mags) : null, bigger, top,
+          src: 'USGS 아카이브 · 반경 300km · 30일 · M2.5+',
+        };
+      } else if (it.kind === 'TC') {
+        // KMA·JMA·NHC 공식 발표 타임라인 (1.0 S3 캐시)
+        const j = await Promise.race([
+          fetch('https://earthus-cache-kr.s3.us-east-2.amazonaws.com/events/typhoon-official.json', { cache: 'no-store' })
+            .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+          new Promise((_, rej) => { setTimeout(() => rej(new Error('timeout')), 12000); }),
+        ]);
+        const name = (it.title || '').replace('열대저기압', '').trim().toUpperCase();
+        const storm = (j.storms || []).find((s) => name && (s.key === name || (s.name || '').toUpperCase() === name));
+        const ag = storm && (storm.agencies || []).find((a) => a.steps && a.steps.length);
+        this.past = ag
+          ? {
+            state: 'ready', kind: 'TC', agency: ag.agencyKo || ag.agency,
+            steps: ag.steps.map((s) => ({ h: s.h, windMs: s.windMs, hpa: s.hpa, place: s.place })),
+            src: `${ag.agencyKo || ag.agency} 공식 발표 (${j.generated ? j.generated.slice(0, 16) : ''})`,
+          }
+          : { state: 'none', note: '공식 태풍 발표에서 이 사건을 찾지 못했습니다 — 표시하지 않습니다.' };
+      } else {
+        this.past = { state: 'none', note: '이 사건 유형의 이력 소스가 아직 없습니다.' };
+      }
+    } catch (e) {
+      this.past = { state: 'error', note: `이력 조회 실패 (${String((e && e.message) || e)}) — 판단하지 않습니다.` };
+    }
+    if (this.onUpdate) this.onUpdate();
+  }
+
+  pastHtml() {
+    const p = this.past;
+    if (!p) return '';
+    if (p.state === 'loading') return '<div class="card"><div class="card-h">PAST</div><div class="card-b">이력 조회 중…</div></div>';
+    if (p.state === 'none' || p.state === 'error') {
+      return `<div class="card"><div class="card-h">PAST ${this.badge('INSUFFICIENT_DATA')}</div><div class="card-b">${p.note}</div></div>`;
+    }
+    if (p.kind === 'EQ') {
+      const rows = p.top.map((t) => `<div class="stat"><span class="k">M${t.mag != null ? t.mag.toFixed(1) : '?'}</span><span class="v">${(t.place || '').slice(0, 34)} · ${agoText(t.t)}</span></div>`).join('');
+      return `<div class="card"><div class="card-h">PAST — 주변 30일 ${this.badge('OBSERVED')}</div>
+        <div class="card-b">반경 300km에서 30일간 M2.5+ <b>${p.n}회</b>${p.maxMag != null ? ` · 최대 M${p.maxMag.toFixed(1)}` : ''}${p.bigger > 1 ? ` · 이번 규모 이상 ${p.bigger}회` : p.bigger === 1 ? ' · 이번이 30일 내 최대' : ''}
+        ${rows}<span class="paysub">${p.src}</span></div></div>`;
+    }
+    const rows = p.steps.slice(0, 8).map((s) => `<div class="stat"><span class="k">${s.h === 0 ? '현재' : `+${s.h}h`}</span><span class="v">${s.windMs != null ? `${s.windMs}m/s` : '—'} · ${s.hpa != null ? `${s.hpa}hPa` : '—'}</span></div>`).join('');
+    return `<div class="card"><div class="card-h">공식 발표 타임라인 ${this.badge('OFFICIAL_FORECAST')}</div>
+      <div class="card-b">${rows}<span class="paysub">${p.src} — 발표값 그대로</span></div></div>`;
   }
 
   async load() {
@@ -128,8 +199,14 @@ export class IntelFeed {
       return `<div class="card"><div class="card-h">피드 ${this.badge('INSUFFICIENT_DATA')}</div>
         <div class="card-b">사건 데이터를 불러오지 못했습니다. 네트워크 확인 후 다시 시도하세요.</div></div>`;
     }
-    const rows = this.items.map((it, i) => `
-      <div class="feed-item" data-action="feed-open" data-idx="${i}">
+    const shown = this.visibleItems();
+    if (!shown.length) {
+      const what = this.kind === 'EQ' ? '지진' : this.kind === 'TC' ? '태풍' : '사건';
+      return `<div class="feed-head">${what} <span class="feed-cnt">0</span></div>
+        <div class="feed-note">지금 조건에 맞는 ${what} 사건이 없습니다 — 없는 것을 만들어 채우지 않습니다.</div>`;
+    }
+    const rows = shown.map((it) => `
+      <div class="feed-item" data-action="feed-open" data-idx="${this.items.indexOf(it)}">
         <span class="feed-dot ${it.kind === 'TC' ? 'tc' : 'eq'} a-${it.alert.toLowerCase()}"></span>
         <div class="feed-main">
           <div class="feed-title">${it.title}</div>
@@ -140,25 +217,32 @@ export class IntelFeed {
     const tcNote = this.tcFailed
       ? `<div class="feed-note">태풍 피드(GDACS) 응답 없음 — ${this.badge('INSUFFICIENT_DATA')} <button class="feed-back" data-action="feed-retry" style="margin:0">재시도</button></div>`
       : '';
-    return `<div class="feed-head">오늘의 지구 사건 <span class="feed-cnt">${this.items.length}</span></div>${tcNote}${rows}
-      <div class="feed-note">출처: GDACS(공식 경보) · USGS(관측) — 사건 클릭 시 3D 지구에서 확인</div>`;
+    const headKo = this.kind === 'EQ' ? '지진 (USGS 관측)'
+      : this.kind === 'TC' ? '태풍 (GDACS 공식)' : '오늘의 지구 사건';
+    const srcKo = this.kind === 'EQ' ? '출처: USGS(관측)'
+      : this.kind === 'TC' ? '출처: GDACS(공식 경보)' : '출처: GDACS(공식 경보) · USGS(관측)';
+    return `<div class="feed-head">${headKo} <span class="feed-cnt">${shown.length}</span></div>${this.kind === 'EQ' ? '' : tcNote}${rows}
+      <div class="feed-note">${srcKo} — 사건 클릭 시 3D 지구에서 확인</div>`;
   }
 
   roomHtml(it) {
     const facts = it.facts.map(([k, v]) => `<div class="stat"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
     return `
       <button class="feed-back" data-action="feed-back">← 피드로</button>
-      <div class="card"><div class="card-h">${it.title} ${this.badge(it.truth)}</div>
+      <div class="card"><div class="card-h">${it.title} ${this.badge(it.truth)}
+          <span class="badge demo" title="sceneProjection">EVENT_FOCUS · REGION</span></div>
         <div class="card-b">
           <div class="stat"><span class="k">위치</span><span class="v">${it.where}</span></div>
           ${facts}
           <div class="stat"><span class="k">상태</span><span class="v">${it.status}</span></div>
         </div></div>
       <div class="card"><div class="card-h">EVIDENCE</div>
-        <div class="card-b">1차 출처: ${it.source}<br/>갱신: ${agoText(it.whenT)} · 지구 위 위치는 출처 좌표 그대로${it.kind === 'TC' ? '<br/>트랙 라인: GDACS 공식 경로' : ''}${it.depthKm != null ? `<br/>진원은 지하 ${Math.round(it.depthKm)}km — 지하 단면 표현은 준비 중` : ''}</div></div>
-      <div class="card"><div class="card-h">WHY · NEXT ${this.badge('LOCKED')}</div>
-        <div class="card-b">${it.why} — 근거 그래프·전망은 <b>EXPLORER PRO</b>에서 제공 예정.<br/>
-        <span class="paysub">공식 경보·안전정보는 항상 무료 (FREE: SEE THE EARTH)</span></div></div>`;
+        <div class="card-b">1차 출처: ${it.source}<br/>갱신: ${agoText(it.whenT)} · 지구 위 위치는 출처 좌표 그대로${it.kind === 'TC' ? '<br/>트랙 라인: GDACS 공식 경로' : ''}${it.depthKm != null ? `<br/>진원은 지하 <b>${Math.round(it.depthKm)}km</b> — 재해 메뉴의 <b>지진 깊이</b>를 켜면 진원을 실제 깊이 자리에서 봅니다` : ''}</div></div>
+      ${this.pastHtml()}
+      <div class="card"><div class="card-h">WHY ${this.badge('INSUFFICIENT_DATA')}</div>
+        <div class="card-b"><b>인과 주장 게이트</b>: 검증된 근거 체인 없이 "원인"을 말하지 않습니다.<br/>
+        이 사건에 연결된 근거는 1차 관측(${it.source})과 위의 실측 이력뿐 — 인과 분석 근거 부족.<br/>
+        <span class="paysub">${it.why} — 근거 그래프·전망(NEXT)은 EXPLORER PRO에서 제공 예정 · 공식 경보·안전정보는 항상 무료</span></div></div>`;
   }
 
   async select(idx, orbit) {
@@ -166,6 +250,7 @@ export class IntelFeed {
     if (!it) return;
     this.selected = it;
     this.view = 'room';
+    this.loadPast(it); // PAST 카드 비동기 채움 (완료 시 onUpdate로 리렌더)
     // 카메라 포커스 (EVENT_FOCUS · 1.1초 글라이드)
     const M = Math.PI / 180;
     let ty = it.lon * M;
@@ -206,7 +291,21 @@ export class IntelFeed {
   back() {
     this.view = 'list';
     this.selected = null;
+    this.past = null;
     this.clearTrack();
+  }
+
+  // 재해 메뉴의 '지구 사건 피드 / 지진 / 태풍' 세 줄이 눌러도 같은 화면이던 것을 갈라 준다
+  setKind(kind) {
+    this.kind = kind || null;   // null = 전체
+    this.view = 'list';
+    this.selected = null;
+    this.past = null;
+    this.clearTrack();
+  }
+
+  visibleItems() {
+    return this.kind ? this.items.filter((it) => it.kind === this.kind) : this.items;
   }
 
   clearTrack() {

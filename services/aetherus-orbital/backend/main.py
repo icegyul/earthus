@@ -1,5 +1,7 @@
 """Aetherus Orbital Environment API."""
 
+import asyncio
+import uuid
 import logging
 import secrets
 from contextlib import asynccontextmanager
@@ -452,6 +454,11 @@ async def get_catalog_status(
     return await service.catalog_status()
 
 
+#: Accepted screening jobs for this process. Durable state is the screening_run
+#: table; this only maps a handle to a running task and its final payload.
+_SCREENING_JOBS: dict[str, dict[str, Any]] = {}
+
+
 @app.post(f"{settings.api_prefix}/v1/conjunctions/screen-runs", status_code=202)
 async def run_conjunction_screening(
     window_hours: float | None = Query(
@@ -469,18 +476,92 @@ async def run_conjunction_screening(
             "takes tens of minutes. Defaults to configuration."
         ),
     ),
+    wait: bool = Query(
+        default=False,
+        description=(
+            "Run synchronously and return the screening payload directly. Only "
+            "sensible with a bounded population; the default accepts a job and "
+            "returns immediately."
+        ),
+    ),
     service: ConjunctionService = Depends(get_conjunction_service),
 ):
-    """Screen stored P1/P2 orbit_solutions and persist events/snapshots.
+    """Accept one screening job; poll GET .../screen-runs/{job_id} for its result.
 
-    Runs synchronously despite the 202. That was defensible while the stored
-    catalogue held a handful of objects; after debris ingestion it holds ~2,851,
-    and pair count is quadratic, so an unbounded call occupies the worker for
-    tens of minutes. ``max_objects`` bounds the population until this route is
-    moved onto a job queue; the response's ``coverage`` block records the bound
-    so a partial run is never mistaken for full catalogue coverage.
+    The 202 used to be a lie: the route ran the whole screening synchronously,
+    which was defensible with a handful of objects and became a multi-minute
+    worker stall once the catalogue held thousands. Now the default returns a
+    job handle at once and the work runs in the background; ``wait=true`` keeps
+    the old synchronous behaviour for bounded populations and tooling.
+
+    The job registry is in-process: a job survives only as long as this server
+    does, while the durable record is the ``screening_run`` row the job creates.
+    A registry entry stuck in RUNNING after a restart is therefore an orphan,
+    not a live job, and says so when polled.
     """
-    return await service.run_screening(window_hours, max_objects=max_objects)
+    if wait:
+        return await service.run_screening(window_hours, max_objects=max_objects)
+
+    job_id = str(uuid.uuid4())
+    job: dict[str, Any] = {
+        "job_id": job_id,
+        "status": "RUNNING",
+        "accepted_at": datetime.now(UTC).isoformat(),
+        "finished_at": None,
+        "poll": f"{settings.api_prefix}/v1/conjunctions/screen-runs/{job_id}",
+        "request": {"window_hours": window_hours, "max_objects": max_objects},
+        "result": None,
+        "error": None,
+    }
+    _SCREENING_JOBS[job_id] = job
+
+    async def _run() -> None:
+        try:
+            job["result"] = await service.run_screening(window_hours, max_objects=max_objects)
+            job["status"] = "SUCCEEDED"
+        except Exception as error:  # noqa: BLE001 - the job must record its own failure
+            job["status"] = "FAILED"
+            job["error"] = {"type": type(error).__name__, "message": str(error)[:2000]}
+        finally:
+            job["finished_at"] = datetime.now(UTC).isoformat()
+
+    # Keep a reference: an un-referenced task can be garbage-collected mid-run.
+    job["_task"] = asyncio.create_task(_run())
+    return JSONResponse(status_code=202, content=_screening_job_view(job))
+
+
+def _screening_job_view(job: dict[str, Any]) -> dict[str, Any]:
+    public = {key: value for key, value in job.items() if not key.startswith("_")}
+    return {
+        "request_id": str(uuid.uuid4()),
+        "generated_at": datetime.now(UTC).isoformat(),
+        "data_status": {"RUNNING": "PENDING", "SUCCEEDED": "OK", "FAILED": "FAILED"}[
+            job["status"]
+        ],
+        "data": public,
+        "warnings": (
+            ["job registry is in-process; this handle does not survive a server restart"]
+        ),
+    }
+
+
+@app.get(f"{settings.api_prefix}/v1/conjunctions/screen-runs/{{job_id}}")
+async def get_screening_job(job_id: str):
+    """Poll one accepted screening job."""
+    job = _SCREENING_JOBS.get(job_id)
+    if job is None:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "status": "UNKNOWN_JOB",
+                "message": (
+                    "no such screening job in this server process; the registry is "
+                    "in-process, so a handle issued before a restart is gone even "
+                    "though its screening_run row, if any, is still stored"
+                ),
+            },
+        )
+    return _screening_job_view(job)
 
 
 @app.get(f"{settings.api_prefix}/v1/conjunctions")

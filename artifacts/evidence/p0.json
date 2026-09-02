@@ -3,10 +3,10 @@
   "orbital_phase": "ORB-P0",
   "gate": "PASS",
   "failed_checks": [],
-  "generated_at": "2026-09-01T12:57:47.578505+00:00",
+  "generated_at": "2026-09-02T14:21:14.394021+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "84dc4e98e5aea51fa78918308837a437fba80195",
+  "commit": "c75f15f79b40f02d6fbcb3d562bbdf18bf73807c",
   "checks": {
     "infrastructure_healthy": true,
     "object_store_roundtrip": true,
@@ -63,7 +63,10 @@
       "012_object_metadata_provenance",
       "013_metadata_established_outcome",
       "014_metadata_provenance_corrections",
-      "015_metadata_conflict_surface"
+      "015_metadata_conflict_surface",
+      "016_max_pc_basis",
+      "017_register_socrates_source",
+      "018_geometry_basis"
     ],
     "table_counts": {
       "aetherus_product": 69,
@@ -82,7 +85,7 @@
   "tests": {
     "command": "pytest <P0 subset> -q",
     "exit_code": 0,
-    "summary": "======================== 15 passed, 1 warning in 0.25s ========================"
+    "summary": "======================== 15 passed, 1 warning in 0.32s ========================"
   },
   "bootstrap": {
     "files_present": {

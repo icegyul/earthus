@@ -315,6 +315,7 @@ export class OceanSim {
       drag = { x: e.clientX, y: e.clientY };
     });
     dom.addEventListener('pointerup', () => { drag = null; });
+    dom.addEventListener('pointercancel', () => { drag = null; });
     window.addEventListener('resize', () => { if (this.active) this.resize(); });
   }
 

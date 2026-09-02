@@ -258,3 +258,80 @@ class TestPersistedChain:
             "the same physical conjunction became two events because the feed "
             "printed the pair in the other order"
         )
+
+
+class TestAtomicityAndSupersession:
+    async def test_a_failure_midway_leaves_nothing_behind(self, tmp_path, monkeypatch):
+        """One transaction: the prefix written before the failure is rolled back."""
+        from backend.conjunction import repository as repository_module
+
+        primary_id, secondary_id = await _two_real_catalog_ids()
+        retrieved_at = datetime.now(UTC)
+        base = (retrieved_at + timedelta(hours=10)).replace(microsecond=0)
+        rows = [
+            f"{primary_id},P,0.5,{secondary_id},S,0.7,{(base + timedelta(minutes=m)).strftime('%Y-%m-%d %H:%M:%S')},0.9,12.0,3.10E-07,1.5"
+            for m in (0, 20)
+        ]
+        result = _feed(rows, retrieved_at)
+
+        original = repository_module.ConjunctionRepository.append_snapshot
+        calls = {"n": 0}
+
+        async def failing(self, *args, **kwargs):
+            calls["n"] += 1
+            if calls["n"] == 2:
+                raise RuntimeError("simulated failure on the second snapshot")
+            return await original(self, *args, **kwargs)
+
+        monkeypatch.setattr(repository_module.ConjunctionRepository, "append_snapshot", failing)
+        with pytest.raises(RuntimeError, match="simulated failure"):
+            await _persist(result, RawArtifactStore(tmp_path / "raw"))
+
+        async with get_db_session() as session:
+            snapshots = (
+                await session.execute(
+                    text("SELECT count(*) FROM conjunction_snapshot WHERE input_hash = :h"),
+                    {"h": result.raw_sha256},
+                )
+            ).scalar_one()
+            artifacts = (
+                await session.execute(
+                    text("SELECT count(*) FROM raw_artifact WHERE content_sha256 = :h"),
+                    {"h": result.raw_sha256},
+                )
+            ).scalar_one()
+            run = (
+                await session.execute(
+                    text(
+                        "SELECT status FROM ingestion_run WHERE request_fingerprint = :h"
+                        " ORDER BY started_at DESC LIMIT 1"
+                    ),
+                    {"h": result.raw_sha256},
+                )
+            ).scalar_one()
+        assert snapshots == 0, "the first snapshot survived the failed transaction"
+        assert artifacts == 0, "the artifact row survived the failed transaction"
+        assert run == "FAILED", "the failure was not recorded on the run row"
+
+    async def test_a_tca_refinement_across_a_minute_retires_the_old_event(self, tmp_path):
+        primary_id, secondary_id = await _two_real_catalog_ids()
+        retrieved_at = datetime.now(UTC)
+        first_tca = (retrieved_at + timedelta(hours=11)).replace(second=59, microsecond=0)
+        second_tca = first_tca + timedelta(seconds=1)  # crosses the minute
+        store = RawArtifactStore(tmp_path / "raw")
+
+        first = await _persist(
+            _feed([f"{primary_id},P,0.5,{secondary_id},S,0.7,{first_tca.strftime('%Y-%m-%d %H:%M:%S')},0.9,12.0,3.10E-07,1.5"], retrieved_at),
+            store,
+        )
+        second = await _persist(
+            _feed([f"{primary_id},P,0.5,{secondary_id},S,0.7,{second_tca.strftime('%Y-%m-%d %H:%M:%S')},0.9,12.0,3.10E-07,1.5"], retrieved_at),
+            store,
+        )
+        assert first.event_ids != second.event_ids, "a new minute is a new identity"
+        assert second.events_superseded == 1
+
+        rows = await _rows_for(primary_id, retrieved_at + timedelta(hours=10, minutes=30), TEST_GRADE)
+        served = {str(r["event_id"]) for r in rows}
+        assert set(second.event_ids) <= served
+        assert not (set(first.event_ids) & served), "the superseded event is still being served"

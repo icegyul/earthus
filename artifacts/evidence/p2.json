@@ -15,20 +15,20 @@
     "record": "docs\\audit\\ENGINE_ADVERSARIAL_AUDIT_2026-09-01.md",
     "honesty_test": "tests/unit/test_space_engine_honesty.py",
     "honesty_test_exit_code": 0,
-    "summary": "======================= 25 passed, 2 warnings in 0.06s ========================",
+    "summary": "======================= 25 passed, 2 warnings in 0.07s ========================",
     "passed": true
   },
-  "generated_at": "2026-09-01T13:09:53.247468+00:00",
+  "generated_at": "2026-09-02T14:21:24.727307+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "84dc4e98e5aea51fa78918308837a437fba80195",
+  "commit": "c75f15f79b40f02d6fbcb3d562bbdf18bf73807c",
   "tests_space": {
     "targets": [
       "tests/unit/test_e08_ephemeris_cross_validation.py",
       "tests/acceptance"
     ],
     "exit_code": 0,
-    "summary": "======================= 285 passed, 2 warnings in 0.68s ======================="
+    "summary": "======================= 285 passed, 2 warnings in 0.87s ======================="
   },
   "e08_correction": {
     "defect": "구 PLANET_ELEMENTS 테이블이 규약 혼선(6열이 수성·금성에선 평균이각, 코드는 평균경도로 소비 → ω+Ω 이중 차감)으로 수성 103°·금성 131° 오배치. 기존 인수 테스트는 |r|만 검사해 각도 오류를 통과시킴.",
@@ -51,11 +51,11 @@
       "data_status": "OK",
       "source_id": "noaa_swpc_planetary_k_index_1m",
       "source_uri": "https://services.swpc.noaa.gov/json/planetary_k_index_1m.json",
-      "raw_sha256": "78e549038a5a871527b5fe7e525e0aada939db64c3bba78be747bfb52a1e965c",
+      "raw_sha256": "af9a718d4242e8d1f434483e706294a957b8dc7e6592ede33720d868dfe3016f",
       "upstream_http_status": 200,
-      "content_bytes": 28003,
+      "content_bytes": 27925,
       "from_cache": false,
-      "total_rows": 359,
+      "total_rows": 358,
       "warnings": [
         "Kp is a dimensionless geomagnetic activity index (0-9). It is not a probability and must not be converted into one."
       ]
@@ -65,11 +65,11 @@
       "data_status": "OK",
       "source_id": "nasa_jpl_sbdb_cad",
       "source_uri": "https://ssd-api.jpl.nasa.gov/cad.api?dist-max=0.05&date-min=now&limit=50&body=Earth",
-      "raw_sha256": "1c85693f1b5cb6d9c5b547e87a331cd94a559d533f0db91ebcc297a15cf84fa5",
+      "raw_sha256": "3f39cfcdbef5bd1f9ebafba52e5d9e1341681656fe74342189c8f93dc79cdcac",
       "upstream_http_status": 200,
-      "content_bytes": 4062,
-      "from_cache": true,
-      "total_rows": 22,
+      "content_bytes": 3711,
+      "from_cache": false,
+      "total_rows": 20,
       "warnings": [
         "Close-approach geometry only. Distance and relative velocity are not an impact probability and are not a conjunction screening result."
       ]

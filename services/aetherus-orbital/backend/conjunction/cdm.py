@@ -27,6 +27,12 @@ class CdmObjectState:
     covariance_unit: str | None
     hbr_m: float | None
     covariance_method: str | None
+    # Published state vector (frame per REF_FRAME) and AREA_PC. Optional so the
+    # JSON dialect, which carries neither, keeps constructing this unchanged.
+    state_position_km: tuple[float, float, float] | None = None
+    state_velocity_km_s: tuple[float, float, float] | None = None
+    state_frame: str | None = None
+    area_pc_m2: float | None = None
 
 
 @dataclass(frozen=True)

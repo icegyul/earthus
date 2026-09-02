@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from blocker_class import BUILDABLE_NOW, classify  # noqa: E402
+from blocker_class import BUILDABLE_NOW, EXTERNAL_DATA_GATED, classify  # noqa: E402
 
 SERVICE_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = SERVICE_ROOT.parents[1]
@@ -118,6 +118,19 @@ def largest_screening_run() -> dict:
         return {"status": "QUERY_FAILED", "reason": str(exc)[:300]}
 
 
+def spec_shaped_cdm_reaches_pc() -> bool:
+    """Run the preparation layer on the spec-shaped fixture; report the fact."""
+    proc = subprocess.run(
+        [
+            sys.executable, "-m", "pytest",
+            "tests/unit/test_cdm_pc_preparation.py::TestSpecShapedDocumentReachesPc::test_pc_is_computed_and_marked_validation_pending",
+            "-q", "--no-header", "-p", "no:logging",
+        ],
+        capture_output=True, text=True, cwd=str(SERVICE_ROOT),
+    )
+    return proc.returncode == 0
+
+
 def main() -> None:
     tests_p4 = pytest_summary(P4_TESTS)
     tests_corpus = pytest_summary([CORPUS_TEST])
@@ -129,6 +142,13 @@ def main() -> None:
         "tests_10k_corpus_pass": tests_corpus.get("exit_code") == 0,
         "tests_p5_pass": tests_p5.get("exit_code") == 0,
         "tests_p6_pass": tests_p6.get("exit_code") == 0,
+        # Every internal gate is open: a CCSDS-shaped document (KVN, RTN lower
+        # triangle, m**2, ITRF state, AREA_PC) now reaches compute_pc as
+        # COMPUTED. Measured by running it, never asserted.
+        "spec_shaped_cdm_reaches_pc": spec_shaped_cdm_reaches_pc(),
+        # Still unmet, but for a different reason than before: the pipeline is
+        # not the blocker any more, the absence of an externally sourced CDM
+        # with a published Pc to compare against is.
         "operational_pc_from_cdm_covariance": False,
         "large_scale_benchmark_run": False,
     }
@@ -138,15 +158,18 @@ def main() -> None:
     # 실측이 그것을 반증했다 — 파트너 데이터가 도착하기 전에 우리 쪽 관문 5개가
     # 먼저 거부한다. 우리 일을 남의 일로 적어두면 로드맵이 잘못된 문을 가리킨다.
     blockers = {
-        "operational_pc_from_cdm_covariance": (
+        "spec_shaped_cdm_reaches_pc": (
             BUILDABLE_NOW,
-            "CDM 파서와 Pc 게이트가 규격 문서를 받지 못한다: JSON 전용(cdm.py:61), "
-            "6x6 중첩 공분산 요구(cdm.py:25), TEME 강제(pc.py:72), KM2 강제(pc.py:22), "
-            "COMBINED_HBR 요구(pc.py:154). CCSDS 508.0-B-1 은 KVN/XML 에 21원소 RTN "
-            "하삼각을 m**2 로 싣는다. 파서와 RTN->TEME 회전은 파트너·자격증명 없이 "
-            "지금 만들 수 있으며, 그 전에는 어떤 CDM 도 읽히지 않는다. "
-            "근거: tests/unit/test_cdm_spec_shape_reality.py, "
-            "docs/audit/METRIC_PROVENANCE_HARDENING_2026-09-02.md"
+            "규격 형태 CDM 이 compute_pc 에 도달하지 못함 — 내부 작업",
+        ),
+        "operational_pc_from_cdm_covariance": (
+            EXTERNAL_DATA_GATED,
+            "내부 관문 5개는 모두 열렸다(KVN 파서·21원소 하삼각·m**2 변환·RTN->TEME "
+            "회전·AREA_PC 기반 HBR; tests/unit/test_cdm_pc_preparation.py 가 규격 형태 "
+            "문서로 COMPUTED 도달을 실행 검증). 남은 것은 우리가 만들지 않은 CDM 과 "
+            "그에 대해 공표된 Pc 로 회전·HBR 규약을 대조하는 일이며, 그 골든 케이스는 "
+            "TraCSS CC0 검증 데이터셋(Google 계정 필요, 20.7GB)에서만 얻을 수 있다. "
+            "그 전까지 계산된 Pc 는 VALIDATION_PENDING 이며 운영 등급이 아니다."
         ),
         "large_scale_benchmark_run": (
             BUILDABLE_NOW,

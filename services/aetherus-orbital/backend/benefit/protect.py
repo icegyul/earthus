@@ -15,7 +15,10 @@ from backend.benefit.physical import (
 )
 
 
-def comparable_metrics(metrics: tuple[str, ...]) -> tuple[str, ...]:
+def comparable_metrics(
+    metrics: tuple[str, ...],
+    capability: frozenset[str] = PHYSICAL_RECOMPUTE_CHANNELS,
+) -> tuple[str, ...]:
     """Keep only channels the physical recompute can actually produce.
 
     PROTECT and OCM both rank candidates by differencing a baseline graph against
@@ -26,12 +29,15 @@ def comparable_metrics(metrics: tuple[str, ...]) -> tuple[str, ...]:
     intervention. Dropped channels are reported by
     ``excluded_metrics`` so the omission is visible rather than silent.
     """
-    return tuple(metric for metric in metrics if metric in PHYSICAL_RECOMPUTE_CHANNELS)
+    return tuple(metric for metric in metrics if metric in capability)
 
 
-def excluded_metrics(metrics: tuple[str, ...]) -> tuple[str, ...]:
-    """Requested channels the physical recompute cannot produce."""
-    return tuple(metric for metric in metrics if metric not in PHYSICAL_RECOMPUTE_CHANNELS)
+def excluded_metrics(
+    metrics: tuple[str, ...],
+    capability: frozenset[str] = PHYSICAL_RECOMPUTE_CHANNELS,
+) -> tuple[str, ...]:
+    """Requested channels this counterfactual path cannot produce."""
+    return tuple(metric for metric in metrics if metric not in capability)
 
 
 @dataclass(frozen=True)
@@ -52,6 +58,7 @@ def rank_protect_candidates(
     protected_object_id: str,
     outcomes: list[CandidateOutcome],
     metrics: tuple[str, ...],
+    capability: frozenset[str] = PHYSICAL_RECOMPUTE_CHANNELS,
 ) -> list[ProtectCandidateRank]:
     """Rank REMOVE candidates by their physically derived benefit to Y.
 
@@ -61,7 +68,7 @@ def rank_protect_candidates(
     # Candidate outcomes come from the physical recompute, which cannot emit the
     # probability channels. Differencing a baseline PC against them would report
     # the whole baseline value as the benefit of protecting Y.
-    comparable = comparable_metrics(metrics)
+    comparable = comparable_metrics(metrics, capability)
 
     ranks: list[ProtectCandidateRank] = []
     for outcome in outcomes:

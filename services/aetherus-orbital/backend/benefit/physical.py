@@ -31,6 +31,7 @@ from typing import Any
 from backend.benefit.models import (
     METHOD_PHYSICAL,
     BaselineConfig,
+    RiskEdge,
     RiskGraph,
     build_graph_hash,
 )
@@ -46,6 +47,25 @@ from backend.conjunction.screen import coarse_screen, prepare_catalog
 #: against a counterfactual that never had one, instead of publishing the whole
 #: baseline value as the benefit of the intervention.
 PHYSICAL_RECOMPUTE_CHANNELS = frozenset({"CONJUNCTION_EXPOSURE"})
+
+#: Channels a REMOVE counterfactual can honestly compare AFTER carrying forward
+#: observed MAX_PC from the stored baseline. Removing a body cannot alter any
+#: other pair's orbit, so a third party's published screening bound for an
+#: untouched pair is exactly as valid in Gs as it was in G0; the bounds on the
+#: removed body's own pairs are eliminated, and that elimination IS the benefit.
+#: SUBSTITUTE gets no carry: it moves the body, invalidating the publisher's
+#: bounds for its old pairs and creating pairs the publisher never screened.
+REMOVE_CARRYFORWARD_CHANNELS = PHYSICAL_RECOMPUTE_CHANNELS | frozenset({"MAX_PC"})
+
+#: Method stamp on every carried edge, so a reader of the persisted risk_edge
+#: rows can tell a carried observation from a recomputed value at a glance.
+OBSERVED_CARRY_METHOD = "CARRIED_FORWARD_OBSERVED_V1"
+
+_CARRY_RULE = (
+    "REMOVE cannot alter any other pair's orbit, so an externally observed "
+    "screening bound on an untouched pair remains valid in the counterfactual; "
+    "bounds on the removed body's pairs are eliminated by the intervention"
+)
 from backend.conjunction.tca import find_tca
 from backend.orbit.errors import PropagationError
 from backend.orbit.frames import FrameAssumptions
@@ -559,3 +579,102 @@ def run_physical_counterfactual(
         input_hash=baseline.input_hash,
         failures=[*baseline.run.failures, *outcome.run.failures],
     )
+
+
+def _mark_carried(edge: RiskEdge, stored_baseline_id: str) -> RiskEdge:
+    return RiskEdge(
+        object_a=edge.object_a,
+        object_b=edge.object_b,
+        metric_type=edge.metric_type,
+        metric_value=edge.metric_value,
+        features=edge.features,
+        provenance={
+            **edge.provenance,
+            "carried_forward": True,
+            "carry_method": OBSERVED_CARRY_METHOD,
+            "carry_rule": _CARRY_RULE,
+            "carried_from_baseline": stored_baseline_id,
+        },
+    )
+
+
+def _extend_graph(graph: RiskGraph, extra: list[RiskEdge]) -> RiskGraph:
+    if not extra:
+        return graph
+    edges = tuple(graph.edges) + tuple(extra)
+    return RiskGraph(
+        snapshot_id=graph.snapshot_id,
+        horizon_start=graph.horizon_start,
+        horizon_end=graph.horizon_end,
+        edges=edges,
+        graph_hash=build_graph_hash(list(edges)),
+    )
+
+
+def carry_into_baseline(
+    stored_baseline: RiskGraph | None, baseline_prime_graph: RiskGraph
+) -> tuple[RiskGraph, list[RiskEdge], dict[str, Any]]:
+    """Attach the stored baseline's observed MAX_PC edges to G0-prime.
+
+    The physical recompute propagates public GP elements and can never emit
+    MAX_PC, so without this step a baseline that carries externally observed
+    bounds has nothing legitimate to be compared against. Every carried edge is
+    marked in provenance; nothing here changes a recomputed value.
+
+    Call this AFTER the recompute ledgers are built: derive_candidate diffs
+    scenario keys against the baseline graph it is given, and carried MAX_PC
+    edges would show up as spuriously "removed" on every candidate.
+    """
+    accounting: dict[str, Any] = {
+        "method": OBSERVED_CARRY_METHOD,
+        "carried_edges": 0,
+        "stored_baseline_id": stored_baseline.snapshot_id if stored_baseline else None,
+    }
+    if stored_baseline is None:
+        return baseline_prime_graph, [], accounting
+    carried = [
+        _mark_carried(edge, stored_baseline.snapshot_id)
+        for edge in stored_baseline.edges
+        if edge.metric_type == "MAX_PC"
+    ]
+    accounting["carried_edges"] = len(carried)
+    return _extend_graph(baseline_prime_graph, carried), carried, accounting
+
+
+def carry_into_scenario(
+    carried: list[RiskEdge], scenario_graph: RiskGraph, removed_object_id: str
+) -> tuple[RiskGraph, list[EdgeDelta]]:
+    """Attach the carried edges that survive a REMOVE to one Gs.
+
+    Edges incident to the removed body do not survive — their elimination is
+    the observed benefit — and are returned as removed-edge deltas so the
+    candidate ledger accounts for them like every other resolved edge.
+    """
+    kept = [edge for edge in carried if not edge.involves(removed_object_id)]
+    removed = [
+        EdgeDelta(
+            key=edge.identity_key(),
+            baseline_value=edge.metric_value,
+            scenario_value=None,
+        )
+        for edge in carried
+        if edge.involves(removed_object_id)
+    ]
+    return _extend_graph(scenario_graph, kept), removed
+
+
+def carry_forward_observed_max_pc(
+    stored_baseline: RiskGraph | None,
+    baseline_prime_graph: RiskGraph,
+    scenario_graph: RiskGraph,
+    removed_object_id: str,
+) -> tuple[RiskGraph, RiskGraph, list[EdgeDelta], dict[str, Any]]:
+    """Single-REMOVE convenience: carry into both G0-prime and Gs."""
+    augmented_prime, carried, accounting = carry_into_baseline(
+        stored_baseline, baseline_prime_graph
+    )
+    augmented_scenario, removed = carry_into_scenario(
+        carried, scenario_graph, removed_object_id
+    )
+    accounting["removed_observed_edges"] = len(removed)
+    return augmented_prime, augmented_scenario, removed, accounting

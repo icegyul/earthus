@@ -70,6 +70,27 @@ class ConjunctionRepository:
             )
             return [dict(row) for row in result.mappings().all()]
 
+    async def count_screenable_objects(self) -> int:
+        """How many canonical objects hold a screenable OMM solution.
+
+        Exists so a bounded screening can say "N of M" instead of letting a
+        truncated population read as the whole catalogue — at ~19k objects the
+        default 2,000-object bound covers a tenth of it.
+        """
+        async with get_db_session() as session:
+            result = await session.execute(
+                text(
+                    """
+                    SELECT count(*) FROM space_object AS so
+                    WHERE EXISTS (
+                        SELECT 1 FROM orbit_solution
+                        WHERE object_id = so.id AND format = 'OMM'
+                    )
+                    """
+                )
+            )
+            return int(result.scalar_one())
+
     async def create_screening_run(
         self,
         window_start: datetime,

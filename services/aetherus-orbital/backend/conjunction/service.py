@@ -89,11 +89,21 @@ class ConjunctionService:
         loaded = await self.repository.load_screenable_solutions(
             effective_config.max_objects, catalog_ids
         )
+        population_total = await self.repository.count_screenable_objects()
+        truncated = catalog_ids is None and population_total > len(loaded)
         coverage = {
             "scope": "CATALOG_SUBSET" if catalog_ids is not None else "FULL_CATALOGUE",
             "requested_catalog_ids": sorted(catalog_ids) if catalog_ids is not None else None,
             "objects_loaded": len(loaded),
             "max_objects": effective_config.max_objects,
+            # Since the active-satellite ingestion (2026-09-02) the catalogue
+            # holds ~19k screenable objects, so the 2,000-object default bound
+            # covers roughly a tenth of it. Which tenth is currently an accident
+            # of ordering, not a policy — that choice belongs to the PD, and
+            # until it is made the truncation must at least be visible.
+            "population_total": population_total,
+            "population_truncated": truncated,
+            "selection_rule": "catalog_id ASC (lowest identifiers first)",
         }
         entries: list[tuple[str, str, Any]] = []
         skipped: list[dict[str, Any]] = []
@@ -287,6 +297,12 @@ class ConjunctionService:
         )
 
         warnings: list[str] = []
+        if truncated:
+            warnings.append(
+                f"screening covered {len(loaded)} of {population_total} screenable "
+                "objects; the population bound truncated the catalogue and the "
+                "retained subset is an ordering accident, not a selection policy"
+            )
         if all_failures:
             warnings.append(
                 f"{len(all_failures)} propagation/refinement failures recorded; "

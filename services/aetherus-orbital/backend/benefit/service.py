@@ -6,6 +6,7 @@ states instead of numbers, beneficiaries, or fabricated benefit values.
 """
 
 import time
+from dataclasses import replace as _dataclass_replace
 import tracemalloc
 import uuid
 from datetime import UTC, datetime
@@ -46,6 +47,10 @@ from backend.benefit.models import (
 )
 from backend.benefit.physical import (
     PHYSICAL_RECOMPUTE_CHANNELS,
+    REMOVE_CARRYFORWARD_CHANNELS,
+    carry_forward_observed_max_pc,
+    carry_into_baseline,
+    carry_into_scenario,
     INTERVENTION_REMOVE,
     INTERVENTION_SUBSTITUTE,
     PHYSICAL_MODEL_VERSION,
@@ -683,6 +688,27 @@ class BenefitService:
                 ut1_utc_offset_seconds=settings.ut1_utc_offset_seconds,
             )
 
+            # Observed MAX_PC carries forward under REMOVE only, and only after
+            # the recompute ledgers exist: carried edges in the baseline handed
+            # to derive_candidate would read as spuriously removed everywhere.
+            carried_prime, carried_scenario, carried_removed, carry_note = (
+                carry_forward_observed_max_pc(
+                    stored_baseline,
+                    counterfactual.baseline_prime,
+                    counterfactual.scenario_graph,
+                    target_id,
+                )
+            )
+            counterfactual = _dataclass_replace(
+                counterfactual,
+                baseline_prime=carried_prime,
+                scenario_graph=carried_scenario,
+                removed_edge_keys=[
+                    *counterfactual.removed_edge_keys,
+                    *[delta.key for delta in carried_removed],
+                ],
+            )
+
             attributions = attribute_direct_beneficiaries(
                 counterfactual.baseline_prime,
                 counterfactual.scenario_graph,
@@ -697,7 +723,7 @@ class BenefitService:
                 # covariance, so it can never emit PC or MAX_PC. Differencing a
                 # baseline that has them against a counterfactual that never
                 # could would publish the entire baseline value as the benefit.
-                counterfactual_channels=PHYSICAL_RECOMPUTE_CHANNELS,
+                counterfactual_channels=REMOVE_CARRYFORWARD_CHANNELS,
             )
             _, peak_bytes = tracemalloc.get_traced_memory()
         finally:
@@ -755,7 +781,24 @@ class BenefitService:
                 counterfactual.baseline_prime,
                 counterfactual.scenario_graph,
                 run_config.metric_types,
-                PHYSICAL_RECOMPUTE_CHANNELS,
+                REMOVE_CARRYFORWARD_CHANNELS,
+            ),
+            *(
+                [
+                    {
+                        "code": "MAX_PC_CARRIED_FORWARD",
+                        **carry_note,
+                        "message": (
+                            "observed MAX_PC edges were carried from the stored "
+                            "baseline into G0' and Gs; edges incident to the removed "
+                            "object are eliminated and their sum is the observed "
+                            "benefit. Carried values are third-party observations, "
+                            "never recomputed."
+                        ),
+                    }
+                ]
+                if carry_note.get("carried_edges")
+                else []
             ),
             {
                 "code": "PHYSICAL_RECOMPUTE_ACCOUNTING",
@@ -1106,8 +1149,20 @@ class BenefitService:
                 snapshot_label=baseline_prime_id,
                 ut1_utc_offset_seconds=settings.ut1_utc_offset_seconds,
             )
+            # Carried observed MAX_PC joins G0' for ranking and candidate
+            # selection, while derive_candidate below keeps the pristine graph
+            # so its reuse/removal ledgers stay clean.
+            stored_graph = await self.repository.load_baseline_graph(
+                str(baseline_row["id"])
+            )
+            augmented_prime_graph, carried_edges, carry_note = carry_into_baseline(
+                stored_graph, baseline_prime.graph
+            )
+            ranking_baseline = _dataclass_replace(
+                baseline_prime, graph=augmented_prime_graph
+            )
             await self._persist_scenario_graph(
-                graph=baseline_prime.graph,
+                graph=augmented_prime_graph,
                 run_stats=baseline_prime.run,
                 role="SCENARIO_BASELINE_PRIME",
                 scenario_id=scenario_id,
@@ -1119,7 +1174,7 @@ class BenefitService:
                 input_hash=baseline_prime.input_hash,
             )
 
-            candidates = sorted(baseline_prime.graph.neighbors_of(protected_id))
+            candidates = sorted(augmented_prime_graph.neighbors_of(protected_id))
             warnings: list[dict[str, Any]] = [_advisory_disclaimer()]
             if len(candidates) > max_candidates:
                 warnings.append(
@@ -1162,6 +1217,14 @@ class BenefitService:
                     snapshot_label=new_baseline_snapshot_id(),
                     ut1_utc_offset_seconds=settings.ut1_utc_offset_seconds,
                 )
+                carried_gs, carried_removed = carry_into_scenario(
+                    carried_edges, outcome.scenario_graph, candidate_id
+                )
+                outcome = _dataclass_replace(
+                    outcome,
+                    scenario_graph=carried_gs,
+                    removed_edges=[*outcome.removed_edges, *carried_removed],
+                )
                 await self._persist_scenario_graph(
                     graph=outcome.scenario_graph,
                     run_stats=outcome.run,
@@ -1178,8 +1241,25 @@ class BenefitService:
                 outcomes.append(outcome)
 
             ranks = rank_protect_candidates(
-                baseline_prime, protected_id, outcomes, metrics
+                ranking_baseline,
+                protected_id,
+                outcomes,
+                metrics,
+                capability=REMOVE_CARRYFORWARD_CHANNELS,
             )
+            if carry_note.get("carried_edges"):
+                warnings.append(
+                    {
+                        "code": "MAX_PC_CARRIED_FORWARD",
+                        **carry_note,
+                        "message": (
+                            "observed MAX_PC edges were carried from the stored "
+                            "baseline; candidate benefits on that channel are "
+                            "eliminations of third-party observations, never "
+                            "recomputed values."
+                        ),
+                    }
+                )
             _, peak_bytes = tracemalloc.get_traced_memory()
         finally:
             if tracemalloc.is_tracing():

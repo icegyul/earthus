@@ -10,6 +10,7 @@ import { search } from './search.js';
 import { onboard } from './onboard.js';
 import { weatherPanel } from './ui-weather.js';
 import { tourismSheet } from './ui-tourism.js?v=20260821-tourism-density2';
+import { travelSheet } from './ui-travel-discovery.js?v=20260903-travel-discovery';
 import { createWeatherEarthSync } from './weather-earth-sync.js';
 import { createWeatherMomentLayer } from './weather-moment-layer.js';
 import { power } from './power.js';
@@ -301,6 +302,7 @@ async function boot() {
   onboard.init({ chips: false, coach: false });
   weatherPanel.init();    // 하단 온도 탭 → 내 자리 날씨 시트
   tourismSheet.init();    // 서울시 공식 혼잡 저층 3D 블록 → 관광 흐름 시트
+  travelSheet.init();     // 여행 메뉴 → 시군구 발견 후보(근거·제외사유 포함)
 
   // 내 위치 — 실패해도 조용히 넘어간다 (HTTP 접속·권한 거부 등)
   windField.init();

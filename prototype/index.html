@@ -780,6 +780,15 @@
     <div id="tourismBody"></div>
   </div>
 
+  <!-- 여행 발견 — 유명한 곳 검색이 아니라 오늘 갈 곳을 데이터로 고른다.
+       ⚠️ 점수 성분과 제외 사유를 카드에 전부 적는다. 숨은 가중치를 두면
+          "왜 여기인가"에 답할 수 없고, 그러면 근거가 아니라 광고가 된다. -->
+  <div id="travelSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>
+    <div class="traffic one"><button class="tl close" data-close="travelSheet" aria-label="닫기"><span>×</span></button></div>
+    <h3 id="travelTitle">여행 발견</h3>
+    <div id="travelBody"></div>
+  </div>
+
   <!-- 일본 (JMA) — ⚠️ 한국 탭을 베낀 것이 아니다. 두 나라가 공개하는 것이 다르다.
        특보는 일부러 빠져 있다 (JMA 특보 경로가 2026-05-28 이후 멈춰 있어 확인 불가). -->
   <div id="jpSheet" class="sheet-panel tall" aria-hidden="true" inert data-nosnippet>

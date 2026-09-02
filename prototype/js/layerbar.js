@@ -981,6 +981,16 @@ export const layerBar = {
         ? '관광 밀도와 명소를 여행 목적에 맞게 빠르게 켭니다.'
         : 'Turn on tourism density and places from a travel-focused entrance.';
       strip.appendChild(intro);
+      // 레이어를 켜는 것과 "오늘 어디 갈까"는 다른 질문이다. 후자는 시트로 연다.
+      const discover = el('button', 'ly-purpose-item ly-purpose-discover');
+      discover.type = 'button';
+      discover.innerHTML = `<b>${ko ? '오늘 발견' : 'Discover today'}</b>`
+        + `<small>${ko ? '시군구 228곳 · 근거와 제외 사유를 함께' : '228 districts, with evidence and exclusions'}</small>`;
+      discover.addEventListener('click', () => {
+        import('./ui-travel-discovery.js?v=20260903-travel-discovery')
+          .then(({ travelSheet }) => travelSheet.open());
+      });
+      strip.appendChild(discover);
       order.flatMap(group => group.items).forEach(it => this._item(strip, it, ko, 'ly-purpose-item'));
       const note = el('p', 'ly-purpose-note');
       note.textContent = ko

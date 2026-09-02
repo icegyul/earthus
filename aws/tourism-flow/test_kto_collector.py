@@ -402,6 +402,40 @@ class KtoCollectorWriteOrderTest(unittest.TestCase):
             {"areaCd": "51", "baseYm": "202607"},
         ])
 
+    def test_region_sweep_records_how_many_regions_were_cut_by_the_page_limit(self):
+        collector = load_collector(self)
+        fake_s3 = FakeS3()
+        self.seed_visitor_snapshot(fake_s3, "locgoRegnVisitrDDList", ["11110", "51130"])
+
+        def call(service, operation, params):
+            # 종로구만 상한(2건)을 채운다.
+            rows = 2 if params["signguCd"] == "11110" else 1
+            return {"resultCode": "00", "items": [{
+                "areaCd": params["areaCd"], "signguCd": params["signguCd"],
+                "baseYm": params["baseYm"], "tAtsCd": f"T{index}", "tAtsNm": "관광지",
+                "rlteTatsCd": f"R{index}", "rlteTatsNm": "연관", "rlteRank": str(index + 1),
+            } for index in range(rows)]}
+
+        result = collector.handle_event(
+            {
+                "task": "KTO_REGION_SWEEP", "service": "related", "operation": "areaBasedList1",
+                "baseYm": "202606", "pageSize": 2, "pageLimit": 1,
+            },
+            s3_client=fake_s3,
+            bucket="fixture-bucket",
+            fetched_at="2026-09-02T15:05:00Z",
+            call=call,
+            sleep=lambda seconds: None,
+        )
+
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["items"], 3)
+        self.assertEqual(result["truncatedRegionCount"], 1)
+        raw_key = next(k for k in fake_s3.objects if k.startswith("archive/tourism/kto/raw/related/"))
+        raw = json.loads(fake_s3.objects[raw_key])
+        self.assertEqual(raw["request"]["truncatedRegionCount"], 1)
+        self.assertEqual(raw["request"]["pageLimitPerRegion"], 1)
+
     def test_region_sweep_without_a_visitors_snapshot_fails_before_any_external_call(self):
         collector = load_collector(self)
         fake_s3 = FakeS3()

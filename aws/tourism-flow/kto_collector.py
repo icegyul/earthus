@@ -494,11 +494,17 @@ def _run_region_sweep(payload, s3_client, bucket, fetched_at, call, environ, _le
     # 결과를 한 스냅샷으로 합치므로 페이지를 잘게 나눌 이유가 없다.
     # 페이지 간 대기(KTO_PAGE_INTERVAL_MS, 기본 1초)가 지역/날짜 수만큼
     # 곱해지면 Lambda 실행 한도를 넘긴다.
-    page_size = int(env.get("KTO_AGGREGATE_PAGE_SIZE") or 1000)
+    page_size = int(payload.get("pageSize") or env.get("KTO_AGGREGATE_PAGE_SIZE") or 1000)
+    # 연관 관광지는 시군구 한 곳이 1,500행을 넘긴다. 270곳을 그대로 합치면
+    # 스냅샷이 수십만 행이 되어 브라우저에 내보낼 수 없다. 지역당 페이지 상한을
+    # 두고, 잘린 지역 수를 원문 증거에 남겨 커버리지를 속이지 않는다.
+    page_limit = payload.get("pageLimit")
+    page_limit = int(page_limit) if page_limit else None
     pacing = max(0.0, min(10.0, float(env.get("KTO_SWEEP_PACING_SECONDS") or 0.2)))
     pause = time.sleep if sleep is None else sleep
     items = []
     failed_regions = []
+    truncated_regions = []
     for index, code in enumerate(selected):
         region_params = {"areaCd": code[:2], "signguCd": code} if scope == "SIGUNGU" else {"areaCd": code}
         if base_ym:
@@ -507,14 +513,24 @@ def _run_region_sweep(payload, s3_client, bucket, fetched_at, call, environ, _le
             pause(pacing)
         try:
             if call is None:
-                region_items = fetch_all_pages(
-                    service, operation, region_params,
-                    page_size=page_size, environ=environ,
-                )
+                if page_limit:
+                    region_items, region_truncated = fetch_all_pages(
+                        service, operation, region_params,
+                        page_size=page_size, environ=environ, max_pages=page_limit,
+                    )
+                    if region_truncated:
+                        truncated_regions.append(code)
+                else:
+                    region_items = fetch_all_pages(
+                        service, operation, region_params,
+                        page_size=page_size, environ=environ,
+                    )
             else:
                 envelope = call(service, operation, dict(region_params))
                 region_items = envelope.get("items") if isinstance(envelope, dict) else []
                 region_items = region_items if isinstance(region_items, list) else []
+                if page_limit and len(region_items) >= page_size:
+                    truncated_regions.append(code)
         except Exception:
             failed_regions.append(code)
             continue
@@ -538,6 +554,8 @@ def _run_region_sweep(payload, s3_client, bucket, fetched_at, call, environ, _le
         "regionScope": scope,
         "regionCount": len(selected),
         "failedRegionCount": len(failed_regions),
+        "truncatedRegionCount": len(truncated_regions),
+        "pageLimitPerRegion": page_limit,
     }
     if base_ym:
         sweep_params["baseYm"] = base_ym
@@ -550,6 +568,7 @@ def _run_region_sweep(payload, s3_client, bucket, fetched_at, call, environ, _le
         "task": "KTO_REGION_SWEEP",
         "regionCount": len(selected),
         "failedRegionCount": len(failed_regions),
+        "truncatedRegionCount": len(truncated_regions),
     })
     return result
 

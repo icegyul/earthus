@@ -305,8 +305,14 @@ def call_kto(service, operation, params=None, environ=None, open_url=None, sleep
     raise KtoTransportError(None, "UNAVAILABLE", False)
 
 
-def fetch_all_pages(service, operation, params=None, page_size=100, call=None, environ=None, sleep=None):
-    """원래 업무 파라미터를 바꾸지 않고 TourAPI의 모든 페이지를 수집한다."""
+def fetch_all_pages(service, operation, params=None, page_size=100, call=None,
+                    environ=None, sleep=None, max_pages=None):
+    """원래 업무 파라미터를 바꾸지 않고 TourAPI의 모든 페이지를 수집한다.
+
+    max_pages를 주면 지역당 앞쪽 몇 장만 받는다. 연관 관광지처럼 지역 하나가
+    수천 행을 돌려주는 Operation을 전국으로 돌 때, 잘린 사실을 호출자가
+    기록할 수 있도록 (items, truncated)를 함께 돌려준다.
+    """
     base_params = dict(params or {})
     env = os.environ if environ is None else environ
     size = max(1, min(1000, int(page_size)))
@@ -318,9 +324,11 @@ def fetch_all_pages(service, operation, params=None, page_size=100, call=None, e
         selected_params,
         environ=env,
     ))
+    limit = 10000 if max_pages is None else max(1, int(max_pages))
     items = []
+    truncated = False
     page_no = 1
-    while page_no <= 10000:
+    while page_no <= limit:
         if page_no > 1 and interval_seconds:
             pause(interval_seconds)
         page = caller(service, operation, {
@@ -334,8 +342,11 @@ def fetch_all_pages(service, operation, params=None, page_size=100, call=None, e
         total_count = int(page.get("totalCount") or len(items))
         if not page_items or len(items) >= total_count:
             break
+        if page_no >= limit:
+            truncated = True
+            break
         page_no += 1
-    return items
+    return (items, truncated) if max_pages is not None else items
 
 
 def capture_contract(service, operation, normalized, request_params=None, captured_at=None):

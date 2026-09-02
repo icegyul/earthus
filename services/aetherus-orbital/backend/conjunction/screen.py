@@ -26,12 +26,25 @@ _MU_KM3_S2 = 398600.4418
 _PAIR_CHUNK = 4096
 
 #: Real debris families sit in nearly identical shells, so the radial envelope
-#: filter prunes only ~10% of pairs and the level-one sampled-distance scan
-#: dominates a full-catalogue screening (measured 2026-09-01: 1.4 min of a
-#: 1.7 min run over 1,998 objects). The scan is chunk-independent and spends
-#: its time inside NumPy (which releases the GIL), so threads cut wall-clock
-#: without copying the shared position grid and without touching the
-#: conservative filter chain itself.
+#: filter leaves most pairs for the level-one sampled-distance scan, and that
+#: scan dominates a screening run. The scan is chunk-independent and spends its
+#: time inside NumPy (which releases the GIL), so threads cut wall-clock without
+#: copying the shared position grid and without touching the conservative filter
+#: chain itself.
+#:
+#: What the filter actually leaves, measured 2026-09-03 over the stored
+#: catalogue (the 2026-09-01 figure of "~10% pruned" predates the
+#: active-satellite ingestion and no longer describes this population):
+#:
+#:      objects   total pairs   shell survivors
+#:        2,000     1,999,000       727,999  (36.4%)
+#:        5,000    12,497,500     5,240,173  (41.9%)
+#:       10,000    49,995,000    26,862,710  (53.7%)
+#:       19,657   193,188,996    96,207,658  (49.8%)
+#:
+#: The survivor *fraction* rises with population - more objects fill the same
+#: shells - so the level-one input grows faster than the pair count alone
+#: suggests. At full catalogue the survivor list is ~6.5 GB on its own.
 _LEVEL_ONE_PARALLEL_MIN_CHUNKS = 4
 
 

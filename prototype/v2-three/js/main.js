@@ -20,6 +20,8 @@ import { SkyView } from './sky-view.js?v=1';
 import { AetherusLink } from './aetherus-link.js?v=2';
 import { SeaFloor } from './seafloor.js?v=2';
 import { TravelScene } from './travel.js?v=1';
+// 익명 이용 집계 — 개인 식별자를 보내지 않는다 (날짜·이벤트명·횟수만). usage.js 주석 참조.
+import { usage } from './usage.js?v=1';
 import { FlightRoute, routeCardHtml } from './route.js?v=4';
 // 정본 엔진(prototype/js/earthus2/v02)으로 가는 유일한 이음매 — 어휘·신선도·품질 예산의 출처
 import {
@@ -1599,7 +1601,8 @@ class CloudManager {
       }
     }, 65000);
     const tex = this.gfsFrameTex(Math.max(0, Math.min(HOURS - 1, Math.floor((Date.now() - this.gfs.timeBase) / 3.6e6))));
-    return { tex, lum: 0, label: 'GFS 5일 예보 · 구름(흰색)·비(파랑)·눈(연보라) · ▶ 재생 (Open-Meteo)' };
+    return { tex, lum: 0, label: 'GFS 5일 예보 · 구름(흰색)·비(파랑)·눈(연보라) · ▶ 재생 (Open-Meteo)'
+      + ' · 전지구 12° 격자(적도 약 1,300km) — 구름 <b>덩어리의 위치</b>이지 모양이 아닙니다' };
   }
 
   gfsFrameTex(h) {
@@ -1623,7 +1626,11 @@ class CloudManager {
     const valid = new Date(this.gfs.timeBase + hF * 3.6e6);
     const offH = Math.round((valid.getTime() - Date.now()) / 3.6e6);
     const ea = this.gfs.grids.length > 1 ? ' · EA 4° 상세' : '';
-    this.noteEl.innerHTML = `<span class="badge model">MODEL</span> GFS 예보 T${offH >= 0 ? '+' : ''}${offH}h · 유효 ${valid.getMonth() + 1}/${valid.getDate()} ${String(valid.getHours()).padStart(2, '0')}시 · 비=파랑 눈=연보라${ea}`;
+    // 성긴 격자를 매끄럽게 그리면 위성사진처럼 보인다 — 그건 없는 상세를 있는 것처럼 만든다.
+    // 해상도를 숫자로 밝혀, 이게 '모양'이 아니라 '덩어리의 위치'임을 알 수 있게 한다.
+    const res = this.gfs.grids.length > 1 ? '전지구 12° + 동아시아 4°' : '전지구 12°';
+    this.noteEl.innerHTML = `<span class="badge model">MODEL</span> GFS 예보 T${offH >= 0 ? '+' : ''}${offH}h · 유효 ${valid.getMonth() + 1}/${valid.getDate()} ${String(valid.getHours()).padStart(2, '0')}시 · 비=파랑 눈=연보라${ea}`
+      + `<br/><span style="opacity:.75">격자 ${res} — 관측 구름보다 수백 배 성깁니다. 뭉개져 보이는 것은 표현이 아니라 자료의 성김입니다.</span>`;
   }
 
   async set(mode) {
@@ -1936,6 +1943,8 @@ async function main() {
   // 나가는 요청을 한 곳에서 관찰 — 각 레이어의 신선도와 소스 건강 상태가 여기서 모인다.
   // (요청 자체는 그대로 통과. 렌더러보다 먼저 걸어야 초기 로딩도 잡힌다.)
   installFetchObserver();
+  usage.init();
+  window.__earthusUsage = usage;
   const basePixelRatio = Math.min(window.devicePixelRatio, 2);
   renderer.setPixelRatio(basePixelRatio);
 
@@ -2235,6 +2244,7 @@ async function main() {
     // 여행 씬이 켜져 있으면 시군구 비콘 우선 — 근거 5줄 카드
     const tv = travel && travel.pick(lat, lon);
     if (tv) {
+      usage.track('travel.region_opened'); // 발견 → 상세 전환 (집계끼리 나눠 전환율을 구한다)
       focus.clear();
       lockedNote = { title: `${tv.nameKo} — 왜 지금`, badge: 'DERIVED', body: travel.regionCard(tv) };
       shell.showTab('now');
@@ -3236,6 +3246,7 @@ async function main() {
           travel.setMode(mode).then((st) => {
             shell.refreshFlyout();
             if (!st.on) { lockedNote = null; shell.renderIntel(); return; }
+            usage.track(mode === 'discover' ? 'travel.discover_opened' : 'travel.purpose_opened');
             // 처음 켤 때 한국으로 — 시군구 228곳이 한 화면에 들어오는 거리
             const KR = { lat: 36.3, lon: 127.8 };
             let ty = THREE.MathUtils.degToRad(KR.lon);
@@ -3249,6 +3260,7 @@ async function main() {
           break;
         }
         case 'travel/related':
+          usage.track('travel.related_opened');
           travel.ensure().then(() => note(layer.name, travel.relatedCard(), 'HISTORY'))
             .catch((e) => note(layer.name, `연관 관광지 데이터를 불러오지 못했습니다.<br/>${String((e && e.message) || e)}`, 'UNAVAILABLE'));
           break;
@@ -3330,6 +3342,7 @@ async function main() {
         const cat0 = w >= 70 ? 5 : w >= 58 ? 4 : w >= 50 ? 3 : w >= 43 ? 2 : 1;
         launchScenario(parseFloat(ds.lat), parseFloat(ds.lon), cat0);
       } else if (action === 'feed-open') {
+        usage.track('event.room_opened');
         feed.select(parseInt(ds.idx, 10), orbit); // view 전환은 동기, 트랙은 비동기
         shell.renderIntel();
       } else if (action === 'feed-back') {
@@ -3357,6 +3370,7 @@ async function main() {
         });
       } else if (action === 'room-layer' && ds.key) {
         // 사건 방 줄의 "지구에 켜기" — 메뉴에서 누른 것과 똑같은 경로로 레이어를 켠다
+        usage.track('event.layer_from_room');
         const [sid, lid] = String(ds.key).split('/');
         const sc = SCENES.find((s) => s.id === sid);
         const layer = sc && sc.layers.find((l) => l.id === lid);

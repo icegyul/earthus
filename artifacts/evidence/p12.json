@@ -1,0 +1,158 @@
+{
+  "phase": "p12",
+  "phase_name": "Personalization & Subscription",
+  "hard_gate": "Free/Plus/Pro behavior tests",
+  "gate": "PARTIAL",
+  "failed_checks": [
+    "billing_provider_verified"
+  ],
+  "checks": {
+    "tests_pass": true,
+    "plans_actually_differ": true,
+    "capability_gate_refuses_what_no_plan_holds": true,
+    "public_safety_is_never_paywalled": true,
+    "scientific_values_identical_across_plans": true,
+    "the_paywall_guard_can_fail": true,
+    "explanation_route_reachable_at_every_plan": true,
+    "capabilities_surface_live": true,
+    "billing_provider_verified": false
+  },
+  "blockers": {
+    "by_check": {
+      "tests_pass": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "plans_actually_differ": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "capability_gate_refuses_what_no_plan_holds": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "public_safety_is_never_paywalled": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "scientific_values_identical_across_plans": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "the_paywall_guard_can_fail": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "explanation_route_reachable_at_every_plan": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "capabilities_surface_live": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "billing_provider_verified": {
+        "blocker_class": "EXTERNAL_DATA_GATED",
+        "reason": "결제 공급자(구독 청구·환불·세금) 연동은 상용 계정과 자격증명이 있어야 검증된다. 계약 협상이 아니라 계정·키 문제이므로 파트너 차단이 아니다."
+      }
+    },
+    "counts": {
+      "BUILDABLE_NOW": 0,
+      "DECISION_PENDING": 0,
+      "EXTERNAL_DATA_GATED": 1,
+      "EXTERNAL_PARTNER_GATED": 0,
+      "NONE": 8
+    },
+    "unmet_buildable_now": [],
+    "unmet_requiring_others": [
+      "billing_provider_verified"
+    ]
+  },
+  "generated_at": "2026-09-02T16:31:01.360761+00:00",
+  "repository": "https://github.com/icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "55f4b1a90db3f8914fad3bccdbf85113b58d2883",
+  "tests_subscription": {
+    "targets": [
+      "tests/acceptance/test_master_acceptance.py",
+      "tests/integration/test_llm_layer_l01_l08.py"
+    ],
+    "exit_code": 0,
+    "summary": "316 passed, 4 warnings in 0.49s"
+  },
+  "plan_behaviour": {
+    "ok": true,
+    "value": {
+      "plans": [
+        "AETHERUS+",
+        "CONTROL / INSTITUTION",
+        "FREE",
+        "OPERATIONS",
+        "PRO / RESEARCH",
+        "REMOVAL INTELLIGENCE"
+      ],
+      "capability_counts": {
+        "AETHERUS+": 6,
+        "CONTROL / INSTITUTION": 8,
+        "FREE": 3,
+        "OPERATIONS": 9,
+        "PRO / RESEARCH": 9,
+        "REMOVAL INTELLIGENCE": 8
+      },
+      "tiers_differ": true,
+      "free_is_a_subset_of_paid": true,
+      "public_safety_open_to_all": true,
+      "unknown_capability_refused": true
+    }
+  },
+  "science_parity": {
+    "ok": true,
+    "value": {
+      "identical_across_plans": true,
+      "guard_detects_a_paywalled_value": true,
+      "plans_compared": [
+        "AETHERUS+",
+        "CONTROL / INSTITUTION",
+        "FREE",
+        "OPERATIONS",
+        "PRO / RESEARCH",
+        "REMOVAL INTELLIGENCE"
+      ]
+    }
+  },
+  "explanation_tiers": {
+    "ok": true,
+    "value": {
+      "served_tier_by_plan": {
+        "FREE": "TEMPLATE",
+        "AETHERUS+": "TEMPLATE",
+        "PRO / RESEARCH": "TEMPLATE",
+        "CONTROL / INSTITUTION": "TEMPLATE",
+        "OPERATIONS": "TEMPLATE",
+        "REMOVAL INTELLIGENCE": "TEMPLATE"
+      },
+      "every_plan_reaches_a_route": true,
+      "downgrades_state_their_reason": true
+    }
+  },
+  "live_build": {
+    "state": "CURRENT",
+    "routes_confirmed": [
+      "/v1/llm/explain",
+      "/v1/subscription/capabilities"
+    ]
+  },
+  "live_api": {
+    "capabilities": {
+      "path": "/v1/subscription/capabilities?plan=FREE",
+      "http_status": 200,
+      "data_status": "OK"
+    }
+  },
+  "limitations": [
+    "결제 공급자 연동은 미검증. 이 단계가 증명하는 것은 능력 게이트와 과학값 동일성이지 청구 정확성이 아니다.",
+    "플랜 이름과 능력 표는 이 저장소의 구현이며, 상용 가격 정책의 확정본이 아니다.",
+    "LLM 등급 상한은 정책 기본값이다. 상한이 바뀌어도 TEMPLATE 경로가 항상 열려 있어야 한다는 제약만이 지시서에서 온 것이다."
+  ],
+  "next_allowed": "결제 공급자 자격증명 확보 후 청구 경로 검증, 또는 P14 연구/운영"
+}

@@ -1,0 +1,127 @@
+{
+  "phase": "p14",
+  "phase_name": "Research / Operations",
+  "hard_gate": "tenant isolation + reproducibility",
+  "gate": "PARTIAL",
+  "failed_checks": [
+    "multi_tenant_deployment_verified"
+  ],
+  "checks": {
+    "tests_pass": true,
+    "private_context_is_tenant_isolated": true,
+    "audit_trail_is_tenant_scoped": true,
+    "audit_carries_request_id": true,
+    "dataset_reproduces_from_the_same_records": true,
+    "reproduction_check_can_fail": true,
+    "dataset_manifest_records_license_and_sources": true,
+    "done_gate_refuses_an_unaccounted_test": true,
+    "multi_tenant_deployment_verified": false
+  },
+  "blockers": {
+    "by_check": {
+      "tests_pass": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "private_context_is_tenant_isolated": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "audit_trail_is_tenant_scoped": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "audit_carries_request_id": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "dataset_reproduces_from_the_same_records": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "reproduction_check_can_fail": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "dataset_manifest_records_license_and_sources": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "done_gate_refuses_an_unaccounted_test": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "multi_tenant_deployment_verified": {
+        "blocker_class": "EXTERNAL_PARTNER_GATED",
+        "reason": "실제 다중 테넌트 배포에서의 격리는 기관 테넌트와의 계약·환경이 있어야 검증된다. 자격증명만의 문제가 아니라 상대가 있어야 하는 일이다."
+      }
+    },
+    "counts": {
+      "BUILDABLE_NOW": 0,
+      "DECISION_PENDING": 0,
+      "EXTERNAL_DATA_GATED": 0,
+      "EXTERNAL_PARTNER_GATED": 1,
+      "NONE": 8
+    },
+    "unmet_buildable_now": [],
+    "unmet_requiring_others": [
+      "multi_tenant_deployment_verified"
+    ]
+  },
+  "generated_at": "2026-09-02T16:31:07.935598+00:00",
+  "repository": "https://github.com/icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "55f4b1a90db3f8914fad3bccdbf85113b58d2883",
+  "tests_research_operations": {
+    "targets": [
+      "tests/acceptance/test_master_acceptance.py",
+      "tests/integration/test_p12_hardening.py"
+    ],
+    "exit_code": 0,
+    "summary": "282 passed, 3 warnings in 1.60s"
+  },
+  "tenant_isolation": {
+    "ok": true,
+    "value": {
+      "owner_reads_own": true,
+      "stranger_reads_nothing": true,
+      "audit_is_per_tenant": true,
+      "audit_carries_request_id": true,
+      "audit_id_returned": true
+    }
+  },
+  "dataset_reproducibility": {
+    "ok": true,
+    "value": {
+      "manifest_records_license": true,
+      "manifest_records_sources": true,
+      "same_records_reproduce": true,
+      "changed_records_do_not_reproduce": true
+    }
+  },
+  "evidence_manifest_gate": {
+    "ok": true,
+    "value": {
+      "done_when_required_tests_named": true,
+      "not_done_when_a_required_test_is_missing": true
+    }
+  },
+  "live_build": {
+    "state": "CURRENT",
+    "routes_confirmed": [
+      "/v1/subscription/capabilities"
+    ]
+  },
+  "live_api": {
+    "capabilities": {
+      "path": "/v1/subscription/capabilities",
+      "http_status": 200,
+      "data_status": "OK"
+    }
+  },
+  "limitations": [
+    "격리는 프로세스 내 저장소 구현에 대해 검증된다. 공유 데이터베이스·캐시·객체 저장소를 낀 실제 배포의 격리는 별도 검증이 필요하다.",
+    "재현은 레코드 집합의 해시 동일성이다. 같은 입력에서 같은 과학 결과가 나오는지는 각 엔진의 결정성 테스트가 따로 담당한다."
+  ],
+  "next_allowed": "기관 테넌트 환경 확보 후 배포 격리 검증, 또는 P15 하드닝"
+}

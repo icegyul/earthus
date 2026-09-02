@@ -900,3 +900,67 @@ PASS 로 채워진 채** 들어왔고, 근거로 지목한 XML 두 개는 **이 
 
 이 저장소의 인수 상태는 `artifacts/evidence/acceptance.json` 하나뿐이고, 그 값은 실행된
 테스트의 종료 코드에서만 나온다.
+
+---
+
+## 13. 단계 점수표가 없던 일곱 단계
+
+V2 단계 계획 16개 중 P0~P4·P6~P9 에만 증거 생성기가 있었다. **V2-P5 와 P10~P15 는
+점수표 자체가 없었다.** 화면이 보인다고 DONE 이 아니라는 지시서 규칙은 각 단계가
+자기 관문에 대해 무엇을 말할 수 있는지를 요구하는데, 일곱 단계는 말할 자리가 없었다.
+
+일곱 개를 만들었고, 공통부(`tools/phase_evidence.py`)에 상태 판정 규칙을 모았다.
+상태는 실행된 종료 코드와 실제 HTTP 응답에서만 나온다.
+
+| 단계 | 관문 | 결과 | 남은 미충족 |
+|---|---|---|---|
+| p5-mission | mission→orbit E2E | PARTIAL | 운영자 텔레메트리 피드 (파트너) |
+| p10 | WHAT CHANGED / HOW SURE E2E | PARTIAL | **개정이 한 번도 일어나지 않음 (우리 몫)** |
+| p11 | SPACE NOW + Scenario decision packet | **PASS** | — |
+| p12 | Free/Plus/Pro behavior tests | PARTIAL | 결제 공급자 (자격증명) |
+| p13 | LLM without hallucinated science | PARTIAL | 라이브 LLM 공급자 (자격증명) |
+| p14 | tenant isolation + reproducibility | PARTIAL | 다중 테넌트 배포 (파트너) |
+| p15 | staging evidence then production decision | PARTIAL | 비밀값·라이브 공급자·**사람의 결정** |
+
+검사 63건 중 미충족 8건, 그중 **우리 몫은 하나** — p10 의
+`a_revision_has_actually_occurred`. 근접 신호가 이벤트로 융합되지 않아 개정이
+발생한 적이 없고, 그래서 "무엇이 바뀌었나"를 종단으로 보일 수 없다. p9 가 이미
+기록한 `conjunction_events_promoted` 와 같은 공백이다.
+
+### P15 의 PARTIAL 은 결함이 아니라 순서다
+
+지시서가 스테이징 증거를 먼저, 운영 결정을 그 다음에 두었다. 자격증명 없이
+`staging_ready=True` 가 나오면 준비된 것이 아니라 검사가 고장 난 것이다. 그래서
+`staging_not_claimed_without_evidence` 를 **통과해야 하는 검사**로 넣었다 — 스테이징이
+근거 없이 주장되면 이 검사가 거짓이 된다.
+
+운영 전환은 `DECISION_PENDING` 이다. 사람이 내리는 결정을 생성기가 대신 내리지 않는다.
+
+### 여기서도 두 가지를 하나의 404 로 뭉치고 있었다
+
+`server_state` 가 404 를 전부 "구식 빌드"로 읽었다. 그런데 404 는 서로 다른 두 질문에
+같은 숫자로 답한다 — **"이 배포에 그런 경로가 없다"** 와 **"이 배포에 그런 임무가
+없다"**. 앞은 구동 중인 프로세스가 코드보다 오래됐다는 뜻이고, 뒤는 경로가 의도대로
+동작한다는 뜻이다.
+
+그 결과 정상 동작하던 `/v1/missions/{id}/state` 의 "mission not found" 가 구식 빌드로
+기록됐다. 라이브 OpenAPI 스키마에서 경로 집합을 읽는 방식으로 바꿨고, 스키마를 읽을
+수 없는 경우는 `UNKNOWN_BUILD` 로 따로 뒀다 — 경로 집합을 모르는 것과 짧다는 것을
+아는 것은 다르다.
+
+이 구분을 `tests/unit/test_phase_evidence_helpers.py` **16건**으로 고정했다.
+
+### 실제로 구식 서버였던 것도 하나 있었다
+
+8100 에서 돌던 uvicorn 프로세스가 라우트 추가 이전(09/02 23:20)에 뜬 것이어서 P13 의
+라이브 표면이 미확인으로 남아 있었다. 같은 명령으로 재시작한 뒤 다시 측정했고,
+`llm_surface_live` 가 충족으로 바뀌었다. 코드가 아니라 프로세스의 문제였고, 생성기가
+그 둘을 구분해 기록했기 때문에 어느 쪽인지 알 수 있었다.
+
+### 이름이 같은 P5 가 둘이다
+
+V2 단계의 P5(임무 추적, E16~E19)와 궤도 서비스의 "P5 준수 반사실"
+(SCREENING_RECOMPUTE_V1)은 다른 계보다. `tests/*/test_p5_*` 는 후자를 가리킨다.
+증거 파일을 `p5-mission.json` 으로 분리하고 생성기 상단에 그 사실을 적었다. 이름이
+같다는 이유로 한쪽 증거를 다른 쪽 관문에 붙이는 것이 이 단계에서 가장 하기 쉬운
+거짓말이다.

@@ -1,0 +1,125 @@
+{
+  "phase": "p10",
+  "phase_name": "Event / Revision / Confidence",
+  "hard_gate": "WHAT CHANGED / HOW SURE E2E",
+  "gate": "PARTIAL",
+  "failed_checks": [
+    "a_revision_has_actually_occurred"
+  ],
+  "checks": {
+    "tests_pass": true,
+    "an_event_exists_to_inspect": true,
+    "revision_lineage_served": true,
+    "revisions_are_ordered": true,
+    "confidence_and_uncertainty_served_together": true,
+    "confidence_carries_a_grade": true,
+    "absent_uncertainty_is_named_not_zeroed": true,
+    "no_confidence_score_without_a_grade": true,
+    "a_revision_has_actually_occurred": false
+  },
+  "blockers": {
+    "by_check": {
+      "tests_pass": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "an_event_exists_to_inspect": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "revision_lineage_served": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "revisions_are_ordered": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "confidence_and_uncertainty_served_together": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "confidence_carries_a_grade": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "absent_uncertainty_is_named_not_zeroed": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "no_confidence_score_without_a_grade": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "a_revision_has_actually_occurred": {
+        "blocker_class": "BUILDABLE_NOW",
+        "reason": "이벤트에 개정이 한 번도 일어나지 않았다. WHAT CHANGED 를 E2E 로 보이려면 실제 개정이 하나는 있어야 한다 — 내부 작업"
+      }
+    },
+    "counts": {
+      "BUILDABLE_NOW": 1,
+      "DECISION_PENDING": 0,
+      "EXTERNAL_DATA_GATED": 0,
+      "EXTERNAL_PARTNER_GATED": 0,
+      "NONE": 8
+    },
+    "unmet_buildable_now": [
+      "a_revision_has_actually_occurred"
+    ],
+    "unmet_requiring_others": []
+  },
+  "generated_at": "2026-09-02T16:30:56.834479+00:00",
+  "repository": "https://github.com/icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "55f4b1a90db3f8914fad3bccdbf85113b58d2883",
+  "tests_event_revision_confidence": {
+    "targets": [
+      "tests/unit/test_confidence_honesty.py",
+      "tests/integration/test_foundation_intelligence_lineage.py",
+      "tests/acceptance/test_master_acceptance.py"
+    ],
+    "exit_code": 0,
+    "summary": "294 passed, 2 warnings in 0.59s"
+  },
+  "inspected_event_id": "ce9c5771-bf41-4b80-a95e-24715bef0ef1",
+  "revision_lineage": {
+    "ok": true,
+    "value": {
+      "http_status": 200,
+      "revision_count": 1,
+      "revisions_are_ordered": true,
+      "each_revision_states_a_change": false
+    }
+  },
+  "confidence_and_uncertainty": {
+    "ok": true,
+    "value": {
+      "http_status": 200,
+      "confidence_grade": "HIGH",
+      "confidence_score": 0.75,
+      "uncertainty_representation": "UNAVAILABLE",
+      "both_present": true,
+      "grade_present": true,
+      "absence_is_named_not_zeroed": true,
+      "no_score_without_a_grade": true
+    }
+  },
+  "live_build": {
+    "state": "CURRENT",
+    "routes_confirmed": [
+      "/v1/intelligence/events"
+    ]
+  },
+  "live_api": {
+    "events": {
+      "path": "/v1/intelligence/events",
+      "http_status": 200,
+      "data_status": "OK"
+    }
+  },
+  "limitations": [
+    "개정 계보는 저장된 이벤트에 대해서만 관찰된다. 이벤트가 하나도 없으면 이 단계는 PASS 가 아니라 '검사할 대상이 없음'이며, 그렇게 기록된다.",
+    "신뢰도 등급 정책과 가중치는 이 저장소의 구현이다. 외부 기관 기준과의 정합은 별도 문제다."
+  ],
+  "next_allowed": "근접 신호의 이벤트 융합으로 실제 개정을 발생시키기, 또는 P11 귀속/결정"
+}

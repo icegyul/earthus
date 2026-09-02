@@ -1,0 +1,166 @@
+{
+  "phase": "p5-mission",
+  "phase_name": "Live/Modelled Mission Tracking (V2-P5, E16~E19)",
+  "hard_gate": "mission→orbit E2E",
+  "gate": "PARTIAL",
+  "failed_checks": [
+    "operator_or_official_live_feed_connected"
+  ],
+  "checks": {
+    "tests_pass": true,
+    "observed_and_modelled_telemetry_stay_separate": true,
+    "telemetry_rejects_bad_units_and_types": true,
+    "no_telemetry_means_no_current_sample": true,
+    "timeline_replay_is_time_bounded": true,
+    "timeline_revision_supersedes_not_duplicates": true,
+    "replay_cannot_author_a_current_event": true,
+    "handover_starts_provisional": true,
+    "handover_refuses_an_unsupported_claim": true,
+    "mission_and_orbit_are_cross_linked": true,
+    "telemetry_surface_live": true,
+    "empty_telemetry_is_labelled_not_zeroed": true,
+    "operator_or_official_live_feed_connected": false
+  },
+  "blockers": {
+    "by_check": {
+      "tests_pass": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "observed_and_modelled_telemetry_stay_separate": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "telemetry_rejects_bad_units_and_types": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "no_telemetry_means_no_current_sample": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "timeline_replay_is_time_bounded": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "timeline_revision_supersedes_not_duplicates": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "replay_cannot_author_a_current_event": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "handover_starts_provisional": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "handover_refuses_an_unsupported_claim": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "mission_and_orbit_are_cross_linked": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "telemetry_surface_live": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "empty_telemetry_is_labelled_not_zeroed": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "operator_or_official_live_feed_connected": {
+        "blocker_class": "EXTERNAL_PARTNER_GATED",
+        "reason": "실 발사 텔레메트리는 운영자 또는 공식 기관이 피드를 제공해야 들어온다. 키 발급이 아니라 상대의 승인과 연동이 필요하므로 파트너 차단이다. 피드가 없는 동안 저장소를 합성 샘플로 채우지 않는다."
+      }
+    },
+    "counts": {
+      "BUILDABLE_NOW": 0,
+      "DECISION_PENDING": 0,
+      "EXTERNAL_DATA_GATED": 0,
+      "EXTERNAL_PARTNER_GATED": 1,
+      "NONE": 12
+    },
+    "unmet_buildable_now": [],
+    "unmet_requiring_others": [
+      "operator_or_official_live_feed_connected"
+    ]
+  },
+  "generated_at": "2026-09-02T16:30:44.792326+00:00",
+  "repository": "https://github.com/icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "55f4b1a90db3f8914fad3bccdbf85113b58d2883",
+  "tests_mission_tracking": {
+    "targets": [
+      "tests/acceptance/test_master_acceptance.py",
+      "tests/integration/test_engine_connections.py"
+    ],
+    "exit_code": 0,
+    "summary": "294 passed, 4 warnings in 0.51s"
+  },
+  "telemetry_fusion": {
+    "ok": true,
+    "value": {
+      "live_is_observed": true,
+      "modelled_is_not_observed": true,
+      "samples_ordered": true,
+      "rejects_wrong_unit": true,
+      "rejects_non_numeric_metric": true,
+      "empty_engine_has_no_current": true
+    }
+  },
+  "timeline_and_replay": {
+    "ok": true,
+    "value": {
+      "distinct_events": 2,
+      "revision_number": 2,
+      "revision_supersedes_rather_than_duplicates": true,
+      "replay_is_time_bounded": true,
+      "replay_excludes_the_future": true,
+      "replay_is_reproducible": true,
+      "replay_cannot_create_a_current_event": true
+    }
+  },
+  "handover": {
+    "ok": true,
+    "value": {
+      "starts_provisional": true,
+      "confirmation_adds_evidence": true,
+      "refuses_handover_without_evidence": true,
+      "refuses_unknown_object_type": true,
+      "cross_links_both_directions": true
+    }
+  },
+  "live_telemetry_store": {
+    "ok": true,
+    "value": {
+      "http_status": 200,
+      "data_status": "UNAVAILABLE",
+      "sample_count": 0,
+      "emptiness_is_labelled": true
+    }
+  },
+  "live_build": {
+    "state": "CURRENT",
+    "routes_confirmed": [
+      "/v1/missions/{mission_id}/state",
+      "/v1/missions/{mission_id}/telemetry"
+    ]
+  },
+  "live_api": {
+    "telemetry": {
+      "path": "/v1/missions/APOLLO11/telemetry",
+      "http_status": 200,
+      "data_status": "UNAVAILABLE"
+    }
+  },
+  "naming_note": "이 저장소에는 P5 가 둘이다. 여기(V2-P5)는 임무 추적이고, tests/*/test_p5_* 와 궤도 서비스의 'P5 준수'는 반사실 엔진 쪽 계보다. 증거 파일명을 p5-mission.json 으로 분리한 이유다.",
+  "limitations": [
+    "실 발사 텔레메트리 피드가 연결돼 있지 않다. E16~E19 의 계약은 검증되지만 실 임무 한 건의 종단 통과는 피드가 있어야 보일 수 있다.",
+    "재생은 기록된 이벤트에서 재구성한다. 기록되지 않은 순간의 상태를 보간하지 않는다.",
+    "인계는 궤도 객체 식별자를 잇는 것이지 궤도 결정을 수행하는 것이 아니다."
+  ],
+  "next_allowed": "운영자/공식 텔레메트리 피드 확보 후 실 임무 종단 검증"
+}

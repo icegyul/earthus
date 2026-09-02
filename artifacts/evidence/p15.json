@@ -1,0 +1,168 @@
+{
+  "phase": "p15",
+  "phase_name": "Hardening / Staging / Production",
+  "hard_gate": "staging evidence then production decision",
+  "gate": "PARTIAL",
+  "failed_checks": [
+    "production_secrets_configured",
+    "live_provider_verified",
+    "production_decision_taken"
+  ],
+  "checks": {
+    "tests_pass": true,
+    "backup_restores_and_refuses_tampering": true,
+    "every_prior_phase_has_a_scorecard": true,
+    "local_product_complete": true,
+    "staging_not_claimed_without_evidence": true,
+    "production_secrets_configured": false,
+    "live_provider_verified": false,
+    "production_decision_taken": false
+  },
+  "blockers": {
+    "by_check": {
+      "tests_pass": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "backup_restores_and_refuses_tampering": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "every_prior_phase_has_a_scorecard": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "local_product_complete": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "staging_not_claimed_without_evidence": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "production_secrets_configured": {
+        "blocker_class": "EXTERNAL_DATA_GATED",
+        "reason": "운영 비밀값(AETHERUS_DB_URL, AETHERUS_API_KEY, AETHERUS_LLM_API_KEY)이 이 환경에 없다. 존재 여부만 읽고 값은 읽지 않는다."
+      },
+      "live_provider_verified": {
+        "blocker_class": "EXTERNAL_DATA_GATED",
+        "reason": "라이브 공급자(LLM·상용 데이터) 검증에 자격증명이 필요하다."
+      },
+      "production_decision_taken": {
+        "blocker_class": "DECISION_PENDING",
+        "reason": "운영 전환은 사람이 내리는 결정이다. 스테이징 증거가 갖춰진 뒤에 판단하며, 이 생성기가 대신 내릴 수 있는 결정이 아니다."
+      }
+    },
+    "counts": {
+      "BUILDABLE_NOW": 0,
+      "DECISION_PENDING": 1,
+      "EXTERNAL_DATA_GATED": 2,
+      "EXTERNAL_PARTNER_GATED": 0,
+      "NONE": 5
+    },
+    "unmet_buildable_now": [],
+    "unmet_requiring_others": [
+      "live_provider_verified",
+      "production_secrets_configured"
+    ]
+  },
+  "generated_at": "2026-09-02T16:31:38.018594+00:00",
+  "repository": "https://github.com/icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "55f4b1a90db3f8914fad3bccdbf85113b58d2883",
+  "tests_hardening": {
+    "targets": [
+      "tests/integration/test_p12_hardening.py",
+      "tests/acceptance/test_master_acceptance.py"
+    ],
+    "exit_code": 0,
+    "summary": "282 passed, 3 warnings in 1.63s"
+  },
+  "backup_integrity": {
+    "ok": true,
+    "value": {
+      "round_trip_matches": true,
+      "checksum_recorded": true,
+      "refuses_a_tampered_backup": true
+    }
+  },
+  "phase_evidence": {
+    "ok": true,
+    "value": {
+      "present": {
+        "p0": "artifacts\\evidence\\p0.json",
+        "p1": "artifacts\\evidence\\p1.json",
+        "p2": "artifacts\\evidence\\p2.json",
+        "p3": "artifacts\\evidence\\p3.json",
+        "p4": "artifacts\\evidence\\p4.json",
+        "p5-mission": "artifacts\\evidence\\p5-mission.json",
+        "p6": "artifacts\\evidence\\p6.json",
+        "p7": "artifacts\\evidence\\p7.json",
+        "p8": "artifacts\\evidence\\p8.json",
+        "p9": "artifacts\\evidence\\p9.json",
+        "p10": "artifacts\\evidence\\p10.json",
+        "p11": "artifacts\\evidence\\p11.json",
+        "p12": "artifacts\\evidence\\p12.json",
+        "p13": "artifacts\\evidence\\p13.json",
+        "p14": "artifacts\\evidence\\p14.json"
+      },
+      "missing": [],
+      "gates": {
+        "p0": "PASS",
+        "p1": "PASS",
+        "p2": "PASS",
+        "p3": "PARTIAL",
+        "p4": "PARTIAL",
+        "p5-mission": "PARTIAL",
+        "p6": "PARTIAL",
+        "p7": "PARTIAL",
+        "p8": "PARTIAL",
+        "p9": "PARTIAL",
+        "p10": "PARTIAL",
+        "p11": "PASS",
+        "p12": "PARTIAL",
+        "p13": "PARTIAL",
+        "p14": "PARTIAL"
+      },
+      "all_present": true,
+      "all_pass": false
+    }
+  },
+  "secrets": {
+    "ok": true,
+    "value": {
+      "expected": [
+        "AETHERUS_DB_URL",
+        "AETHERUS_API_KEY",
+        "AETHERUS_LLM_API_KEY"
+      ],
+      "present": {
+        "AETHERUS_DB_URL": false,
+        "AETHERUS_API_KEY": false,
+        "AETHERUS_LLM_API_KEY": false
+      },
+      "all_present": false
+    }
+  },
+  "readiness": {
+    "local_product_complete": true,
+    "staging_ready": false,
+    "blockers": [
+      "BLOCKED_PRODUCTION_SECRETS",
+      "BLOCKED_LIVE_PROVIDER_VERIFICATION"
+    ]
+  },
+  "live_build": {
+    "state": "STALE_BUILD",
+    "missing_routes": [
+      "/health"
+    ],
+    "detail": "the running process does not declare these routes; restart it to probe them live"
+  },
+  "limitations": [
+    "이 단계의 PARTIAL 은 결함이 아니라 순서다. 지시서가 스테이징 증거를 먼저 요구하고 운영 결정을 그 다음에 두었으므로, 자격증명 없이 PASS 가 나오면 검사가 고장 난 것이다.",
+    "비밀값은 존재 여부만 확인한다. 값은 읽지 않고 증거 파일에도 남기지 않는다.",
+    "백업 검증은 프로세스 내 직렬화 왕복이다. 실제 저장소·복구 절차의 검증은 별도다."
+  ],
+  "next_allowed": "운영 비밀값과 라이브 공급자 자격증명 확보 → 스테이징 증거 수집 → 사람의 운영 전환 결정"
+}

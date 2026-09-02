@@ -1,0 +1,136 @@
+{
+  "phase": "p13",
+  "phase_name": "LLM Layer",
+  "hard_gate": "LLM without hallucinated science",
+  "gate": "PARTIAL",
+  "failed_checks": [
+    "live_provider_verified"
+  ],
+  "checks": {
+    "llm_tests_pass": true,
+    "all_eight_layers_declare_their_id": true,
+    "directive_purposes_implemented": true,
+    "unmeasured_usage_is_not_zero": true,
+    "llm_surface_live": true,
+    "live_provider_verified": false
+  },
+  "blockers": {
+    "by_check": {
+      "llm_tests_pass": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "all_eight_layers_declare_their_id": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "directive_purposes_implemented": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "unmeasured_usage_is_not_zero": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "llm_surface_live": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "live_provider_verified": {
+        "blocker_class": "EXTERNAL_DATA_GATED",
+        "reason": "외부 LLM 공급자(OpenAI/Claude/Gemini 등) 자격증명이 없어 라이브 경로를 호출할 수 없다. 계약이 아니라 키 발급 문제이므로 파트너 차단이 아니다."
+      }
+    },
+    "counts": {
+      "BUILDABLE_NOW": 0,
+      "DECISION_PENDING": 0,
+      "EXTERNAL_DATA_GATED": 1,
+      "EXTERNAL_PARTNER_GATED": 0,
+      "NONE": 5
+    },
+    "unmet_buildable_now": [],
+    "unmet_requiring_others": [
+      "live_provider_verified"
+    ]
+  },
+  "generated_at": "2026-09-02T16:31:04.490490+00:00",
+  "repository": "https://github.com/icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "55f4b1a90db3f8914fad3bccdbf85113b58d2883",
+  "tests_llm": {
+    "targets": [
+      "tests/integration/test_llm_layer_l01_l08.py",
+      "tests/acceptance/test_master_acceptance.py"
+    ],
+    "exit_code": 0,
+    "summary": "316 passed, 4 warnings in 0.49s"
+  },
+  "layer_purposes": {
+    "L01": "provider-neutral gateway; Aetherus is the source of truth, not the model",
+    "L02": "route by difficulty/cost/latency/subscription tier",
+    "L03": "capability-gated tool calls; science stays in the engines",
+    "L04": "assemble the minimum Event/Revision/Evidence context",
+    "L05": "one packet at general/enthusiast/researcher/operator level",
+    "L06": "claim and citation validation against the packet",
+    "L07": "personal/workspace context, tenant isolated",
+    "L08": "Daily Space Brief / Mission Brief / Event Report / Research-Scenario Report"
+  },
+  "layer_ids_declared": {
+    "L01": true,
+    "L02": true,
+    "L03": true,
+    "L04": true,
+    "L05": true,
+    "L06": true,
+    "L07": true,
+    "L08": true
+  },
+  "directive_purposes": {
+    "L02_tier_routing": true,
+    "L02_reports_served_not_requested": true,
+    "L04_minimum_context": true,
+    "L05_four_audience_levels": true,
+    "L08_four_report_types": true
+  },
+  "usage_record_honesty": {
+    "tokens_in": null,
+    "tokens_status": "NOT_REPORTED_BY_PROVIDER",
+    "cost_usd": null,
+    "cost_status": "UNAVAILABLE",
+    "latency_basis": "COMPUTED_INTERNAL",
+    "unreported_is_null_not_zero": true,
+    "cost_is_unavailable_not_free": true
+  },
+  "live_build": {
+    "state": "CURRENT",
+    "checked_routes": [
+      "/v1/briefings/current",
+      "/v1/briefings/types",
+      "/v1/llm/audiences",
+      "/v1/llm/explain"
+    ]
+  },
+  "live_api": {
+    "explain": {
+      "path": "/v1/llm/explain?audience=RESEARCHER",
+      "http_status": 200,
+      "data_status": "VALIDATION_PENDING"
+    },
+    "briefing": {
+      "path": "/v1/briefings/current?report_type=EVENT_REPORT",
+      "http_status": 200,
+      "data_status": "VALIDATION_PENDING"
+    },
+    "audiences": {
+      "path": "/v1/llm/audiences",
+      "http_status": 200,
+      "data_status": "OK"
+    }
+  },
+  "limitations": [
+    "라이브 LLM 공급자(L01)는 자격증명 부재로 미검증. 로컬 결정론 공급자만 실행된다 — 그래서 모든 라우팅 결정이 served_tier=TEMPLATE 로 내려가고, 응답이 그 사실을 싣는다.",
+    "환각 차단은 L06 이 패킷의 숫자 집합과 금지 주장 목록에 대해 검사하는 방식이다. 패킷 밖 세계 지식에 대한 사실성은 이 계층이 판단하지 않으며 판단한다고 주장하지도 않는다.",
+    "청중 4단계는 패킷 문장의 선택을 바꿀 뿐 문장을 다시 쓰지 않는다. 과학 주장을 쉬운 말로 바꾸는 것은 아무것도 뒷받침하지 않는 새 주장이기 때문이다."
+  ],
+  "next_allowed": "외부 공급자 자격증명 확보 후 라이브 경로 검증, 또는 P12/P14/P15 잔여"
+}

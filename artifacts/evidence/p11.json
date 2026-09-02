@@ -1,0 +1,138 @@
+{
+  "phase": "p11",
+  "phase_name": "Why / Attribution / Decision",
+  "hard_gate": "SPACE NOW + Scenario decision packet",
+  "gate": "PASS",
+  "failed_checks": [],
+  "checks": {
+    "tests_pass": true,
+    "space_now_served": true,
+    "space_now_states_its_data_status": true,
+    "importance_reasons_are_traceable": true,
+    "change_rate_can_outrank_magnitude": true,
+    "decision_packet_is_advisory_only": true,
+    "decision_shows_new_risk_and_assumptions": true,
+    "single_option_refused_without_policy": true,
+    "unrun_scenarios_cannot_be_compared": true
+  },
+  "blockers": {
+    "by_check": {
+      "tests_pass": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "space_now_served": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "space_now_states_its_data_status": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "importance_reasons_are_traceable": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "change_rate_can_outrank_magnitude": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "decision_packet_is_advisory_only": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "decision_shows_new_risk_and_assumptions": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "single_option_refused_without_policy": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      },
+      "unrun_scenarios_cannot_be_compared": {
+        "blocker_class": "NONE",
+        "reason": "check is met"
+      }
+    },
+    "counts": {
+      "BUILDABLE_NOW": 0,
+      "DECISION_PENDING": 0,
+      "EXTERNAL_DATA_GATED": 0,
+      "EXTERNAL_PARTNER_GATED": 0,
+      "NONE": 9
+    },
+    "unmet_buildable_now": [],
+    "unmet_requiring_others": []
+  },
+  "generated_at": "2026-09-02T16:30:59.126453+00:00",
+  "repository": "https://github.com/icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "55f4b1a90db3f8914fad3bccdbf85113b58d2883",
+  "tests_attribution_decision": {
+    "targets": [
+      "tests/unit/test_intelligence_orchestrator.py",
+      "tests/integration/test_engine_connections.py",
+      "tests/acceptance/test_master_acceptance.py"
+    ],
+    "exit_code": 0,
+    "summary": "298 passed, 4 warnings in 0.51s"
+  },
+  "space_now": {
+    "ok": true,
+    "value": {
+      "http_status": 200,
+      "data_status": "VALIDATION_PENDING",
+      "event_count": 1,
+      "empty_is_labelled": true
+    }
+  },
+  "importance": {
+    "ok": true,
+    "value": {
+      "factor_count": 4,
+      "every_reason_has_a_contribution": true,
+      "every_reason_names_its_weight": true,
+      "policy_version": "importance-v1",
+      "change_rate_can_outrank_magnitude": true
+    }
+  },
+  "decision_packet": {
+    "ok": true,
+    "value": {
+      "option_count": 2,
+      "advisory_only": true,
+      "every_option_shows_new_risk": true,
+      "every_option_surfaces_assumptions": true,
+      "no_command_field_anywhere": true,
+      "single_option_refused_without_policy": true
+    }
+  },
+  "unrun_scenario_refusal": {
+    "ok": true,
+    "value": {
+      "http_status": 422,
+      "data_status": null,
+      "refused_as_insufficient": true,
+      "warnings": null
+    }
+  },
+  "live_build": {
+    "state": "CURRENT",
+    "routes_confirmed": [
+      "/v1/intelligence/important-now"
+    ]
+  },
+  "live_api": {
+    "important_now": {
+      "path": "/v1/intelligence/important-now",
+      "http_status": 200,
+      "data_status": "VALIDATION_PENDING"
+    }
+  },
+  "limitations": [
+    "결정 비교는 자문이며 우주선 명령을 만들지 않는다. 이것은 성능 한계가 아니라 지시서가 정한 제품 경계다.",
+    "중요도 가중치는 정책 버전이 붙은 이 저장소의 기본값이다. 운영 기관의 우선순위 정책과 일치한다고 주장하지 않는다.",
+    "귀속(attribution) 결과는 반사실 시뮬레이션에서 나오며 관측된 결과가 아니다."
+  ],
+  "next_allowed": "P12 구독/개인화, 또는 P15 하드닝"
+}

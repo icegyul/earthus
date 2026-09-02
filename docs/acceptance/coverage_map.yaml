@@ -1,0 +1,688 @@
+# Acceptance matrix coverage map.
+#
+# test_id -> the pytest nodes that establish it, or an uncovered reason.
+# Generated from the naming convention the foundation tests already follow
+# (test_e01_t01_* covers E01-T01) and then extended by hand. The generator
+# validates every node id against the collected suite, so a mapping can
+# never name a test that does not exist.
+#
+# name_case_similarity records how closely the function name matches the
+# directive's case text. A low value means the test was renamed away from
+# the requirement and deserves a look; it is recorded, never acted on.
+coverage:
+  E01-T01:
+    covered_by:
+      - tests/foundation/test_e01_ingestion.py::test_e01_t01_duplicate_raw_hash_dedupe
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E01-T02:
+    covered_by:
+      - tests/foundation/test_e01_ingestion.py::test_e01_t02_429_backoff_policy
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E01-T03:
+    covered_by:
+      - tests/foundation/test_e01_ingestion.py::test_e01_t03_partial_parse_quarantine
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E01-T04:
+    covered_by:
+      - tests/foundation/test_e01_ingestion.py::test_e01_t04_secret_redaction
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E01-T05:
+    covered_by:
+      - tests/foundation/test_e01_ingestion.py::test_e01_t05_source_outage_stale_behavior
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E02-T01:
+    covered_by:
+      - tests/foundation/test_e02_identity.py::test_e02_t01_six_plus_digit_catalog_id
+    note: 'matched by naming convention; name/case similarity 0.79'
+  E02-T02:
+    covered_by:
+      - tests/foundation/test_e02_identity.py::test_e02_t02_same_catalog_renamed_alias
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E02-T03:
+    covered_by:
+      - tests/foundation/test_e02_identity.py::test_e02_t03_cospar_conflict_quarantine
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E02-T04:
+    covered_by:
+      - tests/foundation/test_e02_identity.py::test_e02_t04_unknown_origin_not_inferred
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E02-T05:
+    covered_by:
+      - tests/foundation/test_e02_identity.py::test_e02_t05_mission_created_object_handover
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E03-T01:
+    covered_by:
+      - tests/foundation/test_e03_provenance.py::test_e03_t01_missing_source_rejects_intelligence_promotion
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E03-T02:
+    covered_by:
+      - tests/foundation/test_e03_provenance.py::test_e03_t02_hash_chain_reproducibility
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E03-T03:
+    covered_by:
+      - tests/foundation/test_e03_provenance.py::test_e03_t03_source_grade_separation
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E03-T04:
+    covered_by:
+      - tests/foundation/test_e03_provenance.py::test_e03_t04_license_policy_propagation
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E04-T01:
+    covered_by:
+      - tests/foundation/test_e04_time.py::test_e04_t01_naive_datetime_rejection
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E04-T02:
+    covered_by:
+      - tests/foundation/test_e04_time.py::test_e04_t02_utc_local_roundtrip
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E04-T03:
+    covered_by:
+      - tests/foundation/test_e04_time.py::test_e04_t03_replay_deterministic_cursor
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E04-T04:
+    covered_by:
+      - tests/foundation/test_e04_time.py::test_e04_t04_future_model_vs_archived_state_separation
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E05-T01:
+    covered_by:
+      - tests/foundation/test_e05_frames.py::test_e05_t01_frame_roundtrip_tolerance
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E05-T02:
+    covered_by:
+      - tests/foundation/test_e05_frames.py::test_e05_t02_unsupported_frame_fail
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E05-T03:
+    covered_by:
+      - tests/foundation/test_e05_frames.py::test_e05_t03_eop_stale_downgrade
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E05-T04:
+    covered_by:
+      - tests/foundation/test_e05_frames.py::test_e05_t04_solar_earth_frame_consistency_fixture
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E06-T01:
+    covered_by:
+      - tests/foundation/test_e06_snapshots.py::test_e06_t01_append_only_state
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E06-T02:
+    covered_by:
+      - tests/foundation/test_e06_snapshots.py::test_e06_t02_same_input_deterministic_hash
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E06-T03:
+    covered_by:
+      - tests/foundation/test_e06_snapshots.py::test_e06_t03_archived_vs_reconstructed_label
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E06-T04:
+    covered_by:
+      - tests/foundation/test_e06_snapshots.py::test_e06_t04_baseline_snapshot_immutability
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E07-T01:
+    covered_by:
+      - tests/foundation/test_e07_graph.py::test_e07_t01_typed_relation_source_required
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E07-T02:
+    covered_by:
+      - tests/foundation/test_e07_graph.py::test_e07_t02_mission_to_object_lineage
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E07-T03:
+    covered_by:
+      - tests/foundation/test_e07_graph.py::test_e07_t03_time_consistent_traversal
+    note: 'matched by naming convention; name/case similarity 1.00'
+  E07-T04:
+    covered_by:
+      - tests/foundation/test_e07_graph.py::test_e07_t04_unknown_relation_uncertainty
+    note: 'matched by naming convention; name/case similarity 1.00'
+
+  # --- not yet claimed ---
+  E08-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E08-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E08-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E08-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E09-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E09-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E09-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E09-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E10-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E10-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E10-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E10-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E11-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E11-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E11-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E11-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E12-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E12-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E12-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E13-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E13-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E13-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E13-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E14-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E14-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E14-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E14-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E15-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E15-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E15-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E15-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E16-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E16-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E16-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E16-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E17-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E17-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E17-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E17-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E18-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E18-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E18-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E18-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E19-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E19-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E19-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E19-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E20-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E20-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E20-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E20-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E20-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  E21-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E21-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E21-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E21-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E21-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  E22-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E22-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E22-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E22-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E22-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  E23-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E23-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E23-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E23-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E24-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E24-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E24-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E24-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E25-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E25-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E25-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E25-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E26-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E26-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E26-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E26-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E27-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E27-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E27-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E27-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E28-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E28-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E28-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E28-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E29-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E29-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E29-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E29-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E29-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  E30-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E30-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E30-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E30-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E30-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  E31-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E31-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E31-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E31-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E31-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  E32-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E32-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E32-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E32-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E33-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E33-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E33-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E33-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E33-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  E34-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E34-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E34-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E34-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E35-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E35-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E35-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E35-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E36-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E36-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E36-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E36-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E37-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E37-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E37-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E37-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E38-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E38-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E38-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E38-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E38-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  E39-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E39-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E39-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E39-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E40-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E40-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E40-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E40-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E41-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E41-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E41-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E41-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E41-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  E42-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E42-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E42-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E42-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E43-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E43-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E43-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E43-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E44-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  E44-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  E44-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  E44-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  E44-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  L01-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  L01-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  L01-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  L01-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  L01-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  L02-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  L02-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  L02-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  L02-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  L02-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  L03-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  L03-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  L03-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  L03-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  L03-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  L04-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  L04-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  L04-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  L04-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  L04-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  L05-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  L05-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  L05-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  L05-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  L05-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  L06-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  L06-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  L06-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  L06-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  L06-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  L07-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  L07-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  L07-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  L07-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  L07-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  L08-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  L08-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  L08-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  L08-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  L08-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  S01-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  S01-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  S01-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  S01-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  S01-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  S02-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  S02-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  S02-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  S02-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  S02-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  S03-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  S03-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  S03-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  S03-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  S03-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  S04-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  S04-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  S04-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  S04-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  S04-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  S05-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  S05-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  S05-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  S05-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  S05-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  S06-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  S06-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  S06-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  S06-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  S06-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  S07-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  S07-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  S07-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  S07-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  S07-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  S08-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  S08-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  S08-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  S08-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  S08-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  S09-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  S09-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  S09-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  S09-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  S09-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  S10-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  S10-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  S10-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  S10-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  S10-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  S11-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  S11-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  S11-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  S11-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  S11-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  S12-T01:
+    uncovered_reason: NOT_YET_MAPPED
+  S12-T02:
+    uncovered_reason: NOT_YET_MAPPED
+  S12-T03:
+    uncovered_reason: NOT_YET_MAPPED
+  S12-T04:
+    uncovered_reason: NOT_YET_MAPPED
+  S12-T05:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-001:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-002:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-003:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-004:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-005:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-006:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-007:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-008:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-009:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-010:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-011:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-012:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-013:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-014:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-015:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-016:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-017:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-018:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-019:
+    uncovered_reason: NOT_YET_MAPPED
+  ICM-020:
+    uncovered_reason: NOT_YET_MAPPED

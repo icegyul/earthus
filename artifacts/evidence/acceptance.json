@@ -1,0 +1,3641 @@
+{
+  "artifact": "acceptance_matrix",
+  "generated_at": "2026-09-02T14:46:57.187016+00:00",
+  "repository": "git@github.com:icegyul/earthus.git",
+  "branch": "earthus-v2/real-living-earth-render",
+  "commit": "9fd496e3cccbdac609591beb029f30ddc4b3f6fc",
+  "matrix_source": "docs\\aetherus-v2-canonical\\claude_handoff_v1.1\\AETHERUS_V2_ACCEPTANCE_MATRIX.csv",
+  "coverage_map": "docs\\acceptance\\coverage_map.yaml",
+  "total_cases": 307,
+  "claimed_cases": 30,
+  "unclaimed_cases": 277,
+  "status_counts": {
+    "PASSED": 30,
+    "FAILED": 0,
+    "NOT_RUN": 277
+  },
+  "uncovered_reasons": {
+    "NOT_YET_MAPPED": 277
+  },
+  "modules_run": {
+    "E01": {
+      "exit_code": 0,
+      "summary": "5 passed, 2 warnings in 0.62s"
+    },
+    "E02": {
+      "exit_code": 0,
+      "summary": "5 passed, 2 warnings in 0.66s"
+    },
+    "E03": {
+      "exit_code": 0,
+      "summary": "4 passed, 2 warnings in 0.68s"
+    },
+    "E04": {
+      "exit_code": 0,
+      "summary": "4 passed, 2 warnings in 0.01s"
+    },
+    "E05": {
+      "exit_code": 0,
+      "summary": "4 passed, 2 warnings in 0.01s"
+    },
+    "E06": {
+      "exit_code": 0,
+      "summary": "4 passed, 2 warnings in 0.72s"
+    },
+    "E07": {
+      "exit_code": 0,
+      "summary": "4 passed, 2 warnings in 0.64s"
+    }
+  },
+  "executed": true,
+  "honesty_note": "status is the exit code of the mapped tests, never a value written by hand; an unmapped row stays NOT_RUN and is counted, so a partial claim can never read as a complete matrix",
+  "results": [
+    {
+      "test_id": "E01-T01",
+      "module_id": "E01",
+      "domain": "FOUNDATION",
+      "case": "duplicate raw hash dedupe",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e01_ingestion.py::test_e01_t01_duplicate_raw_hash_dedupe"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "5 passed, 2 warnings in 0.62s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E01-T02",
+      "module_id": "E01",
+      "domain": "FOUNDATION",
+      "case": "429/backoff policy",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e01_ingestion.py::test_e01_t02_429_backoff_policy"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "5 passed, 2 warnings in 0.62s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E01-T03",
+      "module_id": "E01",
+      "domain": "FOUNDATION",
+      "case": "partial parse quarantine",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e01_ingestion.py::test_e01_t03_partial_parse_quarantine"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "5 passed, 2 warnings in 0.62s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E01-T04",
+      "module_id": "E01",
+      "domain": "FOUNDATION",
+      "case": "secret redaction",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e01_ingestion.py::test_e01_t04_secret_redaction"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "5 passed, 2 warnings in 0.62s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E01-T05",
+      "module_id": "E01",
+      "domain": "FOUNDATION",
+      "case": "source outage stale behavior",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e01_ingestion.py::test_e01_t05_source_outage_stale_behavior"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "5 passed, 2 warnings in 0.62s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E02-T01",
+      "module_id": "E02",
+      "domain": "FOUNDATION",
+      "case": "6+ digit catalog ID",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e02_identity.py::test_e02_t01_six_plus_digit_catalog_id"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "5 passed, 2 warnings in 0.66s"
+      },
+      "note": "matched by naming convention; name/case similarity 0.79"
+    },
+    {
+      "test_id": "E02-T02",
+      "module_id": "E02",
+      "domain": "FOUNDATION",
+      "case": "same catalog renamed alias",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e02_identity.py::test_e02_t02_same_catalog_renamed_alias"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "5 passed, 2 warnings in 0.66s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E02-T03",
+      "module_id": "E02",
+      "domain": "FOUNDATION",
+      "case": "COSPAR conflict quarantine",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e02_identity.py::test_e02_t03_cospar_conflict_quarantine"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "5 passed, 2 warnings in 0.66s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E02-T04",
+      "module_id": "E02",
+      "domain": "FOUNDATION",
+      "case": "unknown origin not inferred",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e02_identity.py::test_e02_t04_unknown_origin_not_inferred"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "5 passed, 2 warnings in 0.66s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E02-T05",
+      "module_id": "E02",
+      "domain": "FOUNDATION",
+      "case": "mission-created object handover",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e02_identity.py::test_e02_t05_mission_created_object_handover"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "5 passed, 2 warnings in 0.66s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E03-T01",
+      "module_id": "E03",
+      "domain": "FOUNDATION",
+      "case": "missing source rejects intelligence promotion",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e03_provenance.py::test_e03_t01_missing_source_rejects_intelligence_promotion"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.68s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E03-T02",
+      "module_id": "E03",
+      "domain": "FOUNDATION",
+      "case": "hash chain reproducibility",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e03_provenance.py::test_e03_t02_hash_chain_reproducibility"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.68s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E03-T03",
+      "module_id": "E03",
+      "domain": "FOUNDATION",
+      "case": "source-grade separation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e03_provenance.py::test_e03_t03_source_grade_separation"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.68s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E03-T04",
+      "module_id": "E03",
+      "domain": "FOUNDATION",
+      "case": "license policy propagation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e03_provenance.py::test_e03_t04_license_policy_propagation"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.68s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E04-T01",
+      "module_id": "E04",
+      "domain": "FOUNDATION",
+      "case": "naive datetime rejection",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e04_time.py::test_e04_t01_naive_datetime_rejection"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.01s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E04-T02",
+      "module_id": "E04",
+      "domain": "FOUNDATION",
+      "case": "UTC/local roundtrip",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e04_time.py::test_e04_t02_utc_local_roundtrip"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.01s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E04-T03",
+      "module_id": "E04",
+      "domain": "FOUNDATION",
+      "case": "replay deterministic cursor",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e04_time.py::test_e04_t03_replay_deterministic_cursor"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.01s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E04-T04",
+      "module_id": "E04",
+      "domain": "FOUNDATION",
+      "case": "future model vs archived state separation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e04_time.py::test_e04_t04_future_model_vs_archived_state_separation"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.01s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E05-T01",
+      "module_id": "E05",
+      "domain": "FOUNDATION",
+      "case": "frame roundtrip tolerance",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e05_frames.py::test_e05_t01_frame_roundtrip_tolerance"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.01s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E05-T02",
+      "module_id": "E05",
+      "domain": "FOUNDATION",
+      "case": "unsupported frame fail",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e05_frames.py::test_e05_t02_unsupported_frame_fail"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.01s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E05-T03",
+      "module_id": "E05",
+      "domain": "FOUNDATION",
+      "case": "EOP stale downgrade",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e05_frames.py::test_e05_t03_eop_stale_downgrade"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.01s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E05-T04",
+      "module_id": "E05",
+      "domain": "FOUNDATION",
+      "case": "solar/earth frame consistency fixture",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e05_frames.py::test_e05_t04_solar_earth_frame_consistency_fixture"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.01s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E06-T01",
+      "module_id": "E06",
+      "domain": "FOUNDATION",
+      "case": "append-only state",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e06_snapshots.py::test_e06_t01_append_only_state"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.72s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E06-T02",
+      "module_id": "E06",
+      "domain": "FOUNDATION",
+      "case": "same input deterministic hash",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e06_snapshots.py::test_e06_t02_same_input_deterministic_hash"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.72s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E06-T03",
+      "module_id": "E06",
+      "domain": "FOUNDATION",
+      "case": "archived vs reconstructed label",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e06_snapshots.py::test_e06_t03_archived_vs_reconstructed_label"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.72s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E06-T04",
+      "module_id": "E06",
+      "domain": "FOUNDATION",
+      "case": "baseline snapshot immutability",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e06_snapshots.py::test_e06_t04_baseline_snapshot_immutability"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.72s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E07-T01",
+      "module_id": "E07",
+      "domain": "FOUNDATION",
+      "case": "typed relation source required",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e07_graph.py::test_e07_t01_typed_relation_source_required"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.64s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E07-T02",
+      "module_id": "E07",
+      "domain": "FOUNDATION",
+      "case": "mission-to-object lineage",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e07_graph.py::test_e07_t02_mission_to_object_lineage"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.64s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E07-T03",
+      "module_id": "E07",
+      "domain": "FOUNDATION",
+      "case": "time-consistent traversal",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e07_graph.py::test_e07_t03_time_consistent_traversal"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.64s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E07-T04",
+      "module_id": "E07",
+      "domain": "FOUNDATION",
+      "case": "unknown relation uncertainty",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "PASSED",
+      "evidence_path": "artifacts\\evidence\\acceptance.json",
+      "covered_by": [
+        "tests/foundation/test_e07_graph.py::test_e07_t04_unknown_relation_uncertainty"
+      ],
+      "module_run": {
+        "exit_code": 0,
+        "summary": "4 passed, 2 warnings in 0.64s"
+      },
+      "note": "matched by naming convention; name/case similarity 1.00"
+    },
+    {
+      "test_id": "E08-T01",
+      "module_id": "E08",
+      "domain": "SPACE",
+      "case": "known epoch cross-check",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E08-T02",
+      "module_id": "E08",
+      "domain": "SPACE",
+      "case": "past/future deterministic",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E08-T03",
+      "module_id": "E08",
+      "domain": "SPACE",
+      "case": "provider/kernel version captured",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E08-T04",
+      "module_id": "E08",
+      "domain": "SPACE",
+      "case": "observer/frame explicit",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E09-T01",
+      "module_id": "E09",
+      "domain": "SPACE",
+      "case": "known event fixture",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E09-T02",
+      "module_id": "E09",
+      "domain": "SPACE",
+      "case": "rule version stored",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E09-T03",
+      "module_id": "E09",
+      "domain": "SPACE",
+      "case": "boundary time zone",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E09-T04",
+      "module_id": "E09",
+      "domain": "SPACE",
+      "case": "official vs derived separation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E10-T01",
+      "module_id": "E10",
+      "domain": "SPACE",
+      "case": "source timestamp preserved",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E10-T02",
+      "module_id": "E10",
+      "domain": "SPACE",
+      "case": "observed vs forecast separated",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E10-T03",
+      "module_id": "E10",
+      "domain": "SPACE",
+      "case": "stale handling",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E10-T04",
+      "module_id": "E10",
+      "domain": "SPACE",
+      "case": "drag context is context not direct orbit correction",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E11-T01",
+      "module_id": "E11",
+      "domain": "SPACE",
+      "case": "source grade",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E11-T02",
+      "module_id": "E11",
+      "domain": "SPACE",
+      "case": "close approach timestamp",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E11-T03",
+      "module_id": "E11",
+      "domain": "SPACE",
+      "case": "uncertainty preserved",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E11-T04",
+      "module_id": "E11",
+      "domain": "SPACE",
+      "case": "no impact claim without source",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E12-T01",
+      "module_id": "E12",
+      "domain": "SPACE",
+      "case": "mission status source",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E12-T02",
+      "module_id": "E12",
+      "domain": "SPACE",
+      "case": "trajectory provenance",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E12-T03",
+      "module_id": "E12",
+      "domain": "SPACE",
+      "case": "missing live telemetry -> model/official state label",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E13-T01",
+      "module_id": "E13",
+      "domain": "CONTROL",
+      "case": "duplicate mission merge policy",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E13-T02",
+      "module_id": "E13",
+      "domain": "CONTROL",
+      "case": "source precedence",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E13-T03",
+      "module_id": "E13",
+      "domain": "CONTROL",
+      "case": "payload provisional status",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E13-T04",
+      "module_id": "E13",
+      "domain": "CONTROL",
+      "case": "site coordinates",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E14-T01",
+      "module_id": "E14",
+      "domain": "CONTROL",
+      "case": "window revision history",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E14-T02",
+      "module_id": "E14",
+      "domain": "CONTROL",
+      "case": "TBD vs confirmed",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E14-T03",
+      "module_id": "E14",
+      "domain": "CONTROL",
+      "case": "timezone conversion",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E14-T04",
+      "module_id": "E14",
+      "domain": "CONTROL",
+      "case": "countdown only with resolved window",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E15-T01",
+      "module_id": "E15",
+      "domain": "CONTROL",
+      "case": "invalid transition reject",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E15-T02",
+      "module_id": "E15",
+      "domain": "CONTROL",
+      "case": "countdown pause/hold",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E15-T03",
+      "module_id": "E15",
+      "domain": "CONTROL",
+      "case": "scrub reset",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E15-T04",
+      "module_id": "E15",
+      "domain": "CONTROL",
+      "case": "official event transition evidence",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E16-T01",
+      "module_id": "E16",
+      "domain": "CONTROL",
+      "case": "live vs modelled separation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E16-T02",
+      "module_id": "E16",
+      "domain": "CONTROL",
+      "case": "out-of-order sample handling",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E16-T03",
+      "module_id": "E16",
+      "domain": "CONTROL",
+      "case": "source fail fallback",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E16-T04",
+      "module_id": "E16",
+      "domain": "CONTROL",
+      "case": "unit/schema validation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E17-T01",
+      "module_id": "E17",
+      "domain": "CONTROL",
+      "case": "trajectory source label",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E17-T02",
+      "module_id": "E17",
+      "domain": "CONTROL",
+      "case": "stage separation geometry",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E17-T03",
+      "module_id": "E17",
+      "domain": "CONTROL",
+      "case": "target orbit frame",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E17-T04",
+      "module_id": "E17",
+      "domain": "CONTROL",
+      "case": "model version/assumption",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E18-T01",
+      "module_id": "E18",
+      "domain": "CONTROL",
+      "case": "event order",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E18-T02",
+      "module_id": "E18",
+      "domain": "CONTROL",
+      "case": "revisions preserved",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E18-T03",
+      "module_id": "E18",
+      "domain": "CONTROL",
+      "case": "video timestamp optional",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E18-T04",
+      "module_id": "E18",
+      "domain": "CONTROL",
+      "case": "record hash reproducibility",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E19-T01",
+      "module_id": "E19",
+      "domain": "CONTROL",
+      "case": "replay deterministic",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E19-T02",
+      "module_id": "E19",
+      "domain": "CONTROL",
+      "case": "handover provisional->confirmed",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E19-T03",
+      "module_id": "E19",
+      "domain": "CONTROL",
+      "case": "stage/payload identity",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E19-T04",
+      "module_id": "E19",
+      "domain": "CONTROL",
+      "case": "GO TO LAUNCH / WHERE IS IT NOW relation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E20-T01",
+      "module_id": "E20",
+      "domain": "ORBIT",
+      "case": "known epoch golden",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E20-T02",
+      "module_id": "E20",
+      "domain": "ORBIT",
+      "case": "deterministic hash",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E20-T03",
+      "module_id": "E20",
+      "domain": "ORBIT",
+      "case": "stale flag",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E20-T04",
+      "module_id": "E20",
+      "domain": "ORBIT",
+      "case": "invalid elements -> unavailable",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E20-T05",
+      "module_id": "E20",
+      "domain": "ORBIT",
+      "case": "frame conversion",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E21-T01",
+      "module_id": "E21",
+      "domain": "ORBIT",
+      "case": "injected close pair recall",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E21-T02",
+      "module_id": "E21",
+      "domain": "ORBIT",
+      "case": "known TCA tolerance",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E21-T03",
+      "module_id": "E21",
+      "domain": "ORBIT",
+      "case": "boundary minimum",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E21-T04",
+      "module_id": "E21",
+      "domain": "ORBIT",
+      "case": "multi-minima",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E21-T05",
+      "module_id": "E21",
+      "domain": "ORBIT",
+      "case": "verification corpus metrics",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E22-T01",
+      "module_id": "E22",
+      "domain": "ORBIT",
+      "case": "missing covariance -> null not zero",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E22-T02",
+      "module_id": "E22",
+      "domain": "ORBIT",
+      "case": "Pc bounds",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E22-T03",
+      "module_id": "E22",
+      "domain": "ORBIT",
+      "case": "method mismatch warning",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E22-T04",
+      "module_id": "E22",
+      "domain": "ORBIT",
+      "case": "spec fixture path",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E22-T05",
+      "module_id": "E22",
+      "domain": "ORBIT",
+      "case": "dilution/covariance validity",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E23-T01",
+      "module_id": "E23",
+      "domain": "ORBIT",
+      "case": "edge deterministic",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E23-T02",
+      "module_id": "E23",
+      "domain": "ORBIT",
+      "case": "metric split",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E23-T03",
+      "module_id": "E23",
+      "domain": "ORBIT",
+      "case": "aggregate config version required",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E23-T04",
+      "module_id": "E23",
+      "domain": "ORBIT",
+      "case": "graph snapshot hash",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E24-T01",
+      "module_id": "E24",
+      "domain": "ORBIT",
+      "case": "shell boundaries",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E24-T02",
+      "module_id": "E24",
+      "domain": "ORBIT",
+      "case": "coverage ratio",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E24-T03",
+      "module_id": "E24",
+      "domain": "ORBIT",
+      "case": "source gap partial",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E24-T04",
+      "module_id": "E24",
+      "domain": "ORBIT",
+      "case": "threshold version",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E25-T01",
+      "module_id": "E25",
+      "domain": "ORBIT",
+      "case": "known family links",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E25-T02",
+      "module_id": "E25",
+      "domain": "ORBIT",
+      "case": "unknown origin no inference",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E25-T03",
+      "module_id": "E25",
+      "domain": "ORBIT",
+      "case": "chronological timeline",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E25-T04",
+      "module_id": "E25",
+      "domain": "ORBIT",
+      "case": "multinational separation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E26-T01",
+      "module_id": "E26",
+      "domain": "ORBIT",
+      "case": "fixed seed reproducibility",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E26-T02",
+      "module_id": "E26",
+      "domain": "ORBIT",
+      "case": "assumption exposure",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E26-T03",
+      "module_id": "E26",
+      "domain": "ORBIT",
+      "case": "remove path indirect delta",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E26-T04",
+      "module_id": "E26",
+      "domain": "ORBIT",
+      "case": "model validation state",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E27-T01",
+      "module_id": "E27",
+      "domain": "ORBIT",
+      "case": "TIP parse",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E27-T02",
+      "module_id": "E27",
+      "domain": "ORBIT",
+      "case": "no TIP -> no fake exact time",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E27-T03",
+      "module_id": "E27",
+      "domain": "ORBIT",
+      "case": "version history",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E27-T04",
+      "module_id": "E27",
+      "domain": "ORBIT",
+      "case": "grade visible",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E28-T01",
+      "module_id": "E28",
+      "domain": "ORBIT",
+      "case": "synthetic sinusoid",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E28-T02",
+      "module_id": "E28",
+      "domain": "ORBIT",
+      "case": "alias ambiguous",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E28-T03",
+      "module_id": "E28",
+      "domain": "ORBIT",
+      "case": "too few points",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E28-T04",
+      "module_id": "E28",
+      "domain": "ORBIT",
+      "case": "uncertainty downgrade",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E29-T01",
+      "module_id": "E29",
+      "domain": "ORBIT",
+      "case": "known pass",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E29-T02",
+      "module_id": "E29",
+      "domain": "ORBIT",
+      "case": "sun/eclipse flag",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E29-T03",
+      "module_id": "E29",
+      "domain": "ORBIT",
+      "case": "mount limit",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E29-T04",
+      "module_id": "E29",
+      "domain": "ORBIT",
+      "case": "info gain ordering",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E29-T05",
+      "module_id": "E29",
+      "domain": "ORBIT",
+      "case": "no visibility -> no request",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E30-T01",
+      "module_id": "E30",
+      "domain": "ORBIT",
+      "case": "duplicate dedupe",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E30-T02",
+      "module_id": "E30",
+      "domain": "ORBIT",
+      "case": "bad timestamp quarantine",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E30-T03",
+      "module_id": "E30",
+      "domain": "ORBIT",
+      "case": "outlier reject",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E30-T04",
+      "module_id": "E30",
+      "domain": "ORBIT",
+      "case": "accepted-only hook",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E30-T05",
+      "module_id": "E30",
+      "domain": "ORBIT",
+      "case": "license missing",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E31-T01",
+      "module_id": "E31",
+      "domain": "ORBIT",
+      "case": "direct remove exact delta",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E31-T02",
+      "module_id": "E31",
+      "domain": "ORBIT",
+      "case": "metric channels separated",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E31-T03",
+      "module_id": "E31",
+      "domain": "ORBIT",
+      "case": "same input repeat hash",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E31-T04",
+      "module_id": "E31",
+      "domain": "ORBIT",
+      "case": "no data no fake beneficiary",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E31-T05",
+      "module_id": "E31",
+      "domain": "ORBIT",
+      "case": "new risk surfaced",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E32-T01",
+      "module_id": "E32",
+      "domain": "ORBIT",
+      "case": "injected influence included",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E32-T02",
+      "module_id": "E32",
+      "domain": "ORBIT",
+      "case": "full-vs-selective equivalence",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E32-T03",
+      "module_id": "E32",
+      "domain": "ORBIT",
+      "case": "new OCM path candidate",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E32-T04",
+      "module_id": "E32",
+      "domain": "ORBIT",
+      "case": "rollback on mismatch",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E33-T01",
+      "module_id": "E33",
+      "domain": "ORBIT",
+      "case": "known ranking",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E33-T02",
+      "module_id": "E33",
+      "domain": "ORBIT",
+      "case": "inactive protected object research mode",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E33-T03",
+      "module_id": "E33",
+      "domain": "ORBIT",
+      "case": "new risk penalty",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E33-T04",
+      "module_id": "E33",
+      "domain": "ORBIT",
+      "case": "same-designator exclusion",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E33-T05",
+      "module_id": "E33",
+      "domain": "ORBIT",
+      "case": "candidate provenance",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E34-T01",
+      "module_id": "E34",
+      "domain": "VISUAL",
+      "case": "scale transition continuity",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E34-T02",
+      "module_id": "E34",
+      "domain": "VISUAL",
+      "case": "floating precision budget",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E34-T03",
+      "module_id": "E34",
+      "domain": "VISUAL",
+      "case": "layer source labels",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E34-T04",
+      "module_id": "E34",
+      "domain": "VISUAL",
+      "case": "device profile fallback",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E35-T01",
+      "module_id": "E35",
+      "domain": "VISUAL",
+      "case": "focus persistence across modes",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E35-T02",
+      "module_id": "E35",
+      "domain": "VISUAL",
+      "case": "back navigation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E35-T03",
+      "module_id": "E35",
+      "domain": "VISUAL",
+      "case": "object->event->object",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E35-T04",
+      "module_id": "E35",
+      "domain": "VISUAL",
+      "case": "NOW reset preserves expected focus",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E36-T01",
+      "module_id": "E36",
+      "domain": "VISUAL",
+      "case": "global view object cap",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E36-T02",
+      "module_id": "E36",
+      "domain": "VISUAL",
+      "case": "shell selection focus",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E36-T03",
+      "module_id": "E36",
+      "domain": "VISUAL",
+      "case": "viewport query",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E36-T04",
+      "module_id": "E36",
+      "domain": "VISUAL",
+      "case": "render subset != science subset",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E37-T01",
+      "module_id": "E37",
+      "domain": "VISUAL",
+      "case": "all evidence classes mapped",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E37-T02",
+      "module_id": "E37",
+      "domain": "VISUAL",
+      "case": "screening vs validated distinct",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E37-T03",
+      "module_id": "E37",
+      "domain": "VISUAL",
+      "case": "uncertainty visible",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E37-T04",
+      "module_id": "E37",
+      "domain": "VISUAL",
+      "case": "contrast/accessibility",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E38-T01",
+      "module_id": "E38",
+      "domain": "INTELLIGENCE",
+      "case": "idempotent trigger",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E38-T02",
+      "module_id": "E38",
+      "domain": "INTELLIGENCE",
+      "case": "dependency ordering",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E38-T03",
+      "module_id": "E38",
+      "domain": "INTELLIGENCE",
+      "case": "partial failure recovery",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E38-T04",
+      "module_id": "E38",
+      "domain": "INTELLIGENCE",
+      "case": "no circular task graph",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E38-T05",
+      "module_id": "E38",
+      "domain": "INTELLIGENCE",
+      "case": "replay from event log",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E39-T01",
+      "module_id": "E39",
+      "domain": "INTELLIGENCE",
+      "case": "independent source weighting",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E39-T02",
+      "module_id": "E39",
+      "domain": "INTELLIGENCE",
+      "case": "stale disagreement",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E39-T03",
+      "module_id": "E39",
+      "domain": "INTELLIGENCE",
+      "case": "conflicting official sources preserved",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E39-T04",
+      "module_id": "E39",
+      "domain": "INTELLIGENCE",
+      "case": "missing evidence remains missing",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E40-T01",
+      "module_id": "E40",
+      "domain": "INTELLIGENCE",
+      "case": "class required",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E40-T02",
+      "module_id": "E40",
+      "domain": "INTELLIGENCE",
+      "case": "AI cannot overwrite observed",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E40-T03",
+      "module_id": "E40",
+      "domain": "INTELLIGENCE",
+      "case": "counterfactual cannot become official",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E40-T04",
+      "module_id": "E40",
+      "domain": "INTELLIGENCE",
+      "case": "unknown class quarantine",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E41-T01",
+      "module_id": "E41",
+      "domain": "INTELLIGENCE",
+      "case": "same event correlation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E41-T02",
+      "module_id": "E41",
+      "domain": "INTELLIGENCE",
+      "case": "duplicate suppression",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E41-T03",
+      "module_id": "E41",
+      "domain": "INTELLIGENCE",
+      "case": "new event boundary",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E41-T04",
+      "module_id": "E41",
+      "domain": "INTELLIGENCE",
+      "case": "domain-specific event types",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E41-T05",
+      "module_id": "E41",
+      "domain": "INTELLIGENCE",
+      "case": "insufficient data event allowed",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E42-T01",
+      "module_id": "E42",
+      "domain": "INTELLIGENCE",
+      "case": "append-only revisions",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E42-T02",
+      "module_id": "E42",
+      "domain": "INTELLIGENCE",
+      "case": "change cause linked",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E42-T03",
+      "module_id": "E42",
+      "domain": "INTELLIGENCE",
+      "case": "no-change revision suppression policy",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E42-T04",
+      "module_id": "E42",
+      "domain": "INTELLIGENCE",
+      "case": "rollback/correction lineage",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E43-T01",
+      "module_id": "E43",
+      "domain": "INTELLIGENCE",
+      "case": "confidence != uncertainty",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E43-T02",
+      "module_id": "E43",
+      "domain": "INTELLIGENCE",
+      "case": "missing covariance raises uncertainty/limits claim",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E43-T03",
+      "module_id": "E43",
+      "domain": "INTELLIGENCE",
+      "case": "factor traceability",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E43-T04",
+      "module_id": "E43",
+      "domain": "INTELLIGENCE",
+      "case": "versioned weighting",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E44-T01",
+      "module_id": "E44",
+      "domain": "INTELLIGENCE",
+      "case": "importance reasons traceable",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E44-T02",
+      "module_id": "E44",
+      "domain": "INTELLIGENCE",
+      "case": "change rate can outrank static magnitude under policy",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E44-T03",
+      "module_id": "E44",
+      "domain": "INTELLIGENCE",
+      "case": "decision shows new risk",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E44-T04",
+      "module_id": "E44",
+      "domain": "INTELLIGENCE",
+      "case": "scenario assumptions surfaced",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "E44-T05",
+      "module_id": "E44",
+      "domain": "INTELLIGENCE",
+      "case": "no single-option recommendation without policy",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L01-T01",
+      "module_id": "L01",
+      "domain": "LLM",
+      "case": "provider/tool path success",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L01-T02",
+      "module_id": "L01",
+      "domain": "LLM",
+      "case": "unsupported scientific number hallucination blocked",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L01-T03",
+      "module_id": "L01",
+      "domain": "LLM",
+      "case": "validation/evidence class preserved in response",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L01-T04",
+      "module_id": "L01",
+      "domain": "LLM",
+      "case": "timeout/fallback does not break Intelligence core",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L01-T05",
+      "module_id": "L01",
+      "domain": "LLM",
+      "case": "authorization/private context isolation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L02-T01",
+      "module_id": "L02",
+      "domain": "LLM",
+      "case": "provider/tool path success",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L02-T02",
+      "module_id": "L02",
+      "domain": "LLM",
+      "case": "unsupported scientific number hallucination blocked",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L02-T03",
+      "module_id": "L02",
+      "domain": "LLM",
+      "case": "validation/evidence class preserved in response",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L02-T04",
+      "module_id": "L02",
+      "domain": "LLM",
+      "case": "timeout/fallback does not break Intelligence core",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L02-T05",
+      "module_id": "L02",
+      "domain": "LLM",
+      "case": "authorization/private context isolation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L03-T01",
+      "module_id": "L03",
+      "domain": "LLM",
+      "case": "provider/tool path success",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L03-T02",
+      "module_id": "L03",
+      "domain": "LLM",
+      "case": "unsupported scientific number hallucination blocked",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L03-T03",
+      "module_id": "L03",
+      "domain": "LLM",
+      "case": "validation/evidence class preserved in response",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L03-T04",
+      "module_id": "L03",
+      "domain": "LLM",
+      "case": "timeout/fallback does not break Intelligence core",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L03-T05",
+      "module_id": "L03",
+      "domain": "LLM",
+      "case": "authorization/private context isolation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L04-T01",
+      "module_id": "L04",
+      "domain": "LLM",
+      "case": "provider/tool path success",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L04-T02",
+      "module_id": "L04",
+      "domain": "LLM",
+      "case": "unsupported scientific number hallucination blocked",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L04-T03",
+      "module_id": "L04",
+      "domain": "LLM",
+      "case": "validation/evidence class preserved in response",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L04-T04",
+      "module_id": "L04",
+      "domain": "LLM",
+      "case": "timeout/fallback does not break Intelligence core",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L04-T05",
+      "module_id": "L04",
+      "domain": "LLM",
+      "case": "authorization/private context isolation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L05-T01",
+      "module_id": "L05",
+      "domain": "LLM",
+      "case": "provider/tool path success",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L05-T02",
+      "module_id": "L05",
+      "domain": "LLM",
+      "case": "unsupported scientific number hallucination blocked",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L05-T03",
+      "module_id": "L05",
+      "domain": "LLM",
+      "case": "validation/evidence class preserved in response",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L05-T04",
+      "module_id": "L05",
+      "domain": "LLM",
+      "case": "timeout/fallback does not break Intelligence core",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L05-T05",
+      "module_id": "L05",
+      "domain": "LLM",
+      "case": "authorization/private context isolation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L06-T01",
+      "module_id": "L06",
+      "domain": "LLM",
+      "case": "provider/tool path success",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L06-T02",
+      "module_id": "L06",
+      "domain": "LLM",
+      "case": "unsupported scientific number hallucination blocked",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L06-T03",
+      "module_id": "L06",
+      "domain": "LLM",
+      "case": "validation/evidence class preserved in response",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L06-T04",
+      "module_id": "L06",
+      "domain": "LLM",
+      "case": "timeout/fallback does not break Intelligence core",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L06-T05",
+      "module_id": "L06",
+      "domain": "LLM",
+      "case": "authorization/private context isolation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L07-T01",
+      "module_id": "L07",
+      "domain": "LLM",
+      "case": "provider/tool path success",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L07-T02",
+      "module_id": "L07",
+      "domain": "LLM",
+      "case": "unsupported scientific number hallucination blocked",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L07-T03",
+      "module_id": "L07",
+      "domain": "LLM",
+      "case": "validation/evidence class preserved in response",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L07-T04",
+      "module_id": "L07",
+      "domain": "LLM",
+      "case": "timeout/fallback does not break Intelligence core",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L07-T05",
+      "module_id": "L07",
+      "domain": "LLM",
+      "case": "authorization/private context isolation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L08-T01",
+      "module_id": "L08",
+      "domain": "LLM",
+      "case": "provider/tool path success",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L08-T02",
+      "module_id": "L08",
+      "domain": "LLM",
+      "case": "unsupported scientific number hallucination blocked",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L08-T03",
+      "module_id": "L08",
+      "domain": "LLM",
+      "case": "validation/evidence class preserved in response",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L08-T04",
+      "module_id": "L08",
+      "domain": "LLM",
+      "case": "timeout/fallback does not break Intelligence core",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "L08-T05",
+      "module_id": "L08",
+      "domain": "LLM",
+      "case": "authorization/private context isolation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S01-T01",
+      "module_id": "S01",
+      "domain": "PLATFORM",
+      "case": "happy path contract",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S01-T02",
+      "module_id": "S01",
+      "domain": "PLATFORM",
+      "case": "authorization/capability enforcement",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S01-T03",
+      "module_id": "S01",
+      "domain": "PLATFORM",
+      "case": "failure/data_status propagation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S01-T04",
+      "module_id": "S01",
+      "domain": "PLATFORM",
+      "case": "audit/request-id traceability",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S01-T05",
+      "module_id": "S01",
+      "domain": "PLATFORM",
+      "case": "regression/security check",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S02-T01",
+      "module_id": "S02",
+      "domain": "PLATFORM",
+      "case": "happy path contract",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S02-T02",
+      "module_id": "S02",
+      "domain": "PLATFORM",
+      "case": "authorization/capability enforcement",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S02-T03",
+      "module_id": "S02",
+      "domain": "PLATFORM",
+      "case": "failure/data_status propagation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S02-T04",
+      "module_id": "S02",
+      "domain": "PLATFORM",
+      "case": "audit/request-id traceability",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S02-T05",
+      "module_id": "S02",
+      "domain": "PLATFORM",
+      "case": "regression/security check",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S03-T01",
+      "module_id": "S03",
+      "domain": "PLATFORM",
+      "case": "happy path contract",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S03-T02",
+      "module_id": "S03",
+      "domain": "PLATFORM",
+      "case": "authorization/capability enforcement",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S03-T03",
+      "module_id": "S03",
+      "domain": "PLATFORM",
+      "case": "failure/data_status propagation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S03-T04",
+      "module_id": "S03",
+      "domain": "PLATFORM",
+      "case": "audit/request-id traceability",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S03-T05",
+      "module_id": "S03",
+      "domain": "PLATFORM",
+      "case": "regression/security check",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S04-T01",
+      "module_id": "S04",
+      "domain": "PLATFORM",
+      "case": "happy path contract",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S04-T02",
+      "module_id": "S04",
+      "domain": "PLATFORM",
+      "case": "authorization/capability enforcement",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S04-T03",
+      "module_id": "S04",
+      "domain": "PLATFORM",
+      "case": "failure/data_status propagation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S04-T04",
+      "module_id": "S04",
+      "domain": "PLATFORM",
+      "case": "audit/request-id traceability",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S04-T05",
+      "module_id": "S04",
+      "domain": "PLATFORM",
+      "case": "regression/security check",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S05-T01",
+      "module_id": "S05",
+      "domain": "PLATFORM",
+      "case": "happy path contract",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S05-T02",
+      "module_id": "S05",
+      "domain": "PLATFORM",
+      "case": "authorization/capability enforcement",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S05-T03",
+      "module_id": "S05",
+      "domain": "PLATFORM",
+      "case": "failure/data_status propagation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S05-T04",
+      "module_id": "S05",
+      "domain": "PLATFORM",
+      "case": "audit/request-id traceability",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S05-T05",
+      "module_id": "S05",
+      "domain": "PLATFORM",
+      "case": "regression/security check",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S06-T01",
+      "module_id": "S06",
+      "domain": "PLATFORM",
+      "case": "happy path contract",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S06-T02",
+      "module_id": "S06",
+      "domain": "PLATFORM",
+      "case": "authorization/capability enforcement",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S06-T03",
+      "module_id": "S06",
+      "domain": "PLATFORM",
+      "case": "failure/data_status propagation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S06-T04",
+      "module_id": "S06",
+      "domain": "PLATFORM",
+      "case": "audit/request-id traceability",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S06-T05",
+      "module_id": "S06",
+      "domain": "PLATFORM",
+      "case": "regression/security check",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S07-T01",
+      "module_id": "S07",
+      "domain": "PLATFORM",
+      "case": "happy path contract",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S07-T02",
+      "module_id": "S07",
+      "domain": "PLATFORM",
+      "case": "authorization/capability enforcement",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S07-T03",
+      "module_id": "S07",
+      "domain": "PLATFORM",
+      "case": "failure/data_status propagation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S07-T04",
+      "module_id": "S07",
+      "domain": "PLATFORM",
+      "case": "audit/request-id traceability",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S07-T05",
+      "module_id": "S07",
+      "domain": "PLATFORM",
+      "case": "regression/security check",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S08-T01",
+      "module_id": "S08",
+      "domain": "PLATFORM",
+      "case": "happy path contract",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S08-T02",
+      "module_id": "S08",
+      "domain": "PLATFORM",
+      "case": "authorization/capability enforcement",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S08-T03",
+      "module_id": "S08",
+      "domain": "PLATFORM",
+      "case": "failure/data_status propagation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S08-T04",
+      "module_id": "S08",
+      "domain": "PLATFORM",
+      "case": "audit/request-id traceability",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S08-T05",
+      "module_id": "S08",
+      "domain": "PLATFORM",
+      "case": "regression/security check",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S09-T01",
+      "module_id": "S09",
+      "domain": "PLATFORM",
+      "case": "happy path contract",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S09-T02",
+      "module_id": "S09",
+      "domain": "PLATFORM",
+      "case": "authorization/capability enforcement",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S09-T03",
+      "module_id": "S09",
+      "domain": "PLATFORM",
+      "case": "failure/data_status propagation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S09-T04",
+      "module_id": "S09",
+      "domain": "PLATFORM",
+      "case": "audit/request-id traceability",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S09-T05",
+      "module_id": "S09",
+      "domain": "PLATFORM",
+      "case": "regression/security check",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S10-T01",
+      "module_id": "S10",
+      "domain": "PLATFORM",
+      "case": "happy path contract",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S10-T02",
+      "module_id": "S10",
+      "domain": "PLATFORM",
+      "case": "authorization/capability enforcement",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S10-T03",
+      "module_id": "S10",
+      "domain": "PLATFORM",
+      "case": "failure/data_status propagation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S10-T04",
+      "module_id": "S10",
+      "domain": "PLATFORM",
+      "case": "audit/request-id traceability",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S10-T05",
+      "module_id": "S10",
+      "domain": "PLATFORM",
+      "case": "regression/security check",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S11-T01",
+      "module_id": "S11",
+      "domain": "PLATFORM",
+      "case": "happy path contract",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S11-T02",
+      "module_id": "S11",
+      "domain": "PLATFORM",
+      "case": "authorization/capability enforcement",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S11-T03",
+      "module_id": "S11",
+      "domain": "PLATFORM",
+      "case": "failure/data_status propagation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S11-T04",
+      "module_id": "S11",
+      "domain": "PLATFORM",
+      "case": "audit/request-id traceability",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S11-T05",
+      "module_id": "S11",
+      "domain": "PLATFORM",
+      "case": "regression/security check",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S12-T01",
+      "module_id": "S12",
+      "domain": "PLATFORM",
+      "case": "happy path contract",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S12-T02",
+      "module_id": "S12",
+      "domain": "PLATFORM",
+      "case": "authorization/capability enforcement",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S12-T03",
+      "module_id": "S12",
+      "domain": "PLATFORM",
+      "case": "failure/data_status propagation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S12-T04",
+      "module_id": "S12",
+      "domain": "PLATFORM",
+      "case": "audit/request-id traceability",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "S12-T05",
+      "module_id": "S12",
+      "domain": "PLATFORM",
+      "case": "regression/security check",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-001",
+      "module_id": "E40",
+      "domain": "INTELLIGENCE",
+      "case": "DIRECT_SIGNAL cannot create Event before Signal Gate",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-002",
+      "module_id": "E41",
+      "domain": "INTELLIGENCE",
+      "case": "CONTEXT_ONLY direct Event create request rejected",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-003",
+      "module_id": "E43",
+      "domain": "INTELLIGENCE",
+      "case": "CONSUMER/UI factor cannot mutate scientific Confidence",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-004",
+      "module_id": "E43",
+      "domain": "INTELLIGENCE",
+      "case": "Subscription tier change leaves scientific Confidence/Uncertainty hash unchanged",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-005",
+      "module_id": "E31",
+      "domain": "ORBIT",
+      "case": "Counterfactual Benefit cannot be persisted as OBSERVED",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-006",
+      "module_id": "E26",
+      "domain": "ORBIT",
+      "case": "Fragmentation scenario always carries SIMULATION_ONLY/model/seed/assumption",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-007",
+      "module_id": "E32",
+      "domain": "ORBIT",
+      "case": "Affected Subgraph helper output not exposed directly as Intelligence Event",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-008",
+      "module_id": "E34",
+      "domain": "VISUAL",
+      "case": "3D render/LOD changes leave scientific result hash unchanged",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-009",
+      "module_id": "E35",
+      "domain": "VISUAL",
+      "case": "Camera/Semantic Zoom does not alter science subset",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-010",
+      "module_id": "E36",
+      "domain": "VISUAL",
+      "case": "Orbital shell visibility does not alter risk/conjunction computation set",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-011",
+      "module_id": "E37",
+      "domain": "VISUAL",
+      "case": "Visual semantics cannot relabel MODEL/SIMULATION as OBSERVED",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-012",
+      "module_id": "E19",
+      "domain": "CONTROL",
+      "case": "Historical Replay cannot create current real-world Event",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-013",
+      "module_id": "E30",
+      "domain": "ORBIT",
+      "case": "Rejected/quarantined citizen observation cannot affect Intelligence",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-014",
+      "module_id": "E30",
+      "domain": "ORBIT",
+      "case": "Accepted observation adds Evidence then triggers bounded re-evaluation",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-015",
+      "module_id": "E20",
+      "domain": "ORBIT",
+      "case": "Periodic orbit updates are reduced by change/signal gate before Event candidate",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-016",
+      "module_id": "E16",
+      "domain": "CONTROL",
+      "case": "Telemetry and modelled trajectory remain separate EvidenceClass",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-017",
+      "module_id": "E22",
+      "domain": "ORBIT",
+      "case": "No covariance means no Pc even if UI/LLM requests it",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-018",
+      "module_id": "E38",
+      "domain": "INTELLIGENCE",
+      "case": "Orchestrator invokes INTELLIGENCE_TOOL only through approved contract",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-019",
+      "module_id": "E44",
+      "domain": "INTELLIGENCE",
+      "case": "Decision result is advisory/research and cannot emit spacecraft command",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    },
+    {
+      "test_id": "ICM-020",
+      "module_id": "L06",
+      "domain": "LLM",
+      "case": "Claim validator rejects or qualifies numeric claim absent from Intelligence Packet",
+      "automation": "AUTOMATED",
+      "gate": "REQUIRED",
+      "status": "NOT_RUN",
+      "evidence_path": "",
+      "uncovered_reason": "NOT_YET_MAPPED"
+    }
+  ]
+}

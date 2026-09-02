@@ -3,14 +3,13 @@
   "orbital_phase": "ORB-P4 + ORB-P5(physical engine) + ORB-P6(PROTECT/OCM)",
   "gate": "PARTIAL",
   "failed_checks": [
-    "tests_p5_pass",
     "operational_pc_from_cdm_covariance",
     "large_scale_benchmark_run"
   ],
   "checks": {
     "tests_p4_core_pass": true,
     "tests_10k_corpus_pass": true,
-    "tests_p5_pass": false,
+    "tests_p5_pass": true,
     "tests_p6_pass": true,
     "spec_shaped_cdm_reaches_pc": true,
     "operational_pc_from_cdm_covariance": false,
@@ -27,8 +26,8 @@
         "reason": "check is met"
       },
       "tests_p5_pass": {
-        "blocker_class": "BUILDABLE_NOW",
-        "reason": "P5 테스트 미통과 — 내부 작업"
+        "blocker_class": "NONE",
+        "reason": "check is met"
       },
       "tests_p6_pass": {
         "blocker_class": "NONE",
@@ -48,24 +47,23 @@
       }
     },
     "counts": {
-      "BUILDABLE_NOW": 2,
+      "BUILDABLE_NOW": 1,
       "DECISION_PENDING": 0,
       "EXTERNAL_DATA_GATED": 1,
       "EXTERNAL_PARTNER_GATED": 0,
-      "NONE": 4
+      "NONE": 5
     },
     "unmet_buildable_now": [
-      "large_scale_benchmark_run",
-      "tests_p5_pass"
+      "large_scale_benchmark_run"
     ],
     "unmet_requiring_others": [
       "operational_pc_from_cdm_covariance"
     ]
   },
-  "generated_at": "2026-09-02T14:37:03.330184+00:00",
+  "generated_at": "2026-09-02T14:42:18.575314+00:00",
   "repository": "git@github.com:icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "51519f7cbf8bf12af14f1a14c012ec5025ebd9d6",
+  "commit": "70366d4eb9b0fd3e4381a3fed580d229a1e64a62",
   "tests_p4_core": {
     "files": [
       "tests/unit/test_ca_screen.py",
@@ -77,8 +75,8 @@
     ],
     "status": "COMPLETED",
     "exit_code": 0,
-    "elapsed_seconds": 91.0,
-    "summary": "============= 53 passed, 1 skipped, 1 warning in 89.55s (0:01:29) ============="
+    "elapsed_seconds": 104.4,
+    "summary": "============ 53 passed, 1 skipped, 1 warning in 103.15s (0:01:43) ============="
   },
   "tests_10k_corpus": {
     "files": [
@@ -86,8 +84,8 @@
     ],
     "status": "COMPLETED",
     "exit_code": 0,
-    "elapsed_seconds": 14.3,
-    "summary": "============================= 5 passed in 12.67s =============================="
+    "elapsed_seconds": 12.8,
+    "summary": "============================= 5 passed in 11.46s =============================="
   },
   "tests_p5": {
     "files": [
@@ -100,9 +98,9 @@
       "tests/integration/test_benefit_api.py"
     ],
     "status": "COMPLETED",
-    "exit_code": 1,
-    "elapsed_seconds": 169.3,
-    "summary": "======= 1 failed, 40 passed, 1 skipped, 1 warning in 167.55s (0:02:47) ========"
+    "exit_code": 0,
+    "elapsed_seconds": 146.3,
+    "summary": "============ 41 passed, 1 skipped, 1 warning in 145.00s (0:02:25) ============="
   },
   "tests_p6": {
     "files": [
@@ -110,8 +108,8 @@
     ],
     "status": "COMPLETED",
     "exit_code": 0,
-    "elapsed_seconds": 9.5,
-    "summary": "======================== 3 passed, 1 warning in 7.69s ========================="
+    "elapsed_seconds": 8.3,
+    "summary": "======================== 3 passed, 1 warning in 6.86s ========================="
   },
   "screening_performance": {
     "record": "docs/audit/DEBRIS_INGESTION_NOTE.md",

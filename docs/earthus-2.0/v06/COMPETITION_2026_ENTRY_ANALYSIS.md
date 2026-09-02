@@ -92,7 +92,19 @@
 
 - 수집기: `aws/tourism-flow/kto_provider.py`(9서비스 allowlist, 계약·스키마 드리프트 검사), `kto_collector.py`(S3 lease, raw→normalized→summary), `kto_pipeline.py`(의미 분리 정규화). 키는 Lambda 환경변수 `DATA_GO_KR_SERVICE_KEY`만 사용하고 브라우저에는 노출되지 않는다.
 - 스케줄: `aws/configure-tourism-flow-operations.sh`는 서울 실시간 인구 5분 rule과 KTO visitors 일일 rule(cron 19:37Z)만 만든다. 나머지 7개 서비스는 수동 1회 수집(8/20) 이후 방치.
-- 계약 `requiredParameters`를 보면 0건의 원인이 보인다. `related`/`localHub`는 `areaCd`+`signguCd`+`baseYm`, `concentration`은 `areaCd`+`signguCd`, `diversity`/`demandStrength`는 `areaCd`+`baseYm`이 필수인데, 8/20 수집은 지역 루프 없이 한 번 호출한 것으로 보인다. `visitors`는 `kto_collector.py:342-372`가 "어제부터 7일"만 요청하는데 데이터랩 방문자수는 집계 지연이 있어 최근 7일이 비어 있을 가능성이 크다(8/24 수집엔 값이 있었음).
+- 계약 `requiredParameters`: `related`/`localHub`는 `areaCd`+`signguCd`+`baseYm`, `concentration`은 `areaCd`+`signguCd`, `diversity`/`demandStrength`는 `areaCd`+`baseYm`이 필수다. 한 번의 호출은 지역 한 곳만 담을 수 있으므로, 8/20의 단발 수집은 전국을 담을 수 없었다.
+- 다만 파라미터가 **빠진** 것은 아니다. `build_kto_url`(`kto_provider.py`)은 호출 전에 `validate_required_parameters`를 돌려 누락 시 예외를 던지므로, 0건 스냅샷이 발행됐다는 사실 자체가 유효한 요청이 빈 응답을 받았다는 증거다. 즉 원인은 **지역 범위와 기준월**이지 요청 형식이 아니다. `visitors`가 빈 이유는 아래 2.1.1에서 실행으로 확인했다.
+
+### 2.1.1 2026-09-02 실행으로 확인한 사실
+
+| 확인 | 내용 |
+|---|---|
+| **방문자수는 조회 범위를 무시한다** | 8/3~8/30(28일)을 요청했는데 정확히 **시작일 하루**만 왔다. 807건 = 270개 시군구 × 3개 방문자 유형 × 1일이고 `totalCount`도 일치. 공표 지연이 아니다(8/24 수집 때는 시작일 8/17이 왔다). → 하루씩 나눠 부르고 한 스냅샷으로 합치도록 수정 |
+| **지역 코드 확보** | 방문자수 스냅샷에서 시군구 **270개**(5자리), 시도 **18개**(2자리). 스윕은 이 코드만 근거로 쓴다(하드코딩 없음) |
+| **지수 5종은 기준월 자료가 아직 없다** | diversity 3개 op·demandStrength 2개 op를 18개 시도 전부에 대해 `baseYm=202607`로 호출 → **실패 0건, 응답 0건**. 호출은 정상이고 해당 월이 공표되지 않았다. 가용 기준월 탐침이 필요하다 |
+| **빈 응답이 실데이터를 지운다** | 수집기가 빈 응답도 그대로 발행해, 8/24에 있던 방문자수가 9/1 자동 수집에서 0건으로 덮였다. → 집계가 비었는데 이미 공개된 값이 있으면 발행하지 않도록 수정 |
+| **공용 키 lease 900초** | 해제 API가 없어 KTO 수집 사이에 15분 간격이 강제된다. Operation마다 호출하면 하루가 걸려, 한 lease 안에서 여러 스윕을 끝내는 배치 태스크를 추가했다 |
+| **EventBridge 드리프트** | `tourism-flow-kto-visitors-daily`는 설정 스크립트가 DISABLED로 만든다고 적혀 있으나 실제로는 **ENABLED**(감사 문서 지적과 일치). 배포 IAM 사용자는 `events:ListTargetsByRule` 권한이 없어 타깃 입력은 읽지 못했다 |
 
 ### 2.2 사용자에게 보이는 메뉴
 
@@ -131,14 +143,17 @@
 
 ### 3.3 데이터 작업 (서버, 1주)
 
-| 순서 | 작업 | 파일 | 비고 |
+| 순서 | 작업 | 상태 | 비고 |
 |---|---|---|---|
-| 1 | visitors 요청 창을 "D-30 ~ D-3"로 넓히고 빈 결과면 마지막 유효 스냅샷 유지 | `aws/tourism-flow/kto_collector.py:342-372` | 집계 지연 대응. 8/24엔 값이 있었음 |
-| 2 | related / localHub / concentration을 `areaCd`+`signguCd` 루프로 수집 | `kto_collector.py` 새 task `KTO_REGION_SWEEP` | 시군구 228 × 3 서비스 ≈ 684콜/일. 개발계정 일 1,000건 한도 안이지만 여유가 없으니 2일 분할 또는 운영계정 전환 신청 |
-| 3 | diversity / demandStrength를 `areaCd`(17 시도) + `baseYm` 월 1회 수집, 스케줄 등록 | `configure-tourism-flow-operations.sh` | 서면심사 근거로 "전 지역 지수" 확보 |
-| 4 | 시군구 코드 ↔ `kr-places.json` ↔ `korea-admin-reference.js` 매핑표 | `prototype/data/tourism/` | KTO `areaCd/signguCd`는 법정동 코드 체계라 변환표 필요 |
-| 5 | 전국체육시설(국민체육진흥공단) 수집기 신규 — KTO 수집기 패턴 복제, 계약 캡처 | `aws/tourism-flow/` 또는 별도 Lambda, `tools/capture_kto_contracts.py` 재사용 | 승인은 받았으나 엔드포인트·필수 파라미터 미확인 |
-| 6 | 발견 피처 materialize: 시군구별 7개 신호를 `/tourism/discovery/features.json`으로 산출 | v11 `discovery-feature-builder.js` 서버 실행 또는 Lambda | SHADOW → ACTIVE 게이트는 "실데이터 + 안전 게이트 + 파일럿" 조건. 이 대회가 파일럿이다 |
+| 1 | visitors를 하루씩 나눠 부르고 합치기 + 빈 응답이 기존 스냅샷을 덮지 않게 | **완료** (2026-09-02) | 시군구 807건·시도 50건 복구. 원인은 집계 지연이 아니라 "조회 범위 무시" |
+| 2 | related / localHub / concentration을 시군구 전역으로 수집 | **코드 완료, 수집 대기** | `KTO_REGION_SWEEP` 태스크. 지역 코드는 방문자수 스냅샷에서만 가져온다 |
+| 3 | diversity / demandStrength를 시도 전역 + 기준월로 수집 | **코드 완료, 기준월 탐침 중** | 202607은 18개 시도 전부 응답 0건. 가용 월을 찾는 중 |
+| 4 | 시군구 코드 ↔ `kr-places.json` ↔ `korea-admin-reference.js` 매핑표 | 미착수 | 지구 위 시각화에 필요 |
+| 5 | 전국체육시설(국민체육진흥공단) 수집기 신규 | 미착수 | 승인은 받았으나 엔드포인트·필수 파라미터 미확인 |
+| 6 | 발견 피처 materialize: 시군구별 7개 신호 산출 | 미착수 (**남은 핵심**) | `mapKtoSignalToFeature`는 `{placeId, metric, normalizedValue, observedAt}`을 기대하고, `buildDiscoveryFeatures`가 받는 featureKey는 demand·novelty·relation·diversity·dwell·weather·accessibility 7종. 정규화 스냅샷 → 이 행 형태로 바꾸는 계층이 없다 |
+| 7 | 스케줄 등록 (스윕 5종 + barrierFree/english 갱신) | 미착수 | 현재 barrierFree·english는 8/20 자료라 UI 신선도 기준(48시간)을 넘겨 "지난 자료"로 표시된다. 배포 IAM 사용자는 `events:ListTargetsByRule`이 없어 별도 권한 필요 |
+
+**일 호출량 실측 기준**: 호출당 약 0.43초, 시군구 270곳 스윕 1회 ≈ 116초 / 270콜. 스윕 3종 = 810콜, 시도 지수 5종 = 90콜, 방문자수 7일 = 14콜. 매일 전부 돌리면 약 914콜로 개발계정 한도(1,000)에 근접하므로, 시군구 스윕은 격일 또는 주 2회로 두는 편이 안전하다.
 
 ### 3.4 4주 일정
 

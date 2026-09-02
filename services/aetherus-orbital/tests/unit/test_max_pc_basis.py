@@ -53,6 +53,7 @@ def _row(**overrides: object) -> dict[str, object]:
         "max_pc_status": None,
         "max_pc_source_id": None,
         "max_pc_content_sha256": None,
+        "geometry_basis": None,
         "covariance_status": "INSUFFICIENT_DATA",
         "dilution_state": None,
         "tca_boundary_flag": False,
@@ -156,10 +157,85 @@ class TestMaxPcChannelKeepsProvenance:
                 max_pc_method="SOCRATES_MAX_PROB",
                 max_pc_basis=BASIS_OBSERVED_EXTERNAL,
                 max_pc_status="OBSERVED",
-                max_pc_source_id="CELESTRAK_SOCRATES",
+                max_pc_source_id="celestrak_socrates",
                 max_pc_content_sha256="a" * 64,
             )
         )
         channel = payload["latest_snapshot"]["metrics"]["MAX_PC"]
-        assert channel["source_id"] == "CELESTRAK_SOCRATES"
+        assert channel["source_id"] == "celestrak_socrates"
         assert channel["content_sha256"] == "a" * 64
+
+
+class TestMissDistanceBasisIsNeverInferred:
+    """The 016 defect, reproduced by us on the neighbouring channel.
+
+    MAX_PC gained a basis column and an honest payload; MISS_DISTANCE on the
+    same row kept the flattering inference ("status": "COMPUTED" if value is
+    not None). The moment SOCRATES ingestion wrote CelesTrak's TCA_RANGE into
+    miss_distance_m, every such snapshot was served as our computation. Caught
+    by the 2026-09-02 adversarial review of the ingestion chain, verified
+    against the live rows.
+
+    Legacy rows predate the geometry_basis column and cannot be backfilled
+    (append-only), so status for a NULL basis is resolved from the RECORDED
+    producer identity (model_version) against a frozen internal allowlist —
+    reading recorded provenance, not the value's mere presence.
+    """
+
+    def test_external_geometry_is_not_reported_as_computed(self):
+        payload = _event_payload(
+            _row(
+                miss_distance_m=715.0,
+                geometry_basis="OBSERVED_EXTERNAL",
+                model_version="CELESTRAK_SOCRATES",
+            )
+        )
+        channel = payload["latest_snapshot"]["metrics"]["MISS_DISTANCE"]
+        assert channel["status"] != "COMPUTED", (
+            "CelesTrak's published range was served as our computation"
+        )
+        assert channel["status"] == "OBSERVED"
+        assert channel["basis"] == "OBSERVED_EXTERNAL"
+
+    def test_internal_geometry_still_reports_computed(self):
+        payload = _event_payload(
+            _row(
+                miss_distance_m=1200.0,
+                geometry_basis="COMPUTED_INTERNAL",
+                model_version="p4-conservative-v1+sgp4",
+            )
+        )
+        channel = payload["latest_snapshot"]["metrics"]["MISS_DISTANCE"]
+        assert channel["status"] == "COMPUTED"
+        assert channel["basis"] == "COMPUTED_INTERNAL"
+
+    def test_legacy_internal_row_resolves_via_recorded_producer(self):
+        """44k pre-018 screening rows carry no basis but do record their producer."""
+        payload = _event_payload(
+            _row(
+                miss_distance_m=1200.0,
+                geometry_basis=None,
+                model_version="p4-conservative-v1+sgp4",
+            )
+        )
+        channel = payload["latest_snapshot"]["metrics"]["MISS_DISTANCE"]
+        assert channel["status"] == "COMPUTED"
+
+    def test_unknown_producer_without_basis_is_a_visible_fault(self):
+        """Value present, no basis, foreign producer: surfaced, never flattered."""
+        payload = _event_payload(
+            _row(
+                miss_distance_m=715.0,
+                geometry_basis=None,
+                model_version="CELESTRAK_SOCRATES",
+            )
+        )
+        channel = payload["latest_snapshot"]["metrics"]["MISS_DISTANCE"]
+        assert channel["status"] == "BASIS_UNRECORDED"
+        assert channel["status"] != "COMPUTED"
+
+    def test_absent_geometry_is_not_computed(self):
+        payload = _event_payload(_row(miss_distance_m=None, geometry_basis=None))
+        channel = payload["latest_snapshot"]["metrics"]["MISS_DISTANCE"]
+        assert channel["value"] is None
+        assert channel["status"] == "NOT_COMPUTED"

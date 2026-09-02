@@ -30,14 +30,19 @@ from __future__ import annotations
 
 import csv
 import io
+import math
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
-from backend.ingestion.errors import InsufficientDataError
+from backend.ingestion.errors import (
+    InsufficientDataError,
+    ProviderUnavailableError,
+    RateLimitedError,
+)
 from backend.providers_live import LiveProviderClient, RawResponse
 
-SOURCE_ID = "CELESTRAK_SOCRATES"
+SOURCE_ID = "celestrak_socrates"
 
 #: Bulk product. The HTML query endpoint caps at 1000 rows and is not machine-readable.
 SOCRATES_CSV_URI = "https://celestrak.org/SOCRATES/sort-minRange.csv"
@@ -180,7 +185,12 @@ def parse_socrates_csv(raw: RawResponse) -> SocratesResult:
     skipped: list[dict[str, Any]] = []
     for index, row in enumerate(reader, start=2):  # row 1 is the header
         try:
-            max_probability = float(row["MAX_PROB"])
+            max_probability = _finite(row["MAX_PROB"], "MAX_PROB")
+            if not 0.0 <= max_probability <= 1.0:
+                # A probability outside [0, 1] is feed corruption, not data. It
+                # would otherwise persist as OBSERVED and pass every DB constraint,
+                # which validate the basis columns and never the number.
+                raise ValueError(f"MAX_PROB_OUT_OF_RANGE: {max_probability!r}")
             conjunctions.append(
                 SocratesConjunction(
                     primary_catalog_id=_catalog_id(row["NORAD_CAT_ID_1"]),
@@ -188,8 +198,8 @@ def parse_socrates_csv(raw: RawResponse) -> SocratesResult:
                     secondary_catalog_id=_catalog_id(row["NORAD_CAT_ID_2"]),
                     secondary_name=(row["OBJECT_NAME_2"] or "").strip(),
                     tca=(row["TCA"] or "").strip(),
-                    tca_range_km=float(row["TCA_RANGE"]),
-                    relative_speed_km_s=float(row["TCA_RELATIVE_SPEED"]),
+                    tca_range_km=_finite(row["TCA_RANGE"], "TCA_RANGE"),
+                    relative_speed_km_s=_finite(row["TCA_RELATIVE_SPEED"], "TCA_RELATIVE_SPEED"),
                     max_probability=max_probability,
                     dilution_km=_optional_float(row.get("DILUTION")),
                 )
@@ -204,13 +214,29 @@ def parse_socrates_csv(raw: RawResponse) -> SocratesResult:
     )
 
 
+def _finite(value: str, column: str) -> float:
+    """Parse a numeric cell, refusing NaN and infinities.
+
+    ``float()`` happily returns nan/inf for the strings "NaN" and "Infinity", so
+    a corrupt cell would otherwise become a stored value with OBSERVED authority
+    and then break the provenance JSON mid-ingest. Rejecting it here makes the
+    row a counted skip instead.
+    """
+    parsed = float(value)
+    if not math.isfinite(parsed):
+        raise ValueError(f"{column} is not finite: {value!r}")
+    return parsed
+
+
 def _optional_float(value: str | None) -> float | None:
+    """Empty is absent; malformed is an error the row must account for.
+
+    Coercing a malformed cell to None made it indistinguishable from a feed that
+    simply omitted the value.
+    """
     if value is None or not value.strip():
         return None
-    try:
-        return float(value)
-    except ValueError:
-        return None
+    return _finite(value, "DILUTION")
 
 
 async def fetch_socrates(client: LiveProviderClient) -> SocratesResult:
@@ -225,5 +251,31 @@ async def fetch_socrates(client: LiveProviderClient) -> SocratesResult:
             "SOCRATES client must not retry; CelesTrak requires stopping on any non-200",
             {"source_id": SOURCE_ID, "configured_max_retries": client.max_retries},
         )
-    raw = await client.fetch_raw(SOCRATES_CSV_URI, source_id=SOURCE_ID)
+    try:
+        # CelesTrak answers 406 to an application/json Accept on CSV products.
+        # Redirects are not followed: a 3xx is a non-200 under the policy.
+        raw = await client.fetch_raw(
+            SOCRATES_CSV_URI,
+            source_id=SOURCE_ID,
+            accept="text/csv, */*",
+            follow_redirects=False,
+        )
+    except (RateLimitedError, ProviderUnavailableError, InsufficientDataError) as error:
+        # Every non-200 is re-raised as the policy stop so the caller cannot
+        # treat it as the shared taxonomy's retry-later or no-record cases.
+        details: dict[str, Any] = {
+            "source_id": SOURCE_ID,
+            "source_uri": SOCRATES_CSV_URI,
+            "provider_error": type(error).__name__,
+        }
+        extra = getattr(error, "details", None)
+        if isinstance(extra, dict):
+            details.update(extra)
+        retry_after = getattr(error, "retry_after_seconds", None)
+        if retry_after is not None:
+            details["retry_after_seconds"] = retry_after
+        raise SocratesUsagePolicyError(
+            "CelesTrak returned a non-200; stop and alert a human, do not retry",
+            details,
+        ) from error
     return parse_socrates_csv(raw)

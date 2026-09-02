@@ -69,7 +69,9 @@ PROHIBITED_CLAIMS: tuple[str, ...] = (
 
 ALLOWED_CLAIMS: tuple[str, ...] = (
     "A bounded SGP4 coarse screening over stored public GP solutions retained this pair.",
-    "miss_distance_m and relative_speed_mps come from the refined TCA of that screening.",
+    "miss_distance_m and relative_speed_mps come from the refined TCA of that screening "
+    "when the geometry basis is COMPUTED_INTERNAL; externally observed rows carry the "
+    "values their publisher computed and are reported as OBSERVED, never as ours.",
 )
 
 #: P4 speaks its own vocabulary ("PUBLIC_GP", "PUBLIC_SCREENING"); the domain enums
@@ -291,7 +293,13 @@ def _convert_event(
     metrics = snapshot.get("metrics") or {}
     pc_block = _pc_block(metrics, snapshot)
     miss_distance = _number(snapshot.get("miss_distance_m"))
-    miss_status = "COMPUTED" if miss_distance is not None else "NOT_COMPUTED"
+    # Read the basis-aware status the payload already resolved; inferring
+    # COMPUTED from mere presence relabelled externally observed geometry
+    # (adversarial review 2026-09-02).
+    miss_status = str(
+        ((metrics.get("MISS_DISTANCE") or {}).get("status"))
+        or ("BASIS_UNRECORDED" if miss_distance is not None else "NOT_COMPUTED")
+    )
 
     raw_grade = _text(snapshot.get("source_grade"))
     grade = _SOURCE_GRADE_MAP.get((raw_grade or "").upper(), SourceGrade.UNKNOWN)

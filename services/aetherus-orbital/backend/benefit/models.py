@@ -39,6 +39,8 @@ VALIDATION_STATE_SIMULATION = "SIMULATION_ONLY"
 MAX_HORIZON_HOURS = 168.0
 
 _SIMULATION_GRADES = frozenset({"SIMULATION_ONLY", "PROBE", "EVIDENCE_PROBE"})
+#: Public alias: the grades a default catalogue read must never mistake for observed data.
+SIMULATION_SOURCE_GRADES = _SIMULATION_GRADES
 
 
 def is_simulation_source_grade(grade: str | None) -> bool:

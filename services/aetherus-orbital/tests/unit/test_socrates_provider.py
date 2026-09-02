@@ -151,3 +151,95 @@ class TestUsagePolicy:
         with pytest.raises(SocratesUsagePolicyError) as caught:
             await fetch_socrates(_NeverCalled())
         assert caught.value.details["configured_max_retries"] == 2
+
+
+class TestCorruptCellsAreCountedNotPersisted:
+    """A cell float() accepts is not necessarily a value we may store.
+
+    float("NaN") and float("Infinity") succeed, and nothing bounds MAX_PROB to
+    [0, 1]. Before this guard a corrupt cell became a stored MAX_PC carrying
+    OBSERVED authority and then broke the provenance JSON mid-ingest, after
+    earlier rows had already been committed (adversarial review 2026-09-02).
+    """
+
+    @pytest.mark.parametrize("bad", ["NaN", "Infinity", "-Infinity", "-1.0", "27.0"])
+    def test_non_finite_or_out_of_range_max_prob_is_skipped_and_counted(self, bad: str):
+        row = f"25544,ISS,0.1,30000,DEB,0.2,2026-09-02 04:15:33,0.7,14.0,{bad},1.0"
+        result = parse_socrates_csv(_raw(_csv(_ROWS[0], row)))
+        assert len(result.conjunctions) == 1
+        assert len(result.skipped_rows) == 1
+        assert result.skipped_rows[0]["row"] == 3
+
+    @pytest.mark.parametrize("column", ["TCA_RANGE", "TCA_RELATIVE_SPEED"])
+    def test_non_finite_geometry_is_skipped(self, column: str):
+        cells = {
+            "TCA_RANGE": "0.7", "TCA_RELATIVE_SPEED": "14.0",
+        }
+        cells[column] = "NaN"
+        row = (
+            f"25544,ISS,0.1,30000,DEB,0.2,2026-09-02 04:15:33,"
+            f"{cells['TCA_RANGE']},{cells['TCA_RELATIVE_SPEED']},1e-5,1.0"
+        )
+        result = parse_socrates_csv(_raw(_csv(row)))
+        assert result.conjunctions == ()
+        assert len(result.skipped_rows) == 1
+
+    def test_malformed_dilution_is_an_accounted_skip_not_a_silent_none(self):
+        row = "25544,ISS,0.1,30000,DEB,0.2,2026-09-02 04:15:33,0.7,14.0,1e-5,garbage"
+        result = parse_socrates_csv(_raw(_csv(row)))
+        assert result.conjunctions == ()
+        assert len(result.skipped_rows) == 1
+
+    def test_empty_dilution_is_still_simply_absent(self):
+        row = "25544,ISS,0.1,30000,DEB,0.2,2026-09-02 04:15:33,0.7,14.0,1e-5,"
+        result = parse_socrates_csv(_raw(_csv(row)))
+        assert len(result.conjunctions) == 1
+        assert result.conjunctions[0].dilution_km is None
+
+
+class TestEveryNon200IsThePolicyStop:
+    """The shared client maps 429 to retry-later and 404 to no-record.
+
+    Under CelesTrak's policy every one of those is a stop-and-alert; letting the
+    shared taxonomy through invited an automated retry on exactly the response
+    that gets an address firewalled.
+    """
+
+    class _Client:
+        max_retries = 0
+
+        def __init__(self, error: Exception) -> None:
+            self.error = error
+            self.calls = 0
+
+        async def fetch_raw(self, *args, **kwargs):
+            self.calls += 1
+            raise self.error
+
+    async def test_rate_limit_becomes_policy_stop_with_no_second_request(self):
+        from backend.ingestion.errors import RateLimitedError
+
+        client = self._Client(RateLimitedError("celestrak_socrates is rate limited", retry_after_seconds=120))
+        with pytest.raises(SocratesUsagePolicyError) as caught:
+            await fetch_socrates(client)
+        assert client.calls == 1
+        assert caught.value.details["provider_error"] == "RateLimitedError"
+        assert caught.value.details["retry_after_seconds"] == 120
+
+    async def test_unexpected_status_becomes_policy_stop(self):
+        from backend.ingestion.errors import ProviderUnavailableError
+
+        client = self._Client(
+            ProviderUnavailableError(
+                "Provider returned an unexpected response",
+                {"http_status": 406, "source_uri": "https://celestrak.org/SOCRATES/sort-minRange.csv"},
+            )
+        )
+        with pytest.raises(SocratesUsagePolicyError) as caught:
+            await fetch_socrates(client)
+        assert caught.value.details["http_status"] == 406
+
+    async def test_no_record_status_becomes_policy_stop(self):
+        client = self._Client(InsufficientDataError("no record", {"http_status": 404}))
+        with pytest.raises(SocratesUsagePolicyError):
+            await fetch_socrates(client)

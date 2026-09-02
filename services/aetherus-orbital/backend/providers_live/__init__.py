@@ -133,19 +133,33 @@ class LiveProviderClient:
         self.user_agent = user_agent
         self._cache: dict[str, _CacheEntry] = {}
 
-    async def fetch_raw(self, source_uri: str, *, source_id: str | None = None) -> RawResponse:
-        """Retrieve one URI and return its unmodified bytes with retrieval metadata."""
+    async def fetch_raw(
+        self,
+        source_uri: str,
+        *,
+        source_id: str | None = None,
+        accept: str = "application/json",
+        follow_redirects: bool = True,
+    ) -> RawResponse:
+        """Retrieve one URI and return its unmodified bytes with retrieval metadata.
+
+        ``accept`` exists because the default is wrong for non-JSON products:
+        CelesTrak answers 406 to ``Accept: application/json`` on its CSV bulk
+        files, found the hard way on the first live SOCRATES fetch (2026-09-02).
+        """
         resolved_source_id = source_id or self.source_id
         cached = self._cached(source_uri)
         if cached is not None:
             return cached
 
         request_error: Exception | None = None
-        headers = {"Accept": "application/json", "User-Agent": self.user_agent}
+        headers = {"Accept": accept, "User-Agent": self.user_agent}
         async with httpx.AsyncClient(
             transport=self.transport,
             timeout=self.timeout_seconds,
-            follow_redirects=True,
+            # A source whose policy is "stop on any non-200" must see the 3xx
+            # itself rather than have it silently followed (SOCRATES).
+            follow_redirects=follow_redirects,
         ) as client:
             for attempt in range(self.max_retries + 1):
                 try:

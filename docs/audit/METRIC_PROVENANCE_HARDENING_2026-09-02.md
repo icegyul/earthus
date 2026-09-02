@@ -391,3 +391,133 @@ CDM 을 읽을 수 있다는 것과 수집한다는 것은 별개의 주장이�
 - **남은 것: RTN→TEME 회전, COMBINED_HBR 규약, 그리고 수집 경로 연결**
 
 분류는 `BUILDABLE_NOW` 그대로다 — 셋 다 파트너·자격증명 없이 가능하다.
+
+## 후속 3 — SOCRATES 실측 수집: 가드레일 전부가 실데이터로 검증됨
+
+체인 `fetch → parse → raw_artifact → event/snapshot → API` 를 실제 피드 1회로 관통했다.
+
+### 실측 회계 (2026-09-02 07:32 KST)
+
+| 항목 | 값 |
+| --- | --- |
+| 피드 행 | **145,213** (파싱 실패 **0**) |
+| 피드의 고유 객체 | 23,740 |
+| 우리 카탈로그와 일치 | 1,979 |
+| **양끝 모두 일치한 쌍** | **4** → 이벤트 4 · 스냅샷 4 |
+| 원본 아티팩트 | sha256 `47d04138…` (16.5MB, 내용주소 보존) |
+
+4건이 적은 이유는 결함이 아니라 **구조**다: SOCRATES 는 운용 위성 대 전체를
+스크리닝하고 우리 카탈로그는 대부분 파편이라, 쌍의 한쪽 끝(위성)이 거의 항상
+카탈로그 밖이다. `rows_outside_catalog: 145,209` 가 이를 명시적으로 기록한다.
+실제로 매칭된 4건은 전부 **LANDSAT 8 × (COSMOS 2251 / IRIDIUM 33 / FENGYUN 1C) DEB** —
+카탈로그에 위성이 하나 있었기에 성립한 쌍들이다.
+
+### API 검증 (실제 HTTP)
+
+```
+GET /api/v1/conjunctions?source_grade=PUBLIC_SOCRATES
+→ 4건 모두: MAX_PC status=OBSERVED · basis=OBSERVED_EXTERNAL
+  · source_id=celestrak_socrates · content_sha256=아티팩트 해시 일치
+  · PC 채널 value=None (비오염)
+```
+
+**결함 1에서 세운 계약이 실데이터에서 처음 작동했다**: 남이 계산한 값이
+COMPUTED 로 위장되지 않고, 출처 아티팩트가 붙어 나오며, Pc 채널은 건드리지 않는다.
+
+### 수집 중 만난 관문 두 개 (설계가 의도대로 작동)
+
+1. **출처 레지스트리 FK 거부** — `raw_artifact.source_id → data_source` FK 가
+   미등록 출처의 첫 저장을 거부했다. 우회 대신 `017_register_socrates_source` 로
+   정식 등록했다(이용정책·36000초 폴링 한도 명시). E27 교정과 같은 원칙:
+   신뢰는 사전 구성 레지스트리에서만 나온다.
+2. **HTTP 406** — 공용 클라이언트가 `Accept: application/json` 을 고정 전송했고
+   CelesTrak 이 CSV 자원에 406 을 반환했다. 정책대로 재시도 없이 즉시 중단됐고,
+   `fetch_raw(accept=...)` 파라미터로 교정 후 의도적 1회 재요청으로 성공했다.
+   픽스처로는 절대 못 잡는 종류의 결함이다.
+
+### 위생 규칙 (결함 5 의 교훈 적용)
+
+- 통합 테스트는 `EVIDENCE_PROBE` 등급으로만 기록한다 — append-only 라 테스트 행은
+  영구적이며, 실피드 등급(`PUBLIC_SOCRATES`)을 입은 합성 행은 관측 데이터와
+  구분 불가이기 때문이다. `source_grade` 파라미터가 이를 구조적으로 가능케 한다.
+- 테스트는 카탈로그 내용을 가정하지 않는다 — 실존 객체 2개를 DB 에서 읽어 쓰고,
+  없으면 정직하게 skip 한다.
+
+### 남은 것
+
+- **수집 자동화는 하지 않았다.** FILE_MTIME(jsonDir, 시간당 1회 한도) 확인과 갱신당
+  1회 정책을 지키는 스케줄러가 선행돼야 한다. 그때까지 수동 도구
+  (`tools/run_socrates_ingestion.py`)가 곧 속도 제한이다.
+- 동일 바이트 재수집 시 스냅샷이 중복 append 된다(이벤트는 재사용). 최신 스냅샷만
+  읽는 조회 경로에는 무해하나, 무정보 쓰기다 — (event, input_hash) 존재 검사로
+  막을 수 있다.
+
+## 후속 4 — SOCRATES 체인 적대 검증: 내가 만든 결함을 같은 방법이 잡았다
+
+수집 체인을 정직성·정확성·운영 3렌즈로 독립 심사하고 지적마다 확정 검증을 붙였다
+(에이전트 23, 지적 20건 확정 — 반박 0건은 검증자 동조 가능성이 있어 전부 직접 재확인).
+중복 통합 후 실질 14건. **가장 무거운 것은 내 것이었다.**
+
+### 결함 6 — MISS_DISTANCE 를 우리 계산으로 서빙 (CRITICAL, 자초)
+
+`service.py:641` (수정 전):
+
+```python
+"status": "COMPUTED" if row["miss_distance_m"] is not None else "NOT_COMPUTED"
+```
+
+**결함 1 과 같은 추론이 같은 행의 옆 채널에 그대로 남아 있었다.** 결함 1 을 고칠 때
+"거리는 항상 우리 정밀화가 만든다"고 판단하고 넘어갔는데, 그 뒤 내가 SOCRATES 수집을
+만들어 CelesTrak 의 `TCA_RANGE` 를 `miss_distance_m` 에 쓰기 시작했다 — 전제를 스스로
+깨고 되돌아보지 않은 것이다. 실측 수집된 4행이 **당일 하루 종일** 남의 거리값을
+"우리가 계산함"으로 서빙했다. `conjunction_signals.py:294` 도 같은 추론을 반복했고,
+그 파일의 계약 문구("정밀화된 TCA 에서 나온다")는 SOCRATES 행에서 거짓이 되어 있었다.
+
+**조치** — `migrations/018_geometry_basis.sql`: `geometry_basis`
+(`COMPUTED_INTERNAL` / `OBSERVED_EXTERNAL`). 스크리닝 경로는 INTERNAL, SOCRATES 는
+EXTERNAL 을 쓴다. 페이로드 `_miss_distance_channel` 은 저장된 근거를 읽는다.
+
+**018 이전 행의 처리** — append-only 라 백필 불가. 근거 컬럼이 NULL 인 행은
+**기록된 생산자 신원(`model_version`)** 을 내부 모델 허용목록과 대조한다. 값의 존재가
+아니라 기록된 계보를 읽는 것이므로 추론이 아니라 조회다. 실측 결과:
+
+| 행 | 이전 | 현재 |
+| --- | --- | --- |
+| 내부 스크리닝 44k 행 (`p4-conservative-v1+sgp4`) | COMPUTED | **COMPUTED** (허용목록 조회) |
+| 실측 SOCRATES 4행 (`CELESTRAK_SOCRATES`, 018 이전) | **COMPUTED (거짓)** | **BASIS_UNRECORDED** (사실) |
+| 018 이후 SOCRATES 행 | — | OBSERVED / OBSERVED_EXTERNAL |
+
+4행은 다음 피드 갱신 때 새 바이트로 재수집되면 근거를 갖게 된다. 같은 바이트 재수집은
+중복 방어로 건너뛰고, 폴링 창 안의 재요청은 정책 방어가 거부하므로 **지금 손으로
+고칠 방법이 없고, 그것이 옳다.**
+
+### 나머지 확정 지적과 조치
+
+| # | 지적 | 조치 |
+| --- | --- | --- |
+| 2 | `float()` 이 NaN·Infinity·범위 밖 MAX_PROB 를 통과시켜 OBSERVED 로 저장 후 provenance JSON 에서 중간 중단 | 유한성 검사 + MAX_PROB ∈ [0,1] 강제, 위반 행은 계수된 skip. `json.dumps(allow_nan=False)` 를 후방 방어로 |
+| 3 | 통합 테스트가 합성 바이트에 "CelesTrak 데이터" 귀속을 붙여 영구 테이블에 기록 | `artifact_attribution` 파라미터. 테스트는 `recorded://` URI 와 "합성, CelesTrak 아님" 문구를 쓴다 |
+| 4 | 기본 조회가 EVIDENCE_PROBE 행을 관측 데이터처럼 서빙 | `list_conjunctions` 기본에서 시뮬레이션 등급 제외. 명시 요청 시에만 노출 |
+| 5 | 잘못된 DILUTION 이 None 으로 조용히 강제되어 부재와 구분 불가 | 빈 셀만 부재. 잘못된 셀은 행 skip + 계수 |
+| 7·11·14 | 실제 비200 이 공용 오류 분류(재시도 대기·기록 없음)로 빠져 정책 중단이 발화하지 않음 | `fetch_socrates` 가 모든 비200 을 `SocratesUsagePolicyError` 로 재발생. 429 의 재시도 힌트도 정책 중단으로 |
+| 20 | `follow_redirects=True` 가 3xx 를 조용히 추종 — "모든 비200 에서 중단"과 모순 | `fetch_raw(follow_redirects=)` 추가, SOCRATES 는 False |
+| 9·16 | 동일 바이트 재수집이 스냅샷을 영구 중복 append | (event, input_hash) 존재 검사 → 건너뛰고 계수. 인덱스 018 |
+| 10 | 쌍 순서를 정규화하지 않아 이벤트 정체성이 피드 열 순서에 종속 | 객체 id 기준 정규화 (`_canonical_pair`) |
+| 15 | 갱신당 1회 정책이 코드로 강제되지 않아 매 실행 16.5MB 재다운로드 | 레지스트리 `max_poll_seconds` 로 창 강제 (`enforce_poll_interval`) — 017 이 등록한 값이 곧 정책 |
+| 18 | `ingestion_run` 행이 없어 DB 기반 모니터링에 보이지 않음 | 실행마다 RUNNING→SUCCEEDED/PARTIAL/FAILED 기록, 아티팩트에 연결 |
+| 8·17 | 행별 커밋이라 중간 실패 시 부분 상태 | **미해결(문서화)** — TCA 를 쓰기 전에 전부 검증해 알려진 중단 원인을 제거했고, 중복 방어로 재실행이 곧 복구가 된다. 단일 트랜잭션은 저장소 메서드 서명 변경이 필요해 별도 작업 |
+| 6 | `tca_boundary_flag=false` 가 실행되지 않은 판정처럼 읽힘 | provenance 에 부적용 명시(기존). NOT NULL 이라 컬럼 자체는 유지 |
+| 12 | 분 경계 넘는 TCA 정밀화가 옛 이벤트를 OPEN 으로 남김 | **미해결(문서화된 한계)** |
+| 13 | 테스트 조회 limit 50 이 누적 시 자멸 | limit 500 + 시각 하한 |
+| 19 | `tca_parse_failures` 무제한 직렬화 | 20건 캡 + 총계 |
+
+### 검증
+
+- 프로바이더 22건(신규 12) · 수집 통합 7건 · MAX_PC/기하 근거 14건(신규 5, **수정 전 실패 확인**)
+- 실제 API: 내부 행 COMPUTED 유지, SOCRATES 4행 BASIS_UNRECORDED, 기본 조회에 프로브 행 없음
+
+### 교훈
+
+같은 실수를 두 번 했다는 것이 이 절의 요점이다. 결함 1 을 고친 손이 결함 6 을 만들었고,
+그것을 잡은 것은 내 주의력이 아니라 **적대 검증이라는 절차**였다. 이 프로젝트에서
+정직성은 태도가 아니라 절차여야 한다는 것을 다시 확인했다.

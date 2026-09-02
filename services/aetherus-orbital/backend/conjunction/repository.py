@@ -8,6 +8,7 @@ from sqlalchemy import text
 
 from backend.database import get_db_session
 from backend.orbit.models import MeanElements
+from backend.benefit.models import SIMULATION_SOURCE_GRADES
 from backend.orbit.repository import _json_dict, _numeric_elements
 
 _METRIC_COLUMN = {
@@ -240,7 +241,7 @@ class ConjunctionRepository:
                         pc, pc_method, pc_status, pc_unavailable_reason,
                         covariance_status,
                         max_pc, max_pc_method, max_pc_basis, max_pc_status,
-                        max_pc_artifact_id,
+                        max_pc_artifact_id, geometry_basis,
                         primary_covariance_json, secondary_covariance_json,
                         dilution_state, tca_boundary_flag,
                         source_grade, validation_state,
@@ -252,7 +253,7 @@ class ConjunctionRepository:
                         :pc, :pc_method, :pc_status, :pc_unavailable_reason,
                         :covariance_status,
                         :max_pc, :max_pc_method, :max_pc_basis, :max_pc_status,
-                        CAST(:max_pc_artifact_id AS uuid),
+                        CAST(:max_pc_artifact_id AS uuid), :geometry_basis,
                         CAST(:primary_covariance AS jsonb), CAST(:secondary_covariance AS jsonb),
                         :dilution_state, :boundary_flag,
                         :source_grade, :validation_state,
@@ -271,6 +272,9 @@ class ConjunctionRepository:
                     "max_pc_basis": None,
                     "max_pc_status": "NOT_COMPUTED",
                     "max_pc_artifact_id": None,
+                    # 기하 근거도 호출자가 명시해야 한다. 기본 None 은 "기록 안 됨"이며
+                    # 페이로드가 이를 BASIS_UNRECORDED 로 표면화한다 — 유리한 추론 금지.
+                    "geometry_basis": None,
                     **metrics,
                     "provenance": json.dumps(provenance_payload),
                     "validation_state": provenance_payload.get(
@@ -336,6 +340,14 @@ class ConjunctionRepository:
         """Serve stored events joined to their newest snapshot only."""
         filters = ["ce.status <> 'RETIRED'"]
         params: dict[str, Any] = {"limit": limit}
+        if source_grade is None:
+            # Probe/simulation rows are permanent (append-only) and must never
+            # read as observed conjunctions by default. They remain reachable by
+            # asking for their grade explicitly. (Adversarial review 2026-09-02.)
+            filters.append(
+                "(cs.source_grade IS NULL OR upper(cs.source_grade) <> ALL(:simulation_grades))"
+            )
+            params["simulation_grades"] = sorted(SIMULATION_SOURCE_GRADES)
         if object_ref is not None:
             filters.append(
                 "(so_primary.catalog_id = :object_ref OR so_secondary.catalog_id = :object_ref"
@@ -395,6 +407,7 @@ class ConjunctionRepository:
                 cs.covariance_status,
                 cs.max_pc, cs.max_pc_method,
                 cs.max_pc_basis, cs.max_pc_status,
+                cs.geometry_basis,
                 -- 외부에서 관측한 MAX_PC 는 출처 없이는 방어할 수 없다. 궤도해의
                 -- 아티팩트와 별개일 수 있으므로 전용 조인으로 가져온다.
                 max_pc_ra.source_id AS max_pc_source_id,

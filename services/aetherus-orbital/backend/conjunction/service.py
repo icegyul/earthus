@@ -414,6 +414,8 @@ class ConjunctionService:
             "secondary_covariance": None,
             "dilution_state": None,
             "boundary_flag": tca_result.boundary_flag,
+            # Our own TCA refinement produced these metres and m/s.
+            "geometry_basis": "COMPUTED_INTERNAL",
             "source_grade": prov_a["quality_grade"],
         }
         provenance_payload = provenance.to_payload()
@@ -604,6 +606,52 @@ def _max_pc_channel(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+#: Producers whose geometry is our own TCA refinement. Rows written before the
+#: 018 geometry_basis column carry no basis and cannot be backfilled (append-only),
+#: so their status is resolved from the RECORDED producer identity — a lookup of
+#: stored provenance, not an inference from the value being present. Anything
+#: outside this list with a value and no basis is surfaced as a fault.
+_INTERNAL_GEOMETRY_PRODUCERS = frozenset(
+    {COARSE_MODEL_VERSION, f"{COARSE_MODEL_VERSION}+sgp4"}
+)
+_GEOMETRY_BASIS_INTERNAL = "COMPUTED_INTERNAL"
+_GEOMETRY_BASIS_EXTERNAL = "OBSERVED_EXTERNAL"
+
+
+def _miss_distance_channel(row: dict[str, Any]) -> dict[str, Any]:
+    """Report miss distance with the basis it was actually obtained on.
+
+    The status used to be inferred from the value being non-null — the same
+    defect 016 removed from MAX_PC, left standing on the neighbouring channel.
+    SOCRATES ingestion then wrote CelesTrak's TCA_RANGE here and every such row
+    was served as our computation (adversarial review, 2026-09-02).
+    """
+    value = row["miss_distance_m"]
+    basis = row.get("geometry_basis")
+
+    if value is None:
+        status = "NOT_COMPUTED"
+    elif basis == _GEOMETRY_BASIS_INTERNAL:
+        status = "COMPUTED"
+    elif basis == _GEOMETRY_BASIS_EXTERNAL:
+        status = "OBSERVED"
+    elif basis is None and row.get("model_version") in _INTERNAL_GEOMETRY_PRODUCERS:
+        # Pre-018 row from our own screening: producer identity is recorded.
+        status = "COMPUTED"
+        basis = _GEOMETRY_BASIS_INTERNAL
+    else:
+        status = "BASIS_UNRECORDED"
+
+    return {
+        "value": value,
+        "unit": "m",
+        "status": status,
+        "basis": basis,
+        # Geometry shares its origin with MAX_PC on external rows; the artifact
+        # attribution lives there and is not duplicated here.
+    }
+
+
 def _event_payload(row: dict[str, Any]) -> dict[str, Any]:
     return {
         "event_id": row["event_id"],
@@ -635,11 +683,7 @@ def _event_payload(row: dict[str, Any]) -> dict[str, Any]:
                     "unavailable_reason": row["pc_unavailable_reason"],
                 },
                 "MAX_PC": _max_pc_channel(row),
-                "MISS_DISTANCE": {
-                    "value": row["miss_distance_m"],
-                    "unit": "m",
-                    "status": "COMPUTED" if row["miss_distance_m"] is not None else "NOT_COMPUTED",
-                },
+                "MISS_DISTANCE": _miss_distance_channel(row),
             },
             "covariance_status": row["covariance_status"],
             "dilution_state": row["dilution_state"],

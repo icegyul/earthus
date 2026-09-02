@@ -1166,6 +1166,30 @@ def _forecast_groups(storm, rec, official_doc, ecmwf_doc, issued):
     return groups
 
 
+def _ibtracs_time(value):
+    """IBTrACS 점 시각('YYYY-MM-DD HH')을 완전한 ISO-8601 UTC 로 편다.
+
+    ⚠️⚠️ **iso_time() 을 그대로 쓰면 안 된다.** 그쪽 계약은 "시간대가 없으면 None"이고
+       (CWA 지역시각을 UTC로 추측하지 않으려는 것 — iso_time 주석 참고), 그 규칙이
+       UTC 가 정의인 IBTrACS 시각까지 같이 버린다.
+       실제로 그래서 **종료 보고서 22건의 오차표가 전부 비어 있었다**(2026-09-02 발견).
+       _score 가 best track 시각을 하나도 못 읽어 nearby 가 항상 빈 배열이었다.
+
+    ⚠️ 여기서만 UTC 로 단정하는 근거 두 가지 — 추측이 아니다:
+       ① IBTrACS ISO_TIME 은 정의상 UTC 다.
+       ② parse_ibtracs 가 00/06/12/18 정시만 통과시킨다(위 필터). 분·초가 없다.
+    ⚠️ 저장 형식(pts[3] = iso[:13])은 바꾸지 않는다. 파일 크기 때문에 자른 것이고,
+       doy() 는 앞 10자만 쓰므로 그대로 둬도 된다. 시각이 필요한 이 지점에서만 편다.
+    """
+    text = str(value or "").strip()
+    if len(text) < 13:
+        return None
+    date, _, hour = text[:13].partition(" ")
+    if len(date) != 10 or len(hour) != 2 or not hour.isdigit():
+        return None
+    return f"{date}T{hour}:00:00Z"
+
+
 def _final_track(history, name, year):
     key = _storm_key(name)
     candidates = [x for x in history.get("storms", [])
@@ -1173,8 +1197,15 @@ def _final_track(history, name, year):
     if not candidates:
         return None
     pts = candidates[0].get("pts") or []
-    return [{"lat": p[0], "lon": p[1], "windKt": p[2], "at": p[3]}
-            for p in pts if len(p) >= 4 and p[3]]
+    out = []
+    for p in pts:
+        if len(p) < 4:
+            continue
+        at = _ibtracs_time(p[3])
+        if not at:
+            continue
+        out.append({"lat": p[0], "lon": p[1], "windKt": p[2], "at": at})
+    return out
 
 
 def _score(groups, actual):
@@ -1259,10 +1290,21 @@ def update_lifecycle(now, tracks, analyses, history):
 
         year = (iso_time(session.get("detectedAt")) or now).year
         final = _final_track(history, session.get("name"), year)
-        if final and session.get("status") in ("VERIFYING", "PRELIMINARY_REPORT"):
-            session["status"] = "FINAL_REPORT"
+        newly_final = bool(final) and session.get("status") in ("VERIFYING", "PRELIMINARY_REPORT")
+        # ⚠️⚠️ 이미 FINAL 인데 오차표가 비어 있으면 **다시 채점한다.**
+        #    2026-09-02 이전 회차는 best track 시각을 못 읽어(iso_time 계약, _ibtracs_time 주석 참고)
+        #    운영 중이던 보고서 22건이 전부 scores=[] 로 굳어 있었다.
+        #    이 경로가 없으면 파싱을 고쳐도 **과거 보고서는 영원히 빈 채로 남는다** —
+        #    위 분기는 VERIFYING/PRELIMINARY 에서만 채점하기 때문이다.
+        #    ⚠️ 눈이 없어 정말로 채점할 수 없는 세션은 매 회차 다시 계산한다.
+        #       메모리 안 계산뿐이라 비용이 없고, 없는 점수를 지어내는 것보다 낫다.
+        rescore = (bool(final) and session.get("status") == "FINAL_REPORT"
+                   and not session.get("scores"))
+        if newly_final or rescore:
+            if newly_final:
+                session["status"] = "FINAL_REPORT"
+                session["events"].append({"status": "FINAL_REPORT", "at": stamp})
             session["finalTrack"] = final
-            session["events"].append({"status": "FINAL_REPORT", "at": stamp})
             groups = [g for snap in session.get("snapshots", []) for g in snap.get("forecasts", [])]
             session["scores"] = _score(groups, final)
         sessions[sid] = session

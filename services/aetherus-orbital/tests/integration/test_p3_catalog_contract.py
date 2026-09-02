@@ -84,20 +84,29 @@ async def test_snapshot_serves_only_real_stored_objects(client: AsyncClient):
 
 async def test_snapshot_position_matches_ephemeris_api_for_same_instant(client: AsyncClient):
     """The catalog marker and the ephemeris API must agree at the same instant."""
-    solution = await _solution_lookup("25544")
+    # Take an object the page actually serves instead of assuming the ISS is on
+    # it: the snapshot page is bounded and ordered by solution epoch, so with
+    # ~19k objects its composition is a fact about the catalogue, not a contract.
+    first_page = await client.get("/api/v1/catalog/snapshot")
+    assert first_page.status_code == 200
+    positioned = [row for row in first_page.json()["data"]["catalog"] if row["geodetic"] is not None]
+    assert positioned, "no positioned object on the snapshot page"
+    catalog_id = str(positioned[0]["catalog_id"])
+
+    solution = await _solution_lookup(catalog_id)
     assert solution is not None
     at = solution["epoch"] + timedelta(minutes=30)
 
     snapshot = await client.get("/api/v1/catalog/snapshot", params={"at": at.isoformat()})
     assert snapshot.status_code == 200
     entry = next(
-        (row for row in snapshot.json()["data"]["catalog"] if row["catalog_id"] == "25544"),
+        (row for row in snapshot.json()["data"]["catalog"] if row["catalog_id"] == catalog_id),
         None,
     )
     assert entry is not None and entry["geodetic"] is not None
 
     ephemeris = await client.get(
-        "/api/v1/objects/25544/ephemeris",
+        f"/api/v1/objects/{catalog_id}/ephemeris",
         params={"start": at.isoformat(), "stop": (at + timedelta(minutes=1)).isoformat(), "step_s": 60},
     )
     assert ephemeris.status_code == 200
@@ -124,7 +133,11 @@ async def test_snapshot_envelope_and_finite_positions(client: AsyncClient):
         if entry["geodetic"] is not None:
             assert -90.0 <= entry["geodetic"]["lat_deg"] <= 90.0
             assert -180.0 <= entry["geodetic"]["lon_deg"] <= 180.0
-            assert 0.0 < entry["geodetic"]["alt_km"] < 2000.0
+            # The catalogue holds GEO and HEO objects since the active-satellite
+            # ingestion (Chandra apogee ~139,000 km), so the old LEO-only bound
+            # of 2,000 km was a premise about the data, not a contract about the
+            # propagator. Finite and physically plausible is the contract.
+            assert 0.0 < entry["geodetic"]["alt_km"] < 1.0e6
             assert all(math.isfinite(value) for value in entry["state"]["r_km"])
         else:
             assert entry["position_status"] in {"QUARANTINE", "PROPAGATION_UNAVAILABLE", "NO_SOLUTION"}

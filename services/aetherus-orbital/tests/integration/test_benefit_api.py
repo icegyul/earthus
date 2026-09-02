@@ -1,6 +1,17 @@
 """P5 API contract tests: real computation, persistence, and error paths."""
 
 import pytest
+import uuid
+
+
+def _unique(prefix: str) -> str:
+    """Per-run identifier.
+
+    Fixed ids reused a stored baseline from an earlier run whose edges referred
+    to a different object trio; the catalogue changed underneath and a bystander
+    inherited a benefit (adversarial regression, 2026-09-02, defect 7).
+    """
+    return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
 from tests.integration.p5_sim_seed import seed_simulation_baseline, simulation_edge
 from tests.integration.p5_real_seed import ensure_iss_object
@@ -32,7 +43,7 @@ class TestBenefitApi:
     ):
         await seed_simulation_baseline(
             benefit_repository,
-            baseline_id="bg-test-list-simulation",
+            baseline_id=_unique("bg-test-list-simulation"),
             edges=[],
             dataset="list-simulation",
         )
@@ -106,7 +117,7 @@ class TestBenefitApi:
 
         baseline_id = await seed_simulation_baseline(
             benefit_repository,
-            baseline_id="bg-test-api-flow",
+            baseline_id=_unique("bg-test-api-flow"),
             edges=[simulation_edge(target_id, neighbor_id, "CONJUNCTION_EXPOSURE", 2.0, "api")],
             dataset="api-flow",
         )
@@ -117,6 +128,12 @@ class TestBenefitApi:
                 "kind": "REMOVE",
                 "target": target_catalog,
                 "baseline_snapshot_id": baseline_id,
+                # This flow exercises the research edge-deletion engine and must
+                # say so. The route default is the physical recompute
+                # (SCREENING_RECOMPUTE_V1, the P5-gate-valid path); the old
+                # assertion only held because a fixed baseline id kept returning
+                # a scenario created under the former default.
+                "counterfactual_method": "IDEALIZED_REMOVAL",
             },
         )
         assert create_response.status_code == 202

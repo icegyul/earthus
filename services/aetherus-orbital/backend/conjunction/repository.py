@@ -9,7 +9,10 @@ from sqlalchemy import text
 from backend.database import get_db_session
 from backend.orbit.models import MeanElements
 from backend.benefit.models import SIMULATION_SOURCE_GRADES
+from backend.config import settings
 from backend.orbit.repository import _json_dict, _numeric_elements
+
+SELECTION_POLICIES = frozenset({"EPOCH_DESC", "CATALOG_ID_ASC"})
 
 _METRIC_COLUMN = {
     "PC": "cs.pc",
@@ -22,7 +25,10 @@ class ConjunctionRepository:
     """Persist screening runs and append-only snapshots; serve stored results only."""
 
     async def load_screenable_solutions(
-        self, max_objects: int, catalog_ids: list[str] | None = None
+        self,
+        max_objects: int,
+        catalog_ids: list[str] | None = None,
+        policy: str | None = None,
     ) -> list[dict[str, Any]]:
         """Load each canonical object's newest stored OMM solution.
 
@@ -31,11 +37,29 @@ class ConjunctionRepository:
         whole catalogue to answer a question about six objects is the dominant
         cost at real debris scale; callers that know their scope say so, and the
         run records that it was scoped so nobody reads it as full coverage.
+
+        ``policy`` decides WHICH objects an unscoped call retains once the
+        catalogue exceeds ``max_objects`` (about a tenth of it since the
+        active-satellite ingestion). EPOCH_DESC takes the freshest solutions and
+        excludes simulation grades; CATALOG_ID_ASC is the historical ordering.
+        A scoped call ignores the policy entirely: the caller named its objects
+        and gets exactly those, probes included, because test corpora are
+        legitimately simulation-graded.
         """
+        policy = (policy or settings.screening_selection_policy).upper()
+        if policy not in SELECTION_POLICIES:
+            raise ValueError(f"unknown screening selection policy: {policy!r}")
+        scoped = catalog_ids is not None
+        order_by = (
+            "os.epoch DESC, so.catalog_id ASC"
+            if policy == "EPOCH_DESC" and not scoped
+            else "so.catalog_id ASC"
+        )
+        exclude_simulation = policy == "EPOCH_DESC" and not scoped
         async with get_db_session() as session:
             result = await session.execute(
                 text(
-                    """
+                    f"""
                     SELECT
                         so.id::text AS object_id,
                         so.catalog_id,
@@ -57,18 +81,38 @@ class ConjunctionRepository:
                         LIMIT 1
                     ) AS os ON true
                     LEFT JOIN raw_artifact AS ra ON ra.id = os.source_artifact_id
-                    WHERE :unscoped OR so.catalog_id = ANY(:catalog_ids)
-                    ORDER BY so.catalog_id ASC
+                    WHERE (:unscoped OR so.catalog_id = ANY(:catalog_ids))
+                      AND (
+                        NOT :exclude_simulation
+                        OR upper(coalesce(os.quality_json->>'source_grade', ''))
+                           <> ALL(:simulation_grades)
+                      )
+                    ORDER BY {order_by}
                     LIMIT :limit
                     """
                 ),
                 {
                     "limit": max_objects,
-                    "unscoped": catalog_ids is None,
+                    "unscoped": not scoped,
                     "catalog_ids": list(catalog_ids or []),
+                    "exclude_simulation": exclude_simulation,
+                    "simulation_grades": sorted(SIMULATION_SOURCE_GRADES),
                 },
             )
             return [dict(row) for row in result.mappings().all()]
+
+    @staticmethod
+    def selection_rule(policy: str | None, scoped: bool) -> str:
+        """Human-readable statement of what the population bound retained."""
+        if scoped:
+            return "explicit catalog_ids (caller-defined population; policy not applied)"
+        policy = (policy or settings.screening_selection_policy).upper()
+        if policy == "EPOCH_DESC":
+            return (
+                "freshest orbit-solution epoch first, simulation grades excluded "
+                "(stale elements produce fictional conjunctions)"
+            )
+        return "catalog_id ASC (lowest identifiers first; historical ordering)"
 
     async def count_screenable_objects(self) -> int:
         """How many canonical objects hold a screenable OMM solution.

@@ -54,6 +54,12 @@ class Settings(BaseSettings):
     screening_threshold_m: float = 25000.0
     screening_shell_margin_km: float = 50.0
     screening_max_objects: int = 2000
+    # Which objects an UNSCOPED screening takes when the catalogue exceeds the
+    # bound. EPOCH_DESC: freshest non-simulation solutions first — stale
+    # elements produce fictional conjunctions, and probe fixtures must never
+    # crowd out real objects. CATALOG_ID_ASC: the pre-2026-09-02 behaviour,
+    # kept for reproducing historical runs only.
+    screening_selection_policy: str = "EPOCH_DESC"
     screening_hbr_m: float = 5.0
     conjunctions_page_limit: int = 200
 

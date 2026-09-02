@@ -4,6 +4,17 @@ All synthetic graphs are SIMULATION_ONLY; operational paths ignore them.
 """
 
 import pytest
+import uuid
+
+
+def _unique(prefix: str) -> str:
+    """Per-run identifier.
+
+    Fixed ids reused a stored baseline from an earlier run whose edges referred
+    to a different object trio; the catalogue changed underneath and a bystander
+    inherited a benefit (adversarial regression, 2026-09-02, defect 7).
+    """
+    return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
 from backend.benefit.errors import (
     BaselineMissingError,
@@ -75,7 +86,7 @@ class TestBenefitServiceRemove:
         ]
         baseline_id = await seed_simulation_baseline(
             benefit_repository,
-            baseline_id="bg-test-ben001-service",
+            baseline_id=_unique("bg-test-ben001-service"),
             edges=edges,
             dataset="synthetic-remove-direct-v1",
         )
@@ -126,7 +137,7 @@ class TestBenefitServiceRemove:
     async def test_repeat_run_same_result_hash(self, benefit_repository, benefit_service):
         _, _, _, scenario_id = await _seed_and_create_scenario(
             benefit_repository,
-            baseline_id="bg-test-repeat",
+            baseline_id=_unique("bg-test-repeat"),
             edges=None,
             target_ref_index=0,
             metrics=["CONJUNCTION_EXPOSURE"],
@@ -142,7 +153,7 @@ class TestBenefitServiceRemove:
         other_a, other_b = resolved[1][1], resolved[2][1]
         baseline_id = await seed_simulation_baseline(
             benefit_repository,
-            baseline_id="bg-test-noedges",
+            baseline_id=_unique("bg-test-noedges"),
             edges=[simulation_edge(other_a, other_b, "CONJUNCTION_EXPOSURE", 1.0, "noedges")],
             dataset="noedges",
         )
@@ -191,7 +202,7 @@ class TestBenefitServiceRemove:
         target_id = resolved[0][1]
         baseline_id = await seed_simulation_baseline(
             benefit_repository,
-            baseline_id="bg-test-invalid-metric",
+            baseline_id=_unique("bg-test-invalid-metric"),
             edges=[
                 simulation_edge(target_id, resolved[1][1], "CONJUNCTION_EXPOSURE", 1.0, "im")
             ],
@@ -222,7 +233,7 @@ class TestBenefitServiceRemove:
     ):
         await seed_simulation_baseline(
             benefit_repository,
-            baseline_id="bg-test-simulation-isolation",
+            baseline_id=_unique("bg-test-simulation-isolation"),
             edges=[],
             dataset="simulation-isolation",
         )
@@ -242,7 +253,7 @@ class TestBenefitServiceRemove:
         target_id, neighbor_id = resolved[0][1], resolved[1][1]
         baseline_id = await seed_simulation_baseline(
             benefit_repository,
-            baseline_id="bg-test-notready",
+            baseline_id=_unique("bg-test-notready"),
             edges=[simulation_edge(target_id, neighbor_id, "PC", 1e-5, "notready")],
             dataset="notready",
         )

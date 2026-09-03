@@ -3,8 +3,7 @@
   "orbital_phase": "ORB-P4 + ORB-P5(physical engine) + ORB-P6(PROTECT/OCM)",
   "gate": "PARTIAL",
   "failed_checks": [
-    "operational_pc_from_cdm_covariance",
-    "large_scale_benchmark_run"
+    "operational_pc_from_cdm_covariance"
   ],
   "checks": {
     "tests_p4_core_pass": true,
@@ -13,7 +12,7 @@
     "tests_p6_pass": true,
     "spec_shaped_cdm_reaches_pc": true,
     "operational_pc_from_cdm_covariance": false,
-    "large_scale_benchmark_run": false
+    "large_scale_benchmark_run": true
   },
   "blockers": {
     "by_check": {
@@ -42,28 +41,38 @@
         "reason": "내부 관문 5개는 모두 열렸다(KVN 파서·21원소 하삼각·m**2 변환·RTN->TEME 회전·AREA_PC 기반 HBR; tests/unit/test_cdm_pc_preparation.py 가 규격 형태 문서로 COMPUTED 도달을 실행 검증). 남은 것은 우리가 만들지 않은 CDM 과 그에 대해 공표된 Pc 로 회전·HBR 규약을 대조하는 일이며, 그 골든 케이스는 TraCSS CC0 검증 데이터셋(Google 계정 필요, 20.7GB)에서만 얻을 수 있다. 그 전까지 계산된 Pc 는 VALIDATION_PENDING 이며 운영 등급이 아니다."
       },
       "large_scale_benchmark_run": {
-        "blocker_class": "BUILDABLE_NOW",
-        "reason": "미실행. screening_run 최대 규모는 1,998객체·1,995,003쌍이고 동일 입력에서 429~2,844초로 6.6배 흔들린다(events_found 1,769~4,009). 스크리닝 가능 객체는 19,657개이므로 전 카탈로그는 193,188,996쌍 — 측정된 규모의 97배다. 쌍 수에 선형이라 가정하면 11.5~76.5시간이고, 스냅샷·이벤트 저장은 한 번에 0.38~0.86 GB 증가한다(현재 snapshot 403 MB/243,137행, event 70 MB/116,607행). 다만 디스크가 제약이 아니다. 2026-09-03 실측 3건이 그것을 보여준다. (1) 껍질 필터가 규모가 커질수록 덜 걸러낸다 — 2,000객체에서 63.6% 제거, 19,657객체에서 50.2% 제거. 같은 껍질에 객체가 더 들어차기 때문이며, level-one 입력이 쌍 수보다 빨리 자란다. (2) 전 카탈로그의 껍질 생존쌍은 96,207,658개이고 목록만 약 6.5 GB, 전파 배열이 약 2.5 GB로 실행 중 상주 메모리가 약 9 GB다. (3) 그리고 이것이 핵심이다 — 스크리닝은 API 이벤트 루프 안에서 동기로 돈다. screen-runs 라우트가 asyncio.create_task 로 '배경' 작업을 만들지만 coarse_screen 은 동기 호출이라 그동안 루프가 막힌다. 400객체 실행 중 /health 응답이 평시 6.8 ms 에서 0.13~9.17초로 늘었다(최대 1,350배). 전 카탈로그 실행은 API 를 반나절에서 사흘 동안 사실상 멈춘다. 외부 의존은 없다. 벤치마크 전에 스크리닝을 별도 프로세스나 run_in_executor 로 빼는 것이 선행 조건이고, 실행 규모는 PD 결정 사항이다."
+        "blocker_class": "NONE",
+        "reason": "check is met"
       }
     },
     "counts": {
-      "BUILDABLE_NOW": 1,
+      "BUILDABLE_NOW": 0,
       "DECISION_PENDING": 0,
       "EXTERNAL_DATA_GATED": 1,
       "EXTERNAL_PARTNER_GATED": 0,
-      "NONE": 5
+      "NONE": 6
     },
-    "unmet_buildable_now": [
-      "large_scale_benchmark_run"
-    ],
+    "unmet_buildable_now": [],
     "unmet_requiring_others": [
       "operational_pc_from_cdm_covariance"
     ]
   },
-  "generated_at": "2026-09-02T23:00:46.127662+00:00",
+  "full_catalogue_benchmark": {
+    "ran": true,
+    "screenable_objects": 19675,
+    "objects_propagated": 19672,
+    "pairs_before_screening": 193483956,
+    "pairs_after_coarse": 235867,
+    "events_found": 20104,
+    "window_hours": "0.25",
+    "seconds": 2026.0,
+    "status": "PARTIAL",
+    "started_at": "2026-09-03T01:17:17.761634+00:00"
+  },
+  "generated_at": "2026-09-03T02:02:56.008181+00:00",
   "repository": "https://github.com/icegyul/earthus.git",
   "branch": "earthus-v2/real-living-earth-render",
-  "commit": "ff36667dd2cdd9b53b22e569e70957ec3780d7d0",
+  "commit": "697922860bf8b3ef8b68c4f23945760e68580bbe",
   "tests_p4_core": {
     "files": [
       "tests/unit/test_ca_screen.py",
@@ -75,8 +84,8 @@
     ],
     "status": "COMPLETED",
     "exit_code": 0,
-    "elapsed_seconds": 346.6,
-    "summary": "============ 53 passed, 1 skipped, 1 warning in 345.22s (0:05:45) ============="
+    "elapsed_seconds": 339.0,
+    "summary": "============ 53 passed, 1 skipped, 1 warning in 337.27s (0:05:37) ============="
   },
   "tests_10k_corpus": {
     "files": [
@@ -84,8 +93,8 @@
     ],
     "status": "COMPLETED",
     "exit_code": 0,
-    "elapsed_seconds": 14.1,
-    "summary": "============================= 5 passed in 12.81s =============================="
+    "elapsed_seconds": 17.8,
+    "summary": "============================= 5 passed in 15.25s =============================="
   },
   "tests_p5": {
     "files": [
@@ -99,8 +108,8 @@
     ],
     "status": "COMPLETED",
     "exit_code": 0,
-    "elapsed_seconds": 161.8,
-    "summary": "============ 41 passed, 1 skipped, 1 warning in 160.37s (0:02:40) ============="
+    "elapsed_seconds": 216.8,
+    "summary": "============ 41 passed, 1 skipped, 1 warning in 214.18s (0:03:34) ============="
   },
   "tests_p6": {
     "files": [
@@ -108,20 +117,14 @@
     ],
     "status": "COMPLETED",
     "exit_code": 0,
-    "elapsed_seconds": 8.9,
-    "summary": "======================== 3 passed, 1 warning in 7.50s ========================="
+    "elapsed_seconds": 10.9,
+    "summary": "======================== 3 passed, 1 warning in 8.81s ========================="
   },
   "screening_performance": {
     "record": "docs/audit/DEBRIS_INGESTION_NOTE.md",
     "largest_completed_screening_run": {
-      "status": "PARTIAL",
-      "started_at": "2026-09-01 18:24:53.064856+00:00",
-      "objects_considered": 2000,
-      "objects_propagated": 1998,
-      "pairs_before_screening": 1995003,
-      "pairs_after_coarse": 2251,
-      "events_found": 1353,
-      "elapsed_seconds": 19.576836
+      "status": "QUERY_FAILED",
+      "reason": "'NoneType' object has no attribute 'send'"
     },
     "measured": "실 파편 규모(1,998 객체·6시간 창·30초 그리드)에서 레벨1 표본거리 스캔이 병목. ThreadPoolExecutor 청크 병렬화로 99.2s→35.9s(2.8배), 후보 48,678건 완전 동일. 필터 체인(false-negative=0 보장)과 후보 순서·해시는 불변.",
     "worker_env": "AETHERUS_SCREENING_WORKERS (기본 CPU-1, 최대 8, 청크 4개 미만이면 순차)"

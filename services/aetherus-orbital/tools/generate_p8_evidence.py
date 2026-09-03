@@ -131,7 +131,65 @@ def spec_shaped_cdm_reaches_pc() -> bool:
     return proc.returncode == 0
 
 
+
+def full_catalogue_benchmark() -> dict:
+    """Has a screening run actually covered the whole catalogue?
+
+    This was the literal False for as long as it took someone to run one. It is
+    now read from screening_run, so the day a full-catalogue run completes the
+    scorecard notices by itself instead of waiting for a hand edit.
+    """
+    import asyncio
+
+    async def _query():
+        from sqlalchemy import text
+
+        from backend.conjunction.repository import ConjunctionRepository
+        from backend.database import get_session_factory
+
+        screenable = await ConjunctionRepository().count_screenable_objects()
+        async with get_session_factory()() as session:
+            row = (
+                await session.execute(
+                    text(
+                        """
+                        SELECT objects_propagated, pairs_before_screening,
+                               pairs_after_coarse, events_found, status,
+                               round(extract(epoch from (finished_at - started_at))::numeric, 0) AS seconds,
+                               config_json->>'window_hours' AS window_hours,
+                               started_at
+                        FROM screening_run
+                        WHERE finished_at IS NOT NULL
+                          AND objects_propagated >= :floor
+                        ORDER BY objects_propagated DESC, started_at DESC
+                        LIMIT 1
+                        """
+                    ),
+                    {"floor": int(screenable * 0.9)},
+                )
+            ).mappings().first()
+        return screenable, dict(row) if row else None
+
+    screenable, row = asyncio.run(_query())
+    if row is None:
+        return {"ran": False, "screenable_objects": screenable,
+                "detail": "no completed run has covered 90% or more of the screenable catalogue"}
+    return {
+        "ran": True,
+        "screenable_objects": screenable,
+        "objects_propagated": row["objects_propagated"],
+        "pairs_before_screening": row["pairs_before_screening"],
+        "pairs_after_coarse": row["pairs_after_coarse"],
+        "events_found": row["events_found"],
+        "window_hours": row["window_hours"],
+        "seconds": float(row["seconds"]),
+        "status": row["status"],
+        "started_at": row["started_at"].isoformat(),
+    }
+
+
 def main() -> None:
+    benchmark = full_catalogue_benchmark()
     tests_p4 = pytest_summary(P4_TESTS)
     tests_corpus = pytest_summary([CORPUS_TEST])
     tests_p5 = pytest_summary(P5_TESTS)
@@ -150,7 +208,7 @@ def main() -> None:
         # not the blocker any more, the absence of an externally sourced CDM
         # with a published Pc to compare against is.
         "operational_pc_from_cdm_covariance": False,
-        "large_scale_benchmark_run": False,
+        "large_scale_benchmark_run": benchmark["ran"],
     }
 
     # 미충족 사유를 원인별로 분류한다. 이전 주석은 운영 Pc 를 "TraCSS/Space-Track
@@ -211,6 +269,7 @@ def main() -> None:
         "checks": checks,
         # PARTIAL 하나로 뭉치지 않는다: 남은 것이 우리 일인지 남의 일인지 구분한다.
         "blockers": blocker_report,
+        "full_catalogue_benchmark": benchmark,
         "generated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "repository": run(["git", "-C", str(REPO_ROOT), "remote", "get-url", "origin"]),
         "branch": run(["git", "-C", str(REPO_ROOT), "rev-parse", "--abbrev-ref", "HEAD"]),

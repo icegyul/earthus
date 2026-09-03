@@ -27,6 +27,7 @@ body{
 }
 #stage{position:fixed;inset:0}
 canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:2}
 
 /* ── 하늘 배경 ── */
 #sky{position:absolute;inset:0;background:
@@ -192,6 +193,7 @@ canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div id="sky"></div>
   <canvas id="stars"></canvas>
   <canvas id="gl"></canvas>
+  <canvas id="windcv"></canvas>
 
   <div id="head">
     <h1>지구야, 오늘 어때?</h1>
@@ -214,6 +216,10 @@ canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9 18h12a5 5 0 0 0 .4-10A7 7 0 0 0 8.4 8.6 4.7 4.7 0 0 0 9 18Z"/>
         <path d="M17 20l-4 5h4l-1.5 4.5"/></svg>
+    </button>
+    <button class="railbtn" id="b-wind" aria-pressed="false" aria-label="바람 보기" title="바람">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
+        <path d="M3 11h14a4 4 0 1 0-4-4"/><path d="M3 17h20a4 4 0 1 1-4 4"/><path d="M3 23h11"/></svg>
     </button>
     <button class="railbtn" id="b-mtn" aria-pressed="false" aria-label="산맥 보기" title="산맥">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
@@ -833,6 +839,124 @@ function addMarker(kind, lat, lon, html, cls){
 }
 
 /* ══════════════════════════════════════════════════════════════
+   바람 — 윈디식 흐름선
+   격자에서 u·v 를 읽어 입자를 떠내려 보내고, 지나간 자리를 천천히 지워
+   꼬리를 남긴다. 방향과 상대 세기는 실측 그대로다.
+
+   ⚠️ 흐르는 속도만 과장한다. 실제 10m/s 는 1초에 0.0001도라 눈에 안 보인다.
+      화면에 그렇다고 적는다 — 위치와 방향은 사실, 흐름 속도는 보이라고 키운 값.
+
+   ⚠️ 격자 방향을 물리로 확인했다(2026-09-03): y=0 이 lat0(-80°)이고 북쪽으로
+      올라간다. 소말리 제트(10N 60E, 9월 남서풍)가 이 해석에서만 u>0·v>0 로
+      맞았다. 뒤집으면 바람이 통째로 거꾸로 흐른다.
+   ══════════════════════════════════════════════════════════════ */
+let WIND = null;
+const windCv = $('#windcv'), windCtx = windCv.getContext('2d');
+let particles = [], windOn = false;
+const PARTICLES = 2600;
+// 한 프레임의 이동은 픽셀 이하다. 꼬리는 그 점들이 여러 프레임 쌓여 생긴다 —
+// 지우는 속도를 늦춰야 선으로 보인다. 크면 점만 찍히고 작으면 화면이 뿌옇게 찬다.
+const TRAIL_FADE = 0.034;
+// 흐름 속도 과장. 실제 10m/s 는 1초에 0.0001도라 프레임당 1픽셀도 못 간다.
+// 물리 단위 대신 '초당 각도'로 잡는다 — 10m/s 가 초당 약 6도를 가게.
+const DEG_PER_MS = 2.2;        // (도/초) / (m/s) — 10m/s 가 초당 22도
+
+async function loadWind(){
+  WIND = await fetch('https://earthus-cache-kr.s3.us-east-2.amazonaws.com/wind/global.json')
+    .then(r => { if(!r.ok) throw new Error(`wind ${r.status}`); return r.json(); });
+  seedParticles();
+}
+
+function seedParticles(){
+  particles = [];
+  for(let i = 0; i < PARTICLES; i++) particles.push(newParticle());
+}
+function newParticle(){
+  // 면적에 고르게 뿌린다 — 위도로 균등하게 뿌리면 극에 몰린다
+  return { lat: Math.asin(Math.random()*2 - 1) * 180/Math.PI,
+           lon: Math.random()*360 - 180,
+           age: Math.random()*90 | 0 };
+}
+
+/* 격자 겹선형 보간. 경도는 감아 돌고, 위도는 격자 밖이면 바람이 없다. */
+function sampleWind(lat, lon){
+  if(!WIND) return null;
+  const { nx, ny, res, lat0, lon0, u, v } = WIND;
+  const fy = (lat - lat0)/res, fx = (((lon - lon0) % 360) + 360) % 360 / res;
+  if(fy < 0 || fy > ny-1) return null;
+  const y0 = Math.floor(fy), x0 = Math.floor(fx);
+  const ty = fy - y0, tx = fx - x0;
+  const y1 = Math.min(y0+1, ny-1), x1 = (x0+1) % nx;
+  const i00 = y0*nx + (x0 % nx), i10 = y0*nx + x1, i01 = y1*nx + (x0 % nx), i11 = y1*nx + x1;
+  const lerp = (a,b,t) => a + (b-a)*t;
+  return {
+    u: lerp(lerp(u[i00], u[i10], tx), lerp(u[i01], u[i11], tx), ty),
+    v: lerp(lerp(v[i00], v[i10], tx), lerp(v[i01], v[i11], tx), ty),
+  };
+}
+
+/* 바람 색 — 느리면 연하고 빠르면 진하다. 색으로 세기를 읽게 한다. */
+function windColor(sp){
+  if(sp < 4)  return 'rgba(190,225,255,';
+  if(sp < 9)  return 'rgba(150,240,220,';
+  if(sp < 15) return 'rgba(255,236,150,';
+  if(sp < 22) return 'rgba(255,178,110,';
+  return            'rgba(255,140,170,';
+}
+
+const _wv = new THREE.Vector3();
+function drawWind(dt, w, h){
+  if(!windOn || !WIND) return;
+  // 지나간 자리를 조금씩 지워 꼬리를 남긴다 (배경을 덮지 않고 지운다)
+  windCtx.globalCompositeOperation = 'destination-out';
+  windCtx.fillStyle = `rgba(0,0,0,${TRAIL_FADE})`;
+  windCtx.fillRect(0, 0, w, h);
+  windCtx.globalCompositeOperation = 'source-over';
+  windCtx.lineWidth = 1.5;
+  windCtx.lineCap = 'round';
+
+  camera.getWorldPosition(_c);
+  const step = Math.min(0.05, dt);
+
+  for(const p of particles){
+    const s = sampleWind(p.lat, p.lon);
+    if(!s){ Object.assign(p, newParticle()); continue; }
+
+    const lat0 = p.lat, lon0 = p.lon;
+    const cosLat = Math.max(0.15, Math.cos(p.lat*Math.PI/180));
+    p.lat += s.v * DEG_PER_MS * step;
+    p.lon += s.u * DEG_PER_MS / cosLat * step;
+    if(p.lon > 180) p.lon -= 360; else if(p.lon < -180) p.lon += 360;
+
+    // 수명이 다하면 다시 뿌린다 — 안 그러면 수렴대에 다 모여 뭉친다
+    if(++p.age > 170 || p.lat > 88 || p.lat < -88){ Object.assign(p, newParticle()); continue; }
+
+    _wv.copy(llToVec(lat0, lon0, R*1.004)).applyMatrix4(earthGroup.matrixWorld);
+    const face0 = _wv.clone().normalize().dot(_c.clone().sub(_wv).normalize());
+    if(face0 <= 0.02) continue;                     // 지구 뒤는 그리지 않는다
+    const a = _wv.clone().project(camera);
+    _wv.copy(llToVec(p.lat, p.lon, R*1.004)).applyMatrix4(earthGroup.matrixWorld);
+    const b = _wv.clone().project(camera);
+
+    const x0 = (a.x*0.5+0.5)*w, y0v = (-a.y*0.5+0.5)*h;
+    const x1 = (b.x*0.5+0.5)*w, y1v = (-b.y*0.5+0.5)*h;
+    if(Math.abs(x1-x0) > w*0.3) continue;           // 경도 이음매를 건너뛴 선분
+
+    const sp = Math.hypot(s.u, s.v);
+    windCtx.strokeStyle = windColor(sp) + Math.min(1, 0.45 + face0*0.55).toFixed(2) + ')';
+    windCtx.beginPath(); windCtx.moveTo(x0, y0v); windCtx.lineTo(x1, y1v); windCtx.stroke();
+  }
+}
+
+$('#b-wind').addEventListener('click', e => {
+  windOn = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  e.currentTarget.setAttribute('aria-pressed', String(windOn));
+  windCv.style.display = windOn ? '' : 'none';
+  if(windOn) seedParticles();
+  else windCtx.clearRect(0, 0, windCv.width, windCv.height);
+});
+
+/* ══════════════════════════════════════════════════════════════
    땅 — 세계 산맥
    손으로 그리지 않는다. Natural Earth 에 산맥 222개가 폴리곤으로 있고
    222개 전부 한국어 이름이 붙어 있다. 화면에 몇 개를 띄울지는 원본이 정한
@@ -1360,6 +1484,7 @@ function frame(now){
   camera.updateMatrixWorld();
   placeMarkers(w, h);
   renderer.render(scene, camera);
+  drawWind(dt, w, h);
   requestAnimationFrame(frame);
 }
 
@@ -1369,6 +1494,7 @@ function resize(){
   camera.aspect = w/h; camera.updateProjectionMatrix();
   const tanV = Math.tan(camera.fov*Math.PI/360);
   tanMin = Math.min(tanV, tanV*camera.aspect);
+  if(windCv.width !== w || windCv.height !== h){ windCv.width = w; windCv.height = h; }
   applyFill();
 }
 addEventListener('resize', refit);
@@ -1400,6 +1526,7 @@ function drawOnce(){
   camera.updateMatrixWorld();
   placeMarkers(w, h);
   renderer.render(scene, camera);
+  drawWind(1/60, w, h);
 }
 
 /* 뒤에 있는 탭이나 숨겨진 패널에서 열면 뷰포트가 0×0 으로 온다.
@@ -1417,6 +1544,7 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe(document.documentEle
   resize();
   earthMat.uniforms.map.value = await buildEarthTexture();
   for(const c of COUNTRY_LABELS) addMarker('name', c.lat, c.lon, c.name, 'nm');
+  loadWind().catch(e => { console.warn('바람 로드 실패', e); $('#b-wind').disabled = true; });
   loadMountains().then(()=>{ for(const t of mtnMarks) t.el.style.display='none'; drawOnce(); })
                 .catch(e => { console.warn('산맥 로드 실패', e); $('#b-mtn').disabled = true; });
   loadPast().then(()=>{ for(const f of fossilMarks) f.el.style.display='none'; drawOnce(); })

@@ -106,6 +106,14 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 }
 .bub .box b{display:block;font-size:12px;opacity:.55;font-weight:400}
 
+/* ── 기온 숫자 — 윈디의 핵심은 색이 아니라 숫자다 ── */
+.tn{position:absolute;z-index:4;transform:translate(-50%,-50%);pointer-events:none;
+  font-family:var(--ui);font-size:12px;font-weight:600;color:#fff;letter-spacing:-.01em;
+  white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.9),0 0 6px rgba(0,0,0,.75);
+  will-change:transform,opacity;font-variant-numeric:tabular-nums}
+.tn.cold{color:#DDF0FF}
+.tn.hot{color:#FFF2DC}
+
 /* ── 충돌구 — 작게 말고 크게 ── */
 .cr{position:absolute;z-index:5;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;
   will-change:transform,opacity;display:flex;flex-direction:column;align-items:center}
@@ -226,7 +234,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 @media (max-width:720px){ #daybar{bottom:142px;padding:5px 9px} .days button{padding:5px 8px} }
 
 /* ── 기온 눈금 ── */
-#tempkey{position:absolute;right:20px;bottom:104px;z-index:6;display:flex;align-items:center;gap:6px;
+#tempkey{position:absolute;right:20px;bottom:148px;z-index:6;display:flex;align-items:center;gap:6px;
   background:rgba(8,16,36,.72);border:1px solid rgba(255,255,255,.16);border-radius:999px;
   padding:6px 12px;backdrop-filter:blur(8px);font-size:10.5px;color:#c3d3ea;letter-spacing:.04em}
 #tempkey[hidden]{display:none!important}
@@ -235,7 +243,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 #tempkey i:nth-of-type(1){background:linear-gradient(90deg,#1a1644,#2e6cb4,#468cb8)}
 #tempkey i:nth-of-type(2){background:linear-gradient(90deg,#468cb8,#69be96,#bed06e)}
 #tempkey i:nth-of-type(3){background:linear-gradient(90deg,#bed06e,#f6c454,#e85260)}
-@media (max-width:720px){ #tempkey{bottom:150px;right:10px;padding:5px 9px} #tempkey i{width:24px} }
+@media (max-width:720px){ #tempkey{bottom:196px;right:10px;padding:5px 9px} #tempkey i{width:24px} }
 
 /* ── 첫 안내 ── */
 #hint{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:6;
@@ -1192,7 +1200,7 @@ tempTex.colorSpace = THREE.SRGBColorSpace;
 tempTex.wrapS = THREE.RepeatWrapping;
 const tempShell = new THREE.Mesh(
   new THREE.SphereGeometry(R*1.002, 96, 60),
-  new THREE.MeshBasicMaterial({ map: tempTex, transparent: true, opacity: 0.82, depthWrite: false })
+  new THREE.MeshBasicMaterial({ map: tempTex, transparent: true, opacity: 0.62, depthWrite: false })
 );
 tempShell.renderOrder = 1;
 tempShell.visible = false;
@@ -1246,6 +1254,7 @@ function setDay(i){
   [...$('#days').children].forEach((b, k) =>
     k === i ? b.setAttribute('aria-current','true') : b.removeAttribute('aria-current'));
   if(paintTemp()) tempTex.needsUpdate = true;
+  if(typeof drawOnce === 'function') drawOnce();
   const l = $('#tempkey .lead');
   if(l) l.textContent = i === 0 ? '실황' : `예보 D+${LEADS.leads[i-1]}`;
 }
@@ -1283,6 +1292,36 @@ function paintTemp(){
   return true;
 }
 
+/* 화면에 기온 숫자를 뿌린다. 윈디는 색만 깔지 않고 곳곳에 도(°)를 찍는다 —
+   색을 눈금과 대조하지 않아도 바로 읽히는 게 그 차이다.
+   격자에서 읽은 값이므로 도시 관측값이 아니라 그 자리의 격자값이다. */
+const tempMarks = [];
+function makeTempMarks(){
+  if(tempMarks.length) return;
+  for(let lat = -70; lat <= 75; lat += 10){
+    for(let lon = -180; lon < 180; lon += 15){
+      const el = document.createElement('div');
+      el.className = 'tn'; el.style.visibility = 'hidden';
+      stage.appendChild(el);
+      tempMarks.push({ lat, lon, el, pos: llToVec(lat, lon, R*1.02) });
+    }
+  }
+}
+
+/* 격자에서 그 자리의 기온을 읽는다 (색면과 같은 값·같은 자료) */
+function tempAt(lat, lon){
+  const src = dayIdx === 0 ? (WIND && WIND.t) : (LEADS && LEADS.tmax[dayIdx-1]);
+  if(!src || !WIND) return null;
+  const { nx, ny, res, lat0, lon0 } = WIND;
+  const fy = (lat - lat0)/res, fx = ((((lon - lon0) % 360) + 360) % 360)/res;
+  if(fy < 0 || fy > ny-1) return null;
+  const y0 = Math.floor(fy), y1 = Math.min(y0+1, ny-1), ty = fy - y0;
+  const x0 = Math.floor(fx) % nx, x1 = (x0+1) % nx, tx = fx - Math.floor(fx);
+  const a = src[y0*nx+x0], b = src[y0*nx+x1], c = src[y1*nx+x0], d = src[y1*nx+x1];
+  if(a == null || b == null || c == null || d == null) return null;
+  return (a + (b-a)*tx)*(1-ty) + (c + (d-c)*tx)*ty;
+}
+
 $('#b-temp').addEventListener('click', e => {
   const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
   e.currentTarget.setAttribute('aria-pressed', String(on));
@@ -1290,6 +1329,8 @@ $('#b-temp').addEventListener('click', e => {
     if(paintTemp()) tempShell.userData.painted = true;
     else { e.currentTarget.setAttribute('aria-pressed', 'false'); return; }
   }
+  if(on) makeTempMarks();
+  for(const m of tempMarks) m.el.style.display = on ? '' : 'none';
   tempShell.visible = on;
   $('#tempkey').hidden = !on;
   $('#daybar').hidden = !(on && LEADS);
@@ -2034,6 +2075,31 @@ function placeMarkers(w, h){
     const clash = pinLabels.some(q => Math.abs(q.x-f.sx) < 58 && Math.abs(q.y-f.sy) < 22);
     lab.style.visibility = clash ? 'hidden' : 'visible';
     if(!clash) pinLabels.push({x:f.sx, y:f.sy});
+  }
+
+  // 기온 숫자 — 겹치면 접는다. 화면에 서른 개 남짓이면 윈디만큼 촘촘하다.
+  if(tempShell.visible && tempMarks.length){
+    const tnShown = [];
+    for(const m of tempMarks){
+      _v.copy(m.pos).applyMatrix4(earthGroup.matrixWorld);
+      const facing = _v.clone().normalize().dot(_c.clone().sub(_v).normalize());
+      if(facing <= 0.2){ m.el.style.visibility='hidden'; continue; }
+      const q = _v.clone().project(camera);
+      const X=(q.x*0.5+0.5)*w, Y=(-q.y*0.5+0.5)*h;
+      if(X<70 || X>w-64 || Y<52 || Y<0 || Y>h-150){ m.el.style.visibility='hidden'; continue; }
+      const clash = tnShown.some(o => Math.abs(o.x-X)<52 && Math.abs(o.y-Y)<26);
+      if(clash || tnShown.length >= 46){ m.el.style.visibility='hidden'; continue; }
+      const c = tempAt(m.lat, m.lon);
+      if(c == null){ m.el.style.visibility='hidden'; continue; }
+      m.el.textContent = `${Math.round(c)}°`;
+      m.el.className = 'tn ' + (c < 5 ? 'cold' : c > 26 ? 'hot' : '');
+      m.el.style.visibility='visible';
+      m.el.style.opacity = Math.min(1, (facing-0.2)/0.25);
+      m.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-50%)`;
+      tnShown.push({x:X, y:Y});
+    }
+  } else {
+    for(const m of tempMarks) m.el.style.visibility='hidden';
   }
 
   // 충돌구 — 지름에 비례해 키우되 자리는 그대로

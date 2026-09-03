@@ -71,7 +71,18 @@ class Settings(BaseSettings):
     screening_refine_step_seconds: int = 5
     screening_threshold_m: float = 25000.0
     screening_shell_margin_km: float = 50.0
-    screening_max_objects: int = 2000
+    # 2000 이었다. 쌍이 제곱으로 늘기 때문에 500 은 작업량이 1/16 이다 —
+    # 스레드를 줄이는 것과 달리 총 CPU 자체가 줄고, 그래서 발열도 줄어든다.
+    # 예약 실행을 하지 않기로 했으므로(2026-09-03 결정) 남은 용도는 데모·검증·
+    # 증거 생성이고 거기에 2,000 은 필요하지 않다. 더 필요한 호출자는
+    # max_objects 를 명시하면 되고, 부족분은 population_truncated 로 표시된다.
+    screening_max_objects: int = 500
+
+    # 레벨1 스캔의 병렬 스레드 상한. 8 이었고 28코어 장비에서 29% 를 점유했다.
+    # 총 작업량은 같고 순간 점유만 낮아지므로 벽시계 시간은 그만큼 늘어난다 —
+    # 상시 실행이 아닌 지금은 그 교환이 맞다. AETHERUS_SCREENING_WORKERS 로
+    # 필요할 때 올릴 수 있다.
+    screening_workers: int = 3
     # Which objects an UNSCOPED screening takes when the catalogue exceeds the
     # bound. EPOCH_DESC: freshest non-simulation solutions first — stale
     # elements produce fictional conjunctions, and probe fixtures must never

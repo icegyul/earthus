@@ -60,7 +60,12 @@ def _level_one_workers(chunk_count: int) -> int:
             requested = 0
         if requested > 0:
             return min(requested, chunk_count)
-    return max(1, min(chunk_count, (os.cpu_count() or 2) - 1, 8))
+    # 상한이 8 로 박혀 있었다. 28코어 장비에서 8 스레드는 29% 를 잡고 그만큼
+    # 뜨거워진다. 총 작업량은 스레드 수와 무관하므로 낮추면 같은 일을 더 낮은
+    # 순간 점유로 더 오래 하는 교환이고, 상시 실행이 아닌 지금은 그쪽이 맞다.
+    from backend.config import settings
+
+    return max(1, min(chunk_count, (os.cpu_count() or 2) - 1, settings.screening_workers))
 
 
 @dataclass(frozen=True)

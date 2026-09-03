@@ -67,7 +67,16 @@
     var here = currentId();
     var nav = document.createElement('nav');
     nav.className = 'es-switch';
-    nav.setAttribute('aria-label', '지구 고르기');
+    // 영어 화면에서 이 라벨만 한국어로 남는다(실측). 세 지구가 저장하는 키를 차례로 보고,
+    // 없으면 기기 언어를 따른다 — 앱마다 i18n 모듈이 달라 여기서 직접 판단한다.
+    var lang = 'ko';
+    try {
+      lang = localStorage.getItem('earthus.lang')
+          || localStorage.getItem('earthus.v2.lang')
+          || ((navigator.languages && navigator.languages[0]) || navigator.language || '');
+    } catch (e) { lang = ''; }
+    var ko = /^ko/i.test(lang || 'ko');
+    nav.setAttribute('aria-label', ko ? '지구 고르기' : 'Choose an Earth');
 
     EARTHS.forEach(function (e) {
       var a = document.createElement('a');

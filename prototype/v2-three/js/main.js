@@ -250,6 +250,8 @@ uniform float uCloudLum;
 uniform float uCloudGfs;   // 1이면 구름 텍스처 A 가 선형 구름량(GFS 프레임)
 uniform sampler2D uSnowTex;
 uniform float uHasSnow;
+uniform sampler2D uIceTex;
+uniform float uHasIce;
 uniform sampler2D uFocusMask;
 uniform float uHasFocus;
 uniform vec4 uFocusRect;
@@ -335,6 +337,16 @@ void main() {
     vec2 baseUV = vec2(lon / (2.0 * PI) + 0.5, lat / PI + 0.5);
     vec3 baseTex = texture2D(uBaseMap, baseUV).rgb;
     ground = mix(ground, baseTex, uPhotoMix);
+  }
+
+  // 만년빙(Natural Earth 50m glaciated areas + 남극 빙붕). 고도 채색은 그린란드·남극의
+  // 2~3km 빙상을 '높은 암반'으로 칠한다 — 그린란드가 갈색으로 나왔다(PD 제보).
+  // poleFade 는 82.3° 위만 덮어서 그린란드(60~83°N)도 남극 가장자리도 놓친다.
+  // 실측 자료로 덮는다. 위성 상세영상(아래)은 실제 얼음을 찍은 것이므로 그 위를 덮지 않는다.
+  if (uHasIce > 0.5) {
+    vec2 iceUV = vec2(lon / (2.0 * PI) + 0.5, lat / PI + 0.5);
+    float ice = texture2D(uIceTex, iceUV).r;
+    ground = mix(ground, srgb(233.0, 239.0, 246.0), smoothstep(0.20, 0.70, ice) * 0.94);
   }
 
   // 줌인 시 실제 위성사진(도시·경작지·실지표)이 지형 위로 페이드 인
@@ -1157,9 +1169,12 @@ void main() {
     // 고층 구름(B)은 운정이 차가워 위성 IR 에서 가장 밝게 보인다 — 밝기에 같이 반영한다.
     float topBright = max(smoothstep(0.35, 1.0, core), cirrus * 0.9);
     tint = vec3(0.62 + 0.38 * topBright);
-    // 예보 프레임은 두께가 포화된 구름대가 넓어 밤에 판처럼 보인다 → 밤에만 조금 더 눌러 결을 남긴다.
+    // 예보 프레임은 두께가 포화된 구름대가 넓어 밤에 판처럼 보인다 → 밤에만 조금 눌러 결을 남긴다.
+    // 0.72 였는데, 아래 (0.52+0.48*day) 와 곱해져 밤 알파가 낮의 37% 로 떨어졌다.
+    // 그 결과 한밤 정중앙(반대극점)에 든 대륙에서 구름이 통째로 사라졌다 —
+    // 실측: 태양만 중국 위로 돌리자 같은 프레임에서 구름이 그대로 나타났다(PD 제보).
     float nightGfs = smoothstep(-0.08, 0.15, dot(n, uSunDir));
-    a *= mix(0.72, 1.0, nightGfs);
+    a *= mix(0.90, 1.0, nightGfs);
   } else {
     if (uBlend > 0.001) {
       vec4 tb = texture2D(uTexB, uv);
@@ -1174,7 +1189,7 @@ void main() {
   // 밤쪽 구름이 사실상 사라졌다 — 구름이 5일간 어디로 가는지 보는 제품에서
   // 지구 절반이 안 보이는 셈이었다. 자료는 그대로 두고 보이게만 올린다.
   // (밤 구름도 달빛·도시광에 실제로 보인다. 낮/밤 대비는 남긴다.)
-  float lit = 0.36 + 0.72 * clamp(dot(n, uSunDir), 0.0, 1.0);
+  float lit = 0.50 + 0.62 * clamp(dot(n, uSunDir), 0.0, 1.0);
   // 릴리프 음영: 운정 고도장의 기울기로 뭉게 입체감 (지형 hillshade와 동일 기법)
   if (uReliefK > 0.001) {
     float eps = 0.0022;
@@ -1186,10 +1201,11 @@ void main() {
     vec3 tN = cross(n, tE);
     vec3 cN = normalize(n - ((hE - hW) * tE + (hN - hS) * tN) * 0.0028);
     float shade = clamp(dot(cN, uSunDir), 0.0, 1.0);
-    lit = 0.34 + 0.76 * mix(clamp(dot(n, uSunDir), 0.0, 1.0), shade, 0.75);
+    lit = 0.48 + 0.66 * mix(clamp(dot(n, uSunDir), 0.0, 1.0), shade, 0.75);
     // 관측 창 안에서 관측상 무운(높이 0)이면 IR 잔상 알파도 억제하지 않고 유지(면적은 IR이 정답일 수 있음)
   }
-  gl_FragColor = vec4(tint * lit, a * uOpacity * (0.52 + 0.48 * day));
+  // 밤 알파 바닥 0.52 → 0.74. 5일 예보에서 지구 절반의 구름이 안 보이면 제품이 성립하지 않는다.
+  gl_FragColor = vec4(tint * lit, a * uOpacity * (0.74 + 0.26 * day));
   #include <colorspace_fragment>
 }
 `;
@@ -2231,6 +2247,11 @@ async function main() {
     console.warn('[earthus-three] basemap load failed:', err);
     return null;
   });
+  // 만년빙 마스크(9.8KB). 첫 화면과 함께 받되, 실패해도 나머지는 그대로 간다.
+  const icePromise = new THREE.TextureLoader().loadAsync('data/icesheet.png').catch((err) => {
+    console.warn('[earthus-three] icesheet load failed:', err);
+    return null;
+  });
 
   loadMsg.textContent = '지형 데이터 로딩 중…';
   let heightTex = null;
@@ -2276,6 +2297,18 @@ async function main() {
     hasBase = 1;
   }
 
+  let hasIce = 0;
+  const iceTex = await icePromise;
+  if (iceTex) {
+    iceTex.colorSpace = THREE.NoColorSpace;   // 마스크지 색이 아니다
+    iceTex.wrapS = THREE.RepeatWrapping;
+    iceTex.wrapT = THREE.ClampToEdgeWrapping;
+    iceTex.minFilter = THREE.LinearFilter;
+    iceTex.magFilter = THREE.LinearFilter;
+    iceTex.generateMipmaps = false;
+    hasIce = 1;
+  }
+
   // --- 지구 메시 ---
   const uniforms = {
     uHeightMap: { value: heightTex },
@@ -2302,6 +2335,8 @@ async function main() {
     uCloudGfs: { value: 0 },
     uSnowTex: { value: null },
     uHasSnow: { value: 0 },
+    uIceTex: { value: iceTex },
+    uHasIce: { value: hasIce },
     uFocusMask: { value: null },
     uHasFocus: { value: 0 },
     uFocusRect: { value: new THREE.Vector4(0, 0, 1, 1) },

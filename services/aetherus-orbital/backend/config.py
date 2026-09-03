@@ -48,6 +48,15 @@ class Settings(BaseSettings):
     frontend_dir: str = "frontend"
 
     # P4 conjunction assessment
+    # 자체 광역(all-vs-all) 스크리닝은 정기 실행하지 않기로 결정했다 (2026-09-03).
+    # 여기 값을 바꿔도 스케줄이 켜지지는 않는다 — 애초에 스케줄러가 없고, 없는 것이
+    # 결정이지 누락이 아니다. 온디맨드 실행(POST /api/v1/conjunctions/screen-runs),
+    # 테스트, 증거 생성이 이 설정을 쓴다.
+    #
+    # 켜기 전에 읽을 것: docs/decisions/2026-09-03-conjunction-screening-cadence.md
+    # 요지 — 비용은 (쌍 수 x 덮는 시간축 길이)이므로 주기를 늘려도 줄지 않고, 전
+    # 카탈로그 연속 커버리지는 54 CPU-시간/일로 실시간의 2.25배다. 7일 앞 예상은
+    # SOCRATES 가 이미 무료로 준다.
     screening_window_hours: float = 24.0
     screening_coarse_step_seconds: int = 30
     screening_refine_step_seconds: int = 5

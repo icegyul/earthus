@@ -30,7 +30,7 @@ SRC="$ROOT/prototype/v3-kids"
 echo "▸ 자격증명: $(aws sts get-caller-identity --query Arn --output text)"
 echo "▸ 전제 확인: v3 가 상대경로로 읽는 자산"
 missing=0
-for key in "${PREFIX}/vendor/three-r184.module.min.js" "${PREFIX}/vendor/earcut.module.js" "${PREFIX}/data/country-reference.json"; do
+for key in "${PREFIX}/vendor/three-r184.module.min.js" "${PREFIX}/vendor/earcut.module.js"            "${PREFIX}/data/country-reference.json" "${PREFIX}/data/relief-2160.webp"; do
   if aws s3 ls "s3://${BUCKET}/${key}" --region "$REGION" >/dev/null 2>&1; then
     echo "  있음  ${key}"
   else

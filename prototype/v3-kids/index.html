@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>지구야, 오늘 어때? — EARTHUS KIDS 샘플</title>
+<script>/* 제목은 <head> 에서 정해진다 — 치환 층이 서기 전이라 여기서 바꾼다. */
+  try{var _l=localStorage.getItem('earthus.lang')||localStorage.getItem('earthus.v2.lang');}catch(e){}
+  if((_l==='en')||(!_l&&!/^ko/i.test(navigator.language||''))) document.title='Hey Earth, how are you today? — EARTHUS KIDS';
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
@@ -177,6 +181,16 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 .mt{position:absolute;z-index:3;transform:translate(-50%,-50%);pointer-events:none;
   font-family:var(--kid);font-size:12.5px;color:#FFE8C7;letter-spacing:.02em;white-space:nowrap;
   text-shadow:0 1px 3px rgba(40,22,6,.9),0 0 10px rgba(40,22,6,.7);will-change:transform,opacity}
+
+/* ── 산봉우리 (세모 + 이름 + 높이) ── */
+/* 세모가 봉우리 자리에 오게 위쪽을 기준으로 붙인다. 이름은 그 아래로 흐른다. */
+.pk{position:absolute;z-index:3;pointer-events:none;text-align:center;
+  font-family:var(--kid);font-size:11px;color:#FFF0D8;letter-spacing:.01em;white-space:nowrap;
+  text-shadow:0 1px 3px rgba(40,22,6,.92),0 0 10px rgba(40,22,6,.7);will-change:transform,opacity}
+.pk b{display:block;font-size:9px;line-height:1;color:#FFD9A0;font-weight:400}
+.pk i{display:block;font-style:normal;font-family:var(--ui);font-size:9.5px;
+  color:rgba(255,232,199,.72);margin-top:1px}
+@media (max-width:520px){ .pk{font-size:10px} .pk i{font-size:9px} }
 
 /* ── 나라 이름 (살짝만) ── */
 .nm{
@@ -357,7 +371,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
         <path d="M2 17h5l3-8 4 15 4-19 3.5 12L26 17h4"/></svg>
     </button>
-    <button class="railbtn" id="b-mtn" aria-pressed="false" aria-label="산맥 보기" title="산맥">
+    <button class="railbtn" id="b-mtn" aria-pressed="false" aria-label="산과 산맥 보기" title="산과 산맥">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 25l7.5-12 5 7.5 3.5-5.5L26 25z"/><path d="M10.5 13l2.6 4.2"/>
         <path d="M19 15l-2.2 3.4"/></svg>
@@ -406,6 +420,23 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 </div>
 
 <script type="module">
+// 템플릿 안의 문구는 치환 층이 못 잡는다(글자 마디가 합쳐진 뒤에 생기기 때문). 여기서 부른다.
+const KT = (x) => (window.KIDS_I18N ? window.KIDS_I18N.t(x) : x);
+KT.en = !!(window.KIDS_I18N && window.KIDS_I18N.lang === 'en');
+KT.deg = KT.en ? '°' : '도';
+// 만/억은 영어에 없는 자릿수다. 숫자를 그대로 두고 단위만 바꾸면 틀린 값이 된다.
+const KAGO = (ma) => {  // ma = 백만 년
+  if(!KT.en){
+    if(ma < 1) return `약 ${Math.round(ma*1000)}만 년 전`.replace('약 50만','약 5만');
+    if(ma < 100) return `약 ${Math.round(ma)}00만 년 전`;
+    const eok = Math.floor(ma/100), man = Math.round(ma%100);
+    return man ? `약 ${eok}억 ${man}00만 년 전` : `약 ${eok}억 년 전`;
+  }
+  if(ma < 1) return `about ${Math.round(ma*1000)},000 years ago`;
+  if(ma < 1000) return `about ${Math.round(ma)} million years ago`;
+  return `about ${(ma/1000).toFixed(ma%1000?1:0)} billion years ago`;
+};
+
 import * as THREE from '../vendor/three-r184.module.min.js';
 // 해안선 고리를 삼각형으로 자른다. 스스로 교차하는 고리까지 다루는 표준 구현이다(ISC).
 import earcut, { deviation } from '../vendor/earcut.module.js';
@@ -459,6 +490,7 @@ const llToVec = (lat, lon, r=1) => {
 
 /* ── 툰 지구 텍스처: 진짜 해안선을 평평한 색 두 단으로 ─────────── */
 let COUNTRY_LABELS = [];      // {name, lat, lon}
+let reliefOn = false;         // 음영기복을 실제로 입혔는가 (출처 표기에 쓴다)
 
 // 이름을 붙일 나라. 다 붙이면 지구가 글자로 덮인다 — 화면당 몇 개만 보이게 할 것.
 const LABEL_CODES = new Set([
@@ -542,6 +574,27 @@ async function buildEarthTexture(){
   g.globalAlpha = .5;
   g.fillStyle = '#69B45E'; g.beginPath(); trace(); g.fill('evenodd');
   g.globalAlpha = 1;
+
+  /* 땅에 그늘을 넣는다 — 이걸 넣기 전 v3 의 땅은 초록 한 판이었다.
+     히말라야도 안데스도 로키도 없이 평지였고, 산맥 겹은 켜기 전에는 안 보였다.
+
+     오버레이는 중간 회색(128)을 기준으로 아래는 어둡게 위는 밝게 한다. 그늘만
+     곱하면 해가 드는 비탈이 살지 않는다. 자료 쪽에서 바다를 정확히 128 로
+     맞춰 두었으므로 바다에서는 아무 일도 일어나지 않는다 — 가리개가 필요 없다.
+
+     못 받으면 그냥 넘어간다. 그늘이 없는 지구는 심심하지만 틀리지는 않다. */
+  try {
+    const relief = await new Promise((ok, no) => {
+      const im = new Image();
+      im.onload = () => ok(im); im.onerror = no;
+      im.src = '../data/relief-2160.webp';
+    });
+    g.imageSmoothingQuality = 'high';
+    g.globalCompositeOperation = 'overlay';
+    g.drawImage(relief, 0, 0, W, H);
+    g.globalCompositeOperation = 'source-over';
+    reliefOn = true;
+  } catch(e){ console.warn('음영기복 로드 실패 — 평평한 땅으로 간다', e); }
 
   // 국경선 — 살짝만. 있는 줄 알 정도지 읽으라고 그리는 게 아니다.
   g.strokeStyle = 'rgba(255,255,255,.34)';
@@ -914,7 +967,7 @@ function setFov(t){
 window.__v3 = (ma) => {
   if(ma !== undefined){ maNow = maTarget = ma; refreshPast(); }   // 숨은 창에서는 rAF 가 안 돈다
   return ({ fill, stop, dist, distTarget, tanMin, tanTarget, tanBase, screenR, fov: camera.fov,
-                       ma: maNow, maTarget, storyOn, fill: paleoFill,
+                       ma: maNow, maTarget, storyOn, fillMesh: paleoFill,
                        india: (()=>{ const m = plateNow(501); return m ? rotXYZ(21.4, 79.4, m) : null; })(),
                        near: camera.near, 여유: dist - R, w: innerWidth, h: innerHeight });
 };
@@ -1067,6 +1120,8 @@ const craterMarks = [];
 
 async function loadCraters(){
   CRATERS = await fetch('../data/craters.json').then(r=>r.json());
+  // 충돌구는 자료가 영어 이름을 들고 있다. 사전에 옮겨 적지 않고 그대로 넘긴다.
+  if(window.KIDS_I18N) window.KIDS_I18N.add(Object.fromEntries(CRATERS.items.map(c=>[c.ko, c.en])));
   for(const c of CRATERS.items){
     const el = document.createElement('div');
     el.className = 'cr';
@@ -1337,7 +1392,8 @@ async function loadLeads(){
   const base = new Date();
   LEADS.leads.forEach((d, k) => {
     const dt = new Date(base.getTime() + d*86400000);
-    mk(`${dt.getMonth()+1}/${dt.getDate()}`, ['일','월','화','수','목','금','토'][dt.getDay()], k+1);
+    mk(`${dt.getMonth()+1}/${dt.getDate()}`,
+      (KT.en ? ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] : ['일','월','화','수','목','금','토'])[dt.getDay()], k+1);
   });
 }
 
@@ -1504,7 +1560,7 @@ async function showHere(){
     const q = cur.current, d = cur.daily;
     const kind = WMO(q.weather_code);
     c.innerHTML = `<button class="x" aria-label="닫기">×</button>
-      <h2>${KT('내 위치')} ${KT(SAY[kind])}</h2>
+      <h2>${KT.en ? `Where you are — ${KT(SAY[kind])}` : `내 위치 ${SAY[kind]}`}</h2>
       <div class="meta">${lat.toFixed(2)}, ${lon.toFixed(2)} · open-meteo ${KT.en ? 'live' : '실황'}</div>
       <div class="kid">${KT.en ? `It's ${Math.round(q.temperature_2m)}° right now.` : `지금 ${Math.round(q.temperature_2m)}도예요.`}</div>
       <ul>
@@ -1687,9 +1743,13 @@ $('#b-wind').addEventListener('click', e => {
 let MOUNTAINS = [];
 let mtnLine = null;
 const mtnMarks = [];
+const peakMarks = [];   // 이름 있는 산봉우리
 
 async function loadMountains(){
   const j = await fetch('../data/mountains.json').then(r=>r.json());
+  // 산맥 en 은 자료에 대문자로 들어 있다(ALPS). 화면에는 첫 글자만 대문자로 낸다.
+  if(window.KIDS_I18N) window.KIDS_I18N.add(Object.fromEntries((j.ranges||[]).map(r=>[r.ko,
+    String(r.en||'').toLowerCase().replace(/(^|[\s-])([a-z])/g, (_,a,b)=>a+b.toUpperCase())])));
   MOUNTAINS = j.ranges;
 
   let segs = 0;
@@ -1716,13 +1776,31 @@ async function loadMountains(){
   mtnLine.visible = false;
   earthGroup.add(mtnLine);
 
+  /* 산맥은 덩어리의 테두리라 "저기가 히말라야" 까지만 말한다. 아이가 찾는 것은
+     그 안의 한 봉우리다 — 에베레스트가 몇 미터인지, 백두산이 어디 있는지.
+     z(원본의 min_zoom)가 작을수록 이름난 산이다. 우리가 고르지 않고 그 값을 쓴다. */
+  try {
+    const pk = await fetch('../data/peaks.json').then(r=>r.json());
+    if(window.KIDS_I18N) window.KIDS_I18N.add(Object.fromEntries((pk.items||[]).map(x=>[x.ko, x.en||x.ko])));
+    for(const q of (pk.items||[]).slice()
+                    .sort((a,b)=> (a.z-b.z) || (b.m-a.m))){
+      const el = document.createElement('div');
+      el.className = 'pk';
+      el.innerHTML = `<b>▲</b>${q.ko}<i>${q.m.toLocaleString('ko-KR')}m</i>`;
+      el.style.visibility = 'hidden';
+      stage.appendChild(el);
+      // 폭은 지금 한 번만 잰다. 글이 바뀌지 않으므로 매 프레임 재면 배치만 느려진다.
+      peakMarks.push({ q, el, w: el.offsetWidth, pos: llToVec(q.at[1], q.at[0], R*1.02) });
+    }
+  } catch(e){ console.warn('산봉우리 로드 실패', e); }
+
   // 이름표는 큰 것부터 스물다섯 개만 준비한다. 화면에는 그중 몇 개만 뜬다.
   for(const m of MOUNTAINS.slice(0, 25)){
     const el = document.createElement('div');
     el.className = 'mt'; el.textContent = m.ko;
     el.style.visibility = 'hidden';
     stage.appendChild(el);
-    mtnMarks.push({ m, el, pos: llToVec(m.at[1], m.at[0], R*1.02) });
+    mtnMarks.push({ m, el, w: el.offsetWidth, pos: llToVec(m.at[1], m.at[0], R*1.02) });
   }
 }
 
@@ -2350,6 +2428,7 @@ $('#b-mtn').addEventListener('click', e => {
   e.currentTarget.setAttribute('aria-pressed', String(on));
   if(mtnLine) mtnLine.visible = on;
   for(const t of mtnMarks) t.el.style.display = on ? '' : 'none';
+  for(const t of peakMarks) t.el.style.display = on ? '' : 'none';
 });
 
 $('#b-pangaea').addEventListener('click', e => {
@@ -2430,22 +2509,6 @@ const WMO = code => {
   return 'cloud';
 };
 const SAY = { sun:'맑아요', cloud:'구름이 많아요', rain:'비가 와요', snow:'눈이 내려요', zap:'번개가 쳐요' };
-// 템플릿 안의 문구는 치환 층이 못 잡는다(글자 마디가 합쳐진 뒤에 생기기 때문). 여기서 부른다.
-const KT = (x) => (window.KIDS_I18N ? window.KIDS_I18N.t(x) : x);
-KT.en = !!(window.KIDS_I18N && window.KIDS_I18N.lang === 'en');
-KT.deg = KT.en ? '°' : '도';
-// 만/억은 영어에 없는 자릿수다. 숫자를 그대로 두고 단위만 바꾸면 틀린 값이 된다.
-const KAGO = (ma) => {  // ma = 백만 년
-  if(!KT.en){
-    if(ma < 1) return `약 ${Math.round(ma*1000)}만 년 전`.replace('약 50만','약 5만');
-    if(ma < 100) return `약 ${Math.round(ma)}00만 년 전`;
-    const eok = Math.floor(ma/100), man = Math.round(ma%100);
-    return man ? `약 ${eok}억 ${man}00만 년 전` : `약 ${eok}억 년 전`;
-  }
-  if(ma < 1) return `about ${Math.round(ma*1000)},000 years ago`;
-  if(ma < 1000) return `about ${Math.round(ma)} million years ago`;
-  return `about ${(ma/1000).toFixed(ma%1000?1:0)} billion years ago`;
-};
 
 async function loadLive(){
   // 구름(관측 영상)과 친구(격자 실황)는 출처가 다르다 — 하나가 죽어도 다른 하나는 살린다.
@@ -2480,16 +2543,18 @@ async function loadLive(){
       const kind = WMO(cur.weather_code);
       addMarker(kind, lat, lon, ART[kind], 'crt');
       if(i < 6) addMarker('bub', lat, lon,
-        `<div class="box">${KT(name)} ${KT(SAY[kind])}<b>${Math.round(cur.temperature_2m)}${KT.deg}</b></div>`, 'bub');
+        `<div class="box">${KT.en ? `${KT(name)} — ${KT(SAY[kind])}` : `${name} ${SAY[kind]}`}<b>${Math.round(cur.temperature_2m)}${KT.deg}</b></div>`, 'bub');
     });
 
     const t = new Date().toLocaleTimeString(KT.en ? 'en-GB' : 'ko-KR',{hour:'2-digit',minute:'2-digit'});
     // 결손과 메움을 숨기지 않는다 — 무엇을 보고 있는지가 화면에 적혀야 한다
     if(cloudMeta){
       const cz = String(cloudMeta.time).slice(11,16);
+      // 지형(음영기복)은 켜고 끄는 겹이 아니라 지구 표면 자체다 — 그래서 늘 적는다
+      const terr = reliefOn ? (KT.en ? ' · <b>Natural Earth</b> terrain' : ' · <b>Natural Earth</b> 지형') : '';
       let note = KT.en
-        ? `Source: <b>NOAA GMGSI</b> global clouds <i>${cz}Z</i> · <b>Open-Meteo</b> weather <i>${t}</i>`
-        : `출처: <b>NOAA GMGSI</b> 전지구 구름 <i>${cz}Z</i> · <b>Open-Meteo</b> 날씨 <i>${t}</i>`;
+        ? `Source: <b>NOAA GMGSI</b> global clouds <i>${cz}Z</i> · <b>Open-Meteo</b> weather <i>${t}</i>${terr}`
+        : `출처: <b>NOAA GMGSI</b> 전지구 구름 <i>${cz}Z</i> · <b>Open-Meteo</b> 날씨 <i>${t}</i>${terr}`;
       if(cloudMeta.broken){
         const bits = [`${KT.en ? 'Source' : '출처'}: <b>NOAA GMGSI</b> <i>${cz}Z</i>`];
         if(cloudMeta.patched) bits.push(KT.en
@@ -2717,9 +2782,13 @@ function placeMarkers(w, h){
     }
   }
 
-  // 산맥 이름 — 화면 가운데에 가까운 것부터 다섯 개까지
+  /* 산맥과 산 — 화면 가운데에 가까운 것부터.
+     ⚠️ 시대를 되감으면 접는다. 히말라야는 5천만 년 전에 없었다 —
+        옛 대륙 위에 오늘 산맥을 얹으면 나라 이름을 얹는 것과 똑같은 거짓말이다.
+        5백만 년 전까지는 지금 산맥이 이미 제자리에 있었으므로 그때까진 둔다. */
   const mtShown = [];
-  const mtOn = $('#b-mtn').getAttribute('aria-pressed') === 'true';
+  const mtOn = $('#b-mtn').getAttribute('aria-pressed') === 'true' && maNow <= 5;
+  if(mtnLine) mtnLine.visible = mtOn;      // 이름표만 접으면 선이 옛 대륙 위에 남는다
   for(const t of mtnMarks){
     if(!mtOn){ t.el.style.visibility = 'hidden'; continue; }
     _v.copy(t.pos).applyMatrix4(earthGroup.matrixWorld);
@@ -2728,13 +2797,44 @@ function placeMarkers(w, h){
     const q = _v.clone().project(camera);
     const X = (q.x*0.5+0.5)*w, Y = (-q.y*0.5+0.5)*h;
     const clash = mtShown.some(o => Math.abs(o.x-X) < 84 && Math.abs(o.y-Y) < 22);
-    const inView = X > 78 && X < w-16 && Y > 56 && Y < h-96;
+    const hw = t.w/2 + 8;
+    const inView = X-hw > 72 && X+hw < w-72 && Y > 56 && Y < h-96;
     const ok = !clash && inView && mtShown.length < 5;
     t.el.style.visibility = ok ? 'visible' : 'hidden';
     if(ok){
       t.el.style.opacity = Math.min(1, (facing-0.12)/0.25);
       t.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-50%)`;
       mtShown.push({x:X, y:Y});
+    }
+  }
+
+  /* 산봉우리 — 화면에 몇 개 띄울지는 자리가 정하고, 누구를 띄울지는 z 가 정한다.
+     z 는 원본의 min_zoom 으로 작을수록 이름난 산이다(에베레스트 4, 대부분 7 언저리).
+     목록을 z 순으로 정렬해 두었으므로 앞에서부터 채우다 자리가 차면 멈춘다 —
+     '이 배율에서는 z 몇까지' 같은 문턱을 우리가 따로 정하지 않는다. */
+  const pkCap = fill > 9 ? 12 : fill > 6 ? 9 : 7;
+  const pkShown = [];
+  for(const t of peakMarks){
+    if(!mtOn || pkShown.length >= pkCap){ t.el.style.visibility = 'hidden'; continue; }
+    _v.copy(t.pos).applyMatrix4(earthGroup.matrixWorld);
+    const facing = _v.clone().normalize().dot(_c.clone().sub(_v).normalize());
+    if(facing <= 0.12){ t.el.style.visibility = 'hidden'; continue; }
+    const q2 = _v.clone().project(camera);
+    const X = (q2.x*0.5+0.5)*w, Y = (-q2.y*0.5+0.5)*h;
+    // 산맥 이름표와도 겹치지 않게 — 둘은 같은 겹이다
+    /* 봉우리 이름은 세모 아래로 흐르므로 기준점보다 아래에 그려진다.
+       그래서 산맥 이름과 겹치는지 볼 때 세로 여유를 더 크게 잡는다. */
+    const clash = pkShown.some(o => Math.abs(o.x-X) < 78 && Math.abs(o.y-Y) < 36)
+               || mtShown.some(o => Math.abs(o.x-X) < 78 && Math.abs(o.y-Y) < 38);
+    // 좌우 레일 밑으로 들어가면 이름이 잘린다. 이름 폭을 세어 미리 뺀다.
+    const hw = t.w/2 + 8;
+    const inView = X-hw > 72 && X+hw < w-72 && Y > 60 && Y < h-96;
+    const ok = !clash && inView;
+    t.el.style.visibility = ok ? 'visible' : 'hidden';
+    if(ok){
+      t.el.style.opacity = Math.min(1, (facing-0.12)/0.25);
+      t.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-5px)`;
+      pkShown.push({x:X, y:Y});
     }
   }
 
@@ -2922,7 +3022,8 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe(document.documentEle
              .catch(e => { console.warn('물 로드 실패', e); $('#b-water').disabled = true; });
   loadLeads().catch(e => console.warn('예보 로드 실패', e));
   loadWind().catch(e => { console.warn('바람 로드 실패', e); $('#b-wind').disabled = true; });
-  loadMountains().then(()=>{ for(const t of mtnMarks) t.el.style.display='none'; drawOnce(); })
+  loadMountains().then(()=>{ for(const t of mtnMarks) t.el.style.display='none';
+                             for(const t of peakMarks) t.el.style.display='none'; drawOnce(); })
                 .catch(e => { console.warn('산맥 로드 실패', e); $('#b-mtn').disabled = true; });
   loadPast().then(()=>{ for(const f of fossilMarks) f.el.style.display='none'; drawOnce(); })
             .catch(e => { console.warn('화석지 로드 실패', e); $('#b-fossil').disabled = true; });

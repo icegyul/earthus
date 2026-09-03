@@ -112,6 +112,15 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
   padding:2px 9px;border-radius:999px;background:rgba(28,16,4,.42);
   text-shadow:0 1px 4px rgba(24,14,2,1),0 0 16px rgba(24,14,2,.9);will-change:transform,opacity}
 
+/* ── 안내된 장면 버튼 ── */
+#story{font-family:var(--kid);font-size:14px;color:#0E1726;background:#FFC24B;border:0;
+  border-radius:999px;padding:8px 16px;cursor:pointer;margin-bottom:8px;align-self:flex-start;
+  box-shadow:0 3px 12px rgba(255,194,75,.28)}
+#story:hover{background:#FFD173}
+#story:focus-visible{outline:3px solid #fff;outline-offset:2px}
+#story[disabled]{opacity:.55;cursor:default}
+#story.playing{background:rgba(255,255,255,.16);color:#fff}
+
 /* ── 시대 이름 (시간 손잡이 위) ── */
 .era{font-family:var(--kid);font-size:15px;color:#FFC24B;margin-bottom:2px;line-height:1.3}
 .era small{display:block;font-family:var(--ui);font-size:11px;color:#9fb4d6;letter-spacing:.01em;margin-top:2px}
@@ -291,6 +300,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
   <button id="home" aria-label="우리 집으로 돌아가기"><span>🏠</span>우리 집</button>
 
   <div id="timebar" hidden>
+    <button id="story" type="button">▶ 인도가 아시아에 부딪히는 걸 보기</button>
     <div class="era" id="era" hidden></div>
     <div class="tb-head">
       <span class="tb-when">지금</span>
@@ -1398,7 +1408,58 @@ function openCard(site){
   for(const f of fossilMarks) f.el.classList.toggle('sel', f.site.id === site.id);
 }
 
-$('#timeslider').addEventListener('input', e => setTime(+e.target.value));
+$('#timeslider').addEventListener('input', e => { stopStory(); setTime(+e.target.value); });
+
+/* ── 안내된 장면: 인도가 올라와 박힌다 ──────────────────────────────
+   구형 디스플레이 연구가 한목소리로 지목한 학습 변수가 '해설자의 존재'였다.
+   자동 재생만으로는 학습이 잘 일어나지 않았다. 그래서 그냥 감기는 게 아니라
+   장면마다 무엇을 보라고 적는다.
+
+   데이터는 이미 있다 — 인도(판 501)는 1억 년 전 남위 37도, 지금 북위 21도.
+   우리가 만드는 값이 아니라 판 회전이 그렇게 말한다.
+
+   손을 대면 즉시 멈춘다. 조작을 뺏지 않는다는 규칙은 여기서도 같다. */
+const STORY = [
+  { idx: 9,  say: '1억 년 전. 인도는 아직 남쪽 바다에 떠 있는 섬이에요.' },
+  { idx: 8,  say: '인도가 북쪽으로 올라오기 시작해요.' },
+  { idx: 7,  say: '6600만 년 전. 아직 아시아와 떨어져 있어요.' },
+  { idx: 6,  say: '5000만 년 전. 곧 부딪혀요.' },
+  { idx: 4,  say: '부딪혔어요. 갈 곳이 없어진 땅이 위로 솟아요.' },
+  { idx: 2,  say: '그렇게 솟은 것이 히말라야예요. 지금도 조금씩 높아지고 있어요.' },
+  { idx: 0,  say: '지금이에요. 산맥 버튼을 켜면 히말라야가 보여요.' },
+];
+let storyTimer = null, storyStep = 0;
+
+function stopStory(){
+  if(storyTimer){ clearTimeout(storyTimer); storyTimer = null; }
+  $('#story').classList.remove('playing');
+  $('#story').textContent = '▶ 인도가 아시아에 부딪히는 걸 보기';
+}
+
+function playStory(){
+  if(storyTimer){ stopStory(); return; }
+  if(!paleoOn) $('#b-pangaea').click();     // 대륙이 안 보이면 장면이 성립하지 않는다
+  storyStep = 0;
+  $('#story').classList.add('playing');
+  const tick = () => {
+    if(storyStep >= STORY.length){ stopStory(); return; }
+    const st = STORY[storyStep++];
+    $('#timeslider').value = String(st.idx);
+    setTime(st.idx);
+    $('#story').textContent = st.say;
+    // 인도를 화면에 붙들어 둔다 — 장면이 화면 밖에서 벌어지면 못 본다
+    const fr = PALEO && PALEO.frames[st.idx];
+    const m = fr && fr.m['501'];
+    if(m){
+      const g = rotXYZ(21.4, 79.4, m);
+      yawTarget = yawFor(g.lon); pitchTarget = pitchFor(g.lat); following = true;
+    }
+    storyTimer = setTimeout(tick, 2600);
+  };
+  tick();
+}
+$('#story').addEventListener('click', playStory);
+canvas.addEventListener('pointerdown', stopStory);
 
 $('#b-mtn').addEventListener('click', e => {
   const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
@@ -1412,6 +1473,7 @@ $('#b-pangaea').addEventListener('click', e => {
   e.currentTarget.setAttribute('aria-pressed', String(paleoOn));
   $('#timebar').hidden = !(paleoOn || $('#b-fossil').getAttribute('aria-pressed') === 'true');
   if(paleoLine){ paleoLine.visible = paleoOn; }
+  if(!paleoOn) stopStory();
   setTime(timeIdx);
 });
 

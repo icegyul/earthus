@@ -116,6 +116,46 @@ canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
 .crt .bob{animation:bobb 3.4s ease-in-out infinite}
 .crt .zap{animation:flash 2.6s steps(1,end) infinite;transform-origin:center}
 
+/* ── 화석 핀 ── */
+.pin{position:absolute;z-index:5;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;
+  will-change:transform,opacity}
+.pin .dot{width:15px;height:15px;border-radius:50%;background:#FFC24B;border:2.5px solid #fff;
+  box-shadow:0 2px 8px rgba(0,0,0,.5);margin:0 auto}
+.pin .nm2{font-family:var(--kid);font-size:12.5px;color:#fff;white-space:nowrap;text-align:center;
+  margin-top:3px;text-shadow:0 1px 4px rgba(4,10,24,.95),0 0 10px rgba(4,10,24,.8)}
+.pin.sel .dot{background:#fff;transform:scale(1.25)}
+.pin .dot{transition:transform .15s ease}
+
+/* ── 화석 카드 ── */
+#card{position:absolute;left:50%;bottom:118px;transform:translateX(-50%);z-index:8;width:min(420px,calc(100% - 32px));
+  background:rgba(10,18,38,.94);border:1px solid rgba(255,255,255,.2);border-radius:18px;
+  padding:18px 20px 16px;backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+#card[hidden]{display:none!important}
+#card h2{font-family:var(--kid);font-size:20px;margin:0 0 2px;color:#fff}
+#card .meta{font-size:11.5px;color:#9fb4d6;letter-spacing:.02em;margin-bottom:10px}
+#card .kid{font-family:var(--kid);font-size:16px;line-height:1.55;color:#FFE3A8;margin-bottom:10px}
+#card ul{margin:0 0 10px;padding-left:17px;display:flex;flex-direction:column;gap:3px;
+  font-size:13px;color:#dbe6f7;line-height:1.5}
+#card .rec{font-size:12.5px;color:#9fb4d6;border-top:1px solid rgba(255,255,255,.14);
+  padding-top:9px;line-height:1.55}
+#card .warn2{color:#FFC24B}
+#card button.x{position:absolute;top:10px;right:12px;background:none;border:0;color:#9fb4d6;
+  font-size:22px;cursor:pointer;line-height:1;padding:4px 8px;min-width:34px;min-height:34px}
+#card button.x:focus-visible{outline:2px solid var(--sun);border-radius:6px}
+
+/* ── 시간 손잡이 ── */
+#timebar{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:7;
+  width:min(560px,calc(100% - 32px));background:rgba(8,16,36,.82);border:1px solid rgba(255,255,255,.18);
+  border-radius:20px;padding:13px 20px 11px;backdrop-filter:blur(10px)}
+#timebar[hidden]{display:none!important}
+.tb-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
+.tb-when{font-family:var(--kid);font-size:20px;color:#fff}
+.tb-conf{font-size:11px;color:#9fb4d6;text-align:right;line-height:1.4}
+#timeslider{width:100%;accent-color:#FFC24B;height:30px;cursor:pointer}
+#timeslider:focus-visible{outline:3px solid var(--sun);outline-offset:2px;border-radius:8px}
+.tb-foot{display:flex;justify-content:space-between;gap:10px;font-size:10.5px;color:#8ba2c4;margin-top:1px}
+.tb-foot #tb-note{color:#c3d3ea;text-align:center}
+
 /* ── 첫 안내 ── */
 #hint{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:6;
   font-family:var(--kid);font-size:16px;background:rgba(8,16,36,.7);padding:10px 20px;
@@ -136,6 +176,9 @@ canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
   .railbtn svg{width:24px;height:24px}
   #home{width:56px;height:56px;right:12px}
   .bub .box{font-size:13.5px;padding:7px 11px}
+  #timebar{bottom:84px;padding:10px 14px 9px}
+  #card{bottom:150px}
+  .tb-when{font-size:17px}
 }
 </style>
 </head>
@@ -167,6 +210,11 @@ canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
         <path d="M9 18h12a5 5 0 0 0 .4-10A7 7 0 0 0 8.4 8.6 4.7 4.7 0 0 0 9 18Z"/>
         <path d="M17 20l-4 5h4l-1.5 4.5"/></svg>
     </button>
+    <button class="railbtn" id="b-fossil" aria-pressed="false" aria-label="공룡 발자국 보기" title="공룡 발자국">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M13 26c-2.2 0-4-1.5-4-3.6 0-2.6 2.4-3.4 2.4-5.6 0-1.6-1.2-2.3-1.2-4C10.2 10.5 12 9 14.3 9c2.4 0 4.2 1.6 4.2 3.9 0 2-1.4 2.7-1.4 4.4 0 2.3 2.6 2.9 2.6 5.5 0 2-1.9 3.2-4 3.2"/>
+        <circle cx="11.4" cy="6.4" r="1.7"/><circle cx="16.6" cy="4.9" r="1.7"/><circle cx="21.2" cy="7.4" r="1.7"/></svg>
+    </button>
     <button class="railbtn" id="b-night" aria-pressed="true" aria-label="낮과 밤 보기" title="낮과 밤">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="16" cy="16" r="10"/><path d="M16 6a10 10 0 0 0 0 20"/><path d="M16 6v20"/></svg>
@@ -182,6 +230,21 @@ canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
 
   <button id="home" aria-label="우리 집으로 돌아가기"><span>🏠</span>우리 집</button>
 
+  <div id="timebar" hidden>
+    <div class="tb-head">
+      <span class="tb-when">지금</span>
+      <span class="tb-conf"></span>
+    </div>
+    <input id="timeslider" type="range" min="0" max="21" step="1" value="0"
+           aria-label="시간 되감기 — 오른쪽으로 갈수록 먼 옛날">
+    <div class="tb-foot">
+      <span>지금</span>
+      <span id="tb-note">한반도를 손으로 되감아 보세요</span>
+      <span>2억 5천만 년 전</span>
+    </div>
+  </div>
+
+  <div id="card" hidden></div>
   <div id="hint">손가락으로 지구를 돌려 보세요</div>
 </div>
 
@@ -369,6 +432,7 @@ const earthMat = new THREE.ShaderMaterial({
     map:      { value: null },
     sunDir:   { value: sunDir },
     nightMix: { value: 1 },
+    pastFade: { value: 0 },
   },
   vertexShader: `
     varying vec2 vUv; varying vec3 vN;
@@ -376,7 +440,7 @@ const earthMat = new THREE.ShaderMaterial({
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
   `,
   fragmentShader: `
-    uniform sampler2D map; uniform vec3 sunDir; uniform float nightMix;
+    uniform sampler2D map; uniform vec3 sunDir; uniform float nightMix; uniform float pastFade;
     varying vec2 vUv; varying vec3 vN;
     void main(){
       vec3 base = texture2D(map, vUv).rgb;
@@ -388,6 +452,8 @@ const earthMat = new THREE.ShaderMaterial({
       col *= 0.72 + 0.28*band;
       float rim = pow(1.0 - abs(dot(normalize(vN), vec3(0.0,0.0,1.0))), 2.6);
       col += vec3(0.36,0.60,0.95) * rim * 0.5;
+      // 과거를 볼 때 오늘 지도는 뒤로 물린다 — 지우지는 않는다. 어디가 지금인지는 알아야 한다.
+      col = mix(col, vec3(0.10,0.16,0.28), pastFade * 0.82);
       gl_FragColor = vec4(col, 1.0);
     }
   `
@@ -516,11 +582,12 @@ const HOME = { lat: 36.5, lon: 127.9 };            // 부모가 고른 우리 �
 const yawFor   = lon => -lon*Math.PI/180;
 const pitchFor  = lat =>  lat*Math.PI/180;
 let yaw = yawFor(HOME.lon), pitch = pitchFor(HOME.lat);
+let yawTarget = yaw, pitchTarget = pitch, following = false;
 let yawV = 0, pitchV = 0, dragging = false, lastX = 0, lastY = 0, idle = 0;
 const MAX_SPIN = 1.05;                              // rad/s ≈ 60°/s — 초당 90도보다 보수적으로
 
 function pointerDown(e){
-  dragging = true; idle = 0; lastX = e.clientX; lastY = e.clientY;
+  dragging = true; idle = 0; following = false; lastX = e.clientX; lastY = e.clientY;
   canvas.setPointerCapture?.(e.pointerId);
   $('#hint').classList.add('gone');
 }
@@ -600,6 +667,196 @@ function addMarker(kind, lat, lon, html, cls){
   markers.push({ el, pos: llToVec(lat, lon, R*1.02), kind });
   return el;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   과거 축 — 한국 공룡 화석지와 판 회전
+   화석은 지금 좌표에서 나오지만, 그 공룡이 살던 시절엔 다른 자리였다.
+   한반도(판 601)는 강체로 움직이므로 회전 행렬 하나면 전부 옮겨진다.
+   ══════════════════════════════════════════════════════════════ */
+let FOSSILS = [], PALEO = null, timeIdx = 0;
+const fossilMarks = [];
+let koreaRings = [];           // 한반도 해안선 (경도,위도) 고리들
+let koreaLine = null;          // 회전해서 그리는 윤곽
+
+async function loadPast(){
+  const [fj, pj] = await Promise.all([
+    fetch('../data/korea-fossils.json').then(r=>r.json()),
+    fetch('../data/korea-paleo.json').then(r=>r.json()),
+  ]);
+  FOSSILS = fj.sites; PALEO = pj;
+  $('#timeslider').max = String(PALEO.frames.length - 1);
+
+  // 한반도 윤곽 — 핀만 옮기고 땅은 두면 거짓말이 된다. 같이 옮긴다.
+  try{
+    const cr = await fetch('../data/country-reference.json').then(r=>r.json());
+    for(const f of cr.features){
+      if(f.code !== 'KR' && f.code !== 'KP') continue;
+      const g = f.geometry;
+      const polys = g.type === 'Polygon' ? [g.coordinates] : g.coordinates;
+      for(const poly of polys){
+        const ring = poly[0];
+        if(ring && ring.length > 12) koreaRings.push(ring);   // 아주 작은 섬은 뺀다
+      }
+    }
+  }catch(e){ console.warn('한반도 윤곽 로드 실패', e); }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(
+    new Float32Array(koreaRings.reduce((n,r)=>n+r.length*2*3, 0)), 3));
+  koreaLine = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({
+    color: 0xFFC24B, transparent: true, opacity: 0, depthWrite: false }));
+  koreaLine.renderOrder = 3;
+  earthGroup.add(koreaLine);
+
+  for(const site of FOSSILS){
+    const el = document.createElement('div');
+    el.className = 'pin';
+    el.innerHTML = `<div class="dot"></div><div class="nm2">${site.short}</div>`;
+    el.addEventListener('click', ()=> openCard(site));
+    stage.appendChild(el);
+    fossilMarks.push({ site, el });
+  }
+  placeFossils();
+}
+
+/* 시대 t 의 회전 행렬. 사이 값은 이웃 프레임에서 고르지 않고 가까운 쪽을 쓴다 —
+   행렬을 선형 보간하면 회전이 아니게 되고, 그건 모델에 없는 값을 만드는 것이다. */
+function matrixAt(i){
+  return PALEO ? PALEO.frames[Math.max(0, Math.min(PALEO.frames.length-1, i))] : null;
+}
+function rotateLL(lat, lon, m){
+  if(!m) return { lat, lon };
+  const la = lat*Math.PI/180, lo = lon*Math.PI/180;
+  const x = Math.cos(la)*Math.cos(lo), y = Math.cos(la)*Math.sin(lo), z = Math.sin(la);
+  const M = m.m;
+  const X = M[0]*x + M[1]*y + M[2]*z;
+  const Y = M[3]*x + M[4]*y + M[5]*z;
+  const Z = M[6]*x + M[7]*y + M[8]*z;
+  return { lat: Math.asin(Math.max(-1,Math.min(1,Z)))*180/Math.PI,
+           lon: Math.atan2(Y, X)*180/Math.PI };
+}
+
+function placeFossils(){
+  const m = matrixAt(timeIdx);
+  for(const f of fossilMarks){
+    const p = rotateLL(f.site.lat, f.site.lon, m);
+    f.pos = llToVec(p.lat, p.lon, R*1.015);
+  }
+  drawKoreaOutline(m);
+}
+
+/* 한반도 윤곽을 그 시대 자리에 그린다. 같은 회전 행렬을 모든 꼭짓점에 적용한다 —
+   판이 강체로 움직이므로 이게 근사가 아니라 원본과 같은 계산이다. */
+function drawKoreaOutline(m){
+  if(!koreaLine) return;
+  const arr = koreaLine.geometry.attributes.position.array;
+  let i = 0;
+  const put = (lat, lon) => {
+    const v = llToVec(lat, lon, R*1.014);
+    arr[i++] = v.x; arr[i++] = v.y; arr[i++] = v.z;
+  };
+  for(const ring of koreaRings){
+    for(let k = 0; k < ring.length - 1; k++){
+      const a = rotateLL(ring[k][1],   ring[k][0],   m);
+      const b = rotateLL(ring[k+1][1], ring[k+1][0], m);
+      // 경도 이음매를 건너뛰는 선분은 그리지 않는다 (지구를 가로지르는 줄이 생긴다)
+      if(Math.abs(a.lon - b.lon) > 180){ i += 6; continue; }
+      put(a.lat, a.lon); put(b.lat, b.lon);
+    }
+  }
+  while(i < arr.length) arr[i++] = 0;
+  koreaLine.geometry.attributes.position.needsUpdate = true;
+  koreaLine.geometry.computeBoundingSphere();
+}
+
+/* 시대 표기. 0 은 "지금"이고, 나머지는 만 년이 아니라 아이가 셀 수 있는 말로. */
+function whenLabel(ma){
+  if(ma === 0) return '지금';
+  if(ma < 100) return `${ma.toLocaleString()}만 년 전`.replace(/^(\d+)만/, (_,n)=>`${n*100}만`);
+  return `${(ma/100).toFixed(ma%100?1:0)}억 년 전`;
+}
+function whenKo(ma){
+  if(ma === 0) return '지금';
+  const eok = Math.floor(ma/100), man = ma%100;
+  if(eok && man) return `${eok}억 ${man*100}만 년 전`;
+  if(eok) return `${eok}억 년 전`;
+  return `${ma*100}만 년 전`;
+}
+/* 우리가 얼마나 아는지를 같이 적는다. 과거는 멀수록 흐려진다. */
+function confidenceKo(ma){
+  if(ma === 0) return '';
+  if(ma <= 83)  return '바다 밑 자기 줄무늬로 위치가 잘 묶이는 구간';
+  if(ma <= 200) return '위치가 대체로 잘 맞는 구간';
+  return '이 시대는 동서 위치가 덜 확실합니다';
+}
+
+function setTime(i){
+  timeIdx = i;
+  const fr = matrixAt(i);
+  const ma = fr ? fr.t : 0;
+  $('.tb-when').textContent = whenKo(ma);
+  $('.tb-conf').textContent = confidenceKo(ma);
+  $('#tb-note').textContent = ma === 0
+    ? '한반도를 손으로 되감아 보세요'
+    : `한반도가 지금과 다른 자리에 있어요`;
+  placeFossils();
+  // 과거로 가면 오늘 날씨는 뜻이 없다 — 친구와 말풍선을 접는다
+  // 화석 모드에서는 시대와 상관없이 오늘 날씨를 접어 둔다
+  const fossilOn = $('#b-fossil').getAttribute('aria-pressed') === 'true';
+  const hide = fossilOn || ma > 0;
+  for(const m of markers) if(m.kind !== 'name') m.el.style.display = hide ? 'none' : '';
+  clouds.visible = !hide && show.cloud;
+
+  // 과거로 가면 오늘 지도는 물러나고 그 시대 한반도가 앞에 선다.
+  // 오늘 땅을 그대로 두고 핀만 옮기면 "저기에 저 땅이 있었다"는 거짓말이 된다.
+  if(koreaLine) koreaLine.material.opacity = fossilOn ? (ma > 0 ? 0.95 : 0.55) : 0;
+  earthMat.uniforms.pastFade.value = (fossilOn && ma > 0) ? 1 : 0;
+
+  // 한반도가 옮겨 가면 카메라도 따라간다. 화면 밖으로 나가면 아이가 놓친다.
+  if(fossilOn){
+    const c = rotateLL(35.6, 127.6, fr);
+    yawTarget = yawFor(c.lon); pitchTarget = pitchFor(c.lat);
+    following = true;
+  }
+}
+
+function openCard(site){
+  const c = $('#card');
+  const conf = site.confidence === 'official'
+    ? '국가유산청 지정 좌표'
+    : '<span class="warn2">좌표가 지정구역 중심이 아닐 수 있음</span>';
+  c.innerHTML = `<button class="x" aria-label="닫기">×</button>
+    <h2>${site.short}</h2>
+    <div class="meta">천연기념물 ${site.nm}호 · ${site.name}</div>
+    <div class="kid">${site.kid}</div>
+    <ul>${site.found.map(f=>`<li>${f}</li>`).join('')}</ul>
+    <div class="rec">${site.why}<br>약 ${whenKo(site.ageMa)} · ${conf}</div>`;
+  c.hidden = false;
+  c.querySelector('.x').addEventListener('click', ()=>{ c.hidden = true; });
+  for(const f of fossilMarks) f.el.classList.toggle('sel', f.site.id === site.id);
+}
+
+$('#timeslider').addEventListener('input', e => setTime(+e.target.value));
+
+$('#b-fossil').addEventListener('click', e => {
+  const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  e.currentTarget.setAttribute('aria-pressed', String(on));
+  $('#timebar').hidden = !on;
+  $('#head h1').textContent = on ? '공룡은 어디에 있었을까?' : '지구야, 오늘 어때?';
+  $('#head p').textContent  = on ? '우리나라 공룡 발자국 여덟 곳' : '지구를 돌려서 지금 날씨를 만나 보세요';
+  if(!on){
+    $('#card').hidden = true;
+    $('#timeslider').value = '0'; setTime(0);
+  } else {
+    // 화석지는 한반도 남부에 몰려 있다 — 가장 가까운 단계로 붙이고 남쪽을 본다
+    goStop(2);
+    yaw = yawFor(127.6); pitch = pitchFor(35.2); yawV = pitchV = 0;
+  }
+  // 화석을 보는 동안 오늘 날씨는 물러난다. 두 시간대를 한 화면에 겹치지 않는다.
+  clouds.visible = !on && show.cloud;
+  for(const m of markers) if(m.kind !== 'name') m.el.style.display = on ? 'none' : '';
+  for(const f of fossilMarks) f.el.style.display = on ? '' : 'none';
+});
 
 /* ── 실측 불러오기 (open-meteo 실황) ───────────────────────────
    격자 = 전지구 운량·강수. 도시 = 말풍선.
@@ -754,6 +1011,30 @@ function placeMarkers(w, h){
     }
   }
 
+  // 화석 핀 — 지구 뒤로 넘어가면 숨긴다
+  for(const f of fossilMarks){
+    if(!f.pos || f.el.style.display === 'none'){ continue; }
+    _v.copy(f.pos).applyMatrix4(earthGroup.matrixWorld);
+    const toCam = _c.clone().sub(_v).normalize();
+    const facing = _v.clone().normalize().dot(toCam);
+    if(facing <= 0.06){ f.el.style.visibility = 'hidden'; continue; }
+    const p = _v.clone().project(camera);
+    f.el.style.visibility = 'visible';
+    f.el.style.opacity = Math.min(1, (facing-0.06)/0.2);
+    const X = (p.x*0.5+0.5)*w, Y = (-p.y*0.5+0.5)*h;
+    f.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-100%)`;
+    f.sx = X; f.sy = Y;
+  }
+  // 이름표가 겹치면 이름만 접는다. 점은 그대로 둔다 — 자리가 사실이기 때문이다.
+  const pinLabels = [];
+  for(const f of fossilMarks){
+    const lab = f.el.querySelector('.nm2');
+    if(!lab || f.el.style.visibility === 'hidden' || f.el.style.display === 'none') continue;
+    const clash = pinLabels.some(q => Math.abs(q.x-f.sx) < 58 && Math.abs(q.y-f.sy) < 22);
+    lab.style.visibility = clash ? 'hidden' : 'visible';
+    if(!clash) pinLabels.push({x:f.sx, y:f.sy});
+  }
+
   /* 나라 이름은 있는 줄 알 정도만. 화면 가운데에 가까운 것부터 다섯 개까지,
      말풍선·다른 이름과 겹치면 건너뛴다. 지구 전체에서는 더 적게. */
   const nameCap = stop === 0 ? 4 : 6;
@@ -788,6 +1069,16 @@ function frame(now){
   const maxStep = MAX_SPIN*dt;
   yawV = Math.max(-maxStep, Math.min(maxStep, yawV));
   pitch = Math.max(-1.16, Math.min(1.16, pitch));
+
+  // 시대를 바꾼 직후에만 카메라가 한반도를 쫓아간다. 손을 대면 즉시 놓아준다.
+  if(following){
+    let d = yawTarget - yaw;
+    while(d >  Math.PI) d -= 2*Math.PI;
+    while(d < -Math.PI) d += 2*Math.PI;
+    const k = Math.min(1, dt*3.2);
+    yaw += d*k; pitch += (pitchTarget - pitch)*k;
+    if(Math.abs(d) < 0.002 && Math.abs(pitchTarget - pitch) < 0.002) following = false;
+  }
 
   // 손을 대지 않을 때만 아주 느리게 돈다. 첫 터치에 멈춘다.
   if(!dragging) idle += dt; else idle = 0;
@@ -874,6 +1165,8 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe(document.documentEle
   resize();
   earthMat.uniforms.map.value = await buildEarthTexture();
   for(const c of COUNTRY_LABELS) addMarker('name', c.lat, c.lon, c.name, 'nm');
+  loadPast().then(()=>{ for(const f of fossilMarks) f.el.style.display='none'; drawOnce(); })
+            .catch(e => { console.warn('화석지 로드 실패', e); $('#b-fossil').disabled = true; });
   drawOnce();                       // 데이터를 기다리는 동안에도 지구는 이미 떠 있다
   requestAnimationFrame(frame);
   await loadLive();

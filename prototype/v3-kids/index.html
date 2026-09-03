@@ -2595,5 +2595,79 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe(document.documentEle
 })();
 </script>
 <script src="/js/earth-switch.js" defer></script>
+<!-- 전환기 오른쪽 도구바. 세 지구가 같은 자리에서 같은 도구를 쓴다(PD 지시). -->
+<script src="/js/app-bar.js" defer></script>
+<script>
+/* v3 키즈 도구바.
+ *
+ * ⚠️ **설정은 넣지 않는다.** 이 앱에는 지금 설정할 것이 하나도 없다 —
+ *    언어 전환도, 소리도, 저장하는 값도 없다. 빈 설정 버튼을 만들면
+ *    아이가 눌렀을 때 아무 일도 안 일어난다. 그건 없는 것보다 나쁘다.
+ *    설정할 것이 생기면 그때 여기 한 줄 더한다.
+ *
+ * ⚠️ **로그인도 넣지 않는다.** 4~9세가 쓰는 화면이고, 지금은 로그인할 이유도 없다.
+ *
+ * 넣는 것은 하나 — "이게 뭐야". 왼쪽 단추들이 무엇을 보여주는지 아이 말로 적는다.
+ */
+(function () {
+  var WHAT = [
+    ['구름', '지금 하늘에 있는 진짜 구름이야. 인공위성이 찍은 거란다.'],
+    ['비', '지금 비가 오는 곳이야. 파랄수록 조금, 노랗고 빨가면 많이 와.'],
+    ['번개', '천둥번개가 치는 곳이야.'],
+    ['낮과 밤', '해가 비치는 쪽이 낮, 반대쪽이 밤이야. 지금 이 순간 그대로란다.'],
+    ['기온', '어디가 덥고 어디가 추운지 색으로 보여줘.'],
+    ['바람', '바람이 어느 쪽으로 부는지 보여줘.'],
+    ['강·댐', '큰 강과 댐이 어디 있는지 보여줘.'],
+    ['산맥', '땅에서 가장 높이 솟은 곳들이야.'],
+    ['지진·판 경계', '땅이 흔들린 곳과, 땅덩어리가 만나는 금이야.'],
+    ['충돌구', '아주 옛날에 운석이 떨어져 파인 자국이야.'],
+    ['공룡 발자국', '공룡 화석이 나온 곳이야.'],
+    ['옛 대륙', '아주 먼 옛날에는 대륙이 하나로 붙어 있었어. 그때 모습이야.'],
+    ['내 위치', '네가 있는 곳으로 지구를 돌려줘.']
+  ];
+  function sheet() {
+    var old = document.getElementById('kid-what');
+    if (old) { old.remove(); return; }
+    var d = document.createElement('div');
+    d.id = 'kid-what';
+    d.style.cssText = 'position:fixed;inset:0;z-index:9500;display:flex;align-items:center;'
+      + 'justify-content:center;background:rgba(4,8,16,.72);backdrop-filter:blur(6px);'
+      + 'font-family:"IBM Plex Sans KR","Malgun Gothic",system-ui,sans-serif;padding:18px';
+    var rows = WHAT.map(function (w) {
+      return '<div style="display:flex;gap:12px;padding:9px 0;border-top:1px solid rgba(255,255,255,.10)">'
+        + '<b style="min-width:104px;color:#fff;font-size:15px">' + w[0] + '</b>'
+        + '<span style="color:#C7D6EA;font-size:15px;line-height:1.55">' + w[1] + '</span></div>';
+    }).join('');
+    d.innerHTML = '<div style="max-width:620px;max-height:82vh;overflow:auto;background:rgba(10,16,28,.96);'
+      + 'border:1px solid rgba(255,255,255,.16);border-radius:18px;padding:22px 24px;'
+      + 'box-shadow:0 18px 60px rgba(0,0,0,.5)">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+      + '<b style="color:#fff;font-size:20px">이게 뭐야?</b>'
+      + '<button id="kid-what-x" style="border:0;background:rgba(255,255,255,.10);color:#fff;'
+      + 'width:34px;height:34px;border-radius:999px;font-size:18px;cursor:pointer">×</button></div>'
+      + '<div style="color:#8FA4BD;font-size:13px;line-height:1.6;margin-bottom:8px">'
+      + '왼쪽 단추를 누르면 지구가 그걸 보여줘. 전부 <b style="color:#C7D6EA">진짜로 지금 있는 일</b>이야 — '
+      + '지어낸 그림이 아니란다.</div>'
+      + rows + '</div>';
+    d.addEventListener('click', function (e) {
+      if (e.target === d || e.target.id === 'kid-what-x') d.remove();
+    });
+    document.body.appendChild(d);
+  }
+  function mount() {
+    if (!window.earthusAppBar) { setTimeout(mount, 200); return; }
+    window.earthusAppBar.set([
+      { id: 'what', glyph: '?', label: '이게 뭐야', title: '왼쪽 단추가 뭘 보여주는지 알려줄게', onClick: sheet },
+      /* 계정은 EARTHUS(v1)에만 있다. 여기서 만들지 않고 그 화면으로 보낸다 —
+         로그인이 끝나면 back 으로 이 지구에 돌려보낸다. */
+      { id: 'login', glyph: '○', label: '로그인', title: '로그인 / 계정',
+        onClick: function () {
+          location.href = '/?login=1&back=' + encodeURIComponent(location.pathname);
+        } }
+    ]);
+  }
+  mount();
+})();
+</script>
 </body>
 </html>

@@ -4,14 +4,14 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=54';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=55';
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=5';
 import { LiveLayers } from './live-layers.js?v=36';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=2';
-import { i18n } from './i18n.js?v=6';
+import { i18n } from './i18n.js?v=7';
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
 import { PopSculpture } from './pop-sculpture.js?v=13';
@@ -4026,6 +4026,16 @@ async function main() {
       el.style.top = `${Math.round(r.top)}px`;
     }
   };
+  // 계정은 EARTHUS(v1)에만 있다. auth 가 config.local·biometric·access-mode·store·
+  // billing 에 묶여 있어 여기로 통째로 끌어오면 무거워진다 — 계정이 사는 곳으로 보낸다.
+  // 로그인이 끝나면 back 으로 이 지구에 돌아온다(v1 main.js 가 처리).
+  const btnLogin = document.getElementById('btn-login');
+  if (btnLogin) {
+    btnLogin.onclick = () => {
+      location.href = `/?login=1&back=${encodeURIComponent(location.pathname)}`;
+    };
+  }
+
   placePanel();
   // 전환기는 defer 로 늦게 붙을 수 있다. 몇 번 더 확인한다.
   for (const ms of [120, 400, 1200]) setTimeout(placePanel, ms);

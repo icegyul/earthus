@@ -687,6 +687,51 @@ function bindAccountUI() {
   });
   auth.onChange(paintAuthRows);
   paintAuthRows();
+
+  /* 좌상단 지구 전환기 오른쪽 도구바 (PD 지시: 세 지구가 같은 자리에서 같은 도구를 쓴다).
+     ⚠️ 이 앱은 원래 로그인을 앞에 내놓지 않았다 — index.html 에 그 이유가 적혀 있다:
+        "아직 로그인할 이유가 없는데 먼저 보여주면 진입 장벽만 된다".
+        그래서 **로그인 전에는 조용한 아이콘 하나**로 두고, 로그인하면 '계정'으로 바뀐다.
+        유료 기능을 누를 때 그 자리에서 뜨는 기존 흐름(auth.requireLogin)은 그대로다. */
+  const paintAppBar = () => {
+    if (!window.earthusAppBar) return;
+    const on = !!auth.user;
+    window.earthusAppBar.set([
+      { id: 'help', glyph: '?', label: '기능 설명',
+        title: '이 지구에서 무엇을 볼 수 있는지 다시 보기',
+        onClick: () => onboard.coach() },
+      { id: 'settings', glyph: '⚙', label: '설정',
+        title: '설정 (언어·단위·계정)',
+        onClick: () => document.querySelector('#menuMain [data-act="settings"]')?.click() },
+      { id: 'account', glyph: on ? '◉' : '○',
+        label: on ? (auth.isPaid && auth.isPaid() ? '계정 · 구독 중' : '계정') : '로그인',
+        title: on ? '계정' : '로그인 / 가입',
+        onClick: () => (on ? accountSheet.open() : loginSheet.open()) },
+    ]);
+  };
+  auth.onChange(paintAppBar);
+  paintAppBar();
+
+  /* 다른 지구(v2·v3)에서 '로그인'을 누르면 여기로 온다. 계정은 이 앱에만 있고,
+     auth 는 config.local·biometric·access-mode·store·billing 에 묶여 있어
+     저쪽으로 통째로 끌어오면 무거워진다 — 계정이 사는 곳으로 보내는 편이 정직하다.
+     ?back= 이 있으면 로그인이 끝난 뒤 원래 있던 지구로 돌려보낸다. */
+  {
+    const q = new URLSearchParams(location.search);
+    const back = q.get('back');
+    if (back && /^\/[a-z0-9/-]*$/i.test(back)) {
+      auth.onChange(() => { if (auth.user) location.replace(back); });
+    }
+    if (q.get('login') === '1') {
+      // 이미 로그인돼 있으면 계정을, 아니면 로그인을 연다.
+      setTimeout(() => { (auth.user ? accountSheet : loginSheet).open(); }, 400);
+      q.delete('login');
+      const rest = q.toString();
+      history.replaceState(null, '', location.pathname + (rest ? `?${rest}` : ''));
+    }
+  }
+  // app-bar.js 는 defer 라 늦게 붙을 수 있다.
+  for (const ms of [150, 600]) setTimeout(paintAppBar, ms);
   // ⚠️ 위에서 지웠을 수 있다 — ?. 로 받는다
   const bw = $('#btnWaitlist');
   if (bw) bw.onclick = () => { close('settings'); open('waitlistSheet'); waitlistUI.init(); };

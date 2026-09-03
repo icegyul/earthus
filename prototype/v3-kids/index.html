@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>지구야, 오늘 어때? — EARTHUS KIDS 샘플</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+:root{
+  --kid:"Jua","Malgun Gothic",sans-serif;
+  --ui:"IBM Plex Sans KR","Malgun Gothic",system-ui,sans-serif;
+  --space-0:#050b1c;
+  --space-1:#0d1a3a;
+  --bubble:#ffffff;
+  --bubble-ink:#16223a;
+  --rail:rgba(255,255,255,.14);
+  --sun:#FFC24B;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--space-0)}
+body{
+  font-family:var(--ui);color:#fff;
+  -webkit-font-smoothing:antialiased;
+  touch-action:none;user-select:none;-webkit-user-select:none;
+}
+#stage{position:fixed;inset:0}
+canvas#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* ── 하늘 배경 ── */
+#sky{position:absolute;inset:0;background:
+  radial-gradient(120% 90% at 50% 42%, #16305e 0%, #0c1a3c 42%, #050b1c 100%);
+}
+#stars{position:absolute;inset:0;pointer-events:none}
+
+/* ── 머리글 ── */
+#head{position:absolute;top:22px;left:0;right:0;text-align:center;pointer-events:none;z-index:6}
+#head h1{font-family:var(--kid);font-size:clamp(26px,3.6vw,40px);margin:0;letter-spacing:.01em;
+  text-shadow:0 2px 14px rgba(0,0,0,.55)}
+#head p{margin:8px 0 0;font-size:clamp(12px,1.4vw,15px);opacity:.72;text-shadow:0 1px 10px rgba(0,0,0,.85),0 0 18px rgba(5,11,28,.8)}
+
+/* ── 상태 배지 ── */
+#badge{position:absolute;top:20px;right:20px;z-index:7;display:flex;gap:8px;align-items:center;
+  font-size:11.5px;letter-spacing:.06em;background:rgba(6,14,32,.62);border:1px solid rgba(255,255,255,.16);
+  padding:7px 12px;border-radius:999px;backdrop-filter:blur(6px)}
+#badge .dot{width:7px;height:7px;border-radius:50%;background:#5ce0a0;box-shadow:0 0 9px #5ce0a0}
+#badge.warn .dot{background:#ffb020;box-shadow:0 0 9px #ffb020}
+#badge.err .dot{background:#ff7a7a;box-shadow:0 0 9px #ff7a7a}
+
+/* ── 왼쪽 레일 ── */
+#rail{position:absolute;left:18px;top:50%;transform:translateY(-50%);z-index:6;
+  display:flex;flex-direction:column;gap:12px}
+.railbtn{
+  width:56px;height:56px;border-radius:18px;border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.10);backdrop-filter:blur(8px);
+  display:grid;place-items:center;cursor:pointer;color:#fff;
+  transition:transform .16s ease, background .16s ease;
+}
+.railbtn:hover{background:rgba(255,255,255,.2)}
+.railbtn[aria-pressed="true"]{background:#fff;color:#123;border-color:#fff}
+.railbtn:active{transform:scale(.93)}
+.railbtn:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+.railbtn svg{width:28px;height:28px;display:block}
+
+/* ── 아래 알약 내비 ── */
+#nav{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:6;
+  display:flex;gap:6px;background:rgba(8,16,36,.66);border:1px solid rgba(255,255,255,.16);
+  padding:7px;border-radius:999px;backdrop-filter:blur(10px)}
+#nav button{
+  font-family:var(--kid);font-size:17px;color:#fff;background:transparent;border:0;
+  padding:10px 20px;border-radius:999px;cursor:pointer;min-height:44px;white-space:nowrap;
+}
+#nav button[aria-current="true"]{background:#fff;color:#132242}
+#nav button:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+
+/* ── 우리 집 버튼 ── */
+#home{position:absolute;right:20px;bottom:26px;z-index:6;
+  width:64px;height:64px;border-radius:22px;border:1px solid rgba(255,255,255,.24);
+  background:rgba(255,255,255,.12);backdrop-filter:blur(8px);cursor:pointer;color:#fff;
+  font-family:var(--kid);font-size:12px;display:grid;place-items:center;gap:2px;line-height:1.1}
+#home:active{transform:scale(.94)}
+#home:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+#home span{font-size:22px}
+
+/* ── 말풍선 ── */
+.bub{
+  position:absolute;z-index:5;transform:translate(-50%,-100%);
+  pointer-events:none;will-change:transform,opacity;
+}
+.bub .box{
+  font-family:var(--kid);font-size:15px;line-height:1.34;color:var(--bubble-ink);
+  background:var(--bubble);border-radius:16px;padding:9px 14px;white-space:nowrap;
+  box-shadow:0 6px 18px rgba(0,0,0,.32);position:relative;
+}
+.bub .box::after{
+  content:"";position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);
+  border:7px solid transparent;border-top-color:var(--bubble);border-bottom:0;
+}
+.bub .box b{display:block;font-size:12px;opacity:.55;font-weight:400}
+
+/* ── 나라 이름 (살짝만) ── */
+.nm{
+  position:absolute;z-index:3;transform:translate(-50%,-50%);pointer-events:none;
+  font-family:var(--kid);font-size:13px;color:#fff;letter-spacing:.02em;
+  text-shadow:0 1px 3px rgba(8,22,16,.75),0 0 10px rgba(8,22,16,.5);
+  will-change:transform,opacity;white-space:nowrap;
+}
+
+/* ── 날씨 친구 ── */
+.crt{position:absolute;z-index:4;transform:translate(-50%,-50%);pointer-events:none;
+  will-change:transform,opacity}
+.crt svg{display:block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+@keyframes bobb{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes flash{0%,88%,100%{opacity:.25}90%,96%{opacity:1}}
+.crt .bob{animation:bobb 3.4s ease-in-out infinite}
+.crt .zap{animation:flash 2.6s steps(1,end) infinite;transform-origin:center}
+
+/* ── 첫 안내 ── */
+#hint{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:6;
+  font-family:var(--kid);font-size:16px;background:rgba(8,16,36,.7);padding:10px 20px;
+  border-radius:999px;border:1px solid rgba(255,255,255,.18);transition:opacity .5s}
+#hint.gone{opacity:0}
+
+@media (prefers-reduced-motion:reduce){
+  .crt .bob,.crt .zap{animation:none}
+}
+@media (max-width:720px){
+  #head{top:44px} #head h1{font-size:21px} #head p{display:none}
+  #badge{top:8px;right:8px;left:auto;font-size:9.5px;padding:5px 9px;letter-spacing:.02em}
+  #nav button{padding:9px 13px;font-size:15px}
+  #nav{bottom:18px}
+  #home{bottom:18px}
+  #rail{left:10px;gap:9px}
+  .railbtn{width:48px;height:48px;border-radius:15px}
+  .railbtn svg{width:24px;height:24px}
+  #home{width:56px;height:56px;right:12px}
+  .bub .box{font-size:13.5px;padding:7px 11px}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="sky"></div>
+  <canvas id="stars"></canvas>
+  <canvas id="gl"></canvas>
+
+  <div id="head">
+    <h1>지구야, 오늘 어때?</h1>
+    <p>지구를 돌려서 지금 날씨를 만나 보세요</p>
+  </div>
+
+  <div id="badge"><span class="dot"></span><span id="badgetxt">불러오는 중</span></div>
+
+  <div id="rail" role="group" aria-label="지구에 켤 것">
+    <button class="railbtn" id="b-cloud" aria-pressed="true" aria-label="구름 보기" title="구름">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 23h13a5.5 5.5 0 0 0 .4-11A7.5 7.5 0 0 0 8.3 13 5 5 0 0 0 9 23Z"/></svg>
+    </button>
+    <button class="railbtn" id="b-rain" aria-pressed="true" aria-label="비 보기" title="비">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 19h13a5.3 5.3 0 0 0 .4-10.6A7.3 7.3 0 0 0 8.3 9 4.9 4.9 0 0 0 9 19Z"/>
+        <path d="M12 24l-1.5 3.5M17 24l-1.5 3.5M22 24l-1.5 3.5"/></svg>
+    </button>
+    <button class="railbtn" id="b-zap" aria-pressed="true" aria-label="번개 보기" title="번개">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18h12a5 5 0 0 0 .4-10A7 7 0 0 0 8.4 8.6 4.7 4.7 0 0 0 9 18Z"/>
+        <path d="M17 20l-4 5h4l-1.5 4.5"/></svg>
+    </button>
+    <button class="railbtn" id="b-night" aria-pressed="true" aria-label="낮과 밤 보기" title="낮과 밤">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="16" cy="16" r="10"/><path d="M16 6a10 10 0 0 0 0 20"/><path d="M16 6v20"/></svg>
+    </button>
+  </div>
+
+  <div id="nav" role="group" aria-label="화면 고르기">
+    <button aria-current="true">오늘</button>
+    <button>지구</button>
+    <button>실험</button>
+    <button>내 책</button>
+  </div>
+
+  <button id="home" aria-label="우리 집으로 돌아가기"><span>🏠</span>우리 집</button>
+
+  <div id="hint">손가락으로 지구를 돌려 보세요</div>
+</div>
+
+<script type="module">
+import * as THREE from '../vendor/three-r184.module.min.js';
+
+/* ══════════════════════════════════════════════════════════════
+   EARTHUS v3 KIDS — 샘플 1: 지금 지구에서
+   원칙: 크기는 과장하되 위치와 존재는 사실.
+        데이터가 없으면 친구도 나타나지 않는다.
+   ══════════════════════════════════════════════════════════════ */
+
+const $ = s => document.querySelector(s);
+const stage = $('#stage');
+const badge = $('#badge'), badgetxt = $('#badgetxt');
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ── 별 배경 (장식이며 실제 항성 카탈로그가 아님) ─────────────── */
+(function stars(){
+  const c = $('#stars'), x = c.getContext('2d');
+  function draw(){
+    const w = c.width = innerWidth, h = c.height = innerHeight;
+    x.clearRect(0,0,w,h);
+    for(let i=0;i<260;i++){
+      const r = Math.random()*1.25+.25;
+      x.globalAlpha = Math.random()*.55+.18;
+      x.fillStyle = '#dfe9ff';
+      x.beginPath(); x.arc(Math.random()*w, Math.random()*h, r, 0, 6.283); x.fill();
+    }
+    x.globalAlpha = 1;
+  }
+  draw(); addEventListener('resize', draw);
+})();
+
+/* ── 태양 위치: 실시간 천문 계산 (v2와 동일 규약) ──────────────── */
+function subsolar(date){
+  const d = date.getTime()/86400000 + 2440587.5 - 2451545.0;      // J2000 기준일
+  const g = (357.529 + 0.98560028*d) * Math.PI/180;                 // 평균 근점이각
+  const q = 280.459 + 0.98564736*d;                                 // 평균 황경
+  const L = (q + 1.915*Math.sin(g) + 0.020*Math.sin(2*g)) * Math.PI/180;
+  const e = (23.439 - 0.00000036*d) * Math.PI/180;                  // 황도 경사
+  const dec = Math.asin(Math.sin(e)*Math.sin(L));                   // 적위
+  const ra  = Math.atan2(Math.cos(e)*Math.sin(L), Math.cos(L));     // 적경
+  const gmst = (18.697374558 + 24.06570982441908*d) % 24;
+  let lon = (ra*180/Math.PI) - gmst*15;
+  lon = ((lon + 540) % 360) - 180;
+  return { lat: dec*180/Math.PI, lon };
+}
+const llToVec = (lat, lon, r=1) => {
+  const p = (90-lat)*Math.PI/180, t = (lon+180)*Math.PI/180;
+  return new THREE.Vector3(-r*Math.sin(p)*Math.cos(t), r*Math.cos(p), r*Math.sin(p)*Math.sin(t));
+};
+
+/* ── 툰 지구 텍스처: 진짜 해안선을 평평한 색 두 단으로 ─────────── */
+let COUNTRY_LABELS = [];      // {name, lat, lon}
+
+// 이름을 붙일 나라. 다 붙이면 지구가 글자로 덮인다 — 화면당 몇 개만 보이게 할 것.
+const LABEL_CODES = new Set([
+  'KR','JP','CN','MN','TW','PH','VN','TH','ID','MY','IN','PK','KZ','RU',
+  'AU','NZ','US','CA','MX','BR','AR','CL','PE','CO',
+  'GB','FR','DE','ES','IT','PL','SE','NO','UA','TR','SA','IR','IQ',
+  'EG','ZA','NG','ET','KE','DZ','MA','CD','TZ','SD','GL'
+]);
+
+// 정식 국호 대신 아이가 부르는 이름
+const SHORT_NAME = {
+  CN:'중국', RU:'러시아', US:'미국', GB:'영국', KR:'한국', KP:'북한',
+  JP:'일본', IN:'인도', BR:'브라질', AU:'호주', NZ:'뉴질랜드',
+  DE:'독일', FR:'프랑스', ES:'스페인', IT:'이탈리아', NL:'네덜란드',
+  EG:'이집트', ZA:'남아공', SA:'사우디', AE:'아랍에미리트',
+  MX:'멕시코', CA:'캐나다', AR:'아르헨티나', CL:'칠레', PE:'페루', CO:'콜롬비아',
+  TR:'튀르키예', IR:'이란', IQ:'이라크', UA:'우크라이나', PL:'폴란드',
+  SE:'스웨덴', NO:'노르웨이', KZ:'카자흐스탄', MN:'몽골', TW:'대만',
+  PH:'필리핀', VN:'베트남', TH:'태국', ID:'인도네시아', MY:'말레이시아',
+  PK:'파키스탄', NG:'나이지리아', ET:'에티오피아', KE:'케냐',
+  DZ:'알제리', MA:'모로코', CD:'콩고', TZ:'탄자니아', SD:'수단', GL:'그린란드',
+};
+
+const polysOf = geo => geo.type === 'Polygon' ? [geo.coordinates]
+                     : geo.type === 'MultiPolygon' ? geo.coordinates : [];
+
+// 가장 큰 고리의 면적중심 — 이름표를 나라 한복판에 놓기 위해서다
+function labelPoint(geo){
+  let best = null, bestA = 0;
+  for(const poly of polysOf(geo)){
+    const ring = poly[0]; if(!ring || ring.length < 4) continue;
+    let a = 0, cx = 0, cy = 0;
+    for(let i=0;i<ring.length-1;i++){
+      const [x1,y1] = ring[i], [x2,y2] = ring[i+1];
+      const f = x1*y2 - x2*y1;
+      a += f; cx += (x1+x2)*f; cy += (y1+y2)*f;
+    }
+    a *= 0.5;
+    if(Math.abs(a) > Math.abs(bestA)){
+      bestA = a;
+      best = Math.abs(a) < 1e-9 ? [ring[0][0], ring[0][1]]
+                                : [cx/(6*a), cy/(6*a)];
+    }
+  }
+  return best && Math.abs(bestA) > 2 ? { lon: best[0], lat: best[1] } : null;
+}
+
+async function buildEarthTexture(){
+  const W = 4096, H = 2048;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+
+  // 바다 — 한 가지 다정한 파랑
+  g.fillStyle = '#3E86D6'; g.fillRect(0,0,W,H);
+
+  let feats = [];
+  try {
+    const r = await fetch('../data/country-reference.json');
+    feats = (await r.json()).features || [];
+  } catch(e){ console.warn('국가 폴리곤 로드 실패', e); }
+
+  const px = (lon,lat) => [ (lon+180)/360*W, (90-lat)/180*H ];
+
+  function trace(){
+    for(const f of feats){
+      for(const poly of polysOf(f.geometry)){
+        for(const ring of poly){
+          g.moveTo(...px(ring[0][0], ring[0][1]));
+          for(let i=1;i<ring.length;i++) g.lineTo(...px(ring[i][0], ring[i][1]));
+          g.closePath();
+        }
+      }
+    }
+  }
+
+  // 땅 — 초록 한 단, 그 위에 살짝 밝은 안쪽 단 (툰 두 단)
+  g.fillStyle = '#4E9E52'; g.beginPath(); trace(); g.fill('evenodd');
+  g.globalAlpha = .5;
+  g.fillStyle = '#69B45E'; g.beginPath(); trace(); g.fill('evenodd');
+  g.globalAlpha = 1;
+
+  // 국경선 — 살짝만. 있는 줄 알 정도지 읽으라고 그리는 게 아니다.
+  g.strokeStyle = 'rgba(255,255,255,.34)';
+  g.lineWidth = 2.4; g.lineJoin = 'round';
+  g.beginPath(); trace(); g.stroke();
+
+  // 해안선은 국경선보다 조금 더 또렷하게 — 땅의 윤곽이 먼저 읽혀야 한다
+  g.strokeStyle = 'rgba(28,72,48,.30)';
+  g.lineWidth = 3.2;
+  g.beginPath(); trace(); g.stroke();
+
+  // 극지 — 눈 색. 위도로만 칠하고 위치를 만들지 않는다.
+  const grad = g.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,   'rgba(243,249,255,1)');
+  grad.addColorStop(.030,'rgba(243,249,255,1)');     // 극은 완전히 덮는다
+  grad.addColorStop(.105,'rgba(243,249,255,0)');
+  grad.addColorStop(.895,'rgba(243,249,255,0)');
+  grad.addColorStop(.970,'rgba(243,249,255,1)');
+  grad.addColorStop(1,   'rgba(243,249,255,1)');
+  g.fillStyle = grad; g.fillRect(0,0,W,H);
+
+  COUNTRY_LABELS = feats
+    .filter(f => LABEL_CODES.has(f.code))
+    .map(f => { const p = labelPoint(f.geometry);
+                return p ? { name: SHORT_NAME[f.code] || f.nameKo || f.nameEn, ...p } : null; })
+    .filter(Boolean);
+
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+
+/* ── 렌더러 ────────────────────────────────────────────────── */
+const canvas = $('#gl');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+
+const earthGroup = new THREE.Group();
+scene.add(earthGroup);
+
+const R = 1;
+const sunDir = new THREE.Vector3();
+
+/* 툰 셰이딩: 낮/황혼/밤 세 단. 밴딩이 곧 화풍이다. */
+const earthMat = new THREE.ShaderMaterial({
+  uniforms: {
+    map:      { value: null },
+    sunDir:   { value: sunDir },
+    nightMix: { value: 1 },
+  },
+  vertexShader: `
+    varying vec2 vUv; varying vec3 vN;
+    void main(){ vUv = uv; vN = normalize(normalMatrix * normal);
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
+  `,
+  fragmentShader: `
+    uniform sampler2D map; uniform vec3 sunDir; uniform float nightMix;
+    varying vec2 vUv; varying vec3 vN;
+    void main(){
+      vec3 base = texture2D(map, vUv).rgb;
+      float d = dot(normalize(vN), normalize(sunDir));
+      float band = d > 0.28 ? 1.0 : (d > -0.06 ? 0.62 : 0.30);
+      band = mix(1.0, band, nightMix);
+      vec3 night = mix(base, vec3(0.09,0.15,0.34), 0.72);
+      vec3 col = mix(night, base, smoothstep(0.30, 1.0, band));
+      col *= 0.72 + 0.28*band;
+      float rim = pow(1.0 - abs(dot(normalize(vN), vec3(0.0,0.0,1.0))), 2.6);
+      col += vec3(0.36,0.60,0.95) * rim * 0.5;
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `
+});
+const earth = new THREE.Mesh(new THREE.SphereGeometry(R, 128, 80), earthMat);
+earthGroup.add(earth);
+
+/* 대기 — 바깥으로 부드럽게 번지는 파란 테두리 */
+const glow = new THREE.Mesh(
+  new THREE.SphereGeometry(R*1.055, 64, 40),
+  new THREE.ShaderMaterial({
+    transparent:true, side:THREE.BackSide, depthWrite:false,
+    vertexShader:`varying vec3 vN; void main(){ vN = normalize(normalMatrix*normal);
+      gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0);} `,
+    fragmentShader:`varying vec3 vN;
+      void main(){ float i = pow(1.0-abs(dot(normalize(vN), vec3(0.0,0.0,1.0))), 3.0);
+      gl_FragColor = vec4(0.42,0.68,1.0, i*0.85); }`
+  })
+);
+earthGroup.add(glow);
+
+/* ── 구름 껍질: 진짜 격자 운량으로 그린 뭉게 덩어리 ────────────── */
+const cloudCv = document.createElement('canvas'); cloudCv.width = 2048; cloudCv.height = 1024;
+const cloudTex = new THREE.CanvasTexture(cloudCv);
+cloudTex.colorSpace = THREE.SRGBColorSpace;
+const clouds = new THREE.Mesh(
+  new THREE.SphereGeometry(R*1.012, 96, 60),
+  new THREE.MeshBasicMaterial({ map:cloudTex, transparent:true, depthWrite:false, opacity:0 })
+);
+earthGroup.add(clouds);
+
+/* 귀여운 구름 도장 하나를 미리 그려 두고, 격자마다 찍는다.
+   얇게 흩어지는 실사 구름 대신 둥글둥글 겹친 덩어리 — 아이가 "구름"이라고 부르는 모양. */
+const CLOUD_STAMP = (function(){
+  const w = 256, h = 168;
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d');
+  g.fillStyle = '#fff';
+  g.filter = 'blur(3px)';                       // 가장자리만 아주 살짝 부드럽게
+  const lobes = [
+    [ 78, 96, 44], [128, 68, 54], [178, 94, 42],
+    [ 52,112, 32], [204,112, 30], [128,110, 46],
+  ];
+  g.beginPath();
+  for(const [x,y,r] of lobes){ g.moveTo(x+r,y); g.arc(x,y,r,0,6.283); }
+  // 아래는 평평하게 — 구름은 바닥이 눌린 모양이라야 구름으로 보인다
+  g.moveTo(44,104); g.lineTo(212,104);
+  g.quadraticCurveTo(216,140, 180,140); g.lineTo(76,140);
+  g.quadraticCurveTo(40,140, 44,104);
+  g.fill();
+  return c;
+})();
+
+function paintClouds(points){
+  const c = cloudCv, g = c.getContext('2d');
+  g.clearRect(0,0,c.width,c.height);
+
+  const PXDEG = c.width/360;
+  const baseW = 15 * PXDEG * 1.15;             // 격자 간격(20°)보다 작게 — 서로 붙어 띠가 되지 않게
+
+  for(const p of points){
+    if(!(p.cloud > 55)) continue;              // 값이 없거나 옅으면 그리지 않는다
+    const strength = Math.min(1, (p.cloud-55)/45);
+    const x = (p.lon+180)/360*c.width, y = (90-p.lat)/180*c.height;
+
+    // 등장방형 도법에서 극에 가까울수록 경도가 늘어난다 → 가로로 늘려야 구면에서 둥글다
+    const stretch = Math.min(3.2, 1/Math.max(0.3, Math.cos(p.lat*Math.PI/180)));
+    const dw = baseW * (0.66 + strength*0.40) * stretch;
+    const dh = dw / stretch * (CLOUD_STAMP.height/CLOUD_STAMP.width);
+
+    // 격자가 눈에 띄지 않게 자리와 크기를 조금씩 흩는다 (위치는 격자 셀 안에서만)
+    const jx = Math.sin(p.lon*1.7 + p.lat*0.9) * dw * 0.16;
+    const jy = Math.cos(p.lon*0.8 + p.lat*1.3) * dh * 0.18;
+    const flip = ((p.lon*3 + p.lat*7) | 0) % 2 ? 1 : -1;
+
+    g.globalAlpha = 0.42 + strength*0.52;
+    g.save();
+    g.translate(x+jx, y+jy); g.scale(flip, 1);
+    g.drawImage(CLOUD_STAMP, -dw/2, -dh/2, dw, dh);
+    g.restore();
+
+    // 경도 이음매에서 잘리지 않게 반대편에도 한 번
+    if(x < dw)             { g.save(); g.translate(x+jx+c.width, y+jy); g.scale(flip,1);
+                             g.drawImage(CLOUD_STAMP,-dw/2,-dh/2,dw,dh); g.restore(); }
+    if(x > c.width - dw)   { g.save(); g.translate(x+jx-c.width, y+jy); g.scale(flip,1);
+                             g.drawImage(CLOUD_STAMP,-dw/2,-dh/2,dw,dh); g.restore(); }
+  }
+  g.globalAlpha = 1;
+  cloudTex.needsUpdate = true;
+}
+
+/* ── 카메라: 세 칸으로 잠근 줌 ────────────────────────────────── */
+// 줌 단계 = 화면 짧은 변의 절반 대비 지구 반지름 비율. 기기가 달라도 같은 크기로 보인다.
+const FILL = [0.80, 1.28, 1.80];    // 지구 전체 / 우리나라 / 우리 동네
+let tanMin = 0.344, screenR = 300;  // 매 프레임 갱신
+const distFor = f => R / (f * tanMin);
+const STOPS = FILL;
+let stop = 0, dist = 3.6, distTarget = 3.6;
+const HOME = { lat: 36.5, lon: 127.9 };            // 부모가 고른 우리 동네 (GPS 아님)
+const yawFor   = lon => -lon*Math.PI/180;
+const pitchFor  = lat =>  lat*Math.PI/180;
+let yaw = yawFor(HOME.lon), pitch = pitchFor(HOME.lat);
+let yawV = 0, pitchV = 0, dragging = false, lastX = 0, lastY = 0, idle = 0;
+const MAX_SPIN = 1.05;                              // rad/s ≈ 60°/s — 초당 90도보다 보수적으로
+
+function pointerDown(e){
+  dragging = true; idle = 0; lastX = e.clientX; lastY = e.clientY;
+  canvas.setPointerCapture?.(e.pointerId);
+  $('#hint').classList.add('gone');
+}
+function pointerMove(e){
+  if(!dragging) return;
+  const k = 0.0052 * (dist/distFor(FILL[0]));
+  yawV   += (e.clientX-lastX)*k;
+  pitchV += (e.clientY-lastY)*k;
+  lastX = e.clientX; lastY = e.clientY;
+}
+function pointerUp(){ dragging = false; }
+canvas.addEventListener('pointerdown', pointerDown);
+addEventListener('pointermove', pointerMove);
+addEventListener('pointerup', pointerUp);
+addEventListener('pointercancel', pointerUp);
+
+function goStop(i){
+  stop = Math.max(0, Math.min(FILL.length-1, i));
+  distTarget = distFor(FILL[stop]);
+}
+$('#home').addEventListener('click', ()=>{
+  goStop(0);
+  yaw = yawFor(HOME.lon);
+  pitch = pitchFor(HOME.lat);
+  yawV = pitchV = 0;
+});
+// 지구를 두 번 누르면 한 칸 들어간다 (핀치 없이도 전부 된다)
+canvas.addEventListener('dblclick', ()=> goStop(stop+1));
+$('#nav').children[1].addEventListener('click', ()=> goStop(stop+1 >= STOPS.length ? 0 : stop+1));
+
+/* ── 레일 토글 ────────────────────────────────────────────── */
+const show = { cloud:true, rain:true, zap:true, night:true };
+for(const [id,key] of [['#b-cloud','cloud'],['#b-rain','rain'],['#b-zap','zap'],['#b-night','night']]){
+  $(id).addEventListener('click', e=>{
+    show[key] = !show[key];
+    e.currentTarget.setAttribute('aria-pressed', String(show[key]));
+    if(key === 'cloud') clouds.visible = show.cloud;
+  });
+}
+
+/* ── 날씨 친구 ─────────────────────────────────────────────── */
+const FACE = `<circle cx="-5" cy="0" r="1.9" fill="#2b3a52"/><circle cx="5" cy="0" r="1.9" fill="#2b3a52"/>
+              <path d="M-3.6 4.4a4.4 4.4 0 0 0 7.2 0" stroke="#2b3a52" stroke-width="1.7" fill="none" stroke-linecap="round"/>`;
+// 위험기상은 웃지 않는다. 눈만 두고 입은 차분한 선으로.
+const CALM = `<circle cx="-5" cy="0" r="1.9" fill="#2b3a52"/><circle cx="5" cy="0" r="1.9" fill="#2b3a52"/>
+              <path d="M-3.4 5.2h6.8" stroke="#2b3a52" stroke-width="1.7" stroke-linecap="round"/>`;
+const ART = {
+  sun:  `<svg width="76" height="76" viewBox="-38 -38 76 76"><g class="bob">
+          <g stroke="#FFB020" stroke-width="4.4" stroke-linecap="round">
+          ${Array.from({length:8},(_,i)=>{const a=i*Math.PI/4;
+            return `<line x1="${Math.cos(a)*20.5}" y1="${Math.sin(a)*20.5}" x2="${Math.cos(a)*28}" y2="${Math.sin(a)*28}"/>`}).join('')}
+          </g><circle r="17.5" fill="#FFD264"/><g transform="translate(0,-1)">${FACE}</g></g></svg>`,
+  cloud:`<svg width="80" height="60" viewBox="-40 -30 80 60"><g class="bob">
+          <path d="M-22 14h32a13 13 0 0 0 1-25.6A17 17 0 0 0-23.5-9 12 12 0 0 0-22 14Z" fill="#FDFEFF"/>
+          <g transform="translate(-1,2)">${FACE}</g></g></svg>`,
+  rain: `<svg width="84" height="80" viewBox="-42 -34 84 80"><g class="bob">
+          <path d="M-22 10h32a13 13 0 0 0 1-25.6A17 17 0 0 0-23.5-13 12 12 0 0 0-22 10Z" fill="#C6D6E8"/>
+          <g transform="translate(-1,-2)">${FACE}</g></g>
+          <g fill="#5AA9F0"><ellipse cx="-13" cy="22" rx="3.1" ry="4.6"/><ellipse cx="0" cy="28" rx="3.1" ry="4.6"/>
+          <ellipse cx="13" cy="22" rx="3.1" ry="4.6"/></g></svg>`,
+  snow: `<svg width="80" height="76" viewBox="-40 -32 80 76"><g class="bob">
+          <path d="M-21 10h31a12.5 12.5 0 0 0 1-24.6A16.4 16.4 0 0 0-22.5-12 11.6 11.6 0 0 0-21 10Z" fill="#EAF3FF"/>
+          <g transform="translate(-1,-2)">${FACE}</g></g>
+          <g stroke="#9FD0FF" stroke-width="2.3" stroke-linecap="round">
+          <path d="M-12 19v9M-16.5 23.5h9M0 25v9M-4.5 29.5h9M12 19v9M7.5 23.5h9"/></g></svg>`,
+  zap:  `<svg width="80" height="82" viewBox="-40 -34 80 82"><g class="bob">
+          <path d="M-22 8h32a13 13 0 0 0 1-25.6A17 17 0 0 0-23.5-15 12 12 0 0 0-22 8Z" fill="#A9B7CC"/>
+          <g transform="translate(-1,-4)">${CALM}</g></g>
+          <path class="zap" d="M4 12l-13 16h9l-3.5 14 15-19h-9.5l6-11z" fill="#FFD264" stroke="#FFB020" stroke-width="1.6" stroke-linejoin="round"/></svg>`,
+};
+
+const markers = [];   // {el, pos:Vector3, kind}
+function addMarker(kind, lat, lon, html, cls){
+  const el = document.createElement('div');
+  el.className = cls; el.innerHTML = html;
+  stage.appendChild(el);
+  markers.push({ el, pos: llToVec(lat, lon, R*1.02), kind });
+  return el;
+}
+
+/* ── 실측 불러오기 (open-meteo 실황) ───────────────────────────
+   격자 = 전지구 운량·강수. 도시 = 말풍선.
+   값 생성 없음. 실패하면 그리지 않고 배지로 알린다. */
+const CITIES = [
+  ['서울',37.57,126.98], ['도쿄',35.68,139.69], ['베이징',39.90,116.41],
+  ['마닐라',14.60,120.98], ['시드니',-33.87,151.21], ['뭄바이',19.08,72.88],
+  ['카이로',30.04,31.24], ['런던',51.51,-0.13], ['모스크바',55.75,37.62],
+  ['뉴욕',40.71,-74.01], ['리마',-12.05,-77.04], ['상파울루',-23.55,-46.63],
+  ['케이프타운',-33.92,18.42], ['앵커리지',61.22,-149.90], ['롱이어비엔',78.22,15.65],
+];
+
+function gridPoints(){
+  const pts = [];
+  for(let lat=-70; lat<=80; lat+=15)
+    for(let lon=-180; lon<180; lon+=20) pts.push({lat, lon});
+  return pts;
+}
+
+const TTL = 10*60*1000;   // 같은 실황을 10분 안에 다시 부르지 않는다
+async function omFetch(pts, fields){
+  const url = 'https://api.open-meteo.com/v1/forecast'
+    + '?latitude='  + pts.map(p=>p.lat).join(',')
+    + '&longitude=' + pts.map(p=>p.lon).join(',')
+    + '&current='   + fields.join(',');
+  const key = 'om:' + fields.join('|') + ':' + pts.length;
+  try{
+    const hit = JSON.parse(sessionStorage.getItem(key) || 'null');
+    if(hit && Date.now()-hit.t < TTL && hit.u === url) return hit.d;
+  }catch(e){}
+  const r = await fetch(url);
+  if(!r.ok) throw new Error('open-meteo ' + r.status);
+  const j = await r.json();
+  const d = Array.isArray(j) ? j : [j];
+  try{ sessionStorage.setItem(key, JSON.stringify({t:Date.now(), u:url, d})); }catch(e){}
+  return d;
+}
+
+const WMO = code => {
+  if(code === 0) return 'sun';
+  if(code <= 3)  return 'cloud';
+  if(code >= 95) return 'zap';
+  if((code>=71&&code<=77)||code===85||code===86) return 'snow';
+  if(code >= 51) return 'rain';
+  return 'cloud';
+};
+const SAY = { sun:'맑아요', cloud:'구름이 많아요', rain:'비가 와요', snow:'눈이 내려요', zap:'번개가 쳐요' };
+
+async function loadLive(){
+  try{
+    const grid = gridPoints();
+    const [gRes, cRes] = await Promise.all([
+      omFetch(grid,   ['cloud_cover','precipitation']),
+      omFetch(CITIES.map(c=>({lat:c[1],lon:c[2]})), ['weather_code','temperature_2m','cloud_cover']),
+    ]);
+
+    // 전지구 구름
+    const pts = gRes.map((d,i)=>({
+      lat: grid[i].lat, lon: grid[i].lon,
+      cloud: d?.current?.cloud_cover ?? null,
+      rain:  d?.current?.precipitation ?? 0,
+    })).filter(p => p.cloud != null);
+    paintClouds(pts);
+    clouds.material.opacity = 1.0;
+
+    // 격자에서 비가 실제로 오는 곳에 비 친구 — 위치는 격자 그대로
+    pts.filter(p => p.rain >= 0.3)
+       .sort((a,b)=>b.rain-a.rain).slice(0,14)
+       .forEach(p => addMarker('rain', p.lat, p.lon, ART.rain, 'crt'));
+
+    // 도시 말풍선 + 친구
+    cRes.forEach((d,i)=>{
+      const cur = d?.current; if(!cur) return;
+      const [name, lat, lon] = CITIES[i];
+      const kind = WMO(cur.weather_code);
+      addMarker(kind, lat, lon, ART[kind], 'crt');
+      if(i < 6) addMarker('bub', lat, lon,
+        `<div class="box">${name} ${SAY[kind]}<b>${Math.round(cur.temperature_2m)}도</b></div>`, 'bub');
+    });
+
+    const t = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    badgetxt.textContent = `실측 · open-meteo · ${t}`;
+    badge.className = '';
+  }catch(err){
+    console.error(err);
+    badge.className = 'err';
+    badgetxt.textContent = '날씨를 못 불러왔어요 — 친구를 그리지 않습니다';
+    clouds.material.opacity = 0;      // 데이터가 없으면 그리지 않는다
+  }
+}
+
+/* ── 마커 투영: 3D 좌표 → 화면 좌표 ─────────────────────────── */
+const _v = new THREE.Vector3(), _c = new THREE.Vector3();
+let creatureScale = 1;
+function placeMarkers(w, h){
+  camera.getWorldPosition(_c);
+  const bubs = [], names = [];
+
+  for(const m of markers){
+    _v.copy(m.pos).applyMatrix4(earthGroup.matrixWorld);
+    const toCam = _c.clone().sub(_v).normalize();
+    const facing = _v.clone().normalize().dot(toCam);     // 뒤로 넘어가면 음수
+    if(facing <= 0.06){ m.el.style.visibility = 'hidden'; continue; }
+    const p = _v.clone().project(camera);
+    if(p.z > 1){ m.el.style.visibility = 'hidden'; continue; }
+
+    const X = (p.x*0.5+0.5)*w, Y = (-p.y*0.5+0.5)*h;
+    const vis = (m.kind === 'bub')  ? true
+              : (m.kind === 'rain' || m.kind === 'snow') ? show.rain
+              : (m.kind === 'zap')  ? show.zap
+              : show.cloud;
+    const alpha = vis ? Math.min(1, (facing-0.06)/0.24) : 0;
+
+    if(m.kind === 'bub' || m.kind === 'name'){
+      (m.kind === 'bub' ? bubs : names).push({ m, X, Y, alpha });
+      continue;
+    }
+
+    m.el.style.visibility = alpha > 0.02 ? 'visible' : 'hidden';
+    m.el.style.opacity = alpha;
+    m.el.style.transform =
+      `translate(${X}px, ${Y}px) translate(-50%,-50%) scale(${creatureScale.toFixed(3)})`;
+  }
+
+  /* 말풍선은 한 번에 세 개까지만.
+     아이에게 한 번에 모든 데이터를 보여주지 않는다 — 화면 가운데에 가까운 것부터 고르고,
+     이미 놓인 풍선과 겹치면 건너뛴다. 위치를 옮기지는 않는다. */
+  const cx = w/2, cy = h/2;
+  bubs.sort((a,b)=> ((a.X-cx)**2 + (a.Y-cy)**2) - ((b.X-cx)**2 + (b.Y-cy)**2));
+  const placed = [];
+  for(const b of bubs){
+    const r = b.m.el.firstElementChild?.getBoundingClientRect();
+    const bw = r?.width || 130, bh = r?.height || 46;
+    const clash = placed.some(q => Math.abs(q.X-b.X) < (q.bw+bw)/2 + 8
+                                && Math.abs(q.Y-b.Y) < (q.bh+bh)/2 + 8);
+    // 화면 밖으로 잘리는 풍선은 아예 띄우지 않는다 (반쯤 잘린 글자가 제일 나쁘다)
+    const railW = w < 720 ? 66 : 84;                    // 왼쪽 레일이 차지하는 폭
+    const inside = (b.X - bw/2) > railW && (b.X + bw/2) < w-14
+                && (b.Y - bh - 30) > 56 && b.Y < h-96;
+    const ok = !clash && inside && placed.length < 3 && b.alpha > 0.55;
+    b.m.el.style.visibility = ok ? 'visible' : 'hidden';
+    b.m.el.style.opacity = ok ? b.alpha : 0;
+    if(ok){
+      placed.push({ X:b.X, Y:b.Y, bw, bh });
+      b.m.el.style.transform = `translate(${b.X}px, ${b.Y - 26*creatureScale}px) translate(-50%,-100%)`;
+    }
+  }
+
+  /* 나라 이름은 있는 줄 알 정도만. 화면 가운데에 가까운 것부터 다섯 개까지,
+     말풍선·다른 이름과 겹치면 건너뛴다. 지구 전체에서는 더 적게. */
+  const nameCap = stop === 0 ? 4 : 6;
+  names.sort((a,b)=> ((a.X-cx)**2 + (a.Y-cy)**2) - ((b.X-cx)**2 + (b.Y-cy)**2));
+  const nameSpots = placed.slice();
+  let shown = 0;
+  for(const n of names){
+    const nw = n.m.el.offsetWidth || 44, nh = n.m.el.offsetHeight || 18;
+    const clash = nameSpots.some(q => Math.abs(q.X-n.X) < (q.bw+nw)/2 + 10
+                                   && Math.abs(q.Y-n.Y) < (q.bh+nh)/2 + 10);
+    const inView = n.X > 8 && n.X < w-8 && n.Y > 52 && n.Y < h-92;
+    const ok = !clash && inView && shown < nameCap && n.alpha > 0.72;
+    n.m.el.style.visibility = ok ? 'visible' : 'hidden';
+    n.m.el.style.opacity = ok ? (0.38 + 0.36*n.alpha) : 0;   // 살짝만
+    if(ok){
+      shown++;
+      nameSpots.push({ X:n.X, Y:n.Y, bw:nw, bh:nh });
+      n.m.el.style.transform = `translate(${n.X}px, ${n.Y}px) translate(-50%,-50%)`;
+    }
+  }
+}
+
+/* ── 루프 ──────────────────────────────────────────────────── */
+let last = performance.now();
+function frame(now){
+  const dt = Math.min(0.05, (now-last)/1000); last = now;
+
+  // 관성 + 감쇠. 손을 떼도 부드럽게 멈춘다.
+  yaw += yawV; pitch += pitchV;
+  const damp = Math.pow(0.86, dt*60);
+  yawV *= damp; pitchV *= damp;
+  const maxStep = MAX_SPIN*dt;
+  yawV = Math.max(-maxStep, Math.min(maxStep, yawV));
+  pitch = Math.max(-1.16, Math.min(1.16, pitch));
+
+  // 손을 대지 않을 때만 아주 느리게 돈다. 첫 터치에 멈춘다.
+  if(!dragging) idle += dt; else idle = 0;
+  if(idle > 3.2 && !reduceMotion) yaw += 0.028*dt;
+
+  dist += (distTarget - dist) * Math.min(1, dt*4.5);
+
+  earthGroup.rotation.set(0,0,0);
+  camera.position.set(
+    dist*Math.cos(pitch)*Math.cos(yaw),
+    dist*Math.sin(pitch),
+    dist*Math.cos(pitch)*Math.sin(yaw)
+  );
+  camera.lookAt(0,0,0);
+
+  const ss = subsolar(new Date());
+  sunDir.copy(llToVec(ss.lat, ss.lon, 1)).applyQuaternion(
+    new THREE.Quaternion().setFromRotationMatrix(camera.matrixWorldInverse)
+  );
+  earthMat.uniforms.sunDir.value = llToVec(ss.lat, ss.lon, 1);
+  earthMat.uniforms.nightMix.value += ((show.night?1:0) - earthMat.uniforms.nightMix.value) * Math.min(1, dt*5);
+
+  const w = innerWidth, h = innerHeight;
+  screenR = (R/dist)/tanMin * (Math.min(w,h)/2);
+  creatureScale = Math.max(0.34, Math.min(1.5, (2*screenR/8)/80));
+  earthGroup.updateMatrixWorld();
+  camera.updateMatrixWorld();
+  placeMarkers(w, h);
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+
+function resize(){
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  const tanV = Math.tan(camera.fov*Math.PI/360);
+  tanMin = Math.min(tanV, tanV*camera.aspect);
+  distTarget = distFor(FILL[stop]);
+}
+addEventListener('resize', resize);
+
+/* 셰이더가 카메라 공간 법선을 쓰므로 태양 방향도 카메라 공간으로 넘긴다 */
+earthMat.onBeforeRender = function(){
+  const ss = subsolar(new Date());
+  const world = llToVec(ss.lat, ss.lon, 1);
+  earthMat.uniforms.sunDir.value = world.clone()
+    .transformDirection(camera.matrixWorldInverse);
+};
+
+(async function start(){
+  resize();
+  earthMat.uniforms.map.value = await buildEarthTexture();
+  for(const c of COUNTRY_LABELS) addMarker('name', c.lat, c.lon, c.name, 'nm');
+  requestAnimationFrame(frame);
+  loadLive();
+  setTimeout(()=> $('#hint').classList.add('gone'), 6000);
+})();
+</script>
+</body>
+</html>

@@ -136,7 +136,8 @@ export class LightningMarks {
   setVisible(v) { this.points.visible = !!v; }
 
   // precipTex 의 B 채널에서 가장 센 셀만 골라 표식을 놓는다.
-  build(precipTex, radius, altKm, centerLat, centerLon, viewDeg) {
+  // cloudTex 를 같이 받아 **구름 안에서만** 찍는다 — 구름 없이 번개가 치지는 않는다(PD 지적).
+  build(precipTex, cloudTex, radius, altKm, centerLat, centerLon, viewDeg) {
     const img = precipTex && precipTex.image;
     if (!img || !img.width) { this.points.visible = false; return 0; }
     const lod = lodFor(altKm);
@@ -146,6 +147,27 @@ export class LightningMarks {
     const grid = Math.max(1, span / 6);
     const key = `${img.src || ''}|${lod.alt}|${Math.round(cLat / grid)}|${Math.round(cLon / grid)}`;
     if (key === this.lastKey) return this.points.geometry.drawRange.count;
+
+    // 구름 두께를 함께 읽는다. 문턱은 셰이더가 구름을 보이기 시작하는 값(A≈0.28)과 맞춘다 —
+    // 화면에 구름이 없는데 번개만 뜨면 그건 거짓이다.
+    let cw = null;
+    const cimg = cloudTex && cloudTex.image;
+    if (cimg && cimg.width) {
+      const cc = this.cloudCanvas || (this.cloudCanvas = document.createElement('canvas'));
+      if (cc.width !== cimg.width || cc.height !== cimg.height) {
+        cc.width = cimg.width;
+        cc.height = cimg.height;
+        this.cloudCtx = null;
+      }
+      if (!this.cloudCtx) this.cloudCtx = cc.getContext('2d', { willReadFrequently: true });
+      this.cloudCtx.clearRect(0, 0, cc.width, cc.height);
+      this.cloudCtx.drawImage(cimg, 0, 0);
+      try {
+        cw = { px: this.cloudCtx.getImageData(0, 0, cc.width, cc.height).data, W: cc.width };
+      } catch (e) {
+        cw = null;
+      }
+    }
 
     const W = img.width;
     const H = img.height;
@@ -175,7 +197,9 @@ export class LightningMarks {
         const o = (y * W + x) * 4;
         const b = px[o + 2];
         if (b < lod.thr) continue;
-        if (px[o] < 46) continue;                 // 비가 없는데 번개만 있을 수는 없다
+        if (px[o] < 64) continue;                 // 비가 없는데 번개만 있을 수는 없다
+        // 구름이 화면에 보일 만큼 두꺼운 곳에서만 — 얇은 곳에 찍으면 허공에 번개가 뜬다.
+        if (cw && cw.px[(y * cw.W + x) * 4 + 3] < 72) continue;
         if (!wrapAll) {
           const lon = ((x + 0.5) / W) * 360 - 180;
           let d = lon - cLon;

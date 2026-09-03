@@ -24,7 +24,7 @@ import { TravelScene } from './travel.js?v=2';
 import { usage } from './usage.js?v=1';
 import { FlightRoute, routeCardHtml } from './route.js?v=4';
 import { PrecipField } from './precip-field.js?v=3';
-import { LightningMarks } from './lightning-marks.js?v=2';
+import { LightningMarks } from './lightning-marks.js?v=3';
 // 정본 엔진(prototype/js/earthus2/v02)으로 가는 유일한 이음매 — 어휘·신선도·품질 예산의 출처
 import {
   installFetchObserver, ThermalGovernor, scenePlan, layerDataState, layerTruthLine,
@@ -4621,6 +4621,7 @@ async function main() {
       const vH = (camera.fov * Math.PI) / 360;
       clouds.bolts.build(
         clouds.precipTex,
+        clouds.uniforms.uTex.value,
         1.0 + (9000 / 6371000) * uniforms.uExagger.value,
         altKm,
         THREE.MathUtils.radToDeg(orbit.pitch),

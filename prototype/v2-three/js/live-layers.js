@@ -2178,9 +2178,14 @@ export class LiveLayers {
     const STEP = Math.max(2, Math.ceil(Math.sqrt((img.width * img.height) / TARGET)));
     const nx = Math.floor(img.width / STEP);
     const ny = Math.floor(img.height / STEP);
+    // 숲만 그린다. 개발된 도심·농지·평지는 그리지 않는다(PD 지시:
+    // "산만 보여줘도 되, 개발된 도심은 안보여줘도 된다").
+    // 자료를 지우는 게 아니라 **그리지 않는 것**이고, 그 문턱을 카드에 적는다.
+    const MIN_COVER = 0.20;
     const at = (ix, iy) => {
       const o = ((iy * STEP) * img.width + ix * STEP) * 4;
-      return { v: px[o] / 255, has: px[o + 3] > 127 };
+      const v = px[o] / 255;
+      return { v, has: px[o + 3] > 127 && v >= MIN_COVER };
     };
     // 수관이 두꺼울수록 높다. 절대 높이는 표현 과장이고 그 사실은 카드에 적는다.
     const H = 0.00075;                 // 100% 수관에서 약 4.8km
@@ -2219,7 +2224,12 @@ export class LiveLayers {
       vertexColors: true, transparent: true, opacity: 0.92, depthWrite: true,
       side: THREE.DoubleSide,
     }));
-    mesh.userData.forest = { region: R, index: d.index, faces: idx.length / 3, step: STEP };
+    let drawn = 0;
+    for (let i = 0; i < ok.length; i += 1) if (ok[i]) drawn += 1;
+    mesh.userData.forest = {
+      region: R, index: d.index, faces: idx.length / 3, step: STEP,
+      minCover: MIN_COVER, drawn,
+    };
     return mesh;
   }
 
@@ -2257,6 +2267,8 @@ export class LiveLayers {
         + `값은 ESA WorldCover <b>10m 관측</b>의 Tree cover 비율을 `
         + `${Math.round(R.cellDeg * 111000)}m 로 평균한 것입니다. `
         + `한국 육지 평균이 64.1%로 나왔고 이는 공식 산림률(약 63%)과 맞습니다.<br/>`
+        + `<b>숲만 그립니다.</b> 수관 20% 미만인 곳은 그리지 않습니다 — 개발된 도심과 `
+        + `농지·평지가 자연히 빠지고 산이 남습니다. 자료를 지운 것이 아니라 그리지 않는 것입니다.<br/>`
         + `화면 격자는 자료보다 성깁니다 — 나라가 커도 정점 수를 맞추려고 `
         + `${Math.round(R.cellDeg * 111000)}m 자료를 `
         + `${Math.round(R.cellDeg * 111000 * (d.stepUsed || 1))}m 간격으로 세웁니다. `

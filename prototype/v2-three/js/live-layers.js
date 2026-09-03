@@ -349,6 +349,7 @@ export class LiveLayers {
       // /tourism은 S3 직접이 403 (버킷 정책) — CloudFront 경유는 CORS 포함 200
       case 'seoul': return fetchJson('/tourism/seoul-flow.json', 20000, 'https://earthus.net');
       case 'tyoff': return fetchJson('/events/typhoon-official.json');
+      case 'argo': return fetchJson('/ocean/argo-floats.json');
       // 발사 일정: TheSpaceDevs LL2 (CORS 허용 확인 · 무료 티어 rate limit 있어 세션 캐시)
       case 'launch':
         return fetchJson('/2.2.0/launch/upcoming/?limit=30&hide_recent_previous=true', 25000, 'https://ll.thespacedevs.com');
@@ -443,6 +444,7 @@ export class LiveLayers {
       case 'tsunami': return { obj: this.buildTsunami(data), data, meta: this.metaTsunami(data) };
       case 'seoul': return { obj: this.buildSeoul(data), data, meta: this.metaSeoul(data) };
       case 'tyoff': return { obj: this.buildTyphoon(data), data, meta: this.metaTyphoon(data) };
+      case 'argo': return { obj: this.buildArgo(data), data, meta: this.metaArgo(data) };
       case 'launch': return { obj: this.buildLaunch(data), data, meta: this.metaLaunch(data) };
       case 'kmasea': return { obj: this.buildKmaSea(data), data, meta: this.metaKmaSea(data) };
       case 'slr': return { obj: this.buildSlr(data), data, meta: this.metaSlr(data) };
@@ -1999,6 +2001,123 @@ export class LiveLayers {
       cardHtml: `지상 바람 관측 — 관측소 ${(this._windN || 0).toLocaleString()}개소의 실측 풍향·풍속을 선분(불어가는 방향, 색·길이=풍속)으로 표시.<br/>`
         + `한국 AWS ${nA}개소 (기상청) + 전 세계 지상관측 ${Number(nG).toLocaleString()}개소 (GTS)<br/>`
         + `입자는 각 관측소의 실측 벡터 위에서만 흐릅니다 — 격자 보간·가상 유선 없음 (관측 없는 곳은 비어 있음)`,
+    };
+  }
+
+  // ---------- Argo 플로트 · 잠수 기록 (지시서 R-11 Dive Replay · OBSERVED) ----------
+  //
+  // R-11 이 지키라는 것: "actual track = solid, estimated horizontal path = dashed;
+  // 측정된 depth 와 추정 위치를 혼동하지 않는다."
+  //
+  // Argo 는 그 구분이 자료의 성질 그 자체다. 플로트는 수면에 떠올랐을 때만 GPS 를 잡는다.
+  // 부상점은 **측정**이고, 두 부상점 사이 열흘간의 경로는 **아무도 모른다**.
+  // 그래서 점은 실선 점으로, 그 사이는 점선으로 긋는다. 지어낼 것이 없다 —
+  // 자료가 이미 "여기까지가 관측이고 여기부터는 아니다"라고 말하고 있다.
+  buildArgo(d) {
+    const g = new THREE.Group();
+    const rT = this.aboveCloudsR();
+    const col = new THREE.Color('#63d2ff');
+    const marks = [];
+    for (const f of (d.floats || [])) {
+      const fx = f.fixes || [];
+      for (const p of fx) marks.push({ lat: p.lat, lon: p.lon, c: col });
+      if (fx.length < 2) continue;
+      // 구면에서 두 점을 직선으로 이으면 선이 지구를 파고든다 — 대권으로 잘게 나눈다.
+      const pts = [];
+      for (let i = 1; i < fx.length; i += 1) {
+        const a = llToV3(fx[i - 1].lat, fx[i - 1].lon, 1).normalize();
+        const b = llToV3(fx[i].lat, fx[i].lon, 1).normalize();
+        const ang = Math.acos(Math.max(-1, Math.min(1, a.dot(b))));
+        const n = Math.max(2, Math.min(24, Math.ceil(ang / 0.02)));
+        for (let k = (i === 1 ? 0 : 1); k <= n; k += 1) {
+          const t = k / n;
+          const v = (ang < 1e-6)
+            ? a.clone()
+            : a.clone().multiplyScalar(Math.sin((1 - t) * ang) / Math.sin(ang))
+              .add(b.clone().multiplyScalar(Math.sin(t * ang) / Math.sin(ang)));
+          pts.push(v.normalize().multiplyScalar(rT));
+        }
+      }
+      const geo = new THREE.BufferGeometry().setFromPoints(pts);
+      const line = new THREE.Line(geo, new THREE.LineDashedMaterial({
+        color: col, transparent: true, opacity: 0.6, depthWrite: false,
+        dashSize: 0.006, gapSize: 0.005,
+      }));
+      line.computeLineDistances();      // 이걸 안 부르면 점선이 실선으로 나온다
+      g.add(line);
+    }
+    // 부상점 = 측정된 위치. 마지막 위치는 크고 밝게.
+    if (marks.length) g.add(this.makePoints(marks, { size: 3.4, lift: rT - 1.0035, opacity: 0.9 }));
+    const last = (d.floats || []).filter((f) => f.last).map((f) => ({
+      lat: f.last.lat, lon: f.last.lon, c: new THREE.Color('#ffffff'),
+    }));
+    if (last.length) g.add(this.makePoints(last, { size: 7, lift: rT - 1.0035, additive: true }));
+    return g;
+  }
+
+  // 수심-수온 단면. 가로는 사이클(시간), 세로는 수심, 색은 실측 수온.
+  // 이건 우리가 만든 곡선이 아니라 플로트가 층마다 잰 값을 그대로 칠한 것이다.
+  argoSectionSvg(f) {
+    const sec = f.section || [];
+    if (!sec.length) return '';
+    const W = 268; const H = 132; const L = 30; const B = 16;
+    const maxP = Math.max(2000, ...sec.map((c) => c.lv[c.lv.length - 1][0]));
+    const cw = (W - L - 4) / sec.length;
+    let body = '';
+    sec.forEach((c, i) => {
+      const x = L + i * cw;
+      for (let k = 0; k < c.lv.length; k += 1) {
+        const p0 = c.lv[k][0];
+        const p1 = k + 1 < c.lv.length ? c.lv[k + 1][0] : maxP;
+        // 수심축은 제곱근이다. 선형으로 두면 바다의 실제 구조인 표층 수온약층이
+        // 2,000m 중 100m, 즉 6픽셀로 뭉개진다. 값을 바꾸는 게 아니라 자리만 넓힌다 —
+        // 그 사실은 카드에 적는다.
+        const y0 = (H - B) * Math.sqrt(p0 / maxP);
+        const y1 = (H - B) * Math.sqrt(p1 / maxP);
+        const [r, gg, b] = SST_RAMP(c.lv[k][1]);
+        body += `<rect x="${x.toFixed(1)}" y="${y0.toFixed(1)}" width="${(cw - 1).toFixed(1)}" `
+          + `height="${Math.max(0.8, y1 - y0).toFixed(1)}" fill="rgb(${r | 0},${gg | 0},${b | 0})"/>`;
+      }
+      const t = (c.t || '').slice(5, 10);
+      body += `<text x="${(x + cw / 2).toFixed(1)}" y="${H - 4}" fill="#8fa4bd" font-size="8" `
+        + `text-anchor="middle">${t}</text>`;
+    });
+    for (const p of [0, 100, 500, 1000, 2000]) {
+      if (p > maxP) continue;
+      const y = (H - B) * Math.sqrt(p / maxP);
+      body += `<line x1="${L}" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" `
+        + `stroke="rgba(255,255,255,.18)" stroke-width="0.7"/>`
+        + `<text x="${L - 4}" y="${Math.min(H - B - 1, y + 3).toFixed(1)}" fill="#8fa4bd" `
+        + `font-size="8" text-anchor="end">${p}m</text>`;
+    }
+    return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="margin-top:6px">${body}</svg>`;
+  }
+
+  metaArgo(d) {
+    const c = d.counts || {};
+    const withSec = (d.floats || []).filter((f) => f.section && f.section.length);
+    const show = withSec.slice(0, 2);
+    const secs = show.map((f) => {
+      const n = (f.fixes || []).length;
+      return `<div style="margin-top:8px"><b>플로트 ${f.id}</b> — 부상 ${n}회 기록 · `
+        + `마지막 ${(f.last && f.last.t || '').slice(0, 10)}`
+        + `${this.argoSectionSvg(f)}</div>`;
+    }).join('');
+    return {
+      badge: 'OBSERVED',
+      note: `플로트 ${c.tracked || 0}대 · 수심 단면 ${c.withSection || 0}대 · `
+        + `전 세계 활동 중 ${(c.activeFloats || 0).toLocaleString()}대`,
+      cardHtml: `<b>Argo 플로트</b> — 바다에 떠다니며 스스로 오르내리는 관측 로봇입니다. `
+        + `약 열흘에 한 번 2,000m 까지 내려갔다 올라오면서 <b>수심마다 수온·염분을 잽니다</b>.<br/><br/>`
+        + `<b>흰 점</b> = 지금 위치 · <b>작은 점</b> = 떠올랐던 자리(측정) · `
+        + `<b>점선</b> = 그 사이 경로(<b>추정</b>)<br/>`
+        + `잠수 중에는 위치를 알 수 없습니다 — GPS 는 수면에서만 잡힙니다. `
+        + `점선은 우리가 이어 본 선이지 관측이 아닙니다.<br/>`
+        + `아래 그림은 <b>실측 수심-수온 단면</b>입니다. 가로는 부상 시각, 세로는 수심, 색은 수온.<br/>`
+        + `<span style="opacity:.75">세로축은 <b>제곱근 눈금</b>입니다 — 선형으로 두면 바다의 실제 구조인 `
+        + `표층 수온약층이 2,000m 중 100m, 즉 몇 픽셀로 뭉개집니다. 값이 아니라 자리만 넓힌 것입니다.</span>`
+        + secs
+        + `<br/>출처 ${d.source || 'Argo'} · ${(d.generated || '').slice(0, 16).replace('T', ' ')}Z`,
     };
   }
 

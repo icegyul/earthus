@@ -4,14 +4,14 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=49';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=50';
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=5';
-import { LiveLayers } from './live-layers.js?v=23';
+import { LiveLayers } from './live-layers.js?v=25';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=2';
-import { i18n } from './i18n.js?v=1';
+import { i18n } from './i18n.js?v=2';
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
 import { PopSculpture } from './pop-sculpture.js?v=13';
@@ -2867,6 +2867,7 @@ async function main() {
     .forEach(([id, view]) => registerAndMount(id, ENGINE_CLASS.DYNAMIC, takeoverAdapter({ view, label: id })));
   const LIVE_LAYER_KEYS = {
     'ocean/buoys': ['buoys', '해양 부이 관측'],
+    'ocean/argo': ['argo', 'Argo 플로트 · 잠수 기록'],
     'hazards/fireglobal': ['fireglobal', '전지구 산불 화점'],
     'weather/radar': ['radar', '레이더 강수'],
     'weather/raingrid': ['raingrid', '전지구 강수'],

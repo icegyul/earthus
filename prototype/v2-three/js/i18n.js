@@ -191,6 +191,7 @@ const L_EN = {
   oceanfocus: 'Ocean focus',
   typhoonsim: 'Typhoon sea-state simulation',
   buoys: 'Ocean buoys (sea temperature)',
+  argo: 'Argo floats — the dive record',
   kmasea: 'Marine observation network (waves · temp, 193 sites)',
   sstfield: 'Sea surface temperature (global)',
   sstanom: 'Sea temperature anomaly (vs normal)',

@@ -3,7 +3,7 @@
 // 지구 렌더러(main.js)는 건드리지 않고 훅(hooks)으로만 연결한다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { i18n } from './i18n.js?v=1';
+import { i18n } from './i18n.js?v=2';
 import { renderBadge } from './engine-bridge.js?v=12';
 
 // ---------------------------------------------------------------------------
@@ -72,6 +72,7 @@ export const SCENES = [
       { id: 'oceanfocus', name: '해양 포커스', state: 'DEMO', src: '—', act: true },
       { id: 'typhoonsim', name: '태풍 해상 시뮬레이션', state: 'SIMULATION_ONLY', src: '자체 물리', act: true },
       { id: 'buoys', name: '해양 부이 관측 (수온)', state: 'OBSERVED', src: 'NDBC 등 · 1.0 S3', act: true },
+      { id: 'argo', name: 'Argo 플로트 — 잠수 기록', state: 'OBSERVED', src: 'Argo · Ifremer ERDDAP', act: true },
       { id: 'kmasea', name: '해상 관측망 (파고·수온 193지점)', state: 'OBSERVED', src: '기상청 해양관측', act: true },
       { id: 'sstfield', name: '해수면 온도 (전지구)', state: 'OBSERVED', src: 'NOAA OISST v2.1', act: true },
       { id: 'sstanom', name: '수온 아노말리 (평년 대비)', state: 'OBSERVED', src: 'OISST − 1991~2020 평년', act: true },

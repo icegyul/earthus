@@ -41,13 +41,20 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
   text-shadow:0 2px 14px rgba(0,0,0,.55)}
 #head p{margin:8px 0 0;font-size:clamp(12px,1.4vw,15px);opacity:.72;text-shadow:0 1px 10px rgba(0,0,0,.85),0 0 18px rgba(5,11,28,.8)}
 
-/* ── 상태 배지 ── */
-#badge{position:absolute;top:20px;right:20px;z-index:7;max-width:calc(100% - 340px);display:flex;gap:8px;align-items:center;
-  font-size:11.5px;letter-spacing:.06em;background:rgba(6,14,32,.62);border:1px solid rgba(255,255,255,.16);
-  padding:7px 12px;border-radius:999px;backdrop-filter:blur(6px)}
-#badge .dot{width:7px;height:7px;border-radius:50%;background:#5ce0a0;box-shadow:0 0 9px #5ce0a0}
-#badge.warn .dot{background:#ffb020;box-shadow:0 0 9px #ffb020}
-#badge.err .dot{background:#ff7a7a;box-shadow:0 0 9px #ff7a7a}
+/* ── 자료 출처 (v1 과 같은 자리·같은 규칙) ──
+   좌하단 작은 글씨. 화면을 가리지 않되 무엇을 보고 있는지는 늘 적혀 있어야 한다.
+   ⚠️ 큰 화면에서는 오히려 키운다 — 9px 는 폰에서 손에 든 거리 기준이고,
+      멀리 두고 보는 화면에서는 아예 안 읽힌다. 출처는 읽히라고 있는 것이다. */
+#srcNote{position:absolute;left:10px;bottom:10px;z-index:8;
+  max-width:min(52vw,420px);pointer-events:none;
+  font-size:9px;line-height:1.45;color:rgba(255,255,255,.46);
+  text-shadow:0 1px 3px rgba(0,0,0,.85)}
+#srcNote b{font-weight:500;color:rgba(255,255,255,.7)}
+#srcNote i{font-style:normal;color:rgba(255,255,255,.32)}
+#srcNote.warn b{color:#FFC24B}
+#srcNote.err b{color:#FF9A9A}
+@media (max-width:520px){ #srcNote{max-width:70vw;font-size:8.5px;bottom:8px;left:8px} }
+@media (min-width:1600px){ #srcNote{font-size:12px;left:18px;bottom:16px;max-width:min(40vw,520px)} }
 
 /* ── 레일 둘 — 왼쪽은 만나기(아이), 오른쪽은 읽기(어른) ──
    가르는 기준은 난이도가 아니라 읽는 방식이다. 왼쪽은 하나를 눌러 하나를
@@ -268,11 +275,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
   .crt .bob,.crt .zap{animation:none}
 }
 @media (max-width:720px){
-  #head{top:92px} #head h1{font-size:21px} #head p{display:none}
-  /* 좌상단 지구 전환기와 겹쳐 배지 왼쪽이 잘렸다 — 전환기 아래로 내린다 */
-  #badge{top:56px;right:8px;left:auto;max-width:calc(100% - 16px);
-    font-size:9.5px;padding:5px 9px;letter-spacing:.02em;white-space:nowrap;
-    overflow:hidden;text-overflow:ellipsis}
+  #head{top:52px} #head h1{font-size:21px} #head p{display:none}
   #nav button{padding:9px 13px;font-size:15px}
   #nav{bottom:18px}
   #home{bottom:18px}
@@ -301,7 +304,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
     <p>지구를 돌려서 지금 날씨를 만나 보세요</p>
   </div>
 
-  <div id="badge"><span class="dot"></span><span id="badgetxt">불러오는 중</span></div>
+  <div id="srcNote" aria-live="polite"><span id="badgetxt">불러오는 중</span></div>
 
   <div id="rail" class="rail rail-kid" role="group" aria-label="아이용 — 하나씩 만나기">
     <span class="railcap">만나기</span>
@@ -413,7 +416,7 @@ import * as THREE from '../vendor/three-r184.module.min.js';
 
 const $ = s => document.querySelector(s);
 const stage = $('#stage');
-const badge = $('#badge'), badgetxt = $('#badgetxt');
+const srcNote = $('#srcNote'), badgetxt = $('#badgetxt');
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ── 별 배경 (장식이며 실제 항성 카탈로그가 아님) ─────────────── */
@@ -2138,23 +2141,23 @@ async function loadLive(){
     // 결손과 메움을 숨기지 않는다 — 무엇을 보고 있는지가 화면에 적혀야 한다
     if(cloudMeta){
       const cz = String(cloudMeta.time).slice(11,16);
-      let note = `실측 · 구름 NOAA GMGSI ${cz}Z · 날씨 open-meteo ${t}`;
+      let note = `출처: <b>NOAA GMGSI</b> 전지구 구름 <i>${cz}Z</i> · <b>Open-Meteo</b> 날씨 <i>${t}</i>`;
       if(cloudMeta.broken){
-        const parts = [`구름 ${cz}Z`];
-        if(cloudMeta.patched) parts.push(`빈 곳 ${cloudMeta.patched}칸은 ${String(cloudMeta.patchTime).slice(11,16)}Z 자료`);
-        if(cloudMeta.stillEmpty) parts.push(`${cloudMeta.stillEmpty}칸은 관측 없어 비움`);
-        note = parts.join(' · ');
+        const bits = [`출처: <b>NOAA GMGSI</b> <i>${cz}Z</i>`];
+        if(cloudMeta.patched) bits.push(`빈 곳 ${cloudMeta.patched}칸은 <i>${String(cloudMeta.patchTime).slice(11,16)}Z</i> 자료로 메움`);
+        if(cloudMeta.stillEmpty) bits.push(`${cloudMeta.stillEmpty}칸은 관측이 없어 비움`);
+        note = bits.join(' · ');
       }
-      badgetxt.textContent = note;
-      badge.className = cloudMeta.broken ? 'warn' : '';
+      badgetxt.innerHTML = note;
+      srcNote.className = cloudMeta.broken ? 'warn' : '';
     } else {
-      badgetxt.textContent = `실측 · open-meteo ${t} · 구름 없음`;
-      badge.className = 'warn';
+      badgetxt.innerHTML = `출처: <b>Open-Meteo</b> 날씨 <i>${t}</i> · 구름 자료 없음`;
+      srcNote.className = 'warn';
     }
   }catch(err){
     console.error(err);
-    badge.className = 'err';
-    badgetxt.textContent = '날씨를 못 불러왔어요 — 친구를 그리지 않습니다';
+    srcNote.className = 'err';
+    badgetxt.innerHTML = '<b>날씨를 못 불러왔습니다</b> — 없는 값을 그리지 않습니다';
     clouds.material.uniforms.ready.value = 0;   // 데이터가 없으면 그리지 않는다
   }
 }

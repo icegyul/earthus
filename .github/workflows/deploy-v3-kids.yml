@@ -1,0 +1,103 @@
+name: Deploy v3 KIDS
+
+# prototype/v3-kids 가 바뀌어 push 되면 그것만 earthus.net/v3 로 올린다.
+# 사람이 자격증명을 다루지 않는다 — 자격증명은 GitHub 비밀값에만 있고 로그에 찍히지 않는다.
+#
+# 처음 한 번 해야 하는 설정 (저장소 Settings → Secrets and variables → Actions):
+#   AWS_ACCESS_KEY_ID       earthus-deploy IAM 사용자 키
+#   AWS_SECRET_ACCESS_KEY   같은 사용자 비밀키
+# 더 나은 방식은 키를 아예 두지 않는 OIDC 다 — 아래 "역할로 바꾸려면" 주석 참고.
+
+on:
+  push:
+    branches:
+      - main
+      - earthus-v2/real-living-earth-render
+    paths:
+      - 'prototype/v3-kids/**'
+      - 'aws/deploy-v3-kids.sh'
+      - '.github/workflows/deploy-v3-kids.yml'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: '수동 배포 사유'
+        required: false
+        default: '수동 실행'
+
+permissions:
+  contents: read
+  # OIDC 로 바꾸면 여기에 id-token: write 를 더한다.
+
+concurrency:
+  group: deploy-v3-kids
+  cancel-in-progress: false        # 배포는 겹쳐 돌리지 않고, 이미 도는 건 끝까지 둔다
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 올릴 것이 실제로 있는지
+        run: |
+          test -f prototype/v3-kids/index.html || { echo "v3 index.html 이 없다"; exit 1; }
+          test -x aws/deploy-v3-kids.sh || chmod +x aws/deploy-v3-kids.sh
+
+      - name: HTML 안의 모듈 스크립트 문법 검사
+        run: |
+          node -e '
+            const fs = require("fs"), vm = require("vm");
+            const html = fs.readFileSync("prototype/v3-kids/index.html", "utf8");
+            const m = html.match(/<script type="module">([\s\S]*?)<\/script>/);
+            if (!m) { console.error("모듈 스크립트를 못 찾았다"); process.exit(1); }
+            new vm.Script(m[1].replace(/^\s*import .*$/gm, ""), { filename: "v3-kids" });
+            console.log("모듈 문법 통과");
+          '
+
+      - name: 값을 지어내지 않는지 확인
+        run: |
+          # 데이터가 없을 때 그리지 않는다는 규약이 코드에 남아 있어야 한다.
+          grep -q "그리지 않는다" prototype/v3-kids/index.html \
+            || { echo "결측 처리 규약 주석이 사라졌다 — 확인 필요"; exit 1; }
+          # 어린이 앱은 위치 권한을 요청하지 않는다.
+          if grep -qE "navigator\.geolocation|getCurrentPosition" prototype/v3-kids/index.html; then
+            echo "어린이 화면에서 위치 권한을 요청하고 있다 — 스토어 정책 위반"; exit 1
+          fi
+
+      - name: AWS 자격증명
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+          # ── 역할로 바꾸려면 위 두 줄을 지우고 아래 두 줄을 쓴다 (키가 사라진다) ──
+          # role-to-assume: arn:aws:iam::294951922100:role/earthus-github-deploy
+          # role-session-name: gh-deploy-v3
+
+      - name: 배포
+        run: ./aws/deploy-v3-kids.sh
+
+      - name: 진짜로 떴는지 확인
+        run: |
+          fail=0
+          for u in https://earthus.net/v3 https://earthus.net/v3/ https://earthus.net/v3/index.html; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 20 "$u")
+            echo "$code  $u"
+            [ "$code" = "200" ] || fail=1
+          done
+          title=$(curl -s -L --max-time 20 https://earthus.net/v3/ | grep -oE '<title>[^<]*</title>' | head -1)
+          echo "제목: $title"
+          echo "$title" | grep -q "지구야" || fail=1
+          # CloudFront 캐시가 아직 안 비었을 수 있다 — 실패면 한 번 더 기다렸다 본다.
+          if [ "$fail" = "1" ]; then
+            echo "1분 기다렸다 다시 확인한다 (무효화 전파 대기)"
+            sleep 60
+            fail=0
+            for u in https://earthus.net/v3 https://earthus.net/v3/ https://earthus.net/v3/index.html; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 20 "$u")
+              echo "재확인 $code  $u"
+              [ "$code" = "200" ] || fail=1
+            done
+          fi
+          exit $fail

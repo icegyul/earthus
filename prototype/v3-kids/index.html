@@ -172,6 +172,17 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 .tb-foot{display:flex;justify-content:space-between;gap:10px;font-size:10.5px;color:#8ba2c4;margin-top:1px}
 .tb-foot #tb-note{color:#c3d3ea;text-align:center}
 
+/* ── 기온 눈금 ── */
+#tempkey{position:absolute;right:20px;bottom:104px;z-index:6;display:flex;align-items:center;gap:6px;
+  background:rgba(8,16,36,.72);border:1px solid rgba(255,255,255,.16);border-radius:999px;
+  padding:6px 12px;backdrop-filter:blur(8px);font-size:10.5px;color:#c3d3ea;letter-spacing:.04em}
+#tempkey[hidden]{display:none!important}
+#tempkey i{width:34px;height:8px;border-radius:2px;display:block}
+#tempkey i:nth-of-type(1){background:linear-gradient(90deg,#1a1644,#2e6cb4,#468cb8)}
+#tempkey i:nth-of-type(2){background:linear-gradient(90deg,#468cb8,#69be96,#bed06e)}
+#tempkey i:nth-of-type(3){background:linear-gradient(90deg,#bed06e,#f6c454,#e85260)}
+@media (max-width:720px){ #tempkey{bottom:150px;right:10px;padding:5px 9px} #tempkey i{width:24px} }
+
 /* ── 첫 안내 ── */
 #hint{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:6;
   font-family:var(--kid);font-size:16px;background:rgba(8,16,36,.7);padding:10px 20px;
@@ -227,6 +238,10 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
         <path d="M9 18h12a5 5 0 0 0 .4-10A7 7 0 0 0 8.4 8.6 4.7 4.7 0 0 0 9 18Z"/>
         <path d="M17 20l-4 5h4l-1.5 4.5"/></svg>
     </button>
+    <button class="railbtn" id="b-temp" aria-pressed="false" aria-label="기온 보기" title="기온">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
+        <path d="M13 18.5V7a3 3 0 0 1 6 0v11.5a5.5 5.5 0 1 1-6 0Z"/><circle cx="16" cy="22.5" r="2.4" fill="currentColor" stroke="none"/></svg>
+    </button>
     <button class="railbtn" id="b-wind" aria-pressed="false" aria-label="바람 보기" title="바람">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
         <path d="M3 11h14a4 4 0 1 0-4-4"/><path d="M3 17h20a4 4 0 1 1-4 4"/><path d="M3 23h11"/></svg>
@@ -277,6 +292,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
     </div>
   </div>
 
+  <div id="tempkey" hidden><span>-40</span><i></i><span>0</span><i></i><span>20</span><i></i><span>40℃</span></div>
   <div id="card" hidden></div>
   <div id="hint">손가락으로 지구를 돌려 보세요</div>
 </div>
@@ -854,6 +870,87 @@ function addMarker(kind, lat, lon, html, cls){
   markers.push({ el, pos: llToVec(lat, lon, R*1.02), kind });
   return el;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   기온 색면 — 윈디가 2D 위에 까는 그 색
+   자료는 새로 받지 않는다. 바람 파일에 기온(t)이 같이 들어 있다(-70.5~36.2℃).
+   격자를 캔버스에 겹선형으로 펴서 텍스처로 얹는다.
+
+   색은 밝기가 한 방향으로 오르내리게 짰다 — 색만으로 못 읽는 사람도
+   진하기로 읽을 수 있어야 한다. 위험을 빨강 하나로만 말하지 않는 규칙과 같다.
+   ══════════════════════════════════════════════════════════════ */
+const tempCv = document.createElement('canvas');
+tempCv.width = 1024; tempCv.height = 512;
+const tempTex = new THREE.CanvasTexture(tempCv);
+tempTex.colorSpace = THREE.SRGBColorSpace;
+tempTex.wrapS = THREE.RepeatWrapping;
+const tempShell = new THREE.Mesh(
+  new THREE.SphereGeometry(R*1.002, 96, 60),
+  new THREE.MeshBasicMaterial({ map: tempTex, transparent: true, opacity: 0.82, depthWrite: false })
+);
+tempShell.renderOrder = 1;
+tempShell.visible = false;
+earthGroup.add(tempShell);
+
+/* 기온 색 계단. 추운 쪽은 어둡고 더운 쪽은 밝다 — 밝기가 곧 값이다. */
+const TEMP_STOPS = [
+  [-40, 26, 22, 68], [-25, 40, 52,130], [-10, 46,108,180], [  0, 70,158,190],
+  [  8,105,190,150], [ 16,190,208,110], [ 24,244,196, 84], [ 30,246,140, 66],
+  [ 38,232, 82, 96], [ 46,246,158,196],
+];
+function tempColor(c){
+  if(c <= TEMP_STOPS[0][0]) return TEMP_STOPS[0].slice(1);
+  for(let i = 1; i < TEMP_STOPS.length; i++){
+    const a = TEMP_STOPS[i-1], b = TEMP_STOPS[i];
+    if(c <= b[0]){
+      const u = (c - a[0]) / (b[0] - a[0]);
+      return [a[1]+(b[1]-a[1])*u, a[2]+(b[2]-a[2])*u, a[3]+(b[3]-a[3])*u];
+    }
+  }
+  return TEMP_STOPS[TEMP_STOPS.length-1].slice(1);
+}
+
+function paintTemp(){
+  if(!WIND || !WIND.t) return false;
+  const { nx, ny, res, lat0, lon0, t } = WIND;
+  const W = tempCv.width, H = tempCv.height;
+  const g = tempCv.getContext('2d');
+  const img = g.createImageData(W, H);
+  const d = img.data;
+  for(let y = 0; y < H; y++){
+    const lat = 90 - (y + 0.5) / H * 180;
+    const fy = (lat - lat0) / res;
+    // 격자 밖(극)은 관측이 없다 — 늘려 채우지 않고 비운다
+    if(fy < 0 || fy > ny - 1){ continue; }
+    const y0 = Math.floor(fy), y1 = Math.min(y0 + 1, ny - 1), ty = fy - y0;
+    for(let x = 0; x < W; x++){
+      const lon = -180 + (x + 0.5) / W * 360;
+      const fx = ((((lon - lon0) % 360) + 360) % 360) / res;
+      const x0 = Math.floor(fx) % nx, x1 = (x0 + 1) % nx, tx = fx - Math.floor(fx);
+      const v00 = t[y0*nx + x0], v10 = t[y0*nx + x1];
+      const v01 = t[y1*nx + x0], v11 = t[y1*nx + x1];
+      if(v00 == null || v10 == null || v01 == null || v11 == null) continue;
+      const c = (v00 + (v10 - v00)*tx) * (1 - ty) + (v01 + (v11 - v01)*tx) * ty;
+      const [r, gg, b] = tempColor(c);
+      const o = (y*W + x) * 4;
+      d[o] = r; d[o+1] = gg; d[o+2] = b; d[o+3] = 255;
+    }
+  }
+  g.putImageData(img, 0, 0);
+  tempTex.needsUpdate = true;
+  return true;
+}
+
+$('#b-temp').addEventListener('click', e => {
+  const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  e.currentTarget.setAttribute('aria-pressed', String(on));
+  if(on && !tempShell.userData.painted){
+    if(paintTemp()) tempShell.userData.painted = true;
+    else { e.currentTarget.setAttribute('aria-pressed', 'false'); return; }
+  }
+  tempShell.visible = on;
+  $('#tempkey').hidden = !on;
+});
 
 /* ══════════════════════════════════════════════════════════════
    바람 — 윈디식 흐름선

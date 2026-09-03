@@ -192,6 +192,19 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
   color:rgba(255,232,199,.72);margin-top:1px}
 @media (max-width:520px){ .pk{font-size:10px} .pk i{font-size:9px} }
 
+/* ── 바다거북 · 철새 ── */
+.tt,.bd{position:absolute;z-index:3;pointer-events:none;text-align:center;
+  font-family:var(--kid);font-size:11px;letter-spacing:.01em;white-space:nowrap;
+  text-shadow:0 1px 3px rgba(6,20,30,.92),0 0 10px rgba(6,20,30,.7);will-change:transform,opacity}
+.tt{color:#D9FFF0}
+.bd{color:#DCF3FF}
+.tt b,.bd b{display:block;font-size:13px;line-height:1;font-weight:400}
+.bd b{font-size:11px;color:#7FD6FF}
+.bd.home b{font-size:13px}
+.bd i{display:block;font-style:normal;font-family:var(--ui);font-size:9px;
+  color:rgba(220,243,255,.6);margin-top:1px}
+@media (max-width:520px){ .tt,.bd{font-size:10px} }
+
 /* ── 나라 이름 (살짝만) ── */
 .nm{
   position:absolute;z-index:3;transform:translate(-50%,-50%);pointer-events:none;
@@ -341,6 +354,17 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
         <path d="M13 26c-2.2 0-4-1.5-4-3.6 0-2.6 2.4-3.4 2.4-5.6 0-1.6-1.2-2.3-1.2-4C10.2 10.5 12 9 14.3 9c2.4 0 4.2 1.6 4.2 3.9 0 2-1.4 2.7-1.4 4.4 0 2.3 2.6 2.9 2.6 5.5 0 2-1.9 3.2-4 3.2"/>
         <circle cx="11.4" cy="6.4" r="1.7"/><circle cx="16.6" cy="4.9" r="1.7"/><circle cx="21.2" cy="7.4" r="1.7"/></svg>
     </button>
+    <button class="railbtn" id="b-turtle" aria-pressed="false" aria-label="바다거북이 간 길 보기" title="바다거북">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="16" cy="17" rx="8" ry="6.4"/><path d="M16 10.6v12.8M9.4 15.4h13.2M10.2 20.2h11.6"/>
+        <path d="M24 15.5c1.6-.6 3-.2 3.6.8"/><path d="M8 15.5c-1.6-.6-3-.2-3.6.8"/>
+        <path d="M16 10.6c0-2 1.3-3.2 3-3.2"/></svg>
+    </button>
+    <button class="railbtn" id="b-bird" aria-pressed="false" aria-label="철새가 간 곳 보기" title="철새">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 13c3.2-3.6 6.4-3.6 9 0"/><path d="M19 19c3.2-3.6 6.4-3.6 9 0"/>
+        <path d="M11 24c3.2-3.6 6.4-3.6 9 0"/></svg>
+    </button>
     <button class="railbtn" id="b-night" aria-pressed="true" aria-label="낮과 밤 보기" title="낮과 밤">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="16" cy="16" r="10"/><path d="M16 6a10 10 0 0 0 0 20"/><path d="M16 6v20"/></svg>
@@ -450,6 +474,18 @@ import earcut, { deviation } from '../vendor/earcut.module.js';
 const $ = s => document.querySelector(s);
 const stage = $('#stage');
 const srcNote = $('#srcNote'), badgetxt = $('#badgetxt');
+/* 출처 줄은 두 조각이다 — 늘 있는 실황(구름·날씨·지형)과, 켜져 있는 겹이 더하는 것.
+   바다거북은 이용조건이 **출처표시**를 요구하므로 카드만으로는 부족하다.
+   켜져 있는 동안 좌하단에도 계속 적혀 있어야 한다. */
+let srcLive = '';
+function paintSrc(){
+  const add = [];
+  if(typeof turtleOn !== 'undefined' && turtleOn && TURTLES)
+    add.push(`<b>${TURTLES.source}</b> 바다거북 <i>지나간 경로</i>`);
+  if(typeof birdOn !== 'undefined' && birdOn && MIGBIRD)
+    add.push(`<b>${MIGBIRD.source}</b> 철새`);
+  badgetxt.innerHTML = srcLive + (add.length ? ' · ' + add.join(' · ') : '');
+}
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ── 별 배경 (장식이며 실제 항성 카탈로그가 아님) ─────────────── */
@@ -1807,6 +1843,206 @@ async function loadMountains(){
 }
 
 /* ══════════════════════════════════════════════════════════════
+   살아 있는 것들 — 바다거북이 간 길, 철새가 간 곳
+
+   둘 다 우리 서비스(aws/sea-turtle, aws/migbird)가 기관 자료로 만들어 둔 것이다.
+   여기서는 화면에 올리기만 한다.
+
+   ■⚠️⚠️⚠️ 바다거북은 **공공누리 제4유형**이다 — 출처표시·상업적 이용금지·변경금지.
+      · 좌표를 **가공 없이 그대로** 찍는다. 솎아내지도 부드럽게 하지도 않는다.
+      · 이 자료로 **분석 문장을 만들지 않는다**. 그게 곧 '변경'이다.
+        화면에 적는 말은 기관이 준 것과 우리가 센 개수뿐이다.
+      · v3 는 언제나 무료이므로 상업적 이용 금지에 걸리지 않는다.
+      · 출처를 화면에 분명히 적는다 — 카드와 좌하단 출처 두 곳 모두.
+
+   ■⚠️⚠️ 바다거북은 **실시간이 아니다.** 기관이 "추적이 종료된 수신기에 대해서만"
+      공개한다. 지나간 길이다. 그 문장을 자료가 들고 오므로 그대로 화면에 낸다.
+
+   ■⚠️⚠️ 철새는 **경로가 아니다.** 떠난 곳과 도착한 곳 두 점뿐이다.
+      그래서 도착지는 점이 아니라 **원**으로 그린다 — 원이 곧 '이 안 어딘가'다.
+      '중국 지린성'은 남한의 두 배다. 가운데에 점을 찍으면 거기 갔다는 거짓말이 된다.
+   ══════════════════════════════════════════════════════════════ */
+let TURTLES = null, MIGBIRD = null;
+let turtleLine = null, turtleOn = false;
+let birdArc = null, birdRing = null, birdOn = false;
+const turtleMarks = [], birdMarks = [];
+
+// 종마다 다른 색. 등껍질 색이 아니라 서로 구분하려고 고른 색이다.
+const TURTLE_COLOR = {
+  '푸른바다거북':   [0.38, 0.86, 0.65],
+  '붉은바다거북':   [1.00, 0.58, 0.40],
+  '매부리바다거북': [1.00, 0.83, 0.39],
+};
+const md = t => String(t || '').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+
+async function loadTurtles(){
+  TURTLES = await fetch('../data/sea-turtle.json').then(r => r.json());
+  const list = TURTLES.turtles || [];
+  let segs = 0;
+  for(const t of list) segs += Math.max(0, (t.track || []).length - 1);
+  const pos = new Float32Array(segs*2*3), col = new Float32Array(segs*2*3);
+  let i = 0, c = 0;
+  for(const t of list){
+    const rgb = TURTLE_COLOR[t.nameKo] || [0.8, 0.9, 1.0];
+    const tr = t.track || [];
+    for(let k = 0; k < tr.length-1; k++){
+      const a = llToVec(tr[k].lat,   tr[k].lon,   R*1.008);
+      const b = llToVec(tr[k+1].lat, tr[k+1].lon, R*1.008);
+      pos[i++]=a.x; pos[i++]=a.y; pos[i++]=a.z;
+      pos[i++]=b.x; pos[i++]=b.y; pos[i++]=b.z;
+      for(let q = 0; q < 2; q++){ col[c++]=rgb[0]; col[c++]=rgb[1]; col[c++]=rgb[2]; }
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color',    new THREE.BufferAttribute(col, 3));
+  turtleLine = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({
+    vertexColors: true, transparent: true, opacity: 0.92, depthWrite: false }));
+  turtleLine.renderOrder = 4;
+  turtleLine.visible = false;
+  earthGroup.add(turtleLine);
+
+  // 추적이 끝난 자리에 거북을 놓는다. 거기서 멈춘 것이지 거기 사는 게 아니다.
+  for(const t of list){
+    const tr = t.track || [];
+    if(!tr.length) continue;
+    const p = tr[tr.length-1];
+    const el = document.createElement('div');
+    el.className = 'tt';
+    el.innerHTML = '<b>🐢</b>' + t.nameKo;
+    el.style.visibility = 'hidden';
+    stage.appendChild(el);
+    turtleMarks.push({ t, el, w: el.offsetWidth, pos: llToVec(p.lat, p.lon, R*1.02) });
+  }
+}
+
+async function loadMigbird(){
+  MIGBIRD = await fetch('../data/migbird.json').then(r => r.json());
+  const places = new Map((MIGBIRD.places || []).map(p => [p.name, p]));
+
+  /* 떠난 곳에서 도착한 곳으로 이은 선. **날아간 길이 아니다** — 두 점뿐인 자료라
+     사이를 잇는 선은 우리가 그은 것이다. 그래서 땅에서 띄워 호(弧)로 그린다.
+     지면에 붙은 선으로 그리면 "이 길로 갔다"로 읽힌다. */
+  const A = [];
+  for(const tp of (MIGBIRD.trips || [])){
+    const a = places.get(tp.from), b = places.get(tp.to);
+    if(!a || !b) continue;
+    const va = llToVec(a.lat, a.lon, 1).normalize();
+    const vb = llToVec(b.lat, b.lon, 1).normalize();
+    const lift = 0.06 + 0.22 * Math.min(1, va.angleTo(vb) / 0.9);   // 멀수록 높이 뜬다
+    const N = 40, prev = new THREE.Vector3();
+    for(let k = 0; k <= N; k++){
+      const u = k/N;
+      const v = va.clone().lerp(vb, u).normalize()
+                  .multiplyScalar(R * (1.01 + lift * Math.sin(Math.PI*u)));
+      if(k) A.push(prev.x, prev.y, prev.z, v.x, v.y, v.z);
+      prev.copy(v);
+    }
+  }
+  const g1 = new THREE.BufferGeometry();
+  g1.setAttribute('position', new THREE.BufferAttribute(new Float32Array(A), 3));
+  birdArc = new THREE.LineSegments(g1, new THREE.LineBasicMaterial({
+    color: 0x9FE0FF, transparent: true, opacity: 0.5, depthWrite: false }));
+  birdArc.renderOrder = 4;
+  birdArc.visible = false;
+  earthGroup.add(birdArc);
+
+  /* 도착지는 **원**이다. 반경 r 이 곧 "이 안 어딘가"라는 뜻이고, 그게 이 자료가
+     가진 정밀도의 전부다. 점을 찍으면 없는 정밀도를 지어내는 것이다. */
+  const C = [];
+  for(const pl of (MIGBIRD.places || [])){
+    if(pl.home) continue;                       // 떠난 곳은 시·군 단위라 점으로 찍는다
+    const rad = (pl.r || 50) / 6371;            // km → 라디안
+    const cen = llToVec(pl.lat, pl.lon, 1).normalize();
+    let ax = new THREE.Vector3(0, 1, 0).cross(cen);
+    if(ax.lengthSq() < 1e-6) ax = new THREE.Vector3(1, 0, 0).cross(cen);
+    ax.normalize();
+    const ay = cen.clone().cross(ax).normalize();
+    const N = 64, prev = new THREE.Vector3();
+    for(let k = 0; k <= N; k++){
+      const th = k/N*Math.PI*2;
+      const v = cen.clone().multiplyScalar(Math.cos(rad))
+        .addScaledVector(ax, Math.sin(rad)*Math.cos(th))
+        .addScaledVector(ay, Math.sin(rad)*Math.sin(th))
+        .multiplyScalar(R*1.012);
+      if(k) C.push(prev.x, prev.y, prev.z, v.x, v.y, v.z);
+      prev.copy(v);
+    }
+  }
+  const g2 = new THREE.BufferGeometry();
+  g2.setAttribute('position', new THREE.BufferAttribute(new Float32Array(C), 3));
+  birdRing = new THREE.LineSegments(g2, new THREE.LineBasicMaterial({
+    color: 0x7FD6FF, transparent: true, opacity: 0.85, depthWrite: false }));
+  birdRing.renderOrder = 4;
+  birdRing.visible = false;
+  earthGroup.add(birdRing);
+
+  // 이름표 — 오간 횟수가 많은 곳부터
+  for(const pl of (MIGBIRD.places || []).slice().sort((a, b) => (b.n||0) - (a.n||0))){
+    const el = document.createElement('div');
+    el.className = 'bd' + (pl.home ? ' home' : '');
+    el.innerHTML = '<b>' + (pl.home ? '🪶' : '◎') + '</b>' + pl.name + '<i>' + pl.n + '건</i>';
+    el.style.visibility = 'hidden';
+    stage.appendChild(el);
+    birdMarks.push({ pl, el, w: el.offsetWidth, pos: llToVec(pl.lat, pl.lon, R*1.02) });
+  }
+}
+
+function openTurtleCard(){
+  const T = TURTLES, card = $('#card');
+  const spc = {};
+  for(const t of (T.turtles || [])) spc[t.nameKo] = (spc[t.nameKo] || 0) + 1;
+  const pts = (T.turtles || []).reduce((n, t) => n + (t.points || 0), 0);
+  card.innerHTML = '<button class="x" aria-label="닫기">×</button>'
+    + '<h2>바다거북이 간 길</h2>'
+    + '<div class="meta">' + T.source + '</div>'
+    + '<div class="kid">등에 작은 발신기를 달고 놓아준 거북들이 어디로 갔는지예요.</div>'
+    + '<ul><li>거북 <b>' + (T.turtles || []).length + '마리</b> · 자리 <b>'
+      + pts.toLocaleString('ko-KR') + '곳</b></li><li>'
+      + Object.entries(spc).map(([k, v]) => k + ' ' + v + '마리').join(' · ') + '</li></ul>'
+    + '<div class="rec">' + md(T.realtimeNote && T.realtimeNote.ko) + '<br>'
+      + md(T.licenseNote && T.licenseNote.ko) + '</div>';
+  card.hidden = false;
+  card.querySelector('.x').addEventListener('click', () => { card.hidden = true; });
+}
+
+function openBirdCard(){
+  const M = MIGBIRD, card = $('#card');
+  const yrs = (M.years || []).map(y => y[0]);
+  card.innerHTML = '<button class="x" aria-label="닫기">×</button>'
+    + '<h2>철새가 간 곳</h2>'
+    + '<div class="meta">' + M.source + '</div>'
+    + '<div class="kid">우리나라에서 겨울을 난 새들이 봄에 어디로 떠났는지예요.</div>'
+    + '<ul><li>기록 <b>' + (M.trips || []).length + '건</b> · <b>'
+      + (M.species || []).length + '종</b>'
+      + (yrs.length ? ' · ' + yrs[0] + '~' + yrs[yrs.length-1] + '년' : '') + '</li>'
+    + '<li>🪶 떠난 곳 · ◎ 도착한 곳(원 안 어딘가)</li></ul>'
+    + '<div class="rec">' + md(M.note && M.note.ko).replace(/\n/g, '<br>') + '</div>';
+  card.hidden = false;
+  card.querySelector('.x').addEventListener('click', () => { card.hidden = true; });
+}
+
+$('#b-turtle').addEventListener('click', e => {
+  turtleOn = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  e.currentTarget.setAttribute('aria-pressed', String(turtleOn));
+  if(turtleLine) turtleLine.visible = turtleOn;
+  for(const m of turtleMarks) m.el.style.display = turtleOn ? '' : 'none';
+  if(turtleOn) openTurtleCard(); else $('#card').hidden = true;
+  paintSrc();
+});
+
+$('#b-bird').addEventListener('click', e => {
+  birdOn = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  e.currentTarget.setAttribute('aria-pressed', String(birdOn));
+  if(birdArc)  birdArc.visible  = birdOn;
+  if(birdRing) birdRing.visible = birdOn;
+  for(const m of birdMarks) m.el.style.display = birdOn ? '' : 'none';
+  if(birdOn) openBirdCard(); else $('#card').hidden = true;
+  paintSrc();
+});
+
+
+/* ══════════════════════════════════════════════════════════════
    과거 축 — 한국 공룡 화석지와 판 회전
    화석은 지금 좌표에서 나오지만, 그 공룡이 살던 시절엔 다른 자리였다.
    한반도(판 601)는 강체로 움직이므로 회전 행렬 하나면 전부 옮겨진다.
@@ -2567,18 +2803,19 @@ async function loadLive(){
           : `${cloudMeta.stillEmpty}칸은 관측이 없어 비움`);
         note = bits.join(' · ');
       }
-      badgetxt.innerHTML = note;
+      srcLive = note; paintSrc();
       srcNote.className = cloudMeta.broken ? 'warn' : '';
     } else {
-      badgetxt.innerHTML = KT.en
+      srcLive = KT.en
         ? `Source: <b>Open-Meteo</b> weather <i>${t}</i> · no cloud data`
         : `출처: <b>Open-Meteo</b> 날씨 <i>${t}</i> · 구름 자료 없음`;
+      paintSrc();
       srcNote.className = 'warn';
     }
   }catch(err){
     console.error(err);
     srcNote.className = 'err';
-    badgetxt.innerHTML = '<b>날씨를 못 불러왔습니다</b> — 없는 값을 그리지 않습니다';
+    srcLive = '<b>날씨를 못 불러왔습니다</b> — 없는 값을 그리지 않습니다'; paintSrc();
     clouds.material.uniforms.ready.value = 0;   // 데이터가 없으면 그리지 않는다
   }
 }
@@ -2841,12 +3078,42 @@ function placeMarkers(w, h){
     }
   }
 
-  /* 나라 이름은 있는 줄 알 정도만. 화면 가운데에 가까운 것부터 다섯 개까지,
-     말풍선·다른 이름과 겹치면 건너뛴다. 지구 전체에서는 더 적게. */
-  // 과거를 보는 동안에는 오늘 나라 이름을 접는다 — 그 이름은 오늘 좌표에 있다.
-  // 어느 버튼으로 들어왔든 같다(전에 화석 경로에서 이게 빠져 '러시아·일본'이 떠 있었다).
+  /* 과거를 보는 동안에는 오늘 것들을 접는다 — 오늘 좌표에 있는 이름과 자리다.
+     어느 버튼으로 들어왔든 같다(전에 화석 경로에서 이게 빠져 '러시아·일본'이 떠 있었다). */
   const pastNow = paleoOn ||
     ($('#b-fossil').getAttribute('aria-pressed') === 'true' && maNow > 0);
+
+  /* 바다거북과 철새 — 화면 가운데에 가까운 것부터.
+     거북 이름표는 **추적이 끝난 자리**에 있다. 거기 산다는 뜻이 아니다. */
+  const wildShown = [];
+  function placeWild(marks, on, cap){
+    let n = 0;
+    for(const t of marks){
+      if(!on || n >= cap){ t.el.style.visibility = 'hidden'; continue; }
+      _v.copy(t.pos).applyMatrix4(earthGroup.matrixWorld);
+      const facing = _v.clone().normalize().dot(_c.clone().sub(_v).normalize());
+      if(facing <= 0.12){ t.el.style.visibility = 'hidden'; continue; }
+      const q3 = _v.clone().project(camera);
+      const X = (q3.x*0.5+0.5)*w, Y = (-q3.y*0.5+0.5)*h;
+      const hw = t.w/2 + 8;
+      const clash = wildShown.some(o => Math.abs(o.x-X) < 76 && Math.abs(o.y-Y) < 34);
+      const ok = !clash && X-hw > 72 && X+hw < w-72 && Y > 60 && Y < h-96;
+      t.el.style.visibility = ok ? 'visible' : 'hidden';
+      if(ok){
+        t.el.style.opacity = Math.min(1, (facing-0.12)/0.25);
+        t.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-5px)`;
+        wildShown.push({x:X, y:Y}); n++;
+      }
+    }
+  }
+  placeWild(turtleMarks, turtleOn && !pastNow, fill > 6 ? 10 : 7);
+  placeWild(birdMarks,   birdOn   && !pastNow, fill > 6 ? 12 : 9);
+  if(turtleLine) turtleLine.visible = turtleOn && !pastNow;
+  if(birdArc)  birdArc.visible  = birdOn && !pastNow;
+  if(birdRing) birdRing.visible = birdOn && !pastNow;
+
+  /* 나라 이름은 있는 줄 알 정도만. 화면 가운데에 가까운 것부터 다섯 개까지,
+     말풍선·다른 이름과 겹치면 건너뛴다. 지구 전체에서는 더 적게. */
   if(pastNow){
     for(const n of names) n.m.el.style.visibility = 'hidden';
     return;
@@ -3030,6 +3297,10 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe(document.documentEle
                 .catch(e => { console.warn('산맥 로드 실패', e); $('#b-mtn').disabled = true; });
   loadPast().then(()=>{ for(const f of fossilMarks) f.el.style.display='none'; drawOnce(); })
             .catch(e => { console.warn('화석지 로드 실패', e); $('#b-fossil').disabled = true; });
+  loadTurtles().then(()=>{ for(const m of turtleMarks) m.el.style.display='none'; drawOnce(); })
+               .catch(e => { console.warn('바다거북 로드 실패', e); $('#b-turtle').disabled = true; });
+  loadMigbird().then(()=>{ for(const m of birdMarks) m.el.style.display='none'; drawOnce(); })
+               .catch(e => { console.warn('철새 로드 실패', e); $('#b-bird').disabled = true; });
   drawOnce();                       // 데이터를 기다리는 동안에도 지구는 이미 떠 있다
   requestAnimationFrame(frame);
   await loadLive();

@@ -547,26 +547,128 @@ earthGroup.add(clouds);
    로컬 개발에서는 같은 출처가 아니기 때문이다. */
 const CLOUD_BASE = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds';
 
+/* ── 지금까지 본 것 중 가장 성한 장을 기기 안에 쌓는다 ────────────────
+   S3 의 global.png 는 갱신 때마다 덮어써져서 과거 프레임이 남지 않는다.
+   그래서 브라우저가 직접 쌓는다.
+
+   ⚠️ 처음엔 "결손이 하나도 없는 장"만 보관했는데, 원본 결손이 며칠 이어지면
+   보관되는 장이 영영 없어 메울 재료가 생기지 않았다. 그래서 **칸 단위로 최선을
+   누적**한다 — 이번에 성한 칸은 갱신하고, 이번에 빈 칸은 예전 것을 남긴다.
+   서버로는 아무것도 보내지 않는다. */
+const CLOUD_DB = 'earthus-v3-clouds';
+function idbOpen(){
+  return new Promise((ok, no) => {
+    const rq = indexedDB.open(CLOUD_DB, 1);
+    rq.onupgradeneeded = () => rq.result.createObjectStore('frame');
+    rq.onsuccess = () => ok(rq.result);
+    rq.onerror = () => no(rq.error);
+  });
+}
+async function lastGoodFrame(){
+  try{
+    const db = await idbOpen();
+    return await new Promise((ok) => {
+      const rq = db.transaction('frame').objectStore('frame').get('last');
+      rq.onsuccess = () => ok(rq.result || null);
+      rq.onerror = () => ok(null);
+    });
+  }catch(e){ return null; }
+}
+async function keepFrame(rec){
+  try{
+    const db = await idbOpen();
+    db.transaction('frame', 'readwrite').objectStore('frame').put(rec, 'last');
+  }catch(e){ /* 저장 못 해도 화면은 돌아간다 */ }
+}
+
+/* ── 깨진 칸 찾기 ────────────────────────────────────────────────
+   위성 합성이 한 구역을 못 받으면 그 자리가 통째로 알파 255 로 채워져 나온다.
+   진짜 구름과는 확실히 구별된다 — 직접 재 봤다(2026-09-03):
+     깨진 자리   알파평균 255, 알파분산 0.0
+     콩고 적운대 알파평균 129, 알파분산 9576
+     사하라 맑음 알파평균 0,   알파분산 0.4
+   구름은 늘 결이 있고 깨진 자리는 완전히 평평하다. 이 둘을 가르는 게 분산이다. */
+const CELL = 64;
+function findBrokenCells(data, W, H){
+  const bad = [];
+  for(let cy = 0; cy < H; cy += CELL){
+    for(let cx = 0; cx < W; cx += CELL){
+      let n = 0, sum = 0, sum2 = 0;
+      for(let y = cy; y < Math.min(cy+CELL, H); y += 4){
+        for(let x = cx; x < Math.min(cx+CELL, W); x += 4){
+          const a = data[(y*W + x)*4 + 3];
+          n++; sum += a; sum2 += a*a;
+        }
+      }
+      if(!n) continue;
+      const mean = sum/n, varc = sum2/n - mean*mean;
+      if(mean > 250 && varc < 5) bad.push([cx, cy]);
+    }
+  }
+  return bad;
+}
+
 async function loadObservedClouds(){
   const meta = await fetch(`${CLOUD_BASE}/meta.json`, { cache:'no-cache' })
     .then(r => { if(!r.ok) throw new Error(`meta ${r.status}`); return r.json(); });
 
-  const img = await new Promise((ok, no) => {
-    const im = new Image();
-    im.crossOrigin = 'anonymous';
-    im.onload = () => ok(im);
-    im.onerror = () => no(new Error('구름 영상을 받지 못했다'));
-    im.src = `${CLOUD_BASE}/global.png?t=${encodeURIComponent(meta.time)}`;
-  });
+  const blob = await fetch(`${CLOUD_BASE}/global.png?t=${encodeURIComponent(meta.time)}`)
+    .then(r => { if(!r.ok) throw new Error(`png ${r.status}`); return r.blob(); });
+  const bmp = await createImageBitmap(blob);
 
   // 위성이 극을 못 본다. 영상이 덮는 위도 띠에만 놓고 나머지는 비운다 —
   // 늘려 채우면 없는 관측을 만들어 내는 것이 된다.
   const north = meta.north ?? 72.715, south = meta.south ?? -72.737;
-  const W = img.width, H = Math.round(W/2);
+  const W = bmp.width, H = Math.round(W/2);
+  const bandY = Math.round(((90-north)/180)*H);
+  const bandH = Math.round(((north-south)/180)*H);
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-  const g = cv.getContext('2d');
+  const g = cv.getContext('2d', { willReadFrequently: true });
   g.clearRect(0,0,W,H);
-  g.drawImage(img, 0, Math.round(((90-north)/180)*H), W, Math.round(((north-south)/180)*H));
+  g.drawImage(bmp, 0, bandY, W, bandH);
+
+  const img = g.getImageData(0, 0, W, H);
+  const broken = findBrokenCells(img.data, W, H);
+
+  let patched = 0, patchTime = null, stillEmpty = broken.length;
+  if(broken.length){
+    // 깨진 칸은 일단 지운다 — 쓰레기를 구름으로 그리지 않는다.
+    for(const [cx, cy] of broken){
+      for(let y = cy; y < Math.min(cy+CELL, H); y++){
+        let o = (y*W + cx)*4 + 3;
+        for(let x = cx; x < Math.min(cx+CELL, W); x++, o += 4) img.data[o] = 0;
+      }
+    }
+    g.putImageData(img, 0, 0);
+
+    // 그 자리만 예전에 성했던 자료에서 가져와 메운다.
+    const prev = await lastGoodFrame();
+    if(prev && prev.time !== meta.time){
+      try{
+        const pb = await createImageBitmap(prev.blob);      // 누적본은 이미 등장방형 전체다
+        const pc = document.createElement('canvas'); pc.width = W; pc.height = H;
+        const pg = pc.getContext('2d', { willReadFrequently: true });
+        pg.drawImage(pb, 0, 0, W, H);
+        const pd = pg.getImageData(0, 0, W, H).data;
+        for(const [cx, cy] of broken){
+          // 예전 자료의 그 칸도 비어 있으면 메울 게 없다 — 억지로 채우지 않는다
+          let has = false;
+          for(let y = cy; y < Math.min(cy+CELL, H) && !has; y += 4)
+            for(let x = cx; x < Math.min(cx+CELL, W); x += 4)
+              if(pd[(y*W + x)*4 + 3] > 8){ has = true; break; }
+          if(!has) continue;
+          const cw = Math.min(CELL, W-cx), ch2 = Math.min(CELL, H-cy);
+          g.drawImage(pc, cx, cy, cw, ch2, cx, cy, cw, ch2);
+          patched++;
+        }
+        stillEmpty = broken.length - patched;
+        if(patched) patchTime = prev.time;
+      }catch(e){ console.warn('예전 자료로 메우지 못했다', e); }
+    }
+  }
+
+  // 지금 화면이 지금까지의 최선이다 — 통째로 누적본으로 갈아 둔다.
+  cv.toBlob((b) => { if(b) keepFrame({ time: meta.time, blob: b }); }, 'image/png');
 
   cloudTex.image = cv;
   cloudTex.colorSpace = THREE.SRGBColorSpace;
@@ -578,7 +680,7 @@ async function loadObservedClouds(){
   clouds.material.uniforms.texel.value.set(1/W, 1/H);
   clouds.material.uniforms.ready.value = 1;
 
-  return meta;
+  return { ...meta, broken: broken.length, patched, patchTime, stillEmpty };
 }
 
 /* ── 카메라: 세 칸으로 잠근 줌 ────────────────────────────────── */
@@ -1059,10 +1161,22 @@ async function loadLive(){
     });
 
     const t = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
-    badgetxt.textContent = cloudMeta
-      ? `실측 · 구름 NOAA GMGSI ${String(cloudMeta.time).slice(11,16)}Z · 날씨 open-meteo ${t}`
-      : `실측 · open-meteo ${t} · 구름 없음`;
-    badge.className = cloudMeta ? '' : 'warn';
+    // 결손과 메움을 숨기지 않는다 — 무엇을 보고 있는지가 화면에 적혀야 한다
+    if(cloudMeta){
+      const cz = String(cloudMeta.time).slice(11,16);
+      let note = `실측 · 구름 NOAA GMGSI ${cz}Z · 날씨 open-meteo ${t}`;
+      if(cloudMeta.broken){
+        const parts = [`구름 ${cz}Z`];
+        if(cloudMeta.patched) parts.push(`빈 곳 ${cloudMeta.patched}칸은 ${String(cloudMeta.patchTime).slice(11,16)}Z 자료`);
+        if(cloudMeta.stillEmpty) parts.push(`${cloudMeta.stillEmpty}칸은 관측 없어 비움`);
+        note = parts.join(' · ');
+      }
+      badgetxt.textContent = note;
+      badge.className = cloudMeta.broken ? 'warn' : '';
+    } else {
+      badgetxt.textContent = `실측 · open-meteo ${t} · 구름 없음`;
+      badge.className = 'warn';
+    }
   }catch(err){
     console.error(err);
     badge.className = 'err';

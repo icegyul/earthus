@@ -16,15 +16,35 @@ const FRAMES = 8;
 const TILE = 48;
 const MAX_MARKS = 900;
 
-// 고도별 예산. 멀면 정말 센 것만, 가까울수록 늘린다.
-// 윈디는 뇌우 구역에 작은 번개를 꽤 촘촘히 뿌린다(레퍼런스 확인). 그 밀도에 맞춘다.
+// 비 문턱은 **고도와 무관하게 고정**이다. "번개는 색으로 보이는 비 위에 몰려야 한다"(PD).
+// 색면 불투명도가 눈에 들어오는 값이 1.5mm/h(=byte 137, 윈디 범례의 시작값)이고,
+// 그건 카메라가 어디 있든 변하지 않는다. 줌으로 바꿀 것은 개수뿐이다.
+// (예전엔 최대 줌에서 byte 100 = 0.61mm/h 까지 통과시켜, 색이 거의 없는 곳에 번개가 앉았다.)
+//
+// rep = 한 칸 안에 흩뿌릴 개수. 1° 칸은 적도에서 111km 라 칸마다 하나만 찍으면
+// 뇌우 구역이 '점 몇 개'로 보인다. 가까이 갈수록 칸 안에 여러 개를 흩어 뭉치게 만든다.
+const RAIN_MIN = 137;   // 1.5 mm/h — 색면이 눈에 들어오기 시작하는 값
+// 뇌우 문턱을 낮춰도 되는 이유: 비(1.5mm/h)와 구름(A≥128) 두 관문이 이미 전지구
+// 65,160칸을 90~140칸으로 줄인다. 여기서 뇌우 문턱까지 높이면 화면에 2~5개만 남아
+// '뭉쳐 있다'가 아니라 '점 몇 개'가 된다(실측: 고도 2,039km 에서 5개).
 const LOD = [
-  { alt: 6000, thr: 120, sep: 4, max: 120 },
-  { alt: 2500, thr: 100, sep: 3, max: 260 },
-  { alt: 1000, thr: 84, sep: 2, max: 420 },
-  { alt: 400, thr: 70, sep: 2, max: 620 },
-  { alt: 0, thr: 56, sep: 1, max: 900 },
+  { alt: 6000, thr: 70, sep: 3, rep: 1, max: 120 },
+  { alt: 2500, thr: 58, sep: 2, rep: 2, max: 220 },
+  { alt: 1000, thr: 46, sep: 1, rep: 3, max: 340 },
+  { alt: 400, thr: 36, sep: 1, rep: 4, max: 520 },
+  { alt: 0, thr: 30, sep: 1, rep: 5, max: 760 },
 ];
+
+// 칸 안에서 흩뿌릴 위치. 매 프레임 같은 자리에 나와야 하므로 난수가 아니라 해시다.
+function jitter(x, y, i) {
+  let a = (x * 73856093) ^ (y * 19349663) ^ (i * 83492791);
+  a = (a ^ 61) ^ (a >>> 16);
+  a = (a + (a << 3)) | 0;
+  a ^= a >>> 4;
+  a = Math.imul(a, 0x27d4eb2d);
+  a ^= a >>> 15;
+  return (a >>> 0) / 4294967296 - 0.5;
+}
 
 function lodFor(altKm) {
   for (const l of LOD) if (altKm >= l.alt) return l;
@@ -148,8 +168,11 @@ export class LightningMarks {
     const key = `${img.src || ''}|${lod.alt}|${Math.round(cLat / grid)}|${Math.round(cLon / grid)}`;
     if (key === this.lastKey) return this.points.geometry.drawRange.count;
 
-    // 구름 두께를 함께 읽는다. 문턱은 셰이더가 구름을 보이기 시작하는 값(A≈0.28)과 맞춘다 —
-    // 화면에 구름이 없는데 번개만 뜨면 그건 거짓이다.
+    // 구름 두께를 함께 읽는다.
+    // 문턱을 '셰이더가 그리기 시작하는 값'(A=72)에 맞췄더니 여전히 허공에 번개가 떴다.
+    // 재보니 그 값에서 셰이더 불투명도는 0.001 — 눈에는 구름이 없다. 게다가 번개 후보의
+    // 63%가 A<72, 중앙값 26 이었다(실측): 대류 셀은 응결물이 비로 떨어져 CWAT 가 낮다.
+    // 자료에 대류가 있어도 화면에 구름이 없으면 번개를 찍지 않는다 — 보이는 것이 기준이다.
     let cw = null;
     const cimg = cloudTex && cloudTex.image;
     if (cimg && cimg.width) {
@@ -197,16 +220,21 @@ export class LightningMarks {
         const o = (y * W + x) * 4;
         const b = px[o + 2];
         if (b < lod.thr) continue;
-        if (px[o] < 64) continue;                 // 비가 없는데 번개만 있을 수는 없다
-        // 구름이 화면에 보일 만큼 두꺼운 곳에서만 — 얇은 곳에 찍으면 허공에 번개가 뜬다.
-        if (cw && cw.px[(y * cw.W + x) * 4 + 3] < 72) continue;
+        // 비가 **색으로 보일 만큼** 와야 한다. 예전엔 0.27mm/h 만 넘으면 통과시켜
+        // 약한 비 위에도 번개가 앉았다 — 화면에서는 비 없는 곳처럼 보인다(PD 지적).
+        const r = px[o];
+        if (r < RAIN_MIN) continue;
+        // 구름이 **눈에 보일 만큼** 두꺼운 곳에서만 (A=128 ≈ 셰이더 불투명도 0.25).
+        // 구름 자료를 못 읽었으면 아예 찍지 않는다 — 확인 못 한 것을 그리지 않는다.
+        if (!cw || cw.px[(y * cw.W + x) * 4 + 3] < 128) continue;
         if (!wrapAll) {
           const lon = ((x + 0.5) / W) * 360 - 180;
           let d = lon - cLon;
           if (d > 180) d -= 360; else if (d < -180) d += 360;
           if (Math.abs(d) > lonHalf) continue;
         }
-        cand.push({ x, y, w: b });
+        // 줄 세우기도 비 강도를 함께 본다 — 가장 센 비의 뇌우 핵에 먼저 앉는다.
+        cand.push({ x, y, w: b * (0.35 + 0.65 * (r / 255)) });
       }
     }
     if (!cand.length) { this.points.geometry.setDrawRange(0, 0); return 0; }
@@ -226,17 +254,26 @@ export class LightningMarks {
       const key2 = Math.floor(c.y / sep) * gw + Math.floor(c.x / sep);
       if (taken.has(key2)) continue;
       taken.add(key2);
-      const lon = ((c.x + 0.5) / W) * 360 - 180;
-      const lat = 90 - ((c.y + 0.5) / H) * 180;
-      const la = (lat * Math.PI) / 180;
-      const lo = (lon * Math.PI) / 180;
-      const cl = Math.cos(la);
-      pos[k * 3] = radius * cl * Math.sin(lo);
-      pos[k * 3 + 1] = radius * Math.sin(la);
-      pos[k * 3 + 2] = radius * cl * Math.cos(lo);
-      siz[k] = base * (0.8 + 0.4 * (c.w / 255));
-      pha[k] = ((c.x * 7 + c.y * 13) % 97) / 97;
-      k += 1;
+      // 센 칸일수록 여러 개를 흩뿌린다 — 뇌우 핵이 '뭉쳐' 보여야 한다.
+      const reps = Math.max(1, Math.round(lod.rep * (0.45 + 0.55 * (c.w / 255))));
+      for (let i = 0; i < reps; i += 1) {
+        if (k >= Math.min(lod.max, MAX_MARKS)) break;
+        // 칸 안에서만 흔든다(±0.42칸). 칸 밖으로 나가면 비 없는 곳에 앉는다.
+        const dx = i === 0 ? 0 : jitter(c.x, c.y, i) * 0.84;
+        const dy = i === 0 ? 0 : jitter(c.y, c.x, i + 41) * 0.84;
+        const lon = ((c.x + 0.5 + dx) / W) * 360 - 180;
+        const lat = 90 - ((c.y + 0.5 + dy) / H) * 180;
+        const la = (lat * Math.PI) / 180;
+        const lo = (lon * Math.PI) / 180;
+        const cl = Math.cos(la);
+        pos[k * 3] = radius * cl * Math.sin(lo);
+        pos[k * 3 + 1] = radius * Math.sin(la);
+        pos[k * 3 + 2] = radius * cl * Math.cos(lo);
+        siz[k] = base * (0.8 + 0.4 * (c.w / 255)) * (i === 0 ? 1 : 0.82);
+        // 번쩍임이 같이 터지면 한 덩어리로 보인다 — 위상을 어긋나게 준다.
+        pha[k] = ((c.x * 7 + c.y * 13 + i * 29) % 97) / 97;
+        k += 1;
+      }
     }
     geo.attributes.position.needsUpdate = true;
     geo.attributes.aSize.needsUpdate = true;

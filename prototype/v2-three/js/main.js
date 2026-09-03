@@ -23,8 +23,8 @@ import { TravelScene } from './travel.js?v=2';
 // 익명 이용 집계 — 개인 식별자를 보내지 않는다 (날짜·이벤트명·횟수만). usage.js 주석 참조.
 import { usage } from './usage.js?v=1';
 import { FlightRoute, routeCardHtml } from './route.js?v=4';
-import { PrecipField } from './precip-field.js?v=3';
-import { LightningMarks } from './lightning-marks.js?v=3';
+import { PrecipField } from './precip-field.js?v=4';
+import { LightningMarks } from './lightning-marks.js?v=7';
 // 정본 엔진(prototype/js/earthus2/v02)으로 가는 유일한 이음매 — 어휘·신선도·품질 예산의 출처
 import {
   installFetchObserver, ThermalGovernor, scenePlan, layerDataState, layerTruthLine,

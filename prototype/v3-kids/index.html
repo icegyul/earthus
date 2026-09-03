@@ -106,6 +106,16 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 }
 .bub .box b{display:block;font-size:12px;opacity:.55;font-weight:400}
 
+/* ── 충돌구 — 작게 말고 크게 ── */
+.cr{position:absolute;z-index:5;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;
+  will-change:transform,opacity;display:flex;flex-direction:column;align-items:center}
+.cr .ring{border:3px solid #C9A6F0;border-radius:50%;background:rgba(120,80,190,.22);
+  box-shadow:0 0 0 2px rgba(10,6,20,.5),0 3px 12px rgba(0,0,0,.5)}
+.cr .ring::after{content:'';display:block;width:34%;height:34%;margin:33%;border-radius:50%;
+  background:rgba(201,166,240,.65)}
+.cr .t{font-family:var(--kid);font-size:12px;color:#EBDBFF;margin-top:3px;white-space:nowrap;
+  text-shadow:0 1px 3px rgba(10,6,20,.95)}
+
 /* ── 강 이름 · 댐 ── */
 .rv{position:absolute;z-index:3;transform:translate(-50%,-50%);pointer-events:none;
   font-family:var(--kid);font-size:12.5px;color:#BFE9FF;white-space:nowrap;
@@ -310,6 +320,11 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
         <path d="M3 12c3.5 0 3.5 3 7 3s3.5-3 7-3 3.5 3 7 3 3.5-3 5-3"/>
         <path d="M3 20c3.5 0 3.5 3 7 3s3.5-3 7-3 3.5 3 7 3 3.5-3 5-3"/></svg>
+    </button>
+    <button class="railbtn" id="b-crater" aria-pressed="false" aria-label="운석 충돌구 보기" title="충돌구">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
+        <ellipse cx="16" cy="20" rx="12" ry="6"/><ellipse cx="16" cy="20" rx="5.5" ry="2.6"/>
+        <path d="M23 6l-4 6"/><path d="M27 9l-3 4"/></svg>
     </button>
     <button class="railbtn" id="b-quake" aria-pressed="false" aria-label="지진과 판 경계 보기" title="지진·판 경계">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
@@ -935,6 +950,55 @@ function addMarker(kind, lat, lon, html, cls){
   markers.push({ el, pos: llToVec(lat, lon, R*1.02), kind });
   return el;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   쿵 — 운석이 남긴 자국
+   "작게 하지 말고 크게" — 표식 크기를 실제 지름에 비례시키되 최소·최대를
+   둔다. 배린저는 1.2km 라 점만 하고 브레데포르트는 160km 라 크다.
+   ⚠️ 크기는 화면에서 키우되 자리는 손대지 않는다.
+   ══════════════════════════════════════════════════════════════ */
+let CRATERS = null, craterOn = false;
+const craterMarks = [];
+
+async function loadCraters(){
+  CRATERS = await fetch('../data/craters.json').then(r=>r.json());
+  for(const c of CRATERS.items){
+    const el = document.createElement('div');
+    el.className = 'cr';
+    el.innerHTML = `<div class="ring"></div><div class="t">${c.ko}</div>`;
+    el.style.visibility = 'hidden'; el.style.display = 'none';
+    el.addEventListener('click', ()=> openCrater(c));
+    stage.appendChild(el);
+    craterMarks.push({ c, el, pos: llToVec(c.lat, c.lon, R*1.016) });
+  }
+}
+
+function craterAgeKo(ma){
+  if(ma < 1) return `약 ${Math.round(ma*1000)}만 년 전`.replace('약 50만','약 5만');
+  if(ma < 100) return `약 ${Math.round(ma)}00만 년 전`;
+  const eok = Math.floor(ma/100), man = Math.round(ma%100);
+  return man ? `약 ${eok}억 ${man}00만 년 전` : `약 ${eok}억 년 전`;
+}
+
+function openCrater(c){
+  const card = $('#card');
+  card.innerHTML = `<button class="x" aria-label="닫기">×</button>
+    <h2>${c.ko}</h2>
+    <div class="meta">${c.co} · ${c.en}</div>
+    ${c.kid ? `<div class="kid">${c.kid}</div>` : ''}
+    <ul><li>지름 약 ${c.km} km</li><li>${craterAgeKo(c.ma)}</li></ul>
+    <div class="rec"><span class="warn2">지름과 나이는 자료마다 다릅니다</span> — 오래된 충돌구는
+      깎이고 묻혀서 원래 크기를 되짚어 재기 때문입니다.<br>손으로 정리한 목록입니다.</div>`;
+  card.hidden = false;
+  card.querySelector('.x').addEventListener('click', ()=>{ card.hidden = true; });
+}
+
+$('#b-crater').addEventListener('click', e => {
+  craterOn = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  e.currentTarget.setAttribute('aria-pressed', String(craterOn));
+  for(const m of craterMarks) m.el.style.display = craterOn ? '' : 'none';
+  if(!craterOn) $('#card').hidden = true;
+});
 
 /* ══════════════════════════════════════════════════════════════
    불 — 지진 25년과 판 경계
@@ -1942,6 +2006,31 @@ function placeMarkers(w, h){
     if(!clash) pinLabels.push({x:f.sx, y:f.sy});
   }
 
+  // 충돌구 — 지름에 비례해 키우되 자리는 그대로
+  if(craterOn){
+    const crShown = [];
+    for(const m of craterMarks){
+      _v.copy(m.pos).applyMatrix4(earthGroup.matrixWorld);
+      const facing = _v.clone().normalize().dot(_c.clone().sub(_v).normalize());
+      if(facing <= 0.06){ m.el.style.visibility='hidden'; continue; }
+      const q = _v.clone().project(camera);
+      const X=(q.x*0.5+0.5)*w, Y=(-q.y*0.5+0.5)*h;
+      // 실제 지름에 비례하되 너무 작거나 크지 않게 — 아이가 누를 수 있어야 한다
+      const px = Math.max(18, Math.min(74, Math.sqrt(m.c.km) * 4.2 * (screenR/300)));
+      const ring = m.el.querySelector('.ring');
+      ring.style.width = ring.style.height = px.toFixed(0) + 'px';
+      m.el.style.visibility='visible';
+      m.el.style.opacity = Math.min(1,(facing-0.06)/0.2);
+      m.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-50%)`;
+      const lab = m.el.querySelector('.t');
+      const clash = crShown.some(o => Math.abs(o.x-X)<80 && Math.abs(o.y-Y)<24);
+      lab.style.visibility = clash ? 'hidden' : 'visible';
+      if(!clash) crShown.push({x:X, y:Y});
+    }
+  } else {
+    for(const m of craterMarks) m.el.style.visibility='hidden';
+  }
+
   // 강 이름과 댐
   if(waterOn){
     const rvShown = [];
@@ -2164,6 +2253,8 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe(document.documentEle
   for(const c of COUNTRY_LABELS) addMarker('name', c.lat, c.lon, c.name, 'nm');
   loadPaleoEarth().then(()=> drawOnce())
                   .catch(e => { console.warn('옛 대륙 로드 실패', e); $('#b-pangaea').disabled = true; });
+  loadCraters().then(()=> drawOnce())
+               .catch(e => { console.warn('충돌구 로드 실패', e); $('#b-crater').disabled = true; });
   loadQuakes().then(()=> drawOnce())
               .catch(e => { console.warn('지진 로드 실패', e); $('#b-quake').disabled = true; });
   loadWater().then(()=>{ for(const d of damMarks) d.el.style.display='none'; drawOnce(); })

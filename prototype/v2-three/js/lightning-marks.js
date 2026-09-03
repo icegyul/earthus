@@ -21,18 +21,24 @@ const MAX_MARKS = 900;
 // 그건 카메라가 어디 있든 변하지 않는다. 줌으로 바꿀 것은 개수뿐이다.
 // (예전엔 최대 줌에서 byte 100 = 0.61mm/h 까지 통과시켜, 색이 거의 없는 곳에 번개가 앉았다.)
 //
-// rep = 한 칸 안에 흩뿌릴 개수. 1° 칸은 적도에서 111km 라 칸마다 하나만 찍으면
-// 뇌우 구역이 '점 몇 개'로 보인다. 가까이 갈수록 칸 안에 여러 개를 흩어 뭉치게 만든다.
+// 한 칸에 몇 개를 뿌릴지는 **고도가 아니라 화면에 들어온 뇌우 칸 수**로 정한다.
+// 고도로 정했더니 거꾸로 갔다(실측): 2,039km 895개 → 828km 170개. 가까이 갈수록
+// 보이는 칸이 줄어서다(면적이 고도의 제곱으로 준다 — 6배 감소).
+// 예산을 화면 안 칸들에 나눠주면, 칸이 줄수록 칸당 개수가 늘어 "가까이 갈수록
+// 번개가 많아진다 → 여긴 폭풍우구나"가 성립한다(PD).
+// 1° 칸은 적도에서 111km 다 — 가까이서 한 칸에 열몇 개가 흩어져야 '치는 중'으로 보인다.
 const RAIN_MIN = 137;   // 1.5 mm/h — 색면이 눈에 들어오기 시작하는 값
+const PER_CELL_MAX = 28;  // 한 칸(111km)에 이보다 많으면 표식이 서로 뭉개진다
 // 뇌우 문턱을 낮춰도 되는 이유: 비(1.5mm/h)와 구름(A≥128) 두 관문이 이미 전지구
 // 65,160칸을 90~140칸으로 줄인다. 여기서 뇌우 문턱까지 높이면 화면에 2~5개만 남아
 // '뭉쳐 있다'가 아니라 '점 몇 개'가 된다(실측: 고도 2,039km 에서 5개).
+// thr 은 계단으로 둔다 — 줌을 당기면 약한 셀이 '새로 나타나는' 게 맞기 때문이다.
 const LOD = [
-  { alt: 6000, thr: 70, sep: 3, rep: 1, max: 120 },
-  { alt: 2500, thr: 58, sep: 2, rep: 2, max: 220 },
-  { alt: 1000, thr: 46, sep: 1, rep: 3, max: 340 },
-  { alt: 400, thr: 36, sep: 1, rep: 4, max: 520 },
-  { alt: 0, thr: 30, sep: 1, rep: 5, max: 760 },
+  { alt: 6000, thr: 70, sep: 3, max: 260 },
+  { alt: 2500, thr: 58, sep: 2, max: 460 },
+  { alt: 1000, thr: 46, sep: 1, max: 700 },
+  { alt: 400, thr: 36, sep: 1, max: 860 },
+  { alt: 0, thr: 30, sep: 1, max: 900 },
 ];
 
 // 칸 안에서 흩뿌릴 위치. 매 프레임 같은 자리에 나와야 하므로 난수가 아니라 해시다.
@@ -161,11 +167,15 @@ export class LightningMarks {
     const img = precipTex && precipTex.image;
     if (!img || !img.width) { this.points.visible = false; return 0; }
     const lod = lodFor(altKm);
-    const span = Number.isFinite(viewDeg) ? Math.min(180, Math.max(5, viewDeg * 1.6)) : 180;
+    // 화면보다 조금만 넓게 잡는다. 1.6배로 잡았더니 상자 넓이가 화면의 2.8배라
+    // 예산의 대부분이 화면 밖에서 소모됐다(실측: 828km 에서 507개 중 화면엔 6개).
+    const span = Number.isFinite(viewDeg) ? Math.min(180, Math.max(2.5, viewDeg * 1.25)) : 180;
     const cLat = Number.isFinite(centerLat) ? centerLat : 0;
     const cLon = Number.isFinite(centerLon) ? centerLon : 0;
     const grid = Math.max(1, span / 6);
-    const key = `${img.src || ''}|${lod.alt}|${Math.round(cLat / grid)}|${Math.round(cLon / grid)}`;
+    // 고도를 100km 눈금으로 키에 넣는다 — LOD 단계(5개)만으로는 줌 중간에 다시 뽑지 않아
+    // 칸당 개수가 갱신되지 않는다.
+    const key = `${img.src || ''}|${Math.round(altKm / 100)}|${Math.round(cLat / grid)}|${Math.round(cLon / grid)}`;
     if (key === this.lastKey) return this.points.geometry.drawRange.count;
 
     // 구름 두께를 함께 읽는다.
@@ -238,6 +248,9 @@ export class LightningMarks {
       }
     }
     if (!cand.length) { this.points.geometry.setDrawRange(0, 0); return 0; }
+    // 예산을 화면 안 뇌우 칸에 나눈다. 칸이 적을수록(=가까이 갈수록) 칸당 개수가 는다.
+    const budget = Math.min(lod.max, MAX_MARKS);
+    const perCell = Math.max(1, Math.min(PER_CELL_MAX, Math.round(budget / cand.length)));
     // 센 곳부터, 최소 간격을 두고 — 격자무늬가 생기지 않고 뇌우 핵에 앉는다.
     cand.sort((a, b) => b.w - a.w);
     const sep = lod.sep;
@@ -247,7 +260,8 @@ export class LightningMarks {
     const pos = geo.attributes.position.array;
     const siz = geo.attributes.aSize.array;
     const pha = geo.attributes.aPhase.array;
-    const base = altKm > 6000 ? 11 : altKm > 2500 ? 13 : altKm > 1000 ? 16 : altKm > 400 ? 20 : 26;
+    // 가까이 갈수록 커져야 한다. 828km 에서 12px 로 나와 '점'으로만 보였다(실측).
+    const base = altKm > 6000 ? 12 : altKm > 2500 ? 15 : altKm > 1000 ? 19 : altKm > 400 ? 27 : 36;
     let k = 0;
     for (const c of cand) {
       if (k >= Math.min(lod.max, MAX_MARKS)) break;
@@ -255,7 +269,11 @@ export class LightningMarks {
       if (taken.has(key2)) continue;
       taken.add(key2);
       // 센 칸일수록 여러 개를 흩뿌린다 — 뇌우 핵이 '뭉쳐' 보여야 한다.
-      const reps = Math.max(1, Math.round(lod.rep * (0.45 + 0.55 * (c.w / 255))));
+      // w 는 실제로 255 근처까지 잘 안 간다(뇌우 B × 비 세기). 140 을 1.0 으로 본다.
+      const strength = Math.min(1, c.w / 140);
+      // 약한 칸도 충분히 뿌린다. 0.30 을 바닥으로 뒀더니 가까이서 한 칸에 5개만 나와
+      // '여기 폭풍우'로 읽히지 않았다. 세기는 개수보다 크기·밝기로 드러내는 게 낫다.
+      const reps = Math.max(1, Math.round(perCell * (0.55 + 0.45 * strength)));
       for (let i = 0; i < reps; i += 1) {
         if (k >= Math.min(lod.max, MAX_MARKS)) break;
         // 칸 안에서만 흔든다(±0.42칸). 칸 밖으로 나가면 비 없는 곳에 앉는다.
@@ -269,7 +287,10 @@ export class LightningMarks {
         pos[k * 3] = radius * cl * Math.sin(lo);
         pos[k * 3 + 1] = radius * Math.sin(la);
         pos[k * 3 + 2] = radius * cl * Math.cos(lo);
-        siz[k] = base * (0.8 + 0.4 * (c.w / 255)) * (i === 0 ? 1 : 0.82);
+        // 한 칸에 열몇 개가 들어가면 큰 글리프는 뭉개진다 — 개수가 많을수록 조금 줄인다.
+        // 촘촘할 때 조금만 줄인다. 0.70 까지 줄였더니 많아지는 대신 안 보였다.
+        const crowd = reps > 10 ? 0.86 : reps > 6 ? 0.92 : 1.0;
+        siz[k] = base * (0.8 + 0.4 * strength) * (i === 0 ? 1 : 0.84) * crowd;
         // 번쩍임이 같이 터지면 한 덩어리로 보인다 — 위상을 어긋나게 준다.
         pha[k] = ((c.x * 7 + c.y * 13 + i * 29) % 97) / 97;
         k += 1;

@@ -23,8 +23,8 @@ import { TravelScene } from './travel.js?v=2';
 // 익명 이용 집계 — 개인 식별자를 보내지 않는다 (날짜·이벤트명·횟수만). usage.js 주석 참조.
 import { usage } from './usage.js?v=1';
 import { FlightRoute, routeCardHtml } from './route.js?v=4';
-import { PrecipField } from './precip-field.js?v=4';
-import { LightningMarks } from './lightning-marks.js?v=7';
+import { PrecipField } from './precip-field.js?v=5';
+import { LightningMarks } from './lightning-marks.js?v=12';
 // 정본 엔진(prototype/js/earthus2/v02)으로 가는 유일한 이음매 — 어휘·신선도·품질 예산의 출처
 import {
   installFetchObserver, ThermalGovernor, scenePlan, layerDataState, layerTruthLine,
@@ -3454,7 +3454,12 @@ async function main() {
           break;
         case 'weather/cloud-gfs':
           setCloud('gfs');
-          note('비·눈·태풍 5일 예보', '하단 타임라인 ▶ 를 누르면 5일치 이동을 재생합니다.<br/>비=파랑 · 눈=연보라 · 65초 뒤 동아시아 4° 상세가 합류합니다.', 'MODEL_SIGNAL');
+          note('비·눈·태풍 5일 예보', '하단 타임라인 ▶ 를 누르면 5일치 이동을 재생합니다.<br/>'
+            + '비=파랑 · 눈=연보라 · 65초 뒤 동아시아 4° 상세가 합류합니다.<br/><br/>'
+            + '<b>번개 표식</b>은 GFS 대류강수율과 CAPE 로 <b>우리가 유도한 값</b>입니다(DERIVED). '
+            + '관측된 낙뢰가 아니고 <b>표식 개수도 낙뢰 횟수가 아닙니다</b> — 가까이 갈수록 촘촘해집니다.<br/>'
+            + '비가 1.5mm/h 이상이고 구름이 실제로 그려지는 곳에만 찍습니다. '
+            + '지금(NOW) 시각에는 GFS 에 대류강수율이 없어 표식이 나오지 않습니다.', 'MODEL_SIGNAL');
           break;
         case 'ocean/marine':
           note('해상 실황 조회', '지구의 바다를 클릭하면 그 지점의 실측 파고·너울·풍속을 조회하고, 관측 기반 시뮬레이션으로 볼 수 있습니다.', 'OBSERVED');

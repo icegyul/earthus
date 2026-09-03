@@ -34,25 +34,28 @@ from PIL import Image
 
 Image.MAX_IMAGE_PIXELS = None
 
-SRC = "https://naciscdn.org/naturalearth/50m/raster/SR_50M.zip"
+# 10m 판(21600×10800). 50m 판(10800×5400)으로 시작했다가 능선이 뭉개져 올렸다 —
+# 지구 텍스처가 4096 폭이라 2160 짜리 그늘은 두 배로 늘어나며 흐려졌다.
+SRC = "https://naciscdn.org/naturalearth/10m/raster/SR_HR.zip"
+NAME = "SR_HR.tif"
 ROOT = Path(__file__).resolve().parent.parent
-CACHE = ROOT / ".tmp" / "relief" / "SR_50M.zip"
-OUT = ROOT / "prototype" / "data" / "relief-2160.webp"
+CACHE = ROOT / ".tmp" / "relief" / "SR_HR.zip"
+OUT = ROOT / "prototype" / "data" / "relief-4320.webp"
 
-# 10800×5400 의 정확히 1/5. 나누어떨어지지 않는 크기로 줄이면 화소마다 섞는 원본
-# 개수가 달라져 능선에 결이 생긴다.
-W, H = 2160, 1080
-FLAT = 206          # 원본에서 바다(평지)가 갖는 값
-GAIN = 1.35         # 기복을 얼마나 세울까. 1.0 이면 원본 그대로
+# 21600×10800 의 정확히 1/5. 나누어떨어지지 않는 크기로 줄이면 화소마다 섞는 원본
+# 개수가 달라져 능선에 결이 생긴다. 지구 텍스처(4096×2048)와 거의 1:1 이다.
+W, H = 4320, 2160
+FLAT = 206          # 원본에서 바다(평지)가 갖는 값. 10m 판도 같다(2.3억 중 1.6억 화소).
+GAIN = 1.45         # 기복을 얼마나 세울까. 1.0 이면 원본 그대로
 
 
 def load():
     if not CACHE.exists():
         CACHE.parent.mkdir(parents=True, exist_ok=True)
-        print("▸ 내려받는다 (11MB)")
-        CACHE.write_bytes(urllib.request.urlopen(SRC, timeout=900).read())
+        print("▸ 내려받는다 (44MB)")
+        CACHE.write_bytes(urllib.request.urlopen(SRC, timeout=1800).read())
     z = zipfile.ZipFile(CACHE)
-    return np.asarray(Image.open(io.BytesIO(z.read("SR_50M.tif"))), dtype=np.float32)
+    return np.asarray(Image.open(io.BytesIO(z.read(NAME))))     # uint8 그대로 — 2.3억 화소다
 
 
 def main():
@@ -61,9 +64,15 @@ def main():
     print(f"▸ 원본 {w}×{h}")
 
     # 넓이 평균으로 줄인다. 그냥 건너뛰면 능선이 들쭉날쭉 끊긴다.
+    # ⚠️ 통째로 float32 로 올리면 900MB 다. 가로줄 묶음으로 잘라 가며 줄인다.
     fy, fx = h // H, w // W
     assert h == H * fy and w == W * fx, f"정수배가 아니다: {w}×{h} → {W}×{H}"
-    small = a.reshape(H, fy, W, fx).mean(axis=(1, 3))
+    small = np.empty((H, W), np.float32)
+    step = 216
+    for y0 in range(0, H, step):
+        y1 = min(H, y0 + step)
+        blk = a[y0 * fy:y1 * fy].astype(np.float32)
+        small[y0:y1] = blk.reshape(y1 - y0, fy, W, fx).mean(axis=(1, 3))
 
     out = np.clip(128.0 + (small - FLAT) * GAIN, 0, 255).astype(np.uint8)
 

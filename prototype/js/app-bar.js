@@ -77,7 +77,14 @@
       bar = document.createElement('div');
       bar.className = 'ab-bar';
       bar.setAttribute('role', 'toolbar');
-      bar.setAttribute('aria-label', 'EARTHUS 도구');
+      // 세 지구가 함께 쓰는 바다. 라벨도 앱이 보는 언어를 따라간다.
+      var ko = true;
+      try {
+        var pick = localStorage.getItem('earthus.lang') || localStorage.getItem('earthus.v2.lang');
+        ko = pick ? pick === 'ko'
+                  : /^ko/i.test((navigator.languages && navigator.languages[0]) || navigator.language || '');
+      } catch (e) { /* 사생활 모드 */ }
+      bar.setAttribute('aria-label', ko ? 'EARTHUS 도구' : 'EARTHUS tools');
       document.body.appendChild(bar);
     }
     bar.textContent = '';

@@ -34,6 +34,24 @@ SRC = ("https://raw.githubusercontent.com/nvkelso/natural-earth-vector/"
 OUT = Path(__file__).resolve().parent.parent / "prototype" / "data" / "mountains.json"
 CACHE = Path(__file__).resolve().parent.parent / ".tmp" / "ne-regions.geojson"
 
+# 원본의 한국어 이름에 영어 낱말이 소리 그대로 남아 있다 — '코스트 마운틴스',
+# '앨버타 레인지'. 산맥 이름의 Mountains/Range 는 한국어로 '산맥'이다.
+# 로키산맥·애팔래치아산맥·캐스케이드산맥이 그 관례이고, 이건 옮기는 것이지
+# 지어내는 것이 아니다. 아이가 읽을 화면에 '마운틴스'를 남겨 둘 이유가 없다.
+#
+# 앞말에 띄어쓰기가 있으면 '산맥' 앞도 띄운다 — '퀸 모드 산맥'.
+# 없으면 붙인다 — '코스트산맥'.
+import re
+SUFFIX = re.compile(r"[ \-](마운틴스|마운틴|레인지스|레인지)$")
+
+
+def tidy(ko):
+    m = SUFFIX.search(ko or "")
+    if not m:
+        return ko, False
+    base = ko[:m.start()]
+    return (base + (" 산맥" if " " in base else "산맥")), True
+
 DP = 2            # 소수 둘째 자리 ≈ 1km. 저장소 관례(build-plates.mjs)와 같다.
 MIN_PTS = 4
 MIN_SPAN = 0.15   # 이보다 작은 조각은 전지구 화면에서 한 점도 안 된다
@@ -107,7 +125,7 @@ def main():
         if not lp:
             continue
         items.append({
-            "ko": p.get("NAME_KO") or p.get("NAME"),
+            "ko": tidy(p.get("NAME_KO") or p.get("NAME"))[0],
             "en": p.get("NAME"),
             "wd": p.get("WIKIDATAID"),
             "pri": p.get("MIN_LABEL"),        # 작을수록 큰 산맥 — 화면에 고를 때 쓴다

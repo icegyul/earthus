@@ -1,8 +1,11 @@
 // 다국어 (§5-7)
+import { sweepKo, watchKo, tKo, missingKo } from './i18n-sweep.js';
 // 규칙: 기기 언어 감지는 "최초 1회 기본값"으로만. 수동 변경 시 저장하고 이후 덮어쓰지 않음.
 
 const KO = {
   loading: '지구 불러오는 중…',
+  'w.weak': '약함',
+  'w.loadingLayer': '불러오는 중…',
   layers: '레이어',
   settings: '설정',
   language: '언어',
@@ -60,6 +63,8 @@ const KO = {
 
 const EN = {
   loading: 'Loading Earth…',
+  'w.weak': 'Light',
+  'w.loadingLayer': 'loading…',
   layers: 'Layers',
   settings: 'Settings',
   language: 'Language',
@@ -112,20 +117,34 @@ const LS_LANG = 'earthus.lang';
 const LS_UNIT = 'earthus.unit';
 
 function detect() {
+  // v2 가 남긴 예전 열쇠도 본다 — v2 에서 고른 언어가 1.0 으로 넘어와야 한 앱처럼 느껴진다.
+  try {
+    const old = localStorage.getItem('earthus.v2.lang');
+    if (old === 'ko' || old === 'en') return old;
+  } catch (e) { /* 사생활 모드 */ }
   const n = (navigator.language || 'en').toLowerCase();
   return n.startsWith('ko') ? 'ko' : 'en';
 }
 
 export const i18n = {
-  lang: localStorage.getItem(LS_LANG) || detect(),   // 저장값 우선 — 기기 언어로 덮어쓰지 않음
+  /* 저장값 우선 — 기기 언어로 덮어쓰지 않음.
+     ⚠️ 값을 검사한다. 예전에는 그대로 썼는데, 'ja' 같은 값이 한 번 들어가면
+        PACKS['ja'] 가 undefined 라 i18n.t 를 읽는 모든 곳이 터진다. */
+  lang: (() => {
+    let v = null;
+    try { v = localStorage.getItem(LS_LANG); } catch (e) { /* 사생활 모드 */ }
+    return (v === 'ko' || v === 'en') ? v : detect();
+  })(),
   unit: localStorage.getItem(LS_UNIT) || 'c',        // 온도 단위는 언어와 분리 (§5-7)
   listeners: [],
 
   get t() { return PACKS[this.lang]; },
 
   setLang(l) {
+    l = (l === 'en') ? 'en' : 'ko';   // 지금 있는 묶음은 둘뿐이다
     this.lang = l;
     localStorage.setItem(LS_LANG, l);   // 수동 변경 → 영구 저장
+    try { localStorage.setItem('earthus.v2.lang', l); } catch (e) { /* v2 가 아직 보는 열쇠 */ }
     this.emit();
   },
   setUnit(u) {
@@ -275,7 +294,18 @@ export const i18n = {
     });
     // 문서 언어도 함께 바꾼다 — 스크린리더가 읽는 발음이 달라진다
     document.documentElement.lang = L;
+
+    /* 열쇠(data-i18n)가 아직 닿지 않은 곳을 덮는다. 열쇠가 먼저 돌고 그 뒤라 열쇠가 이긴다.
+       이게 없으면 영어를 고른 사용자에게 우주·해양·계정 화면이 통째로 한국어로 남는다(실측 340곳). */
+    if (L === 'en') {
+      document.title = tKo(document.title);
+      sweepKo(document.body);
+      watchKo();   // 나중에 만들어지는 것도 따라가게 한다
+    }
   },
+
+  /* 화면에 남은 한국어를 돌려준다. i18n-sweep.js 의 사전을 채울 때 쓴다. */
+  missingKo,
 
   // 온도 변환 + 포맷
   temp(celsius, digits = 0) {

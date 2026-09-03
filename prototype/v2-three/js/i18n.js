@@ -9,12 +9,22 @@
 //   그걸 어설프게 옮기면 정직성 문구가 뭉개진다. 그건 문장 단위로 옮겨야 해서 남겨 둔다.
 //   영어 화면에서는 그 사실을 설정에 적어 둔다 — 없는 것을 있는 척하지 않는다.
 
-const LS_KEY = 'earthus.v2.lang';
+/* 세 지구가 언어를 **한 열쇠**로 나눈다.
+   전에는 v2 만 'earthus.v2.lang' 을 따로 썼다. 그래서 1.0 에서 영어를 고른 사람이
+   전환기로 v2 에 넘어오면 다시 한국어가 됐다(실측: earthus.lang=en 인데 화면은 ko).
+   이제 'earthus.lang' 이 정본이고, 예전 열쇠는 **읽기만** 한다 — 이미 고른 사람의 선택을 버리지 않으려고. */
+const LS_KEY = 'earthus.lang';
+const LS_OLD = 'earthus.v2.lang';
 
 function detect() {
   try {
     const saved = localStorage.getItem(LS_KEY);
     if (saved === 'ko' || saved === 'en') return saved;
+    const old = localStorage.getItem(LS_OLD);
+    if (old === 'ko' || old === 'en') {
+      localStorage.setItem(LS_KEY, old);   // 한 번만 옮겨 적는다
+      return old;
+    }
   } catch (e) { /* 사생활 모드 등 — 기기 언어로 간다 */ }
   const nav = (navigator.languages && navigator.languages[0]) || navigator.language || '';
   return /^ko/i.test(nav) ? 'ko' : 'en';
@@ -24,7 +34,10 @@ export const i18n = {
   lang: detect(),
   set(l) {
     this.lang = (l === 'en') ? 'en' : 'ko';
-    try { localStorage.setItem(LS_KEY, this.lang); } catch (e) { /* 저장 못 해도 이번 세션은 유지 */ }
+    try {
+      localStorage.setItem(LS_KEY, this.lang);
+      localStorage.setItem(LS_OLD, this.lang);   // 아직 예전 열쇠를 보는 코드가 있다
+    } catch (e) { /* 저장 못 해도 이번 세션은 유지 */ }
   },
   get ko() { return this.lang === 'ko'; },
   // t('key') · 없는 키는 키 자체를 돌려준다(빈 화면보다 낫다 — 무엇이 빠졌는지 보인다)
@@ -89,6 +102,8 @@ const KO = {
   exaggerL: '지형 과장', isobathGap: '등심선 간격', shadeStr: '음영 강도',
   photoMix: '위성 색 혼합', manualLight: '수동 조명 (화면 기준)',
   sunAzL: '태양 방위각', sunElL: '태양 고도각',
+  crTerrain: '지형', crBase: '기본색', crCompare: '비교', crCesium: 'Cesium v2 지구 열기',
+  hudCopy: '📋 복사',
   mapExit: '◀ 3D 지구로', map3d: '⛰ 3D 지형',
   hudAlt: '고도 —', hudMore: '진단 정보 (상태를 텍스트로 복사)',
   locked: '준비 중',
@@ -137,6 +152,8 @@ const EN = {
   exaggerL: 'Terrain exaggeration', isobathGap: 'Contour interval', shadeStr: 'Shading strength',
   photoMix: 'Satellite colour blend', manualLight: 'Manual lighting (screen-relative)',
   sunAzL: 'Sun azimuth', sunElL: 'Sun elevation',
+  crTerrain: 'Terrain', crBase: 'Base colour', crCompare: 'Compare', crCesium: 'Open the Cesium v2 globe',
+  hudCopy: '📋 Copy',
   mapExit: '◀ Back to 3D Earth', map3d: '⛰ 3D terrain',
   hudAlt: 'alt —', hudMore: 'Diagnostics (copy state as text)',
   locked: 'not connected yet',

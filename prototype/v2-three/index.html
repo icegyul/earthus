@@ -4,6 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>EARTHUS — 지금 지구의 날씨·바다·재난</title>
+<script>/* 제목은 i18n 모듈이 서기 전에 정해진다 — 여기서 언어를 본다. */
+  try{var _l=localStorage.getItem('earthus.lang')||localStorage.getItem('earthus.v2.lang');}catch(e){}
+  if((_l==='en')||(!_l&&!/^ko/i.test(navigator.language||''))) document.title="EARTHUS — Earth's weather, ocean and hazards now";
+</script>
 <meta name="description" content="실데이터로 살아 있는 3D 지구. 실시간 관측 구름·특보·낙뢰·부이, 25년치 지진 18만 건, 인구 데이터 조각을 한 화면에서 봅니다. 없는 값은 만들지 않고 비워 둡니다." />
 <link rel="canonical" href="https://earthus.net/v2/" />
 <meta property="og:type" content="website" />
@@ -1003,9 +1007,9 @@
   </div>
 
   <div class="credit">
-    지형: AWS Terrain Tiles (Terrarium)<br/>
-    기본색: Natural Earth II<br/>
-    비교: <a href="../v2/index.html">Cesium v2 지구 열기</a>
+    <span data-i18n="crTerrain">지형</span>: AWS Terrain Tiles (Terrarium)<br/>
+    <span data-i18n="crBase">기본색</span>: Natural Earth II<br/>
+    <span data-i18n="crCompare">비교</span>: <a href="../v2/index.html" data-i18n="crCesium">Cesium v2 지구 열기</a>
   </div>
   </div><!-- /settings-drawer -->
 </div>
@@ -1020,7 +1024,7 @@
 </div>
 
 <div id="hud"><span id="hud-line" data-i18n="hudAlt">고도 —</span><button id="hud-more" data-i18n-title="hudMore" title="진단 정보 (상태를 텍스트로 복사)">▾</button>
-  <div id="hud-detail"><pre id="hud-text"></pre><button id="hud-copy">📋 복사</button></div></div>
+  <div id="hud-detail"><pre id="hud-text"></pre><button id="hud-copy" data-i18n="hudCopy">📋 복사</button></div></div>
 
 <div id="loading">
   <img class="lockup" src="./assets/brand/earthus-lockup-white.svg" alt="EARTHUS — WHERE EARTH BECOMES ONE" />

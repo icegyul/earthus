@@ -1353,7 +1353,9 @@ class CloudManager {
     CloudManager.featherEdges(ctx, 0, yTop, W, yH, 0, (3 / 180) * H); // 극 경계만 페이드
     const tex = CloudManager.texDefaults(new THREE.CanvasTexture(full));
     const t = (meta.time || '').replace('T', ' ').slice(0, 16);
-    return { tex, lum: 0, relief: true, label: `관측 실황 · 다중위성 IR 합성 (NOAA GMGSI) · ${t}Z · 3D 릴리프(DERIVED: IR→고도 근사)` };
+    return { tex, lum: 0, relief: true, label: i18n.ko
+      ? `관측 실황 · 다중위성 IR 합성 (NOAA GMGSI) · ${t}Z · 3D 릴리프(DERIVED: IR→고도 근사)`
+      : `Observed now · multi-satellite IR composite (NOAA GMGSI) · ${t}Z · 3D relief (DERIVED: IR→height approximation)` };
   }
 
   // 천리안은 채널이 7개인데 오랫동안 ir112 하나만 썼다.
@@ -2001,7 +2003,7 @@ class CloudManager {
       this.loadCth().then(() => {
         if (this.mode === mode) {
           const hm = (this.cthValidAt || '').slice(11, 16);
-          this.noteEl.innerHTML += ` · 운정고도 <span class="badge live">OBSERVED</span> KMA L2 ${hm}Z`;
+          this.noteEl.innerHTML += ` · ${i18n.ko ? '운정고도' : 'cloud-top height'} <span class="badge live">OBSERVED</span> KMA L2 ${hm}Z`;
         }
       }).catch((e) => console.warn('[earthus-cth]', e.message || e));
     }

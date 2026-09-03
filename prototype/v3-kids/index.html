@@ -587,7 +587,7 @@ async function buildEarthTexture(){
     const relief = await new Promise((ok, no) => {
       const im = new Image();
       im.onload = () => ok(im); im.onerror = no;
-      im.src = '../data/relief-2160.webp';
+      im.src = '../data/relief-4320.webp';
     });
     g.imageSmoothingQuality = 'high';
     g.globalCompositeOperation = 'overlay';
@@ -1794,8 +1794,10 @@ async function loadMountains(){
     }
   } catch(e){ console.warn('산봉우리 로드 실패', e); }
 
-  // 이름표는 큰 것부터 스물다섯 개만 준비한다. 화면에는 그중 몇 개만 뜬다.
-  for(const m of MOUNTAINS.slice(0, 25)){
+  /* 이름표는 전부 만들어 두고 화면에는 자리가 되는 만큼만 띄운다.
+     pri 는 원본의 MIN_LABEL — 작을수록 이름난 산맥이다. 스물다섯 개만 만들어 두니
+     화면을 어디로 돌리든 늘 같은 산맥만 떴다. */
+  for(const m of MOUNTAINS.slice().sort((a,b)=> (a.pri-b.pri) || 0)){
     const el = document.createElement('div');
     el.className = 'mt'; el.textContent = m.ko;
     el.style.visibility = 'hidden';
@@ -2788,6 +2790,7 @@ function placeMarkers(w, h){
         5백만 년 전까지는 지금 산맥이 이미 제자리에 있었으므로 그때까진 둔다. */
   const mtShown = [];
   const mtOn = $('#b-mtn').getAttribute('aria-pressed') === 'true' && maNow <= 5;
+  const mtCap = fill > 9 ? 8 : fill > 6 ? 7 : 6;
   if(mtnLine) mtnLine.visible = mtOn;      // 이름표만 접으면 선이 옛 대륙 위에 남는다
   for(const t of mtnMarks){
     if(!mtOn){ t.el.style.visibility = 'hidden'; continue; }
@@ -2799,7 +2802,7 @@ function placeMarkers(w, h){
     const clash = mtShown.some(o => Math.abs(o.x-X) < 84 && Math.abs(o.y-Y) < 22);
     const hw = t.w/2 + 8;
     const inView = X-hw > 72 && X+hw < w-72 && Y > 56 && Y < h-96;
-    const ok = !clash && inView && mtShown.length < 5;
+    const ok = !clash && inView && mtShown.length < mtCap;
     t.el.style.visibility = ok ? 'visible' : 'hidden';
     if(ok){
       t.el.style.opacity = Math.min(1, (facing-0.12)/0.25);
@@ -2812,7 +2815,7 @@ function placeMarkers(w, h){
      z 는 원본의 min_zoom 으로 작을수록 이름난 산이다(에베레스트 4, 대부분 7 언저리).
      목록을 z 순으로 정렬해 두었으므로 앞에서부터 채우다 자리가 차면 멈춘다 —
      '이 배율에서는 z 몇까지' 같은 문턱을 우리가 따로 정하지 않는다. */
-  const pkCap = fill > 9 ? 12 : fill > 6 ? 9 : 7;
+  const pkCap = fill > 9 ? 16 : fill > 6 ? 13 : 10;
   const pkShown = [];
   for(const t of peakMarks){
     if(!mtOn || pkShown.length >= pkCap){ t.el.style.visibility = 'hidden'; continue; }

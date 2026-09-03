@@ -3,6 +3,7 @@ import { viewer, gibsProvider } from '../viewer.js';
 import { API } from '../config.js';
 import { store } from '../store.js';
 import { fetchT } from '../net.js';
+import { i18n } from '../i18n.js';
 import { CONFIG } from '../config.local.js';
 import { buildCloudShadowAlpha } from '../cloud-shadow.js';
 import { ImageryLayerGroup, adoptImageryLayerGroup, visualPipelineMetrics }
@@ -708,8 +709,8 @@ export const imagery = {
        remaining 이 줄기 시작한 뒤에야 퍼센트를 말한다. */
     this._tcLoadEl.classList.add('indet');
     this._tcBar.style.width = '';
-    this._tcLabel = label || '위성 영상';
-    this._tcTxt.textContent = `${this._tcLabel} 불러오는 중…`;
+    this._tcLabel = label || (i18n.lang === 'en' ? 'Satellite imagery' : '위성 영상');
+    this._tcTxt.textContent = `${this._tcLabel} ${i18n.t['w.loadingLayer']}`;
 
     let sawPending = false, peak = 0, shown = 0;
 
@@ -731,7 +732,7 @@ export const imagery = {
         const pct = Math.round((1 - remaining / peak) * 100);
         shown = Math.max(shown, pct);                         // ⚠️ 뒤로 가지 않는다
         this._tcBar.style.width = `${Math.max(4, shown)}%`;
-        this._tcTxt.textContent = `${this._tcLabel} 불러오는 중… ${shown}%`;
+        this._tcTxt.textContent = `${this._tcLabel} ${i18n.t['w.loadingLayer']} ${shown}%`;
         return;
       }
       if (sawPending) {

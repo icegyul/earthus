@@ -5,6 +5,7 @@
 import * as THREE from '../../vendor/three-r184.module.min.js';
 // 사건 방: 기관 스택 + 진리등급 + 현재→다음→행동 (정본 HAZ-011로 사건 결합)
 import { EventRoom } from './event-room.js?v=1';
+import { i18n } from './i18n.js?v=8';
 
 const GDACS_TC = 'https://www.gdacs.org/gdacsapi/api/events/geteventlist/MAP?eventtype=TC';
 const USGS_EQ = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson';
@@ -14,9 +15,12 @@ const ALERT_RANK = { Red: 0, Orange: 1, Green: 2 };
 
 const agoText = (t) => {
   const m = Math.round((Date.now() - t) / 60000);
-  if (m < 60) return `${m}분 전`;
-  if (m < 1440) return `${Math.round(m / 60)}시간 전`;
-  return `${Math.round(m / 1440)}일 전`;
+  const ko = i18n.ko;
+  if (m < 60) return ko ? `${m}분 전` : `${m} min ago`;
+  const h = Math.round(m / 60);
+  if (m < 1440) return ko ? `${h}시간 전` : `${h} h ago`;
+  const d = Math.round(m / 1440);
+  return ko ? `${d}일 전` : `${d} d ago`;
 };
 
 export class IntelFeed {
@@ -167,7 +171,7 @@ export class IntelFeed {
           id: `eq-${f.id}`,
           kind: 'EQ',
           alert: p.mag >= 6.5 ? 'Red' : p.mag >= 5.5 ? 'Orange' : 'Green',
-          title: `M${p.mag != null ? p.mag.toFixed(1) : '?'} 지진`,
+          title: `M${p.mag != null ? p.mag.toFixed(1) : '?'} ${i18n.ko ? '지진' : 'earthquake'}`,
           where: p.place || '',
           whenT: p.time || Date.now(),
           status: 'ACTIVE',
@@ -219,15 +223,19 @@ export class IntelFeed {
         </div>
         ${this.badge(it.truth)}
       </div>`).join('');
+    const ko = i18n.ko;
     const tcNote = this.tcFailed
-      ? `<div class="feed-note">태풍 피드(GDACS) 응답 없음 — ${this.badge('INSUFFICIENT_DATA')} <button class="feed-back" data-action="feed-retry" style="margin:0">재시도</button></div>`
+      ? `<div class="feed-note">${ko ? '태풍 피드(GDACS) 응답 없음' : 'No response from the typhoon feed (GDACS)'} — ${this.badge('INSUFFICIENT_DATA')} <button class="feed-back" data-action="feed-retry" style="margin:0">${ko ? '재시도' : 'Retry'}</button></div>`
       : '';
-    const headKo = this.kind === 'EQ' ? '지진 (USGS 관측)'
-      : this.kind === 'TC' ? '태풍 (GDACS 공식)' : '오늘의 지구 사건';
-    const srcKo = this.kind === 'EQ' ? '출처: USGS(관측)'
-      : this.kind === 'TC' ? '출처: GDACS(공식 경보)' : '출처: GDACS(공식 경보) · USGS(관측)';
-    return `<div class="feed-head">${headKo} <span class="feed-cnt">${shown.length}</span></div>${this.kind === 'EQ' ? '' : tcNote}${rows}
-      <div class="feed-note">${srcKo} — 사건 클릭 시 3D 지구에서 확인</div>`;
+    const head = this.kind === 'EQ' ? (ko ? '지진 (USGS 관측)' : 'Earthquakes (USGS observed)')
+      : this.kind === 'TC' ? (ko ? '태풍 (GDACS 공식)' : 'Tropical cyclones (GDACS official)')
+      : (ko ? '오늘의 지구 사건' : "Today's Earth events");
+    const src = this.kind === 'EQ' ? (ko ? '출처: USGS(관측)' : 'Source: USGS (observed)')
+      : this.kind === 'TC' ? (ko ? '출처: GDACS(공식 경보)' : 'Source: GDACS (official alerts)')
+      : (ko ? '출처: GDACS(공식 경보) · USGS(관측)' : 'Source: GDACS (official alerts) · USGS (observed)');
+    const tail = ko ? '사건 클릭 시 3D 지구에서 확인' : 'click an event to find it on the 3D globe';
+    return `<div class="feed-head">${head} <span class="feed-cnt">${shown.length}</span></div>${this.kind === 'EQ' ? '' : tcNote}${rows}
+      <div class="feed-note">${src} — ${tail}</div>`;
   }
 
   // 공식 1차 출처의 사건 페이지로 나가는 링크.
@@ -236,8 +244,10 @@ export class IntelFeed {
     if (!it.official) return '';
     let host = '';
     try { host = new URL(it.official).host.replace(/^www\./, ''); } catch (e) { return ''; }
-    const nameKo = { 'earthquake.usgs.gov': 'USGS 사건 페이지' }[host] || `${host} 공식 페이지`;
-    return `<br/><a class="official-out" href="${it.official}" target="_blank" rel="noopener noreferrer">${nameKo} 열기 ↗</a>`;
+    const name = i18n.ko
+      ? ({ 'earthquake.usgs.gov': 'USGS 사건 페이지' }[host] || `${host} 공식 페이지`)
+      : ({ 'earthquake.usgs.gov': 'the USGS event page' }[host] || `the official page at ${host}`);
+    return `<br/><a class="official-out" href="${it.official}" target="_blank" rel="noopener noreferrer">${i18n.ko ? `${name} 열기` : `Open ${name}`} ↗</a>`;
   }
 
   roomHtml(it) {

@@ -5,7 +5,41 @@
 
 const KEY = 'earthus.seen.intro.v1';
 
-const STEPS = [
+/* 첫 화면 안내가 한국어로만 있어서, 영어를 고른 사람이 v2 에서 처음 보는 글이
+   통째로 한국어였다. 이 파일은 i18n 모듈을 안 쓰므로 여기서 언어를 읽는다. */
+function isEn() {
+  try {
+    const v = localStorage.getItem('earthus.lang') || localStorage.getItem('earthus.v2.lang');
+    if (v === 'en') return true;
+    if (v === 'ko') return false;
+  } catch (e) { /* 사생활 모드 */ }
+  const nav = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+  return !/^ko/i.test(nav);
+}
+const EN = isEn();
+
+const STEPS = EN ? [
+  {
+    icon: '🖱',
+    title: 'Turn the Earth yourself',
+    body: 'Drag to rotate, wheel or two fingers to zoom. Middle-click (two fingers up and down on mobile) tilts the view so you can look from the side.',
+  },
+  {
+    icon: '🗂',
+    title: 'The left handle is the data drawer',
+    body: 'EARTHUS holds terrain, weather, ocean, people and hazards; AETHERUS holds space and orbits. Every real-data layer you can turn on is in there.',
+  },
+  {
+    icon: '🛰',
+    title: 'EARTH INTELLIGENCE on the right',
+    body: 'What is happening now, the sky where you are, and the source and freshness of whatever you are looking at.',
+  },
+  {
+    icon: '⤴',
+    title: 'Share exactly what you see',
+    body: 'The ⤴ button copies a link that carries the camera position and the layers you turned on. You can save the picture too.',
+  },
+] : [
   {
     icon: '🖱',
     title: '지구를 직접 돌려 보세요',
@@ -28,7 +62,13 @@ const STEPS = [
   },
 ];
 
-const PRINCIPLE = '이 앱은 <b>없는 값을 만들지 않습니다</b> — 데이터가 없으면 비워 두고, 관측인지 예보인지 배지로 밝힙니다.';
+// 이 문장은 제품의 약속이다. 옮길 때도 뜻을 깎지 않는다.
+const PRINCIPLE = EN
+  ? 'This app <b>never invents a value</b> — where there is no data it stays empty, and a badge says whether you are looking at an observation or a forecast.'
+  : '이 앱은 <b>없는 값을 만들지 않습니다</b> — 데이터가 없으면 비워 두고, 관측인지 예보인지 배지로 밝힙니다.';
+
+const HEAD_SUB = EN ? 'A living Earth, from real data' : '실데이터로 살아 있는 지구';
+const GO = EN ? 'Go and see the Earth' : '지구 보러 가기';
 
 export function initOnboard() {
   const dom = document.createElement('div');
@@ -37,7 +77,7 @@ export function initOnboard() {
     <div class="intro-card">
       <div class="intro-head">
         <b>EARTHUS</b>
-        <span>실데이터로 살아 있는 지구</span>
+        <span>${HEAD_SUB}</span>
         <button class="intro-x" data-intro="close" aria-label="${window.__earthusT ? window.__earthusT('close') : '닫기'}">✕</button>
       </div>
       <div class="intro-steps">
@@ -47,7 +87,7 @@ export function initOnboard() {
         </div>`).join('')}
       </div>
       <div class="intro-foot">${PRINCIPLE}</div>
-      <button class="intro-go" data-intro="close">지구 보러 가기</button>
+      <button class="intro-go" data-intro="close">${GO}</button>
     </div>`;
   document.body.appendChild(dom);
 

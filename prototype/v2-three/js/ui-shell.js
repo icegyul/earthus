@@ -3,7 +3,7 @@
 // 지구 렌더러(main.js)는 건드리지 않고 훅(hooks)으로만 연결한다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { i18n } from './i18n.js?v=6';
+import { i18n } from './i18n.js?v=8';
 import { renderBadge } from './engine-bridge.js?v=12';
 
 // ---------------------------------------------------------------------------
@@ -450,7 +450,7 @@ export function initShell(hooks) {
   strip.id = 'timestrip';
   strip.innerHTML = `
     <button id="ts-now">${i18n.t('now')}</button>
-    <button id="ts-play" title="5일 예보 재생">▶</button>
+    <button id="ts-play" title="${i18n.t('play5d')}">▶</button>
     <input type="range" id="ts-range" min="-1440" max="7200" step="30" value="0" />
     <span id="ts-label">NOW</span>`;
   root.appendChild(strip);

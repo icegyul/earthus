@@ -696,20 +696,28 @@ function bindAccountUI() {
   const paintAppBar = () => {
     if (!window.earthusAppBar) return;
     const on = !!auth.user;
+    // ⚠️ 라벨을 한국어로 박아 두면 영어 화면에서 여기만 한국어로 남는다(실측으로 잡았다).
+    const ko = i18n.lang !== 'en';
     window.earthusAppBar.set([
-      { id: 'help', glyph: '?', label: '기능 설명',
-        title: '이 지구에서 무엇을 볼 수 있는지 다시 보기',
+      { id: 'help', glyph: '?', label: ko ? '기능 설명' : 'Guide',
+        title: ko ? '이 지구에서 무엇을 볼 수 있는지 다시 보기'
+                  : 'Show again what this Earth can show you',
         onClick: () => onboard.coach() },
-      { id: 'settings', glyph: '⚙', label: '설정',
-        title: '설정 (언어·단위·계정)',
+      { id: 'settings', glyph: '⚙', label: ko ? '설정' : 'Settings',
+        title: ko ? '설정 (언어·단위·계정)' : 'Settings (language, units, account)',
         onClick: () => document.querySelector('#menuMain [data-act="settings"]')?.click() },
       { id: 'account', glyph: on ? '◉' : '○',
-        label: on ? (auth.isPaid && auth.isPaid() ? '계정 · 구독 중' : '계정') : '로그인',
-        title: on ? '계정' : '로그인 / 가입',
+        label: on
+          ? (auth.isPaid && auth.isPaid()
+              ? (ko ? '계정 · 구독 중' : 'Account · subscribed')
+              : (ko ? '계정' : 'Account'))
+          : (ko ? '로그인' : 'Sign in'),
+        title: on ? (ko ? '계정' : 'Account') : (ko ? '로그인 / 가입' : 'Sign in / sign up'),
         onClick: () => (on ? accountSheet.open() : loginSheet.open()) },
     ]);
   };
   auth.onChange(paintAppBar);
+  i18n.onChange(paintAppBar);      // 언어를 바꾸면 도구바도 따라간다
   paintAppBar();
 
   /* 다른 지구(v2·v3)에서 '로그인'을 누르면 여기로 온다. 계정은 이 앱에만 있고,

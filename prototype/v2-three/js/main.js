@@ -4,19 +4,22 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=55';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=56';
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=5';
 import { LiveLayers } from './live-layers.js?v=36';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=2';
-import { i18n } from './i18n.js?v=7';
+import { i18n } from './i18n.js?v=8';
+// onboard.js 처럼 i18n 을 직접 들이지 않는 곳에서 쓴다. 문구를 한국어로 박아 두면
+// 영어 화면에서 거기만 한국어로 남는다(실측으로 잡았다).
+window.__earthusT = (k) => i18n.t(k);
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
 import { PopSculpture } from './pop-sculpture.js?v=13';
 import { QuakeHistory } from './quake-history.js?v=3';
-import { initOnboard } from './onboard.js?v=1';
+import { initOnboard } from './onboard.js?v=2';
 import { SolarView } from './solar-view.js?v=2';
 import { GalaxyView } from './galaxy-view.js?v=1';
 import { SkyView } from './sky-view.js?v=1';
@@ -2318,14 +2321,14 @@ async function main() {
     return null;
   });
 
-  loadMsg.textContent = '지형 데이터 로딩 중…';
+  loadMsg.textContent = `${i18n.t('loadTerrain')}…`;
   let heightTex = null;
   let hasHeight = 0;
   let baseHeightCanvas = null;
   try {
     const { canvas: hCanvas, failed, total } = await loadTerrariumHeightCanvas((done, tot) => {
       loadFill.style.width = `${Math.round((done / tot) * 100)}%`;
-      loadMsg.textContent = `지형 데이터 로딩 ${done}/${tot}`;
+      loadMsg.textContent = `${i18n.t('loadTerrain')} ${done}/${tot}`;
     });
     if (failed < total) {
       baseHeightCanvas = hCanvas;

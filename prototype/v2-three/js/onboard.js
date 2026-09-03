@@ -38,7 +38,7 @@ export function initOnboard() {
       <div class="intro-head">
         <b>EARTHUS</b>
         <span>실데이터로 살아 있는 지구</span>
-        <button class="intro-x" data-intro="close" aria-label="닫기">✕</button>
+        <button class="intro-x" data-intro="close" aria-label="${window.__earthusT ? window.__earthusT('close') : '닫기'}">✕</button>
       </div>
       <div class="intro-steps">
         ${STEPS.map((s) => `<div class="intro-step">

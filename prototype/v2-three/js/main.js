@@ -1692,7 +1692,7 @@ class CloudManager {
     return CloudManager.texDefaults(new THREE.CanvasTexture(can));
   }
 
-  // GFS 1.0° 프레임 (Lambda gfs-cloud-forecast → S3 clouds/gfs-fc). 41장, 3시간 간격, 5일.
+  // GFS 예보 프레임 (Lambda gfs-cloud-forecast → S3 clouds/gfs-fc). 41장, 3시간 간격, 5일.
   // 예전 방식은 Open-Meteo 지점 450개(12°, 적도 1,300km)를 질의해 5일치를 통째로 받았다.
   // 그건 뭉개져 보였고 그건 표현이 아니라 자료의 성김이었다. 이제 원자료 격자를 그대로 쓴다.
   async loadGfs() {
@@ -1706,10 +1706,21 @@ class CloudManager {
       console.warn('[earthus-cloud] GFS 프레임 매니페스트 없음 → 지점 방식으로 물러남');
       return this.loadGfsPoints();
     }
+    // 텍셀 크기는 매니페스트가 말하는 격자에서 가져온다. 예전엔 1/360, 1/181 로 박혀 있어서
+    // Lambda 해상도를 0.5° 로 올려도 보간이 1° 기준으로 돌아 선명해지지 않았다.
+    if (mf.grid && mf.grid.ni && mf.grid.nj) {
+      this.uniforms.uGfsTexel.value.set(1 / mf.grid.ni, 1 / mf.grid.nj);
+    }
+    this.gfsGrid = mf.grid || null;
+    // 같은 런은 같은 폴더에 덮어쓴다. 파일 이름이 그대로라 브라우저가 옛 프레임을 계속 썼다 —
+    // 해상도를 0.5° 로 올렸는데도 화면에는 1° 이미지가 남아 있었고, 텍셀만 바뀌어
+    // 보간이 어긋났다(실측: 격자 720 인데 이미지 360). 생성시각을 붙여 세대를 가른다.
+    const gen = encodeURIComponent(mf.generatedAt || mf.run || '');
+    const q = gen ? `?g=${gen}` : '';
     const frames = mf.steps.map((st) => ({
-      h: st.h, t: Date.parse(st.valid), url: `${S3B}/clouds/gfs-fc/${st.file}`,
-      wind: st.wind ? `${S3B}/clouds/gfs-fc/${st.wind}` : null,
-      precip: st.precip ? `${S3B}/clouds/gfs-fc/${st.precip}` : null,
+      h: st.h, t: Date.parse(st.valid), url: `${S3B}/clouds/gfs-fc/${st.file}${q}`,
+      wind: st.wind ? `${S3B}/clouds/gfs-fc/${st.wind}${q}` : null,
+      precip: st.precip ? `${S3B}/clouds/gfs-fc/${st.precip}${q}` : null,
     })).filter((f) => Number.isFinite(f.t) && f.wind).sort((a, b) => a.t - b.t);
     if (!frames.length) return this.loadGfsPoints();
     const stepMs = (mf.stepHours || 3) * 3.6e6;

@@ -35,16 +35,16 @@ if aws lambda get-function --function-name "$FN" --region "$REGION" >/dev/null 2
     --zip-file "fileb://$ZIPW" --query 'LastModified' --output text
   aws lambda wait function-updated --function-name "$FN" --region "$REGION"
   aws lambda update-function-configuration --function-name "$FN" --region "$REGION" \
-    --timeout 300 --memory-size 1024 \
-    --environment "Variables={CACHE_BUCKET=earthus-cache-kr,CACHE_REGION=us-east-2,GFS_FC_PREFIX=clouds/gfs-fc}" \
+    --timeout 900 --memory-size 2048 \
+    --environment "Variables={CACHE_BUCKET=earthus-cache-kr,CACHE_REGION=us-east-2,GFS_FC_PREFIX=clouds/gfs-fc,GFS_FC_RES=0p50}" \
     --query 'LastModified' --output text >/dev/null
   aws lambda wait function-updated --function-name "$FN" --region "$REGION"
   echo "   코드·설정 갱신"
 else
   aws lambda create-function --function-name "$FN" --region "$REGION" \
     --runtime python3.12 --handler handler.handler --role "$ROLE" \
-    --timeout 300 --memory-size 1024 --zip-file "fileb://$ZIPW" \
-    --environment "Variables={CACHE_BUCKET=earthus-cache-kr,CACHE_REGION=us-east-2,GFS_FC_PREFIX=clouds/gfs-fc}" \
+    --timeout 900 --memory-size 2048 --zip-file "fileb://$ZIPW" \
+    --environment "Variables={CACHE_BUCKET=earthus-cache-kr,CACHE_REGION=us-east-2,GFS_FC_PREFIX=clouds/gfs-fc,GFS_FC_RES=0p50}" \
     --query 'FunctionArn' --output text
   aws lambda wait function-active --function-name "$FN" --region "$REGION"
   echo "   새로 생성"

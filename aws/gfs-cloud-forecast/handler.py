@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""GFS 1.0° 5일 예보 구름 프레임 — NOAA NOMADS → PNG 41장 + 매니페스트 → S3 clouds/gfs-fc/
+"""GFS 0.5° 5일 예보 구름 프레임 — NOAA NOMADS → PNG 41장 + 매니페스트 → S3 clouds/gfs-fc/
 
 왜 만들었나: 브라우저가 Open-Meteo 지점 450개(12° 격자, 적도 1,300km)를 질의해
 5일치 구름을 그리고 있었다. 시간을 밀면 뭉개져 보였고, 그건 표현이 아니라 자료의 성김이었다.
-여기서는 GFS 원자료를 1.0° 로 받아 프레임으로 만든다. 12배 촘촘하고, 브라우저는 PNG 만 읽는다.
+여기서는 GFS 원자료를 0.5°(적도 55km) 로 받아 프레임으로 만든다. 브라우저는 PNG 만 읽는다.
 
 어떤 필드를 쓰나 — 실측으로 골랐다(2026-09-03):
   구름 '비율'(TCDC/LCDC/MCDC)은 지구의 절반 이상이 90% 라 화면이 회색 베일이 된다.
@@ -56,13 +56,21 @@ PREFIX = os.environ.get('GFS_FC_PREFIX', 'clouds/gfs-fc')
 STEP_H = int(os.environ.get('GFS_FC_STEP_H', '3'))
 MAX_H = int(os.environ.get('GFS_FC_MAX_H', '120'))
 WIND_LEVEL = os.environ.get('GFS_FC_WIND_MB', '700')
-BASE = 'https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_1p00.pl'
+# 해상도. 1.0°(적도 111km)로는 구름이 뭉개져 보인다는 지적이 있어 0.5°(55km)로 올렸다.
+# 0.25°는 못 간다 — GRIB 이 스텝당 10.8MB(11.5배)이고 순수 파이썬 디코드가 41스텝에
+# 약 2,800초로 Lambda 한도를 넘는다. 프레임 전송량도 스텝당 1.45MB 가 되어 과하다(실측).
+RES = os.environ.get('GFS_FC_RES', '0p50')            # '1p00' | '0p50'
+RES_DEG = {'1p00': 1.0, '0p50': 0.5}[RES]
+BASE = 'https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_%s.pl' % RES
 UA = 'earthus/2.0 (+https://earthus.net)'
-NI, NJ = 360, 181
-WIND_DIV = 4                          # 바람 다운샘플 배수 → 90×46 (4° 격자)
+NI, NJ = int(round(360 / RES_DEG)), int(round(180 / RES_DEG)) + 1
+# 바람은 부드러워 4°면 충분하다 — 해상도를 올려도 바람 파일은 그대로 90×46 으로 둔다.
+WIND_DIV = int(round(4.0 / RES_DEG))  # 바람 다운샘플 배수 → 90×46 (4° 격자)
 WNI, WNJ = NI // WIND_DIV, (NJ + WIND_DIV - 1) // WIND_DIV
-DEADLINE_S = 270
+DEADLINE_S = int(os.environ.get('GFS_FC_DEADLINE_S', '840'))
 CWAT_LO, CWAT_HI = 0.005, 2.0        # log 인코딩 범위 (kg/m²)
+TOP_Q = 4                            # 운정고도 양자화 눈금 (4/255*16000 ≈ 252 m)
+CWAT_Q = 4                           # 구름수 양자화 눈금 (256/4 = 64 단계)
 _LOG_LO = math.log10(CWAT_LO)
 _LOG_SPAN = math.log10(CWAT_HI) - _LOG_LO
 
@@ -84,7 +92,9 @@ def candidate_runs(now=None):
 
 def url_for(run, step):
     q = [
-        ('file', 'gfs.t%sz.pgrb2.1p00.f%03d' % (run.strftime('%H'), step)),
+        # 0.5° 는 파일 이름이 pgrb2full 이다(1.0°/0.25° 는 pgrb2). 이걸 틀리면 NOMADS 가 500 을 준다.
+        ('file', 'gfs.t%sz.%s.%s.f%03d'
+                 % (run.strftime('%H'), 'pgrb2full' if RES == '0p50' else 'pgrb2', RES, step)),
         ('dir', '/gfs.%s/%s/atmos' % (run.strftime('%Y%m%d'), run.strftime('%H'))),
         ('var_CWAT', 'on'), ('var_LCDC', 'on'), ('var_MCDC', 'on'), ('var_HCDC', 'on'),
         ('var_UGRD', 'on'), ('var_VGRD', 'on'),
@@ -179,15 +189,22 @@ def _top_height_m(l, m, h):
     return TOP_H * fh + TOP_M * fm * rest + TOP_L * fl * rest * (1.0 - fm)
 
 
-def encode_png_rgba(w, h, rows):
-    """순수 파이썬 PNG. rows = 각 행의 RGBA bytes."""
+# PNG 색 유형: 2=RGB(3바이트) · 4=그레이+알파(2바이트) · 6=RGBA(4바이트)
+# 안 쓰는 채널을 굽지 않는다. 구름은 두 값(운정고도·구름수), 강수는 세 값만 쓴다.
+# 브라우저는 그레이+알파를 R=G=B=회색, A=알파로 펼치므로 셰이더의 .b/.a 가 그대로 맞는다.
+def encode_png(w, h, rows, color_type=6):
+    """순수 파이썬 PNG. rows = 각 행의 픽셀 bytes(색 유형에 맞는 길이)."""
     def chunk(tag, data):
         c = tag + data
         return struct.pack('>I', len(data)) + c + struct.pack('>I', zlib.crc32(c) & 0xffffffff)
     raw = b''.join(b'\x00' + r for r in rows)
-    ihdr = struct.pack('>IIBBBBB', w, h, 8, 6, 0, 0, 0)
+    ihdr = struct.pack('>IIBBBBB', w, h, 8, color_type, 0, 0, 0)
     return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', ihdr)
             + chunk(b'IDAT', zlib.compress(raw, 9)) + chunk(b'IEND', b''))
+
+
+def encode_png_rgba(w, h, rows):
+    return encode_png(w, h, rows, 6)
 
 
 def _wind_byte(ms):
@@ -210,15 +227,21 @@ def cloud_png(cw, lc, mc, hc):
     half = NI // 2
     for j in range(NJ):
         base = j * NI
-        row = bytearray(NI * 4)
+        # 그레이+알파 2채널: 회색=운정고도, 알파=구름수. R/G 는 늘 0 이라 굽지 않는다.
+        row = bytearray(NI * 2)
         for i in range(NI):
             src = base + ((i + half) % NI)
-            o = i * 4
+            o = i * 2
             top = _top_height_m(lc[src], mc[src], hc[src])
-            row[o + 2] = int(max(0.0, min(1.0, top / 16000.0)) * 255.0 + 0.5)
-            row[o + 3] = _cwat_byte(cw[src])
+            # 양자화. 0.5° 로 올리면서 프레임이 커져(330KB) 눈금을 굵게 잡았다.
+            # 운정고도는 음영에만 쓰므로 252m 눈금이면 충분하고, 구름수는 셰이더가
+            # smoothstep(0.28,0.80) 으로 읽어 64단계면 화면에서 구분되지 않는다.
+            # 이것만으로 330KB -> 229KB (실측). 값을 지어내지 않고 눈금만 굵게 한 것이다.
+            g = int(max(0.0, min(1.0, top / 16000.0)) * 255.0 + 0.5)
+            row[o] = (g // TOP_Q) * TOP_Q
+            row[o + 1] = (_cwat_byte(cw[src]) // CWAT_Q) * CWAT_Q
         rows.append(bytes(row))
-    return encode_png_rgba(NI, NJ, rows)
+    return encode_png(NI, NJ, rows, 4)
 
 
 PRATE_LO, PRATE_HI = 0.05, 30.0        # mm/h — log 인코딩 범위
@@ -244,10 +267,10 @@ def precip_png(wet, cape):
     half = NI // 2
     for j in range(NJ):
         base = j * NI
-        row = bytearray(NI * 4)
+        row = bytearray(NI * 3)          # RGB 3채널 — 알파가 늘 255 라 굽지 않는다
         for i in range(NI):
             src = base + ((i + half) % NI)
-            o = i * 4
+            o = i * 3
             rate = (pr[src] or 0.0) * 3600.0
             row[o] = _rate_byte(rate)
             if row[o]:
@@ -263,9 +286,8 @@ def precip_png(wet, cape):
                 a1 = max(0.0, min(1.0, (cr - 0.15) / 1.85))
                 a2 = max(0.0, min(1.0, (cv - 500.0) / 1500.0))
                 row[o + 2] = int(a1 * a2 * 255.0 + 0.5)
-            row[o + 3] = 255
         rows.append(bytes(row))
-    return encode_png_rgba(NI, NJ, rows)
+    return encode_png(NI, NJ, rows, 2)
 
 
 def wind_png(u, v):
@@ -368,18 +390,23 @@ def handler(event, context):
         })
 
     manifest = {
-        'source': 'NOAA NCEP GFS 1.00° (NOMADS filter_gfs_1p00)',
+        'source': 'NOAA NCEP GFS %.2f° (NOMADS filter_gfs_%s)' % (RES_DEG, RES),
         'truthClass': 'MODEL_SIGNAL',
         'run': run.strftime('%Y-%m-%dT%H:%M:%SZ'),
         'generatedAt': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-        'grid': {'ni': NI, 'nj': NJ, 'lon0': -180.0, 'dLon': 1.0, 'lat0': 90.0, 'dLat': -1.0,
-                 'note': 'row 0 = 90N, col 0 = 180W; 1.0° ≈ 111km at equator'},
+        'grid': {'ni': NI, 'nj': NJ, 'lon0': -180.0, 'dLon': RES_DEG, 'lat0': 90.0, 'dLat': -RES_DEG,
+                 'note': 'row 0 = 90N, col 0 = 180W; %.2f° ≈ %.0fkm at equator'
+                         % (RES_DEG, RES_DEG * 111.0)},
         'windGrid': {'ni': WNI, 'nj': WNJ, 'dLon': float(WIND_DIV), 'dLat': float(WIND_DIV),
                      'note': 'separate low-res file; wind is smooth so 4° suffices '
                              '(cuts per-user transfer by 43%)'},
         'encoding': {
             'A': 'CWAT column cloud water kg/m², log: cwat = 10^(A/255*%.4f + %.4f); 0 below %.3f, 255 at %.1f'
                  % (_LOG_SPAN, _LOG_LO, CWAT_LO, CWAT_HI),
+            'quantization': 'cloud PNG is grayscale+alpha; top height in %d steps (~%.0f m), '
+                            'cloud water in %d levels — values are not invented, only the '
+                            'grid of representable values is coarser (cuts frame size 330->229KB)'
+                            % (256 // TOP_Q, TOP_Q / 255.0 * 16000.0, 256 // CWAT_Q),
             'B': 'DERIVED cloud top height, metres: B/255*16000 '
                  '(topmost of LCDC/MCDC/HCDC at %.0f/%.0f/%.0f m; not a GFS output field)'
                  % (TOP_L, TOP_M, TOP_H),

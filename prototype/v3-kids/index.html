@@ -49,9 +49,15 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 #badge.warn .dot{background:#ffb020;box-shadow:0 0 9px #ffb020}
 #badge.err .dot{background:#ff7a7a;box-shadow:0 0 9px #ff7a7a}
 
-/* ── 왼쪽 레일 ── */
-#rail{position:absolute;left:18px;top:50%;transform:translateY(-50%);z-index:6;
-  display:flex;flex-direction:column;gap:12px}
+/* ── 레일 둘 — 왼쪽은 만나기(아이), 오른쪽은 읽기(어른) ──
+   가르는 기준은 난이도가 아니라 읽는 방식이다. 왼쪽은 하나를 눌러 하나를
+   만나고(캐릭터·핀), 오른쪽은 색면 전체를 한눈에 읽는다(색면·흐름선). */
+.rail{position:absolute;top:50%;z-index:6;display:flex;flex-direction:column;
+  gap:12px;align-items:center}
+.rail-kid{left:18px;transform:translateY(-50%)}
+.rail-pro{right:18px;transform:translateY(-58%)}
+.railcap{font-family:var(--kid);font-size:11px;color:#9fb4d6;letter-spacing:.1em;
+  margin-bottom:2px;text-shadow:0 1px 6px rgba(4,10,24,.9)}
 .railbtn{
   width:56px;height:56px;border-radius:18px;border:1px solid rgba(255,255,255,.2);
   background:rgba(255,255,255,.10);backdrop-filter:blur(8px);
@@ -198,7 +204,9 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
   #nav button{padding:9px 13px;font-size:15px}
   #nav{bottom:18px}
   #home{bottom:18px}
-  #rail{left:10px;gap:9px}
+  .rail-kid{left:10px} .rail-pro{right:10px}
+  .rail{gap:9px}
+  .railcap{font-size:10px}
   .railbtn{width:48px;height:48px;border-radius:15px}
   .railbtn svg{width:24px;height:24px}
   #home{width:56px;height:56px;right:12px}
@@ -223,7 +231,8 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 
   <div id="badge"><span class="dot"></span><span id="badgetxt">불러오는 중</span></div>
 
-  <div id="rail" role="group" aria-label="지구에 켤 것">
+  <div id="rail" class="rail rail-kid" role="group" aria-label="아이용 — 하나씩 만나기">
+    <span class="railcap">만나기</span>
     <button class="railbtn" id="b-cloud" aria-pressed="true" aria-label="구름 보기" title="구름">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9 23h13a5.5 5.5 0 0 0 .4-11A7.5 7.5 0 0 0 8.3 13 5 5 0 0 0 9 23Z"/></svg>
@@ -238,6 +247,19 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
         <path d="M9 18h12a5 5 0 0 0 .4-10A7 7 0 0 0 8.4 8.6 4.7 4.7 0 0 0 9 18Z"/>
         <path d="M17 20l-4 5h4l-1.5 4.5"/></svg>
     </button>
+    <button class="railbtn" id="b-fossil" aria-pressed="false" aria-label="공룡 발자국 보기" title="공룡 발자국">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M13 26c-2.2 0-4-1.5-4-3.6 0-2.6 2.4-3.4 2.4-5.6 0-1.6-1.2-2.3-1.2-4C10.2 10.5 12 9 14.3 9c2.4 0 4.2 1.6 4.2 3.9 0 2-1.4 2.7-1.4 4.4 0 2.3 2.6 2.9 2.6 5.5 0 2-1.9 3.2-4 3.2"/>
+        <circle cx="11.4" cy="6.4" r="1.7"/><circle cx="16.6" cy="4.9" r="1.7"/><circle cx="21.2" cy="7.4" r="1.7"/></svg>
+    </button>
+    <button class="railbtn" id="b-night" aria-pressed="true" aria-label="낮과 밤 보기" title="낮과 밤">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="16" cy="16" r="10"/><path d="M16 6a10 10 0 0 0 0 20"/><path d="M16 6v20"/></svg>
+    </button>
+  </div>
+
+  <div id="rail2" class="rail rail-pro" role="group" aria-label="어른용 — 한눈에 읽기">
+    <span class="railcap">읽기</span>
     <button class="railbtn" id="b-temp" aria-pressed="false" aria-label="기온 보기" title="기온">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
         <path d="M13 18.5V7a3 3 0 0 1 6 0v11.5a5.5 5.5 0 1 1-6 0Z"/><circle cx="16" cy="22.5" r="2.4" fill="currentColor" stroke="none"/></svg>
@@ -256,15 +278,6 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
         <circle cx="16" cy="16" r="12"/>
         <path d="M10 8.5c3 .5 4.5 2.5 4 5s-3 2.5-2.5 5 3 2 5.5 1.5 4-1 5-3"/>
         <path d="M20.5 7c-1.5 1.5-1 3.5.5 4.5s3 .5 4 2"/></svg>
-    </button>
-    <button class="railbtn" id="b-fossil" aria-pressed="false" aria-label="공룡 발자국 보기" title="공룡 발자국">
-      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M13 26c-2.2 0-4-1.5-4-3.6 0-2.6 2.4-3.4 2.4-5.6 0-1.6-1.2-2.3-1.2-4C10.2 10.5 12 9 14.3 9c2.4 0 4.2 1.6 4.2 3.9 0 2-1.4 2.7-1.4 4.4 0 2.3 2.6 2.9 2.6 5.5 0 2-1.9 3.2-4 3.2"/>
-        <circle cx="11.4" cy="6.4" r="1.7"/><circle cx="16.6" cy="4.9" r="1.7"/><circle cx="21.2" cy="7.4" r="1.7"/></svg>
-    </button>
-    <button class="railbtn" id="b-night" aria-pressed="true" aria-label="낮과 밤 보기" title="낮과 밤">
-      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="16" cy="16" r="10"/><path d="M16 6a10 10 0 0 0 0 20"/><path d="M16 6v20"/></svg>
     </button>
   </div>
 

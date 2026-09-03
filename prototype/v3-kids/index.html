@@ -226,6 +226,12 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
         <path d="M3 25l7.5-12 5 7.5 3.5-5.5L26 25z"/><path d="M10.5 13l2.6 4.2"/>
         <path d="M19 15l-2.2 3.4"/></svg>
     </button>
+    <button class="railbtn" id="b-pangaea" aria-pressed="false" aria-label="옛 대륙 보기" title="옛 대륙">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round">
+        <circle cx="16" cy="16" r="12"/>
+        <path d="M10 8.5c3 .5 4.5 2.5 4 5s-3 2.5-2.5 5 3 2 5.5 1.5 4-1 5-3"/>
+        <path d="M20.5 7c-1.5 1.5-1 3.5.5 4.5s3 .5 4 2"/></svg>
+    </button>
     <button class="railbtn" id="b-fossil" aria-pressed="false" aria-label="공룡 발자국 보기" title="공룡 발자국">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
         <path d="M13 26c-2.2 0-4-1.5-4-3.6 0-2.6 2.4-3.4 2.4-5.6 0-1.6-1.2-2.3-1.2-4C10.2 10.5 12 9 14.3 9c2.4 0 4.2 1.6 4.2 3.9 0 2-1.4 2.7-1.4 4.4 0 2.3 2.6 2.9 2.6 5.5 0 2-1.9 3.2-4 3.2"/>
@@ -1010,17 +1016,64 @@ async function loadMountains(){
    한반도(판 601)는 강체로 움직이므로 회전 행렬 하나면 전부 옮겨진다.
    ══════════════════════════════════════════════════════════════ */
 let FOSSILS = [], PALEO = null, timeIdx = 0;
+let paleoLine = null, paleoOn = false;   // 전지구 옛 해안선
+
+/* 현재 해안선 한 벌 + 판별 회전 행렬. GPlates 가 하는 계산과 같은 것이라
+   근사가 아니다 — 66·100·200·400 Ma 를 원본과 대조해 오차 0.02km 미만을 확인했다.
+   시대별로 해안선을 통째로 구우면 9MB, 이 방식은 gzip 355KB 다. */
+async function loadPaleoEarth(){
+  PALEO = await fetch('../data/paleo-earth.json').then(r=>r.json());
+  $('#timeslider').max = String(PALEO.frames.length - 1);
+
+  let segs = 0;
+  for(const l of PALEO.lines) segs += (l.c.length - 1);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(segs*2*3), 3));
+  paleoLine = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({
+    color: 0xFFD9A0, transparent: true, opacity: 0, depthWrite: false }));
+  paleoLine.renderOrder = 5;
+  paleoLine.visible = false;
+  earthGroup.add(paleoLine);
+  drawPaleo();
+}
+
+/* 그 시대에 판이 없으면 그 대륙은 그리지 않는다. 없는 땅을 만들지 않는다. */
+function drawPaleo(){
+  if(!paleoLine || !PALEO) return;
+  const fr = PALEO.frames[Math.max(0, Math.min(PALEO.frames.length-1, timeIdx))];
+  const arr = paleoLine.geometry.attributes.position.array;
+  let i = 0, drawn = 0, skipped = 0;
+  for(const l of PALEO.lines){
+    const m = fr.m[String(l.p)];
+    if(!m){ i += (l.c.length-1)*6; skipped++; continue; }
+    drawn++;
+    for(let k = 0; k < l.c.length-1; k++){
+      const a = rotXYZ(l.c[k][1],   l.c[k][0],   m);
+      const b = rotXYZ(l.c[k+1][1], l.c[k+1][0], m);
+      if(Math.abs(a.lon - b.lon) > 180){ i += 6; continue; }   // 경도 이음매
+      const va = llToVec(a.lat, a.lon, R*1.006), vb = llToVec(b.lat, b.lon, R*1.006);
+      arr[i++]=va.x; arr[i++]=va.y; arr[i++]=va.z;
+      arr[i++]=vb.x; arr[i++]=vb.y; arr[i++]=vb.z;
+    }
+  }
+  while(i < arr.length) arr[i++] = 0;
+  paleoLine.geometry.attributes.position.needsUpdate = true;
+  paleoLine.geometry.computeBoundingSphere();
+  PALEO._drawn = drawn; PALEO._skipped = skipped;
+}
+
+function rotXYZ(lat, lon, m){
+  const la = lat*Math.PI/180, lo = lon*Math.PI/180;
+  const x = Math.cos(la)*Math.cos(lo), y = Math.cos(la)*Math.sin(lo), z = Math.sin(la);
+  const X = m[0]*x + m[1]*y + m[2]*z, Y = m[3]*x + m[4]*y + m[5]*z, Z = m[6]*x + m[7]*y + m[8]*z;
+  return { lat: Math.asin(Math.max(-1,Math.min(1,Z)))*180/Math.PI, lon: Math.atan2(Y,X)*180/Math.PI };
+}
 const fossilMarks = [];
 let koreaRings = [];           // 한반도 해안선 (경도,위도) 고리들
 let koreaLine = null;          // 회전해서 그리는 윤곽
 
 async function loadPast(){
-  const [fj, pj] = await Promise.all([
-    fetch('../data/korea-fossils.json').then(r=>r.json()),
-    fetch('../data/korea-paleo.json').then(r=>r.json()),
-  ]);
-  FOSSILS = fj.sites; PALEO = pj;
-  $('#timeslider').max = String(PALEO.frames.length - 1);
+  FOSSILS = (await fetch('../data/korea-fossils.json').then(r=>r.json())).sites;
 
   // 한반도 윤곽 — 핀만 옮기고 땅은 두면 거짓말이 된다. 같이 옮긴다.
   try{
@@ -1058,7 +1111,9 @@ async function loadPast(){
 /* 시대 t 의 회전 행렬. 사이 값은 이웃 프레임에서 고르지 않고 가까운 쪽을 쓴다 —
    행렬을 선형 보간하면 회전이 아니게 되고, 그건 모델에 없는 값을 만드는 것이다. */
 function matrixAt(i){
-  return PALEO ? PALEO.frames[Math.max(0, Math.min(PALEO.frames.length-1, i))] : null;
+  if(!PALEO) return null;
+  const fr = PALEO.frames[Math.max(0, Math.min(PALEO.frames.length-1, i))];
+  return { t: fr.t, m: fr.m['601'] || null };   // 한반도는 판 601
 }
 function rotateLL(lat, lon, m){
   if(!m) return { lat, lon };
@@ -1128,6 +1183,7 @@ function confidenceKo(ma){
 
 function setTime(i){
   timeIdx = i;
+  drawPaleo();
   const fr = matrixAt(i);
   const ma = fr ? fr.t : 0;
   $('.tb-when').textContent = whenKo(ma);
@@ -1139,14 +1195,15 @@ function setTime(i){
   // 과거로 가면 오늘 날씨는 뜻이 없다 — 친구와 말풍선을 접는다
   // 화석 모드에서는 시대와 상관없이 오늘 날씨를 접어 둔다
   const fossilOn = $('#b-fossil').getAttribute('aria-pressed') === 'true';
-  const hide = fossilOn || ma > 0;
+  const hide = fossilOn || paleoOn || ma > 0;
   for(const m of markers) if(m.kind !== 'name') m.el.style.display = hide ? 'none' : '';
   clouds.visible = !hide && show.cloud;
 
   // 과거로 가면 오늘 지도는 물러나고 그 시대 한반도가 앞에 선다.
   // 오늘 땅을 그대로 두고 핀만 옮기면 "저기에 저 땅이 있었다"는 거짓말이 된다.
   if(koreaLine) koreaLine.material.opacity = fossilOn ? (ma > 0 ? 0.95 : 0.55) : 0;
-  earthMat.uniforms.pastFade.value = (fossilOn && ma > 0) ? 1 : 0;
+  if(paleoLine) paleoLine.material.opacity = paleoOn ? (ma > 0 ? 0.95 : 0.6) : 0;
+  earthMat.uniforms.pastFade.value = ((fossilOn || paleoOn) && ma > 0) ? 1 : 0;
 
   // 한반도가 옮겨 가면 카메라도 따라간다. 화면 밖으로 나가면 아이가 놓친다.
   if(fossilOn){
@@ -1179,6 +1236,14 @@ $('#b-mtn').addEventListener('click', e => {
   e.currentTarget.setAttribute('aria-pressed', String(on));
   if(mtnLine) mtnLine.visible = on;
   for(const t of mtnMarks) t.el.style.display = on ? '' : 'none';
+});
+
+$('#b-pangaea').addEventListener('click', e => {
+  paleoOn = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  e.currentTarget.setAttribute('aria-pressed', String(paleoOn));
+  $('#timebar').hidden = !(paleoOn || $('#b-fossil').getAttribute('aria-pressed') === 'true');
+  if(paleoLine){ paleoLine.visible = paleoOn; }
+  setTime(timeIdx);
 });
 
 $('#b-fossil').addEventListener('click', e => {
@@ -1544,6 +1609,8 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe(document.documentEle
   resize();
   earthMat.uniforms.map.value = await buildEarthTexture();
   for(const c of COUNTRY_LABELS) addMarker('name', c.lat, c.lon, c.name, 'nm');
+  loadPaleoEarth().then(()=> drawOnce())
+                  .catch(e => { console.warn('옛 대륙 로드 실패', e); $('#b-pangaea').disabled = true; });
   loadWind().catch(e => { console.warn('바람 로드 실패', e); $('#b-wind').disabled = true; });
   loadMountains().then(()=>{ for(const t of mtnMarks) t.el.style.display='none'; drawOnce(); })
                 .catch(e => { console.warn('산맥 로드 실패', e); $('#b-mtn').disabled = true; });

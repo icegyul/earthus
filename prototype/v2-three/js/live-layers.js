@@ -643,29 +643,105 @@ export class LiveLayers {
   }
 
   // ---------- 서울 실시간 인구 121곳 (R-14 밀도 타워) ----------
+  // 지시서 R-01(맨해튼 수직 막대)이 보존하라는 것:
+  //   "도시 전체에서 수많은 vertical bars 가 실제 지리 위에 솟고 **time scrub 으로 상태가 바뀌는** 문법"
+  //   금지: 평면 heatmap 으로 대체.
+  //
+  // 서울시 실시간 도시데이터에는 지금 값(OFFICIAL_OBSERVATION)과 그 뒤 12스텝의
+  // 공식 예측(OFFICIAL_FORECAST)이 함께 온다. 그래서 시간을 밀면 막대가 실제로 바뀐다.
+  // 다만 **관측과 예측을 같은 막대로 그리면 안 된다** — 예측 구간에서는 막대를 비우고
+  // 테두리만 남겨 "이건 앞으로의 이야기"라고 눈으로 알게 한다.
+  //
+  // 예측 지평(약 +24시간)을 넘어가면 값이 없다. 그때는 **감춘다.** 늘려 그리지 않는다.
   buildSeoul(d) {
     const places = (d.places || []).filter((p) => p.position && p.official);
     const geo = new THREE.BoxGeometry(1, 1, 1);
     const mat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.88 });
     const mesh = new THREE.InstancedMesh(geo, mat, places.length);
+    // 각 장소의 시간축: [지금(관측)] + [예측 12스텝]. 값이 없는 스텝은 담지 않는다.
+    const mid = (r) => (r && Number.isFinite(r.min) && Number.isFinite(r.max)
+      ? (r.min + r.max) / 2 : null);
+    const series = places.map((p) => {
+      const rows = [{
+        t: Date.parse(d.generatedAt) || Date.now(),
+        rank: p.official.rank || 1,
+        pop: mid(p.official.populationRange),
+        color: p.official.color || '#7fd88f',
+        level: p.official.level,
+        obs: true,
+      }];
+      for (const f of (p.forecast || [])) {
+        const t = Date.parse(f.at);
+        if (!Number.isFinite(t)) continue;
+        rows.push({
+          t, rank: f.rank || 1, pop: mid(f.populationRange),
+          color: f.color || p.official.color || '#7fd88f', level: f.level, obs: false,
+        });
+      }
+      rows.sort((a, b) => a.t - b.t);
+      return rows;
+    });
+    mesh.userData.seoul = {
+      places, series,
+      // 높이는 인구에 **선형** 비례한다. 값이 없으면 단계로 물러난다(그 사실은 카드에 적는다).
+      maxPop: Math.max(1, ...series.flat().map((r) => r.pop || 0)),
+      horizon: Math.max(...series.flat().map((r) => r.t)),
+    };
+    this._seoulApply(mesh, 0);
+    return mesh;
+  }
+
+  // 스크럽한 시각의 막대를 다시 세운다. altKm 을 주면 그 고도에 맞춰 폭도 맞춘다.
+  _seoulApply(mesh, offsetMs, altKm) {
+    const u = mesh.userData.seoul;
+    if (!u) return;
+    if (Number.isFinite(altKm)) u.altKm = altKm;
+    const at = Date.now() + (offsetMs || 0);
     const M = new THREE.Matrix4();
     const Q = new THREE.Quaternion();
     const UP = new THREE.Vector3(0, 1, 0);
-    const W = 0.00032; // ≈ 2 km — 표현 과장 (R-14 밀도 타워 문법)
-    places.forEach((p, i) => {
+    // 폭은 고도를 따라간다. 2km 고정으로 두면 500km 상공에서 1.5픽셀이라
+    // '수많은 막대가 솟는' 문법(R-01)이 화면에서 사라진다. 서울은 30km 남짓이고
+    // 이 앱은 300km 아래로 내려가면 지도/지역 3D 로 넘어가므로, 막대가 읽히는
+    // 구간이 그 위뿐이다. 위치는 그대로 두고 굵기만 키운다.
+    const W = 0.00032 * Math.max(1, Math.min(5, (u.altKm || 400) / 250));
+    const H_MAX = 0.0052;         // 최고 인구에서 ~33km (시각 과장)
+    let shown = 0;
+    let future = false;
+    u.places.forEach((p, i) => {
+      const rows = u.series[i];
+      // 그 시각에 해당하는 값. 예측 지평을 넘어가면 없다 — 늘려 쓰지 않는다.
+      let row = null;
+      if (Math.abs(offsetMs || 0) <= 60 * 60 * 1000) row = rows[0];
+      else if (at <= u.horizon + 30 * 60 * 1000) {
+        for (const r of rows) if (r.t <= at + 60 * 60 * 1000) row = r;
+      }
+      if (!row) { M.makeScale(0, 0, 0); mesh.setMatrixAt(i, M); return; }
+      if (!row.obs) future = true;
       const { lat, lon } = p.position;
-      const rank = Math.min(Math.max(p.official.rank || 1, 1), 4);
-      const h = 0.0009 + (rank - 1) * 0.0016; // 여유 ~6km → 붐빔 ~34km (시각 과장)
+      // 높이는 인구의 **제곱근**이다. 선형으로 두면 중앙값(9,750명)이 최대(162,500명)의
+      // 6%가 되어 막대 대부분이 사라진다 — R-01 이 보존하라는 '수많은 막대가 솟는' 문법이
+      // 성립하지 않는다. 값을 바꾸는 게 아니라 자리만 넓히는 것이고, 그 사실은 카드에 적는다.
+      const frac = row.pop != null
+        ? Math.sqrt(row.pop / u.maxPop)
+        : (Math.min(Math.max(row.rank, 1), 4) - 1) / 3 * 0.8 + 0.15;
+      const h = 0.0009 + H_MAX * frac;
       const rBase = this.surfR(lat, lon, 0.0002);
       const dir = llToV3(lat, lon, 1).normalize();
       Q.setFromUnitVectors(UP, dir);
       M.compose(dir.clone().multiplyScalar(rBase + h / 2), Q, new THREE.Vector3(W, h, W));
       mesh.setMatrixAt(i, M);
-      mesh.setColorAt(i, new THREE.Color(p.official.color || '#7fd88f'));
+      // 예측 구간은 색을 눌러 관측과 구분한다 — 같은 밝기로 그리면 예보가 관측처럼 읽힌다.
+      const c = new THREE.Color(row.color);
+      if (!row.obs) c.multiplyScalar(0.55);
+      mesh.setColorAt(i, c);
+      shown += 1;
     });
     mesh.instanceMatrix.needsUpdate = true;
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    return mesh;
+    mesh.material.opacity = future ? 0.66 : 0.88;
+    u.shown = shown;
+    u.future = future;
   }
 
   metaSeoul(d) {
@@ -680,9 +756,31 @@ export class LiveLayers {
       .sort((a, b) => (b.official?.rank || 0) - (a.official?.rank || 0)).slice(0, 4);
     const stale = d.state === 'STALE';
     const note = `${(d.places || []).length}곳 · ${parts.join(' · ')}${stale ? ' · 지난 관측' : ''}`;
+    // 예측 지평은 자료가 말하게 한다 — 숫자를 우리가 적어 두면 자료가 바뀔 때 거짓말이 된다.
+    const lastT = Math.max(0, ...(d.places || []).flatMap(
+      (p) => (p.forecast || []).map((f) => Date.parse(f.at) || 0),
+    ));
+    const fcH = lastT ? Math.max(1, Math.round((lastT - Date.now()) / 3.6e6)) : 0;
+    const pops = (d.places || []).map((p) => {
+      const r = p.official && p.official.populationRange;
+      return r && Number.isFinite(r.min) && Number.isFinite(r.max) ? (r.min + r.max) / 2 : null;
+    }).filter((x) => x != null).sort((a, b) => a - b);
+    const medPop = pops.length ? pops[Math.floor(pops.length / 2)] : 0;
+    const maxPop = pops.length ? pops[pops.length - 1] : 0;
     return {
       badge: stale ? 'STALE' : 'OBSERVED', note,
-      cardHtml: `서울시 실시간 도시데이터 — 주요 ${(d.places || []).length}장소 혼잡도를 타워 높이·색(서울시 공식 4단계 색)으로 표시.<br/>${parts.join(' · ')}<br/>가장 붐빔: ${busiest.map((p) => `${p.nameKo}(${p.official.level})`).join(' · ')}<br/>타워 높이는 표현 과장입니다 — 값은 서울시 공식 단계 그대로.<br/>${stale ? '⚠ 지난 관측(STALE) — 최신 관측 대기 중 · ' : ''}${kstShort(d.generatedAt)}`,
+      cardHtml: `서울시 실시간 도시데이터 — 주요 ${(d.places || []).length}장소의 혼잡을 `
+        + `<b>수직 막대</b>로 세웁니다. 색은 서울시 공식 4단계 색 그대로.<br/>${parts.join(' · ')}<br/>`
+        + `가장 붐빔: ${busiest.map((p) => `${p.nameKo}(${p.official.level})`).join(' · ')}<br/><br/>`
+        + `<b>하단 시간을 밀면 막대가 바뀝니다.</b> 지금은 <b>서울시 공식 관측</b>이고, `
+        + `앞으로는 <b>서울시 공식 예측</b>입니다(+${fcH}시간까지). 예측 구간에서는 막대 색을 `
+        + `눌러 관측과 구분합니다 — 같은 밝기로 그리면 예보가 관측처럼 읽힙니다.<br/>`
+        + `예측이 끝나는 시각을 넘기면 <b>막대를 감춥니다</b>. 값이 없는 시간을 늘려 그리지 않습니다.<br/>`
+        + `<b>높이</b>는 발표된 인구 범위의 가운데 값의 <b>제곱근</b>에 비례합니다 — `
+        + `선형으로 두면 중앙값(약 ${Math.round(medPop).toLocaleString()}명)이 최대`
+        + `(${Math.round(maxPop).toLocaleString()}명)의 6%가 되어 막대 대부분이 사라집니다. `
+        + `값이 아니라 자리를 넓힌 것입니다. 인구 범위 자체는 서울시가 밴드로 발표합니다.<br/>`
+        + `${stale ? '⚠ 지난 관측(STALE) — 최신 관측 대기 중 · ' : ''}${kstShort(d.generatedAt)}`,
     };
   }
 
@@ -1975,6 +2073,17 @@ export class LiveLayers {
       }
     }
     if (altKm != null) this.fadeCoarseGrids(altKm);
+    // 서울 타워는 고도에 따라 굵기가 달라진다 — 고도가 한 단계 바뀔 때만 다시 세운다.
+    const sl = this.layers.seoul;
+    if (altKm != null && sl && sl.on && sl.obj && sl.obj.userData && sl.obj.userData.seoul) {
+      const bucket = Math.round(Math.log2(Math.max(50, altKm)) * 3);
+      // 고도 눈금은 레이어가 꺼져 있는 동안에도 흘러간다. 눈금만 보고 판단하면
+      // '켜는 순간'에 한 번도 적용되지 않는다(실측: 켜도 폭이 기본값 그대로였다).
+      if (bucket !== this._seoulBucket || sl.obj.userData.seoul.altKm == null) {
+        this._seoulBucket = bucket;
+        this._seoulApply(sl.obj, this._timeOffsetMs || 0, altKm);
+      }
+    }
   }
 
   // 지역 모델 격자(0.05°≈5km)는 권역 축척용이다. 도시까지 내려가면 점 사이가 벌어져
@@ -2182,6 +2291,13 @@ export class LiveLayers {
   // 타임 스크럽 → 태풍의 '그 시각' 공식 예보 위치.
   // 예보 구간 밖(과거이거나 마지막 스텝 이후)이면 표식을 숨긴다. 없는 위치를 만들지 않는다.
   setTimeOffset(ms) {
+    this._timeOffsetMs = ms || 0;
+    // 서울 혼잡 타워도 시간을 따라 다시 선다 (R-01 time scrub 문법).
+    const sl = this.layers.seoul;
+    if (sl && sl.on && sl.obj && sl.obj.userData && sl.obj.userData.seoul) {
+      this._seoulApply(sl.obj, ms || 0);
+    }
+
     const l = this.layers.tyoff;
     const ud = l && l.on && l.obj && l.obj.userData;
     if (!ud || !ud.tyMarker) return;

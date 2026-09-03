@@ -8,7 +8,7 @@ import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './u
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=5';
-import { LiveLayers } from './live-layers.js?v=25';
+import { LiveLayers } from './live-layers.js?v=29';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=2';
 import { i18n } from './i18n.js?v=2';

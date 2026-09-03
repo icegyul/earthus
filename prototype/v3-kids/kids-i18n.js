@@ -74,6 +74,7 @@
     '충돌구': 'Impact craters', '운석 충돌구 보기': 'Show meteorite craters',
     '지진·판 경계': 'Quakes & plates', '지진과 판 경계 보기': 'Show earthquakes and plate edges',
     '산맥': 'Mountains', '산맥 보기': 'Show mountain ranges',
+  '산과 산맥': 'Mountains', '산과 산맥 보기': 'Show mountains and ranges',
     '옛 대륙': 'Ancient continents', '옛 대륙 보기': 'Show the ancient continents',
     '날씨': 'Weather',
     '전지구 구름': 'Global clouds',
@@ -198,14 +199,11 @@
     '아스완 하이댐': 'Aswan High Dam', '과리댐': 'Guri Dam', '타르벨라댐': 'Tarbela Dam',
     '브라츠크댐': 'Bratsk Dam', '아코소마보댐': 'Akosombo Dam', '바크라댐': 'Bhakra Dam',
     '소양강댐': 'Soyanggang Dam', '충주댐': 'Chungju Dam', '대청댐': 'Daecheong Dam',
-    '안동댐': 'Andong Dam', // ⚠️ '로부지댐' 은 이름만 다른 댐 것이고 좌표·나라(짐바브웨·잠비아)·설명은 카리바댐이다.
-    '로부지댐': 'Kariba Dam',
-    '그랜드에티오피아 르네상스댐': 'Grand Ethiopian Renaissance Dam',
-    // ⚠️ 아래 세 이름은 한국어 원본이 잘못돼 있다(편집 흔적·오기). 영어는 실제 이름으로 적는다.
-    //    한국어 쪽은 data/water.json 을 고쳐야 한다 — 여기서 덮으면 틀린 원본이 남는다.
-    '후버 다음 글렌캐니언댐': 'Glen Canyon Dam',
-    '후버 근처 오로빌댐': 'Oroville Dam',
-    '구로지구 사얀댐': 'Sayano-Shushenskaya Dam',
+    '안동댐': 'Andong Dam',     '그랜드에티오피아 르네상스댐': 'Grand Ethiopian Renaissance Dam',
+    '글렌캐니언댐': 'Glen Canyon Dam',
+    '오로빌댐': 'Oroville Dam',
+    '사야노슈셴스카야댐': 'Sayano-Shushenskaya Dam',
+    '카리바댐': 'Kariba Dam',
 
     // ── 우리나라 공룡 화석지 ──
     '해남': 'Haenam', '진주 정촌': 'Jinju Jeongchon', '여수': 'Yeosu', '고성': 'Goseong',
@@ -242,7 +240,6 @@
     '사람이 만든 가장 넓은 호수': 'The widest lake people have ever made',
     '국내 최대 사력댐': "Korea's largest rock-fill dam",
     '국내 최대 콘크리트댐': "Korea's largest concrete dam",
-    '카리바 댐': 'Kariba Dam',
     '아프리카 최대 발전 댐': "Africa's biggest power dam",
     '미국에서 가장 높은 댐': 'The tallest dam in the United States',
     '전 세계 댐은 4만 개가 넘지만 전지구 화면에서는 뜻이 없어 손으로 고른 큰 것만 싣는다.':
@@ -339,6 +336,7 @@
     '자리는 찾았는데 날씨를 못 받았어요 — 없는 값을 지어내지 않습니다.':
       "I found the place but couldn't get the weather — I won't make up a value.",
     '날씨를 못 불러왔습니다': "Couldn't load the weather",
+    '— 없는 값을 그리지 않습니다': '— we do not draw values we do not have',
     '관측 구름 실패': 'Cloud observation failed',
     '옛 대륙 로드 실패': 'Ancient continents failed to load',
     '충돌구 로드 실패': 'Craters failed to load',

@@ -3,6 +3,7 @@
 // 지구 렌더러(main.js)는 건드리지 않고 훅(hooks)으로만 연결한다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
+import { i18n } from './i18n.js?v=1';
 import { renderBadge } from './engine-bridge.js?v=12';
 
 // ---------------------------------------------------------------------------
@@ -231,7 +232,7 @@ export function initShell(hooks) {
     let chips = '';
     if (s.id === 'land') {
       chips = `<div class="mp-chips" role="group" aria-label="권역 이동">
-          ${REGION_CHIPS.map((r) => `<button class="mp-chip" data-region="${r.id}">${r.ko}</button>`).join('')}
+          ${REGION_CHIPS.map((r) => `<button class="mp-chip" data-region="${r.id}">${i18n.region(r.id, r.ko)}</button>`).join('')}
         </div>
         <div class="mp-chip-note">권역 이동 — 3D 지구를 유지한 채 그 구도로 날아갑니다</div>`;
     } else if (s.id === 'people' && POP_COUNTRIES.length) {
@@ -241,13 +242,13 @@ export function initShell(hooks) {
         <div class="mp-chip-note">인구 조각 — 격자가 준비된 ${POP_COUNTRIES.length}개국. 지구에서 국가를 눌러도 됩니다</div>`;
     }
     return `<div class="mp-sec" style="--sc:${s.accent}">
-      <h3 class="mp-title"><i></i>${s.label}<em>${liveN}/${s.layers.length}</em></h3>
+      <h3 class="mp-title"><i></i>${i18n.scene(s.id, s.label)}<em>${liveN}/${s.layers.length}</em></h3>
       ${chips}
       ${s.layers.map((l) => {
         const st = (hooks.getLayerState && hooks.getLayerState(s.id, l)) || {};
         return `<button class="mp-item${l.state === 'LOCKED' ? ' locked' : ''}${st.on ? ' on' : ''}"
           data-fscene="${s.id}" data-flayer="${l.id}" title="${l.src}">
-          <span class="mp-lbl">${l.name}</span>${dataBadge(l.state)}
+          <span class="mp-lbl">${i18n.layer(l.id, l.name)}</span>${dataBadge(l.state)}
           ${st.on && st.note ? `<span class="mp-note">${st.note}</span>` : ''}
         </button>`;
       }).join('')}
@@ -424,7 +425,7 @@ export function initShell(hooks) {
   const strip = document.createElement('div');
   strip.id = 'timestrip';
   strip.innerHTML = `
-    <button id="ts-now">지금</button>
+    <button id="ts-now">${i18n.t('now')}</button>
     <button id="ts-play" title="5일 예보 재생">▶</button>
     <input type="range" id="ts-range" min="-1440" max="7200" step="30" value="0" />
     <span id="ts-label">NOW</span>`;
@@ -529,7 +530,8 @@ export function initShell(hooks) {
       d.style.display = 'block';
       d.style.left = `${v.x}px`;
       d.style.top = `${v.y}px`;
-      d.textContent = v.c.nameKo;
+      // 나라 이름도 언어를 따른다. 자료에 nameEn 이 있고, 없으면 한국어를 쓴다.
+      d.textContent = i18n.ko ? v.c.nameKo : (v.c.nameEn || v.c.nameKo);
       const dimmed = focusSel && !focusSel.ocean && focusSel.code3 !== v.c.code3;
       d.classList.toggle('dim', !!dimmed);
       d.classList.toggle('sel', !!(focusSel && focusSel.code3 === v.c.code3));

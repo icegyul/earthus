@@ -4,13 +4,14 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=47';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=49';
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=5';
 import { LiveLayers } from './live-layers.js?v=23';
 import { StationModel } from './station-model.js?v=2';
-import { AskEarth } from './ask-earth.js?v=1';
+import { AskEarth } from './ask-earth.js?v=2';
+import { i18n } from './i18n.js?v=1';
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
 import { PopSculpture } from './pop-sculpture.js?v=13';
@@ -3808,7 +3809,8 @@ async function main() {
   // 모델은 제안만 한다. 여기 있는 orchestrator 만 장면을 바꾼다 —
   // 승인 목록 밖의 도구, 없는 레이어, 범위 밖 좌표는 ask-earth.js 가 걸러 낸다.
   // ---------------------------------------------------------------------------
-  const askLang = /^ko/i.test(navigator.language || navigator.userLanguage || '') ? 'ko' : 'en';
+  // 언어는 i18n 이 정한다 — 기기 언어는 최초 1회 기본값, 사용자가 바꾸면 그 선택이 이긴다.
+  const askLang = i18n.lang;
   const layerIndex = new Map();
   for (const sc of SCENES) for (const l of (sc.layers || [])) layerIndex.set(l.id, { sid: sc.id, l });
   const layerOn = (e) => {
@@ -3890,6 +3892,58 @@ async function main() {
   window.__earthusSynop = synop;   // 선언 뒤에 대입한다 — 앞에 두면 TDZ 로 main() 이 통째로 죽는다
   const shell = initShell(shellHooks);
   askEarth.init();
+
+  // ---------------------------------------------------------------------------
+  // 다국어 적용. data-i18n / data-i18n-title / data-i18n-ph 만 갈아 끼운다.
+  // 값이 들어가는 자리(<span class="val">)는 건드리지 않으려고 라벨 글자를 따로 감쌌다.
+  // ---------------------------------------------------------------------------
+  const applyI18n = () => {
+    document.documentElement.lang = i18n.lang;
+    document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = i18n.t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-title]').forEach((el) => { el.title = i18n.t(el.dataset.i18nTitle); });
+    document.querySelectorAll('[data-i18n-ph]').forEach((el) => { el.placeholder = i18n.t(el.dataset.i18nPh); });
+    const sm = document.getElementById('share-menu');
+    if (sm) {
+      const a = sm.querySelector('[data-share="link"]');
+      const b = sm.querySelector('[data-share="image"]');
+      if (a) a.textContent = i18n.t('shareLink');
+      if (b) b.textContent = i18n.t('shareImage');
+    }
+  };
+  // 설정 맨 위에 언어 줄. 영어 화면에서는 '카드는 아직 한국어'라는 사실도 같이 적는다 —
+  // 없는 것을 있는 척하지 않는다.
+  const sd = document.getElementById('settings-drawer');
+  if (sd) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `<label><span id="lang-label"></span></label>
+      <div class="seg" id="lang-seg">
+        <button data-lang="ko">한국어</button><button data-lang="en">English</button>
+      </div>
+      <div class="row info" id="lang-note" style="margin-top:6px"></div>`;
+    sd.insertBefore(row, sd.firstChild);
+    const paint = () => {
+      document.getElementById('lang-label').textContent = i18n.t('language');
+      const note = document.getElementById('lang-note');
+      note.textContent = i18n.lang === 'en' ? i18n.t('langNote') : '';
+      note.style.display = i18n.lang === 'en' ? 'block' : 'none';
+      row.querySelectorAll('#lang-seg button').forEach((b) => {
+        b.classList.toggle('on', b.dataset.lang === i18n.lang);
+      });
+    };
+    row.querySelectorAll('#lang-seg button').forEach((b) => {
+      b.onclick = () => {
+        if (b.dataset.lang === i18n.lang) return;
+        i18n.set(b.dataset.lang);
+        applyI18n();
+        paint();
+        shell.refreshFlyout();     // 레이어 이름을 다시 그린다
+        askEarth.setLang(i18n.lang);   // 서랍 문구와 답변 언어를 함께 바꾼다
+      };
+    });
+    paint();
+  }
+  applyI18n();
 
   // ---------- 크롬 서랍 (검색·설정) — 1.0식 배타성: 하나 열리면 나머지 닫힘 ----------
   const searchDrawer = document.getElementById('search-drawer');
@@ -4004,6 +4058,7 @@ async function main() {
       const lonR = (cLo * Math.PI) / 180;
       return {
         nameKo: f.nameKo,
+        nameEn: f.nameEn,     // 영어 화면에서 라벨도 영어로 — 안 실으면 지구만 한국어로 남는다
         code3: f.code3,
         rank: bestSize * Math.max(Math.cos(latR), 0.2),
         unit: new THREE.Vector3(
@@ -4856,7 +4911,12 @@ async function main() {
         clouds.uniforms.uReliefK.value = 0;
       }
     }
-    hudLine.textContent = `고도 ${altKm >= 1000 ? `${(altKm / 1000).toFixed(1)}천` : Math.round(altKm)} km · 과장 ${uniforms.uExagger.value}×`;
+    const altTxt = altKm >= 1000
+      ? (i18n.ko ? `${(altKm / 1000).toFixed(1)}천` : `${(altKm / 1000).toFixed(1)}k`)
+      : String(Math.round(altKm));
+    hudLine.textContent = i18n.ko
+      ? `고도 ${altTxt} km · 과장 ${uniforms.uExagger.value}×`
+      : `alt ${altTxt} km · exag ${uniforms.uExagger.value}×`;
 
     renderer.render(scene, camera);
   };

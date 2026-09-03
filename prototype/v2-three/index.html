@@ -914,80 +914,80 @@
 <div id="panel">
   <div id="chrome">
     <img class="brand" src="./assets/brand/earthus-wordmark-white.svg" alt="EARTHUS" />
-    <button id="btn-search" title="검색 (나라·시군구·도시·공항)">⌕</button>
-    <button id="btn-ask" title="지구에 묻기 — 지금 켜 놓은 자료만 근거로 답합니다">✦</button>
-    <button id="btn-share" title="이 화면 공유 (링크 복사 · 그림 저장)">⤴</button>
-    <button id="btn-help" title="사용법 다시 보기">?</button>
-    <button id="btn-settings" title="설정">⚙</button>
+    <button id="btn-search" data-i18n-title="search" title="검색 (나라·시군구·도시·공항)">⌕</button>
+    <button id="btn-ask" data-i18n-title="ask" title="지구에 묻기 — 지금 켜 놓은 자료만 근거로 답합니다">✦</button>
+    <button id="btn-share" data-i18n-title="share" title="이 화면 공유 (링크 복사 · 그림 저장)">⤴</button>
+    <button id="btn-help" data-i18n-title="help" title="사용법 다시 보기">?</button>
+    <button id="btn-settings" data-i18n-title="settings" title="설정">⚙</button>
   </div>
 
   <div id="menu-scrim"></div>
   <div id="share-menu">
     <button data-share="link">🔗 이 화면 링크 복사</button>
     <button data-share="image">🖼 지구 그림 저장 (JPG)</button>
-    <div class="sm-note">링크에는 카메라 위치·켜 놓은 레이어·선택한 나라가 담깁니다</div>
+    <div class="sm-note" data-i18n="shareNote">링크에는 카메라 위치·켜 놓은 레이어·선택한 나라가 담깁니다</div>
   </div>
   <div id="share-toast"></div>
 
   <div id="ask-drawer" class="drawer"></div>
 
   <div id="search-drawer" class="drawer">
-    <input type="text" id="c-search" placeholder="검색 — 나라·시군구·도시·공항" autocomplete="off" />
+    <input type="text" id="c-search" data-i18n-ph="searchPh" placeholder="검색 — 나라·시군구·도시·공항" autocomplete="off" />
     <div id="search-results"></div>
   </div>
 
   <div id="settings-drawer" class="drawer">
-  <div class="row info" id="sun-info">태양 위치 계산 중…</div>
+  <div class="row info" id="sun-info" data-i18n="sunCalc">태양 위치 계산 중…</div>
 
   <div class="row">
-    <label>구름 (고급 — 기본 조작은 좌측 날씨 메뉴)</label>
+    <label data-i18n="cloudAdv">구름 (고급 — 기본 조작은 좌측 날씨 메뉴)</label>
     <div class="seg" id="cloud-seg">
-      <button data-cloud="off" class="on">없음</button>
-      <button data-cloud="obs">관측</button>
-      <button data-cloud="gk2a">천리안</button>
-      <button data-cloud="gfs">모델</button>
-      <button data-cloud="static">정적</button>
+      <button data-cloud="off" class="on" data-i18n="cloudNone">없음</button>
+      <button data-cloud="obs" data-i18n="cloudObs">관측</button>
+      <button data-cloud="gk2a" data-i18n="cloudGk2a">천리안</button>
+      <button data-cloud="gfs" data-i18n="cloudModel">모델</button>
+      <button data-cloud="static" data-i18n="cloudStatic">정적</button>
     </div>
     <div class="cloud-note" id="cloud-note">구름 끔</div>
   </div>
 
   <div class="row toggle">
-    <input type="checkbox" id="c-snow" /><label for="c-snow">눈·얼음 (관측)</label>
+    <input type="checkbox" id="c-snow" /><label for="c-snow" data-i18n="snowChk">눈·얼음 (관측)</label>
   </div>
   <div class="cloud-note" id="snow-note"></div>
 
   <div class="row toggle">
-    <input type="checkbox" id="c-rotate" checked /><label for="c-rotate">자동 회전</label>
+    <input type="checkbox" id="c-rotate" checked /><label for="c-rotate" data-i18n="rotate">자동 회전</label>
   </div>
 
-  <button id="sim-toggle">시뮬레이션 설정 열기 ▾</button>
+  <button id="sim-toggle" data-i18n="simOpen">시뮬레이션 설정 열기 ▾</button>
   <div id="sim">
-    <div class="sim-head">시뮬레이션 · 표현 튜닝</div>
+    <div class="sim-head" data-i18n="simHead">시뮬레이션 · 표현 튜닝</div>
     <div class="row">
-      <label>지형 과장 <span class="val" id="v-exagger">50×</span></label>
+      <label><span data-i18n="exaggerL">지형 과장</span> <span class="val" id="v-exagger">50×</span></label>
       <input type="range" id="c-exagger" min="1" max="80" step="1" value="50" />
     </div>
     <div class="row">
-      <label>등심선 간격 <span class="val" id="v-isobath">500 m</span></label>
+      <label><span data-i18n="isobathGap">등심선 간격</span> <span class="val" id="v-isobath">500 m</span></label>
       <input type="range" id="c-isobath" min="200" max="2000" step="100" value="500" disabled />
     </div>
     <div class="row">
-      <label>음영 강도 <span class="val" id="v-shade">1.9</span></label>
+      <label><span data-i18n="shadeStr">음영 강도</span> <span class="val" id="v-shade">1.9</span></label>
       <input type="range" id="c-shade" min="0" max="2.5" step="0.1" value="1.9" />
     </div>
     <div class="row">
-      <label>위성 색 혼합 <span class="val" id="v-photo">65%</span></label>
+      <label><span data-i18n="photoMix">위성 색 혼합</span> <span class="val" id="v-photo">65%</span></label>
       <input type="range" id="c-photo" min="0" max="100" step="5" value="65" />
     </div>
     <div class="row toggle">
-      <input type="checkbox" id="c-manual" /><label for="c-manual">수동 조명 (화면 기준)</label>
+      <input type="checkbox" id="c-manual" /><label for="c-manual" data-i18n="manualLight">수동 조명 (화면 기준)</label>
     </div>
     <div class="row">
-      <label>태양 방위각 <span class="val" id="v-sunaz">245°</span></label>
+      <label><span data-i18n="sunAzL">태양 방위각</span> <span class="val" id="v-sunaz">245°</span></label>
       <input type="range" id="c-sunaz" min="0" max="360" step="5" value="245" disabled />
     </div>
     <div class="row">
-      <label>태양 고도각 <span class="val" id="v-sunel">64°</span></label>
+      <label><span data-i18n="sunElL">태양 고도각</span> <span class="val" id="v-sunel">64°</span></label>
       <input type="range" id="c-sunel" min="5" max="80" step="1" value="64" disabled />
     </div>
   </div>
@@ -1004,12 +1004,12 @@
 
 <div id="mapview">
   <div id="map-tiles"></div>
-  <button id="map-exit">◀ 3D 지구로</button>
-  <button id="map-3d">⛰ 3D 지형</button>
+  <button id="map-exit" data-i18n="mapExit">◀ 3D 지구로</button>
+  <button id="map-3d" data-i18n="map3d">⛰ 3D 지형</button>
   <div id="map-attrib">위성영상 © Esri · Maxar · Earthstar Geographics</div>
 </div>
 
-<div id="hud"><span id="hud-line">고도 —</span><button id="hud-more" title="진단 정보 (상태를 텍스트로 복사)">▾</button>
+<div id="hud"><span id="hud-line" data-i18n="hudAlt">고도 —</span><button id="hud-more" data-i18n-title="hudMore" title="진단 정보 (상태를 텍스트로 복사)">▾</button>
   <div id="hud-detail"><pre id="hud-text"></pre><button id="hud-copy">📋 복사</button></div></div>
 
 <div id="loading">
@@ -1019,6 +1019,6 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=149"></script>
+<script type="module" src="./js/main.js?v=152"></script>
 </body>
 </html>

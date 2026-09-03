@@ -125,6 +125,16 @@ export class AskEarth {
     this.btn = btn;
   }
 
+  // 언어를 바꾸면 서랍 문구와 답변 언어를 함께 갈아 끼운다.
+  // (예전엔 this.t 를 지우게 해뒀는데 render() 가 그걸 쓰므로 다음 답에서 터진다.)
+  setLang(lang) {
+    this.h.lang = (lang === 'en') ? 'en' : 'ko';
+    this.t = T[this.h.lang];
+    const out = this.out ? this.out.innerHTML : '';
+    this.init();
+    if (out && this.out) this.out.innerHTML = out;
+  }
+
   close() {
     if (this.box) this.box.classList.remove('open');
     if (this.btn) this.btn.classList.remove('on');

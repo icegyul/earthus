@@ -392,7 +392,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
     <div class="tb-foot">
       <span>지금</span>
       <span id="tb-note">한반도를 손으로 되감아 보세요</span>
-      <span>2억 5천만 년 전</span>
+      <span id="tb-far">2억 5천만 년 전</span>
     </div>
   </div>
 
@@ -909,8 +909,13 @@ function setFov(t){
 }
 /* 화면이 비었을 때 "카메라 탓인가 자료 탓인가"를 밖에서 물어볼 수 있게 열어 둔다.
    이 함정에 여러 번 빠졌다 — 숨은 패널은 뷰포트가 0×0 으로 오고, 그때 잰 수치는 못 믿는다. */
-window.__v3 = () => ({ fill, stop, dist, distTarget, tanMin, tanTarget, tanBase, screenR, fov: camera.fov,
+window.__v3 = (ma) => {
+  if(ma !== undefined){ maNow = maTarget = ma; refreshPast(); }   // 숨은 창에서는 rAF 가 안 돈다
+  return ({ fill, stop, dist, distTarget, tanMin, tanTarget, tanBase, screenR, fov: camera.fov,
+                       ma: maNow, maTarget, storyOn,
+                       india: (()=>{ const m = plateNow(501); return m ? rotXYZ(21.4, 79.4, m) : null; })(),
                        near: camera.near, 여유: dist - R, w: innerWidth, h: innerHeight });
+};
 const HOME = { lat: 36.5, lon: 127.9 };            // 부모가 고른 우리 동네 (GPS 아님)
 const yawFor   = lon => -lon*Math.PI/180;
 const pitchFor  = lat =>  lat*Math.PI/180;
@@ -1730,6 +1735,26 @@ async function loadMountains(){
    한반도(판 601)는 강체로 움직이므로 회전 행렬 하나면 전부 옮겨진다.
    ══════════════════════════════════════════════════════════════ */
 let FOSSILS = [], PALEO = null, timeIdx = 0;
+
+/* ── 시간을 이어서 흐르게 ──────────────────────────────────────
+   판 회전은 26 장의 정지 화면으로 들어온다. 그것만 갈아 끼우면 땅이 순간이동한다.
+   실제로 그렇게 보였다 — '땅이 부딪히는 장면'이 아니라 슬라이드 일곱 장이었다.
+
+   두 장 사이를 사원수 구면보간으로 잇는다. 판 운동은 강체 회전이라 두 자세 사이의
+   최단 경로가 곧 그 사이의 자세다 — GPlates 가 유한회전을 사이 시각으로 옮길 때
+   하는 것과 같은 연산이고, 우리가 지어내는 중간 그림이 아니다.
+
+   ⚠️ 다만 우리 26 장은 모델이 가진 시각의 부분집합이다. 촘촘한 구간(0~200Ma)에서는
+      GPlates 가 주는 답과 거의 같지만, 사이가 벌어진 구간에서는 벌어질 수 있다.
+
+   ⚠️ 시간 축은 프레임 번호가 아니라 백만 년(Ma)이다. 프레임 간격이 5Ma 도 있고
+      60Ma 도 있어서 번호를 고르게 훑으면 땅이 들쭉날쭉 움직인다.
+      화면에서 빨라 보이면 실제로 빨랐던 것이어야 한다. */
+let maNow = 0, maTarget = 0;
+let PALEO_XYZ = null, PALEO_BRK = null, PLATE_IDS = [];
+const PLATE_Q = new Map();      // 판번호 → 프레임별 자세(사원수)
+const PLATE_NOW = new Map();    // 판번호 → 지금 이 순간의 3×3 (없으면 null)
+const _m4 = new THREE.Matrix4(), _qa = new THREE.Quaternion();
 let paleoLine = null, paleoOn = false;   // 전지구 옛 해안선
 const contMarks = [];                    // 대륙 이름표
 
@@ -1759,6 +1784,46 @@ function eraAt(ma){ return ERAS.find(e => ma >= e.from && ma <= e.to) || null; }
 async function loadPaleoEarth(){
   PALEO = await fetch('../data/paleo-earth.json').then(r=>r.json());
   $('#timeslider').max = String(PALEO.frames.length - 1);
+  $('#tb-far').textContent = whenKo(PALEO.frames[PALEO.frames.length-1].t);
+
+  /* 점을 미리 지오센트릭 단위벡터로 굽는다. 매 프레임 6만 5천 점에 삼각함수를
+     다시 부르지 않기 위해서다 — 회전은 강체라 곱셈 아홉 번이면 끝난다. */
+  let N = 0;
+  for(const l of PALEO.lines) N += l.c.length;
+  PALEO_XYZ = new Float32Array(N*3);
+  PALEO_BRK = new Uint8Array(N);
+  let o = 0;
+  for(const l of PALEO.lines){
+    l.o = o; l.n = l.c.length;
+    for(let k = 0; k < l.n; k++){
+      const la = l.c[k][1]*Math.PI/180, lo = l.c[k][0]*Math.PI/180, b = (o+k)*3;
+      PALEO_XYZ[b]   = Math.cos(la)*Math.cos(lo);
+      PALEO_XYZ[b+1] = Math.cos(la)*Math.sin(lo);
+      PALEO_XYZ[b+2] = Math.sin(la);
+    }
+    /* 회전은 거리를 바꾸지 않는다 — 끊을 선분은 지금 한 번만 가려내면 된다.
+       예전에는 매 프레임 경도 차이(>180도)로 걸렀는데, 3차원에서는 날짜변경선을
+       지나는 선분도 그냥 이웃한 두 점이라 멀쩡한 해안선을 끊고 있었다. */
+    for(let k = 0; k < l.n-1; k++){
+      const a = (o+k)*3, c = (o+k+1)*3;
+      const dx = PALEO_XYZ[a]-PALEO_XYZ[c], dy = PALEO_XYZ[a+1]-PALEO_XYZ[c+1], dz = PALEO_XYZ[a+2]-PALEO_XYZ[c+2];
+      if(dx*dx + dy*dy + dz*dz > 0.12) PALEO_BRK[o+k] = 1;   // 현 길이 0.35 ≈ 20도
+    }
+    o += l.n;
+  }
+
+  // 판마다 프레임별 자세를 사원수로. 보간은 여기서만 일어난다.
+  for(let i = 0; i < PALEO.frames.length; i++){
+    const fm = PALEO.frames[i].m;
+    for(const pid in fm){
+      const m = fm[pid];
+      let A = PLATE_Q.get(pid);
+      if(!A){ A = new Array(PALEO.frames.length).fill(null); PLATE_Q.set(pid, A); PLATE_NOW.set(pid, new Float64Array(10)); }   // [9] 는 '이 시대에 있는 판인가'
+      _m4.set(m[0],m[1],m[2],0, m[3],m[4],m[5],0, m[6],m[7],m[8],0, 0,0,0,1);
+      A[i] = new THREE.Quaternion().setFromRotationMatrix(_m4);
+    }
+  }
+  PLATE_IDS = [...PLATE_Q.keys()];
 
   let segs = 0;
   for(const l of PALEO.lines) segs += (l.c.length - 1);
@@ -1789,31 +1854,65 @@ async function loadPaleoEarth(){
     contMarks.push({ pid: +pid, el, lon: a[0]/a[2], lat: a[1]/a[2] });
   }
 
+  // 경계상자는 한 번만. 해안선은 어느 시대에도 이 구를 벗어나지 않는다.
+  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), R*1.01);
+  updatePlates();
   drawPaleo();
 }
 
 /* 그 시대에 판이 없으면 그 대륙은 그리지 않는다. 없는 땅을 만들지 않는다. */
+/* maNow(백만 년) 가 어느 두 프레임 사이인지, 그리고 얼마나 왔는지 */
+function frameSpan(ma){
+  const F = PALEO.frames, last = F.length-1;
+  if(ma <= F[0].t) return [0, 0, 0];
+  if(ma >= F[last].t) return [last, last, 0];
+  let k = 0; while(k < last-1 && F[k+1].t < ma) k++;
+  return [k, k+1, (ma - F[k].t) / (F[k+1].t - F[k].t)];
+}
+
+/* 모든 판의 지금 자세를 한 번에 구해 둔다. 해안선·이름표·화석이 같은 값을 본다. */
+function updatePlates(){
+  if(!PALEO) return;
+  const [k0, k1, u] = frameSpan(maNow);
+  for(const pid of PLATE_IDS){
+    const A = PLATE_Q.get(pid), a = A[k0], b = A[k1], out = PLATE_NOW.get(pid);
+    // 한쪽 시대에 없는 판은 그 구간에서 그리지 않는다. 없는 땅을 만들지 않는다.
+    if(!a || !b){ out[9] = 0; continue; }
+    _qa.copy(a); if(u > 0) _qa.slerp(b, u);
+    _m4.makeRotationFromQuaternion(_qa);
+    const e = _m4.elements;                    // three 는 열 우선, 우리 행렬은 행 우선
+    out[0]=e[0]; out[1]=e[4]; out[2]=e[8];
+    out[3]=e[1]; out[4]=e[5]; out[5]=e[9];
+    out[6]=e[2]; out[7]=e[6]; out[8]=e[10];
+    out[9] = 1;
+  }
+}
+const plateNow = pid => { const m = PLATE_NOW.get(String(pid)); return (m && m[9]) ? m : null; };
+
 function drawPaleo(){
-  if(!paleoLine || !PALEO) return;
-  const fr = PALEO.frames[Math.max(0, Math.min(PALEO.frames.length-1, timeIdx))];
+  if(!paleoLine || !PALEO || !PALEO_XYZ) return;
   const arr = paleoLine.geometry.attributes.position.array;
+  const P = PALEO_XYZ, BRK = PALEO_BRK, RR = R*1.006;
   let i = 0, drawn = 0, skipped = 0;
   for(const l of PALEO.lines){
-    const m = fr.m[String(l.p)];
-    if(!m){ i += (l.c.length-1)*6; skipped++; continue; }
+    const m = plateNow(l.p), n = l.n, o = l.o;
+    if(!m){ const end = i + (n-1)*6; while(i < end) arr[i++] = 0; skipped++; continue; }
     drawn++;
-    for(let k = 0; k < l.c.length-1; k++){
-      const a = rotXYZ(l.c[k][1],   l.c[k][0],   m);
-      const b = rotXYZ(l.c[k+1][1], l.c[k+1][0], m);
-      if(Math.abs(a.lon - b.lon) > 180){ i += 6; continue; }   // 경도 이음매
-      const va = llToVec(a.lat, a.lon, R*1.006), vb = llToVec(b.lat, b.lon, R*1.006);
-      arr[i++]=va.x; arr[i++]=va.y; arr[i++]=va.z;
-      arr[i++]=vb.x; arr[i++]=vb.y; arr[i++]=vb.z;
+    const m0=m[0],m1=m[1],m2=m[2],m3=m[3],m4=m[4],m5=m[5],m6=m[6],m7=m[7],m8=m[8];
+    let ax=0, ay=0, az=0;
+    for(let k = 0; k < n; k++){
+      const b = (o+k)*3, x = P[b], y = P[b+1], z = P[b+2];
+      const X = (m0*x+m1*y+m2*z)*RR, Y = (m3*x+m4*y+m5*z)*RR, Z = (m6*x+m7*y+m8*z)*RR;
+      if(k > 0){
+        if(BRK[o+k-1]){ arr[i++]=0;arr[i++]=0;arr[i++]=0; arr[i++]=0;arr[i++]=0;arr[i++]=0; }
+        // 지오센트릭(x=적도0도, y=적도90도, z=북극) → three(x, z, -y)
+        else { arr[i++]=ax; arr[i++]=az; arr[i++]=-ay; arr[i++]=X; arr[i++]=Z; arr[i++]=-Y; }
+      }
+      ax=X; ay=Y; az=Z;
     }
   }
   while(i < arr.length) arr[i++] = 0;
   paleoLine.geometry.attributes.position.needsUpdate = true;
-  paleoLine.geometry.computeBoundingSphere();
   PALEO._drawn = drawn; PALEO._skipped = skipped;
 }
 
@@ -1865,11 +1964,8 @@ async function loadPast(){
 
 /* 시대 t 의 회전 행렬. 사이 값은 이웃 프레임에서 고르지 않고 가까운 쪽을 쓴다 —
    행렬을 선형 보간하면 회전이 아니게 되고, 그건 모델에 없는 값을 만드는 것이다. */
-function matrixAt(i){
-  if(!PALEO) return null;
-  const fr = PALEO.frames[Math.max(0, Math.min(PALEO.frames.length-1, i))];
-  return { t: fr.t, m: fr.m['601'] || null };   // 한반도는 판 601
-}
+// 한반도는 판 601. 프레임이 아니라 '지금 이 순간' 의 자세를 준다.
+function matrixAt(){ return { t: maNow, m: plateNow(601) }; }
 function rotateLL(lat, lon, m){
   if(!m) return { lat, lon };
   const la = lat*Math.PI/180, lo = lon*Math.PI/180;
@@ -1883,7 +1979,7 @@ function rotateLL(lat, lon, m){
 }
 
 function placeFossils(){
-  const m = matrixAt(timeIdx);
+  const m = matrixAt();
   for(const f of fossilMarks){
     const p = rotateLL(f.site.lat, f.site.lon, m);
     f.pos = llToVec(p.lat, p.lon, R*1.015);
@@ -1936,23 +2032,35 @@ function confidenceKo(ma){
   return '이 시대는 동서 위치가 덜 확실합니다';
 }
 
+/* 슬라이더와 이야기는 '어디로 갈지' 만 정한다. 실제로 옮기는 건 시계(frame)다. */
 function setTime(i){
   timeIdx = i;
+  maTarget = PALEO ? PALEO.frames[Math.max(0, Math.min(PALEO.frames.length-1, i))].t : 0;
+  refreshPast();
+}
+
+let _lastWhen = '', _lastEra = '';
+function refreshPast(){
+  updatePlates();
   drawPaleo();
-  const fr = matrixAt(i);
-  const ma = fr ? fr.t : 0;
+  const ma = Math.round(maNow);
   const era = eraAt(ma);
   const eraEl = $('#era');
-  if(era && paleoOn){
-    eraEl.innerHTML = `${era.ko}<small>${era.note}</small>`;
-    eraEl.hidden = false;
-  } else eraEl.hidden = true;
-
-  $('.tb-when').textContent = whenKo(ma);
-  $('.tb-conf').textContent = confidenceKo(ma);
-  $('#tb-note').textContent = ma === 0
-    ? '한반도를 손으로 되감아 보세요'
-    : `한반도가 지금과 다른 자리에 있어요`;
+  const eraTxt = (era && paleoOn) ? `${era.ko}<small>${era.note}</small>` : '';
+  if(eraTxt !== _lastEra){                      // 매 프레임 글자를 다시 붓지 않는다
+    _lastEra = eraTxt;
+    eraEl.innerHTML = eraTxt;
+    eraEl.hidden = !eraTxt;
+  }
+  const when = whenKo(ma);
+  if(when !== _lastWhen){
+    _lastWhen = when;
+    $('.tb-when').textContent = when;
+    $('.tb-conf').textContent = confidenceKo(ma);
+    $('#tb-note').textContent = ma === 0
+      ? '한반도를 손으로 되감아 보세요'
+      : `한반도가 지금과 다른 자리에 있어요`;
+  }
   placeFossils();
   // 과거로 가면 오늘 날씨는 뜻이 없다 — 친구와 말풍선을 접는다
   // 화석 모드에서는 시대와 상관없이 오늘 날씨를 접어 둔다
@@ -1972,12 +2080,16 @@ function setTime(i){
   }
   // 한반도는 과거에 조금 더 밝게 — 화석지가 붙어 있는 곳이라 눈이 갈 자리다
   if(koreaLine) koreaLine.material.opacity = fossilOn ? (ma > 0 ? 1 : 0.55) : 0;
-  // 오늘 지도를 너무 깜깜하게 눌렀다. 대륙 선이 보일 만큼만 물린다.
-  earthMat.uniforms.pastFade.value = inPast ? 1 : 0;
+  /* 오늘 지도를 물리는 정도. 이어서 흐르므로 켜고 끄지 않고 서서히 준다 —
+     0 과 1 사이를 한 프레임에 건너뛰면 도착하는 순간 화면이 번쩍인다. */
+  const back = (fossilOn || paleoOn) ? Math.min(1, maNow/4) : 0;
+  earthMat.uniforms.pastFade.value = back;
+  if(paleoLine && paleoLine.visible) paleoLine.material.opacity = 0.6 + 0.35*back;
 
-  // 한반도가 옮겨 가면 카메라도 따라간다. 화면 밖으로 나가면 아이가 놓친다.
-  if(fossilOn){
-    const c = rotateLL(35.6, 127.6, fr);
+  // 땅이 옮겨 가면 카메라도 따라간다. 화면 밖에서 벌어지면 아이가 놓친다.
+  if(storyOn){ sayStory(); followStory(); }
+  else if(fossilOn){
+    const c = rotateLL(35.6, 127.6, matrixAt());
     yawTarget = yawFor(c.lon); pitchTarget = pitchFor(c.lat);
     following = true;
   }
@@ -2010,47 +2122,71 @@ $('#timeslider').addEventListener('input', e => { stopStory(); setTime(+e.target
    우리가 만드는 값이 아니라 판 회전이 그렇게 말한다.
 
    손을 대면 즉시 멈춘다. 조작을 뺏지 않는다는 규칙은 여기서도 같다. */
-const STORY = [
-  { idx: 9,  say: '1억 년 전. 인도는 아직 남쪽 바다에 떠 있는 섬이에요.' },
-  { idx: 8,  say: '인도가 북쪽으로 올라오기 시작해요.' },
-  { idx: 7,  say: '6600만 년 전. 아직 아시아와 떨어져 있어요.' },
-  { idx: 6,  say: '5000만 년 전. 곧 부딪혀요.' },
-  { idx: 4,  say: '부딪혔어요. 갈 곳이 없어진 땅이 위로 솟아요.' },
-  { idx: 2,  say: '그렇게 솟은 것이 히말라야예요. 지금도 조금씩 높아지고 있어요.' },
-  { idx: 0,  say: '지금이에요. 산맥 버튼을 켜면 히말라야가 보여요.' },
-];
-let storyTimer = null, storyStep = 0;
+/* 말은 시각(Ma)에 건다. 흐름이 그 지점을 지날 때 저절로 바뀐다.
+   ⚠️ 말 안에 연도를 적지 않는다 — 바로 아래에 '4000만 년 전' 이 큰 글씨로 떠 있는데
+      말풍선이 '5000만 년 전' 이라고 하면 둘 중 하나는 거짓말이 된다.
 
-function stopStory(){
-  if(storyTimer){ clearTimeout(storyTimer); storyTimer = null; }
+   부딪힌 시각을 45Ma 로 잡은 건 우리 자료가 그렇게 말해서다. 인도가 5Ma 마다
+   올라온 위도를 보면 55→50 은 6.8도인데 50→45 에서 3.3도로 반토막이 난다.
+   갈 곳이 막힌 것이 회전값에 그대로 남아 있다. */
+const STORY = [
+  { ma: 100, say: '1억 년 전. 인도는 아직 남쪽 바다에 떠 있는 섬이에요.' },
+  { ma:  80, say: '인도가 북쪽으로 올라오기 시작해요.' },
+  { ma:  66, say: '아직 아시아와 멀리 떨어져 있어요.' },
+  { ma:  50, say: '점점 빨라져요. 곧 부딪혀요.' },
+  { ma:  45, say: '부딪혔어요! 갈 곳이 없어진 땅이 위로 솟아요.' },
+  { ma:  20, say: '솟아오른 것이 히말라야예요. 지금도 조금씩 높아지고 있어요.' },
+  { ma:   2, say: '지금이에요. 저 산맥이 그때 부딪혀 생긴 거예요.' },
+];
+/* 이야기 동안에는 지구를 물린다. 날씨 화면은 땅을 크게 보는 게 목적이라 3.4 부터
+   시작하는데, 인도가 건너온 6,000km 를 그 배율로 담으면 화면에 바다밖에 안 남는다.
+   1.5 면 짧은 변으로 ±42도 — 남위 37도의 인도와 북위 45도의 아시아가 함께 들어온다. */
+const STORY_FILL = 1.5;
+let storyFill = 0;           // 돌아올 자리
+const STORY_FROM = 100;      // 어디서 시작하나 (Ma)
+const STORY_SEC  = 16;       // 몇 초에 걸쳐 오나
+const STORY_RATE = STORY_FROM / STORY_SEC;   // Ma/초 — 시간 축에 맞춘 일정 속도
+let storyOn = false, storyEnd = null;
+
+function stopStory(done){
+  storyOn = false;
+  if(storyEnd){ clearTimeout(storyEnd); storyEnd = null; }
+  // 끝까지 본 경우에만 원래 배율로 돌린다. 손을 대서 멈춘 거면 그 자리를 뺏지 않는다.
+  if(done && storyFill){ fill = storyFill; applyFill(); }
+  storyFill = 0;
   $('#story').classList.remove('playing');
   $('#story').textContent = '▶ 인도가 아시아에 부딪히는 걸 보기';
 }
 
+// 지금 시각에 걸린 말 — 지나온 지점 중 가장 최근 것
+function sayStory(){
+  let st = null;
+  for(const x of STORY) if(x.ma >= maNow) st = x;   // STORY 는 옛날→지금 순
+  if(st && $('#story').textContent !== st.say) $('#story').textContent = st.say;
+}
+
+// 인도를 화면 가운데에 붙들어 둔다. 조금 북쪽을 보게 해서 아시아가 같이 들어오게.
+function followStory(){
+  const m = plateNow(501);
+  if(!m) return;
+  const g = rotXYZ(21.4, 79.4, m);
+  yawTarget = yawFor(g.lon); pitchTarget = pitchFor(Math.min(38, g.lat + 9));
+  following = true;
+}
+
 function playStory(){
-  if(storyTimer){ stopStory(); return; }
+  if(storyOn){ stopStory(); return; }
   if(!paleoOn) $('#b-pangaea').click();     // 대륙이 안 보이면 장면이 성립하지 않는다
-  storyStep = 0;
+  storyOn = true;
   $('#story').classList.add('playing');
-  const tick = () => {
-    if(storyStep >= STORY.length){ stopStory(); return; }
-    const st = STORY[storyStep++];
-    $('#timeslider').value = String(st.idx);
-    setTime(st.idx);
-    $('#story').textContent = st.say;
-    // 인도를 화면에 붙들어 둔다 — 장면이 화면 밖에서 벌어지면 못 본다
-    const fr = PALEO && PALEO.frames[st.idx];
-    const m = fr && fr.m['501'];
-    if(m){
-      const g = rotXYZ(21.4, 79.4, m);
-      yawTarget = yawFor(g.lon); pitchTarget = pitchFor(g.lat); following = true;
-    }
-    storyTimer = setTimeout(tick, 2600);
-  };
-  tick();
+  maNow = STORY_FROM; maTarget = 0;
+  $('#timeslider').value = '0';
+  storyFill = fill; fill = STORY_FILL; applyFill();
+  refreshPast();
 }
 $('#story').addEventListener('click', playStory);
-canvas.addEventListener('pointerdown', stopStory);
+// 인자 없이 부른다 — 이벤트 객체가 done 자리에 들어가면 손댄 사람의 배율을 뺏는다
+canvas.addEventListener('pointerdown', () => stopStory());
 
 $('#b-mtn').addEventListener('click', e => {
   const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
@@ -2380,10 +2516,8 @@ function placeMarkers(w, h){
 
   // 대륙 이름 — 그 시대에 판이 있는 것만. 없으면 이름도 없다.
   const contShown = [];
-  const paleoFr = (paleoOn && PALEO)
-    ? PALEO.frames[Math.max(0, Math.min(PALEO.frames.length-1, timeIdx))] : null;
   for(const t of contMarks){
-    const m = paleoFr && paleoFr.m[String(t.pid)];
+    const m = paleoOn ? plateNow(t.pid) : null;
     if(!m){ t.el.style.visibility = 'hidden'; continue; }
     const g = rotXYZ(t.lat, t.lon, m);
     _v.copy(llToVec(g.lat, g.lon, R*1.03)).applyMatrix4(earthGroup.matrixWorld);
@@ -2428,8 +2562,7 @@ function placeMarkers(w, h){
   // 과거를 보는 동안에는 오늘 나라 이름을 접는다 — 그 이름은 오늘 좌표에 있다.
   // 어느 버튼으로 들어왔든 같다(전에 화석 경로에서 이게 빠져 '러시아·일본'이 떠 있었다).
   const pastNow = paleoOn ||
-    ($('#b-fossil').getAttribute('aria-pressed') === 'true' &&
-     PALEO && PALEO.frames[timeIdx] && PALEO.frames[timeIdx].t > 0);
+    ($('#b-fossil').getAttribute('aria-pressed') === 'true' && maNow > 0);
   if(pastNow){
     for(const n of names) n.m.el.style.visibility = 'hidden';
     return;
@@ -2480,6 +2613,26 @@ function frame(now){
   // 손을 대지 않을 때만 아주 느리게 돈다. 첫 터치에 멈춘다.
   if(!dragging) idle += dt; else idle = 0;
   if(idle > 3.2 && !reduceMotion) yaw += 0.028*dt;
+
+  /* 시간을 옮긴다. 두 가지 속도가 필요하다.
+       이야기 — 백만 년/초 를 고정한다. 화면에서 빨라 보이면 실제로 빨랐던 것이다.
+       손 조작 — 어디서 끌든 1초쯤에 도착한다. 6억 년을 실제 속도로 보여줄 순 없다. */
+  if(PALEO && maNow !== maTarget){
+    const d = maTarget - maNow;
+    if(storyOn){
+      const v = STORY_RATE * dt;
+      maNow = Math.abs(d) <= v ? maTarget : maNow + Math.sign(d)*v;
+    } else {
+      maNow += d * Math.min(1, dt*3.2);
+      if(Math.abs(maTarget - maNow) < 0.02) maNow = maTarget;
+    }
+    refreshPast();
+    if(storyOn && maNow === 0 && !storyEnd){
+      // 부딪혀서 솟은 것을 마지막에 보여준다 — 버튼을 누르라고 시키지 않는다
+      if($('#b-mtn').getAttribute('aria-pressed') !== 'true') $('#b-mtn').click();
+      storyEnd = setTimeout(()=>stopStory(true), 3400);
+    }
+  }
 
   const ease = Math.min(1, dt*4.5);
   dist   += (distTarget - dist)   * ease;
@@ -2541,6 +2694,11 @@ earthMat.onBeforeRender = function(){
 function drawOnce(){
   const w = innerWidth, h = innerHeight;
   yaw += 0; pitch += 0;
+  /* 시간은 건너뛰되, 이야기가 흐르는 중이면 그대로 둔다.
+     창 크기가 바뀌었다고 장면을 끝으로 보내면 아이는 아무것도 못 본다. */
+  if(PALEO && maNow !== maTarget && !storyOn){ maNow = maTarget; refreshPast(); }
+  // 따라가는 중이면 중간이 아니라 목적지를 그린다 — 한 장만 그리는 자리라 중간은 뜻이 없다
+  if(following){ yaw = yawTarget; pitch = pitchTarget; yawV = pitchV = 0; }
   dist = distTarget; tanMin = tanTarget; setFov(tanMin);
   updateCoast();
   camera.position.set(

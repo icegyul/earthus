@@ -479,11 +479,14 @@ const srcNote = $('#srcNote'), badgetxt = $('#badgetxt');
    켜져 있는 동안 좌하단에도 계속 적혀 있어야 한다. */
 let srcLive = '';
 function paintSrc(){
+  /* 기관명만 쓴다. 괄호 안 시스템 이름까지 넣으면 줄이 세 줄이 되어 아래 메뉴를
+     덮는다 — 전체 출처는 카드에 그대로 적혀 있다. */
+  const org = t => String(t||'').split(' (')[0];
   const add = [];
   if(typeof turtleOn !== 'undefined' && turtleOn && TURTLES)
-    add.push(`<b>${TURTLES.source}</b> 바다거북 <i>지나간 경로</i>`);
+    add.push(`<b>${org(TURTLES.source)}</b> 바다거북 <i>지나간 경로</i>`);
   if(typeof birdOn !== 'undefined' && birdOn && MIGBIRD)
-    add.push(`<b>${MIGBIRD.source}</b> 철새`);
+    add.push(`<b>${org(MIGBIRD.source)}</b> 철새`);
   badgetxt.innerHTML = srcLive + (add.length ? ' · ' + add.join(' · ') : '');
 }
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -971,9 +974,14 @@ const D_MIN = R * 1.5;               // 카메라가 더 붙지 않는 거리
 if(D_MIN - R <= NEAR) throw new Error('카메라 최소 거리가 near 평면보다 가깝다 — 지구가 잘린다');
 
 let stop = 0, dist = 3.6, distTarget = 3.6;
-// 지구가 화면 짧은 변의 절반에서 차지하는 비율. 네 칸이 정하던 범위를 그대로 위아래 한계로 쓴다.
+/* 지구가 화면 짧은 변의 절반에서 차지하는 비율.
+   ⚠️ 손으로 줄이는 한계를 칸 목록과 묶어 두었더니 **줌 아웃이 아예 안 됐다.**
+      칸의 첫 값(3.4)이 곧 하한이라, 가장 넓게 봐도 지구가 화면을 넘겼다 —
+      지구본인데 지구 전체를 볼 수 없었다.
+      칸은 '자주 쓰는 자리'고 손은 그것보다 넓게도 갈 수 있어야 한다.
+      0.8 이면 짧은 변에 여백을 두고 지구가 통째로 들어온다. */
 let fill = FILL[0];
-const FILL_MIN = FILL[0], FILL_MAX = FILL[FILL.length-1];
+const FILL_MIN = 0.8, FILL_MAX = FILL[FILL.length-1];
 const clampFill = f => Math.max(FILL_MIN, Math.min(FILL_MAX, f));
 function applyFill(){
   const d = R / (fill * tanBase);
@@ -1003,7 +1011,7 @@ function setFov(t){
 window.__v3 = (ma) => {
   if(ma !== undefined){ maNow = maTarget = ma; refreshPast(); }   // 숨은 창에서는 rAF 가 안 돈다
   return ({ fill, stop, dist, distTarget, tanMin, tanTarget, tanBase, screenR, fov: camera.fov,
-                       ma: maNow, maTarget, storyOn, fillMesh: paleoFill,
+                       ma: maNow, maTarget, storyOn, fillMesh: paleoFill, yaw, pitch, yawV, pitchV, dragging, following,
                        india: (()=>{ const m = plateNow(501); return m ? rotXYZ(21.4, 79.4, m) : null; })(),
                        near: camera.near, 여유: dist - R, w: innerWidth, h: innerHeight });
 };
@@ -1093,7 +1101,11 @@ $('#home').addEventListener('click', ()=>{
 });
 // 지구를 두 번 누르면 한 칸 들어간다 (핀치 없이도 전부 된다)
 canvas.addEventListener('dblclick', ()=> goStop(nearestStop()+1));
-$('#nav').children[1].addEventListener('click', ()=>{ const n = nearestStop()+1; goStop(n >= FILL.length ? 0 : n); });
+$('#nav').children[1].addEventListener('click', ()=>{
+  // 칸보다 넓게 나가 있으면 '넓게'로 돌아온다 — 거기서 한 칸 더 들어가면 건너뛴다
+  const n = fill < FILL[0]*0.95 ? 0 : nearestStop()+1;
+  goStop(n >= FILL.length ? 0 : n);
+});
 
 /* ── 레일 토글 ────────────────────────────────────────────── */
 const show = { cloud:true, rain:true, zap:true, night:true };

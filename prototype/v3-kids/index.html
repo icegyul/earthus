@@ -100,6 +100,16 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 }
 .bub .box b{display:block;font-size:12px;opacity:.55;font-weight:400}
 
+/* ── 대륙 이름 (옛 대륙) ── */
+.cn{position:absolute;z-index:4;transform:translate(-50%,-50%);pointer-events:none;
+  font-family:var(--kid);font-size:17px;color:#FFF0D2;letter-spacing:.03em;white-space:nowrap;
+  padding:2px 9px;border-radius:999px;background:rgba(28,16,4,.42);
+  text-shadow:0 1px 4px rgba(24,14,2,1),0 0 16px rgba(24,14,2,.9);will-change:transform,opacity}
+
+/* ── 시대 이름 (시간 손잡이 위) ── */
+.era{font-family:var(--kid);font-size:15px;color:#FFC24B;margin-bottom:2px;line-height:1.3}
+.era small{display:block;font-family:var(--ui);font-size:11px;color:#9fb4d6;letter-spacing:.01em;margin-top:2px}
+
 /* ── 산맥 이름 ── */
 .mt{position:absolute;z-index:3;transform:translate(-50%,-50%);pointer-events:none;
   font-family:var(--kid);font-size:12.5px;color:#FFE8C7;letter-spacing:.02em;white-space:nowrap;
@@ -253,6 +263,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
   <button id="home" aria-label="우리 집으로 돌아가기"><span>🏠</span>우리 집</button>
 
   <div id="timebar" hidden>
+    <div class="era" id="era" hidden></div>
     <div class="tb-head">
       <span class="tb-when">지금</span>
       <span class="tb-conf"></span>
@@ -1017,6 +1028,27 @@ async function loadMountains(){
    ══════════════════════════════════════════════════════════════ */
 let FOSSILS = [], PALEO = null, timeIdx = 0;
 let paleoLine = null, paleoOn = false;   // 전지구 옛 해안선
+const contMarks = [];                    // 대륙 이름표
+
+/* 이름을 붙일 판. 판 번호는 GPlates 관례를 그대로 쓴다.
+   해안선 점이 많고 오래 살아 있는 것만 고른다 — 잘게 나뉜 미소판은 이름이 없다. */
+const PLATE_NAMES = {
+  101:'북아메리카', 102:'그린란드', 201:'남아메리카', 301:'유라시아',
+  302:'유럽', 401:'시베리아', 501:'인도', 601:'한반도',
+  701:'아프리카', 714:'서아프리카', 801:'오스트레일리아', 8011:'오스트레일리아',
+};
+
+/* 시대 이름. 겹치는 구간이 있는 것이 사실이라 그대로 적는다 —
+   곤드와나는 판게아의 재료이자 파편이라 두 번 나온다.
+   판노티아는 존재 자체가 논쟁 중이라 단정하지 않는다. */
+const ERAS = [
+  { from: 541, to: 601, ko: '판노티아',        note: '있었는지 자체가 아직 논쟁 중인 초대륙' },
+  { from: 336, to: 540, ko: '곤드와나',        note: '남쪽 대륙들이 이미 하나로 모여 있던 때' },
+  { from: 176, to: 335, ko: '판게아',          note: '모든 땅이 하나 — 북쪽은 로라시아, 남쪽은 곤드와나' },
+  { from:  67, to: 175, ko: '판게아가 갈라진다', note: '로라시아와 곤드와나로 나뉘는 중' },
+  { from:   1, to:  66, ko: '지금 모양으로',     note: '대륙이 오늘 자리를 찾아간다' },
+];
+function eraAt(ma){ return ERAS.find(e => ma >= e.from && ma <= e.to) || null; }
 
 /* 현재 해안선 한 벌 + 판별 회전 행렬. GPlates 가 하는 계산과 같은 것이라
    근사가 아니다 — 66·100·200·400 Ma 를 원본과 대조해 오차 0.02km 미만을 확인했다.
@@ -1034,6 +1066,26 @@ async function loadPaleoEarth(){
   paleoLine.renderOrder = 5;
   paleoLine.visible = false;
   earthGroup.add(paleoLine);
+
+  // 이름표 자리는 그 판 해안선의 평균점 — 따로 좌표를 두지 않는다
+  const acc = {};
+  for(const l of PALEO.lines){
+    if(!PLATE_NAMES[l.p]) continue;
+    const a = acc[l.p] || (acc[l.p] = [0,0,0]);
+    for(const q of l.c){ a[0]+=q[0]; a[1]+=q[1]; a[2]++; }
+  }
+  const seen = new Set();
+  for(const pid of Object.keys(acc)){
+    const name = PLATE_NAMES[pid];
+    if(seen.has(name)) continue;          // 8011 처럼 같은 대륙이 둘로 나뉜 경우
+    seen.add(name);
+    const a = acc[pid];
+    const el = document.createElement('div');
+    el.className = 'cn'; el.textContent = name; el.style.visibility = 'hidden';
+    stage.appendChild(el);
+    contMarks.push({ pid: +pid, el, lon: a[0]/a[2], lat: a[1]/a[2] });
+  }
+
   drawPaleo();
 }
 
@@ -1186,6 +1238,13 @@ function setTime(i){
   drawPaleo();
   const fr = matrixAt(i);
   const ma = fr ? fr.t : 0;
+  const era = eraAt(ma);
+  const eraEl = $('#era');
+  if(era && paleoOn){
+    eraEl.innerHTML = `${era.ko}<small>${era.note}</small>`;
+    eraEl.hidden = false;
+  } else eraEl.hidden = true;
+
   $('.tb-when').textContent = whenKo(ma);
   $('.tb-conf').textContent = confidenceKo(ma);
   $('#tb-note').textContent = ma === 0
@@ -1455,6 +1514,30 @@ function placeMarkers(w, h){
     if(!clash) pinLabels.push({x:f.sx, y:f.sy});
   }
 
+  // 대륙 이름 — 그 시대에 판이 있는 것만. 없으면 이름도 없다.
+  const contShown = [];
+  const paleoFr = (paleoOn && PALEO)
+    ? PALEO.frames[Math.max(0, Math.min(PALEO.frames.length-1, timeIdx))] : null;
+  for(const t of contMarks){
+    const m = paleoFr && paleoFr.m[String(t.pid)];
+    if(!m){ t.el.style.visibility = 'hidden'; continue; }
+    const g = rotXYZ(t.lat, t.lon, m);
+    _v.copy(llToVec(g.lat, g.lon, R*1.03)).applyMatrix4(earthGroup.matrixWorld);
+    const facing = _v.clone().normalize().dot(_c.clone().sub(_v).normalize());
+    if(facing <= 0.14){ t.el.style.visibility = 'hidden'; continue; }
+    const q = _v.clone().project(camera);
+    const X = (q.x*0.5+0.5)*w, Y = (-q.y*0.5+0.5)*h;
+    const clash = contShown.some(o => Math.abs(o.x-X) < 92 && Math.abs(o.y-Y) < 26);
+    const inView = X > 78 && X < w-16 && Y > 56 && Y < h-140;
+    const ok = !clash && inView;
+    t.el.style.visibility = ok ? 'visible' : 'hidden';
+    if(ok){
+      t.el.style.opacity = Math.min(1, 0.55 + (facing-0.14)*1.6);
+      t.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-50%)`;
+      contShown.push({x:X, y:Y});
+    }
+  }
+
   // 산맥 이름 — 화면 가운데에 가까운 것부터 다섯 개까지
   const mtShown = [];
   const mtOn = $('#b-mtn').getAttribute('aria-pressed') === 'true';
@@ -1478,6 +1561,11 @@ function placeMarkers(w, h){
 
   /* 나라 이름은 있는 줄 알 정도만. 화면 가운데에 가까운 것부터 다섯 개까지,
      말풍선·다른 이름과 겹치면 건너뛴다. 지구 전체에서는 더 적게. */
+  // 옛 대륙을 보는 동안에는 오늘 나라 이름을 접는다 — 그 이름은 오늘 좌표에 있다
+  if(paleoOn){
+    for(const n of names) n.m.el.style.visibility = 'hidden';
+    return;
+  }
   const nameCap = stop === 0 ? 4 : 6;
   names.sort((a,b)=> ((a.X-cx)**2 + (a.Y-cy)**2) - ((b.X-cx)**2 + (b.Y-cy)**2));
   const nameSpots = placed.slice();

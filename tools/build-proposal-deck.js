@@ -116,9 +116,9 @@ function chip(s, x, y, label, color) {
     sub: '같은 자료 저장소(S3 캐시)를 쓰지만, 메뉴는 각자 자랐습니다.' });
   const apps = [
     { n: 'EARTHUS  v1', u: 'earthus.net', c: P.blue,
-      d: '생활과 안전의 지구', m: ['레이어 44개 · 10묶음', '별도 화면 15개 (해양·연구·관측소…)', '계정·구독·관리자'] },
+      d: '기본 서비스', m: ['공공데이터를 받아 그대로 구현', '레이어 44개 · 보고서/검증 화면 7개', '예보는 기상의 기본 기능 — 여기 있다'] },
     { n: 'Intelligence  v2', u: '/v2', c: P.sky,
-      d: '분석과 시간축의 지구', m: ['레이어 93개 · 7씬 (준비중 4)', '5일 예보 · 진리등급 배지', 'LLM 문답 · 3D 지형'] },
+      d: '여기서 더 나아간다', m: ['레이어 93개 · 7씬 (준비중 4)', '예측 — 시나리오 · 앙상블 · 2100 전망', '진리등급 배지 · LLM 문답 · 3D 지형'] },
     { n: 'WONDER  v3', u: '/v3', c: P.warm,
       d: '아이의 지구', m: ['버튼 12개 · 한 화면', '공룡 · 판게아 · 충돌구', '4~9세, 읽는 글 최소'] },
   ];
@@ -189,39 +189,40 @@ function chip(s, x, y, label, color) {
 
 /* ───────────────────────── 4. 진단 — 축이 지켜지지 않는다 ───────────────────────── */
 {
-  const s = slide({ eyebrow: '진단 ①', title: '전환기는 시간축을 약속하는데, 내용이 지키지 않는다' });
-  card(s, 0.6, 2.15, 12.13, 1.5, P.card2);
-  s.addText('js/earth-switch.js 가 적어 둔 약속', { x: 0.95, y: 2.35, w: 6, h: 0.3, isTextBox: true, margin: 0,
-    fontFace: KO, fontSize: 12, bold: true, color: P.blue });
-  const axis = [['EARTHUS', '현재', '지금 지구에서 무슨 일이'],
-                ['Intelligence', '미래', '앞으로 무슨 일이 — 예보와 시나리오'],
-                ['WONDER', '과거', '여기까지 어떻게 왔나']];
-  axis.forEach((a, i) => {
-    const x = 0.95 + i * 4.0;
-    s.addText(`${a[0]}  ·  ${a[1]}`, { x, y: 2.72, w: 3.8, h: 0.28, isTextBox: true, margin: 0,
-      fontFace: KO, fontSize: 13, bold: true, color: P.text });
-    s.addText(a[2], { x, y: 3.0, w: 3.8, h: 0.4, isTextBox: true, margin: 0,
-      fontFace: KO, fontSize: 11, color: P.dim });
-  });
-  s.addText('그런데 실제로는', { x: 0.62, y: 3.95, w: 6, h: 0.35, isTextBox: true, margin: 0,
-    fontFace: KO, fontSize: 16, bold: true, color: P.warm });
-  const gaps = [
-    ['«미래» 인 v2 에 실황이 잔뜩', '구름 실황 · 지진 실황 · 바람 관측 3천 개소 · 레이더 강수 · 기입 모형'],
-    ['«현재» 인 v1 에 예보가 있다', '예보 바람 · 최고/최저기온 · 영국 예보'],
-    ['«과거» 인 v3 에 현재가 대부분', '12개 중 공룡·판게아·충돌구 3개만 과거, 나머지는 지금 날씨'],
+  const s = slide({ eyebrow: '진단 ①', title: '축은 시간이 아니라 «자료를 어디까지 다루는가» 다',
+    sub: '전환기 문구는 현재/미래/과거로 적혀 있지만, 실제 경계는 시간이 아닙니다.' });
+  const axis = [
+    { n: 'v1 · 기본', c: P.blue, h: '받는다 · 보여준다 · 검증한다',
+      d: '공공데이터를 그대로 구현하고 출처를 밝히고\n맞았는지 확인해 보고서로 낸다.\n예보는 기상의 기본 기능이므로 여기 있는 것이 맞다.' },
+    { n: 'v2 · 예측', c: P.sky, h: '그 위에서 예측한다',
+      d: '기본 예보를 넘어 시나리오·앙상블·전망을 만든다.\n실황은 예측의 바탕으로 필요해서 갖는다.' },
+    { n: 'v3 · 경이', c: P.warm, h: '아이가 만난다',
+      d: '같은 자료를 아이의 말과 그림으로 낸다.\n공룡·옛 대륙은 여기서만.' },
   ];
-  gaps.forEach((g, i) => {
-    const y = 4.42 + i * 0.72;
-    card(s, 0.6, y, 12.13, 0.6);
-    s.addText(g[0], { x: 0.95, y: y + 0.13, w: 4.3, h: 0.34, isTextBox: true, margin: 0,
-      fontFace: KO, fontSize: 13, bold: true, color: P.text, valign: 'middle' });
-    s.addText(g[1], { x: 5.35, y: y + 0.13, w: 7.1, h: 0.34, isTextBox: true, margin: 0,
-      fontFace: KO, fontSize: 11.5, color: P.dim, valign: 'middle' });
+  axis.forEach((a, i) => {
+    const x = 0.6 + i * 4.12;
+    card(s, x, 2.25, 3.85, 2.25);
+    s.addShape(pres.ShapeType.roundRect, { x: x + 0.3, y: 2.5, w: 1.55, h: 0.32, rectRadius: 0.16,
+      fill: { color: a.c }, line: { type: 'none' } });
+    s.addText(a.n, { x: x + 0.3, y: 2.5, w: 1.55, h: 0.32, isTextBox: true, margin: 0,
+      fontFace: KO, fontSize: 11, bold: true, color: P.bg, align: 'center', valign: 'middle' });
+    s.addText(a.h, { x: x + 0.3, y: 2.95, w: 3.3, h: 0.32, isTextBox: true, margin: 0,
+      fontFace: KO, fontSize: 13.5, bold: true, color: P.text });
+    s.addText(a.d, { x: x + 0.3, y: 3.32, w: 3.3, h: 1.05, isTextBox: true, margin: 0,
+      fontFace: KO, fontSize: 10.5, color: P.dim, lineSpacing: 15 });
   });
-  s.addText('사용자는 «어디에 뭐가 있는지» 를 축이 아니라 기억으로 찾고 있습니다.', {
-    x: 0.62, y: 6.72, w: 12, h: 0.32, isTextBox: true, margin: 0,
-    fontFace: KO, fontSize: 12.5, color: P.faint });
-  s.addNotes('이 어긋남이 메뉴가 커질수록 비용이 됩니다. 축을 지키거나, 축을 바꾸거나 둘 중 하나입니다.');
+  s.addText('그러면 남는 진짜 문제는 하나', { x: 0.62, y: 4.7, w: 8, h: 0.35, isTextBox: true, margin: 0,
+    fontFace: KO, fontSize: 16, bold: true, color: P.warm });
+  card(s, 0.6, 5.18, 12.13, 1.3, P.card2);
+  s.addText('같은 실황을 두 벌로 구현하고 있다', { x: 0.95, y: 5.36, w: 8, h: 0.32, isTextBox: true, margin: 0,
+    fontFace: KO, fontSize: 14, bold: true, color: P.text });
+  s.addText('v2 가 실황을 갖는 것은 예측의 바탕이라 맞습니다. 문제는 그 실황이 v1 과 따로 자란 것입니다 —\n구름 · 지진 · 바람 · 레이더 · 기입 모형 · 대기질 · 특보가 두 벌의 코드로 서 있습니다.', {
+    x: 0.95, y: 5.72, w: 11.4, h: 0.62, isTextBox: true, margin: 0,
+    fontFace: KO, fontSize: 11.5, color: P.dim, lineSpacing: 17 });
+  s.addText('고칠 것은 «어디에 두느냐» 가 아니라 «몇 벌로 구현하느냐» 입니다.', {
+    x: 0.62, y: 6.62, w: 12, h: 0.32, isTextBox: true, margin: 0,
+    fontFace: KO, fontSize: 12, color: P.faint });
+  s.addNotes('처음엔 시간축이 안 지켜진다고 봤는데 그게 아니었습니다. 예보는 기본 기능이라 v1 에 있는 것이 맞고, 경계는 자료를 어디까지 다루는가입니다.');
 }
 
 /* ───────────────────────── 5. 진단 ② — 같은 기능이 두 갈래로 ───────────────────────── */
@@ -274,10 +275,10 @@ function chip(s, x, y, label, color) {
     fontFace: KO, fontSize: 12.5, color: P.dim });
 
   const three = [
-    { n: 'v1 · 지금', c: P.blue, sub: '읽는 사람: 오늘을 사는 어른',
-      g: ['질문에 바로 답한다', '숫자와 경보가 먼저', '한 화면에 결론'] },
-    { n: 'v2 · 깊이', c: P.sky, sub: '읽는 사람: 왜인지 알고 싶은 사람',
-      g: ['시간축과 근거가 먼저', '진리등급을 항상 표기', '층을 겹쳐 스스로 판단'] },
+    { n: 'v1 · 기본', c: P.blue, sub: '읽는 사람: 오늘을 사는 어른',
+      g: ['공공데이터를 그대로', '숫자·경보·예보가 먼저', '출처와 검증을 함께 낸다'] },
+    { n: 'v2 · 예측', c: P.sky, sub: '읽는 사람: 앞을 알고 싶은 사람',
+      g: ['기본 예보를 넘어선다', '시나리오·앙상블·전망', '진리등급으로 갈라 보여준다'] },
     { n: 'v3 · 경이', c: P.warm, sub: '읽는 사람: 4~9세 아이',
       g: ['글자 대신 그림과 움직임', '단추 하나에 개념 하나', '«진짜 지금» 임을 말해준다'] },
   ];
@@ -305,18 +306,18 @@ function chip(s, x, y, label, color) {
   const s = slide({ eyebrow: '제안 ②', title: '최적 메뉴 구성',
     sub: '한국이 언제나 먼저입니다. 공통 여섯은 세 곳 모두, 나머지는 성격에 맞는 곳 하나에만 둡니다.' });
   const cols = [
-    { h: 'v1 · 지금', c: P.blue, rows: [
+    { h: 'v1 · 기본', c: P.blue, rows: [
       ['지금', '날씨 · 대기질 · 특보'],
+      ['예보', '기온 · 바람 · 강수 (기본 기능)'],
       ['안전', '태풍 · 지진 · 산불 · 쓰나미'],
-      ['내 주변', '관측소 · 부이 · 내 위치'],
-      ['이동', '항공편 · 선박'],
+      ['보고서', 'LAB 분석 · 태풍 결과 · 예보 검증'],
       ['묻기', '질문 → 지구가 답한다'],
     ] },
-    { h: 'v2 · 깊이', c: P.sky, rows: [
-      ['시간', '5일 예보 · 산림감소 · 지진 25년'],
-      ['땅과 바다', '3D 지형 · 해저 · 해수면 전망'],
+    { h: 'v2 · 예측', c: P.sky, rows: [
+      ['예측', '5일 재생 · 앙상블 · 시나리오'],
+      ['전망', '2100 해수면 · 산림감소 · 지진 25년'],
+      ['땅과 바다', '3D 지형 · 해저 · 연안 침수'],
       ['사람', '실시간 인구 · 도시 타워'],
-      ['우주', '위성 · 태양 · 은하'],
       ['근거', '진리등급 · 사건 방 · 묻기'],
     ] },
     { h: 'v3 · 경이', c: P.warm, rows: [
@@ -457,11 +458,11 @@ function chip(s, x, y, label, color) {
   const s = slide({ eyebrow: '실행', title: '무엇부터 하면 되는가',
     sub: '값싼 것부터, 그리고 되돌리기 어려운 것은 나중에.' });
   const steps = [
-    { n: '1', t: '묻기를 하나로', d: 'v1 라우터를 공용으로 올리고, v2 LLM 이 그 라우터를 부르게 한다. v1 주석이 예언한 구조 그대로.', c: P.blue, e: '엔진 통합' },
-    { n: '2', t: '진리등급 어휘 통일', d: 'v2 의 배지 어휘를 v1·v3 로. 같은 자료가 세 곳에서 같은 이름으로 불린다.', c: P.sky, e: '표현 통일' },
-    { n: '3', t: '공통 여섯의 문법 확정', d: '구름·비·기온·바람·지진·낙뢰를 세 문법으로 못박고 v3 를 그 기준으로 채운다.', c: P.warm, e: '문법' },
-    { n: '4', t: '메뉴를 «하려는 일» 로', d: '자료 이름 대신 지금·안전·시간·근거로 다시 묶는다. 한국이 먼저.', c: P.green, e: '정보구조' },
-    { n: '5', t: '축을 지키거나 바꾸거나', d: '현재/미래/과거를 지킬지, 지금·깊이·경이로 바꿀지 정한다. 이건 제품 결정.', c: 'B08BE0', e: '결정 필요' },
+    { n: '1', t: '실황을 한 벌로', d: '구름·지진·바람·레이더·기입 모형을 공용 모듈로. 지금은 v1·v2 가 각자 구현하고 있다.', c: P.blue, e: '중복 제거' },
+    { n: '2', t: '묻기를 하나로', d: 'v1 라우터를 공용으로 올리고 v2 LLM 이 그것을 부르게 한다. v1 주석이 예언한 구조 그대로.', c: P.sky, e: '엔진 통합' },
+    { n: '3', t: '진리등급 어휘 통일', d: 'v2 의 배지 어휘를 v1·v3 로. 같은 자료가 세 곳에서 같은 이름으로 불린다.', c: P.warm, e: '표현 통일' },
+    { n: '4', t: '공통 여섯의 문법 확정', d: '구름·비·기온·바람·지진·낙뢰를 세 문법으로 못박고 v3 를 그 기준으로 채운다.', c: P.green, e: '문법' },
+    { n: '5', t: '전환기 문구를 실제에 맞춘다', d: '현재/미래/과거 대신 기본 · 예측 · 경이. 축이 시간이 아니라 자료를 어디까지 다루는가이기 때문.', c: 'B08BE0', e: '문구' },
   ];
   steps.forEach((st, i) => {
     const y = 2.3 + i * 0.87;
@@ -477,7 +478,7 @@ function chip(s, x, y, label, color) {
     s.addText(st.d, { x: 4.5, y: y + 0.2, w: 8.0, h: 0.4, isTextBox: true, margin: 0,
       fontFace: KO, fontSize: 11.5, color: P.dim, valign: 'middle' });
   });
-  s.addNotes('1~3 은 코드 작업, 4~5 는 제품 결정이 먼저 필요합니다.');
+  s.addNotes('1~4 는 코드 작업입니다. 5 는 이름 문제라 제품 결정입니다.');
 }
 
 /* ───────────────────────── 11. 마무리 ───────────────────────── */

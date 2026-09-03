@@ -3,7 +3,7 @@
 // 지구 렌더러(main.js)는 건드리지 않고 훅(hooks)으로만 연결한다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { i18n } from './i18n.js?v=5';
+import { i18n } from './i18n.js?v=6';
 import { renderBadge } from './engine-bridge.js?v=12';
 
 // ---------------------------------------------------------------------------
@@ -26,6 +26,7 @@ export const SCENES = [
       { id: 'lst', name: '지표온도 (위성 관측)', state: 'OBSERVED', src: 'MODIS Terra LST · NASA GIBS', act: true },
       // 나라를 이름에 적지 않는다 — 늘어날 때마다 메뉴가 실제와 어긋난다. 목록은 카드가 낸다.
       { id: 'forest', name: '산림 피복 릴리프 (나무가 덮은 비율)', state: 'OBSERVED', src: 'ESA WorldCover 10m', act: true },
+      { id: 'forestloss', name: '산림 감소 2001~2023 (한국)', state: 'OBSERVED', src: 'Hansen GFC v1.11 · UMD', act: true },
       { id: 'locate', name: '내 위치로 이동', state: 'LIVE', src: 'GPS', act: true },
       { id: 'globe', name: '전지구 보기', state: 'LIVE', src: '—', act: true },
       { id: 'base-ne2', name: '베이스 · 자연 지형', state: 'LIVE', src: 'Natural Earth II', act: true },
@@ -418,6 +419,12 @@ export function initShell(hooks) {
   intelContent.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action]');
     if (btn && hooks.onAction) hooks.onAction(btn.dataset.action, btn.dataset);
+  });
+
+  // 카드 안의 슬라이더는 click 이 아니라 input 으로 온다. 같은 onAction 으로 흘려보낸다.
+  intel.addEventListener('input', (e) => {
+    const el = e.target.closest('[data-action]');
+    if (el && hooks.onAction) hooks.onAction(el.dataset.action, el.dataset, el.value);
   });
 
   intel.querySelector('#intel-tab').addEventListener('click', () => {

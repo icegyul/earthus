@@ -160,6 +160,7 @@ const L_EN = {
   seaice: 'Sea ice concentration (polar)',
   lst: 'Land surface temperature (satellite)',
   forest: 'Forest cover relief (share covered by trees)',
+  forestloss: 'Forest loss 2001–2023 (Korea)',
   locate: 'Go to my location',
   globe: 'Whole Earth view',
   'base-ne2': 'Base · Natural Earth',

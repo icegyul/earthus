@@ -4,14 +4,14 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=53';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=54';
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=5';
-import { LiveLayers } from './live-layers.js?v=31';
+import { LiveLayers } from './live-layers.js?v=35';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=2';
-import { i18n } from './i18n.js?v=5';
+import { i18n } from './i18n.js?v=6';
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
 import { PopSculpture } from './pop-sculpture.js?v=13';
@@ -2870,6 +2870,7 @@ async function main() {
     'ocean/argo': ['argo', 'Argo 플로트 · 잠수 기록'],
     'people/poptower': ['poptower', '도시 인구 타워'],
     'land/forest': ['forest', '산림 피복 릴리프'],
+    'land/forestloss': ['forestloss', '산림 감소 2001~2023'],
     'hazards/fireglobal': ['fireglobal', '전지구 산불 화점'],
     'weather/radar': ['radar', '레이더 강수'],
     'weather/raingrid': ['raingrid', '전지구 강수'],
@@ -3679,7 +3680,31 @@ async function main() {
           <div class="paysub">공식 예보 아님 · SIMULATION_ONLY · 정식 Scenario Lab은 INTELLIGENCE PRO (실제 태풍 트랙 연동 예정)</div>
         </div></div>`;
     },
-    onAction: (action, ds) => {
+    onAction: (action, ds, value) => {
+      if (action === 'loss-year') {
+        // 슬라이더는 기하를 다시 만들지 않는다 — 셰이더 유니폼만 바뀐다.
+        const y = liveLayers.setLossYear(parseInt(value, 10));
+        const el = document.getElementById('loss-y');
+        if (el && y) el.textContent = `~${y}`;
+        return;
+      }
+      if (action === 'loss-play') {
+        const l = liveLayers.layers.forestloss;
+        if (!l || !l.on || !l.obj) return;
+        const R = l.obj.userData.loss.idx;
+        if (lossTimer) { clearInterval(lossTimer); lossTimer = null; return; }
+        let y = R.year0 + 1;
+        lossTimer = setInterval(() => {
+          const cur = liveLayers.setLossYear(y);
+          const el = document.getElementById('loss-y');
+          const sl = document.querySelector('[data-action="loss-year"]');
+          if (el && cur) el.textContent = `~${cur}`;
+          if (sl && cur) sl.value = String(cur);
+          y += 1;
+          if (y > R.lastYear) { clearInterval(lossTimer); lossTimer = null; }
+        }, 320);
+        return;
+      }
       if (action === 'sim-now' && seaPoint && seaPoint.marine) {
         const m = seaPoint.marine;
         const w = seaPoint.wind;
@@ -3834,6 +3859,7 @@ async function main() {
   };
   // 기입 모형은 DOM 오버레이다(숫자와 기호가 섞여 있어 텍스처로 굽는 것보다 선명하다).
   // shellHooks 안에서 참조하므로 initShell 보다 먼저 만들어 둔다.
+  let lossTimer = null;          // 산림 감소 '해마다 재생' 타이머
   const synop = new StationModel(document.body);
 
   // ---------------------------------------------------------------------------

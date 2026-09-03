@@ -356,6 +356,10 @@ export class LiveLayers {
       case 'tsunami': return fetchJson('/events/tsunami-intl.json');
       // /tourism은 S3 직접이 403 (버킷 정책) — CloudFront 경유는 CORS 포함 200
       case 'seoul': return fetchJson('/tourism/seoul-flow.json', 20000, 'https://earthus.net');
+      case 'forestloss':
+        return fetch('./forest/loss-index.json', { cache: 'no-cache' })
+          .then((r) => r.json())
+          .then((idx) => loadImage(`./forest/${idx.file}`).then((img) => ({ idx, img })));
       // 산림 릴리프도 색인 순서대로 — 한국이 먼저다.
       case 'forest':
         return fetch('./forest/index.json', { cache: 'no-cache' })
@@ -474,6 +478,7 @@ export class LiveLayers {
       case 'seoul': return { obj: this.buildSeoul(data), data, meta: this.metaSeoul(data) };
       case 'poptower': return { obj: this.buildPopTower(data), data, meta: this.metaPopTower(data) };
       case 'forest': return { obj: this.buildForest(data), data, meta: this.metaForest(data) };
+      case 'forestloss': return { obj: this.buildForestLoss(data), data, meta: this.metaForestLoss(data) };
       case 'tyoff': return { obj: this.buildTyphoon(data), data, meta: this.metaTyphoon(data) };
       case 'argo': return { obj: this.buildArgo(data), data, meta: this.metaArgo(data) };
       case 'launch': return { obj: this.buildLaunch(data), data, meta: this.metaLaunch(data) };
@@ -2149,6 +2154,145 @@ export class LiveLayers {
       cardHtml: `지상 바람 관측 — 관측소 ${(this._windN || 0).toLocaleString()}개소의 실측 풍향·풍속을 선분(불어가는 방향, 색·길이=풍속)으로 표시.<br/>`
         + `한국 AWS ${nA}개소 (기상청) + 전 세계 지상관측 ${Number(nG).toLocaleString()}개소 (GTS)<br/>`
         + `입자는 각 관측소의 실측 벡터 위에서만 흐릅니다 — 격자 보간·가상 유선 없음 (관측 없는 곳은 비어 있음)`,
+    };
+  }
+
+  // ---------- 산림 감소 2001~2023 (한국 · OBSERVED) ----------
+  //
+  // PD: "산이 점차 줄어들고 있어 개발 때문에". 지금 숲이 어디 있나(R-04)로는 그걸 못 본다.
+  // Hansen GFC 는 화소마다 **그 자리의 숲이 사라진 해**를 담는다 — 시간을 밀면 갉여 나간다.
+  //
+  // ⚠️ 이건 **모든 수관 소실**이다. 개발만이 아니라 벌채·산불·병해충·수확도 들어 있다.
+  //    "개발 때문"이라고 화면이 단정하면 우리가 원인을 만든 것이 된다 — 카드가 그렇게 말한다.
+  //
+  // 연도 거르기는 기하를 다시 만들지 않는다. 정점마다 소실 연도를 달아 두고 셰이더가
+  // 그 해를 넘는 것을 버린다 — 슬라이더를 밀 때 끊기지 않는다.
+  buildForestLoss(d) {
+    const { img } = d;
+    const R = d.idx;
+    const [lon0, lat0, lon1, lat1] = R.bbox;
+    const can = document.createElement('canvas');
+    can.width = img.width; can.height = img.height;
+    const g2 = can.getContext('2d', { willReadFrequently: true });
+    g2.drawImage(img, 0, 0);
+    const px = g2.getImageData(0, 0, can.width, can.height).data;
+    // ⚠️ 면으로 이으려 했더니 거의 다 빠졌다(면 142개). 소실은 이어진 덩어리가 아니라
+    //    **점점이 흩어진 자국**이라, 네 귀퉁이가 모두 소실인 칸이 거의 없다.
+    //    자국 하나하나를 점으로 찍는다 — 자료의 성질에 맞는 표현이다.
+    const MIN_FRAC = 0.12;      // 이보다 적게 사라진 칸은 그리지 않는다 — 잡티가 된다
+    const MAX_PTS = 260000;
+    const W = img.width; const Hh = img.height;
+    // 먼저 몇 개인지 세고, 많으면 고르게 솎는다(값을 바꾸지 않고 개수만 줄인다).
+    let total = 0;
+    for (let i = 0; i < W * Hh; i += 1) {
+      if (px[i * 4 + 3] >= MIN_FRAC * 255 && px[i * 4] >= 1) total += 1;
+    }
+    const keep = total > MAX_PTS ? MAX_PTS / total : 1;
+    const STEP = 1;
+    const H = 0.0006;           // 100% 소실에서 약 3.8km (표현 과장)
+    const P = []; const Y = []; const F = [];
+    let seen = 0; let acc = 0;
+    for (let iy = 0; iy < Hh; iy += 1) {
+      const lat = lat1 - (iy + 0.5) * R.cellDeg;
+      for (let ix = 0; ix < W; ix += 1) {
+        const o = (iy * W + ix) * 4;
+        const f = px[o + 3] / 255;
+        const y = px[o];
+        if (f < MIN_FRAC || y < 1) continue;
+        seen += 1;
+        acc += keep;
+        if (acc < 1) continue;
+        acc -= 1;
+        const lon = lon0 + (ix + 0.5) * R.cellDeg;
+        const rr = this.surfR(lat, lon, 0.00004) + H * f;
+        const v = llToV3(lat, lon, rr);
+        P.push(v.x, v.y, v.z); Y.push(y); F.push(f);
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(P), 3));
+    geo.setAttribute('aYear', new THREE.BufferAttribute(new Float32Array(Y), 1));
+    geo.setAttribute('aFrac', new THREE.BufferAttribute(new Float32Array(F), 1));
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { uYear: { value: 23 }, uOpacity: { value: 0.95 }, uSize: { value: 0.55 } },
+      vertexShader: `
+        attribute float aYear;
+        attribute float aFrac;
+        uniform float uSize;
+        varying float vYear;
+        varying float vFrac;
+        void main() {
+          vYear = aYear; vFrac = aFrac;
+          vec4 mv = modelViewMatrix * vec4(position, 1.0);
+          // 가까이 갈수록 커진다 — 자국의 실제 크기(278m)에 가깝게 보이도록.
+          gl_PointSize = clamp(uSize / -mv.z * (0.6 + 0.4 * aFrac), 1.5, 26.0);
+          gl_Position = projectionMatrix * mv;
+        }`,
+      fragmentShader: `
+        precision mediump float;
+        uniform float uYear;
+        uniform float uOpacity;
+        varying float vYear;
+        varying float vFrac;
+        void main() {
+          // 고른 해보다 나중에 사라진 곳은 아직 숲이다 — 그리지 않는다.
+          if (vYear > uYear + 0.5) discard;
+          vec2 d = gl_PointCoord - 0.5;
+          if (dot(d, d) > 0.25) discard;      // 둥근 자국
+          // 오래된 소실은 가라앉은 적갈색, 최근일수록 밝은 주황으로 온다.
+          float t = clamp((vYear - 1.0) / 22.0, 0.0, 1.0);
+          vec3 col = mix(vec3(0.42, 0.16, 0.13), vec3(1.00, 0.62, 0.22), pow(t, 0.7));
+          gl_FragColor = vec4(col, uOpacity * (0.45 + 0.55 * clamp(vFrac, 0.0, 1.0)));
+          #include <colorspace_fragment>
+        }`,
+      transparent: true,
+      depthWrite: false,
+    });
+    const mesh = new THREE.Points(geo, mat);
+    mesh.frustumCulled = false;
+    mesh.userData.loss = {
+      idx: R, step: STEP, drawn: Y.length, total: seen, minFrac: MIN_FRAC, year: 23,
+    };
+    return mesh;
+  }
+
+  // 연도 자르기. 기하는 그대로 두고 셰이더 유니폼만 바꾼다.
+  setLossYear(year) {
+    const l = this.layers.forestloss;
+    if (!l || !l.on || !l.obj) return null;
+    const R = l.obj.userData.loss.idx;
+    const i = Math.max(1, Math.min(R.lastYear - R.year0, Math.round(year - R.year0)));
+    l.obj.material.uniforms.uYear.value = i;
+    l.obj.userData.loss.year = i;
+    return R.year0 + i;
+  }
+
+  metaForestLoss(d) {
+    const R = d.idx;
+    const l = this.layers.forestloss;
+    const lu = l && l.obj && l.obj.userData.loss;
+    const cur = R.year0 + ((l && l.obj && l.obj.userData.loss.year) || (R.lastYear - R.year0));
+    const by = R.byYear || {};
+    const top = Object.entries(by).sort((a, b) => b[1] - a[1]).slice(0, 3)
+      .map(([y, v]) => `${y}년 ${(v / 1000).toFixed(0)}천칸`).join(' · ');
+    return {
+      badge: 'OBSERVED',
+      note: `${R.ko} · 2001~${R.lastYear} 사라진 숲 약 ${R.lostKm2.toLocaleString()}㎢`,
+      cardHtml: `<b>산림 감소 2001~${R.lastYear}</b> — 그 자리의 숲이 <b>몇 년도에 사라졌는지</b>를 `
+        + `화소마다 기록한 자료입니다. 오래된 소실은 가라앉은 적갈색, 최근일수록 밝은 주황입니다.<br/>`
+        + `${R.ko}에서 사라진 숲 약 <b>${R.lostKm2.toLocaleString()}㎢</b> · `
+        + `가장 많았던 해 ${top}<br/><br/>`
+        + `<div class="row"><label><span>보이는 해까지</span> <span class="val" id="loss-y">~${cur}</span></label>`
+        + `<input type="range" min="${R.year0 + 1}" max="${R.lastYear}" value="${cur}" `
+        + `data-action="loss-year" style="width:100%"/></div>`
+        + `<button class="simgo" style="padding:2px 10px;font-size:11px" data-action="loss-play">▶ 해마다 재생</button>`
+        + `<br/><br/>`
+        + `⚠️ <b>모든 수관 소실</b>입니다 — 개발만이 아니라 <b>벌채·산불·병해충·수확</b>도 들어 있습니다. `
+        + `화면이 "개발 때문"이라고 단정하지 않습니다. 또한 <b>소실이지 순감소가 아닙니다</b> — `
+        + `다시 자란 곳은 반영되지 않습니다.<br/>`
+        + `${Math.round(R.cellDeg * 111000)}m 칸에서 12% 넘게 사라진 곳만 자국으로 찍습니다`
+        + `${lu && lu.total > lu.drawn ? ` (${lu.total.toLocaleString()}곳 중 ${lu.drawn.toLocaleString()}곳을 고르게 솎아 그립니다 — 값이 아니라 개수만 줄였습니다)` : ''}.<br/>`
+        + `출처 ${R.source} · ${R.cite} · ${R.license}`,
     };
   }
 

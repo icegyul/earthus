@@ -104,6 +104,7 @@ export const LAYER_TRUTH = Object.freeze({
   'land/lst': { kind: K.OFFICIAL_OBSERVATION, slaMin: 4320 },
   // 2021년 관측을 해마다 갱신하는 정적 산출물이다 — 분 단위로 늙지 않는다.
   'land/forest': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
+  'land/forestloss': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
   'land/base-ne2': { kind: K.VISUALIZATION_ONLY, slaMin: null },
   'land/base-bluemarble': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
   'land/base-truecolor': { kind: K.OFFICIAL_OBSERVATION, slaMin: 2880 },

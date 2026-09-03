@@ -42,7 +42,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 #head p{margin:8px 0 0;font-size:clamp(12px,1.4vw,15px);opacity:.72;text-shadow:0 1px 10px rgba(0,0,0,.85),0 0 18px rgba(5,11,28,.8)}
 
 /* ── 상태 배지 ── */
-#badge{position:absolute;top:20px;right:20px;z-index:7;display:flex;gap:8px;align-items:center;
+#badge{position:absolute;top:20px;right:20px;z-index:7;max-width:calc(100% - 340px);display:flex;gap:8px;align-items:center;
   font-size:11.5px;letter-spacing:.06em;background:rgba(6,14,32,.62);border:1px solid rgba(255,255,255,.16);
   padding:7px 12px;border-radius:999px;backdrop-filter:blur(6px)}
 #badge .dot{width:7px;height:7px;border-radius:50%;background:#5ce0a0;box-shadow:0 0 9px #5ce0a0}
@@ -80,6 +80,18 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 }
 #nav button[aria-current="true"]{background:#fff;color:#132242}
 #nav button:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+
+/* ── 내 위치 버튼 ── */
+#here{position:absolute;right:20px;bottom:98px;z-index:6;
+  width:64px;height:64px;border-radius:22px;border:1px solid rgba(255,255,255,.24);
+  background:rgba(255,255,255,.12);backdrop-filter:blur(8px);cursor:pointer;color:#fff;
+  font-family:var(--kid);font-size:12px;display:grid;place-items:center;gap:2px;line-height:1.1}
+#here span{font-size:20px}
+#here:active{transform:scale(.94)}
+#here:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+#here[disabled]{opacity:.5;cursor:default}
+#here.on{background:#fff;color:#132242}
+@media (max-width:720px){ #here{width:56px;height:56px;right:12px;bottom:84px} }
 
 /* ── 우리 집 버튼 ── */
 #home{position:absolute;right:20px;bottom:26px;z-index:6;
@@ -240,6 +252,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 #tempkey[hidden]{display:none!important}
 #tempkey i{width:34px;height:8px;border-radius:2px;display:block}
 #tempkey .lead{color:#FFC24B;font-family:var(--kid);font-size:11px;margin-right:2px}
+#tempkey .grid{color:#8ba2c4;font-size:9.5px;margin-right:4px}
 #tempkey i:nth-of-type(1){background:linear-gradient(90deg,#1a1644,#2e6cb4,#468cb8)}
 #tempkey i:nth-of-type(2){background:linear-gradient(90deg,#468cb8,#69be96,#bed06e)}
 #tempkey i:nth-of-type(3){background:linear-gradient(90deg,#bed06e,#f6c454,#e85260)}
@@ -255,8 +268,11 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
   .crt .bob,.crt .zap{animation:none}
 }
 @media (max-width:720px){
-  #head{top:44px} #head h1{font-size:21px} #head p{display:none}
-  #badge{top:8px;right:8px;left:auto;font-size:9.5px;padding:5px 9px;letter-spacing:.02em}
+  #head{top:92px} #head h1{font-size:21px} #head p{display:none}
+  /* 좌상단 지구 전환기와 겹쳐 배지 왼쪽이 잘렸다 — 전환기 아래로 내린다 */
+  #badge{top:56px;right:8px;left:auto;max-width:calc(100% - 16px);
+    font-size:9.5px;padding:5px 9px;letter-spacing:.02em;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
   #nav button{padding:9px 13px;font-size:15px}
   #nav{bottom:18px}
   #home{bottom:18px}
@@ -359,6 +375,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
   </div>
 
   <button id="home" aria-label="우리 집으로 돌아가기"><span>🏠</span>우리 집</button>
+  <button id="here" aria-label="내 위치 날씨 보기" title="내 위치"><span>📍</span>내 위치</button>
 
   <div id="timebar" hidden>
     <button id="story" type="button">▶ 인도가 아시아에 부딪히는 걸 보기</button>
@@ -380,7 +397,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
     <span class="dl">기온</span>
     <div class="days" id="days"></div>
   </div>
-  <div id="tempkey" hidden><span class="lead">실황</span><span>-40</span><i></i><span>0</span><i></i><span>20</span><i></i><span>40℃</span></div>
+  <div id="tempkey" hidden><span class="lead">실황</span><span class="grid">5°격자</span><span>-40</span><i></i><span>0</span><i></i><span>20</span><i></i><span>40℃</span></div>
   <div id="card" hidden></div>
   <div id="hint">손가락으로 지구를 돌려 보세요</div>
 </div>
@@ -484,6 +501,8 @@ function labelPoint(geo){
   return best && Math.abs(bestA) > 2 ? { lon: best[0], lat: best[1] } : null;
 }
 
+let COAST_FEATS = null;     // 해안선을 색면 위에 다시 그리려고 들고 있는다
+
 async function buildEarthTexture(){
   const W = 4096, H = 2048;
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
@@ -497,6 +516,7 @@ async function buildEarthTexture(){
     const r = await fetch('../data/country-reference.json');
     feats = (await r.json()).features || [];
   } catch(e){ console.warn('국가 폴리곤 로드 실패', e); }
+  COAST_FEATS = feats;
 
   const px = (lon,lat) => [ (lon+180)/360*W, (90-lat)/180*H ];
 
@@ -537,6 +557,32 @@ async function buildEarthTexture(){
   grad.addColorStop(.970,'rgba(243,249,255,1)');
   grad.addColorStop(1,   'rgba(243,249,255,1)');
   g.fillStyle = grad; g.fillRect(0,0,W,H);
+
+  // 색면을 깔면 텍스처의 해안선이 묻힌다. 윈디처럼 색 위에 다시 긋는다.
+  {
+    let segs = 0;
+    for(const f of feats) for(const poly of polysOf(f.geometry)) segs += poly[0].length - 1;
+    const arr = new Float32Array(segs*2*3);
+    let i = 0;
+    for(const f of feats){
+      for(const poly of polysOf(f.geometry)){
+        const ring = poly[0];
+        for(let k = 0; k < ring.length-1; k++){
+          if(Math.abs(ring[k][0] - ring[k+1][0]) > 180){ i += 6; continue; }
+          const a = llToVec(ring[k][1], ring[k][0], R*1.0055);
+          const b = llToVec(ring[k+1][1], ring[k+1][0], R*1.0055);
+          arr[i++]=a.x; arr[i++]=a.y; arr[i++]=a.z;
+          arr[i++]=b.x; arr[i++]=b.y; arr[i++]=b.z;
+        }
+      }
+    }
+    const g2 = new THREE.BufferGeometry();
+    g2.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+    coastLine = new THREE.LineSegments(g2, new THREE.LineBasicMaterial({
+      color: 0x14202C, transparent: true, opacity: 0, depthWrite: false }));
+    coastLine.renderOrder = 2;
+    earthGroup.add(coastLine);
+  }
 
   COUNTRY_LABELS = feats
     .filter(f => LABEL_CODES.has(f.code))
@@ -595,6 +641,7 @@ const earthMat = new THREE.ShaderMaterial({
     }
   `
 });
+let coastLine = null;
 const earth = new THREE.Mesh(new THREE.SphereGeometry(R, 128, 80), earthMat);
 earthGroup.add(earth);
 
@@ -812,9 +859,12 @@ async function loadObservedClouds(){
 
 /* ── 카메라: 세 칸으로 잠근 줌 ────────────────────────────────── */
 // 줌 단계 = 화면 짧은 변의 절반 대비 지구 반지름 비율. 기기가 달라도 같은 크기로 보인다.
-const FILL = [0.80, 1.28, 1.80, 3.6];   // 지구 전체 / 우리나라 / 우리 동네 / 한반도만
+// 윈디는 지도가 화면을 넘겨 채운다. 지구 가장자리를 보여주는 게 목적이 아니라
+// 땅을 크게 보여주는 게 목적이다. 처음 값(0.80)의 4배 이상으로 잡는다.
+const FILL = [3.4, 5.2, 7.6, 12.0];   // 넓게 / 나라 / 동네 / 한반도만
 let tanMin = 0.344, screenR = 300;  // 매 프레임 갱신
-const distFor = f => R / (f * tanMin);
+// 배율이 커지면 카메라가 지구 표면 안으로 들어간다 — 최소 거리를 둔다.
+const distFor = f => Math.max(R * 1.045, R / (f * tanMin));
 const STOPS = FILL;
 let stop = 0, dist = 3.6, distTarget = 3.6;
 // 지구가 화면 짧은 변의 절반에서 차지하는 비율. 세 칸이 정하던 범위를 그대로 위아래 한계로 쓴다.
@@ -1194,7 +1244,7 @@ $('#b-water').addEventListener('click', e => {
    진하기로 읽을 수 있어야 한다. 위험을 빨강 하나로만 말하지 않는 규칙과 같다.
    ══════════════════════════════════════════════════════════════ */
 const tempCv = document.createElement('canvas');
-tempCv.width = 1024; tempCv.height = 512;
+tempCv.width = 2048; tempCv.height = 1024;
 const tempTex = new THREE.CanvasTexture(tempCv);
 tempTex.colorSpace = THREE.SRGBColorSpace;
 tempTex.wrapS = THREE.RepeatWrapping;
@@ -1281,7 +1331,10 @@ function paintTemp(){
       const v00 = t[y0*nx + x0], v10 = t[y0*nx + x1];
       const v01 = t[y1*nx + x0], v11 = t[y1*nx + x1];
       if(v00 == null || v10 == null || v01 == null || v11 == null) continue;
-      const c = (v00 + (v10 - v00)*tx) * (1 - ty) + (v01 + (v11 - v01)*tx) * ty;
+      // 5도 격자를 곧이곧대로 겹선형으로 펴면 격자 모서리가 각지게 보인다.
+      // 스무드스텝으로 가중치만 부드럽게 한다 — 값을 만들지 않고 사이를 잇는 방식만 바꾼다.
+      const sx = tx*tx*(3-2*tx), sy = ty*ty*(3-2*ty);
+      const c = (v00 + (v10 - v00)*sx) * (1 - sy) + (v01 + (v11 - v01)*sx) * sy;
       const [r, gg, b] = tempColor(c);
       const o = (y*W + x) * 4;
       d[o] = r; d[o+1] = gg; d[o+2] = b; d[o+3] = 255;
@@ -1295,17 +1348,38 @@ function paintTemp(){
 /* 화면에 기온 숫자를 뿌린다. 윈디는 색만 깔지 않고 곳곳에 도(°)를 찍는다 —
    색을 눈금과 대조하지 않아도 바로 읽히는 게 그 차이다.
    격자에서 읽은 값이므로 도시 관측값이 아니라 그 자리의 격자값이다. */
+/* ⚠️ 처음엔 고정 위경도 격자(10°×15°)에 숫자를 뒀는데, 지구를 키우니 그 점들이
+   전부 화면 밖으로 나가 숫자가 하나도 안 보였다(50개 중 0개 통과).
+   그래서 반대로 간다 — **화면 격자에서 지구로 역투영**한다. 배율이 얼마든
+   화면에는 늘 같은 간격으로 숫자가 놓인다. 윈디가 하는 방식이다. */
 const tempMarks = [];
+const TN_STEP = 88;                     // 화면에서 숫자 사이 간격(px)
 function makeTempMarks(){
   if(tempMarks.length) return;
-  for(let lat = -70; lat <= 75; lat += 10){
-    for(let lon = -180; lon < 180; lon += 15){
-      const el = document.createElement('div');
-      el.className = 'tn'; el.style.visibility = 'hidden';
-      stage.appendChild(el);
-      tempMarks.push({ lat, lon, el, pos: llToVec(lat, lon, R*1.02) });
-    }
+  for(let i = 0; i < 90; i++){          // 넉넉히 만들어 두고 쓸 만큼만 쓴다
+    const el = document.createElement('div');
+    el.className = 'tn'; el.style.visibility = 'hidden';
+    stage.appendChild(el);
+    tempMarks.push({ el });
   }
+}
+
+/* 화면 한 점을 지구 표면으로 쏜다. 맞으면 그 자리의 위경도를 돌려준다. */
+const _ray = new THREE.Vector3(), _org = new THREE.Vector3();
+function screenToLatLon(X, Y, w, h){
+  _ray.set((X/w)*2 - 1, -(Y/h)*2 + 1, 0.5).unproject(camera);
+  camera.getWorldPosition(_org);
+  _ray.sub(_org).normalize();
+  const b = 2 * _org.dot(_ray), c = _org.lengthSq() - 1;
+  const disc = b*b - 4*c;
+  if(disc < 0) return null;                        // 지구를 빗나갔다 (우주)
+  const t = (-b - Math.sqrt(disc)) / 2;
+  if(t < 0) return null;
+  const hx = _org.x + _ray.x*t, hy = _org.y + _ray.y*t, hz = _org.z + _ray.z*t;
+  // llToVec 의 역: x=-sin(p)cos(t), y=cos(p), z=sin(p)sin(t)
+  const lat = 90 - Math.acos(Math.max(-1, Math.min(1, hy)))*180/Math.PI;
+  const lon = Math.atan2(hz, -hx)*180/Math.PI - 180;
+  return { lat, lon: ((lon + 540) % 360) - 180 };
 }
 
 /* 격자에서 그 자리의 기온을 읽는다 (색면과 같은 값·같은 자료) */
@@ -1322,6 +1396,94 @@ function tempAt(lat, lon){
   return (a + (b-a)*tx)*(1-ty) + (c + (d-c)*tx)*ty;
 }
 
+/* ── 내 위치 ────────────────────────────────────────────────────
+   기기 위치는 **누를 때만** 물어본다. 화면을 열자마자 묻지 않는다.
+   받은 좌표는 그 자리에서 날씨를 부르는 데만 쓰고 저장하거나 보내지 않는다.
+
+   ⚠️ 나중에 구글플레이에 '어린이 전용'으로 올린다면 그 정책은 위치 권한
+      요청 자체를 금지한다. 웹에서는 해당하지 않지만, 앱으로 갈 때 이 기능은
+      빼거나 부모 관문 뒤로 옮겨야 한다. */
+let hereMark = null;
+
+async function showHere(){
+  const btn = $('#here');
+  if(!navigator.geolocation){
+    btn.disabled = true;
+    return;
+  }
+  btn.textContent = '…';
+  let pos;
+  try{
+    pos = await new Promise((ok, no) =>
+      navigator.geolocation.getCurrentPosition(ok, no, { timeout: 12000, maximumAge: 300000 }));
+  }catch(e){
+    btn.innerHTML = '<span>📍</span>내 위치';
+    const c = $('#card');
+    c.innerHTML = `<button class="x" aria-label="닫기">×</button>
+      <h2>위치를 못 받았어요</h2>
+      <div class="rec">브라우저가 위치를 알려주지 않았습니다. 주소창 옆에서 위치 허용을
+        켜면 다시 시도할 수 있어요.<br>받은 좌표는 날씨를 부르는 데만 쓰고 저장하지 않습니다.</div>`;
+    c.hidden = false;
+    c.querySelector('.x').addEventListener('click', ()=>{ c.hidden = true; });
+    return;
+  }
+
+  const lat = +pos.coords.latitude.toFixed(3);
+  const lon = +pos.coords.longitude.toFixed(3);
+  btn.innerHTML = '<span>📍</span>내 위치';
+  btn.classList.add('on');
+
+  // 그 자리로 지구를 돌린다
+  yawTarget = yawFor(lon); pitchTarget = pitchFor(lat); following = true;
+  goStop(2);
+
+  let cur = null;
+  try{
+    const j = await fetch('https://api.open-meteo.com/v1/forecast'
+      + `?latitude=${lat}&longitude=${lon}`
+      + '&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m,precipitation'
+      + '&daily=temperature_2m_max,temperature_2m_min&forecast_days=3&timezone=auto')
+      .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); });
+    cur = j;
+  }catch(e){ /* 못 받으면 자리만 표시한다 */ }
+
+  if(!hereMark){
+    const el = document.createElement('div');
+    el.className = 'pin';
+    el.innerHTML = '<div class="dot" style="background:#7FE0FF"></div><div class="nm2">내 위치</div>';
+    stage.appendChild(el);
+    hereMark = { el };
+  }
+  hereMark.pos = llToVec(lat, lon, R*1.015);
+  hereMark.el.style.display = '';
+
+  const c = $('#card');
+  if(cur && cur.current){
+    const q = cur.current, d = cur.daily;
+    const kind = WMO(q.weather_code);
+    c.innerHTML = `<button class="x" aria-label="닫기">×</button>
+      <h2>내 위치 ${SAY[kind]}</h2>
+      <div class="meta">${lat.toFixed(2)}, ${lon.toFixed(2)} · open-meteo 실황</div>
+      <div class="kid">지금 ${Math.round(q.temperature_2m)}도예요.</div>
+      <ul>
+        <li>습도 ${q.relative_humidity_2m}%</li>
+        <li>바람 ${q.wind_speed_10m} km/h</li>
+        <li>비 ${q.precipitation} mm</li>
+        ${d ? `<li>오늘 최고 ${Math.round(d.temperature_2m_max[0])}° · 최저 ${Math.round(d.temperature_2m_min[0])}°</li>` : ''}
+        ${d && d.temperature_2m_max[1] != null ? `<li>내일 최고 ${Math.round(d.temperature_2m_max[1])}° · 최저 ${Math.round(d.temperature_2m_min[1])}°</li>` : ''}
+      </ul>
+      <div class="rec">받은 좌표는 날씨를 부르는 데만 썼고 저장하거나 보내지 않았습니다.</div>`;
+  } else {
+    c.innerHTML = `<button class="x" aria-label="닫기">×</button>
+      <h2>내 위치</h2>
+      <div class="meta">${lat.toFixed(2)}, ${lon.toFixed(2)}</div>
+      <div class="rec">자리는 찾았는데 날씨를 못 받았어요 — 없는 값을 지어내지 않습니다.</div>`;
+  }
+  c.hidden = false;
+  c.querySelector('.x').addEventListener('click', ()=>{ c.hidden = true; });
+}
+$('#here').addEventListener('click', showHere);
+
 $('#b-temp').addEventListener('click', e => {
   const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
   e.currentTarget.setAttribute('aria-pressed', String(on));
@@ -1329,6 +1491,7 @@ $('#b-temp').addEventListener('click', e => {
     if(paintTemp()) tempShell.userData.painted = true;
     else { e.currentTarget.setAttribute('aria-pressed', 'false'); return; }
   }
+  if(coastLine) coastLine.material.opacity = on ? 0.85 : 0;
   if(on) makeTempMarks();
   for(const m of tempMarks) m.el.style.display = on ? '' : 'none';
   tempShell.visible = on;
@@ -2077,27 +2240,38 @@ function placeMarkers(w, h){
     if(!clash) pinLabels.push({x:f.sx, y:f.sy});
   }
 
-  // 기온 숫자 — 겹치면 접는다. 화면에 서른 개 남짓이면 윈디만큼 촘촘하다.
-  if(tempShell.visible && tempMarks.length){
-    const tnShown = [];
-    for(const m of tempMarks){
-      _v.copy(m.pos).applyMatrix4(earthGroup.matrixWorld);
-      const facing = _v.clone().normalize().dot(_c.clone().sub(_v).normalize());
-      if(facing <= 0.2){ m.el.style.visibility='hidden'; continue; }
+  // 내 위치 표식
+  if(hereMark && hereMark.pos){
+    _v.copy(hereMark.pos).applyMatrix4(earthGroup.matrixWorld);
+    const facing = _v.clone().normalize().dot(_c.clone().sub(_v).normalize());
+    if(facing <= 0.06){ hereMark.el.style.visibility='hidden'; }
+    else {
       const q = _v.clone().project(camera);
-      const X=(q.x*0.5+0.5)*w, Y=(-q.y*0.5+0.5)*h;
-      if(X<70 || X>w-64 || Y<52 || Y<0 || Y>h-150){ m.el.style.visibility='hidden'; continue; }
-      const clash = tnShown.some(o => Math.abs(o.x-X)<52 && Math.abs(o.y-Y)<26);
-      if(clash || tnShown.length >= 46){ m.el.style.visibility='hidden'; continue; }
-      const c = tempAt(m.lat, m.lon);
-      if(c == null){ m.el.style.visibility='hidden'; continue; }
-      m.el.textContent = `${Math.round(c)}°`;
-      m.el.className = 'tn ' + (c < 5 ? 'cold' : c > 26 ? 'hot' : '');
-      m.el.style.visibility='visible';
-      m.el.style.opacity = Math.min(1, (facing-0.2)/0.25);
-      m.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-50%)`;
-      tnShown.push({x:X, y:Y});
+      hereMark.el.style.visibility='visible';
+      hereMark.el.style.opacity = Math.min(1,(facing-0.06)/0.2);
+      hereMark.el.style.transform =
+        `translate(${(q.x*0.5+0.5)*w}px, ${(-q.y*0.5+0.5)*h}px) translate(-50%,-100%)`;
     }
+  }
+
+  // 기온 숫자 — 화면 격자에서 지구로 쏘아 그 자리의 값을 적는다.
+  if(tempShell.visible && tempMarks.length){
+    let k = 0;
+    for(let Y = 92; Y < h-160 && k < tempMarks.length; Y += TN_STEP){
+      for(let X = 84; X < w-72 && k < tempMarks.length; X += TN_STEP){
+        const ll = screenToLatLon(X, Y, w, h);
+        if(!ll) continue;
+        const c = tempAt(ll.lat, ll.lon);
+        if(c == null) continue;
+        const m = tempMarks[k++];
+        m.el.textContent = `${Math.round(c)}°`;
+        m.el.className = 'tn ' + (c < 5 ? 'cold' : c > 26 ? 'hot' : '');
+        m.el.style.visibility = 'visible';
+        m.el.style.opacity = 1;
+        m.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-50%)`;
+      }
+    }
+    for(let i = k; i < tempMarks.length; i++) tempMarks[i].el.style.visibility = 'hidden';
   } else {
     for(const m of tempMarks) m.el.style.visibility='hidden';
   }
@@ -2220,7 +2394,7 @@ function placeMarkers(w, h){
     for(const n of names) n.m.el.style.visibility = 'hidden';
     return;
   }
-  const nameCap = stop === 0 ? 4 : (stop >= 3 ? 2 : 6);
+  const nameCap = stop === 0 ? 7 : (stop >= 3 ? 3 : 9);
   names.sort((a,b)=> ((a.X-cx)**2 + (a.Y-cy)**2) - ((b.X-cx)**2 + (b.Y-cy)**2));
   const nameSpots = placed.slice();
   let shown = 0;

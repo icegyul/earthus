@@ -3,7 +3,7 @@
 // 지구 렌더러(main.js)는 건드리지 않고 훅(hooks)으로만 연결한다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { i18n } from './i18n.js?v=2';
+import { i18n } from './i18n.js?v=3';
 import { renderBadge } from './engine-bridge.js?v=12';
 
 // ---------------------------------------------------------------------------
@@ -97,6 +97,8 @@ export const SCENES = [
     accent: '#EC7AA6',
     layers: [
       { id: 'seoul', name: '서울 실시간 인구 121곳', state: 'OBSERVED', src: '서울시 실시간 도시데이터', act: true },
+      // 위(서울 실시간)는 관측, 아래(도시 타워)는 거주 인구 추정이다. 붙여 두되 배지로 가른다.
+      { id: 'poptower', name: '도시 인구 타워 — 서울·도쿄·타이베이·런던 (거주)', state: 'MODEL_SIGNAL', src: 'WorldPop 100m R2025A', act: true },
       { id: 'sculpt', name: '인구 데이터 조각 — 국가를 누르세요', state: 'OBSERVED', src: 'WorldPop 1km 격자', act: true },
       { id: 'livemix', name: '지금 사람 × 거주 인구 (서울)', state: 'OBSERVED', src: '서울시 실시간 + WorldPop', act: true },
       { id: 'pop', name: '국가 인구 (전 세계 총계)', state: 'OBSERVED', src: 'World Bank SP.POP.TOTL', act: true },
@@ -172,8 +174,18 @@ export const SCENES = [
 // 얇은 껍데기만 남긴다. 신선도까지 반영한 배지는 engine-bridge.layerBadge(key)를 쓴다.
 export const dataBadge = (state, extra) => renderBadge(state, extra);
 
-// 미오픈 국가 준비도 (§67.1) — 오픈 국가만 LIVE, 그 외 정직한 준비 상태
-const OPEN_COUNTRIES = new Set(['KOR', 'JPN', 'USA', 'GBR']);
+// 미오픈 국가 준비도 (§67.1) — 오픈 국가만 LIVE, 그 외 정직한 준비 상태.
+// PD 가 정한 대상 다섯 나라다: 한국·일본·대만·영국·미국. 대만이 빠져 있었다.
+const OPEN_COUNTRIES = new Set(['KOR', 'JPN', 'TWN', 'GBR', 'USA']);
+
+// 시장 우선순위 — PD 지시: "메뉴를 만들면 항상 한국 먼저야."
+// 목록을 만들 때마다 손으로 정렬하지 않도록 여기 한 곳에 둔다.
+export const MARKET_ORDER = ['KOR', 'JPN', 'TWN', 'GBR', 'USA'];
+export const byMarket = (a, b) => {
+  const ia = MARKET_ORDER.indexOf(a);
+  const ib = MARKET_ORDER.indexOf(b);
+  return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+};
 
 export function initShell(hooks) {
   // hooks: { onScene(id), getNow() -> html, camera, getFocusSel(), labelData() -> [{nameKo,lat,lon,rank}] }
@@ -200,10 +212,11 @@ export function initShell(hooks) {
 
   // 권역 이동 (v5.3 스케일 사다리: GLOBAL → CONTINENT → REGION → COUNTRY).
   // 3D 지구를 벗어나지 않고 카메라만 그 권역 구도로 옮긴다 — 평면 전환이 아니다.
+  // ⚠️ 순서는 시장 우선순위를 따른다 — 한반도가 맨 앞이다(PD 지시).
   const REGION_CHIPS = [
+    { id: 'korea', ko: '한반도' },
     { id: 'globe', ko: '전 지구' },
     { id: 'eastasia', ko: '동북아시아' },
-    { id: 'korea', ko: '한반도' },
     { id: 'seasia', ko: '동남아시아' },
     { id: 'southasia', ko: '남아시아' },
     { id: 'oceania', ko: '오세아니아' },
@@ -223,7 +236,8 @@ export function initShell(hooks) {
     .then((r) => (r.ok ? r.json() : null))
     .then((j) => {
       if (!j || !Array.isArray(j.countries)) return;
-      POP_COUNTRIES = j.countries;
+      // 파일은 인구순이라 미국이 맨 앞이다. 화면에서는 한국이 먼저다(PD 지시).
+      POP_COUNTRIES = j.countries.slice().sort((a, b) => byMarket(a.iso3, b.iso3));
       if (openBrand) refreshFlyout();
     })
     .catch(() => { /* 목록이 없으면 칩 없이 국가 클릭으로만 쓴다 */ });

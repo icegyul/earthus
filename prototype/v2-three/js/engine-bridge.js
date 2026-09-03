@@ -177,6 +177,8 @@ export const LAYER_TRUTH = Object.freeze({
   'ocean/trenches': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
 
   'people/seoul': { kind: K.OFFICIAL_OBSERVATION, slaMin: 30 },
+  // 거주 인구 격자는 해마다 갱신되는 추정치다 — 분 단위로 늙지 않는다.
+  'people/poptower': { kind: K.PROVIDER_FORECAST, slaMin: null },
 
   'hazards/feed': { kind: K.OFFICIAL_OBSERVATION, slaMin: 90 },
   'hazards/eq': { kind: K.OFFICIAL_OBSERVATION, slaMin: 60 },

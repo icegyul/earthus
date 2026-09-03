@@ -208,6 +208,7 @@ const L_EN = {
   trenches: '28 ocean trenches',
   vessel: 'Vessels',
   seoul: 'Seoul live population, 121 areas',
+  poptower: 'City population towers — Seoul · Tokyo · Taipei · London (residential)',
   sculpt: 'Population data sculpture — pick a country',
   livemix: 'People now × residents (Seoul)',
   pop: 'Country population (world totals)',

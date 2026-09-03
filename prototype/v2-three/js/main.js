@@ -4,14 +4,14 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=50';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=51';
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=5';
-import { LiveLayers } from './live-layers.js?v=29';
+import { LiveLayers } from './live-layers.js?v=30';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=2';
-import { i18n } from './i18n.js?v=2';
+import { i18n } from './i18n.js?v=3';
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
 import { PopSculpture } from './pop-sculpture.js?v=13';
@@ -2868,6 +2868,7 @@ async function main() {
   const LIVE_LAYER_KEYS = {
     'ocean/buoys': ['buoys', '해양 부이 관측'],
     'ocean/argo': ['argo', 'Argo 플로트 · 잠수 기록'],
+    'people/poptower': ['poptower', '도시 인구 타워'],
     'hazards/fireglobal': ['fireglobal', '전지구 산불 화점'],
     'weather/radar': ['radar', '레이더 강수'],
     'weather/raingrid': ['raingrid', '전지구 강수'],
@@ -3704,6 +3705,20 @@ async function main() {
         }, () => { myEarth.error = '위치 권한이 거부되었습니다'; shell.renderIntel(); });
       } else if (action === 'my-refresh') {
         refreshMyEarth();
+      } else if (action === 'popcity') {
+        // 도시 갈아 끼우기 (R-01/R-02). 순서는 색인이 정한다 — 한국이 먼저다.
+        liveLayers.popTowerCity(ds.city).then((c) => {
+          if (!c) return;
+          shell.refreshFlyout();
+          showNote('도시 인구 타워', liveLayers.card('poptower'), 'MODEL_SIGNAL');
+          let ty = THREE.MathUtils.degToRad(c.grid.lon0 + (c.grid.nx / 2) * c.grid.dLon);
+          ty += Math.round((orbit.yaw - ty) / (2 * Math.PI)) * 2 * Math.PI;
+          orbit.targetYaw = ty;
+          orbit.targetPitch = THREE.MathUtils.degToRad(c.grid.lat0 - (c.grid.ny / 2) * c.grid.dLat);
+          orbit.targetDist = 1 + 260 / 6371;
+          orbit.glide = 1.15;
+          orbit.autoRotate = false;
+        }).catch((e) => showNote('도시 인구 타워', `도시를 바꾸지 못했습니다 — ${String(e && e.message || e)}`, 'UNAVAILABLE'));
       } else if (action === 'ty-focus') {
         let ty = THREE.MathUtils.degToRad(parseFloat(ds.lon));
         ty += Math.round((orbit.yaw - ty) / (2 * Math.PI)) * 2 * Math.PI;

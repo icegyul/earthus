@@ -348,6 +348,18 @@ export class LiveLayers {
       case 'tsunami': return fetchJson('/events/tsunami-intl.json');
       // /tourism은 S3 직접이 403 (버킷 정책) — CloudFront 경유는 CORS 포함 200
       case 'seoul': return fetchJson('/tourism/seoul-flow.json', 20000, 'https://earthus.net');
+      // 색인의 순서가 곧 시장 우선순위다 — 첫 도시(한국)를 먼저 띄운다.
+      // (이 switch 는 async 가 아니라서 await 를 쓸 수 없다 — 약속을 그대로 돌려준다.)
+      case 'poptower':
+        return fetch('./popcity/index.json', { cache: 'no-cache' })
+          .then((r) => r.json())
+          .then((idx) => {
+            const first = (idx.cities || [])[0];
+            if (!first) throw new Error('도시 격자가 없습니다');
+            return fetch(`./popcity/${first.id}.json`, { cache: 'no-cache' })
+              .then((r2) => r2.json())
+              .then((city) => ({ index: idx, city }));
+          });
       case 'tyoff': return fetchJson('/events/typhoon-official.json');
       case 'argo': return fetchJson('/ocean/argo-floats.json');
       // 발사 일정: TheSpaceDevs LL2 (CORS 허용 확인 · 무료 티어 rate limit 있어 세션 캐시)
@@ -443,6 +455,7 @@ export class LiveLayers {
       case 'warn': return { obj: this.buildWarn(data), data, meta: this.metaWarn(data) };
       case 'tsunami': return { obj: this.buildTsunami(data), data, meta: this.metaTsunami(data) };
       case 'seoul': return { obj: this.buildSeoul(data), data, meta: this.metaSeoul(data) };
+      case 'poptower': return { obj: this.buildPopTower(data), data, meta: this.metaPopTower(data) };
       case 'tyoff': return { obj: this.buildTyphoon(data), data, meta: this.metaTyphoon(data) };
       case 'argo': return { obj: this.buildArgo(data), data, meta: this.metaArgo(data) };
       case 'launch': return { obj: this.buildLaunch(data), data, meta: this.metaLaunch(data) };
@@ -2074,6 +2087,14 @@ export class LiveLayers {
     }
     if (altKm != null) this.fadeCoarseGrids(altKm);
     // 서울 타워는 고도에 따라 굵기가 달라진다 — 고도가 한 단계 바뀔 때만 다시 세운다.
+    const pt = this.layers.poptower;
+    if (altKm != null && pt && pt.on && pt.obj && pt.obj.userData && pt.obj.userData.popTower) {
+      const b2 = Math.round(Math.log2(Math.max(50, altKm)) * 3);
+      if (b2 !== this._popBucket || pt.obj.userData.popTower.altKm == null) {
+        this._popBucket = b2;
+        this._popTowerApply(pt.obj, altKm);
+      }
+    }
     const sl = this.layers.seoul;
     if (altKm != null && sl && sl.on && sl.obj && sl.obj.userData && sl.obj.userData.seoul) {
       const bucket = Math.round(Math.log2(Math.max(50, altKm)) * 3);
@@ -2110,6 +2131,112 @@ export class LiveLayers {
       cardHtml: `지상 바람 관측 — 관측소 ${(this._windN || 0).toLocaleString()}개소의 실측 풍향·풍속을 선분(불어가는 방향, 색·길이=풍속)으로 표시.<br/>`
         + `한국 AWS ${nA}개소 (기상청) + 전 세계 지상관측 ${Number(nG).toLocaleString()}개소 (GTS)<br/>`
         + `입자는 각 관측소의 실측 벡터 위에서만 흐릅니다 — 격자 보간·가상 유선 없음 (관측 없는 곳은 비어 있음)`,
+    };
+  }
+
+  // ---------- 도시 인구 타워 (지시서 R-01 맨해튼 · R-02 샌프란만 · MODEL_SIGNAL) ----------
+  //
+  // R-01/R-02 가 보존하라는 것: "도시 전체에서 **수많은 vertical bars** 가 실제 지리 위에
+  // 솟는" 문법. 금지: 평면 heatmap 으로 대체.
+  //
+  // ⚠️ 서울 실시간 혼잡(seoul)과 **다른 것**이다. 저쪽은 서울시가 지금 관측한 사람 수고,
+  //    이쪽은 WorldPop 이 위성·행정자료로 추정한 **거주 인구**다. 같은 막대로 그리되
+  //    배지와 카드가 그 차이를 분명히 말해야 한다 — 안 그러면 추정이 관측으로 읽힌다.
+  //
+  // 대상은 다섯 나라뿐이다(한국·일본·대만·영국·미국). 그 밖의 나라에는 넣지 않는다.
+  buildPopTower(d) {
+    const c = d.city;
+    const g = c.grid;
+    const cells = c.cells || [];
+    const geo = new THREE.BoxGeometry(1, 1, 1);
+    const mat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.9 });
+    const mesh = new THREE.InstancedMesh(geo, mat, cells.length);
+    mesh.userData.popTower = {
+      city: c, index: d.index,
+      maxPop: Math.max(1, ...cells.map((x) => x[2])),
+      altKm: null,
+    };
+    this._popTowerApply(mesh);
+    return mesh;
+  }
+
+  _popTowerApply(mesh, altKm) {
+    const u = mesh.userData.popTower;
+    if (!u) return;
+    if (Number.isFinite(altKm)) u.altKm = altKm;
+    const c = u.city;
+    const g = c.grid;
+    const cells = c.cells || [];
+    const M = new THREE.Matrix4();
+    const Q = new THREE.Quaternion();
+    const UP = new THREE.Vector3(0, 1, 0);
+    // 칸 자체의 폭(도 → 지구 반지름 1 기준). 멀리서는 굵게 해야 막대가 보인다.
+    const cellW = (g.cellM / 6371000);
+    const W = cellW * Math.max(1, Math.min(4, (u.altKm || 400) / 220));
+    const H_MAX = 0.0040;      // 최대 인구 칸에서 ~25km (시각 과장)
+    for (let i = 0; i < cells.length; i += 1) {
+      const [gx, gy, v] = cells[i];
+      const lon = g.lon0 + (gx + 0.5) * g.dLon;
+      const lat = g.lat0 - (gy + 0.5) * g.dLat;
+      // 높이는 인구의 제곱근이다 — 선형이면 도심 몇 칸만 남고 나머지가 사라진다.
+      // 값이 아니라 자리를 넓힌 것이고 카드에 적는다(인구 조각의 세제곱근과 같은 관례).
+      const h = 0.00012 + H_MAX * Math.sqrt(v / u.maxPop);
+      const rBase = this.surfR(lat, lon, 0.00012);
+      const dir = llToV3(lat, lon, 1).normalize();
+      Q.setFromUnitVectors(UP, dir);
+      M.compose(dir.clone().multiplyScalar(rBase + h / 2), Q, new THREE.Vector3(W, h, W));
+      mesh.setMatrixAt(i, M);
+      const [r, gg, b] = POP_RAMP(v / u.maxPop);
+      mesh.setColorAt(i, new THREE.Color(r / 255, gg / 255, b / 255));
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  }
+
+  // 다른 도시로 갈아 끼운다. 순서는 색인이 정한다(한국이 먼저).
+  async popTowerCity(id) {
+    const l = this.layers.poptower;
+    if (!l || !l.on || !l.obj) return null;
+    const city = await (await fetch(`./popcity/${id}.json`, { cache: 'no-cache' })).json();
+    l.data.city = city;
+    const old = l.obj;
+    const next = this.buildPopTower(l.data);
+    next.userData.popTower.altKm = old.userData.popTower.altKm;
+    this._popTowerApply(next);
+    this.group.remove(old);
+    old.geometry.dispose();
+    old.material.dispose();
+    this.group.add(next);
+    l.obj = next;
+    l.meta = this.metaPopTower(l.data);
+    return city;
+  }
+
+  metaPopTower(d) {
+    const c = d.city;
+    const st = c.stats || {};
+    const list = (d.index && d.index.cities || []).map((x) => {
+      const on = x.id === c.id;
+      return `<button class="simgo" style="padding:2px 8px;font-size:11px${on ? ';border-color:var(--accent)' : ''}" `
+        + `data-action="popcity" data-city="${x.id}">${x.ko}${on ? ' ●' : ''}</button>`;
+    }).join(' ');
+    return {
+      badge: 'MODEL_SIGNAL',
+      note: `${c.ko} · ${(st.cells || 0).toLocaleString()}칸 · ${(st.total || 0).toLocaleString()}명 (거주)`,
+      cardHtml: `<b>도시 인구 타워</b> — ${c.grid.cellM}m 칸마다 막대를 세웁니다. `
+        + `${c.ko} 창 안 ${(st.cells || 0).toLocaleString()}칸 · 합계 `
+        + `<b>${(st.total || 0).toLocaleString()}명</b> · 가장 많은 칸 ${(st.max || 0).toLocaleString()}명.<br/><br/>`
+        + `⚠️ <b>거주 인구</b>입니다 — <b>지금 그 자리에 있는 사람 수가 아닙니다.</b> `
+        + `WorldPop 이 위성·행정자료로 만든 격자 <b>추정치</b>이며 관측이 아닙니다. `
+        + `'서울 실시간 인구'(관측)와 섞어 읽지 마세요.<br/>`
+        + `${c.grid.cellM}m 칸으로 합칠 때 <b>합계를 보존</b>했습니다. 높이는 인구의 `
+        + `<b>제곱근</b>에 비례합니다 — 선형이면 도심 몇 칸만 남고 나머지가 사라집니다. `
+        + `값이 아니라 자리를 넓힌 것입니다.<br/><br/>`
+        + `<b>도시</b> ${list}<br/>`
+        + `<span style="opacity:.75">대상은 한국·일본·대만·영국·미국입니다. `
+        + `미국은 100m 국가 파일이 1.4GB 라 도시 창만 받는 경로가 아직 없어 비워 뒀습니다 — `
+        + `성긴 자료로 대신 채우지 않습니다.</span><br/>`
+        + `출처 ${c.source} · ${c.license}`,
     };
   }
 
@@ -2379,6 +2506,12 @@ const rampFrom = (stops) => (v) => {
   return last.slice(1);
 };
 // 해수온 (°C): 1.0 gridoverlay의 sst 눈금과 같은 계열
+// 도시 인구 타워 색 — 어두운 남색(성김) → 청록 → 노랑 → 주황(빽빽).
+// 0~1 로 정규화한 값을 받는다.
+const POP_RAMP = rampFrom([
+  [0.00, 40, 70, 120], [0.08, 46, 130, 170], [0.20, 70, 190, 170],
+  [0.40, 200, 205, 110], [0.70, 240, 150, 70], [1.00, 245, 90, 80],
+]);
 const SST_RAMP = rampFrom([
   [-2, 22, 40, 92], [4, 30, 96, 168], [10, 46, 156, 176], [16, 108, 196, 140],
   [22, 232, 206, 110], [27, 236, 140, 72], [32, 208, 62, 62],

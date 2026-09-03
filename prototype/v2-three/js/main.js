@@ -10,6 +10,7 @@ import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=5';
 import { LiveLayers } from './live-layers.js?v=23';
 import { StationModel } from './station-model.js?v=2';
+import { AskEarth } from './ask-earth.js?v=1';
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
 import { PopSculpture } from './pop-sculpture.js?v=13';
@@ -1712,6 +1713,11 @@ class CloudManager {
       this.uniforms.uGfsTexel.value.set(1 / mf.grid.ni, 1 / mf.grid.nj);
     }
     this.gfsGrid = mf.grid || null;
+    // 화면 문구도 자료를 따라간다. 0.5° 로 올린 뒤에도 "1.0°"라고 적혀 있었다 —
+    // 화면이 자료를 잘못 말하는 것은 그리기 결함보다 나쁘다.
+    const dLon = (mf.grid && mf.grid.dLon) || 1.0;
+    this.gfsResText = `${dLon.toFixed(2)}°`;
+    this.gfsResKm = Math.round(dLon * 111);
     // 같은 런은 같은 폴더에 덮어쓴다. 파일 이름이 그대로라 브라우저가 옛 프레임을 계속 썼다 —
     // 해상도를 0.5° 로 올렸는데도 화면에는 1° 이미지가 남아 있었고, 텍셀만 바뀌어
     // 보간이 어긋났다(실측: 격자 720 인데 이미지 360). 생성시각을 붙여 세대를 가른다.
@@ -1740,7 +1746,7 @@ class CloudManager {
     const runKo = mf.run ? mf.run.replace('T', ' ').slice(0, 16) + 'Z' : '';
     return {
       tex: texA, lum: 0, frames: true, relief: true,
-      label: `GFS 1.0° 5일 예보 · 구름 두께(CWAT) · ▶ 재생 · 프레임 3시간 · 사이는 700hPa 바람으로 이류한 보간 (NOAA NOMADS · 런 ${runKo})`,
+      label: `GFS ${this.gfsResText || '1.00°'} 5일 예보 · 구름 두께(CWAT) · ▶ 재생 · 프레임 3시간 · 사이는 700hPa 바람으로 이류한 보간 (NOAA NOMADS · 런 ${runKo})`,
     };
   }
 
@@ -1853,6 +1859,50 @@ class CloudManager {
   }
 
   // 타임라인 오프셋(ms) → 예보 프레임 보간. 관측/정적 모드는 무시.
+  // 지금 보는 지점에서 실제로 읽히는 값. §17C 의 답은 '근거'가 있어야 하는데,
+  // 레이어 이름과 배지만 넘기면 모델은 "알 수 없다"밖에 말할 수 없다(실측).
+  // 인코딩을 되돌린 원값을 준다 — 화면이 그린 것과 같은 수를 말하게 하기 위해서다.
+  sampleAt(latDeg, lonDeg) {
+    const grab = (tex, key) => {
+      const img = tex && tex.image;
+      if (!img || !img.width) return null;
+      this._samp = this._samp || {};
+      let e = this._samp[key];
+      const src = img.src || key;
+      if (!e || e.src !== src || e.W !== img.width) {
+        const can = document.createElement('canvas');
+        can.width = img.width; can.height = img.height;
+        const g = can.getContext('2d', { willReadFrequently: true });
+        g.drawImage(img, 0, 0);
+        try {
+          e = { src, px: g.getImageData(0, 0, can.width, can.height).data, W: can.width, H: can.height };
+        } catch (err) { return null; }
+        this._samp[key] = e;
+      }
+      const x = Math.min(e.W - 1, Math.max(0, Math.round(((lonDeg + 180) / 360) * e.W - 0.5)));
+      const y = Math.min(e.H - 1, Math.max(0, Math.round(((90 - latDeg) / 180) * e.H - 0.5)));
+      const o = (y * e.W + x) * 4;
+      return [e.px[o], e.px[o + 1], e.px[o + 2], e.px[o + 3]];
+    };
+    if (this.mode !== 'gfs') return null;
+    const out = {};
+    const c = grab(this.uniforms.uTex.value, 'cloud');
+    if (c) {
+      // A = CWAT log (0.005~2.0 kg/m²), 회색 = 운정고도 (0~16,000 m)
+      out['구름수_kg_m2'] = c[3] > 0 ? +(10 ** ((c[3] / 255) * 2.6021 - 2.3010)).toFixed(3) : 0;
+      out['운정고도_m'] = Math.round((c[2] / 255) * 16000);
+    }
+    const p = grab(this.precipTex, 'precip');
+    if (p) {
+      out['강수_mm_h'] = p[0] >= 1 ? +(10 ** ((p[0] / 255) * 2.7782 - 1.3010)).toFixed(2) : 0;
+      if (p[0] >= 1) {
+        out['강수종류'] = p[1] >= 184 ? '눈' : (Math.abs(p[1] - 128) < 17 ? '어는비·진눈깨비' : '비');
+      }
+      out['뇌우가능성_0_1'] = +(p[2] / 255).toFixed(2);
+    }
+    return Object.keys(out).length ? out : null;
+  }
+
   setForecastOffset(ms) {
     if (this.mode !== 'gfs' || !this.gfs) return;
     this.lastOffsetMs = ms;
@@ -1883,8 +1933,10 @@ class CloudManager {
       const valid = new Date(g.frames[0].t + hF * g.stepMs);
       const offH = Math.round((valid.getTime() - Date.now()) / 3.6e6);
       const pending = (okA && okB) ? '' : ' · <span style="opacity:.7">프레임 받는 중…</span>';
-      this.noteEl.innerHTML = `<span class="badge model">MODEL</span> GFS 1.0° 예보 T${offH >= 0 ? '+' : ''}${offH}h · 유효 ${valid.getMonth() + 1}/${valid.getDate()} ${String(valid.getHours()).padStart(2, '0')}시`
-        + `<br/><span style="opacity:.75">구름 <b>두께</b>(CWAT)로 그리고 <b>운정 높이</b>만큼 세움(DERIVED: 저·중·고층 비율에서 유도) · 프레임 3시간(NOAA GFS 1.0°, 적도 111km) · 사이는 700hPa 바람으로 이류한 <b>보간</b>이며 모델 출력이 아닙니다</span>${pending}`;
+      const rt = this.gfsResText || '1.00°';
+      const rk = this.gfsResKm || 111;
+      this.noteEl.innerHTML = `<span class="badge model">MODEL</span> GFS ${rt} 예보 T${offH >= 0 ? '+' : ''}${offH}h · 유효 ${valid.getMonth() + 1}/${valid.getDate()} ${String(valid.getHours()).padStart(2, '0')}시`
+        + `<br/><span style="opacity:.75">구름 <b>두께</b>(CWAT)로 그리고 <b>운정 높이</b>만큼 세움(DERIVED: 저·중·고층 비율에서 유도) · 프레임 3시간(NOAA GFS ${rt}, 적도 ${rk}km) · 사이는 700hPa 바람으로 이류한 <b>보간</b>이며 모델 출력이 아닙니다</span>${pending}`;
       return;
     }
     const hF = Math.max(0, Math.min(this.gfs.HOURS - 1.001, (Date.now() + ms - this.gfs.timeBase) / 3.6e6));
@@ -3750,8 +3802,94 @@ async function main() {
   // 기입 모형은 DOM 오버레이다(숫자와 기호가 섞여 있어 텍스처로 굽는 것보다 선명하다).
   // shellHooks 안에서 참조하므로 initShell 보다 먼저 만들어 둔다.
   const synop = new StationModel(document.body);
+
+  // ---------------------------------------------------------------------------
+  // 지구에 묻기 (§17C LLM → 3D EARTH INTERACTION CONTRACT)
+  // 모델은 제안만 한다. 여기 있는 orchestrator 만 장면을 바꾼다 —
+  // 승인 목록 밖의 도구, 없는 레이어, 범위 밖 좌표는 ask-earth.js 가 걸러 낸다.
+  // ---------------------------------------------------------------------------
+  const askLang = /^ko/i.test(navigator.language || navigator.userLanguage || '') ? 'ko' : 'en';
+  const layerIndex = new Map();
+  for (const sc of SCENES) for (const l of (sc.layers || [])) layerIndex.set(l.id, { sid: sc.id, l });
+  const layerOn = (e) => {
+    try { return !!(shellHooks.getLayerState(e.sid, e.l) || {}).on; } catch (err) { return false; }
+  };
+  // 스냅샷은 **지금 켜져 있는 것만** 담는다. 화면에 없는 것을 근거로 삼으면 안 된다.
+  const askSnapshot = () => {
+    const layers = [];
+    for (const [id, e] of layerIndex) {
+      if (e.l.state === 'LOCKED') continue;
+      let st = {};
+      try { st = shellHooks.getLayerState(e.sid, e.l) || {}; } catch (err) { st = {}; }
+      if (!st.on) continue;
+      layers.push({ id, label: e.l.name, badge: e.l.state, source: e.l.src, value: st.note });
+    }
+    const lat = THREE.MathUtils.radToDeg(orbit.targetPitch);
+    const lon = ((THREE.MathUtils.radToDeg(orbit.targetYaw) + 540) % 360) - 180;
+    // 화면 한가운데의 실제 값. 이름만 넘기면 모델이 답할 근거가 없다.
+    const point = {};
+    const hM = heightAtJs(lat, lon);
+    if (Number.isFinite(hM)) point['지면고도_m'] = Math.round(hM);
+    const cs = clouds.sampleAt(lat, lon);
+    if (cs) Object.assign(point, cs);
+    return {
+      view: {
+        lat: +lat.toFixed(3), lon: +lon.toFixed(3),
+        altKm: Math.round(Math.max(orbit.dist - 1, 0) * 6371),
+        exagger: uniforms.uExagger.value,
+      },
+      point: Object.keys(point).length ? point : undefined,
+      focus: focus.selected ? (focus.selected.nameKo || focus.selected.code3 || null) : null,
+      layers,
+    };
+  };
+  const askTools = {
+    showLayer: (id) => { const e = layerIndex.get(id); if (e && !layerOn(e)) shellHooks.onLayerAction(e.sid, e.l); },
+    hideLayer: (id) => { const e = layerIndex.get(id); if (e && layerOn(e)) shellHooks.onLayerAction(e.sid, e.l); },
+    flyTo: (lat, lon, altKm) => {
+      orbit.targetPitch = THREE.MathUtils.degToRad(lat);
+      // 경도는 가까운 쪽으로 돈다 — 안 그러면 지구를 한 바퀴 되감는다.
+      let ty = THREE.MathUtils.degToRad(lon);
+      ty += Math.round((orbit.yaw - ty) / (2 * Math.PI)) * 2 * Math.PI;
+      orbit.targetYaw = ty;
+      orbit.targetDist = Math.max(orbit.minDist, Math.min(orbit.maxDist, 1 + altKm / 6371));
+      orbit.glide = 1.2;
+      orbit.autoRotate = false;
+    },
+    openCard: (id) => {
+      const e = layerIndex.get(id);
+      if (!e) return;
+      const card = liveLayers.card(id);
+      showNote(e.l.name, card || `출처 ${e.l.src}`, e.l.state);
+    },
+  };
+  // §17C reset_scene_to_verified_state — 도구를 쓰기 전 상태로 돌린다.
+  const askCapture = () => ({
+    on: [...layerIndex.entries()].filter(([, e]) => layerOn(e)).map(([id]) => id),
+    cam: { pitch: orbit.targetPitch, yaw: orbit.targetYaw, dist: orbit.targetDist },
+  });
+  const askRestore = (saved) => {
+    const now = new Set(askCapture().on);
+    const want = new Set(saved.on);
+    for (const id of now) if (!want.has(id)) askTools.hideLayer(id);
+    for (const id of want) if (!now.has(id)) askTools.showLayer(id);
+    orbit.targetPitch = saved.cam.pitch;
+    orbit.targetYaw = saved.cam.yaw;
+    orbit.targetDist = saved.cam.dist;
+    orbit.glide = 1.2;
+    shell.refreshFlyout();
+  };
+  const askEarth = new AskEarth({
+    lang: askLang,
+    snapshot: askSnapshot,
+    layerName: (id) => (layerIndex.get(id) ? layerIndex.get(id).l.name : null),
+    tools: askTools,
+    captureScene: askCapture,
+    restoreScene: askRestore,
+  });
   window.__earthusSynop = synop;   // 선언 뒤에 대입한다 — 앞에 두면 TDZ 로 main() 이 통째로 죽는다
   const shell = initShell(shellHooks);
+  askEarth.init();
 
   // ---------- 크롬 서랍 (검색·설정) — 1.0식 배타성: 하나 열리면 나머지 닫힘 ----------
   const searchDrawer = document.getElementById('search-drawer');

@@ -40,12 +40,12 @@ SCENE_TOOLS = {
     "openCard": ["id"],
 }
 
-SYSTEM = """당신은 EARTHUS의 지구 해설자입니다. 한국어로 답합니다.
+SYSTEM = """당신은 EARTHUS의 지구 해설자입니다. {LANG_LINE}
 
 절대 규칙 — 어기면 답변으로서 실패입니다:
 1. 아래 <snapshot>에 실제로 있는 값만 사용합니다. 스냅샷에 없는 수치·원인·확률·좌표를
    지어내지 않습니다. 일반 상식으로 채우지도 않습니다.
-2. 물어본 것이 스냅샷에 없으면 "지금 화면의 자료로는 알 수 없습니다"라고 말하고,
+2. 물어본 것이 스냅샷에 없으면 {NO_DATA}라고 말하고,
    무엇이 있어야 답할 수 있는지 한 줄로 알려줍니다. insufficient 를 true 로 둡니다.
 3. 각 값에는 배지가 붙어 있습니다. 그 성격을 뭉개지 마세요.
    OBSERVED=공식 관측, OFFICIAL=공식 예보, WARNING=공식 특보,
@@ -54,7 +54,7 @@ SYSTEM = """당신은 EARTHUS의 지구 해설자입니다. 한국어로 답합�
    예보를 "지금 이렇다"로 바꿔 말하지 않습니다.
 4. 자료의 나이(ageMin)가 그 레이어의 기준(slaMin)을 넘었으면 그 사실을 함께 말합니다.
 5. 원인을 묻는 질문에는, 스냅샷의 값들 사이의 관계로 설명할 수 있는 만큼만 말하고
-   "이건 상관관계이지 확정된 원인이 아닙니다"를 분명히 합니다. 기사나 통념을 끌어오지 않습니다.
+   {CORR}를 분명히 합니다. 기사나 통념을 끌어오지 않습니다.
 
 답변 형식: 3~5문장. 숫자를 말할 때는 출처 레이어 이름을 함께 적습니다.
 
@@ -141,6 +141,12 @@ def compact_snapshot(payload):
     }
     if payload.get("focus"):
         out["선택한나라"] = str(payload["focus"])[:120]
+    # 화면 한가운데에서 실제로 읽히는 값. 이게 없으면 모델은 레이어 이름만 보고
+    # "알 수 없다"밖에 못 한다(실측 2026-09-03). 인코딩을 되돌린 원값이다.
+    pt = payload.get("point")
+    if isinstance(pt, dict) and pt:
+        out["보는곳의값"] = {str(k)[:24]: v for k, v in list(pt.items())[:12]
+                          if isinstance(v, (int, float, str))}
     for l in (payload.get("layers") or [])[:MAX_LAYERS]:
         if not isinstance(l, dict):
             continue
@@ -168,9 +174,33 @@ def call_one(key, model, body):
         return json.loads(r.read().decode("utf-8"))
 
 
-def call_gemini(key, snapshot, question):
+# 기기 언어를 따른다. 화면은 영어인데 답만 한국어로 오면 그건 제품이 아니다.
+# 규칙(근거 밖으로 나가지 않기·배지 구분)은 언어와 무관하게 같아야 하므로
+# 지시문 본문은 하나로 두고 답변 언어 줄만 갈아 끼운다.
+LANG_LINE = {
+    "ko": "한국어로 답합니다.",
+    "en": "Answer in English. Keep the Korean layer names as-is when you cite them,"
+          " and put a short English gloss in parentheses the first time.",
+}
+# 지시문 안에 박아둔 정형구도 언어를 따라야 한다. 영어로 답하면서 이 문장만
+# 한국어로 나오면 답변에 한국어가 섞인다(실측 2026-09-03).
+NO_DATA = {
+    "ko": '"지금 화면의 자료로는 알 수 없습니다"',
+    "en": '"I cannot tell from what is on screen right now"',
+}
+CORR = {
+    "ko": '"이건 상관관계이지 확정된 원인이 아닙니다"',
+    "en": '"this is a correlation, not an established cause"',
+}
+
+
+def call_gemini(key, snapshot, question, lang="ko"):
+    system = (SYSTEM
+              .replace("{LANG_LINE}", LANG_LINE.get(lang, LANG_LINE["ko"]))
+              .replace("{NO_DATA}", NO_DATA.get(lang, NO_DATA["ko"]))
+              .replace("{CORR}", CORR.get(lang, CORR["ko"])))
     body = {
-        "systemInstruction": {"parts": [{"text": SYSTEM}]},
+        "systemInstruction": {"parts": [{"text": system}]},
         "contents": [{
             "role": "user",
             "parts": [{"text":
@@ -265,6 +295,8 @@ def handler(event, context):
     except (ValueError, TypeError):
         return reply(400, {"error": "본문이 JSON이 아닙니다"})
 
+    # 기기 언어. 모르는 값이 오면 한국어로 둔다 — 임의의 언어로 답하지 않는다.
+    lang = "en" if str(payload.get("lang") or "ko").lower().startswith("en") else "ko"
     q = str(payload.get("q") or "").strip()
     if not q:
         return reply(400, {"error": "질문이 비어 있습니다"})
@@ -276,13 +308,16 @@ def handler(event, context):
         # 켜진 레이어가 없으면 근거가 없다. 모델을 부르지 않는다 —
         # 부르면 반드시 일반 상식으로 답하려 든다.
         return reply(200, {
-            "answer": "지금 켜진 레이어가 없어서 근거로 삼을 자료가 없습니다. "
-                      "왼쪽 메뉴에서 보고 싶은 레이어를 켜고 다시 물어봐 주세요.",
+            "answer": ("No layers are on, so there is nothing to ground an answer in. "
+                       "Turn on a layer from the menu and ask again.")
+            if lang == "en" else
+            ("지금 켜진 레이어가 없어서 근거로 삼을 자료가 없습니다. "
+             "왼쪽 메뉴에서 보고 싶은 레이어를 켜고 다시 물어봐 주세요."),
             "insufficient": True, "used": [], "actions": [],
         })
 
     try:
-        raw, used_model = call_gemini(key, snapshot, q)
+        raw, used_model = call_gemini(key, snapshot, q, lang)
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", "replace")[:200]
         print(f"[gemini] HTTP {e.code} {detail}")

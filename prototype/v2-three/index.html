@@ -70,6 +70,34 @@
     max-height: 72vh; overflow-y: auto; overscroll-behavior: contain;
   }
   .drawer.open { display: block; }
+
+  /* 지구에 묻기 (§17C) — 답과 함께 '무엇을 근거로 썼는지'와 '장면에서 무엇을 했는지'를
+     같은 크기로 보여준다. 답만 크게 보이면 근거 없는 문장이 사실처럼 읽힌다. */
+  .ask-head { font-weight: 600; margin-bottom: 3px; }
+  .ask-hint { color: var(--text-dim); font-size: 11px; line-height: 1.55; margin-bottom: 9px; }
+  .ask-row { display: flex; gap: 6px; }
+  .ask-row input { flex: 1; min-width: 0; padding: 7px 9px; border-radius: 7px;
+    background: rgba(0,0,0,0.28); border: 1px solid var(--panel-line); color: var(--text);
+    font-family: inherit; font-size: 12px; }
+  .ask-row input:focus { outline: none; border-color: var(--accent); }
+  .ask-row button { padding: 0 12px; border-radius: 7px; cursor: pointer; font-family: inherit;
+    background: rgba(74,144,217,0.16); border: 1px solid var(--panel-line); color: var(--text); }
+  .ask-row button:hover { border-color: var(--accent); color: var(--accent); }
+  #ask-out:not(:empty) { margin-top: 10px; }
+  .ask-wait, .ask-err { color: var(--text-dim); font-size: 11.5px; }
+  .ask-a { font-size: 12.5px; line-height: 1.72; white-space: pre-wrap; }
+  .ask-a.thin { color: var(--text-dim); }
+  .ask-flag { display: inline-block; margin-top: 6px; padding: 1px 7px; border-radius: 5px;
+    font-size: 10px; background: rgba(200,140,60,0.18); border: 1px solid rgba(200,140,60,0.42); }
+  .ask-meta { margin-top: 8px; font-size: 11px; line-height: 1.6; color: var(--text-dim); }
+  .ask-meta b { color: var(--text); font-weight: 600; }
+  .ask-meta.drop { color: rgba(200,140,60,0.92); }
+  .ask-meta button { margin-left: 6px; padding: 1px 8px; border-radius: 5px; cursor: pointer;
+    font-family: inherit; font-size: 10.5px; background: transparent;
+    border: 1px solid var(--panel-line); color: var(--text-dim); }
+  .ask-meta button:disabled { opacity: 0.4; cursor: default; }
+  .ask-foot { margin-top: 9px; padding-top: 7px; border-top: 1px solid var(--panel-line);
+    font-size: 10px; line-height: 1.55; color: var(--text-dim); }
   .row { margin-bottom: 10px; }
   .row label { display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--text); }
   .row label .val { color: var(--accent); font-variant-numeric: tabular-nums; }
@@ -887,6 +915,7 @@
   <div id="chrome">
     <img class="brand" src="./assets/brand/earthus-wordmark-white.svg" alt="EARTHUS" />
     <button id="btn-search" title="검색 (나라·시군구·도시·공항)">⌕</button>
+    <button id="btn-ask" title="지구에 묻기 — 지금 켜 놓은 자료만 근거로 답합니다">✦</button>
     <button id="btn-share" title="이 화면 공유 (링크 복사 · 그림 저장)">⤴</button>
     <button id="btn-help" title="사용법 다시 보기">?</button>
     <button id="btn-settings" title="설정">⚙</button>
@@ -899,6 +928,8 @@
     <div class="sm-note">링크에는 카메라 위치·켜 놓은 레이어·선택한 나라가 담깁니다</div>
   </div>
   <div id="share-toast"></div>
+
+  <div id="ask-drawer" class="drawer"></div>
 
   <div id="search-drawer" class="drawer">
     <input type="text" id="c-search" placeholder="검색 — 나라·시군구·도시·공항" autocomplete="off" />
@@ -988,6 +1019,6 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=147"></script>
+<script type="module" src="./js/main.js?v=149"></script>
 </body>
 </html>

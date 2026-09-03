@@ -2172,8 +2172,10 @@ export class LiveLayers {
     const g2 = can.getContext('2d', { willReadFrequently: true });
     g2.drawImage(img, 0, 0);
     const px = g2.getImageData(0, 0, can.width, can.height).data;
-    // 격자를 통째로 정점으로 쓰면 100만 개가 넘는다 — 3칸마다 하나로 줄인다.
-    const STEP = 3;
+    // 격자를 통째로 정점으로 쓰면 일본이 1,034만 칸이라 정점 115만 개가 된다 —
+    // 만드는 동안 브라우저가 멈춘다. 나라 크기와 무관하게 정점 수를 맞춘다.
+    const TARGET = 150000;
+    const STEP = Math.max(2, Math.ceil(Math.sqrt((img.width * img.height) / TARGET)));
     const nx = Math.floor(img.width / STEP);
     const ny = Math.floor(img.height / STEP);
     const at = (ix, iy) => {
@@ -2217,7 +2219,7 @@ export class LiveLayers {
       vertexColors: true, transparent: true, opacity: 0.92, depthWrite: true,
       side: THREE.DoubleSide,
     }));
-    mesh.userData.forest = { region: R, index: d.index, faces: idx.length / 3 };
+    mesh.userData.forest = { region: R, index: d.index, faces: idx.length / 3, step: STEP };
     return mesh;
   }
 
@@ -2239,6 +2241,8 @@ export class LiveLayers {
 
   metaForest(d) {
     const R = d.region;
+    const l = this.layers.forest;
+    d.stepUsed = (l && l.obj && l.obj.userData.forest && l.obj.userData.forest.step) || 1;
     const list = (d.index.regions || []).map((x) => {
       const on = x.iso3 === R.iso3;
       return `<button class="simgo" style="padding:2px 8px;font-size:11px${on ? ';border-color:var(--accent)' : ''}" `
@@ -2253,6 +2257,10 @@ export class LiveLayers {
         + `값은 ESA WorldCover <b>10m 관측</b>의 Tree cover 비율을 `
         + `${Math.round(R.cellDeg * 111000)}m 로 평균한 것입니다. `
         + `한국 육지 평균이 64.1%로 나왔고 이는 공식 산림률(약 63%)과 맞습니다.<br/>`
+        + `화면 격자는 자료보다 성깁니다 — 나라가 커도 정점 수를 맞추려고 `
+        + `${Math.round(R.cellDeg * 111000)}m 자료를 `
+        + `${Math.round(R.cellDeg * 111000 * (d.stepUsed || 1))}m 간격으로 세웁니다. `
+        + `색과 높이는 그 자리의 실제 값입니다.<br/>`
         + `<b>바다와 무자료는 비어 있습니다</b> — 없는 곳을 0%로 칠하지 않고, `
         + `빈 칸에는 면을 만들지 않습니다.<br/>`
         + `높이는 수관 비율에 비례하며 <b>절대 높이는 표현 과장</b>입니다(100%에서 약 4.8km).<br/><br/>`

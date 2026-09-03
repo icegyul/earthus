@@ -58,3 +58,6 @@ __pycache__/
 
 # 인텔리전스 패키지 캐시 (이전 커밋에서 한 건 누락됐음)
 services/aetherus-orbital/**/__pycache__/
+
+# 정적 배포 산출물 — 내보내기로 언제든 다시 만든다 (aws/deploy-orbital-static.sh)
+build/

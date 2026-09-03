@@ -54,6 +54,14 @@ const parseValidUtc = (v) => {
   return Number.isFinite(ms) ? ms : null;
 };
 
+// 릴리프용 PNG 를 읽는다. 실패를 조용히 삼키지 않는다 — 없으면 레이어가 켜지지 않아야 한다.
+const loadImage = (url) => new Promise((res, rej) => {
+  const im = new Image();
+  im.onload = () => res(im);
+  im.onerror = () => rej(new Error(`이미지를 받지 못했습니다: ${url}`));
+  im.src = url;
+});
+
 const llToV3 = (latDeg, lonDeg, r) => {
   const la = (latDeg * Math.PI) / 180;
   const lo = (lonDeg * Math.PI) / 180;
@@ -348,6 +356,15 @@ export class LiveLayers {
       case 'tsunami': return fetchJson('/events/tsunami-intl.json');
       // /tourism은 S3 직접이 403 (버킷 정책) — CloudFront 경유는 CORS 포함 200
       case 'seoul': return fetchJson('/tourism/seoul-flow.json', 20000, 'https://earthus.net');
+      // 산림 릴리프도 색인 순서대로 — 한국이 먼저다.
+      case 'forest':
+        return fetch('./forest/index.json', { cache: 'no-cache' })
+          .then((r) => r.json())
+          .then((idx) => {
+            const first = (idx.regions || [])[0];
+            if (!first) throw new Error('산림 격자가 없습니다');
+            return loadImage(`./forest/${first.file}`).then((img) => ({ index: idx, region: first, img }));
+          });
       // 색인의 순서가 곧 시장 우선순위다 — 첫 도시(한국)를 먼저 띄운다.
       // (이 switch 는 async 가 아니라서 await 를 쓸 수 없다 — 약속을 그대로 돌려준다.)
       case 'poptower':
@@ -456,6 +473,7 @@ export class LiveLayers {
       case 'tsunami': return { obj: this.buildTsunami(data), data, meta: this.metaTsunami(data) };
       case 'seoul': return { obj: this.buildSeoul(data), data, meta: this.metaSeoul(data) };
       case 'poptower': return { obj: this.buildPopTower(data), data, meta: this.metaPopTower(data) };
+      case 'forest': return { obj: this.buildForest(data), data, meta: this.metaForest(data) };
       case 'tyoff': return { obj: this.buildTyphoon(data), data, meta: this.metaTyphoon(data) };
       case 'argo': return { obj: this.buildArgo(data), data, meta: this.metaArgo(data) };
       case 'launch': return { obj: this.buildLaunch(data), data, meta: this.metaLaunch(data) };
@@ -2134,6 +2152,116 @@ export class LiveLayers {
     };
   }
 
+  // ---------- 산림 피복 릴리프 (지시서 R-04 이탈리아 산림 분포 · OBSERVED) ----------
+  //
+  // R-04 가 보존하라는 것: "terrain 위 forest cover 를 높이/밀도/재질로 읽는
+  //   country-scale vegetation structure". 막대가 아니라 **면**이다.
+  //
+  // 레퍼런스는 이탈리아지만 대상 국가는 한국·일본·대만·영국·미국뿐이다(PD 지시).
+  // 문법만 가져오고 나라는 우리 것으로 한다 — 한국이 먼저다.
+  //
+  // 값은 ESA WorldCover 10m 의 Tree cover 비율을 500m 로 평균한 것이다(실측 검증:
+  // 한국 육지 평균 64.1% — 공식 산림률 약 63%와 맞는다). 바다·무자료는 비어 있고,
+  // 비어 있는 칸에는 삼각형을 만들지 않는다 — 없는 곳을 0% 로 칠하지 않는다.
+  buildForest(d) {
+    const { img } = d;
+    const R = d.region;
+    const [lon0, lat0, lon1, lat1] = R.bbox;
+    const can = document.createElement('canvas');
+    can.width = img.width; can.height = img.height;
+    const g2 = can.getContext('2d', { willReadFrequently: true });
+    g2.drawImage(img, 0, 0);
+    const px = g2.getImageData(0, 0, can.width, can.height).data;
+    // 격자를 통째로 정점으로 쓰면 100만 개가 넘는다 — 3칸마다 하나로 줄인다.
+    const STEP = 3;
+    const nx = Math.floor(img.width / STEP);
+    const ny = Math.floor(img.height / STEP);
+    const at = (ix, iy) => {
+      const o = ((iy * STEP) * img.width + ix * STEP) * 4;
+      return { v: px[o] / 255, has: px[o + 3] > 127 };
+    };
+    // 수관이 두꺼울수록 높다. 절대 높이는 표현 과장이고 그 사실은 카드에 적는다.
+    const H = 0.00075;                 // 100% 수관에서 약 4.8km
+    const pos = new Float32Array(nx * ny * 3);
+    const col = new Float32Array(nx * ny * 3);
+    const ok = new Uint8Array(nx * ny);
+    for (let iy = 0; iy < ny; iy += 1) {
+      const lat = lat1 - (iy * STEP + 0.5) * R.cellDeg;
+      for (let ix = 0; ix < nx; ix += 1) {
+        const lon = lon0 + (ix * STEP + 0.5) * R.cellDeg;
+        const { v, has } = at(ix, iy);
+        const i = iy * nx + ix;
+        ok[i] = has ? 1 : 0;
+        const r = this.surfR(lat, lon, 0.00004) + (has ? H * v : 0);
+        const p = llToV3(lat, lon, r);
+        pos[i * 3] = p.x; pos[i * 3 + 1] = p.y; pos[i * 3 + 2] = p.z;
+        const [cr, cg, cb] = FOREST_RAMP(v);
+        col[i * 3] = cr / 255; col[i * 3 + 1] = cg / 255; col[i * 3 + 2] = cb / 255;
+      }
+    }
+    // 네 귀퉁이가 모두 자료가 있는 칸만 면으로 만든다.
+    const idx = [];
+    for (let iy = 0; iy < ny - 1; iy += 1) {
+      for (let ix = 0; ix < nx - 1; ix += 1) {
+        const a = iy * nx + ix; const b = a + 1; const c = a + nx; const e = c + 1;
+        if (!ok[a] || !ok[b] || !ok[c] || !ok[e]) continue;
+        idx.push(a, c, b, b, c, e);
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    geo.setIndex(idx);
+    geo.computeVertexNormals();
+    const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+      vertexColors: true, transparent: true, opacity: 0.92, depthWrite: true,
+      side: THREE.DoubleSide,
+    }));
+    mesh.userData.forest = { region: R, index: d.index, faces: idx.length / 3 };
+    return mesh;
+  }
+
+  async forestRegion(iso3) {
+    const l = this.layers.forest;
+    if (!l || !l.on || !l.obj) return null;
+    const R = (l.data.index.regions || []).find((x) => x.iso3 === iso3);
+    if (!R) return null;
+    const img = await loadImage(`./forest/${R.file}`);
+    l.data.region = R; l.data.img = img;
+    const next = this.buildForest(l.data);
+    this.group.remove(l.obj);
+    l.obj.geometry.dispose(); l.obj.material.dispose();
+    this.group.add(next);
+    l.obj = next;
+    l.meta = this.metaForest(l.data);
+    return R;
+  }
+
+  metaForest(d) {
+    const R = d.region;
+    const list = (d.index.regions || []).map((x) => {
+      const on = x.iso3 === R.iso3;
+      return `<button class="simgo" style="padding:2px 8px;font-size:11px${on ? ';border-color:var(--accent)' : ''}" `
+        + `data-action="forest-region" data-iso="${x.iso3}">${x.ko}${on ? ' ●' : ''}</button>`;
+    }).join(' ');
+    return {
+      badge: 'OBSERVED',
+      note: `${R.ko} · 육지 평균 수관 ${(R.meanCover * 100).toFixed(1)}% · ${R.cells.toLocaleString()}칸`,
+      cardHtml: `<b>산림 피복 릴리프</b> — 나무가 덮은 비율만큼 지표가 솟습니다. `
+        + `${R.ko} 육지 ${R.cells.toLocaleString()}칸(${Math.round(R.cellDeg * 111000)}m) · `
+        + `평균 수관 <b>${(R.meanCover * 100).toFixed(1)}%</b>.<br/><br/>`
+        + `값은 ESA WorldCover <b>10m 관측</b>의 Tree cover 비율을 `
+        + `${Math.round(R.cellDeg * 111000)}m 로 평균한 것입니다. `
+        + `한국 육지 평균이 64.1%로 나왔고 이는 공식 산림률(약 63%)과 맞습니다.<br/>`
+        + `<b>바다와 무자료는 비어 있습니다</b> — 없는 곳을 0%로 칠하지 않고, `
+        + `빈 칸에는 면을 만들지 않습니다.<br/>`
+        + `높이는 수관 비율에 비례하며 <b>절대 높이는 표현 과장</b>입니다(100%에서 약 4.8km).<br/><br/>`
+        + `<b>지역</b> ${list}<br/>`
+        + `<span style="opacity:.75">대상은 한국·일본·대만·영국·미국입니다.</span><br/>`
+        + `출처 ${d.index.source} · ${d.index.license}`,
+    };
+  }
+
   // ---------- 도시 인구 타워 (지시서 R-01 맨해튼 · R-02 샌프란만 · MODEL_SIGNAL) ----------
   //
   // R-01/R-02 가 보존하라는 것: "도시 전체에서 **수많은 vertical bars** 가 실제 지리 위에
@@ -2506,6 +2634,11 @@ const rampFrom = (stops) => (v) => {
   return last.slice(1);
 };
 // 해수온 (°C): 1.0 gridoverlay의 sst 눈금과 같은 계열
+// 산림 피복 색 — 성긴 곳은 마른 노랑, 빽빽한 곳은 짙은 초록. 0~1 을 받는다.
+const FOREST_RAMP = rampFrom([
+  [0.00, 176, 168, 120], [0.15, 150, 172, 104], [0.35, 104, 158, 84],
+  [0.60, 62, 132, 68], [0.85, 34, 104, 58], [1.00, 22, 82, 48],
+]);
 // 도시 인구 타워 색 — 어두운 남색(성김) → 청록 → 노랑 → 주황(빽빽).
 // 0~1 로 정규화한 값을 받는다.
 const POP_RAMP = rampFrom([

@@ -3,7 +3,7 @@
 // 지구 렌더러(main.js)는 건드리지 않고 훅(hooks)으로만 연결한다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { i18n } from './i18n.js?v=3';
+import { i18n } from './i18n.js?v=5';
 import { renderBadge } from './engine-bridge.js?v=12';
 
 // ---------------------------------------------------------------------------
@@ -24,6 +24,8 @@ export const SCENES = [
       { id: 'snow', name: '눈·얼음 덮임', state: 'OBSERVED', src: 'MODIS NDSI', act: true },
       { id: 'seaice', name: '해빙 농도 (극지)', state: 'OBSERVED', src: 'GHRSST L4 MUR · NASA GIBS', act: true },
       { id: 'lst', name: '지표온도 (위성 관측)', state: 'OBSERVED', src: 'MODIS Terra LST · NASA GIBS', act: true },
+      // 나라를 이름에 적지 않는다 — 늘어날 때마다 메뉴가 실제와 어긋난다. 목록은 카드가 낸다.
+      { id: 'forest', name: '산림 피복 릴리프 (나무가 덮은 비율)', state: 'OBSERVED', src: 'ESA WorldCover 10m', act: true },
       { id: 'locate', name: '내 위치로 이동', state: 'LIVE', src: 'GPS', act: true },
       { id: 'globe', name: '전지구 보기', state: 'LIVE', src: '—', act: true },
       { id: 'base-ne2', name: '베이스 · 자연 지형', state: 'LIVE', src: 'Natural Earth II', act: true },

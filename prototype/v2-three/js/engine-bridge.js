@@ -102,6 +102,8 @@ export const LAYER_TRUTH = Object.freeze({
   // --- 2026-09-02 추가: 정합성 검사(tools/check-v2-consistency.mjs)가 배지 누락으로 잡아낸 것들 ---
   'land/seaice': { kind: K.OFFICIAL_OBSERVATION, slaMin: 4320 },
   'land/lst': { kind: K.OFFICIAL_OBSERVATION, slaMin: 4320 },
+  // 2021년 관측을 해마다 갱신하는 정적 산출물이다 — 분 단위로 늙지 않는다.
+  'land/forest': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
   'land/base-ne2': { kind: K.VISUALIZATION_ONLY, slaMin: null },
   'land/base-bluemarble': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
   'land/base-truecolor': { kind: K.OFFICIAL_OBSERVATION, slaMin: 2880 },

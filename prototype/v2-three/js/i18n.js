@@ -159,6 +159,7 @@ const L_EN = {
   snow: 'Snow & ice cover',
   seaice: 'Sea ice concentration (polar)',
   lst: 'Land surface temperature (satellite)',
+  forest: 'Forest cover relief (share covered by trees)',
   locate: 'Go to my location',
   globe: 'Whole Earth view',
   'base-ne2': 'Base · Natural Earth',

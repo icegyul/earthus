@@ -4,14 +4,14 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=51';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=53';
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=5';
-import { LiveLayers } from './live-layers.js?v=30';
+import { LiveLayers } from './live-layers.js?v=31';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=2';
-import { i18n } from './i18n.js?v=3';
+import { i18n } from './i18n.js?v=5';
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
 import { PopSculpture } from './pop-sculpture.js?v=13';
@@ -2869,6 +2869,7 @@ async function main() {
     'ocean/buoys': ['buoys', '해양 부이 관측'],
     'ocean/argo': ['argo', 'Argo 플로트 · 잠수 기록'],
     'people/poptower': ['poptower', '도시 인구 타워'],
+    'land/forest': ['forest', '산림 피복 릴리프'],
     'hazards/fireglobal': ['fireglobal', '전지구 산불 화점'],
     'weather/radar': ['radar', '레이더 강수'],
     'weather/raingrid': ['raingrid', '전지구 강수'],
@@ -3705,6 +3706,21 @@ async function main() {
         }, () => { myEarth.error = '위치 권한이 거부되었습니다'; shell.renderIntel(); });
       } else if (action === 'my-refresh') {
         refreshMyEarth();
+      } else if (action === 'forest-region') {
+        // 산림 릴리프 지역 전환 (R-04). 순서는 색인이 정한다 — 한국이 먼저다.
+        liveLayers.forestRegion(ds.iso).then((R) => {
+          if (!R) return;
+          shell.refreshFlyout();
+          showNote('산림 피복 릴리프', liveLayers.card('forest'), 'OBSERVED');
+          const [lo0, la0, lo1, la1] = R.bbox;
+          let ty = THREE.MathUtils.degToRad((lo0 + lo1) / 2);
+          ty += Math.round((orbit.yaw - ty) / (2 * Math.PI)) * 2 * Math.PI;
+          orbit.targetYaw = ty;
+          orbit.targetPitch = THREE.MathUtils.degToRad((la0 + la1) / 2);
+          orbit.targetDist = 1 + Math.max(320, (la1 - la0) * 111 * 1.6) / 6371;
+          orbit.glide = 1.15;
+          orbit.autoRotate = false;
+        }).catch((e) => showNote('산림 피복 릴리프', `지역을 바꾸지 못했습니다 — ${String(e && e.message || e)}`, 'UNAVAILABLE'));
       } else if (action === 'popcity') {
         // 도시 갈아 끼우기 (R-01/R-02). 순서는 색인이 정한다 — 한국이 먼저다.
         liveLayers.popTowerCity(ds.city).then((c) => {

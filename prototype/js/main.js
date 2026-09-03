@@ -4,6 +4,7 @@
 import { initViewer, viewer, scene, cameraHeight, onCameraIdle, flyTo, setAmbientView, fitGlobeHeight } from './viewer.js';
 import { alarms } from './alarms.js';
 import { windField } from './windfield.js';
+import { stationModel } from './station-model.js';
 import { myLocation } from './mylocation.js';
 import { layerBar } from './layerbar.js';
 import { search } from './search.js';
@@ -306,6 +307,7 @@ async function boot() {
 
   // 내 위치 — 실패해도 조용히 넘어간다 (HTTP 접속·권한 거부 등)
   windField.init();
+  stationModel.init();   // 일기도 기입 모형 — store 의 'synop' 레이어로 켜고 끈다
   myLocation.init();
 
   /* 위치 응답이 오기 전에 사람이 화면을 쓰기 시작했는지 기록한다.

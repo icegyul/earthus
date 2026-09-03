@@ -82,6 +82,11 @@ export const ITEMS = [
     sky:'#101820', paint:'temp' },
   { id:'wind', ko:'바람', en:'Wind', sub:'현재', subEn:'Now', ready:true,
     sky:'#0d1622', paint:'wind' },
+  /* 일기도 표준 기호(기입 모형). 운량·풍향풍속깃·기온·이슬점·해면기압을 실측으로 찍는다.
+     v2(three)의 js/station-model.js 와 같은 규칙이다 — 같은 값을 두 화면이 다르게
+     그리면 그 자체가 결함이다. */
+  { id:'synop', ko:'일기도 기호', en:'Station model', sub:'실측 관측', subEn:'Observed', ready:true,
+    sky:'#0d1622', paint:'wind' },
   { id:'humidity', ko:'습도', en:'Humidity', sub:'현재', subEn:'Now', ready:true,
     sky:'#0a1720', paint:'humid' },
   /* 받은 지적: "대기중 수증기량인데 뉴스에 나온 자료야 너무 선명하게 잘 보여"
@@ -470,7 +475,7 @@ const CATEGORIES = [
           'gk2aWV',        // 🇰🇷 천리안 수증기
           'himaIR'] },     // 🇯🇵 히마와리 구름 꼭대기 온도
   { id: 'weather', ko: '기상',       en: 'Weather',
-    ids: ['temp', 'tmax', 'tmin', 'humidity', 'tpw', 'wind', 'windfc', 'rain', 'pressure',
+    ids: ['temp', 'tmax', 'tmin', 'humidity', 'tpw', 'wind', 'synop', 'windfc', 'rain', 'pressure',
           'fog', 'drought'] },
   { id: 'air',     ko: '대기질',     en: 'Air quality',
     ids: ['airkr', 'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone'] },

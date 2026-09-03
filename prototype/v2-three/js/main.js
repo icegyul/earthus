@@ -23,7 +23,8 @@ import { TravelScene } from './travel.js?v=2';
 // 익명 이용 집계 — 개인 식별자를 보내지 않는다 (날짜·이벤트명·횟수만). usage.js 주석 참조.
 import { usage } from './usage.js?v=1';
 import { FlightRoute, routeCardHtml } from './route.js?v=4';
-import { PrecipIcons } from './precip-icons.js?v=4';
+import { PrecipField } from './precip-field.js?v=3';
+import { LightningMarks } from './lightning-marks.js?v=2';
 // 정본 엔진(prototype/js/earthus2/v02)으로 가는 유일한 이음매 — 어휘·신선도·품질 예산의 출처
 import {
   installFetchObserver, ThermalGovernor, scenePlan, layerDataState, layerTruthLine,
@@ -1219,8 +1220,9 @@ class CloudManager {
     };
     this.reliefOn = false;
     this.cthLoaded = false;
-    // 강수는 2D 아이콘으로 찍는다 (js/precip-icons.js). 절차적 렌더는 지구본에서 싸구려로 보였다.
-    this.precip = new PrecipIcons(scene);
+    // 강수는 연속 색면 (js/precip-field.js), 번개는 별도 표식 (js/lightning-marks.js) — 윈디 규칙.
+    this.precip = new PrecipField(scene);
+    this.bolts = new LightningMarks(scene);
     this.precipTex = null;
     this.mesh = new THREE.Mesh(
       new THREE.SphereGeometry(1, 384, 192),
@@ -1844,11 +1846,11 @@ class CloudManager {
         this.uniforms.uTexB.value = okB ? b.cloud : a.cloud;
         this.uniforms.uWindB.value = okB ? b.wind : a.wind;
         this.uniforms.uBlend.value = okB ? f : 0;
-        // 아이콘은 '지금 시각에 가장 가까운' 한 프레임으로 찍는다.
-        // 두 프레임을 섞으면 표식이 두 번 찍혀 겹친다 — 그건 자료가 두 배로 있는 것처럼 보인다.
-        const near = (okB && f > 0.5 && b.precip) ? b.precip : a.precip;
-        this.precipTex = near || null;
-        this.precip.setVisible(!!near);
+        // 색면은 구름과 같은 방식으로 두 프레임을 섞는다 — 시간이 이어져 보여야 한다.
+        this.precip.set(a.precip, (okB && b.precip) ? b.precip : null, f);
+        // 번개 표식은 가까운 한 프레임으로 — 섞으면 표식이 두 번 찍힌다.
+        this.precipTex = (okB && f > 0.5 && b.precip) ? b.precip : a.precip;
+        this.bolts.setVisible(!!this.precipTex);
       }
       const valid = new Date(g.frames[0].t + hF * g.stepMs);
       const offH = Math.round((valid.getTime() - Date.now()) / 3.6e6);
@@ -1879,6 +1881,7 @@ class CloudManager {
     if (mode === 'off') {
       this.mesh.visible = false;
       this.precip.setVisible(false);
+      this.bolts.setVisible(false);
       this.precipTex = null;
       this.earthUniforms.uCloudShadow.value = 0;
       this.noteEl.textContent = '구름 끔';
@@ -1924,7 +1927,7 @@ class CloudManager {
     this.uniforms.uGfsFrames.value = entry.frames ? 1 : 0;
     this.uniforms.uGfsTop.value = entry.frames ? 1 : 0;
     // 관측 구름(GMGSI/천리안)에는 강수 종류 자료가 없다 — 없는 것을 그리지 않는다.
-    if (!entry.frames) { this.precip.setVisible(false); this.precipTex = null; }
+    if (!entry.frames) { this.precip.setVisible(false); this.bolts.setVisible(false); this.precipTex = null; }
     this.earthUniforms.uCloudShadow.value = 1;
     this.mesh.visible = true;
     this.noteEl.textContent = entry.label;
@@ -4611,20 +4614,20 @@ async function main() {
       shell.renderIntel();
     });
     clouds.uniforms.uSunDir.value.copy(sun);
-    // 강수 아이콘: 프레임이 바뀌었으면 점을 다시 뽑고, 12칸 애니메이션을 돌린다
-    if (clouds.precipTex) {
-      // 지금 보고 있는 곳과 보이는 범위를 넘긴다 — 멀면 센 비만, 가까우면 시야 안에 촘촘하게.
-      const vHalf = (camera.fov * Math.PI) / 360;
-      const viewDeg = DetailTerrain.arcHalfDeg(Math.atan(Math.tan(vHalf) * camera.aspect), altKm);
-      clouds.precip.build(
+    // 강수 색면: 태양만 넘기면 된다. 프레임 바인딩은 setForecastOffset 이 한다.
+    if (clouds.precip.mesh.visible) clouds.precip.setSun(sun);
+    // 번개 표식: 지금 보는 곳에 맞춰 센 뇌우만 뽑고 번쩍임을 돌린다.
+    if (clouds.precipTex && clouds.bolts.points.visible) {
+      const vH = (camera.fov * Math.PI) / 360;
+      clouds.bolts.build(
         clouds.precipTex,
-        1.0 + (2500 / 6371000) * uniforms.uExagger.value,
+        1.0 + (9000 / 6371000) * uniforms.uExagger.value,
         altKm,
         THREE.MathUtils.radToDeg(orbit.pitch),
         ((THREE.MathUtils.radToDeg(orbit.yaw) + 180) % 360 + 360) % 360 - 180,
-        viewDeg,
+        DetailTerrain.arcHalfDeg(Math.atan(Math.tan(vH) * camera.aspect), altKm),
       );
-      clouds.precip.tick(now);
+      clouds.bolts.tick(now);
     }
     cloudVol.update(camera, sun, altKm);
     if (clouds.mesh.visible) {

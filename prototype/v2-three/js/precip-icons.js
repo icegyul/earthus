@@ -166,9 +166,10 @@ uniform float uOpacity;
 varying float vType;
 varying float vSmall;
 void main() {
-  vec2 c = gl_PointCoord;
-  c.y = 1.0 - c.y;                                   // Points 좌표는 위아래가 뒤집혀 있다
-  vec2 uv = vec2((floor(uFrame) + c.x) / 12.0, (vType + (1.0 - c.y)) / 3.0);
+  // gl_PointCoord 는 위가 0, 아래가 1. CanvasTexture 는 flipY 라 v=1 이 캔버스 위쪽이다.
+  // 예전엔 여기서 뒤집고 uv 에서 또 뒤집어 서로 상쇄돼 아이콘이 거꾸로 섰다.
+  vec2 pc = gl_PointCoord;
+  vec2 uv = vec2((floor(uFrame) + pc.x) / 12.0, 1.0 - (vType + pc.y) / 3.0);
   vec4 t = texture2D(uAtlas, uv);
   if (t.a < 0.02) discard;
   // 아이콘이 작아지면 빗방울·번개가 안 보여 셋이 똑같은 흰 점이 된다.
@@ -212,12 +213,37 @@ export class PrecipIcons {
 
   setVisible(v) { this.points.visible = !!v; }
 
-  // 강수 PNG 한 장을 읽어 표식 지점을 뽑는다.
-  // 강한 곳부터 남긴다 — 화면이 표식으로 덮이면 지구가 안 보인다.
+  // 텍스처 한 장을 캔버스로 옮겨 픽셀을 읽는다. 실패하면 null — 값을 지어내지 않는다.
+  readPixels(tex, slot) {
+    const img = tex && tex.image;
+    if (!img || !img.width) return null;
+    const c = this[slot] || (this[slot] = document.createElement('canvas'));
+    if (c.width !== img.width || c.height !== img.height) {
+      c.width = img.width;
+      c.height = img.height;
+      this[`${slot}Ctx`] = null;
+    }
+    let ctx = this[`${slot}Ctx`];
+    if (!ctx) {
+      ctx = c.getContext('2d', { willReadFrequently: true });
+      this[`${slot}Ctx`] = ctx;
+    }
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.drawImage(img, 0, 0);
+    try {
+      return { px: ctx.getImageData(0, 0, c.width, c.height).data, W: c.width, H: c.height };
+    } catch (e) {
+      return null;                                    // 캔버스 오염 등
+    }
+  }
+
+  // 강수 PNG 를 읽어 표식 지점을 뽑는다.
+  // cloudTex 를 같이 받아 **구름 아래**에 매달고, 구름이 없는 곳에는 찍지 않는다.
   // viewDeg: 지금 화면에 보이는 지구의 반각(도). 가까울수록 작다 — 그만큼만 뽑는다.
-  build(precipTex, radius, altKm, centerLat, centerLon, viewDeg) {
+  build(precipTex, cloudTex, exagger, altKm, centerLat, centerLon, viewDeg) {
     const img = precipTex && precipTex.image;
     if (!img || !img.width) { this.points.visible = false; return 0; }
+    const radius = 1.0;
     const lod = lodFor(altKm);
     // 시야가 좁아지면 화면 밖을 뽑을 이유가 없다. 여유 1.6배 — 돌릴 때 빈 곳이 생기지 않게.
     const span = Number.isFinite(viewDeg) ? Math.min(180, Math.max(6, viewDeg * 1.6)) : 180;
@@ -225,36 +251,23 @@ export class PrecipIcons {
     const cLon = Number.isFinite(centerLon) ? centerLon : 0;
     // 카메라가 조금 움직였다고 매번 다시 뽑지 않는다 — 시야의 1/6 만큼 움직이면 갱신한다.
     const grid = Math.max(1, span / 6);
-    const key = `${img.src || ''}|${Math.round(radius * 1e5)}|${lod.alt}`
+    const key = `${img.src || ''}|${Math.round(exagger)}|${lod.alt}`
       + `|${Math.round(cLat / grid)}|${Math.round(cLon / grid)}|${Math.round(span)}`;
     if (key === this.lastKey) return this.points.geometry.drawRange.count;
-    const W = img.width;
-    const H = img.height;
-    if (this.canvas.width !== W || this.canvas.height !== H) {
-      this.canvas.width = W;
-      this.canvas.height = H;
-      this.ctx = null;
-    }
-    if (!this.ctx) this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
-    this.ctx.clearRect(0, 0, W, H);
-    this.ctx.drawImage(img, 0, 0);
-    let px;
-    try {
-      px = this.ctx.getImageData(0, 0, W, H).data;
-    } catch (e) {
-      this.points.visible = false;                     // 캔버스 오염 등 — 값을 지어내지 않는다
-      return 0;
-    }
+    const pRead = this.readPixels(precipTex, 'canvas');
+    if (!pRead) { this.points.visible = false; return 0; }
+    const { px, W, H } = pRead;
+    const cRead = this.readPixels(cloudTex, 'cloudCanvas');   // 없으면 고정 높이로 떨어진다
     const cand = [];
-    // 격자를 그대로 쓰면 6만 점이다. 고도가 높을수록 성기게 훑고 문턱을 높인다.
-    const step = lod.step;
     // 시야 밖은 아예 훑지 않는다 — 같은 예산을 보이는 곳에 쓴다.
     const y0 = Math.max(1, Math.floor(((90 - (cLat + span)) / 180) * H));
     const y1 = Math.min(H - 1, Math.ceil(((90 - (cLat - span)) / 180) * H));
     const lonHalf = span >= 180 ? 180 : span / Math.max(0.15, Math.cos((cLat * Math.PI) / 180));
     const wrapAll = lonHalf >= 180;
-    for (let y = y0; y < y1; y += step) {
-      for (let x = 0; x < W; x += step) {
+    // 한 칸도 빼놓지 않고 훑는다. 간격은 뒤에서 '봉우리 고르기'로 준다 —
+    // 일정 간격으로 훑으면 비가 어디에 세든 표식이 격자로 선다(PD 지적).
+    for (let y = y0; y < y1; y += 1) {
+      for (let x = 0; x < W; x += 1) {
         const o = (y * W + x) * 4;
         const rate = px[o];
         const storm = px[o + 2];
@@ -265,13 +278,37 @@ export class PrecipIcons {
           if (d > 180) d -= 360; else if (d < -180) d += 360;
           if (Math.abs(d) > lonHalf) continue;
         }
+        // 구름이 없는 곳에서 비가 오게 둘 수 없다 — 두께가 없으면 건너뛴다.
+        let top = 6000;
+        if (cRead) {
+          const co = (y * cRead.W + x) * 4;
+          if (cRead.px[co + 3] < 24) continue;
+          top = (cRead.px[co + 2] / 255) * 16000;
+        }
         const kind = px[o + 1];
         const type = storm >= lod.storm && rate >= lod.rate ? 2 : (kind > 190 ? 1 : 0);
-        cand.push({ x, y, w: Math.max(rate, storm * 0.9), type });
+        cand.push({ x, y, w: Math.max(rate, storm * 0.9), type, top });
       }
     }
     if (!cand.length) { this.points.geometry.setDrawRange(0, 0); return 0; }
+    // 센 곳부터 고르되 이미 고른 것과 최소 간격을 둔다.
+    // 봉우리에 먼저 놓이므로 비 모양을 따라 앉고, 격자무늬가 생기지 않는다.
     cand.sort((a, b) => b.w - a.w);
+    const sep = Math.max(1, lod.step);
+    const gw = Math.ceil(W / sep);
+    const taken = new Set();
+    const picked = [];
+    for (const c of cand) {
+      if (picked.length >= lod.max) break;
+      const gx = Math.floor(c.x / sep);
+      const gy = Math.floor(c.y / sep);
+      const k = gy * gw + gx;
+      if (taken.has(k)) continue;
+      taken.add(k);
+      picked.push(c);
+    }
+    cand.length = 0;
+    Array.prototype.push.apply(cand, picked);
     const n = Math.min(cand.length, lod.max, MAX_POINTS);
     const geo = this.points.geometry;
     const pos = geo.attributes.position.array;
@@ -292,9 +329,11 @@ export class PrecipIcons {
       const la = (lat * Math.PI) / 180;
       const lo = (lon * Math.PI) / 180;
       const cl = Math.cos(la);
-      pos[i * 3] = radius * cl * Math.sin(lo);
-      pos[i * 3 + 1] = radius * Math.sin(la);
-      pos[i * 3 + 2] = radius * cl * Math.cos(lo);
+      // 구름 밑에 매단다 — 운정의 45% 높이(대략 구름 밑면). 지형 과장과 같은 배율을 쓴다.
+      const r = radius + ((c.top * 0.45) / 6371000) * exagger;
+      pos[i * 3] = r * cl * Math.sin(lo);
+      pos[i * 3 + 1] = r * Math.sin(la);
+      pos[i * 3 + 2] = r * cl * Math.cos(lo);
       typ[i] = c.type;
       siz[i] = base * (0.72 + 0.45 * (c.w / 255));
     }

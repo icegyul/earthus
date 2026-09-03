@@ -255,10 +255,14 @@ def precip_png(wet, cape):
                 is_mix = bool((frz and frz[src] and frz[src] > 0.5)
                               or (ice and ice[src] and ice[src] > 0.5))
                 row[o + 1] = 255 if is_snow else (128 if is_mix else 0)
-                # 뇌우: 대류강수 비율 × CAPE. 둘 다 높아야 한다 — 어느 하나로는 못 정한다.
-                conv = ((cp[src] or 0.0) * 3600.0 / rate) if (cp and rate > 0.01) else 0.0
+                # 뇌우: 대류강수의 **세기** × CAPE.
+                # 비율(conv/total)을 쓰면 열대의 약한 소나기도 1이 되어 지구의 5.5%가
+                # 뇌우로 찍혔다(실측). 세기를 쓰면 정말 센 셀만 남는다.
+                cr = (cp[src] or 0.0) * 3600.0 if cp else 0.0
                 cv = (cape[src] or 0.0) if cape else 0.0
-                row[o + 2] = int(max(0.0, min(1.0, conv * min(1.0, cv / 1500.0))) * 255.0 + 0.5)
+                a1 = max(0.0, min(1.0, (cr - 0.15) / 1.85))
+                a2 = max(0.0, min(1.0, (cv - 500.0) / 1500.0))
+                row[o + 2] = int(a1 * a2 * 255.0 + 0.5)
             row[o + 3] = 255
         rows.append(bytes(row))
     return encode_png_rgba(NI, NJ, rows)
@@ -381,8 +385,8 @@ def handler(event, context):
                  % (TOP_L, TOP_M, TOP_H),
             'precip.R': 'PRATE mm/h, log: 0 below %.2f, 255 at %.0f' % (PRATE_LO, PRATE_HI),
             'precip.G': 'type: 0 rain, 128 freezing/sleet, 255 snow (GFS CRAIN/CFRZR/CICEP/CSNOW)',
-            'precip.B': 'DERIVED thunder likelihood = convective share × min(1, CAPE/1500); '
-                        'not a GFS output field',
+            'precip.B': 'DERIVED thunder likelihood = ramp(CPRAT mm/h, 0.15..2.0) × '
+                        'ramp(CAPE, 500..2000); not a GFS output field',
             'wind.R': 'UGRD %s hPa, m/s: R/255*128-64 (0.5 m/s quantized, 4° mean)' % WIND_LEVEL,
             'wind.G': 'VGRD %s hPa, m/s: G/255*128-64 (0.5 m/s quantized, 4° mean)' % WIND_LEVEL,
         },

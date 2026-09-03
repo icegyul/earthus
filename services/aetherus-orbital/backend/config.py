@@ -57,7 +57,16 @@ class Settings(BaseSettings):
     # 요지 — 비용은 (쌍 수 x 덮는 시간축 길이)이므로 주기를 늘려도 줄지 않고, 전
     # 카탈로그 연속 커버리지는 54 CPU-시간/일로 실시간의 2.25배다. 7일 앞 예상은
     # SOCRATES 가 이미 무료로 준다.
-    screening_window_hours: float = 24.0
+    # 24.0 이었다. 아무도 그 조합을 돌려 본 적이 없었고, 브라우저 테스트가 그것을
+    # 건드리자 서버가 CPU 500초를 태우며 /ui/ 를 35초 무응답으로 만들었다. 2.0 은
+    # 실측된 값이다 — 2,000객체에 429~490초.
+    screening_window_hours: float = 2.0
+
+    # 한 실행이 시작될 수 있는 최대 작업량. objects x window_hours 로 센다.
+    # 실제로 완주한 설정은 전부 통과해야 하므로 측정된 최대(1,998 x 6h = 11,988
+    # 객체시간, 실측 47분) 바로 위에 둔다. 폭주한 조합(2,000 x 24h = 48,000,
+    # 최악 5.5시간)은 거부한다. 근거는 backend/conjunction/budget.py 참조.
+    screening_max_object_hours: float = 12000.0
     screening_coarse_step_seconds: int = 30
     screening_refine_step_seconds: int = 5
     screening_threshold_m: float = 25000.0
@@ -73,7 +82,9 @@ class Settings(BaseSettings):
     conjunctions_page_limit: int = 200
 
     # P5 intervention benefit engine (IDEALIZED_REMOVAL counterfactuals only)
-    benefit_horizon_hours: float = 24.0
+    # 24.0 이었다. P5 패널의 브라우저 클릭 하나가 이 기본값으로 베이스라인을 다시
+    # 지으면서 API 를 막았다. 스크리닝 창과 같은 근거로 2.0 으로 내린다.
+    benefit_horizon_hours: float = 2.0
     benefit_max_objects: int = 2000
     benefit_shell_margin_km: float = 50.0
     # Per-metric beneficiary thresholds; a beneficiary must exceed the value

@@ -209,6 +209,7 @@ async def ingestion_error_handler(request: Request, error: IngestionError) -> JS
         "QUARANTINE": 400,
         "INVALID_WINDOW": 422,
         "SCREEN_INVALID": 422,
+        "SCREEN_BUDGET_EXCEEDED": 422,
         "INVALID_PARAMETER": 422,
         "BASELINE_MISSING": 422,
         "SCENARIO_INVALID": 422,

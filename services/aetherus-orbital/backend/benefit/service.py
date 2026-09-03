@@ -66,14 +66,18 @@ from backend.benefit.protect import (
 )
 from backend.benefit.repository import BenefitRepository, new_baseline_snapshot_id
 from backend.config import settings
+from backend.conjunction.budget import check_screening_budget
 from backend.conjunction.models import ScreeningConfig
 from backend.conjunction.repository import ConjunctionRepository, to_mean_elements
 
-MAX_HORIZON_HOURS = 168.0
+#: 창 상한과 같은 이유로 내린다 — 6시간을 넘겨 측정된 실행이 없다.
+MAX_HORIZON_HOURS = 24.0
 
 
 
-async def _load_scoped_solutions(catalog_scope: list[str] | None) -> list[dict[str, Any]]:
+async def _load_scoped_solutions(
+    catalog_scope: list[str] | None, horizon_hours: float | None = None
+) -> list[dict[str, Any]]:
     """Load the screening population, optionally bounded to an explicit scope.
 
     Scoping is sound only when the scope covers every object the intervention can
@@ -84,9 +88,17 @@ async def _load_scoped_solutions(catalog_scope: list[str] | None) -> list[dict[s
     manoeuvre introduces. Callers that cannot guarantee the condition pass None
     and pay for the full catalogue.
     """
-    return await ConjunctionRepository().load_screenable_solutions(
+    loaded = await ConjunctionRepository().load_screenable_solutions(
         settings.screening_max_objects, catalog_scope
     )
+    # 베이스라인도 스크리닝만큼 커질 수 있다. P5 패널의 클릭 하나가 이 경로로
+    # 2,000객체 x 24시간을 시작시켰고 API 가 멈췄다. 같은 예산을 적용한다.
+    check_screening_budget(
+        objects=len(loaded),
+        window_hours=settings.benefit_horizon_hours if horizon_hours is None else horizon_hours,
+        budget=settings.screening_max_object_hours,
+    )
+    return loaded
 
 class BenefitService:
     """Build baseline risk graphs and run REMOVE counterfactual scenarios."""
@@ -110,7 +122,7 @@ class BenefitService:
         )
         if not 0.01 <= requested_hours <= MAX_HORIZON_HOURS:
             raise ScenarioInvalidError(
-                "Baseline horizon must lie between 0.01 and 168 hours",
+                f"Baseline horizon must lie between 0.01 and {MAX_HORIZON_HOURS:g} hours",
                 {"horizon_hours": requested_hours},
             )
         config = BaselineConfig(

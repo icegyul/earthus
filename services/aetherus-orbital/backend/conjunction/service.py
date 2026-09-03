@@ -24,6 +24,7 @@ from backend.conjunction.tca import find_tca
 from backend.orbit.errors import PropagationError
 from backend.orbit.frames import FrameAssumptions
 from backend.orbit.propagator import Sgp4Propagator
+from backend.conjunction.budget import check_screening_budget
 from backend.conjunction.materiality import (
     MATERIAL_CHANGE_POLICY,
     SNAPSHOT_CHANNELS,
@@ -31,7 +32,10 @@ from backend.conjunction.materiality import (
 )
 from backend.orbit.time_scale import require_utc_datetime
 
-MAX_WINDOW_HOURS = 168.0
+#: 168.0(7일) 이었다. 6시간을 넘겨 측정된 실행이 하나도 없는데 7일을 허용하는 것은
+#: 재 보지 않은 폭주를 계약으로 허용하는 것이다. 24시간으로 내린다 — 이것도 아직
+#: 측정 전이지만 예산(screening_max_object_hours)이 실제 한도를 잡는다.
+MAX_WINDOW_HOURS = 24.0
 
 
 class ConjunctionService:
@@ -72,7 +76,7 @@ class ConjunctionService:
         )
         if not 0.01 <= requested_window <= MAX_WINDOW_HOURS:
             raise ScreeningInvalidError(
-                "Screening window must lie between 0.01 and 168 hours",
+                f"Screening window must lie between 0.01 and {MAX_WINDOW_HOURS:g} hours",
                 {"window_hours": requested_window},
             )
         overrides: dict[str, Any] = {"window_hours": requested_window}
@@ -93,6 +97,13 @@ class ConjunctionService:
 
         loaded = await self.repository.load_screenable_solutions(
             effective_config.max_objects, catalog_ids
+        )
+        # 시작하기 전에 크기를 본다. 이 검사가 없을 때 브라우저 클릭 하나가 API 를
+        # 몇 시간 막았고, 그동안 아무 산출도 없었다.
+        check_screening_budget(
+            objects=len(loaded),
+            window_hours=requested_window,
+            budget=settings.screening_max_object_hours,
         )
         population_total = await self.repository.count_screenable_objects()
         truncated = catalog_ids is None and population_total > len(loaded)

@@ -272,6 +272,45 @@ class BenefitRepository:
             row = result.mappings().one_or_none()
         return _baseline_dict(dict(row)) if row else None
 
+    async def find_reusable_baseline(
+        self, *, input_hash: str, config_hash: str, model_version: str
+    ) -> dict[str, Any] | None:
+        """An existing baseline built from exactly these inputs, if there is one.
+
+        ``input_hash`` covers the P4 event and snapshot identities the graph was
+        built from, so two baselines sharing it were built from the same upstream
+        facts and hold the same edges. Rebuilding one is 1.1 seconds of work and
+        4.9 MB of permanently stored rows; 1,397 of them accumulated in three
+        days because nothing ever looked for the one already there.
+
+        The horizon is deliberately not part of the match. It moves with the
+        clock, so including it would make every lookup miss, and it does not
+        change the graph — the events that fell inside it do, and those are what
+        the input hash covers.
+        """
+        async with get_db_session() as session:
+            result = await session.execute(
+                text(
+                    """
+                    SELECT *, provenance_json AS provenance
+                    FROM baseline_graph_snapshot
+                    WHERE input_hash = :input_hash
+                      AND config_hash = :config_hash
+                      AND model_version = :model_version
+                      AND edge_count > 0
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                    """
+                ),
+                {
+                    "input_hash": input_hash,
+                    "config_hash": config_hash,
+                    "model_version": model_version,
+                },
+            )
+            row = result.mappings().one_or_none()
+        return _baseline_dict(dict(row)) if row else None
+
     async def latest_operational_baseline(self) -> dict[str, Any] | None:
         async with get_db_session() as session:
             result = await session.execute(

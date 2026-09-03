@@ -452,6 +452,30 @@ def result_hash(
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
 
+#: The baseline horizon starts on a bucket boundary rather than at the exact
+#: instant of the request.
+#:
+#: It used to start at ``now``, which meant no two requests ever asked the same
+#: question: six seconds apart, one conjunction had aged out of the window and
+#: the input hash changed. Nothing could be reused, so every call wrote another
+#: ~3,000 edge rows, and risk_edge reached four million rows and 90% of the
+#: database.
+#:
+#: Quantising costs freshness bounded by the bucket and buys the ability to
+#: recognise the same question twice. The horizon that was actually used travels
+#: in every payload, so a caller always knows which window their answer covers.
+HORIZON_BUCKET_SECONDS = 900  # 15 minutes
+
+
 def default_horizon_bounds(now: datetime, horizon_hours: float) -> tuple[datetime, datetime]:
-    start = now
+    """Bucket-aligned [start, stop) for a baseline horizon.
+
+    ``start`` is ``now`` floored to the bucket, never rounded up: a horizon must
+    not begin in the future, or events between now and the boundary would fall
+    outside a window that claims to start now.
+    """
+    epoch = int(now.timestamp())
+    start = now.fromtimestamp(
+        epoch - (epoch % HORIZON_BUCKET_SECONDS), tz=now.tzinfo
+    ).replace(microsecond=0)
     return start, start + timedelta(hours=horizon_hours)

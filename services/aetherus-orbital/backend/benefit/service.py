@@ -196,6 +196,35 @@ class BenefitService:
         }
         input_hash_value = build_input_hash(build.edge_seeds)
 
+        # Has this exact graph already been stored?
+        #
+        # risk_edge holds 4 million rows and 90% of the database because every
+        # call wrote its edge set again: 1,397 baselines in three days, ~3,000
+        # edges each, all append-only. The inputs were usually identical - the
+        # same P4 events and snapshots - and nothing ever looked.
+        #
+        # Reuse skips the write, not the check: the graph is still built and
+        # hashed, so a baseline is only reused when it provably holds the same
+        # edges. And the answer says it was reused, because a stored graph from
+        # ten minutes ago must not read as one computed just now.
+        reusable = await self.repository.find_reusable_baseline(
+            input_hash=input_hash_value,
+            config_hash=config_hash,
+            model_version=RISK_GRAPH_MODEL_VERSION,
+        )
+        if reusable is not None:
+            return self._baseline_payload(
+                baseline_row=reusable,
+                warnings=[
+                    *warnings,
+                    "Reused the stored baseline built from identical P4 inputs "
+                    f"(input_hash {input_hash_value[:12]}...); no new graph was "
+                    "written. Its horizon is the one it was built with, not the "
+                    "horizon of this request.",
+                ],
+                reused=True,
+            )
+
         await self.repository.insert_baseline_snapshot(
             snapshot_id=snapshot_id,
             horizon_start=horizon_start,
@@ -1902,7 +1931,7 @@ class BenefitService:
         }
 
     def _baseline_payload(
-        self, baseline_row: dict[str, Any], *, warnings: list[str]
+        self, baseline_row: dict[str, Any], *, warnings: list[str], reused: bool = False
     ) -> dict[str, Any]:
         provenance = baseline_row.get("provenance") or {}
         return {
@@ -1920,6 +1949,10 @@ class BenefitService:
                 "object_count": baseline_row["object_count"],
                 "graph_hash": baseline_row["graph_hash"],
                 "edges_available": int(baseline_row["edge_count"] or 0) > 0,
+                # False means these edges were computed for this request; True
+                # means an identical stored graph was served instead of writing
+                # a duplicate.
+                "reused_existing_baseline": reused,
             },
             "provenance": {
                 "model_id": baseline_row["model_id"],

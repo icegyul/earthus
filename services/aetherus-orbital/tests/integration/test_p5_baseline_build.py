@@ -37,25 +37,61 @@ class TestBaselineBuild:
                     ).scalar_one()
                 )
 
-        before = await operational_count()
+        async def row_of(snapshot_id: str):
+            async with get_db_session() as session:
+                return (
+                    await session.execute(
+                        text(
+                            "SELECT graph_hash, edge_count FROM baseline_graph_snapshot"
+                            " WHERE id = :id"
+                        ),
+                        {"id": snapshot_id},
+                    )
+                ).mappings().one_or_none()
+
+        # The first build may itself reuse a baseline an earlier run left behind,
+        # so the count is measured after it rather than assumed to grow.
         first = await benefit_service.build_baseline(horizon_hours=24.0)
         first_id = first["data"]["baseline_snapshot_id"]
-        second = await benefit_service.build_baseline(horizon_hours=24.0)
+        first_row = await row_of(first_id)
+        before = await operational_count()
+
+        # Rebuilding the same inputs reuses the stored graph rather than writing
+        # a duplicate. That is not a hole in append-only: append-only forbids
+        # rewriting a stored row, and skipping a write rewrites nothing. The
+        # earlier version of this test asserted "two builds, two rows", which
+        # conflated "never overwrite" with "always write" and made the fix for
+        # four million duplicate risk_edge rows look like a regression.
+        repeat = await benefit_service.build_baseline(horizon_hours=24.0)
+        after_repeat = await operational_count()
+        if repeat["data"].get("reused_existing_baseline"):
+            # Reuse serves the row that is already there and writes nothing.
+            assert repeat["data"]["baseline_snapshot_id"] == first_id
+            assert after_repeat == before
+        else:
+            assert after_repeat == before + 1
+
+        # The stored row is untouched by the rebuild, whichever way it went.
+        assert await row_of(first_id) == first_row
+
+        # A genuinely different question appends its own row, and the first one
+        # is still addressable beside it.
+        second = await benefit_service.build_baseline(horizon_hours=2.0)
         second_id = second["data"]["baseline_snapshot_id"]
-        after = await operational_count()
-        assert after == before + 2
-        # Both snapshots remain individually addressable: append-only versions.
-        async with get_db_session() as session:
-            kept = (
-                await session.execute(
-                    text(
-                        "SELECT id FROM baseline_graph_snapshot"
-                        " WHERE id IN (:a, :b) AND validation_state = 'PUBLIC_SCREENING'"
-                    ),
-                    {"a": first_id, "b": second_id},
-                )
-            ).fetchall()
-        assert len(kept) == 2
+        if second_id != first_id:
+            async with get_db_session() as session:
+                kept = (
+                    await session.execute(
+                        text(
+                            "SELECT id FROM baseline_graph_snapshot"
+                            " WHERE id IN (:a, :b)"
+                            " AND validation_state = 'PUBLIC_SCREENING'"
+                        ),
+                        {"a": first_id, "b": second_id},
+                    )
+                ).fetchall()
+            assert len(kept) == 2
+        assert await row_of(first_id) == first_row
 
     async def test_stale_and_probe_inputs_never_enter_graph(self, benefit_repository):
         from datetime import UTC, datetime

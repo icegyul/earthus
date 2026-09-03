@@ -8,7 +8,7 @@ import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './u
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=5';
-import { LiveLayers } from './live-layers.js?v=22';
+import { LiveLayers } from './live-layers.js?v=23';
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
 import { PopSculpture } from './pop-sculpture.js?v=13';

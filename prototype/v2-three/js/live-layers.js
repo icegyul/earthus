@@ -97,6 +97,87 @@ const getDotTex = () => {
   return dotTex;
 };
 
+// 사이클론 글리프. 태풍·허리케인 중심에 얹는 표식이다(PD 요청) — 흰 점만으로는
+// '여기가 태풍의 중심'이 읽히지 않는다. 흰색으로 그려서 태풍마다 다른 색으로 물들인다.
+// 눈(가운데 구멍)을 뚫는 것이 이 기호의 핵심이다.
+let cycloneTex = null;
+const getCycloneTex = () => {
+  if (cycloneTex) return cycloneTex;
+  const S = 160, cx = S / 2, cy = S / 2;
+  const c = document.createElement('canvas');
+  c.width = S; c.height = S;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  // 팔 두 개. 눈 가까이서 굵게 시작해 바깥으로 감기며 끝은 뾰족해진다.
+  const rIn = 24, rOut = 63, wMax = 17, A0 = -0.45 * Math.PI, A1 = 0.95 * Math.PI, N = 64;
+  for (let k = 0; k < 2; k += 1) {
+    const phi = k * Math.PI;
+    const outer = [], inner = [];
+    for (let i = 0; i <= N; i += 1) {
+      const t = i / N;
+      const a = phi + A0 + (A1 - A0) * t;
+      const rc = rIn + (rOut - rIn) * Math.pow(t, 0.85);
+      const w = wMax * Math.pow(1 - t, 0.8);
+      outer.push([cx + Math.cos(a) * (rc + w), cy + Math.sin(a) * (rc + w)]);
+      inner.push([cx + Math.cos(a) * (rc - w), cy + Math.sin(a) * (rc - w)]);
+    }
+    ctx.beginPath();
+    ctx.moveTo(outer[0][0], outer[0][1]);
+    for (let i = 1; i < outer.length; i += 1) ctx.lineTo(outer[i][0], outer[i][1]);
+    for (let i = inner.length - 1; i >= 0; i -= 1) ctx.lineTo(inner[i][0], inner[i][1]);
+    ctx.closePath();
+    ctx.fill();
+  }
+  // 태풍의 눈
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.beginPath();
+  ctx.arc(cx, cy, 19, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalCompositeOperation = 'source-over';
+  cycloneTex = new THREE.CanvasTexture(c);
+  // 캔버스는 y가 아래로, gl_PointCoord 도 y가 아래로 간다. 뒤집으면 회전 방향이 반대가 된다.
+  cycloneTex.flipY = false;
+  cycloneTex.minFilter = THREE.LinearFilter;
+  cycloneTex.magFilter = THREE.LinearFilter;
+  cycloneTex.generateMipmaps = false;
+  return cycloneTex;
+};
+
+const CYCLONE_VERT = /* glsl */ `
+attribute vec3 aColor;
+attribute float aSpin;
+attribute float aSize;
+varying vec3 vCol;
+varying float vSpin;
+void main() {
+  vCol = aColor;
+  vSpin = aSpin;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  gl_PointSize = aSize;
+}`;
+
+const CYCLONE_FRAG = /* glsl */ `
+precision mediump float;
+uniform sampler2D uMap;
+uniform float uTime;
+uniform float uOpacity;
+varying vec3 vCol;
+varying float vSpin;
+void main() {
+  vec2 p = gl_PointCoord - 0.5;
+  // 북반구는 반시계, 남반구는 시계 — 실제 회전 방향이다(코리올리). aSpin 이 부호를 준다.
+  float a = uTime * 0.5 * vSpin;
+  float s = sin(a), c = cos(a);
+  vec2 q = vec2(c * p.x - s * p.y, s * p.x + c * p.y) + 0.5;
+  if (q.x < 0.0 || q.x > 1.0 || q.y < 0.0 || q.y > 1.0) discard;
+  // 색을 0으로 만든 것은 '예보 구간 밖'이라는 뜻이다(setTimeOffset). 검게 그리지 않는다.
+  if (vCol.r + vCol.g + vCol.b < 0.01) discard;
+  float m = texture2D(uMap, q).a;
+  if (m < 0.03) discard;
+  gl_FragColor = vec4(vCol, m * uOpacity);
+  #include <colorspace_fragment>
+}`;
+
 export class LiveLayers {
   constructor(scene, heightAt, getExagger, dataBadge) {
     this.group = new THREE.Group();
@@ -418,6 +499,41 @@ export class LiveLayers {
       blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
     });
     return new THREE.Points(g, m);
+  }
+
+  // 태풍·허리케인 중심 표식. 점 하나에 사이클론 기호를 얹고 반구에 맞춰 돌린다.
+  makeCyclones(items, { size = 26, lift = 0.0035, opacity = 0.96 } = {}) {
+    const n = items.length;
+    const pos = new Float32Array(n * 3);
+    const col = new Float32Array(n * 3);
+    const spin = new Float32Array(n);
+    const siz = new Float32Array(n);
+    items.forEach((it, i) => {
+      const v = llToV3(it.lat, it.lon, this.surfR(it.lat, it.lon, lift));
+      pos[i * 3] = v.x; pos[i * 3 + 1] = v.y; pos[i * 3 + 2] = v.z;
+      col[i * 3] = it.c.r; col[i * 3 + 1] = it.c.g; col[i * 3 + 2] = it.c.b;
+      spin[i] = it.lat < 0 ? -1 : 1;      // 남반구는 반대로 돈다
+      siz[i] = it.size || size;
+    });
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
+    g.setAttribute('aSpin', new THREE.BufferAttribute(spin, 1));
+    g.setAttribute('aSize', new THREE.BufferAttribute(siz, 1));
+    const m = new THREE.ShaderMaterial({
+      vertexShader: CYCLONE_VERT,
+      fragmentShader: CYCLONE_FRAG,
+      uniforms: {
+        uMap: { value: getCycloneTex() },
+        uTime: { value: 0 },
+        uOpacity: { value: opacity },
+      },
+      transparent: true,
+      depthWrite: false,
+    });
+    const pts = new THREE.Points(g, m);
+    pts.frustumCulled = false;   // 점 하나짜리라 경계상자로 자르면 사라진다
+    return pts;
   }
 
   // ---------- 해양 부이 (NDBC 등 · OBSERVED) ----------
@@ -1891,6 +2007,7 @@ export class LiveLayers {
     const g = new THREE.Group();
     const rT = this.aboveCloudsR();
     const tracks = [];
+    const animMats = [];
     (d.storms || []).forEach((s, si) => {
       const ag = (s.agencies || []).find((a) => a.steps && a.steps.length) || {};
       const steps = ag.steps || [];
@@ -1913,9 +2030,11 @@ export class LiveLayers {
       const pts = this.makePoints(items, { size: 5, lift: rT - 1.0035 });
       g.add(pts);
       const now = steps[0];
-      const nowPt = this.makePoints([{ lat: now.lat, lon: now.lon, c: new THREE.Color('#ffffff') }],
-        { size: 10, lift: rT - 1.0035, additive: true });
+      // 중심에는 사이클론 기호를 얹는다(PD 요청). 흰 점은 '여기가 태풍'을 말해주지 못한다.
+      const nowPt = this.makeCyclones([{ lat: now.lat, lon: now.lon, c: color }],
+        { size: 34, lift: rT - 1.0035 });
       g.add(nowPt);
+      animMats.push(nowPt.material);
       // 타임 스크럽용: 각 스텝의 유효시각을 붙여 둔다. 이게 있어야 '그 시각의 위치'를 낸다.
       const timed = steps
         .map((st) => ({ t: parseValidUtc(st.validUtc), lat: st.lat, lon: st.lon, wind: st.windMs, h: st.h }))
@@ -1925,21 +2044,19 @@ export class LiveLayers {
     // 시각을 옮겼을 때 그 시각의 예보 위치를 표시할 표식. 관측된 현재 위치(흰 점)와
     // 구분되게 속 빈 느낌으로 크게 둔다 — 이건 관측이 아니라 공식 '예보' 위치다(15.5).
     if (tracks.length) {
-      const mg = new THREE.BufferGeometry();
-      mg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(tracks.length * 3), 3));
-      mg.setAttribute('color', new THREE.BufferAttribute(new Float32Array(tracks.length * 3), 3));
-      const mk = new THREE.Points(mg, new THREE.PointsMaterial({
-        size: 18, sizeAttenuation: false, vertexColors: true, map: getDotTex(),
-        alphaTest: 0.05, transparent: true, opacity: 0.9, depthWrite: false,
-        blending: THREE.AdditiveBlending,
-      }));
-      mk.frustumCulled = false;
+      // 스크럽 표식도 같은 기호로 — 다만 조금 작고 옅게(관측이 아니라 '예보 위치'다).
+      const mk = this.makeCyclones(
+        tracks.map((t) => ({ lat: t.steps[0].lat, lon: t.steps[0].lon, c: t.color })),
+        { size: 28, lift: rT - 1.0035, opacity: 0.78 },
+      );
       mk.visible = false;
       g.add(mk);
+      animMats.push(mk.material);
       g.userData.tyTracks = tracks;
       g.userData.tyMarker = mk;
       g.userData.tyRadius = rT;
     }
+    if (animMats.length) g.userData.animMats = animMats;   // tick() 이 매 프레임 uTime 을 준다
     return g;
   }
 
@@ -1952,7 +2069,7 @@ export class LiveLayers {
     const mk = ud.tyMarker;
     const at = Date.now() + (ms || 0);
     const pos = mk.geometry.attributes.position.array;
-    const col = mk.geometry.attributes.color.array;
+    const col = mk.geometry.attributes.aColor.array;
     let shown = 0;
     ud.tyTracks.forEach((tr, i) => {
       const st = tr.steps;
@@ -1979,7 +2096,7 @@ export class LiveLayers {
       }
     });
     mk.geometry.attributes.position.needsUpdate = true;
-    mk.geometry.attributes.color.needsUpdate = true;
+    mk.geometry.attributes.aColor.needsUpdate = true;
     mk.visible = shown > 0 && Math.abs(ms || 0) > 60000;
     // 관측된 '지금' 위치는 지금일 때만 보인다 — 미래 화면에 과거 관측을 남기지 않는다.
     for (const tr of ud.tyTracks) if (tr.nowPt) tr.nowPt.visible = Math.abs(ms || 0) <= 60000;

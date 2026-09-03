@@ -47,8 +47,13 @@
   }
   #scene { position: fixed; inset: 0; display: block; }
 
+  /* 상단바는 좌상단 '지구 전환기'(js/earth-switch.js) 오른쪽에 붙는다.
+     그 전에는 오른쪽 끝에 워드마크와 함께 떠 있었는데, 전환기가 이미 EARTHUS 라고
+     말하고 있어서 이름이 두 번 나왔다(PD 지적). 워드마크를 빼고 자리를 합쳤다.
+     실제 left/top 은 전환기 폭을 재서 JS 가 넣는다 — 폭을 여기 적어 두면
+     라벨이 바뀔 때 다시 겹친다. */
   #panel {
-    position: fixed; top: 14px; right: 14px; width: 252px;
+    position: fixed; top: 14px; left: 14px; width: 252px;
     font-size: 12px; user-select: none;
   }
   #chrome {
@@ -918,7 +923,6 @@
 
 <div id="panel">
   <div id="chrome">
-    <img class="brand" src="./assets/brand/earthus-wordmark-white.svg" alt="EARTHUS" />
     <button id="btn-search" data-i18n-title="search" title="검색 (나라·시군구·도시·공항)">⌕</button>
     <button id="btn-ask" data-i18n-title="ask" title="지구에 묻기 — 지금 켜 놓은 자료만 근거로 답합니다">✦</button>
     <button id="btn-share" data-i18n-title="share" title="이 화면 공유 (링크 복사 · 그림 저장)">⤴</button>
@@ -1024,7 +1028,7 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=166"></script>
+<script type="module" src="./js/main.js?v=168"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

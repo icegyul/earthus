@@ -8,7 +8,7 @@ import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './u
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=5';
-import { LiveLayers } from './live-layers.js?v=35';
+import { LiveLayers } from './live-layers.js?v=36';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=2';
 import { i18n } from './i18n.js?v=6';
@@ -4002,6 +4002,34 @@ async function main() {
     paint();
   }
   applyI18n();
+
+  // ---------------------------------------------------------------------------
+  // 상단바를 좌상단 지구 전환기 오른쪽에 붙인다 (PD 지적: 이름이 두 번 나온다).
+  // 전환기는 세 지구가 공유하는 파일(js/earth-switch.js)이 스스로 넣는다 —
+  // 우리가 그 파일을 건드리지 않고 **폭을 재서** 자리를 잡는다. 폭을 적어 두면
+  // 라벨이 바뀌거나 언어가 달라질 때 다시 겹친다.
+  // ---------------------------------------------------------------------------
+  const placePanel = () => {
+    const sw = document.querySelector('.es-switch');
+    const el = document.getElementById('panel');
+    if (!el) return;
+    const narrow = window.innerWidth < 700;
+    if (!sw) { el.style.left = '14px'; el.style.right = 'auto'; return; }
+    const r = sw.getBoundingClientRect();
+    el.style.right = 'auto';
+    if (narrow) {
+      // 좁은 화면에서 나란히 두면 둘 다 잘린다 — 전환기 아래로 내린다.
+      el.style.left = `${Math.round(r.left)}px`;
+      el.style.top = `${Math.round(r.bottom + 8)}px`;
+    } else {
+      el.style.left = `${Math.round(r.right + 10)}px`;
+      el.style.top = `${Math.round(r.top)}px`;
+    }
+  };
+  placePanel();
+  // 전환기는 defer 로 늦게 붙을 수 있다. 몇 번 더 확인한다.
+  for (const ms of [120, 400, 1200]) setTimeout(placePanel, ms);
+  window.addEventListener('resize', placePanel);
 
   // ---------- 크롬 서랍 (검색·설정) — 1.0식 배타성: 하나 열리면 나머지 닫힘 ----------
   const searchDrawer = document.getElementById('search-drawer');

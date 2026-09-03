@@ -3,6 +3,8 @@
 // 실데이터: GDACS 열대저기압(공식·전 해역) + USGS 지진(관측). 사건은 3D 지구 위 비컨으로.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
+// 사건 방: 기관 스택 + 진리등급 + 현재→다음→행동 (정본 HAZ-011로 사건 결합)
+import { EventRoom } from './event-room.js?v=1';
 
 const GDACS_TC = 'https://www.gdacs.org/gdacsapi/api/events/geteventlist/MAP?eventtype=TC';
 const USGS_EQ = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson';
@@ -42,6 +44,8 @@ export class IntelFeed {
     this._frame = 0;
     this.past = null; // 선택 사건의 과거 맥락 { state, ... }
     this.onUpdate = null; // 비동기 로드 후 패널 리렌더 콜백 (main.js가 연결)
+    this.room = new EventRoom();
+    this.roomHtmlCache = null; // 선택 사건의 기관 스택 (비동기 완성 후 채워짐)
   }
 
   // PAST: 사건 주변의 실제 이력 — 값 생성 없이 공식 아카이브 조회만
@@ -172,6 +176,7 @@ export class IntelFeed {
           lat: c[1],
           lon: c[0],
           depthKm: c[2],
+          official: p.url || null,   // USGS 사건 상세 페이지 (피드가 주는 값)
           facts: [
             ['규모', `M${p.mag != null ? p.mag.toFixed(1) : '?'}`],
             ['진원 깊이', c[2] != null ? `${Math.round(c[2])} km (지하)` : '—'],
@@ -225,6 +230,16 @@ export class IntelFeed {
       <div class="feed-note">${srcKo} — 사건 클릭 시 3D 지구에서 확인</div>`;
   }
 
+  // 공식 1차 출처의 사건 페이지로 나가는 링크.
+  // 저장소 규칙대로 noopener 를 붙인 공식 페이지만 쓴다. 값이 없으면 만들지 않는다.
+  officialLink(it) {
+    if (!it.official) return '';
+    let host = '';
+    try { host = new URL(it.official).host.replace(/^www\./, ''); } catch (e) { return ''; }
+    const nameKo = { 'earthquake.usgs.gov': 'USGS 사건 페이지' }[host] || `${host} 공식 페이지`;
+    return `<br/><a class="official-out" href="${it.official}" target="_blank" rel="noopener noreferrer">${nameKo} 열기 ↗</a>`;
+  }
+
   roomHtml(it) {
     const facts = it.facts.map(([k, v]) => `<div class="stat"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
     return `
@@ -236,8 +251,9 @@ export class IntelFeed {
           ${facts}
           <div class="stat"><span class="k">상태</span><span class="v">${it.status}</span></div>
         </div></div>
+      ${this.roomHtmlCache || '<div class="card room"><div class="card-h">사건 방 — 기관 스택</div><div class="card-b">기관 데이터를 모으는 중… (공식 트랙 · 앙상블 · 해상관측 · 연안 침수 · 특보)</div></div>'}
       <div class="card"><div class="card-h">EVIDENCE</div>
-        <div class="card-b">1차 출처: ${it.source}<br/>갱신: ${agoText(it.whenT)} · 지구 위 위치는 출처 좌표 그대로${it.kind === 'TC' ? '<br/>트랙 라인: GDACS 공식 경로' : ''}${it.depthKm != null ? `<br/>진원은 지하 <b>${Math.round(it.depthKm)}km</b> — 재해 메뉴의 <b>지진 깊이</b>를 켜면 진원을 실제 깊이 자리에서 봅니다` : ''}</div></div>
+        <div class="card-b">1차 출처: ${it.source}<br/>갱신: ${agoText(it.whenT)} · 지구 위 위치는 출처 좌표 그대로${it.kind === 'TC' ? '<br/>트랙 라인: GDACS 공식 경로' : ''}${it.depthKm != null ? `<br/>진원은 지하 <b>${Math.round(it.depthKm)}km</b> — 재해 메뉴의 <b>지진 깊이</b>를 켜면 진원을 실제 깊이 자리에서 봅니다` : ''}${this.officialLink(it)}</div></div>
       ${this.pastHtml()}
       <div class="card"><div class="card-h">WHY ${this.badge('INSUFFICIENT_DATA')}</div>
         <div class="card-b"><b>인과 주장 게이트</b>: 검증된 근거 체인 없이 "원인"을 말하지 않습니다.<br/>
@@ -251,6 +267,17 @@ export class IntelFeed {
     this.selected = it;
     this.view = 'room';
     this.loadPast(it); // PAST 카드 비동기 채움 (완료 시 onUpdate로 리렌더)
+    // 사건 방: 기관 스택은 비동기로 모아 채운다. 다른 사건으로 넘어갔으면 버린다.
+    this.roomHtmlCache = null;
+    this.room.build(it).then((html) => {
+      if (this.selected !== it) return;
+      this.roomHtmlCache = html;
+      if (this.onUpdate) this.onUpdate();
+    }).catch((e) => {
+      if (this.selected !== it) return;
+      this.roomHtmlCache = `<div class="card room"><div class="card-h">사건 방 ${this.badge('UNAVAILABLE')}</div><div class="card-b">기관 데이터를 모으지 못했습니다 — ${String((e && e.message) || e)}. 판단하지 않습니다.</div></div>`;
+      if (this.onUpdate) this.onUpdate();
+    });
     // 카메라 포커스 (EVENT_FOCUS · 1.1초 글라이드)
     const M = Math.PI / 180;
     let ty = it.lon * M;
@@ -292,6 +319,7 @@ export class IntelFeed {
     this.view = 'list';
     this.selected = null;
     this.past = null;
+    this.roomHtmlCache = null;
     this.clearTrack();
   }
 

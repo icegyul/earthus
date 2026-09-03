@@ -505,6 +505,11 @@
   .card-b { font-size: 11px; color: var(--text-dim); line-height: 1.65; }
   .card-b .stat { display: flex; justify-content: space-between; padding: 3px 0; border-top: 1px solid rgba(120,160,200,0.09); color: var(--text); }
   .card-b .stat .k { color: var(--text-dim); }
+  /* 공식 1차 출처로 나가는 링크. 규칙대로 noopener 공식 페이지만 쓴다. */
+  .card-b a.official-out { display: inline-block; margin-top: 6px; color: #7FB7F5;
+    text-decoration: none; border-bottom: 1px solid rgba(127,183,245,.45); padding-bottom: 1px; }
+  .card-b a.official-out:hover { border-bottom-color: #7FB7F5; }
+  .card-b a.official-out:focus-visible { outline: 2px solid #7FB7F5; outline-offset: 3px; border-radius: 2px; }
   .card-b .stat .v.na { color: #8a7350; font-size: 10px; letter-spacing: 0.4px; }
   .badge { font-size: 8.5px; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.6px; font-weight: 600; }
   .badge.live { background: rgba(64,160,110,0.18); color: #5fd39a; }

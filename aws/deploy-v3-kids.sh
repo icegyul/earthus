@@ -4,7 +4,7 @@
 #   ./aws/deploy-v3-kids.sh
 #
 # 범위를 좁게 잡는다: app/v3 만 새로 올린다. 1.0/2.0 자산은 건드리지 않는다.
-# v3 페이지는 이미 배포되어 있는 app/vendor(three.js)와 app/data(국가 폴리곤)를
+# v3 페이지는 이미 배포되어 있는 app/vendor(three.js·earcut)와 app/data(국가 폴리곤)를
 # 같은 출처에서 상대경로로 읽는다 → 그 둘이 S3 에 있어야 화면이 뜬다.
 set -euo pipefail
 
@@ -30,7 +30,7 @@ SRC="$ROOT/prototype/v3-kids"
 echo "▸ 자격증명: $(aws sts get-caller-identity --query Arn --output text)"
 echo "▸ 전제 확인: v3 가 상대경로로 읽는 자산"
 missing=0
-for key in "${PREFIX}/vendor/three-r184.module.min.js" "${PREFIX}/data/country-reference.json"; do
+for key in "${PREFIX}/vendor/three-r184.module.min.js" "${PREFIX}/vendor/earcut.module.js" "${PREFIX}/data/country-reference.json"; do
   if aws s3 ls "s3://${BUCKET}/${key}" --region "$REGION" >/dev/null 2>&1; then
     echo "  있음  ${key}"
   else

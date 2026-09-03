@@ -407,6 +407,8 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 
 <script type="module">
 import * as THREE from '../vendor/three-r184.module.min.js';
+// 해안선 고리를 삼각형으로 자른다. 스스로 교차하는 고리까지 다루는 표준 구현이다(ISC).
+import earcut, { deviation } from '../vendor/earcut.module.js';
 
 /* ══════════════════════════════════════════════════════════════
    EARTHUS v3 KIDS — 샘플 1: 지금 지구에서
@@ -912,7 +914,7 @@ function setFov(t){
 window.__v3 = (ma) => {
   if(ma !== undefined){ maNow = maTarget = ma; refreshPast(); }   // 숨은 창에서는 rAF 가 안 돈다
   return ({ fill, stop, dist, distTarget, tanMin, tanTarget, tanBase, screenR, fov: camera.fov,
-                       ma: maNow, maTarget, storyOn,
+                       ma: maNow, maTarget, storyOn, fill: paleoFill,
                        india: (()=>{ const m = plateNow(501); return m ? rotXYZ(21.4, 79.4, m) : null; })(),
                        near: camera.near, 여유: dist - R, w: innerWidth, h: innerHeight });
 };
@@ -1076,20 +1078,15 @@ async function loadCraters(){
   }
 }
 
-function craterAgeKo(ma){
-  if(ma < 1) return `약 ${Math.round(ma*1000)}만 년 전`.replace('약 50만','약 5만');
-  if(ma < 100) return `약 ${Math.round(ma)}00만 년 전`;
-  const eok = Math.floor(ma/100), man = Math.round(ma%100);
-  return man ? `약 ${eok}억 ${man}00만 년 전` : `약 ${eok}억 년 전`;
-}
+const craterAgeKo = (ma) => KAGO(ma);
 
 function openCrater(c){
   const card = $('#card');
   card.innerHTML = `<button class="x" aria-label="닫기">×</button>
-    <h2>${c.ko}</h2>
-    <div class="meta">${c.co} · ${c.en}</div>
+    <h2>${KT.en ? c.en : c.ko}</h2>
+    <div class="meta">${KT(c.co)}${KT.en ? '' : ' · ' + c.en}</div>
     ${c.kid ? `<div class="kid">${c.kid}</div>` : ''}
-    <ul><li>지름 약 ${c.km} km</li><li>${craterAgeKo(c.ma)}</li></ul>
+    <ul><li>${KT.en ? `about ${c.km} km across` : `지름 약 ${c.km} km`}</li><li>${craterAgeKo(c.ma)}</li></ul>
     <div class="rec"><span class="warn2">지름과 나이는 자료마다 다릅니다</span> — 오래된 충돌구는
       깎이고 묻혀서 원래 크기를 되짚어 재기 때문입니다.<br>손으로 정리한 목록입니다.</div>`;
   card.hidden = false;
@@ -1192,8 +1189,8 @@ $('#b-quake').addEventListener('click', e => {
   const c = $('#card');
   if(quakeOn && QUAKE_HEAD){
     c.innerHTML = `<button class="x" aria-label="닫기">×</button>
-      <h2>지진 ${QUAKE_HEAD.epoch.slice(0,4)}년부터 지금까지</h2>
-      <div class="meta">USGS · 규모 ${QUAKE_HEAD.minMagnitude} 이상 ${QUAKE_HEAD.count.toLocaleString()}건</div>
+      <h2>${KT.en ? `Earthquakes since ${QUAKE_HEAD.epoch.slice(0,4)}` : `지진 ${QUAKE_HEAD.epoch.slice(0,4)}년부터 지금까지`}</h2>
+      <div class="meta">USGS · ${KT.en ? `${QUAKE_HEAD.count.toLocaleString()} quakes of magnitude ${QUAKE_HEAD.minMagnitude}+` : `규모 ${QUAKE_HEAD.minMagnitude} 이상 ${QUAKE_HEAD.count.toLocaleString()}건`}</div>
       <div class="kid">점 하나가 지진 한 번이에요. 하루만 보면 흩어져 있는데, 25년을 쌓으면 줄이 보여요.</div>
       <div class="rec">그 줄이 <b>판 경계</b>예요. 하늘색 선은 지질학자가 그린 판 경계고, 붉은 점이 그 위에 겹칩니다.<br>판 경계 Bird(2003) PB2002 · ODC-BY</div>`;
     c.hidden = false;
@@ -1264,8 +1261,8 @@ async function loadWater(){
 function openDam(d){
   const c = $('#card');
   c.innerHTML = `<button class="x" aria-label="닫기">×</button>
-    <h2>${d.n}</h2>
-    <div class="meta">${d.co} · ${d.r} · ${d.y}년 완공</div>
+    <h2>${KT(d.n)}</h2>
+    <div class="meta">${KT(d.co)} · ${KT(d.r)} · ${KT.en ? `completed ${d.y}` : `${d.y}년 완공`}</div>
     ${d.why ? `<div class="kid">${d.why}</div>` : ''}
     <div class="rec">강을 막아 물을 모으고 전기를 만듭니다.<br>좌표는 위키데이터·위키백과에서 확인한 값입니다.</div>`;
   c.hidden = false;
@@ -1351,7 +1348,7 @@ function setDay(i){
   if(paintTemp()) tempTex.needsUpdate = true;
   if(typeof drawOnce === 'function') drawOnce();
   const l = $('#tempkey .lead');
-  if(l) l.textContent = i === 0 ? '실황' : `예보 D+${LEADS.leads[i-1]}`;
+  if(l) l.textContent = i === 0 ? KT('실황') : (KT.en ? `Forecast D+${LEADS.leads[i-1]}` : `예보 D+${LEADS.leads[i-1]}`);
 }
 
 function paintTemp(){
@@ -1507,15 +1504,15 @@ async function showHere(){
     const q = cur.current, d = cur.daily;
     const kind = WMO(q.weather_code);
     c.innerHTML = `<button class="x" aria-label="닫기">×</button>
-      <h2>내 위치 ${SAY[kind]}</h2>
-      <div class="meta">${lat.toFixed(2)}, ${lon.toFixed(2)} · open-meteo 실황</div>
-      <div class="kid">지금 ${Math.round(q.temperature_2m)}도예요.</div>
+      <h2>${KT('내 위치')} ${KT(SAY[kind])}</h2>
+      <div class="meta">${lat.toFixed(2)}, ${lon.toFixed(2)} · open-meteo ${KT.en ? 'live' : '실황'}</div>
+      <div class="kid">${KT.en ? `It's ${Math.round(q.temperature_2m)}° right now.` : `지금 ${Math.round(q.temperature_2m)}도예요.`}</div>
       <ul>
-        <li>습도 ${q.relative_humidity_2m}%</li>
-        <li>바람 ${q.wind_speed_10m} km/h</li>
-        <li>비 ${q.precipitation} mm</li>
-        ${d ? `<li>오늘 최고 ${Math.round(d.temperature_2m_max[0])}° · 최저 ${Math.round(d.temperature_2m_min[0])}°</li>` : ''}
-        ${d && d.temperature_2m_max[1] != null ? `<li>내일 최고 ${Math.round(d.temperature_2m_max[1])}° · 최저 ${Math.round(d.temperature_2m_min[1])}°</li>` : ''}
+        <li>${KT.en ? 'Humidity' : '습도'} ${q.relative_humidity_2m}%</li>
+        <li>${KT.en ? 'Wind' : '바람'} ${q.wind_speed_10m} km/h</li>
+        <li>${KT.en ? 'Rain' : '비'} ${q.precipitation} mm</li>
+        ${d ? `<li>${KT.en ? 'Today' : '오늘'} ${KT.en ? 'high' : '최고'} ${Math.round(d.temperature_2m_max[0])}° · ${KT.en ? 'low' : '최저'} ${Math.round(d.temperature_2m_min[0])}°</li>` : ''}
+        ${d && d.temperature_2m_max[1] != null ? `<li>${KT.en ? 'Tomorrow' : '내일'} ${KT.en ? 'high' : '최고'} ${Math.round(d.temperature_2m_max[1])}° · ${KT.en ? 'low' : '최저'} ${Math.round(d.temperature_2m_min[1])}°</li>` : ''}
       </ul>
       <div class="rec">받은 좌표는 날씨를 부르는 데만 썼고 저장하거나 보내지 않았습니다.</div>`;
   } else {
@@ -1755,7 +1752,8 @@ let PALEO_XYZ = null, PALEO_BRK = null, PLATE_IDS = [];
 const PLATE_Q = new Map();      // 판번호 → 프레임별 자세(사원수)
 const PLATE_NOW = new Map();    // 판번호 → 지금 이 순간의 3×3 (없으면 null)
 const _m4 = new THREE.Matrix4(), _qa = new THREE.Quaternion();
-let paleoLine = null, paleoOn = false;   // 전지구 옛 해안선
+let paleoLine = null, paleoFill = null, paleoOn = false;   // 전지구 옛 해안선과 그 안의 땅
+let PALEO_POS = null;                    // 선과 면이 함께 쓰는 정점 한 벌
 const contMarks = [];                    // 대륙 이름표
 
 /* 이름을 붙일 판. 판 번호는 GPlates 관례를 그대로 쓴다.
@@ -1825,15 +1823,88 @@ async function loadPaleoEarth(){
   }
   PLATE_IDS = [...PLATE_Q.keys()];
 
-  let segs = 0;
-  for(const l of PALEO.lines) segs += (l.c.length - 1);
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(segs*2*3), 3));
-  paleoLine = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({
-    color: 0xFFD9A0, transparent: true, opacity: 0, depthWrite: false }));
+  /* 선과 면이 같은 정점을 쓴다. 매 프레임 옮기는 건 점 6만 5천 개 한 벌뿐이고,
+     무엇을 잇고 무엇을 채울지는 고정된 인덱스가 정한다. */
+  PALEO_POS = new THREE.BufferAttribute(new Float32Array(N*3), 3);
+  PALEO_POS.setUsage(THREE.DynamicDrawUsage);
+
+  const lineIdx = [];
+  const triIdx = [];
+  for(const l of PALEO.lines)
+    for(let k = 0; k < l.n-1; k++) if(!PALEO_BRK[l.o+k]) lineIdx.push(l.o+k, l.o+k+1);
+
+  /* 채울 다각형을 모은다 — 같은 고리(g)·같은 판(p)에서 나온 조각들을 고리 순서대로
+     이어 붙인 것이 그 판이 가진 땅 한 덩어리다. 조각을 따로 닫으면 인도 남해안과
+     히말라야 앞자락이 서로 다른 다각형이 되어 인도가 채워지지 않는다. */
+  const polys = [];
+  const seg = (a, b) => {                       // 두 꼭짓점 사이 현의 길이
+    const p1=a*3, p2=b*3;
+    return Math.hypot(PALEO_XYZ[p1]-PALEO_XYZ[p2],
+                      PALEO_XYZ[p1+1]-PALEO_XYZ[p2+1],
+                      PALEO_XYZ[p1+2]-PALEO_XYZ[p2+2]);
+  };
+  for(let i = 0; i < PALEO.lines.length; ){
+    const l = PALEO.lines[i], idx = [];
+    let j = i, chord = 0, total = 0;
+    while(j < PALEO.lines.length && PALEO.lines[j].p === l.p && PALEO.lines[j].g === l.g){
+      const q = PALEO.lines[j];
+      if(idx.length){ const d = seg(idx[idx.length-1], q.o); chord += d; total += d; }
+      for(let k = 0; k < q.n; k++){
+        if(k) total += seg(q.o+k-1, q.o+k);
+        idx.push(q.o + k);
+      }
+      j++;
+    }
+    if(idx.length > 2){ const d = seg(idx[idx.length-1], idx[0]); chord += d; total += d; }
+    polys.push(idx); idx.made = total > 0 ? chord/total : 1;
+    i = j;
+  }
+
+  let filled = 0, gaveUp = 0, ptsAll = 0, ptsMiss = 0;
+  const t0 = performance.now();
+  for(const idx of polys){
+    if(idx.length < 3) continue;
+    ptsAll += idx.length;
+    /* 해안선은 잰 것이고 현은 우리가 이은 것이다. 이은 길이가 둘레의 절반을 넘으면
+       그 모양은 잰 것보다 지어낸 것이 많다 — 채우지 않고 선만 남긴다.
+
+       판게아 시대 바다 위에 길고 뾰족한 쐐기들이 떠 있던 게 이것이었다. 이웃 판이
+       그 시대에 살아 있을 때는 그 아래 가려 안 보이다가, 이웃이 사라지면 드러났다. */
+    if(idx.made > 0.3){ gaveUp++; ptsMiss += idx.length; continue; }
+    let tri = null;
+    for(const sep of [0, 0.0019, 0.0063]){        // 원본 · 12km · 40km
+      tri = ringTris(idx, sep);
+      if(tri) break;
+    }
+    if(tri){ filled++; for(let i2=0;i2<tri.length;i2++) triIdx.push(tri[i2]); }
+    else { gaveUp++; ptsMiss += idx.length; }
+  }
+  console.info(`옛 해안선: 땅 ${polys.length}덩어리 중 ${filled}개 채움 / ${gaveUp}개 못 채움 ` +
+    `(못 채운 고리의 점 ${ptsMiss}개 = 전체의 ${(100*ptsMiss/ptsAll).toFixed(1)}%) · ` +
+    `삼각형 ${triIdx.length/3}개 · ${Math.round(performance.now()-t0)}ms`);
+
+  const geoLine = new THREE.BufferGeometry();
+  geoLine.setAttribute('position', PALEO_POS);
+  geoLine.setIndex(lineIdx);
+  paleoLine = new THREE.LineSegments(geoLine, new THREE.LineBasicMaterial({
+    color: 0xFFE0B0, transparent: true, opacity: 0, depthWrite: false }));
   paleoLine.renderOrder = 5;
   paleoLine.visible = false;
   earthGroup.add(paleoLine);
+
+  /* 면은 깊이 검사를 끈다. 큰 삼각형은 구의 현이라 가운데가 표면 아래로 가라앉는데,
+     깊이로 겨루면 그 부분이 지구 속에 묻혀 사라진다. 대신 뒷면을 잘라 뒤쪽 반구는
+     그리지 않는다 — 감김을 위에서 반시계로 맞춰 둔 이유가 이것이다. */
+  const geoFill = new THREE.BufferGeometry();
+  geoFill.setAttribute('position', PALEO_POS);
+  geoFill.setIndex(triIdx);
+  paleoFill = new THREE.Mesh(geoFill, new THREE.MeshBasicMaterial({
+    color: 0xA98A57, transparent: true, opacity: 0, depthWrite: false,
+    depthTest: false, side: THREE.FrontSide }));
+  paleoFill.renderOrder = 4.5;
+  paleoFill.visible = false;
+  earthGroup.add(paleoFill);
+  geoFill.boundingSphere = new THREE.Sphere(new THREE.Vector3(), R*1.01);
 
   // 이름표 자리는 그 판 해안선의 평균점 — 따로 좌표를 두지 않는다
   const acc = {};
@@ -1855,12 +1926,94 @@ async function loadPaleoEarth(){
   }
 
   // 경계상자는 한 번만. 해안선은 어느 시대에도 이 구를 벗어나지 않는다.
-  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), R*1.01);
+  geoLine.boundingSphere = new THREE.Sphere(new THREE.Vector3(), R*1.01);
   updatePlates();
   drawPaleo();
 }
 
 /* 그 시대에 판이 없으면 그 대륙은 그리지 않는다. 없는 땅을 만들지 않는다. */
+/* ── 면 만들기 ────────────────────────────────────────────────
+   선만 움직이면 땅이 아니라 땅의 그림자다. 해안선 고리 안을 삼각형으로 채운다.
+
+   구 위의 다각형을 평면으로 옮겨 귀 자르기(ear clipping)로 삼각형을 낸다.
+   투영은 **고리 중심의 반대편에서 쏘는 등각사영**이다 — 경위도 평면에 그대로
+   펴면 날짜변경선을 걸친 고리와 극지방 고리(남극)가 뒤집히는데, 이 투영은
+   그 둘을 특별대우 없이 옳게 편다.
+
+   삼각형 목록은 한 번만 만든다. 판은 강체로 도니까 어느 시대에나 같은 목록이
+   맞다 — 매 시대 다시 자를 이유가 없다.
+
+   ⚠️ 스스로 교차하는 고리는 귀가 안 나온다. 그러면 그 고리는 **채우지 않는다**.
+      억지로 채우면 있지도 않은 땅이 생긴다. 선은 그대로 그린다. */
+function ringTris(src, minSep){
+  /* src 는 이 다각형을 이루는 꼭짓점 번호들이다. 한 고리에서 같은 판이 가진
+     꼭짓점만 고리 순서대로 모은 것 — 빠진 자리는 저절로 현으로 이어지고,
+     그 현이 곧 판 경계다.
+
+     너무 가까운 점을 걸러 낸다. minSep=0 이면 겹친 점만 버린다.
+     ⚠️ 왜 성기게 다시 시도하나: 1km 해상도의 굽이진 해안은 제 몸을 스치며
+        교차하는 일이 있고, 그러면 어떤 삼각분할기도 옳게 자르지 못한다.
+        12km 로 성기게 하면 그 스침이 사라진다. 선은 원본 그대로 그리므로
+        성겨지는 건 면의 가장자리뿐이다. */
+  const P = PALEO_XYZ, loc = new Int32Array(src.length), sep2 = minSep*minSep;
+  let n = 0;
+  for(let k=0;k<src.length;k++){
+    const b=src[k]*3;
+    if(n>0){ const q=loc[n-1]*3;
+      const dx=P[q]-P[b], dy=P[q+1]-P[b+1], dz=P[q+2]-P[b+2];
+      if(dx*dx+dy*dy+dz*dz <= sep2) continue; }
+    loc[n++] = src[k];
+  }
+  while(n>2){ const f=loc[0]*3, e=loc[n-1]*3;
+    const dx=P[f]-P[e], dy=P[f+1]-P[e+1], dz=P[f+2]-P[e+2];
+    if(dx*dx+dy*dy+dz*dz <= sep2) n--; else break; }
+  if(n < 3) return null;
+
+  // 고리 중심 — 그 반대편이 투영 기준점이 된다
+  let cx=0, cy=0, cz=0;
+  for(let k=0;k<n;k++){ const b=loc[k]*3; cx+=P[b]; cy+=P[b+1]; cz+=P[b+2]; }
+  let L = Math.hypot(cx,cy,cz);
+  if(L < 1e-6) return null;                    // 지구 전체에 흩어진 고리 — 채울 수 없다
+  cx/=L; cy/=L; cz/=L;
+  // 직교 기저 (u, v, c) — 오른손. 그래야 평면의 반시계가 곧 바깥에서 본 반시계다.
+  const tx = Math.abs(cx) < 0.9 ? 1 : 0, ty = Math.abs(cx) < 0.9 ? 0 : 1;
+  const d = tx*cx + ty*cy;
+  let ux = tx - d*cx, uy = ty - d*cy, uz = -d*cz;
+  L = Math.hypot(ux,uy,uz); ux/=L; uy/=L; uz/=L;
+  const vx = cy*uz - cz*uy, vy = cz*ux - cx*uz, vz = cx*uy - cy*ux;
+
+  const flat = new Float64Array(n*2);
+  for(let k=0;k<n;k++){
+    const b=loc[k]*3, px=P[b], py=P[b+1], pz=P[b+2];
+    const den = 1 + (px*cx + py*cy + pz*cz);
+    if(den < 0.15) return null;                // 반구를 넘게 퍼진 고리 — 투영이 터진다
+    flat[k*2]   = (px*ux + py*uy + pz*uz)/den;
+    flat[k*2+1] = (px*vx + py*vy + pz*vz)/den;
+  }
+
+  const tri = earcut(flat, null, 2);
+  if(!tri.length) return null;
+
+  /* 제대로 잘렸는지 넓이로 확인한다. 옳은 삼각분할은 조각의 넓이 합이 다각형
+     넓이와 같고, deviation 이 그 차이를 넓이로 나눈 값이다.
+
+     이 검사가 없을 때 판게아 시대 바다 위에 뾰족한 쐐기들이 떠 있었다.
+     선은 몰라도 면은 다르다 — 면은 '여기가 땅이었다'는 말이다.
+     확신이 없으면 채우지 않고 선만 남긴다. */
+  if(deviation(flat, null, 2, tri) > 0.01) return null;
+
+  /* 감김은 손대지 않는다. earcut 은 들어온 방향과 무관하게 바깥 고리를 제 기준으로
+     한 방향으로 세워 놓고 자르므로, 나오는 삼각형의 감김은 늘 같다.
+     여기 투영이 (u,v,c) 오른손 기저라 그 감김이 곧 '바깥에서 본 반시계' 이고,
+     three 는 그것을 앞면으로 본다.
+
+     입력 방향을 보고 뒤집었더니 절반이 뒷면이 되어 잘려 나갔다 — 인도가 그래서
+     테두리만 남고 속이 비어 있었다. */
+  const out = new Uint32Array(tri.length);
+  for(let i=0;i<tri.length;i++) out[i] = loc[tri[i]];
+  return out;
+}
+
 /* maNow(백만 년) 가 어느 두 프레임 사이인지, 그리고 얼마나 왔는지 */
 function frameSpan(ma){
   const F = PALEO.frames, last = F.length-1;
@@ -1889,30 +2042,27 @@ function updatePlates(){
 }
 const plateNow = pid => { const m = PLATE_NOW.get(String(pid)); return (m && m[9]) ? m : null; };
 
+/* 점 한 벌만 옮긴다. 무엇을 잇고 무엇을 채울지는 고정된 인덱스가 이미 정해 뒀다.
+   그 시대에 없는 판은 점을 원점으로 모은다 — 선은 길이 0, 삼각형은 넓이 0 이 되어
+   저절로 사라진다. 없는 땅을 그리지 않는 가장 싼 방법이다. */
 function drawPaleo(){
-  if(!paleoLine || !PALEO || !PALEO_XYZ) return;
-  const arr = paleoLine.geometry.attributes.position.array;
-  const P = PALEO_XYZ, BRK = PALEO_BRK, RR = R*1.006;
-  let i = 0, drawn = 0, skipped = 0;
+  if(!PALEO_POS || !PALEO || !PALEO_XYZ) return;
+  const arr = PALEO_POS.array, P = PALEO_XYZ, RR = R*1.006;
+  let drawn = 0, skipped = 0;
   for(const l of PALEO.lines){
     const m = plateNow(l.p), n = l.n, o = l.o;
-    if(!m){ const end = i + (n-1)*6; while(i < end) arr[i++] = 0; skipped++; continue; }
+    if(!m){ arr.fill(0, o*3, (o+n)*3); skipped++; continue; }
     drawn++;
     const m0=m[0],m1=m[1],m2=m[2],m3=m[3],m4=m[4],m5=m[5],m6=m[6],m7=m[7],m8=m[8];
-    let ax=0, ay=0, az=0;
     for(let k = 0; k < n; k++){
       const b = (o+k)*3, x = P[b], y = P[b+1], z = P[b+2];
-      const X = (m0*x+m1*y+m2*z)*RR, Y = (m3*x+m4*y+m5*z)*RR, Z = (m6*x+m7*y+m8*z)*RR;
-      if(k > 0){
-        if(BRK[o+k-1]){ arr[i++]=0;arr[i++]=0;arr[i++]=0; arr[i++]=0;arr[i++]=0;arr[i++]=0; }
-        // 지오센트릭(x=적도0도, y=적도90도, z=북극) → three(x, z, -y)
-        else { arr[i++]=ax; arr[i++]=az; arr[i++]=-ay; arr[i++]=X; arr[i++]=Z; arr[i++]=-Y; }
-      }
-      ax=X; ay=Y; az=Z;
+      // 지오센트릭(x=적도0도, y=적도90도, z=북극) → three(x, z, -y)
+      arr[b]   =  (m0*x+m1*y+m2*z)*RR;
+      arr[b+1] =  (m6*x+m7*y+m8*z)*RR;
+      arr[b+2] = -(m3*x+m4*y+m5*z)*RR;
     }
   }
-  while(i < arr.length) arr[i++] = 0;
-  paleoLine.geometry.attributes.position.needsUpdate = true;
+  PALEO_POS.needsUpdate = true;
   PALEO._drawn = drawn; PALEO._skipped = skipped;
 }
 
@@ -2018,7 +2168,10 @@ function whenLabel(ma){
   return `${(ma/100).toFixed(ma%100?1:0)}억 년 전`;
 }
 function whenKo(ma){
-  if(ma === 0) return '지금';
+  if(ma === 0) return KT.en ? 'Now' : '지금';
+  if(KT.en) return ma >= 1000
+    ? `${(ma/1000).toFixed(ma%1000?1:0)} billion years ago`
+    : `${ma.toLocaleString()} million years ago`;
   const eok = Math.floor(ma/100), man = ma%100;
   if(eok && man) return `${eok}억 ${man*100}만 년 전`;
   if(eok) return `${eok}억 년 전`;
@@ -2027,9 +2180,9 @@ function whenKo(ma){
 /* 우리가 얼마나 아는지를 같이 적는다. 과거는 멀수록 흐려진다. */
 function confidenceKo(ma){
   if(ma === 0) return '';
-  if(ma <= 83)  return '바다 밑 자기 줄무늬로 위치가 잘 묶이는 구간';
-  if(ma <= 200) return '위치가 대체로 잘 맞는 구간';
-  return '이 시대는 동서 위치가 덜 확실합니다';
+  if(ma <= 83)  return KT('바다 밑 자기 줄무늬로 위치가 잘 묶이는 구간');
+  if(ma <= 200) return KT('위치가 대체로 잘 맞는 구간');
+  return KT('이 시대는 동서 위치가 덜 확실합니다');
 }
 
 /* 슬라이더와 이야기는 '어디로 갈지' 만 정한다. 실제로 옮기는 건 시계(frame)다. */
@@ -2078,6 +2231,7 @@ function refreshPast(){
     paleoLine.visible = inPast || paleoOn;
     paleoLine.material.opacity = inPast ? 0.95 : (paleoOn ? 0.6 : 0);
   }
+  if(paleoFill) paleoFill.visible = paleoLine ? paleoLine.visible : false;
   // 한반도는 과거에 조금 더 밝게 — 화석지가 붙어 있는 곳이라 눈이 갈 자리다
   if(koreaLine) koreaLine.material.opacity = fossilOn ? (ma > 0 ? 1 : 0.55) : 0;
   /* 오늘 지도를 물리는 정도. 이어서 흐르므로 켜고 끄지 않고 서서히 준다 —
@@ -2085,6 +2239,9 @@ function refreshPast(){
   const back = (fossilOn || paleoOn) ? Math.min(1, maNow/4) : 0;
   earthMat.uniforms.pastFade.value = back;
   if(paleoLine && paleoLine.visible) paleoLine.material.opacity = 0.6 + 0.35*back;
+  /* 면은 뒤로 갈수록 진해진다. 지금(0Ma)에는 그 시대 땅이 곧 오늘 땅이라
+     덮어 봐야 오늘 지도를 가리기만 한다 — 물러난 만큼만 앞에 선다. */
+  if(paleoFill && paleoFill.visible) paleoFill.material.opacity = 0.88*back;
 
   // 땅이 옮겨 가면 카메라도 따라간다. 화면 밖에서 벌어지면 아이가 놓친다.
   if(storyOn){ sayStory(); followStory(); }
@@ -2098,14 +2255,14 @@ function refreshPast(){
 function openCard(site){
   const c = $('#card');
   const conf = site.confidence === 'official'
-    ? '국가유산청 지정 좌표'
-    : '<span class="warn2">좌표가 지정구역 중심이 아닐 수 있음</span>';
+    ? KT('국가유산청 지정 좌표')
+    : `<span class="warn2">${KT('좌표가 지정구역 중심이 아닐 수 있음')}</span>`;
   c.innerHTML = `<button class="x" aria-label="닫기">×</button>
-    <h2>${site.short}</h2>
-    <div class="meta">천연기념물 ${site.nm}호 · ${site.name}</div>
-    <div class="kid">${site.kid}</div>
-    <ul>${site.found.map(f=>`<li>${f}</li>`).join('')}</ul>
-    <div class="rec">${site.why}<br>약 ${whenKo(site.ageMa)} · ${conf}</div>`;
+    <h2>${KT(site.short)}</h2>
+    <div class="meta">${KT.en ? `Natural Monument No. ${site.nm}` : `천연기념물 ${site.nm}호`} · ${KT(site.name)}</div>
+    <div class="kid">${KT(site.kid)}</div>
+    <ul>${site.found.map(f=>`<li>${KT(f)}</li>`).join('')}</ul>
+    <div class="rec">${KT(site.why)}<br>${KT.en ? 'about' : '약'} ${whenKo(site.ageMa)} · ${conf}</div>`;
   c.hidden = false;
   c.querySelector('.x').addEventListener('click', ()=>{ c.hidden = true; });
   for(const f of fossilMarks) f.el.classList.toggle('sel', f.site.id === site.id);
@@ -2273,6 +2430,22 @@ const WMO = code => {
   return 'cloud';
 };
 const SAY = { sun:'맑아요', cloud:'구름이 많아요', rain:'비가 와요', snow:'눈이 내려요', zap:'번개가 쳐요' };
+// 템플릿 안의 문구는 치환 층이 못 잡는다(글자 마디가 합쳐진 뒤에 생기기 때문). 여기서 부른다.
+const KT = (x) => (window.KIDS_I18N ? window.KIDS_I18N.t(x) : x);
+KT.en = !!(window.KIDS_I18N && window.KIDS_I18N.lang === 'en');
+KT.deg = KT.en ? '°' : '도';
+// 만/억은 영어에 없는 자릿수다. 숫자를 그대로 두고 단위만 바꾸면 틀린 값이 된다.
+const KAGO = (ma) => {  // ma = 백만 년
+  if(!KT.en){
+    if(ma < 1) return `약 ${Math.round(ma*1000)}만 년 전`.replace('약 50만','약 5만');
+    if(ma < 100) return `약 ${Math.round(ma)}00만 년 전`;
+    const eok = Math.floor(ma/100), man = Math.round(ma%100);
+    return man ? `약 ${eok}억 ${man}00만 년 전` : `약 ${eok}억 년 전`;
+  }
+  if(ma < 1) return `about ${Math.round(ma*1000)},000 years ago`;
+  if(ma < 1000) return `about ${Math.round(ma)} million years ago`;
+  return `about ${(ma/1000).toFixed(ma%1000?1:0)} billion years ago`;
+};
 
 async function loadLive(){
   // 구름(관측 영상)과 친구(격자 실황)는 출처가 다르다 — 하나가 죽어도 다른 하나는 살린다.
@@ -2307,24 +2480,32 @@ async function loadLive(){
       const kind = WMO(cur.weather_code);
       addMarker(kind, lat, lon, ART[kind], 'crt');
       if(i < 6) addMarker('bub', lat, lon,
-        `<div class="box">${name} ${SAY[kind]}<b>${Math.round(cur.temperature_2m)}도</b></div>`, 'bub');
+        `<div class="box">${KT(name)} ${KT(SAY[kind])}<b>${Math.round(cur.temperature_2m)}${KT.deg}</b></div>`, 'bub');
     });
 
-    const t = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
+    const t = new Date().toLocaleTimeString(KT.en ? 'en-GB' : 'ko-KR',{hour:'2-digit',minute:'2-digit'});
     // 결손과 메움을 숨기지 않는다 — 무엇을 보고 있는지가 화면에 적혀야 한다
     if(cloudMeta){
       const cz = String(cloudMeta.time).slice(11,16);
-      let note = `출처: <b>NOAA GMGSI</b> 전지구 구름 <i>${cz}Z</i> · <b>Open-Meteo</b> 날씨 <i>${t}</i>`;
+      let note = KT.en
+        ? `Source: <b>NOAA GMGSI</b> global clouds <i>${cz}Z</i> · <b>Open-Meteo</b> weather <i>${t}</i>`
+        : `출처: <b>NOAA GMGSI</b> 전지구 구름 <i>${cz}Z</i> · <b>Open-Meteo</b> 날씨 <i>${t}</i>`;
       if(cloudMeta.broken){
-        const bits = [`출처: <b>NOAA GMGSI</b> <i>${cz}Z</i>`];
-        if(cloudMeta.patched) bits.push(`빈 곳 ${cloudMeta.patched}칸은 <i>${String(cloudMeta.patchTime).slice(11,16)}Z</i> 자료로 메움`);
-        if(cloudMeta.stillEmpty) bits.push(`${cloudMeta.stillEmpty}칸은 관측이 없어 비움`);
+        const bits = [`${KT.en ? 'Source' : '출처'}: <b>NOAA GMGSI</b> <i>${cz}Z</i>`];
+        if(cloudMeta.patched) bits.push(KT.en
+          ? `${cloudMeta.patched} empty cells filled from <i>${String(cloudMeta.patchTime).slice(11,16)}Z</i>`
+          : `빈 곳 ${cloudMeta.patched}칸은 <i>${String(cloudMeta.patchTime).slice(11,16)}Z</i> 자료로 메움`);
+        if(cloudMeta.stillEmpty) bits.push(KT.en
+          ? `${cloudMeta.stillEmpty} cells left blank — no observation`
+          : `${cloudMeta.stillEmpty}칸은 관측이 없어 비움`);
         note = bits.join(' · ');
       }
       badgetxt.innerHTML = note;
       srcNote.className = cloudMeta.broken ? 'warn' : '';
     } else {
-      badgetxt.innerHTML = `출처: <b>Open-Meteo</b> 날씨 <i>${t}</i> · 구름 자료 없음`;
+      badgetxt.innerHTML = KT.en
+        ? `Source: <b>Open-Meteo</b> weather <i>${t}</i> · no cloud data`
+        : `출처: <b>Open-Meteo</b> 날씨 <i>${t}</i> · 구름 자료 없음`;
       srcNote.className = 'warn';
     }
   }catch(err){
@@ -2752,6 +2933,8 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe(document.documentEle
   setTimeout(()=> $('#hint').classList.add('gone'), 6000);
 })();
 </script>
+<!-- 영어 치환 층. 한국어가 원본이고 영어를 그 위에 덮는다 (kids-i18n.js 머리말 참고). -->
+<script src="./kids-i18n.js"></script>
 <script src="/js/earth-switch.js" defer></script>
 <!-- 전환기 오른쪽 도구바. 세 지구가 같은 자리에서 같은 도구를 쓴다(PD 지시). -->
 <script src="/js/app-bar.js" defer></script>

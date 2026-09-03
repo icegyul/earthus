@@ -228,19 +228,26 @@ def main():
     print(f"  꼭짓점 {len(allpts):,}개")
     vpid = assign_plates(allpts)
 
+    # 조각마다 '몇 번째 고리에서 나왔는지'를 함께 남긴다.
+    #
+    # 선을 그릴 때는 필요 없지만 **면을 채울 때 반드시 필요하다**. 한 고리에서
+    # 같은 판이 가진 꼭짓점만 고리 순서대로 추리면 그것이 곧 그 판이 가진 땅
+    # 한 덩어리다 — 빠진 자리는 저절로 현으로 이어지고, 그 현이 판 경계다.
+    # 조각을 따로따로 닫으면 인도 남해안과 히말라야 앞자락이 서로 다른 다각형이
+    # 되어 인도가 채워지지 않는다(실제로 그랬다).
     by_plate, i = {}, 0
-    for r in rings:
+    for ri, r in enumerate(rings):
         run, cur = [], None
         for q in r:
             pid = vpid[i]; i += 1
             pid = int(pid) if pid is not None else None
             if pid != cur:
                 if cur is not None and len(run) >= MIN_PTS:
-                    by_plate.setdefault(cur, []).append(run)
+                    by_plate.setdefault(cur, []).append((ri, run))
                 run, cur = ([run[-1]] if run else []), pid
             run.append(q)
         if cur is not None and len(run) >= MIN_PTS:
-            by_plate.setdefault(cur, []).append(run)
+            by_plate.setdefault(cur, []).append((ri, run))
     print(f"  같은 판끼리 끊어 이은 조각 {sum(len(v) for v in by_plate.values())}개")
     print(f"  판 {len(by_plate)}개 — 큰 것부터: "
           + ", ".join(f"{p}({len(v)})" for p, v in
@@ -249,14 +256,14 @@ def main():
     # 기준점은 그 판의 해안선 위에서 고른다 — 판 위에 확실히 있는 점이다
     MIN_PLATE_PTS = 60          # 이보다 작은 판은 전지구 화면에서 안 보인다
     small = [p for p, rs in by_plate.items()
-             if sum(len(r) for r in rs) < MIN_PLATE_PTS]
+             if sum(len(r) for _, r in rs) < MIN_PLATE_PTS]
     for p in small:
         del by_plate[p]
     print(f"  작은 판 {len(small)}개를 뺐다 — 남은 판 {len(by_plate)}개")
 
     seeds, order = {}, []
     for pid, rs in by_plate.items():
-        flat = [q for r in rs for q in r]
+        flat = [q for _, r in rs for q in r]
         step = max(1, len(flat) // 5)
         pick = [tuple(flat[i]) for i in range(0, len(flat), step)][:5]
         if len(pick) >= 3:
@@ -290,8 +297,9 @@ def main():
         frames.append({"t": t, "m": mats})
         print(f"  {t:4d} Ma  판 {len(mats):3d}  (없어진 판 {drop})")
 
-    lines = [{"p": pid, "c": r} for pid in order if pid in alive
-             for r in by_plate[pid]]
+    # g = 고리 번호. 같은 p 와 같은 g 를 가진 조각들을 이어 붙이면 채울 다각형이 된다.
+    lines = [{"p": pid, "g": ri, "c": r} for pid in order if pid in alive
+             for ri, r in by_plate[pid]]
 
     # ── 검증: 우리 행렬로 옮긴 점이 GPlates 원본과 같은가 ──────────────
     print("▸ 검증 (표본 200점을 GPlates 원본과 대조)")

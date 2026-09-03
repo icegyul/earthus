@@ -24,6 +24,11 @@ from backend.conjunction.tca import find_tca
 from backend.orbit.errors import PropagationError
 from backend.orbit.frames import FrameAssumptions
 from backend.orbit.propagator import Sgp4Propagator
+from backend.conjunction.materiality import (
+    MATERIAL_CHANGE_POLICY,
+    SNAPSHOT_CHANNELS,
+    materially_different,
+)
 from backend.orbit.time_scale import require_utc_datetime
 
 MAX_WINDOW_HOURS = 168.0
@@ -215,6 +220,8 @@ class ConjunctionService:
 
         events: list[dict[str, Any]] = []
         pair_failures: list[dict[str, Any]] = []
+        snapshots_written = 0
+        snapshots_reused = 0
         for candidate in screen.candidates:
             entry_a = index_to_entry[candidate.index_a]
             entry_b = index_to_entry[candidate.index_b]
@@ -248,7 +255,7 @@ class ConjunctionService:
 
             if tca_result.miss_distance_m > effective_config.screening_threshold_m:
                 continue
-            event_id, snapshot_id = await self._persist_event_and_snapshot(
+            event_id, snapshot_id, snapshot_written, changed_channels = await self._persist_event_and_snapshot(
                 run_id=run_id,
                 entry_a=entry_a,
                 entry_b=entry_b,
@@ -258,10 +265,18 @@ class ConjunctionService:
                 input_hash=input_hash,
                 provenance_rows=provenance_rows,
             )
+            if snapshot_written:
+                snapshots_written += 1
+            else:
+                snapshots_reused += 1
             events.append(
                 {
                     "event_id": event_id,
                     "snapshot_id": snapshot_id,
+                    # False means the stored assessment already said this; the
+                    # row named above is still the one that describes it.
+                    "snapshot_written": snapshot_written,
+                    "changed_channels": changed_channels,
                     "primary_catalog_id": entry_a[1],
                     "secondary_catalog_id": entry_b[1],
                     "tca": tca_result.tca_utc.isoformat(),
@@ -331,7 +346,15 @@ class ConjunctionService:
             config_hash=config_hash,
             input_hash=input_hash,
             warnings=warnings,
-            coverage=coverage,
+            coverage={
+                **coverage,
+                # What this run actually stored, versus what it re-confirmed.
+                # A run that writes nothing is a run that found nothing new,
+                # and that is a result, not a failure.
+                "snapshots_written": snapshots_written,
+                "snapshots_reused": snapshots_reused,
+                "material_change_policy": MATERIAL_CHANGE_POLICY,
+            },
         )
 
     async def _persist_event_and_snapshot(
@@ -442,6 +465,21 @@ class ConjunctionService:
             "PUBLIC_GP carries no covariance; Pc stays NOT_COMPUTED and is "
             "never estimated from screening metrics."
         )
+        # Does this run have anything new to say about this conjunction?
+        #
+        # The table is append-only and every run used to write a row per
+        # candidate, so five snapshots in six recorded that the screener had run
+        # again rather than that the conjunction had moved. Those rows are the
+        # bulk of the store and the bulk of what a scheduled screening costs to
+        # keep. The event's last_seen_at still records that we looked, so
+        # skipping the write loses the duplicate and not the observation.
+        previous = await self.repository.latest_snapshot_assessment(event_id)
+        moved, channels = materially_different(
+            previous, metrics, channels=SNAPSHOT_CHANNELS
+        )
+        if not moved:
+            return event_id, previous["snapshot_id"], False, channels
+
         return event_id, await self.repository.append_snapshot(
             event_id=event_id,
             snapshot_at=datetime.now(UTC),
@@ -449,7 +487,7 @@ class ConjunctionService:
             provenance_payload=provenance_payload,
             model_version=f"{COARSE_MODEL_VERSION}+sgp4",
             input_hash=input_hash,
-        )
+        ), True, channels
 
     async def list_conjunction_history(
         self,

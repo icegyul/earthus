@@ -43,93 +43,22 @@ from aetherus_domain.models import EvidenceRecord, SignalRecord
 REFUSED_BY_GATE = "REFUSED_BY_PROMOTION_GATE"
 REFUSED_EVIDENCE_UNRESOLVABLE = "EVIDENCE_NOT_PERSISTED"
 
-#: What counts as the screening having moved.
-#:
-#: Not a tuning knob and not a guess. Repeated screening of identical input
-#: produces miss distances that differ in the ninth decimal place, and public GP
-#: geometry is not resolved anywhere near that finely; a difference below the
-#: metre is the arithmetic talking to itself. Recording it as a revision would
-#: bury the 2,468 conjunctions whose distance really moved among thousands that
-#: only got recomputed.
-#:
-#: The version travels with every outcome, so a history promoted under one rule
-#: can be told from one promoted under another.
-MATERIAL_CHANGE_POLICY = "SCREENING_MATERIAL_CHANGE_V1"
+# The rule for "did this actually move" lives in the backend, next to the
+# screening that writes the snapshots, and both callers import it. A second copy
+# here would be a second answer to one question, and the two would drift.
+from backend.conjunction.materiality import (  # noqa: E402
+    MATERIAL_CHANGE_POLICY,
+    RESOLUTION,
+    materially_different,
+)
 
-#: Absolute resolution below which a numeric channel is treated as unchanged.
-MATERIAL_CHANGE_RESOLUTION: dict[str, float] = {
-    # Screening-grade geometry from public GP elements. A sub-metre difference
-    # is recomputation noise, not a new assessment.
-    "miss_distance_m": 1.0,
-    "relative_speed_mps": 1.0,
-}
-
-#: Channels where any change of value at all is material, because the value is
-#: a probability whose scale is not fixed: a move from 1e-9 to 1e-6 is small in
-#: absolute terms and is the whole story.
-MATERIAL_CHANGE_RELATIVE = {"pc", "max_pc"}
-MATERIAL_CHANGE_RELATIVE_FRACTION = 0.01
-
-#: Any change to one of these is material regardless of magnitude: they say what
-#: kind of statement the row is, and that is never noise.
-MATERIAL_CHANGE_ALWAYS = frozenset({
+#: The adapter's payload keys that constitute the conjunction's assessment.
+#: Different names from the snapshot's own columns, same policy underneath.
+MATERIAL_CHANGE_CHANNELS = frozenset({
+    "miss_distance_m", "relative_speed_mps", "pc", "max_pc",
     "pc_status", "max_pc_status", "max_pc_basis", "geometry_basis",
     "validation_state", "covariance_status", "event_status",
     "dilution_state", "tca_boundary_flag", "tca", "source_grade",
-})
-
-
-def _materially_different(previous: dict[str, Any], current: dict[str, Any]) -> tuple[bool, list[str]]:
-    """Whether the assessment moved, and which channels moved.
-
-    Change is decided over a named list of assessment channels, not over
-    everything except a list of provenance keys. The first attempt here did the
-    opposite and got it wrong immediately: it excluded ``snapshot_id`` and
-    ``snapshot_at`` and then recorded 870 revisions whose reasons were
-    ``config_hash``, ``input_hash`` and ``screening_run_id`` - the identity of
-    the screening run, which changes every time the screener runs and never
-    because the conjunction moved.
-
-    An exclusion list has to anticipate every provenance field anyone will ever
-    add. An inclusion list fails the other way: a new field is ignored until
-    somebody decides it is an assessment, and a revision that should have fired
-    is easier to notice than a thousand that should not have.
-    """
-    moved: list[str] = []
-    for key, value in current.items():
-        if key not in MATERIAL_CHANGE_CHANNELS:
-            continue
-        before = previous.get(key)
-        if key in MATERIAL_CHANGE_ALWAYS:
-            if before != value:
-                moved.append(key)
-            continue
-        if isinstance(value, (int, float)) and isinstance(before, (int, float)):
-            if key in MATERIAL_CHANGE_RELATIVE:
-                scale = max(abs(before), abs(value))
-                if scale > 0 and abs(value - before) / scale >= MATERIAL_CHANGE_RELATIVE_FRACTION:
-                    moved.append(key)
-                continue
-            resolution = MATERIAL_CHANGE_RESOLUTION.get(key)
-            if resolution is None:
-                if before != value:
-                    moved.append(key)
-            elif abs(value - before) >= resolution:
-                moved.append(key)
-            continue
-        if before != value:
-            moved.append(key)
-    return bool(moved), sorted(moved)
-
-
-#: The only fields whose movement is a change in the conjunction.
-#:
-#: Everything else in the payload describes the observation - which run produced
-#: it, which snapshot it came from, what the adapter version was - and changes on
-#: every refresh whether or not the conjunction did.
-MATERIAL_CHANGE_CHANNELS = frozenset({
-    "miss_distance_m", "relative_speed_mps", "pc", "max_pc",
-    *MATERIAL_CHANGE_ALWAYS,
 })
 
 
@@ -311,7 +240,9 @@ async def promote_conjunction_signals(
                 field: change.get("after")
                 for field, change in repository.revisions_for(existing.id)[-1].delta.items()
             }
-            moved, channels = _materially_different(previous, signal.payload)
+            moved, channels = materially_different(
+                previous, signal.payload, channels=MATERIAL_CHANGE_CHANNELS
+            )
             if not moved:
                 unchanged += 1
                 continue
@@ -370,7 +301,7 @@ async def promote_conjunction_signals(
         source_bundle={
             **_bundle_provenance(bundle),
             "material_change_policy": MATERIAL_CHANGE_POLICY,
-            "material_change_resolution": dict(MATERIAL_CHANGE_RESOLUTION),
+            "material_change_resolution": dict(RESOLUTION),
             "changed_channels_by_event": moved_channels,
         },
     )

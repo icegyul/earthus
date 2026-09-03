@@ -81,9 +81,31 @@ class TestRealCatalogScreening:
             and event["secondary_catalog_id"] == first_event["secondary_catalog_id"]
         ]
         assert matching_second, "event identity must be stable across runs"
-        assert (
-            matching_second[0]["event_id"] is not None
-            and matching_second[0]["snapshot_id"] != first_event["snapshot_id"]
+        assert matching_second[0]["event_id"] is not None
+
+        # Versioning lives on the snapshot, not on a duplicated event - that part
+        # is unchanged. What changed is that a second run only writes a snapshot
+        # when the assessment actually moved: re-screening identical input used
+        # to append a row per candidate, and five in six said nothing new.
+        repeat = matching_second[0]
+        if repeat["snapshot_written"]:
+            assert repeat["snapshot_id"] != first_event["snapshot_id"], (
+                "a written snapshot must be a new row"
+            )
+            assert repeat["changed_channels"], "a write must name what moved"
+        else:
+            assert repeat["snapshot_id"] == first_event["snapshot_id"], (
+                "a reused assessment must point at the row that still describes it"
+            )
+            assert repeat["changed_channels"] == []
+
+        coverage = second["data"]["coverage"]
+        assert coverage["snapshots_written"] + coverage["snapshots_reused"] == len(
+            second["data"]["events"]
+        ), "every candidate is either written or reused; the accounting must close"
+        assert coverage["snapshots_reused"] > 0, (
+            "re-screening the same window rewrote every candidate; the "
+            "material-change policy is not being applied"
         )
 
     async def test_pair_counts_recorded(self, repository):

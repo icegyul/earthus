@@ -307,6 +307,31 @@ class ConjunctionRepository:
             )
             return str(result.scalar_one())
 
+    async def latest_snapshot_assessment(self, event_id: str) -> dict[str, Any] | None:
+        """The newest stored assessment for one conjunction, or None if it is new.
+
+        Only the channels that constitute the assessment, plus the snapshot id so
+        a caller that decides not to write can still say which row describes the
+        conjunction now.
+        """
+        query = text(
+            """
+            SELECT id::text AS snapshot_id,
+                   miss_distance_m, relative_speed_mps,
+                   pc, pc_status, pc_unavailable_reason, covariance_status,
+                   max_pc, max_pc_status,
+                   dilution_state, tca_boundary_flag AS boundary_flag,
+                   geometry_basis, source_grade
+            FROM conjunction_snapshot
+            WHERE event_id = :event_id
+            ORDER BY snapshot_at DESC, id DESC
+            LIMIT 1
+            """
+        )
+        async with get_db_session() as session:
+            row = (await session.execute(query, {"event_id": event_id})).mappings().first()
+        return dict(row) if row else None
+
     async def append_snapshot(
         self,
         event_id: str,

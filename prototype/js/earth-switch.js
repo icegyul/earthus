@@ -25,9 +25,9 @@
   var DEV = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 
   var EARTHS = [
-    { id: 'earthus', label: 'EARTHUS',      when: '현재', href: '/' },
-    { id: 'intel',   label: 'Intelligence', when: '미래', href: '/v2-three/' },
-    { id: 'wonder',  label: 'WONDER',       when: '과거', href: DEV ? '/v3-kids/' : '/v3/' }
+    { id: 'earthus', label: 'EARTHUS',      href: '/' },
+    { id: 'intel',   label: 'Intelligence', href: '/v2-three/' },
+    { id: 'wonder',  label: 'WONDER',       href: DEV ? '/v3-kids/' : '/v3/' }
   ];
 
   // 지금 어느 지구인가. 긴 경로부터 본다 — '/' 는 무엇에나 걸리기 때문이다.
@@ -44,19 +44,16 @@
     '  border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(10px);',
     '  -webkit-backdrop-filter:blur(10px);box-shadow:0 6px 22px rgba(0,0,0,.34);',
     '  font-family:"IBM Plex Sans KR","Malgun Gothic",system-ui,-apple-system,sans-serif}',
-    '.es-switch a{display:flex;flex-direction:column;justify-content:center;gap:1px;',
-    '  padding:6px 13px 5px;border-radius:999px;text-decoration:none;color:#C7D6EA;',
-    '  font-size:12.5px;font-weight:500;letter-spacing:.01em;line-height:1.15;white-space:nowrap;',
+    '.es-switch a{display:flex;align-items:center;',
+    '  padding:7px 15px;border-radius:999px;text-decoration:none;color:#C7D6EA;',
+    '  font-size:13px;font-weight:500;letter-spacing:.01em;line-height:1.2;white-space:nowrap;',
     '  transition:background .15s ease,color .15s ease}',
-    '.es-switch a .es-when{font-size:9.5px;letter-spacing:.08em;opacity:.62;font-weight:400}',
     '.es-switch a:hover{background:rgba(255,255,255,.12);color:#fff}',
     '.es-switch a[aria-current="page"]{background:#fff;color:#0E1726;cursor:default}',
-    '.es-switch a[aria-current="page"] .es-when{opacity:.55}',
     '.es-switch a:focus-visible{outline:2px solid #7FB7F5;outline-offset:2px}',
     '@media (max-width:720px){',
     '  .es-switch{top:8px;left:8px;padding:2px}',
-    '  .es-switch a{padding:5px 10px 4px;font-size:11.5px}',
-    '  .es-switch a .es-when{display:none}}',
+    '  .es-switch a{padding:6px 11px;font-size:12px}}',
     '@media (prefers-reduced-motion:reduce){.es-switch a{transition:none}}'
   ].join('\n');
 
@@ -75,8 +72,7 @@
     EARTHS.forEach(function (e) {
       var a = document.createElement('a');
       a.href = e.href;
-      a.innerHTML = '<span>' + e.label + '</span>'
-                  + '<span class="es-when">' + e.when + '</span>';
+      a.textContent = e.label;
       if (e.id === here) {
         a.setAttribute('aria-current', 'page');
         a.addEventListener('click', function (ev) { ev.preventDefault(); });

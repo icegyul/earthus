@@ -311,6 +311,10 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
         <path d="M3 12c3.5 0 3.5 3 7 3s3.5-3 7-3 3.5 3 7 3 3.5-3 5-3"/>
         <path d="M3 20c3.5 0 3.5 3 7 3s3.5-3 7-3 3.5 3 7 3 3.5-3 5-3"/></svg>
     </button>
+    <button class="railbtn" id="b-quake" aria-pressed="false" aria-label="지진과 판 경계 보기" title="지진·판 경계">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 17h5l3-8 4 15 4-19 3.5 12L26 17h4"/></svg>
+    </button>
     <button class="railbtn" id="b-mtn" aria-pressed="false" aria-label="산맥 보기" title="산맥">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 25l7.5-12 5 7.5 3.5-5.5L26 25z"/><path d="M10.5 13l2.6 4.2"/>
@@ -931,6 +935,104 @@ function addMarker(kind, lat, lon, html, cls){
   markers.push({ el, pos: llToVec(lat, lon, R*1.02), kind });
   return el;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   불 — 지진 25년과 판 경계
+   가르치지 않고 보게 만든다. 하루치 지진은 흩어진 점이지만 25년을 쌓으면
+   줄이 생긴다. 그 줄이 판 경계다 — 지질학자가 그린 선을 그 위에 겹치면
+   "정말 같은 자리인가"를 아이가 눈으로 확인한다.
+
+   자료는 v2 가 이미 가진 것을 그대로 쓴다. USGS ComCat 2001년~ 규모 4.5 이상
+   18만 건이 5.7바이트/건으로 눌려 있고(zlib), 판 경계는 Bird(2003) PB2002 다.
+   ══════════════════════════════════════════════════════════════ */
+let quakeOn = false, quakePts = null, plateLine = null, QUAKE_HEAD = null;
+
+async function inflateBin(buf){
+  const st = new Response(buf).body.pipeThrough(new DecompressionStream('deflate'));
+  return new Uint8Array(await new Response(st).arrayBuffer());
+}
+
+async function loadQuakes(){
+  const base = '../v2-three/quakes';
+  const [head, bin, plates] = await Promise.all([
+    fetch(`${base}/quakes.json`).then(r=>r.json()),
+    fetch(`${base}/quakes.bin`).then(r=>r.arrayBuffer()),
+    fetch(`${base}/plates.json`).then(r=>r.json()),
+  ]);
+  QUAKE_HEAD = head;
+
+  const raw = await inflateBin(bin);
+  const n = head.count;
+  const dv = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
+  const pos = new Float32Array(n*3);
+  const col = new Float32Array(n*3);
+
+  // 배열 5개가 차례로 들어 있다 — 순서를 틀리면 지진이 엉뚱한 자리에 찍힌다
+  let o = 0;
+  const lon = new Float32Array(n), lat = new Float32Array(n), mag = new Float32Array(n);
+  for(let i=0;i<n;i++, o+=2) lon[i] = dv.getInt16(o, true)/181;
+  for(let i=0;i<n;i++, o+=2) lat[i] = dv.getInt16(o, true)/362;
+  o += n*2;                                   // 깊이는 이 화면에서 쓰지 않는다
+  for(let i=0;i<n;i++, o+=1) mag[i] = raw[o]/20 + 4.0;
+
+  for(let i=0;i<n;i++){
+    const v = llToVec(lat[i], lon[i], R*1.004);
+    pos[i*3]=v.x; pos[i*3+1]=v.y; pos[i*3+2]=v.z;
+    // 큰 지진일수록 붉다. 색만이 아니라 밝기도 함께 오른다.
+    const u = Math.min(1, (mag[i]-4.5)/3.0);
+    col[i*3]   = 1.0;
+    col[i*3+1] = 0.86 - u*0.62;
+    col[i*3+2] = 0.45 - u*0.32;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  quakePts = new THREE.Points(g, new THREE.PointsMaterial({
+    size: 0.0075, vertexColors: true, transparent: true, opacity: 0.55,
+    sizeAttenuation: true, depthWrite: false }));
+  quakePts.visible = false;
+  earthGroup.add(quakePts);
+
+  // 판 경계 — 지질학자가 그린 선
+  const co = plates.coords;
+  let segs = 0;
+  for(const line of co) segs += (line.length/2 - 1);
+  const ppos = new Float32Array(segs*2*3);
+  let k = 0;
+  for(const line of co){
+    for(let i=0;i<line.length-2;i+=2){
+      if(Math.abs(line[i]-line[i+2]) > 180){ k += 6; continue; }
+      const a = llToVec(line[i+1], line[i], R*1.009);
+      const b = llToVec(line[i+3], line[i+2], R*1.009);
+      ppos[k++]=a.x; ppos[k++]=a.y; ppos[k++]=a.z;
+      ppos[k++]=b.x; ppos[k++]=b.y; ppos[k++]=b.z;
+    }
+  }
+  const pg = new THREE.BufferGeometry();
+  pg.setAttribute('position', new THREE.BufferAttribute(ppos, 3));
+  plateLine = new THREE.LineSegments(pg, new THREE.LineBasicMaterial({
+    color: 0x7FE0FF, transparent: true, opacity: 0.75, depthWrite: false }));
+  plateLine.renderOrder = 4;
+  plateLine.visible = false;
+  earthGroup.add(plateLine);
+}
+
+$('#b-quake').addEventListener('click', e => {
+  quakeOn = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  e.currentTarget.setAttribute('aria-pressed', String(quakeOn));
+  if(quakePts) quakePts.visible = quakeOn;
+  if(plateLine) plateLine.visible = quakeOn;
+  const c = $('#card');
+  if(quakeOn && QUAKE_HEAD){
+    c.innerHTML = `<button class="x" aria-label="닫기">×</button>
+      <h2>지진 ${QUAKE_HEAD.epoch.slice(0,4)}년부터 지금까지</h2>
+      <div class="meta">USGS · 규모 ${QUAKE_HEAD.minMagnitude} 이상 ${QUAKE_HEAD.count.toLocaleString()}건</div>
+      <div class="kid">점 하나가 지진 한 번이에요. 하루만 보면 흩어져 있는데, 25년을 쌓으면 줄이 보여요.</div>
+      <div class="rec">그 줄이 <b>판 경계</b>예요. 하늘색 선은 지질학자가 그린 판 경계고, 붉은 점이 그 위에 겹칩니다.<br>판 경계 Bird(2003) PB2002 · ODC-BY</div>`;
+    c.hidden = false;
+    c.querySelector('.x').addEventListener('click', ()=>{ c.hidden = true; });
+  } else if(!quakeOn) c.hidden = true;
+});
 
 /* ══════════════════════════════════════════════════════════════
    물 — 큰 강과 큰 댐
@@ -2062,6 +2164,8 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe(document.documentEle
   for(const c of COUNTRY_LABELS) addMarker('name', c.lat, c.lon, c.name, 'nm');
   loadPaleoEarth().then(()=> drawOnce())
                   .catch(e => { console.warn('옛 대륙 로드 실패', e); $('#b-pangaea').disabled = true; });
+  loadQuakes().then(()=> drawOnce())
+              .catch(e => { console.warn('지진 로드 실패', e); $('#b-quake').disabled = true; });
   loadWater().then(()=>{ for(const d of damMarks) d.el.style.display='none'; drawOnce(); })
              .catch(e => { console.warn('물 로드 실패', e); $('#b-water').disabled = true; });
   loadLeads().catch(e => console.warn('예보 로드 실패', e));

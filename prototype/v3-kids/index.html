@@ -106,6 +106,17 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 }
 .bub .box b{display:block;font-size:12px;opacity:.55;font-weight:400}
 
+/* ── 강 이름 · 댐 ── */
+.rv{position:absolute;z-index:3;transform:translate(-50%,-50%);pointer-events:none;
+  font-family:var(--kid);font-size:12.5px;color:#BFE9FF;white-space:nowrap;
+  text-shadow:0 1px 3px rgba(2,18,32,.95),0 0 10px rgba(2,18,32,.8);will-change:transform,opacity}
+.dm{position:absolute;z-index:5;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;
+  will-change:transform,opacity}
+.dm .b{width:13px;height:13px;border-radius:3px;background:#7FD4F0;border:2px solid #fff;
+  box-shadow:0 2px 7px rgba(0,0,0,.5)}
+.dm .t{font-family:var(--kid);font-size:11.5px;color:#DFF4FF;text-align:center;margin-top:3px;
+  white-space:nowrap;text-shadow:0 1px 3px rgba(2,18,32,.95)}
+
 /* ── 대륙 이름 (옛 대륙) ── */
 .cn{position:absolute;z-index:4;transform:translate(-50%,-50%);pointer-events:none;
   font-family:var(--kid);font-size:17px;color:#FFF0D2;letter-spacing:.03em;white-space:nowrap;
@@ -294,6 +305,11 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
     <button class="railbtn" id="b-wind" aria-pressed="false" aria-label="바람 보기" title="바람">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
         <path d="M3 11h14a4 4 0 1 0-4-4"/><path d="M3 17h20a4 4 0 1 1-4 4"/><path d="M3 23h11"/></svg>
+    </button>
+    <button class="railbtn" id="b-water" aria-pressed="false" aria-label="강과 댐 보기" title="강·댐">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
+        <path d="M3 12c3.5 0 3.5 3 7 3s3.5-3 7-3 3.5 3 7 3 3.5-3 5-3"/>
+        <path d="M3 20c3.5 0 3.5 3 7 3s3.5-3 7-3 3.5 3 7 3 3.5-3 5-3"/></svg>
     </button>
     <button class="railbtn" id="b-mtn" aria-pressed="false" aria-label="산맥 보기" title="산맥">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
@@ -915,6 +931,85 @@ function addMarker(kind, lat, lon, html, cls){
   markers.push({ el, pos: llToVec(lat, lon, R*1.02), kind });
   return el;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   물 — 큰 강과 큰 댐
+   강은 Natural Earth 1:50m(퍼블릭 도메인). 원본에 한국어 이름이 없어
+   큰 강 209줄만 손으로 붙였다 — 나머지는 선만 그리고 이름을 띄우지 않는다.
+   영어 이름을 아이 화면에 올리지 않기 위해서다.
+   댐은 4만 개 중 손으로 고른 18개. 전지구 화면에서 4만 점은 뜻이 없다.
+   ══════════════════════════════════════════════════════════════ */
+let WATER = null, waterOn = false, riverLine = null;
+const riverMarks = [], damMarks = [];
+
+async function loadWater(){
+  WATER = await fetch('../data/water.json').then(r=>r.json());
+
+  let segs = 0;
+  for(const l of WATER.rivers.lines) segs += (l.c.length - 1);
+  const pos = new Float32Array(segs*2*3);
+  let i = 0;
+  for(const l of WATER.rivers.lines){
+    for(let k = 0; k < l.c.length-1; k++){
+      if(Math.abs(l.c[k][0] - l.c[k+1][0]) > 180){ i += 6; continue; }
+      const a = llToVec(l.c[k][1], l.c[k][0], R*1.005);
+      const b = llToVec(l.c[k+1][1], l.c[k+1][0], R*1.005);
+      pos[i++]=a.x; pos[i++]=a.y; pos[i++]=a.z;
+      pos[i++]=b.x; pos[i++]=b.y; pos[i++]=b.z;
+    }
+    if(l.n){
+      const mid = l.c[Math.floor(l.c.length/2)];
+      riverMarks.push({ n: l.n, lon: mid[0], lat: mid[1] });
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  riverLine = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({
+    color: 0x6EC8F0, transparent: true, opacity: 0.9, depthWrite: false }));
+  riverLine.renderOrder = 3;
+  riverLine.visible = false;
+  earthGroup.add(riverLine);
+
+  // 강 이름표는 큰 것만 — 209줄 다 띄우면 지구가 글자로 덮인다
+  const seen = new Set();
+  for(const r of riverMarks){
+    if(seen.has(r.n)) continue;
+    seen.add(r.n);
+    const el = document.createElement('div');
+    el.className = 'rv'; el.textContent = r.n; el.style.visibility = 'hidden';
+    stage.appendChild(el);
+    r.el = el; r.pos = llToVec(r.lat, r.lon, R*1.012);
+  }
+
+  for(const d of WATER.dams.items){
+    const el = document.createElement('div');
+    el.className = 'dm';
+    el.innerHTML = `<div class="b"></div><div class="t">${d.n}</div>`;
+    el.style.visibility = 'hidden';
+    el.addEventListener('click', ()=> openDam(d));
+    stage.appendChild(el);
+    damMarks.push({ d, el, pos: llToVec(d.lat, d.lon, R*1.014) });
+  }
+}
+
+function openDam(d){
+  const c = $('#card');
+  c.innerHTML = `<button class="x" aria-label="닫기">×</button>
+    <h2>${d.n}</h2>
+    <div class="meta">${d.co} · ${d.r} · ${d.y}년 완공</div>
+    ${d.why ? `<div class="kid">${d.why}</div>` : ''}
+    <div class="rec">강을 막아 물을 모으고 전기를 만듭니다.<br>좌표는 위키데이터·위키백과에서 확인한 값입니다.</div>`;
+  c.hidden = false;
+  c.querySelector('.x').addEventListener('click', ()=>{ c.hidden = true; });
+}
+
+$('#b-water').addEventListener('click', e => {
+  waterOn = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  e.currentTarget.setAttribute('aria-pressed', String(waterOn));
+  if(riverLine) riverLine.visible = waterOn;
+  for(const d of damMarks) d.el.style.display = waterOn ? '' : 'none';
+  if(!waterOn) $('#card').hidden = true;
+});
 
 /* ══════════════════════════════════════════════════════════════
    기온 색면 — 윈디가 2D 위에 까는 그 색
@@ -1745,6 +1840,43 @@ function placeMarkers(w, h){
     if(!clash) pinLabels.push({x:f.sx, y:f.sy});
   }
 
+  // 강 이름과 댐
+  if(waterOn){
+    const rvShown = [];
+    for(const r of riverMarks){
+      if(!r.el) continue;
+      _v.copy(r.pos).applyMatrix4(earthGroup.matrixWorld);
+      const facing = _v.clone().normalize().dot(_c.clone().sub(_v).normalize());
+      if(facing <= 0.14){ r.el.style.visibility='hidden'; continue; }
+      const q = _v.clone().project(camera);
+      const X=(q.x*0.5+0.5)*w, Y=(-q.y*0.5+0.5)*h;
+      const clash = rvShown.some(o => Math.abs(o.x-X)<86 && Math.abs(o.y-Y)<22);
+      const ok = !clash && rvShown.length < 6 && X>78 && X<w-90 && Y>56 && Y<h-150;
+      r.el.style.visibility = ok ? 'visible' : 'hidden';
+      if(ok){ r.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-50%)`;
+              r.el.style.opacity = Math.min(1, (facing-0.14)/0.25); rvShown.push({x:X,y:Y}); }
+    }
+    // 댐 이름이 겹치면 이름만 접는다. 표식은 남긴다 — 자리가 사실이기 때문이다.
+    const dmShown = [];
+    for(const m of damMarks){
+      _v.copy(m.pos).applyMatrix4(earthGroup.matrixWorld);
+      const facing = _v.clone().normalize().dot(_c.clone().sub(_v).normalize());
+      if(facing <= 0.06){ m.el.style.visibility='hidden'; continue; }
+      const q = _v.clone().project(camera);
+      const X=(q.x*0.5+0.5)*w, Y=(-q.y*0.5+0.5)*h;
+      m.el.style.visibility='visible';
+      m.el.style.opacity = Math.min(1,(facing-0.06)/0.2);
+      m.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-50%)`;
+      const lab = m.el.querySelector('.t');
+      const clash = dmShown.some(o => Math.abs(o.x-X)<74 && Math.abs(o.y-Y)<20);
+      lab.style.visibility = clash ? 'hidden' : 'visible';
+      if(!clash) dmShown.push({x:X, y:Y});
+    }
+  } else {
+    for(const r of riverMarks) if(r.el) r.el.style.visibility='hidden';
+    for(const m of damMarks) m.el.style.visibility='hidden';
+  }
+
   // 대륙 이름 — 그 시대에 판이 있는 것만. 없으면 이름도 없다.
   const contShown = [];
   const paleoFr = (paleoOn && PALEO)
@@ -1930,6 +2062,8 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe(document.documentEle
   for(const c of COUNTRY_LABELS) addMarker('name', c.lat, c.lon, c.name, 'nm');
   loadPaleoEarth().then(()=> drawOnce())
                   .catch(e => { console.warn('옛 대륙 로드 실패', e); $('#b-pangaea').disabled = true; });
+  loadWater().then(()=>{ for(const d of damMarks) d.el.style.display='none'; drawOnce(); })
+             .catch(e => { console.warn('물 로드 실패', e); $('#b-water').disabled = true; });
   loadLeads().catch(e => console.warn('예보 로드 실패', e));
   loadWind().catch(e => { console.warn('바람 로드 실패', e); $('#b-wind').disabled = true; });
   loadMountains().then(()=>{ for(const t of mtnMarks) t.el.style.display='none'; drawOnce(); })

@@ -4,11 +4,12 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=46';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=47';
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=5';
 import { LiveLayers } from './live-layers.js?v=23';
+import { StationModel } from './station-model.js?v=2';
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
 import { PopSculpture } from './pop-sculpture.js?v=13';
@@ -3095,6 +3096,12 @@ async function main() {
       if (id === 'cloud-ea') return { on: clouds.mode === 'gk2a:ir112ea', note: cloudNote() };
       if (id === 'cloud-gfs') return { on: clouds.mode === 'gfs', note: cloudNote() };
       if (id === 'cloud-vol') return cloudVol.state();
+      if (id === 'synop') {
+        const m = synop.meta || {};
+        return { on: synop.on, note: synop.on
+          ? `기상청 ${m.aws || 0}개소 · GTS ${(m.gts || 0).toLocaleString()}개소 · 운량·바람깃·기온·이슬점·기압`
+          : undefined };
+      }
     }
     if (sid === 'people' && id === 'sculpt') return popSculpt.state();
     if (sid === 'people' && id === 'livemix') {
@@ -3440,6 +3447,17 @@ async function main() {
       };
       switch (key) {
         case 'weather/cloud-off': setCloud('off'); break;
+        case 'weather/synop':
+          if (synop.on) { synop.setVisible(false); shell.refreshFlyout(); lockedNote = null; shell.renderIntel(); break; }
+          note('일기도 기입 모형', '지상관측을 받는 중…', 'LIVE');
+          synop.load().then(() => {
+            synop.setVisible(true);
+            shell.refreshFlyout();
+            note('일기도 기입 모형', synop.cardHtml(), 'OBSERVED');
+          }).catch((e) => {
+            note('일기도 기입 모형', `지상관측을 받지 못했습니다 — 값을 만들지 않고 표시하지 않습니다.<br/>${String((e && e.message) || e)}`, 'UNAVAILABLE');
+          });
+          break;
         case 'land/terrain':
           note('실지형 3D', 'AWS Terrarium 실고도 — 전역 z4 + 지역 z6~z8 스트리밍. 항상 켜져 있는 기본 씬입니다.', 'LIVE');
           break;
@@ -3718,6 +3736,10 @@ async function main() {
       return { short, full };
     },
   };
+  // 기입 모형은 DOM 오버레이다(숫자와 기호가 섞여 있어 텍스처로 굽는 것보다 선명하다).
+  // shellHooks 안에서 참조하므로 initShell 보다 먼저 만들어 둔다.
+  const synop = new StationModel(document.body);
+  window.__earthusSynop = synop;   // 선언 뒤에 대입한다 — 앞에 두면 TDZ 로 main() 이 통째로 죽는다
   const shell = initShell(shellHooks);
 
   // ---------- 크롬 서랍 (검색·설정) — 1.0식 배타성: 하나 열리면 나머지 닫힘 ----------
@@ -4648,6 +4670,7 @@ async function main() {
     travel.update(camera);
     buildLabelCandidates();
     shell.updateLabels(camera, altKm);
+    synop.update(camera, altKm);
     feed.updateMarkers(camera, altKm, (i) => {
       feed.select(i, orbit);
       shell.openIntel();

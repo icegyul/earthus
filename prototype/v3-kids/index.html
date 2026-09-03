@@ -409,74 +409,100 @@ const glow = new THREE.Mesh(
 );
 earthGroup.add(glow);
 
-/* ── 구름 껍질: 진짜 격자 운량으로 그린 뭉게 덩어리 ────────────── */
-const cloudCv = document.createElement('canvas'); cloudCv.width = 2048; cloudCv.height = 1024;
-const cloudTex = new THREE.CanvasTexture(cloudCv);
+/* ── 구름 껍질: NOAA GMGSI 관측 영상을 평평한 2D 로 계단화 ──────────
+   전에는 손으로 그린 구름 도장을 격자마다 찍었다. 모양이 지어낸 것이었고
+   가까이 가면 같은 그림이 반복돼 벽지처럼 보였다.
+   지금은 정지궤도 위성 적외 합성 영상을 그대로 받아서, 밝기를 두 단으로
+   끊어 평평하게 칠한다 — 모양은 진짜, 칠은 2D. */
+const cloudTex = new THREE.Texture();
 cloudTex.colorSpace = THREE.SRGBColorSpace;
+
 const clouds = new THREE.Mesh(
   new THREE.SphereGeometry(R*1.012, 96, 60),
-  new THREE.MeshBasicMaterial({ map:cloudTex, transparent:true, depthWrite:false, opacity:0 })
+  new THREE.ShaderMaterial({
+    transparent:true, depthWrite:false,
+    uniforms:{
+      map:    { value: cloudTex },
+      texel:  { value: new THREE.Vector2(1/3072, 1/1536) },
+      ready:  { value: 0 },
+    },
+    vertexShader:`
+      varying vec2 vUv;
+      void main(){ vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
+    `,
+    fragmentShader:`
+      uniform sampler2D map; uniform vec2 texel; uniform float ready;
+      varying vec2 vUv;
+      void main(){
+        if(ready < 0.5) discard;
+
+        // 이 합성 영상은 알파가 "구름이 얼마나 있나"이고 밝기는 "얼마나 흰가"다.
+        // (사하라 = 알파 0, 적도 적운대 = 알파 246 을 직접 재서 확인했다.)
+        // 적외 영상의 잔 알갱이를 이웃 평균으로 눌러 둥근 덩어리로 만든다.
+        // 모양을 지어내는 게 아니라 해상도를 낮추는 것이다 — 구름은 제자리에 있다.
+        float a = 0.0, l = 0.0;
+        for(int i=-2;i<=2;i++){
+          for(int j=-2;j<=2;j++){
+            vec4 t = texture2D(map, vUv + vec2(float(i), float(j)) * texel * 2.4);
+            a += t.a; l += t.r;
+          }
+        }
+        a /= 25.0; l /= 25.0;
+
+        // 구름이 없는 곳과 관측이 없는 곳은 그리지 않는다
+        if(a < 0.10) discard;
+
+        // 평평한 두 단. 가장자리는 계단이 안 보일 만큼만 부드럽게.
+        float lo = smoothstep(0.11, 0.19, a);   // 구름이 있다
+        float hi = smoothstep(0.46, 0.66, a);   // 두꺼운 구름
+        float alpha = lo * (0.58 + 0.42*hi);
+        vec3  col   = mix(vec3(0.79,0.85,0.94), vec3(1.0,1.0,1.0), max(hi, l*0.35));
+
+        gl_FragColor = vec4(col, alpha);
+      }
+    `
+  })
 );
 earthGroup.add(clouds);
 
-/* 귀여운 구름 도장 하나를 미리 그려 두고, 격자마다 찍는다.
-   얇게 흩어지는 실사 구름 대신 둥글둥글 겹친 덩어리 — 아이가 "구름"이라고 부르는 모양. */
-const CLOUD_STAMP = (function(){
-  const w = 256, h = 168;
-  const c = document.createElement('canvas'); c.width = w; c.height = h;
-  const g = c.getContext('2d');
-  g.fillStyle = '#fff';
-  g.filter = 'blur(3px)';                       // 가장자리만 아주 살짝 부드럽게
-  const lobes = [
-    [ 78, 96, 44], [128, 68, 54], [178, 94, 42],
-    [ 52,112, 32], [204,112, 30], [128,110, 46],
-  ];
-  g.beginPath();
-  for(const [x,y,r] of lobes){ g.moveTo(x+r,y); g.arc(x,y,r,0,6.283); }
-  // 아래는 평평하게 — 구름은 바닥이 눌린 모양이라야 구름으로 보인다
-  g.moveTo(44,104); g.lineTo(212,104);
-  g.quadraticCurveTo(216,140, 180,140); g.lineTo(76,140);
-  g.quadraticCurveTo(40,140, 44,104);
-  g.fill();
-  return c;
-})();
+/* 관측 구름 한 장을 받아 온다.
+   S3 를 직접 부른다 — CloudFront 는 /clouds/* 말고는 CORS 헤더를 안 붙이고,
+   로컬 개발에서는 같은 출처가 아니기 때문이다. */
+const CLOUD_BASE = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds';
 
-function paintClouds(points){
-  const c = cloudCv, g = c.getContext('2d');
-  g.clearRect(0,0,c.width,c.height);
+async function loadObservedClouds(){
+  const meta = await fetch(`${CLOUD_BASE}/meta.json`, { cache:'no-cache' })
+    .then(r => { if(!r.ok) throw new Error(`meta ${r.status}`); return r.json(); });
 
-  const PXDEG = c.width/360;
-  const baseW = 15 * PXDEG * 1.15;             // 격자 간격(20°)보다 작게 — 서로 붙어 띠가 되지 않게
+  const img = await new Promise((ok, no) => {
+    const im = new Image();
+    im.crossOrigin = 'anonymous';
+    im.onload = () => ok(im);
+    im.onerror = () => no(new Error('구름 영상을 받지 못했다'));
+    im.src = `${CLOUD_BASE}/global.png?t=${encodeURIComponent(meta.time)}`;
+  });
 
-  for(const p of points){
-    if(!(p.cloud > 55)) continue;              // 값이 없거나 옅으면 그리지 않는다
-    const strength = Math.min(1, (p.cloud-55)/45);
-    const x = (p.lon+180)/360*c.width, y = (90-p.lat)/180*c.height;
+  // 위성이 극을 못 본다. 영상이 덮는 위도 띠에만 놓고 나머지는 비운다 —
+  // 늘려 채우면 없는 관측을 만들어 내는 것이 된다.
+  const north = meta.north ?? 72.715, south = meta.south ?? -72.737;
+  const W = img.width, H = Math.round(W/2);
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  g.clearRect(0,0,W,H);
+  g.drawImage(img, 0, Math.round(((90-north)/180)*H), W, Math.round(((north-south)/180)*H));
 
-    // 등장방형 도법에서 극에 가까울수록 경도가 늘어난다 → 가로로 늘려야 구면에서 둥글다
-    const stretch = Math.min(3.2, 1/Math.max(0.3, Math.cos(p.lat*Math.PI/180)));
-    const dw = baseW * (0.66 + strength*0.40) * stretch;
-    const dh = dw / stretch * (CLOUD_STAMP.height/CLOUD_STAMP.width);
-
-    // 격자가 눈에 띄지 않게 자리와 크기를 조금씩 흩는다 (위치는 격자 셀 안에서만)
-    const jx = Math.sin(p.lon*1.7 + p.lat*0.9) * dw * 0.16;
-    const jy = Math.cos(p.lon*0.8 + p.lat*1.3) * dh * 0.18;
-    const flip = ((p.lon*3 + p.lat*7) | 0) % 2 ? 1 : -1;
-
-    g.globalAlpha = 0.42 + strength*0.52;
-    g.save();
-    g.translate(x+jx, y+jy); g.scale(flip, 1);
-    g.drawImage(CLOUD_STAMP, -dw/2, -dh/2, dw, dh);
-    g.restore();
-
-    // 경도 이음매에서 잘리지 않게 반대편에도 한 번
-    if(x < dw)             { g.save(); g.translate(x+jx+c.width, y+jy); g.scale(flip,1);
-                             g.drawImage(CLOUD_STAMP,-dw/2,-dh/2,dw,dh); g.restore(); }
-    if(x > c.width - dw)   { g.save(); g.translate(x+jx-c.width, y+jy); g.scale(flip,1);
-                             g.drawImage(CLOUD_STAMP,-dw/2,-dh/2,dw,dh); g.restore(); }
-  }
-  g.globalAlpha = 1;
+  cloudTex.image = cv;
+  cloudTex.colorSpace = THREE.SRGBColorSpace;
+  cloudTex.wrapS = THREE.RepeatWrapping;
+  cloudTex.minFilter = THREE.LinearMipmapLinearFilter;
+  cloudTex.magFilter = THREE.LinearFilter;
+  cloudTex.anisotropy = 8;
   cloudTex.needsUpdate = true;
+  clouds.material.uniforms.texel.value.set(1/W, 1/H);
+  clouds.material.uniforms.ready.value = 1;
+
+  return meta;
 }
 
 /* ── 카메라: 세 칸으로 잠근 줌 ────────────────────────────────── */
@@ -623,6 +649,11 @@ const WMO = code => {
 const SAY = { sun:'맑아요', cloud:'구름이 많아요', rain:'비가 와요', snow:'눈이 내려요', zap:'번개가 쳐요' };
 
 async function loadLive(){
+  // 구름(관측 영상)과 친구(격자 실황)는 출처가 다르다 — 하나가 죽어도 다른 하나는 살린다.
+  let cloudMeta = null;
+  try { cloudMeta = await loadObservedClouds(); }
+  catch(e){ console.warn('관측 구름 실패', e); clouds.material.uniforms.ready.value = 0; }
+
   try{
     const grid = gridPoints();
     const [gRes, cRes] = await Promise.all([
@@ -636,8 +667,7 @@ async function loadLive(){
       cloud: d?.current?.cloud_cover ?? null,
       rain:  d?.current?.precipitation ?? 0,
     })).filter(p => p.cloud != null);
-    paintClouds(pts);
-    clouds.material.opacity = 1.0;
+
 
     // 격자에서 비가 실제로 오는 곳에 비 친구 — 위치는 격자 그대로
     pts.filter(p => p.rain >= 0.3)
@@ -655,13 +685,15 @@ async function loadLive(){
     });
 
     const t = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
-    badgetxt.textContent = `실측 · open-meteo · ${t}`;
-    badge.className = '';
+    badgetxt.textContent = cloudMeta
+      ? `실측 · 구름 NOAA GMGSI ${String(cloudMeta.time).slice(11,16)}Z · 날씨 open-meteo ${t}`
+      : `실측 · open-meteo ${t} · 구름 없음`;
+    badge.className = cloudMeta ? '' : 'warn';
   }catch(err){
     console.error(err);
     badge.className = 'err';
     badgetxt.textContent = '날씨를 못 불러왔어요 — 친구를 그리지 않습니다';
-    clouds.material.opacity = 0;      // 데이터가 없으면 그리지 않는다
+    clouds.material.uniforms.ready.value = 0;   // 데이터가 없으면 그리지 않는다
   }
 }
 

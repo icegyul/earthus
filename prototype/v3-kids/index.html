@@ -137,6 +137,21 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 }
 .bub .box b{display:block;font-size:12px;opacity:.55;font-weight:400}
 
+/* ── 지진 재생 막대 ── */
+#quakebar{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:7;
+  display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:18px;
+  background:rgba(8,16,36,.72);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(8px);
+  max-width:min(560px,92vw);width:max-content}
+#quakebar[hidden]{display:none!important}
+#quakeplay{border:0;border-radius:12px;padding:8px 14px;cursor:pointer;white-space:nowrap;
+  background:#FFC24B;color:#20160a;font-family:var(--kid);font-size:13px}
+#quakeplay:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.qb-line{flex:1;min-width:120px;height:6px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden}
+.qb-line i{display:block;height:100%;width:0;background:linear-gradient(90deg,#FFDE9B,#FF7A5C);border-radius:3px}
+#quakewhen{font-family:var(--kid);font-size:13px;color:#FFE9BE;min-width:74px;text-align:right}
+@media (max-width:720px){ #quakebar{bottom:150px;padding:8px 12px;gap:8px} #quakewhen{font-size:11px;min-width:62px}
+  #card.with-bar{bottom:216px} }
+
 /* ── 위성 표식 ── */
 .st{position:absolute;left:0;top:0;z-index:5;cursor:pointer;pointer-events:auto;
   display:flex;align-items:center;gap:5px;white-space:nowrap}
@@ -261,6 +276,9 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
   background:rgba(10,18,38,.94);border:1px solid rgba(255,255,255,.2);border-radius:18px;
   padding:18px 20px 16px;backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
 #card[hidden]{display:none!important}
+/* ⚠️ 지진 재생 막대와 카드가 겹쳐 ▶ 를 누를 수가 없었다(카드 z-index 가 위였다).
+      막대가 떠 있는 동안에는 카드를 그만큼 올린다. */
+  #card.with-bar{bottom:170px}
 #card h2{font-family:var(--kid);font-size:20px;margin:0 0 2px;color:#fff}
 #card .meta{font-size:11.5px;color:#9fb4d6;letter-spacing:.02em;margin-bottom:10px}
 #card .kid{font-family:var(--kid);font-size:16px;line-height:1.55;color:#FFE3A8;margin-bottom:10px}
@@ -451,6 +469,12 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
       <span id="tb-note">한반도를 손으로 되감아 보세요</span>
       <span id="tb-far">2억 5천만 년 전</span>
     </div>
+  </div>
+
+  <div id="quakebar" hidden>
+    <button id="quakeplay" type="button">▶ 25년을 흘려보기</button>
+    <div class="qb-line"><i id="quakefill"></i></div>
+    <span id="quakewhen">2001년</span>
   </div>
 
   <div id="daybar" hidden>
@@ -1283,7 +1307,9 @@ $('#b-crater').addEventListener('click', e => {
    자료는 v2 가 이미 가진 것을 그대로 쓴다. USGS ComCat 2001년~ 규모 4.5 이상
    18만 건이 5.7바이트/건으로 눌려 있고(zlib), 판 경계는 Bird(2003) PB2002 다.
    ══════════════════════════════════════════════════════════════ */
-let quakeOn = false, quakePts = null, plateLine = null, QUAKE_HEAD = null;
+let quakeOn = false, quakePts = null, plateLine = null, QUAKE_HEAD = null, quakeMat = null;
+let quakePlaying = false, quakeDay = 0, quakeT0 = 0;
+const QUAKE_SECONDS = 42;        // 25년을 42초에 흘려보낸다
 
 async function inflateBin(buf){
   const st = new Response(buf).body.pipeThrough(new DecompressionStream('deflate'));
@@ -1308,10 +1334,14 @@ async function loadQuakes(){
   // 배열 5개가 차례로 들어 있다 — 순서를 틀리면 지진이 엉뚱한 자리에 찍힌다
   let o = 0;
   const lon = new Float32Array(n), lat = new Float32Array(n), mag = new Float32Array(n);
+  const day = new Float32Array(n);
   for(let i=0;i<n;i++, o+=2) lon[i] = dv.getInt16(o, true)/181;
   for(let i=0;i<n;i++, o+=2) lat[i] = dv.getInt16(o, true)/362;
   o += n*2;                                   // 깊이는 이 화면에서 쓰지 않는다
   for(let i=0;i<n;i++, o+=1) mag[i] = raw[o]/20 + 4.0;
+  // ⚠️ 날짜가 이미 파일 안에 있었다(기준일로부터 일수). 여기서 건너뛰고 있었고,
+  //    그래서 25년이 한 장에 눌려 있었다. 읽어 두면 시간을 흘려보낼 수 있다.
+  for(let i=0;i<n;i++, o+=2) day[i] = dv.getUint16(o, true);
 
   for(let i=0;i<n;i++){
     const v = llToVec(lat[i], lon[i], R*1.004);
@@ -1325,9 +1355,40 @@ async function loadQuakes(){
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  quakePts = new THREE.Points(g, new THREE.PointsMaterial({
-    size: 0.0075, vertexColors: true, transparent: true, opacity: 0.55,
-    sizeAttenuation: true, depthWrite: false }));
+  g.setAttribute('aDay', new THREE.BufferAttribute(day, 1));
+  /* 재생을 하려면 점마다 "그날이 지났는가"를 물어야 한다. 18만 개를 CPU 에서
+     매 프레임 훑을 수는 없으니 GPU 에 묻는다 — uNow 하나만 바꾸면 된다.
+     uNow < 0 이면 전부 켠다(재생 전의 원래 화면). */
+  quakeMat = new THREE.ShaderMaterial({
+    uniforms: { uNow: { value: -1 }, uFlash: { value: 46 }, uScale: { value: 450 }, uSize: { value: 0.0075 } },
+    transparent: true, depthWrite: false, vertexColors: true,
+    vertexShader: `
+      attribute float aDay;
+      uniform float uNow, uFlash, uScale, uSize;
+      varying vec3 vC; varying float vA;
+      void main(){
+        vC = color;
+        float all = step(uNow, -0.5);                 // uNow < 0 → 전부 보이기
+        float past = step(aDay, uNow);
+        float d = max(uNow - aDay, 0.0);
+        float flash = clamp(1.0 - d/uFlash, 0.0, 1.0);
+        flash *= flash;                                // 짧고 세게 번쩍인다
+        vA = max(all * 0.55, past * (0.16 + 0.84*flash));
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = uSize * (1.0 + 4.5*flash*(1.0-all)) * (uScale / -mv.z);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      varying vec3 vC; varying float vA;
+      void main(){
+        if(vA < 0.02) discard;
+        vec2 q = gl_PointCoord - 0.5;
+        float r = dot(q,q);
+        if(r > 0.25) discard;
+        gl_FragColor = vec4(vC, vA * smoothstep(0.25, 0.05, r));
+      }`,
+  });
+  quakePts = new THREE.Points(g, quakeMat);
   quakePts.visible = false;
   earthGroup.add(quakePts);
 
@@ -1355,11 +1416,42 @@ async function loadQuakes(){
   earthGroup.add(plateLine);
 }
 
+/* 25년을 흘려보낸다. 하루치는 흩어진 점이지만 시간을 흘리면 같은 자리가
+   되풀이해서 번쩍이고, 그 되풀이가 판 경계를 그린다 — 말로 하지 않고 보여 준다. */
+function quakeStop(){
+  quakePlaying = false;
+  $('#quakeplay').textContent = '▶ 25년을 흘려보기';
+  if(quakeMat) quakeMat.uniforms.uNow.value = -1;
+  $('#quakefill').style.width = '0%';
+  $('#quakewhen').textContent = QUAKE_HEAD ? `${QUAKE_HEAD.epoch.slice(0,4)}년부터 지금까지` : '';
+}
+function quakeStart(){
+  if(!QUAKE_HEAD || !quakeMat) return;
+  quakePlaying = true; quakeDay = 0; quakeT0 = performance.now();
+  $('#quakeplay').textContent = '■ 멈추기';
+  $('#card').hidden = true;
+}
+function quakeStep(now){
+  if(!quakePlaying || !QUAKE_HEAD || !quakeMat) return;
+  const days = QUAKE_HEAD.days;
+  quakeDay = (now - quakeT0) / 1000 / QUAKE_SECONDS * days;
+  if(quakeDay >= days){ quakeStop(); return; }
+  quakeMat.uniforms.uNow.value = quakeDay;
+  $('#quakefill').style.width = (quakeDay / days * 100).toFixed(1) + '%';
+  const d = new Date(QUAKE_HEAD.epoch + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + Math.floor(quakeDay));
+  $('#quakewhen').textContent = `${d.getUTCFullYear()}년 ${d.getUTCMonth()+1}월`;
+}
+$('#quakeplay').addEventListener('click', () => { quakePlaying ? quakeStop() : quakeStart(); });
+
 $('#b-quake').addEventListener('click', e => {
   quakeOn = e.currentTarget.getAttribute('aria-pressed') !== 'true';
   e.currentTarget.setAttribute('aria-pressed', String(quakeOn));
   if(quakePts) quakePts.visible = quakeOn;
   if(plateLine) plateLine.visible = quakeOn;
+  $('#quakebar').hidden = !(quakeOn && QUAKE_HEAD);
+  $('#card').classList.toggle('with-bar', quakeOn && !!QUAKE_HEAD);
+  if(!quakeOn) quakeStop(); else quakeStop();
   const c = $('#card');
   if(quakeOn && QUAKE_HEAD){
     c.innerHTML = `<button class="x" aria-label="닫기">×</button>
@@ -3436,6 +3528,12 @@ function placeMarkers(w, h){
     for(let i = k; i < buoyMarks.length; i++){ buoyMarks[i].el.style.visibility = 'hidden'; buoyMarks[i].b = null; }
   } else if(buoyMarks.length){
     for(const m of buoyMarks) m.el.style.visibility = 'hidden';
+  }
+
+  // 지진 재생 — 시각을 흘리고, 점 크기 배율은 그리기 버퍼 높이를 따른다
+  if(quakeOn && quakeMat){
+    quakeMat.uniforms.uScale.value = renderer.domElement.height * 0.5;
+    quakeStep(performance.now());
   }
 
   // 위성 — 1초에 한 번 다시 풀고, 보이는 것만 그린다

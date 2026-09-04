@@ -288,13 +288,18 @@ export class AetherusCore {
   }
 
   // ── 나이·유효성 ──────────────────────────────────────────────────────
-  /** 지금 쓰는 자료가 몇 초 전 것인가. SGP4 경로면 요소 epoch 기준. */
+  /**
+   * 지금 쓰는 자료가 몇 초 전 것인가.
+   * ⚠️ 한 벌 안에서도 요소 나이가 제각각이다. **가장 오래된 것**을 답한다 —
+   *    가장 새 것을 답하면 한 기만 갓 들어와도 전체가 신선해 보인다. 신선도는
+   *    가장 나쁜 쪽이 사실이다. (요소 epoch 은 미래일 수 있어 음수는 0으로 깎는다)
+   */
   ageSeconds() {
     const now = Date.now();
     if (this.mode() === 'SGP4') {
       const epochs = this.entries.map((e) => e.epochMs).filter((v) => v != null);
       if (!epochs.length) return null;
-      return Math.max(0, (now - Math.max(...epochs)) / 1000);
+      return Math.max(0, (now - Math.min(...epochs)) / 1000);
     }
     if (this.sampleMs == null) return null;
     return Math.max(0, (now - this.sampleMs) / 1000);
@@ -305,10 +310,22 @@ export class AetherusCore {
     return this.mode() === 'SGP4' ? MAX_ELEMENT_AGE_S : this.maxAgeS;
   }
 
-  /** 위치를 그려도 되는가 — 그 경로의 상한 안쪽일 때만 참. */
+  /** 요소가 너무 낡아 개별로 뺀 객체 수 (SGP4 경로에서만 0 이 아니다). */
+  tooOld() {
+    if (this.mode() !== 'SGP4') return 0;
+    const cut = Date.now() - MAX_ELEMENT_AGE_S * 1000;
+    return this.entries.filter((e) => e.epochMs != null && e.epochMs < cut).length;
+  }
+
+  /* 위치를 그려도 되는가.
+     ⚠️ 요소 경로에서는 한 벌 전체를 통으로 막지 않는다 — 객체마다 요소 나이가
+        다르므로 낡은 것만 빼고 나머지는 그린다(뺀 수는 카드에 적는다). 통으로
+        막으면 오래된 한 기 때문에 멀쩡한 499기가 사라진다. */
   positionsUsable() {
+    if (!this.entries.length) return false;
+    if (this.mode() === 'SGP4') return this.tooOld() < this.entries.length;
     const age = this.ageSeconds();
-    return this.entries.length > 0 && age != null && age <= this.ageLimitSeconds();
+    return age != null && age <= this.ageLimitSeconds();
   }
 
   /** 위치를 못 그리는 이유 한 줄. 그릴 수 있으면 null. */
@@ -317,14 +334,16 @@ export class AetherusCore {
     const age = this.ageSeconds();
     if (age == null) return ko ? '표본 시각이 없습니다.' : 'No sample time.';
     const limit = this.ageLimitSeconds();
+    if (this.positionsUsable()) return null;   // 일부만 낡은 건 아래 카드가 개수로 적는다
     if (age <= limit) return null;
     const span = (sec) => (sec >= 86400 ? `${Math.round(sec / 86400)}일`
       : sec >= 3600 ? `${Math.round(sec / 3600)}시간` : `${Math.round(sec / 60)}분`);
     if (this.mode() === 'SGP4') {
       return ko
-        ? `궤도요소가 ${span(age)} 전 것입니다 (허용 ${span(limit)}). `
-          + '이만큼 오래된 요소로 푼 자리는 실제와 크게 벌어집니다 — 그리지 않습니다.'
-        : `Elements are ${span(age)} old (limit ${span(limit)}) — too far to draw.`;
+        ? `모든 궤도요소가 허용(${span(limit)})보다 오래됐습니다 — 가장 오래된 것이 `
+          + `${span(age)} 전입니다. 이만큼 낡은 요소로 푼 자리는 실제와 크게 `
+          + '벌어집니다 — 그리지 않습니다.'
+        : `Every element set is older than the ${span(limit)} limit (oldest ${span(age)}) — not drawn.`;
     }
     return ko
       ? `스냅샷이 ${span(age)} 전 것이고 이 발행본에는 궤도요소가 없습니다 `
@@ -351,6 +370,9 @@ export class AetherusCore {
     const out = [];
     for (const e of this.entries) {
       let teme = null;
+      if (sgp4 && e.epochMs != null && nowMs - e.epochMs > MAX_ELEMENT_AGE_S * 1000) {
+        continue;   // 이 요소로 푼 자리는 이미 믿을 수 없다 — 개수는 tooOld()가 센다
+      }
       if (sgp4 && e.omm) {
         /* 서버가 쓴 것과 같은 요소를 같은 모델로 푼다. satrec 은 한 번만 만들고
            캐시한다 — 250ms 마다 500기를 다시 초기화하면 그게 프레임 비용이 된다.
@@ -473,6 +495,14 @@ export class AetherusCore {
       lines.push(ko
         ? `격리·위치불가 ${fmt(this.hidden)}기는 그리지 않습니다 (지어내지 않음).`
         : `${fmt(this.hidden)} quarantined or unpositionable objects are not drawn.`);
+    }
+
+    const stale = this.tooOld();
+    if (stale) {
+      lines.push(ko
+        ? `궤도요소가 허용(${Math.round(MAX_ELEMENT_AGE_S / 86400)}일)보다 오래된 ${fmt(stale)}기는`
+          + ' 빼고 그렸습니다 — 낡은 요소로 푼 자리를 진짜인 척하지 않습니다.'
+        : `${fmt(stale)} objects whose elements exceed the age limit are excluded.`);
     }
 
     const we = this.withElements();

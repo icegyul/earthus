@@ -89,3 +89,60 @@ export async function zipFiles(entries) {
   e.setUint32(0, 0x06054b50, true); e.setUint16(8, entries.length, true); e.setUint16(10, entries.length, true); e.setUint32(12, size, true); e.setUint32(16, offset, true);
   return new Blob([...chunks, ...central, end], { type: 'application/zip' });
 }
+// The atlas prompt asks for an exact 3x2 grid, but a model never lands a part in the middle of its
+// cell. Reading the alpha channel gives the crop the picture actually has, so assembly uses measured
+// parts instead of assumed ones. Roles keep the documented reading order of the atlas prompt.
+export const ATLAS_ROLES = ['head', 'body', 'arm_left', 'arm_right', 'leg_left', 'leg_right'];
+const ATLAS_DEPTH = { leg_left: -.008, leg_right: -.006, body: 0, arm_left: .006, arm_right: .008, head: .012 };
+function alphaBox(data, width, x0, y0, x1, y1, threshold) {
+  let minX = x1, minY = y1, maxX = -1, maxY = -1;
+  for (let y = y0; y < y1; y++) {
+    const row = y * width;
+    for (let x = x0; x < x1; x++) {
+      if (data[(row + x) * 4 + 3] <= threshold) continue;
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
+      if (y < minY) minY = y; if (y > maxY) maxY = y;
+    }
+  }
+  return maxX < minX ? null : { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+}
+export function autoLayers(data, width, height, { threshold = 40 } = {}) {
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v)), warnings = [];
+  const cellW = width / 3, cellH = height / 2;
+  const boxes = ATLAS_ROLES.map((role, i) => {
+    const left = Math.round((i % 3) * cellW), top = Math.round(Math.floor(i / 3) * cellH);
+    const right = Math.round((i % 3 + 1) * cellW), bottom = Math.round((Math.floor(i / 3) + 1) * cellH);
+    const box = alphaBox(data, width, left, top, right, bottom, threshold);
+    // A cell that is empty or nearly empty means the model skipped a part. Fall back to the cell
+    // itself so the character still assembles, and say which part needs a human look.
+    if (!box || box.w < cellW * .06 || box.h < cellH * .06) {
+      warnings.push(role);
+      return { role, x: left + cellW * .12, y: top + cellH * .12, w: cellW * .76, h: cellH * .76 };
+    }
+    const pad = Math.max(1, Math.round(cellW * .006));
+    const x = clamp(box.x - pad, left, right - 1), y = clamp(box.y - pad, top, bottom - 1);
+    return { role, x, y, w: clamp(box.w + (box.x - x) + pad, 1, right - x), h: clamp(box.h + (box.y - y) + pad, 1, bottom - y) };
+  });
+  const by = Object.fromEntries(boxes.map(b => [b.role, b]));
+  const legPixels = Math.max(by.leg_left.h, by.leg_right.h);
+  // One scale for every part keeps the picture's own proportions; the stack fills the unit height.
+  const k = .94 / Math.max(1, by.head.h + by.body.h + legPixels);
+  const size = b => [clamp(b.w * k, .01, 2), clamp(b.h * k, .01, 2)];
+  const [bodyW, bodyH] = size(by.body), [headW, headH] = size(by.head);
+  const legH = clamp(legPixels * k, .01, 2), armW = Math.max(size(by.arm_left)[0], size(by.arm_right)[0]);
+  const bodyBottom = legH * .9, bodyTop = bodyBottom + bodyH, shoulder = bodyTop - bodyH * .12;
+  const place = {
+    head: [0, bodyTop - headH * .12 + headH / 2, [.5, .5]],
+    body: [0, bodyBottom + bodyH / 2, [.5, .5]],
+    arm_left: [-(bodyW / 2 + armW * .12), shoulder, [.5, .14]],
+    arm_right: [bodyW / 2 + armW * .12, shoulder, [.5, .14]],
+    leg_left: [-bodyW * .24, size(by.leg_left)[1] / 2, [.5, .5]],
+    leg_right: [bodyW * .24, size(by.leg_right)[1] / 2, [.5, .5]],
+  };
+  const layers = boxes.map(b => {
+    const [w, h] = size(b), [x, y, pivot] = place[b.role];
+    return { id: b.role, role: b.role, rect: [b.x / width, b.y / height, b.w / width, b.h / height],
+      x: clamp(x, -2, 2), y: clamp(y, -1, 3), width: w, height: h, pivot, depth: ATLAS_DEPTH[b.role], rotation: 0 };
+  });
+  return { layers, warnings };
+}

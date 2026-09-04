@@ -56,7 +56,38 @@ export const power = {
       }
       else if (!this.suspended) this.animate(800);   // 돌아오면 잠깐 그려서 화면 복구
     });
+    this._bindGlobeInput();
     return this;
+  },
+
+  /* 손이 지구에 닿아 있는 동안 프레임을 요청한다.
+     ⚠️ 이게 없어서 아이폰에서 "두세번 옆으로 밀어야 움직이고, 줌인·줌아웃이 안 된다"는
+        신고가 나왔다(2026-09-04, iPhone 16). 원인은 터치 자체가 아니라 **그리지 않는 것**이다:
+        requestRenderMode 를 켜 두면 화면이 그대로일 때 Cesium 은 한 장도 그리지 않는데,
+        카메라 조작기는 render() 안에서만 입력을 처리한다. 그래서 프레임을 아무도 요청하지
+        않으면 손가락이 움직여도 카메라가 갱신되지 않고, 다른 이유로 우연히 한 장이 그려질 때
+        비로소 밀린 입력이 한꺼번에 반영된다 — 그게 "두세 번 밀어야" 의 정체다.
+     데스크톱에서 티가 안 났던 건 마우스 휠·호버 등 다른 경로로 프레임이 자주 요청되기 때문이다.
+     절전 원칙은 그대로다 — 손이 닿아 있는 동안과 관성이 남은 짧은 꼬리에만 쓴다. */
+  _bindGlobeInput() {
+    const el = document.getElementById('cesiumContainer');
+    if (!el || this._inputBound) return;
+    this._inputBound = true;
+    const wake = (ms) => this.animate(ms, 0, 'input');
+    let down = 0;
+    el.addEventListener('pointerdown', () => { down += 1; wake(700); }, { passive: true });
+    el.addEventListener('pointermove', () => { if (down) wake(700); }, { passive: true });
+    // 손을 뗀 뒤에도 inertiaSpin 여운이 남는다 — 그 동안 안 그리면 관성이 뚝 끊겨 보인다.
+    const up = () => { down = Math.max(0, down - 1); wake(1600); };
+    el.addEventListener('pointerup', up, { passive: true });
+    el.addEventListener('pointercancel', up, { passive: true });
+    el.addEventListener('wheel', () => wake(700), { passive: true });
+    /* 아이폰 사파리는 표준 이벤트와 별개로 gesture* 를 쏘고, user-scalable=no 를 무시한다.
+       두 손가락을 사파리가 먼저 가져가면 Cesium 에는 손가락이 하나만 남아 오므리기가
+       밀기로 처리된다 — CSS touch-action 만으로는 인앱 브라우저에서 새는 경우가 있어 함께 막는다. */
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach((t) => {
+      el.addEventListener(t, (e) => { e.preventDefault(); wake(700); }, { passive: false });
+    });
   },
 
   /* ⚠️⚠️ 여기 있던 setRippleCheck 를 없앴다. 발열의 원인이었다.

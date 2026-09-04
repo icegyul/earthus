@@ -3,7 +3,7 @@
 // 지구 렌더러(main.js)는 건드리지 않고 훅(hooks)으로만 연결한다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { i18n } from './i18n.js?v=9';
+import { i18n } from './i18n.js?v=10';
 import { renderBadge } from './engine-bridge.js?v=15';
 
 // ---------------------------------------------------------------------------
@@ -159,7 +159,7 @@ export const SCENES = [
     layers: [
       { id: 'sats', name: '위성 추적 (정거장·기상·과학·항법)', state: 'LIVE', src: 'CelesTrak · SGP4', act: true },
       { id: 'starlink', name: '스타링크', state: 'LIVE', src: 'CelesTrak · SGP4', act: true },
-      { id: 'aeth-orbit', name: '궤도 인텔리전스 (정본 카탈로그·근접사건)', state: 'LIVE', src: 'AETHERUS API · 서버 SGP4', act: true },
+      { id: 'aeth-orbit', name: '궤도 인텔리전스 (우주쓰레기·정본 카탈로그·근접사건)', state: 'LIVE', src: 'AETHERUS API · 서버 SGP4', act: true },
       { id: 'aurora', name: '오로라 예보 (지금 보이는 곳)', state: 'OFFICIAL_FORECAST', src: 'NOAA SWPC OVATION', act: true },
       { id: 'launch', name: '발사 일정 (세계 로켓)', state: 'OFFICIAL_FORECAST', src: 'TheSpaceDevs LL2', act: true },
       { id: 'solaract', name: '오늘의 태양 (실황 관측)', state: 'OBSERVED', src: 'NASA SDO · NOAA SWPC X선', act: true },
@@ -386,15 +386,52 @@ export function initShell(hooks) {
   let intelOpen = false;
   let curTab = 'feed';
 
-  const LOCKED_TABS = {
-    why: {
-      title: 'WHY — 왜 이런 상태인가',
-      preview: '사건·상태 변화의 원인 후보를 근거 그래프와 함께 설명합니다. 원인은 근거 등급(가설→강한 근거→공식 조사)으로만 표시.',
-    },
-    next: {
-      title: 'NEXT — 다음에 어떻게 되나',
-      preview: '공식 예보와 모델 신호를 신뢰도·불확실성과 함께 제공합니다. (관측≠예보, 모델은 항상 라벨)',
-    },
+  // 지금 켜져 있는 레이어 — 씬 매니페스트를 한 번 훑어 모은다.
+  const activeLayers = () => {
+    const rows = [];
+    SCENES.forEach((s) => s.layers.forEach((l) => {
+      const st = (hooks.getLayerState && hooks.getLayerState(s.id, l)) || {};
+      if (st.on) rows.push({ s, l, st, key: `${s.id}/${l.id}` });
+    }));
+    return rows;
+  };
+
+  const evidenceRow = ({ s, l, st }) => `<div class="stat">
+      <span class="k">${i18n.layer(l.id, l.name)}</span>
+      <span class="v">${renderBadge(l.state)} ${l.src}${st.note ? ` · ${st.note}` : ''}</span>
+    </div>`;
+
+  // WHY·NEXT 는 오랫동안 "EXPLORER PRO 에서 제공 예정입니다" 한 줄만 있는 벽이었다.
+  // 여섯 탭 중 둘을 눌렀을 때 아무것도 없으면, 돈을 낼 이유를 묻기 전에 제품이
+  // 안 끝난 것으로 읽힌다. 아직 없는 것(근거 그래프·불확실성 폭)은 그대로 아직이라고
+  // 적되, **이미 가진 것**을 먼저 편다 — 지금 화면이 딛고 선 출처와 진리등급,
+  // 그리고 기관이 말한 앞. 그게 EARTHUS 가 파는 것의 본체다.
+  const whyHtml = () => {
+    const rows = activeLayers();
+    const picked = hooks.feedSelected && hooks.feedSelected();
+    return `
+      <div class="card"><div class="card-h">${i18n.t('whyTitle')}</div>
+        <div class="card-b">${i18n.t('whyGate')}</div></div>
+      ${picked ? `<div class="card"><div class="card-h">${i18n.t('eventPicked')}</div>
+        <div class="card-b"><b>${picked.title}</b><br/>
+        <button class="feed-back" data-action="shell-open-feed" style="margin:8px 0 0">${i18n.t('eventOpen')}</button></div></div>` : ''}
+      <div class="card"><div class="card-h">${i18n.t('whyNow')} <span class="feed-cnt">${rows.length}</span></div>
+        <div class="card-b">${rows.length
+    ? rows.map(evidenceRow).join('')
+    : `${i18n.t('whyEmpty')}<br/><button class="feed-back" data-action="shell-open-menu" style="margin:8px 0 0">${i18n.t('openMenu')}</button>`}</div></div>
+      <div class="card"><div class="card-b"><span class="paysub">${i18n.t('whyPro')}</span></div></div>`;
+  };
+
+  const nextHtml = () => {
+    // '앞을 말하는 자료' = 예보·특보. 진리등급 어휘가 정본이라 이름으로 가른다.
+    const rows = activeLayers().filter(({ l }) => /FORECAST|WARNING|MODEL/.test(String(l.state)));
+    return `
+      <div class="card"><div class="card-h">${i18n.t('nextTitle')}</div>
+        <div class="card-b">${i18n.t('nextNote')}</div></div>
+      <div class="card"><div class="card-h">${i18n.t('nextTitle').split('—')[0].trim()} <span class="feed-cnt">${rows.length}</span></div>
+        <div class="card-b">${rows.length ? rows.map(evidenceRow).join('') : i18n.t('nextEmpty')}
+          <br/><button class="feed-back" data-action="shell-play5d" style="margin:8px 0 0">${i18n.t('nextPlay')}</button></div></div>
+      <div class="card"><div class="card-b"><span class="paysub">${i18n.t('nextPro')}</span></div></div>`;
   };
 
   const renderIntel = () => {
@@ -406,24 +443,23 @@ export function initShell(hooks) {
       intelContent.innerHTML = hooks.getMy ? hooks.getMy() : '';
     } else if (curTab === 'scenario') {
       intelContent.innerHTML = hooks.getScenario();
+    } else if (curTab === 'why') {
+      intelContent.innerHTML = whyHtml();
     } else {
-      const t = LOCKED_TABS[curTab];
-      intelContent.innerHTML = `
-        <div class="card">
-          <div class="card-h">${t.title}</div>
-          <div class="card-b">${t.preview}</div>
-          <div class="paycard">
-            <div><b>EXPLORER PRO</b> — UNDERSTAND THE EARTH에서 제공 예정입니다.</div>
-            <div class="paysub">FREE는 체험판이 아님 — 공식 안전정보·표시된 사실 근거는 항상 무료</div>
-          </div>
-        </div>`;
+      intelContent.innerHTML = nextHtml();
     }
   };
 
   // 패널 내 버튼 액션 위임 (예: 시뮬레이션 시작)
   intelContent.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action]');
-    if (btn && hooks.onAction) hooks.onAction(btn.dataset.action, btn.dataset);
+    if (!btn) return;
+    // 셸이 스스로 처리하는 것 — 지구 렌더러까지 갈 일이 아니다
+    const a = btn.dataset.action;
+    if (a === 'shell-open-menu') { openPanel('earthus'); return; }
+    if (a === 'shell-open-feed') { showTab('feed'); return; }
+    if (a === 'shell-play5d') { strip.querySelector('#ts-play').click(); return; }
+    if (hooks.onAction) hooks.onAction(a, btn.dataset);
   });
 
   // 카드 안의 슬라이더는 click 이 아니라 input 으로 온다. 같은 onAction 으로 흘려보낸다.

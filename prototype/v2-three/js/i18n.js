@@ -132,6 +132,20 @@ const KO = {
   fAlert: '경보 등급', fFrom: '시작', fUpdated: '최근 갱신',
   fMag: '규모', fDepth: '진원 깊이', fWhen: '발생',
   fUnderground: '지하',
+  // WHY·NEXT — 전에는 두 탭 모두 "제공 예정"이라고만 적힌 벽이었다. 지금 가진 것을 먼저 편다.
+  whyTitle: 'WHY — 이 화면은 무엇을 근거로 서 있나',
+  whyGate: '<b>인과 주장 게이트</b> — 검증된 근거 체인 없이 "원인"을 말하지 않습니다. 대신 지금 화면이 딛고 선 근거를 그대로 폅니다.',
+  whyNow: '지금 켜 놓은 근거',
+  whyEmpty: '켜 놓은 자료가 없습니다. 왼쪽 EARTHUS 손잡이에서 자료를 켜면 그 출처와 진리등급이 여기에 쌓입니다.',
+  whyPro: 'EXPLORER PRO — 원인 후보를 근거 등급(가설 → 강한 근거 → 공식 조사)으로 잇는 근거 그래프는 아직입니다. 위의 사실 근거와 공식 안전정보는 항상 무료입니다.',
+  nextTitle: 'NEXT — 기관이 말하는 다음',
+  nextNote: '관측은 지나간 것, 예보는 기관이 말한 앞입니다 — 섞지 않습니다. 아래는 지금 켜 놓은 것 중 앞을 말하는 자료입니다.',
+  nextEmpty: '지금 켜 놓은 자료 중 앞을 말하는 것이 없습니다 — 날씨·재해 메뉴의 예보·특보를 켜면 여기에 모입니다.',
+  nextPlay: '5일 예보로 시간 밀어 보기 ▶',
+  nextPro: 'EXPLORER PRO — 신뢰도·불확실성 폭을 함께 읽는 전망은 아직입니다. 공식 예보와 특보 원문은 항상 무료입니다.',
+  openMenu: '자료 켜러 가기',
+  eventOpen: '고른 사건의 근거 보기 →',
+  eventPicked: '고른 사건',
 };
 
 const EN = {
@@ -203,6 +217,19 @@ const EN = {
   fAlert: 'Alert level', fFrom: 'Started', fUpdated: 'Last update',
   fMag: 'Magnitude', fDepth: 'Focal depth', fWhen: 'Occurred',
   fUnderground: 'below surface',
+  whyTitle: 'WHY — what this view stands on',
+  whyGate: '<b>Causal claim gate</b> — we do not name a "cause" without a verified evidence chain. Instead, here is exactly what this view stands on.',
+  whyNow: 'Evidence you have on',
+  whyEmpty: 'No layers are on. Turn something on from the EARTHUS handle on the left and its source and truth class will collect here.',
+  whyPro: 'EXPLORER PRO — the evidence graph that links candidate causes by evidence grade (hypothesis → strong evidence → official investigation) is not built yet. The factual evidence above and official safety information are always free.',
+  nextTitle: 'NEXT — what the agencies say comes next',
+  nextNote: 'Observation is what happened; a forecast is what an agency says comes next — we never merge the two. Below is what you have on that speaks about the future.',
+  nextEmpty: 'Nothing you have on speaks about the future — turn on a forecast or warning from the Weather or Hazards menu and it will collect here.',
+  nextPlay: 'Push time through the 5-day forecast ▶',
+  nextPro: 'EXPLORER PRO — outlooks read together with confidence and uncertainty bands are not built yet. Official forecasts and warning texts are always free.',
+  openMenu: 'Go turn data on',
+  eventOpen: 'Open the evidence for the event you picked →',
+  eventPicked: 'Event picked',
 };
 
 // 씬 — 글리프도 함께 바꾼다(한글 초성은 영어 화면에서 읽히지 않는다)

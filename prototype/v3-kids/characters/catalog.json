@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "characters": [
+    {
+      "character_id": "yeti",
+      "name": "히말라야의 예티",
+      "placement": {
+        "lat": 27.99,
+        "lon": 86.93,
+        "scale": 0.085
+      },
+      "manifest": "yeti/yeti_manifest.json"
+    }
+  ]
+}

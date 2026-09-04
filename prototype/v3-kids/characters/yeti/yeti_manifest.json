@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "character_id": "yeti",
+  "name": "히말라야의 예티",
+  "prompt": "히말라야에 사는 다정한 예티. 아이보리 종이를 여러 겹 겹친 흰 털, 둥근 배, 빙하색 파란 얼굴과 손발, 두꺼운 파란 뜨개 목도리.",
+  "region": "히말라야",
+  "league": "BIPED_PAPER",
+  "placement": {
+    "lat": 27.99,
+    "lon": 86.93,
+    "scale": 0.085
+  },
+  "motion": "sway",
+  "lod": {
+    "enter_px": 100,
+    "exit_px": 80
+  },
+  "layers": [
+    {
+      "id": "head",
+      "role": "head",
+      "rect": [
+        0.08138,
+        0.155273,
+        0.169922,
+        0.188477
+      ],
+      "x": 0.01461,
+      "y": 0.79449,
+      "width": 0.37016,
+      "height": 0.27396,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "depth": 0.01,
+      "rotation": 0
+    },
+    {
+      "id": "body",
+      "role": "body",
+      "rect": [
+        0.391927,
+        0.029297,
+        0.215495,
+        0.44043
+      ],
+      "x": 0.0,
+      "y": 0.43286,
+      "width": 0.47,
+      "height": 0.63925,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "depth": 0.0,
+      "rotation": 0
+    },
+    {
+      "id": "arm_left",
+      "role": "arm_left",
+      "rect": [
+        0.785807,
+        0.068359,
+        0.094401,
+        0.362305
+      ],
+      "x": -0.24535,
+      "y": 0.41399,
+      "width": 0.20578,
+      "height": 0.52601,
+      "pivot": [
+        0.5,
+        0.12
+      ],
+      "depth": 0.004,
+      "rotation": 0
+    },
+    {
+      "id": "arm_right",
+      "role": "arm_right",
+      "rect": [
+        0.122396,
+        0.568359,
+        0.088542,
+        0.362305
+      ],
+      "x": 0.25205,
+      "y": 0.41399,
+      "width": 0.19238,
+      "height": 0.52601,
+      "pivot": [
+        0.5,
+        0.12
+      ],
+      "depth": 0.006,
+      "rotation": 0
+    },
+    {
+      "id": "leg_left",
+      "role": "leg_left",
+      "rect": [
+        0.44401,
+        0.674805,
+        0.111328,
+        0.150391
+      ],
+      "x": -0.10654,
+      "y": 0.11628,
+      "width": 0.24231,
+      "height": 0.21795,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "depth": -0.008,
+      "rotation": 0
+    },
+    {
+      "id": "leg_right",
+      "role": "leg_right",
+      "rect": [
+        0.777344,
+        0.675781,
+        0.111328,
+        0.148438
+      ],
+      "x": 0.12115,
+      "y": 0.1175,
+      "width": 0.24231,
+      "height": 0.21552,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "depth": -0.006,
+      "rotation": 0
+    }
+  ],
+  "files": {
+    "master_sheet": "yeti_master_sheet.png",
+    "runtime_3q": "yeti_runtime_3q.png",
+    "parts_atlas": "yeti_parts_atlas.png",
+    "thumbnail": "yeti_thumbnail.png",
+    "manifest": "yeti_manifest.json"
+  },
+  "direction": "surface-normal-camera-facing",
+  "shadow": {
+    "type": "ellipse",
+    "opacity": 0.22
+  },
+  "updated_at": "2026-09-04T08:50:43Z"
+}

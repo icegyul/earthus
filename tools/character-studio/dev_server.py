@@ -132,12 +132,11 @@ def main():
                 route = '/v3/character-studio.html'
             if route == '/v3' or route == '/v3/':
                 route = '/v3/index.html'
+            # Published drafts win; otherwise fall through to characters committed in the repo.
             if route.startswith('/v3/characters/'):
                 data, _ = store.get('app' + route)
                 if data is not None:
                     return self.send(200, data, 'image/png' if route.endswith('.png') else 'application/json')
-                if route.endswith('catalog.json'):
-                    return self.send(200, b'{"schema_version":1,"characters":[]}')
             relative = route.lstrip('/').replace('v3/', 'v3-kids/', 1) if route.startswith('/v3/') else route.lstrip('/')
             if any(part.startswith('.') for part in Path(relative).parts):
                 return self.send(403, b'403', 'text/plain')
@@ -146,6 +145,8 @@ def main():
                 if p.is_relative_to(base.resolve()) and p.is_file():
                     mime = 'text/javascript; charset=utf-8' if p.suffix in ('.js', '.mjs') else mimetypes.guess_type(str(p))[0] or 'application/octet-stream'
                     return self.send(200, p.read_bytes(), mime)
+            if route.endswith('/v3/characters/catalog.json'):
+                return self.send(200, b'{"schema_version":1,"characters":[]}')
             self.send(404, b'404', 'text/plain')
     print(f'Character studio: http://127.0.0.1:{args.port}/v3/character-studio.html?preview=1', flush=True)
     ThreadingHTTPServer(('127.0.0.1', args.port), Handler).serve_forever()

@@ -462,6 +462,7 @@ const KAGO = (ma) => {  // ma = 백만 년
 };
 
 import * as THREE from '../vendor/three-r184.module.min.js';
+import { createCharacterGlobe } from './character-globe.js';
 // 해안선 고리를 삼각형으로 자른다. 스스로 교차하는 고리까지 다루는 표준 구현이다(ISC).
 import earcut, { deviation } from '../vendor/earcut.module.js';
 
@@ -580,7 +581,16 @@ function labelPoint(geo){
 let COAST_FEATS = null;     // 해안선을 색면 위에 다시 그리려고 들고 있는다
 
 async function buildEarthTexture(){
-  const W = 4096, H = 2048;
+  /* 텍스처가 곧 선명도의 천장이다. 가장 깊은 배율에서 화면은 도(度)당 39화소를
+     쓰는데 4096 폭은 도당 11화소뿐이라 3.4배로 늘어나며 산이 뭉갰다.
+     5400 이면 도당 15화소 — 그래도 모자라지만 눈에 띄게 낫다.
+
+     ⚠️ 더 못 올리는 이유는 메모리다. RGBA 라 5400×2700 이 캔버스 58MB,
+        GPU 사본까지 130MB 쯤 된다. 8192 로 가면 300MB 를 넘어 낡은 태블릿이
+        죽는다. 기기가 작다고 하면 4096 으로 물러선다 — 흐린 지구가
+        안 뜨는 지구보다 낫다. */
+  const big = (navigator.deviceMemory || 4) >= 4;
+  const W = big ? 5400 : 4096, H = W/2;
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const g = cv.getContext('2d');
 
@@ -626,7 +636,7 @@ async function buildEarthTexture(){
     const relief = await new Promise((ok, no) => {
       const im = new Image();
       im.onload = () => ok(im); im.onerror = no;
-      im.src = '../data/relief-4320.webp';
+      im.src = '../data/relief-5400.webp';
     });
     g.imageSmoothingQuality = 'high';
     g.globalCompositeOperation = 'overlay';
@@ -705,6 +715,13 @@ const earthGroup = new THREE.Group();
 scene.add(earthGroup);
 
 const R = 1;
+// Paper characters use the existing frame; creating a second loop would waste mobile power.
+const paperCharacters = createCharacterGlobe({ group: earthGroup, camera, focus: ({ lat, lon }) => {
+  const p = llToVec(lat, lon);
+  yawTarget = Math.atan2(p.z, p.x); pitchTarget = Math.asin(p.y); following = true;
+  distTarget = Math.max(1.25, Math.min(distTarget, 1.7));
+}});
+addEventListener('pagehide', event => { if (!event.persisted) paperCharacters.dispose(); });
 const sunDir = new THREE.Vector3();
 
 /* 툰 셰이딩: 낮/황혼/밤 세 단. 밴딩이 곧 화풍이다. */
@@ -1021,22 +1038,38 @@ const pitchFor  = lat =>  lat*Math.PI/180;
 let yaw = yawFor(HOME.lon), pitch = pitchFor(HOME.lat);
 let yawTarget = yaw, pitchTarget = pitch, following = false;
 let yawV = 0, pitchV = 0, dragging = false, lastX = 0, lastY = 0, idle = 0;
-const MAX_SPIN = 1.05;                              // rad/s ≈ 60°/s — 초당 90도보다 보수적으로
+let lastDY = 0, lastDP = 0;                         // 놓을 때 이어서 미끄러질 만큼
+const MAX_SPIN = 1.05;                              // rad/s ≈ 60°/s — 손을 뗀 뒤에만 걸린다
 
 function pointerDown(e){
   dragging = true; idle = 0; following = false; lastX = e.clientX; lastY = e.clientY;
-  canvas.setPointerCapture?.(e.pointerId);
+  // 포인터가 이미 놓인 뒤면 던진다. 잡는 데 실패해도 끄는 건 계속돼야 한다.
+  try { canvas.setPointerCapture?.(e.pointerId); } catch(_){}
   $('#hint').classList.add('gone');
 }
+/* 손가락(마우스) 밑의 점이 따라온다.
+   화면에서 지구 반지름이 screenR 픽셀이므로 1픽셀이 곧 1/screenR 라디안이다 —
+   배율이 달라져도 저절로 맞고, 배율마다 계수를 손볼 일이 없다.
+
+   ⚠️ 전에는 각도가 아니라 **속도**에 더하고 있었다. 루프가 `yaw += yawV` 로
+      한 프레임에 그 값을 통째로 쓰는데 감쇠가 프레임당 0.86 이라, 끌고 있는
+      동안 속도가 1/(1-0.86) ≈ 7배로 눌어붙었다. 한 번 움직일 때 이미 3.3배
+      빨랐으니 합쳐서 손가락보다 스무 배 넘게 돌았다.
+      지구를 키워도 빠른 채였던 건 계수만 배율로 나누고 이 쌓임을 그대로 뒀기 때문이다. */
 function pointerMove(e){
   if(!dragging || touches.size >= 2) return;
-  // 화각으로 당기는 구간에서는 거리가 안 줄어든다. 배율을 직접 본다.
-  const k = 0.0052 * (FILL[0]/fill);
-  yawV   += (e.clientX-lastX)*k;
-  pitchV += (e.clientY-lastY)*k;
+  const k = 1/Math.max(80, screenR);
+  lastDY = (e.clientX-lastX)*k;
+  lastDP = (e.clientY-lastY)*k;
+  yaw += lastDY; pitch += lastDP;
+  yawV = pitchV = 0;                 // 끄는 동안에는 관성이 없다. 손이 곧 진실이다.
   lastX = e.clientX; lastY = e.clientY;
 }
-function pointerUp(){ dragging = false; }
+// 놓으면 마지막 움직임의 절반만큼 미끄러지다 감쇠로 선다
+function pointerUp(){
+  if(dragging){ yawV = lastDY*0.5; pitchV = lastDP*0.5; }
+  dragging = false; lastDY = lastDP = 0;
+}
 /* 마우스 휠 — 세 칸이 정하던 범위 안에서만 연속으로 움직인다.
    자유 줌이면 아이가 지구 밖으로 나가거나 텍스처가 깨질 만큼 붙는다. */
 canvas.addEventListener('wheel', (e) => {
@@ -3161,7 +3194,7 @@ function frame(now){
   yawV *= damp; pitchV *= damp;
   const maxStep = MAX_SPIN*dt;
   yawV = Math.max(-maxStep, Math.min(maxStep, yawV));
-  pitch = Math.max(-1.16, Math.min(1.16, pitch));
+  pitch = Math.max(-1.40, Math.min(1.40, pitch));   // ±80° — 극을 볼 수 있게. 90°는 카메라가 뒤집힌다
 
   // 시대를 바꾼 직후에만 카메라가 한반도를 쫓아간다. 손을 대면 즉시 놓아준다.
   if(following){
@@ -3224,6 +3257,7 @@ function frame(now){
   earthGroup.updateMatrixWorld();
   camera.updateMatrixWorld();
   placeMarkers(w, h);
+  paperCharacters.update(performance.now(), h, !PALEO || maNow === 0);
   renderer.render(scene, camera);
   drawWind(dt, w, h);
   requestAnimationFrame(frame);
@@ -3339,6 +3373,7 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe(document.documentEle
  */
 (function () {
   var WHAT = [
+    ['종이 친구', '관리자가 만든 그림책 속 친구들이야. 실제 동물이 관측된 위치를 뜻하지는 않아.'],
     ['구름', '지금 하늘에 있는 진짜 구름이야. 인공위성이 찍은 거란다.'],
     ['비', '지금 비가 오는 곳이야. 파랄수록 조금, 노랗고 빨가면 많이 와.'],
     ['번개', '천둥번개가 치는 곳이야.'],

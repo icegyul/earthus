@@ -43,11 +43,23 @@ while IFS= read -r -d '' f; do
     -e 's#\.\./\.\./js/earthus2/v02/#../engine/#g' \
     -e "s#'\.\./\.\./js/earthus2/v02'#'../engine'#g" \
     -e 's#\.\./\.\./vendor/#../vendor/#g' \
+    -e 's#\.\./\.\./js/aetherus/#./aetherus/#g' \
     -e 's#\.\./v2/assets/#./assets/#g' \
     -e "s#'\.\./data/#'./data/#g" \
     -e 's#"\.\./data/#"./data/#g' \
     "$f"
 done < <(find "$OUT/js" -name '*.js' -print0)
+
+# AETHERUS 정본 모듈 — 세 지구가 함께 쓰는 하나의 우주(prototype/js/aetherus/).
+# ⚠️ 재작성이 **끝난 뒤에** 복사한다. 이 트리는 이미 번들 기준으로 맞는 경로를
+#    쓰고 있어서, 위 sed 를 같이 맞으면 ../../vendor/ 가 ../vendor/ 로 바뀌어
+#    js/aetherus/ 에서 한 칸 모자란 곳(js/vendor/)을 가리키게 된다.
+# ⚠️ 번들 안에서도 소스와 **같은 깊이**(js/aetherus/)에 둔다 — core.js 가
+#    ../../vendor/satellite-6.0.2.min.js 를 자기 모듈 URL 기준으로 찾기 때문이다.
+mkdir -p "$OUT/js/aetherus"
+cp -r "$ROOT/prototype/js/aetherus"/. "$OUT/js/aetherus"/
+[[ -f "$OUT/js/aetherus/core.js" ]] || { echo 'FAIL aetherus 정본 모듈 복사 실패' >&2; exit 1; }
+grep -F "'./aetherus/layer-three.js'" "$OUT/js/aetherus-link.js" >/dev/null   || { echo 'FAIL aetherus 경로 재작성 확인 실패' >&2; exit 1; }
 
 # v02 말고 다른 엔진 갈래(v03~v11 등)를 불러오는 파일이 새로 들어올 수 있다.
 # v02만 재작성하던 탓에 v11 import가 번들 밖으로 새어 운영이 죽었다(2026-09-03).
@@ -70,8 +82,11 @@ done
 
 echo "== 4/4 번들 무결성 검사 =="
 fail=0
-# 번들 밖을 가리키는 상대 경로가 남아 있으면 프로덕션에서 403이 난다
-leftover="$(grep -rn -E "\.\./\.\./|\.\./v2/|from '\.\./js/" "$OUT/js" || true)"
+# 번들 밖을 가리키는 상대 경로가 남아 있으면 프로덕션에서 403이 난다.
+# ⚠️ js/ 바로 아래 파일 기준의 규칙이다. js/aetherus/ 는 한 칸 더 깊어서
+#    ../../vendor/ 가 번들 안(vendor/)을 가리킨다 — 정본 모듈을 소스와 같은
+#    깊이에 두는 이유다. 그 트리는 아래에서 따로, 실제 파일 존재로 검사한다.
+leftover="$(grep -rn -E "\.\./\.\./|\.\./v2/|from '\.\./js/" "$OUT/js" --exclude-dir=aetherus || true)"
 if [[ -n "$leftover" ]]; then
   echo "FAIL 번들 밖 참조가 남았습니다:" >&2
   printf '%s\n' "$leftover" >&2
@@ -103,6 +118,14 @@ print('PASS 모든 상대 import가 번들 안에 있습니다')
 PYEOF
 # 실패는 마지막 줄에 다시 찍는다 — tail로 잘라 봐도 놓치지 않게.
 # (호출부에서 `build | tail -1 && deploy` 로 이으면 파이프 종료코드가 실패를 삼킨다)
+# AETHERUS 정본 모듈은 자기 모듈 URL 기준으로 vendor 를 찾는다 —
+# 경로 규칙 대신 **그 자리에 파일이 실제로 있는지**로 확인한다.
+for rel in $(grep -rhoE "\'\.\.\/\.\.\/[^\']+\'" "$OUT/js/aetherus" | tr -d "\'" | sort -u); do
+  target="$OUT/js/aetherus/$rel"
+  [[ -f "$(python -c "import os,sys;print(os.path.normpath(sys.argv[1]))" "$target")" ]] || { echo "FAIL aetherus 정본 모듈이 번들 밖을 봅니다: $rel" >&2; fail=1; }
+done
+[[ $fail -ne 0 ]] || echo "PASS aetherus 정본 모듈 참조가 번들 안에 있습니다"
+
 if [[ $fail -ne 0 ]]; then
   echo "FAIL 번들 무결성 검사 실패 — 배포하면 안 됩니다" >&2
   exit 1

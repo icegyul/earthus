@@ -1031,9 +1031,39 @@ export const layerBar = {
   _renderAetherus(strip, ko) {
     const intro = el('p', 'aetherus-menu-intro');
     intro.textContent = ko
-      ? '공식 관측 사진과 태양계·우리은하·우주의 크기를 네 가지 흐름으로 탐험합니다.'
-      : 'Explore official observations, the Solar System, the Milky Way and the scale of the universe.';
+      ? '지구를 도는 것들과 공식 관측 사진, 태양계·우리은하·우주의 크기를 봅니다.'
+      : 'What orbits Earth, plus official observations, the Solar System and the scale of the universe.';
     strip.appendChild(intro);
+
+    /* 궤도 인텔리전스 — 세 지구가 함께 쓰는 정본 AETHERUS.
+       ⚠️ 아래 네 줄과 성격이 다르다. 그것들은 우주 장면으로 **가는 문**이고,
+          이건 지금 보고 있는 지구 위에 켜는 **겹**이다. 그래서 스위치로 둔다.
+       위치는 서버 SGP4 스냅샷에서 오고, 낡으면 코어가 알아서 그리지 않는다. */
+    const orbit = el('button', 'aetherus-route aetherus-orbit');
+    orbit.type = 'button';
+    const paintOrbit = (note) => {
+      orbit.classList.toggle('current', !!note);
+      orbit.setAttribute('aria-pressed', note ? 'true' : 'false');
+      orbit.innerHTML = '<span>'
+        + `<b>${ko ? '궤도 인텔리전스' : 'Orbital intelligence'}</b>`
+        + `<small>${note || (ko ? '우주쓰레기 · 정본 카탈로그 · 근접사건' : 'Space debris · canonical catalogue · conjunctions')}</small>`
+        + '</span><i aria-hidden="true">◈</i>';
+    };
+    paintOrbit(null);
+    orbit.onclick = async () => {
+      orbit.disabled = true;
+      try {
+        const { aetherusOrbit } = await import('./ui-aetherus.js');
+        await aetherusOrbit.toggle();
+        paintOrbit(aetherusOrbit.note());
+      } catch (error) {
+        console.warn('[layerbar] AETHERUS 궤도 레이어를 열지 못했습니다', error?.message || error);
+        toast(ko ? '궤도 인텔리전스를 열지 못했습니다' : 'Could not open orbital intelligence');
+      } finally { orbit.disabled = false; }
+    };
+    strip.appendChild(orbit);
+    strip.appendChild(el('div', 'ly-gap'));
+
     AETHERUS_ROUTES.forEach(route => {
       const button = el('button', 'aetherus-route');
       button.type = 'button';

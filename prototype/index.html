@@ -200,11 +200,13 @@
     <section class="scene-view space-scene" data-scene-view="space" aria-label="우주 탐험 기반 장면">
       <div id="cosmicExperience" class="cosmic-experience" hidden>
         <canvas id="cosmicCanvas" tabindex="0" aria-label="지구에서 태양계, 은하수, 은하들까지 이어지는 회전 가능한 3D 로그 스케일"></canvas>
-        <!-- AETHERUS v3의 제품 전환과 네 가지 경험은 장면 안에서 항상 같은 자리에 둔다.
-             기존 세로 손잡이는 지구 화면의 진입점으로만 남고, 우주 안에서는 이 앱바가 정본이다. -->
+        <!-- AETHERUS 의 제품 전환과 네 가지 경험은 장면 안에서 항상 같은 자리에 둔다.
+             기존 세로 손잡이는 지구 화면의 진입점으로만 남고, 우주 안에서는 이 앱바가 정본이다.
+             ⚠️ 버전 표기를 뺐다 — AETHERUS 는 지구마다 갈래를 두지 않는 하나의 우주다.
+                (정본: js/aetherus/core.js — 세 지구가 같은 코어를 쓴다) -->
         <nav id="cosmicExperienceNav" class="cosmic-experience-nav" aria-label="AETHERUS 경험">
           <button type="button" data-aetherus-nav="earth">← EARTHUS</button>
-          <strong>AETHERUS <small>v3.0</small></strong>
+          <strong>AETHERUS</strong>
           <div role="group" aria-label="우주 탐험 선택">
             <button type="button" data-aetherus-nav="solar">오늘의 태양계</button>
             <button type="button" data-aetherus-nav="photos">우주 사진관</button>

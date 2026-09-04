@@ -105,11 +105,21 @@ def fetch_batch(pts, tries=4):
                 d = json.load(r)
             return d if isinstance(d, list) else [d]
         except urllib.error.HTTPError as e:
-            if e.code != 429 or attempt == tries - 1:
+            # 429(한도)와 5xx(서버)는 기다리면 풀린다. 나머지 4xx 는 다시 던져도 같다.
+            if (e.code != 429 and e.code < 500) or attempt == tries - 1:
                 raise
-            print(f"  429 — {wait}초 대기 후 재시도")
-            time.sleep(wait)
-            wait *= 2
+            print(f"  {e.code} — {wait}초 대기 후 재시도")
+        except (urllib.error.URLError, TimeoutError, ConnectionError, ValueError) as e:
+            # ⚠️ 2026-09-04. 여기가 비어 있었다. 429 만 다시 걸고 시간초과·연결끊김은
+            #    그대로 올려보냈고, 부르는 쪽은 그 묶음 100지점을 통째로 None 으로 뒀다.
+            #    화면에서는 위도 +5° 한 줄이 사라져 **10도짜리 빈 띠가 지구를 한 바퀴** 돌았다.
+            #    색면은 네 모서리 중 하나만 없어도 그 픽셀을 건너뛰기 때문이다.
+            #    한 번의 잠깐 끊김이 지구 한 바퀴를 지우게 두지 않는다.
+            if attempt == tries - 1:
+                raise
+            print(f"  {type(e).__name__} — {wait}초 대기 후 재시도")
+        time.sleep(wait)
+        wait *= 2
     return []
 
 

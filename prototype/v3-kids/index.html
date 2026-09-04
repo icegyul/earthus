@@ -479,6 +479,7 @@ const srcNote = $('#srcNote'), badgetxt = $('#badgetxt');
    바다거북은 이용조건이 **출처표시**를 요구하므로 카드만으로는 부족하다.
    켜져 있는 동안 좌하단에도 계속 적혀 있어야 한다. */
 let srcLive = '';
+let tempFieldOn = false;      // paintSrc 가 tempShell 보다 먼저 도는 구간이 있다
 function paintSrc(){
   /* 기관명만 쓴다. 괄호 안 시스템 이름까지 넣으면 줄이 세 줄이 되어 아래 메뉴를
      덮는다 — 전체 출처는 카드에 그대로 적혀 있다. */
@@ -488,6 +489,10 @@ function paintSrc(){
     add.push(`<b>${org(TURTLES.source)}</b> 바다거북 <i>지나간 경로</i>`);
   if(typeof birdOn !== 'undefined' && birdOn && MIGBIRD)
     add.push(`<b>${org(MIGBIRD.source)}</b> 철새`);
+  // 이어 붙인 자리를 숨기지 않는다 — 구름 결손을 적는 규칙과 같다
+  if(gridBridged && tempFieldOn)
+    add.push(KT.en ? `${gridBridged} grid cells bridged from the rows above and below`
+                   : `격자 ${gridBridged}칸은 위아래 줄에서 이어 붙임`);
   badgetxt.innerHTML = srcLive + (add.length ? ' · ' + add.join(' · ') : '');
 }
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1452,6 +1457,55 @@ function tempColor(c){
   return TEMP_STOPS[TEMP_STOPS.length-1].slice(1);
 }
 
+/* ⚠️ 2026-09-04. 지구 한가운데에 색이 안 칠해지는 띠가 돌고 있었다.
+   자료를 열어 보니 위도 +5° 한 줄이 72칸 전부 비어 있었다(0°에 24칸, +10°에 4칸 추가).
+   비어 있는 자리가 정확히 **연속된 100칸** — 공급자가 100지점씩 묶어 받아오는데
+   (aws/wind-grid/handler.py:60 BATCH=100) 그 묶음 하나가 통째로 실패한 것이다.
+   바람(u·v)은 멀쩡하고 Open-Meteo 에서 오는 값만 전부 같은 자리를 잃었다.
+
+   색면은 네 모서리 중 하나만 없어도 그 픽셀을 건너뛴다. 그래서 한 줄이 비면
+   10도짜리 빈 띠가 지구를 한 바퀴 돈다 — 한 줄의 사고가 지구 전체를 지운다.
+   격자 사이를 잇는 것과 같은 방식으로 위아래 유효한 줄에서 이어 붙인다.
+   두 줄(10°)까지만 잇는다. 그보다 넓으면 진짜 구멍이므로 비워 둔다 —
+   자료가 없으면 안 그린다는 규칙은 그대로다. */
+const GRID_BRIDGE = 2;
+let gridBridged = 0;            // 격자 위 '자리' 수. 변수마다 더하면 같은 구멍을 스물세 번 센다.
+function bridgeGaps(src, nx, ny, count){
+  if(!Array.isArray(src) || src.length !== nx*ny) return src;
+  let out = null, filled = 0;
+  for(let x = 0; x < nx; x++){
+    for(let y = 0; y < ny; y++){
+      if(src[y*nx + x] != null) continue;
+      let up = -1, dn = -1;
+      for(let k = 1; k <= GRID_BRIDGE && y-k >= 0; k++) if(src[(y-k)*nx + x] != null){ up = y-k; break; }
+      for(let k = 1; k <= GRID_BRIDGE && y+k < ny; k++) if(src[(y+k)*nx + x] != null){ dn = y+k; break; }
+      if(up < 0 || dn < 0) continue;
+      // 원본에서만 읽는다 — 이어 붙인 값에 또 이어 붙이면 없는 자료가 번진다.
+      if(!out) out = src.slice();
+      const a = src[up*nx + x], b = src[dn*nx + x];
+      out[y*nx + x] = a + (b - a) * (y - up) / (dn - up);
+      filled++;
+    }
+  }
+  if(count) gridBridged = Math.max(gridBridged, filled);
+  return out || src;
+}
+let bridgedWind = false, bridgedLeads = false;
+function bridgeLoaded(){
+  if(!WIND) return;
+  const { nx, ny } = WIND;
+  if(!bridgedWind){
+    for(const k of ['t','rh','mslp','rain','cld','vis','soil','tmax','tmin']) WIND[k] = bridgeGaps(WIND[k], nx, ny, k === 't');
+    bridgedWind = true;
+  }
+  if(LEADS && !bridgedLeads){
+    for(const k of ['tmax','tmin'])
+      if(Array.isArray(LEADS[k])) LEADS[k] = LEADS[k].map(a => bridgeGaps(a, nx, ny));
+    bridgedLeads = true;
+  }
+  if(gridBridged) paintSrc();
+}
+
 let LEADS = null, dayIdx = 0;    // 0 = 지금(관측 기반 실황), 1..7 = D+1..D+7 예보
 
 /* 같은 5° 격자에 D+1~D+7 일별 최고기온이 들어 있다. 예보이므로 화면에
@@ -1459,6 +1513,7 @@ let LEADS = null, dayIdx = 0;    // 0 = 지금(관측 기반 실황), 1..7 = D+1
 async function loadLeads(){
   LEADS = await fetch('https://earthus-cache-kr.s3.us-east-2.amazonaws.com/wind/forecast-leads.json')
     .then(r => { if(!r.ok) throw new Error(`leads ${r.status}`); return r.json(); });
+  bridgeLoaded();
   const box = $('#days');
   box.innerHTML = '';
   const mk = (label, sub, i) => {
@@ -1532,7 +1587,8 @@ function paintTemp(){
    그래서 반대로 간다 — **화면 격자에서 지구로 역투영**한다. 배율이 얼마든
    화면에는 늘 같은 간격으로 숫자가 놓인다. 윈디가 하는 방식이다. */
 const tempMarks = [];
-const TN_STEP = 88;                     // 화면에서 숫자 사이 간격(px)
+const TN_STEP = 88;                     // 화면에서 숫자 사이 간격(px) — 이 값에 가장 가깝게 격자를 고른다
+const TN_GRID = [1, 2, 5, 10, 15, 20, 30, 45];   // 고를 수 있는 위경도 간격(도)
 function makeTempMarks(){
   if(tempMarks.length) return;
   for(let i = 0; i < 90; i++){          // 넉넉히 만들어 두고 쓸 만큼만 쓴다
@@ -1673,7 +1729,7 @@ $('#b-temp').addEventListener('click', e => {
   coastBase = on ? 0.85 : 0; updateCoast();
   if(on) makeTempMarks();
   for(const m of tempMarks) m.el.style.display = on ? '' : 'none';
-  tempShell.visible = on;
+  tempShell.visible = on; tempFieldOn = on; paintSrc();
   $('#tempkey').hidden = !on;
   $('#daybar').hidden = !(on && LEADS);
 });
@@ -1704,6 +1760,7 @@ const DEG_PER_MS = 2.2;        // (도/초) / (m/s) — 10m/s 가 초당 22도
 async function loadWind(){
   WIND = await fetch('https://earthus-cache-kr.s3.us-east-2.amazonaws.com/wind/global.json')
     .then(r => { if(!r.ok) throw new Error(`wind ${r.status}`); return r.json(); });
+  bridgeLoaded();
   seedParticles();
 }
 
@@ -2960,21 +3017,50 @@ function placeMarkers(w, h){
     }
   }
 
-  // 기온 숫자 — 화면 격자에서 지구로 쏘아 그 자리의 값을 적는다.
+  /* 기온 숫자 — 땅에 박아 둔다.
+     ⚠️ 화면 격자에 두었더니 지구를 돌려도 숫자가 제자리에 남고 값만 바뀌었다.
+        자리가 곧 뜻인 화면에서 그건 숫자가 어디 것인지를 지우는 일이다.
+        그렇다고 고정 위경도 격자로 돌아가면 확대했을 때 점이 전부 화면 밖으로
+        나간다(그래서 화면 격자로 옮겼던 것이다). 그래서 **간격만 배율에서 고른다** —
+        숫자는 땅에 붙어 함께 돌고, 화면에서의 간격은 늘 비슷하게 유지된다. */
   if(tempShell.visible && tempMarks.length){
+    const mid = screenToLatLon(w/2, h/2, w, h);
     let k = 0;
-    for(let Y = 92; Y < h-160 && k < tempMarks.length; Y += TN_STEP){
-      for(let X = 84; X < w-72 && k < tempMarks.length; X += TN_STEP){
-        const ll = screenToLatLon(X, Y, w, h);
-        if(!ll) continue;
-        const c = tempAt(ll.lat, ll.lon);
-        if(c == null) continue;
-        const m = tempMarks[k++];
-        m.el.textContent = `${Math.round(c)}°`;
-        m.el.className = 'tn ' + (c < 5 ? 'cold' : c > 26 ? 'hot' : '');
-        m.el.style.visibility = 'visible';
-        m.el.style.opacity = 1;
-        m.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-50%)`;
+    if(mid){
+      const project = (lat, lon) => {
+        _v.copy(llToVec(lat, lon, R*1.004)).applyMatrix4(earthGroup.matrixWorld);
+        const q = _v.clone().project(camera);
+        return [(q.x*0.5+0.5)*w, (-q.y*0.5+0.5)*h];
+      };
+      // ⚠️ screenR 은 이 루프보다 뒤에서 갱신된다 — 처음엔 그걸 썼다가 초기값 300 이
+      //    그대로 들어가 20°격자를 골랐고, 실제로는 320px 씩 벌어져 숫자가 여덟 개만 떴다.
+      //    배율은 여기서 직접 잰다. 화면 한가운데에서 위도 1도가 몇 픽셀인지.
+      const p0 = project(mid.lat, mid.lon), p1 = project(mid.lat + 1, mid.lon);
+      const perDeg = Math.hypot(p1[0]-p0[0], p1[1]-p0[1]) || 1;
+      const step = TN_GRID.find(s => s*perDeg >= TN_STEP) ?? TN_GRID[TN_GRID.length-1];
+      const latC = Math.round(mid.lat/step)*step, lonC = Math.round(mid.lon/step)*step;
+      const span = Math.min(Math.ceil(95/step), 40);
+      for(let dy = -span; dy <= span && k < tempMarks.length; dy++){
+        const lat = latC + dy*step;
+        if(lat < -85 || lat > 85) continue;
+        // 위로 갈수록 경도선이 모인다 — 간격을 벌리지 않으면 숫자가 극에서 뭉친다
+        const lonStep = step * Math.max(1, Math.round(1/Math.max(.12, Math.cos(lat*Math.PI/180))));
+        const wide = Math.min(Math.ceil(100/lonStep), 60);
+        for(let dx = -wide; dx <= wide && k < tempMarks.length; dx++){
+          const lon = ((lonC + dx*lonStep + 540) % 360) - 180;
+          const [X, Y] = project(lat, lon);
+          // 가장자리는 경도선이 겹쳐 보여 숫자가 서로 붙는다 — 테두리 한 겹은 버린다
+          if(_v.clone().normalize().dot(_c.clone().sub(_v).normalize()) <= 0.30) continue;
+          if(X < 84 || X > w-72 || Y < 92 || Y > h-160) continue;   // 머리말·날짜 막대 자리
+          const c = tempAt(lat, lon);
+          if(c == null) continue;
+          const m = tempMarks[k++];
+          m.el.textContent = `${Math.round(c)}°`;
+          m.el.className = 'tn ' + (c < 5 ? 'cold' : c > 26 ? 'hot' : '');
+          m.el.style.visibility = 'visible';
+          m.el.style.opacity = 1;
+          m.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-50%)`;
+        }
       }
     }
     for(let i = k; i < tempMarks.length; i++) tempMarks[i].el.style.visibility = 'hidden';

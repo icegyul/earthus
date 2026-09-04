@@ -30,7 +30,7 @@ import zipfile
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -40,13 +40,24 @@ SRC = "https://naciscdn.org/naturalearth/10m/raster/SR_HR.zip"
 NAME = "SR_HR.tif"
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / ".tmp" / "relief" / "SR_HR.zip"
-OUT = ROOT / "prototype" / "data" / "relief-4320.webp"
+OUT = ROOT / "prototype" / "data" / "relief-5400.webp"
 
-# 21600×10800 의 정확히 1/5. 나누어떨어지지 않는 크기로 줄이면 화소마다 섞는 원본
-# 개수가 달라져 능선에 결이 생긴다. 지구 텍스처(4096×2048)와 거의 1:1 이다.
-W, H = 4320, 2160
+# 21600×10800 의 정확히 1/4. 나누어떨어지지 않는 크기로 줄이면 화소마다 섞는 원본
+# 개수가 달라져 능선에 결이 생긴다. 지구 텍스처와 1:1 로 맞춰 둔 크기다.
+#
+# ⚠️ 여기가 선명도의 천장이 아니다. 원본은 도(度)당 60화소인데 가장 깊은 배율의
+#    화면은 도당 39화소다 — 원본은 충분하고, 줄이는 우리가 줄이는 만큼만 잃는다.
+#    5400 이면 도당 15화소. 화면을 따라가려면 14,000 폭이 필요한데 그건 텍스처
+#    메모리가 감당하지 못한다. 그래서 남는 몫은 언샵으로 메운다.
+W, H = 5400, 2700
 FLAT = 206          # 원본에서 바다(평지)가 갖는 값. 10m 판도 같다(2.3억 중 1.6억 화소).
 GAIN = 1.45         # 기복을 얼마나 세울까. 1.0 이면 원본 그대로
+
+# 5배로 줄이면 화소 25개가 하나로 평균된다 — 능선의 잔결이 거기서 뭉개진다.
+# 언샵 마스크로 그 결을 되살린다. 없는 산을 만드는 게 아니라, 평균이 먹어 버린
+# 대비를 원래 있던 자리에 돌려놓는 것이다.
+# 평지(128)는 균일하므로 언샵이 건드리지 않는다 — 바다는 그대로 128 로 남는다.
+SHARP_R, SHARP_PCT, SHARP_TH = 1.4, 125, 2
 
 
 def load():
@@ -82,7 +93,12 @@ def main():
           f"{np.percentile(out,1):.0f}/{np.percentile(out,50):.0f}/{np.percentile(out,99):.0f}")
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    im = Image.fromarray(out, mode="L")
+    im = Image.fromarray(out, mode="L").filter(
+        ImageFilter.UnsharpMask(radius=SHARP_R, percent=SHARP_PCT, threshold=SHARP_TH))
+    a2 = np.asarray(im)
+    sea2 = a2[int(0.45*H):int(0.55*H), int(0.10*W):int(0.18*W)]
+    print(f"  날 세운 뒤: 태평양 평균 {sea2.mean():.1f} (128 그대로여야 한다), "
+          f"땅 대비 {a2.std():.2f} ← {out.std():.2f}")
     im.save(OUT, format="WEBP", quality=88, method=6)
     png = OUT.with_suffix(".png")
     im.save(png, format="PNG", optimize=True)

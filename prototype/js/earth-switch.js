@@ -16,18 +16,27 @@
  * 스타일과 마크업을 스스로 넣고 밖의 CSS 를 건드리지 않는다 — 세 지구의 CSS 가
  * 서로 다르기 때문이다. 클래스 이름에 es- 를 붙여 충돌을 피한다.
  *
- * ── 좁은 화면 (2026-09-04, iPhone 16 신고 반영) ────────────────────────────
- * 신고: "3개 지구 선택하는 글이 시계 위에 있어서 안 예뻐", "설정·로그인이 따로 떠 있어".
- * 폰에서는 세 지구를 늘 펴 두지 않는다. **EARTHUS 로고 하나로 접어** 두고,
- * 누르면 오른쪽으로 세 지구가 펴지고 그 아래에 도움말·설정·로그인이 세로로 붙는다.
- *   · 도움말·설정·로그인은 여기서 새로 만들지 않는다 — 각 지구가 이미 가진 단추를
- *     **찾아서 입양**하고(원래 자리에서는 숨긴다) 누르면 그 단추를 대신 누른다.
- *     그래야 세 지구의 서로 다른 동작이 그대로 살아 있고, 여기에 로직이 안 생긴다.
- *     v3(키즈)에는 설정·로그인이 없다 — 없는 것은 줄도 안 만든다.
- *   · 지금 있는 지구를 누르면 그 지구의 **처음 화면**으로 간다(해시를 떼고 이동).
- *   · 연 뒤 10초는 강제로 떠 있고, 지구나 다른 메뉴를 만지면 그때부터 다시 10초를
- *     센 뒤 접힌다 — 만지자마자 사라지면 뭘 눌렀는지 확인할 새가 없다.
- * 넓은 화면은 예전 그대로다(세 알약이 늘 펴져 있음).
+ * ── 좁은 화면 (2026-09-04, iPhone 16 신고 반영 — 2차 수정) ─────────────────
+ * 1차 수정(로고 텍스트 "EARTHUS" 버튼 + 옆으로 펴지는 지구 목록 + 그 아래 펴지는
+ * 더보기 목록)을 실기기로 보고 받은 지적 셋:
+ *   · "EARTHUS 가 두 번 나온다" — 로고 버튼 자체가 글자 "EARTHUS" 였고, 펴면 그
+ *     옆에 지구 목록의 첫 칸도 "EARTHUS" 였다. 화면엔 실제로 "EARTHUS EARTHUS
+ *     Intelligence WONDER" 로 찍혔다.
+ *   · "이 디자인이 예쁘니? 좌측으로 메뉴 생기고 하단으로 메뉴 생기고" — 한 번은
+ *     옆으로, 한 번은 아래로, 두 방향으로 벌어지는 모양이 부담스럽다는 지적.
+ *   · "도움말이 왜 여기 나와? 로그인과 설정만 말했는데" — 더보기 목록에 도움말을
+ *     같이 넣은 건 내 임의 판단이었다. 요청한 적 없다.
+ *
+ * 그래서 다시 짰다:
+ *   · 접힌 로고는 **글자가 아니라 브랜드 아이콘**(logo/earthus-appicon.svg,
+ *     정본 자산 — 새로 그리지 않는다)이다. 글자가 없으니 지구 목록과 겹칠 이름이
+ *     없다.
+ *   · 펴면 로고 **바로 아래로 카드 하나만** 뜬다(옆으로 벌어지지 않는다). 그
+ *     카드 안에 지구 셋 → 구분선 → 더보기(설정·로그인만)가 한 줄로 세로 나열된다.
+ *   · 더보기는 **설정·로그인만** 입양한다. 도움말은 여기 넣지 않는다 — 딴 데
+ *     넣을지는 다음 지시를 기다린다(첫 방문 안내는 각 지구가 이미 자동으로 한
+ *     번 띄운다. 그건 그대로다).
+ * 넓은 화면(>720px)은 손대지 않았다 — 세 알약이 늘 펴져 있는 예전 모습 그대로.
  */
 (function () {
   'use strict';
@@ -38,6 +47,9 @@
   var DEV = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
   var NARROW = '(max-width:720px)';
   var HOLD_MS = 10000;   // 연 뒤 강제로 떠 있는 시간
+  // 정본 브랜드 아이콘(prototype/logo/) — 루트 상대경로라 세 지구 어디서 열어도
+  // 같은 파일을 가리킨다(이 스크립트 자체도 같은 방식). 새로 그리지 않는다.
+  var ICON = '/logo/earthus-appicon.svg';
 
   var EARTHS = [
     { id: 'earthus', label: 'EARTHUS',      href: '/' },
@@ -45,17 +57,23 @@
     { id: 'wonder',  label: 'WONDER',       href: DEV ? '/v3-kids/' : '/v3/' }
   ];
 
-  /* 각 지구가 이미 갖고 있는 단추를 찾는 열쇠. 앞에서부터 먼저 맞는 것을 쓴다.
+  /* 각 지구가 이미 갖고 있는 단추를 찾는 열쇠. **설정·로그인만** — 요청받은 것만 넣는다.
      v2 는 id, v1·v3 는 aria-label 로만 구분된다(공용 앱바가 id 를 안 준다).
      영어 화면에서는 라벨이 바뀌므로 두 언어를 다 적는다. */
   var ADOPT = [
-    { id: 'help', ko: '도움말', en: 'Help',
-      sel: '#btn-help,[aria-label="기능 설명"],[aria-label="이게 뭐야"],[aria-label="What is this"],[aria-label="Show the walkthrough again"]' },
     { id: 'settings', ko: '설정', en: 'Settings',
       sel: '#btn-settings,[aria-label="설정"],[aria-label="Settings"]' },
     { id: 'login', ko: '로그인', en: 'Sign in',
       sel: '#btn-login,[aria-label="로그인"],[aria-label="Sign in"],[aria-label="Sign in / account"]' }
   ];
+  /* 도움말은 드롭다운에 넣지 말라는 지적을 받아 목록(ADOPT)에서는 뺐다.
+     다만 목록에서만 빼고 원래 자리에 그대로 두면, 아이콘 버튼 바로 아래에
+     동그란 "?" 하나만 외따로 남아 떠 있다(앱바의 나머지 두 개는 입양돼 사라졌으니).
+     그 잔재가 더 지저분해서, 좁은 화면에서는 일단 통째로 숨긴다 — 목록에 다시
+     넣으라는 지시가 오면 그때 넣는다. 첫 방문 안내는 각 지구가 이미 자동으로
+     한 번 띄우므로 접근로가 아예 없어지는 것은 아니다. */
+  var HELP_SEL = '#btn-help,[aria-label="기능 설명"],[aria-label="이게 뭐야"],'
+    + '[aria-label="What is this"],[aria-label="Show the walkthrough again"]';
 
   // 지금 어느 지구인가. 긴 경로부터 본다 — '/' 는 무엇에나 걸리기 때문이다.
   function currentId() {
@@ -66,42 +84,54 @@
   }
 
   var css = [
+    // 넓은 화면(기본): 예전 그대로 — 알약 세 개가 늘 펴져 있다.
     '.es-switch{position:fixed;top:14px;left:14px;z-index:9000;',
-    '  display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:3px;',
+    '  display:flex;align-items:stretch;gap:2px;padding:3px;',
     '  border-radius:999px;background:rgba(8,14,26,.72);',
     '  border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(10px);',
     '  -webkit-backdrop-filter:blur(10px);box-shadow:0 6px 22px rgba(0,0,0,.34);',
     '  font-family:"IBM Plex Sans KR","Malgun Gothic",system-ui,-apple-system,sans-serif}',
-    '.es-row{display:flex;align-items:stretch;gap:2px}',
-    '.es-earths{display:flex;align-items:stretch;gap:2px}',
-    '.es-switch a,.es-logo,.es-more button{display:flex;align-items:center;',
+    '.es-switch>a{display:flex;align-items:center;',
     '  padding:7px 15px;border-radius:999px;text-decoration:none;color:#C7D6EA;',
     '  font-size:13px;font-weight:500;letter-spacing:.01em;line-height:1.2;white-space:nowrap;',
-    '  background:none;border:0;font-family:inherit;cursor:pointer;',
     '  transition:background .15s ease,color .15s ease}',
-    '.es-switch a:hover,.es-logo:hover,.es-more button:hover{background:rgba(255,255,255,.12);color:#fff}',
-    '.es-switch a[aria-current="page"]{background:#fff;color:#0E1726}',
-    '.es-switch a:focus-visible,.es-logo:focus-visible,.es-more button:focus-visible{outline:2px solid #7FB7F5;outline-offset:2px}',
-    // 넓은 화면: 예전 그대로 — 로고와 더보기는 없다.
-    '.es-logo,.es-more{display:none}',
+    '.es-switch>a:hover{background:rgba(255,255,255,.12);color:#fff}',
+    '.es-switch>a[aria-current="page"]{background:#fff;color:#0E1726}',
+    '.es-switch>a:focus-visible{outline:2px solid #7FB7F5;outline-offset:2px}',
+    '.es-logo,.es-menu{display:none}',   // 넓은 화면엔 아이콘 버튼도 드롭다운도 없다
+    '@media (prefers-reduced-motion:reduce){.es-switch>a{transition:none}}',
+
+    // 좁은 화면: 브랜드 아이콘 버튼 하나 + 누르면 그 아래로 카드 하나.
     '@media ' + NARROW + '{',
-    '  .es-switch{top:8px;left:8px;padding:2px;gap:0}',
-    '  .es-switch a,.es-logo,.es-more button{padding:8px 12px;font-size:13px}',
-    // 접힌 상태 = 로고 하나. 편 상태에서만 지구들과 더보기가 나온다.
-    '  .es-logo{display:flex;font-weight:700;letter-spacing:.06em}',
-    '  .es-earths{display:none}',
-    '  .es-switch.es-open{border-radius:18px;padding:4px}',
-    '  .es-switch.es-open .es-earths{display:flex}',
-    '  .es-switch.es-open .es-more{display:flex;flex-direction:column;align-items:stretch;',
-    '    gap:1px;margin-top:3px;padding-top:4px;border-top:1px solid rgba(255,255,255,.14)}',
-    '  .es-more button{justify-content:flex-start;color:#AFC2DA;font-size:13px}',
+    '  .es-switch{top:8px;left:8px;padding:0;background:none;border:0;',
+    '    box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;',
+    '    font-family:"IBM Plex Sans KR","Malgun Gothic",system-ui,-apple-system,sans-serif}',
+    '  .es-switch>a{display:none}',      // 넓은 화면용 알약은 숨기고 드롭다운 쪽만 쓴다
+    '  .es-logo{display:flex;align-items:center;justify-content:center;',
+    '    width:40px;height:40px;padding:0;border:1px solid rgba(255,255,255,.18);',
+    '    border-radius:11px;background:rgba(8,14,26,.78);overflow:hidden;',
+    '    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);',
+    '    box-shadow:0 6px 18px rgba(0,0,0,.34);touch-action:manipulation}',
+    '  .es-logo:active{background:rgba(20,28,44,.9)}',
+    '  .es-logo img{width:100%;height:100%;display:block;object-fit:cover}',
+    '  .es-switch.es-open .es-menu{display:flex}',
+    '  .es-menu{position:absolute;top:46px;left:0;flex-direction:column;min-width:184px;',
+    '    gap:1px;padding:6px;border-radius:14px;background:rgba(8,14,26,.92);',
+    '    border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(14px);',
+    '    -webkit-backdrop-filter:blur(14px);box-shadow:0 12px 32px rgba(0,0,0,.4)}',
+    '  .es-menu a,.es-menu button{all:unset;box-sizing:border-box;display:flex;',
+    '    align-items:center;width:100%;padding:11px 13px;border-radius:9px;',
+    '    color:#C7D6EA;font-size:14px;font-weight:500;letter-spacing:.01em;',
+    '    cursor:pointer;touch-action:manipulation}',
+    '  .es-menu a:active,.es-menu button:active{background:rgba(255,255,255,.14)}',
+    '  .es-menu a[aria-current="page"]{color:#fff;font-weight:700;background:rgba(255,255,255,.10)}',
+    '  .es-menu .es-div{height:1px;margin:4px 8px;background:rgba(255,255,255,.14)}',
     // 입양한 단추는 원래 자리에서 숨긴다 — 같은 것이 두 군데 있으면 안 된다.
     // ⚠️ 클래스를 붙여 숨기면 안 된다: v1·v3 의 공용 앱바는 부팅 뒤에 **다시 그려져서**
-    //    붙여 둔 클래스가 통째로 날아간다(실측 — 숨겼는데 ? ⚙ ○ 가 되살아났다).
+    //    붙여 둔 클래스가 통째로 날아간다(실측 — 숨겼는데 ⚙ ○ 가 되살아났다).
     //    그래서 선택자 자체를 CSS 에 박는다. 다시 그려도 계속 숨겨진다.
-    '  ' + ADOPT.map(function (a) { return a.sel; }).join(',') + '{display:none!important}',
-    '  .es-bar-empty{display:none!important}}',
-    '@media (prefers-reduced-motion:reduce){.es-switch a,.es-logo,.es-more button{transition:none}}'
+    '  ' + ADOPT.map(function (a) { return a.sel; }).join(',') + ',' + HELP_SEL + '{display:none!important}',
+    '  .es-bar-empty{display:none!important}}'
   ].join('\n');
 
   function mount() {
@@ -126,50 +156,63 @@
     nav.className = 'es-switch';
     nav.setAttribute('aria-label', ko ? '지구 고르기' : 'Choose an Earth');
 
-    var row = document.createElement('div');
-    row.className = 'es-row';
+    // 지금 있는 지구를 누르면 **처음 화면**으로 돌아간다. 해시를 떼고 가야
+    // 링크로 복원된 카메라·레이어까지 초기화된다.
+    var goHome = function (ev, href) {
+      ev.preventDefault();
+      if (location.hash || location.search) location.href = href;
+      else location.reload();
+    };
 
-    var logo = document.createElement('button');
-    logo.type = 'button';
-    logo.className = 'es-logo';
-    logo.textContent = 'EARTHUS';
-    logo.setAttribute('aria-expanded', 'false');
-    logo.setAttribute('aria-label', ko ? '지구와 메뉴 고르기' : 'Earths and menu');
-    row.appendChild(logo);
-
-    var earths = document.createElement('div');
-    earths.className = 'es-earths';
+    // 넓은 화면용 알약 (예전 그대로) — nav 바로 아래 평평하게.
     EARTHS.forEach(function (e) {
       var a = document.createElement('a');
       a.href = e.href;
       a.textContent = e.label;
       if (e.id === here) {
         a.setAttribute('aria-current', 'page');
-        /* 지금 있는 지구를 누르면 **처음 화면**으로 돌아간다.
-           예전에는 아무 일도 하지 않았는데(preventDefault), 폰에서는 접힌 메뉴를 열어
-           자기 지구를 누르는 것이 "처음으로"라는 뜻으로 읽힌다. 해시를 떼고 가야
-           링크로 복원된 카메라·레이어까지 초기화된다. */
-        a.addEventListener('click', function (ev) {
-          ev.preventDefault();
-          if (location.hash || location.search) location.href = e.href;
-          else location.reload();
-        });
+        a.addEventListener('click', function (ev) { goHome(ev, e.href); });
       }
-      earths.appendChild(a);
+      nav.appendChild(a);
     });
-    row.appendChild(earths);
-    nav.appendChild(row);
 
-    var more = document.createElement('div');
-    more.className = 'es-more';
-    nav.appendChild(more);
+    // 좁은 화면용 아이콘 버튼.
+    var logo = document.createElement('button');
+    logo.type = 'button';
+    logo.className = 'es-logo';
+    logo.setAttribute('aria-expanded', 'false');
+    logo.setAttribute('aria-label', ko ? '지구와 메뉴 고르기' : 'Earths and menu');
+    var icon = document.createElement('img');
+    icon.src = ICON;
+    icon.alt = '';           // 버튼 자체의 aria-label 이 이미 설명한다
+    icon.setAttribute('aria-hidden', 'true');
+    logo.appendChild(icon);
+    nav.appendChild(logo);
+
+    // 좁은 화면용 드롭다운 카드 — 지구 셋 → 구분선 → 더보기(설정·로그인).
+    var menu = document.createElement('div');
+    menu.className = 'es-menu';
+    menu.setAttribute('role', 'menu');
+    EARTHS.forEach(function (e) {
+      var a = document.createElement('a');
+      a.href = e.href;
+      a.textContent = e.label;
+      a.setAttribute('role', 'menuitem');
+      if (e.id === here) {
+        a.setAttribute('aria-current', 'page');
+        a.addEventListener('click', function (ev) { goHome(ev, e.href); });
+      }
+      menu.appendChild(a);
+    });
+    nav.appendChild(menu);   // 입양한 설정·로그인은 adopt() 가 menu 에 직접 쌓는다
 
     document.body.appendChild(nav);
 
-    /* ── 각 지구의 단추 입양 ──────────────────────────────────────────────
+    /* ── 설정·로그인 입양 ─────────────────────────────────────────────────
        앱바를 늦게 만드는 지구가 있어서(v1·v3 는 부팅이 끝난 뒤에 만든다)
        몇 번 더 찾아본다. 이미 입양한 것은 다시 넣지 않는다. */
     var adopted = {};
+    var divider = null;
     function adopt() {
       ADOPT.forEach(function (a) {
         if (adopted[a.id]) return;
@@ -177,8 +220,14 @@
         try { src = document.querySelector(a.sel); } catch (e) { src = null; }
         if (!src) return;                       // 이 지구에 없는 메뉴는 줄도 만들지 않는다
         adopted[a.id] = true;
+        if (!divider) {
+          divider = document.createElement('div');
+          divider.className = 'es-div';
+          menu.appendChild(divider);
+        }
         var b = document.createElement('button');
         b.type = 'button';
+        b.setAttribute('role', 'menuitem');
         b.textContent = ko ? a.ko : a.en;
         /* ⚠️ 찾아 둔 노드를 붙잡지 않고 **누를 때 다시 찾는다.** 앱바가 다시 그려지면
            붙잡아 둔 노드는 화면에서 떨어져 나가 눌러도 아무 일이 없다. */
@@ -187,7 +236,7 @@
           var live = document.querySelector(a.sel);
           if (live) live.click();               // 동작은 각 지구의 것이다
         });
-        more.appendChild(b);
+        menu.appendChild(b);
       });
       syncBars();
     }

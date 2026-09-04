@@ -4896,11 +4896,18 @@ async function main() {
   }
 
   // --- 루프 ---
-  window.addEventListener('resize', () => {
+  const applyResize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
-  });
+  };
+  window.addEventListener('resize', applyResize);
+  // 아이폰 신고: "위아래가 잘리고 화면이 가끔 통제가 안 된다". 사파리 주소창이 접혔다
+  // 펴졌다 하는 동안 window 의 resize 이벤트가 늦게 오거나 아예 안 오는 경우가 있다.
+  // <html> 요소 자체의 렌더 박스를 감시하면(위 CSS 를 100dvh 로 고쳤으니 그 박스가
+  // 지금 실제로 보이는 만큼만 잡힌다) 더 즉각적으로, 놓치지 않고 반응한다 —
+  // v3(WONDER)가 이미 같은 방식을 쓰고 있어 그 패턴을 그대로 가져왔다.
+  if (window.ResizeObserver) new ResizeObserver(applyResize).observe(document.documentElement);
 
   const camRight = new THREE.Vector3();
   const camUp = new THREE.Vector3();

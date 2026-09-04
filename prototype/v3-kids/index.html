@@ -2,7 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- interactive-widget=resizes-content: Safari 16.4+/Chrome108+ 에서 주소창이 접혔다 펴졌다
+     할 때 "실제 보이는 영역"을 즉시 알려 달라는 지시다. 옛 브라우저는 이 값을 그냥 무시한다. -->
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <title>지구야, 오늘 어때? — EARTHUS KIDS 샘플</title>
 <script>/* 제목은 <head> 에서 정해진다 — 치환 층이 서기 전이라 여기서 바꾼다. */
   try{var _l=localStorage.getItem('earthus.lang')||localStorage.getItem('earthus.v2.lang');}catch(e){}
@@ -23,7 +25,11 @@
   --sun:#FFC24B;
 }
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;overflow:hidden;background:var(--space-0)}
+/* height:100% 는 사파리 주소창이 접힌 "가장 큰" 상태 기준으로 잡힌다. 주소창이 펴져 있으면
+   실제 보이는 영역보다 이 상자가 더 커지고, overflow:hidden 이라 그 아랫부분이 화면 밖으로
+   잘려 나간다("위아래가 잘린다" 신고). 100dvh 는 지금 실제로 보이는 만큼만 잡는다 — v1 이
+   이미 같은 이유로 쓰고 있다(prototype/css/app.css). */
+html,body{height:100%;height:100dvh;margin:0;overflow:hidden;background:var(--space-0)}
 body{
   font-family:var(--ui);color:#fff;
   -webkit-font-smoothing:antialiased;
@@ -40,7 +46,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 #stars{position:absolute;inset:0;pointer-events:none}
 
 /* ── 머리글 ── */
-#head{position:absolute;top:22px;left:0;right:0;text-align:center;pointer-events:none;z-index:6}
+#head{position:absolute;top:calc(22px + env(safe-area-inset-top));left:0;right:0;text-align:center;pointer-events:none;z-index:6}
 #head h1{font-family:var(--kid);font-size:clamp(26px,3.6vw,40px);margin:0;letter-spacing:.01em;
   text-shadow:0 2px 14px rgba(0,0,0,.55)}
 #head p{margin:8px 0 0;font-size:clamp(12px,1.4vw,15px);opacity:.72;text-shadow:0 1px 10px rgba(0,0,0,.85),0 0 18px rgba(5,11,28,.8)}
@@ -49,7 +55,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
    좌하단 작은 글씨. 화면을 가리지 않되 무엇을 보고 있는지는 늘 적혀 있어야 한다.
    ⚠️ 큰 화면에서는 오히려 키운다 — 9px 는 폰에서 손에 든 거리 기준이고,
       멀리 두고 보는 화면에서는 아예 안 읽힌다. 출처는 읽히라고 있는 것이다. */
-#srcNote{position:absolute;left:10px;bottom:10px;z-index:8;
+#srcNote{position:absolute;left:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:8;
   max-width:min(52vw,420px);pointer-events:none;
   font-size:9px;line-height:1.45;color:rgba(255,255,255,.46);
   text-shadow:0 1px 3px rgba(0,0,0,.85)}
@@ -57,8 +63,8 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 #srcNote i{font-style:normal;color:rgba(255,255,255,.32)}
 #srcNote.warn b{color:#FFC24B}
 #srcNote.err b{color:#FF9A9A}
-@media (max-width:520px){ #srcNote{max-width:70vw;font-size:8.5px;bottom:8px;left:8px} }
-@media (min-width:1600px){ #srcNote{font-size:12px;left:18px;bottom:16px;max-width:min(40vw,520px)} }
+@media (max-width:520px){ #srcNote{max-width:70vw;font-size:8.5px;bottom:calc(8px + env(safe-area-inset-bottom));left:8px} }
+@media (min-width:1600px){ #srcNote{font-size:12px;left:18px;bottom:calc(16px + env(safe-area-inset-bottom));max-width:min(40vw,520px)} }
 
 /* ── 레일 둘 — 왼쪽은 만나기(아이), 오른쪽은 읽기(어른) ──
    가르는 기준은 난이도가 아니라 읽는 방식이다. 왼쪽은 하나를 눌러 하나를
@@ -88,7 +94,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 .railbtn svg{width:28px;height:28px;display:block}
 
 /* ── 아래 알약 내비 ── */
-#nav{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:6;
+#nav{position:absolute;bottom:calc(26px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:6;
   display:flex;gap:6px;background:rgba(8,16,36,.66);border:1px solid rgba(255,255,255,.16);
   padding:7px;border-radius:999px;backdrop-filter:blur(10px)}
 #nav button{
@@ -98,8 +104,22 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 #nav button[aria-current="true"]{background:#fff;color:#132242}
 #nav button:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 
+/* ── 캐릭터 갈래 (오늘/설화/공룡/동물) ── 지금은 이름만.
+   ⚠️ #nav 바로 위(90px)에 두었더니 #hint("손가락으로 지구를 돌려 보세요")와
+      자리가 겹쳐 처음 6초 동안 통째로 가려졌다. 더 위로 올린다. */
+#charTabs{position:absolute;bottom:calc(150px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:6;
+  display:flex;gap:5px;background:rgba(8,16,36,.66);border:1px solid rgba(255,255,255,.16);
+  padding:6px;border-radius:999px;backdrop-filter:blur(10px)}
+#charTabs button{
+  font-family:var(--kid);font-size:14px;color:#fff;background:transparent;border:0;
+  padding:8px 15px;border-radius:999px;cursor:pointer;min-height:38px;white-space:nowrap;
+}
+#charTabs button[aria-current="true"]{background:#fff;color:#132242}
+#charTabs button:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+@media (max-width:720px){ #charTabs{bottom:calc(132px + env(safe-area-inset-bottom));padding:5px} #charTabs button{padding:7px 12px;font-size:13px} }
+
 /* ── 내 위치 버튼 ── */
-#here{position:absolute;right:20px;bottom:98px;z-index:6;
+#here{position:absolute;right:20px;bottom:calc(98px + env(safe-area-inset-bottom));z-index:6;
   width:64px;height:64px;border-radius:22px;border:1px solid rgba(255,255,255,.24);
   background:rgba(9,18,38,.46);backdrop-filter:blur(8px);cursor:pointer;color:#fff;
   box-shadow:0 2px 12px rgba(0,0,0,.30);text-shadow:0 1px 3px rgba(0,0,0,.6);
@@ -109,10 +129,10 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 #here:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 #here[disabled]{opacity:.5;cursor:default}
 #here.on{background:#fff;color:#132242}
-@media (max-width:720px){ #here{width:56px;height:56px;right:12px;bottom:84px} }
+@media (max-width:720px){ #here{width:56px;height:56px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom))} }
 
 /* ── 우리 집 버튼 ── */
-#home{position:absolute;right:20px;bottom:26px;z-index:6;
+#home{position:absolute;right:20px;bottom:calc(26px + env(safe-area-inset-bottom));z-index:6;
   width:64px;height:64px;border-radius:22px;border:1px solid rgba(255,255,255,.24);
   background:rgba(9,18,38,.46);backdrop-filter:blur(8px);cursor:pointer;color:#fff;
   box-shadow:0 2px 12px rgba(0,0,0,.30);text-shadow:0 1px 3px rgba(0,0,0,.6);
@@ -138,7 +158,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 .bub .box b{display:block;font-size:12px;opacity:.55;font-weight:400}
 
 /* ── 지진 재생 막대 ── */
-#quakebar{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:7;
+#quakebar{position:absolute;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:7;
   display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:18px;
   background:rgba(8,16,36,.72);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(8px);
   max-width:min(560px,92vw);width:max-content}
@@ -149,8 +169,8 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 .qb-line{flex:1;min-width:120px;height:6px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden}
 .qb-line i{display:block;height:100%;width:0;background:linear-gradient(90deg,#FFDE9B,#FF7A5C);border-radius:3px}
 #quakewhen{font-family:var(--kid);font-size:13px;color:#FFE9BE;min-width:74px;text-align:right}
-@media (max-width:720px){ #quakebar{bottom:150px;padding:8px 12px;gap:8px} #quakewhen{font-size:11px;min-width:62px}
-  #card.with-bar{bottom:216px} }
+@media (max-width:720px){ #quakebar{bottom:calc(150px + env(safe-area-inset-bottom));padding:8px 12px;gap:8px} #quakewhen{font-size:11px;min-width:62px}
+  #card.with-bar{bottom:calc(216px + env(safe-area-inset-bottom))} }
 
 /* ── 위성 표식 ── */
 .st{position:absolute;left:0;top:0;z-index:5;cursor:pointer;pointer-events:auto;
@@ -166,7 +186,6 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 .by .b{width:11px;height:11px;border-radius:50%;background:#7FE3F2;
   border:2px solid rgba(6,22,34,.85);box-shadow:0 0 0 2px rgba(127,227,242,.28)}
 .by:hover .b{transform:scale(1.25)}
-#card img.shot{width:100%;border-radius:12px;margin:10px 0 4px;display:block;background:#0b1a24}
 
 /* ── 기온 숫자 — 윈디의 핵심은 색이 아니라 숫자다 ── */
 .tn{position:absolute;z-index:4;transform:translate(-50%,-50%);pointer-events:none;
@@ -185,6 +204,23 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
   background:rgba(201,166,240,.65)}
 .cr .t{font-family:var(--kid);font-size:12px;color:#EBDBFF;margin-top:3px;white-space:nowrap;
   text-shadow:0 1px 3px rgba(10,6,20,.95)}
+/* 손댄 곳 하나만 도드라지게 — 나머지는 죽이지 않고 옅게만 접는다 */
+.cr.dim{opacity:.22!important;pointer-events:none}
+
+/* ── 운석이 떨어지는 순간 ── */
+.meteor{position:absolute;z-index:9;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 35% 32%, #fff 0%, #FFE7B0 28%, #FF9A3C 60%, #B3450A 100%);
+  box-shadow:0 0 14px 4px rgba(255,150,60,.85), 0 0 34px 10px rgba(255,90,20,.45)}
+.meteor::after{content:'';position:absolute;right:92%;top:50%;width:220%;height:34%;
+  transform:translateY(-50%);border-radius:999px;
+  background:linear-gradient(90deg, rgba(255,180,90,0) 0%, rgba(255,180,90,.55) 100%)}
+.impact-flash{position:absolute;z-index:9;left:0;top:0;border-radius:50%;pointer-events:none;
+  width:120px;height:120px;margin:-60px 0 0 -60px;
+  background:radial-gradient(circle, rgba(255,255,255,.95) 0%, rgba(255,190,110,.7) 34%, rgba(255,140,60,0) 72%)}
+.impact-size{position:absolute;z-index:10;transform:translate(-50%,-100%);pointer-events:none;
+  font-family:var(--kid);font-size:15px;color:#FFE9BE;white-space:nowrap;
+  text-shadow:0 2px 6px rgba(20,8,2,.9),0 0 14px rgba(20,8,2,.85)}
+@media (prefers-reduced-motion:reduce){ .meteor,.impact-flash{display:none} }
 
 /* ── 강 이름 · 댐 ── */
 .rv{position:absolute;z-index:3;transform:translate(-50%,-50%);pointer-events:none;
@@ -231,6 +267,16 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
   color:rgba(255,232,199,.72);margin-top:1px}
 @media (max-width:520px){ .pk{font-size:10px} .pk i{font-size:9px} }
 
+/* ── 해구(바다에서 가장 깊은 곳) — 역세모 + 이름 + 깊이 ── */
+.tr{position:absolute;z-index:3;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;
+  text-align:center;font-family:var(--kid);font-size:11px;color:#D6F3FF;letter-spacing:.01em;
+  white-space:nowrap;text-shadow:0 1px 3px rgba(2,14,28,.95),0 0 10px rgba(2,14,28,.85);
+  will-change:transform,opacity}
+.tr b{display:block;font-size:9px;line-height:1;color:#8FE0FF;font-weight:400}
+.tr i{display:block;font-style:normal;font-family:var(--ui);font-size:9.5px;
+  color:rgba(214,243,255,.72);margin-top:1px}
+@media (max-width:520px){ .tr{font-size:10px} .tr i{font-size:9px} }
+
 /* ── 바다거북 · 철새 ── */
 .tt,.bd{position:absolute;z-index:3;pointer-events:none;text-align:center;
   font-family:var(--kid);font-size:11px;letter-spacing:.01em;white-space:nowrap;
@@ -272,13 +318,13 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 .pin .dot{transition:transform .15s ease}
 
 /* ── 화석 카드 ── */
-#card{position:absolute;left:50%;bottom:118px;transform:translateX(-50%);z-index:8;width:min(420px,calc(100% - 32px));
+#card{position:absolute;left:50%;bottom:calc(118px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:8;width:min(420px,calc(100% - 32px));
   background:rgba(10,18,38,.94);border:1px solid rgba(255,255,255,.2);border-radius:18px;
   padding:18px 20px 16px;backdrop-filter:blur(10px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
 #card[hidden]{display:none!important}
 /* ⚠️ 지진 재생 막대와 카드가 겹쳐 ▶ 를 누를 수가 없었다(카드 z-index 가 위였다).
       막대가 떠 있는 동안에는 카드를 그만큼 올린다. */
-  #card.with-bar{bottom:170px}
+  #card.with-bar{bottom:calc(170px + env(safe-area-inset-bottom))}
 #card h2{font-family:var(--kid);font-size:20px;margin:0 0 2px;color:#fff}
 #card .meta{font-size:11.5px;color:#9fb4d6;letter-spacing:.02em;margin-bottom:10px}
 #card .kid{font-family:var(--kid);font-size:16px;line-height:1.55;color:#FFE3A8;margin-bottom:10px}
@@ -288,12 +334,17 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 #card .rec{font-size:12.5px;color:#9fb4d6;border-top:1px solid rgba(255,255,255,.14);
   padding-top:9px;line-height:1.55}
 #card .warn2{color:#FFC24B}
+/* ── 카드 속 실제 사진 (Wikimedia Commons) ── */
+#card img.shot{width:100%;max-height:220px;object-fit:cover;border-radius:12px;
+  margin:2px 0 4px;display:block;background:#0b1a24}
+#card .cap{font-size:10.5px;color:#7b8ba6;margin:0 0 10px;line-height:1.4}
+#card .cap a{color:#8fb4e0}
 #card button.x{position:absolute;top:10px;right:12px;background:none;border:0;color:#9fb4d6;
   font-size:22px;cursor:pointer;line-height:1;padding:4px 8px;min-width:34px;min-height:34px}
 #card button.x:focus-visible{outline:2px solid var(--sun);border-radius:6px}
 
 /* ── 시간 손잡이 ── */
-#timebar{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:7;
+#timebar{position:absolute;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:7;
   width:min(560px,calc(100% - 32px));background:rgba(8,16,36,.82);border:1px solid rgba(255,255,255,.18);
   border-radius:20px;padding:13px 20px 11px;backdrop-filter:blur(10px)}
 #timebar[hidden]{display:none!important}
@@ -306,7 +357,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 .tb-foot #tb-note{color:#c3d3ea;text-align:center}
 
 /* ── 하단 날짜 막대 ── */
-#daybar{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:6;
+#daybar{position:absolute;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:6;
   display:flex;align-items:center;gap:10px;max-width:calc(100% - 32px);
   background:rgba(8,16,36,.78);border:1px solid rgba(255,255,255,.16);
   border-radius:999px;padding:6px 12px 6px 14px;backdrop-filter:blur(10px)}
@@ -320,10 +371,10 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 .days button small{font-size:9.5px;opacity:.6}
 .days button[aria-current="true"]{background:#fff;color:#132242}
 .days button:focus-visible{outline:2px solid var(--sun);outline-offset:1px}
-@media (max-width:720px){ #daybar{bottom:142px;padding:5px 9px} .days button{padding:5px 8px} }
+@media (max-width:720px){ #daybar{bottom:calc(142px + env(safe-area-inset-bottom));padding:5px 9px} .days button{padding:5px 8px} }
 
 /* ── 기온 눈금 ── */
-#tempkey{position:absolute;right:20px;bottom:148px;z-index:6;display:flex;align-items:center;gap:6px;
+#tempkey{position:absolute;right:20px;bottom:calc(148px + env(safe-area-inset-bottom));z-index:6;display:flex;align-items:center;gap:6px;
   background:rgba(8,16,36,.72);border:1px solid rgba(255,255,255,.16);border-radius:999px;
   padding:6px 12px;backdrop-filter:blur(8px);font-size:10.5px;color:#c3d3ea;letter-spacing:.04em}
 #tempkey[hidden]{display:none!important}
@@ -333,10 +384,10 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 #tempkey i:nth-of-type(1){background:linear-gradient(90deg,#1a1644,#2e6cb4,#468cb8)}
 #tempkey i:nth-of-type(2){background:linear-gradient(90deg,#468cb8,#69be96,#bed06e)}
 #tempkey i:nth-of-type(3){background:linear-gradient(90deg,#bed06e,#f6c454,#e85260)}
-@media (max-width:720px){ #tempkey{bottom:196px;right:10px;padding:5px 9px} #tempkey i{width:24px} }
+@media (max-width:720px){ #tempkey{bottom:calc(196px + env(safe-area-inset-bottom));right:10px;padding:5px 9px} #tempkey i{width:24px} }
 
 /* ── 첫 안내 ── */
-#hint{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:6;
+#hint{position:absolute;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:6;
   font-family:var(--kid);font-size:16px;background:rgba(8,16,36,.7);padding:10px 20px;
   border-radius:999px;border:1px solid rgba(255,255,255,.18);transition:opacity .5s}
 #hint.gone{opacity:0}
@@ -345,10 +396,10 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
   .crt .bob,.crt .zap{animation:none}
 }
 @media (max-width:720px){
-  #head{top:52px} #head h1{font-size:21px} #head p{display:none}
+  #head{top:calc(52px + env(safe-area-inset-top))} #head h1{font-size:21px} #head p{display:none}
   #nav button{padding:9px 13px;font-size:15px}
-  #nav{bottom:18px}
-  #home{bottom:18px}
+  #nav{bottom:calc(18px + env(safe-area-inset-bottom))}
+  #home{bottom:calc(18px + env(safe-area-inset-bottom))}
   .rail-kid{left:10px} .rail-pro{right:10px}
   .rail{gap:9px}
   .railcap{font-size:10px}
@@ -356,15 +407,16 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
   .railbtn svg{width:24px;height:24px}
   #home{width:56px;height:56px;right:12px}
   .bub .box{font-size:13.5px;padding:7px 11px}
-  #timebar{bottom:84px;padding:10px 14px 9px}
-  #card{bottom:150px}
+  #timebar{bottom:calc(84px + env(safe-area-inset-bottom));padding:10px 14px 9px}
+  #card{bottom:calc(150px + env(safe-area-inset-bottom))}
   .tb-when{font-size:17px}
 }
 </style>
+<link rel="stylesheet" href="./paper-world.css">
 </head>
 <body>
 <div id="stage">
-  <div id="sky"></div>
+  <div id="sky" aria-hidden="true"><i class="paper-cloud"></i><i class="paper-cloud"></i><i class="paper-cloud"></i></div>
   <canvas id="stars"></canvas>
   <canvas id="gl"></canvas>
   <canvas id="windcv"></canvas>
@@ -415,7 +467,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
         <path d="M3 11h14a4 4 0 1 0-4-4"/><path d="M3 17h20a4 4 0 1 1-4 4"/><path d="M3 23h11"/></svg>
     </button>
-    <button class="railbtn" id="b-water" aria-pressed="false" aria-label="강과 댐 보기" title="강·댐">
+    <button class="railbtn" id="b-water" aria-pressed="false" aria-label="강·댐·바다 깊이 보기" title="강·댐·바다 깊이">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
         <path d="M3 12c3.5 0 3.5 3 7 3s3.5-3 7-3 3.5 3 7 3 3.5-3 5-3"/>
         <path d="M3 20c3.5 0 3.5 3 7 3s3.5-3 7-3 3.5 3 7 3 3.5-3 5-3"/></svg>
@@ -450,6 +502,13 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
         <path d="M3 25l7.5-12 5 7.5 3.5-5.5L26 25z"/><path d="M10.5 13l2.6 4.2"/>
         <path d="M19 15l-2.2 3.4"/></svg>
     </button>
+  </div>
+
+  <div id="charTabs" role="group" aria-label="캐릭터 갈래 고르기">
+    <button aria-current="true" data-cat="today">오늘</button>
+    <button data-cat="myth">설화</button>
+    <button data-cat="dino">공룡</button>
+    <button data-cat="animal">동물</button>
   </div>
 
   <div id="nav" role="group" aria-label="화면 고르기">
@@ -516,8 +575,11 @@ const KAGO = (ma) => {  // ma = 백만 년
 
 import * as THREE from '../vendor/three-r184.module.min.js';
 import { createCharacterGlobe } from './character-globe.js';
+import { paintPaperMap, createPaperWorld, loadPaperRanges, PAPER_VERTEX, PAPER_FRAGMENT } from './paper-world.js';
 // 해안선 고리를 삼각형으로 자른다. 스스로 교차하는 고리까지 다루는 표준 구현이다(ISC).
 import earcut, { deviation } from '../vendor/earcut.module.js';
+// v1(prototype/)과 같은 위성 실사진 조회 — 위키백과 자유 라이선스 확인까지 그대로 재사용한다.
+import { satPhoto, drawSchematic } from '../js/satimage.js';
 
 /* ══════════════════════════════════════════════════════════════
    EARTHUS v3 KIDS — 샘플 1: 지금 지구에서
@@ -552,6 +614,7 @@ const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ── 별 배경 (장식이며 실제 항성 카탈로그가 아님) ─────────────── */
 (function stars(){
+  if(getComputedStyle($('#stars')).display === 'none') return;
   const c = $('#stars'), x = c.getContext('2d');
   function draw(){
     const w = c.width = innerWidth, h = c.height = innerHeight;
@@ -643,12 +706,18 @@ async function buildEarthTexture(){
      쓰는데 4096 폭은 도당 11화소뿐이라 3.4배로 늘어나며 산이 뭉갰다.
      5400 이면 도당 15화소 — 그래도 모자라지만 눈에 띄게 낫다.
 
-     ⚠️ 더 못 올리는 이유는 메모리다. RGBA 라 5400×2700 이 캔버스 58MB,
-        GPU 사본까지 130MB 쯤 된다. 8192 로 가면 300MB 를 넘어 낡은 태블릿이
+     ⚠️ 더 못 올리는 이유는 메모리다. RGBA 라 6144×3072 이 캔버스 75MB,
+        GPU 사본까지 150MB 쯤 된다. 8192 로 가면 300MB 를 넘어 낡은 태블릿이
         죽는다. 기기가 작다고 하면 4096 으로 물러선다 — 흐린 지구가
-        안 뜨는 지구보다 낫다. */
+        안 뜨는 지구보다 낫다.
+     ⚠️ 산의 뭉갬은 해상도만의 문제가 아니다 — relief-5400.webp 자체가
+        5400px 원본이라, 캔버스를 더 키워도 그 위에 그려지는 국경선·해안선·
+        사막같은 벡터 그림만 더 또렷해질 뿐 산 음영은 그대로 늘어난다.
+        그래서 산 쪽은 아래에서 대비를 따로 올린다. */
   const big = (navigator.deviceMemory || 4) >= 4;
-  const W = big ? 5400 : 4096, H = W/2;
+  // Keep the latest map-detail increase and respect the actual GPU texture limit.
+  const W = Math.min(big && innerWidth >= 720 ? 6144 : 4096, renderer.capabilities.maxTextureSize), H = W/2;
+  let paperRelief = null;
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const g = cv.getContext('2d');
 
@@ -698,29 +767,75 @@ async function buildEarthTexture(){
     });
     g.imageSmoothingQuality = 'high';
     g.globalCompositeOperation = 'overlay';
+    // 대비를 살짝 올려 그린다 — 확대했을 때 산줄기가 뭉개져 보이던 것을,
+    // 자료 해상도를 더 못 올리는 대신(위 메모리 주석) 대비로 보완한다.
+    g.filter = 'contrast(128%)';
     g.drawImage(relief, 0, 0, W, H);
+    paperRelief = relief;
+    g.filter = 'none';
     g.globalCompositeOperation = 'source-over';
     reliefOn = true;
   } catch(e){ console.warn('음영기복 로드 실패 — 평평한 땅으로 간다', e); }
+  await paintPaperMap(cv, feats, polysOf, paperRelief);
+
+  /* 사막 — 큰 사막 몇 곳만 손으로 골라 부드럽게 칠한다. 나라 경계가 아니라
+     "이 언저리는 마른 땅"이라는 뜻이라 정밀한 경계 자료 없이 중심과 반경만 쓴다.
+     바다는 사막색을 받으면 안 되므로 땅 모양으로 잘라(clip) 그 안에서만 칠한다. */
+  const DESERTS = [
+    { lat: 23,  lon: 10,   r: 22 },   // 사하라
+    { lat: 24,  lon: 45,   r: 14 },   // 아라비아
+    { lat: 40,  lon: 103,  r: 13 },   // 고비
+    { lat: -24, lon: 133,  r: 15 },   // 오스트레일리아 아웃백
+    { lat: -23, lon: 22,   r: 9  },   // 칼라하리
+    { lat: -24, lon: -69,  r: 5  },   // 아타카마
+    { lat: 34,  lon: -114, r: 8  },   // 소노란·모하비
+  ];
+  g.save();
+  g.beginPath(); trace(); g.clip();
+  for(const d of DESERTS){
+    const [cx, cy] = px(d.lon, d.lat);
+    const rx = d.r/360*W;
+    const dg = g.createRadialGradient(cx,cy,0, cx,cy,rx);
+    dg.addColorStop(0, 'rgba(216,177,110,.65)');
+    dg.addColorStop(1, 'rgba(216,177,110,0)');
+    g.fillStyle = dg;
+    g.fillRect(cx-rx, cy-rx, rx*2, rx*2);
+  }
+  g.restore();
+
+  /* 그린란드·남극 — 위도만으로 눈을 칠하면(아래 극지 그러데이션) 둘 다 못 덮인다.
+     그린란드는 남쪽 절반이, 남극은 대륙 가장자리 전체가 위도 그러데이션 바깥에
+     있는데도 실제로는 거의 다 얼음이다. 나라 폴리곤 그대로 눈 색을 입힌다. */
+  g.beginPath();
+  for(const f of feats){
+    if(f.code !== 'GL' && f.code !== 'AQ') continue;
+    for(const poly of polysOf(f.geometry)) for(const ring of poly){
+      g.moveTo(...px(ring[0][0], ring[0][1]));
+      for(let i=1;i<ring.length;i++) g.lineTo(...px(ring[i][0], ring[i][1]));
+      g.closePath();
+    }
+  }
+  g.fillStyle = 'rgba(243,239,227,.94)';
+  g.fill('evenodd');
 
   // 국경선 — 살짝만. 있는 줄 알 정도지 읽으라고 그리는 게 아니다.
-  g.strokeStyle = 'rgba(255,255,255,.34)';
+  g.strokeStyle = 'rgba(250,246,225,.22)';
   g.lineWidth = 2.4; g.lineJoin = 'round';
   g.beginPath(); trace(); g.stroke();
 
   // 해안선은 국경선보다 조금 더 또렷하게 — 땅의 윤곽이 먼저 읽혀야 한다
-  g.strokeStyle = 'rgba(28,72,48,.30)';
+  g.strokeStyle = 'rgba(58,88,68,.12)';
   g.lineWidth = 3.2;
   g.beginPath(); trace(); g.stroke();
 
   // 극지 — 눈 색. 위도로만 칠하고 위치를 만들지 않는다.
   const grad = g.createLinearGradient(0,0,0,H);
-  grad.addColorStop(0,   'rgba(243,249,255,1)');
-  grad.addColorStop(.030,'rgba(243,249,255,1)');     // 극은 완전히 덮는다
-  grad.addColorStop(.105,'rgba(243,249,255,0)');
-  grad.addColorStop(.895,'rgba(243,249,255,0)');
-  grad.addColorStop(.970,'rgba(243,249,255,1)');
-  grad.addColorStop(1,   'rgba(243,249,255,1)');
+  grad.addColorStop(0,   'rgba(243,239,227,1)');
+  grad.addColorStop(.030,'rgba(243,239,227,1)');     // 극은 완전히 덮는다
+  grad.addColorStop(.105,'rgba(243,239,227,0)');
+  grad.addColorStop(.895,'rgba(243,239,227,0)');
+  grad.addColorStop(.970,'rgba(243,239,227,1)');
+  grad.addColorStop(1,   'rgba(243,239,227,1)');
   g.fillStyle = grad; g.fillRect(0,0,W,H);
 
   // 색면을 깔면 텍스처의 해안선이 묻힌다. 윈디처럼 색 위에 다시 긋는다.
@@ -790,30 +905,14 @@ const earthMat = new THREE.ShaderMaterial({
     nightMix: { value: 1 },
     pastFade: { value: 0 },
   },
-  vertexShader: `
-    varying vec2 vUv; varying vec3 vN;
-    void main(){ vUv = uv; vN = normalize(normalMatrix * normal);
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }
-  `,
-  fragmentShader: `
-    uniform sampler2D map; uniform vec3 sunDir; uniform float nightMix; uniform float pastFade;
-    varying vec2 vUv; varying vec3 vN;
-    void main(){
-      vec3 base = texture2D(map, vUv).rgb;
-      float d = dot(normalize(vN), normalize(sunDir));
-      float band = d > 0.28 ? 1.0 : (d > -0.06 ? 0.62 : 0.30);
-      band = mix(1.0, band, nightMix);
-      vec3 night = mix(base, vec3(0.09,0.15,0.34), 0.72);
-      vec3 col = mix(night, base, smoothstep(0.30, 1.0, band));
-      col *= 0.72 + 0.28*band;
-      float rim = pow(1.0 - abs(dot(normalize(vN), vec3(0.0,0.0,1.0))), 2.6);
-      col += vec3(0.36,0.60,0.95) * rim * 0.5;
-      // 과거를 볼 때 오늘 지도는 뒤로 물린다 — 지우지는 않는다. 어디가 지금인지는 알아야 한다.
-      col = mix(col, vec3(0.13,0.19,0.31), pastFade * 0.66);
-      gl_FragColor = vec4(col, 1.0);
-    }
-  `
+  // The old three-band toon lighting is replaced by matte paper studio shading.
+  // 과거를 볼 때 오늘 지도는 뒤로 물린다 — 지우지는 않는다. 어디가 지금인지는 알아야 한다.
+  vertexShader: PAPER_VERTEX,
+  fragmentShader: PAPER_FRAGMENT
 });
+const paperWorld = createPaperWorld({ group: earthGroup, camera, uniforms: earthMat.uniforms, renderer });
+paperWorld.ready.then(() => { if(earthMat.uniforms.map.value) drawOnce(); });
+addEventListener('pagehide', event => { if(!event.persisted) paperWorld.dispose(); });
 let coastLine = null;
 const earth = new THREE.Mesh(new THREE.SphereGeometry(R, 128, 80), earthMat);
 earthGroup.add(earth);
@@ -827,7 +926,7 @@ const glow = new THREE.Mesh(
       gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0);} `,
     fragmentShader:`varying vec3 vN;
       void main(){ float i = pow(1.0-abs(dot(normalize(vN), vec3(0.0,0.0,1.0))), 3.0);
-      gl_FragColor = vec4(0.42,0.68,1.0, i*0.85); }`
+      gl_FragColor = vec4(0.80,0.88,0.87, i*0.06); }`
   })
 );
 earthGroup.add(glow);
@@ -880,7 +979,9 @@ const clouds = new THREE.Mesh(
         float lo = smoothstep(0.11, 0.19, a);   // 구름이 있다
         float hi = smoothstep(0.46, 0.66, a);   // 두꺼운 구름
         float alpha = lo * (0.58 + 0.42*hi);
-        vec3  col   = mix(vec3(0.79,0.85,0.94), vec3(1.0,1.0,1.0), max(hi, l*0.35));
+        vec3  col   = mix(vec3(0.66,0.77,0.84), vec3(0.98,0.965,0.91), max(hi, l*0.35));
+        float edge = smoothstep(0.11,0.23,a)*(1.0-smoothstep(0.23,0.34,a));
+        col *= 1.0-edge*0.14;
 
         gl_FragColor = vec4(col, alpha);
       }
@@ -1034,7 +1135,8 @@ async function loadObservedClouds(){
 // 줌 단계 = 화면 짧은 변의 절반 대비 지구 반지름 비율. 기기가 달라도 같은 크기로 보인다.
 // 윈디는 지도가 화면을 넘겨 채운다. 지구 가장자리를 보여주는 게 목적이 아니라
 // 땅을 크게 보여주는 게 목적이다. 처음 값(0.80)의 4배 이상으로 잡는다.
-const FILL = [3.4, 5.2, 7.6, 12.0];   // 넓게 / 나라 / 동네 / 한반도만
+// Paper edition starts with the entire globe, then approaches the country and neighborhood.
+const FILL = [0.82, 3.4, 7.6, 12.0];   // 넓게 / 나라 / 동네 / 한반도만
 let tanMin = 0.344, tanTarget = 0.344, tanBase = 0.344, screenR = 300;  // 매 프레임 갱신
 
 /* ⚠️ 다가가는 것만으로는 이 배율이 안 나온다.
@@ -1088,7 +1190,7 @@ window.__v3 = (ma) => {
   return ({ fill, stop, dist, distTarget, tanMin, tanTarget, tanBase, screenR, fov: camera.fov,
                        ma: maNow, maTarget, storyOn, fillMesh: paleoFill, yaw, pitch, yawV, pitchV, dragging, following,
                        india: (()=>{ const m = plateNow(501); return m ? rotXYZ(21.4, 79.4, m) : null; })(),
-                       near: camera.near, 여유: dist - R, w: innerWidth, h: innerHeight });
+                       paper: paperWorld.inspect(), drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, textures: renderer.info.memory.textures, near: camera.near, 여유: dist - R, w: innerWidth, h: innerHeight });
 };
 const HOME = { lat: 36.5, lon: 127.9 };            // 부모가 고른 우리 동네 (GPS 아님)
 const yawFor   = lon => -lon*Math.PI/180;
@@ -1241,6 +1343,14 @@ $('#nav').children[1].addEventListener('click', ()=>{
   goStop(n >= FILL.length ? 0 : n);
 });
 
+/* 캐릭터 갈래 탭 — 지금은 고른 것을 표시만 한다.
+   설화·공룡·동물별 배치·애니메이션·사진은 다음 단계에서 붙인다. */
+$('#charTabs').addEventListener('click', e => {
+  const btn = e.target.closest('button'); if(!btn) return;
+  for(const b of $('#charTabs').children) b.removeAttribute('aria-current');
+  btn.setAttribute('aria-current', 'true');
+});
+
 /* ── 레일 토글 ────────────────────────────────────────────── */
 const show = { cloud:true, rain:true, zap:true, night:true };
 /* 구름·비·번개는 아이에게 세 가지가 아니라 '오늘 하늘' 하나다. 버튼 하나로 묶는다. */
@@ -1307,6 +1417,7 @@ function addMarker(kind, lat, lon, html, cls){
    ══════════════════════════════════════════════════════════════ */
 let CRATERS = null, craterOn = false;
 const craterMarks = [];
+let craterFocus = null;   // 지금 손댄 충돌구 — 애니메이션이 도는 동안·카드가 열려 있는 동안
 
 async function loadCraters(){
   CRATERS = await fetch('../data/craters.json').then(r=>r.json());
@@ -1317,32 +1428,115 @@ async function loadCraters(){
     el.className = 'cr';
     el.innerHTML = `<div class="ring"></div><div class="t">${c.ko}</div>`;
     el.style.visibility = 'hidden'; el.style.display = 'none';
-    el.addEventListener('click', ()=> openCrater(c));
+    const m = { c, el, pos: llToVec(c.lat, c.lon, R*1.016), sx: 0, sy: 0 };
+    el.addEventListener('click', ()=> playCraterImpact(m));
     stage.appendChild(el);
-    craterMarks.push({ c, el, pos: llToVec(c.lat, c.lon, R*1.016) });
+    craterMarks.push(m);
   }
 }
 
 const craterAgeKo = (ma) => KAGO(ma);
 
+/* 충돌구 지름의 대략 1/20 — 흔한 충돌 속도(초속 15~20km)를 가정한 어림값이다.
+   자료에 실제 운석 크기가 없어서 쓰는 규칙이지, 각 충돌구를 실측한 값이 아니다. */
+function impactorSize(c){
+  // 실측·연구로 알려진 값이 있으면 그걸 쓴다(예: 합천은 한국지질자원연구원 값).
+  // 없으면 충돌구 지름의 1/20 어림값이다 — 아래 표시에서 이 둘을 구분해 적는다.
+  const m = c.impactorM || (c.km * 1000 / 20);
+  return m < 1000 ? `${Math.round(m)}m` : `${(m/1000).toFixed(1)}km`;
+}
+
 function openCrater(c){
   const card = $('#card');
+  card.dataset.crater = c.ko;
   card.innerHTML = `<button class="x" aria-label="닫기">×</button>
     <h2>${KT.en ? c.en : c.ko}</h2>
     <div class="meta">${KT(c.co)}${KT.en ? '' : ' · ' + c.en}</div>
+    <div id="craterPhoto"></div>
     ${c.kid ? `<div class="kid">${c.kid}</div>` : ''}
-    <ul><li>${KT.en ? `about ${c.km} km across` : `지름 약 ${c.km} km`}</li><li>${craterAgeKo(c.ma)}</li></ul>
-    <div class="rec"><span class="warn2">지름과 나이는 자료마다 다릅니다</span> — 오래된 충돌구는
-      깎이고 묻혀서 원래 크기를 되짚어 재기 때문입니다.<br>손으로 정리한 목록입니다.</div>`;
+    <ul><li>${KT.en ? `about ${c.km} km across` : `지름 약 ${c.km} km`}</li><li>${craterAgeKo(c.ma)}</li>
+      <li>${c.impactorM
+        ? (KT.en ? `the meteor itself was about ${impactorSize(c)} across`
+                 : `떨어진 운석 크기는 약 ${impactorSize(c)}였어요`)
+        : (KT.en ? `the meteor itself was roughly ${impactorSize(c)} across (rule-of-thumb estimate)`
+                 : `떨어진 운석 크기는 어림잡아 ${impactorSize(c)} 정도였을 거예요(경험적 추정)`)}</li></ul>`;
   card.hidden = false;
-  card.querySelector('.x').addEventListener('click', ()=>{ card.hidden = true; });
+  card.querySelector('.x').addEventListener('click', ()=>{ card.hidden = true; unfocusCrater(); });
+
+  // 충돌구는 댐과 달리 눈에 잘 안 띄는 지형이다 — 반경을 넓게 잡으면
+  // 그 근방의 상관없는 사진(궤도 사진 등)을 주울 수 있다. 좁게 찾고,
+  // 없으면 사진 없이 둔다 — 엉뚱한 사진보다 없는 편이 낫다.
+  commonsPhoto(c.lat, c.lon, 1500).then(photo => {
+    if(card.hidden || card.dataset.crater !== c.ko) return;
+    const slot = card.querySelector('#craterPhoto');
+    if(slot) slot.innerHTML = photoBlock(photo, KT.en ? c.en : c.ko);
+  });
+}
+
+/* 손댄 충돌구만 도드라지게 — 나머지는 지우지 않고 옅게 접는다.
+   ⚠️ 아예 숨기면 "왜 방금 있던 게 사라졌지"가 된다. 옅게 남기면 여전히
+   구 전체에 몇 개나 있는지는 보이면서도, 지금 보는 건 하나임이 분명하다. */
+function focusCrater(m){
+  craterFocus = m;
+  for(const o of craterMarks) o.el.classList.toggle('dim', o !== m);
+}
+function unfocusCrater(){
+  craterFocus = null;
+  for(const o of craterMarks) o.el.classList.remove('dim');
+}
+
+/* 운석이 날아와 부딪히는 순간. 지름이 클수록 운석도 크게 그린다 —
+   충돌구끼리 크기를 비교하는 것도 이 애니메이션의 몫이다. */
+function playCraterImpact(m){
+  focusCrater(m);
+  if(reduceMotion){ openCrater(m.c); return; }
+
+  const cx = m.sx, cy = m.sy;
+  const size = Math.max(10, Math.min(46, Math.sqrt(m.c.km) * 3.2));
+  const meteor = document.createElement('div');
+  meteor.className = 'meteor';
+  meteor.style.width = meteor.style.height = size + 'px';
+  const startX = cx + 200, startY = cy - 240;
+  meteor.style.transform = `translate(${startX}px, ${startY}px) rotate(-32deg)`;
+  stage.appendChild(meteor);
+
+  const FLIGHT = 620, FLASH = 560;
+  meteor.animate([
+    { transform: `translate(${startX}px, ${startY}px) rotate(-32deg)`, offset: 0 },
+    { transform: `translate(${cx}px, ${cy}px) rotate(-32deg) scale(.75)`, offset: 1 },
+  ], { duration: FLIGHT, easing: 'cubic-bezier(.6,0,1,.4)', fill: 'forwards' });
+
+  /* ⚠️ .onfinish 에 기대지 않는다 — 탭이 뒤로 가 있으면(또는 자동화 환경에서는)
+     애니메이션 타임라인 자체가 멎어 콜백이 영영 안 온다. 실측으로 잡았다:
+     카드가 안 열리는 것보다는 살짝 이르거나 늦게 여는 게 낫다. setTimeout 은
+     같은 상황에서도 그대로 돈다. */
+  setTimeout(() => {
+    meteor.remove();
+    const flash = document.createElement('div');
+    flash.className = 'impact-flash';
+    flash.style.transform = `translate(${cx}px, ${cy}px)`;
+    stage.appendChild(flash);
+    const size2 = document.createElement('div');
+    size2.className = 'impact-size';
+    size2.style.transform = `translate(${cx}px, ${cy - 46}px)`;
+    size2.textContent = (KT.en ? 'about ' : '약 ') + impactorSize(m.c);
+    stage.appendChild(size2);
+    flash.animate([
+      { opacity: 1, transform: `translate(${cx}px, ${cy}px) scale(.3)` },
+      { opacity: 0, transform: `translate(${cx}px, ${cy}px) scale(2.6)` },
+    ], { duration: FLASH, easing: 'ease-out' });
+    size2.animate([{ opacity: 0 }, { opacity: 1, offset: .25 }, { opacity: 1, offset: .7 }, { opacity: 0 }],
+      { duration: 1400, easing: 'ease-out' });
+    setTimeout(() => size2.remove(), 1400);
+    setTimeout(() => { flash.remove(); openCrater(m.c); }, FLASH);
+  }, FLIGHT);
 }
 
 $('#b-crater').addEventListener('click', e => {
   craterOn = e.currentTarget.getAttribute('aria-pressed') !== 'true';
   e.currentTarget.setAttribute('aria-pressed', String(craterOn));
   for(const m of craterMarks) m.el.style.display = craterOn ? '' : 'none';
-  if(!craterOn) $('#card').hidden = true;
+  if(!craterOn){ $('#card').hidden = true; unfocusCrater(); }
 });
 
 /* ══════════════════════════════════════════════════════════════
@@ -1519,7 +1713,7 @@ $('#b-quake').addEventListener('click', e => {
    댐은 4만 개 중 손으로 고른 18개. 전지구 화면에서 4만 점은 뜻이 없다.
    ══════════════════════════════════════════════════════════════ */
 let WATER = null, waterOn = false, riverLine = null;
-const riverMarks = [], damMarks = [];
+const riverMarks = [], damMarks = [], trenchMarks = [];
 
 async function loadWater(){
   WATER = await fetch('../data/water.json').then(r=>r.json());
@@ -1569,6 +1763,40 @@ async function loadWater(){
     stage.appendChild(el);
     damMarks.push({ d, el, pos: llToVec(d.lat, d.lon, R*1.014) });
   }
+
+  await loadTrenches();
+}
+
+/* 해구 — 바다에서 가장 깊은 곳들. '물' 방과 같은 자료 방이다(강·댐과 함께 켜고 끈다).
+   22곳뿐이라 산봉우리처럼 다 만들어 두고 다 띄운다 — 골라낼 만큼 많지 않다. */
+async function loadTrenches(){
+  try{
+    const j = await fetch('../data/trenches.json').then(r=>r.json());
+    if(window.KIDS_I18N) window.KIDS_I18N.add(Object.fromEntries(
+      j.items.map(t => [t.name.ko, t.name.en])));
+    for(const t of j.items){
+      const el = document.createElement('div');
+      el.className = 'tr';
+      el.innerHTML = `<b>▼</b>${KT(t.name.ko)}<i>${Math.round(t.depthMax).toLocaleString('ko-KR')}m</i>`;
+      el.style.visibility = 'hidden';
+      el.addEventListener('click', ()=> openTrench(t));
+      stage.appendChild(el);
+      trenchMarks.push({ t, el, pos: llToVec(t.lat, t.lon, R*1.014) });
+    }
+  } catch(e){ console.warn('해구 로드 실패', e); }
+}
+
+function openTrench(t){
+  const c = $('#card');
+  c.innerHTML = `<button class="x" aria-label="닫기">×</button>
+    <h2>${KT(t.name.ko)}</h2>
+    <div class="meta">${KT.en ? 'depth' : '깊이'} ${Math.round(t.depthMin).toLocaleString('ko-KR')}〜${Math.round(t.depthMax).toLocaleString('ko-KR')}m</div>
+    <div class="kid">${KT.en
+      ? `The deepest known point here is about ${(t.depthMax/1000).toFixed(1)}km down — deeper than Mt. Everest is tall.`
+      : `가장 깊은 곳은 약 ${(t.depthMax/1000).toFixed(1)}km — 에베레스트산 높이보다 더 깊어요.`}</div>
+    <div class="rec">${KT(t.depthMethod?.ko || '')}<br>${KT(t.note?.ko || '')}<br>${KT(t.credit || t.source || '')}</div>`;
+  c.hidden = false;
+  c.querySelector('.x').addEventListener('click', ()=>{ c.hidden = true; });
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1717,28 +1945,59 @@ function stepSats(now){
 }
 function openSat(x){
   const c = $('#card'), geo = x.alt > 30000, weather = x.group === 'weather';
-  /* ⚠️ 구름 사진은 이 위성 한 대가 찍은 게 아니라 여러 대를 이어 붙인 합성이다.
-        그렇게 적는다 — 한 대가 지구 전체를 찍은 것처럼 두면 거짓말이 된다. */
-  const shot = weather
-    ? '<img class="shot" alt="기상위성들이 합쳐 만든 지금 구름" src="' + CLOUD_BASE + '/global.png" loading="lazy" onerror="this.remove()">'
-    : '';
+  /* ⚠️ 예전엔 여기서 전지구 구름 합성사진(CLOUD_BASE/global.png)을 모든 위성에
+        똑같이 보여줬다. 위성 이름이 붙은 카드 안에 넣으니 "이 위성이 저 사진을
+        찍었다"로 읽혔다 — 각주로 "합성입니다"라고 적어도 사진이 주는 인상을
+        못 이긴다. 그래서 그 공용 사진은 뺐다.
+     대신 v1(prototype/)과 똑같은 방식으로 **이 위성 하나의 진짜 사진**을 찾는다
+     (satimage.js — 위키백과에 자유 라이선스 사진이 있을 때만, 없으면 개념도). */
   c.innerHTML = '<button class="x" aria-label="닫기">×</button>'
     + '<h2>' + KT(x.n) + '</h2>'
     + '<div class="meta">' + (x.own ? KT(x.own) + ' · ' : '') + (weather ? '기상위성' : '우주정거장')
       + (x.ld ? ' · ' + x.ld.slice(0,4) + '년 발사' : '') + '</div>'
-    + shot
+    + '<div class="satshot"></div>'
     + '<div class="kid">' + (weather
         ? (geo ? '한자리에 머물면서 같은 곳을 계속 지켜봐요.' : '지구를 돌면서 위에서 아래로 훑어봐요.')
-          + ' 지금 지구에 깔린 구름이 이런 위성들이 찍은 거예요.'
         : '사람이 타고 지구를 도는 곳이에요.') + '</div>'
     + '<ul><li>지금 높이 약 ' + Math.round(x.alt).toLocaleString('ko-KR') + ' km</li>'
     + '<li>지금 ' + (x.lat >= 0 ? '북위' : '남위') + ' ' + Math.abs(x.lat).toFixed(1) + '도 · '
       + (x.lon >= 0 ? '동경' : '서경') + ' ' + Math.abs(x.lon).toFixed(1) + '도 위</li>'
     + (x.ops ? '<li>' + KT(x.ops) + '</li>' : '') + '</ul>'
-    + '<div class="rec">자리는 CelesTrak 궤도요소로 지금 계산한 값입니다.'
-      + (weather ? '<br>구름 사진은 NOAA GMGSI 합성입니다 — 이 위성 한 대가 아니라 여러 대를 이어 붙인 것입니다.' : '') + '</div>';
+    + '<div class="rec">자리는 CelesTrak 궤도요소로 지금 계산한 값입니다.</div>';
   c.hidden = false;
   c.querySelector('.x').addEventListener('click', ()=>{ c.hidden = true; });
+  renderSatShot(x, c.querySelector('.satshot'));
+}
+
+/* ⚠️ 비동기라 카드가 그새 닫히거나 다른 위성으로 바뀔 수 있다.
+   `box.isConnected` 로 지금도 화면에 붙어 있는 그 상자가 맞는지 반드시 확인하고
+   붙인다 — 안 하면 이전 위성 카드에 방금 위성 사진이 끼어드는 일이 생긴다. */
+async function renderSatShot(x, box){
+  if(!box) return;
+  const lang = KT.en ? 'en' : 'ko';
+  const photo = await satPhoto(x.n, lang).catch(() => null);
+  if(!box.isConnected) return;
+  if(photo){
+    const img = document.createElement('img');
+    img.className = 'shot';
+    img.alt = photo.title; img.loading = 'lazy'; img.src = photo.url;
+    box.appendChild(img);
+    const cap = document.createElement('div');
+    cap.className = 'cap';
+    const a = document.createElement('a');
+    a.href = photo.page; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = photo.credit + ' ↗';
+    cap.appendChild(a);
+    box.appendChild(cap);
+  } else {
+    const cv = document.createElement('canvas');
+    drawSchematic(cv, { rcs: x.rcs, _alt: x.alt }, x.own ? '#7ec8e3' : '#ffd166', lang);
+    box.appendChild(cv);
+    const cap = document.createElement('div');
+    cap.className = 'cap';
+    cap.textContent = KT.en ? 'Illustration · not an actual photo' : '그림이에요 · 실제 사진이 아니에요';
+    box.appendChild(cap);
+  }
 }
 /* ══════════════════════════════════════════════════════════════
    우주 쓰레기 — 지구를 도는 부서진 조각들
@@ -1842,15 +2101,58 @@ $('#b-sat').addEventListener('click', async e => {
   drawOnce();
 });
 
+/* 실제 현장 사진 — Wikimedia Commons 지리검색. CORS 가 열려 있어 브라우저가 바로 부른다
+   (v1 해상관측소 카드와 같은 자료·같은 규칙). 저작자·라이선스를 다 못 받으면 그 사진은
+   건너뛴다 — Commons 전체를 하나의 라이선스로 뭉뚱그리지 않는다. */
+async function commonsPhoto(lat, lon, radius = 4000){
+  const u = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*'
+    + `&generator=geosearch&ggscoord=${lat.toFixed(4)}%7C${lon.toFixed(4)}`
+    + `&ggsradius=${radius}&ggslimit=6&ggsnamespace=6`
+    + '&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=480';
+  try{
+    const r = await fetch(u);
+    if(!r.ok) return null;
+    const j = await r.json();
+    for(const p of Object.values(j?.query?.pages || {})){
+      const ii = (p.imageinfo || [])[0]; if(!ii) continue;
+      const em = ii.extmetadata || {};
+      // Commons 의 Artist 는 HTML 이 들어 있다. 태그를 지우고 글자만 쓴다 —
+      // 그대로 innerHTML 에 넣으면 남의 마크업이 우리 화면에서 실행된다.
+      const author = String(em.Artist?.value || '').replace(/<[^>]*>/g, '').trim().slice(0, 40);
+      const license = em.LicenseShortName?.value || '';
+      const thumb = ii.thumburl || ii.url;
+      const page = ii.descriptionurl || `https://commons.wikimedia.org/wiki/${encodeURIComponent(p.title||'')}`;
+      if(thumb && page && license && author) return { thumb, page, license, author };
+    }
+  } catch(e){ console.warn('Commons 사진 실패', e); }
+  return null;
+}
+function photoBlock(photo, alt){
+  if(!photo) return '';
+  return `<img class="shot" src="${photo.thumb}" alt="${alt}" loading="lazy">
+    <div class="cap">${photo.author} · ${photo.license} · <a href="${photo.page}" target="_blank" rel="noopener">Wikimedia Commons</a></div>`;
+}
+
 function openDam(d){
   const c = $('#card');
+  c.dataset.dam = d.n;
+  const cap = d.capKm3 != null
+    ? `<li>${KT.en ? `holds about ${d.capKm3}km³ of water` : `담는 물의 양 약 ${d.capKm3}km³`}</li>` : '';
   c.innerHTML = `<button class="x" aria-label="닫기">×</button>
     <h2>${KT(d.n)}</h2>
     <div class="meta">${KT(d.co)} · ${KT(d.r)} · ${KT.en ? `completed ${d.y}` : `${d.y}년 완공`}</div>
-    ${d.why ? `<div class="kid">${d.why}</div>` : ''}
-    <div class="rec">강을 막아 물을 모으고 전기를 만듭니다.<br>좌표는 위키데이터·위키백과에서 확인한 값입니다.</div>`;
+    <div id="damPhoto"></div>
+    ${d.purposeKo ? `<div class="kid">${KT(d.purposeKo)}</div>` : d.why ? `<div class="kid">${KT(d.why)}</div>` : ''}
+    <ul>${cap}${d.purposeKo && d.why ? `<li>${KT(d.why)}</li>` : ''}</ul>
+    <div class="rec">강을 막아 물을 모읍니다.<br>좌표·저수량·목적은 위키데이터·위키백과에서 확인한 값입니다.</div>`;
   c.hidden = false;
   c.querySelector('.x').addEventListener('click', ()=>{ c.hidden = true; });
+
+  commonsPhoto(d.lat, d.lon).then(photo => {
+    if(c.hidden || c.dataset.dam !== d.n) return;   // 그새 닫혔거나 다른 댐을 열었다
+    const slot = c.querySelector('#damPhoto');
+    if(slot) slot.innerHTML = photoBlock(photo, KT(d.n));
+  });
 }
 
 $('#b-water').addEventListener('click', e => {
@@ -1858,6 +2160,7 @@ $('#b-water').addEventListener('click', e => {
   e.currentTarget.setAttribute('aria-pressed', String(waterOn));
   if(riverLine) riverLine.visible = waterOn;
   for(const d of damMarks) d.el.style.display = waterOn ? '' : 'none';
+  for(const t of trenchMarks) t.el.style.display = waterOn ? '' : 'none';
   if(!waterOn) $('#card').hidden = true;
 });
 
@@ -2022,42 +2325,18 @@ function paintTemp(){
   return true;
 }
 
-/* 화면에 기온 숫자를 뿌린다. 윈디는 색만 깔지 않고 곳곳에 도(°)를 찍는다 —
-   색을 눈금과 대조하지 않아도 바로 읽히는 게 그 차이다.
-   격자에서 읽은 값이므로 도시 관측값이 아니라 그 자리의 격자값이다. */
-/* ⚠️ 처음엔 고정 위경도 격자(10°×15°)에 숫자를 뒀는데, 지구를 키우니 그 점들이
-   전부 화면 밖으로 나가 숫자가 하나도 안 보였다(50개 중 0개 통과).
-   그래서 반대로 간다 — **화면 격자에서 지구로 역투영**한다. 배율이 얼마든
-   화면에는 늘 같은 간격으로 숫자가 놓인다. 윈디가 하는 방식이다. */
+/* 화면에 기온 숫자를 뿌린다. 도시가 있는 자리에만 놓는다 — 격자점은 바다
+   한복판에도 찍혀 뜻 없는 숫자가 됐다. 값은 도시 관측이 아니라 그 위경도의
+   격자값이다(색면과 같은 자료). */
 const tempMarks = [];
-const TN_STEP = 88;                     // 화면에서 숫자 사이 간격(px) — 이 값에 가장 가깝게 격자를 고른다
-const TN_GRID = [1, 2, 5, 10, 15, 20, 30, 45];   // 고를 수 있는 위경도 간격(도)
 function makeTempMarks(){
   if(tempMarks.length) return;
-  for(let i = 0; i < 90; i++){          // 넉넉히 만들어 두고 쓸 만큼만 쓴다
+  for(let i = 0; i < TEMP_CITIES.length; i++){
     const el = document.createElement('div');
     el.className = 'tn'; el.style.visibility = 'hidden';
     stage.appendChild(el);
     tempMarks.push({ el });
   }
-}
-
-/* 화면 한 점을 지구 표면으로 쏜다. 맞으면 그 자리의 위경도를 돌려준다. */
-const _ray = new THREE.Vector3(), _org = new THREE.Vector3();
-function screenToLatLon(X, Y, w, h){
-  _ray.set((X/w)*2 - 1, -(Y/h)*2 + 1, 0.5).unproject(camera);
-  camera.getWorldPosition(_org);
-  _ray.sub(_org).normalize();
-  const b = 2 * _org.dot(_ray), c = _org.lengthSq() - 1;
-  const disc = b*b - 4*c;
-  if(disc < 0) return null;                        // 지구를 빗나갔다 (우주)
-  const t = (-b - Math.sqrt(disc)) / 2;
-  if(t < 0) return null;
-  const hx = _org.x + _ray.x*t, hy = _org.y + _ray.y*t, hz = _org.z + _ray.z*t;
-  // llToVec 의 역: x=-sin(p)cos(t), y=cos(p), z=sin(p)sin(t)
-  const lat = 90 - Math.acos(Math.max(-1, Math.min(1, hy)))*180/Math.PI;
-  const lon = Math.atan2(hz, -hx)*180/Math.PI - 180;
-  return { lat, lon: ((lon + 540) % 360) - 180 };
 }
 
 /* 격자에서 그 자리의 기온을 읽는다 (색면과 같은 값·같은 자료) */
@@ -2082,6 +2361,7 @@ function tempAt(lat, lon){
       요청 자체를 금지한다. 웹에서는 해당하지 않지만, 앱으로 갈 때 이 기능은
       빼거나 부모 관문 뒤로 옮겨야 한다. */
 let hereMark = null;
+let hereLat = null, hereLon = null;   // GPS 로 받은 실제 자리 — '오늘 어때?' 문구가 우리 동네 대신 이걸 쓴다
 
 async function showHere(){
   const btn = $('#here');
@@ -2108,6 +2388,7 @@ async function showHere(){
 
   const lat = +pos.coords.latitude.toFixed(3);
   const lon = +pos.coords.longitude.toFixed(3);
+  hereLat = lat; hereLon = lon;
   btn.innerHTML = '<span>📍</span>내 위치';
   btn.classList.add('on');
 
@@ -2192,10 +2473,13 @@ $('#b-temp').addEventListener('click', e => {
 let WIND = null;
 const windCv = $('#windcv'), windCtx = windCv.getContext('2d');
 let particles = [], windOn = false;
-const PARTICLES = 2600;
+/* ⚠️ 2026-09-04. 2,600개는 지구 전체에 뿌린 개수라, 나라 하나만 확대하면
+   화면에 몇 가닥 안 남아 "선이 작다"는 지적을 받았다. mapped.earth·윈디처럼
+   화면을 채우는 느낌을 내려면 촘촘해야 한다 — 메모리 큰 기기는 훨씬 더. */
+const PARTICLES = ((navigator.deviceMemory || 4) >= 4) ? 9000 : 4200;
 // 한 프레임의 이동은 픽셀 이하다. 꼬리는 그 점들이 여러 프레임 쌓여 생긴다 —
 // 지우는 속도를 늦춰야 선으로 보인다. 크면 점만 찍히고 작으면 화면이 뿌옇게 찬다.
-const TRAIL_FADE = 0.034;
+const TRAIL_FADE = 0.026;
 // 흐름 속도 과장. 실제 10m/s 는 1초에 0.0001도라 프레임당 1픽셀도 못 간다.
 // 물리 단위 대신 '초당 각도'로 잡는다 — 10m/s 가 초당 약 6도를 가게.
 const DEG_PER_MS = 2.2;        // (도/초) / (m/s) — 10m/s 가 초당 22도
@@ -2211,8 +2495,36 @@ function seedParticles(){
   particles = [];
   for(let i = 0; i < PARTICLES; i++) particles.push(newParticle());
 }
+
+/* 화면 한 점을 지구 표면으로 쏜다. 맞으면 그 자리의 위경도를 돌려준다.
+   (기온 숫자가 도시 자리로 옮겨가며 한 번 지웠던 것을, 바람 입자를 화면
+   보이는 만큼 뿌리려고 다시 쓴다 — 용도가 다르다.) */
+const _pRay = new THREE.Vector3(), _pOrg = new THREE.Vector3();
+function screenToLatLon(X, Y, w, h){
+  _pRay.set((X/w)*2 - 1, -(Y/h)*2 + 1, 0.5).unproject(camera);
+  camera.getWorldPosition(_pOrg);
+  _pRay.sub(_pOrg).normalize();
+  const b = 2 * _pOrg.dot(_pRay), c = _pOrg.lengthSq() - 1;
+  const disc = b*b - 4*c;
+  if(disc < 0) return null;
+  const t = (-b - Math.sqrt(disc)) / 2;
+  if(t < 0) return null;
+  const hx = _pOrg.x + _pRay.x*t, hy = _pOrg.y + _pRay.y*t, hz = _pOrg.z + _pRay.z*t;
+  const lat = 90 - Math.acos(Math.max(-1, Math.min(1, hy)))*180/Math.PI;
+  const lon = Math.atan2(hz, -hx)*180/Math.PI - 180;
+  return { lat, lon: ((lon + 540) % 360) - 180 };
+}
+
 function newParticle(){
-  // 면적에 고르게 뿌린다 — 위도로 균등하게 뿌리면 극에 몰린다
+  /* ⚠️ 2026-09-04. 구 전체에 고르게 뿌리면 나라 하나만 확대했을 때 화면 안에는
+     몇 가닥밖에 안 남는다("선이 작다"는 지적 그대로). 보이는 자리에서 다시
+     태어나게 하면 확대할수록 저절로 촘촘해진다 — 윈디·mapped.earth 가 하는 방식. */
+  for(let tries = 0; tries < 6; tries++){
+    const ll = screenToLatLon(Math.random()*innerWidth, Math.random()*innerHeight, innerWidth, innerHeight);
+    if(ll) return { lat: ll.lat, lon: ll.lon, age: Math.random()*90 | 0 };
+  }
+  // 지구가 화면의 일부만 채울 때(멀리 보기)는 화면을 쏴도 자꾸 빗나간다 —
+  // 그럴 땐 예전처럼 구 전체에 고르게 뿌린다. 면적 기준이라 극에 몰리지 않는다.
   return { lat: Math.asin(Math.random()*2 - 1) * 180/Math.PI,
            lon: Math.random()*360 - 180,
            age: Math.random()*90 | 0 };
@@ -2271,7 +2583,7 @@ function drawWind(dt, w, h){
     windCtx.fillRect(0, 0, w, h);
     windCtx.globalCompositeOperation = 'source-over';
   }
-  windCtx.lineWidth = 1.5;
+  windCtx.lineWidth = 1.8;
   windCtx.lineCap = 'round';
 
   camera.getWorldPosition(_c);
@@ -2327,7 +2639,7 @@ const mtnMarks = [];
 const peakMarks = [];   // 이름 있는 산봉우리
 
 async function loadMountains(){
-  const j = await fetch('../data/mountains.json').then(r=>r.json());
+  const j = await loadPaperRanges();
   // 산맥 en 은 자료에 대문자로 들어 있다(ALPS). 화면에는 첫 글자만 대문자로 낸다.
   if(window.KIDS_I18N) window.KIDS_I18N.add(Object.fromEntries((j.ranges||[]).map(r=>[r.ko,
     String(r.en||'').toLowerCase().replace(/(^|[\s-])([a-z])/g, (_,a,b)=>a+b.toUpperCase())])));
@@ -3259,6 +3571,25 @@ const CITIES = [
   ['케이프타운',-33.92,18.42], ['앵커리지',61.22,-149.90], ['롱이어비엔',78.22,15.65],
 ];
 
+/* 기온 숫자용 도시 — CITIES(날씨 친구 아이콘)보다 훨씬 촘촘하다.
+   도시 밀도는 시장 우선순위를 따른다: 한국을 가장 두텁게, 다음이 일본·대만·영국·미국,
+   그 밖은 세계 주요 도시로 성기게 채운다. */
+const TEMP_CITIES = [
+  ['서울',37.57,126.98], ['부산',35.18,129.08], ['인천',37.46,126.71], ['대구',35.87,128.60],
+  ['대전',36.35,127.38], ['광주',35.16,126.85], ['울산',35.54,129.31], ['제주',33.50,126.53],
+  ['강릉',37.75,128.90], ['전주',35.82,127.15], ['평양',39.02,125.75],
+  ['도쿄',35.68,139.69], ['오사카',34.69,135.50], ['삿포로',43.06,141.35],
+  ['후쿠오카',33.59,130.40], ['나고야',35.18,136.91],
+  ['타이베이',25.03,121.56], ['가오슝',22.63,120.30],
+  ['런던',51.51,-0.13], ['맨체스터',53.48,-2.24], ['에든버러',55.95,-3.19],
+  ['뉴욕',40.71,-74.01], ['로스앤젤레스',34.05,-118.24], ['시카고',41.88,-87.63],
+  ['워싱턴',38.91,-77.04], ['시애틀',47.61,-122.33], ['마이애미',25.76,-80.19],
+  ['베이징',39.90,116.41], ['상하이',31.23,121.47], ['마닐라',14.60,120.98],
+  ['시드니',-33.87,151.21], ['뭄바이',19.08,72.88], ['카이로',30.04,31.24],
+  ['모스크바',55.75,37.62], ['리마',-12.05,-77.04], ['상파울루',-23.55,-46.63],
+  ['케이프타운',-33.92,18.42], ['앵커리지',61.22,-149.90], ['롱이어비엔',78.22,15.65],
+];
+
 function gridPoints(){
   const pts = [];
   for(let lat=-70; lat<=80; lat+=15)
@@ -3308,16 +3639,41 @@ const HEAD_SAY = { sun:'해가 쨍쨍해요', cloud:'구름이 두둥실 떠 있
 const HEAD_SAY_EN = { sun:'the sun is out', cloud:'clouds are drifting by', rain:"it's raining", snow:"it's snowing", zap:'there is lightning' };
 const HEADLINES = [
   ['지구야, 오늘 어때?', '지구를 돌려서 지금 날씨를 만나 보세요'],
-  ['지금 지구 반대편은 밤이에요', '어두운 쪽을 찾아서 돌려 보세요'],
   ['구름은 어디로 가고 있을까?', '하얀 구름을 눈으로 따라가 보세요'],
   ['오늘 지구는 어떤 얼굴일까?', '동그란 친구들을 하나씩 눌러 보세요'],
 ];
 const HEADLINES_EN = [
   ['Earth, how are you today?', 'Spin the globe and meet the weather'],
-  ['The other side of Earth is dark now', 'Turn it around and find the night'],
   ['Where are the clouds going?', 'Follow the white clouds with your eyes'],
   ['What face is Earth wearing today?', 'Tap the round friends one by one'],
 ];
+/* "지구 반대편은 밤이에요 — 찾아서 돌려 보세요" 는 고정 문구였다. 그런데 이미
+   그 자리를 보고 있거나(화면 한가운데가 이미 밤) 우리 동네가 이미 밤이면
+   '반대편'이라는 말도, '찾아서 돌리라'는 말도 사실이 아니게 된다.
+   그래서 매번 지금 상태를 보고 셋 중 하나로 고른다. */
+const NIGHT_FIND    = ['지금 지구 반대편은 밤이에요', '어두운 쪽을 찾아서 돌려 보세요'];
+const NIGHT_FIND_EN = ['The other side of Earth is dark now', 'Turn it around and find the night'];
+const NIGHT_HERE    = ['우와, 지금 여기는 밤이에요', '지구를 돌려서 낮도 찾아보세요'];
+const NIGHT_HERE_EN = ["Wow, it's nighttime right here", 'Spin the globe to find daytime too'];
+const NIGHT_HOME    = ['우리 동네는 지금 밤이에요', '지구 반대쪽은 낮이겠죠? 돌려서 찾아보세요'];
+const NIGHT_HOME_EN = ["It's nighttime in our town right now", 'Is it daytime on the other side? Spin and see'];
+
+function nightAt(lat, lon){
+  const ss = subsolar(new Date());
+  return llToVec(lat, lon, 1).dot(llToVec(ss.lat, ss.lon, 1)) < 0;
+}
+// 화면 한가운데가 지금 지구의 어느 위경도를 보고 있는가 — yawFor/pitchFor 의 역함수
+function viewCenterLatLon(){
+  return { lat: pitch*180/Math.PI, lon: ((-yaw*180/Math.PI + 540) % 360) - 180 };
+}
+function nightLine(){
+  const view = viewCenterLatLon();
+  if(nightAt(view.lat, view.lon)) return KT.en ? NIGHT_HERE_EN : NIGHT_HERE;
+  const home = (hereLat != null) ? { lat: hereLat, lon: hereLon } : HOME;
+  if(nightAt(home.lat, home.lon)) return KT.en ? NIGHT_HOME_EN : NIGHT_HOME;
+  return KT.en ? NIGHT_FIND_EN : NIGHT_FIND;
+}
+
 let headLocked = false, headIdx = 0, homeSay = null;
 function sayHome(place, cur){
   if(!cur) return;
@@ -3333,7 +3689,8 @@ function sayHome(place, cur){
 function rollHead(){
   if(headLocked) return;
   const base = KT.en ? HEADLINES_EN : HEADLINES;
-  const pool = homeSay ? [homeSay, ...base] : base;
+  const withNight = [base[0], nightLine(), ...base.slice(1)];
+  const pool = homeSay ? [homeSay, ...withNight] : withNight;
   const [line, sub] = pool[headIdx++ % pool.length];
   $('#head h1').textContent = line;
   $('#head p').textContent  = sub;
@@ -3509,51 +3866,27 @@ function placeMarkers(w, h){
     }
   }
 
-  /* 기온 숫자 — 땅에 박아 둔다.
-     ⚠️ 화면 격자에 두었더니 지구를 돌려도 숫자가 제자리에 남고 값만 바뀌었다.
-        자리가 곧 뜻인 화면에서 그건 숫자가 어디 것인지를 지우는 일이다.
-        그렇다고 고정 위경도 격자로 돌아가면 확대했을 때 점이 전부 화면 밖으로
-        나간다(그래서 화면 격자로 옮겼던 것이다). 그래서 **간격만 배율에서 고른다** —
-        숫자는 땅에 붙어 함께 돌고, 화면에서의 간격은 늘 비슷하게 유지된다. */
+  /* 기온 숫자 — 도시 자리에만 놓는다. 격자점을 썼을 때는 바다 한복판에도
+     숫자가 떠 무엇을 가리키는지 알 수 없었다. TEMP_CITIES 는 땅에 박혀
+     함께 돌므로, 화면에서의 자리가 곧 그 도시를 뜻한다. */
   if(tempShell.visible && tempMarks.length){
-    const mid = screenToLatLon(w/2, h/2, w, h);
     let k = 0;
-    if(mid){
-      const project = (lat, lon) => {
-        _v.copy(llToVec(lat, lon, R*1.004)).applyMatrix4(earthGroup.matrixWorld);
-        const q = _v.clone().project(camera);
-        return [(q.x*0.5+0.5)*w, (-q.y*0.5+0.5)*h];
-      };
-      // ⚠️ screenR 은 이 루프보다 뒤에서 갱신된다 — 처음엔 그걸 썼다가 초기값 300 이
-      //    그대로 들어가 20°격자를 골랐고, 실제로는 320px 씩 벌어져 숫자가 여덟 개만 떴다.
-      //    배율은 여기서 직접 잰다. 화면 한가운데에서 위도 1도가 몇 픽셀인지.
-      const p0 = project(mid.lat, mid.lon), p1 = project(mid.lat + 1, mid.lon);
-      const perDeg = Math.hypot(p1[0]-p0[0], p1[1]-p0[1]) || 1;
-      const step = TN_GRID.find(s => s*perDeg >= TN_STEP) ?? TN_GRID[TN_GRID.length-1];
-      const latC = Math.round(mid.lat/step)*step, lonC = Math.round(mid.lon/step)*step;
-      const span = Math.min(Math.ceil(95/step), 40);
-      for(let dy = -span; dy <= span && k < tempMarks.length; dy++){
-        const lat = latC + dy*step;
-        if(lat < -85 || lat > 85) continue;
-        // 위로 갈수록 경도선이 모인다 — 간격을 벌리지 않으면 숫자가 극에서 뭉친다
-        const lonStep = step * Math.max(1, Math.round(1/Math.max(.12, Math.cos(lat*Math.PI/180))));
-        const wide = Math.min(Math.ceil(100/lonStep), 60);
-        for(let dx = -wide; dx <= wide && k < tempMarks.length; dx++){
-          const lon = ((lonC + dx*lonStep + 540) % 360) - 180;
-          const [X, Y] = project(lat, lon);
-          // 가장자리는 경도선이 겹쳐 보여 숫자가 서로 붙는다 — 테두리 한 겹은 버린다
-          if(_v.clone().normalize().dot(_c.clone().sub(_v).normalize()) <= 0.30) continue;
-          if(X < 84 || X > w-72 || Y < 92 || Y > h-160) continue;   // 머리말·날짜 막대 자리
-          const c = tempAt(lat, lon);
-          if(c == null) continue;
-          const m = tempMarks[k++];
-          m.el.textContent = `${Math.round(c)}°`;
-          m.el.className = 'tn ' + (c < 5 ? 'cold' : c > 26 ? 'hot' : '');
-          m.el.style.visibility = 'visible';
-          m.el.style.opacity = 1;
-          m.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-50%)`;
-        }
-      }
+    for(const [, lat, lon] of TEMP_CITIES){
+      if(k >= tempMarks.length) break;
+      _v.copy(llToVec(lat, lon, R*1.004)).applyMatrix4(earthGroup.matrixWorld);
+      const facing = _v.clone().normalize().dot(_c.clone().sub(_v).normalize());
+      if(facing <= 0.30) continue;   // 가장자리는 살짝 일찍 접는다 — 겹쳐 보이는 걸 막는다
+      const q = _v.clone().project(camera);
+      const X = (q.x*0.5+0.5)*w, Y = (-q.y*0.5+0.5)*h;
+      if(X < 84 || X > w-72 || Y < 92 || Y > h-160) continue;   // 머리말·날짜 막대 자리
+      const c = tempAt(lat, lon);
+      if(c == null) continue;
+      const m = tempMarks[k++];
+      m.el.textContent = `${Math.round(c)}°`;
+      m.el.className = 'tn ' + (c < 5 ? 'cold' : c > 26 ? 'hot' : '');
+      m.el.style.visibility = 'visible';
+      m.el.style.opacity = Math.min(1, (facing-0.06)/0.2);
+      m.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-50%)`;
     }
     for(let i = k; i < tempMarks.length; i++) tempMarks[i].el.style.visibility = 'hidden';
   } else {
@@ -3569,6 +3902,7 @@ function placeMarkers(w, h){
       if(facing <= 0.06){ m.el.style.visibility='hidden'; continue; }
       const q = _v.clone().project(camera);
       const X=(q.x*0.5+0.5)*w, Y=(-q.y*0.5+0.5)*h;
+      m.sx = X; m.sy = Y;   // 운석 애니메이션이 지금 화면 자리를 알아야 한다
       // 실제 지름에 비례하되 너무 작거나 크지 않게 — 아이가 누를 수 있어야 한다
       const px = Math.max(18, Math.min(74, Math.sqrt(m.c.km) * 4.2 * (screenR/300)));
       const ring = m.el.querySelector('.ring');
@@ -3617,9 +3951,24 @@ function placeMarkers(w, h){
       lab.style.visibility = clash ? 'hidden' : 'visible';
       if(!clash) dmShown.push({x:X, y:Y});
     }
+    // 해구 — 22곳뿐이라 댐과 같은 규칙(늘 표식은 두고 이름만 접는다)
+    const trShown = [];
+    for(const m of trenchMarks){
+      _v.copy(m.pos).applyMatrix4(earthGroup.matrixWorld);
+      const facing = _v.clone().normalize().dot(_c.clone().sub(_v).normalize());
+      if(facing <= 0.06){ m.el.style.visibility='hidden'; continue; }
+      const q = _v.clone().project(camera);
+      const X=(q.x*0.5+0.5)*w, Y=(-q.y*0.5+0.5)*h;
+      const clash = trShown.some(o => Math.abs(o.x-X)<70 && Math.abs(o.y-Y)<24);
+      m.el.style.visibility = clash ? 'hidden' : 'visible';
+      m.el.style.opacity = Math.min(1,(facing-0.06)/0.2);
+      m.el.style.transform = `translate(${X}px, ${Y}px) translate(-50%,-50%)`;
+      if(!clash) trShown.push({x:X, y:Y});
+    }
   } else {
     for(const r of riverMarks) if(r.el) r.el.style.visibility='hidden';
     for(const m of damMarks) m.el.style.visibility='hidden';
+    for(const m of trenchMarks) m.el.style.visibility='hidden';
   }
 
   /* 해상 부이 — 2,400여 곳 중 지금 보이는 것만 풀에 배정한다.
@@ -3856,7 +4205,7 @@ function frame(now){
      ⚠️ 전에는 3.2초 쉬면 다시 돌기 시작했다. 아이가 보고 싶은 자리에 맞춰 놓고
         손을 떼면 화면이 그 자리를 도로 가져가 버렸다. 한 번 손이 닿으면 끝이다. */
   if(!dragging) idle += dt; else idle = 0;
-  if(spinning && !reduceMotion) yaw += 0.028*dt;
+  if(spinning && !reduceMotion && now < 8000) yaw += 0.028*dt;
 
   /* 시간을 옮긴다. 두 가지 속도가 필요하다.
        이야기 — 백만 년/초 를 고정한다. 화면에서 빨라 보이면 실제로 빨랐던 것이다.
@@ -3906,6 +4255,8 @@ function frame(now){
   camera.updateMatrixWorld();
   placeMarkers(w, h);
   paperCharacters.update(performance.now(), h, !PALEO || maNow === 0);
+  paperWorld.update({ past: !!PALEO && maNow > 0, dataLayer: tempFieldOn });
+  earthMat.onBeforeRender(); // The terrain shares the globe's current camera-space sunlight.
   renderer.render(scene, camera);
   drawWind(dt, w, h);
   requestAnimationFrame(frame);
@@ -3957,6 +4308,9 @@ function drawOnce(){
   earthGroup.updateMatrixWorld();
   camera.updateMatrixWorld();
   placeMarkers(w, h);
+  paperCharacters.update(performance.now(), h, !PALEO || maNow === 0);
+  paperWorld.update({ past: !!PALEO && maNow > 0, dataLayer: tempFieldOn });
+  earthMat.onBeforeRender();
   renderer.render(scene, camera);
   drawWind(1/60, w, h);
 }
@@ -3982,7 +4336,8 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe(document.documentEle
                .catch(e => { console.warn('충돌구 로드 실패', e); $('#b-crater').disabled = true; });
   loadQuakes().then(()=> drawOnce())
               .catch(e => { console.warn('지진 로드 실패', e); $('#b-quake').disabled = true; });
-  loadWater().then(()=>{ for(const d of damMarks) d.el.style.display='none'; drawOnce(); })
+  loadWater().then(()=>{ for(const d of damMarks) d.el.style.display='none';
+                         for(const t of trenchMarks) t.el.style.display='none'; drawOnce(); })
              .catch(e => { console.warn('물 로드 실패', e); $('#b-water').disabled = true; });
   loadLeads().catch(e => console.warn('예보 로드 실패', e));
   loadWind().catch(e => { console.warn('바람 로드 실패', e); $('#b-wind').disabled = true; });
@@ -4028,7 +4383,7 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe(document.documentEle
     ['낮과 밤', '해가 비치는 쪽이 낮, 반대쪽이 밤이야. 지금 이 순간 그대로란다.'],
     ['기온', '어디가 덥고 어디가 추운지 색으로 보여줘.'],
     ['바람', '바람이 어느 쪽으로 부는지 보여줘.'],
-    ['강·댐', '큰 강과 댐이 어디 있는지 보여줘.'],
+    ['강·댐', '큰 강과 댐, 그리고 바다에서 가장 깊은 곳(해구)이 어디 있는지 보여줘.'],
     ['산맥', '땅에서 가장 높이 솟은 곳들이야.'],
     ['지진·판 경계', '땅이 흔들린 곳과, 땅덩어리가 만나는 금이야.'],
     ['충돌구', '아주 옛날에 운석이 떨어져 파인 자국이야.'],
@@ -4069,11 +4424,19 @@ if(window.ResizeObserver) new ResizeObserver(refit).observe(document.documentEle
     if (!window.earthusAppBar) { setTimeout(mount, 200); return; }
     window.earthusAppBar.set([
       { id: 'what', glyph: '?', label: '이게 뭐야', title: '왼쪽 단추가 뭘 보여주는지 알려줄게', onClick: sheet },
-      /* 계정은 EARTHUS(v1)에만 있다. 여기서 만들지 않고 그 화면으로 보낸다 —
-         로그인이 끝나면 back 으로 이 지구에 돌려보낸다. */
+      /* 계정은 EARTHUS(v1)에만 있다 — 로그인 화면을 여기서 새로 만들지 않는다.
+         ⚠️ 예전에는 location.href 로 이 화면째로 v1 으로 넘어갔다. 그러면 아이가
+         보던 지구가 통째로 사라지고 v1 의 어른용 대시보드가 뜬 다음에야 로그인
+         창이 열렸다 — "v3 에서 로그인했더니 v1 이 떴다"는 지적 그대로였다.
+         작은 팝업으로만 연다: 이 화면은 그대로 있고, 로그인이 끝나면(팝업 쪽
+         main.js 의 popup=1 처리) 팝업이 스스로 닫힌다. */
       { id: 'login', glyph: '○', label: '로그인', title: '로그인 / 계정',
         onClick: function () {
-          location.href = '/?login=1&back=' + encodeURIComponent(location.pathname);
+          const w = 460, h = 640;
+          const x = Math.round(screen.left + (screen.availWidth - w) / 2);
+          const y = Math.round(screen.top + (screen.availHeight - h) / 2);
+          window.open('/?login=1&popup=1', 'earthus-login',
+            `width=${w},height=${h},left=${x},top=${y},menubar=no,toolbar=no,location=no,status=no`);
         } }
     ]);
   }

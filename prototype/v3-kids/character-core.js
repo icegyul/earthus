@@ -1,5 +1,14 @@
 // Character assets share one contract in the editor, ZIP export and globe renderer.
 export const SLOTS = ['master_sheet', 'runtime_3q', 'parts_atlas', 'thumbnail'];
+/* 장면 카드 — 인포창에만 쓴다. 지구 위에 그리지 않으므로 슬롯과 값이 따로다.
+   투명 캐릭터를 카드에 얹으면 지구 위와 똑같은 그림이 한 번 더 나올 뿐이었다. */
+export const SCENE = 'scene';
+/* 인포창에 그대로 실리는 글. 한국어가 원본이고 영어가 그 위에 덮는다 — kids-i18n 과 같은 규칙.
+   전부 선택이다. 비어 있는 줄은 카드에서 통째로 빠진다. 자리만 잡아 두지 않는다. */
+export const INFO_FIELDS = ['name_en', 'place_ko', 'place_en', 'country_ko', 'country_en',
+  'line_ko', 'line_en', 'story_ko', 'story_en', 'trace_ko', 'trace_en'];
+const INFO_MAX = { story_ko: 400, story_en: 500 };
+export function newInfo() { return Object.fromEntries(INFO_FIELDS.map(k => [k, ''])); }
 export const PRICE = { master_sheet: 0.165, runtime_3q: 0.211, parts_atlas: 0.165 };
 export const MODEL = 'gpt-image-2';
 export function validId(id) { return /^[a-z][a-z0-9_-]{1,47}$/.test(id); }
@@ -9,7 +18,7 @@ export function makeId(name) {
 }
 export function files(id) {
   if (!validId(id)) throw new Error('영문 ID는 영문 소문자로 시작하는 2~48자의 영문·숫자·-·_만 사용할 수 있습니다.');
-  return Object.fromEntries([...SLOTS, 'manifest'].map(s => [s, `${id}_${s}.${s === 'manifest' ? 'json' : 'png'}`]));
+  return Object.fromEntries([...SLOTS, SCENE, 'manifest'].map(s => [s, `${id}_${s}.${s === 'manifest' ? 'json' : 'png'}`]));
 }
 export function defaultLayers() {
   const roles = ['head', 'body', 'arm_left', 'arm_right', 'leg_left', 'leg_right'];
@@ -21,6 +30,7 @@ export function defaultLayers() {
 export function newCharacter() {
   return { schema_version: 1, character_id: '', name: '', prompt: '', region: '', league: '',
     placement: { lat: 37.5, lon: 127, scale: .085 }, motion: 'breathe', lod: { enter_px: 100, exit_px: 80 },
+    moves: [], info: newInfo(),
     layers: defaultLayers(), approvals: { master: '', motion: false }, assets: {}, hashes: {}, references: {},
     updated_at: new Date().toISOString(), server_revision: null };
 }
@@ -46,6 +56,21 @@ export function validate(c, { complete = false } = {}) {
       if (!Array.isArray(p.pivot) || p.pivot.length !== 2 || !p.pivot.every(v => n(v, 0, 1)) || !n(p.x, -2, 2) || !n(p.y, -1, 3) || !n(p.width, .01, 2) || !n(p.height, .01, 2) || !n(p.depth, -.2, .2) || !n(p.rotation, -180, 180)) errors.push(`${p.id}: 파츠 위치·크기·회전 중심을 확인하세요.`);
     }
   }
+  /* 동작과 인포창 글은 **선택**이다 — 없으면 리그 기본 동작으로 서고 카드는 이름만 싣는다.
+     다만 있는 것은 맞아야 한다. 틀린 동작 이름을 조용히 버리면 목록을 고친 줄 알고 넘어간다. */
+  if (c.moves !== undefined) {
+    if (!Array.isArray(c.moves) || (c.moves.length && (c.moves.length < 3 || c.moves.length > 5))) errors.push('동작은 없거나 3~5개여야 합니다.');
+    else if (new Set(c.moves).size !== c.moves.length) errors.push('같은 동작을 두 번 넣을 수 없습니다.');
+    else if (!c.moves.every(m => MOVES[m])) errors.push(`동작 이름은 ${Object.keys(MOVES).join(', ')} 중에서만 고를 수 있습니다.`);
+  }
+  if (c.info !== undefined) {
+    if (!c.info || typeof c.info !== 'object' || Array.isArray(c.info)) errors.push('인포창 글은 하나의 묶음이어야 합니다.');
+    else for (const k of INFO_FIELDS) {
+      const v = c.info[k], cap = INFO_MAX[k] || 160;
+      if (v === undefined || v === '') continue;
+      if (typeof v !== 'string' || v.length > cap) errors.push(`인포창 ${k} 은(는) ${cap}자 이내의 글이어야 합니다.`);
+    }
+  }
   if (complete) {
     const need = c.layers.length ? SLOTS : SLOTS.filter(s => s !== 'parts_atlas');
     for (const slot of need) if (!c.assets[slot]) errors.push(`${slot}.png 파일이 필요합니다.`);
@@ -59,10 +84,12 @@ export function validate(c, { complete = false } = {}) {
 export function manifest(c) {
   const { schema_version, character_id, name, prompt, region, league, placement, motion, lod, layers } = c;
   const f = files(character_id);
-  // 파츠가 없으면 파일 목록에도 넣지 않는다 — 없는 파일을 받으러 가지 않게.
+  // 없는 파일은 목록에도 넣지 않는다 — 받으러 갔다가 캐릭터가 통째로 죽는다.
   if (!layers.length) delete f.parts_atlas;
+  for (const slot of [SCENE, 'thumbnail', 'master_sheet']) if (!c.assets?.[slot]) delete f[slot];
   return { schema_version, character_id, name, prompt, region, league, placement, motion, lod, layers,
-    moves: movesFor(c), files: f, direction: 'surface-normal-camera-facing',
+    moves: movesFor(c), info: { ...newInfo(), ...(c.info || {}) },
+    files: f, direction: 'surface-normal-camera-facing',
     shadow: { type: 'ellipse', opacity: .22 }, updated_at: c.updated_at };
 }
 export function promptFor(c, slot) {
@@ -110,7 +137,7 @@ export const RIG_MOVES = {
 };
 export function movesFor(c) {
   const list = Array.isArray(c?.moves) ? c.moves.filter(m => MOVES[m]) : [];
-  return list.length ? list.slice(0, 6) : (RIG_MOVES[c?.league] || RIG_MOVES.BIPED_PAPER);
+  return list.length ? list.slice(0, 5) : (RIG_MOVES[c?.league] || RIG_MOVES.BIPED_PAPER);
 }
 /* 몸 전체 변형. 쉬는 동안은 아주 작게, 동작 중에는 그 동작이 덮어쓴다. */
 export function bodyPose(motion, seconds, move) {

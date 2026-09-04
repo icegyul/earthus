@@ -149,5 +149,24 @@
     "type": "ellipse",
     "opacity": 0.22
   },
-  "updated_at": "2026-09-04T08:50:43Z"
+  "updated_at": "2026-09-04T08:50:43Z",
+  "moves": [
+    "wave",
+    "jump",
+    "nod",
+    "spin"
+  ],
+  "info": {
+    "name_en": "Yeti",
+    "place_ko": "네팔 쿰부 히말라야",
+    "place_en": "Khumbu Himal, Nepal",
+    "country_ko": "네팔",
+    "country_en": "Nepal",
+    "line_ko": "눈 덮인 히말라야 높은 곳에 산다고 전해지는 털북숭이 친구예요.",
+    "line_en": "A shaggy friend said to live high in the snowy Himalayas.",
+    "story_ko": "히말라야 산골 마을에서는 아주 오래전부터 눈밭에 커다란 발자국이 남는다는 이야기가 전해 내려왔어요. 사람들은 그 발자국의 주인을 눈에 사는 사람이라는 뜻으로 예티라고 불렀지요. 산을 오르던 탐험가들도 비슷한 자국을 보았다고 기록에 남겼어요. 아직 만난 사람은 없지만, 히말라야를 조용히 지키는 친구로 여겨진답니다.",
+    "story_en": "For a very long time, villages in the Himalayas have told of huge footprints left in the snow. People called their owner the Yeti, meaning the one who lives in the snow. Climbers on the mountain wrote about seeing similar tracks. Nobody has met one yet, but many think of the Yeti as a quiet guardian of the Himalayas.",
+    "trace_ko": "네팔 쿰중 마을의 절에는 예티의 것이라 전해지는 머리 가죽이 지금도 보관되어 있어요.",
+    "trace_en": "A monastery in Khumjung, Nepal still keeps a scalp said to belong to a Yeti."
+  }
 }

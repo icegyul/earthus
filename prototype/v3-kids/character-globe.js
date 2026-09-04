@@ -22,6 +22,11 @@ export function createCharacterGlobe({ group, camera, focus }) {
         if (data.files?.[slot] !== `${data.character_id}_${slot}.png`) throw new Error('filename');
         urls[slot] = new URL(data.files[slot], url).href;
       }
+      // 장면 카드는 인포창에서만 쓴다. 주소만 만들어 두고 받는 것은 카드가 열릴 때.
+      if (data.files?.scene) {
+        if (data.files.scene !== `${data.character_id}_scene.png`) throw new Error('filename');
+        urls.scene = new URL(data.files.scene, url).href;
+      }
       const model = await loadPaperCharacter(data, urls); if (stopped) return model.dispose();
       group.add(model.group); models.set(row.character_id, { model, seen: performance.now() });
     } catch { failures.add(row.character_id); } finally { inflight.delete(row.character_id); }
@@ -32,8 +37,9 @@ export function createCharacterGlobe({ group, camera, focus }) {
     const data = event.data.character;
     if (validate({ ...data, assets: {}, hashes: {}, approvals: {}, references: {} }).length) return;
     if (!['runtime_3q', 'parts_atlas'].every(s => event.data.assets?.[s] instanceof Blob && event.data.assets[s].size < 4 * 1024 * 1024)) return;
+    if (event.data.assets.scene && !(event.data.assets.scene instanceof Blob && event.data.assets.scene.size < 8 * 1024 * 1024)) return;
     draft?.dispose(); draftUrls.forEach(URL.revokeObjectURL); draftUrls = [];
-    const urls = Object.fromEntries(['runtime_3q', 'parts_atlas'].map(s => { const u = URL.createObjectURL(event.data.assets[s]); draftUrls.push(u); return [s, u]; }));
+    const urls = Object.fromEntries(['runtime_3q', 'parts_atlas', 'scene'].filter(s => event.data.assets[s]).map(s => { const u = URL.createObjectURL(event.data.assets[s]); draftUrls.push(u); return [s, u]; }));
     try { draft = await loadPaperCharacter(data, urls); group.add(draft.group); focus?.(data.placement); }
     catch { console.warn('[characters] 초안 미리보기를 표시하지 못했습니다.'); }
     const badge = document.createElement('div'); badge.textContent = '캐릭터 초안 미리보기 · 실제 지구에는 적용되지 않음'; badge.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#fff7de;color:#334333;padding:10px 16px;border-radius:20px;z-index:10000;font:12px sans-serif;max-width:90vw;text-align:center'; document.body.append(badge);
@@ -59,6 +65,16 @@ export function createCharacterGlobe({ group, camera, focus }) {
         }
       }
       for (const entry of models.values()) { if (entry.enabled) entry.model.update(camera, height, now); else entry.model.group.visible = false; }
+    },
+    /* 손이 닿은 캐릭터. 겹쳐 서 있으면 화면에서 더 가까운 하나만 — 둘이 한꺼번에 뛰면
+       무엇을 눌렀는지 알 수 없다. 고른 즉시 다음 동작을 재생하고, 카드에 실을 것을 돌려준다. */
+    pick(x, y, width, height) {
+      if (document.hidden || stopped) return null;
+      let hit = null, best = Infinity;
+      const consider = model => { const d = model.hitDistance(x, y, camera, width, height); if (d < best) { best = d; hit = model; } };
+      for (const entry of models.values()) if (entry.enabled) consider(entry.model);
+      if (draft) consider(draft);
+      return hit ? { data: hit.data, scene: hit.sceneUrl, move: hit.play() } : null;
     },
     dispose() { stopped = true; draft?.dispose(); draftUrls.forEach(URL.revokeObjectURL); models.forEach(e => e.model.dispose()); window.removeEventListener('message', receive); }
   };

@@ -284,6 +284,7 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 #card .kid{font-family:var(--kid);font-size:16px;line-height:1.55;color:#FFE3A8;margin-bottom:10px}
 #card ul{margin:0 0 10px;padding-left:17px;display:flex;flex-direction:column;gap:3px;
   font-size:13px;color:#dbe6f7;line-height:1.5}
+#card .story{font-size:13.5px;color:#dbe6f7;line-height:1.62;margin:0 0 10px}
 #card .rec{font-size:12.5px;color:#9fb4d6;border-top:1px solid rgba(255,255,255,.14);
   padding-top:9px;line-height:1.55}
 #card .warn2{color:#FFC24B}
@@ -1129,6 +1130,46 @@ function pointerUp(){
   if(dragging){ yawV = lastDY*0.5; pitchV = lastDP*0.5; }
   dragging = false; lastDY = lastDP = 0;
 }
+
+/* ── 캐릭터를 눌렀을 때 ──────────────────────────────────────────────
+   지구는 어디를 잡아도 돌아간다. 그래서 '누름'과 '돌리다 뗌'을 갈라야 한다 —
+   9픽셀 안에서 500밀리초 안에 끝난 것만 누름으로 친다. 두 손가락(확대)은 아니다. */
+let tapAt = null;
+canvas.addEventListener('pointerdown', e => { tapAt = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+canvas.addEventListener('pointercancel', () => { tapAt = null; });
+canvas.addEventListener('pointerup', e => {
+  const a = tapAt; tapAt = null;
+  if(!a || touches.size >= 2) return;
+  if(Math.hypot(e.clientX-a.x, e.clientY-a.y) > 9 || performance.now()-a.t > 500) return;
+  const hit = paperCharacters.pick(e.clientX, e.clientY, innerWidth, innerHeight);
+  if(hit) openCharacter(hit.data, hit.scene);
+});
+
+/* 캐릭터 인포창. 다른 카드와 달리 innerHTML 로 붙이지 않는다 — 여기 실리는 글은
+   ChatGPT 가 쓰고 manifest 를 타고 들어온 것이고, 그 길에 태그를 통과시킬 이유가 없다. */
+function openCharacter(data, sceneUrl){
+  const card = $('#card'), info = data.info || {}, en = KT.en;
+  const two = (e, k) => String((en ? (info[e] || info[k]) : info[k]) || '').trim();
+  card.replaceChildren();
+  const x = document.createElement('button');
+  x.type = 'button'; x.className = 'x'; x.setAttribute('aria-label', KT.en ? 'Close' : '닫기'); x.textContent = '×';
+  x.addEventListener('click', ()=>{ card.hidden = true; });
+  card.append(x);
+  const add = (tag, cls, text) => { if(!text) return; const el = document.createElement(tag); if(cls) el.className = cls; el.textContent = text; card.append(el); };
+  add('h2', '', (en && info.name_en) ? info.name_en : data.name);
+  add('div', 'meta', [two('place_en','place_ko'), two('country_en','country_ko')].filter(Boolean).join(' · '));
+  if(sceneUrl){
+    const img = document.createElement('img');
+    img.className = 'shot'; img.src = sceneUrl; img.alt = ''; img.loading = 'lazy';
+    // 장면 카드가 아직 없거나 못 받으면 그 자리를 비운다. 깨진 그림 아이콘을 아이에게 보이지 않는다.
+    img.addEventListener('error', ()=> img.remove());
+    card.append(img);
+  }
+  add('div', 'kid', two('line_en','line_ko'));
+  add('div', 'story', two('story_en','story_ko'));
+  add('div', 'rec', two('trace_en','trace_ko'));
+  card.hidden = false;
+}
 /* 마우스 휠 — 세 칸이 정하던 범위 안에서만 연속으로 움직인다.
    자유 줌이면 아이가 지구 밖으로 나가거나 텍스처가 깨질 만큼 붙는다. */
 canvas.addEventListener('wheel', (e) => {
@@ -1734,8 +1775,10 @@ async function ensureJunk(){
 }
 function openJunkCard(){
   const c = $('#card'), core = junk.core;
-  const shown = core.positionsUsable() ? core.entries.length : 0;
-  const deb = core.debrisCount();
+  // 화면에 실제로 찍힌 수를 쓴다 — 요소가 거부된 객체가 있으면 목록 수와 다르다
+  const rows = core.positions();
+  const shown = rows.length;
+  const deb = rows.filter(r => r.debris).length;
   const total = core.totalObjects();
   const blocked = core.positionBlockReason(true);
   c.innerHTML = '<button class="x" aria-label="닫기">×</button>'

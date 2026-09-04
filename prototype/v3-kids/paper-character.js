@@ -57,6 +57,7 @@ export class PaperCharacter {
     this.facing.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(right, up, forward));
     this.facing.quaternion.premultiply(this.group.quaternion.clone().invert());
     const pixels = this.data.placement.scale * height / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * toCamera.length());
+    this.pixels = pixels;
     if (force) this.near = force === 'layers';
     else if (this.near && pixels < this.data.lod.exit_px) this.near = false;
     else if (!this.near && pixels > this.data.lod.enter_px) this.near = true;
@@ -86,6 +87,20 @@ export class PaperCharacter {
       this.lastPose = tick;
     }
   }
+  /* 손이 닿았는지. 레이캐스트가 아니라 **화면에 그려진 크기**로 잰다 —
+     종이는 면이 하나뿐이고 알파가 뚫린 자리는 레이가 그냥 지나간다. 뿔과 꼬리 사이를
+     정확히 찌른 아이에게 "안 눌렸다"고 답하는 것보다, 넉넉한 원 하나가 맞다.
+     돌려주는 값은 중심까지의 거리(px). 닿지 않았으면 Infinity — 겹쳐 선 둘 중
+     가까운 하나만 고르기 위해 참·거짓이 아니라 거리로 답한다. */
+  hitDistance(x, y, camera, width, height) {
+    if (!this.group.visible || !(this.pixels > 0)) return Infinity;
+    const center = this.group.localToWorld(new THREE.Vector3(0, .5, 0));
+    if (center.distanceToSquared(camera.position) < 1e-8) return Infinity;
+    const ndc = center.project(camera);
+    if (ndc.z > 1) return Infinity;                       // 카메라 뒤로 넘어간 것
+    const d = Math.hypot(x - (ndc.x * .5 + .5) * width, y - (-ndc.y * .5 + .5) * height);
+    return d <= Math.max(24, this.pixels * .5) ? d : Infinity;
+  }
   /** 손이 닿았을 때. 누를 때마다 다음 동작으로 넘어가 3~5가지를 차례로 보여 준다. */
   play() {
     if (!this.moves.length) return null;
@@ -101,5 +116,8 @@ export class PaperCharacter {
 export async function loadPaperCharacter(data, urls) {
   const load = url => new Promise((resolve, reject) => { const img = new Image(); img.crossOrigin = 'anonymous'; img.onload = () => resolve(img); img.onerror = () => reject(new Error('캐릭터 이미지를 읽지 못했습니다.')); img.src = url; });
   const [runtime_3q, parts_atlas] = await Promise.all([load(urls.runtime_3q), urls.parts_atlas ? load(urls.parts_atlas) : null]);
-  return new PaperCharacter(data, { runtime_3q, parts_atlas });
+  const model = new PaperCharacter(data, { runtime_3q, parts_atlas });
+  // 장면 카드는 인포창이 열릴 때 <img> 가 받는다. 여기서 받으면 122장을 지구가 지고 다닌다.
+  model.sceneUrl = urls.scene || null;
+  return model;
 }

@@ -13,12 +13,18 @@
 // 정본은 여기 하나다. 지구를 고치는 사람이 우주까지 고칠 필요가 없어야 한다.
 //
 // ══ 정직성 규칙 (1.0 원칙 그대로) ════════════════════════════════════════
-//  · 위치를 지어내지 않는다. 원천은 서버 SGP4 스냅샷(raw SHA-256 → 정본 아이덴티티
-//    계보)이고, 스냅샷 사이 구간만 서버가 준 속도벡터로 짧게 선형 보간한다
-//    (LINEAR_ADVANCE). 브라우저가 궤도를 다시 풀지 않는다.
-//  · 발행 매니페스트가 정한 position_max_age_s 를 넘긴 스냅샷의 **위치는 그리지
-//    않는다**. LEO 는 초당 약 7.5km 를 간다 — 낡은 위치를 그리면 그건 그냥 다른
-//    곳이다. 대신 카탈로그 현황과 근접사건(TCA 가 미래인 것만)은 그대로 쓴다.
+//  · 위치를 지어내지 않는다. 원천은 정본 카탈로그(raw SHA-256 → 정본 아이덴티티
+//    계보)다. 전파 방법은 서버가 무엇을 줬느냐에 따라 둘이고, 어느 쪽인지 화면에 적는다.
+//
+//      SGP4        서버가 궤도요소(OMM)를 함께 주면 브라우저가 그 요소로 직접 푼다.
+//                  서버가 쓰는 것과 같은 요소·같은 모델이라 시각이 흘러도 유효하다.
+//                  요소 자체는 하루에 1km 안팎으로 열화하므로 상한은 '일' 단위다.
+//      LINEAR       요소가 없으면 상태벡터를 서버 속도로 짧게 민다. 이건 표본 시각
+//                  근처에서만 맞으므로 상한이 '분' 단위다(발행 정책값).
+//
+//  · 상한을 넘기면 **위치를 그리지 않는다**. LEO 는 초당 약 7.5km 를 간다 — 낡은
+//    위치를 그리면 그건 그냥 다른 곳이다. 대신 카탈로그 현황과 근접사건(TCA 가
+//    미래인 것만)은 그대로 쓴다.
 //  · 서버가 페이지 상한으로 자른 만큼, 격리·위치불가로 못 그린 만큼을 화면에 적는다.
 //  · 자문 전용(ADVISORY_ONLY). 어떤 명령도 어디로도 보내지 않는다.
 
@@ -37,6 +43,11 @@ const R_KM = 6371;                    // 지구 평균 반지름 — 어댑터�
 const SNAPSHOT_INTERVAL_MS = 20000;   // 라이브 API 재조회 주기
 const MAX_LINEAR_ADVANCE_S = 40;      // 이 나이를 넘긴 표본은 보간을 더 밀지 않는다
 const DEFAULT_MAX_AGE_S = 900;        // 매니페스트에 정책이 없을 때의 보수적 기본값
+
+/* 궤도요소로 직접 풀 때의 상한. 공개 GP 요소는 하루에 1km 안팎으로 벌어지고,
+   일주일이면 근접판단에 쓸 수 없을 만큼 커진다. 보여 주기용 위치로는 그 앞까지
+   쓰되, 나이는 항상 화면에 적는다. (근접사건은 이 값과 무관하게 서버 산출만 쓴다) */
+const MAX_ELEMENT_AGE_S = 7 * 24 * 3600;
 
 // satellite.js — TEME→ECEF 변환에만 쓴다(전파는 서버가 한다).
 // 세 지구 모두 vendor/ 가 이 모듈 기준 ../../vendor/ 에 있다:
@@ -109,6 +120,7 @@ export class AetherusCore {
     this.entries = [];        // 위치 있는 정본 객체
     this.hidden = 0;          // 격리·위치불가 — 그리지 않되 개수는 반드시 공개
     this.fixtures = 0;        // 걸러낸 테스트 주입 객체 — 이것도 공개한다
+    this._withElements = null;
     this.coverage = null;     // 서버 커버리지 — 절단 사실을 숨기지 않으려고 보존
     this.conjunctions = [];
     this.pastConjunctions = 0;
@@ -188,12 +200,14 @@ export class AetherusCore {
     this.entries = [];
     this.hidden = 0;
     this.fixtures = 0;
+    this._withElements = null;   // 갱신마다 다시 센다
     let newest = null;
     for (const row of rows) {
       if (isFixture(row)) { this.fixtures += 1; continue; }
       const st = row.state;
       const sampleMs = Date.parse(row.sample_time);
       if (row.position_status === 'OK' && Array.isArray(st?.r_km) && Number.isFinite(sampleMs)) {
+        const epochMs = Date.parse(row.elements?.EPOCH ?? '');
         this.entries.push({
           catalogId: row.catalog_id,
           name: row.canonical_name || row.catalog_id,
@@ -203,6 +217,10 @@ export class AetherusCore {
           v: st.v_km_s || [0, 0, 0],
           altKm: num(row.geodetic?.alt_km),
           sampleMs,
+          // 궤도요소가 오면 브라우저가 직접 푼다. satrec 은 처음 쓸 때 한 번만 만든다.
+          omm: row.elements || null,
+          epochMs: Number.isFinite(epochMs) ? epochMs : null,
+          satrec: undefined,
           debris: isDebris(row.canonical_name),
         });
         if (newest == null || sampleMs > newest) newest = sampleMs;
@@ -254,17 +272,43 @@ export class AetherusCore {
     if (this.timer) { clearInterval(this.timer); this.timer = null; }
   }
 
-  // ── 나이·유효성 ──────────────────────────────────────────────────────
-  /** 표본이 몇 초 전 것인가. 데이터가 없으면 null. */
-  ageSeconds() {
-    if (this.sampleMs == null) return null;
-    return Math.max(0, (Date.now() - this.sampleMs) / 1000);
+  // ── 전파 방법 ────────────────────────────────────────────────────────
+  /** 'SGP4' — 궤도요소로 직접 푼다 / 'LINEAR' — 상태벡터를 짧게 민다 / null — 자료 없음 */
+  mode() {
+    if (!this.entries.length) return null;
+    return this.withElements() ? 'SGP4' : 'LINEAR';
   }
 
-  /** 위치를 그려도 되는가 — 매니페스트 정책이 정한 상한 안쪽일 때만 참. */
+  /** 궤도요소를 가진 객체 수 — 없으면 옛 상태벡터 경로로 내려간다. */
+  withElements() {
+    if (this._withElements == null) {
+      this._withElements = this.entries.filter((e) => e.omm).length;
+    }
+    return this._withElements;
+  }
+
+  // ── 나이·유효성 ──────────────────────────────────────────────────────
+  /** 지금 쓰는 자료가 몇 초 전 것인가. SGP4 경로면 요소 epoch 기준. */
+  ageSeconds() {
+    const now = Date.now();
+    if (this.mode() === 'SGP4') {
+      const epochs = this.entries.map((e) => e.epochMs).filter((v) => v != null);
+      if (!epochs.length) return null;
+      return Math.max(0, (now - Math.max(...epochs)) / 1000);
+    }
+    if (this.sampleMs == null) return null;
+    return Math.max(0, (now - this.sampleMs) / 1000);
+  }
+
+  /** 지금 경로에 적용되는 상한(초). */
+  ageLimitSeconds() {
+    return this.mode() === 'SGP4' ? MAX_ELEMENT_AGE_S : this.maxAgeS;
+  }
+
+  /** 위치를 그려도 되는가 — 그 경로의 상한 안쪽일 때만 참. */
   positionsUsable() {
     const age = this.ageSeconds();
-    return this.entries.length > 0 && age != null && age <= this.maxAgeS;
+    return this.entries.length > 0 && age != null && age <= this.ageLimitSeconds();
   }
 
   /** 위치를 못 그리는 이유 한 줄. 그릴 수 있으면 null. */
@@ -272,13 +316,21 @@ export class AetherusCore {
     if (!this.entries.length) return ko ? '표시할 객체가 없습니다.' : 'No objects to show.';
     const age = this.ageSeconds();
     if (age == null) return ko ? '표본 시각이 없습니다.' : 'No sample time.';
-    if (age <= this.maxAgeS) return null;
-    const h = Math.floor(age / 3600);
-    const label = h >= 1 ? `${h}시간` : `${Math.round(age / 60)}분`;
+    const limit = this.ageLimitSeconds();
+    if (age <= limit) return null;
+    const span = (sec) => (sec >= 86400 ? `${Math.round(sec / 86400)}일`
+      : sec >= 3600 ? `${Math.round(sec / 3600)}시간` : `${Math.round(sec / 60)}분`);
+    if (this.mode() === 'SGP4') {
+      return ko
+        ? `궤도요소가 ${span(age)} 전 것입니다 (허용 ${span(limit)}). `
+          + '이만큼 오래된 요소로 푼 자리는 실제와 크게 벌어집니다 — 그리지 않습니다.'
+        : `Elements are ${span(age)} old (limit ${span(limit)}) — too far to draw.`;
+    }
     return ko
-      ? `스냅샷이 ${label} 전 것입니다 (허용 ${Math.round(this.maxAgeS / 60)}분). `
-        + '위성은 초당 약 7.5km 를 지나가므로 이 위치는 지금 위치가 아닙니다 — 그리지 않습니다.'
-      : `Snapshot is ${Math.round(age / 60)} min old (limit ${Math.round(this.maxAgeS / 60)} min). `
+      ? `스냅샷이 ${span(age)} 전 것이고 이 발행본에는 궤도요소가 없습니다 `
+        + `(상태벡터 허용 ${span(limit)}). 위성은 초당 약 7.5km 를 지나가므로 `
+        + '이 위치는 지금 위치가 아닙니다 — 그리지 않습니다.'
+      : `Snapshot is ${span(age)} old with no elements published (state-vector limit ${span(limit)}). `
         + 'Objects move ~7.5 km/s, so these are not current positions — not drawn.';
   }
 
@@ -295,15 +347,33 @@ export class AetherusCore {
     if (!sat || !this.positionsUsable()) return [];
     const date = new Date(nowMs);
     const gmst = sat.gstime(date);
+    const sgp4 = this.mode() === 'SGP4';
     const out = [];
     for (const e of this.entries) {
-      // 서버가 준 속도벡터로만, 그것도 짧게 민다. 궤도를 다시 풀지 않는다.
-      const dt = Math.min(Math.max((nowMs - e.sampleMs) / 1000, 0), MAX_LINEAR_ADVANCE_S);
-      const teme = {
-        x: e.r[0] + e.v[0] * dt,
-        y: e.r[1] + e.v[1] * dt,
-        z: e.r[2] + e.v[2] * dt,
-      };
+      let teme = null;
+      if (sgp4 && e.omm) {
+        /* 서버가 쓴 것과 같은 요소를 같은 모델로 푼다. satrec 은 한 번만 만들고
+           캐시한다 — 250ms 마다 500기를 다시 초기화하면 그게 프레임 비용이 된다.
+           요소가 SGP4 에 거부되면 그 객체만 조용히 뺀다(값을 지어내지 않는다). */
+        if (e.satrec === undefined) {
+          try { e.satrec = sat.json2satrec(e.omm) || null; } catch (_) { e.satrec = null; }
+        }
+        if (e.satrec) {
+          const pv = sat.propagate(e.satrec, date);
+          const p = pv && pv.position;
+          if (p && Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z)) teme = p;
+        }
+      }
+      if (!teme) {
+        if (sgp4) continue;   // 요소 경로인데 못 푼 객체 — 자리를 만들어 내지 않는다
+        // 요소가 없는 발행본: 서버가 준 속도벡터로만, 그것도 짧게 민다.
+        const dt = Math.min(Math.max((nowMs - e.sampleMs) / 1000, 0), MAX_LINEAR_ADVANCE_S);
+        teme = {
+          x: e.r[0] + e.v[0] * dt,
+          y: e.r[1] + e.v[1] * dt,
+          z: e.r[2] + e.v[2] * dt,
+        };
+      }
       const ecf = sat.eciToEcf(teme, gmst);
       out.push({
         catalogId: e.catalogId,
@@ -331,20 +401,23 @@ export class AetherusCore {
     const age = this.ageSeconds();
     const total = this.totalObjects();
     const shown = this.positionsUsable() ? this.entries.length : 0;
-    const src = this.fromSnapshot ? (ko ? '발행 스냅샷' : 'published snapshot') : (ko ? '서버' : 'server');
+    const sgp4 = this.mode() === 'SGP4';
+    const src = sgp4 ? (ko ? '요소 SGP4' : 'SGP4 from elements')
+      : this.fromSnapshot ? (ko ? '발행 스냅샷' : 'published snapshot') : (ko ? '서버' : 'server');
     const ageTxt = age == null ? '—'
       : age < 90 ? `${Math.round(age)}s`
-        : age < 5400 ? `${Math.round(age / 60)}분` : `${Math.round(age / 3600)}시간`;
+        : age < 5400 ? `${Math.round(age / 60)}분`
+          : age < 172800 ? `${Math.round(age / 3600)}시간` : `${Math.round(age / 86400)}일`;
     if (ko) {
       const head = shown
         ? `${fmt(shown)}기 표시${total ? ` / 정본 ${fmt(total)}기` : ''}`
         : `위치 비표시 (${total ? `정본 ${fmt(total)}기` : '카탈로그'} 확인)`;
-      return `${head} · 근접 ${this.conjunctions.length}건 · ${src} ${ageTxt} 전`
+      return `${head} · 근접 ${this.conjunctions.length}건 · ${src} · 요소 ${ageTxt} 전`
         + (this.lastError ? ' · 갱신 실패' : '');
     }
     const head = shown ? `${fmt(shown)} shown${total ? ` / ${fmt(total)} catalogued` : ''}`
       : 'positions withheld';
-    return `${head} · ${this.conjunctions.length} conjunctions · ${src} ${ageTxt} ago`;
+    return `${head} · ${this.conjunctions.length} conjunctions · ${src} · ${ageTxt} old`;
   }
 
   /** 레이어를 켰을 때 띄우는 설명 카드(HTML). 세 지구가 같은 글을 쓴다. */
@@ -354,21 +427,29 @@ export class AetherusCore {
       : age < 5400 ? `${Math.round(age / 60)}분 전` : `${Math.round(age / 3600)}시간 전`;
     const lines = [];
 
+    const sgp4 = this.mode() === 'SGP4';
     lines.push(ko
-      ? 'AETHERUS 정본 카탈로그 — 위치는 브라우저 계산이 아니라 <b>서버 SGP4 스냅샷</b>'
-        + '(raw SHA-256 → 정본 아이덴티티 계보)에서 옵니다.'
-      : 'AETHERUS canonical catalogue — positions come from server-side SGP4 snapshots '
-        + '(raw SHA-256 → canonical identity lineage), not from browser propagation.');
+      ? 'AETHERUS 정본 카탈로그 — 궤도요소는 공식 제공자 응답에서 오고'
+        + '(raw SHA-256 → 정본 아이덴티티 계보), 서버와 브라우저가 <b>같은 요소</b>를 씁니다.'
+      : 'AETHERUS canonical catalogue — elements come from official provider responses '
+        + '(raw SHA-256 → canonical identity lineage); server and browser use the same set.');
 
     const block = this.positionBlockReason(ko);
     if (block) {
       lines.push(`<b>${ko ? '위치 비표시' : 'Positions withheld'}</b> — ${block}`);
+    } else if (sgp4) {
+      lines.push(ko
+        ? `${fmt(this.entries.length)}기 표시 · <b>궤도요소로 브라우저가 직접 SGP4</b>를 풉니다`
+          + ` (요소 epoch ${ageTxt}). 서버가 쓰는 것과 같은 모델·같은 요소라 시각이 흘러도`
+          + ' 유효합니다 — 다만 공개 GP 요소는 하루 1km 안팎으로 벌어집니다.'
+        : `${fmt(this.entries.length)} objects · <b>SGP4 run in the browser from the published elements</b>`
+          + ` (epoch ${ageTxt}), the same model and element set the server uses.`);
     } else {
       lines.push(ko
-        ? `${fmt(this.entries.length)}기 표시 · 산출 ${ageTxt} · 사이 구간은 서버 속도벡터로`
-          + ` 최대 ${MAX_LINEAR_ADVANCE_S}초만 선형 보간(LINEAR_ADVANCE)합니다.`
-        : `${fmt(this.entries.length)} objects · sampled ${ageTxt} · gaps linearly advanced `
-          + `at most ${MAX_LINEAR_ADVANCE_S}s from the server velocity vector.`);
+        ? `${fmt(this.entries.length)}기 표시 · 산출 ${ageTxt} · 이 발행본에는 궤도요소가 없어`
+          + ` 서버 속도벡터로 최대 ${MAX_LINEAR_ADVANCE_S}초만 선형 보간(LINEAR_ADVANCE)합니다.`
+        : `${fmt(this.entries.length)} objects · sampled ${ageTxt} · no elements in this snapshot, `
+          + `so gaps are linearly advanced at most ${MAX_LINEAR_ADVANCE_S}s.`);
     }
 
     const cut = this.truncated();
@@ -392,6 +473,14 @@ export class AetherusCore {
       lines.push(ko
         ? `격리·위치불가 ${fmt(this.hidden)}기는 그리지 않습니다 (지어내지 않음).`
         : `${fmt(this.hidden)} quarantined or unpositionable objects are not drawn.`);
+    }
+
+    const we = this.withElements();
+    if (we && we < this.entries.length) {
+      lines.push(ko
+        ? `궤도요소가 온 것은 ${fmt(we)}기뿐입니다 — 나머지 ${fmt(this.entries.length - we)}기는`
+          + ' 요소 없이 왔고, 요소 경로에서는 그리지 않습니다.'
+        : `${fmt(we)} of ${fmt(this.entries.length)} objects carry elements; the rest are not drawn.`);
     }
 
     if (this.fixtures) {

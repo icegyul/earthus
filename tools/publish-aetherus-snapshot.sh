@@ -83,6 +83,9 @@ def is_fixture(o):
         return False
 kept = [o for o in cat if not is_fixture(o)]
 dropped = len(cat) - len(kept)
+# 궤도요소(OMM)를 동봉했는가. 이게 있으면 클라이언트가 서버와 같은 SGP4 를 돌려
+# 스냅샷 시각을 벗어나서도 자리를 계산한다 — 위치 유효기간이 '분'에서 '일'로 바뀐다.
+with_elements = sum(1 for o in kept if o.get('elements'))
 snap.setdefault('data', {})['catalog'] = kept
 snap['fixture_filtered'] = dropped
 dump('snapshot.json', snap)
@@ -90,6 +93,24 @@ dump('snapshot.json', snap)
 status = load('status.json')
 conj = load('conjunctions.json')
 events = ((conj.get('data') or {}).get('events')) or []
+
+# ⚠️ 근접사건은 TCA 가 미래일 때만 스냅샷으로도 쓸모가 있다 — 이 파일이
+#    정책란에 적어둔 근거가 그것이다. 그런데 스크리닝을 다시 돌리지 않으면 지난
+#    번 결과가 그대로 남아 **전부 과거 사건인 목록**을 유효하다며 발행하게 된다
+#    (실측 2026-09-04: 200건 전부 09-01T04:00 대). 여기서 거르고 개수를 적는다.
+_now = datetime.datetime.now(datetime.timezone.utc)
+def _future(ev):
+    try:
+        return datetime.datetime.fromisoformat(ev['tca']) >= _now
+    except (KeyError, TypeError, ValueError):
+        return False   # 시각을 모르는 사건은 유효하다고 말하지 않는다
+_all_events = events
+events = [e for e in _all_events if _future(e)]
+events_past = len(_all_events) - len(events)
+conj.setdefault('data', {})['events'] = events
+dump('conjunctions.json', conj)
+if events_past:
+    print('  근접사건 %d건은 TCA 가 이미 지나 제외 (새 스크리닝 필요)' % events_past)
 
 manifest = {
     'schema': 'earthus.aetherus.snapshot.v1',
@@ -102,21 +123,31 @@ manifest = {
     },
     'counts': {
         'catalog_objects': len(kept),
+        'catalog_objects_with_elements': with_elements,
         'fixtures_filtered': dropped,
         'conjunction_events': len(events),
+        'conjunction_events_past_dropped': events_past,
     },
     'policy': {
         'positions': ('스냅샷 시각 기준 위치입니다. 위성은 초당 약 7.5km 이동하므로 '
                       '오래된 스냅샷의 위치는 그리지 않고 카탈로그 현황과 근접사건만 표시합니다.'),
         'position_max_age_s': 900,
-        'conjunctions': '근접사건의 TCA는 미래 시각이라 스냅샷으로도 유효합니다.',
+        'elements': ('궤도요소(OMM)를 동봉하면 클라이언트가 서버와 같은 SGP4·같은 요소로 직접 풉니다. '
+                     '그 경우 position_max_age_s(상태벡터 기준)가 아니라 요소 epoch 나이가 기준이며, '
+                     '공개 GP 요소는 하루 1km 안팎으로 열화합니다.'),
+        'element_max_age_s': 7 * 24 * 3600,
+        'conjunctions': ('근접사건은 TCA가 미래인 것만 발행합니다 — 그래야 스냅샷으로도 유효합니다. '
+                         '지난 사건은 제외하고 그 개수를 counts에 적습니다.'),
         'fixtures': ('테스트 주입 객체는 발행에서 제외했습니다 — 이름 접두어와 '
                      '국제식별부호(COSPAR) 실재 규약, 카탈로그 번호 범위로 가려냅니다.'),
     },
 }
 dump('manifest.json', manifest)
-print('  카탈로그 %d개 (픽스처 %d개 제외) · 근접사건 %d건'
-      % (len(kept), dropped, len(events)))
+# 셸이 공개 확인에서 대조할 값 — 스키마 이름은 발행마다 같아 근거가 못 된다
+with io.open(os.path.join(tmp, 'generated_at.txt'), 'w', encoding='utf-8') as f:
+    f.write(manifest['generated_at'])
+print('  카탈로그 %d개 (픽스처 %d개 제외, 궤도요소 %d개 동봉) · 근접사건 %d건 (과거 %d건 제외)'
+      % (len(kept), dropped, with_elements, len(events), events_past))
 PYEOF
 
 echo "== 3/4 S3 업로드 =="
@@ -136,14 +167,17 @@ echo "== 4/4 무효화 + 공개 확인 =="
 MSYS_NO_PATHCONV=1 aws cloudfront create-invalidation \
   --distribution-id "$DIST" --paths '/aetherus/*' '/v2/aetherus/*' \
   --query 'Invalidation.Id' --output text >/dev/null
+# ⚠️ 방금 발행한 시각과 **같은 것**이 보일 때만 통과다. 스키마 이름은 발행마다
+# 같아서, 그걸로 판정하면 CloudFront 가 들고 있는 직전 본을 보고도 PASS 를 낸다.
+WANT="$(cat "$TMP/generated_at.txt")"
 for attempt in $(seq 1 40); do
-  if curl -fsS --max-time 15 -H 'Cache-Control: no-cache' "$ORIGIN/aetherus/manifest.json" -o "$TMP/pub.json" \
-     && grep -q 'earthus.aetherus.snapshot.v1' "$TMP/pub.json"; then
-    echo "PASS $ORIGIN/aetherus/manifest.json"
+  if curl -fsS --max-time 15 -H 'Cache-Control: no-cache' "$ORIGIN/aetherus/manifest.json?cb=$RANDOM$attempt" -o "$TMP/pub.json" \
+     && grep -qF "$WANT" "$TMP/pub.json"; then
+    echo "PASS $ORIGIN/aetherus/manifest.json ($WANT)"
     "$PY" -c "import json,io,sys;d=json.load(io.open(sys.argv[1],encoding='utf-8'));print('  발행:',d['generated_at'],'| 객체',d['counts']['catalog_objects'],'| 근접사건',d['counts']['conjunction_events'])" "$TMP/pub.json"
     exit 0
   fi
   sleep 3
 done
-echo 'FAIL: 공개 경로가 수렴하지 않았습니다' >&2
+echo "FAIL: 공개 경로가 방금 발행분($WANT)으로 수렴하지 않았습니다" >&2
 exit 4

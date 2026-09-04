@@ -54,6 +54,59 @@ def _lon_in_bbox(lon_deg: float, bounds: tuple[float, float, float, float]) -> b
     return lon_deg >= min_lon or lon_deg <= max_lon
 
 
+def _utc_z(moment: datetime) -> str:
+    """ISO-8601 in UTC with a trailing Z, the form OMM consumers actually parse."""
+    return moment.astimezone(UTC).isoformat().replace("+00:00", "Z")
+
+
+def _omm_payload(
+    elements: MeanElements, name: str | None, cospar_id: str | None
+) -> dict[str, Any] | None:
+    """Render stored mean elements back in OMM field names for client-side SGP4.
+
+    Values are passed through unconverted: ingestion stored them exactly as the
+    provider published them (rev/day, degrees, rev/day^n), and every SGP4
+    implementation that accepts OMM expects those same units. Converting here
+    would make the client disagree with the server for the same element set.
+    """
+    raw = elements.mean_elements
+    required = (
+        "mean_motion_rev_per_day",
+        "eccentricity",
+        "inclination_deg",
+        "ra_of_asc_node_deg",
+        "arg_of_pericenter_deg",
+        "mean_anomaly_deg",
+    )
+    if any(raw.get(key) is None for key in required):
+        return None  # never publish a half element set; the client would guess
+    return {
+        "OBJECT_NAME": name,
+        "OBJECT_ID": cospar_id,
+        "NORAD_CAT_ID": int(elements.catalog_id) if elements.catalog_id.isdecimal() else None,
+        # ⚠️ "Z" for UTC, not "+00:00". Python's isoformat() emits the offset
+        #    form, and satellite.js (the client SGP4 every Earth here uses) silently
+        #    fails to parse it — jdsatepoch comes out null and every position is
+        #    NaN with error code 0, so nothing looks broken until nothing draws.
+        "EPOCH": _utc_z(elements.epoch),
+        "MEAN_MOTION": raw["mean_motion_rev_per_day"],
+        "ECCENTRICITY": raw["eccentricity"],
+        "INCLINATION": raw["inclination_deg"],
+        "RA_OF_ASC_NODE": raw["ra_of_asc_node_deg"],
+        "ARG_OF_PERICENTER": raw["arg_of_pericenter_deg"],
+        "MEAN_ANOMALY": raw["mean_anomaly_deg"],
+        "EPHEMERIS_TYPE": 0,
+        "CLASSIFICATION_TYPE": "U",
+        "ELEMENT_SET_NO": raw.get("element_set_no"),
+        "REV_AT_EPOCH": raw.get("rev_at_epoch"),
+        "BSTAR": raw.get("bstar") or 0.0,
+        "MEAN_MOTION_DOT": raw.get("mean_motion_dot") or 0.0,
+        "MEAN_MOTION_DDOT": raw.get("mean_motion_ddot") or 0.0,
+        "THEORY": elements.theory,
+        "FRAME": elements.frame,
+    }
+
+
 class CatalogService:
     """Build explore snapshots from stored solutions through the real P2 propagator."""
 
@@ -220,6 +273,7 @@ class CatalogService:
                 "alt_km": sample.alt_km,
             },
             provenance=reference,
+            elements=_omm_payload(elements, row["canonical_name"], row["cospar_id"]),
             warnings=warnings,
         )
 

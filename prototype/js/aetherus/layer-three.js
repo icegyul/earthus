@@ -58,6 +58,12 @@ export class AetherusThreeLayer {
     this.linkLines = null;
     this.lastPos = 0;
     this._buckets = { plain: [], debris: [] };
+    this._capacity = 0;
+  }
+
+  /** 지금 실제로 그려지고 있는 개수 — 카드가 "몇 개 보인다"고 말할 때의 근거. */
+  drawnCount() {
+    return this._buckets.plain.length + this._buckets.debris.length;
   }
 
   // 코어의 상태를 그대로 노출한다 — 호출부가 코어를 따로 들여다볼 필요가 없게.
@@ -79,22 +85,27 @@ export class AetherusThreeLayer {
   }
 
   /* 파편과 그 밖을 다른 색으로 나눈다 — '우주쓰레기가 어디에 얼마나 있는가' 가
-     이 레이어의 요점이라, 한 색으로 섞으면 그 요점이 사라진다. */
+     이 레이어의 요점이라, 한 색으로 섞으면 그 요점이 사라진다.
+     ⚠️ 두 버퍼 모두 **전체 개수만큼** 잡는다. 파편/그 밖의 비율로 잡았더니, 요소가
+        거부된 객체가 생겨 비율이 바뀐 프레임에서 넘치는 만큼이 조용히 안 그려졌다
+        (실측 2026-09-04: 500기 중 435기만 나왔다). Float32Array 는 범위를 넘겨
+        써도 예외를 안 내므로 화면에서만 사라진다 — 용량으로 막는다. */
   _rebuildGeometry() {
     const { THREE } = this;
     this._disposeGeometry();
     const rows = this.core.positions();
+    this._capacity = Math.max(this.core.entries.length, rows.length, 1);
     this._buckets = {
       plain: rows.filter((r) => !r.debris),
       debris: rows.filter((r) => r.debris),
     };
 
-    const mkPoints = (count, color, size) => {
+    const mkPoints = (drawn, color, size) => {
       const geo = new THREE.BufferGeometry();
-      const attr = new THREE.BufferAttribute(new Float32Array(Math.max(count, 1) * 3), 3);
+      const attr = new THREE.BufferAttribute(new Float32Array(this._capacity * 3), 3);
       attr.setUsage(THREE.DynamicDrawUsage);
       geo.setAttribute('position', attr);
-      geo.setDrawRange(0, count);
+      geo.setDrawRange(0, drawn);
       const pts = new THREE.Points(geo, new THREE.PointsMaterial({
         size, sizeAttenuation: false, color: new THREE.Color(color),
         map: getRingTex(THREE), alphaTest: 0.05, transparent: true,
@@ -156,12 +167,21 @@ export class AetherusThreeLayer {
 
   card(ko = true) { return this.core.card(ko); }
 
-  update(nowMs) {
+  /**
+   * @param {number} tick 씬의 프레임 시각. 호출부마다 performance.now() 이기도 하고
+   *   Date.now() 이기도 하다 — 여기서는 **간격 재는 용도로만** 쓴다.
+   *   ⚠️ 이걸 전파 시각으로 넘기면 안 된다. performance.now() 는 페이지를 연 뒤
+   *      흐른 밀리초라, epoch 으로 읽으면 1970년이 된다. SGP4 가 56년 전으로
+   *      전파하다 대부분 실패했고(실측 2026-09-04: 500기 중 435기만 남았다),
+   *      선형 보간 경로에서는 dt 가 0으로 clamp 되어 이 잘못이 보이지 않았다.
+   *      전파 시각은 코어가 Date.now() 로 직접 잡는다.
+   */
+  update(tick) {
     if (!this.group.visible) return;
-    if (nowMs - this.lastPos < POS_INTERVAL_MS) return;
-    this.lastPos = nowMs;
+    if (tick - this.lastPos < POS_INTERVAL_MS) return;
+    this.lastPos = tick;
 
-    const rows = this.core.positions(nowMs);
+    const rows = this.core.positions();
     if (!rows.length) {
       // 위치를 그릴 수 없는 상태 — 이전 점을 남겨두지 않는다.
       if (this.points) this.points.geometry.setDrawRange(0, 0);
@@ -169,7 +189,9 @@ export class AetherusThreeLayer {
       if (this.linkLines) this.linkLines.geometry.setDrawRange(0, 0);
       return;
     }
-    if (rows.length !== this._buckets.plain.length + this._buckets.debris.length) {
+    // 용량이 모자랄 때만 다시 만든다. 파편/그 밖의 비율 변화는 drawRange 로 흡수한다.
+    const plainN = rows.reduce((n, r) => n + (r.debris ? 0 : 1), 0);
+    if (!this._capacity || plainN > this._capacity || rows.length - plainN > this._capacity) {
       this._rebuildGeometry();
     }
 

@@ -49,6 +49,11 @@ class CatalogEntry:
     state: dict[str, Any] | None
     geodetic: dict[str, float] | None
     provenance: CatalogSolutionRef | None
+    # The stored GP element set, rendered in OMM field names so a client can run
+    # the same SGP4 the server ran. Without it a published snapshot goes stale in
+    # minutes (a state vector is only valid near its sample time); with it the
+    # client propagates from the element epoch, which stays usable for days.
+    elements: dict[str, Any] | None = None
     warnings: list[str] = field(default_factory=list)
 
     def to_payload(self) -> dict[str, Any]:
@@ -66,6 +71,7 @@ class CatalogEntry:
             "state": self.state,
             "geodetic": self.geodetic,
             "provenance": _ref_payload(self.provenance),
+            "elements": self.elements,
             "warnings": list(self.warnings),
         }
 

@@ -24,6 +24,8 @@ async function ensureLayer() {
     // requestRenderMode 를 켜둔 지구다 — 위치가 바뀌면 다시 그려달라고 알려야 한다
     onAnimate: (until, gap, owner) => power.animate(until, gap, owner),
   });
+  // v2 의 __earthusAeth · WONDER 의 __earthusJunk 와 같은 자리 (개발 계측용 싱글턴 포인터)
+  globalThis.__earthusOrbit = layer;
   return layer;
 }
 

@@ -3,8 +3,8 @@
 // 지구 렌더러(main.js)는 건드리지 않고 훅(hooks)으로만 연결한다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { i18n } from './i18n.js?v=8';
-import { renderBadge } from './engine-bridge.js?v=12';
+import { i18n } from './i18n.js?v=9';
+import { renderBadge } from './engine-bridge.js?v=15';
 
 // ---------------------------------------------------------------------------
 // 씬 매니페스트 (§19.3, §72): 메뉴 하나 = 씬 프로파일 하나. 주 엔진은 항상 1개.
@@ -249,15 +249,20 @@ export function initShell(hooks) {
     const liveN = s.layers.filter((l) => l.state !== 'LOCKED').length;
     let chips = '';
     if (s.id === 'land') {
-      chips = `<div class="mp-chips" role="group" aria-label="권역 이동">
+      chips = `<div class="mp-chips" role="group" aria-label="${i18n.t('regionMove')}">
           ${REGION_CHIPS.map((r) => `<button class="mp-chip" data-region="${r.id}">${i18n.region(r.id, r.ko)}</button>`).join('')}
         </div>
-        <div class="mp-chip-note">권역 이동 — 3D 지구를 유지한 채 그 구도로 날아갑니다</div>`;
+        <div class="mp-chip-note">${i18n.t('regionNote')}</div>`;
     } else if (s.id === 'people' && POP_COUNTRIES.length) {
-      chips = `<div class="mp-chips" role="group" aria-label="인구 조각 국가">
-          ${POP_COUNTRIES.map((c) => `<button class="mp-chip" data-pop="${c.iso3}" data-popname="${c.nameKo}" title="${c.total.toLocaleString('ko-KR')}명 · ${c.year}">${c.nameKo}</button>`).join('')}
+      // 격자 목록(popgrid/index.json)에는 우리말 이름만 있다. 영어 이름은 나라 정본이 갖고 있어서
+      // 셸이 직접 들고 있지 않고 hooks.countryName 으로 물어본다 — 손으로 표를 만들면 격자를
+      // 늘릴 때마다 메뉴가 실제와 어긋난다.
+      const cname = (c) => (hooks.countryName ? hooks.countryName(c.iso3, c.nameKo) : c.nameKo);
+      const loc = i18n.ko ? 'ko-KR' : 'en-US';
+      chips = `<div class="mp-chips" role="group" aria-label="${i18n.t('popChips')}">
+          ${POP_COUNTRIES.map((c) => `<button class="mp-chip" data-pop="${c.iso3}" data-popname="${c.nameKo}" title="${i18n.t('popTitle').replace('{n}', c.total.toLocaleString(loc)).replace('{y}', c.year)}">${cname(c)}</button>`).join('')}
         </div>
-        <div class="mp-chip-note">인구 조각 — 격자가 준비된 ${POP_COUNTRIES.length}개국. 지구에서 국가를 눌러도 됩니다</div>`;
+        <div class="mp-chip-note">${i18n.t('popNote').replace('{n}', POP_COUNTRIES.length)}</div>`;
     }
     return `<div class="mp-sec" style="--sc:${s.accent}">
       <h3 class="mp-title"><i></i>${i18n.scene(s.id, s.label)}<em>${liveN}/${s.layers.length}</em></h3>
@@ -283,12 +288,12 @@ export function initShell(hooks) {
     panel.classList.toggle('aeth', aeth);
     panel.innerHTML = `
       <div class="mp-head">
-        <div class="mp-head-copy"><b>${aeth ? 'AETHERUS' : 'EARTHUS'}</b><small>${aeth ? '우주 · 궤도 · 태양계' : '실데이터로 살아있는 지구'}</small></div>
+        <div class="mp-head-copy"><b>${aeth ? 'AETHERUS' : 'EARTHUS'}</b><small>${i18n.t(aeth ? 'mpTagA' : 'mpTagE')}</small></div>
         <button class="ui-x" data-x="1">✕</button>
       </div>
       <div class="mp-body">
         ${scenes.map(sectionHtml).join('')}
-        <div class="mp-foot">잠긴 레이어 = 데이터 미연결 (출처·계획 명시) — 가짜 값 없음</div>
+        <div class="mp-foot">${i18n.t('mpFoot')}</div>
       </div>`;
     panel.classList.add('open');
     if (scrim) scrim.classList.add('on');

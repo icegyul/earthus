@@ -108,6 +108,30 @@ const KO = {
   hudAlt: '고도 —', hudMore: '진단 정보 (상태를 텍스트로 복사)',
   locked: '준비 중',
   sources: '출처',
+  clearSel: '해제',
+  // 메뉴 패널 — 손잡이를 열면 나오는 머리말·칩 설명·꼬리말. 레이어 이름만 옮기고
+  // 이 문장들을 빼 놓아서, 영어 화면 메뉴에 한국어가 그대로 남아 있었다.
+  mpTagE: '실데이터로 살아있는 지구',
+  mpTagA: '우주 · 궤도 · 태양계',
+  mpFoot: '잠긴 레이어 = 데이터 미연결 (출처·계획 명시) — 가짜 값 없음',
+  regionMove: '권역 이동',
+  regionNote: '권역 이동 — 3D 지구를 유지한 채 그 구도로 날아갑니다',
+  popChips: '인구 조각 국가',
+  popNote: '인구 조각 — 격자가 준비된 {n}개국. 지구에서 국가를 눌러도 됩니다',
+  popTitle: '{n}명 · {y}',
+  // 사건 피드 — 목록 층위의 문구. 근거 카드 본문은 아직 아니다(langNote 참조).
+  feedLoading: '지구 사건 조회 중… (GDACS · USGS)',
+  feedError: '사건 데이터를 불러오지 못했습니다. 네트워크 확인 후 다시 시도하세요.',
+  feedNoneEQ: '지진', feedNoneTC: '태풍', feedNoneEV: '사건',
+  feedNone: '지금 조건에 맞는 {what} 사건이 없습니다 — 없는 것을 만들어 채우지 않습니다.',
+  tcPending: '태풍 피드(GDACS) 받는 중 — 1.7MB 라 20초쯤 걸립니다',
+  tcFailed: '태풍 피드(GDACS) 응답 없음',
+  retry: '재시도',
+  tcTitle: '열대저기압',
+  atSea: '해상',
+  fAlert: '경보 등급', fFrom: '시작', fUpdated: '최근 갱신',
+  fMag: '규모', fDepth: '진원 깊이', fWhen: '발생',
+  fUnderground: '지하',
 };
 
 const EN = {
@@ -158,6 +182,27 @@ const EN = {
   hudAlt: 'alt —', hudMore: 'Diagnostics (copy state as text)',
   locked: 'not connected yet',
   sources: 'Source',
+  clearSel: 'Clear',
+  mpTagE: 'A living Earth, from real data',
+  mpTagA: 'Space · orbits · the solar system',
+  mpFoot: 'A locked layer = no data connected yet (source and plan stated) — no invented values',
+  regionMove: 'Jump to a region',
+  regionNote: 'Region jump — the camera flies to that framing, still on the 3D Earth',
+  popChips: 'Population sculpture — countries',
+  popNote: 'Population sculpture — {n} countries have a grid ready. You can also click a country on the Earth',
+  popTitle: '{n} people · {y}',
+  feedLoading: 'Looking up Earth events… (GDACS · USGS)',
+  feedError: 'Could not load event data. Check the network and try again.',
+  feedNoneEQ: 'earthquake', feedNoneTC: 'tropical cyclone', feedNoneEV: 'Earth event',
+  feedNone: 'No {what} matches the current filter — we do not invent events to fill the list.',
+  tcPending: 'Fetching the typhoon feed (GDACS) — it is 1.7 MB, so this takes about 20 s',
+  tcFailed: 'No response from the typhoon feed (GDACS)',
+  retry: 'Retry',
+  tcTitle: 'Tropical cyclone',
+  atSea: 'At sea',
+  fAlert: 'Alert level', fFrom: 'Started', fUpdated: 'Last update',
+  fMag: 'Magnitude', fDepth: 'Focal depth', fWhen: 'Occurred',
+  fUnderground: 'below surface',
 };
 
 // 씬 — 글리프도 함께 바꾼다(한글 초성은 영어 화면에서 읽히지 않는다)

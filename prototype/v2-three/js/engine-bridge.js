@@ -25,6 +25,7 @@ import { EarthusEngineRuntime } from '../../js/earthus2/v02/core/engine-runtime.
 import { ENGINE_CLASS, ENGINE_LIFECYCLE } from '../../js/earthus2/v02/core/constants.js';
 import { providerHealthState, PROVIDER_HEALTH } from '../../js/earthus2/v02/ops/provider-health.js';
 import { depthVisualScale } from '../../js/earthus2/v02/geo/bathymetry-policy.js';
+import { i18n } from './i18n.js?v=9';
 
 export {
   DATA_STATE, EVIDENCE_KIND, THERMAL_STATE, SCENE_MODE, VISUAL_ENGINE,
@@ -75,7 +76,9 @@ const NON_TRUTH = Object.freeze({
   STALE: ['stale', 'STALE'],
   UNAVAILABLE: ['na', 'UNAVAILABLE'],
   INSUFFICIENT_DATA: ['na', 'INSUFFICIENT_DATA'],
-  LOCKED: ['locked', '준비 중'],
+  // '준비 중'은 배지 중에서 유일하게 우리말 낱말이다 — 나머지(STALE·MODEL…)는 만국 공통 약어라
+  // 그대로 두지만, 이것만은 화면 언어를 따라야 한다. 영어 화면 메뉴에 한국어로 박혀 있었다.
+  LOCKED: ['locked', () => i18n.t('locked')],
   PRO: ['locked', 'EXPLORER PRO'],
 });
 
@@ -84,7 +87,10 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 // 기존 dataBadge(state, extra)와 출력이 같다. 다만 어휘의 출처가 정본이다.
 export function renderBadge(state, extra) {
   const nt = NON_TRUTH[state];
-  if (nt) return `<span class="badge ${nt[0]}">${nt[1]}${extra ? ` · ${esc(extra)}` : ''}</span>`;
+  if (nt) {
+    const label = typeof nt[1] === 'function' ? nt[1]() : nt[1];
+    return `<span class="badge ${nt[0]}">${label}${extra ? ` · ${esc(extra)}` : ''}</span>`;
+  }
   const kind = LEGACY_TO_KIND[state] || (KIND_BADGE[state] ? state : null);
   if (!kind) return '';
   const b = KIND_BADGE[kind];
@@ -182,6 +188,19 @@ export const LAYER_TRUTH = Object.freeze({
   'people/seoul': { kind: K.OFFICIAL_OBSERVATION, slaMin: 30 },
   // 거주 인구 격자는 해마다 갱신되는 추정치다 — 분 단위로 늙지 않는다.
   'people/poptower': { kind: K.PROVIDER_FORECAST, slaMin: null },
+
+  // 2026-09-04: 정합성 검사가 배지 누락으로 잡아낸 7건. 동작은 했지만 신선도가 안 보였다.
+  // 일기도 기입 모형은 바람 관측과 같은 관측점(KMA AWS·GTS SYNOP)을 쓴다 — SLA도 같게 둔다.
+  'weather/synop': { kind: K.OFFICIAL_OBSERVATION, slaMin: 90 },
+  // 관광 5종은 KTO 공개 산출물을 미리 집계해 파일로 싣는다 — 분 단위로 늙지 않는 등재부다.
+  // 다만 '오늘 발견'만은 그 등재부에 특보·대기질을 우리가 합쳐 점수를 낸 것이라 등급이 다르다.
+  'travel/discover': { kind: K.EARTHUS_ANALYSIS, slaMin: 180 },
+  'travel/bf': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
+  'travel/wl': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
+  'travel/en': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
+  // 방문자 스냅샷과 연관 관광지는 '지금'이 아니라 지나간 기록이다 — 메뉴 선언과 같이 HISTORY 로 둔다.
+  'travel/visitors': { kind: K.HISTORY, slaMin: null },
+  'travel/related': { kind: K.HISTORY, slaMin: null },
 
   'hazards/feed': { kind: K.OFFICIAL_OBSERVATION, slaMin: 90 },
   'hazards/eq': { kind: K.OFFICIAL_OBSERVATION, slaMin: 60 },

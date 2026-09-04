@@ -9,7 +9,7 @@
 // 값을 생성하지 않는다: 매칭이 안 되면 "찾지 못했다"고 적고, 지시가 없으면 "없다"고 적는다.
 
 import { eventSimilarity, haversineMeters } from '../../js/earthus2/v11/event/event-fusion.js';
-import { renderBadge, layerBadge } from './engine-bridge.js?v=12';
+import { renderBadge, layerBadge } from './engine-bridge.js?v=15';
 
 const S3 = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
 const SRC = Object.freeze({
@@ -92,7 +92,10 @@ export class EventRoom {
     });
 
     if (isTC) {
-      const name = (it.title || '').replace('열대저기압', '').trim();
+      // 이름은 피드가 실어 준 대조용 이름을 쓴다(GDACS 시즌 꼬리표 '-26' 을 뗀 것).
+      // 제목에서 접두어를 떼어 쓰면 영어 화면에서 접두어가 달라져 기관 대조가 통째로 어긋나고,
+      // 꼬리표를 남기면 이름 유사도가 절반으로 깎여 문턱을 못 넘는다.
+      const name = it.stormName || (it.title || '').replace('열대저기압', '').trim().replace(/-\d{2}$/, '');
       const mine = { eventType: 'TC', title: name, lat: it.lat, lon: it.lon, startedAt: new Date(it.whenT).toISOString() };
 
       // ---- 공식 트랙 (KMA · JMA · NHC) --------------------------------------

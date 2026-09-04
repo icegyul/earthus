@@ -4,8 +4,8 @@
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
 // 사건 방: 기관 스택 + 진리등급 + 현재→다음→행동 (정본 HAZ-011로 사건 결합)
-import { EventRoom } from './event-room.js?v=1';
-import { i18n } from './i18n.js?v=8';
+import { EventRoom } from './event-room.js?v=3';
+import { i18n } from './i18n.js?v=9';
 
 const GDACS_TC = 'https://www.gdacs.org/gdacsapi/api/events/geteventlist/MAP?eventtype=TC';
 const USGS_EQ = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson';
@@ -84,7 +84,7 @@ export class IntelFeed {
             .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }),
           new Promise((_, rej) => { setTimeout(() => rej(new Error('timeout')), 12000); }),
         ]);
-        const name = (it.title || '').replace('열대저기압', '').trim().toUpperCase();
+        const name = it.stormName || (it.title || '').replace(i18n.t('tcTitle'), '').trim().toUpperCase().replace(/-\d{2}$/, '');
         const storm = (j.storms || []).find((s) => name && (s.key === name || (s.name || '').toUpperCase() === name));
         const ag = storm && (storm.agencies || []).find((a) => a.steps && a.steps.length);
         this.past = ag
@@ -121,20 +121,55 @@ export class IntelFeed {
       <div class="card-b">${rows}<span class="paysub">${p.src} — 발표값 그대로</span></div></div>`;
   }
 
+  // GDACS 는 태풍 하나를 에피소드 수백 개로 쪼개 보내고, 그걸 폴리곤까지 붙여
+  // **1.7MB** 로 내려준다. 실측하면 응답에 10~28초가 걸린다(2026-09-04, 서울·브라우저).
+  // 12초로 끊어 두고 있었으니 태풍 칸은 사실상 언제나 '응답 없음'이었다 —
+  // 출처가 멀쩡한데 우리가 먼저 끊고 있었다. 문턱을 실측에 맞추고,
+  // 지진은 그 기다림에 묶지 않는다(먼저 그리고, 태풍은 도착하면 덧그린다).
   async load() {
     this.state = 'loading';
+    this.tcPending = true;
+    this.tcFailed = false;
+    this.items = [];
     const timed = (url, ms) => Promise.race([
       fetch(url).then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); }),
       new Promise((_, rej) => { setTimeout(() => rej(new Error('timeout')), ms); }),
     ]);
-    const [tcR, eqR] = await Promise.allSettled([
-      timed(GDACS_TC, 12000),
-      timed(USGS_EQ, 12000),
-    ]);
-    this.tcFailed = tcR.status !== 'fulfilled';
-    const items = [];
-    if (tcR.status === 'fulfilled' && tcR.value.features) {
-      for (const f of tcR.value.features) {
+
+    // 태풍은 뒤에서 계속 받는다. 끝나면 스스로 다시 그린다.
+    const tcJob = timed(GDACS_TC, 45000)
+      .then((j) => { this.ingestTC(j); this.tcFailed = false; })
+      .catch(() => { this.tcFailed = true; })
+      .finally(() => {
+        this.tcPending = false;
+        this.settle();
+        if (this.onUpdate) this.onUpdate();
+      });
+
+    try {
+      this.ingestEQ(await timed(USGS_EQ, 12000));
+    } catch (e) { /* 지진이 실패해도 태풍은 위에서 계속 받는다 */ }
+    this.settle();
+    // 여기서 끝낸다 — 태풍을 기다리지 않는다. 태풍은 도착하면 onUpdate 로 다시 그린다.
+    // (tcJob 은 catch·finally 를 달아 두었으니 붙잡지 않아도 조용히 끝난다.)
+    void tcJob;
+  }
+
+  // 목록 정렬·상태 판정을 한 곳에 둔다 — 두 출처가 서로 다른 시점에 도착하기 때문이다.
+  settle() {
+    this.items.sort((a, b) => {
+      if (a.kind !== b.kind) return a.kind === 'TC' ? -1 : 1;
+      if (a.kind === 'TC') return (ALERT_RANK[a.alert] ?? 3) - (ALERT_RANK[b.alert] ?? 3);
+      return b.whenT - a.whenT;
+    });
+    if (this.items.length) this.state = 'ready';
+    else this.state = this.tcPending ? 'loading' : 'error';
+  }
+
+  ingestTC(json) {
+    const items = this.items;
+    if (json && json.features) {
+      for (const f of json.features) {
         const p = f.properties || {};
         const g = f.geometry || {};
         const c = g.type === 'Point' ? g.coordinates : null;
@@ -145,8 +180,17 @@ export class IntelFeed {
           eventid: p.eventid,
           episodeid: p.episodeid,
           alert: p.alertlevel || 'Green',
-          title: `열대저기압 ${p.eventname || p.name || ''}`.trim(),
-          where: p.country || '해상',
+          // 태풍 이름은 따로 들고 다닌다 — 제목에서 접두어를 떼어 쓰면 화면 언어가 바뀔 때
+          // 공식 발표 대조(loadPast)가 조용히 어긋난다.
+          //
+          // GDACS 는 이름 끝에 시즌을 붙인다('SAUDEL-26'). 기상청·JMA·NHC 는 'Saudel' 이다.
+          // 그 꼬리표 하나 때문에 이름 유사도가 1.00 → 0.50 으로 깎였고, SAUDEL 은 합산 0.59 로
+          // 문턱(0.62) 아래에 떨어져 "공식 발표에서 찾지 못했다"고 적히고 있었다 —
+          // 기상청이 그 태풍을 발표하고 있는데도. 대조용 이름에서만 시즌을 떼고,
+          // 화면에 적는 제목은 GDACS 가 준 그대로 둔다(출처의 표기를 우리가 고치지 않는다).
+          stormName: (p.eventname || p.name || '').toUpperCase().replace(/-\d{2}$/, ''),
+          title: `${i18n.t('tcTitle')} ${p.eventname || p.name || ''}`.trim(),
+          where: p.country || i18n.t('atSea'),
           whenT: Date.parse(p.todate || p.fromdate) || Date.now(),
           status: 'ACTIVE',
           truth: 'OFFICIAL_FORECAST',
@@ -154,16 +198,20 @@ export class IntelFeed {
           lat: c[1],
           lon: c[0],
           facts: [
-            ['경보 등급', p.alertlevel || '—'],
-            ['시작', (p.fromdate || '').slice(0, 10)],
-            ['최근 갱신', (p.todate || '').slice(0, 10)],
+            [i18n.t('fAlert'), p.alertlevel || '—'],
+            [i18n.t('fFrom'), (p.fromdate || '').slice(0, 10)],
+            [i18n.t('fUpdated'), (p.todate || '').slice(0, 10)],
           ],
           why: '태풍 진로·강도 분석',
         });
       }
     }
-    if (eqR.status === 'fulfilled' && eqR.value.features) {
-      for (const f of eqR.value.features.slice(0, 14)) {
+  }
+
+  ingestEQ(json) {
+    const items = this.items;
+    if (json && json.features) {
+      for (const f of json.features.slice(0, 14)) {
         const p = f.properties || {};
         const c = (f.geometry || {}).coordinates || null;
         if (!c) continue;
@@ -182,37 +230,30 @@ export class IntelFeed {
           depthKm: c[2],
           official: p.url || null,   // USGS 사건 상세 페이지 (피드가 주는 값)
           facts: [
-            ['규모', `M${p.mag != null ? p.mag.toFixed(1) : '?'}`],
-            ['진원 깊이', c[2] != null ? `${Math.round(c[2])} km (지하)` : '—'],
-            ['발생', agoText(p.time)],
+            [i18n.t('fMag'), `M${p.mag != null ? p.mag.toFixed(1) : '?'}`],
+            [i18n.t('fDepth'), c[2] != null ? `${Math.round(c[2])} km (${i18n.t('fUnderground')})` : '—'],
+            [i18n.t('fWhen'), agoText(p.time)],
           ],
           why: '지진 발생 맥락 분석',
         });
       }
     }
-    items.sort((a, b) => {
-      if (a.kind !== b.kind) return a.kind === 'TC' ? -1 : 1;
-      if (a.kind === 'TC') return (ALERT_RANK[a.alert] ?? 3) - (ALERT_RANK[b.alert] ?? 3);
-      return b.whenT - a.whenT;
-    });
-    this.items = items;
-    this.state = items.length ? 'ready' : 'error';
   }
 
   html() {
     if (this.view === 'room' && this.selected) return this.roomHtml(this.selected);
     if (this.state === 'loading') {
-      return '<div class="card"><div class="card-b">지구 사건 조회 중… (GDACS · USGS)</div></div>';
+      return `<div class="card"><div class="card-b">${i18n.t('feedLoading')}</div></div>`;
     }
     if (this.state === 'error') {
-      return `<div class="card"><div class="card-h">피드 ${this.badge('INSUFFICIENT_DATA')}</div>
-        <div class="card-b">사건 데이터를 불러오지 못했습니다. 네트워크 확인 후 다시 시도하세요.</div></div>`;
+      return `<div class="card"><div class="card-h">${i18n.ko ? '피드' : 'Feed'} ${this.badge('INSUFFICIENT_DATA')}</div>
+        <div class="card-b">${i18n.t('feedError')}</div></div>`;
     }
     const shown = this.visibleItems();
     if (!shown.length) {
-      const what = this.kind === 'EQ' ? '지진' : this.kind === 'TC' ? '태풍' : '사건';
+      const what = i18n.t(this.kind === 'EQ' ? 'feedNoneEQ' : this.kind === 'TC' ? 'feedNoneTC' : 'feedNoneEV');
       return `<div class="feed-head">${what} <span class="feed-cnt">0</span></div>
-        <div class="feed-note">지금 조건에 맞는 ${what} 사건이 없습니다 — 없는 것을 만들어 채우지 않습니다.</div>`;
+        <div class="feed-note">${i18n.t('feedNone').replace('{what}', what)}</div>`;
     }
     const rows = shown.map((it) => `
       <div class="feed-item" data-action="feed-open" data-idx="${this.items.indexOf(it)}">
@@ -224,9 +265,13 @@ export class IntelFeed {
         ${this.badge(it.truth)}
       </div>`).join('');
     const ko = i18n.ko;
-    const tcNote = this.tcFailed
-      ? `<div class="feed-note">${ko ? '태풍 피드(GDACS) 응답 없음' : 'No response from the typhoon feed (GDACS)'} — ${this.badge('INSUFFICIENT_DATA')} <button class="feed-back" data-action="feed-retry" style="margin:0">${ko ? '재시도' : 'Retry'}</button></div>`
-      : '';
+    // 아직 받는 중인 것과 못 받은 것을 구분해서 말한다 — 둘 다 '응답 없음'으로 적으면
+    // 오는 중인 자료를 없다고 말하는 셈이 된다.
+    const tcNote = this.tcPending
+      ? `<div class="feed-note">${i18n.t('tcPending')}</div>`
+      : this.tcFailed
+        ? `<div class="feed-note">${i18n.t('tcFailed')} — ${this.badge('INSUFFICIENT_DATA')} <button class="feed-back" data-action="feed-retry" style="margin:0">${i18n.t('retry')}</button></div>`
+        : '';
     const head = this.kind === 'EQ' ? (ko ? '지진 (USGS 관측)' : 'Earthquakes (USGS observed)')
       : this.kind === 'TC' ? (ko ? '태풍 (GDACS 공식)' : 'Tropical cyclones (GDACS official)')
       : (ko ? '오늘의 지구 사건' : "Today's Earth events");

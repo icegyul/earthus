@@ -137,6 +137,14 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 }
 .bub .box b{display:block;font-size:12px;opacity:.55;font-weight:400}
 
+/* ── 위성 표식 ── */
+.st{position:absolute;left:0;top:0;z-index:5;cursor:pointer;pointer-events:auto;
+  display:flex;align-items:center;gap:5px;white-space:nowrap}
+.st .b{width:9px;height:9px;border-radius:2px;background:#FFD98A;
+  border:1.5px solid rgba(20,14,4,.8);box-shadow:0 0 8px rgba(255,217,138,.8);flex:none}
+.st .t{font-size:10px;color:#FFE9BE;text-shadow:0 1px 3px rgba(0,0,0,.85);font-weight:600}
+.st:hover .b{transform:scale(1.3)}
+
 /* ── 해상 부이 표식 ── */
 .by{position:absolute;left:0;top:0;z-index:5;cursor:pointer;pointer-events:auto;
   width:22px;height:22px;margin:-11px 0 0 -11px;display:grid;place-items:center}
@@ -406,6 +414,11 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
         <path d="M16 4v9"/><path d="M11 13h10l2 7H9z"/><path d="M13 20l-1 4M19 20l1 4"/>
         <path d="M3 27c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2 2.5-2 5-2"/></svg>
+    </button>
+    <button class="railbtn" id="b-sat" aria-pressed="false" aria-label="지구를 도는 위성 보기" title="위성">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="16" cy="16" r="4"/><path d="M9.5 9.5L6 6M22.5 9.5L26 6M9.5 22.5L6 26M22.5 22.5L26 26"/>
+        <path d="M3 6h6v6H3zM23 20h6v6h-6z"/></svg>
     </button>
     <button class="railbtn" id="b-mtn" aria-pressed="false" aria-label="산과 산맥 보기" title="산과 산맥">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
@@ -1488,6 +1501,125 @@ $('#b-buoy').addEventListener('click', async e => {
     btn.disabled = true;
     try { await loadBuoys(); }
     catch(err){ console.warn('부이 로드 실패', err); buoyOn = false; btn.setAttribute('aria-pressed','false'); }
+    finally { btn.disabled = false; }
+  }
+  drawOnce();
+});
+
+/* ══════════════════════════════════════════════════════════════
+   위성 — 지금 지구를 도는 것들
+   v1 과 같은 자료(CelesTrak OMM 을 하루 한 번 조인해 둔 카탈로그)와 같은 계산
+   (satellite.js SGP4 — vendor 에 이미 있고 이미 배포되어 있다)을 쓴다.
+   ⚠️ 카탈로그에 16,513개가 있지만 스타링크만 11,088개다. 전부 그리면 지구가
+      점으로 덮이고 아이 화면에서 뜻이 없다. **우주정거장 22 + 기상위성 73** 만 쓴다 —
+      이 화면이 보여 주는 구름을 실제로 찍는 것들이라 설명이 성립한다.
+   ⚠️ 위치는 프레임마다 풀지 않는다. 1초에 한 번만 푼다.
+   ══════════════════════════════════════════════════════════════ */
+const SAT_URL = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/celestrak/catalog.json.gz';
+const SAT_GROUPS = ['stations', 'weather'];
+let SATS = null, satOn = false, satLoading = false, satLast = 0, satLib = null;
+const satMarks = [];
+async function loadSats(){
+  if(SATS || satLoading) return;
+  satLoading = true;
+  try{
+    if(!satLib){
+      await import('../vendor/satellite-6.0.2.min.js');
+      satLib = globalThis.satellite;
+      if(!satLib) throw new Error('satellite.js 전역이 없다');
+    }
+    const buf = await fetch(SAT_URL).then(r => { if(!r.ok) throw new Error('sat ' + r.status); return r.arrayBuffer(); });
+    const head = new Uint8Array(buf, 0, 2);
+    // S3 가 Content-Encoding 을 붙여 주면 이미 풀려서 온다. 아니면 여기서 푼다.
+    const text = (head[0] === 0x1f && head[1] === 0x8b)
+      ? await new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).text()
+      : new TextDecoder().decode(buf);
+    const cat = JSON.parse(text), seen = new Set(), out = [];
+    for(const g of SAT_GROUPS){
+      for(const row of (cat.groups?.[g] || [])){
+        if(seen.has(row.id)) continue;
+        seen.add(row.id);
+        const a = row.o;
+        if(!Array.isArray(a)) continue;
+        const rec = satLib.json2satrec({
+          OBJECT_NAME: row.n, OBJECT_ID: row.oid, NORAD_CAT_ID: Number(row.id),
+          EPOCH: a[0], MEAN_MOTION: a[1], ECCENTRICITY: a[2], INCLINATION: a[3],
+          RA_OF_ASC_NODE: a[4], ARG_OF_PERICENTER: a[5], MEAN_ANOMALY: a[6],
+          EPHEMERIS_TYPE: a[7], CLASSIFICATION_TYPE: a[8], ELEMENT_SET_NO: a[9],
+          REV_AT_EPOCH: a[10], BSTAR: a[11], MEAN_MOTION_DOT: a[12], MEAN_MOTION_DDOT: a[13],
+        });
+        if(!rec || rec.error !== 0) continue;
+        out.push({ n: row.n, id: row.id, own: row.ownKo || row.own, ld: row.ld,
+                   ops: row.opsKo, group: g, rec, lat: 0, lon: 0, alt: 0, ok: false, pos: null });
+      }
+    }
+    SATS = out;
+  } finally { satLoading = false; }
+}
+function stepSats(now){
+  if(!SATS || !satLib || now - satLast < 1000) return;
+  satLast = now;
+  const t = new Date(), gmst = satLib.gstime(t);
+  for(const x of SATS){
+    x.ok = false;
+    try{
+      const pv = satLib.propagate(x.rec, t);
+      if(!pv || !pv.position) continue;
+      const gd = satLib.eciToGeodetic(pv.position, gmst);
+      x.lat = satLib.degreesLat(gd.latitude);
+      x.lon = satLib.degreesLong(gd.longitude);
+      x.alt = gd.height;
+      if(!Number.isFinite(x.lat) || !Number.isFinite(x.lon) || !Number.isFinite(x.alt)) continue;
+      // 높이를 그대로 반지름에 더하면 정지위성이 화면 밖으로 나간다. 눌러서 담는다.
+      x.pos = llToVec(x.lat, x.lon, R * (1 + Math.min(0.16, x.alt / 42000)));
+      x.ok = true;
+    }catch(_){}
+  }
+}
+function openSat(x){
+  const c = $('#card'), geo = x.alt > 30000, weather = x.group === 'weather';
+  /* ⚠️ 구름 사진은 이 위성 한 대가 찍은 게 아니라 여러 대를 이어 붙인 합성이다.
+        그렇게 적는다 — 한 대가 지구 전체를 찍은 것처럼 두면 거짓말이 된다. */
+  const shot = weather
+    ? '<img class="shot" alt="기상위성들이 합쳐 만든 지금 구름" src="' + CLOUD_BASE + '/global.png" loading="lazy" onerror="this.remove()">'
+    : '';
+  c.innerHTML = '<button class="x" aria-label="닫기">×</button>'
+    + '<h2>' + KT(x.n) + '</h2>'
+    + '<div class="meta">' + (x.own ? KT(x.own) + ' · ' : '') + (weather ? '기상위성' : '우주정거장')
+      + (x.ld ? ' · ' + x.ld.slice(0,4) + '년 발사' : '') + '</div>'
+    + shot
+    + '<div class="kid">' + (weather
+        ? (geo ? '한자리에 머물면서 같은 곳을 계속 지켜봐요.' : '지구를 돌면서 위에서 아래로 훑어봐요.')
+          + ' 지금 지구에 깔린 구름이 이런 위성들이 찍은 거예요.'
+        : '사람이 타고 지구를 도는 곳이에요.') + '</div>'
+    + '<ul><li>지금 높이 약 ' + Math.round(x.alt).toLocaleString('ko-KR') + ' km</li>'
+    + '<li>지금 ' + (x.lat >= 0 ? '북위' : '남위') + ' ' + Math.abs(x.lat).toFixed(1) + '도 · '
+      + (x.lon >= 0 ? '동경' : '서경') + ' ' + Math.abs(x.lon).toFixed(1) + '도 위</li>'
+    + (x.ops ? '<li>' + KT(x.ops) + '</li>' : '') + '</ul>'
+    + '<div class="rec">자리는 CelesTrak 궤도요소로 지금 계산한 값입니다.'
+      + (weather ? '<br>구름 사진은 NOAA GMGSI 합성입니다 — 이 위성 한 대가 아니라 여러 대를 이어 붙인 것입니다.' : '') + '</div>';
+  c.hidden = false;
+  c.querySelector('.x').addEventListener('click', ()=>{ c.hidden = true; });
+}
+$('#b-sat').addEventListener('click', async e => {
+  const btn = e.currentTarget;
+  satOn = btn.getAttribute('aria-pressed') !== 'true';
+  btn.setAttribute('aria-pressed', String(satOn));
+  if(!satOn){ for(const m of satMarks) m.el.style.visibility = 'hidden'; $('#card').hidden = true; return; }
+  if(!satMarks.length){
+    for(let i = 0; i < 120; i++){
+      const el = document.createElement('div');
+      el.className = 'st'; el.style.visibility = 'hidden';
+      el.innerHTML = '<div class="b"></div><div class="t"></div>';
+      el.addEventListener('click', () => { const x = satMarks[i].s; if(x) openSat(x); });
+      stage.appendChild(el);
+      satMarks.push({ el, s: null });
+    }
+  }
+  if(!SATS){
+    btn.disabled = true;
+    try { await loadSats(); satLast = 0; }
+    catch(err){ console.warn('위성 로드 실패', err); satOn = false; btn.setAttribute('aria-pressed','false'); }
     finally { btn.disabled = false; }
   }
   drawOnce();
@@ -3304,6 +3436,32 @@ function placeMarkers(w, h){
     for(let i = k; i < buoyMarks.length; i++){ buoyMarks[i].el.style.visibility = 'hidden'; buoyMarks[i].b = null; }
   } else if(buoyMarks.length){
     for(const m of buoyMarks) m.el.style.visibility = 'hidden';
+  }
+
+  // 위성 — 1초에 한 번 다시 풀고, 보이는 것만 그린다
+  if(satOn && SATS && satMarks.length){
+    stepSats(performance.now());
+    const shown = [];
+    let k = 0;
+    for(const x of SATS){
+      if(!x.ok || k >= satMarks.length) continue;
+      _v.copy(x.pos).applyMatrix4(earthGroup.matrixWorld);
+      if(_v.clone().normalize().dot(_c.clone().sub(_v).normalize()) <= 0.08) continue;
+      const q = _v.clone().project(camera);
+      const X = (q.x*0.5+0.5)*w, Y = (-q.y*0.5+0.5)*h;
+      if(X < 60 || X > w-60 || Y < 56 || Y > h-140) continue;
+      const m = satMarks[k++];
+      m.s = x;
+      m.el.style.visibility = 'visible';
+      m.el.style.transform = 'translate(' + X + 'px, ' + Y + 'px) translate(-50%,-50%)';
+      const lab = m.el.querySelector('.t');
+      const clash = shown.some(o => Math.abs(o.X-X) < 96 && Math.abs(o.Y-Y) < 20);
+      lab.textContent = clash ? '' : x.n.replace(/\s*\(.*\)$/, '');
+      if(!clash) shown.push({X, Y});
+    }
+    for(let i = k; i < satMarks.length; i++){ satMarks[i].el.style.visibility = 'hidden'; satMarks[i].s = null; }
+  } else if(satMarks.length){
+    for(const m of satMarks) m.el.style.visibility = 'hidden';
   }
 
   // 대륙 이름 — 그 시대에 판이 있는 것만. 없으면 이름도 없다.

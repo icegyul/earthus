@@ -63,12 +63,61 @@ export function promptFor(c, slot) {
   if (slot === 'runtime_3q') return `${shared}\nUse the approved design sheet as the sole identity reference. One single 3/4-view character, centered, relaxed standing pose, entire character visible with padding. True transparent alpha background. No checkerboard painted into the image.`;
   return `${shared}\nUse the single 3/4 image as reference. Exploded paper puppet asset atlas on true transparent background. Six detached parts in an exact 3-column by 2-row grid. Top row: head, torso, character left arm. Bottom row: character right arm, left leg, right leg. Each part completely inside its own cell with padding. No labels, no assembled character. Paint hidden overlaps so rotation never reveals holes. Preserve the same 3/4 view in every part.`;
 }
-export function pose(p, motion, seconds) {
+export function pose(p, motion, seconds, arm = 0) {
   let angle = p.rotation * Math.PI / 180, dy = 0;
+  const lifts = /^(arm|wing|fin)_/.test(p.role || '');
   if (motion === 'wave' && p.role === 'arm_right') angle += .38 * Math.sin(seconds * 5);
   if (motion === 'sway') angle += .035 * Math.sin(seconds * 2);
   if (motion === 'breathe' && ['head', 'body'].includes(p.role)) dy = .008 * Math.sin(seconds * 2.4);
+  // 몸 전체 동작이 팔·날개를 함께 들 때. 왼쪽과 오른쪽은 반대로 돈다.
+  if (arm && lifts) angle += arm * (p.role.endsWith('_left') ? -1 : 1);
   return { angle, dy };
+}
+
+/* ── 손이 닿으면 하는 동작 ─────────────────────────────────────────
+   ⚠️ 처음엔 파츠 회전으로만 움직였다. 그런데 파츠는 한 장 그림에서 잘라 만들기
+      때문에 크게 움직이면 자른 자리가 드러난다. 그래서 **몸 전체를 움직인다** —
+      종이 인형을 손에 들고 흔드는 것과 같은 방식이라 파츠가 없어도 성립한다.
+      파츠가 있으면 팔·날개가 얹혀서 함께 움직인다.
+   u 는 0→1 로 흐르는 진행도. 돌려주는 값:
+      dy 위아래 · tz 좌우 기울기 · tx 앞뒤 끄덕임 · ry 제자리 돌기 · sx·sy 눌리고 늘어남 */
+const easeInOut = u => u * u * (3 - 2 * u);
+export const MOVES = {
+  jump:   { ko: '폴짝 뛰기',   sec: 1.1, f: u => ({ dy: .34 * Math.sin(Math.PI * u), sy: 1 - .10 * Math.sin(Math.PI * u * 2) }) },
+  spin:   { ko: '빙글 돌기',   sec: 1.3, f: u => ({ ry: Math.PI * 2 * easeInOut(u) }) },
+  wave:   { ko: '손 흔들기',   sec: 1.6, f: u => ({ tz: .05 * Math.sin(u * Math.PI * 6) }), arm: u => .75 * Math.sin(u * Math.PI * 6) },
+  nod:    { ko: '고개 끄덕',   sec: 1.0, f: u => ({ tx: .22 * Math.sin(u * Math.PI * 3), dy: -.02 * Math.abs(Math.sin(u * Math.PI * 3)) }) },
+  wiggle: { ko: '살랑살랑',    sec: 1.2, f: u => ({ tz: .17 * Math.sin(u * Math.PI * 5) }) },
+  bounce: { ko: '통통 튀기',   sec: 1.2, f: u => { const k = Math.abs(Math.sin(u * Math.PI * 3)); return { dy: .15 * k, sy: 1 - .11 * (1 - k) }; } },
+  rear:   { ko: '앞발 들기',   sec: 1.4, f: u => { const k = Math.sin(Math.PI * u); return { tx: -.40 * k, dy: .06 * k }; } },
+  flap:   { ko: '날갯짓',      sec: 1.5, f: u => ({ dy: .13 * Math.sin(u * Math.PI * 8) }), arm: u => .85 * Math.sin(u * Math.PI * 8) },
+  coil:   { ko: '몸 세우기',   sec: 1.5, f: u => { const k = Math.sin(Math.PI * u); return { sy: 1 + .24 * k, sx: 1 - .11 * k, tz: .09 * Math.sin(u * Math.PI * 4) }; } },
+  stomp:  { ko: '쿵쿵 걷기',   sec: 1.3, f: u => { const k = Math.abs(Math.sin(u * Math.PI * 2)); return { dy: .09 * k, sy: 1 - .13 * (1 - k), tz: .06 * Math.sin(u * Math.PI * 2) }; } },
+};
+export const RIG_MOVES = {
+  BIPED_PAPER:     ['jump', 'spin', 'wave', 'nod', 'wiggle'],
+  QUADRUPED_PAPER: ['jump', 'rear', 'nod', 'wiggle'],
+  SERPENT_PAPER:   ['coil', 'wiggle', 'spin', 'nod'],
+  FLYER_PAPER:     ['flap', 'jump', 'spin', 'nod'],
+};
+export function movesFor(c) {
+  const list = Array.isArray(c?.moves) ? c.moves.filter(m => MOVES[m]) : [];
+  return list.length ? list.slice(0, 6) : (RIG_MOVES[c?.league] || RIG_MOVES.BIPED_PAPER);
+}
+/* 몸 전체 변형. 쉬는 동안은 아주 작게, 동작 중에는 그 동작이 덮어쓴다. */
+export function bodyPose(motion, seconds, move) {
+  const t = { dy: 0, tz: 0, tx: 0, ry: 0, sx: 1, sy: 1, arm: 0 };
+  if (motion === 'breathe') { t.sy = 1 + .016 * Math.sin(seconds * 2.4); t.dy = .004 * Math.sin(seconds * 2.4); }
+  else if (motion === 'sway') t.tz = .035 * Math.sin(seconds * 1.7);
+  if (move) {
+    const spec = MOVES[move.id];
+    if (spec) {
+      const u = Math.min(1, Math.max(0, move.u));
+      Object.assign(t, { ...t, ...spec.f(u) });
+      if (spec.arm) t.arm = spec.arm(u);
+    }
+  }
+  return t;
 }
 export async function sha256(blob) {
   return [...new Uint8Array(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer()))].map(v => v.toString(16).padStart(2, '0')).join('');

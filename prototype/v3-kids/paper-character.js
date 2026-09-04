@@ -1,5 +1,5 @@
 import * as THREE from '../vendor/three-r184.module.min.js';
-import { pose } from './character-core.js';
+import { pose, bodyPose, movesFor, MOVES } from './character-core.js';
 
 export const surfaceNormal = (lat, lon) => {
   const p = (90 - lat) * Math.PI / 180, t = (lon + 180) * Math.PI / 180;
@@ -11,9 +11,14 @@ export class PaperCharacter {
     this.normal = surfaceNormal(data.placement.lat, data.placement.lon); this.group.position.copy(this.normal).multiplyScalar(1.003);
     this.group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), this.normal);
     this.group.scale.setScalar(data.placement.scale); this.textures = []; this.parts = []; this.near = false; this.started = performance.now(); this.lastPose = -1;
+    /* 몸 전체를 담는 겹. 손이 닿았을 때의 동작은 파츠가 아니라 여기에 건다 —
+       파츠는 한 장 그림에서 잘라 만들기 때문에 크게 움직이면 자른 자리가 드러난다.
+       종이 인형을 손에 들고 흔드는 것과 같은 방식이라 파츠가 없어도 성립한다. */
+    this.body = new THREE.Group(); this.facing.add(this.body);
+    this.moves = movesFor(data); this.moveIdx = 0; this.move = null;
     this.billboard = this.plane(images.runtime_3q, 1, 1); this.billboard.scale.x = images.runtime_3q.width / images.runtime_3q.height;
-    this.billboard.position.y = .5; this.facing.add(this.billboard);
-    this.layered = new THREE.Group(); this.facing.add(this.layered);
+    this.billboard.position.y = .5; this.body.add(this.billboard);
+    this.layered = new THREE.Group(); this.body.add(this.layered);
     for (const part of data.layers) {
       const texture = new THREE.Texture(images.parts_atlas); texture.colorSpace = THREE.SRGBColorSpace; texture.needsUpdate = true;
       const [x, y, w, h] = part.rect; texture.repeat.set(w, h); texture.offset.set(x, 1 - y - h); this.textures.push(texture);
@@ -57,12 +62,35 @@ export class PaperCharacter {
     else if (!this.near && pixels > this.data.lod.enter_px) this.near = true;
     this.billboard.visible = !this.near; this.layered.visible = this.near;
     // Each appearance animates for eight seconds, then settles. No extra render loop on the globe.
-    const active = animate && now - this.started < 8000 && !document.hidden && !matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const tick = active ? Math.floor((now - this.started) / 50) : 0;
-    if (tick !== this.lastPose) {
-      for (const { pivot, part } of this.parts) { const q = pose(part, this.data.motion, tick / 20); pivot.rotation.z = q.angle; pivot.position.y = part.y + q.dy; }
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let playing = null;
+    if (this.move && !still) {
+      const u = (now - this.move.t0) / (this.move.sec * 1000);
+      if (u >= 1) this.move = null; else playing = { id: this.move.id, u };
+    }
+    const active = !!playing || (animate && now - this.started < 8000 && !document.hidden && !still);
+    const b = bodyPose(this.data.motion, active ? (now - this.started) / 1000 : 0, playing);
+    this.body.position.y = b.dy;
+    this.body.rotation.set(b.tx, b.ry, b.tz);
+    this.body.scale.set(b.sx, b.sy, 1);
+    // 뛰어오르면 그림자가 줄어든다. 발이 땅에 붙어 있는지가 그것으로 읽힌다.
+    const sh = Math.max(.45, 1 - b.dy * 1.5);
+    this.shadow.scale.set(sh, .46 * sh, 1);
+    // 동작 중에는 촘촘히, 쉬는 동안은 20Hz. 한 번에 움직이는 캐릭터는 하나뿐이다.
+    const tick = active ? Math.floor((now - this.started) / (playing ? 16 : 50)) : 0;
+    if (tick !== this.lastPose || playing) {
+      const secs = playing ? (now - this.started) / 1000 : tick / 20;
+      for (const { pivot, part } of this.parts) { const q = pose(part, this.data.motion, secs, b.arm); pivot.rotation.z = q.angle; pivot.position.y = part.y + q.dy; }
       this.lastPose = tick;
     }
+  }
+  /** 손이 닿았을 때. 누를 때마다 다음 동작으로 넘어가 3~5가지를 차례로 보여 준다. */
+  play() {
+    if (!this.moves.length) return null;
+    const id = this.moves[this.moveIdx++ % this.moves.length];
+    this.move = { id, t0: performance.now(), sec: MOVES[id].sec };
+    this.started = performance.now();
+    return id;
   }
   dispose() {
     this.group.removeFromParent(); this.group.traverse(o => { o.geometry?.dispose(); o.material?.dispose(); }); this.textures.forEach(t => t.dispose());

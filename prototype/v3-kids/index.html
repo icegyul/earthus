@@ -444,7 +444,10 @@ KT.deg = KT.en ? '°' : '도';
 // 만/억은 영어에 없는 자릿수다. 숫자를 그대로 두고 단위만 바꾸면 틀린 값이 된다.
 const KAGO = (ma) => {  // ma = 백만 년
   if(!KT.en){
-    if(ma < 1) return `약 ${Math.round(ma*1000)}만 년 전`.replace('약 50만','약 5만');
+    // ⚠️ 1 Ma = 100만 년이다. 여기가 *1000 이라 0.05Ma(5만 년)를 '50만 년'으로 적었고,
+    //    그 한 건만 문자열을 바꿔치기해 가리고 있었다(`.replace('약 50만','약 5만')`).
+    //    합천(5만 년)을 넣으면서 드러났다 — 다른 값이 오면 전부 열 배로 틀린다.
+    if(ma < 1) return `약 ${Math.round(ma*100)}만 년 전`;
     if(ma < 100) return `약 ${Math.round(ma)}00만 년 전`;
     const eok = Math.floor(ma/100), man = Math.round(ma%100);
     return man ? `약 ${eok}억 ${man}00만 년 전` : `약 ${eok}억 년 전`;

@@ -137,6 +137,14 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
 }
 .bub .box b{display:block;font-size:12px;opacity:.55;font-weight:400}
 
+/* ── 해상 부이 표식 ── */
+.by{position:absolute;left:0;top:0;z-index:5;cursor:pointer;pointer-events:auto;
+  width:22px;height:22px;margin:-11px 0 0 -11px;display:grid;place-items:center}
+.by .b{width:11px;height:11px;border-radius:50%;background:#7FE3F2;
+  border:2px solid rgba(6,22,34,.85);box-shadow:0 0 0 2px rgba(127,227,242,.28)}
+.by:hover .b{transform:scale(1.25)}
+#card img.shot{width:100%;border-radius:12px;margin:10px 0 4px;display:block;background:#0b1a24}
+
 /* ── 기온 숫자 — 윈디의 핵심은 색이 아니라 숫자다 ── */
 .tn{position:absolute;z-index:4;transform:translate(-50%,-50%);pointer-events:none;
   font-family:var(--ui);font-size:12px;font-weight:600;color:#fff;letter-spacing:-.01em;
@@ -393,6 +401,11 @@ canvas#windcv{position:absolute;inset:0;width:100%;height:100%;display:block;poi
     <button class="railbtn" id="b-quake" aria-pressed="false" aria-label="지진과 판 경계 보기" title="지진·판 경계">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
         <path d="M2 17h5l3-8 4 15 4-19 3.5 12L26 17h4"/></svg>
+    </button>
+    <button class="railbtn" id="b-buoy" aria-pressed="false" aria-label="바다에 떠 있는 관측 부이 보기" title="해상 부이">
+      <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 4v9"/><path d="M11 13h10l2 7H9z"/><path d="M13 20l-1 4M19 20l1 4"/>
+        <path d="M3 27c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2 2.5-2 5-2"/></svg>
     </button>
     <button class="railbtn" id="b-mtn" aria-pressed="false" aria-label="산과 산맥 보기" title="산과 산맥">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
@@ -1405,6 +1418,80 @@ async function loadWater(){
     damMarks.push({ d, el, pos: llToVec(d.lat, d.lon, R*1.014) });
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   해상 부이 — 바다 위에 실제로 떠서 지금 재고 있는 것들
+   v1 이 쓰는 같은 자료(NOAA NDBC + OSMC/GTS, 2,400여 곳)를 그대로 읽는다.
+   ⚠️ 표식을 DOM 으로 2,400개 만들면 화면이 죽는다. 기온 숫자와 같은 방법 —
+      **풀을 돌려 쓴다.** 카메라를 향한 것 중 가까운 순으로 최대 100개만 자리에 놓는다.
+   ⚠️ 자료는 668KB 라 첫 화면에서 받지 않는다. 버튼을 눌렀을 때 한 번 받는다.
+   ══════════════════════════════════════════════════════════════ */
+const BUOY_URL = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/ocean/buoys.json';
+const BUOY_POOL = 100;
+let BUOYS = null, buoyOn = false, buoyLoading = false;
+const buoyMarks = [];
+function makeBuoyMarks(){
+  if(buoyMarks.length) return;
+  for(let i = 0; i < BUOY_POOL; i++){
+    const el = document.createElement('div');
+    el.className = 'by'; el.style.visibility = 'hidden';
+    el.innerHTML = '<div class="b"></div>';
+    el.addEventListener('click', () => { const b = buoyMarks[i].b; if(b) openBuoy(b); });
+    stage.appendChild(el);
+    buoyMarks.push({ el, b: null });
+  }
+}
+async function loadBuoys(){
+  if(BUOYS || buoyLoading) return;
+  buoyLoading = true;
+  try{
+    const j = await fetch(BUOY_URL, { cache: 'no-cache' }).then(r => { if(!r.ok) throw new Error('buoys ' + r.status); return r.json(); });
+    BUOYS = (j.buoys || []).filter(b => Number.isFinite(b.lat) && Number.isFinite(b.lon))
+      .map(b => ({ ...b, pos: llToVec(b.lat, b.lon, R*1.008) }));
+    buoySrc = { generated: j.generated, source: j.source, count: BUOYS.length };
+  } finally { buoyLoading = false; }
+}
+let buoySrc = null;
+const seaWord = h => h == null ? null : h < 0.5 ? '아주 잔잔해요' : h < 1.25 ? '잔잔해요' : h < 2.5 ? '물결이 있어요' : h < 4 ? '파도가 높아요' : '파도가 아주 높아요';
+function openBuoy(b){
+  const c = $('#card'), m = b.meta || {};
+  const rows = [];
+  if(b.wvht != null) rows.push(`파도 높이 ${b.wvht.toFixed(1)} m · ${seaWord(b.wvht)}`);
+  if(b.dpd  != null) rows.push(`파도 사이 ${b.dpd.toFixed(1)}초`);
+  if(b.wtmp != null) rows.push(`바닷물 ${b.wtmp.toFixed(1)}${KT.deg}`);
+  if(b.atmp != null) rows.push(`공기 ${b.atmp.toFixed(1)}${KT.deg}`);
+  if(b.wspd != null) rows.push(`바람 ${(b.wspd*3.6).toFixed(0)} km/h`);
+  if(b.pres != null) rows.push(`기압 ${b.pres.toFixed(0)} hPa`);
+  const when = b.time ? String(b.time).slice(11,16) + 'Z' : null;
+  /* ⚠️ 카메라 사진은 그 부이가 **방금 찍은 진짜 바다**다. 없는 부이는 자리를 비운다 —
+        다른 부이 사진을 대신 넣지 않는다. */
+  const cam = m.cam ? `<img class="shot" alt="${KT(m.name || b.id)} 부이가 찍은 바다"
+      src="https://www.ndbc.noaa.gov/buoycam.php?station=${encodeURIComponent(b.id)}"
+      loading="lazy" onerror="this.remove()">` : '';
+  c.innerHTML = `<button class="x" aria-label="닫기">×</button>
+    <h2>${KT(m.name || ('부이 ' + b.id))}</h2>
+    <div class="meta">${KT(m.type || '해상 관측 부이')} · NDBC ${b.id}${when ? ' · ' + when : ''}</div>
+    ${cam}
+    <div class="kid">바다 한가운데 떠서 파도와 물 온도를 재는 친구예요.${m.cam ? ' 사진은 이 부이가 방금 찍은 바다예요.' : ''}</div>
+    ${rows.length ? `<ul>${rows.map(r => `<li>${r}</li>`).join('')}</ul>` : '<div class="rec">지금은 값이 들어오지 않았어요.</div>'}
+    <div class="rec">${KT(m.ownerKo || m.ownerEn || '')}${m.ownerKo || m.ownerEn ? ' · ' : ''}출처 NOAA NDBC · OSMC</div>`;
+  c.hidden = false;
+  c.querySelector('.x').addEventListener('click', ()=>{ c.hidden = true; });
+}
+$('#b-buoy').addEventListener('click', async e => {
+  const btn = e.currentTarget;
+  buoyOn = btn.getAttribute('aria-pressed') !== 'true';
+  btn.setAttribute('aria-pressed', String(buoyOn));
+  if(!buoyOn){ for(const m of buoyMarks) m.el.style.visibility = 'hidden'; $('#card').hidden = true; return; }
+  makeBuoyMarks();
+  if(!BUOYS){
+    btn.disabled = true;
+    try { await loadBuoys(); }
+    catch(err){ console.warn('부이 로드 실패', err); buoyOn = false; btn.setAttribute('aria-pressed','false'); }
+    finally { btn.disabled = false; }
+  }
+  drawOnce();
+});
 
 function openDam(d){
   const c = $('#card');
@@ -3184,6 +3271,39 @@ function placeMarkers(w, h){
   } else {
     for(const r of riverMarks) if(r.el) r.el.style.visibility='hidden';
     for(const m of damMarks) m.el.style.visibility='hidden';
+  }
+
+  /* 해상 부이 — 2,400여 곳 중 지금 보이는 것만 풀에 배정한다.
+     가까운 쪽(카메라를 정면으로 보는 쪽)부터 채우고 나머지는 그리지 않는다. */
+  if(buoyOn && BUOYS && buoyMarks.length){
+    const cand = [];
+    for(const b of BUOYS){
+      _v.copy(b.pos).applyMatrix4(earthGroup.matrixWorld);
+      const facing = _v.clone().normalize().dot(_c.clone().sub(_v).normalize());
+      if(facing <= 0.20) continue;
+      const q = _v.clone().project(camera);
+      const X = (q.x*0.5+0.5)*w, Y = (-q.y*0.5+0.5)*h;
+      if(X < 70 || X > w-70 || Y < 60 || Y > h-140) continue;
+      cand.push({ b, X, Y, facing });
+      if(cand.length > 900) break;         // 축소 상태에서 전부 훑지 않는다
+    }
+    cand.sort((a,z) => z.facing - a.facing);
+    const placed = [];
+    let k = 0;
+    for(const c2 of cand){
+      if(k >= buoyMarks.length) break;
+      // 겹치면 건너뛴다 — 점이 뭉쳐 있으면 누를 수가 없다
+      if(placed.some(o => Math.abs(o.X-c2.X) < 22 && Math.abs(o.Y-c2.Y) < 22)) continue;
+      const m = buoyMarks[k++];
+      m.b = c2.b;
+      m.el.style.visibility = 'visible';
+      m.el.style.opacity = Math.min(1, (c2.facing-0.20)/0.25);
+      m.el.style.transform = `translate(${c2.X}px, ${c2.Y}px) translate(-50%,-50%)`;
+      placed.push(c2);
+    }
+    for(let i = k; i < buoyMarks.length; i++){ buoyMarks[i].el.style.visibility = 'hidden'; buoyMarks[i].b = null; }
+  } else if(buoyMarks.length){
+    for(const m of buoyMarks) m.el.style.visibility = 'hidden';
   }
 
   // 대륙 이름 — 그 시대에 판이 있는 것만. 없으면 이름도 없다.

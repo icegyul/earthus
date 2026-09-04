@@ -77,6 +77,27 @@ for key in "${PREFIX}/v3" "${PREFIX}/v3/"; do
   echo "  올림  ${key}"
 done
 
+# ── /wonder 별칭 ─────────────────────────────────────────────────────────
+# earth-switch.js 의 메뉴는 이제 /v3 를 걸지 않고 /wonder 만 건다. /v3 는
+# 주소창 직통용으로 남긴다. 실제 자산을 통째로 복제하지 않고, index.html 에
+# <base href="/v3/"> 하나만 얹은 사본을 만들어 상대경로(./character-globe.js,
+# ../vendor/...)가 항상 /v3/ 를 가리키게 한다. <base> 가 문서의 기준 URI를
+# 못박으므로 슬래시 유무와 무관하게 세 키 모두 이 사본으로 충분하다.
+echo "▸ /wonder 별칭 만드는 중"
+sed '/^<head>$/a\
+<base href="/v3/">' "$SRC/index.html" > /tmp/wonder-alias.html 2>/dev/null \
+  || sed '/^<head>$/a\
+<base href="/v3/">' "$SRC/index.html" > "$ROOT/.wonder-alias.tmp.html"
+WONDER_TMP="/tmp/wonder-alias.html"; [[ -s "$WONDER_TMP" ]] || WONDER_TMP="$ROOT/.wonder-alias.tmp.html"
+grep -qF '<base href="/v3/">' "$WONDER_TMP" || { echo "wonder alias injection failed" >&2; exit 4; }
+for key in "${PREFIX}/wonder" "${PREFIX}/wonder/" "${PREFIX}/wonder/index.html"; do
+  aws s3api put-object --bucket "$BUCKET" --region "$REGION" --key "$key" \
+    --body "$WONDER_TMP" --content-type 'text/html; charset=utf-8' \
+    --cache-control 'public, max-age=60' >/dev/null
+  echo "  올림  ${key}"
+done
+rm -f "$ROOT/.wonder-alias.tmp.html"
+
 # 배포 ID 를 사람이 기억할 필요가 없다 — earthus.net 별칭을 가진 배포를 직접 찾는다.
 CF_ID="${EARTHUS_CLOUDFRONT_DISTRIBUTION_ID:-}"
 if [[ -z "$CF_ID" ]]; then
@@ -85,7 +106,12 @@ if [[ -z "$CF_ID" ]]; then
 fi
 
 if [[ -n "$CF_ID" ]]; then
-  INV="$(aws cloudfront create-invalidation --distribution-id "$CF_ID"     --paths '/v3/*' --query 'Invalidation.Id' --output text)"
+  # Windows Git Bash 픽스: /wonder 처럼 슬래시로 시작하는 --paths 인자를 MSYS 가
+  # 윈도우 경로로 착각해 자기 멋대로 바꿔치기한다("/v3/*"는 와일드카드라 안 걸리고
+  # "/wonder"·"/wonder/"·"/wonder/index.html"만 걸려 매번 InvalidArgument 로 조용히
+  # 실패하고 있었다 — 실측 2026-09-05). deploy-v2-three.sh 가 이미 쓰는 방어를 그대로
+  # 가져온다. 이 호출에만 국한한다 — 전역으로 끄면 다른 곳의 실제 경로 변환이 깨진다.
+  INV="$(MSYS_NO_PATHCONV=1 aws cloudfront create-invalidation --distribution-id "$CF_ID"     --paths '/v3/*' '/wonder' '/wonder/' '/wonder/index.html' --query 'Invalidation.Id' --output text)"
   echo "▸ CloudFront 무효화 요청함  배포 $CF_ID  무효화 $INV"
 else
   echo "▸ earthus.net 별칭을 가진 CloudFront 배포를 못 찾아 무효화하지 않았다." >&2
@@ -94,4 +120,4 @@ fi
 
 echo
 echo "올림:  https://${BUCKET}.s3.${REGION}.amazonaws.com/${PREFIX}/v3/index.html"
-echo "주소:  https://earthus.net/v3/"
+echo "주소:  https://earthus.net/v3/  (메뉴가 거는 별칭: https://earthus.net/wonder/)"

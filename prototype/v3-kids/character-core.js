@@ -33,8 +33,11 @@ export function validate(c, { complete = false } = {}) {
   if (!n(c.placement?.lat, -90, 90) || !n(c.placement?.lon, -180, 180) || !n(c.placement?.scale, .015, .3)) errors.push('배치 좌표 또는 크기를 확인하세요.');
   if (!['breathe', 'sway', 'wave', 'still'].includes(c.motion)) errors.push('동작을 확인하세요.');
   if (!n(c.lod?.exit_px, 20, 400) || !n(c.lod?.enter_px, 30, 500) || c.lod.enter_px <= c.lod.exit_px) errors.push('가까운 거리 전환값은 먼 거리 전환값보다 커야 합니다.');
-  if (!Array.isArray(c.layers) || c.layers.length < 3 || c.layers.length > 7) errors.push('파츠는 3~7개로 구성하세요.');
-  else {
+  /* ⚠️ 파츠는 이제 **선택**이다. 122종을 손으로 잘라 넣을 수는 없고, 움직임이
+     더는 파츠에 묶여 있지 않다(몸 전체 동작). 파츠가 없으면 빌보드 한 장으로
+     서서 똑같이 움직인다. 있으면 가까이서 겹이 갈라진다. */
+  if (!Array.isArray(c.layers) || (c.layers.length && (c.layers.length < 3 || c.layers.length > 7))) errors.push('파츠는 없거나 3~7개여야 합니다.');
+  else if (c.layers.length) {
     const ids = new Set();
     for (const p of c.layers) {
       if (!/^[a-z][a-z0-9_]{0,31}$/.test(p.id) || ids.has(p.id)) errors.push('파츠 ID가 잘못되었거나 중복됩니다.');
@@ -44,18 +47,23 @@ export function validate(c, { complete = false } = {}) {
     }
   }
   if (complete) {
-    for (const slot of SLOTS) if (!c.assets[slot]) errors.push(`${slot}.png 파일이 필요합니다.`);
+    const need = c.layers.length ? SLOTS : SLOTS.filter(s => s !== 'parts_atlas');
+    for (const slot of need) if (!c.assets[slot]) errors.push(`${slot}.png 파일이 필요합니다.`);
     if (!c.hashes.master_sheet || c.approvals.master !== c.hashes.master_sheet) errors.push('디자인 시트를 먼저 확정하세요.');
     if (c.references.runtime_3q !== c.hashes.master_sheet) errors.push('현재 디자인 시트를 기준으로 단일 이미지를 다시 등록하세요.');
-    if (c.references.parts_atlas !== c.hashes.runtime_3q) errors.push('현재 단일 이미지를 기준으로 파츠 시트를 다시 등록하세요.');
+    if (c.layers.length && c.references.parts_atlas !== c.hashes.runtime_3q) errors.push('현재 단일 이미지를 기준으로 파츠 시트를 다시 등록하세요.');
     if (!c.approvals.motion) errors.push('파츠와 동작을 확인한 뒤 확정하세요.');
   }
   return [...new Set(errors)];
 }
 export function manifest(c) {
   const { schema_version, character_id, name, prompt, region, league, placement, motion, lod, layers } = c;
+  const f = files(character_id);
+  // 파츠가 없으면 파일 목록에도 넣지 않는다 — 없는 파일을 받으러 가지 않게.
+  if (!layers.length) delete f.parts_atlas;
   return { schema_version, character_id, name, prompt, region, league, placement, motion, lod, layers,
-    files: files(character_id), direction: 'surface-normal-camera-facing', shadow: { type: 'ellipse', opacity: .22 }, updated_at: c.updated_at };
+    moves: movesFor(c), files: f, direction: 'surface-normal-camera-facing',
+    shadow: { type: 'ellipse', opacity: .22 }, updated_at: c.updated_at };
 }
 export function promptFor(c, slot) {
   const shared = `Create a consistent 2.5D layered paper picture-book character named ${c.name}. ${c.prompt}\nSoft paper texture, clean silhouette, no text, no watermark, no ground or cast shadow. Keep identity, colors, proportions and clothing identical to the reference. Character only, full body, no clipping.`;

@@ -19,7 +19,7 @@ export class PaperCharacter {
     this.billboard = this.plane(images.runtime_3q, 1, 1); this.billboard.scale.x = images.runtime_3q.width / images.runtime_3q.height;
     this.billboard.position.y = .5; this.body.add(this.billboard);
     this.layered = new THREE.Group(); this.body.add(this.layered);
-    for (const part of data.layers) {
+    for (const part of (images.parts_atlas ? data.layers : [])) {
       const texture = new THREE.Texture(images.parts_atlas); texture.colorSpace = THREE.SRGBColorSpace; texture.needsUpdate = true;
       const [x, y, w, h] = part.rect; texture.repeat.set(w, h); texture.offset.set(x, 1 - y - h); this.textures.push(texture);
       const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, alphaTest: .06, depthWrite: false, side: THREE.DoubleSide });
@@ -60,6 +60,8 @@ export class PaperCharacter {
     if (force) this.near = force === 'layers';
     else if (this.near && pixels < this.data.lod.exit_px) this.near = false;
     else if (!this.near && pixels > this.data.lod.enter_px) this.near = true;
+    // 파츠가 없으면 언제나 빌보드 한 장이다. 없는 겹으로 넘어가지 않는다.
+    if (!this.parts.length) this.near = false;
     this.billboard.visible = !this.near; this.layered.visible = this.near;
     // Each appearance animates for eight seconds, then settles. No extra render loop on the globe.
     const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -98,6 +100,6 @@ export class PaperCharacter {
 }
 export async function loadPaperCharacter(data, urls) {
   const load = url => new Promise((resolve, reject) => { const img = new Image(); img.crossOrigin = 'anonymous'; img.onload = () => resolve(img); img.onerror = () => reject(new Error('캐릭터 이미지를 읽지 못했습니다.')); img.src = url; });
-  const [runtime_3q, parts_atlas] = await Promise.all([load(urls.runtime_3q), load(urls.parts_atlas)]);
+  const [runtime_3q, parts_atlas] = await Promise.all([load(urls.runtime_3q), urls.parts_atlas ? load(urls.parts_atlas) : null]);
   return new PaperCharacter(data, { runtime_3q, parts_atlas });
 }

@@ -16,7 +16,12 @@ export function createCharacterGlobe({ group, camera, focus }) {
       const url = safeUrl(row.manifest), response = await fetch(url); if (!response.ok) throw new Error('manifest'); const data = await response.json();
       if (data.character_id !== row.character_id || validate({ ...data, assets: {}, hashes: {}, approvals: {}, references: {} }).length) throw new Error('contract');
       const urls = {};
-      for (const slot of ['runtime_3q', 'parts_atlas']) { if (data.files?.[slot] !== `${data.character_id}_${slot}.png`) throw new Error('filename'); urls[slot] = new URL(data.files[slot], url).href; }
+      // 파츠는 선택이다. 목록에 있을 때만 받는다 — 없는 파일을 받으러 가면 캐릭터가 통째로 죽는다.
+      for (const slot of ['runtime_3q', 'parts_atlas']) {
+        if (slot === 'parts_atlas' && !data.files?.parts_atlas) continue;
+        if (data.files?.[slot] !== `${data.character_id}_${slot}.png`) throw new Error('filename');
+        urls[slot] = new URL(data.files[slot], url).href;
+      }
       const model = await loadPaperCharacter(data, urls); if (stopped) return model.dispose();
       group.add(model.group); models.set(row.character_id, { model, seen: performance.now() });
     } catch { failures.add(row.character_id); } finally { inflight.delete(row.character_id); }

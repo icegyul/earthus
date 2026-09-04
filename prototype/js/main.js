@@ -138,7 +138,9 @@ async function boot() {
   /* 부가 패널과 원격 자료가 모두 준비될 때까지 기다리면 느린 자료 하나 때문에
      스튜디오 연결도 같이 늦어진다. 캡처에 필요한 지구본 손잡이는 바로 연다. */
   exposeStudioCapture();
-  setAmbientView(127, 25);
+  // 첫 화면의 기준은 한국이다. 경도는 127로 맞아 있었지만 위도가 25(대만·오키나와 높이)라
+  // 처음 뜨는 화면의 한가운데가 한국이 아니었다. 여기서 돌기 시작해 첫 입력에 멈춘다(intro.js).
+  setAmbientView(127.8, 36.5);
   /* 등치선은 gridoverlay의 ready 이벤트보다 먼저 구독해야 딥링크 첫 렌더도 놓치지 않는다. */
   continuousContours.init();
   // B0 실험은 ?skyframe=1에서만 보인다. 일반 방문자 화면에는 진단 마커를 섞지 않는다.
@@ -723,12 +725,17 @@ function bindAccountUI() {
   /* 다른 지구(v2·v3)에서 '로그인'을 누르면 여기로 온다. 계정은 이 앱에만 있고,
      auth 는 config.local·biometric·access-mode·store·billing 에 묶여 있어
      저쪽으로 통째로 끌어오면 무거워진다 — 계정이 사는 곳으로 보내는 편이 정직하다.
-     ?back= 이 있으면 로그인이 끝난 뒤 원래 있던 지구로 돌려보낸다. */
+     ?back= 이 있으면 로그인이 끝난 뒤 원래 있던 지구로 돌려보낸다(같은 탭에서 옮겨 온 경우).
+     ?popup=1 이면 다른 지구가 작은 팝업으로 이 화면을 띄운 것이다 — 로그인이
+     끝나면 원래 창(opener)이 이미 살아 있으므로 돌아갈 곳이 없다. 스스로 닫는다. */
   {
     const q = new URLSearchParams(location.search);
     const back = q.get('back');
     if (back && /^\/[a-z0-9/-]*$/i.test(back)) {
       auth.onChange(() => { if (auth.user) location.replace(back); });
+    }
+    if (q.get('popup') === '1' && window.opener) {
+      auth.onChange(() => { if (auth.user) setTimeout(() => window.close(), 600); });
     }
     if (q.get('login') === '1') {
       // 이미 로그인돼 있으면 계정을, 아니면 로그인을 연다.

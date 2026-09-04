@@ -4,14 +4,14 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=56';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=58';
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
-import { IntelFeed } from './intel-feed.js?v=5';
-import { LiveLayers } from './live-layers.js?v=36';
+import { IntelFeed } from './intel-feed.js?v=7';
+import { LiveLayers } from './live-layers.js?v=38';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=2';
-import { i18n } from './i18n.js?v=8';
+import { i18n } from './i18n.js?v=10';
 // onboard.js 처럼 i18n 을 직접 들이지 않는 곳에서 쓴다. 문구를 한국어로 박아 두면
 // 영어 화면에서 거기만 한국어로 남는다(실측으로 잡았다).
 window.__earthusT = (k) => i18n.t(k);
@@ -20,8 +20,8 @@ import { CloudVolume } from './cloud-volume.js?v=4';
 import { PopSculpture } from './pop-sculpture.js?v=13';
 import { QuakeHistory } from './quake-history.js?v=3';
 import { initOnboard } from './onboard.js?v=2';
-import { SolarView } from './solar-view.js?v=2';
-import { GalaxyView } from './galaxy-view.js?v=1';
+import { SolarView } from './solar-view.js?v=4';
+import { GalaxyView } from './galaxy-view.js?v=3';
 import { SkyView } from './sky-view.js?v=1';
 import { AetherusLink } from './aetherus-link.js?v=2';
 import { SeaFloor } from './seafloor.js?v=2';
@@ -36,10 +36,19 @@ import {
   installFetchObserver, ThermalGovernor, scenePlan, layerDataState, layerTruthLine,
   refreshProviderHealth, providerCardHtml, providerSnapshot, THERMAL_STATE,
   getRuntime, registerAndMount, broadcastThermal, engineCardHtml, ENGINE_CLASS,
-} from './engine-bridge.js?v=12';
+} from './engine-bridge.js?v=15';
 import { globeAdapter, overlayAdapter, takeoverAdapter } from './engine-adapters.js?v=1';
 
 const EARTH_RADIUS_M = 6371000;
+
+// 세 지구(EARTHUS·Intelligence·WONDER)가 같은 자리에서 시작한다 — 기준은 한국이다.
+// v3(v3-kids)의 HOME 과 같은 뜻의 값이고, 두 곳이 어긋나면 전환기로 오갈 때 지구가 튄다.
+const KOREA_HOME = { lat: 36.5, lon: 127.8 };
+
+// 밤면에 실제로 걸린 불빛의 출처·날짜. NOW 카드가 이걸 그대로 적는다 —
+// 배경 연출이라도 언제 찍힌 것인지는 말해야 한다. (NOW 카드가 초기화보다 먼저 그려질 수
+// 있어서 모듈 맨 위에 둔다 — 함수 안에 두면 TDZ 로 터진다.)
+let nightLightSrc = '';
 
 // ---------------------------------------------------------------------------
 // 태양 위치 (실시간): 태양 직하점(subsolar point)의 위도 = 적위, 경도 = 시각에서 계산.
@@ -247,6 +256,11 @@ uniform float uPhotoMix;
 uniform float uIsobath;      // 해저 등심선 세기 (0 = 끔)
 uniform float uIsobathStep;  // 등심 간격 (m)
 uniform float uHasBase;
+// 밤면 도시 불빛 (VIIRS City Lights 2012 · 정적 합성본).
+// 베이스를 통째로 갈지 않고 **밤쪽에만 더한다** — 베이스를 갈면 낮면까지 불빛 그림이 되고,
+// 밤면은 어차피 0.055 배로 눌리니 불빛이 보이지도 않는다(둘 다 틀린 그림이 된다).
+uniform sampler2D uNightMap;
+uniform float uHasNight;
 uniform float uDetailEps;
 uniform vec3 uSunDir;
 uniform vec3 uCamPos;
@@ -379,6 +393,16 @@ void main() {
   vec3 nightCol = ground * vec3(0.055, 0.070, 0.105); // 밤면: 어두운 청색 잔광
   vec3 color = mix(nightCol, dayCol, dayMask);
 
+  // 밤면 도시 불빛. 낮면(dayMask=1)에는 한 톨도 더하지 않고, 박명 구간에서 서서히 켜진다.
+  // 색은 원본의 밝기만 가져와 나트륨등 색으로 다시 칠한다 — 원본 JPEG 의 색 얼룩을
+  // 그대로 얹으면 사막·구름이 도시처럼 빛난다.
+  if (uHasNight > 0.5) {
+    vec3 nRaw = texture2D(uNightMap, vec2(lon / (2.0 * PI) + 0.5, lat / PI + 0.5)).rgb;
+    float lum = dot(nRaw, vec3(0.299, 0.587, 0.114));
+    float lights = smoothstep(0.11, 0.55, lum);          // 바닥 잡음은 버린다
+    color += vec3(1.00, 0.84, 0.58) * lights * 1.15 * (1.0 - dayMask);
+  }
+
   // 구름 그림자: 태양 쪽으로 살짝 이동한 지점의 구름 알파만큼 지면을 어둡게
   if (uCloudShadow > 0.5) {
     vec3 tSun = uSunDir - nGeo * dot(nGeo, uSunDir);
@@ -510,8 +534,10 @@ class OrbitCam {
   constructor(camera, dom) {
     this.camera = camera;
     this.dom = dom;
-    this.yaw = 0.6;
-    this.pitch = 0.35;
+    // 첫 화면의 기준은 한국이다 (부팅에서 한 번 더 못박는다 — KOREA_HOME).
+    // 거리 3.0 은 전지구가 한 화면에 들어오는 거리다.
+    this.yaw = THREE.MathUtils.degToRad(KOREA_HOME.lon);
+    this.pitch = THREE.MathUtils.degToRad(KOREA_HOME.lat);
     this.dist = 3.0;
     this.targetYaw = this.yaw;
     this.targetPitch = this.pitch;
@@ -1280,11 +1306,25 @@ class CloudManager {
   }
 
   // 관측: 1차 GMGSI 다중위성 IR 실황(10분급, EARTHUS 캐시) → 실패 시 GIBS 어제자 폴백
+  // 관측 구름의 출처는 둘이다 — NOAA GMGSI(정지위성 합성)와 NASA GIBS(수오미 NPP VIIRS).
+  // **둘 중 더 최신인 것**을 쓴다. 실측(2026-09-04)으로는 거의 항상 GMGSI 다:
+  //   · GMGSI  매시간 · 전지구 · 적외라 밤에도 구름이 보인다
+  //   · VIIRS  하루 한 장 · 하루치를 채워 가는 중이라 오늘 자는 조각이고 **낮 쪽만** 찍힌다
+  // 그래서 기본은 GMGSI 이고, GMGSI 가 실패하거나 **늙었을 때만** VIIRS 로 넘어간다.
+  // 전에는 '실패'만 봤다 — 파이프라인이 멈춰 서서 몇 시간 묵은 그림을 보내도 그대로 실황이라고 걸었다.
   async loadObserved() {
     try {
-      return await this.loadGmgsi();
+      const r = await this.loadGmgsi();
+      const at = Date.parse(this.lastObsTime || '');
+      const ageH = Number.isFinite(at) ? (Date.now() - at) / 3600000 : null;
+      // 매시간 자료가 3시간을 넘겼으면 파이프라인이 서 있는 것이다.
+      if (ageH != null && ageH > 3) {
+        console.warn(`[earthus-cloud] GMGSI ${ageH.toFixed(1)}시간 경과 → 수오미 VIIRS 로 전환`);
+        try { return await this.loadGibs(); } catch (e2) { return r; }   // VIIRS 도 안 되면 묵은 것이라도 (배지가 늙음을 말한다)
+      }
+      return r;
     } catch (err) {
-      console.warn('[earthus-cloud] GMGSI 실패 → GIBS 폴백:', err.message);
+      console.warn('[earthus-cloud] GMGSI 실패 → 수오미 VIIRS 폴백:', err.message);
       return this.loadGibs();
     }
   }
@@ -1353,6 +1393,7 @@ class CloudManager {
     CloudManager.featherEdges(ctx, 0, yTop, W, yH, 0, (3 / 180) * H); // 극 경계만 페이드
     const tex = CloudManager.texDefaults(new THREE.CanvasTexture(full));
     const t = (meta.time || '').replace('T', ' ').slice(0, 16);
+    this.lastObsTime = meta.time || null;   // loadObserved 가 신선도를 재는 데 쓴다
     return { tex, lum: 0, relief: true, label: i18n.ko
       ? `관측 실황 · 다중위성 IR 합성 (NOAA GMGSI) · ${t}Z · 3D 릴리프(DERIVED: IR→고도 근사)`
       : `Observed now · multi-satellite IR composite (NOAA GMGSI) · ${t}Z · 3D relief (DERIVED: IR→height approximation)` };
@@ -2171,9 +2212,13 @@ class CountryFocus {
     this.orbit.glide = 1.1;
 
     this.uniforms.uHasFocus.value = 1;
+    // 고른 것을 알려주는 칩도 화면 언어를 따른다 — 영어 화면에서 여기만 한국어로 남아 있었다.
+    const x = `<button class="chip-x" title="${i18n.t('clearSel')}">✕</button>`;
     this.chip.innerHTML = sel.region
-      ? `${sel.nameKo} · ${sel.count}개국 <button class="chip-x" title="해제">✕</button>`
-      : `${f.nameKo} (${f.nameEn}) · ${f.code3} <button class="chip-x" title="해제">✕</button>`;
+      ? (i18n.ko ? `${sel.nameKo} · ${sel.count}개국 ${x}`
+        : `${i18n.region(sel.code3 ? sel.code3.replace('RGN:', '') : '', sel.nameKo)} · ${sel.count} countries ${x}`)
+      : (i18n.ko ? `${f.nameKo} (${f.nameEn}) · ${f.code3} ${x}`
+        : `${f.nameEn} · ${f.code3} ${x}`);
     this.chip.classList.add('show');
     if (this.onChange) this.onChange(sel.region ? sel : f);
   }
@@ -2390,6 +2435,8 @@ async function main() {
     uPhotoMix: { value: hasHeight ? 0.65 : 1.0 },
     uHasHeight: { value: hasHeight },
     uHasBase: { value: hasBase },
+    uNightMap: { value: null },
+    uHasNight: { value: 0 },
     uSunDir: { value: new THREE.Vector3(0, 0, 1) },
     uCamPos: { value: new THREE.Vector3() },
     uDetailMap: { value: null },
@@ -2447,16 +2494,21 @@ async function main() {
     orbit.dist = 1 + 320 / 6371;
     orbit.targetDist = orbit.dist;
   };
-  const map = new MapView(document.getElementById('mapview'), hud, backToGlobe);
+  // 하위 뷰가 쓰는 HUD 손잡이는 컨테이너(#hud)가 아니라 글줄(#hud-line)이다.
+  // 컨테이너에 textContent 를 넣으면 진단 버튼(#hud-more)과 상세(#hud-detail)가 통째로
+  // 지워진다 — 태양계·사진관·은하·지도에 한 번 들어갔다 나오면 진단 HUD가 세션 내내
+  // 사라지고, 매 프레임의 고도 갱신은 떨어져 나간 노드에만 쓰였다.
+  const hudLine = document.getElementById('hud-line');
+  const map = new MapView(document.getElementById('mapview'), hudLine, backToGlobe);
   // AETHERUS 오늘의 태양계 (JPL 근사 궤도요소를 기기에서 계산)
-  const solar = new SolarView(hud);
-  const galaxy = new GalaxyView(document.getElementById('hud'));
+  const solar = new SolarView(hudLine);
+  const galaxy = new GalaxyView(hudLine);
   window.__earthusSolar = solar;
   // AETHERUS 우주 사진관 (천구 방향 배치)
-  const sky = new SkyView(hud);
+  const sky = new SkyView(hudLine);
   window.__earthusSky = sky;
 
-  const local = new LocalTerrain(hud);
+  const local = new LocalTerrain(hudLine);
   local.onClose = backToGlobe;
   local.onOpenMap = (lat, lon) => { map.show(lat, lon, 12); };
   // 위성지도 → 지역 3D 지형 (역방향 전환)
@@ -3124,7 +3176,7 @@ async function main() {
       focusSel: focus.selected,
       focusStatsHtml: focusStatsRows,
       sunHtml,
-      terrainHtml: `과장 ${uniforms.uExagger.value}× · 음영 ${uniforms.uShade.value.toFixed(1)}${uniforms.uIsobath.value > 0.5 ? ` · 등심선 ${uniforms.uIsobathStep.value.toLocaleString('ko-KR')} m` : ''}<br/>전역 z4 + 지역 z6~z8 스트리밍 (AWS Terrarium)`,
+      terrainHtml: `과장 ${uniforms.uExagger.value}× · 음영 ${uniforms.uShade.value.toFixed(1)}${uniforms.uIsobath.value > 0.5 ? ` · 등심선 ${uniforms.uIsobathStep.value.toLocaleString('ko-KR')} m` : ''}<br/>전역 z4 + 지역 z6~z8 스트리밍 (AWS Terrarium)${nightLightSrc ? `<br/>밤면 불빛 · ${nightLightSrc}` : ''}`,
       cloudBadge: cloudBadgeFor(clouds.mode),
       cloudHtml: document.getElementById('cloud-note').textContent,
     });
@@ -3303,6 +3355,53 @@ async function main() {
     orbit.autoRotate = false;
   };
 
+  // 레이어를 켰는데 그 자료가 화면 밖에 있으면, 자료가 있는 곳으로 옮긴다.
+  //
+  // 전에는 옮기지 않았다. 그래서 아프리카를 보는 중에 '대기질(에어코리아)'을 켜면
+  // 오른쪽에 카드만 뜨고 지구에서는 아무 일도 일어나지 않았다 — 한국 자료를
+  // 지구 반대편에서 켠 것이니 당연한데, 화면은 그 사실을 말해 주지 않았다.
+  // 켰는데 변화가 없는 화면은 '고장'으로 읽힌다.
+  //
+  // 이미 보고 있는 곳에 자료가 있으면 건드리지 않는다 — 사람이 맞춰 둔 구도를
+  // 빼앗지 않는다. 전지구 자료도 옮기지 않는다(옮길 곳이 없다).
+  // 반환: 옮겼으면 그 자리를 설명하는 한 줄, 아니면 ''.
+  const revealLayer = (lid) => {
+    const cov = liveLayers.coverage(lid);
+    if (!cov || cov.global) return '';
+
+    // 자료 덩어리가 화면을 채우는 거리 (권역 이동 표와 같은 눈금: 한반도 10° → 1.22, 동북아 35° → 1.62)
+    const fit = THREE.MathUtils.clamp(1.08 + 0.0145 * cov.spanDeg, 1.18, 3.0);
+    const M = Math.PI / 180;
+    // 지금 보고 있는 지점과 자료 중심 사이의 각 — 60°를 넘으면 지구 뒤편이라 보이지 않는다.
+    const here = new THREE.Vector3(
+      Math.cos(orbit.pitch) * Math.sin(orbit.yaw), Math.sin(orbit.pitch), Math.cos(orbit.pitch) * Math.cos(orbit.yaw),
+    );
+    const there = new THREE.Vector3(
+      Math.cos(cov.lat * M) * Math.sin(cov.lon * M), Math.sin(cov.lat * M), Math.cos(cov.lat * M) * Math.cos(cov.lon * M),
+    );
+    const offView = here.dot(there) < 0.5;                 // 60° 밖
+    const tooFar = orbit.targetDist > fit * 1.6;           // 점이 보이긴 해도 알아볼 수 없는 거리
+    if (!offView && !tooFar) return '';
+
+    if (map.active) map.exit();
+    if (local.active) local.close(true);
+    let ty = cov.lon * M;
+    ty += Math.round((orbit.yaw - ty) / (2 * Math.PI)) * 2 * Math.PI;
+    orbit.targetYaw = ty;
+    orbit.targetPitch = cov.lat * M;
+    // 자리를 옮기는 김에 거리도 그 자료가 담기는 거리로 맞춘다. 너무 멀면 점이 안 보이고,
+    // 너무 가까우면(한국을 보다 미국 특보를 켠 경우) 자료의 한 귀퉁이만 보인다.
+    // 지구 반대편으로 넘어가는 참이라 사람이 맞춰 둔 줌은 이미 뜻을 잃었다.
+    orbit.targetDist = fit;
+    orbit.glide = 1.2;
+    orbit.autoRotate = false;
+    const ns = cov.lat >= 0 ? 'N' : 'S';
+    const ew = cov.lon >= 0 ? 'E' : 'W';
+    return i18n.ko
+      ? `<div class="card"><div class="card-b" style="font-size:11px;opacity:.8">이 자료가 있는 곳으로 옮겼습니다 — ${Math.abs(cov.lat).toFixed(1)}°${ns} ${Math.abs(cov.lon).toFixed(1)}°${ew} 부근. 화면을 그대로 두고 싶으면 지구를 끌어 되돌리면 됩니다.</div></div>`
+      : `<div class="card"><div class="card-b" style="font-size:11px;opacity:.8">Moved to where this data actually is — near ${Math.abs(cov.lat).toFixed(1)}°${ns} ${Math.abs(cov.lon).toFixed(1)}°${ew}. Drag the Earth to go back.</div></div>`;
+  };
+
   // 카드 띄우기 — 메뉴 클릭 밖(칩·단축키)에서도 같은 카드를 쓰려고 공용으로 둔다
   const showNote = (title, body, badge) => {
     lockedNote = { title, body, badge };
@@ -3360,6 +3459,14 @@ async function main() {
       const ds = layerDataState(`${sid}/${l.id}`);
       if (ds !== 'LIVE') return { ...st, note: `${st.note ? st.note + ' · ' : ''}${ds}` };
       return st;
+    },
+    // 나라 이름은 나라 정본(country-reference)이 갖고 있다. 셸이 우리말 이름만 든 목록으로
+    // 칩을 그리다 보니 영어 화면에서 나라 이름만 한국어로 남았다 — 정본에 물어서 채운다.
+    countryName: (iso3, koFallback) => {
+      if (i18n.ko) return koFallback;
+      const feats = (focus.data && focus.data.features) || [];
+      const f = feats.find((c) => c.code3 === iso3);
+      return (f && f.nameEn) || koFallback;
     },
     onLayerAction: (sid, layer) => {
       const key = `${sid}/${layer.id}`;
@@ -3423,7 +3530,9 @@ async function main() {
           if (st.on) {
             // 정본이 선언한 증거종류·신선도 기준을 카드에 함께 보여준다 (진리등급의 근거)
             const truth = layerTruthLine(key);
-            note(title, liveLayers.card(lid) + (truth ? `<div class="card"><div class="card-b" style="font-size:11px;opacity:.75">${truth}</div></div>` : ''), st.badge);
+            // 자료가 화면 밖이면 그 자리로 옮기고, 옮겼다는 사실을 카드에 적는다
+            const moved = revealLayer(lid);
+            note(title, liveLayers.card(lid) + moved + (truth ? `<div class="card"><div class="card-b" style="font-size:11px;opacity:.75">${truth}</div></div>` : ''), st.badge);
           } else if (st.error) {
             note(title, `데이터를 불러오지 못했습니다 — 값을 생성하지 않고 표시하지 않습니다.<br/>${st.error}`, 'UNAVAILABLE');
           } else {
@@ -3673,6 +3782,8 @@ async function main() {
     getNow: getNowHtml,
     getMy: () => getMyHtml(),
     getFeed: () => feed.html(),
+    // WHY 탭이 "고른 사건"을 가리킬 수 있게 — 피드가 무엇을 열어 두었는지만 알려준다
+    feedSelected: () => (feed.selected ? { title: feed.selected.title, kind: feed.selected.kind } : null),
     getScenario: () => {
       const hasSea = seaPoint && seaPoint.marine;
       const loc = hasSea ? seaPoint : { lat: 34.2, lon: 128.9 };
@@ -4074,6 +4185,29 @@ async function main() {
 
   // 첫 방문 안내 — 처음 온 사람에게 조작법과 어디에 뭐가 있는지 한 번만 알려준다
   const onboard = initOnboard();
+
+  // 안내를 닫고 나면 오늘의 지구 사건을 펴 준다.
+  //
+  // 전에는 안내를 닫으면 **아무것도 없는 화면**이 남았다. 지구는 아름다운데 화면에
+  // 적힌 것이 하나도 없어서, 지금 이 별에서 태풍 6개와 지진 14건이 벌어지고 있다는
+  // 사실이 닫힌 서랍 두 개 뒤에 숨어 있었다. 자료가 89겹인 제품의 첫인상이
+  // '예쁜 지구본'이면, 그 다음 질문(이걸 왜 돈 주고 쓰지)에 답할 기회가 없다.
+  // 한 번만 연다 — 다음부터는 사람이 닫아 둔 상태를 존중한다.
+  const INTRO_FEED_KEY = 'earthus.v2.feedIntro';
+  let feedIntroSeen = false;
+  try { feedIntroSeen = localStorage.getItem(INTRO_FEED_KEY) === '1'; } catch (e) { feedIntroSeen = false; }
+  if (!feedIntroSeen) {
+    // 첫 방문 안내가 떠 있는 동안은 기다린다 — 두 개를 한꺼번에 띄우지 않는다.
+    const openFeedOnce = () => {
+      const intro = document.getElementById('intro');
+      if (intro && intro.classList.contains('show')) { setTimeout(openFeedOnce, 600); return; }
+      try { localStorage.setItem(INTRO_FEED_KEY, '1'); } catch (e) { /* 사생활 모드 */ }
+      shell.showTab('feed');
+      shell.openIntel();
+      shell.renderIntel();
+    };
+    setTimeout(openFeedOnce, 2600);
+  }
   document.getElementById('btn-help').addEventListener('click', () => {
     closeDrawers();
     shell.closeFlyout();
@@ -4288,7 +4422,6 @@ async function main() {
   // ---------- 진단 HUD ----------
   // 화면만 봐서는 어느 빌드에서 무엇이 켜져 있는지 알 수 없다.
   // 여기 모아 두면 PD가 통째로 복사해 넘길 수 있다 — 캡처보다 정확하고 빠르다.
-  const hudLine = document.getElementById('hud-line');
   const hudMore = document.getElementById('hud-more');
   const hudText = document.getElementById('hud-text');
   const hudCopy = document.getElementById('hud-copy');
@@ -4583,15 +4716,33 @@ async function main() {
     { id: 'truecolor', ko: '오늘의 지구 (실촬영)', src: 'VIIRS True Color', badge: 'OBSERVED',
       layer: 'VIIRS_SNPP_CorrectedReflectance_TrueColor', res: '250m', ext: 'jpeg', daily: true,
       note: '어제자 실제 위성 촬영 — 구름·연무·황사가 그대로 보입니다 (밤면은 촬영 불가라 검음)' },
-    { id: 'night', ko: '밤의 불빛', src: 'VIIRS City Lights', badge: 'OBSERVED',
-      layer: 'VIIRS_CityLights_2012', date: '2012-01-01', res: '500m', ext: 'jpeg',
+    // 밤 불빛은 오랫동안 2012년 합성본이었다. 14년 전 불빛을 '지금'처럼 걸어 둘 이유가 없다.
+    // NASA Black Marble VNP46A2(일별·갭필·BRDF 보정)가 이틀 지연으로 계속 올라온다
+    // (실측 2026-09-04: 최신 2026-09-02, 타일 9/9 정상). 이게 1순위다.
+    { id: 'night', ko: '밤의 불빛', src: 'NASA Black Marble (VIIRS DNB)', badge: 'OBSERVED',
+      layer: 'VIIRS_SNPP_GapFilled_BRDF_Corrected_DayNightBand_Radiance', res: '500m', ext: 'png',
+      daily: true, lagH: 54,
+      note: '이틀 전 밤에 실제로 찍힌 불빛 (VNP46A2 · 갭필·달빛 보정)' },
+  ];
+  // 일별 불빛이 안 잡히는 날의 대체 — 새것부터. 값을 만들지 않고 있는 것 중 최신을 쓴다.
+  const NIGHT_FALLBACK = [
+    { ko: '밤의 불빛 (2016 합성본)', layer: 'VIIRS_Black_Marble', date: '2016-01-01', res: '500m', ext: 'png',
+      note: '2016년 야간광 합성본 — 현재 시각의 불빛이 아닙니다' },
+    { ko: '밤의 불빛 (2012 합성본)', layer: 'VIIRS_CityLights_2012', date: '2012-01-01', res: '500m', ext: 'jpeg',
       note: '2012년 야간광 합성본 — 현재 시각의 불빛이 아닙니다' },
   ];
   let baseStyle = 'ne2';
   const baseCache = { ne2: baseTex };
 
-  async function loadGibsBase(st) {
-    const date = st.daily ? new Date(Date.now() - 36 * 3600000).toISOString().slice(0, 10) : st.date;
+  // lagH: 그 산출물이 실제로 공개되기까지 걸리는 시간. 트루컬러는 36시간이면 되지만
+  // 밤 불빛(Black Marble VNP46A2)은 보정·갭필을 거쳐 이틀쯤 뒤에 올라온다(실측 2026-09-04:
+  // 최신 공개일 2026-09-02). 이 값을 안 맞추면 매번 빈 날짜를 받아 타일이 통째로 비고,
+  // 25장 미만이면 아래에서 예외가 나 폴백으로 떨어진다.
+  async function loadGibsBase(st, dayShift = 0) {
+    const lagH = st.lagH || 36;
+    const date = st.daily
+      ? new Date(Date.now() - (lagH + dayShift * 24) * 3600000).toISOString().slice(0, 10)
+      : st.date;
     const cols = 10;
     const rows = 5;
     const can = document.createElement('canvas');
@@ -4608,7 +4759,9 @@ async function main() {
       img.crossOrigin = 'anonymous';
       img.onload = () => { ctx.drawImage(img, c * 512, r * 512); ok += 1; res(); };
       img.onerror = () => res();
-      img.src = `https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/${st.layer}/default/${date}/${st.res}/3/${r}/${c}.jpg`;
+      // 확장자를 .jpg 로 박아 두고 있었다 — 표에 ext 를 적어 두고도 쓰지 않아서
+      // PNG 로만 나오는 산출물(밤 불빛 일별)은 통째로 404 였다.
+      img.src = `https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/${st.layer}/default/${date}/${st.res}/3/${r}/${c}.${st.ext || 'jpg'}`;
     })));
     if (ok < 25) throw new Error(`GIBS 타일 ${ok}/50`);
     const tex = new THREE.CanvasTexture(can);
@@ -4727,14 +4880,19 @@ async function main() {
     }
   };
 
-  // 시작 카메라: 태양 직하점(지금 낮인 곳) 상공에서 시작
+  // 시작 카메라: **한국**. 여기서 시작해 스스로 돌고, 손이 닿으면 멈춘다.
+  //
+  // 전에는 태양 직하점(지금 낮인 곳)에서 시작했다. 첫 화면이 어둡지 않다는 장점은 있었지만,
+  // 그 자리는 계절과 시각에 따라 매일 다른 대륙이라 한국에서 접속한 사람이 아프리카를 보고
+  // 시작하는 날이 많았다. 세 지구(EARTHUS·Intelligence·WONDER) 모두 기준을 한국으로 맞춘다.
+  //
+  // ⚠️ 한국이 밤인 시각에 열면 첫 화면의 한반도는 어둡다. 그건 지금 지구의 사실이고,
+  //    이 제품은 없는 낮을 만들어 보여주지 않는다. 낮을 보고 싶으면 타임 스트립을 밀면 된다.
   {
-    const s = subsolarPoint(new Date());
-    orbit.yaw = s.lonRad;
-    orbit.targetYaw = s.lonRad;
-    const p = THREE.MathUtils.clamp(s.latRad, -1.0, 1.0);
-    orbit.pitch = p;
-    orbit.targetPitch = p;
+    orbit.yaw = THREE.MathUtils.degToRad(KOREA_HOME.lon);
+    orbit.targetYaw = orbit.yaw;
+    orbit.pitch = THREE.MathUtils.degToRad(KOREA_HOME.lat);
+    orbit.targetPitch = orbit.pitch;
   }
 
   // --- 루프 ---
@@ -4905,8 +5063,8 @@ async function main() {
     if (map.active) {
       return; // 지도 모드: 3D 렌더 정지 (지도가 자체적으로 DOM 렌더)
     }
-    if (sim.active || local.active || solar.active || sky.active) {
-      return; // 시뮬레이션/지역 3D/태양계/사진관 모드: 자체 루프가 렌더
+    if (sim.active || local.active || solar.active || sky.active || galaxy.active) {
+      return; // 시뮬레이션/지역 3D/태양계/사진관/은하 모드: 자체 루프가 렌더
     }
     orbit.update(dt);
 
@@ -5038,6 +5196,32 @@ async function main() {
   // 링크로 들어왔다면 그 화면을 되살린다 (국가 데이터가 준비된 뒤라 선택도 복원된다)
   const incoming = parseLink();
   if (incoming) applyLink(incoming).catch((e) => console.warn('[earthus-three] 링크 복원 실패', e));
+
+  // 밤면 도시 불빛 — 첫 화면의 기준을 한국으로 옮기면서 필요해졌다.
+  // 한국이 밤인 시각(대략 절반)에 열면 첫 화면의 한반도가 통째로 까맸다. 없는 낮을 만들지는
+  // 않되, 밤에 실제로 있는 것(도시 불빛)은 보여 준다. 낮면에는 한 톨도 더하지 않는다.
+  // ⚠️ VIIRS City Lights **2012** 정적 합성본이다 — 지금 이 순간의 불빛이 아니다.
+  //    지형·구름을 한 프레임도 늦추지 않으려고 로딩바가 끝난 뒤에 뒤에서 받는다.
+  setTimeout(async () => {
+    const st = BASE_STYLES.find((s) => s.id === 'night');
+    if (!st) return;
+    // 일별 불빛 → 하루 더 뒤로 → 2016 합성본 → 2012 합성본. 되는 것 중 가장 새것에서 멈춘다.
+    const tries = [
+      () => loadGibsBase(st, 0),
+      () => loadGibsBase(st, 1),
+      ...NIGHT_FALLBACK.map((f) => () => loadGibsBase(f)),
+    ];
+    for (let i = 0; i < tries.length; i += 1) {
+      try {
+        const { tex, date } = await tries[i]();
+        uniforms.uNightMap.value = tex;
+        uniforms.uHasNight.value = 1;
+        nightLightSrc = i < 2 ? `${st.src} · ${date}` : (NIGHT_FALLBACK[i - 2].ko);
+        return;
+      } catch (e) { /* 다음 후보로 */ }
+    }
+    console.warn('[earthus-three] 밤 불빛 전부 실패 — 밤면은 잔광만');
+  }, 900);
 
   // 접속하면 지구만 뜨고 구름이 없었다 — 매번 손으로 켜야 했다.
   // 지구가 뜬 뒤에 전지구 관측 구름(NOAA GMGSI)을 얹는다.

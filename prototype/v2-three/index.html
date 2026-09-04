@@ -134,6 +134,18 @@
     color: var(--text-dim); font-size: 10px; line-height: 1.5; }
   #panel .credit a { color: var(--text-dim); }
 
+  /* 전체화면 하위 뷰(2D 지도·시뮬·은하·태양계·사진관·지역 3D)에서는 세 지구 전환기를 숨긴다.
+     전환기(.es-switch)는 top-left 14px 고정에 z-index 9000 이라, 각 뷰가 같은 자리에 두는
+     '◀ 지구로' 버튼과 경로 표시(AETHERUS › …)를 통째로 덮고 있었다. 뒤로 가려고 그 자리를
+     누른 사람은 EARTHUS 1.0 으로 나가 버렸고, Esc 가 없는 터치 기기에서는 빠져나올 길이
+     아예 없었다. 지구로 돌아오면 전환기도 함께 돌아온다. */
+  body:has(#mapview.active) .es-switch,
+  body:has(#simview.active) .es-switch,
+  body:has(#gxview.active) .es-switch,
+  body:has(#solarview.active) .es-switch,
+  body:has(#skyview.active) .es-switch,
+  body:has(#localview.active) .es-switch { display: none; }
+
   #mapview {
     position: fixed; inset: 0; display: block; background: #0a0f14;
     opacity: 0; pointer-events: none; transition: opacity 0.35s;
@@ -904,6 +916,10 @@
     /* 오른쪽 설정·검색 패널도 화면을 넘지 않게 */
     #panel { width: min(252px, 74vw); }
     #intel.open #intel-body { width: calc(100vw - 16px); max-height: 52vh; }
+    /* 좁은 화면에서 인텔 패널은 화면 폭을 다 쓴다. 그 위에 좌측 브랜드 손잡이가 그대로
+       떠 있어서 첫 탭(FEED)의 글자와 사건 줄의 왼쪽 끝을 덮고 있었다 — 열려 있는 것을
+       가리는 손잡이는 쓸모가 없다. 패널이 열려 있는 동안만 접는다. */
+    body:has(#intel.open) .edge-tab { opacity: 0; pointer-events: none; }
     /* 아이폰 홈 인디케이터·노치 — viewport-fit=cover와 함께 써야 의미가 있다 */
     #timestrip {
       left: 8px; right: 8px; transform: none;
@@ -919,6 +935,34 @@
     #intel { right: 8px; bottom: 66px; }
     #intel-tab { padding: 7px 12px; font-size: 11px; }
     #intel.open #intel-body { width: calc(100vw - 16px); max-height: 52vh; }
+    /* AETHERUS 전체화면 뷰(태양계·사진관·은하) — 좁은 화면에서 윗줄이 통째로 겹쳤다.
+       '◀ 지구로'·경로·가운데 제목이 한 줄에 몰려 서로의 글자를 지웠고, 사진관은 카드가
+       망원경 거르개를 덮어 허블·제임스 웹을 누를 수조차 없었다. 경로는 접고(제목이 같은
+       말을 한다) 제목을 아래 줄로 내린 뒤, 카드·거르개·막대를 화면 폭에 맞춘다. */
+    #sv-crumb, #sk-crumb, #gx-crumb { display: none; }
+    #sv-title, #sk-title, #gx-title { top: 56px; left: 12px; right: 12px; transform: none; }
+    #sv-title b, #sk-title b, #gx-title b { font-size: 15px; letter-spacing: 0.32em; }
+    #sv-title span, #sk-title span, #gx-title span { font-size: 10px; }
+    #gx-card { top: 104px; max-height: 40vh; }
+    #sv-card {
+      right: 8px; left: 8px; width: auto; top: 104px;
+      max-height: 38vh; overflow-y: auto; overscroll-behavior: contain;
+    }
+    /* left:50% + translateX(-50%) 는 폭이 화면의 절반으로 묶인다. 좁은 화면에서
+       망원경 거르개가 '전 체 / 허 블'처럼 글자마다 줄바꿈됐고, 은하 출처 줄은 세 줄이 됐다. */
+    #sk-filters { top: 100px; left: 12px; right: 12px; transform: none; justify-content: center; }
+    #gx-bar { left: 12px; right: 12px; transform: none; }
+    #sk-card { right: 8px; left: 8px; width: auto; top: 144px; max-height: 38vh; }
+    #sv-bar {
+      left: 8px; right: 8px; transform: none; flex-wrap: wrap;
+      justify-content: center; gap: 8px 12px; padding: 8px 12px;
+      bottom: calc(12px + env(safe-area-inset-bottom));
+    }
+    #sv-bar input[type="range"] { width: 45vw; }
+    #sk-hint {
+      left: 12px; right: 12px; transform: none; text-align: center;
+      bottom: calc(12px + env(safe-area-inset-bottom));
+    }
   }
 </style>
 </head>
@@ -1033,7 +1077,7 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=170"></script>
+<script type="module" src="./js/main.js?v=182"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

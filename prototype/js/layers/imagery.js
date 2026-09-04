@@ -129,12 +129,18 @@ export const imagery = {
     // 매시간 갱신되고 색 눈금을 우리가 정할 수 있다 — gridoverlay.js 참고.
 
     // ── 야간 도시 불빛 ──
+    // 오랫동안 VIIRS_CityLights_2012 였다 — 14년 전 불빛을 밤마다 걸어 두고 있었다.
+    // NASA Black Marble VNP46A2(일별·갭필·BRDF 보정)가 이틀 지연으로 계속 올라온다
+    // (실측 2026-09-04: 최신 2026-09-02). 시각 세그먼트를 비우면 GIBS 가 최신을 준다 —
+    // 날짜를 우리가 계산해 박으면 그 날 자료가 없는 날 통째로 404 다(위 gibsProvider 주석).
     this.citylight = viewer.imageryLayers.addImageryProvider(
-      gibsProvider({ layer: 'VIIRS_CityLights_2012', level: 8, ext: 'jpeg' })
+      gibsProvider({ layer: 'VIIRS_SNPP_GapFilled_BRDF_Corrected_DayNightBand_Radiance', level: 8, ext: 'png' })
     );
     this.citylight.dayAlpha = 0.0;
     this.citylight.nightAlpha = 1.0;
-    this.citylight.brightness = 1.6;
+    // 1.6 은 미리 톤을 잡아 둔 2012 JPEG 기준이었다. 일별 DNB 는 라디언스라 폭이 넓어
+    // 같은 값을 주면 수도권이 흰 덩어리로 뭉갠다. 1.6 은 뭉개고 1.15 는 거의 안 보여 그 사이로 잡았다.
+    this.citylight.brightness = 1.35;
   },
 
   /* ── RealEarth 전지구 구름 ────────────────────────────────────

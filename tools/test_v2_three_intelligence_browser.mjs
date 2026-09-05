@@ -99,6 +99,26 @@ try {
     }
     evidence.checks.scenario = sc;
   }
+  // 지시서 N-1 — 지진 사건 방에 도달시간 행(있음/계산 대상 아님/조회 불가 중 하나)이 반드시 있다
+  await page.evaluate(() => document.querySelector('[data-tab="feed"]').dispatchEvent(new MouseEvent('click', { bubbles: true })));   // 가정 실험 탭에 있었다
+  await page.waitForTimeout(500);
+  await page.evaluate(() => { const b = document.querySelector('[data-action="feed-back"]'); if (b) b.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+  await page.waitForTimeout(800);
+  const eqIdx = await page.evaluate(() => [...document.querySelectorAll('#intel-content .feed-item')].findIndex((it) => it.querySelector('.feed-dot.eq')));
+  if (eqIdx >= 0) {
+    await page.evaluate((i) => { const el = document.querySelectorAll('#intel-content .feed-item')[i]; el.scrollIntoView(); el.dispatchEvent(new MouseEvent('click', { bubbles: true })); }, eqIdx);
+    await page.waitForSelector('.room-src', { timeout: 90000 });
+    await page.waitForTimeout(3000);
+    const eq = await page.evaluate(() => {
+      const t = document.querySelector('#intel-content').textContent;
+      return { hasEtaRow: /쓰나미 도달시간 추정/.test(t), state: /도달시간 계산 대상이 아닙니다/.test(t) ? 'NOT_TARGET' : /첫 파 도달 추정/.test(t) ? 'PRESENT' : /쓰나미 도달시간 추정[\s\S]{0,200}조회 불가/.test(t) ? 'FAILED' : 'UNKNOWN', noDanger: !/위험 없음|안전합니다/.test(t) };
+    });
+    evidence.checks.quakeRoom = eq;
+    assert.ok(eq.hasEtaRow, 'ETA_ROW_MISSING');
+    assert.notEqual(eq.state, 'UNKNOWN', 'ETA_ROW_STATE_UNKNOWN');
+    assert.ok(eq.noDanger, 'ETA_ROW_SAYS_SAFE');
+    await page.screenshot({ path: path.join(out, 'quake-room.png') });
+  }
   await page.evaluate(() => document.querySelector('[data-tab="my"]').dispatchEvent(new MouseEvent('click', { bubbles: true })));
   await page.waitForTimeout(500);
   const my = await page.evaluate(() => document.querySelector('#intel-content').textContent);

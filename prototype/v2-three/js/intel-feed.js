@@ -513,6 +513,31 @@ export class IntelFeed {
   clearRevisionLines() {
     (this.revisionLines || []).forEach((l) => { this.scene.remove(l); l.geometry.dispose(); l.material.dispose(); });
     this.revisionLines = [];
+    this.clearIsochrones();
+  }
+
+  // 지시서 N-1 — 쓰나미 등시선(30분 간격, 주황). 사건 방이 도달시간 파일을 받으면 그린다. SIMULATION_ONLY.
+  drawIsochrones(doc) {
+    this.clearIsochrones();
+    if (!doc || !doc.isochronesMin || !this.scene) return;
+    const M = Math.PI / 180;
+    const v = (p) => new THREE.Vector3(Math.cos(p[0] * M) * Math.sin(p[1] * M) * 1.006, Math.sin(p[0] * M) * 1.006, Math.cos(p[0] * M) * Math.cos(p[1] * M) * 1.006);
+    const pts = [];
+    for (const [level, segs] of Object.entries(doc.isochronesMin)) {
+      if (+level > 720) continue;
+      for (const [p, q] of segs) { if (Math.abs(p[1] - q[1]) > 180) continue; pts.push(v(p), v(q)); }
+    }
+    if (!pts.length) return;
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    const mat = new THREE.LineBasicMaterial({ color: 0xffa64d, transparent: true, opacity: 0.55 });
+    const lines = new THREE.LineSegments(geo, mat);
+    this.isoLines = [lines];
+    this.scene.add(lines);
+  }
+
+  clearIsochrones() {
+    (this.isoLines || []).forEach((l) => { this.scene.remove(l); l.geometry.dispose(); l.material.dispose(); });
+    this.isoLines = [];
   }
 
   compareHtml(it) {
@@ -595,6 +620,7 @@ export class IntelFeed {
     this.room.build(it).then((html) => {
       if (this.selected !== it || gen !== this._gen) return;
       this.roomHtmlCache = html;
+      if (it.kind === 'EQ') this.drawIsochrones(this.room.eta);   // 도달시간 파일이 없으면 아무것도 안 그린다
       if (this.onUpdate) this.onUpdate();
     }).catch((e) => {
       if (this.selected !== it || gen !== this._gen) return;

@@ -29,6 +29,8 @@ const SRC_URL = Object.freeze({ ...SRC, warnRegions: `${S3}/events/kma-warn-regi
 export const SOURCE_STATE = Object.freeze({ OK: 'OK', EMPTY: 'EMPTY', FAILED: 'FAILED', STALE: 'STALE', OUT_OF_SCOPE: 'OUT_OF_SCOPE' });
 // 소스별 신선도 SLA(분). generated 가 이보다 묵으면 STALE — 자료는 쓰되 배지에 나이를 적는다.
 const SLA_MIN = { tyoff: 180, tyens: 720, kmasea: 120, khoaflood: null, warn: 60, tsunami: 60, warnRegions: null };
+// 지시서 N-1 — 쓰나미 도달시간(EARTHUS 기준선, SIMULATION_ONLY). 사건마다 파일 하나: ocean/tsunami-eta/{usgsId}.json
+export const TSU_ETA_URL = (usgsId) => `${S3}/ocean/tsunami-eta/${usgsId}.json`;
 export const RELATED_KM = { TC: 350, EQ: 200 };   // 특보 구역 중심 ↔ 사건 중심 (지시서 A-3)
 
 const cache = new Map(); // id → { at, result }
@@ -46,7 +48,8 @@ async function fetchSource(id, fetchJson, now = Date.now()) {
   if (hit && now - hit.at < TTL_MS) return hit.result;
   let result;
   try {
-    const data = await fetchJson(SRC_URL[id]);
+    const url = id.startsWith('tsueta:') ? TSU_ETA_URL(id.slice(7)) : SRC_URL[id];
+    const data = await fetchJson(url);
     const generatedAt = data && (data.generated || data.generatedAt || data.run || null);
     const t = generatedAt ? Date.parse(generatedAt) : NaN;
     const ageMin = Number.isFinite(t) ? Math.round((now - t) / 60000) : null;
@@ -54,7 +57,10 @@ async function fetchSource(id, fetchJson, now = Date.now()) {
     const state = sla != null && ageMin != null && ageMin > sla ? SOURCE_STATE.STALE : SOURCE_STATE.OK;
     result = { state, data, error: null, generatedAt, ageMin, retrievedAt: new Date(now).toISOString() };
   } catch (e) {
-    result = { state: SOURCE_STATE.FAILED, data: null, error: String((e && e.message) || e), generatedAt: null, ageMin: null, retrievedAt: new Date(now).toISOString() };
+    const msg = String((e && e.message) || e);
+    // 도달시간 파일이 없는 것(404)은 "이 지진은 계산 대상이 아니거나 아직 계산 전" — 실패가 아니다
+    const state = id.startsWith('tsueta:') && /(^|\D)40[34](\D|$)/.test(msg) ? SOURCE_STATE.EMPTY : SOURCE_STATE.FAILED;
+    result = { state, data: null, error: msg, generatedAt: null, ageMin: null, retrievedAt: new Date(now).toISOString() };
   }
   if (result.state !== SOURCE_STATE.FAILED) cache.set(id, { at: now, result });
   return result;
@@ -110,6 +116,8 @@ export class EventRoom {
     const isTC = it.kind === 'TC';
     const nearKorea = haversineMeters(it, KOREA) < 1200000;
     const need = isTC ? ['tyoff', 'tyens', 'kmasea', 'khoaflood', 'warn'] : ['tsunami', 'kmasea', 'warn'];
+    const usgsId = !isTC && /^eq-/.test(String(it.id || '')) ? String(it.id).slice(3) : null;
+    if (usgsId) need.push(`tsueta:${usgsId}`);
     if (nearKorea) need.push('warnRegions');
     const got = {};
     await Promise.all(need.map(async (id) => { got[id] = await fetchSource(id, this.fetchJson, this.now()); }));
@@ -234,6 +242,31 @@ export class EventRoom {
         tl.next = '쓰나미 발표 조회 불가<br/><span class="room-sub">현재 경보 유무는 기관 원문 확인 — 없다고 적지 않습니다</span>';
       }
       tl.now = `<b>${esc(it.facts[0] ? it.facts[0][1] : '')}</b> · 깊이 ${it.depthKm != null ? Math.round(it.depthKm) + ' km' : '—'}<br/><span class="room-sub">${esc(it.where)} · ${ago(new Date(it.whenT).toISOString())} · USGS</span>`;
+      // ---- 도달시간 추정 (EARTHUS 기준선 · SIMULATION_ONLY, 지시서 N-1) ----
+      if (usgsId) {
+        const te = got[`tsueta:${usgsId}`];
+        if (te && te.state === SOURCE_STATE.FAILED) {
+          rows.push(failRow('EARTHUS 기준선', '쓰나미 도달시간 추정', 'SIMULATION_ONLY', null, te));
+        } else if (te && usable(te) && te.data && te.data.stations) {
+          const d = te.data;
+          const reached = d.stations.filter((s) => s.etaMin != null);
+          const kor = reached.filter((s) => s.iso === 'KOR').sort((a, b) => a.etaMin - b.etaMin).slice(0, 3);
+          const others = reached.filter((s) => s.iso !== 'KOR').sort((a, b) => a.etaMin - b.etaMin).slice(0, 3);
+          const fmt = (s) => `${esc(s.name)} +${s.etaMin}분`;
+          const korTxt = kor.length ? kor.map(fmt).join(' · ') : (d.stations.some((s) => s.iso === 'KOR' && s.note === '계산 창 밖') ? '한국은 계산 창 밖' : '한국 연안에 닿는 경로 없음(격자 기준)');
+          const cmp = d.official && d.official.compare && d.official.compare.length
+            ? `PTWC 게시문 ETA 대조 ${d.official.compare.length}곳 · 평균 차 ${Math.round(d.official.compare.reduce((a, c) => a + Math.abs(c.diffMin), 0) / d.official.compare.length)}분`
+            : `공식 ETA 대조 불가 — ${esc((d.official && d.official.note) || '게시문 없음')}`;
+          rows.push({ agency: 'EARTHUS 기준선', what: '쓰나미 도달시간 추정', kind: 'SIMULATION_ONLY', layerKey: null,
+            value: `<b>${korTxt}</b>${others.length ? `<br/>${others.map(fmt).join(' · ')}` : ''}`,
+            sub: `첫 파 도달 추정 · 장파 근사 √(g·h) · 0.2° 격자 · <b>파고·침수 아님</b> · 계산 ${esc((d.time && d.time.computedAt) || '').slice(5, 16).replace('T', ' ')}Z${d.event && d.event.sourceOnLand ? '<br/>⚠ 진원이 육지 셀 — 가장 가까운 바다 셀에서 시작한 가정(쓰나미 발생 여부와 무관)' : ''}<br/>${cmp}<br/>지구 위: 30분 간격 등시선(주황) — 공식 경보는 PTWC/JMA/기상청 원문만` });
+          this.eta = d;
+        } else {
+          rows.push({ agency: 'EARTHUS 기준선', what: '쓰나미 도달시간 추정', kind: 'SIMULATION_ONLY', layerKey: null, found: false,
+            value: '이 지진은 도달시간 계산 대상이 아닙니다', sub: 'M6.5 이상 · 진원 100 km 이하 · 바다 지진만 계산 (15분 주기) — 계산이 없다는 것이지 위험이 없다는 뜻이 아닙니다' });
+          this.eta = null;
+        }
+      }
       rows.push({ agency: '지각 맥락', what: '판 경계 · 진원 깊이', kind: 'OFFICIAL_OBSERVATION', layerKey: 'hazards/eqdepth',
         value: '같은 카탈로그를 실제 진원 깊이에 배치', sub: '재해 › 판 경계선 겹쳐보기 · 지진 깊이' });
     }

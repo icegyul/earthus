@@ -48,7 +48,8 @@ export function evaluateWatch({ place, zone, warn, events = [], quakes = [], see
   let monitoring = 'ON', reason = '';
   // ① 내 구역 특보 — 소스 실패면 감시 중단이라고 말한다. "없음"으로 바꾸지 않는다.
   if (!warn || warn.state !== 'OK') {
-    monitoring = 'SUSPENDED'; reason = '특보 소스 조회 불가';
+    // FAILED 도, STALE(SLA 를 넘긴 자료)도 감시 근거가 못 된다 — 묵은 자료로 "새 특보 없음"을 판정하면 안 된다(PHASE 2 §6)
+    monitoring = 'SUSPENDED'; reason = (warn && warn.reason) || (warn && warn.state === 'STALE' ? '특보 자료 STALE' : '특보 소스 조회 불가');
   } else if (zone) {
     for (const w of warn.active || []) {
       if (w.regionId !== zone.zone && w.parentId !== zone.zone) continue;

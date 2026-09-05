@@ -115,3 +115,30 @@ class RadarTest(unittest.TestCase):
         self.assertGreater(len(calls), 1); self.assertEqual(kma_hub.ledger.counts["timeout"], len(calls))
 
 if __name__ == "__main__": unittest.main()
+
+
+class AllFailedNoOverwriteTest(unittest.TestCase):
+    """PHASE 2 — 전 칸/전 지수 실패(timeout 등)여도 빈 문서로 이전 산출물을 덮지 않는다."""
+    def test_fcst_timeout_everywhere_does_not_write(self):
+        kma_hub.ledger.reset(); M = load_handler("kma-fcst")
+        def fake_get_json(url):
+            with kma_hub.track("getVilageFcst", "https://apihub.kma.go.kr/x"):
+                raise socket.timeout("timed out")
+        M.get_json = fake_get_json
+        puts = []
+        M.s3 = types.SimpleNamespace(get_object=lambda **k: {"Body": io.BytesIO(json.dumps({"stations": [{"id": "1", "name": "a", "lat": 37.5, "lon": 127.0}]}).encode())},
+            put_object=lambda **k: puts.append(k["Key"]))
+        out = M.handler.__wrapped__({}, None)
+        self.assertEqual(out.get("reason"), "all-failed"); self.assertEqual(puts, [])
+        self.assertGreater(kma_hub.ledger.counts["timeout"], 0); self.assertEqual(kma_hub.ledger.counts["quota_exhausted"], 0)
+    def test_life_all_403_does_not_write(self):
+        kma_hub.ledger.reset(); M = load_handler("kma-life")
+        def fake_get(path, **p):
+            with kma_hub.track(path, "https://apihub.kma.go.kr/x"):
+                raise http_error(403)
+        M.get = fake_get
+        puts = []
+        M.s3 = types.SimpleNamespace(put_object=lambda **k: puts.append(k["Key"]))
+        out = M.handler.__wrapped__({}, None)
+        self.assertEqual(out.get("reason"), "quota_exhausted"); self.assertEqual(puts, [])
+        self.assertEqual(kma_hub.ledger.counts["calls"], 1)      # 지수 4 × 시도 17 = 68 이 아니라 1

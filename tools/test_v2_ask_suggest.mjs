@@ -43,3 +43,13 @@ test('켜기 버튼을 누르면 그때 켜고 같은 질문을 다시 묻는다
   await new Promise((r) => setTimeout(r, 1600));
   assert.deepEqual(asked, ['태풍 어디로 가?']);
 });
+
+test('API 가 5xx 를 빈 본문으로 돌려줘도 "답을 받지 못했습니다" 만 보인다 (기술 메시지 노출 금지)', async () => {
+  const { ask } = harness();
+  ask.h.snapshot = () => ({ layers: [{ id: 'clouds' }] });
+  const saved = globalThis.fetch;
+  globalThis.fetch = async () => ({ status: 502, ok: false, json: async () => { throw new SyntaxError('Unexpected end of JSON input'); } });
+  try { await ask.ask('지금 태풍은?'); } finally { globalThis.fetch = saved; }
+  assert.match(ask.out.innerHTML, /답을 받지 못했습니다\. 값을 만들지 않고 비워 둡니다/);
+  assert.doesNotMatch(ask.out.innerHTML, /Unexpected end of JSON/);
+});

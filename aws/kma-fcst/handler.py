@@ -252,6 +252,12 @@ def handler(event, context):
             "hourly": hourly, "daily": daily,
         })
 
+    if not points:
+        # 전 칸 실패(timeout·5xx 등) — 빈 문서로 이전 예보를 덮지 않는다. 2026-09-05 11:17Z 에 count 0 문서가
+        # 올라가 "예보 없음"처럼 보였다(PHASE 2 QA). 이전 산출물이 남아 STALE 로 보이는 것이 맞다.
+        print(f"[kma-fcst] ALL_FAILED — {failed}/{len(cells)} 칸 실패, S3 미기록 · 회계 {dict(kma_hub.ledger.counts)}")
+        return {"ok": False, "reason": "all-failed", "cells": len(cells), "failed": failed, "calls": kma_hub.ledger.counts["calls"]}
+
     doc = {
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z"),
         "observedKst": now.strftime("%Y%m%d%H%M"),

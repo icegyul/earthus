@@ -407,7 +407,7 @@ export class IntelFeed {
       : (ko ? '출처: GDACS(공식 경보) · USGS(관측)' : 'Source: GDACS (official alerts) · USGS (observed)');
     const tail = ko ? '사건 클릭 시 3D 지구에서 확인' : 'click an event to find it on the 3D globe';
     const sortNote = i18n.ko ? '정렬: 공식 경보 등급 → 최근 갱신 · 시각 없는 사건은 뒤' : 'sort: official alert level → latest update · undated last';
-    return `<div class="feed-head">${head} <span class="feed-cnt">${shown.length}</span></div>${this.kind === 'EQ' ? '' : tcNote}${this.state === 'partial' || this.state === 'stale' ? this.sourceNote() : ''}${rows}
+    return `<div class="feed-head">${head} <span class="feed-cnt">${shown.length}</span></div>${this.kind === 'EQ' ? '' : tcNote}${this.state === 'partial' || this.state === 'stale' || (this.sources && this.sources.gdacs && (this.sources.gdacs.origin === 'cache' || this.sources.gdacs.origin === 'origin')) ? this.sourceNote() : ''}${rows}
       <div class="feed-note">${src} — ${tail} · ${sortNote}</div>`;
   }
 

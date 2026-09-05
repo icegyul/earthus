@@ -3167,8 +3167,13 @@ async function main() {
         const pk = it && feed.packetOf(it);
         if (pk) followedEvents.push(pk);
       }
+      // 특보 문서가 SLA(60분, 사건 방과 같은 기준)를 넘기면 STALE — 화면에 그렇게 적고 감시도 멈춘다
+      const warnAgeMin = warn && warn.generated && Number.isFinite(Date.parse(warn.generated)) ? Math.round((Date.now() - Date.parse(warn.generated)) / 60000) : null;
+      const warnStale = warnAgeMin != null && warnAgeMin > 60;
+      myEarth.data.warnAgeMin = warnAgeMin;
+      myEarth.data.warnStale = warnStale;
       const verdict = evaluateWatch({
-        place: p, zone, warn: warn ? { state: 'OK', active: warn.active || [] } : { state: 'FAILED' },
+        place: p, zone, warn: !warn ? { state: 'FAILED' } : warnStale ? { state: 'STALE', reason: `특보 자료 STALE (${warnAgeMin}분 전 자료)` } : { state: 'OK', active: warn.active || [] },
         events: followedEvents, quakes: feed.items.filter((it) => it.kind === 'EQ'), seen, now: Date.now(),
       });
       if (verdict.hits.length) saveWatch(log.concat(verdict.hits));
@@ -3209,14 +3214,15 @@ async function main() {
     html += '<div style="margin-top:8px">';
     if (myEarth.zone) {
       html += `<div class="stat"><span class="k">내 특보 구역</span><span class="v">${escUI(myEarth.zone.zoneName)} <span style="color:var(--text-dim)">(${escUI(myEarth.zone.station)} ${myEarth.zone.km.toFixed(0)} km · 근사)</span></span></div>`;
+      const staleTag = d.warnStale ? ` <span class="badge stale">STALE · ${d.warnAgeMin}분 전 자료</span>` : '';
       if (d.zoneWarns == null) html += '<div class="stat"><span class="k">구역 특보</span><span class="v na">조회 불가 — 판단하지 않음</span></div>';
-      else if (!d.zoneWarns.length) html += '<div class="stat"><span class="k">구역 특보</span><span class="v">내 구역 발효 특보 0건</span></div>';
-      else html += `<div class="stat"><span class="k">구역 특보 ${d.zoneWarns.length}건</span><span class="v">${[...new Set(d.zoneWarns.map((w) => `${w.kind} ${w.level}`))].slice(0, 3).map(escUI).join(' · ')}</span></div>`;
+      else if (!d.zoneWarns.length) html += `<div class="stat"><span class="k">구역 특보</span><span class="v${d.warnStale ? ' na' : ''}">${d.warnStale ? '묵은 자료 기준 0건 — 최신 여부 미확인' : '내 구역 발효 특보 0건'}${staleTag}</span></div>`;
+      else html += `<div class="stat"><span class="k">구역 특보 ${d.zoneWarns.length}건</span><span class="v">${[...new Set(d.zoneWarns.map((w) => `${w.kind} ${w.level}`))].slice(0, 3).map(escUI).join(' · ')}${staleTag}</span></div>`;
     } else {
       html += '<div class="stat"><span class="k">내 특보 구역</span><span class="v na">대응표 조회 불가 — 구역을 정하지 않음</span></div>';
     }
     if (d.warns == null) html += '<div class="stat"><span class="k">⚠ 특보</span><span class="v na">확인 실패 — 판단하지 않음</span></div>';
-    else if (!d.warns.length) html += '<div class="stat"><span class="k">⚠ 특보</span><span class="v">주변 60km 유효 특보 없음</span></div>';
+    else if (!d.warns.length) html += `<div class="stat"><span class="k">⚠ 특보</span><span class="v${d.warnStale ? ' na' : ''}">${d.warnStale ? `묵은 자료(${d.warnAgeMin}분 전) 기준 주변 60km 0건 — 최신 여부 미확인` : '주변 60km 유효 특보 없음'}</span></div>`;
     else html += `<div class="stat"><span class="k">⚠ 특보 ${d.warns.length}건</span><span class="v">${[...new Set(d.warns.map((w) => `${w.icon || ''}${w.kind} ${w.level}`))].slice(0, 3).join(' · ')}</span></div>`;
     if (d.air && d.air.km < 400) {
       const g = AIR_GRADE_KO[d.air.it.grade] || ['—', '#7f95a8'];

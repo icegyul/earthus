@@ -70,3 +70,52 @@ test('TEST 9 회귀 — 축약본이 깨진 JSON(features 없음)이면 캐시/�
   await feed.load(); await settle();
   assert.equal(feed.sources.gdacs.origin, 'origin'); assert.equal(feed.sources.gdacs.state, 'OK');
 });
+
+// PHASE 2 STEP 05 — 축약본 5xx / timeout / stale / 원본도 불가
+test('축약본 5xx → 캐시 사용, 캐시 없으면 원본', async () => {
+  store.clear();
+  const feed = feedWith((url) => (COMPACT.test(url) ? new Error('503') : ORIGIN.test(url) ? originDoc : { features: [] }));
+  await feed.load(); await settle();
+  assert.equal(feed.sources.gdacs.origin, 'origin'); assert.equal(feed.items.filter((i) => i.kind === 'TC').length, 1);
+});
+
+test('축약본 timeout → 캐시가 있으면 캐시, 원본 요청 없음', async () => {
+  store.set('earthus.gdacs.last', JSON.stringify({ generated: '2026-09-05T11:00:00Z', savedAt: 'x', features: compactDoc.features }));
+  const feed = feedWith((url) => (COMPACT.test(url) ? new Error('timeout') : { features: [] }));
+  await feed.load(); await settle();
+  assert.equal(feed.sources.gdacs.origin, 'cache'); assert.ok(!feed.urls.some((u) => ORIGIN.test(u)));
+  assert.match(feed.sourceNote(), /이전 축약본 09-05 11:00Z/);
+});
+
+test('축약본이 묵어도(generated 오래됨) 값은 쓰되 시각이 상태 줄에 남는다 — 최신으로 위장하지 않는다', async () => {
+  store.clear();
+  const stale = { ...compactDoc, generated: '2026-09-04T00:00:00Z' };
+  const feed = feedWith((url) => (COMPACT.test(url) ? stale : { features: [] }));
+  await feed.load(); await settle();
+  assert.equal(feed.sources.gdacs.generated, '2026-09-04T00:00:00Z');
+});
+
+test('축약본·캐시·원본 모두 불가 → GDACS FAILED, 직전 목록 보존, 지어낸 사건 없음', async () => {
+  store.clear();
+  const ok = feedWith((url) => (COMPACT.test(url) ? compactDoc : { features: [] }));
+  await ok.load(); await settle();
+  store.clear();
+  ok.fetchJson = async (url) => { if (COMPACT.test(url) || ORIGIN.test(url)) throw new Error('offline'); throw new Error('offline'); };
+  await ok.load(); await settle(60);
+  assert.equal(ok.sources.gdacs.state, 'FAILED');
+  assert.equal(ok.state, 'stale');                                   // 둘 다 실패 → 직전 목록 유지
+  assert.equal(ok.items.filter((i) => i.kind === 'TC').length, 2);
+  assert.match(ok.sourceNote(), /조회 불가/); assert.doesNotMatch(ok.html(), /안전|위험 없음/);
+});
+
+test('폴백 경로(캐시/원본)로 왔으면 정상 상태여도 목록 위 상태 줄에 그 사실이 보인다', async () => {
+  store.set('earthus.gdacs.last', JSON.stringify({ generated: '2026-09-05T11:00:00Z', savedAt: 'x', features: compactDoc.features }));
+  const feed = feedWith((url) => (COMPACT.test(url) ? new Error('503') : { features: [] }));
+  await feed.load(); await settle();
+  assert.equal(feed.state, 'ready');
+  assert.match(feed.html(), /이전 축약본 09-05 11:00Z/);
+  store.clear();
+  const f2 = feedWith((url) => (COMPACT.test(url) ? new Error('404') : ORIGIN.test(url) ? originDoc : { features: [] }));
+  await f2.load(); await settle();
+  assert.match(f2.html(), /원본 직접/);
+});

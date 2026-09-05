@@ -167,8 +167,10 @@ export class AskEarth {
         body: bytes,
       });
       if (res.status === 429) throw new Error(t.errRate);
-      const data = await res.json();
-      if (!res.ok || !data.answer) throw new Error(data.error || t.errNet);
+      // 5xx·빈 본문·JSON 아님 → 기술 메시지("Unexpected end of JSON input")가 아니라 "답을 받지 못했습니다" (PHASE 2 QA A1)
+      let data = null;
+      try { data = await res.json(); } catch (_) { data = null; }
+      if (!res.ok || !data || !data.answer) throw new Error((data && data.error) || t.errNet);
       this.render(data);
     } catch (e) {
       this.out.innerHTML = `<div class="ask-err">${esc((e && e.message) || t.errNet)}</div>`;

@@ -53,3 +53,8 @@ test('400 km 안 M5+ 24시간 안 지진만 — 멀거나 작거나 오래된 �
   assert.deepEqual(r.hits.map((h) => h.eventId), ['a']);
   assert.match(r.hits[0].reasonKo, /km 거리 M5.4 지진/);
 });
+
+test('특보 자료가 STALE 이면 감시는 SUSPENDED — 묵은 자료로 "새 특보 없음"을 판정하지 않는다', () => {
+  const r = evaluateWatch({ place, zone: myZone(place, stations), warn: { state: 'STALE', reason: '특보 자료 STALE (188분 전 자료)', active: [] }, now });
+  assert.equal(r.monitoring, 'SUSPENDED'); assert.match(r.reason, /STALE \(188분 전 자료\)/); assert.equal(r.hits.length, 0);
+});

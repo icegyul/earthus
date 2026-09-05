@@ -156,6 +156,13 @@ def handler(event, context):
             missing[key] = gone
         out[key] = {"ko": ko, "en": en, "regions": regions}
 
+    if not any(v["regions"] for v in out.values()) and not seasons:
+        # 모든 지수가 비었고 계절 안내도 없다 = 조회 실패(403 용량 초과·timeout). 빈 문서로 덮지 않는다.
+        # 2026-09-05 12:50Z 에 지수가 하나도 없는 문서가 올라갔다(PHASE 2 QA). 이전 산출물이 남아 STALE 로 보이는 것이 맞다.
+        reason = "quota_exhausted" if kma_hub.stop() else "all-failed"
+        print(f"[life] {reason} — S3 미기록 · 회계 {dict(kma_hub.ledger.counts)}")
+        return {"ok": False, "reason": reason, "calls": kma_hub.ledger.counts["calls"]}
+
     doc = {
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z"),
         "source": "기상청 생활·보건기상지수 (API허브)",

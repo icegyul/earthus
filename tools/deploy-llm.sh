@@ -7,6 +7,8 @@
 #   - 환경변수가 없으면 Lambda에 이미 설정된 값을 **그대로 보존**한다 (덮어쓰지 않는다).
 set -euo pipefail
 export MSYS_NO_PATHCONV=1
+# --verify-only: 배포 없이 배포 가드(함수 URL 인증·/api/ask)만 실행한다 — PHASE 2 PENDING 1 검증용
+VERIFY_ONLY=0; [ "${1:-}" = "--verify-only" ] && VERIFY_ONLY=1
 # Windows 콘솔 기본 코드페이지(cp949)가 한글·기호 출력에서 죽는다 — UTF-8로 고정한다
 export PYTHONUTF8=1 PYTHONIOENCODING=utf-8
 
@@ -23,6 +25,9 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 ZIP="$TMP/fn.zip"
 
+if [ "$VERIFY_ONLY" = "1" ]; then
+  echo "== verify-only: 배포 생략, 가드만 실행 =="
+else
 echo "== 1/4 패키징 =="
 # Windows 파이썬은 Git Bash 의 /tmp/... 경로를 못 연다. 먼저 Windows 경로로 바꿔 넘긴다.
 ZIPW="$(cygpath -w "$ZIP" 2>/dev/null || echo "$ZIP")"
@@ -112,6 +117,8 @@ echo "EARTHUS LLM 배포 완료"
 echo "  함수 URL: $URL"
 echo "  모델 후보: $MODELS · 허용 오리진: $ORIGIN"
 
+fi   # VERIFY_ONLY
+
 # ── 배포 가드(지시서 §14): 함수 URL 인증이 AWS_IAM 이 아니면 실패. /api/ask 가 CloudFront 를 거쳐 200 인지도 본다.
 AUTH="$(aws lambda get-function-url-config --function-name "$FN" --region "$REGION" --query AuthType --output text)"
 if [ "$AUTH" != "AWS_IAM" ]; then
@@ -120,7 +127,8 @@ if [ "$AUTH" != "AWS_IAM" ]; then
 fi
 BODY='{"q":"hello","lang":"ko","layers":[{"id":"clouds","label":"clouds","badge":"OBSERVED","value":"south"}],"view":{"lat":35,"lon":128,"altKm":3000}}'
 HASH="$(printf '%s' "$BODY" | sha256sum | cut -d' ' -f1)"
-CODE="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${ORIGIN}/api/ask" -H 'content-type: application/json' -H "x-amz-content-sha256: $HASH" --data-binary "$BODY" || echo 000)"
+# MSYS_NO_PATHCONV=1 상태에선 /dev/null 이 리터럴로 넘어가 curl 이 exit 23 을 낸다 — 이 호출만 변환을 되살린다
+CODE="$(env -u MSYS_NO_PATHCONV curl -s -o /dev/null -w '%{http_code}' -X POST "${ORIGIN}/api/ask" -H 'content-type: application/json' -H "x-amz-content-sha256: $HASH" --data-binary "$BODY" || echo 000)"
 if [ "$CODE" != "200" ]; then
   echo "❌ 배포 가드 FAIL — ${ORIGIN}/api/ask HTTP $CODE (기대 200)"
   exit 1

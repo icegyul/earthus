@@ -1,0 +1,87 @@
+{
+  "planId": "gdp-hycom-cohort-201501.plan1",
+  "verdict": "FAIL",
+  "failedCriteria": [
+    "C1_beatsStationary"
+  ],
+  "criteria": {
+    "C1_beatsStationary": false,
+    "C2_beatsPersistence": true,
+    "C3_sampleFloor": true,
+    "C4_reporting": true
+  },
+  "pooledMedianSeparationMeters": {
+    "86400": {
+      "model": 8768.492551964924,
+      "stationary": 8491.491729079982,
+      "initialVelocity": 9630.648723670269,
+      "n": 21
+    },
+    "172800": {
+      "model": 18440.43786686538,
+      "stationary": 14167.19553244729,
+      "initialVelocity": 21029.80059272237,
+      "n": 21
+    },
+    "259200": {
+      "model": 24329.118469437562,
+      "stationary": 19221.030240221768,
+      "initialVelocity": 32204.493402698477,
+      "n": 21
+    }
+  },
+  "perRegionMedianSeparationMeters": {
+    "a": {
+      "86400": {
+        "model": 9083.674516477215,
+        "stationary": 8534.64546404132,
+        "initialVelocity": 9758.380983836232,
+        "n": 12
+      },
+      "172800": {
+        "model": 16087.524060658034,
+        "stationary": 14865.843921105294,
+        "initialVelocity": 21257.32355045189,
+        "n": 12
+      },
+      "259200": {
+        "model": 23596.28835932666,
+        "stationary": 20648.055960765887,
+        "initialVelocity": 31146.96544258043,
+        "n": 12
+      }
+    },
+    "b": {
+      "86400": {
+        "model": 8020.55502348714,
+        "stationary": 6354.842146847839,
+        "initialVelocity": 9630.648723670269,
+        "n": 9
+      },
+      "172800": {
+        "model": 18822.49761793675,
+        "stationary": 12975.568000508967,
+        "initialVelocity": 17964.47018146305,
+        "n": 9
+      },
+      "259200": {
+        "model": 25281.589700498243,
+        "stationary": 18883.491915382987,
+        "initialVelocity": 32204.493402698477,
+        "n": 9
+      }
+    }
+  },
+  "eligibleTracksWith72h": 21,
+  "cohorts": 2,
+  "reading": "At 72 h the HYCOM 15 m advection median error is not smaller than the stationary baseline for this cohort. The drifters moved little (stationary error ≈ 23 km/72 h), so a tracer that follows the reanalysis eddy field accumulates phase/position error faster than a particle that stays put. This is a real negative result for 'does v1 beat persistence in the quiet subtropical/tropical gyre in January 2015', not a code defect: the numerical tests and same-environment replay still hold. It does not test coastal, forecast, or energetic regimes.",
+  "scientificAcceptance": "NOT_ACCEPTED",
+  "modelResultArraySha256": {
+    "a": "9a2308576134eefc21bd635c5e2750b5389ef42dac69712b829ce73cc99d87fb",
+    "b": "4b44a6075d974f7a97ac004ad8c4e689417e6cbada8bc880f80ec5980f6c0405"
+  },
+  "observationTracksSha256": {
+    "a": "2adceac861abb98ffe0829cea5d28a5fb5d2798f81c8d3a9aaa38c5282a1a178",
+    "b": "67727ba98e28eed45c6715f4af719f1352683c70151c6689b7035eb0d4770bab"
+  }
+}

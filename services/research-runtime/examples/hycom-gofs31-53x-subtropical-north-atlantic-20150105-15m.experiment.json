@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0",
+  "projectId": "gdp-hycom-cohort-201501",
+  "modelId": "surface-passive-advection.v1",
+  "modelVersion": "0.1.0",
+  "question": "Do drogued SVP drifters follow HYCOM 15 m reanalysis currents over 72 hours?",
+  "datasetVersions": [
+    {
+      "datasetId": "hycom-gofs31-53x-subtropical-north-atlantic-20150105-15m",
+      "version": "2015-01-05T12_2015-01-08T12.earthus1"
+    }
+  ],
+  "area": {
+    "west": -45,
+    "east": -29,
+    "south": 25,
+    "north": 37
+  },
+  "startTimeUTC": "2015-01-05T12:00:00Z",
+  "durationSeconds": 259200,
+  "releaseDefinition": {
+    "type": "points",
+    "points": [
+      {
+        "lon": -39.17993,
+        "lat": 27.38751
+      },
+      {
+        "lon": -30.65779,
+        "lat": 32.69975
+      },
+      {
+        "lon": -41.00035,
+        "lat": 27.57154
+      },
+      {
+        "lon": -43.90435,
+        "lat": 27.53258
+      },
+      {
+        "lon": -42.01884,
+        "lat": 26.97722
+      },
+      {
+        "lon": -30.07026,
+        "lat": 34.19604
+      },
+      {
+        "lon": -31.03775,
+        "lat": 31.36429
+      },
+      {
+        "lon": -38.39886,
+        "lat": 35.38006
+      },
+      {
+        "lon": -30.57244,
+        "lat": 30.92855
+      }
+    ]
+  },
+  "particleCount": 9,
+  "integrationMethod": "RK4",
+  "integrationStepSeconds": 300,
+  "outputStepSeconds": 3600,
+  "boundaryPolicy": "STOP_AT_FIRST_CROSSING",
+  "metrics": [
+    "statusCounts",
+    "displacementMeters"
+  ],
+  "backend": "oceanparcels"
+}

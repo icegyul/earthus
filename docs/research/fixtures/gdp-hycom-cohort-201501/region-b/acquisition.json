@@ -1,0 +1,86 @@
+{
+  "fixtureIssuedAtUTC": "2026-09-05T00:21:32Z",
+  "sources": [
+    {
+      "path": "current-20150105T12.nc",
+      "sourceURI": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2015?var=water_u&var=water_v&north=37&south=25&west=-45&east=-29&horizStride=1&time_start=2015-01-05T12%3A00%3A00Z&time_end=2015-01-06T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+      "sha256": "c8fcca556be96d37aa6291810d3280b9e2af0716bed993e32c2025d14f1b7347",
+      "bytes": 976916,
+      "validTimeStartUTC": "2015-01-05T12:00:00Z",
+      "validTimeEndUTC": "2015-01-06T09:00:00Z",
+      "ncssTranslationTimeUTC": "2026-09-05T00:18:58.597Z",
+      "originalTimeUnits": "hours since 2000-01-01 00:00:00",
+      "originalConventions": "CF-1.6 NAVO_netcdf_v1.1",
+      "originalFieldType": "instantaneous",
+      "uScaleFactor": 0.0010000000474974513,
+      "vScaleFactor": 0.0010000000474974513
+    },
+    {
+      "path": "current-20150106T12.nc",
+      "sourceURI": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2015?var=water_u&var=water_v&north=37&south=25&west=-45&east=-29&horizStride=1&time_start=2015-01-06T12%3A00%3A00Z&time_end=2015-01-07T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+      "sha256": "397a56f1de1a594407ac8fb9676b6ef4d286a2921f078d47212f01bb16ba081e",
+      "bytes": 976916,
+      "validTimeStartUTC": "2015-01-06T12:00:00Z",
+      "validTimeEndUTC": "2015-01-07T09:00:00Z",
+      "ncssTranslationTimeUTC": "2026-09-05T00:19:00.501Z",
+      "originalTimeUnits": "hours since 2000-01-01 00:00:00",
+      "originalConventions": "CF-1.6 NAVO_netcdf_v1.1",
+      "originalFieldType": "instantaneous",
+      "uScaleFactor": 0.0010000000474974513,
+      "vScaleFactor": 0.0010000000474974513
+    },
+    {
+      "path": "current-20150107T12.nc",
+      "sourceURI": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2015?var=water_u&var=water_v&north=37&south=25&west=-45&east=-29&horizStride=1&time_start=2015-01-07T12%3A00%3A00Z&time_end=2015-01-08T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+      "sha256": "dbbc37e79dcd6a7073a6217d60d88952e65342abcba545bfab3882de11c36c89",
+      "bytes": 976916,
+      "validTimeStartUTC": "2015-01-07T12:00:00Z",
+      "validTimeEndUTC": "2015-01-08T09:00:00Z",
+      "ncssTranslationTimeUTC": "2026-09-05T00:19:05.894Z",
+      "originalTimeUnits": "hours since 2000-01-01 00:00:00",
+      "originalConventions": "CF-1.6 NAVO_netcdf_v1.1",
+      "originalFieldType": "instantaneous",
+      "uScaleFactor": 0.0010000000474974513,
+      "vScaleFactor": 0.0010000000474974513
+    },
+    {
+      "path": "current-20150108T12.nc",
+      "sourceURI": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2015?var=water_u&var=water_v&north=37&south=25&west=-45&east=-29&horizStride=1&time_start=2015-01-08T12%3A00%3A00Z&time_end=2015-01-08T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+      "sha256": "6030c6fb03cae5e0ed8b918556b30b02f8b82b8cff098d42b5948c2a9147a914",
+      "bytes": 127036,
+      "validTimeStartUTC": "2015-01-08T12:00:00Z",
+      "validTimeEndUTC": "2015-01-08T12:00:00Z",
+      "ncssTranslationTimeUTC": "2026-09-05T00:19:11.189Z",
+      "originalTimeUnits": "hours since 2000-01-01 00:00:00",
+      "originalConventions": "CF-1.6 NAVO_netcdf_v1.1",
+      "originalFieldType": "instantaneous",
+      "uScaleFactor": 0.0010000000474974513,
+      "vScaleFactor": 0.0010000000474974513
+    }
+  ],
+  "sourceBundleSha256": "a40da201f41bfe517b4fc6a681edf4ede0c2f0689eaed6704cb1818f3f119268",
+  "reader": {
+    "distribution_statement": "Approved for public release. Distribution unlimited.",
+    "conventions": "CF-1.6 NAVO_netcdf_v1.1",
+    "cadenceSeconds": 10800.0,
+    "corrections": {
+      "lat": 1.8310546892053026e-06,
+      "lon": 5.859375000127898e-05
+    },
+    "shape": [
+      25,
+      151,
+      201
+    ],
+    "maskedNodes": 0,
+    "uRange": [
+      -0.7710000276565552,
+      1.0890001058578491
+    ],
+    "vRange": [
+      -0.9450000524520874,
+      0.8910000324249268
+    ],
+    "netCDF4Version": "1.7.4"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "planId": "gdp-hycom-cohort-201501.plan1",
+  "registeredAtUTC": "2026-09-05T00:35:00Z",
+  "registeredBefore": "any model run on the cohort forcing and before any comparison output was produced or inspected",
+  "question": "Does surface-passive-advection.v1 driven by HYCOM GOFS 3.1 reanalysis 15 m currents track drogued SVP drifters better than the stationary and initial-velocity-persistence baselines over 24/48/72 h?",
+  "cohort": {
+    "observationProvider": "NOAA AOML Global Drifter Program hourly QC (ERDDAP drifter_hourly_qc, CC BY 4.0)",
+    "selection": "All drifters reported at 2015-01-05T12:00Z inside 10-50N / 80-20W whose drogue_lost_date is empty or later than 2015-01-08T12:00Z, then the two densest 10x14 degree windows south of 40N (HYCOM native 0.08 degree latitude spacing).",
+    "regionA": {"name": "tropical North Atlantic", "south": 13, "north": 25, "west": -53, "east": -37, "expectedTracks": 12},
+    "regionB": {"name": "subtropical North Atlantic", "south": 25, "north": 37, "west": -45, "east": -29, "expectedTracks": 9},
+    "minimumEligibleTracks": 20,
+    "minimumCohorts": 2,
+    "window": {"startUTC": "2015-01-05T12:00:00Z", "durationSeconds": 259200}
+  },
+  "forcing": {
+    "provider": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis, 15 m depth, 3-hourly",
+    "depthMeters": 15,
+    "depthRationale": "SVP drogue is centred at 15 m; comparing a 0 m field with a drogued drifter is a depth mismatch and is excluded by the comparator.",
+    "independence": "Provider description: NCODA assimilates satellite altimetry, satellite and in-situ SST, and in-situ T/S profiles. Drifter positions and velocities are not assimilated. Recorded as provider assertion; not independently certified."
+  },
+  "excludedByRule": ["drogue lost before or during window", "QC not PASSED", "no exact hourly UTC match at a horizon", "model particle not ACTIVE/COMPLETED at horizon", "start position mismatch over 1 m"],
+  "metrics": ["separationMeters at 24h, 48h, 72h", "mean, median, p95 per horizon", "stationarySeparationMeters", "initialVelocitySeparationMeters"],
+  "preregisteredCriteria": {
+    "C1_beatsStationary": "median separation at 72 h is smaller than the stationary-baseline median at 72 h",
+    "C2_beatsPersistence": "median separation at 72 h is smaller than the initial-velocity-persistence median at 72 h",
+    "C3_sampleFloor": "at least 20 eligible tracks with a compared 72 h horizon",
+    "C4_reporting": "every excluded track and unavailable horizon is listed with its reason; no track is dropped silently",
+    "verdictRule": "PASS only if C1 and C2 and C3 and C4 all hold; otherwise FAIL with the failing criteria named. Thresholds are not to be widened after results are seen."
+  },
+  "engineeringReference": {
+    "note": "Absolute error levels are not preregistered as acceptance thresholds; published Lagrangian skill for global reanalysis-driven 72 h drift is typically tens of km. This plan tests skill relative to baselines only.",
+    "holdOut": "No tuning is performed on this cohort; the model has no tunable parameters in v1. The cohort is therefore both first-look and held-out. A second period must be used before any parameter is introduced."
+  },
+  "notDemonstratedByThisPlan": ["coastal stranding accuracy", "search-and-rescue skill", "oil weathering", "forecast (non-reanalysis) skill", "statistical power beyond n≈21"]
+}

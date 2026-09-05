@@ -60,7 +60,7 @@ manifest는 출처·인용·권리, 자료 종류, 버전, 깊이, 격자·좌�
 
 `timeStepSeconds`는 원자료의 시간 간격이다. 모든 프레임 간격이 이 값과 일치해야 하며, 빠진 프레임을 넓은 시간 보간으로 숨기지 않는다.
 
-일반 NetCDF 파일을 UI에 그대로 올리는 기능은 아직 제공하지 않는다. 제공자별 reader로 원본을 정규화하고 원본 해시·변환 기록을 남긴다. 곡선/C-grid·3차원 흐름·확산·풍압·Stokes drift·유류 풍화는 현재 모델에 포함되지 않는다.
+HYCOM NCSS NetCDF는 `research_runtime/netcdf_reader.py`(`earthus-hycom-netcdf/1`)가 이 JSON 격자로 정규화한다 — 제공자 전용 reader이며 CF 이름·단위·달력·배포 문구·정규 격자·프레임 연속성을 검사하고 결측 노드는 `landMask=true`·`null`로 둔다(0 대체 없음). 일반 NetCDF 파일을 UI에 그대로 올리는 기능은 아직 제공하지 않는다. 제공자별 reader로 원본을 정규화하고 원본 해시·변환 기록을 남긴다. 곡선/C-grid·3차원 흐름·확산·풍압·Stokes drift·유류 풍화는 현재 모델에 포함되지 않는다.
 
 ## 검증
 

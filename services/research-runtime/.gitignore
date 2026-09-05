@@ -5,3 +5,6 @@ __pycache__/
 *.pyc
 .pytest_cache/
 *.egg-info/
+
+# 재생성 가능한 대용량 정규화 자료 — 원본 .nc + tools/research/build_gdp_hycom_cohort.py 로 만든다
+examples/*-15m.dataset.json

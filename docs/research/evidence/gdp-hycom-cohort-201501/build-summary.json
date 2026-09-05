@@ -1,0 +1,99 @@
+{
+  "builtAtUTC": "2026-09-05T00:21:32Z",
+  "regions": [
+    {
+      "region": "a",
+      "datasetId": "hycom-gofs31-53x-tropical-north-atlantic-20150105-15m",
+      "gridShape": [
+        25,
+        151,
+        201
+      ],
+      "maskedNodes": 0,
+      "tracks": 12,
+      "eligible": 12,
+      "excluded": [],
+      "unavailable": 0,
+      "qualityStatus": "COMPLETE",
+      "wallSeconds": 7.4,
+      "summary": [
+        {
+          "horizonSeconds": 86400,
+          "sampleCount": 12,
+          "meanSeparationMeters": 9430.13152768447,
+          "medianSeparationMeters": 9083.674516477215,
+          "p95SeparationMeters": 20914.087276462404,
+          "meanStationarySeparationMeters": 9160.025333808799,
+          "meanInitialVelocitySeparationMeters": 9927.513173967305
+        },
+        {
+          "horizonSeconds": 172800,
+          "sampleCount": 12,
+          "meanSeparationMeters": 17342.14790435311,
+          "medianSeparationMeters": 16087.524060658034,
+          "p95SeparationMeters": 38770.001248926674,
+          "meanStationarySeparationMeters": 16061.765607174297,
+          "meanInitialVelocitySeparationMeters": 20430.96187947694
+        },
+        {
+          "horizonSeconds": 259200,
+          "sampleCount": 12,
+          "meanSeparationMeters": 27998.52583182583,
+          "medianSeparationMeters": 23596.28835932666,
+          "p95SeparationMeters": 58024.869231786666,
+          "meanStationarySeparationMeters": 23163.479058125482,
+          "meanInitialVelocitySeparationMeters": 33557.573608568935
+        }
+      ],
+      "resultArraySha256": "9a2308576134eefc21bd635c5e2750b5389ef42dac69712b829ce73cc99d87fb",
+      "datasetSha256": "40da2b478fca58752d2f66863345308a58f083d52be9e992878eba3cf767d6ee"
+    },
+    {
+      "region": "b",
+      "datasetId": "hycom-gofs31-53x-subtropical-north-atlantic-20150105-15m",
+      "gridShape": [
+        25,
+        151,
+        201
+      ],
+      "maskedNodes": 0,
+      "tracks": 9,
+      "eligible": 9,
+      "excluded": [],
+      "unavailable": 0,
+      "qualityStatus": "COMPLETE",
+      "wallSeconds": 6.5,
+      "summary": [
+        {
+          "horizonSeconds": 86400,
+          "sampleCount": 9,
+          "meanSeparationMeters": 9333.372367103613,
+          "medianSeparationMeters": 8020.55502348714,
+          "p95SeparationMeters": 22477.043319053795,
+          "meanStationarySeparationMeters": 9220.098653509132,
+          "meanInitialVelocitySeparationMeters": 9564.734754275298
+        },
+        {
+          "horizonSeconds": 172800,
+          "sampleCount": 9,
+          "meanSeparationMeters": 22224.915523462678,
+          "medianSeparationMeters": 18822.49761793675,
+          "p95SeparationMeters": 53214.58936205867,
+          "meanStationarySeparationMeters": 17281.351047919605,
+          "meanInitialVelocitySeparationMeters": 20454.920920145767
+        },
+        {
+          "horizonSeconds": 259200,
+          "sampleCount": 9,
+          "meanSeparationMeters": 34534.053457399714,
+          "medianSeparationMeters": 25281.589700498243,
+          "p95SeparationMeters": 84324.65738349942,
+          "meanStationarySeparationMeters": 22376.028171796926,
+          "meanInitialVelocitySeparationMeters": 31141.776581412978
+        }
+      ],
+      "resultArraySha256": "4b44a6075d974f7a97ac004ad8c4e689417e6cbada8bc880f80ec5980f6c0405",
+      "datasetSha256": "16a4721348dc5a5b2c747012db76e0ab07fd1b51ea2d9afee1418cc045747097"
+    }
+  ]
+}

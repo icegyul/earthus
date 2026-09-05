@@ -8,11 +8,14 @@ APIHub의 그래픽 경로는 투영된 레이더 격자와 국경/행정경계�
 import json
 import os
 import struct
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 
 import boto3
+
+import kma_hub   # KMA 허브 호출 회계(PHASE 1) — aws/_shared/kma_hub.py, 배포 스크립트가 같이 담는다
 
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
@@ -42,7 +45,7 @@ def fetch_image(tm):
         "authKey": KEY,
     }
     url = BASE + "?" + urllib.parse.urlencode(params)
-    with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=60) as response:
+    with kma_hub.track(url, url), urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=60) as response:
         return response.read()
 
 
@@ -74,6 +77,7 @@ def merge_frames(previous, current):
     return frames[-HISTORY_SLOTS:]
 
 
+@kma_hub.accounted("kma-radar")
 def handler(event, context):
     if not KEY:
         return {"ok": False, "reason": "no-key"}
@@ -85,10 +89,17 @@ def handler(event, context):
             attempt = fetch_image(candidate)
             width, height = png_size(attempt)
             if len(attempt) < 10_000 or width < 600 or height < 600:
+                kma_hub.note_invalid("rdr_cmp1_img")
                 raise ValueError(f"undersized:{width}x{height}:{len(attempt)}")
             body, requested = attempt, candidate
             break
-        except Exception as error:  # noqa: BLE001 — 이전 생산시각으로 명시적 재시도
+        except (kma_hub.QuotaExhausted, urllib.error.HTTPError) as error:
+            if isinstance(error, kma_hub.QuotaExhausted) or getattr(error, "code", None) == 403:
+                # 일일 용량 초과 — 후보 시각 13개를 더 돌지 않는다. 이전 프레임은 그대로 남는다.
+                print(f"[kma-radar] QUOTA_EXHAUSTED at {candidate} — 중단, S3 미기록")
+                return {"ok": False, "reason": "quota_exhausted", "api": "rdr_cmp1_img", "requested": candidate}
+            failures.append(f"{candidate}:HTTP{error.code}")
+        except Exception as error:  # noqa: BLE001 — 이전 생산시각으로 명시적 재시도(timeout·미달 이미지)
             failures.append(f"{candidate}:{type(error).__name__}")
     if body is None:
         raise RuntimeError("레이더 PNG 검증 실패 — 덮어쓰지 않는다: " + ",".join(failures))

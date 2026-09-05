@@ -34,6 +34,8 @@ from datetime import datetime, timezone
 
 import boto3
 
+import kma_hub   # KMA 허브 호출 회계(PHASE 1) — aws/_shared/kma_hub.py, 배포 스크립트가 같이 담는다
+
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 KEY = os.environ.get("KMA_HUB_KEY", "").strip()
@@ -59,7 +61,7 @@ MISSING = {-99.9, -99.90, -9.0, -99.0, -999.0}
 
 def get(**params):
     q = urllib.parse.urlencode({**params, "authKey": KEY})
-    with urllib.request.urlopen(urllib.request.Request(f"{API}?{q}", headers=UA), timeout=60) as r:
+    with kma_hub.track("sfc_norm1"), urllib.request.urlopen(urllib.request.Request(f"{API}?{q}", headers=UA), timeout=60) as r:
         return r.read().decode("euc-kr", "replace")
 
 
@@ -100,6 +102,7 @@ def station_ids():
         return []
 
 
+@kma_hub.accounted("kma-normal")
 def handler(event, context):
     if not KEY:
         return {"ok": False, "reason": "no-key"}

@@ -36,6 +36,8 @@ from datetime import datetime, timedelta, timezone
 
 import boto3
 
+import kma_hub   # KMA 허브 호출 회계(PHASE 1) — aws/_shared/kma_hub.py, 배포 스크립트가 같이 담는다
+
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 KEY = os.environ.get("KMA_HUB_KEY", "").strip()
@@ -74,7 +76,7 @@ s3 = boto3.client("s3", region_name=REGION)
 def get(path, **p):
     q = urllib.parse.urlencode({**p, "authKey": KEY, "dataType": "JSON",
                                 "pageNo": "1", "numOfRows": "10"})
-    with urllib.request.urlopen(urllib.request.Request(f"{HOST}{path}?{q}", headers=UA),
+    with kma_hub.track(path), urllib.request.urlopen(urllib.request.Request(f"{HOST}{path}?{q}", headers=UA),
                                 timeout=60) as r:
         return json.loads(r.read().decode("utf-8"))
 
@@ -105,6 +107,7 @@ def pick_now(item, issued, now):
     return None, None
 
 
+@kma_hub.accounted("kma-life")
 def handler(event, context):
     if not KEY:
         return {"ok": False, "reason": "no-key"}

@@ -15,7 +15,9 @@ FN="${1:?사용법: ./deploy-lite.sh <함수이름> [--url]}"
 # Function URL 은 필요할 때만 만든다.
 # 예약 실행(EventBridge)만 하는 함수에 공개 URL 을 붙이면 공격면만 넓어진다.
 WANT_URL="${2:-}"
-REGION="$(aws configure get region)"
+# 프로필 리전(us-east-2)을 따르면 서울 함수의 복사본이 생긴다(2026-09-05 실측). 서울로 못 박는다.
+REGION="${REGION:-ap-northeast-2}"
+export AWS_DEFAULT_REGION="$REGION"
 PYVER="3.12"
 ROLE="earthus-lambda-${FN}"
 DIR="$(cd "$(dirname "$0")" && pwd)/${FN}"
@@ -54,14 +56,39 @@ fi
 # ── 2. 패키징 ────────────────────────────────────────────────
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 cp "$DIR"/*.py "$TMP"/
-(cd "$TMP" && zip -qr "/tmp/${FN}.zip" .)
+# KMA 허브 호출 회계 모듈 — handler 가 import 하면 반드시 같이 담는다(없으면 Lambda 가 import 에서 죽는다)
+SHARED="$(cd "$(dirname "$0")" && pwd)/_shared/kma_hub.py"
+if grep -q "import kma_hub" "$DIR/handler.py"; then
+  [ -f "$SHARED" ] || { echo "❌ kma_hub.py 없음: $SHARED"; exit 1; }
+  cp "$SHARED" "$TMP"/
+  echo "▸ kma_hub.py 동봉"
+fi
+# Windows(Git Bash)엔 zip 이 없다 — deploy-python.sh 와 같이 python 으로 묶는다. 실패하면 멈춘다(예전엔 조용히 넘어가 옛 코드가 남았다).
+rm -f "/tmp/${FN}.zip"
+if command -v zip >/dev/null 2>&1; then
+  (cd "$TMP" && zip -qr "/tmp/${FN}.zip" .)
+else
+  ZIPW="$(cygpath -w "/tmp/${FN}.zip" 2>/dev/null || echo "/tmp/${FN}.zip")"
+  TMPW="$(cygpath -w "$TMP" 2>/dev/null || echo "$TMP")"
+  python - "$TMPW" "$ZIPW" <<'PY'
+import os, sys, zipfile
+src, out = sys.argv[1], sys.argv[2]
+with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+    for root, _, files in os.walk(src):
+        for f in files:
+            full = os.path.join(root, f)
+            z.write(full, os.path.relpath(full, src))
+PY
+fi
+[ -s "/tmp/${FN}.zip" ] || { echo "❌ 패키징 실패: /tmp/${FN}.zip 없음"; exit 1; }
+ZIPFILE="$(cygpath -w "/tmp/${FN}.zip" 2>/dev/null || echo "/tmp/${FN}.zip")"   # Windows aws CLI 는 /tmp 경로를 못 연다
 echo "▸ 패키지: $(du -k "/tmp/${FN}.zip" | cut -f1)KB"
 
 # ── 3. 함수 ──────────────────────────────────────────────────
 if aws lambda get-function --function-name "$FN" >/dev/null 2>&1; then
   echo "▸ 코드 갱신"
   aws lambda update-function-code --function-name "$FN" \
-    --zip-file "fileb:///tmp/${FN}.zip" --query LastModified --output text
+    --zip-file "fileb://${ZIPFILE}" --query LastModified --output text
   aws lambda wait function-updated --function-name "$FN" 2>/dev/null || sleep 8
   # ⚠️ 갱신 경로에서 timeout·memory 를 안 고쳐서 한 번 헤맸다.
   #    LAMBDA_TIMEOUT/LAMBDA_MEM 을 줬는데도 생성 시 값(30초/256MB)이 그대로 남아
@@ -76,7 +103,7 @@ else
   echo "▸ 함수 생성"
   aws lambda create-function --function-name "$FN" \
     --runtime "python${PYVER}" --role "$ROLE_ARN" --handler handler.handler \
-    --zip-file "fileb:///tmp/${FN}.zip" --timeout "${LAMBDA_TIMEOUT:-30}" --memory-size "${LAMBDA_MEM:-256}" \
+    --zip-file "fileb://${ZIPFILE}" --timeout "${LAMBDA_TIMEOUT:-30}" --memory-size "${LAMBDA_MEM:-256}" \
     --query FunctionArn --output text
   aws lambda wait function-active --function-name "$FN" 2>/dev/null || sleep 8
 fi
@@ -106,3 +133,10 @@ echo ""
 echo "✅ 배포 완료"
 echo "   URL: ${URL}"
 echo "   → prototype/js/config.js 의 API.FLIGHT 에 넣으세요"
+
+# ── 배포 가드(지시서 §16): us-east-2 에 같은 이름이 있으면 실패. 삭제는 하지 않는다 — 목록만 보고한다.
+if DUP="$(aws lambda get-function --function-name "$FN" --region us-east-2 --query 'Configuration.[FunctionArn,LastModified]' --output text 2>/dev/null)"; then
+  echo "❌ 배포 가드 FAIL — us-east-2 에 복사본이 있다(삭제는 별도 승인): $DUP"
+  exit 1
+fi
+echo "✅ 배포 가드 PASS — ${FN} 은 ${REGION} 에만 있다"

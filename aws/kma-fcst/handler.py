@@ -46,6 +46,8 @@ from datetime import datetime, timedelta, timezone
 
 import boto3
 
+import kma_hub   # KMA 허브 호출 회계(PHASE 1) — aws/_shared/kma_hub.py, 배포 스크립트가 같이 담는다
+
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 KEY = os.environ.get("KMA_HUB_KEY", "").strip()
@@ -116,13 +118,15 @@ def base_runs(now_kst, back=3):
 
 def get_json(url):
     req = urllib.request.Request(url, headers=UA)
-    with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+    with kma_hub.track(url, url), urllib.request.urlopen(req, timeout=TIMEOUT) as r:
         return json.loads(r.read().decode("utf-8"))
 
 
 def fetch_cell(nx, ny, runs):
     """격자 한 칸의 예보. 최근 회차부터 시도하고 비면 이전 회차로 물러난다."""
     for base_date, base_time in runs:
+        if kma_hub.stop():                          # 이 실행에서 이미 403 — 다음 회차·다음 셀 모두 금지
+            return None, None, []
         q = urllib.parse.urlencode({
             "pageNo": 1, "numOfRows": 1000, "dataType": "JSON",
             "base_date": base_date, "base_time": base_time,
@@ -130,15 +134,25 @@ def fetch_cell(nx, ny, runs):
         })
         try:
             j = get_json(f"{VILAGE}?{q}")
-        except Exception:                                    # noqa: BLE001
+        except (kma_hub.QuotaExhausted, urllib.error.HTTPError) as e:
+            # 403 = 일일 용량 초과. 예전엔 일반 예외로 삼켜 회차 3개 × 셀 90 을 헛돌았다(2026-09-05 실측).
+            if isinstance(e, kma_hub.QuotaExhausted) or getattr(e, "code", None) == 403:
+                return None, None, []
+            continue
+        except Exception:                                    # noqa: BLE001 — timeout·연결은 회계에 분류돼 있다
             continue
         head = (j.get("response") or {}).get("header") or {}
+        if head.get("resultCode") == "03":                  # NO_DATA — 그 회차가 아직 없다
+            kma_hub.note_empty("getVilageFcst")
+            continue
         if head.get("resultCode") != "00":
+            kma_hub.note_invalid("getVilageFcst")
             continue
         items = (((j.get("response") or {}).get("body") or {})
                  .get("items") or {}).get("item") or []
         if items:
             return base_date, base_time, items
+        kma_hub.note_empty("getVilageFcst")
     return None, None, []
 
 
@@ -185,6 +199,7 @@ def shape(items):
     return ordered, {k: v for k, v in sorted(days.items())}
 
 
+@kma_hub.accounted("kma-fcst")
 def handler(event, context):
     if not KEY:
         return {"ok": False, "reason": "no-key"}
@@ -213,6 +228,11 @@ def handler(event, context):
         futs = {ex.submit(fetch_cell, nx, ny, runs): (nx, ny) for (nx, ny) in cells}
         for f in cf.as_completed(futs):
             results[futs[f]] = f.result()
+
+    if kma_hub.stop():
+        # 용량 초과 — 새 문서를 만들지 않는다. 이전 산출물이 남아 화면은 STALE 로 보인다(EMPTY 아님).
+        print(f"[kma-fcst] QUOTA_EXHAUSTED — 이 실행 호출 {kma_hub.ledger.counts['calls']}회에서 중단, S3 미기록")
+        return {"ok": False, "reason": "quota_exhausted", "api": "getVilageFcst", "calls": kma_hub.ledger.counts["calls"]}
 
     points, failed = [], 0
     for (nx, ny), members in cells.items():

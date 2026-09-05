@@ -94,6 +94,12 @@ else
 fi
 # boto3/botocore 는 Lambda 런타임에 이미 있다 — 넣으면 용량만 커진다.
 cp "$DIR"/*.py "$TMP"/
+SHARED="$(cd "$(dirname "$0")" && pwd)/_shared/kma_hub.py"
+if grep -q "import kma_hub" "$DIR/handler.py"; then
+  [ -f "$SHARED" ] || { echo "❌ kma_hub.py 없음: $SHARED"; exit 1; }
+  cp "$SHARED" "$TMP"/
+  echo "  · kma_hub.py 동봉(KMA 허브 호출 회계)"
+fi
 # 관광 수집기는 공식 Swagger에서 고정한 Operation 계약을 런타임 검증에 쓴다.
 # 계약에는 키나 업무 응답값이 없고, 요청 파라미터명·응답 필드명만 들어 있다.
 if [ -d "$DIR/contracts" ]; then
@@ -208,3 +214,10 @@ rm -f /tmp/${FN}.zip
 echo ""
 echo "✅ 배포 완료 — 실행해보기:"
 echo "   aws lambda invoke --function-name ${FN} /tmp/out.json && cat /tmp/out.json"
+
+# ── 배포 가드(지시서 §16): us-east-2 에 같은 이름이 있으면 실패. 삭제는 하지 않는다 — 목록만 보고한다.
+if DUP="$(aws lambda get-function --function-name "$FN" --region us-east-2 --query 'Configuration.[FunctionArn,LastModified]' --output text 2>/dev/null)"; then
+  echo "❌ 배포 가드 FAIL — us-east-2 에 복사본이 있다(삭제는 별도 승인): $DUP"
+  exit 1
+fi
+echo "✅ 배포 가드 PASS — ${FN} 은 ${REGION} 에만 있다"

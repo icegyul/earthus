@@ -30,6 +30,8 @@ from datetime import datetime, timedelta, timezone
 
 import boto3
 
+import kma_hub   # KMA 허브 호출 회계(PHASE 1) — aws/_shared/kma_hub.py, 배포 스크립트가 같이 담는다
+
 from safety_contract import command_state, latest_by_region_kind
 
 BUCKET = os.environ["CACHE_BUCKET"]
@@ -75,7 +77,7 @@ s3 = boto3.client("s3", region_name=REGION)
 
 def get(ep, **p):
     q = urllib.parse.urlencode({**p, "authKey": KEY})
-    with urllib.request.urlopen(urllib.request.Request(BASE + ep + "?" + q, headers=UA),
+    with kma_hub.track(ep), urllib.request.urlopen(urllib.request.Request(BASE + ep + "?" + q, headers=UA),
                                 timeout=60) as r:
         return r.read().decode("euc-kr", "replace")
 
@@ -391,6 +393,7 @@ def track_episodes(active, now):
     return len(closed), len(open_)
 
 
+@kma_hub.accounted("kma-warn")
 def handler(event, context):
     if not KEY:
         return {"ok": False, "reason": "no-key"}

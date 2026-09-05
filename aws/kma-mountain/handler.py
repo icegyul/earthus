@@ -43,6 +43,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 import boto3
 
+import kma_hub   # KMA 허브 호출 회계(PHASE 1) — aws/_shared/kma_hub.py, 배포 스크립트가 같이 담는다
+
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 KEY = os.environ.get("KMA_HUB_KEY", "").strip()
@@ -70,7 +72,7 @@ s3 = boto3.client("s3", region_name=REGION)
 
 def get(**p):
     q = urllib.parse.urlencode({**p, "authKey": KEY})
-    with urllib.request.urlopen(urllib.request.Request(f"{API}?{q}", headers=UA),
+    with kma_hub.track("getMountainWeather"), urllib.request.urlopen(urllib.request.Request(f"{API}?{q}", headers=UA),
                                 timeout=90) as r:
         return json.loads(r.read().decode("utf-8"))
 
@@ -176,6 +178,7 @@ def fetch_latest():
     return d, bt, out
 
 
+@kma_hub.accounted("kma-mountain")
 def handler(event, context):
     if not KEY:
         return {"ok": False, "reason": "no-key"}

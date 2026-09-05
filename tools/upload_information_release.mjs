@@ -123,6 +123,22 @@ async function main() {
     record.verified.push({ key: file.key, url, ok, sha256: got });
     console.log(`   ${ok ? 'PASS' : 'FAIL'} ${file.publicPath}`);
   }
+  // ── 배포 가드(지시서 §15): 운영 /v2/ 와 /v2/index.html 이 같은 빌드인지 — 디렉터리 키 함정. 최대 3분 기다린다.
+  const entry = manifest.files.find(f => f.publicPath.endsWith('/index.html'));
+  if (entry) {
+    const site = process.env.EARTHUS_SITE || 'https://earthus.net';
+    const dirPath = entry.publicPath.slice(0, -'index.html'.length);
+    let same = false, dirSha = null, idxSha = null;
+    for (let attempt = 0; attempt < 36 && !same; attempt++) {
+      const [d, i] = await Promise.all([fetch(`${site}${dirPath}?g=${Date.now()}`, { cache: 'no-store' }), fetch(`${site}${entry.publicPath}?g=${Date.now()}`, { cache: 'no-store' })]);
+      dirSha = sha256(Buffer.from(await d.arrayBuffer())); idxSha = sha256(Buffer.from(await i.arrayBuffer()));
+      same = d.ok && i.ok && dirSha === idxSha && idxSha === entry.sha256;
+      if (!same) await new Promise(r => setTimeout(r, 5000));
+    }
+    record.guard = { dirPath, same, dirSha, idxSha, expected: entry.sha256 };
+    console.log(same ? `✅ 배포 가드 PASS — ${site}${dirPath} == ${entry.publicPath} == manifest` : `❌ 배포 가드 FAIL — ${site}${dirPath} 가 옛 빌드를 낸다 (dir ${dirSha && dirSha.slice(0, 12)} / index ${idxSha && idxSha.slice(0, 12)} / manifest ${entry.sha256.slice(0, 12)})`);
+    if (!same) process.exitCode = 3;
+  }
   record.finishedAt = new Date().toISOString();
   await writeFile(path.join(OUTPUT, 'deploy-record.json'), JSON.stringify(record, null, 2) + '\n');
   const failed = record.verified.filter(v => !v.ok).length;

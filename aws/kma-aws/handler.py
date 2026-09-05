@@ -44,6 +44,8 @@ from datetime import datetime, timedelta, timezone
 
 import boto3
 
+import kma_hub   # KMA 허브 호출 회계(PHASE 1) — aws/_shared/kma_hub.py, 배포 스크립트가 같이 담는다
+
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 KEY = os.environ.get("KMA_HUB_KEY", os.environ.get("KMA_KEY", "")).strip()
@@ -103,7 +105,7 @@ def get(url, **params):
     """허브 호출. ⚠️ authKey 는 URL 파라미터다. 로그에 찍히지 않게 조심한다."""
     q = urllib.parse.urlencode({**params, "authKey": KEY})
     req = urllib.request.Request(f"{url}?{q}", headers=UA)
-    with urllib.request.urlopen(req, timeout=90) as r:
+    with kma_hub.track(url, url), urllib.request.urlopen(req, timeout=90) as r:
         txt = r.read().decode("euc-kr", "replace")
     # ⚠️ 키가 틀리면 HTTP 200 에 JSON 오류가 오기도 한다. 본문을 봐야 안다.
     if txt.lstrip().startswith("{") and "인증" in txt:
@@ -289,6 +291,7 @@ def stations(refresh=False):
     return out
 
 
+@kma_hub.accounted("kma-aws")
 def handler(event, context):
     if not KEY:
         # ⚠️ 옛 파일을 덮어쓰지 않는다. 없는 것과 비어 있는 것은 다르다.

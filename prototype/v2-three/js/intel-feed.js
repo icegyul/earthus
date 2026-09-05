@@ -7,7 +7,14 @@ import * as THREE from '../../vendor/three-r184.module.min.js';
 import { EventRoom } from './event-room.js?v=3';
 import { i18n } from './i18n.js?v=10';
 
-const GDACS_TC = 'https://www.gdacs.org/gdacsapi/api/events/geteventlist/MAP?eventtype=TC';
+// PHASE 1(2026-09-05): 브라우저는 EARTHUS 축약본(Point·카드 필드만, 수십 KB)을 정상 경로로 쓴다.
+// 원본 MAP(1.97 MB · 15~106초)은 축약본도, 마지막 정상 축약본(localStorage)도 없을 때만 폴백이다.
+const GDACS_TC_COMPACT = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/events/gdacs-tc.json';
+const GDACS_TC_ORIGIN = 'https://www.gdacs.org/gdacsapi/api/events/geteventlist/MAP?eventtype=TC';
+const GDACS_TC = GDACS_TC_COMPACT;
+const GDACS_LAST_KEY = 'earthus.gdacs.last';
+const loadLastGdacs = () => { try { const j = JSON.parse(localStorage.getItem(GDACS_LAST_KEY) || 'null'); return j && j.features ? j : null; } catch (e) { return null; } };
+const saveLastGdacs = (j) => { try { localStorage.setItem(GDACS_LAST_KEY, JSON.stringify({ generated: j.generated, savedAt: new Date().toISOString(), features: j.features })); } catch (e) { /* 저장 불가 */ } };
 const USGS_EQ = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson';
 const GDACS_GEOM = (id, ep) => `https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=${id}&episodeid=${ep}`;
 
@@ -203,7 +210,17 @@ export class IntelFeed {
 
     void this.loadEvents();   // 패킷 목록은 따로 받는다 — 도착하면 카드가 채워진다
     // 태풍은 뒤에서 계속 받는다. 끝나면 스스로 다시 그린다.
-    const tcJob = timed(GDACS_TC, 45000)
+    // 축약본 → 마지막 정상 축약본 → (둘 다 없을 때만) 원본. 어느 경로로 왔는지 sources.gdacs.origin 에 남긴다.
+    this.tcOrigin = null;
+    const tcJob = timed(GDACS_TC_COMPACT, 20000)
+      .then((j) => { if (!j || !Array.isArray(j.features)) throw new Error('compact-invalid'); saveLastGdacs(j); this.tcOrigin = 'compact'; this.tcGenerated = j.generated || null; return j; })
+      .catch((e) => {
+        const last = loadLastGdacs();
+        if (last) { this.tcOrigin = 'cache'; this.tcGenerated = last.generated || null; console.warn('[feed] GDACS 축약본 실패 — 마지막 정상 축약본 사용', String(e && e.message || e), last.savedAt); return last; }
+        console.warn('[feed] GDACS 축약본·캐시 모두 없음 — 원본 MAP 폴백(1.9 MB, 느림)');
+        this.tcOrigin = 'origin';
+        return timed(GDACS_TC_ORIGIN, 45000);
+      })
       .then((j) => { this.ingestTC(j); this.tcFailed = false; })
       .catch(() => { this.tcFailed = true; })
       .finally(() => {
@@ -246,7 +263,7 @@ export class IntelFeed {
       return b.whenT - a.whenT;
     });
     this.sources = {
-      gdacs: { state: this.tcPending ? 'PENDING' : this.tcFailed ? 'FAILED' : 'OK', count: this.items.filter((x) => x.kind === 'TC').length },
+      gdacs: { state: this.tcPending ? 'PENDING' : this.tcFailed ? 'FAILED' : 'OK', count: this.items.filter((x) => x.kind === 'TC').length, origin: this.tcOrigin || null, generated: this.tcGenerated || null },
       usgs: { state: this.eqPending ? 'PENDING' : this.eqFailed ? 'FAILED' : 'OK', count: this.items.filter((x) => x.kind === 'EQ').length },
     };
     const pending = this.tcPending || this.eqPending;
@@ -264,7 +281,8 @@ export class IntelFeed {
     const parts = Object.entries(this.sources || {}).map(([id, s]) => {
       if (s.state === 'PENDING') return `${name[id]} ${ko ? '받는 중' : 'loading'}`;
       if (s.state === 'FAILED') return `${name[id]} ${ko ? '조회 불가' : 'unavailable'}`;
-      return `${name[id]} ${s.count}${ko ? '건' : ''}`;
+      const via = s.origin === 'cache' ? ` (${ko ? '이전 축약본' : 'cached'}${s.generated ? ` ${String(s.generated).slice(5, 16).replace('T', ' ')}Z` : ''})` : s.origin === 'origin' ? ` (${ko ? '원본 직접' : 'origin'})` : '';
+      return `${name[id]} ${s.count}${ko ? '건' : ''}${via}`;
     });
     const retry = `<button class="feed-back" data-action="feed-retry" style="margin:0 0 0 6px">${i18n.t('retry')}</button>`;
     const stale = this.state === 'stale' && this.previous

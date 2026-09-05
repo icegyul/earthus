@@ -111,3 +111,18 @@ echo
 echo "EARTHUS LLM 배포 완료"
 echo "  함수 URL: $URL"
 echo "  모델 후보: $MODELS · 허용 오리진: $ORIGIN"
+
+# ── 배포 가드(지시서 §14): 함수 URL 인증이 AWS_IAM 이 아니면 실패. /api/ask 가 CloudFront 를 거쳐 200 인지도 본다.
+AUTH="$(aws lambda get-function-url-config --function-name "$FN" --region "$REGION" --query AuthType --output text)"
+if [ "$AUTH" != "AWS_IAM" ]; then
+  echo "❌ 배포 가드 FAIL — 함수 URL AuthType=$AUTH (CloudFront OAC 는 AWS_IAM 이어야 한다)"
+  exit 1
+fi
+BODY='{"q":"hello","lang":"ko","layers":[{"id":"clouds","label":"clouds","badge":"OBSERVED","value":"south"}],"view":{"lat":35,"lon":128,"altKm":3000}}'
+HASH="$(printf '%s' "$BODY" | sha256sum | cut -d' ' -f1)"
+CODE="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${ORIGIN}/api/ask" -H 'content-type: application/json' -H "x-amz-content-sha256: $HASH" --data-binary "$BODY" || echo 000)"
+if [ "$CODE" != "200" ]; then
+  echo "❌ 배포 가드 FAIL — ${ORIGIN}/api/ask HTTP $CODE (기대 200)"
+  exit 1
+fi
+echo "✅ 배포 가드 PASS — AuthType=AWS_IAM · /api/ask 200"

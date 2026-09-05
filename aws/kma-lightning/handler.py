@@ -34,6 +34,8 @@ from datetime import datetime, timedelta, timezone
 
 import boto3
 
+import kma_hub   # KMA 허브 호출 회계(PHASE 1) — aws/_shared/kma_hub.py, 배포 스크립트가 같이 담는다
+
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 KEY = os.environ.get("KMA_HUB_KEY", "").strip()
@@ -68,7 +70,7 @@ def put(key, doc, maxage):
 
 def fetch(tm, dtm):
     q = urllib.parse.urlencode({"tm": tm, "dtm": str(dtm), "gc": "T", "authKey": KEY})
-    with urllib.request.urlopen(urllib.request.Request(f"{BASE}?{q}", headers=UA),
+    with kma_hub.track("lgt_pnt"), urllib.request.urlopen(urllib.request.Request(f"{BASE}?{q}", headers=UA),
                                 timeout=90) as r:
         txt = r.read().decode("euc-kr", "replace")
 
@@ -99,6 +101,7 @@ def fetch(tm, dtm):
     return out
 
 
+@kma_hub.accounted("kma-lightning")
 def handler(event, context):
     if not KEY:
         return {"ok": False, "reason": "no-key"}

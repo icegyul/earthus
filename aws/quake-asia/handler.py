@@ -32,6 +32,8 @@ from datetime import datetime, timedelta, timezone
 
 import boto3
 
+import kma_hub   # KMA 허브 호출 회계(PHASE 1) — aws/_shared/kma_hub.py, 배포 스크립트가 같이 담는다
+
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 KEY = os.environ["KMA_HUB_KEY"]
@@ -55,7 +57,7 @@ KMA_TP = {
 
 
 def get(url, enc="utf-8"):
-    with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=40) as r:
+    with kma_hub.track(url, url), urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=40) as r:
         return r.read().decode(enc, "replace")
 
 
@@ -168,6 +170,7 @@ def jma():
     return out
 
 
+@kma_hub.accounted("quake-asia")
 def handler(event=None, context=None):
     rows, errs = [], {}
     for name, fn in (("kma", kma), ("jma", jma)):

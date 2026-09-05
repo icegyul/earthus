@@ -1,5 +1,6 @@
 """지시서 D-4 — 발표 원문 보존: 키 규칙, 불변(중복 안 씀), sourceRef 기록."""
 import importlib.util, os, pathlib, sys, types, unittest
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent.parent / "_shared"))   # kma_hub
 if "boto3" not in sys.modules:
     boto3 = types.ModuleType("boto3"); boto3.client = lambda *a, **k: object(); sys.modules["boto3"] = boto3
 os.environ.setdefault("CACHE_BUCKET", "test-bucket")

@@ -1,0 +1,2 @@
+# 의존성 없음 — 표준 라이브러리와 Lambda 기본 제공 boto3 만 쓴다.
+# ⚠️ 이 파일을 지우지 말 것. 없으면 deploy-python.sh 가 NetCDF 기본값(h5py 등 30MB)을 넣는다.

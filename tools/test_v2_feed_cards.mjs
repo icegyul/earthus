@@ -24,7 +24,7 @@ function feedWith() {
   feed.fetchJson = async (url) => {
     if (/cyclone-events\.json/.test(url)) return index;
     if (/cyclone-events\/1\.json/.test(url)) return packet;
-    if (/gdacs.*geteventlist/.test(url)) return { features: [tc(2, 'BBB-26', 'Orange'), tc(1, 'AAA-26', 'Green')] };
+    if (/gdacs.*geteventlist|gdacs-tc\.json/.test(url)) return { features: [tc(2, 'BBB-26', 'Orange'), tc(1, 'AAA-26', 'Green')] };
     if (/usgs/.test(url)) return { features: [] };
     if (/getgeometry/.test(url)) return { features: [] };
     return {};

@@ -41,6 +41,8 @@ from datetime import datetime, timezone
 
 import boto3
 
+import kma_hub   # KMA 허브 호출 회계(PHASE 1) — aws/_shared/kma_hub.py, 배포 스크립트가 같이 담는다
+
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 KMA_KEY = os.environ.get("KMA_KEY", "")
@@ -110,7 +112,7 @@ DIR16_KO = {"N": "북", "NNE": "북북동", "NE": "북동", "ENE": "동북동",
 
 def get(url, raw=False):
     req = urllib.request.Request(url, headers=UA)
-    with urllib.request.urlopen(req, timeout=T) as r:
+    with kma_hub.track(url, url), urllib.request.urlopen(req, timeout=T) as r:
         b = r.read()
     return b if raw else json.loads(b)
 
@@ -394,6 +396,7 @@ def downgrade_of(rec):
     return None
 
 
+@kma_hub.accounted("typhoon-official")
 def handler(event=None, context=None):
     now = datetime.now(timezone.utc)
     year = now.year

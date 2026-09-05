@@ -83,12 +83,21 @@ async function main() {
       '--content-type', file.contentType, '--cache-control', file.cacheControl]);
     record.uploads.push({ key: file.key, state: 'UPLOADED', sha256: file.sha256, bytes: file.bytes });
     console.log(`   올림  ${file.key}`);
+    // 디렉터리 키(app/v2/)가 S3 에 따로 있다 — CloudFront 의 /v2/ 는 그 객체를 낸다. index.html 만 갱신하면
+    // /v2/index.html 은 새것, /v2/ 는 옛것이 된다(실측 2026-09-05: 9/4자 HTML 이 하루 더 나갔다). 같이 덮는다.
+    if (file.key.endsWith('/index.html')) {
+      const dirKey = file.key.slice(0, -'index.html'.length);
+      aws(['s3api', 'put-object', '--bucket', bucket, '--key', dirKey, '--region', region, '--body', local,
+        '--content-type', file.contentType, '--cache-control', 'no-cache, no-store, must-revalidate']);
+      record.uploads.push({ key: dirKey, state: 'UPLOADED_DIR_MIRROR', sha256: file.sha256, bytes: file.bytes });
+      console.log(`   올림  ${dirKey} (디렉터리 키 거울)`);
+    }
   }
 
   console.log('== 4/5 무효화 ==');
   // 와일드카드(*) 무효화는 동시 진행 15개 한도가 있다(실측 2026-09-05 TooManyInvalidationsInProgress).
   // 정확한 경로는 한도가 3,000개라 파일마다 정확한 경로로 낸다. 쿼리(?v=)는 CloudFront 캐시 키에 따라 다르므로 두 경로(정확·와일드카드 최소)를 함께.
-  const exact = manifest.files.map(file => file.publicPath);
+  const exact = manifest.files.flatMap(file => (file.publicPath.endsWith('/index.html') ? [file.publicPath, file.publicPath.slice(0, -'index.html'.length)] : [file.publicPath]));
   const wild = ['/v2/*', '/js/*', '/css/*'].filter(w => manifest.files.some(f => f.publicPath.startsWith(w.slice(0, -1))));
   let paths = [...exact, ...wild];
   let inv;

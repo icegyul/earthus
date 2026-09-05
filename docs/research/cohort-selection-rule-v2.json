@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "cohort-selection-rule-v2",
+  "createdAtUTC": "2026-09-05T17:04:34Z",
+  "authorProcess": "Claude Code session (STEP 12) — rule fixed before any candidate cohort is enumerated or computed",
+  "gitCommitAtDesign": "73d40ae0",
+  "purpose": "Choose follow-up drifter cohorts by observation-only, pre-defined numeric criteria so that no model result can influence which cohort is used.",
+  "observationSource": {"provider": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc, CC BY 4.0)", "version": "v2.01 endpoint as accessed 2026-09-05", "note": "same product and access path as the 2015-01 cohorts"},
+  "candidateRegions": {
+    "definedBefore": "any data query for the follow-up",
+    "rationale": "Boxes are standard western-boundary/extension regions taken from textbook geography, restricted to 40S–40N because the HYCOM GLBv0.08 latitude spacing changes from 0.08° to 0.04° poleward of 40° and the current reader only accepts uniform spacing.",
+    "regions": [
+      {"id": "GS", "name": "Gulf Stream, post-Hatteras", "south": 32, "north": 40, "west": -75, "east": -55},
+      {"id": "KE", "name": "Kuroshio Extension", "south": 30, "north": 40, "west": 135, "east": 160},
+      {"id": "AG", "name": "Agulhas Current / Retroflection", "south": -40, "north": -30, "west": 15, "east": 35},
+      {"id": "BM", "name": "Brazil–Malvinas Confluence", "south": -40, "north": -30, "west": -60, "east": -45}
+    ],
+    "minimumRegionsSelected": 2
+  },
+  "candidateWindows": {"year": 2015, "reason": "keep the HYCOM expt_53.X 2015 archive already used; no cross-year archive mixing", "windowDurationSeconds": 259200, "startHourUTC": 12, "enumeration": "every day of 2015 at 12:00Z, per region"},
+  "advectionDominantDefinition": {
+    "principle": "Observation-only quantities; no model output enters the definition.",
+    "A1_observedSpeedAtStart": {"quantity": "median over cohort drifters of hypot(ve, vn) at the window start sample (GDP provider velocity, m/s)", "threshold": ">= 0.30", "unit": "m/s"},
+    "A2_observed72hDisplacement": {"quantity": "median over cohort drifters of haversine distance between the start sample and the +72 h sample", "threshold": ">= 40", "unit": "km", "rationale": "about twice the 2015-01 quiet-gyre stationary error (19.2 km); guarantees the stationary baseline is not trivially strong"},
+    "A3_persistenceOfDirection": {"quantity": "median over cohort of |bearing(0→24 h) − bearing(24→72 h)|", "threshold": "<= 90", "unit": "degrees", "rationale": "excludes purely inertial/tidal looping windows where displacement is large but not advective"},
+    "allOf": ["A1", "A2", "A3"]
+  },
+  "eligibilityPerDrifter": {
+    "E1": "drogue_lost_date empty or later than window end (provider field)",
+    "E2": "typebuoy in {SVP, SVPB}",
+    "E3": "all 73 hourly samples present in the window; no provider gap > 3600 s",
+    "E4": "start position at least 100 km from the nearest coastline (Natural Earth 1:10m) — the forcing has no coastline geometry",
+    "E5": "start position inside the region box; drifters that leave the box during the window are NOT excluded (that would be result-based)"
+  },
+  "cohortEligibility": {
+    "C_n": "at least 20 eligible drifters in the window across the selected regions and at least 8 in each selected region",
+    "C_forcing": "HYCOM expt_53.X 15 m coverage for the box + 1° margin and the window must be obtainable (archive gaps reject the window); NCEP-R2 10 m wind coverage likewise",
+    "C_independence": "provider description recorded; not certified"
+  },
+  "selectionProcedure": [
+    "1. For each region, enumerate all 2015 windows (day at 12Z) and count eligible drifters (E1–E5) using observation data only.",
+    "2. Keep windows satisfying C_n (per-region minimum 8) and compute A1–A3 from observations only.",
+    "3. Keep windows satisfying A1–A3.",
+    "4. Within each region choose the EARLIEST calendar window that survives steps 1–3. Calendar order is the only tie-breaker; no model output, no wind statistics, no V1/V2 knowledge is consulted.",
+    "5. Take the two regions with the largest eligible count at their chosen window; if fewer than two regions qualify, record BLOCKED_COHORT and do not relax thresholds.",
+    "6. Freeze the chosen windows, drifter IDs and all A/E/C values in cohort-step12.json and commit it BEFORE any forcing download or model run."
+  ],
+  "exclusionRules": {
+    "X1": "No window may be chosen or rejected because of any model result (V1, V2, HYCOM, GLORYS).",
+    "X2": "Thresholds A1–A3, E1–E5, C_n are not adjusted after any data are seen; a change requires a new ruleId and a new commit before use.",
+    "X3": "A cohort that fails C_forcing is BLOCKED, not replaced by a neighbouring window chosen for convenience.",
+    "X4": "Drifters are never dropped after the run for being 'outliers'."
+  },
+  "leakageStatement": "The 2015-01 quiet-gyre cohort (A/B) is excluded from candidate windows (regions differ). No follow-up run may reuse the 2015-01 cohort under this rule.",
+  "status": "RULE_FIXED — enumeration not performed"
+}

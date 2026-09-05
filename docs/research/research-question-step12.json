@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "questionId": "Q2-advection-regime-and-product-independence",
+  "createdAtUTC": "2026-09-05T17:04:34Z",
+  "authorProcess": "Claude Code session (Research Intelligence PHASE 2, STEP 12) — design only, no computation",
+  "gitCommitAtDesign": "73d40ae0",
+  "supersedes": null,
+  "immutableInputs": {
+    "V1": {"verdict": "FAIL / NOT_ACCEPTED", "record": "docs/research/evidence/gdp-hycom-cohort-201501/IMMUTABLE-V1.json"},
+    "V2": {"verdict": "NOT_ACCEPTED", "record": "docs/research/evidence/gdp-hycom-cohort-201501-v2/verdict.json", "criteria": {"C1": "FAIL", "C2": "PASS", "C3": "PASS", "C4": "PASS", "C5": "FAIL"},
+           "primaryAlpha": 0.0007, "medians72hKm": {"V1": 24.33, "V2": 23.20, "stationary": 19.22, "initialVelocityPersistence": 32.20}, "v1ToV2": {"medianDeltaKm": 0.46, "improved": "7/21"}},
+    "rule": "These records are not modified by STEP 12 or by any result of the follow-up study."
+  },
+  "question": "Can the V2 failure be attributed to reanalysis advection-field error in a low-energy (quiet-gyre) regime rather than to the absence of windage — i.e., does the same fixed model (alpha = 0.0007, no retuning) behave differently against the same baselines in a pre-defined advection-dominant cohort and with an independent current product?",
+  "notAQuestionAbout": "making V1 or V2 PASS retrospectively; the 2015-01 quiet-gyre verdicts stand regardless of the answer",
+  "hypotheses": {
+    "H1": {"statement": "V2 windage is generally superior to V1.", "status": "NOT_ADOPTED", "note": "Already contradicted on the quiet-gyre cohort (C5 FAIL); the follow-up tests only whether this changes in a different regime."},
+    "H2": {"statement": "In the 2015 North Atlantic quiet-gyre cohort the eddy/advection signal is weak, so the stationary baseline is intrinsically strong.", "status": "NOT_ADOPTED", "testableBy": "observed 72 h displacement distribution of the cohort versus the pre-registered advection-dominant threshold"},
+    "H3": {"statement": "In an advection-dominant regime the relative advantage of a current-driven model over the stationary baseline is larger.", "status": "NOT_ADOPTED", "testableBy": "C1-analog on the new cohort, same alpha, same metric"},
+    "H4": {"statement": "A different ocean reanalysis product (GLORYS12V1) yields different trajectory error than HYCOM GOFS 3.1 on the same cohort.", "status": "NOT_ADOPTED", "testableBy": "paired HYCOM-vs-GLORYS comparison on identical observations, horizons and metric"}
+  },
+  "designDocuments": ["docs/research/validation-plan-step12.md", "docs/research/cohort-selection-rule-v2.json", "docs/research/dataset-comparison-hycom-glorys.md"],
+  "preregistrationRequirement": "Before any follow-up computation: (1) cohort-selection-rule-v2.json applied and the chosen windows recorded, (2) validation-plan-v3.json with acceptance criteria committed alone, (3) GLORYS access obtained by the user (credentials are never entered by the assistant). None of these steps has been executed.",
+  "computationPerformed": false,
+  "codeChanged": false
+}

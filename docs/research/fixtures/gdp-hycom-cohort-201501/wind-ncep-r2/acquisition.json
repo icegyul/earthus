@@ -1,0 +1,24 @@
+{
+  "fixtureIssuedAtUTC": "2026-09-05T15:00:00Z",
+  "sources": [
+    {
+      "path": "uwnd.10m.gauss.2015-0105-0108.nc",
+      "uri": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2015.nc?var=uwnd&north=40&south=10&west=300&east=335&time_start=2015-01-05T00:00:00Z&time_end=2015-01-08T18:00:00Z&accept=netcdf",
+      "sha256": "0e3cefc025f3a3acd679cd7526df21d73aac7af3c5a887f8b4a8da9b109bc4ed",
+      "bytes": 24908,
+      "longName": "6-Hourly Forecast of U-wind at 10 m",
+      "dataset": "NCEP/DOE AMIP-II Reanalysis (Reanalysis-2)",
+      "title": "4x Daily NCEP/DOE Reanalysis 2"
+    },
+    {
+      "path": "vwnd.10m.gauss.2015-0105-0108.nc",
+      "uri": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2015.nc?var=vwnd&north=40&south=10&west=300&east=335&time_start=2015-01-05T00:00:00Z&time_end=2015-01-08T18:00:00Z&accept=netcdf",
+      "sha256": "b284a3ce5f48547d28fa23e1cac0adc334ddb8dedaf337de6917708050c47132",
+      "bytes": 24908,
+      "longName": "6-Hourly Forecast of V-wind at 10 m",
+      "dataset": "NCEP/DOE AMIP-II Reanalysis (Reanalysis-2)",
+      "title": "4x Daily NCEP/DOE Reanalysis 2"
+    }
+  ],
+  "sourceBundleSha256": "bff55d671b6df74a4a73d94dc436b85316eb1fd0cf63307443bbec82ea2613c5"
+}

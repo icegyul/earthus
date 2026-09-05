@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "earthus.research.experiment.v2",
+  "title": "ExperimentSpec for surface-passive-advection.v2.windage",
+  "type": "object",
+  "required": ["schemaVersion", "projectId", "question", "questionId", "validationPlanId", "modelId", "modelVersion", "datasetVersions", "windDataset", "windage", "area", "startTimeUTC", "durationSeconds", "releaseDefinition", "particleCount", "integrationMethod", "integrationStepSeconds", "outputStepSeconds", "boundaryPolicy"],
+  "properties": {
+    "schemaVersion": {"const": "1.0"},
+    "projectId": {"type": "string", "minLength": 1},
+    "question": {"type": "string", "minLength": 1},
+    "questionId": {"type": "string", "minLength": 1, "description": "Stable identifier of the research question this run answers (lineage root)."},
+    "validationPlanId": {"type": "string", "minLength": 1, "description": "planId of the pre-registered validation plan committed before this run."},
+    "modelId": {"const": "surface-passive-advection.v2.windage"},
+    "modelVersion": {"const": "0.1.0"},
+    "datasetVersions": {"type": "array", "minItems": 1, "maxItems": 1, "items": {"type": "object", "required": ["datasetId", "version"], "properties": {"datasetId": {"type": "string", "minLength": 1}, "version": {"type": "string", "minLength": 1}}}},
+    "windDataset": {"type": "object", "required": ["datasetId", "version"], "properties": {"datasetId": {"type": "string", "minLength": 1}, "version": {"type": "string", "minLength": 1}}, "description": "Immutable 10 m wind dataset binding (variableKind wind10m, gaussian-latlon-a-grid)."},
+    "windage": {"type": "object", "required": ["alpha"], "additionalProperties": false, "properties": {"alpha": {"type": "number", "minimum": 0, "maximum": 0.05, "description": "Dimensionless leeway coefficient: u = u_current + alpha * U10. No default; must be stated."}}},
+    "area": {"type": "object", "required": ["west", "east", "south", "north"], "properties": {"west": {"type": "number"}, "east": {"type": "number"}, "south": {"type": "number"}, "north": {"type": "number"}}},
+    "startTimeUTC": {"type": "string"},
+    "durationSeconds": {"type": "integer", "minimum": 1, "maximum": 259200},
+    "releaseDefinition": {"type": "object", "required": ["type", "points"], "properties": {"type": {"const": "points"}, "points": {"type": "array", "minItems": 1}}},
+    "particleCount": {"type": "integer", "minimum": 1, "maximum": 10000},
+    "integrationMethod": {"const": "RK4"},
+    "integrationStepSeconds": {"type": "integer", "minimum": 1},
+    "outputStepSeconds": {"type": "integer", "minimum": 1},
+    "boundaryPolicy": {"const": "STOP_AT_FIRST_CROSSING"},
+    "metrics": {"type": "array", "items": {"type": "string"}},
+    "backend": {"const": "oceanparcels"}
+  }
+}

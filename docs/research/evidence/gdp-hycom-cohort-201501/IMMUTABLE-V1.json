@@ -1,0 +1,38 @@
+{
+  "immutableId": "earthus-research-v1-gdp-hycom-cohort-201501-verdict-FAIL",
+  "frozenAtUTC": "2026-09-05T13:55:00Z",
+  "frozenAtCommitParent": "d5d712edbbc578ab6f26ef73ee2975c84bdffa56",
+  "evidenceCommit": "a3d9a57d",
+  "modelId": "surface-passive-advection.v1",
+  "modelVersion": "0.1.0",
+  "engine": "OceanParcels 3.1.4 ScipyParticle AdvectionRK4",
+  "verdict": "FAIL",
+  "scientificAcceptance": "NOT_ACCEPTED",
+  "failedCriteria": ["C1_beatsStationary"],
+  "passedCriteria": ["C2_beatsPersistence", "C3_sampleFloor", "C4_reporting"],
+  "pooledMedianSeparationMeters72h": {"model": 24329.118469437562, "stationary": 19221.030240221768, "initialVelocity": 32204.493402698477, "n": 21},
+  "sha256": {
+    "validation-plan.json": "a603d29ddebdfcf4dd24c550f3fb6ecb1b8c16aa53b38e1b8a11f285d62af7a9",
+    "verdict.json": "00989f011288a2d587c25c995aea49bf0858bab8fa07005f9e4752ff7345e7f5",
+    "comparison-region-a.json": "d5987364af6071817988d25a74f9bf95ab1c9dc86a93ff72768809694e2f5c34",
+    "comparison-region-b.json": "57b5578bf7b69afedbd5fdb041c908e21bb7d0f8c0107cd4be9d6d69e67d9828",
+    "build-summary.json": "ef5b9de2aac304f4684d5326b3513758110bf3c26206faa82ac21e71b1903547",
+    "tracks.csv": "5c29b4977955e4f609fa456edaf4b58d40ebce2962a8997fb60822caa92a6fc5",
+    "region-a/observations.json": "22e97d3716becb8210d5b0fa5e1d1f0a07feab52ccda7088356538bd1ad948a4",
+    "region-b/observations.json": "0a691064bd882b1252826c0d308c4ad9e2630be86fbffdd9d69cff0f2b31e09d",
+    "region-a/current-20150105T12.nc": "f3eaa895d7076d06c387f43360decbe271c20a950703d49373cc0303ee0c53d9",
+    "region-a/current-20150106T12.nc": "194311e50ebff790a1e0931637ff17ad42ef8f0d8459732f1ab5e2bf6f6c7616",
+    "region-a/current-20150107T12.nc": "cdeb35921f3c87ef51b335dc61dcd98b3fe739408e3dde953361225f4a2dcabc",
+    "region-a/current-20150108T12.nc": "df48ab3efe09864b9ff3df02a9b7ea9812d17f6e18ce73171fae24a7367a2282",
+    "region-b/current-20150105T12.nc": "c8fcca556be96d37aa6291810d3280b9e2af0716bed993e32c2025d14f1b7347",
+    "region-b/current-20150106T12.nc": "397a56f1de1a594407ac8fb9676b6ef4d286a2921f078d47212f01bb16ba081e",
+    "region-b/current-20150107T12.nc": "dbbc37e79dcd6a7073a6217d60d88952e65342abcba545bfab3882de11c36c89",
+    "region-b/current-20150108T12.nc": "6030c6fb03cae5e0ed8b918556b30b02f8b82b8cff098d42b5948c2a9147a914"
+  },
+  "resultArraySha256": {"a": "9a2308576134eefc21bd635c5e2750b5389ef42dac69712b829ce73cc99d87fb", "b": "4b44a6075d974f7a97ac004ad8c4e689417e6cbada8bc880f80ec5980f6c0405"},
+  "datasetSha256": {"a": "40da2b478fca58752d2f66863345308a58f083d52be9e992878eba3cf767d6ee", "b": "16a4721348dc5a5b2c747012db76e0ab07fd1b51ea2d9afee1418cc045747097"},
+  "integrityNotes": [
+    "validation-plan.json carries registeredAtUTC 2026-09-05T00:35:00Z, which is LATER than build-summary builtAtUTC 2026-09-05T00:21:32Z. The plan file was written before the run (session transcript order) but the hand-typed timestamp is wrong and both files entered git in the same commit (a3d9a57d), so ordering is not commit-proven for V1. The plan is left byte-identical (rule: V1 plan is never edited); this note is the correction. V2 fixes the procedure: the plan is committed alone, before any run.",
+    "Any V2 result, including a PASS, does not change this record."
+  ]
+}

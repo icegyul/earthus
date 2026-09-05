@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "questionId": "Q3-multi-year-advection-regime-cohort-availability",
+  "ruleId": "cohort-selection-rule-step14-multi-year",
+  "createdAtUTC": "2026-09-05T23:13:13Z",
+  "gitCommit": "6d95b604",
+  "authorProcess": "Claude Code session (STEP 14) — preregistration only",
+  "parentStep": 13,
+  "previousStepStatus": "COHORT SELECTION BLOCKED (commit 6d95b604; GS 0 / KE 0 / AG 17 / BM 0 qualifying windows in 2015; AG only, 9 drifters; requirement 2 regions and >= 20)",
+  "question": "STEP 13 could not assemble two independent regions and at least 20 drifters meeting the pre-registered advection-dominant cohort conditions from 2015 observations alone. Keeping every eligibility and advection-dominant criterion unchanged, and allowing the pre-defined multi-year observation period 2010-01-01 through 2020-12-31, can two independent regions and at least 20 drifters be assembled?",
+  "purpose": "COHORT AVAILABILITY only. This step does not ask whether any model performs better; no model is evaluated.",
+  "observationPeriod": {"startDate": "2010-01-01", "endDate": "2020-12-31"},
+  "candidateRegions": ["GS 32–40N / 75–55W", "KE 30–40N / 135–160E", "AG 40–30S / 15–35E", "BM 40–30S / 60–45W"],
+  "eligibilityRules": ["E1 drogue attached through window end", "E2 SVP/SVPB", "E3 73 hourly samples, gap <= 1 h", "E4 start > 100 km from Natural Earth 1:10m coastline", "E5 start inside region box (leaving later is not an exclusion)"],
+  "advectionCriteria": ["A1 median start observed speed >= 0.30 m/s (first observed hourly displacement / elapsed time)", "A2 median 72 h observed displacement >= 40 km", "A3 median bearing change (0→24 h vs 24→72 h) <= 90°"],
+  "finalCohortCriteria": {"regionMinimumEligible": 8, "requiredRegions": 2, "totalMinimumEligible": 20, "windowChoice": "earliest calendar qualifying window per region", "regionOrder": "eligible count descending, then alphabetical"},
+  "immutableInputs": {
+    "step13Commit": "6d95b604",
+    "step13CohortFileSha256": "ed87385e3a92224ad4d40fa2513a78afad1155650c43f46a2497dd2a5da47e63",
+    "step13AuditSha256": "dcf0f645bbd496dfe5a44f55fce803fce041b036d267bddc0898f4cc625442bf",
+    "step12RuleSha256": "9bd36215008ad61b5023bdcc02b626961ec0f750944eb9b334ee230032edb217",
+    "v1ImmutableRecordSha256": "6f07fc61f470eb56c4f2b8bdf5101b6494bc1b194fcf625f6551bf3e0e13854c",
+    "v1VerdictSha256": "00989f011288a2d587c25c995aea49bf0858bab8fa07005f9e4752ff7345e7f5",
+    "v2VerdictSha256": "40e1570545a44389e353babe6bdbead4e50d05077715f6376caf9c8687be0efb",
+    "v2EvidenceManifestSha256": "463bce127653786279579a4baab2ac5529d233c53c3b480a3006be1c0056097b",
+    "rule": "none of these records is modified by STEP 14 or by any later result"
+  },
+  "prohibitedInputs": ["NOAA GDP raw observation CSV (not opened in STEP 14)", "HYCOM", "GLORYS", "ERA5", "NCEP", "windage", "V1 results", "V2 results", "bootstrap", "sensitivity", "model trajectories", "stationary baseline", "persistence baseline", "previous experiment result arrays", "STEP 13 outcome as an optimisation signal"],
+  "nextStep": "After this commit: acquire GDP hourly observations for the period, run the selection mechanically, commit the resulting cohort file alone. Forcing acquisition and any model run come only after a cohort is LOCKED and a validation plan is committed.",
+  "computationPerformed": false,
+  "cohortSelected": false
+}

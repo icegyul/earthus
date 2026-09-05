@@ -42,3 +42,29 @@ class ArchiveTest(unittest.TestCase):
         self.assertEqual(json.loads(s3.objs[storms[0]["agencies"][0]["sourceRef"]])["record"]["steps"][0]["lat"], 26.3)
 
 if __name__ == "__main__": unittest.main()
+
+
+class RetainTest(unittest.TestCase):
+    """지시서 §4 — 기상청 403 이면 직전 발표를 stale 로 유지한다(행이 사라지지 않는다)."""
+    def test_retain_marks_stale_and_keeps_values(self):
+        prev = {"storms": [{"key": "KROVANH", "agencies": [
+            {"agency": "KMA", "name": "Krovanh", "issue": "2026-09-05T06:00:00Z", "steps": [{"h": 0, "lat": 26.3, "lon": 127.4, "windMs": 21.0}], "sourceRef": "events/typhoon-official/archive/KROVANH/KMA-202609050600.json"},
+            {"agency": "JMA", "issue": "2026-09-05T15:45:00Z", "steps": []}]}]}
+        out = M.retain_previous_kma(prev, "QUOTA_EXHAUSTED")
+        self.assertEqual(len(out), 1)
+        self.assertEqual(out[0]["agency"], "KMA"); self.assertTrue(out[0]["stale"]); self.assertEqual(out[0]["staleReason"], "QUOTA_EXHAUSTED")
+        self.assertEqual(out[0]["issue"], "2026-09-05T06:00:00Z"); self.assertEqual(out[0]["steps"][0]["windMs"], 21.0)   # 값 그대로
+        self.assertEqual(M.retain_previous_kma(None, "x"), [])
+    def test_archive_fallback_when_previous_doc_has_no_kma(self):
+        import json
+        import io as _io
+        class S3L(FakeS3):
+            def get_object(self, Bucket, Key): return {"Body": _io.BytesIO(self.objs[Key])}
+            def list_objects_v2(self, Bucket, Prefix):
+                return {"Contents": [{"Key": k} for k in sorted(self.objs) if k.startswith(Prefix)]}
+        s3 = S3L()
+        s3.objs["events/typhoon-official/archive/KROVANH/KMA-202609050000.json"] = json.dumps({"record": {"agency": "KMA", "issue": "2026-09-05T00:00:00Z", "steps": [{"h": 0}]}}).encode()
+        s3.objs["events/typhoon-official/archive/KROVANH/KMA-202609050600.json"] = json.dumps({"record": {"agency": "KMA", "issue": "2026-09-05T06:00:00Z", "steps": [{"h": 0, "windMs": 21.0}]}}).encode()
+        out = M.retain_previous_kma({"storms": [{"key": "KROVANH", "agencies": [{"agency": "JMA"}]}]}, "QUOTA_EXHAUSTED", keys=["KROVANH", "NOSUCH"], client=s3)
+        self.assertEqual(len(out), 1); self.assertEqual(out[0]["issue"], "2026-09-05T06:00:00Z"); self.assertEqual(out[0]["staleOrigin"], "archive")
+        self.assertEqual(out[0]["sourceRef"], "events/typhoon-official/archive/KROVANH/KMA-202609050600.json")

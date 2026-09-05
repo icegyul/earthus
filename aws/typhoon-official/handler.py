@@ -383,6 +383,54 @@ def from_nhc():
     return out
 
 
+def load_previous():
+    try:
+        return json.loads(s3.get_object(Bucket=BUCKET, Key=DST)["Body"].read().decode("utf-8"))
+    except Exception:  # noqa: BLE001 — 없으면 유지할 것도 없다
+        return None
+
+
+def _mark_stale(rec, reason, origin):
+    rec = dict(rec)
+    rec["stale"] = True
+    rec["staleReason"] = reason
+    rec["staleOrigin"] = origin
+    rec["staleNote"] = "기상청 API 허브 조회 실패(용량 초과 등) — 직전 발표를 그대로 둔다. 발표 시각(issue)이 그 근거다."
+    return rec
+
+
+def retain_previous_kma(prev, reason, keys=(), client=None):
+    """직전 문서의 기상청 발표를 stale 로 표시해 돌려준다. 새 값을 만들지 않는다.
+    직전 문서에도 없으면(이미 한 번 빠진 채 덮어썼을 때) D-4 아카이브에서 그 태풍의 가장 최근 기상청 발표를 꺼낸다."""
+    out = []
+    seen = set()
+    for storm in (prev or {}).get("storms") or []:
+        for a in storm.get("agencies") or []:
+            if a.get("agency") != "KMA":
+                continue
+            out.append(_mark_stale(a, reason, "previous-doc"))
+            seen.add((storm.get("key") or "").upper())
+    client = client or s3
+    for key in keys:
+        k = str(key).upper()
+        if k in seen:
+            continue
+        try:
+            safe = re.sub(r"[^A-Z0-9_-]", "_", k)
+            resp = client.list_objects_v2(Bucket=BUCKET, Prefix=f"{ARCHIVE_PREFIX}/{safe}/KMA-")
+            names = sorted(o["Key"] for o in resp.get("Contents") or [])
+            if not names:
+                continue
+            doc = json.loads(client.get_object(Bucket=BUCKET, Key=names[-1])["Body"].read().decode("utf-8"))
+            rec = doc.get("record") or {}
+            if rec.get("agency") == "KMA" and rec.get("steps"):
+                rec["sourceRef"] = names[-1]
+                out.append(_mark_stale(rec, reason, "archive"))
+        except Exception as e:  # noqa: BLE001 — 아카이브를 못 읽으면 못 읽은 대로(행이 비고, kmaState 에 이유가 남는다)
+            print(f"[kma] archive fallback skip {k}: {e!r}")
+    return out
+
+
 def downgrade_of(rec):
     """등급이 바뀌는 첫 시점. ⚠️ 우리가 판단하지 않는다 — 기관이 낸 등급의 변화다."""
     steps = rec.get("steps") or []
@@ -410,6 +458,13 @@ def handler(event=None, context=None):
         if len(n) == 4 and n.isdigit():
             nums[int(n[2:])] = r.get("name")
     kma = from_kma(year, nums)
+    # 지시서 §4(2026-09-05): 기상청이 403(일일 용량)·timeout 으로 비면 "기상청 행 없음"이 되면 안 된다.
+    # 직전 문서의 기상청 발표를 stale 표시로 그대로 둔다 — 값은 그때 것이고, 그렇게 적힌다.
+    kma_state = "OK"
+    if nums and not kma:
+        kma_state = "QUOTA_EXHAUSTED" if kma_hub.stop() else "FAILED_OR_EMPTY"
+        kma = retain_previous_kma(load_previous(), kma_state, keys=[(n or "").upper() for n in nums.values()])
+        print(f"[kma] {kma_state} — 직전 발표 {len(kma)}건 유지(stale)")
     nhc = from_nhc()
 
     recs = jma + kma + nhc
@@ -445,6 +500,7 @@ def handler(event=None, context=None):
 
     doc = {
         "generated": now.strftime("%Y-%m-%dT%H:%M:00Z"),
+        "kmaState": kma_state,
         "archive": {"prefix": ARCHIVE_PREFIX, "note": "발표(기관·태풍·발표시각)마다 원문 한 파일, 공개·불변. 각 agencies[].sourceRef 가 가리킨다."},
         "source": "기상청(KMA) · 일본 기상청(JMA) · 미국 NHC",
         "note": {

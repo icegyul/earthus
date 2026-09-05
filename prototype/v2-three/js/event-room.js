@@ -188,7 +188,7 @@ export class EventRoom {
             const a0 = a.steps[0], a24 = a.steps.find((x) => x.h === 24);
             const off24 = a24 && s24 && a !== best.ag ? Math.round(haversineMeters({ lat: a24.lat, lon: a24.lon }, { lat: s24.lat, lon: s24.lon }) / 1000) : null;
             rows.push({
-              agency: esc(a.agencyKo || a.agency), what: `발표 ${esc(String(a.issue || '').slice(5, 16))}`, kind: 'OFFICIAL_FORECAST',
+              agency: esc(a.agencyKo || a.agency), what: `발표 ${esc(String(a.issue || '').slice(5, 16))}${a.stale ? ' · 직전 발표 유지(허브 조회 실패)' : ''}`, kind: 'OFFICIAL_FORECAST',
               value: `현재 ${num(a0.windMs, ' m/s')}${a24 ? ` · +24h <b>${num(a24.windMs, ' m/s')}</b>` : ''}`,
               sub: `${a0.categoryKo || a0.category ? `등급 ${esc(a0.categoryKo || a0.category)}` : '등급 미표기'}${off24 != null ? ` · ${esc(best.ag.agencyKo || best.ag.agency)} 대비 +24h 위치 차 ${off24} km` : ''}`,
             });

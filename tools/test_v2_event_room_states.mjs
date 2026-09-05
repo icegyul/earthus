@@ -84,3 +84,18 @@ test('공식 트랙은 기관마다 한 행 — 이름만 합치고 첫 기관 �
   const jma = room.last.rows.find((r) => r.agency === '일본 기상청');
   assert.match(jma.sub, /등급 열대폭풍 · 한국 기상청 대비 \+24h 위치 차 \d+ km/);
 });
+
+test('기상청 발표가 stale(허브 조회 실패 → 직전 발표 유지)이면 행이 사라지지 않고 그렇게 적힌다', async () => {
+  const empty = { generated: '2026-09-05T02:00:00Z', active: [] };
+  const regions = { regions: {} };
+  const off = { generated: '2026-09-05T02:00:00Z', kmaState: 'QUOTA_EXHAUSTED', storms: [{ key: 'KROVANH', name: 'Krovanh', agencies: [
+    { agency: 'KMA', agencyKo: '한국 기상청', issue: '2026-09-05T00:00:00Z', stale: true, staleReason: 'QUOTA_EXHAUSTED', staleOrigin: 'archive', steps: [{ h: 0, lat: 34.0, lon: 129.0, windMs: 24, hpa: 990 }, { h: 24, lat: 36.0, lon: 130.0, windMs: 21 }] },
+    { agency: 'JMA', agencyKo: '일본 기상청', issue: '2026-09-05T00:45:00+09:00', steps: [{ h: 0, lat: 34.1, lon: 129.1, windMs: 20 }, { h: 24, lat: 36.5, lon: 130.6, windMs: 18 }] },
+  ] }] };
+  const { EventRoom } = await import('../prototype/v2-three/js/event-room.js');
+  const room = new EventRoom({ fetchJson: async (url) => (/typhoon-official/.test(url) ? off : /kma-warn-regions/.test(url) ? regions : /kma-warn/.test(url) ? empty : { generated: '2026-09-05T02:00:00Z', stations: [], storms: [], alerts: [] }), now: () => Date.parse('2026-09-05T02:30:00Z') });
+  room.clearCache();
+  const html = await room.build({ kind: 'TC', id: 'tc-1', eventid: 1, episodeid: 1, stormName: 'KROVANH', title: '열대저기압 KROVANH-26', where: 'Japan', lat: 34.0, lon: 129.0, whenT: Date.parse('2026-09-05T00:00:00Z'), time: {}, facts: [] });
+  assert.ok(room.last.rows.some((r) => r.agency === '한국 기상청' && /직전 발표 유지/.test(r.what)), '기상청 stale 행이 없다');
+  assert.match(html, /발표 09-05T00:00 · 직전 발표 유지\(허브 조회 실패\)/);
+});

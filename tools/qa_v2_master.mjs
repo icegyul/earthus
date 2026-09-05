@@ -189,7 +189,19 @@ async function sectionBrowser() {
     R('G1', '피드에 "방금"·"안전"·"위험 없음" 같은 지어낸 문구가 없다', !/방금|안전합니다|위험 없음/.test(feed.text), '');
     await page.screenshot({ path: path.join(out, 'feed.png') });
     if (feed.tc >= 0) {
-      await click('#intel-content .feed-item', feed.tc);
+      // 기관별 행(D10)은 공식 발표가 있는 태풍에만 있다 — 첫 카드가 열대저기압(발표 없음)이면 다음 태풍 카드로 넘어간다(최대 3장)
+      const tcIdx = await page.evaluate(() => [...document.querySelectorAll('#intel-content .feed-item')].map((it, i) => (it.querySelector('.feed-follow') ? i : -1)).filter((i) => i >= 0).slice(0, 3));
+      let picked = tcIdx[0];
+      for (const i of tcIdx) {
+        await click('#intel-content .feed-item', i);
+        await page.waitForSelector('.room-src', { timeout: 90000 });
+        await page.waitForTimeout(5000);
+        const hasKma = await page.evaluate(() => /한국 기상청\s*발표/.test(document.querySelector('#intel-content').textContent.replace(/\s+/g, ' ')));
+        picked = i;
+        if (hasKma) break;
+        await click('[data-action="feed-back"]'); await page.waitForTimeout(600);
+      }
+      await click('#intel-content .feed-item', picked);
       await page.waitForSelector('.room-src', { timeout: 90000 });
       await page.waitForTimeout(5000);
       const room = await page.evaluate(() => { const c = document.querySelector('#intel-content'); const rows = [...c.querySelectorAll('.room-src')]; return { n: rows.length, fail: rows.filter((r) => r.classList.contains('fail')).length, failRetry: rows.filter((r) => r.classList.contains('fail') && r.querySelector('[data-action="room-retry"]')).length, badges: rows.filter((r) => r.querySelector('.badge')).length, text: c.textContent, chips: c.querySelectorAll('.rev-chip').length, srcLinks: [...c.querySelectorAll('a.official-out')].filter((a) => /typhoon-official\/archive/.test(a.href)).length, kmaRow: /한국 기상청발표|한국 기상청\s*발표/.test(c.textContent.replace(/\s+/g, ' ')) }; });

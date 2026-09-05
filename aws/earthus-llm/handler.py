@@ -55,6 +55,9 @@ SYSTEM = """당신은 EARTHUS의 지구 해설자입니다. {LANG_LINE}
 4. 자료의 나이(ageMin)가 그 레이어의 기준(slaMin)을 넘었으면 그 사실을 함께 말합니다.
 5. 원인을 묻는 질문에는, 스냅샷의 값들 사이의 관계로 설명할 수 있는 만큼만 말하고
    {CORR}를 분명히 합니다. 기사나 통념을 끌어오지 않습니다.
+6. 스냅샷에 답할 자료가 없지만 <snapshot>의 "켤수있는레이어" 중에 답에 필요한 것이 있으면,
+   그 레이어의 showLayer 를 actions 에 넣고 answer 에 "이 자료를 켜면 답할 수 있습니다: (이름)" 을
+   덧붙입니다. insufficient 는 그대로 true 입니다. 켜지 않은 자료의 값을 미리 말하지 않습니다.
 
 답변 형식: 3~5문장. 숫자를 말할 때는 출처 레이어 이름을 함께 적습니다.
 
@@ -147,6 +150,14 @@ def compact_snapshot(payload):
     if isinstance(pt, dict) and pt:
         out["보는곳의값"] = {str(k)[:24]: v for k, v in list(pt.items())[:12]
                           if isinstance(v, (int, float, str))}
+    # 켤 수 있는 레이어(지금 꺼진 것) — 모델이 "이걸 켜면 답할 수 있다"고 제안할 때만 쓴다(지시서 H).
+    # 값은 싣지 않는다: 켜지 않은 자료의 값을 근거로 삼으면 안 된다.
+    avail = []
+    for l in (payload.get("available") or [])[:MAX_LAYERS]:
+        if isinstance(l, dict) and l.get("id"):
+            avail.append({"id": str(l["id"])[:40], "이름": str(l.get("label", ""))[:60], "배지": str(l.get("badge", ""))[:24]})
+    if avail:
+        out["켤수있는레이어"] = avail
     for l in (payload.get("layers") or [])[:MAX_LAYERS]:
         if not isinstance(l, dict):
             continue

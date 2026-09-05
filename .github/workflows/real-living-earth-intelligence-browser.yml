@@ -25,6 +25,11 @@ jobs:
           node --check prototype/v2/js/progressive-planet-intelligence.js
           node --check prototype/v2/js/intelligence-runtime-bootstrap.js
           node --check tools/test_v2_intelligence_runtime_browser.mjs
+          node --check tools/test_v2_three_intelligence_browser.mjs
+          node --check prototype/v2-three/js/intel-feed.js
+          node --check prototype/v2-three/js/event-room.js
+          node --check prototype/v2-three/js/watch.js
+          node --check prototype/v2-three/js/ask-earth.js
           node --check tools/test_v2_canonical_imagery_ownership.mjs
           node --check tools/earthus-v52/materialized-earth-browser.mjs
           node --check tools/earthus-v52/mobile-acceptance.mjs
@@ -32,15 +37,26 @@ jobs:
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install chromium
-      - name: Verify FND-017 live runtime
+      - name: Intelligence contracts (node:test)
+        run: node --test tools/test_v2_intel_time_contract.mjs tools/test_v2_event_room_states.mjs tools/test_v2_feed_selection_race.mjs tools/test_v2_badge_parity.mjs tools/test_v2_feed_cards.mjs tools/test_v2_watch.mjs tools/test_v2_ask_suggest.mjs
+      # 지시서 G-2: 운영 /v2 는 prototype/v2-three 다. 검사 대상을 배포하는 코드로 맞춘다.
+      # 옛 FND-017(prototype/v2, Cesium) 검사는 운영과 무관해 여기서 뺐다 — 파일은 남아 있다.
+      - name: Verify v2-three intelligence runtime (what earthus.net/v2 serves)
         env:
           EARTHUS_PLAYWRIGHT_MODULE: ${{ github.workspace }}/node_modules/playwright/index.mjs
-          EARTHUS_V2_INTELLIGENCE_OUTPUT: ${{ github.workspace }}/output/v2-intelligence-runtime
+          EARTHUS_V2_INTELLIGENCE_OUTPUT: ${{ github.workspace }}/output/v2-three-intelligence
         run: |
-          if ! node tools/test_v2_intelligence_runtime_browser.mjs; then
-            echo "::warning::Intelligence browser bootstrap failed once; retrying once for transient external browser resources"
-            node tools/test_v2_intelligence_runtime_browser.mjs
+          if ! node tools/test_v2_three_intelligence_browser.mjs; then
+            echo "::warning::v2-three intelligence browser check failed once; retrying once for transient external sources"
+            node tools/test_v2_three_intelligence_browser.mjs
           fi
+      - name: Upload evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: v2-three-intelligence-evidence
+          path: output/v2-three-intelligence
+          if-no-files-found: ignore
       - name: Verify canonical provider ownership
         if: ${{ !cancelled() }}
         env:

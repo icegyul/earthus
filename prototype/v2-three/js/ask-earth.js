@@ -44,6 +44,9 @@ const T = {
     droppedWhy: '승인된 도구가 아니거나 없는 레이어를 가리켜서 실행하지 않았습니다',
     reset: '되돌리기',
     insufficient: '자료 부족',
+    suggest: '이 자료를 켜면 답할 수 있습니다',
+    turnOn: (l) => `${l} 켜기`,
+    turnedOn: '켰습니다 — 같은 질문을 다시 묻는 중',
     footer: (m) => `이 답은 ${m} 이(가) 위 스냅샷만 보고 쓴 것입니다. 웹 검색·기사 요약을 하지 않습니다.`,
     errRate: '조금 뒤에 다시 물어봐 주세요 (분당 12회까지).',
     errLong: `질문이 너무 깁니다 (${MAX_Q}자까지).`,
@@ -68,6 +71,9 @@ const T = {
     droppedWhy: 'not an approved tool, or it pointed at a layer that does not exist',
     reset: 'Undo',
     insufficient: 'insufficient data',
+    suggest: 'Turning on this layer would let me answer',
+    turnOn: (l) => `Turn on ${l}`,
+    turnedOn: 'turned on — asking the same question again',
     footer: (m) => `Written by ${m} from the snapshot above only. No web search, no article summarising.`,
     errRate: 'Please wait a moment (12 questions per minute).',
     errLong: `Question is too long (max ${MAX_Q} characters).`,
@@ -144,6 +150,7 @@ export class AskEarth {
     const t = this.t;
     const q = String(qRaw || '').trim();
     if (!q || this.busy) return;
+    this.lastQ = q;
     if (q.length > MAX_Q) { this.out.innerHTML = `<div class="ask-err">${esc(t.errLong)}</div>`; return; }
     const snap = this.h.snapshot();
     if (!snap.layers.length) { this.out.innerHTML = `<div class="ask-err">${esc(t.noLayers)}</div>`; return; }
@@ -201,12 +208,33 @@ export class AskEarth {
     return { did, dropped };
   }
 
+  // 자료 부족 답변에 붙은 showLayer 제안은 "실행"이 아니라 "제안"이다 — 사용자가 켜기를 누를 때만 켠다.
+  // 이전에는 승인된 도구라 그대로 켜거나, 몰라서 버렸다(dropped). 둘 다 지시서 H 가 금지한 동작.
+  splitSuggested(data) {
+    const actions = Array.isArray(data.actions) ? data.actions : [];
+    if (!data.insufficient) return { run: actions, suggested: [] };
+    const run = [];
+    const suggested = [];
+    for (const a of actions) {
+      const id = a && a.tool === 'showLayer' ? String(a.id || '') : '';
+      const label = id ? this.h.layerName(id) : null;
+      if (label) suggested.push({ id, label }); else run.push(a);
+    }
+    return { run, suggested };
+  }
+
   render(data) {
     const t = this.t;
-    const { did, dropped } = this.runActions(data.actions);
+    const { run, suggested } = this.splitSuggested(data);
+    const { did, dropped } = this.runActions(run);
     const used = (data.used || []).map((id) => this.h.layerName(id) || id);
     let html = `<div class="ask-a${data.insufficient ? ' thin' : ''}">${esc(data.answer)}</div>`;
     if (data.insufficient) html += `<div class="ask-flag">${esc(t.insufficient)}</div>`;
+    if (suggested.length) {
+      html += `<div class="ask-meta ask-suggest"><b>${esc(t.suggest)}</b> · `
+        + suggested.map((x) => `<button class="ask-on" data-ask-show="${esc(x.id)}">${esc(t.turnOn(x.label))}</button>`).join(' ')
+        + '</div>';
+    }
     if (used.length) html += `<div class="ask-meta"><b>${esc(t.used)}</b> · ${used.map(esc).join(' · ')}</div>`;
     if (did.length) {
       html += `<div class="ask-meta"><b>${esc(t.did)}</b> · ${did.map(esc).join(' · ')}`
@@ -218,6 +246,15 @@ export class AskEarth {
     }
     if (data.model) html += `<div class="ask-foot">${esc(t.footer(data.model))}</div>`;
     this.out.innerHTML = html;
+    for (const b of this.out.querySelectorAll('[data-ask-show]')) {
+      b.onclick = () => {
+        this.h.tools.showLayer(b.dataset.askShow);
+        b.disabled = true;
+        b.textContent = t.turnedOn;
+        // 켜자마자 다시 물으면 스냅샷에 값이 아직 없다 — 레이어가 한 번 그려질 시간을 준다.
+        if (this.lastQ) setTimeout(() => this.ask(this.lastQ), 1500);
+      };
+    }
     const undo = this.out.querySelector('#ask-undo');
     if (undo) {
       undo.onclick = () => {

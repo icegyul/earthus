@@ -1,6 +1,6 @@
 # EARTHUS V2 인텔리전스 — 실행 결과 보고 (2026-09-05)
 
-지시서 `docs/INTELLIGENCE-DEV-DIRECTIVE-2026-09-05.md` 의 G-1 → A → B → C-1 을 실행했다. 각 항목은 지시서가 요구한 다섯 칸(코드 존재 / 실제 데이터 연결 / 로컬 브라우저 / 운영 배포 / 실기기)으로 보고한다.
+지시서 `docs/INTELLIGENCE-DEV-DIRECTIVE-2026-09-05.md` 의 G-1 → A → B → C → D → H → E → F → G-2 를 실행했다. 각 항목은 지시서가 요구한 다섯 칸(코드 존재 / 실제 데이터 연결 / 로컬 브라우저 / 운영 배포 / 실기기)으로 보고한다.
 
 ## 1. 완료 항목
 
@@ -15,6 +15,13 @@
 | C-1 배지 동일성 (F07) | WHY/NEXT 의 근거 줄이 사건 방과 같은 `layerBadge`(신선도 반영) 사용 | ○ | ○ | ○ | ○ | — |
 | C-2 기관별 행 (F08) | 공식 트랙을 기관마다 한 행 + 대표 기관 대비 +24h 위치 차 km | ○ | ○ | ○ | ○ | — |
 | C-3 정렬 공개 (F06) | 피드 하단에 "정렬: 공식 경보 등급 → 최근 갱신 · 시각 없는 사건은 뒤" | ○ | ○ | ○ | ○ | — |
+| D-1 공개 사건 패킷 v1 | `ocean/cyclone-events.json` + `ocean/cyclone-events/{id}.json` — revisions(회차·기관별 h0/h24/h48)·changes(두 회차 모두 값 있을 때만 delta)·importance(이유 목록)·confidence(신선도·일치도)·uncertainty(기관 폭 km, 앙상블 null). status ACTIVE/WATCH/RESOLVED 판정 | ○ | ○ 3시간 주기 | ○ | ○ `fa4ae258` | — |
+| D-2 Feed 카드 8필드 + 팔로우 | 무엇·어디·언제·바뀐 것·왜 지금·신뢰·상태·행동 + ★ 팔로우(localStorage). 종료 사건은 "지난 사건 N건 보기" 뒤 | ○ | ○ | ○ | ○ | — |
+| D-3 비교·검증·NEXT | 회차 두 개 비교(회색 점선 이전/주황 실선 현재), 검증 카드(기관별 위치·방향 오차 vs EARTHUS 기준선), NEXT 자동 채움 | ○ | ○ | ○ | ○ | — |
+| H 지구에 묻기 도구 제안 | 스냅샷에 "켤 수 있는 레이어"(값 없이 이름만) 동봉. 자료 부족 답변의 showLayer 는 실행·폐기 대신 "이 자료를 켜면 답할 수 있습니다: [켜기]" 버튼 — 누르면 켜고 같은 질문 재질의 | ○ | ○ Lambda `earthus-llm` 갱신 | ○ | ○ | — |
+| E 내 장소 감시 | 특보구역-관측지점 대응표(711개)로 내 구역 판정(근사 명시) + 구역 특보 행. 감시 조건 3종(내 구역 특보·팔로우 사건 새 회차·400 km 안 M5+) dedupeKey 로 한 번만 기록(localStorage `earthus.watch`). 특보 소스 실패 → "감시 중단 — 안전하다는 뜻이 아닙니다" | ○ | ○ | ○ 부산중부(동래 3 km) | ○ | — |
+| F 가정 실험 baseline | 고른 사건의 최신 회차 대표 기관(KMA→JMA→NHC) +24h 를 기준선으로. 슬라이더는 편차(풍속 ±15 m/s, 눈까지 거리). 실험 기록 localStorage `earthus.scenario`. 기준선 없으면 "확인 불가" | ○ | ○ KROVANH-26 KMA r030 | ○ | ○ | — |
+| G-2 CI 재조준 | 워크플로가 검사하던 prototype/v2(Cesium FND-017) → 운영이 서빙하는 prototype/v2-three 로. 실소스(S3)로 사건 카드·사건 방 소스 행·행동 칸 문구·기준선 실험을 헤드리스 검사, 증거 업로드 | ○ | ○ | ○ 로컬 통과 | — CI는 push 뒤 | — |
 
 실기기(iPhone/Android) 칸은 비워 둔다 — 이 세션에서 실기기 캡처를 얻지 못했다.
 
@@ -26,6 +33,11 @@
 | `tools/test_v2_event_room_states.mjs` | 특보 실패→조회 불가, 0건 문구, RELATED/DOMESTIC, OUT_OF_SCOPE, STALE 나이, 기관별 행 | 6/6 |
 | `tools/test_v2_feed_selection_race.mjs` | A→B 전환 뒤 늦은 A 응답 폐기, 피드 복귀 뒤 늦은 응답 무시 | 2/2 |
 | `tools/test_v2_badge_parity.mjs` | evidenceRow 가 layerBadge 사용, 같은 키 같은 배지 | 2/2 |
+| `tools/test_v2_feed_cards.mjs` | 카드 8필드·팔로우 정렬·종료 접기·비교·검증·NEXT | 2/2 |
+| `tools/test_v2_watch.mjs` | 내 구역 근사, 소스 실패→SUSPENDED, 구역 특보·dedupe, 팔로우 회차, 400 km M5+ 필터 | 5/5 |
+| `tools/test_v2_ask_suggest.mjs` | 자료 부족 제안은 실행 안 함·버튼, 충분하면 즉시 실행, 버튼→켜기→재질의 | 3/3 |
+| `tools/test_v2_three_intelligence_browser.mjs` (Playwright, 실소스) | 카드 17장 시각 줄, 사건 방 소스 행 8줄, 조회 실패를 "특보 없음"으로 안 적음, 기준선 실험 슬라이더·기록 | 통과 |
+| `aws/cyclone-analog/tests` | public_detail 6 + event_packet 4 + 기존 | 22/22 |
 | 기존 v2 테스트 (information-flow·source-context·travel-catalogs) | 회귀 없음 | 28/28 |
 
 ## 3. 운영 실측 (2026-09-05 16:5x KST, earthus.net/v2, KROVANH-26 사건 방)
@@ -48,13 +60,16 @@
 |---|---|
 | `713727f7` | v2 정보 접근성 빌드 운영 배포 + 업로더 |
 | `6558f20a` | 지시서 A·B·C-1 구현 + 테스트 4파일 |
+| `fa4ae258` | D 사건 원장 — 패킷 백엔드 + 카드·비교·검증·NEXT |
+| (본 커밋) | H·E·F·G-2 + 테스트 3파일 + 워크플로 재조준 |
 | `2144eacd` `5cc3b108` `3acb47f0` | 지시서(§A~§N) |
 
-## 6. 남은 것 (지시서 순서)
+## 6. 남은 것
 
-1. **D 태풍 사건 원장** — 공개 패킷 v1(revisions·changes·importance·confidence·uncertainty), Feed 카드 8필드+팔로우, 비교 카드, NEXT 자동 채움. 백엔드 자료는 이미 3시간마다 쌓이는 중
-2. H 지구에 묻기 도구 제안 · E 내 장소 감시 · F 가정 실험 baseline · G-2 CI 진입점 재조준 · N-1 쓰나미 도달시간
-3. 실기기 캡처(iPhone 390×844) — 위 표의 빈 칸
+1. N-1 쓰나미 도달시간(√(g·h) 전파, 수심 격자) — 지시서 §N 후순위
+2. 사건 패킷 용량(~95 KB → 60 KB 목표), D-4 태풍 공식 발표 원문 보관, `room-retry` 부분 재조회
+3. 실기기 캡처(iPhone 390×844) — 위 표의 빈 칸. G-2 CI 는 push 뒤 첫 실행 결과 확인
+4. 감시(E)의 푸시 알림 — 지금은 앱을 열었을 때만 판정·기록한다(백그라운드 감시 아님, 화면에 그렇게 적을 것)
 
 ## 7. 알려진 한계
 

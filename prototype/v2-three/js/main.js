@@ -10,9 +10,10 @@ const escUI = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<'
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=7';
+import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
 import { LiveLayers } from './live-layers.js?v=39-information';
 import { StationModel } from './station-model.js?v=2';
-import { AskEarth } from './ask-earth.js?v=2';
+import { AskEarth } from './ask-earth.js?v=3';
 import { i18n } from './i18n.js?v=10';
 // onboard.js 처럼 i18n 을 직접 들이지 않는 곳에서 쓴다. 문구를 한국어로 박아 두면
 // 영어 화면에서 거기만 한국어로 남는다(실측으로 잡았다).
@@ -3132,11 +3133,13 @@ async function main() {
         shell.refreshFlyout();
       }
       const sky = sampleSkyAt(p.lat, p.lon);
-      const [warn, air, aws] = await Promise.all([
+      const [warn, air, aws, stn] = await Promise.all([
         fetchS3('/events/kma-warn.json'),
         fetchS3('/wind/korea-air-obs.json'),
         fetchS3('/wind/kma-aws.json'),
+        myEarth.stations ? Promise.resolve(null) : fetchS3('/events/kma-warn-stations.json'),
       ]);
+      if (stn && Array.isArray(stn.stations)) myEarth.stations = stn.stations;
       if(myEarth.place!==p)return;
       const warns = warn ? (warn.active || []).filter((w) => w.lat != null
         && Math.hypot(w.lat - p.lat, (w.lon - p.lon) * Math.cos((p.lat * Math.PI) / 180)) < 0.55) : null;
@@ -3151,6 +3154,25 @@ async function main() {
         awsAt: aws && aws.observedKst,
         at: new Date().toLocaleTimeString('ko-KR', { hour12: false }),
       };
+      // 지시서 E — 내 특보 구역(가장 가까운 관측지점의 구역, 경계선이 아닌 근사)과 감시 조건 3종.
+      const zone = myZone(p, myEarth.stations || []);
+      myEarth.zone = zone;
+      myEarth.data.zoneWarns = warn && zone
+        ? (warn.active || []).filter((w) => w.regionId === zone.zone || w.parentId === zone.zone) : null;
+      const log = loadWatch();
+      const seen = new Set(log.map((h) => h.dedupeKey));
+      const followedEvents = [];
+      for (const id of feed.follow) {
+        const it = feed.items.find((x) => x.id === id);
+        const pk = it && feed.packetOf(it);
+        if (pk) followedEvents.push(pk);
+      }
+      const verdict = evaluateWatch({
+        place: p, zone, warn: warn ? { state: 'OK', active: warn.active || [] } : { state: 'FAILED' },
+        events: followedEvents, quakes: feed.items.filter((it) => it.kind === 'EQ'), seen, now: Date.now(),
+      });
+      if (verdict.hits.length) saveWatch(log.concat(verdict.hits));
+      myEarth.watch = { monitoring: verdict.monitoring, reason: verdict.reason, fresh: verdict.hits, log: log.concat(verdict.hits).slice(-5).reverse() };
     } catch (e) {
       myEarth.error = String((e && e.message) || e);
     }
@@ -3185,6 +3207,14 @@ async function main() {
         : d.sky.label;
     html += `${skyLine}<br/><span style="font-size:9.5px;color:var(--text-dim)">${d.cloudNote || ''}</span>`;
     html += '<div style="margin-top:8px">';
+    if (myEarth.zone) {
+      html += `<div class="stat"><span class="k">내 특보 구역</span><span class="v">${escUI(myEarth.zone.zoneName)} <span style="color:var(--text-dim)">(${escUI(myEarth.zone.station)} ${myEarth.zone.km.toFixed(0)} km · 근사)</span></span></div>`;
+      if (d.zoneWarns == null) html += '<div class="stat"><span class="k">구역 특보</span><span class="v na">조회 불가 — 판단하지 않음</span></div>';
+      else if (!d.zoneWarns.length) html += '<div class="stat"><span class="k">구역 특보</span><span class="v">내 구역 발효 특보 0건</span></div>';
+      else html += `<div class="stat"><span class="k">구역 특보 ${d.zoneWarns.length}건</span><span class="v">${[...new Set(d.zoneWarns.map((w) => `${w.kind} ${w.level}`))].slice(0, 3).map(escUI).join(' · ')}</span></div>`;
+    } else {
+      html += '<div class="stat"><span class="k">내 특보 구역</span><span class="v na">대응표 조회 불가 — 구역을 정하지 않음</span></div>';
+    }
     if (d.warns == null) html += '<div class="stat"><span class="k">⚠ 특보</span><span class="v na">확인 실패 — 판단하지 않음</span></div>';
     else if (!d.warns.length) html += '<div class="stat"><span class="k">⚠ 특보</span><span class="v">주변 60km 유효 특보 없음</span></div>';
     else html += `<div class="stat"><span class="k">⚠ 특보 ${d.warns.length}건</span><span class="v">${[...new Set(d.warns.map((w) => `${w.icon || ''}${w.kind} ${w.level}`))].slice(0, 3).join(' · ')}</span></div>`;
@@ -3197,6 +3227,16 @@ async function main() {
     if (d.aws && d.aws.km < 400) {
       const a = d.aws.it;
       html += `<div class="stat"><span class="k">🌬 바람·기온 (${a.name} ${d.aws.km}km)</span><span class="v">${a.wind_ms != null ? `${a.wind_ms}m/s` : '—'} · ${a.temp_c != null ? `${a.temp_c}°C` : '—'}</span></div>`;
+    }
+    const wv = myEarth.watch;
+    if (wv) {
+      html += '</div><div class="card" style="margin-top:8px"><div class="card-h">감시 <span class="badge ' + (wv.monitoring === 'ON' ? 'model' : 'demo') + '">' + (wv.monitoring === 'ON' ? '감시 중' : '감시 중단') + '</span></div><div class="card-b">';
+      html += wv.monitoring === 'ON'
+        ? '조건 3종 — 내 구역 특보 · 팔로우한 사건의 새 회차 · 400 km 안 M5+ 지진. 같은 건은 한 번만 적습니다.'
+        : `<b>감시 중단</b> — ${escUI(wv.reason)}. 안전하다는 뜻이 아닙니다.`;
+      if (wv.log.length) html += '<div style="margin-top:6px">' + wv.log.map((h) => `<div class="stat"><span class="k">${escUI(h.at.slice(5, 16).replace('T', ' '))}Z</span><span class="v">${escUI(h.reasonKo)}</span></div>`).join('') + '</div>';
+      else if (wv.monitoring === 'ON') html += '<div style="margin-top:6px;color:var(--text-dim)">아직 기록 없음</div>';
+      html += '</div></div><div>';
     }
     html += `</div><details><summary>각 자료의 기준 시각</summary><p>특보: ${escUI(d.warnAt||'제공되지 않음')}<br/>대기질: ${escUI(d.airAt||'제공되지 않음')}<br/>바람·기온: ${escUI(d.awsAt||'제공되지 않음')}</p></details>조회 ${d.at} · 한국 관측망 기준 · 조회 시각과 자료 시각은 다릅니다.</div></div>`;
     return html;
@@ -3903,7 +3943,23 @@ async function main() {
     getScenario: () => {
       const hasSea = seaPoint && seaPoint.marine;
       const loc = hasSea ? seaPoint : { lat: 34.2, lon: 128.9 };
-      return `<div class="card"><div class="card-h">태풍 시나리오 ${dataBadge('SIMULATION_ONLY')} <span class="badge demo">무료 프리뷰</span></div>
+      const base = scenarioBaseline();
+      let head = '';
+      if (base) {
+        head = `<div class="card"><div class="card-h">기준선이 있는 가정 실험 ${dataBadge('SIMULATION_ONLY')}</div>
+        <div class="card-b">${escUI(base.name)} — ${escUI(base.agencyKo)} ${escUI(base.issued || '')} 발표 +24h 전망을 기준선으로 씁니다.<br/>
+        위치 ${fmtPt(base.lat, base.lon)} · 풍속 ${base.windMs != null ? `${base.windMs} m/s` : '미제공'} · 회차 ${escUI(base.revisionId)}<br/>
+        슬라이더는 기준선에서의 <b>편차</b>입니다(풍속 ±, 눈까지 거리). 결과는 파도 물리 시뮬레이션이지 예보가 아닙니다.
+        <div class="paycard" style="border-style:solid;margin-top:6px">
+          <button class="simgo" data-action="sim-scenario-event">기준선에서 실험 시작 →</button>
+          <div class="paysub">공식 예보 아님 · SIMULATION_ONLY · 실험 기록은 이 기기에만 남습니다</div>
+        </div></div></div>`;
+      } else if (feed.selected && feed.selected.kind === 'TC') {
+        head = `<div class="card"><div class="card-h">기준선 ${dataBadge('UNAVAILABLE')}</div><div class="card-b">${escUI(feed.selected.title)} 의 공식 +24h 전망이 아직 패킷에 없어 기준선을 만들지 않았습니다.</div></div>`;
+      } else {
+        head = `<div class="card"><div class="card-h">기준선 ${dataBadge('UNAVAILABLE')}</div><div class="card-b">사건 탭에서 태풍을 고르면 그 사건의 최신 공식 +24h 전망이 기준선이 됩니다.</div></div>`;
+      }
+      return head + `<div class="card"><div class="card-h">태풍 시나리오 ${dataBadge('SIMULATION_ONLY')} <span class="badge demo">무료 프리뷰</span></div>
         <div class="card-b">가정한 태풍 조건으로 해상 상태를 물리 시뮬레이션합니다.<br/>
         지점: ${fmtPt(loc.lat, loc.lon)} ${hasSea ? '(선택한 해상)' : '(기본: 대한해협)'}<br/>
         시뮬레이션 안에서 카테고리·눈까지 거리를 실시간 조절할 수 있습니다.</div>
@@ -3982,6 +4038,9 @@ async function main() {
         }, simNowInfoHtml(), '');
       } else if (action === 'sim-scenario') {
         launchScenario(parseFloat(ds.lat), parseFloat(ds.lon));
+      } else if (action === 'sim-scenario-event') {
+        const base = scenarioBaseline();
+        if (base) launchScenarioFromBaseline(base);
       } else if (action === 'my-locate') {
         if (!navigator.geolocation) return;
         navigator.geolocation.getCurrentPosition((p) => {
@@ -4152,11 +4211,12 @@ async function main() {
   // 스냅샷은 **지금 켜져 있는 것만** 담는다. 화면에 없는 것을 근거로 삼으면 안 된다.
   const askSnapshot = () => {
     const layers = [];
+    const available = [];   // 꺼져 있는 레이어 — 모델이 "이걸 켜면 답할 수 있다"고 제안할 때만 쓴다(값은 싣지 않는다)
     for (const [id, e] of layerIndex) {
       if (e.l.state === 'LOCKED') continue;
       let st = {};
       try { st = shellHooks.getLayerState(e.sid, e.l) || {}; } catch (err) { st = {}; }
-      if (!st.on) continue;
+      if (!st.on) { if (available.length < 40) available.push({ id, label: e.l.name, badge: e.l.state }); continue; }
       layers.push({ id, label: e.l.name, badge: e.l.state, source: e.l.src, value: st.note });
     }
     const lat = THREE.MathUtils.radToDeg(orbit.targetPitch);
@@ -4176,6 +4236,7 @@ async function main() {
       point: Object.keys(point).length ? point : undefined,
       focus: focus.selected ? (focus.selected.nameKo || focus.selected.code3 || null) : null,
       layers,
+      available,
     };
   };
   const askTools = {
@@ -4406,6 +4467,65 @@ async function main() {
       ? '이 화면 링크를 <b>복사</b>했습니다 — 붙여넣으면 지금 보는 화면 그대로 열립니다'
       : '주소창의 링크를 복사해 주세요 (클립보드 권한 없음)');
   });
+
+  // 지시서 F — 선택 사건의 최신 회차에서 대표 기관(KMA→JMA→NHC)의 +24h 전망. 없으면 null(만들지 않는다).
+  const scenarioBaseline = () => {
+    const pk = feed.packet;
+    const it = feed.selected;
+    if (!pk || !it || it.kind !== 'TC' || !Array.isArray(pk.revisions) || !pk.revisions.length) return null;
+    const rev = pk.revisions[pk.revisions.length - 1];
+    for (const ag of ['KMA', 'JMA', 'NHC']) {
+      const a = rev.agencies && rev.agencies[ag];
+      if (a && a.h24 && Number.isFinite(a.h24.lat) && Number.isFinite(a.h24.lon)) {
+        return { eventId: pk.eventId, name: pk.name || it.title, revisionId: rev.revisionId, agency: ag,
+          agencyKo: { KMA: '한국 기상청', JMA: '일본 기상청', NHC: '미국 NHC' }[ag], issued: a.issued,
+          lat: a.h24.lat, lon: a.h24.lon, windMs: Number.isFinite(a.h24.windMs) ? a.h24.windMs : null };
+      }
+    }
+    return null;
+  };
+  const catFromWind = (ms) => { if (!Number.isFinite(ms)) return 3; let best = 3; let d = 1e9; for (const [c, v] of Object.entries(TY_CAT)) { const e = Math.abs(v.U - ms); if (e < d) { d = e; best = +c; } } return best; };
+  const launchScenarioFromBaseline = (base) => {
+    let windOff = 0;
+    let eye = 35;
+    const cat = catFromWind(base.windMs);
+    const baseU = Number.isFinite(base.windMs) ? base.windMs : TY_CAT[cat].U;
+    const params = () => { const p = scenarioParams(cat, eye, base.lat, base.lon); const f = Math.max(0.2, (baseU + windOff) / TY_CAT[cat].U); return { ...p, windSpeed: p.windSpeed * f, Hs: p.Hs * f, swellH: p.swellH * f, windWaveH: p.windWaveH * f }; };
+    const info = () => `<div class="card-h">${dataBadge('SIMULATION_ONLY')} 기준선 실험 — ${escUI(base.name)}</div>
+      <div class="card-b">
+        <div class="stat"><span class="k">기준선</span><span class="v">${escUI(base.agencyKo)} ${escUI(base.revisionId)} +24h</span></div>
+        <div class="stat"><span class="k">지점</span><span class="v">${fmtPt(base.lat, base.lon)}</span></div>
+        <div class="stat"><span class="k">풍속</span><span class="v">${baseU} ${windOff ? `${windOff > 0 ? '+' : ''}${windOff}` : ''} m/s</span></div>
+        <div class="stat"><span class="k">눈까지 거리</span><span class="v">${eye} km</span></div>
+        기준선에서 편차를 준 가정 — <b>공식 예보 아님</b>. 실제 태풍 정보는 기상청 발표를 따르세요.
+      </div>`;
+    const controls = `
+      <label>풍속 편차 <input type="range" id="sc-wind" min="-15" max="15" step="1" value="0" /><b id="sc-wind-v">0 m/s</b></label>
+      <label>눈까지 거리 <input type="range" id="sc-eye" min="5" max="200" step="5" value="35" /><b id="sc-eye-v">35km</b></label>
+      <span class="badge model">SCENARIO — 기준선 ${escUI(base.agency)} ${escUI(base.revisionId)} · 공식 예보 아님</span>`;
+    sim.open(params(), info(), controls);
+    const wEl = document.getElementById('sc-wind');
+    const eyeEl = document.getElementById('sc-eye');
+    const record = () => {
+      try {
+        const all = JSON.parse(localStorage.getItem('earthus.scenario') || '[]');
+        all.push({ eventId: base.eventId, revisionId: base.revisionId, agency: base.agency, baseline: { lat: base.lat, lon: base.lon, windMs: base.windMs }, windOffsetMs: windOff, eyeKm: eye, badge: 'SIMULATION_ONLY', at: new Date().toISOString() });
+        localStorage.setItem('earthus.scenario', JSON.stringify(all.slice(-30)));
+      } catch (e) { /* 저장 불가 */ }
+    };
+    record();
+    const apply = () => {
+      windOff = parseInt(wEl.value, 10);
+      eye = parseInt(eyeEl.value, 10);
+      document.getElementById('sc-wind-v').textContent = `${windOff > 0 ? '+' : ''}${windOff} m/s`;
+      document.getElementById('sc-eye-v').textContent = `${eye}km`;
+      sim.setParams(params());
+      sim.info.innerHTML = info();
+      record();
+    };
+    wEl.addEventListener('input', apply);
+    eyeEl.addEventListener('input', apply);
+  };
 
   const launchScenario = (lat, lon, cat0 = 3) => {
     let cat = cat0;

@@ -1,0 +1,171 @@
+{
+  "manifest": {
+    "timeStepSeconds": 129600,
+    "datasetId": "synthetic-eastward",
+    "version": "1",
+    "evidenceKind": "SYNTHETIC_TEST",
+    "sourceURI": "fixture:constant-eastward",
+    "provider": "EARTHUS numerical validation",
+    "citation": "Analytic constant eastward velocity, 1 m/s",
+    "license": "CC0-1.0",
+    "issuedAtUTC": "2025-01-01T00:00:00Z",
+    "collectedAtUTC": "2025-01-01T00:00:00Z",
+    "validTimeStartUTC": "2025-01-01T00:00:00Z",
+    "validTimeEndUTC": "2025-01-04T00:00:00Z",
+    "sha256": "e75c6cd7fcdf09e8b6194476626679118739c98106b275755f7ed7bbf6623659",
+    "hashScope": "canonical-grid-json",
+    "gridType": "regular-latlon-a-grid",
+    "crs": "EPSG:4326",
+    "calendar": "proleptic_gregorian",
+    "velocityUnits": "m/s",
+    "uDirection": "eastward",
+    "vDirection": "northward",
+    "surfaceDepthMeters": 0,
+    "landMaskVersion": "synthetic-open-ocean/1",
+    "readerVersion": "earthus-json-grid/1",
+    "redistributionAllowed": true,
+    "processingHistory": [
+      "Analytic fixture generated as constant velocity over three UTC times; not observed or forecast."
+    ]
+  },
+  "grid": {
+    "lon": [
+      -5.0,
+      0.0,
+      5.0
+    ],
+    "lat": [
+      -5.0,
+      0.0,
+      5.0
+    ],
+    "timeUTC": [
+      "2025-01-01T00:00:00Z",
+      "2025-01-02T12:00:00Z",
+      "2025-01-04T00:00:00Z"
+    ],
+    "u": [
+      [
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          1.0,
+          1.0,
+          1.0
+        ]
+      ],
+      [
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          1.0,
+          1.0,
+          1.0
+        ]
+      ],
+      [
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          1.0,
+          1.0,
+          1.0
+        ],
+        [
+          1.0,
+          1.0,
+          1.0
+        ]
+      ]
+    ],
+    "v": [
+      [
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      [
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      [
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ]
+      ]
+    ],
+    "landMask": [
+      [
+        false,
+        false,
+        false
+      ],
+      [
+        false,
+        false,
+        false
+      ],
+      [
+        false,
+        false,
+        false
+      ]
+    ]
+  }
+}

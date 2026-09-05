@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "1.0",
+  "projectId": "hycom-offshore-replay",
+  "question": "How do passive surface particles move in the archived HYCOM current field over 72 hours?",
+  "modelId": "surface-passive-advection.v1",
+  "modelVersion": "0.1.0",
+  "datasetVersions": [
+    {
+      "datasetId": "hycom-gofs31-53x-atlantic-20150105",
+      "version": "2015-01-05T12_2015-01-08T12.earthus1"
+    }
+  ],
+  "area": {
+    "west": -60,
+    "east": -58,
+    "south": 28,
+    "north": 30
+  },
+  "startTimeUTC": "2015-01-05T12:00:00Z",
+  "durationSeconds": 259200,
+  "releaseDefinition": {
+    "type": "points",
+    "points": [
+      {
+        "lon": -59.6,
+        "lat": 28.9
+      },
+      {
+        "lon": -59.6,
+        "lat": 29.0
+      },
+      {
+        "lon": -59.6,
+        "lat": 29.1
+      },
+      {
+        "lon": -59.5,
+        "lat": 28.9
+      },
+      {
+        "lon": -59.5,
+        "lat": 29.0
+      },
+      {
+        "lon": -59.5,
+        "lat": 29.1
+      },
+      {
+        "lon": -59.4,
+        "lat": 28.9
+      },
+      {
+        "lon": -59.4,
+        "lat": 29.0
+      },
+      {
+        "lon": -59.4,
+        "lat": 29.1
+      }
+    ]
+  },
+  "particleCount": 9,
+  "integrationMethod": "RK4",
+  "integrationStepSeconds": 300,
+  "outputStepSeconds": 3600,
+  "boundaryPolicy": "STOP_AT_FIRST_CROSSING",
+  "metrics": [
+    "statusCounts",
+    "displacementMeters"
+  ],
+  "backend": "oceanparcels"
+}

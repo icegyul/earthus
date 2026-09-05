@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "1.0",
+  "status": "NOT_VALIDATED",
+  "scientificAcceptance": "NOT_EVALUATED",
+  "observationValidationPassed": false,
+  "observationProvenance": {
+    "provider": "NOAA AOML Global Drifter Program",
+    "sourceURI": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID,time,latitude,longitude,drogue_lost_date,ve,vn,gap,typebuoy&ID=%22116362%22&time%3E=2015-01-01T12:00:00Z&time%3C=2015-01-04T12:00:00Z",
+    "citation": "Elipot, Shane; Sykulski, Adam; Lumpkin, Rick; Centurioni, Luca; Pazos, Mayra (2022). Hourly location, current velocity, and temperature collected from Global Drifter Program drifters world-wide. NOAA NCEI. doi:10.25921/x46c-3620. Subset GDP116362, 2015-01-01 12Z to 2015-01-04 12Z. Accessed 2026-09-04 UTC.",
+    "license": "Creative Commons Attribution 4.0; NOAA GDP ERDDAP license attribute",
+    "qualityControl": "PROVIDER_QC",
+    "qualityControlURI": "https://www.aoml.noaa.gov/phod/gdp/hourly_data.php",
+    "evidenceKind": "OBSERVATION"
+  },
+  "observationDatasetId": "noaa-gdp-hourly-qc-116362-20150101",
+  "observationVersion": "v2.01-subset-earthus1",
+  "observationTracksSha256": "1f8838cdca6d2738e34368e548d877f3d2359cd5cb104b4a4d00505408d3104a",
+  "observationSourceSha256": "f0bc887bc12f7ff72c2af3fae003e0d21e6d15558d30378f6211e119effd7b43",
+  "modelResultArraySha256": "50a20011057cc95eaf3c4fcc14f0f1d9e472d9fd473028db9da99cec2f0d6546",
+  "modelDatasetSha256": "c882f855c2731cc5ef19fc593263100496e665c112681c4fa25007709465ed5e",
+  "totalTracks": 1,
+  "eligibleTracks": 0,
+  "tracksWithComparedHorizons": 0,
+  "excludedTracks": [
+    {
+      "particleId": 0,
+      "reasons": [
+        "DROGUE_LOST",
+        "DEPTH_UNKNOWN",
+        "INDEPENDENCE_NOT_ESTABLISHED"
+      ]
+    }
+  ],
+  "exclusionReasonCounts": {
+    "DROGUE_LOST": 1,
+    "DEPTH_UNKNOWN": 1,
+    "INDEPENDENCE_NOT_ESTABLISHED": 1
+  },
+  "unavailableHorizons": [],
+  "trackEligibility": [
+    {
+      "particleId": 0,
+      "trackId": "GDP-116362",
+      "qualityControl": "PASSED",
+      "drogueStatus": "LOST",
+      "observationDepthMeters": null,
+      "modelDepthMeters": 0,
+      "independenceStatus": "UNKNOWN",
+      "independenceEvidence": "",
+      "eligible": false
+    }
+  ],
+  "summary": [
+    {
+      "horizonSeconds": 86400,
+      "sampleCount": 0,
+      "meanSeparationMeters": null,
+      "medianSeparationMeters": null,
+      "p95SeparationMeters": null,
+      "meanStationarySeparationMeters": null,
+      "meanInitialVelocitySeparationMeters": null
+    },
+    {
+      "horizonSeconds": 172800,
+      "sampleCount": 0,
+      "meanSeparationMeters": null,
+      "medianSeparationMeters": null,
+      "p95SeparationMeters": null,
+      "meanStationarySeparationMeters": null,
+      "meanInitialVelocitySeparationMeters": null
+    },
+    {
+      "horizonSeconds": 259200,
+      "sampleCount": 0,
+      "meanSeparationMeters": null,
+      "medianSeparationMeters": null,
+      "p95SeparationMeters": null,
+      "meanStationarySeparationMeters": null,
+      "meanInitialVelocitySeparationMeters": null
+    }
+  ],
+  "comparisons": [],
+  "method": {
+    "timeAlignment": "exact UTC instants only; no temporal interpolation or nearest-time substitution",
+    "depthToleranceMeters": 0.1,
+    "initialPositionToleranceMeters": 1,
+    "distance": "WGS84 coordinates; spherical haversine radius 6371008.8m",
+    "stationaryBaseline": "fixed initial observed position",
+    "initialVelocityBaseline": "great-circle propagation at initial observed speed and bearing",
+    "independence": "explicit caller-supplied evidence required; provenance assertion is recorded, not independently certified",
+    "acceptance": "error metrics are not a pass/fail threshold; preregister domain criteria and held-out cohort before evaluation"
+  }
+}

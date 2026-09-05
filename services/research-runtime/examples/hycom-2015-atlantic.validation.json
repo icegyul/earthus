@@ -1,0 +1,27 @@
+{
+  "scope": "engineering convergence and same-environment replay; not observation validation",
+  "particleCount": 9,
+  "durationSeconds": 259200,
+  "stepsSeconds": [
+    300,
+    150,
+    75
+  ],
+  "wallSeconds": [
+    3.97264140000334,
+    8.32361310000124,
+    15.764912699989509
+  ],
+  "p95FinalSeparation150Vs75Meters": 0.0006220675558400131,
+  "thresholdMeters": 76.98619429481982,
+  "convergencePassed": true,
+  "sameEnvironmentSubprocessReplay": {
+    "matched": true,
+    "resultArraySha256": "50a20011057cc95eaf3c4fcc14f0f1d9e472d9fd473028db9da99cec2f0d6546",
+    "backend": "oceanparcels",
+    "observationValidation": "NOT_PERFORMED"
+  },
+  "modelSourceSha256": "42e5886b640b616256dafc036bd4bbceff8a17affab1330947f0a9cb8612e444",
+  "datasetSha256": "c882f855c2731cc5ef19fc593263100496e665c112681c4fa25007709465ed5e",
+  "observationValidation": "NOT_PERFORMED"
+}

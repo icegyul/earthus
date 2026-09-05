@@ -1,0 +1,19 @@
+{
+  "verifiedAtUTC": "2026-09-05T00:02:49.275Z",
+  "url": "http://127.0.0.1:8789/v2-three/research.html",
+  "browser": "Microsoft Edge (Playwright)",
+  "checks": [
+    "project creation, dataset inspection, XSS-safe user title, preflight gate",
+    "saved experiment, preflight, actual run completion, trajectories, shared timeline, Three.js globe",
+    "reproduction ZIP downloaded",
+    "two actual runs compared",
+    "actual submitted computation cancelled; cancelled result unavailable",
+    "insufficient forcing time coverage rejects actual preflight",
+    "server records survive reload",
+    "390px mobile layout without overflow",
+    "backend failure shown honestly; online action disabled"
+  ],
+  "baselineId": "7153856433ac483e8856bdf61c0b51f0",
+  "comparisonId": "785696503ccf4ddb875ae12290d80f7c",
+  "uncaughtErrors": []
+}

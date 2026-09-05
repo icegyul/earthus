@@ -1,0 +1,67 @@
+{
+  "status": "REJECTED",
+  "reason": "MISSING_FORCING_TIMESTEPS",
+  "requestedStartUTC": "2015-01-01T12:00:00Z",
+  "requestedEndUTC": "2015-01-04T12:00:00Z",
+  "expectedTimeStepSeconds": 10800,
+  "expectedFrames": 25,
+  "actualFrames": 23,
+  "missingTimesUTC": [
+    "2015-01-03T03:00:00Z",
+    "2015-01-03T12:00:00Z"
+  ],
+  "sources": [
+    {
+      "path": "current-20150101T12.nc",
+      "bytes": 24916,
+      "sha256": "31eace3a2f2b0f167e14f74bf745b18939d99d9f6f7b3405a7d1ad0d49b9fbf2",
+      "actualTimesUTC": [
+        "2015-01-01T12:00:00Z",
+        "2015-01-01T15:00:00Z",
+        "2015-01-01T18:00:00Z",
+        "2015-01-01T21:00:00Z",
+        "2015-01-02T00:00:00Z",
+        "2015-01-02T03:00:00Z",
+        "2015-01-02T06:00:00Z",
+        "2015-01-02T09:00:00Z"
+      ]
+    },
+    {
+      "path": "current-20150102T12.nc",
+      "bytes": 22204,
+      "sha256": "888213614b41c4b40d7ae0035f58e6140f79669ac1fb95b86fcef594e55aa003",
+      "actualTimesUTC": [
+        "2015-01-02T12:00:00Z",
+        "2015-01-02T15:00:00Z",
+        "2015-01-02T18:00:00Z",
+        "2015-01-02T21:00:00Z",
+        "2015-01-03T00:00:00Z",
+        "2015-01-03T06:00:00Z",
+        "2015-01-03T09:00:00Z"
+      ]
+    },
+    {
+      "path": "current-20150103T12.nc",
+      "bytes": 22204,
+      "sha256": "68f8b6b3fcaba05f864b3b68ddf3b8cb60a501a92521c6d66019423836903cf3",
+      "actualTimesUTC": [
+        "2015-01-03T15:00:00Z",
+        "2015-01-03T18:00:00Z",
+        "2015-01-03T21:00:00Z",
+        "2015-01-04T00:00:00Z",
+        "2015-01-04T03:00:00Z",
+        "2015-01-04T06:00:00Z",
+        "2015-01-04T09:00:00Z"
+      ]
+    },
+    {
+      "path": "current-20150104T12.nc",
+      "bytes": 5932,
+      "sha256": "81986b3bebe1f304e63c9e620395b8bcce788448f5259cd41877955d7d3d32a4",
+      "actualTimesUTC": [
+        "2015-01-04T12:00:00Z"
+      ]
+    }
+  ],
+  "action": "Not normalized; no fabricated frames. Separate complete Jan05-Jan08 data acquired."
+}

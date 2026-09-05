@@ -1,0 +1,136 @@
+{
+  "schemaVersion": "1.0",
+  "checkedAt": "2026-09-05T00:02:32.662Z",
+  "capturedAt": "2026-09-04T23:49:42.6580009Z",
+  "scope": "explicit-paths-only",
+  "tracked": 17,
+  "preserved": 10,
+  "allowedChanges": 0,
+  "unattributedChanges": 7,
+  "files": [
+    {
+      "path": "prototype/index.html",
+      "change": "UNCHANGED",
+      "classification": "PRESERVED",
+      "beforeSha256": "b4601d98108539fde85e5fd685e7625b03e96cf7b1246abc04a09d36414ac222",
+      "afterSha256": "b4601d98108539fde85e5fd685e7625b03e96cf7b1246abc04a09d36414ac222"
+    },
+    {
+      "path": "prototype/js/ui.js",
+      "change": "UNCHANGED",
+      "classification": "PRESERVED",
+      "beforeSha256": "f4d57b1722040a66a3e9e3b482f173753aa74141677a95e468b731e7b835273b",
+      "afterSha256": "f4d57b1722040a66a3e9e3b482f173753aa74141677a95e468b731e7b835273b"
+    },
+    {
+      "path": "prototype/js/ui-events.js",
+      "change": "UNCHANGED",
+      "classification": "PRESERVED",
+      "beforeSha256": "c93409d8ea486e8d5b56af74f65d4c8a5e063f404fe949d56393bfdf983d60b0",
+      "afterSha256": "c93409d8ea486e8d5b56af74f65d4c8a5e063f404fe949d56393bfdf983d60b0"
+    },
+    {
+      "path": "prototype/js/earth-switch.js",
+      "change": "UNCHANGED",
+      "classification": "PRESERVED",
+      "beforeSha256": "1f5891a238d33a0764e79fbdd0701b76522beb5ba45786c15bf67448e933b552",
+      "afterSha256": "1f5891a238d33a0764e79fbdd0701b76522beb5ba45786c15bf67448e933b552"
+    },
+    {
+      "path": "prototype/js/space/aetherus-dashboard.js",
+      "change": "MODIFIED",
+      "classification": "UNATTRIBUTED_CHANGE_REVIEW_REQUIRED",
+      "beforeSha256": "0fe303cae9789b55387707bb71518e835dd1475660102ff8316fc278e20addba",
+      "afterSha256": "021ef9467af4180612f737e2d8d30d772c8fc89718f529c5eea9564994a28559"
+    },
+    {
+      "path": "prototype/css/aetherus-dashboard.css",
+      "change": "MODIFIED",
+      "classification": "UNATTRIBUTED_CHANGE_REVIEW_REQUIRED",
+      "beforeSha256": "631c25ffb47ffff5c083b4a7d2080273d262384570f4acd2c8f8c552b9dcc966",
+      "afterSha256": "84fc6d1ef7efdf90c7ed54d43dc7fc9d273efa655f4997bd3e1a91d028eacb54"
+    },
+    {
+      "path": "prototype/js/space/mission-readability.js",
+      "change": "MODIFIED",
+      "classification": "UNATTRIBUTED_CHANGE_REVIEW_REQUIRED",
+      "beforeSha256": "93446d412f8c7f650ebffe0d88e1897e1d65ede5e2608ede4b315bf923be65c7",
+      "afterSha256": "0e2df9c88ce15ac53937b86ed62a67de0a2dc33a6e4e1e1124d5ca2afefef5f8"
+    },
+    {
+      "path": "prototype/v2-three/index.html",
+      "change": "UNCHANGED",
+      "classification": "PRESERVED",
+      "beforeSha256": "8243bd8723f47c67eedc33728852bed01b731f57ff7954b7343086cdf39cc28e",
+      "afterSha256": "8243bd8723f47c67eedc33728852bed01b731f57ff7954b7343086cdf39cc28e"
+    },
+    {
+      "path": "prototype/v2-three/js/main.js",
+      "change": "MODIFIED",
+      "classification": "UNATTRIBUTED_CHANGE_REVIEW_REQUIRED",
+      "beforeSha256": "c13c10c1db8822b0afca1ad7ea6cc02e078397bd6dd8a51fd5360eff905613f8",
+      "afterSha256": "3b82f71ed07ef792a369aeeb98a02c8e577f218ed49b4c7bbea060b6f42f2cce"
+    },
+    {
+      "path": "prototype/v2-three/js/ui-shell.js",
+      "change": "MODIFIED",
+      "classification": "UNATTRIBUTED_CHANGE_REVIEW_REQUIRED",
+      "beforeSha256": "0c61e55e7882c87d7e35c76c317cc8e5eae990e9d27037282b402d9301db1285",
+      "afterSha256": "7bad1359b7737d5b2a5f37cf7060a55e12a861760dd40e28629bf8754293c2d1"
+    },
+    {
+      "path": "prototype/v2-three/js/engine-bridge.js",
+      "change": "MODIFIED",
+      "classification": "UNATTRIBUTED_CHANGE_REVIEW_REQUIRED",
+      "beforeSha256": "f8e37a44c217bf70b60022b18246b48d9e2b514958b72ef3e653695157283751",
+      "afterSha256": "ff54de03f7df21c48ab6afc2c48767f6e3c5ac1b0746f21e1c1d3d5b88bac2d7"
+    },
+    {
+      "path": "prototype/v2-three/js/live-layers.js",
+      "change": "MODIFIED",
+      "classification": "UNATTRIBUTED_CHANGE_REVIEW_REQUIRED",
+      "beforeSha256": "e488163a908977ddb5764648a9e20a39cd1e87f110599faf34f01b40ed6a4b65",
+      "afterSha256": "c9b3af084a5e5660bd90b133a57b3dfa7751b8a90ab8807a9fac0331819cf8d6"
+    },
+    {
+      "path": "prototype/v2-three/js/intel-feed.js",
+      "change": "UNCHANGED",
+      "classification": "PRESERVED",
+      "beforeSha256": "c1ec0705661f908c4b384939a49557511f29a42f055df24b339b39f5dfa22dfb",
+      "afterSha256": "c1ec0705661f908c4b384939a49557511f29a42f055df24b339b39f5dfa22dfb"
+    },
+    {
+      "path": "prototype/v2-three/js/sim-ocean.js",
+      "change": "UNCHANGED",
+      "classification": "PRESERVED",
+      "beforeSha256": "09678321d3f9179fb96e3948088606a52f828043a05f6960b615c03c663bdb1a",
+      "afterSha256": "09678321d3f9179fb96e3948088606a52f828043a05f6960b615c03c663bdb1a"
+    },
+    {
+      "path": "prototype/v2-three/js/ask-earth.js",
+      "change": "UNCHANGED",
+      "classification": "PRESERVED",
+      "beforeSha256": "cd9a47cd4cf4d89a3a0a3653269154c9e712f0ec4537df489fa04c4a0b353dc7",
+      "afterSha256": "cd9a47cd4cf4d89a3a0a3653269154c9e712f0ec4537df489fa04c4a0b353dc7"
+    },
+    {
+      "path": "tools/build-v2-bundle.sh",
+      "change": "UNCHANGED",
+      "classification": "PRESERVED",
+      "beforeSha256": "21c8ed8c4afa38f4418e9dcecbe9ab8da11fb3e0206f9d9ea8a2cc839ad91d63",
+      "afterSha256": "21c8ed8c4afa38f4418e9dcecbe9ab8da11fb3e0206f9d9ea8a2cc839ad91d63"
+    },
+    {
+      "path": "tools/deploy-v2-three.sh",
+      "change": "UNCHANGED",
+      "classification": "PRESERVED",
+      "beforeSha256": "6e94d4af3ec0a97c9d783bc5fec7b24b8b7721f1faad94e0ee6ac37714f262ac",
+      "afterSha256": "6e94d4af3ec0a97c9d783bc5fec7b24b8b7721f1faad94e0ee6ac37714f262ac"
+    }
+  ],
+  "limitations": [
+    "Only captured paths are checked; this is not a repository-wide change audit.",
+    "A hash difference cannot identify its author or prove a regression. Review concurrent changes; never restore automatically.",
+    "An allowed change is not proof that current external edits or menu behavior were preserved."
+  ]
+}

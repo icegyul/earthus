@@ -1,0 +1,626 @@
+{
+  "manifest": {
+    "datasetId": "noaa-gdp-hourly-qc-116362-20150101",
+    "version": "v2.01-subset-earthus1",
+    "evidenceKind": "OBSERVATION",
+    "provider": "NOAA AOML Global Drifter Program",
+    "sourceURI": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID,time,latitude,longitude,drogue_lost_date,ve,vn,gap,typebuoy&ID=%22116362%22&time%3E=2015-01-01T12:00:00Z&time%3C=2015-01-04T12:00:00Z",
+    "sourceFile": "observations.csv",
+    "sourceSha256": "f0bc887bc12f7ff72c2af3fae003e0d21e6d15558d30378f6211e119effd7b43",
+    "qualityControl": "PROVIDER_QC",
+    "qualityControlURI": "https://www.aoml.noaa.gov/phod/gdp/hourly_data.php",
+    "citation": "Elipot, Shane; Sykulski, Adam; Lumpkin, Rick; Centurioni, Luca; Pazos, Mayra (2022). Hourly location, current velocity, and temperature collected from Global Drifter Program drifters world-wide. NOAA NCEI. doi:10.25921/x46c-3620. Subset GDP116362, 2015-01-01 12Z to 2015-01-04 12Z. Accessed 2026-09-04 UTC.",
+    "license": "Creative Commons Attribution 4.0; NOAA GDP ERDDAP license attribute",
+    "licenseURI": "https://erddap.aoml.noaa.gov/gdp/erddap/info/drifter_hourly_qc/index.html",
+    "redistributionAllowed": true,
+    "hashScope": "canonical-observation-tracks-json",
+    "sha256": "1f8838cdca6d2738e34368e548d877f3d2359cd5cb104b4a4d00505408d3104a",
+    "validTimeStartUTC": "2015-01-01T12:00:00Z",
+    "validTimeEndUTC": "2015-01-04T12:00:00Z",
+    "intendedUse": "Real-data eligibility rejection example only; not a model validation cohort",
+    "processingHistory": [
+      "Removed ERDDAP units row; parsed numeric coordinates/velocities; kept every original hourly record",
+      "Drogue loss predates all observations; effective depth and forcing independence remain unknown"
+    ]
+  },
+  "tracks": [
+    {
+      "particleId": 0,
+      "trackId": "GDP-116362",
+      "qualityControl": "PASSED",
+      "drogueStatus": "LOST",
+      "drogueLostAtUTC": "2014-08-19T00:00:00Z",
+      "depthMeters": null,
+      "nominalDrogueDepthMeters": 15,
+      "depthMeaning": "SVP nominal 15m drogue was lost; actual effective current-following depth unknown",
+      "independenceStatus": "UNKNOWN",
+      "independenceEvidence": "",
+      "samples": [
+        {
+          "timeUTC": "2015-01-01T12:00:00Z",
+          "lon": -58.15198,
+          "lat": 29.3411,
+          "uMps": -0.0057,
+          "vMps": 0.1291,
+          "sourceGapSeconds": 460.5
+        },
+        {
+          "timeUTC": "2015-01-01T13:00:00Z",
+          "lon": -58.15299,
+          "lat": 29.34452,
+          "uMps": 0.1584,
+          "vMps": 0.0894,
+          "sourceGapSeconds": 140.70834
+        },
+        {
+          "timeUTC": "2015-01-01T14:00:00Z",
+          "lon": -58.14812,
+          "lat": 29.34716,
+          "uMps": 0.0913,
+          "vMps": -0.1028,
+          "sourceGapSeconds": 112.5
+        },
+        {
+          "timeUTC": "2015-01-01T15:00:00Z",
+          "lon": -58.14487,
+          "lat": 29.3425,
+          "uMps": 0.0978,
+          "vMps": -0.1643,
+          "sourceGapSeconds": 355.0417
+        },
+        {
+          "timeUTC": "2015-01-01T16:00:00Z",
+          "lon": -58.1414,
+          "lat": 29.33889,
+          "uMps": 0.0997,
+          "vMps": -0.1624,
+          "sourceGapSeconds": 355.0417
+        },
+        {
+          "timeUTC": "2015-01-01T17:00:00Z",
+          "lon": -58.1385,
+          "lat": 29.33498,
+          "uMps": 0.1042,
+          "vMps": -0.1675,
+          "sourceGapSeconds": 355.0417
+        },
+        {
+          "timeUTC": "2015-01-01T18:00:00Z",
+          "lon": -58.13153,
+          "lat": 29.32751,
+          "uMps": 0.1541,
+          "vMps": -0.1711,
+          "sourceGapSeconds": 246.16667
+        },
+        {
+          "timeUTC": "2015-01-01T19:00:00Z",
+          "lon": -58.12577,
+          "lat": 29.32151,
+          "uMps": 0.1212,
+          "vMps": -0.155,
+          "sourceGapSeconds": 161.70833
+        },
+        {
+          "timeUTC": "2015-01-01T20:00:00Z",
+          "lon": -58.12201,
+          "lat": 29.31816,
+          "uMps": 0.0572,
+          "vMps": -0.0665,
+          "sourceGapSeconds": 256.66666
+        },
+        {
+          "timeUTC": "2015-01-01T21:00:00Z",
+          "lon": -58.11965,
+          "lat": 29.31441,
+          "uMps": 0.0593,
+          "vMps": -0.0806,
+          "sourceGapSeconds": 256.66666
+        },
+        {
+          "timeUTC": "2015-01-01T22:00:00Z",
+          "lon": -58.11562,
+          "lat": 29.31536,
+          "uMps": 0.1144,
+          "vMps": 0.0382,
+          "sourceGapSeconds": 101.833336
+        },
+        {
+          "timeUTC": "2015-01-01T23:00:00Z",
+          "lon": -58.10835,
+          "lat": 29.31199,
+          "uMps": 0.2111,
+          "vMps": -0.0673,
+          "sourceGapSeconds": 246.16667
+        },
+        {
+          "timeUTC": "2015-01-02T00:00:00Z",
+          "lon": -58.10106,
+          "lat": 29.31344,
+          "uMps": 0.1598,
+          "vMps": -0.2959,
+          "sourceGapSeconds": 98.416664
+        },
+        {
+          "timeUTC": "2015-01-02T01:00:00Z",
+          "lon": -58.09957,
+          "lat": 29.30511,
+          "uMps": -0.0149,
+          "vMps": -0.0988,
+          "sourceGapSeconds": 98.416664
+        },
+        {
+          "timeUTC": "2015-01-02T02:00:00Z",
+          "lon": -58.09176,
+          "lat": 29.30156,
+          "uMps": 0.1482,
+          "vMps": -0.0991,
+          "sourceGapSeconds": 639.9166
+        },
+        {
+          "timeUTC": "2015-01-02T03:00:00Z",
+          "lon": -58.08554,
+          "lat": 29.29844,
+          "uMps": 0.1465,
+          "vMps": -0.0989,
+          "sourceGapSeconds": 639.9166
+        },
+        {
+          "timeUTC": "2015-01-02T04:00:00Z",
+          "lon": -58.07969,
+          "lat": 29.29542,
+          "uMps": 0.1455,
+          "vMps": -0.0986,
+          "sourceGapSeconds": 639.9166
+        },
+        {
+          "timeUTC": "2015-01-02T05:00:00Z",
+          "lon": -58.07376,
+          "lat": 29.29269,
+          "uMps": 0.1445,
+          "vMps": -0.0977,
+          "sourceGapSeconds": 639.9166
+        },
+        {
+          "timeUTC": "2015-01-02T06:00:00Z",
+          "lon": -58.06961,
+          "lat": 29.28962,
+          "uMps": 0.1295,
+          "vMps": -0.0968,
+          "sourceGapSeconds": 253.20834
+        },
+        {
+          "timeUTC": "2015-01-02T07:00:00Z",
+          "lon": -58.06548,
+          "lat": 29.28463,
+          "uMps": 0.1277,
+          "vMps": -0.1052,
+          "sourceGapSeconds": 253.20834
+        },
+        {
+          "timeUTC": "2015-01-02T08:00:00Z",
+          "lon": -58.06566,
+          "lat": 29.28965,
+          "uMps": 0.0337,
+          "vMps": -0.0253,
+          "sourceGapSeconds": 147.58333
+        },
+        {
+          "timeUTC": "2015-01-02T09:00:00Z",
+          "lon": -58.06388,
+          "lat": 29.27712,
+          "uMps": 0.0404,
+          "vMps": -0.1478,
+          "sourceGapSeconds": 242.54167
+        },
+        {
+          "timeUTC": "2015-01-02T10:00:00Z",
+          "lon": -58.0628,
+          "lat": 29.27266,
+          "uMps": 0.0682,
+          "vMps": -0.1531,
+          "sourceGapSeconds": 453.45834
+        },
+        {
+          "timeUTC": "2015-01-02T11:00:00Z",
+          "lon": -58.06024,
+          "lat": 29.26822,
+          "uMps": 0.0685,
+          "vMps": -0.156,
+          "sourceGapSeconds": 453.45834
+        },
+        {
+          "timeUTC": "2015-01-02T12:00:00Z",
+          "lon": -58.05789,
+          "lat": 29.26326,
+          "uMps": 0.069,
+          "vMps": -0.1559,
+          "sourceGapSeconds": 453.45834
+        },
+        {
+          "timeUTC": "2015-01-02T13:00:00Z",
+          "lon": -58.05398,
+          "lat": 29.25802,
+          "uMps": 0.1265,
+          "vMps": -0.147,
+          "sourceGapSeconds": 133.66667
+        },
+        {
+          "timeUTC": "2015-01-02T14:00:00Z",
+          "lon": -58.04837,
+          "lat": 29.25262,
+          "uMps": 0.1604,
+          "vMps": -0.1959,
+          "sourceGapSeconds": 116.083336
+        },
+        {
+          "timeUTC": "2015-01-02T15:00:00Z",
+          "lon": -58.04178,
+          "lat": 29.24611,
+          "uMps": 0.1921,
+          "vMps": -0.223,
+          "sourceGapSeconds": 376.2083
+        },
+        {
+          "timeUTC": "2015-01-02T16:00:00Z",
+          "lon": -58.03497,
+          "lat": 29.23908,
+          "uMps": 0.192,
+          "vMps": -0.223,
+          "sourceGapSeconds": 376.2083
+        },
+        {
+          "timeUTC": "2015-01-02T17:00:00Z",
+          "lon": -58.02824,
+          "lat": 29.23188,
+          "uMps": 0.2203,
+          "vMps": -0.2266,
+          "sourceGapSeconds": 246.16667
+        },
+        {
+          "timeUTC": "2015-01-02T18:00:00Z",
+          "lon": -58.01842,
+          "lat": 29.22415,
+          "uMps": 0.2219,
+          "vMps": -0.2278,
+          "sourceGapSeconds": 246.16667
+        },
+        {
+          "timeUTC": "2015-01-02T19:00:00Z",
+          "lon": -58.01052,
+          "lat": 29.21731,
+          "uMps": 0.2295,
+          "vMps": -0.2072,
+          "sourceGapSeconds": 115.958336
+        },
+        {
+          "timeUTC": "2015-01-02T20:00:00Z",
+          "lon": -58.00023,
+          "lat": 29.21643,
+          "uMps": 0.2834,
+          "vMps": -0.0086,
+          "sourceGapSeconds": 140.70834
+        },
+        {
+          "timeUTC": "2015-01-02T21:00:00Z",
+          "lon": -57.98815,
+          "lat": 29.21825,
+          "uMps": 0.3215,
+          "vMps": 0.0897,
+          "sourceGapSeconds": 130.04166
+        },
+        {
+          "timeUTC": "2015-01-02T22:00:00Z",
+          "lon": -57.98554,
+          "lat": 29.22299,
+          "uMps": 0.054,
+          "vMps": 0.1312,
+          "sourceGapSeconds": 253.20834
+        },
+        {
+          "timeUTC": "2015-01-02T23:00:00Z",
+          "lon": -57.98397,
+          "lat": 29.22584,
+          "uMps": 0.0571,
+          "vMps": 0.1305,
+          "sourceGapSeconds": 253.20834
+        },
+        {
+          "timeUTC": "2015-01-03T00:00:00Z",
+          "lon": -57.97926,
+          "lat": 29.23141,
+          "uMps": 0.3267,
+          "vMps": 0.0187,
+          "sourceGapSeconds": 126.58333
+        },
+        {
+          "timeUTC": "2015-01-03T01:00:00Z",
+          "lon": -57.97123,
+          "lat": 29.2313,
+          "uMps": 0.0309,
+          "vMps": 0.0376,
+          "sourceGapSeconds": 133.66667
+        },
+        {
+          "timeUTC": "2015-01-03T02:00:00Z",
+          "lon": -57.97384,
+          "lat": 29.23238,
+          "uMps": 0.0718,
+          "vMps": 0.0442,
+          "sourceGapSeconds": 523.7917
+        },
+        {
+          "timeUTC": "2015-01-03T03:00:00Z",
+          "lon": -57.9695,
+          "lat": 29.23369,
+          "uMps": 0.0577,
+          "vMps": 0.0445,
+          "sourceGapSeconds": 523.7917
+        },
+        {
+          "timeUTC": "2015-01-03T04:00:00Z",
+          "lon": -57.96858,
+          "lat": 29.23519,
+          "uMps": 0.0758,
+          "vMps": 0.0441,
+          "sourceGapSeconds": 523.7917
+        },
+        {
+          "timeUTC": "2015-01-03T05:00:00Z",
+          "lon": -57.96686,
+          "lat": 29.23684,
+          "uMps": 0.0997,
+          "vMps": 0.0426,
+          "sourceGapSeconds": 523.7917
+        },
+        {
+          "timeUTC": "2015-01-03T06:00:00Z",
+          "lon": -57.96227,
+          "lat": 29.23757,
+          "uMps": 0.1166,
+          "vMps": 0.0157,
+          "sourceGapSeconds": 253.20834
+        },
+        {
+          "timeUTC": "2015-01-03T07:00:00Z",
+          "lon": -57.95789,
+          "lat": 29.23752,
+          "uMps": 0.0138,
+          "vMps": -0.0369,
+          "sourceGapSeconds": 277.79166
+        },
+        {
+          "timeUTC": "2015-01-03T08:00:00Z",
+          "lon": -57.95925,
+          "lat": 29.23538,
+          "uMps": 0.0004,
+          "vMps": -0.0452,
+          "sourceGapSeconds": 277.79166
+        },
+        {
+          "timeUTC": "2015-01-03T09:00:00Z",
+          "lon": -57.96135,
+          "lat": 29.23368,
+          "uMps": -0.0777,
+          "vMps": -0.0592,
+          "sourceGapSeconds": 73.791664
+        },
+        {
+          "timeUTC": "2015-01-03T10:00:00Z",
+          "lon": -57.96451,
+          "lat": 29.23253,
+          "uMps": -0.1026,
+          "vMps": -0.0214,
+          "sourceGapSeconds": 196.95833
+        },
+        {
+          "timeUTC": "2015-01-03T11:00:00Z",
+          "lon": -57.9653,
+          "lat": 29.23129,
+          "uMps": 0.0638,
+          "vMps": -0.055,
+          "sourceGapSeconds": 214.5
+        },
+        {
+          "timeUTC": "2015-01-03T12:00:00Z",
+          "lon": -57.96476,
+          "lat": 29.23025,
+          "uMps": 0.0482,
+          "vMps": -0.0516,
+          "sourceGapSeconds": 214.5
+        },
+        {
+          "timeUTC": "2015-01-03T13:00:00Z",
+          "lon": -57.96171,
+          "lat": 29.22771,
+          "uMps": 0.0242,
+          "vMps": -0.0556,
+          "sourceGapSeconds": 123.0
+        },
+        {
+          "timeUTC": "2015-01-03T14:00:00Z",
+          "lon": -57.96401,
+          "lat": 29.22768,
+          "uMps": 0.0236,
+          "vMps": 0.0177,
+          "sourceGapSeconds": 137.08333
+        },
+        {
+          "timeUTC": "2015-01-03T15:00:00Z",
+          "lon": -57.96168,
+          "lat": 29.23441,
+          "uMps": 0.0575,
+          "vMps": -0.0771,
+          "sourceGapSeconds": 270.74997
+        },
+        {
+          "timeUTC": "2015-01-03T16:00:00Z",
+          "lon": -57.96399,
+          "lat": 29.2299,
+          "uMps": 0.0219,
+          "vMps": -0.0468,
+          "sourceGapSeconds": 270.74997
+        },
+        {
+          "timeUTC": "2015-01-03T17:00:00Z",
+          "lon": -57.96416,
+          "lat": 29.22855,
+          "uMps": 0.0245,
+          "vMps": -0.0723,
+          "sourceGapSeconds": 242.54167
+        },
+        {
+          "timeUTC": "2015-01-03T18:00:00Z",
+          "lon": -57.95449,
+          "lat": 29.22682,
+          "uMps": 0.1324,
+          "vMps": -0.0728,
+          "sourceGapSeconds": 242.54167
+        },
+        {
+          "timeUTC": "2015-01-03T19:00:00Z",
+          "lon": -57.95472,
+          "lat": 29.2233,
+          "uMps": -0.0167,
+          "vMps": -0.0928,
+          "sourceGapSeconds": 267.16666
+        },
+        {
+          "timeUTC": "2015-01-03T20:00:00Z",
+          "lon": -57.96004,
+          "lat": 29.22042,
+          "uMps": 0.0404,
+          "vMps": -0.0944,
+          "sourceGapSeconds": 267.16666
+        },
+        {
+          "timeUTC": "2015-01-03T21:00:00Z",
+          "lon": -57.95773,
+          "lat": 29.22096,
+          "uMps": 0.0124,
+          "vMps": -0.0747,
+          "sourceGapSeconds": 66.75
+        },
+        {
+          "timeUTC": "2015-01-03T22:00:00Z",
+          "lon": -57.95739,
+          "lat": 29.21518,
+          "uMps": -0.0323,
+          "vMps": -0.161,
+          "sourceGapSeconds": 263.7083
+        },
+        {
+          "timeUTC": "2015-01-03T23:00:00Z",
+          "lon": -57.95622,
+          "lat": 29.20972,
+          "uMps": 0.0807,
+          "vMps": -0.2836,
+          "sourceGapSeconds": 126.58333
+        },
+        {
+          "timeUTC": "2015-01-04T00:00:00Z",
+          "lon": -57.95159,
+          "lat": 29.20081,
+          "uMps": 0.1856,
+          "vMps": -0.2347,
+          "sourceGapSeconds": 123.0
+        },
+        {
+          "timeUTC": "2015-01-04T01:00:00Z",
+          "lon": -57.94488,
+          "lat": 29.19416,
+          "uMps": 0.207,
+          "vMps": -0.1371,
+          "sourceGapSeconds": 133.66667
+        },
+        {
+          "timeUTC": "2015-01-04T02:00:00Z",
+          "lon": -57.95226,
+          "lat": 29.19423,
+          "uMps": -0.1443,
+          "vMps": -0.0322,
+          "sourceGapSeconds": 116.083336
+        },
+        {
+          "timeUTC": "2015-01-04T03:00:00Z",
+          "lon": -57.93613,
+          "lat": 29.19075,
+          "uMps": 0.1244,
+          "vMps": -0.0542,
+          "sourceGapSeconds": 435.91666
+        },
+        {
+          "timeUTC": "2015-01-04T04:00:00Z",
+          "lon": -57.93149,
+          "lat": 29.1888,
+          "uMps": 0.1248,
+          "vMps": -0.0539,
+          "sourceGapSeconds": 435.91666
+        },
+        {
+          "timeUTC": "2015-01-04T05:00:00Z",
+          "lon": -57.92783,
+          "lat": 29.18736,
+          "uMps": 0.1316,
+          "vMps": -0.0562,
+          "sourceGapSeconds": 435.91666
+        },
+        {
+          "timeUTC": "2015-01-04T06:00:00Z",
+          "lon": -57.92268,
+          "lat": 29.18562,
+          "uMps": 0.2325,
+          "vMps": -0.0706,
+          "sourceGapSeconds": 246.16667
+        },
+        {
+          "timeUTC": "2015-01-04T07:00:00Z",
+          "lon": -57.91445,
+          "lat": 29.18327,
+          "uMps": 0.2357,
+          "vMps": -0.0483,
+          "sourceGapSeconds": 253.20834
+        },
+        {
+          "timeUTC": "2015-01-04T08:00:00Z",
+          "lon": -57.90491,
+          "lat": 29.18243,
+          "uMps": 0.2366,
+          "vMps": -0.0467,
+          "sourceGapSeconds": 253.20834
+        },
+        {
+          "timeUTC": "2015-01-04T09:00:00Z",
+          "lon": -57.89843,
+          "lat": 29.18052,
+          "uMps": 0.0206,
+          "vMps": -0.0035,
+          "sourceGapSeconds": 172.20833
+        },
+        {
+          "timeUTC": "2015-01-04T10:00:00Z",
+          "lon": -57.89792,
+          "lat": 29.18397,
+          "uMps": 0.0236,
+          "vMps": 0.0305,
+          "sourceGapSeconds": 172.20833
+        },
+        {
+          "timeUTC": "2015-01-04T11:00:00Z",
+          "lon": -57.8922,
+          "lat": 29.18054,
+          "uMps": 0.079,
+          "vMps": -0.0632,
+          "sourceGapSeconds": 334.04166
+        },
+        {
+          "timeUTC": "2015-01-04T12:00:00Z",
+          "lon": -57.88987,
+          "lat": 29.18064,
+          "uMps": 0.0822,
+          "vMps": -0.0606,
+          "sourceGapSeconds": 334.04166
+        }
+      ]
+    }
+  ]
+}

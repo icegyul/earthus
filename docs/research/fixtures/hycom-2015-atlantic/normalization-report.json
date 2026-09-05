@@ -1,0 +1,25 @@
+{
+  "dataset": "services\\research-runtime\\examples\\hycom-2015-atlantic.dataset.json",
+  "gridSha256": "c882f855c2731cc5ef19fc593263100496e665c112681c4fa25007709465ed5e",
+  "shape": [
+    25,
+    26,
+    26
+  ],
+  "sourceBytes": 80680,
+  "timeStepSeconds": 10800,
+  "uRangeMps": [
+    -0.35100001096725464,
+    0.45500001311302185
+  ],
+  "vRangeMps": [
+    -0.2800000011920929,
+    0.4140000343322754
+  ],
+  "maxAbsoluteCoordinateCorrectionDegrees": {
+    "lat": 9.155273446026513e-07,
+    "lon": 2.929687499886313e-05
+  },
+  "readerValidation": "PASSED",
+  "observationValidation": "NOT_PERFORMED"
+}

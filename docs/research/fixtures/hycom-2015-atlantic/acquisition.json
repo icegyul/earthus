@@ -1,0 +1,62 @@
+{
+  "fixtureIssuedAtUTC": "2026-09-04T23:59:18Z",
+  "sources": [
+    {
+      "path": "current-20150105T12.nc",
+      "sourceURI": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2015?var=water_u&var=water_v&north=30&south=28&west=-60&east=-58&horizStride=1&time_start=2015-01-05T12%3A00%3A00Z&time_end=2015-01-06T09%3A00%3A00Z&timeStride=1&vertCoord=0&addLatLon=true&accept=netcdf",
+      "sha256": "8273f2a4f3152b3f3fd9d1aeb09526d4f3cb21b471748855b5dbfb2f615af2c5",
+      "bytes": 24916,
+      "validTimeStartUTC": "2015-01-05T12:00:00Z",
+      "validTimeEndUTC": "2015-01-06T09:00:00Z",
+      "ncssTranslationTimeUTC": "2026-09-04T23:58:29.773Z",
+      "originalTimeUnits": "hours since 2000-01-01 00:00:00",
+      "originalConventions": "CF-1.6 NAVO_netcdf_v1.1",
+      "originalFieldType": "instantaneous",
+      "uScaleFactor": 0.0010000000474974513,
+      "vScaleFactor": 0.0010000000474974513
+    },
+    {
+      "path": "current-20150106T12.nc",
+      "sourceURI": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2015?var=water_u&var=water_v&north=30&south=28&west=-60&east=-58&horizStride=1&time_start=2015-01-06T12%3A00%3A00Z&time_end=2015-01-07T09%3A00%3A00Z&timeStride=1&vertCoord=0&addLatLon=true&accept=netcdf",
+      "sha256": "955f7d247caabb8ec3b749a9cabadd790bf6898620e7483cae40c982a8b61734",
+      "bytes": 24916,
+      "validTimeStartUTC": "2015-01-06T12:00:00Z",
+      "validTimeEndUTC": "2015-01-07T09:00:00Z",
+      "ncssTranslationTimeUTC": "2026-09-04T23:58:38.167Z",
+      "originalTimeUnits": "hours since 2000-01-01 00:00:00",
+      "originalConventions": "CF-1.6 NAVO_netcdf_v1.1",
+      "originalFieldType": "instantaneous",
+      "uScaleFactor": 0.0010000000474974513,
+      "vScaleFactor": 0.0010000000474974513
+    },
+    {
+      "path": "current-20150107T12.nc",
+      "sourceURI": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2015?var=water_u&var=water_v&north=30&south=28&west=-60&east=-58&horizStride=1&time_start=2015-01-07T12%3A00%3A00Z&time_end=2015-01-08T09%3A00%3A00Z&timeStride=1&vertCoord=0&addLatLon=true&accept=netcdf",
+      "sha256": "f0fa284141d6d7dc641dfc33516ebc8d9ba4a633ec58ca3845cdb1ff67909f9c",
+      "bytes": 24916,
+      "validTimeStartUTC": "2015-01-07T12:00:00Z",
+      "validTimeEndUTC": "2015-01-08T09:00:00Z",
+      "ncssTranslationTimeUTC": "2026-09-04T23:58:44.500Z",
+      "originalTimeUnits": "hours since 2000-01-01 00:00:00",
+      "originalConventions": "CF-1.6 NAVO_netcdf_v1.1",
+      "originalFieldType": "instantaneous",
+      "uScaleFactor": 0.0010000000474974513,
+      "vScaleFactor": 0.0010000000474974513
+    },
+    {
+      "path": "current-20150108T12.nc",
+      "sourceURI": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2015?var=water_u&var=water_v&north=30&south=28&west=-60&east=-58&horizStride=1&time_start=2015-01-08T12%3A00%3A00Z&time_end=2015-01-08T12%3A00%3A00Z&timeStride=1&vertCoord=0&addLatLon=true&accept=netcdf",
+      "sha256": "c206355c7bbd92537cf39fcb4d4357a77ba62e40ad61147123e3a40f2f56ac89",
+      "bytes": 5932,
+      "validTimeStartUTC": "2015-01-08T12:00:00Z",
+      "validTimeEndUTC": "2015-01-08T12:00:00Z",
+      "ncssTranslationTimeUTC": "2026-09-04T23:59:16.573Z",
+      "originalTimeUnits": "hours since 2000-01-01 00:00:00",
+      "originalConventions": "CF-1.6 NAVO_netcdf_v1.1",
+      "originalFieldType": "instantaneous",
+      "uScaleFactor": 0.0010000000474974513,
+      "vScaleFactor": 0.0010000000474974513
+    }
+  ],
+  "sourceBundleSha256": "218eacc0125704c56848353ac93df8d7761fbc94a506df273d8cf39005155afc"
+}

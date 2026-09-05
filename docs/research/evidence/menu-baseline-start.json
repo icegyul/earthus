@@ -1,0 +1,73 @@
+{
+  "capturedAt": "2026-09-04T23:49:42.6580009Z",
+  "files": [
+    {
+      "path": "prototype/index.html",
+      "sha256": "B4601D98108539FDE85E5FD685E7625B03E96CF7B1246ABC04A09D36414AC222"
+    },
+    {
+      "path": "prototype/js/ui.js",
+      "sha256": "F4D57B1722040A66A3E9E3B482F173753AA74141677A95E468B731E7B835273B"
+    },
+    {
+      "path": "prototype/js/ui-events.js",
+      "sha256": "C93409D8EA486E8D5B56AF74F65D4C8A5E063F404FE949D56393BFDF983D60B0"
+    },
+    {
+      "path": "prototype/js/earth-switch.js",
+      "sha256": "1F5891A238D33A0764E79FBDD0701B76522BEB5BA45786C15BF67448E933B552"
+    },
+    {
+      "path": "prototype/js/space/aetherus-dashboard.js",
+      "sha256": "0FE303CAE9789B55387707BB71518E835DD1475660102FF8316FC278E20ADDBA"
+    },
+    {
+      "path": "prototype/css/aetherus-dashboard.css",
+      "sha256": "631C25FFB47FFFF5C083B4A7D2080273D262384570F4ACD2C8F8C552B9DCC966"
+    },
+    {
+      "path": "prototype/js/space/mission-readability.js",
+      "sha256": "93446D412F8C7F650EBFFE0D88E1897E1D65EDE5E2608EDE4B315BF923BE65C7"
+    },
+    {
+      "path": "prototype/v2-three/index.html",
+      "sha256": "8243BD8723F47C67EEDC33728852BED01B731F57FF7954B7343086CDF39CC28E"
+    },
+    {
+      "path": "prototype/v2-three/js/main.js",
+      "sha256": "C13C10C1DB8822B0AFCA1AD7EA6CC02E078397BD6DD8A51FD5360EFF905613F8"
+    },
+    {
+      "path": "prototype/v2-three/js/ui-shell.js",
+      "sha256": "0C61E55E7882C87D7E35C76C317CC8E5EAE990E9D27037282B402D9301DB1285"
+    },
+    {
+      "path": "prototype/v2-three/js/engine-bridge.js",
+      "sha256": "F8E37A44C217BF70B60022B18246B48D9E2B514958B72EF3E653695157283751"
+    },
+    {
+      "path": "prototype/v2-three/js/live-layers.js",
+      "sha256": "E488163A908977DDB5764648A9E20A39CD1E87F110599FAF34F01B40ED6A4B65"
+    },
+    {
+      "path": "prototype/v2-three/js/intel-feed.js",
+      "sha256": "C1EC0705661F908C4B384939A49557511F29A42F055DF24B339B39F5DFA22DFB"
+    },
+    {
+      "path": "prototype/v2-three/js/sim-ocean.js",
+      "sha256": "09678321D3F9179FB96E3948088606A52F828043A05F6960B615C03C663BDB1A"
+    },
+    {
+      "path": "prototype/v2-three/js/ask-earth.js",
+      "sha256": "CD9A47CD4CF4D89A3A0A3653269154C9E712F0EC4537DF489FA04C4A0B353DC7"
+    },
+    {
+      "path": "tools/build-v2-bundle.sh",
+      "sha256": "21C8ED8C4AFA38F4418E9DCECBE9AB8DA11FB3E0206F9D9EA8A2CC839AD91D63"
+    },
+    {
+      "path": "tools/deploy-v2-three.sh",
+      "sha256": "6E94D4AF3EC0A97C9D783BC5FEC7B24B8B7721F1FAAD94E0EE6AC37714F262AC"
+    }
+  ]
+}

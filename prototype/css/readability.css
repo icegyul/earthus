@@ -1,5 +1,9 @@
 /* EARTHUS PR-04 — 첫 지구는 건드리지 않고 Data/Evidence에서만 여는 판독 UI. */
 #readabilityPanel[hidden]{display:none}
+/* 시트(장소 정보 창 등)가 열려 있는 동안은 판독 패널을 접는다 — 폰에서 둘 다 화면
+   아래에 붙어 두 장이 겹쳐 보였다("정보창이 두 개 떠"). 시트를 닫으면 격자 선택 상태는
+   그대로라 판독 패널이 다시 나온다. body.panel-open 은 panels.js 가 관리한다. */
+body.panel-open #readabilityPanel{display:none}
 #readabilityPanel{position:fixed;z-index:18;top:max(18px,env(safe-area-inset-top));left:50%;width:min(760px,calc(100vw - 220px));transform:translateX(-50%);color:#f5f8fa;font-family:var(--sans);pointer-events:none}
 .rd-shell{display:grid;grid-template-columns:minmax(170px,.7fr) minmax(280px,1.3fr);gap:12px;padding:13px 14px 14px;border:1px solid rgba(220,235,242,.17);border-top-color:rgba(235,247,251,.42);border-radius:14px;background:rgba(3,10,15,.86);backdrop-filter:blur(18px) saturate(115%);box-shadow:0 18px 54px rgba(0,11,18,.38),inset 0 1px 0 rgba(255,255,255,.04);pointer-events:auto}
 .rd-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.rd-heading h2{margin:0;font-size:clamp(17px,1.7vw,22px);font-weight:580;line-height:1.08;letter-spacing:-.035em;text-wrap:balance}.rd-badge{flex:none;padding:4px 6px;border:1px solid rgba(133,215,234,.34);border-radius:4px;color:#a6e8f5;font:700 8.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em}

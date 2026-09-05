@@ -31,6 +31,16 @@ export const SOURCE_STATE = Object.freeze({ OK: 'OK', EMPTY: 'EMPTY', FAILED: 'F
 const SLA_MIN = { tyoff: 180, tyens: 720, kmasea: 120, khoaflood: null, warn: 60, tsunami: 60, warnRegions: null };
 // 지시서 N-1 — 쓰나미 도달시간(EARTHUS 기준선, SIMULATION_ONLY). 사건마다 파일 하나: ocean/tsunami-eta/{usgsId}.json
 export const TSU_ETA_URL = (usgsId) => `${S3}/ocean/tsunami-eta/${usgsId}.json`;
+const TSU_ETA_INDEX = `${S3}/ocean/tsunami-eta.json`;
+// 색인에 없는 사건의 파일을 찔러 보면 S3 가 403 을 낸다(QA E4 실측). 색인을 먼저 보고, 있는 사건만 받는다.
+let etaIndexCache = null;   // { at, ids:Set } — 5분
+async function etaIndexHas(usgsId, fetchJson, now) {
+  if (!etaIndexCache || now - etaIndexCache.at > TTL_MS) {
+    const doc = await fetchJson(TSU_ETA_INDEX);
+    etaIndexCache = { at: now, ids: new Set(((doc && doc.events) || []).map((e) => String(e.usgsId))) };
+  }
+  return etaIndexCache.ids.has(String(usgsId));
+}
 export const RELATED_KM = { TC: 350, EQ: 200 };   // 특보 구역 중심 ↔ 사건 중심 (지시서 A-3)
 
 const cache = new Map(); // id → { at, result }
@@ -48,6 +58,11 @@ async function fetchSource(id, fetchJson, now = Date.now()) {
   if (hit && now - hit.at < TTL_MS) return hit.result;
   let result;
   try {
+    if (id.startsWith('tsueta:') && !(await etaIndexHas(id.slice(7), fetchJson, now))) {
+      result = { state: SOURCE_STATE.EMPTY, data: null, error: null, generatedAt: null, ageMin: null, retrievedAt: new Date(now).toISOString() };
+      cache.set(id, { at: now, result });
+      return result;
+    }
     const url = id.startsWith('tsueta:') ? TSU_ETA_URL(id.slice(7)) : SRC_URL[id];
     const data = await fetchJson(url);
     const generatedAt = data && (data.generated || data.generatedAt || data.run || null);
@@ -109,7 +124,7 @@ export class EventRoom {
     this.now = now;
   }
 
-  clearCache() { cache.clear(); }
+  clearCache() { cache.clear(); etaIndexCache = null; }
 
   // 사건 → 기관 스택 + 타임라인 HTML. 실패한 소스는 그 줄에 실패라고 적는다.
   async build(it) {

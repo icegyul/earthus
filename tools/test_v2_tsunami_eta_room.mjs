@@ -11,11 +11,16 @@ const eta = { schema: 'earthus.tsunami-eta.v1', badge: 'SIMULATION_ONLY', time: 
   official: { matched: true, compare: [{ official: 'SENDAI', ours: '센다이', officialMin: 30, oursMin: 25, diffMin: -5 }], note: null },
   isochronesMin: { '30': [[[38.5, 142.9], [38.6, 143.0]]] } };
 
+let indexIds = ['us7000abcd'];
 const build = async (etaBehaviour) => {
+  const fetched = [];
   const room = new EventRoom({ fetchJson: async (url) => {
+    fetched.push(url);
+    if (/tsunami-eta\.json$/.test(url)) return { events: indexIds.map((usgsId) => ({ usgsId })) };   // 색인
     if (/tsunami-eta\//.test(url)) return etaBehaviour();
     return base;
   }, now: () => Date.now() });
+  room.fetched = fetched;
   room.clearCache();
   return { html: await room.build(eq), room };
 };
@@ -30,8 +35,11 @@ test('도달시간 파일이 있으면 한국 연안 3곳·대조 결과가 행�
   assert.equal(room.eta.schema, 'earthus.tsunami-eta.v1');
 });
 
-test('404 는 "계산 대상 아님" — 실패 행도, 안전 문구도 아니다', async () => {
-  const { html, room } = await build(() => { throw new Error('HTTP 404'); });
+test('색인에 없는 사건은 파일을 찔러 보지 않고 "계산 대상 아님" — 실패 행도, 안전 문구도 아니다', async () => {
+  indexIds = [];
+  const { html, room } = await build(() => { throw new Error('HTTP 403'); });
+  indexIds = ['us7000abcd'];
+  assert.ok(!room.fetched.some((u) => /tsunami-eta\/us7000abcd/.test(u)), '색인에 없는데 사건 파일을 요청했다');
   assert.match(html, /도달시간 계산 대상이 아닙니다/);
   assert.match(html, /위험이 없다는 뜻이 아닙니다/);
   assert.doesNotMatch(html, /쓰나미 도달시간 추정[\s\S]{0,300}재시도/);

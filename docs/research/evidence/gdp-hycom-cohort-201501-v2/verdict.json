@@ -1,0 +1,46 @@
+{
+  "planId": "gdp-hycom-cohort-201501.plan2-windage",
+  "primaryAlpha": 0.0007,
+  "criteria": {
+    "C1_beatsStationary": {
+      "pass": false,
+      "medianV2Km": 23.200465046498206,
+      "medianStationaryKm": 19.22103024022177
+    },
+    "C2_beatsPersistence": {
+      "pass": true,
+      "medianV2Km": 23.200465046498206,
+      "medianPersistenceKm": 32.204493402698475
+    },
+    "C3_sampleFloor": {
+      "pass": true,
+      "tracksWith72h": 21,
+      "regions": 2,
+      "minimumTracks": 20,
+      "minimumCohorts": 2
+    },
+    "C4_reporting": {
+      "pass": true,
+      "reportsComplete": true,
+      "missingEvidence": [],
+      "replayMatched": true
+    },
+    "C5_improvesOnV1": {
+      "pass": false,
+      "improved": 7,
+      "required": 14,
+      "of": 21,
+      "n": 21,
+      "medianDeltaKm": 0.4599488809017039
+    }
+  },
+  "failedCriteria": [
+    "C1_beatsStationary",
+    "C5_improvesOnV1"
+  ],
+  "verdict": "NOT_ACCEPTED",
+  "v2Accepted": "V2_NOT_ACCEPTED",
+  "v2ImprovesV1": "V2_DOES_NOT_IMPROVE_V1",
+  "scope": "pre-registered 2015-01 North Atlantic drogued-drifter cohort only; not a general accuracy claim",
+  "v1VerdictUnchanged": "FAIL / NOT_ACCEPTED (IMMUTABLE-V1.json)"
+}

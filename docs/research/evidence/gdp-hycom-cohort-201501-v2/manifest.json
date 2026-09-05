@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0",
+  "createdAtUTC": "2026-09-05T16:36:52Z",
+  "package": "gdp-hycom-cohort-201501-v2",
+  "files": {
+    "bootstrap.json": "6bb8d168dfd230d3313c9273274e8ea9bc70d40a33ff33afebbf0b43421efbdf",
+    "comparison-baselines.json": "b86b460d7a4c0f5600ce009d52fbaabc397d94694b76615db8ad0f67af1cc9be",
+    "comparison-region-a-v2.json": "1d51c05dc3bcf93a40685e6f006df99a78686b8add976f72380ea979963c3951",
+    "comparison-region-b-v2.json": "b9345bee030383cf3b3263b8d85d013540e14a68c7ec078e649751fc3b0c8151",
+    "comparison-v1-v2.json": "7358b9bb534a6d6c5323a8ae6dec94fa0bc7ed86cb942617cf6314b91cabb36c",
+    "dataset.json": "2f6113ffdf07d580472c3683d79962f23b28cf9642c6259ffb8b370dea53a0d9",
+    "model.json": "13dbd971c20fc0a2bc3d6e7ba97a2856361f615cd62d775a9dce986789986456",
+    "observation.json": "63f0a202740ccc138bba89885d58fe21b141e1d4b58dd2fd877f55fabc79379d",
+    "parameters.json": "3f3022f89a99eb70e53aec460b885b332edd9dfb1650ee14583f2082ee36f15e",
+    "replay.json": "fd70b0d5a771ae4e7ae33c78303c9a55991515398020a490f6285ddd9cb2fbe9",
+    "run-primary.json": "b1f33c9a943e76cedeea3a1ebbb7bb2af0765eaafec7add2be72927e45ef5f19",
+    "run-sensitivity.json": "665eae2dc00d61adfe9fd6a3a0f157090d6b738c2ed74cd8aa5dfef59df7b7a0",
+    "sensitivity.json": "bf7a6f2f68ed2915d8851a5deaeb51f3219aa41d31347b88807f65f5276ad182",
+    "validation-plan-v2.json": "c2dec604a6573e0f1e92e866e705bb981fd9902a654e52e8595bb6e39869aeda",
+    "verdict.json": "40e1570545a44389e353babe6bdbead4e50d05077715f6376caf9c8687be0efb",
+    "wind-dataset.json": "d42b5fa92eb1ab6811c9471108e11818b0134fcb4321b662a52a3e3ae4a38113"
+  },
+  "externalInputs": {
+    "IMMUTABLE-V1.json": "6f07fc61f470eb56c4f2b8bdf5101b6494bc1b194fcf625f6551bf3e0e13854c",
+    "tracks.csv": "5c29b4977955e4f609fa456edaf4b58d40ebce2962a8997fb60822caa92a6fc5",
+    "planCommit": "23fce909",
+    "hycomDatasetSha256": {
+      "a": "40da2b478fca58752d2f66863345308a58f083d52be9e992878eba3cf767d6ee",
+      "b": "16a4721348dc5a5b2c747012db76e0ab07fd1b51ea2d9afee1418cc045747097"
+    },
+    "windGridSha256": "ef13e03c4fc3bbd413c91d926b45a8b87dafb0ab59fb6c412c0005308f4d9fcf"
+  },
+  "lineage": [
+    "questionId Q-gdp-hycom-cohort-201501-v2-windage",
+    "validation-plan-v2.json c2dec604a6573e0f1e92e866e705bb981fd9902a654e52e8595bb6e39869aeda",
+    "observation.json",
+    "dataset.json",
+    "wind-dataset.json",
+    "model.json",
+    "parameters.json",
+    "run-primary.json",
+    "comparison-v1-v2.json",
+    "comparison-baselines.json",
+    "replay.json",
+    "verdict.json"
+  ],
+  "note": "Copy the whole directory; every claim in verdict.json resolves to a hashed file here or to an externalInputs hash."
+}

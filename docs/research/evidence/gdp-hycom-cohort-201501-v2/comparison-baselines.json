@@ -1,0 +1,108 @@
+{
+  "role": "PRIMARY",
+  "summary": {
+    "24": {
+      "n": 21,
+      "model": {
+        "medianKm": 8.89288995871721,
+        "meanKm": 9.636913688294273,
+        "minKm": 1.5819788036824511,
+        "maxKm": 30.001783304230628
+      },
+      "stationary": {
+        "medianKm": 8.491491729079982,
+        "meanKm": 9.1857710422518,
+        "minKm": 2.0387447081333145,
+        "maxKm": 22.297715445594413
+      },
+      "initialVelocity": {
+        "medianKm": 9.63064872367027,
+        "meanKm": 9.772036708385016,
+        "minKm": 1.1449241298136092,
+        "maxKm": 20.056340820551366
+      },
+      "modelVs_stationary": {
+        "improved": 11,
+        "worse": 10,
+        "unchanged": 0
+      },
+      "modelVs_initialVelocity": {
+        "improved": 14,
+        "worse": 7,
+        "unchanged": 0
+      }
+    },
+    "48": {
+      "n": 21,
+      "model": {
+        "medianKm": 18.54094500760462,
+        "meanKm": 19.753189728394002,
+        "minKm": 1.7755561523811672,
+        "maxKm": 68.64020426876216
+      },
+      "stationary": {
+        "medianKm": 14.16719553244729,
+        "meanKm": 16.584445081779428,
+        "minKm": 2.496554684807319,
+        "maxKm": 34.065905624492096
+      },
+      "initialVelocity": {
+        "medianKm": 21.02980059272237,
+        "meanKm": 20.44123003976358,
+        "minKm": 3.3921658441491385,
+        "maxKm": 40.422386412552584
+      },
+      "modelVs_stationary": {
+        "improved": 8,
+        "worse": 13,
+        "unchanged": 0
+      },
+      "modelVs_initialVelocity": {
+        "improved": 14,
+        "worse": 7,
+        "unchanged": 0
+      }
+    },
+    "72": {
+      "n": 21,
+      "model": {
+        "medianKm": 23.200465046498206,
+        "meanKm": 31.128778796857695,
+        "minKm": 8.14738931434569,
+        "maxKm": 111.76714544035661
+      },
+      "stationary": {
+        "medianKm": 19.22103024022177,
+        "meanKm": 22.826000106841814,
+        "minKm": 2.040465255266115,
+        "maxKm": 43.119682901095565
+      },
+      "initialVelocity": {
+        "medianKm": 32.204493402698475,
+        "meanKm": 32.5222320255021,
+        "minKm": 11.962541365691065,
+        "maxKm": 58.08303524724246
+      },
+      "modelVs_stationary": {
+        "improved": 7,
+        "worse": 14,
+        "unchanged": 0
+      },
+      "modelVs_initialVelocity": {
+        "improved": 15,
+        "worse": 6,
+        "unchanged": 0
+      }
+    }
+  },
+  "metricDefinition": {
+    "timeAlignment": "exact UTC instants only; no temporal interpolation or nearest-time substitution",
+    "depthToleranceMeters": 0.1,
+    "initialPositionToleranceMeters": 1,
+    "distance": "WGS84 coordinates; spherical haversine radius 6371008.8m",
+    "stationaryBaseline": "fixed initial observed position",
+    "initialVelocityBaseline": "great-circle propagation at initial observed speed and bearing",
+    "independence": "explicit caller-supplied evidence required; provenance assertion is recorded, not independently certified",
+    "acceptance": "error metrics are not a pass/fail threshold; preregister domain criteria and held-out cohort before evaluation"
+  }
+}

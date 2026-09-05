@@ -275,12 +275,15 @@ def main(argv=None):
         replay = {"matched": True, "runs": []}
         bundles = SERVICE / ".local-data" / "v2-bundles"
         for region in specs:
-            bundle = export_bundle(specs[region], datasets[region], wind, primary_results[region], bundles / f"primary-{region}-{primary_records[region]['runId']}.zip")
+            bundle = Path(export_bundle(specs[region], datasets[region], wind, primary_results[region], bundles / f"primary-{region}-{primary_records[region]['runId']}.zip"))
             proc = subprocess.run([sys.executable, "-m", "research_runtime.cli_v2", "replay", str(bundle)], capture_output=True, text=True, cwd=SERVICE,
                                   env={**__import__("os").environ, "PYTHONPATH": f"{SERVICE};{SERVICE / '.deps'}"})
             outcome = {}
+            # cli_v2 prints an indented JSON object; parcels may print warnings before it. Parse from the last '{' block.
+            text = proc.stdout
+            start = text.rfind(chr(10) + "{")
             try:
-                outcome = json.loads(proc.stdout.strip().splitlines()[-1]) if proc.stdout.strip() else {}
+                outcome = json.loads(text[start + 1:] if start >= 0 else text) if text.strip() else {}
             except json.JSONDecodeError:
                 pass
             ok = proc.returncode == 0 and outcome.get("matched") is True and outcome.get("resultArraySha256") == primary_records[region]["resultSha256"]

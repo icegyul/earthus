@@ -1,0 +1,29 @@
+{
+  "matched": true,
+  "runs": [
+    {
+      "region": "a",
+      "runId": "a71b591a40415901bfaad42ff94c8ed2",
+      "bundle": "primary-a-a71b591a40415901bfaad42ff94c8ed2.zip",
+      "bundleSha256": "807b0d439350ae290a2109ab5ea8e991f9cf6c4f67d97c83a6ee005f9b938a6c",
+      "process": "separate python -m research_runtime.cli_v2 replay",
+      "returncode": 0,
+      "matched": true,
+      "replayResultSha256": "45ff8df20c61836a45347561a00be893c086084078fd1b8b30df3a62c2b1935a",
+      "expectedResultSha256": "45ff8df20c61836a45347561a00be893c086084078fd1b8b30df3a62c2b1935a",
+      "stderr": ""
+    },
+    {
+      "region": "b",
+      "runId": "4a50c5263b72496fb02abf01d3ede772",
+      "bundle": "primary-b-4a50c5263b72496fb02abf01d3ede772.zip",
+      "bundleSha256": "2d6841b8a46b5e3220fde52d51215e2d6ca63dd681f1fc25c454db64ddd750ea",
+      "process": "separate python -m research_runtime.cli_v2 replay",
+      "returncode": 0,
+      "matched": true,
+      "replayResultSha256": "73a049031dd201cc601ba2fdd9cf7921f1f5be143df3484444c2131a93b7d0ad",
+      "expectedResultSha256": "73a049031dd201cc601ba2fdd9cf7921f1f5be143df3484444c2131a93b7d0ad",
+      "stderr": ""
+    }
+  ]
+}

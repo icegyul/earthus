@@ -1,0 +1,562 @@
+{
+  "schemaVersion": "1.0",
+  "status": "COMPARISON_COMPUTED",
+  "scientificAcceptance": "NOT_EVALUATED",
+  "observationValidationPassed": false,
+  "observationProvenance": {
+    "provider": "NOAA AOML Global Drifter Program",
+    "sourceURI": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&ID=~%22(21 cohort IDs)%22&time%3E%3D2015-01-05T12%3A00%3A00Z&time%3C%3D2015-01-08T12%3A00%3A00Z",
+    "citation": "Elipot, S.; Sykulski, A.; Lumpkin, R.; Centurioni, L.; Pazos, M. (2022). Hourly location, current velocity, and temperature collected from Global Drifter Program drifters world-wide. NOAA NCEI. doi:10.25921/x46c-3620. Cohort subset 2015-01-05 12Z to 2015-01-08 12Z; accessed 2026-09-05 UTC.",
+    "license": "Creative Commons Attribution 4.0; NOAA GDP ERDDAP license attribute",
+    "qualityControl": "PROVIDER_QC",
+    "qualityControlURI": "https://www.aoml.noaa.gov/phod/gdp/hourly_data.php",
+    "evidenceKind": "OBSERVATION"
+  },
+  "observationDatasetId": "noaa-gdp-hourly-qc-cohort-201501-region-a",
+  "observationVersion": "v2.01-subset-earthus1",
+  "observationTracksSha256": "2adceac861abb98ffe0829cea5d28a5fb5d2798f81c8d3a9aaa38c5282a1a178",
+  "observationSourceSha256": "5c29b4977955e4f609fa456edaf4b58d40ebce2962a8997fb60822caa92a6fc5",
+  "modelResultArraySha256": "45ff8df20c61836a45347561a00be893c086084078fd1b8b30df3a62c2b1935a",
+  "modelDatasetSha256": "40da2b478fca58752d2f66863345308a58f083d52be9e992878eba3cf767d6ee",
+  "totalTracks": 12,
+  "eligibleTracks": 12,
+  "tracksWithComparedHorizons": 12,
+  "excludedTracks": [],
+  "exclusionReasonCounts": {},
+  "unavailableHorizons": [],
+  "trackEligibility": [
+    {
+      "particleId": 0,
+      "trackId": "GDP-116369",
+      "qualityControl": "PASSED",
+      "drogueStatus": "ATTACHED",
+      "observationDepthMeters": 15,
+      "modelDepthMeters": 15,
+      "independenceStatus": "INDEPENDENT",
+      "independenceEvidence": "HYCOM GOFS 3.1 reanalysis (NCODA) assimilates satellite altimetry, satellite/in-situ SST and in-situ T/S profiles; drifter positions and velocities are not assimilated (provider description, hycom.org/dataserver/gofs-3pt1/reanalysis). Provider assertion recorded; not independently certified.",
+      "eligible": true
+    },
+    {
+      "particleId": 1,
+      "trackId": "GDP-122647",
+      "qualityControl": "PASSED",
+      "drogueStatus": "ATTACHED",
+      "observationDepthMeters": 15,
+      "modelDepthMeters": 15,
+      "independenceStatus": "INDEPENDENT",
+      "independenceEvidence": "HYCOM GOFS 3.1 reanalysis (NCODA) assimilates satellite altimetry, satellite/in-situ SST and in-situ T/S profiles; drifter positions and velocities are not assimilated (provider description, hycom.org/dataserver/gofs-3pt1/reanalysis). Provider assertion recorded; not independently certified.",
+      "eligible": true
+    },
+    {
+      "particleId": 2,
+      "trackId": "GDP-127226",
+      "qualityControl": "PASSED",
+      "drogueStatus": "ATTACHED",
+      "observationDepthMeters": 15,
+      "modelDepthMeters": 15,
+      "independenceStatus": "INDEPENDENT",
+      "independenceEvidence": "HYCOM GOFS 3.1 reanalysis (NCODA) assimilates satellite altimetry, satellite/in-situ SST and in-situ T/S profiles; drifter positions and velocities are not assimilated (provider description, hycom.org/dataserver/gofs-3pt1/reanalysis). Provider assertion recorded; not independently certified.",
+      "eligible": true
+    },
+    {
+      "particleId": 3,
+      "trackId": "GDP-127229",
+      "qualityControl": "PASSED",
+      "drogueStatus": "ATTACHED",
+      "observationDepthMeters": 15,
+      "modelDepthMeters": 15,
+      "independenceStatus": "INDEPENDENT",
+      "independenceEvidence": "HYCOM GOFS 3.1 reanalysis (NCODA) assimilates satellite altimetry, satellite/in-situ SST and in-situ T/S profiles; drifter positions and velocities are not assimilated (provider description, hycom.org/dataserver/gofs-3pt1/reanalysis). Provider assertion recorded; not independently certified.",
+      "eligible": true
+    },
+    {
+      "particleId": 4,
+      "trackId": "GDP-132676",
+      "qualityControl": "PASSED",
+      "drogueStatus": "ATTACHED",
+      "observationDepthMeters": 15,
+      "modelDepthMeters": 15,
+      "independenceStatus": "INDEPENDENT",
+      "independenceEvidence": "HYCOM GOFS 3.1 reanalysis (NCODA) assimilates satellite altimetry, satellite/in-situ SST and in-situ T/S profiles; drifter positions and velocities are not assimilated (provider description, hycom.org/dataserver/gofs-3pt1/reanalysis). Provider assertion recorded; not independently certified.",
+      "eligible": true
+    },
+    {
+      "particleId": 5,
+      "trackId": "GDP-132677",
+      "qualityControl": "PASSED",
+      "drogueStatus": "ATTACHED",
+      "observationDepthMeters": 15,
+      "modelDepthMeters": 15,
+      "independenceStatus": "INDEPENDENT",
+      "independenceEvidence": "HYCOM GOFS 3.1 reanalysis (NCODA) assimilates satellite altimetry, satellite/in-situ SST and in-situ T/S profiles; drifter positions and velocities are not assimilated (provider description, hycom.org/dataserver/gofs-3pt1/reanalysis). Provider assertion recorded; not independently certified.",
+      "eligible": true
+    },
+    {
+      "particleId": 6,
+      "trackId": "GDP-132678",
+      "qualityControl": "PASSED",
+      "drogueStatus": "ATTACHED",
+      "observationDepthMeters": 15,
+      "modelDepthMeters": 15,
+      "independenceStatus": "INDEPENDENT",
+      "independenceEvidence": "HYCOM GOFS 3.1 reanalysis (NCODA) assimilates satellite altimetry, satellite/in-situ SST and in-situ T/S profiles; drifter positions and velocities are not assimilated (provider description, hycom.org/dataserver/gofs-3pt1/reanalysis). Provider assertion recorded; not independently certified.",
+      "eligible": true
+    },
+    {
+      "particleId": 7,
+      "trackId": "GDP-300234061512840",
+      "qualityControl": "PASSED",
+      "drogueStatus": "ATTACHED",
+      "observationDepthMeters": 15,
+      "modelDepthMeters": 15,
+      "independenceStatus": "INDEPENDENT",
+      "independenceEvidence": "HYCOM GOFS 3.1 reanalysis (NCODA) assimilates satellite altimetry, satellite/in-situ SST and in-situ T/S profiles; drifter positions and velocities are not assimilated (provider description, hycom.org/dataserver/gofs-3pt1/reanalysis). Provider assertion recorded; not independently certified.",
+      "eligible": true
+    },
+    {
+      "particleId": 8,
+      "trackId": "GDP-300234061610040",
+      "qualityControl": "PASSED",
+      "drogueStatus": "ATTACHED",
+      "observationDepthMeters": 15,
+      "modelDepthMeters": 15,
+      "independenceStatus": "INDEPENDENT",
+      "independenceEvidence": "HYCOM GOFS 3.1 reanalysis (NCODA) assimilates satellite altimetry, satellite/in-situ SST and in-situ T/S profiles; drifter positions and velocities are not assimilated (provider description, hycom.org/dataserver/gofs-3pt1/reanalysis). Provider assertion recorded; not independently certified.",
+      "eligible": true
+    },
+    {
+      "particleId": 9,
+      "trackId": "GDP-300234061611040",
+      "qualityControl": "PASSED",
+      "drogueStatus": "ATTACHED",
+      "observationDepthMeters": 15,
+      "modelDepthMeters": 15,
+      "independenceStatus": "INDEPENDENT",
+      "independenceEvidence": "HYCOM GOFS 3.1 reanalysis (NCODA) assimilates satellite altimetry, satellite/in-situ SST and in-situ T/S profiles; drifter positions and velocities are not assimilated (provider description, hycom.org/dataserver/gofs-3pt1/reanalysis). Provider assertion recorded; not independently certified.",
+      "eligible": true
+    },
+    {
+      "particleId": 10,
+      "trackId": "GDP-300234061614060",
+      "qualityControl": "PASSED",
+      "drogueStatus": "ATTACHED",
+      "observationDepthMeters": 15,
+      "modelDepthMeters": 15,
+      "independenceStatus": "INDEPENDENT",
+      "independenceEvidence": "HYCOM GOFS 3.1 reanalysis (NCODA) assimilates satellite altimetry, satellite/in-situ SST and in-situ T/S profiles; drifter positions and velocities are not assimilated (provider description, hycom.org/dataserver/gofs-3pt1/reanalysis). Provider assertion recorded; not independently certified.",
+      "eligible": true
+    },
+    {
+      "particleId": 11,
+      "trackId": "GDP-71187",
+      "qualityControl": "PASSED",
+      "drogueStatus": "ATTACHED",
+      "observationDepthMeters": 15,
+      "modelDepthMeters": 15,
+      "independenceStatus": "INDEPENDENT",
+      "independenceEvidence": "HYCOM GOFS 3.1 reanalysis (NCODA) assimilates satellite altimetry, satellite/in-situ SST and in-situ T/S profiles; drifter positions and velocities are not assimilated (provider description, hycom.org/dataserver/gofs-3pt1/reanalysis). Provider assertion recorded; not independently certified.",
+      "eligible": true
+    }
+  ],
+  "summary": [
+    {
+      "horizonSeconds": 86400,
+      "sampleCount": 12,
+      "meanSeparationMeters": 9800.479180605234,
+      "medianSeparationMeters": 9628.813734693282,
+      "p95SeparationMeters": 21281.065000248673,
+      "meanStationarySeparationMeters": 9160.025333808799,
+      "meanInitialVelocitySeparationMeters": 9927.513173967305
+    },
+    {
+      "horizonSeconds": 172800,
+      "sampleCount": 12,
+      "meanSeparationMeters": 17794.879796907437,
+      "medianSeparationMeters": 15718.027490248913,
+      "p95SeparationMeters": 39604.7033928463,
+      "meanStationarySeparationMeters": 16061.765607174297,
+      "meanInitialVelocitySeparationMeters": 20430.96187947694
+    },
+    {
+      "horizonSeconds": 259200,
+      "sampleCount": 12,
+      "meanSeparationMeters": 28569.817237423627,
+      "medianSeparationMeters": 23136.070985795253,
+      "p95SeparationMeters": 59415.45904406377,
+      "meanStationarySeparationMeters": 23163.479058125482,
+      "meanInitialVelocitySeparationMeters": 33557.573608568935
+    }
+  ],
+  "comparisons": [
+    {
+      "particleId": 0,
+      "horizonSeconds": 86400,
+      "timeUTC": "2015-01-06T12:00:00Z",
+      "separationMeters": 19789.967653693187,
+      "stationarySeparationMeters": 8491.491729079982,
+      "initialVelocitySeparationMeters": 1144.9241298136092,
+      "modelMinusStationaryMeters": 11298.475924613205,
+      "modelMinusInitialVelocityMeters": 18645.04352387958
+    },
+    {
+      "particleId": 0,
+      "horizonSeconds": 172800,
+      "timeUTC": "2015-01-07T12:00:00Z",
+      "separationMeters": 34159.928799608395,
+      "stationarySeparationMeters": 15564.492309763298,
+      "initialVelocitySeparationMeters": 3392.1658441491386,
+      "modelMinusStationaryMeters": 18595.436489845095,
+      "modelMinusInitialVelocityMeters": 30767.762955459257
+    },
+    {
+      "particleId": 0,
+      "horizonSeconds": 259200,
+      "timeUTC": "2015-01-08T12:00:00Z",
+      "separationMeters": 54089.91648141164,
+      "stationarySeparationMeters": 18283.525376435362,
+      "initialVelocitySeparationMeters": 12224.83069315618,
+      "modelMinusStationaryMeters": 35806.391104976276,
+      "modelMinusInitialVelocityMeters": 41865.085788255456
+    },
+    {
+      "particleId": 1,
+      "horizonSeconds": 86400,
+      "timeUTC": "2015-01-06T12:00:00Z",
+      "separationMeters": 9282.095107228122,
+      "stationarySeparationMeters": 6972.917247971068,
+      "initialVelocitySeparationMeters": 9549.499472531921,
+      "modelMinusStationaryMeters": 2309.1778592570545,
+      "modelMinusInitialVelocityMeters": -267.40436530379884
+    },
+    {
+      "particleId": 1,
+      "horizonSeconds": 172800,
+      "timeUTC": "2015-01-07T12:00:00Z",
+      "separationMeters": 22862.05912289946,
+      "stationarySeparationMeters": 9427.15175941604,
+      "initialVelocitySeparationMeters": 23451.582500575798,
+      "modelMinusStationaryMeters": 13434.90736348342,
+      "modelMinusInitialVelocityMeters": -589.523377676338
+    },
+    {
+      "particleId": 1,
+      "horizonSeconds": 259200,
+      "timeUTC": "2015-01-08T12:00:00Z",
+      "separationMeters": 38185.509600862795,
+      "stationarySeparationMeters": 14705.391756692421,
+      "initialVelocitySeparationMeters": 39446.89906613642,
+      "modelMinusStationaryMeters": 23480.117844170374,
+      "modelMinusInitialVelocityMeters": -1261.3894652736271
+    },
+    {
+      "particleId": 2,
+      "horizonSeconds": 86400,
+      "timeUTC": "2015-01-06T12:00:00Z",
+      "separationMeters": 23103.517312705382,
+      "stationarySeparationMeters": 5393.874373906948,
+      "initialVelocitySeparationMeters": 8929.285903770346,
+      "modelMinusStationaryMeters": 17709.642938798435,
+      "modelMinusInitialVelocityMeters": 14174.231408935037
+    },
+    {
+      "particleId": 2,
+      "horizonSeconds": 172800,
+      "timeUTC": "2015-01-07T12:00:00Z",
+      "separationMeters": 46259.42789569264,
+      "stationarySeparationMeters": 12362.235797494784,
+      "initialVelocitySeparationMeters": 21029.80059272237,
+      "modelMinusStationaryMeters": 33897.19209819786,
+      "modelMinusInitialVelocityMeters": 25229.62730297027
+    },
+    {
+      "particleId": 2,
+      "horizonSeconds": 259200,
+      "timeUTC": "2015-01-08T12:00:00Z",
+      "separationMeters": 65924.4555095275,
+      "stationarySeparationMeters": 24058.823412338566,
+      "initialVelocitySeparationMeters": 28662.076901578483,
+      "modelMinusStationaryMeters": 41865.632097188936,
+      "modelMinusInitialVelocityMeters": 37262.37860794902
+    },
+    {
+      "particleId": 3,
+      "horizonSeconds": 86400,
+      "timeUTC": "2015-01-06T12:00:00Z",
+      "separationMeters": 10018.623438819557,
+      "stationarySeparationMeters": 11220.735489222496,
+      "initialVelocitySeparationMeters": 10350.315539488163,
+      "modelMinusStationaryMeters": -1202.1120504029386,
+      "modelMinusInitialVelocityMeters": -331.69210066860614
+    },
+    {
+      "particleId": 3,
+      "horizonSeconds": 172800,
+      "timeUTC": "2015-01-07T12:00:00Z",
+      "separationMeters": 21806.013702412103,
+      "stationarySeparationMeters": 19775.51435020971,
+      "initialVelocitySeparationMeters": 32075.01773061989,
+      "modelMinusStationaryMeters": 2030.4993522023942,
+      "modelMinusInitialVelocityMeters": -10269.004028207786
+    },
+    {
+      "particleId": 3,
+      "horizonSeconds": 259200,
+      "timeUTC": "2015-01-08T12:00:00Z",
+      "separationMeters": 38445.704814552686,
+      "stationarySeparationMeters": 16011.748735527472,
+      "initialVelocitySeparationMeters": 52623.67212657202,
+      "modelMinusStationaryMeters": 22433.956079025214,
+      "modelMinusInitialVelocityMeters": -14177.967312019333
+    },
+    {
+      "particleId": 4,
+      "horizonSeconds": 86400,
+      "timeUTC": "2015-01-06T12:00:00Z",
+      "separationMeters": 9975.532362158441,
+      "stationarySeparationMeters": 15864.952544762724,
+      "initialVelocitySeparationMeters": 20056.340820551366,
+      "modelMinusStationaryMeters": -5889.420182604283,
+      "modelMinusInitialVelocityMeters": -10080.808458392925
+    },
+    {
+      "particleId": 4,
+      "horizonSeconds": 172800,
+      "timeUTC": "2015-01-07T12:00:00Z",
+      "separationMeters": 9156.351374126714,
+      "stationarySeparationMeters": 27841.837414711397,
+      "initialVelocitySeparationMeters": 28318.73672284871,
+      "modelMinusStationaryMeters": -18685.486040584685,
+      "modelMinusInitialVelocityMeters": -19162.385348721997
+    },
+    {
+      "particleId": 4,
+      "horizonSeconds": 259200,
+      "timeUTC": "2015-01-08T12:00:00Z",
+      "separationMeters": 8147.389314345689,
+      "stationarySeparationMeters": 43119.68290109556,
+      "initialVelocitySeparationMeters": 48013.26276735804,
+      "modelMinusStationaryMeters": -34972.293586749875,
+      "modelMinusInitialVelocityMeters": -39865.873453012355
+    },
+    {
+      "particleId": 5,
+      "horizonSeconds": 86400,
+      "timeUTC": "2015-01-06T12:00:00Z",
+      "separationMeters": 5429.263281345538,
+      "stationarySeparationMeters": 15120.420159830523,
+      "initialVelocitySeparationMeters": 14403.96774198091,
+      "modelMinusStationaryMeters": -9691.156878484984,
+      "modelMinusInitialVelocityMeters": -8974.704460635372
+    },
+    {
+      "particleId": 5,
+      "horizonSeconds": 172800,
+      "timeUTC": "2015-01-07T12:00:00Z",
+      "separationMeters": 12861.890163873479,
+      "stationarySeparationMeters": 16799.964274940285,
+      "initialVelocitySeparationMeters": 30489.512630147263,
+      "modelMinusStationaryMeters": -3938.074111066806,
+      "modelMinusInitialVelocityMeters": -17627.622466273784
+    },
+    {
+      "particleId": 5,
+      "horizonSeconds": 259200,
+      "timeUTC": "2015-01-08T12:00:00Z",
+      "separationMeters": 23071.676925092306,
+      "stationarySeparationMeters": 19046.923040333248,
+      "initialVelocitySeparationMeters": 51452.62360938063,
+      "modelMinusStationaryMeters": 4024.7538847590586,
+      "modelMinusInitialVelocityMeters": -28380.946684288323
+    },
+    {
+      "particleId": 6,
+      "horizonSeconds": 86400,
+      "timeUTC": "2015-01-06T12:00:00Z",
+      "separationMeters": 1581.9788036824511,
+      "stationarySeparationMeters": 7374.885916543774,
+      "initialVelocitySeparationMeters": 13244.005874722878,
+      "modelMinusStationaryMeters": -5792.907112861323,
+      "modelMinusInitialVelocityMeters": -11662.027071040426
+    },
+    {
+      "particleId": 6,
+      "horizonSeconds": 172800,
+      "timeUTC": "2015-01-07T12:00:00Z",
+      "separationMeters": 4396.789185091468,
+      "stationarySeparationMeters": 10223.494324515788,
+      "initialVelocitySeparationMeters": 18978.295480625355,
+      "modelMinusStationaryMeters": -5826.70513942432,
+      "modelMinusInitialVelocityMeters": -14581.506295533887
+    },
+    {
+      "particleId": 6,
+      "horizonSeconds": 259200,
+      "timeUTC": "2015-01-08T12:00:00Z",
+      "separationMeters": 19717.915228014394,
+      "stationarySeparationMeters": 22075.081681310006,
+      "initialVelocitySeparationMeters": 26922.19227701123,
+      "modelMinusStationaryMeters": -2357.166453295613,
+      "modelMinusInitialVelocityMeters": -7204.277048996835
+    },
+    {
+      "particleId": 7,
+      "horizonSeconds": 86400,
+      "timeUTC": "2015-01-06T12:00:00Z",
+      "separationMeters": 14275.178591548216,
+      "stationarySeparationMeters": 3403.7487049885253,
+      "initialVelocitySeparationMeters": 5087.602118874084,
+      "modelMinusStationaryMeters": 10871.42988655969,
+      "modelMinusInitialVelocityMeters": 9187.576472674133
+    },
+    {
+      "particleId": 7,
+      "horizonSeconds": 172800,
+      "timeUTC": "2015-01-07T12:00:00Z",
+      "separationMeters": 24975.32075943188,
+      "stationarySeparationMeters": 5539.68546561068,
+      "initialVelocitySeparationMeters": 7805.940621914396,
+      "modelMinusStationaryMeters": 19435.6352938212,
+      "modelMinusInitialVelocityMeters": 17169.380137517484
+    },
+    {
+      "particleId": 7,
+      "horizonSeconds": 259200,
+      "timeUTC": "2015-01-08T12:00:00Z",
+      "separationMeters": 32907.58273578765,
+      "stationarySeparationMeters": 9628.433855994599,
+      "initialVelocitySeparationMeters": 11962.541365691064,
+      "modelMinusStationaryMeters": 23279.14887979305,
+      "modelMinusInitialVelocityMeters": 20945.041370096584
+    },
+    {
+      "particleId": 8,
+      "horizonSeconds": 86400,
+      "timeUTC": "2015-01-06T12:00:00Z",
+      "separationMeters": 10714.010640755503,
+      "stationarySeparationMeters": 4777.795522634281,
+      "initialVelocitySeparationMeters": 9967.262495140543,
+      "modelMinusStationaryMeters": 5936.215118121222,
+      "modelMinusInitialVelocityMeters": 746.7481456149599
+    },
+    {
+      "particleId": 8,
+      "horizonSeconds": 172800,
+      "timeUTC": "2015-01-07T12:00:00Z",
+      "separationMeters": 18574.164816624347,
+      "stationarySeparationMeters": 11644.84672466436,
+      "initialVelocitySeparationMeters": 21484.846508181407,
+      "modelMinusStationaryMeters": 6929.318091959987,
+      "modelMinusInitialVelocityMeters": -2910.68169155706
+    },
+    {
+      "particleId": 8,
+      "horizonSeconds": 259200,
+      "timeUTC": "2015-01-08T12:00:00Z",
+      "separationMeters": 23200.465046498204,
+      "stationarySeparationMeters": 19221.030240221768,
+      "initialVelocitySeparationMeters": 32609.046051466783,
+      "modelMinusStationaryMeters": 3979.4348062764366,
+      "modelMinusInitialVelocityMeters": -9408.581004968579
+    },
+    {
+      "particleId": 9,
+      "horizonSeconds": 86400,
+      "timeUTC": "2015-01-06T12:00:00Z",
+      "separationMeters": 7321.691070719933,
+      "stationarySeparationMeters": 8577.799199002657,
+      "initialVelocitySeparationMeters": 2288.9800909691544,
+      "modelMinusStationaryMeters": -1256.1081282827236,
+      "modelMinusInitialVelocityMeters": 5032.710979750778
+    },
+    {
+      "particleId": 9,
+      "horizonSeconds": 172800,
+      "timeUTC": "2015-01-07T12:00:00Z",
+      "separationMeters": 12835.812710745444,
+      "stationarySeparationMeters": 14167.19553244729,
+      "initialVelocitySeparationMeters": 9504.303550337456,
+      "modelMinusStationaryMeters": -1331.3828217018454,
+      "modelMinusInitialVelocityMeters": 3331.509160407988
+    },
+    {
+      "particleId": 9,
+      "horizonSeconds": 259200,
+      "timeUTC": "2015-01-08T12:00:00Z",
+      "separationMeters": 13974.152608962682,
+      "stationarySeparationMeters": 23277.592482671447,
+      "initialVelocitySeparationMeters": 19280.235655768603,
+      "modelMinusStationaryMeters": -9303.439873708765,
+      "modelMinusInitialVelocityMeters": -5306.083046805921
+    },
+    {
+      "particleId": 10,
+      "horizonSeconds": 86400,
+      "timeUTC": "2015-01-06T12:00:00Z",
+      "separationMeters": 2931.188392839177,
+      "stationarySeparationMeters": 12375.140673015387,
+      "initialVelocitySeparationMeters": 7718.29917314872,
+      "modelMinusStationaryMeters": -9443.95228017621,
+      "modelMinusInitialVelocityMeters": -4787.110780309543
+    },
+    {
+      "particleId": 10,
+      "horizonSeconds": 172800,
+      "timeUTC": "2015-01-07T12:00:00Z",
+      "separationMeters": 1775.556152381167,
+      "stationarySeparationMeters": 29395.0212192519,
+      "initialVelocitySeparationMeters": 16261.291284165034,
+      "modelMinusStationaryMeters": -27619.465066870733,
+      "modelMinusInitialVelocityMeters": -14485.735131783867
+    },
+    {
+      "particleId": 10,
+      "horizonSeconds": 259200,
+      "timeUTC": "2015-01-08T12:00:00Z",
+      "separationMeters": 8494.7561996721,
+      "stationarySeparationMeters": 37186.213254081646,
+      "initialVelocitySeparationMeters": 29684.884833694075,
+      "modelMinusStationaryMeters": -28691.457054409548,
+      "modelMinusInitialVelocityMeters": -21190.128634021974
+    },
+    {
+      "particleId": 11,
+      "horizonSeconds": 86400,
+      "timeUTC": "2015-01-06T12:00:00Z",
+      "separationMeters": 3182.703511767303,
+      "stationarySeparationMeters": 10346.542444747221,
+      "initialVelocitySeparationMeters": 16389.67472661596,
+      "modelMinusStationaryMeters": -7163.838932979918,
+      "modelMinusInitialVelocityMeters": -13206.971214848654
+    },
+    {
+      "particleId": 11,
+      "horizonSeconds": 172800,
+      "timeUTC": "2015-01-07T12:00:00Z",
+      "separationMeters": 3875.242880002142,
+      "stationarySeparationMeters": 19999.748113066034,
+      "initialVelocitySeparationMeters": 32380.049087436473,
+      "modelMinusStationaryMeters": -16124.505233063892,
+      "modelMinusInitialVelocityMeters": -28504.806207434332
+    },
+    {
+      "particleId": 11,
+      "horizonSeconds": 259200,
+      "timeUTC": "2015-01-08T12:00:00Z",
+      "separationMeters": 16678.28238435589,
+      "stationarySeparationMeters": 31347.30196080367,
+      "initialVelocitySeparationMeters": 49808.61795501373,
+      "modelMinusStationaryMeters": -14669.01957644778,
+      "modelMinusInitialVelocityMeters": -33130.335570657844
+    }
+  ],
+  "method": {
+    "timeAlignment": "exact UTC instants only; no temporal interpolation or nearest-time substitution",
+    "depthToleranceMeters": 0.1,
+    "initialPositionToleranceMeters": 1,
+    "distance": "WGS84 coordinates; spherical haversine radius 6371008.8m",
+    "stationaryBaseline": "fixed initial observed position",
+    "initialVelocityBaseline": "great-circle propagation at initial observed speed and bearing",
+    "independence": "explicit caller-supplied evidence required; provenance assertion is recorded, not independently certified",
+    "acceptance": "error metrics are not a pass/fail threshold; preregister domain criteria and held-out cohort before evaluation"
+  }
+}

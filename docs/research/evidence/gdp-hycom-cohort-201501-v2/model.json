@@ -1,0 +1,80 @@
+{
+  "primary": {
+    "modelId": "surface-passive-advection.v2.windage",
+    "modelVersion": "0.1.0",
+    "engine": "OceanParcels",
+    "engineVersion": "3.1.4",
+    "available": true,
+    "availabilityReason": null,
+    "grids": [
+      "regular-latlon-a-grid"
+    ],
+    "latitudeRange": [
+      -80,
+      80
+    ],
+    "integrationMethods": [
+      "RK4"
+    ],
+    "maxDurationSeconds": 259200,
+    "maxParticles": 10000,
+    "maxParticleSteps": 2000000,
+    "maxOutputSamples": 500000,
+    "excludedPhysics": [
+      "Stokes drift (explicit)",
+      "diffusion",
+      "vertical mixing",
+      "oil weathering",
+      "cross-wind leeway"
+    ],
+    "validationStatus": "NUMERICAL_TESTS_ONLY",
+    "observationValidation": "NOT_PERFORMED",
+    "includedPhysics": [
+      "windage: alpha * U10 at every RK4 stage"
+    ],
+    "windageAlphaRange": [
+      0.0,
+      0.05
+    ],
+    "windReaderVersion": "earthus-ncep-r2-wind/1",
+    "basedOn": {
+      "modelId": "surface-passive-advection.v1",
+      "modelVersion": "0.1.0"
+    }
+  },
+  "basedOn": {
+    "modelId": "surface-passive-advection.v1",
+    "modelVersion": "0.1.0",
+    "engine": "OceanParcels",
+    "engineVersion": "3.1.4",
+    "available": true,
+    "availabilityReason": null,
+    "grids": [
+      "regular-latlon-a-grid"
+    ],
+    "latitudeRange": [
+      -80,
+      80
+    ],
+    "integrationMethods": [
+      "RK4"
+    ],
+    "maxDurationSeconds": 259200,
+    "maxParticles": 10000,
+    "maxParticleSteps": 2000000,
+    "maxOutputSamples": 500000,
+    "excludedPhysics": [
+      "windage",
+      "Stokes drift",
+      "diffusion",
+      "vertical mixing",
+      "oil weathering"
+    ],
+    "validationStatus": "NUMERICAL_TESTS_ONLY",
+    "observationValidation": "NOT_PERFORMED"
+  },
+  "v1SourceSha256": "42e5886b640b616256dafc036bd4bbceff8a17affab1330947f0a9cb8612e444",
+  "v2SourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+  "comparatorSourceSha256": "26d9999e1a6634adb5dfb8ba0a98c090247df02257037ffb4a25167b9918b025",
+  "comparatorNote": "research_runtime.validation.compare — identical function for V1 (frozen) and V2"
+}

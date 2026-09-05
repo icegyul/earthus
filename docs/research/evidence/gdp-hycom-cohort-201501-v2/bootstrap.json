@@ -1,0 +1,35 @@
+{
+  "method": "nonparametric bootstrap, drifter-level resampling with replacement",
+  "seed": 20260905,
+  "iterations": 2000,
+  "horizonHours": 72,
+  "n": 21,
+  "role": "SUPPLEMENTARY — not a pre-registered acceptance criterion",
+  "intervals": {
+    "medianV2Km": {
+      "p2.5": 16.678282384355892,
+      "p50": 23.200465046498206,
+      "p97.5": 38.185509600862794
+    },
+    "medianV1Km": {
+      "p2.5": 18.202660954028612,
+      "p50": 24.329118469437564,
+      "p97.5": 36.18244841657651
+    },
+    "medianDeltaV2MinusV1Km": {
+      "p2.5": -0.3740175611357936,
+      "p50": 0.4599488809017039,
+      "p97.5": 1.1324606242590598
+    },
+    "medianV2MinusStationaryKm": {
+      "p2.5": -2.357166453295612,
+      "p50": 4.024753884759058,
+      "p97.5": 18.80236813573366
+    },
+    "medianV2MinusPersistenceKm": {
+      "p2.5": -17.206879062765363,
+      "p50": -7.57486045069035,
+      "p97.5": -1.2613894652736306
+    }
+  }
+}

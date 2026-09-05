@@ -1,0 +1,81 @@
+{
+  "a": {
+    "manifest": {
+      "datasetId": "noaa-gdp-hourly-qc-cohort-201501-region-a",
+      "version": "v2.01-subset-earthus1",
+      "evidenceKind": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program",
+      "sourceURI": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&ID=~%22(21 cohort IDs)%22&time%3E%3D2015-01-05T12%3A00%3A00Z&time%3C%3D2015-01-08T12%3A00%3A00Z",
+      "sourceFile": "../tracks.csv",
+      "sourceSha256": "5c29b4977955e4f609fa456edaf4b58d40ebce2962a8997fb60822caa92a6fc5",
+      "qualityControl": "PROVIDER_QC",
+      "qualityControlURI": "https://www.aoml.noaa.gov/phod/gdp/hourly_data.php",
+      "citation": "Elipot, S.; Sykulski, A.; Lumpkin, R.; Centurioni, L.; Pazos, M. (2022). Hourly location, current velocity, and temperature collected from Global Drifter Program drifters world-wide. NOAA NCEI. doi:10.25921/x46c-3620. Cohort subset 2015-01-05 12Z to 2015-01-08 12Z; accessed 2026-09-05 UTC.",
+      "license": "Creative Commons Attribution 4.0; NOAA GDP ERDDAP license attribute",
+      "licenseURI": "https://erddap.aoml.noaa.gov/gdp/erddap/info/drifter_hourly_qc/index.html",
+      "redistributionAllowed": true,
+      "hashScope": "canonical-observation-tracks-json",
+      "sha256": "2adceac861abb98ffe0829cea5d28a5fb5d2798f81c8d3a9aaa38c5282a1a178",
+      "validTimeStartUTC": "2015-01-05T12:00:00Z",
+      "validTimeEndUTC": "2015-01-08T12:00:00Z",
+      "intendedUse": "Pre-registered drogued-drifter comparison cohort (validation-plan.json); drogue attached through the window by provider drogue_lost_date",
+      "processingHistory": [
+        "Removed ERDDAP units row; parsed numeric coordinates/velocities; kept every original hourly record",
+        "Cohort membership: first sample at window start inside the region; drogue_lost_date empty or after window end"
+      ]
+    },
+    "tracks": [
+      "GDP-116369",
+      "GDP-122647",
+      "GDP-127226",
+      "GDP-127229",
+      "GDP-132676",
+      "GDP-132677",
+      "GDP-132678",
+      "GDP-300234061512840",
+      "GDP-300234061610040",
+      "GDP-300234061611040",
+      "GDP-300234061614060",
+      "GDP-71187"
+    ],
+    "tracksSha256": "2adceac861abb98ffe0829cea5d28a5fb5d2798f81c8d3a9aaa38c5282a1a178"
+  },
+  "b": {
+    "manifest": {
+      "datasetId": "noaa-gdp-hourly-qc-cohort-201501-region-b",
+      "version": "v2.01-subset-earthus1",
+      "evidenceKind": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program",
+      "sourceURI": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&ID=~%22(21 cohort IDs)%22&time%3E%3D2015-01-05T12%3A00%3A00Z&time%3C%3D2015-01-08T12%3A00%3A00Z",
+      "sourceFile": "../tracks.csv",
+      "sourceSha256": "5c29b4977955e4f609fa456edaf4b58d40ebce2962a8997fb60822caa92a6fc5",
+      "qualityControl": "PROVIDER_QC",
+      "qualityControlURI": "https://www.aoml.noaa.gov/phod/gdp/hourly_data.php",
+      "citation": "Elipot, S.; Sykulski, A.; Lumpkin, R.; Centurioni, L.; Pazos, M. (2022). Hourly location, current velocity, and temperature collected from Global Drifter Program drifters world-wide. NOAA NCEI. doi:10.25921/x46c-3620. Cohort subset 2015-01-05 12Z to 2015-01-08 12Z; accessed 2026-09-05 UTC.",
+      "license": "Creative Commons Attribution 4.0; NOAA GDP ERDDAP license attribute",
+      "licenseURI": "https://erddap.aoml.noaa.gov/gdp/erddap/info/drifter_hourly_qc/index.html",
+      "redistributionAllowed": true,
+      "hashScope": "canonical-observation-tracks-json",
+      "sha256": "67727ba98e28eed45c6715f4af719f1352683c70151c6689b7035eb0d4770bab",
+      "validTimeStartUTC": "2015-01-05T12:00:00Z",
+      "validTimeEndUTC": "2015-01-08T12:00:00Z",
+      "intendedUse": "Pre-registered drogued-drifter comparison cohort (validation-plan.json); drogue attached through the window by provider drogue_lost_date",
+      "processingHistory": [
+        "Removed ERDDAP units row; parsed numeric coordinates/velocities; kept every original hourly record",
+        "Cohort membership: first sample at window start inside the region; drogue_lost_date empty or after window end"
+      ]
+    },
+    "tracks": [
+      "GDP-116364",
+      "GDP-116474",
+      "GDP-122644",
+      "GDP-122645",
+      "GDP-122646",
+      "GDP-139285",
+      "GDP-300234012007220",
+      "GDP-300234060207590",
+      "GDP-300234060441290"
+    ],
+    "tracksSha256": "67727ba98e28eed45c6715f4af719f1352683c70151c6689b7035eb0d4770bab"
+  }
+}

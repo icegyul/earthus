@@ -1,0 +1,109 @@
+{
+  "calendar": "gregorian",
+  "citation": "Kanamitsu, M., et al. (2002). NCEP-DOE AMIP-II Reanalysis (R-2). Bull. Amer. Meteor. Soc., 83, 1631-1643. Data provided by the NOAA PSL, Boulder, Colorado, USA, from their website at https://psl.noaa.gov. 10 m wind subset 2015-01-05T00:00:00Z to 2015-01-08T18:00:00Z.",
+  "collectedAtUTC": "2026-09-05T15:00:00Z",
+  "crs": "EPSG:4326",
+  "datasetId": "ncep-doe-r2-10m-wind-natl-20150105",
+  "evidenceKind": "REANALYSIS",
+  "gridMeaning": "T62 Gaussian latitudes retained as stored (spacing ≈1.9047° but not exactly uniform); regular 1.875° longitudes",
+  "gridType": "gaussian-latlon-a-grid",
+  "hashScope": "canonical-grid-json",
+  "heightMeters": 10,
+  "issuedAtMeaning": "normalized-fixture-creation; not original analysis publication",
+  "issuedAtUTC": "2026-09-05T15:00:00Z",
+  "license": "No restrictions stated by provider; acknowledgment of NOAA PSL requested.",
+  "licenseURI": "https://psl.noaa.gov/data/gridded/data.ncep.reanalysis2.gaussian.html",
+  "processingHistory": [
+    {
+      "operation": "PSL THREDDS NCSS subset",
+      "sourceFiles": [
+        {
+          "bytes": 24908,
+          "dataset": "NCEP/DOE AMIP-II Reanalysis (Reanalysis-2)",
+          "longName": "6-Hourly Forecast of U-wind at 10 m",
+          "path": "uwnd.10m.gauss.2015-0105-0108.nc",
+          "sha256": "0e3cefc025f3a3acd679cd7526df21d73aac7af3c5a887f8b4a8da9b109bc4ed",
+          "title": "4x Daily NCEP/DOE Reanalysis 2",
+          "uri": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2015.nc?var=uwnd&north=40&south=10&west=300&east=335&time_start=2015-01-05T00:00:00Z&time_end=2015-01-08T18:00:00Z&accept=netcdf"
+        },
+        {
+          "bytes": 24908,
+          "dataset": "NCEP/DOE AMIP-II Reanalysis (Reanalysis-2)",
+          "longName": "6-Hourly Forecast of V-wind at 10 m",
+          "path": "vwnd.10m.gauss.2015-0105-0108.nc",
+          "sha256": "b284a3ce5f48547d28fa23e1cac0adc334ddb8dedaf337de6917708050c47132",
+          "title": "4x Daily NCEP/DOE Reanalysis 2",
+          "uri": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2015.nc?var=vwnd&north=40&south=10&west=300&east=335&time_start=2015-01-05T00:00:00Z&time_end=2015-01-08T18:00:00Z&accept=netcdf"
+        }
+      ]
+    },
+    {
+      "fillPolicy": "missing values become null; never zero",
+      "operation": "netCDF4 mask-and-scale decode; drop singleton level axis"
+    },
+    {
+      "applied": true,
+      "operation": "reverse latitude axis to ascending together with data planes (no resampling)"
+    },
+    {
+      "operation": "express longitude in -180..180 without reordering",
+      "rawLatitude": [
+        40.951698303222656,
+        39.047000885009766,
+        37.1422004699707,
+        35.23749923706055,
+        33.332801818847656,
+        31.4281005859375,
+        29.523399353027344,
+        27.618600845336914,
+        25.713899612426758,
+        23.809200286865234,
+        21.904399871826172,
+        19.99970054626465,
+        18.094999313354492,
+        16.190200805664062,
+        14.285499572753906,
+        12.380800247192383,
+        10.47603988647461
+      ],
+      "rawLongitude": [
+        300.0,
+        301.875,
+        303.75,
+        305.625,
+        307.5,
+        309.375,
+        311.25,
+        313.125,
+        315.0,
+        316.875,
+        318.75,
+        320.625,
+        322.5,
+        324.375,
+        326.25,
+        328.125,
+        330.0,
+        331.875,
+        333.75,
+        335.625
+      ]
+    }
+  ],
+  "provider": "NOAA PSL — NCEP-DOE AMIP-II Reanalysis (Reanalysis-2)",
+  "readerVersion": "earthus-ncep-r2-wind/1",
+  "redistributionAllowed": true,
+  "sha256": "ef13e03c4fc3bbd413c91d926b45a8b87dafb0ab59fb6c412c0005308f4d9fcf",
+  "sourceSha256": "bff55d671b6df74a4a73d94dc436b85316eb1fd0cf63307443bbec82ea2613c5",
+  "sourceSha256Scope": "SHA-256 of canonical JSON ordered original-subset metadata list (acquisition sources)",
+  "sourceURI": "https://psl.noaa.gov/data/gridded/data.ncep.reanalysis2.gaussian.html",
+  "timeMeaning": "file time coordinate taken as the valid time of the 6-hourly forecast (provider long_name '6-Hourly Forecast of U-wind at 10 m')",
+  "timeStepSeconds": 21600.0,
+  "uDirection": "eastward",
+  "vDirection": "northward",
+  "validTimeEndUTC": "2015-01-08T18:00:00Z",
+  "validTimeStartUTC": "2015-01-05T00:00:00Z",
+  "variableKind": "wind10m",
+  "velocityUnits": "m/s",
+  "version": "2015-01-05T00_2015-01-08T18.earthus1"
+}

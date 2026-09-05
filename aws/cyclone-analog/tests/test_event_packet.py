@@ -50,3 +50,40 @@ class PacketTest(unittest.TestCase):
         self.assertFalse(any(c["field"].endswith("windMs") for c in p["revisions"][-1]["changes"]))
         self.assertIsNone(p["importance"]["inputs"]["nearestWarnRegionKm"])
 if __name__ == "__main__": unittest.main()
+
+
+class PacketDietTest(unittest.TestCase):
+    """2026-09-05 실측 105 KB → 목표 60 KB. 빼는 건 null·place·회차별 검증표뿐, 값은 안 바꾼다."""
+    def setUp(self):
+        s = session()
+        # 발표 회차마다 한 항목이던 interimScores 를 흉내 — 같은 기관이 여러 번
+        s["snapshots"][0]["forecasts"].append({"agency": "EARTHUS_MULTI_SOURCE", "issued": "2026-09-04T12:00:00Z",
+                                               "steps": [{"h": 0, "lat": 30.0, "lon": 128.0}, {"h": 24, "lat": 31.0, "lon": 128.0}]})
+        self.detail = M.public_detail(s, NOW)
+        self.p = M.event_packet(s, NOW, self.detail, WARN, REGIONS)
+    def test_no_null_and_no_place_in_forecast_steps(self):
+        import json
+        txt = json.dumps([r["agencies"] for r in self.p["revisions"]])
+        self.assertNotIn(": null", txt)      # changes 의 from/to null 은 "비교 불가" 표시라 남긴다
+        for r in self.p["revisions"]:
+            for a in r["agencies"].values():
+                self.assertNotIn("place", a.get("h24") or {})
+                self.assertIn("h0", a)
+    def test_only_packet_agencies_in_revisions(self):
+        for r in self.p["revisions"]:
+            self.assertTrue(set(r["agencies"]) <= set(M.PACKET_AGENCIES), r["agencies"].keys())
+    def test_scores_aggregated_per_agency(self):
+        d = self.p["detail"]
+        agencies = [s["agency"] for s in d["interimScores"]]
+        self.assertEqual(len(agencies), len(set(agencies)))          # 기관당 한 줄
+        for s in d["interimScores"]:
+            self.assertEqual(s["n"], sum(L["n"] for L in s["byLead"]))
+        for h in d["headingScores"]:
+            self.assertNotIn("rows", h)                               # 회차별 표는 LAB 보고서 몫
+        self.assertLessEqual(len(d["observed"]), M.PACKET_OBSERVED)
+        self.assertTrue(all("place" not in o for o in d["observed"]))
+    def test_aggregate_is_weighted_mean(self):
+        agg = M._aggregate_scores([{"agency": "KMA", "n": 2, "meanErrorKm": 100, "byLead": [{"h": 24, "errorKm": 50}, {"h": 48, "errorKm": 150}]},
+                                   {"agency": "KMA", "n": 1, "meanErrorKm": 300, "byLead": [{"h": 24, "errorKm": 300}]}])
+        self.assertEqual(agg[0]["n"], 3); self.assertEqual(agg[0]["meanErrorKm"], round(500 / 3))
+        self.assertEqual([L for L in agg[0]["byLead"] if L["h"] == 24][0]["meanErrorKm"], 175)

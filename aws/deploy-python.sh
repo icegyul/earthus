@@ -19,6 +19,9 @@ FN="${1:-gmgsi-clouds}"
 #    복사본이 다른 리전에 생긴다** — 2026-09-05 실측: cyclone-analog·lab-report-index 가 us-east-2 에
 #    새로 만들어지고 스케줄이 걸린 서울 함수는 옛 코드로 계속 돌았다. 리전은 여기서 고정한다.
 REGION="${REGION:-ap-northeast-2}"
+# aws 호출마다 --region 을 안 붙이므로 여기서 기본 리전을 못 박는다. 없으면 프로필 리전(us-east-2)에
+# 복사본이 생긴다 — 2026-09-05 두 번째 실측(cyclone-analog 가 또 us-east-2 에 생성됨).
+export AWS_DEFAULT_REGION="$REGION"
 BUCKET="earthus-cache-kr"
 BUCKET_REGION="us-east-2"
 PYVER="3.12"

@@ -47,6 +47,45 @@ KMA_KEY = os.environ.get("KMA_KEY", "")
 s3 = boto3.client("s3", region_name=REGION)
 
 DST = "events/typhoon-official.json"
+# 지시서 D-4 — 발표별 원문 보존. DST 는 최신만 남기므로 "이전 발표를 다시 열면 당시 값"이 없었다.
+# 발표(기관·태풍·발표시각)마다 한 파일을 공개·불변으로 남긴다. 같은 키는 다시 쓰지 않는다(IfNoneMatch).
+ARCHIVE_PREFIX = "events/typhoon-official/archive"
+
+
+def archive_key(storm_key, agency, issue):
+    """events/typhoon-official/archive/{태풍}/{기관}-{발표시각}.json — 발표시각이 없으면 보존하지 않는다."""
+    if not (storm_key and agency and issue):
+        return None
+    safe = re.sub(r"[^A-Z0-9_-]", "_", str(storm_key).upper())
+    stamp = re.sub(r"[^0-9]", "", str(issue))[:12]
+    if len(stamp) < 10:
+        return None
+    return f"{ARCHIVE_PREFIX}/{safe}/{agency}-{stamp}.json"
+
+
+def archive_records(client, storms, now_iso):
+    """발표 원문을 보존하고 각 rec 에 sourceRef 를 적는다. 반환: (새로 쓴 수, 이미 있던 수)."""
+    written = skipped = 0
+    for storm in storms:
+        for rec in storm.get("agencies") or []:
+            key = archive_key(storm.get("key"), rec.get("agency"), rec.get("issue"))
+            if not key:
+                continue
+            rec["sourceRef"] = key
+            body = json.dumps({"schema": "earthus.typhoon-official.issue.v1", "storm": storm.get("key"), "name": storm.get("name"),
+                               "archivedAt": now_iso, "record": {k: v for k, v in rec.items() if k != "sourceRef"}},
+                              ensure_ascii=False, separators=(",", ":")).encode()
+            try:
+                client.put_object(Bucket=BUCKET, Key=key, Body=body, IfNoneMatch="*",
+                                  ContentType="application/json; charset=utf-8", CacheControl="public, max-age=31536000, immutable")
+                written += 1
+            except Exception as e:   # PreconditionFailed(412) = 이미 보존됨. 그 밖의 오류도 최신 발표 갱신을 막지 않는다.
+                code = getattr(e, "response", {}).get("Error", {}).get("Code", "") if hasattr(e, "response") else ""
+                if code in ("PreconditionFailed", "412"):
+                    skipped += 1
+                else:
+                    print(f"archive skip {key}: {e}")
+    return written, skipped
 UA = {"User-Agent": "earthus.net (dalur@kakao.com)"}
 T = 25
 
@@ -398,8 +437,12 @@ def handler(event=None, context=None):
             "agencies": group,
         })
 
+    written, skipped = archive_records(s3, storms, now.strftime("%Y-%m-%dT%H:%M:00Z"))
+    print(f"archive: new {written}, kept {skipped}")
+
     doc = {
         "generated": now.strftime("%Y-%m-%dT%H:%M:00Z"),
+        "archive": {"prefix": ARCHIVE_PREFIX, "note": "발표(기관·태풍·발표시각)마다 원문 한 파일, 공개·불변. 각 agencies[].sourceRef 가 가리킨다."},
         "source": "기상청(KMA) · 일본 기상청(JMA) · 미국 NHC",
         "note": {
             "ko": "각국 기상기관이 발표한 **공식 예보**를 그대로 옮긴 것입니다. "

@@ -3232,7 +3232,7 @@ async function main() {
     if (wv) {
       html += '</div><div class="card" style="margin-top:8px"><div class="card-h">감시 <span class="badge ' + (wv.monitoring === 'ON' ? 'model' : 'demo') + '">' + (wv.monitoring === 'ON' ? '감시 중' : '감시 중단') + '</span></div><div class="card-b">';
       html += wv.monitoring === 'ON'
-        ? '조건 3종 — 내 구역 특보 · 팔로우한 사건의 새 회차 · 400 km 안 M5+ 지진. 같은 건은 한 번만 적습니다.'
+        ? '조건 3종 — 내 구역 특보 · 팔로우한 사건의 새 회차 · 400 km 안 M5+ 지진. 같은 건은 한 번만 적습니다.<br/><b>앱을 열었을 때와 ⟳ 를 눌렀을 때만 판정</b>합니다 — 닫혀 있는 동안은 감시하지 않고, 푸시 알림도 보내지 않습니다.'
         : `<b>감시 중단</b> — ${escUI(wv.reason)}. 안전하다는 뜻이 아닙니다.`;
       if (wv.log.length) html += '<div style="margin-top:6px">' + wv.log.map((h) => `<div class="stat"><span class="k">${escUI(h.at.slice(5, 16).replace('T', ' '))}Z</span><span class="v">${escUI(h.reasonKo)}</span></div>`).join('') + '</div>';
       else if (wv.monitoring === 'ON') html += '<div style="margin-top:6px;color:var(--text-dim)">아직 기록 없음</div>';
@@ -4129,9 +4129,10 @@ async function main() {
         // 칩 한 번 = 이전 회차 선택, 최신은 고정 — 두 칩을 고르는 UI 는 다음 단계
         feed.setCompare(ds.rev, null);
       } else if (action === 'room-retry') {
-        // 사건 방의 실패한 소스 줄 '재시도' — 캐시를 비우고 같은 사건을 다시 연다(지시서 A-2)
+        // 사건 방의 실패한 소스 줄 '재시도' — 실패한 소스만 다시 받는다(지시서 A-2, 부분 재조회).
+        // 성공한 소스는 캐시(TTL 안)에 있고 실패는 캐시에 안 남으므로, 캐시를 비우지 않고 다시 열면
+        // 실패한 것만 새로 요청된다. 전엔 clearCache() 로 성공한 소스까지 다시 받았다.
         usage.track('event.room_retry');
-        feed.room.clearCache();
         if (feed.selected) feed.select(feed.items.indexOf(feed.selected), orbit);
       } else if (action === 'room-layer' && ds.key) {
         // 사건 방 줄의 "지구에 켜기" — 메뉴에서 누른 것과 똑같은 경로로 레이어를 켠다

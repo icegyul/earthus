@@ -534,12 +534,17 @@ export class IntelFeed {
     }).join('');
     const changes = (b.changes || []).map((c) => `<li>${c.label}: ${c.from != null ? `${c.from} → ${c.to}` : c.delta != null ? `${c.delta} km 이동` : '—'}</li>`).join('');
     const link = `${location.pathname}?event=${it.eventid}&compare=${a.revisionId},${b.revisionId}`;
+    // D-4: 회차가 가리키는 발표 원문(events/typhoon-official/archive/…) — 이전 발표를 다시 열면 당시 값이 그대로다
+    const srcRefs = [['이전', a], ['현재', b]].flatMap(([lab, r]) => Object.entries(r.agencies)
+      .filter(([, v]) => v && v.sourceRef)
+      .map(([k, v]) => `<a class="official-out" href="https://earthus-cache-kr.s3.us-east-2.amazonaws.com/${v.sourceRef}" target="_blank" rel="noopener noreferrer">${lab} ${k} ${r.revisionId} ↗</a>`)).join(' · ');
     return `<div class="card"><div class="card-h">이전 발표와 비교 <span class="badge off">회차 ${a.revisionId} ⇄ ${b.revisionId}</span></div>
       <div class="card-b">
         <div class="rev-chips">${chips}</div>
         <div class="room-sub">${t(a)} → ${t(b)} · ${b.changeSummaryKo || ''}</div>
         ${changes ? `<ul class="rev-changes">${changes}</ul>` : ''}
         <div class="wrap"><table class="room-cmp"><thead><tr><th>기관</th><th>이전 h0</th><th>현재 h0</th><th>이전 +24h</th><th>현재 +24h</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>
+        ${srcRefs ? `<div class="room-sub">당시 발표 원문(불변 보관): ${srcRefs}</div>` : ''}
         <div class="room-sub">지구 위: 현재 회차 예보 실선(주황) · 이전 회차 회색 점선 · <a class="official-out" href="${link}">이 비교 링크</a></div>
       </div></div>`;
   }

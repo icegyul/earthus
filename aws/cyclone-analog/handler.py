@@ -1158,7 +1158,8 @@ def _forecast_groups(storm, rec, official_doc, ecmwf_doc, issued):
         for agency in item.get("agencies") or []:
             groups.append({"agency": agency.get("agency"),
                            "issued": agency.get("issue") or official_doc.get("generated") or issued,
-                           "steps": agency.get("steps") or [], "notOfficial": False})
+                           "steps": agency.get("steps") or [], "notOfficial": False,
+                           "sourceRef": agency.get("sourceRef")})   # D-4 발표 원문(불변) — 회차가 이걸 가리킨다
     for item in ecmwf_doc.get("storms") or []:
         if _storm_key(item.get("name")) == key:
             groups.append({"agency": "ECMWF", "issued": ecmwf_doc.get("generated") or issued,
@@ -1558,12 +1559,17 @@ def _revision_agencies(snapshot):
         agency = group.get("agency")
         if not agency:
             continue
+        if agency not in PACKET_AGENCIES:
+            continue
         h0, h24, h48 = (_brief_step(_agency_step(group, h)) for h in (0, 24, 48))
         if not h0:
             continue
+        for st in (h24, h48):
+            if st:
+                st.pop("place", None)
         heading = round(bearing(h0["lat"], h0["lon"], h24["lat"], h24["lon"])) if h24 else None
         out[agency] = {"issued": group.get("issued"), "h0": h0, "h24": h24, "h48": h48,
-                       "heading24Deg": heading, "heading24Ko": dir_ko(heading)}
+                       "heading24Deg": heading, "heading24Ko": dir_ko(heading), "sourceRef": group.get("sourceRef")}
     return out
 
 
@@ -1665,6 +1671,62 @@ def event_status(session, now):
     return "ACTIVE", "GDACS 활성 · 최근 갱신"
 
 
+# ── 패킷 다이어트 (2026-09-05 실측 KROVANH 105 KB → 목표 ≤ 60 KB) ─────────────
+# 무거웠던 것: interimScores 가 발표 회차마다 한 항목(101개, 38 KB) · revisions 의 null 필드·place 문자열(58 KB) ·
+# observed 42점의 place(10 KB). Feed 는 기관별 합계만 쓰고(verifyHtml 이 n 가중 평균), 회차 비교는 KMA/JMA/NHC/ECMWF 만
+# 그린다. LAB 보고서는 이 패킷이 아니라 lab-reports 색인의 detail 을 쓰므로 거기는 그대로 둔다.
+PACKET_AGENCIES = ("KMA", "JMA", "NHC", "ECMWF")
+PACKET_OBSERVED = 24
+
+
+def _compact(obj):
+    """null 값 키를 뺀다. 값이 없는 것을 '없다'고 적는 건 스키마 문서 몫이지 바이트 몫이 아니다."""
+    if isinstance(obj, dict):
+        return {k: _compact(v) for k, v in obj.items() if v is not None}
+    if isinstance(obj, list):
+        return [_compact(v) for v in obj]
+    return obj
+
+
+def _aggregate_scores(scores):
+    """발표 회차별 오차 → 기관별 합계(n 가중 평균)와 예보시간별 평균. 값을 새로 만들지 않고 더하기만 한다."""
+    by = {}
+    for s in scores or []:
+        a = by.setdefault(s.get("agency"), {"agency": s.get("agency"), "n": 0, "sumKm": 0.0, "lead": {}})
+        for r in s.get("byLead") or []:
+            h, km = r.get("h"), r.get("errorKm")
+            if h is None or km is None:
+                continue
+            a["n"] += 1
+            a["sumKm"] += km
+            L = a["lead"].setdefault(int(h), {"h": int(h), "n": 0, "sumKm": 0.0})
+            L["n"] += 1
+            L["sumKm"] += km
+    out = []
+    for a in by.values():
+        if not a["n"]:
+            continue
+        out.append({"agency": a["agency"], "n": a["n"], "meanErrorKm": round(a["sumKm"] / a["n"]),
+                    "byLead": [{"h": L["h"], "n": L["n"], "meanErrorKm": round(L["sumKm"] / L["n"])} for L in sorted(a["lead"].values(), key=lambda x: x["h"])]})
+    return sorted(out, key=lambda x: x["meanErrorKm"])
+
+
+def slim_detail(detail):
+    """Feed 사건 방이 읽는 것만 남긴다: 최근 실황 24점(place 없이), 공식 전망, 강도, 기관별 검증 합계."""
+    if not detail:
+        return detail
+    obs = [{k: p.get(k) for k in ("at", "lat", "lon", "windMs", "hpa", "gradeKo", "courseKo", "agency")}
+           for p in (detail.get("observed") or [])[-PACKET_OBSERVED:]]
+    heads = [{k: h.get(k) for k in ("agency", "agencyKo", "n", "meanErrDeg", "within45")} for h in detail.get("headingScores") or []]
+    return _compact({
+        "observed": obs, "latestObserved": detail.get("latestObserved"), "intensity": detail.get("intensity"),
+        "official": detail.get("official"), "models": detail.get("models"), "truthAgency": detail.get("truthAgency"),
+        "interimScores": _aggregate_scores(detail.get("interimScores")), "headingScores": heads,
+        "landfall": detail.get("landfall"), "note": detail.get("note"),
+        "slim": f"observed 최근 {PACKET_OBSERVED}점 · 검증은 기관별 합계(회차별 표는 LAB 보고서)",
+    })
+
+
 def event_packet(session, now, detail, warn_doc=None, regions_doc=None):
     snaps = (session.get("snapshots") or [])[-PACKET_REVISIONS:]
     base = len(session.get("snapshots") or []) - len(snaps)
@@ -1672,7 +1734,7 @@ def event_packet(session, now, detail, warn_doc=None, regions_doc=None):
     for i, snap in enumerate(snaps):
         agencies = _revision_agencies(snap)
         changes, pa, ca = _changes(prev, agencies) if prev else ([], None, _primary(agencies)[0])
-        revisions.append({"revisionId": f"r{base + i + 1:03d}", "issuedAt": snap.get("issuedAt"), "agencies": agencies,
+        revisions.append({"revisionId": f"r{base + i + 1:03d}", "issuedAt": snap.get("issuedAt"), "agencies": _compact(agencies),
                           "changes": changes, "changeSummaryKo": _change_summary(changes, ca) if prev else "첫 회차"})
         prev = agencies
     latest = revisions[-1] if revisions else None
@@ -1709,7 +1771,7 @@ def event_packet(session, now, detail, warn_doc=None, regions_doc=None):
         "confidence": _confidence(source_n, agree24, fresh_min),
         "uncertainty": {"ensembleSpreadKm": None, "agencySpreadKm": {"24": agree24, "48": _spread(latest["agencies"], 48) if latest else None},
                         "note": "기관 폭은 KMA/JMA/NHC 예보 위치의 최대 차이(km). 앙상블 멤버 분산은 세션에 없어 null 이다. 확률이 아니다."},
-        "detail": detail,
+        "detail": slim_detail(detail),
     }
 
 

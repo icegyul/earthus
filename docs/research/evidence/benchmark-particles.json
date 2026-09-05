@@ -1,0 +1,67 @@
+{
+  "measuredAtUTC": "2026-09-05T00:32:35Z",
+  "machine": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.10",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel"
+  },
+  "engine": "OceanParcels 3.1.4 ScipyParticle (no JIT)",
+  "dataset": "hycom-gofs31-53x-atlantic-20150105",
+  "note": "Wall time on this machine only; not a guarantee. 10,000 particles x 72 h at 300 s exceeds the declared 2,000,000 particle-step budget and was not run.",
+  "cases": [
+    {
+      "particleCount": 1000,
+      "durationSeconds": 259200,
+      "integrationStepSeconds": 300,
+      "preflightOk": true,
+      "preflightErrors": [],
+      "wallSeconds": 212.39,
+      "qualityStatus": "PARTIAL",
+      "statusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 143,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 857
+      },
+      "particleSteps": 864000,
+      "secondsPerParticleStep": 0.000246
+    },
+    {
+      "particleCount": 2000,
+      "durationSeconds": 259200,
+      "integrationStepSeconds": 300,
+      "preflightOk": true,
+      "preflightErrors": [],
+      "wallSeconds": 417.73,
+      "qualityStatus": "PARTIAL",
+      "statusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 292,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1708
+      },
+      "particleSteps": 1728000,
+      "secondsPerParticleStep": 0.000242
+    },
+    {
+      "particleCount": 10000,
+      "durationSeconds": 86400,
+      "integrationStepSeconds": 1200,
+      "preflightOk": true,
+      "preflightErrors": [],
+      "wallSeconds": 180.23,
+      "qualityStatus": "PARTIAL",
+      "statusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 54,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 9946
+      },
+      "particleSteps": 720000,
+      "secondsPerParticleStep": 0.00025
+    }
+  ]
+}

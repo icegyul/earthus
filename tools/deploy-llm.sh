@@ -93,17 +93,18 @@ aws lambda update-function-configuration --function-name "$FN" --region "$REGION
 aws lambda wait function-updated --function-name "$FN" --region "$REGION"
 
 echo "== 4/4 함수 URL =="
-# 브라우저가 직접 부른다 → 인증 NONE + 오리진 제한. 공개 엔드포인트임을 잊지 말 것.
-URLCFG="--auth-type NONE --cors AllowOrigins=$ORIGIN,AllowMethods=POST,AllowHeaders=content-type,MaxAge=300"
+# 브라우저는 CloudFront 의 /api/ask 를 부르고, CloudFront(OAC)가 SigV4 로 서명해 이 URL 을 부른다.
+# 그래서 인증은 AWS_IAM 이어야 한다. NONE 으로 내리면 OAC 서명 요청이 403 으로 튕긴다 —
+# 2026-09-05 배포 때 이 줄이 NONE 이라 운영 "지구에 묻기"가 3시간 죽어 있었다.
+# 함수 정책(cloudfront-oac, FunctionUrlAuthType=AWS_IAM)은 CloudFront 쪽 설정과 짝이므로 여기서 건드리지 않는다.
+URLCFG="--auth-type AWS_IAM --cors AllowOrigins=$ORIGIN,AllowMethods=POST,AllowHeaders=content-type,MaxAge=300"
 if aws lambda get-function-url-config --function-name "$FN" --region "$REGION" >/dev/null 2>&1; then
   # shellcheck disable=SC2086
   URL="$(aws lambda update-function-url-config --function-name "$FN" --region "$REGION" $URLCFG --query 'FunctionUrl' --output text)"
 else
   # shellcheck disable=SC2086
   URL="$(aws lambda create-function-url-config --function-name "$FN" --region "$REGION" $URLCFG --query 'FunctionUrl' --output text)"
-  aws lambda add-permission --function-name "$FN" --region "$REGION" \
-    --statement-id public-url --action lambda:InvokeFunctionUrl \
-    --principal '*' --function-url-auth-type NONE >/dev/null
+  echo "   새 URL 은 CloudFront 오리진(OAC)에 연결하고, 함수 정책에 cloudfront-oac 문장(FunctionUrlAuthType=AWS_IAM)을 추가해야 한다"
 fi
 
 echo

@@ -35,7 +35,10 @@ class ContractTest(unittest.TestCase):
         self.assertEqual(report["id"], "cyclone:WP012026")
         self.assertEqual(report["kind"], "cyclone")
         self.assertEqual(report["sourceCount"], 1)
-        self.assertNotIn("scores", report)
+        # 2026-09-05: 계산기가 만든 공개 요약(scores·detail)은 색인이 그대로 넘긴다 — 화면은 색인을 먼저 읽고
+        # 같은 id 의 원본을 버리므로, 여기서 떼면 종료 검증 표와 보고서 본문이 화면에서 사라졌다.
+        # 비공개 원문(회차·좌표 원본)은 계산기가 애초에 공개 파일에 넣지 않는다.
+        self.assertIn("scores", report)
 
     def test_missing_id_is_rejected(self):
         self.assertIsNone(MODULE.public_report("aurora", {"title": "No id"}))

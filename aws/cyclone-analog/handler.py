@@ -1244,6 +1244,284 @@ def _score(groups, actual):
     return out
 
 
+# ── 공개 보고서 본문 ──────────────────────────────────────
+# 받은 지적(2026-09-05): "태풍 보고서가 없어. 태풍 위치와 실제 진행방향이 어느 기상청 자료와
+# 맞는지, 우리가 계산한 진행방향도 얼마나 맞았는지, 언제 커지거나 작아지고 상륙하는지,
+# 기상청이 어떻게 분류했는지 — 이런 보고서가 없어."
+# 목록 카드에는 상태와 회차 수만 있었고, 종료 뒤 오차표 하나가 전부였다.
+#
+# 세션 파일(비공개)에는 회차마다 기관 발표 원문과 우리 계산이 남아 있다. 여기서
+# **요약만** 공개 목록에 싣는다 — 기관 실황 위치·발표 진로·강도 분류는 기관의 공개 자료고,
+# 우리 계산은 좌표 원문이 아니라 오차 수치만 낸다(원문은 세션에 남는다).
+#
+# ⚠️ 활동 중 검증의 '실제 위치'는 IBTrACS 가 아니라 **기관 실황(예보 0시간 위치)** 이다.
+#    best track 은 시즌이 끝나야 나온다. 그래서 활동 중 오차는 반드시 '잠정'이라 부르고,
+#    어느 기관 실황을 기준으로 삼았는지(truthAgency)를 같이 적는다.
+# ⚠️ 상륙은 우리가 판정하지 않는다. 기관 발표문의 지점 문구에 '상륙·육상·내륙·上陸'이
+#    있을 때만 그 문구를 옮긴다. 없으면 "발표문에 상륙 언급 없음"이다.
+AGENCY_KO = {"KMA": "한국 기상청", "JMA": "일본 기상청", "NHC": "미국 허리케인센터",
+             "ECMWF": "ECMWF 모델", "EARTHUS_MULTI_SOURCE": "EARTHUS 다중소스 계산",
+             "EARTHUS_ANALOG_MEDIAN": "EARTHUS 유사사례 중앙값"}
+OFFICIAL_AGENCIES = ("KMA", "JMA", "NHC")
+DIRS_KO = ["북", "북동", "동", "남동", "남", "남서", "서", "북서"]
+LANDFALL_WORDS = ("상륙", "육상", "내륙", "上陸", "landfall", "inland")
+
+
+def kma_grade(wind_ms):
+    """기상청 태풍 강도 분류를 최대풍속(m/s)에서 환산한다.
+
+    기상청은 강도 '중' 미만(17~24 m/s)이면 강도를 적지 않아 발표문 category 가 비어 있는
+    회차가 많다. 그래서 풍속으로 환산하되, 화면은 반드시 '풍속 환산'이라고 표시한다.
+    기준(기상청): 17 미만 열대저압부 · 17~24 태풍(강도 없음) · 25~32 중 · 33~43 강 ·
+    44~53 매우강 · 54 이상 초강력.
+    """
+    if wind_ms is None:
+        return None
+    try:
+        w = float(wind_ms)
+    except (TypeError, ValueError):
+        return None
+    if w < 17:
+        return "열대저압부"
+    if w < 25:
+        return "태풍"
+    if w < 33:
+        return "중"
+    if w < 44:
+        return "강"
+    if w < 54:
+        return "매우강"
+    return "초강력"
+
+
+def dir_ko(deg):
+    return DIRS_KO[dir_index(deg)] if deg is not None else None
+
+
+def _step_at(step, issued):
+    at = iso_time(step.get("validUtc") or step.get("validKst"))
+    if at:
+        return at
+    try:
+        return issued + timedelta(hours=float(step.get("h"))) if issued else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _stamp(dt):
+    return dt.strftime("%Y-%m-%dT%H:%M:00Z") if dt else None
+
+
+def _num(value):
+    try:
+        return None if value is None else float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _public_step(step, issued):
+    at = _step_at(step, issued)
+    wind = _num(step.get("windMs"))
+    return {"h": step.get("h"), "at": _stamp(at), "lat": _num(step.get("lat")), "lon": _num(step.get("lon")),
+            "windMs": wind, "hpa": _num(step.get("hpa")), "categoryKo": step.get("categoryKo") or step.get("category"),
+            "gradeKo": kma_grade(wind), "courseKo": step.get("courseKo"), "speedKmh": _num(step.get("speedKmh")),
+            "place": step.get("place")}
+
+
+def _mentions_landfall(text):
+    return bool(text) and any(word in str(text) for word in LANDFALL_WORDS)
+
+
+def _observed_points(session):
+    """회차마다 남은 기관 실황(0시간) 위치를 시각순으로 편다. 같은 기관·같은 시각은 최신 회차만."""
+    seen = {}
+    for snap in session.get("snapshots") or []:
+        for group in snap.get("forecasts") or []:
+            agency = group.get("agency")
+            if agency not in OFFICIAL_AGENCIES:
+                continue
+            issued = iso_time(group.get("issued"))
+            for step in group.get("steps") or []:
+                if step.get("h") not in (0, 0.0, "0"):
+                    continue
+                at = _step_at(step, issued)
+                if not at or _num(step.get("lat")) is None or _num(step.get("lon")) is None:
+                    continue
+                row = _public_step(step, issued)
+                row["agency"] = agency
+                seen[(agency, _stamp(at))] = row
+    return sorted(seen.values(), key=lambda x: (x["at"], x["agency"]))
+
+
+def _truth(points):
+    """활동 중 검증 기준 — 실황이 가장 많은 공식 기관 하나. 섞으면 기관 간 위치 차이가 오차로 둔갑한다."""
+    counts = {}
+    for p in points:
+        counts[p["agency"]] = counts.get(p["agency"], 0) + 1
+    if not counts:
+        return None, []
+    agency = max(OFFICIAL_AGENCIES, key=lambda a: (counts.get(a, 0), -OFFICIAL_AGENCIES.index(a)))
+    if not counts.get(agency):
+        return None, []
+    return agency, [p for p in points if p["agency"] == agency]
+
+
+def _intensity(points):
+    """실황 강도 이력에서 최고 강도 시각과 최근 12시간 추세를 읽는다."""
+    rows = [p for p in points if p.get("windMs") is not None]
+    if not rows:
+        return None
+    peak = max(rows, key=lambda p: p["windMs"])
+    last = rows[-1]
+    last_at = iso_time(last["at"])
+    earlier = [p for p in rows if last_at and iso_time(p["at"]) and last_at - iso_time(p["at"]) >= timedelta(hours=12)]
+    trend = None
+    if earlier:
+        delta = last["windMs"] - earlier[-1]["windMs"]
+        trend = {"since": earlier[-1]["at"], "deltaMs": round(delta, 1),
+                 "ko": "강화" if delta >= 2 else "약화" if delta <= -2 else "유지"}
+    return {"peakAt": peak["at"], "peakWindMs": peak["windMs"], "peakHpa": peak.get("hpa"),
+            "peakGradeKo": peak.get("gradeKo"), "peakAgency": peak["agency"],
+            "latestAt": last["at"], "latestWindMs": last["windMs"], "latestGradeKo": last.get("gradeKo"),
+            "trend": trend}
+
+
+def _outlook(agency, group):
+    """한 기관의 최신 발표에서 강해지는 때·약해지는 때·등급 변화·상륙 문구를 읽는다. 값을 만들지 않는다."""
+    issued = iso_time(group.get("issued"))
+    steps = [_public_step(s, issued) for s in group.get("steps") or []]
+    steps = [s for s in steps if s["lat"] is not None and s["lon"] is not None]
+    if not steps:
+        return None
+    h0 = next((s for s in steps if s["h"] in (0, 0.0)), steps[0])
+    future = [s for s in steps if s is not h0 and s["at"]]
+    heading = None
+    target = next((s for s in future if _num(s["h"]) is not None and _num(s["h"]) >= 24), future[-1] if future else None)
+    if target:
+        heading = round(bearing(h0["lat"], h0["lon"], target["lat"], target["lon"]))
+    winds = [s for s in steps if s["windMs"] is not None]
+    peak = max(winds, key=lambda s: s["windMs"]) if winds else None
+    weaken = None
+    if peak:
+        after = [s for s in winds if s["at"] and peak["at"] and s["at"] > peak["at"] and s["windMs"] <= peak["windMs"] - 3]
+        weaken = after[0] if after else None
+    downgrade = None
+    base = h0.get("categoryKo") or h0.get("gradeKo")
+    for s in steps[1:]:
+        cat = s.get("categoryKo") or s.get("gradeKo")
+        if base and cat and cat != base:
+            downgrade = {"at": s["at"], "h": s["h"], "fromKo": base, "toKo": cat,
+                         "basis": "발표 등급" if s.get("categoryKo") else "풍속 환산"}
+            break
+    landfall = next(({"at": s["at"], "h": s["h"], "place": s["place"]} for s in steps if _mentions_landfall(s["place"])), None)
+    return {"agency": agency, "agencyKo": AGENCY_KO.get(agency, agency), "issued": group.get("issued"),
+            "headingDeg": heading, "headingKo": dir_ko(heading), "headingToH": target["h"] if target else None,
+            "courseKo": h0.get("courseKo"), "speedKmh": h0.get("speedKmh"), "horizonH": future[-1]["h"] if future else 0,
+            "peak": {"at": peak["at"], "windMs": peak["windMs"], "gradeKo": peak.get("gradeKo")} if peak else None,
+            "weakenAt": weaken["at"] if weaken else None, "downgrade": downgrade, "landfall": landfall,
+            "steps": steps}
+
+
+def _latest_groups(session):
+    snaps = session.get("snapshots") or []
+    latest = {}
+    for snap in snaps:
+        for group in snap.get("forecasts") or []:
+            agency = group.get("agency")
+            if agency and (group.get("steps") or []):
+                latest[agency] = group
+    return latest
+
+
+def _heading_scores(groups, truth):
+    """예보 방향과 실제 방향의 각도 차 — 위치 오차와는 다른 질문("방향은 맞았나")에 답한다."""
+    truth_times = [(iso_time(p["at"]), p) for p in truth if iso_time(p["at"])]
+    if not truth_times:
+        return {}
+    out = {}
+    for group in groups:
+        issued = iso_time(group.get("issued"))
+        steps = group.get("steps") or []
+        h0 = next((s for s in steps if s.get("h") in (0, 0.0)), None)
+        if not issued or not h0 or _num(h0.get("lat")) is None:
+            continue
+        start = min(truth_times, key=lambda x: abs((x[0] - issued).total_seconds()))
+        if abs((start[0] - issued).total_seconds()) > 4 * 3600:
+            continue
+        rows = []
+        for step in steps:
+            h = _num(step.get("h"))
+            if not h or h < 12 or _num(step.get("lat")) is None:
+                continue
+            at = _step_at(step, issued)
+            if not at:
+                continue
+            end = min(truth_times, key=lambda x: abs((x[0] - at).total_seconds()))
+            if abs((end[0] - at).total_seconds()) > 4 * 3600:
+                continue
+            moved = dist_km(start[1]["lat"], start[1]["lon"], end[1]["lat"], end[1]["lon"])
+            if moved < 30:      # 거의 안 움직인 구간의 방향은 의미가 없다
+                continue
+            forecast = bearing(float(h0["lat"]), float(h0["lon"]), float(step["lat"]), float(step["lon"]))
+            actual = bearing(start[1]["lat"], start[1]["lon"], end[1]["lat"], end[1]["lon"])
+            rows.append({"h": h, "forecastKo": dir_ko(forecast), "actualKo": dir_ko(actual),
+                         "errDeg": round(angle_diff(forecast, actual))})
+        if rows:
+            agency = group.get("agency")
+            bucket = out.setdefault(agency, {"agency": agency, "agencyKo": AGENCY_KO.get(agency, agency), "rows": []})
+            bucket["rows"].extend(rows)
+    for bucket in out.values():
+        bucket["n"] = len(bucket["rows"])
+        bucket["meanErrDeg"] = round(sum(r["errDeg"] for r in bucket["rows"]) / len(bucket["rows"]))
+        bucket["within45"] = sum(r["errDeg"] <= 45 for r in bucket["rows"])
+        bucket["rows"] = bucket["rows"][-12:]
+    return out
+
+
+def public_detail(session, now):
+    """카드 하나가 답해야 할 것 — 지금 어디로 가나, 누가 맞았나, 언제 세지고 약해지나, 어떻게 분류했나."""
+    points = _observed_points(session)
+    truth_agency, truth = _truth(points)
+    latest = _latest_groups(session)
+    outlooks = [o for o in (_outlook(a, g) for a, g in latest.items() if a in OFFICIAL_AGENCIES) if o]
+    models = []
+    for agency in ("ECMWF", "EARTHUS_MULTI_SOURCE"):
+        group = latest.get(agency)
+        if not group:
+            continue
+        o = _outlook(agency, group)
+        if o:
+            models.append({"agency": agency, "agencyKo": AGENCY_KO.get(agency, agency), "issued": o["issued"],
+                           "headingDeg": o["headingDeg"], "headingKo": o["headingKo"], "headingToH": o["headingToH"],
+                           "horizonH": o["horizonH"]})
+    groups = [g for snap in session.get("snapshots") or [] for g in snap.get("forecasts") or []]
+    interim = []
+    heading = {}
+    if truth and session.get("status") != "FINAL_REPORT":
+        interim = _score(groups, truth)
+        heading = _heading_scores(groups, truth)
+    elif session.get("finalTrack"):
+        heading = _heading_scores(groups, session["finalTrack"])
+    latest_obs = points[-1] if points else None
+    return {
+        "observed": points[-60:],
+        "latestObserved": latest_obs,
+        "intensity": _intensity(points),
+        "official": outlooks,
+        "models": models,
+        "truthAgency": truth_agency,
+        "interimScores": interim,
+        "headingScores": sorted(heading.values(), key=lambda x: x["meanErrDeg"]),
+        "landfall": next(({"agency": o["agency"], "agencyKo": o["agencyKo"], **o["landfall"]} for o in outlooks if o["landfall"]), None),
+        "note": {"observed": "기관이 발표한 실황(예보 0시간) 위치·강도입니다. 우리가 만든 값이 아닙니다.",
+                 "interim": f"활동 중 오차는 {AGENCY_KO.get(truth_agency, truth_agency)} 실황 위치를 기준으로 한 잠정값입니다. "
+                            "최종 오차는 시즌 뒤 IBTrACS best track 으로 다시 셉니다." if truth_agency
+                            else "공식 기관 실황이 없어 활동 중 오차를 내지 않습니다.",
+                 "landfall": "상륙은 기관 발표문 문구를 옮긴 것이며, 문구가 없으면 판정하지 않습니다.",
+                 "grade": "gradeKo 는 기상청 강도 기준(최대풍속 m/s)으로 환산한 값입니다. categoryKo 가 있으면 그것이 기관 발표 등급입니다."},
+    }
+
+
 def update_lifecycle(now, tracks, analyses, history):
     """탐지부터 종료 보고서까지 이어지는 상태와 당시 계산 회차를 보존한다."""
     state = _safe_s3(SESSION_KEY, {"schema": 1, "sessions": []})
@@ -1318,6 +1596,8 @@ def update_lifecycle(now, tracks, analyses, history):
                 "detectedAt": x.get("detectedAt"), "lastSeen": x.get("lastSeen"),
                 "endedAt": x.get("endedAt"), "snapshotCount": len(x.get("snapshots", [])),
                 "scores": x.get("scores", []),
+                # 카드가 열리면 답해야 할 본문 — 위치·진로·강도 분류·상륙 문구·잠정 오차 (public_detail 주석)
+                "detail": public_detail(x, now),
                 "note": "FINAL_REPORT만 IBTrACS best track으로 검증됨. PRELIMINARY_REPORT는 잠정 상태."}
                for x in kept]
     put(REPORT_KEY, {"generated": stamp, "count": len(reports), "reports": reports}, 1800)

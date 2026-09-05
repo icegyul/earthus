@@ -24,6 +24,7 @@ OUTPUT_KEY = "ocean/lab-reports.json"
 
 SOURCES = (
     ("cyclone", "ocean/cyclone-reports.json"),
+    ("earthquake", "analysis/earthquake-reports.json"),
     ("smoke-ash", "analysis/smoke-ash-reports.json"),
     ("air-pollution", "analysis/air-pollution-reports.json"),
     ("ocean-drift", "analysis/ocean-drift-reports.json"),
@@ -80,6 +81,12 @@ def public_report(kind, raw):
         "summary": _text(raw.get("summary") or raw.get("note")),
         "sourcePath": _text(raw.get("sourcePath")),
     }
+    # 2026-09-05: 카드를 열면 보여줄 본문. 계산기(cyclone-analog public_detail, lab-events detail)가
+    # 이미 공개용 요약만 만든다 — 회차 원문은 archive/ 에 남고 여기엔 안 온다. 권한 가림은 화면이 한다.
+    if isinstance(raw.get("detail"), dict):
+        result["detail"] = raw["detail"]
+    if isinstance(raw.get("scores"), list) and raw["scores"]:
+        result["scores"] = raw["scores"]
     if kind == "cyclone":
         result["summary"] = (
             "IBTrACS 최종 경로가 확인된 경우에만 당시 기관·EARTHUS 계산 회차의 오차를 확정합니다."

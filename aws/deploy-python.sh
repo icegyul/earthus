@@ -15,7 +15,10 @@
 set -euo pipefail
 
 FN="${1:-gmgsi-clouds}"
-REGION="$(aws configure get region)"
+# ⚠️ 프로필 기본 리전(us-east-2)을 따라가면 서울(ap-northeast-2)에 있는 원본 함수 옆에 **같은 이름의
+#    복사본이 다른 리전에 생긴다** — 2026-09-05 실측: cyclone-analog·lab-report-index 가 us-east-2 에
+#    새로 만들어지고 스케줄이 걸린 서울 함수는 옛 코드로 계속 돌았다. 리전은 여기서 고정한다.
+REGION="${REGION:-ap-northeast-2}"
 BUCKET="earthus-cache-kr"
 BUCKET_REGION="us-east-2"
 PYVER="3.12"

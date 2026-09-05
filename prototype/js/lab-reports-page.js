@@ -1,5 +1,6 @@
 import { auth } from './auth.js';
 import { REPORT_KINDS, kindInfo, loadLabReports, reportTime, statusLabel } from './lab-reports.js';
+import { renderCycloneDetail, renderEventDetail } from './lab-report-detail.js';
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char =>
@@ -58,17 +59,25 @@ function renderDetail(report) {
     + `<div><small>마지막 자료</small><b>${esc(formatTime(reportTime(report)))}</b></div>`
     + `<div><small>저장 계산 회차</small><b>${report.snapshotCount == null ? '자료 없음' : `${report.snapshotCount}개`}</b></div>`
     + `<div><small>검증 상태</small><b>${esc(statusLabel(report.status, true))}</b></div></div>`;
-  if (!allowed()) {
-    $('#detail').innerHTML = common + '<div class="lock">저장된 계산 회차와 기관별 종료 오차는 구독·관리자에게 제공됩니다. 출처·방법·현재 안전 정보는 숨기지 않습니다.</div>';
-    return;
+  /* 본문은 현상별 계산기가 만든 detail 을 그린다 (lab-report-detail.js). 태풍은 위치·기관 진로·
+     강도 분류·상륙 문구·잠정 검증, 그 밖의 현상은 사건 이력·근거·검증. 권한은 검증 표에만 건다. */
+  const body = report.kind === 'cyclone' ? renderCycloneDetail(report, allowed()) : renderEventDetail(report, allowed());
+  $('#detail').innerHTML = common + body;
+}
+
+/* 폰에서는 목록이 길어 상세가 화면 두 장 아래에 있었다("눌러도 위나 아래로 보고서가 안 나와").
+   좁은 화면이면 상세를 누른 카드 바로 아래로 옮기고 보이게 스크롤한다. 넓은 화면은 옆 칸 그대로. */
+function placeDetail(button) {
+  const detail = $('#detail');
+  const narrow = window.matchMedia('(max-width: 760px)').matches;
+  if (narrow && button) {
+    button.insertAdjacentElement('afterend', detail);
+    detail.classList.add('inline');
+    requestAnimationFrame(() => detail.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  } else if (!narrow && detail.classList.contains('inline')) {
+    $('.layout').appendChild(detail);
+    detail.classList.remove('inline');
   }
-  let verification = '<p class="empty">최종 관측 자료가 아직 확인되지 않아 오차를 확정하지 않습니다.</p>';
-  if (report.status === 'FINAL_REPORT' && report.scores.length) {
-    verification = `<table class="score"><thead><tr><th>자료</th><th>검증점 n</th><th>평균 위치오차</th></tr></thead><tbody>${report.scores.map(score =>
-      `<tr><td>${esc(score.agency)}</td><td>${esc(score.n)}</td><td>${esc(score.meanErrorKm)}km</td></tr>`).join('')}</tbody></table>`;
-  }
-  $('#detail').innerHTML = common + '<h3>종료 검증</h3>' + verification
-    + '<p class="empty">한 사건의 결과로 기관의 장기 우열을 일반화하지 않습니다. FINAL만 확인된 최종 관측과의 대조입니다.</p>';
 }
 
 function render() {
@@ -86,6 +95,7 @@ function render() {
   let report = data.reports.find(item => item.id === selectedId);
   if (!report && reports.length && selectedId) selectedId = null;
   renderDetail(report || null);
+  placeDetail(report ? $('#list').querySelector(`[data-id="${CSS.escape(report.id)}"]`) : null);
 }
 
 await auth.init();

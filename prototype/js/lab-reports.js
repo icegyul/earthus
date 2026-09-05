@@ -11,6 +11,7 @@ import { API } from './config.js';
 
 export const REPORT_KINDS = Object.freeze([
   { id: 'cyclone', ko: '태풍', en: 'Cyclone' },
+  { id: 'earthquake', ko: '지진', en: 'Earthquake' },
   { id: 'smoke-ash', ko: '산불 연기·화산재', en: 'Smoke & volcanic ash' },
   { id: 'air-pollution', ko: '황사·미세먼지', en: 'Dust & air pollution' },
   { id: 'ocean-drift', ko: '해류 표류', en: 'Ocean drift' },
@@ -62,6 +63,8 @@ function normalizeReport(report) {
     summary: clean(report.summary || report.note),
     method: report.method && typeof report.method === 'object' ? report.method : null,
     scores: Array.isArray(report.scores) ? report.scores : [],
+    // 카드를 열면 보여줄 본문(현상별 계산기의 public detail). 없으면 null — 예시로 채우지 않는다.
+    detail: report.detail && typeof report.detail === 'object' ? report.detail : null,
     sourcePath: clean(report.sourcePath),
   };
 }

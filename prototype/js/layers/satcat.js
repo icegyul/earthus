@@ -18,6 +18,12 @@ import { i18n } from '../i18n.js';
 export const SAT_GROUPS = [
   { id:'stations', celestrak:['stations'], ko:'우주정거장', en:'Space stations',
     color:'#3fc7c0', est:25 },
+  /* ⚠️ celestrak: [] — CelesTrak 엔 "한국"이라는 GROUP 슬러그가 없다.
+     S3 카탈로그(celestrak-proxy Lambda)가 NORAD 번호로 직접 골라 채운 것을 그대로 쓴다.
+     그래서 S3 가 막혀 CelesTrak 직접 호출로 폴백할 때는 이 그룹만 비게 된다
+     (space.js fetchGroupDirect 참고) — 폴백은 원래도 SATCAT 조인이 빠지는 비상 경로다. */
+  { id:'korea',    celestrak:[], ko:'한국 위성', en:'Korean satellites',
+    color:'#ff6b6e', est:22 },
   { id:'weather',  celestrak:['weather','noaa','goes'], ko:'기상',   en:'Weather',
     color:'#ffd166', est:180 },
   { id:'science',  celestrak:['science'],  ko:'과학',     en:'Science',
@@ -177,6 +183,12 @@ const PURPOSE = [
     en: ['Navigation augmentation', 'LEO augmentation improving satnav accuracy.'] }],
 
   // ── 기상 ──
+  [/^(GK-2A|GEO-KOMPSAT-2A|CHOLLIAN-2A)/i, {
+    ko: ['정지궤도 기상 (천리안2A)', '한국 기상청의 정지궤도 기상위성. 동아시아·서태평양을 10분마다 찍어 태풍·집중호우 감시에 쓰인다.'],
+    en: ['Geostationary weather (Chollian-2A)', "South Korea's geostationary weather satellite — images East Asia/West Pacific every 10 minutes for typhoon and heavy-rain monitoring."] }],
+  [/^(GK-2B|GEO-KOMPSAT-2B|CHOLLIAN-2B)/i, {
+    ko: ['정지궤도 해양·환경 (천리안2B)', '천리안2A와 같은 위치에서 해양(적조·해무)과 대기환경(미세먼지·오존)을 관측한다.'],
+    en: ['Geostationary ocean/environment (Chollian-2B)', 'Shares GK-2A\'s orbital slot; monitors ocean color/haze and air pollutants (fine dust, ozone).'] }],
   [/^(GOES|METEOSAT|HIMAWARI|FENGYUN|ELEKTRO|INSAT-3D)/i, {
     ko: ['정지궤도 기상', '적도 상공 약 35,800km 에 머물며 같은 반구를 10~15분마다 찍는다. 구름·수증기·해수면온도를 관측해 태풍 추적의 핵심이 된다.'],
     en: ['Geostationary weather', 'Images the same hemisphere every 10-15 min from 35,800 km. Clouds, water vapour, sea surface temperature.'] }],
@@ -188,6 +200,12 @@ const PURPOSE = [
     en: ['Weather (radio occultation)', 'Measures bending of navsat signals to profile temperature and humidity.'] }],
 
   // ── 지구관측 ──
+  [/^(KOMPSAT|ARIRANG)/i, {
+    ko: ['지구관측 (다목적실용위성)', '한국항공우주연구원(KARI)이 운용하는 다목적실용위성(아리랑) 계열. 국토·재해·농업 관측에 쓰이며 일부 기종은 SAR(레이더)로 밤·구름 관계없이 촬영한다.'],
+    en: ['Earth observation (KOMPSAT)', "KARI's multipurpose satellite series — land, disaster, and agriculture imaging; some models carry SAR for night/all-weather imaging."] }],
+  [/^CAS[ -]?500/i, {
+    ko: ['지구관측 (차세대중형위성)', '민간 표준 플랫폼으로 만든 국토관측위성 계열. 정부 여러 기관이 나눠 쓴다.'],
+    en: ['Earth observation (CAS500)', 'Korean standardised medium-satellite platform shared across government agencies for land observation.'] }],
   [/^SENTINEL-1/i, {
     ko: ['지구관측 (레이더)', '합성개구레이더(SAR)로 관측한다. 구름과 밤에 관계없이 지표를 보고, 지반 침하·유출유·해빙을 감시한다.'],
     en: ['Earth observation (SAR)', 'Synthetic aperture radar — sees through cloud and at night.'] }],
@@ -220,6 +238,9 @@ const PURPOSE = [
   [/^(INTELSAT|SES |SES-|EUTELSAT|ZHONGXING|CHINASAT|ASTRA|GALAXY|ANIK|OPTUS|THAICOM|MEASAT|KOREASAT)/i, {
     ko: ['정지궤도 통신·방송', '적도 상공에 고정돼 보여 접시 안테나를 한 방향으로 고정할 수 있다. TV 방송과 광역 통신을 중계한다.'],
     en: ['GEO comms & broadcast', 'Appears fixed above the equator — TV and wide-area communications relay.'] }],
+  [/^ANASIS/i, {
+    ko: ['군 통신 (아나시스)', '한국군 전용 정지궤도 통신위성. 상업위성과 같은 버스를 쓰지만 군 통신망 전용으로 운용된다.'],
+    en: ['Military comms (ANASIS)', "South Korea's dedicated military communications satellite, built on a commercial bus but reserved for military networks."] }],
   [/^O3B/i, {
     ko: ['중궤도 통신', '적도 상공 약 8,000km 에서 도는 SES 의 통신 위성군. 정지궤도보다 지연이 짧다.'],
     en: ['MEO comms', 'SES constellation at ~8,000 km — lower latency than GEO.'] }],
@@ -253,6 +274,9 @@ const PURPOSE = [
   [/^(SMAP|SMOS)/i, {
     ko: ['토양 수분', '지표의 물 함량을 재서 가뭄과 홍수 예측에 쓴다.'],
     en: ['Soil moisture', 'Measures surface water content for drought and flood forecasting.'] }],
+  [/^SNIPE/i, {
+    ko: ['우주기상 관측 (도요샛)', '초소형위성 4기가 편대비행하며 이온층·우주기상을 동시에 여러 지점에서 재는 한국천문연구원(KASI)의 실험 성좌다. 2023년 발사 후 일부는 교신이 되지 않는다.'],
+    en: ['Space weather (SNIPE)', "KASI's 4-cubesat formation flying swarm measuring the ionosphere/space weather at multiple points at once; some units have been unreachable since the 2023 launch."] }],
   [/^CYGNSS/i, {
     ko: ['열대 폭풍 관측', 'GPS 신호가 바다에서 반사되는 것을 받아 태풍 중심의 해상 풍속을 잰다.'],
     en: ['Tropical storm winds', 'Uses reflected GPS signals to measure ocean winds inside cyclones.'] }],
@@ -317,6 +341,7 @@ export function purposeOf(name) {
 /** 계열도 모를 때 — 그룹과 궤도로 최소한의 설명 */
 function fallbackPurpose(groupId, cls, ko) {
   const byGroup = {
+    korea:    ko ? '한국 위성' : 'Korean satellite',
     weather:  ko ? '기상 관측' : 'Weather observation',
     nav:      ko ? '위성항법' : 'Navigation',
     comm:     ko ? '통신 중계' : 'Communications',

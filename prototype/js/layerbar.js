@@ -18,6 +18,7 @@ import { LAYER_DEFS, TIER } from './config.js';
 import { i18n } from './i18n.js';
 import { toast } from './ui.js';
 import { CONFIG } from './config.local.js';
+import { QUESTION_ENTRIES, matchesLayerQuery, partitionLayerItems, clearSelectedLayers, openQuestionEntry } from './menu-information.js?v=20260905';
 
 const $ = s => document.querySelector(s);
 const el = (t, c) => { const n = document.createElement(t); if (c) n.className = c; return n; };
@@ -577,6 +578,7 @@ const AETHERUS_ROUTES = [
 export const layerBar = {
   open: false,      // 1단
   query: '',
+  expertExpanded: false,
   /* 2단 — 어떤 목록을 펼쳤나. null · 'earth'(지구 스타일) · 'alert'(재난)
      ⚠️ 예전엔 불리언이었다. 2단이 하나뿐이라는 전제였는데 Alert 가 생기며 깨졌다.
         DOM(#menuSub)과 CSS 는 그대로 두고 **내용만 갈아끼운다** — 폭·위치 계산이
@@ -584,6 +586,13 @@ export const layerBar = {
   sub: null,
 
   init() {
+    if (!document.querySelector('link[data-menu-information]')) {
+      const style = document.createElement('link');
+      style.rel = 'stylesheet';
+      style.href = new URL('../css/menu-information.css?v=20260905', import.meta.url).href;
+      style.dataset.menuInformation = 'true';
+      document.head.appendChild(style);
+    }
     const tab = $('#menuTab'), aetherusTab = $('#aetherusTab');
     const main = $('#menuMain'), sub = $('#menuSub');
     const closeButton = $('#menuClose');
@@ -750,12 +759,20 @@ export const layerBar = {
       }
     }, true);
 
+    this._renderQuestionEntries(main, i18n.lang === 'ko');
     this.render();
+    const sourceRoot = document.getElementById('srcNote');
+    if (sourceRoot && !this._sourceObserver) {
+      // Reuse the exact source/time/coverage already shown by ui-source; do not duplicate its registry or fetch data.
+      this._sourceObserver = new MutationObserver(() => this._syncSourceContext());
+      this._sourceObserver.observe(sourceRoot, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'data-inline-source'] });
+    }
     store.on('layer', () => { this.sync(); this._renderSceneFilter(store.scene); });
     store.on('scene', next => this._renderSceneFilter(next));
     store.on('tier', () => this.render(this.sub || 'earth'));
     i18n.onChange(() => {
       closeButton?.setAttribute('aria-label', i18n.lang === 'ko' ? '메뉴 닫기' : 'Close menu');
+      this._renderQuestionEntries(main, i18n.lang === 'ko');
       this.render(this.sub || 'earth');
       this._renderSceneFilter(store.scene);
     });
@@ -782,6 +799,101 @@ export const layerBar = {
     this.open = false;
     this.sub = null;
     this._apply?.();
+  },
+
+  _renderQuestionEntries(main, ko) {
+    if (!main) return;
+    main.querySelector('.mm-questions')?.remove();
+    const section = el('section', 'mm-questions');
+    const title = el('h2', 'mm-question-title');
+    title.textContent = ko ? '무엇이 궁금한가요?' : 'What would you like to know?';
+    section.appendChild(title);
+    QUESTION_ENTRIES.forEach(entry => {
+      const button = el('button', 'mm-question');
+      button.type = 'button';
+      button.dataset.question = entry.id;
+      const label = el('b'); label.textContent = ko ? entry.ko : entry.en;
+      const sub = el('small'); sub.textContent = ko ? entry.subKo : entry.subEn;
+      button.append(label, sub);
+      button.onclick = () => this._openQuestion(entry.id, button);
+      section.appendChild(button);
+    });
+    this._mountSelection(section, ko);
+    main.querySelector('.mm-head')?.after(section);
+  },
+
+  async _openQuestion(id, button) {
+    if (button) button.disabled = true;
+    try {
+      document.dispatchEvent(new CustomEvent('earthus:close-menu'));
+      await openQuestionEntry(id, {
+        weather: async () => (await import('./ui-korea.js?v=20260814-n5')).koreaPanel.open(),
+        alerts: async () => {
+          const { eventPanel } = await import('./ui-events.js');
+          eventPanel.mode = 'alert'; eventPanel.show = 'warn'; eventPanel.open();
+        },
+        ocean: async () => {
+          (await import('./ui-outdoor.js')).outdoorPanel.open();
+          document.querySelector('#outBody [data-out-group="ocean-activity"]')?.scrollIntoView({ block: 'start' });
+        },
+        travel: async () => (await import('./ui-travel-discovery.js?v=20260903-travel-discovery')).travelSheet.open(),
+        sky: async () => (await import('./ui-sky.js')).skyPanel.open(),
+      });
+    } catch (error) {
+      console.warn('[layerbar] question entry', id, error?.message || error);
+      toast(i18n.lang === 'ko' ? '정보 화면을 열지 못했습니다. 메뉴에서 다시 시도해 주세요.' : 'Could not open this view. Please try again from the menu.');
+    } finally { if (button) button.disabled = false; }
+  },
+
+  _mountSelection(parent, ko) {
+    const section = el('section', 'ly-selection');
+    const active = el('details', 'ly-selection-active');
+    active.append(el('summary'), el('div', 'ly-selection-controls'));
+    const clear = el('button', 'ly-clear'); clear.type = 'button';
+    clear.onclick = () => {
+      const n = clearSelectedLayers(LAYER_DEFS, store);
+      toast(ko ? `켜진 정보 ${n}개를 껐습니다` : `Cleared ${n} layers`);
+      section.querySelector('summary')?.focus();
+    };
+    const source = el('details', 'ly-selection-source');
+    const summary = el('summary'); summary.textContent = ko ? '지도 출처·시각·범위' : 'Map sources, times & coverage';
+    source.append(summary, el('div', 'ly-source-content'));
+    section.append(active, clear, source);
+    parent.appendChild(section);
+  },
+
+  _syncSelection() {
+    const ko = i18n.lang === 'ko';
+    const active = LAYER_DEFS.filter(def => store.isOn(def.id));
+    document.querySelectorAll('#menuMain .ly-selection, #layerStrip .ly-selection').forEach(section => {
+      section.querySelector('.ly-selection-active > summary').textContent = ko ? `현재 켠 정보 ${active.length}개` : `${active.length} layers on`;
+      const controls = section.querySelector('.ly-selection-controls');
+      controls.replaceChildren();
+      active.forEach(def => {
+        const item = ITEMS.find(it => it.id === def.id);
+        const name = (ko ? item?.ko : item?.en) || i18n.t.L?.[def.id] || def.id;
+        const off = el('button'); off.type = 'button';
+        off.textContent = `${name} ×`;
+        off.setAttribute('aria-label', ko ? `${name} 끄기` : `Turn off ${name}`);
+        off.onclick = () => { store.setLayer(def.id, false); section.querySelector('summary')?.focus(); };
+        controls.appendChild(off);
+      });
+      const clear = section.querySelector('.ly-clear');
+      clear.textContent = ko ? '켜진 정보 모두 끄기' : 'Clear all layers';
+      clear.disabled = active.length === 0;
+    });
+    this._syncSourceContext();
+  },
+
+  _syncSourceContext() {
+    const source = document.getElementById('srcNote');
+    document.querySelectorAll('#menuMain .ly-source-content, #layerStrip .ly-source-content').forEach(content => {
+      const lines = source?.classList.contains('on') ? [...source.querySelectorAll(':scope > span')] : [];
+      content.replaceChildren(...lines.map(line => line.cloneNode(true)));
+      if (!lines.length) content.textContent = i18n.lang === 'ko'
+        ? '지도의 자료 안내를 기다리는 중입니다. 수신된 출처·시각·범위가 이곳에도 표시됩니다.'
+        : 'Waiting for the map data note. Received sources, times and coverage appear here.';
+    });
   },
 
   _renderSceneFilter(next = 'earth') {
@@ -846,6 +958,7 @@ export const layerBar = {
       this._renderAetherus(strip, ko);
       return;
     }
+    this._mountSelection(strip, ko);
 
     /* 묶음별로 제목을 두고 그 아래에 항목을 놓는다.
        ⚠️ CATEGORIES 에 없는 항목이 생기면 조용히 사라지므로 마지막에 모아 붙인다.
@@ -1008,21 +1121,31 @@ export const layerBar = {
         items.forEach(it => this._item(strip, it, ko));
       });
     } else {
+      const orderedItems = [...QUICK_IDS.map(id => ITEMS.find(x => x.id === id)).filter(Boolean), ...order.flatMap(x => x.items)];
+      const groups = partitionLayerItems(orderedItems, QUICK_IDS);
       const qh = el('div', 'ly-section-head');
       qh.textContent = ko ? '빠른 레이어' : 'Quick layers';
       strip.appendChild(qh);
-      QUICK_IDS.map(id => ITEMS.find(x => x.id === id)).filter(Boolean)
-        .forEach(it => this._item(strip, it, ko, 'ly-quick-item'));
+      groups.quick.forEach(it => this._item(strip, it, ko, 'ly-quick-item'));
 
-      const allItems = order.flatMap(x => x.items).filter(it => !QUICK_IDS.includes(it.id));
       const search = el('label', 'ly-search');
       search.innerHTML = `<input type="search" aria-label="${ko ? '전체 레이어 검색' : 'Search all layers'}"`
         + ` value="${this.query.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}"`
-        + ` placeholder="${ko ? '레이어 이름 검색' : 'Search layers'}" autocomplete="off">`;
+        + ` placeholder="${ko ? '이름·설명·지역 검색' : 'Search name, description, coverage'}" autocomplete="off">`
+        + `<span class="ly-search-count" role="status" aria-live="polite"></span>`;
       const input = search.querySelector('input');
       input.oninput = () => { this.query = input.value; this._filterAll(strip); };
-      strip.appendChild(search);
-      allItems.forEach(it => this._item(strip, it, ko, 'ly-all-item'));
+      strip.prepend(search);
+      groups.regular.forEach(it => this._item(strip, it, ko, 'ly-all-item'));
+      const expert = el('details', 'ly-expert');
+      expert.open = this.expertExpanded;
+      const summary = el('summary'); summary.textContent = ko ? `위성 전문 채널 ${groups.expert.length}개` : `${groups.expert.length} satellite channels`;
+      const intro = el('p', 'ly-expert-note'); intro.textContent = ko ? '적외·가시광·수증기와 관측 범위를 직접 고릅니다.' : 'Choose infrared, visible and water-vapour channels and their coverage.';
+      const expertItems = el('div', 'ly-expert-items');
+      groups.expert.forEach(it => this._item(expertItems, it, ko, 'ly-all-item'));
+      expert.append(summary, intro, expertItems);
+      expert.ontoggle = () => { if (!this.query.trim()) this.expertExpanded = expert.open; };
+      strip.appendChild(expert);
       this._filterAll(strip);
     }
     this.sync();
@@ -1089,6 +1212,7 @@ export const layerBar = {
     {
       const def = LAYER_DEFS.find(d => d.id === it.id);
       const b = document.createElement('button');
+      b.type = 'button';
       b.className = 'ly';
       if (extraClass) b.classList.add(extraClass);
       b.dataset.id = it.id;
@@ -1178,11 +1302,23 @@ export const layerBar = {
 
   _filterAll(strip) {
     const q = this.query.trim().toLocaleLowerCase();
-    strip.querySelectorAll('.ly-all-item').forEach(b => {
-      b.hidden = !!q && !b.dataset.search.includes(q);
+    const buttons = [...strip.querySelectorAll('.ly-all-item, .ly-quick-item')];
+    buttons.forEach(b => {
+      b.hidden = !matchesLayerQuery(b.dataset.search, q);
     });
+    strip.querySelectorAll(':scope > .ly-open, :scope > .ly-times, :scope > .ly-presets, :scope > .ly-gap, :scope > .ly-section-head')
+      .forEach(node => { node.hidden = !!q; });
+    const expert = strip.querySelector('.ly-expert');
+    if (expert) {
+      const matches = [...expert.querySelectorAll('.ly-all-item')].some(b => !b.hidden);
+      expert.hidden = !!q && !matches;
+      expert.open = q ? matches : this.expertExpanded;
+    }
     const none = strip.querySelector('.ly-search-empty') || el('p', 'ly-search-empty');
-    const visible = [...strip.querySelectorAll('.ly-all-item')].some(b => !b.hidden);
+    const count = buttons.filter(b => !b.hidden).length;
+    const visible = count > 0;
+    const counter = strip.querySelector('.ly-search-count');
+    if (counter) counter.textContent = i18n.lang === 'ko' ? `${count}개 정보${q ? ' 검색됨' : ' · 전문 채널 포함'}` : `${count} layers${q ? ' found' : ', including expert channels'}`;
     none.textContent = i18n.lang === 'ko' ? '일치하는 레이어가 없습니다.' : 'No matching layers.';
     if (!visible && !none.isConnected) strip.appendChild(none);
     if (visible) none.remove();
@@ -1191,6 +1327,7 @@ export const layerBar = {
   sync() {
     document.querySelectorAll('#layerStrip .ly').forEach(b => {
       b.classList.toggle('on', store.isOn(b.dataset.id));
+      if (!b.classList.contains('open')) b.setAttribute('aria-pressed', String(store.isOn(b.dataset.id)));
     });
     document.querySelectorAll('#layerStrip .ly-preset').forEach(b => {
       const p = PRESETS.find(x => x.id === b.dataset.preset);
@@ -1204,6 +1341,7 @@ export const layerBar = {
       b.classList.toggle('on', on);
       b.setAttribute('aria-pressed', String(on));
     });
+    this._syncSelection();
   },
 
   applyWeatherTime(preset) {

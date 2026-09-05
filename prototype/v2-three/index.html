@@ -76,12 +76,13 @@
     border-radius: 10px; padding: 8px 12px; backdrop-filter: blur(6px);
   }
   #chrome .brand { display: block; width: 108px; margin-right: auto; }
-  #chrome button {
+  #chrome button, #chrome a#btn-research {
     width: 30px; height: 28px; font-size: 15px; line-height: 1;
     background: rgba(74,144,217,0.10); border: 1px solid var(--panel-line);
     color: var(--text); border-radius: 7px; cursor: pointer; font-family: inherit;
   }
-  #chrome button:hover, #chrome button.on { border-color: var(--accent); color: var(--accent); }
+  #chrome button:hover, #chrome button.on, #chrome a#btn-research:hover { border-color: var(--accent); color: var(--accent); }
+  #chrome a#btn-research { text-decoration: none; }
   .drawer {
     display: none; margin-top: 8px;
     background: var(--panel-bg); border: 1px solid var(--panel-line);
@@ -987,6 +988,8 @@
     <button id="btn-help" data-i18n-title="help" title="사용법 다시 보기">?</button>
     <button id="btn-settings" data-i18n-title="settings" title="설정">⚙</button>
     <button id="btn-login" data-i18n-title="login" title="로그인 / 계정">○</button>
+    <!-- 연구 작업 공간 진입 — 별도 페이지다. 메뉴 파일(ui-shell/main)은 건드리지 않고 도구줄에 문 하나만 낸다. -->
+    <a id="btn-research" href="./research.html" data-i18n-title="research" title="연구 작업 공간 — 자료·조건을 고정해 실험을 실행하고 재현합니다">⚗</a>
   </div>
 
   <div id="menu-scrim"></div>
@@ -1040,12 +1043,12 @@
       <input type="range" id="c-isobath" min="200" max="2000" step="100" value="500" disabled />
     </div>
     <div class="row">
-      <label><span data-i18n="shadeStr">음영 강도</span> <span class="val" id="v-shade">1.9</span></label>
-      <input type="range" id="c-shade" min="0" max="2.5" step="0.1" value="1.9" />
+      <label><span data-i18n="shadeStr">음영 강도</span> <span class="val" id="v-shade">0.9</span></label>
+      <input type="range" id="c-shade" min="0" max="2.5" step="0.1" value="0.9" />
     </div>
     <div class="row">
-      <label><span data-i18n="photoMix">위성 색 혼합</span> <span class="val" id="v-photo">65%</span></label>
-      <input type="range" id="c-photo" min="0" max="100" step="5" value="65" />
+      <label><span data-i18n="photoMix">위성 색 혼합</span> <span class="val" id="v-photo">80%</span></label>
+      <input type="range" id="c-photo" min="0" max="100" step="5" value="80" />
     </div>
     <div class="row toggle">
       <input type="checkbox" id="c-manual" /><label for="c-manual" data-i18n="manualLight">수동 조명 (화면 기준)</label>
@@ -1087,7 +1090,7 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=182"></script>
+<script type="module" src="./js/main.js?v=184-continuous-3d"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

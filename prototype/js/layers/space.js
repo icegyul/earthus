@@ -3,6 +3,7 @@ import { PointLayer } from './pointLayer.js';
 import { viewer } from '../viewer.js';
 import { API, C, GLOBAL_EVENT } from '../config.js';
 import { fetchT } from '../net.js';
+import { getLaunchSchedule } from '../launch-schedule.js';
 import { i18n } from '../i18n.js';
 import { SAT_GROUPS, satDetail, ISS_ICON } from './satcat.js';
 import { power } from '../power.js';
@@ -32,10 +33,11 @@ export const launches = {
   async refresh() {
     /* mode=normal이면 우리가 쓰지 않는 이미지·설명을 덜 받는다.
        ⚠️ LL2 이미지에는 CC BY-NC 등 제3자 라이선스가 섞여 있으므로 표시하지 않는다. */
-    const url = `${API.LAUNCH}?limit=30&hide_recent_previous=true&mode=normal`;
-    const res = await fetchT(url);
-    if (!res.ok) throw new Error('ll2 ' + res.status);
-    const j = await res.json();
+    const schedule = await getLaunchSchedule({url:API.LAUNCH,fetcher:fetchT});
+    const j = {results:schedule.rawResults};
+    this.retrievedAt = schedule.retrievedAt;
+    this.cached = schedule.mode === 'cached';
+    this.retryAt = schedule.retryAt;
     const t = i18n.t.F;
     const now = Date.now();
 
@@ -57,6 +59,9 @@ export const launches = {
             _hoursOut: hoursOut,
             _net: r.net,
             _stream: stream,
+            _source: 'Launch Library 2',
+            _retrievedAt: schedule.retrievedAt,
+            _cached: schedule.mode === 'cached',
             [t.provider]: r.launch_service_provider?.name || '—',
             [t.pad]: r.pad?.name || '—',
             [t.net]: r.net ? `${new Date(r.net).toLocaleString(i18n.lang)} (${i18n.rel(r.net)})` : '—',
@@ -137,7 +142,7 @@ export const orbits = {
   _trackTimer: null,
   _priorityNorad: null,
   selected: JSON.parse(localStorage.getItem(LS_GROUPS) || 'null')
-            || ['stations', 'weather', 'science'],
+            || ['stations', 'korea', 'weather', 'science'],
 
   /* 확대해도 위성을 계속 보여줄지.
      기본은 꺼짐 — 가까이서는 궤도가 화면 밖이라 점만 떠다니고 지표를 가린다.

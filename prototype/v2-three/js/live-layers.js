@@ -3,6 +3,7 @@
 // 각 레이어는 첫 켬에서 로드하고 원본 데이터를 보관한다 (지형 과장 변경 시 재배치용).
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
+import { bulletinRecords, bulletinTimesHtml, escapeHtml, sourceTimeLabel, SEA_LEVEL_SCALE_CM, seaLevelFractionCm } from './source-context.js?v=20260905';
 
 // CloudFront(earthus.net)는 /clouds/* 외 경로에 CORS 헤더를 안 붙인다 → 1.0처럼 S3 직접 (CORS *)
 const S3 = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
@@ -186,6 +187,44 @@ void main() {
   #include <colorspace_fragment>
 }`;
 
+// 오로라 전용 점 — makeCyclones 와 같은 방식(점마다 크기·위상을 셰이더로 넘긴다).
+// 격자를 그대로 찍으면 좌표 격자가 드러나 보인다(실측 지적). 그래서:
+//   · 확률이 강할수록 점을 키운다(t) — 지금까지는 색만 바뀌고 크기는 고정이었다.
+//   · 문턱값(MIN) 바로 위는 옅게 시작해 서서히 짙어진다 — 칼로 자른 경계를 없앤다.
+//   · 점마다 다른 위상으로 밝기가 은은하게 오르내린다 — 확률 수치 자체는 전혀
+//     안 바꾼다. 격자가 아니라 흐르는 빛처럼 보이게 하는 순수한 시각 효과다.
+const AURORA_VERT = /* glsl */ `
+attribute vec3 aColor;
+attribute float aSize;
+attribute float aPhase;
+attribute float aAlpha;
+varying vec3 vCol;
+varying float vPhase;
+varying float vAlpha;
+void main() {
+  vCol = aColor;
+  vPhase = aPhase;
+  vAlpha = aAlpha;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  gl_PointSize = aSize;
+}`;
+
+const AURORA_FRAG = /* glsl */ `
+precision mediump float;
+uniform sampler2D uMap;
+uniform float uTime;
+uniform float uOpacity;
+varying vec3 vCol;
+varying float vPhase;
+varying float vAlpha;
+void main() {
+  float m = texture2D(uMap, gl_PointCoord).a;
+  if (m < 0.03) discard;
+  float shimmer = 0.75 + 0.25 * sin(uTime * 1.3 + vPhase * 6.2831853);
+  gl_FragColor = vec4(vCol, m * uOpacity * vAlpha * shimmer);
+  #include <colorspace_fragment>
+}`;
+
 export class LiveLayers {
   constructor(scene, heightAt, getExagger, dataBadge) {
     this.group = new THREE.Group();
@@ -220,6 +259,36 @@ export class LiveLayers {
     return { on: !!l.on, note: l.on && l.meta ? l.meta.note : undefined };
   }
 
+  // 이 레이어의 자료가 실제로 지구 어디에 있는지 — **선언표가 아니라 그린 것에서 잰다**.
+  // 손으로 '이건 한국 레이어' 하고 적어 두면 자료가 늘 때마다 표가 실제와 어긋난다.
+  //
+  // 왜 필요한가: 대기질(에어코리아 673개소)처럼 한 나라에만 있는 자료를 아프리카를 보는
+  // 중에 켜면, 카드만 뜨고 지구에서는 아무 일도 일어나지 않았다. 켰는데 아무 변화가
+  // 없는 화면은 사용자에게 '고장'으로 읽힌다 — 그래서 켤 때 그 자료가 있는 곳으로 옮긴다.
+  //
+  // 반환: { global: true }  자료가 지구를 감싼다(옮길 곳이 없다)
+  //       { global: false, lat, lon, spanDeg }  자료가 한 곳에 몰려 있다
+  coverage(id) {
+    const l = this.layers[id];
+    if (!l || !l.obj) return null;
+    const box = new THREE.Box3().setFromObject(l.obj);
+    if (box.isEmpty()) return null;
+    const c = box.getCenter(new THREE.Vector3());
+    const len = c.length();
+    // 상자 중심이 지구 중심 가까이 오면 자료가 사방에 흩어져 있다는 뜻이다.
+    if (len < 0.35) return { global: true };
+    const size = box.getSize(new THREE.Vector3());
+    const radius = Math.max(size.x, size.y, size.z) / 2;
+    const spanDeg = THREE.MathUtils.radToDeg(2 * Math.asin(THREE.MathUtils.clamp(radius / len, 0, 1)));
+    const u = c.normalize();
+    return {
+      global: false,
+      lat: THREE.MathUtils.radToDeg(Math.asin(THREE.MathUtils.clamp(u.y, -1, 1))),
+      lon: THREE.MathUtils.radToDeg(Math.atan2(u.x, u.z)),
+      spanDeg,
+    };
+  }
+
   card(id) {
     const l = this.layers[id];
     return l && l.meta ? l.meta.cardHtml : '';
@@ -238,10 +307,14 @@ export class LiveLayers {
       l.on = true;
       return { on: true, badge: l.meta.badge };
     }
-    if (l && l.loading) return { on: false };
+    if (l && l.loading) { l.cancelled = true; delete this.layers[id]; return { on: false }; }
     l = this.layers[id] = { on: false, loading: true };
     try {
       const built = await this.build(id);
+      if (l.cancelled || this.layers[id] !== l) {
+        this.disposeObj(built.obj);
+        return {on:false};
+      }
       l.obj = built.obj;
       l.data = built.data;
       l.meta = built.meta;
@@ -251,9 +324,18 @@ export class LiveLayers {
       return { on: true, badge: l.meta.badge };
     } catch (e) {
       console.warn('[live-layers]', id, e);
-      delete this.layers[id];
+      if(this.layers[id]===l) delete this.layers[id];
       return { on: false, error: String(e && e.message || e) };
     }
+  }
+
+  clearAll() {
+    for (const [id, layer] of Object.entries(this.layers)) {
+      if(layer.loading) {layer.cancelled=true;delete this.layers[id];continue;}
+      if(layer.obj)layer.obj.visible=false;
+      layer.on=false;
+    }
+    this._floodSel=null;
   }
 
   // 켜 둔 레이어를 실제로 다시 받아 온다.
@@ -273,6 +355,7 @@ export class LiveLayers {
     l.refreshing = true;
     try {
       const built = await this.build(id);
+      if(this.layers[id] !== l || !l.on || l.cancelled) {this.disposeObj(built.obj);return false;}
       this.group.remove(l.obj);
       this.disposeObj(l.obj);
       built.obj.visible = true;
@@ -330,13 +413,14 @@ export class LiveLayers {
     this.lastExagger = ex;
     for (const [id, l] of Object.entries(this.layers)) {
       if (!l.obj || !l.data) continue;
-      const wasOn = l.on;
-      this.group.remove(l.obj);
-      disposeDeep(l.obj);
+      const revision = l.geometryRevision = (l.geometryRevision || 0) + 1;
       this.buildFromData(id, l.data).then((built) => {
+        if(this.layers[id] !== l || l.geometryRevision !== revision || l.cancelled) {this.disposeObj(built.obj);return;}
+        this.group.remove(l.obj);
+        disposeDeep(l.obj);
         l.obj = built.obj;
         l.meta = built.meta;
-        l.obj.visible = wasOn;
+        l.obj.visible = l.on;
         this.group.add(l.obj);
       }).catch(() => {});
     }
@@ -659,22 +743,32 @@ export class LiveLayers {
 
   // ---------- 쓰나미 정보 (PTWC/NWS 공식 채널) ----------
   buildTsunami(d) {
-    const items = (d.alerts || [])
-      .filter((a) => a.lat != null && a.lon != null)
-      .map((a) => ({
+    const items = bulletinRecords(d)
+      .filter(({ bulletin: a }) => Number.isFinite(a.lat) && Number.isFinite(a.lon))
+      .map(({ bulletin: a, context }) => ({
         lat: a.lat, lon: a.lon,
-        c: new THREE.Color(a.category === 'Information' ? '#8fd0ff' : '#ff5f7a'),
+        c: new THREE.Color(context.state === 'active' ? '#ff5f7a' : context.state === 'information' ? '#8fd0ff' : '#b1b9c8'),
       }));
     return this.makePoints(items, { size: 11, lift: 0.005 });
   }
 
   metaTsunami(d) {
-    const rows = (d.alerts || []).map((a) =>
-      `${a.category === 'Information' ? 'ℹ️' : '🚨'} ${a.region || a.title} — M${a.magnitude ?? '—'} · ${a.centerName || a.center} · ${kstShort(a.updated)}`);
-    const note = `${(d.alerts || []).length}건 (${(d.alerts || []).filter((a) => a.category !== 'Information').length}건 경보) · ${kstShort(d.generated)}`;
+    const records = bulletinRecords(d);
+    const section = (title, selected) => selected.length ? `<section style="margin-top:12px"><b>${title} · ${selected.length}건</b>${selected.map(({ bulletin: a, context }) => {
+      const url = /^https?:\/\//i.test(a.bulletin || '') ? `<a href="${escapeHtml(a.bulletin)}" target="_blank" rel="noopener noreferrer">기관 원문 보기</a>` : '원문 링크 미제공';
+      return `<div style="margin-top:10px;padding-top:10px;border-top:1px solid #ffffff24"><b>${escapeHtml(a.region || a.title)}</b><br/>${escapeHtml(a.category || '분류 미확인')} · ${context.label}<br/>M${escapeHtml(a.magnitude ?? '—')} · ${escapeHtml(a.centerName || a.center)}<br/>${bulletinTimesHtml(context)}<br/>${url}</div>`;
+    }).join('')}</section>` : '';
+    const active = records.filter(({ context }) => context.state === 'active');
+    const unknown = records.filter(({ context }) => ['unknown', 'scheduled'].includes(context.state));
+    const archive = records.filter(({ context }) => ['cancelled', 'expired', 'information'].includes(context.state));
+    const note = `발표 기록 ${records.length}건 · 유효기간 확인 ${active.length}건 · 수집 ${sourceTimeLabel(d.generated)}`;
     return {
-      badge: 'LIVE', note,
-      cardHtml: `태평양쓰나미경보센터(PTWC)·NWS 공식 채널 최신 발표 ${(d.alerts || []).length}건.<br/>${rows.join('<br/>') || '현재 발표 없음'}<br/>ℹ️ Information = 쓰나미 위협 평가 정보(경보 아님) · ${kstShort(d.generated)}`,
+      badge: 'OFFICIAL_WARNING', note,
+      cardHtml: `<b>쓰나미 공식 발표 기록</b><br/>수집된 발표 ${records.length}건. 수집 시각과 각 발표의 유효기간을 구분합니다.<br/>`
+        + `출처 ${escapeHtml(d.source || 'NOAA tsunami.gov · PTWC · NTWC')}<br/>목록 수집 ${escapeHtml(sourceTimeLabel(d.generated))}<br/>`
+        + (active.length ? section('유효기간 내 발표', active) : '<p>이 목록에서 유효기간이 확인된 발표는 없습니다. 현재 경보 유무는 기관 원문에서 확인하세요.</p>')
+        + section('유효기간 미확인·발효 전', unknown) + section('정보문·종료 기록', archive)
+        + `<details style="margin-top:12px"><summary>자료 읽는 방법</summary>Information은 위협 평가 정보문입니다. 회색 지도점은 유효 경보를 뜻하지 않습니다. 유효기간이 없는 발표는 오래됐다는 이유만으로 해제 처리하지 않습니다.</details>`,
     };
   }
 
@@ -1149,20 +1243,32 @@ export class LiveLayers {
 
   // ---------- 태양 활동 실황 (SDO 이미지 + GOES X선) ----------
   metaSolarAct(d) {
-    const cls = d.flareClass || '—';
-    const lvl = String(cls)[0];
+    // GOES 1~8Å 피드에는 결측을 0으로 채운 표본이 섞여 있다(6시간 창 358줄 중 44줄).
+    // 그 줄이 최신이면 등급 판정이 A로 떨어져, 실제로는 C급인 태양을 '아주 조용함'으로
+    // 발표하게 된다(2026-09-04 실측: 실제 1.13e-6 = C1.1인데 화면은 A · 0.00e+0).
+    // 0은 관측값이 아니라 결측이다 — 등급도 플럭스도 만들어 내지 않는다.
+    const flux = Number(d.xrayFlux);
+    const observed = Number.isFinite(flux) && flux > 0;
+    const cls = observed ? (d.flareClass || '—') : null;
+    const lvl = String(cls || '')[0];
     const KO = {
       A: '아주 조용함', B: '조용함', C: '작은 플레어',
       M: '중간 플레어 — 극지 통신 영향 가능', X: '큰 플레어 — 통신·위성 영향',
     };
+    // 관측 시각은 수집기가 xrayAt 을 실어 줄 때만 적는다 — 수집 실행 시각(generated)을
+    // 관측 시각인 척 붙이면 최대 10분을 틀리게 말한다.
+    const xrayAt = d.xrayAt ? ` · ${kstShort(d.xrayAt)}` : '';
     return {
       badge: 'OBSERVED',
-      note: `X선 등급 ${cls} · ${kstShort(d.generated)}`,
+      note: `X선 등급 ${cls || 'UNAVAILABLE'} · ${kstShort(d.generated)}`,
       cardHtml: `<b>오늘의 태양</b> — 지금 태양이 어떤 상태인지 실제 관측으로 봅니다.<br/>`
         + `<img src="${S3}/${(d.image || 'solar/latest.jpg').replace(/^\//, '')}" alt="NASA SDO AIA 193Å 태양 관측 영상" `
         + `style="width:100%;border-radius:10px;margin:8px 0;background:#0a0f14" loading="lazy" />`
-        + `X선 등급 <b>${cls}</b>${KO[lvl] ? ` — ${KO[lvl]}` : ''}<br/>`
-        + `X선 플럭스 ${d.xrayFlux != null ? `${Number(d.xrayFlux).toExponential(2)} W/m²` : 'UNAVAILABLE'} (GOES 1~8Å 관측값)<br/>`
+        + (observed
+          ? `X선 등급 <b>${cls}</b>${KO[lvl] ? ` — ${KO[lvl]}` : ''}<br/>`
+            + `X선 플럭스 ${flux.toExponential(2)} W/m² (GOES 1~8Å 관측값${xrayAt})<br/>`
+          : `X선 등급 <b>UNAVAILABLE</b> — GOES 1~8Å 최신 표본이 결측입니다.<br/>`
+            + `결측(0)을 '아주 조용함(A)'으로 바꾸지 않습니다. 사진은 그대로 실제 관측입니다.<br/>`)
         + `사진은 <b>SDO AIA 193Å</b> — 눈에 보이는 빛이 아니라 100만 도 코로나의 극자외선입니다.<br/>`
         + `출처 ${d.source || 'NASA SDO · NOAA SWPC'} · ${kstShort(d.generated)}`,
     };
@@ -1175,19 +1281,16 @@ export class LiveLayers {
     // 한 시나리오 안에서는 값이 거의 균일하다(SSP585: 5~95%가 65~72cm). 절대 눈금(0~80)으로
     // 칠하면 시나리오마다 단색 판이 된다. 그래서 색은 **이 시나리오 안의 상대 차이**(5~95% 구간)로 펴고,
     // 시나리오 사이 비교는 카드의 숫자로 한다. 이 선택을 카드에 그대로 적는다.
-    const vals = sc.val.filter((v) => v != null).sort((x, y) => x - y);
-    const p5 = vals[Math.floor(vals.length * 0.05)] ?? sc.min;
-    const p95 = vals[Math.floor(vals.length * 0.95)] ?? sc.max;
-    const span = Math.max(0.5, p95 - p5);
+    // 2026-09-05: 위 상대색 설계는 공통 cm 눈금으로 교체했다. 같은 값은 시나리오와 무관하게 같은 색이다.
     const items = [];
     for (let i = 0; i < d.n; i += 1) {
       const v = sc.val[i];
-      if (v == null) continue;                      // 좌표 불일치 점은 비운다
-      const t = Math.max(0, Math.min(1, (v - p5) / span));
+      if (!Number.isFinite(v)) continue;           // 좌표 불일치 점은 비운다
+      const t = seaLevelFractionCm(v);
       const c = SLR_KHOA_RAMP(t * 80);
       items.push({ lat: d.lat[i], lon: d.lon[i], c: { r: c[0] / 255, g: c[1] / 255, b: c[2] / 255 } });
     }
-    this._khoaSlStat = { n: items.length, ssp, min: sc.min, max: sc.max, p5, p95 };
+    this._khoaSlStat = { n: items.length, ssp, min: sc.min, max: sc.max };
     return this.makePoints(items, { size: 3.4, lift: 0.0012, opacity: 0.72 });
   }
 
@@ -1206,15 +1309,16 @@ export class LiveLayers {
       note: `${(s.n || 0).toLocaleString()}점 · ${s.min}~${s.max}cm · ${ssp}`,
       cardHtml: `<b>우리 바다 해수면 상승 전망 — ${KO[ssp] || ssp}</b><br/>`
         + `국립해양조사원의 <b>지역 해양기후 수치모델</b>이 시나리오별로 계산한 해수면 상승폭입니다. `
-        + `NASA/IPCC 전 세계 조위관측소(24곳)보다 훨씬 촘촘한 <b>격자 ${(s.n || 0).toLocaleString()}점</b>(위도 0.042° × 경도 0.05°)이 우리 해역을 덮습니다.<br/>`
+        + `<b>격자 ${(s.n || 0).toLocaleString()}점</b>이 우리 해역을 덮습니다.<br/>`
         + `이 시나리오 범위 <b>${s.min} ~ ${s.max}cm</b> · 다른 시나리오: ${others}<br/>`
-        + `색은 <b>이 시나리오 안에서의 상대 차이</b>입니다 — 옅은 쪽이 ${s.p5}cm, 자주색 쪽이 ${s.p95}cm(5~95% 구간). `
-        + `시나리오끼리는 값이 거의 겹치지 않아 절대 눈금으로 칠하면 단색 판이 되기에 이렇게 폅니다. 시나리오 간 비교는 위 숫자로 하세요.<br/>`
-        + `${d.unitNote || ''}<br/>`
-        + `<b>이것은 예보가 아니라 시나리오 전망</b>입니다 — 배출 경로에 따라 갈리는 폭 자체가 메시지입니다.<br/>`
-        + `격자는 해역 값입니다. 국가 경계 폴리곤과 겹쳐 보면 61점이 육지 안으로 들어오는데, 이는 남서 다도해의 경계 단순화 때문이며 값을 지우거나 옮기지 않았습니다.<br/>`
-        + `<b>가까이 가면 서서히 사라집니다</b> — 격자 간격이 약 5km라 도시 축척에서는 점 사이가 벌어져 읽을 수 없기 때문입니다. 값을 지운 것이 아니라 이 축척에서 읽지 말라는 뜻입니다. 권역 시점(고도 900km 이상)에서 온전히 보입니다.<br/>`
-        + `출처 ${d.source} · ${d.via} · ${d.license} · 수집 ${(d.generated || '').slice(0, 10)}`,
+        + `<div style="margin:10px 0"><b>모든 시나리오 공통 눈금 · cm</b><div style="display:flex;margin-top:6px">${SEA_LEVEL_SCALE_CM.ticks.map((v) => { const c = SLR_KHOA_RAMP(seaLevelFractionCm(v) * 80); return `<span style="flex:1;border-top:8px solid rgb(${c.join(',')});padding-top:5px">${v === 0 ? '≤' : v === 100 ? '≥' : ''}${v}</span>`; }).join('')}</div></div>`
+        + `같은 색은 같은 상승량입니다. 눈금 밖 값은 끝 색으로 표시하며 원래 수치는 위 범위에 보존합니다.<br/>`
+        + `배출 경로에 따른 <b>장기 시나리오 전망</b>입니다. 기준연도 ${escapeHtml(d.referencePeriod || d.baseline || '미제공')} · 전망연도 ${escapeHtml(d.targetYear || d.projectionPeriod || '미제공')}<br/>`
+        + `출처 ${escapeHtml(d.source)} · 수집 ${escapeHtml(sourceTimeLabel(d.generated))}`
+        + `<details style="margin-top:12px"><summary>단위·해상도·표현 방식</summary>${escapeHtml(d.unitNote || '')}<br/>${escapeHtml(d.grid || '약 5km 해역 격자')}<br/>`
+        + `격자는 해역 값입니다. 국가 경계의 단순화 때문에 일부 점이 육지와 겹칠 수 있으며 원좌표와 값을 보존합니다.<br/>`
+        + `권역 시점(고도 900km 이상)에서 온전히 보이며 도시 축척에서는 서서히 사라집니다.<br/>`
+        + `${escapeHtml(d.via)} · ${escapeHtml(d.license)}</details>`,
     };
   }
 
@@ -1239,18 +1343,18 @@ export class LiveLayers {
   metaFloodIndex(d) {
     const rows = (this._floodDistricts || []).slice().sort((a, b) => b.count - a.count);
     const buttons = rows.map((r) =>
-      `<button class="simgo" style="margin:2px 3px 2px 0;padding:3px 8px;font-size:10.5px" `
-      + `data-action="flood-district" data-sgg="${r.sggCd}">${r.name} <i style="opacity:.6">${r.count}</i></button>`).join('');
+      `<button class="simgo" style="margin:2px 3px 2px 0;padding:8px 12px;min-height:44px;font-size:14px" `
+      + `data-action="flood-district" data-sgg="${escapeHtml(r.sggCd)}">${escapeHtml(r.name)} <i style="opacity:.6">${r.count}</i></button>`).join('');
     const empty = (d.districts || []).filter((r) => !r.count).map((r) => r.name);
     return {
-      badge: 'OFFICIAL_OBSERVATION',
+      badge: 'PROVIDER_FORECAST',
       note: `${rows.length}곳 자료 · 침수면 ${Number(d.totalPolygons || 0).toLocaleString()}개`,
-      cardHtml: `<b>연안 침수 범위 — 국립해양조사원 침수 예상도</b><br/>`
-        + `시군구를 누르면 그 지역의 <b>침수 예상 범위</b>가 지형 위에 실제 폴리곤으로 올라옵니다. 색은 침수 깊이 구간(m).<br/>`
+      cardHtml: `<b>연안 침수 예상도 — 기관 산출 시나리오 자료</b><br/>`
+        + `시군구를 누르면 그 지역의 <b>침수 예상 범위</b>를 볼 수 있습니다. 색은 예상 침수 깊이 구간(m)입니다.<br/>현재 침수 관측이나 이번 태풍의 예보가 아닙니다.<br/>`
         + `<div style="margin:8px 0 6px">${buttons}</div>`
-        + `${d.note || ''}<br/>`
+        + `${escapeHtml(d.note || '')}<br/>`
         + `${empty.length ? `자료가 비어 있는 곳: ${empty.join(' · ')} — 없는 것을 그리지 않습니다.<br/>` : ''}`
-        + `출처 ${d.source || '국립해양조사원'} · ${d.license || ''} · 수집 ${(d.generated || '').slice(0, 10)}`,
+        + `출처 ${escapeHtml(d.source || '국립해양조사원')} · ${escapeHtml(d.license || '')}<br/>자료 수집 ${escapeHtml(sourceTimeLabel(d.generated))} · 산출 기준시각 ${escapeHtml(sourceTimeLabel(d.referenceAt || d.issuedAt))}`,
     };
   }
 
@@ -1309,7 +1413,7 @@ export class LiveLayers {
     mesh.frustumCulled = false;
     l.obj.add(mesh);
     this._floodMesh = mesh;
-    this._floodSel = { code, name: d.name, count: d.count, bbox: d.bbox, classes: d.classes, unit: d.unit };
+    this._floodSel = { code, name: d.name, count: d.count, bbox: d.bbox, classes: d.classes, unit: d.unit, source: d.source, generated: d.generated };
     return this._floodSel;
   }
 
@@ -1323,10 +1427,11 @@ export class LiveLayers {
     if (!s) return '';
     const cls = Object.entries(s.classes || {}).sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]))
       .map(([k, v]) => `${k}m ${v}면`).join(' · ');
-    return `<b>${s.name} 침수 예상 범위</b> — 폴리곤 ${s.count.toLocaleString()}면<br/>`
+    return `<b>${escapeHtml(s.name)} 침수 예상 범위</b> — 구역 ${s.count.toLocaleString()}개<br/>`
       + `깊이 구간별: ${cls}<br/>`
-      + `침수값은 기관이 산출한 <b>깊이 구간</b>이며 저희가 계산하지 않았습니다. 지형 과장 위에 얹혀 있어 위치는 정확하고 높이는 표현용입니다.<br/>`
-      + `면 하나는 <b>수평면</b>으로 놓았습니다 — 면 안에서 과장된 지형을 따라가게 두면 면이 수직으로 찢어지기 때문입니다. 경위도는 원자료 그대로이고, 통일한 것은 높이뿐입니다.`;
+      + `국립해양조사원이 산출한 <b>사전 침수 예상도</b>입니다. 현재 관측된 침수 범위는 아닙니다.<br/>`
+      + `출처 ${escapeHtml(s.source || '국립해양조사원')} · 지역 자료 수집 ${escapeHtml(sourceTimeLabel(s.generated))}<br/>`
+      + `<details style="margin-top:12px"><summary>지도 표현 방식</summary>지형 높이는 과장된 표현입니다. 각 예상 구역은 수평면으로 표시하며 원자료 경위도를 보존합니다. 깊이는 지도 높이 대신 위 깊이 구간으로 읽으세요.</details>`;
   }
 
   // ---------- 평년 대비 기온 (실황 − 1991~2020 평년) ----------
@@ -1403,10 +1508,47 @@ export class LiveLayers {
       const lon = lon0 > 180 ? lon0 - 360 : lon0;
       const t = Math.min(1, (v - MIN) / Math.max(1, maxV - MIN));
       // 초록(약) → 자홍(강): 실제 오로라 색 순서와 같은 방향
-      items.push({ lat, lon, c: { r: 0.12 + t * 0.88, g: 0.92 - t * 0.42, b: 0.4 + t * 0.5 } });
+      items.push({ lat, lon, t, c: { r: 0.12 + t * 0.88, g: 0.92 - t * 0.42, b: 0.4 + t * 0.5 } });
     }
     this._auroraStat = { shown: items.length, nonzero, total: rows.length, maxV, min: MIN };
-    return this.makePoints(items, { size: 3.2, lift: 0.012, opacity: 0.6, additive: true });
+    return this.makeAurora(items);
+  }
+
+  makeAurora(items) {
+    const n = items.length;
+    const pos = new Float32Array(n * 3);
+    const col = new Float32Array(n * 3);
+    const siz = new Float32Array(n);
+    const phase = new Float32Array(n);
+    const alpha = new Float32Array(n);
+    items.forEach((it, i) => {
+      const v = llToV3(it.lat, it.lon, this.surfR(it.lat, it.lon, 0.012));
+      pos[i * 3] = v.x; pos[i * 3 + 1] = v.y; pos[i * 3 + 2] = v.z;
+      col[i * 3] = it.c.r; col[i * 3 + 1] = it.c.g; col[i * 3 + 2] = it.c.b;
+      siz[i] = 4 + it.t * 6;                       // 약할수록 작게, 강할수록 크게
+      phase[i] = Math.random() * Math.PI * 2;      // 점마다 다른 위상 — 다같이 깜빡이면 격자가 다시 드러난다
+      alpha[i] = 0.25 + 0.75 * Math.sqrt(it.t);     // 문턱값 바로 위는 옅게, 강할수록 빠르게 짙어짐
+    });
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('aColor', new THREE.BufferAttribute(col, 3));
+    g.setAttribute('aSize', new THREE.BufferAttribute(siz, 1));
+    g.setAttribute('aPhase', new THREE.BufferAttribute(phase, 1));
+    g.setAttribute('aAlpha', new THREE.BufferAttribute(alpha, 1));
+    const m = new THREE.ShaderMaterial({
+      vertexShader: AURORA_VERT,
+      fragmentShader: AURORA_FRAG,
+      uniforms: { uMap: { value: getDotTex() }, uTime: { value: 0 }, uOpacity: { value: 0.8 } },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    const pts = new THREE.Points(g, m);
+    pts.frustumCulled = false;
+    const group = new THREE.Group();
+    group.add(pts);
+    group.userData.animMats = [m];   // tick() 이 자동으로 uTime 을 갱신한다(main.js)
+    return group;
   }
 
   metaAurora(d) {

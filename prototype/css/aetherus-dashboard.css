@@ -64,3 +64,76 @@
 @media(max-width:760px) and (orientation:landscape) and (max-height:560px){.mission-edit-button{display:block}}
 
 @media(prefers-reduced-motion:reduce){.aetherus-mission-control *{scroll-behavior:auto!important;transition:none!important}}
+
+/* 2026-09-05: readable information flow. Keep existing saved widget layouts;
+   topic filters temporarily reveal their own widgets, including on narrow screens. */
+.aetherus-mission-control{grid-template-columns:240px minmax(0,1fr);grid-template-rows:auto auto auto;align-content:start;gap:16px;padding:20px;overflow-y:auto;overflow-x:hidden;background:rgba(3,10,17,.86);font-size:16px;line-height:1.55;pointer-events:auto}
+.mission-left{display:flex;grid-column:1;grid-row:1/4;align-self:start;position:sticky;top:0;overflow:visible}
+.mission-center{grid-column:2;grid-row:1;display:flex;flex-direction:column;min-height:260px;height:auto;padding-bottom:16px;overflow:visible;background:linear-gradient(120deg,rgba(13,38,52,.94),rgba(6,18,28,.68))}
+.mission-center-tools{flex-wrap:wrap;padding:16px;gap:12px}
+.mission-filter{max-width:none;flex-wrap:wrap;overflow:visible}
+.mission-filter button,.mission-edit-button{font-size:14px;padding:0 14px;width:auto;min-height:44px}
+.mission-source-mode{display:inline;max-width:none;font-size:14px;color:#adbfcb;white-space:normal}
+.mission-center-actions{flex-wrap:wrap}
+.mission-stage-clock{position:static;margin:8px 18px 16px;display:flex;gap:12px;text-align:left;background:none;border:0}
+.mission-stage-clock small,.mission-stage-clock b{font-size:14px;color:#adc3d0}
+.mission-launch-marker{position:static;margin:12px 18px;padding:0;max-width:none;background:none;border:0;transform:none}
+.mission-launch-marker b{font-size:20px;white-space:normal}.mission-launch-marker small{font-size:14px;color:#bfd0db;white-space:normal}
+.mission-center-legend{position:static;display:flex;justify-content:flex-start;flex-wrap:wrap;gap:16px;margin:12px 18px;border:0;background:none;padding:0}
+.mission-center-legend span,.mission-center-legend b,.mission-center-legend em{display:inline;font-size:14px;color:#b7ccd8}
+.mission-right{grid-column:2;grid-row:2;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto;gap:16px;overflow:visible}
+.mission-right-top,.mission-right-bottom{display:flex;flex-direction:column;gap:16px;min-height:0}
+.mission-right .mission-widget{min-height:0}
+.mission-bottom{grid-column:2;grid-row:3;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.mission-bottom .mission-widget:nth-child(n){display:flex;min-height:0}
+.mission-widget{border-color:#2a414e;background:#0c1923;border-radius:12px;box-shadow:none;overflow:visible}
+.mission-widget>header{padding:14px 18px;min-height:52px;align-items:flex-start;flex-wrap:wrap}
+.mission-widget>header b{font-size:16px;letter-spacing:0}
+.mission-widget>header span{font-size:14px;max-width:100%;white-space:normal;overflow:visible;color:#a8c2d0}
+.mission-widget>header span[data-state="pending"]{color:#edc88d}
+.mission-widget-body,.mission-bottom .mission-widget-body{overflow:visible;min-height:0;padding:16px 18px}
+.mission-data-row{margin:0;padding:12px 0;min-height:64px;align-items:start}
+.mission-data-row b,.mission-data-row small,.mission-following-row b,.mission-following-row small{font-size:14px;white-space:normal;overflow:visible;overflow-wrap:anywhere}
+.mission-data-row small,.mission-data-row i{font-size:14px;color:#adc0cd;white-space:normal}
+.mission-widget-empty,.mission-live-copy p,.mission-live-copy strong{font-size:16px;line-height:1.6;color:#bacdd8}
+.mission-live-copy{padding:0;min-height:0}.mission-live-copy strong{color:#f1f7fa}
+[data-widget-body="COUNTDOWN"]{justify-items:start;text-align:left;gap:12px;padding:20px}
+[data-widget-body="COUNTDOWN"]>b{font-size:18px;white-space:normal;overflow:visible}
+.mission-countdown{font-size:36px;line-height:1.25;color:#d2f0ff}
+[data-widget-body="COUNTDOWN"] small{font-size:14px;color:#b5cbd6}
+.mission-kp-value{padding:0;font-size:32px;line-height:1.4}
+.mission-kp-value+p,[data-widget-body="EARTH_WEATHER"] p{margin:12px 0;font-size:14px;color:#b5cbd6}
+.mission-panel-title b{font-size:18px}.mission-panel-title small{font-size:14px;color:#afc4d0}
+.mission-following>header,.mission-quick>header,.mission-quick button b,.mission-add-widget,.mission-room-row b{font-size:14px;letter-spacing:0}
+.mission-following-row{padding:12px 8px;min-height:72px}.mission-quick{margin-top:20px}
+.mission-quick button{min-height:52px}.mission-room-row{padding:10px 0;min-height:52px}.mission-room-row i{font-size:14px}
+.aetherus-mission-control .mission-widget-body button,.mission-widget-action,.mission-widget-body a{min-height:44px;font-size:14px;line-height:1.5}
+[data-widget-body="TONIGHT"] button{display:flex;align-items:center;gap:8px;width:100%;margin-top:10px;padding:10px 14px;text-align:left;border:1px solid #355160;border-radius:8px;background:#152e3d;color:#e5f5ff}
+.mission-editor,.mission-status-panel{position:fixed;top:80px;right:24px;width:min(560px,calc(100vw - 48px));max-height:calc(100vh - 104px)}
+.mission-editor-row b,.mission-editor-row button,.mission-editor header small,.mission-editor footer button,.mission-status-row b,.mission-status-row small,.mission-status-row em,.mission-status-panel header small,.mission-status-panel footer small,.mission-status-panel footer button{font-size:14px!important;white-space:normal}
+.mission-status-row{padding:12px 0}.mission-status-row>span{min-width:0}.mission-status-row small{overflow-wrap:anywhere}
+.mission-editor-row{min-height:64px}.mission-jwst-card b,.mission-jwst-card small{font-size:14px}
+.mission-room-picker button{font-size:14px;line-height:1.4;padding:8px}
+.aetherus-mission-control[data-filter="satellites"] .mission-right,.aetherus-mission-control[data-filter="iss"] .mission-right,.aetherus-mission-control[data-filter="weather"] .mission-right,.aetherus-mission-control[data-filter="astronomy"] .mission-right{display:none}
+.aetherus-mission-control:not([data-filter="all"]):not([data-filter="launches"]) .mission-center,.aetherus-mission-control:not([data-filter="all"]):not([data-filter="launches"]) .mission-bottom{grid-column:1/-1}
+@media(min-width:1600px){.mission-right{grid-template-columns:1.1fr 1fr}.mission-right-top,.mission-right-bottom{display:grid;grid-template-columns:1fr 1fr}.mission-bottom{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1000px){.aetherus-mission-control{grid-template-columns:minmax(0,1fr);padding:12px;gap:12px}.mission-left{position:static;display:flex;grid-column:1;grid-row:4}.mission-center{grid-column:1;grid-row:1;min-height:200px}.mission-right{grid-column:1;grid-row:2}.mission-bottom{grid-column:1;grid-row:3}.mission-quick{margin-top:0}}
+@media(max-width:760px){.aetherus-mission-control{grid-template-rows:auto auto auto auto;overflow-y:auto;top:max(111px,calc(env(safe-area-inset-top) + 101px))}.mission-center-tools{padding:12px}.mission-filter{max-width:none;flex-wrap:wrap}.mission-center-actions{gap:8px}.mission-source-mode{display:none}.mission-right{grid-template-columns:1fr}.mission-right-top,.mission-right-bottom{display:flex;min-height:0}.mission-bottom{grid-template-columns:1fr}.mission-bottom .mission-widget.is-wide{grid-column:auto}.mission-edit-button{display:block;width:auto;font-size:14px}.mission-stage-clock{position:static}.mission-launch-marker{position:static}.mission-bottom{display:grid}.mission-center-legend span{display:inline}.mission-editor,.mission-status-panel{inset:12px;width:auto;max-height:none}.mission-data-row{grid-template-columns:minmax(0,1fr)}.mission-editor-row{grid-template-columns:minmax(0,1fr) 48px 64px 44px 44px}}
+
+/* 2026-09-05: launch selection and manual observer controls stay keyboard accessible.
+   Results share the selected launch, while following remains an explicit saved action. */
+button.mission-data-row{width:100%;gap:10px;padding:12px 10px;border:1px solid transparent;border-bottom-color:#29404e;border-radius:6px;background:transparent;color:#e6f1f7;text-align:left;cursor:pointer}
+button.mission-data-row:hover{background:#163142}
+button.mission-data-row[aria-pressed="true"]{border-color:#82d4ef;background:#14364a}
+.mission-more-launches summary{min-height:44px;padding:12px 0;color:#b9deee;cursor:pointer}
+.mission-widget.is-waiting .mission-live-copy p{margin:6px 0;font-size:14px}
+.mission-widget.is-waiting .mission-widget-body{padding-top:12px;padding-bottom:12px}
+.mission-observer-form{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid #2a414e}
+.mission-observer-form label{font-size:14px;font-weight:650;color:#e0eff7}
+.mission-observer-form input{box-sizing:border-box;width:100%;min-width:0;min-height:48px;border:1px solid #527385;border-radius:8px;padding:10px 12px;background:#07131e;color:#f3f9ff;font:inherit;font-size:16px}
+.mission-observer-form input:focus-visible,.mission-more-launches summary:focus-visible{outline:2px solid #8adcf7;outline-offset:2px}
+.mission-observer-form small,.mission-pass-provenance{font-size:14px;line-height:1.6;color:#b4cad6;overflow-wrap:anywhere}
+.mission-observer-form button,[data-mission-weather],.mission-widget-action{border:1px solid #45677b;border-radius:8px;padding:10px 14px;min-height:44px;background:#173749;color:#e8f6ff;cursor:pointer;white-space:normal}
+.mission-observer-form button:disabled,.mission-observer-form input:disabled{opacity:.6;cursor:wait}
+.mission-kp-value~p{font-size:14px;line-height:1.6;color:#b5cbd6}
+@media(max-width:520px){.mission-editor-row{grid-template-columns:minmax(48px,1fr) minmax(64px,1fr) 44px 44px;padding:10px 0;gap:8px}.mission-editor-row>b{grid-column:1/-1}.mission-filter button{padding:0 10px}}

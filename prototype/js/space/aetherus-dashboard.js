@@ -7,6 +7,10 @@
 
 import { API } from '../config.js';
 import { fetchT } from '../net.js';
+import { widgetVisible, launchStatusLabel, selectedLaunch } from './mission-readability.js';
+import { getLaunchSchedule } from '../launch-schedule.js';
+import { worldPlaces } from '../geoname.js';
+import { normalizeObserver, parseObserverInput, parseNoaaTimestamp, latestNoaaKp } from './mission-observer.js';
 
 const STYLE_ID = 'aetherusMissionControlStyle';
 const PHOTO_CATALOG = '/data/space-photos.json';
@@ -14,18 +18,18 @@ const STORAGE_KEY = 'earthus:aetherus-mission-control-layout:v1';
 const DATA_CACHE_KEY = 'earthus:aetherus-mission-control-public-data:v1';
 const REFRESH_MS = 5 * 60 * 1000;
 const ROOM_TEMPLATES = Object.freeze([
-  ['SPACE_CONTROL', 'SPACE CONTROL', '◈'],
-  ['WEATHER_CENTER', 'WEATHER CENTER', '☼'],
-  ['ASTRONOMY_LAB', 'ASTRONOMY LAB', '✦'],
-  ['SATELLITE_TRACKING', 'SATELLITE TRACKING', '⌁'],
+  ['SPACE_CONTROL', '발사·우주 종합', '◈'],
+  ['WEATHER_CENTER', '우주·지구 날씨', '☼'],
+  ['ASTRONOMY_LAB', '천문·관측 사진', '✦'],
+  ['SATELLITE_TRACKING', '위성·발사 추적', '⌁'],
 ]);
 const EDITABLE_WIDGETS = Object.freeze([
-  ['FOLLOWING', 'Following'], ['NEXT_LAUNCH', 'Next Launch'], ['LIVE', 'Live Stream'], ['COUNTDOWN', 'Countdown'],
-  ['MISSION_TIMELINE', 'Mission Timeline'], ['PAYLOAD_STATUS', 'Payload Status'],
-  ['UPCOMING_LAUNCHES', 'Upcoming Launches'], ['TONIGHT', 'Tonight Above Me'],
-  ['SPACE_WEATHER', 'Space Weather'], ['EARTH_WEATHER', 'Earth Weather'],
-  ['CONTROL_ROOMS', 'My Control Rooms'], ['SATELLITE_PASS', 'Satellite Pass'],
-  ['AURORA', 'Aurora'], ['KOREA_SPACE', 'Korea Space'], ['SPACEX', 'SpaceX'],
+  ['FOLLOWING', '관심 발사'], ['NEXT_LAUNCH', '선택한 발사 요약'], ['LIVE', '발사 중계'], ['COUNTDOWN', '선택한 발사'],
+  ['MISSION_TIMELINE', '발사 진행 정보'], ['PAYLOAD_STATUS', '탑재체·임무'],
+  ['UPCOMING_LAUNCHES', '다가오는 발사 일정'], ['TONIGHT', '오늘 볼 하늘'],
+  ['SPACE_WEATHER', '지자기 활동 · Kp'], ['EARTH_WEATHER', '지구 날씨'],
+  ['CONTROL_ROOMS', '관심 분야 선택'], ['SATELLITE_PASS', 'ISS 통과 시각'],
+  ['AURORA', '오로라'], ['KOREA_SPACE', '한국 우주 소식'], ['SPACEX', 'SpaceX'],
   ['STARSHIP', 'Starship'], ['JWST', 'JWST'],
 ]);
 const BOTTOM_WIDGETS = Object.freeze([
@@ -49,6 +53,7 @@ const ROOM_DEFAULTS = Object.freeze({
 const DEFAULT_STATE = Object.freeze({
   activeRoom: 'SPACE_CONTROL',
   followingLaunchId: null,
+  selectedLaunchId: null,
   activeFilter: 'all',
 });
 const FILTER_WIDGETS = Object.freeze({
@@ -61,7 +66,7 @@ const FILTER_WIDGETS = Object.freeze({
 });
 const STATUS_SOURCES = Object.freeze([
   ['launches', '발사 일정', 'Launch Library 2'],
-  ['kp', 'Kp 관측', 'NOAA SWPC'],
+  ['kp', '관측 기반 Kp 지수', 'NOAA SWPC'],
   ['aurora', '오로라 모델', 'NOAA SWPC OVATION'],
   ['photos', '우주 사진 원장', 'Earthus provenance catalogue'],
 ]);
@@ -83,7 +88,7 @@ function ensureStylesheet() {
   const link = document.createElement('link');
   link.id = STYLE_ID;
   link.rel = 'stylesheet';
-  link.href = new URL('../../css/aetherus-dashboard.css?v=20260815-mc14', import.meta.url).href;
+  link.href = new URL('../../css/aetherus-dashboard.css?v=20260905-mission-complete', import.meta.url).href;
   document.head.append(link);
 }
 
@@ -93,7 +98,7 @@ function formatKst(value, withSeconds = false) {
   const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', second: withSeconds ? '2-digit' : undefined,
-    hour12: false, hourCycle: 'h23',
+    hourCycle: 'h23',
   }).formatToParts(date).map(part => [part.type, part.value]));
   return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}`
     + (withSeconds ? `:${parts.second}` : '');
@@ -142,6 +147,7 @@ function safeStoredState() {
         ? parsed.activeRoom : DEFAULT_STATE.activeRoom,
       rooms,
       followingLaunchId: typeof parsed.followingLaunchId === 'string' ? parsed.followingLaunchId : null,
+      selectedLaunchId: null,
       activeFilter: 'all',
     };
   } catch {
@@ -212,15 +218,15 @@ function buildMarkup() {
   mission.setAttribute('aria-label', 'AETHERUS My Mission Control');
   mission.innerHTML = `
     <aside class="mission-left mission-surface" data-widget="FOLLOWING">
-      <header class="mission-panel-title"><span><b>MY MISSION CONTROL</b><small>개인 관제센터 · 기기 저장</small></span>
+      <header class="mission-panel-title"><span><b>내 관제센터</b><small>관심 발사 · 이 기기에 저장</small></span>
         <button type="button" data-mission-edit aria-label="레이아웃 편집">⌁</button></header>
       <button type="button" class="mission-add-widget" data-mission-edit><span>＋</span> 위젯 추가</button>
       <section class="mission-following">
-        <header><b>FOLLOWING</b><span data-following-count>0</span></header>
+        <header><b>관심 발사</b><span data-following-count>0</span></header>
         <div data-following-list class="mission-following-list"></div>
       </section>
       <section class="mission-quick">
-        <header><b>QUICK MENU</b></header>
+        <header><b>우주 탐험</b></header>
         ${routeButton('solar', '◉', '태양계 탐색')}
         ${routeButton('photos', '▣', '허블·제임스웹 사진')}
         ${routeButton('milkyway', '⌁', '우리은하')}
@@ -234,10 +240,9 @@ function buildMarkup() {
         <div class="mission-filter" role="group" aria-label="관제 자료 필터">
           <button type="button" class="current" data-mission-filter="all" aria-pressed="true">전체</button>
           <button type="button" data-mission-filter="launches" aria-pressed="false">발사</button>
-          <button type="button" data-mission-filter="satellites" aria-pressed="false">위성</button>
-          <button type="button" data-mission-filter="iss" aria-pressed="false">ISS</button>
-          <button type="button" data-mission-filter="weather" aria-pressed="false">날씨</button>
-          <button type="button" data-mission-filter="astronomy" aria-pressed="false">천문</button>
+          <button type="button" data-mission-filter="satellites" aria-pressed="false">위성 통과</button>
+          <button type="button" data-mission-filter="weather" aria-pressed="false">우주·지구 날씨</button>
+          <button type="button" data-mission-filter="astronomy" aria-pressed="false">오늘 볼 하늘</button>
         </div>
         <div class="mission-center-actions">
           <span class="mission-source-mode" data-mission-source-mode>자료 확인 중</span>
@@ -249,44 +254,38 @@ function buildMarkup() {
           <button type="button" class="mission-edit-button" data-mission-edit>레이아웃 편집</button>
         </div>
       </div>
-      <div class="mission-orbit-diagram" aria-label="실시간 위치가 아닌 궤도 구조 도식">
-        <i class="mission-orbit mission-orbit-a"></i><i class="mission-orbit mission-orbit-b"></i>
-        <span class="mission-orbit-label mission-orbit-label-a">HUBBLE · 궤도 도식</span>
-        <span class="mission-orbit-label mission-orbit-label-b">JWST · L2 도식</span>
-      </div>
       <div class="mission-launch-marker" data-widget="NEXT_LAUNCH" data-launch-marker hidden
-        role="group" aria-label="Next Launch">
+        role="group" aria-label="선택한 발사 요약">
         <span aria-hidden="true">△</span><b data-launch-name>발사 일정</b>
         <small><span data-launch-site>위치 미수신</span> · <span data-launch-marker-state>일정</span></small>
       </div>
       <div class="mission-stage-clock"><small>기기 시각 · KST</small><b data-mission-device-time>--</b></div>
       <div class="mission-center-legend">
-        <span><i class="ready"></i>공식/공개 자료</span><span><i></i>계산·도식</span>
+        <span><i class="ready"></i>출처와 시각은 각 카드에 표시됩니다</span>
         <span>▣ <em data-mission-photo-count>사진 확인 중</em></span>
-        <b>3D EARTH</b>
       </div>
     </section>
 
     <aside class="mission-right">
       <div class="mission-right-top">
-        ${widgetShell('LIVE', 'LIVE STREAM')}
-        ${widgetShell('COUNTDOWN', 'LAUNCH COUNTDOWN')}
+        ${widgetShell('COUNTDOWN', '선택한 발사')}
+        ${widgetShell('LIVE', '발사 중계')}
       </div>
       <div class="mission-right-bottom">
-        ${widgetShell('MISSION_TIMELINE', 'MISSION TIMELINE')}
-        ${widgetShell('PAYLOAD_STATUS', 'PAYLOADS')}
+        ${widgetShell('MISSION_TIMELINE', '발사 진행 정보')}
+        ${widgetShell('PAYLOAD_STATUS', '탑재체·임무')}
       </div>
     </aside>
 
     <section class="mission-bottom">
-      ${widgetShell('UPCOMING_LAUNCHES', 'UPCOMING LAUNCHES')}
-      ${widgetShell('TONIGHT', 'TONIGHT ABOVE ME')}
-      ${widgetShell('SPACE_WEATHER', 'SPACE WEATHER')}
-      ${widgetShell('EARTH_WEATHER', 'EARTH WEATHER')}
-      ${widgetShell('CONTROL_ROOMS', 'MY CONTROL ROOMS')}
-      ${widgetShell('SATELLITE_PASS', 'SATELLITE PASS')}
-      ${widgetShell('AURORA', 'AURORA')}
-      ${widgetShell('KOREA_SPACE', 'KOREA SPACE')}
+      ${widgetShell('UPCOMING_LAUNCHES', '다가오는 발사 일정')}
+      ${widgetShell('TONIGHT', '오늘 볼 하늘')}
+      ${widgetShell('SPACE_WEATHER', '지자기 활동 · Kp')}
+      ${widgetShell('EARTH_WEATHER', '지구 날씨')}
+      ${widgetShell('CONTROL_ROOMS', '관심 분야 선택')}
+      ${widgetShell('SATELLITE_PASS', 'ISS 통과 시각')}
+      ${widgetShell('AURORA', '오로라 모델')}
+      ${widgetShell('KOREA_SPACE', '한국 발사 일정')}
       ${widgetShell('SPACEX', 'SPACEX')}
       ${widgetShell('STARSHIP', 'STARSHIP')}
       ${widgetShell('JWST', 'JWST')}
@@ -301,7 +300,7 @@ function buildMarkup() {
       <footer><button type="button" data-layout-reset>기본 배치 복원</button>
         <button type="button" data-mission-editor-close>완료</button></footer>
     </aside>
-    <aside class="mission-status-panel mission-surface" data-mission-status hidden role="dialog"
+    <aside class="mission-status-panel mission-surface" data-mission-status hidden role="dialog" aria-modal="true"
       aria-label="관제 알림센터">
       <header><span><b>관제 알림센터</b><small>현재 화면의 공식·공개 자료 상태</small></span>
         <button type="button" data-mission-status-close aria-label="알림센터 닫기">×</button></header>
@@ -341,44 +340,16 @@ function makeMenuMissionButton(onRoute) {
   return button;
 }
 
-function launchListUrl() {
-  try {
-    const url = new URL(API.LAUNCH);
-    /* 한 번의 LL2 응답에서 다음 발사뿐 아니라 Korea/SpaceX/Starship 위젯도
-       대조한다. 별도 provider 호출을 반복하지 않도록 24건을 한 번만 받는다. */
-    url.searchParams.set('limit', '24');
-    url.searchParams.set('ordering', 'window_start');
-    return url.href;
-  } catch {
-    return API.LAUNCH;
-  }
-}
-
-function normalizeLaunches(value) {
-  if (!Array.isArray(value?.results)) return [];
-  return value.results.filter(item => item?.id && item?.name && item?.window_start).map(item => ({
-    id: String(item.id), name: String(item.name), scheduledAt: item.window_start,
-    windowEnd: item.window_end || null, status: item.status?.name || '상태 미수신',
-    statusDescription: item.status?.description || '', webcastLive: item.webcast_live === true,
-    provider: item.launch_service_provider?.name || '운영기관 미수신',
-    site: item.pad?.location?.name || item.pad?.name || '발사장 미수신',
-    missionType: item.mission?.type || null, missionName: item.mission?.name || null,
-    videoUrls: (Array.isArray(item.mission?.vid_urls) ? item.mission.vid_urls : []).map(video => {
-      const rawUrl = typeof video === 'string' ? video : video?.url;
-      try {
-        const parsed = new URL(rawUrl); if (parsed.protocol !== 'https:') return null;
-        return { url: parsed.href, title: String(video?.title || video?.publisher || '발사 송출 열기') };
-      } catch { return null; }
-    }).filter(Boolean),
-  }));
-}
+/* 한 번의 LL2 응답에서 다음 발사뿐 아니라 Korea/SpaceX/Starship 위젯도
+   대조한다. 별도 provider 호출을 반복하지 않도록 24건을 한 번만 받는다.
+   2026-09-05: 공용 launch-schedule.js의 30건 응답을 EARTHUS 발사 핀과 공유한다. */
 
 function normalizeAurora(value) {
   const coordinates = Array.isArray(value?.coordinates) ? value.coordinates : [];
   const intensity = coordinates.map(row => Number(row?.[2])).filter(Number.isFinite);
   if (!intensity.length) return null;
-  const forecastAt = value['Forecast Time'] || value.forecast_time || value.forecastTime || null;
-  const observedAt = value['Observation Time'] || value.observation_time || value.observationTime || null;
+  const forecastAt = parseNoaaTimestamp(value['Forecast Time'] || value.forecast_time || value.forecastTime);
+  const observedAt = parseNoaaTimestamp(value['Observation Time'] || value.observation_time || value.observationTime);
   return {
     forecastAt, observedAt,
     max: Math.max(...intensity),
@@ -405,7 +376,9 @@ function setText(root, selector, value) {
 function stateBadge(root, type, value) {
   const node = root.querySelector(`[data-widget-state="${type}"]`);
   if (!node) return;
-  node.textContent = value.label;
+  node.textContent = ({ OBSERVED: '관측', MODEL: '모델', SCHEDULED: '예정',
+    'LOCATION REQUIRED': '위치 필요', CALCULATING: '계산 중',
+    'ISS · CALCULATED': 'ISS · 궤도 계산', 'DEVICE LOCAL': '이 기기에 저장' })[value.label] || value.label;
   node.dataset.state = value.state;
 }
 
@@ -424,7 +397,11 @@ function renderRows(container, rows, emptyCopy) {
     empty.textContent = emptyCopy; container.append(empty); return;
   }
   rows.forEach(row => {
-    const item = document.createElement('div'); item.className = 'mission-data-row';
+    const item = document.createElement(row.launchId ? 'button' : 'div'); item.className = 'mission-data-row';
+    if (row.launchId) {
+      item.type = 'button'; item.dataset.selectLaunch = row.launchId;
+      item.setAttribute('aria-pressed', row.selected ? 'true' : 'false');
+    }
     const main = document.createElement('span');
     const title = document.createElement('b'); title.textContent = row.title;
     const copy = document.createElement('small'); copy.textContent = row.copy;
@@ -444,16 +421,16 @@ function renderStatusCenter(mission, data, state) {
     ? launches.find(item => item.id === state.followingLaunchId) : null;
   const rows = [];
 
-  if (next?.webcastLive) {
+  if (next?.webcastLive && data.sourceModes.launches === 'live') {
     rows.push({ state: 'live', badge: 'LIVE', title: next.name,
-      copy: `LL2 webcast_live=true · ${formatKst(data.launchRetrievedAt)} KST` });
+      copy: `Launch Library 2 · 조회 ${formatKst(data.launchRetrievedAt)} KST` });
   }
   if (following) {
-    rows.push({ state: 'following', badge: 'FOLLOWING', title: following.name,
-      copy: `${formatKst(following.scheduledAt)} KST · ${following.status}` });
+    rows.push({ state: 'following', badge: '관심 발사', title: following.name,
+      copy: `${formatKst(following.scheduledAt)} KST · ${launchStatusLabel(following.status)}` });
   } else if (next) {
-    rows.push({ state: 'info', badge: 'NEXT', title: next.name,
-      copy: `${formatKst(next.scheduledAt)} KST · ${next.status}` });
+    rows.push({ state: 'info', badge: '다음 발사', title: next.name,
+      copy: `${formatKst(next.scheduledAt)} KST · ${launchStatusLabel(next.status)}` });
   }
 
   STATUS_SOURCES.forEach(([id, title, provider]) => {
@@ -463,7 +440,7 @@ function renderStatusCenter(mission, data, state) {
     if (id === 'aurora' && (data.aurora?.forecastAt || data.aurora?.observedAt)) {
       evidenceTime = data.aurora.forecastAt || data.aurora.observedAt;
     }
-    rows.push({ state: mode, badge: mode === 'live' ? 'LIVE' : (mode === 'cached' ? 'CACHED' : '미수신'),
+    rows.push({ state: mode, badge: mode === 'live' ? '자료 수신' : (mode === 'cached' ? '저장본' : '미수신'),
       title, copy: evidenceTime ? `${provider} · ${formatKst(evidenceTime)} KST` : `${provider} · 시각 미수신` });
   });
 
@@ -488,11 +465,15 @@ function renderStatusCenter(mission, data, state) {
 }
 
 function renderMissionData(mission, data, state) {
+  const observerFocused = document.activeElement?.id === 'missionObserverInput';
+  const selection = observerFocused ? [document.activeElement.selectionStart, document.activeElement.selectionEnd] : null;
   const launches = data.launches || [];
-  const next = launches[0] || null;
+  const next = selectedLaunch(launches, state.selectedLaunchId);
+  state.selectedLaunchId = next?.id || null;
+  mission.dataset.hasLaunch = String(Boolean(next));
   const retrieved = data.launchRetrievedAt ? formatKst(data.launchRetrievedAt) : '조회 시각 미수신';
-  const unavailable = { label: 'UNAVAILABLE', state: 'unavailable' };
-  const ready = { label: 'READY', state: 'ready' };
+  const unavailable = { label: '자료 미수신', state: 'unavailable' };
+  const ready = { label: '자료 수신', state: 'ready' };
   const cachedSources = Object.entries(data.sourceModes || {})
     .filter(([, mode]) => mode === 'cached').map(([source]) => source);
   const liveSources = Object.values(data.sourceModes || {}).filter(mode => mode === 'live').length;
@@ -505,26 +486,29 @@ function renderMissionData(mission, data, state) {
   liveBody.replaceChildren();
   const liveCopy = document.createElement('div'); liveCopy.className = 'mission-live-copy';
   const liveTitle = document.createElement('strong');
-  liveTitle.textContent = next?.webcastLive ? 'LL2에서 LIVE 상태 수신' : '현재 LIVE 상태 미수신';
+  const verifiedLive = next?.webcastLive && data.sourceModes.launches === 'live';
+  mission.querySelector('[data-widget="LIVE"]').classList.toggle('is-waiting', !verifiedLive);
+  liveTitle.textContent = verifiedLive ? '선택한 발사 중계 중' : (next ? '선택한 발사 중계 대기' : '발사 일정 확인 중');
   const liveMeta = document.createElement('p');
-  liveMeta.textContent = next?.webcastLive
-    ? `${next.name} · Launch Library 2 · ${retrieved}`
-    : 'LL2 webcast_live=true인 해당 발사에 연결된 송출만 표시합니다.';
+  liveMeta.textContent = verifiedLive
+    ? `${next.name} · Launch Library 2 · 조회 ${retrieved} KST`
+    : (data.sourceModes.launches === 'cached' ? '저장된 자료 · 현재 송출 상태 미확인' : 'Launch Library 2 · 송출 시작 정보 미수신');
   liveCopy.append(liveTitle, liveMeta);
   const liveVideo = next?.videoUrls?.[0];
-  if (next?.webcastLive && liveVideo) {
+  if (liveVideo) {
     const liveLink = document.createElement('a');
     liveLink.href = liveVideo.url; liveLink.target = '_blank';
-    liveLink.rel = 'noopener noreferrer'; liveLink.textContent = `${liveVideo.title} ↗`;
+    liveLink.rel = 'noopener noreferrer'; liveLink.textContent = `${verifiedLive ? liveVideo.title : '예정 중계 페이지'} ↗`;
     liveCopy.append(liveLink);
-  } else if (next?.webcastLive) {
+  } else if (verifiedLive) {
     const missingLink = document.createElement('p');
     missingLink.className = 'mission-widget-empty';
     missingLink.textContent = '이 발사에 연결된 HTTPS 송출 URL은 미수신입니다.';
     liveCopy.append(missingLink);
   }
   liveBody.append(liveCopy);
-  stateBadge(mission, 'LIVE', next?.webcastLive ? sourceBadge(data, 'launches', ready.label) : unavailable);
+  stateBadge(mission, 'LIVE', verifiedLive ? sourceBadge(data, 'launches', '중계 중')
+    : { label: next ? '중계 대기' : '자료 미수신', state: next ? 'pending' : 'unavailable' });
 
   const countdownBody = mission.querySelector('[data-widget-body="COUNTDOWN"]');
   countdownBody.replaceChildren();
@@ -532,33 +516,55 @@ function renderMissionData(mission, data, state) {
   countdown.textContent = next ? countdownLabel(next.scheduledAt) : '--';
   const countdownName = document.createElement('b'); countdownName.textContent = next?.name || '다음 일정 미수신';
   const countdownTime = document.createElement('small');
-  countdownTime.textContent = next ? `${formatKst(next.scheduledAt)} KST · ${next.status}` : 'Launch Library 2 응답 없음';
+  countdownTime.textContent = next ? `${formatKst(next.scheduledAt)} KST · ${launchStatusLabel(next.status)} · Launch Library 2` : '발사 일정을 불러오지 못했습니다';
   countdownBody.append(countdownName, countdown, countdownTime);
-  stateBadge(mission, 'COUNTDOWN', next ? sourceBadge(data, 'launches', ready.label) : unavailable);
+  if (next) {
+    const follow = document.createElement('button'); follow.type = 'button'; follow.className = 'mission-widget-action';
+    const followed = state.followingLaunchId === next.id;
+    follow.dataset[followed ? 'unfollowLaunch' : 'followLaunch'] = next.id;
+    follow.textContent = followed ? '관심 발사에서 해제' : '관심 발사로 저장';
+    follow.setAttribute('aria-pressed', followed ? 'true' : 'false'); countdownBody.append(follow);
+  }
+  const launchBadge = next ? sourceBadge(data, 'launches', launchStatusLabel(next.status)) : unavailable;
+  if (next && /To Be|Hold/i.test(next.status) && launchBadge.state !== 'cached') launchBadge.state = 'pending';
+  stateBadge(mission, 'COUNTDOWN', launchBadge);
 
   renderRows(mission.querySelector('[data-widget-body="MISSION_TIMELINE"]'), next ? [
-    { title: '일정 등록', copy: formatKst(next.scheduledAt) + ' KST', tail: next.status },
-    { title: '발사 세부 타임라인', copy: '공식 이벤트 단계 미수신', tail: '—' },
-    { title: '궤도 투입·분리', copy: '확인 전에는 표시하지 않음', tail: '—' },
+    { title: '예정 시각', copy: formatKst(next.scheduledAt) + ' KST', tail: launchStatusLabel(next.status) },
+    { title: '세부 진행 단계', copy: '발사·분리·궤도 투입 자료 미수신 · Launch Library 2', tail: '—' },
   ] : [], '검증 가능한 미션 타임라인이 없습니다.');
-  stateBadge(mission, 'MISSION_TIMELINE', next ? sourceBadge(data, 'launches', ready.label) : unavailable);
+  stateBadge(mission, 'MISSION_TIMELINE', next ? { label: '일정만 확인', state: 'pending' } : unavailable);
 
   renderRows(mission.querySelector('[data-widget-body="PAYLOAD_STATUS"]'), next ? [
-    { title: next.missionName || 'Payload manifest 미수신', copy: next.missionType || '임무 유형 미수신', tail: '예정' },
-    { title: '분리·첫 교신 상태', copy: '공식 확인 전에는 비워 둠', tail: '—' },
+    { title: next.missionName || '탑재체 명세 미수신', copy: next.missionType || '임무 유형 미수신', tail: '예정' },
+    { title: '분리·첫 교신 상태', copy: '미수신 · Launch Library 2', tail: '—' },
   ] : [], '검증 가능한 payload 자료가 없습니다.');
   stateBadge(mission, 'PAYLOAD_STATUS', next ? sourceBadge(data, 'launches', 'SCHEDULED') : unavailable);
 
-  renderRows(mission.querySelector('[data-widget-body="UPCOMING_LAUNCHES"]'), launches.slice(0, 4).map(item => ({
+  const launchRows = launches.map(item => ({
     title: item.name, copy: `${formatKst(item.scheduledAt)} KST · ${item.provider}`,
-    tail: countdownLabel(item.scheduledAt),
-  })), '발사 일정 응답이 없습니다.');
+    tail: `${item.id === next?.id ? '선택됨 · ' : ''}${launchStatusLabel(item.status)}`,
+    launchId: item.id, selected: item.id === next?.id,
+  }));
+  const upcomingBody = mission.querySelector('[data-widget-body="UPCOMING_LAUNCHES"]');
+  renderRows(upcomingBody, launchRows.slice(0, 6), data.launchError
+    ? `발사 자료 연결 대기${data.launchRetryAt ? ` · ${formatKst(data.launchRetryAt)} KST 이후 다시 조회` : ''}`
+    : '현재 응답에 발사 일정이 없습니다.');
+  if (launchRows.length > 6) {
+    const more = document.createElement('details'); more.className = 'mission-more-launches';
+    const summary = document.createElement('summary'); summary.textContent = `이후 일정 ${launchRows.length - 6}개`;
+    const rows = document.createElement('div'); renderRows(rows, launchRows.slice(6), '');
+    more.open = launchRows.slice(6).some(row => row.selected); more.append(summary, rows); upcomingBody.append(more);
+  }
   stateBadge(mission, 'UPCOMING_LAUNCHES', launches.length
     ? sourceBadge(data, 'launches', `LL2 · ${retrieved}`) : unavailable);
 
   const tonight = mission.querySelector('[data-widget-body="TONIGHT"]');
-  renderRows(tonight, [], '사용자 위치를 선택하지 않아 통과 시각을 계산하지 않았습니다.');
-  stateBadge(mission, 'TONIGHT', { label: 'LOCATION REQUIRED', state: 'unavailable' });
+  renderRows(tonight, [], data.observer
+    ? `${data.observer.name}의 ISS 통과는 위성 통과에서 계산할 수 있습니다. 태양계의 현재 배치와 관측 사진도 살펴보세요.`
+    : '태양계의 현재 배치와 관측 사진을 살펴보세요. 위성 통과에서 도시를 입력하면 ISS 통과를 계산할 수 있습니다.');
+  tonight.insertAdjacentHTML('beforeend', routeButton('solar', '◉', '오늘의 태양계') + routeButton('photos', '▣', '관측 사진 보기'));
+  stateBadge(mission, 'TONIGHT', { label: '탐험', state: 'ready' });
 
   const spaceWeather = mission.querySelector('[data-widget-body="SPACE_WEATHER"]');
   spaceWeather.replaceChildren();
@@ -567,9 +573,14 @@ function renderMissionData(mission, data, state) {
   kpValue.textContent = data.kp ? `Kp ${data.kp.value.toFixed(2)}` : 'Kp --';
   const kpCopy = document.createElement('p');
   kpCopy.dataset.missionKpTime = '';
-  kpCopy.textContent = data.kp ? `NOAA SWPC · ${formatKst(data.kp.observedAt)} KST` : 'NOAA SWPC 응답 없음';
+  kpCopy.textContent = data.kp ? `NOAA SWPC · 자료 시각 ${formatKst(data.kp.observedAt)} KST` : 'NOAA SWPC 응답 없음';
   spaceWeather.append(kpValue, kpCopy);
-  stateBadge(mission, 'SPACE_WEATHER', data.kp ? sourceBadge(data, 'kp', 'OBSERVED') : unavailable);
+  if (data.kp) {
+    const meaning = document.createElement('p');
+    meaning.textContent = 'Kp는 0~9의 지자기 활동 지수입니다. 특정 장소에서 오로라가 보인다는 뜻은 아닙니다.';
+    spaceWeather.append(meaning);
+  }
+  stateBadge(mission, 'SPACE_WEATHER', data.kp ? sourceBadge(data, 'kp', '관측 기반 지수') : unavailable);
 
   const aurora = mission.querySelector('[data-widget-body="AURORA"]');
   aurora.replaceChildren();
@@ -585,49 +596,80 @@ function renderMissionData(mission, data, state) {
 
   const earthWeather = mission.querySelector('[data-widget-body="EARTH_WEATHER"]');
   earthWeather.replaceChildren();
-  const weatherTitle = document.createElement('strong'); weatherTitle.textContent = '위치 미선택';
-  const weatherCopy = document.createElement('p'); weatherCopy.textContent = 'Earthus에서 위치를 선택하면 공식 관측을 연결합니다.';
+  const weatherTitle = document.createElement('strong'); weatherTitle.textContent = data.observer?.name || '장소별 날씨 보기';
+  const weatherCopy = document.createElement('p'); weatherCopy.textContent = data.observer
+    ? `${data.observer.source} · ${data.observer.lat.toFixed(4)}, ${data.observer.lon.toFixed(4)} · 이 장소의 모델 날씨와 관측 자료를 확인하세요.`
+    : '위성 통과에서 도시를 입력하거나 EARTHUS에서 장소를 선택하세요.';
   const weatherButton = document.createElement('button'); weatherButton.type = 'button';
-  weatherButton.dataset.missionRoute = 'earth'; weatherButton.textContent = '지구에서 위치 선택';
+  weatherButton.dataset.missionWeather = ''; weatherButton.textContent = data.observer ? '이 장소의 날씨 열기' : 'EARTHUS 날씨 열기';
   earthWeather.append(weatherTitle, weatherCopy, weatherButton);
-  stateBadge(mission, 'EARTH_WEATHER', unavailable);
+  stateBadge(mission, 'EARTH_WEATHER', { label: 'EARTHUS 연결', state: 'ready' });
 
   const passBody = mission.querySelector('[data-widget-body="SATELLITE_PASS"]');
+  passBody.replaceChildren();
   if (data.satellitePass?.status === 'ready') {
     renderRows(passBody, data.satellitePass.rows, '앞으로 48시간 안에 앙각 10° 이상 ISS 통과가 없습니다.');
+    const provenance = document.createElement('p'); provenance.className = 'mission-pass-provenance';
+    provenance.textContent = `${data.satellitePass.position.name} · ${data.satellitePass.position.source} · 고도 0m 기준 · CelesTrak 궤도 기준 ${formatKst(data.satellitePass.epoch)} KST · 계산 ${formatKst(data.satellitePass.calculatedAt)} KST`;
+    const visibility = document.createElement('p'); visibility.className = 'mission-widget-empty';
+    visibility.textContent = '지평선 위 통과 계산입니다. 햇빛·구름·지형에 따른 육안 관측 가능성은 포함하지 않습니다.';
+    passBody.append(provenance, visibility);
     stateBadge(mission, 'SATELLITE_PASS', { label: 'ISS · CALCULATED', state: 'ready' });
   } else {
-    passBody.replaceChildren();
     const passCopy = document.createElement('p'); passCopy.className = 'mission-widget-empty';
-    passCopy.textContent = data.satellitePass?.message || '위치를 허용하면 ISS의 향후 48시간 통과를 이 기기에서 계산합니다.';
-    const passButton = document.createElement('button'); passButton.type = 'button';
-    passButton.className = 'mission-widget-action'; passButton.dataset.missionSatellitePass = '';
-    passButton.textContent = data.satellitePass?.status === 'loading' ? '계산 중…' : '내 위치로 계산';
-    passButton.disabled = data.satellitePass?.status === 'loading'; passBody.append(passCopy, passButton);
+    passCopy.textContent = data.satellitePass?.message || '도시 또는 위도, 경도를 입력해 향후 48시간 ISS 통과를 계산하세요.';
+    passBody.append(passCopy);
     stateBadge(mission, 'SATELLITE_PASS', data.satellitePass?.status === 'loading'
-      ? { label: 'CALCULATING', state: 'ready' } : { label: 'LOCATION REQUIRED', state: 'unavailable' });
+      ? { label: 'CALCULATING', state: 'pending' } : { label: '위치 선택', state: 'pending' });
   }
+  const passForm = document.createElement('form'); passForm.className = 'mission-observer-form';
+  passForm.dataset.missionObserverForm = '';
+  const inputLabel = document.createElement('label'); inputLabel.htmlFor = 'missionObserverInput';
+  inputLabel.textContent = '도시 또는 위도, 경도';
+  const input = document.createElement('input'); input.id = 'missionObserverInput'; input.name = 'observer';
+  input.type = 'text'; input.required = true; input.maxLength = 100; input.autocomplete = 'off';
+  input.setAttribute('list', 'missionObserverCities'); input.setAttribute('aria-describedby', 'missionObserverHint');
+  input.placeholder = '서울 또는 37.57, 126.98'; input.value = data.observerInput || '';
+  const cities = document.createElement('datalist'); cities.id = 'missionObserverCities';
+  worldPlaces().forEach(city => {
+    const option = document.createElement('option'); option.value = `${city.ko} · ${city.countryKo}`;
+    option.label = city.en; cities.append(option);
+  });
+  const hint = document.createElement('small'); hint.id = 'missionObserverHint';
+  hint.textContent = '도시는 지명표 대표 좌표입니다. 입력 좌표는 저장하지 않습니다.';
+  const calculate = document.createElement('button'); calculate.type = 'submit'; calculate.textContent = '입력한 위치로 계산';
+  const passButton = document.createElement('button'); passButton.type = 'button';
+  passButton.dataset.missionSatellitePass = ''; passButton.textContent = '내 기기 위치로 계산';
+  const loadingPass = data.satellitePass?.status === 'loading';
+  input.disabled = loadingPass; calculate.disabled = loadingPass; passButton.disabled = loadingPass;
+  passForm.append(inputLabel, input, cities, hint, calculate, passButton);
+  if (data.observer && !loadingPass) {
+    const selected = document.createElement('button'); selected.type = 'button';
+    selected.dataset.missionContextPass = ''; selected.textContent = `선택한 장소로 계산 · ${data.observer.name}`;
+    passForm.append(selected);
+  }
+  passBody.append(passForm);
 
   const koreaLaunches = providerLaunches(launches, /korea|korean|kari|kasa|naro|innospace|한빛|누리|대한민국/i);
   renderRows(mission.querySelector('[data-widget-body="KOREA_SPACE"]'), koreaLaunches.slice(0, 3).map(item => ({
     title: item.name, copy: `${formatKst(item.scheduledAt)} KST · ${item.site}`,
-    tail: countdownLabel(item.scheduledAt),
+    tail: countdownLabel(item.scheduledAt), launchId: item.id, selected: item.id === next?.id,
   })), 'LL2 현재 응답에 확인된 한국 발사 일정이 없습니다.');
   stateBadge(mission, 'KOREA_SPACE', koreaLaunches.length
     ? sourceBadge(data, 'launches', 'LL2') : unavailable);
 
   const spacexLaunches = providerLaunches(launches, /spacex|falcon|dragon/i);
   renderRows(mission.querySelector('[data-widget-body="SPACEX"]'), spacexLaunches.slice(0, 3).map(item => ({
-    title: item.name, copy: `${formatKst(item.scheduledAt)} KST · ${item.status}`,
-    tail: countdownLabel(item.scheduledAt),
+    title: item.name, copy: `${formatKst(item.scheduledAt)} KST · ${launchStatusLabel(item.status)}`,
+    tail: countdownLabel(item.scheduledAt), launchId: item.id, selected: item.id === next?.id,
   })), 'LL2 현재 응답에 확인된 SpaceX 일정이 없습니다.');
   stateBadge(mission, 'SPACEX', spacexLaunches.length
     ? sourceBadge(data, 'launches', 'LL2') : unavailable);
 
   const starshipLaunches = providerLaunches(launches, /starship|super heavy/i);
   renderRows(mission.querySelector('[data-widget-body="STARSHIP"]'), starshipLaunches.slice(0, 3).map(item => ({
-    title: item.name, copy: `${formatKst(item.scheduledAt)} KST · ${item.status}`,
-    tail: countdownLabel(item.scheduledAt),
+    title: item.name, copy: `${formatKst(item.scheduledAt)} KST · ${launchStatusLabel(item.status)}`,
+    tail: countdownLabel(item.scheduledAt), launchId: item.id, selected: item.id === next?.id,
   })), 'LL2 현재 응답에 확인된 Starship 일정이 없습니다.');
   stateBadge(mission, 'STARSHIP', starshipLaunches.length
     ? sourceBadge(data, 'launches', 'LL2') : unavailable);
@@ -667,30 +709,39 @@ function renderMissionData(mission, data, state) {
   if (next) {
     setText(marker, '[data-launch-name]', next.name);
     setText(marker, '[data-launch-site]', next.site);
-    setText(marker, '[data-launch-marker-state]', `${next.status} · 일정 위치`);
+    setText(marker, '[data-launch-marker-state]', launchStatusLabel(next.status));
   }
 
   const following = state.followingLaunchId ? launches.find(item => item.id === state.followingLaunchId) : null;
   const followingList = mission.querySelector('[data-following-list]'); followingList.replaceChildren();
   if (following) {
     const row = document.createElement('button'); row.type = 'button'; row.className = 'mission-following-row current';
-    row.dataset.unfollowLaunch = following.id;
-    row.innerHTML = '<span aria-hidden="true">△</span><span><b></b><small></small></span><i>×</i>';
+    row.dataset.selectLaunch = following.id;
+    row.innerHTML = '<span aria-hidden="true">△</span><span><b></b><small></small></span><i>›</i>';
     row.querySelector('b').textContent = following.name;
-    row.querySelector('small').textContent = `${countdownLabel(following.scheduledAt)} · ${following.status}`;
+    row.querySelector('small').textContent = `${countdownLabel(following.scheduledAt)} · ${launchStatusLabel(following.status)}`;
     followingList.append(row);
+  } else if (state.followingLaunchId) {
+    const copy = document.createElement('p'); copy.className = 'mission-widget-empty';
+    copy.textContent = '저장한 발사가 현재 일정 목록에 없습니다.';
+    const remove = document.createElement('button'); remove.type = 'button'; remove.dataset.unfollowLaunch = state.followingLaunchId;
+    remove.textContent = '관심 발사에서 해제'; followingList.append(copy, remove);
   } else if (next) {
     const row = document.createElement('button'); row.type = 'button'; row.className = 'mission-following-row';
     row.dataset.followLaunch = next.id;
-    row.innerHTML = '<span aria-hidden="true">＋</span><span><b>다음 발사 팔로우</b><small></small></span><i>›</i>';
+    row.innerHTML = '<span aria-hidden="true">＋</span><span><b>선택한 발사 저장</b><small></small></span><i>›</i>';
     row.querySelector('small').textContent = next.name;
     followingList.append(row);
   } else {
     const copy = document.createElement('p'); copy.className = 'mission-widget-empty';
     copy.textContent = '팔로우할 검증 일정이 없습니다.'; followingList.append(copy);
   }
-  setText(mission, '[data-following-count]', following ? '1' : '0');
+  setText(mission, '[data-following-count]', state.followingLaunchId ? '1' : '0');
   renderStatusCenter(mission, data, state);
+  applyFilter(mission, state);
+  if (observerFocused && !input.disabled) {
+    input.focus({ preventScroll: true }); input.setSelectionRange(...selection);
+  }
 }
 
 function renderEditor(mission, state) {
@@ -738,7 +789,10 @@ function applyLayout(mission, state) {
 
 function applyFilter(mission, state) {
   const allowed = FILTER_WIDGETS[state.activeFilter] || null;
+  const hidden = currentRoomLayout(state).hidden;
   mission.querySelectorAll('[data-widget]').forEach(widget => {
+    widget.hidden = !widgetVisible(widget.dataset.widget, hidden, allowed)
+      || (widget.dataset.widget === 'NEXT_LAUNCH' && mission.dataset.hasLaunch === 'false');
     widget.classList.toggle('is-filtered-out', Boolean(allowed) && !allowed.includes(widget.dataset.widget));
   });
   mission.querySelectorAll('[data-mission-filter]').forEach(button => {
@@ -759,14 +813,27 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
   const mission = buildMarkup(); root.append(mission);
   const state = safeStoredState();
   const data = { launches: [], launchRetrievedAt: null, kp: null, aurora: null,
-    photos: null, satellitePass: null,
+    photos: null, satellitePass: null, observer: null, observerInput: '', launchError: null, launchRetryAt: null,
     sourceModes: { photos: 'unavailable', kp: 'unavailable', aurora: 'unavailable', launches: 'unavailable' },
     sourceRetrievedAt: { photos: null, kp: null, aurora: null, launches: null } };
   let lastRefresh = 0; let refreshPromise = null;
 
   const announce = copy => { setText(mission, '[data-mission-announcement]', copy); };
   const persistAndRender = copy => {
+    const focused = document.activeElement;
+    const followingControl = focused?.hasAttribute?.('data-follow-launch') || focused?.hasAttribute?.('data-unfollow-launch');
+    const focusAttribute = ['data-layout-toggle', 'data-layout-size', 'data-layout-move', 'data-room', 'data-layout-reset']
+      .find(attribute => focused?.hasAttribute?.(attribute));
+    const focusValue = focusAttribute ? focused.getAttribute(focusAttribute) : null;
+    const direction = focused?.dataset?.direction;
     const saved = saveState(state); applyLayout(mission, state); renderMissionData(mission, data, state);
+    if (focusAttribute && !focused.isConnected) {
+      [...mission.querySelectorAll(`[${focusAttribute}]`)].find(node => node.getAttribute(focusAttribute) === focusValue
+        && (!direction || node.dataset.direction === direction))?.focus({ preventScroll: true });
+    } else if (followingControl && !focused.isConnected) {
+      mission.querySelector('[data-widget-body="COUNTDOWN"] [data-follow-launch], [data-widget-body="COUNTDOWN"] [data-unfollow-launch]')
+        ?.focus({ preventScroll: true });
+    }
     announce(saved ? copy : `${copy} · 기기 저장은 사용할 수 없습니다.`);
   };
 
@@ -788,6 +855,7 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
       statusReturnFocus = null;
     }
     editorReturnFocus = trigger || document.activeElement;
+    state.activeFilter = 'all'; applyFilter(mission, state);
     editor.hidden = false; mission.classList.add('is-editing');
     renderEditor(mission, state); mission.querySelector('[data-mission-editor-close]')?.focus();
     announce('레이아웃 편집 대화상자를 열었습니다.');
@@ -835,7 +903,7 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
     if (event.target.closest('[data-layout-reset]')) {
       event.stopPropagation();
       const defaults = defaultRoomLayouts()[state.activeRoom];
-      state.rooms[state.activeRoom] = defaults; state.followingLaunchId = null;
+      state.rooms[state.activeRoom] = defaults;
       persistAndRender(`${ROOM_TEMPLATES.find(([id]) => id === state.activeRoom)?.[1]} 기본 배치를 복원했습니다.`);
     }
   };
@@ -902,33 +970,98 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
   document.addEventListener('fullscreenchange', syncFullscreenState);
   document.addEventListener('webkitfullscreenchange', syncFullscreenState);
 
-  const calculateSatellitePass = async () => {
-    data.satellitePass = { status: 'loading', message: '위치와 최신 위성 궤도 요소를 확인하고 있습니다.' };
+  let passRun = 0;
+  const calculateSatellitePass = async (manualPosition = null) => {
+    const run = ++passRun;
+    data.satellitePass = { status: 'loading', message: manualPosition
+      ? `${manualPosition.name}의 최신 위성 궤도 요소를 확인하고 있습니다.` : '기기 위치와 최신 위성 궤도 요소를 확인하고 있습니다.' };
     renderMissionData(mission, data, state);
     try {
-      const [{ myLocation }, { orbits }, { computePasses, azName }] = await Promise.all([
-        import('../mylocation.js'), import('../layers/space.js'), import('../passes.js'),
+      let position = manualPosition;
+      if (!position) {
+        const { myLocation } = await import('../mylocation.js');
+        position = normalizeObserver({ ...(await myLocation.locate(true)), name: '내 기기 위치', source: '기기 위치' });
+        if (!position) throw new Error(`${myLocation.reason() || '위치를 가져오지 못했습니다.'} · 도시 또는 좌표를 입력할 수 있습니다.`);
+      }
+      const [{ orbits }, { computePasses, azName }] = await Promise.all([
+        import('../layers/space.js'), import('../passes.js'),
       ]);
-      const position = await myLocation.locate(true);
-      if (!position) throw new Error(myLocation.reason() || '위치를 가져오지 못했습니다.');
       const catalog = await orbits.loadCatalog();
       const stationRows = Array.isArray(catalog?.groups?.stations) ? catalog.groups.stations : [];
       const issRow = stationRows.find(row => String(row?.id) === '25544' || /ISS \(ZARYA\)/i.test(row?.n || ''));
       if (!issRow) throw new Error('위성 카탈로그에서 ISS 궤도 요소를 찾지 못했습니다.');
       const iss = orbits.toSat(issRow, { id: 'stations', color: '#69d7f4' });
       if (!iss?.rec) throw new Error('ISS 궤도 요소를 계산 형식으로 변환하지 못했습니다.');
-      const passes = computePasses(iss.rec, { lat: position.lat, lon: position.lon, alt: 0.05 }, 48, 5);
+      const epochMs = (iss.rec.jdsatepoch - 2440587.5) * 86400_000;
+      if (!Number.isFinite(epochMs)) throw new Error('ISS 궤도 기준 시각을 받지 못했습니다.');
+      if (run !== passRun) return;
+      const calculatedAt = new Date().toISOString();
+      const passes = computePasses(iss.rec, position, 48, 5);
+      data.observer = position;
       data.satellitePass = {
-        status: 'ready', rows: passes.map(item => ({
+        status: 'ready', position, epoch: new Date(epochMs).toISOString(), calculatedAt,
+        rows: passes.map(item => ({
           title: `${formatKst(item.start)} KST · 최대앙각 ${item.maxEl}°`,
           copy: `${azName(item.startAz)} → ${azName(item.endAz)} · ${item.minutes}분 · SGP4 계산`,
           tail: `${item.minKm.toLocaleString()} km`,
         })),
       };
     } catch (error) {
+      if (run !== passRun) return;
       data.satellitePass = { status: 'error', message: error?.message || 'ISS 통과를 계산하지 못했습니다.' };
     }
     renderMissionData(mission, data, state);
+    announce(data.satellitePass.status === 'ready'
+      ? `${data.satellitePass.position.name}의 48시간 ISS 통과 ${data.satellitePass.rows.length}개를 계산했습니다.`
+      : data.satellitePass.message);
+  };
+
+  mission.addEventListener('input', event => {
+    if (event.target.id === 'missionObserverInput') data.observerInput = event.target.value;
+  });
+  mission.addEventListener('submit', event => {
+    if (!event.target.matches('[data-mission-observer-form]')) return;
+    event.preventDefault();
+    const input = event.target.elements.observer;
+    const observer = parseObserverInput(input.value, worldPlaces());
+    if (!observer) {
+      input.setCustomValidity('목록의 도시를 선택하거나 위도(-90~90), 경도(-180~180)를 입력하세요.');
+      input.reportValidity();
+      input.addEventListener('input', () => input.setCustomValidity(''), { once: true }); return;
+    }
+    data.observerInput = input.value; calculateSatellitePass(observer);
+  });
+
+  const receivePlace = (value, source = 'EARTHUS 선택 장소') => {
+    const observer = normalizeObserver({ ...value, source });
+    if (!observer) return;
+    data.observer = observer;
+    if (!mission.hidden) renderMissionData(mission, data, state);
+  };
+  document.addEventListener('earthus:place', event => receivePlace(event.detail, 'EARTHUS 위치'));
+  document.addEventListener('earthus:place-conditions', event => {
+    const { point, place } = event.detail || {};
+    if (!point) return;
+    receivePlace({ ...point, name: place?.city || place?.region || place?.country });
+  });
+
+  const navigateRoute = async route => {
+    if (route === 'earth') {
+      // The legacy aetherus:route listener handles space experiences only.
+      // Use the existing scene transition so Earth navigation also restores Cesium input.
+      const { sceneMgr } = await import('../scene.js');
+      await sceneMgr.to('earth', { stage: 'earth' });
+      return;
+    }
+    await onRoute(route);
+  };
+  const openEarthWeather = async () => {
+    const position = data.observer;
+    await navigateRoute('earth');
+    if (!position) return;
+    const { sheet } = await import('../ui.js');
+    await sheet.open({ id: 'mission-place', kind: 'weather', name: position.name,
+      lat: position.lat, lon: position.lon, data: { _lazy: true } });
   };
 
   mission.addEventListener('click', event => {
@@ -946,8 +1079,24 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
     if (event.target.closest('[data-mission-satellite-pass]')) {
       calculateSatellitePass(); return;
     }
+    if (event.target.closest('[data-mission-context-pass]')) {
+      if (data.observer) calculateSatellitePass(data.observer); return;
+    }
+    if (event.target.closest('[data-mission-weather]')) {
+      openEarthWeather().catch(() => announce('장소 날씨를 열지 못했습니다. EARTHUS에서 다시 선택해 주세요.')); return;
+    }
+    const launchButton = event.target.closest('[data-select-launch]');
+    if (launchButton) {
+      const launch = data.launches.find(item => item.id === launchButton.dataset.selectLaunch);
+      if (!launch) return;
+      state.selectedLaunchId = launch.id; state.activeFilter = 'launches'; renderMissionData(mission, data, state);
+      const heading = mission.querySelector('[data-widget-body="COUNTDOWN"] > b');
+      heading.tabIndex = -1; heading.focus({ preventScroll: true });
+      heading.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+      announce(`${launch.name} 선택. 발사 시각, 중계, 임무 정보를 함께 표시합니다.`); return;
+    }
     const route = event.target.closest('[data-mission-route]')?.dataset.missionRoute;
-    if (route) { onRoute(route); return; }
+    if (route) { navigateRoute(route).catch(() => announce('화면을 열지 못했습니다. 다시 선택해 주세요.')); return; }
     const craft = event.target.closest('[data-mission-craft]')?.dataset.missionCraft;
     if (craft) { onCraft(craft); return; }
     const filter = event.target.closest('[data-mission-filter]');
@@ -965,7 +1114,7 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
       state.activeRoom = room; persistAndRender(`${roomButton.textContent.trim()} 룸을 적용했습니다.`); return;
     }
     const follow = event.target.closest('[data-follow-launch]')?.dataset.followLaunch;
-    if (follow) { state.followingLaunchId = follow; persistAndRender('다음 발사를 이 기기에서 팔로우합니다.'); return; }
+    if (follow) { state.followingLaunchId = follow; persistAndRender('선택한 발사를 이 기기에 저장했습니다.'); return; }
     if (event.target.closest('[data-unfollow-launch]')) {
       state.followingLaunchId = null; persistAndRender('발사 팔로우를 해제했습니다.'); return;
     }
@@ -1039,9 +1188,7 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
       fetchT(API.AURORA, { cache: 'no-cache' }).then(response => {
         if (!response.ok) throw new Error(`AURORA_${response.status}`); return response.json();
       }),
-      fetchT(launchListUrl(), { cache: 'no-cache' }).then(response => {
-        if (!response.ok) throw new Error(`LAUNCH_${response.status}`); return response.json();
-      }),
+      getLaunchSchedule({ url: API.LAUNCH, fetcher: fetchT, force }),
     ]).then(([photos, kp, aurora, launches]) => {
       const refreshedAt = new Date();
       const nextCache = { ...previousCache };
@@ -1063,19 +1210,33 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
       const livePhotos = photos.status === 'fulfilled' ? photos.value : null;
       data.photos = useSource('photos', livePhotos, value => Array.isArray(value?.items));
 
-      const rows = kp.status === 'fulfilled' && Array.isArray(kp.value)
-        ? kp.value.filter(row => row?.kp_index != null && row?.time_tag) : [];
-      const latest = rows[rows.length - 1]; const value = Number(latest?.kp_index);
-      const liveKp = latest && Number.isFinite(value) ? { value, observedAt: latest.time_tag } : null;
-      data.kp = useSource('kp', liveKp, item => Number.isFinite(Number(item?.value)) && Boolean(item?.observedAt));
+      const liveKp = kp.status === 'fulfilled' ? latestNoaaKp(kp.value) : null;
+      data.kp = useSource('kp', liveKp, item => item?.value != null && Number.isFinite(Number(item.value))
+        && Number(item.value) >= 0 && Number(item.value) <= 9 && Boolean(parseNoaaTimestamp(item?.observedAt)));
+      if (data.kp) data.kp = { ...data.kp, observedAt: parseNoaaTimestamp(data.kp.observedAt) };
 
       const liveAurora = aurora.status === 'fulfilled' ? normalizeAurora(aurora.value) : null;
       data.aurora = useSource('aurora', liveAurora,
         item => Number.isFinite(Number(item?.max)) && Number(item?.sampleCount) > 0);
 
-      const liveLaunches = launches.status === 'fulfilled' ? normalizeLaunches(launches.value) : null;
-      data.launches = useSource('launches', liveLaunches,
-        items => Array.isArray(items) && items.every(item => item?.id && item?.scheduledAt)) || [];
+      const sharedLaunches = launches.status === 'fulfilled' ? launches.value : null;
+      data.launchError = sharedLaunches?.error || (launches.status === 'rejected' ? launches.reason?.message : null);
+      data.launchRetryAt = sharedLaunches?.retryAt || (launches.status === 'rejected' ? launches.reason?.retryAt : null);
+      if (sharedLaunches) {
+        data.launches = sharedLaunches.launches;
+        data.sourceModes.launches = sharedLaunches.mode;
+        data.sourceRetrievedAt.launches = sharedLaunches.retrievedAt;
+        nextCache.launches = cacheEntry(data.launches, sharedLaunches.retrievedAt);
+      } else {
+        // Carry forward the pre-shared-cache release only while its last success is under 24 hours old.
+        const cached = validCachedSource(previousCache, 'launches', items => Array.isArray(items)
+          && items.every(item => item?.id && Number.isFinite(Date.parse(item?.scheduledAt))));
+        const cacheAge = cached ? Date.now() - Date.parse(cached.retrievedAt) : Infinity;
+        const usable = cached && cacheAge >= 0 && cacheAge <= 24 * 3600_000;
+        data.launches = usable ? cached.value : [];
+        data.sourceModes.launches = usable ? 'cached' : 'unavailable';
+        data.sourceRetrievedAt.launches = usable ? cached.retrievedAt : null;
+      }
       data.launchRetrievedAt = data.sourceRetrievedAt.launches;
       saveDataCache(nextCache);
       if (data.photos) {
@@ -1096,14 +1257,30 @@ export function createAetherusMissionControl({ root, onRoute, onCraft }) {
   };
 
   applyLayout(mission, state); renderMissionData(mission, data, state);
+  let clockTimer = null;
+  const tick = () => {
+    clearTimeout(clockTimer);
+    if (mission.hidden || document.hidden) return;
+    setText(mission, '[data-mission-device-time]', formatKst(new Date()));
+    const launch = selectedLaunch(data.launches, state.selectedLaunchId);
+    setText(mission, '.mission-countdown', launch ? countdownLabel(launch.scheduledAt) : '--');
+    refresh().catch(error => console.warn('[aetherus-mission]', error.message));
+    clockTimer = setTimeout(tick, 60_000);
+  };
+  document.addEventListener('visibilitychange', tick);
   return {
     root: mission,
     setOpen(open) {
       mission.hidden = !open; root.classList.toggle('is-dashboard', open);
       if (open) {
-        setText(mission, '[data-mission-device-time]', formatKst(new Date(), true));
-        refresh().catch(error => console.warn('[aetherus-mission]', error.message));
+        tick();
+        if (!data.observer) import('../ui.js').then(({ chrome }) => {
+          if (!data.observer && chrome?.place) receivePlace({ ...chrome.place,
+            name: chrome.place.name || (chrome.isDefault ? chrome.defaultName : '') },
+          chrome.isDefault ? 'EARTHUS 기본 장소' : 'EARTHUS 위치');
+        }).catch(() => { /* Manual city/coordinate input remains available. */ });
       } else {
+        clearTimeout(clockTimer);
         editor.hidden = true; mission.classList.remove('is-editing'); editorReturnFocus = null;
         if (!statusPanel.hidden) closeStatus({ restoreFocus: false });
         mission.classList.remove('is-status-open');

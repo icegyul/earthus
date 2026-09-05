@@ -40,7 +40,7 @@ import {
   normalizeAetherusTelescope,
   resolveAetherusPhoto,
 } from './photo-catalog.js';
-import { createAetherusMissionControl } from './aetherus-dashboard.js?v=20260815-mc14';
+import { createAetherusMissionControl } from './aetherus-dashboard.js?v=20260905-information';
 
 const IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
 const BODY_ORDER = ['sun', 'mercury', 'venus', 'earth', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
@@ -72,8 +72,15 @@ const ENTER_HEIGHT = 220_000_000;
 const SOLAR_MARKER = { x: 29, y: .7, z: 9 };
 const DAY_MS = 86_400_000;
 const LIGHT_HOURS_PER_AU = 499.004783836 / 3600;
-const MOTION_SAMPLES = 145;
-const MOTION_DURATION_MS = 6500;
+/* 전진 도식을 1년만 펼치면 지구도 한 바퀴라 나선이 안 보였다. 12년을 펼쳐야
+   수성(촘촘한 나선)~목성(넓은 나선 한 바퀴)의 대비가 화면에 드러난다.
+   수성은 이 스팬에 약 50공전이라, 곡선으로 읽히려면 공전당 표본 ~29개가 필요하다. */
+const MOTION_YEARS = 12;
+const MOTION_SAMPLES = 1460;
+const MOTION_DURATION_MS = 9500;
+/* 태양의 은하 공전은 한 바퀴에 약 2.3억 년 — 12년 화면에서 실제 곡률은 0이다.
+   경로가 은하 궤도의 일부임을 보여주기 위해 곡률을 과장하고, 카드에 명시한다. */
+const MOTION_ARC = .62;
 const COSMIC_FPS = 30;
 const COSMIC_FRAME_MS = 1000 / COSMIC_FPS;
 const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
@@ -487,6 +494,11 @@ export const cosmic3d = {
   },
 
   async activate(stage) {
+    /* ⚠️ _internalStage 는 syncStage 가 setScene 직후 동기적으로 되돌린다.
+       이 함수는 async 라 await 뒤에서 읽으면 항상 false — 휠 줌이 만든 내부 단계
+       전환까지 canonical 목표로 스냅해 버려, 방금 연 전진 모드가 닫히고
+       연속 줌이 끊겼다. 진입 시점(리스너가 동기 호출)에 캡처해야 맞다. */
+    const internalStage = this._internalStage;
     this.root.classList.add('is-loading');
     const note = document.getElementById('cosmicNote');
     if (note) note.textContent = ko() ? '3D 우주 공간을 준비하는 중…' : 'Preparing the 3D space…';
@@ -501,7 +513,7 @@ export const cosmic3d = {
       await this.loadSolarMotionCatalog();
       if (store.scene !== 'space') { this.root.classList.remove('is-loading'); return; }
       this.root.classList.remove('is-loading');
-      if (!this._internalStage) this.animateTo(TARGET[stage] ?? TARGET.solar);
+      if (!internalStage) this.animateTo(TARGET[stage] ?? TARGET.solar);
       this.render();
     } catch (error) {
       console.error('[cosmic3d]', error);
@@ -1364,6 +1376,7 @@ export const cosmic3d = {
     }
     this._motionPaths.clear(); this._motionPlanetMeshes.clear();
     this.motionSun = null; this.motionSunGlow = null; this.motionDirectionMarker = null;
+    this._motionPlace = null;
   },
 
   buildSolarMotion() {
@@ -1371,9 +1384,31 @@ export const cosmic3d = {
     this.clearSolarMotion();
     const T = this.THREE;
     const start = new Date(`${this._motionCatalog.referenceDate}T00:00:00Z`);
-    const spanMs = this._motionCatalog.displaySpanDays * DAY_MS;
+    const spanMs = this._motionCatalog.displaySpanDays * DAY_MS * MOTION_YEARS;
     const travelStart = -42;
     const travelEnd = 42;
+    /* 진행 축을 과장 곡률(MOTION_ARC)의 원호로 구부린다 — 나선들이 굽은 리본이
+       되어, 이 경로가 은하 공전 궤도의 한 조각임이 화면에서 읽힌다. */
+    const arcRadius = (travelEnd - travelStart) / MOTION_ARC;
+    const spine = progress => {
+      const angle = (progress - .5) * MOTION_ARC;
+      return {
+        angle,
+        x: Math.sin(angle) * arcRadius,
+        z: (Math.cos(angle) - Math.cos(MOTION_ARC / 2)) * arcRadius,
+      };
+    };
+    /* orbit 오프셋(x=진행 방향, y=수직, z=측면)을 스파인 접선 좌표계로 돌려 놓는다 */
+    const place = (progress, orbit) => {
+      const s = spine(progress);
+      const sin = Math.sin(s.angle), cos = Math.cos(s.angle);
+      return new T.Vector3(
+        s.x + cos * orbit.x + sin * orbit.z,
+        orbit.y,
+        s.z - sin * orbit.x + cos * orbit.z,
+      );
+    };
+    this._motionPlace = place;
     const timeSamples = Array.from({ length: MOTION_SAMPLES }, (_, index) => {
       const progress = index / (MOTION_SAMPLES - 1);
       return {
@@ -1385,34 +1420,63 @@ export const cosmic3d = {
       const radius = Math.max(.0001, Math.hypot(point.x, point.y, point.z));
       const displayRadius = 2.1 + Math.log1p(radius) * 5.7;
       const scale = displayRadius / radius;
-      // 진행 방향을 X축으로 펼쳐 궤도면을 정면·측면 모두에서 읽게 한다. 실제 황도면과
+      // 진행 방향을 스파인에 맞춰 펼쳐 궤도면을 정면·측면 모두에서 읽게 한다. 실제 황도면과
       // 은하 공전 방향의 각도는 보존하지 않으며 이 한계를 카드에 항상 표시한다.
       return { x: point.z * scale * .35, y: point.x * scale, z: point.y * scale };
     };
-    const linePoints = [new T.Vector3(travelStart - 5, 0, 0), new T.Vector3(travelEnd + 5, 0, 0)];
+    const zero = { x: 0, y: 0, z: 0 };
+    const directionPoints = Array.from({ length: 64 }, (_, index) => place(-.06 + (index / 63) * 1.18, zero));
     const directionLine = new T.Line(
-      new T.BufferGeometry().setFromPoints(linePoints),
+      new T.BufferGeometry().setFromPoints(directionPoints),
       new T.LineDashedMaterial({ color: 0x83e0f2, transparent: true, opacity: .32, dashSize: 1.5, gapSize: .9 }),
     );
     directionLine.computeLineDistances(); this.solarMotionGroup.add(directionLine);
+    /* 콘은 +X를 향하게 만들고, 스파인 접선 방향은 그룹 회전으로 준다 */
+    const markerGroup = new T.Group();
     const directionMarker = new T.Mesh(
       new T.ConeGeometry(.72, 2.4, 16),
       new T.MeshBasicMaterial({ color: 0x83e0f2, transparent: true, opacity: .72 }),
     );
-    directionMarker.position.set(travelEnd + 5, 0, 0); directionMarker.rotation.z = -Math.PI / 2;
-    this.solarMotionGroup.add(directionMarker); this.motionDirectionMarker = directionMarker;
+    directionMarker.rotation.z = -Math.PI / 2;
+    markerGroup.add(directionMarker);
+    const markerSpine = spine(1.12);
+    markerGroup.position.copy(place(1.12, zero));
+    markerGroup.rotation.y = markerSpine.angle;
+    this.solarMotionGroup.add(markerGroup); this.motionDirectionMarker = markerGroup;
+
+    /* 릴 느낌의 황금 먼지 띠 — 경로 양옆을 따라 흐르는 별 무리 */
+    const compact = matchMedia('(max-width:560px)').matches;
+    const dustCount = compact ? 700 : 1300;
+    const dustPositions = new Float32Array(dustCount * 3);
+    for (let index = 0; index < dustCount; index += 1) {
+      const progress = -.05 + hash(index * 3.1) * 1.16;
+      const side = hash(index * 5.7) < .5 ? -1 : 1;
+      const lateral = side * (8.5 + hash(index * 7.3) * 13);
+      const vertical = normal(index * 11.9) * 1.9;
+      const point = place(progress, { x: 0, y: vertical, z: lateral });
+      dustPositions[index * 3] = point.x;
+      dustPositions[index * 3 + 1] = point.y;
+      dustPositions[index * 3 + 2] = point.z;
+    }
+    const dustGeometry = new T.BufferGeometry();
+    dustGeometry.setAttribute('position', new T.BufferAttribute(dustPositions, 3));
+    const dust = new T.Points(dustGeometry, new T.PointsMaterial({
+      color: 0xf3c98d, size: .62, sizeAttenuation: true, transparent: true, opacity: .5,
+      blending: T.AdditiveBlending, depthWrite: false,
+    }));
+    this.solarMotionGroup.add(dust);
 
     IDS.forEach(id => {
       const points = timeSamples.map(sample => {
-        const { progress } = sample;
-        const point = sample.positions[id];
-        const orbit = compressOrbit(point);
-        return new T.Vector3(mix(travelStart, travelEnd, progress) + orbit.x, orbit.y, orbit.z);
+        const orbit = compressOrbit(sample.positions[id]);
+        return place(sample.progress, orbit);
       });
       const geometry = new T.BufferGeometry().setFromPoints(points);
       geometry.setDrawRange(0, 2);
+      /* 가산 블렌딩 — 어두운 은하 배경 위에서 궤적이 빛줄기처럼 겹쳐 보인다 */
       const line = new T.Line(geometry, new T.LineBasicMaterial({
-        color: PLANETS[id].color, transparent: true, opacity: id === 'earth' ? .94 : .66, depthWrite: false,
+        color: PLANETS[id].color, transparent: true, opacity: id === 'earth' ? .95 : .78,
+        blending: T.AdditiveBlending, depthWrite: false,
       }));
       this.solarMotionGroup.add(line);
       const radius = clamp(PLANETS[id].radius * .5, .22, .62);
@@ -1427,15 +1491,15 @@ export const cosmic3d = {
     });
 
     this.motionSun = new T.Mesh(
-      new T.SphereGeometry(1.15, 20, 14),
+      new T.SphereGeometry(1.3, 20, 14),
       new T.MeshBasicMaterial({ color: 0xffca55 }),
     );
-    this.motionSun.position.set(travelStart, 0, 0); this.solarMotionGroup.add(this.motionSun);
+    this.motionSun.position.copy(place(0, zero)); this.solarMotionGroup.add(this.motionSun);
     this.motionSunGlow = new T.Sprite(new T.SpriteMaterial({
-      map: this.spriteTexture, color: 0xffb83d, transparent: true, opacity: .72,
+      map: this.spriteTexture, color: 0xffb83d, transparent: true, opacity: .78,
       blending: T.AdditiveBlending, depthWrite: false,
     }));
-    this.motionSunGlow.scale.set(8, 8, 1); this.motionSunGlow.position.copy(this.motionSun.position);
+    this.motionSunGlow.scale.set(10.5, 10.5, 1); this.motionSunGlow.position.copy(this.motionSun.position);
     this.solarMotionGroup.add(this.motionSunGlow);
     this.setSolarMotionProgress(0, false);
   },
@@ -1445,18 +1509,20 @@ export const cosmic3d = {
     const progress = clamp(value, 0, 1);
     this._motionProgress = progress;
     const pointIndex = Math.min(MOTION_SAMPLES - 1, Math.floor(progress * (MOTION_SAMPLES - 1)));
-    const travelX = mix(-42, 42, progress);
-    this.motionSun.position.set(travelX, 0, 0); this.motionSunGlow.position.copy(this.motionSun.position);
+    const sunPoint = this._motionPlace
+      ? this._motionPlace(progress, { x: 0, y: 0, z: 0 })
+      : new this.THREE.Vector3(mix(-42, 42, progress), 0, 0);
+    this.motionSun.position.copy(sunPoint); this.motionSunGlow.position.copy(sunPoint);
     this._motionPaths.forEach((entry, id) => {
       entry.line.geometry.setDrawRange(0, Math.max(2, pointIndex + 1));
       this._motionPlanetMeshes.get(id)?.position.copy(entry.points[pointIndex]);
     });
-    const distance = this._motionCatalog.distanceAu * progress;
-    const days = Math.round(this._motionCatalog.displaySpanDays * progress);
+    const distance = this._motionCatalog.distanceAu * MOTION_YEARS * progress;
+    const years = MOTION_YEARS * progress;
     const status = document.getElementById('cosmicMotionDistance');
     if (status) status.textContent = ko()
-      ? `${days}일 · 태양 이동 약 ${distance.toFixed(1)} AU`
-      : `${days} days · Sun travels about ${distance.toFixed(1)} AU`;
+      ? `${years.toFixed(1)}년 경과 · 태양 이동 약 ${Math.round(distance)} AU`
+      : `${years.toFixed(1)} yr elapsed · Sun travelled ~${Math.round(distance)} AU`;
     const bar = document.getElementById('cosmicMotionProgress');
     if (bar) bar.style.transform = `scaleX(${progress})`;
     if (updateScreen) this.render();
@@ -1527,11 +1593,11 @@ export const cosmic3d = {
     if (!this._motionCatalog) return;
     const isKo = ko();
     document.getElementById('cosmicMotionKind').textContent = isKo
-      ? `${this._motionCatalog.referenceDate} 자료 기준 · 1년을 펼친 3D 도식`
-      : `Reference ${this._motionCatalog.referenceDate} · one year unfolded in 3D`;
+      ? `${this._motionCatalog.referenceDate} 자료 기준 · ${MOTION_YEARS}년을 펼친 3D 나선 도식`
+      : `Reference ${this._motionCatalog.referenceDate} · ${MOTION_YEARS} years unfolded as 3D helices`;
     document.getElementById('cosmicMotionTitle').textContent = isKo ? '움직이는 태양계' : 'The moving Solar System';
     document.getElementById('cosmicMotionLimit').textContent = this._motionCatalog.displayLimit[isKo ? 'ko' : 'en'];
-    document.getElementById('cosmicMotionReplay').textContent = isKo ? '1년 다시 보기' : 'Replay one year';
+    document.getElementById('cosmicMotionReplay').textContent = isKo ? `${MOTION_YEARS}년 다시 보기` : `Replay ${MOTION_YEARS} years`;
     document.getElementById('cosmicMotionBack').textContent = isKo ? '← 은하수 전체' : '← Full Milky Way';
     const source = document.getElementById('cosmicMotionSource');
     source.href = this._motionCatalog.sourceUrl;
@@ -3084,7 +3150,12 @@ export const cosmic3d = {
       // 탐험 장면으로 들어간 뒤에만 연속 줌을 사용한다.
       if (this._dashboardOpen) return;
       if (this._solarMotionMode) {
-        this._motionDistance = clamp(this._motionDistance + Math.sign(event.deltaY) * 7, 88, 230);
+        /* 전진 뷰 안에서도 휠 줌이 이어진다 — 끝까지 빼면 은하수 전체로,
+           끝까지 당기면 태양계로 돌아간다. 릴처럼 한 축으로 계속 흐르는 줌. */
+        const next = this._motionDistance + Math.sign(event.deltaY) * 7;
+        if (next > 230) { this.closeSolarMotion(false); this.animateTo(TARGET.milkyway); return; }
+        if (next < 88) { this.closeSolarMotion(false); this.animateTo(TARGET.solar); return; }
+        this._motionDistance = next;
         this.render(); return;
       }
       if (this._photoMode) {
@@ -3096,8 +3167,16 @@ export const cosmic3d = {
         this.render(); return;
       }
       if (event.deltaY < 0 && this.target <= .015) { this.exitToEarth(); return; }
+      const stageBefore = stageFor(this.target);
       this.target = clamp(this.target + Math.sign(event.deltaY) * Math.min(.2, Math.abs(event.deltaY) / 760), 0, 3.15);
       this.syncStage(this.target); this.startMotion();
+      /* 태양계에서 바깥으로 빼는 순간 "움직이는 태양계"(전진 나선)로 이어진다 —
+         은하 크기로 나가기 전에, 태양계가 실제로 은하를 달리고 있음을 먼저 보여준다. */
+      if (stageBefore === 'solar' && event.deltaY > 0 && stageFor(this.target) === 'milkyway'
+          && !this._photoMode && !this._detailBody && !this._selectedCraft
+          && !this._galaxyGuideMode && !this._dashboardOpen) {
+        this.openSolarMotion();
+      }
     }, { passive: false });
 
     this.canvas.addEventListener('pointerdown', event => {
@@ -3544,12 +3623,27 @@ export const cosmic3d = {
       // 근접 지구 카메라에서는 태양계용 탐사선 모형의 과장 크기를 쓰지 않는다.
       // 미션 컨트롤 DOM의 얇은 궤도선이 위치 도식임을 명시한다.
     } else if (this._solarMotionMode) {
-      this.placeLabel('motion-sun', this.motionSun, ko() ? '태양 · 함께 전진' : 'Sun · moving with us', -18, -18);
-      ['earth', 'jupiter', 'neptune'].forEach((id, index) => {
-        this.placeLabel(`motion-${id}`, this._motionPlanetMeshes.get(id), PLANETS[id][ko() ? 'ko' : 'en'], 5, (index - 1) * 9);
+      const isKo = ko();
+      /* 릴처럼 행성마다 나선의 성격을 이름 옆에 적는다 — 궤도 반지름·주기의
+         차이가 "촘촘한 나선 ↔ 가장 크고 느림"으로 즉시 읽힌다. */
+      const HELIX_NOTE = {
+        mercury: ['촘촘한 나선', 'Tight helix'], venus: ['부드러운 나선', 'Smooth helix'],
+        earth: ['중간 나선', 'Medium helix'], mars: ['조금 넓은 나선', 'Slightly wider'],
+        jupiter: ['넓은 나선', 'Wide helix'], saturn: ['아주 넓은 나선', 'Very wide'],
+        uranus: ['극도로 넓은 나선', 'Extremely wide'], neptune: ['가장 크고 느림', 'Largest & slow'],
+      };
+      const compactLabels = matchMedia('(max-width:560px)').matches;
+      const shown = compactLabels ? ['mercury', 'earth', 'jupiter', 'neptune'] : IDS;
+      const speed = Math.round((this._motionCatalog?.galacticSpeedKph || 829000) / 3600);
+      this.placeLabel('motion-sun', this.motionSun,
+        isKo ? `태양 · 은하수를 약 ${speed} km/s로 통과` : `Sun · ~${speed} km/s through the Milky Way`, -18, -20);
+      shown.forEach((id, index) => {
+        const name = PLANETS[id][isKo ? 'ko' : 'en'];
+        this.placeLabel(`motion-${id}`, this._motionPlanetMeshes.get(id),
+          `${name} · ${HELIX_NOTE[id][isKo ? 0 : 1]}`, 7, index % 2 ? 11 : -15);
       });
       this.placeLabel('motion-direction', this.motionDirectionMarker,
-        ko() ? '은하 중심 공전 방향을 직선으로 펼침' : 'Galactic orbit direction unfolded', -160, -22);
+        isKo ? '태양 진행 방향 → · 곡률 과장' : "Direction of Sun's motion → · curvature exaggerated", -186, -22);
     } else if (this._photoMode) {
       const forward = new this.THREE.Vector3(); this.camera.getWorldDirection(forward);
       [...this._photoMarkers.values()]
@@ -3730,11 +3824,11 @@ export const cosmic3d = {
     if (this._solarMotionMode) {
       document.getElementById('cosmicStage').textContent = isKo ? '앞으로 나아가는 태양계' : 'The Solar System in motion';
       document.getElementById('cosmicScale').textContent = isKo
-        ? '1년 · 태양 약 48.6 AU 전진 · 행성 궤도 계산'
-        : 'One year · Sun travels about 48.6 AU · calculated planet orbits';
+        ? `${MOTION_YEARS}년 · 태양 약 ${Math.round((this._motionCatalog?.distanceAu || 48.6) * MOTION_YEARS)} AU 전진 · 행성 궤도 계산 · 곡률 과장`
+        : `${MOTION_YEARS} years · Sun travels ~${Math.round((this._motionCatalog?.distanceAu || 48.6) * MOTION_YEARS)} AU · calculated orbits · curvature exaggerated`;
       document.getElementById('cosmicHint').textContent = isKo
-        ? '행성은 멈춘 원이 아니라 전진하는 태양과 함께 3D 궤적을 만듭니다'
-        : 'Planets form 3D trails while moving with the Sun rather than orbiting a fixed point';
+        ? '행성은 멈춘 원이 아니라 전진하는 태양을 감는 나선을 그립니다 — 안쪽 행성일수록 촘촘합니다'
+        : 'Planets trace helices around the moving Sun — the inner the planet, the tighter the coil';
       document.getElementById('cosmicNote').textContent = this._motionCatalog?.limitations?.[isKo ? 'ko' : 'en'] || '';
       this.root.dataset.stage = 'solar-motion';
       this.updateExperienceNav('milkyway');
@@ -3830,3 +3924,4 @@ export const cosmic3d = {
       });
   },
 };
+

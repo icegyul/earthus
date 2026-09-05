@@ -41,12 +41,19 @@ const $ = s => document.querySelector(s);
       화면에서도 제목만 보여주고 읽으려면 원문으로 보낸다. */
 const regionalNews = {
   data: null,
-  async load() {
-    if (this.data) return this.data;
-    const r = await fetch(`${API.EVENTS}/regional-news.json`, { cache: 'no-cache' });
-    if (!r.ok) throw new Error('regional-news ' + r.status);
-    this.data = await r.json();
-    return this.data;
+  fetchedAt: 0,
+  pending: null,
+  async load(force = false) {
+    if (!force && this.data && Date.now() - this.fetchedAt < 300000) return this.data;
+    if (this.pending) return this.pending;
+    this.pending = (async () => {
+      const r = await fetch(`${API.EVENTS}/regional-news.json`, { cache: 'no-cache' });
+      if (!r.ok) throw new Error('regional-news ' + r.status);
+      this.data = await r.json();
+      this.fetchedAt = Date.now();
+      return this.data;
+    })();
+    try { return await this.pending; } finally { this.pending = null; }
   },
 };
 
@@ -128,9 +135,9 @@ export const eventPanel = {
     this.render();
     // ⚠️ 둘을 함께 받는다. 브리핑을 이벤트 뒤에 순차로 받으면 열고 나서 두 번 깜빡인다.
     const jobs = [];
-    if (this._warn == null) {
+    if (this.mode !== 'news' && this._warn == null) {
       jobs.push(warnings().then(w => { this._warn = w; })
-        .catch(e => { console.warn('[warn]', e.message); this._warn = []; }));
+        .catch(e => { console.warn('[warn]', e.message); this._warnError = true; }));
     }
     if (!events.list.length) jobs.push(events.refresh().catch(e => console.warn('[events]', e.message)));
     if (!briefs.loaded) jobs.push(briefs.load());
@@ -142,21 +149,19 @@ export const eventPanel = {
   close() { $('#eventSheet').classList.remove('up'); },
 
   render() {
+    this._renderId = (this._renderId || 0) + 1;
     const ko = i18n.lang === 'ko';
     const body = $('#eventBody');
     if (!body) return;
     body.innerHTML = '';
-    $('#eventTitle').textContent = ko ? '이벤트' : 'Events';
+    $('#eventTitle').textContent = this.mode === 'news' ? (ko ? '뉴스' : 'News') : (ko ? '지금 일어난 일' : "What's happening");
 
     const list = events.list || [];
     const conf = list.filter(e => e.status === 'confirmed');
     const unconf = list.filter(e => e.status !== 'confirmed');
 
-    if (!list.length) {
-      body.appendChild(el('p', 'sky-dim', ko
-        ? '이벤트 자료를 불러오지 못했습니다.' : 'Could not load events.'));
-      return;
-    }
+    // 받은 지적: 뉴스 메뉴가 이벤트 자료 실패 때문에 함께 닫혔다.
+    // 지역 뉴스와 공식 경고는 독립 자료다. 이벤트 0건이어도 각 탭은 유지한다.
 
     /* 채점 결과를 먼저 보여준다 — 몇 건에서 몇 건이 걸러졌는지.
        이 숫자가 이 레이어의 존재 이유다. */
@@ -261,17 +266,24 @@ export const eventPanel = {
      ⚠️ 제목은 매체가 쓴 **원어 그대로**다 (포르투갈어·인도네시아어 등).
         번역해서 보여주면 "매체가 이렇게 썼다"가 아니라 "우리가 이렇게 옮겼다"가 된다. */
   async renderLocalNews(body, ko) {
-    body.appendChild(el('p', 'sky-dim', ko ? '불러오는 중…' : 'Loading…'));
+    const requestId = this._renderId;
+    const loading = el('p', 'sky-dim', ko ? '지역 뉴스 불러오는 중…' : 'Loading regional news…');
+    body.appendChild(loading);
     let j;
     try {
       j = await regionalNews.load();
     } catch (e) {
-      body.lastChild.textContent = ko
-        ? `지역 뉴스를 불러오지 못했습니다 — ${e.message}`
-        : `Could not load local news — ${e.message}`;
-      return;
+      if (requestId !== this._renderId || this.show !== 'local') return;
+      loading.textContent = ko ? '지역 뉴스를 받지 못했습니다.' : 'Regional news is unavailable.';
+      const retry = el('button', 'comm-tab', ko ? '다시 불러오기' : 'Retry');
+      retry.onclick = () => { regionalNews.fetchedAt = 0; this.render(); };
+      body.appendChild(retry);
+      if (regionalNews.data) {
+        body.appendChild(el('p', 'sky-note', ko ? '이전에 받은 뉴스가 있습니다.' : 'Previously loaded headlines are available.'));
+        j = regionalNews.data;
+      } else return;
     }
-    if (this.show !== 'local') return;          // 그 사이 탭이 바뀌었다
+    if (this.show !== 'local' || requestId !== this._renderId) return; // 그 사이 탭 또는 요청이 바뀌었다
     /* ⚠️ 건수를 처음 알게 된 순간 **탭 라벨을 다시 그려야** 한다.
        안 그리면 '지역 뉴스 …' 가 그대로 남아 영원히 로딩 중처럼 보인다.
        ⚠️ 단, render() 를 다시 부르면 무한 재귀가 된다 — 라벨만 고쳐 넣는다. */
@@ -284,7 +296,9 @@ export const eventPanel = {
        ⚠️ first 조건도 뺀다 — 갱신될 때마다 건수를 맞춰야 한다. */
     const tab = document.querySelector('.comm-tab[data-tab="local"]');
     if (tab) tab.textContent = ko ? `뉴스 ${j.count}` : `News ${j.count}`;
-    body.removeChild(body.lastChild);
+    loading.remove();
+    body.appendChild(el('p', 'sky-note', `${ko ? '자료 수집' : 'Collected'} · ${esc(j.generated || j.updated || '시각 미제공')} · ${ko ? '제목을 눌러 원문 보기' : 'Open a headline to read the source'}`));
+    if (!(j.items || []).length) body.appendChild(el('p', 'sky-dim', ko ? '이번 자료에 표시할 뉴스가 없습니다.' : 'No headlines in this collection.'));
 
     const byRegion = j.byRegion || {};
     body.appendChild(el('div', 'ev-funnel',
@@ -333,6 +347,13 @@ export const eventPanel = {
      ⚠️ 여기 있는 것은 전부 기관 발표다. 우리가 등급을 다시 매기지 않는다.
         "우리 판단"이 섞이는 순간 사람들이 무엇을 믿어야 할지 알 수 없게 된다. */
   renderWarnings(body, ko) {
+    if (this._warnError && this._warn == null) {
+      body.appendChild(el('p', 'sky-dim', ko ? '공식 경고 자료를 받지 못했습니다.' : 'Official warning data is unavailable.'));
+      const retry = el('button', 'comm-tab', ko ? '다시 불러오기' : 'Retry');
+      retry.onclick = () => { this._warnError = false; this.open(); };
+      body.appendChild(retry);
+      return;
+    }
     if (this._warn == null) {
       body.appendChild(el('p', 'sky-dim', ko ? '불러오는 중…' : 'Loading…'));
       return;

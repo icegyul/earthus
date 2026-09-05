@@ -25,7 +25,8 @@ import { EarthusEngineRuntime } from '../../js/earthus2/v02/core/engine-runtime.
 import { ENGINE_CLASS, ENGINE_LIFECYCLE } from '../../js/earthus2/v02/core/constants.js';
 import { providerHealthState, PROVIDER_HEALTH } from '../../js/earthus2/v02/ops/provider-health.js';
 import { depthVisualScale } from '../../js/earthus2/v02/geo/bathymetry-policy.js';
-import { i18n } from './i18n.js?v=9';
+import { i18n } from './i18n.js?v=10';
+import { sourceTimeLabel } from './source-context.js?v=20260905';
 
 export {
   DATA_STATE, EVIDENCE_KIND, THERMAL_STATE, SCENE_MODE, VISUAL_ENGINE,
@@ -43,6 +44,7 @@ const LEGACY_TO_KIND = Object.freeze({
   OBSERVED: EVIDENCE_KIND.OFFICIAL_OBSERVATION,
   OFFICIAL_FORECAST: EVIDENCE_KIND.OFFICIAL_FORECAST,
   MODEL_SIGNAL: EVIDENCE_KIND.PROVIDER_FORECAST,
+  MODEL: EVIDENCE_KIND.PROVIDER_FORECAST,
   SIMULATION_ONLY: EVIDENCE_KIND.SIMULATION,
   DERIVED: EVIDENCE_KIND.EARTHUS_ANALYSIS,
   DEMO: EVIDENCE_KIND.VISUALIZATION_ONLY,
@@ -73,9 +75,11 @@ const STATE_SUFFIX = Object.freeze({
 
 // 정본에 없는 것 — 준비도/과금은 진리등급이 아니라 상태 표시다. 그대로 둔다.
 const NON_TRUTH = Object.freeze({
-  STALE: ['stale', 'STALE'],
-  UNAVAILABLE: ['na', 'UNAVAILABLE'],
-  INSUFFICIENT_DATA: ['na', 'INSUFFICIENT_DATA'],
+  LOADING: ['stale', () => i18n.ko ? '불러오는 중' : 'Loading'],
+  OFFICIAL_INFORMATION: ['info', () => i18n.ko ? '공식 정보' : 'Official information'],
+  STALE: ['stale', () => i18n.ko ? '이전 자료' : 'STALE'],
+  UNAVAILABLE: ['na', () => i18n.ko ? '확인 불가' : 'UNAVAILABLE'],
+  INSUFFICIENT_DATA: ['na', () => i18n.ko ? '자료 부족' : 'INSUFFICIENT_DATA'],
   // '준비 중'은 배지 중에서 유일하게 우리말 낱말이다 — 나머지(STALE·MODEL…)는 만국 공통 약어라
   // 그대로 두지만, 이것만은 화면 언어를 따라야 한다. 영어 화면 메뉴에 한국어로 박혀 있었다.
   LOCKED: ['locked', () => i18n.t('locked')],
@@ -94,7 +98,7 @@ export function renderBadge(state, extra) {
   const kind = LEGACY_TO_KIND[state] || (KIND_BADGE[state] ? state : null);
   if (!kind) return '';
   const b = KIND_BADGE[kind];
-  return `<span class="badge ${b[0]}">${b[1]}${extra ? ` · ${esc(extra)}` : ''}</span>`;
+  return `<span class="badge ${b[0]}" title="${b[1]}">${i18n.ko ? b[2] : b[1]}${extra ? ` · ${esc(extra)}` : ''}</span>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -130,12 +134,12 @@ export const LAYER_TRUTH = Object.freeze({
   'ocean/khoasl245': { kind: K.PROVIDER_FORECAST, slaMin: null },
   'ocean/khoasl370': { kind: K.PROVIDER_FORECAST, slaMin: null },
   'ocean/khoasl585': { kind: K.PROVIDER_FORECAST, slaMin: null },
-  'ocean/khoaflood': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
+  'ocean/khoaflood': { kind: K.PROVIDER_FORECAST, slaMin: null },
   'ocean/slr': { kind: K.PROVIDER_FORECAST, slaMin: null },
   'ocean/surf': { kind: K.HISTORY, slaMin: null },
 
   'people/sculpt': { kind: K.ESTIMATED_DISTRIBUTION, slaMin: null },
-  'people/livemix': { kind: K.OFFICIAL_OBSERVATION, slaMin: 30 },
+  'people/livemix': { kind: K.EARTHUS_ANALYSIS, slaMin: 30 },
   'people/pop': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
   'people/news': { kind: K.VISUALIZATION_ONLY, slaMin: 120 },
 
@@ -209,7 +213,7 @@ export const LAYER_TRUTH = Object.freeze({
   'hazards/tyens': { kind: K.PROVIDER_FORECAST, slaMin: 720 },
   'hazards/eqdepth': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
   'hazards/plates': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
-  'ocean/khoaflood': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
+  'ocean/khoaflood': { kind: K.PROVIDER_FORECAST, slaMin: null },
   // 아날로그는 예보가 아니라 과거 통계에서 우리가 유도한 것 — 등급을 반드시 분리한다
   'hazards/tyanalog': { kind: K.EARTHUS_ANALYSIS, slaMin: null },
   'hazards/tsunami': { kind: K.OFFICIAL_WARNING, slaMin: 60 },
@@ -272,6 +276,7 @@ export function layerBadge(key, extra) {
   const suffix = STATE_SUFFIX[st];
   const at = sourceAt.get(key);
   let out = `<span class="badge ${b[0]}">${b[1]}${extra ? ` · ${esc(extra)}` : ''}</span>`;
+  if (truth.slaMin != null && !at) out += ' <span class="badge stale">갱신 시각 미확인</span>';
   if (suffix) out += ` <span class="badge ${suffix[0]}">${suffix[1]}${at ? ` · ${ageText(at)}` : ''}</span>`;
   return out;
 }
@@ -282,7 +287,11 @@ export function layerTruthLine(key) {
   const b = KIND_BADGE[truth.kind];
   const at = sourceAt.get(key);
   const sla = truth.slaMin == null ? '시간 무관 (기준 자료·렌더링)' : `${truth.slaMin}분 이내 = LIVE · ${truth.slaMin * 2}분 초과 = UNAVAILABLE`;
-  return `증거종류 ${b[2]} (${truth.kind})<br/>신선도 기준 ${sla}${at ? `<br/>마지막 데이터 시각 ${ageText(at)}` : ''}`;
+  const meaning = key === 'hazards/tsunami' ? '공식 발표 기록 · 개별 발표의 유효기간은 상세에서 확인'
+    : key === 'ocean/khoaflood' ? '기관 침수 예상도 · 시나리오 자료'
+      : b[2];
+  return `자료 종류 ${meaning}<br/>자료 파일 갱신 ${at ? esc(sourceTimeLabel(at)) : '미확인'}`
+    + `<details style="margin-top:8px"><summary>자료 상태 판정 기준</summary>분류 ${truth.kind}<br/>${sla}<br/>파일 갱신은 개별 관측·발표·유효 시각과 다를 수 있습니다.</details>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -480,10 +489,12 @@ function observeFetch(url, ok, lastModified) {
   }
   if (!hit) hit = HOST_RULES.find((r) => url.includes(r.host)) || null;
   if (!hit) return;
-  const at = (lastModified && !Number.isNaN(Date.parse(lastModified)))
+  const hasSourceTime = lastModified && !Number.isNaN(Date.parse(lastModified));
+  const at = hasSourceTime
     ? new Date(lastModified).toISOString()
     : new Date().toISOString();
-  if (ok && hit.layer) recordSourceTime(hit.layer, at);
+  // 응답 시각은 조회 성공의 증거일 뿐 자료 갱신 시각은 아니다. 헤더가 없으면 미확인으로 남긴다.
+  if (ok && hit.layer && hasSourceTime) recordSourceTime(hit.layer, at);
   if (hit.provider) reportProvider(hit.provider, ok, at);
 }
 
@@ -571,14 +582,15 @@ export function providerCardHtml() {
   };
   return `<div class="card"><div class="card-h">데이터 소스 상태 <span class="badge live">${okN}/${probed.length} 정상</span></div>
     <div class="card-b">
-      <div style="opacity:.7;font-size:11px;margin-bottom:6px">1.0 S3 캐시 파이프라인 (HEAD로 갱신 시각 직접 확인)</div>
+      <div style="opacity:.8;margin-bottom:6px">기관 자료 수신 상태</div>
       <div class="stats">${rows.filter((r) => r.probe).map(line).join('')}</div>
-      <div style="opacity:.7;font-size:11px;margin:8px 0 6px">브라우저 직접 호출 (호출한 결과로만 판단)</div>
+      <div style="opacity:.8;margin:8px 0 6px">이 화면에서 조회하는 자료</div>
       <div class="stats">${rows.filter((r) => !r.probe).map(line).join('')}</div>
-      <div style="margin-top:8px;opacity:.7;font-size:11px">
+      <details style="margin-top:8px"><summary>연결 진단 자세히</summary>
+        S3 파일은 HEAD 응답의 갱신 시각으로 확인합니다. 개별 자료의 발표·관측 시각은 각 결과에서 확인하세요.<br/>
         판정 정본 <code>ops/provider-health.js · providerHealthState()</code> —
         SLA 1배 초과 = 지연, 2배 초과 = 끊김. 값을 지어내지 않고 응답 헤더의 갱신 시각만 씁니다.
-      </div>
+      </details>
     </div></div>`;
 }
 
@@ -648,7 +660,7 @@ export function engineCardHtml() {
       + `<span class="badge ${e.lifecycle === 'ACTIVE' ? 'live' : e.lifecycle === 'ERROR' ? 'na' : 'locked'}">${e.lifecycle}</span>`
       + ` <span style="opacity:.7">${detail}</span></span></div>`;
   }).join('');
-  return `<div class="card"><div class="card-h">엔진 런타임 <span class="badge live">${snap.engines.length}개 등록</span></div>
+  return `<details class="card"><summary class="card-h">화면 성능 진단 <span class="badge live">${snap.engines.length}개 구성요소</span></summary>
     <div class="card-b">
       <div class="stats">
         <div class="stat"><span class="k">드로우콜 · 삼각형</span><span class="v">${fmtN(g.drawCalls)} · ${fmtN(g.triangles)}</span></div>
@@ -660,7 +672,7 @@ export function engineCardHtml() {
         생명주기·자원 소유 정본 <code>core/engine-runtime.js</code> ·
         열상태는 <code>runtime.setThermalState()</code>로 전 엔진에 전파됩니다.
       </div>
-    </div></div>`;
+    </div></details>`;
 }
 
 export const engineInfo = Object.freeze({

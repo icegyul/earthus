@@ -19,7 +19,8 @@ export class GalaxyView {
     this.doc = null;
     this.yaw = 0.5;
     this.pitch = 0.55;
-    this.dist = 145;
+    this.dist = 145;        // 가로 화면 기준 구도. 세로로 긴 화면에서는 resize()가 넓힌다
+    this.userZoom = false;  // 사람이 휠로 줌한 뒤에는 리사이즈가 그 거리를 건드리지 않는다
     this.raf = 0;
     this.labels = [];
   }
@@ -153,6 +154,7 @@ export class GalaxyView {
     dom.addEventListener('pointercancel', up);
     dom.addEventListener('wheel', (e) => {
       e.preventDefault();
+      this.userZoom = true;
       this.dist = Math.max(28, Math.min(420, this.dist * Math.exp(e.deltaY * 0.0012)));
     }, { passive: false });
     window.addEventListener('resize', () => { if (this.active) this.resize(); });
@@ -227,12 +229,26 @@ export class GalaxyView {
       + `<p class="gx-src">출처 ${src}</p></div>`;
   }
 
+  // 은하 원반(표현 반지름 50)이 다 들어오는 거리. 145로 못박아 두었더니 세로로 긴
+  // 화면에서는 가로 화각이 모자라 원반 좌우가 잘렸다 — 휠이 없는 휴대폰에서는
+  // '우리는 어디 있나'를 잘린 은하로 보게 된다. 가로 화면 구도(145)는 그대로 둔다.
+  fitDist() {
+    const vHalf = (this.camera.fov * Math.PI) / 360;
+    const hHalf = Math.atan(Math.tan(vHalf) * (this.camera.aspect || 1));
+    const sp = Math.abs(Math.sin(this.pitch));
+    const cp = Math.abs(Math.cos(this.pitch));
+    const needV = (R_DISK * cp + (R_DISK * sp) / Math.tan(vHalf)) * 1.05;
+    const needH = (R_DISK / Math.tan(hHalf)) * 1.06;
+    return Math.max(145, needV, needH);
+  }
+
   resize() {
     const w = window.innerWidth;
     const h = window.innerHeight;
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
+    if (!this.userZoom) this.dist = this.fitDist();
   }
 
   async open() {
@@ -273,7 +289,12 @@ export class GalaxyView {
         const on = v.z < 1;
         l.el.style.display = on ? 'block' : 'none';
         if (on) {
-          l.el.style.left = `${((v.x + 1) / 2) * window.innerWidth}px`;
+          if (!l.w) l.w = l.el.offsetWidth; // 글자가 안 바뀌니 한 번만 잰다
+          const W = window.innerWidth;
+          // 라벨은 점 위에 가운데로 놓인다. 화면 끝에 걸린 팔 이름은 절반이 잘려
+          // 읽히지 않았다(좁은 화면의 '페르세우스자리 팔') — 안쪽으로 물린다.
+          const x = Math.min(Math.max(((v.x + 1) / 2) * W, l.w / 2 + 6), W - l.w / 2 - 6);
+          l.el.style.left = `${x}px`;
           l.el.style.top = `${((1 - v.y) / 2) * window.innerHeight}px`;
         }
       }

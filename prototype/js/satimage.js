@@ -9,8 +9,11 @@
 //    모르는 걸 그럴듯하게 지어내면 그게 거짓말이 된다.
 //
 // ⚠️ 위키백과 이미지는 CC 라이선스다. 출처 표기와 링크가 의무다.
+//
+// ⚠️ i18n.js 를 import 하지 않는다 — 이 파일은 v1(prototype/)뿐 아니라
+//    v3-kids(자체 kids-i18n.js)에서도 그대로 가져다 쓴다. 언어는 호출부가
+//    lang 인자로 넘긴다. v1 호출부는 ui.js 에서 i18n.lang 을 넘긴다.
 
-import { i18n } from './i18n.js';
 import { fetchT } from './net.js';
 
 /* 실사진이 있는 위성 — 위성 이름 → 위키백과 문서 제목.
@@ -41,6 +44,20 @@ const WIKI = {
 
 /* 이름 앞부분으로 계열을 알아채는 규칙 (개별 등록이 비현실적인 것들) */
 const FAMILY = [
+  /* ⚠️ 한국 위성 — 문서 제목을 추정해 넣는다. 틀려도 위험하지 않다:
+     satPhoto()가 문서가 없거나 자유 라이선스 이미지가 없으면 그냥 null을 돌려주고
+     drawSchematic()으로 넘어간다 (아래 catch에서 이미 그렇게 짜여 있다). */
+  /* ⚠️ CelesTrak/SATCAT 실명은 "ARIRANG-3 (KOMPSAT-3)"처럼 KOMPSAT 부분이
+     앞이 아니라 괄호 안에 온다(실측 확인). 그래서 앞쪽(^) 고정을 안 쓴다.
+     순서가 중요하다 — "KOMPSAT-3"이 "KOMPSAT-3A"의 부분열이라 3A를 먼저 둔다. */
+  [/GK-2A|GEO-KOMPSAT-2A|CHOLLIAN-2A/i, { en: 'Chollian-2A', ko: '천리안_2A호' }],
+  [/GK-2B|GEO-KOMPSAT-2B|CHOLLIAN-2B/i, { en: 'Chollian-2B' }],
+  [/KOMPSAT-3A/i, { en: 'KOMPSAT-3A' }],
+  [/KOMPSAT-2/i,  { en: 'KOMPSAT-2' }],
+  [/KOMPSAT-3/i,  { en: 'KOMPSAT-3' }],
+  [/KOMPSAT-5/i,  { en: 'KOMPSAT-5' }],
+  [/KOMPSAT-7/i,  { en: 'KOMPSAT-7' }],
+  [/^ANASIS/i,     { en: 'ANASIS-II' }],
   [/^STARLINK/i,   { en: 'Starlink' }],
   [/^ONEWEB/i,     { en: 'OneWeb_satellite_constellation' }],
   [/^IRIDIUM/i,    { en: 'Iridium_satellite_constellation' }],
@@ -70,22 +87,25 @@ function firstPage(json) {
   return Object.values(json?.query?.pages || {})[0] || null;
 }
 
-/** 실사진 찾기. 없으면 null. */
-export async function satPhoto(name) {
+/** 실사진 찾기. 없으면 null.
+ * @param {string} name  CelesTrak OBJECT_NAME
+ * @param {'ko'|'en'} [lang] 문서 제목 선택 언어. 기본 'ko' (이 앱은 한국이 기본이다). */
+export async function satPhoto(name, lang = 'ko') {
   if (!name) return null;
-  if (cache.has(name)) return cache.get(name);
+  const cacheKey = `${name}:${lang}`;
+  if (cache.has(cacheKey)) return cache.get(cacheKey);
 
   let entry = WIKI[name];
   if (!entry) {
     const hit = FAMILY.find(([re]) => re.test(name));
     if (hit) entry = hit[1];
   }
-  if (!entry) { cache.set(name, null); return null; }
+  if (!entry) { cache.set(cacheKey, null); return null; }
 
-  const lang = (i18n.lang === 'ko' && entry.ko) ? 'ko' : 'en';
-  const title = entry[lang] || entry.en;
+  const useLang = (lang === 'ko' && entry.ko) ? 'ko' : 'en';
+  const title = entry[useLang] || entry.en;
   try {
-    const api = `https://${lang}.wikipedia.org/w/api.php`;
+    const api = `https://${useLang}.wikipedia.org/w/api.php`;
     const pageParams = new URLSearchParams({
       action: 'query', format: 'json', origin: '*', redirects: '1',
       prop: 'pageimages', piprop: 'name|thumbnail', pithumbsize: '480',
@@ -121,10 +141,10 @@ export async function satPhoto(name) {
       title: article.title || title.replaceAll('_', ' '),
       credit: [author, license].filter(Boolean).join(' · '),
     };
-    cache.set(name, out);
+    cache.set(cacheKey, out);
     return out;
   } catch (_) {
-    cache.set(name, null);
+    cache.set(cacheKey, null);
     return null;
   }
 }
@@ -135,7 +155,7 @@ export async function satPhoto(name) {
      궤도 종류            → 태양전지판 형태 (정지궤도는 크고 넓다)
      그룹                 → 색
    모르는 건 그리지 않는다. 안테나 개수 같은 건 지어내지 않는다. */
-export function drawSchematic(cv, sat, color) {
+export function drawSchematic(cv, sat, color, lang = 'ko') {
   const W = 420, H = 240;
   cv.width = W; cv.height = H;
   const g = cv.getContext('2d');
@@ -195,7 +215,7 @@ export function drawSchematic(cv, sat, color) {
   g.stroke();
 
   // 크기 눈금
-  const ko = i18n.lang === 'ko';
+  const ko = lang === 'ko';
   g.fillStyle = 'rgba(255,255,255,.45)';
   g.font = '11px ui-monospace, monospace';
   g.textAlign = 'center';

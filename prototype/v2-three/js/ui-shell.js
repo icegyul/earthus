@@ -5,6 +5,9 @@
 import * as THREE from '../../vendor/three-r184.module.min.js';
 import { i18n } from './i18n.js?v=10';
 import { renderBadge } from './engine-bridge.js?v=15';
+import { MENU_QUESTIONS } from './menu-guide.js';
+import { menuCoverage, menuTime, canClearLayer, matchesMenu } from './information-contract.js';
+const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // ---------------------------------------------------------------------------
 // 씬 매니페스트 (§19.3, §72): 메뉴 하나 = 씬 프로파일 하나. 주 엔진은 항상 1개.
@@ -32,7 +35,7 @@ export const SCENES = [
       { id: 'base-ne2', name: '베이스 · 자연 지형', state: 'LIVE', src: 'Natural Earth II', act: true },
       { id: 'base-bluemarble', name: '베이스 · 블루마블 (지형·수심)', state: 'OBSERVED', src: 'NASA GIBS', act: true },
       { id: 'base-truecolor', name: '베이스 · 오늘의 지구 (실촬영)', state: 'OBSERVED', src: 'VIIRS True Color', act: true },
-      { id: 'base-night', name: '베이스 · 밤의 불빛', state: 'OBSERVED', src: 'VIIRS City Lights 2012', act: true },
+      { id: 'base-night', name: '베이스 · 밤의 불빛', state: 'OBSERVED', src: 'NASA Black Marble · 합성 배경', act: true },
     ],
   },
   {
@@ -71,8 +74,8 @@ export const SCENES = [
     glyph: '해',
     accent: '#5FD3C0',
     layers: [
-      { id: 'marine', name: '해상 실황 조회', state: 'OBSERVED', src: 'Open-Meteo Marine', act: true },
-      { id: 'oceanfocus', name: '해양 포커스', state: 'DEMO', src: '—', act: true },
+      { id: 'marine', name: '해양 모델 · 파고와 바람', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine · GFS 바람', act: true },
+      { id: 'oceanfocus', name: '해양 포커스', state: 'DERIVED', src: '선택 해역 · 연결된 해양 자료', act: true },
       { id: 'typhoonsim', name: '태풍 해상 시뮬레이션', state: 'SIMULATION_ONLY', src: '자체 물리', act: true },
       { id: 'buoys', name: '해양 부이 관측 (수온)', state: 'OBSERVED', src: 'NDBC 등 · 1.0 S3', act: true },
       { id: 'argo', name: 'Argo 플로트 — 잠수 기록', state: 'OBSERVED', src: 'Argo · Ifremer ERDDAP', act: true },
@@ -84,7 +87,7 @@ export const SCENES = [
       { id: 'khoasl245', name: '우리 바다 해수면 전망 · SSP2-4.5 중간', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true },
       { id: 'khoasl370', name: '우리 바다 해수면 전망 · SSP3-7.0 고배출', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true },
       { id: 'khoasl585', name: '우리 바다 해수면 전망 · SSP5-8.5 최고', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true },
-      { id: 'khoaflood', name: '연안 침수 범위 — 시군구별 침수 예상도', state: 'OFFICIAL_OBSERVATION', src: '국립해양조사원 · 연안 시군구 70곳', act: true },
+      { id: 'khoaflood', name: '연안 침수 범위 — 시군구별 침수 예상도', state: 'MODEL_SIGNAL', src: '국립해양조사원 · 침수 예상도', act: true },
       { id: 'wavefield', name: '유의파고 (전지구)', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine', act: true },
       { id: 'current', name: '표층 해류', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine', act: true },
       { id: 'surf', name: '해변 271곳·낚시 946곳', state: 'OBSERVED', src: 'OpenStreetMap ODbL', act: true },
@@ -102,8 +105,8 @@ export const SCENES = [
       { id: 'seoul', name: '서울 실시간 인구 121곳', state: 'OBSERVED', src: '서울시 실시간 도시데이터', act: true },
       // 위(서울 실시간)는 관측, 아래(도시 타워)는 거주 인구 추정이다. 붙여 두되 배지로 가른다.
       { id: 'poptower', name: '도시 인구 타워 — 서울·도쿄·타이베이·런던 (거주)', state: 'MODEL_SIGNAL', src: 'WorldPop 100m R2025A', act: true },
-      { id: 'sculpt', name: '인구 데이터 조각 — 국가를 누르세요', state: 'OBSERVED', src: 'WorldPop 1km 격자', act: true },
-      { id: 'livemix', name: '지금 사람 × 거주 인구 (서울)', state: 'OBSERVED', src: '서울시 실시간 + WorldPop', act: true },
+      { id: 'sculpt', name: '인구 데이터 조각 — 국가를 누르세요', state: 'MODEL_SIGNAL', src: 'WorldPop 1km 인구 추정', act: true },
+      { id: 'livemix', name: '지금 사람 × 거주 인구 (서울)', state: 'DERIVED', src: '서울시 실시간 + WorldPop 추정', act: true },
       { id: 'pop', name: '국가 인구 (전 세계 총계)', state: 'OBSERVED', src: 'World Bank SP.POP.TOTL', act: true },
       { id: 'news', name: '지역 뉴스 (지금)', state: 'LIVE', src: '각 지역 매체 RSS', act: true },
       { id: 'travel', name: '여행·관광 POI', state: 'LOCKED', src: 'Overpass API', plan: '공용 서버 응답 불안정(504) — 자체 프록시/캐시 후 연결' },
@@ -119,9 +122,9 @@ export const SCENES = [
     accent: '#F2A2C4',
     layers: [
       { id: 'discover', name: '오늘 발견 — 시군구 228곳', state: 'DERIVED', src: 'KTO 데이터랩 5종 + 기상청·에어코리아', act: true },
-      { id: 'bf', name: '무장애 여행지 11,644곳', state: 'OBSERVED', src: 'KTO 무장애 여행 정보', act: true },
-      { id: 'wl', name: '웰니스 관광지 202곳', state: 'OBSERVED', src: 'KTO 웰니스관광정보', act: true },
-      { id: 'en', name: '외국인 · 영문 콘텐츠 25,398건', state: 'OBSERVED', src: 'KTO 영문 관광정보', act: true },
+      { id: 'bf', name: '무장애 여행지 목록', state: 'OFFICIAL_INFORMATION', src: 'KTO 무장애 여행 정보', act: true },
+      { id: 'wl', name: '웰니스 관광지 목록', state: 'OFFICIAL_INFORMATION', src: 'KTO 웰니스관광정보', act: true },
+      { id: 'en', name: '외국인 · 영문 관광정보', state: 'OFFICIAL_INFORMATION', src: 'KTO 영문 관광정보', act: true },
       { id: 'visitors', name: '방문자 스냅샷 (이동통신 · 관광객 아님)', state: 'HISTORY', src: 'KTO 지역별 방문자수', act: true },
       { id: 'related', name: '하나 더 — 연관 관광지 그래프', state: 'HISTORY', src: 'KTO 관광지별 연관 관광지 (TMAP 이동)', act: true },
     ],
@@ -142,7 +145,7 @@ export const SCENES = [
       { id: 'tyoff', name: '태풍 공식 트랙', state: 'OFFICIAL_FORECAST', src: 'KMA·JMA·NHC', act: true },
       { id: 'tyens', name: '태풍 앙상블 — 예보가 갈리는 폭', state: 'MODEL_SIGNAL', src: 'ECMWF IFS ENS · CC-BY', act: true },
       { id: 'tyanalog', name: '태풍 과거 유사 경로 (예보 아님)', state: 'DERIVED', src: '1980~ 아날로그 통계', act: true },
-      { id: 'tsunami', name: '쓰나미 정보', state: 'LIVE', src: 'PTWC·NWS', act: true },
+      { id: 'tsunami', name: '쓰나미 발표 기록', state: 'OFFICIAL_WARNING', src: 'PTWC·NWS · 발표별 유효 상태', act: true },
       { id: 'fireglobal', name: '전지구 산불 화점 (24시간)', state: 'OBSERVED', src: 'NASA FIRMS VIIRS 375m', act: true },
       { id: 'wildfire', name: '산불 위험지수 (전국)', state: 'OFFICIAL_FORECAST', src: '산림청 · 1.0 S3', act: true },
       { id: 'lightning', name: '낙뢰 (최근 60분)', state: 'OBSERVED', src: 'KMA 낙뢰관측망', act: true },
@@ -193,6 +196,7 @@ export const byMarket = (a, b) => {
 export function initShell(hooks) {
   // hooks: { onScene(id), getNow() -> html, camera, getFocusSel(), labelData() -> [{nameKo,lat,lon,rank}] }
   const root = document.body;
+  if(!document.getElementById('information-access-style')){const css=document.createElement('link');css.id='information-access-style';css.rel='stylesheet';css.href=new URL('./information-access.css?v=20260905',import.meta.url).href;document.head.append(css);}
 
   // --- 1.0식 브랜드 메뉴 (PD 지시): 좌측 가장자리 세로 손잡이 + 슬라이드 패널 ---
   // EARTHUS와 AETHERUS는 서로의 카테고리가 아니다 — 각자 독립 손잡이 (1.0 원칙).
@@ -212,6 +216,11 @@ export function initShell(hooks) {
   panel.id = 'menu-panel';
   root.appendChild(panel);
   let openBrand = null; // 'earthus' | 'aetherus' | null
+  let menuQuery = '';
+  let activeOnly = false;
+  let selectedMenu = null;
+  let timelineMinutes = 0;
+  const collapsedSections = new Set();
 
   // 권역 이동 (v5.3 스케일 사다리: GLOBAL → CONTINENT → REGION → COUNTRY).
   // 3D 지구를 벗어나지 않고 카메라만 그 권역 구도로 옮긴다 — 평면 전환이 아니다.
@@ -246,7 +255,11 @@ export function initShell(hooks) {
     .catch(() => { /* 목록이 없으면 칩 없이 국가 클릭으로만 쓴다 */ });
 
   const sectionHtml = (s) => {
-    const liveN = s.layers.filter((l) => l.state !== 'LOCKED').length;
+    const shown = s.layers.filter(l => {
+      const st = hooks.getLayerState?.(s.id, l) || {};
+      return (!activeOnly || st.on) && matchesMenu(menuQuery, [s.label,l.name,l.src,MENU_QUESTIONS[l.id],menuCoverage(l.id)]);
+    });
+    if (!shown.length) return '';
     let chips = '';
     if (s.id === 'land') {
       chips = `<div class="mp-chips" role="group" aria-label="${i18n.t('regionMove')}">
@@ -264,18 +277,21 @@ export function initShell(hooks) {
         </div>
         <div class="mp-chip-note">${i18n.t('popNote').replace('{n}', POP_COUNTRIES.length)}</div>`;
     }
-    return `<div class="mp-sec" style="--sc:${s.accent}">
-      <h3 class="mp-title"><i></i>${i18n.scene(s.id, s.label)}<em>${liveN}/${s.layers.length}</em></h3>
-      ${chips}
-      ${s.layers.map((l) => {
+    return `<section class="mp-sec" data-section="${s.id}" style="--sc:${s.accent}">
+      <h3 class="mp-title"><button data-collapse="${s.id}" aria-expanded="${menuQuery || !collapsedSections.has(s.id) ? 'true':'false'}"><i></i>${i18n.scene(s.id, s.label)}<em>${shown.length} ${i18n.ko ? '항목':'items'}</em></button></h3>
+      <div ${!menuQuery && collapsedSections.has(s.id) ? 'hidden':''}>
+      ${menuQuery || activeOnly ? '' : chips}
+      ${shown.map((l) => {
         const st = (hooks.getLayerState && hooks.getLayerState(s.id, l)) || {};
         return `<button class="mp-item${l.state === 'LOCKED' ? ' locked' : ''}${st.on ? ' on' : ''}"
-          data-fscene="${s.id}" data-flayer="${l.id}" title="${l.src}">
+          data-fscene="${s.id}" data-flayer="${l.id}" title="${safeText(l.src)}" aria-pressed="${!!st.on}">
           <span class="mp-lbl">${i18n.layer(l.id, l.name)}</span>${dataBadge(l.state)}
+          <span class="mp-question">${safeText(i18n.ko ? MENU_QUESTIONS[l.id] || l.name : l.name)}</span>
+          <span class="mp-support">${safeText(menuCoverage(l.id,i18n.ko))} · ${safeText(menuTime(l.id,i18n.ko))}</span>
           ${st.on && st.note ? `<span class="mp-note">${st.note}</span>` : ''}
         </button>`;
       }).join('')}
-    </div>`;
+      </div></section>`;
   };
 
   const scrim = document.getElementById('menu-scrim');
@@ -289,10 +305,12 @@ export function initShell(hooks) {
     panel.innerHTML = `
       <div class="mp-head">
         <div class="mp-head-copy"><b>${aeth ? 'AETHERUS' : 'EARTHUS'}</b><small>${i18n.t(aeth ? 'mpTagA' : 'mpTagE')}</small></div>
-        <button class="ui-x" data-x="1">✕</button>
+        <button class="ui-x" data-x="1" aria-label="${i18n.ko ? '메뉴 닫기':'Close menu'}">✕</button>
       </div>
+      <div class="mp-search"><label>${i18n.ko ? '메뉴·질문 검색':'Find a topic'}<input type="search" data-menu-search value="${safeText(menuQuery)}" placeholder="${i18n.ko ? '예: 파고, 무장애, 한국':'Search topics'}"></label>
+      <label class="mp-active-only"><input type="checkbox" data-active-only ${activeOnly ? 'checked':''}>${i18n.ko ? '켜진 자료만':'Active only'}</label></div>
       <div class="mp-body">
-        ${scenes.map(sectionHtml).join('')}
+        ${scenes.map(sectionHtml).join('') || `<p role="status">${i18n.ko ? '조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`}
         <div class="mp-foot">${i18n.t('mpFoot')}</div>
       </div>`;
     panel.classList.add('open');
@@ -320,19 +338,33 @@ export function initShell(hooks) {
     if (!openBrand) return;
     const body = panel.querySelector('.mp-body');
     const top = body ? body.scrollTop : 0;
+    const active = document.activeElement;
+    const restore = active && panel.contains(active) ? {search:active.matches('[data-menu-search]'), start:active.selectionStart, end:active.selectionEnd,scene:active.dataset.fscene,id:active.dataset.flayer,collapse:active.dataset.collapse} : null;
     const onChips = [...panel.querySelectorAll('.mp-chip.on')]
       .map((c) => c.dataset.region || c.dataset.pop).filter(Boolean);
     openPanel(openBrand);
     const body2 = panel.querySelector('.mp-body');
     if (body2 && top) body2.scrollTop = top;
+    const restoreEl = restore?.search ? panel.querySelector('[data-menu-search]') : restore?.id ? panel.querySelector(`[data-fscene="${restore.scene}"][data-flayer="${restore.id}"]`) : restore?.collapse ? panel.querySelector(`[data-collapse="${restore.collapse}"]`) : null;
+    if (restoreEl) { restoreEl.focus({preventScroll:true}); if(restore?.search)restoreEl.setSelectionRange(restore.start,restore.end); }
     for (const key of onChips) {
       const c = panel.querySelector(`.mp-chip[data-region="${key}"], .mp-chip[data-pop="${key}"]`);
       if (c) c.classList.add('on');
     }
   };
+  panel.addEventListener('input',e=>{
+    if(e.target.matches('[data-menu-search]')) menuQuery=e.target.value;
+    else if(e.target.matches('[data-active-only]')) activeOnly=e.target.checked;
+    else return;
+    const scenes=SCENES.filter(s=>(s.group||'earthus')===openBrand);
+    panel.querySelector('.mp-body').innerHTML=scenes.map(sectionHtml).join('') || `<p role="status">${i18n.ko?'조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`;
+  });
+  panel.addEventListener('keydown',e=>{if(e.key==='Escape'){const brand=openBrand;closeFlyout();(brand==='aetherus'?tabA:tabE).focus();}});
 
   panel.addEventListener('click', (e) => {
     if (e.target.closest('[data-x]')) { closeFlyout(); return; }
+    const collapse=e.target.closest('[data-collapse]');
+    if(collapse){const id=collapse.dataset.collapse;collapsedSections.has(id)?collapsedSections.delete(id):collapsedSections.add(id);refreshFlyout();return;}
     const chip = e.target.closest('.mp-chip');
     if (chip) {
       const group = chip.parentElement;
@@ -348,7 +380,7 @@ export function initShell(hooks) {
     if (!row) return;
     const scene = SCENES.find((s) => s.id === row.dataset.fscene);
     const layer = scene && scene.layers.find((l) => l.id === row.dataset.flayer);
-    if (layer && hooks.onLayerAction) hooks.onLayerAction(scene.id, layer);
+    if (layer && hooks.onLayerAction) { selectedMenu={s:scene,l:layer}; intelContent.scrollTop=0; hooks.onLayerAction(scene.id, layer); }
   });
 
   tabE.addEventListener('click', () => {
@@ -369,13 +401,13 @@ export function initShell(hooks) {
     <button id="intel-tab">EARTH INTELLIGENCE</button>
     <div id="intel-body">
       <div class="intel-tabs">
-        <button data-tab="feed" class="on">FEED</button>
-        <button data-tab="my">MY</button>
-        <button data-tab="now">NOW</button>
-        <button data-tab="why">WHY</button>
-        <button data-tab="next">NEXT</button>
-        <button data-tab="scenario">WHAT IF</button>
-        <button class="ui-x" id="intel-close">✕</button>
+        <button data-tab="feed" class="on">${i18n.ko?'사건':'Feed'}</button>
+        <button data-tab="my">${i18n.ko?'내 장소':'My place'}</button>
+        <button data-tab="now">${i18n.ko?'선택 자료':'Now'}</button>
+        <button data-tab="why">${i18n.ko?'자료의 근거':'Why'}</button>
+        <button data-tab="next">${i18n.ko?'예보·예정':'Next'}</button>
+        <button data-tab="scenario">${i18n.ko?'가정 실험':'What if'}</button>
+        <button class="ui-x" id="intel-close" aria-label="${i18n.ko?'정보 닫기':'Close information'}">✕</button>
       </div>
       <div id="intel-content"></div>
     </div>`;
@@ -435,6 +467,7 @@ export function initShell(hooks) {
   };
 
   const renderIntel = () => {
+    const scrollTop=intelContent.scrollTop;
     if (curTab === 'feed') {
       intelContent.innerHTML = hooks.getFeed();
     } else if (curTab === 'now') {
@@ -448,6 +481,13 @@ export function initShell(hooks) {
     } else {
       intelContent.innerHTML = nextHtml();
     }
+    const active=activeLayers();
+    const picked=hooks.getFocusSel?.();
+    const header=document.createElement('div');header.className='information-context';
+    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? MENU_QUESTIONS[selectedMenu.l.id] || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>`:''}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
+      ${active.length ? `<details><summary>${i18n.ko?'현재 켜진 자료':'Active data'} ${active.length}</summary>${active.map(({s,l})=>`<div class="active-data-row"><span>${safeText(i18n.layer(l.id,l.name))}<small>${safeText(menuTime(l.id,i18n.ko))}</small></span>${canClearLayer(l.id)?`<button data-action="shell-layer-off" data-scene="${s.id}" data-layer="${l.id}" aria-label="${safeText(l.name)} 끄기">${i18n.ko?'끄기':'Off'}</button>`:''}</div>`).join('')}<button data-action="shell-clear-layers">${i18n.ko?'추가 자료 모두 끄기':'Clear overlays'}</button></details>`:''}`;
+    intelContent.prepend(header);
+    intelContent.scrollTop=scrollTop;
   };
 
   // 패널 내 버튼 액션 위임 (예: 시뮬레이션 시작)
@@ -456,6 +496,8 @@ export function initShell(hooks) {
     if (!btn) return;
     // 셸이 스스로 처리하는 것 — 지구 렌더러까지 갈 일이 아니다
     const a = btn.dataset.action;
+    if(a==='shell-layer-off'){const s=SCENES.find(s=>s.id===btn.dataset.scene);const l=s?.layers.find(l=>l.id===btn.dataset.layer);if(l && hooks.getLayerState?.(s.id,l)?.on)hooks.onLayerAction(s.id,l);return;}
+    if(a==='shell-clear-layers'){hooks.clearLayers?.();return;}
     if (a === 'shell-open-menu') { openPanel('earthus'); return; }
     if (a === 'shell-open-feed') { showTab('feed'); return; }
     if (a === 'shell-play5d') { strip.querySelector('#ts-play').click(); return; }
@@ -492,7 +534,7 @@ export function initShell(hooks) {
   strip.innerHTML = `
     <button id="ts-now">${i18n.t('now')}</button>
     <button id="ts-play" title="${i18n.t('play5d')}">▶</button>
-    <input type="range" id="ts-range" min="-1440" max="7200" step="30" value="0" />
+    <input type="range" id="ts-range" aria-label="${i18n.ko?'자료 시간 이동':'Data timeline'}" min="-1440" max="7200" step="30" value="0" />
     <span id="ts-label">NOW</span>`;
   root.appendChild(strip);
 
@@ -507,11 +549,13 @@ export function initShell(hooks) {
   };
   const applyTime = () => {
     const m = parseInt(tsRange.value, 10);
+    timelineMinutes=m;
     const n = m !== 0 && hooks.timeNote ? hooks.timeNote(m) : null;
     hooks.onTimeOffset(m * 60000);
     tsLabel.textContent = m === 0 ? 'NOW'
       : `${fmtOffset(m)} · ${n ? n.short : ''}`;
     strip.title = n ? n.full : '';
+    if(intelOpen)renderIntel();
   };
   tsRange.addEventListener('input', applyTime);
   strip.querySelector('#ts-now').addEventListener('click', () => {
@@ -535,7 +579,7 @@ export function initShell(hooks) {
     if (parseInt(tsRange.value, 10) < 0) tsRange.value = 0;
     playTimer = setInterval(() => {
       let v = parseInt(tsRange.value, 10) + 60;
-      if (v > 7200) v = 0;
+      if (v > 7200) { clearInterval(playTimer);playTimer=null;playBtn.textContent='▶';return; }
       tsRange.value = v;
       applyTime();
     }, 220);
@@ -611,6 +655,8 @@ export function initShell(hooks) {
 
   return {
     setActiveScene,
+    clearSelection: () => {selectedMenu=null;},
+    setSelection: (sid,id) => {const s=SCENES.find(s=>s.id===sid);const l=s?.layers.find(l=>l.id===id);selectedMenu=l?{s,l}:null;},
     showTab,
     closeFlyout,
     refreshFlyout,
@@ -629,7 +675,7 @@ export function buildNowCards(ctx) {
   const cards = [];
   if (ctx.focusSel && ctx.focusSel.ocean) {
     // 예전엔 '해류·수온 미연결'이라고 적혀 있었는데 두 레이어 다 실데이터로 동작한다.
-    cards.push(`<div class="card"><div class="card-h">해양 포커스 ${dataBadge('OBSERVED')}</div>
+    cards.push(`<div class="card"><div class="card-h">해양 포커스 ${dataBadge('DERIVED')}</div>
       <div class="card-b">해양 메뉴에서 <b>수온(NOAA OISST)</b> · <b>유의파고</b> · <b>표층 해류</b>를 켤 수 있습니다.<br/>
       값이 없는 격자는 비워 둡니다 — 보간해서 채우지 않습니다.</div></div>`);
   } else if (ctx.focusSel && ctx.focusSel.region) {

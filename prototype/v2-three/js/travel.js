@@ -11,7 +11,9 @@
 //       방문자수는 이동통신 기반이라 관광객이 아니다. 그 문구를 화면에 그대로 둔다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { renderBadge } from './engine-bridge.js?v=12';
+import { renderBadge } from './engine-bridge.js?v=15';
+import { TRAVEL_CATALOGS, ACCESSIBILITY_LABELS, TRAVEL_INTRO_LABELS, safeSourceUrl, validateTravelCatalog, searchTravelCatalog,
+  detailSummaryUrl, validateTravelDetailSummary, providerPlainText, providerHomepage } from './travel-catalog.js';
 
 const S3 = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
 const DATA_URL = './data/tourism/kto-discovery.json';
@@ -82,6 +84,15 @@ export class TravelScene {
     this.selected = null;
     this.labels = [];
     this.loading = null;
+    this.catalogs = new Map();
+    this.catalog = null;
+    this.query = ''; this.page = 0; this.selectedPlace = null;
+    this.requestId = 0; this.controller = null; this.error = null; this.busy = false;
+    this.detailCache = new Map(); this.detailRequest = 0; this.detailController = null;
+    if (!document.getElementById('travel-catalog-css')) {
+      const link = document.createElement('link'); link.id = 'travel-catalog-css'; link.rel = 'stylesheet';
+      link.href = new URL('./travel-catalog.css', import.meta.url).href; document.head.appendChild(link);
+    }
   }
 
   // ---------------------------------------------------------------- 로드
@@ -89,28 +100,39 @@ export class TravelScene {
     if (this.data) return this.data;
     if (!this.loading) {
       this.loading = (async () => {
-        const res = await fetch(DATA_URL, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`발견 데이터 HTTP ${res.status}`);
-        const d = await res.json();
-        d.regions.forEach((r, i) => { r.i = i; });
-        this.data = d;
-        return d;
-      })();
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 20000);
+        try {
+          const res = await fetch(DATA_URL, { cache: 'no-store', signal: controller.signal });
+          if (!res.ok) throw new Error(`발견 데이터 HTTP ${res.status}`);
+          const d = await res.json();
+          d.regions.forEach((r, i) => { r.i = i; });
+          this.data = d;
+          return d;
+        } finally { clearTimeout(timeout); }
+      })().finally(() => { this.loading = null; });
     }
     return this.loading;
   }
 
   // 실시간 게이트: 특보(기상청) · 대기질(에어코리아). 5분 캐시.
-  async ensureGates() {
+  async ensureGates(signal) {
     if (Date.now() - this.gates.at < 5 * 60 * 1000 && (this.gates.warn || this.gates.air)) return this.gates;
     const get = async (p, ms) => {
+      const controller = new AbortController();
+      const cancel = () => controller.abort();
+      if (signal?.aborted) cancel();
+      signal?.addEventListener('abort', cancel, { once: true });
+      const timeout = setTimeout(cancel, ms);
       try {
-        const r = await Promise.race([fetch(`${S3}${p}`, { cache: 'no-store' }), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+        const r = await fetch(`${S3}${p}`, { cache: 'no-store', signal: controller.signal });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return await r.json();
       } catch (e) { return { __error: String((e && e.message) || e) }; }
+      finally { clearTimeout(timeout); signal?.removeEventListener('abort', cancel); }
     };
     const [warn, air] = await Promise.all([get('/events/kma-warn.json', 15000), get('/wind/korea-air-obs.json', 20000)]);
+    if (signal?.aborted) throw new Error('지역 자료 요청이 취소되었습니다.');
     this.gates = { warn, air, at: Date.now() };
     return this.gates;
   }
@@ -170,15 +192,49 @@ export class TravelScene {
 
   // ---------------------------------------------------------------- 그리기
   async setMode(mode) {
-    if (this.mode === mode) { this.mode = null; this.group.visible = false; return { on: false }; }
-    await this.ensure();
-    await this.ensureGates();
-    this.computeScores();
+    if (!MODES[mode]) throw new Error('알 수 없는 여행 메뉴입니다.');
+    const id = ++this.requestId;
+    this.controller?.abort(); this.controller = new AbortController();
+    this.detailController?.abort(); this.detailRequest = (this.detailRequest || 0) + 1;
+    if (this.mode === mode) {
+      this.mode = null; this.busy = false; this.catalog = null; this.group.visible = false; this.clear();
+      return { on: false };
+    }
     this.mode = mode;
-    this.build();
-    this.group.visible = true;
-    return { on: true };
+    this.query = ''; this.page = 0; this.selectedPlace = null; this.selected = null;
+    this.catalog = null; this.error = null; this.busy = true; this.group.visible = false; this.clear();
+    const controller = this.controller;
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    try {
+      if (TRAVEL_CATALOGS[mode]) {
+        if (!this.catalogs.has(mode)) {
+          const response = await fetch(new URL(`../data/tourism/${TRAVEL_CATALOGS[mode].file}`, import.meta.url), { signal: controller.signal });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const catalog = validateTravelCatalog(await response.json(), mode);
+          if (id !== this.requestId) return { stale: true };
+          this.catalogs.set(mode, catalog);
+        }
+        this.catalog = this.catalogs.get(mode);
+      } else {
+        await this.ensure();
+        if (id !== this.requestId) return { stale: true };
+        await this.ensureGates(controller.signal);
+        if (id !== this.requestId) return { stale: true };
+        this.computeScores();
+      }
+      if (id !== this.requestId) return { stale: true };
+      this.busy = false; this.build(); this.group.visible = true;
+      return { on: true };
+    } catch (error) {
+      if (id !== this.requestId) return { stale: true };
+      this.busy = false; this.error = error; this.catalog = null; this.group.visible = false;
+      return { on: true, error: true };
+    } finally { clearTimeout(timeout); }
   }
+
+  async retry() { const mode = this.mode; if (!mode) return { stale: true }; this.mode = null; this.catalogs.delete(mode); return this.setMode(mode); }
+  get title() { return TRAVEL_CATALOGS[this.mode]?.title || MODES[this.mode]?.title || '여행'; }
+  get badge() { return this.error ? 'UNAVAILABLE' : this.busy ? 'LOADING' : TRAVEL_CATALOGS[this.mode] ? 'OFFICIAL_INFORMATION' : this.mode === 'visitors' ? 'HISTORY' : 'DERIVED'; }
 
   surfR(lat, lon, lift = 0.004) {
     const h = Math.max(this.heightAt(lat, lon), 0);
@@ -196,6 +252,7 @@ export class TravelScene {
 
   build() {
     this.clear();
+    if (this.catalog) { this.buildPlaces(); return; }
     const key = MODES[this.mode].key;
     const rs = this.data.regions;
     const vals = rs.map((r) => Number(r[key]) || 0);
@@ -238,10 +295,10 @@ export class TravelScene {
     });
   }
 
-  onExaggerChanged() { if (this.mode && this.data) this.build(); }
+  onExaggerChanged() { if (this.mode && !this.busy && !this.error && (this.data || this.catalog)) this.build(); }
 
   update(camera) {
-    if (!this.mode || !this.data) return;
+    if (!this.mode || this.busy || this.error || (!this.data && !this.catalog)) return;
     // 지형 과장이 바뀌면 점이 산에 묻히거나 뜬다 — 스스로 감지해 다시 배치한다
     const ex = this.getExagger();
     if (ex !== this._lastEx) { this._lastEx = ex; this.build(); }
@@ -251,7 +308,19 @@ export class TravelScene {
   }
 
   pick(lat, lon, maxKm = 35) {
-    if (!this.mode || !this.data) return null;
+    if (!this.mode || this.busy || this.error) return null;
+    if (this.catalog) {
+      let best = null, distance = maxKm;
+      for (const item of this.pageResult.items) {
+        if (!item.location) continue;
+        const km = distKm({ lat, lon }, { lat: item.location[0], lon: item.location[1] });
+        if (km < distance) { distance = km; best = item; }
+      }
+      if (!best) return null;
+      this.selectedPlace = best; this.selected = { ...best, nameKo: best.title, province: best.address, lat: best.location[0], lon: best.location[1], _travelPlace: true };
+      return this.selected;
+    }
+    if (!this.data) return null;
     let best = null; let bd = maxKm;
     for (const r of this.data.regions) { const d = distKm({ lat, lon }, r); if (d < bd) { bd = d; best = r; } }
     if (best) this.selected = best;
@@ -271,7 +340,11 @@ export class TravelScene {
   }
 
   sceneCard() {
+    if (this.busy) return this.loadingCard(this.mode);
+    if (this.error) return `<section class="card tv-catalog"><div class="card-h">${esc(this.title)}</div><div class="card-b"><p role="status">관광지 목록을 불러오지 못했습니다.</p><p>자료가 없는 지역이라는 뜻은 아닙니다. 다시 불러오거나 공식 자료를 확인하세요.</p><button type="button" class="tv-button" data-action="travel-retry">다시 불러오기</button><p><a href="https://www.data.go.kr/" target="_blank" rel="noopener noreferrer">공공데이터포털에서 원자료 확인</a></p></div></section>`;
+    if (this.catalog) return this.selectedPlace ? this.placeCard(this.selectedPlace) : this.catalogCard();
     if (!this.data) return '';
+    if (this.mode === 'visitors') return this.visitorsCard();
     const top = this.top.map((r) => `<div class="stat"><span class="k">${esc(r.nameKo)} <span style="opacity:.6">${esc(r.province.slice(0, 2))}</span></span><span class="v">${(r.score * 100).toFixed(0)}</span></div>`).join('');
     const blocked = this.data.regions.filter((r) => r.components && r.components.gate.blocked).length;
     const title = MODES[this.mode] ? MODES[this.mode].title : '여행';
@@ -288,6 +361,7 @@ export class TravelScene {
   }
 
   regionCard(r) {
+    if (r._travelPlace) return this.placeCard(r);
     const c = r.components || { density: 0, quiet: 0.5, quietKnown: false, gate: { blocked: false } };
     const g = c.gate || {};
     const v = r.visitors;
@@ -312,6 +386,177 @@ export class TravelScene {
         <div class="tv-why">왜 지금</div>
         ${lines}
       </div></div>`;
+  }
+
+  loadingCard(mode) {
+    return `<section class="card tv-catalog" aria-busy="true"><div class="card-h">${esc(TRAVEL_CATALOGS[mode]?.title || MODES[mode]?.title || '여행')}</div><div class="card-b" role="status">${TRAVEL_CATALOGS[mode] ? '관광지 목록을 불러오고 있습니다.' : '지역 자료와 현재 특보·대기질을 확인하고 있습니다.'}</div></section>`;
+  }
+
+  get pageResult() { return searchTravelCatalog(this.catalog, this.query, this.page); }
+
+  sourceFooter() {
+    const catalog = this.catalog;
+    const link = safeSourceUrl(catalog.sourceUrl);
+    const at = new Date(catalog.fetchedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false });
+    return `<div class="tv-catalog-source">출처 ${esc(catalog.sourceName)}<br/>수집 ${esc(at)} KST · 공식 관광정보 스냅샷</div>
+      <details class="tv-provenance"><summary>자료 범위와 출처 보기</summary><p>원본 ${n(catalog.sourceItemCount)}건 중 공개 표시된 콘텐츠 ${n(catalog.items.length)}건. 숨김 콘텐츠와 중복 ID는 목록에서 제외했습니다. 운영시간·입장 가능 여부는 이 목록에 포함되지 않습니다.</p>
+      ${link ? `<a href="${esc(link)}" target="_blank" rel="noopener noreferrer">한국관광공사 원자료 안내</a>` : ''}<p>사진은 사용하지 않았습니다. 장소별 공공누리 코드가 제공되면 상세에 보존합니다.</p></details>`;
+  }
+
+  catalogCard() {
+    return `<section class="card tv-catalog"><div class="card-h">${esc(this.title)} <span class="badge">공식 관광정보</span></div><div class="card-b">
+      <p>${this.mode === 'bf' ? `장소를 선택하면 주소와 수집된 무장애 항목을 확인할 수 있습니다. ${this.catalog.detailState === 'NOT_FETCHED' ? '현재 시설별 접근성 항목은 미수집 상태입니다.' : '시설별 접근성 항목은 수집된 장소에서만 표시합니다.'}` : this.mode === 'wl' ? '한국관광공사 웰니스 목록의 실제 장소입니다. 장소를 선택해 주소와 위치를 확인하세요.' : '한국관광공사가 제공한 영문 명칭과 주소입니다. 영문 장소명·지역명으로 검색하세요.'}</p>
+      <label class="tv-search-label" for="travel-query">관광지 이름·주소 검색</label>
+      <input id="travel-query" class="tv-query" type="search" maxlength="160" value="${esc(this.query)}" placeholder="${this.mode === 'en' ? 'Seoul, Busan, museum…' : '예: 제주, 박물관, 온천'}" data-action="travel-query" autocomplete="off" aria-controls="travel-results"/>
+      <div id="travel-results">${this.resultsHtml()}</div>${this.sourceFooter()}</div></section>`;
+  }
+
+  resultsHtml() {
+    const result = this.pageResult; this.page = result.page;
+    const rows = result.items.map(item => `<li><button class="tv-place" type="button" data-action="travel-item" data-id="${esc(item.id)}"><strong${this.mode === 'en' ? ' lang="en"' : ''}>${esc(item.title)}</strong><span>${esc(item.address || '주소 정보 미수집')}${item.location ? '' : ' · 좌표 없음'}</span></button></li>`).join('');
+    return `<p class="tv-result-count" id="travel-result-count" role="status" aria-live="polite" tabindex="-1">검색 결과 ${n(result.total)}곳${result.total ? ` · ${n(result.page * result.pageSize + 1)}–${n(result.page * result.pageSize + result.items.length)}번째` : ''}</p>
+      ${result.total ? `<ul class="tv-places">${rows}</ul><div class="tv-pagination"><button type="button" class="tv-button" data-action="travel-page" data-page="${result.page - 1}" ${result.page === 0 ? 'disabled' : ''}>이전 목록</button><span>${result.page + 1} / ${result.pages}</span><button type="button" class="tv-button" data-action="travel-page" data-page="${result.page + 1}" ${result.page + 1 >= result.pages ? 'disabled' : ''}>다음 목록</button></div><p class="tv-map-note">지도에는 이 페이지에서 좌표가 있는 장소를 표시합니다.</p>` : '<p>일치하는 관광지가 없습니다. 검색어를 줄이거나 다른 지역명으로 찾아보세요.</p>'}`;
+  }
+
+  placeCard(item) {
+    if (!this.catalog) return '';
+    const position = item.location;
+    return `<section class="card tv-catalog"><div class="card-b"><button type="button" class="tv-button" data-action="travel-list">← 검색 목록으로</button>
+      <h3 id="travel-place-title" tabindex="-1"${this.mode === 'en' ? ' lang="en"' : ''}>${esc(item.title)}</h3><span class="badge">${esc(this.title)} · 공식 관광정보</span>
+      <dl class="tv-facts"><dt>주소</dt><dd${this.mode === 'en' ? ' lang="en"' : ''}>${esc(item.address || '주소 정보 미수집')}</dd><dt>위치</dt><dd>${position ? `${position[0].toFixed(5)}°, ${position[1].toFixed(5)}°` : '좌표 미수집'}</dd>${item.phone ? `<dt>문의 전화</dt><dd>${esc(item.phone)}</dd>` : ''}</dl>
+      ${position ? `<button type="button" class="tv-button" data-action="travel-locate" data-id="${esc(item.id)}">지도에서 이 장소 보기</button>` : ''}
+      <div id="travel-place-details" data-mode="${esc(this.mode)}" data-content-id="${esc(item.id)}">${this.detailHtml(item)}</div>
+      <details class="tv-provenance"><summary>이 장소의 자료 정보</summary><dl class="tv-facts"><dt>공식 콘텐츠 ID</dt><dd>${esc(item.id)}</dd><dt>원문 수정시각</dt><dd>${esc(item.modifiedAtRaw ? item.modifiedAtRaw.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3 $4:$5:$6') + ' (제공자 표기)' : '원문에 없음')}</dd>${item.theme ? `<dt>공식 웰니스 분류 코드</dt><dd>${esc(item.theme)}</dd>` : ''}${item.copyrightCode ? `<dt>공공누리 코드</dt><dd>${esc(item.copyrightCode)}</dd>` : ''}</dl></details>
+      ${this.sourceFooter()}</div></section>`;
+  }
+
+  detailHtml(item) {
+    const status = this.detailCache?.get(`${this.mode}:${item.id}`);
+    const summary = status?.summary;
+    const rowHtml = (fields, labels) => `<dl class="tv-facts">${Object.keys(labels).filter(key => fields?.[key]).map(key => `<dt>${labels[key]}</dt><dd class="tv-official-text">${esc(providerPlainText(fields[key]))}</dd>`).join('')}</dl>`;
+    const source = section => section?.fetchedAt ? `<p class="tv-catalog-source">출처 ${esc(section.sourceName)} · ${section.state === 'STALE' ? '이전 수집 자료 · ' : ''}상세 수집 ${esc(new Date(section.fetchedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false }))} KST${section.sourceUrl ? ` · <a href="${esc(section.sourceUrl)}" target="_blank" rel="noopener noreferrer">공식 원자료</a>` : ''}</p>` : '';
+    let html = '';
+    if (status?.requestState === 'LOADING') html += '<p role="status" aria-live="polite">이 장소의 공식 상세 자료를 확인하고 있습니다.</p>';
+    else if (status?.requestState === 'NOT_FETCHED') html += '<p role="status">이 장소의 상세 자료가 아직 연결되지 않았습니다. 목록에서 확인된 주소와 위치를 표시합니다.</p>';
+    else if (status?.requestState === 'UNAVAILABLE') html += '<p role="status">상세 자료를 불러오지 못했습니다. 이미 수집된 정보는 아래에 표시합니다.</p>';
+    const common = summary?.sections.common;
+    if (common?.fields.overview) html += `<h4>장소 소개</h4><p class="tv-official-text"${this.mode === 'en' ? ' lang="en"' : ''}>${esc(providerPlainText(common.fields.overview))}</p>`;
+    const homepage = providerHomepage(common?.fields.homepage);
+    if (homepage) html += `<p><a href="${esc(homepage)}" target="_blank" rel="noopener noreferrer">관광공사가 제공한 장소 홈페이지</a></p>`;
+    if (common && Object.keys(common.fields).length) html += source(common);
+    const intro = summary?.sections.intro;
+    html += '<h4>이용 안내</h4>';
+    html += intro && Object.keys(intro.fields).length ? rowHtml(intro.fields, TRAVEL_INTRO_LABELS) + source(intro) : '<p>운영시간·요금·체험 프로그램 상세는 아직 수집되지 않았습니다.</p>';
+    if (this.mode === 'bf') {
+      const accessibility = summary?.sections.accessibility;
+      html += '<h4>무장애 시설 정보</h4>';
+      if (accessibility && Object.keys(accessibility.fields).length) html += rowHtml(accessibility.fields, ACCESSIBILITY_LABELS) + source(accessibility);
+      else if (item.accessibility && Object.keys(item.accessibility).length) html += rowHtml(item.accessibility, ACCESSIBILITY_LABELS) + `<p class="tv-catalog-source">시설 항목 수집 ${esc(item.accessibilityFetchedAt)}</p>`;
+      else html += '<p>주차·출입구·화장실·휠체어 대여 등 시설별 접근성 자료가 아직 수집되지 않았습니다. 무장애 목록 수록 여부로 시설 이용 가능을 판정하지 않습니다.</p>';
+    }
+    if (status?.requestState !== 'LOADING') html += `<button type="button" class="tv-button" data-action="travel-detail-retry" data-id="${esc(item.id)}">상세 자료 다시 확인</button>`;
+    return html;
+  }
+
+  async loadPlaceDetails(item, { force = false } = {}) {
+    if (!this.catalog || !TRAVEL_CATALOGS[this.mode] || !item?.id) return null;
+    this.detailCache ||= new Map();
+    const mode = this.mode, id = item.id, key = `${mode}:${id}`;
+    const request = this.detailRequest = (this.detailRequest || 0) + 1;
+    this.detailController?.abort();
+    const controller = this.detailController = new AbortController();
+    const previous = this.detailCache.get(key);
+    const current = () => this.mode === mode && this.selectedPlace?.id === id && this.detailRequest === request && !controller.signal.aborted;
+    const render = () => {
+      if (!current()) return null;
+      const target = document.getElementById('travel-place-details');
+      if (target?.dataset.mode === mode && target?.dataset.contentId === id) target.innerHTML = this.detailHtml(item);
+      return { html: this.placeCard(item), inPlace: true };
+    };
+    if (!force && previous?.expiresAt > Date.now()) return render();
+    this.detailCache.set(key, { ...previous, requestState: 'LOADING', expiresAt: 0 });
+    render();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    let result;
+    try {
+      // 서버에서 이미 생성한 summary만 읽는다. provider API·인증키·수집 트리거는 호출하지 않는다.
+      const response = await fetch(detailSummaryUrl(mode, id), { signal: controller.signal, credentials: 'omit' });
+      if (response.status === 403 || response.status === 404) result = { requestState: 'NOT_FETCHED', summary: previous?.summary || null, expiresAt: Date.now() + 120000 };
+      else {
+        if (!response.ok) throw new Error('DETAIL_UNAVAILABLE');
+        const summary = validateTravelDetailSummary(await response.json(), mode, id);
+        result = { requestState: 'RECEIVED', summary, expiresAt: Date.now() + 300000 };
+      }
+    } catch {
+      // 취소된 이전 선택은 새 선택에 실패 상태를 쓰지 않는다. 제한시간 초과만 현재 카드에 알린다.
+      if (this.mode !== mode || this.selectedPlace?.id !== id || this.detailRequest !== request) return null;
+      result = { requestState: 'UNAVAILABLE', summary: previous?.summary || null, expiresAt: Date.now() + 30000 };
+    } finally { clearTimeout(timeout); }
+    if (this.mode !== mode || this.selectedPlace?.id !== id || this.detailRequest !== request) return null;
+    this.detailCache.set(key, result);
+    if (['HIDDEN', 'NOT_IN_CATALOG'].includes(result.summary?.state)) {
+      this.catalog.items = this.catalog.items.filter(row => row.id !== id);
+      this.selectedPlace = null; this.selected = null; this.build();
+      const target = document.getElementById('travel-place-details');
+      if (target?.dataset.mode === mode && target?.dataset.contentId === id) {
+        const card = target.closest('.tv-catalog'); if (card) card.outerHTML = this.catalogCard();
+        this.focusPanel('travel-result-count');
+      }
+      return { html: this.catalogCard(), inPlace: true };
+    }
+    // 제한시간으로 Abort된 현재 요청도 현재 카드에 오류를 표시한다.
+    const target = document.getElementById('travel-place-details');
+    if (target?.dataset.mode === mode && target?.dataset.contentId === id) target.innerHTML = this.detailHtml(item);
+    return { html: this.placeCard(item), inPlace: true };
+  }
+
+  handleAction(action, dataset = {}, value) {
+    if (!action?.startsWith('travel-') || !this.catalog) return null;
+    if (action === 'travel-query') {
+      // 검색창의 click도 셸의 action 위임을 탄다. 실제 input만 처리해 한글 조합을 보존한다.
+      if (typeof value !== 'string') return { handled: true };
+      this.query = value.slice(0, 160); this.page = 0; this.selectedPlace = null;
+    } else if (action === 'travel-page') {
+      this.page = Math.max(0, Number(dataset.page) || 0);
+    } else if (action === 'travel-list') {
+      this.detailController?.abort(); this.detailRequest = (this.detailRequest || 0) + 1;
+      this.selectedPlace = null; this.selected = null;
+      return { html: this.catalogCard(), focusId: 'travel-query' };
+    } else if (action === 'travel-item' || action === 'travel-locate' || action === 'travel-detail-retry') {
+      const item = this.catalog.items.find(row => row.id === dataset.id);
+      if (!item) return { handled: true };
+      this.selectedPlace = item; this.selected = { ...item, nameKo: item.title, province: item.address, _travelPlace: true };
+      if (action === 'travel-locate') return { point: item.location ? { lat: item.location[0], lon: item.location[1], title: item.title } : null };
+      const pending = this.loadPlaceDetails(item, { force: action === 'travel-detail-retry' });
+      return { html: this.placeCard(item), focusId: action === 'travel-detail-retry' ? null : 'travel-place-title', pending };
+    } else return null;
+    const target = document.getElementById('travel-results');
+    if (target) target.innerHTML = this.resultsHtml();
+    this.build();
+    if (action === 'travel-page') this.focusPanel('travel-result-count');
+    // 호출자는 저장된 본문만 갱신한다. 입력 중인 패널 전체를 교체하지 않는다.
+    return { html: this.catalogCard(), inPlace: true };
+  }
+
+  focusPanel(id) { if (id) queueMicrotask(() => document.getElementById(id)?.focus({ preventScroll: true })); }
+
+  buildPlaces() {
+    const places = this.pageResult.items.filter(item => item.location);
+    if (!places.length) return;
+    const positions = new Float32Array(places.length * 3);
+    places.forEach((item, index) => {
+      const [lat, lon] = item.location; const v = llToV3(lat, lon, this.surfR(lat, lon));
+      positions.set([v.x, v.y, v.z], index * 3);
+      if (index < 8) { const label = makeLabel(item.title, '#F2A2C4'); label.position.copy(llToV3(lat, lon, this.surfR(lat, lon, 0.007))); this.group.add(label); this.labels.push(label); }
+    });
+    const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    this.group.add(new THREE.Points(geometry, new THREE.PointsMaterial({ size: 9, sizeAttenuation: false, color: ACCENT, map: getDotTex(), transparent: true, alphaTest: 0.05, depthWrite: false })));
+  }
+
+  visitorsCard() {
+    const rows = this.data.regions.filter(region => region.visitors).sort((a, b) => (b.visitors.domestic ?? -1) - (a.visitors.domestic ?? -1));
+    const content = rows.slice(0, 20).map(region => { const v = region.visitors; return `<tr><th scope="row">${esc(region.province)} ${esc(region.nameKo)}</th><td>${n(v.domestic == null ? null : Math.round(v.domestic))}</td><td>${esc(v.date || '기간 미수신')}${v.aggregation === 'MEAN_PER_DAY' ? ' · 일평균' : ''}</td></tr>`; }).join('');
+    return `<section class="card tv-catalog"><div class="card-h">방문자 스냅샷 <span class="badge">과거 통계</span></div><div class="card-b"><p>이동통신 기반 외지인 방문 지표입니다. 관광객 수나 현재 혼잡도가 아닙니다.</p><p>자료가 있는 ${n(rows.length)}개 지역 중 외지인 지표 상위 20곳. 지역별 집계 기간이 다를 수 있습니다.</p><div class="tv-table-wrap"><table><thead><tr><th>지역</th><th>외지인</th><th>집계 기간</th></tr></thead><tbody>${content}</tbody></table></div><p class="tv-catalog-source">${this.provLine('visitors')}</p></div></section>`;
   }
 
   relatedCard() {

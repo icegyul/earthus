@@ -4,11 +4,13 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=58';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=59-information';
+import { createSelectionGate } from './information-contract.js';
+const escUI = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=7';
-import { LiveLayers } from './live-layers.js?v=38';
+import { LiveLayers } from './live-layers.js?v=39-information';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=2';
 import { i18n } from './i18n.js?v=10';
@@ -25,7 +27,7 @@ import { GalaxyView } from './galaxy-view.js?v=3';
 import { SkyView } from './sky-view.js?v=1';
 import { AetherusLink } from './aetherus-link.js?v=2';
 import { SeaFloor } from './seafloor.js?v=2';
-import { TravelScene } from './travel.js?v=2';
+import { TravelScene } from './travel.js?v=3-information';
 // 익명 이용 집계 — 개인 식별자를 보내지 않는다 (날짜·이벤트명·횟수만). usage.js 주석 참조.
 import { usage } from './usage.js?v=1';
 import { FlightRoute, routeCardHtml } from './route.js?v=4';
@@ -161,7 +163,7 @@ async function loadTerrariumHeightCanvas(onProgress) {
 // 셰이더
 // ---------------------------------------------------------------------------
 
-// 전역 고도맵(z4) + 카메라 주변 고해상도 디테일 윈도우(z6~z8)를 공유하는 샘플링 체인.
+// 전역 고도맵(z4) + 카메라 주변 고해상도 디테일 윈도우(z5~z9)를 공유하는 샘플링 체인.
 // uDetailRect: xy = 윈도 원점(전역 메르카토르 uv), zw = 윈도 폭/높이. 경계는 8% 마진으로 페이드.
 const TERRAIN_GLSL = /* glsl */ `
 uniform sampler2D uHeightMap;
@@ -285,10 +287,10 @@ vec3 srgb(float r, float g, float b) {
 }
 
 vec3 hypsometric(float h) {
-  vec3 low   = srgb( 74.0, 110.0,  62.0);
-  vec3 mid   = srgb(128.0, 128.0,  74.0);
-  vec3 high  = srgb(150.0, 116.0,  80.0);
-  vec3 rock  = srgb(126.0, 114.0, 104.0);
+  vec3 low   = srgb( 65.0, 105.0,  78.0);
+  vec3 mid   = srgb(128.0, 139.0, 101.0);
+  vec3 high  = srgb(169.0, 149.0, 117.0);
+  vec3 rock  = srgb(155.0, 149.0, 141.0);
   vec3 snow  = srgb(232.0, 237.0, 242.0);
   vec3 c = mix(low,  mid,  smoothstep(   80.0, 1000.0, h));
   c      = mix(c,    high, smoothstep( 1000.0, 2600.0, h));
@@ -298,9 +300,9 @@ vec3 hypsometric(float h) {
 }
 
 vec3 oceanColor(float h) {
-  vec3 deep    = srgb(  6.0,  16.0,  30.0);
-  vec3 midsea  = srgb( 14.0,  42.0,  66.0);
-  vec3 shallow = srgb( 28.0,  82.0, 112.0);
+  vec3 deep    = srgb( 12.0,  35.0,  66.0);
+  vec3 midsea  = srgb( 18.0,  63.0,  96.0);
+  vec3 shallow = srgb( 43.0, 114.0, 128.0);
   float d = clamp(-h, 0.0, 6500.0);
   vec3 c = mix(shallow, midsea, smoothstep(80.0, 1800.0, d));
   c      = mix(c,       deep,   smoothstep(1800.0, 5200.0, d));
@@ -342,7 +344,11 @@ void main() {
   }
 
   float poleFade = smoothstep(1.437, 1.4844, abs(lat));
-  float bumpK = uExagger * uShade * (h < 0.0 ? 0.35 : 1.0) * (1.0 - poleFade);
+  // 지형의 실제 정점 변위는 유지한다. 픽셀 음영에 같은 50배를 또 곱하면
+  // 낮은 구릉까지 자갈처럼 번쩍인다. 음영만 완만하게 증가시키고 수면은 구면 법선.
+  // 수심은 색·등심선·별도 해저 뷰가 표현하며 수면 반사에 해저 경사를 사용하지 않는다.
+  float bumpK = sqrt(max(uExagger, 1.0)) * 2.0 * uShade
+    * smoothstep(0.0, 30.0, h) * (1.0 - poleFade);
   vec3 N = normalize(nGeo - (slopeE * tE + slopeN * tN) * bumpK);
 
   // 조명: uSunDir는 실시간 태양(월드 고정) 또는 수동 모드(화면 기준) — JS에서 매 프레임 계산
@@ -374,8 +380,9 @@ void main() {
     float du2 = fract(cuv.x - uDetailRect.x);
     float dv2 = cuv.y - uDetailRect.y;
     vec2 duv2 = vec2(du2 / uDetailRect.z, dv2 / uDetailRect.w);
-    vec3 sat = texture2D(uDetailImg, duv2).rgb;
-    ground = mix(ground, sat, df * 0.92);
+    vec4 sat = texture2D(uDetailImg, duv2);
+    // 누락 타일은 투명: 이전 지역 영상이나 검은 사각형으로 덮지 않는다.
+    ground = mix(ground, sat.rgb, df * sat.a);
   }
 
   // 눈·얼음 관측 레이어 (OBSERVED · MODIS NDSI): 지표 재질/상태로만 사용 (17A SNOW/ICE)
@@ -389,7 +396,8 @@ void main() {
   // 극지 만년설/해빙: 데이터가 없는 위도는 얼음색으로 덮는다
   ground = mix(ground, srgb(226.0, 234.0, 240.0), poleFade);
 
-  vec3 dayCol = ground * (0.30 + 0.85 * hillshade);
+  // 넓은 하늘광으로 음지의 지형색을 남겨 데이터 레이어와 배경이 함께 읽히게 한다.
+  vec3 dayCol = ground * (0.42 + 0.70 * hillshade);
   vec3 nightCol = ground * vec3(0.055, 0.070, 0.105); // 밤면: 어두운 청색 잔광
   vec3 color = mix(nightCol, dayCol, dayMask);
 
@@ -427,8 +435,10 @@ void main() {
   vec3 viewDir = normalize(uCamPos - nGeo);
   if (h < 0.0) {
     vec3 halfV = normalize(uSunDir + viewDir);
-    float spec = pow(clamp(dot(N, halfV), 0.0, 1.0), 80.0);
-    color += vec3(0.35, 0.45, 0.55) * spec * 0.35 * dayMask;
+    float ndh = clamp(dot(nGeo, halfV), 0.0, 1.0);
+    float fresnel = 0.02 + 0.98 * pow(1.0 - max(dot(nGeo, viewDir), 0.0), 5.0);
+    float spec = pow(ndh, 110.0) * 0.55 + pow(ndh, 18.0) * 0.045;
+    color += vec3(0.72, 0.86, 1.0) * spec * (0.25 + fresnel) * dayMask;
   }
 
   // 대기 림 (지표면 쪽) — 밤면은 약하게
@@ -711,7 +721,7 @@ class OrbitCam {
 }
 
 // ---------------------------------------------------------------------------
-// 디테일 지형 스트리밍: 카메라가 내려가면 보이는 지역의 z6~z8 타일(6×6)을 받아
+// 디테일 지형 스트리밍: 카메라가 내려가면 보이는 지역의 z5~z9 타일(10×10)을 받아
 // 전역 z4 고도맵 위에 덧씌운다. 실패 타일은 전역맵 업스케일로 자연스럽게 대체.
 // ---------------------------------------------------------------------------
 
@@ -720,14 +730,17 @@ const TILE_TIMEOUT_MS = 8000;
 // 창 중심이 이만큼 어긋나면 새 창을 받는다. 그 전까지는 옛 창을 쓰므로,
 // 덮는지 따질 때 이만큼 밀린 최악의 상태를 기준으로 삼아야 한다.
 const DETAIL_REFETCH_TILES = 1;
+// 확대 시 6×6 창이 부족해 전역 z4로 떨어지던 문제: 10×10, 최대 2560px.
+const DETAIL_TILES = 10;
+const DETAIL_SIZE = DETAIL_TILES * 256;
 
 class DetailTerrain {
   constructor(uniforms, baseCanvas) {
     this.uniforms = uniforms;
     this.baseCanvas = baseCanvas;
     this.canvas = document.createElement('canvas');
-    this.canvas.width = 1536;
-    this.canvas.height = 1536;
+    this.canvas.width = DETAIL_SIZE;
+    this.canvas.height = DETAIL_SIZE;
     this.ctx = this.canvas.getContext('2d');
     this.tex = new THREE.CanvasTexture(this.canvas);
     this.tex.flipY = false;
@@ -740,8 +753,8 @@ class DetailTerrain {
     uniforms.uDetailMap.value = this.tex;
     // 위성 이미지 윈도우 (같은 타일 좌표계) — 줌인 시 도시·실지표가 보이게
     this.imgCanvas = document.createElement('canvas');
-    this.imgCanvas.width = 1536;
-    this.imgCanvas.height = 1536;
+    this.imgCanvas.width = DETAIL_SIZE;
+    this.imgCanvas.height = DETAIL_SIZE;
     this.imgCtx = this.imgCanvas.getContext('2d');
     this.imgTex = new THREE.CanvasTexture(this.imgCanvas);
     this.imgTex.flipY = false;
@@ -779,22 +792,22 @@ class DetailTerrain {
   }
 
   // 쓸 수 있는 폭 ÷ 화면 폭. 1이면 겨우 맞고, 클수록 여유가 있다.
-  // '쓸 수 있는 폭'은 창 폭(6타일)이 아니라, 다시 받기 전까지 카메라가 밀릴 수 있는
+  // '쓸 수 있는 폭'은 창 폭(10타일)이 아니라, 다시 받기 전까지 카메라가 밀릴 수 있는
   // 만큼을 양쪽에서 깎은 폭이다. 창 폭으로 재면 밀린 순간 가장자리에 띠가 남는다.
   // 메르카토르 타일은 위도가 높을수록 위도 방향으로 좁아진다(×cos위도) —
   // 같은 고도라도 시베리아에서 먼저 모자란다.
   static coverRatio(z, altKm, latRad, cam) {
     const need = DetailTerrain.screenNeed(altKm, cam);
-    const usable = (6 - 2 * DETAIL_REFETCH_TILES) * (360 / (1 << z));
+    const usable = (DETAIL_TILES - 2 * DETAIL_REFETCH_TILES) * (360 / (1 << z));
     const cosL = Math.max(0.15, Math.cos(latRad));
     return Math.min(usable / need.lon, (usable * cosL) / need.lat);
   }
 
-  // 상세 창은 6×6 타일 고정이라 폭이 정해져 있다. 화면을 덮지 못하면 지구 위에
+  // 상세 창은 10×10 타일 고정이라 폭이 정해져 있다. 화면을 덮지 못하면 지구 위에
   // 사각형으로 드러나므로, 고도만 보지 말고 '덮는가'를 직접 따진다.
   static zoomFor(altKm, latRad, cam) {
-    const zAlt = altKm > 1200 ? 6 : altKm > 400 ? 7 : 8;  // 고도별 상세도 상한
-    for (let z = zAlt; z >= 6; z -= 1) {
+    const zAlt = altKm > 2200 ? 6 : altKm > 800 ? 7 : altKm > 300 ? 8 : 9;  // 고도별 상세도 상한
+    for (let z = zAlt; z >= 5; z -= 1) {
       if (DetailTerrain.coverRatio(z, altKm, latRad, cam) >= 1) return z;
     }
     return 0;  // 가장 넓은 창으로도 못 덮는다 → 전역맵 한 장으로 간다
@@ -802,11 +815,12 @@ class DetailTerrain {
 
   update(latRad, lonRad, altKm, cam) {
     const z = DetailTerrain.zoomFor(altKm, latRad, cam);
-    // 겨우 덮는 구간에서 갑자기 꺼지면 지표 톤이 툭 튄다 → 여유분에 따라 서서히 넘긴다.
+    // coverRatio는 양옆 재요청 마진을 이미 제외한다. 1 이상이면 상세 영상을 온전히 표시한다.
+    // 여유분을 다시 요구하면 화면을 덮는 타일도 20% 정도만 보여 흐린 전역색이 남는다.
     // 높이도 같은 계수를 쓰므로(detailFade) 지형이 튀지도 않는다.
     this.uniforms.uDetailAmt.value = z === 0
       ? 0
-      : THREE.MathUtils.smoothstep(DetailTerrain.coverRatio(z, altKm, latRad, cam), 1.0, 1.15);
+      : THREE.MathUtils.smoothstep(DetailTerrain.coverRatio(z, altKm, latRad, cam), 0.85, 1.0);
     if (z === 0) {
       if (this.cur) {
         this.cur = null;
@@ -821,12 +835,19 @@ class DetailTerrain {
     let txc = Math.floor((((lonDeg + 180) / 360) % 1 + 1) % 1 * n);
     const mercV = 0.5 - Math.log(Math.tan(Math.PI / 4 + latC / 2)) / (2 * Math.PI);
     const tyc = Math.max(0, Math.min(n - 1, Math.floor(mercV * n)));
-    const tx0 = txc - 3;
-    const ty0 = Math.max(0, Math.min(n - 6, tyc - 3));
+    const tx0 = txc - DETAIL_TILES / 2;
+    const ty0 = Math.max(0, Math.min(n - DETAIL_TILES, tyc - DETAIL_TILES / 2));
     if (this.cur && this.cur.z === z) {
       const dtx = ((tx0 - this.cur.tx0) % n + n) % n;
       const drift = Math.max(Math.min(dtx, n - dtx), Math.abs(ty0 - this.cur.ty0));
-      if (drift < DETAIL_REFETCH_TILES) return;  // 아직 창 안이다
+      if (drift < DETAIL_REFETCH_TILES) {
+        const state = `${z}:${this.uniforms.uDetailAmt.value.toFixed(3)}`;
+        if (state !== this.lastState) {
+          this.lastState = state;
+          document.getElementById('scene')?.setAttribute('data-terrain-blend', state);
+        }
+        return;  // 아직 창 안이다
+      }
     }
     // 창을 벗어났다. 새 창이 올 때까지 낡은 창을 보여주면 화면에 경계선이 남는다.
     this.uniforms.uDetailAmt.value = 0;
@@ -839,7 +860,7 @@ class DetailTerrain {
     const n = 1 << z;
     const u0 = (((tx0 % n) + n) % n) / n;
     const v0 = ty0 / n;
-    const w = 6 / n;
+    const w = DETAIL_TILES / n;
     // 전역맵을 미리 업스케일로 깔아 실패 타일이 구멍이 되지 않게 한다
     // (GPU 업로드는 needsUpdate 시점이라 진행 중에도 화면의 이전 윈도는 유지됨)
     if (this.baseCanvas) {
@@ -848,12 +869,12 @@ class DetailTerrain {
       const sy = v0 * bw;
       const sw = w * bw;
       if (sx + sw <= bw) {
-        this.ctx.drawImage(this.baseCanvas, sx, sy, sw, sw, 0, 0, 1536, 1536);
+        this.ctx.drawImage(this.baseCanvas, sx, sy, sw, sw, 0, 0, DETAIL_SIZE, DETAIL_SIZE);
       } else {
         const w1 = bw - sx;
-        const px = Math.round(1536 * (w1 / sw));
-        this.ctx.drawImage(this.baseCanvas, sx, sy, w1, sw, 0, 0, px, 1536);
-        this.ctx.drawImage(this.baseCanvas, 0, sy, sw - w1, sw, px, 0, 1536 - px, 1536);
+        const px = Math.round(DETAIL_SIZE * (w1 / sw));
+        this.ctx.drawImage(this.baseCanvas, sx, sy, w1, sw, 0, 0, px, DETAIL_SIZE);
+        this.ctx.drawImage(this.baseCanvas, 0, sy, sw - w1, sw, px, 0, DETAIL_SIZE - px, DETAIL_SIZE);
       }
     }
     // 매달린 연결 하나가 창 전체를 붙잡지 못하게 타일마다 시한을 둔다.
@@ -874,29 +895,36 @@ class DetailTerrain {
       img.onerror = () => done(false);
       img.src = url;
     });
+    this.imgCtx.clearRect(0, 0, DETAIL_SIZE, DETAIL_SIZE);
     const jobs = [];
     let imgOk = 0;
-    for (let dy = 0; dy < 6; dy += 1) {
-      for (let dx = 0; dx < 6; dx += 1) {
+    for (let dy = 0; dy < DETAIL_TILES; dy += 1) {
+      for (let dx = 0; dx < DETAIL_TILES; dx += 1) {
         const tx = (((tx0 + dx) % n) + n) % n;
         const ty = ty0 + dy;
-        jobs.push(loadTile(TILE_URL(z, tx, ty), (img) => {
+        jobs.push(() => loadTile(TILE_URL(z, tx, ty), (img) => {
           this.ctx.drawImage(img, dx * 256, dy * 256);
         }));
-        jobs.push(loadTile(
+        jobs.push(() => loadTile(
           `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${ty}/${tx}`,
           (img) => { this.imgCtx.drawImage(img, dx * 256, dy * 256, 256, 256); imgOk += 1; },
         ));
       }
     }
-    await Promise.all(jobs);
+    // 200장을 동시에 요청하지 않는다. 창의 요청 수가 늘어도 동시는 12개로 제한.
+    let nextJob = 0;
+    await Promise.all(Array.from({ length: 12 }, async () => {
+      while (nextJob < jobs.length) await jobs[nextJob++]();
+    }));
     this.tex.needsUpdate = true;
     this.imgTex.needsUpdate = true;
     this.cur = { z, tx0, ty0 };
     this.uniforms.uDetailRect.value.set(u0, v0, w, w);
     this.uniforms.uDetailEps.value = ((2 * Math.PI) / (n * 256)) * 1.5;
     this.uniforms.uHasDetail.value = 1;
-    this.uniforms.uHasDetailImg.value = imgOk > 18 ? 1 : 0;
+    this.uniforms.uHasDetailImg.value = imgOk > 0 ? 1 : 0;
+    document.getElementById('scene')?.setAttribute('data-terrain-detail',
+      JSON.stringify({ zoom: z, imageryTiles: imgOk, totalTiles: DETAIL_TILES ** 2, size: DETAIL_SIZE }));
   }
 }
 
@@ -2431,8 +2459,8 @@ async function main() {
     uExagger: { value: 50.0 },
     uIsobath: { value: 0.0 },      // 해저 등심선 세기 (0 = 끔)
     uIsobathStep: { value: 500.0 }, // 등심 간격 500 m · 주곡선 2,500 m
-    uShade: { value: 1.9 },
-    uPhotoMix: { value: hasHeight ? 0.65 : 1.0 },
+    uShade: { value: 0.9 },
+    uPhotoMix: { value: hasHeight ? 0.80 : 1.0 },
     uHasHeight: { value: hasHeight },
     uHasBase: { value: hasBase },
     uNightMap: { value: null },
@@ -2655,11 +2683,14 @@ async function main() {
     if (tv) {
       usage.track('travel.region_opened'); // 발견 → 상세 전환 (집계끼리 나눠 전환율을 구한다)
       focus.clear();
-      lockedNote = { title: `${tv.nameKo} — 왜 지금`, badge: 'DERIVED', body: travel.regionCard(tv) };
+      const current=selectionGate.next();
+      shell.clearSelection();
+      lockedNote = { title: tv._travelPlace ? tv.nameKo : `${tv.nameKo} — 왜 지금`, badge: tv._travelPlace ? 'OFFICIAL_INFORMATION' : 'DERIVED', body: travel.regionCard(tv) };
       shell.showTab('now');
       shell.openIntel();
       shell.renderIntel();
       shell.refreshFlyout();
+      if(tv._travelPlace && travel.loadPlaceDetails)travel.loadPlaceDetails(tv).then(update=>{if(current()&&update&&lockedNote)lockedNote.body=update.html;});
       return;
     }
     const tr = seafloor && seafloor.pick(lat, lon);
@@ -2716,24 +2747,34 @@ async function main() {
     return { elev, azDeg };
   };
 
+  let marineRequest = null;
   async function marineSelect(lat, lon) {
+    marineRequest?.abort();
+    const request = new AbortController();
+    marineRequest = request;
+    selectionGate.invalidate();
+    lockedNote = null;
+    shell.clearSelection();
     seaPoint = { lat, lon, loading: true };
+    shell.showTab('now');
     shell.openIntel();
     shell.renderIntel();
     try {
       const [m, w] = await Promise.all([
-        fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&current=wave_height,wave_direction,wave_period,wind_wave_height,swell_wave_height,swell_wave_period,swell_wave_direction`)
+        fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&current=wave_height,wave_direction,wave_period,wind_wave_height,swell_wave_height,swell_wave_period,swell_wave_direction&timezone=UTC`, {signal:request.signal})
           .then((r) => { if (!r.ok) throw new Error(`marine ${r.status}`); return r.json(); }),
-        fetch(`https://api.open-meteo.com/v1/gfs?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms`)
+        fetch(`https://api.open-meteo.com/v1/gfs?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms&timezone=UTC`, {signal:request.signal})
           .then((r) => { if (!r.ok) throw new Error(`wind ${r.status}`); return r.json(); }),
       ]);
+      if(request !== marineRequest || request.signal.aborted) return;
       if (!m.current || m.current.wave_height == null) {
         seaPoint = { lat, lon, error: '해양 데이터 없음 (연안 밖 지점을 클릭하세요)' };
       } else {
-        seaPoint = { lat, lon, marine: m.current, wind: (w && w.current) || {}, time: m.current.time };
+        seaPoint = { lat, lon, marine: m.current, wind: (w && w.current) || {}, time: m.current.time, windTime:w?.current?.time, retrievedAt:new Date().toISOString() };
       }
     } catch (err) {
-      seaPoint = { lat, lon, error: err.message };
+      if(request.signal.aborted || request !== marineRequest) return;
+      seaPoint = { lat, lon, error: '해양 모델 자료를 받지 못했습니다. 잠시 후 다시 조회해 주세요.' };
     }
     shell.renderIntel();
   }
@@ -2743,25 +2784,27 @@ async function main() {
   const seaCardHtml = () => {
     if (!seaPoint) return '';
     if (seaPoint.loading) {
-      return `<div class="card"><div class="card-h">해상 지점 ${fmtPt(seaPoint.lat, seaPoint.lon)}</div><div class="card-b">실측 해양 데이터 조회 중…</div></div>`;
+      return `<div class="card"><div class="card-h">해상 지점 ${fmtPt(seaPoint.lat, seaPoint.lon)}</div><div class="card-b" role="status">해양 모델 자료 조회 중…</div></div>`;
     }
     if (seaPoint.error) {
-      return `<div class="card"><div class="card-h">해상 지점 ${dataBadge('UNAVAILABLE')}</div><div class="card-b">${seaPoint.error}</div></div>`;
+      return `<div class="card"><div class="card-h">해상 지점 ${dataBadge('UNAVAILABLE')}</div><div class="card-b">${seaPoint.error}<br/><button data-action="marine-retry">다시 조회</button></div></div>`;
     }
     const m = seaPoint.marine;
     const w = seaPoint.wind;
-    return `<div class="card"><div class="card-h">해상 실황 ${dataBadge('OBSERVED')}</div>
+    return `<div class="card"><div class="card-h">해양 모델 · 파고와 바람 ${dataBadge('MODEL_SIGNAL')}</div>
       <div class="card-b">
         <div class="stat"><span class="k">지점</span><span class="v">${fmtPt(seaPoint.lat, seaPoint.lon)}</span></div>
         <div class="stat"><span class="k">유의파고</span><span class="v">${m.wave_height} m</span></div>
         <div class="stat"><span class="k">너울</span><span class="v">${m.swell_wave_height != null ? `${m.swell_wave_height} m · ${m.swell_wave_period}s` : '—'}</span></div>
         <div class="stat"><span class="k">풍파</span><span class="v">${m.wind_wave_height != null ? `${m.wind_wave_height} m` : '—'}</span></div>
         <div class="stat"><span class="k">풍속</span><span class="v">${w.wind_speed_10m != null ? `${w.wind_speed_10m} m/s` : '—'}</span></div>
-        출처 Open-Meteo Marine (GFS-Wave) · ${seaPoint.time || ''}
+        <p>유의파고는 높은 쪽 1/3 파도의 평균 높이입니다.</p>
+        <p>해양: Open-Meteo Marine · 유효 ${seaPoint.time || '시각 미제공'} UTC<br/>바람: Open-Meteo GFS · 유효 ${seaPoint.windTime || '시각 미제공'} UTC<br/>조회 ${seaPoint.retrievedAt}</p>
+        <button data-action="marine-buoys">부이 실측과 비교</button>
       </div>
       <div class="paycard" style="border-style:solid; cursor:default;">
         <button class="simgo" data-action="sim-now">이 바다 시뮬레이션 보기 →</button>
-        <div class="paysub">관측 파라미터로 물리 재구성 — 실제 영상 아님 (OBSERVED-DRIVEN MODEL)</div>
+        <div class="paysub">모델 값을 입력한 파도 시뮬레이션</div>
       </div></div>`;
   };
 
@@ -2804,13 +2847,13 @@ async function main() {
   const simNowInfoHtml = () => {
     const m = seaPoint.marine;
     const w = seaPoint.wind;
-    return `<div class="card-h"><span class="badge live">OBSERVED-DRIVEN</span><span class="badge model">MODEL</span></div>
+    return `<div class="card-h">${dataBadge('SIMULATION_ONLY')} 모델 값을 입력한 파도</div>
       <div class="card-b">
         <div class="stat"><span class="k">지점</span><span class="v">${fmtPt(seaPoint.lat, seaPoint.lon)}</span></div>
         <div class="stat"><span class="k">유의파고</span><span class="v">${m.wave_height} m</span></div>
         <div class="stat"><span class="k">풍속</span><span class="v">${w.wind_speed_10m != null ? `${w.wind_speed_10m} m/s` : '—'}</span></div>
         출처 Open-Meteo Marine · ${seaPoint.time || ''}<br/>
-        관측 파라미터 물리 재구성 — 실제 영상 아님
+        해양 모델의 파고·풍속으로 계산한 시뮬레이션
       </div>`;
   };
 
@@ -2819,6 +2862,7 @@ async function main() {
   let focusStatsRows = '';
   let lastSunState = null;
   let lockedNote = null;
+  const selectionGate = createSelectionGate();
   let labelCandidates = null;
   const statRow = (k, v, na) => `<div class="stat"><span class="k">${k}</span><span class="v${na ? ' na' : ''}">${v}</span></div>`;
 
@@ -3084,6 +3128,7 @@ async function main() {
       if (clouds.mode !== 'gk2a') {
         markCloudBtn('gk2a');
         await clouds.set('gk2a');
+        if(myEarth.place!==p)return;
         shell.refreshFlyout();
       }
       const sky = sampleSkyAt(p.lat, p.lon);
@@ -3092,6 +3137,7 @@ async function main() {
         fetchS3('/wind/korea-air-obs.json'),
         fetchS3('/wind/kma-aws.json'),
       ]);
+      if(myEarth.place!==p)return;
       const warns = warn ? (warn.active || []).filter((w) => w.lat != null
         && Math.hypot(w.lat - p.lat, (w.lon - p.lon) * Math.cos((p.lat * Math.PI) / 180)) < 0.55) : null;
       myEarth.data = {
@@ -3113,16 +3159,18 @@ async function main() {
   };
 
   const AIR_GRADE_KO = { 1: ['좋음', '#3fa7ff'], 2: ['보통', '#4fd06a'], 3: ['나쁨', '#ffab3d'], 4: ['매우나쁨', '#ff4d4d'] };
+  const manualPlaceHtml = () => `<details class="context-details"><summary>GPS 없이 장소 선택</summary><p>상단 장소 검색으로 지도를 이동한 뒤 중심 지점을 사용하거나 좌표를 입력하세요.</p><button data-action="my-map-center">현재 지도 중심 사용</button><label>위도 <input id="my-lat" type="number" min="-90" max="90" step="any" placeholder="예: 37.5665"></label><label>경도 <input id="my-lon" type="number" min="-180" max="180" step="any" placeholder="예: 126.9780"></label><button data-action="my-coordinates">입력한 장소 사용</button></details>`;
   const getMyHtml = () => {
+    const error=myEarth.error?`<p role="alert">${escUI(myEarth.error)}</p>`:'';
     if (!myEarth.place) {
       return `<div class="card"><div class="card-h">MY EARTH ${dataBadge('LIVE')}</div>
         <div class="card-b">내 위치를 등록하면 내 하늘의 실황 구름, 주변 기상 특보, 가장 가까운 대기질·바람 관측을 한 화면으로 봅니다.<br/>
         위치는 <b>이 브라우저에만</b> 저장되며 서버로 보내지 않습니다.</div>
-        <div class="paycard" style="border-style:solid;"><button class="simgo" data-action="my-locate">📍 내 위치 등록 (GPS)</button></div></div>`;
+        <div class="paycard" style="border-style:solid;"><button class="simgo" data-action="my-locate">📍 내 위치 등록 (GPS)</button>${error}${manualPlaceHtml()}</div></div>`;
     }
     const p = myEarth.place;
     let html = `<div class="card"><div class="card-h">MY EARTH · ${fmtPt(p.lat, p.lon)}
-      <button class="ui-x" data-action="my-refresh" title="갱신">⟳</button><button class="ui-x" data-action="my-locate" title="위치 다시 등록">📍</button></div><div class="card-b">`;
+      <button class="ui-x" data-action="my-refresh" title="갱신">⟳</button><button class="ui-x" data-action="my-locate" title="위치 다시 등록">📍</button></div><div class="card-b">${error}${manualPlaceHtml()}`;
     if (myEarth.loading) {
       html += '관측 불러오는 중…</div></div>';
       return html;
@@ -3150,7 +3198,7 @@ async function main() {
       const a = d.aws.it;
       html += `<div class="stat"><span class="k">🌬 바람·기온 (${a.name} ${d.aws.km}km)</span><span class="v">${a.wind_ms != null ? `${a.wind_ms}m/s` : '—'} · ${a.temp_c != null ? `${a.temp_c}°C` : '—'}</span></div>`;
     }
-    html += `</div>조회 ${d.at} · 하늘=천리안 10분 · 특보·대기질·바람=공식 관측 그대로</div></div>`;
+    html += `</div><details><summary>각 자료의 기준 시각</summary><p>특보: ${escUI(d.warnAt||'제공되지 않음')}<br/>대기질: ${escUI(d.airAt||'제공되지 않음')}<br/>바람·기온: ${escUI(d.awsAt||'제공되지 않음')}</p></details>조회 ${d.at} · 한국 관측망 기준 · 조회 시각과 자료 시각은 다릅니다.</div></div>`;
     return html;
   };
 
@@ -3167,19 +3215,21 @@ async function main() {
     if (lockedNote) {
       html += `<div class="card"><div class="card-h">${lockedNote.title} ${dataBadge(lockedNote.badge || 'LOCKED')}</div><div class="card-b">${lockedNote.body}</div></div>`;
     }
-    html += seaCardHtml();
+    if (!lockedNote) html += seaCardHtml();
     const s = lastSunState;
     const sunHtml = s
       ? `직하점 ${s.declDeg >= 0 ? 'N' : 'S'}${Math.abs(s.declDeg).toFixed(1)}° ${s.lonDeg >= 0 ? 'E' : 'W'}${Math.abs(s.lonDeg).toFixed(1)}° · 적위 ${s.declDeg >= 0 ? '+' : ''}${s.declDeg.toFixed(1)}°${timeOffsetMs !== 0 ? '<br/>타임 스크럽 적용 중 — 현재 시각 아님' : ''}`
       : '수동 조명 모드 (화면 기준)';
-    html += buildNowCards({
+    const contextCards = buildNowCards({
       focusSel: focus.selected,
       focusStatsHtml: focusStatsRows,
       sunHtml,
-      terrainHtml: `과장 ${uniforms.uExagger.value}× · 음영 ${uniforms.uShade.value.toFixed(1)}${uniforms.uIsobath.value > 0.5 ? ` · 등심선 ${uniforms.uIsobathStep.value.toLocaleString('ko-KR')} m` : ''}<br/>전역 z4 + 지역 z6~z8 스트리밍 (AWS Terrarium)${nightLightSrc ? `<br/>밤면 불빛 · ${nightLightSrc}` : ''}`,
+      terrainHtml: `과장 ${uniforms.uExagger.value}× · 음영 ${uniforms.uShade.value.toFixed(1)}${uniforms.uIsobath.value > 0.5 ? ` · 등심선 ${uniforms.uIsobathStep.value.toLocaleString('ko-KR')} m` : ''}<br/>전역 z4 + 지역 z5~z9 스트리밍 (AWS Terrarium · Esri 위성)${nightLightSrc ? `<br/>밤면 불빛 · ${nightLightSrc}` : ''}`,
       cloudBadge: cloudBadgeFor(clouds.mode),
       cloudHtml: document.getElementById('cloud-note').textContent,
     });
+    html += lockedNote || seaPoint ? `<details class="context-details"><summary>배경 지구 · 태양 · 구름</summary>${contextCards}</details>` : contextCards;
+    html += '<details class="context-details"><summary>자료 연결·화면 성능 상세</summary>';
     // 정본 ops/provider-health.js 판정 — 이 앱이 의존하는 소스가 지금 살아 있는지
     html += providerCardHtml();
     // 정본 core/engine-runtime.js 스냅샷 — 등록 엔진의 생명주기와 실제 자원량
@@ -3199,7 +3249,7 @@ async function main() {
           </div>
         </div></div>`;
     }
-    return html;
+    return html + '</details>';
   };
 
   // 레이어별 켜짐/꺼짐 등 셸 자체 상태 (신선도는 getLayerState가 정본으로 덧입힌다)
@@ -3412,6 +3462,11 @@ async function main() {
 
   // 인구 조각 국가 칩 — 격자를 켜고 그 나라가 화면을 채우는 거리로 날아간다.
   const goPopCountry = (iso3, nameKo) => {
+    const current = selectionGate.next();
+    marineRequest?.abort();
+    seaPoint = null;
+    shell.clearSelection();
+    showNote(`${nameKo} · 인구 분포`, '인구 추정 자료를 불러오는 중…', 'MODEL_SIGNAL');
     if (map.active) map.exit();
     if (local.active) local.close(true);
     popSculpt.pendingName = nameKo;
@@ -3419,8 +3474,9 @@ async function main() {
     ready
       .then(() => popSculpt.show(iso3, nameKo))
       .then(() => {
+        if(!current())return;
         const ext = popSculpt.extent();
-        showNote('인구 데이터 조각', popSculpt.cardHtml(), popSculpt.doc ? 'OBSERVED' : 'UNAVAILABLE');
+        showNote('인구 데이터 조각', popSculpt.cardHtml(), popSculpt.doc ? 'MODEL_SIGNAL' : 'UNAVAILABLE');
         shell.refreshFlyout();
         if (!ext) return;
         let ty = THREE.MathUtils.degToRad(ext.lon);
@@ -3437,6 +3493,33 @@ async function main() {
 
   // 셸 훅을 변수로 들고 있는다 — 사건 방의 "지구에 켜기"가 메뉴와 같은 경로로 레이어를 켤 수 있게
   const shellHooks = {
+    clearLayers: async () => {
+      const current=selectionGate.next();marineRequest?.abort();
+      liveLayers.clearAll();
+      satLayer.coreOn=false;satLayer.starlinkOn=false;satLayer.group.visible=false;
+      synop.setVisible(false);
+      setSnow(false);
+      uniforms.uIsobath.value=0;
+      focus.clear();seaPoint=null;lockedNote=null;
+      shell.clearSelection();shell.refreshFlyout();shell.renderIntel();
+      if(travel.mode)await travel.setMode(travel.mode);
+      if(!current())return;
+      if(cloudVol.on)await cloudVol.toggle();
+      if(!current())return;
+      if(quakeHistory.on)await quakeHistory.toggle();
+      if(!current())return;
+      if(quakeHistory.platesOn)await quakeHistory.togglePlates();
+      if(!current())return;
+      if(popSculpt.on)await popSculpt.toggle();
+      if(!current())return;
+      if(seafloor.on)await seafloor.toggle();
+      if(!current())return;
+      if(aethLink.state().on)await aethLink.toggle();
+      if(!current())return;
+      markCloudBtn('off');await clouds.set('off');
+      if(!current())return;
+      shell.refreshFlyout();shell.renderIntel();
+    },
     onScene: () => { lockedNote = null; },
     onRegion: goRegion,
     onPopCountry: goPopCountry,
@@ -3470,13 +3553,19 @@ async function main() {
     },
     onLayerAction: (sid, layer) => {
       const key = `${sid}/${layer.id}`;
-      const note = showNote;
+      const current = selectionGate.next();
+      marineRequest?.abort();
+      seaPoint = null;
+      const note = (...args) => { if(current()) showNote(...args); };
+      note(layer.name, '선택한 자료를 여는 중…', 'LOADING');
       if (layer.state === 'LOCKED') {
-        note(layer.name, `출처 예정: ${layer.src}<br/>계획: ${layer.plan}<br/>연결 전에는 어떤 값도 생성하지 않습니다 (INSUFFICIENT_DATA ≠ 0).`);
+        const alternatives = {travel:'<button data-action="open-travel">여행지 목록 열기</button>',flight:'검색에서 출발 공항 &gt; 도착 공항을 입력하면 계산 항로와 공항 날씨를 볼 수 있습니다.',vessel:'<a href="https://mtis.komsa.or.kr/" target="_blank" rel="noopener noreferrer">공식 해양교통안전정보 확인</a>'};
+        note(layer.name, `현재 이 기능은 제공하지 않습니다.<br/>${alternatives[layer.id] || '연결 가능한 자료를 준비 중입니다.'}<details><summary>제공 범위</summary>${layer.plan || ''}</details>`, 'UNAVAILABLE');
         return;
       }
       if (key === 'hazards/plates') {
         quakeHistory.togglePlates().then((st) => {
+          if(!current())return;
           shell.refreshFlyout();
           if (st.on) note('판 경계선', quakeHistory.platesCardHtml(), 'OBSERVED');
           else if (st.error) note('판 경계선', st.error, 'UNAVAILABLE');
@@ -3489,6 +3578,7 @@ async function main() {
         note('지진 깊이', want ? '진원을 지구 속 제자리에 놓는 중…' : '표면 모드로 돌아갑니다', 'OBSERVED');
         shell.refreshFlyout();
         quakeHistory.setDepthMode(want).then((st) => {
+          if(!current())return;
           shell.refreshFlyout();
           if (st && st.on) {
             note('지진 깊이', quakeHistory.cardHtml(), 'OBSERVED');
@@ -3509,6 +3599,7 @@ async function main() {
         note('지진 25년', '25년치 지진 카탈로그(18만건)를 여는 중…', 'OBSERVED');
         shell.refreshFlyout();
         quakeHistory.toggle().then((st) => {
+          if(!current())return;
           shell.refreshFlyout();
           if (st.on) {
             note('지진 25년', quakeHistory.cardHtml(), 'OBSERVED');
@@ -3526,7 +3617,9 @@ async function main() {
       if (live) {
         const [lid, title] = live;
         liveLayers.toggle(lid).then((st) => {
+          if(!current())return;
           shell.refreshFlyout();
+          if(!current())return;
           if (st.on) {
             // 정본이 선언한 증거종류·신선도 기준을 카드에 함께 보여준다 (진리등급의 근거)
             const truth = layerTruthLine(key);
@@ -3545,6 +3638,7 @@ async function main() {
       }
       if (key === 'space/aeth-orbit') {
         aethLink.toggle().then((st) => {
+          if(!current())return;
           shell.refreshFlyout();
           if (st.on) note('궤도 인텔리전스', aethLink.card(), 'LIVE');
           else if (st.error) note('궤도 인텔리전스', `AETHERUS 과학 API에 연결하지 못했습니다 — 위치·근접사건을 생성하지 않습니다.<br/>${st.error}`, 'UNAVAILABLE');
@@ -3560,9 +3654,10 @@ async function main() {
           : (popSculpt.on ? popSculpt.show('KOR', '대한민국')
             : popSculpt.toggle('KOR').then(() => { popSculpt.pendingName = '대한민국'; }));
         ensure.then(() => popSculpt.toggleLive()).then((st) => {
+          if(!current())return;
           shell.refreshFlyout();
           if (st.on) {
-            note('지금 사람 × 거주 인구', popSculpt.liveCardHtml(), 'OBSERVED');
+            note('지금 사람 × 거주 인구', popSculpt.liveCardHtml(), 'DERIVED');
             // 서울 상공으로 이동해 두 층이 겹친 모습을 보여준다
             let ty = THREE.MathUtils.degToRad(126.99);
             ty += Math.round((orbit.yaw - ty) / (2 * Math.PI)) * 2 * Math.PI;
@@ -3582,26 +3677,30 @@ async function main() {
         const sel = focus.selected && focus.selected.code3;
         if (focus.selected) popSculpt.pendingName = focus.selected.nameKo;
         popSculpt.toggle(sel).then((st) => {
+          if(!current())return;
           shell.refreshFlyout();
-          if (st.on) note('인구 데이터 조각', popSculpt.cardHtml(), 'OBSERVED');
+          if (st.on) note('인구 데이터 조각', popSculpt.cardHtml(), 'MODEL_SIGNAL');
           else { lockedNote = null; shell.renderIntel(); }
         });
         shell.refreshFlyout();
         return;
       }
       if (key === 'space/galaxy') {
+        lockedNote=null;
         shell.closeFlyout();
         closeDrawers();
         galaxy.open();
         return;
       }
       if (key === 'space/solar') {
+        lockedNote=null;
         shell.closeFlyout();
         closeDrawers();
         solar.open();
         return;
       }
       if (key === 'space/photos') {
+        lockedNote=null;
         shell.closeFlyout();
         closeDrawers();
         sky.open();
@@ -3610,6 +3709,7 @@ async function main() {
       if (key === 'space/sats' || key === 'space/starlink') {
         const fn = key === 'space/sats' ? satLayer.toggleCore() : satLayer.toggleStarlink();
         fn.then((st) => {
+          if(!current())return;
           shell.refreshFlyout();
           if (st.on) note('인공위성 추적', satLayer.card(), 'LIVE');
           else if (st.error) note('인공위성 추적', `카탈로그를 불러오지 못했습니다 — 위치를 생성하지 않습니다.<br/>${st.error}`, 'UNAVAILABLE');
@@ -3621,7 +3721,9 @@ async function main() {
       const setCloud = (m) => {
         markCloudBtn(m);
         clouds.set(m).then((ok) => {
+          if(!current())return;
           if (!ok) markCloudBtn('off');
+          note(layer.name, document.getElementById('cloud-note').textContent, m==='gfs'?'MODEL_SIGNAL':m==='off'?'DERIVED':'OBSERVED');
           shell.renderIntel();
           shell.refreshFlyout();
         });
@@ -3633,6 +3735,7 @@ async function main() {
           if (synop.on) { synop.setVisible(false); shell.refreshFlyout(); lockedNote = null; shell.renderIntel(); break; }
           note('일기도 기입 모형', '지상관측을 받는 중…', 'LIVE');
           synop.load().then(() => {
+          if(!current())return;
             synop.setVisible(true);
             shell.refreshFlyout();
             note('일기도 기입 모형', synop.cardHtml(), 'OBSERVED');
@@ -3641,24 +3744,26 @@ async function main() {
           });
           break;
         case 'land/terrain':
-          note('실지형 3D', 'AWS Terrarium 실고도 — 전역 z4 + 지역 z6~z8 스트리밍. 항상 켜져 있는 기본 씬입니다.', 'LIVE');
+          note('실지형 3D', 'AWS Terrarium 실고도 — 전역 z4 + 지역 z5~z9 스트리밍. 항상 켜져 있는 기본 씬입니다.', 'LIVE');
           break;
         case 'land/satdetail':
           note('위성 표면', '고도 4,000km 아래로 줌인하면 실제 위성 이미지가 지형 위로 자동 표시됩니다. 250km 아래는 지역 3D.', 'LIVE');
           break;
         case 'land/snow':
-          setSnow(!document.getElementById('c-snow').checked).then(() => shell.refreshFlyout());
+          setSnow(!document.getElementById('c-snow').checked).then(() => {shell.refreshFlyout();note(layer.name,snowNote.textContent,'OBSERVED');});
           shell.refreshFlyout();
           break;
         case 'land/locate':
           if (!navigator.geolocation) { note('내 위치', '이 브라우저에서 위치를 사용할 수 없습니다.', 'UNAVAILABLE'); break; }
           navigator.geolocation.getCurrentPosition((p) => {
+            if(!current())return;
             let ty = THREE.MathUtils.degToRad(p.coords.longitude);
             ty += Math.round((orbit.yaw - ty) / (2 * Math.PI)) * 2 * Math.PI;
             orbit.targetYaw = ty;
             orbit.targetPitch = THREE.MathUtils.degToRad(p.coords.latitude);
             orbit.targetDist = 1.15;
             orbit.glide = 1.1;
+            note('내 위치',`${fmtPt(p.coords.latitude,p.coords.longitude)}로 이동했습니다. 내 장소 탭에서 주변 관측을 확인할 수 있습니다.`,'DERIVED');
           }, () => note('내 위치', '위치 권한이 거부되었습니다.', 'UNAVAILABLE'));
           break;
         case 'land/base-ne2':
@@ -3668,6 +3773,7 @@ async function main() {
           setBaseStyle(key.replace('land/base-', ''), note);
           break;
         case 'land/globe':
+          lockedNote=null;
           focus.clear();
           orbit.targetDist = 3.0;
           orbit.glide = 1.1;
@@ -3680,6 +3786,7 @@ async function main() {
         case 'weather/mysky': mySky(note); break;
         case 'weather/cloud-vol':
           cloudVol.toggle().then((st) => {
+          if(!current())return;
             shell.refreshFlyout();
             if (st.on) note('구름 3D 볼륨', cloudVol.cardHtml(), 'MODEL_SIGNAL');
             else if (st.error) note('구름 3D 볼륨', `볼륨을 불러오지 못했습니다 — 값을 생성하지 않습니다.<br/>${st.error}`, 'UNAVAILABLE');
@@ -3697,15 +3804,17 @@ async function main() {
             + '지금(NOW) 시각에는 GFS 에 대류강수율이 없어 표식이 나오지 않습니다.', 'MODEL_SIGNAL');
           break;
         case 'ocean/marine':
-          note('해상 실황 조회', '지구의 바다를 클릭하면 그 지점의 실측 파고·너울·풍속을 조회하고, 관측 기반 시뮬레이션으로 볼 수 있습니다.', 'OBSERVED');
+          note('해양 모델 · 파고와 바람', '지구에서 바다를 선택하면 모델 파고·너울·풍속을 확인할 수 있습니다. 부이 관측은 별도로 비교할 수 있습니다.', 'MODEL_SIGNAL');
           break;
         case 'ocean/oceanfocus':
+          lockedNote = null;
           if (focus.selected && focus.selected.ocean) focus.clear();
           else { focus.clear(); focus.selectOcean(); }
           shell.renderIntel();
           shell.refreshFlyout();
           break;
         case 'ocean/typhoonsim':
+          lockedNote=null;
           shell.showTab('scenario');
           shell.openIntel();
           break;
@@ -3735,8 +3844,12 @@ async function main() {
         case 'travel/en':
         case 'travel/visitors': {
           const mode = key.split('/')[1];
+          note(layer.name,travel.loadingCard(mode),'LOADING');
           travel.setMode(mode).then((st) => {
+          if(!current())return;
+            if(st.stale || !current())return;
             shell.refreshFlyout();
+            if(st.error){note(travel.title,travel.sceneCard(),travel.badge);return;}
             if (!st.on) { lockedNote = null; shell.renderIntel(); return; }
             usage.track(mode === 'discover' ? 'travel.discover_opened' : 'travel.purpose_opened');
             // 처음 켤 때 한국으로 — 시군구 228곳이 한 화면에 들어오는 거리
@@ -3746,7 +3859,7 @@ async function main() {
             orbit.targetYaw = ty; orbit.targetPitch = THREE.MathUtils.degToRad(KR.lat);
             if (orbit.targetDist > 1.4 || orbit.targetDist < 1.06) orbit.targetDist = 1.22;
             orbit.glide = 1.1;
-            note(layer.name, travel.sceneCard(), 'DERIVED');
+            note(travel.title, travel.sceneCard(), travel.badge);
           }).catch((e) => note(layer.name, `발견 데이터를 불러오지 못했습니다 — 값을 생성하지 않습니다.<br/>${String((e && e.message) || e)}`, 'UNAVAILABLE'));
           shell.refreshFlyout();
           break;
@@ -3759,6 +3872,7 @@ async function main() {
         // 해구 위치 — GEBCO SCUFN 가제티어 축선
         case 'ocean/trenches':
           seafloor.toggle().then((st) => {
+          if(!current())return;
             shell.refreshFlyout();
             if (st.on) note('해구 위치', seafloor.card(), 'OBSERVED');
             else if (st.error) note('해구 위치', `GEBCO SCUFN 가제티어를 불러오지 못했습니다 — 좌표를 생성하지 않습니다.<br/>${st.error}`, 'UNAVAILABLE');
@@ -3769,6 +3883,7 @@ async function main() {
         case 'hazards/feed':
         case 'hazards/eq':
         case 'hazards/tc':
+          lockedNote=null;
           // 세 줄이 같은 화면을 열던 것을 종류별로 가른다
           feed.setKind(layer.id === 'eq' ? 'EQ' : layer.id === 'tc' ? 'TC' : null);
           shell.showTab('feed');
@@ -3797,6 +3912,34 @@ async function main() {
         </div></div>`;
     },
     onAction: (action, ds, value) => {
+      if(action==='my-map-center'||action==='my-coordinates'){
+        const rawLat=action==='my-map-center'?String(THREE.MathUtils.radToDeg(orbit.pitch)):document.getElementById('my-lat')?.value;
+        const rawLon=action==='my-map-center'?String(((THREE.MathUtils.radToDeg(orbit.yaw)+180)%360+360)%360-180):document.getElementById('my-lon')?.value;
+        const lat=Number(rawLat),lon=Number(rawLon);
+        if(!rawLat?.trim()||!rawLon?.trim()||!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180){myEarth.error='위도는 -90~90, 경도는 -180~180 범위로 입력하세요.';shell.renderIntel();return;}
+        myEarth.place={lat:+lat.toFixed(4),lon:+lon.toFixed(4)};myEarth.data=null;
+        try{localStorage.setItem('earthus.myplace',JSON.stringify(myEarth.place));}catch(_){}
+        refreshMyEarth();return;
+      }
+      const travelAction=travel.handleAction(action,ds,value);
+      if(travelAction){
+        if(travelAction.pending){const current=selectionGate.next();travelAction.pending.then(update=>{if(current()&&update&&lockedNote)lockedNote.body=update.html;});}
+        if(travelAction.html!==undefined){
+          if(travelAction.inPlace){if(lockedNote)lockedNote.body=travelAction.html;}
+          else {showNote(travel.title,travelAction.html,travel.badge);travel.focusPanel(travelAction.focusId);}
+        }
+        if(travelAction.point){const p=travelAction.point;let yaw=THREE.MathUtils.degToRad(p.lon);yaw+=Math.round((orbit.yaw-yaw)/(2*Math.PI))*2*Math.PI;orbit.targetYaw=yaw;orbit.targetPitch=THREE.MathUtils.degToRad(p.lat);orbit.targetDist=1.035;orbit.glide=1.2;orbit.autoRotate=false;}
+        return;
+      }
+      if(action==='travel-retry'){const current=selectionGate.next();showNote(travel.title,travel.loadingCard(travel.mode),'LOADING');travel.retry().then(st=>{if(current()&&!st.stale)showNote(travel.title,travel.sceneCard(),travel.badge);});return;}
+      if(action==='open-travel'){const s=SCENES.find(s=>s.id==='travel');const l=s.layers.find(l=>l.id==='discover');shell.setSelection(s.id,l.id);shellHooks.onLayerAction(s.id,l);return;}
+      if(action==='marine-retry' && seaPoint){marineSelect(seaPoint.lat,seaPoint.lon);return;}
+      if(action==='marine-buoys'){
+        const current=selectionGate.next();const sea=seaCardHtml();
+        const loaded=liveLayers.state('buoys').on?Promise.resolve(liveLayers.state('buoys')):liveLayers.toggle('buoys');
+        showNote('해양 모델과 부이 관측',sea+'<p>부이 관측을 불러오는 중…</p>','LOADING');
+        loaded.then(st=>{if(current())showNote('해양 모델과 부이 관측',sea+liveLayers.card('buoys'),st.on?'DERIVED':'UNAVAILABLE');shell.refreshFlyout();});return;
+      }
       if (action === 'loss-year') {
         // 슬라이더는 기하를 다시 만들지 않는다 — 셰이더 유니폼만 바뀐다.
         const y = liveLayers.setLossYear(parseInt(value, 10));
@@ -3913,7 +4056,7 @@ async function main() {
           orbit.glide = 1.2;
           orbit.autoRotate = false;
           if (map.active) map.exit();
-          showNote('연안 침수 범위', liveLayers.floodDistrictCardHtml() + '<br/>' + liveLayers.card('khoaflood'), 'OFFICIAL_OBSERVATION');
+          showNote('연안 침수 범위', liveLayers.floodDistrictCardHtml() + '<br/>' + liveLayers.card('khoaflood'), 'PROVIDER_FORECAST');
         });
       } else if (action === 'room-layer' && ds.key) {
         // 사건 방 줄의 "지구에 켜기" — 메뉴에서 누른 것과 똑같은 경로로 레이어를 켠다
@@ -4671,6 +4814,7 @@ async function main() {
   // 눈·얼음 관측 레이어 (P1 계절 컨텍스트): GIBS MODIS NDSI — extent만, 적설 깊이 아님
   const snowNote = document.getElementById('snow-note');
   let snowLoaded = false;
+  let snowRevision = 0;
   async function loadSnow() {
     const date = new Date(Date.now() - 2 * 86400000).toISOString().slice(0, 10);
     const cols = 10;
@@ -4805,6 +4949,7 @@ async function main() {
   window.__earthusBase = { list: BASE_STYLES, get: () => baseStyle, set: setBaseStyle };
 
   async function setSnow(on) {
+    const revision=++snowRevision;
     const box = document.getElementById('c-snow');
     box.checked = on;
     if (!on) {
@@ -4819,9 +4964,11 @@ async function main() {
     snowNote.textContent = '눈덮임 관측 로딩 중…';
     try {
       const date = await loadSnow();
+      if(revision!==snowRevision || !box.checked)return;
       uniforms.uHasSnow.value = 1;
       snowNote.innerHTML = `${dataBadge('OBSERVED', date)} MODIS NDSI 눈덮임 (NASA GIBS) — 범위만, 적설 깊이 아님`;
     } catch (err) {
+      if(revision!==snowRevision)return;
       console.warn('[earthus-snow]', err);
       snowNote.innerHTML = `${dataBadge('INSUFFICIENT_DATA')} 눈덮임 데이터를 받지 못했습니다`;
       box.checked = false;
@@ -5112,19 +5259,10 @@ async function main() {
     // 데이터 조각이 켜져 있으면 지도로 넘기지 않는다 — 도시 상공에서 기둥을 옆면으로 봐야 한다.
     // 침수 폴리곤도 같다 — 시군구 규모(해운대 약 9km)라 250km에서 튕기면 아예 볼 수가 없다.
     const closeUp = popSculpt.on || (liveLayers.state('khoaflood').on && liveLayers.floodSelected());
-    if (closeUp) {
-      orbit.minDist = 1 + 3 / 6371; // 3km까지 내려간다
-    } else {
-      orbit.minDist = 1.02;
-      if (altKm < 250) {
-        const latDeg = THREE.MathUtils.radToDeg(orbit.pitch);
-        const lonDeg = ((THREE.MathUtils.radToDeg(orbit.yaw) + 540) % 360) - 180;
-        orbit.dist = 1 + 320 / 6371; // 복귀 지점: 국가 뷰 높이
-        orbit.targetDist = orbit.dist;
-        map.show(latDeg, lonDeg, 12);
-        return;
-      }
-    }
+    // 2026-09-05 PD 결정: 위의 자동 지도 전환 정책을 대체한다.
+    // Intelligence 시뮬레이션은 같은 3D 공간에서 이어져야 하므로 고도에 따라
+    // MapView로 전환하지 않는다. 지형·데이터 레이어·시점과 시간축을 유지한다.
+    orbit.minDist = closeUp ? 1 + 3 / 6371 : 1.02;
 
     if (detail) detail.update(orbit.pitch, orbit.yaw, altKm, camera);
     satLayer.update(now);
@@ -5280,3 +5418,5 @@ main().catch((err) => {
   loadErr.style.display = 'block';
   loadErr.textContent = `초기화 실패: ${err.message}`;
 });
+
+

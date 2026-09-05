@@ -8,7 +8,7 @@
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
 // 깊이 → 시각 강도 곡선은 정본을 쓴다 (geo/bathymetry-policy.js · 200 m까지 선형, 그 뒤 로그)
-import { depthVisualScale } from './engine-bridge.js?v=12';
+import { depthVisualScale } from './engine-bridge.js?v=15';
 
 const D2R = Math.PI / 180;
 const R2D = 180 / Math.PI;

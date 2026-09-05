@@ -122,3 +122,22 @@ node tools/dev_static_server.mjs 8777
 - 사람: 국가 인구(World Bank SP.POP.TOTL 167개국, 세제곱근 높이)·지역 뉴스(RSS 116건, 지역 대표점)
 - 여행 POI = Overpass 공용서버 504 불안정, 항공편 = adsb.lol CORS 헤더 없음(API 자체는 200) → 둘 다 프록시 필요
 - ⚠ 배포 번들에 engine/ (js/earthus2/v02 61파일) 포함 + 경로 재작성 필수 — 누락 시 프로덕션 403·부팅 실패
+
+## 2026-09-03 공모전 화면 — 사건 방 · 여행 씬 (v2-three)
+
+스토리보드(문제→답→효과, 대회별 한 장면)는 `docs/earthus-2.0/v06/COMPETITION_2026_ENTRY_ANALYSIS.md`와 세션 아티팩트 "EARTHUS 출품 3막"에 있다.
+
+### 만들어진 것
+- **사건 방** (`js/event-room.js`, GovTech 시연 2단계): 피드에서 사건을 누르면 기관 스택 + 진리등급 + 현재→다음→행동.
+  사건 결합은 정본 `earthus2/v11/event/event-fusion.js`(HAZ-011) `eventSimilarity` 그대로. 줄마다 "지구에 켜기"(`room-layer` 액션 → 메뉴와 같은 경로).
+  태풍: GDACS + 공식 트랙(KMA·JMA·NHC) + ECMWF 앙상블 + 해상관측 193 + 연안 침수 예상도 + 기상청 특보. 지진: USGS + PTWC 쓰나미 + 해상관측 + 지각 맥락.
+  행동 칸은 공식 텍스트(특보 종류·등급, PTWC 게시문 링크)만 옮긴다 — 캐시의 `command`는 '발표/변경'이라 지시문이 아니다.
+- **여행 씬** (`js/travel.js`, 데이터랩 출품 모듈 v1): 시군구 228곳 비콘, 오늘 점수 = 목적 밀도 0.6 + 덜 붐빔 0.4, 특보·에어코리아 나쁨(등급 3+)은 게이트로 제외하고 카드에 "후보 제외"라고 적는다.
+  데이터: `data/tourism/kto-discovery.json`(138KB) ← `tools/build_kto_discovery.py`가 KTO 공개 산출물 5종(무장애 11,644 · 영문 25,398 · 웰니스 202 · 연관 1,409 · 방문자 857)을 최근접 시군구로 집계. 원본은 12/28MB라 브라우저에 못 싣는다.
+  라벨은 EARTHUS DISCOVERY. 방문자수 ≠ 관광객 문구를 카드와 파일 note에 그대로 둔다.
+
+### 남은 것
+- KTO 4종(집중률·다양성·수요 강도·중심 관광지)은 아직 UNAVAILABLE(0건) — 서버 스윕 후 `build_kto_discovery.py`에 성분 추가.
+- 방문자 스냅샷이 단일 기준일(2026-08-03 월요일)이다. 일자 범위가 쌓이면 "덜 붐빔"을 요일별로.
+- 지역코드 12xxx(71건)는 kr-places 매칭 실패로 제외. 코드 체계 확인 필요.
+- 9/16 공개 배포 → 이용 지표(`analytics-contract.js` tourism.* 이벤트) 수집이 서식4 계량성과.

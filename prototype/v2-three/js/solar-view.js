@@ -23,6 +23,8 @@ const TEX_ROOT = './assets/planets/';
 const dispR = (au) => 3.5 + 7 * Math.log1p(au * 1.4);
 // 표현 구체 크기: 실제 반지름을 로그 압축 (목성이 화면을 삼키지 않게)
 const dispSize = (km) => 0.16 + 0.30 * Math.log10(km / 2000);
+// 표현 반지름의 바깥 끝 — 해왕성 궤도(≈30.1AU)의 dispR ≈ 29.9 에 약간의 여유
+const R_OUTER = 30.5;
 
 const fmt = (n, d = 2) => Number(n).toLocaleString('ko-KR', { maximumFractionDigits: d });
 
@@ -34,7 +36,8 @@ export class SolarView {
     this.dayOffset = 0;
     this.yaw = 0.7;
     this.pitch = 0.62;
-    this.dist = 46; // 해왕성(표현 반지름 ≈30)까지 8행성이 한 화면에 들어오는 거리
+    this.dist = 46;      // open() 에서 화면 비율에 맞춰 다시 잡는다 (fitDist)
+    this.userZoom = false; // 사람이 휠로 줌한 뒤에는 리사이즈가 그 거리를 건드리지 않는다
     this.selected = 'earth';
     this.raf = 0;
   }
@@ -148,7 +151,9 @@ export class SolarView {
     dom.addEventListener('pointercancel', () => { drag = null; });
     dom.addEventListener('wheel', (e) => {
       e.preventDefault();
-      this.dist = Math.max(6, Math.min(90, this.dist * Math.exp(e.deltaY * 0.001)));
+      this.userZoom = true;
+      // 상한을 90으로 못박아 두면 세로로 긴 화면에서는 8행성을 담는 거리조차 못 간다
+      this.dist = Math.max(6, Math.min(this.fitDist() * 2.4, this.dist * Math.exp(e.deltaY * 0.001)));
     }, { passive: false });
     window.addEventListener('resize', () => { if (this.active) this.resize(); });
   }
@@ -236,10 +241,25 @@ export class SolarView {
     }
   }
 
+  // 8행성이 다 들어오는 카메라 거리. 46으로 못박아 두었더니 세로 화각이 모자라
+  // 가까운 쪽 바깥 궤도가 화면 아래로 잘렸고, 천왕성·해왕성은 라벨까지 화면 밖이라
+  // 아예 없는 행성이 됐다 — 터치 기기엔 휠이 없어 되돌릴 방법도 없었다.
+  fitDist() {
+    const vHalf = (this.camera.fov * Math.PI) / 360;
+    const hHalf = Math.atan(Math.tan(vHalf) * (this.camera.aspect || 1));
+    const sp = Math.sin(this.pitch);
+    const cp = Math.cos(this.pitch);
+    // 가장 빡빡한 곳은 카메라와 같은 방위의 바깥 궤도(화면 아래 끝)다
+    const needV = (R_OUTER * cp + (R_OUTER * sp) / Math.tan(vHalf)) * 1.12; // 아래 날짜 막대 여유
+    const needH = (R_OUTER / Math.tan(hHalf)) * 1.06;
+    return Math.max(needV, needH);
+  }
+
   resize() {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
+    if (!this.userZoom) this.dist = this.fitDist();
   }
 
   open() {
@@ -272,7 +292,12 @@ export class SolarView {
           const v = b.mesh.position.clone().project(this.camera);
           if (v.z > 1) { b.label.style.display = 'none'; continue; }
           b.label.style.display = 'block';
-          b.label.style.left = `${(v.x * 0.5 + 0.5) * W}px`;
+          if (!b.labelW) b.labelW = b.label.offsetWidth; // 글자가 안 바뀌니 한 번만 잰다
+          const px = (v.x * 0.5 + 0.5) * W;
+          // 오른쪽 끝에 붙은 행성(좁은 화면의 해왕성)은 라벨이 잘려 이름이 사라졌다.
+          // 그럴 때만 라벨을 점 왼쪽으로 붙인다.
+          b.label.style.transform = px + b.labelW + 16 > W ? 'translate(calc(-100% - 10px), -50%)' : '';
+          b.label.style.left = `${px}px`;
           b.label.style.top = `${(-v.y * 0.5 + 0.5) * H}px`;
         }
         this.renderer.render(this.scene, this.camera);

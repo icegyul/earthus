@@ -172,6 +172,32 @@ aws s3api put-object \
   --cache-control 'no-cache, no-store, must-revalidate' >/dev/null
 echo "PASS wrote s3://$BUCKET/$PREFIX/v2"
 
+echo '== 2b/5 Publish /Intelligence alias (menu-facing name; /v2 stays a hidden direct address) =='
+# earth-switch.js 의 메뉴는 /v2 를 걸지 않고 /Intelligence 만 건다. 실제 자산은
+# 그대로 /v2/ 에 있다 — 통째로 복제하지 않고, index.html 사본에 <base href="/v2/">
+# 하나만 얹어서 상대경로(./js/main.js 등)가 항상 /v2/ 를 가리키게 만든다.
+# <base> 가 문서의 기준 URI를 못박으므로, 슬래시 유무와 무관하게 세 키 모두
+# 같은 바이트를 올려도 된다(=/v2 처럼 별도 리다이렉트 페이지가 필요 없다).
+"$PY" - "$SRC/index.html" "$TMP/intelligence-alias.html" <<'PYEOF'
+import sys
+src, dst = sys.argv[1], sys.argv[2]
+html = open(src, encoding='utf-8').read()
+marker = '<head>'
+i = html.find(marker)
+assert i != -1, 'no <head> found to inject <base> after'
+i += len(marker)
+out = html[:i] + '\n<base href="/v2/">' + html[i:]
+open(dst, 'w', encoding='utf-8').write(out)
+PYEOF
+for key in "$PREFIX/Intelligence" "$PREFIX/Intelligence/" "$PREFIX/Intelligence/index.html"; do
+  aws s3api put-object \
+    --region "$S3_REGION" --bucket "$BUCKET" --key "$key" \
+    --body "$TMP/intelligence-alias.html" \
+    --content-type 'text/html; charset=utf-8' \
+    --cache-control 'no-cache, no-store, must-revalidate' >/dev/null
+  echo "PASS wrote s3://$BUCKET/$key"
+done
+
 echo '== 3/5 S3 byte-for-byte proof (핵심 파일) =='
 for path in index.html js/main.js vendor/three-r184.module.min.js data/country-reference.json; do
   mkdir -p "$TMP/remote/$(dirname "$path")"
@@ -184,6 +210,7 @@ echo '== 4/5 CloudFront V2-only invalidation =='
 INV_ID="$(MSYS_NO_PATHCONV=1 aws cloudfront create-invalidation \
   --distribution-id "$DISTRIBUTION_ID" \
   --paths '/v2' '/v2/' '/v2/index.html' '/v2/*' \
+           '/Intelligence' '/Intelligence/' '/Intelligence/index.html' \
   --query 'Invalidation.Id' --output text)"
 echo "CREATED invalidation $INV_ID"
 
@@ -208,6 +235,17 @@ done
 [[ "$PUBLIC_READY" == 1 ]] || { echo 'FAIL: public /v2/ has not converged to the new build' >&2; exit 4; }
 echo "PASS $ORIGIN/v2/ -> v2-three HTML"
 
+INTEL_READY=0
+for attempt in $(seq 1 60); do
+  if curl -fsS --max-time 20 -H 'Cache-Control: no-cache' "$ORIGIN/Intelligence/" -o "$TMP/intel-check.html" \
+    && grep -F '<base href="/v2/">' "$TMP/intel-check.html" >/dev/null; then
+    INTEL_READY=1; break
+  fi
+  sleep 3
+done
+[[ "$INTEL_READY" == 1 ]] || { echo 'FAIL: public /Intelligence/ has not converged' >&2; exit 4; }
+echo "PASS $ORIGIN/Intelligence/ -> v2-three HTML (base href=/v2/)"
+
 for path in /v2/js/main.js /v2/vendor/three-r184.module.min.js /v2/data/country-reference.json /v2/assets/brand/earthus-wordmark-white.svg; do
   curl -fsS --max-time 30 -H 'Cache-Control: no-cache' "$ORIGIN$path" -o "$TMP/pub-$(basename "$path")"
   echo "PASS $ORIGIN$path"
@@ -220,4 +258,4 @@ for root_path in / /index.html; do
   echo "PASS unchanged production root $root_path"
 done
 
-echo 'EARTHUS v2-three DEPLOYED: https://earthus.net/v2/'
+echo 'EARTHUS v2-three DEPLOYED: https://earthus.net/v2/  (menu-facing alias: https://earthus.net/Intelligence/)'

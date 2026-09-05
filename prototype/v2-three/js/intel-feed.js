@@ -5,7 +5,7 @@
 import * as THREE from '../../vendor/three-r184.module.min.js';
 // 사건 방: 기관 스택 + 진리등급 + 현재→다음→행동 (정본 HAZ-011로 사건 결합)
 import { EventRoom } from './event-room.js?v=3';
-import { i18n } from './i18n.js?v=9';
+import { i18n } from './i18n.js?v=10';
 
 const GDACS_TC = 'https://www.gdacs.org/gdacsapi/api/events/geteventlist/MAP?eventtype=TC';
 const USGS_EQ = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson';

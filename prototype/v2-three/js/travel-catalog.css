@@ -1,0 +1,32 @@
+/* 여행 목록: 이름 → 장소 사실 → 출처. 쉘 전체 스타일과 독립적으로 읽기 크기를 보장한다. */
+.tv-catalog .card-b { font-size: 16px; line-height: 1.65; }
+.tv-catalog p { margin: 12px 0; }
+.tv-catalog h3 { margin: 18px 0 10px; font-size: 21px; line-height: 1.45; overflow-wrap: anywhere; }
+.tv-catalog h4 { font-size: 16px; margin: 20px 0 8px; }
+.tv-search-label { display: block; font-weight: 650; margin-bottom: 6px; }
+.tv-query { width: 100%; box-sizing: border-box; min-height: 44px; padding: 10px 12px; border: 1px solid #657086; border-radius: 8px; color: inherit; background: #111a26; font: inherit; font-size: 16px; }
+.tv-query:focus-visible, .tv-catalog button:focus-visible, .tv-catalog a:focus-visible, .tv-catalog summary:focus-visible { outline: 2px solid #f2a2c4; outline-offset: 3px; }
+.tv-result-count { color: #c8d3e4; font-size: 13px; }
+.tv-places { margin: 0; padding: 0; list-style: none; }
+.tv-place { display: block; width: 100%; min-height: 64px; text-align: left; padding: 12px 8px; border: 0; border-bottom: 1px solid #394251; color: inherit; background: transparent; cursor: pointer; font: inherit; }
+.tv-place:hover { background: #f2a2c410; }
+.tv-place strong, .tv-place span { display: block; overflow-wrap: anywhere; }
+.tv-place strong { font-size: 16px; font-weight: 650; }
+.tv-place span { color: #becadb; margin-top: 5px; font-size: 14px; }
+.tv-button { min-height: 44px; padding: 9px 13px; border: 1px solid #758096; border-radius: 8px; color: inherit; background: #1c293b; font: inherit; font-size: 14px; cursor: pointer; }
+.tv-button:disabled { cursor: default; opacity: .4; }
+.tv-pagination { display: flex; gap: 10px; justify-content: space-between; align-items: center; margin-top: 14px; }
+.tv-pagination span { white-space: nowrap; font-size: 13px; }
+.tv-map-note, .tv-catalog-source { font-size: 14px; color: #c5cfdd; line-height: 1.6; overflow-wrap: anywhere; }
+.tv-catalog-source { border-top: 1px solid #455065; margin-top: 18px; padding-top: 12px; }
+.tv-provenance { margin: 14px 0 4px; font-size: 13px; color: #c7d2e2; }
+.tv-provenance summary { cursor: pointer; min-height: 44px; display: list-item; align-content: center; }
+.tv-catalog a { color: #a8d6ff; text-decoration: underline; }
+.tv-facts { display: grid; grid-template-columns: minmax(80px, 1fr) minmax(0, 2fr); gap: 8px 14px; }
+.tv-facts dt { color: #c2cede; }
+.tv-facts dd { margin: 0; overflow-wrap: anywhere; }
+.tv-official-text { white-space: pre-line; overflow-wrap: anywhere; }
+.tv-table-wrap { overflow-x: auto; }
+.tv-catalog table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tv-catalog th, .tv-catalog td { padding: 10px 6px; text-align: left; border-bottom: 1px solid #455065; }
+@media (max-width: 420px) { .tv-facts { grid-template-columns: 1fr; gap: 3px; } .tv-facts dd { margin-bottom: 10px; } .tv-pagination { gap: 5px; } }

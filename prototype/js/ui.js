@@ -1472,7 +1472,7 @@ async function renderSatImage(sat, rows) {
   rows.parentElement.insertBefore(box, rows);
 
   const { satPhoto, drawSchematic } = await import('./satimage.js');
-  const photo = await satPhoto(sat.name);
+  const photo = await satPhoto(sat.name, i18n.lang);
 
   if (photo) {
     const img = new Image();
@@ -1487,7 +1487,7 @@ async function renderSatImage(sat, rows) {
     box.appendChild(cap);
   } else {
     const cv = document.createElement('canvas');
-    drawSchematic(cv, sat, sat.color);
+    drawSchematic(cv, sat, sat.color, i18n.lang);
     box.appendChild(cv);
     box.appendChild(el('div', 'sat-cap',
       ko ? '표시 유형 · 개념도 · 크기·궤도 반영'

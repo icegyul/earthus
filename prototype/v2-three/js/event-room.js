@@ -10,6 +10,7 @@
 
 import { eventSimilarity, haversineMeters } from '../../js/earthus2/v11/event/event-fusion.js';
 import { renderBadge, layerBadge } from './engine-bridge.js?v=15';
+import { bulletinContext, bulletinTimesHtml, sourceTimeLabel } from './source-context.js?v=20260905';
 
 const S3 = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
 const SRC = Object.freeze({
@@ -166,20 +167,21 @@ export class EventRoom {
       const ts = got.tsunami;
       if (ts && !ts.__error) {
         const near = (ts.alerts || []).map((a) => ({ a, d: haversineMeters(it, a) }))
-          .filter((x) => Number.isFinite(x.d) && x.d < 1500000 && Date.now() - Date.parse(x.a.updated) < 3 * 86400000)
+          .filter((x) => Number.isFinite(x.d) && x.d < 1500000 && Math.abs(it.whenT - Date.parse(x.a.updated)) < 3 * 86400000)
           .sort((p, q) => p.d - q.d);
         if (near.length) {
           const a = near[0].a;
+          const context = bulletinContext(a, ts);
           rows.push({ agency: esc(a.centerName || a.center), what: '쓰나미 메시지', kind: 'OFFICIAL_WARNING', layerKey: 'hazards/tsunami',
-            value: `<b>${esc(a.category)}</b> · ${esc(a.title)}`, sub: `M${num(a.magnitude)} · ${km(near[0].d)} · ${ago(a.updated)}` });
-          tl.next = `<b>${esc(a.category)}</b> · ${esc(a.centerName || a.center)}<br/><span class="room-sub">${ago(a.updated)} 게시</span>`;
+            value: `<b>${esc(a.category)}</b> · ${context.label} · ${esc(a.title)}`, sub: `M${num(a.magnitude)} · ${km(near[0].d)}<br/>${bulletinTimesHtml(context)}<br/>목록 수집 ${esc(sourceTimeLabel(context.retrievedRaw))}<br/>이 지진과의 연결은 위치·시각 기준 후보입니다` });
+          tl.next = `<b>${context.label}</b> · ${esc(a.category)}<br/><span class="room-sub">${bulletinTimesHtml(context)}</span>`;
           tl.action = a.bulletin && /^https?:/.test(a.bulletin)
             ? `<a href="${esc(a.bulletin)}" target="_blank" rel="noopener">PTWC 게시문 보기</a><br/><span class="room-sub">행동 지시는 게시문 원문만 따릅니다</span>`
             : '게시문 본문 없음 — 판단하지 않습니다';
         } else {
           rows.push({ agency: 'PTWC · NWS', what: '쓰나미 메시지', kind: 'OFFICIAL_WARNING', layerKey: 'hazards/tsunami', found: false,
-            value: '이 지진에 대한 쓰나미 메시지 없음', sub: `최근 게시 ${(ts.alerts || []).length}건 중 반경 1,500 km · 3일 안 해당 없음` });
-          tl.next = '쓰나미 메시지 없음<br/><span class="room-sub">PTWC · NWS 게시 기준</span>';
+            value: '이 지진에 대응하는 쓰나미 발표를 찾지 못했습니다', sub: `수집된 ${(ts.alerts || []).length}건 중 반경 1,500 km · 사건 시각 전후 3일 후보 없음<br/>목록 수집 ${esc(sourceTimeLabel(ts.generated))}` });
+          tl.next = '연결된 쓰나미 발표 미확인<br/><span class="room-sub">현재 경보 유무는 기관 원문 확인</span>';
         }
       } else {
         rows.push({ agency: 'PTWC · NWS', what: '쓰나미 메시지', kind: 'OFFICIAL_WARNING', layerKey: 'hazards/tsunami', found: false, value: `불러오지 못함 (${esc(ts && ts.__error)})` });
@@ -226,12 +228,12 @@ export class EventRoom {
           rows.push({
             agency: '국립해양조사원',
             what: `연안 침수 예상도 · 반경 700 km 안 ${near.length}개 시군구`,
-            kind: 'OFFICIAL_OBSERVATION', layerKey: 'ocean/khoaflood',
+            kind: 'PROVIDER_FORECAST', layerKey: 'ocean/khoaflood',
             value: `가장 가까운 <b>${esc(near[0].d.name)}</b> ${km(near[0].dist)} · 침수 구역 ${near[0].d.count}개`,
             sub: `${near.slice(1, 4).map((x) => esc(x.d.name)).join(' · ')} … 구역 합계 ${polys.toLocaleString('ko-KR')}개 — 침수 범위는 사전 예상도이며 이번 태풍의 예보가 아닙니다`,
           });
         } else {
-          rows.push({ agency: '국립해양조사원', what: '연안 침수 예상도', kind: 'OFFICIAL_OBSERVATION', layerKey: 'ocean/khoaflood', found: false,
+          rows.push({ agency: '국립해양조사원', what: '연안 침수 예상도', kind: 'PROVIDER_FORECAST', layerKey: 'ocean/khoaflood', found: false,
             value: '반경 700 km 안 연안 시군구 없음', sub: `자료는 한국 연안 ${(fl.districts || []).length}개 시군구` });
         }
       }
@@ -279,7 +281,7 @@ export class EventRoom {
       <div class="card room"><div class="card-h">사건 방 — 기관 스택 <span class="badge live">${agencies.size}곳 · ${L.rows.length}줄</span></div>
         <div class="card-b">
           ${stack}
-          ${L.fusion.length ? `<div class="room-fusion">사건 결합 · 정본 HAZ-011 <code>eventSimilarity</code><br/>${L.fusion.map(esc).join('<br/>')}</div>` : ''}
+          ${L.fusion.length ? `<details class="room-fusion"><summary>기관 자료 연결 근거</summary>사건 결합 · 정본 HAZ-011 <code>eventSimilarity</code><br/>${L.fusion.map(esc).join('<br/>')}</details>` : ''}
         </div></div>
       <div class="card room"><div class="card-h">현재 → 다음 → 행동</div>
         <div class="card-b room-tl">

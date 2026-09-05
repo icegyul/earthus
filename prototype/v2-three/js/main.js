@@ -3899,6 +3899,7 @@ async function main() {
     getFeed: () => feed.html(),
     // WHY 탭이 "고른 사건"을 가리킬 수 있게 — 피드가 무엇을 열어 두었는지만 알려준다
     feedSelected: () => (feed.selected ? { title: feed.selected.title, kind: feed.selected.kind } : null),
+    feedNext: () => feed.nextRows(),
     getScenario: () => {
       const hasSea = seaPoint && seaPoint.marine;
       const loc = hasSea ? seaPoint : { lat: 34.2, lon: 128.9 };
@@ -4058,6 +4059,16 @@ async function main() {
           if (map.active) map.exit();
           showNote('연안 침수 범위', liveLayers.floodDistrictCardHtml() + '<br/>' + liveLayers.card('khoaflood'), 'PROVIDER_FORECAST');
         });
+      } else if (action === 'feed-follow' && ds.id) {
+        usage.track('event.follow');
+        feed.toggleFollow(ds.id);
+        shell.renderIntel();
+      } else if (action === 'feed-show-resolved') {
+        feed.showResolved = true;
+        shell.renderIntel();
+      } else if (action === 'feed-compare' && ds.rev) {
+        // 칩 한 번 = 이전 회차 선택, 최신은 고정 — 두 칩을 고르는 UI 는 다음 단계
+        feed.setCompare(ds.rev, null);
       } else if (action === 'room-retry') {
         // 사건 방의 실패한 소스 줄 '재시도' — 캐시를 비우고 같은 사건을 다시 연다(지시서 A-2)
         usage.track('event.room_retry');

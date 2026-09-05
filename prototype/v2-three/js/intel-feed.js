@@ -12,6 +12,14 @@ const USGS_EQ = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_d
 const GDACS_GEOM = (id, ep) => `https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=${id}&episodeid=${ep}`;
 
 const ALERT_RANK = { Red: 0, Orange: 1, Green: 2 };
+// 공개 사건 패킷(지시서 D-1) — cyclone-analog 가 3시간마다 쓴다. Feed 는 GDACS eventid 로 결합한다.
+const EVENTS_INDEX = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/ocean/cyclone-events.json';
+const EVENT_PACKET = (id) => `https://earthus-cache-kr.s3.us-east-2.amazonaws.com/ocean/cyclone-events/${id}.json`;
+const FOLLOW_KEY = 'earthus.follow';
+const STATUS_KO = { ACTIVE: '활동 중', WATCH: '주시', RESOLVED: '지난 사건', VERIFYING: '종료 확인 중', PRELIMINARY_REPORT: '잠정 보고', FINAL_REPORT: '최종 보고' };
+const CONF_BADGE = { high: ['live', '신뢰 高'], medium: ['off', '신뢰 中'], low: ['stale', '신뢰 低'] };
+export const loadFollow = () => { try { return JSON.parse(localStorage.getItem(FOLLOW_KEY) || '[]'); } catch (e) { return []; } };
+export const saveFollow = (ids) => { try { localStorage.setItem(FOLLOW_KEY, JSON.stringify(ids)); } catch (e) { /* 저장 불가 — 세션 안에서만 */ } };
 
 // 시각 4분법(지시서 A-1): 발생·발표·갱신·수집. 없는 시각은 null — Date.now() 로 채우지 않는다.
 // 시각이 없는 사건이 "방금"으로 보이던 것이 최종 보고서 F01 이다.
@@ -60,7 +68,32 @@ export class IntelFeed {
     this.onUpdate = null; // 비동기 로드 후 패널 리렌더 콜백 (main.js가 연결)
     this.room = new EventRoom();
     this.roomHtmlCache = null; // 선택 사건의 기관 스택 (비동기 완성 후 채워짐)
+    this.events = new Map();   // gdacsId → 패킷 목록 항목 (변경 요약·이유·신뢰도·상태)
+    this.packet = null;        // 선택 사건의 전체 패킷 (회차·검증)
+    this.follow = new Set(loadFollow());
+    this.showResolved = false;
   }
+
+  // 팔로우: 이 브라우저에만 저장. 계정 동기화는 지시서 P1-3.
+  toggleFollow(id) {
+    if (this.follow.has(id)) this.follow.delete(id); else this.follow.add(id);
+    saveFollow([...this.follow]);
+    this.settle();
+  }
+
+  // 패킷 목록을 받아 사건에 붙인다 — 실패해도 Feed 는 그대로(패킷은 덧붙이는 정보다).
+  async loadEvents() {
+    const fetchJson = this.fetchJson || ((url, opts) => fetch(url, opts).then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); }));
+    try {
+      const j = await fetchJson(EVENTS_INDEX, { cache: 'no-store' });
+      this.events = new Map((j.events || []).map((e) => [String(e.gdacsId), e]));
+      this.eventsAt = j.generated || null;
+    } catch (e) { this.eventsFailed = true; }
+    this.settle();
+    if (this.onUpdate) this.onUpdate();
+  }
+
+  packetOf(it) { return it && it.kind === 'TC' ? this.events.get(String(it.eventid)) || null : null; }
 
   // PAST: 사건 주변의 실제 이력 — 값 생성 없이 공식 아카이브 조회만
   async loadPast(it, gen = this._gen) {
@@ -168,6 +201,7 @@ export class IntelFeed {
       new Promise((_, rej) => { setTimeout(() => rej(new Error('timeout')), ms); }),
     ]);
 
+    void this.loadEvents();   // 패킷 목록은 따로 받는다 — 도착하면 카드가 채워진다
     // 태풍은 뒤에서 계속 받는다. 끝나면 스스로 다시 그린다.
     const tcJob = timed(GDACS_TC, 45000)
       .then((j) => { this.ingestTC(j); this.tcFailed = false; })
@@ -193,10 +227,22 @@ export class IntelFeed {
   // + stale(둘 다 실패했지만 직전 목록이 있음). 정렬 기준은 화면 머리에 그대로 적는다(F06).
   settle() {
     const noTime = (v) => !Number.isFinite(v);
+    // 끝난 사건 = RESOLVED 뿐 아니라 세션이 종료 단계(검증·잠정·최종 보고)인 것도 — 소멸한 태풍이 1번에 있던 문제
+    const PAST = new Set(['RESOLVED', 'VERIFYING', 'PRELIMINARY_REPORT', 'FINAL_REPORT']);
+    const resolved = (x) => { const p = this.packetOf(x); return p ? PAST.has(p.status) : false; };
+    this.isPast = resolved;
+    const nearKm = (x) => { const p = this.packetOf(x); return p && p.nearestWarnRegionKm != null ? p.nearestWarnRegionKm : 1e9; };
     this.items.sort((a, b) => {
+      const fa = this.follow.has(a.id), fb = this.follow.has(b.id);
+      if (fa !== fb) return fa ? -1 : 1;                                             // 팔로우 사건은 맨 위
+      if (resolved(a) !== resolved(b)) return resolved(a) ? 1 : -1;                  // 지난 사건은 뒤
       if (noTime(a.whenT) !== noTime(b.whenT)) return noTime(a.whenT) ? 1 : -1;   // 시각 없는 사건은 맨 뒤
       if (a.kind !== b.kind) return a.kind === 'TC' ? -1 : 1;
-      if (a.kind === 'TC') return (ALERT_RANK[a.alert] ?? 3) - (ALERT_RANK[b.alert] ?? 3);
+      if (a.kind === 'TC') {
+        const r = (ALERT_RANK[a.alert] ?? 3) - (ALERT_RANK[b.alert] ?? 3);
+        if (r) return r;
+        if (nearKm(a) !== nearKm(b)) return nearKm(a) - nearKm(b);
+      }
       return b.whenT - a.whenT;
     });
     this.sources = {
@@ -322,15 +368,11 @@ export class IntelFeed {
       return `<div class="feed-head">${what} <span class="feed-cnt">0</span></div>
         <div class="feed-note">${i18n.t('feedNone').replace('{what}', what)}</div>`;
     }
-    const rows = shown.map((it) => `
-      <div class="feed-item" data-action="feed-open" data-idx="${this.items.indexOf(it)}">
-        <span class="feed-dot ${it.kind === 'TC' ? 'tc' : 'eq'} a-${it.alert.toLowerCase()}"></span>
-        <div class="feed-main">
-          <div class="feed-title">${it.title}</div>
-          <div class="feed-sub">${it.where} · ${agoText(it.whenT)}${Number.isFinite(it.whenT) ? '' : ` ${this.badge('INSUFFICIENT_DATA')}`}</div>
-        </div>
-        ${this.badge(it.truth)}
-      </div>`).join('');
+    const resolvedItems = shown.filter((it) => this.isPast && this.isPast(it) && !this.follow.has(it.id));   // 팔로우한 사건은 끝나도 접지 않는다
+    const live = this.showResolved ? shown : shown.filter((it) => !resolvedItems.includes(it));
+    const rows = live.map((it) => this.cardHtml(it)).join('')
+      + (resolvedItems.length && !this.showResolved
+        ? `<button class="feed-back" data-action="feed-show-resolved" style="margin:4px 0 8px">${i18n.ko ? `지난 사건 ${resolvedItems.length}건 보기 ▾` : `Show ${resolvedItems.length} past events ▾`}</button>` : '');
     const ko = i18n.ko;
     // 아직 받는 중인 것과 못 받은 것을 구분해서 말한다 — 둘 다 '응답 없음'으로 적으면
     // 오는 중인 자료를 없다고 말하는 셈이 된다.
@@ -349,6 +391,31 @@ export class IntelFeed {
     const sortNote = i18n.ko ? '정렬: 공식 경보 등급 → 최근 갱신 · 시각 없는 사건은 뒤' : 'sort: official alert level → latest update · undated last';
     return `<div class="feed-head">${head} <span class="feed-cnt">${shown.length}</span></div>${this.kind === 'EQ' ? '' : tcNote}${this.state === 'partial' || this.state === 'stale' ? this.sourceNote() : ''}${rows}
       <div class="feed-note">${src} — ${tail} · ${sortNote}</div>`;
+  }
+
+  // 사건 카드(지시서 D-2 · 8필드): 제목·장소·시각·상태·바뀐 것·왜 지금·진리등급·신뢰도 + 팔로우.
+  // 패킷이 없으면 현행 카드 + '변경 이력 없음 (첫 관측)'.
+  cardHtml(it) {
+    const p = this.packetOf(it);
+    const ko = i18n.ko;
+    const followed = this.follow.has(it.id);
+    const conf = p && CONF_BADGE[p.confidence] ? `<span class="badge ${CONF_BADGE[p.confidence][0]}" title="근거의 신선도·기관 일치도 — 정확도가 아님">${CONF_BADGE[p.confidence][1]}</span>` : '';
+    const status = p && p.status && p.status !== 'ACTIVE' ? `<span class="badge demo">${STATUS_KO[p.status] || p.status}</span>` : '';
+    const changed = p ? `<div class="feed-line"><span class="feed-k">${ko ? '바뀐 것' : 'changed'}</span>${p.changeSummaryKo || '—'}</div>` : (it.kind === 'TC' ? `<div class="feed-line dim">${ko ? '변경 이력 없음 (첫 관측)' : 'no revision yet'}</div>` : '');
+    const why = p && p.reasons && p.reasons.length ? `<div class="feed-line"><span class="feed-k">${ko ? '왜 지금' : 'why now'}</span>${p.reasons.join(' · ')}</div>` : '';
+    const rev = p && p.lastRevisionAt ? ` · ${ko ? '회차' : 'rev'} ${agoText(Date.parse(p.lastRevisionAt))}` : '';
+    return `
+      <div class="feed-item${followed ? ' followed' : ''}" data-action="feed-open" data-idx="${this.items.indexOf(it)}">
+        <span class="feed-dot ${it.kind === 'TC' ? 'tc' : 'eq'} a-${it.alert.toLowerCase()}"></span>
+        <div class="feed-main">
+          <div class="feed-title">${it.title}${followed && p && p.lastRevisionAt && this.follow.has(it.id) ? '' : ''}</div>
+          <div class="feed-sub">${it.where} · ${agoText(it.whenT)}${Number.isFinite(it.whenT) ? '' : ` ${this.badge('INSUFFICIENT_DATA')}`}${rev}</div>
+          ${changed}${why}
+        </div>
+        <div class="feed-badges">${this.badge(it.truth)}${conf}${status}
+          ${it.kind === 'TC' ? `<button class="feed-follow${followed ? ' on' : ''}" data-action="feed-follow" data-id="${it.id}" title="${ko ? '이 사건을 위에 고정하고 새 회차를 표시' : 'Pin and mark new revisions'}">${followed ? '★' : '☆'}</button>` : ''}
+        </div>
+      </div>`;
   }
 
   // 공식 1차 출처의 사건 페이지로 나가는 링크.
@@ -378,6 +445,8 @@ export class IntelFeed {
       <div class="card"><div class="card-h">EVIDENCE</div>
         <div class="card-b">1차 출처: ${it.source}<br/>${this.timeLines(it)}<br/>지구 위 위치는 출처 좌표 그대로${it.kind === 'TC' ? '<br/>트랙 라인: GDACS 공식 경로' : ''}${it.depthKm != null ? `<br/>진원은 지하 <b>${Math.round(it.depthKm)}km</b> — 재해 메뉴의 <b>지진 깊이</b>를 켜면 진원을 실제 깊이 자리에서 봅니다` : ''}${this.officialLink(it)}</div></div>
       ${this.pastHtml()}
+      ${this.compareHtml(it)}
+      ${this.verifyHtml(it)}
       <div class="card"><div class="card-h">WHY ${this.badge('INSUFFICIENT_DATA')}</div>
         <div class="card-b"><b>인과 주장 게이트</b>: 검증된 근거 체인 없이 "원인"을 말하지 않습니다.<br/>
         이 사건에 연결된 근거는 1차 관측(${it.source})과 위의 실측 이력뿐 — 인과 분석 근거 부족.<br/>
@@ -392,12 +461,129 @@ export class IntelFeed {
     return this._gen;
   }
 
+  // 선택 사건의 전체 패킷(회차·검증) — 목록 항목과 달리 사건마다 한 파일이라 열 때 받는다.
+  async loadPacket(it, gen) {
+    this.packet = null;
+    this.compareA = null;
+    if (it.kind !== 'TC') return;
+    const fetchJson = this.fetchJson || ((url, opts) => fetch(url, opts).then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); }));
+    let next = null;
+    try { next = await fetchJson(EVENT_PACKET(it.eventid), { cache: 'no-store', signal: this._abort ? this._abort.signal : undefined }); }
+    catch (e) { next = { error: String((e && e.message) || e) }; }
+    if (gen !== this._gen) return;
+    this.packet = next;
+    this.drawPreviousTrack(next);
+    if (this.onUpdate) this.onUpdate();
+  }
+
+  // 회차 두 개 고르기 — 기본은 최신·직전. URL 로 재현 가능하게 revisionId 를 쓴다.
+  setCompare(a, b) { this.compareA = a; this.compareB = b; this.drawPreviousTrack(this.packet); if (this.onUpdate) this.onUpdate(); }
+
+  comparePair() {
+    const revs = (this.packet && this.packet.revisions) || [];
+    if (revs.length < 2) return null;
+    const b = revs.find((r) => r.revisionId === this.compareB) || revs[revs.length - 1];
+    const a = revs.find((r) => r.revisionId === this.compareA) || revs[Math.max(0, revs.indexOf(b) - 1)];
+    return a === b ? null : { a, b };
+  }
+
+  // 지구 위: 직전 회차 공식 예보(h0→h24→h48)를 회색 점선으로, 현재 회차를 주황 실선으로(지시서 L-4).
+  drawPreviousTrack(packet) {
+    this.clearRevisionLines();
+    const pair = this.comparePair();
+    if (!pair || !this.scene) return;
+    const M = Math.PI / 180;
+    const line = (agencies, color, dashed) => {
+      const ag = agencies.KMA || agencies.JMA || agencies.NHC;
+      if (!ag) return null;
+      const pts = [ag.h0, ag.h24, ag.h48].filter(Boolean).map((p) => new THREE.Vector3(
+        Math.cos(p.lat * M) * Math.sin(p.lon * M) * 1.007, Math.sin(p.lat * M) * 1.007, Math.cos(p.lat * M) * Math.cos(p.lon * M) * 1.007));
+      if (pts.length < 2) return null;
+      const geo = new THREE.BufferGeometry().setFromPoints(pts);
+      const mat = dashed ? new THREE.LineDashedMaterial({ color, dashSize: 0.01, gapSize: 0.008, transparent: true, opacity: 0.8 })
+        : new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.85 });
+      const l = new THREE.Line(geo, mat);
+      if (dashed) l.computeLineDistances();
+      return l;
+    };
+    this.revisionLines = [line(pair.a.agencies, 0xc8d2dc, true), line(pair.b.agencies, 0xffd39a, false)].filter(Boolean);
+    this.revisionLines.forEach((l) => this.scene.add(l));
+  }
+
+  clearRevisionLines() {
+    (this.revisionLines || []).forEach((l) => { this.scene.remove(l); l.geometry.dispose(); l.material.dispose(); });
+    this.revisionLines = [];
+  }
+
+  compareHtml(it) {
+    if (it.kind !== 'TC') return '';
+    const p = this.packet;
+    if (!p) return `<div class="card"><div class="card-h">이전 발표와 비교</div><div class="card-b">회차 자료 받는 중…</div></div>`;
+    if (p.error) return `<div class="card"><div class="card-h">이전 발표와 비교 ${this.badge('UNAVAILABLE')}</div><div class="card-b">회차 자료를 받지 못했습니다 (${p.error}) — 판단하지 않습니다.</div></div>`;
+    const pair = this.comparePair();
+    if (!pair) return `<div class="card"><div class="card-h">이전 발표와 비교</div><div class="card-b">첫 회차 — 비교 대상 없음 (회차 ${(p.revisions || []).length}개)</div></div>`;
+    const { a, b } = pair;
+    const t = (r) => (r.issuedAt || '').slice(5, 16).replace('T', ' ') + 'Z';
+    const chips = p.revisions.slice(-8).map((r) => `<button class="rev-chip${r === a ? ' a' : ''}${r === b ? ' b' : ''}" data-action="feed-compare" data-rev="${r.revisionId}" title="${t(r)}">${r.revisionId}</button>`).join('');
+    const agencies = [...new Set([...Object.keys(a.agencies), ...Object.keys(b.agencies)])].filter((k) => !k.startsWith('EARTHUS'));
+    const cell = (s) => (s ? `${s.lat.toFixed(1)},${s.lon.toFixed(1)}${s.windMs != null ? ` · ${s.windMs}m/s` : ''}` : '—');
+    const rowsHtml = agencies.map((k) => {
+      const ra = a.agencies[k], rb = b.agencies[k];
+      const diff = (x, y) => (x && y && (x.lat !== y.lat || x.lon !== y.lon || x.windMs !== y.windMs) ? ' chg' : '');
+      return `<tr><td>${k}</td><td class="dim">${cell(ra && ra.h0)}</td><td class="${diff(ra && ra.h0, rb && rb.h0)}">${cell(rb && rb.h0)}</td><td class="dim">${cell(ra && ra.h24)}</td><td class="${diff(ra && ra.h24, rb && rb.h24)}">${cell(rb && rb.h24)}</td></tr>`;
+    }).join('');
+    const changes = (b.changes || []).map((c) => `<li>${c.label}: ${c.from != null ? `${c.from} → ${c.to}` : c.delta != null ? `${c.delta} km 이동` : '—'}</li>`).join('');
+    const link = `${location.pathname}?event=${it.eventid}&compare=${a.revisionId},${b.revisionId}`;
+    return `<div class="card"><div class="card-h">이전 발표와 비교 <span class="badge off">회차 ${a.revisionId} ⇄ ${b.revisionId}</span></div>
+      <div class="card-b">
+        <div class="rev-chips">${chips}</div>
+        <div class="room-sub">${t(a)} → ${t(b)} · ${b.changeSummaryKo || ''}</div>
+        ${changes ? `<ul class="rev-changes">${changes}</ul>` : ''}
+        <div class="wrap"><table class="room-cmp"><thead><tr><th>기관</th><th>이전 h0</th><th>현재 h0</th><th>이전 +24h</th><th>현재 +24h</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>
+        <div class="room-sub">지구 위: 현재 회차 예보 실선(주황) · 이전 회차 회색 점선 · <a class="official-out" href="${link}">이 비교 링크</a></div>
+      </div></div>`;
+  }
+
+  verifyHtml(it) {
+    if (it.kind !== 'TC') return '';
+    const p = this.packet;
+    if (!p || p.error || !p.detail) return '';
+    const d = p.detail;
+    const isFinal = p.sessionStatus === 'FINAL_REPORT';
+    const head = d.headingScores || [];
+    const pos = isFinal ? (d.scores || []) : (d.interimScores || []);
+    if (!head.length && !pos.length) return `<div class="card"><div class="card-h">당시 전망 검증</div><div class="card-b">${d.note && d.note.interim ? d.note.interim : '대조할 실황이 아직 없습니다.'}</div></div>`;
+    const byAgency = new Map();
+    pos.forEach((s) => { const m = byAgency.get(s.agency) || { agency: s.agency, n: 0, sum: 0 }; m.n += s.n || 0; m.sum += (s.meanErrorKm || 0) * (s.n || 0); byAgency.set(s.agency, m); });
+    head.forEach((h) => { const m = byAgency.get(h.agency) || { agency: h.agency, n: 0, sum: 0 }; m.headN = h.n; m.headErr = h.meanErrDeg; m.within45 = h.within45; byAgency.set(h.agency, m); });
+    const nameKo = (a) => ({ KMA: '한국 기상청', JMA: '일본 기상청', NHC: '미국 허리케인센터', ECMWF: 'ECMWF 모델', EARTHUS_MULTI_SOURCE: 'EARTHUS 기준선', EARTHUS_ANALOG_MEDIAN: 'EARTHUS 유사사례 기준선' }[a] || a);
+    const list = [...byAgency.values()].sort((x, y) => (x.headErr ?? 999) - (y.headErr ?? 999));
+    const rows = list.map((m) => `<tr class="${/^EARTHUS/.test(m.agency) ? 'ours' : ''}"><td>${nameKo(m.agency)}</td><td>${m.headErr != null ? `${m.headErr}°` : '—'}</td><td>${m.headN ? `${m.within45}/${m.headN}` : '—'}</td><td>${m.n ? `${Math.round(m.sum / m.n)} km (n=${m.n})` : '—'}</td></tr>`).join('');
+    return `<div class="card"><div class="card-h">${isFinal ? '종료 검증 (IBTrACS 최종 경로 기준)' : `당시 전망 검증 (잠정 · ${nameKo(d.truthAgency)} 실황 기준)`}</div>
+      <div class="card-b">
+        <div class="wrap"><table class="room-cmp"><thead><tr><th>자료</th><th>방향 오차</th><th>45° 안</th><th>위치 오차</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="room-sub">같은 리드타임·같은 표본에서만 비교 · 한 사건으로 기관의 장기 우열을 말하지 않습니다 · EARTHUS 줄은 기준선(일반 매개변수)입니다</div>
+      </div></div>`;
+  }
+
+  // NEXT 탭 자동 채움(지시서 D-3): 선택 사건의 기관별 +24h/+48h.
+  nextRows() {
+    const p = this.packet;
+    const it = this.selected;
+    if (!it || !p || p.error || !p.revisions || !p.revisions.length) return [];
+    const latest = p.revisions[p.revisions.length - 1];
+    return Object.entries(latest.agencies).filter(([k]) => !k.startsWith('EARTHUS')).map(([k, v]) => ({
+      agency: k, official: k !== 'ECMWF', issued: v.issued, h24: v.h24, h48: v.h48, headingKo: v.heading24Ko,
+    }));
+  }
+
   async select(idx, orbit) {
     const it = this.items[idx];
     if (!it) return;
     const gen = this._nextGeneration();
     this.selected = it;
     this.view = 'room';
+    this.loadPacket(it, gen);
     this.loadPast(it, gen); // PAST 카드 비동기 채움 (완료 시 onUpdate로 리렌더)
     // 사건 방: 기관 스택은 비동기로 모아 채운다. 다른 사건으로 넘어갔으면 버린다.
     this.roomHtmlCache = null;
@@ -454,8 +640,10 @@ export class IntelFeed {
     this.view = 'list';
     this.selected = null;
     this.past = null;
+    this.packet = null;
     this.roomHtmlCache = null;
     this.clearTrack();
+    this.clearRevisionLines();
   }
 
   // 재해 메뉴의 '지구 사건 피드 / 지진 / 태풍' 세 줄이 눌러도 같은 화면이던 것을 갈라 준다

@@ -1522,6 +1522,206 @@ def public_detail(session, now):
     }
 
 
+# ── 공개 사건 패킷 v1 (지시서 D-1) ───────────────────────────────
+# 받은 지적: 카드에 "무엇이 바뀌었나·왜 지금·얼마나 확실한가"가 없다. 세션에는 회차가 쌓이는데
+# Feed 가 안 읽었다. 여기서 세션 → 공개 패킷(revisions·changes·importance·confidence·uncertainty)을 만든다.
+# 원칙: 값을 만들지 않는다 — 두 회차 모두 값이 있을 때만 delta, 폭을 잴 자료가 없으면 null 과 그 이유.
+WARN_KEY = "events/kma-warn.json"
+WARN_REGIONS_KEY = "events/kma-warn-regions.json"
+EVENTS_INDEX_KEY = "ocean/cyclone-events.json"
+EVENT_KEY = "ocean/cyclone-events/{id}.json"
+PACKET_REVISIONS = 24   # 사건당 패킷 ≤ 60 KB 목표(실측 30회차 106 KB)
+PRIMARY_ORDER = ("KMA", "JMA", "NHC")
+
+
+def _agency_step(group, h):
+    for s in group.get("steps") or []:
+        try:
+            if float(s.get("h")) == float(h):
+                return s
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def _brief_step(step):
+    if not step or _num(step.get("lat")) is None or _num(step.get("lon")) is None:
+        return None
+    return {"lat": round(_num(step["lat"]), 2), "lon": round(_num(step["lon"]), 2), "windMs": _num(step.get("windMs")),
+            "hpa": _num(step.get("hpa")), "courseKo": step.get("courseKo"), "categoryKo": step.get("categoryKo") or step.get("category"),
+            "gradeKo": kma_grade(_num(step.get("windMs"))), "place": step.get("place")}
+
+
+def _revision_agencies(snapshot):
+    out = {}
+    for group in snapshot.get("forecasts") or []:
+        agency = group.get("agency")
+        if not agency:
+            continue
+        h0, h24, h48 = (_brief_step(_agency_step(group, h)) for h in (0, 24, 48))
+        if not h0:
+            continue
+        heading = round(bearing(h0["lat"], h0["lon"], h24["lat"], h24["lon"])) if h24 else None
+        out[agency] = {"issued": group.get("issued"), "h0": h0, "h24": h24, "h48": h48,
+                       "heading24Deg": heading, "heading24Ko": dir_ko(heading)}
+    return out
+
+
+def _primary(agencies):
+    for a in PRIMARY_ORDER:
+        if a in agencies:
+            return a, agencies[a]
+    return (None, None)
+
+
+def _changes(prev, cur):
+    """직전 회차와 필드별 비교. 두 쪽 다 값이 있을 때만 적는다."""
+    out = []
+    pa, pv = _primary(prev)
+    ca, cv = _primary(cur)
+    if not pv or not cv or pa != ca:
+        return out, pa, ca
+    for field, label in (("windMs", "실황 풍속"), ("hpa", "중심기압")):
+        a, b = pv["h0"].get(field), cv["h0"].get(field)
+        if a is not None and b is not None and a != b:
+            out.append({"field": f"{ca}.h0.{field}", "label": label, "from": a, "to": b, "delta": round(b - a, 1)})
+    moved = dist_km(pv["h0"]["lat"], pv["h0"]["lon"], cv["h0"]["lat"], cv["h0"]["lon"])
+    out.append({"field": f"{ca}.h0.position", "label": "실황 위치 이동", "from": None, "to": None, "delta": round(moved)})
+    if pv.get("heading24Ko") and cv.get("heading24Ko") and pv["heading24Ko"] != cv["heading24Ko"]:
+        out.append({"field": f"{ca}.heading24", "label": "24시간 방향", "from": pv["heading24Ko"], "to": cv["heading24Ko"], "delta": None})
+    pg, cg = pv["h0"].get("categoryKo") or pv["h0"].get("gradeKo"), cv["h0"].get("categoryKo") or cv["h0"].get("gradeKo")
+    if pg and cg and pg != cg:
+        out.append({"field": f"{ca}.h0.grade", "label": "등급", "from": pg, "to": cg, "delta": None})
+    return out, pa, ca
+
+
+def _change_summary(changes, agency):
+    parts = []
+    for c in changes:
+        if c["field"].endswith("windMs"):
+            parts.append(f"실황 {c['from']:g}→{c['to']:g} m/s {'강화' if c['delta'] > 0 else '약화'}")
+        elif c["field"].endswith("heading24"):
+            parts.append(f"24h 방향 {c['from']}→{c['to']}")
+        elif c["field"].endswith("grade"):
+            parts.append(f"등급 {c['from']}→{c['to']}")
+        elif c["field"].endswith("hpa"):
+            parts.append(f"기압 {c['from']:g}→{c['to']:g} hPa")
+    if not parts:
+        return f"{AGENCY_KO.get(agency, agency)} 실황·전망 변화 없음" if agency else "비교할 직전 회차 없음"
+    return f"{AGENCY_KO.get(agency, agency)} " + " · ".join(parts)
+
+
+def _nearest_warn_region_km(point, warn_doc, regions_doc):
+    """발효 중 특보 구역 중심 중 가장 가까운 것. 구역 중심점 근사 — 경계선 자료가 아니다."""
+    if not point or not warn_doc or not regions_doc:
+        return None, None
+    regions = regions_doc.get("regions") or {}
+    best = None
+    for w in warn_doc.get("active") or []:
+        r = regions.get(w.get("regionId")) or regions.get(w.get("parentId"))
+        if not r or _num(r.get("lat")) is None:
+            continue
+        km = dist_km(point["lat"], point["lon"], r["lat"], r["lon"])
+        if best is None or km < best[0]:
+            best = (round(km), f"{w.get('region')} {w.get('kind')} {w.get('level')}")
+    return best if best else (None, None)
+
+
+def _confidence(source_n, agreement_km, freshness_min):
+    if source_n >= 2 and agreement_km is not None and agreement_km <= 100 and freshness_min is not None and freshness_min <= 180:
+        level = "high"
+    elif source_n >= 1 and freshness_min is not None and freshness_min <= 360:
+        level = "medium"
+    else:
+        level = "low"
+    return {"level": level, "sourceN": source_n, "agencyAgreement24hKm": agreement_km, "freshnessMin": freshness_min,
+            "note": "기관 2곳 이상·24시간 예보 위치 차 100 km 이하·최신 회차 3시간 이내면 high, 기관 1곳 이상·6시간 이내면 medium, 그 밖은 low. 정확도가 아니라 근거의 신선도·일치도다."}
+
+
+def _spread(agencies, h):
+    pts = [p for name, a in agencies.items() if name in PRIMARY_ORDER and (p := a.get(f"h{h}"))]
+    if len(pts) < 2:
+        return None
+    worst = 0.0
+    for i in range(len(pts)):
+        for j in range(i + 1, len(pts)):
+            worst = max(worst, dist_km(pts[i]["lat"], pts[i]["lon"], pts[j]["lat"], pts[j]["lon"]))
+    return round(worst)
+
+
+def event_status(session, now):
+    """GDACS 지연을 그대로 노출하던 것(SAUDEL-26 · 소멸 후 3일째 ACTIVE)을 판정으로 내린다."""
+    st = session.get("status")
+    if st in ("FINAL_REPORT", "PRELIMINARY_REPORT", "VERIFYING"):
+        return st, "세션 종료 단계"
+    last_seen = iso_time(session.get("lastSeen"))
+    age_h = (now - last_seen).total_seconds() / 3600 if last_seen else None
+    latest = (session.get("snapshots") or [{}])[-1]
+    has_official = any((g.get("agency") in PRIMARY_ORDER) for g in latest.get("forecasts") or [])
+    if session.get("live") is False or (age_h is not None and age_h > 120):
+        return "RESOLVED", f"GDACS live={session.get('live')} · 마지막 {round(age_h) if age_h is not None else '?'}시간 전"
+    if age_h is not None and age_h > 48 and not has_official:
+        return "WATCH", f"GDACS 갱신 {round(age_h)}시간 전 · 공식 발표 없음"
+    return "ACTIVE", "GDACS 활성 · 최근 갱신"
+
+
+def event_packet(session, now, detail, warn_doc=None, regions_doc=None):
+    snaps = (session.get("snapshots") or [])[-PACKET_REVISIONS:]
+    base = len(session.get("snapshots") or []) - len(snaps)
+    revisions, prev = [], {}
+    for i, snap in enumerate(snaps):
+        agencies = _revision_agencies(snap)
+        changes, pa, ca = _changes(prev, agencies) if prev else ([], None, _primary(agencies)[0])
+        revisions.append({"revisionId": f"r{base + i + 1:03d}", "issuedAt": snap.get("issuedAt"), "agencies": agencies,
+                          "changes": changes, "changeSummaryKo": _change_summary(changes, ca) if prev else "첫 회차"})
+        prev = agencies
+    latest = revisions[-1] if revisions else None
+    la, lv = _primary(latest["agencies"]) if latest else (None, None)
+    point = lv["h0"] if lv else (detail.get("latestObserved") if detail else None)
+    nearest_km, nearest_label = _nearest_warn_region_km(point, warn_doc, regions_doc)
+    # 기관 수는 공식 기관(KMA·JMA·NHC)만 — ECMWF 는 모델이고 EARTHUS 는 우리 계산이다
+    source_n = len([a for a in (latest["agencies"] if latest else {}) if a in PRIMARY_ORDER])
+    agree24 = _spread(latest["agencies"], 24) if latest else None
+    last_at = iso_time(latest["issuedAt"]) if latest else None
+    fresh_min = round((now - last_at).total_seconds() / 60) if last_at else None
+    trend = ((detail or {}).get("intensity") or {}).get("trend") or {}
+    status, status_reason = event_status(session, now)
+    reasons = []
+    if session.get("alert"):
+        reasons.append(f"공식 경보 {session['alert']}")
+    if nearest_km is not None and nearest_km <= 350:
+        reasons.append(f"한국 특보구역 {nearest_km} km 안 ({nearest_label})")
+    if trend.get("ko") == "강화":
+        reasons.append(f"최근 12시간 {trend.get('deltaMs'):+g} m/s 강화")
+    if source_n:
+        reasons.append(f"기관 {source_n}곳 발표 중")
+    if not reasons:
+        reasons.append("GDACS 탐지 — 공식 발표 미연결")
+    return {
+        "schema": 1, "eventId": f"cyclone:{session['id']}", "gdacsId": session["id"], "name": session.get("name"),
+        "status": status, "statusReason": status_reason, "sessionStatus": session.get("status"),
+        "time": {"detectedAt": session.get("detectedAt"), "lastSeen": session.get("lastSeen"), "endedAt": session.get("endedAt"),
+                 "lastRevisionAt": latest["issuedAt"] if latest else None, "retrievedAt": _stamp(now)},
+        "revisions": revisions,
+        "importance": {"reasons": reasons, "inputs": {"alert": session.get("alert"), "nearestWarnRegionKm": nearest_km,
+                                                       "windTrend12h": trend.get("deltaMs"), "sourceN": source_n, "lastRevisionAgeMin": fresh_min},
+                       "note": "규칙 순서: 공식 경보 등급 → 관련 특보구역 거리 → 최근 강화 → 기관 수. 점수가 아니라 이유 목록이다."},
+        "confidence": _confidence(source_n, agree24, fresh_min),
+        "uncertainty": {"ensembleSpreadKm": None, "agencySpreadKm": {"24": agree24, "48": _spread(latest["agencies"], 48) if latest else None},
+                        "note": "기관 폭은 KMA/JMA/NHC 예보 위치의 최대 차이(km). 앙상블 멤버 분산은 세션에 없어 null 이다. 확률이 아니다."},
+        "detail": detail,
+    }
+
+
+def event_index_entry(packet):
+    latest = packet["revisions"][-1] if packet["revisions"] else None
+    return {"eventId": packet["eventId"], "gdacsId": packet["gdacsId"], "name": packet["name"], "status": packet["status"],
+            "statusReason": packet["statusReason"], "lastRevisionAt": packet["time"]["lastRevisionAt"],
+            "changeSummaryKo": latest["changeSummaryKo"] if latest else None, "reasons": packet["importance"]["reasons"][:3],
+            "confidence": packet["confidence"]["level"], "nearestWarnRegionKm": packet["importance"]["inputs"]["nearestWarnRegionKm"],
+            "revisionCount": len(packet["revisions"])}
+
+
 def update_lifecycle(now, tracks, analyses, history):
     """탐지부터 종료 보고서까지 이어지는 상태와 당시 계산 회차를 보존한다."""
     state = _safe_s3(SESSION_KEY, {"schema": 1, "sessions": []})
@@ -1541,6 +1741,8 @@ def update_lifecycle(now, tracks, analyses, history):
         session["name"] = storm.get("name") or session.get("name")
         session["lastSeen"] = storm.get("lastSeen") or session.get("lastSeen")
         session["actualTrack"] = storm.get("track") or session.get("actualTrack") or []
+        session["alert"] = storm.get("alert") or session.get("alert")
+        session["live"] = storm.get("live")
         wanted = "ACTIVE" if storm.get("live") else "VERIFYING"
         if session.get("status") in ("DETECTED", "ACTIVE") and session.get("status") != wanted:
             session["status"] = wanted
@@ -1592,15 +1794,28 @@ def update_lifecycle(now, tracks, analyses, history):
     s3.put_object(Bucket=BUCKET, Key=SESSION_KEY,
                   Body=json.dumps(private, ensure_ascii=False, separators=(",", ":")).encode(),
                   ContentType="application/json", CacheControl="private, no-store")
+    details = {x["id"]: public_detail(x, now) for x in kept}
     reports = [{"id": x["id"], "name": x.get("name"), "status": x.get("status"),
                 "detectedAt": x.get("detectedAt"), "lastSeen": x.get("lastSeen"),
                 "endedAt": x.get("endedAt"), "snapshotCount": len(x.get("snapshots", [])),
                 "scores": x.get("scores", []),
                 # 카드가 열리면 답해야 할 본문 — 위치·진로·강도 분류·상륙 문구·잠정 오차 (public_detail 주석)
-                "detail": public_detail(x, now),
+                "detail": details[x["id"]],
                 "note": "FINAL_REPORT만 IBTrACS best track으로 검증됨. PRELIMINARY_REPORT는 잠정 상태."}
                for x in kept]
     put(REPORT_KEY, {"generated": stamp, "count": len(reports), "reports": reports}, 1800)
+    # 공개 사건 패킷(지시서 D-1): 사건마다 한 파일 + 목록. Feed 가 이 목록을 GDACS id 로 결합한다.
+    warn_doc = _safe_s3(WARN_KEY, {})
+    regions_doc = _safe_s3(WARN_REGIONS_KEY, {})
+    index = []
+    for x in kept:
+        try:
+            packet = event_packet(x, now, details[x["id"]], warn_doc, regions_doc)
+            put(EVENT_KEY.format(id=x["id"]), packet, 900)
+            index.append(event_index_entry(packet))
+        except Exception as error:  # noqa: BLE001 - 패킷 하나가 죽어도 목록·보고서는 낸다
+            print(f"    패킷 실패 {x.get('name')}: {error!r}"[:160])
+    put(EVENTS_INDEX_KEY, {"schema": 1, "generated": stamp, "count": len(index), "events": index}, 900)
     return {"sessions": len(kept), "active": sum(x.get("status") == "ACTIVE" for x in kept)}
 
 

@@ -454,10 +454,23 @@ export function initShell(hooks) {
       <div class="card"><div class="card-b"><span class="paysub">${i18n.t('whyPro')}</span></div></div>`;
   };
 
+  // 선택 사건의 기관별 +24h/+48h — 사건을 열면 켜진 레이어와 무관하게 NEXT 가 채워진다(지시서 D-3).
+  const eventNextHtml = () => {
+    const rows = hooks.feedNext ? hooks.feedNext() : [];
+    const picked = hooks.feedSelected && hooks.feedSelected();
+    if (!picked || !rows.length) return '';
+    const cell = (s) => (s ? `${s.lat.toFixed(1)}°, ${s.lon.toFixed(1)}°${s.windMs != null ? ` · ${s.windMs} m/s` : ''}${s.categoryKo ? ` · ${s.categoryKo}` : ''}` : '—');
+    const nameKo = (a) => ({ KMA: '한국 기상청', JMA: '일본 기상청', NHC: '미국 허리케인센터', ECMWF: 'ECMWF 모델' }[a] || a);
+    return `<div class="card"><div class="card-h">${picked.title} — ${i18n.ko ? '기관별 다음 위치' : 'Next positions by agency'}</div>
+      <div class="card-b"><div class="wrap"><table class="room-cmp"><thead><tr><th>기관</th><th>+24h</th><th>+48h</th><th>24h 방향</th></tr></thead><tbody>${rows.map((r) =>
+        `<tr><td>${nameKo(r.agency)} ${renderBadge(r.official ? 'OFFICIAL_FORECAST' : 'MODEL_SIGNAL')}</td><td>${cell(r.h24)}</td><td>${cell(r.h48)}</td><td>${r.headingKo || '—'}</td></tr>`).join('')}</tbody></table></div>
+      <div class="room-sub">${i18n.ko ? '공식 예보와 모델을 합치지 않습니다 — 기관마다 발표 시각이 다릅니다' : 'Official forecasts and models are never merged'}</div></div></div>`;
+  };
+
   const nextHtml = () => {
     // '앞을 말하는 자료' = 예보·특보. 진리등급 어휘가 정본이라 이름으로 가른다.
     const rows = activeLayers().filter(({ l }) => /FORECAST|WARNING|MODEL/.test(String(l.state)));
-    return `
+    return `${eventNextHtml()}
       <div class="card"><div class="card-h">${i18n.t('nextTitle')}</div>
         <div class="card-b">${i18n.t('nextNote')}</div></div>
       <div class="card"><div class="card-h">${i18n.t('nextTitle').split('—')[0].trim()} <span class="feed-cnt">${rows.length}</span></div>

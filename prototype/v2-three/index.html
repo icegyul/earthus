@@ -844,6 +844,22 @@
   .room-src.none { opacity: 0.62; }
   /* 조회 실패는 '없음'과 다른 색 — 없음은 흐리고, 실패는 주황 바탕(지시서 L-6) */
   .room-src.fail { background: rgba(150,90,70,0.08); border-radius: 6px; }
+  /* 사건 카드 8필드·팔로우·비교 표 (지시서 L-2·L-3) */
+  .feed-item.followed { border-left: 2px solid var(--accent); }
+  .feed-line { font-size: 11px; color: var(--text); margin-top: 3px; line-height: 1.45; }
+  .feed-line.dim { color: var(--text-dim); }
+  .feed-k { color: var(--accent); font-size: 10px; margin-right: 6px; }
+  .feed-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex: none; }
+  .feed-follow { background: none; border: 1px solid var(--panel-line); border-radius: 6px; color: var(--text-dim); font-size: 12px; min-width: 26px; min-height: 26px; cursor: pointer; }
+  .feed-follow.on { color: var(--accent); border-color: var(--accent); }
+  .rev-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+  .rev-chip { background: none; border: 1px solid var(--panel-line); border-radius: 6px; color: var(--text-dim); font-size: 10px; padding: 2px 6px; cursor: pointer; }
+  .rev-chip.a { border-color: #c8d2dc; color: #c8d2dc; } .rev-chip.b { border-color: #ffd39a; color: #ffd39a; }
+  .rev-changes { margin: 4px 0 6px; padding-left: 16px; font-size: 11px; }
+  .room-cmp { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+  .room-cmp th, .room-cmp td { padding: 4px 5px; border-bottom: 1px solid rgba(255,255,255,0.07); text-align: left; white-space: nowrap; }
+  .room-cmp th { color: var(--text-dim); font-weight: 500; } .room-cmp td.dim { color: var(--text-dim); } .room-cmp td.chg { color: var(--accent); }
+  .room-cmp tr.ours td { color: #f5c995; } .wrap { overflow-x: auto; }
   .room-agency { font-size: 11px; font-weight: 600; line-height: 1.35; }
   .room-what { font-size: 9.5px; color: var(--text-dim); font-weight: 400; margin-top: 2px; line-height: 1.4; }
   .room-val { font-size: 11px; line-height: 1.45; min-width: 0; }

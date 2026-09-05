@@ -13,7 +13,17 @@ const GDACS_GEOM = (id, ep) => `https://www.gdacs.org/gdacsapi/api/polygons/getg
 
 const ALERT_RANK = { Red: 0, Orange: 1, Green: 2 };
 
-const agoText = (t) => {
+// 시각 4분법(지시서 A-1): 발생·발표·갱신·수집. 없는 시각은 null — Date.now() 로 채우지 않는다.
+// 시각이 없는 사건이 "방금"으로 보이던 것이 최종 보고서 F01 이다.
+// GDACS·USGS 는 시간대 표기 없는 UTC('2026-09-01T00:00:00')를 준다 — 그대로 parse 하면 브라우저 지역시각으로 읽혀 9시간이 어긋난다.
+const asUtc = (v) => (typeof v === 'string' && /T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(v) ? `${v}Z` : v);
+export const iso = (v) => { const t = typeof v === 'number' ? v : Date.parse(asUtc(v)); return Number.isFinite(t) ? new Date(t).toISOString() : null; };
+export const eventTime = ({ occurredAt = null, issuedAt = null, updatedAt = null } = {}) =>
+  ({ occurredAt, issuedAt, updatedAt, retrievedAt: new Date().toISOString() });
+const NO_TIME = () => (i18n.ko ? '시각 미확인' : 'time unknown');
+
+export const agoText = (t) => {
+  if (t == null || !Number.isFinite(Number(t))) return NO_TIME();
   const m = Math.round((Date.now() - t) / 60000);
   const ko = i18n.ko;
   if (m < 60) return ko ? `${m}분 전` : `${m} min ago`;
@@ -53,9 +63,12 @@ export class IntelFeed {
   }
 
   // PAST: 사건 주변의 실제 이력 — 값 생성 없이 공식 아카이브 조회만
-  async loadPast(it) {
+  async loadPast(it, gen = this._gen) {
     this.past = { state: 'loading' };
     if (this.onUpdate) this.onUpdate();
+    const fetchJson = this.fetchJson || ((url, opts) => fetch(url, opts).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }));
+    const signal = this._abort ? this._abort.signal : undefined;
+    let next;
     try {
       if (it.kind === 'EQ') {
         // USGS 아카이브: 반경 300km · 최근 30일 · M2.5+
@@ -64,7 +77,7 @@ export class IntelFeed {
           + `&latitude=${it.lat.toFixed(3)}&longitude=${it.lon.toFixed(3)}&maxradiuskm=300`
           + `&starttime=${start}&minmagnitude=2.5&orderby=magnitude&limit=200`;
         const j = await Promise.race([
-          fetch(url).then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+          fetchJson(url, { signal }),
           new Promise((_, rej) => { setTimeout(() => rej(new Error('timeout')), 12000); }),
         ]);
         const fs = j.features || [];
@@ -73,21 +86,20 @@ export class IntelFeed {
         const top = fs.slice(0, 5).map((f) => ({
           mag: f.properties.mag, place: f.properties.place, t: f.properties.time,
         }));
-        this.past = {
+        next = {
           state: 'ready', kind: 'EQ', n: fs.length, maxMag: mags.length ? Math.max(...mags) : null, bigger, top,
-          src: 'USGS 아카이브 · 반경 300km · 30일 · M2.5+',
+          src: 'USGS 아카이브 · 반경 300km · 30일 · M2.5+ · 사건 시각 이후 여진과 이전 지진이 섞여 있음',
         };
       } else if (it.kind === 'TC') {
         // KMA·JMA·NHC 공식 발표 타임라인 (1.0 S3 캐시)
         const j = await Promise.race([
-          fetch('https://earthus-cache-kr.s3.us-east-2.amazonaws.com/events/typhoon-official.json', { cache: 'no-store' })
-            .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+          fetchJson('https://earthus-cache-kr.s3.us-east-2.amazonaws.com/events/typhoon-official.json', { cache: 'no-store', signal }),
           new Promise((_, rej) => { setTimeout(() => rej(new Error('timeout')), 12000); }),
         ]);
         const name = it.stormName || (it.title || '').replace(i18n.t('tcTitle'), '').trim().toUpperCase().replace(/-\d{2}$/, '');
         const storm = (j.storms || []).find((s) => name && (s.key === name || (s.name || '').toUpperCase() === name));
         const ag = storm && (storm.agencies || []).find((a) => a.steps && a.steps.length);
-        this.past = ag
+        next = ag
           ? {
             state: 'ready', kind: 'TC', agency: ag.agencyKo || ag.agency,
             steps: ag.steps.map((s) => ({ h: s.h, windMs: s.windMs, hpa: s.hpa, place: s.place })),
@@ -95,12 +107,26 @@ export class IntelFeed {
           }
           : { state: 'none', note: '공식 태풍 발표에서 이 사건을 찾지 못했습니다 — 표시하지 않습니다.' };
       } else {
-        this.past = { state: 'none', note: '이 사건 유형의 이력 소스가 아직 없습니다.' };
+        next = { state: 'none', note: '이 사건 유형의 이력 소스가 아직 없습니다.' };
       }
     } catch (e) {
-      this.past = { state: 'error', note: `이력 조회 실패 (${String((e && e.message) || e)}) — 판단하지 않습니다.` };
+      next = { state: 'error', note: `이력 조회 실패 (${String((e && e.message) || e)}) — 판단하지 않습니다.` };
     }
+    if (gen !== this._gen) return;   // 늦게 도착한 다른 사건의 이력 — 버린다
+    this.past = next;
     if (this.onUpdate) this.onUpdate();
+  }
+
+  // EVIDENCE 카드의 시각 세 줄 — 발표·갱신·수집을 한 줄 '갱신' 으로 뭉치지 않는다.
+  timeLines(it) {
+    const t = it.time || {};
+    const f = (v) => (v ? `${v.slice(5, 16).replace('T', ' ')}Z` : NO_TIME());
+    const ko = i18n.ko;
+    const rows = [];
+    if (it.kind === 'EQ') rows.push(`${ko ? '발생' : 'occurred'} ${f(t.occurredAt)}`);
+    else rows.push(`${ko ? '발표' : 'issued'} ${f(t.issuedAt)}`, `${ko ? '갱신' : 'updated'} ${f(t.updatedAt)}`);
+    rows.push(`${ko ? '수집' : 'retrieved'} ${f(t.retrievedAt)}`);
+    return rows.join(' · ');
   }
 
   pastHtml() {
@@ -127,12 +153,18 @@ export class IntelFeed {
   // 출처가 멀쩡한데 우리가 먼저 끊고 있었다. 문턱을 실측에 맞추고,
   // 지진은 그 기다림에 묶지 않는다(먼저 그리고, 태풍은 도착하면 덧그린다).
   async load() {
+    // 재시도가 실패해도 직전 목록은 버리지 않는다 — '이전 결과 · 수집 시각' 으로 남긴다(지시서 A-4).
+    this.previous = this.items.length ? { items: this.items, retrievedAt: this.retrievedAt } : null;
     this.state = 'loading';
     this.tcPending = true;
     this.tcFailed = false;
+    this.eqPending = true;
+    this.eqFailed = false;
     this.items = [];
+    this.retrievedAt = new Date().toISOString();
+    const fetchJson = this.fetchJson || ((url, opts) => fetch(url, opts).then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); }));
     const timed = (url, ms) => Promise.race([
-      fetch(url).then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); }),
+      fetchJson(url),
       new Promise((_, rej) => { setTimeout(() => rej(new Error('timeout')), ms); }),
     ]);
 
@@ -148,7 +180,8 @@ export class IntelFeed {
 
     try {
       this.ingestEQ(await timed(USGS_EQ, 12000));
-    } catch (e) { /* 지진이 실패해도 태풍은 위에서 계속 받는다 */ }
+    } catch (e) { this.eqFailed = true; /* 지진이 실패해도 태풍은 위에서 계속 받는다 */ }
+    this.eqPending = false;
     this.settle();
     // 여기서 끝낸다 — 태풍을 기다리지 않는다. 태풍은 도착하면 onUpdate 로 다시 그린다.
     // (tcJob 은 catch·finally 를 달아 두었으니 붙잡지 않아도 조용히 끝난다.)
@@ -156,14 +189,42 @@ export class IntelFeed {
   }
 
   // 목록 정렬·상태 판정을 한 곳에 둔다 — 두 출처가 서로 다른 시점에 도착하기 때문이다.
+  // 상태 5분법(지시서 A-4): loading · ready · partial(한 출처 실패) · empty(둘 다 정상 0건) · error(둘 다 실패)
+  // + stale(둘 다 실패했지만 직전 목록이 있음). 정렬 기준은 화면 머리에 그대로 적는다(F06).
   settle() {
+    const noTime = (v) => !Number.isFinite(v);
     this.items.sort((a, b) => {
+      if (noTime(a.whenT) !== noTime(b.whenT)) return noTime(a.whenT) ? 1 : -1;   // 시각 없는 사건은 맨 뒤
       if (a.kind !== b.kind) return a.kind === 'TC' ? -1 : 1;
       if (a.kind === 'TC') return (ALERT_RANK[a.alert] ?? 3) - (ALERT_RANK[b.alert] ?? 3);
       return b.whenT - a.whenT;
     });
-    if (this.items.length) this.state = 'ready';
-    else this.state = this.tcPending ? 'loading' : 'error';
+    this.sources = {
+      gdacs: { state: this.tcPending ? 'PENDING' : this.tcFailed ? 'FAILED' : 'OK', count: this.items.filter((x) => x.kind === 'TC').length },
+      usgs: { state: this.eqPending ? 'PENDING' : this.eqFailed ? 'FAILED' : 'OK', count: this.items.filter((x) => x.kind === 'EQ').length },
+    };
+    const pending = this.tcPending || this.eqPending;
+    const failed = (this.tcFailed ? 1 : 0) + (this.eqFailed ? 1 : 0);
+    if (this.items.length) this.state = failed && !pending ? 'partial' : 'ready';
+    else if (pending) this.state = 'loading';
+    else if (failed === 2 && this.previous) { this.items = this.previous.items; this.state = 'stale'; }
+    else this.state = failed ? 'error' : 'empty';
+  }
+
+  // 출처 상태 한 줄 — "오는 중"과 "못 받음"과 "없음"을 다른 말로 적는다.
+  sourceNote() {
+    const ko = i18n.ko;
+    const name = { gdacs: 'GDACS', usgs: 'USGS' };
+    const parts = Object.entries(this.sources || {}).map(([id, s]) => {
+      if (s.state === 'PENDING') return `${name[id]} ${ko ? '받는 중' : 'loading'}`;
+      if (s.state === 'FAILED') return `${name[id]} ${ko ? '조회 불가' : 'unavailable'}`;
+      return `${name[id]} ${s.count}${ko ? '건' : ''}`;
+    });
+    const retry = `<button class="feed-back" data-action="feed-retry" style="margin:0 0 0 6px">${i18n.t('retry')}</button>`;
+    const stale = this.state === 'stale' && this.previous
+      ? ` · ${ko ? '이전 결과' : 'previous result'} ${(this.previous.retrievedAt || '').slice(11, 16)}Z`
+      : '';
+    return `<div class="feed-note">${parts.join(' · ')}${stale}${/FAILED/.test(JSON.stringify(this.sources)) || this.state === 'stale' ? retry : ''}</div>`;
   }
 
   ingestTC(json) {
@@ -191,7 +252,8 @@ export class IntelFeed {
           stormName: (p.eventname || p.name || '').toUpperCase().replace(/-\d{2}$/, ''),
           title: `${i18n.t('tcTitle')} ${p.eventname || p.name || ''}`.trim(),
           where: p.country || i18n.t('atSea'),
-          whenT: Date.parse(p.todate || p.fromdate) || Date.now(),
+          time: eventTime({ issuedAt: iso(p.fromdate), updatedAt: iso(p.todate) }),
+          whenT: Date.parse(asUtc(p.todate || p.fromdate)),   // NaN 이면 목록 맨 뒤 + '시각 미확인'
           status: 'ACTIVE',
           truth: 'OFFICIAL_FORECAST',
           source: 'GDACS (JRC/UN)',
@@ -221,7 +283,8 @@ export class IntelFeed {
           alert: p.mag >= 6.5 ? 'Red' : p.mag >= 5.5 ? 'Orange' : 'Green',
           title: `M${p.mag != null ? p.mag.toFixed(1) : '?'} ${i18n.ko ? '지진' : 'earthquake'}`,
           where: p.place || '',
-          whenT: p.time || Date.now(),
+          time: eventTime({ occurredAt: iso(p.time) }),
+          whenT: Number.isFinite(p.time) ? p.time : NaN,
           status: 'ACTIVE',
           truth: 'OBSERVED',
           source: 'USGS',
@@ -232,7 +295,7 @@ export class IntelFeed {
           facts: [
             [i18n.t('fMag'), `M${p.mag != null ? p.mag.toFixed(1) : '?'}`],
             [i18n.t('fDepth'), c[2] != null ? `${Math.round(c[2])} km (${i18n.t('fUnderground')})` : '—'],
-            [i18n.t('fWhen'), agoText(p.time)],
+            [i18n.t('fWhen'), Number.isFinite(p.time) ? agoText(p.time) : NO_TIME()],
           ],
           why: '지진 발생 맥락 분석',
         });
@@ -247,7 +310,11 @@ export class IntelFeed {
     }
     if (this.state === 'error') {
       return `<div class="card"><div class="card-h">${i18n.ko ? '피드' : 'Feed'} ${this.badge('INSUFFICIENT_DATA')}</div>
-        <div class="card-b">${i18n.t('feedError')}</div></div>`;
+        <div class="card-b">${i18n.t('feedError')}</div></div>${this.sourceNote()}`;
+    }
+    if (this.state === 'empty') {
+      return `<div class="feed-head">${i18n.ko ? '오늘의 지구 사건' : "Today's Earth events"} <span class="feed-cnt">0</span></div>
+        <div class="feed-note">${i18n.ko ? '두 출처 모두 정상 응답 — 수집 범위에 사건이 없습니다.' : 'Both sources responded — no events in scope.'}</div>${this.sourceNote()}`;
     }
     const shown = this.visibleItems();
     if (!shown.length) {
@@ -260,7 +327,7 @@ export class IntelFeed {
         <span class="feed-dot ${it.kind === 'TC' ? 'tc' : 'eq'} a-${it.alert.toLowerCase()}"></span>
         <div class="feed-main">
           <div class="feed-title">${it.title}</div>
-          <div class="feed-sub">${it.where} · ${agoText(it.whenT)}</div>
+          <div class="feed-sub">${it.where} · ${agoText(it.whenT)}${Number.isFinite(it.whenT) ? '' : ` ${this.badge('INSUFFICIENT_DATA')}`}</div>
         </div>
         ${this.badge(it.truth)}
       </div>`).join('');
@@ -279,8 +346,9 @@ export class IntelFeed {
       : this.kind === 'TC' ? (ko ? '출처: GDACS(공식 경보)' : 'Source: GDACS (official alerts)')
       : (ko ? '출처: GDACS(공식 경보) · USGS(관측)' : 'Source: GDACS (official alerts) · USGS (observed)');
     const tail = ko ? '사건 클릭 시 3D 지구에서 확인' : 'click an event to find it on the 3D globe';
-    return `<div class="feed-head">${head} <span class="feed-cnt">${shown.length}</span></div>${this.kind === 'EQ' ? '' : tcNote}${rows}
-      <div class="feed-note">${src} — ${tail}</div>`;
+    const sortNote = i18n.ko ? '정렬: 공식 경보 등급 → 최근 갱신 · 시각 없는 사건은 뒤' : 'sort: official alert level → latest update · undated last';
+    return `<div class="feed-head">${head} <span class="feed-cnt">${shown.length}</span></div>${this.kind === 'EQ' ? '' : tcNote}${this.state === 'partial' || this.state === 'stale' ? this.sourceNote() : ''}${rows}
+      <div class="feed-note">${src} — ${tail} · ${sortNote}</div>`;
   }
 
   // 공식 1차 출처의 사건 페이지로 나가는 링크.
@@ -308,7 +376,7 @@ export class IntelFeed {
         </div></div>
       ${this.roomHtmlCache || '<div class="card room"><div class="card-h">사건 방 — 기관 스택</div><div class="card-b">기관 데이터를 모으는 중… (공식 트랙 · 앙상블 · 해상관측 · 연안 침수 · 특보)</div></div>'}
       <div class="card"><div class="card-h">EVIDENCE</div>
-        <div class="card-b">1차 출처: ${it.source}<br/>갱신: ${agoText(it.whenT)} · 지구 위 위치는 출처 좌표 그대로${it.kind === 'TC' ? '<br/>트랙 라인: GDACS 공식 경로' : ''}${it.depthKm != null ? `<br/>진원은 지하 <b>${Math.round(it.depthKm)}km</b> — 재해 메뉴의 <b>지진 깊이</b>를 켜면 진원을 실제 깊이 자리에서 봅니다` : ''}${this.officialLink(it)}</div></div>
+        <div class="card-b">1차 출처: ${it.source}<br/>${this.timeLines(it)}<br/>지구 위 위치는 출처 좌표 그대로${it.kind === 'TC' ? '<br/>트랙 라인: GDACS 공식 경로' : ''}${it.depthKm != null ? `<br/>진원은 지하 <b>${Math.round(it.depthKm)}km</b> — 재해 메뉴의 <b>지진 깊이</b>를 켜면 진원을 실제 깊이 자리에서 봅니다` : ''}${this.officialLink(it)}</div></div>
       ${this.pastHtml()}
       <div class="card"><div class="card-h">WHY ${this.badge('INSUFFICIENT_DATA')}</div>
         <div class="card-b"><b>인과 주장 게이트</b>: 검증된 근거 체인 없이 "원인"을 말하지 않습니다.<br/>
@@ -316,20 +384,29 @@ export class IntelFeed {
         <span class="paysub">${it.why} — 근거 그래프·전망(NEXT)은 EXPLORER PRO에서 제공 예정 · 공식 경보·안전정보는 항상 무료</span></div></div>`;
   }
 
+  // 선택 세대 토큰(지시서 B): A 를 눌렀다 B 를 누르면 A 의 늦은 응답(이력·트랙·기관 스택)은 전부 버린다.
+  _nextGeneration() {
+    this._gen = (this._gen || 0) + 1;
+    if (this._abort) this._abort.abort();
+    this._abort = typeof AbortController === 'function' ? new AbortController() : null;
+    return this._gen;
+  }
+
   async select(idx, orbit) {
     const it = this.items[idx];
     if (!it) return;
+    const gen = this._nextGeneration();
     this.selected = it;
     this.view = 'room';
-    this.loadPast(it); // PAST 카드 비동기 채움 (완료 시 onUpdate로 리렌더)
+    this.loadPast(it, gen); // PAST 카드 비동기 채움 (완료 시 onUpdate로 리렌더)
     // 사건 방: 기관 스택은 비동기로 모아 채운다. 다른 사건으로 넘어갔으면 버린다.
     this.roomHtmlCache = null;
     this.room.build(it).then((html) => {
-      if (this.selected !== it) return;
+      if (this.selected !== it || gen !== this._gen) return;
       this.roomHtmlCache = html;
       if (this.onUpdate) this.onUpdate();
     }).catch((e) => {
-      if (this.selected !== it) return;
+      if (this.selected !== it || gen !== this._gen) return;
       this.roomHtmlCache = `<div class="card room"><div class="card-h">사건 방 ${this.badge('UNAVAILABLE')}</div><div class="card-b">기관 데이터를 모으지 못했습니다 — ${String((e && e.message) || e)}. 판단하지 않습니다.</div></div>`;
       if (this.onUpdate) this.onUpdate();
     });
@@ -345,7 +422,9 @@ export class IntelFeed {
     this.clearTrack();
     if (it.kind === 'TC' && it.eventid) {
       try {
-        const g = await fetch(GDACS_GEOM(it.eventid, it.episodeid)).then((r) => r.json());
+        const fetchJson = this.fetchJson || ((url, opts) => fetch(url, opts).then((r) => r.json()));
+        const g = await fetchJson(GDACS_GEOM(it.eventid, it.episodeid), { signal: this._abort ? this._abort.signal : undefined });
+        if (gen !== this._gen) return;   // 그 사이 다른 사건을 골랐다 — A 의 트랙을 B 위에 그리지 않는다
         const lines = (g.features || []).filter((f) => f.geometry && f.geometry.type === 'LineString');
         if (lines.length) {
           const pts = [];
@@ -371,6 +450,7 @@ export class IntelFeed {
   }
 
   back() {
+    this._nextGeneration();
     this.view = 'list';
     this.selected = null;
     this.past = null;
@@ -380,6 +460,7 @@ export class IntelFeed {
 
   // 재해 메뉴의 '지구 사건 피드 / 지진 / 태풍' 세 줄이 눌러도 같은 화면이던 것을 갈라 준다
   setKind(kind) {
+    this._nextGeneration();
     this.kind = kind || null;   // null = 전체
     this.view = 'list';
     this.selected = null;

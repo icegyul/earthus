@@ -4,7 +4,7 @@
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
 import { i18n } from './i18n.js?v=10';
-import { renderBadge } from './engine-bridge.js?v=15';
+import { renderBadge, layerBadge } from './engine-bridge.js?v=15';
 import { MENU_QUESTIONS } from './menu-guide.js';
 import { menuCoverage, menuTime, canClearLayer, matchesMenu } from './information-contract.js';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -430,7 +430,7 @@ export function initShell(hooks) {
 
   const evidenceRow = ({ s, l, st }) => `<div class="stat">
       <span class="k">${i18n.layer(l.id, l.name)}</span>
-      <span class="v">${renderBadge(l.state)} ${l.src}${st.note ? ` · ${st.note}` : ''}</span>
+      <span class="v">${layerBadge(`${s.id}/${l.id}`) || renderBadge(l.state)} ${l.src}${st.note ? ` · ${st.note}` : ''}</span>
     </div>`;
 
   // WHY·NEXT 는 오랫동안 "EXPLORER PRO 에서 제공 예정입니다" 한 줄만 있는 벽이었다.

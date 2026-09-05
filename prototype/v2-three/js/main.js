@@ -4058,6 +4058,11 @@ async function main() {
           if (map.active) map.exit();
           showNote('연안 침수 범위', liveLayers.floodDistrictCardHtml() + '<br/>' + liveLayers.card('khoaflood'), 'PROVIDER_FORECAST');
         });
+      } else if (action === 'room-retry') {
+        // 사건 방의 실패한 소스 줄 '재시도' — 캐시를 비우고 같은 사건을 다시 연다(지시서 A-2)
+        usage.track('event.room_retry');
+        feed.room.clearCache();
+        if (feed.selected) feed.select(feed.items.indexOf(feed.selected), orbit);
       } else if (action === 'room-layer' && ds.key) {
         // 사건 방 줄의 "지구에 켜기" — 메뉴에서 누른 것과 똑같은 경로로 레이어를 켠다
         usage.track('event.layer_from_room');

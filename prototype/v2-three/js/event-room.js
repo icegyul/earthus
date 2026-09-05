@@ -23,20 +23,49 @@ const SRC = Object.freeze({
 });
 const TTL_MS = 5 * 60 * 1000;
 const KOREA = { lat: 36.2, lon: 127.6 };
+const SRC_URL = Object.freeze({ ...SRC, warnRegions: `${S3}/events/kma-warn-regions.json` });   // SRC 는 동결돼 있다
 
-const cache = new Map(); // id → { at, data }
-async function get(id) {
-  const hit = cache.get(id);
-  if (hit && Date.now() - hit.at < TTL_MS) return hit.data;
+// 소스 상태 5분법(지시서 A-2). 화면 문구는 이 상태에서만 나온다 — "조회 실패"가 "없음"으로 보이던 것이 F02.
+export const SOURCE_STATE = Object.freeze({ OK: 'OK', EMPTY: 'EMPTY', FAILED: 'FAILED', STALE: 'STALE', OUT_OF_SCOPE: 'OUT_OF_SCOPE' });
+// 소스별 신선도 SLA(분). generated 가 이보다 묵으면 STALE — 자료는 쓰되 배지에 나이를 적는다.
+const SLA_MIN = { tyoff: 180, tyens: 720, kmasea: 120, khoaflood: null, warn: 60, tsunami: 60, warnRegions: null };
+export const RELATED_KM = { TC: 350, EQ: 200 };   // 특보 구역 중심 ↔ 사건 중심 (지시서 A-3)
+
+const cache = new Map(); // id → { at, result }
+async function defaultFetchJson(url) {
   const res = await Promise.race([
-    fetch(SRC[id], { cache: 'no-store' }),
+    fetch(url, { cache: 'no-store' }),
     new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 15000)),
   ]);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  cache.set(id, { at: Date.now(), data });
-  return data;
+  return res.json();
 }
+// { state, data, error, generatedAt, ageMin, retrievedAt } — 절대 throw 하지 않는다.
+async function fetchSource(id, fetchJson, now = Date.now()) {
+  const hit = cache.get(id);
+  if (hit && now - hit.at < TTL_MS) return hit.result;
+  let result;
+  try {
+    const data = await fetchJson(SRC_URL[id]);
+    const generatedAt = data && (data.generated || data.generatedAt || data.run || null);
+    const t = generatedAt ? Date.parse(generatedAt) : NaN;
+    const ageMin = Number.isFinite(t) ? Math.round((now - t) / 60000) : null;
+    const sla = SLA_MIN[id];
+    const state = sla != null && ageMin != null && ageMin > sla ? SOURCE_STATE.STALE : SOURCE_STATE.OK;
+    result = { state, data, error: null, generatedAt, ageMin, retrievedAt: new Date(now).toISOString() };
+  } catch (e) {
+    result = { state: SOURCE_STATE.FAILED, data: null, error: String((e && e.message) || e), generatedAt: null, ageMin: null, retrievedAt: new Date(now).toISOString() };
+  }
+  if (result.state !== SOURCE_STATE.FAILED) cache.set(id, { at: now, result });
+  return result;
+}
+const usable = (s) => s && (s.state === SOURCE_STATE.OK || s.state === SOURCE_STATE.STALE);
+const staleSub = (s) => (s && s.state === SOURCE_STATE.STALE ? ` · STALE · ${s.ageMin}분 전 자료` : '');
+// 실패한 소스는 행을 남긴다 — 행이 사라지면 사용자는 "없다"로 읽는다.
+const failRow = (agency, what, kind, layerKey, s) => ({
+  agency, what, kind, layerKey, state: SOURCE_STATE.FAILED, found: false,
+  value: `조회 불가 (${esc(s && s.error ? s.error : 'unknown')})`, sub: '기관 원문에서 직접 확인 — 이 화면은 판단하지 않습니다',
+});
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const km = (m) => (Number.isFinite(m) ? `${Math.round(m / 1000).toLocaleString('ko-KR')} km` : '—');
@@ -53,11 +82,14 @@ const num = (v, unit = '') => (v == null || Number.isNaN(Number(v)) ? '—' : `$
 
 // 한 줄: { agency, what, kind(EVIDENCE_KIND), layerKey, value, sub, found }
 const row = (r) => {
-  const badge = r.layerKey ? layerBadge(r.layerKey) : renderBadge(r.kind);
-  const btn = r.layerKey
-    ? `<button class="room-on" data-action="room-layer" data-key="${r.layerKey}" title="이 레이어를 지구에 켭니다">지구에 켜기</button>`
-    : '';
-  return `<div class="room-src${r.found === false ? ' none' : ''}">
+  const failed = r.state === SOURCE_STATE.FAILED;
+  const badge = failed ? renderBadge('UNAVAILABLE') : (r.layerKey ? layerBadge(r.layerKey) : renderBadge(r.kind));
+  const btn = failed
+    ? `<button class="room-on" data-action="room-retry" title="이 소스를 다시 조회합니다">재시도</button>`
+    : r.layerKey
+      ? `<button class="room-on" data-action="room-layer" data-key="${r.layerKey}" title="이 레이어를 지구에 켭니다">지구에 켜기</button>`
+      : '';
+  return `<div class="room-src${r.found === false ? ' none' : ''}${failed ? ' fail' : ''}">
     <div class="room-agency">${esc(r.agency)}<div class="room-what">${esc(r.what)}</div></div>
     <div class="room-val">${r.value}${r.sub ? `<div class="room-sub">${r.sub}</div>` : ''}</div>
     <div class="room-right">${badge}${btn}</div>
@@ -65,22 +97,26 @@ const row = (r) => {
 };
 
 export class EventRoom {
-  constructor() {
+  constructor({ fetchJson = defaultFetchJson, now = () => Date.now() } = {}) {
     this.last = null;
+    this.fetchJson = fetchJson;
+    this.now = now;
   }
+
+  clearCache() { cache.clear(); }
 
   // 사건 → 기관 스택 + 타임라인 HTML. 실패한 소스는 그 줄에 실패라고 적는다.
   async build(it) {
     const isTC = it.kind === 'TC';
+    const nearKorea = haversineMeters(it, KOREA) < 1200000;
     const need = isTC ? ['tyoff', 'tyens', 'kmasea', 'khoaflood', 'warn'] : ['tsunami', 'kmasea', 'warn'];
+    if (nearKorea) need.push('warnRegions');
     const got = {};
-    await Promise.all(need.map(async (id) => {
-      try { got[id] = await get(id); } catch (e) { got[id] = { __error: String((e && e.message) || e) }; }
-    }));
+    await Promise.all(need.map(async (id) => { got[id] = await fetchSource(id, this.fetchJson, this.now()); }));
     const rows = [];
     const tl = { now: null, next: null, action: null };
     const fusion = [];
-    const nearKorea = haversineMeters(it, KOREA) < 1200000;
+    this.sources = Object.fromEntries(need.map((id) => [id, { state: got[id].state, ageMin: got[id].ageMin, error: got[id].error }]));
 
     // ---- 1차 출처 (피드 자체) ------------------------------------------------
     rows.push({
@@ -100,8 +136,8 @@ export class EventRoom {
       const mine = { eventType: 'TC', title: name, lat: it.lat, lon: it.lon, startedAt: new Date(it.whenT).toISOString() };
 
       // ---- 공식 트랙 (KMA · JMA · NHC) --------------------------------------
-      const off = got.tyoff;
-      if (off && !off.__error) {
+      const off = usable(got.tyoff) ? got.tyoff.data : null;
+      if (off) {
         let best = null;
         for (const s of off.storms || []) {
           const ag = (s.agencies || []).find((a) => a.steps && a.steps.length);
@@ -122,8 +158,18 @@ export class EventRoom {
             what: '공식 예보 트랙',
             kind: 'OFFICIAL_FORECAST', layerKey: 'hazards/tyoff',
             value: `현재 <b>${num(s0.windMs, ' m/s')}</b> · ${num(s0.hpa, ' hPa')}${s0.place ? ` · ${esc(s0.place)}` : ''}`,
-            sub: `${s24 ? `+${s24.h}h ${num(s24.windMs, ' m/s')}` : ''}${s48 ? ` · +48h ${num(s48.windMs, ' m/s')}` : ''}${best.s.earliestDowngrade ? ` · ${esc(best.s.earliestDowngrade.agencyKo || best.s.earliestDowngrade.agency)} +${best.s.earliestDowngrade.h}h ${esc(best.s.earliestDowngrade.toKo || best.s.earliestDowngrade.to)}` : ''} · 발표 ${ago(best.ag.issue)}`,
+            sub: `${s24 ? `+${s24.h}h ${num(s24.windMs, ' m/s')}` : ''}${s48 ? ` · +48h ${num(s48.windMs, ' m/s')}` : ''}${best.s.earliestDowngrade ? ` · ${esc(best.s.earliestDowngrade.agencyKo || best.s.earliestDowngrade.agency)} +${best.s.earliestDowngrade.h}h ${esc(best.s.earliestDowngrade.toKo || best.s.earliestDowngrade.to)}` : ''} · 발표 ${ago(best.ag.issue)}${staleSub(got.tyoff)}`,
           });
+          // 기관마다 한 행(지시서 C-2): 이름만 합쳐 놓고 값은 첫 기관 것을 쓰던 F08.
+          for (const a of (best.s.agencies || []).filter((x) => x.steps && x.steps.length)) {
+            const a0 = a.steps[0], a24 = a.steps.find((x) => x.h === 24);
+            const off24 = a24 && s24 && a !== best.ag ? Math.round(haversineMeters({ lat: a24.lat, lon: a24.lon }, { lat: s24.lat, lon: s24.lon }) / 1000) : null;
+            rows.push({
+              agency: esc(a.agencyKo || a.agency), what: `발표 ${esc(String(a.issue || '').slice(5, 16))}`, kind: 'OFFICIAL_FORECAST',
+              value: `현재 ${num(a0.windMs, ' m/s')}${a24 ? ` · +24h <b>${num(a24.windMs, ' m/s')}</b>` : ''}`,
+              sub: `${a0.categoryKo || a0.category ? `등급 ${esc(a0.categoryKo || a0.category)}` : '등급 미표기'}${off24 != null ? ` · ${esc(best.ag.agencyKo || best.ag.agency)} 대비 +24h 위치 차 ${off24} km` : ''}`,
+            });
+          }
           tl.now = `<b>${num(s0.windMs, ' m/s')}</b> · ${num(s0.hpa, ' hPa')}<br/><span class="room-sub">${esc(s0.place || it.where)} · ${esc(best.ag.agencyKo || best.ag.agency)} 발표값</span>`;
           tl.next = `${s24 ? `+${s24.h}h <b>${num(s24.windMs, ' m/s')}</b>${s24.place ? ` · ${esc(s24.place)}` : ''}` : '예보 스텝 없음'}${best.s.earliestDowngrade ? `<br/><span class="room-sub">+${best.s.earliestDowngrade.h}h ${esc(best.s.earliestDowngrade.toKo || best.s.earliestDowngrade.to)}로 약화 전망 (${esc(best.s.earliestDowngrade.agencyKo || best.s.earliestDowngrade.agency)})</span>` : ''}`;
         } else {
@@ -131,12 +177,12 @@ export class EventRoom {
             value: '공식 태풍 발표에서 이 사건을 찾지 못했습니다', sub: `발표 중인 태풍 ${(off.storms || []).length}개 — 이름·위치·시각이 맞지 않음. 판단하지 않습니다` });
         }
       } else {
-        rows.push({ agency: 'KMA · JMA · NHC', what: '공식 예보 트랙', kind: 'OFFICIAL_FORECAST', layerKey: 'hazards/tyoff', found: false, value: `불러오지 못함 (${esc(off && off.__error)})` });
+        rows.push(failRow('KMA · JMA · NHC', '공식 예보 트랙', 'OFFICIAL_FORECAST', 'hazards/tyoff', got.tyoff));
       }
 
       // ---- ECMWF 앙상블 ------------------------------------------------------
-      const ens = got.tyens;
-      if (ens && !ens.__error) {
+      const ens = usable(got.tyens) ? got.tyens.data : null;
+      if (ens) {
         let best = null;
         for (const s of ens.storms || []) {
           const s0 = (s.steps || [])[0];
@@ -158,14 +204,14 @@ export class EventRoom {
           rows.push({ agency: 'ECMWF', what: '앙상블', kind: 'PROVIDER_FORECAST', layerKey: 'hazards/tyens', found: false, value: '이 사건에 대응하는 앙상블 트랙 없음', sub: `모델이 추적 중인 열대저기압 ${(ens.storms || []).length}개` });
         }
       } else {
-        rows.push({ agency: 'ECMWF', what: '앙상블', kind: 'PROVIDER_FORECAST', layerKey: 'hazards/tyens', found: false, value: `불러오지 못함 (${esc(ens && ens.__error)})` });
+        rows.push(failRow('ECMWF', '앙상블', 'PROVIDER_FORECAST', 'hazards/tyens', got.tyens));
       }
     }
 
     // ---- 쓰나미 메시지 (지진) ------------------------------------------------
     if (!isTC) {
-      const ts = got.tsunami;
-      if (ts && !ts.__error) {
+      const ts = usable(got.tsunami) ? got.tsunami.data : null;
+      if (ts) {
         const near = (ts.alerts || []).map((a) => ({ a, d: haversineMeters(it, a) }))
           .filter((x) => Number.isFinite(x.d) && x.d < 1500000 && Math.abs(it.whenT - Date.parse(x.a.updated)) < 3 * 86400000)
           .sort((p, q) => p.d - q.d);
@@ -184,7 +230,8 @@ export class EventRoom {
           tl.next = '연결된 쓰나미 발표 미확인<br/><span class="room-sub">현재 경보 유무는 기관 원문 확인</span>';
         }
       } else {
-        rows.push({ agency: 'PTWC · NWS', what: '쓰나미 메시지', kind: 'OFFICIAL_WARNING', layerKey: 'hazards/tsunami', found: false, value: `불러오지 못함 (${esc(ts && ts.__error)})` });
+        rows.push(failRow('PTWC · NWS', '쓰나미 메시지', 'OFFICIAL_WARNING', 'hazards/tsunami', got.tsunami));
+        tl.next = '쓰나미 발표 조회 불가<br/><span class="room-sub">현재 경보 유무는 기관 원문 확인 — 없다고 적지 않습니다</span>';
       }
       tl.now = `<b>${esc(it.facts[0] ? it.facts[0][1] : '')}</b> · 깊이 ${it.depthKm != null ? Math.round(it.depthKm) + ' km' : '—'}<br/><span class="room-sub">${esc(it.where)} · ${ago(new Date(it.whenT).toISOString())} · USGS</span>`;
       rows.push({ agency: '지각 맥락', what: '판 경계 · 진원 깊이', kind: 'OFFICIAL_OBSERVATION', layerKey: 'hazards/eqdepth',
@@ -192,8 +239,8 @@ export class EventRoom {
     }
 
     // ---- 해상 관측망 (기상청) -----------------------------------------------
-    const sea = got.kmasea;
-    if (sea && !sea.__error) {
+    const sea = usable(got.kmasea) ? got.kmasea.data : null;
+    if (sea) {
       const R = isTC ? 600000 : 400000;
       // 파고를 보고하는 관측점(부이·파고계)을 먼저, 그 다음 거리순 — 조위관측소는 파고가 비어 있다
       const near = (sea.stations || []).map((s) => ({ s, d: haversineMeters(it, s) }))
@@ -212,12 +259,14 @@ export class EventRoom {
         rows.push({ agency: '기상청 해양관측', what: '해상 관측망', kind: 'OFFICIAL_OBSERVATION', layerKey: 'ocean/kmasea', found: false,
           value: `반경 ${R / 1000} km 안 관측점 없음`, sub: `관측점 ${(sea.stations || []).length}곳은 한반도 연안` });
       }
+    } else {
+      rows.push(failRow('기상청 해양관측', '해상 관측망', 'OFFICIAL_OBSERVATION', 'ocean/kmasea', got.kmasea));
     }
 
     // ---- 연안 침수 예상도 (해양조사원) — 태풍 ---------------------------------
     if (isTC) {
-      const fl = got.khoaflood;
-      if (fl && !fl.__error) {
+      const fl = usable(got.khoaflood) ? got.khoaflood.data : null;
+      if (fl) {
         const near = (fl.districts || []).map((d) => {
           const [w, s, e, n] = d.bbox || [];
           const c = { lat: (s + n) / 2, lon: (w + e) / 2 };
@@ -239,34 +288,62 @@ export class EventRoom {
       }
     }
 
-    // ---- 기상청 특보 ----------------------------------------------------------
+    // ---- 기상청 특보 (지시서 A-2·A-3) -------------------------------------------
+    // 상태 결정표: FAILED → '조회 불가'(절대 '없음' 아님) · OK+0건 → '관련 유형 없음 (전체 N건)' ·
+    // STALE → 나이 병기 · 한반도 밖 → OUT_OF_SCOPE. 구역 연관은 특보 구역 중심점 거리로 RELATED/DOMESTIC 두 단계.
     const wn = got.warn;
-    if (wn && !wn.__error) {
-      const kinds = isTC ? ['태풍', '강풍', '풍랑', '호우', '폭풍해일'] : null;
-      const act = (wn.active || []).filter((w) => !kinds || kinds.some((k) => String(w.kind || '').includes(k)))
-        .sort((a, b) => (b.levelRank || 0) - (a.levelRank || 0));
-      if (nearKorea && act.length) {
-        const top = act[0];
+    const kinds = isTC ? ['태풍', '강풍', '풍랑', '호우', '폭풍해일'] : null;
+    if (!nearKorea) {
+      this.warnState = SOURCE_STATE.OUT_OF_SCOPE;
+    } else if (!usable(wn)) {
+      this.warnState = SOURCE_STATE.FAILED;
+      rows.push(failRow('기상청 특보', '발효 중 특보', 'OFFICIAL_WARNING', 'weather/warn', wn));
+      tl.action = `<b>특보 조회 불가</b> (${esc(wn && wn.error ? wn.error : 'unknown')})<br/><span class="room-sub">기상청 원문에서 직접 확인 — 조회 실패를 부재로 적지 않습니다</span>`;
+    } else {
+      const regions = usable(got.warnRegions) && got.warnRegions.data ? (got.warnRegions.data.regions || {}) : null;
+      const limitKm = RELATED_KM[isTC ? 'TC' : 'EQ'];
+      const act = (wn.data.active || []).filter((w) => !kinds || kinds.some((k) => String(w.kind || '').includes(k)))
+        .map((w) => {
+          const r = regions && (regions[w.regionId] || regions[w.parentId]);
+          const km_ = r && Number.isFinite(r.lat) ? Math.round(haversineMeters(it, r) / 1000) : null;
+          return { ...w, distKm: km_, related: km_ != null && km_ <= limitKm };
+        })
+        .sort((p, q) => (Number(q.related) - Number(p.related)) || ((q.levelRank || 0) - (p.levelRank || 0)) || ((p.distKm ?? 1e9) - (q.distKm ?? 1e9)));
+      const related = act.filter((w) => w.related);
+      const total = (wn.data.active || []).length;
+      const gen = wn.generatedAt ? esc(String(wn.generatedAt).slice(11, 16)) + 'Z' : '시각 미표기';
+      if (related.length) {
+        this.warnState = 'RELATED';
+        const top = related[0];
         const byKind = {};
-        act.forEach((w) => { byKind[w.kind] = (byKind[w.kind] || 0) + 1; });
+        related.forEach((w) => { byKind[w.kind] = (byKind[w.kind] || 0) + 1; });
         rows.push({
-          agency: '기상청 특보',
-          what: `발효 중 ${act.length}건${kinds ? ' (태풍·강풍·풍랑·호우·해일)' : ''}`,
+          agency: '기상청 특보', what: `관련 구역 특보 ${related.length}건 (구역 중심 ${limitKm} km 안)`,
           kind: 'OFFICIAL_WARNING', layerKey: 'weather/warn',
-          value: `<b>${esc(top.region)} ${esc(top.kind)} ${esc(top.level)}</b>`,
-          sub: `${Object.entries(byKind).map(([k, n]) => `${esc(k)} ${n}`).join(' · ')} · 발표 ${esc((top.issuedKst || '').slice(5, 16))} KST`,
+          value: `<b>${esc(top.region)} ${esc(top.kind)} ${esc(top.level)}</b> · 사건 중심에서 ${top.distKm} km`,
+          sub: `${Object.entries(byKind).map(([k, n]) => `${esc(k)} ${n}`).join(' · ')} · 발표 ${esc((top.issuedKst || '').slice(5, 16))} KST · 구역 중심점 근사(경계선 아님)${staleSub(wn)}`,
         });
         // 캐시의 command 는 '발표/변경' 같은 통보 종류이지 행동 지시가 아니다 — 지시문은 싣지 않는다
-        tl.action = `<b>${esc(top.kind)} ${esc(top.level)} 발효 중</b> — ${esc(top.region)}<br/><span class="room-sub">행동 지시는 기상청 특보 원문을 따르세요. 이 화면은 지시문을 만들지 않습니다</span>`;
-      } else if (nearKorea) {
+        tl.action = `<b>${esc(top.kind)} ${esc(top.level)} 발효 중</b> — ${esc(top.region)} (${top.distKm} km)<br/><span class="room-sub">행동 지시는 기상청 특보 원문을 따르세요. 이 화면은 지시문을 만들지 않습니다</span>`;
+      } else if (act.length) {
+        this.warnState = 'DOMESTIC';
+        rows.push({
+          agency: '기상청 특보', what: `국내 관련 유형 특보 ${act.length}건 (구역 교차 미확인)`, kind: 'OFFICIAL_WARNING', layerKey: 'weather/warn',
+          value: `${esc(act[0].region)} ${esc(act[0].kind)} ${esc(act[0].level)}${act[0].distKm != null ? ` · ${act[0].distKm} km` : ''}`,
+          sub: `이 사건과의 구역 관계는 확인되지 않음 · 전체 발효 ${total}건 · ${gen} 자료${staleSub(wn)}`,
+        });
+        tl.action = `국내에 ${esc(act[0].kind)} 등 특보 ${act.length}건 — 이 사건과의 구역 관계는 확인되지 않음<br/><span class="room-sub">기상청 원문에서 내 지역 확인</span>`;
+      } else {
+        this.warnState = SOURCE_STATE.EMPTY;
         rows.push({ agency: '기상청 특보', what: '발효 중 특보', kind: 'OFFICIAL_WARNING', layerKey: 'weather/warn', found: false,
-          value: '이 사건과 관련된 발효 특보 없음', sub: `전체 발효 ${(wn.active || []).length}건 · 예고 ${(wn.upcoming || []).length}건` });
+          value: `관련 유형 특보 없음 (전체 발효 ${total}건)`, sub: `예고 ${(wn.data.upcoming || []).length}건 · ${gen} 자료${staleSub(wn)}` });
+        tl.action = `관련 유형 특보 없음 (전체 발효 ${total}건 · ${gen} 자료)<br/><span class="room-sub">특보 자료 정상 수신 기준 · 지시문은 만들지 않습니다</span>`;
       }
     }
 
     if (!tl.now) tl.now = `${isTC ? `경보 <b>${esc(it.alert)}</b>` : `<b>${esc(it.facts[0] ? it.facts[0][1] : '')}</b>`}<br/><span class="room-sub">${esc(it.source)} · ${ago(new Date(it.whenT).toISOString())}</span>`;
     if (!tl.next) tl.next = isTC ? '공식 예보 스텝 없음<br/><span class="room-sub">판단하지 않습니다</span>' : '—';
-    if (!tl.action) tl.action = `공식 행동 지시 없음<br/><span class="room-sub">${nearKorea ? '발효 특보 없음' : '한반도 밖 사건 — 기상청 특보 범위 아님'} · 지어내지 않습니다</span>`;
+    if (!tl.action) tl.action = `공식 행동 지시 없음<br/><span class="room-sub">한반도 밖 사건 — 기상청 특보 범위 아님 · 지어내지 않습니다</span>`;
 
     this.last = { it, rows, tl, fusion };
     return this.html();

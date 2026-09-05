@@ -1,0 +1,288 @@
+{
+  "schemaVersion": "1.0",
+  "cohortId": "gdp-cohort-step12-2015",
+  "createdAtUTC": "2026-09-05T17:14:40Z",
+  "status": "COHORT SELECTION BLOCKED",
+  "selectionRuleId": "cohort-selection-rule-v2",
+  "selectionRuleSha256": "9bd36215008ad61b5023bdcc02b626961ec0f750944eb9b334ee230032edb217",
+  "observationDatasetId": "noaa-gdp-hourly-qc-2015-regions-GS-KE-AG-BM",
+  "observationSha256": "cef7835e769ac6756d1d6e1ba768d7871daf7870bb013b590868367b2a451d04",
+  "observationFiles": [
+    {
+      "file": "AG-q1.csv",
+      "sha256": "017bebf6d0b44f6a8a4f5e81acc1f722bc50ae525a1301558e8921efeb337191",
+      "bytes": 1183048
+    },
+    {
+      "file": "AG-q2.csv",
+      "sha256": "344fda06e3da9e55c0b7822a06ed04c28510b626e7d3af5e073326de3376788d",
+      "bytes": 2791963
+    },
+    {
+      "file": "AG-q3.csv",
+      "sha256": "b5f320eb94cf9bfc1029a45b36d842d11ac6705f99dc3d53e0c95204bf2a45dd",
+      "bytes": 2988810
+    },
+    {
+      "file": "AG-q4.csv",
+      "sha256": "b7b2c4354b765d2d19866626cc85f5d6e4072ef96eaf79f815d4a548276c0f2d",
+      "bytes": 1805253
+    },
+    {
+      "file": "BM-q1.csv",
+      "sha256": "0fac22b1633af9499faf8ad0f99fe01073bcf131c341069b7ebae433acb25298",
+      "bytes": 774330
+    },
+    {
+      "file": "BM-q2.csv",
+      "sha256": "4d292c7f2186d487924b5668d78a8fe1f2b69250ac0170529851397034597625",
+      "bytes": 871709
+    },
+    {
+      "file": "BM-q3.csv",
+      "sha256": "8e46d82a82e14546a1fb941d190ef275c077b65fb66156c1ef9096d5a6863293",
+      "bytes": 857843
+    },
+    {
+      "file": "BM-q4.csv",
+      "sha256": "ede21e4b1fc401fecc82a2c7e64adb8dbd7d07bb18984c883f7f913f96c1b36c",
+      "bytes": 2635365
+    },
+    {
+      "file": "GS-q1.csv",
+      "sha256": "bd3b521d4d4577024d5ee2f8c595cfb3ed608ca7222c0ec1e6d8ee6db13104b7",
+      "bytes": 3748860
+    },
+    {
+      "file": "GS-q2.csv",
+      "sha256": "d609f11cd145779659e0412e0d79dffdc73d926af8ff5b62dc0ea6e3881ead19",
+      "bytes": 2957885
+    },
+    {
+      "file": "GS-q3.csv",
+      "sha256": "30e48efff4cdf1a5dc52b7add3f56922923e77192eaa917b8727e05199752c31",
+      "bytes": 4607439
+    },
+    {
+      "file": "GS-q4.csv",
+      "sha256": "d306046e57883642e656f8ca703979abf1bfea201c12c292d2d5c4e65ef0561d",
+      "bytes": 4500848
+    },
+    {
+      "file": "KE-q1.csv",
+      "sha256": "050b796ba65c56910a4b190f2deece94cffe79cfd04ef153187307f34c6743db",
+      "bytes": 2214684
+    },
+    {
+      "file": "KE-q2.csv",
+      "sha256": "7ee82f9d090d74aba5fd8dddc1c2a7d2224cf809db47ad43f4ba4b90180a8f64",
+      "bytes": 3828225
+    },
+    {
+      "file": "KE-q3.csv",
+      "sha256": "bd8acf97e05d8cd8143974923e24089c8d8a3f563da28d12580077c700773e10",
+      "bytes": 4755394
+    },
+    {
+      "file": "KE-q4.csv",
+      "sha256": "d9a2a2dbd7c654d3ab840956e8075475280b5cabce7f28877af7b5334ed2c6e5",
+      "bytes": 5810589
+    }
+  ],
+  "coastline": {
+    "file": "ne_10m_coastline.geojson",
+    "sha256": "6f75ae0e0de157b14946e2255eb1f5486d9a13819032e26d4610852d296788f6",
+    "source": "Natural Earth 1:10m coastline (public domain)",
+    "method": "nearest vertex haversine; ≥100 km"
+  },
+  "thresholds": {
+    "A1": 0.3,
+    "A2": 40.0,
+    "A3": 90.0
+  },
+  "regionsRanked": [
+    {
+      "regionId": "AG",
+      "eligibleAtEarliest": 9,
+      "earliestDate": "2015-04-23"
+    }
+  ],
+  "regionsNotQualifying": [
+    "GS",
+    "KE",
+    "BM"
+  ],
+  "regions": [
+    {
+      "regionId": "AG",
+      "box": {
+        "south": -40,
+        "north": -30,
+        "west": 15,
+        "east": 35
+      },
+      "selectedDate": "2015-04-23",
+      "windowStart": "2015-04-23T12:00:00Z",
+      "windowEnd": "2015-04-26T12:00:00Z",
+      "eligibleCount": 9,
+      "A1": {
+        "threshold": 0.3,
+        "unit": "m/s",
+        "measuredValue": 0.9282,
+        "pass": true
+      },
+      "A2": {
+        "threshold": 40.0,
+        "unit": "km",
+        "measuredValue": 135.1,
+        "pass": true
+      },
+      "A3": {
+        "threshold": 90.0,
+        "unit": "deg",
+        "measuredValue": 17.0,
+        "pass": true
+      },
+      "drifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634"
+      ],
+      "drifters": [
+        {
+          "drifterId": "127198",
+          "typebuoy": "SVPB",
+          "startLon": 20.32911,
+          "startLat": -39.81819,
+          "coastKm": 556.3,
+          "speedMps": 1.7671718224326687,
+          "displacement72hKm": 308.4657305088773,
+          "turnDeg": 17.326493761541315,
+          "drogueLostDate": "2015-09-28T00:00:00Z"
+        },
+        {
+          "drifterId": "127199",
+          "typebuoy": "SVPB",
+          "startLon": 20.31773,
+          "startLat": -39.82213,
+          "coastKm": 556.7,
+          "speedMps": 1.7285000723170363,
+          "displacement72hKm": 308.8541598283801,
+          "turnDeg": 16.97258199093511,
+          "drogueLostDate": "2015-11-16T00:00:00Z"
+        },
+        {
+          "drifterId": "127272",
+          "typebuoy": "SVPB",
+          "startLon": 27.2557,
+          "startLat": -34.85449,
+          "coastKm": 139.3,
+          "speedMps": 0.4615727136649219,
+          "displacement72hKm": 80.75518751460983,
+          "turnDeg": 3.2638365703272996,
+          "drogueLostDate": "2016-07-19T00:00:00Z"
+        },
+        {
+          "drifterId": "127313",
+          "typebuoy": "SVPB",
+          "startLon": 23.25523,
+          "startLat": -35.43792,
+          "coastKm": 148.3,
+          "speedMps": 1.8246477413462578,
+          "displacement72hKm": 449.48937090793794,
+          "turnDeg": 6.3676648684974,
+          "drogueLostDate": "2015-09-13T00:00:00Z"
+        },
+        {
+          "drifterId": "127314",
+          "typebuoy": "SVPB",
+          "startLon": 30.01394,
+          "startLat": -34.13828,
+          "coastKm": 221.9,
+          "speedMps": 0.9282009750048748,
+          "displacement72hKm": 98.76255482342393,
+          "turnDeg": 104.31363917664021,
+          "drogueLostDate": "2015-10-03T00:00:00Z"
+        },
+        {
+          "drifterId": "127315",
+          "typebuoy": "SVPB",
+          "startLon": 24.83593,
+          "startLat": -35.31406,
+          "coastKm": 123.2,
+          "speedMps": 0.8345449598433867,
+          "displacement72hKm": 181.03214403774328,
+          "turnDeg": 8.648275406006888,
+          "drogueLostDate": "2015-10-05T00:00:00Z"
+        },
+        {
+          "drifterId": "132511",
+          "typebuoy": "SVPB",
+          "startLon": 21.4817,
+          "startLat": -37.10636,
+          "coastKm": 286.5,
+          "speedMps": 0.484538718783133,
+          "displacement72hKm": 90.0513538472478,
+          "turnDeg": 12.738365257854241,
+          "drogueLostDate": "2015-06-16T00:00:00Z"
+        },
+        {
+          "drifterId": "132528",
+          "typebuoy": "SVPB",
+          "startLon": 23.86592,
+          "startLat": -34.97313,
+          "coastKm": 104.2,
+          "speedMps": 0.11009423236482463,
+          "displacement72hKm": 85.52837825211137,
+          "turnDeg": 59.99538794041419,
+          "drogueLostDate": "2015-06-24T00:00:00Z"
+        },
+        {
+          "drifterId": "132634",
+          "typebuoy": "SVPB",
+          "startLon": 29.88758,
+          "startLat": -34.64967,
+          "coastKm": 256.2,
+          "speedMps": 1.7483682135065255,
+          "displacement72hKm": 135.10047974877622,
+          "turnDeg": 122.92040300976925,
+          "drogueLostDate": "2015-08-16T00:00:00Z"
+        }
+      ],
+      "exclusionCounts": {
+        "E1_drogue": 2,
+        "E2_type": 0,
+        "E3_samples": 0,
+        "E4_coast": 1,
+        "E5_box": 5,
+        "notPresentAtStart": 20
+      },
+      "qualifyingWindowsInRegion": 17
+    }
+  ],
+  "totalDrifters": 9,
+  "minimumTotal": 20,
+  "selectionProcedure": [
+    "1. For each region, enumerate all 2015 windows (day at 12Z) and count eligible drifters (E1–E5) using observation data only.",
+    "2. Keep windows satisfying C_n (per-region minimum 8) and compute A1–A3 from observations only.",
+    "3. Keep windows satisfying A1–A3.",
+    "4. Within each region choose the EARLIEST calendar window that survives steps 1–3. Calendar order is the only tie-breaker; no model output, no wind statistics, no V1/V2 knowledge is consulted.",
+    "5. Take the two regions with the largest eligible count at their chosen window; if fewer than two regions qualify, record BLOCKED_COHORT and do not relax thresholds.",
+    "6. Freeze the chosen windows, drifter IDs and all A/E/C values in cohort-step12.json and commit it BEFORE any forcing download or model run."
+  ],
+  "tieBreakRule": "eligible count descending, then alphabetical regionId; within a region the earliest calendar window",
+  "modelBlind": true,
+  "forcingBlind": true,
+  "inputsOpened": [
+    "cohort-selection-rule-v2.json",
+    "fixtures/gdp-cohort-step12/raw/*.csv",
+    "ne_10m_coastline.geojson"
+  ],
+  "selectionHash": "597e3b0130991ad34eb75026084a290310e3c81b0f59c6d5364e604e500edd7f"
+}

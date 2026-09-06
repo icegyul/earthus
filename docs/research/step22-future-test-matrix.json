@@ -1,0 +1,95 @@
+{
+  "ruleId": "forcing-adequacy-requirement-analysis-step22",
+  "noTestExecuted": true,
+  "tests": [
+    {
+      "id": "TEST-01",
+      "name": "higher temporal resolution ocean forcing",
+      "hypothesis": "error growth rate decreases with hourly forcing",
+      "requiredData": [
+        "DATA-02"
+      ],
+      "dependentVariable": "M3 at 24/48/72 h, growth E72/E24",
+      "control": "frozen baseline (3 h, alpha 0.002 and 0)",
+      "risk": "product change confounds cadence with model version"
+    },
+    {
+      "id": "TEST-02",
+      "name": "higher spatial resolution ocean forcing",
+      "hypothesis": "event-scale endpoint divergence decreases",
+      "requiredData": [
+        "DATA-01"
+      ],
+      "dependentVariable": "M3 72 h, bearing difference, highest-error cases",
+      "control": "frozen baseline",
+      "risk": "different assimilation system; regime differences"
+    },
+    {
+      "id": "TEST-03",
+      "name": "surface current product comparison",
+      "hypothesis": "an independent surface-current reference reduces directional error",
+      "requiredData": [
+        "DATA-03"
+      ],
+      "dependentVariable": "bearing difference, east/north offsets",
+      "control": "frozen baseline",
+      "risk": "geostrophic products omit ageostrophic surface flow"
+    },
+    {
+      "id": "TEST-04",
+      "name": "depth sensitivity",
+      "hypothesis": "trajectories forced at 0/5/10/15/20 m differ measurably; 15 m is or is not the closest to observations",
+      "requiredData": [
+        "DATA-04"
+      ],
+      "dependentVariable": "M3, displacement ratio",
+      "control": "15 m frozen baseline",
+      "risk": "multiple comparisons; must be preregistered with a fixed depth set and no post-hoc selection"
+    },
+    {
+      "id": "TEST-05",
+      "name": "windage-only sensitivity (structural, not alpha search)",
+      "hypothesis": "windage direction relative to the error vector is unit-dependent",
+      "requiredData": [
+        "DATA-05"
+      ],
+      "dependentVariable": "windage-toward-observation projection",
+      "control": "alpha 0",
+      "risk": "must not become an alpha search; alpha stays 0.002"
+    },
+    {
+      "id": "TEST-06",
+      "name": "Stokes drift inclusion",
+      "hypothesis": "a wave-direction transport term reduces the orthogonal residual",
+      "requiredData": [
+        "DATA-06"
+      ],
+      "dependentVariable": "M3, projection of added term onto the error vector",
+      "control": "frozen baseline",
+      "risk": "new term requires its own preregistration and calibration/holdout separation"
+    },
+    {
+      "id": "TEST-07",
+      "name": "eddy-resolving forcing comparison (event-stratified)",
+      "hypothesis": "highest-error events correspond to mispositioned mesoscale structure",
+      "requiredData": [
+        "DATA-01",
+        "DATA-03"
+      ],
+      "dependentVariable": "event-stratified M3, bearing difference",
+      "control": "frozen baseline",
+      "risk": "event stratification must be preregistered to avoid cherry-picking"
+    },
+    {
+      "id": "TEST-08",
+      "name": "coastal / bathymetric sensitivity",
+      "hypothesis": "not indicated for offshore cohorts",
+      "requiredData": [
+        "DATA-08"
+      ],
+      "dependentVariable": "n/a until a nearshore cohort exists",
+      "control": "n/a",
+      "risk": "low priority; requires a new cohort rule"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "status": "STEP22_REQUIREMENT_ANALYSIS_COMPLETE",
+  "inputs": {
+    "docs/research/step21-diagnostic-summary.json": "d310eaadf64324286de80e485e9944998665d14d2599ca80133cf3d25b406fbd",
+    "docs/research/step21-diagnostic-table.csv": "e52dc35d6750cc7260e05341d48b7eaa886dfc389f1880547a39b184dbdbbe78",
+    "docs/research/step20-b6-holdout-summary.json": "fe2043b30aaba17d34e3d9a780379de9612541b75caa4ed487a10931a784d93b",
+    "docs/research/step20-selected-alpha.json": "68e43a0f91e3a6bd81427399adbe2cf8a7543d85cf0249d4926f3df093649efd",
+    "docs/research/step17-forcing-manifest.json": "591cc05799da03e6bb604321d9e2b129a32a201112922c4d06823026a0b5ac86",
+    "docs/research/step20-b3-holdout-forcing-manifest.json": "10c4f7420d16757b7cd3f23805ce63dde1f58ea63591e8dc9411647d7bc27701"
+  },
+  "outputs": {
+    "step22-limitation-assessment.json": "88eeb25543025d9697ffd4e5cadcf1a0dd376a4eccc7752df009752b7fc4bd3b",
+    "step22-data-requirement-register.json": "5b965572137270e7c71aa6377d5ca6548b233ab1521cc63a8c63a4dc255ea61a",
+    "step22-future-test-matrix.json": "55f6afd8c9c63f93e6472fed12fc636f1468160e1deaa5840c7c5c221d09ba93",
+    "step22-summary.json": "0093d1c0ab8c73195c76b11da1ddf0609555f5ff49c2698069e31b0a76f4e5bd",
+    "step22-summary.csv": "897f44ed8ee5f35f3b415b113605edae4adb20efdd375e07e913c6f9a8a82467"
+  },
+  "tool": {
+    "file": "tools/research/analyze_step22.py",
+    "sha256": "92cb5e0173ccf2ad680faa26254c4629ee32e0b9dcecb547c88e6644b6296b19"
+  },
+  "createdAtUTC": "2026-09-06T08:28:15Z",
+  "deterministic": true,
+  "modelRuns": 0,
+  "dataDownloads": 0
+}

@@ -1,0 +1,17 @@
+id,category,evidenceStrength,priority,additionalDataRequired,requiredData,candidateTests
+L1,Ocean spatial resolution,PLAUSIBLE_BUT_UNTESTED,P1,True,DATA-01;DATA-03,TEST-03;TEST-07
+L2,Ocean temporal resolution,SUPPORTED_INDICATION,P2,True,DATA-02,TEST-01
+L3,Forcing depth / vertical representativeness,INSUFFICIENT_EVIDENCE,P2,True,DATA-04,TEST-04
+L4,Wind forcing resolution / windage representation,SUPPORTED_INDICATION,P2,True,DATA-05;DATA-06,TEST-06
+L5,Sub-grid / mesoscale / eddy processes,SUPPORTED_INDICATION,P1,True,DATA-01;DATA-03,TEST-03;TEST-07
+L6,Coastal / bathymetric interaction,INSUFFICIENT_EVIDENCE,P3,True,,
+L7,Observation sampling / observation uncertainty,PLAUSIBLE_BUT_UNTESTED,P2,True,,
+L8,"Missing physical processes (Stokes drift, mixed-layer processes, other surface transport)",PLAUSIBLE_BUT_UNTESTED,P1,True,DATA-05;DATA-06,TEST-06
+DATA-01,"higher-resolution ocean current (e.g. 1/12 deg or finer, eddy-resolving)",UNAVAILABLE,P1,,,
+DATA-02,higher-frequency ocean forcing (hourly),UNAVAILABLE,P2,,,
+DATA-03,"surface current / altimetry reference (geostrophic + Ekman products, SSH anomaly, EKE)",UNAVAILABLE,P1,,,
+DATA-04,"mixed-layer / vertical current information (multi-depth velocity, MLD)",UNAVAILABLE,P2,,,
+DATA-05,"drifter metadata: drogue status/depth, windage characteristics, position uncertainty",PARTIAL,P2,,,
+DATA-06,wave / Stokes drift information,UNAVAILABLE,P1,,,
+DATA-07,higher-resolution wind forcing (e.g. ERA5 0.25 deg hourly),UNAVAILABLE,P2,,,
+DATA-08,bathymetry / coastal circulation information,PARTIAL,P3,,,

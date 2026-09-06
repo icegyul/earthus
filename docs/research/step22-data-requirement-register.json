@@ -1,0 +1,84 @@
+{
+  "ruleId": "forcing-adequacy-requirement-analysis-step22",
+  "availabilityLabels": [
+    "AVAILABLE",
+    "PARTIAL",
+    "UNAVAILABLE",
+    "UNKNOWN"
+  ],
+  "noAcquisitionPerformed": true,
+  "register": [
+    {
+      "id": "DATA-01",
+      "data": "higher-resolution ocean current (e.g. 1/12 deg or finer, eddy-resolving)",
+      "availability": "UNAVAILABLE",
+      "repositoryState": "only HYCOM 0.08 deg expt_53.X; GLORYS 1/12 deg BLOCKED/PENDING (credentials) since STEP 17",
+      "priority": "P1",
+      "priorityReason": "needed for TEST-02/TEST-07 addressing the dominant regional/event errors",
+      "acquisitionNote": "not downloaded; requires a new forcing preregistration"
+    },
+    {
+      "id": "DATA-02",
+      "data": "higher-frequency ocean forcing (hourly)",
+      "availability": "UNAVAILABLE",
+      "repositoryState": "expt_53.X provides 3 h; hourly surface fields exist only in later HYCOM experiments (different product)",
+      "priority": "P2",
+      "priorityReason": "TEST-01 discriminating power uncertain",
+      "acquisitionNote": "not downloaded"
+    },
+    {
+      "id": "DATA-03",
+      "data": "surface current / altimetry reference (geostrophic + Ekman products, SSH anomaly, EKE)",
+      "availability": "UNAVAILABLE",
+      "repositoryState": "none in repository",
+      "priority": "P1",
+      "priorityReason": "independent reference to test unresolved circulation (TEST-03)",
+      "acquisitionNote": "not downloaded"
+    },
+    {
+      "id": "DATA-04",
+      "data": "mixed-layer / vertical current information (multi-depth velocity, MLD)",
+      "availability": "UNAVAILABLE",
+      "repositoryState": "HYCOM 15 m only in repository; other depths acquirable via the same NCSS protocol; MLD not present",
+      "priority": "P2",
+      "priorityReason": "depth sensitivity (TEST-04); current evidence does not indicate depth",
+      "acquisitionNote": "not downloaded"
+    },
+    {
+      "id": "DATA-05",
+      "data": "drifter metadata: drogue status/depth, windage characteristics, position uncertainty",
+      "availability": "PARTIAL",
+      "repositoryState": "GDP hourly QC carries typebuoy (SVP/SVPB) and drogue_lost_date (used in STEP 15 E1/E2); no position-uncertainty or windage-characteristic fields",
+      "priority": "P2",
+      "priorityReason": "bounds the observation noise floor and interprets windage (L7)",
+      "acquisitionNote": "GDP metadata file not downloaded"
+    },
+    {
+      "id": "DATA-06",
+      "data": "wave / Stokes drift information",
+      "availability": "UNAVAILABLE",
+      "repositoryState": "none",
+      "priority": "P1",
+      "priorityReason": "enables TEST-06, a physically distinct transport term",
+      "acquisitionNote": "not downloaded"
+    },
+    {
+      "id": "DATA-07",
+      "data": "higher-resolution wind forcing (e.g. ERA5 0.25 deg hourly)",
+      "availability": "UNAVAILABLE",
+      "repositoryState": "NCEP-R2 only; ERA5 noted in STEP 17 as requiring credentials and a separate preregistration",
+      "priority": "P2",
+      "priorityReason": "supporting; windage not indicated as the primary missing term",
+      "acquisitionNote": "not downloaded"
+    },
+    {
+      "id": "DATA-08",
+      "data": "bathymetry / coastal circulation information",
+      "availability": "PARTIAL",
+      "repositoryState": "Natural Earth 1:10m coastline (STEP 15 E4) only; no bathymetry",
+      "priority": "P3",
+      "priorityReason": "no coastal signature for the offshore cohorts",
+      "acquisitionNote": "not downloaded"
+    }
+  ]
+}

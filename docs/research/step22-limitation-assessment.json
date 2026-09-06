@@ -1,0 +1,1067 @@
+{
+  "ruleId": "forcing-adequacy-requirement-analysis-step22",
+  "descriptiveOnly": true,
+  "frozenBaseline": {
+    "ocean": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X, 0.08 deg, 15 m, 3 h",
+    "wind": "NCEP-DOE Reanalysis 2, 10 m, 6 h (T62 Gaussian ~1.9 deg)",
+    "equation": "dX/dt = U_ocean + alpha * U_wind",
+    "alpha": 0.002,
+    "baselineAlpha": 0.0,
+    "integration": "RK4, 300 s substep, 900 s output, bilinear spatial, linear temporal, cos(phi) at every RK4 stage",
+    "excluded": [
+      "extrapolation",
+      "smoothing",
+      "zero-fill",
+      "land substitution",
+      "frame duplication"
+    ],
+    "gridScaleKm": {
+      "KE-1": {
+        "latitudeUsedDeg": 33.0,
+        "dxKm": 7.47,
+        "dyKm": 8.91
+      },
+      "KE-2": {
+        "latitudeUsedDeg": 35.0,
+        "dxKm": 7.3,
+        "dyKm": 8.91
+      },
+      "AG-1": {
+        "latitudeUsedDeg": -36.0,
+        "dxKm": 7.2,
+        "dyKm": 8.91
+      },
+      "AG-2": {
+        "latitudeUsedDeg": -37.0,
+        "dxKm": 7.11,
+        "dyKm": 8.91
+      },
+      "KE-H1": {
+        "latitudeUsedDeg": 35.0,
+        "dxKm": 7.3,
+        "dyKm": 8.91
+      },
+      "KE-H3": {
+        "latitudeUsedDeg": 34.5,
+        "dxKm": 7.34,
+        "dyKm": 8.91
+      }
+    },
+    "oceanFrameSeconds": 10800,
+    "windFrameSeconds": 21600,
+    "drifterType": "SVP/SVPB, 15 m drogue attached through the window (STEP 15 E1/E2)",
+    "observationSampling": "hourly (GDP hourly QC); model output 900 s; STEP 21 path ratios hourly/hourly"
+  },
+  "frozenEvidence": {
+    "A_temporalGrowth": {
+      "calibration": {
+        "E24_E48_E72_median_a002": [
+          25.126,
+          39.026,
+          59.055
+        ],
+        "growth48_24_median": 16.887,
+        "growth72_48_median": 34.476,
+        "ratio72_24_median": 3.089,
+        "classA": 17,
+        "n": 23
+      },
+      "holdout": {
+        "E24_E48_E72_median_a002": [
+          13.437,
+          22.142,
+          31.308
+        ],
+        "growth48_24_median": 6.406,
+        "growth72_48_median": 7.74,
+        "ratio72_24_median": 2.548,
+        "classA": 8,
+        "n": 12
+      }
+    },
+    "B_regionalEvent": {
+      "KE_E72_median_a002": 44.239,
+      "AG_E72_median_a002": 114.655,
+      "KE_obsDisp72_median": 70.905,
+      "AG_obsDisp72_median": 158.066,
+      "highestErrorCases": {
+        "calibration": [
+          {
+            "drifter_id": "127281",
+            "unit": "AG-2",
+            "E72_a002": 331.318,
+            "E72_a0": 330.76,
+            "obs_disp_72h": 352.788,
+            "model_disp_72h_a002": 23.912,
+            "bearing_diff_72h_a002": 25.252
+          },
+          {
+            "drifter_id": "127198",
+            "unit": "AG-1",
+            "E72_a002": 323.38,
+            "E72_a0": 321.997,
+            "obs_disp_72h": 308.466,
+            "model_disp_72h_a002": 210.616,
+            "bearing_diff_72h_a002": 74.418
+          },
+          {
+            "drifter_id": "127199",
+            "unit": "AG-1",
+            "E72_a002": 319.828,
+            "E72_a0": 318.506,
+            "obs_disp_72h": 308.854,
+            "model_disp_72h_a002": 209.404,
+            "bearing_diff_72h_a002": 73.416
+          }
+        ],
+        "holdout": [
+          {
+            "drifter_id": "98996",
+            "unit": "KE-H3",
+            "E72_a002": 90.497,
+            "E72_a0": 84.199,
+            "obs_disp_72h": 79.433,
+            "model_disp_72h_a002": 12.233,
+            "bearing_diff_72h_a002": 152.923
+          },
+          {
+            "drifter_id": "90150",
+            "unit": "KE-H1",
+            "E72_a002": 89.37,
+            "E72_a0": 99.98,
+            "obs_disp_72h": 112.667,
+            "model_disp_72h_a002": 125.215,
+            "bearing_diff_72h_a002": 43.741
+          },
+          {
+            "drifter_id": "98998",
+            "unit": "KE-H3",
+            "E72_a002": 58.451,
+            "E72_a0": 55.689,
+            "obs_disp_72h": 51.185,
+            "model_disp_72h_a002": 66.716,
+            "bearing_diff_72h_a002": 57.653
+          }
+        ]
+      },
+      "top1ShareOfSumE72": {
+        "calibration": 0.135,
+        "holdout": 0.195
+      }
+    },
+    "C_directional": {
+      "bearingDiff72_median_a002": {
+        "calibration": 36.208,
+        "holdout": 17.968
+      },
+      "eastOffset72_median_a002": {
+        "calibration": -18.39,
+        "holdout": -17.935
+      },
+      "westCount72_a002": {
+        "calibration": {
+          "east": 8,
+          "west": 15
+        },
+        "holdout": {
+          "east": 3,
+          "west": 9
+        }
+      },
+      "northOffset72_median_a002": {
+        "calibration": 19.269,
+        "holdout": 8.61,
+        "AG": 39.784,
+        "KE": -6.851
+      }
+    },
+    "D_alphaEffect": {
+      "delta_median": {
+        "calibration": [
+          0.224,
+          0.554,
+          0.789
+        ],
+        "holdout": [
+          -0.035,
+          0.686,
+          -0.017
+        ]
+      },
+      "holdoutWinsLosses72": {
+        "neg": 6,
+        "pos": 6
+      },
+      "step20HoldoutConclusion": "Calibration-selected alpha=0.002 did not show a consistent performance advantage over alpha=0 on the 12 evaluable KE holdout drifters."
+    },
+    "E_largeFailures": {
+      "calibration": [
+        {
+          "drifter_id": "127281",
+          "unit": "AG-2",
+          "E72_a002": 331.318,
+          "E72_a0": 330.76,
+          "obs_disp_72h": 352.788,
+          "model_disp_72h_a002": 23.912,
+          "bearing_diff_72h_a002": 25.252
+        },
+        {
+          "drifter_id": "127198",
+          "unit": "AG-1",
+          "E72_a002": 323.38,
+          "E72_a0": 321.997,
+          "obs_disp_72h": 308.466,
+          "model_disp_72h_a002": 210.616,
+          "bearing_diff_72h_a002": 74.418
+        },
+        {
+          "drifter_id": "127199",
+          "unit": "AG-1",
+          "E72_a002": 319.828,
+          "E72_a0": 318.506,
+          "obs_disp_72h": 308.854,
+          "model_disp_72h_a002": 209.404,
+          "bearing_diff_72h_a002": 73.416
+        }
+      ],
+      "holdout": [
+        {
+          "drifter_id": "98996",
+          "unit": "KE-H3",
+          "E72_a002": 90.497,
+          "E72_a0": 84.199,
+          "obs_disp_72h": 79.433,
+          "model_disp_72h_a002": 12.233,
+          "bearing_diff_72h_a002": 152.923
+        },
+        {
+          "drifter_id": "90150",
+          "unit": "KE-H1",
+          "E72_a002": 89.37,
+          "E72_a0": 99.98,
+          "obs_disp_72h": 112.667,
+          "model_disp_72h_a002": 125.215,
+          "bearing_diff_72h_a002": 43.741
+        },
+        {
+          "drifter_id": "98998",
+          "unit": "KE-H3",
+          "E72_a002": 58.451,
+          "E72_a0": 55.689,
+          "obs_disp_72h": 51.185,
+          "model_disp_72h_a002": 66.716,
+          "bearing_diff_72h_a002": 57.653
+        }
+      ]
+    },
+    "F_windageOrthogonal": {
+      "alphaSeparation72_median": {
+        "calibration": 3.511,
+        "holdout": 3.742
+      },
+      "towardObservation72_median": {
+        "calibration": -0.004,
+        "holdout": 0.016
+      }
+    },
+    "G_magnitude": {
+      "dispRatio72_median_a002": {
+        "calibration": 1.065,
+        "holdout": 1.149,
+        "AG": 0.847
+      },
+      "pathRatioHourly72_median_a002": {
+        "calibration": 0.933,
+        "holdout": 1.059,
+        "AG": 0.736
+      }
+    }
+  },
+  "limitations": [
+    {
+      "id": "L1",
+      "category": "Ocean spatial resolution",
+      "represents": "0.08 deg regular grid (dx 7.1–7.5 km, dy 8.9 km at the unit latitudes); bilinear interpolation; features narrower than ~2 cells (15–18 km) are not resolved",
+      "doesNotRepresent": "sub-grid fronts, narrow jets, eddy edges, coastal gradients finer than the grid; sub-grid turbulence",
+      "expectedSignature": "growing, region/event-dependent errors; large bearing differences where the drifter follows unresolved structure",
+      "evidence": {
+        "AG_vs_KE_E72": [
+          114.655,
+          44.239
+        ],
+        "highestErrorCases": {
+          "calibration": [
+            {
+              "drifter_id": "127281",
+              "unit": "AG-2",
+              "E72_a002": 331.318,
+              "E72_a0": 330.76,
+              "obs_disp_72h": 352.788,
+              "model_disp_72h_a002": 23.912,
+              "bearing_diff_72h_a002": 25.252
+            },
+            {
+              "drifter_id": "127198",
+              "unit": "AG-1",
+              "E72_a002": 323.38,
+              "E72_a0": 321.997,
+              "obs_disp_72h": 308.466,
+              "model_disp_72h_a002": 210.616,
+              "bearing_diff_72h_a002": 74.418
+            },
+            {
+              "drifter_id": "127199",
+              "unit": "AG-1",
+              "E72_a002": 319.828,
+              "E72_a0": 318.506,
+              "obs_disp_72h": 308.854,
+              "model_disp_72h_a002": 209.404,
+              "bearing_diff_72h_a002": 73.416
+            }
+          ],
+          "holdout": [
+            {
+              "drifter_id": "98996",
+              "unit": "KE-H3",
+              "E72_a002": 90.497,
+              "E72_a0": 84.199,
+              "obs_disp_72h": 79.433,
+              "model_disp_72h_a002": 12.233,
+              "bearing_diff_72h_a002": 152.923
+            },
+            {
+              "drifter_id": "90150",
+              "unit": "KE-H1",
+              "E72_a002": 89.37,
+              "E72_a0": 99.98,
+              "obs_disp_72h": 112.667,
+              "model_disp_72h_a002": 125.215,
+              "bearing_diff_72h_a002": 43.741
+            },
+            {
+              "drifter_id": "98998",
+              "unit": "KE-H3",
+              "E72_a002": 58.451,
+              "E72_a0": 55.689,
+              "obs_disp_72h": 51.185,
+              "model_disp_72h_a002": 66.716,
+              "bearing_diff_72h_a002": 57.653
+            }
+          ]
+        },
+        "bearingDiff72": {
+          "calibration": 36.208,
+          "holdout": 17.968
+        }
+      },
+      "evidenceStrength": "PLAUSIBLE_BUT_UNTESTED",
+      "reason": "regional/event-scale divergence is observed, but no higher-resolution comparison exists to attribute it to spatial resolution rather than to model dynamics, forcing timing or missing processes",
+      "additionalDataRequired": true,
+      "priority": "P1",
+      "priorityReason": "large regional/event errors are the dominant error mass; a resolution comparison is the most direct test, but it needs a product not in the repository"
+    },
+    {
+      "id": "L2",
+      "category": "Ocean temporal resolution",
+      "represents": "3 h instantaneous fields, linear in time; variability faster than ~6 h (2 frames) is not represented; inertial period at 33–37 deg is ~20 h and is nominally sampled",
+      "doesNotRepresent": "sub-3 h variability, tidal currents at the frame cadence, transient wind-driven surface response",
+      "expectedSignature": "steady error growth with time; not specific to region",
+      "evidence": {
+        "errorGrowth": {
+          "calibration": {
+            "E24_E48_E72_median_a002": [
+              25.126,
+              39.026,
+              59.055
+            ],
+            "growth48_24_median": 16.887,
+            "growth72_48_median": 34.476,
+            "ratio72_24_median": 3.089,
+            "classA": 17,
+            "n": 23
+          },
+          "holdout": {
+            "E24_E48_E72_median_a002": [
+              13.437,
+              22.142,
+              31.308
+            ],
+            "growth48_24_median": 6.406,
+            "growth72_48_median": 7.74,
+            "ratio72_24_median": 2.548,
+            "classA": 8,
+            "n": 12
+          }
+        }
+      },
+      "evidenceStrength": "SUPPORTED_INDICATION",
+      "reason": "monotonic growth in 25/35 drifters and 72 h/24 h median ratio 2.5–3.1 is consistent with unresolved temporal variability, but the same signature also arises from chaotic advection with resolved forcing; no higher-frequency forcing test exists",
+      "additionalDataRequired": true,
+      "priority": "P2",
+      "priorityReason": "growth is consistent with several limitations; the test is cheap (same product, hourly where available) but the discriminating power is uncertain"
+    },
+    {
+      "id": "L3",
+      "category": "Forcing depth / vertical representativeness",
+      "represents": "a single 15 m velocity applied to 15 m-drogued drifters",
+      "doesNotRepresent": "surface–15 m shear, mixed-layer shear, drogue slip, vertical structure below/above 15 m",
+      "expectedSignature": "systematic magnitude offset if the represented depth is wrong; wind-aligned residuals",
+      "evidence": {
+        "dispRatio72": {
+          "calibration": 1.065,
+          "holdout": 1.149,
+          "AG": 0.847
+        },
+        "pathRatio72": {
+          "calibration": 0.933,
+          "holdout": 1.059,
+          "AG": 0.736
+        }
+      },
+      "evidenceStrength": "INSUFFICIENT_EVIDENCE",
+      "reason": "median displacement ratios near 1.07–1.20 do not show a systematic magnitude offset; no multi-depth velocity or mixed-layer information exists in the repository to test depth representativeness",
+      "additionalDataRequired": true,
+      "priority": "P2",
+      "priorityReason": "multi-depth HYCOM levels are acquirable under the existing forcing protocol, making a depth-sensitivity test feasible, but current evidence does not point to depth"
+    },
+    {
+      "id": "L4",
+      "category": "Wind forcing resolution / windage representation",
+      "represents": "scalar windage alpha*U10 with 6 h, ~1.9 deg wind",
+      "doesNotRepresent": "sub-6 h wind variability, mesoscale wind structure, wind-driven surface layer (Ekman/shear), Stokes drift",
+      "expectedSignature": "if windage were the missing term, alpha>0 would move endpoints toward observations consistently",
+      "evidence": {
+        "alphaEffect": {
+          "delta_median": {
+            "calibration": [
+              0.224,
+              0.554,
+              0.789
+            ],
+            "holdout": [
+              -0.035,
+              0.686,
+              -0.017
+            ]
+          },
+          "holdoutWinsLosses72": {
+            "neg": 6,
+            "pos": 6
+          },
+          "step20HoldoutConclusion": "Calibration-selected alpha=0.002 did not show a consistent performance advantage over alpha=0 on the 12 evaluable KE holdout drifters."
+        },
+        "windageOrthogonal": {
+          "alphaSeparation72_median": {
+            "calibration": 3.511,
+            "holdout": 3.742
+          },
+          "towardObservation72_median": {
+            "calibration": -0.004,
+            "holdout": 0.016
+          }
+        }
+      },
+      "evidenceStrength": "SUPPORTED_INDICATION",
+      "reason": "the windage term exists and separates trajectories by ~3.5–3.7 km at 72 h, yet the paired error effect is small, unit-dependent (holdout 6/6) and the windage displacement is nearly orthogonal to the error vector (medians -0.004 / +0.016): a diagnostic indication that scalar windage alone does not address the observed error; wind resolution itself is untested",
+      "additionalDataRequired": true,
+      "priority": "P2",
+      "priorityReason": "further alpha tuning is not indicated; higher-resolution wind is a supporting test only"
+    },
+    {
+      "id": "L5",
+      "category": "Sub-grid / mesoscale / eddy processes",
+      "represents": "eddies resolved by the 0.08 deg reanalysis with data assimilation",
+      "doesNotRepresent": "eddies/meanders mispositioned or mistimed in the reanalysis, sub-mesoscale features",
+      "expectedSignature": "large, event-specific endpoint divergences with large bearing differences; region dependence",
+      "evidence": {
+        "highestErrorCases": {
+          "calibration": [
+            {
+              "drifter_id": "127281",
+              "unit": "AG-2",
+              "E72_a002": 331.318,
+              "E72_a0": 330.76,
+              "obs_disp_72h": 352.788,
+              "model_disp_72h_a002": 23.912,
+              "bearing_diff_72h_a002": 25.252
+            },
+            {
+              "drifter_id": "127198",
+              "unit": "AG-1",
+              "E72_a002": 323.38,
+              "E72_a0": 321.997,
+              "obs_disp_72h": 308.466,
+              "model_disp_72h_a002": 210.616,
+              "bearing_diff_72h_a002": 74.418
+            },
+            {
+              "drifter_id": "127199",
+              "unit": "AG-1",
+              "E72_a002": 319.828,
+              "E72_a0": 318.506,
+              "obs_disp_72h": 308.854,
+              "model_disp_72h_a002": 209.404,
+              "bearing_diff_72h_a002": 73.416
+            }
+          ],
+          "holdout": [
+            {
+              "drifter_id": "98996",
+              "unit": "KE-H3",
+              "E72_a002": 90.497,
+              "E72_a0": 84.199,
+              "obs_disp_72h": 79.433,
+              "model_disp_72h_a002": 12.233,
+              "bearing_diff_72h_a002": 152.923
+            },
+            {
+              "drifter_id": "90150",
+              "unit": "KE-H1",
+              "E72_a002": 89.37,
+              "E72_a0": 99.98,
+              "obs_disp_72h": 112.667,
+              "model_disp_72h_a002": 125.215,
+              "bearing_diff_72h_a002": 43.741
+            },
+            {
+              "drifter_id": "98998",
+              "unit": "KE-H3",
+              "E72_a002": 58.451,
+              "E72_a0": 55.689,
+              "obs_disp_72h": 51.185,
+              "model_disp_72h_a002": 66.716,
+              "bearing_diff_72h_a002": 57.653
+            }
+          ]
+        },
+        "regional": {
+          "KE_E72_median_a002": 44.239,
+          "AG_E72_median_a002": 114.655,
+          "KE_obsDisp72_median": 70.905,
+          "AG_obsDisp72_median": 158.066,
+          "highestErrorCases": {
+            "calibration": [
+              {
+                "drifter_id": "127281",
+                "unit": "AG-2",
+                "E72_a002": 331.318,
+                "E72_a0": 330.76,
+                "obs_disp_72h": 352.788,
+                "model_disp_72h_a002": 23.912,
+                "bearing_diff_72h_a002": 25.252
+              },
+              {
+                "drifter_id": "127198",
+                "unit": "AG-1",
+                "E72_a002": 323.38,
+                "E72_a0": 321.997,
+                "obs_disp_72h": 308.466,
+                "model_disp_72h_a002": 210.616,
+                "bearing_diff_72h_a002": 74.418
+              },
+              {
+                "drifter_id": "127199",
+                "unit": "AG-1",
+                "E72_a002": 319.828,
+                "E72_a0": 318.506,
+                "obs_disp_72h": 308.854,
+                "model_disp_72h_a002": 209.404,
+                "bearing_diff_72h_a002": 73.416
+              }
+            ],
+            "holdout": [
+              {
+                "drifter_id": "98996",
+                "unit": "KE-H3",
+                "E72_a002": 90.497,
+                "E72_a0": 84.199,
+                "obs_disp_72h": 79.433,
+                "model_disp_72h_a002": 12.233,
+                "bearing_diff_72h_a002": 152.923
+              },
+              {
+                "drifter_id": "90150",
+                "unit": "KE-H1",
+                "E72_a002": 89.37,
+                "E72_a0": 99.98,
+                "obs_disp_72h": 112.667,
+                "model_disp_72h_a002": 125.215,
+                "bearing_diff_72h_a002": 43.741
+              },
+              {
+                "drifter_id": "98998",
+                "unit": "KE-H3",
+                "E72_a002": 58.451,
+                "E72_a0": 55.689,
+                "obs_disp_72h": 51.185,
+                "model_disp_72h_a002": 66.716,
+                "bearing_diff_72h_a002": 57.653
+              }
+            ]
+          },
+          "top1ShareOfSumE72": {
+            "calibration": 0.135,
+            "holdout": 0.195
+          }
+        },
+        "top1Share": {
+          "calibration": 0.135,
+          "holdout": 0.195
+        }
+      },
+      "evidenceStrength": "SUPPORTED_INDICATION",
+      "reason": "the largest errors are individual high-displacement events (AG-2 353 km observed vs 24 km modeled; AG-1 pair with 73–74 deg bearing difference; KE-H3 98996 with 153 deg bearing difference) — consistent with mispositioned mesoscale structure, but no eddy attribution has been performed",
+      "additionalDataRequired": true,
+      "priority": "P1",
+      "priorityReason": "event-scale failures dominate the error mass; an independent surface-current/altimetry reference is required to test this"
+    },
+    {
+      "id": "L6",
+      "category": "Coastal / bathymetric interaction",
+      "represents": "provider wet mask only; cohort rule required > 100 km from the Natural Earth coastline at t0",
+      "doesNotRepresent": "bathymetric steering, shelf currents, nearshore circulation",
+      "expectedSignature": "errors concentrated near coasts/shelf edges",
+      "evidence": {
+        "cohortCoastRuleKm": 100,
+        "runtimeStatuses": "all 35 trajectories COMPLETED; 0 FORCING_UNAVAILABLE/STRANDED in STEP 20 runs"
+      },
+      "evidenceStrength": "INSUFFICIENT_EVIDENCE",
+      "reason": "all drifters started > 100 km offshore and no trajectory reached the land mask; no bathymetry is in the repository; no coastal signature is identifiable from the STEP 21 metrics",
+      "additionalDataRequired": true,
+      "priority": "P3",
+      "priorityReason": "no current indication; bathymetry would only matter for a future nearshore cohort"
+    },
+    {
+      "id": "L7",
+      "category": "Observation sampling / observation uncertainty",
+      "represents": "hourly GDP QC positions, exact-timestamp matching, 73 samples per 72 h window (gap <= 1 h)",
+      "doesNotRepresent": "sub-hourly drifter motion in path length; positional uncertainty of the GPS/Argos fix is not quantified in the repository",
+      "expectedSignature": "observed hourly path shorter than the true path; noise floor in 24 h errors",
+      "evidence": {
+        "obsPath72_median": {
+          "calibration": 148.494,
+          "holdout": 86.504
+        },
+        "modelHourlyVs900s": "STEP 21 path ratios hourly/hourly",
+        "E24_median": {
+          "calibration": 25.126,
+          "holdout": 13.437
+        }
+      },
+      "evidenceStrength": "PLAUSIBLE_BUT_UNTESTED",
+      "reason": "24 h median errors (13–25 km) are far above any plausible fix uncertainty, so observation error is unlikely to dominate, but no uncertainty metadata exists to bound it; sampling limits path-length comparisons only",
+      "additionalDataRequired": true,
+      "priority": "P2",
+      "priorityReason": "position-uncertainty and drogue metadata are needed to bound the noise floor and to interpret windage"
+    },
+    {
+      "id": "L8",
+      "category": "Missing physical processes (Stokes drift, mixed-layer processes, other surface transport)",
+      "represents": "Eulerian 15 m advection + scalar windage",
+      "doesNotRepresent": "Stokes drift, wave–current interaction, mixed-layer/Ekman shear, sub-grid turbulence (no diffusion), inertial oscillation response beyond the reanalysis",
+      "expectedSignature": "wind/wave-aligned residuals not captured by scalar windage; error growth",
+      "evidence": {
+        "windageOrthogonal": {
+          "alphaSeparation72_median": {
+            "calibration": 3.511,
+            "holdout": 3.742
+          },
+          "towardObservation72_median": {
+            "calibration": -0.004,
+            "holdout": 0.016
+          }
+        },
+        "alphaEffect": {
+          "delta_median": {
+            "calibration": [
+              0.224,
+              0.554,
+              0.789
+            ],
+            "holdout": [
+              -0.035,
+              0.686,
+              -0.017
+            ]
+          },
+          "holdoutWinsLosses72": {
+            "neg": 6,
+            "pos": 6
+          },
+          "step20HoldoutConclusion": "Calibration-selected alpha=0.002 did not show a consistent performance advantage over alpha=0 on the 12 evaluable KE holdout drifters."
+        }
+      },
+      "evidenceStrength": "PLAUSIBLE_BUT_UNTESTED",
+      "reason": "the near-orthogonality of the windage displacement to the error vector indicates that the missing transport is not along U10; Stokes drift is wave-direction dependent and untested; no wave data exist in the repository",
+      "additionalDataRequired": true,
+      "priority": "P1",
+      "priorityReason": "a wave/Stokes product enables a physically distinct transport term test without parameter tuning"
+    }
+  ],
+  "physicalProcessInventory": [
+    {
+      "term": "Stokes drift",
+      "inModel": false,
+      "relevance": "surface transport aligned with wave direction, distinct from U10",
+      "evidenceStrength": "PLAUSIBLE_BUT_UNTESTED",
+      "requiredData": [
+        "DATA-06"
+      ],
+      "testPriority": "P1"
+    },
+    {
+      "term": "surface windage / slip",
+      "inModel": true,
+      "relevance": "represented as alpha*U10 (alpha 0.002 locked); small, inconsistent paired effect",
+      "evidenceStrength": "SUPPORTED_INDICATION",
+      "requiredData": [
+        "DATA-05"
+      ],
+      "testPriority": "P3",
+      "note": "no further alpha search"
+    },
+    {
+      "term": "mixed-layer shear",
+      "inModel": false,
+      "relevance": "surface–15 m velocity difference",
+      "evidenceStrength": "INSUFFICIENT_EVIDENCE",
+      "requiredData": [
+        "DATA-04"
+      ],
+      "testPriority": "P2"
+    },
+    {
+      "term": "vertical shear (below drogue)",
+      "inModel": false,
+      "relevance": "drogue integrates a layer, not a level",
+      "evidenceStrength": "INSUFFICIENT_EVIDENCE",
+      "requiredData": [
+        "DATA-04",
+        "DATA-05"
+      ],
+      "testPriority": "P2"
+    },
+    {
+      "term": "mesoscale eddies (position/timing)",
+      "inModel": "partially (reanalysis-resolved)",
+      "relevance": "event-scale failures",
+      "evidenceStrength": "SUPPORTED_INDICATION",
+      "requiredData": [
+        "DATA-01",
+        "DATA-03"
+      ],
+      "testPriority": "P1"
+    },
+    {
+      "term": "sub-grid turbulence / diffusion",
+      "inModel": false,
+      "relevance": "deterministic model has no dispersion; single-trajectory comparison",
+      "evidenceStrength": "PLAUSIBLE_BUT_UNTESTED",
+      "requiredData": [
+        "DATA-01"
+      ],
+      "testPriority": "P2"
+    },
+    {
+      "term": "coastal / bathymetric effects",
+      "inModel": false,
+      "relevance": "not indicated for the offshore cohorts",
+      "evidenceStrength": "INSUFFICIENT_EVIDENCE",
+      "requiredData": [
+        "DATA-08"
+      ],
+      "testPriority": "P3"
+    },
+    {
+      "term": "wave–current interaction",
+      "inModel": false,
+      "relevance": "untested",
+      "evidenceStrength": "PLAUSIBLE_BUT_UNTESTED",
+      "requiredData": [
+        "DATA-06"
+      ],
+      "testPriority": "P2"
+    }
+  ],
+  "errorSignatureRequirementMap": [
+    {
+      "errorSignature": "temporal error growth (monotonic in 25/35; E72/E24 median 2.5–3.1)",
+      "possibleLimitation": "unresolved temporal variability (L2) and/or chaotic advection with resolved forcing",
+      "evidence": {
+        "calibration": {
+          "E24_E48_E72_median_a002": [
+            25.126,
+            39.026,
+            59.055
+          ],
+          "growth48_24_median": 16.887,
+          "growth72_48_median": 34.476,
+          "ratio72_24_median": 3.089,
+          "classA": 17,
+          "n": 23
+        },
+        "holdout": {
+          "E24_E48_E72_median_a002": [
+            13.437,
+            22.142,
+            31.308
+          ],
+          "growth48_24_median": 6.406,
+          "growth72_48_median": 7.74,
+          "ratio72_24_median": 2.548,
+          "classA": 8,
+          "n": 12
+        }
+      },
+      "confidence": "SUPPORTED_INDICATION",
+      "requiredData": [
+        "DATA-02"
+      ],
+      "candidateTest": "TEST-01"
+    },
+    {
+      "errorSignature": "directional error (west offset 24/35; bearing diff medians 18–45 deg)",
+      "possibleLimitation": "unresolved circulation / forcing bias (L1, L5)",
+      "evidence": {
+        "bearingDiff72_median_a002": {
+          "calibration": 36.208,
+          "holdout": 17.968
+        },
+        "eastOffset72_median_a002": {
+          "calibration": -18.39,
+          "holdout": -17.935
+        },
+        "westCount72_a002": {
+          "calibration": {
+            "east": 8,
+            "west": 15
+          },
+          "holdout": {
+            "east": 3,
+            "west": 9
+          }
+        },
+        "northOffset72_median_a002": {
+          "calibration": 19.269,
+          "holdout": 8.61,
+          "AG": 39.784,
+          "KE": -6.851
+        }
+      },
+      "confidence": "PLAUSIBLE_BUT_UNTESTED",
+      "requiredData": [
+        "DATA-01",
+        "DATA-03"
+      ],
+      "candidateTest": "TEST-03"
+    },
+    {
+      "errorSignature": "large displacement failure (AG-2 353 vs 24 km; AG-1 pair; KE-H3 98996)",
+      "possibleLimitation": "unresolved regional/event-scale circulation (L5, L1)",
+      "evidence": {
+        "calibration": [
+          {
+            "drifter_id": "127281",
+            "unit": "AG-2",
+            "E72_a002": 331.318,
+            "E72_a0": 330.76,
+            "obs_disp_72h": 352.788,
+            "model_disp_72h_a002": 23.912,
+            "bearing_diff_72h_a002": 25.252
+          },
+          {
+            "drifter_id": "127198",
+            "unit": "AG-1",
+            "E72_a002": 323.38,
+            "E72_a0": 321.997,
+            "obs_disp_72h": 308.466,
+            "model_disp_72h_a002": 210.616,
+            "bearing_diff_72h_a002": 74.418
+          },
+          {
+            "drifter_id": "127199",
+            "unit": "AG-1",
+            "E72_a002": 319.828,
+            "E72_a0": 318.506,
+            "obs_disp_72h": 308.854,
+            "model_disp_72h_a002": 209.404,
+            "bearing_diff_72h_a002": 73.416
+          }
+        ],
+        "holdout": [
+          {
+            "drifter_id": "98996",
+            "unit": "KE-H3",
+            "E72_a002": 90.497,
+            "E72_a0": 84.199,
+            "obs_disp_72h": 79.433,
+            "model_disp_72h_a002": 12.233,
+            "bearing_diff_72h_a002": 152.923
+          },
+          {
+            "drifter_id": "90150",
+            "unit": "KE-H1",
+            "E72_a002": 89.37,
+            "E72_a0": 99.98,
+            "obs_disp_72h": 112.667,
+            "model_disp_72h_a002": 125.215,
+            "bearing_diff_72h_a002": 43.741
+          },
+          {
+            "drifter_id": "98998",
+            "unit": "KE-H3",
+            "E72_a002": 58.451,
+            "E72_a0": 55.689,
+            "obs_disp_72h": 51.185,
+            "model_disp_72h_a002": 66.716,
+            "bearing_diff_72h_a002": 57.653
+          }
+        ]
+      },
+      "confidence": "SUPPORTED_INDICATION",
+      "requiredData": [
+        "DATA-01",
+        "DATA-03"
+      ],
+      "candidateTest": "TEST-07"
+    },
+    {
+      "errorSignature": "windage inconsistency (small paired effect, orthogonal to error)",
+      "possibleLimitation": "scalar windage alone insufficient (L4, L8)",
+      "evidence": {
+        "alphaSeparation72_median": {
+          "calibration": 3.511,
+          "holdout": 3.742
+        },
+        "towardObservation72_median": {
+          "calibration": -0.004,
+          "holdout": 0.016
+        }
+      },
+      "confidence": "SUPPORTED_INDICATION",
+      "requiredData": [
+        "DATA-06",
+        "DATA-05"
+      ],
+      "candidateTest": "TEST-06",
+      "note": "no immediate alpha tuning"
+    },
+    {
+      "errorSignature": "regional difference (AG E72 ~2.6x KE with 2.2x observed displacement)",
+      "possibleLimitation": "regime-dependent forcing skill (L1, L5)",
+      "evidence": {
+        "KE_E72_median_a002": 44.239,
+        "AG_E72_median_a002": 114.655,
+        "KE_obsDisp72_median": 70.905,
+        "AG_obsDisp72_median": 158.066,
+        "highestErrorCases": {
+          "calibration": [
+            {
+              "drifter_id": "127281",
+              "unit": "AG-2",
+              "E72_a002": 331.318,
+              "E72_a0": 330.76,
+              "obs_disp_72h": 352.788,
+              "model_disp_72h_a002": 23.912,
+              "bearing_diff_72h_a002": 25.252
+            },
+            {
+              "drifter_id": "127198",
+              "unit": "AG-1",
+              "E72_a002": 323.38,
+              "E72_a0": 321.997,
+              "obs_disp_72h": 308.466,
+              "model_disp_72h_a002": 210.616,
+              "bearing_diff_72h_a002": 74.418
+            },
+            {
+              "drifter_id": "127199",
+              "unit": "AG-1",
+              "E72_a002": 319.828,
+              "E72_a0": 318.506,
+              "obs_disp_72h": 308.854,
+              "model_disp_72h_a002": 209.404,
+              "bearing_diff_72h_a002": 73.416
+            }
+          ],
+          "holdout": [
+            {
+              "drifter_id": "98996",
+              "unit": "KE-H3",
+              "E72_a002": 90.497,
+              "E72_a0": 84.199,
+              "obs_disp_72h": 79.433,
+              "model_disp_72h_a002": 12.233,
+              "bearing_diff_72h_a002": 152.923
+            },
+            {
+              "drifter_id": "90150",
+              "unit": "KE-H1",
+              "E72_a002": 89.37,
+              "E72_a0": 99.98,
+              "obs_disp_72h": 112.667,
+              "model_disp_72h_a002": 125.215,
+              "bearing_diff_72h_a002": 43.741
+            },
+            {
+              "drifter_id": "98998",
+              "unit": "KE-H3",
+              "E72_a002": 58.451,
+              "E72_a0": 55.689,
+              "obs_disp_72h": 51.185,
+              "model_disp_72h_a002": 66.716,
+              "bearing_diff_72h_a002": 57.653
+            }
+          ]
+        },
+        "top1ShareOfSumE72": {
+          "calibration": 0.135,
+          "holdout": 0.195
+        }
+      },
+      "confidence": "SUPPORTED_INDICATION",
+      "requiredData": [
+        "DATA-01",
+        "DATA-03"
+      ],
+      "candidateTest": "TEST-07"
+    },
+    {
+      "errorSignature": "no systematic magnitude offset at the median (disp ratio 1.07–1.20)",
+      "possibleLimitation": "depth representativeness not indicated (L3)",
+      "evidence": {
+        "dispRatio72_median_a002": {
+          "calibration": 1.065,
+          "holdout": 1.149,
+          "AG": 0.847
+        },
+        "pathRatioHourly72_median_a002": {
+          "calibration": 0.933,
+          "holdout": 1.059,
+          "AG": 0.736
+        }
+      },
+      "confidence": "INSUFFICIENT_EVIDENCE",
+      "requiredData": [
+        "DATA-04"
+      ],
+      "candidateTest": "TEST-04"
+    }
+  ],
+  "evidenceLabels": [
+    "DIRECTLY_SUPPORTED",
+    "SUPPORTED_INDICATION",
+    "PLAUSIBLE_BUT_UNTESTED",
+    "INSUFFICIENT_EVIDENCE"
+  ],
+  "priorityDefinitions": {
+    "P0": "essential; next model improvement cannot proceed without it",
+    "P1": "high value; strongly recommended for the next validation",
+    "P2": "supporting",
+    "P3": "insufficient current evidence"
+  },
+  "causalAttribution": "NONE — every entry is a hypothesis / indication; wording restricted to possible / plausible / indication / hypothesis / requires testing",
+  "step20ConclusionUnchanged": true,
+  "step21ConclusionUnchanged": true,
+  "alphaUnchanged": 0.002
+}

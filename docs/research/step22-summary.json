@@ -1,0 +1,202 @@
+{
+  "ruleId": "forcing-adequacy-requirement-analysis-step22",
+  "status": "STEP22_REQUIREMENT_ANALYSIS_COMPLETE",
+  "interpretation": "DESCRIPTIVE / REQUIREMENT ANALYSIS ONLY",
+  "step20ConclusionUnchanged": true,
+  "step21ConclusionUnchanged": true,
+  "alphaUnchanged": 0.002,
+  "modelValidationClaim": false,
+  "causalAttribution": false,
+  "limitationSummary": [
+    {
+      "id": "L1",
+      "category": "Ocean spatial resolution",
+      "evidenceStrength": "PLAUSIBLE_BUT_UNTESTED",
+      "priority": "P1",
+      "additionalDataRequired": true
+    },
+    {
+      "id": "L2",
+      "category": "Ocean temporal resolution",
+      "evidenceStrength": "SUPPORTED_INDICATION",
+      "priority": "P2",
+      "additionalDataRequired": true
+    },
+    {
+      "id": "L3",
+      "category": "Forcing depth / vertical representativeness",
+      "evidenceStrength": "INSUFFICIENT_EVIDENCE",
+      "priority": "P2",
+      "additionalDataRequired": true
+    },
+    {
+      "id": "L4",
+      "category": "Wind forcing resolution / windage representation",
+      "evidenceStrength": "SUPPORTED_INDICATION",
+      "priority": "P2",
+      "additionalDataRequired": true
+    },
+    {
+      "id": "L5",
+      "category": "Sub-grid / mesoscale / eddy processes",
+      "evidenceStrength": "SUPPORTED_INDICATION",
+      "priority": "P1",
+      "additionalDataRequired": true
+    },
+    {
+      "id": "L6",
+      "category": "Coastal / bathymetric interaction",
+      "evidenceStrength": "INSUFFICIENT_EVIDENCE",
+      "priority": "P3",
+      "additionalDataRequired": true
+    },
+    {
+      "id": "L7",
+      "category": "Observation sampling / observation uncertainty",
+      "evidenceStrength": "PLAUSIBLE_BUT_UNTESTED",
+      "priority": "P2",
+      "additionalDataRequired": true
+    },
+    {
+      "id": "L8",
+      "category": "Missing physical processes (Stokes drift, mixed-layer processes, other surface transport)",
+      "evidenceStrength": "PLAUSIBLE_BUT_UNTESTED",
+      "priority": "P1",
+      "additionalDataRequired": true
+    }
+  ],
+  "priorityCounts": {
+    "P0": 0,
+    "P1": 3,
+    "P2": 4,
+    "P3": 1
+  },
+  "evidenceCounts": {
+    "DIRECTLY_SUPPORTED": 0,
+    "SUPPORTED_INDICATION": 3,
+    "PLAUSIBLE_BUT_UNTESTED": 3,
+    "INSUFFICIENT_EVIDENCE": 2
+  },
+  "dataRegister": [
+    {
+      "id": "DATA-01",
+      "availability": "UNAVAILABLE",
+      "priority": "P1"
+    },
+    {
+      "id": "DATA-02",
+      "availability": "UNAVAILABLE",
+      "priority": "P2"
+    },
+    {
+      "id": "DATA-03",
+      "availability": "UNAVAILABLE",
+      "priority": "P1"
+    },
+    {
+      "id": "DATA-04",
+      "availability": "UNAVAILABLE",
+      "priority": "P2"
+    },
+    {
+      "id": "DATA-05",
+      "availability": "PARTIAL",
+      "priority": "P2"
+    },
+    {
+      "id": "DATA-06",
+      "availability": "UNAVAILABLE",
+      "priority": "P1"
+    },
+    {
+      "id": "DATA-07",
+      "availability": "UNAVAILABLE",
+      "priority": "P2"
+    },
+    {
+      "id": "DATA-08",
+      "availability": "PARTIAL",
+      "priority": "P3"
+    }
+  ],
+  "tests": [
+    {
+      "id": "TEST-01",
+      "requiredData": [
+        "DATA-02"
+      ]
+    },
+    {
+      "id": "TEST-02",
+      "requiredData": [
+        "DATA-01"
+      ]
+    },
+    {
+      "id": "TEST-03",
+      "requiredData": [
+        "DATA-03"
+      ]
+    },
+    {
+      "id": "TEST-04",
+      "requiredData": [
+        "DATA-04"
+      ]
+    },
+    {
+      "id": "TEST-05",
+      "requiredData": [
+        "DATA-05"
+      ]
+    },
+    {
+      "id": "TEST-06",
+      "requiredData": [
+        "DATA-06"
+      ]
+    },
+    {
+      "id": "TEST-07",
+      "requiredData": [
+        "DATA-01",
+        "DATA-03"
+      ]
+    },
+    {
+      "id": "TEST-08",
+      "requiredData": [
+        "DATA-08"
+      ]
+    }
+  ],
+  "modelDevelopmentGate": {
+    "Q1_continueParameterTuning": {
+      "answer": "NOT INDICATED",
+      "basis": "STEP 20 holdout: no consistent advantage of alpha 0.002 over 0 (6/6 at 72 h); STEP 21: windage displacement nearly orthogonal to the error vector; alpha stays 0.002 and is not re-searched"
+    },
+    "Q2_newForcingOrDataRequired": {
+      "answer": "YES",
+      "basis": "every limitation with SUPPORTED_INDICATION (L2, L4, L5) or PLAUSIBLE_BUT_UNTESTED (L1, L7, L8) requires data not in the repository to be tested"
+    },
+    "Q3_highestPriorityData": {
+      "answer": [
+        "DATA-01",
+        "DATA-03",
+        "DATA-06"
+      ],
+      "basis": "P1: eddy-resolving currents and an independent surface-current reference address the dominant regional/event error mass; wave/Stokes data enable a physically distinct transport test"
+    },
+    "Q4_mandatoryBaselineForNextIteration": {
+      "answer": "frozen baseline (HYCOM 0.08 deg 15 m 3 h + NCEP-R2 10 m 6 h, alpha 0.002) AND alpha 0, on the same calibration (23) and holdout (12) sets with STEP 19/20 metrics",
+      "basis": "STEP 20 B-6 and STEP 21 records are the reference; any new term/forcing must be compared against both"
+    },
+    "overall": "INSUFFICIENT EVIDENCE to attribute the error to any single limitation; requirement analysis indicates data acquisition (P1 items) before further model development"
+  },
+  "counters": {
+    "modelRuns": 0,
+    "dataDownloads": 0,
+    "alphaCandidatesAdded": 0,
+    "testsExecuted": 0
+  }
+}

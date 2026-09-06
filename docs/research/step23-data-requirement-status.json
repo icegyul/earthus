@@ -1,0 +1,61 @@
+{
+  "ruleId": "p1-data-acquisition-quality-gate-step23",
+  "interpretation": "DATA ACQUISITION / QUALITY ASSESSMENT ONLY",
+  "modelRuns": 0,
+  "alphaChanged": false,
+  "step20_21_22Revised": false,
+  "DATA-01": {
+    "status": "DATASET_BLOCKED",
+    "reason": "credentials/toolbox absent (existence check only; nothing read or entered); STEP 17 BLOCKED/PENDING preserved",
+    "futureTestEligibility": "NOT ELIGIBLE (no data)"
+  },
+  "DATA-03": {
+    "jplOscar": {
+      "status": "DATASET_BLOCKED",
+      "windowsCovered": [],
+      "futureTestEligibility": "NOT ELIGIBLE"
+    },
+    "nesdisSSH1day": {
+      "status": "DATASET_BLOCKED",
+      "windowsCovered": [],
+      "futureTestEligibility": "NOT ELIGIBLE"
+    },
+    "erdTAgeo1day": {
+      "status": "PARTIAL_COVERAGE",
+      "windowsCovered": [
+        "KE-2",
+        "KE-H1",
+        "KE-H2",
+        "KE-H3"
+      ],
+      "futureTestEligibility": "ELIGIBLE for 2010 windows only (TEST-03), reference role"
+    },
+    "erdTAssh1day": {
+      "status": "PARTIAL_COVERAGE",
+      "windowsCovered": [
+        "KE-1",
+        "KE-2",
+        "KE-H1",
+        "KE-H2",
+        "KE-H3"
+      ],
+      "futureTestEligibility": "ELIGIBLE for 2010 windows only (TEST-03), reference role"
+    }
+  },
+  "DATA-06": {
+    "status": "LICENSE_STATUS_UNKNOWN",
+    "qualityStatusIgnoringLicense": "ACCEPTED_FOR_FUTURE_TEST",
+    "windowsCovered": [
+      "KE-1",
+      "KE-2",
+      "AG-1",
+      "AG-2",
+      "KE-H1",
+      "KE-H2",
+      "KE-H3"
+    ],
+    "futureTestEligibility": "quality sufficient for TEST-06 on covered windows; use conditional on license confirmation"
+  },
+  "KE-H2": "coverage recorded only; STEP 20 result not revised",
+  "bestDatasetSelected": false
+}

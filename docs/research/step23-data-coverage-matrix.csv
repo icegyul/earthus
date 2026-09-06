@@ -1,0 +1,43 @@
+dataset,product,windowId,spatial,temporal,missingFractionBox,releaseStencil,status
+DATA-01,GLORYS12V1,KE-1,N/A,N/A,N/A,N/A,DATASET_BLOCKED
+DATA-01,GLORYS12V1,KE-2,N/A,N/A,N/A,N/A,DATASET_BLOCKED
+DATA-01,GLORYS12V1,AG-1,N/A,N/A,N/A,N/A,DATASET_BLOCKED
+DATA-01,GLORYS12V1,AG-2,N/A,N/A,N/A,N/A,DATASET_BLOCKED
+DATA-01,GLORYS12V1,KE-H1,N/A,N/A,N/A,N/A,DATASET_BLOCKED
+DATA-01,GLORYS12V1,KE-H2,N/A,N/A,N/A,N/A,DATASET_BLOCKED
+DATA-01,GLORYS12V1,KE-H3,N/A,N/A,N/A,N/A,DATASET_BLOCKED
+DATA-03,jplOscar,KE-1,N/A,outside product period,N/A,N/A,metadata only
+DATA-03,jplOscar,KE-2,N/A,outside product period,N/A,N/A,metadata only
+DATA-03,jplOscar,AG-1,N/A,outside product period,N/A,N/A,metadata only
+DATA-03,jplOscar,AG-2,N/A,outside product period,N/A,N/A,metadata only
+DATA-03,jplOscar,KE-H1,N/A,outside product period,N/A,N/A,metadata only
+DATA-03,jplOscar,KE-H2,N/A,outside product period,N/A,N/A,metadata only
+DATA-03,jplOscar,KE-H3,N/A,outside product period,N/A,N/A,metadata only
+DATA-03,nesdisSSH1day,KE-1,N/A,outside product period,N/A,N/A,metadata only
+DATA-03,nesdisSSH1day,KE-2,N/A,outside product period,N/A,N/A,metadata only
+DATA-03,nesdisSSH1day,AG-1,N/A,outside product period,N/A,N/A,metadata only
+DATA-03,nesdisSSH1day,AG-2,N/A,outside product period,N/A,N/A,metadata only
+DATA-03,nesdisSSH1day,KE-H1,N/A,outside product period,N/A,N/A,metadata only
+DATA-03,nesdisSSH1day,KE-H2,N/A,outside product period,N/A,N/A,metadata only
+DATA-03,nesdisSSH1day,KE-H3,N/A,outside product period,N/A,N/A,metadata only
+DATA-03,erdTAgeo1day,KE-1,PASS,PASS bracket 2010-05-05T12:00:00Z..2010-05-19T12:00:00Z,0.077381,FAIL,NOT_COVERED
+DATA-03,erdTAgeo1day,KE-2,PASS,PASS bracket 2010-06-30T12:00:00Z..2010-07-07T12:00:00Z,0.191877,PASS,COVERED
+DATA-03,erdTAgeo1day,AG-1,no file,outside product period (no request issued),N/A,N/A,NOT_COVERED
+DATA-03,erdTAgeo1day,AG-2,no file,outside product period (no request issued),N/A,N/A,NOT_COVERED
+DATA-03,erdTAgeo1day,KE-H1,PASS,PASS bracket 2010-08-04T12:00:00Z..2010-08-18T12:00:00Z,0.184083,PASS,COVERED
+DATA-03,erdTAgeo1day,KE-H2,PASS,PASS bracket 2010-08-11T12:00:00Z..2010-08-25T12:00:00Z,0.1875,PASS,COVERED
+DATA-03,erdTAgeo1day,KE-H3,PASS,PASS bracket 2010-11-10T12:00:00Z..2010-11-24T12:00:00Z,0.119318,PASS,COVERED
+DATA-03,erdTAssh1day,KE-1,PASS,PASS bracket 2010-05-05T12:00:00Z..2010-05-19T12:00:00Z,0.0,PASS,COVERED
+DATA-03,erdTAssh1day,KE-2,PASS,PASS bracket 2010-06-30T12:00:00Z..2010-07-07T12:00:00Z,0.029132,PASS,COVERED
+DATA-03,erdTAssh1day,AG-1,no file,outside product period (no request issued),N/A,N/A,NOT_COVERED
+DATA-03,erdTAssh1day,AG-2,no file,outside product period (no request issued),N/A,N/A,NOT_COVERED
+DATA-03,erdTAssh1day,KE-H1,PASS,PASS bracket 2010-08-04T12:00:00Z..2010-08-18T12:00:00Z,0.025157,PASS,COVERED
+DATA-03,erdTAssh1day,KE-H2,PASS,PASS bracket 2010-08-11T12:00:00Z..2010-08-25T12:00:00Z,0.0,PASS,COVERED
+DATA-03,erdTAssh1day,KE-H3,PASS,PASS bracket 2010-11-10T12:00:00Z..2010-11-24T12:00:00Z,0.002273,PASS,COVERED
+DATA-06,WW3-GLOB-30M CFSR uss,KE-1,PASS,PASS,0.00119,PASS,COVERED
+DATA-06,WW3-GLOB-30M CFSR uss,KE-2,PASS,"PASS (spans 2 monthly files, contiguous)",,FAIL,COVERED
+DATA-06,WW3-GLOB-30M CFSR uss,AG-1,PASS,PASS,0.167411,PASS,COVERED
+DATA-06,WW3-GLOB-30M CFSR uss,AG-2,PASS,PASS,0.0,PASS,COVERED
+DATA-06,WW3-GLOB-30M CFSR uss,KE-H1,PASS,PASS,0.067925,PASS,COVERED
+DATA-06,WW3-GLOB-30M CFSR uss,KE-H2,PASS,PASS,0.0,PASS,COVERED
+DATA-06,WW3-GLOB-30M CFSR uss,KE-H3,PASS,PASS,0.006061,PASS,COVERED

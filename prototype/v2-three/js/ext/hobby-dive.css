@@ -1,0 +1,78 @@
+/* EARTHUS v2-three · ext · Dive · 심해 — intel 카드(372px) 안에 1.0 조종 화면을 세로로 다시 쌓는다.
+   /css/ocean-dive.css 는 전체 화면 절대배치 + 뷰포트 미디어쿼리라, 여기서 #intel-content 아래로
+   특이도를 높여 위치·폭·높이만 덮어쓴다. 색·글꼴·버튼 모양은 1.0 그대로. */
+
+#intel-content .hd-head .hd-actions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 10px}
+#intel-content .hd-head .hd-actions button,
+#intel-content .hd-head .hd-select select{font:inherit;font-size:10.5px;padding:5px 9px;border:1px solid rgba(87,169,207,.35);border-radius:7px;background:rgba(8,25,36,.6);color:#cfe8f5;cursor:pointer}
+#intel-content .hd-head .hd-actions button[disabled]{opacity:.45;cursor:default}
+#intel-content .hd-head .hd-select{display:flex;align-items:center;gap:5px;flex:1 1 100%;font-size:10px;color:var(--text-dim,#8fb0c8)}
+#intel-content .hd-head .hd-select select{flex:1;min-width:0;max-width:100%}
+#intel-content .hd-note{margin:8px 0 0;font-size:9.5px;line-height:1.5;color:var(--text-dim,#8fb0c8)}
+
+#intel-content .hd-scene{display:block;position:relative;padding:0;margin:0;background:none}
+#intel-content #oceanSceneIntro{padding:8px 0}
+#intel-content #oceanSceneIntro[hidden]{display:none}
+#intel-content #oceanSceneIntro .scene-kicker{margin:0 0 3px;font-size:9.5px;letter-spacing:.14em;color:#27bfff}
+#intel-content #oceanSceneIntro .scene-status{margin:0;font-size:10.5px;line-height:1.55}
+
+/* 조종 화면 본체 — 절대배치를 풀고 한 열 격자로 */
+#intel-content #diveExperience.od-dive{position:relative;inset:auto;top:auto;right:auto;bottom:auto;left:auto;width:auto;height:auto;min-height:0;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding:10px;border:1px solid rgba(87,169,207,.22);border-radius:12px;overflow:hidden}
+#intel-content #diveExperience.od-dive[hidden]{display:none}
+#intel-content .od-dive-bg,#intel-content .od-dive-shade,#intel-content .od-dive-grain{inset:0;top:0;right:0;bottom:0;left:0;height:auto}
+
+#intel-content .od-dive-header{position:relative;top:auto;right:auto;left:auto;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 8px;text-shadow:0 1px 8px #000}
+#intel-content .od-breadcrumb{grid-column:1/-1;min-height:0;gap:6px;font-size:9.5px;overflow:hidden;text-overflow:ellipsis}
+#intel-content .od-breadcrumb button{min-height:0;font-size:11px;letter-spacing:.2em;cursor:default}
+#intel-content .od-breadcrumb span:last-child{overflow:hidden;text-overflow:ellipsis}
+#intel-content .od-dive-title{position:static;width:auto;justify-items:start;padding-top:0;text-align:left;white-space:normal;transform:none}
+#intel-content .od-dive-title p{font-size:16px;letter-spacing:.16em}
+#intel-content .od-dive-title h2{font-size:11px!important}
+#intel-content .od-dive-utils{grid-column:2;grid-row:2;align-self:start}
+#intel-content .od-dive-utils button{width:34px;height:34px;font-size:14px}
+#intel-content .od-dive-utils button[data-dive-home]{display:none}          /* v2 에는 돌아갈 장면이 없다 */
+#intel-content .od-dive-utils button:nth-child(2){display:grid}
+
+#intel-content .od-locator{display:none}                                      /* 미니 지구는 카드 폭에 안 맞는다 */
+
+/* 수심계: 카드 폭 전체, 높이 ~320px */
+#intel-content .od-depth-rail{position:relative;top:auto;right:auto;bottom:auto;left:auto;width:100%;height:320px;min-height:320px}
+#intel-content #diveExperience #diveCanvas{width:100%;height:320px;min-height:320px}
+#intel-content #diveExperience #diveSlider{top:14px;bottom:14px;height:calc(100% - 28px)}
+#intel-content #diveExperience #diveReadout{right:6px;min-width:72px;font-size:20px}
+
+/* 문헌 생물 */
+#intel-content .od-specimen{position:relative;top:auto;right:auto;bottom:auto;left:auto;width:100%;height:auto;grid-template-rows:auto auto auto;padding:10px 12px}
+#intel-content .od-specimen-nav button{width:32px;height:32px;font-size:18px}
+#intel-content .od-specimen-media img{max-height:120px}
+#intel-content .od-specimen-copy h3{font-size:16px}
+#intel-content .od-specimen-copy p{font-size:10.5px}
+#intel-content .od-specimen-copy small{display:block;font-size:9px}
+#intel-content .od-specimen-evidence{min-height:36px;margin-top:8px}
+
+/* 현재 가상 수심·압력 */
+#intel-content .od-telemetry{position:relative;top:auto;right:auto;bottom:auto;left:auto;width:100%;min-height:0;padding:10px 12px}
+#intel-content .od-telemetry-head{margin-bottom:4px}
+#intel-content .od-telemetry-head span{font-size:11px;white-space:normal}
+#intel-content .od-telemetry-head strong{font-size:20px}
+#intel-content .od-telemetry dl{grid-template-columns:1fr auto;grid-template-rows:none}
+#intel-content .od-telemetry dt,#intel-content .od-telemetry dd{grid-column:auto;grid-row:auto;min-height:28px;padding:6px 6px;font-size:10.5px;text-align:left}
+#intel-content .od-telemetry dd{text-align:right}
+#intel-content .od-telemetry-source{display:flex;min-height:36px}
+
+/* 하강·상승 조종 */
+#intel-content .od-controls-wrap{position:relative;top:auto;right:auto;bottom:auto;left:auto;width:100%;transform:none}
+#intel-content .od-controls{width:100%;min-width:0;grid-template-columns:repeat(5,minmax(0,1fr));border-radius:12px}
+#intel-content .od-controls button{grid-template-columns:1fr;gap:3px;min-height:56px;padding:5px 2px;font-size:9.5px}
+#intel-content .od-controls button span{width:30px;height:30px;margin:auto;font-size:15px}
+#intel-content .od-controls button[data-dive-control="speed"] span{font-size:15px}
+#intel-content .od-motion-status{display:block;font-size:9px;text-align:center}
+
+/* 출처·도움말 서랍: 겹치지 않고 격자 맨 아래에 흐름으로 */
+#intel-content .od-dive-drawer{position:relative;inset:auto;top:auto;right:auto;bottom:auto;left:auto;width:100%;max-width:none;max-height:none;overflow:visible;padding:12px;border-radius:12px}
+#intel-content .od-dive-drawer[hidden]{display:none}
+#intel-content .od-drawer-head{margin-bottom:10px}
+#intel-content .od-drawer-head h3{font-size:14px}
+#intel-content .od-drawer-head button{width:32px;height:32px}
+#intel-content #diveExperience #obisSummary{margin-top:10px;padding:10px}
+#intel-content #diveExperience #diveComparisons a{min-height:36px;padding:8px 10px}

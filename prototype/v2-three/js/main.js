@@ -4,7 +4,7 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=59-information';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=60-ext';
 import { createSelectionGate } from './information-contract.js';
 const escUI = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 import { OceanSim } from './sim-ocean.js?v=6';
@@ -29,6 +29,9 @@ import { SkyView } from './sky-view.js?v=1';
 import { AetherusLink } from './aetherus-link.js?v=2';
 import { SeaFloor } from './seafloor.js?v=2';
 import { TravelScene } from './travel.js?v=3-information';
+// LAB · 취미 — 1.0 에서 옮겨온 확장 화면 런타임 (2026-09-06). 화면 모듈은 js/ext/ 에서 누를 때 받는다.
+import { ExtScene } from './ext-scene.js?v=1';
+let extScene = null;
 // 익명 이용 집계 — 개인 식별자를 보내지 않는다 (날짜·이벤트명·횟수만). usage.js 주석 참조.
 import { usage } from './usage.js?v=1';
 import { FlightRoute, routeCardHtml } from './route.js?v=4';
@@ -2680,6 +2683,15 @@ async function main() {
     }
     // 해구 표시가 켜져 있으면 해구선 우선 — 바다 클릭이 해상 실황으로 새지 않게
     // 여행 씬이 켜져 있으면 시군구 비콘 우선 — 근거 5줄 카드
+    // 확장 화면(취미)이 켜져 있으면 그 표시가 우선 — 해변·활공장·거북 같은 것을 눌렀을 때
+    const exPick = extScene && extScene.pick(lat, lon);
+    if (exPick) {
+      focus.clear();
+      lockedNote = { title: exPick.title, badge: exPick.badge || extScene.badge, body: exPick.body };
+      shell.showTab('now'); shell.openIntel(); shell.renderIntel(); shell.refreshFlyout();
+      extScene.afterRender();
+      return;
+    }
     const tv = travel && travel.pick(lat, lon);
     if (tv) {
       usage.track('travel.region_opened'); // 발견 → 상세 전환 (집계끼리 나눠 전환율을 구한다)
@@ -2894,6 +2906,27 @@ async function main() {
   window.__earthusLive = liveLayers;
   seafloor = new SeaFloor(scene, heightAtJs, dataBadge);
   travel = new TravelScene(scene, heightAtJs, () => uniforms.uExagger.value);
+  // 확장 화면(LAB·취미)이 쓰는 카메라 이동 — askTools.flyTo 와 같은 식 (경도는 가까운 쪽으로)
+  const extFly = (lat, lon, altKm) => {
+    orbit.targetPitch = THREE.MathUtils.degToRad(lat);
+    let ty = THREE.MathUtils.degToRad(lon);
+    ty += Math.round((orbit.yaw - ty) / (2 * Math.PI)) * 2 * Math.PI;
+    orbit.targetYaw = ty;
+    orbit.targetDist = Math.max(orbit.minDist, Math.min(orbit.maxDist, 1 + altKm / 6371));
+    orbit.glide = 1.2; orbit.autoRotate = false;
+  };
+  extScene = new ExtScene({
+    scene, THREE, heightAt: heightAtJs, getExagger: () => uniforms.uExagger.value, flyTo: extFly,
+    cam: () => ({
+      lat: THREE.MathUtils.radToDeg(orbit.pitch),
+      lon: ((THREE.MathUtils.radToDeg(orbit.yaw) + 180) % 360 + 360) % 360 - 180,
+      altKm: Math.max(0, (camera.position.length() - 1) * 6371),
+    }),
+    badge: dataBadge,
+    i18n: { get ko() { return i18n.ko; }, get lang() { return i18n.lang; } },
+    refresh: (title, html, badge) => { if (!lockedNote) return; lockedNote = { title, body: html, badge }; shell.renderIntel(); },
+  });
+  window.__earthusExt = extScene;
   window.__earthusTravel = travel;
   window.__earthusSeafloor = seafloor;
   const satLayer = new SatLayer(scene);
@@ -2949,6 +2982,11 @@ async function main() {
     group: () => travel.group,
     isOn: () => !!travel.mode,
     disposeAll: () => travel.clear && travel.clear(),
+  }));
+  registerAndMount('ext-scene', ENGINE_CLASS.DYNAMIC, overlayAdapter({
+    group: () => extScene.group,
+    isOn: () => !!extScene.active,
+    disposeAll: () => extScene.clear && extScene.clear(),
   }));
   registerAndMount('seafloor', ENGINE_CLASS.DYNAMIC, overlayAdapter({
     group: () => seafloor.group,
@@ -3301,6 +3339,7 @@ async function main() {
   // 레이어별 켜짐/꺼짐 등 셸 자체 상태 (신선도는 getLayerState가 정본으로 덧입힌다)
   const baseLayerState = (sid, l) => {
     const id = l.id;
+    if (sid === 'lab' || sid === 'hobby') return { on: !!extScene && extScene.active === `${sid}/${id}` };
     if (sid === 'travel') {
       if (id === 'related') return {};
       const on = !!(travel && travel.mode === id);
@@ -3607,6 +3646,20 @@ async function main() {
       if (layer.state === 'LOCKED') {
         const alternatives = {travel:'<button data-action="open-travel">여행지 목록 열기</button>',flight:'검색에서 출발 공항 &gt; 도착 공항을 입력하면 계산 항로와 공항 날씨를 볼 수 있습니다.',vessel:'<a href="https://mtis.komsa.or.kr/" target="_blank" rel="noopener noreferrer">공식 해양교통안전정보 확인</a>'};
         note(layer.name, `현재 이 기능은 제공하지 않습니다.<br/>${alternatives[layer.id] || '연결 가능한 자료를 준비 중입니다.'}<details><summary>제공 범위</summary>${layer.plan || ''}</details>`, 'UNAVAILABLE');
+        return;
+      }
+      // LAB · 취미 — ext-scene 이 모듈을 받아 켠다 (같은 항목을 다시 누르면 끈다)
+      if (sid === 'lab' || sid === 'hobby') {
+        note(layer.name, extScene.loadingCard(layer.name), 'LOADING');
+        extScene.open(key).then((st) => {
+          if (!current() || st.stale) return;
+          shell.refreshFlyout();
+          if (!st.on) { lockedNote = null; shell.renderIntel(); return; }
+          note(extScene.title, extScene.card(), extScene.badge);
+          extScene.afterRender();
+          if (st.point) extFly(st.point.lat, st.point.lon, st.point.altKm ?? 900);
+        }).catch((e) => note(layer.name, `자료를 불러오지 못했습니다 — 값을 생성하지 않습니다.<br/>${escUI((e && e.message) || e)}`, 'UNAVAILABLE'));
+        shell.refreshFlyout();
         return;
       }
       if (key === 'hazards/plates') {
@@ -3975,6 +4028,24 @@ async function main() {
         </div></div>`;
     },
     onAction: (action, ds, value) => {
+      // 확장 화면(LAB·취미) 카드의 버튼 — data-action="ext:…" 만 여기서 받는다
+      const ex = extScene ? extScene.handleAction(action, ds, value) : null;
+      if (ex) {
+        if (ex.reopen) {
+          const [s, l] = ex.reopen.split('/');
+          const sc = SCENES.find((x) => x.id === s); const ly = sc && sc.layers.find((x) => x.id === l);
+          if (sc && ly) { if (extScene.active === ex.reopen) extScene.close(); shell.setSelection(sc.id, ly.id); shellHooks.onLayerAction(sc.id, ly); }
+          return;
+        }
+        if (ex.pending) { const current = selectionGate.next(); Promise.resolve(ex.pending).then((u) => { if (current() && u && lockedNote) { lockedNote.body = u.html; shell.renderIntel(); extScene.afterRender(); } }).catch(() => {}); }
+        if (ex.html !== undefined) {
+          if (ex.inPlace && lockedNote) { lockedNote.body = ex.html; shell.renderIntel(); }
+          else showNote(extScene.title, ex.html, extScene.badge);
+          extScene.afterRender();
+        }
+        if (ex.point) extFly(ex.point.lat, ex.point.lon, ex.point.altKm ?? 900);
+        return;
+      }
       if(action==='my-map-center'||action==='my-coordinates'){
         const rawLat=action==='my-map-center'?String(THREE.MathUtils.radToDeg(orbit.pitch)):document.getElementById('my-lat')?.value;
         const rawLon=action==='my-map-center'?String(((THREE.MathUtils.radToDeg(orbit.yaw)+180)%360+360)%360-180):document.getElementById('my-lon')?.value;
@@ -5419,6 +5490,7 @@ async function main() {
     if (rotateEl && rotateEl.checked !== orbit.autoRotate) rotateEl.checked = orbit.autoRotate;
     seafloor.update(camera, altKm);
     travel.update(camera);
+    extScene.update(camera, altKm);
     buildLabelCandidates();
     shell.updateLabels(camera, altKm);
     synop.update(camera, altKm);

@@ -129,6 +129,41 @@ export const SCENES = [
       { id: 'related', name: '하나 더 — 연관 관광지 그래프', state: 'HISTORY', src: 'KTO 관광지별 연관 관광지 (TMAP 이동)', act: true },
     ],
   },
+  /* ── LAB · 취미 — 1.0(Cesium) 에서 옮겨온 두 묶음 (2026-09-06 받은 지시: v1 에서 숨기고 v2 로).
+     실제 화면은 js/ext/<이름>.js 모듈이고 js/ext-scene.js 가 켜고 끈다. 하나만 켜진다.
+     ⚠️ 여기 id 를 바꾸면 ext-scene.js 의 MODULES 표도 같이 바꿔야 한다. */
+  {
+    id: 'lab',
+    label: 'LAB',
+    glyph: 'L',
+    accent: '#8fd3c7',
+    layers: [
+      { id: 'today', name: '오늘의 지구 — 지금 가장 눈에 띄는 9곳', state: 'OBSERVED', src: '1.0 S3 격자 · NASA GIBS', act: true },
+      { id: 'charts', name: '자료 그래프 — 해수온·해빙·기온 시계열', state: 'OBSERVED', src: '1.0 S3 series', act: true },
+      { id: 'reports', name: '분석 보고서 — 태풍·현상 계산기 결과', state: 'DERIVED', src: '1.0 LAB 보고서 색인', act: true },
+      { id: 'crust', name: '땅의 움직임 — 한국·일본 GNSS 속도', state: 'OBSERVED', src: 'UNR MIDAS · 1.0 S3', act: true },
+      { id: 'requests', name: '개발 요청 — 제안하고 투표', state: 'LIVE', src: 'EARTHUS 회원 서버', act: true },
+    ],
+  },
+  {
+    id: 'hobby',
+    label: '취미',
+    glyph: '취',
+    accent: '#65d6e7',
+    layers: [
+      { id: 'surf', name: '서핑 — 이 해변에 너울이 들어오는가', state: 'MODEL', src: 'Open-Meteo Marine · 기상청 AWS · 해변 1,027곳', act: true },
+      { id: 'fishing', name: '낚시 — 물때와 안전 · 방파제 · 섬', state: 'MODEL', src: 'Open-Meteo Marine · 기상청 · 낚시터 1,009곳', act: true },
+      { id: 'vessel', name: '선박 — 공식 실시간 위치 · 여객선 운항', state: 'OFFICIAL_INFORMATION', src: '해양교통안전정보시스템(MTIS)', act: true },
+      { id: 'dive', name: 'Dive · 심해 — GEBCO 수심 기둥과 심해 생물', state: 'DERIVED', src: 'GEBCO 2026 · OBIS', act: true },
+      { id: 'trench', name: '해구 — 지구의 가장 깊은 바다', state: 'OBSERVED', src: 'GEBCO 2026 · SCUFN', act: true },
+      { id: 'turtle', name: '바다거북 — 방류된 거북이 지나간 길', state: 'HISTORY', src: '국립해양생물자원관 · 공공저작물 제4유형', act: true },
+      { id: 'seabird', name: '바닷새 — 조사한 해에 어디서 몇 마리를 셌나', state: 'HISTORY', src: '국립생물자원관', act: true },
+      { id: 'migbird', name: '철새 — 봄에 우리 동네 새가 어디로 갔나', state: 'HISTORY', src: '농림축산검역본부 · 공공누리', act: true },
+      { id: 'ecobird', name: '전국 조류 조사 — 어느 5km 칸에 기록이 있나', state: 'HISTORY', src: '국립생태원 EcoBank · data.go.kr', act: true },
+      { id: 'para', name: '패러글라이딩 — 바람 세기와 구름 밑면', state: 'MODEL', src: 'Open-Meteo · 활공장 26곳', act: true },
+      { id: 'mountain', name: '산 — 정상은 여기보다 얼마나 추운가', state: 'OFFICIAL_FORECAST', src: '기상청 산악예보 · AWS · 등산로 104봉', act: true },
+    ],
+  },
   {
     id: 'hazards',
     label: '재해',

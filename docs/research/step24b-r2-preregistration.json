@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "data06-license-evidence-scope-correction-step24b-r2",
+  "title": "STEP 24b r2 — validator revision (check 3 self-scan fix) and process-violation record",
+  "createdAtUTC": "2026-09-06T11:20:00Z",
+  "parentStep24bLockCommit": "15a81d25",
+  "parentStep24bOutputCommit": "c34c6d97",
+  "parentStep24Commit": "e0e7cfd2",
+  "processViolation": {
+    "what": "STEP 24b outputs were committed as c34c6d97 while the r1 validator (check_step24b_license_scope.py) reported FAIL on check 3; the commit command was not conditioned on the validator exit code",
+    "policyBreached": "STEP 24b §15 commit policy (validator PASS required before commit)",
+    "historyRewritten": false,
+    "commitKept": true,
+    "reason": "immutability rules forbid amend/rewrite; the premature commit is disclosed here and superseded by this r2 validation record"
+  },
+  "validatorDefect": {
+    "r1": "tools/research/check_step24b_license_scope.py",
+    "r1Sha256": "c1dfde0a079316aceb5e7fa8835db6b65225e07a4c5ea9838b8d6dd28ae37b07",
+    "defect": "check 3 scanned the evidence-index policy field forbiddenDocumentIds (which lists cmems_terms / cmems_stac_product as FORBIDDEN ids) as if it were evidence and produced a false FAIL; the DATA-06 evidence itself contains no Copernicus document",
+    "r2": "tools/research/check_step24b_license_scope_r2.py",
+    "r2Sha256": "d4825f077eede74829d827f8f8e8c1045267ec5522170dc41c99b74acf93d2e7",
+    "changeScope": "check 3 excludes the forbiddenDocumentIds declaration from the scan and asserts the declaration is present; no other check changed; assessment tool, evidence, outputs unchanged"
+  },
+  "unchangedOutputs": {
+    "step24b-license-evidence-scope-correction.json": "702493a0bfc61a48fb4d3d78d81d00e687b49d2199e011cac7ebffb44b5a4b69",
+    "step24b-license-status.json": "7f9a8b9983dd3849e852d31514b6b512ed12195457930c70a104f24dcf8807ef",
+    "step24b-evidence-index.json": "6f99a04d017b3dbbd4fe4c6c134a603de1b5b5e636231a0f78373acb4dfb3c62",
+    "step24b-summary.json": "162f266b78bde91c37c69c110154eb5182602c64e98d1e353b57f19ff7148925",
+    "step24b-run.json": "9a706f32e00757840d653df52865f5bc9d197204d1597a805c03a58214a3ef4d",
+    "step24b-evidence/index.json": "652215e8b1cce9e79883d9923b56f48bad91ca12e91805a8884f8adc869dd2b2"
+  },
+  "keywordFalsePositivesDisclosed": [
+    "ifremer_hindcast_readme#p3 — a filesystem 'permissions on main directories' line (category 'restriction'); not a usage restriction",
+    "ifremer_hindcast_readme_netcdf#p1 — 'works without a IDL licence' about a software tool (category 'license'); not a data license"
+  ],
+  "licenseDeterminationUnchanged": "LICENSE_UNKNOWN — no license, terms-of-use, redistribution, derived-data or citation statement applicable to the GLOB-30M CFSR hindcast exists in the eight IFREMER documents",
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0,
+  "alpha": 0.002,
+  "DATA-01": "CREDENTIALS_REQUIRED",
+  "DATA-03": "REFERENCE_ELIGIBLE_PARTIAL",
+  "lockedAtUTC": "2026-09-06T11:20:00Z"
+}

@@ -1,0 +1,2 @@
+55ffa70f6654563244589f81a7ac9a0c8063b1243a4af3aa5ca78b6c171c7d40  docs/research/step24b-r2-preregistration.json
+d4825f077eede74829d827f8f8e8c1045267ec5522170dc41c99b74acf93d2e7  tools/research/check_step24b_license_scope_r2.py

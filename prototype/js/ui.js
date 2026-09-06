@@ -235,6 +235,11 @@ export const sheet = {
       if (!m || m.kind !== 'launch') {
         import('./layers/launchtrack.js').then(({ launchTrack }) => launchTrack.clear()).catch(() => {});
       }
+      /* 지진·쓰나미 초점 표시도 마찬가지 — 다른 것을 고르거나 선택을 풀면 걷는다.
+         같은 사건을 다시 고른 경우는 그리는 쪽이 새로 그린다. */
+      if (!m || (m.kind !== 'quake' && m.kind !== 'tsunami')) {
+        import('./layers/eventfocus.js').then(({ eventFocus }) => eventFocus.clear()).catch(() => {});
+      }
       return m ? this.open(m) : this.close();
     });
   },
@@ -349,6 +354,8 @@ export const sheet = {
           addRow(rows, k, `<a href="${v}" target="_blank" rel="noopener">NWS ↗</a>`, true);
         } else addRow(rows, k, v);
       });
+      /* 무슨 발표인지 · 어디서 났는지 · 어디로 언제 퍼지는지 (2026-09-07 받은 지적) */
+      renderTsunamiStory(m._ts, rows);
       if (d.rows._note) rows.parentElement.appendChild(noteEl(d.rows._note));
       rows.parentElement.appendChild(safetyActions({ lat: m.lat, lon: m.lon }));
       box.classList.remove('down'); box.classList.add('up');
@@ -624,6 +631,9 @@ export const sheet = {
     }
     // 일본 지진이면 기관 대조 결과 (USGS vs 일본 기상청)
     if (m.kind === 'quake' && m.data?._jma) renderAgencyCheck(m.data._jma, rows);
+    /* 지진이면 "어디서 어떻게" 를 먼저 (2026-09-07 받은 지적) — 단층 카드보다 위에 온다.
+       ⚠️ 카드를 지금 만들어 두고 값만 나중에 채운다. 순서를 지키려면 이 방법뿐이다. */
+    if (m.kind === 'quake') renderQuakeStory(m, rows);
     // 지진이면 단층 메커니즘을 덧붙인다 (큰 지진에만 자료가 있다)
     if (m.kind === 'quake' && m.data?._detail) renderFault(m.data._detail, rows);
     Object.entries(m.data || {}).forEach(([k, v]) => {
@@ -682,6 +692,215 @@ function mdBold(t) {
 }
 
 /** 안내문 — ** 를 굵게 살린다 (mdBold 가 이스케이프한다) */
+/* ── 지진: 어디서 · 어떻게 (2026-09-07 받은 지적) ──────────────────────────────
+   받은 말 그대로: "쓰나미와 지진은 여기서 누르면 어디서 어떻게 진행되었다던지
+   그런 정보가 없어. 지구에 표시를 해줘."
+   ⚠️ 여기 숫자는 전부 USGS 값이다. 흔들림 세기도 느낀 사람 수도 우리가 만들지 않는다.
+   ⚠️ 산출되지 않은 것은 "없음"이 아니라 "산출되지 않았습니다"로 적는다. */
+async function renderQuakeStory(m, rows) {
+  const ko = i18n.lang === 'ko';
+  const box = el('div', 'qk-story');
+  box.innerHTML = `<div class="qk-t">${ko ? '어디서 · 어떻게' : 'Where and how'}</div>`
+    + `<div class="qk-load">${ko ? '미국 지질조사국 자료를 확인 중…' : 'Checking USGS detail…'}</div>`;
+  rows.parentElement.appendChild(box);
+
+  const { eventFocus } = await import('./layers/eventfocus.js');
+  const { quakeImpact, shakemapContours, mmiWord, depthWord, aftershocksNear } =
+    await import('./quake-detail.js');
+
+  const im = m.data?._detail ? await quakeImpact(m.data._detail) : null;
+  const cont = im?.shakemapUrl ? await shakemapContours(im.shakemapUrl) : null;
+  /* 이 시트가 아직 이 지진을 보고 있을 때만 그린다 — 사이에 다른 걸 고른 경우를 덮지 않는다. */
+  const drawn = store.selected?.id === m.id ? eventFocus.quake(m, cont) : { contours: 0 };
+
+  const depthKm = im?.depthKm != null ? im.depthKm
+    : (parseFloat(String(m.data?.[i18n.t.F.depth] ?? m.data?.['깊이'] ?? '')) || null);
+  const mm = mmiWord(im?.mmi);
+  const parts = [];
+
+  /* 한 문장 요약 — 규모·시각·자리·깊이 */
+  const when = m.data?._time ? i18n.rel(m.data._time) : null;
+  parts.push(`<p class="qk-lead">`
+    + (ko
+      ? `<b>${esc(m.name)}</b> 지진이 ${when ? `<b>${esc(when)}</b> ` : ''}`
+        + `${esc(im?.place || m.data?.[i18n.t.F.place] || m.data?.['위치'] || '')}에서 났습니다`
+        + `${depthKm != null ? ` · 진원 깊이 <b>${Math.round(depthKm)} km</b>` : ''}.`
+      : `<b>${esc(m.name)}</b> ${when ? `${esc(when)} ` : ''}`
+        + `at ${esc(im?.place || '')}${depthKm != null ? ` · depth <b>${Math.round(depthKm)} km</b>` : ''}.`)
+    + `</p>`);
+
+  const dw = depthWord(depthKm);
+  if (dw) parts.push(`<p class="qk-line">${esc(dw)}</p>`);
+
+  /* 흔들림 — ShakeMap 이 있을 때만. 없으면 없다고 적는다. */
+  if (mm) {
+    parts.push(`<p class="qk-line"><span class="qk-chip" style="background:${mm.color}"></span>`
+      + (ko
+        ? `가장 세게 흔들린 곳의 진도는 <b>${esc(mm.roman)}</b> — ${esc(mm.word)}. `
+          + `규모(M)가 지진의 크기라면, 진도는 <b>땅 위에서 느낀 세기</b>입니다.`
+        : `Peak intensity <b>${esc(mm.roman)}</b> — ${esc(mm.word)}. `
+          + `Magnitude is the size of the quake; intensity is how strongly it was felt.`)
+      + `</p>`);
+  }
+  if (drawn.contours > 0) {
+    parts.push(`<p class="qk-line qk-map">${ko
+      ? `지구에 <b>흔들림 등진도선 ${drawn.contours}줄</b>을 그렸습니다 — 안쪽으로 갈수록 세게 흔들린 곳이고, 선의 색은 미국 지질조사국 범례 그대로입니다.`
+      : `${drawn.contours} shaking contours are drawn on the globe — colours are the USGS ShakeMap legend.`}</p>`);
+  } else if (im) {
+    /* ⚠️ 상세 문서를 받았는데 ShakeMap 이 없는 경우에만 "산출되지 않았다"고 쓸 수 있다.
+       문서 자체를 못 받은 경우까지 이렇게 쓰면 없는 사실을 단정하는 것이 된다. */
+    parts.push(`<p class="qk-line qk-map">${ko
+      ? '이 지진은 아직 <b>흔들림 지도(ShakeMap)</b>가 산출되지 않았습니다. 지구에는 진앙만 찍었습니다 — 작은 지진과 관측소가 드문 바다에서는 흔한 일입니다.'
+      : 'No ShakeMap has been produced for this quake yet — only the epicentre is marked.'}</p>`);
+  } else {
+    parts.push(`<p class="qk-line qk-map">${ko
+      ? '지구에는 <b>진앙</b>을 찍었습니다. 흔들림 지도는 아래 사유로 확인하지 못했습니다.'
+      : 'The epicentre is marked on the globe; the shaking map could not be checked (see below).'}</p>`);
+  }
+
+  /* 사람 신고 — 0 과 '모름'을 구분한다. */
+  if (im && im.felt != null) {
+    parts.push(`<p class="qk-line">${ko
+      ? `직접 느꼈다고 신고한 사람은 <b>${im.felt.toLocaleString('ko-KR')}명</b>입니다(USGS 시민 신고).`
+      : `<b>${im.felt.toLocaleString()}</b> people reported feeling it (USGS Did You Feel It).`}</p>`);
+  } else if (im) {
+    parts.push(`<p class="qk-line">${ko
+      ? '느꼈다는 시민 신고는 아직 들어오지 않았습니다 — 사람이 살지 않는 바다에서는 신고가 없는 것이 보통입니다.'
+      : 'No citizen reports yet — normal for offshore events.'}</p>`);
+  }
+
+  /* 예상 피해 등급(PAGER) */
+  if (im?.alert?.ko) {
+    parts.push(`<p class="qk-line"><span class="qk-chip" style="background:${im.alert.color}"></span>`
+      + (ko ? `예상 피해 등급 <b>${esc(im.alert.ko)}</b> — 미국 지질조사국 PAGER 가 인구와 건물을 넣어 추정한 값입니다.`
+            : `Estimated impact <b>${esc(im.alert.en)}</b> (USGS PAGER).`) + `</p>`);
+  }
+
+  /* 쓰나미 표시 여부 — 이건 단정할 값이 아니라 USGS 플래그다. */
+  if (im) {
+    parts.push(`<p class="qk-line">${im.tsunamiFlag
+      ? (ko ? '미국 지질조사국이 <b>쓰나미 관련 사건</b>으로 표시했습니다. 실제 경보는 쓰나미 경보센터 발표를 따릅니다.'
+            : 'USGS flagged this as tsunami-related; follow the tsunami centres for actual alerts.')
+      : (ko ? '쓰나미 관련 표시는 붙어 있지 않습니다.' : 'Not flagged as tsunami-related.')}</p>`);
+  }
+
+  /* 여진 — 우리가 이미 받아 둔 목록 안에서 센 것이다. 그 한계를 함께 적는다. */
+  try {
+    const { quakes } = await import('./layers/hazard.js');
+    const af = aftershocksNear(quakes.layer?.items || [], m);
+    if (af) {
+      parts.push(`<p class="qk-line">${ko
+        ? (af.count
+          ? `그 뒤 반경 ${af.radiusKm} km 안에서 <b>${af.count}건</b>이 더 기록됐습니다(가장 큰 것 M ${af.maxMag.toFixed(1)}). `
+            + '우리가 받아 둔 최근 목록 안에서 센 수라, 실제 여진은 이보다 많습니다.'
+          : `우리가 받아 둔 최근 목록 안에서는 그 뒤 반경 ${af.radiusKm} km 에 기록된 지진이 없습니다.`)
+        : (af.count
+          ? `<b>${af.count}</b> more quakes within ${af.radiusKm} km afterwards (largest M ${af.maxMag.toFixed(1)}), counted in our recent list only.`
+          : `No later quakes within ${af.radiusKm} km in our recent list.`)}</p>`);
+    }
+  } catch (_) { /* 목록이 없으면 여진 줄만 빠진다 */ }
+
+  if (im?.status) {
+    parts.push(`<p class="qk-src">${ko
+      ? `출처 · 미국 지질조사국(USGS) · ${im.status === 'reviewed' ? '사람이 검토한 값' : '자동 산출값(검토 전이라 바뀔 수 있음)'}`
+      : `Source · USGS · ${im.status === 'reviewed' ? 'reviewed' : 'automatic, may change'}`}</p>`);
+  } else if (!im) {
+    parts.push(`<p class="qk-line">${ko
+      ? (m.data?._detail
+        ? '미국 지질조사국 상세 자료를 받지 못했습니다 — 흔들림·시민 신고·피해 등급은 <b>확인 불가</b>입니다. 아래 원문 링크에서 직접 확인하세요.'
+        : '이 지진에는 상세 문서 주소가 없어 흔들림·시민 신고·피해 등급을 <b>확인할 수 없습니다.</b>')
+      : 'Detail document unavailable — shaking, citizen reports and impact cannot be shown here.'}</p>`);
+  }
+
+  box.innerHTML = `<div class="qk-t">${ko ? '어디서 · 어떻게' : 'Where and how'}</div>` + parts.join('');
+}
+
+/* ── 쓰나미: 무슨 발표인가 · 어디서 · 어디로 언제 (2026-09-07 받은 지적) ────────
+   ⚠️ 등급 뜻풀이는 미국 국립기상청이 공표한 정의를 옮긴 것이다. 우리가 새로 정하지 않는다.
+   ⚠️ 도달시간은 우리 계산본(SIMULATION_ONLY)이고 공식 예보가 아니다. 대상이 아닌 발표에는
+      "계산 중"이 아니라 "대상이 아니다"라고 적는다. */
+const TS_MEAN = {
+  4: { ko: '위험한 쓰나미가 예상되거나 이미 진행 중이라는 뜻입니다. 해안을 떠나 높은 곳으로 대피하라는 단계입니다.',
+       en: 'A dangerous tsunami is expected or under way — move inland and to high ground.' },
+  3: { ko: '해안에서 강한 물살과 파도가 예상된다는 뜻입니다. 바다와 해변에서 나오라는 단계이고, 육지 대피 단계는 아닙니다.',
+       en: 'Strong currents and waves are expected — stay out of the water and off beaches.' },
+  2: { ko: '아직 확실하지 않지만 쓰나미가 있을 수 있어 지켜보는 단계입니다. 다음 발표를 기다리라는 뜻입니다.',
+       en: 'A tsunami is possible but not confirmed — stay tuned for the next bulletin.' },
+  1: { ko: '지진은 있었지만 쓰나미 위험은 없거나 매우 낮다는 알림입니다. 대피 지시가 아닙니다.',
+       en: 'An earthquake occurred but there is no or very little tsunami threat — not an evacuation notice.' },
+};
+
+async function renderTsunamiStory(t, rows) {
+  const ko = i18n.lang === 'ko';
+  const box = el('div', 'ts-story');
+  box.innerHTML = `<div class="qk-t">${ko ? '무슨 발표인가 · 어디로 퍼지나' : 'What this bulletin means'}</div>`
+    + `<div class="qk-load">${ko ? '도달시간 계산본을 확인 중…' : 'Checking travel-time model…'}</div>`;
+  rows.parentElement.appendChild(box);
+
+  const parts = [];
+  const mean = TS_MEAN[t.level?.rank];
+  if (mean) parts.push(`<p class="qk-lead">${esc(ko ? mean.ko : mean.en)}</p>`);
+
+  /* 언제 나온 발표인가 — 목록에서는 기관 이름만 보였다. 며칠 전 발표를 지금 것처럼 두지 않는다. */
+  const sent = Date.parse(t.sent || '') || null;
+  if (sent) {
+    const days = (Date.now() - sent) / 86_400_000;
+    parts.push(`<p class="qk-line">${ko
+      ? `발표 시각은 <b>${new Date(sent).toISOString().slice(0, 16).replace('T', ' ')} UTC</b>`
+        + ` (${esc(i18n.rel(sent))})입니다.`
+        + (days > 1 ? ' 이미 지난 발표이며, 지금 진행 중인 상황이 아닙니다.' : '')
+      : `Issued ${new Date(sent).toISOString().slice(0, 16).replace('T', ' ')} UTC (${esc(i18n.rel(sent))}).`
+        + (days > 1 ? ' This is a past bulletin, not an ongoing situation.' : '')}</p>`);
+  }
+
+  if (t.lat != null) {
+    parts.push(`<p class="qk-line">${ko
+      ? `발표가 가리키는 자리는 <b>${t.lat.toFixed(2)}°, ${t.lon.toFixed(2)}°</b>`
+        + `${t.area ? ` · ${esc(String(t.area).split(';')[0])}` : ''}`
+        + `${t.magnitude != null ? ` · 원인 지진 <b>M ${Number(t.magnitude).toFixed(1)}</b>` : ''}입니다.`
+      : `Location <b>${t.lat.toFixed(2)}, ${t.lon.toFixed(2)}</b>`
+        + `${t.magnitude != null ? ` · source quake <b>M ${Number(t.magnitude).toFixed(1)}</b>` : ''}.`}</p>`);
+  }
+
+  const { eventFocus } = await import('./layers/eventfocus.js');
+  const { etaFor, soonest } = await import('./tsunami-eta.js');
+  const res = await etaFor(t);
+  const eta = res.state === 'found' ? res.eta : null;
+  const drawn = store.selected?.id === t.id || store.selected?._ts?.id === t.id
+    ? eventFocus.tsunami(t, eta) : { isochrones: 0, stations: 0 };
+
+  if (eta) {
+    const first = soonest(eta, 5);
+    parts.push(`<p class="qk-line qk-map">${ko
+      ? `지구에 <b>도달 등시선</b>을 그렸습니다 — 같은 색 선은 첫 파가 같은 시각에 닿는 자리입니다.`
+        + (drawn.stations ? ` 연안 ${drawn.stations}곳에는 몇 분 뒤인지 적었습니다.` : '')
+      : 'Travel-time isochrones are drawn on the globe — each line is where the first wave arrives at the same time.'}</p>`);
+    if (first.length) {
+      parts.push('<div class="ts-eta">' + first.map(s =>
+        `<div class="ts-eta-row"><b>${esc(s.name)}</b><em>${ko ? `${Math.round(s.etaMin)}분 뒤` : `${Math.round(s.etaMin)} min`}</em></div>`
+      ).join('') + '</div>');
+    }
+    parts.push(`<p class="qk-warn">${ko
+      ? '<b>이 도달시간은 공식 예보가 아닙니다.</b> 우리가 수심으로 계산한 물리 근사이고(장파 근사), 파고·침수·피해를 뜻하지 않습니다. 대피는 기상청·PTWC 원문 지시만 따르세요.'
+      : '<b>Simulation only.</b> Physics approximation from bathymetry — not a forecast, not wave height. Follow official agencies.'}</p>`);
+  } else if (res.state === 'unavailable') {
+    parts.push(`<p class="qk-line qk-map">${ko
+      ? '도달시간 계산본을 <b>받지 못했습니다</b> — 지구에는 발표 지점만 표시했습니다.'
+      : 'Travel-time model could not be loaded — only the bulletin location is marked.'}</p>`);
+  } else {
+    parts.push(`<p class="qk-line qk-map">${ko
+      ? '이 발표는 도달시간 <b>계산 대상이 아닙니다</b>. 지구에는 발표 지점'
+        + (t.polygon?.length ? '과 경보 구역을' : '을') + ' 표시했습니다.'
+      : 'This bulletin is outside the travel-time model scope — the location is marked on the globe.'}</p>`);
+    if (res.rule) {
+      parts.push(`<p class="qk-src">${ko ? '계산 대상 · ' : 'Model scope · '}${esc(res.rule)}</p>`);
+    }
+  }
+
+  box.innerHTML = `<div class="qk-t">${ko ? '무슨 발표인가 · 어디로 퍼지나' : 'What this bulletin means'}</div>`
+    + parts.join('');
+}
+
 function noteEl(text) {
   const p = el('p', 'sheet-note');
   p.innerHTML = mdBold(text);
@@ -1623,6 +1842,8 @@ const DYNAMIC_BLOCKS = [
   '.sat-img',       // 위성 개념도
   '.passes',        // 통과 예보
   '.fault',         // 단층 메커니즘
+  '.qk-story',      // 지진: 어디서 · 어떻게
+  '.ts-story',      // 쓰나미: 무슨 발표인가 · 어디로 퍼지나
   '.place-line',    // 지명 줄
   '.official',      // 공식 기관 링크
   '.live',          // 라이브 임베드

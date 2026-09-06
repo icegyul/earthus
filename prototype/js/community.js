@@ -32,10 +32,16 @@ export async function warnings(limit = 30) {
     const { tsunami } = await import('./layers/tsunami.js');
     (tsunami.list || []).forEach(t => push({
       id: `ts-${t.id}`, kind: 'tsunami',
-      badge: ko ? '쓰나미' : 'Tsunami', severity: 3,
+      badge: ko ? '쓰나미' : 'Tsunami',
+      /* ⚠️ 등급을 무시하고 전부 최고 위험으로 두면 안 된다 — '쓰나미 정보'는 발표 기관이
+         "위험 없음"을 알리는 단계다. 그걸 며칠이 지나도 목록 맨 위에 두면, 진짜 경보와
+         구분이 사라진다. 기관이 매긴 rank 를 그대로 쓴다 (경보·주의보 4·3 은 그대로 최상단). */
+      severity: t.level.rank >= 3 ? 3 : t.level.rank === 2 ? 2 : 1,
       title: t.level[i18n.lang] || t.level.ko,
       sub: (t.area || '').split(';')[0],
-      meta: t.sourceName || 'NWS',
+      /* ⚠️ 여기엔 기관 이름만 있었다 — 언제 나온 발표인지 화면 어디에도 없었다.
+         (받은 지적: "어디서 어떻게 진행되었다던지 그런 정보가 없어") */
+      meta: t.sent ? `${i18n.rel(Date.parse(t.sent))} · ${t.sourceName || 'NWS'}` : (t.sourceName || 'NWS'),
       at: Date.parse(t.sent) || Date.now(), lat: t.lat, lon: t.lon,
       select: { id: t.id, kind: 'tsunami', name: t.level[i18n.lang] || t.level.ko,
                 lat: t.lat, lon: t.lon, _ts: t },

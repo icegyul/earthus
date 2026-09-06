@@ -384,7 +384,12 @@ export const eventPanel = {
          <div class="fd-sub">${esc(it.sub)}</div>`;
       card.onclick = () => {
         $('#eventSheet').classList.remove('up');
-        if (it.lat != null && it.lon != null) flyTo(it.lon, it.lat, 2_400_000);
+        /* 높이를 사건에 맞춘다 (2026-09-07 받은 지적: "지구에 표시를 해줘").
+           지진의 흔들림 등진도선은 200 km 안팎이라 2,400 km 에서는 점으로 보인다.
+           쓰나미 등시선은 반대로 대양을 가로지르므로 멀리서 봐야 한다. */
+        const h = it.kind === 'quake' ? 1_100_000
+          : it.kind === 'tsunami' ? 4_500_000 : 2_400_000;
+        if (it.lat != null && it.lon != null) flyTo(it.lon, it.lat, h);
         if (it.select) store.select(it.select);
       };
       body.appendChild(card);

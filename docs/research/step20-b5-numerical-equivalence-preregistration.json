@@ -1,0 +1,196 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "revisionId": "step20-b5-numerical-equivalence-revision",
+  "parentRuleId": "model-protocol-step20-generalization-parameter-validation",
+  "supersedes": null,
+  "ancestry": [
+    "STEP20 155995dd",
+    "selected-alpha 73fafffb",
+    "B-3 forcing resolution 9113e8b5",
+    "B-4 segmentation gate record 869bc664",
+    "B-5 numerical equivalence revision (this)"
+  ],
+  "protocolDocument": "docs/research/step20-b5-numerical-equivalence-protocol.md",
+  "protocolDocumentSha256": "a61140347320519b623eeb382d18470a0759d4e51597c4d2896730889a737f42",
+  "selectionRuleDocument": "docs/research/step20-b5-numerical-equivalence-selection-rule.json",
+  "selectionRuleSha256": "dd3916b840b921165771c022e29db5b72b3a26769775503044fef5c004cc7595",
+  "createdAtUTC": "2026-09-06T07:55:00Z",
+  "gitCommitAtDesign": "869bc664",
+  "authorProcess": "Claude Code session (Research Intelligence PHASE 2, STEP 20 Phase B-5) — revision preregistration only; 0 model runs, 0 holdout execution",
+  "immutabilityCheck": {
+    "step17LockCommit": "551668ef",
+    "step18LockCommit": "d505cc5e",
+    "step18bLockCommit": "5b9567e5",
+    "step19LockCommit": "5f27dc2d",
+    "step20LockCommit": "155995dd",
+    "selectedAlphaLockCommit": "73fafffb",
+    "b3RevisionCommit": "9113e8b5",
+    "b4GateCommit": "869bc664",
+    "gateToolCommit": "96abb29d",
+    "b4Gate": "9e3d3dd9e98287a3a0d06a8a8fe190d5189f595cf6b81055d6e41d30e2aaed02",
+    "gateTool": "b9ade2787658098c5f0c9b83c37ff79c7c4584af0b0374cef828a52d669a6892",
+    "segmentedModule": "8f451b420ef2618552ca588836d97d9f1a893e71eea16a5d3d6041c206341d0c",
+    "b3Protocol": "b7a2ad2309553c05f261598773df7ca5295a8dcd92ef76fd3467e4d1787ef466",
+    "b3Preregistration": "c4348d8b3c306df2f8661f26a72e8a42261fbfabac2c606115b716d059874095",
+    "b3SelectionRule": "87f7750bd3f95089402da565a8801677955f2e078c8616905752bef9e17e9126",
+    "step20Protocol": "65b004589570e7e409201e82c9388b17ec53002c4b31282112056d005baabb00",
+    "step20Preregistration": "1e4ed8c1d004b00812c0710fd3df32c8a6c7537ff5287474a4c0a3e8ae33cae4",
+    "step20SelectionRule": "5d980be74fbeb752160143c2e44ecb6611f01f21e94ea528908fc5867d9b46d7",
+    "selectedAlphaContent": "27e0c940a4beed5b6a1068b83856ba1711300f91b45905f93b1de5c5bfccebc3",
+    "selectedAlphaFile": "68e43a0f91e3a6bd81427399adbe2cf8a7543d85cf0249d4926f3df093649efd",
+    "calibrationManifest": "41ca439ec6540fd98b3c9ecf5c74af7afdd8731e94bea5d33bfac3397afe8498",
+    "existingLockedFileMutation": 0,
+    "result": "PASS"
+  },
+  "reason": "B-4 segmentation gate failed because alpha=0.002 segmented execution differed from the single-reader reference at the float64 last-bit level; observed maximum 5.684e-14 degrees longitude",
+  "b4GateRecord": {
+    "file": "docs/research/step20-b4-segmentation-gate.json",
+    "sha256": "9e3d3dd9e98287a3a0d06a8a8fe190d5189f595cf6b81055d6e41d30e2aaed02",
+    "commit": "869bc664",
+    "status": "SEGMENTED_EQUIVALENCE_FAIL",
+    "tests": {
+      "0.0": {
+        "resultArrayIdentical": true,
+        "csvBitwiseIdentical": true,
+        "trajectoriesListIdentical": true,
+        "samplesCompared": 2312
+      },
+      "0.002": {
+        "resultArrayIdentical": false,
+        "csvBitwiseIdentical": true,
+        "trajectoriesListIdentical": false,
+        "samplesCompared": 2312
+      }
+    },
+    "observed": {
+      "differingSamples": 519,
+      "samplesCompared": 2312,
+      "onlyAfterUTC": "2010-05-13T00:00:00Z",
+      "maxAbsDeltaLonDeg": 5.684341886080802e-14,
+      "maxAbsDeltaLatDeg": 0.0,
+      "endpointSeparationMeters": {
+        "24h": 0.0,
+        "48h": 5.424644402417126e-09,
+        "72h": 1.4146481319698978e-09
+      },
+      "csvBitwiseEqual": true,
+      "timestampsIdentical": true,
+      "orderingIdentical": true,
+      "statusIdentical": true
+    },
+    "diagnosticHypothesis": "wind time axis relative to the current-dataset origin (t0 vs t0+24h for chunk B) changes last-bit rounding in the Parcels wind time interpolation; hypothesis only, not a scientific conclusion",
+    "preserved": true
+  },
+  "criterion": {
+    "level1Structural": {
+      "exact": [
+        "timestamps",
+        "particle IDs",
+        "particle ordering",
+        "sample count",
+        "output ordering",
+        "status",
+        "release coordinates",
+        "landMask",
+        "forcing frame identity",
+        "forcing values",
+        "chunk overlap values"
+      ]
+    },
+    "level2Positional": {
+      "absoluteToleranceDegrees": 1e-12,
+      "appliesTo": [
+        "lon",
+        "lat"
+      ],
+      "perSample": true,
+      "isScientificMetric": false,
+      "appliedToM3": false
+    },
+    "endpointImpact": {
+      "horizonsHours": [
+        24,
+        48,
+        72
+      ],
+      "record": [
+        "max endpoint dLon",
+        "max endpoint dLat",
+        "max endpoint haversine separation"
+      ],
+      "conditionJ": {
+        "maxSeparationKm": 1e-06,
+        "meaning": "numerically negligible relative to the 0.001 km reporting scale; equals the preregistered tie tolerance"
+      },
+      "usedForAlphaOrInterpretation": false
+    },
+    "alphaZeroBitwiseStillRequired": true,
+    "passConditions": [
+      "A timestamps exact",
+      "B particle IDs exact",
+      "C ordering exact",
+      "D status exact",
+      "E forcing values exact",
+      "F landMask exact",
+      "G all position differences <= 1e-12 deg",
+      "H no missing samples",
+      "I no extra samples",
+      "J 24/48/72h endpoint separation <= 1e-6 km"
+    ],
+    "onFail": "SEGMENTATION_EQUIVALENCE_FAIL -> HOLDOUT_BLOCKED_SEGMENTATION; no fallback; no further tolerance revision"
+  },
+  "antiLeakage": {
+    "toleranceFixedBeforeGateReexecution": true,
+    "toleranceFixedBeforeHoldout": true,
+    "changeAfterLock": "PROHIBITED",
+    "gateDataset": "calibration KE-1 only (STEP 17 forcing)",
+    "holdoutRead": false,
+    "timingDisclosure": "value chosen after the B-4 observation existed; magnitude set by representation (1e-12 deg ~ 1.1e-7 m; 1e4 x observed; 1e6 x below CSV resolution; 1e9 x below tie tolerance)"
+  },
+  "untouched": {
+    "runtimeModification": false,
+    "windTimeOriginCodeChange": false,
+    "parcelsSourceChange": false,
+    "floatingPointModeChange": false,
+    "compilerChange": false,
+    "precisionChange": false,
+    "forcingModification": false,
+    "timestepChange": false,
+    "alphaReselection": false,
+    "otherAlphaRuns": false,
+    "cohortReselection": false,
+    "chunkDefinitionChange": false
+  },
+  "alpha": {
+    "primary": 0.002,
+    "baseline": 0.0,
+    "locked": true
+  },
+  "holdoutState": {
+    "KE-H1": "NOT RUN (n=5)",
+    "KE-H3": "NOT RUN (n=7)",
+    "KE-H2": "FORCING_UNAVAILABLE (n=1; missing 2010-08-18T12:00:00Z)",
+    "evaluable": 12,
+    "evaluated": 0,
+    "AG": "HOLDOUT_UNAVAILABLE"
+  },
+  "phaseB6Order": [
+    "B-6.1 re-execute KE-1 gate (alpha 0 and 0.002), judge by B-5 criterion A-J (+ alpha 0 bitwise)",
+    "B-6.2 if PASS: holdout KE-H1 segmented x {0.002, 0}, KE-H3 single x {0.002, 0}; KE-H2 not modeled; exactly once; replay",
+    "B-6.3 evaluation on n=12 per STEP 20 §8-§12 (no positional tolerance in M3)"
+  ],
+  "counters": {
+    "modelRuns": 0,
+    "holdoutExecution": 0,
+    "forcingDownloads": 0
+  },
+  "modelRun": false,
+  "holdoutExecuted": false,
+  "runtimeModified": false,
+  "forcingModified": false,
+  "alphaReselected": false,
+  "cohortReselected": false,
+  "lockedAtUTC": "2026-09-06T07:55:00Z",
+  "nextStep": "STEP 20 PHASE B-6 — REVISED SEGMENTATION GATE + HOLDOUT EXECUTION (separate instruction only)"
+}

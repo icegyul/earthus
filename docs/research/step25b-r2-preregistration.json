@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "revision": "r2",
+  "ruleId": "glorys12v1-acquisition-quality-gate-step25b",
+  "createdAtUTC": "2026-09-06T09:54:30Z",
+  "baseLock": "1a6a3173",
+  "reason": "the r1 acquisition tool (tools/research/acquire_step25b.py, locked at 1a6a3173) invokes `python -m copernicusmarine`; the official client copernicusmarine 2.4.1 installed in the isolated venv has no __main__ module, so that invocation fails regardless of credential state and would have produced a false CREDENTIALS_REQUIRED",
+  "discoveredHow": "after the LOCK commit, during the isolated toolbox install step (before any authentication check by the tool); no acquisition output existed yet",
+  "change": {
+    "newTool": "tools/research/acquire_step25b_r2.py",
+    "differences": [
+      "calls the venv console script Scripts/copernicusmarine(.exe) instead of python -m copernicusmarine",
+      "stdin closed (subprocess.DEVNULL) so the client can never prompt for credentials",
+      "records the toolbox install timestamp from the dist-info mtime and the revision label"
+    ],
+    "unchanged": [
+      "product identity",
+      "windows / boxes / depth",
+      "authentication = exit code only",
+      "credential policy (never read, printed, stored, committed)",
+      "manifest / access-status schema",
+      "MODEL_RUN = FORBIDDEN"
+    ]
+  },
+  "r1ToolLeftUnchanged": true,
+  "r1ToolSha256": "d381e04aac821c5a02c1829a988b1683cea865ba66a7ac6571ecc276e28a273b",
+  "r2ToolSha256": "b2e8a1fcb6cc01c904fdf362fd82c08a64be12af8e69e717b26caf438f9e132c",
+  "protocolSha256": "0a542a94ee0c04a54ac7bd543c7f89eb0462e0a19e89668c969935178dc76eb9",
+  "preregistrationSha256": "ecc1fdbc59ff8773135f62175e951bc8d88958d9f4c4bfb97aac5a3b0a233f62",
+  "toolbox": {
+    "name": "copernicusmarine (Copernicus Marine Toolbox, official client)",
+    "version": "2.4.1",
+    "method": "python -m venv data/research/step25b/toolbox-venv; pip install copernicusmarine (no credentials involved)",
+    "isolatedFromRuntime": true
+  },
+  "credentialState": "unchanged: none present (existence check only)",
+  "MODEL_RUN": "FORBIDDEN",
+  "frozenAlpha": 0.002,
+  "comparisonAlpha": 0.0
+}

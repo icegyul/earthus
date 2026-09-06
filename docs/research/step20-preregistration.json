@@ -1,0 +1,596 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "dataRequirementStatus": "STEP20_DATA_REQUIREMENT_BLOCKED",
+  "ruleId": "model-protocol-step20-generalization-parameter-validation",
+  "protocolDocument": "docs/research/step20-generalization-protocol.md",
+  "protocolDocumentSha256": "65b004589570e7e409201e82c9388b17ec53002c4b31282112056d005baabb00",
+  "createdAtUTC": "2026-09-06T05:50:00Z",
+  "authorProcess": "Claude Code session (Research Intelligence PHASE 2, STEP 20 Phase A) — preregistration only; 0 model runs, 0 trajectories, 0 forcing downloads; holdout windows derived from observations only",
+  "gitCommitAtDesign": "2a681ec2",
+  "question": "Does a non-zero windage coefficient generalize across independent temporal/spatial validation conditions, and if so, what preregistered alpha-selection rule identifies the preferred coefficient without using holdout results?",
+  "possibleOutcomes": {
+    "A": "alpha=0 is sufficient",
+    "B": "a non-zero alpha consistently improves the model",
+    "C": "improvement is conditional on region/forcing regime",
+    "D": "no stable alpha preference can be established"
+  },
+  "expectedWinner": null,
+  "step19Result": "DESCRIPTIVE ONLY; alpha=0.0007 was NOT established as superior to alpha=0",
+  "immutabilityCheck": {
+    "step17LockCommit": "551668ef",
+    "step17ProtocolSha256": "db73ef67d1a191d67b29d488805a3c9998a65bf70b80dffe15b40ed8eb041792",
+    "step17ForcingManifestSha256": "591cc05799da03e6bb604321d9e2b129a32a201112922c4d06823026a0b5ac86",
+    "step18LockCommit": "d505cc5e",
+    "step18ProtocolSha256": "519b3d35bc13524b3e0a30f5521cd2e696ffecdceead58535b0c4959ac3bea2b",
+    "step18PhaseB": "BLOCKED (permanent)",
+    "step18ManifestSha256": "02c859f9a079eb68826852589d4c6d313171bcad9b544406212abfe3651a61cb",
+    "step18bLockCommit": "5b9567e5",
+    "step18bProtocolSha256": "73e8aa1405aa82c6ae283962f8efaabdfa5331a5dc6109471b1e6bd0ebf813bc",
+    "step18bPreregistrationSha256": "02935e81e9c93690078ff96231c74ad51c86dfaffa89bfa17a2e2ba082306316",
+    "step18bModelRuleSha256": "7e9ab639f0c36ca747ff5f292f2c78eaa3eaae8da078311ce26f76e964bc49eb",
+    "step18bManifestSha256": "923fd1ba69438da0a6bbd02495705b4dccce229d606a199b0498c6d80d6aaefe",
+    "step18bModelCommit": "75020d98",
+    "step18bManifestCommit": "a9225f77",
+    "step19LockCommit": "5f27dc2d",
+    "step19ProtocolSha256": "920475967d4dd1a0b10a9f96f10c83291f92df767e906c50b0973e82b9af52b3",
+    "step19PreregistrationSha256": "02e73093bbcf44a89c26887d7cddcc243c01ae37c45b30f789ee04838bac14dd",
+    "step19RuleSha256": "ce3d466bb4ba973a797ca6de5044491c90699f6c66ff6113ab7d44a4f561599d",
+    "step19OutputsCommit": "2a681ec2",
+    "step19EvaluationSha256": "9baa0c6ae4fd38fbd0ea72e479736d0eb8f43f49aac6cebc8dcfa0051490b5f4",
+    "step19PairedTableSha256": "10a629e421f2045da67d27385f54c2aa7761acfb770a0058decd5a1e1154d4bb",
+    "step19SummarySha256": "061474f4666d163cdbb0a61f8661d7d0884f6130ae8330135bb5633e84490470",
+    "step19ScriptSha256": "7706587944a527e55138a7cdd299e62c395bce5c9d2a1ea97c878f9ac26a3784",
+    "step16CohortSha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+    "step16CohortCommit": "5bc3590b",
+    "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "step18bTrajectoriesUntouched": true,
+    "step20OutputsExist": false,
+    "result": "PASS",
+    "checkedAtUTC": "2026-09-06T05:50:00Z"
+  },
+  "alphaCandidates": [
+    0,
+    0.0003,
+    0.0007,
+    0.001,
+    0.002
+  ],
+  "alphaCandidateRule": "exactly these five, this order; alpha=0 baseline; no add/remove/reorder/tune after results; runtime range [0, 0.05] unchanged",
+  "model": {
+    "modelId": "surface-passive-advection.v2.windage",
+    "modelVersion": "0.1.0",
+    "implementation": "services/research-runtime/research_runtime/models_v2.py (no code change)",
+    "v1SourceSha256Prefix": "42e5886b (4-file snapshot, immutable)",
+    "equation": "dX/dt = U_ocean(15 m) + alpha * U_wind(10 m)",
+    "coordinateConversion": "spherical geographic: dlon/dt = u/(R_deg*cos(lat)), dlat/dt = v/R_deg, R_deg = 1852*60 m/deg, evaluated at the current latitude at every RK4 stage; no fixed km/deg constant",
+    "integrator": "RK4, ocean and wind re-interpolated at all four stages, alpha*U_wind added at every stage",
+    "depth": "15 m only, no vertical motion",
+    "excluded": [
+      "diffusion/random walk",
+      "Stokes drift",
+      "vertical mixing",
+      "leeway angle",
+      "data assimilation",
+      "nudging",
+      "observation reset"
+    ],
+    "observationUsedByModel": false,
+    "randomSeed": null,
+    "deterministic": true,
+    "statusRules": "STEP 18b §3 (OUT_OF_DOMAIN = ±40° latitude crossing; otherwise FORCING_UNAVAILABLE)",
+    "specArea": "locked ocean forcing box per run unit, latitude clipped to [-40, 40]",
+    "mechanicsChangeAllowed": false
+  },
+  "time": {
+    "start": "t0 = window start 12Z",
+    "durationSeconds": 259200,
+    "lastTimestamp": "t0 + 72 h exactly",
+    "outputStepSeconds": 900,
+    "outputSamplesPerDrifter": 289,
+    "integrationStepSeconds": 300,
+    "integrationSubstepsPerOutput": 3,
+    "integrationStepRationale": "locked runtime preflight (models.py, immutable V1 source) enforces integrationStepSeconds <= floor(min_grid_m/(4*max_speed)); from the STEP 17 Phase B normalized forcing this bound is KE-1 655 s, KE-2 733 s, AG-1 579 s, AG-2 663 s, so 900 s is rejected for all four windows; 300 s (runtime default, same as STEP 11) satisfies all four; 900 s is therefore the output/evaluation/status timestep and the RK4 substep is 300 s; fixed before any run and not changed afterwards",
+    "gridTravelBoundSeconds": {
+      "KE-1": 655,
+      "KE-2": 733,
+      "AG-1": 579,
+      "AG-2": 663
+    }
+  },
+  "interpolation": {
+    "spatial": "bilinear on native grids (HYCOM 0.08° regular; NCEP Gaussian)",
+    "temporal": "linear between adjacent frames",
+    "extrapolation": false,
+    "regridding": false,
+    "smoothing": false,
+    "zeroFill": false,
+    "landValues": false,
+    "frameDuplication": false,
+    "stencil": "all 4 nodes wet and non-null"
+  },
+  "calibration": {
+    "purpose": "alpha ranking/selection only",
+    "runUnits": [
+      {
+        "windowId": "KE-1",
+        "region": "KE",
+        "t0": "2010-05-11T12:00:00Z",
+        "end": "2010-05-14T12:00:00Z",
+        "drifterCount": 8,
+        "drifterIds": [
+          "81801",
+          "81805",
+          "81807",
+          "81811",
+          "81813",
+          "81814",
+          "71155",
+          "81816"
+        ],
+        "computationArea": {
+          "west": 140.60959,
+          "east": 161.61974,
+          "south": 28.12786,
+          "north": 38.19472
+        },
+        "forcingSha256": "eebd0c38e647b9fbdc3bc08202589fddce3e57892a3edfc1c2c12f01eddfca8d",
+        "hycomGridSha256": "649ebad52f64b7d2bbe05ef6e8e818f7f0e8791fc8ac01ac5422c9d53d3fb74a",
+        "ncepGridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+        "forcingStatus": "ACQUIRED (STEP 17 Phase B)"
+      },
+      {
+        "windowId": "KE-2",
+        "region": "KE",
+        "t0": "2010-06-30T12:00:00Z",
+        "end": "2010-07-03T12:00:00Z",
+        "drifterCount": 5,
+        "drifterIds": [
+          "81802",
+          "48965",
+          "90141",
+          "90142",
+          "90145"
+        ],
+        "computationArea": {
+          "west": 133.53249,
+          "east": 154.78535,
+          "south": 29.70784,
+          "north": 40.0
+        },
+        "forcingSha256": "b3da27677e778d6e29af7bb1ad13119f8d7049f9b161950dbf1ed6a5ac213226",
+        "hycomGridSha256": "1d597036f12febb4d962b7418c25fd752677fa471d8afa12b8811801afe76a9e",
+        "ncepGridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+        "forcingStatus": "ACQUIRED (STEP 17 Phase B)"
+      },
+      {
+        "windowId": "AG-1",
+        "region": "AG",
+        "t0": "2015-04-23T12:00:00Z",
+        "end": "2015-04-26T12:00:00Z",
+        "drifterCount": 9,
+        "drifterIds": [
+          "127198",
+          "127199",
+          "127272",
+          "127313",
+          "127314",
+          "127315",
+          "132511",
+          "132528",
+          "132634"
+        ],
+        "computationArea": {
+          "west": 18.31773,
+          "east": 32.013940000000005,
+          "south": -40.0,
+          "north": -32.13828
+        },
+        "forcingSha256": "dd0342c513139fd7c6de4033416f838e4423570e4fbdf89e6de4d4810337966c",
+        "hycomGridSha256": "ee9af738d169cb6302b1987cafa5022f5d41f450e2cb3c7df1f5284fa58aae3b",
+        "ncepGridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+        "forcingStatus": "ACQUIRED (STEP 17 Phase B)"
+      },
+      {
+        "windowId": "AG-2",
+        "region": "AG",
+        "t0": "2015-04-26T12:00:00Z",
+        "end": "2015-04-29T12:00:00Z",
+        "drifterCount": 1,
+        "drifterIds": [
+          "127281"
+        ],
+        "computationArea": {
+          "west": 19.79639,
+          "east": 23.79639,
+          "south": -38.76674,
+          "north": -34.76674
+        },
+        "forcingSha256": "78fc422e2a29e99ba9275dbb9d9c9370fffa13a0db193e2d9d7052a2473ef057",
+        "hycomGridSha256": "c53b91b4922c5b1f97ff4c704f87bb2a0fa14d6ea8da4a11bbcc9719dfe43859",
+        "ncepGridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+        "forcingStatus": "ACQUIRED (STEP 17 Phase B)"
+      }
+    ],
+    "uniqueDrifters": 23,
+    "regions": {
+      "KE": 13,
+      "AG": 10
+    },
+    "forcing": "STEP 17 Phase B acquisition (immutable)",
+    "priorExposure": "alpha=0 and alpha=0.0007 results on these units exist (STEP 18b/19); selection rule fixed independently of them; other three alphas have no results"
+  },
+  "holdout": {
+    "purpose": "single final generalization assessment of the selected alpha vs alpha=0; never used for parameter selection, model modification, threshold tuning or protocol modification",
+    "selectionRule": {
+      "separationDays": 30,
+      "coverageEnd": "2015-12-31T23:59:59Z",
+      "stopWhenUniqueDrifters": 10,
+      "maximumWindows": 6,
+      "minimumStartSeparationHours": 72,
+      "eligibility": "STEP 15/16 E1–E5 + A1–A3 verbatim (select_step16_cohort.evaluate); audit eligibleCount re-verified",
+      "excludes": "calibration (STEP 16 cohort) drifter IDs"
+    },
+    "derivationFile": "docs/research/step20-holdout-derivation.json",
+    "derivationSha256": "68dce1d200c73fd6f1c392446f61d2d240c40068bd34992efce8c14622becfb8",
+    "derivationHash": "4c960a21981119ad197c3a131cc172b81c0096ee23acc83163684ea076f76000",
+    "regions": {
+      "KE": {
+        "status": "HOLDOUT_MET",
+        "cutoff": "2010-08-02T12:00:00Z",
+        "lastCalibrationEnd": "2010-07-03T12:00:00Z",
+        "candidateEligibleWindows": 106,
+        "uniqueDrifters": 13
+      },
+      "AG": {
+        "status": "HOLDOUT_UNAVAILABLE",
+        "cutoff": "2015-05-29T12:00:00Z",
+        "lastCalibrationEnd": "2015-04-29T12:00:00Z",
+        "candidateEligibleWindows": 0,
+        "uniqueDrifters": 0
+      }
+    },
+    "runUnits": [
+      {
+        "windowId": "KE-H1",
+        "region": "KE",
+        "t0": "2010-08-10T12:00:00Z",
+        "end": "2010-08-13T12:00:00Z",
+        "drifterCount": 5,
+        "drifterIds": [
+          "81806",
+          "48985",
+          "90149",
+          "90135",
+          "90150"
+        ],
+        "releasePositions": [
+          {
+            "drifterId": "81806",
+            "lon": 157.94424,
+            "lat": 32.2673
+          },
+          {
+            "drifterId": "48985",
+            "lon": 137.25655,
+            "lat": 39.19842
+          },
+          {
+            "drifterId": "90149",
+            "lon": 159.85992,
+            "lat": 38.45439
+          },
+          {
+            "drifterId": "90135",
+            "lon": 156.24634,
+            "lat": 37.19708
+          },
+          {
+            "drifterId": "90150",
+            "lon": 155.67223,
+            "lat": 38.35129
+          }
+        ],
+        "forcingStatus": "NOT ACQUIRED (R1)"
+      },
+      {
+        "windowId": "KE-H2",
+        "region": "KE",
+        "t0": "2010-08-16T12:00:00Z",
+        "end": "2010-08-19T12:00:00Z",
+        "drifterCount": 1,
+        "drifterIds": [
+          "81961"
+        ],
+        "releasePositions": [
+          {
+            "drifterId": "81961",
+            "lon": 145.81236,
+            "lat": 34.62506
+          }
+        ],
+        "forcingStatus": "NOT ACQUIRED (R1)"
+      },
+      {
+        "windowId": "KE-H3",
+        "region": "KE",
+        "t0": "2010-11-15T12:00:00Z",
+        "end": "2010-11-18T12:00:00Z",
+        "drifterCount": 7,
+        "drifterIds": [
+          "90146",
+          "89898",
+          "92981",
+          "98996",
+          "98997",
+          "98998",
+          "99006"
+        ],
+        "releasePositions": [
+          {
+            "drifterId": "90146",
+            "lon": 152.8268,
+            "lat": 38.44446
+          },
+          {
+            "drifterId": "89898",
+            "lon": 143.26125,
+            "lat": 31.29767
+          },
+          {
+            "drifterId": "92981",
+            "lon": 143.06795,
+            "lat": 31.02459
+          },
+          {
+            "drifterId": "98996",
+            "lon": 147.97673,
+            "lat": 33.89059
+          },
+          {
+            "drifterId": "98997",
+            "lon": 152.19716,
+            "lat": 34.03334
+          },
+          {
+            "drifterId": "98998",
+            "lon": 154.05711,
+            "lat": 33.55673
+          },
+          {
+            "drifterId": "99006",
+            "lon": 151.61525,
+            "lat": 31.19199
+          }
+        ],
+        "forcingStatus": "NOT ACQUIRED (R1)"
+      }
+    ],
+    "uniqueDrifters": 13,
+    "temporalSeparationDays": 30,
+    "coverageEnd": "2015-12-31T23:59:59Z",
+    "statement": "Holdout data are not used for parameter selection, model modification, threshold tuning, or protocol modification.",
+    "leakageCaveat": "same year and region as KE calibration (2010); different drifter IDs; disjoint forcing files; mesoscale ocean state may persist across the 30-day separation — not full independence"
+  },
+  "dataRequirements": {
+    "status": "STEP20_DATA_REQUIREMENT_BLOCKED",
+    "R1": {
+      "what": "forcing for KE-H1, KE-H2, KE-H3: HYCOM GOFS 3.1 GLBv0.08 expt_53.X 15 m 3 h (t0..t0+72h, box = cohort t0 bbox ± 2.0°, lat clipped to [-40, 40]) + NCEP-DOE R2 10 m 6 h (± 3.0°, t0-12h..t0+84h)",
+      "when": "Phase B-3, only after the alpha selection commit; STEP 17 rules; new manifest",
+      "phaseADownload": false
+    },
+    "R2": {
+      "what": "AG holdout observations: no AG eligible window after 2015-05-29 within HYCOM expt_53.X coverage in the repository (AG eligible windows exist only 2015-04-23..2015-05-20)",
+      "options": [
+        "acquire and preregister NOAA GDP hourly QC for the AG box in 1994–2009 (within expt_53.X coverage) STEP 15-style",
+        "or preregister a different HYCOM experiment (expt_57.x/92.x/93.0) as a new forcing protocol for 2016+"
+      ],
+      "decisionTakenHere": null,
+      "ifAbsent": "AG holdout stratum reported as HOLDOUT_UNAVAILABLE; no pooling/substitution/deletion; region-dependence conclusion for AG limited to 'insufficient evidence'"
+    },
+    "designNotWeakened": true
+  },
+  "phaseBOrder": [
+    "B-1 calibration runs: 4 units x 5 alphas = 20 runtime calls, fixed order (unit KE-1, KE-2, AG-1, AG-2; alpha 0, 0.0003, 0.0007, 0.0010, 0.0020); alpha 0 / 0.0007 result SHA must equal STEP 18b else CALIBRATION_BLOCKED_REPRODUCIBILITY; replay per run",
+    "B-2 alpha selection per §7 → docs/research/step20-alpha-selection.json committed alone; alpha* frozen",
+    "B-3 holdout forcing acquisition (R1) after the alpha* commit",
+    "B-4 holdout runs: KE-H1/H2/H3 x {alpha*, 0} (alpha* = 0 → alpha 0 only), exactly once, replay",
+    "B-5 evaluation §8–§11; results under data/research/step20/ (not committed); manifest/evaluation/tables committed"
+  ],
+  "spatialStrata": {
+    "required": [
+      "KE",
+      "AG"
+    ],
+    "units": [
+      "KE-1",
+      "KE-2",
+      "AG-1",
+      "AG-2",
+      "KE-H1",
+      "KE-H2",
+      "KE-H3"
+    ],
+    "neverSilentlyExcluded": [
+      "AG-2",
+      "KE-H2"
+    ],
+    "poolingHidesRegions": false
+  },
+  "primaryMetric": {
+    "metric": "M3 observed-vs-model positional error",
+    "horizonsHours": [
+      24,
+      48,
+      72
+    ],
+    "distance": "haversine, radius 6371008.8 m, km",
+    "timestampMatching": "exact UTC only; no interpolation",
+    "notAvailable": "NOT_AVAILABLE"
+  },
+  "alphaSelectionRule": {
+    "selectionSet": "calibration drifters with valid t0+72h model position for ALL five alphas and an observation at t0+72h (exclusions reported)",
+    "primary": "72 h M3 median (lower is better; even n → mean of central two)",
+    "secondary": "48 h M3 median",
+    "tertiary": "24 h M3 median",
+    "finalTie": "smaller alpha",
+    "tieToleranceKm": 1e-06,
+    "meanUsedForSelection": false,
+    "meanReported": true,
+    "regionalMediansUsedForSelection": false,
+    "holdoutUsed": false,
+    "frozenAfterSelection": true,
+    "ifSelectedIsZero": "holdout runs alpha=0 only; outcome candidates A / baseline preferred"
+  },
+  "holdoutComparison": {
+    "pairs": "selected alpha vs alpha=0, paired by drifter",
+    "horizonsHours": [
+      24,
+      48,
+      72
+    ],
+    "delta": "error_selected - error_baseline",
+    "tieToleranceKm": 1e-06,
+    "report": [
+      "n",
+      "median",
+      "mean",
+      "min",
+      "max",
+      "median delta",
+      "mean delta",
+      "min delta",
+      "max delta",
+      "wins",
+      "losses",
+      "ties"
+    ],
+    "strata": [
+      "overall",
+      "KE",
+      "AG (UNAVAILABLE if absent)",
+      "units"
+    ],
+    "acceptanceThreshold": "NONE"
+  },
+  "generalizationReporting": {
+    "minimum": [
+      "overall holdout",
+      "KE",
+      "AG",
+      "finer units where n permits",
+      "24/48/72 h horizon behaviour"
+    ],
+    "allowedConclusions": [
+      "consistent improvement",
+      "no meaningful difference",
+      "baseline alpha=0 preferred",
+      "region-dependent effect",
+      "horizon-dependent effect",
+      "insufficient evidence"
+    ],
+    "binaryPassFail": false
+  },
+  "secondaryMetrics": {
+    "M1": "72 h endpoint displacement: release point → model position at t0+72h; NOT_AVAILABLE if not valid at t0+72h",
+    "M2": "total trajectory displacement: sum of distances between consecutive valid=true output points up to the last valid point; valid duration (h) recorded",
+    "M4": "generalized: distance between the selected-alpha trajectory and the alpha=0 trajectory at the same timestamp, 24/48/72 h plus series n/median/max to 72 h; if selected alpha = 0, M4 = 0 by definition → NOT_APPLICABLE; in calibration reported for each positive alpha vs alpha=0 (descriptive)",
+    "M5": "observed 72 h displacement (reference against cohort A2)",
+    "postHocMetrics": "PROHIBITED"
+  },
+  "outlierPolicy": {
+    "remove": false,
+    "winsorize": false,
+    "trim": false,
+    "replace": false,
+    "manualExclusion": false,
+    "topErrorsPerHorizon": 3,
+    "failuresRedefinedAfterResults": false
+  },
+  "smallSamplePolicy": {
+    "report": [
+      "overall paired n",
+      "regional n",
+      "unit n",
+      "strata with n < 5 flagged"
+    ],
+    "nBelow5": "values only (medians, wins/losses/ties); no inferential statistics",
+    "signTestMinimumN": 10,
+    "AG2Visible": true,
+    "KEH2Visible": true
+  },
+  "inferencePolicy": {
+    "primary": "DESCRIPTIVE",
+    "independenceAssumed": false,
+    "acknowledged": [
+      "shared forcing",
+      "shared temporal windows",
+      "regional correlation",
+      "possible common model error"
+    ],
+    "independentSampleTTest": false,
+    "anova": false,
+    "confidenceIntervals": false,
+    "exploratory": {
+      "test": "two-sided exact sign test, ties excluded, p = 0.5",
+      "label": "EXPLORATORY, nominal",
+      "acceptanceCriterion": false,
+      "significanceWording": "PROHIBITED"
+    }
+  },
+  "leakagePrevention": [
+    "selecting alpha after seeing holdout results",
+    "modifying alpha candidates after seeing results",
+    "changing the selection metric after seeing results",
+    "changing calibration/holdout windows after seeing results",
+    "removing unfavorable drifters",
+    "changing spatial bounds after seeing results",
+    "changing forcing after seeing results",
+    "re-running only failed/favorable alpha values",
+    "redefining model failure states after seeing results",
+    "repeating holdout evaluation",
+    "modifying the protocol during Phase B"
+  ],
+  "forcingPolicy": {
+    "step17Immutable": true,
+    "phaseADownload": false,
+    "calibrationForcing": "STEP 17 acquisition only",
+    "holdoutForcing": "R1, acquired after alpha* commit under STEP 17 rules",
+    "substituteForcing": "PROHIBITED",
+    "glorys": "NOT USED",
+    "ifAbsent": "HOLDOUT_BLOCKED_FORCING"
+  },
+  "failurePolicy": {
+    "inputShaMismatch": "*_BLOCKED_IMMUTABILITY",
+    "preflightError": "MODEL_RUN_BLOCKED_PREFLIGHT (no parameter change)",
+    "runtimeException": "MODEL_RUN_FAIL (one identical retry)",
+    "replayMismatch": "MODEL_RUN_FAIL",
+    "calibrationShaMismatchWithStep18b": "CALIBRATION_BLOCKED_REPRODUCIBILITY",
+    "earlyTermination": "not a failure; NOT_AVAILABLE",
+    "holdoutForcingAbsent": "HOLDOUT_BLOCKED_FORCING"
+  },
+  "acceptanceThresholds": "NONE",
+  "outputs": {
+    "resultsRoot": "data/research/step20/",
+    "resultsCommitted": false,
+    "gitignore": "data/research/step20/",
+    "committed": [
+      "docs/research/step20-calibration-manifest.json",
+      "docs/research/step20-alpha-selection.json",
+      "docs/research/step20-holdout-forcing-manifest.json",
+      "docs/research/step20-holdout-manifest.json",
+      "docs/research/step20-evaluation.json",
+      "docs/research/step20-paired-table.csv"
+    ]
+  },
+  "phaseA": {
+    "modelRuns": 0,
+    "newTrajectoryCsvs": 0,
+    "forcingDownloads": 0,
+    "holdoutResultsInspected": false,
+    "alphaChosenFromStep19": false
+  },
+  "lockedAtUTC": "2026-09-06T05:50:00Z",
+  "lockPolicy": "after LOCK no change to alpha candidates, model, calibration/holdout windows, selection rule, tie rule, horizons, metrics, strata, small-n/outlier/inference/leakage/forcing/failure policies; changes require a new ruleId",
+  "nextStep": "STEP 20 — PHASE B (separate instruction only; B-3/B-4 require R1)"
+}

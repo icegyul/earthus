@@ -1,0 +1,3 @@
+65b004589570e7e409201e82c9388b17ec53002c4b31282112056d005baabb00  docs/research/step20-generalization-protocol.md
+1e4ed8c1d004b00812c0710fd3df32c8a6c7537ff5287474a4c0a3e8ae33cae4  docs/research/step20-preregistration.json
+68dce1d200c73fd6f1c392446f61d2d240c40068bd34992efce8c14622becfb8  docs/research/step20-holdout-derivation.json

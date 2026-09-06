@@ -93,3 +93,5 @@ secrets/
 data/research/step18/
 # STEP 18b model/trajectory outputs are never committed; only docs/research/step18b-model-manifest.json is
 data/research/step18b/
+# STEP 20 model/trajectory outputs are never committed; only STEP 20 manifests/evaluation/tables are
+data/research/step20/

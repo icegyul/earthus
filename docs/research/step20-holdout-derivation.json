@@ -1,0 +1,574 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "model-protocol-step20-generalization-parameter-validation",
+  "purpose": "holdout window derivation (observations only)",
+  "rule": {
+    "separationDays": 30,
+    "coverageEnd": "2015-12-31T23:59:59Z",
+    "stopWhenUniqueDrifters": 10,
+    "maximumWindows": 6,
+    "minimumStartSeparationHours": 72,
+    "eligibility": "STEP 15/16 E1–E5 + A1–A3 verbatim (select_step16_cohort.evaluate); audit eligibleCount re-verified",
+    "excludes": "calibration (STEP 16 cohort) drifter IDs"
+  },
+  "inputs": {
+    "audit": "docs/research/step16-selection-audit.json",
+    "auditSha256": "ba5b8a5410e2787a326639cdc2db866b4f898e279bc3d48296c914bb57a0f1bd",
+    "cohort": "docs/research/cohort-step16.json",
+    "cohortSha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+    "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "coastlineSha256": "6f75ae0e0de157b14946e2255eb1f5486d9a13819032e26d4610852d296788f6"
+  },
+  "regions": {
+    "KE": {
+      "box": {
+        "south": 30,
+        "north": 40,
+        "west": 135,
+        "east": 160
+      },
+      "calibrationWindows": [
+        {
+          "windowId": "KE-1",
+          "start": "2010-05-11T12:00:00Z",
+          "end": "2010-05-14T12:00:00Z",
+          "drifters": 8
+        },
+        {
+          "windowId": "KE-2",
+          "start": "2010-06-30T12:00:00Z",
+          "end": "2010-07-03T12:00:00Z",
+          "drifters": 5
+        }
+      ],
+      "calibrationDrifterIds": [
+        "48965",
+        "71155",
+        "81801",
+        "81802",
+        "81805",
+        "81807",
+        "81811",
+        "81813",
+        "81814",
+        "81816",
+        "90141",
+        "90142",
+        "90145"
+      ],
+      "lastCalibrationEnd": "2010-07-03T12:00:00Z",
+      "cutoff": "2010-08-02T12:00:00Z",
+      "candidateEligibleWindows": 106,
+      "candidateDates": [
+        "2010-08-10",
+        "2010-08-16",
+        "2010-08-17",
+        "2010-08-18",
+        "2010-08-19",
+        "2010-08-20",
+        "2010-11-15",
+        "2010-11-16",
+        "2010-11-22",
+        "2010-11-23",
+        "2011-05-08",
+        "2011-05-09",
+        "2011-05-10",
+        "2011-05-12",
+        "2011-05-13",
+        "2011-05-15",
+        "2011-05-28",
+        "2011-05-29",
+        "2011-06-04",
+        "2011-06-10",
+        "2011-06-11",
+        "2011-06-12",
+        "2011-06-13",
+        "2011-06-14",
+        "2011-06-16",
+        "2011-06-17",
+        "2011-06-18",
+        "2011-06-19",
+        "2011-06-20",
+        "2011-06-21",
+        "2011-06-22",
+        "2011-06-23",
+        "2011-06-24",
+        "2011-06-25",
+        "2011-06-26",
+        "2011-06-27",
+        "2011-06-28",
+        "2011-06-29",
+        "2011-06-30",
+        "2011-07-01",
+        "2011-07-02",
+        "2011-07-03",
+        "2011-07-04",
+        "2011-07-05",
+        "2011-07-06",
+        "2011-07-07",
+        "2011-07-10",
+        "2011-07-14",
+        "2011-07-15",
+        "2011-07-20",
+        "2011-07-21",
+        "2011-07-22",
+        "2011-07-23",
+        "2011-07-24",
+        "2011-07-25",
+        "2011-07-26",
+        "2011-07-27",
+        "2011-07-28",
+        "2011-07-31",
+        "2011-08-08",
+        "2011-08-09",
+        "2011-08-13",
+        "2011-08-14",
+        "2011-08-15",
+        "2011-08-16",
+        "2011-08-18",
+        "2011-08-19",
+        "2011-08-20",
+        "2011-08-22",
+        "2011-08-23",
+        "2011-08-24",
+        "2011-08-25",
+        "2011-08-26",
+        "2011-08-30",
+        "2011-09-10",
+        "2011-09-11",
+        "2011-09-12",
+        "2011-09-13",
+        "2011-09-14",
+        "2011-09-16",
+        "2011-09-17",
+        "2011-09-18",
+        "2011-09-19",
+        "2011-09-20",
+        "2011-09-21",
+        "2011-09-22",
+        "2011-09-25",
+        "2011-09-26",
+        "2011-10-01",
+        "2011-10-02",
+        "2011-10-03",
+        "2011-10-05",
+        "2011-10-09",
+        "2011-10-17",
+        "2011-10-18",
+        "2011-10-19",
+        "2011-10-27",
+        "2011-10-31",
+        "2011-11-06",
+        "2011-11-09",
+        "2011-11-10",
+        "2011-11-11",
+        "2011-11-12",
+        "2011-11-22",
+        "2011-11-23",
+        "2011-11-24"
+      ],
+      "selected": [
+        {
+          "order": 1,
+          "windowId": "KE-H1",
+          "date": "2010-08-10",
+          "start": "2010-08-10T12:00:00Z",
+          "end": "2010-08-13T12:00:00Z",
+          "eligibleCount": 9,
+          "A1_median": 0.3975,
+          "A2_median": 62.19,
+          "A3_median": 11.3,
+          "newDrifterIds": [
+            "81806",
+            "48985",
+            "90149",
+            "90135",
+            "90150"
+          ],
+          "calibrationDuplicateIds": [
+            "81801",
+            "81811",
+            "48965",
+            "90145"
+          ],
+          "holdoutDuplicateIds": [],
+          "cumulativeUniqueDrifters": 5,
+          "drifters": [
+            {
+              "drifterId": "81806",
+              "typebuoy": "SVPB",
+              "startLon": 157.94424,
+              "startLat": 32.2673,
+              "coastKm": 966.4,
+              "speedMps": 0.16735999259089257,
+              "displacement72hKm": 48.47685539322614,
+              "turnDeg": 3.8009801284982245,
+              "drogueLostDate": "2011-03-02T00:00:00Z"
+            },
+            {
+              "drifterId": "48985",
+              "typebuoy": "SVP",
+              "startLon": 137.25655,
+              "startLat": 39.19842,
+              "coastKm": 144.0,
+              "speedMps": 0.17841919626012653,
+              "displacement72hKm": 31.456160607814393,
+              "turnDeg": 31.201657614545127,
+              "drogueLostDate": "2010-09-02T00:00:00Z"
+            },
+            {
+              "drifterId": "90149",
+              "typebuoy": "SVPB",
+              "startLon": 159.85992,
+              "startLat": 38.45439,
+              "coastKm": 1133.9,
+              "speedMps": 0.3974539327509843,
+              "displacement72hKm": 62.18766957116226,
+              "turnDeg": 17.530793704936116,
+              "drogueLostDate": "2010-09-21T00:00:00Z"
+            },
+            {
+              "drifterId": "90135",
+              "typebuoy": "SVPB",
+              "startLon": 156.24634,
+              "startLat": 37.19708,
+              "coastKm": 1076.7,
+              "speedMps": 0.589674140432674,
+              "displacement72hKm": 104.78218285891437,
+              "turnDeg": 11.281182458139938,
+              "drogueLostDate": "2010-09-26T00:00:00Z"
+            },
+            {
+              "drifterId": "90150",
+              "typebuoy": "SVPB",
+              "startLon": 155.67223,
+              "startLat": 38.35129,
+              "coastKm": 948.3,
+              "speedMps": 0.4280314369164105,
+              "displacement72hKm": 112.66665471357226,
+              "turnDeg": 2.6703075640839984,
+              "drogueLostDate": "2010-10-20T00:00:00Z"
+            }
+          ]
+        },
+        {
+          "order": 2,
+          "windowId": "KE-H2",
+          "date": "2010-08-16",
+          "start": "2010-08-16T12:00:00Z",
+          "end": "2010-08-19T12:00:00Z",
+          "eligibleCount": 10,
+          "A1_median": 0.3691,
+          "A2_median": 64.21,
+          "A3_median": 25.3,
+          "newDrifterIds": [
+            "81961"
+          ],
+          "calibrationDuplicateIds": [
+            "81801",
+            "81811",
+            "90141",
+            "90145"
+          ],
+          "holdoutDuplicateIds": [
+            "81806",
+            "48985",
+            "90149",
+            "90135",
+            "90150"
+          ],
+          "cumulativeUniqueDrifters": 6,
+          "drifters": [
+            {
+              "drifterId": "81961",
+              "typebuoy": "SVP",
+              "startLon": 145.81236,
+              "startLat": 34.62506,
+              "coastKm": 464.6,
+              "speedMps": 0.7978184714120039,
+              "displacement72hKm": 184.21745598261822,
+              "turnDeg": 36.79112124564335,
+              "drogueLostDate": "2013-02-15T00:00:00Z"
+            }
+          ]
+        },
+        {
+          "order": 3,
+          "windowId": "KE-H3",
+          "date": "2010-11-15",
+          "start": "2010-11-15T12:00:00Z",
+          "end": "2010-11-18T12:00:00Z",
+          "eligibleCount": 8,
+          "A1_median": 0.3033,
+          "A2_median": 65.31,
+          "A3_median": 40.4,
+          "newDrifterIds": [
+            "90146",
+            "89898",
+            "92981",
+            "98996",
+            "98997",
+            "98998",
+            "99006"
+          ],
+          "calibrationDuplicateIds": [],
+          "holdoutDuplicateIds": [
+            "81806"
+          ],
+          "cumulativeUniqueDrifters": 13,
+          "drifters": [
+            {
+              "drifterId": "90146",
+              "typebuoy": "SVPB",
+              "startLon": 152.8268,
+              "startLat": 38.44446,
+              "coastKm": 774.3,
+              "speedMps": 0.3117629188243982,
+              "displacement72hKm": 81.35684791611436,
+              "turnDeg": 30.60458059402356,
+              "drogueLostDate": "2010-12-13T00:00:00Z"
+            },
+            {
+              "drifterId": "89898",
+              "typebuoy": "SVPB",
+              "startLon": 143.26125,
+              "startLat": 31.29767,
+              "coastKm": 294.3,
+              "speedMps": 0.2949333127484004,
+              "displacement72hKm": 140.0712317203089,
+              "turnDeg": 46.072315616633716,
+              "drogueLostDate": "2011-01-18T00:00:00Z"
+            },
+            {
+              "drifterId": "92981",
+              "typebuoy": "SVPB",
+              "startLon": 143.06795,
+              "startLat": 31.02459,
+              "coastKm": 268.8,
+              "speedMps": 0.5330019138675532,
+              "displacement72hKm": 154.55949843151197,
+              "turnDeg": 34.71346900034851,
+              "drogueLostDate": "2011-06-08T00:00:00Z"
+            },
+            {
+              "drifterId": "98996",
+              "typebuoy": "SVPB",
+              "startLon": 147.97673,
+              "startLat": 33.89059,
+              "coastKm": 679.0,
+              "speedMps": 0.17183097662586636,
+              "displacement72hKm": 79.43272587243514,
+              "turnDeg": 30.38650780692808,
+              "drogueLostDate": "2010-12-14T00:00:00Z"
+            },
+            {
+              "drifterId": "98997",
+              "typebuoy": "SVPB",
+              "startLon": 152.19716,
+              "startLat": 34.03334,
+              "coastKm": 1048.7,
+              "speedMps": 0.5944538559491586,
+              "displacement72hKm": 12.150843434075597,
+              "turnDeg": 122.52800190953252,
+              "drogueLostDate": "2011-01-12T00:00:00Z"
+            },
+            {
+              "drifterId": "98998",
+              "typebuoy": "SVPB",
+              "startLon": 154.05711,
+              "startLat": 33.55673,
+              "coastKm": 1027.6,
+              "speedMps": 0.1946896711195428,
+              "displacement72hKm": 51.1847423312434,
+              "turnDeg": 34.263860286811166,
+              "drogueLostDate": "2010-12-25T00:00:00Z"
+            },
+            {
+              "drifterId": "99006",
+              "typebuoy": "SVPB",
+              "startLon": 151.61525,
+              "startLat": 31.19199,
+              "coastKm": 798.4,
+              "speedMps": 0.1568050435233295,
+              "displacement72hKm": 26.355543165462716,
+              "turnDeg": 83.28604811786755,
+              "drogueLostDate": "2010-12-04T00:00:00Z"
+            }
+          ]
+        }
+      ],
+      "holdoutDrifterIds": [
+        "81806",
+        "48985",
+        "90149",
+        "90135",
+        "90150",
+        "81961",
+        "90146",
+        "89898",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "holdoutUniqueDrifters": 13,
+      "status": "HOLDOUT_MET",
+      "log": [
+        {
+          "date": "2010-08-10",
+          "status": "SELECTED",
+          "new": 5
+        },
+        {
+          "date": "2010-08-16",
+          "status": "SELECTED",
+          "new": 1
+        },
+        {
+          "date": "2010-08-17",
+          "status": "SKIPPED_OVERLAP"
+        },
+        {
+          "date": "2010-08-18",
+          "status": "SKIPPED_OVERLAP"
+        },
+        {
+          "date": "2010-08-19",
+          "status": "NO_NEW_IDS",
+          "calibrationDuplicates": [
+            "81801",
+            "81811",
+            "90141"
+          ],
+          "holdoutDuplicates": [
+            "81806",
+            "48985",
+            "81961",
+            "90149",
+            "90135",
+            "90150"
+          ]
+        },
+        {
+          "date": "2010-08-20",
+          "status": "NO_NEW_IDS",
+          "calibrationDuplicates": [
+            "81801",
+            "81811",
+            "90141"
+          ],
+          "holdoutDuplicates": [
+            "81806",
+            "48985",
+            "81961",
+            "90149",
+            "90135",
+            "90150"
+          ]
+        },
+        {
+          "date": "2010-11-15",
+          "status": "SELECTED",
+          "new": 7
+        }
+      ],
+      "rawFiles": [
+        "KE-2010-q1.csv",
+        "KE-2010-q2.csv",
+        "KE-2010-q3.csv",
+        "KE-2010-q4.csv",
+        "KE-2011-q1.csv",
+        "KE-2011-q2.csv",
+        "KE-2011-q3.csv",
+        "KE-2011-q4.csv",
+        "KE-2012-q1.csv",
+        "KE-2012-q2.csv",
+        "KE-2012-q3.csv",
+        "KE-2012-q4.csv",
+        "KE-2013-q1.csv",
+        "KE-2013-q2.csv",
+        "KE-2013-q3.csv",
+        "KE-2013-q4.csv",
+        "KE-2014-q1.csv",
+        "KE-2014-q2.csv",
+        "KE-2014-q3.csv",
+        "KE-2014-q4.csv",
+        "KE-2015-q1.csv",
+        "KE-2015-q2.csv",
+        "KE-2015-q3.csv",
+        "KE-2015-q4.csv",
+        "KE-2016-q1.csv",
+        "KE-2016-q2.csv",
+        "KE-2016-q3.csv",
+        "KE-2016-q4.csv",
+        "KE-2017-q1.csv",
+        "KE-2017-q2.csv",
+        "KE-2017-q3.csv",
+        "KE-2017-q4.csv",
+        "KE-2018-q1.csv",
+        "KE-2018-q2.csv",
+        "KE-2018-q3.csv",
+        "KE-2018-q4.csv",
+        "KE-2019-q1.csv",
+        "KE-2019-q2.csv",
+        "KE-2019-q3.csv",
+        "KE-2019-q4.csv",
+        "KE-2020-q1.csv",
+        "KE-2020-q2.csv",
+        "KE-2020-q3.csv",
+        "KE-2020-q4.csv"
+      ]
+    },
+    "AG": {
+      "box": {
+        "south": -40,
+        "north": -30,
+        "west": 15,
+        "east": 35
+      },
+      "calibrationWindows": [
+        {
+          "windowId": "AG-1",
+          "start": "2015-04-23T12:00:00Z",
+          "end": "2015-04-26T12:00:00Z",
+          "drifters": 9
+        },
+        {
+          "windowId": "AG-2",
+          "start": "2015-04-26T12:00:00Z",
+          "end": "2015-04-29T12:00:00Z",
+          "drifters": 1
+        }
+      ],
+      "calibrationDrifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127281",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634"
+      ],
+      "lastCalibrationEnd": "2015-04-29T12:00:00Z",
+      "cutoff": "2015-05-29T12:00:00Z",
+      "candidateEligibleWindows": 0,
+      "candidateDates": [],
+      "selected": [],
+      "holdoutDrifterIds": [],
+      "holdoutUniqueDrifters": 0,
+      "status": "HOLDOUT_UNAVAILABLE",
+      "log": [],
+      "rawFiles": []
+    }
+  },
+  "derivationHash": "4c960a21981119ad197c3a131cc172b81c0096ee23acc83163684ea076f76000",
+  "forbiddenInputAccess": 0,
+  "modelRun": false,
+  "forcingAccessed": false,
+  "trajectoryComputed": false,
+  "createdAtUTC": "2026-09-06T06:17:04Z"
+}

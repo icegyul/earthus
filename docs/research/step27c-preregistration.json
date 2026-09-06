@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "d20-acquisition-quality-gate-step27c",
+  "protocolSha256": "94b8203475f509fdd74a5f3f6b3afb84bbdcd825f7e5027bab220bd6030b7d80",
+  "createdAtUTC": "2026-09-06T13:59:22Z",
+  "gitCommitAtDesign": "b9078805",
+  "authorProcess": "Claude Fable 5.1 session, user-directed STEP 27C",
+  "ancestry": {
+    "step27bR2": "b9078805",
+    "step27bRecord": "d242165d",
+    "step27bLock": "d5fb2a62",
+    "step27PhaseA": "2a5c8f9a"
+  },
+  "tools": {
+    "tools/research/acquire_step27c.py": "bb82d2d51df0165ba288ae900ad67b85b8b218896e0f38fa98de4a67ac0093ce",
+    "tools/research/quality_step27c.py": "970a8ae9df65927a04dc02b668ca8646554d6303410a290036cb16d55b3ce381",
+    "tools/research/check_step27c_d20_quality.py": "d92d393106686dedbdbfb49fae7327e7a0cf9f698b8255bbf67f6d262b64cfae"
+  },
+  "validator": {
+    "path": "tools/research/check_step27c_d20_quality.py",
+    "sha256": "d92d393106686dedbdbfb49fae7327e7a0cf9f698b8255bbf67f6d262b64cfae",
+    "checks": 20
+  },
+  "depthPlan": {
+    "D20": "ACQUIRE (18.495560 m)"
+  },
+  "credentialState": "authorized (exit code 0 at lock; contents never read)",
+  "MODEL_RUN": "FORBIDDEN",
+  "lockPolicy": "protocol, preregistration and tools SHA-locked and committed before acquisition"
+}

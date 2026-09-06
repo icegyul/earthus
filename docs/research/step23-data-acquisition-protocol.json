@@ -1,0 +1,486 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "p1-data-acquisition-quality-gate-step23",
+  "title": "STEP 23 — P1 data acquisition & data quality gate",
+  "status": "PREREGISTRATION LOCKED",
+  "createdAtUTC": "2026-09-06T09:40:00Z",
+  "baseCommit": "a7f62873",
+  "purpose": "acquire and quality-check the STEP 22 P1 data requirements (DATA-01, DATA-03, DATA-06) independently of any model improvement; no trajectory run, no metric, no alpha change, no data-driven dataset selection",
+  "frozenBaseline": {
+    "ocean": "HYCOM GOFS 3.1 GLBv0.08 0.08 deg 15 m 3 h",
+    "wind": "NCEP-DOE R2 10 m 6 h",
+    "equation": "dX/dt = U_ocean + alpha U_wind",
+    "alpha": 0.002,
+    "baselineAlpha": 0.0,
+    "modifiable": false
+  },
+  "targets": [
+    "DATA-01",
+    "DATA-03",
+    "DATA-06"
+  ],
+  "otherDataAcquired": false,
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "dataset": "CALIBRATION",
+      "t0": "2010-05-11T12:00:00Z",
+      "end": "2010-05-14T12:00:00Z",
+      "drifterCount": 8,
+      "oceanBox": {
+        "south": 28.12786,
+        "north": 38.19472,
+        "west": 140.60959,
+        "east": 161.61974
+      },
+      "boxSource": "STEP 17 manifest",
+      "releasePositions": [
+        {
+          "drifterId": "71155",
+          "lon": 142.60959,
+          "lat": 35.68513
+        },
+        {
+          "drifterId": "81801",
+          "lon": 150.57346,
+          "lat": 30.12786
+        },
+        {
+          "drifterId": "81805",
+          "lon": 150.6728,
+          "lat": 30.8741
+        },
+        {
+          "drifterId": "81807",
+          "lon": 149.87982,
+          "lat": 30.91725
+        },
+        {
+          "drifterId": "81811",
+          "lon": 151.57515,
+          "lat": 32.09739
+        },
+        {
+          "drifterId": "81813",
+          "lon": 157.64886,
+          "lat": 30.87311
+        },
+        {
+          "drifterId": "81814",
+          "lon": 159.61974,
+          "lat": 36.19472
+        },
+        {
+          "drifterId": "81816",
+          "lon": 148.6675,
+          "lat": 30.73258
+        }
+      ],
+      "note": null
+    },
+    {
+      "windowId": "KE-2",
+      "dataset": "CALIBRATION",
+      "t0": "2010-06-30T12:00:00Z",
+      "end": "2010-07-03T12:00:00Z",
+      "drifterCount": 5,
+      "oceanBox": {
+        "south": 29.70784,
+        "north": 40.0,
+        "west": 133.53249,
+        "east": 154.78535
+      },
+      "boxSource": "STEP 17 manifest",
+      "releasePositions": [
+        {
+          "drifterId": "48965",
+          "lon": 135.53249,
+          "lat": 37.60833
+        },
+        {
+          "drifterId": "81802",
+          "lon": 151.58324,
+          "lat": 31.70784
+        },
+        {
+          "drifterId": "90141",
+          "lon": 145.17612,
+          "lat": 38.3657
+        },
+        {
+          "drifterId": "90142",
+          "lon": 152.78535,
+          "lat": 39.3177
+        },
+        {
+          "drifterId": "90145",
+          "lon": 147.0891,
+          "lat": 37.12376
+        }
+      ],
+      "note": null
+    },
+    {
+      "windowId": "AG-1",
+      "dataset": "CALIBRATION",
+      "t0": "2015-04-23T12:00:00Z",
+      "end": "2015-04-26T12:00:00Z",
+      "drifterCount": 9,
+      "oceanBox": {
+        "south": -40.0,
+        "north": -32.13828,
+        "west": 18.31773,
+        "east": 32.013940000000005
+      },
+      "boxSource": "STEP 17 manifest",
+      "releasePositions": [
+        {
+          "drifterId": "127198",
+          "lon": 20.32911,
+          "lat": -39.81819
+        },
+        {
+          "drifterId": "127199",
+          "lon": 20.31773,
+          "lat": -39.82213
+        },
+        {
+          "drifterId": "127272",
+          "lon": 27.2557,
+          "lat": -34.85449
+        },
+        {
+          "drifterId": "127313",
+          "lon": 23.25523,
+          "lat": -35.43792
+        },
+        {
+          "drifterId": "127314",
+          "lon": 30.01394,
+          "lat": -34.13828
+        },
+        {
+          "drifterId": "127315",
+          "lon": 24.83593,
+          "lat": -35.31406
+        },
+        {
+          "drifterId": "132511",
+          "lon": 21.4817,
+          "lat": -37.10636
+        },
+        {
+          "drifterId": "132528",
+          "lon": 23.86592,
+          "lat": -34.97313
+        },
+        {
+          "drifterId": "132634",
+          "lon": 29.88758,
+          "lat": -34.64967
+        }
+      ],
+      "note": null
+    },
+    {
+      "windowId": "AG-2",
+      "dataset": "CALIBRATION",
+      "t0": "2015-04-26T12:00:00Z",
+      "end": "2015-04-29T12:00:00Z",
+      "drifterCount": 1,
+      "oceanBox": {
+        "south": -38.76674,
+        "north": -34.76674,
+        "west": 19.79639,
+        "east": 23.79639
+      },
+      "boxSource": "STEP 17 manifest",
+      "releasePositions": [
+        {
+          "drifterId": "127281",
+          "lon": 21.79639,
+          "lat": -36.76674
+        }
+      ],
+      "note": null
+    },
+    {
+      "windowId": "KE-H1",
+      "dataset": "HOLDOUT",
+      "t0": "2010-08-10T12:00:00Z",
+      "end": "2010-08-13T12:00:00Z",
+      "drifterCount": 5,
+      "oceanBox": {
+        "south": 30.2673,
+        "north": 40.0,
+        "west": 135.25655,
+        "east": 161.85992
+      },
+      "boxSource": "STEP 20 B-2 holdout forcing manifest",
+      "releasePositions": [
+        {
+          "drifterId": "81806",
+          "lon": 157.94424,
+          "lat": 32.2673
+        },
+        {
+          "drifterId": "48985",
+          "lon": 137.25655,
+          "lat": 39.19842
+        },
+        {
+          "drifterId": "90149",
+          "lon": 159.85992,
+          "lat": 38.45439
+        },
+        {
+          "drifterId": "90135",
+          "lon": 156.24634,
+          "lat": 37.19708
+        },
+        {
+          "drifterId": "90150",
+          "lon": 155.67223,
+          "lat": 38.35129
+        }
+      ],
+      "note": null
+    },
+    {
+      "windowId": "KE-H2",
+      "dataset": "HOLDOUT",
+      "t0": "2010-08-16T12:00:00Z",
+      "end": "2010-08-19T12:00:00Z",
+      "drifterCount": 1,
+      "oceanBox": {
+        "south": 32.62506,
+        "north": 36.62506,
+        "west": 143.81236,
+        "east": 147.81236
+      },
+      "boxSource": "STEP 20 B-2 holdout forcing manifest",
+      "releasePositions": [
+        {
+          "drifterId": "81961",
+          "lon": 145.81236,
+          "lat": 34.62506
+        }
+      ],
+      "note": "STEP 20 original HYCOM forcing unavailable (missing 2010-08-18T12Z); coverage recorded only, STEP 20 not revised"
+    },
+    {
+      "windowId": "KE-H3",
+      "dataset": "HOLDOUT",
+      "t0": "2010-11-15T12:00:00Z",
+      "end": "2010-11-18T12:00:00Z",
+      "drifterCount": 7,
+      "oceanBox": {
+        "south": 29.02459,
+        "north": 40.0,
+        "west": 141.06795,
+        "east": 156.05711
+      },
+      "boxSource": "STEP 20 B-2 holdout forcing manifest",
+      "releasePositions": [
+        {
+          "drifterId": "90146",
+          "lon": 152.8268,
+          "lat": 38.44446
+        },
+        {
+          "drifterId": "89898",
+          "lon": 143.26125,
+          "lat": 31.29767
+        },
+        {
+          "drifterId": "92981",
+          "lon": 143.06795,
+          "lat": 31.02459
+        },
+        {
+          "drifterId": "98996",
+          "lon": 147.97673,
+          "lat": 33.89059
+        },
+        {
+          "drifterId": "98997",
+          "lon": 152.19716,
+          "lat": 34.03334
+        },
+        {
+          "drifterId": "98998",
+          "lon": 154.05711,
+          "lat": 33.55673
+        },
+        {
+          "drifterId": "99006",
+          "lon": 151.61525,
+          "lat": 31.19199
+        }
+      ],
+      "note": null
+    }
+  ],
+  "requiredMonths": [
+    "2010-05",
+    "2010-06",
+    "2010-07",
+    "2010-08",
+    "2010-11",
+    "2015-04"
+  ],
+  "credentialPolicy": "no credential is entered or stored by this session; products requiring login are recorded as blocked with the required credential named; existence of credential files is checked without reading them",
+  "sources": {
+    "DATA-01": {
+      "priority": [
+        {
+          "rank": 1,
+          "product": "GLORYS12V1 GLOBAL_MULTIYEAR_PHY_001_030 (1/12 deg, daily, multi-depth uo/vo)",
+          "provider": "Copernicus Marine",
+          "access": "copernicusmarine toolbox + credentials",
+          "status_if_no_credential": "DATASET_BLOCKED (credentials); STEP 17 BLOCKED/PENDING preserved"
+        },
+        {
+          "rank": 2,
+          "product": "any anonymous eddy-resolving (< 0.08 deg) reanalysis covering 2010 and 2015",
+          "provider": "none identified",
+          "access": "n/a",
+          "status": "candidate list only; none known"
+        }
+      ],
+      "depthInventoryRule": "record available depth levels only; no depth is selected; 15 m is not replaced",
+      "download": "only if credentials/toolbox are present (they are not expected)"
+    },
+    "DATA-03": {
+      "priority": [
+        {
+          "rank": 1,
+          "product": "AVISO delayed-time absolute geostrophic currents, 0.25 deg, ~weekly (erdTAgeo1day; u_current/v_current at altitude 0), 1992-10-14..2012-12-08",
+          "provider": "NOAA CoastWatch West Coast Node ERDDAP (coastwatch.pfeg.noaa.gov), anonymous",
+          "role": "geostrophic surface current REFERENCE (not equal to drifter velocity)",
+          "expectedCoverage": "2010 windows only; 2015 windows outside the product period"
+        },
+        {
+          "rank": 2,
+          "product": "AVISO absolute sea surface height + deviation, 0.25 deg, ~weekly (erdTAssh1day; ssh/sshd), 1992-10-14..2012-12-09",
+          "provider": "same ERDDAP, anonymous",
+          "role": "SSH / SSH-anomaly REFERENCE",
+          "expectedCoverage": "2010 windows only"
+        },
+        {
+          "rank": 3,
+          "product": "OSCAR 1/3 deg 5-day surface velocity (jplOscar)",
+          "provider": "same ERDDAP, anonymous",
+          "role": "surface current reference",
+          "expectedCoverage": "server holds 2011-12-06..2014-09-26 only: no window covered; metadata check only, no download"
+        },
+        {
+          "rank": 4,
+          "product": "NOAA NESDIS SSHA + geostrophic currents (nesdisSSH1day)",
+          "provider": "same ERDDAP",
+          "expectedCoverage": "2017+ only: no window covered; metadata check only"
+        },
+        {
+          "rank": 5,
+          "product": "OSCAR full period (PO.DAAC) / CMEMS SEALEVEL_GLO",
+          "access": "Earthdata / Copernicus credentials",
+          "status": "candidate only; not acquired"
+        }
+      ],
+      "subset": "per window: box = ocean box +/- 3.0 deg (lon converted to the product convention), time = t0 - 8 d .. t0 + 72 h + 8 d (bracketing frames on both sides; no extrapolation)",
+      "format": "ERDDAP griddap NetCDF",
+      "queryRecorded": true
+    },
+    "DATA-06": {
+      "priority": [
+        {
+          "rank": 1,
+          "product": "IFREMER WAVEWATCH III global hindcast, CFSR-forced, GLOB-30M (0.5 deg), 3-hourly, surface Stokes drift 'uss' monthly files (WW3-GLOB-30M_YYYYMM_uss.nc)",
+          "provider": "IFREMER (ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/<year>_CFSR/uss/), anonymous FTP",
+          "role": "Stokes drift (surface) for a future TEST-06; not added to the model here",
+          "granularity": "provider offers global monthly files only (~75 MB each); no spatial subsetting available on this endpoint — recorded as the reason for downloading whole files"
+        },
+        {
+          "rank": 2,
+          "product": "ERA5 Stokes drift (ust/vst) / CMEMS GLOBAL_MULTIYEAR_WAV_001_032 (VSDX/VSDY)",
+          "access": "CDS / Copernicus credentials",
+          "status": "candidate only; not acquired"
+        }
+      ],
+      "files": [
+        "WW3-GLOB-30M_201005_uss.nc",
+        "WW3-GLOB-30M_201006_uss.nc",
+        "WW3-GLOB-30M_201007_uss.nc",
+        "WW3-GLOB-30M_201008_uss.nc",
+        "WW3-GLOB-30M_201011_uss.nc",
+        "WW3-GLOB-30M_201504_uss.nc"
+      ],
+      "expectedVariables": [
+        "uuss",
+        "vuss"
+      ],
+      "expectedUnits": "m s-1",
+      "expectedCadenceSeconds": 10800
+    }
+  },
+  "gates": {
+    "G1": "provenance: provider, product, version, query/URL, retrieval time, license recorded",
+    "G2": "file integrity: SHA-256 and byte size recorded; file readable",
+    "G3": "coordinate validity: monotonic regular lat/lon, documented convention, within [-90,90]/[-180,360]",
+    "G4": "time-axis validity: strictly increasing, calendar/units decoded, cadence recorded; irregular cadence allowed only if documented (weekly AVISO)",
+    "G5": "variable availability: required variables present with standard/long names",
+    "G6": "spatial coverage: every window ocean box inside the grid extent",
+    "G7": "temporal coverage: frames bracket t0 and t0+72h for every window (no extrapolation)",
+    "G8": "missingness: fraction of missing values in each window box at the bracketing frames recorded; release points must not be missing",
+    "G9": "unit validity: velocity in m s-1 (or documented equivalent), SSH in m",
+    "G10": "release-window coverage: for every drifter release point the nearest 4-node stencil is non-missing at both bracketing frames",
+    "G11": "reproducibility: quality analysis re-run to a separate directory is byte-identical"
+  },
+  "gateRule": "any FAIL → DATASET_BLOCKED for that dataset; other datasets continue; windows failing G7/G10 mark the dataset PARTIAL_COVERAGE if at least one window passes",
+  "finalStatuses": [
+    "ACCEPTED_FOR_FUTURE_TEST",
+    "DATASET_BLOCKED",
+    "PARTIAL_COVERAGE",
+    "LICENSE_STATUS_UNKNOWN",
+    "INSUFFICIENT_EVIDENCE"
+  ],
+  "acceptedMeaning": "quality sufficient for a preregistered future sensitivity/comparison test; NOT approval for model use",
+  "prohibited": {
+    "missingFrameInterpolation": false,
+    "gapFilling": false,
+    "spatialExtrapolation": false,
+    "zeroFill": false,
+    "nearestFrameSubstitution": false,
+    "landValueSubstitution": false,
+    "smoothing": false,
+    "duplicateFrames": false,
+    "trajectoryIntegration": false,
+    "alphaComparison": false,
+    "metrics_M1_M5": false,
+    "bestDatasetSelection": false,
+    "step20Revision": false
+  },
+  "comparabilityFields": [
+    "same geographic domain",
+    "same time standard",
+    "same observation windows",
+    "same variable semantics",
+    "compatible units",
+    "compatible coordinate system",
+    "compatible surface/depth interpretation"
+  ],
+  "outputs": [
+    "docs/research/step23-data-acquisition-manifest.json",
+    "docs/research/step23-data-quality-gates.json",
+    "docs/research/step23-data-coverage-matrix.csv",
+    "docs/research/step23-data-requirement-status.json",
+    "docs/research/step23-acquisition/acquisition-log.jsonl"
+  ],
+  "dataRoot": "data/research/step23/ (gitignored; raw files never committed)",
+  "tools": {
+    "acquisition": "tools/research/acquire_step23.py",
+    "quality": "tools/research/quality_step23.py",
+    "validator": "tools/research/check_step23_data_quality.py"
+  },
+  "stopRule": "STOP after STEP 23; no model run; no alpha change; STEP 24 not started"
+}

@@ -95,3 +95,5 @@ data/research/step18/
 data/research/step18b/
 # STEP 20 model/trajectory outputs are never committed; only STEP 20 manifests/evaluation/tables are
 data/research/step20/
+# STEP 23 acquired P1 raw data (hundreds of MB) — manifests/logs live in docs/research/step23-acquisition
+data/research/step23/

@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "p1-data-acquisition-quality-gate-step23",
+  "protocolDocument": "docs/research/step23-data-acquisition-protocol.json",
+  "protocolSha256": "e2388a62a82b9f9c1f68b0275ec1e83da6dbbe7820c3b4739bb786bcedf01ff9",
+  "createdAtUTC": "2026-09-06T09:40:00Z",
+  "gitCommitAtDesign": "a7f62873",
+  "authorProcess": "Claude Code session (Research Intelligence PHASE 2, STEP 23 Phase A) — acquisition/quality-gate preregistration; no model run, no alpha change; no credential entered",
+  "immutabilityCheck": {
+    "ancestryCommits": {
+      "step17": "551668ef",
+      "step18": "d505cc5e",
+      "step18b": "5b9567e5",
+      "step19": "5f27dc2d",
+      "step20": [
+        "155995dd",
+        "73fafffb",
+        "9113e8b5",
+        "869bc664",
+        "c395a098",
+        "7b3d2a0e",
+        "ed746129"
+      ],
+      "step21": [
+        "63c3e5dd",
+        "7b0453b8"
+      ],
+      "step22": [
+        "82f725aa",
+        "a7f62873"
+      ]
+    },
+    "lockedFiles": {
+      "docs/research/step17-forcing-protocol.md": "db73ef67d1a191d67b29d488805a3c9998a65bf70b80dffe15b40ed8eb041792",
+      "docs/research/step17-forcing-manifest.json": "591cc05799da03e6bb604321d9e2b129a32a201112922c4d06823026a0b5ac86",
+      "docs/research/step18-model-manifest.json": "02c859f9a079eb68826852589d4c6d313171bcad9b544406212abfe3651a61cb",
+      "docs/research/step18b-model-manifest.json": "923fd1ba69438da0a6bbd02495705b4dccce229d606a199b0498c6d80d6aaefe",
+      "docs/research/step19-evaluation.json": "9baa0c6ae4fd38fbd0ea72e479736d0eb8f43f49aac6cebc8dcfa0051490b5f4",
+      "docs/research/step20-generalization-protocol.md": "65b004589570e7e409201e82c9388b17ec53002c4b31282112056d005baabb00",
+      "docs/research/step20-preregistration.json": "1e4ed8c1d004b00812c0710fd3df32c8a6c7537ff5287474a4c0a3e8ae33cae4",
+      "docs/research/step20-selected-alpha.json": "68e43a0f91e3a6bd81427399adbe2cf8a7543d85cf0249d4926f3df093649efd",
+      "docs/research/step20-calibration-manifest.json": "41ca439ec6540fd98b3c9ecf5c74af7afdd8731e94bea5d33bfac3397afe8498",
+      "docs/research/step20-b6-holdout-manifest.json": "968da55a4553c00f373d6a0f26bc2b1c9e3f3af421d37db7a1e58e99a5727653",
+      "docs/research/step20-b6-holdout-summary.json": "fe2043b30aaba17d34e3d9a780379de9612541b75caa4ed487a10931a784d93b",
+      "docs/research/step20-holdout-forcing-manifest.json": "8e4c55928707cfe4c6f9c5d962cd789ebd2767737af23407ffb5cb48e60b065b",
+      "docs/research/step20-b3-holdout-forcing-manifest.json": "10c4f7420d16757b7cd3f23805ce63dde1f58ea63591e8dc9411647d7bc27701",
+      "docs/research/step21-diagnostic-summary.json": "d310eaadf64324286de80e485e9944998665d14d2599ca80133cf3d25b406fbd",
+      "docs/research/step21-diagnostic-table.csv": "e52dc35d6750cc7260e05341d48b7eaa886dfc389f1880547a39b184dbdbbe78",
+      "docs/research/step22-limitation-assessment.json": "88eeb25543025d9697ffd4e5cadcf1a0dd376a4eccc7752df009752b7fc4bd3b",
+      "docs/research/step22-data-requirement-register.json": "5b965572137270e7c71aa6377d5ca6548b233ab1521cc63a8c63a4dc255ea61a",
+      "docs/research/step22-future-test-matrix.json": "55f6afd8c9c63f93e6472fed12fc636f1468160e1deaa5840c7c5c221d09ba93",
+      "docs/research/step22-summary.json": "0093d1c0ab8c73195c76b11da1ddf0609555f5ff49c2698069e31b0a76f4e5bd",
+      "docs/research/cohort-step16.json": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474"
+    },
+    "runtimeFilesIdenticalToStep20Lock": true,
+    "credentialFilesPresent": {
+      "copernicusmarine": false,
+      "netrc": false,
+      "cdsapirc": false
+    },
+    "copernicusmarineToolbox": false,
+    "result": "PASS"
+  },
+  "tools": {
+    "acquisition": {
+      "file": "tools/research/acquire_step23.py",
+      "sha256": "e302c5d2fabb2674442a6f02efd5858e74604696583dbcce2cb1523c1d2b9809"
+    },
+    "quality": {
+      "file": "tools/research/quality_step23.py",
+      "sha256": "4d158e290dd202fef40d08fa7e5d5ec33e33e05abbc53908e9f7df09055a237b"
+    },
+    "validator": {
+      "file": "tools/research/check_step23_data_quality.py",
+      "sha256": "bf2dce4a893fe7956aa8ee20639b925d790d6b3a54b82758cba0880792a5578f"
+    }
+  },
+  "phaseA": {
+    "modelRuns": 0,
+    "downloads": 0,
+    "alphaCandidatesAdded": 0
+  },
+  "lockedAtUTC": "2026-09-06T09:40:00Z",
+  "nextStep": "STEP 23 Phase B acquisition + quality gates (same instruction), then STOP; STEP 24 not started"
+}

@@ -3011,3 +3011,12 @@ body.menu-bar.menu-sub-open:has(#menuSub.layers-right) #windLegend{ bottom:max(1
 body.menu-bar #menuSub.layers-right #layerStrip .ly-section-head{
   display:block !important; margin:6px 6px 2px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--fog); opacity:.75;
 }
+
+/* 정보 시트 vs 하단 바 (2026-09-06 받은 신고: "로켓 발사 리스트가 기존 메뉴와 겹쳐진다")
+   하단 바(z 28)와 출처 독(z 18)이 시트(z 14) 위에 그려져 글자가 비쳤다. 바 모드에서는 시트를 바 위로 올리고
+   독보다 앞에 둔다. 바(28)보다는 뒤 — 바는 항상 눌려야 한다. */
+body.menu-bar #sheet{
+  bottom:max(82px,calc(env(safe-area-inset-bottom) + 72px));
+  max-height:min(72vh,calc(100dvh - 190px));
+  z-index:20;
+}

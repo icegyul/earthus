@@ -39,6 +39,55 @@ export const launchPads = {
 
   set(on) { if (this.ds) this.ds.show = on; },
 
+  /* ── 발사대 핀포인트 (2026-09-06 받은 지시: "발사대 위치를 핀포인트로 표시해줘") ──
+     인공위성 시트의 발사 목록에서 한 건을 고르면, launch 레이어가 꺼져 있어도 그 발사대 자리에
+     핀(아이콘 + 900 m 원 + 이름)을 하나 세운다. 레이어와 별도의 작은 데이터소스라 레이어 켜고 끔에
+     휩쓸리지 않는다. 다른 걸 고르거나 선택이 풀리면(store 'select' null) 걷는다. */
+  pinDs: null,
+  pin(m) {
+    if (!m || m.lat == null || m.lon == null) return;
+    if (!this.pinDs) {
+      this.pinDs = new Cesium.CustomDataSource('launchpin');
+      viewer.dataSources.add(this.pinDs);
+    }
+    this.pinDs.entities.removeAll();
+    this.pinDs.show = true;
+    const t = i18n.t.F;
+    const name = m.data?.[t.pad] || m.name || '';
+    const col = Cesium.Color.fromCssColorString(C.amber);
+    const meta = { id: `pad-pin-${m.id}`, kind: 'launchpad', name, lat: m.lat, lon: m.lon, _launch: m };
+    this.pinDs.entities.add({
+      id: 'pad:pin',
+      position: Cesium.Cartesian3.fromDegrees(m.lon, m.lat),
+      billboard: {
+        image: padIcon(true), width: 40, height: 46,
+        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+      },
+      label: {
+        ...mapLabel({ text: name, color: col, size: 'sm', maxDistance: 12_000_000 }),
+        pixelOffset: new Cesium.Cartesian2(0, 10),
+        verticalOrigin: Cesium.VerticalOrigin.TOP,
+      },
+      _meta: meta, _layer: 'launch',
+    });
+    this.pinDs.entities.add({
+      id: 'pad:pin:ring',
+      position: Cesium.Cartesian3.fromDegrees(m.lon, m.lat),
+      ellipse: {
+        semiMajorAxis: 900, semiMinorAxis: 900,
+        material: col.withAlpha(0.14), outline: true, outlineColor: col.withAlpha(0.7), outlineWidth: 1.5, height: 0,
+      },
+      _meta: meta, _layer: 'launch',
+    });
+    viewer.scene.requestRender?.();
+  },
+  clearPin() {
+    if (!this.pinDs) return;
+    this.pinDs.entities.removeAll();
+    viewer.scene.requestRender?.();
+  },
+
   /** 발사 목록에서 발사대를 뽑아낸다 (같은 좌표는 하나로 묶는다) */
   build(items) {
     if (!this.ds) return;

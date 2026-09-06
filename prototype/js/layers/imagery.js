@@ -1679,25 +1679,34 @@ export const imagery = {
       /* 히마와리를 사람이 직접 골랐을 때.
          ⚠️ 구름(전지구 합성)을 확대했을 때 자동으로 갈아타는 것과는 다르다.
             직접 고르면 고도와 무관하게 켜 두고, 볼 수 있는 곳으로 화면을 옮긴다. */
-      case 'himawari':
+      case 'himawari': {
+        /* ⚠️ 받은 신고(2026-09-06): "히마와리 활성화 시키면 화면 이동이 안 되고 계속 내 위치로 옮겨져".
+           registry.applyAll() 이 store 'camera' 이벤트마다 이 set() 을 다시 부른다 — 그때마다 flyToHima() 가
+           걸려 손으로 옮긴 화면이 한국 중심으로 되돌아갔다. 비행은 **꺼짐→켜짐 첫 순간에만** 건다. */
+        const first = on && !this._himaManual;
         this._himaManual = on;
         if (on) {
           this.setHima(true);
-          this.flyToHima();
-          /* 밤이면 적외로 자동 전환한다. 색을 강수량으로 읽지 않도록 바로 알린다. */
-          this._himaNightHint();
+          if (first) {
+            this.flyToHima();
+            /* 밤이면 적외로 자동 전환한다. 색을 강수량으로 읽지 않도록 바로 알린다. */
+            this._himaNightHint();
+          }
         } else {
           this.setHima(false);
         }
         break;
+      }
       /* 적외 단독 — 구름 꼭대기 온도.
          ⚠️ 이건 **강수량이 아니다.** 아주 찬 꼭대기(색이 진한 곳)는 대개 대류가 강해
             소나기·뇌우가 있을 수 있지만, 높고 얇은 권운도 차갑다. 화면에 그렇게 적는다. */
-      case 'himaIR':
+      case 'himaIR': {
+        const first = on && !this._irManual;   // 같은 이유 — 카메라 이벤트마다 재적용돼도 첫 켜짐에만 난다
         this._irManual = on;
-        if (on) { this.setHimaIR(true); this.flyToHima(); }
+        if (on) { this.setHimaIR(true); if (first) this.flyToHima(); }
         else { this.setHimaIR(false); }
         break;
+      }
       case 'gk2aAuto': this.setGK2AAuto(on); break;
       /* ── 천리안2A — 우리 위성이 본 동아시아·서태평양 ───────────
          ⚠️ 히마와리와 겹쳐 보이지만 다르다. 히마와리는 NASA GIBS 를 거친

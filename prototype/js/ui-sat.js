@@ -98,6 +98,15 @@ export const satPanel = {
         document.getElementById('satSheet').classList.remove('up');
         const { flyTo } = await import('./viewer.js');
         flyTo(m.lon, m.lat, 900_000);
+        /* 발사대 자리에 핀을 세운다(받은 지시). launch 레이어가 꺼져 있어도 보인다. 선택이 풀리면 걷는다. */
+        try {
+          const { launchPads } = await import('./layers/launchpad.js');
+          launchPads.pin(m);
+          if (!this._pinWatch) {
+            this._pinWatch = true;
+            store.on('select', s => { if (!s || s.kind !== 'launch') launchPads.clearPin(); });
+          }
+        } catch (e) { console.warn('[sat] 발사대 핀', e?.message || e); }
         store.select(m);
       };
       box.appendChild(row);

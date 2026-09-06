@@ -1,0 +1,2931 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "model-protocol-step20-generalization-parameter-validation",
+  "phase": "B-1 CALIBRATION RUNS",
+  "status": "CALIBRATION_RUNS_PASS",
+  "lockCommit": "155995dd",
+  "step20ProtocolSha256": "65b004589570e7e409201e82c9388b17ec53002c4b31282112056d005baabb00",
+  "step20PreregistrationSha256": "1e4ed8c1d004b00812c0710fd3df32c8a6c7537ff5287474a4c0a3e8ae33cae4",
+  "step20SelectionRuleSha256": "5d980be74fbeb752160143c2e44ecb6611f01f21e94ea528908fc5867d9b46d7",
+  "step18bPreregistrationSha256": "02935e81e9c93690078ff96231c74ad51c86dfaffa89bfa17a2e2ba082306316",
+  "step18bManifestSha256": "923fd1ba69438da0a6bbd02495705b4dccce229d606a199b0498c6d80d6aaefe",
+  "forcingManifestSha256": "591cc05799da03e6bb604321d9e2b129a32a201112922c4d06823026a0b5ac86",
+  "cohortSha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "alphaCandidates": [
+    0,
+    0.0003,
+    0.0007,
+    0.001,
+    0.002
+  ],
+  "alphaText": {
+    "0": "0",
+    "0.0003": "0.0003",
+    "0.0007": "0.0007",
+    "0.001": "0.001",
+    "0.002": "0.002"
+  },
+  "modelId": "surface-passive-advection.v2.windage",
+  "modelVersion": "0.1.0",
+  "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+  "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "dependencies": {
+      "Deprecated": "1.3.1",
+      "PyYAML": "6.0.3",
+      "Pygments": "2.21.0",
+      "asciitree": "0.3.3",
+      "certifi": "2026.7.22",
+      "cftime": "1.6.5",
+      "cgen": "2025.1",
+      "click": "8.5.0",
+      "cloudpickle": "3.1.2",
+      "colorama": "0.4.6",
+      "constantdict": "2025.3",
+      "dask": "2026.8.0",
+      "fasteners": "0.20",
+      "fsspec": "2026.7.0",
+      "iniconfig": "2.3.0",
+      "locket": "1.0.0",
+      "netCDF4": "1.7.4",
+      "numcodecs": "0.15.1",
+      "numpy": "2.5.2",
+      "packaging": "26.3",
+      "pandas": "3.0.5",
+      "parcels": "3.1.4",
+      "partd": "1.4.2",
+      "platformdirs": "4.11.7",
+      "pluggy": "1.6.0",
+      "psutil": "7.2.2",
+      "pymbolic": "2025.1",
+      "pytest": "9.1.1",
+      "python-dateutil": "2.9.0.post0",
+      "pytools": "2026.1.1",
+      "scipy": "1.18.1",
+      "siphash24": "1.8",
+      "six": "1.17.0",
+      "toolz": "1.1.0",
+      "tqdm": "4.70.0",
+      "typing_extensions": "4.16.0",
+      "tzdata": "2026.3",
+      "wrapt": "2.4.0",
+      "xarray": "2026.7.0",
+      "zarr": "2.18.7"
+    },
+    "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+  },
+  "orchestrator": {
+    "file": "tools/research/run_step20_calibration.py",
+    "sha256": "5e4c4ecbb4a7316f7b5ffc35f953fed6d294c939e8ec295860787127b7ff975f"
+  },
+  "runs": [
+    {
+      "runId": "step20-cal-alpha0-KE-1",
+      "windowId": "KE-1",
+      "alpha": 0,
+      "alphaText": "0",
+      "drifterCount": 8,
+      "released": 8,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-1-15m",
+          "version": "2010-05-11T12_2010-05-14T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-1",
+        "version": "2010-05-11T12.earthus1"
+      },
+      "forcingSha256": "eebd0c38e647b9fbdc3bc08202589fddce3e57892a3edfc1c2c12f01eddfca8d",
+      "gridSha256": "649ebad52f64b7d2bbe05ef6e8e818f7f0e8791fc8ac01ac5422c9d53d3fb74a",
+      "windGridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 9216,
+          "outputSamplesUpperBound": 2312,
+          "recommendedMaxStepSeconds": 655,
+          "minimumGridLengthMeters": 6989.789646322781,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:31:21Z",
+      "completedAtUTC": "2026-09-06T06:31:29Z",
+      "wallSeconds": 7.5,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "c3604b70ccfb1b9f5a68368b327849219ff7a9d85c774a0866d4072ee2562ab8",
+      "resultArraySha256": "aa6987ed8fcabd89d025b30acc3bd869840f8aff6d7ae598984b16d0d357ba4b",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/KE-1/alpha0.result.json",
+      "resultSha256": "1c359c992f97eed067164192b649eb8952331cc43c71752fe6ebdd32e833f6c4",
+      "trajectoriesFile": "data/research/step20/calibration/KE-1/alpha0.trajectories.csv",
+      "trajectoriesSha256": "0e6f034f7f99982148708d0cf67302249141fbb2063d410c96547c329b4740b3",
+      "rows": 2312,
+      "finalStatusCounts": {
+        "COMPLETED": 8
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 8
+      },
+      "step18bResultArraySha256": "aa6987ed8fcabd89d025b30acc3bd869840f8aff6d7ae598984b16d0d357ba4b",
+      "matchesStep18b": true,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/KE-1/bundles/alpha0.zip",
+        "bundleSha256": "6ea59c0867d4d82a315bbd2adfbf8c2fcb25b87a9902fa42660597e3c091a3fa",
+        "returncode": 0,
+        "replayResultSha256": "aa6987ed8fcabd89d025b30acc3bd869840f8aff6d7ae598984b16d0d357ba4b"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.0003-KE-1",
+      "windowId": "KE-1",
+      "alpha": 0.0003,
+      "alphaText": "0.0003",
+      "drifterCount": 8,
+      "released": 8,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-1-15m",
+          "version": "2010-05-11T12_2010-05-14T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-1",
+        "version": "2010-05-11T12.earthus1"
+      },
+      "forcingSha256": "eebd0c38e647b9fbdc3bc08202589fddce3e57892a3edfc1c2c12f01eddfca8d",
+      "gridSha256": "649ebad52f64b7d2bbe05ef6e8e818f7f0e8791fc8ac01ac5422c9d53d3fb74a",
+      "windGridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 9216,
+          "outputSamplesUpperBound": 2312,
+          "recommendedMaxStepSeconds": 655,
+          "minimumGridLengthMeters": 6989.789646322781,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:31:46Z",
+      "completedAtUTC": "2026-09-06T06:31:53Z",
+      "wallSeconds": 7.6,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "15e3e63a08a6a452594eb9f1988137cdd1dd8fe491b2804feda1171df70ae248",
+      "resultArraySha256": "fee754522313f9cd29546056147309568c03d7bbabbe03a254f2a9c3f0ba7a8f",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/KE-1/alpha0.0003.result.json",
+      "resultSha256": "36872c451d661b1ec6da33d8aacaaa0fba736341ea92426cd74ac945c1c06d3d",
+      "trajectoriesFile": "data/research/step20/calibration/KE-1/alpha0.0003.trajectories.csv",
+      "trajectoriesSha256": "115f67dcb7ae6011e10986e56697c1b48ec365f1581e20218f9d40740c82091d",
+      "rows": 2312,
+      "finalStatusCounts": {
+        "COMPLETED": 8
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 8
+      },
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/KE-1/bundles/alpha0.0003.zip",
+        "bundleSha256": "feaeef37de6220b7c2950a15534fe722a7ebdf952d57209c1c06d49d489f8d0e",
+        "returncode": 0,
+        "replayResultSha256": "fee754522313f9cd29546056147309568c03d7bbabbe03a254f2a9c3f0ba7a8f"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.0007-KE-1",
+      "windowId": "KE-1",
+      "alpha": 0.0007,
+      "alphaText": "0.0007",
+      "drifterCount": 8,
+      "released": 8,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-1-15m",
+          "version": "2010-05-11T12_2010-05-14T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-1",
+        "version": "2010-05-11T12.earthus1"
+      },
+      "forcingSha256": "eebd0c38e647b9fbdc3bc08202589fddce3e57892a3edfc1c2c12f01eddfca8d",
+      "gridSha256": "649ebad52f64b7d2bbe05ef6e8e818f7f0e8791fc8ac01ac5422c9d53d3fb74a",
+      "windGridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 9216,
+          "outputSamplesUpperBound": 2312,
+          "recommendedMaxStepSeconds": 655,
+          "minimumGridLengthMeters": 6989.789646322781,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:32:17Z",
+      "completedAtUTC": "2026-09-06T06:32:25Z",
+      "wallSeconds": 7.4,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "604f4a0909b8935ffba8d37b9dcf6b09881133511c421a59c548af2b004afc7d",
+      "resultArraySha256": "0bfdcd446d65ea453f29472d809271346b39cb92e1b457729011b5e96856be53",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/KE-1/alpha0.0007.result.json",
+      "resultSha256": "33f8b14bd95dd94095649ed75160d0f6a85d56eb4e05220a6bb2a4c659445ba4",
+      "trajectoriesFile": "data/research/step20/calibration/KE-1/alpha0.0007.trajectories.csv",
+      "trajectoriesSha256": "0e565be705a267407a866bb914df90d56827ac1115690b3bc074bbdc58b0f228",
+      "rows": 2312,
+      "finalStatusCounts": {
+        "COMPLETED": 8
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 8
+      },
+      "step18bResultArraySha256": "0bfdcd446d65ea453f29472d809271346b39cb92e1b457729011b5e96856be53",
+      "matchesStep18b": true,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/KE-1/bundles/alpha0.0007.zip",
+        "bundleSha256": "84547031aa08b2d63178d5866539d13a20fd49319e4bf9674c230af5e3d4bfa5",
+        "returncode": 0,
+        "replayResultSha256": "0bfdcd446d65ea453f29472d809271346b39cb92e1b457729011b5e96856be53"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.001-KE-1",
+      "windowId": "KE-1",
+      "alpha": 0.001,
+      "alphaText": "0.001",
+      "drifterCount": 8,
+      "released": 8,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-1-15m",
+          "version": "2010-05-11T12_2010-05-14T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-1",
+        "version": "2010-05-11T12.earthus1"
+      },
+      "forcingSha256": "eebd0c38e647b9fbdc3bc08202589fddce3e57892a3edfc1c2c12f01eddfca8d",
+      "gridSha256": "649ebad52f64b7d2bbe05ef6e8e818f7f0e8791fc8ac01ac5422c9d53d3fb74a",
+      "windGridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 9216,
+          "outputSamplesUpperBound": 2312,
+          "recommendedMaxStepSeconds": 655,
+          "minimumGridLengthMeters": 6989.789646322781,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:32:42Z",
+      "completedAtUTC": "2026-09-06T06:32:49Z",
+      "wallSeconds": 7.5,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "68cfb04bd504198abcef33c97c3cd9dd6047e8c35d19fa7b06d4db777dc62ce5",
+      "resultArraySha256": "ecc13fa3f8b549d60e0318bb25156fa954f161cd37a9a82e571a99c3a8e4d016",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/KE-1/alpha0.001.result.json",
+      "resultSha256": "a8103fd3dfb3f0f4a2eaa73e9c24637a4026a8936f77eb96ed811899adf5f33e",
+      "trajectoriesFile": "data/research/step20/calibration/KE-1/alpha0.001.trajectories.csv",
+      "trajectoriesSha256": "0ec650ed3924ead227b2da3f530eb8e3f1d693d4d60cc22b4c89dd881aaa93e0",
+      "rows": 2312,
+      "finalStatusCounts": {
+        "COMPLETED": 8
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 8
+      },
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/KE-1/bundles/alpha0.001.zip",
+        "bundleSha256": "41175f95c5f1a0104170074214dfb2392d7cc21c71179ee6e6a9a300525a7e9f",
+        "returncode": 0,
+        "replayResultSha256": "ecc13fa3f8b549d60e0318bb25156fa954f161cd37a9a82e571a99c3a8e4d016"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.002-KE-1",
+      "windowId": "KE-1",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 8,
+      "released": 8,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-1-15m",
+          "version": "2010-05-11T12_2010-05-14T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-1",
+        "version": "2010-05-11T12.earthus1"
+      },
+      "forcingSha256": "eebd0c38e647b9fbdc3bc08202589fddce3e57892a3edfc1c2c12f01eddfca8d",
+      "gridSha256": "649ebad52f64b7d2bbe05ef6e8e818f7f0e8791fc8ac01ac5422c9d53d3fb74a",
+      "windGridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 9216,
+          "outputSamplesUpperBound": 2312,
+          "recommendedMaxStepSeconds": 655,
+          "minimumGridLengthMeters": 6989.789646322781,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:33:07Z",
+      "completedAtUTC": "2026-09-06T06:33:14Z",
+      "wallSeconds": 7.5,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "2efe8e589f6dad2b1a3ac70e000edc12d67879e5f2ea01582de167f5e6fe5ff4",
+      "resultArraySha256": "2b7547ed6151ad908f91513a6d54a7ab140f3413f42eb5b706f0e79ad296ec9d",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/KE-1/alpha0.002.result.json",
+      "resultSha256": "f74ff0d7d5e00053d556713fdfd5579b4eabba086abfc3d1e08a94510b6100cb",
+      "trajectoriesFile": "data/research/step20/calibration/KE-1/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "cc38b0d7fd171f187b990f16f9ab3a18d836ea2a7a6913e0d8dce996a1915069",
+      "rows": 2312,
+      "finalStatusCounts": {
+        "COMPLETED": 8
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 8
+      },
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/KE-1/bundles/alpha0.002.zip",
+        "bundleSha256": "34246621a181fc19db334ef464066f10bcdeb5d08e90dc48c2179cf63d6aaac6",
+        "returncode": 0,
+        "replayResultSha256": "2b7547ed6151ad908f91513a6d54a7ab140f3413f42eb5b706f0e79ad296ec9d"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0-KE-2",
+      "windowId": "KE-2",
+      "alpha": 0,
+      "alphaText": "0",
+      "drifterCount": 5,
+      "released": 5,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-2-15m",
+          "version": "2010-06-30T12_2010-07-03T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-2",
+        "version": "2010-06-30T12.earthus1"
+      },
+      "forcingSha256": "b3da27677e778d6e29af7bb1ad13119f8d7049f9b161950dbf1ed6a5ac213226",
+      "gridSha256": "1d597036f12febb4d962b7418c25fd752677fa471d8afa12b8811801afe76a9e",
+      "windGridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 5760,
+          "outputSamplesUpperBound": 1445,
+          "recommendedMaxStepSeconds": 733,
+          "minimumGridLengthMeters": 6809.828681549111,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:33:31Z",
+      "completedAtUTC": "2026-09-06T06:33:38Z",
+      "wallSeconds": 6.2,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "62f920ec6ed74b4d6af53760dc8333324096851eb4603489c54d41bdcd3a7124",
+      "resultArraySha256": "054d9a24687fe4b520285b50e061f8f6e5ca93d69f24d3e66868ef0224d6334d",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/KE-2/alpha0.result.json",
+      "resultSha256": "aa16bf5719e2e7674f24d0e402109a4ec0a2bf58a3e078ebbf6b1ff2f48a7224",
+      "trajectoriesFile": "data/research/step20/calibration/KE-2/alpha0.trajectories.csv",
+      "trajectoriesSha256": "f52849f24e6cf02a51e1594b018d601496b292b77a899bb59d8cbf0f39eeef82",
+      "rows": 1445,
+      "finalStatusCounts": {
+        "COMPLETED": 5
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 5
+      },
+      "step18bResultArraySha256": "054d9a24687fe4b520285b50e061f8f6e5ca93d69f24d3e66868ef0224d6334d",
+      "matchesStep18b": true,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/KE-2/bundles/alpha0.zip",
+        "bundleSha256": "289f595ef7812c4abda8bb7c1c1abbc936d44552f9d4c827f77ee820447eb66b",
+        "returncode": 0,
+        "replayResultSha256": "054d9a24687fe4b520285b50e061f8f6e5ca93d69f24d3e66868ef0224d6334d"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.0003-KE-2",
+      "windowId": "KE-2",
+      "alpha": 0.0003,
+      "alphaText": "0.0003",
+      "drifterCount": 5,
+      "released": 5,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-2-15m",
+          "version": "2010-06-30T12_2010-07-03T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-2",
+        "version": "2010-06-30T12.earthus1"
+      },
+      "forcingSha256": "b3da27677e778d6e29af7bb1ad13119f8d7049f9b161950dbf1ed6a5ac213226",
+      "gridSha256": "1d597036f12febb4d962b7418c25fd752677fa471d8afa12b8811801afe76a9e",
+      "windGridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 5760,
+          "outputSamplesUpperBound": 1445,
+          "recommendedMaxStepSeconds": 733,
+          "minimumGridLengthMeters": 6809.828681549111,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:33:53Z",
+      "completedAtUTC": "2026-09-06T06:34:00Z",
+      "wallSeconds": 6.3,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "5040aa7cd874fbd1e513e870ed00e0d0988fe0ce3c406e8a341e9adcb0c662c1",
+      "resultArraySha256": "7119ea4d712414e4a3c66d9aa2cd64502d17bf1facfcd1b3a9079a4474469d40",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/KE-2/alpha0.0003.result.json",
+      "resultSha256": "2c24741d3c60646c1af7d97bc913377653156bcf52d7c468134c817f342a44ff",
+      "trajectoriesFile": "data/research/step20/calibration/KE-2/alpha0.0003.trajectories.csv",
+      "trajectoriesSha256": "987ee7e9edf0e8ed72640edb64aa8e344062f495a5cdd383643e5e4411cf238d",
+      "rows": 1445,
+      "finalStatusCounts": {
+        "COMPLETED": 5
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 5
+      },
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/KE-2/bundles/alpha0.0003.zip",
+        "bundleSha256": "5be94884292b1b1cf6ed7033b7a3912ea89478c679bb34e82edfb18f7a32b907",
+        "returncode": 0,
+        "replayResultSha256": "7119ea4d712414e4a3c66d9aa2cd64502d17bf1facfcd1b3a9079a4474469d40"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.0007-KE-2",
+      "windowId": "KE-2",
+      "alpha": 0.0007,
+      "alphaText": "0.0007",
+      "drifterCount": 5,
+      "released": 5,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-2-15m",
+          "version": "2010-06-30T12_2010-07-03T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-2",
+        "version": "2010-06-30T12.earthus1"
+      },
+      "forcingSha256": "b3da27677e778d6e29af7bb1ad13119f8d7049f9b161950dbf1ed6a5ac213226",
+      "gridSha256": "1d597036f12febb4d962b7418c25fd752677fa471d8afa12b8811801afe76a9e",
+      "windGridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 5760,
+          "outputSamplesUpperBound": 1445,
+          "recommendedMaxStepSeconds": 733,
+          "minimumGridLengthMeters": 6809.828681549111,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:34:15Z",
+      "completedAtUTC": "2026-09-06T06:34:22Z",
+      "wallSeconds": 6.4,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "dee43e4648fff8d67bec11d0cbeee6140c86108783dccab8ab657e5470c8158c",
+      "resultArraySha256": "f4ed6734bd38031835b6c7be966aca04a13a7384c13f845b00453d2a8bf2d535",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/KE-2/alpha0.0007.result.json",
+      "resultSha256": "0b6f9e1871a5d20e8876ba548d69821895678b65179637c249c13bd46d6e216e",
+      "trajectoriesFile": "data/research/step20/calibration/KE-2/alpha0.0007.trajectories.csv",
+      "trajectoriesSha256": "b06c6cb25ee7dc5d364607ec2582fa6d0eb2f15c30cb7f4eb29b773aec38fd43",
+      "rows": 1445,
+      "finalStatusCounts": {
+        "COMPLETED": 5
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 5
+      },
+      "step18bResultArraySha256": "f4ed6734bd38031835b6c7be966aca04a13a7384c13f845b00453d2a8bf2d535",
+      "matchesStep18b": true,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/KE-2/bundles/alpha0.0007.zip",
+        "bundleSha256": "931a4c5e7dd97ececfcd1c0190ac96d7a814dac42dd1e7e0cd6ff1624cafe644",
+        "returncode": 0,
+        "replayResultSha256": "f4ed6734bd38031835b6c7be966aca04a13a7384c13f845b00453d2a8bf2d535"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.001-KE-2",
+      "windowId": "KE-2",
+      "alpha": 0.001,
+      "alphaText": "0.001",
+      "drifterCount": 5,
+      "released": 5,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-2-15m",
+          "version": "2010-06-30T12_2010-07-03T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-2",
+        "version": "2010-06-30T12.earthus1"
+      },
+      "forcingSha256": "b3da27677e778d6e29af7bb1ad13119f8d7049f9b161950dbf1ed6a5ac213226",
+      "gridSha256": "1d597036f12febb4d962b7418c25fd752677fa471d8afa12b8811801afe76a9e",
+      "windGridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 5760,
+          "outputSamplesUpperBound": 1445,
+          "recommendedMaxStepSeconds": 733,
+          "minimumGridLengthMeters": 6809.828681549111,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:34:38Z",
+      "completedAtUTC": "2026-09-06T06:34:44Z",
+      "wallSeconds": 6.3,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "5509803ff50b69bdffd02b7a9abbc0d3945125914a7d4619b6e5ad0cf90d43d9",
+      "resultArraySha256": "3cd53f401b6761d6a0de47700b4768078de737b6e9d35e2dadef88730988c47f",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/KE-2/alpha0.001.result.json",
+      "resultSha256": "f61da65fd3af32e8c9de9ad1ce642fc787e0a81ec4741eec7c518a772f969770",
+      "trajectoriesFile": "data/research/step20/calibration/KE-2/alpha0.001.trajectories.csv",
+      "trajectoriesSha256": "c8a8541417d1e80eb21329a1a748025e9172e90417ed17317f7de784b805a1ff",
+      "rows": 1445,
+      "finalStatusCounts": {
+        "COMPLETED": 5
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 5
+      },
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/KE-2/bundles/alpha0.001.zip",
+        "bundleSha256": "0bff0630310f45a4a6939fce36b8614f65366b1d0f2125029f3acfc7c5853a6c",
+        "returncode": 0,
+        "replayResultSha256": "3cd53f401b6761d6a0de47700b4768078de737b6e9d35e2dadef88730988c47f"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.002-KE-2",
+      "windowId": "KE-2",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 5,
+      "released": 5,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-2-15m",
+          "version": "2010-06-30T12_2010-07-03T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-2",
+        "version": "2010-06-30T12.earthus1"
+      },
+      "forcingSha256": "b3da27677e778d6e29af7bb1ad13119f8d7049f9b161950dbf1ed6a5ac213226",
+      "gridSha256": "1d597036f12febb4d962b7418c25fd752677fa471d8afa12b8811801afe76a9e",
+      "windGridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 5760,
+          "outputSamplesUpperBound": 1445,
+          "recommendedMaxStepSeconds": 733,
+          "minimumGridLengthMeters": 6809.828681549111,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:35:00Z",
+      "completedAtUTC": "2026-09-06T06:35:06Z",
+      "wallSeconds": 6.3,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "51be927dff67796145d8f3167f74d25459071ee68df03982222af30287f6da44",
+      "resultArraySha256": "a063e35a2ec6ac764d590e792b98482974c60b6d5580c59029a167f7dfd05043",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/KE-2/alpha0.002.result.json",
+      "resultSha256": "b8d40bd4d7befb72d608d680028cb6fd937f7ed3f48423af79a7e9716924245c",
+      "trajectoriesFile": "data/research/step20/calibration/KE-2/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "e2c8ca1336b3ef967e08a2b641579158e61617ec5c0b770762919769b416aa99",
+      "rows": 1445,
+      "finalStatusCounts": {
+        "COMPLETED": 5
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 5
+      },
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/KE-2/bundles/alpha0.002.zip",
+        "bundleSha256": "a70e9037e028afef7ee84a474e72d47de806bb3e24d801ef43679a7965c4f6ca",
+        "returncode": 0,
+        "replayResultSha256": "a063e35a2ec6ac764d590e792b98482974c60b6d5580c59029a167f7dfd05043"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0-AG-1",
+      "windowId": "AG-1",
+      "alpha": 0,
+      "alphaText": "0",
+      "drifterCount": 9,
+      "released": 9,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-1-15m",
+          "version": "2015-04-23T12_2015-04-26T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-1",
+        "version": "2015-04-23T12.earthus1"
+      },
+      "forcingSha256": "dd0342c513139fd7c6de4033416f838e4423570e4fbdf89e6de4d4810337966c",
+      "gridSha256": "ee9af738d169cb6302b1987cafa5022f5d41f450e2cb3c7df1f5284fa58aae3b",
+      "windGridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 10368,
+          "outputSamplesUpperBound": 2601,
+          "recommendedMaxStepSeconds": 579,
+          "minimumGridLengthMeters": 6809.8286815503225,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:35:20Z",
+      "completedAtUTC": "2026-09-06T06:35:26Z",
+      "wallSeconds": 5.9,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "341eecc1fd7c044b204dd9c0e922c7fc0b7dd9883690e83f53388b39cac85af1",
+      "resultArraySha256": "752235d460dd93f8c8f820259e85294c0fb9e13f968f2d48cea589e656d966f6",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/AG-1/alpha0.result.json",
+      "resultSha256": "2b1ee133ba68616dfaf2a43ecb524409a5f1e1ae49b9fee1814d63f4de2d43d0",
+      "trajectoriesFile": "data/research/step20/calibration/AG-1/alpha0.trajectories.csv",
+      "trajectoriesSha256": "8970e7010f555482aafe210a66a41664c2fa6482726296a0d31f01ed2aeaee3b",
+      "rows": 2601,
+      "finalStatusCounts": {
+        "COMPLETED": 9
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 9
+      },
+      "step18bResultArraySha256": "752235d460dd93f8c8f820259e85294c0fb9e13f968f2d48cea589e656d966f6",
+      "matchesStep18b": true,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/AG-1/bundles/alpha0.zip",
+        "bundleSha256": "05836ff46ee0b8696478970ea214062ae9f215dbdaeb1b4061326f81c25a873c",
+        "returncode": 0,
+        "replayResultSha256": "752235d460dd93f8c8f820259e85294c0fb9e13f968f2d48cea589e656d966f6"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.0003-AG-1",
+      "windowId": "AG-1",
+      "alpha": 0.0003,
+      "alphaText": "0.0003",
+      "drifterCount": 9,
+      "released": 9,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-1-15m",
+          "version": "2015-04-23T12_2015-04-26T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-1",
+        "version": "2015-04-23T12.earthus1"
+      },
+      "forcingSha256": "dd0342c513139fd7c6de4033416f838e4423570e4fbdf89e6de4d4810337966c",
+      "gridSha256": "ee9af738d169cb6302b1987cafa5022f5d41f450e2cb3c7df1f5284fa58aae3b",
+      "windGridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 10368,
+          "outputSamplesUpperBound": 2601,
+          "recommendedMaxStepSeconds": 579,
+          "minimumGridLengthMeters": 6809.8286815503225,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:35:37Z",
+      "completedAtUTC": "2026-09-06T06:35:43Z",
+      "wallSeconds": 6.0,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "1073ff5cfc83148da6648a38b55acc6ee2d876340ef1b8aeb88a1dba106536e3",
+      "resultArraySha256": "e9f1b1bc5c10a1c48a202b27abdd0292b343a34411f721db6090657665fbe456",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/AG-1/alpha0.0003.result.json",
+      "resultSha256": "09979853d0b81c71b1623e09287754b78ca0869faab3c348df3424e9a4d0fb87",
+      "trajectoriesFile": "data/research/step20/calibration/AG-1/alpha0.0003.trajectories.csv",
+      "trajectoriesSha256": "5b13ec372fd27a1a292ff331a1df6ea6a8edda2f0074b12fd0cbd5b2167a9fbc",
+      "rows": 2601,
+      "finalStatusCounts": {
+        "COMPLETED": 9
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 9
+      },
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/AG-1/bundles/alpha0.0003.zip",
+        "bundleSha256": "fd9482eee411aad46c905da4a7e555b7a73453b9172ee30c0b586dd1aa63ebc9",
+        "returncode": 0,
+        "replayResultSha256": "e9f1b1bc5c10a1c48a202b27abdd0292b343a34411f721db6090657665fbe456"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.0007-AG-1",
+      "windowId": "AG-1",
+      "alpha": 0.0007,
+      "alphaText": "0.0007",
+      "drifterCount": 9,
+      "released": 9,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-1-15m",
+          "version": "2015-04-23T12_2015-04-26T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-1",
+        "version": "2015-04-23T12.earthus1"
+      },
+      "forcingSha256": "dd0342c513139fd7c6de4033416f838e4423570e4fbdf89e6de4d4810337966c",
+      "gridSha256": "ee9af738d169cb6302b1987cafa5022f5d41f450e2cb3c7df1f5284fa58aae3b",
+      "windGridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 10368,
+          "outputSamplesUpperBound": 2601,
+          "recommendedMaxStepSeconds": 579,
+          "minimumGridLengthMeters": 6809.8286815503225,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:35:55Z",
+      "completedAtUTC": "2026-09-06T06:36:00Z",
+      "wallSeconds": 5.7,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "2b5cbb3cd2cc67b0890bd74da28826aa8f3f5f74f0052b2fcd5242c2f52fea08",
+      "resultArraySha256": "d68c848bb186dffa38aec1c4a5dd88b29dfece8e5117cf8394bee0236981586a",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/AG-1/alpha0.0007.result.json",
+      "resultSha256": "33d94f10fbf60effea54689170bfcc31f71bdb5369d009b20017e0b1296b04b2",
+      "trajectoriesFile": "data/research/step20/calibration/AG-1/alpha0.0007.trajectories.csv",
+      "trajectoriesSha256": "cda8c1e2782b3e5e479a14d67f960d5021c870a324648194594c20ca92a145af",
+      "rows": 2601,
+      "finalStatusCounts": {
+        "COMPLETED": 9
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 9
+      },
+      "step18bResultArraySha256": "d68c848bb186dffa38aec1c4a5dd88b29dfece8e5117cf8394bee0236981586a",
+      "matchesStep18b": true,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/AG-1/bundles/alpha0.0007.zip",
+        "bundleSha256": "cc9c4e8c0d7a79e82d0ae436921bc1057c6a7120994f02788124879066659576",
+        "returncode": 0,
+        "replayResultSha256": "d68c848bb186dffa38aec1c4a5dd88b29dfece8e5117cf8394bee0236981586a"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.001-AG-1",
+      "windowId": "AG-1",
+      "alpha": 0.001,
+      "alphaText": "0.001",
+      "drifterCount": 9,
+      "released": 9,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-1-15m",
+          "version": "2015-04-23T12_2015-04-26T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-1",
+        "version": "2015-04-23T12.earthus1"
+      },
+      "forcingSha256": "dd0342c513139fd7c6de4033416f838e4423570e4fbdf89e6de4d4810337966c",
+      "gridSha256": "ee9af738d169cb6302b1987cafa5022f5d41f450e2cb3c7df1f5284fa58aae3b",
+      "windGridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 10368,
+          "outputSamplesUpperBound": 2601,
+          "recommendedMaxStepSeconds": 579,
+          "minimumGridLengthMeters": 6809.8286815503225,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:36:11Z",
+      "completedAtUTC": "2026-09-06T06:36:17Z",
+      "wallSeconds": 5.7,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "43a3a3356d845700b9b254e19bae984fbc48945c9ca55a764245496507c65d0e",
+      "resultArraySha256": "06915b4497f3d156c1fcd9ed112f4d18970399c5b013820d8f2ac7bcda809136",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/AG-1/alpha0.001.result.json",
+      "resultSha256": "b491ca62e68a5069c618e33b6c3279c97cfe06dc12d367fc71a2e275e479d304",
+      "trajectoriesFile": "data/research/step20/calibration/AG-1/alpha0.001.trajectories.csv",
+      "trajectoriesSha256": "966470b3bbca0bc0bb3324f9fde0ef6faccfe15204fe8923479a41f2754fb90c",
+      "rows": 2601,
+      "finalStatusCounts": {
+        "COMPLETED": 9
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 9
+      },
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/AG-1/bundles/alpha0.001.zip",
+        "bundleSha256": "03a837f7e975c640c9ecbd73c748dd29429447e12a679e08fc493b490de14d22",
+        "returncode": 0,
+        "replayResultSha256": "06915b4497f3d156c1fcd9ed112f4d18970399c5b013820d8f2ac7bcda809136"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.002-AG-1",
+      "windowId": "AG-1",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 9,
+      "released": 9,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-1-15m",
+          "version": "2015-04-23T12_2015-04-26T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-1",
+        "version": "2015-04-23T12.earthus1"
+      },
+      "forcingSha256": "dd0342c513139fd7c6de4033416f838e4423570e4fbdf89e6de4d4810337966c",
+      "gridSha256": "ee9af738d169cb6302b1987cafa5022f5d41f450e2cb3c7df1f5284fa58aae3b",
+      "windGridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 10368,
+          "outputSamplesUpperBound": 2601,
+          "recommendedMaxStepSeconds": 579,
+          "minimumGridLengthMeters": 6809.8286815503225,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:36:27Z",
+      "completedAtUTC": "2026-09-06T06:36:33Z",
+      "wallSeconds": 5.7,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "12c5a679d353f0d4dbf6af2ef00ccaadbf8bf30399cd52bc0adf9b1224fd9645",
+      "resultArraySha256": "afac7313dd5dc7decd013aca1d7da6691bfa48933f98273d4c02c09beb9891d3",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/AG-1/alpha0.002.result.json",
+      "resultSha256": "b842b1e9841d9fd7fabff0d18b63072a6e4a1a719fdec0d63f217112e1d8f71f",
+      "trajectoriesFile": "data/research/step20/calibration/AG-1/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "58f9ca262b7e74d1fba1daac951b51e9f32847e7b500ec87bb9e7d75f716976b",
+      "rows": 2601,
+      "finalStatusCounts": {
+        "COMPLETED": 9
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 9
+      },
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/AG-1/bundles/alpha0.002.zip",
+        "bundleSha256": "556098d94810d3efa39ac902047f7da92c5a12ecba4133fe8ff6ce0b9ac4f087",
+        "returncode": 0,
+        "replayResultSha256": "afac7313dd5dc7decd013aca1d7da6691bfa48933f98273d4c02c09beb9891d3"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0-AG-2",
+      "windowId": "AG-2",
+      "alpha": 0,
+      "alphaText": "0",
+      "drifterCount": 1,
+      "released": 1,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-2-15m",
+          "version": "2015-04-26T12_2015-04-29T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-2",
+        "version": "2015-04-26T12.earthus1"
+      },
+      "forcingSha256": "78fc422e2a29e99ba9275dbb9d9c9370fffa13a0db193e2d9d7052a2473ef057",
+      "gridSha256": "c53b91b4922c5b1f97ff4c704f87bb2a0fa14d6ea8da4a11bbcc9719dfe43859",
+      "windGridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 1152,
+          "outputSamplesUpperBound": 289,
+          "recommendedMaxStepSeconds": 663,
+          "minimumGridLengthMeters": 6928.002773054685,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:36:43Z",
+      "completedAtUTC": "2026-09-06T06:36:44Z",
+      "wallSeconds": 0.8,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "33efd0eb02a3e0c92e73618fb8b5ddcd06d380789ec8b4f35a000607e07e6217",
+      "resultArraySha256": "341f1fca0d7e6dece2cd0d05f434f81dfa5415110650ccac27e721ea098b87d8",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/AG-2/alpha0.result.json",
+      "resultSha256": "3c12761ad677a076603631d436d7c6b9be4ec78799cd788c1c7255a2683d3111",
+      "trajectoriesFile": "data/research/step20/calibration/AG-2/alpha0.trajectories.csv",
+      "trajectoriesSha256": "158100c502fbe5f985fe5dbb5979229c77bc55731453f938b5fec9ffcd169da7",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "step18bResultArraySha256": "341f1fca0d7e6dece2cd0d05f434f81dfa5415110650ccac27e721ea098b87d8",
+      "matchesStep18b": true,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/AG-2/bundles/alpha0.zip",
+        "bundleSha256": "ebd0e71b992b133ee16b2c853dac428e9924c22403871990607ad6a5b4d0d084",
+        "returncode": 0,
+        "replayResultSha256": "341f1fca0d7e6dece2cd0d05f434f81dfa5415110650ccac27e721ea098b87d8"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.0003-AG-2",
+      "windowId": "AG-2",
+      "alpha": 0.0003,
+      "alphaText": "0.0003",
+      "drifterCount": 1,
+      "released": 1,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-2-15m",
+          "version": "2015-04-26T12_2015-04-29T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-2",
+        "version": "2015-04-26T12.earthus1"
+      },
+      "forcingSha256": "78fc422e2a29e99ba9275dbb9d9c9370fffa13a0db193e2d9d7052a2473ef057",
+      "gridSha256": "c53b91b4922c5b1f97ff4c704f87bb2a0fa14d6ea8da4a11bbcc9719dfe43859",
+      "windGridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 1152,
+          "outputSamplesUpperBound": 289,
+          "recommendedMaxStepSeconds": 663,
+          "minimumGridLengthMeters": 6928.002773054685,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:36:46Z",
+      "completedAtUTC": "2026-09-06T06:36:47Z",
+      "wallSeconds": 0.8,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "146612f5861936c2e2eae37606b8ebb7536530efec280af4c60533a48daa0661",
+      "resultArraySha256": "c0b7c6ac6d5ddb7114bc5f00c5578c588ac7c1cfc9c193fd55cdf5f5d8d9b7a7",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/AG-2/alpha0.0003.result.json",
+      "resultSha256": "c95694bcc6785d750e9b1ab623f7ab09fafa0fec39ff862c25e1def15c034e78",
+      "trajectoriesFile": "data/research/step20/calibration/AG-2/alpha0.0003.trajectories.csv",
+      "trajectoriesSha256": "77ec2051875e60b27efe6984466de63f96c54e8dd31fbcf6d005981e2dd97091",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/AG-2/bundles/alpha0.0003.zip",
+        "bundleSha256": "3537515ab3d60c9fd08ea1d593a51902f732dea9df681d4b5a812da2640d5d3b",
+        "returncode": 0,
+        "replayResultSha256": "c0b7c6ac6d5ddb7114bc5f00c5578c588ac7c1cfc9c193fd55cdf5f5d8d9b7a7"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.0007-AG-2",
+      "windowId": "AG-2",
+      "alpha": 0.0007,
+      "alphaText": "0.0007",
+      "drifterCount": 1,
+      "released": 1,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-2-15m",
+          "version": "2015-04-26T12_2015-04-29T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-2",
+        "version": "2015-04-26T12.earthus1"
+      },
+      "forcingSha256": "78fc422e2a29e99ba9275dbb9d9c9370fffa13a0db193e2d9d7052a2473ef057",
+      "gridSha256": "c53b91b4922c5b1f97ff4c704f87bb2a0fa14d6ea8da4a11bbcc9719dfe43859",
+      "windGridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 1152,
+          "outputSamplesUpperBound": 289,
+          "recommendedMaxStepSeconds": 663,
+          "minimumGridLengthMeters": 6928.002773054685,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:36:50Z",
+      "completedAtUTC": "2026-09-06T06:36:51Z",
+      "wallSeconds": 0.8,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "72cc8833f9bb76aa13057335e06bd1d09a9f29e7d4f40673dbd0abc290df6cb1",
+      "resultArraySha256": "8016967682c3dd39e8b677fad8a3e9a0758db490e4f54e80150ad0a42f807d25",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/AG-2/alpha0.0007.result.json",
+      "resultSha256": "da37caf8761ce9a4bc95a80be7d2f4e473603a2335c4778576159d544abe7c9e",
+      "trajectoriesFile": "data/research/step20/calibration/AG-2/alpha0.0007.trajectories.csv",
+      "trajectoriesSha256": "74615fb4bef30a65e8a1472c4573f4ad9af90c916573cdb4de6c06edbb1d2f79",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "step18bResultArraySha256": "8016967682c3dd39e8b677fad8a3e9a0758db490e4f54e80150ad0a42f807d25",
+      "matchesStep18b": true,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/AG-2/bundles/alpha0.0007.zip",
+        "bundleSha256": "45db7824e9933f1160368ebb715a6a0271ef042f515321bbb66a049c4c76ad1b",
+        "returncode": 0,
+        "replayResultSha256": "8016967682c3dd39e8b677fad8a3e9a0758db490e4f54e80150ad0a42f807d25"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.001-AG-2",
+      "windowId": "AG-2",
+      "alpha": 0.001,
+      "alphaText": "0.001",
+      "drifterCount": 1,
+      "released": 1,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-2-15m",
+          "version": "2015-04-26T12_2015-04-29T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-2",
+        "version": "2015-04-26T12.earthus1"
+      },
+      "forcingSha256": "78fc422e2a29e99ba9275dbb9d9c9370fffa13a0db193e2d9d7052a2473ef057",
+      "gridSha256": "c53b91b4922c5b1f97ff4c704f87bb2a0fa14d6ea8da4a11bbcc9719dfe43859",
+      "windGridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 1152,
+          "outputSamplesUpperBound": 289,
+          "recommendedMaxStepSeconds": 663,
+          "minimumGridLengthMeters": 6928.002773054685,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:36:53Z",
+      "completedAtUTC": "2026-09-06T06:36:54Z",
+      "wallSeconds": 0.8,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "476660a261c09a64716e8e46cbe6e9a0f2a6be9e7e93d65a1d05832b280b6bc0",
+      "resultArraySha256": "b09919ce5150d7e66ee4641bf70e076fd66f08543c6c539965dcfd2022d0fef4",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/AG-2/alpha0.001.result.json",
+      "resultSha256": "fbbbd540378deda71b35751716ec6dff5cb48c1843a32562e91af607ce4b03e7",
+      "trajectoriesFile": "data/research/step20/calibration/AG-2/alpha0.001.trajectories.csv",
+      "trajectoriesSha256": "7d990ac5b28f366c5d63117b54e82d192cc8f0441e2bdd6a84f4608fc54f967b",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/AG-2/bundles/alpha0.001.zip",
+        "bundleSha256": "ab46ddfe5623cb9ad87507293d1a532b793d37112402e8234355231c3df35a75",
+        "returncode": 0,
+        "replayResultSha256": "b09919ce5150d7e66ee4641bf70e076fd66f08543c6c539965dcfd2022d0fef4"
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step20-cal-alpha0.002-AG-2",
+      "windowId": "AG-2",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 1,
+      "released": 1,
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-2-15m",
+          "version": "2015-04-26T12_2015-04-29T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-2",
+        "version": "2015-04-26T12.earthus1"
+      },
+      "forcingSha256": "78fc422e2a29e99ba9275dbb9d9c9370fffa13a0db193e2d9d7052a2473ef057",
+      "gridSha256": "c53b91b4922c5b1f97ff4c704f87bb2a0fa14d6ea8da4a11bbcc9719dfe43859",
+      "windGridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 1152,
+          "outputSamplesUpperBound": 289,
+          "recommendedMaxStepSeconds": 663,
+          "minimumGridLengthMeters": 6928.002773054685,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T06:36:57Z",
+      "completedAtUTC": "2026-09-06T06:36:58Z",
+      "wallSeconds": 0.8,
+      "modelCommit": "e0d99261bdc4dc9d0a27019571e1e2c8d73c8d5a",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "13c3a3802bbb6c8be52656f5c1eea57fb86c1e380b0e79ba2eae8b5a60998afe",
+      "resultArraySha256": "42c0010f77f96608364fdb55450f40f22851947b085bc7184b04fc9afe5dd42b",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step20/calibration/AG-2/alpha0.002.result.json",
+      "resultSha256": "48b6f4fd071414b60ffc3818d838467ff31cbab45fae8bfd5a2f11f915d8b2ed",
+      "trajectoriesFile": "data/research/step20/calibration/AG-2/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "afc98cf9d2e1d66f97d1c3f2637ae9c0e7c24bdfdade8d2dc785a10f990ba0e2",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step20/calibration/AG-2/bundles/alpha0.002.zip",
+        "bundleSha256": "ca07426d864c6ae32533a3a00f0527fd8d87b0cb1beb733041dac927e5531df7",
+        "returncode": 0,
+        "replayResultSha256": "42c0010f77f96608364fdb55450f40f22851947b085bc7184b04fc9afe5dd42b"
+      },
+      "replayMatched": true
+    }
+  ],
+  "runOrder": [
+    "step20-cal-alpha0-KE-1",
+    "step20-cal-alpha0.0003-KE-1",
+    "step20-cal-alpha0.0007-KE-1",
+    "step20-cal-alpha0.001-KE-1",
+    "step20-cal-alpha0.002-KE-1",
+    "step20-cal-alpha0-KE-2",
+    "step20-cal-alpha0.0003-KE-2",
+    "step20-cal-alpha0.0007-KE-2",
+    "step20-cal-alpha0.001-KE-2",
+    "step20-cal-alpha0.002-KE-2",
+    "step20-cal-alpha0-AG-1",
+    "step20-cal-alpha0.0003-AG-1",
+    "step20-cal-alpha0.0007-AG-1",
+    "step20-cal-alpha0.001-AG-1",
+    "step20-cal-alpha0.002-AG-1",
+    "step20-cal-alpha0-AG-2",
+    "step20-cal-alpha0.0003-AG-2",
+    "step20-cal-alpha0.0007-AG-2",
+    "step20-cal-alpha0.001-AG-2",
+    "step20-cal-alpha0.002-AG-2"
+  ],
+  "step18bReproducibility": {
+    "KE-1/0": true,
+    "KE-1/0.0007": true,
+    "KE-2/0": true,
+    "KE-2/0.0007": true,
+    "AG-1/0": true,
+    "AG-1/0.0007": true,
+    "AG-2/0": true,
+    "AG-2/0.0007": true
+  },
+  "holdoutAccess": 0,
+  "forcingDownloads": 0,
+  "holdoutEvaluation": 0,
+  "startedAtUTC": "2026-09-06T06:31:17Z",
+  "createdAtUTC": "2026-09-06T06:37:00Z",
+  "deterministic": true,
+  "randomSeed": null,
+  "resultFilesCommitted": false,
+  "interpretation": "NONE",
+  "log": [
+    {
+      "utc": "2026-09-06T06:31:17Z",
+      "phase": "precheck",
+      "status": "PASS",
+      "head": "e0d99261"
+    },
+    {
+      "utc": "2026-09-06T06:31:21Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0-KE-1",
+      "particles": 8
+    },
+    {
+      "utc": "2026-09-06T06:31:43Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0-KE-1",
+      "wall": 7.5,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 8
+      },
+      "matchesStep18b": true
+    },
+    {
+      "utc": "2026-09-06T06:31:46Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.0003-KE-1",
+      "particles": 8
+    },
+    {
+      "utc": "2026-09-06T06:32:14Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.0003-KE-1",
+      "wall": 7.6,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 8
+      },
+      "matchesStep18b": null
+    },
+    {
+      "utc": "2026-09-06T06:32:17Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.0007-KE-1",
+      "particles": 8
+    },
+    {
+      "utc": "2026-09-06T06:32:39Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.0007-KE-1",
+      "wall": 7.4,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 8
+      },
+      "matchesStep18b": true
+    },
+    {
+      "utc": "2026-09-06T06:32:42Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.001-KE-1",
+      "particles": 8
+    },
+    {
+      "utc": "2026-09-06T06:33:04Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.001-KE-1",
+      "wall": 7.5,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 8
+      },
+      "matchesStep18b": null
+    },
+    {
+      "utc": "2026-09-06T06:33:07Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.002-KE-1",
+      "particles": 8
+    },
+    {
+      "utc": "2026-09-06T06:33:28Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.002-KE-1",
+      "wall": 7.5,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 8
+      },
+      "matchesStep18b": null
+    },
+    {
+      "utc": "2026-09-06T06:33:31Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0-KE-2",
+      "particles": 5
+    },
+    {
+      "utc": "2026-09-06T06:33:50Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0-KE-2",
+      "wall": 6.2,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 5
+      },
+      "matchesStep18b": true
+    },
+    {
+      "utc": "2026-09-06T06:33:53Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.0003-KE-2",
+      "particles": 5
+    },
+    {
+      "utc": "2026-09-06T06:34:12Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.0003-KE-2",
+      "wall": 6.3,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 5
+      },
+      "matchesStep18b": null
+    },
+    {
+      "utc": "2026-09-06T06:34:15Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.0007-KE-2",
+      "particles": 5
+    },
+    {
+      "utc": "2026-09-06T06:34:35Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.0007-KE-2",
+      "wall": 6.4,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 5
+      },
+      "matchesStep18b": true
+    },
+    {
+      "utc": "2026-09-06T06:34:38Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.001-KE-2",
+      "particles": 5
+    },
+    {
+      "utc": "2026-09-06T06:34:57Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.001-KE-2",
+      "wall": 6.3,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 5
+      },
+      "matchesStep18b": null
+    },
+    {
+      "utc": "2026-09-06T06:35:00Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.002-KE-2",
+      "particles": 5
+    },
+    {
+      "utc": "2026-09-06T06:35:19Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.002-KE-2",
+      "wall": 6.3,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 5
+      },
+      "matchesStep18b": null
+    },
+    {
+      "utc": "2026-09-06T06:35:20Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0-AG-1",
+      "particles": 9
+    },
+    {
+      "utc": "2026-09-06T06:35:36Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0-AG-1",
+      "wall": 5.9,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 9
+      },
+      "matchesStep18b": true
+    },
+    {
+      "utc": "2026-09-06T06:35:37Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.0003-AG-1",
+      "particles": 9
+    },
+    {
+      "utc": "2026-09-06T06:35:53Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.0003-AG-1",
+      "wall": 6.0,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 9
+      },
+      "matchesStep18b": null
+    },
+    {
+      "utc": "2026-09-06T06:35:55Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.0007-AG-1",
+      "particles": 9
+    },
+    {
+      "utc": "2026-09-06T06:36:10Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.0007-AG-1",
+      "wall": 5.7,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 9
+      },
+      "matchesStep18b": true
+    },
+    {
+      "utc": "2026-09-06T06:36:11Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.001-AG-1",
+      "particles": 9
+    },
+    {
+      "utc": "2026-09-06T06:36:26Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.001-AG-1",
+      "wall": 5.7,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 9
+      },
+      "matchesStep18b": null
+    },
+    {
+      "utc": "2026-09-06T06:36:27Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.002-AG-1",
+      "particles": 9
+    },
+    {
+      "utc": "2026-09-06T06:36:43Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.002-AG-1",
+      "wall": 5.7,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 9
+      },
+      "matchesStep18b": null
+    },
+    {
+      "utc": "2026-09-06T06:36:43Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0-AG-2",
+      "particles": 1
+    },
+    {
+      "utc": "2026-09-06T06:36:46Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0-AG-2",
+      "wall": 0.8,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 1
+      },
+      "matchesStep18b": true
+    },
+    {
+      "utc": "2026-09-06T06:36:46Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.0003-AG-2",
+      "particles": 1
+    },
+    {
+      "utc": "2026-09-06T06:36:50Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.0003-AG-2",
+      "wall": 0.8,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 1
+      },
+      "matchesStep18b": null
+    },
+    {
+      "utc": "2026-09-06T06:36:50Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.0007-AG-2",
+      "particles": 1
+    },
+    {
+      "utc": "2026-09-06T06:36:53Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.0007-AG-2",
+      "wall": 0.8,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 1
+      },
+      "matchesStep18b": true
+    },
+    {
+      "utc": "2026-09-06T06:36:53Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.001-AG-2",
+      "particles": 1
+    },
+    {
+      "utc": "2026-09-06T06:36:57Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.001-AG-2",
+      "wall": 0.8,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 1
+      },
+      "matchesStep18b": null
+    },
+    {
+      "utc": "2026-09-06T06:36:57Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step20-cal-alpha0.002-AG-2",
+      "particles": 1
+    },
+    {
+      "utc": "2026-09-06T06:37:00Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step20-cal-alpha0.002-AG-2",
+      "wall": 0.8,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 1
+      },
+      "matchesStep18b": null
+    }
+  ]
+}

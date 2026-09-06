@@ -97,3 +97,5 @@ data/research/step18b/
 data/research/step20/
 # STEP 23 acquired P1 raw data (hundreds of MB) — manifests/logs live in docs/research/step23-acquisition
 data/research/step23/
+# STEP 25B GLORYS raw data and isolated toolbox venv are never committed; only docs/research/step25b-* records are
+data/research/step25b/

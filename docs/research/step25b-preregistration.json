@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "glorys12v1-acquisition-quality-gate-step25b",
+  "protocolDocument": "docs/research/step25b-glorys-acquisition-protocol.json",
+  "protocolSha256": "0a542a94ee0c04a54ac7bd543c7f89eb0462e0a19e89668c969935178dc76eb9",
+  "createdAtUTC": "2026-09-06T09:51:55Z",
+  "gitCommitAtDesign": "2841f511",
+  "authorProcess": "Claude Fable 5.1 session, user-directed STEP 25B",
+  "ancestry": {
+    "step25aLock": "2841f511",
+    "step24bR2": "db6cea2f",
+    "step20AlphaLock": "73fafffb",
+    "step20Lock": "155995dd"
+  },
+  "immutabilityCheck": "SHA-256 of STEP 17-25A locked outputs and the runtime files at 155995dd verified by the validator before and after",
+  "tools": {
+    "tools/research/acquire_step25b.py": "d381e04aac821c5a02c1829a988b1683cea865ba66a7ac6571ecc276e28a273b",
+    "tools/research/quality_step25b.py": "fd06dee31b3d0377dc09dd6a6cd9298944a598bc7af6d3d42d7298352a16c82f",
+    "tools/research/check_step25b_glorys_quality.py": "db5a8ea8be26eca2d7aee5e035f39d26c205894e013d6c2019aba936ce4139bc"
+  },
+  "validator": {
+    "path": "tools/research/check_step25b_glorys_quality.py",
+    "checks": 20,
+    "sha256": "db5a8ea8be26eca2d7aee5e035f39d26c205894e013d6c2019aba936ce4139bc"
+  },
+  "credentialState": {
+    "checkedHow": "existence only (no contents read)",
+    "userProvidedCredentials": "none present at lock time",
+    "expectedOutcomeIfUnchanged": "STEP25B_CREDENTIALS_REQUIRED"
+  },
+  "phaseOrder": [
+    "LOCK commit",
+    "isolated toolbox install (no credentials)",
+    "authentication check (exit code)",
+    "acquisition only if AUTHORIZED",
+    "quality gates",
+    "validator x2 byte-identical",
+    "commit only with validator PASS"
+  ],
+  "MODEL_RUN": "FORBIDDEN",
+  "frozenAlpha": 0.002,
+  "comparisonAlpha": 0.0,
+  "lockPolicy": "this document and the three tools are SHA-locked and committed BEFORE any acquisition attempt; any change requires a new revision step"
+}

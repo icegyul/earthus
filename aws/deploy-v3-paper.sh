@@ -68,19 +68,22 @@ while IFS= read -r f; do
 done < <(find "$SRC/data" -type f \( -name '*.json' -size +900k -o -name '*.i16' \) | sort)
 rm -rf "$TMPGZ"
 
-echo "▸ 디렉터리 주소용 사본  app/v3  ·  app/v3/"
-for key in "${PREFIX}/v3" "${PREFIX}/v3/"; do
-  aws s3api put-object --bucket "$BUCKET" --region "$REGION" --key "$key" --body "$SRC/index.html" \
-    --content-type 'text/html; charset=utf-8' --cache-control 'public, max-age=60' >/dev/null
-  echo "  올림  ${key}"
-done
-
-# /wonder 별칭 — earth-switch.js 메뉴가 거는 주소. <base href="/v3/"> 한 줄만 얹은 사본.
-echo "▸ /wonder 별칭"
+# <base href="/v3/"> 를 얹은 사본. /wonder 별칭뿐 아니라 **슬래시 없는 /v3 에도 이걸 써야 한다** —
+# 2026-09-07 받은 신고: earthus.net/v3 로 들어가면 ./styles.css 가 루트로 풀려 맨 HTML 이 떴다(/v3/ 와 메뉴의 /wonder 는 정상).
 WONDER_TMP="$ROOT/.wonder-alias.tmp.html"
 sed '/^<head>$/a\
 <base href="/v3/">' "$SRC/index.html" > "$WONDER_TMP"
 grep -qF '<base href="/v3/">' "$WONDER_TMP" || { echo "wonder alias injection failed" >&2; exit 4; }
+
+echo "▸ 디렉터리 주소용 사본  app/v3  ·  app/v3/  (base href 사본)"
+for key in "${PREFIX}/v3" "${PREFIX}/v3/"; do
+  aws s3api put-object --bucket "$BUCKET" --region "$REGION" --key "$key" --body "$WONDER_TMP" \
+    --content-type 'text/html; charset=utf-8' --cache-control 'public, max-age=60' >/dev/null
+  echo "  올림  ${key}"
+done
+
+# /wonder 별칭 — earth-switch.js 메뉴가 거는 주소.
+echo "▸ /wonder 별칭"
 for key in "${PREFIX}/wonder" "${PREFIX}/wonder/" "${PREFIX}/wonder/index.html"; do
   aws s3api put-object --bucket "$BUCKET" --region "$REGION" --key "$key" --body "$WONDER_TMP" \
     --content-type 'text/html; charset=utf-8' --cache-control 'public, max-age=60' >/dev/null

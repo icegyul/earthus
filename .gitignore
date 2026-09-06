@@ -84,3 +84,8 @@ artifacts/v3-paper/
 
 # STEP 15 raw observation inputs (hundreds of MB) — SHAs and acquisition log are kept in docs/research/step15-observation-manifest.json
 data/research/step15/
+
+# Copernicus Marine / CDS credential files must never be committed (STEP 17 secret policy)
+.copernicusmarine/
+.cdsapirc
+secrets/

@@ -1,0 +1,201 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "forcing-protocol-step17-hycom15m-ncep10m-primary",
+  "protocolDocument": "docs/research/step17-forcing-protocol.md",
+  "protocolDocumentSha256": "db73ef67d1a191d67b29d488805a3c9998a65bf70b80dffe15b40ed8eb041792",
+  "createdAtUTC": "2026-09-06T04:07:12Z",
+  "authorProcess": "Claude Code session (Research Intelligence PHASE 2, STEP 17) — design only; no forcing acquired, no model run",
+  "gitCommitAtDesign": "5bc3590b",
+  "parent": {
+    "step": 16,
+    "status": "COHORT_SELECTION_PASS",
+    "ruleSha256": "e9e2c1ca2e2148ff763becebf8a56119a3551c965efe32df7ea49fdb84ea0948",
+    "selectionHash": "4b13c3abce723bc222de0bec7b0499c551b4cb668b3f68759d7e00f0ccbc6692",
+    "cohortFileSha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+    "cohortCommit": "5bc3590b",
+    "regions": [
+      "KE",
+      "AG"
+    ],
+    "uniqueDrifters": 23,
+    "immutable": true
+  },
+  "step15": {
+    "commit": "7091c5cb",
+    "immutable": true
+  },
+  "selectionPriority": [
+    "physical suitability",
+    "spatial/temporal resolution",
+    "coverage of observation windows",
+    "reproducibility",
+    "data quality",
+    "provenance",
+    "access stability",
+    "cost (never decisive alone)"
+  ],
+  "runUnits": [
+    {
+      "windowId": "KE-1",
+      "region": "KE",
+      "startUTC": "2010-05-11T12:00:00Z",
+      "endUTC": "2010-05-14T12:00:00Z",
+      "cohortDrifters": 8
+    },
+    {
+      "windowId": "KE-2",
+      "region": "KE",
+      "startUTC": "2010-06-30T12:00:00Z",
+      "endUTC": "2010-07-03T12:00:00Z",
+      "cohortDrifters": 5
+    },
+    {
+      "windowId": "AG-1",
+      "region": "AG",
+      "startUTC": "2015-04-23T12:00:00Z",
+      "endUTC": "2015-04-26T12:00:00Z",
+      "cohortDrifters": 9
+    },
+    {
+      "windowId": "AG-2",
+      "region": "AG",
+      "startUTC": "2015-04-26T12:00:00Z",
+      "endUTC": "2015-04-29T12:00:00Z",
+      "cohortDrifters": 1
+    }
+  ],
+  "releaseRule": "release points = t0 observed positions of the window's cohort-assigned drifters only (IDs first added in that window); duplicate IDs are not released; comparison pairs = 23",
+  "domainRule": {
+    "current": "t0 cohort bounding box of the window's cohort drifters with a fixed buffer of 2.0 degree in latitude and 2.0 degree in longitude; latitude domain clipped to [-40, +40]",
+    "wind": "ocean forcing domain ± 3.0°, time t0-12h .. t0+84h",
+    "oceanTime": "t0 .. t0+72h",
+    "bufferRationale": "72 h × 0.85 m/s ≈ 220 km was the prior basis for choosing the initial spatial margin only; the implementation applies the geographic degree extent as stated, never a guaranteed km distance",
+    "boundaryPolicy": "latitude domain [-40, +40]; no extrapolation outside; states are OUT_OF_DOMAIN (particle leaves the ocean domain) or FORCING_UNAVAILABLE (no forcing sample at that time/position); cohort kept; recorded per window forcing status; no reader extension for the 0.04° grid poleward of ±40° without a new preregistration"
+  },
+  "forcing": {
+    "currentPrimary": {
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "provider": "NRL/NAVOCEANO via HYCOM.org THREDDS NCSS (anonymous)",
+      "variables": [
+        "water_u",
+        "water_v"
+      ],
+      "units": "m/s",
+      "spatialResolution": "0.08° (40S–40N)",
+      "temporalResolution": "3 h instantaneous",
+      "coveragePeriod": "1994–2015",
+      "verticalLevel": "15 m (vertCoord=15)",
+      "coordinateConvention": "lon -180..180 as requested, lat ascending, float32 labels normalized to 2 dp (<1e-4° correction)",
+      "missingValue": "masked → null + landMask (never zero)",
+      "qualityFlags": "masked-node count and u/v ranges recorded; release stencil must be fully wet",
+      "spatialInterpolation": "bilinear",
+      "temporalInterpolation": "linear, no extrapolation",
+      "landMasking": "wet-validity mask across all frames",
+      "coastlineTreatment": "none in forcing; cohort rule E4 (>100 km) already applied",
+      "download": "NCSS 4 requests per window (21h+21h+21h+1 frame), 25 frames exactly",
+      "license": "DoD Distribution A, unlimited distribution (file distribution_statement)",
+      "reader": "research_runtime/netcdf_reader.py earthus-hycom-netcdf/1 (unchanged)",
+      "checksum": "SHA-256 per original file + canonical-list aggregate per window; normalized grid sha256 with fixed issuedAt",
+      "reproducibility": "saved originals are canonical; re-download registered as new version"
+    },
+    "currentProductAxis": {
+      "source": "GLORYS12V1 GLOBAL_MULTIYEAR_PHY_001_030 (cmems_mod_glo_phy_my_0.083deg_P1D-m, to reconfirm)",
+      "provider": "Copernicus Marine / Mercator Ocean",
+      "status": "BLOCKED_PENDING_CREDENTIALS",
+      "variables": [
+        "uo",
+        "vo"
+      ],
+      "units": "m/s",
+      "spatialResolution": "1/12°",
+      "temporalResolution": "daily mean (kept as is; not resampled to 3 h)",
+      "coveragePeriod": "1993–2026-06",
+      "verticalLevel": "15 m by linear interpolation between adjacent levels (~13.47 m, ~15.81 m; confirm from file)",
+      "reader": "research_runtime/glorys_reader.py (NEW, separate commit + tests)",
+      "independenceStatement": "independent model/assimilation system; shared assimilated observations (altimetry, SST, Argo) — not 'fully independent'",
+      "license": "Copernicus Marine free with attribution"
+    },
+    "wind": {
+      "source": "NCEP-DOE Reanalysis 2 uwnd.10m/vwnd.10m",
+      "provider": "NOAA PSL THREDDS NCSS (anonymous)",
+      "units": "m/s",
+      "spatialResolution": "T62 Gaussian ≈1.9°",
+      "temporalResolution": "6 h (file time = forecast valid time)",
+      "coveragePeriod": "1979–present",
+      "verticalLevel": "10 m",
+      "coordinateConvention": "lat reversed to ascending with data; lon 0..360 → -180..180",
+      "missingValue": "null (never zero)",
+      "spatialInterpolation": "bilinear on native Gaussian nodes",
+      "temporalInterpolation": "linear, no extrapolation",
+      "reader": "research_runtime/wind.py earthus-ncep-r2-wind/1 (unchanged)",
+      "license": "no restrictions; PSL acknowledgment",
+      "windageAlpha": 0.0007,
+      "controlAlpha": 0.0,
+      "alternative": "ERA5 10 m only after CDS credentials and a separate preregistration; sensitivity axis only"
+    }
+  },
+  "qcPolicy": {
+    "frameCompleteness": "25 HYCOM frames at 3 h exactly, 16+ wind frames at 6 h; any gap → window FORCING_BLOCKED (no substitution)",
+    "coverage": "release points inside both boxes with full wet stencil; else preflight rejects",
+    "validity": "u/v finite within ±5 m/s current, ±120 m/s wind; masked fraction reported",
+    "noZeroFill": true,
+    "noRegridding": true,
+    "noExtrapolation": true
+  },
+  "provenancePolicy": {
+    "manifest": "docs/research/step17-forcing-manifest.json: per file query, retrievedAtUTC, httpStatus, bytes, sha256; per window forcingSha256",
+    "normalized": "grid sha256 + sourceSha256 + processingHistory; regenerable by tools/research/build_step17_forcing.py",
+    "storage": "originals under data/research/step17/ (committed if small) ; normalized JSON regenerable (.gitignore policy as STEP 9)"
+  },
+  "checksumPolicy": "SHA-256 everywhere; aggregate = sha256(canonical JSON of sorted [{filename, sha256, bytes}])",
+  "acquisitionOrder": [
+    "LOCK commit of this protocol",
+    "build_step17_forcing.py reads cohort-step16.json only to size boxes",
+    "download originals + manifest commit",
+    "check_step17_forcing.py PASS",
+    "next STEP: model/validation plan preregistration"
+  ],
+  "prohibited": [
+    "downloading before LOCK",
+    "model execution",
+    "parameter tuning",
+    "reselecting the cohort with forcing",
+    "choosing datasets/thresholds for a drifter, date or outcome",
+    "modifying STEP 15/16 files",
+    "reducing the domain margin after acquisition"
+  ],
+  "modelRun": false,
+  "forcingAcquired": false,
+  "cohortModified": false,
+  "forcingRoles": {
+    "primaryOcean": "HYCOM GOFS 3.1 GLBv0.08, 15 m, 3 h",
+    "primaryWind": "NCEP-DOE Reanalysis 2, 10 m, 6 h",
+    "independentOceanProduct": "GLORYS12V1 (Copernicus Marine) — not a substitute for HYCOM; if credentials are absent: GLORYS STATUS = BLOCKED/PENDING, HYCOM+NCEP primary proceeds, GLORYS-dependent axes are not run until acquired"
+  },
+  "credentialPolicy": {
+    "phaseA": "not required",
+    "acquisition": "user provides Copernicus Marine credentials at acquisition time; never stored or committed",
+    "secrets": "username/password/API token/credential files are never committed; .gitignore checked beforehand",
+    "fallback": "NOT ALLOWED — no substitute forcing"
+  },
+  "cohortImmutability": {
+    "KE": 13,
+    "AG": 10,
+    "total": 23,
+    "prohibited": [
+      "removing AG-2 (1 drifter) or KE-2 (5 drifters) windows",
+      "removing drifters for forcing coverage",
+      "reselecting the cohort with forcing",
+      "excluding or adding drifters"
+    ]
+  },
+  "alpha": {
+    "primary": 0.0007,
+    "control": 0.0,
+    "locked": true
+  },
+  "lockedAtUTC": "2026-09-06T04:21:35Z",
+  "lockPolicy": "after LOCK no change to forcing source, variables, resolution, domain, buffer, temporal window, interpolation, QC, missing policy, alpha or run definition; changes require a new ruleId",
+  "nextStep": "STEP 17 — PHASE B: FORCING ACQUISITION + QC (separate step; nothing acquired in Phase A)"
+}

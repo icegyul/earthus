@@ -1,0 +1,1 @@
+db73ef67d1a191d67b29d488805a3c9998a65bf70b80dffe15b40ed8eb041792  docs/research/step17-forcing-protocol.md

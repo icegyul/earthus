@@ -16,7 +16,8 @@ const $ = (s) => document.querySelector(s);
 
 let layer = null;
 
-async function ensureLayer() {
+/** 관제센터(js/spaceops)도 같은 레이어 하나를 쓴다 — 둘이 각자 만들면 점이 두 겹으로 그려진다. */
+export async function ensureLayer() {
   if (layer) return layer;
   const { AetherusCesiumLayer } = await import('./aetherus/layer-cesium.js');
   layer = new AetherusCesiumLayer({
@@ -35,10 +36,13 @@ function panel() {
   el = document.createElement('div');
   el.id = 'aetherusOrbitSheet';
   el.className = 'sheet-panel';
-  el.innerHTML = '<button class="sp-close" type="button" aria-label="닫기">&#215;</button>'
+  /* ⚠️ 닫기는 앱 공통 신호등(.traffic > .tl.close)을 쓴다 — 다른 시트가 전부 그렇다.
+     여기만 큰 회색 × 였다(2026-09-06 받은 지적: "x 디자인 수정해줘"). 내리기 점은 두지 않는다 —
+     이 패널은 지도에 남길 상태가 없어 '내리기'가 닫기와 같은 뜻이 된다. */
+  el.innerHTML = '<div class="traffic"><button class="tl close" type="button" aria-label="닫기" title="닫기"><span>×</span></button></div>'
     + '<h3 id="aetherusOrbitTitle">궤도 인텔리전스</h3>'
     + '<div id="aetherusOrbitBody" class="kr-note" style="font-size:12.5px;line-height:1.75"></div>';
-  el.querySelector('.sp-close').onclick = () => el.classList.remove('up');
+  el.querySelector('.tl.close').onclick = () => el.classList.remove('up');
   document.body.appendChild(el);
   return el;
 }

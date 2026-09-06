@@ -548,7 +548,35 @@ export class AetherusCore {
         : `Last refresh failed: ${this.lastError}`);
     }
     lines.push(ko ? '<b>자문 전용</b> — 어떤 명령도 전송하지 않습니다.' : '<b>Advisory only</b> — no commands are sent.');
-    return lines.join('<br/>');
+
+    /* ── 2026-09-06 받은 지적: "이게 무슨 말인지 모르겠어. 요약하고 일반인이 알기 쉽게 설명해놔."
+       위 lines 는 전부 근거다 — **지우지 않는다.** 대신 맨 위에 숫자 요약과 쉬운 말 설명을 놓고,
+       근거는 접이식 안으로 넣는다. 궁금한 사람은 펼치고, 대부분은 세 줄만 읽으면 된다. */
+    const shownN = this.entries.length;
+    const conjN = this.conjunctions.length;
+    const easy = ko
+      ? `<div class="ai-lead">지구 둘레를 도는 물체 <b>${fmt(shownN)}기</b>를 지금 자리에 그렸습니다`
+        + `${deb ? ` · 그중 <b>${fmt(deb)}기</b>가 부서진 파편입니다` : ''}.<br/>`
+        + `${conjN ? `가까이 스쳐 지나갈 일이 <b>${conjN}건</b> 예정돼 있습니다.`
+          : '앞으로 가까이 스쳐 지나갈 일은 목록에 없습니다.'}</div>`
+        + '<p class="ai-easy"><b>우주쓰레기</b>란 수명이 끝난 위성·로켓과, 그것들이 부딪히거나 터져서'
+        + ' 생긴 파편입니다. 초속 7km 남짓으로 돌기 때문에 1cm 조각도 위성을 부술 수 있어,'
+        + ' 무엇이 어디 있는지 세어 두는 일이 중요합니다.</p>'
+        + `<p class="ai-easy">위치는 각국이 공개한 <b>궤도 정보</b>를 그대로 받아 계산합니다 —`
+        + ` 저희가 지어내지 않습니다. 지금 쓰는 자료는 <b>${ageTxt}</b> 것이고, 시간이 지난 만큼`
+        + ' 실제 위치와 조금씩 벌어집니다.</p>'
+        + '<p class="ai-easy"><b>보기만 하는 화면</b>입니다 — 위성이나 기관에 어떤 명령도 보내지 않습니다.</p>'
+        + `<details class="ai-more"><summary>자세한 근거 · 기술 정보</summary>${lines.join('<br/>')}</details>`
+      : `<div class="ai-lead"><b>${fmt(shownN)}</b> objects drawn at their current positions`
+        + `${deb ? ` · <b>${fmt(deb)}</b> of them are debris` : ''}.<br/>`
+        + `${conjN ? `<b>${conjN}</b> close approaches are expected.` : 'No upcoming close approaches in this list.'}</div>`
+        + '<p class="ai-easy"><b>Space debris</b> is dead satellites, spent rockets and the fragments they leave'
+        + ' behind. At roughly 7 km per second even a 1 cm piece can destroy a satellite, so keeping count matters.</p>'
+        + `<p class="ai-easy">Positions come from publicly published <b>orbital elements</b> — nothing is invented here.`
+        + ` This data is <b>${ageTxt}</b> old and drifts from reality as time passes.</p>`
+        + '<p class="ai-easy"><b>Advisory only</b> — no command is sent to any satellite or agency.</p>'
+        + `<details class="ai-more"><summary>Evidence · technical detail</summary>${lines.join('<br/>')}</details>`;
+    return easy;
   }
 }
 

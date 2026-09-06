@@ -37,16 +37,16 @@ export const launchOps = {
     box.id = 'launchOpsSheet';
     box.className = 'sheet-panel lo-sheet';
     box.setAttribute('aria-hidden', 'true');
+    /* 닫기 점 하나만 — 이 패널도 지도에 남길 상태가 없어 '내리기'가 닫기와 같아진다.
+       두 점이 같은 일을 하면 색으로 뜻을 나눈 신호등 규칙이 깨진다. */
     box.innerHTML = `<div class="traffic">
-        <button class="tl close" type="button" aria-label="닫기"></button>
-        <button class="tl min" type="button" aria-label="내리기"></button>
+        <button class="tl close" type="button" aria-label="닫기" title="닫기"><span>×</span></button>
       </div>
       <div class="lo-head"></div>
       <div class="lo-tabs"></div>
       <div class="lo-body"></div>`;
     document.body.appendChild(box);
     box.querySelector('.tl.close').onclick = () => this.close();
-    box.querySelector('.tl.min').onclick = () => this.close();
     this.el = box;
     store.on('tier', () => { if (this.el && this.el.classList.contains('up')) this.render(); });
   },

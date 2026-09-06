@@ -1,0 +1,2510 @@
+{
+  "ruleId": "forcing-sensitivity-test02-step25c",
+  "test": "TEST-02",
+  "modelA": "FROZEN HYCOM BASELINE",
+  "modelB": "GLORYS12V1",
+  "primaryAlpha": 0.002,
+  "structuralAlpha": 0.0,
+  "horizons": [
+    24,
+    48,
+    72
+  ],
+  "tieToleranceKm": 1e-06,
+  "deltaDefinition": "error_GLORYS - error_HYCOM (km); negative = GLORYS lower error",
+  "windows": [
+    "KE-1",
+    "KE-2",
+    "AG-1",
+    "AG-2",
+    "KE-H1",
+    "KE-H3"
+  ],
+  "KE-H2": "EXCLUDED (HYCOM FORCING_UNAVAILABLE in immutable STEP 20; GLORYS coverage fact only)",
+  "AG_holdout": "UNAVAILABLE",
+  "strata": {
+    "overall": {
+      "n_drifters": 35,
+      "24h": {
+        "n": 35,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 35,
+          "median": 19.701,
+          "mean": 28.277,
+          "min": 2.66,
+          "max": 131.891
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 35,
+          "median": 17.762,
+          "mean": 29.388,
+          "min": 1.487,
+          "max": 144.38
+        },
+        "delta": {
+          "median_delta": 1.366,
+          "mean_delta": -1.111,
+          "min_delta": -88.433,
+          "max_delta": 68.341
+        },
+        "wins_GLORYS": 15,
+        "losses_GLORYS": 20,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 35,
+          "error_GLORYS_alpha0": {
+            "n": 35,
+            "median": 20.119,
+            "mean": 28.377,
+            "min": 2.602,
+            "max": 132.895
+          },
+          "error_HYCOM_alpha0": {
+            "n": 35,
+            "median": 17.005,
+            "mean": 29.302,
+            "min": 1.947,
+            "max": 144.014
+          },
+          "delta": {
+            "median_delta": 2.637,
+            "mean_delta": -0.924,
+            "min_delta": -87.284,
+            "max_delta": 68.138
+          },
+          "wins_GLORYS": 14,
+          "losses_GLORYS": 21,
+          "ties": 0
+        }
+      },
+      "48h": {
+        "n": 34,
+        "notAvailable": 1,
+        "error_GLORYS_alpha0.002": {
+          "n": 34,
+          "median": 39.54,
+          "mean": 55.615,
+          "min": 4.796,
+          "max": 289.961
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 35,
+          "median": 33.816,
+          "mean": 53.679,
+          "min": 5.112,
+          "max": 238.223
+        },
+        "delta": {
+          "median_delta": 4.915,
+          "mean_delta": 7.206,
+          "min_delta": -113.348,
+          "max_delta": 147.026
+        },
+        "wins_GLORYS": 15,
+        "losses_GLORYS": 19,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 34,
+          "error_GLORYS_alpha0": {
+            "n": 34,
+            "median": 40.058,
+            "mean": 55.694,
+            "min": 5.116,
+            "max": 290.97
+          },
+          "error_HYCOM_alpha0": {
+            "n": 35,
+            "median": 30.835,
+            "mean": 53.397,
+            "min": 3.487,
+            "max": 237.414
+          },
+          "delta": {
+            "median_delta": 5.587,
+            "mean_delta": 7.57,
+            "min_delta": -114.596,
+            "max_delta": 146.039
+          },
+          "wins_GLORYS": 15,
+          "losses_GLORYS": 19,
+          "ties": 0
+        }
+      },
+      "72h": {
+        "n": 33,
+        "notAvailable": 2,
+        "error_GLORYS_alpha0.002": {
+          "n": 33,
+          "median": 51.988,
+          "mean": 77.259,
+          "min": 7.037,
+          "max": 416.26
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 35,
+          "median": 48.81,
+          "mean": 83.136,
+          "min": 10.265,
+          "max": 331.318
+        },
+        "delta": {
+          "median_delta": 2.167,
+          "mean_delta": 0.586,
+          "min_delta": -175.68,
+          "max_delta": 223.639
+        },
+        "wins_GLORYS": 14,
+        "losses_GLORYS": 19,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 34,
+          "error_GLORYS_alpha0": {
+            "n": 34,
+            "median": 54.225,
+            "mean": 76.744,
+            "min": 8.567,
+            "max": 416.222
+          },
+          "error_HYCOM_alpha0": {
+            "n": 35,
+            "median": 50.633,
+            "mean": 82.264,
+            "min": 10.224,
+            "max": 330.76
+          },
+          "delta": {
+            "median_delta": 5.275,
+            "mean_delta": 1.789,
+            "min_delta": -175.417,
+            "max_delta": 247.895
+          },
+          "wins_GLORYS": 15,
+          "losses_GLORYS": 19,
+          "ties": 0
+        }
+      },
+      "M1_endpoint72h": {
+        "G002": {
+          "n": 33,
+          "median": 67.628,
+          "mean": 94.895,
+          "min": 15.274,
+          "max": 349.635
+        },
+        "G0": {
+          "n": 34,
+          "median": 72.178,
+          "mean": 98.246,
+          "min": 15.551,
+          "max": 348.61
+        },
+        "H002": {
+          "n": 35,
+          "median": 93.295,
+          "mean": 102.058,
+          "min": 11.989,
+          "max": 240.965
+        },
+        "H0": {
+          "n": 35,
+          "median": 91.261,
+          "mean": 101.531,
+          "min": 6.824,
+          "max": 240.645
+        }
+      },
+      "M2_totalPath": {
+        "G002": {
+          "n": 35,
+          "median": 79.782,
+          "mean": 111.207,
+          "min": 17.581,
+          "max": 374.344
+        },
+        "G0": {
+          "n": 35,
+          "median": 81.895,
+          "mean": 111.177,
+          "min": 17.041,
+          "max": 373.916
+        },
+        "H002": {
+          "n": 35,
+          "median": 104.989,
+          "mean": 118.9,
+          "min": 37.045,
+          "max": 255.853
+        },
+        "H0": {
+          "n": 35,
+          "median": 107.085,
+          "mean": 118.164,
+          "min": 36.286,
+          "max": 255.376
+        }
+      },
+      "M4_separation72h": {
+        "GLORYS_alpha0.002_vs_alpha0": {
+          "n": 33,
+          "median": 2.828,
+          "mean": 3.033,
+          "min": 0.496,
+          "max": 8.521
+        },
+        "HYCOM_alpha0.002_vs_alpha0": {
+          "n": 35,
+          "median": 3.511,
+          "mean": 4.88,
+          "min": 0.693,
+          "max": 27.8
+        },
+        "GLORYS_vs_HYCOM_alpha0.002": {
+          "n": 33,
+          "median": 51.034,
+          "mean": 89.139,
+          "min": 16.764,
+          "max": 257.165
+        }
+      },
+      "M5_observed72h": {
+        "n": 35,
+        "median": 85.528,
+        "mean": 115.128,
+        "min": 12.151,
+        "max": 449.489
+      }
+    },
+    "calibration": {
+      "n_drifters": 23,
+      "24h": {
+        "n": 23,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 23,
+          "median": 27.383,
+          "mean": 35.456,
+          "min": 2.66,
+          "max": 131.891
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 23,
+          "median": 25.126,
+          "mean": 37.624,
+          "min": 1.487,
+          "max": 144.38
+        },
+        "delta": {
+          "median_delta": 3.974,
+          "mean_delta": -2.168,
+          "min_delta": -88.433,
+          "max_delta": 68.341
+        },
+        "wins_GLORYS": 11,
+        "losses_GLORYS": 12,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 23,
+          "error_GLORYS_alpha0": {
+            "n": 23,
+            "median": 26.869,
+            "mean": 35.416,
+            "min": 2.602,
+            "max": 132.895
+          },
+          "error_HYCOM_alpha0": {
+            "n": 23,
+            "median": 25.684,
+            "mean": 37.522,
+            "min": 1.947,
+            "max": 144.014
+          },
+          "delta": {
+            "median_delta": 4.32,
+            "mean_delta": -2.107,
+            "min_delta": -87.284,
+            "max_delta": 68.138
+          },
+          "wins_GLORYS": 10,
+          "losses_GLORYS": 13,
+          "ties": 0
+        }
+      },
+      "48h": {
+        "n": 22,
+        "notAvailable": 1,
+        "error_GLORYS_alpha0.002": {
+          "n": 22,
+          "median": 50.243,
+          "mean": 70.523,
+          "min": 7.082,
+          "max": 289.961
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 23,
+          "median": 39.026,
+          "mean": 68.59,
+          "min": 5.112,
+          "max": 238.223
+        },
+        "delta": {
+          "median_delta": 7.03,
+          "mean_delta": 9.401,
+          "min_delta": -113.348,
+          "max_delta": 147.026
+        },
+        "wins_GLORYS": 10,
+        "losses_GLORYS": 12,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 22,
+          "error_GLORYS_alpha0": {
+            "n": 22,
+            "median": 49.865,
+            "mean": 70.313,
+            "min": 7.945,
+            "max": 290.97
+          },
+          "error_HYCOM_alpha0": {
+            "n": 23,
+            "median": 40.669,
+            "mean": 68.337,
+            "min": 3.487,
+            "max": 237.414
+          },
+          "delta": {
+            "median_delta": 7.584,
+            "mean_delta": 9.446,
+            "min_delta": -114.596,
+            "max_delta": 146.039
+          },
+          "wins_GLORYS": 9,
+          "losses_GLORYS": 13,
+          "ties": 0
+        }
+      },
+      "72h": {
+        "n": 21,
+        "notAvailable": 2,
+        "error_GLORYS_alpha0.002": {
+          "n": 21,
+          "median": 63.535,
+          "mean": 98.492,
+          "min": 10.262,
+          "max": 416.26
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 23,
+          "median": 59.055,
+          "mean": 106.376,
+          "min": 16.207,
+          "max": 331.318
+        },
+        "delta": {
+          "median_delta": 0.706,
+          "mean_delta": 0.058,
+          "min_delta": -175.68,
+          "max_delta": 223.639
+        },
+        "wins_GLORYS": 9,
+        "losses_GLORYS": 12,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 22,
+          "error_GLORYS_alpha0": {
+            "n": 22,
+            "median": 65.679,
+            "mean": 95.806,
+            "min": 10.364,
+            "max": 416.222
+          },
+          "error_HYCOM_alpha0": {
+            "n": 23,
+            "median": 61.314,
+            "mean": 105.037,
+            "min": 14.404,
+            "max": 330.76
+          },
+          "delta": {
+            "median_delta": 4.147,
+            "mean_delta": 1.029,
+            "min_delta": -175.417,
+            "max_delta": 247.895
+          },
+          "wins_GLORYS": 10,
+          "losses_GLORYS": 12,
+          "ties": 0
+        }
+      },
+      "M1_endpoint72h": {
+        "G002": {
+          "n": 21,
+          "median": 79.647,
+          "mean": 115.577,
+          "min": 19.203,
+          "max": 349.635
+        },
+        "G0": {
+          "n": 22,
+          "median": 81.193,
+          "mean": 120.257,
+          "min": 19.797,
+          "max": 348.61
+        },
+        "H002": {
+          "n": 23,
+          "median": 98.344,
+          "mean": 114.589,
+          "min": 11.989,
+          "max": 240.965
+        },
+        "H0": {
+          "n": 23,
+          "median": 97.509,
+          "mean": 113.776,
+          "min": 13.263,
+          "max": 240.645
+        }
+      },
+      "M2_totalPath": {
+        "G002": {
+          "n": 23,
+          "median": 90.149,
+          "mean": 137.02,
+          "min": 22.883,
+          "max": 374.344
+        },
+        "G0": {
+          "n": 23,
+          "median": 90.903,
+          "mean": 137.5,
+          "min": 25.955,
+          "max": 373.916
+        },
+        "H002": {
+          "n": 23,
+          "median": 108.383,
+          "mean": 130.878,
+          "min": 44.318,
+          "max": 255.853
+        },
+        "H0": {
+          "n": 23,
+          "median": 112.17,
+          "mean": 129.756,
+          "min": 44.988,
+          "max": 255.376
+        }
+      },
+      "M4_separation72h": {
+        "GLORYS_alpha0.002_vs_alpha0": {
+          "n": 21,
+          "median": 2.75,
+          "mean": 2.767,
+          "min": 0.496,
+          "max": 6.114
+        },
+        "HYCOM_alpha0.002_vs_alpha0": {
+          "n": 23,
+          "median": 3.511,
+          "mean": 4.91,
+          "min": 0.693,
+          "max": 27.8
+        },
+        "GLORYS_vs_HYCOM_alpha0.002": {
+          "n": 21,
+          "median": 86.539,
+          "mean": 112.031,
+          "min": 17.882,
+          "max": 257.165
+        }
+      },
+      "M5_observed72h": {
+        "n": 23,
+        "median": 98.763,
+        "mean": 135.861,
+        "min": 16.535,
+        "max": 449.489
+      }
+    },
+    "holdout": {
+      "n_drifters": 12,
+      "24h": {
+        "n": 12,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 12,
+          "median": 12.356,
+          "mean": 14.515,
+          "min": 2.992,
+          "max": 34.495
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 12,
+          "median": 13.437,
+          "mean": 13.601,
+          "min": 1.941,
+          "max": 23.705
+        },
+        "delta": {
+          "median_delta": 1.208,
+          "mean_delta": 0.914,
+          "min_delta": -14.296,
+          "max_delta": 10.936
+        },
+        "wins_GLORYS": 4,
+        "losses_GLORYS": 8,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 12,
+          "error_GLORYS_alpha0": {
+            "n": 12,
+            "median": 13.21,
+            "mean": 14.887,
+            "min": 2.846,
+            "max": 33.621
+          },
+          "error_HYCOM_alpha0": {
+            "n": 12,
+            "median": 12.866,
+            "mean": 13.545,
+            "min": 2.389,
+            "max": 25.276
+          },
+          "delta": {
+            "median_delta": 1.637,
+            "mean_delta": 1.342,
+            "min_delta": -13.597,
+            "max_delta": 11.629
+          },
+          "wins_GLORYS": 4,
+          "losses_GLORYS": 8,
+          "ties": 0
+        }
+      },
+      "48h": {
+        "n": 12,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 12,
+          "median": 26.219,
+          "mean": 28.284,
+          "min": 4.796,
+          "max": 58.905
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 12,
+          "median": 22.142,
+          "mean": 25.101,
+          "min": 6.096,
+          "max": 58.664
+        },
+        "delta": {
+          "median_delta": 1.691,
+          "mean_delta": 3.182,
+          "min_delta": -33.879,
+          "max_delta": 28.579
+        },
+        "wins_GLORYS": 5,
+        "losses_GLORYS": 7,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 12,
+          "error_GLORYS_alpha0": {
+            "n": 12,
+            "median": 27.783,
+            "mean": 28.893,
+            "min": 5.116,
+            "max": 57.741
+          },
+          "error_HYCOM_alpha0": {
+            "n": 12,
+            "median": 21.734,
+            "mean": 24.761,
+            "min": 7.536,
+            "max": 63.93
+          },
+          "delta": {
+            "median_delta": 2.701,
+            "mean_delta": 4.132,
+            "min_delta": -30.502,
+            "max_delta": 29.464
+          },
+          "wins_GLORYS": 6,
+          "losses_GLORYS": 6,
+          "ties": 0
+        }
+      },
+      "72h": {
+        "n": 12,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 12,
+          "median": 34.263,
+          "mean": 40.102,
+          "min": 7.037,
+          "max": 83.052
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 12,
+          "median": 31.308,
+          "mean": 38.592,
+          "min": 10.265,
+          "max": 90.497
+        },
+        "delta": {
+          "median_delta": 2.955,
+          "mean_delta": 1.51,
+          "min_delta": -44.143,
+          "max_delta": 41.819
+        },
+        "wins_GLORYS": 5,
+        "losses_GLORYS": 7,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 12,
+          "error_GLORYS_alpha0": {
+            "n": 12,
+            "median": 39.884,
+            "mean": 41.798,
+            "min": 8.567,
+            "max": 80.329
+          },
+          "error_HYCOM_alpha0": {
+            "n": 12,
+            "median": 30.036,
+            "mean": 38.615,
+            "min": 10.224,
+            "max": 99.98
+          },
+          "delta": {
+            "median_delta": 9.848,
+            "mean_delta": 3.183,
+            "min_delta": -41.016,
+            "max_delta": 45.51
+          },
+          "wins_GLORYS": 5,
+          "losses_GLORYS": 7,
+          "ties": 0
+        }
+      },
+      "M1_endpoint72h": {
+        "G002": {
+          "n": 12,
+          "median": 47.12,
+          "mean": 58.7,
+          "min": 15.274,
+          "max": 126.318
+        },
+        "G0": {
+          "n": 12,
+          "median": 44.735,
+          "mean": 57.891,
+          "min": 15.551,
+          "max": 127.286
+        },
+        "H002": {
+          "n": 12,
+          "median": 73.204,
+          "mean": 78.041,
+          "min": 12.233,
+          "max": 150.297
+        },
+        "H0": {
+          "n": 12,
+          "median": 70.423,
+          "mean": 78.06,
+          "min": 6.824,
+          "max": 150.017
+        }
+      },
+      "M2_totalPath": {
+        "G002": {
+          "n": 12,
+          "median": 48.657,
+          "mean": 61.73,
+          "min": 17.581,
+          "max": 130.913
+        },
+        "G0": {
+          "n": 12,
+          "median": 46.234,
+          "mean": 60.724,
+          "min": 17.041,
+          "max": 131.857
+        },
+        "H002": {
+          "n": 12,
+          "median": 83.279,
+          "mean": 95.941,
+          "min": 37.045,
+          "max": 174.169
+        },
+        "H0": {
+          "n": 12,
+          "median": 80.151,
+          "mean": 95.947,
+          "min": 36.286,
+          "max": 172.702
+        }
+      },
+      "M4_separation72h": {
+        "GLORYS_alpha0.002_vs_alpha0": {
+          "n": 12,
+          "median": 3.333,
+          "mean": 3.498,
+          "min": 1.441,
+          "max": 8.521
+        },
+        "HYCOM_alpha0.002_vs_alpha0": {
+          "n": 12,
+          "median": 3.742,
+          "mean": 4.822,
+          "min": 1.616,
+          "max": 10.906
+        },
+        "GLORYS_vs_HYCOM_alpha0.002": {
+          "n": 12,
+          "median": 47.243,
+          "mean": 49.077,
+          "min": 16.764,
+          "max": 114.333
+        }
+      },
+      "M5_observed72h": {
+        "n": 12,
+        "median": 70.81,
+        "mean": 75.39,
+        "min": 12.151,
+        "max": 154.559
+      }
+    }
+  },
+  "perWindow": {
+    "KE-1": {
+      "n_drifters": 8,
+      "24h": {
+        "n": 8,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 8,
+          "median": 24.043,
+          "mean": 30.279,
+          "min": 2.66,
+          "max": 76.952
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 8,
+          "median": 13.999,
+          "mean": 14.762,
+          "min": 6.03,
+          "max": 26.129
+        },
+        "delta": {
+          "median_delta": 9.346,
+          "mean_delta": 15.518,
+          "min_delta": -9.727,
+          "max_delta": 58.573
+        },
+        "wins_GLORYS": 2,
+        "losses_GLORYS": 6,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 8,
+          "error_GLORYS_alpha0": {
+            "n": 8,
+            "median": 25.279,
+            "mean": 30.498,
+            "min": 3.547,
+            "max": 75.276
+          },
+          "error_HYCOM_alpha0": {
+            "n": 8,
+            "median": 13.314,
+            "mean": 14.221,
+            "min": 7.468,
+            "max": 26.172
+          },
+          "delta": {
+            "median_delta": 11.463,
+            "mean_delta": 16.277,
+            "min_delta": -7.748,
+            "max_delta": 58.271
+          },
+          "wins_GLORYS": 1,
+          "losses_GLORYS": 7,
+          "ties": 0
+        }
+      },
+      "48h": {
+        "n": 8,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 8,
+          "median": 43.986,
+          "mean": 55.375,
+          "min": 11.886,
+          "max": 169.072
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 8,
+          "median": 27.56,
+          "mean": 25.98,
+          "min": 5.112,
+          "max": 39.026
+        },
+        "delta": {
+          "median_delta": 10.192,
+          "mean_delta": 29.395,
+          "min_delta": -9.849,
+          "max_delta": 132.036
+        },
+        "wins_GLORYS": 3,
+        "losses_GLORYS": 5,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 8,
+          "error_GLORYS_alpha0": {
+            "n": 8,
+            "median": 43.262,
+            "mean": 55.066,
+            "min": 12.294,
+            "max": 164.446
+          },
+          "error_HYCOM_alpha0": {
+            "n": 8,
+            "median": 25.024,
+            "mean": 24.365,
+            "min": 3.487,
+            "max": 40.669
+          },
+          "delta": {
+            "median_delta": 11.636,
+            "mean_delta": 30.701,
+            "min_delta": -9.58,
+            "max_delta": 136.271
+          },
+          "wins_GLORYS": 2,
+          "losses_GLORYS": 6,
+          "ties": 0
+        }
+      },
+      "72h": {
+        "n": 7,
+        "notAvailable": 1,
+        "error_GLORYS_alpha0.002": {
+          "n": 7,
+          "median": 32.042,
+          "mean": 83.603,
+          "min": 18.783,
+          "max": 325.969
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 8,
+          "median": 45.956,
+          "mean": 47.08,
+          "min": 16.207,
+          "max": 102.331
+        },
+        "delta": {
+          "median_delta": 7.283,
+          "mean_delta": 36.687,
+          "min_delta": -40.272,
+          "max_delta": 223.639
+        },
+        "wins_GLORYS": 2,
+        "losses_GLORYS": 5,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 8,
+          "error_GLORYS_alpha0": {
+            "n": 8,
+            "median": 33.279,
+            "mean": 76.972,
+            "min": 19.746,
+            "max": 324.011
+          },
+          "error_HYCOM_alpha0": {
+            "n": 8,
+            "median": 47.212,
+            "mean": 44.031,
+            "min": 14.404,
+            "max": 76.116
+          },
+          "delta": {
+            "median_delta": 4.617,
+            "mean_delta": 32.941,
+            "min_delta": -41.568,
+            "max_delta": 247.895
+          },
+          "wins_GLORYS": 3,
+          "losses_GLORYS": 5,
+          "ties": 0
+        }
+      },
+      "M1_endpoint72h": {
+        "G002": {
+          "n": 7,
+          "median": 75.353,
+          "mean": 99.915,
+          "min": 22.685,
+          "max": 349.635
+        },
+        "G0": {
+          "n": 8,
+          "median": 77.416,
+          "mean": 113.676,
+          "min": 22.116,
+          "max": 348.61
+        },
+        "H002": {
+          "n": 8,
+          "median": 65.895,
+          "mean": 83.138,
+          "min": 11.989,
+          "max": 172.172
+        },
+        "H0": {
+          "n": 8,
+          "median": 69.786,
+          "mean": 81.728,
+          "min": 13.263,
+          "max": 167.802
+        }
+      },
+      "M2_totalPath": {
+        "G002": {
+          "n": 8,
+          "median": 83.911,
+          "mean": 126.42,
+          "min": 32.803,
+          "max": 374.344
+        },
+        "G0": {
+          "n": 8,
+          "median": 85.233,
+          "mean": 126.469,
+          "min": 35.798,
+          "max": 373.916
+        },
+        "H002": {
+          "n": 8,
+          "median": 86.54,
+          "mean": 104.676,
+          "min": 44.318,
+          "max": 193.528
+        },
+        "H0": {
+          "n": 8,
+          "median": 86.973,
+          "mean": 102.684,
+          "min": 45.783,
+          "max": 189.234
+        }
+      },
+      "M4_separation72h": {
+        "GLORYS_alpha0.002_vs_alpha0": {
+          "n": 7,
+          "median": 2.934,
+          "mean": 3.979,
+          "min": 2.75,
+          "max": 6.114
+        },
+        "HYCOM_alpha0.002_vs_alpha0": {
+          "n": 8,
+          "median": 4.386,
+          "mean": 7.212,
+          "min": 2.267,
+          "max": 27.8
+        },
+        "GLORYS_vs_HYCOM_alpha0.002": {
+          "n": 7,
+          "median": 62.511,
+          "mean": 84.665,
+          "min": 17.882,
+          "max": 224.622
+        }
+      },
+      "M5_observed72h": {
+        "n": 8,
+        "median": 62.84,
+        "mean": 79.529,
+        "min": 16.535,
+        "max": 204.736
+      },
+      "role": "CALIBRATION",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    },
+    "KE-2": {
+      "n_drifters": 5,
+      "24h": {
+        "n": 5,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 5,
+          "median": 11.536,
+          "mean": 12.03,
+          "min": 4.427,
+          "max": 20.568
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 5,
+          "median": 14.072,
+          "mean": 16.365,
+          "min": 1.487,
+          "max": 28.443
+        },
+        "delta": {
+          "median_delta": -0.251,
+          "mean_delta": -4.335,
+          "min_delta": -24.016,
+          "max_delta": 12.553
+        },
+        "wins_GLORYS": 3,
+        "losses_GLORYS": 2,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 5,
+          "error_GLORYS_alpha0": {
+            "n": 5,
+            "median": 10.162,
+            "mean": 11.69,
+            "min": 2.602,
+            "max": 21.361
+          },
+          "error_HYCOM_alpha0": {
+            "n": 5,
+            "median": 13.615,
+            "mean": 16.47,
+            "min": 1.947,
+            "max": 28.682
+          },
+          "delta": {
+            "median_delta": -0.079,
+            "mean_delta": -4.78,
+            "min_delta": -26.08,
+            "max_delta": 12.851
+          },
+          "wins_GLORYS": 3,
+          "losses_GLORYS": 2,
+          "ties": 0
+        }
+      },
+      "48h": {
+        "n": 5,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 5,
+          "median": 15.402,
+          "mean": 20.519,
+          "min": 7.082,
+          "max": 37.503
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 5,
+          "median": 30.812,
+          "mean": 41.386,
+          "min": 7.466,
+          "max": 77.943
+        },
+        "delta": {
+          "median_delta": -13.919,
+          "mean_delta": -20.867,
+          "min_delta": -62.542,
+          "max_delta": 26.259
+        },
+        "wins_GLORYS": 3,
+        "losses_GLORYS": 2,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 5,
+          "error_GLORYS_alpha0": {
+            "n": 5,
+            "median": 12.804,
+            "mean": 20.43,
+            "min": 7.945,
+            "max": 39.373
+          },
+          "error_HYCOM_alpha0": {
+            "n": 5,
+            "median": 29.315,
+            "mean": 41.113,
+            "min": 5.83,
+            "max": 77.023
+          },
+          "delta": {
+            "median_delta": -12.471,
+            "mean_delta": -20.683,
+            "min_delta": -65.019,
+            "max_delta": 28.234
+          },
+          "wins_GLORYS": 3,
+          "losses_GLORYS": 2,
+          "ties": 0
+        }
+      },
+      "72h": {
+        "n": 5,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 5,
+          "median": 21.727,
+          "mean": 29.927,
+          "min": 10.262,
+          "max": 51.677
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 5,
+          "median": 44.239,
+          "mean": 70.926,
+          "min": 20.569,
+          "max": 158.931
+        },
+        "delta": {
+          "median_delta": -10.307,
+          "mean_delta": -40.999,
+          "min_delta": -143.954,
+          "max_delta": 24.284
+        },
+        "wins_GLORYS": 3,
+        "losses_GLORYS": 2,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 5,
+          "error_GLORYS_alpha0": {
+            "n": 5,
+            "median": 23.44,
+            "mean": 30.32,
+            "min": 10.364,
+            "max": 54.748
+          },
+          "error_HYCOM_alpha0": {
+            "n": 5,
+            "median": 40.173,
+            "mean": 69.902,
+            "min": 20.146,
+            "max": 154.377
+          },
+          "delta": {
+            "median_delta": -9.782,
+            "mean_delta": -39.582,
+            "min_delta": -142.222,
+            "max_delta": 28.236
+          },
+          "wins_GLORYS": 3,
+          "losses_GLORYS": 2,
+          "ties": 0
+        }
+      },
+      "M1_endpoint72h": {
+        "G002": {
+          "n": 5,
+          "median": 67.628,
+          "mean": 66.429,
+          "min": 20.751,
+          "max": 115.598
+        },
+        "G0": {
+          "n": 5,
+          "median": 67.307,
+          "mean": 66.151,
+          "min": 24.236,
+          "max": 115.315
+        },
+        "H002": {
+          "n": 5,
+          "median": 93.295,
+          "mean": 86.144,
+          "min": 45.298,
+          "max": 139.966
+        },
+        "H0": {
+          "n": 5,
+          "median": 88.122,
+          "mean": 84.159,
+          "min": 40.849,
+          "max": 141.162
+        }
+      },
+      "M2_totalPath": {
+        "G002": {
+          "n": 5,
+          "median": 68.565,
+          "mean": 70.961,
+          "min": 22.883,
+          "max": 128.603
+        },
+        "G0": {
+          "n": 5,
+          "median": 67.931,
+          "mean": 70.258,
+          "min": 25.955,
+          "max": 127.514
+        },
+        "H002": {
+          "n": 5,
+          "median": 100.092,
+          "mean": 91.406,
+          "min": 49.12,
+          "max": 150.073
+        },
+        "H0": {
+          "n": 5,
+          "median": 94.922,
+          "mean": 89.018,
+          "min": 44.988,
+          "max": 148.91
+        }
+      },
+      "M4_separation72h": {
+        "GLORYS_alpha0.002_vs_alpha0": {
+          "n": 5,
+          "median": 2.117,
+          "mean": 2.205,
+          "min": 0.532,
+          "max": 3.505
+        },
+        "HYCOM_alpha0.002_vs_alpha0": {
+          "n": 5,
+          "median": 4.748,
+          "mean": 4.845,
+          "min": 0.693,
+          "max": 8.467
+        },
+        "GLORYS_vs_HYCOM_alpha0.002": {
+          "n": 5,
+          "median": 65.895,
+          "mean": 76.404,
+          "min": 29.788,
+          "max": 167.628
+        }
+      },
+      "M5_observed72h": {
+        "n": 5,
+        "median": 70.905,
+        "mean": 79.548,
+        "min": 37.048,
+        "max": 131.458
+      },
+      "role": "CALIBRATION",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    },
+    "AG-1": {
+      "n_drifters": 9,
+      "24h": {
+        "n": 9,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 9,
+          "median": 45.029,
+          "mean": 53.854,
+          "min": 18.05,
+          "max": 131.891
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 9,
+          "median": 39.952,
+          "mean": 60.952,
+          "min": 23.293,
+          "max": 144.38
+        },
+        "delta": {
+          "median_delta": -1.441,
+          "mean_delta": -7.098,
+          "min_delta": -73.642,
+          "max_delta": 68.341
+        },
+        "wins_GLORYS": 5,
+        "losses_GLORYS": 4,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 9,
+          "error_GLORYS_alpha0": {
+            "n": 9,
+            "median": 45.063,
+            "mean": 53.671,
+            "min": 16.675,
+            "max": 132.895
+          },
+          "error_HYCOM_alpha0": {
+            "n": 9,
+            "median": 40.743,
+            "mean": 61.169,
+            "min": 24.375,
+            "max": 144.014
+          },
+          "delta": {
+            "median_delta": -1.555,
+            "mean_delta": -7.498,
+            "min_delta": -73.996,
+            "max_delta": 68.138
+          },
+          "wins_GLORYS": 5,
+          "losses_GLORYS": 4,
+          "ties": 0
+        }
+      },
+      "48h": {
+        "n": 9,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 9,
+          "median": 99.332,
+          "mean": 111.768,
+          "min": 52.823,
+          "max": 289.961
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 9,
+          "median": 60.676,
+          "mean": 103.323,
+          "min": 19.304,
+          "max": 238.223
+        },
+        "delta": {
+          "median_delta": 16.727,
+          "mean_delta": 8.445,
+          "min_delta": -113.348,
+          "max_delta": 147.026
+        },
+        "wins_GLORYS": 4,
+        "losses_GLORYS": 5,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 9,
+          "error_GLORYS_alpha0": {
+            "n": 9,
+            "median": 99.767,
+            "mean": 111.58,
+            "min": 50.142,
+            "max": 290.97
+          },
+          "error_HYCOM_alpha0": {
+            "n": 9,
+            "median": 64.073,
+            "mean": 104.289,
+            "min": 24.056,
+            "max": 237.414
+          },
+          "delta": {
+            "median_delta": 16.514,
+            "mean_delta": 7.291,
+            "min_delta": -114.596,
+            "max_delta": 146.039
+          },
+          "wins_GLORYS": 4,
+          "losses_GLORYS": 5,
+          "ties": 0
+        }
+      },
+      "72h": {
+        "n": 9,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 9,
+          "median": 143.744,
+          "mean": 148.164,
+          "min": 63.504,
+          "max": 416.26
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 9,
+          "median": 106.115,
+          "mean": 153.786,
+          "min": 45.89,
+          "max": 323.38
+        },
+        "delta": {
+          "median_delta": 0.706,
+          "mean_delta": -5.622,
+          "min_delta": -175.68,
+          "max_delta": 178.048
+        },
+        "wins_GLORYS": 4,
+        "losses_GLORYS": 5,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 9,
+          "error_GLORYS_alpha0": {
+            "n": 9,
+            "median": 143.328,
+            "mean": 148.928,
+            "min": 65.867,
+            "max": 416.222
+          },
+          "error_HYCOM_alpha0": {
+            "n": 9,
+            "median": 112.085,
+            "mean": 153.705,
+            "min": 47.705,
+            "max": 321.997
+          },
+          "delta": {
+            "median_delta": 4.805,
+            "mean_delta": -4.776,
+            "min_delta": -175.417,
+            "max_delta": 177.22
+          },
+          "wins_GLORYS": 4,
+          "losses_GLORYS": 5,
+          "ties": 0
+        }
+      },
+      "M1_endpoint72h": {
+        "G002": {
+          "n": 9,
+          "median": 166.876,
+          "mean": 155.064,
+          "min": 19.203,
+          "max": 323.313
+        },
+        "G0": {
+          "n": 9,
+          "median": 166.978,
+          "mean": 156.165,
+          "min": 19.797,
+          "max": 322.934
+        },
+        "H002": {
+          "n": 9,
+          "median": 182.984,
+          "mean": 168.424,
+          "min": 88.772,
+          "max": 240.965
+        },
+        "H0": {
+          "n": 9,
+          "median": 182.865,
+          "mean": 168.509,
+          "min": 91.261,
+          "max": 240.645
+        }
+      },
+      "M2_totalPath": {
+        "G002": {
+          "n": 9,
+          "median": 168.387,
+          "mean": 168.637,
+          "min": 24.573,
+          "max": 332.85
+        },
+        "G0": {
+          "n": 9,
+          "median": 169.792,
+          "mean": 170.118,
+          "min": 26.012,
+          "max": 332.273
+        },
+        "H002": {
+          "n": 9,
+          "median": 186.979,
+          "mean": 185.092,
+          "min": 108.383,
+          "max": 255.853
+        },
+        "H0": {
+          "n": 9,
+          "median": 185.129,
+          "mean": 185.325,
+          "min": 112.17,
+          "max": 255.376
+        }
+      },
+      "M4_separation72h": {
+        "GLORYS_alpha0.002_vs_alpha0": {
+          "n": 9,
+          "median": 2.222,
+          "mean": 2.136,
+          "min": 0.496,
+          "max": 4.655
+        },
+        "HYCOM_alpha0.002_vs_alpha0": {
+          "n": 9,
+          "median": 2.606,
+          "mean": 3.155,
+          "min": 0.899,
+          "max": 8.262
+        },
+        "GLORYS_vs_HYCOM_alpha0.002": {
+          "n": 9,
+          "median": 169.759,
+          "mean": 153.107,
+          "min": 22.13,
+          "max": 257.165
+        }
+      },
+      "M5_observed72h": {
+        "n": 9,
+        "median": 135.1,
+        "mean": 193.115,
+        "min": 80.755,
+        "max": 449.489
+      },
+      "role": "CALIBRATION",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    },
+    "AG-2": {
+      "n_drifters": 1,
+      "24h": {
+        "n": 1,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 1,
+          "median": 28.432,
+          "mean": 28.432,
+          "min": 28.432,
+          "max": 28.432
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 1,
+          "median": 116.865,
+          "mean": 116.865,
+          "min": 116.865,
+          "max": 116.865
+        },
+        "delta": {
+          "median_delta": -88.433,
+          "mean_delta": -88.433,
+          "min_delta": -88.433,
+          "max_delta": -88.433
+        },
+        "wins_GLORYS": 1,
+        "losses_GLORYS": 0,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 1,
+          "error_GLORYS_alpha0": {
+            "n": 1,
+            "median": 29.091,
+            "mean": 29.091,
+            "min": 29.091,
+            "max": 29.091
+          },
+          "error_HYCOM_alpha0": {
+            "n": 1,
+            "median": 116.375,
+            "mean": 116.375,
+            "min": 116.375,
+            "max": 116.375
+          },
+          "delta": {
+            "median_delta": -87.284,
+            "mean_delta": -87.284,
+            "min_delta": -87.284,
+            "max_delta": -87.284
+          },
+          "wins_GLORYS": 1,
+          "losses_GLORYS": 0,
+          "ties": 0
+        }
+      },
+      "48h": {
+        "n": 0,
+        "notAvailable": 1,
+        "error_GLORYS_alpha0.002": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 1,
+          "median": 232.889,
+          "mean": 232.889,
+          "min": 232.889,
+          "max": 232.889
+        },
+        "delta": {
+          "median_delta": null,
+          "mean_delta": null,
+          "min_delta": null,
+          "max_delta": null
+        },
+        "wins_GLORYS": 0,
+        "losses_GLORYS": 0,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 0,
+          "error_GLORYS_alpha0": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "error_HYCOM_alpha0": {
+            "n": 1,
+            "median": 232.677,
+            "mean": 232.677,
+            "min": 232.677,
+            "max": 232.677
+          },
+          "delta": {
+            "median_delta": null,
+            "mean_delta": null,
+            "min_delta": null,
+            "max_delta": null
+          },
+          "wins_GLORYS": 0,
+          "losses_GLORYS": 0,
+          "ties": 0
+        }
+      },
+      "72h": {
+        "n": 0,
+        "notAvailable": 1,
+        "error_GLORYS_alpha0.002": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 1,
+          "median": 331.318,
+          "mean": 331.318,
+          "min": 331.318,
+          "max": 331.318
+        },
+        "delta": {
+          "median_delta": null,
+          "mean_delta": null,
+          "min_delta": null,
+          "max_delta": null
+        },
+        "wins_GLORYS": 0,
+        "losses_GLORYS": 0,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 0,
+          "error_GLORYS_alpha0": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "error_HYCOM_alpha0": {
+            "n": 1,
+            "median": 330.76,
+            "mean": 330.76,
+            "min": 330.76,
+            "max": 330.76
+          },
+          "delta": {
+            "median_delta": null,
+            "mean_delta": null,
+            "min_delta": null,
+            "max_delta": null
+          },
+          "wins_GLORYS": 0,
+          "losses_GLORYS": 0,
+          "ties": 0
+        }
+      },
+      "M1_endpoint72h": {
+        "G002": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "G0": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "H002": {
+          "n": 1,
+          "median": 23.912,
+          "mean": 23.912,
+          "min": 23.912,
+          "max": 23.912
+        },
+        "H0": {
+          "n": 1,
+          "median": 25.655,
+          "mean": 25.655,
+          "min": 25.655,
+          "max": 25.655
+        }
+      },
+      "M2_totalPath": {
+        "G002": {
+          "n": 1,
+          "median": 267.569,
+          "mean": 267.569,
+          "min": 267.569,
+          "max": 267.569
+        },
+        "G0": {
+          "n": 1,
+          "median": 268.4,
+          "mean": 268.4,
+          "min": 268.4,
+          "max": 268.4
+        },
+        "H002": {
+          "n": 1,
+          "median": 49.933,
+          "mean": 49.933,
+          "min": 49.933,
+          "max": 49.933
+        },
+        "H0": {
+          "n": 1,
+          "median": 49.891,
+          "mean": 49.891,
+          "min": 49.891,
+          "max": 49.891
+        }
+      },
+      "M4_separation72h": {
+        "GLORYS_alpha0.002_vs_alpha0": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "HYCOM_alpha0.002_vs_alpha0": {
+          "n": 1,
+          "median": 2.612,
+          "mean": 2.612,
+          "min": 2.612,
+          "max": 2.612
+        },
+        "GLORYS_vs_HYCOM_alpha0.002": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        }
+      },
+      "M5_observed72h": {
+        "n": 1,
+        "median": 352.788,
+        "mean": 352.788,
+        "min": 352.788,
+        "max": 352.788
+      },
+      "role": "CALIBRATION",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    },
+    "KE-H1": {
+      "n_drifters": 5,
+      "24h": {
+        "n": 5,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 5,
+          "median": 15.025,
+          "mean": 18.949,
+          "min": 2.992,
+          "max": 34.495
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 5,
+          "median": 8.223,
+          "mean": 11.895,
+          "min": 1.941,
+          "max": 23.705
+        },
+        "delta": {
+          "median_delta": 10.444,
+          "mean_delta": 7.054,
+          "min_delta": 1.05,
+          "max_delta": 10.936
+        },
+        "wins_GLORYS": 0,
+        "losses_GLORYS": 5,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 5,
+          "error_GLORYS_alpha0": {
+            "n": 5,
+            "median": 15.906,
+            "mean": 19.123,
+            "min": 2.846,
+            "max": 33.621
+          },
+          "error_HYCOM_alpha0": {
+            "n": 5,
+            "median": 8.106,
+            "mean": 12.224,
+            "min": 2.389,
+            "max": 25.276
+          },
+          "delta": {
+            "median_delta": 8.345,
+            "mean_delta": 6.899,
+            "min_delta": 0.457,
+            "max_delta": 11.629
+          },
+          "wins_GLORYS": 0,
+          "losses_GLORYS": 5,
+          "ties": 0
+        }
+      },
+      "48h": {
+        "n": 5,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 5,
+          "median": 26.378,
+          "mean": 31.602,
+          "min": 4.796,
+          "max": 58.905
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 5,
+          "median": 21.544,
+          "mean": 24.538,
+          "min": 6.096,
+          "max": 58.664
+        },
+        "delta": {
+          "median_delta": 0.242,
+          "mean_delta": 7.065,
+          "min_delta": -9.694,
+          "max_delta": 28.579
+        },
+        "wins_GLORYS": 2,
+        "losses_GLORYS": 3,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 5,
+          "error_GLORYS_alpha0": {
+            "n": 5,
+            "median": 28.409,
+            "mean": 31.963,
+            "min": 5.116,
+            "max": 57.741
+          },
+          "error_HYCOM_alpha0": {
+            "n": 5,
+            "median": 21.494,
+            "mean": 25.66,
+            "min": 7.536,
+            "max": 63.93
+          },
+          "delta": {
+            "median_delta": -2.419,
+            "mean_delta": 6.303,
+            "min_delta": -8.62,
+            "max_delta": 29.464
+          },
+          "wins_GLORYS": 3,
+          "losses_GLORYS": 2,
+          "ties": 0
+        }
+      },
+      "72h": {
+        "n": 5,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 5,
+          "median": 30.524,
+          "mean": 37.423,
+          "min": 7.037,
+          "max": 69.208
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 5,
+          "median": 24.444,
+          "mean": 38.464,
+          "min": 12.091,
+          "max": 89.37
+        },
+        "delta": {
+          "median_delta": -5.054,
+          "mean_delta": -1.041,
+          "min_delta": -25.972,
+          "max_delta": 33.064
+        },
+        "wins_GLORYS": 3,
+        "losses_GLORYS": 2,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 5,
+          "error_GLORYS_alpha0": {
+            "n": 5,
+            "median": 33.526,
+            "mean": 38.427,
+            "min": 8.567,
+            "max": 69.014
+          },
+          "error_HYCOM_alpha0": {
+            "n": 5,
+            "median": 24.844,
+            "mean": 40.671,
+            "min": 13.843,
+            "max": 99.98
+          },
+          "delta": {
+            "median_delta": -5.277,
+            "mean_delta": -2.243,
+            "min_delta": -30.966,
+            "max_delta": 32.066
+          },
+          "wins_GLORYS": 3,
+          "losses_GLORYS": 2,
+          "ties": 0
+        }
+      },
+      "M1_endpoint72h": {
+        "G002": {
+          "n": 5,
+          "median": 44.501,
+          "mean": 54.249,
+          "min": 15.274,
+          "max": 126.318
+        },
+        "G0": {
+          "n": 5,
+          "median": 41.697,
+          "mean": 53.784,
+          "min": 15.551,
+          "max": 127.286
+        },
+        "H002": {
+          "n": 5,
+          "median": 79.693,
+          "mean": 78.371,
+          "min": 40.051,
+          "max": 125.215
+        },
+        "H0": {
+          "n": 5,
+          "median": 77.507,
+          "mean": 80.272,
+          "min": 38.936,
+          "max": 132.96
+        }
+      },
+      "M2_totalPath": {
+        "G002": {
+          "n": 5,
+          "median": 44.533,
+          "mean": 56.253,
+          "min": 17.581,
+          "max": 130.913
+        },
+        "G0": {
+          "n": 5,
+          "median": 41.717,
+          "mean": 55.634,
+          "min": 17.041,
+          "max": 131.857
+        },
+        "H002": {
+          "n": 5,
+          "median": 83.845,
+          "mean": 84.309,
+          "min": 47.599,
+          "max": 128.243
+        },
+        "H0": {
+          "n": 5,
+          "median": 82.918,
+          "mean": 86.691,
+          "min": 45.771,
+          "max": 136.577
+        }
+      },
+      "M4_separation72h": {
+        "GLORYS_alpha0.002_vs_alpha0": {
+          "n": 5,
+          "median": 2.828,
+          "mean": 3.017,
+          "min": 1.441,
+          "max": 5.341
+        },
+        "HYCOM_alpha0.002_vs_alpha0": {
+          "n": 5,
+          "median": 6.808,
+          "mean": 5.764,
+          "min": 1.826,
+          "max": 10.906
+        },
+        "GLORYS_vs_HYCOM_alpha0.002": {
+          "n": 5,
+          "median": 47.788,
+          "mean": 53.186,
+          "min": 16.764,
+          "max": 114.333
+        }
+      },
+      "M5_observed72h": {
+        "n": 5,
+        "median": 62.188,
+        "mean": 71.914,
+        "min": 31.456,
+        "max": 112.667
+      },
+      "role": "HOLDOUT",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    },
+    "KE-H3": {
+      "n_drifters": 7,
+      "24h": {
+        "n": 7,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 7,
+          "median": 8.506,
+          "mean": 11.348,
+          "min": 5.228,
+          "max": 19.701
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 7,
+          "median": 13.802,
+          "mean": 14.82,
+          "min": 7.39,
+          "max": 22.802
+        },
+        "delta": {
+          "median_delta": -2.162,
+          "mean_delta": -3.472,
+          "min_delta": -14.296,
+          "max_delta": 7.402
+        },
+        "wins_GLORYS": 4,
+        "losses_GLORYS": 3,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 7,
+          "error_GLORYS_alpha0": {
+            "n": 7,
+            "median": 10.112,
+            "mean": 11.861,
+            "min": 5.542,
+            "max": 19.105
+          },
+          "error_HYCOM_alpha0": {
+            "n": 7,
+            "median": 13.214,
+            "mean": 14.489,
+            "min": 7.809,
+            "max": 23.709
+          },
+          "delta": {
+            "median_delta": -2.267,
+            "mean_delta": -2.628,
+            "min_delta": -13.597,
+            "max_delta": 8.083
+          },
+          "wins_GLORYS": 4,
+          "losses_GLORYS": 3,
+          "ties": 0
+        }
+      },
+      "48h": {
+        "n": 7,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 7,
+          "median": 26.06,
+          "mean": 25.913,
+          "min": 9.4,
+          "max": 46.89
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 7,
+          "median": 22.74,
+          "mean": 25.504,
+          "min": 12.402,
+          "max": 43.279
+        },
+        "delta": {
+          "median_delta": 3.139,
+          "mean_delta": 0.409,
+          "min_delta": -33.879,
+          "max_delta": 19.432
+        },
+        "wins_GLORYS": 3,
+        "losses_GLORYS": 4,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 7,
+          "error_GLORYS_alpha0": {
+            "n": 7,
+            "median": 27.157,
+            "mean": 26.7,
+            "min": 10.427,
+            "max": 44.751
+          },
+          "error_HYCOM_alpha0": {
+            "n": 7,
+            "median": 21.974,
+            "mean": 24.118,
+            "min": 11.059,
+            "max": 41.253
+          },
+          "delta": {
+            "median_delta": 6.063,
+            "mean_delta": 2.581,
+            "min_delta": -30.502,
+            "max_delta": 22.166
+          },
+          "wins_GLORYS": 3,
+          "losses_GLORYS": 4,
+          "ties": 0
+        }
+      },
+      "72h": {
+        "n": 7,
+        "notAvailable": 0,
+        "error_GLORYS_alpha0.002": {
+          "n": 7,
+          "median": 36.862,
+          "mean": 42.016,
+          "min": 14.309,
+          "max": 83.052
+        },
+        "error_HYCOM_alpha0.002": {
+          "n": 7,
+          "median": 33.118,
+          "mean": 38.684,
+          "min": 10.265,
+          "max": 90.497
+        },
+        "delta": {
+          "median_delta": 3.743,
+          "mean_delta": 3.332,
+          "min_delta": -44.143,
+          "max_delta": 41.819
+        },
+        "wins_GLORYS": 2,
+        "losses_GLORYS": 5,
+        "ties": 0,
+        "structural_alpha0": {
+          "n": 7,
+          "error_GLORYS_alpha0": {
+            "n": 7,
+            "median": 40.007,
+            "mean": 44.206,
+            "min": 14.673,
+            "max": 80.329
+          },
+          "error_HYCOM_alpha0": {
+            "n": 7,
+            "median": 30.134,
+            "mean": 37.147,
+            "min": 10.224,
+            "max": 84.199
+          },
+          "delta": {
+            "median_delta": 10.069,
+            "mean_delta": 7.059,
+            "min_delta": -41.016,
+            "max_delta": 45.51
+          },
+          "wins_GLORYS": 2,
+          "losses_GLORYS": 5,
+          "ties": 0
+        }
+      },
+      "M1_endpoint72h": {
+        "G002": {
+          "n": 7,
+          "median": 54.39,
+          "mean": 61.879,
+          "min": 18.674,
+          "max": 120.046
+        },
+        "G0": {
+          "n": 7,
+          "median": 50.659,
+          "mean": 60.826,
+          "min": 20.473,
+          "max": 118.346
+        },
+        "H002": {
+          "n": 7,
+          "median": 66.716,
+          "mean": 77.804,
+          "min": 12.233,
+          "max": 150.297
+        },
+        "H0": {
+          "n": 7,
+          "median": 63.34,
+          "mean": 76.48,
+          "min": 6.824,
+          "max": 150.017
+        }
+      },
+      "M2_totalPath": {
+        "G002": {
+          "n": 7,
+          "median": 54.753,
+          "mean": 65.643,
+          "min": 19.74,
+          "max": 130.288
+        },
+        "G0": {
+          "n": 7,
+          "median": 50.894,
+          "mean": 64.36,
+          "min": 21.563,
+          "max": 127.76
+        },
+        "H002": {
+          "n": 7,
+          "median": 82.714,
+          "mean": 104.25,
+          "min": 37.045,
+          "max": 174.169
+        },
+        "H0": {
+          "n": 7,
+          "median": 77.384,
+          "mean": 102.559,
+          "min": 36.286,
+          "max": 172.702
+        }
+      },
+      "M4_separation72h": {
+        "GLORYS_alpha0.002_vs_alpha0": {
+          "n": 7,
+          "median": 3.715,
+          "mean": 3.842,
+          "min": 1.884,
+          "max": 8.521
+        },
+        "HYCOM_alpha0.002_vs_alpha0": {
+          "n": 7,
+          "median": 3.453,
+          "mean": 4.149,
+          "min": 1.616,
+          "max": 6.975
+        },
+        "GLORYS_vs_HYCOM_alpha0.002": {
+          "n": 7,
+          "median": 46.699,
+          "mean": 46.143,
+          "min": 20.952,
+          "max": 63.394
+        }
+      },
+      "M5_observed72h": {
+        "n": 7,
+        "median": 79.433,
+        "mean": 77.873,
+        "min": 12.151,
+        "max": 154.559
+      },
+      "role": "HOLDOUT",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    }
+  },
+  "topErrors": {
+    "24h": [
+      {
+        "drifter_id": "127313",
+        "unit": "AG-1",
+        "error_GLORYS": 131.891,
+        "error_HYCOM": 63.55,
+        "delta": 68.341
+      },
+      {
+        "drifter_id": "71155",
+        "unit": "KE-1",
+        "error_GLORYS": 76.952,
+        "error_HYCOM": 18.379,
+        "delta": 58.573
+      },
+      {
+        "drifter_id": "127199",
+        "unit": "AG-1",
+        "error_GLORYS": 71.146,
+        "error_HYCOM": 144.38,
+        "delta": -73.234
+      }
+    ],
+    "48h": [
+      {
+        "drifter_id": "127313",
+        "unit": "AG-1",
+        "error_GLORYS": 289.961,
+        "error_HYCOM": 142.936,
+        "delta": 147.026
+      },
+      {
+        "drifter_id": "71155",
+        "unit": "KE-1",
+        "error_GLORYS": 169.072,
+        "error_HYCOM": 37.036,
+        "delta": 132.036
+      },
+      {
+        "drifter_id": "127199",
+        "unit": "AG-1",
+        "error_GLORYS": 125.036,
+        "error_HYCOM": 237.391,
+        "delta": -112.355
+      }
+    ],
+    "72h": [
+      {
+        "drifter_id": "127313",
+        "unit": "AG-1",
+        "error_GLORYS": 416.26,
+        "error_HYCOM": 238.212,
+        "delta": 178.048
+      },
+      {
+        "drifter_id": "71155",
+        "unit": "KE-1",
+        "error_GLORYS": 325.969,
+        "error_HYCOM": 102.331,
+        "delta": 223.639
+      },
+      {
+        "drifter_id": "132511",
+        "unit": "AG-1",
+        "error_GLORYS": 151.207,
+        "error_HYCOM": 105.167,
+        "delta": 46.041
+      }
+    ]
+  },
+  "exploratorySignTest": {
+    "overall_24h": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 35,
+      "k": 15,
+      "p": 0.49956,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "overall_48h": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 34,
+      "k": 15,
+      "p": 0.607591,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "overall_72h": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 33,
+      "k": 14,
+      "p": 0.48685,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "calibration_24h": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 23,
+      "k": 11,
+      "p": 1.0,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "calibration_48h": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 22,
+      "k": 10,
+      "p": 0.831812,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "calibration_72h": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 21,
+      "k": 9,
+      "p": 0.663624,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "holdout_24h": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 4,
+      "p": 0.387695,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "holdout_48h": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 5,
+      "p": 0.774414,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "holdout_72h": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 5,
+      "p": 0.774414,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    }
+  },
+  "hycomCrossCheck": {
+    "pairsCompared": 210,
+    "agreeWithinRounding": 210,
+    "allAgree": true
+  },
+  "interpretationRule": {
+    "scope": "overall stratum, alpha 0.002 pair",
+    "primaryHorizonHours": 72,
+    "A_GLORYS_DESCRIPTIVELY_FAVORED": "median delta < -tie AND wins/(wins+losses) >= 2/3",
+    "B_HYCOM_DESCRIPTIVELY_FAVORED": "median delta > +tie AND losses/(wins+losses) >= 2/3",
+    "C_NO_CLEAR_DESCRIPTIVE_DIFFERENCE": "otherwise",
+    "D_EXPERIMENT_BLOCKED": "any mandatory gate fails",
+    "consistencyFraction": 0.6666666666666666,
+    "signTestMinimumN": 10,
+    "signTestRole": "descriptive / nominal only; pairs not independent",
+    "claimsForbidden": [
+      "statistical significance",
+      "generalization",
+      "universal superiority",
+      "operational superiority",
+      "production readiness"
+    ],
+    "calibrationHoldoutLabels": "reported separately, descriptive only; no selection"
+  },
+  "descriptiveLabel": {
+    "primary": "NO CLEAR DESCRIPTIVE DIFFERENCE",
+    "byStratum": {
+      "overall": "NO CLEAR DESCRIPTIVE DIFFERENCE",
+      "calibration": "NO CLEAR DESCRIPTIVE DIFFERENCE",
+      "holdout": "NO CLEAR DESCRIPTIVE DIFFERENCE"
+    }
+  },
+  "outlierPolicyApplied": {
+    "removed": 0,
+    "winsorized": 0,
+    "trimmed": 0,
+    "weighted": 0,
+    "postHocExclusions": 0
+  },
+  "acceptanceThresholds": "NONE",
+  "alphaReselection": false,
+  "hycomRerun": false,
+  "statements": [
+    "TEST-02 is a descriptive paired experiment; no statistical significance, generalization or operational claim is made.",
+    "Higher resolution is not interpreted as superiority; the label follows the locked M3 paired rule only.",
+    "STEP20 alpha=0.002 remains calibration-selected but not established as superior on holdout; alpha is unchanged.",
+    "The HYCOM baseline is the immutable STEP 20 record and was not re-run.",
+    "KE-H2 is excluded from pairing; STEP 20 is not revised.",
+    "No forcing tuning, model selection or STEP 26 follows from this result."
+  ]
+}

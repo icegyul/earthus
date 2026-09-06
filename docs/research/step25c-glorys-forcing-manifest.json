@@ -1,0 +1,539 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "forcing-sensitivity-test02-step25c",
+  "protocolSha256": "7ff8468ea8399b8bf9d563980a184203b1b69c55a52cf7a493d1c140c97901ab",
+  "step25bManifestSha256": "8dfd07815328074fefa029a41e911130984386d50d3ca86cd8c123e1f0d8b734",
+  "reader": {
+    "file": "tools/research/glorys_reader_step25c.py",
+    "sha256": "11b7d987434a55a9e42a9776e851fad49b8ec65d2df0f23130c7a7e6234ab63e",
+    "version": "earthus-glorys-netcdf/1",
+    "isolatedFromRuntime": true
+  },
+  "modelB": {
+    "name": "GLORYS12V1",
+    "productId": "GLOBAL_MULTIYEAR_PHY_001_030",
+    "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+    "resolutionDegrees": 0.08333333333333333,
+    "cadence": "daily mean",
+    "cadenceSeconds": 86400,
+    "variables": [
+      "uo",
+      "vo"
+    ],
+    "depthMeters": 15.81007,
+    "depthRule": "single native level as stored (15.81007 m); no vertical interpolation, no depth search, no alternate depth",
+    "wind": "NCEP-DOE R2 10 m 6-hourly (identical files as Model A, SHA-locked)",
+    "alpha": 0.002,
+    "temporalRule": "daily mean frames carry the stored 00:00Z label; linear interpolation between existing bracketing daily frames only (t0-1 d .. end+1 d acquired in STEP 25B); no gap filling, no frame duplication, no extrapolation",
+    "reader": {
+      "file": "tools/research/glorys_reader_step25c.py",
+      "version": "earthus-glorys-netcdf/1",
+      "isolatedFromRuntime": true,
+      "coordinateNormalization": "float32 labels of the documented 1/12 degree grid normalized to k/12 (tolerance 1e-4 deg, worst case recorded); values untouched"
+    }
+  },
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "t0": "2010-05-11T12:00:00Z",
+      "end": "2010-05-14T12:00:00Z",
+      "computationArea": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "rawFile": "data/research/step25b/glorys/KE-1.glorys12v1.uo_vo.15.81m.nc",
+      "rawSha256": "d399a2b586b3eea97838bfc9eab2bf0e58afcd33d07c4e9fcef7b02de033c2dc",
+      "rawBytes": 870562,
+      "normalized": {
+        "file": "data/research/step25c/forcing/KE-1.glorys15.81m.dataset.json",
+        "fileSha256": "5eac44039387614c00d84df59c6805c2d275369cc4c1e25af80c0a23588230eb",
+        "gridSha256": "57e0916e8e4204ed0e07c0c34cb5cd451a018157425b5de9ac1b766d29a484f2",
+        "sourceSha256": "d399a2b586b3eea97838bfc9eab2bf0e58afcd33d07c4e9fcef7b02de033c2dc",
+        "datasetId": "glorys12v1-15.81m-KE-1",
+        "version": "step25c-1",
+        "readerVersion": "earthus-glorys-netcdf/1",
+        "shape": [
+          6,
+          133,
+          264
+        ],
+        "timeUTC": [
+          "2010-05-10T00:00:00Z",
+          "2010-05-11T00:00:00Z",
+          "2010-05-12T00:00:00Z",
+          "2010-05-13T00:00:00Z",
+          "2010-05-14T00:00:00Z",
+          "2010-05-15T00:00:00Z"
+        ],
+        "timeStepSeconds": 86400,
+        "surfaceDepthMeters": 15.81007,
+        "depthLevelMeters": 15.810070037841797,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        },
+        "maskedNodes": 378,
+        "uRange": [
+          -1.1243018880486488,
+          1.9251075759530067
+        ],
+        "vRange": [
+          -1.4868617802858353,
+          1.785332802683115
+        ],
+        "valuesCount": 421344
+      },
+      "coverage": {
+        "areaInsideGrid": true,
+        "timeBracketsWindow": true,
+        "gapInterpolated": false,
+        "substitution": false
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/KE-1.ncep10m.wind.json",
+        "sha256": "6e6c0c225cf70d676e7adb1cf0ba2b18f3805db9e0e02eef710295f564473a71",
+        "gridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "hycomBaseline": {
+        "0.002": {
+          "runId": "step20-cal-alpha0.002-KE-1",
+          "file": "data/research/step20/calibration/KE-1/alpha0.002.trajectories.csv",
+          "sha256": "cc38b0d7fd171f187b990f16f9ab3a18d836ea2a7a6913e0d8dce996a1915069",
+          "resultArraySha256": "2b7547ed6151ad908f91513a6d54a7ab140f3413f42eb5b706f0e79ad296ec9d",
+          "segmented": false
+        },
+        "0": {
+          "runId": "step20-cal-alpha0-KE-1",
+          "file": "data/research/step20/calibration/KE-1/alpha0.trajectories.csv",
+          "sha256": "0e6f034f7f99982148708d0cf67302249141fbb2063d410c96547c329b4740b3",
+          "resultArraySha256": "aa6987ed8fcabd89d025b30acc3bd869840f8aff6d7ae598984b16d0d357ba4b",
+          "segmented": false
+        }
+      },
+      "status": "NORMALIZED"
+    },
+    {
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "t0": "2010-06-30T12:00:00Z",
+      "end": "2010-07-03T12:00:00Z",
+      "computationArea": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "rawFile": "data/research/step25b/glorys/KE-2.glorys12v1.uo_vo.15.81m.nc",
+      "rawSha256": "f2ca50183aea583d69e3b73f4609568b221106a7c119a0c8c0bd43d7623f4bbe",
+      "rawBytes": 899382,
+      "normalized": {
+        "file": "data/research/step25c/forcing/KE-2.glorys15.81m.dataset.json",
+        "fileSha256": "3c454919b343754740dd861ac8d147282be60392b043771e7f5a7f6407ef28ae",
+        "gridSha256": "99364bcd6a0dd93db4e4c7c09420e03d8cfb29e5d0443c872492b41ac00b30d5",
+        "sourceSha256": "f2ca50183aea583d69e3b73f4609568b221106a7c119a0c8c0bd43d7623f4bbe",
+        "datasetId": "glorys12v1-15.81m-KE-2",
+        "version": "step25c-1",
+        "readerVersion": "earthus-glorys-netcdf/1",
+        "shape": [
+          6,
+          136,
+          267
+        ],
+        "timeUTC": [
+          "2010-06-29T00:00:00Z",
+          "2010-06-30T00:00:00Z",
+          "2010-07-01T00:00:00Z",
+          "2010-07-02T00:00:00Z",
+          "2010-07-03T00:00:00Z",
+          "2010-07-04T00:00:00Z"
+        ],
+        "timeStepSeconds": 86400,
+        "surfaceDepthMeters": 15.81007,
+        "depthLevelMeters": 15.810070037841797,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        },
+        "maskedNodes": 3195,
+        "uRange": [
+          -1.1011078208684921,
+          2.267525251954794
+        ],
+        "vRange": [
+          -1.6583758033812046,
+          1.5289773233234882
+        ],
+        "valuesCount": 435744
+      },
+      "coverage": {
+        "areaInsideGrid": true,
+        "timeBracketsWindow": true,
+        "gapInterpolated": false,
+        "substitution": false
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/KE-2.ncep10m.wind.json",
+        "sha256": "2b913475ada3a1fa16d3a29b3441151b328eb99df64f798ee3467527cedda71f",
+        "gridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "hycomBaseline": {
+        "0.002": {
+          "runId": "step20-cal-alpha0.002-KE-2",
+          "file": "data/research/step20/calibration/KE-2/alpha0.002.trajectories.csv",
+          "sha256": "e2c8ca1336b3ef967e08a2b641579158e61617ec5c0b770762919769b416aa99",
+          "resultArraySha256": "a063e35a2ec6ac764d590e792b98482974c60b6d5580c59029a167f7dfd05043",
+          "segmented": false
+        },
+        "0": {
+          "runId": "step20-cal-alpha0-KE-2",
+          "file": "data/research/step20/calibration/KE-2/alpha0.trajectories.csv",
+          "sha256": "f52849f24e6cf02a51e1594b018d601496b292b77a899bb59d8cbf0f39eeef82",
+          "resultArraySha256": "054d9a24687fe4b520285b50e061f8f6e5ca93d69f24d3e66868ef0224d6334d",
+          "segmented": false
+        }
+      },
+      "status": "NORMALIZED"
+    },
+    {
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "t0": "2015-04-23T12:00:00Z",
+      "end": "2015-04-26T12:00:00Z",
+      "computationArea": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "rawFile": "data/research/step25b/glorys/AG-1.glorys12v1.uo_vo.15.81m.nc",
+      "rawSha256": "87fffab5d0cfc0ff96387be7089b408681ea55a1f87bfba72f7f8f3ccf875759",
+      "rawBytes": 482402,
+      "normalized": {
+        "file": "data/research/step25c/forcing/AG-1.glorys15.81m.dataset.json",
+        "fileSha256": "a41f03647dcf12c048f92bb389d5ce80340060b4a953051ab0da43394823237c",
+        "gridSha256": "6821bf8fef4cd232353f030f51f836eb06adf331f5a7a6568eaabceca60009e2",
+        "sourceSha256": "87fffab5d0cfc0ff96387be7089b408681ea55a1f87bfba72f7f8f3ccf875759",
+        "datasetId": "glorys12v1-15.81m-AG-1",
+        "version": "step25c-1",
+        "readerVersion": "earthus-glorys-netcdf/1",
+        "shape": [
+          6,
+          107,
+          177
+        ],
+        "timeUTC": [
+          "2015-04-22T00:00:00Z",
+          "2015-04-23T00:00:00Z",
+          "2015-04-24T00:00:00Z",
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z"
+        ],
+        "timeStepSeconds": 86400,
+        "surfaceDepthMeters": 15.81007,
+        "depthLevelMeters": 15.810070037841797,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 1.2715657575768091e-06
+        },
+        "maskedNodes": 3587,
+        "uRange": [
+          -1.898251287639141,
+          1.6834009811282158
+        ],
+        "vRange": [
+          -1.8402661196887493,
+          1.501510664820671
+        ],
+        "valuesCount": 227268
+      },
+      "coverage": {
+        "areaInsideGrid": true,
+        "timeBracketsWindow": true,
+        "gapInterpolated": false,
+        "substitution": false
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/AG-1.ncep10m.wind.json",
+        "sha256": "00ff12e9daabcca05c9db6e5542eb788871c5fbae14a6d3774152d36cfbc6785",
+        "gridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "hycomBaseline": {
+        "0.002": {
+          "runId": "step20-cal-alpha0.002-AG-1",
+          "file": "data/research/step20/calibration/AG-1/alpha0.002.trajectories.csv",
+          "sha256": "58f9ca262b7e74d1fba1daac951b51e9f32847e7b500ec87bb9e7d75f716976b",
+          "resultArraySha256": "afac7313dd5dc7decd013aca1d7da6691bfa48933f98273d4c02c09beb9891d3",
+          "segmented": false
+        },
+        "0": {
+          "runId": "step20-cal-alpha0-AG-1",
+          "file": "data/research/step20/calibration/AG-1/alpha0.trajectories.csv",
+          "sha256": "8970e7010f555482aafe210a66a41664c2fa6482726296a0d31f01ed2aeaee3b",
+          "resultArraySha256": "752235d460dd93f8c8f820259e85294c0fb9e13f968f2d48cea589e656d966f6",
+          "segmented": false
+        }
+      },
+      "status": "NORMALIZED"
+    },
+    {
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "t0": "2015-04-26T12:00:00Z",
+      "end": "2015-04-29T12:00:00Z",
+      "computationArea": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "rawFile": "data/research/step25b/glorys/AG-2.glorys12v1.uo_vo.15.81m.nc",
+      "rawSha256": "595c2bace7156f3dab92698a251e29a87920eb4d2375cc730fbdf69562cc9b25",
+      "rawBytes": 114286,
+      "normalized": {
+        "file": "data/research/step25c/forcing/AG-2.glorys15.81m.dataset.json",
+        "fileSha256": "27de6bdf0d7284aa5989f3c0c75d08b61eb3776dbf1b93c0ec055bdff42bb2bb",
+        "gridSha256": "96894ed4c1b40a0d5db94d3cdcbab83f8a4d4502342ac983ae84eda4e97d0a26",
+        "sourceSha256": "595c2bace7156f3dab92698a251e29a87920eb4d2375cc730fbdf69562cc9b25",
+        "datasetId": "glorys12v1-15.81m-AG-2",
+        "version": "step25c-1",
+        "readerVersion": "earthus-glorys-netcdf/1",
+        "shape": [
+          6,
+          60,
+          60
+        ],
+        "timeUTC": [
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z",
+          "2015-04-28T00:00:00Z",
+          "2015-04-29T00:00:00Z",
+          "2015-04-30T00:00:00Z"
+        ],
+        "timeStepSeconds": 86400,
+        "surfaceDepthMeters": 15.81007,
+        "depthLevelMeters": 15.810070037841797,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 6.357828787884046e-07
+        },
+        "maskedNodes": 93,
+        "uRange": [
+          -1.8066957592964172,
+          1.5802484191954136
+        ],
+        "vRange": [
+          -1.8402661196887493,
+          1.0357982106506824
+        ],
+        "valuesCount": 43200
+      },
+      "coverage": {
+        "areaInsideGrid": true,
+        "timeBracketsWindow": true,
+        "gapInterpolated": false,
+        "substitution": false
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/AG-2.ncep10m.wind.json",
+        "sha256": "f32e7a2a4f2e7d991d516e5ac97308ac1f4c0b143b9cf39612f604c1910f7699",
+        "gridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "hycomBaseline": {
+        "0.002": {
+          "runId": "step20-cal-alpha0.002-AG-2",
+          "file": "data/research/step20/calibration/AG-2/alpha0.002.trajectories.csv",
+          "sha256": "afc98cf9d2e1d66f97d1c3f2637ae9c0e7c24bdfdade8d2dc785a10f990ba0e2",
+          "resultArraySha256": "42c0010f77f96608364fdb55450f40f22851947b085bc7184b04fc9afe5dd42b",
+          "segmented": false
+        },
+        "0": {
+          "runId": "step20-cal-alpha0-AG-2",
+          "file": "data/research/step20/calibration/AG-2/alpha0.trajectories.csv",
+          "sha256": "158100c502fbe5f985fe5dbb5979229c77bc55731453f938b5fec9ffcd169da7",
+          "resultArraySha256": "341f1fca0d7e6dece2cd0d05f434f81dfa5415110650ccac27e721ea098b87d8",
+          "segmented": false
+        }
+      },
+      "status": "NORMALIZED"
+    },
+    {
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "t0": "2010-08-10T12:00:00Z",
+      "end": "2010-08-13T12:00:00Z",
+      "computationArea": {
+        "west": 135.25655,
+        "east": 161.85992,
+        "south": 30.2673,
+        "north": 40.0
+      },
+      "rawFile": "data/research/step25b/glorys/KE-H1.glorys12v1.uo_vo.15.81m.nc",
+      "rawSha256": "5fcb3b013aa4f0fa8dabf516ea2ef9d669f7009aceb5d960c339e92f4debcb25",
+      "rawBytes": 1052642,
+      "normalized": {
+        "file": "data/research/step25c/forcing/KE-H1.glorys15.81m.dataset.json",
+        "fileSha256": "5cd22aece73dbb1d613ad99535d93b09b417b22ce300b2d3bfe79670e2656f16",
+        "gridSha256": "e12142bace085deb9a83837334205d8d26c33c13cef9b06be3525c7a738bf1b5",
+        "sourceSha256": "5fcb3b013aa4f0fa8dabf516ea2ef9d669f7009aceb5d960c339e92f4debcb25",
+        "datasetId": "glorys12v1-15.81m-KE-H1",
+        "version": "step25c-1",
+        "readerVersion": "earthus-glorys-netcdf/1",
+        "shape": [
+          6,
+          129,
+          331
+        ],
+        "timeUTC": [
+          "2010-08-09T00:00:00Z",
+          "2010-08-10T00:00:00Z",
+          "2010-08-11T00:00:00Z",
+          "2010-08-12T00:00:00Z",
+          "2010-08-13T00:00:00Z",
+          "2010-08-14T00:00:00Z"
+        ],
+        "timeStepSeconds": 86400,
+        "surfaceDepthMeters": 15.81007,
+        "depthLevelMeters": 15.810070037841797,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        },
+        "maskedNodes": 2747,
+        "uRange": [
+          -1.6534928418695927,
+          2.4420911259949207
+        ],
+        "vRange": [
+          -1.9794305227696896,
+          1.976378671824932
+        ],
+        "valuesCount": 512388
+      },
+      "coverage": {
+        "areaInsideGrid": true,
+        "timeBracketsWindow": true,
+        "gapInterpolated": false,
+        "substitution": false
+      },
+      "wind": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H1.ncep10m.wind.json",
+        "sha256": "7b16b08358e2ca50769cfb4106674703f7da70190e8bb6601fec4ceeae5bcfcd",
+        "gridSha256": "2efe5efe8feed013a2c0b64fb3257938d8f85a129f35ecc0167cc35db0154d21",
+        "source": "STEP 20 B-3 normalized NCEP-DOE R2 10 m 6 h (holdout)"
+      },
+      "hycomBaseline": {
+        "0.002": {
+          "runId": "step20-hold-alpha0.002-KE-H1",
+          "file": "data/research/step20/holdout/trajectories/KE-H1/alpha0.002.trajectories.csv",
+          "sha256": "5f68152824cf8b548187181fed37b06b6c3b3482d024c72ecd1ce679bc580d18",
+          "resultArraySha256": "0a0a80728f9ef58f0d1637ebd7e57db44d45d94380405402dc19de47308368da",
+          "segmented": true
+        },
+        "0": {
+          "runId": "step20-hold-alpha0-KE-H1",
+          "file": "data/research/step20/holdout/trajectories/KE-H1/alpha0.trajectories.csv",
+          "sha256": "56c327e0b21ad59b4a1a840a13bc9d45e9f913ba4e9196032aed60230fa44d8c",
+          "resultArraySha256": "3f5722fcd417a0127a571e447ca1115509c71bc1c42c646e073f8a287caa5312",
+          "segmented": true
+        }
+      },
+      "status": "NORMALIZED"
+    },
+    {
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "t0": "2010-11-15T12:00:00Z",
+      "end": "2010-11-18T12:00:00Z",
+      "computationArea": {
+        "west": 141.06795,
+        "east": 156.05711,
+        "south": 29.02459,
+        "north": 40.0
+      },
+      "rawFile": "data/research/step25b/glorys/KE-H3.glorys12v1.uo_vo.15.81m.nc",
+      "rawSha256": "403ed3a5b4b2882d6f1a102d2edea299ae9436598b250a46e0c0bcb834c10152",
+      "rawBytes": 691438,
+      "normalized": {
+        "file": "data/research/step25c/forcing/KE-H3.glorys15.81m.dataset.json",
+        "fileSha256": "f3955b90eb1c2715accc8675d8a8338b3816434d96a70754bc7d5fe3f70cc059",
+        "gridSha256": "f00cb7fec7d318234f7ed6dd2af3c92f332b92cb076d82cec947ea300735421f",
+        "sourceSha256": "403ed3a5b4b2882d6f1a102d2edea299ae9436598b250a46e0c0bcb834c10152",
+        "datasetId": "glorys12v1-15.81m-KE-H3",
+        "version": "step25c-1",
+        "readerVersion": "earthus-glorys-netcdf/1",
+        "shape": [
+          6,
+          144,
+          192
+        ],
+        "timeUTC": [
+          "2010-11-14T00:00:00Z",
+          "2010-11-15T00:00:00Z",
+          "2010-11-16T00:00:00Z",
+          "2010-11-17T00:00:00Z",
+          "2010-11-18T00:00:00Z",
+          "2010-11-19T00:00:00Z"
+        ],
+        "timeStepSeconds": 86400,
+        "surfaceDepthMeters": 15.81007,
+        "depthLevelMeters": 15.810070037841797,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        },
+        "maskedNodes": 508,
+        "uRange": [
+          -1.2030396424233913,
+          1.899472028017044
+        ],
+        "vRange": [
+          -1.9562364555895329,
+          1.2921536900103092
+        ],
+        "valuesCount": 331776
+      },
+      "coverage": {
+        "areaInsideGrid": true,
+        "timeBracketsWindow": true,
+        "gapInterpolated": false,
+        "substitution": false
+      },
+      "wind": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H3.ncep10m.wind.json",
+        "sha256": "c1f1e3d70697a41b5d39d4f0b422869378256930d5e9d9b8393cbff996ab9bbc",
+        "gridSha256": "94b50b5ac56e7224b260eb0a03bddccd9785e3454a69471cdc3a39bc61e43cd8",
+        "source": "STEP 20 B-3 normalized NCEP-DOE R2 10 m 6 h (holdout)"
+      },
+      "hycomBaseline": {
+        "0.002": {
+          "runId": "step20-hold-alpha0.002-KE-H3",
+          "file": "data/research/step20/holdout/trajectories/KE-H3/alpha0.002.trajectories.csv",
+          "sha256": "00d9db9f183b53e2d7261cc42e4db997a06b7b8b9d0a1e421f73f4517a723fd6",
+          "resultArraySha256": "a9ae8822f873fd2695ae39ebd8e8132bbac52e7f416033645f5fba2f7f96e1de",
+          "segmented": false
+        },
+        "0": {
+          "runId": "step20-hold-alpha0-KE-H3",
+          "file": "data/research/step20/holdout/trajectories/KE-H3/alpha0.trajectories.csv",
+          "sha256": "e63fe31926121e2fad2445a7ef10d95276fbd0b1bd204adbf5c87500995c70be",
+          "resultArraySha256": "54e70c66093be5ae749749d6f5fd0eb439e35726b665018bb806b3bd7c614938",
+          "segmented": false
+        }
+      },
+      "status": "NORMALIZED"
+    }
+  ],
+  "windowCount": 6,
+  "MODEL_RUN": "NOT_PERFORMED_IN_THIS_TOOL",
+  "modelRunCount": 0,
+  "createdAtUTC": "2026-09-06T11:46:46Z"
+}

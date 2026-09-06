@@ -1,0 +1,307 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "evaluation-protocol-step19-paired-ab-24-48-72h",
+  "protocolDocument": "docs/research/step19-evaluation-protocol.md",
+  "protocolDocumentSha256": "920475967d4dd1a0b10a9f96f10c83291f92df767e906c50b0973e82b9af52b3",
+  "createdAtUTC": "2026-09-06T05:34:40Z",
+  "authorProcess": "Claude Code session (Research Intelligence PHASE 2, STEP 19 Phase A) — evaluation preregistration only; no analysis, no statistics, no plots, no interpretation",
+  "gitCommitAtDesign": "a9225f77",
+  "evaluates": {
+    "ruleId": "model-protocol-step18b-openloop-72h-alpha0007",
+    "phaseBStatus": "MODEL_RUN_PASS",
+    "runs": "8/8",
+    "drifters": "23/23 COMPLETED to t0+72h",
+    "replay": "8/8 matched",
+    "runtimeValidatorFailures": 0,
+    "modelCommit": "75020d98",
+    "manifestCommit": "a9225f77",
+    "manifestSha256": "923fd1ba69438da0a6bbd02495705b4dccce229d606a199b0498c6d80d6aaefe"
+  },
+  "immutabilityCheck": {
+    "step16CohortCommit": "5bc3590b",
+    "step16CohortSha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+    "step17PhaseBCommit": "cc4d8c48",
+    "step17ForcingManifestSha256": "591cc05799da03e6bb604321d9e2b129a32a201112922c4d06823026a0b5ac86",
+    "step18LockCommit": "d505cc5e",
+    "step18PhaseBCommit": "5607ac1a",
+    "step18bLockCommit": "5b9567e5",
+    "step18bProtocolSha256": "73e8aa1405aa82c6ae283962f8efaabdfa5331a5dc6109471b1e6bd0ebf813bc",
+    "step18bPreregistrationSha256": "02935e81e9c93690078ff96231c74ad51c86dfaffa89bfa17a2e2ba082306316",
+    "step18bModelRuleSha256": "7e9ab639f0c36ca747ff5f292f2c78eaa3eaae8da078311ce26f76e964bc49eb",
+    "step18bModelCommit": "75020d98",
+    "step18bManifestCommit": "a9225f77",
+    "step18bManifestSha256": "923fd1ba69438da0a6bbd02495705b4dccce229d606a199b0498c6d80d6aaefe",
+    "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "resultShaVerification": "PASS (16/16 files match manifest at design time)",
+    "step19OutputsExist": false,
+    "result": "PASS",
+    "checkedAtUTC": "2026-09-06T05:34:40Z"
+  },
+  "inputs": {
+    "trajectoryRuns": [
+      {
+        "runId": "step18-A-alpha0007-KE-1",
+        "windowId": "KE-1",
+        "alpha": 0.0007,
+        "trajectoriesFile": "data/research/step18b/KE-1/step18-A-alpha0007.trajectories.csv",
+        "trajectoriesSha256": "55283d738ba8ba55c552d9cdbd8269566f7550c2b420967fc9f74a0ee03e85dd",
+        "resultFile": "data/research/step18b/KE-1/step18-A-alpha0007.result.json",
+        "resultSha256": "23f55f4422f548042db7414978c721dc71a04a4d7658f3182ba8fd744df51dd2",
+        "rows": 2312
+      },
+      {
+        "runId": "step18-B-alpha0-KE-1",
+        "windowId": "KE-1",
+        "alpha": 0.0,
+        "trajectoriesFile": "data/research/step18b/KE-1/step18-B-alpha0.trajectories.csv",
+        "trajectoriesSha256": "d03b562d61c146b10995fe31733d4b2179bc253d4d4ade6ba7b819a3ca70d535",
+        "resultFile": "data/research/step18b/KE-1/step18-B-alpha0.result.json",
+        "resultSha256": "013b93b788a71f328a683091226c305d7f9c2659f8d91a5f6151e3ac755ee5ef",
+        "rows": 2312
+      },
+      {
+        "runId": "step18-A-alpha0007-KE-2",
+        "windowId": "KE-2",
+        "alpha": 0.0007,
+        "trajectoriesFile": "data/research/step18b/KE-2/step18-A-alpha0007.trajectories.csv",
+        "trajectoriesSha256": "68181e66761217196d5ff87e65399bca125392a934f4f85b9f23a142f1adb428",
+        "resultFile": "data/research/step18b/KE-2/step18-A-alpha0007.result.json",
+        "resultSha256": "352267b5b128b7333c297484f6906fe0ac9b5393013e46cffd45619ba58db02a",
+        "rows": 1445
+      },
+      {
+        "runId": "step18-B-alpha0-KE-2",
+        "windowId": "KE-2",
+        "alpha": 0.0,
+        "trajectoriesFile": "data/research/step18b/KE-2/step18-B-alpha0.trajectories.csv",
+        "trajectoriesSha256": "d6845c7e64384d6b7e957a18ace2adc6029210ed2127846596e1c3d6da672040",
+        "resultFile": "data/research/step18b/KE-2/step18-B-alpha0.result.json",
+        "resultSha256": "f176f3dd369450e6a13b2dfdebde56590370c6203616fe379a0f496582a84418",
+        "rows": 1445
+      },
+      {
+        "runId": "step18-A-alpha0007-AG-1",
+        "windowId": "AG-1",
+        "alpha": 0.0007,
+        "trajectoriesFile": "data/research/step18b/AG-1/step18-A-alpha0007.trajectories.csv",
+        "trajectoriesSha256": "639b1004dbbf586609cbe8eca13e6edd9c44e3588a7697cf9ff0b720a82b1a48",
+        "resultFile": "data/research/step18b/AG-1/step18-A-alpha0007.result.json",
+        "resultSha256": "97d6330ac003f24d0d6f11e7552cceb1d4206b5eec3e3c6c2052f032caffe9e2",
+        "rows": 2601
+      },
+      {
+        "runId": "step18-B-alpha0-AG-1",
+        "windowId": "AG-1",
+        "alpha": 0.0,
+        "trajectoriesFile": "data/research/step18b/AG-1/step18-B-alpha0.trajectories.csv",
+        "trajectoriesSha256": "5738399d2133874ea8ae3b55a406596d0d0fc17f21c2b46a24496f9480b63c51",
+        "resultFile": "data/research/step18b/AG-1/step18-B-alpha0.result.json",
+        "resultSha256": "c2d8d0d1d885f1a13b5c568d329690724ffb87100b61a30106cf469d0b32a4ab",
+        "rows": 2601
+      },
+      {
+        "runId": "step18-A-alpha0007-AG-2",
+        "windowId": "AG-2",
+        "alpha": 0.0007,
+        "trajectoriesFile": "data/research/step18b/AG-2/step18-A-alpha0007.trajectories.csv",
+        "trajectoriesSha256": "5ec26dc581015ce7d6d4b2443cd9fd4ca1a4464bbfc7a06d1df17eb1dade79c2",
+        "resultFile": "data/research/step18b/AG-2/step18-A-alpha0007.result.json",
+        "resultSha256": "bc02889b57ae8a72bd5c83b7be7c4d9f0faea48f5ec8514e5d081bf7caadb3d2",
+        "rows": 289
+      },
+      {
+        "runId": "step18-B-alpha0-AG-2",
+        "windowId": "AG-2",
+        "alpha": 0.0,
+        "trajectoriesFile": "data/research/step18b/AG-2/step18-B-alpha0.trajectories.csv",
+        "trajectoriesSha256": "85f7281a62fae85ad68df8d9c9d7d41b6454ad076394a1a79930d188da9d787b",
+        "resultFile": "data/research/step18b/AG-2/step18-B-alpha0.result.json",
+        "resultSha256": "d5ebcfbb61df189837f34cf7382e0319489665f9f7b8aa7caf3998091e0ba294",
+        "rows": 289
+      }
+    ],
+    "observationRoot": "data/research/step15/noaa-gdp-hourly-qc/",
+    "cohort": "docs/research/cohort-step16.json",
+    "integrityRule": "all 16 result files SHA-256 verified against the STEP 18b manifest before analysis; any mismatch → EVALUATION_BLOCKED_RESULT_INTEGRITY"
+  },
+  "design": {
+    "primaryComparison": {
+      "A": {
+        "runId": "step18-A-alpha0007",
+        "alpha": 0.0007
+      },
+      "B": {
+        "runId": "step18-B-alpha0",
+        "alpha": 0.0
+      }
+    },
+    "pairing": "same drifter, paired comparison only; each drifter is one paired observation",
+    "horizonsHours": [
+      24,
+      48,
+      72
+    ],
+    "timestampMatching": "exact UTC only; observations on the hour; model output on the 900 s grid; no interpolation",
+    "independence": "23 drifters are NOT statistically independent (shared window forcing/time; shared region product); unit stratification mandatory; no independent-sample inference as primary"
+  },
+  "primaryError": {
+    "metric": "M3 observed-vs-model positional error",
+    "distance": "haversine, radius 6371008.8 m, km",
+    "delta": "error_A - error_B (delta < 0: A lower error; delta > 0: B lower error; delta = 0: tie)",
+    "tieToleranceKm": 1e-06,
+    "win": "strictly lower error in that pair/horizon",
+    "notAvailable": "pair/horizon excluded from paired statistics and counted; nothing removed",
+    "noBetterClaimBeforeFullDistribution": true
+  },
+  "secondaryMetrics": {
+    "M1": "72 h endpoint displacement: release point → model position at t0+72h; NOT_AVAILABLE if not valid at t0+72h",
+    "M2": "total trajectory displacement: sum of distances between consecutive valid=true output points up to the last valid point; valid duration (h) recorded",
+    "M4": "A-B separation at 72 h (model_A vs model_B position distance at t0+72h)",
+    "M5": "observed 72 h displacement (reference against cohort A2)",
+    "definitionsChanged": false,
+    "manifestConsistencyToleranceKm": 0.001
+  },
+  "summaryStatistics": {
+    "perMetricHorizonRun": [
+      "n",
+      "median",
+      "mean",
+      "min",
+      "max"
+    ],
+    "pairedDelta": [
+      "median delta",
+      "mean delta",
+      "min delta",
+      "max delta",
+      "A wins",
+      "B wins",
+      "ties"
+    ],
+    "median": "even n → mean of the two central values",
+    "reportingDecimals": 3,
+    "stratification": {
+      "units": [
+        "KE-1",
+        "KE-2",
+        "AG-1",
+        "AG-2"
+      ],
+      "perUnitFields": [
+        "n",
+        "median A",
+        "median B",
+        "median delta",
+        "A wins",
+        "B wins",
+        "ties"
+      ],
+      "poolingHidesUnits": false,
+      "AG-2": "n=1 kept visible"
+    }
+  },
+  "outlierPolicy": {
+    "remove": false,
+    "winsorize": false,
+    "trim": false,
+    "replaceObservations": false,
+    "removeAG2": false,
+    "removeLargeError": false,
+    "influenceReport": {
+      "topErrorsPerHorizon": 3,
+      "leaveOneOut": "23 rows: overall median delta and A/B/tie counts with each single drifter left out (descriptive only, no removal)"
+    }
+  },
+  "pairedTable": {
+    "file": "docs/research/step19-paired-table.csv",
+    "rows": 23,
+    "order": "drifter_id ascending (string)",
+    "columns": [
+      "drifter_id",
+      "unit",
+      "error_A_24h",
+      "error_B_24h",
+      "delta_24h",
+      "error_A_48h",
+      "error_B_48h",
+      "delta_48h",
+      "error_A_72h",
+      "error_B_72h",
+      "delta_72h",
+      "endpoint_A_72h",
+      "endpoint_B_72h",
+      "A_B_separation_72h",
+      "path_A",
+      "path_B",
+      "observed_72h"
+    ],
+    "units": "km, 3 decimals, NOT_AVAILABLE when missing",
+    "silentOmission": false
+  },
+  "inference": {
+    "primary": "descriptive paired analysis",
+    "independentSampleTTest": false,
+    "assumeIndependence": false,
+    "confidenceIntervals": false,
+    "exploratory": {
+      "test": "two-sided exact sign test on sign(delta) per horizon, ties excluded, binomial n = A wins + B wins, p = 0.5",
+      "label": "EXPLORATORY",
+      "changesPrimary": false,
+      "caveat": "assumes pair independence, which §2 denies; nominal p-values reported only",
+      "pValueThreshold": null,
+      "significanceWording": "PROHIBITED"
+    }
+  },
+  "postHocProhibited": [
+    "alpha change/search/optimization",
+    "forcing tuning",
+    "interpolation tuning",
+    "trajectory model change",
+    "regenerating STEP 18b trajectories",
+    "changing metrics, horizons, tie tolerance, table columns or stratification after seeing results",
+    "introducing acceptance thresholds",
+    "removing or replacing any drifter"
+  ],
+  "acceptanceThresholds": "NONE",
+  "phaseBOutputs": {
+    "tool": "tools/research/evaluate_step19.py",
+    "evaluation": "docs/research/step19-evaluation.json",
+    "table": "docs/research/step19-paired-table.csv",
+    "runValidator": "tools/research/check_step19_evaluation_run.py",
+    "plots": "NONE",
+    "evaluationFields": [
+      "ruleId",
+      "protocolSha256",
+      "preregistrationSha256",
+      "evaluationRuleSha256",
+      "step18bManifestSha256",
+      "inputFileShas",
+      "observationSha256",
+      "cohortSha256",
+      "status",
+      "horizons",
+      "pairs",
+      "summary",
+      "paired",
+      "topErrors",
+      "leaveOneOut",
+      "manifestConsistency",
+      "exploratorySignTest",
+      "interpretation",
+      "createdAtUTC",
+      "tableSha256"
+    ],
+    "statuses": [
+      "EVALUATION_COMPLETE",
+      "EVALUATION_BLOCKED_RESULT_INTEGRITY"
+    ]
+  },
+  "analysisPerformed": false,
+  "statisticsComputed": false,
+  "plotsCreated": false,
+  "interpretation": "NONE",
+  "lockedAtUTC": "2026-09-06T05:34:40Z",
+  "lockPolicy": "after LOCK no change to comparison, horizons, error definition, tie tolerance, secondary metrics, summary items, stratification, outlier policy, table schema or inference rules; changes require a new ruleId",
+  "nextStep": "STEP 19 — PHASE B: EVALUATION (separate instruction only; nothing analysed in Phase A)"
+}

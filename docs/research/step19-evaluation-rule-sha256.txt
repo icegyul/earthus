@@ -1,0 +1,2 @@
+920475967d4dd1a0b10a9f96f10c83291f92df767e906c50b0973e82b9af52b3  docs/research/step19-evaluation-protocol.md
+02e73093bbcf44a89c26887d7cddcc243c01ae37c45b30f789ee04838bac14dd  docs/research/step19-preregistration.json

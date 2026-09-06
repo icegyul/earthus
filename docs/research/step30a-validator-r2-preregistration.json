@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "status": "VALIDATOR REVISION LOCKED",
+  "ruleId": "final-candidate-benchmark-step30a",
+  "phase": "B",
+  "phaseBLock": "d30607c8",
+  "phaseALock": "94d414b6",
+  "reason": "Locked r1 validator reported FAIL on two validator-side defects after the evaluation ran: (1) '7 medians recomputed' at overall 48 h, holdout 48 h, holdout 72 h: the validator recomputed medians from the 3-decimal table and compared them with tolerance 0.0005 km to the evaluator's full-precision medians; even-n medians differ by 0.001 km (35.658 vs 35.659; 28.914 vs 28.913; 2.305 vs 2.304). (2) 'no overclaim language': the scan matched 'ground truth' inside the preregistered required statement 'AVISO and any other field are reference fields, not ground truth'. r1 is kept on disk unchanged; r2 fixes only these two checks (tolerance 0.001 km; required statements excluded from the scan). No evaluation output, rule, threshold, label or input was changed.",
+  "r1": {
+    "path": "tools/research/check_step30a_final_candidate.py",
+    "sha256": "2716b2509766f66517e4e5ed89ed09126354edb5d100d3309d650b73e7bb88a0",
+    "result": "FAIL",
+    "failures": [
+      "7 medians recomputed: overall 48h",
+      "7 medians recomputed: holdout 48h",
+      "7 medians recomputed: holdout 72h",
+      "no overclaim language"
+    ],
+    "runs": 2,
+    "byteIdenticalOutput": true,
+    "allOtherChecks": "PASS"
+  },
+  "r2": {
+    "path": "tools/research/check_step30a_final_candidate_r2.py",
+    "sha256": "553050882e6c932d1e45b178c926f665ff8263b794bb88356e18cbf71bda8d89"
+  },
+  "evaluatorSha256": "4d3bc0805701ae9827d05d4fbfd772acce3331211a9a3de6a9812ae7de594d4e",
+  "evaluationOutputsAtR1Failure": {
+    "docs/research/step30a-final-candidate-table.csv": "b01a5b3d53d3a702952143f53637c21d2027bd04010903b8c93ffefa4cbe61d3",
+    "docs/research/step30a-final-candidate-window-summary.csv": "9a5bd88c8afffbe636d25815a7a28dc51ae971653174d10c32060449ac553c3a",
+    "docs/research/step30a-final-candidate-summary.json": "faaf891fa7c5308db70f97add419d370efa7346ee560c30e307ac33d0a01c504",
+    "docs/research/step30a-final-candidate-evaluation.json": "1fe96b3ce1b104d9334cd2f92954cfa0d0e44f8771bc81489b6e8e702227e5ae",
+    "docs/research/step30a-final-candidate-manifest.json": "cae1745aaa19b8a70758f97252d481d4f98908218b7ebf590851f5a3e1f324a6"
+  },
+  "evaluationOutputsModified": false,
+  "modelRunCount": 0,
+  "newData": 0
+}

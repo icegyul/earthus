@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "forcing-sensitivity-experiment-design-step25a",
+  "createdAtUTC": "2026-09-06T11:50:00Z",
+  "gitCommitAtDesign": "db6cea2f",
+  "protocolSha256": "792ea745f11dc0e468daae97e053e8c374e9d5bc3c7483c6247f3302b93f07f1",
+  "experimentMatrixSha256": "aba7590391e1a71d4b3481d1a97ca2f5154ec61f657886e3e775e61a3d45fc73",
+  "experimentMatrixCsvSha256": "c11e406cca687603c4781b1ed43357452fb86ed8cabc26eb1efa3891f7656af5",
+  "summarySha256": "96c84a369c5111480d47eea491c7a8dc370acb5dd543e22897ee2a6d77c16576",
+  "validator": {
+    "file": "tools/research/check_step25a_experiment_design.py",
+    "sha256": "9779c3b4a6563063f84ef185913cc18e38fdc21ad761e63457044c27e40986fb"
+  },
+  "immutabilityCheck": {
+    "ancestryCommits": {
+      "step17": "551668ef",
+      "step18": "d505cc5e",
+      "step18b": "5b9567e5",
+      "step19": "5f27dc2d",
+      "step20": "155995dd",
+      "step20AlphaLock": "73fafffb",
+      "step20B3": "9113e8b5",
+      "step20B4": "869bc664",
+      "step20B5": "c395a098",
+      "step20B6": "ed746129",
+      "step21": "7b0453b8",
+      "step22": "a7f62873",
+      "step23": [
+        "322f0e57",
+        "4bb4342b"
+      ],
+      "step24": [
+        "275d06e6",
+        "e0e7cfd2"
+      ],
+      "step24b": [
+        "15a81d25",
+        "c34c6d97 (premature commit; PROCESS VIOLATION record, preserved)",
+        "db6cea2f"
+      ]
+    },
+    "lockedFiles": {
+      "docs/research/step17-forcing-protocol.md": "db73ef67d1a191d67b29d488805a3c9998a65bf70b80dffe15b40ed8eb041792",
+      "docs/research/step17-forcing-manifest.json": "591cc05799da03e6bb604321d9e2b129a32a201112922c4d06823026a0b5ac86",
+      "docs/research/step18-model-manifest.json": "02c859f9a079eb68826852589d4c6d313171bcad9b544406212abfe3651a61cb",
+      "docs/research/step18b-model-manifest.json": "923fd1ba69438da0a6bbd02495705b4dccce229d606a199b0498c6d80d6aaefe",
+      "docs/research/step19-evaluation.json": "9baa0c6ae4fd38fbd0ea72e479736d0eb8f43f49aac6cebc8dcfa0051490b5f4",
+      "docs/research/step20-preregistration.json": "1e4ed8c1d004b00812c0710fd3df32c8a6c7537ff5287474a4c0a3e8ae33cae4",
+      "docs/research/step20-selected-alpha.json": "68e43a0f91e3a6bd81427399adbe2cf8a7543d85cf0249d4926f3df093649efd",
+      "docs/research/step20-calibration-manifest.json": "41ca439ec6540fd98b3c9ecf5c74af7afdd8731e94bea5d33bfac3397afe8498",
+      "docs/research/step20-b6-holdout-manifest.json": "968da55a4553c00f373d6a0f26bc2b1c9e3f3af421d37db7a1e58e99a5727653",
+      "docs/research/step20-b6-holdout-summary.json": "fe2043b30aaba17d34e3d9a780379de9612541b75caa4ed487a10931a784d93b",
+      "docs/research/step20-b6-holdout-table.csv": "d21d029bba4e09a15ef19a393f0d8389df0e5750cb1459ed0b1e92372aeea681",
+      "docs/research/step21-diagnostic-summary.json": "d310eaadf64324286de80e485e9944998665d14d2599ca80133cf3d25b406fbd",
+      "docs/research/step22-summary.json": "0093d1c0ab8c73195c76b11da1ddf0609555f5ff49c2698069e31b0a76f4e5bd",
+      "docs/research/step23-data-quality-gates.json": "5121ddee252a03ac276c5094bb373b6948ef317de7bb956add064b7caf99f39b",
+      "docs/research/step23-data-requirement-status.json": "24825f53a615bfecde79972f7a4b8ad53079b71defeb5d66e7d7700f83e01873",
+      "docs/research/step24-data-access-status.json": "74ea277901b95880b5f03e3133ff4b5696381cdbb69a27ccbd6703fdd8db6bf7",
+      "docs/research/step24-license-status.json": "2fed50d520b63fb3303926c78ec4668926db9cfb41f025df7d59a6cfed07a3e2",
+      "docs/research/step24-summary.json": "4b29c5d2be8f9e5b4dac3d105cb8bdd80f75e7cc8b4611047b1cb7f2413ff390",
+      "docs/research/step24b-license-status.json": "7f9a8b9983dd3849e852d31514b6b512ed12195457930c70a104f24dcf8807ef",
+      "docs/research/step24b-summary.json": "162f266b78bde91c37c69c110154eb5182602c64e98d1e353b57f19ff7148925",
+      "docs/research/step24b-r2-preregistration.json": "55ffa70f6654563244589f81a7ac9a0c8063b1243a4af3aa5ca78b6c171c7d40",
+      "docs/research/cohort-step16.json": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474"
+    },
+    "runtimeFilesIdenticalToStep20Lock": true,
+    "result": "PASS"
+  },
+  "phaseA": {
+    "modelRuns": 0,
+    "trajectoryCount": 0,
+    "dataDownloads": 0,
+    "alphaChanged": false,
+    "glorysDownloaded": false
+  },
+  "lockedAtUTC": "2026-09-06T11:50:00Z",
+  "lockPolicy": "after LOCK no modification; any scientific change requires a new superseding step",
+  "nextStep": "none automatically; GLORYS acquisition, TEST-02, TEST-06 and STEP 26 require separate instructions"
+}

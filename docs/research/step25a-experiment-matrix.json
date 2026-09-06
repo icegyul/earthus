@@ -1,0 +1,82 @@
+{
+  "ruleId": "forcing-sensitivity-experiment-design-step25a",
+  "MODEL_RUN": "FORBIDDEN",
+  "executed": 0,
+  "tests": [
+    {
+      "id": "TEST-02",
+      "name": "higher-resolution ocean forcing",
+      "modelA": "HYCOM 0.08 deg 15 m 3 h + NCEP-R2 (frozen; STEP 20 runs)",
+      "modelB": "GLORYS12V1 1/12 deg daily, 15 m nearest native level (~15.81 m) + NCEP-R2",
+      "alphaPairs": [
+        "0.002 (primary)",
+        "0 (baseline structural check)"
+      ],
+      "windows": "KE-1, KE-2, AG-1, AG-2, KE-H1, KE-H3 paired; KE-H2 coverage fact only",
+      "runsNew": "2 per eligible window (B0.002, B0) = 12 if all six paired windows pass; 0 now",
+      "dataset": "DATA-01",
+      "availability": "CREDENTIALS_REQUIRED",
+      "license": "Copernicus Marine licence (account required)",
+      "qualityGate": "G1–G11 on all 7 windows; missing frame → DATASET_BLOCKED",
+      "primaryMetric": "M3 24/48/72 h median; paired delta = E_GLORYS − E_HYCOM",
+      "holdoutUsable": true,
+      "status": "BLOCKED_CREDENTIALS_REQUIRED"
+    },
+    {
+      "id": "TEST-06",
+      "name": "Stokes drift",
+      "modelA": "U_ocean + alpha U_wind",
+      "modelB": "U_ocean + U_Stokes + alpha U_wind (coefficient 1.0)",
+      "alphaPairs": [
+        "0.002",
+        "0"
+      ],
+      "windows": "7 windows covered by DATA-06",
+      "runsNew": "0 now",
+      "dataset": "DATA-06",
+      "availability": "acquired (STEP 23 gates PASS)",
+      "license": "LICENSE_UNKNOWN (STEP 24b)",
+      "qualityGate": "STEP 23 PASS; license gate FAIL",
+      "primaryMetric": "M3 paired delta",
+      "holdoutUsable": true,
+      "status": "BLOCKED_LICENSE_UNKNOWN"
+    },
+    {
+      "id": "TEST-03",
+      "name": "AVISO structural/reference comparison",
+      "modelA": "HYCOM current field",
+      "modelB": "AVISO geostrophic current field (formulation to be frozen)",
+      "alphaPairs": [
+        "to be frozen"
+      ],
+      "windows": "KE-2, KE-H1, KE-H2, KE-H3 (4/7)",
+      "runsNew": "0 now",
+      "dataset": "DATA-03",
+      "availability": "PARTIAL (acquired)",
+      "license": "ERDDAP notice",
+      "qualityGate": "STEP 23 PARTIAL_COVERAGE",
+      "primaryMetric": "M3 paired delta / field comparison",
+      "holdoutUsable": true,
+      "status": "DESIGN_PENDING_FORMULATION"
+    },
+    {
+      "id": "TEST-04",
+      "name": "depth sensitivity",
+      "modelA": "15 m",
+      "modelB": "fixed preregistered depth set",
+      "alphaPairs": [
+        "0.002",
+        "0"
+      ],
+      "windows": "7",
+      "runsNew": "0 now",
+      "dataset": "DATA-04 (HYCOM depths, anonymous) / GLORYS levels",
+      "availability": "not acquired",
+      "license": "HYCOM Distribution A",
+      "qualityGate": "future",
+      "primaryMetric": "M3",
+      "holdoutUsable": true,
+      "status": "DESIGN_PENDING"
+    }
+  ]
+}

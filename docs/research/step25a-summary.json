@@ -1,0 +1,32 @@
+{
+  "ruleId": "forcing-sensitivity-experiment-design-step25a",
+  "status": "STEP25A_PREREGISTRATION_LOCKED",
+  "MODEL_RUN": "FORBIDDEN",
+  "trajectoryCount": 0,
+  "metricsComputed": {
+    "M1": false,
+    "M2": false,
+    "M3": false,
+    "M4": false,
+    "M5": false
+  },
+  "dataDownloads": 0,
+  "frozenAlpha": 0.002,
+  "comparisonAlpha": 0.0,
+  "tests": {
+    "TEST-02": "BLOCKED_CREDENTIALS_REQUIRED",
+    "TEST-06": "BLOCKED_LICENSE_UNKNOWN",
+    "TEST-03": "DESIGN_PENDING_FORMULATION",
+    "TEST-04": "DESIGN_PENDING"
+  },
+  "statements": [
+    "STEP25A establishes experimental design only.",
+    "No new forcing performance result is generated.",
+    "STEP20 alpha=0.002 remains calibration-selected but not established as superior on holdout.",
+    "STEP17 GLORYS BLOCKED/PENDING remains historically immutable.",
+    "DATA-06 remains unavailable for model use while license status is UNKNOWN.",
+    "AVISO remains a partial reference dataset.",
+    "No model run is performed."
+  ],
+  "interpretation": "EXPERIMENT DESIGN ONLY"
+}

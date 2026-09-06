@@ -1,0 +1,470 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "forcing-sensitivity-experiment-design-step25a",
+  "title": "STEP 25A — Forcing sensitivity experiment preregistration",
+  "status": "PREREGISTRATION LOCKED",
+  "createdAtUTC": "2026-09-06T11:50:00Z",
+  "baseCommit": "db6cea2f",
+  "MODEL_RUN": "FORBIDDEN",
+  "purpose": "freeze the design of future higher-resolution and structural forcing experiments (TEST-02, TEST-06, TEST-03, TEST-04) before any data acquisition or model run; STEP 17–24b immutable; no alpha reselection; no holdout-based tuning",
+  "frozenBaseline": {
+    "ocean": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X, 0.08 deg, 15 m, 3-hourly",
+    "wind": "NCEP-DOE R2, 10 m, 6-hourly",
+    "equation": "dX/dt = U_ocean + alpha * U_wind",
+    "alpha": 0.002,
+    "comparisonAlpha": 0.0,
+    "integrator": "RK4",
+    "integrationStepSeconds": 300,
+    "outputStepSeconds": 900,
+    "interpolation": "bilinear spatial, linear temporal, cos(phi) at every RK4 stage",
+    "forbidden": [
+      "extrapolation",
+      "smoothing",
+      "zero-fill",
+      "land substitution",
+      "duplicate frames",
+      "source-gap interpolation",
+      "post-hoc forcing repair"
+    ],
+    "modifiable": false
+  },
+  "scientificQuestion": {
+    "primary": "Does a higher-resolution ocean current forcing produce materially different and/or improved drifter trajectory agreement compared with the frozen HYCOM baseline?",
+    "secondary": [
+      "Does surface-current forcing differ systematically from HYCOM?",
+      "Does adding Stokes drift change trajectory error?",
+      "Is any observed difference region-dependent?",
+      "Is any effect stable between calibration and holdout?"
+    ],
+    "rules": [
+      "'different' is not 'better'",
+      "'better' is determined only by the preregistered M3 metrics",
+      "higher resolution is not assumed to be better"
+    ]
+  },
+  "testOrder": [
+    "TEST-02 higher-resolution ocean forcing",
+    "TEST-06 Stokes drift",
+    "TEST-03 AVISO structural/reference comparison",
+    "TEST-04 depth sensitivity"
+  ],
+  "gateRule": "no test executes before its own data/forcing quality gate is PASS",
+  "test02": {
+    "modelA": {
+      "name": "FROZEN BASELINE",
+      "ocean": "HYCOM 0.08 deg, 15 m, 3 h",
+      "wind": "NCEP-DOE R2 10 m 6 h",
+      "alpha": 0.002,
+      "source": "STEP 20 calibration (23) and B-6 holdout (12) trajectories, SHA-locked; not re-run (a re-run must reproduce the result arrays bitwise)"
+    },
+    "modelB": {
+      "name": "HIGHER RESOLUTION",
+      "ocean": "GLORYS12V1 GLOBAL_MULTIYEAR_PHY_001_030 (1/12 deg, daily mean, reanalysis), variables uo/vo",
+      "wind": "NCEP-DOE R2 10 m 6 h (identical)",
+      "alpha": 0.002,
+      "identicalConditions": [
+        "wind",
+        "alpha",
+        "release positions",
+        "windows",
+        "RK4 300 s",
+        "output 900 s",
+        "bilinear/linear interpolation",
+        "status rules",
+        "observation matching",
+        "metrics"
+      ]
+    },
+    "secondaryPair": {
+      "alpha": 0.0,
+      "role": "baseline structural check (A0 vs B0)",
+      "preregistered": true,
+      "alphaOptimization": false
+    },
+    "runsPerWindow": {
+      "A0.002": "existing STEP 20 run",
+      "A0": "existing STEP 20 run",
+      "B0.002": "new",
+      "B0": "new"
+    },
+    "productCadenceNote": "GLORYS daily means vs HYCOM 3 h instantaneous fields: the cadence difference is part of the product identity being compared, not a tunable; temporal interpolation is linear between daily means with bracketing days on both sides of every window (no extrapolation)",
+    "depthRule": {
+      "primary": "15 m nearest available native GLORYS level (expected ~15.81 m)",
+      "recordedFromFile": true,
+      "verticalInterpolation": false,
+      "depthSearch": false,
+      "bestDepthSelection": false,
+      "depthSensitivity": "TEST-04 only"
+    },
+    "interpolation": {
+      "spatial": "native GLORYS coordinates; bilinear to particle position",
+      "temporal": "linear",
+      "extrapolation": false,
+      "smoothing": false,
+      "gapFilling": false,
+      "landSubstitution": false,
+      "frameDuplication": false,
+      "missingSourceFrame": "MODEL BLOCKED"
+    },
+    "reader": "new GLORYS reader (separate preregistration + tests) producing the unchanged runtime grid contract (RegularGrid; MAX_VALUES 2,000,000 applies; regular 1/12 deg lat/lon)",
+    "runtimeChange": false
+  },
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "t0": "2010-05-11T12:00:00Z",
+      "end": "2010-05-14T12:00:00Z",
+      "drifterCount": 8,
+      "oceanBox": {
+        "south": 28.12786,
+        "north": 38.19472,
+        "west": 140.60959,
+        "east": 161.61974
+      },
+      "hycomBaseline": "AVAILABLE",
+      "hycomBaselineRuns": {
+        "0.0": {
+          "runId": "step20-cal-alpha0-KE-1",
+          "trajectoriesSha256": "0e6f034f7f99982148708d0cf67302249141fbb2063d410c96547c329b4740b3",
+          "resultArraySha256": "aa6987ed8fcabd89d025b30acc3bd869840f8aff6d7ae598984b16d0d357ba4b"
+        },
+        "0.002": {
+          "runId": "step20-cal-alpha0.002-KE-1",
+          "trajectoriesSha256": "cc38b0d7fd171f187b990f16f9ab3a18d836ea2a7a6913e0d8dce996a1915069",
+          "resultArraySha256": "2b7547ed6151ad908f91513a6d54a7ab140f3413f42eb5b706f0e79ad296ec9d"
+        }
+      },
+      "pairedComparisonEligible": true,
+      "commonWindowRule": "included in a paired A/B comparison only if BOTH forcings pass their quality gates for the full 72 h window",
+      "note": null
+    },
+    {
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "t0": "2010-06-30T12:00:00Z",
+      "end": "2010-07-03T12:00:00Z",
+      "drifterCount": 5,
+      "oceanBox": {
+        "south": 29.70784,
+        "north": 40.0,
+        "west": 133.53249,
+        "east": 154.78535
+      },
+      "hycomBaseline": "AVAILABLE",
+      "hycomBaselineRuns": {
+        "0.0": {
+          "runId": "step20-cal-alpha0-KE-2",
+          "trajectoriesSha256": "f52849f24e6cf02a51e1594b018d601496b292b77a899bb59d8cbf0f39eeef82",
+          "resultArraySha256": "054d9a24687fe4b520285b50e061f8f6e5ca93d69f24d3e66868ef0224d6334d"
+        },
+        "0.002": {
+          "runId": "step20-cal-alpha0.002-KE-2",
+          "trajectoriesSha256": "e2c8ca1336b3ef967e08a2b641579158e61617ec5c0b770762919769b416aa99",
+          "resultArraySha256": "a063e35a2ec6ac764d590e792b98482974c60b6d5580c59029a167f7dfd05043"
+        }
+      },
+      "pairedComparisonEligible": true,
+      "commonWindowRule": "included in a paired A/B comparison only if BOTH forcings pass their quality gates for the full 72 h window",
+      "note": null
+    },
+    {
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "t0": "2015-04-23T12:00:00Z",
+      "end": "2015-04-26T12:00:00Z",
+      "drifterCount": 9,
+      "oceanBox": {
+        "south": -40.0,
+        "north": -32.13828,
+        "west": 18.31773,
+        "east": 32.013940000000005
+      },
+      "hycomBaseline": "AVAILABLE",
+      "hycomBaselineRuns": {
+        "0.0": {
+          "runId": "step20-cal-alpha0-AG-1",
+          "trajectoriesSha256": "8970e7010f555482aafe210a66a41664c2fa6482726296a0d31f01ed2aeaee3b",
+          "resultArraySha256": "752235d460dd93f8c8f820259e85294c0fb9e13f968f2d48cea589e656d966f6"
+        },
+        "0.002": {
+          "runId": "step20-cal-alpha0.002-AG-1",
+          "trajectoriesSha256": "58f9ca262b7e74d1fba1daac951b51e9f32847e7b500ec87bb9e7d75f716976b",
+          "resultArraySha256": "afac7313dd5dc7decd013aca1d7da6691bfa48933f98273d4c02c09beb9891d3"
+        }
+      },
+      "pairedComparisonEligible": true,
+      "commonWindowRule": "included in a paired A/B comparison only if BOTH forcings pass their quality gates for the full 72 h window",
+      "note": null
+    },
+    {
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "t0": "2015-04-26T12:00:00Z",
+      "end": "2015-04-29T12:00:00Z",
+      "drifterCount": 1,
+      "oceanBox": {
+        "south": -38.76674,
+        "north": -34.76674,
+        "west": 19.79639,
+        "east": 23.79639
+      },
+      "hycomBaseline": "AVAILABLE",
+      "hycomBaselineRuns": {
+        "0.0": {
+          "runId": "step20-cal-alpha0-AG-2",
+          "trajectoriesSha256": "158100c502fbe5f985fe5dbb5979229c77bc55731453f938b5fec9ffcd169da7",
+          "resultArraySha256": "341f1fca0d7e6dece2cd0d05f434f81dfa5415110650ccac27e721ea098b87d8"
+        },
+        "0.002": {
+          "runId": "step20-cal-alpha0.002-AG-2",
+          "trajectoriesSha256": "afc98cf9d2e1d66f97d1c3f2637ae9c0e7c24bdfdade8d2dc785a10f990ba0e2",
+          "resultArraySha256": "42c0010f77f96608364fdb55450f40f22851947b085bc7184b04fc9afe5dd42b"
+        }
+      },
+      "pairedComparisonEligible": true,
+      "commonWindowRule": "included in a paired A/B comparison only if BOTH forcings pass their quality gates for the full 72 h window",
+      "note": null
+    },
+    {
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "t0": "2010-08-10T12:00:00Z",
+      "end": "2010-08-13T12:00:00Z",
+      "drifterCount": 5,
+      "oceanBox": {
+        "south": 30.2673,
+        "north": 40.0,
+        "west": 135.25655,
+        "east": 161.85992
+      },
+      "hycomBaseline": "AVAILABLE",
+      "hycomBaselineRuns": {
+        "0.002": {
+          "runId": "step20-hold-alpha0.002-KE-H1",
+          "trajectoriesSha256": "5f68152824cf8b548187181fed37b06b6c3b3482d024c72ecd1ce679bc580d18",
+          "resultArraySha256": "0a0a80728f9ef58f0d1637ebd7e57db44d45d94380405402dc19de47308368da"
+        },
+        "0.0": {
+          "runId": "step20-hold-alpha0-KE-H1",
+          "trajectoriesSha256": "56c327e0b21ad59b4a1a840a13bc9d45e9f913ba4e9196032aed60230fa44d8c",
+          "resultArraySha256": "3f5722fcd417a0127a571e447ca1115509c71bc1c42c646e073f8a287caa5312"
+        }
+      },
+      "pairedComparisonEligible": true,
+      "commonWindowRule": "included in a paired A/B comparison only if BOTH forcings pass their quality gates for the full 72 h window",
+      "note": null
+    },
+    {
+      "windowId": "KE-H2",
+      "role": "HOLDOUT",
+      "t0": "2010-08-16T12:00:00Z",
+      "end": "2010-08-19T12:00:00Z",
+      "drifterCount": 1,
+      "oceanBox": {
+        "south": 32.62506,
+        "north": 36.62506,
+        "west": 143.81236,
+        "east": 147.81236
+      },
+      "hycomBaseline": "UNAVAILABLE (HYCOM source frame 2010-08-18T12Z missing; STEP 20 record immutable)",
+      "hycomBaselineRuns": {},
+      "pairedComparisonEligible": false,
+      "commonWindowRule": "included in a paired A/B comparison only if BOTH forcings pass their quality gates for the full 72 h window",
+      "note": "if GLORYS covers KE-H2 completely, record as a NEW DATASET COVERAGE FACT; no paired comparison (no HYCOM baseline); STEP 20 not revised"
+    },
+    {
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "t0": "2010-11-15T12:00:00Z",
+      "end": "2010-11-18T12:00:00Z",
+      "drifterCount": 7,
+      "oceanBox": {
+        "south": 29.02459,
+        "north": 40.0,
+        "west": 141.06795,
+        "east": 156.05711
+      },
+      "hycomBaseline": "AVAILABLE",
+      "hycomBaselineRuns": {
+        "0.002": {
+          "runId": "step20-hold-alpha0.002-KE-H3",
+          "trajectoriesSha256": "00d9db9f183b53e2d7261cc42e4db997a06b7b8b9d0a1e421f73f4517a723fd6",
+          "resultArraySha256": "a9ae8822f873fd2695ae39ebd8e8132bbac52e7f416033645f5fba2f7f96e1de"
+        },
+        "0.0": {
+          "runId": "step20-hold-alpha0-KE-H3",
+          "trajectoriesSha256": "e63fe31926121e2fad2445a7ef10d95276fbd0b1bd204adbf5c87500995c70be",
+          "resultArraySha256": "54e70c66093be5ae749749d6f5fd0eb439e35726b665018bb806b3bd7c614938"
+        }
+      },
+      "pairedComparisonEligible": true,
+      "commonWindowRule": "included in a paired A/B comparison only if BOTH forcings pass their quality gates for the full 72 h window",
+      "note": null
+    }
+  ],
+  "agHoldout": "HOLDOUT_UNAVAILABLE",
+  "calibrationHoldoutSeparation": {
+    "calibration": [
+      "KE-1",
+      "KE-2",
+      "AG-1",
+      "AG-2"
+    ],
+    "holdout": [
+      "KE-H1",
+      "KE-H2",
+      "KE-H3"
+    ],
+    "calibrationUse": "characterize forcing behavior only",
+    "calibrationMustNotChange": [
+      "alpha",
+      "depth",
+      "dataset",
+      "interpolation",
+      "model equation"
+    ],
+    "holdoutEvaluation": "exactly once, only after the experiment definition is frozen"
+  },
+  "primaryMetric": {
+    "metric": "M3 observed-vs-model endpoint error",
+    "horizonsHours": [
+      24,
+      48,
+      72
+    ],
+    "timestampMatching": "exact UTC",
+    "distance": "haversine R = 6371008.8 m, km",
+    "perDrifter": [
+      "E24",
+      "E48",
+      "E72"
+    ],
+    "primarySummary": "median error",
+    "secondarySummary": "mean error",
+    "medianReplacedByMean": false,
+    "outlierTrimming": false
+  },
+  "secondaryMetrics": {
+    "M1": "72 h endpoint displacement",
+    "M2": "72 h total trajectory length",
+    "M4": "72 h A/B model separation (haversine between model A and model B positions)",
+    "M5": "observed 72 h displacement",
+    "diagnostics": [
+      "bearing difference",
+      "east/west signed offset",
+      "north/south signed offset",
+      "temporal error growth",
+      "regional stratification",
+      "unit-level stratification"
+    ]
+  },
+  "comparisonRule": {
+    "delta": "E_new_forcing - E_HYCOM per drifter and horizon",
+    "interpretation": {
+      "negative": "new forcing lower error",
+      "positive": "new forcing higher error",
+      "zero": "tie (|delta| <= 1e-6 km)"
+    },
+    "primaryComparison": "median paired delta",
+    "superiorityClaim": "not permitted without a separately registered confirmatory statistical protocol"
+  },
+  "noParameterSearch": {
+    "alphaGridSearch": false,
+    "depthGridSearch": false,
+    "stokesCoefficientSearch": false,
+    "windageOptimization": false,
+    "forcingWeightOptimization": false,
+    "blendingOptimization": false,
+    "purpose": "structural forcing comparison"
+  },
+  "test06": {
+    "condition": "license confirmation (STEP 24b: LICENSE_UNKNOWN → BLOCKED)",
+    "status": "BLOCKED",
+    "BASE": "U_ocean + alpha U_wind",
+    "STOKES": "U_ocean + U_Stokes + alpha U_wind",
+    "alpha": 0.002,
+    "baselineAlpha": 0.0,
+    "stokesCoefficient": 1.0,
+    "coefficientSearch": false,
+    "run": false
+  },
+  "test03": {
+    "data": "AVISO erdTAgeo1day (reference/surface geostrophic current; not observed drifter velocity; not added to HYCOM automatically)",
+    "candidateComparison": "HYCOM current field vs AVISO geostrophic current field",
+    "formulation": "frozen before execution by a future preregistration",
+    "status": "REFERENCE_ELIGIBLE_PARTIAL (4/7 windows; STEP 23/24 limits)",
+    "run": false
+  },
+  "test04": {
+    "scope": "depth sensitivity with a fixed preregistered depth set",
+    "status": "DESIGN_PENDING",
+    "run": false
+  },
+  "glorysQualityGates": {
+    "G1": "provenance",
+    "G2": "file integrity",
+    "G3": "coordinate integrity",
+    "G4": "time axis",
+    "G5": "variables uo/vo",
+    "G6": "spatial coverage",
+    "G7": "temporal coverage (bracketing daily means around t0..t0+72h)",
+    "G8": "missingness",
+    "G9": "units m s-1",
+    "G10": "release-window stencil",
+    "G11": "reproducibility",
+    "depth": "15 m nearest native level",
+    "windows": "all seven candidate windows evaluated",
+    "missingSourceFrame": "DATASET_BLOCKED (no interpolation across source gaps)"
+  },
+  "experimentAcceptance": {
+    "mandatory": [
+      "GLORYS authorized access PASS",
+      "dataset integrity PASS",
+      "all required forcing windows PASS",
+      "required variables PASS",
+      "15 m level PASS",
+      "release stencil PASS",
+      "time axis PASS",
+      "no missing source frame PASS",
+      "reproducibility PASS",
+      "frozen protocol PASS"
+    ],
+    "anyFail": "TEST-02 BLOCKED"
+  },
+  "modelRunGate": {
+    "MODEL_RUN": "FORBIDDEN",
+    "trajectoryCount": 0,
+    "M1": "not computed",
+    "M2": "not computed",
+    "M3": "not computed",
+    "M4": "not computed",
+    "M5": "not computed",
+    "violation": "MODEL_RUN_GATE_VIOLATION → STOP"
+  },
+  "currentBlockers": {
+    "TEST-02": "GLORYS access CREDENTIALS_REQUIRED (STEP 24); STEP 17 GLORYS BLOCKED/PENDING immutable",
+    "TEST-06": "DATA-06 LICENSE_UNKNOWN (STEP 24b)",
+    "TEST-03": "formulation not yet frozen; partial coverage",
+    "TEST-04": "design pending"
+  },
+  "requiredStatements": [
+    "STEP25A establishes experimental design only.",
+    "No new forcing performance result is generated.",
+    "STEP20 alpha=0.002 remains calibration-selected but not established as superior on holdout.",
+    "STEP17 GLORYS BLOCKED/PENDING remains historically immutable.",
+    "DATA-06 remains unavailable for model use while license status is UNKNOWN.",
+    "AVISO remains a partial reference dataset.",
+    "No model run is performed."
+  ],
+  "outputs": [
+    "docs/research/step25a-forcing-experiment-protocol.json",
+    "docs/research/step25a-forcing-experiment-preregistration.json",
+    "docs/research/step25a-experiment-matrix.json",
+    "docs/research/step25a-experiment-matrix.csv",
+    "docs/research/step25a-summary.json"
+  ],
+  "validator": "tools/research/check_step25a_experiment_design.py",
+  "lockPolicy": "after LOCK no modification; any scientific change requires a new superseding step",
+  "stopRule": "STOP after LOCK; no GLORYS acquisition; no TEST-02/TEST-06; STEP 26 not started"
+}

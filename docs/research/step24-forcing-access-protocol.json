@@ -1,0 +1,380 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "p1-forcing-access-resolution-step24",
+  "title": "STEP 24 — P1 forcing access resolution & experiment registration",
+  "status": "PREREGISTRATION LOCKED",
+  "createdAtUTC": "2026-09-06T10:20:00Z",
+  "baseCommit": "4bb4342b",
+  "MODEL_RUN": "FORBIDDEN",
+  "purpose": "resolve the access/license/coverage limits found in STEP 23 and fix, by preregistration, the conditions under which future forcing sensitivity experiments may be run; no model run, no alpha reselection, no performance comparison",
+  "frozenBaseline": {
+    "ocean": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X, 0.08 degree, 15 m, 3-hourly",
+    "wind": "NCEP-DOE R2, 10 m, 6-hourly",
+    "equation": "dX/dt = U_ocean + alpha * U_wind",
+    "alpha": 0.002,
+    "baselineAlpha": 0.0,
+    "integrator": "RK4",
+    "integrationStepSeconds": 300,
+    "outputStepSeconds": 900,
+    "interpolation": "bilinear spatial, linear temporal, cos(phi) every RK4 stage",
+    "forbidden": [
+      "temporal extrapolation",
+      "spatial extrapolation",
+      "smoothing",
+      "zero filling",
+      "land-value substitution",
+      "duplicated forcing frames",
+      "artificial interpolation across missing source frames",
+      "post-hoc forcing repair"
+    ],
+    "modifiable": false,
+    "step20ResultsFrozen": true
+  },
+  "step23Status": {
+    "DATA-01": "DATASET_BLOCKED",
+    "DATA-01reason": "credentials/toolbox absent (existence check only; nothing read or entered); STEP 17 BLOCKED/PENDING preserved",
+    "DATA-03": {
+      "jplOscar": "DATASET_BLOCKED",
+      "nesdisSSH1day": "DATASET_BLOCKED",
+      "erdTAgeo1day": "PARTIAL_COVERAGE",
+      "erdTAssh1day": "PARTIAL_COVERAGE"
+    },
+    "DATA-06": "LICENSE_STATUS_UNKNOWN",
+    "DATA-06qualityIgnoringLicense": "ACCEPTED_FOR_FUTURE_TEST",
+    "DATA-06gates": {
+      "G1": "PASS",
+      "G2": "PASS",
+      "G3": "PASS",
+      "G4": "PASS",
+      "G5": "PASS",
+      "G6": "PASS",
+      "G7": "PASS",
+      "G8": "PASS",
+      "G9": "PASS",
+      "G10": "PASS",
+      "G11": "PENDING_VALIDATOR"
+    },
+    "erdTAgeo1dayWindowsCovered": [
+      "KE-2",
+      "KE-H1",
+      "KE-H2",
+      "KE-H3"
+    ],
+    "erdTAssh1dayWindowsCovered": [
+      "KE-1",
+      "KE-2",
+      "KE-H1",
+      "KE-H2",
+      "KE-H3"
+    ],
+    "note": "copied exactly from STEP 23; erdTAgeo1day is an ERDDAP '1 Day Composite' product whose acquired subsets carry frames 7 days apart (STEP 23 measurement); STEP 17 GLORYS BLOCKED/PENDING remains immutable"
+  },
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "dataset": "CALIBRATION",
+      "t0": "2010-05-11T12:00:00Z",
+      "end": "2010-05-14T12:00:00Z",
+      "drifterCount": 8,
+      "oceanBox": {
+        "south": 28.12786,
+        "north": 38.19472,
+        "west": 140.60959,
+        "east": 161.61974
+      }
+    },
+    {
+      "windowId": "KE-2",
+      "dataset": "CALIBRATION",
+      "t0": "2010-06-30T12:00:00Z",
+      "end": "2010-07-03T12:00:00Z",
+      "drifterCount": 5,
+      "oceanBox": {
+        "south": 29.70784,
+        "north": 40.0,
+        "west": 133.53249,
+        "east": 154.78535
+      }
+    },
+    {
+      "windowId": "AG-1",
+      "dataset": "CALIBRATION",
+      "t0": "2015-04-23T12:00:00Z",
+      "end": "2015-04-26T12:00:00Z",
+      "drifterCount": 9,
+      "oceanBox": {
+        "south": -40.0,
+        "north": -32.13828,
+        "west": 18.31773,
+        "east": 32.013940000000005
+      }
+    },
+    {
+      "windowId": "AG-2",
+      "dataset": "CALIBRATION",
+      "t0": "2015-04-26T12:00:00Z",
+      "end": "2015-04-29T12:00:00Z",
+      "drifterCount": 1,
+      "oceanBox": {
+        "south": -38.76674,
+        "north": -34.76674,
+        "west": 19.79639,
+        "east": 23.79639
+      }
+    },
+    {
+      "windowId": "KE-H1",
+      "dataset": "HOLDOUT",
+      "t0": "2010-08-10T12:00:00Z",
+      "end": "2010-08-13T12:00:00Z",
+      "drifterCount": 5,
+      "oceanBox": {
+        "south": 30.2673,
+        "north": 40.0,
+        "west": 135.25655,
+        "east": 161.85992
+      }
+    },
+    {
+      "windowId": "KE-H2",
+      "dataset": "HOLDOUT",
+      "t0": "2010-08-16T12:00:00Z",
+      "end": "2010-08-19T12:00:00Z",
+      "drifterCount": 1,
+      "oceanBox": {
+        "south": 32.62506,
+        "north": 36.62506,
+        "west": 143.81236,
+        "east": 147.81236
+      }
+    },
+    {
+      "windowId": "KE-H3",
+      "dataset": "HOLDOUT",
+      "t0": "2010-11-15T12:00:00Z",
+      "end": "2010-11-18T12:00:00Z",
+      "drifterCount": 7,
+      "oceanBox": {
+        "south": 29.02459,
+        "north": 40.0,
+        "west": 141.06795,
+        "east": 156.05711
+      }
+    }
+  ],
+  "officialSources": [
+    {
+      "id": "ifremer_ftp_ww3_root",
+      "purpose": "DATA-06: list root of the WW3 hindcast FTP tree for README/LICENSE/terms files",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/"
+    },
+    {
+      "id": "ifremer_ftp_ww3_global",
+      "purpose": "DATA-06: list GLOBAL directory for README/LICENSE/terms files",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/"
+    },
+    {
+      "id": "ifremer_ftp_ww3_top",
+      "purpose": "DATA-06: list ww3 top directory for README/LICENSE/terms files",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/"
+    },
+    {
+      "id": "ifremer_iowaga_page",
+      "purpose": "DATA-06: IOWAGA project page referenced by the file attribute 'references' (http://wwz.ifremer.fr/iowaga/)",
+      "url": "https://wwz.ifremer.fr/iowaga/"
+    },
+    {
+      "id": "ifremer_iowaga_data_page",
+      "purpose": "DATA-06: IOWAGA data/products page (license/terms/citation)",
+      "url": "https://wwz.ifremer.fr/iowaga/Products"
+    },
+    {
+      "id": "ifremer_data_terms",
+      "purpose": "DATA-06: IFREMER data portal general terms of use",
+      "url": "https://data.ifremer.fr/Conditions-d-utilisation"
+    },
+    {
+      "id": "cmems_stac_product",
+      "purpose": "DATA-01: public Copernicus Marine STAC product record for GLOBAL_MULTIYEAR_PHY_001_030 (identity, version, extent, license field)",
+      "url": "https://stac.marine.copernicus.eu/metadata/GLOBAL_MULTIYEAR_PHY_001_030/product.stac.json"
+    },
+    {
+      "id": "cmems_terms",
+      "purpose": "DATA-01: Copernicus Marine service commitments / terms (registration requirement)",
+      "url": "https://marine.copernicus.eu/user-corner/service-commitments-and-licence"
+    }
+  ],
+  "licenseRule": {
+    "allowed": [
+      "LICENSE_CONFIRMED",
+      "LICENSE_RESTRICTED",
+      "LICENSE_UNKNOWN",
+      "DATASET_BLOCKED"
+    ],
+    "confirmedRequires": "an explicit authoritative statement (named open license such as CC-BY / Etalab / 'licence ouverte', or explicit terms of use) found in the consulted provider documents; anonymous FTP access alone never confirms a license",
+    "unknownDefault": "LICENSE_UNKNOWN → no model use"
+  },
+  "accessRule": {
+    "credentialsCreated": false,
+    "credentialsEmbedded": false,
+    "credentialsCommitted": false,
+    "credentialFilesContentsRead": false,
+    "assessment": [
+      "A environment authenticated?",
+      "B toolbox available?",
+      "C official anonymous/public download path?",
+      "D registration/account required?",
+      "E product accessible under current identity?",
+      "F official coverage for 2010+2015, ~1/12 deg, multi-depth, reanalysis?"
+    ],
+    "ifCredentialsAbsent": "STATUS = CREDENTIALS_REQUIRED; acquisition stops; no automatic credential request",
+    "noSubstituteLabelledGlorys": true
+  },
+  "data01RequiredCoverage": {
+    "windows": [
+      "KE-1",
+      "KE-2",
+      "AG-1",
+      "AG-2",
+      "KE-H1",
+      "KE-H2",
+      "KE-H3"
+    ],
+    "duration": "complete 72 h windows",
+    "variables": [
+      "eastward ocean velocity",
+      "northward ocean velocity"
+    ],
+    "depthInventory": [
+      "surface",
+      "5 m",
+      "10 m",
+      "15 m",
+      "20 m"
+    ],
+    "depthSelection": "deferred to a future preregistration"
+  },
+  "data03Rules": {
+    "observedDrifterVelocity": false,
+    "addedToHYCOM": false,
+    "alphaTuning": false,
+    "candidateRoles": [
+      "A HYCOM vs AVISO current-field comparison",
+      "B structural forcing sensitivity",
+      "C surface-current reference diagnostic"
+    ],
+    "formulationDecidedNow": false,
+    "sshAsVelocity": "not without a future explicit conversion preregistration"
+  },
+  "data06FutureTest": {
+    "registerOnlyIf": "LICENSE_CONFIRMED",
+    "BASE": "U_ocean + alpha U_wind",
+    "STOKES": "U_ocean + U_Stokes + alpha U_wind",
+    "alpha": {
+      "primary": 0.002,
+      "baseline": 0.0,
+      "frozen": true
+    },
+    "stokesCoefficient": 1.0,
+    "searches": false,
+    "runInStep24": false
+  },
+  "principle": {
+    "forbidden": [
+      "choosing the best forcing dataset",
+      "choosing the best depth",
+      "selecting alpha",
+      "selecting a Stokes coefficient from data",
+      "optimizing forcing combinations",
+      "comparing M3",
+      "computing significance",
+      "declaring a new model",
+      "using holdout results to tune anything"
+    ],
+    "flow": "DATA ACCESS → DATA VALIDITY → EXPERIMENT ELIGIBILITY → PREREGISTERED FUTURE TEST"
+  },
+  "futureTests": [
+    {
+      "id": "TEST-01",
+      "name": "higher temporal ocean forcing"
+    },
+    {
+      "id": "TEST-02",
+      "name": "higher spatial resolution ocean forcing"
+    },
+    {
+      "id": "TEST-03",
+      "name": "surface current / altimetry structural comparison"
+    },
+    {
+      "id": "TEST-04",
+      "name": "depth sensitivity"
+    },
+    {
+      "id": "TEST-05",
+      "name": "windage structural sensitivity (no alpha search)"
+    },
+    {
+      "id": "TEST-06",
+      "name": "Stokes drift"
+    },
+    {
+      "id": "TEST-07",
+      "name": "eddy-resolving / event-stratified forcing"
+    },
+    {
+      "id": "TEST-08",
+      "name": "coastal / bathymetric effects"
+    }
+  ],
+  "matrixFields": [
+    "requiredDataset",
+    "currentAvailability",
+    "licenseStatus",
+    "coverage",
+    "missingness",
+    "requiredVariables",
+    "requiredDepth",
+    "numericalCompatibility",
+    "holdoutUsable",
+    "prerequisites",
+    "status"
+  ],
+  "priorityOrder": [
+    "1 DATA-01 higher-resolution ocean current",
+    "2 DATA-06 Stokes drift, only after license confirmation",
+    "3 DATA-03 AVISO surface-current reference",
+    "4 DATA-04 depth sensitivity",
+    "5 remaining structural tests"
+  ],
+  "priorityBasis": "preregistered order, not performance-based",
+  "finalStatuses": [
+    "STEP24_ACCESS_RESOLUTION_COMPLETE",
+    "STEP24_ACCESS_BLOCKED",
+    "STEP24_LICENSE_BLOCKED",
+    "STEP24_CREDENTIALS_REQUIRED",
+    "STEP24_INSUFFICIENT_EVIDENCE"
+  ],
+  "statusRule": "COMPLETE only if an authorized DATA-01 access path exists AND DATA-06 license is confirmed; otherwise the blocking condition names the status",
+  "requiredStatements": [
+    "STEP24 does not establish that any new forcing is superior to the frozen HYCOM+NCEP baseline.",
+    "STEP20 alpha=0.002 remains calibration-selected but not established as superior on holdout.",
+    "STEP17 GLORYS BLOCKED/PENDING remains historically immutable.",
+    "No model performance conclusion is generated in STEP24."
+  ],
+  "outputs": [
+    "docs/research/step24-data-access-status.json",
+    "docs/research/step24-license-status.json",
+    "docs/research/step24-future-experiment-matrix.json",
+    "docs/research/step24-future-experiment-matrix.csv",
+    "docs/research/step24-summary.json",
+    "docs/research/step24-run.json",
+    "docs/research/step24-evidence/"
+  ],
+  "tools": {
+    "assessment": "tools/research/assess_step24.py",
+    "validator": "tools/research/check_step24_forcing_access.py"
+  },
+  "reproducibility": "derived outputs byte-identical on independent re-run from the stored evidence; validator run twice",
+  "stopRule": "STOP after STEP 24; STEP 25 not started"
+}

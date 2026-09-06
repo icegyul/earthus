@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "p1-forcing-access-resolution-step24",
+  "protocolDocument": "docs/research/step24-forcing-access-protocol.json",
+  "protocolSha256": "6db9e6c47510b9361aa5019e4840ff2db6a9db11307f2fb8b8dc747e86d53db5",
+  "createdAtUTC": "2026-09-06T10:20:00Z",
+  "gitCommitAtDesign": "4bb4342b",
+  "authorProcess": "Claude Code session (Research Intelligence PHASE 2, STEP 24 Phase A) — access/experiment-registration preregistration; locked before any provider document is consulted",
+  "immutabilityCheck": {
+    "ancestryCommits": {
+      "step17": "551668ef",
+      "step18": "d505cc5e",
+      "step18b": "5b9567e5",
+      "step19": "5f27dc2d",
+      "step20": "155995dd",
+      "step20SelectedAlpha": "73fafffb",
+      "step20B3": "9113e8b5",
+      "step20B4": "869bc664",
+      "step20B5": "c395a098",
+      "step20B6": "ed746129",
+      "step21": "7b0453b8",
+      "step22": "a7f62873",
+      "step23Lock": "322f0e57",
+      "step23Completion": "4bb4342b"
+    },
+    "lockedFiles": {
+      "docs/research/step17-forcing-protocol.md": "db73ef67d1a191d67b29d488805a3c9998a65bf70b80dffe15b40ed8eb041792",
+      "docs/research/step17-forcing-manifest.json": "591cc05799da03e6bb604321d9e2b129a32a201112922c4d06823026a0b5ac86",
+      "docs/research/step18-model-manifest.json": "02c859f9a079eb68826852589d4c6d313171bcad9b544406212abfe3651a61cb",
+      "docs/research/step18b-model-manifest.json": "923fd1ba69438da0a6bbd02495705b4dccce229d606a199b0498c6d80d6aaefe",
+      "docs/research/step19-evaluation.json": "9baa0c6ae4fd38fbd0ea72e479736d0eb8f43f49aac6cebc8dcfa0051490b5f4",
+      "docs/research/step20-preregistration.json": "1e4ed8c1d004b00812c0710fd3df32c8a6c7537ff5287474a4c0a3e8ae33cae4",
+      "docs/research/step20-selected-alpha.json": "68e43a0f91e3a6bd81427399adbe2cf8a7543d85cf0249d4926f3df093649efd",
+      "docs/research/step20-calibration-manifest.json": "41ca439ec6540fd98b3c9ecf5c74af7afdd8731e94bea5d33bfac3397afe8498",
+      "docs/research/step20-b6-holdout-manifest.json": "968da55a4553c00f373d6a0f26bc2b1c9e3f3af421d37db7a1e58e99a5727653",
+      "docs/research/step20-b6-holdout-summary.json": "fe2043b30aaba17d34e3d9a780379de9612541b75caa4ed487a10931a784d93b",
+      "docs/research/step21-diagnostic-summary.json": "d310eaadf64324286de80e485e9944998665d14d2599ca80133cf3d25b406fbd",
+      "docs/research/step22-summary.json": "0093d1c0ab8c73195c76b11da1ddf0609555f5ff49c2698069e31b0a76f4e5bd",
+      "docs/research/step22-future-test-matrix.json": "55f6afd8c9c63f93e6472fed12fc636f1468160e1deaa5840c7c5c221d09ba93",
+      "docs/research/step23-data-acquisition-protocol.json": "e2388a62a82b9f9c1f68b0275ec1e83da6dbbe7820c3b4739bb786bcedf01ff9",
+      "docs/research/step23-data-acquisition-manifest.json": "2f47cba7e29edc06a1f71bb4e2ed9dc373910e81e1f454b80595e955fd149b9a",
+      "docs/research/step23-data-quality-gates.json": "5121ddee252a03ac276c5094bb373b6948ef317de7bb956add064b7caf99f39b",
+      "docs/research/step23-data-requirement-status.json": "24825f53a615bfecde79972f7a4b8ad53079b71defeb5d66e7d7700f83e01873",
+      "docs/research/step23-data-coverage-matrix.csv": "de035584c4198687c1dbfe7c04465dfa977581bf8004973f5a9dc6d037828012",
+      "docs/research/cohort-step16.json": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474"
+    },
+    "runtimeFilesIdenticalToStep20Lock": true,
+    "result": "PASS"
+  },
+  "tools": {
+    "assessment": {
+      "file": "tools/research/assess_step24.py",
+      "sha256": "cfcccf604cba53c3c464a2b099add8507cb3baa0fb9d263847c3d5c7c185d2de"
+    },
+    "validator": {
+      "file": "tools/research/check_step24_forcing_access.py",
+      "sha256": "8c8fc255df8dc5fed8bc467aabd2ba9a4110c731346df9f832579c4d8468c7e2"
+    }
+  },
+  "phaseA": {
+    "modelRuns": 0,
+    "forcingDownloads": 0,
+    "credentialsEntered": false
+  },
+  "lockedAtUTC": "2026-09-06T10:20:00Z",
+  "nextStep": "STEP 24 assessment (same instruction), then STOP; STEP 25 not started"
+}

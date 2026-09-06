@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "1.0",
+  "gate": "STEP 20 B-6.1 segmentation gate under B-5 criterion",
+  "b5SelectionRuleSha256": "dd3916b840b921165771c022e29db5b72b3a26769775503044fef5c004cc7595",
+  "criterion": {
+    "positionToleranceDeg": 1e-12,
+    "endpointMaxKm": 1e-06,
+    "alphaZeroBitwise": true
+  },
+  "calibrationManifestSha256": "41ca439ec6540fd98b3c9ecf5c74af7afdd8731e94bea5d33bfac3397afe8498",
+  "forcingEquivalence": {
+    "E_forcingValuesExact": true,
+    "framesCompared": 33,
+    "framesEqual": 33,
+    "F_landMaskExact": true,
+    "chunkOverlapExact": true
+  },
+  "tests": [
+    {
+      "alpha": 0.0,
+      "calibrationRunId": "step20-cal-alpha0-KE-1",
+      "expectedResultArraySha256": "aa6987ed8fcabd89d025b30acc3bd869840f8aff6d7ae598984b16d0d357ba4b",
+      "segmentedResultArraySha256": "aa6987ed8fcabd89d025b30acc3bd869840f8aff6d7ae598984b16d0d357ba4b",
+      "bitwiseIdentical": true,
+      "conditions": {
+        "A_timestamps": true,
+        "B_particleIds": true,
+        "C_ordering": true,
+        "D_status": true,
+        "H_noMissingSamples": true,
+        "I_noExtraSamples": true,
+        "G_positions": true,
+        "J_endpoints": true
+      },
+      "releaseCoordinatesExact": true,
+      "samplesCompared": 2312,
+      "differingSamples": 0,
+      "maxAbsDeltaLonDeg": 0.0,
+      "maxAbsDeltaLatDeg": 0.0,
+      "maxAbsDeltaDeg": 0.0,
+      "endpointMaxSeparationKm": {
+        "24h": 0.0,
+        "48h": 0.0,
+        "72h": 0.0
+      },
+      "csvSha256": "0e6f034f7f99982148708d0cf67302249141fbb2063d410c96547c329b4740b3",
+      "csvBitwiseIdentical": true,
+      "segments": [
+        {
+          "name": "seg1",
+          "runId": "step20-cal-alpha0-KE-1-seg1",
+          "specSha256": "4dac16c9c699eeac5e4d6f4914ba84a4cf172e74d470d4b79efbbd85fcf5417a",
+          "datasetId": "gate-ke-1-chunka",
+          "datasetSha256": "f25999890bc366cc0880177a99b224b9de8876bdb33d94703a17cef7ece2ac98",
+          "resultArraySha256": "1fb4db8fd98ee9a88796ca08427329dece93c9eb7bf60740df3a2b05706680f1"
+        },
+        {
+          "name": "seg2",
+          "runId": "step20-cal-alpha0-KE-1-seg2",
+          "specSha256": "e72ff99840bbe61147ba70bb6ebe2b78f703adae04af68b443faf41c5ed5d2e8",
+          "datasetId": "gate-ke-1-chunkb",
+          "datasetSha256": "7a28f19141c580ac2fda925123e70f0b0c98dcce82a838f00ed0090fd5fd87cc",
+          "resultArraySha256": "56c900c54931c40324def444abe076d1654c15cc33a6ece8708ff60276b9b31d"
+        }
+      ],
+      "continuedParticles": 8,
+      "pass": true
+    },
+    {
+      "alpha": 0.002,
+      "calibrationRunId": "step20-cal-alpha0.002-KE-1",
+      "expectedResultArraySha256": "2b7547ed6151ad908f91513a6d54a7ab140f3413f42eb5b706f0e79ad296ec9d",
+      "segmentedResultArraySha256": "7c257ce6ef8a2e6c4dd8998c147ee9a69ab3dc89a58afeceb31bbaf595700ccd",
+      "bitwiseIdentical": false,
+      "conditions": {
+        "A_timestamps": true,
+        "B_particleIds": true,
+        "C_ordering": true,
+        "D_status": true,
+        "H_noMissingSamples": true,
+        "I_noExtraSamples": true,
+        "G_positions": true,
+        "J_endpoints": true
+      },
+      "releaseCoordinatesExact": true,
+      "samplesCompared": 2312,
+      "differingSamples": 519,
+      "maxAbsDeltaLonDeg": 5.684341886080802e-14,
+      "maxAbsDeltaLatDeg": 1.0658141036401503e-14,
+      "maxAbsDeltaDeg": 5.684341886080802e-14,
+      "endpointMaxSeparationKm": {
+        "24h": 0.0,
+        "48h": 5.424644402417126e-12,
+        "72h": 1.4146481319698977e-12
+      },
+      "csvSha256": "cc38b0d7fd171f187b990f16f9ab3a18d836ea2a7a6913e0d8dce996a1915069",
+      "csvBitwiseIdentical": true,
+      "segments": [
+        {
+          "name": "seg1",
+          "runId": "step20-cal-alpha0.002-KE-1-seg1",
+          "specSha256": "209c9fd0c02408d86a31824a16ccd0d02766b2942a1f29d98350c98d33ff64f7",
+          "datasetId": "gate-ke-1-chunka",
+          "datasetSha256": "f25999890bc366cc0880177a99b224b9de8876bdb33d94703a17cef7ece2ac98",
+          "resultArraySha256": "c90ab1d19aeb6b3479fd45736e874dc8b9dba8223c422577c764ebbe5dfde40d"
+        },
+        {
+          "name": "seg2",
+          "runId": "step20-cal-alpha0.002-KE-1-seg2",
+          "specSha256": "d8c6bf5f9fe35ee9bb4def95640dc8696db230d032061ae8bda0dc3d0f945d5f",
+          "datasetId": "gate-ke-1-chunkb",
+          "datasetSha256": "7a28f19141c580ac2fda925123e70f0b0c98dcce82a838f00ed0090fd5fd87cc",
+          "resultArraySha256": "23b2b0b91425cf7340700a34029ff98e4bef867a3620957847b8e2788e0e4a63"
+        }
+      ],
+      "continuedParticles": 8,
+      "pass": true
+    }
+  ],
+  "createdAtUTC": "2026-09-06T07:34:28Z",
+  "status": "SEGMENTATION_EQUIVALENCE_PASS",
+  "gitHead": "208721a7"
+}

@@ -1,0 +1,3206 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "model-protocol-step18b-openloop-72h-alpha0007",
+  "status": "MODEL_RUN_PASS",
+  "protocolSha256": "73e8aa1405aa82c6ae283962f8efaabdfa5331a5dc6109471b1e6bd0ebf813bc",
+  "preregistrationSha256": "02935e81e9c93690078ff96231c74ad51c86dfaffa89bfa17a2e2ba082306316",
+  "modelRuleSha256": "7e9ab639f0c36ca747ff5f292f2c78eaa3eaae8da078311ce26f76e964bc49eb",
+  "modelRuleFileContent": [
+    "73e8aa1405aa82c6ae283962f8efaabdfa5331a5dc6109471b1e6bd0ebf813bc  docs/research/step18b-model-protocol.md",
+    "02935e81e9c93690078ff96231c74ad51c86dfaffa89bfa17a2e2ba082306316  docs/research/step18b-preregistration.json"
+  ],
+  "cohortSha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+  "forcingManifestSha256": "591cc05799da03e6bb604321d9e2b129a32a201112922c4d06823026a0b5ac86",
+  "aggregateForcingSha256": "01acda6b9a30d9038df866ca378e3a4b2e041aa37667309810cabbf3e36c6dcd",
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "lockCommit": "5b9567e5",
+  "step18bProtocolSha256": "73e8aa1405aa82c6ae283962f8efaabdfa5331a5dc6109471b1e6bd0ebf813bc",
+  "step18bPreregistrationSha256": "02935e81e9c93690078ff96231c74ad51c86dfaffa89bfa17a2e2ba082306316",
+  "step18bModelRuleSha256": "7e9ab639f0c36ca747ff5f292f2c78eaa3eaae8da078311ce26f76e964bc49eb",
+  "step18ProtocolSha256": "519b3d35bc13524b3e0a30f5521cd2e696ffecdceead58535b0c4959ac3bea2b",
+  "step18PreregistrationSha256": "f02b17379140c8d0f7304dc2f15d512341c089b6773d2b4f6021da382972ecf4",
+  "step18ModelRuleSha256": "1a107b7edd49844e01e881de46c4bef477ac7dae336beac431dbd6efafd1388c",
+  "step18BlockedRun": {
+    "manifest": "docs/research/step18-model-manifest.json",
+    "manifestSha256": "02c859f9a079eb68826852589d4c6d313171bcad9b544406212abfe3651a61cb",
+    "commit": "5607ac1a",
+    "status": "MODEL_RUN_BLOCKED_PREFLIGHT",
+    "reason": "WIND_COVERAGE",
+    "runsExecuted": "0/8"
+  },
+  "modelParameters": {
+    "integrationStepSeconds": 300,
+    "outputStepSeconds": 900,
+    "durationSeconds": 259200,
+    "gridTravelBoundSeconds": {
+      "KE-1": 655,
+      "KE-2": 733,
+      "AG-1": 579,
+      "AG-2": 663
+    }
+  },
+  "computationAreas": {
+    "KE-1": {
+      "west": 140.60959,
+      "east": 161.61974,
+      "south": 28.12786,
+      "north": 38.19472
+    },
+    "KE-2": {
+      "west": 133.53249,
+      "east": 154.78535,
+      "south": 29.70784,
+      "north": 40.0
+    },
+    "AG-1": {
+      "west": 18.31773,
+      "east": 32.013940000000005,
+      "south": -40.0,
+      "north": -32.13828
+    },
+    "AG-2": {
+      "west": 19.79639,
+      "east": 23.79639,
+      "south": -38.76674,
+      "north": -34.76674
+    }
+  },
+  "replayMatched": true,
+  "modelId": "surface-passive-advection.v2.windage",
+  "modelVersion": "0.1.0",
+  "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+  "modelCommit": "75020d98bd555afa42d5fe9a0702309cf27080d4",
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "dependencies": {
+      "Deprecated": "1.3.1",
+      "PyYAML": "6.0.3",
+      "Pygments": "2.21.0",
+      "asciitree": "0.3.3",
+      "certifi": "2026.7.22",
+      "cftime": "1.6.5",
+      "cgen": "2025.1",
+      "click": "8.5.0",
+      "cloudpickle": "3.1.2",
+      "colorama": "0.4.6",
+      "constantdict": "2025.3",
+      "dask": "2026.8.0",
+      "fasteners": "0.20",
+      "fsspec": "2026.7.0",
+      "iniconfig": "2.3.0",
+      "locket": "1.0.0",
+      "netCDF4": "1.7.4",
+      "numcodecs": "0.15.1",
+      "numpy": "2.5.2",
+      "packaging": "26.3",
+      "pandas": "3.0.5",
+      "parcels": "3.1.4",
+      "partd": "1.4.2",
+      "platformdirs": "4.11.7",
+      "pluggy": "1.6.0",
+      "psutil": "7.2.2",
+      "pymbolic": "2025.1",
+      "pytest": "9.1.1",
+      "python-dateutil": "2.9.0.post0",
+      "pytools": "2026.1.1",
+      "scipy": "1.18.1",
+      "siphash24": "1.8",
+      "six": "1.17.0",
+      "toolz": "1.1.0",
+      "tqdm": "4.70.0",
+      "typing_extensions": "4.16.0",
+      "tzdata": "2026.3",
+      "wrapt": "2.4.0",
+      "xarray": "2026.7.0",
+      "zarr": "2.18.7"
+    },
+    "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+  },
+  "orchestrator": {
+    "file": "tools/research/run_step18b_model.py",
+    "sha256": "8fb69ffa5b4e2056d5153aaeeba47682ab1326037bb01e809cfb866d12a9633b"
+  },
+  "statusMapping": {
+    "OUT_OF_DOMAIN": "OUT_OF_DOMAIN only when the last safe position lies on the ±40° latitude boundary (bisection tolerance 1e-6°); otherwise FORCING_UNAVAILABLE",
+    "MISSING_FORCING": "FORCING_UNAVAILABLE",
+    "STRANDED": "FORCING_UNAVAILABLE",
+    "ACTIVE": "ACTIVE",
+    "COMPLETED": "COMPLETED"
+  },
+  "boundaryClassificationToleranceDegrees": 1e-06,
+  "runs": [
+    {
+      "runId": "step18-A-alpha0007-KE-1",
+      "windowId": "KE-1",
+      "alpha": 0.0007,
+      "role": "primary",
+      "drifterCount": 8,
+      "released": 8,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "computationArea": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "area": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-1-15m",
+          "version": "2010-05-11T12_2010-05-14T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-1",
+        "version": "2010-05-11T12.earthus1"
+      },
+      "forcingSha256": "eebd0c38e647b9fbdc3bc08202589fddce3e57892a3edfc1c2c12f01eddfca8d",
+      "gridSha256": "649ebad52f64b7d2bbe05ef6e8e818f7f0e8791fc8ac01ac5422c9d53d3fb74a",
+      "windGridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 9216,
+          "outputSamplesUpperBound": 2312,
+          "recommendedMaxStepSeconds": 655,
+          "minimumGridLengthMeters": 6989.789646322781,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T05:26:26Z",
+      "completedAtUTC": "2026-09-06T05:26:34Z",
+      "wallSeconds": 8.1,
+      "modelCommit": "75020d98bd555afa42d5fe9a0702309cf27080d4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "792769ec89b9bc3f24c86945f11c24d22ca13ead70824a2dbf82e7814077c133",
+      "resultArraySha256": "0bfdcd446d65ea453f29472d809271346b39cb92e1b457729011b5e96856be53",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step18b/KE-1/step18-A-alpha0007.result.json",
+      "resultSha256": "23f55f4422f548042db7414978c721dc71a04a4d7658f3182ba8fd744df51dd2",
+      "trajectoriesFile": "data/research/step18b/KE-1/step18-A-alpha0007.trajectories.csv",
+      "trajectoriesSha256": "55283d738ba8ba55c552d9cdbd8269566f7550c2b420967fc9f74a0ee03e85dd",
+      "rows": 2312,
+      "rowStatusCounts": {
+        "ACTIVE": 2304,
+        "COMPLETED": 8
+      },
+      "finalStatusCounts": {
+        "COMPLETED": 8
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 8
+      },
+      "qualityStatus": "COMPLETE",
+      "boundaryTimeResolutionSeconds": 0,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step18b/KE-1/bundles/step18-A-alpha0007.zip",
+        "bundleSha256": "6e4be597093b0a82b0916fd827f37d92dae215594aabb9c69b902b6793db4f8c",
+        "returncode": 0,
+        "replayResultSha256": "0bfdcd446d65ea453f29472d809271346b39cb92e1b457729011b5e96856be53",
+        "stderrTail": ""
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step18-B-alpha0-KE-1",
+      "windowId": "KE-1",
+      "alpha": 0.0,
+      "role": "control",
+      "drifterCount": 8,
+      "released": 8,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "computationArea": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "area": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-1-15m",
+          "version": "2010-05-11T12_2010-05-14T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-1",
+        "version": "2010-05-11T12.earthus1"
+      },
+      "forcingSha256": "eebd0c38e647b9fbdc3bc08202589fddce3e57892a3edfc1c2c12f01eddfca8d",
+      "gridSha256": "649ebad52f64b7d2bbe05ef6e8e818f7f0e8791fc8ac01ac5422c9d53d3fb74a",
+      "windGridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 9216,
+          "outputSamplesUpperBound": 2312,
+          "recommendedMaxStepSeconds": 655,
+          "minimumGridLengthMeters": 6989.789646322781,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T05:26:51Z",
+      "completedAtUTC": "2026-09-06T05:26:59Z",
+      "wallSeconds": 7.6,
+      "modelCommit": "75020d98bd555afa42d5fe9a0702309cf27080d4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "baf1ccdb50062410d2c0178015e1d7ad18a5cfb8e0c3a29e6541b1b3ff78d565",
+      "resultArraySha256": "aa6987ed8fcabd89d025b30acc3bd869840f8aff6d7ae598984b16d0d357ba4b",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step18b/KE-1/step18-B-alpha0.result.json",
+      "resultSha256": "013b93b788a71f328a683091226c305d7f9c2659f8d91a5f6151e3ac755ee5ef",
+      "trajectoriesFile": "data/research/step18b/KE-1/step18-B-alpha0.trajectories.csv",
+      "trajectoriesSha256": "d03b562d61c146b10995fe31733d4b2179bc253d4d4ade6ba7b819a3ca70d535",
+      "rows": 2312,
+      "rowStatusCounts": {
+        "ACTIVE": 2304,
+        "COMPLETED": 8
+      },
+      "finalStatusCounts": {
+        "COMPLETED": 8
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 8
+      },
+      "qualityStatus": "COMPLETE",
+      "boundaryTimeResolutionSeconds": 0,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step18b/KE-1/bundles/step18-B-alpha0.zip",
+        "bundleSha256": "0f6f9d5f9f57022bbe9a23297c06fea70f71f3d0c5e3e6669ed2402a4f4c10fe",
+        "returncode": 0,
+        "replayResultSha256": "aa6987ed8fcabd89d025b30acc3bd869840f8aff6d7ae598984b16d0d357ba4b",
+        "stderrTail": ""
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step18-A-alpha0007-KE-2",
+      "windowId": "KE-2",
+      "alpha": 0.0007,
+      "role": "primary",
+      "drifterCount": 5,
+      "released": 5,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "computationArea": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "area": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-2-15m",
+          "version": "2010-06-30T12_2010-07-03T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-2",
+        "version": "2010-06-30T12.earthus1"
+      },
+      "forcingSha256": "b3da27677e778d6e29af7bb1ad13119f8d7049f9b161950dbf1ed6a5ac213226",
+      "gridSha256": "1d597036f12febb4d962b7418c25fd752677fa471d8afa12b8811801afe76a9e",
+      "windGridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 5760,
+          "outputSamplesUpperBound": 1445,
+          "recommendedMaxStepSeconds": 733,
+          "minimumGridLengthMeters": 6809.828681549111,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T05:27:16Z",
+      "completedAtUTC": "2026-09-06T05:27:22Z",
+      "wallSeconds": 6.2,
+      "modelCommit": "75020d98bd555afa42d5fe9a0702309cf27080d4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "def139771f01a4465d7b9870d15319b16c7e9099d553f26982184b493a89f12b",
+      "resultArraySha256": "f4ed6734bd38031835b6c7be966aca04a13a7384c13f845b00453d2a8bf2d535",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step18b/KE-2/step18-A-alpha0007.result.json",
+      "resultSha256": "352267b5b128b7333c297484f6906fe0ac9b5393013e46cffd45619ba58db02a",
+      "trajectoriesFile": "data/research/step18b/KE-2/step18-A-alpha0007.trajectories.csv",
+      "trajectoriesSha256": "68181e66761217196d5ff87e65399bca125392a934f4f85b9f23a142f1adb428",
+      "rows": 1445,
+      "rowStatusCounts": {
+        "ACTIVE": 1440,
+        "COMPLETED": 5
+      },
+      "finalStatusCounts": {
+        "COMPLETED": 5
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 5
+      },
+      "qualityStatus": "COMPLETE",
+      "boundaryTimeResolutionSeconds": 0,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step18b/KE-2/bundles/step18-A-alpha0007.zip",
+        "bundleSha256": "f505c4675ab80d1536dbe5d49a093849106b2ce6aa8ae5d3b6a0ff999eb73b6b",
+        "returncode": 0,
+        "replayResultSha256": "f4ed6734bd38031835b6c7be966aca04a13a7384c13f845b00453d2a8bf2d535",
+        "stderrTail": ""
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step18-B-alpha0-KE-2",
+      "windowId": "KE-2",
+      "alpha": 0.0,
+      "role": "control",
+      "drifterCount": 5,
+      "released": 5,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "computationArea": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "area": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-2-15m",
+          "version": "2010-06-30T12_2010-07-03T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-2",
+        "version": "2010-06-30T12.earthus1"
+      },
+      "forcingSha256": "b3da27677e778d6e29af7bb1ad13119f8d7049f9b161950dbf1ed6a5ac213226",
+      "gridSha256": "1d597036f12febb4d962b7418c25fd752677fa471d8afa12b8811801afe76a9e",
+      "windGridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 5760,
+          "outputSamplesUpperBound": 1445,
+          "recommendedMaxStepSeconds": 733,
+          "minimumGridLengthMeters": 6809.828681549111,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T05:27:38Z",
+      "completedAtUTC": "2026-09-06T05:27:44Z",
+      "wallSeconds": 6.3,
+      "modelCommit": "75020d98bd555afa42d5fe9a0702309cf27080d4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "e0fea28b6098b2b5f303795abe07f5eef8ba596e1ca065bfed1139940ce8fa59",
+      "resultArraySha256": "054d9a24687fe4b520285b50e061f8f6e5ca93d69f24d3e66868ef0224d6334d",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step18b/KE-2/step18-B-alpha0.result.json",
+      "resultSha256": "f176f3dd369450e6a13b2dfdebde56590370c6203616fe379a0f496582a84418",
+      "trajectoriesFile": "data/research/step18b/KE-2/step18-B-alpha0.trajectories.csv",
+      "trajectoriesSha256": "d6845c7e64384d6b7e957a18ace2adc6029210ed2127846596e1c3d6da672040",
+      "rows": 1445,
+      "rowStatusCounts": {
+        "ACTIVE": 1440,
+        "COMPLETED": 5
+      },
+      "finalStatusCounts": {
+        "COMPLETED": 5
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 5
+      },
+      "qualityStatus": "COMPLETE",
+      "boundaryTimeResolutionSeconds": 0,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step18b/KE-2/bundles/step18-B-alpha0.zip",
+        "bundleSha256": "ffad132a08393188811d35dc6717938a4fe3c14dcfa7a9451bc15b24c5cc8f93",
+        "returncode": 0,
+        "replayResultSha256": "054d9a24687fe4b520285b50e061f8f6e5ca93d69f24d3e66868ef0224d6334d",
+        "stderrTail": ""
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step18-A-alpha0007-AG-1",
+      "windowId": "AG-1",
+      "alpha": 0.0007,
+      "role": "primary",
+      "drifterCount": 9,
+      "released": 9,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "computationArea": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "area": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-1-15m",
+          "version": "2015-04-23T12_2015-04-26T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-1",
+        "version": "2015-04-23T12.earthus1"
+      },
+      "forcingSha256": "dd0342c513139fd7c6de4033416f838e4423570e4fbdf89e6de4d4810337966c",
+      "gridSha256": "ee9af738d169cb6302b1987cafa5022f5d41f450e2cb3c7df1f5284fa58aae3b",
+      "windGridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 10368,
+          "outputSamplesUpperBound": 2601,
+          "recommendedMaxStepSeconds": 579,
+          "minimumGridLengthMeters": 6809.8286815503225,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T05:27:58Z",
+      "completedAtUTC": "2026-09-06T05:28:04Z",
+      "wallSeconds": 5.8,
+      "modelCommit": "75020d98bd555afa42d5fe9a0702309cf27080d4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "29ea52770efbeb04cf269c9f823c4831761b7d7cecbba4c8be949a0b564a6890",
+      "resultArraySha256": "d68c848bb186dffa38aec1c4a5dd88b29dfece8e5117cf8394bee0236981586a",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step18b/AG-1/step18-A-alpha0007.result.json",
+      "resultSha256": "97d6330ac003f24d0d6f11e7552cceb1d4206b5eec3e3c6c2052f032caffe9e2",
+      "trajectoriesFile": "data/research/step18b/AG-1/step18-A-alpha0007.trajectories.csv",
+      "trajectoriesSha256": "639b1004dbbf586609cbe8eca13e6edd9c44e3588a7697cf9ff0b720a82b1a48",
+      "rows": 2601,
+      "rowStatusCounts": {
+        "ACTIVE": 2592,
+        "COMPLETED": 9
+      },
+      "finalStatusCounts": {
+        "COMPLETED": 9
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 9
+      },
+      "qualityStatus": "COMPLETE",
+      "boundaryTimeResolutionSeconds": 0,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step18b/AG-1/bundles/step18-A-alpha0007.zip",
+        "bundleSha256": "72b5d1f23ca8210b1e0def85b48ce2c78f485e75af86dcf47f9a55a57bbffadb",
+        "returncode": 0,
+        "replayResultSha256": "d68c848bb186dffa38aec1c4a5dd88b29dfece8e5117cf8394bee0236981586a",
+        "stderrTail": ""
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step18-B-alpha0-AG-1",
+      "windowId": "AG-1",
+      "alpha": 0.0,
+      "role": "control",
+      "drifterCount": 9,
+      "released": 9,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "computationArea": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "area": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-1-15m",
+          "version": "2015-04-23T12_2015-04-26T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-1",
+        "version": "2015-04-23T12.earthus1"
+      },
+      "forcingSha256": "dd0342c513139fd7c6de4033416f838e4423570e4fbdf89e6de4d4810337966c",
+      "gridSha256": "ee9af738d169cb6302b1987cafa5022f5d41f450e2cb3c7df1f5284fa58aae3b",
+      "windGridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 10368,
+          "outputSamplesUpperBound": 2601,
+          "recommendedMaxStepSeconds": 579,
+          "minimumGridLengthMeters": 6809.8286815503225,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T05:28:14Z",
+      "completedAtUTC": "2026-09-06T05:28:20Z",
+      "wallSeconds": 5.8,
+      "modelCommit": "75020d98bd555afa42d5fe9a0702309cf27080d4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "2b128a456c7bf2fa532f216dba0b2e91efd17830a89e4baa0fe6b61eb4cae0e1",
+      "resultArraySha256": "752235d460dd93f8c8f820259e85294c0fb9e13f968f2d48cea589e656d966f6",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step18b/AG-1/step18-B-alpha0.result.json",
+      "resultSha256": "c2d8d0d1d885f1a13b5c568d329690724ffb87100b61a30106cf469d0b32a4ab",
+      "trajectoriesFile": "data/research/step18b/AG-1/step18-B-alpha0.trajectories.csv",
+      "trajectoriesSha256": "5738399d2133874ea8ae3b55a406596d0d0fc17f21c2b46a24496f9480b63c51",
+      "rows": 2601,
+      "rowStatusCounts": {
+        "ACTIVE": 2592,
+        "COMPLETED": 9
+      },
+      "finalStatusCounts": {
+        "COMPLETED": 9
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 9
+      },
+      "qualityStatus": "COMPLETE",
+      "boundaryTimeResolutionSeconds": 0,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step18b/AG-1/bundles/step18-B-alpha0.zip",
+        "bundleSha256": "bd73771b7d7286b25826878ac6895937dfff78a9f6635845df3eae69e09b837d",
+        "returncode": 0,
+        "replayResultSha256": "752235d460dd93f8c8f820259e85294c0fb9e13f968f2d48cea589e656d966f6",
+        "stderrTail": ""
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step18-A-alpha0007-AG-2",
+      "windowId": "AG-2",
+      "alpha": 0.0007,
+      "role": "primary",
+      "drifterCount": 1,
+      "released": 1,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "computationArea": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "area": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-2-15m",
+          "version": "2015-04-26T12_2015-04-29T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-2",
+        "version": "2015-04-26T12.earthus1"
+      },
+      "forcingSha256": "78fc422e2a29e99ba9275dbb9d9c9370fffa13a0db193e2d9d7052a2473ef057",
+      "gridSha256": "c53b91b4922c5b1f97ff4c704f87bb2a0fa14d6ea8da4a11bbcc9719dfe43859",
+      "windGridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 1152,
+          "outputSamplesUpperBound": 289,
+          "recommendedMaxStepSeconds": 663,
+          "minimumGridLengthMeters": 6928.002773054685,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T05:28:30Z",
+      "completedAtUTC": "2026-09-06T05:28:31Z",
+      "wallSeconds": 0.8,
+      "modelCommit": "75020d98bd555afa42d5fe9a0702309cf27080d4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "3388b7250681d1b0ad738d535c5631768c42b7482e3e7be60e21adecbe604a42",
+      "resultArraySha256": "8016967682c3dd39e8b677fad8a3e9a0758db490e4f54e80150ad0a42f807d25",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step18b/AG-2/step18-A-alpha0007.result.json",
+      "resultSha256": "bc02889b57ae8a72bd5c83b7be7c4d9f0faea48f5ec8514e5d081bf7caadb3d2",
+      "trajectoriesFile": "data/research/step18b/AG-2/step18-A-alpha0007.trajectories.csv",
+      "trajectoriesSha256": "5ec26dc581015ce7d6d4b2443cd9fd4ca1a4464bbfc7a06d1df17eb1dade79c2",
+      "rows": 289,
+      "rowStatusCounts": {
+        "ACTIVE": 288,
+        "COMPLETED": 1
+      },
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "qualityStatus": "COMPLETE",
+      "boundaryTimeResolutionSeconds": 0,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step18b/AG-2/bundles/step18-A-alpha0007.zip",
+        "bundleSha256": "8c698f46e3cd2d921e82f29082a69eca11b55566bf4f43a6da929cc2821d712b",
+        "returncode": 0,
+        "replayResultSha256": "8016967682c3dd39e8b677fad8a3e9a0758db490e4f54e80150ad0a42f807d25",
+        "stderrTail": ""
+      },
+      "replayMatched": true
+    },
+    {
+      "runId": "step18-B-alpha0-AG-2",
+      "windowId": "AG-2",
+      "alpha": 0.0,
+      "role": "control",
+      "drifterCount": 1,
+      "released": 1,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "computationArea": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "area": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-2-15m",
+          "version": "2015-04-26T12_2015-04-29T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-2",
+        "version": "2015-04-26T12.earthus1"
+      },
+      "forcingSha256": "78fc422e2a29e99ba9275dbb9d9c9370fffa13a0db193e2d9d7052a2473ef057",
+      "gridSha256": "c53b91b4922c5b1f97ff4c704f87bb2a0fa14d6ea8da4a11bbcc9719dfe43859",
+      "windGridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 1152,
+          "outputSamplesUpperBound": 289,
+          "recommendedMaxStepSeconds": 663,
+          "minimumGridLengthMeters": 6928.002773054685,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T05:28:34Z",
+      "completedAtUTC": "2026-09-06T05:28:34Z",
+      "wallSeconds": 0.8,
+      "modelCommit": "75020d98bd555afa42d5fe9a0702309cf27080d4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "specSha256": "5063fcbc1a37c277f7038dbcf9c26e81da21661186a5f622c9c21629df1046a2",
+      "resultArraySha256": "341f1fca0d7e6dece2cd0d05f434f81dfa5415110650ccac27e721ea098b87d8",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step18b/AG-2/step18-B-alpha0.result.json",
+      "resultSha256": "d5ebcfbb61df189837f34cf7382e0319489665f9f7b8aa7caf3998091e0ba294",
+      "trajectoriesFile": "data/research/step18b/AG-2/step18-B-alpha0.trajectories.csv",
+      "trajectoriesSha256": "85f7281a62fae85ad68df8d9c9d7d41b6454ad076394a1a79930d188da9d787b",
+      "rows": 289,
+      "rowStatusCounts": {
+        "ACTIVE": 288,
+        "COMPLETED": 1
+      },
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "qualityStatus": "COMPLETE",
+      "boundaryTimeResolutionSeconds": 0,
+      "replay": {
+        "process": "separate python -m research_runtime.cli_v2 replay",
+        "bundle": "data/research/step18b/AG-2/bundles/step18-B-alpha0.zip",
+        "bundleSha256": "ffe1aab2500102b7e736165ae6d4a41c9e91ebd004e76a24bf6f7e4a39c9f582",
+        "returncode": 0,
+        "replayResultSha256": "341f1fca0d7e6dece2cd0d05f434f81dfa5415110650ccac27e721ea098b87d8",
+        "stderrTail": ""
+      },
+      "replayMatched": true
+    }
+  ],
+  "outputSchema": {
+    "columns": [
+      "run_id",
+      "drifter_id",
+      "timestamp",
+      "lat",
+      "lon",
+      "alpha",
+      "status",
+      "valid"
+    ],
+    "rules": {
+      "timestamp": "ISO-8601 UTC YYYY-MM-DDTHH:MM:SSZ",
+      "lat": "6 decimals WGS84",
+      "lon": "6 decimals, -180..180",
+      "alpha": "literal 0.0007 or 0",
+      "status": [
+        "ACTIVE",
+        "COMPLETED",
+        "OUT_OF_DOMAIN",
+        "FORCING_UNAVAILABLE"
+      ],
+      "valid": "true for ACTIVE/COMPLETED model positions, false for termination rows"
+    },
+    "rowOrder": "drifter_id ascending (string), then timestamp ascending"
+  },
+  "metrics": {
+    "perDrifter": [
+      {
+        "windowId": "KE-1",
+        "drifterId": "71155",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 165.447,
+            "M2_totalPathKm": 172.937,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 17.486,
+              "48": 31.199,
+              "72": 85.524
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 21.841,
+              "mean": 31.502,
+              "min": 0.0,
+              "max": 85.524
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 161.93,
+            "M2_totalPathKm": 166.899,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 17.005,
+              "48": 28.175,
+              "72": 76.116
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 21.74,
+              "mean": 28.931,
+              "min": 0.0,
+              "max": 76.116
+            }
+          }
+        },
+        "M5_observed72hKm": 127.48,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.486,
+            "48": 3.063,
+            "72": 9.984
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 1.636,
+            "mean": 2.635,
+            "min": 0.0,
+            "max": 9.984
+          },
+          "pairedError72hDiffKm_AminusB": 9.408
+        }
+      },
+      {
+        "windowId": "KE-1",
+        "drifterId": "81801",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 72.207,
+            "M2_totalPathKm": 89.727,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 6.963,
+              "48": 17.849,
+              "72": 15.029
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 9.172,
+              "mean": 12.408,
+              "min": 0.0,
+              "max": 24.342
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 72.918,
+            "M2_totalPathKm": 90.989,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 7.468,
+              "48": 17.663,
+              "72": 14.404
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 9.378,
+              "mean": 12.417,
+              "min": 0.0,
+              "max": 23.894
+            }
+          }
+        },
+        "M5_observed72hKm": 78.333,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.525,
+            "48": 0.58,
+            "72": 0.83
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.564,
+            "mean": 0.502,
+            "min": 0.0,
+            "max": 0.83
+          },
+          "pairedError72hDiffKm_AminusB": 0.625
+        }
+      },
+      {
+        "windowId": "KE-1",
+        "drifterId": "81805",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 64.788,
+            "M2_totalPathKm": 71.98,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 11.641,
+              "48": 33.59,
+              "72": 43.761
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 20.104,
+              "mean": 21.412,
+              "min": 0.0,
+              "max": 43.978
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 66.655,
+            "M2_totalPathKm": 73.419,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 11.712,
+              "48": 33.772,
+              "72": 43.791
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 20.171,
+              "mean": 21.512,
+              "min": 0.0,
+              "max": 44.064
+            }
+          }
+        },
+        "M5_observed72hKm": 47.347,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.79,
+            "48": 1.84,
+            "72": 2.564
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 1.397,
+            "mean": 1.316,
+            "min": 0.0,
+            "max": 2.564
+          },
+          "pairedError72hDiffKm_AminusB": -0.03
+        }
+      },
+      {
+        "windowId": "KE-1",
+        "drifterId": "81807",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 12.657,
+            "M2_totalPathKm": 45.185,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 9.545,
+              "48": 18.034,
+              "72": 31.27
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 11.812,
+              "mean": 13.828,
+              "min": 0.0,
+              "max": 31.27
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 13.263,
+            "M2_totalPathKm": 45.783,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 9.283,
+              "48": 17.855,
+              "72": 31.073
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 11.692,
+              "mean": 13.635,
+              "min": 0.0,
+              "max": 31.073
+            }
+          }
+        },
+        "M5_observed72hKm": 21.291,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.753,
+            "48": 1.322,
+            "72": 1.483
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 1.044,
+            "mean": 0.95,
+            "min": 0.0,
+            "max": 1.563
+          },
+          "pairedError72hDiffKm_AminusB": 0.197
+        }
+      },
+      {
+        "windowId": "KE-1",
+        "drifterId": "81811",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 56.972,
+            "M2_totalPathKm": 106.368,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 26.148,
+              "48": 40.091,
+              "72": 60.528
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 36.65,
+              "mean": 32.546,
+              "min": 0.0,
+              "max": 60.528
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 57.509,
+            "M2_totalPathKm": 107.085,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 26.172,
+              "48": 40.669,
+              "72": 61.314
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 37.0,
+              "mean": 32.85,
+              "min": 0.0,
+              "max": 61.314
+            }
+          }
+        },
+        "M5_observed72hKm": 41.423,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.487,
+            "48": 0.674,
+            "72": 0.791
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.571,
+            "mean": 0.495,
+            "min": 0.0,
+            "max": 0.791
+          },
+          "pairedError72hDiffKm_AminusB": -0.786
+        }
+      },
+      {
+        "windowId": "KE-1",
+        "drifterId": "81813",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 80.115,
+            "M2_totalPathKm": 83.908,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 11.677,
+              "48": 21.802,
+              "72": 21.856
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 13.417,
+              "mean": 13.488,
+              "min": 0.0,
+              "max": 22.038
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 79.259,
+            "M2_totalPathKm": 82.958,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 11.295,
+              "48": 21.874,
+              "72": 23.047
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 13.097,
+              "mean": 13.61,
+              "min": 0.0,
+              "max": 23.047
+            }
+          }
+        },
+        "M5_observed72hKm": 99.084,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.402,
+            "48": 0.892,
+            "72": 1.214
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.659,
+            "mean": 0.626,
+            "min": 0.0,
+            "max": 1.214
+          },
+          "pairedError72hDiffKm_AminusB": -1.191
+        }
+      },
+      {
+        "windowId": "KE-1",
+        "drifterId": "81814",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 169.324,
+            "M2_totalPathKm": 190.754,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 15.159,
+              "48": 4.064,
+              "72": 50.616
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 13.534,
+              "mean": 14.761,
+              "min": 0.0,
+              "max": 50.616
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 167.802,
+            "M2_totalPathKm": 189.234,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 14.917,
+              "48": 3.487,
+              "72": 51.867
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 13.356,
+              "mean": 14.843,
+              "min": 0.0,
+              "max": 51.867
+            }
+          }
+        },
+        "M5_observed72hKm": 204.736,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.257,
+            "48": 0.587,
+            "72": 1.567
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.356,
+            "mean": 0.505,
+            "min": 0.0,
+            "max": 1.567
+          },
+          "pairedError72hDiffKm_AminusB": -1.251
+        }
+      },
+      {
+        "windowId": "KE-1",
+        "drifterId": "81816",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 36.207,
+            "M2_totalPathKm": 65.906,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 16.569,
+              "48": 32.579,
+              "72": 52.416
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 28.175,
+              "mean": 26.898,
+              "min": 0.0,
+              "max": 52.416
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 34.486,
+            "M2_totalPathKm": 65.109,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 15.92,
+              "48": 31.427,
+              "72": 50.633
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 27.272,
+              "mean": 26.021,
+              "min": 0.0,
+              "max": 50.633
+            }
+          }
+        },
+        "M5_observed72hKm": 16.535,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.667,
+            "48": 1.202,
+            "72": 1.914
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.904,
+            "mean": 0.932,
+            "min": 0.0,
+            "max": 1.914
+          },
+          "pairedError72hDiffKm_AminusB": 1.783
+        }
+      },
+      {
+        "windowId": "KE-2",
+        "drifterId": "48965",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 53.388,
+            "M2_totalPathKm": 57.112,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 9.678,
+              "48": 20.633,
+              "72": 20.298
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 17.167,
+              "mean": 14.314,
+              "min": 0.0,
+              "max": 22.734
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 53.152,
+            "M2_totalPathKm": 56.888,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 9.604,
+              "48": 20.435,
+              "72": 20.146
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 17.038,
+              "mean": 14.177,
+              "min": 0.0,
+              "max": 22.529
+            }
+          }
+        },
+        "M5_observed72hKm": 49.759,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.224,
+            "48": 0.289,
+            "72": 0.247
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.283,
+            "mean": 0.227,
+            "min": 0.0,
+            "max": 0.352
+          },
+          "pairedError72hDiffKm_AminusB": 0.152
+        }
+      },
+      {
+        "windowId": "KE-2",
+        "drifterId": "81802",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 97.839,
+            "M2_totalPathKm": 99.663,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 1.476,
+              "48": 6.208,
+              "72": 24.079
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 4.373,
+              "mean": 7.195,
+              "min": 0.0,
+              "max": 24.079
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 97.509,
+            "M2_totalPathKm": 99.382,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 1.947,
+              "48": 5.83,
+              "72": 22.659
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 4.495,
+              "mean": 7.11,
+              "min": 0.0,
+              "max": 22.659
+            }
+          }
+        },
+        "M5_observed72hKm": 108.571,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.753,
+            "48": 1.305,
+            "72": 1.697
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 1.122,
+            "mean": 0.995,
+            "min": 0.0,
+            "max": 1.697
+          },
+          "pairedError72hDiffKm_AminusB": 1.42
+        }
+      },
+      {
+        "windowId": "KE-2",
+        "drifterId": "90141",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 90.085,
+            "M2_totalPathKm": 96.926,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 28.594,
+              "48": 77.399,
+              "72": 156.123
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 49.898,
+              "mean": 59.532,
+              "min": 0.0,
+              "max": 156.123
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 88.122,
+            "M2_totalPathKm": 94.922,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 28.682,
+              "48": 77.023,
+              "72": 154.377
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 49.799,
+              "mean": 59.17,
+              "min": 0.0,
+              "max": 154.377
+            }
+          }
+        },
+        "M5_observed72hKm": 70.905,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.443,
+            "48": 0.75,
+            "72": 2.116
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.556,
+            "mean": 0.723,
+            "min": 0.0,
+            "max": 2.116
+          },
+          "pairedError72hDiffKm_AminusB": 1.746
+        }
+      },
+      {
+        "windowId": "KE-2",
+        "drifterId": "90142",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 42.408,
+            "M2_totalPathKm": 46.425,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 13.769,
+              "48": 29.829,
+              "72": 41.573
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 21.349,
+              "mean": 21.428,
+              "min": 0.0,
+              "max": 41.573
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 40.849,
+            "M2_totalPathKm": 44.988,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 13.615,
+              "48": 29.315,
+              "72": 40.173
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 21.018,
+              "mean": 21.005,
+              "min": 0.0,
+              "max": 40.173
+            }
+          }
+        },
+        "M5_observed72hKm": 37.048,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.343,
+            "48": 0.815,
+            "72": 1.665
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.555,
+            "mean": 0.637,
+            "min": 0.0,
+            "max": 1.665
+          },
+          "pairedError72hDiffKm_AminusB": 1.4
+        }
+      },
+      {
+        "windowId": "KE-2",
+        "drifterId": "90145",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 140.774,
+            "M2_totalPathKm": 149.355,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 28.324,
+              "48": 71.847,
+              "72": 109.292
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 47.328,
+              "mean": 50.873,
+              "min": 0.0,
+              "max": 109.292
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 141.162,
+            "M2_totalPathKm": 148.91,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 28.501,
+              "48": 72.964,
+              "72": 112.157
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 47.815,
+              "mean": 51.715,
+              "min": 0.0,
+              "max": 112.157
+            }
+          }
+        },
+        "M5_observed72hKm": 131.458,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.534,
+            "48": 1.304,
+            "72": 3.072
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.793,
+            "mean": 1.092,
+            "min": 0.0,
+            "max": 3.072
+          },
+          "pairedError72hDiffKm_AminusB": -2.865
+        }
+      },
+      {
+        "windowId": "AG-1",
+        "drifterId": "127198",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 209.474,
+            "M2_totalPathKm": 240.478,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 143.1,
+              "48": 237.69,
+              "72": 322.45
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 189.778,
+              "mean": 183.05,
+              "min": 0.0,
+              "max": 322.45
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 208.868,
+            "M2_totalPathKm": 239.838,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 142.98,
+              "48": 237.414,
+              "72": 321.997
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 189.586,
+              "mean": 182.855,
+              "min": 0.0,
+              "max": 321.997
+            }
+          }
+        },
+        "M5_observed72hKm": 308.466,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.211,
+            "48": 0.319,
+            "72": 0.651
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.305,
+            "mean": 0.283,
+            "min": 0.0,
+            "max": 0.651
+          },
+          "pairedError72hDiffKm_AminusB": 0.453
+        }
+      },
+      {
+        "windowId": "AG-1",
+        "drifterId": "127199",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 208.178,
+            "M2_totalPathKm": 239.357,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 144.143,
+              "48": 236.846,
+              "72": 318.95
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 189.716,
+              "mean": 182.445,
+              "min": 0.0,
+              "max": 318.95
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 207.516,
+            "M2_totalPathKm": 238.643,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 144.014,
+              "48": 236.558,
+              "72": 318.506
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 189.513,
+              "mean": 182.244,
+              "min": 0.0,
+              "max": 318.506
+            }
+          }
+        },
+        "M5_observed72hKm": 308.854,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.223,
+            "48": 0.304,
+            "72": 0.695
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.311,
+            "mean": 0.296,
+            "min": 0.0,
+            "max": 0.695
+          },
+          "pairedError72hDiffKm_AminusB": 0.444
+        }
+      },
+      {
+        "windowId": "AG-1",
+        "drifterId": "127272",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 184.048,
+            "M2_totalPathKm": 186.264,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 26.505,
+              "48": 52.484,
+              "72": 103.985
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 35.78,
+              "mean": 42.398,
+              "min": 0.0,
+              "max": 103.985
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 182.865,
+            "M2_totalPathKm": 185.129,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 25.99,
+              "48": 51.132,
+              "72": 102.801
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 34.873,
+              "mean": 41.569,
+              "min": 0.0,
+              "max": 102.801
+            }
+          }
+        },
+        "M5_observed72hKm": 80.755,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.562,
+            "48": 1.369,
+            "72": 1.184
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.934,
+            "mean": 0.85,
+            "min": 0.0,
+            "max": 1.461
+          },
+          "pairedError72hDiffKm_AminusB": 1.184
+        }
+      },
+      {
+        "windowId": "AG-1",
+        "drifterId": "127313",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 240.773,
+            "M2_totalPathKm": 255.561,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 64.331,
+              "48": 144.219,
+              "72": 238.727
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 100.639,
+              "mean": 109.48,
+              "min": 0.0,
+              "max": 238.727
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 240.645,
+            "M2_totalPathKm": 255.376,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 64.757,
+              "48": 144.932,
+              "72": 239.003
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 101.293,
+              "mean": 109.936,
+              "min": 0.0,
+              "max": 239.003
+            }
+          }
+        },
+        "M5_observed72hKm": 449.489,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.446,
+            "48": 0.728,
+            "72": 0.301
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.484,
+            "mean": 0.469,
+            "min": 0.0,
+            "max": 0.781
+          },
+          "pairedError72hDiffKm_AminusB": -0.276
+        }
+      },
+      {
+        "windowId": "AG-1",
+        "drifterId": "127314",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 128.453,
+            "M2_totalPathKm": 166.836,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 48.155,
+              "48": 62.881,
+              "72": 47.053
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 48.155,
+              "mean": 45.316,
+              "min": 0.0,
+              "max": 68.106
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 128.466,
+            "M2_totalPathKm": 167.098,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 48.617,
+              "48": 64.073,
+              "72": 47.705
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 49.163,
+              "mean": 46.046,
+              "min": 0.0,
+              "max": 69.11
+            }
+          }
+        },
+        "M5_observed72hKm": 98.763,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.513,
+            "48": 1.244,
+            "72": 0.952
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.956,
+            "mean": 0.785,
+            "min": 0.0,
+            "max": 1.332
+          },
+          "pairedError72hDiffKm_AminusB": -0.652
+        }
+      },
+      {
+        "windowId": "AG-1",
+        "drifterId": "127315",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 183.71,
+            "M2_totalPathKm": 187.805,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 23.991,
+              "48": 44.311,
+              "72": 55.671
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 32.302,
+              "mean": 32.586,
+              "min": 0.0,
+              "max": 55.774
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 184.082,
+            "M2_totalPathKm": 188.233,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 24.375,
+              "48": 44.145,
+              "72": 55.299
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 32.493,
+              "mean": 32.607,
+              "min": 0.0,
+              "max": 55.415
+            }
+          }
+        },
+        "M5_observed72hKm": 181.032,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.476,
+            "48": 0.462,
+            "72": 0.589
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.446,
+            "mean": 0.398,
+            "min": 0.0,
+            "max": 0.618
+          },
+          "pairedError72hDiffKm_AminusB": 0.372
+        }
+      },
+      {
+        "windowId": "AG-1",
+        "drifterId": "132511",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 127.686,
+            "M2_totalPathKm": 130.621,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 40.466,
+              "48": 58.542,
+              "72": 109.628
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 56.497,
+              "mean": 52.441,
+              "min": 0.0,
+              "max": 109.628
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 130.504,
+            "M2_totalPathKm": 133.373,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 40.743,
+              "48": 59.96,
+              "72": 112.085
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 57.767,
+              "mean": 53.335,
+              "min": 0.0,
+              "max": 112.085
+            }
+          }
+        },
+        "M5_observed72hKm": 90.051,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.292,
+            "48": 1.541,
+            "72": 2.879
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.773,
+            "mean": 1.046,
+            "min": 0.0,
+            "max": 2.879
+          },
+          "pairedError72hDiffKm_AminusB": -2.457
+        }
+      },
+      {
+        "windowId": "AG-1",
+        "drifterId": "132528",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 143.672,
+            "M2_totalPathKm": 149.469,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 25.475,
+              "48": 22.369,
+              "72": 62.989
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 22.548,
+              "mean": 23.982,
+              "min": 0.0,
+              "max": 62.989
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 142.374,
+            "M2_totalPathKm": 148.062,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 25.684,
+              "48": 24.056,
+              "72": 61.421
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 22.61,
+              "mean": 24.133,
+              "min": 0.0,
+              "max": 61.421
+            }
+          }
+        },
+        "M5_observed72hKm": 85.528,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.732,
+            "48": 1.749,
+            "72": 1.713
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 1.351,
+            "mean": 1.12,
+            "min": 0.0,
+            "max": 1.763
+          },
+          "pairedError72hDiffKm_AminusB": 1.568
+        }
+      },
+      {
+        "windowId": "AG-1",
+        "drifterId": "132634",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 90.389,
+            "M2_totalPathKm": 110.867,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 33.644,
+              "48": 76.117,
+              "72": 124.0
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 45.972,
+              "mean": 59.157,
+              "min": 0.0,
+              "max": 124.0
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 91.261,
+            "M2_totalPathKm": 112.17,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 33.36,
+              "48": 76.329,
+              "72": 124.525
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 45.858,
+              "mean": 59.246,
+              "min": 0.0,
+              "max": 124.525
+            }
+          }
+        },
+        "M5_observed72hKm": 135.1,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.415,
+            "48": 0.934,
+            "72": 0.931
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.701,
+            "mean": 0.659,
+            "min": 0.0,
+            "max": 1.215
+          },
+          "pairedError72hDiffKm_AminusB": -0.525
+        }
+      },
+      {
+        "windowId": "AG-2",
+        "drifterId": "127281",
+        "runs": {
+          "0.0007": {
+            "M1_endpoint72hKm": 25.039,
+            "M2_totalPathKm": 49.853,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 116.546,
+              "48": 232.749,
+              "72": 330.962
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 181.646,
+              "mean": 172.778,
+              "min": 0.0,
+              "max": 330.962
+            }
+          },
+          "0.0": {
+            "M1_endpoint72hKm": 25.655,
+            "M2_totalPathKm": 49.891,
+            "validHours": 72.0,
+            "M3_positionErrorKm": {
+              "24": 116.375,
+              "48": 232.677,
+              "72": 330.76
+            },
+            "M3_hourlySeries": {
+              "n": 73,
+              "median": 181.564,
+              "mean": 172.658,
+              "min": 0.0,
+              "max": 330.76
+            }
+          }
+        },
+        "M5_observed72hKm": 352.788,
+        "M4_alphaEffect": {
+          "separationKm": {
+            "24": 0.287,
+            "48": 0.615,
+            "72": 0.881
+          },
+          "separationSeries": {
+            "n": 289,
+            "median": 0.409,
+            "mean": 0.443,
+            "min": 0.0,
+            "max": 0.881
+          },
+          "pairedError72hDiffKm_AminusB": 0.202
+        }
+      }
+    ],
+    "perRunUnit": {
+      "KE-1": {
+        "0.0007": {
+          "M1_endpoint72hKm": {
+            "n": 8,
+            "median": 68.498,
+            "mean": 82.215,
+            "min": 12.657,
+            "max": 169.324
+          },
+          "M2_totalPathKm": {
+            "n": 8,
+            "median": 86.817,
+            "mean": 103.346,
+            "min": 45.185,
+            "max": 190.754
+          },
+          "M3_positionErrorKm": {
+            "24": {
+              "n": 8,
+              "median": 13.418,
+              "mean": 14.399,
+              "min": 6.963,
+              "max": 26.148
+            },
+            "48": {
+              "n": 8,
+              "median": 26.501,
+              "mean": 24.901,
+              "min": 4.064,
+              "max": 40.091
+            },
+            "72": {
+              "n": 8,
+              "median": 47.189,
+              "mean": 45.125,
+              "min": 15.029,
+              "max": 85.524
+            }
+          }
+        },
+        "0.0": {
+          "M1_endpoint72hKm": {
+            "n": 8,
+            "median": 69.787,
+            "mean": 81.728,
+            "min": 13.263,
+            "max": 167.802
+          },
+          "M2_totalPathKm": {
+            "n": 8,
+            "median": 86.974,
+            "mean": 102.684,
+            "min": 45.783,
+            "max": 189.234
+          },
+          "M3_positionErrorKm": {
+            "24": {
+              "n": 8,
+              "median": 13.314,
+              "mean": 14.221,
+              "min": 7.468,
+              "max": 26.172
+            },
+            "48": {
+              "n": 8,
+              "median": 25.024,
+              "mean": 24.365,
+              "min": 3.487,
+              "max": 40.669
+            },
+            "72": {
+              "n": 8,
+              "median": 47.212,
+              "mean": 44.031,
+              "min": 14.404,
+              "max": 76.116
+            }
+          }
+        },
+        "M4_separation72hKm": {
+          "n": 8,
+          "median": 1.525,
+          "mean": 2.543,
+          "min": 0.791,
+          "max": 9.984
+        },
+        "M4_pairedError72hDiffKm_AminusB": {
+          "n": 8,
+          "median": 0.084,
+          "mean": 1.094,
+          "min": -1.251,
+          "max": 9.408
+        },
+        "M5_observed72hKm": {
+          "n": 8,
+          "median": 62.84,
+          "mean": 79.529,
+          "min": 16.535,
+          "max": 204.736
+        }
+      },
+      "KE-2": {
+        "0.0007": {
+          "M1_endpoint72hKm": {
+            "n": 5,
+            "median": 90.085,
+            "mean": 84.899,
+            "min": 42.408,
+            "max": 140.774
+          },
+          "M2_totalPathKm": {
+            "n": 5,
+            "median": 96.926,
+            "mean": 89.896,
+            "min": 46.425,
+            "max": 149.355
+          },
+          "M3_positionErrorKm": {
+            "24": {
+              "n": 5,
+              "median": 13.769,
+              "mean": 16.368,
+              "min": 1.476,
+              "max": 28.594
+            },
+            "48": {
+              "n": 5,
+              "median": 29.829,
+              "mean": 41.183,
+              "min": 6.208,
+              "max": 77.399
+            },
+            "72": {
+              "n": 5,
+              "median": 41.573,
+              "mean": 70.273,
+              "min": 20.298,
+              "max": 156.123
+            }
+          }
+        },
+        "0.0": {
+          "M1_endpoint72hKm": {
+            "n": 5,
+            "median": 88.122,
+            "mean": 84.159,
+            "min": 40.849,
+            "max": 141.162
+          },
+          "M2_totalPathKm": {
+            "n": 5,
+            "median": 94.922,
+            "mean": 89.018,
+            "min": 44.988,
+            "max": 148.91
+          },
+          "M3_positionErrorKm": {
+            "24": {
+              "n": 5,
+              "median": 13.615,
+              "mean": 16.47,
+              "min": 1.947,
+              "max": 28.682
+            },
+            "48": {
+              "n": 5,
+              "median": 29.315,
+              "mean": 41.113,
+              "min": 5.83,
+              "max": 77.023
+            },
+            "72": {
+              "n": 5,
+              "median": 40.173,
+              "mean": 69.902,
+              "min": 20.146,
+              "max": 154.377
+            }
+          }
+        },
+        "M4_separation72hKm": {
+          "n": 5,
+          "median": 1.697,
+          "mean": 1.759,
+          "min": 0.247,
+          "max": 3.072
+        },
+        "M4_pairedError72hDiffKm_AminusB": {
+          "n": 5,
+          "median": 1.4,
+          "mean": 0.371,
+          "min": -2.865,
+          "max": 1.746
+        },
+        "M5_observed72hKm": {
+          "n": 5,
+          "median": 70.905,
+          "mean": 79.548,
+          "min": 37.048,
+          "max": 131.458
+        }
+      },
+      "AG-1": {
+        "0.0007": {
+          "M1_endpoint72hKm": {
+            "n": 9,
+            "median": 183.71,
+            "mean": 168.487,
+            "min": 90.389,
+            "max": 240.773
+          },
+          "M2_totalPathKm": {
+            "n": 9,
+            "median": 186.264,
+            "mean": 185.251,
+            "min": 110.867,
+            "max": 255.561
+          },
+          "M3_positionErrorKm": {
+            "24": {
+              "n": 9,
+              "median": 40.466,
+              "mean": 61.09,
+              "min": 23.991,
+              "max": 144.143
+            },
+            "48": {
+              "n": 9,
+              "median": 62.881,
+              "mean": 103.94,
+              "min": 22.369,
+              "max": 237.69
+            },
+            "72": {
+              "n": 9,
+              "median": 109.628,
+              "mean": 153.717,
+              "min": 47.053,
+              "max": 322.45
+            }
+          }
+        },
+        "0.0": {
+          "M1_endpoint72hKm": {
+            "n": 9,
+            "median": 182.865,
+            "mean": 168.509,
+            "min": 91.261,
+            "max": 240.645
+          },
+          "M2_totalPathKm": {
+            "n": 9,
+            "median": 185.129,
+            "mean": 185.325,
+            "min": 112.17,
+            "max": 255.376
+          },
+          "M3_positionErrorKm": {
+            "24": {
+              "n": 9,
+              "median": 40.743,
+              "mean": 61.169,
+              "min": 24.375,
+              "max": 144.014
+            },
+            "48": {
+              "n": 9,
+              "median": 64.073,
+              "mean": 104.289,
+              "min": 24.056,
+              "max": 237.414
+            },
+            "72": {
+              "n": 9,
+              "median": 112.085,
+              "mean": 153.705,
+              "min": 47.705,
+              "max": 321.997
+            }
+          }
+        },
+        "M4_separation72hKm": {
+          "n": 9,
+          "median": 0.931,
+          "mean": 1.099,
+          "min": 0.301,
+          "max": 2.879
+        },
+        "M4_pairedError72hDiffKm_AminusB": {
+          "n": 9,
+          "median": 0.372,
+          "mean": 0.012,
+          "min": -2.457,
+          "max": 1.568
+        },
+        "M5_observed72hKm": {
+          "n": 9,
+          "median": 135.1,
+          "mean": 193.115,
+          "min": 80.755,
+          "max": 449.489
+        }
+      },
+      "AG-2": {
+        "0.0007": {
+          "M1_endpoint72hKm": {
+            "n": 1,
+            "median": 25.039,
+            "mean": 25.039,
+            "min": 25.039,
+            "max": 25.039
+          },
+          "M2_totalPathKm": {
+            "n": 1,
+            "median": 49.853,
+            "mean": 49.853,
+            "min": 49.853,
+            "max": 49.853
+          },
+          "M3_positionErrorKm": {
+            "24": {
+              "n": 1,
+              "median": 116.546,
+              "mean": 116.546,
+              "min": 116.546,
+              "max": 116.546
+            },
+            "48": {
+              "n": 1,
+              "median": 232.749,
+              "mean": 232.749,
+              "min": 232.749,
+              "max": 232.749
+            },
+            "72": {
+              "n": 1,
+              "median": 330.962,
+              "mean": 330.962,
+              "min": 330.962,
+              "max": 330.962
+            }
+          }
+        },
+        "0.0": {
+          "M1_endpoint72hKm": {
+            "n": 1,
+            "median": 25.655,
+            "mean": 25.655,
+            "min": 25.655,
+            "max": 25.655
+          },
+          "M2_totalPathKm": {
+            "n": 1,
+            "median": 49.891,
+            "mean": 49.891,
+            "min": 49.891,
+            "max": 49.891
+          },
+          "M3_positionErrorKm": {
+            "24": {
+              "n": 1,
+              "median": 116.375,
+              "mean": 116.375,
+              "min": 116.375,
+              "max": 116.375
+            },
+            "48": {
+              "n": 1,
+              "median": 232.677,
+              "mean": 232.677,
+              "min": 232.677,
+              "max": 232.677
+            },
+            "72": {
+              "n": 1,
+              "median": 330.76,
+              "mean": 330.76,
+              "min": 330.76,
+              "max": 330.76
+            }
+          }
+        },
+        "M4_separation72hKm": {
+          "n": 1,
+          "median": 0.881,
+          "mean": 0.881,
+          "min": 0.881,
+          "max": 0.881
+        },
+        "M4_pairedError72hDiffKm_AminusB": {
+          "n": 1,
+          "median": 0.202,
+          "mean": 0.202,
+          "min": 0.202,
+          "max": 0.202
+        },
+        "M5_observed72hKm": {
+          "n": 1,
+          "median": 352.788,
+          "mean": 352.788,
+          "min": 352.788,
+          "max": 352.788
+        }
+      }
+    },
+    "overall": {
+      "0.0007": {
+        "M1_endpoint72hKm": {
+          "n": 23,
+          "median": 97.839,
+          "mean": 114.071,
+          "min": 12.657,
+          "max": 240.773
+        },
+        "M2_totalPathKm": {
+          "n": 23,
+          "median": 110.867,
+          "mean": 130.146,
+          "min": 45.185,
+          "max": 255.561
+        },
+        "M3_positionErrorKm": {
+          "24": {
+            "n": 23,
+            "median": 25.475,
+            "mean": 37.538,
+            "min": 1.476,
+            "max": 144.143
+          },
+          "48": {
+            "n": 23,
+            "median": 40.091,
+            "mean": 68.406,
+            "min": 4.064,
+            "max": 237.69
+          },
+          "72": {
+            "n": 23,
+            "median": 60.528,
+            "mean": 105.512,
+            "min": 15.029,
+            "max": 330.962
+          }
+        }
+      },
+      "0.0": {
+        "M1_endpoint72hKm": {
+          "n": 23,
+          "median": 97.509,
+          "mean": 113.776,
+          "min": 13.263,
+          "max": 240.645
+        },
+        "M2_totalPathKm": {
+          "n": 23,
+          "median": 112.17,
+          "mean": 129.756,
+          "min": 44.988,
+          "max": 255.376
+        },
+        "M3_positionErrorKm": {
+          "24": {
+            "n": 23,
+            "median": 25.684,
+            "mean": 37.522,
+            "min": 1.947,
+            "max": 144.014
+          },
+          "48": {
+            "n": 23,
+            "median": 40.669,
+            "mean": 68.338,
+            "min": 3.487,
+            "max": 237.414
+          },
+          "72": {
+            "n": 23,
+            "median": 61.314,
+            "mean": 105.037,
+            "min": 14.404,
+            "max": 330.76
+          }
+        }
+      },
+      "M4_separation72hKm": {
+        "n": 23,
+        "median": 1.214,
+        "mean": 1.736,
+        "min": 0.247,
+        "max": 9.984
+      },
+      "M4_pairedError72hDiffKm_AminusB": {
+        "n": 23,
+        "median": 0.202,
+        "mean": 0.475,
+        "min": -2.865,
+        "max": 9.408
+      },
+      "M5_observed72hKm": {
+        "n": 23,
+        "median": 98.763,
+        "mean": 135.861,
+        "min": 16.535,
+        "max": 449.489
+      }
+    },
+    "definitions": {
+      "distance": "haversine, radius 6371008.8 m, km",
+      "observationMatching": "exact UTC timestamp match with STEP 15 hourly QC files; no interpolation; missing → NOT_AVAILABLE",
+      "M1": "72 h endpoint displacement: release point → model position at t0+72h; NOT_AVAILABLE if not valid at t0+72h",
+      "M2": "total trajectory displacement: sum of distances between consecutive valid=true output points up to the last valid point; valid duration (h) recorded",
+      "M3": "observed-vs-modeled position error at every on-the-hour timestamp with an observation; horizons 24/48/72 h reported separately; NOT_AVAILABLE if model not valid or no observation",
+      "M4": "alpha effect: RUN A vs RUN B position distance at timestamps where both valid; paired difference A−B of M3(72 h) when both available",
+      "M5": "observed 72 h displacement (reference against cohort A2)",
+      "aggregation": "per run, per run unit, overall (23): n, median, mean, min, max; paired metrics on the same drifter only",
+      "acceptanceThresholds": "NONE in this protocol — trajectory production and descriptive statistics only; PASS/FAIL judgement requires a separate preregistration fixing STEP 12 K1–K5 numerically (validation-plan-v3)",
+      "independenceNote": "temporal overlap within and across windows does not imply statistical independence; n=23 is not an independent sample count",
+      "confidenceIntervals": "none for the deterministic model; no bootstrap at this step",
+      "postHocMetrics": "PROHIBITED"
+    },
+    "acceptanceThresholds": "NONE (protocol §9)",
+    "interpretation": "NOT PERFORMED in Phase B"
+  },
+  "glorys": "NOT USED",
+  "startedAtUTC": "2026-09-06T05:26:21Z",
+  "createdAtUTC": "2026-09-06T05:28:38Z",
+  "deterministic": true,
+  "randomSeed": null,
+  "resultFilesCommitted": false,
+  "interpretation": "NOT PERFORMED",
+  "log": [
+    {
+      "utc": "2026-09-06T05:26:22Z",
+      "phase": "precheck",
+      "status": "PASS",
+      "head": "75020d98"
+    },
+    {
+      "utc": "2026-09-06T05:26:26Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step18-A-alpha0007-KE-1",
+      "particles": 8
+    },
+    {
+      "utc": "2026-09-06T05:26:48Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step18-A-alpha0007-KE-1",
+      "wall": 8.1,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 8
+      }
+    },
+    {
+      "utc": "2026-09-06T05:26:51Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step18-B-alpha0-KE-1",
+      "particles": 8
+    },
+    {
+      "utc": "2026-09-06T05:27:13Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step18-B-alpha0-KE-1",
+      "wall": 7.6,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 8
+      }
+    },
+    {
+      "utc": "2026-09-06T05:27:16Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step18-A-alpha0007-KE-2",
+      "particles": 5
+    },
+    {
+      "utc": "2026-09-06T05:27:35Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step18-A-alpha0007-KE-2",
+      "wall": 6.2,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 5
+      }
+    },
+    {
+      "utc": "2026-09-06T05:27:38Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step18-B-alpha0-KE-2",
+      "particles": 5
+    },
+    {
+      "utc": "2026-09-06T05:27:57Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step18-B-alpha0-KE-2",
+      "wall": 6.3,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 5
+      }
+    },
+    {
+      "utc": "2026-09-06T05:27:58Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step18-A-alpha0007-AG-1",
+      "particles": 9
+    },
+    {
+      "utc": "2026-09-06T05:28:13Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step18-A-alpha0007-AG-1",
+      "wall": 5.8,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 9
+      }
+    },
+    {
+      "utc": "2026-09-06T05:28:14Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step18-B-alpha0-AG-1",
+      "particles": 9
+    },
+    {
+      "utc": "2026-09-06T05:28:30Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step18-B-alpha0-AG-1",
+      "wall": 5.8,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 9
+      }
+    },
+    {
+      "utc": "2026-09-06T05:28:30Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step18-A-alpha0007-AG-2",
+      "particles": 1
+    },
+    {
+      "utc": "2026-09-06T05:28:33Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step18-A-alpha0007-AG-2",
+      "wall": 0.8,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-06T05:28:34Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step18-B-alpha0-AG-2",
+      "particles": 1
+    },
+    {
+      "utc": "2026-09-06T05:28:37Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step18-B-alpha0-AG-2",
+      "wall": 0.8,
+      "replayMatched": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    }
+  ]
+}

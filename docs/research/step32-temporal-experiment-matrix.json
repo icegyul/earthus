@@ -1,0 +1,1396 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "expanded-holdout-and-temporal-forcing-step32",
+  "phase": "A",
+  "status": "PREREGISTRATION_LOCKED",
+  "createdAtUTC": "2026-09-06T23:18:24Z",
+  "baseCommit": "671a91cf",
+  "holdoutDerivationSha256": "ab3d06de6582802462637b5e307e4bee9d39bbdfdb9d2b461b232335ab357e95",
+  "derivationHash": "32049a15d99e3efad6ca3131ce7f25f92917c964b1eed811ac9aac2490587830",
+  "primaryQuestion": "Does the temporal representation of ocean forcing materially affect trajectory agreement? HYCOM_NATIVE_3H vs HYCOM_DAILY with everything else held constant.",
+  "secondPrimaryQuestion": "Can the candidate behaviour observed in STEP 29/30A be reproduced on an expanded holdout cohort not used in STEP 20-31?",
+  "conditions": {
+    "A": {
+      "name": "HYCOM_NATIVE_3H",
+      "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "gridDegrees": 0.08,
+      "cadence": "3-hourly instantaneous",
+      "depthMeters": 15.0,
+      "alpha": 0.002,
+      "wind": "NCEP-DOE R2 10 m 6 h",
+      "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind"
+    },
+    "B": {
+      "name": "HYCOM_DAILY",
+      "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "gridDegrees": 0.08,
+      "cadence": "daily mean",
+      "depthMeters": 15.0,
+      "alpha": 0.002,
+      "wind": "NCEP-DOE R2 10 m 6 h",
+      "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+      "dailyDerivation": {
+        "framesPerUtcDay": 8,
+        "frameHoursUTC": [
+          0,
+          3,
+          6,
+          9,
+          12,
+          15,
+          18,
+          21
+        ],
+        "method": "unweighted arithmetic mean of the eight frames (u and v separately)",
+        "labelTimeUTC": "00:00Z",
+        "weighting": false,
+        "temporalSmoothing": false,
+        "missingFrameReconstruction": false,
+        "missingFramePolicy": "WINDOW_BLOCKED",
+        "deterministic": true,
+        "stored": [
+          "source file SHA",
+          "source frame timestamps",
+          "source u/v SHA",
+          "daily derived SHA",
+          "derivation script SHA"
+        ],
+        "timeInterpolationInModel": "linear between daily labels exactly as the frozen runtime treats any time axis; no change to the runtime"
+      }
+    }
+  },
+  "onlyDifference": "ocean temporal representation",
+  "identicalBetweenConditions": [
+    "wind",
+    "alpha",
+    "depth",
+    "spatial grid",
+    "release positions",
+    "release times",
+    "drifter IDs",
+    "computation area",
+    "observation handling",
+    "RK4",
+    "integration timestep",
+    "output timestep",
+    "interpolation rules",
+    "land mask",
+    "status rules"
+  ],
+  "stokes": "NONE",
+  "temporalTest": {
+    "alpha": 0.002,
+    "depthMeters": 15.0,
+    "wind": "NCEP-DOE R2 10 m 6 h",
+    "alphaSearch": false,
+    "depthSearch": false,
+    "coefficientSearch": false,
+    "usesExpandedHoldoutForTuning": false,
+    "metrics": {
+      "primary": "M3",
+      "horizonsHours": [
+        24,
+        48,
+        72
+      ],
+      "haversineRadiusMeters": 6371008.8,
+      "delta": "E_HYCOM_DAILY - E_HYCOM_NATIVE_3H (km)",
+      "tieToleranceKm": 1e-06,
+      "pairing": "exact drifter_id and exact UTC timestamp",
+      "secondary": [
+        "M1",
+        "M2",
+        "M4",
+        "M5"
+      ],
+      "operationalWinner": false,
+      "descriptiveLabelRule": {
+        "scope": "overall stratum, 72 h",
+        "consistencyFraction": 0.6666666666666666,
+        "labels": {
+          "A": "NATIVE_3H_DESCRIPTIVELY_FAVORED if median delta > +tie AND (delta > tie count)/(non-tied) >= 2/3",
+          "B": "DAILY_DESCRIPTIVELY_FAVORED if median delta < -tie AND (delta < -tie count)/(non-tied) >= 2/3",
+          "C": "NO_CLEAR_TEMPORAL_DIFFERENCE otherwise"
+        },
+        "newThreshold": false
+      }
+    },
+    "windowRequirement": "all required HYCOM 3-hourly frames of every UTC day intersecting [t0 - 1 day, t0 + 72 h + 1 day]; one missing mandatory frame = WINDOW_BLOCKED; no interpolation, duplication, substitution or fill"
+  },
+  "windows": [
+    {
+      "windowId": "KE-X1",
+      "region": "KE",
+      "role": "NEW_HOLDOUT / TEMPORAL_TEST",
+      "t0": "2011-05-08T12:00:00Z",
+      "end": "2011-05-11T12:00:00Z",
+      "date": "2011-05-08",
+      "drifterCount": 8,
+      "drifterIds": [
+        "92958",
+        "98924",
+        "39974",
+        "39986",
+        "39994",
+        "39995",
+        "39996",
+        "39997"
+      ],
+      "eligibleCount": 9,
+      "releasePositions": [
+        {
+          "drifterId": "92958",
+          "lon": 138.5617,
+          "lat": 30.01396
+        },
+        {
+          "drifterId": "98924",
+          "lon": 154.56836,
+          "lat": 37.99475
+        },
+        {
+          "drifterId": "39974",
+          "lon": 147.5347,
+          "lat": 33.30464
+        },
+        {
+          "drifterId": "39986",
+          "lon": 149.63283,
+          "lat": 34.00282
+        },
+        {
+          "drifterId": "39994",
+          "lon": 157.87978,
+          "lat": 39.39952
+        },
+        {
+          "drifterId": "39995",
+          "lon": 151.24709,
+          "lat": 36.43347
+        },
+        {
+          "drifterId": "39996",
+          "lon": 153.05551,
+          "lat": 34.59928
+        },
+        {
+          "drifterId": "39997",
+          "lon": 155.9939,
+          "lat": 35.29139
+        }
+      ],
+      "oceanBox": {
+        "south": 28.01396,
+        "north": 40.0,
+        "west": 136.5617,
+        "east": 159.87978
+      },
+      "windBox": {
+        "south": 25.01396,
+        "north": 43.0,
+        "west": 133.5617,
+        "east": 162.87978
+      },
+      "requiredUtcDays": [
+        "2011-05-07",
+        "2011-05-08",
+        "2011-05-09",
+        "2011-05-10",
+        "2011-05-11",
+        "2011-05-12"
+      ],
+      "requiredFrameCount": 48,
+      "requiredFrames": [
+        "2011-05-07T00:00:00Z",
+        "2011-05-07T03:00:00Z",
+        "2011-05-07T06:00:00Z",
+        "2011-05-07T09:00:00Z",
+        "2011-05-07T12:00:00Z",
+        "2011-05-07T15:00:00Z",
+        "2011-05-07T18:00:00Z",
+        "2011-05-07T21:00:00Z",
+        "2011-05-08T00:00:00Z",
+        "2011-05-08T03:00:00Z",
+        "2011-05-08T06:00:00Z",
+        "2011-05-08T09:00:00Z",
+        "2011-05-08T12:00:00Z",
+        "2011-05-08T15:00:00Z",
+        "2011-05-08T18:00:00Z",
+        "2011-05-08T21:00:00Z",
+        "2011-05-09T00:00:00Z",
+        "2011-05-09T03:00:00Z",
+        "2011-05-09T06:00:00Z",
+        "2011-05-09T09:00:00Z",
+        "2011-05-09T12:00:00Z",
+        "2011-05-09T15:00:00Z",
+        "2011-05-09T18:00:00Z",
+        "2011-05-09T21:00:00Z",
+        "2011-05-10T00:00:00Z",
+        "2011-05-10T03:00:00Z",
+        "2011-05-10T06:00:00Z",
+        "2011-05-10T09:00:00Z",
+        "2011-05-10T12:00:00Z",
+        "2011-05-10T15:00:00Z",
+        "2011-05-10T18:00:00Z",
+        "2011-05-10T21:00:00Z",
+        "2011-05-11T00:00:00Z",
+        "2011-05-11T03:00:00Z",
+        "2011-05-11T06:00:00Z",
+        "2011-05-11T09:00:00Z",
+        "2011-05-11T12:00:00Z",
+        "2011-05-11T15:00:00Z",
+        "2011-05-11T18:00:00Z",
+        "2011-05-11T21:00:00Z",
+        "2011-05-12T00:00:00Z",
+        "2011-05-12T03:00:00Z",
+        "2011-05-12T06:00:00Z",
+        "2011-05-12T09:00:00Z",
+        "2011-05-12T12:00:00Z",
+        "2011-05-12T15:00:00Z",
+        "2011-05-12T18:00:00Z",
+        "2011-05-12T21:00:00Z"
+      ],
+      "acquisition": {
+        "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis (STEP 17 identity)",
+        "dataset": "GLBv0.08/expt_53.X",
+        "year": "2011",
+        "service": "NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/{year}",
+        "variables": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 28.01396,
+          "north": 40.0,
+          "west": 136.5617,
+          "east": 159.87978
+        },
+        "timeStart": "2011-05-07T00:00:00Z",
+        "timeEnd": "2011-05-12T21:00:00Z",
+        "frames": 48,
+        "chunking": "any; every registered frame must be present after concatenation",
+        "alternativeProduct": "NONE",
+        "phaseAExecuted": false
+      },
+      "windAcquisition": {
+        "product": "NCEP-DOE R2 10 m 6 h (STEP 17 identity)",
+        "box": {
+          "south": 25.01396,
+          "north": 43.0,
+          "west": 133.5617,
+          "east": 162.87978
+        },
+        "timeStart": "2011-05-08T00:00:00Z",
+        "timeEnd": "2011-05-12T00:00:00Z",
+        "phaseAExecuted": false
+      }
+    },
+    {
+      "windowId": "KE-X2",
+      "region": "KE",
+      "role": "NEW_HOLDOUT / TEMPORAL_TEST",
+      "t0": "2011-05-13T12:00:00Z",
+      "end": "2011-05-16T12:00:00Z",
+      "date": "2011-05-13",
+      "drifterCount": 1,
+      "drifterIds": [
+        "40006"
+      ],
+      "eligibleCount": 9,
+      "releasePositions": [
+        {
+          "drifterId": "40006",
+          "lon": 159.9926,
+          "lat": 38.5543
+        }
+      ],
+      "oceanBox": {
+        "south": 36.5543,
+        "north": 40.0,
+        "west": 157.9926,
+        "east": 161.9926
+      },
+      "windBox": {
+        "south": 33.5543,
+        "north": 43.0,
+        "west": 154.9926,
+        "east": 164.9926
+      },
+      "requiredUtcDays": [
+        "2011-05-12",
+        "2011-05-13",
+        "2011-05-14",
+        "2011-05-15",
+        "2011-05-16",
+        "2011-05-17"
+      ],
+      "requiredFrameCount": 48,
+      "requiredFrames": [
+        "2011-05-12T00:00:00Z",
+        "2011-05-12T03:00:00Z",
+        "2011-05-12T06:00:00Z",
+        "2011-05-12T09:00:00Z",
+        "2011-05-12T12:00:00Z",
+        "2011-05-12T15:00:00Z",
+        "2011-05-12T18:00:00Z",
+        "2011-05-12T21:00:00Z",
+        "2011-05-13T00:00:00Z",
+        "2011-05-13T03:00:00Z",
+        "2011-05-13T06:00:00Z",
+        "2011-05-13T09:00:00Z",
+        "2011-05-13T12:00:00Z",
+        "2011-05-13T15:00:00Z",
+        "2011-05-13T18:00:00Z",
+        "2011-05-13T21:00:00Z",
+        "2011-05-14T00:00:00Z",
+        "2011-05-14T03:00:00Z",
+        "2011-05-14T06:00:00Z",
+        "2011-05-14T09:00:00Z",
+        "2011-05-14T12:00:00Z",
+        "2011-05-14T15:00:00Z",
+        "2011-05-14T18:00:00Z",
+        "2011-05-14T21:00:00Z",
+        "2011-05-15T00:00:00Z",
+        "2011-05-15T03:00:00Z",
+        "2011-05-15T06:00:00Z",
+        "2011-05-15T09:00:00Z",
+        "2011-05-15T12:00:00Z",
+        "2011-05-15T15:00:00Z",
+        "2011-05-15T18:00:00Z",
+        "2011-05-15T21:00:00Z",
+        "2011-05-16T00:00:00Z",
+        "2011-05-16T03:00:00Z",
+        "2011-05-16T06:00:00Z",
+        "2011-05-16T09:00:00Z",
+        "2011-05-16T12:00:00Z",
+        "2011-05-16T15:00:00Z",
+        "2011-05-16T18:00:00Z",
+        "2011-05-16T21:00:00Z",
+        "2011-05-17T00:00:00Z",
+        "2011-05-17T03:00:00Z",
+        "2011-05-17T06:00:00Z",
+        "2011-05-17T09:00:00Z",
+        "2011-05-17T12:00:00Z",
+        "2011-05-17T15:00:00Z",
+        "2011-05-17T18:00:00Z",
+        "2011-05-17T21:00:00Z"
+      ],
+      "acquisition": {
+        "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis (STEP 17 identity)",
+        "dataset": "GLBv0.08/expt_53.X",
+        "year": "2011",
+        "service": "NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/{year}",
+        "variables": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 36.5543,
+          "north": 40.0,
+          "west": 157.9926,
+          "east": 161.9926
+        },
+        "timeStart": "2011-05-12T00:00:00Z",
+        "timeEnd": "2011-05-17T21:00:00Z",
+        "frames": 48,
+        "chunking": "any; every registered frame must be present after concatenation",
+        "alternativeProduct": "NONE",
+        "phaseAExecuted": false
+      },
+      "windAcquisition": {
+        "product": "NCEP-DOE R2 10 m 6 h (STEP 17 identity)",
+        "box": {
+          "south": 33.5543,
+          "north": 43.0,
+          "west": 154.9926,
+          "east": 164.9926
+        },
+        "timeStart": "2011-05-13T00:00:00Z",
+        "timeEnd": "2011-05-17T00:00:00Z",
+        "phaseAExecuted": false
+      }
+    },
+    {
+      "windowId": "KE-X3",
+      "region": "KE",
+      "role": "NEW_HOLDOUT / TEMPORAL_TEST",
+      "t0": "2011-05-28T12:00:00Z",
+      "end": "2011-05-31T12:00:00Z",
+      "date": "2011-05-28",
+      "drifterCount": 1,
+      "drifterIds": [
+        "47591"
+      ],
+      "eligibleCount": 8,
+      "releasePositions": [
+        {
+          "drifterId": "47591",
+          "lon": 150.77896,
+          "lat": 30.01893
+        }
+      ],
+      "oceanBox": {
+        "south": 28.01893,
+        "north": 32.01893,
+        "west": 148.77896,
+        "east": 152.77896
+      },
+      "windBox": {
+        "south": 25.01893,
+        "north": 35.01893,
+        "west": 145.77896,
+        "east": 155.77896
+      },
+      "requiredUtcDays": [
+        "2011-05-27",
+        "2011-05-28",
+        "2011-05-29",
+        "2011-05-30",
+        "2011-05-31",
+        "2011-06-01"
+      ],
+      "requiredFrameCount": 48,
+      "requiredFrames": [
+        "2011-05-27T00:00:00Z",
+        "2011-05-27T03:00:00Z",
+        "2011-05-27T06:00:00Z",
+        "2011-05-27T09:00:00Z",
+        "2011-05-27T12:00:00Z",
+        "2011-05-27T15:00:00Z",
+        "2011-05-27T18:00:00Z",
+        "2011-05-27T21:00:00Z",
+        "2011-05-28T00:00:00Z",
+        "2011-05-28T03:00:00Z",
+        "2011-05-28T06:00:00Z",
+        "2011-05-28T09:00:00Z",
+        "2011-05-28T12:00:00Z",
+        "2011-05-28T15:00:00Z",
+        "2011-05-28T18:00:00Z",
+        "2011-05-28T21:00:00Z",
+        "2011-05-29T00:00:00Z",
+        "2011-05-29T03:00:00Z",
+        "2011-05-29T06:00:00Z",
+        "2011-05-29T09:00:00Z",
+        "2011-05-29T12:00:00Z",
+        "2011-05-29T15:00:00Z",
+        "2011-05-29T18:00:00Z",
+        "2011-05-29T21:00:00Z",
+        "2011-05-30T00:00:00Z",
+        "2011-05-30T03:00:00Z",
+        "2011-05-30T06:00:00Z",
+        "2011-05-30T09:00:00Z",
+        "2011-05-30T12:00:00Z",
+        "2011-05-30T15:00:00Z",
+        "2011-05-30T18:00:00Z",
+        "2011-05-30T21:00:00Z",
+        "2011-05-31T00:00:00Z",
+        "2011-05-31T03:00:00Z",
+        "2011-05-31T06:00:00Z",
+        "2011-05-31T09:00:00Z",
+        "2011-05-31T12:00:00Z",
+        "2011-05-31T15:00:00Z",
+        "2011-05-31T18:00:00Z",
+        "2011-05-31T21:00:00Z",
+        "2011-06-01T00:00:00Z",
+        "2011-06-01T03:00:00Z",
+        "2011-06-01T06:00:00Z",
+        "2011-06-01T09:00:00Z",
+        "2011-06-01T12:00:00Z",
+        "2011-06-01T15:00:00Z",
+        "2011-06-01T18:00:00Z",
+        "2011-06-01T21:00:00Z"
+      ],
+      "acquisition": {
+        "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis (STEP 17 identity)",
+        "dataset": "GLBv0.08/expt_53.X",
+        "year": "2011",
+        "service": "NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/{year}",
+        "variables": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 28.01893,
+          "north": 32.01893,
+          "west": 148.77896,
+          "east": 152.77896
+        },
+        "timeStart": "2011-05-27T00:00:00Z",
+        "timeEnd": "2011-06-01T21:00:00Z",
+        "frames": 48,
+        "chunking": "any; every registered frame must be present after concatenation",
+        "alternativeProduct": "NONE",
+        "phaseAExecuted": false
+      },
+      "windAcquisition": {
+        "product": "NCEP-DOE R2 10 m 6 h (STEP 17 identity)",
+        "box": {
+          "south": 25.01893,
+          "north": 35.01893,
+          "west": 145.77896,
+          "east": 155.77896
+        },
+        "timeStart": "2011-05-28T00:00:00Z",
+        "timeEnd": "2011-06-01T00:00:00Z",
+        "phaseAExecuted": false
+      }
+    },
+    {
+      "windowId": "KE-X4",
+      "region": "KE",
+      "role": "NEW_HOLDOUT / TEMPORAL_TEST",
+      "t0": "2011-06-10T12:00:00Z",
+      "end": "2011-06-13T12:00:00Z",
+      "date": "2011-06-10",
+      "drifterCount": 1,
+      "drifterIds": [
+        "36474"
+      ],
+      "eligibleCount": 8,
+      "releasePositions": [
+        {
+          "drifterId": "36474",
+          "lon": 143.88063,
+          "lat": 37.99809
+        }
+      ],
+      "oceanBox": {
+        "south": 35.99809,
+        "north": 39.99809,
+        "west": 141.88063,
+        "east": 145.88063
+      },
+      "windBox": {
+        "south": 32.99809,
+        "north": 42.99809,
+        "west": 138.88063,
+        "east": 148.88063
+      },
+      "requiredUtcDays": [
+        "2011-06-09",
+        "2011-06-10",
+        "2011-06-11",
+        "2011-06-12",
+        "2011-06-13",
+        "2011-06-14"
+      ],
+      "requiredFrameCount": 48,
+      "requiredFrames": [
+        "2011-06-09T00:00:00Z",
+        "2011-06-09T03:00:00Z",
+        "2011-06-09T06:00:00Z",
+        "2011-06-09T09:00:00Z",
+        "2011-06-09T12:00:00Z",
+        "2011-06-09T15:00:00Z",
+        "2011-06-09T18:00:00Z",
+        "2011-06-09T21:00:00Z",
+        "2011-06-10T00:00:00Z",
+        "2011-06-10T03:00:00Z",
+        "2011-06-10T06:00:00Z",
+        "2011-06-10T09:00:00Z",
+        "2011-06-10T12:00:00Z",
+        "2011-06-10T15:00:00Z",
+        "2011-06-10T18:00:00Z",
+        "2011-06-10T21:00:00Z",
+        "2011-06-11T00:00:00Z",
+        "2011-06-11T03:00:00Z",
+        "2011-06-11T06:00:00Z",
+        "2011-06-11T09:00:00Z",
+        "2011-06-11T12:00:00Z",
+        "2011-06-11T15:00:00Z",
+        "2011-06-11T18:00:00Z",
+        "2011-06-11T21:00:00Z",
+        "2011-06-12T00:00:00Z",
+        "2011-06-12T03:00:00Z",
+        "2011-06-12T06:00:00Z",
+        "2011-06-12T09:00:00Z",
+        "2011-06-12T12:00:00Z",
+        "2011-06-12T15:00:00Z",
+        "2011-06-12T18:00:00Z",
+        "2011-06-12T21:00:00Z",
+        "2011-06-13T00:00:00Z",
+        "2011-06-13T03:00:00Z",
+        "2011-06-13T06:00:00Z",
+        "2011-06-13T09:00:00Z",
+        "2011-06-13T12:00:00Z",
+        "2011-06-13T15:00:00Z",
+        "2011-06-13T18:00:00Z",
+        "2011-06-13T21:00:00Z",
+        "2011-06-14T00:00:00Z",
+        "2011-06-14T03:00:00Z",
+        "2011-06-14T06:00:00Z",
+        "2011-06-14T09:00:00Z",
+        "2011-06-14T12:00:00Z",
+        "2011-06-14T15:00:00Z",
+        "2011-06-14T18:00:00Z",
+        "2011-06-14T21:00:00Z"
+      ],
+      "acquisition": {
+        "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis (STEP 17 identity)",
+        "dataset": "GLBv0.08/expt_53.X",
+        "year": "2011",
+        "service": "NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/{year}",
+        "variables": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 35.99809,
+          "north": 39.99809,
+          "west": 141.88063,
+          "east": 145.88063
+        },
+        "timeStart": "2011-06-09T00:00:00Z",
+        "timeEnd": "2011-06-14T21:00:00Z",
+        "frames": 48,
+        "chunking": "any; every registered frame must be present after concatenation",
+        "alternativeProduct": "NONE",
+        "phaseAExecuted": false
+      },
+      "windAcquisition": {
+        "product": "NCEP-DOE R2 10 m 6 h (STEP 17 identity)",
+        "box": {
+          "south": 32.99809,
+          "north": 42.99809,
+          "west": 138.88063,
+          "east": 148.88063
+        },
+        "timeStart": "2011-06-10T00:00:00Z",
+        "timeEnd": "2011-06-14T00:00:00Z",
+        "phaseAExecuted": false
+      }
+    },
+    {
+      "windowId": "KE-X5",
+      "region": "KE",
+      "role": "NEW_HOLDOUT / TEMPORAL_TEST",
+      "t0": "2011-06-13T12:00:00Z",
+      "end": "2011-06-16T12:00:00Z",
+      "date": "2011-06-13",
+      "drifterCount": 11,
+      "drifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "35266",
+        "35487",
+        "36037",
+        "36473",
+        "36476",
+        "39153",
+        "39160",
+        "40082"
+      ],
+      "eligibleCount": 19,
+      "releasePositions": [
+        {
+          "drifterId": "34469",
+          "lon": 142.67068,
+          "lat": 37.59955
+        },
+        {
+          "drifterId": "34471",
+          "lon": 142.96346,
+          "lat": 37.35139
+        },
+        {
+          "drifterId": "34702",
+          "lon": 142.61664,
+          "lat": 37.61769
+        },
+        {
+          "drifterId": "35266",
+          "lon": 142.66394,
+          "lat": 37.62028
+        },
+        {
+          "drifterId": "35487",
+          "lon": 142.87291,
+          "lat": 37.99011
+        },
+        {
+          "drifterId": "36037",
+          "lon": 145.58621,
+          "lat": 35.23485
+        },
+        {
+          "drifterId": "36473",
+          "lon": 146.63268,
+          "lat": 34.71712
+        },
+        {
+          "drifterId": "36476",
+          "lon": 144.44843,
+          "lat": 35.51011
+        },
+        {
+          "drifterId": "39153",
+          "lon": 150.09525,
+          "lat": 37.58957
+        },
+        {
+          "drifterId": "39160",
+          "lon": 151.89034,
+          "lat": 38.6259
+        },
+        {
+          "drifterId": "40082",
+          "lon": 155.1892,
+          "lat": 39.56813
+        }
+      ],
+      "oceanBox": {
+        "south": 32.71712,
+        "north": 40.0,
+        "west": 140.61664,
+        "east": 157.1892
+      },
+      "windBox": {
+        "south": 29.71712,
+        "north": 43.0,
+        "west": 137.61664,
+        "east": 160.1892
+      },
+      "requiredUtcDays": [
+        "2011-06-12",
+        "2011-06-13",
+        "2011-06-14",
+        "2011-06-15",
+        "2011-06-16",
+        "2011-06-17"
+      ],
+      "requiredFrameCount": 48,
+      "requiredFrames": [
+        "2011-06-12T00:00:00Z",
+        "2011-06-12T03:00:00Z",
+        "2011-06-12T06:00:00Z",
+        "2011-06-12T09:00:00Z",
+        "2011-06-12T12:00:00Z",
+        "2011-06-12T15:00:00Z",
+        "2011-06-12T18:00:00Z",
+        "2011-06-12T21:00:00Z",
+        "2011-06-13T00:00:00Z",
+        "2011-06-13T03:00:00Z",
+        "2011-06-13T06:00:00Z",
+        "2011-06-13T09:00:00Z",
+        "2011-06-13T12:00:00Z",
+        "2011-06-13T15:00:00Z",
+        "2011-06-13T18:00:00Z",
+        "2011-06-13T21:00:00Z",
+        "2011-06-14T00:00:00Z",
+        "2011-06-14T03:00:00Z",
+        "2011-06-14T06:00:00Z",
+        "2011-06-14T09:00:00Z",
+        "2011-06-14T12:00:00Z",
+        "2011-06-14T15:00:00Z",
+        "2011-06-14T18:00:00Z",
+        "2011-06-14T21:00:00Z",
+        "2011-06-15T00:00:00Z",
+        "2011-06-15T03:00:00Z",
+        "2011-06-15T06:00:00Z",
+        "2011-06-15T09:00:00Z",
+        "2011-06-15T12:00:00Z",
+        "2011-06-15T15:00:00Z",
+        "2011-06-15T18:00:00Z",
+        "2011-06-15T21:00:00Z",
+        "2011-06-16T00:00:00Z",
+        "2011-06-16T03:00:00Z",
+        "2011-06-16T06:00:00Z",
+        "2011-06-16T09:00:00Z",
+        "2011-06-16T12:00:00Z",
+        "2011-06-16T15:00:00Z",
+        "2011-06-16T18:00:00Z",
+        "2011-06-16T21:00:00Z",
+        "2011-06-17T00:00:00Z",
+        "2011-06-17T03:00:00Z",
+        "2011-06-17T06:00:00Z",
+        "2011-06-17T09:00:00Z",
+        "2011-06-17T12:00:00Z",
+        "2011-06-17T15:00:00Z",
+        "2011-06-17T18:00:00Z",
+        "2011-06-17T21:00:00Z"
+      ],
+      "acquisition": {
+        "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis (STEP 17 identity)",
+        "dataset": "GLBv0.08/expt_53.X",
+        "year": "2011",
+        "service": "NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/{year}",
+        "variables": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 32.71712,
+          "north": 40.0,
+          "west": 140.61664,
+          "east": 157.1892
+        },
+        "timeStart": "2011-06-12T00:00:00Z",
+        "timeEnd": "2011-06-17T21:00:00Z",
+        "frames": 48,
+        "chunking": "any; every registered frame must be present after concatenation",
+        "alternativeProduct": "NONE",
+        "phaseAExecuted": false
+      },
+      "windAcquisition": {
+        "product": "NCEP-DOE R2 10 m 6 h (STEP 17 identity)",
+        "box": {
+          "south": 29.71712,
+          "north": 43.0,
+          "west": 137.61664,
+          "east": 160.1892
+        },
+        "timeStart": "2011-06-13T00:00:00Z",
+        "timeEnd": "2011-06-17T00:00:00Z",
+        "phaseAExecuted": false
+      }
+    },
+    {
+      "windowId": "KE-X6",
+      "region": "KE",
+      "role": "NEW_HOLDOUT / TEMPORAL_TEST",
+      "t0": "2011-06-16T12:00:00Z",
+      "end": "2011-06-19T12:00:00Z",
+      "date": "2011-06-16",
+      "drifterCount": 2,
+      "drifterIds": [
+        "34711",
+        "35490"
+      ],
+      "eligibleCount": 15,
+      "releasePositions": [
+        {
+          "drifterId": "34711",
+          "lon": 148.38908,
+          "lat": 35.23586
+        },
+        {
+          "drifterId": "35490",
+          "lon": 142.15073,
+          "lat": 36.83588
+        }
+      ],
+      "oceanBox": {
+        "south": 33.23586,
+        "north": 38.83588,
+        "west": 140.15073,
+        "east": 150.38908
+      },
+      "windBox": {
+        "south": 30.235860000000002,
+        "north": 41.83588,
+        "west": 137.15073,
+        "east": 153.38908
+      },
+      "requiredUtcDays": [
+        "2011-06-15",
+        "2011-06-16",
+        "2011-06-17",
+        "2011-06-18",
+        "2011-06-19",
+        "2011-06-20"
+      ],
+      "requiredFrameCount": 48,
+      "requiredFrames": [
+        "2011-06-15T00:00:00Z",
+        "2011-06-15T03:00:00Z",
+        "2011-06-15T06:00:00Z",
+        "2011-06-15T09:00:00Z",
+        "2011-06-15T12:00:00Z",
+        "2011-06-15T15:00:00Z",
+        "2011-06-15T18:00:00Z",
+        "2011-06-15T21:00:00Z",
+        "2011-06-16T00:00:00Z",
+        "2011-06-16T03:00:00Z",
+        "2011-06-16T06:00:00Z",
+        "2011-06-16T09:00:00Z",
+        "2011-06-16T12:00:00Z",
+        "2011-06-16T15:00:00Z",
+        "2011-06-16T18:00:00Z",
+        "2011-06-16T21:00:00Z",
+        "2011-06-17T00:00:00Z",
+        "2011-06-17T03:00:00Z",
+        "2011-06-17T06:00:00Z",
+        "2011-06-17T09:00:00Z",
+        "2011-06-17T12:00:00Z",
+        "2011-06-17T15:00:00Z",
+        "2011-06-17T18:00:00Z",
+        "2011-06-17T21:00:00Z",
+        "2011-06-18T00:00:00Z",
+        "2011-06-18T03:00:00Z",
+        "2011-06-18T06:00:00Z",
+        "2011-06-18T09:00:00Z",
+        "2011-06-18T12:00:00Z",
+        "2011-06-18T15:00:00Z",
+        "2011-06-18T18:00:00Z",
+        "2011-06-18T21:00:00Z",
+        "2011-06-19T00:00:00Z",
+        "2011-06-19T03:00:00Z",
+        "2011-06-19T06:00:00Z",
+        "2011-06-19T09:00:00Z",
+        "2011-06-19T12:00:00Z",
+        "2011-06-19T15:00:00Z",
+        "2011-06-19T18:00:00Z",
+        "2011-06-19T21:00:00Z",
+        "2011-06-20T00:00:00Z",
+        "2011-06-20T03:00:00Z",
+        "2011-06-20T06:00:00Z",
+        "2011-06-20T09:00:00Z",
+        "2011-06-20T12:00:00Z",
+        "2011-06-20T15:00:00Z",
+        "2011-06-20T18:00:00Z",
+        "2011-06-20T21:00:00Z"
+      ],
+      "acquisition": {
+        "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis (STEP 17 identity)",
+        "dataset": "GLBv0.08/expt_53.X",
+        "year": "2011",
+        "service": "NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/{year}",
+        "variables": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 33.23586,
+          "north": 38.83588,
+          "west": 140.15073,
+          "east": 150.38908
+        },
+        "timeStart": "2011-06-15T00:00:00Z",
+        "timeEnd": "2011-06-20T21:00:00Z",
+        "frames": 48,
+        "chunking": "any; every registered frame must be present after concatenation",
+        "alternativeProduct": "NONE",
+        "phaseAExecuted": false
+      },
+      "windAcquisition": {
+        "product": "NCEP-DOE R2 10 m 6 h (STEP 17 identity)",
+        "box": {
+          "south": 30.235860000000002,
+          "north": 41.83588,
+          "west": 137.15073,
+          "east": 153.38908
+        },
+        "timeStart": "2011-06-16T00:00:00Z",
+        "timeEnd": "2011-06-20T00:00:00Z",
+        "phaseAExecuted": false
+      }
+    },
+    {
+      "windowId": "KE-X7",
+      "region": "KE",
+      "role": "NEW_HOLDOUT / TEMPORAL_TEST",
+      "t0": "2011-06-19T12:00:00Z",
+      "end": "2011-06-22T12:00:00Z",
+      "date": "2011-06-19",
+      "drifterCount": 7,
+      "drifterIds": [
+        "34740",
+        "35221",
+        "35223",
+        "35228",
+        "35262",
+        "35263",
+        "72569"
+      ],
+      "eligibleCount": 23,
+      "releasePositions": [
+        {
+          "drifterId": "34740",
+          "lon": 143.43434,
+          "lat": 36.55358
+        },
+        {
+          "drifterId": "35221",
+          "lon": 142.07632,
+          "lat": 36.47743
+        },
+        {
+          "drifterId": "35223",
+          "lon": 143.15982,
+          "lat": 36.62803
+        },
+        {
+          "drifterId": "35228",
+          "lon": 142.15591,
+          "lat": 36.96085
+        },
+        {
+          "drifterId": "35262",
+          "lon": 142.36057,
+          "lat": 36.64845
+        },
+        {
+          "drifterId": "35263",
+          "lon": 143.46751,
+          "lat": 36.65776
+        },
+        {
+          "drifterId": "72569",
+          "lon": 137.65227,
+          "lat": 39.89828
+        }
+      ],
+      "oceanBox": {
+        "south": 34.47743,
+        "north": 40.0,
+        "west": 135.65227,
+        "east": 145.46751
+      },
+      "windBox": {
+        "south": 31.47743,
+        "north": 43.0,
+        "west": 132.65227,
+        "east": 148.46751
+      },
+      "requiredUtcDays": [
+        "2011-06-18",
+        "2011-06-19",
+        "2011-06-20",
+        "2011-06-21",
+        "2011-06-22",
+        "2011-06-23"
+      ],
+      "requiredFrameCount": 48,
+      "requiredFrames": [
+        "2011-06-18T00:00:00Z",
+        "2011-06-18T03:00:00Z",
+        "2011-06-18T06:00:00Z",
+        "2011-06-18T09:00:00Z",
+        "2011-06-18T12:00:00Z",
+        "2011-06-18T15:00:00Z",
+        "2011-06-18T18:00:00Z",
+        "2011-06-18T21:00:00Z",
+        "2011-06-19T00:00:00Z",
+        "2011-06-19T03:00:00Z",
+        "2011-06-19T06:00:00Z",
+        "2011-06-19T09:00:00Z",
+        "2011-06-19T12:00:00Z",
+        "2011-06-19T15:00:00Z",
+        "2011-06-19T18:00:00Z",
+        "2011-06-19T21:00:00Z",
+        "2011-06-20T00:00:00Z",
+        "2011-06-20T03:00:00Z",
+        "2011-06-20T06:00:00Z",
+        "2011-06-20T09:00:00Z",
+        "2011-06-20T12:00:00Z",
+        "2011-06-20T15:00:00Z",
+        "2011-06-20T18:00:00Z",
+        "2011-06-20T21:00:00Z",
+        "2011-06-21T00:00:00Z",
+        "2011-06-21T03:00:00Z",
+        "2011-06-21T06:00:00Z",
+        "2011-06-21T09:00:00Z",
+        "2011-06-21T12:00:00Z",
+        "2011-06-21T15:00:00Z",
+        "2011-06-21T18:00:00Z",
+        "2011-06-21T21:00:00Z",
+        "2011-06-22T00:00:00Z",
+        "2011-06-22T03:00:00Z",
+        "2011-06-22T06:00:00Z",
+        "2011-06-22T09:00:00Z",
+        "2011-06-22T12:00:00Z",
+        "2011-06-22T15:00:00Z",
+        "2011-06-22T18:00:00Z",
+        "2011-06-22T21:00:00Z",
+        "2011-06-23T00:00:00Z",
+        "2011-06-23T03:00:00Z",
+        "2011-06-23T06:00:00Z",
+        "2011-06-23T09:00:00Z",
+        "2011-06-23T12:00:00Z",
+        "2011-06-23T15:00:00Z",
+        "2011-06-23T18:00:00Z",
+        "2011-06-23T21:00:00Z"
+      ],
+      "acquisition": {
+        "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis (STEP 17 identity)",
+        "dataset": "GLBv0.08/expt_53.X",
+        "year": "2011",
+        "service": "NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/{year}",
+        "variables": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 34.47743,
+          "north": 40.0,
+          "west": 135.65227,
+          "east": 145.46751
+        },
+        "timeStart": "2011-06-18T00:00:00Z",
+        "timeEnd": "2011-06-23T21:00:00Z",
+        "frames": 48,
+        "chunking": "any; every registered frame must be present after concatenation",
+        "alternativeProduct": "NONE",
+        "phaseAExecuted": false
+      },
+      "windAcquisition": {
+        "product": "NCEP-DOE R2 10 m 6 h (STEP 17 identity)",
+        "box": {
+          "south": 31.47743,
+          "north": 43.0,
+          "west": 132.65227,
+          "east": 148.46751
+        },
+        "timeStart": "2011-06-19T00:00:00Z",
+        "timeEnd": "2011-06-23T00:00:00Z",
+        "phaseAExecuted": false
+      }
+    },
+    {
+      "windowId": "KE-X8",
+      "region": "KE",
+      "role": "NEW_HOLDOUT / TEMPORAL_TEST",
+      "t0": "2011-06-22T12:00:00Z",
+      "end": "2011-06-25T12:00:00Z",
+      "date": "2011-06-22",
+      "drifterCount": 1,
+      "drifterIds": [
+        "34741"
+      ],
+      "eligibleCount": 23,
+      "releasePositions": [
+        {
+          "drifterId": "34741",
+          "lon": 145.49815,
+          "lat": 35.66267
+        }
+      ],
+      "oceanBox": {
+        "south": 33.66267,
+        "north": 37.66267,
+        "west": 143.49815,
+        "east": 147.49815
+      },
+      "windBox": {
+        "south": 30.66267,
+        "north": 40.66267,
+        "west": 140.49815,
+        "east": 150.49815
+      },
+      "requiredUtcDays": [
+        "2011-06-21",
+        "2011-06-22",
+        "2011-06-23",
+        "2011-06-24",
+        "2011-06-25",
+        "2011-06-26"
+      ],
+      "requiredFrameCount": 48,
+      "requiredFrames": [
+        "2011-06-21T00:00:00Z",
+        "2011-06-21T03:00:00Z",
+        "2011-06-21T06:00:00Z",
+        "2011-06-21T09:00:00Z",
+        "2011-06-21T12:00:00Z",
+        "2011-06-21T15:00:00Z",
+        "2011-06-21T18:00:00Z",
+        "2011-06-21T21:00:00Z",
+        "2011-06-22T00:00:00Z",
+        "2011-06-22T03:00:00Z",
+        "2011-06-22T06:00:00Z",
+        "2011-06-22T09:00:00Z",
+        "2011-06-22T12:00:00Z",
+        "2011-06-22T15:00:00Z",
+        "2011-06-22T18:00:00Z",
+        "2011-06-22T21:00:00Z",
+        "2011-06-23T00:00:00Z",
+        "2011-06-23T03:00:00Z",
+        "2011-06-23T06:00:00Z",
+        "2011-06-23T09:00:00Z",
+        "2011-06-23T12:00:00Z",
+        "2011-06-23T15:00:00Z",
+        "2011-06-23T18:00:00Z",
+        "2011-06-23T21:00:00Z",
+        "2011-06-24T00:00:00Z",
+        "2011-06-24T03:00:00Z",
+        "2011-06-24T06:00:00Z",
+        "2011-06-24T09:00:00Z",
+        "2011-06-24T12:00:00Z",
+        "2011-06-24T15:00:00Z",
+        "2011-06-24T18:00:00Z",
+        "2011-06-24T21:00:00Z",
+        "2011-06-25T00:00:00Z",
+        "2011-06-25T03:00:00Z",
+        "2011-06-25T06:00:00Z",
+        "2011-06-25T09:00:00Z",
+        "2011-06-25T12:00:00Z",
+        "2011-06-25T15:00:00Z",
+        "2011-06-25T18:00:00Z",
+        "2011-06-25T21:00:00Z",
+        "2011-06-26T00:00:00Z",
+        "2011-06-26T03:00:00Z",
+        "2011-06-26T06:00:00Z",
+        "2011-06-26T09:00:00Z",
+        "2011-06-26T12:00:00Z",
+        "2011-06-26T15:00:00Z",
+        "2011-06-26T18:00:00Z",
+        "2011-06-26T21:00:00Z"
+      ],
+      "acquisition": {
+        "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis (STEP 17 identity)",
+        "dataset": "GLBv0.08/expt_53.X",
+        "year": "2011",
+        "service": "NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/{year}",
+        "variables": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 33.66267,
+          "north": 37.66267,
+          "west": 143.49815,
+          "east": 147.49815
+        },
+        "timeStart": "2011-06-21T00:00:00Z",
+        "timeEnd": "2011-06-26T21:00:00Z",
+        "frames": 48,
+        "chunking": "any; every registered frame must be present after concatenation",
+        "alternativeProduct": "NONE",
+        "phaseAExecuted": false
+      },
+      "windAcquisition": {
+        "product": "NCEP-DOE R2 10 m 6 h (STEP 17 identity)",
+        "box": {
+          "south": 30.66267,
+          "north": 40.66267,
+          "west": 140.49815,
+          "east": 150.49815
+        },
+        "timeStart": "2011-06-22T00:00:00Z",
+        "timeEnd": "2011-06-26T00:00:00Z",
+        "phaseAExecuted": false
+      }
+    }
+  ],
+  "windowCount": 8,
+  "drifterTotal": 32,
+  "AG": "AG_EXPANDED_HOLDOUT_UNAVAILABLE",
+  "regionsRepresented": [
+    "KE"
+  ],
+  "dataQualityRequirements": [
+    "product identity",
+    "file integrity",
+    "coordinate identity",
+    "time axis",
+    "variable identity",
+    "spatial coverage",
+    "temporal coverage",
+    "missing frames",
+    "units",
+    "release stencil",
+    "reproducibility"
+  ],
+  "futureValidation": {
+    "candidate": {
+      "ocean": "GLORYS12V1 GLOBAL_MULTIYEAR_PHY_001_030 cmems_mod_glo_phy_my_0.083deg_P1D-m",
+      "depthMeters": 15.81007,
+      "stokes": "WW3 GLOB-30M CFSR surface Stokes drift",
+      "stokesCoefficient": 1.0,
+      "wind": "NCEP-DOE R2 10 m 6 h",
+      "alpha": 0.002,
+      "status": "CANDIDATE_ONLY"
+    },
+    "baseline": {
+      "ocean": "HYCOM GOFS 3.1 GLBv0.08 15.000 m 3-hourly",
+      "depthMeters": 15.0,
+      "wind": "NCEP-DOE R2 10 m 6 h",
+      "alpha": 0.002,
+      "status": "FROZEN_REFERENCE_BASELINE"
+    },
+    "metrics": {
+      "primary": "M3",
+      "horizonsHours": [
+        24,
+        48,
+        72
+      ],
+      "haversineRadiusMeters": 6371008.8,
+      "delta": "E_candidate - E_HYCOM (km)",
+      "tieToleranceKm": 1e-06,
+      "pairing": "exact drifter_id and exact UTC timestamp",
+      "report": [
+        "median",
+        "mean",
+        "min",
+        "max",
+        "W/L/T",
+        "n",
+        "NA"
+      ],
+      "strata": [
+        "CALIBRATION",
+        "NEW_HOLDOUT"
+      ],
+      "oldHoldoutIncluded": false,
+      "labelRule": "same locked rule as STEP 30A (overall 72 h median sign + 2/3 consistency)"
+    },
+    "additionalDataRequirement": {
+      "GLORYS12V1": "daily, native 15.810070 m, for the new windows (2011); authorized Copernicus access only; no substitute",
+      "WW3_GLOB-30M_CFSR": "surface Stokes drift for the new windows; same DATA-06 product identity; no substitute",
+      "NCEP-R2": "10 m 6 h for the new windows",
+      "phaseAExecuted": false,
+      "note": "registered as requirement only; a Phase B acquisition preregistration follows the temporal-test acquisition"
+    },
+    "parameterSelectionFromNewHoldout": false,
+    "modelSelectionInStep32": false,
+    "order": "only after the temporal-test source and the new holdout are frozen"
+  },
+  "independence": "Drifters sharing a window, forcing period and release time are clustered; they are not treated as independent samples. Window-level and region-level structure is reported alongside pooled counts; no independence assumption is made; pooled counts are descriptive only.",
+  "windowReplacement": {
+    "performanceBased": false,
+    "coverageFailureRule": "preregistered data-availability rule only (WINDOW_BLOCKED)",
+    "afterFreeze": "a failing model run never justifies replacing a window"
+  },
+  "outliers": {
+    "removal": false,
+    "trimming": false,
+    "winsorization": false,
+    "weighting": false,
+    "postHocExclusion": false
+  },
+  "phaseBOrder": [
+    "acquire HYCOM source forcing for the temporal-test windows",
+    "quality-gate source forcing",
+    "build HYCOM daily fields",
+    "run HYCOM_NATIVE_3H vs HYCOM_DAILY",
+    "independently verify replay",
+    "execute candidate-vs-baseline validation on the new holdout only after the temporal-test source and the new holdout are frozen",
+    "evaluate independently"
+  ],
+  "phaseAExecuted": {
+    "acquisition": false,
+    "dailyForcing": false,
+    "trajectories": false,
+    "M3": false,
+    "modelComparison": false,
+    "candidateChoice": false,
+    "performanceInspection": false
+  },
+  "holdoutLock": "the expanded holdout cohort in step32-holdout-derivation.json is locked at this commit, before any model result exists for these drifters"
+}

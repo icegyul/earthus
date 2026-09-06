@@ -1,0 +1,63 @@
+{
+  "ruleId": "expanded-holdout-and-temporal-forcing-step32",
+  "phase": "A",
+  "status": "PREREGISTRATION_LOCKED",
+  "temporalTest": "HYCOM_NATIVE_3H vs HYCOM_DAILY",
+  "alpha": 0.002,
+  "depthMetersTemporal": 15.0,
+  "depthMetersCandidate": 15.81007,
+  "wind": "NCEP-R2",
+  "dailyDerivation": "8 x 3 h frames per UTC day",
+  "newHoldout": {
+    "minimumDrifters": 20,
+    "minimumWindows": 6,
+    "targetWindows": 8,
+    "drifters": 32,
+    "windows": 8,
+    "regions": [
+      "KE"
+    ],
+    "AG": "AG_EXPANDED_HOLDOUT_UNAVAILABLE",
+    "windowIds": [
+      "KE-X1",
+      "KE-X2",
+      "KE-X3",
+      "KE-X4",
+      "KE-X5",
+      "KE-X6",
+      "KE-X7",
+      "KE-X8"
+    ],
+    "status": "HOLDOUT_MET",
+    "derivationHash": "32049a15d99e3efad6ca3131ce7f25f92917c964b1eed811ac9aac2490587830"
+  },
+  "currentHoldoutReused": false,
+  "performanceLeakage": false,
+  "candidate": {
+    "name": "GLORYS + Stokes",
+    "status": "CANDIDATE_ONLY",
+    "selected": false
+  },
+  "baseline": {
+    "name": "HYCOM",
+    "status": "FROZEN_REFERENCE_BASELINE"
+  },
+  "counters": {
+    "MODEL_RUN_COUNT": 0,
+    "NEW_DATA": 0,
+    "NEW_TRAJECTORIES": 0,
+    "ALPHA_CHANGE": "NO",
+    "DEPTH_CHANGE": "NO",
+    "FORCING_SELECTION": "NO",
+    "MODEL_SELECTION": "NO"
+  },
+  "noPostHocReplacement": true,
+  "independence": "windows are clusters; drifters are not independent samples; pooled counts descriptive only",
+  "interpretation": "NONE",
+  "statements": [
+    "STEP 32 Phase A registers the expanded independent holdout (observations and calendar only) and the temporal forcing test design; nothing is acquired, built, run, evaluated or selected.",
+    "The expanded holdout is disjoint from every STEP 20 calibration and holdout drifter ID and window; KE-H1/KE-H3 remain historical holdout.",
+    "alpha 0.002, HYCOM depth 15.000 m, GLORYS depth 15.810070 m and Stokes coefficient 1.0 are frozen; STEP 32 never selects a final model.",
+    "AG_EXPANDED_HOLDOUT_UNAVAILABLE: no AG eligible window exists 30 days after the last AG calibration window within HYCOM coverage; no replacement data."
+  ]
+}

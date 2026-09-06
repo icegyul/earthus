@@ -1,0 +1,163 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "expanded-holdout-and-temporal-forcing-step32",
+  "status": "HOLDOUT RULE LOCKED",
+  "phase": "A",
+  "createdAtUTC": "2026-09-06T23:12:39Z",
+  "baseCommit": "671a91cf",
+  "purpose": "expanded independent holdout derived from observations and calendar only; the same windows are the temporal-test windows (HYCOM_NATIVE_3H vs HYCOM_DAILY)",
+  "regions": [
+    "KE",
+    "AG"
+  ],
+  "separationDays": 30,
+  "minimumStartSeparationHours": 72,
+  "coverageMarginDays": 1,
+  "minimumDrifters": 20,
+  "minimumWindows": 6,
+  "targetWindows": 8,
+  "eligibility": "STEP 15/16 E1-E5 + A1-A3 verbatim (select_step16_cohort.evaluate); audit eligibleCount re-verified for every evaluated window",
+  "accumulation": "chronological, exactly as STEP 16/20: a window enters only if it contributes at least one drifter ID absent from every prior cohort and from the already accumulated expanded holdout; selected starts >= 72 h apart; stop at targetWindows or exhaustion",
+  "windowExclusion": "a candidate whose start lies within minimumStartSeparationHours of any prior STEP 20 calibration/holdout window start is skipped (no reuse, no time overlap with historical windows)",
+  "coverage": {
+    "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis (STEP 17 identity; 15 m; 3-hourly)",
+    "coverageStart": "1994-01-01T00:00:00Z",
+    "coverageEnd": "2015-12-31T23:59:59Z",
+    "knownMissingFrames": [
+      "2010-08-18T12:00:00Z"
+    ],
+    "knownMissingFramesSource": "STEP 20 B6 holdout: KE-H2 FORCING_UNAVAILABLE, missingSourceFrame 2010-08-18T12:00:00Z (docs/research/step20-b6-holdout-summary.json)",
+    "rule": "required frames = all 8 three-hourly frames of every UTC day intersecting [t0 - 1 day, t0 + 72 h + 1 day]; any required frame in knownMissingFrames -> WINDOW_BLOCKED at derivation; any frame missing at acquisition -> WINDOW_BLOCKED (no interpolation, duplication, substitution or fill)"
+  },
+  "exclusion": {
+    "KE": {
+      "priorDrifterIds": [
+        "48965",
+        "48985",
+        "71155",
+        "81801",
+        "81802",
+        "81805",
+        "81806",
+        "81807",
+        "81811",
+        "81813",
+        "81814",
+        "81816",
+        "81961",
+        "89898",
+        "90135",
+        "90141",
+        "90142",
+        "90145",
+        "90146",
+        "90149",
+        "90150",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "priorWindowStarts": [
+        "2010-05-11T12:00:00Z",
+        "2010-06-30T12:00:00Z",
+        "2010-08-10T12:00:00Z",
+        "2010-08-16T12:00:00Z",
+        "2010-11-15T12:00:00Z"
+      ],
+      "priorWindows": [
+        {
+          "windowId": "KE-1",
+          "start": "2010-05-11T12:00:00Z",
+          "end": "2010-05-14T12:00:00Z",
+          "role": "STEP20_CALIBRATION"
+        },
+        {
+          "windowId": "KE-2",
+          "start": "2010-06-30T12:00:00Z",
+          "end": "2010-07-03T12:00:00Z",
+          "role": "STEP20_CALIBRATION"
+        },
+        {
+          "windowId": "KE-H1",
+          "start": "2010-08-10T12:00:00Z",
+          "end": "2010-08-13T12:00:00Z",
+          "role": "STEP20_HOLDOUT (historical; KE-H2 unpaired)"
+        },
+        {
+          "windowId": "KE-H2",
+          "start": "2010-08-16T12:00:00Z",
+          "end": "2010-08-19T12:00:00Z",
+          "role": "STEP20_HOLDOUT (historical; KE-H2 unpaired)"
+        },
+        {
+          "windowId": "KE-H3",
+          "start": "2010-11-15T12:00:00Z",
+          "end": "2010-11-18T12:00:00Z",
+          "role": "STEP20_HOLDOUT (historical; KE-H2 unpaired)"
+        }
+      ]
+    },
+    "AG": {
+      "priorDrifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127281",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634"
+      ],
+      "priorWindowStarts": [
+        "2015-04-23T12:00:00Z",
+        "2015-04-26T12:00:00Z"
+      ],
+      "priorWindows": [
+        {
+          "windowId": "AG-1",
+          "start": "2015-04-23T12:00:00Z",
+          "end": "2015-04-26T12:00:00Z",
+          "role": "STEP20_CALIBRATION"
+        },
+        {
+          "windowId": "AG-2",
+          "start": "2015-04-26T12:00:00Z",
+          "end": "2015-04-29T12:00:00Z",
+          "role": "STEP20_CALIBRATION"
+        }
+      ]
+    }
+  },
+  "forbiddenInputs": [
+    "HYCOM/GLORYS/Stokes trajectory results",
+    "M1-M5 values",
+    "STEP 20-31 performance results",
+    "model comparison results",
+    "AVISO similarity",
+    "model ranking"
+  ],
+  "allowedInputs": [
+    "docs/research/step16-selection-audit.json",
+    "docs/research/cohort-step16.json",
+    "docs/research/step20-holdout-derivation.json (prior cohort IDs/windows only)",
+    "data/research/step15/noaa-gdp-hourly-qc/*.csv",
+    "docs/research/fixtures/gdp-cohort-step12/ne_10m_coastline.geojson",
+    "this rule file"
+  ],
+  "AG": "if no candidate window exists after the AG cutoff within coverage: AG_EXPANDED_HOLDOUT_UNAVAILABLE; no replacement data",
+  "inputs": {
+    "auditSha256": "ba5b8a5410e2787a326639cdc2db866b4f898e279bc3d48296c914bb57a0f1bd",
+    "cohortSha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+    "step20HoldoutDerivationSha256": "68dce1d200c73fd6f1c392446f61d2d240c40068bd34992efce8c14622becfb8",
+    "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "coastlineSha256": "6f75ae0e0de157b14946e2255eb1f5486d9a13819032e26d4610852d296788f6"
+  },
+  "output": "docs/research/step32-holdout-derivation.json",
+  "tool": "tools/research/derive_step32_holdout.py",
+  "noPerformanceBasedReplacement": true,
+  "noArtificialBalancing": true
+}

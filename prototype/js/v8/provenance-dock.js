@@ -52,7 +52,8 @@ export function attachProvenanceDock(root) {
       ? (ko ? '출처 상세 닫기' : 'Close source details')
       : (ko ? '출처 상세 보기' : 'View source details'));
     toggle.querySelector('.pd-label').textContent = label;
-    toggle.querySelector('.pd-summary').textContent = summary;
+    /* 펼치면 요약 한 줄은 아래 목록과 같은 말이라 지운다(2026-09-06 받은 지적). 접는 손잡이만 남긴다. */
+    toggle.querySelector('.pd-summary').textContent = expanded ? (ko ? '접기 ▲' : 'Collapse ▲') : summary;
     root.hidden = !expanded;
 
     // 지도·천구처럼 화면에 항상 붙어 있어야 하는 크레딧은 접힌 상태에서도 남긴다.

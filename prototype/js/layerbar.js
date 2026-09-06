@@ -1124,6 +1124,30 @@ export const layerBar = {
         }
       };
       strip.appendChild(watch);
+
+      /* 뉴스 (2026-09-06 받은 지시: "경보재난에 기존 가지고 있던 뉴스 메뉴도 넣어줘").
+         v1 정리 때 1단 '읽고 분석' 묶음을 숨기면서 News 입구가 같이 사라졌다. 성격이 맞는 자리는
+         여기다 — '지금 일어난 일'이 관측·경보라면 뉴스는 그 일을 사람들이 어떻게 전하는가다.
+         ⚠️ 레이어를 강제로 켜지 않는다(main.js 의 news 동작과 같다). 목록만 연다. */
+      const news = el('button', 'ly-open ly-open--news');
+      news.type = 'button';
+      news.innerHTML = `<span class="ly-open-copy">`
+        + `<b>${ko ? '뉴스' : 'News'}</b>`
+        + `<em>${ko ? '지구에서 지금 전해지는 소식 · 지도에 켜고 끌 수 있습니다' : 'What is being reported now · toggle on the map'}</em>`
+        + `</span><span class="ly-open-arrow" aria-hidden="true">›</span>`;
+      news.onclick = async () => {
+        try {
+          const { eventPanel } = await import('./ui-events.js');
+          this.leave({ keep: 'hazard' });
+          eventPanel.mode = 'news';
+          eventPanel.show = 'local';
+          eventPanel.open();
+        } catch (e) {
+          console.warn('[layerbar] 뉴스를 못 열었습니다', e.message);
+        }
+      };
+      strip.appendChild(news);
+
       strip.appendChild(el('div', 'ly-gap'));
     }
 

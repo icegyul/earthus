@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "final-candidate-benchmark-step30a",
+  "phase": "A",
+  "createdAtUTC": "2026-09-06T15:27:41Z",
+  "gitCommitAtDesign": "f0149153",
+  "authorProcess": "Claude Fable 5.1 session, user-directed STEP 30A Phase A",
+  "protocolDocument": "docs/research/step30a-final-candidate-protocol.md",
+  "protocolSha256": "8ae362c325c324efeac40854fa67a0168d60c2b28f45f667678e5a4da1c464fb",
+  "ruleSha256": "9251be51fc3fc8cc3a3b9570a0b3902c01e653754389da55852bdd4e83ab803d",
+  "summarySha256": "ce3ca53efd89f89483c67ad5ee42bb1f01c0eda56b6b7d86449dd29b46b2e97b",
+  "validator": {
+    "path": "tools/research/check_step30a_preregistration.py",
+    "sha256": "4ad23777535fc67665f9a500eff520ed662f9797aafb2c145b0669c083c5e01b"
+  },
+  "ancestry": {
+    "step29PhaseB": "f0149153",
+    "step29PhaseA": "289815d6",
+    "step28": "4942421a",
+    "step25c": "c974ce42",
+    "step20AlphaLock": "73fafffb"
+  },
+  "possibleOutcomes": [
+    "CANDIDATE_DESCRIPTIVELY_FAVORED",
+    "HYCOM_DESCRIPTIVELY_FAVORED",
+    "NO_CLEAR_DESCRIPTIVE_DIFFERENCE"
+  ],
+  "expectedWinner": "NONE DECLARED",
+  "modelRunPlan": 0,
+  "newData": 0,
+  "lockPolicy": "protocol, rule, preregistration, Phase A summary and Phase A validator SHA-locked and committed before any evaluation"
+}

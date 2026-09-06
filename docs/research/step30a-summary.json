@@ -1,0 +1,23 @@
+{
+  "ruleId": "final-candidate-benchmark-step30a",
+  "phase": "A",
+  "status": "PREREGISTRATION_LOCKED",
+  "baseline": "HYCOM STEP25C",
+  "candidate": "GLORYS + Stokes STEP29",
+  "alpha": 0.002,
+  "stokesCoefficient": 1.0,
+  "depthMeters": 15.81007,
+  "baselineDepthMeters": 15.0,
+  "windows": 6,
+  "drifters": 35,
+  "modelRunCount": 0,
+  "newData": 0,
+  "evaluation": "NOT RUN",
+  "interpretation": "NONE",
+  "statements": [
+    "STEP 30A Phase A registers a final-candidate benchmark of existing trajectories only; no trajectory is generated and no metric is computed here.",
+    "Candidate = GLORYS12V1 15.810070 m + WW3 Stokes x 1.0 + NCEP-R2 alpha 0.002 (STEP 29 treatment); baseline = HYCOM 15.000 m + NCEP-R2 alpha 0.002 (STEP 25C / STEP 20); both fixed and never re-run.",
+    "The STEP 29 comparison (candidate vs GLORYS) and the STEP 30A comparison (candidate vs HYCOM) are distinct and will be reported side by side.",
+    "No alpha, coefficient, depth or forcing change; no blending; no selection; holdout descriptive only."
+  ]
+}

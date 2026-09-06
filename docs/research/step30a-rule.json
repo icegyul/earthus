@@ -1,0 +1,581 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "final-candidate-benchmark-step30a",
+  "status": "PREREGISTRATION LOCKED",
+  "phase": "A",
+  "createdAtUTC": "2026-09-06T15:27:41Z",
+  "baseCommit": "f0149153",
+  "question": "Does the already-computed GLORYS12V1 + Stokes drift candidate produce lower observed-versus-model trajectory error than the frozen HYCOM baseline? (final-candidate benchmark; not optimization, tuning, forcing or alpha selection)",
+  "candidate": {
+    "name": "GLORYS + Stokes (STEP 29 treatment)",
+    "ocean": "GLORYS12V1 native 15.810070 m",
+    "depthMeters": 15.81007,
+    "stokes": "WW3 GLOB-30M CFSR surface Stokes drift",
+    "stokesCoefficient": 1.0,
+    "wind": "NCEP-DOE R2 10 m 6 h",
+    "alpha": 0.002,
+    "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+    "source": "STEP 29 treatment alpha 0.002",
+    "rerun": false
+  },
+  "baseline": {
+    "name": "HYCOM frozen baseline (STEP 25C / STEP 20)",
+    "ocean": "HYCOM GOFS 3.1 GLBv0.08 15.000 m 3-hourly",
+    "depthMeters": 15.0,
+    "wind": "NCEP-DOE R2 10 m 6 h",
+    "alpha": 0.002,
+    "equation": "dX/dt = U_HYCOM + 0.002 * U_wind",
+    "source": "STEP 25C hycomBaseline 0.002 (STEP 20 trajectories)",
+    "rerun": false
+  },
+  "identityDifferences": [
+    "ocean product (HYCOM vs GLORYS)",
+    "ocean cadence (3 h instantaneous vs daily mean at 3 h composite instants)",
+    "native depth (15.000 vs 15.810070 m, difference 0.810070 m)",
+    "added WW3 Stokes drift x 1.0"
+  ],
+  "trajectorySources": "only the two listed; no other trajectory enters the primary comparison",
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "region": "KE",
+      "t0": "2010-05-11T12:00:00Z",
+      "end": "2010-05-14T12:00:00Z",
+      "drifterCount": 8,
+      "drifterIds": [
+        "71155",
+        "81801",
+        "81805",
+        "81807",
+        "81811",
+        "81813",
+        "81814",
+        "81816"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "71155",
+          "lon": 142.60959,
+          "lat": 35.68513
+        },
+        {
+          "drifterId": "81801",
+          "lon": 150.57346,
+          "lat": 30.12786
+        },
+        {
+          "drifterId": "81805",
+          "lon": 150.6728,
+          "lat": 30.8741
+        },
+        {
+          "drifterId": "81807",
+          "lon": 149.87982,
+          "lat": 30.91725
+        },
+        {
+          "drifterId": "81811",
+          "lon": 151.57515,
+          "lat": 32.09739
+        },
+        {
+          "drifterId": "81813",
+          "lon": 157.64886,
+          "lat": 30.87311
+        },
+        {
+          "drifterId": "81814",
+          "lon": 159.61974,
+          "lat": 36.19472
+        },
+        {
+          "drifterId": "81816",
+          "lon": 148.6675,
+          "lat": 30.73258
+        }
+      ],
+      "computationArea": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "candidate": {
+        "runId": "step29-treatment-alpha0.002-KE-1",
+        "file": "data/research/step29/trajectories/KE-1/treatment-alpha0.002/trajectories.csv",
+        "sha256": "4de8920fad4548f3b818f57d78d90c6d8cdb40b9ee41a5e17419a32caa9ae234",
+        "resultArraySha256": "d5d85ad444ae90b1221dc55083c9a0bfb49c21792370161fddfa6b9b43540aa2"
+      },
+      "baseline": {
+        "runId": "step20-cal-alpha0.002-KE-1",
+        "file": "data/research/step20/calibration/KE-1/alpha0.002.trajectories.csv",
+        "sha256": "cc38b0d7fd171f187b990f16f9ab3a18d836ea2a7a6913e0d8dce996a1915069",
+        "resultArraySha256": "2b7547ed6151ad908f91513a6d54a7ab140f3413f42eb5b706f0e79ad296ec9d"
+      }
+    },
+    {
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "region": "KE",
+      "t0": "2010-06-30T12:00:00Z",
+      "end": "2010-07-03T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "48965",
+        "81802",
+        "90141",
+        "90142",
+        "90145"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "48965",
+          "lon": 135.53249,
+          "lat": 37.60833
+        },
+        {
+          "drifterId": "81802",
+          "lon": 151.58324,
+          "lat": 31.70784
+        },
+        {
+          "drifterId": "90141",
+          "lon": 145.17612,
+          "lat": 38.3657
+        },
+        {
+          "drifterId": "90142",
+          "lon": 152.78535,
+          "lat": 39.3177
+        },
+        {
+          "drifterId": "90145",
+          "lon": 147.0891,
+          "lat": 37.12376
+        }
+      ],
+      "computationArea": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "candidate": {
+        "runId": "step29-treatment-alpha0.002-KE-2",
+        "file": "data/research/step29/trajectories/KE-2/treatment-alpha0.002/trajectories.csv",
+        "sha256": "9ac0aaa9c4560b4089cd15232b0381c939b7df995e33a8d986f8f9535ca7a479",
+        "resultArraySha256": "cf9d791529ad517dfbac689925384deaa5ac536738ae263c0d7647d304d4312a"
+      },
+      "baseline": {
+        "runId": "step20-cal-alpha0.002-KE-2",
+        "file": "data/research/step20/calibration/KE-2/alpha0.002.trajectories.csv",
+        "sha256": "e2c8ca1336b3ef967e08a2b641579158e61617ec5c0b770762919769b416aa99",
+        "resultArraySha256": "a063e35a2ec6ac764d590e792b98482974c60b6d5580c59029a167f7dfd05043"
+      }
+    },
+    {
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "region": "AG",
+      "t0": "2015-04-23T12:00:00Z",
+      "end": "2015-04-26T12:00:00Z",
+      "drifterCount": 9,
+      "drifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "127198",
+          "lon": 20.32911,
+          "lat": -39.81819
+        },
+        {
+          "drifterId": "127199",
+          "lon": 20.31773,
+          "lat": -39.82213
+        },
+        {
+          "drifterId": "127272",
+          "lon": 27.2557,
+          "lat": -34.85449
+        },
+        {
+          "drifterId": "127313",
+          "lon": 23.25523,
+          "lat": -35.43792
+        },
+        {
+          "drifterId": "127314",
+          "lon": 30.01394,
+          "lat": -34.13828
+        },
+        {
+          "drifterId": "127315",
+          "lon": 24.83593,
+          "lat": -35.31406
+        },
+        {
+          "drifterId": "132511",
+          "lon": 21.4817,
+          "lat": -37.10636
+        },
+        {
+          "drifterId": "132528",
+          "lon": 23.86592,
+          "lat": -34.97313
+        },
+        {
+          "drifterId": "132634",
+          "lon": 29.88758,
+          "lat": -34.64967
+        }
+      ],
+      "computationArea": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "candidate": {
+        "runId": "step29-treatment-alpha0.002-AG-1",
+        "file": "data/research/step29/trajectories/AG-1/treatment-alpha0.002/trajectories.csv",
+        "sha256": "19629ab74541ea4c579e1a083aeb98320172baa23be0d4f8ff9e851ccbee8f1c",
+        "resultArraySha256": "bc367ae24885798988e205846ba2b74fdec1e2568d7a476641653d758c90cb5d"
+      },
+      "baseline": {
+        "runId": "step20-cal-alpha0.002-AG-1",
+        "file": "data/research/step20/calibration/AG-1/alpha0.002.trajectories.csv",
+        "sha256": "58f9ca262b7e74d1fba1daac951b51e9f32847e7b500ec87bb9e7d75f716976b",
+        "resultArraySha256": "afac7313dd5dc7decd013aca1d7da6691bfa48933f98273d4c02c09beb9891d3"
+      }
+    },
+    {
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "region": "AG",
+      "t0": "2015-04-26T12:00:00Z",
+      "end": "2015-04-29T12:00:00Z",
+      "drifterCount": 1,
+      "drifterIds": [
+        "127281"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "127281",
+          "lon": 21.79639,
+          "lat": -36.76674
+        }
+      ],
+      "computationArea": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "candidate": {
+        "runId": "step29-treatment-alpha0.002-AG-2",
+        "file": "data/research/step29/trajectories/AG-2/treatment-alpha0.002/trajectories.csv",
+        "sha256": "87d00536ab3d379a5bdcc4090eb7abc2be21bab242707eb92dda872fc5b2622c",
+        "resultArraySha256": "a894baf8e213701afd306ebfb4d5874de864abf35a1b57f573fd0ebd7a053e2b"
+      },
+      "baseline": {
+        "runId": "step20-cal-alpha0.002-AG-2",
+        "file": "data/research/step20/calibration/AG-2/alpha0.002.trajectories.csv",
+        "sha256": "afc98cf9d2e1d66f97d1c3f2637ae9c0e7c24bdfdade8d2dc785a10f990ba0e2",
+        "resultArraySha256": "42c0010f77f96608364fdb55450f40f22851947b085bc7184b04fc9afe5dd42b"
+      }
+    },
+    {
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "region": "KE",
+      "t0": "2010-08-10T12:00:00Z",
+      "end": "2010-08-13T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "48985",
+        "81806",
+        "90135",
+        "90149",
+        "90150"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "48985",
+          "lon": 137.25655,
+          "lat": 39.19842
+        },
+        {
+          "drifterId": "81806",
+          "lon": 157.94424,
+          "lat": 32.2673
+        },
+        {
+          "drifterId": "90135",
+          "lon": 156.24634,
+          "lat": 37.19708
+        },
+        {
+          "drifterId": "90149",
+          "lon": 159.85992,
+          "lat": 38.45439
+        },
+        {
+          "drifterId": "90150",
+          "lon": 155.67223,
+          "lat": 38.35129
+        }
+      ],
+      "computationArea": {
+        "west": 135.25655,
+        "east": 161.85992,
+        "south": 30.2673,
+        "north": 40.0
+      },
+      "candidate": {
+        "runId": "step29-treatment-alpha0.002-KE-H1",
+        "file": "data/research/step29/trajectories/KE-H1/treatment-alpha0.002/trajectories.csv",
+        "sha256": "d1c1de2b6f37d2f2ed02f2ad1ac5ad3251fa841d749b9d9624c5fe0329e0b659",
+        "resultArraySha256": "714a205363362be9971401311cbc5052aeb4e5cbb28cd47b6857342e753c060c"
+      },
+      "baseline": {
+        "runId": "step20-hold-alpha0.002-KE-H1",
+        "file": "data/research/step20/holdout/trajectories/KE-H1/alpha0.002.trajectories.csv",
+        "sha256": "5f68152824cf8b548187181fed37b06b6c3b3482d024c72ecd1ce679bc580d18",
+        "resultArraySha256": "0a0a80728f9ef58f0d1637ebd7e57db44d45d94380405402dc19de47308368da"
+      }
+    },
+    {
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "region": "KE",
+      "t0": "2010-11-15T12:00:00Z",
+      "end": "2010-11-18T12:00:00Z",
+      "drifterCount": 7,
+      "drifterIds": [
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "89898",
+          "lon": 143.26125,
+          "lat": 31.29767
+        },
+        {
+          "drifterId": "90146",
+          "lon": 152.8268,
+          "lat": 38.44446
+        },
+        {
+          "drifterId": "92981",
+          "lon": 143.06795,
+          "lat": 31.02459
+        },
+        {
+          "drifterId": "98996",
+          "lon": 147.97673,
+          "lat": 33.89059
+        },
+        {
+          "drifterId": "98997",
+          "lon": 152.19716,
+          "lat": 34.03334
+        },
+        {
+          "drifterId": "98998",
+          "lon": 154.05711,
+          "lat": 33.55673
+        },
+        {
+          "drifterId": "99006",
+          "lon": 151.61525,
+          "lat": 31.19199
+        }
+      ],
+      "computationArea": {
+        "west": 141.06795,
+        "east": 156.05711,
+        "south": 29.02459,
+        "north": 40.0
+      },
+      "candidate": {
+        "runId": "step29-treatment-alpha0.002-KE-H3",
+        "file": "data/research/step29/trajectories/KE-H3/treatment-alpha0.002/trajectories.csv",
+        "sha256": "38b382264c3152ddb2d1aa77c124b1afd038ed290b3984cc4ca0ad36a0daf03e",
+        "resultArraySha256": "fd8a9231b3f2dbab9930416ab91c7c4226a7337c47d357762ed03edf36876285"
+      },
+      "baseline": {
+        "runId": "step20-hold-alpha0.002-KE-H3",
+        "file": "data/research/step20/holdout/trajectories/KE-H3/alpha0.002.trajectories.csv",
+        "sha256": "00d9db9f183b53e2d7261cc42e4db997a06b7b8b9d0a1e421f73f4517a723fd6",
+        "resultArraySha256": "a9ae8822f873fd2695ae39ebd8e8132bbac52e7f416033645f5fba2f7f96e1de"
+      }
+    }
+  ],
+  "windowCount": 6,
+  "drifterTotal": 35,
+  "excluded": {
+    "KE-H2": {
+      "paired": false,
+      "reason": "frozen HYCOM baseline unavailable (STEP 20)"
+    },
+    "AG-holdout": "UNAVAILABLE"
+  },
+  "strata": {
+    "calibration": [
+      "KE-1",
+      "KE-2",
+      "AG-1",
+      "AG-2"
+    ],
+    "holdout": [
+      "KE-H1",
+      "KE-H3"
+    ],
+    "perWindow": "reported individually; small-n descriptive; AG-2 kept",
+    "holdoutRole": "descriptive only; candidate already fixed; no re-ranking"
+  },
+  "metrics": {
+    "M3": {
+      "definition": "observed-vs-model position error, haversine",
+      "radiusMeters": 6371008.8,
+      "horizonsHours": [
+        24,
+        48,
+        72
+      ],
+      "exactUTC": true,
+      "observationInterpolation": false,
+      "report": [
+        "candidate median/mean/min/max",
+        "baseline median/mean/min/max",
+        "median delta",
+        "mean delta",
+        "wins",
+        "losses",
+        "ties",
+        "n",
+        "NOT_AVAILABLE"
+      ]
+    },
+    "delta": "E_candidate - E_HYCOM (km); negative = candidate lower error",
+    "tieToleranceKm": 1e-06,
+    "primaryStatistic": "paired median delta",
+    "secondaryStatistic": "paired mean delta",
+    "pairing": "exact drifter_id and exact UTC timestamp; both sources and the observation valid; no interpolation, no nearest matching, no imputation",
+    "secondary": [
+      "M1",
+      "M2",
+      "M4",
+      "M5"
+    ],
+    "M1": "72 h endpoint displacement (both)",
+    "M2": "path length (both)",
+    "M4": "candidate vs HYCOM trajectory separation at 24/48/72 h",
+    "M5": "observed 72 h displacement",
+    "topErrors": "top-3 candidate errors per horizon with the corresponding HYCOM errors",
+    "signTest": "descriptive/nominal only, n >= 10"
+  },
+  "interpretationRule": {
+    "scope": "overall stratum",
+    "primaryHorizonHours": 72,
+    "consistencyFraction": 0.6666666666666666,
+    "A": "CANDIDATE_DESCRIPTIVELY_FAVORED if median delta < -tie AND wins/(wins+losses) >= 2/3",
+    "B": "HYCOM_DESCRIPTIVELY_FAVORED if median delta > +tie AND losses/(wins+losses) >= 2/3",
+    "C": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE otherwise",
+    "labels": [
+      "CANDIDATE_DESCRIPTIVELY_FAVORED",
+      "HYCOM_DESCRIPTIVELY_FAVORED",
+      "NO_CLEAR_DESCRIPTIVE_DIFFERENCE"
+    ],
+    "newThreshold": false,
+    "operationalSuperiorityClaim": false
+  },
+  "context": {
+    "threeWay": {
+      "A": "HYCOM (STEP 25C error_H002)",
+      "B": "GLORYS (STEP 25C error_G002)",
+      "C": "GLORYS + Stokes (STEP 29 error_T002)"
+    },
+    "mandatoryDistinction": "STEP 29 = C vs B; STEP 30A = C vs A; never confused",
+    "recompute": false,
+    "sources": {
+      "step25cTable": "docs/research/step25c-paired-table.csv",
+      "step29Table": "docs/research/step29-stokes-paired-table.csv"
+    },
+    "causalClaim": false
+  },
+  "fairness": {
+    "identical": [
+      "observations",
+      "drifter IDs",
+      "timestamps",
+      "windows",
+      "horizons",
+      "metric",
+      "evaluation code"
+    ],
+    "onlyDifference": "model identity: HYCOM baseline vs GLORYS + Stokes candidate"
+  },
+  "forbidden": {
+    "alphaChange": false,
+    "stokesCoefficientChange": false,
+    "depthChange": false,
+    "forcingChange": false,
+    "timestepChange": false,
+    "interpolationChange": false,
+    "addedPhysics": false,
+    "hycomGlorysBlending": false,
+    "ensembleOptimization": false,
+    "trajectoryGeneration": false,
+    "outlierRemoval": false,
+    "reranking": false,
+    "holdoutSelection": false
+  },
+  "availability": "inherited (candidate: STEP 29; baseline: STEP 25C/20); no domain change, rerun or repair",
+  "outlierPolicy": {
+    "removal": false,
+    "trimming": false,
+    "winsorization": false,
+    "weighting": false,
+    "manualExclusion": false
+  },
+  "modelRun": "FORBIDDEN",
+  "modelRunCount": 0,
+  "newData": 0,
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "phaseBOutputs": [
+    "docs/research/step30a-final-candidate-manifest.json",
+    "docs/research/step30a-final-candidate-evaluation.json",
+    "docs/research/step30a-final-candidate-summary.json",
+    "docs/research/step30a-final-candidate-table.csv",
+    "tools/research/check_step30a_final_candidate.py"
+  ],
+  "summaryNaming": "Phase A summary = step30a-summary.json (locked); Phase B summary = step30a-final-candidate-summary.json",
+  "reproducibility": {
+    "evaluationRunTwice": true,
+    "byteIdentical": [
+      "paired table",
+      "summary",
+      "evaluation JSON"
+    ],
+    "inputTrajectorySha256Unchanged": true
+  },
+  "lockPolicy": "protocol, rule, preregistration, Phase A summary and Phase A validator SHA-locked and committed before any evaluation",
+  "stopRule": "Phase A ends at the LOCK commit; no M1-M5, no evaluation, no STEP 31"
+}

@@ -1,0 +1,5481 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "stokes-license-and-experiment-gate-step29",
+  "phase": "B",
+  "status": "EVALUATION_COMPLETE",
+  "phaseBPreregistrationSha256": "82101494c9035557613905d7c26815aabf384f231a827a07452f7c3ab3917745",
+  "runManifestSha256": "8906b46090db07a9254382b6fa953f871833d611ad6958eac44e9f5c7459e936",
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "inputFileShas": [
+    {
+      "window": "AG-1",
+      "run": "C0",
+      "file": "data/research/step29/trajectories/AG-1/control-alpha0/trajectories.csv",
+      "expected": "f00dbfd37c7c34fe5872c8c63e78d335bad81ac2bd5f738c2e4a37a6e5a13eef",
+      "actual": "f00dbfd37c7c34fe5872c8c63e78d335bad81ac2bd5f738c2e4a37a6e5a13eef",
+      "verified": true
+    },
+    {
+      "window": "AG-1",
+      "run": "C002",
+      "file": "data/research/step29/trajectories/AG-1/control-alpha0.002/trajectories.csv",
+      "expected": "236c43836bc19ec389dab54b0f755a091f2644065b12f2c8a876f6dfe4f2e7a8",
+      "actual": "236c43836bc19ec389dab54b0f755a091f2644065b12f2c8a876f6dfe4f2e7a8",
+      "verified": true
+    },
+    {
+      "window": "AG-1",
+      "run": "T0",
+      "file": "data/research/step29/trajectories/AG-1/treatment-alpha0/trajectories.csv",
+      "expected": "570c791d623d1417e9d6b0e095bc8552a20b8a91ae99f337b090401c8f9d9e77",
+      "actual": "570c791d623d1417e9d6b0e095bc8552a20b8a91ae99f337b090401c8f9d9e77",
+      "verified": true
+    },
+    {
+      "window": "AG-1",
+      "run": "T002",
+      "file": "data/research/step29/trajectories/AG-1/treatment-alpha0.002/trajectories.csv",
+      "expected": "19629ab74541ea4c579e1a083aeb98320172baa23be0d4f8ff9e851ccbee8f1c",
+      "actual": "19629ab74541ea4c579e1a083aeb98320172baa23be0d4f8ff9e851ccbee8f1c",
+      "verified": true
+    },
+    {
+      "window": "AG-2",
+      "run": "C0",
+      "file": "data/research/step29/trajectories/AG-2/control-alpha0/trajectories.csv",
+      "expected": "475b1e9b495ed732a312687f8d1e1c81a09580740fc8f3701a4fbb65d00acda3",
+      "actual": "475b1e9b495ed732a312687f8d1e1c81a09580740fc8f3701a4fbb65d00acda3",
+      "verified": true
+    },
+    {
+      "window": "AG-2",
+      "run": "C002",
+      "file": "data/research/step29/trajectories/AG-2/control-alpha0.002/trajectories.csv",
+      "expected": "7e664fe6c2c8c67d1ad3363156adb588d32d6c86e804e31169f06564d7fc21ee",
+      "actual": "7e664fe6c2c8c67d1ad3363156adb588d32d6c86e804e31169f06564d7fc21ee",
+      "verified": true
+    },
+    {
+      "window": "AG-2",
+      "run": "T0",
+      "file": "data/research/step29/trajectories/AG-2/treatment-alpha0/trajectories.csv",
+      "expected": "da512fe00feaef8e0929a40925b5b078bb4728e48d8f206b48c5616afb398dd1",
+      "actual": "da512fe00feaef8e0929a40925b5b078bb4728e48d8f206b48c5616afb398dd1",
+      "verified": true
+    },
+    {
+      "window": "AG-2",
+      "run": "T002",
+      "file": "data/research/step29/trajectories/AG-2/treatment-alpha0.002/trajectories.csv",
+      "expected": "87d00536ab3d379a5bdcc4090eb7abc2be21bab242707eb92dda872fc5b2622c",
+      "actual": "87d00536ab3d379a5bdcc4090eb7abc2be21bab242707eb92dda872fc5b2622c",
+      "verified": true
+    },
+    {
+      "window": "KE-1",
+      "run": "C0",
+      "file": "data/research/step29/trajectories/KE-1/control-alpha0/trajectories.csv",
+      "expected": "d31ff9b8052b102f9478302edfd23ab7ea75c3f75c976ff7f84054ec3db01d9c",
+      "actual": "d31ff9b8052b102f9478302edfd23ab7ea75c3f75c976ff7f84054ec3db01d9c",
+      "verified": true
+    },
+    {
+      "window": "KE-1",
+      "run": "C002",
+      "file": "data/research/step29/trajectories/KE-1/control-alpha0.002/trajectories.csv",
+      "expected": "2625b12889f4c8231e24bfc563010313e62b7bac94f08e836e12724fac6905e2",
+      "actual": "2625b12889f4c8231e24bfc563010313e62b7bac94f08e836e12724fac6905e2",
+      "verified": true
+    },
+    {
+      "window": "KE-1",
+      "run": "T0",
+      "file": "data/research/step29/trajectories/KE-1/treatment-alpha0/trajectories.csv",
+      "expected": "7d52d73a841ce29b7df2fa8e8de436290c847ace35f951233aed856bc6afae57",
+      "actual": "7d52d73a841ce29b7df2fa8e8de436290c847ace35f951233aed856bc6afae57",
+      "verified": true
+    },
+    {
+      "window": "KE-1",
+      "run": "T002",
+      "file": "data/research/step29/trajectories/KE-1/treatment-alpha0.002/trajectories.csv",
+      "expected": "4de8920fad4548f3b818f57d78d90c6d8cdb40b9ee41a5e17419a32caa9ae234",
+      "actual": "4de8920fad4548f3b818f57d78d90c6d8cdb40b9ee41a5e17419a32caa9ae234",
+      "verified": true
+    },
+    {
+      "window": "KE-2",
+      "run": "C0",
+      "file": "data/research/step29/trajectories/KE-2/control-alpha0/trajectories.csv",
+      "expected": "984c8d197772ccf01663b77a2fea1f9f776619cc2eee418ca0062fa867d05dae",
+      "actual": "984c8d197772ccf01663b77a2fea1f9f776619cc2eee418ca0062fa867d05dae",
+      "verified": true
+    },
+    {
+      "window": "KE-2",
+      "run": "C002",
+      "file": "data/research/step29/trajectories/KE-2/control-alpha0.002/trajectories.csv",
+      "expected": "151a0ec5780c9c53c3cf3f0efce8d53e9406b739ae40de36814964b0692cfb64",
+      "actual": "151a0ec5780c9c53c3cf3f0efce8d53e9406b739ae40de36814964b0692cfb64",
+      "verified": true
+    },
+    {
+      "window": "KE-2",
+      "run": "T0",
+      "file": "data/research/step29/trajectories/KE-2/treatment-alpha0/trajectories.csv",
+      "expected": "fd6a5a6402cf35ea8670d6280cadeaeaf92b0421c451db68c5028adb125a444c",
+      "actual": "fd6a5a6402cf35ea8670d6280cadeaeaf92b0421c451db68c5028adb125a444c",
+      "verified": true
+    },
+    {
+      "window": "KE-2",
+      "run": "T002",
+      "file": "data/research/step29/trajectories/KE-2/treatment-alpha0.002/trajectories.csv",
+      "expected": "9ac0aaa9c4560b4089cd15232b0381c939b7df995e33a8d986f8f9535ca7a479",
+      "actual": "9ac0aaa9c4560b4089cd15232b0381c939b7df995e33a8d986f8f9535ca7a479",
+      "verified": true
+    },
+    {
+      "window": "KE-H1",
+      "run": "C0",
+      "file": "data/research/step29/trajectories/KE-H1/control-alpha0/trajectories.csv",
+      "expected": "9792169db4fd0878528f3e974e8b811854c84dc6039e957a3e7d9fac6f46238c",
+      "actual": "9792169db4fd0878528f3e974e8b811854c84dc6039e957a3e7d9fac6f46238c",
+      "verified": true
+    },
+    {
+      "window": "KE-H1",
+      "run": "C002",
+      "file": "data/research/step29/trajectories/KE-H1/control-alpha0.002/trajectories.csv",
+      "expected": "57335fff5548599ef0590b4772c0a48c2d3ae5ace45a7b80d4f674fffc03c4b1",
+      "actual": "57335fff5548599ef0590b4772c0a48c2d3ae5ace45a7b80d4f674fffc03c4b1",
+      "verified": true
+    },
+    {
+      "window": "KE-H1",
+      "run": "T0",
+      "file": "data/research/step29/trajectories/KE-H1/treatment-alpha0/trajectories.csv",
+      "expected": "e94a43337ddb692fec52b287b542648bd7622bc63d9796177913e0f1c47211de",
+      "actual": "e94a43337ddb692fec52b287b542648bd7622bc63d9796177913e0f1c47211de",
+      "verified": true
+    },
+    {
+      "window": "KE-H1",
+      "run": "T002",
+      "file": "data/research/step29/trajectories/KE-H1/treatment-alpha0.002/trajectories.csv",
+      "expected": "d1c1de2b6f37d2f2ed02f2ad1ac5ad3251fa841d749b9d9624c5fe0329e0b659",
+      "actual": "d1c1de2b6f37d2f2ed02f2ad1ac5ad3251fa841d749b9d9624c5fe0329e0b659",
+      "verified": true
+    },
+    {
+      "window": "KE-H3",
+      "run": "C0",
+      "file": "data/research/step29/trajectories/KE-H3/control-alpha0/trajectories.csv",
+      "expected": "a309297982b51ee70774e215fb5a234836462c63db4e237b2fdf4c4b377d59a3",
+      "actual": "a309297982b51ee70774e215fb5a234836462c63db4e237b2fdf4c4b377d59a3",
+      "verified": true
+    },
+    {
+      "window": "KE-H3",
+      "run": "C002",
+      "file": "data/research/step29/trajectories/KE-H3/control-alpha0.002/trajectories.csv",
+      "expected": "d01054b41bd1789ff9517a6f8d99269bcffda2fadbfb792e765df92c754e0487",
+      "actual": "d01054b41bd1789ff9517a6f8d99269bcffda2fadbfb792e765df92c754e0487",
+      "verified": true
+    },
+    {
+      "window": "KE-H3",
+      "run": "T0",
+      "file": "data/research/step29/trajectories/KE-H3/treatment-alpha0/trajectories.csv",
+      "expected": "b225ea0c43e946fe361c8f52599cb62ab3590111d84d64e190690dcf2ceb250b",
+      "actual": "b225ea0c43e946fe361c8f52599cb62ab3590111d84d64e190690dcf2ceb250b",
+      "verified": true
+    },
+    {
+      "window": "KE-H3",
+      "run": "T002",
+      "file": "data/research/step29/trajectories/KE-H3/treatment-alpha0.002/trajectories.csv",
+      "expected": "38b382264c3152ddb2d1aa77c124b1afd038ed290b3984cc4ca0ad36a0daf03e",
+      "actual": "38b382264c3152ddb2d1aa77c124b1afd038ed290b3984cc4ca0ad36a0daf03e",
+      "verified": true
+    }
+  ],
+  "perDrifter": [
+    {
+      "drifter_id": "127198",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 69.677,
+      "error_T002_24h": 68.808,
+      "error_C0_24h": 68.984,
+      "error_T0_24h": 68.111,
+      "delta_24h": -0.869,
+      "deltaS_24h": -0.872,
+      "sep_T002_C002_24h": 1.272,
+      "sep_T0_C0_24h": 1.274,
+      "error_C002_48h": 124.876,
+      "error_T002_48h": 127.627,
+      "error_C0_48h": 122.818,
+      "error_T0_48h": 125.567,
+      "delta_48h": 2.751,
+      "deltaS_48h": 2.749,
+      "sep_T002_C002_48h": 2.816,
+      "sep_T0_C0_48h": 2.795,
+      "error_C002_72h": 147.7,
+      "error_T002_72h": 151.486,
+      "error_C0_72h": 146.58,
+      "error_T0_72h": 150.22,
+      "delta_72h": 3.786,
+      "deltaS_72h": 3.64,
+      "sep_T002_C002_72h": 4.581,
+      "sep_T0_C0_72h": 4.557,
+      "endpoint_C002_72h": 166.876,
+      "path_C002": 181.07,
+      "endpoint_T002_72h": 162.399,
+      "path_T002": 175.276,
+      "endpoint_C0_72h": 168.663,
+      "path_C0": 183.707,
+      "endpoint_T0_72h": 164.238,
+      "path_T0": 177.834,
+      "observed_72h": 308.466
+    },
+    {
+      "drifter_id": "127199",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 71.146,
+      "error_T002_24h": 70.192,
+      "error_C0_24h": 70.46,
+      "error_T0_24h": 69.502,
+      "delta_24h": -0.954,
+      "deltaS_24h": -0.958,
+      "sep_T002_C002_24h": 1.319,
+      "sep_T0_C0_24h": 1.321,
+      "error_C002_48h": 125.036,
+      "error_T002_48h": 127.746,
+      "error_C0_48h": 122.981,
+      "error_T0_48h": 125.689,
+      "delta_48h": 2.71,
+      "deltaS_48h": 2.709,
+      "sep_T002_C002_48h": 2.786,
+      "sep_T0_C0_48h": 2.766,
+      "error_C002_72h": 146.416,
+      "error_T002_72h": 150.141,
+      "error_C0_72h": 145.292,
+      "error_T0_72h": 148.883,
+      "delta_72h": 3.725,
+      "deltaS_72h": 3.591,
+      "sep_T002_C002_72h": 4.531,
+      "sep_T0_C0_72h": 4.52,
+      "endpoint_C002_72h": 168.361,
+      "path_C002": 182.888,
+      "endpoint_T002_72h": 163.947,
+      "path_T002": 177.137,
+      "endpoint_C0_72h": 170.149,
+      "path_C0": 185.529,
+      "endpoint_T0_72h": 165.774,
+      "path_T0": 179.69,
+      "observed_72h": 308.854
+    },
+    {
+      "drifter_id": "127272",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 18.05,
+      "error_T002_24h": 21.655,
+      "error_C0_24h": 16.675,
+      "error_T0_24h": 20.228,
+      "delta_24h": 3.606,
+      "deltaS_24h": 3.553,
+      "sep_T002_C002_24h": 3.777,
+      "sep_T0_C0_24h": 3.778,
+      "error_C002_48h": 52.823,
+      "error_T002_48h": 63.744,
+      "error_C0_48h": 50.142,
+      "error_T0_48h": 61.061,
+      "delta_48h": 10.921,
+      "deltaS_48h": 10.919,
+      "sep_T002_C002_48h": 12.633,
+      "sep_T0_C0_48h": 12.8,
+      "error_C002_72h": 96.523,
+      "error_T002_72h": 101.871,
+      "error_C0_72h": 95.488,
+      "error_T0_72h": 101.184,
+      "delta_72h": 5.347,
+      "deltaS_72h": 5.696,
+      "sep_T002_C002_72h": 8.229,
+      "sep_T0_C0_72h": 8.595,
+      "endpoint_C002_72h": 168.331,
+      "path_C002": 168.387,
+      "endpoint_T002_72h": 175.164,
+      "path_T002": 175.376,
+      "endpoint_C0_72h": 166.978,
+      "path_C0": 167.039,
+      "endpoint_T0_72h": 174.226,
+      "path_T0": 174.413,
+      "observed_72h": 80.755
+    },
+    {
+      "drifter_id": "127313",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 131.891,
+      "error_T002_24h": 129.183,
+      "error_C0_24h": 132.895,
+      "error_T0_24h": 130.183,
+      "delta_24h": -2.708,
+      "deltaS_24h": -2.712,
+      "sep_T002_C002_24h": 4.323,
+      "sep_T0_C0_24h": 4.304,
+      "error_C002_48h": 289.961,
+      "error_T002_48h": 281.682,
+      "error_C0_48h": 290.97,
+      "error_T0_48h": 283.544,
+      "delta_48h": -8.28,
+      "deltaS_48h": -7.426,
+      "sep_T002_C002_48h": 12.343,
+      "sep_T0_C0_48h": 11.524,
+      "error_C002_72h": 416.26,
+      "error_T002_72h": 408.388,
+      "error_C0_72h": 416.222,
+      "error_T0_72h": 410.469,
+      "delta_72h": -7.872,
+      "deltaS_72h": -5.753,
+      "sep_T002_C002_72h": 8.786,
+      "sep_T0_C0_72h": 6.877,
+      "endpoint_C002_72h": 54.514,
+      "path_C002": 54.842,
+      "endpoint_T002_72h": 62.328,
+      "path_T002": 62.727,
+      "endpoint_C0_72h": 54.13,
+      "path_C0": 54.555,
+      "endpoint_T0_72h": 60.562,
+      "path_T0": 60.935,
+      "observed_72h": 449.489
+    },
+    {
+      "drifter_id": "127314",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 45.859,
+      "error_T002_24h": 42.785,
+      "error_C0_24h": 47.062,
+      "error_T0_24h": 44.019,
+      "delta_24h": -3.074,
+      "deltaS_24h": -3.043,
+      "sep_T002_C002_24h": 3.598,
+      "sep_T0_C0_24h": 3.594,
+      "error_C002_48h": 77.404,
+      "error_T002_48h": 65.841,
+      "error_C0_48h": 80.587,
+      "error_T0_48h": 68.901,
+      "delta_48h": -11.563,
+      "deltaS_48h": -11.685,
+      "sep_T002_C002_48h": 11.696,
+      "sep_T0_C0_48h": 11.834,
+      "error_C002_72h": 63.504,
+      "error_T002_72h": 57.069,
+      "error_C0_72h": 65.867,
+      "error_T0_72h": 59.424,
+      "delta_72h": -6.434,
+      "deltaS_72h": -6.443,
+      "sep_T002_C002_72h": 9.565,
+      "sep_T0_C0_72h": 10.008,
+      "endpoint_C002_72h": 131.752,
+      "path_C002": 167.418,
+      "endpoint_T002_72h": 132.163,
+      "path_T002": 171.581,
+      "endpoint_C0_72h": 133.074,
+      "path_C0": 169.792,
+      "endpoint_T0_72h": 133.794,
+      "path_T0": 173.917,
+      "observed_72h": 98.763
+    },
+    {
+      "drifter_id": "127315",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 34.539,
+      "error_T002_24h": 38.567,
+      "error_C0_24h": 33.197,
+      "error_T0_24h": 37.213,
+      "delta_24h": 4.028,
+      "deltaS_24h": 4.016,
+      "sep_T002_C002_24h": 4.443,
+      "sep_T0_C0_24h": 4.456,
+      "error_C002_48h": 83.472,
+      "error_T002_48h": 94.203,
+      "error_C0_48h": 81.627,
+      "error_T0_48h": 92.496,
+      "delta_48h": 10.731,
+      "deltaS_48h": 10.87,
+      "sep_T002_C002_48h": 11.009,
+      "sep_T0_C0_48h": 11.138,
+      "error_C002_72h": 143.744,
+      "error_T002_72h": 151.598,
+      "error_C0_72h": 143.328,
+      "error_T0_72h": 151.266,
+      "delta_72h": 7.854,
+      "deltaS_72h": 7.937,
+      "sep_T002_C002_72h": 8.185,
+      "sep_T0_C0_72h": 8.269,
+      "endpoint_C002_72h": 323.313,
+      "path_C002": 332.85,
+      "endpoint_T002_72h": 330.868,
+      "path_T002": 341.736,
+      "endpoint_C0_72h": 322.934,
+      "path_C0": 332.273,
+      "endpoint_T0_72h": 330.573,
+      "path_T0": 341.216,
+      "observed_72h": 181.032
+    },
+    {
+      "drifter_id": "132511",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 45.029,
+      "error_T002_24h": 43.539,
+      "error_C0_24h": 45.063,
+      "error_T0_24h": 43.597,
+      "delta_24h": -1.491,
+      "deltaS_24h": -1.466,
+      "sep_T002_C002_24h": 1.652,
+      "sep_T0_C0_24h": 1.631,
+      "error_C002_48h": 99.332,
+      "error_T002_48h": 100.565,
+      "error_C0_48h": 99.767,
+      "error_T0_48h": 101.077,
+      "delta_48h": 1.233,
+      "deltaS_48h": 1.31,
+      "sep_T002_C002_48h": 1.259,
+      "sep_T0_C0_48h": 1.335,
+      "error_C002_72h": 151.207,
+      "error_T002_72h": 144.8,
+      "error_C0_72h": 155.836,
+      "error_T0_72h": 149.671,
+      "delta_72h": -6.408,
+      "deltaS_72h": -6.165,
+      "sep_T002_C002_72h": 6.637,
+      "sep_T0_C0_72h": 6.416,
+      "endpoint_C002_72h": 238.377,
+      "path_C002": 248.764,
+      "endpoint_T002_72h": 231.805,
+      "path_T002": 242.234,
+      "endpoint_C0_72h": 243.032,
+      "path_C0": 253.526,
+      "endpoint_T0_72h": 236.699,
+      "path_T0": 247.238,
+      "observed_72h": 90.051
+    },
+    {
+      "drifter_id": "132528",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 41.109,
+      "error_T002_24h": 36.645,
+      "error_C0_24h": 42.129,
+      "error_T0_24h": 37.632,
+      "delta_24h": -4.465,
+      "deltaS_24h": -4.497,
+      "sep_T002_C002_24h": 5.711,
+      "sep_T0_C0_24h": 5.696,
+      "error_C002_48h": 99.499,
+      "error_T002_48h": 89.126,
+      "error_C0_48h": 100.648,
+      "error_T0_48h": 90.386,
+      "delta_48h": -10.373,
+      "deltaS_48h": -10.263,
+      "sep_T002_C002_48h": 11.391,
+      "sep_T0_C0_48h": 11.313,
+      "error_C002_72h": 66.626,
+      "error_T002_72h": 63.063,
+      "error_C0_72h": 66.225,
+      "error_T0_72h": 62.768,
+      "delta_72h": -3.563,
+      "deltaS_72h": -3.457,
+      "sep_T002_C002_72h": 5.983,
+      "sep_T0_C0_72h": 6.079,
+      "endpoint_C002_72h": 19.203,
+      "path_C002": 24.573,
+      "endpoint_T002_72h": 22.569,
+      "path_T002": 27.746,
+      "endpoint_C0_72h": 19.797,
+      "path_C0": 26.012,
+      "endpoint_T0_72h": 22.803,
+      "path_T0": 27.641,
+      "observed_72h": 85.528
+    },
+    {
+      "drifter_id": "132634",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 27.383,
+      "error_T002_24h": 27.528,
+      "error_C0_24h": 26.572,
+      "error_T0_24h": 26.577,
+      "delta_24h": 0.145,
+      "deltaS_24h": 0.005,
+      "sep_T002_C002_24h": 4.669,
+      "sep_T0_C0_24h": 4.683,
+      "error_C002_48h": 53.507,
+      "error_T002_48h": 46.098,
+      "error_C0_48h": 54.676,
+      "error_T0_48h": 46.502,
+      "delta_48h": -7.409,
+      "deltaS_48h": -8.174,
+      "sep_T002_C002_48h": 10.675,
+      "sep_T0_C0_48h": 10.868,
+      "error_C002_72h": 101.496,
+      "error_T002_72h": 83.442,
+      "error_C0_72h": 105.516,
+      "error_T0_72h": 85.226,
+      "delta_72h": -18.054,
+      "deltaS_72h": -20.29,
+      "sep_T002_C002_72h": 18.363,
+      "sep_T0_C0_72h": 20.368,
+      "endpoint_C002_72h": 124.846,
+      "path_C002": 156.945,
+      "endpoint_T002_72h": 117.637,
+      "path_T002": 154.233,
+      "endpoint_C0_72h": 126.731,
+      "path_C0": 158.632,
+      "endpoint_T0_72h": 119.891,
+      "path_T0": 157.818,
+      "observed_72h": 135.1
+    },
+    {
+      "drifter_id": "127281",
+      "unit": "AG-2",
+      "role": "CALIBRATION",
+      "error_C002_24h": 28.432,
+      "error_T002_24h": 25.469,
+      "error_C0_24h": 29.091,
+      "error_T0_24h": 26.04,
+      "delta_24h": -2.963,
+      "deltaS_24h": -3.051,
+      "sep_T002_C002_24h": 6.796,
+      "sep_T0_C0_24h": 6.757,
+      "error_C002_48h": "NOT_AVAILABLE",
+      "error_T002_48h": "NOT_AVAILABLE",
+      "error_C0_48h": "NOT_AVAILABLE",
+      "error_T0_48h": "NOT_AVAILABLE",
+      "delta_48h": "NOT_AVAILABLE",
+      "deltaS_48h": "NOT_AVAILABLE",
+      "sep_T002_C002_48h": "NOT_AVAILABLE",
+      "sep_T0_C0_48h": "NOT_AVAILABLE",
+      "error_C002_72h": "NOT_AVAILABLE",
+      "error_T002_72h": "NOT_AVAILABLE",
+      "error_C0_72h": "NOT_AVAILABLE",
+      "error_T0_72h": "NOT_AVAILABLE",
+      "delta_72h": "NOT_AVAILABLE",
+      "deltaS_72h": "NOT_AVAILABLE",
+      "sep_T002_C002_72h": "NOT_AVAILABLE",
+      "sep_T0_C0_72h": "NOT_AVAILABLE",
+      "endpoint_C002_72h": "NOT_AVAILABLE",
+      "path_C002": 267.569,
+      "endpoint_T002_72h": "NOT_AVAILABLE",
+      "path_T002": 266.832,
+      "endpoint_C0_72h": "NOT_AVAILABLE",
+      "path_C0": 268.4,
+      "endpoint_T0_72h": "NOT_AVAILABLE",
+      "path_T0": 267.852,
+      "observed_72h": 352.788
+    },
+    {
+      "drifter_id": "71155",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 76.952,
+      "error_T002_24h": 74.23,
+      "error_C0_24h": 75.276,
+      "error_T0_24h": 72.503,
+      "delta_24h": -2.722,
+      "deltaS_24h": -2.773,
+      "sep_T002_C002_24h": 3.003,
+      "sep_T0_C0_24h": 3.065,
+      "error_C002_48h": 169.072,
+      "error_T002_48h": 179.449,
+      "error_C0_48h": 164.446,
+      "error_T0_48h": 175.403,
+      "delta_48h": 10.377,
+      "deltaS_48h": 10.957,
+      "sep_T002_C002_48h": 11.09,
+      "sep_T0_C0_48h": 11.643,
+      "error_C002_72h": 325.969,
+      "error_T002_72h": 335.192,
+      "error_C0_72h": 324.011,
+      "error_T0_72h": 334.908,
+      "delta_72h": 9.223,
+      "deltaS_72h": 10.897,
+      "sep_T002_C002_72h": 9.81,
+      "sep_T0_C0_72h": 11.321,
+      "endpoint_C002_72h": 349.635,
+      "path_C002": 374.344,
+      "endpoint_T002_72h": 357.029,
+      "path_T002": 382.227,
+      "endpoint_C0_72h": 348.61,
+      "path_C0": 373.916,
+      "endpoint_T0_72h": 357.662,
+      "path_T0": 383.283,
+      "observed_72h": 127.48
+    },
+    {
+      "drifter_id": "81801",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 46.234,
+      "error_T002_24h": 49.903,
+      "error_C0_24h": 44.936,
+      "error_T0_24h": 48.521,
+      "delta_24h": 3.668,
+      "deltaS_24h": 3.585,
+      "sep_T002_C002_24h": 6.685,
+      "sep_T0_C0_24h": 6.695,
+      "error_C002_48h": 80.256,
+      "error_T002_48h": 89.97,
+      "error_C0_48h": 77.676,
+      "error_T0_48h": 87.791,
+      "delta_48h": 9.714,
+      "deltaS_48h": 10.115,
+      "sep_T002_C002_48h": 11.509,
+      "sep_T0_C0_48h": 11.738,
+      "error_C002_72h": 89.781,
+      "error_T002_72h": 100.746,
+      "error_C0_72h": 87.345,
+      "error_T0_72h": 98.973,
+      "delta_72h": 10.964,
+      "deltaS_72h": 11.628,
+      "sep_T002_C002_72h": 12.982,
+      "sep_T0_C0_72h": 13.368,
+      "endpoint_C002_72h": 66.534,
+      "path_C002": 69.825,
+      "endpoint_T002_72h": 67.251,
+      "path_T002": 71.696,
+      "endpoint_C0_72h": 66.53,
+      "path_C0": 69.698,
+      "endpoint_T0_72h": 67.622,
+      "path_T0": 71.721,
+      "observed_72h": 78.333
+    },
+    {
+      "drifter_id": "81805",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 22.646,
+      "error_T002_24h": 21.952,
+      "error_C0_24h": 23.689,
+      "error_T0_24h": 22.697,
+      "delta_24h": -0.694,
+      "deltaS_24h": -0.992,
+      "sep_T002_C002_24h": 5.509,
+      "sep_T0_C0_24h": 5.496,
+      "error_C002_48h": 30.398,
+      "error_T002_48h": 27.596,
+      "error_C0_48h": 31.216,
+      "error_T0_48h": 27.869,
+      "delta_48h": -2.801,
+      "deltaS_48h": -3.347,
+      "sep_T002_C002_48h": 9.866,
+      "sep_T0_C0_48h": 9.693,
+      "error_C002_72h": 28.201,
+      "error_T002_72h": 20.494,
+      "error_C0_72h": 29.74,
+      "error_T0_72h": 21.592,
+      "delta_72h": -7.707,
+      "deltaS_72h": -8.148,
+      "sep_T002_C002_72h": 11.37,
+      "sep_T0_C0_72h": 11.04,
+      "endpoint_C002_72h": 75.353,
+      "path_C002": 88.04,
+      "endpoint_T002_72h": 66.081,
+      "path_T002": 77.104,
+      "endpoint_C0_72h": 77.05,
+      "path_C0": 90.903,
+      "endpoint_T0_72h": 67.985,
+      "path_T0": 80.076,
+      "observed_72h": 47.347
+    },
+    {
+      "drifter_id": "81807",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 8.196,
+      "error_T002_24h": 5.354,
+      "error_C0_24h": 9.775,
+      "error_T0_24h": 6.174,
+      "delta_24h": -2.843,
+      "deltaS_24h": -3.601,
+      "sep_T002_C002_24h": 6.769,
+      "sep_T0_C0_24h": 6.633,
+      "error_C002_48h": 15.75,
+      "error_T002_48h": 6.398,
+      "error_C0_48h": 18.783,
+      "error_T0_48h": 7.086,
+      "delta_48h": -9.351,
+      "deltaS_48h": -11.697,
+      "sep_T002_C002_48h": 13.388,
+      "sep_T0_C0_48h": 14.805,
+      "error_C002_72h": 32.042,
+      "error_T002_72h": 17.333,
+      "error_C0_72h": 36.818,
+      "error_T0_72h": 15.735,
+      "delta_72h": -14.709,
+      "deltaS_72h": -21.083,
+      "sep_T002_C002_72h": 35.984,
+      "sep_T0_C0_72h": 35.709,
+      "endpoint_C002_72h": 22.685,
+      "path_C002": 32.803,
+      "endpoint_T002_72h": 35.496,
+      "path_T002": 37.925,
+      "endpoint_C0_72h": 24.208,
+      "path_C0": 35.798,
+      "endpoint_T0_72h": 30.905,
+      "path_T0": 32.996,
+      "observed_72h": 21.291
+    },
+    {
+      "drifter_id": "81811",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 40.522,
+      "error_T002_24h": 44.357,
+      "error_C0_24h": 39.776,
+      "error_T0_24h": 43.541,
+      "delta_24h": 3.835,
+      "deltaS_24h": 3.765,
+      "sep_T002_C002_24h": 4.179,
+      "sep_T0_C0_24h": 4.182,
+      "error_C002_48h": 46.395,
+      "error_T002_48h": 49.24,
+      "error_C0_48h": 45.78,
+      "error_T0_48h": 47.478,
+      "delta_48h": 2.845,
+      "deltaS_48h": 1.698,
+      "sep_T002_C002_48h": 9.421,
+      "sep_T0_C0_48h": 9.457,
+      "error_C002_72h": 18.783,
+      "error_T002_72h": 22.779,
+      "error_C0_72h": 19.746,
+      "error_T0_72h": 19.176,
+      "delta_72h": 3.996,
+      "deltaS_72h": -0.569,
+      "sep_T002_C002_72h": 14.896,
+      "sep_T0_C0_72h": 15.366,
+      "endpoint_C002_72h": 26.077,
+      "path_C002": 60.684,
+      "endpoint_T002_72h": 38.858,
+      "path_T002": 73.271,
+      "endpoint_C0_72h": 22.116,
+      "path_C0": 55.448,
+      "endpoint_T0_72h": 34.328,
+      "path_T0": 68.322,
+      "observed_72h": 41.423
+    },
+    {
+      "drifter_id": "81813",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 2.66,
+      "error_T002_24h": 2.639,
+      "error_C0_24h": 3.547,
+      "error_T0_24h": 3.38,
+      "delta_24h": -0.021,
+      "deltaS_24h": -0.167,
+      "sep_T002_C002_24h": 1.615,
+      "sep_T0_C0_24h": 1.606,
+      "error_C002_48h": 11.886,
+      "error_T002_48h": 11.787,
+      "error_C0_48h": 12.294,
+      "error_T0_48h": 11.226,
+      "delta_48h": -0.099,
+      "deltaS_48h": -1.068,
+      "sep_T002_C002_48h": 5.654,
+      "sep_T0_C0_48h": 5.746,
+      "error_C002_72h": 26.913,
+      "error_T002_72h": 28.966,
+      "error_C0_72h": 26.537,
+      "error_T0_72h": 27.685,
+      "delta_72h": 2.053,
+      "deltaS_72h": 1.148,
+      "sep_T002_C002_72h": 10.738,
+      "sep_T0_C0_72h": 10.902,
+      "endpoint_C002_72h": 79.473,
+      "path_C002": 90.149,
+      "endpoint_T002_72h": 87.923,
+      "path_T002": 99.595,
+      "endpoint_C0_72h": 77.782,
+      "path_C0": 88.571,
+      "endpoint_T0_72h": 86.159,
+      "path_T0": 98.126,
+      "observed_72h": 99.084
+    },
+    {
+      "drifter_id": "81814",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 19.585,
+      "error_T002_24h": 20.643,
+      "error_C0_24h": 20.119,
+      "error_T0_24h": 21.185,
+      "delta_24h": 1.058,
+      "deltaS_24h": 1.066,
+      "sep_T002_C002_24h": 1.714,
+      "sep_T0_C0_24h": 1.7,
+      "error_C002_48h": 41.577,
+      "error_T002_48h": 41.838,
+      "error_C0_48h": 40.744,
+      "error_T0_48h": 40.851,
+      "delta_48h": 0.261,
+      "deltaS_48h": 0.107,
+      "sep_T002_C002_48h": 2.731,
+      "sep_T0_C0_48h": 2.71,
+      "error_C002_72h": "NOT_AVAILABLE",
+      "error_T002_72h": "NOT_AVAILABLE",
+      "error_C0_72h": 26.087,
+      "error_T0_72h": "NOT_AVAILABLE",
+      "delta_72h": "NOT_AVAILABLE",
+      "deltaS_72h": "NOT_AVAILABLE",
+      "sep_T002_C002_72h": "NOT_AVAILABLE",
+      "sep_T0_C0_72h": "NOT_AVAILABLE",
+      "endpoint_C002_72h": "NOT_AVAILABLE",
+      "path_C002": 215.731,
+      "endpoint_T002_72h": "NOT_AVAILABLE",
+      "path_T002": 205.977,
+      "endpoint_C0_72h": 211.339,
+      "path_C0": 215.524,
+      "endpoint_T0_72h": "NOT_AVAILABLE",
+      "path_T0": 208.298,
+      "observed_72h": 204.736
+    },
+    {
+      "drifter_id": "81816",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_C002_24h": 25.44,
+      "error_T002_24h": 23.073,
+      "error_C0_24h": 26.869,
+      "error_T0_24h": 24.26,
+      "delta_24h": -2.367,
+      "deltaS_24h": -2.609,
+      "sep_T002_C002_24h": 7.699,
+      "sep_T0_C0_24h": 7.62,
+      "error_C002_48h": 47.664,
+      "error_T002_48h": 37.007,
+      "error_C0_48h": 49.588,
+      "error_T0_48h": 39.494,
+      "delta_48h": -10.657,
+      "deltaS_48h": -10.095,
+      "sep_T002_C002_48h": 19.878,
+      "sep_T0_C0_48h": 18.48,
+      "error_C002_72h": 63.535,
+      "error_T002_72h": 44.652,
+      "error_C0_72h": 65.492,
+      "error_T0_72h": 49.097,
+      "delta_72h": -18.883,
+      "deltaS_72h": -16.395,
+      "sep_T002_C002_72h": 28.757,
+      "sep_T0_C0_72h": 25.599,
+      "endpoint_C002_72h": 79.647,
+      "path_C002": 79.782,
+      "endpoint_T002_72h": 58.566,
+      "path_T002": 59.099,
+      "endpoint_C0_72h": 81.775,
+      "path_C0": 81.895,
+      "endpoint_T0_72h": 63.823,
+      "path_T0": 64.12,
+      "observed_72h": 16.535
+    },
+    {
+      "drifter_id": "48965",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_C002_24h": 9.577,
+      "error_T002_24h": 9.865,
+      "error_C0_24h": 9.525,
+      "error_T0_24h": 9.755,
+      "delta_24h": 0.288,
+      "deltaS_24h": 0.23,
+      "sep_T002_C002_24h": 1.088,
+      "sep_T0_C0_24h": 1.083,
+      "error_C002_48h": 7.082,
+      "error_T002_48h": 5.273,
+      "error_C0_48h": 7.964,
+      "error_T0_48h": 5.878,
+      "delta_48h": -1.809,
+      "deltaS_48h": -2.085,
+      "sep_T002_C002_48h": 3.157,
+      "sep_T0_C0_48h": 3.096,
+      "error_C002_72h": 10.262,
+      "error_T002_72h": 12.056,
+      "error_C0_72h": 10.364,
+      "error_T0_72h": 10.852,
+      "delta_72h": 1.793,
+      "deltaS_72h": 0.488,
+      "sep_T002_C002_72h": 7.227,
+      "sep_T0_C0_72h": 7.175,
+      "endpoint_C002_72h": 45.219,
+      "path_C002": 47.219,
+      "endpoint_T002_72h": 52.209,
+      "path_T002": 54.257,
+      "endpoint_C0_72h": 43.289,
+      "path_C0": 45.241,
+      "endpoint_T0_72h": 50.181,
+      "path_T0": 52.227,
+      "observed_72h": 49.759
+    },
+    {
+      "drifter_id": "81802",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_C002_24h": 14.04,
+      "error_T002_24h": 13.945,
+      "error_C0_24h": 14.798,
+      "error_T0_24h": 14.093,
+      "delta_24h": -0.094,
+      "deltaS_24h": -0.705,
+      "sep_T002_C002_24h": 7.696,
+      "sep_T0_C0_24h": 7.714,
+      "error_C002_48h": 33.725,
+      "error_T002_48h": 34.31,
+      "error_C0_48h": 34.064,
+      "error_T0_48h": 35.583,
+      "delta_48h": 0.585,
+      "deltaS_48h": 1.519,
+      "sep_T002_C002_48h": 11.066,
+      "sep_T0_C0_48h": 11.03,
+      "error_C002_72h": 50.99,
+      "error_T002_72h": 49.226,
+      "error_C0_72h": 50.895,
+      "error_T0_72h": 51.02,
+      "delta_72h": -1.765,
+      "deltaS_72h": 0.126,
+      "sep_T002_C002_72h": 9.894,
+      "sep_T0_C0_72h": 9.317,
+      "endpoint_C002_72h": 67.628,
+      "path_C002": 68.565,
+      "endpoint_T002_72h": 76.63,
+      "path_T002": 80.157,
+      "endpoint_C0_72h": 67.307,
+      "path_C0": 67.931,
+      "endpoint_T0_72h": 74.827,
+      "path_T0": 77.673,
+      "observed_72h": 108.571
+    },
+    {
+      "drifter_id": "90141",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_C002_24h": 4.427,
+      "error_T002_24h": 12.078,
+      "error_C0_24h": 2.602,
+      "error_T0_24h": 10.412,
+      "delta_24h": 7.651,
+      "deltaS_24h": 7.809,
+      "sep_T002_C002_24h": 7.895,
+      "sep_T0_C0_24h": 7.958,
+      "error_C002_48h": 15.402,
+      "error_T002_48h": 29.476,
+      "error_C0_48h": 12.804,
+      "error_T0_48h": 26.345,
+      "delta_48h": 14.074,
+      "deltaS_48h": 13.541,
+      "sep_T002_C002_48h": 16.902,
+      "sep_T0_C0_48h": 15.06,
+      "error_C002_72h": 14.977,
+      "error_T002_72h": 39.643,
+      "error_C0_72h": 12.155,
+      "error_T0_72h": 31.375,
+      "delta_72h": 24.666,
+      "deltaS_72h": 19.22,
+      "sep_T002_C002_72h": 36.285,
+      "sep_T0_C0_72h": 26.986,
+      "endpoint_C002_72h": 82.95,
+      "path_C002": 87.533,
+      "endpoint_T002_72h": 70.983,
+      "path_T002": 72.271,
+      "endpoint_C0_72h": 80.611,
+      "path_C0": 84.648,
+      "endpoint_T0_72h": 73.484,
+      "path_T0": 76.355,
+      "observed_72h": 70.905
+    },
+    {
+      "drifter_id": "90142",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_C002_24h": 20.568,
+      "error_T002_24h": 18.575,
+      "error_C0_24h": 21.361,
+      "error_T0_24h": 19.257,
+      "delta_24h": -1.994,
+      "deltaS_24h": -2.104,
+      "sep_T002_C002_24h": 2.986,
+      "sep_T0_C0_24h": 2.983,
+      "error_C002_48h": 37.503,
+      "error_T002_48h": 31.996,
+      "error_C0_48h": 39.373,
+      "error_T0_48h": 33.495,
+      "delta_48h": -5.507,
+      "deltaS_48h": -5.878,
+      "sep_T002_C002_48h": 8.54,
+      "sep_T0_C0_48h": 8.2,
+      "error_C002_72h": 51.677,
+      "error_T002_72h": 40.552,
+      "error_C0_72h": 54.748,
+      "error_T0_72h": 42.919,
+      "delta_72h": -11.125,
+      "deltaS_72h": -11.829,
+      "sep_T002_C002_72h": 15.066,
+      "sep_T0_C0_72h": 13.601,
+      "endpoint_C002_72h": 20.751,
+      "path_C002": 22.883,
+      "endpoint_T002_72h": 5.685,
+      "path_T002": 10.346,
+      "endpoint_C0_72h": 24.236,
+      "path_C0": 25.955,
+      "endpoint_T0_72h": 10.91,
+      "path_T0": 14.704,
+      "observed_72h": 37.048
+    },
+    {
+      "drifter_id": "90145",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_C002_24h": 11.536,
+      "error_T002_24h": 17.041,
+      "error_C0_24h": 10.162,
+      "error_T0_24h": 15.693,
+      "delta_24h": 5.506,
+      "deltaS_24h": 5.532,
+      "sep_T002_C002_24h": 5.82,
+      "sep_T0_C0_24h": 5.878,
+      "error_C002_48h": 8.884,
+      "error_T002_48h": 14.916,
+      "error_C0_48h": 7.945,
+      "error_T0_48h": 13.904,
+      "delta_48h": 6.032,
+      "deltaS_48h": 5.959,
+      "sep_T002_C002_48h": 6.104,
+      "sep_T0_C0_48h": 6.131,
+      "error_C002_72h": 21.727,
+      "error_T002_72h": 16.414,
+      "error_C0_72h": 23.44,
+      "error_T0_72h": 18.194,
+      "delta_72h": -5.313,
+      "deltaS_72h": -5.246,
+      "sep_T002_C002_72h": 5.717,
+      "sep_T0_C0_72h": 5.655,
+      "endpoint_C002_72h": 115.598,
+      "path_C002": 128.603,
+      "endpoint_T002_72h": 120.676,
+      "path_T002": 134.66,
+      "endpoint_C0_72h": 115.315,
+      "path_C0": 127.514,
+      "endpoint_T0_72h": 120.18,
+      "path_T0": 133.536,
+      "observed_72h": 131.458
+    },
+    {
+      "drifter_id": "48985",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_C002_24h": 10.273,
+      "error_T002_24h": 7.63,
+      "error_C0_24h": 11.265,
+      "error_T0_24h": 8.629,
+      "delta_24h": -2.644,
+      "deltaS_24h": -2.636,
+      "sep_T002_C002_24h": 2.647,
+      "sep_T0_C0_24h": 2.653,
+      "error_C002_48h": 11.849,
+      "error_T002_48h": 8.517,
+      "error_C0_48h": 12.874,
+      "error_T0_48h": 9.476,
+      "delta_48h": -3.332,
+      "deltaS_48h": -3.398,
+      "sep_T002_C002_48h": 3.363,
+      "sep_T0_C0_48h": 3.412,
+      "error_C002_72h": 22.839,
+      "error_T002_72h": 19.343,
+      "error_C0_72h": 24.119,
+      "error_T0_72h": 20.706,
+      "delta_72h": -3.496,
+      "deltaS_72h": -3.413,
+      "sep_T002_C002_72h": 4.416,
+      "sep_T0_C0_72h": 4.149,
+      "endpoint_C002_72h": 15.274,
+      "path_C002": 17.581,
+      "endpoint_T002_72h": 19.017,
+      "path_T002": 24.536,
+      "endpoint_C0_72h": 15.551,
+      "path_C0": 17.041,
+      "endpoint_T0_72h": 18.695,
+      "path_T0": 23.433,
+      "observed_72h": 31.456
+    },
+    {
+      "drifter_id": "81806",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_C002_24h": 2.992,
+      "error_T002_24h": 5.975,
+      "error_C0_24h": 2.846,
+      "error_T0_24h": 5.049,
+      "delta_24h": 2.983,
+      "deltaS_24h": 2.203,
+      "sep_T002_C002_24h": 4.879,
+      "sep_T0_C0_24h": 4.883,
+      "error_C002_48h": 4.796,
+      "error_T002_48h": 7.566,
+      "error_C0_48h": 5.116,
+      "error_T0_48h": 5.837,
+      "delta_48h": 2.77,
+      "deltaS_48h": 0.721,
+      "sep_T002_C002_48h": 7.045,
+      "sep_T0_C0_48h": 7.127,
+      "error_C002_72h": 7.037,
+      "error_T002_72h": 5.529,
+      "error_C0_72h": 8.567,
+      "error_T0_72h": 4.05,
+      "delta_72h": -1.509,
+      "deltaS_72h": -4.517,
+      "sep_T002_C002_72h": 7.549,
+      "sep_T0_C0_72h": 7.873,
+      "endpoint_C002_72h": 44.501,
+      "path_C002": 44.533,
+      "endpoint_T002_72h": 51.833,
+      "path_T002": 51.982,
+      "endpoint_C0_72h": 41.697,
+      "path_C0": 41.717,
+      "endpoint_T0_72h": 49.399,
+      "path_T0": 49.515,
+      "observed_72h": 48.477
+    },
+    {
+      "drifter_id": "90135",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_C002_24h": 31.961,
+      "error_T002_24h": 33.569,
+      "error_C0_24h": 31.976,
+      "error_T0_24h": 33.558,
+      "delta_24h": 1.608,
+      "deltaS_24h": 1.582,
+      "sep_T002_C002_24h": 2.575,
+      "sep_T0_C0_24h": 2.59,
+      "error_C002_48h": 56.083,
+      "error_T002_48h": 59.283,
+      "error_C0_48h": 55.676,
+      "error_T0_48h": 58.897,
+      "delta_48h": 3.2,
+      "deltaS_48h": 3.221,
+      "sep_T002_C002_48h": 4.173,
+      "sep_T0_C0_48h": 4.249,
+      "error_C002_72h": 57.508,
+      "error_T002_72h": 58.57,
+      "error_C0_72h": 56.91,
+      "error_T0_72h": 57.858,
+      "delta_72h": 1.062,
+      "deltaS_72h": 0.947,
+      "sep_T002_C002_72h": 5.64,
+      "sep_T0_C0_72h": 5.959,
+      "endpoint_C002_72h": 126.318,
+      "path_C002": 130.913,
+      "endpoint_T002_72h": 122.244,
+      "path_T002": 128.254,
+      "endpoint_C0_72h": 127.286,
+      "path_C0": 131.857,
+      "endpoint_T0_72h": 122.917,
+      "path_T0": 128.875,
+      "observed_72h": 104.782
+    },
+    {
+      "drifter_id": "90149",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_C002_24h": 15.025,
+      "error_T002_24h": 12.722,
+      "error_C0_24h": 15.906,
+      "error_T0_24h": 13.519,
+      "delta_24h": -2.303,
+      "deltaS_24h": -2.387,
+      "sep_T002_C002_24h": 2.804,
+      "sep_T0_C0_24h": 2.814,
+      "error_C002_48h": 26.378,
+      "error_T002_48h": 21.517,
+      "error_C0_48h": 28.409,
+      "error_T0_48h": 22.769,
+      "delta_48h": -4.861,
+      "deltaS_48h": -5.64,
+      "sep_T002_C002_48h": 9.908,
+      "sep_T0_C0_48h": 9.991,
+      "error_C002_72h": 30.524,
+      "error_T002_72h": 26.355,
+      "error_C0_72h": 33.526,
+      "error_T0_72h": 26.893,
+      "delta_72h": -4.168,
+      "deltaS_72h": -6.633,
+      "sep_T002_C002_72h": 20.051,
+      "sep_T0_C0_72h": 20.773,
+      "endpoint_C002_72h": 35.413,
+      "path_C002": 35.457,
+      "endpoint_T002_72h": 38.362,
+      "path_T002": 39.71,
+      "endpoint_C0_72h": 36.612,
+      "path_C0": 36.801,
+      "endpoint_T0_72h": 35.922,
+      "path_T0": 37.101,
+      "observed_72h": 62.188
+    },
+    {
+      "drifter_id": "90150",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_C002_24h": 34.495,
+      "error_T002_24h": 37.918,
+      "error_C0_24h": 33.621,
+      "error_T0_24h": 37.175,
+      "delta_24h": 3.423,
+      "deltaS_24h": 3.554,
+      "sep_T002_C002_24h": 4.13,
+      "sep_T0_C0_24h": 4.288,
+      "error_C002_48h": 58.905,
+      "error_T002_48h": 61.804,
+      "error_C0_48h": 57.741,
+      "error_T0_48h": 61.439,
+      "delta_48h": 2.898,
+      "deltaS_48h": 3.698,
+      "sep_T002_C002_48h": 9.222,
+      "sep_T0_C0_48h": 9.611,
+      "error_C002_72h": 69.208,
+      "error_T002_72h": 64.032,
+      "error_C0_72h": 69.014,
+      "error_T0_72h": 64.961,
+      "delta_72h": -5.176,
+      "deltaS_72h": -4.053,
+      "sep_T002_C002_72h": 16.793,
+      "sep_T0_C0_72h": 16.243,
+      "endpoint_C002_72h": 49.739,
+      "path_C002": 52.782,
+      "endpoint_T002_72h": 65.113,
+      "path_T002": 69.466,
+      "endpoint_C0_72h": 47.772,
+      "path_C0": 50.752,
+      "endpoint_T0_72h": 61.413,
+      "path_T0": 65.353,
+      "observed_72h": 112.667
+    },
+    {
+      "drifter_id": "89898",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_C002_24h": 6.807,
+      "error_T002_24h": 1.764,
+      "error_C0_24h": 7.574,
+      "error_T0_24h": 2.579,
+      "delta_24h": -5.043,
+      "deltaS_24h": -4.995,
+      "sep_T002_C002_24h": 5.321,
+      "sep_T0_C0_24h": 5.311,
+      "error_C002_48h": 26.06,
+      "error_T002_48h": 17.904,
+      "error_C0_48h": 27.157,
+      "error_T0_48h": 19.07,
+      "delta_48h": -8.155,
+      "deltaS_48h": -8.088,
+      "sep_T002_C002_48h": 8.324,
+      "sep_T0_C0_48h": 8.212,
+      "error_C002_72h": 52.084,
+      "error_T002_72h": 34.389,
+      "error_C0_72h": 55.735,
+      "error_T0_72h": 38.353,
+      "delta_72h": -17.695,
+      "deltaS_72h": -17.382,
+      "sep_T002_C002_72h": 18.311,
+      "sep_T0_C0_72h": 17.825,
+      "endpoint_C002_72h": 104.573,
+      "path_C002": 110.415,
+      "endpoint_T002_72h": 112.497,
+      "path_T002": 120.412,
+      "endpoint_C0_72h": 103.568,
+      "path_C0": 108.715,
+      "endpoint_T0_72h": 110.801,
+      "path_T0": 117.842,
+      "observed_72h": 140.071
+    },
+    {
+      "drifter_id": "90146",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_C002_24h": 6.766,
+      "error_T002_24h": 12.534,
+      "error_C0_24h": 7.262,
+      "error_T0_24h": 10.606,
+      "delta_24h": 5.768,
+      "deltaS_24h": 3.344,
+      "sep_T002_C002_24h": 10.078,
+      "sep_T0_C0_24h": 10.183,
+      "error_C002_48h": 19.158,
+      "error_T002_48h": 22.032,
+      "error_C0_48h": 21.313,
+      "error_T0_48h": 20.693,
+      "delta_48h": 2.874,
+      "deltaS_48h": -0.62,
+      "sep_T002_C002_48h": 16.079,
+      "sep_T0_C0_48h": 17.01,
+      "error_C002_72h": 31.665,
+      "error_T002_72h": 10.81,
+      "error_C0_72h": 39.761,
+      "error_T0_72h": 15.12,
+      "delta_72h": -20.855,
+      "deltaS_72h": -24.642,
+      "sep_T002_C002_72h": 25.807,
+      "sep_T0_C0_72h": 27.675,
+      "endpoint_C002_72h": 54.39,
+      "path_C002": 54.753,
+      "endpoint_T002_72h": 71.561,
+      "path_T002": 72.025,
+      "endpoint_C0_72h": 50.659,
+      "path_C0": 50.894,
+      "endpoint_T0_72h": 66.238,
+      "path_T0": 66.605,
+      "observed_72h": 81.357
+    },
+    {
+      "drifter_id": "92981",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_C002_24h": 14.439,
+      "error_T002_24h": 8.827,
+      "error_C0_24h": 15.155,
+      "error_T0_24h": 9.549,
+      "delta_24h": -5.612,
+      "deltaS_24h": -5.606,
+      "sep_T002_C002_24h": 5.614,
+      "sep_T0_C0_24h": 5.613,
+      "error_C002_48h": 31.834,
+      "error_T002_48h": 22.746,
+      "error_C0_48h": 33.224,
+      "error_T0_48h": 23.805,
+      "delta_48h": -9.088,
+      "deltaS_48h": -9.42,
+      "sep_T002_C002_48h": 10.784,
+      "sep_T0_C0_48h": 10.797,
+      "error_C002_72h": 36.862,
+      "error_T002_72h": 27.923,
+      "error_C0_72h": 40.007,
+      "error_T0_72h": 28.7,
+      "delta_72h": -8.939,
+      "deltaS_72h": -11.307,
+      "sep_T002_C002_72h": 18.697,
+      "sep_T0_C0_72h": 18.886,
+      "endpoint_C002_72h": 120.046,
+      "path_C002": 130.288,
+      "endpoint_T002_72h": 127.336,
+      "path_T002": 141.253,
+      "endpoint_C0_72h": 118.346,
+      "path_C0": 127.76,
+      "endpoint_T0_72h": 125.946,
+      "path_T0": 138.852,
+      "observed_72h": 154.559
+    },
+    {
+      "drifter_id": "98996",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_C002_24h": 19.701,
+      "error_T002_24h": 29.53,
+      "error_C0_24h": 18.278,
+      "error_T0_24h": 27.95,
+      "delta_24h": 9.829,
+      "deltaS_24h": 9.672,
+      "sep_T002_C002_24h": 10.264,
+      "sep_T0_C0_24h": 10.25,
+      "error_C002_48h": 46.89,
+      "error_T002_48h": 62.962,
+      "error_C0_48h": 44.751,
+      "error_T0_48h": 60.694,
+      "delta_48h": 16.072,
+      "deltaS_48h": 15.943,
+      "sep_T002_C002_48h": 16.168,
+      "sep_T0_C0_48h": 16.128,
+      "error_C002_72h": 83.052,
+      "error_T002_72h": 97.454,
+      "error_C0_72h": 80.329,
+      "error_T0_72h": 94.99,
+      "delta_72h": 14.402,
+      "deltaS_72h": 14.662,
+      "sep_T002_C002_72h": 17.485,
+      "sep_T0_C0_72h": 17.494,
+      "endpoint_C002_72h": 31.315,
+      "path_C002": 31.683,
+      "endpoint_T002_72h": 46.77,
+      "path_T002": 50.507,
+      "endpoint_C0_72h": 29.513,
+      "path_C0": 29.958,
+      "endpoint_T0_72h": 44.186,
+      "path_T0": 47.251,
+      "observed_72h": 79.433
+    },
+    {
+      "drifter_id": "98997",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_C002_24h": 17.993,
+      "error_T002_24h": 11.802,
+      "error_C0_24h": 19.105,
+      "error_T0_24h": 12.784,
+      "delta_24h": -6.191,
+      "deltaS_24h": -6.321,
+      "sep_T002_C002_24h": 6.962,
+      "sep_T0_C0_24h": 7.01,
+      "error_C002_48h": 36.955,
+      "error_T002_48h": 25.269,
+      "error_C0_48h": 39.273,
+      "error_T0_48h": 27.78,
+      "delta_48h": -11.687,
+      "deltaS_48h": -11.492,
+      "sep_T002_C002_48h": 11.707,
+      "sep_T0_C0_48h": 11.512,
+      "error_C002_72h": 51.988,
+      "error_T002_72h": 44.746,
+      "error_C0_72h": 53.702,
+      "error_T0_72h": 46.235,
+      "delta_72h": -7.242,
+      "deltaS_72h": -7.467,
+      "sep_T002_C002_72h": 9.568,
+      "sep_T0_C0_72h": 8.662,
+      "endpoint_C002_72h": 63.693,
+      "path_C002": 70.483,
+      "endpoint_T002_72h": 56.756,
+      "path_T002": 59.614,
+      "endpoint_C0_72h": 65.346,
+      "path_C0": 73.109,
+      "endpoint_T0_72h": 58.126,
+      "path_T0": 61.218,
+      "observed_72h": 12.151
+    },
+    {
+      "drifter_id": "98998",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_C002_24h": 8.506,
+      "error_T002_24h": 2.164,
+      "error_C0_24h": 10.112,
+      "error_T0_24h": 3.764,
+      "delta_24h": -6.342,
+      "deltaS_24h": -6.348,
+      "sep_T002_C002_24h": 6.342,
+      "sep_T0_C0_24h": 6.369,
+      "error_C002_48h": 9.4,
+      "error_T002_48h": 12.355,
+      "error_C0_48h": 10.751,
+      "error_T0_48h": 8.808,
+      "delta_48h": 2.955,
+      "deltaS_48h": -1.943,
+      "sep_T002_C002_48h": 15.44,
+      "sep_T0_C0_48h": 15.688,
+      "error_C002_72h": 14.309,
+      "error_T002_72h": 18.179,
+      "error_C0_72h": 14.673,
+      "error_T0_72h": 16.171,
+      "delta_72h": 3.87,
+      "deltaS_72h": 1.498,
+      "sep_T002_C002_72h": 16.754,
+      "sep_T0_C0_72h": 17.542,
+      "endpoint_C002_72h": 40.461,
+      "path_C002": 42.135,
+      "endpoint_T002_72h": 56.236,
+      "path_T002": 64.618,
+      "endpoint_C0_72h": 37.875,
+      "path_C0": 38.525,
+      "endpoint_T0_72h": 53.76,
+      "path_T0": 60.811,
+      "observed_72h": 51.185
+    },
+    {
+      "drifter_id": "99006",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_C002_24h": 5.228,
+      "error_T002_24h": 3.181,
+      "error_C0_24h": 5.542,
+      "error_T0_24h": 2.27,
+      "delta_24h": -2.047,
+      "deltaS_24h": -3.272,
+      "sep_T002_C002_24h": 7.297,
+      "sep_T0_C0_24h": 7.264,
+      "error_C002_48h": 11.096,
+      "error_T002_48h": 20.494,
+      "error_C0_48h": 10.427,
+      "error_T0_48h": 19.91,
+      "delta_48h": 9.398,
+      "deltaS_48h": 9.483,
+      "sep_T002_C002_48h": 10.676,
+      "sep_T0_C0_48h": 10.738,
+      "error_C002_72h": 24.151,
+      "error_T002_72h": 29.904,
+      "error_C0_72h": 25.234,
+      "error_T0_72h": 30.432,
+      "delta_72h": 5.754,
+      "deltaS_72h": 5.197,
+      "sep_T002_C002_72h": 10.306,
+      "sep_T0_C0_72h": 10.369,
+      "endpoint_C002_72h": 18.674,
+      "path_C002": 19.74,
+      "endpoint_T002_72h": 12.575,
+      "path_T002": 22.578,
+      "endpoint_C0_72h": 20.473,
+      "path_C0": 21.563,
+      "endpoint_T0_72h": 14.327,
+      "path_T0": 20.055,
+      "observed_72h": 26.356
+    }
+  ],
+  "step25cControlCrossCheck": [
+    {
+      "unit": "KE-1",
+      "drifter_id": "71155",
+      "horizon": 24,
+      "control_C002": 76.952,
+      "step25c_G002": "76.952",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "71155",
+      "horizon": 48,
+      "control_C002": 169.072,
+      "step25c_G002": "169.072",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "71155",
+      "horizon": 72,
+      "control_C002": 325.969,
+      "step25c_G002": "325.969",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81801",
+      "horizon": 24,
+      "control_C002": 46.234,
+      "step25c_G002": "46.234",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81801",
+      "horizon": 48,
+      "control_C002": 80.256,
+      "step25c_G002": "80.256",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81801",
+      "horizon": 72,
+      "control_C002": 89.781,
+      "step25c_G002": "89.781",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81805",
+      "horizon": 24,
+      "control_C002": 22.646,
+      "step25c_G002": "22.646",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81805",
+      "horizon": 48,
+      "control_C002": 30.398,
+      "step25c_G002": "30.398",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81805",
+      "horizon": 72,
+      "control_C002": 28.201,
+      "step25c_G002": "28.201",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81807",
+      "horizon": 24,
+      "control_C002": 8.196,
+      "step25c_G002": "8.196",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81807",
+      "horizon": 48,
+      "control_C002": 15.75,
+      "step25c_G002": "15.75",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81807",
+      "horizon": 72,
+      "control_C002": 32.042,
+      "step25c_G002": "32.042",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81811",
+      "horizon": 24,
+      "control_C002": 40.522,
+      "step25c_G002": "40.522",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81811",
+      "horizon": 48,
+      "control_C002": 46.395,
+      "step25c_G002": "46.395",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81811",
+      "horizon": 72,
+      "control_C002": 18.783,
+      "step25c_G002": "18.783",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81813",
+      "horizon": 24,
+      "control_C002": 2.66,
+      "step25c_G002": "2.66",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81813",
+      "horizon": 48,
+      "control_C002": 11.886,
+      "step25c_G002": "11.886",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81813",
+      "horizon": 72,
+      "control_C002": 26.913,
+      "step25c_G002": "26.913",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81814",
+      "horizon": 24,
+      "control_C002": 19.585,
+      "step25c_G002": "19.585",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81814",
+      "horizon": 48,
+      "control_C002": 41.577,
+      "step25c_G002": "41.577",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81814",
+      "horizon": 72,
+      "control_C002": "NOT_AVAILABLE",
+      "step25c_G002": "NOT_AVAILABLE",
+      "absDiffKm": "NOT_AVAILABLE"
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81816",
+      "horizon": 24,
+      "control_C002": 25.44,
+      "step25c_G002": "25.44",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81816",
+      "horizon": 48,
+      "control_C002": 47.664,
+      "step25c_G002": "47.664",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81816",
+      "horizon": 72,
+      "control_C002": 63.535,
+      "step25c_G002": "63.535",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "48965",
+      "horizon": 24,
+      "control_C002": 9.577,
+      "step25c_G002": "9.577",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "48965",
+      "horizon": 48,
+      "control_C002": 7.082,
+      "step25c_G002": "7.082",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "48965",
+      "horizon": 72,
+      "control_C002": 10.262,
+      "step25c_G002": "10.262",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "81802",
+      "horizon": 24,
+      "control_C002": 14.04,
+      "step25c_G002": "14.04",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "81802",
+      "horizon": 48,
+      "control_C002": 33.725,
+      "step25c_G002": "33.725",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "81802",
+      "horizon": 72,
+      "control_C002": 50.99,
+      "step25c_G002": "50.99",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90141",
+      "horizon": 24,
+      "control_C002": 4.427,
+      "step25c_G002": "4.427",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90141",
+      "horizon": 48,
+      "control_C002": 15.402,
+      "step25c_G002": "15.402",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90141",
+      "horizon": 72,
+      "control_C002": 14.977,
+      "step25c_G002": "14.977",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90142",
+      "horizon": 24,
+      "control_C002": 20.568,
+      "step25c_G002": "20.568",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90142",
+      "horizon": 48,
+      "control_C002": 37.503,
+      "step25c_G002": "37.503",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90142",
+      "horizon": 72,
+      "control_C002": 51.677,
+      "step25c_G002": "51.677",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90145",
+      "horizon": 24,
+      "control_C002": 11.536,
+      "step25c_G002": "11.536",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90145",
+      "horizon": 48,
+      "control_C002": 8.884,
+      "step25c_G002": "8.884",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90145",
+      "horizon": 72,
+      "control_C002": 21.727,
+      "step25c_G002": "21.727",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127198",
+      "horizon": 24,
+      "control_C002": 69.677,
+      "step25c_G002": "69.677",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127198",
+      "horizon": 48,
+      "control_C002": 124.876,
+      "step25c_G002": "124.876",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127198",
+      "horizon": 72,
+      "control_C002": 147.7,
+      "step25c_G002": "147.7",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127199",
+      "horizon": 24,
+      "control_C002": 71.146,
+      "step25c_G002": "71.146",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127199",
+      "horizon": 48,
+      "control_C002": 125.036,
+      "step25c_G002": "125.036",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127199",
+      "horizon": 72,
+      "control_C002": 146.416,
+      "step25c_G002": "146.416",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127272",
+      "horizon": 24,
+      "control_C002": 18.05,
+      "step25c_G002": "18.05",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127272",
+      "horizon": 48,
+      "control_C002": 52.823,
+      "step25c_G002": "52.823",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127272",
+      "horizon": 72,
+      "control_C002": 96.523,
+      "step25c_G002": "96.523",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127313",
+      "horizon": 24,
+      "control_C002": 131.891,
+      "step25c_G002": "131.891",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127313",
+      "horizon": 48,
+      "control_C002": 289.961,
+      "step25c_G002": "289.961",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127313",
+      "horizon": 72,
+      "control_C002": 416.26,
+      "step25c_G002": "416.26",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127314",
+      "horizon": 24,
+      "control_C002": 45.859,
+      "step25c_G002": "45.859",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127314",
+      "horizon": 48,
+      "control_C002": 77.404,
+      "step25c_G002": "77.404",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127314",
+      "horizon": 72,
+      "control_C002": 63.504,
+      "step25c_G002": "63.504",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127315",
+      "horizon": 24,
+      "control_C002": 34.539,
+      "step25c_G002": "34.539",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127315",
+      "horizon": 48,
+      "control_C002": 83.472,
+      "step25c_G002": "83.472",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127315",
+      "horizon": 72,
+      "control_C002": 143.744,
+      "step25c_G002": "143.744",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132511",
+      "horizon": 24,
+      "control_C002": 45.029,
+      "step25c_G002": "45.029",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132511",
+      "horizon": 48,
+      "control_C002": 99.332,
+      "step25c_G002": "99.332",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132511",
+      "horizon": 72,
+      "control_C002": 151.207,
+      "step25c_G002": "151.207",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132528",
+      "horizon": 24,
+      "control_C002": 41.109,
+      "step25c_G002": "41.109",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132528",
+      "horizon": 48,
+      "control_C002": 99.499,
+      "step25c_G002": "99.499",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132528",
+      "horizon": 72,
+      "control_C002": 66.626,
+      "step25c_G002": "66.626",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132634",
+      "horizon": 24,
+      "control_C002": 27.383,
+      "step25c_G002": "27.383",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132634",
+      "horizon": 48,
+      "control_C002": 53.507,
+      "step25c_G002": "53.507",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132634",
+      "horizon": 72,
+      "control_C002": 101.496,
+      "step25c_G002": "101.496",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-2",
+      "drifter_id": "127281",
+      "horizon": 24,
+      "control_C002": 28.432,
+      "step25c_G002": "28.432",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "AG-2",
+      "drifter_id": "127281",
+      "horizon": 48,
+      "control_C002": "NOT_AVAILABLE",
+      "step25c_G002": "NOT_AVAILABLE",
+      "absDiffKm": "NOT_AVAILABLE"
+    },
+    {
+      "unit": "AG-2",
+      "drifter_id": "127281",
+      "horizon": 72,
+      "control_C002": "NOT_AVAILABLE",
+      "step25c_G002": "NOT_AVAILABLE",
+      "absDiffKm": "NOT_AVAILABLE"
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "48985",
+      "horizon": 24,
+      "control_C002": 10.273,
+      "step25c_G002": "10.273",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "48985",
+      "horizon": 48,
+      "control_C002": 11.849,
+      "step25c_G002": "11.849",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "48985",
+      "horizon": 72,
+      "control_C002": 22.839,
+      "step25c_G002": "22.839",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "81806",
+      "horizon": 24,
+      "control_C002": 2.992,
+      "step25c_G002": "2.992",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "81806",
+      "horizon": 48,
+      "control_C002": 4.796,
+      "step25c_G002": "4.796",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "81806",
+      "horizon": 72,
+      "control_C002": 7.037,
+      "step25c_G002": "7.037",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90135",
+      "horizon": 24,
+      "control_C002": 31.961,
+      "step25c_G002": "31.961",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90135",
+      "horizon": 48,
+      "control_C002": 56.083,
+      "step25c_G002": "56.083",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90135",
+      "horizon": 72,
+      "control_C002": 57.508,
+      "step25c_G002": "57.508",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90149",
+      "horizon": 24,
+      "control_C002": 15.025,
+      "step25c_G002": "15.025",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90149",
+      "horizon": 48,
+      "control_C002": 26.378,
+      "step25c_G002": "26.378",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90149",
+      "horizon": 72,
+      "control_C002": 30.524,
+      "step25c_G002": "30.524",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90150",
+      "horizon": 24,
+      "control_C002": 34.495,
+      "step25c_G002": "34.495",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90150",
+      "horizon": 48,
+      "control_C002": 58.905,
+      "step25c_G002": "58.905",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90150",
+      "horizon": 72,
+      "control_C002": 69.208,
+      "step25c_G002": "69.208",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "89898",
+      "horizon": 24,
+      "control_C002": 6.807,
+      "step25c_G002": "6.807",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "89898",
+      "horizon": 48,
+      "control_C002": 26.06,
+      "step25c_G002": "26.06",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "89898",
+      "horizon": 72,
+      "control_C002": 52.084,
+      "step25c_G002": "52.084",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "90146",
+      "horizon": 24,
+      "control_C002": 6.766,
+      "step25c_G002": "6.766",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "90146",
+      "horizon": 48,
+      "control_C002": 19.158,
+      "step25c_G002": "19.158",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "90146",
+      "horizon": 72,
+      "control_C002": 31.665,
+      "step25c_G002": "31.665",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "92981",
+      "horizon": 24,
+      "control_C002": 14.439,
+      "step25c_G002": "14.439",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "92981",
+      "horizon": 48,
+      "control_C002": 31.834,
+      "step25c_G002": "31.834",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "92981",
+      "horizon": 72,
+      "control_C002": 36.862,
+      "step25c_G002": "36.862",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98996",
+      "horizon": 24,
+      "control_C002": 19.701,
+      "step25c_G002": "19.701",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98996",
+      "horizon": 48,
+      "control_C002": 46.89,
+      "step25c_G002": "46.89",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98996",
+      "horizon": 72,
+      "control_C002": 83.052,
+      "step25c_G002": "83.052",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98997",
+      "horizon": 24,
+      "control_C002": 17.993,
+      "step25c_G002": "17.993",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98997",
+      "horizon": 48,
+      "control_C002": 36.955,
+      "step25c_G002": "36.955",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98997",
+      "horizon": 72,
+      "control_C002": 51.988,
+      "step25c_G002": "51.988",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98998",
+      "horizon": 24,
+      "control_C002": 8.506,
+      "step25c_G002": "8.506",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98998",
+      "horizon": 48,
+      "control_C002": 9.4,
+      "step25c_G002": "9.4",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98998",
+      "horizon": 72,
+      "control_C002": 14.309,
+      "step25c_G002": "14.309",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "99006",
+      "horizon": 24,
+      "control_C002": 5.228,
+      "step25c_G002": "5.228",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "99006",
+      "horizon": 48,
+      "control_C002": 11.096,
+      "step25c_G002": "11.096",
+      "absDiffKm": 0.0
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "99006",
+      "horizon": 72,
+      "control_C002": 24.151,
+      "step25c_G002": "24.151",
+      "absDiffKm": 0.0
+    }
+  ],
+  "summary": {
+    "ruleId": "stokes-license-and-experiment-gate-step29",
+    "test": "TEST-06",
+    "phase": "B",
+    "status": "STEP29_COMPLETE",
+    "control": "dX/dt = U_GLORYS + alpha * U_wind",
+    "treatment": "dX/dt = U_GLORYS + U_Stokes + alpha * U_wind",
+    "stokesCoefficient": 1.0,
+    "alphaPrimary": 0.002,
+    "alphaStructural": 0.0,
+    "horizons": [
+      24,
+      48,
+      72
+    ],
+    "tieToleranceKm": 1e-06,
+    "deltaDefinition": "error_treatment - error_control (km); negative = Stokes treatment lower error",
+    "windows": [
+      "KE-1",
+      "KE-2",
+      "AG-1",
+      "AG-2",
+      "KE-H1",
+      "KE-H3"
+    ],
+    "KE-H2": "coverage fact only; not paired (frozen STEP 20 pairing)",
+    "AG_holdout": "UNAVAILABLE",
+    "strata": {
+      "overall": {
+        "n_drifters": 35,
+        "24h": {
+          "primary_alpha0.002": {
+            "n": 35,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 35,
+              "median": 19.701,
+              "mean": 28.277,
+              "min": 2.66,
+              "max": 131.891
+            },
+            "error_treatment": {
+              "n": 35,
+              "median": 21.655,
+              "mean": 28.161,
+              "min": 1.764,
+              "max": 129.183
+            },
+            "delta": {
+              "median_delta": -0.869,
+              "mean_delta": -0.115,
+              "min_delta": -6.342,
+              "max_delta": 9.829
+            },
+            "wins_stokes": 21,
+            "losses_stokes": 14,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 35,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 35,
+              "median": 20.119,
+              "mean": 28.377,
+              "min": 2.602,
+              "max": 132.895
+            },
+            "error_treatment": {
+              "n": 35,
+              "median": 21.185,
+              "mean": 28.057,
+              "min": 2.27,
+              "max": 130.183
+            },
+            "delta": {
+              "median_delta": -0.958,
+              "mean_delta": -0.32,
+              "min_delta": -6.348,
+              "max_delta": 9.672
+            },
+            "wins_stokes": 21,
+            "losses_stokes": 14,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 35,
+              "median": 4.669,
+              "mean": 4.832,
+              "min": 1.088,
+              "max": 10.264
+            },
+            "alpha0": {
+              "n": 35,
+              "median": 4.683,
+              "mean": 4.838,
+              "min": 1.083,
+              "max": 10.25
+            }
+          }
+        },
+        "48h": {
+          "primary_alpha0.002": {
+            "n": 34,
+            "notAvailable": 1,
+            "error_control": {
+              "n": 34,
+              "median": 39.54,
+              "mean": 55.615,
+              "min": 4.796,
+              "max": 289.961
+            },
+            "error_treatment": {
+              "n": 34,
+              "median": 35.658,
+              "mean": 55.833,
+              "min": 5.273,
+              "max": 281.682
+            },
+            "delta": {
+              "median_delta": 0.909,
+              "mean_delta": 0.219,
+              "min_delta": -11.687,
+              "max_delta": 16.072
+            },
+            "wins_stokes": 15,
+            "losses_stokes": 19,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 34,
+            "notAvailable": 1,
+            "error_control": {
+              "n": 34,
+              "median": 40.058,
+              "mean": 55.694,
+              "min": 5.116,
+              "max": 290.97
+            },
+            "error_treatment": {
+              "n": 34,
+              "median": 37.539,
+              "mean": 55.494,
+              "min": 5.837,
+              "max": 283.544
+            },
+            "delta": {
+              "median_delta": -0.257,
+              "mean_delta": -0.2,
+              "min_delta": -11.697,
+              "max_delta": 15.943
+            },
+            "wins_stokes": 17,
+            "losses_stokes": 17,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 34,
+              "median": 10.675,
+              "mean": 9.671,
+              "min": 1.259,
+              "max": 19.878
+            },
+            "alpha0": {
+              "n": 34,
+              "median": 10.768,
+              "mean": 9.666,
+              "min": 1.335,
+              "max": 18.48
+            }
+          }
+        },
+        "72h": {
+          "primary_alpha0.002": {
+            "n": 33,
+            "notAvailable": 2,
+            "error_control": {
+              "n": 33,
+              "median": 51.988,
+              "mean": 77.259,
+              "min": 7.037,
+              "max": 416.26
+            },
+            "error_treatment": {
+              "n": 33,
+              "median": 44.652,
+              "mean": 75.065,
+              "min": 5.529,
+              "max": 408.388
+            },
+            "delta": {
+              "median_delta": -3.496,
+              "mean_delta": -2.194,
+              "min_delta": -20.855,
+              "max_delta": 24.666
+            },
+            "wins_stokes": 19,
+            "losses_stokes": 14,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 33,
+            "notAvailable": 2,
+            "error_control": {
+              "n": 34,
+              "median": 54.225,
+              "mean": 76.744,
+              "min": 8.567,
+              "max": 416.222
+            },
+            "error_treatment": {
+              "n": 33,
+              "median": 46.235,
+              "mean": 75.306,
+              "min": 4.05,
+              "max": 410.469
+            },
+            "delta": {
+              "median_delta": -3.457,
+              "mean_delta": -2.973,
+              "min_delta": -24.642,
+              "max_delta": 19.22
+            },
+            "wins_stokes": 19,
+            "losses_stokes": 14,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 33,
+              "median": 10.306,
+              "mean": 13.484,
+              "min": 4.416,
+              "max": 36.285
+            },
+            "alpha0": {
+              "n": 33,
+              "median": 10.902,
+              "mean": 13.187,
+              "min": 4.149,
+              "max": 35.709
+            }
+          }
+        },
+        "M1_endpoint72h": {
+          "C002": {
+            "n": 33,
+            "median": 67.628,
+            "mean": 94.895,
+            "min": 15.274,
+            "max": 349.635
+          },
+          "T002": {
+            "n": 33,
+            "median": 67.251,
+            "mean": 97.472,
+            "min": 5.685,
+            "max": 357.029
+          },
+          "C0": {
+            "n": 34,
+            "median": 72.178,
+            "mean": 98.246,
+            "min": 15.551,
+            "max": 348.61
+          },
+          "T0": {
+            "n": 33,
+            "median": 67.622,
+            "mean": 97.223,
+            "min": 10.91,
+            "max": 357.662
+          }
+        },
+        "M2_totalPath": {
+          "C002": {
+            "n": 35,
+            "median": 79.782,
+            "mean": 111.207,
+            "min": 17.581,
+            "max": 374.344
+          },
+          "T002": {
+            "n": 35,
+            "median": 73.271,
+            "mean": 114.241,
+            "min": 10.346,
+            "max": 382.227
+          },
+          "C0": {
+            "n": 35,
+            "median": 81.895,
+            "mean": 111.177,
+            "min": 17.041,
+            "max": 373.916
+          },
+          "T0": {
+            "n": 35,
+            "median": 76.355,
+            "mean": 113.912,
+            "min": 14.704,
+            "max": 383.283
+          }
+        },
+        "M4_separation72h": {
+          "treatment_vs_control_alpha0.002": {
+            "n": 33,
+            "median": 10.306,
+            "mean": 13.484,
+            "min": 4.416,
+            "max": 36.285
+          },
+          "treatment_vs_control_alpha0": {
+            "n": 33,
+            "median": 10.902,
+            "mean": 13.187,
+            "min": 4.149,
+            "max": 35.709
+          }
+        },
+        "M5_observed72h": {
+          "n": 35,
+          "median": 85.528,
+          "mean": 115.128,
+          "min": 12.151,
+          "max": 449.489
+        }
+      },
+      "calibration": {
+        "n_drifters": 23,
+        "24h": {
+          "primary_alpha0.002": {
+            "n": 23,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 23,
+              "median": 27.383,
+              "mean": 35.456,
+              "min": 2.66,
+              "max": 131.891
+            },
+            "error_treatment": {
+              "n": 23,
+              "median": 25.469,
+              "mean": 35.566,
+              "min": 2.639,
+              "max": 129.183
+            },
+            "delta": {
+              "median_delta": -0.694,
+              "mean_delta": 0.11,
+              "min_delta": -4.465,
+              "max_delta": 7.651
+            },
+            "wins_stokes": 14,
+            "losses_stokes": 9,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 23,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 23,
+              "median": 26.869,
+              "mean": 35.416,
+              "min": 2.602,
+              "max": 132.895
+            },
+            "error_treatment": {
+              "n": 23,
+              "median": 26.04,
+              "mean": 35.416,
+              "min": 3.38,
+              "max": 130.183
+            },
+            "delta": {
+              "median_delta": -0.872,
+              "mean_delta": 0.0,
+              "min_delta": -4.497,
+              "max_delta": 7.809
+            },
+            "wins_stokes": 14,
+            "losses_stokes": 9,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 23,
+              "median": 4.323,
+              "mean": 4.357,
+              "min": 1.088,
+              "max": 7.895
+            },
+            "alpha0": {
+              "n": 23,
+              "median": 4.304,
+              "mean": 4.352,
+              "min": 1.083,
+              "max": 7.958
+            }
+          }
+        },
+        "48h": {
+          "primary_alpha0.002": {
+            "n": 22,
+            "notAvailable": 1,
+            "error_control": {
+              "n": 22,
+              "median": 50.243,
+              "mean": 70.523,
+              "min": 7.082,
+              "max": 289.961
+            },
+            "error_treatment": {
+              "n": 22,
+              "median": 47.669,
+              "mean": 70.722,
+              "min": 5.273,
+              "max": 281.682
+            },
+            "delta": {
+              "median_delta": 0.423,
+              "mean_delta": 0.199,
+              "min_delta": -11.563,
+              "max_delta": 14.074
+            },
+            "wins_stokes": 10,
+            "losses_stokes": 12,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 22,
+            "notAvailable": 1,
+            "error_control": {
+              "n": 22,
+              "median": 49.865,
+              "mean": 70.313,
+              "min": 7.945,
+              "max": 290.97
+            },
+            "error_treatment": {
+              "n": 22,
+              "median": 46.99,
+              "mean": 70.347,
+              "min": 5.878,
+              "max": 283.544
+            },
+            "delta": {
+              "median_delta": 0.708,
+              "mean_delta": 0.033,
+              "min_delta": -11.697,
+              "max_delta": 13.541
+            },
+            "wins_stokes": 10,
+            "losses_stokes": 12,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 22,
+              "median": 10.842,
+              "mean": 9.36,
+              "min": 1.259,
+              "max": 19.878
+            },
+            "alpha0": {
+              "n": 22,
+              "median": 10.949,
+              "mean": 9.28,
+              "min": 1.335,
+              "max": 18.48
+            }
+          }
+        },
+        "72h": {
+          "primary_alpha0.002": {
+            "n": 21,
+            "notAvailable": 2,
+            "error_control": {
+              "n": 21,
+              "median": 63.535,
+              "mean": 98.492,
+              "min": 10.262,
+              "max": 416.26
+            },
+            "error_treatment": {
+              "n": 21,
+              "median": 57.069,
+              "mean": 97.139,
+              "min": 12.056,
+              "max": 408.388
+            },
+            "delta": {
+              "median_delta": -1.765,
+              "mean_delta": -1.354,
+              "min_delta": -18.883,
+              "max_delta": 24.666
+            },
+            "wins_stokes": 11,
+            "losses_stokes": 10,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 21,
+            "notAvailable": 2,
+            "error_control": {
+              "n": 22,
+              "median": 65.679,
+              "mean": 95.806,
+              "min": 10.364,
+              "max": 416.222
+            },
+            "error_treatment": {
+              "n": 21,
+              "median": 59.424,
+              "mean": 97.173,
+              "min": 10.852,
+              "max": 410.469
+            },
+            "delta": {
+              "median_delta": -0.569,
+              "mean_delta": -1.953,
+              "min_delta": -21.083,
+              "max_delta": 19.22
+            },
+            "wins_stokes": 11,
+            "losses_stokes": 10,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 21,
+              "median": 9.81,
+              "mean": 13.028,
+              "min": 4.531,
+              "max": 36.285
+            },
+            "alpha0": {
+              "n": 21,
+              "median": 10.008,
+              "mean": 12.463,
+              "min": 4.52,
+              "max": 35.709
+            }
+          }
+        },
+        "M1_endpoint72h": {
+          "C002": {
+            "n": 21,
+            "median": 79.647,
+            "mean": 115.577,
+            "min": 19.203,
+            "max": 349.635
+          },
+          "T002": {
+            "n": 21,
+            "median": 76.63,
+            "mean": 116.013,
+            "min": 5.685,
+            "max": 357.029
+          },
+          "C0": {
+            "n": 22,
+            "median": 81.193,
+            "mean": 120.257,
+            "min": 19.797,
+            "max": 348.61
+          },
+          "T0": {
+            "n": 21,
+            "median": 74.827,
+            "mean": 116.506,
+            "min": 10.91,
+            "max": 357.662
+          }
+        },
+        "M2_totalPath": {
+          "C002": {
+            "n": 23,
+            "median": 90.149,
+            "mean": 137.02,
+            "min": 22.883,
+            "max": 374.344
+          },
+          "T002": {
+            "n": 23,
+            "median": 99.595,
+            "mean": 137.107,
+            "min": 10.346,
+            "max": 382.227
+          },
+          "C0": {
+            "n": 23,
+            "median": 90.903,
+            "mean": 137.5,
+            "min": 25.955,
+            "max": 373.916
+          },
+          "T0": {
+            "n": 23,
+            "median": 98.126,
+            "mean": 137.826,
+            "min": 14.704,
+            "max": 383.283
+          }
+        },
+        "M4_separation72h": {
+          "treatment_vs_control_alpha0.002": {
+            "n": 21,
+            "median": 9.81,
+            "mean": 13.028,
+            "min": 4.531,
+            "max": 36.285
+          },
+          "treatment_vs_control_alpha0": {
+            "n": 21,
+            "median": 10.008,
+            "mean": 12.463,
+            "min": 4.52,
+            "max": 35.709
+          }
+        },
+        "M5_observed72h": {
+          "n": 23,
+          "median": 98.763,
+          "mean": 135.861,
+          "min": 16.535,
+          "max": 449.489
+        }
+      },
+      "holdout": {
+        "n_drifters": 12,
+        "24h": {
+          "primary_alpha0.002": {
+            "n": 12,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 12,
+              "median": 12.356,
+              "mean": 14.515,
+              "min": 2.992,
+              "max": 34.495
+            },
+            "error_treatment": {
+              "n": 12,
+              "median": 10.314,
+              "mean": 13.968,
+              "min": 1.764,
+              "max": 37.918
+            },
+            "delta": {
+              "median_delta": -2.175,
+              "mean_delta": -0.547,
+              "min_delta": -6.342,
+              "max_delta": 9.829
+            },
+            "wins_stokes": 7,
+            "losses_stokes": 5,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 12,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 12,
+              "median": 13.21,
+              "mean": 14.887,
+              "min": 2.846,
+              "max": 33.621
+            },
+            "error_treatment": {
+              "n": 12,
+              "median": 10.078,
+              "mean": 13.953,
+              "min": 2.27,
+              "max": 37.175
+            },
+            "delta": {
+              "median_delta": -2.512,
+              "mean_delta": -0.934,
+              "min_delta": -6.348,
+              "max_delta": 9.672
+            },
+            "wins_stokes": 7,
+            "losses_stokes": 5,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 12,
+              "median": 5.468,
+              "mean": 5.743,
+              "min": 2.575,
+              "max": 10.264
+            },
+            "alpha0": {
+              "n": 12,
+              "median": 5.462,
+              "mean": 5.769,
+              "min": 2.59,
+              "max": 10.25
+            }
+          }
+        },
+        "48h": {
+          "primary_alpha0.002": {
+            "n": 12,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 12,
+              "median": 26.219,
+              "mean": 28.284,
+              "min": 4.796,
+              "max": 58.905
+            },
+            "error_treatment": {
+              "n": 12,
+              "median": 21.774,
+              "mean": 28.537,
+              "min": 7.566,
+              "max": 62.962
+            },
+            "delta": {
+              "median_delta": 2.822,
+              "mean_delta": 0.254,
+              "min_delta": -11.687,
+              "max_delta": 16.072
+            },
+            "wins_stokes": 5,
+            "losses_stokes": 7,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 12,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 12,
+              "median": 27.783,
+              "mean": 28.893,
+              "min": 5.116,
+              "max": 57.741
+            },
+            "error_treatment": {
+              "n": 12,
+              "median": 21.731,
+              "mean": 28.265,
+              "min": 5.837,
+              "max": 61.439
+            },
+            "delta": {
+              "median_delta": -1.281,
+              "mean_delta": -0.628,
+              "min_delta": -11.492,
+              "max_delta": 15.943
+            },
+            "wins_stokes": 7,
+            "losses_stokes": 5,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 12,
+              "median": 10.292,
+              "mean": 10.241,
+              "min": 3.363,
+              "max": 16.168
+            },
+            "alpha0": {
+              "n": 12,
+              "median": 10.365,
+              "mean": 10.373,
+              "min": 3.412,
+              "max": 17.01
+            }
+          }
+        },
+        "72h": {
+          "primary_alpha0.002": {
+            "n": 12,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 12,
+              "median": 34.263,
+              "mean": 40.102,
+              "min": 7.037,
+              "max": 83.052
+            },
+            "error_treatment": {
+              "n": 12,
+              "median": 28.914,
+              "mean": 36.436,
+              "min": 5.529,
+              "max": 97.454
+            },
+            "delta": {
+              "median_delta": -3.832,
+              "mean_delta": -3.666,
+              "min_delta": -20.855,
+              "max_delta": 14.402
+            },
+            "wins_stokes": 8,
+            "losses_stokes": 4,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 12,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 12,
+              "median": 39.884,
+              "mean": 41.798,
+              "min": 8.567,
+              "max": 80.329
+            },
+            "error_treatment": {
+              "n": 12,
+              "median": 29.566,
+              "mean": 37.039,
+              "min": 4.05,
+              "max": 94.99
+            },
+            "delta": {
+              "median_delta": -4.285,
+              "mean_delta": -4.759,
+              "min_delta": -24.642,
+              "max_delta": 14.662
+            },
+            "wins_stokes": 8,
+            "losses_stokes": 4,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 12,
+              "median": 16.773,
+              "mean": 14.281,
+              "min": 4.416,
+              "max": 25.807
+            },
+            "alpha0": {
+              "n": 12,
+              "median": 16.868,
+              "mean": 14.454,
+              "min": 4.149,
+              "max": 27.675
+            }
+          }
+        },
+        "M1_endpoint72h": {
+          "C002": {
+            "n": 12,
+            "median": 47.12,
+            "mean": 58.7,
+            "min": 15.274,
+            "max": 126.318
+          },
+          "T002": {
+            "n": 12,
+            "median": 56.496,
+            "mean": 65.025,
+            "min": 12.575,
+            "max": 127.336
+          },
+          "C0": {
+            "n": 12,
+            "median": 44.735,
+            "mean": 57.891,
+            "min": 15.551,
+            "max": 127.286
+          },
+          "T0": {
+            "n": 12,
+            "median": 55.943,
+            "mean": 63.478,
+            "min": 14.327,
+            "max": 125.946
+          }
+        },
+        "M2_totalPath": {
+          "C002": {
+            "n": 12,
+            "median": 48.657,
+            "mean": 61.73,
+            "min": 17.581,
+            "max": 130.913
+          },
+          "T002": {
+            "n": 12,
+            "median": 62.116,
+            "mean": 70.413,
+            "min": 22.578,
+            "max": 141.253
+          },
+          "C0": {
+            "n": 12,
+            "median": 46.234,
+            "mean": 60.724,
+            "min": 17.041,
+            "max": 131.857
+          },
+          "T0": {
+            "n": 12,
+            "median": 61.014,
+            "mean": 68.076,
+            "min": 20.055,
+            "max": 138.852
+          }
+        },
+        "M4_separation72h": {
+          "treatment_vs_control_alpha0.002": {
+            "n": 12,
+            "median": 16.773,
+            "mean": 14.281,
+            "min": 4.416,
+            "max": 25.807
+          },
+          "treatment_vs_control_alpha0": {
+            "n": 12,
+            "median": 16.868,
+            "mean": 14.454,
+            "min": 4.149,
+            "max": 27.675
+          }
+        },
+        "M5_observed72h": {
+          "n": 12,
+          "median": 70.81,
+          "mean": 75.39,
+          "min": 12.151,
+          "max": 154.559
+        }
+      }
+    },
+    "perWindow": {
+      "KE-1": {
+        "n_drifters": 8,
+        "24h": {
+          "primary_alpha0.002": {
+            "n": 8,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 8,
+              "median": 24.043,
+              "mean": 30.279,
+              "min": 2.66,
+              "max": 76.952
+            },
+            "error_treatment": {
+              "n": 8,
+              "median": 22.513,
+              "mean": 30.269,
+              "min": 2.639,
+              "max": 74.23
+            },
+            "delta": {
+              "median_delta": -0.357,
+              "mean_delta": -0.011,
+              "min_delta": -2.843,
+              "max_delta": 3.835
+            },
+            "wins_stokes": 5,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 8,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 8,
+              "median": 25.279,
+              "mean": 30.498,
+              "min": 3.547,
+              "max": 75.276
+            },
+            "error_treatment": {
+              "n": 8,
+              "median": 23.478,
+              "mean": 30.283,
+              "min": 3.38,
+              "max": 72.503
+            },
+            "delta": {
+              "median_delta": -0.58,
+              "mean_delta": -0.216,
+              "min_delta": -3.601,
+              "max_delta": 3.765
+            },
+            "wins_stokes": 5,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 8,
+              "median": 4.844,
+              "mean": 4.647,
+              "min": 1.615,
+              "max": 7.699
+            },
+            "alpha0": {
+              "n": 8,
+              "median": 4.839,
+              "mean": 4.625,
+              "min": 1.606,
+              "max": 7.62
+            }
+          }
+        },
+        "48h": {
+          "primary_alpha0.002": {
+            "n": 8,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 8,
+              "median": 43.986,
+              "mean": 55.375,
+              "min": 11.886,
+              "max": 169.072
+            },
+            "error_treatment": {
+              "n": 8,
+              "median": 39.422,
+              "mean": 55.411,
+              "min": 6.398,
+              "max": 179.449
+            },
+            "delta": {
+              "median_delta": 0.081,
+              "mean_delta": 0.036,
+              "min_delta": -10.657,
+              "max_delta": 10.377
+            },
+            "wins_stokes": 4,
+            "losses_stokes": 4,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 8,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 8,
+              "median": 43.262,
+              "mean": 55.066,
+              "min": 12.294,
+              "max": 164.446
+            },
+            "error_treatment": {
+              "n": 8,
+              "median": 40.172,
+              "mean": 54.65,
+              "min": 7.086,
+              "max": 175.403
+            },
+            "delta": {
+              "median_delta": -0.481,
+              "mean_delta": -0.416,
+              "min_delta": -11.697,
+              "max_delta": 10.957
+            },
+            "wins_stokes": 4,
+            "losses_stokes": 4,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 8,
+              "median": 10.478,
+              "mean": 10.442,
+              "min": 2.731,
+              "max": 19.878
+            },
+            "alpha0": {
+              "n": 8,
+              "median": 10.668,
+              "mean": 10.534,
+              "min": 2.71,
+              "max": 18.48
+            }
+          }
+        },
+        "72h": {
+          "primary_alpha0.002": {
+            "n": 7,
+            "notAvailable": 1,
+            "error_control": {
+              "n": 7,
+              "median": 32.042,
+              "mean": 83.603,
+              "min": 18.783,
+              "max": 325.969
+            },
+            "error_treatment": {
+              "n": 7,
+              "median": 28.966,
+              "mean": 81.452,
+              "min": 17.333,
+              "max": 335.192
+            },
+            "delta": {
+              "median_delta": 2.053,
+              "mean_delta": -2.152,
+              "min_delta": -18.883,
+              "max_delta": 10.964
+            },
+            "wins_stokes": 3,
+            "losses_stokes": 4,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 7,
+            "notAvailable": 1,
+            "error_control": {
+              "n": 8,
+              "median": 33.279,
+              "mean": 76.972,
+              "min": 19.746,
+              "max": 324.011
+            },
+            "error_treatment": {
+              "n": 7,
+              "median": 27.685,
+              "mean": 81.024,
+              "min": 15.735,
+              "max": 334.908
+            },
+            "delta": {
+              "median_delta": -0.569,
+              "mean_delta": -3.218,
+              "min_delta": -21.083,
+              "max_delta": 11.628
+            },
+            "wins_stokes": 4,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 7,
+              "median": 12.982,
+              "mean": 17.791,
+              "min": 9.81,
+              "max": 35.984
+            },
+            "alpha0": {
+              "n": 7,
+              "median": 13.368,
+              "mean": 17.615,
+              "min": 10.902,
+              "max": 35.709
+            }
+          }
+        },
+        "M1_endpoint72h": {
+          "C002": {
+            "n": 7,
+            "median": 75.353,
+            "mean": 99.915,
+            "min": 22.685,
+            "max": 349.635
+          },
+          "T002": {
+            "n": 7,
+            "median": 66.081,
+            "mean": 101.601,
+            "min": 35.496,
+            "max": 357.029
+          },
+          "C0": {
+            "n": 8,
+            "median": 77.416,
+            "mean": 113.676,
+            "min": 22.116,
+            "max": 348.61
+          },
+          "T0": {
+            "n": 7,
+            "median": 67.622,
+            "mean": 101.212,
+            "min": 30.905,
+            "max": 357.662
+          }
+        },
+        "M2_totalPath": {
+          "C002": {
+            "n": 8,
+            "median": 83.911,
+            "mean": 126.42,
+            "min": 32.803,
+            "max": 374.344
+          },
+          "T002": {
+            "n": 8,
+            "median": 75.188,
+            "mean": 125.862,
+            "min": 37.925,
+            "max": 382.227
+          },
+          "C0": {
+            "n": 8,
+            "median": 85.233,
+            "mean": 126.469,
+            "min": 35.798,
+            "max": 373.916
+          },
+          "T0": {
+            "n": 8,
+            "median": 75.898,
+            "mean": 125.868,
+            "min": 32.996,
+            "max": 383.283
+          }
+        },
+        "M4_separation72h": {
+          "treatment_vs_control_alpha0.002": {
+            "n": 7,
+            "median": 12.982,
+            "mean": 17.791,
+            "min": 9.81,
+            "max": 35.984
+          },
+          "treatment_vs_control_alpha0": {
+            "n": 7,
+            "median": 13.368,
+            "mean": 17.615,
+            "min": 10.902,
+            "max": 35.709
+          }
+        },
+        "M5_observed72h": {
+          "n": 8,
+          "median": 62.84,
+          "mean": 79.529,
+          "min": 16.535,
+          "max": 204.736
+        },
+        "role": "CALIBRATION",
+        "smallN": true,
+        "label": "SMALL-N / DESCRIPTIVE ONLY"
+      },
+      "KE-2": {
+        "n_drifters": 5,
+        "24h": {
+          "primary_alpha0.002": {
+            "n": 5,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 5,
+              "median": 11.536,
+              "mean": 12.03,
+              "min": 4.427,
+              "max": 20.568
+            },
+            "error_treatment": {
+              "n": 5,
+              "median": 13.945,
+              "mean": 14.301,
+              "min": 9.865,
+              "max": 18.575
+            },
+            "delta": {
+              "median_delta": 0.288,
+              "mean_delta": 2.271,
+              "min_delta": -1.994,
+              "max_delta": 7.651
+            },
+            "wins_stokes": 2,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 5,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 5,
+              "median": 10.162,
+              "mean": 11.69,
+              "min": 2.602,
+              "max": 21.361
+            },
+            "error_treatment": {
+              "n": 5,
+              "median": 14.093,
+              "mean": 13.842,
+              "min": 9.755,
+              "max": 19.257
+            },
+            "delta": {
+              "median_delta": 0.23,
+              "mean_delta": 2.152,
+              "min_delta": -2.104,
+              "max_delta": 7.809
+            },
+            "wins_stokes": 2,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 5,
+              "median": 5.82,
+              "mean": 5.097,
+              "min": 1.088,
+              "max": 7.895
+            },
+            "alpha0": {
+              "n": 5,
+              "median": 5.878,
+              "mean": 5.123,
+              "min": 1.083,
+              "max": 7.958
+            }
+          }
+        },
+        "48h": {
+          "primary_alpha0.002": {
+            "n": 5,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 5,
+              "median": 15.402,
+              "mean": 20.519,
+              "min": 7.082,
+              "max": 37.503
+            },
+            "error_treatment": {
+              "n": 5,
+              "median": 29.476,
+              "mean": 23.194,
+              "min": 5.273,
+              "max": 34.31
+            },
+            "delta": {
+              "median_delta": 0.585,
+              "mean_delta": 2.675,
+              "min_delta": -5.507,
+              "max_delta": 14.074
+            },
+            "wins_stokes": 2,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 5,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 5,
+              "median": 12.804,
+              "mean": 20.43,
+              "min": 7.945,
+              "max": 39.373
+            },
+            "error_treatment": {
+              "n": 5,
+              "median": 26.345,
+              "mean": 23.041,
+              "min": 5.878,
+              "max": 35.583
+            },
+            "delta": {
+              "median_delta": 1.519,
+              "mean_delta": 2.611,
+              "min_delta": -5.878,
+              "max_delta": 13.541
+            },
+            "wins_stokes": 2,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 5,
+              "median": 8.54,
+              "mean": 9.154,
+              "min": 3.157,
+              "max": 16.902
+            },
+            "alpha0": {
+              "n": 5,
+              "median": 8.2,
+              "mean": 8.704,
+              "min": 3.096,
+              "max": 15.06
+            }
+          }
+        },
+        "72h": {
+          "primary_alpha0.002": {
+            "n": 5,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 5,
+              "median": 21.727,
+              "mean": 29.927,
+              "min": 10.262,
+              "max": 51.677
+            },
+            "error_treatment": {
+              "n": 5,
+              "median": 39.643,
+              "mean": 31.578,
+              "min": 12.056,
+              "max": 49.226
+            },
+            "delta": {
+              "median_delta": -1.765,
+              "mean_delta": 1.651,
+              "min_delta": -11.125,
+              "max_delta": 24.666
+            },
+            "wins_stokes": 3,
+            "losses_stokes": 2,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 5,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 5,
+              "median": 23.44,
+              "mean": 30.32,
+              "min": 10.364,
+              "max": 54.748
+            },
+            "error_treatment": {
+              "n": 5,
+              "median": 31.375,
+              "mean": 30.872,
+              "min": 10.852,
+              "max": 51.02
+            },
+            "delta": {
+              "median_delta": 0.126,
+              "mean_delta": 0.552,
+              "min_delta": -11.829,
+              "max_delta": 19.22
+            },
+            "wins_stokes": 2,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 5,
+              "median": 9.894,
+              "mean": 14.838,
+              "min": 5.717,
+              "max": 36.285
+            },
+            "alpha0": {
+              "n": 5,
+              "median": 9.317,
+              "mean": 12.547,
+              "min": 5.655,
+              "max": 26.986
+            }
+          }
+        },
+        "M1_endpoint72h": {
+          "C002": {
+            "n": 5,
+            "median": 67.628,
+            "mean": 66.429,
+            "min": 20.751,
+            "max": 115.598
+          },
+          "T002": {
+            "n": 5,
+            "median": 70.983,
+            "mean": 65.237,
+            "min": 5.685,
+            "max": 120.676
+          },
+          "C0": {
+            "n": 5,
+            "median": 67.307,
+            "mean": 66.151,
+            "min": 24.236,
+            "max": 115.315
+          },
+          "T0": {
+            "n": 5,
+            "median": 73.484,
+            "mean": 65.916,
+            "min": 10.91,
+            "max": 120.18
+          }
+        },
+        "M2_totalPath": {
+          "C002": {
+            "n": 5,
+            "median": 68.565,
+            "mean": 70.961,
+            "min": 22.883,
+            "max": 128.603
+          },
+          "T002": {
+            "n": 5,
+            "median": 72.271,
+            "mean": 70.338,
+            "min": 10.346,
+            "max": 134.66
+          },
+          "C0": {
+            "n": 5,
+            "median": 67.931,
+            "mean": 70.258,
+            "min": 25.955,
+            "max": 127.514
+          },
+          "T0": {
+            "n": 5,
+            "median": 76.355,
+            "mean": 70.899,
+            "min": 14.704,
+            "max": 133.536
+          }
+        },
+        "M4_separation72h": {
+          "treatment_vs_control_alpha0.002": {
+            "n": 5,
+            "median": 9.894,
+            "mean": 14.838,
+            "min": 5.717,
+            "max": 36.285
+          },
+          "treatment_vs_control_alpha0": {
+            "n": 5,
+            "median": 9.317,
+            "mean": 12.547,
+            "min": 5.655,
+            "max": 26.986
+          }
+        },
+        "M5_observed72h": {
+          "n": 5,
+          "median": 70.905,
+          "mean": 79.548,
+          "min": 37.048,
+          "max": 131.458
+        },
+        "role": "CALIBRATION",
+        "smallN": true,
+        "label": "SMALL-N / DESCRIPTIVE ONLY"
+      },
+      "AG-1": {
+        "n_drifters": 9,
+        "24h": {
+          "primary_alpha0.002": {
+            "n": 9,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 9,
+              "median": 45.029,
+              "mean": 53.854,
+              "min": 18.05,
+              "max": 131.891
+            },
+            "error_treatment": {
+              "n": 9,
+              "median": 42.785,
+              "mean": 53.211,
+              "min": 21.655,
+              "max": 129.183
+            },
+            "delta": {
+              "median_delta": -0.954,
+              "mean_delta": -0.642,
+              "min_delta": -4.465,
+              "max_delta": 4.028
+            },
+            "wins_stokes": 6,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 9,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 9,
+              "median": 45.063,
+              "mean": 53.671,
+              "min": 16.675,
+              "max": 132.895
+            },
+            "error_treatment": {
+              "n": 9,
+              "median": 43.597,
+              "mean": 53.007,
+              "min": 20.228,
+              "max": 130.183
+            },
+            "delta": {
+              "median_delta": -0.958,
+              "mean_delta": -0.664,
+              "min_delta": -4.497,
+              "max_delta": 4.016
+            },
+            "wins_stokes": 6,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 9,
+              "median": 3.777,
+              "mean": 3.418,
+              "min": 1.272,
+              "max": 5.711
+            },
+            "alpha0": {
+              "n": 9,
+              "median": 3.778,
+              "mean": 3.415,
+              "min": 1.274,
+              "max": 5.696
+            }
+          }
+        },
+        "48h": {
+          "primary_alpha0.002": {
+            "n": 9,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 9,
+              "median": 99.332,
+              "mean": 111.768,
+              "min": 52.823,
+              "max": 289.961
+            },
+            "error_treatment": {
+              "n": 9,
+              "median": 94.203,
+              "mean": 110.737,
+              "min": 46.098,
+              "max": 281.682
+            },
+            "delta": {
+              "median_delta": 1.233,
+              "mean_delta": -1.031,
+              "min_delta": -11.563,
+              "max_delta": 10.921
+            },
+            "wins_stokes": 4,
+            "losses_stokes": 5,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 9,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 9,
+              "median": 99.767,
+              "mean": 111.58,
+              "min": 50.142,
+              "max": 290.97
+            },
+            "error_treatment": {
+              "n": 9,
+              "median": 92.496,
+              "mean": 110.581,
+              "min": 46.502,
+              "max": 283.544
+            },
+            "delta": {
+              "median_delta": 1.31,
+              "mean_delta": -0.999,
+              "min_delta": -11.685,
+              "max_delta": 10.919
+            },
+            "wins_stokes": 4,
+            "losses_stokes": 5,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 9,
+              "median": 11.009,
+              "mean": 8.512,
+              "min": 1.259,
+              "max": 12.633
+            },
+            "alpha0": {
+              "n": 9,
+              "median": 11.138,
+              "mean": 8.486,
+              "min": 1.335,
+              "max": 12.8
+            }
+          }
+        },
+        "72h": {
+          "primary_alpha0.002": {
+            "n": 9,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 9,
+              "median": 143.744,
+              "mean": 148.164,
+              "min": 63.504,
+              "max": 416.26
+            },
+            "error_treatment": {
+              "n": 9,
+              "median": 144.8,
+              "mean": 145.762,
+              "min": 57.069,
+              "max": 408.388
+            },
+            "delta": {
+              "median_delta": -3.563,
+              "mean_delta": -2.402,
+              "min_delta": -18.054,
+              "max_delta": 7.854
+            },
+            "wins_stokes": 5,
+            "losses_stokes": 4,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 9,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 9,
+              "median": 143.328,
+              "mean": 148.928,
+              "min": 65.867,
+              "max": 416.222
+            },
+            "error_treatment": {
+              "n": 9,
+              "median": 148.883,
+              "mean": 146.568,
+              "min": 59.424,
+              "max": 410.469
+            },
+            "delta": {
+              "median_delta": -3.457,
+              "mean_delta": -2.36,
+              "min_delta": -20.29,
+              "max_delta": 7.937
+            },
+            "wins_stokes": 5,
+            "losses_stokes": 4,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 9,
+              "median": 8.185,
+              "mean": 8.318,
+              "min": 4.531,
+              "max": 18.363
+            },
+            "alpha0": {
+              "n": 9,
+              "median": 6.877,
+              "mean": 8.41,
+              "min": 4.52,
+              "max": 20.368
+            }
+          }
+        },
+        "M1_endpoint72h": {
+          "C002": {
+            "n": 9,
+            "median": 166.876,
+            "mean": 155.064,
+            "min": 19.203,
+            "max": 323.313
+          },
+          "T002": {
+            "n": 9,
+            "median": 162.399,
+            "mean": 155.431,
+            "min": 22.569,
+            "max": 330.868
+          },
+          "C0": {
+            "n": 9,
+            "median": 166.978,
+            "mean": 156.165,
+            "min": 19.797,
+            "max": 322.934
+          },
+          "T0": {
+            "n": 9,
+            "median": 164.238,
+            "mean": 156.507,
+            "min": 22.803,
+            "max": 330.573
+          }
+        },
+        "M2_totalPath": {
+          "C002": {
+            "n": 9,
+            "median": 168.387,
+            "mean": 168.637,
+            "min": 24.573,
+            "max": 332.85
+          },
+          "T002": {
+            "n": 9,
+            "median": 175.276,
+            "mean": 169.783,
+            "min": 27.746,
+            "max": 341.736
+          },
+          "C0": {
+            "n": 9,
+            "median": 169.792,
+            "mean": 170.118,
+            "min": 26.012,
+            "max": 332.273
+          },
+          "T0": {
+            "n": 9,
+            "median": 174.413,
+            "mean": 171.189,
+            "min": 27.641,
+            "max": 341.216
+          }
+        },
+        "M4_separation72h": {
+          "treatment_vs_control_alpha0.002": {
+            "n": 9,
+            "median": 8.185,
+            "mean": 8.318,
+            "min": 4.531,
+            "max": 18.363
+          },
+          "treatment_vs_control_alpha0": {
+            "n": 9,
+            "median": 6.877,
+            "mean": 8.41,
+            "min": 4.52,
+            "max": 20.368
+          }
+        },
+        "M5_observed72h": {
+          "n": 9,
+          "median": 135.1,
+          "mean": 193.115,
+          "min": 80.755,
+          "max": 449.489
+        },
+        "role": "CALIBRATION",
+        "smallN": true,
+        "label": "SMALL-N / DESCRIPTIVE ONLY"
+      },
+      "AG-2": {
+        "n_drifters": 1,
+        "24h": {
+          "primary_alpha0.002": {
+            "n": 1,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 1,
+              "median": 28.432,
+              "mean": 28.432,
+              "min": 28.432,
+              "max": 28.432
+            },
+            "error_treatment": {
+              "n": 1,
+              "median": 25.469,
+              "mean": 25.469,
+              "min": 25.469,
+              "max": 25.469
+            },
+            "delta": {
+              "median_delta": -2.963,
+              "mean_delta": -2.963,
+              "min_delta": -2.963,
+              "max_delta": -2.963
+            },
+            "wins_stokes": 1,
+            "losses_stokes": 0,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 1,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 1,
+              "median": 29.091,
+              "mean": 29.091,
+              "min": 29.091,
+              "max": 29.091
+            },
+            "error_treatment": {
+              "n": 1,
+              "median": 26.04,
+              "mean": 26.04,
+              "min": 26.04,
+              "max": 26.04
+            },
+            "delta": {
+              "median_delta": -3.051,
+              "mean_delta": -3.051,
+              "min_delta": -3.051,
+              "max_delta": -3.051
+            },
+            "wins_stokes": 1,
+            "losses_stokes": 0,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 1,
+              "median": 6.796,
+              "mean": 6.796,
+              "min": 6.796,
+              "max": 6.796
+            },
+            "alpha0": {
+              "n": 1,
+              "median": 6.757,
+              "mean": 6.757,
+              "min": 6.757,
+              "max": 6.757
+            }
+          }
+        },
+        "48h": {
+          "primary_alpha0.002": {
+            "n": 0,
+            "notAvailable": 1,
+            "error_control": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "error_treatment": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "delta": {
+              "median_delta": null,
+              "mean_delta": null,
+              "min_delta": null,
+              "max_delta": null
+            },
+            "wins_stokes": 0,
+            "losses_stokes": 0,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 0,
+            "notAvailable": 1,
+            "error_control": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "error_treatment": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "delta": {
+              "median_delta": null,
+              "mean_delta": null,
+              "min_delta": null,
+              "max_delta": null
+            },
+            "wins_stokes": 0,
+            "losses_stokes": 0,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "alpha0": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            }
+          }
+        },
+        "72h": {
+          "primary_alpha0.002": {
+            "n": 0,
+            "notAvailable": 1,
+            "error_control": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "error_treatment": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "delta": {
+              "median_delta": null,
+              "mean_delta": null,
+              "min_delta": null,
+              "max_delta": null
+            },
+            "wins_stokes": 0,
+            "losses_stokes": 0,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 0,
+            "notAvailable": 1,
+            "error_control": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "error_treatment": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "delta": {
+              "median_delta": null,
+              "mean_delta": null,
+              "min_delta": null,
+              "max_delta": null
+            },
+            "wins_stokes": 0,
+            "losses_stokes": 0,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "alpha0": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            }
+          }
+        },
+        "M1_endpoint72h": {
+          "C002": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "T002": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "C0": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "T0": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          }
+        },
+        "M2_totalPath": {
+          "C002": {
+            "n": 1,
+            "median": 267.569,
+            "mean": 267.569,
+            "min": 267.569,
+            "max": 267.569
+          },
+          "T002": {
+            "n": 1,
+            "median": 266.832,
+            "mean": 266.832,
+            "min": 266.832,
+            "max": 266.832
+          },
+          "C0": {
+            "n": 1,
+            "median": 268.4,
+            "mean": 268.4,
+            "min": 268.4,
+            "max": 268.4
+          },
+          "T0": {
+            "n": 1,
+            "median": 267.852,
+            "mean": 267.852,
+            "min": 267.852,
+            "max": 267.852
+          }
+        },
+        "M4_separation72h": {
+          "treatment_vs_control_alpha0.002": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "treatment_vs_control_alpha0": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          }
+        },
+        "M5_observed72h": {
+          "n": 1,
+          "median": 352.788,
+          "mean": 352.788,
+          "min": 352.788,
+          "max": 352.788
+        },
+        "role": "CALIBRATION",
+        "smallN": true,
+        "label": "SMALL-N / DESCRIPTIVE ONLY (n=1: values only)"
+      },
+      "KE-H1": {
+        "n_drifters": 5,
+        "24h": {
+          "primary_alpha0.002": {
+            "n": 5,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 5,
+              "median": 15.025,
+              "mean": 18.949,
+              "min": 2.992,
+              "max": 34.495
+            },
+            "error_treatment": {
+              "n": 5,
+              "median": 12.722,
+              "mean": 19.563,
+              "min": 5.975,
+              "max": 37.918
+            },
+            "delta": {
+              "median_delta": 1.608,
+              "mean_delta": 0.614,
+              "min_delta": -2.644,
+              "max_delta": 3.423
+            },
+            "wins_stokes": 2,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 5,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 5,
+              "median": 15.906,
+              "mean": 19.123,
+              "min": 2.846,
+              "max": 33.621
+            },
+            "error_treatment": {
+              "n": 5,
+              "median": 13.519,
+              "mean": 19.586,
+              "min": 5.049,
+              "max": 37.175
+            },
+            "delta": {
+              "median_delta": 1.582,
+              "mean_delta": 0.463,
+              "min_delta": -2.636,
+              "max_delta": 3.554
+            },
+            "wins_stokes": 2,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 5,
+              "median": 2.804,
+              "mean": 3.407,
+              "min": 2.575,
+              "max": 4.879
+            },
+            "alpha0": {
+              "n": 5,
+              "median": 2.814,
+              "mean": 3.445,
+              "min": 2.59,
+              "max": 4.883
+            }
+          }
+        },
+        "48h": {
+          "primary_alpha0.002": {
+            "n": 5,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 5,
+              "median": 26.378,
+              "mean": 31.602,
+              "min": 4.796,
+              "max": 58.905
+            },
+            "error_treatment": {
+              "n": 5,
+              "median": 21.517,
+              "mean": 31.737,
+              "min": 7.566,
+              "max": 61.804
+            },
+            "delta": {
+              "median_delta": 2.77,
+              "mean_delta": 0.135,
+              "min_delta": -4.861,
+              "max_delta": 3.2
+            },
+            "wins_stokes": 2,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 5,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 5,
+              "median": 28.409,
+              "mean": 31.963,
+              "min": 5.116,
+              "max": 57.741
+            },
+            "error_treatment": {
+              "n": 5,
+              "median": 22.769,
+              "mean": 31.684,
+              "min": 5.837,
+              "max": 61.439
+            },
+            "delta": {
+              "median_delta": 0.721,
+              "mean_delta": -0.28,
+              "min_delta": -5.64,
+              "max_delta": 3.698
+            },
+            "wins_stokes": 2,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 5,
+              "median": 7.045,
+              "mean": 6.742,
+              "min": 3.363,
+              "max": 9.908
+            },
+            "alpha0": {
+              "n": 5,
+              "median": 7.127,
+              "mean": 6.878,
+              "min": 3.412,
+              "max": 9.991
+            }
+          }
+        },
+        "72h": {
+          "primary_alpha0.002": {
+            "n": 5,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 5,
+              "median": 30.524,
+              "mean": 37.423,
+              "min": 7.037,
+              "max": 69.208
+            },
+            "error_treatment": {
+              "n": 5,
+              "median": 26.355,
+              "mean": 34.766,
+              "min": 5.529,
+              "max": 64.032
+            },
+            "delta": {
+              "median_delta": -3.496,
+              "mean_delta": -2.657,
+              "min_delta": -5.176,
+              "max_delta": 1.062
+            },
+            "wins_stokes": 4,
+            "losses_stokes": 1,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 5,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 5,
+              "median": 33.526,
+              "mean": 38.427,
+              "min": 8.567,
+              "max": 69.014
+            },
+            "error_treatment": {
+              "n": 5,
+              "median": 26.893,
+              "mean": 34.893,
+              "min": 4.05,
+              "max": 64.961
+            },
+            "delta": {
+              "median_delta": -4.053,
+              "mean_delta": -3.534,
+              "min_delta": -6.633,
+              "max_delta": 0.947
+            },
+            "wins_stokes": 4,
+            "losses_stokes": 1,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 5,
+              "median": 7.549,
+              "mean": 10.89,
+              "min": 4.416,
+              "max": 20.051
+            },
+            "alpha0": {
+              "n": 5,
+              "median": 7.873,
+              "mean": 10.999,
+              "min": 4.149,
+              "max": 20.773
+            }
+          }
+        },
+        "M1_endpoint72h": {
+          "C002": {
+            "n": 5,
+            "median": 44.501,
+            "mean": 54.249,
+            "min": 15.274,
+            "max": 126.318
+          },
+          "T002": {
+            "n": 5,
+            "median": 51.833,
+            "mean": 59.314,
+            "min": 19.017,
+            "max": 122.244
+          },
+          "C0": {
+            "n": 5,
+            "median": 41.697,
+            "mean": 53.784,
+            "min": 15.551,
+            "max": 127.286
+          },
+          "T0": {
+            "n": 5,
+            "median": 49.399,
+            "mean": 57.669,
+            "min": 18.695,
+            "max": 122.917
+          }
+        },
+        "M2_totalPath": {
+          "C002": {
+            "n": 5,
+            "median": 44.533,
+            "mean": 56.253,
+            "min": 17.581,
+            "max": 130.913
+          },
+          "T002": {
+            "n": 5,
+            "median": 51.982,
+            "mean": 62.79,
+            "min": 24.536,
+            "max": 128.254
+          },
+          "C0": {
+            "n": 5,
+            "median": 41.717,
+            "mean": 55.634,
+            "min": 17.041,
+            "max": 131.857
+          },
+          "T0": {
+            "n": 5,
+            "median": 49.515,
+            "mean": 60.855,
+            "min": 23.433,
+            "max": 128.875
+          }
+        },
+        "M4_separation72h": {
+          "treatment_vs_control_alpha0.002": {
+            "n": 5,
+            "median": 7.549,
+            "mean": 10.89,
+            "min": 4.416,
+            "max": 20.051
+          },
+          "treatment_vs_control_alpha0": {
+            "n": 5,
+            "median": 7.873,
+            "mean": 10.999,
+            "min": 4.149,
+            "max": 20.773
+          }
+        },
+        "M5_observed72h": {
+          "n": 5,
+          "median": 62.188,
+          "mean": 71.914,
+          "min": 31.456,
+          "max": 112.667
+        },
+        "role": "HOLDOUT",
+        "smallN": true,
+        "label": "SMALL-N / DESCRIPTIVE ONLY"
+      },
+      "KE-H3": {
+        "n_drifters": 7,
+        "24h": {
+          "primary_alpha0.002": {
+            "n": 7,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 7,
+              "median": 8.506,
+              "mean": 11.348,
+              "min": 5.228,
+              "max": 19.701
+            },
+            "error_treatment": {
+              "n": 7,
+              "median": 8.827,
+              "mean": 9.972,
+              "min": 1.764,
+              "max": 29.53
+            },
+            "delta": {
+              "median_delta": -5.043,
+              "mean_delta": -1.377,
+              "min_delta": -6.342,
+              "max_delta": 9.829
+            },
+            "wins_stokes": 5,
+            "losses_stokes": 2,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 7,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 7,
+              "median": 10.112,
+              "mean": 11.861,
+              "min": 5.542,
+              "max": 19.105
+            },
+            "error_treatment": {
+              "n": 7,
+              "median": 9.549,
+              "mean": 9.929,
+              "min": 2.27,
+              "max": 27.95
+            },
+            "delta": {
+              "median_delta": -4.995,
+              "mean_delta": -1.932,
+              "min_delta": -6.348,
+              "max_delta": 9.672
+            },
+            "wins_stokes": 5,
+            "losses_stokes": 2,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 7,
+              "median": 6.962,
+              "mean": 7.411,
+              "min": 5.321,
+              "max": 10.264
+            },
+            "alpha0": {
+              "n": 7,
+              "median": 7.01,
+              "mean": 7.429,
+              "min": 5.311,
+              "max": 10.25
+            }
+          }
+        },
+        "48h": {
+          "primary_alpha0.002": {
+            "n": 7,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 7,
+              "median": 26.06,
+              "mean": 25.913,
+              "min": 9.4,
+              "max": 46.89
+            },
+            "error_treatment": {
+              "n": 7,
+              "median": 22.032,
+              "mean": 26.252,
+              "min": 12.355,
+              "max": 62.962
+            },
+            "delta": {
+              "median_delta": 2.874,
+              "mean_delta": 0.338,
+              "min_delta": -11.687,
+              "max_delta": 16.072
+            },
+            "wins_stokes": 3,
+            "losses_stokes": 4,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 7,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 7,
+              "median": 27.157,
+              "mean": 26.7,
+              "min": 10.427,
+              "max": 44.751
+            },
+            "error_treatment": {
+              "n": 7,
+              "median": 20.693,
+              "mean": 25.823,
+              "min": 8.808,
+              "max": 60.694
+            },
+            "delta": {
+              "median_delta": -1.943,
+              "mean_delta": -0.877,
+              "min_delta": -11.492,
+              "max_delta": 15.943
+            },
+            "wins_stokes": 5,
+            "losses_stokes": 2,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 7,
+              "median": 11.707,
+              "mean": 12.74,
+              "min": 8.324,
+              "max": 16.168
+            },
+            "alpha0": {
+              "n": 7,
+              "median": 11.512,
+              "mean": 12.869,
+              "min": 8.212,
+              "max": 17.01
+            }
+          }
+        },
+        "72h": {
+          "primary_alpha0.002": {
+            "n": 7,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 7,
+              "median": 36.862,
+              "mean": 42.016,
+              "min": 14.309,
+              "max": 83.052
+            },
+            "error_treatment": {
+              "n": 7,
+              "median": 29.904,
+              "mean": 37.629,
+              "min": 10.81,
+              "max": 97.454
+            },
+            "delta": {
+              "median_delta": -7.242,
+              "mean_delta": -4.386,
+              "min_delta": -20.855,
+              "max_delta": 14.402
+            },
+            "wins_stokes": 4,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "structural_alpha0": {
+            "n": 7,
+            "notAvailable": 0,
+            "error_control": {
+              "n": 7,
+              "median": 40.007,
+              "mean": 44.206,
+              "min": 14.673,
+              "max": 80.329
+            },
+            "error_treatment": {
+              "n": 7,
+              "median": 30.432,
+              "mean": 38.572,
+              "min": 15.12,
+              "max": 94.99
+            },
+            "delta": {
+              "median_delta": -7.467,
+              "mean_delta": -5.634,
+              "min_delta": -24.642,
+              "max_delta": 14.662
+            },
+            "wins_stokes": 4,
+            "losses_stokes": 3,
+            "ties": 0,
+            "winMeaning": "Stokes treatment lower error than control"
+          },
+          "stokesContribution_separationKm": {
+            "alpha0.002": {
+              "n": 7,
+              "median": 17.485,
+              "mean": 16.704,
+              "min": 9.568,
+              "max": 25.807
+            },
+            "alpha0": {
+              "n": 7,
+              "median": 17.542,
+              "mean": 16.922,
+              "min": 8.662,
+              "max": 27.675
+            }
+          }
+        },
+        "M1_endpoint72h": {
+          "C002": {
+            "n": 7,
+            "median": 54.39,
+            "mean": 61.879,
+            "min": 18.674,
+            "max": 120.046
+          },
+          "T002": {
+            "n": 7,
+            "median": 56.756,
+            "mean": 69.104,
+            "min": 12.575,
+            "max": 127.336
+          },
+          "C0": {
+            "n": 7,
+            "median": 50.659,
+            "mean": 60.826,
+            "min": 20.473,
+            "max": 118.346
+          },
+          "T0": {
+            "n": 7,
+            "median": 58.126,
+            "mean": 67.626,
+            "min": 14.327,
+            "max": 125.946
+          }
+        },
+        "M2_totalPath": {
+          "C002": {
+            "n": 7,
+            "median": 54.753,
+            "mean": 65.643,
+            "min": 19.74,
+            "max": 130.288
+          },
+          "T002": {
+            "n": 7,
+            "median": 64.618,
+            "mean": 75.858,
+            "min": 22.578,
+            "max": 141.253
+          },
+          "C0": {
+            "n": 7,
+            "median": 50.894,
+            "mean": 64.36,
+            "min": 21.563,
+            "max": 127.76
+          },
+          "T0": {
+            "n": 7,
+            "median": 61.218,
+            "mean": 73.233,
+            "min": 20.055,
+            "max": 138.852
+          }
+        },
+        "M4_separation72h": {
+          "treatment_vs_control_alpha0.002": {
+            "n": 7,
+            "median": 17.485,
+            "mean": 16.704,
+            "min": 9.568,
+            "max": 25.807
+          },
+          "treatment_vs_control_alpha0": {
+            "n": 7,
+            "median": 17.542,
+            "mean": 16.922,
+            "min": 8.662,
+            "max": 27.675
+          }
+        },
+        "M5_observed72h": {
+          "n": 7,
+          "median": 79.433,
+          "mean": 77.873,
+          "min": 12.151,
+          "max": 154.559
+        },
+        "role": "HOLDOUT",
+        "smallN": true,
+        "label": "SMALL-N / DESCRIPTIVE ONLY"
+      }
+    },
+    "topErrors": {
+      "24h": [
+        {
+          "drifter_id": "127313",
+          "unit": "AG-1",
+          "error_control": 131.891,
+          "error_treatment": 129.183,
+          "delta": -2.708
+        },
+        {
+          "drifter_id": "71155",
+          "unit": "KE-1",
+          "error_control": 76.952,
+          "error_treatment": 74.23,
+          "delta": -2.722
+        },
+        {
+          "drifter_id": "127199",
+          "unit": "AG-1",
+          "error_control": 71.146,
+          "error_treatment": 70.192,
+          "delta": -0.954
+        }
+      ],
+      "48h": [
+        {
+          "drifter_id": "127313",
+          "unit": "AG-1",
+          "error_control": 289.961,
+          "error_treatment": 281.682,
+          "delta": -8.28
+        },
+        {
+          "drifter_id": "71155",
+          "unit": "KE-1",
+          "error_control": 169.072,
+          "error_treatment": 179.449,
+          "delta": 10.377
+        },
+        {
+          "drifter_id": "127199",
+          "unit": "AG-1",
+          "error_control": 125.036,
+          "error_treatment": 127.746,
+          "delta": 2.71
+        }
+      ],
+      "72h": [
+        {
+          "drifter_id": "127313",
+          "unit": "AG-1",
+          "error_control": 416.26,
+          "error_treatment": 408.388,
+          "delta": -7.872
+        },
+        {
+          "drifter_id": "71155",
+          "unit": "KE-1",
+          "error_control": 325.969,
+          "error_treatment": 335.192,
+          "delta": 9.223
+        },
+        {
+          "drifter_id": "127315",
+          "unit": "AG-1",
+          "error_control": 143.744,
+          "error_treatment": 151.598,
+          "delta": 7.854
+        }
+      ]
+    },
+    "exploratorySignTest": {
+      "overall_24h_primary_alpha0.002": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 35,
+        "k": 14,
+        "p": 0.310505,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "overall_24h_structural_alpha0": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 35,
+        "k": 14,
+        "p": 0.310505,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "overall_48h_primary_alpha0.002": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 34,
+        "k": 15,
+        "p": 0.607591,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "overall_48h_structural_alpha0": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 34,
+        "k": 17,
+        "p": 1.0,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "overall_72h_primary_alpha0.002": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 33,
+        "k": 14,
+        "p": 0.48685,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "overall_72h_structural_alpha0": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 33,
+        "k": 14,
+        "p": 0.48685,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "calibration_24h_primary_alpha0.002": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 23,
+        "k": 9,
+        "p": 0.404873,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "calibration_24h_structural_alpha0": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 23,
+        "k": 9,
+        "p": 0.404873,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "calibration_48h_primary_alpha0.002": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 22,
+        "k": 10,
+        "p": 0.831812,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "calibration_48h_structural_alpha0": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 22,
+        "k": 10,
+        "p": 0.831812,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "calibration_72h_primary_alpha0.002": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 21,
+        "k": 10,
+        "p": 1.0,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "calibration_72h_structural_alpha0": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 21,
+        "k": 10,
+        "p": 1.0,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "holdout_24h_primary_alpha0.002": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 5,
+        "p": 0.774414,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "holdout_24h_structural_alpha0": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 5,
+        "p": 0.774414,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "holdout_48h_primary_alpha0.002": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 5,
+        "p": 0.774414,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "holdout_48h_structural_alpha0": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 5,
+        "p": 0.774414,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "holdout_72h_primary_alpha0.002": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 4,
+        "p": 0.387695,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      },
+      "holdout_72h_structural_alpha0": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 4,
+        "p": 0.387695,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+      }
+    },
+    "step25cControlCrossCheck": {
+      "pairsCompared": 102,
+      "maxAbsDiffKm": 0.0,
+      "medianAbsDiffKm": 0.0,
+      "note": "control uses the composite 3-hourly time axis and composite mask; differences vs the STEP 25C GLORYS run are recorded descriptively, not gated"
+    },
+    "labelRules": {
+      "scope": "overall stratum, primary alpha 0.002, 72 h; also reported per stratum and for the structural alpha 0 pair",
+      "primaryHorizonHours": 72,
+      "tieToleranceKm": 1e-06,
+      "consistencyFraction": 0.6666666666666666,
+      "signTestMinimumN": 10,
+      "rule": "STOKES_DESCRIPTIVELY_FAVORED if median delta < -tie AND wins/(wins+losses) >= 2/3; STOKES_DESCRIPTIVELY_DISFAVORED if median delta > +tie AND losses/(wins+losses) >= 2/3; otherwise NO_CLEAR_STOKES_DIFFERENCE; TEST_BLOCKED if any mandatory gate fails",
+      "labels": [
+        "STOKES_DESCRIPTIVELY_FAVORED",
+        "NO_CLEAR_STOKES_DIFFERENCE",
+        "STOKES_DESCRIPTIVELY_DISFAVORED",
+        "TEST_BLOCKED"
+      ],
+      "selection": false
+    },
+    "descriptiveLabel": {
+      "primary": "NO_CLEAR_STOKES_DIFFERENCE",
+      "byStratum": {
+        "overall": "NO_CLEAR_STOKES_DIFFERENCE",
+        "calibration": "NO_CLEAR_STOKES_DIFFERENCE",
+        "holdout": "STOKES_DESCRIPTIVELY_FAVORED"
+      },
+      "structural_alpha0": {
+        "overall": "NO_CLEAR_STOKES_DIFFERENCE",
+        "calibration": "NO_CLEAR_STOKES_DIFFERENCE",
+        "holdout": "STOKES_DESCRIPTIVELY_FAVORED"
+      }
+    },
+    "outlierPolicyApplied": {
+      "removed": 0,
+      "trimmed": 0,
+      "winsorized": 0,
+      "weighted": 0,
+      "deleted": 0,
+      "postHocExclusions": 0
+    },
+    "acceptanceThresholds": "NONE",
+    "coefficientSelection": "NONE",
+    "alphaSelection": "NONE",
+    "forcingSelection": "NONE",
+    "holdoutUsedForSelection": false,
+    "interpretation": "DESCRIPTIVE ONLY",
+    "physicalExplanationClaimed": false,
+    "statements": [
+      "TEST-06 is a descriptive paired experiment; no statistical significance, causal, universal or operational claim is made.",
+      "The only intentional difference between treatment and control is the added WW3 surface Stokes drift (coefficient 1.0, never multiplied by alpha); grid, time axis, mask, wind, alpha, releases and mechanics are identical.",
+      "alpha = 0.002 (structural pair alpha = 0), the Stokes coefficient, GLORYS depth and forcing identities are unchanged; no coefficient, alpha, depth or forcing selection was made.",
+      "Holdout results are descriptive only; no re-ranking, no selective rerun, no outlier handling.",
+      "Any observed Stokes effect is reported as an observed effect under the preregistered metric, not as a physical explanation; STEP 20-29 Phase A results are unchanged."
+    ]
+  },
+  "tableSha256": "972ec47f28c637a8116e2f107f71c2e0a64cc10e2421a96181c2242f1ac9c568",
+  "summarySha256": "921783b2db14cb069f4578cb4a7aff29edf0672866c61eb495b7883a20a61e1f",
+  "tool": {
+    "file": "tools/research/evaluate_step29_test06.py",
+    "sha256": "31c22612f59f9b90a89a9c924bb4e16e933ecd2eeb38a864ad76a0b3d964843c"
+  },
+  "deterministic": true,
+  "randomSeed": null,
+  "positionalToleranceInM3": null
+}

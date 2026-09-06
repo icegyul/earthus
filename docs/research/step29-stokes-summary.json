@@ -1,0 +1,3095 @@
+{
+  "ruleId": "stokes-license-and-experiment-gate-step29",
+  "test": "TEST-06",
+  "phase": "B",
+  "status": "STEP29_COMPLETE",
+  "control": "dX/dt = U_GLORYS + alpha * U_wind",
+  "treatment": "dX/dt = U_GLORYS + U_Stokes + alpha * U_wind",
+  "stokesCoefficient": 1.0,
+  "alphaPrimary": 0.002,
+  "alphaStructural": 0.0,
+  "horizons": [
+    24,
+    48,
+    72
+  ],
+  "tieToleranceKm": 1e-06,
+  "deltaDefinition": "error_treatment - error_control (km); negative = Stokes treatment lower error",
+  "windows": [
+    "KE-1",
+    "KE-2",
+    "AG-1",
+    "AG-2",
+    "KE-H1",
+    "KE-H3"
+  ],
+  "KE-H2": "coverage fact only; not paired (frozen STEP 20 pairing)",
+  "AG_holdout": "UNAVAILABLE",
+  "strata": {
+    "overall": {
+      "n_drifters": 35,
+      "24h": {
+        "primary_alpha0.002": {
+          "n": 35,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 35,
+            "median": 19.701,
+            "mean": 28.277,
+            "min": 2.66,
+            "max": 131.891
+          },
+          "error_treatment": {
+            "n": 35,
+            "median": 21.655,
+            "mean": 28.161,
+            "min": 1.764,
+            "max": 129.183
+          },
+          "delta": {
+            "median_delta": -0.869,
+            "mean_delta": -0.115,
+            "min_delta": -6.342,
+            "max_delta": 9.829
+          },
+          "wins_stokes": 21,
+          "losses_stokes": 14,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 35,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 35,
+            "median": 20.119,
+            "mean": 28.377,
+            "min": 2.602,
+            "max": 132.895
+          },
+          "error_treatment": {
+            "n": 35,
+            "median": 21.185,
+            "mean": 28.057,
+            "min": 2.27,
+            "max": 130.183
+          },
+          "delta": {
+            "median_delta": -0.958,
+            "mean_delta": -0.32,
+            "min_delta": -6.348,
+            "max_delta": 9.672
+          },
+          "wins_stokes": 21,
+          "losses_stokes": 14,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 35,
+            "median": 4.669,
+            "mean": 4.832,
+            "min": 1.088,
+            "max": 10.264
+          },
+          "alpha0": {
+            "n": 35,
+            "median": 4.683,
+            "mean": 4.838,
+            "min": 1.083,
+            "max": 10.25
+          }
+        }
+      },
+      "48h": {
+        "primary_alpha0.002": {
+          "n": 34,
+          "notAvailable": 1,
+          "error_control": {
+            "n": 34,
+            "median": 39.54,
+            "mean": 55.615,
+            "min": 4.796,
+            "max": 289.961
+          },
+          "error_treatment": {
+            "n": 34,
+            "median": 35.658,
+            "mean": 55.833,
+            "min": 5.273,
+            "max": 281.682
+          },
+          "delta": {
+            "median_delta": 0.909,
+            "mean_delta": 0.219,
+            "min_delta": -11.687,
+            "max_delta": 16.072
+          },
+          "wins_stokes": 15,
+          "losses_stokes": 19,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 34,
+          "notAvailable": 1,
+          "error_control": {
+            "n": 34,
+            "median": 40.058,
+            "mean": 55.694,
+            "min": 5.116,
+            "max": 290.97
+          },
+          "error_treatment": {
+            "n": 34,
+            "median": 37.539,
+            "mean": 55.494,
+            "min": 5.837,
+            "max": 283.544
+          },
+          "delta": {
+            "median_delta": -0.257,
+            "mean_delta": -0.2,
+            "min_delta": -11.697,
+            "max_delta": 15.943
+          },
+          "wins_stokes": 17,
+          "losses_stokes": 17,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 34,
+            "median": 10.675,
+            "mean": 9.671,
+            "min": 1.259,
+            "max": 19.878
+          },
+          "alpha0": {
+            "n": 34,
+            "median": 10.768,
+            "mean": 9.666,
+            "min": 1.335,
+            "max": 18.48
+          }
+        }
+      },
+      "72h": {
+        "primary_alpha0.002": {
+          "n": 33,
+          "notAvailable": 2,
+          "error_control": {
+            "n": 33,
+            "median": 51.988,
+            "mean": 77.259,
+            "min": 7.037,
+            "max": 416.26
+          },
+          "error_treatment": {
+            "n": 33,
+            "median": 44.652,
+            "mean": 75.065,
+            "min": 5.529,
+            "max": 408.388
+          },
+          "delta": {
+            "median_delta": -3.496,
+            "mean_delta": -2.194,
+            "min_delta": -20.855,
+            "max_delta": 24.666
+          },
+          "wins_stokes": 19,
+          "losses_stokes": 14,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 33,
+          "notAvailable": 2,
+          "error_control": {
+            "n": 34,
+            "median": 54.225,
+            "mean": 76.744,
+            "min": 8.567,
+            "max": 416.222
+          },
+          "error_treatment": {
+            "n": 33,
+            "median": 46.235,
+            "mean": 75.306,
+            "min": 4.05,
+            "max": 410.469
+          },
+          "delta": {
+            "median_delta": -3.457,
+            "mean_delta": -2.973,
+            "min_delta": -24.642,
+            "max_delta": 19.22
+          },
+          "wins_stokes": 19,
+          "losses_stokes": 14,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 33,
+            "median": 10.306,
+            "mean": 13.484,
+            "min": 4.416,
+            "max": 36.285
+          },
+          "alpha0": {
+            "n": 33,
+            "median": 10.902,
+            "mean": 13.187,
+            "min": 4.149,
+            "max": 35.709
+          }
+        }
+      },
+      "M1_endpoint72h": {
+        "C002": {
+          "n": 33,
+          "median": 67.628,
+          "mean": 94.895,
+          "min": 15.274,
+          "max": 349.635
+        },
+        "T002": {
+          "n": 33,
+          "median": 67.251,
+          "mean": 97.472,
+          "min": 5.685,
+          "max": 357.029
+        },
+        "C0": {
+          "n": 34,
+          "median": 72.178,
+          "mean": 98.246,
+          "min": 15.551,
+          "max": 348.61
+        },
+        "T0": {
+          "n": 33,
+          "median": 67.622,
+          "mean": 97.223,
+          "min": 10.91,
+          "max": 357.662
+        }
+      },
+      "M2_totalPath": {
+        "C002": {
+          "n": 35,
+          "median": 79.782,
+          "mean": 111.207,
+          "min": 17.581,
+          "max": 374.344
+        },
+        "T002": {
+          "n": 35,
+          "median": 73.271,
+          "mean": 114.241,
+          "min": 10.346,
+          "max": 382.227
+        },
+        "C0": {
+          "n": 35,
+          "median": 81.895,
+          "mean": 111.177,
+          "min": 17.041,
+          "max": 373.916
+        },
+        "T0": {
+          "n": 35,
+          "median": 76.355,
+          "mean": 113.912,
+          "min": 14.704,
+          "max": 383.283
+        }
+      },
+      "M4_separation72h": {
+        "treatment_vs_control_alpha0.002": {
+          "n": 33,
+          "median": 10.306,
+          "mean": 13.484,
+          "min": 4.416,
+          "max": 36.285
+        },
+        "treatment_vs_control_alpha0": {
+          "n": 33,
+          "median": 10.902,
+          "mean": 13.187,
+          "min": 4.149,
+          "max": 35.709
+        }
+      },
+      "M5_observed72h": {
+        "n": 35,
+        "median": 85.528,
+        "mean": 115.128,
+        "min": 12.151,
+        "max": 449.489
+      }
+    },
+    "calibration": {
+      "n_drifters": 23,
+      "24h": {
+        "primary_alpha0.002": {
+          "n": 23,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 23,
+            "median": 27.383,
+            "mean": 35.456,
+            "min": 2.66,
+            "max": 131.891
+          },
+          "error_treatment": {
+            "n": 23,
+            "median": 25.469,
+            "mean": 35.566,
+            "min": 2.639,
+            "max": 129.183
+          },
+          "delta": {
+            "median_delta": -0.694,
+            "mean_delta": 0.11,
+            "min_delta": -4.465,
+            "max_delta": 7.651
+          },
+          "wins_stokes": 14,
+          "losses_stokes": 9,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 23,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 23,
+            "median": 26.869,
+            "mean": 35.416,
+            "min": 2.602,
+            "max": 132.895
+          },
+          "error_treatment": {
+            "n": 23,
+            "median": 26.04,
+            "mean": 35.416,
+            "min": 3.38,
+            "max": 130.183
+          },
+          "delta": {
+            "median_delta": -0.872,
+            "mean_delta": 0.0,
+            "min_delta": -4.497,
+            "max_delta": 7.809
+          },
+          "wins_stokes": 14,
+          "losses_stokes": 9,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 23,
+            "median": 4.323,
+            "mean": 4.357,
+            "min": 1.088,
+            "max": 7.895
+          },
+          "alpha0": {
+            "n": 23,
+            "median": 4.304,
+            "mean": 4.352,
+            "min": 1.083,
+            "max": 7.958
+          }
+        }
+      },
+      "48h": {
+        "primary_alpha0.002": {
+          "n": 22,
+          "notAvailable": 1,
+          "error_control": {
+            "n": 22,
+            "median": 50.243,
+            "mean": 70.523,
+            "min": 7.082,
+            "max": 289.961
+          },
+          "error_treatment": {
+            "n": 22,
+            "median": 47.669,
+            "mean": 70.722,
+            "min": 5.273,
+            "max": 281.682
+          },
+          "delta": {
+            "median_delta": 0.423,
+            "mean_delta": 0.199,
+            "min_delta": -11.563,
+            "max_delta": 14.074
+          },
+          "wins_stokes": 10,
+          "losses_stokes": 12,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 22,
+          "notAvailable": 1,
+          "error_control": {
+            "n": 22,
+            "median": 49.865,
+            "mean": 70.313,
+            "min": 7.945,
+            "max": 290.97
+          },
+          "error_treatment": {
+            "n": 22,
+            "median": 46.99,
+            "mean": 70.347,
+            "min": 5.878,
+            "max": 283.544
+          },
+          "delta": {
+            "median_delta": 0.708,
+            "mean_delta": 0.033,
+            "min_delta": -11.697,
+            "max_delta": 13.541
+          },
+          "wins_stokes": 10,
+          "losses_stokes": 12,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 22,
+            "median": 10.842,
+            "mean": 9.36,
+            "min": 1.259,
+            "max": 19.878
+          },
+          "alpha0": {
+            "n": 22,
+            "median": 10.949,
+            "mean": 9.28,
+            "min": 1.335,
+            "max": 18.48
+          }
+        }
+      },
+      "72h": {
+        "primary_alpha0.002": {
+          "n": 21,
+          "notAvailable": 2,
+          "error_control": {
+            "n": 21,
+            "median": 63.535,
+            "mean": 98.492,
+            "min": 10.262,
+            "max": 416.26
+          },
+          "error_treatment": {
+            "n": 21,
+            "median": 57.069,
+            "mean": 97.139,
+            "min": 12.056,
+            "max": 408.388
+          },
+          "delta": {
+            "median_delta": -1.765,
+            "mean_delta": -1.354,
+            "min_delta": -18.883,
+            "max_delta": 24.666
+          },
+          "wins_stokes": 11,
+          "losses_stokes": 10,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 21,
+          "notAvailable": 2,
+          "error_control": {
+            "n": 22,
+            "median": 65.679,
+            "mean": 95.806,
+            "min": 10.364,
+            "max": 416.222
+          },
+          "error_treatment": {
+            "n": 21,
+            "median": 59.424,
+            "mean": 97.173,
+            "min": 10.852,
+            "max": 410.469
+          },
+          "delta": {
+            "median_delta": -0.569,
+            "mean_delta": -1.953,
+            "min_delta": -21.083,
+            "max_delta": 19.22
+          },
+          "wins_stokes": 11,
+          "losses_stokes": 10,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 21,
+            "median": 9.81,
+            "mean": 13.028,
+            "min": 4.531,
+            "max": 36.285
+          },
+          "alpha0": {
+            "n": 21,
+            "median": 10.008,
+            "mean": 12.463,
+            "min": 4.52,
+            "max": 35.709
+          }
+        }
+      },
+      "M1_endpoint72h": {
+        "C002": {
+          "n": 21,
+          "median": 79.647,
+          "mean": 115.577,
+          "min": 19.203,
+          "max": 349.635
+        },
+        "T002": {
+          "n": 21,
+          "median": 76.63,
+          "mean": 116.013,
+          "min": 5.685,
+          "max": 357.029
+        },
+        "C0": {
+          "n": 22,
+          "median": 81.193,
+          "mean": 120.257,
+          "min": 19.797,
+          "max": 348.61
+        },
+        "T0": {
+          "n": 21,
+          "median": 74.827,
+          "mean": 116.506,
+          "min": 10.91,
+          "max": 357.662
+        }
+      },
+      "M2_totalPath": {
+        "C002": {
+          "n": 23,
+          "median": 90.149,
+          "mean": 137.02,
+          "min": 22.883,
+          "max": 374.344
+        },
+        "T002": {
+          "n": 23,
+          "median": 99.595,
+          "mean": 137.107,
+          "min": 10.346,
+          "max": 382.227
+        },
+        "C0": {
+          "n": 23,
+          "median": 90.903,
+          "mean": 137.5,
+          "min": 25.955,
+          "max": 373.916
+        },
+        "T0": {
+          "n": 23,
+          "median": 98.126,
+          "mean": 137.826,
+          "min": 14.704,
+          "max": 383.283
+        }
+      },
+      "M4_separation72h": {
+        "treatment_vs_control_alpha0.002": {
+          "n": 21,
+          "median": 9.81,
+          "mean": 13.028,
+          "min": 4.531,
+          "max": 36.285
+        },
+        "treatment_vs_control_alpha0": {
+          "n": 21,
+          "median": 10.008,
+          "mean": 12.463,
+          "min": 4.52,
+          "max": 35.709
+        }
+      },
+      "M5_observed72h": {
+        "n": 23,
+        "median": 98.763,
+        "mean": 135.861,
+        "min": 16.535,
+        "max": 449.489
+      }
+    },
+    "holdout": {
+      "n_drifters": 12,
+      "24h": {
+        "primary_alpha0.002": {
+          "n": 12,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 12,
+            "median": 12.356,
+            "mean": 14.515,
+            "min": 2.992,
+            "max": 34.495
+          },
+          "error_treatment": {
+            "n": 12,
+            "median": 10.314,
+            "mean": 13.968,
+            "min": 1.764,
+            "max": 37.918
+          },
+          "delta": {
+            "median_delta": -2.175,
+            "mean_delta": -0.547,
+            "min_delta": -6.342,
+            "max_delta": 9.829
+          },
+          "wins_stokes": 7,
+          "losses_stokes": 5,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 12,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 12,
+            "median": 13.21,
+            "mean": 14.887,
+            "min": 2.846,
+            "max": 33.621
+          },
+          "error_treatment": {
+            "n": 12,
+            "median": 10.078,
+            "mean": 13.953,
+            "min": 2.27,
+            "max": 37.175
+          },
+          "delta": {
+            "median_delta": -2.512,
+            "mean_delta": -0.934,
+            "min_delta": -6.348,
+            "max_delta": 9.672
+          },
+          "wins_stokes": 7,
+          "losses_stokes": 5,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 12,
+            "median": 5.468,
+            "mean": 5.743,
+            "min": 2.575,
+            "max": 10.264
+          },
+          "alpha0": {
+            "n": 12,
+            "median": 5.462,
+            "mean": 5.769,
+            "min": 2.59,
+            "max": 10.25
+          }
+        }
+      },
+      "48h": {
+        "primary_alpha0.002": {
+          "n": 12,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 12,
+            "median": 26.219,
+            "mean": 28.284,
+            "min": 4.796,
+            "max": 58.905
+          },
+          "error_treatment": {
+            "n": 12,
+            "median": 21.774,
+            "mean": 28.537,
+            "min": 7.566,
+            "max": 62.962
+          },
+          "delta": {
+            "median_delta": 2.822,
+            "mean_delta": 0.254,
+            "min_delta": -11.687,
+            "max_delta": 16.072
+          },
+          "wins_stokes": 5,
+          "losses_stokes": 7,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 12,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 12,
+            "median": 27.783,
+            "mean": 28.893,
+            "min": 5.116,
+            "max": 57.741
+          },
+          "error_treatment": {
+            "n": 12,
+            "median": 21.731,
+            "mean": 28.265,
+            "min": 5.837,
+            "max": 61.439
+          },
+          "delta": {
+            "median_delta": -1.281,
+            "mean_delta": -0.628,
+            "min_delta": -11.492,
+            "max_delta": 15.943
+          },
+          "wins_stokes": 7,
+          "losses_stokes": 5,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 12,
+            "median": 10.292,
+            "mean": 10.241,
+            "min": 3.363,
+            "max": 16.168
+          },
+          "alpha0": {
+            "n": 12,
+            "median": 10.365,
+            "mean": 10.373,
+            "min": 3.412,
+            "max": 17.01
+          }
+        }
+      },
+      "72h": {
+        "primary_alpha0.002": {
+          "n": 12,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 12,
+            "median": 34.263,
+            "mean": 40.102,
+            "min": 7.037,
+            "max": 83.052
+          },
+          "error_treatment": {
+            "n": 12,
+            "median": 28.914,
+            "mean": 36.436,
+            "min": 5.529,
+            "max": 97.454
+          },
+          "delta": {
+            "median_delta": -3.832,
+            "mean_delta": -3.666,
+            "min_delta": -20.855,
+            "max_delta": 14.402
+          },
+          "wins_stokes": 8,
+          "losses_stokes": 4,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 12,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 12,
+            "median": 39.884,
+            "mean": 41.798,
+            "min": 8.567,
+            "max": 80.329
+          },
+          "error_treatment": {
+            "n": 12,
+            "median": 29.566,
+            "mean": 37.039,
+            "min": 4.05,
+            "max": 94.99
+          },
+          "delta": {
+            "median_delta": -4.285,
+            "mean_delta": -4.759,
+            "min_delta": -24.642,
+            "max_delta": 14.662
+          },
+          "wins_stokes": 8,
+          "losses_stokes": 4,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 12,
+            "median": 16.773,
+            "mean": 14.281,
+            "min": 4.416,
+            "max": 25.807
+          },
+          "alpha0": {
+            "n": 12,
+            "median": 16.868,
+            "mean": 14.454,
+            "min": 4.149,
+            "max": 27.675
+          }
+        }
+      },
+      "M1_endpoint72h": {
+        "C002": {
+          "n": 12,
+          "median": 47.12,
+          "mean": 58.7,
+          "min": 15.274,
+          "max": 126.318
+        },
+        "T002": {
+          "n": 12,
+          "median": 56.496,
+          "mean": 65.025,
+          "min": 12.575,
+          "max": 127.336
+        },
+        "C0": {
+          "n": 12,
+          "median": 44.735,
+          "mean": 57.891,
+          "min": 15.551,
+          "max": 127.286
+        },
+        "T0": {
+          "n": 12,
+          "median": 55.943,
+          "mean": 63.478,
+          "min": 14.327,
+          "max": 125.946
+        }
+      },
+      "M2_totalPath": {
+        "C002": {
+          "n": 12,
+          "median": 48.657,
+          "mean": 61.73,
+          "min": 17.581,
+          "max": 130.913
+        },
+        "T002": {
+          "n": 12,
+          "median": 62.116,
+          "mean": 70.413,
+          "min": 22.578,
+          "max": 141.253
+        },
+        "C0": {
+          "n": 12,
+          "median": 46.234,
+          "mean": 60.724,
+          "min": 17.041,
+          "max": 131.857
+        },
+        "T0": {
+          "n": 12,
+          "median": 61.014,
+          "mean": 68.076,
+          "min": 20.055,
+          "max": 138.852
+        }
+      },
+      "M4_separation72h": {
+        "treatment_vs_control_alpha0.002": {
+          "n": 12,
+          "median": 16.773,
+          "mean": 14.281,
+          "min": 4.416,
+          "max": 25.807
+        },
+        "treatment_vs_control_alpha0": {
+          "n": 12,
+          "median": 16.868,
+          "mean": 14.454,
+          "min": 4.149,
+          "max": 27.675
+        }
+      },
+      "M5_observed72h": {
+        "n": 12,
+        "median": 70.81,
+        "mean": 75.39,
+        "min": 12.151,
+        "max": 154.559
+      }
+    }
+  },
+  "perWindow": {
+    "KE-1": {
+      "n_drifters": 8,
+      "24h": {
+        "primary_alpha0.002": {
+          "n": 8,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 8,
+            "median": 24.043,
+            "mean": 30.279,
+            "min": 2.66,
+            "max": 76.952
+          },
+          "error_treatment": {
+            "n": 8,
+            "median": 22.513,
+            "mean": 30.269,
+            "min": 2.639,
+            "max": 74.23
+          },
+          "delta": {
+            "median_delta": -0.357,
+            "mean_delta": -0.011,
+            "min_delta": -2.843,
+            "max_delta": 3.835
+          },
+          "wins_stokes": 5,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 8,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 8,
+            "median": 25.279,
+            "mean": 30.498,
+            "min": 3.547,
+            "max": 75.276
+          },
+          "error_treatment": {
+            "n": 8,
+            "median": 23.478,
+            "mean": 30.283,
+            "min": 3.38,
+            "max": 72.503
+          },
+          "delta": {
+            "median_delta": -0.58,
+            "mean_delta": -0.216,
+            "min_delta": -3.601,
+            "max_delta": 3.765
+          },
+          "wins_stokes": 5,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 8,
+            "median": 4.844,
+            "mean": 4.647,
+            "min": 1.615,
+            "max": 7.699
+          },
+          "alpha0": {
+            "n": 8,
+            "median": 4.839,
+            "mean": 4.625,
+            "min": 1.606,
+            "max": 7.62
+          }
+        }
+      },
+      "48h": {
+        "primary_alpha0.002": {
+          "n": 8,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 8,
+            "median": 43.986,
+            "mean": 55.375,
+            "min": 11.886,
+            "max": 169.072
+          },
+          "error_treatment": {
+            "n": 8,
+            "median": 39.422,
+            "mean": 55.411,
+            "min": 6.398,
+            "max": 179.449
+          },
+          "delta": {
+            "median_delta": 0.081,
+            "mean_delta": 0.036,
+            "min_delta": -10.657,
+            "max_delta": 10.377
+          },
+          "wins_stokes": 4,
+          "losses_stokes": 4,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 8,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 8,
+            "median": 43.262,
+            "mean": 55.066,
+            "min": 12.294,
+            "max": 164.446
+          },
+          "error_treatment": {
+            "n": 8,
+            "median": 40.172,
+            "mean": 54.65,
+            "min": 7.086,
+            "max": 175.403
+          },
+          "delta": {
+            "median_delta": -0.481,
+            "mean_delta": -0.416,
+            "min_delta": -11.697,
+            "max_delta": 10.957
+          },
+          "wins_stokes": 4,
+          "losses_stokes": 4,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 8,
+            "median": 10.478,
+            "mean": 10.442,
+            "min": 2.731,
+            "max": 19.878
+          },
+          "alpha0": {
+            "n": 8,
+            "median": 10.668,
+            "mean": 10.534,
+            "min": 2.71,
+            "max": 18.48
+          }
+        }
+      },
+      "72h": {
+        "primary_alpha0.002": {
+          "n": 7,
+          "notAvailable": 1,
+          "error_control": {
+            "n": 7,
+            "median": 32.042,
+            "mean": 83.603,
+            "min": 18.783,
+            "max": 325.969
+          },
+          "error_treatment": {
+            "n": 7,
+            "median": 28.966,
+            "mean": 81.452,
+            "min": 17.333,
+            "max": 335.192
+          },
+          "delta": {
+            "median_delta": 2.053,
+            "mean_delta": -2.152,
+            "min_delta": -18.883,
+            "max_delta": 10.964
+          },
+          "wins_stokes": 3,
+          "losses_stokes": 4,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 7,
+          "notAvailable": 1,
+          "error_control": {
+            "n": 8,
+            "median": 33.279,
+            "mean": 76.972,
+            "min": 19.746,
+            "max": 324.011
+          },
+          "error_treatment": {
+            "n": 7,
+            "median": 27.685,
+            "mean": 81.024,
+            "min": 15.735,
+            "max": 334.908
+          },
+          "delta": {
+            "median_delta": -0.569,
+            "mean_delta": -3.218,
+            "min_delta": -21.083,
+            "max_delta": 11.628
+          },
+          "wins_stokes": 4,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 7,
+            "median": 12.982,
+            "mean": 17.791,
+            "min": 9.81,
+            "max": 35.984
+          },
+          "alpha0": {
+            "n": 7,
+            "median": 13.368,
+            "mean": 17.615,
+            "min": 10.902,
+            "max": 35.709
+          }
+        }
+      },
+      "M1_endpoint72h": {
+        "C002": {
+          "n": 7,
+          "median": 75.353,
+          "mean": 99.915,
+          "min": 22.685,
+          "max": 349.635
+        },
+        "T002": {
+          "n": 7,
+          "median": 66.081,
+          "mean": 101.601,
+          "min": 35.496,
+          "max": 357.029
+        },
+        "C0": {
+          "n": 8,
+          "median": 77.416,
+          "mean": 113.676,
+          "min": 22.116,
+          "max": 348.61
+        },
+        "T0": {
+          "n": 7,
+          "median": 67.622,
+          "mean": 101.212,
+          "min": 30.905,
+          "max": 357.662
+        }
+      },
+      "M2_totalPath": {
+        "C002": {
+          "n": 8,
+          "median": 83.911,
+          "mean": 126.42,
+          "min": 32.803,
+          "max": 374.344
+        },
+        "T002": {
+          "n": 8,
+          "median": 75.188,
+          "mean": 125.862,
+          "min": 37.925,
+          "max": 382.227
+        },
+        "C0": {
+          "n": 8,
+          "median": 85.233,
+          "mean": 126.469,
+          "min": 35.798,
+          "max": 373.916
+        },
+        "T0": {
+          "n": 8,
+          "median": 75.898,
+          "mean": 125.868,
+          "min": 32.996,
+          "max": 383.283
+        }
+      },
+      "M4_separation72h": {
+        "treatment_vs_control_alpha0.002": {
+          "n": 7,
+          "median": 12.982,
+          "mean": 17.791,
+          "min": 9.81,
+          "max": 35.984
+        },
+        "treatment_vs_control_alpha0": {
+          "n": 7,
+          "median": 13.368,
+          "mean": 17.615,
+          "min": 10.902,
+          "max": 35.709
+        }
+      },
+      "M5_observed72h": {
+        "n": 8,
+        "median": 62.84,
+        "mean": 79.529,
+        "min": 16.535,
+        "max": 204.736
+      },
+      "role": "CALIBRATION",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    },
+    "KE-2": {
+      "n_drifters": 5,
+      "24h": {
+        "primary_alpha0.002": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 5,
+            "median": 11.536,
+            "mean": 12.03,
+            "min": 4.427,
+            "max": 20.568
+          },
+          "error_treatment": {
+            "n": 5,
+            "median": 13.945,
+            "mean": 14.301,
+            "min": 9.865,
+            "max": 18.575
+          },
+          "delta": {
+            "median_delta": 0.288,
+            "mean_delta": 2.271,
+            "min_delta": -1.994,
+            "max_delta": 7.651
+          },
+          "wins_stokes": 2,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 5,
+            "median": 10.162,
+            "mean": 11.69,
+            "min": 2.602,
+            "max": 21.361
+          },
+          "error_treatment": {
+            "n": 5,
+            "median": 14.093,
+            "mean": 13.842,
+            "min": 9.755,
+            "max": 19.257
+          },
+          "delta": {
+            "median_delta": 0.23,
+            "mean_delta": 2.152,
+            "min_delta": -2.104,
+            "max_delta": 7.809
+          },
+          "wins_stokes": 2,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 5,
+            "median": 5.82,
+            "mean": 5.097,
+            "min": 1.088,
+            "max": 7.895
+          },
+          "alpha0": {
+            "n": 5,
+            "median": 5.878,
+            "mean": 5.123,
+            "min": 1.083,
+            "max": 7.958
+          }
+        }
+      },
+      "48h": {
+        "primary_alpha0.002": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 5,
+            "median": 15.402,
+            "mean": 20.519,
+            "min": 7.082,
+            "max": 37.503
+          },
+          "error_treatment": {
+            "n": 5,
+            "median": 29.476,
+            "mean": 23.194,
+            "min": 5.273,
+            "max": 34.31
+          },
+          "delta": {
+            "median_delta": 0.585,
+            "mean_delta": 2.675,
+            "min_delta": -5.507,
+            "max_delta": 14.074
+          },
+          "wins_stokes": 2,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 5,
+            "median": 12.804,
+            "mean": 20.43,
+            "min": 7.945,
+            "max": 39.373
+          },
+          "error_treatment": {
+            "n": 5,
+            "median": 26.345,
+            "mean": 23.041,
+            "min": 5.878,
+            "max": 35.583
+          },
+          "delta": {
+            "median_delta": 1.519,
+            "mean_delta": 2.611,
+            "min_delta": -5.878,
+            "max_delta": 13.541
+          },
+          "wins_stokes": 2,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 5,
+            "median": 8.54,
+            "mean": 9.154,
+            "min": 3.157,
+            "max": 16.902
+          },
+          "alpha0": {
+            "n": 5,
+            "median": 8.2,
+            "mean": 8.704,
+            "min": 3.096,
+            "max": 15.06
+          }
+        }
+      },
+      "72h": {
+        "primary_alpha0.002": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 5,
+            "median": 21.727,
+            "mean": 29.927,
+            "min": 10.262,
+            "max": 51.677
+          },
+          "error_treatment": {
+            "n": 5,
+            "median": 39.643,
+            "mean": 31.578,
+            "min": 12.056,
+            "max": 49.226
+          },
+          "delta": {
+            "median_delta": -1.765,
+            "mean_delta": 1.651,
+            "min_delta": -11.125,
+            "max_delta": 24.666
+          },
+          "wins_stokes": 3,
+          "losses_stokes": 2,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 5,
+            "median": 23.44,
+            "mean": 30.32,
+            "min": 10.364,
+            "max": 54.748
+          },
+          "error_treatment": {
+            "n": 5,
+            "median": 31.375,
+            "mean": 30.872,
+            "min": 10.852,
+            "max": 51.02
+          },
+          "delta": {
+            "median_delta": 0.126,
+            "mean_delta": 0.552,
+            "min_delta": -11.829,
+            "max_delta": 19.22
+          },
+          "wins_stokes": 2,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 5,
+            "median": 9.894,
+            "mean": 14.838,
+            "min": 5.717,
+            "max": 36.285
+          },
+          "alpha0": {
+            "n": 5,
+            "median": 9.317,
+            "mean": 12.547,
+            "min": 5.655,
+            "max": 26.986
+          }
+        }
+      },
+      "M1_endpoint72h": {
+        "C002": {
+          "n": 5,
+          "median": 67.628,
+          "mean": 66.429,
+          "min": 20.751,
+          "max": 115.598
+        },
+        "T002": {
+          "n": 5,
+          "median": 70.983,
+          "mean": 65.237,
+          "min": 5.685,
+          "max": 120.676
+        },
+        "C0": {
+          "n": 5,
+          "median": 67.307,
+          "mean": 66.151,
+          "min": 24.236,
+          "max": 115.315
+        },
+        "T0": {
+          "n": 5,
+          "median": 73.484,
+          "mean": 65.916,
+          "min": 10.91,
+          "max": 120.18
+        }
+      },
+      "M2_totalPath": {
+        "C002": {
+          "n": 5,
+          "median": 68.565,
+          "mean": 70.961,
+          "min": 22.883,
+          "max": 128.603
+        },
+        "T002": {
+          "n": 5,
+          "median": 72.271,
+          "mean": 70.338,
+          "min": 10.346,
+          "max": 134.66
+        },
+        "C0": {
+          "n": 5,
+          "median": 67.931,
+          "mean": 70.258,
+          "min": 25.955,
+          "max": 127.514
+        },
+        "T0": {
+          "n": 5,
+          "median": 76.355,
+          "mean": 70.899,
+          "min": 14.704,
+          "max": 133.536
+        }
+      },
+      "M4_separation72h": {
+        "treatment_vs_control_alpha0.002": {
+          "n": 5,
+          "median": 9.894,
+          "mean": 14.838,
+          "min": 5.717,
+          "max": 36.285
+        },
+        "treatment_vs_control_alpha0": {
+          "n": 5,
+          "median": 9.317,
+          "mean": 12.547,
+          "min": 5.655,
+          "max": 26.986
+        }
+      },
+      "M5_observed72h": {
+        "n": 5,
+        "median": 70.905,
+        "mean": 79.548,
+        "min": 37.048,
+        "max": 131.458
+      },
+      "role": "CALIBRATION",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    },
+    "AG-1": {
+      "n_drifters": 9,
+      "24h": {
+        "primary_alpha0.002": {
+          "n": 9,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 9,
+            "median": 45.029,
+            "mean": 53.854,
+            "min": 18.05,
+            "max": 131.891
+          },
+          "error_treatment": {
+            "n": 9,
+            "median": 42.785,
+            "mean": 53.211,
+            "min": 21.655,
+            "max": 129.183
+          },
+          "delta": {
+            "median_delta": -0.954,
+            "mean_delta": -0.642,
+            "min_delta": -4.465,
+            "max_delta": 4.028
+          },
+          "wins_stokes": 6,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 9,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 9,
+            "median": 45.063,
+            "mean": 53.671,
+            "min": 16.675,
+            "max": 132.895
+          },
+          "error_treatment": {
+            "n": 9,
+            "median": 43.597,
+            "mean": 53.007,
+            "min": 20.228,
+            "max": 130.183
+          },
+          "delta": {
+            "median_delta": -0.958,
+            "mean_delta": -0.664,
+            "min_delta": -4.497,
+            "max_delta": 4.016
+          },
+          "wins_stokes": 6,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 9,
+            "median": 3.777,
+            "mean": 3.418,
+            "min": 1.272,
+            "max": 5.711
+          },
+          "alpha0": {
+            "n": 9,
+            "median": 3.778,
+            "mean": 3.415,
+            "min": 1.274,
+            "max": 5.696
+          }
+        }
+      },
+      "48h": {
+        "primary_alpha0.002": {
+          "n": 9,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 9,
+            "median": 99.332,
+            "mean": 111.768,
+            "min": 52.823,
+            "max": 289.961
+          },
+          "error_treatment": {
+            "n": 9,
+            "median": 94.203,
+            "mean": 110.737,
+            "min": 46.098,
+            "max": 281.682
+          },
+          "delta": {
+            "median_delta": 1.233,
+            "mean_delta": -1.031,
+            "min_delta": -11.563,
+            "max_delta": 10.921
+          },
+          "wins_stokes": 4,
+          "losses_stokes": 5,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 9,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 9,
+            "median": 99.767,
+            "mean": 111.58,
+            "min": 50.142,
+            "max": 290.97
+          },
+          "error_treatment": {
+            "n": 9,
+            "median": 92.496,
+            "mean": 110.581,
+            "min": 46.502,
+            "max": 283.544
+          },
+          "delta": {
+            "median_delta": 1.31,
+            "mean_delta": -0.999,
+            "min_delta": -11.685,
+            "max_delta": 10.919
+          },
+          "wins_stokes": 4,
+          "losses_stokes": 5,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 9,
+            "median": 11.009,
+            "mean": 8.512,
+            "min": 1.259,
+            "max": 12.633
+          },
+          "alpha0": {
+            "n": 9,
+            "median": 11.138,
+            "mean": 8.486,
+            "min": 1.335,
+            "max": 12.8
+          }
+        }
+      },
+      "72h": {
+        "primary_alpha0.002": {
+          "n": 9,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 9,
+            "median": 143.744,
+            "mean": 148.164,
+            "min": 63.504,
+            "max": 416.26
+          },
+          "error_treatment": {
+            "n": 9,
+            "median": 144.8,
+            "mean": 145.762,
+            "min": 57.069,
+            "max": 408.388
+          },
+          "delta": {
+            "median_delta": -3.563,
+            "mean_delta": -2.402,
+            "min_delta": -18.054,
+            "max_delta": 7.854
+          },
+          "wins_stokes": 5,
+          "losses_stokes": 4,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 9,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 9,
+            "median": 143.328,
+            "mean": 148.928,
+            "min": 65.867,
+            "max": 416.222
+          },
+          "error_treatment": {
+            "n": 9,
+            "median": 148.883,
+            "mean": 146.568,
+            "min": 59.424,
+            "max": 410.469
+          },
+          "delta": {
+            "median_delta": -3.457,
+            "mean_delta": -2.36,
+            "min_delta": -20.29,
+            "max_delta": 7.937
+          },
+          "wins_stokes": 5,
+          "losses_stokes": 4,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 9,
+            "median": 8.185,
+            "mean": 8.318,
+            "min": 4.531,
+            "max": 18.363
+          },
+          "alpha0": {
+            "n": 9,
+            "median": 6.877,
+            "mean": 8.41,
+            "min": 4.52,
+            "max": 20.368
+          }
+        }
+      },
+      "M1_endpoint72h": {
+        "C002": {
+          "n": 9,
+          "median": 166.876,
+          "mean": 155.064,
+          "min": 19.203,
+          "max": 323.313
+        },
+        "T002": {
+          "n": 9,
+          "median": 162.399,
+          "mean": 155.431,
+          "min": 22.569,
+          "max": 330.868
+        },
+        "C0": {
+          "n": 9,
+          "median": 166.978,
+          "mean": 156.165,
+          "min": 19.797,
+          "max": 322.934
+        },
+        "T0": {
+          "n": 9,
+          "median": 164.238,
+          "mean": 156.507,
+          "min": 22.803,
+          "max": 330.573
+        }
+      },
+      "M2_totalPath": {
+        "C002": {
+          "n": 9,
+          "median": 168.387,
+          "mean": 168.637,
+          "min": 24.573,
+          "max": 332.85
+        },
+        "T002": {
+          "n": 9,
+          "median": 175.276,
+          "mean": 169.783,
+          "min": 27.746,
+          "max": 341.736
+        },
+        "C0": {
+          "n": 9,
+          "median": 169.792,
+          "mean": 170.118,
+          "min": 26.012,
+          "max": 332.273
+        },
+        "T0": {
+          "n": 9,
+          "median": 174.413,
+          "mean": 171.189,
+          "min": 27.641,
+          "max": 341.216
+        }
+      },
+      "M4_separation72h": {
+        "treatment_vs_control_alpha0.002": {
+          "n": 9,
+          "median": 8.185,
+          "mean": 8.318,
+          "min": 4.531,
+          "max": 18.363
+        },
+        "treatment_vs_control_alpha0": {
+          "n": 9,
+          "median": 6.877,
+          "mean": 8.41,
+          "min": 4.52,
+          "max": 20.368
+        }
+      },
+      "M5_observed72h": {
+        "n": 9,
+        "median": 135.1,
+        "mean": 193.115,
+        "min": 80.755,
+        "max": 449.489
+      },
+      "role": "CALIBRATION",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    },
+    "AG-2": {
+      "n_drifters": 1,
+      "24h": {
+        "primary_alpha0.002": {
+          "n": 1,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 1,
+            "median": 28.432,
+            "mean": 28.432,
+            "min": 28.432,
+            "max": 28.432
+          },
+          "error_treatment": {
+            "n": 1,
+            "median": 25.469,
+            "mean": 25.469,
+            "min": 25.469,
+            "max": 25.469
+          },
+          "delta": {
+            "median_delta": -2.963,
+            "mean_delta": -2.963,
+            "min_delta": -2.963,
+            "max_delta": -2.963
+          },
+          "wins_stokes": 1,
+          "losses_stokes": 0,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 1,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 1,
+            "median": 29.091,
+            "mean": 29.091,
+            "min": 29.091,
+            "max": 29.091
+          },
+          "error_treatment": {
+            "n": 1,
+            "median": 26.04,
+            "mean": 26.04,
+            "min": 26.04,
+            "max": 26.04
+          },
+          "delta": {
+            "median_delta": -3.051,
+            "mean_delta": -3.051,
+            "min_delta": -3.051,
+            "max_delta": -3.051
+          },
+          "wins_stokes": 1,
+          "losses_stokes": 0,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 1,
+            "median": 6.796,
+            "mean": 6.796,
+            "min": 6.796,
+            "max": 6.796
+          },
+          "alpha0": {
+            "n": 1,
+            "median": 6.757,
+            "mean": 6.757,
+            "min": 6.757,
+            "max": 6.757
+          }
+        }
+      },
+      "48h": {
+        "primary_alpha0.002": {
+          "n": 0,
+          "notAvailable": 1,
+          "error_control": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "error_treatment": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "delta": {
+            "median_delta": null,
+            "mean_delta": null,
+            "min_delta": null,
+            "max_delta": null
+          },
+          "wins_stokes": 0,
+          "losses_stokes": 0,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 0,
+          "notAvailable": 1,
+          "error_control": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "error_treatment": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "delta": {
+            "median_delta": null,
+            "mean_delta": null,
+            "min_delta": null,
+            "max_delta": null
+          },
+          "wins_stokes": 0,
+          "losses_stokes": 0,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "alpha0": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "72h": {
+        "primary_alpha0.002": {
+          "n": 0,
+          "notAvailable": 1,
+          "error_control": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "error_treatment": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "delta": {
+            "median_delta": null,
+            "mean_delta": null,
+            "min_delta": null,
+            "max_delta": null
+          },
+          "wins_stokes": 0,
+          "losses_stokes": 0,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 0,
+          "notAvailable": 1,
+          "error_control": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "error_treatment": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "delta": {
+            "median_delta": null,
+            "mean_delta": null,
+            "min_delta": null,
+            "max_delta": null
+          },
+          "wins_stokes": 0,
+          "losses_stokes": 0,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "alpha0": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          }
+        }
+      },
+      "M1_endpoint72h": {
+        "C002": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "T002": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "C0": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "T0": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        }
+      },
+      "M2_totalPath": {
+        "C002": {
+          "n": 1,
+          "median": 267.569,
+          "mean": 267.569,
+          "min": 267.569,
+          "max": 267.569
+        },
+        "T002": {
+          "n": 1,
+          "median": 266.832,
+          "mean": 266.832,
+          "min": 266.832,
+          "max": 266.832
+        },
+        "C0": {
+          "n": 1,
+          "median": 268.4,
+          "mean": 268.4,
+          "min": 268.4,
+          "max": 268.4
+        },
+        "T0": {
+          "n": 1,
+          "median": 267.852,
+          "mean": 267.852,
+          "min": 267.852,
+          "max": 267.852
+        }
+      },
+      "M4_separation72h": {
+        "treatment_vs_control_alpha0.002": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "treatment_vs_control_alpha0": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        }
+      },
+      "M5_observed72h": {
+        "n": 1,
+        "median": 352.788,
+        "mean": 352.788,
+        "min": 352.788,
+        "max": 352.788
+      },
+      "role": "CALIBRATION",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY (n=1: values only)"
+    },
+    "KE-H1": {
+      "n_drifters": 5,
+      "24h": {
+        "primary_alpha0.002": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 5,
+            "median": 15.025,
+            "mean": 18.949,
+            "min": 2.992,
+            "max": 34.495
+          },
+          "error_treatment": {
+            "n": 5,
+            "median": 12.722,
+            "mean": 19.563,
+            "min": 5.975,
+            "max": 37.918
+          },
+          "delta": {
+            "median_delta": 1.608,
+            "mean_delta": 0.614,
+            "min_delta": -2.644,
+            "max_delta": 3.423
+          },
+          "wins_stokes": 2,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 5,
+            "median": 15.906,
+            "mean": 19.123,
+            "min": 2.846,
+            "max": 33.621
+          },
+          "error_treatment": {
+            "n": 5,
+            "median": 13.519,
+            "mean": 19.586,
+            "min": 5.049,
+            "max": 37.175
+          },
+          "delta": {
+            "median_delta": 1.582,
+            "mean_delta": 0.463,
+            "min_delta": -2.636,
+            "max_delta": 3.554
+          },
+          "wins_stokes": 2,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 5,
+            "median": 2.804,
+            "mean": 3.407,
+            "min": 2.575,
+            "max": 4.879
+          },
+          "alpha0": {
+            "n": 5,
+            "median": 2.814,
+            "mean": 3.445,
+            "min": 2.59,
+            "max": 4.883
+          }
+        }
+      },
+      "48h": {
+        "primary_alpha0.002": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 5,
+            "median": 26.378,
+            "mean": 31.602,
+            "min": 4.796,
+            "max": 58.905
+          },
+          "error_treatment": {
+            "n": 5,
+            "median": 21.517,
+            "mean": 31.737,
+            "min": 7.566,
+            "max": 61.804
+          },
+          "delta": {
+            "median_delta": 2.77,
+            "mean_delta": 0.135,
+            "min_delta": -4.861,
+            "max_delta": 3.2
+          },
+          "wins_stokes": 2,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 5,
+            "median": 28.409,
+            "mean": 31.963,
+            "min": 5.116,
+            "max": 57.741
+          },
+          "error_treatment": {
+            "n": 5,
+            "median": 22.769,
+            "mean": 31.684,
+            "min": 5.837,
+            "max": 61.439
+          },
+          "delta": {
+            "median_delta": 0.721,
+            "mean_delta": -0.28,
+            "min_delta": -5.64,
+            "max_delta": 3.698
+          },
+          "wins_stokes": 2,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 5,
+            "median": 7.045,
+            "mean": 6.742,
+            "min": 3.363,
+            "max": 9.908
+          },
+          "alpha0": {
+            "n": 5,
+            "median": 7.127,
+            "mean": 6.878,
+            "min": 3.412,
+            "max": 9.991
+          }
+        }
+      },
+      "72h": {
+        "primary_alpha0.002": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 5,
+            "median": 30.524,
+            "mean": 37.423,
+            "min": 7.037,
+            "max": 69.208
+          },
+          "error_treatment": {
+            "n": 5,
+            "median": 26.355,
+            "mean": 34.766,
+            "min": 5.529,
+            "max": 64.032
+          },
+          "delta": {
+            "median_delta": -3.496,
+            "mean_delta": -2.657,
+            "min_delta": -5.176,
+            "max_delta": 1.062
+          },
+          "wins_stokes": 4,
+          "losses_stokes": 1,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 5,
+            "median": 33.526,
+            "mean": 38.427,
+            "min": 8.567,
+            "max": 69.014
+          },
+          "error_treatment": {
+            "n": 5,
+            "median": 26.893,
+            "mean": 34.893,
+            "min": 4.05,
+            "max": 64.961
+          },
+          "delta": {
+            "median_delta": -4.053,
+            "mean_delta": -3.534,
+            "min_delta": -6.633,
+            "max_delta": 0.947
+          },
+          "wins_stokes": 4,
+          "losses_stokes": 1,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 5,
+            "median": 7.549,
+            "mean": 10.89,
+            "min": 4.416,
+            "max": 20.051
+          },
+          "alpha0": {
+            "n": 5,
+            "median": 7.873,
+            "mean": 10.999,
+            "min": 4.149,
+            "max": 20.773
+          }
+        }
+      },
+      "M1_endpoint72h": {
+        "C002": {
+          "n": 5,
+          "median": 44.501,
+          "mean": 54.249,
+          "min": 15.274,
+          "max": 126.318
+        },
+        "T002": {
+          "n": 5,
+          "median": 51.833,
+          "mean": 59.314,
+          "min": 19.017,
+          "max": 122.244
+        },
+        "C0": {
+          "n": 5,
+          "median": 41.697,
+          "mean": 53.784,
+          "min": 15.551,
+          "max": 127.286
+        },
+        "T0": {
+          "n": 5,
+          "median": 49.399,
+          "mean": 57.669,
+          "min": 18.695,
+          "max": 122.917
+        }
+      },
+      "M2_totalPath": {
+        "C002": {
+          "n": 5,
+          "median": 44.533,
+          "mean": 56.253,
+          "min": 17.581,
+          "max": 130.913
+        },
+        "T002": {
+          "n": 5,
+          "median": 51.982,
+          "mean": 62.79,
+          "min": 24.536,
+          "max": 128.254
+        },
+        "C0": {
+          "n": 5,
+          "median": 41.717,
+          "mean": 55.634,
+          "min": 17.041,
+          "max": 131.857
+        },
+        "T0": {
+          "n": 5,
+          "median": 49.515,
+          "mean": 60.855,
+          "min": 23.433,
+          "max": 128.875
+        }
+      },
+      "M4_separation72h": {
+        "treatment_vs_control_alpha0.002": {
+          "n": 5,
+          "median": 7.549,
+          "mean": 10.89,
+          "min": 4.416,
+          "max": 20.051
+        },
+        "treatment_vs_control_alpha0": {
+          "n": 5,
+          "median": 7.873,
+          "mean": 10.999,
+          "min": 4.149,
+          "max": 20.773
+        }
+      },
+      "M5_observed72h": {
+        "n": 5,
+        "median": 62.188,
+        "mean": 71.914,
+        "min": 31.456,
+        "max": 112.667
+      },
+      "role": "HOLDOUT",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    },
+    "KE-H3": {
+      "n_drifters": 7,
+      "24h": {
+        "primary_alpha0.002": {
+          "n": 7,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 7,
+            "median": 8.506,
+            "mean": 11.348,
+            "min": 5.228,
+            "max": 19.701
+          },
+          "error_treatment": {
+            "n": 7,
+            "median": 8.827,
+            "mean": 9.972,
+            "min": 1.764,
+            "max": 29.53
+          },
+          "delta": {
+            "median_delta": -5.043,
+            "mean_delta": -1.377,
+            "min_delta": -6.342,
+            "max_delta": 9.829
+          },
+          "wins_stokes": 5,
+          "losses_stokes": 2,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 7,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 7,
+            "median": 10.112,
+            "mean": 11.861,
+            "min": 5.542,
+            "max": 19.105
+          },
+          "error_treatment": {
+            "n": 7,
+            "median": 9.549,
+            "mean": 9.929,
+            "min": 2.27,
+            "max": 27.95
+          },
+          "delta": {
+            "median_delta": -4.995,
+            "mean_delta": -1.932,
+            "min_delta": -6.348,
+            "max_delta": 9.672
+          },
+          "wins_stokes": 5,
+          "losses_stokes": 2,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 7,
+            "median": 6.962,
+            "mean": 7.411,
+            "min": 5.321,
+            "max": 10.264
+          },
+          "alpha0": {
+            "n": 7,
+            "median": 7.01,
+            "mean": 7.429,
+            "min": 5.311,
+            "max": 10.25
+          }
+        }
+      },
+      "48h": {
+        "primary_alpha0.002": {
+          "n": 7,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 7,
+            "median": 26.06,
+            "mean": 25.913,
+            "min": 9.4,
+            "max": 46.89
+          },
+          "error_treatment": {
+            "n": 7,
+            "median": 22.032,
+            "mean": 26.252,
+            "min": 12.355,
+            "max": 62.962
+          },
+          "delta": {
+            "median_delta": 2.874,
+            "mean_delta": 0.338,
+            "min_delta": -11.687,
+            "max_delta": 16.072
+          },
+          "wins_stokes": 3,
+          "losses_stokes": 4,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 7,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 7,
+            "median": 27.157,
+            "mean": 26.7,
+            "min": 10.427,
+            "max": 44.751
+          },
+          "error_treatment": {
+            "n": 7,
+            "median": 20.693,
+            "mean": 25.823,
+            "min": 8.808,
+            "max": 60.694
+          },
+          "delta": {
+            "median_delta": -1.943,
+            "mean_delta": -0.877,
+            "min_delta": -11.492,
+            "max_delta": 15.943
+          },
+          "wins_stokes": 5,
+          "losses_stokes": 2,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 7,
+            "median": 11.707,
+            "mean": 12.74,
+            "min": 8.324,
+            "max": 16.168
+          },
+          "alpha0": {
+            "n": 7,
+            "median": 11.512,
+            "mean": 12.869,
+            "min": 8.212,
+            "max": 17.01
+          }
+        }
+      },
+      "72h": {
+        "primary_alpha0.002": {
+          "n": 7,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 7,
+            "median": 36.862,
+            "mean": 42.016,
+            "min": 14.309,
+            "max": 83.052
+          },
+          "error_treatment": {
+            "n": 7,
+            "median": 29.904,
+            "mean": 37.629,
+            "min": 10.81,
+            "max": 97.454
+          },
+          "delta": {
+            "median_delta": -7.242,
+            "mean_delta": -4.386,
+            "min_delta": -20.855,
+            "max_delta": 14.402
+          },
+          "wins_stokes": 4,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "structural_alpha0": {
+          "n": 7,
+          "notAvailable": 0,
+          "error_control": {
+            "n": 7,
+            "median": 40.007,
+            "mean": 44.206,
+            "min": 14.673,
+            "max": 80.329
+          },
+          "error_treatment": {
+            "n": 7,
+            "median": 30.432,
+            "mean": 38.572,
+            "min": 15.12,
+            "max": 94.99
+          },
+          "delta": {
+            "median_delta": -7.467,
+            "mean_delta": -5.634,
+            "min_delta": -24.642,
+            "max_delta": 14.662
+          },
+          "wins_stokes": 4,
+          "losses_stokes": 3,
+          "ties": 0,
+          "winMeaning": "Stokes treatment lower error than control"
+        },
+        "stokesContribution_separationKm": {
+          "alpha0.002": {
+            "n": 7,
+            "median": 17.485,
+            "mean": 16.704,
+            "min": 9.568,
+            "max": 25.807
+          },
+          "alpha0": {
+            "n": 7,
+            "median": 17.542,
+            "mean": 16.922,
+            "min": 8.662,
+            "max": 27.675
+          }
+        }
+      },
+      "M1_endpoint72h": {
+        "C002": {
+          "n": 7,
+          "median": 54.39,
+          "mean": 61.879,
+          "min": 18.674,
+          "max": 120.046
+        },
+        "T002": {
+          "n": 7,
+          "median": 56.756,
+          "mean": 69.104,
+          "min": 12.575,
+          "max": 127.336
+        },
+        "C0": {
+          "n": 7,
+          "median": 50.659,
+          "mean": 60.826,
+          "min": 20.473,
+          "max": 118.346
+        },
+        "T0": {
+          "n": 7,
+          "median": 58.126,
+          "mean": 67.626,
+          "min": 14.327,
+          "max": 125.946
+        }
+      },
+      "M2_totalPath": {
+        "C002": {
+          "n": 7,
+          "median": 54.753,
+          "mean": 65.643,
+          "min": 19.74,
+          "max": 130.288
+        },
+        "T002": {
+          "n": 7,
+          "median": 64.618,
+          "mean": 75.858,
+          "min": 22.578,
+          "max": 141.253
+        },
+        "C0": {
+          "n": 7,
+          "median": 50.894,
+          "mean": 64.36,
+          "min": 21.563,
+          "max": 127.76
+        },
+        "T0": {
+          "n": 7,
+          "median": 61.218,
+          "mean": 73.233,
+          "min": 20.055,
+          "max": 138.852
+        }
+      },
+      "M4_separation72h": {
+        "treatment_vs_control_alpha0.002": {
+          "n": 7,
+          "median": 17.485,
+          "mean": 16.704,
+          "min": 9.568,
+          "max": 25.807
+        },
+        "treatment_vs_control_alpha0": {
+          "n": 7,
+          "median": 17.542,
+          "mean": 16.922,
+          "min": 8.662,
+          "max": 27.675
+        }
+      },
+      "M5_observed72h": {
+        "n": 7,
+        "median": 79.433,
+        "mean": 77.873,
+        "min": 12.151,
+        "max": 154.559
+      },
+      "role": "HOLDOUT",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    }
+  },
+  "topErrors": {
+    "24h": [
+      {
+        "drifter_id": "127313",
+        "unit": "AG-1",
+        "error_control": 131.891,
+        "error_treatment": 129.183,
+        "delta": -2.708
+      },
+      {
+        "drifter_id": "71155",
+        "unit": "KE-1",
+        "error_control": 76.952,
+        "error_treatment": 74.23,
+        "delta": -2.722
+      },
+      {
+        "drifter_id": "127199",
+        "unit": "AG-1",
+        "error_control": 71.146,
+        "error_treatment": 70.192,
+        "delta": -0.954
+      }
+    ],
+    "48h": [
+      {
+        "drifter_id": "127313",
+        "unit": "AG-1",
+        "error_control": 289.961,
+        "error_treatment": 281.682,
+        "delta": -8.28
+      },
+      {
+        "drifter_id": "71155",
+        "unit": "KE-1",
+        "error_control": 169.072,
+        "error_treatment": 179.449,
+        "delta": 10.377
+      },
+      {
+        "drifter_id": "127199",
+        "unit": "AG-1",
+        "error_control": 125.036,
+        "error_treatment": 127.746,
+        "delta": 2.71
+      }
+    ],
+    "72h": [
+      {
+        "drifter_id": "127313",
+        "unit": "AG-1",
+        "error_control": 416.26,
+        "error_treatment": 408.388,
+        "delta": -7.872
+      },
+      {
+        "drifter_id": "71155",
+        "unit": "KE-1",
+        "error_control": 325.969,
+        "error_treatment": 335.192,
+        "delta": 9.223
+      },
+      {
+        "drifter_id": "127315",
+        "unit": "AG-1",
+        "error_control": 143.744,
+        "error_treatment": 151.598,
+        "delta": 7.854
+      }
+    ]
+  },
+  "exploratorySignTest": {
+    "overall_24h_primary_alpha0.002": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 35,
+      "k": 14,
+      "p": 0.310505,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "overall_24h_structural_alpha0": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 35,
+      "k": 14,
+      "p": 0.310505,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "overall_48h_primary_alpha0.002": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 34,
+      "k": 15,
+      "p": 0.607591,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "overall_48h_structural_alpha0": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 34,
+      "k": 17,
+      "p": 1.0,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "overall_72h_primary_alpha0.002": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 33,
+      "k": 14,
+      "p": 0.48685,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "overall_72h_structural_alpha0": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 33,
+      "k": 14,
+      "p": 0.48685,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "calibration_24h_primary_alpha0.002": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 23,
+      "k": 9,
+      "p": 0.404873,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "calibration_24h_structural_alpha0": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 23,
+      "k": 9,
+      "p": 0.404873,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "calibration_48h_primary_alpha0.002": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 22,
+      "k": 10,
+      "p": 0.831812,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "calibration_48h_structural_alpha0": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 22,
+      "k": 10,
+      "p": 0.831812,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "calibration_72h_primary_alpha0.002": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 21,
+      "k": 10,
+      "p": 1.0,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "calibration_72h_structural_alpha0": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 21,
+      "k": 10,
+      "p": 1.0,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "holdout_24h_primary_alpha0.002": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 5,
+      "p": 0.774414,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "holdout_24h_structural_alpha0": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 5,
+      "p": 0.774414,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "holdout_48h_primary_alpha0.002": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 5,
+      "p": 0.774414,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "holdout_48h_structural_alpha0": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 5,
+      "p": 0.774414,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "holdout_72h_primary_alpha0.002": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 4,
+      "p": 0.387695,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    },
+    "holdout_72h_structural_alpha0": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 4,
+      "p": 0.387695,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not a selection criterion"
+    }
+  },
+  "step25cControlCrossCheck": {
+    "pairsCompared": 102,
+    "maxAbsDiffKm": 0.0,
+    "medianAbsDiffKm": 0.0,
+    "note": "control uses the composite 3-hourly time axis and composite mask; differences vs the STEP 25C GLORYS run are recorded descriptively, not gated"
+  },
+  "labelRules": {
+    "scope": "overall stratum, primary alpha 0.002, 72 h; also reported per stratum and for the structural alpha 0 pair",
+    "primaryHorizonHours": 72,
+    "tieToleranceKm": 1e-06,
+    "consistencyFraction": 0.6666666666666666,
+    "signTestMinimumN": 10,
+    "rule": "STOKES_DESCRIPTIVELY_FAVORED if median delta < -tie AND wins/(wins+losses) >= 2/3; STOKES_DESCRIPTIVELY_DISFAVORED if median delta > +tie AND losses/(wins+losses) >= 2/3; otherwise NO_CLEAR_STOKES_DIFFERENCE; TEST_BLOCKED if any mandatory gate fails",
+    "labels": [
+      "STOKES_DESCRIPTIVELY_FAVORED",
+      "NO_CLEAR_STOKES_DIFFERENCE",
+      "STOKES_DESCRIPTIVELY_DISFAVORED",
+      "TEST_BLOCKED"
+    ],
+    "selection": false
+  },
+  "descriptiveLabel": {
+    "primary": "NO_CLEAR_STOKES_DIFFERENCE",
+    "byStratum": {
+      "overall": "NO_CLEAR_STOKES_DIFFERENCE",
+      "calibration": "NO_CLEAR_STOKES_DIFFERENCE",
+      "holdout": "STOKES_DESCRIPTIVELY_FAVORED"
+    },
+    "structural_alpha0": {
+      "overall": "NO_CLEAR_STOKES_DIFFERENCE",
+      "calibration": "NO_CLEAR_STOKES_DIFFERENCE",
+      "holdout": "STOKES_DESCRIPTIVELY_FAVORED"
+    }
+  },
+  "outlierPolicyApplied": {
+    "removed": 0,
+    "trimmed": 0,
+    "winsorized": 0,
+    "weighted": 0,
+    "deleted": 0,
+    "postHocExclusions": 0
+  },
+  "acceptanceThresholds": "NONE",
+  "coefficientSelection": "NONE",
+  "alphaSelection": "NONE",
+  "forcingSelection": "NONE",
+  "holdoutUsedForSelection": false,
+  "interpretation": "DESCRIPTIVE ONLY",
+  "physicalExplanationClaimed": false,
+  "statements": [
+    "TEST-06 is a descriptive paired experiment; no statistical significance, causal, universal or operational claim is made.",
+    "The only intentional difference between treatment and control is the added WW3 surface Stokes drift (coefficient 1.0, never multiplied by alpha); grid, time axis, mask, wind, alpha, releases and mechanics are identical.",
+    "alpha = 0.002 (structural pair alpha = 0), the Stokes coefficient, GLORYS depth and forcing identities are unchanged; no coefficient, alpha, depth or forcing selection was made.",
+    "Holdout results are descriptive only; no re-ranking, no selective rerun, no outlier handling.",
+    "Any observed Stokes effect is reported as an observed effect under the preregistered metric, not as a physical explanation; STEP 20-29 Phase A results are unchanged."
+  ]
+}

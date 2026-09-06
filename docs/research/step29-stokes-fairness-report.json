@@ -1,0 +1,165 @@
+{
+  "ruleId": "stokes-license-and-experiment-gate-step29",
+  "control": "dX/dt = U_GLORYS + alpha * U_wind",
+  "treatment": "dX/dt = U_GLORYS + U_Stokes + alpha * U_wind",
+  "stokesCoefficient": 1.0,
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "identical": [
+        "lon",
+        "lat",
+        "timeUTC",
+        "landMask",
+        "depth 15.81007 m",
+        "wind file",
+        "alpha (per run)",
+        "area",
+        "release positions",
+        "drifter IDs",
+        "RK4 300 s",
+        "output 900 s",
+        "72 h"
+      ],
+      "difference": [
+        "u,v = GLORYS + WW3 Stokes (coefficient 1.0) at every valid node (treatment) vs GLORYS only (control)"
+      ],
+      "maskMismatchNodes": 0,
+      "maxStokesSpeedSampled": 0.398802,
+      "controlGridSha256": "3c414e8bfba61b5825b0675b872d53f4afe861bd3c0c7b699c89f9d9904af7dd",
+      "treatmentGridSha256": "720fb9b24b3042d913cbec9c1709d6ea8d1e5f02bd685d6d2d6a3a2cd3b8b53c",
+      "pass": true
+    },
+    {
+      "windowId": "KE-2",
+      "identical": [
+        "lon",
+        "lat",
+        "timeUTC",
+        "landMask",
+        "depth 15.81007 m",
+        "wind file",
+        "alpha (per run)",
+        "area",
+        "release positions",
+        "drifter IDs",
+        "RK4 300 s",
+        "output 900 s",
+        "72 h"
+      ],
+      "difference": [
+        "u,v = GLORYS + WW3 Stokes (coefficient 1.0) at every valid node (treatment) vs GLORYS only (control)"
+      ],
+      "maskMismatchNodes": 0,
+      "maxStokesSpeedSampled": 0.203944,
+      "controlGridSha256": "e9be2588ffdbce33d73be31e64b2fad3d337aa8d491c0b4b936a1cfb25040a4a",
+      "treatmentGridSha256": "e1009a3a1ea6602c2956bb9075e140165a17d55338571a75ac4d2e9e66eba132",
+      "pass": true
+    },
+    {
+      "windowId": "AG-1",
+      "identical": [
+        "lon",
+        "lat",
+        "timeUTC",
+        "landMask",
+        "depth 15.81007 m",
+        "wind file",
+        "alpha (per run)",
+        "area",
+        "release positions",
+        "drifter IDs",
+        "RK4 300 s",
+        "output 900 s",
+        "72 h"
+      ],
+      "difference": [
+        "u,v = GLORYS + WW3 Stokes (coefficient 1.0) at every valid node (treatment) vs GLORYS only (control)"
+      ],
+      "maskMismatchNodes": 0,
+      "maxStokesSpeedSampled": 0.154889,
+      "controlGridSha256": "070b10784b6aefba6f6a3f80ddd621d48e5cfcfe9f0902b21b4ffcf294046feb",
+      "treatmentGridSha256": "9e01fcf7b88c74cd1a51dc78df6e114140bfbe5edc7b803d2fccda3131a50b64",
+      "pass": true
+    },
+    {
+      "windowId": "AG-2",
+      "identical": [
+        "lon",
+        "lat",
+        "timeUTC",
+        "landMask",
+        "depth 15.81007 m",
+        "wind file",
+        "alpha (per run)",
+        "area",
+        "release positions",
+        "drifter IDs",
+        "RK4 300 s",
+        "output 900 s",
+        "72 h"
+      ],
+      "difference": [
+        "u,v = GLORYS + WW3 Stokes (coefficient 1.0) at every valid node (treatment) vs GLORYS only (control)"
+      ],
+      "maskMismatchNodes": 0,
+      "maxStokesSpeedSampled": 0.232491,
+      "controlGridSha256": "6a87921b4fee28e79e2371ac5db50b24440312188876faf279e054f24be44c8d",
+      "treatmentGridSha256": "ed787962f42ca6cdfc63cf3acfce5ff9e4f65aca190c6447d7f00041ca154da6",
+      "pass": true
+    },
+    {
+      "windowId": "KE-H1",
+      "identical": [
+        "lon",
+        "lat",
+        "timeUTC",
+        "landMask",
+        "depth 15.81007 m",
+        "wind file",
+        "alpha (per run)",
+        "area",
+        "release positions",
+        "drifter IDs",
+        "RK4 300 s",
+        "output 900 s",
+        "72 h"
+      ],
+      "difference": [
+        "u,v = GLORYS + WW3 Stokes (coefficient 1.0) at every valid node (treatment) vs GLORYS only (control)"
+      ],
+      "maskMismatchNodes": 0,
+      "maxStokesSpeedSampled": 0.226112,
+      "controlGridSha256": "0f415aaa08b9d615d3b28663061f9f1aa786c1e3bad05fd7a09674d60034b38e",
+      "treatmentGridSha256": "dea1448ceabac7b65a3e7b9628530a5d0093413a58353ede64f701e352303b84",
+      "pass": true
+    },
+    {
+      "windowId": "KE-H3",
+      "identical": [
+        "lon",
+        "lat",
+        "timeUTC",
+        "landMask",
+        "depth 15.81007 m",
+        "wind file",
+        "alpha (per run)",
+        "area",
+        "release positions",
+        "drifter IDs",
+        "RK4 300 s",
+        "output 900 s",
+        "72 h"
+      ],
+      "difference": [
+        "u,v = GLORYS + WW3 Stokes (coefficient 1.0) at every valid node (treatment) vs GLORYS only (control)"
+      ],
+      "maskMismatchNodes": 0,
+      "maxStokesSpeedSampled": 0.29503,
+      "controlGridSha256": "d74c7c4280fc2b13cde62003e44ea8d5a4b03d7dfcf289c11019dd4f5afa064b",
+      "treatmentGridSha256": "d17af994cc35284a421d41ecabace859272c83b2a9f2d87cf9b519e8da5d73d4",
+      "pass": true
+    }
+  ],
+  "allPass": true
+}

@@ -1,0 +1,1174 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "stokes-license-and-experiment-gate-step29",
+  "phaseBPreregistrationSha256": "82101494c9035557613905d7c26815aabf384f231a827a07452f7c3ab3917745",
+  "licenseStatusSha256": "8a8640ac534c1fb9b8551a4a1e777f8a96d6f6c271d896246ed13b8cf93cb24b",
+  "licenseStatus": "LICENSE_CONFIRMED",
+  "builder": {
+    "file": "tools/research/build_step29_forcing.py",
+    "sha256": "2ba5bbb46caf6f4439da871fbaec0ca186a6268125aff172494a854f2fd97298"
+  },
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "t0": "2010-05-11T12:00:00Z",
+      "end": "2010-05-14T12:00:00Z",
+      "computationArea": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "status": "BUILT",
+      "glorysSource": {
+        "role": "GLORYS",
+        "file": "data/research/step25c/forcing/KE-1.glorys15.81m.dataset.json",
+        "sha256": "5eac44039387614c00d84df59c6805c2d275369cc4c1e25af80c0a23588230eb",
+        "gridSha256": "57e0916e8e4204ed0e07c0c34cb5cd451a018157425b5de9ac1b766d29a484f2"
+      },
+      "ww3Sources": [
+        {
+          "role": "WW3_STOKES",
+          "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201005_uss.nc",
+          "sha256": "9a8afc65fef3502497ae44cdc79f4c02a17218b873dd2d287d81f081bcfb87e8"
+        }
+      ],
+      "ww3Gate": {
+        "windowId": "KE-1",
+        "files": [
+          {
+            "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201005_uss.nc",
+            "sha256": "9a8afc65fef3502497ae44cdc79f4c02a17218b873dd2d287d81f081bcfb87e8",
+            "shaVerified": true,
+            "attributes": {
+              "source": "MODEL WAVEWATCH III (R) GLOBMULTI",
+              "product_version": "1.0",
+              "grid": "glob_30m",
+              "institution": "SHOM and Ifremer",
+              "distribution_statement": "No restrictions"
+            },
+            "frameTimes": [
+              "2010-05-01T00:00:00Z",
+              "2010-05-31T21:00:00Z"
+            ],
+            "nFrames": 248
+          }
+        ],
+        "identity": true,
+        "variables": true,
+        "units": true,
+        "timeAxis": true,
+        "extent": true,
+        "releaseStencil": true,
+        "license": true,
+        "frames": [
+          "2010-05-11T12:00:00Z",
+          "2010-05-11T15:00:00Z",
+          "2010-05-11T18:00:00Z",
+          "2010-05-11T21:00:00Z",
+          "2010-05-12T00:00:00Z",
+          "2010-05-12T03:00:00Z",
+          "2010-05-12T06:00:00Z",
+          "2010-05-12T09:00:00Z",
+          "2010-05-12T12:00:00Z",
+          "2010-05-12T15:00:00Z",
+          "2010-05-12T18:00:00Z",
+          "2010-05-12T21:00:00Z",
+          "2010-05-13T00:00:00Z",
+          "2010-05-13T03:00:00Z",
+          "2010-05-13T06:00:00Z",
+          "2010-05-13T09:00:00Z",
+          "2010-05-13T12:00:00Z",
+          "2010-05-13T15:00:00Z",
+          "2010-05-13T18:00:00Z",
+          "2010-05-13T21:00:00Z",
+          "2010-05-14T00:00:00Z",
+          "2010-05-14T03:00:00Z",
+          "2010-05-14T06:00:00Z",
+          "2010-05-14T09:00:00Z",
+          "2010-05-14T12:00:00Z"
+        ],
+        "framesPresent": 25,
+        "releaseStencilDetail": [
+          {
+            "drifterId": "71155",
+            "valid": true
+          },
+          {
+            "drifterId": "81801",
+            "valid": true
+          },
+          {
+            "drifterId": "81805",
+            "valid": true
+          },
+          {
+            "drifterId": "81807",
+            "valid": true
+          },
+          {
+            "drifterId": "81811",
+            "valid": true
+          },
+          {
+            "drifterId": "81813",
+            "valid": true
+          },
+          {
+            "drifterId": "81814",
+            "valid": true
+          },
+          {
+            "drifterId": "81816",
+            "valid": true
+          }
+        ],
+        "status": "PASS",
+        "missingFractionArea": 0.006594
+      },
+      "grid": {
+        "lon": [
+          140.58333333333334,
+          161.66666666666666
+        ],
+        "lat": [
+          28.083333333333332,
+          38.25
+        ],
+        "shape": [
+          123,
+          254
+        ],
+        "croppedToAreaPlusOneNode": true
+      },
+      "timeUTC": [
+        "2010-05-11T12:00:00Z",
+        "2010-05-11T15:00:00Z",
+        "2010-05-11T18:00:00Z",
+        "2010-05-11T21:00:00Z",
+        "2010-05-12T00:00:00Z",
+        "2010-05-12T03:00:00Z",
+        "2010-05-12T06:00:00Z",
+        "2010-05-12T09:00:00Z",
+        "2010-05-12T12:00:00Z",
+        "2010-05-12T15:00:00Z",
+        "2010-05-12T18:00:00Z",
+        "2010-05-12T21:00:00Z",
+        "2010-05-13T00:00:00Z",
+        "2010-05-13T03:00:00Z",
+        "2010-05-13T06:00:00Z",
+        "2010-05-13T09:00:00Z",
+        "2010-05-13T12:00:00Z",
+        "2010-05-13T15:00:00Z",
+        "2010-05-13T18:00:00Z",
+        "2010-05-13T21:00:00Z",
+        "2010-05-14T00:00:00Z",
+        "2010-05-14T03:00:00Z",
+        "2010-05-14T06:00:00Z",
+        "2010-05-14T09:00:00Z",
+        "2010-05-14T12:00:00Z"
+      ],
+      "mask": {
+        "glorysMasked": 113,
+        "stokesStencilInvalid": 296,
+        "compositeMasked": 296,
+        "total": 31242
+      },
+      "control": {
+        "file": "data/research/step29/forcing/KE-1.control.dataset.json",
+        "fileSha256": "7f49d70ef67703f158f013979f5c9c40be94afc78d983a41cae19a8843b37835",
+        "gridSha256": "3c414e8bfba61b5825b0675b872d53f4afe861bd3c0c7b699c89f9d9904af7dd",
+        "datasetId": "test06-control-glorys15.81m-KE-1",
+        "shape": [
+          25,
+          123,
+          254
+        ],
+        "valuesCount": 1562100
+      },
+      "treatment": {
+        "file": "data/research/step29/forcing/KE-1.treatment.dataset.json",
+        "fileSha256": "2c8f545866f5f09d3919f829854b27eaf414e242d5e541e0794bacacd5bfc4b5",
+        "gridSha256": "720fb9b24b3042d913cbec9c1709d6ea8d1e5f02bd685d6d2d6a3a2cd3b8b53c",
+        "datasetId": "test06-treatment-glorys15.81m-plus-ww3-stokes-KE-1",
+        "shape": [
+          25,
+          123,
+          254
+        ],
+        "valuesCount": 1562100
+      },
+      "stokesCoefficient": 1.0,
+      "wind": {
+        "file": "data/research/step17/normalized/KE-1.ncep10m.wind.json",
+        "sha256": "6e6c0c225cf70d676e7adb1cf0ba2b18f3805db9e0e02eef710295f564473a71",
+        "gridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      }
+    },
+    {
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "t0": "2010-06-30T12:00:00Z",
+      "end": "2010-07-03T12:00:00Z",
+      "computationArea": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "status": "BUILT",
+      "glorysSource": {
+        "role": "GLORYS",
+        "file": "data/research/step25c/forcing/KE-2.glorys15.81m.dataset.json",
+        "sha256": "3c454919b343754740dd861ac8d147282be60392b043771e7f5a7f6407ef28ae",
+        "gridSha256": "99364bcd6a0dd93db4e4c7c09420e03d8cfb29e5d0443c872492b41ac00b30d5"
+      },
+      "ww3Sources": [
+        {
+          "role": "WW3_STOKES",
+          "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201006_uss.nc",
+          "sha256": "152d2264a8d8c46277044d55b0616131fdf6c270419af06ddac0b66f50682e12"
+        },
+        {
+          "role": "WW3_STOKES",
+          "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201007_uss.nc",
+          "sha256": "cb3eae5330791054bad4922887814212b196bcc04886ec13eefbde3f7393b4fa"
+        }
+      ],
+      "ww3Gate": {
+        "windowId": "KE-2",
+        "files": [
+          {
+            "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201006_uss.nc",
+            "sha256": "152d2264a8d8c46277044d55b0616131fdf6c270419af06ddac0b66f50682e12",
+            "shaVerified": true,
+            "attributes": {
+              "source": "MODEL WAVEWATCH III (R) GLOBMULTI",
+              "product_version": "1.0",
+              "grid": "glob_30m",
+              "institution": "SHOM and Ifremer",
+              "distribution_statement": "No restrictions"
+            },
+            "frameTimes": [
+              "2010-06-01T00:00:00Z",
+              "2010-06-30T21:00:00Z"
+            ],
+            "nFrames": 240
+          },
+          {
+            "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201007_uss.nc",
+            "sha256": "cb3eae5330791054bad4922887814212b196bcc04886ec13eefbde3f7393b4fa",
+            "shaVerified": true,
+            "attributes": {
+              "source": "MODEL WAVEWATCH III (R) GLOBMULTI",
+              "product_version": "1.0",
+              "grid": "glob_30m",
+              "institution": "SHOM and Ifremer",
+              "distribution_statement": "No restrictions"
+            },
+            "frameTimes": [
+              "2010-07-01T00:00:00Z",
+              "2010-07-31T21:00:00Z"
+            ],
+            "nFrames": 248
+          }
+        ],
+        "identity": true,
+        "variables": true,
+        "units": true,
+        "timeAxis": true,
+        "extent": true,
+        "releaseStencil": true,
+        "license": true,
+        "frames": [
+          "2010-06-30T12:00:00Z",
+          "2010-06-30T15:00:00Z",
+          "2010-06-30T18:00:00Z",
+          "2010-06-30T21:00:00Z",
+          "2010-07-01T00:00:00Z",
+          "2010-07-01T03:00:00Z",
+          "2010-07-01T06:00:00Z",
+          "2010-07-01T09:00:00Z",
+          "2010-07-01T12:00:00Z",
+          "2010-07-01T15:00:00Z",
+          "2010-07-01T18:00:00Z",
+          "2010-07-01T21:00:00Z",
+          "2010-07-02T00:00:00Z",
+          "2010-07-02T03:00:00Z",
+          "2010-07-02T06:00:00Z",
+          "2010-07-02T09:00:00Z",
+          "2010-07-02T12:00:00Z",
+          "2010-07-02T15:00:00Z",
+          "2010-07-02T18:00:00Z",
+          "2010-07-02T21:00:00Z",
+          "2010-07-03T00:00:00Z",
+          "2010-07-03T03:00:00Z",
+          "2010-07-03T06:00:00Z",
+          "2010-07-03T09:00:00Z",
+          "2010-07-03T12:00:00Z"
+        ],
+        "framesPresent": 25,
+        "releaseStencilDetail": [
+          {
+            "drifterId": "48965",
+            "valid": true
+          },
+          {
+            "drifterId": "81802",
+            "valid": true
+          },
+          {
+            "drifterId": "90141",
+            "valid": true
+          },
+          {
+            "drifterId": "90142",
+            "valid": true
+          },
+          {
+            "drifterId": "90145",
+            "valid": true
+          }
+        ],
+        "status": "PASS",
+        "missingFractionArea": 0.093756
+      },
+      "grid": {
+        "lon": [
+          133.5,
+          154.83333333333334
+        ],
+        "lat": [
+          29.666666666666668,
+          40.083333333333336
+        ],
+        "shape": [
+          126,
+          257
+        ],
+        "croppedToAreaPlusOneNode": true
+      },
+      "timeUTC": [
+        "2010-06-30T12:00:00Z",
+        "2010-06-30T15:00:00Z",
+        "2010-06-30T18:00:00Z",
+        "2010-06-30T21:00:00Z",
+        "2010-07-01T00:00:00Z",
+        "2010-07-01T03:00:00Z",
+        "2010-07-01T06:00:00Z",
+        "2010-07-01T09:00:00Z",
+        "2010-07-01T12:00:00Z",
+        "2010-07-01T15:00:00Z",
+        "2010-07-01T18:00:00Z",
+        "2010-07-01T21:00:00Z",
+        "2010-07-02T00:00:00Z",
+        "2010-07-02T03:00:00Z",
+        "2010-07-02T06:00:00Z",
+        "2010-07-02T09:00:00Z",
+        "2010-07-02T12:00:00Z",
+        "2010-07-02T15:00:00Z",
+        "2010-07-02T18:00:00Z",
+        "2010-07-02T21:00:00Z",
+        "2010-07-03T00:00:00Z",
+        "2010-07-03T03:00:00Z",
+        "2010-07-03T06:00:00Z",
+        "2010-07-03T09:00:00Z",
+        "2010-07-03T12:00:00Z"
+      ],
+      "mask": {
+        "glorysMasked": 2966,
+        "stokesStencilInvalid": 4200,
+        "compositeMasked": 4225,
+        "total": 32382
+      },
+      "control": {
+        "file": "data/research/step29/forcing/KE-2.control.dataset.json",
+        "fileSha256": "2045f48ab84e5d9f03c5e71997749628615ebac321e5a3e81a29252523e6007c",
+        "gridSha256": "e9be2588ffdbce33d73be31e64b2fad3d337aa8d491c0b4b936a1cfb25040a4a",
+        "datasetId": "test06-control-glorys15.81m-KE-2",
+        "shape": [
+          25,
+          126,
+          257
+        ],
+        "valuesCount": 1619100
+      },
+      "treatment": {
+        "file": "data/research/step29/forcing/KE-2.treatment.dataset.json",
+        "fileSha256": "a1b71e21602f2bd44cddc438053488b6736e9998b7397ef0e52d119adf2cc182",
+        "gridSha256": "e1009a3a1ea6602c2956bb9075e140165a17d55338571a75ac4d2e9e66eba132",
+        "datasetId": "test06-treatment-glorys15.81m-plus-ww3-stokes-KE-2",
+        "shape": [
+          25,
+          126,
+          257
+        ],
+        "valuesCount": 1619100
+      },
+      "stokesCoefficient": 1.0,
+      "wind": {
+        "file": "data/research/step17/normalized/KE-2.ncep10m.wind.json",
+        "sha256": "2b913475ada3a1fa16d3a29b3441151b328eb99df64f798ee3467527cedda71f",
+        "gridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      }
+    },
+    {
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "t0": "2015-04-23T12:00:00Z",
+      "end": "2015-04-26T12:00:00Z",
+      "computationArea": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "status": "BUILT",
+      "glorysSource": {
+        "role": "GLORYS",
+        "file": "data/research/step25c/forcing/AG-1.glorys15.81m.dataset.json",
+        "sha256": "a41f03647dcf12c048f92bb389d5ce80340060b4a953051ab0da43394823237c",
+        "gridSha256": "6821bf8fef4cd232353f030f51f836eb06adf331f5a7a6568eaabceca60009e2"
+      },
+      "ww3Sources": [
+        {
+          "role": "WW3_STOKES",
+          "file": "data/research/step23/DATA-06/2015_CFSR/WW3-GLOB-30M_201504_uss.nc",
+          "sha256": "63052f4623c00103e876c78037a5e04faf7a360726377015cce07352d92bb556"
+        }
+      ],
+      "ww3Gate": {
+        "windowId": "AG-1",
+        "files": [
+          {
+            "file": "data/research/step23/DATA-06/2015_CFSR/WW3-GLOB-30M_201504_uss.nc",
+            "sha256": "63052f4623c00103e876c78037a5e04faf7a360726377015cce07352d92bb556",
+            "shaVerified": true,
+            "attributes": {
+              "source": "MODEL WAVEWATCH III (R) GLOBMULTI",
+              "product_version": "1.0",
+              "grid": "glob_30m",
+              "institution": "SHOM and Ifremer",
+              "distribution_statement": "No restrictions"
+            },
+            "frameTimes": [
+              "2015-04-01T00:00:00Z",
+              "2015-04-30T21:00:00Z"
+            ],
+            "nFrames": 240
+          }
+        ],
+        "identity": true,
+        "variables": true,
+        "units": true,
+        "timeAxis": true,
+        "extent": true,
+        "releaseStencil": true,
+        "license": true,
+        "frames": [
+          "2015-04-23T12:00:00Z",
+          "2015-04-23T15:00:00Z",
+          "2015-04-23T18:00:00Z",
+          "2015-04-23T21:00:00Z",
+          "2015-04-24T00:00:00Z",
+          "2015-04-24T03:00:00Z",
+          "2015-04-24T06:00:00Z",
+          "2015-04-24T09:00:00Z",
+          "2015-04-24T12:00:00Z",
+          "2015-04-24T15:00:00Z",
+          "2015-04-24T18:00:00Z",
+          "2015-04-24T21:00:00Z",
+          "2015-04-25T00:00:00Z",
+          "2015-04-25T03:00:00Z",
+          "2015-04-25T06:00:00Z",
+          "2015-04-25T09:00:00Z",
+          "2015-04-25T12:00:00Z",
+          "2015-04-25T15:00:00Z",
+          "2015-04-25T18:00:00Z",
+          "2015-04-25T21:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-26T03:00:00Z",
+          "2015-04-26T06:00:00Z",
+          "2015-04-26T09:00:00Z",
+          "2015-04-26T12:00:00Z"
+        ],
+        "framesPresent": 25,
+        "releaseStencilDetail": [
+          {
+            "drifterId": "127198",
+            "valid": true
+          },
+          {
+            "drifterId": "127199",
+            "valid": true
+          },
+          {
+            "drifterId": "127272",
+            "valid": true
+          },
+          {
+            "drifterId": "127313",
+            "valid": true
+          },
+          {
+            "drifterId": "127314",
+            "valid": true
+          },
+          {
+            "drifterId": "127315",
+            "valid": true
+          },
+          {
+            "drifterId": "132511",
+            "valid": true
+          },
+          {
+            "drifterId": "132528",
+            "valid": true
+          },
+          {
+            "drifterId": "132634",
+            "valid": true
+          }
+        ],
+        "status": "PASS",
+        "missingFractionArea": 0.167788
+      },
+      "grid": {
+        "lon": [
+          18.25,
+          32.083333333333336
+        ],
+        "lat": [
+          -40.083333333333336,
+          -32.083333333333336
+        ],
+        "shape": [
+          97,
+          167
+        ],
+        "croppedToAreaPlusOneNode": true
+      },
+      "timeUTC": [
+        "2015-04-23T12:00:00Z",
+        "2015-04-23T15:00:00Z",
+        "2015-04-23T18:00:00Z",
+        "2015-04-23T21:00:00Z",
+        "2015-04-24T00:00:00Z",
+        "2015-04-24T03:00:00Z",
+        "2015-04-24T06:00:00Z",
+        "2015-04-24T09:00:00Z",
+        "2015-04-24T12:00:00Z",
+        "2015-04-24T15:00:00Z",
+        "2015-04-24T18:00:00Z",
+        "2015-04-24T21:00:00Z",
+        "2015-04-25T00:00:00Z",
+        "2015-04-25T03:00:00Z",
+        "2015-04-25T06:00:00Z",
+        "2015-04-25T09:00:00Z",
+        "2015-04-25T12:00:00Z",
+        "2015-04-25T15:00:00Z",
+        "2015-04-25T18:00:00Z",
+        "2015-04-25T21:00:00Z",
+        "2015-04-26T00:00:00Z",
+        "2015-04-26T03:00:00Z",
+        "2015-04-26T06:00:00Z",
+        "2015-04-26T09:00:00Z",
+        "2015-04-26T12:00:00Z"
+      ],
+      "mask": {
+        "glorysMasked": 2903,
+        "stokesStencilInvalid": 3618,
+        "compositeMasked": 3620,
+        "total": 16199
+      },
+      "control": {
+        "file": "data/research/step29/forcing/AG-1.control.dataset.json",
+        "fileSha256": "77a534cb61e6acef5f357121544532fcfa0b03ca3aceec07764224016873aa77",
+        "gridSha256": "070b10784b6aefba6f6a3f80ddd621d48e5cfcfe9f0902b21b4ffcf294046feb",
+        "datasetId": "test06-control-glorys15.81m-AG-1",
+        "shape": [
+          25,
+          97,
+          167
+        ],
+        "valuesCount": 809950
+      },
+      "treatment": {
+        "file": "data/research/step29/forcing/AG-1.treatment.dataset.json",
+        "fileSha256": "4b5d1ce47ab431b7e6ad66269f50aad6346c4db7177b02f69b608f1d0d0540d6",
+        "gridSha256": "9e01fcf7b88c74cd1a51dc78df6e114140bfbe5edc7b803d2fccda3131a50b64",
+        "datasetId": "test06-treatment-glorys15.81m-plus-ww3-stokes-AG-1",
+        "shape": [
+          25,
+          97,
+          167
+        ],
+        "valuesCount": 809950
+      },
+      "stokesCoefficient": 1.0,
+      "wind": {
+        "file": "data/research/step17/normalized/AG-1.ncep10m.wind.json",
+        "sha256": "00ff12e9daabcca05c9db6e5542eb788871c5fbae14a6d3774152d36cfbc6785",
+        "gridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      }
+    },
+    {
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "t0": "2015-04-26T12:00:00Z",
+      "end": "2015-04-29T12:00:00Z",
+      "computationArea": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "status": "BUILT",
+      "glorysSource": {
+        "role": "GLORYS",
+        "file": "data/research/step25c/forcing/AG-2.glorys15.81m.dataset.json",
+        "sha256": "27de6bdf0d7284aa5989f3c0c75d08b61eb3776dbf1b93c0ec055bdff42bb2bb",
+        "gridSha256": "96894ed4c1b40a0d5db94d3cdcbab83f8a4d4502342ac983ae84eda4e97d0a26"
+      },
+      "ww3Sources": [
+        {
+          "role": "WW3_STOKES",
+          "file": "data/research/step23/DATA-06/2015_CFSR/WW3-GLOB-30M_201504_uss.nc",
+          "sha256": "63052f4623c00103e876c78037a5e04faf7a360726377015cce07352d92bb556"
+        }
+      ],
+      "ww3Gate": {
+        "windowId": "AG-2",
+        "files": [
+          {
+            "file": "data/research/step23/DATA-06/2015_CFSR/WW3-GLOB-30M_201504_uss.nc",
+            "sha256": "63052f4623c00103e876c78037a5e04faf7a360726377015cce07352d92bb556",
+            "shaVerified": true,
+            "attributes": {
+              "source": "MODEL WAVEWATCH III (R) GLOBMULTI",
+              "product_version": "1.0",
+              "grid": "glob_30m",
+              "institution": "SHOM and Ifremer",
+              "distribution_statement": "No restrictions"
+            },
+            "frameTimes": [
+              "2015-04-01T00:00:00Z",
+              "2015-04-30T21:00:00Z"
+            ],
+            "nFrames": 240
+          }
+        ],
+        "identity": true,
+        "variables": true,
+        "units": true,
+        "timeAxis": true,
+        "extent": true,
+        "releaseStencil": true,
+        "license": true,
+        "frames": [
+          "2015-04-26T12:00:00Z",
+          "2015-04-26T15:00:00Z",
+          "2015-04-26T18:00:00Z",
+          "2015-04-26T21:00:00Z",
+          "2015-04-27T00:00:00Z",
+          "2015-04-27T03:00:00Z",
+          "2015-04-27T06:00:00Z",
+          "2015-04-27T09:00:00Z",
+          "2015-04-27T12:00:00Z",
+          "2015-04-27T15:00:00Z",
+          "2015-04-27T18:00:00Z",
+          "2015-04-27T21:00:00Z",
+          "2015-04-28T00:00:00Z",
+          "2015-04-28T03:00:00Z",
+          "2015-04-28T06:00:00Z",
+          "2015-04-28T09:00:00Z",
+          "2015-04-28T12:00:00Z",
+          "2015-04-28T15:00:00Z",
+          "2015-04-28T18:00:00Z",
+          "2015-04-28T21:00:00Z",
+          "2015-04-29T00:00:00Z",
+          "2015-04-29T03:00:00Z",
+          "2015-04-29T06:00:00Z",
+          "2015-04-29T09:00:00Z",
+          "2015-04-29T12:00:00Z"
+        ],
+        "framesPresent": 25,
+        "releaseStencilDetail": [
+          {
+            "drifterId": "127281",
+            "valid": true
+          }
+        ],
+        "status": "PASS",
+        "missingFractionArea": 0.0
+      },
+      "grid": {
+        "lon": [
+          19.75,
+          23.833333333333332
+        ],
+        "lat": [
+          -38.833333333333336,
+          -34.75
+        ],
+        "shape": [
+          50,
+          50
+        ],
+        "croppedToAreaPlusOneNode": true
+      },
+      "timeUTC": [
+        "2015-04-26T12:00:00Z",
+        "2015-04-26T15:00:00Z",
+        "2015-04-26T18:00:00Z",
+        "2015-04-26T21:00:00Z",
+        "2015-04-27T00:00:00Z",
+        "2015-04-27T03:00:00Z",
+        "2015-04-27T06:00:00Z",
+        "2015-04-27T09:00:00Z",
+        "2015-04-27T12:00:00Z",
+        "2015-04-27T15:00:00Z",
+        "2015-04-27T18:00:00Z",
+        "2015-04-27T21:00:00Z",
+        "2015-04-28T00:00:00Z",
+        "2015-04-28T03:00:00Z",
+        "2015-04-28T06:00:00Z",
+        "2015-04-28T09:00:00Z",
+        "2015-04-28T12:00:00Z",
+        "2015-04-28T15:00:00Z",
+        "2015-04-28T18:00:00Z",
+        "2015-04-28T21:00:00Z",
+        "2015-04-29T00:00:00Z",
+        "2015-04-29T03:00:00Z",
+        "2015-04-29T06:00:00Z",
+        "2015-04-29T09:00:00Z",
+        "2015-04-29T12:00:00Z"
+      ],
+      "mask": {
+        "glorysMasked": 5,
+        "stokesStencilInvalid": 60,
+        "compositeMasked": 60,
+        "total": 2500
+      },
+      "control": {
+        "file": "data/research/step29/forcing/AG-2.control.dataset.json",
+        "fileSha256": "4474f159ffcc859b23971a8d955708f835f0ba301db4055039b747c04d968082",
+        "gridSha256": "6a87921b4fee28e79e2371ac5db50b24440312188876faf279e054f24be44c8d",
+        "datasetId": "test06-control-glorys15.81m-AG-2",
+        "shape": [
+          25,
+          50,
+          50
+        ],
+        "valuesCount": 125000
+      },
+      "treatment": {
+        "file": "data/research/step29/forcing/AG-2.treatment.dataset.json",
+        "fileSha256": "0cfe50956c451d677dd2114cc06eb65252315b82b2fb85836c1a9b74eda8c5b4",
+        "gridSha256": "ed787962f42ca6cdfc63cf3acfce5ff9e4f65aca190c6447d7f00041ca154da6",
+        "datasetId": "test06-treatment-glorys15.81m-plus-ww3-stokes-AG-2",
+        "shape": [
+          25,
+          50,
+          50
+        ],
+        "valuesCount": 125000
+      },
+      "stokesCoefficient": 1.0,
+      "wind": {
+        "file": "data/research/step17/normalized/AG-2.ncep10m.wind.json",
+        "sha256": "f32e7a2a4f2e7d991d516e5ac97308ac1f4c0b143b9cf39612f604c1910f7699",
+        "gridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      }
+    },
+    {
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "t0": "2010-08-10T12:00:00Z",
+      "end": "2010-08-13T12:00:00Z",
+      "computationArea": {
+        "west": 135.25655,
+        "east": 161.85992,
+        "south": 30.2673,
+        "north": 40.0
+      },
+      "status": "BUILT",
+      "glorysSource": {
+        "role": "GLORYS",
+        "file": "data/research/step25c/forcing/KE-H1.glorys15.81m.dataset.json",
+        "sha256": "5cd22aece73dbb1d613ad99535d93b09b417b22ce300b2d3bfe79670e2656f16",
+        "gridSha256": "e12142bace085deb9a83837334205d8d26c33c13cef9b06be3525c7a738bf1b5"
+      },
+      "ww3Sources": [
+        {
+          "role": "WW3_STOKES",
+          "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201008_uss.nc",
+          "sha256": "4825781512add7afa509ae26106750d9df2dab0ef339836dc1f93084295b4e63"
+        }
+      ],
+      "ww3Gate": {
+        "windowId": "KE-H1",
+        "files": [
+          {
+            "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201008_uss.nc",
+            "sha256": "4825781512add7afa509ae26106750d9df2dab0ef339836dc1f93084295b4e63",
+            "shaVerified": true,
+            "attributes": {
+              "source": "MODEL WAVEWATCH III (R) GLOBMULTI",
+              "product_version": "1.0",
+              "grid": "glob_30m",
+              "institution": "SHOM and Ifremer",
+              "distribution_statement": "No restrictions"
+            },
+            "frameTimes": [
+              "2010-08-01T00:00:00Z",
+              "2010-08-31T21:00:00Z"
+            ],
+            "nFrames": 248
+          }
+        ],
+        "identity": true,
+        "variables": true,
+        "units": true,
+        "timeAxis": true,
+        "extent": true,
+        "releaseStencil": true,
+        "license": true,
+        "frames": [
+          "2010-08-10T12:00:00Z",
+          "2010-08-10T15:00:00Z",
+          "2010-08-10T18:00:00Z",
+          "2010-08-10T21:00:00Z",
+          "2010-08-11T00:00:00Z",
+          "2010-08-11T03:00:00Z",
+          "2010-08-11T06:00:00Z",
+          "2010-08-11T09:00:00Z",
+          "2010-08-11T12:00:00Z",
+          "2010-08-11T15:00:00Z",
+          "2010-08-11T18:00:00Z",
+          "2010-08-11T21:00:00Z",
+          "2010-08-12T00:00:00Z",
+          "2010-08-12T03:00:00Z",
+          "2010-08-12T06:00:00Z",
+          "2010-08-12T09:00:00Z",
+          "2010-08-12T12:00:00Z",
+          "2010-08-12T15:00:00Z",
+          "2010-08-12T18:00:00Z",
+          "2010-08-12T21:00:00Z",
+          "2010-08-13T00:00:00Z",
+          "2010-08-13T03:00:00Z",
+          "2010-08-13T06:00:00Z",
+          "2010-08-13T09:00:00Z",
+          "2010-08-13T12:00:00Z"
+        ],
+        "framesPresent": 25,
+        "releaseStencilDetail": [
+          {
+            "drifterId": "48985",
+            "valid": true
+          },
+          {
+            "drifterId": "81806",
+            "valid": true
+          },
+          {
+            "drifterId": "90135",
+            "valid": true
+          },
+          {
+            "drifterId": "90149",
+            "valid": true
+          },
+          {
+            "drifterId": "90150",
+            "valid": true
+          }
+        ],
+        "status": "PASS",
+        "missingFractionArea": 0.066284
+      },
+      "grid": {
+        "lon": [
+          135.25,
+          161.91666666666666
+        ],
+        "lat": [
+          30.25,
+          40.083333333333336
+        ],
+        "shape": [
+          119,
+          321
+        ],
+        "croppedToAreaPlusOneNode": true
+      },
+      "timeUTC": [
+        "2010-08-10T12:00:00Z",
+        "2010-08-10T15:00:00Z",
+        "2010-08-10T18:00:00Z",
+        "2010-08-10T21:00:00Z",
+        "2010-08-11T00:00:00Z",
+        "2010-08-11T03:00:00Z",
+        "2010-08-11T06:00:00Z",
+        "2010-08-11T09:00:00Z",
+        "2010-08-11T12:00:00Z",
+        "2010-08-11T15:00:00Z",
+        "2010-08-11T18:00:00Z",
+        "2010-08-11T21:00:00Z",
+        "2010-08-12T00:00:00Z",
+        "2010-08-12T03:00:00Z",
+        "2010-08-12T06:00:00Z",
+        "2010-08-12T09:00:00Z",
+        "2010-08-12T12:00:00Z",
+        "2010-08-12T15:00:00Z",
+        "2010-08-12T18:00:00Z",
+        "2010-08-12T21:00:00Z",
+        "2010-08-13T00:00:00Z",
+        "2010-08-13T03:00:00Z",
+        "2010-08-13T06:00:00Z",
+        "2010-08-13T09:00:00Z",
+        "2010-08-13T12:00:00Z"
+      ],
+      "mask": {
+        "glorysMasked": 2567,
+        "stokesStencilInvalid": 3498,
+        "compositeMasked": 3524,
+        "total": 38199
+      },
+      "control": {
+        "file": "data/research/step29/forcing/KE-H1.control.dataset.json",
+        "fileSha256": "897fe2934a03f70d152669d8e5e34621f27452153f4942efaec12b1c298c4b99",
+        "gridSha256": "0f415aaa08b9d615d3b28663061f9f1aa786c1e3bad05fd7a09674d60034b38e",
+        "datasetId": "test06-control-glorys15.81m-KE-H1",
+        "shape": [
+          25,
+          119,
+          321
+        ],
+        "valuesCount": 1909950
+      },
+      "treatment": {
+        "file": "data/research/step29/forcing/KE-H1.treatment.dataset.json",
+        "fileSha256": "48ed7da278fafc659ba0faaf1b65a73eda6c64fa1439bc9d087710608d28ec6a",
+        "gridSha256": "dea1448ceabac7b65a3e7b9628530a5d0093413a58353ede64f701e352303b84",
+        "datasetId": "test06-treatment-glorys15.81m-plus-ww3-stokes-KE-H1",
+        "shape": [
+          25,
+          119,
+          321
+        ],
+        "valuesCount": 1909950
+      },
+      "stokesCoefficient": 1.0,
+      "wind": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H1.ncep10m.wind.json",
+        "sha256": "7b16b08358e2ca50769cfb4106674703f7da70190e8bb6601fec4ceeae5bcfcd",
+        "gridSha256": "2efe5efe8feed013a2c0b64fb3257938d8f85a129f35ecc0167cc35db0154d21",
+        "source": "STEP 20 B-3 normalized NCEP-DOE R2 10 m 6 h (holdout)"
+      }
+    },
+    {
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "t0": "2010-11-15T12:00:00Z",
+      "end": "2010-11-18T12:00:00Z",
+      "computationArea": {
+        "west": 141.06795,
+        "east": 156.05711,
+        "south": 29.02459,
+        "north": 40.0
+      },
+      "status": "BUILT",
+      "glorysSource": {
+        "role": "GLORYS",
+        "file": "data/research/step25c/forcing/KE-H3.glorys15.81m.dataset.json",
+        "sha256": "f3955b90eb1c2715accc8675d8a8338b3816434d96a70754bc7d5fe3f70cc059",
+        "gridSha256": "f00cb7fec7d318234f7ed6dd2af3c92f332b92cb076d82cec947ea300735421f"
+      },
+      "ww3Sources": [
+        {
+          "role": "WW3_STOKES",
+          "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201011_uss.nc",
+          "sha256": "c18e6fc7663a74c384fbfdffb7867bdb6e8c629f1391d31eb047b4aaa80d4365"
+        }
+      ],
+      "ww3Gate": {
+        "windowId": "KE-H3",
+        "files": [
+          {
+            "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201011_uss.nc",
+            "sha256": "c18e6fc7663a74c384fbfdffb7867bdb6e8c629f1391d31eb047b4aaa80d4365",
+            "shaVerified": true,
+            "attributes": {
+              "source": "MODEL WAVEWATCH III (R) GLOBMULTI",
+              "product_version": "1.0",
+              "grid": "glob_30m",
+              "institution": "SHOM and Ifremer",
+              "distribution_statement": "No restrictions"
+            },
+            "frameTimes": [
+              "2010-11-01T00:00:00Z",
+              "2010-11-30T21:00:00Z"
+            ],
+            "nFrames": 240
+          }
+        ],
+        "identity": true,
+        "variables": true,
+        "units": true,
+        "timeAxis": true,
+        "extent": true,
+        "releaseStencil": true,
+        "license": true,
+        "frames": [
+          "2010-11-15T12:00:00Z",
+          "2010-11-15T15:00:00Z",
+          "2010-11-15T18:00:00Z",
+          "2010-11-15T21:00:00Z",
+          "2010-11-16T00:00:00Z",
+          "2010-11-16T03:00:00Z",
+          "2010-11-16T06:00:00Z",
+          "2010-11-16T09:00:00Z",
+          "2010-11-16T12:00:00Z",
+          "2010-11-16T15:00:00Z",
+          "2010-11-16T18:00:00Z",
+          "2010-11-16T21:00:00Z",
+          "2010-11-17T00:00:00Z",
+          "2010-11-17T03:00:00Z",
+          "2010-11-17T06:00:00Z",
+          "2010-11-17T09:00:00Z",
+          "2010-11-17T12:00:00Z",
+          "2010-11-17T15:00:00Z",
+          "2010-11-17T18:00:00Z",
+          "2010-11-17T21:00:00Z",
+          "2010-11-18T00:00:00Z",
+          "2010-11-18T03:00:00Z",
+          "2010-11-18T06:00:00Z",
+          "2010-11-18T09:00:00Z",
+          "2010-11-18T12:00:00Z"
+        ],
+        "framesPresent": 25,
+        "releaseStencilDetail": [
+          {
+            "drifterId": "89898",
+            "valid": true
+          },
+          {
+            "drifterId": "90146",
+            "valid": true
+          },
+          {
+            "drifterId": "92981",
+            "valid": true
+          },
+          {
+            "drifterId": "98996",
+            "valid": true
+          },
+          {
+            "drifterId": "98997",
+            "valid": true
+          },
+          {
+            "drifterId": "98998",
+            "valid": true
+          },
+          {
+            "drifterId": "99006",
+            "valid": true
+          }
+        ],
+        "status": "PASS",
+        "missingFractionArea": 0.011317
+      },
+      "grid": {
+        "lon": [
+          141.0,
+          156.08333333333334
+        ],
+        "lat": [
+          29.0,
+          40.083333333333336
+        ],
+        "shape": [
+          134,
+          182
+        ],
+        "croppedToAreaPlusOneNode": true
+      },
+      "timeUTC": [
+        "2010-11-15T12:00:00Z",
+        "2010-11-15T15:00:00Z",
+        "2010-11-15T18:00:00Z",
+        "2010-11-15T21:00:00Z",
+        "2010-11-16T00:00:00Z",
+        "2010-11-16T03:00:00Z",
+        "2010-11-16T06:00:00Z",
+        "2010-11-16T09:00:00Z",
+        "2010-11-16T12:00:00Z",
+        "2010-11-16T15:00:00Z",
+        "2010-11-16T18:00:00Z",
+        "2010-11-16T21:00:00Z",
+        "2010-11-17T00:00:00Z",
+        "2010-11-17T03:00:00Z",
+        "2010-11-17T06:00:00Z",
+        "2010-11-17T09:00:00Z",
+        "2010-11-17T12:00:00Z",
+        "2010-11-17T15:00:00Z",
+        "2010-11-17T18:00:00Z",
+        "2010-11-17T21:00:00Z",
+        "2010-11-18T00:00:00Z",
+        "2010-11-18T03:00:00Z",
+        "2010-11-18T06:00:00Z",
+        "2010-11-18T09:00:00Z",
+        "2010-11-18T12:00:00Z"
+      ],
+      "mask": {
+        "glorysMasked": 217,
+        "stokesStencilInvalid": 420,
+        "compositeMasked": 422,
+        "total": 24388
+      },
+      "control": {
+        "file": "data/research/step29/forcing/KE-H3.control.dataset.json",
+        "fileSha256": "66affb0914f11aab962ee484ce5e75f3ecceb1630d818dc86616bf737c6f6cc1",
+        "gridSha256": "d74c7c4280fc2b13cde62003e44ea8d5a4b03d7dfcf289c11019dd4f5afa064b",
+        "datasetId": "test06-control-glorys15.81m-KE-H3",
+        "shape": [
+          25,
+          134,
+          182
+        ],
+        "valuesCount": 1219400
+      },
+      "treatment": {
+        "file": "data/research/step29/forcing/KE-H3.treatment.dataset.json",
+        "fileSha256": "bb29e7d676c06ebdbab28742ce087ccae7a77ed3e96990382092506c6f4af0c5",
+        "gridSha256": "d17af994cc35284a421d41ecabace859272c83b2a9f2d87cf9b519e8da5d73d4",
+        "datasetId": "test06-treatment-glorys15.81m-plus-ww3-stokes-KE-H3",
+        "shape": [
+          25,
+          134,
+          182
+        ],
+        "valuesCount": 1219400
+      },
+      "stokesCoefficient": 1.0,
+      "wind": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H3.ncep10m.wind.json",
+        "sha256": "c1f1e3d70697a41b5d39d4f0b422869378256930d5e9d9b8393cbff996ab9bbc",
+        "gridSha256": "94b50b5ac56e7224b260eb0a03bddccd9785e3454a69471cdc3a39bc61e43cd8",
+        "source": "STEP 20 B-3 normalized NCEP-DOE R2 10 m 6 h (holdout)"
+      }
+    }
+  ],
+  "modelRunCount": 0,
+  "newDownloads": 0,
+  "createdAtUTC": "2026-09-06T15:11:59Z"
+}

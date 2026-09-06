@@ -31,7 +31,70 @@ export const launches = {
     return this.layer;
   },
 
+  /** EARTHUS 축약본(events/launches.json) → 화면 항목. 실패하면 null 을 돌려 LL2 폴백으로 간다. */
+  async _fromFeed(now) {
+    const res = await fetchT(API.LAUNCH_FEED, { timeout: 15_000 });
+    if (!res.ok) throw new Error('feed ' + res.status);
+    const doc = await res.json();
+    if (!Array.isArray(doc.launches) || !doc.launches.length) throw new Error('feed empty');
+    const t = i18n.t.F;
+    this.retrievedAt = doc.generated;
+    this.cached = false;
+    this.feedSource = 'compact';
+    return doc.launches.map(L => {
+      const net = L.net ? new Date(L.net).getTime() : null;
+      const hoursOut = net != null ? (net - now) / 3600_000 : null;
+      const vids = L.videos || [];
+      return {
+        id: L.id,
+        name: (L.name || '').split('|')[0].trim(),
+        lat: L.lat, lon: L.lon, kind: 'launch',
+        pulse: hoursOut != null && hoursOut >= 0 && hoursOut <= 6,
+        radius: hoursOut != null && hoursOut >= 0 && hoursOut <= 24 ? 9 : 6,
+        data: {
+          _hoursOut: hoursOut,
+          _net: L.net,
+          _stream: vids[0]?.url || null,
+          _videos: vids,                     // 중계 전체 — 시트가 고른다
+          _links: L.links || [],
+          _mission: L.mission || null,
+          _missionType: L.missionType || null,
+          _missionDescription: L.missionDescription || null,
+          _orbit: L.orbit || null,
+          _orbitAbbrev: L.orbitAbbrev || null,
+          _rocket: L.rocket || null,
+          _site: L.site || null,
+          _padWiki: L.padWiki || null,
+          _webcastLive: L.webcastLive === true,
+          _statusNote: L.statusNote || null,
+          _source: 'Launch Library 2 (The Space Devs)',
+          _retrievedAt: doc.generated,
+          _cached: false,
+          [t.provider]: L.provider || '—',
+          [t.pad]: L.pad || '—',
+          [t.net]: L.net ? `${new Date(L.net).toLocaleString(i18n.lang)} (${i18n.rel(L.net)})` : '—',
+          [t.status]: L.status || '—',
+          /* ⚠️ 중계 링크를 여기 넣지 않는다 — 아래 '중계' 카드(ui.js renderLaunch)가 제목·시작 시각까지
+             갖춰 보여주므로, 같은 것이 위에 '중계 ↗' 한 줄로 또 나오면 두 번 읽힌다. */
+        },
+      };
+    });
+  },
+
   async refresh() {
+    const now = Date.now();
+    /* 2026-09-06: 축약본(events/launches.json)이 정상 경로다. 미션 설명·중계 주소가 여기 들어 있고,
+       LL2 를 브라우저가 직접 부르지 않으므로 429 가 나지 않는다. 축약본이 없을 때만 옛 경로로 간다. */
+    try {
+      const items = await this._fromFeed(now);
+      this.upcoming = items.filter(m => m.data._hoursOut != null && m.data._hoursOut > 0)
+        .sort((a, b) => a.data._hoursOut - b.data._hoursOut);
+      this.layer.setData(items);
+      return items;
+    } catch (e) {
+      console.warn('[launch] 축약본 실패 — LL2 직접 폴백', e?.message || e);
+      this.feedSource = 'll2';
+    }
     /* mode=normal이면 우리가 쓰지 않는 이미지·설명을 덜 받는다.
        ⚠️ LL2 이미지에는 CC BY-NC 등 제3자 라이선스가 섞여 있으므로 표시하지 않는다. */
     const schedule = await getLaunchSchedule({url:API.LAUNCH,fetcher:fetchT});
@@ -40,7 +103,6 @@ export const launches = {
     this.cached = schedule.mode === 'cached';
     this.retryAt = schedule.retryAt;
     const t = i18n.t.F;
-    const now = Date.now();
 
     const items = (j.results || [])
       .filter(r => r.pad && r.pad.latitude != null && r.pad.longitude != null)
@@ -79,6 +141,8 @@ export const launches = {
     this.layer.setData(items);
     return items;
   },
+
+  feedSource: null,
 
   next() { return this.upcoming[0] || null; },
 };

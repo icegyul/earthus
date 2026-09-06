@@ -230,7 +230,13 @@ export const sheet = {
        내리기 → 창만 내리고 선택은 유지. 궤적을 보려고 창을 치우는 경우가 이것이다.
        처음엔 닫기만 있어서, 궤적을 보려고 × 를 누르면 궤적까지 사라졌다. */
     $('#sheetMin').onclick = () => this.minimize();
-    store.on('select', m => m ? this.open(m) : this.close());
+    store.on('select', m => {
+      /* 발사 궤적은 그 발사를 고르는 동안만 남는다 — 다른 것을 고르거나 선택을 풀면 걷는다. */
+      if (!m || m.kind !== 'launch') {
+        import('./layers/launchtrack.js').then(({ launchTrack }) => launchTrack.clear()).catch(() => {});
+      }
+      return m ? this.open(m) : this.close();
+    });
   },
 
   minimize() {
@@ -628,6 +634,8 @@ export const sheet = {
       } else addRow(rows, k, v);
     });
 
+    if (m.kind === 'launch') await renderLaunch(m, rows);
+
     if (['quake', 'volcano', 'wildfire'].includes(m.kind)) {
       rows.parentElement.appendChild(safetyActions({ lat: m.lat, lon: m.lon }));
     }
@@ -651,7 +659,11 @@ export const sheet = {
        글을 치우려는 것이지 지도를 치우려는 게 아니다. 선은
        ① 태풍 밖을 탭하거나 ② 다른 것을 선택하거나 ③ 태풍 레이어를 끄면
        접힌다 (①은 이미 "다른 거 보려니깐" 지적으로 만든 동작이다). */
-    import('./layers/space.js').then(({ orbits }) => orbits.clearTrack()).catch(() => {}); $('#sheet').classList.remove('up'); clearForecast(); },
+    import('./layers/space.js').then(({ orbits }) => orbits.clearTrack()).catch(() => {});
+    /* ⚠️ 발사 궤적은 여기서 지우지 않는다 — 태풍 진로선과 같은 규칙이다.
+       창을 닫는 건 글을 치우려는 것이지 지도를 치우려는 것이 아니다.
+       궤적은 다른 것을 고르거나(select) 발사 레이어를 끌 때 걷는다. */
+    $('#sheet').classList.remove('up'); clearForecast(); },
 };
 
 /* 긴 값은 몇 자부터 한 칸으로 펴는가.
@@ -674,6 +686,92 @@ function noteEl(text) {
   const p = el('p', 'sheet-note');
   p.innerHTML = mdBold(text);
   return p;
+}
+
+/* ── 로켓 발사: 무엇을 쏘나 · 어디서 보나 · 어디로 지나가나 (2026-09-06 받은 지시) ──
+   받은 말 그대로: "어떤걸 발사하고 어떤 위성이 탑재되는지 그런 정보도 찾아서 넣어주고,
+   유튜브 생방송 주소 찾아서 넣어줘. 모든 발사는 발사 한 시간 전 유튜브나 공식홈페이지 라이브
+   영상을 정보창에서 볼 수 있게. 발사 지나가는 발사궤도도 그려줘."
+   ⚠️ 값을 만들지 않는다 — LL2 가 비워 둔 미션 설명·중계 주소는 비운 채로 그렇게 적는다. */
+async function renderLaunch(m, rows) {
+  const ko = i18n.lang === 'ko';
+  const d = m.data || {};
+  const box = rows.parentElement;
+  const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ① 무엇을 쏘나 — 발사체·탑재체·목표 궤도·미션 설명 */
+  const bits = [];
+  if (d._rocket) bits.push(`<div class="lb-row"><span>${ko ? '발사체' : 'Rocket'}</span><b>${esc(d._rocket)}</b></div>`);
+  if (d._mission) bits.push(`<div class="lb-row"><span>${ko ? '탑재' : 'Payload'}</span><b>${esc(d._mission)}${d._missionType ? ` · ${esc(d._missionType)}` : ''}</b></div>`);
+  if (d._orbit) bits.push(`<div class="lb-row"><span>${ko ? '목표 궤도' : 'Target orbit'}</span><b>${esc(d._orbit)}${d._orbitAbbrev ? ` (${esc(d._orbitAbbrev)})` : ''}</b></div>`);
+  if (d._site) bits.push(`<div class="lb-row"><span>${ko ? '발사장' : 'Site'}</span><b>${esc(d._site)}</b></div>`);
+  const desc = (d._missionDescription || '').trim();
+  if (bits.length || desc) {
+    const mission = el('div', 'launch-block lb-mission');
+    mission.innerHTML = `<div class="lb-head">${ko ? '무엇을 쏘나' : 'What is flying'}</div>${bits.join('')}`
+      + (desc ? `<p class="lb-desc">${esc(desc)}</p>`
+              : `<p class="lb-desc dim">${ko ? '발사 기관이 아직 탑재체를 공개하지 않았습니다 — 지어내지 않습니다.' : 'The operator has not disclosed the payload yet.'}</p>`);
+    box.appendChild(mission);
+  }
+
+  /* ② 어디서 보나 — 중계. 발사 1시간 전(또는 중계 시작 시각 이후)부터 화면 안에서 재생한다. */
+  const vids = Array.isArray(d._videos) && d._videos.length ? d._videos
+    : (d._stream ? [{ url: d._stream }] : []);
+  const h = d._hoursOut;
+  const started = vids.some(v => v.start_time && Date.parse(v.start_time) <= Date.now());
+  const playable = (h != null && h <= 1 && h > -4) || d._webcastLive === true || started;
+  const live = el('div', 'launch-block lb-live');
+  live.innerHTML = `<div class="lb-head">${ko ? '중계' : 'Webcast'}${d._webcastLive ? ` <span class="lb-now">${ko ? '방송 중' : 'LIVE'}</span>` : ''}</div>`;
+  box.appendChild(live);
+  if (!vids.length) {
+    live.insertAdjacentHTML('beforeend', `<p class="lb-desc dim">${ko
+      ? '아직 공개된 중계 주소가 없습니다. 발사가 가까워지면 기관이 올리며, 그때 여기에 나타납니다.'
+      : 'No webcast link published yet — it appears here once the operator posts one.'}</p>`);
+  } else {
+    if (playable) {
+      const { makeLiveBlock } = await import('./livevideo.js');
+      const yt = vids.find(v => /youtube\.com|youtu\.be/.test(v.url || ''));
+      const pick = yt || vids[0];
+      const blk = makeLiveBlock(pick.url, `${pick.publisher || ''} ${pick.title || (ko ? '공식 중계' : 'Official webcast')}`.trim());
+      if (blk) { blk.classList.add('launch-block'); live.appendChild(blk); }
+    } else {
+      live.insertAdjacentHTML('beforeend', `<p class="lb-desc dim">${h != null && h > 1
+        ? (ko ? `발사 1시간 전부터 이 창에서 바로 볼 수 있습니다 (발사까지 ${Math.round(h)}시간)` : `Playable here from T-1h (launch in ${Math.round(h)}h)`)
+        : (ko ? '중계가 끝났을 수 있습니다 — 채널에서 확인하세요' : 'The stream may have ended — check the channel')}</p>`);
+    }
+    live.insertAdjacentHTML('beforeend', vids.map(v => `<a class="lb-link" href="${esc(v.url)}" target="_blank" rel="noopener">`
+      + `<b>${esc(v.publisher || v.source || (ko ? '중계' : 'Stream'))}</b>`
+      + `<span>${esc(v.title || v.kind || '')}</span>`
+      + `<em>${esc(v.source || '')}${v.start_time ? ` · ${ko ? '시작' : 'starts'} ${new Date(v.start_time).toLocaleString(i18n.lang)}` : ''}</em></a>`).join(''));
+  }
+  (d._links || []).slice(0, 3).forEach(l => {
+    const a = el('a', 'launch-block lb-link one');
+    a.href = l.url; a.target = '_blank'; a.rel = 'noopener';
+    a.innerHTML = `<b>${esc(l.title)}</b><em>${ko ? '공식 안내' : 'Official info'}</em>`;
+    box.appendChild(a);
+  });
+
+  /* ③ 어디로 지나가나 — 지상 궤적. 경사각을 알 수 없으면 그리지 않고 그 이유를 적는다. */
+  try {
+    const { launchTrack } = await import('./layers/launchtrack.js');
+    const t = launchTrack.show(m);
+    const card = el('div', 'launch-block lb-track');
+    if (t && !t.skipped) {
+      card.innerHTML = `<div class="lb-head">${ko ? '지나갈 경로' : 'Ground track'} <span class="lb-sim">${ko ? '근사' : 'APPROX'}</span></div>`
+        + `<div class="lb-row"><span>${ko ? '궤도 경사각' : 'Inclination'}</span><b>${t.inc.toFixed(1)}°${t.minimum ? (ko ? ' (최소)' : ' (min)') : ''}</b></div>`
+        + (t.az != null ? `<div class="lb-row"><span>${ko ? '발사 방위각' : 'Azimuth'}</span><b>${Math.round(t.az)}°</b></div>` : '')
+        + `<div class="lb-row"><span>${ko ? '궤도 주기' : 'Period'}</span><b>${t.periodMin.toFixed(0)}${ko ? '분' : ' min'} · ${t.alt} km</b></div>`
+        + `<p class="lb-desc dim">${esc(t.why)}<br>${ko
+          ? '주황 선은 발사 뒤 약 한 바퀴 반 동안 지날 지상 경로입니다. 실제 궤도 요소는 발사 뒤 공개 카탈로그(CelesTrak)에 올라와야 확정됩니다.'
+          : 'The amber line is the ground path for about 1.5 orbits. Actual elements are confirmed only after the public catalogue publishes them.'}</p>`;
+    } else {
+      card.innerHTML = `<div class="lb-head">${ko ? '지나갈 경로' : 'Ground track'}</div>`
+        + `<p class="lb-desc dim">${esc((t && t.why) || (ko ? '목표 궤도를 알 수 없어 경로를 그리지 않습니다.' : 'Target orbit unknown — no track drawn.'))}</p>`;
+    }
+    box.appendChild(card);
+  } catch (e) {
+    console.warn('[launch] 궤적', e?.message || e);
+  }
 }
 
 function addRow(dl, k, v, html = false) {
@@ -1537,6 +1635,7 @@ const DYNAMIC_BLOCKS = [
   '.paid-hint',     // 유료 기능 안내
   '.title-orig',    // 제목 원문 (번역했을 때)
   '.safety-actions', // 공식 행동요령 + 한국 긴급전화
+  '.launch-block',  // 발사 — 미션·탑재·중계·궤적 (2026-09-06)
 ].join(', ');
 
 function clearDynamic() {

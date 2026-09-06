@@ -91,6 +91,11 @@ export const API = {
   SAT_CATALOG: CDN + '/celestrak/catalog.json.gz',
   GP:          'https://celestrak.org/NORAD/elements/gp.php',   // OMM JSON 폴백용
   LAUNCH:      'https://ll.thespacedevs.com/2.3.0/launches/upcoming/',
+  /* 2026-09-06: 브라우저는 이 축약본을 먼저 본다(aws/launch-feed, 15분).
+     LL2 직접 호출은 시간당 한도가 빡빡해 실측 429 가 잦았고, 중계 주소(vidURLs)는
+     mode=detailed 에만 있는데 그건 30건에 360 KB 다. 서버가 한 번 받아 35 KB 로 줄인다.
+     위 LAUNCH 는 축약본을 못 받을 때만 쓰는 폴백으로 남긴다. */
+  LAUNCH_FEED: CDN + '/events/launches.json',
   KP:          'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json',
   AURORA:      'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json',
   OVERPASS:    'https://overpass-api.de/api/interpreter',

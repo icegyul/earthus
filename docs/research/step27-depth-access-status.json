@@ -1,0 +1,33 @@
+{
+  "ruleId": "missing-native-depth-acquisition-step27b",
+  "product": {
+    "productId": "GLOBAL_MULTIYEAR_PHY_001_030",
+    "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+    "name": "Global Ocean Physics Reanalysis (GLORYS12V1)"
+  },
+  "tool": {
+    "name": "copernicusmarine (Copernicus Marine Toolbox, official client)",
+    "isolatedVenv": "data/research/step25b/toolbox-venv",
+    "installedInIsolatedVenv": true,
+    "runtimeIsolated": true,
+    "python": "3.12.10",
+    "version": "copernicusmarine, version 2.4.1"
+  },
+  "credentialExistence": {
+    "copernicusmarine_credentials_file": true,
+    "contentsRead": false
+  },
+  "authentication": {
+    "method": "copernicusmarine login --check-credentials-valid (exit code only)",
+    "checkedAtUTC": "2026-09-06T12:46:18Z",
+    "credentialsEntered": false,
+    "credentialsStored": false,
+    "exitCode": 0,
+    "outputScrubbed": "INFO - 2026-09-06T12:46:19Z - Checking if credentials are valid.\nINFO - 2026-09-06T12:46:21Z - Valid credentials from configuration file.\n",
+    "authenticated": true
+  },
+  "accessStatus": "AUTHORIZED",
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0,
+  "checkedAtUTC": "2026-09-06T12:46:21Z"
+}

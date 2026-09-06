@@ -1,0 +1,509 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "missing-native-depth-acquisition-step27b",
+  "protocolSha256": "38be0a2ebae7c448bc675e05cce3b8e37e9521f95e58724f07fdd039282c967b",
+  "accessStatus": "AUTHORIZED",
+  "product": {
+    "productId": "GLOBAL_MULTIYEAR_PHY_001_030",
+    "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+    "name": "Global Ocean Physics Reanalysis (GLORYS12V1)"
+  },
+  "tool": {
+    "name": "copernicusmarine (Copernicus Marine Toolbox, official client)",
+    "isolatedVenv": "data/research/step25b/toolbox-venv",
+    "installedInIsolatedVenv": true,
+    "runtimeIsolated": true,
+    "python": "3.12.10",
+    "version": "copernicusmarine, version 2.4.1"
+  },
+  "startedAtUTC": "2026-09-06T12:46:21Z",
+  "credentialsInManifest": false,
+  "depths": [
+    {
+      "id": "D05",
+      "targetMeters": 5,
+      "expectedNativeLevelMeters": 5.078224,
+      "acquisitionStatus": "ACQUIRE",
+      "windows": [
+        {
+          "windowId": "KE-1",
+          "t0": "2010-05-11T12:00:00Z",
+          "end": "2010-05-14T12:00:00Z",
+          "requestedTime": [
+            "2010-05-10T00:00:00",
+            "2010-05-15T00:00:00"
+          ],
+          "requestedBox": {
+            "west": 140.10959,
+            "east": 162.11974,
+            "south": 27.62786,
+            "north": 38.69472
+          },
+          "requestedDepthTargetMeters": 5,
+          "selectionMethod": "nearest (single native level)",
+          "variables": [
+            "uo",
+            "vo"
+          ],
+          "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 140.10959 -X 162.11974 -y 27.62786 -Y 38.69472 -t 2010-05-10T00:00:00 -T 2010-05-15T00:00:00 -z 5 -Z 5 --coordinates-selection-method nearest -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step27\\D05 -f KE-1.glorys12v1.uo_vo.D05.nc --disable-progress-bar",
+          "requestedAtUTC": "2026-09-06T12:46:21Z",
+          "exitCode": 0,
+          "outputScrubbed": "{\n  \"file_size\": \"0.82 MB\",\n  \"data_transfer_size\": \"192.11 MB\",\n  \"status\": \"000\",\n  \"message\": \"The request was successful.\"\n}\nINFO - 2026-09-06T12:46:27Z - Selected dataset version: \"202311\"\nINFO - 2026-09-06T12:46:27Z - Selected dataset part: \"default\"\nINFO - 2026-09-06T12:46:35Z - Total size of the download: 839.82 KB.\n",
+          "file": "data/research/step27/D05/KE-1.glorys12v1.uo_vo.D05.nc",
+          "bytes": 873754,
+          "sha256": "45fdb09ad398c7a6a9710430a65f88a794af1dfd079489b8a782c166c8b88a70",
+          "returnedDepthLevelsMeters": [
+            5.078224182128906
+          ],
+          "status": "ok"
+        },
+        {
+          "windowId": "KE-2",
+          "t0": "2010-06-30T12:00:00Z",
+          "end": "2010-07-03T12:00:00Z",
+          "requestedTime": [
+            "2010-06-29T00:00:00",
+            "2010-07-04T00:00:00"
+          ],
+          "requestedBox": {
+            "west": 133.03249,
+            "east": 155.28535,
+            "south": 29.20784,
+            "north": 40.5
+          },
+          "requestedDepthTargetMeters": 5,
+          "selectionMethod": "nearest (single native level)",
+          "variables": [
+            "uo",
+            "vo"
+          ],
+          "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 133.03249 -X 155.28535 -y 29.20784 -Y 40.5 -t 2010-06-29T00:00:00 -T 2010-07-04T00:00:00 -z 5 -Z 5 --coordinates-selection-method nearest -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step27\\D05 -f KE-2.glorys12v1.uo_vo.D05.nc --disable-progress-bar",
+          "requestedAtUTC": "2026-09-06T12:46:35Z",
+          "exitCode": 0,
+          "outputScrubbed": "{\n  \"file_size\": \"0.85 MB\",\n  \"data_transfer_size\": \"96.05 MB\",\n  \"status\": \"000\",\n  \"message\": \"The request was successful.\"\n}\nINFO - 2026-09-06T12:46:41Z - Selected dataset version: \"202311\"\nINFO - 2026-09-06T12:46:41Z - Selected dataset part: \"default\"\nINFO - 2026-09-06T12:46:48Z - Total size of the download: 874.32 KB.\n",
+          "file": "data/research/step27/D05/KE-2.glorys12v1.uo_vo.D05.nc",
+          "bytes": 909058,
+          "sha256": "0d4c0a252683582a2d73f1aefbf6d5a440dd98dc810984a61677a57e515a4b55",
+          "returnedDepthLevelsMeters": [
+            5.078224182128906
+          ],
+          "status": "ok"
+        },
+        {
+          "windowId": "AG-1",
+          "t0": "2015-04-23T12:00:00Z",
+          "end": "2015-04-26T12:00:00Z",
+          "requestedTime": [
+            "2015-04-22T00:00:00",
+            "2015-04-27T00:00:00"
+          ],
+          "requestedBox": {
+            "west": 17.81773,
+            "east": 32.51394,
+            "south": -40.5,
+            "north": -31.63828
+          },
+          "requestedDepthTargetMeters": 5,
+          "selectionMethod": "nearest (single native level)",
+          "variables": [
+            "uo",
+            "vo"
+          ],
+          "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 17.81773 -X 32.51394 -y -40.5 -Y -31.63828 -t 2015-04-22T00:00:00 -T 2015-04-27T00:00:00 -z 5 -Z 5 --coordinates-selection-method nearest -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step27\\D05 -f AG-1.glorys12v1.uo_vo.D05.nc --disable-progress-bar",
+          "requestedAtUTC": "2026-09-06T12:46:48Z",
+          "exitCode": 0,
+          "outputScrubbed": "{\n  \"file_size\": \"0.45 MB\",\n  \"data_transfer_size\": \"192.11 MB\",\n  \"status\": \"000\",\n  \"message\": \"The request was successful.\"\n}\nINFO - 2026-09-06T12:46:54Z - Selected dataset version: \"202311\"\nINFO - 2026-09-06T12:46:54Z - Selected dataset part: \"default\"\nINFO - 2026-09-06T12:47:01Z - Total size of the download: 457.44 KB.\n",
+          "file": "data/research/step27/D05/AG-1.glorys12v1.uo_vo.D05.nc",
+          "bytes": 482410,
+          "sha256": "61442fdc99901f088a150af2451b2f081bc599d4b7b75d7b3f3e8795bc20aeba",
+          "returnedDepthLevelsMeters": [
+            5.078224182128906
+          ],
+          "status": "ok"
+        },
+        {
+          "windowId": "AG-2",
+          "t0": "2015-04-26T12:00:00Z",
+          "end": "2015-04-29T12:00:00Z",
+          "requestedTime": [
+            "2015-04-25T00:00:00",
+            "2015-04-30T00:00:00"
+          ],
+          "requestedBox": {
+            "west": 19.29639,
+            "east": 24.29639,
+            "south": -39.26674,
+            "north": -34.26674
+          },
+          "requestedDepthTargetMeters": 5,
+          "selectionMethod": "nearest (single native level)",
+          "variables": [
+            "uo",
+            "vo"
+          ],
+          "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 19.29639 -X 24.29639 -y -39.26674 -Y -34.26674 -t 2015-04-25T00:00:00 -T 2015-04-30T00:00:00 -z 5 -Z 5 --coordinates-selection-method nearest -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step27\\D05 -f AG-2.glorys12v1.uo_vo.D05.nc --disable-progress-bar",
+          "requestedAtUTC": "2026-09-06T12:47:01Z",
+          "exitCode": 0,
+          "outputScrubbed": "{\n  \"file_size\": \"0.10 MB\",\n  \"data_transfer_size\": \"192.11 MB\",\n  \"status\": \"000\",\n  \"message\": \"The request was successful.\"\n}\nINFO - 2026-09-06T12:47:07Z - Selected dataset version: \"202311\"\nINFO - 2026-09-06T12:47:07Z - Selected dataset part: \"default\"\nINFO - 2026-09-06T12:47:15Z - Total size of the download: 100.57 KB.\n",
+          "file": "data/research/step27/D05/AG-2.glorys12v1.uo_vo.D05.nc",
+          "bytes": 117178,
+          "sha256": "935c8ef4f21501d933a3fb735b746a22f32bfec3482a9197579ba351aac79314",
+          "returnedDepthLevelsMeters": [
+            5.078224182128906
+          ],
+          "status": "ok"
+        },
+        {
+          "windowId": "KE-H1",
+          "t0": "2010-08-10T12:00:00Z",
+          "end": "2010-08-13T12:00:00Z",
+          "requestedTime": [
+            "2010-08-09T00:00:00",
+            "2010-08-14T00:00:00"
+          ],
+          "requestedBox": {
+            "west": 134.75655,
+            "east": 162.35992,
+            "south": 29.7673,
+            "north": 40.5
+          },
+          "requestedDepthTargetMeters": 5,
+          "selectionMethod": "nearest (single native level)",
+          "variables": [
+            "uo",
+            "vo"
+          ],
+          "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 134.75655 -X 162.35992 -y 29.7673 -Y 40.5 -t 2010-08-09T00:00:00 -T 2010-08-14T00:00:00 -z 5 -Z 5 --coordinates-selection-method nearest -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step27\\D05 -f KE-H1.glorys12v1.uo_vo.D05.nc --disable-progress-bar",
+          "requestedAtUTC": "2026-09-06T12:47:15Z",
+          "exitCode": 0,
+          "outputScrubbed": "{\n  \"file_size\": \"1.00 MB\",\n  \"data_transfer_size\": \"192.11 MB\",\n  \"status\": \"000\",\n  \"message\": \"The request was successful.\"\n}\nINFO - 2026-09-06T12:47:21Z - Selected dataset version: \"202311\"\nINFO - 2026-09-06T12:47:21Z - Selected dataset part: \"default\"\nINFO - 2026-09-06T12:47:28Z - Total size of the download: 1.00 MB.\n",
+          "file": "data/research/step27/D05/KE-H1.glorys12v1.uo_vo.D05.nc",
+          "bytes": 1063714,
+          "sha256": "ef7656118fdeba2a0d494e817f7fcf93977f9831d2047bf732e3575b2659f422",
+          "returnedDepthLevelsMeters": [
+            5.078224182128906
+          ],
+          "status": "ok"
+        },
+        {
+          "windowId": "KE-H2",
+          "t0": "2010-08-16T12:00:00Z",
+          "end": "2010-08-19T12:00:00Z",
+          "requestedTime": [
+            "2010-08-15T00:00:00",
+            "2010-08-20T00:00:00"
+          ],
+          "requestedBox": {
+            "west": 143.31236,
+            "east": 148.31236,
+            "south": 32.12506,
+            "north": 37.12506
+          },
+          "requestedDepthTargetMeters": 5,
+          "selectionMethod": "nearest (single native level)",
+          "variables": [
+            "uo",
+            "vo"
+          ],
+          "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 143.31236 -X 148.31236 -y 32.12506 -Y 37.12506 -t 2010-08-15T00:00:00 -T 2010-08-20T00:00:00 -z 5 -Z 5 --coordinates-selection-method nearest -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step27\\D05 -f KE-H2.glorys12v1.uo_vo.D05.nc --disable-progress-bar",
+          "requestedAtUTC": "2026-09-06T12:47:28Z",
+          "exitCode": 0,
+          "outputScrubbed": "{\n  \"file_size\": \"0.10 MB\",\n  \"data_transfer_size\": \"96.05 MB\",\n  \"status\": \"000\",\n  \"message\": \"The request was successful.\"\n}\nINFO - 2026-09-06T12:47:35Z - Selected dataset version: \"202311\"\nINFO - 2026-09-06T12:47:35Z - Selected dataset part: \"default\"\nINFO - 2026-09-06T12:47:41Z - Total size of the download: 100.57 KB.\n",
+          "file": "data/research/step27/D05/KE-H2.glorys12v1.uo_vo.D05.nc",
+          "bytes": 117170,
+          "sha256": "c73f11b9e137baac7d51974c1e19edf7d7f719edfd74b128bc83f958314c8c3d",
+          "returnedDepthLevelsMeters": [
+            5.078224182128906
+          ],
+          "status": "ok"
+        },
+        {
+          "windowId": "KE-H3",
+          "t0": "2010-11-15T12:00:00Z",
+          "end": "2010-11-18T12:00:00Z",
+          "requestedTime": [
+            "2010-11-14T00:00:00",
+            "2010-11-19T00:00:00"
+          ],
+          "requestedBox": {
+            "west": 140.56795,
+            "east": 156.55711,
+            "south": 28.52459,
+            "north": 40.5
+          },
+          "requestedDepthTargetMeters": 5,
+          "selectionMethod": "nearest (single native level)",
+          "variables": [
+            "uo",
+            "vo"
+          ],
+          "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 140.56795 -X 156.55711 -y 28.52459 -Y 40.5 -t 2010-11-14T00:00:00 -T 2010-11-19T00:00:00 -z 5 -Z 5 --coordinates-selection-method nearest -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step27\\D05 -f KE-H3.glorys12v1.uo_vo.D05.nc --disable-progress-bar",
+          "requestedAtUTC": "2026-09-06T12:47:41Z",
+          "exitCode": 0,
+          "outputScrubbed": "{\n  \"file_size\": \"0.65 MB\",\n  \"data_transfer_size\": \"96.05 MB\",\n  \"status\": \"000\",\n  \"message\": \"The request was successful.\"\n}\nINFO - 2026-09-06T12:47:47Z - Selected dataset version: \"202311\"\nINFO - 2026-09-06T12:47:47Z - Selected dataset part: \"default\"\nINFO - 2026-09-06T12:47:54Z - Total size of the download: 669.57 KB.\n",
+          "file": "data/research/step27/D05/KE-H3.glorys12v1.uo_vo.D05.nc",
+          "bytes": 699526,
+          "sha256": "65d6520b173a59decbb163980c96dd7d4e0fbf52bf804a83edb88c93716fb6b7",
+          "returnedDepthLevelsMeters": [
+            5.078224182128906
+          ],
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "id": "D10",
+      "targetMeters": 10,
+      "expectedNativeLevelMeters": 9.572997,
+      "acquisitionStatus": "ACQUIRE",
+      "windows": [
+        {
+          "windowId": "KE-1",
+          "t0": "2010-05-11T12:00:00Z",
+          "end": "2010-05-14T12:00:00Z",
+          "requestedTime": [
+            "2010-05-10T00:00:00",
+            "2010-05-15T00:00:00"
+          ],
+          "requestedBox": {
+            "west": 140.10959,
+            "east": 162.11974,
+            "south": 27.62786,
+            "north": 38.69472
+          },
+          "requestedDepthTargetMeters": 10,
+          "selectionMethod": "nearest (single native level)",
+          "variables": [
+            "uo",
+            "vo"
+          ],
+          "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 140.10959 -X 162.11974 -y 27.62786 -Y 38.69472 -t 2010-05-10T00:00:00 -T 2010-05-15T00:00:00 -z 10 -Z 10 --coordinates-selection-method nearest -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step27\\D10 -f KE-1.glorys12v1.uo_vo.D10.nc --disable-progress-bar",
+          "requestedAtUTC": "2026-09-06T12:47:54Z",
+          "exitCode": 0,
+          "outputScrubbed": "{\n  \"file_size\": \"0.82 MB\",\n  \"data_transfer_size\": \"192.11 MB\",\n  \"status\": \"000\",\n  \"message\": \"The request was successful.\"\n}\nINFO - 2026-09-06T12:48:00Z - Selected dataset version: \"202311\"\nINFO - 2026-09-06T12:48:00Z - Selected dataset part: \"default\"\nINFO - 2026-09-06T12:48:08Z - Total size of the download: 839.82 KB.\n",
+          "file": "data/research/step27/D10/KE-1.glorys12v1.uo_vo.D10.nc",
+          "bytes": 873754,
+          "sha256": "a76c1a3b2d9289d578b1da2e0dbf5142c22893656ee845e5753a6622eab1ffcf",
+          "returnedDepthLevelsMeters": [
+            9.572997093200684
+          ],
+          "status": "ok"
+        },
+        {
+          "windowId": "KE-2",
+          "t0": "2010-06-30T12:00:00Z",
+          "end": "2010-07-03T12:00:00Z",
+          "requestedTime": [
+            "2010-06-29T00:00:00",
+            "2010-07-04T00:00:00"
+          ],
+          "requestedBox": {
+            "west": 133.03249,
+            "east": 155.28535,
+            "south": 29.20784,
+            "north": 40.5
+          },
+          "requestedDepthTargetMeters": 10,
+          "selectionMethod": "nearest (single native level)",
+          "variables": [
+            "uo",
+            "vo"
+          ],
+          "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 133.03249 -X 155.28535 -y 29.20784 -Y 40.5 -t 2010-06-29T00:00:00 -T 2010-07-04T00:00:00 -z 10 -Z 10 --coordinates-selection-method nearest -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step27\\D10 -f KE-2.glorys12v1.uo_vo.D10.nc --disable-progress-bar",
+          "requestedAtUTC": "2026-09-06T12:48:08Z",
+          "exitCode": 0,
+          "outputScrubbed": "{\n  \"file_size\": \"0.85 MB\",\n  \"data_transfer_size\": \"96.05 MB\",\n  \"status\": \"000\",\n  \"message\": \"The request was successful.\"\n}\nINFO - 2026-09-06T12:48:14Z - Selected dataset version: \"202311\"\nINFO - 2026-09-06T12:48:14Z - Selected dataset part: \"default\"\nINFO - 2026-09-06T12:48:21Z - Total size of the download: 874.32 KB.\n",
+          "file": "data/research/step27/D10/KE-2.glorys12v1.uo_vo.D10.nc",
+          "bytes": 909058,
+          "sha256": "6e0717a629e3946740a6eb7eacfecca3dc26d7e4630878f440ed877711d359c1",
+          "returnedDepthLevelsMeters": [
+            9.572997093200684
+          ],
+          "status": "ok"
+        },
+        {
+          "windowId": "AG-1",
+          "t0": "2015-04-23T12:00:00Z",
+          "end": "2015-04-26T12:00:00Z",
+          "requestedTime": [
+            "2015-04-22T00:00:00",
+            "2015-04-27T00:00:00"
+          ],
+          "requestedBox": {
+            "west": 17.81773,
+            "east": 32.51394,
+            "south": -40.5,
+            "north": -31.63828
+          },
+          "requestedDepthTargetMeters": 10,
+          "selectionMethod": "nearest (single native level)",
+          "variables": [
+            "uo",
+            "vo"
+          ],
+          "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 17.81773 -X 32.51394 -y -40.5 -Y -31.63828 -t 2015-04-22T00:00:00 -T 2015-04-27T00:00:00 -z 10 -Z 10 --coordinates-selection-method nearest -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step27\\D10 -f AG-1.glorys12v1.uo_vo.D10.nc --disable-progress-bar",
+          "requestedAtUTC": "2026-09-06T12:48:21Z",
+          "exitCode": 0,
+          "outputScrubbed": "{\n  \"file_size\": \"0.45 MB\",\n  \"data_transfer_size\": \"192.11 MB\",\n  \"status\": \"000\",\n  \"message\": \"The request was successful.\"\n}\nINFO - 2026-09-06T12:48:27Z - Selected dataset version: \"202311\"\nINFO - 2026-09-06T12:48:27Z - Selected dataset part: \"default\"\nINFO - 2026-09-06T12:48:34Z - Total size of the download: 457.44 KB.\n",
+          "file": "data/research/step27/D10/AG-1.glorys12v1.uo_vo.D10.nc",
+          "bytes": 482410,
+          "sha256": "9b3fd56aff7d40f391a9d17eb75770eca9f14f9d3171de7f9d7a67db6a3644f2",
+          "returnedDepthLevelsMeters": [
+            9.572997093200684
+          ],
+          "status": "ok"
+        },
+        {
+          "windowId": "AG-2",
+          "t0": "2015-04-26T12:00:00Z",
+          "end": "2015-04-29T12:00:00Z",
+          "requestedTime": [
+            "2015-04-25T00:00:00",
+            "2015-04-30T00:00:00"
+          ],
+          "requestedBox": {
+            "west": 19.29639,
+            "east": 24.29639,
+            "south": -39.26674,
+            "north": -34.26674
+          },
+          "requestedDepthTargetMeters": 10,
+          "selectionMethod": "nearest (single native level)",
+          "variables": [
+            "uo",
+            "vo"
+          ],
+          "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 19.29639 -X 24.29639 -y -39.26674 -Y -34.26674 -t 2015-04-25T00:00:00 -T 2015-04-30T00:00:00 -z 10 -Z 10 --coordinates-selection-method nearest -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step27\\D10 -f AG-2.glorys12v1.uo_vo.D10.nc --disable-progress-bar",
+          "requestedAtUTC": "2026-09-06T12:48:35Z",
+          "exitCode": 0,
+          "outputScrubbed": "{\n  \"file_size\": \"0.10 MB\",\n  \"data_transfer_size\": \"192.11 MB\",\n  \"status\": \"000\",\n  \"message\": \"The request was successful.\"\n}\nINFO - 2026-09-06T12:48:40Z - Selected dataset version: \"202311\"\nINFO - 2026-09-06T12:48:40Z - Selected dataset part: \"default\"\nINFO - 2026-09-06T12:48:49Z - Total size of the download: 100.57 KB.\n",
+          "file": "data/research/step27/D10/AG-2.glorys12v1.uo_vo.D10.nc",
+          "bytes": 117178,
+          "sha256": "b3d9e3e1f1d2d57476e886ba72b1e66f21dd0849d0583007b52eb419cc71540f",
+          "returnedDepthLevelsMeters": [
+            9.572997093200684
+          ],
+          "status": "ok"
+        },
+        {
+          "windowId": "KE-H1",
+          "t0": "2010-08-10T12:00:00Z",
+          "end": "2010-08-13T12:00:00Z",
+          "requestedTime": [
+            "2010-08-09T00:00:00",
+            "2010-08-14T00:00:00"
+          ],
+          "requestedBox": {
+            "west": 134.75655,
+            "east": 162.35992,
+            "south": 29.7673,
+            "north": 40.5
+          },
+          "requestedDepthTargetMeters": 10,
+          "selectionMethod": "nearest (single native level)",
+          "variables": [
+            "uo",
+            "vo"
+          ],
+          "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 134.75655 -X 162.35992 -y 29.7673 -Y 40.5 -t 2010-08-09T00:00:00 -T 2010-08-14T00:00:00 -z 10 -Z 10 --coordinates-selection-method nearest -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step27\\D10 -f KE-H1.glorys12v1.uo_vo.D10.nc --disable-progress-bar",
+          "requestedAtUTC": "2026-09-06T12:48:49Z",
+          "exitCode": 0,
+          "outputScrubbed": "{\n  \"file_size\": \"1.00 MB\",\n  \"data_transfer_size\": \"192.11 MB\",\n  \"status\": \"000\",\n  \"message\": \"The request was successful.\"\n}\nINFO - 2026-09-06T12:48:54Z - Selected dataset version: \"202311\"\nINFO - 2026-09-06T12:48:54Z - Selected dataset part: \"default\"\nINFO - 2026-09-06T12:49:02Z - Total size of the download: 1.00 MB.\n",
+          "file": "data/research/step27/D10/KE-H1.glorys12v1.uo_vo.D10.nc",
+          "bytes": 1063714,
+          "sha256": "25240c67e6968904b73bf975d2ee362531ba013cf71d47605aeeb15ec31e129d",
+          "returnedDepthLevelsMeters": [
+            9.572997093200684
+          ],
+          "status": "ok"
+        },
+        {
+          "windowId": "KE-H2",
+          "t0": "2010-08-16T12:00:00Z",
+          "end": "2010-08-19T12:00:00Z",
+          "requestedTime": [
+            "2010-08-15T00:00:00",
+            "2010-08-20T00:00:00"
+          ],
+          "requestedBox": {
+            "west": 143.31236,
+            "east": 148.31236,
+            "south": 32.12506,
+            "north": 37.12506
+          },
+          "requestedDepthTargetMeters": 10,
+          "selectionMethod": "nearest (single native level)",
+          "variables": [
+            "uo",
+            "vo"
+          ],
+          "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 143.31236 -X 148.31236 -y 32.12506 -Y 37.12506 -t 2010-08-15T00:00:00 -T 2010-08-20T00:00:00 -z 10 -Z 10 --coordinates-selection-method nearest -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step27\\D10 -f KE-H2.glorys12v1.uo_vo.D10.nc --disable-progress-bar",
+          "requestedAtUTC": "2026-09-06T12:49:02Z",
+          "exitCode": 0,
+          "outputScrubbed": "{\n  \"file_size\": \"0.10 MB\",\n  \"data_transfer_size\": \"96.05 MB\",\n  \"status\": \"000\",\n  \"message\": \"The request was successful.\"\n}\nINFO - 2026-09-06T12:49:08Z - Selected dataset version: \"202311\"\nINFO - 2026-09-06T12:49:08Z - Selected dataset part: \"default\"\nINFO - 2026-09-06T12:49:15Z - Total size of the download: 100.57 KB.\n",
+          "file": "data/research/step27/D10/KE-H2.glorys12v1.uo_vo.D10.nc",
+          "bytes": 117178,
+          "sha256": "517fed7e2055b00b19accbeff1facc441b7146b77a1604cfe3a9f11798479f25",
+          "returnedDepthLevelsMeters": [
+            9.572997093200684
+          ],
+          "status": "ok"
+        },
+        {
+          "windowId": "KE-H3",
+          "t0": "2010-11-15T12:00:00Z",
+          "end": "2010-11-18T12:00:00Z",
+          "requestedTime": [
+            "2010-11-14T00:00:00",
+            "2010-11-19T00:00:00"
+          ],
+          "requestedBox": {
+            "west": 140.56795,
+            "east": 156.55711,
+            "south": 28.52459,
+            "north": 40.5
+          },
+          "requestedDepthTargetMeters": 10,
+          "selectionMethod": "nearest (single native level)",
+          "variables": [
+            "uo",
+            "vo"
+          ],
+          "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 140.56795 -X 156.55711 -y 28.52459 -Y 40.5 -t 2010-11-14T00:00:00 -T 2010-11-19T00:00:00 -z 10 -Z 10 --coordinates-selection-method nearest -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step27\\D10 -f KE-H3.glorys12v1.uo_vo.D10.nc --disable-progress-bar",
+          "requestedAtUTC": "2026-09-06T12:49:15Z",
+          "exitCode": 0,
+          "outputScrubbed": "{\n  \"file_size\": \"0.65 MB\",\n  \"data_transfer_size\": \"96.05 MB\",\n  \"status\": \"000\",\n  \"message\": \"The request was successful.\"\n}\nINFO - 2026-09-06T12:49:20Z - Selected dataset version: \"202311\"\nINFO - 2026-09-06T12:49:20Z - Selected dataset part: \"default\"\nINFO - 2026-09-06T12:49:27Z - Total size of the download: 669.57 KB.\n",
+          "file": "data/research/step27/D10/KE-H3.glorys12v1.uo_vo.D10.nc",
+          "bytes": 699514,
+          "sha256": "1978b96e0d31bff7f3a688c91eb48f3b13714b468cd75d294905134b72fed180",
+          "returnedDepthLevelsMeters": [
+            9.572997093200684
+          ],
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "id": "D20",
+      "targetMeters": 20,
+      "expectedNativeLevelMeters": 21.598816,
+      "acquisitionStatus": "BLOCKED_DEPTH_IDENTITY_AMBIGUOUS",
+      "windows": [],
+      "reason": "the locked STEP 27 rule says 'nearest native level to 20 m' = 18.495560 m, while the STEP 27 rule file and STEP 27B instruction expect 21.598816 m; the two readings name different native levels; choosing one after seeing the level list would be a depth choice made by the executor, which is forbidden; D20 is therefore not acquired and awaits an explicit ruling in a new preregistration (which level defines D20); no multi-level extraction is performed"
+    }
+  ],
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0,
+  "d15": {
+    "levelMeters": 15.81007,
+    "source": "STEP 25B files (SHA-locked in step25b-glorys-acquisition-manifest.json)",
+    "reacquire": false,
+    "modify": false
+  },
+  "downloaded": 14,
+  "completedAtUTC": "2026-09-06T12:49:27Z",
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0"
+  }
+}

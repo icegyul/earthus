@@ -1,0 +1,63 @@
+{
+  "ruleId": "missing-native-depth-acquisition-step27b",
+  "status": "STEP27B_PARTIAL_COVERAGE",
+  "accessStatus": "AUTHORIZED",
+  "depths": {
+    "D05": {
+      "status": "DEPTH_READY",
+      "actualNativeLevelMeters": 5.078224,
+      "expectedNativeLevelMeters": 5.078224,
+      "pairedWindowsPass": [
+        "KE-1",
+        "KE-2",
+        "AG-1",
+        "AG-2",
+        "KE-H1",
+        "KE-H3"
+      ],
+      "reason": null
+    },
+    "D10": {
+      "status": "DEPTH_READY",
+      "actualNativeLevelMeters": 9.572997,
+      "expectedNativeLevelMeters": 9.572997,
+      "pairedWindowsPass": [
+        "KE-1",
+        "KE-2",
+        "AG-1",
+        "AG-2",
+        "KE-H1",
+        "KE-H3"
+      ],
+      "reason": null
+    },
+    "D20": {
+      "status": "DEPTH_IDENTITY_AMBIGUOUS",
+      "actualNativeLevelMeters": null,
+      "expectedNativeLevelMeters": 21.598816,
+      "pairedWindowsPass": [],
+      "reason": "the locked STEP 27 rule says 'nearest native level to 20 m' = 18.495560 m, while the STEP 27 rule file and STEP 27B instruction expect 21.598816 m; the two readings name different native levels; choosing one after seeing the level list would be a depth choice made by the executor, which is forbidden; D20 is therefore not acquired and awaits an explicit ruling in a new preregistration (which level defines D20); no multi-level extraction is performed"
+    }
+  },
+  "d15": {
+    "unchanged": true,
+    "levelMeters": 15.81007,
+    "reacquired": false
+  },
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0,
+  "trajectoryCount": 0,
+  "newObservations": 0,
+  "verticalInterpolation": false,
+  "depthSelection": false,
+  "alpha": 0.002,
+  "alphaModified": false,
+  "statements": [
+    "STEP 27B performs data acquisition and quality validation only; no model run, no depth comparison, no statistic.",
+    "The STEP 27 depth set and the control D15 = 15.810070 m are unchanged; D15 data are not re-acquired.",
+    "No vertical interpolation, averaging, multi-level extraction or substitution was performed.",
+    "No depth is chosen here; a blocked or ambiguous depth is not replaced by another level.",
+    "alpha = 0.002 and STEP 20-26 results are unchanged."
+  ],
+  "interpretation": "DATA ACQUISITION / QUALITY ASSESSMENT ONLY"
+}

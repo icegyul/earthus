@@ -1,0 +1,48 @@
+{
+  "status": "STEP21_DIAGNOSTIC_COMPLETE",
+  "tableSha256": "e52dc35d6750cc7260e05341d48b7eaa886dfc389f1880547a39b184dbdbbe78",
+  "summarySha256": "d310eaadf64324286de80e485e9944998665d14d2599ca80133cf3d25b406fbd",
+  "figures": [
+    {
+      "file": "figure1_position_error.svg",
+      "sha256": "6a04e9e25e0e574fafdbfdbd8d63390e0de075c8b85df66ed040264a1a1955b7"
+    },
+    {
+      "file": "figure2_error_growth.svg",
+      "sha256": "9e2f95110ac3bfc4d03e344cb44d9d005027dd622efdf76a4ef0bbbc8e65f0a9"
+    },
+    {
+      "file": "figure3_displacement.svg",
+      "sha256": "dcde66409f46495316dab21f16727789ed901f3e0a6e8a2cfaf26a024a049b76"
+    },
+    {
+      "file": "figure4_bearing_difference.svg",
+      "sha256": "a7ee80fd6f748d39d1e463d180dd8da5c6061a98c7688e0f04ad4c59f6148c75"
+    },
+    {
+      "file": "figure5_paired_delta.svg",
+      "sha256": "f8264505a4fe05eb1bbf067b840e890c7bf659d9cb9797b689722c1f66013e12"
+    },
+    {
+      "file": "figure6_trajectory_divergence.svg",
+      "sha256": "ec7b9e510a968ea819fc3fd71887040793e86dc9332f977a92151c99cf1be0c2"
+    }
+  ],
+  "rows": 35,
+  "tool": {
+    "file": "tools/research/diagnose_step21.py",
+    "sha256": "7891a5b95108b7e17a52493fbbc13b18d8a4f8fa179d6630cad67e89cb9ba9bd"
+  },
+  "inputs": {
+    "docs/research/step20-preregistration.json": "1e4ed8c1d004b00812c0710fd3df32c8a6c7537ff5287474a4c0a3e8ae33cae4",
+    "docs/research/step20-selected-alpha.json": "68e43a0f91e3a6bd81427399adbe2cf8a7543d85cf0249d4926f3df093649efd",
+    "docs/research/step20-calibration-manifest.json": "41ca439ec6540fd98b3c9ecf5c74af7afdd8731e94bea5d33bfac3397afe8498",
+    "docs/research/step20-calibration-table.csv": "a15df2a059ba11e5e3900f10b29ad3cfed1dca610c8ad421898374cd31a8425f",
+    "docs/research/step20-b6-holdout-manifest.json": "968da55a4553c00f373d6a0f26bc2b1c9e3f3af421d37db7a1e58e99a5727653",
+    "docs/research/step20-b6-holdout-table.csv": "d21d029bba4e09a15ef19a393f0d8389df0e5750cb1459ed0b1e92372aeea681",
+    "docs/research/cohort-step16.json": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474"
+  },
+  "createdAtUTC": "2026-09-06T08:16:44Z",
+  "deterministic": true,
+  "randomSeed": null
+}

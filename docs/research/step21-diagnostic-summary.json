@@ -1,0 +1,5941 @@
+{
+  "ruleId": "model-adequacy-diagnosis-step21",
+  "phase": "B DIAGNOSTIC",
+  "descriptiveOnly": true,
+  "haversineRadiusMeters": 6371008.8,
+  "horizonsHours": [
+    24,
+    48,
+    72
+  ],
+  "alphas": {
+    "a002": 0.002,
+    "a0": 0.0
+  },
+  "bearingDefinition": "initial great-circle bearing from the release point to the endpoint, degrees clockwise from north; absolute difference folded to [0, 180]; NOT_AVAILABLE when displacement < 1e-6 km",
+  "offsetDefinition": "east/north offset of the model endpoint relative to the observed endpoint, km, equirectangular at the observed latitude (positive = model east / north of observation)",
+  "pathLengthNote": "model path from 900 s samples (model_path) and from hourly subsamples (model_path_hourly); observed path from hourly samples only; ratios use hourly/hourly for fairness",
+  "windageTowardObsDefinition": "projection of (P_alpha0.002 - P_alpha0) onto (P_obs - P_alpha0) divided by |P_obs - P_alpha0|^2 (local km); positive = windage displaces toward the observation",
+  "datasets": {
+    "CALIBRATION": {
+      "n": 23,
+      "units": [
+        "KE-1",
+        "KE-2",
+        "AG-1",
+        "AG-2"
+      ],
+      "source": "STEP 20 calibration runs (alpha 0 and 0.002 only; other alphas not used)"
+    },
+    "HOLDOUT": {
+      "n": 12,
+      "units": [
+        "KE-H1",
+        "KE-H3"
+      ],
+      "source": "STEP 20 B-6 holdout runs (frozen; not used for any selection)"
+    },
+    "excluded": [
+      {
+        "unit": "KE-H2",
+        "n": 1,
+        "status": "FORCING_UNAVAILABLE",
+        "missingRequiredOceanFrames": [
+          "2010-08-18T12:00:00Z"
+        ],
+        "reason": "forcing unavailable in STEP 20 B-3/B-6; no trajectory exists; excluded from every trajectory-based diagnostic"
+      }
+    ]
+  },
+  "overall": {
+    "CALIBRATION": {
+      "n": 23,
+      "smallN": false,
+      "a002": {
+        "E24": {
+          "n": 23,
+          "median": 25.126,
+          "mean": 37.624,
+          "min": 1.487,
+          "max": 144.38
+        },
+        "bearing_diff_24h": {
+          "n": 23,
+          "median": 23.898,
+          "mean": 37.929,
+          "min": 0.348,
+          "max": 118.25
+        },
+        "east_offset_24h": {
+          "n": 23,
+          "median": -0.702,
+          "mean": -6.679,
+          "min": -138.528,
+          "max": 84.277
+        },
+        "north_offset_24h": {
+          "n": 23,
+          "median": -1.311,
+          "mean": 1.928,
+          "min": -42.779,
+          "max": 80.535
+        },
+        "model_disp_24h": {
+          "n": 23,
+          "median": 33.603,
+          "mean": 37.747,
+          "min": 2.692,
+          "max": 84.473
+        },
+        "disp_ratio_24h": {
+          "n": 23,
+          "median": 0.81,
+          "mean": 0.943,
+          "min": 0.18,
+          "max": 3.476
+        },
+        "path_ratio_hourly_24h": {
+          "n": 23,
+          "median": 0.943,
+          "mean": 0.861,
+          "min": 0.18,
+          "max": 1.802
+        },
+        "path_excess_24h": {
+          "n": 23,
+          "median": 1.034,
+          "mean": 1.253,
+          "min": 1.002,
+          "max": 5.147
+        },
+        "east_sign_counts_24h": {
+          "east": 9,
+          "west": 14
+        },
+        "north_sign_counts_24h": {
+          "north": 11,
+          "south": 12
+        },
+        "E48": {
+          "n": 23,
+          "median": 39.026,
+          "mean": 68.59,
+          "min": 5.112,
+          "max": 238.223
+        },
+        "bearing_diff_48h": {
+          "n": 23,
+          "median": 33.371,
+          "mean": 45.271,
+          "min": 0.614,
+          "max": 155.301
+        },
+        "east_offset_48h": {
+          "n": 23,
+          "median": -3.696,
+          "mean": -8.629,
+          "min": -236.455,
+          "max": 190.794
+        },
+        "north_offset_48h": {
+          "n": 23,
+          "median": 14.953,
+          "mean": 11.508,
+          "min": -49.463,
+          "max": 131.344
+        },
+        "model_disp_48h": {
+          "n": 23,
+          "median": 74.596,
+          "mean": 80.181,
+          "min": 4.892,
+          "max": 168.186
+        },
+        "disp_ratio_48h": {
+          "n": 23,
+          "median": 0.916,
+          "mean": 1.196,
+          "min": 0.111,
+          "max": 7.94
+        },
+        "path_ratio_hourly_48h": {
+          "n": 23,
+          "median": 0.909,
+          "mean": 0.878,
+          "min": 0.139,
+          "max": 1.851
+        },
+        "path_excess_48h": {
+          "n": 23,
+          "median": 1.07,
+          "mean": 1.31,
+          "min": 1.006,
+          "max": 5.69
+        },
+        "east_sign_counts_48h": {
+          "east": 10,
+          "west": 13
+        },
+        "north_sign_counts_48h": {
+          "north": 14,
+          "south": 9
+        },
+        "E72": {
+          "n": 23,
+          "median": 59.055,
+          "mean": 106.376,
+          "min": 16.207,
+          "max": 331.318
+        },
+        "bearing_diff_72h": {
+          "n": 23,
+          "median": 36.208,
+          "mean": 50.405,
+          "min": 5.635,
+          "max": 168.193
+        },
+        "east_offset_72h": {
+          "n": 23,
+          "median": -18.39,
+          "mean": -12.143,
+          "min": -302.156,
+          "max": 296.77
+        },
+        "north_offset_72h": {
+          "n": 23,
+          "median": 19.269,
+          "mean": 13.327,
+          "min": -70.546,
+          "max": 142.047
+        },
+        "model_disp_72h": {
+          "n": 23,
+          "median": 98.344,
+          "mean": 114.589,
+          "min": 11.989,
+          "max": 240.965
+        },
+        "disp_ratio_72h": {
+          "n": 23,
+          "median": 1.065,
+          "mean": 1.104,
+          "min": 0.068,
+          "max": 2.38
+        },
+        "path_ratio_hourly_72h": {
+          "n": 23,
+          "median": 0.933,
+          "mean": 0.933,
+          "min": 0.127,
+          "max": 2.244
+        },
+        "path_excess_72h": {
+          "n": 23,
+          "median": 1.084,
+          "mean": 1.317,
+          "min": 1.011,
+          "max": 3.697
+        },
+        "east_sign_counts_72h": {
+          "east": 8,
+          "west": 15
+        },
+        "north_sign_counts_72h": {
+          "north": 13,
+          "south": 10
+        },
+        "growth_48_24": {
+          "n": 23,
+          "median": 16.887,
+          "mean": 30.966,
+          "min": -10.498,
+          "max": 116.024
+        },
+        "growth_72_48": {
+          "n": 23,
+          "median": 34.476,
+          "mean": 37.787,
+          "min": -14.786,
+          "max": 98.429
+        },
+        "growth_ratio_72_24": {
+          "n": 23,
+          "median": 3.089,
+          "mean": 3.691,
+          "min": 0.97,
+          "max": 17.96
+        },
+        "growth_class_counts": {
+          "A": 17,
+          "B": 2,
+          "C": 4,
+          "D": 0
+        }
+      },
+      "a0": {
+        "E24": {
+          "n": 23,
+          "median": 25.684,
+          "mean": 37.522,
+          "min": 1.947,
+          "max": 144.014
+        },
+        "bearing_diff_24h": {
+          "n": 23,
+          "median": 24.644,
+          "mean": 39.624,
+          "min": 2.989,
+          "max": 148.824
+        },
+        "east_offset_24h": {
+          "n": 23,
+          "median": -1.691,
+          "mean": -6.499,
+          "min": -138.321,
+          "max": 84.375
+        },
+        "north_offset_24h": {
+          "n": 23,
+          "median": -1.317,
+          "mean": 1.671,
+          "min": -42.206,
+          "max": 79.721
+        },
+        "model_disp_24h": {
+          "n": 23,
+          "median": 33.783,
+          "mean": 37.369,
+          "min": 0.673,
+          "max": 83.907
+        },
+        "disp_ratio_24h": {
+          "n": 23,
+          "median": 0.933,
+          "mean": 0.918,
+          "min": 0.077,
+          "max": 3.191
+        },
+        "path_ratio_hourly_24h": {
+          "n": 23,
+          "median": 0.941,
+          "mean": 0.853,
+          "min": 0.185,
+          "max": 1.757
+        },
+        "path_excess_24h": {
+          "n": 23,
+          "median": 1.035,
+          "mean": 1.936,
+          "min": 1.002,
+          "max": 20.897
+        },
+        "east_sign_counts_24h": {
+          "east": 10,
+          "west": 13
+        },
+        "north_sign_counts_24h": {
+          "north": 11,
+          "south": 12
+        },
+        "E48": {
+          "n": 23,
+          "median": 40.669,
+          "mean": 68.337,
+          "min": 3.487,
+          "max": 237.414
+        },
+        "bearing_diff_48h": {
+          "n": 23,
+          "median": 34.839,
+          "mean": 43.576,
+          "min": 0.297,
+          "max": 150.993
+        },
+        "east_offset_48h": {
+          "n": 23,
+          "median": -4.946,
+          "mean": -8.573,
+          "min": -235.587,
+          "max": 191.61
+        },
+        "north_offset_48h": {
+          "n": 23,
+          "median": 14.415,
+          "mean": 11.296,
+          "min": -47.792,
+          "max": 129.778
+        },
+        "model_disp_48h": {
+          "n": 23,
+          "median": 76.827,
+          "mean": 79.706,
+          "min": 6.218,
+          "max": 166.411
+        },
+        "disp_ratio_48h": {
+          "n": 23,
+          "median": 0.898,
+          "mean": 1.161,
+          "min": 0.116,
+          "max": 7.129
+        },
+        "path_ratio_hourly_48h": {
+          "n": 23,
+          "median": 0.906,
+          "mean": 0.871,
+          "min": 0.142,
+          "max": 1.791
+        },
+        "path_excess_48h": {
+          "n": 23,
+          "median": 1.072,
+          "mean": 1.263,
+          "min": 1.006,
+          "max": 4.584
+        },
+        "east_sign_counts_48h": {
+          "east": 10,
+          "west": 13
+        },
+        "north_sign_counts_48h": {
+          "north": 14,
+          "south": 9
+        },
+        "E72": {
+          "n": 23,
+          "median": 61.314,
+          "mean": 105.037,
+          "min": 14.404,
+          "max": 330.76
+        },
+        "bearing_diff_72h": {
+          "n": 23,
+          "median": 29.756,
+          "mean": 49.205,
+          "min": 5.614,
+          "max": 164.906
+        },
+        "east_offset_72h": {
+          "n": 23,
+          "median": -15.93,
+          "mean": -12.908,
+          "min": -301.34,
+          "max": 297.386
+        },
+        "north_offset_72h": {
+          "n": 23,
+          "median": 17.752,
+          "mean": 13.089,
+          "min": -78.57,
+          "max": 139.511
+        },
+        "model_disp_72h": {
+          "n": 23,
+          "median": 97.509,
+          "mean": 113.776,
+          "min": 13.263,
+          "max": 240.645
+        },
+        "disp_ratio_72h": {
+          "n": 23,
+          "median": 1.068,
+          "mean": 1.089,
+          "min": 0.073,
+          "max": 2.264
+        },
+        "path_ratio_hourly_72h": {
+          "n": 23,
+          "median": 0.916,
+          "mean": 0.923,
+          "min": 0.127,
+          "max": 2.206
+        },
+        "path_excess_72h": {
+          "n": 23,
+          "median": 1.101,
+          "mean": 1.305,
+          "min": 1.012,
+          "max": 3.452
+        },
+        "east_sign_counts_72h": {
+          "east": 8,
+          "west": 15
+        },
+        "north_sign_counts_72h": {
+          "north": 13,
+          "south": 10
+        },
+        "growth_48_24": {
+          "n": 23,
+          "median": 15.701,
+          "mean": 30.815,
+          "min": -11.43,
+          "max": 116.302
+        },
+        "growth_72_48": {
+          "n": 23,
+          "median": 37.364,
+          "mean": 36.7,
+          "min": -16.368,
+          "max": 98.084
+        },
+        "growth_ratio_72_24": {
+          "n": 23,
+          "median": 2.951,
+          "mean": 3.375,
+          "min": 0.981,
+          "max": 11.639
+        },
+        "growth_class_counts": {
+          "A": 18,
+          "B": 2,
+          "C": 3,
+          "D": 0
+        }
+      },
+      "obs_disp_24h": {
+        "n": 23,
+        "median": 44.678,
+        "mean": 55.912,
+        "min": 6.645,
+        "max": 144.73
+      },
+      "delta_24h": {
+        "n": 23,
+        "median": 0.224,
+        "mean": 0.102,
+        "min": -1.438,
+        "max": 1.842
+      },
+      "alpha_sep_24h": {
+        "n": 23,
+        "median": 1.355,
+        "mean": 1.343,
+        "min": 0.601,
+        "max": 2.248
+      },
+      "windage_toward_obs_24h": {
+        "n": 23,
+        "median": -0.002,
+        "mean": 0.028,
+        "min": -0.115,
+        "max": 0.81
+      },
+      "delta_sign_counts_24h": {
+        "neg": 11,
+        "pos": 12,
+        "zero": 0
+      },
+      "obs_disp_48h": {
+        "n": 23,
+        "median": 75.604,
+        "mean": 103.869,
+        "min": 3.919,
+        "max": 308.077
+      },
+      "delta_48h": {
+        "n": 23,
+        "median": 0.554,
+        "mean": 0.252,
+        "min": -4.752,
+        "max": 8.861
+      },
+      "alpha_sep_48h": {
+        "n": 23,
+        "median": 2.567,
+        "mean": 2.978,
+        "min": 0.821,
+        "max": 8.984
+      },
+      "windage_toward_obs_48h": {
+        "n": 23,
+        "median": -0.004,
+        "mean": -0.033,
+        "min": -0.462,
+        "max": 0.199
+      },
+      "delta_sign_counts_48h": {
+        "neg": 9,
+        "pos": 14,
+        "zero": 0
+      },
+      "obs_disp_72h": {
+        "n": 23,
+        "median": 98.763,
+        "mean": 135.861,
+        "min": 16.535,
+        "max": 449.489
+      },
+      "delta_72h": {
+        "n": 23,
+        "median": 0.789,
+        "mean": 1.339,
+        "min": -7.974,
+        "max": 26.215
+      },
+      "alpha_sep_72h": {
+        "n": 23,
+        "median": 3.511,
+        "mean": 4.91,
+        "min": 0.693,
+        "max": 27.8
+      },
+      "windage_toward_obs_72h": {
+        "n": 23,
+        "median": -0.004,
+        "mean": -0.025,
+        "min": -0.335,
+        "max": 0.149
+      },
+      "delta_sign_counts_72h": {
+        "neg": 9,
+        "pos": 14,
+        "zero": 0
+      },
+      "obs_path_hourly_72h": {
+        "n": 23,
+        "median": 148.494,
+        "mean": 173.422,
+        "min": 37.331,
+        "max": 471.872
+      },
+      "delta_sign_persistent_count": 15,
+      "delta_sign_change_counts": {
+        "0": 15,
+        "1": 8,
+        "2": 0
+      },
+      "highest_error_cases_72h_a002": [
+        {
+          "drifter_id": "127281",
+          "unit": "AG-2",
+          "E72_a002": 331.318,
+          "E72_a0": 330.76,
+          "obs_disp_72h": 352.788,
+          "model_disp_72h_a002": 23.912,
+          "bearing_diff_72h_a002": 25.252
+        },
+        {
+          "drifter_id": "127198",
+          "unit": "AG-1",
+          "E72_a002": 323.38,
+          "E72_a0": 321.997,
+          "obs_disp_72h": 308.466,
+          "model_disp_72h_a002": 210.616,
+          "bearing_diff_72h_a002": 74.418
+        },
+        {
+          "drifter_id": "127199",
+          "unit": "AG-1",
+          "E72_a002": 319.828,
+          "E72_a0": 318.506,
+          "obs_disp_72h": 308.854,
+          "model_disp_72h_a002": 209.404,
+          "bearing_diff_72h_a002": 73.416
+        }
+      ],
+      "top1_share_of_sum_E72_a002": 0.135
+    },
+    "HOLDOUT": {
+      "n": 12,
+      "smallN": false,
+      "a002": {
+        "E24": {
+          "n": 12,
+          "median": 13.437,
+          "mean": 13.601,
+          "min": 1.941,
+          "max": 23.705
+        },
+        "bearing_diff_24h": {
+          "n": 12,
+          "median": 19.199,
+          "mean": 24.557,
+          "min": 2.578,
+          "max": 69.342
+        },
+        "east_offset_24h": {
+          "n": 12,
+          "median": -9.02,
+          "mean": -9.12,
+          "min": -17.331,
+          "max": 1.913
+        },
+        "north_offset_24h": {
+          "n": 12,
+          "median": 0.316,
+          "mean": -0.537,
+          "min": -16.154,
+          "max": 15.592
+        },
+        "model_disp_24h": {
+          "n": 12,
+          "median": 27.513,
+          "mean": 28.816,
+          "min": 6.327,
+          "max": 63.852
+        },
+        "disp_ratio_24h": {
+          "n": 12,
+          "median": 1.153,
+          "mean": 1.693,
+          "min": 0.486,
+          "max": 7.673
+        },
+        "path_ratio_hourly_24h": {
+          "n": 12,
+          "median": 0.942,
+          "mean": 0.979,
+          "min": 0.408,
+          "max": 1.607
+        },
+        "path_excess_24h": {
+          "n": 12,
+          "median": 1.056,
+          "mean": 1.12,
+          "min": 1.004,
+          "max": 1.489
+        },
+        "east_sign_counts_24h": {
+          "east": 1,
+          "west": 11
+        },
+        "north_sign_counts_24h": {
+          "north": 7,
+          "south": 5
+        },
+        "E48": {
+          "n": 12,
+          "median": 22.142,
+          "mean": 25.101,
+          "min": 6.096,
+          "max": 58.664
+        },
+        "bearing_diff_48h": {
+          "n": 12,
+          "median": 15.575,
+          "mean": 24.572,
+          "min": 2.623,
+          "max": 69.123
+        },
+        "east_offset_48h": {
+          "n": 12,
+          "median": -15.858,
+          "mean": -14.709,
+          "min": -37.945,
+          "max": 11.42
+        },
+        "north_offset_48h": {
+          "n": 12,
+          "median": 1.569,
+          "mean": -0.28,
+          "min": -44.651,
+          "max": 31.843
+        },
+        "model_disp_48h": {
+          "n": 12,
+          "median": 54.814,
+          "mean": 56.651,
+          "min": 10.793,
+          "max": 115.961
+        },
+        "disp_ratio_48h": {
+          "n": 12,
+          "median": 1.113,
+          "mean": 1.628,
+          "min": 0.269,
+          "max": 7.337
+        },
+        "path_ratio_hourly_48h": {
+          "n": 12,
+          "median": 1.071,
+          "mean": 1.014,
+          "min": 0.329,
+          "max": 1.635
+        },
+        "path_excess_48h": {
+          "n": 12,
+          "median": 1.126,
+          "mean": 1.178,
+          "min": 1.017,
+          "max": 1.591
+        },
+        "east_sign_counts_48h": {
+          "east": 2,
+          "west": 10
+        },
+        "north_sign_counts_48h": {
+          "north": 6,
+          "south": 6
+        },
+        "E72": {
+          "n": 12,
+          "median": 31.308,
+          "mean": 38.592,
+          "min": 10.265,
+          "max": 90.497
+        },
+        "bearing_diff_72h": {
+          "n": 12,
+          "median": 17.968,
+          "mean": 39.368,
+          "min": 0.353,
+          "max": 152.923
+        },
+        "east_offset_72h": {
+          "n": 12,
+          "median": -17.935,
+          "mean": -19.16,
+          "min": -62.431,
+          "max": 22.557
+        },
+        "north_offset_72h": {
+          "n": 12,
+          "median": 8.61,
+          "mean": 1.324,
+          "min": -72.183,
+          "max": 50.709
+        },
+        "model_disp_72h": {
+          "n": 12,
+          "median": 73.204,
+          "mean": 78.041,
+          "min": 12.233,
+          "max": 150.297
+        },
+        "disp_ratio_72h": {
+          "n": 12,
+          "median": 1.149,
+          "mean": 1.245,
+          "min": 0.154,
+          "max": 3.498
+        },
+        "path_ratio_hourly_72h": {
+          "n": 12,
+          "median": 1.059,
+          "mean": 1.04,
+          "min": 0.386,
+          "max": 1.468
+        },
+        "path_excess_72h": {
+          "n": 12,
+          "median": 1.24,
+          "mean": 1.408,
+          "min": 1.024,
+          "max": 3.028
+        },
+        "east_sign_counts_72h": {
+          "east": 3,
+          "west": 9
+        },
+        "north_sign_counts_72h": {
+          "north": 8,
+          "south": 4
+        },
+        "growth_48_24": {
+          "n": 12,
+          "median": 6.406,
+          "mean": 11.5,
+          "min": -0.67,
+          "max": 34.959
+        },
+        "growth_72_48": {
+          "n": 12,
+          "median": 7.74,
+          "mean": 13.491,
+          "min": -6.815,
+          "max": 55.37
+        },
+        "growth_ratio_72_24": {
+          "n": 12,
+          "median": 2.548,
+          "mean": 3.337,
+          "min": 0.744,
+          "max": 7.358
+        },
+        "growth_class_counts": {
+          "A": 8,
+          "B": 1,
+          "C": 3,
+          "D": 0
+        }
+      },
+      "a0": {
+        "E24": {
+          "n": 12,
+          "median": 12.866,
+          "mean": 13.545,
+          "min": 2.389,
+          "max": 25.276
+        },
+        "bearing_diff_24h": {
+          "n": 12,
+          "median": 23.421,
+          "mean": 24.064,
+          "min": 2.772,
+          "max": 57.942
+        },
+        "east_offset_24h": {
+          "n": 12,
+          "median": -8.344,
+          "mean": -8.98,
+          "min": -17.653,
+          "max": 2.344
+        },
+        "north_offset_24h": {
+          "n": 12,
+          "median": -0.686,
+          "mean": -0.324,
+          "min": -18.07,
+          "max": 17.119
+        },
+        "model_disp_24h": {
+          "n": 12,
+          "median": 26.989,
+          "mean": 28.738,
+          "min": 6.304,
+          "max": 63.247
+        },
+        "disp_ratio_24h": {
+          "n": 12,
+          "median": 1.131,
+          "mean": 1.703,
+          "min": 0.484,
+          "max": 7.916
+        },
+        "path_ratio_hourly_24h": {
+          "n": 12,
+          "median": 0.937,
+          "mean": 0.971,
+          "min": 0.392,
+          "max": 1.584
+        },
+        "path_excess_24h": {
+          "n": 12,
+          "median": 1.059,
+          "mean": 1.118,
+          "min": 1.004,
+          "max": 1.435
+        },
+        "east_sign_counts_24h": {
+          "east": 1,
+          "west": 11
+        },
+        "north_sign_counts_24h": {
+          "north": 5,
+          "south": 7
+        },
+        "E48": {
+          "n": 12,
+          "median": 21.734,
+          "mean": 24.761,
+          "min": 7.536,
+          "max": 63.93
+        },
+        "bearing_diff_48h": {
+          "n": 12,
+          "median": 12.219,
+          "mean": 22.678,
+          "min": 2.275,
+          "max": 71.084
+        },
+        "east_offset_48h": {
+          "n": 12,
+          "median": -15.18,
+          "mean": -14.194,
+          "min": -39.364,
+          "max": 9.8
+        },
+        "north_offset_48h": {
+          "n": 12,
+          "median": -0.32,
+          "mean": -0.961,
+          "min": -50.28,
+          "max": 32.557
+        },
+        "model_disp_48h": {
+          "n": 12,
+          "median": 52.554,
+          "mean": 56.71,
+          "min": 11.915,
+          "max": 115.936
+        },
+        "disp_ratio_48h": {
+          "n": 12,
+          "median": 1.101,
+          "mean": 1.61,
+          "min": 0.297,
+          "max": 7.257
+        },
+        "path_ratio_hourly_48h": {
+          "n": 12,
+          "median": 1.078,
+          "mean": 1.006,
+          "min": 0.344,
+          "max": 1.611
+        },
+        "path_excess_48h": {
+          "n": 12,
+          "median": 1.111,
+          "mean": 1.173,
+          "min": 1.021,
+          "max": 1.504
+        },
+        "east_sign_counts_48h": {
+          "east": 2,
+          "west": 10
+        },
+        "north_sign_counts_48h": {
+          "north": 6,
+          "south": 6
+        },
+        "E72": {
+          "n": 12,
+          "median": 30.036,
+          "mean": 38.615,
+          "min": 10.224,
+          "max": 99.98
+        },
+        "bearing_diff_72h": {
+          "n": 12,
+          "median": 20.254,
+          "mean": 37.909,
+          "min": 0.937,
+          "max": 132.569
+        },
+        "east_offset_72h": {
+          "n": 12,
+          "median": -19.02,
+          "mean": -19.203,
+          "min": -58.002,
+          "max": 19.835
+        },
+        "north_offset_72h": {
+          "n": 12,
+          "median": 6.35,
+          "mean": -0.38,
+          "min": -82.311,
+          "max": 49.291
+        },
+        "model_disp_72h": {
+          "n": 12,
+          "median": 70.423,
+          "mean": 78.06,
+          "min": 6.824,
+          "max": 150.017
+        },
+        "disp_ratio_72h": {
+          "n": 12,
+          "median": 1.195,
+          "mean": 1.243,
+          "min": 0.086,
+          "max": 3.591
+        },
+        "path_ratio_hourly_72h": {
+          "n": 12,
+          "median": 1.035,
+          "mean": 1.035,
+          "min": 0.379,
+          "max": 1.443
+        },
+        "path_excess_72h": {
+          "n": 12,
+          "median": 1.224,
+          "mean": 1.592,
+          "min": 1.027,
+          "max": 5.317
+        },
+        "east_sign_counts_72h": {
+          "east": 2,
+          "west": 10
+        },
+        "north_sign_counts_72h": {
+          "north": 7,
+          "south": 5
+        },
+        "growth_48_24": {
+          "n": 12,
+          "median": 5.953,
+          "mean": 11.215,
+          "min": -1.459,
+          "max": 38.655
+        },
+        "growth_72_48": {
+          "n": 12,
+          "median": 7.417,
+          "mean": 13.854,
+          "min": -7.023,
+          "max": 53.364
+        },
+        "growth_ratio_72_24": {
+          "n": 12,
+          "median": 2.37,
+          "mean": 3.338,
+          "min": 0.774,
+          "max": 8.259
+        },
+        "growth_class_counts": {
+          "A": 9,
+          "B": 1,
+          "C": 2,
+          "D": 0
+        }
+      },
+      "obs_disp_24h": {
+        "n": 12,
+        "median": 23.894,
+        "mean": 25.059,
+        "min": 2.64,
+        "max": 51.035
+      },
+      "delta_24h": {
+        "n": 12,
+        "median": -0.035,
+        "mean": 0.056,
+        "min": -1.571,
+        "max": 2.104
+      },
+      "alpha_sep_24h": {
+        "n": 12,
+        "median": 1.327,
+        "mean": 1.367,
+        "min": 0.642,
+        "max": 2.127
+      },
+      "windage_toward_obs_24h": {
+        "n": 12,
+        "median": 0.018,
+        "mean": 0.011,
+        "min": -0.206,
+        "max": 0.241
+      },
+      "delta_sign_counts_24h": {
+        "neg": 6,
+        "pos": 6,
+        "zero": 0
+      },
+      "obs_disp_48h": {
+        "n": 12,
+        "median": 44.134,
+        "mean": 50.577,
+        "min": 5.291,
+        "max": 109.446
+      },
+      "delta_48h": {
+        "n": 12,
+        "median": 0.686,
+        "mean": 0.341,
+        "min": -5.267,
+        "max": 4.291
+      },
+      "alpha_sep_48h": {
+        "n": 12,
+        "median": 2.665,
+        "mean": 2.899,
+        "min": 0.995,
+        "max": 5.807
+      },
+      "windage_toward_obs_48h": {
+        "n": 12,
+        "median": -0.018,
+        "mean": -0.006,
+        "min": -0.138,
+        "max": 0.197
+      },
+      "delta_sign_counts_48h": {
+        "neg": 4,
+        "pos": 8,
+        "zero": 0
+      },
+      "obs_disp_72h": {
+        "n": 12,
+        "median": 70.81,
+        "mean": 75.39,
+        "min": 12.151,
+        "max": 154.559
+      },
+      "delta_72h": {
+        "n": 12,
+        "median": -0.017,
+        "mean": -0.023,
+        "min": -10.61,
+        "max": 6.297
+      },
+      "alpha_sep_72h": {
+        "n": 12,
+        "median": 3.742,
+        "mean": 4.822,
+        "min": 1.616,
+        "max": 10.906
+      },
+      "windage_toward_obs_72h": {
+        "n": 12,
+        "median": 0.016,
+        "mean": 0.02,
+        "min": -0.106,
+        "max": 0.133
+      },
+      "delta_sign_counts_72h": {
+        "neg": 6,
+        "pos": 6,
+        "zero": 0
+      },
+      "obs_path_hourly_72h": {
+        "n": 12,
+        "median": 86.504,
+        "mean": 91.934,
+        "min": 50.354,
+        "max": 167.449
+      },
+      "delta_sign_persistent_count": 4,
+      "delta_sign_change_counts": {
+        "0": 4,
+        "1": 6,
+        "2": 2
+      },
+      "highest_error_cases_72h_a002": [
+        {
+          "drifter_id": "98996",
+          "unit": "KE-H3",
+          "E72_a002": 90.497,
+          "E72_a0": 84.199,
+          "obs_disp_72h": 79.433,
+          "model_disp_72h_a002": 12.233,
+          "bearing_diff_72h_a002": 152.923
+        },
+        {
+          "drifter_id": "90150",
+          "unit": "KE-H1",
+          "E72_a002": 89.37,
+          "E72_a0": 99.98,
+          "obs_disp_72h": 112.667,
+          "model_disp_72h_a002": 125.215,
+          "bearing_diff_72h_a002": 43.741
+        },
+        {
+          "drifter_id": "98998",
+          "unit": "KE-H3",
+          "E72_a002": 58.451,
+          "E72_a0": 55.689,
+          "obs_disp_72h": 51.185,
+          "model_disp_72h_a002": 66.716,
+          "bearing_diff_72h_a002": 57.653
+        }
+      ],
+      "top1_share_of_sum_E72_a002": 0.195
+    }
+  },
+  "perUnit": {
+    "KE-1": {
+      "n": 8,
+      "smallN": true,
+      "a002": {
+        "E24": {
+          "n": 8,
+          "median": 13.999,
+          "mean": 14.762,
+          "min": 6.03,
+          "max": 26.129
+        },
+        "bearing_diff_24h": {
+          "n": 8,
+          "median": 20.875,
+          "mean": 33.53,
+          "min": 3.688,
+          "max": 115.804
+        },
+        "east_offset_24h": {
+          "n": 8,
+          "median": -0.399,
+          "mean": 0.215,
+          "min": -24.152,
+          "max": 17.57
+        },
+        "north_offset_24h": {
+          "n": 8,
+          "median": 10.08,
+          "mean": 4.903,
+          "min": -11.419,
+          "max": 15.602
+        },
+        "model_disp_24h": {
+          "n": 8,
+          "median": 27.463,
+          "mean": 32.112,
+          "min": 2.692,
+          "max": 84.473
+        },
+        "disp_ratio_24h": {
+          "n": 8,
+          "median": 0.981,
+          "mean": 1.193,
+          "min": 0.309,
+          "max": 3.476
+        },
+        "path_ratio_hourly_24h": {
+          "n": 8,
+          "median": 0.996,
+          "mean": 1.0,
+          "min": 0.517,
+          "max": 1.364
+        },
+        "path_excess_24h": {
+          "n": 8,
+          "median": 1.03,
+          "mean": 1.612,
+          "min": 1.018,
+          "max": 5.147
+        },
+        "east_sign_counts_24h": {
+          "east": 3,
+          "west": 5
+        },
+        "north_sign_counts_24h": {
+          "north": 5,
+          "south": 3
+        },
+        "E48": {
+          "n": 8,
+          "median": 27.56,
+          "mean": 25.98,
+          "min": 5.112,
+          "max": 39.026
+        },
+        "bearing_diff_48h": {
+          "n": 8,
+          "median": 26.835,
+          "mean": 55.647,
+          "min": 0.614,
+          "max": 155.301
+        },
+        "east_offset_48h": {
+          "n": 8,
+          "median": -7.369,
+          "mean": 0.051,
+          "min": -21.272,
+          "max": 33.358
+        },
+        "north_offset_48h": {
+          "n": 8,
+          "median": 6.912,
+          "mean": 1.591,
+          "min": -32.697,
+          "max": 28.758
+        },
+        "model_disp_48h": {
+          "n": 8,
+          "median": 48.847,
+          "mean": 59.511,
+          "min": 4.892,
+          "max": 138.707
+        },
+        "disp_ratio_48h": {
+          "n": 8,
+          "median": 0.881,
+          "mean": 1.725,
+          "min": 0.346,
+          "max": 7.94
+        },
+        "path_ratio_hourly_48h": {
+          "n": 8,
+          "median": 1.026,
+          "mean": 0.943,
+          "min": 0.544,
+          "max": 1.361
+        },
+        "path_excess_48h": {
+          "n": 8,
+          "median": 1.136,
+          "mean": 1.723,
+          "min": 1.016,
+          "max": 5.69
+        },
+        "east_sign_counts_48h": {
+          "east": 3,
+          "west": 5
+        },
+        "north_sign_counts_48h": {
+          "north": 4,
+          "south": 4
+        },
+        "E72": {
+          "n": 8,
+          "median": 45.956,
+          "mean": 47.08,
+          "min": 16.207,
+          "max": 102.331
+        },
+        "bearing_diff_72h": {
+          "n": 8,
+          "median": 40.87,
+          "mean": 61.958,
+          "min": 5.808,
+          "max": 168.193
+        },
+        "east_offset_72h": {
+          "n": 8,
+          "median": -13.522,
+          "mean": 6.091,
+          "min": -46.377,
+          "max": 79.007
+        },
+        "north_offset_72h": {
+          "n": 8,
+          "median": -9.969,
+          "mean": -10.48,
+          "min": -64.675,
+          "max": 29.708
+        },
+        "model_disp_72h": {
+          "n": 8,
+          "median": 65.895,
+          "mean": 83.138,
+          "min": 11.989,
+          "max": 172.172
+        },
+        "disp_ratio_72h": {
+          "n": 8,
+          "median": 1.095,
+          "mean": 1.188,
+          "min": 0.563,
+          "max": 2.38
+        },
+        "path_ratio_hourly_72h": {
+          "n": 8,
+          "median": 1.038,
+          "mean": 0.989,
+          "min": 0.537,
+          "max": 1.28
+        },
+        "path_excess_72h": {
+          "n": 8,
+          "median": 1.182,
+          "mean": 1.613,
+          "min": 1.048,
+          "max": 3.697
+        },
+        "east_sign_counts_72h": {
+          "east": 3,
+          "west": 5
+        },
+        "north_sign_counts_72h": {
+          "north": 3,
+          "south": 5
+        },
+        "growth_48_24": {
+          "n": 8,
+          "median": 12.541,
+          "mean": 11.218,
+          "min": -10.498,
+          "max": 21.753
+        },
+        "growth_72_48": {
+          "n": 8,
+          "median": 16.606,
+          "mean": 21.1,
+          "min": -2.105,
+          "max": 65.295
+        },
+        "growth_ratio_72_24": {
+          "n": 8,
+          "median": 3.111,
+          "mean": 3.152,
+          "min": 1.585,
+          "max": 5.568
+        },
+        "growth_class_counts": {
+          "A": 5,
+          "B": 1,
+          "C": 2,
+          "D": 0
+        }
+      },
+      "a0": {
+        "E24": {
+          "n": 8,
+          "median": 13.314,
+          "mean": 14.221,
+          "min": 7.468,
+          "max": 26.172
+        },
+        "bearing_diff_24h": {
+          "n": 8,
+          "median": 20.476,
+          "mean": 37.188,
+          "min": 3.264,
+          "max": 148.824
+        },
+        "east_offset_24h": {
+          "n": 8,
+          "median": -1.189,
+          "mean": -0.875,
+          "min": -24.691,
+          "max": 15.683
+        },
+        "north_offset_24h": {
+          "n": 8,
+          "median": 8.874,
+          "mean": 4.25,
+          "min": -10.42,
+          "max": 14.915
+        },
+        "model_disp_24h": {
+          "n": 8,
+          "median": 27.899,
+          "mean": 32.084,
+          "min": 0.673,
+          "max": 83.907
+        },
+        "disp_ratio_24h": {
+          "n": 8,
+          "median": 0.974,
+          "mean": 1.155,
+          "min": 0.077,
+          "max": 3.191
+        },
+        "path_ratio_hourly_24h": {
+          "n": 8,
+          "median": 1.01,
+          "mean": 1.008,
+          "min": 0.529,
+          "max": 1.292
+        },
+        "path_excess_24h": {
+          "n": 8,
+          "median": 1.027,
+          "mean": 3.569,
+          "min": 1.016,
+          "max": 20.897
+        },
+        "east_sign_counts_24h": {
+          "east": 3,
+          "west": 5
+        },
+        "north_sign_counts_24h": {
+          "north": 5,
+          "south": 3
+        },
+        "E48": {
+          "n": 8,
+          "median": 25.024,
+          "mean": 24.365,
+          "min": 3.487,
+          "max": 40.669
+        },
+        "bearing_diff_48h": {
+          "n": 8,
+          "median": 27.655,
+          "mean": 49.803,
+          "min": 0.297,
+          "max": 150.993
+        },
+        "east_offset_48h": {
+          "n": 8,
+          "median": -9.453,
+          "mean": -2.654,
+          "min": -21.645,
+          "max": 30.43
+        },
+        "north_offset_48h": {
+          "n": 8,
+          "median": 6.178,
+          "mean": 1.35,
+          "min": -34.626,
+          "max": 25.945
+        },
+        "model_disp_48h": {
+          "n": 8,
+          "median": 48.725,
+          "mean": 59.344,
+          "min": 6.218,
+          "max": 134.866
+        },
+        "disp_ratio_48h": {
+          "n": 8,
+          "median": 0.953,
+          "mean": 1.648,
+          "min": 0.44,
+          "max": 7.129
+        },
+        "path_ratio_hourly_48h": {
+          "n": 8,
+          "median": 1.051,
+          "mean": 0.946,
+          "min": 0.554,
+          "max": 1.304
+        },
+        "path_excess_48h": {
+          "n": 8,
+          "median": 1.109,
+          "mean": 1.591,
+          "min": 1.014,
+          "max": 4.584
+        },
+        "east_sign_counts_48h": {
+          "east": 3,
+          "west": 5
+        },
+        "north_sign_counts_48h": {
+          "north": 4,
+          "south": 4
+        },
+        "E72": {
+          "n": 8,
+          "median": 47.212,
+          "mean": 44.031,
+          "min": 14.404,
+          "max": 76.116
+        },
+        "bearing_diff_72h": {
+          "n": 8,
+          "median": 34.141,
+          "mean": 57.92,
+          "min": 7.605,
+          "max": 164.906
+        },
+        "east_offset_72h": {
+          "n": 8,
+          "median": -14.681,
+          "mean": 2.159,
+          "min": -50.571,
+          "max": 63.584
+        },
+        "north_offset_72h": {
+          "n": 8,
+          "median": -10.12,
+          "mean": -8.67,
+          "min": -41.609,
+          "max": 26.69
+        },
+        "model_disp_72h": {
+          "n": 8,
+          "median": 69.786,
+          "mean": 81.728,
+          "min": 13.263,
+          "max": 167.802
+        },
+        "disp_ratio_72h": {
+          "n": 8,
+          "median": 1.101,
+          "mean": 1.166,
+          "min": 0.623,
+          "max": 2.086
+        },
+        "path_ratio_hourly_72h": {
+          "n": 8,
+          "median": 0.972,
+          "mean": 0.984,
+          "min": 0.548,
+          "max": 1.325
+        },
+        "path_excess_72h": {
+          "n": 8,
+          "median": 1.188,
+          "mean": 1.595,
+          "min": 1.031,
+          "max": 3.452
+        },
+        "east_sign_counts_72h": {
+          "east": 3,
+          "west": 5
+        },
+        "north_sign_counts_72h": {
+          "north": 3,
+          "south": 5
+        },
+        "growth_48_24": {
+          "n": 8,
+          "median": 10.874,
+          "mean": 10.144,
+          "min": -11.43,
+          "max": 22.06
+        },
+        "growth_72_48": {
+          "n": 8,
+          "median": 16.212,
+          "mean": 19.666,
+          "min": -3.259,
+          "max": 48.38
+        },
+        "growth_ratio_72_24": {
+          "n": 8,
+          "median": 3.264,
+          "mean": 3.067,
+          "min": 1.929,
+          "max": 4.476
+        },
+        "growth_class_counts": {
+          "A": 6,
+          "B": 1,
+          "C": 1,
+          "D": 0
+        }
+      },
+      "obs_disp_24h": {
+        "n": 8,
+        "median": 24.026,
+        "mean": 32.668,
+        "min": 6.645,
+        "max": 76.331
+      },
+      "delta_24h": {
+        "n": 8,
+        "median": 0.788,
+        "mean": 0.541,
+        "min": -1.438,
+        "max": 1.842
+      },
+      "alpha_sep_24h": {
+        "n": 8,
+        "median": 1.45,
+        "mean": 1.559,
+        "min": 0.736,
+        "max": 2.248
+      },
+      "windage_toward_obs_24h": {
+        "n": 8,
+        "median": -0.059,
+        "mean": -0.024,
+        "min": -0.115,
+        "max": 0.194
+      },
+      "delta_sign_counts_24h": {
+        "neg": 3,
+        "pos": 5,
+        "zero": 0
+      },
+      "obs_disp_48h": {
+        "n": 8,
+        "median": 61.444,
+        "mean": 59.578,
+        "min": 3.919,
+        "max": 121.161
+      },
+      "delta_48h": {
+        "n": 8,
+        "median": 0.689,
+        "mean": 1.615,
+        "min": -1.643,
+        "max": 8.861
+      },
+      "alpha_sep_48h": {
+        "n": 8,
+        "median": 2.931,
+        "mean": 3.667,
+        "min": 1.651,
+        "max": 8.984
+      },
+      "windage_toward_obs_48h": {
+        "n": 8,
+        "median": -0.026,
+        "mean": -0.106,
+        "min": -0.462,
+        "max": 0.041
+      },
+      "delta_sign_counts_48h": {
+        "neg": 3,
+        "pos": 5,
+        "zero": 0
+      },
+      "obs_disp_72h": {
+        "n": 8,
+        "median": 62.84,
+        "mean": 79.529,
+        "min": 16.535,
+        "max": 204.736
+      },
+      "delta_72h": {
+        "n": 8,
+        "median": 0.345,
+        "mean": 3.049,
+        "min": -3.647,
+        "max": 26.215
+      },
+      "alpha_sep_72h": {
+        "n": 8,
+        "median": 4.386,
+        "mean": 7.212,
+        "min": 2.267,
+        "max": 27.8
+      },
+      "windage_toward_obs_72h": {
+        "n": 8,
+        "median": 0.0,
+        "mean": -0.037,
+        "min": -0.335,
+        "max": 0.149
+      },
+      "delta_sign_counts_72h": {
+        "neg": 4,
+        "pos": 4,
+        "zero": 0
+      },
+      "obs_path_hourly_72h": {
+        "n": 8,
+        "median": 108.64,
+        "mean": 115.919,
+        "min": 37.331,
+        "max": 207.376
+      },
+      "delta_sign_persistent_count": 5,
+      "delta_sign_change_counts": {
+        "0": 5,
+        "1": 3,
+        "2": 0
+      },
+      "highest_error_cases_72h_a002": [
+        {
+          "drifter_id": "71155",
+          "unit": "KE-1",
+          "E72_a002": 102.331,
+          "E72_a0": 76.116,
+          "obs_disp_72h": 127.48,
+          "model_disp_72h_a002": 172.16,
+          "bearing_diff_72h_a002": 36.208
+        },
+        {
+          "drifter_id": "81811",
+          "unit": "KE-1",
+          "E72_a002": 59.055,
+          "E72_a0": 61.314,
+          "obs_disp_72h": 41.423,
+          "model_disp_72h_a002": 55.94,
+          "bearing_diff_72h_a002": 72.965
+        },
+        {
+          "drifter_id": "81816",
+          "unit": "KE-1",
+          "E72_a002": 55.641,
+          "E72_a0": 50.633,
+          "obs_disp_72h": 16.535,
+          "model_disp_72h_a002": 39.353,
+          "bearing_diff_72h_a002": 168.193
+        }
+      ],
+      "top1_share_of_sum_E72_a002": 0.272
+    },
+    "KE-2": {
+      "n": 5,
+      "smallN": true,
+      "a002": {
+        "E24": {
+          "n": 5,
+          "median": 14.072,
+          "mean": 16.365,
+          "min": 1.487,
+          "max": 28.443
+        },
+        "bearing_diff_24h": {
+          "n": 5,
+          "median": 35.311,
+          "mean": 42.408,
+          "min": 0.348,
+          "max": 102.827
+        },
+        "east_offset_24h": {
+          "n": 5,
+          "median": -5.412,
+          "mean": -9.988,
+          "min": -26.668,
+          "max": 9.471
+        },
+        "north_offset_24h": {
+          "n": 5,
+          "median": -1.311,
+          "mean": -0.221,
+          "min": -9.952,
+          "max": 10.414
+        },
+        "model_disp_24h": {
+          "n": 5,
+          "median": 16.982,
+          "mean": 30.339,
+          "min": 13.741,
+          "max": 66.604
+        },
+        "disp_ratio_24h": {
+          "n": 5,
+          "median": 1.04,
+          "mean": 1.055,
+          "min": 0.623,
+          "max": 1.412
+        },
+        "path_ratio_hourly_24h": {
+          "n": 5,
+          "median": 0.996,
+          "mean": 1.015,
+          "min": 0.734,
+          "max": 1.377
+        },
+        "path_excess_24h": {
+          "n": 5,
+          "median": 1.011,
+          "mean": 1.061,
+          "min": 1.006,
+          "max": 1.226
+        },
+        "east_sign_counts_24h": {
+          "east": 1,
+          "west": 4
+        },
+        "north_sign_counts_24h": {
+          "north": 2,
+          "south": 3
+        },
+        "E48": {
+          "n": 5,
+          "median": 30.812,
+          "mean": 41.386,
+          "min": 7.466,
+          "max": 77.943
+        },
+        "bearing_diff_48h": {
+          "n": 5,
+          "median": 36.998,
+          "mean": 56.141,
+          "min": 4.869,
+          "max": 143.809
+        },
+        "east_offset_48h": {
+          "n": 5,
+          "median": -10.631,
+          "mean": -25.752,
+          "min": -75.376,
+          "max": 21.471
+        },
+        "north_offset_48h": {
+          "n": 5,
+          "median": 6.487,
+          "mean": -1.422,
+          "min": -34.357,
+          "max": 22.129
+        },
+        "model_disp_48h": {
+          "n": 5,
+          "median": 40.176,
+          "mean": 59.463,
+          "min": 30.291,
+          "max": 115.786
+        },
+        "disp_ratio_48h": {
+          "n": 5,
+          "median": 1.089,
+          "mean": 1.106,
+          "min": 0.932,
+          "max": 1.283
+        },
+        "path_ratio_hourly_48h": {
+          "n": 5,
+          "median": 0.981,
+          "mean": 1.009,
+          "min": 0.909,
+          "max": 1.179
+        },
+        "path_excess_48h": {
+          "n": 5,
+          "median": 1.044,
+          "mean": 1.059,
+          "min": 1.01,
+          "max": 1.154
+        },
+        "east_sign_counts_48h": {
+          "east": 1,
+          "west": 4
+        },
+        "north_sign_counts_48h": {
+          "north": 3,
+          "south": 2
+        },
+        "E72": {
+          "n": 5,
+          "median": 44.239,
+          "mean": 70.926,
+          "min": 20.569,
+          "max": 158.931
+        },
+        "bearing_diff_72h": {
+          "n": 5,
+          "median": 45.011,
+          "mean": 59.176,
+          "min": 13.713,
+          "max": 150.61
+        },
+        "east_offset_72h": {
+          "n": 5,
+          "median": -18.508,
+          "mean": -48.206,
+          "min": -157.158,
+          "max": 26.512
+        },
+        "north_offset_72h": {
+          "n": 5,
+          "median": 19.269,
+          "mean": -0.347,
+          "min": -54.556,
+          "max": 35.46
+        },
+        "model_disp_72h": {
+          "n": 5,
+          "median": 93.295,
+          "mean": 86.144,
+          "min": 45.298,
+          "max": 139.966
+        },
+        "disp_ratio_72h": {
+          "n": 5,
+          "median": 1.082,
+          "mean": 1.118,
+          "min": 0.906,
+          "max": 1.316
+        },
+        "path_ratio_hourly_72h": {
+          "n": 5,
+          "median": 0.98,
+          "mean": 1.022,
+          "min": 0.878,
+          "max": 1.276
+        },
+        "path_excess_72h": {
+          "n": 5,
+          "median": 1.072,
+          "mean": 1.063,
+          "min": 1.018,
+          "max": 1.084
+        },
+        "east_sign_counts_72h": {
+          "east": 1,
+          "west": 4
+        },
+        "north_sign_counts_72h": {
+          "north": 3,
+          "south": 2
+        },
+        "growth_48_24": {
+          "n": 5,
+          "median": 16.739,
+          "mean": 25.021,
+          "min": 5.979,
+          "max": 49.5
+        },
+        "growth_72_48": {
+          "n": 5,
+          "median": 19.24,
+          "mean": 29.54,
+          "min": -0.432,
+          "max": 80.987
+        },
+        "growth_ratio_72_24": {
+          "n": 5,
+          "median": 3.722,
+          "mean": 6.501,
+          "min": 2.093,
+          "max": 17.96
+        },
+        "growth_class_counts": {
+          "A": 4,
+          "B": 0,
+          "C": 1,
+          "D": 0
+        }
+      },
+      "a0": {
+        "E24": {
+          "n": 5,
+          "median": 13.615,
+          "mean": 16.47,
+          "min": 1.947,
+          "max": 28.682
+        },
+        "bearing_diff_24h": {
+          "n": 5,
+          "median": 35.699,
+          "mean": 44.099,
+          "min": 2.989,
+          "max": 107.124
+        },
+        "east_offset_24h": {
+          "n": 5,
+          "median": -4.786,
+          "mean": -9.328,
+          "min": -26.674,
+          "max": 9.778
+        },
+        "north_offset_24h": {
+          "n": 5,
+          "median": -1.317,
+          "mean": -0.939,
+          "min": -11.188,
+          "max": 9.48
+        },
+        "model_disp_24h": {
+          "n": 5,
+          "median": 16.354,
+          "mean": 29.522,
+          "min": 12.979,
+          "max": 66.128
+        },
+        "disp_ratio_24h": {
+          "n": 5,
+          "median": 1.006,
+          "mean": 1.019,
+          "min": 0.589,
+          "max": 1.402
+        },
+        "path_ratio_hourly_24h": {
+          "n": 5,
+          "median": 0.941,
+          "mean": 0.984,
+          "min": 0.709,
+          "max": 1.367
+        },
+        "path_excess_24h": {
+          "n": 5,
+          "median": 1.012,
+          "mean": 1.068,
+          "min": 1.007,
+          "max": 1.254
+        },
+        "east_sign_counts_24h": {
+          "east": 2,
+          "west": 3
+        },
+        "north_sign_counts_24h": {
+          "north": 2,
+          "south": 3
+        },
+        "E48": {
+          "n": 5,
+          "median": 29.315,
+          "mean": 41.113,
+          "min": 5.83,
+          "max": 77.023
+        },
+        "bearing_diff_48h": {
+          "n": 5,
+          "median": 38.815,
+          "mean": 56.244,
+          "min": 2.05,
+          "max": 145.903
+        },
+        "east_offset_48h": {
+          "n": 5,
+          "median": -9.833,
+          "mean": -24.938,
+          "min": -74.014,
+          "max": 21.643
+        },
+        "north_offset_48h": {
+          "n": 5,
+          "median": 5.829,
+          "mean": -3.002,
+          "min": -37.584,
+          "max": 19.803
+        },
+        "model_disp_48h": {
+          "n": 5,
+          "median": 39.359,
+          "mean": 58.447,
+          "min": 27.971,
+          "max": 116.408
+        },
+        "disp_ratio_48h": {
+          "n": 5,
+          "median": 1.006,
+          "mean": 1.076,
+          "min": 0.898,
+          "max": 1.288
+        },
+        "path_ratio_hourly_48h": {
+          "n": 5,
+          "median": 0.946,
+          "mean": 0.984,
+          "min": 0.846,
+          "max": 1.185
+        },
+        "path_excess_48h": {
+          "n": 5,
+          "median": 1.044,
+          "mean": 1.061,
+          "min": 1.01,
+          "max": 1.155
+        },
+        "east_sign_counts_48h": {
+          "east": 1,
+          "west": 4
+        },
+        "north_sign_counts_48h": {
+          "north": 3,
+          "south": 2
+        },
+        "E72": {
+          "n": 5,
+          "median": 40.173,
+          "mean": 69.902,
+          "min": 20.146,
+          "max": 154.377
+        },
+        "bearing_diff_72h": {
+          "n": 5,
+          "median": 48.428,
+          "mean": 59.128,
+          "min": 11.029,
+          "max": 152.053
+        },
+        "east_offset_72h": {
+          "n": 5,
+          "median": -14.093,
+          "mean": -47.347,
+          "min": -152.143,
+          "max": 25.902
+        },
+        "north_offset_72h": {
+          "n": 5,
+          "median": 17.752,
+          "mean": -3.516,
+          "min": -61.258,
+          "max": 30.751
+        },
+        "model_disp_72h": {
+          "n": 5,
+          "median": 88.122,
+          "mean": 84.159,
+          "min": 40.849,
+          "max": 141.162
+        },
+        "disp_ratio_72h": {
+          "n": 5,
+          "median": 1.074,
+          "mean": 1.077,
+          "min": 0.898,
+          "max": 1.243
+        },
+        "path_ratio_hourly_72h": {
+          "n": 5,
+          "median": 0.961,
+          "mean": 0.986,
+          "min": 0.871,
+          "max": 1.209
+        },
+        "path_excess_72h": {
+          "n": 5,
+          "median": 1.07,
+          "mean": 1.065,
+          "min": 1.019,
+          "max": 1.101
+        },
+        "east_sign_counts_72h": {
+          "east": 1,
+          "west": 4
+        },
+        "north_sign_counts_72h": {
+          "north": 3,
+          "south": 2
+        },
+        "growth_48_24": {
+          "n": 5,
+          "median": 15.701,
+          "mean": 24.644,
+          "min": 3.883,
+          "max": 48.341
+        },
+        "growth_72_48": {
+          "n": 5,
+          "median": 16.829,
+          "mean": 28.789,
+          "min": -0.289,
+          "max": 77.354
+        },
+        "growth_ratio_72_24": {
+          "n": 5,
+          "median": 3.935,
+          "mean": 5.201,
+          "min": 2.098,
+          "max": 11.639
+        },
+        "growth_class_counts": {
+          "A": 4,
+          "B": 0,
+          "C": 1,
+          "D": 0
+        }
+      },
+      "obs_disp_24h": {
+        "n": 5,
+        "median": 22.04,
+        "mean": 27.234,
+        "min": 14.361,
+        "max": 47.181
+      },
+      "delta_24h": {
+        "n": 5,
+        "median": -0.239,
+        "mean": -0.105,
+        "min": -0.509,
+        "max": 0.458
+      },
+      "alpha_sep_24h": {
+        "n": 5,
+        "median": 1.258,
+        "mean": 1.31,
+        "min": 0.638,
+        "max": 2.136
+      },
+      "windage_toward_obs_24h": {
+        "n": 5,
+        "median": 0.009,
+        "mean": 0.157,
+        "min": -0.032,
+        "max": 0.81
+      },
+      "delta_sign_counts_24h": {
+        "neg": 3,
+        "pos": 2,
+        "zero": 0
+      },
+      "obs_disp_48h": {
+        "n": 5,
+        "median": 42.445,
+        "mean": 53.509,
+        "min": 27.804,
+        "max": 90.388
+      },
+      "delta_48h": {
+        "n": 5,
+        "median": 0.921,
+        "mean": 0.272,
+        "min": -3.257,
+        "max": 1.636
+      },
+      "alpha_sep_48h": {
+        "n": 5,
+        "median": 2.332,
+        "mean": 2.515,
+        "min": 0.821,
+        "max": 3.734
+      },
+      "windage_toward_obs_48h": {
+        "n": 5,
+        "median": -0.027,
+        "mean": -0.033,
+        "min": -0.122,
+        "max": 0.045
+      },
+      "delta_sign_counts_48h": {
+        "neg": 1,
+        "pos": 4,
+        "zero": 0
+      },
+      "obs_disp_72h": {
+        "n": 5,
+        "median": 70.905,
+        "mean": 79.548,
+        "min": 37.048,
+        "max": 131.458
+      },
+      "delta_72h": {
+        "n": 5,
+        "median": 4.048,
+        "mean": 1.023,
+        "min": -7.974,
+        "max": 4.554
+      },
+      "alpha_sep_72h": {
+        "n": 5,
+        "median": 4.748,
+        "mean": 4.845,
+        "min": 0.693,
+        "max": 8.467
+      },
+      "windage_toward_obs_72h": {
+        "n": 5,
+        "median": -0.029,
+        "mean": -0.05,
+        "min": -0.173,
+        "max": 0.071
+      },
+      "delta_sign_counts_72h": {
+        "neg": 1,
+        "pos": 4,
+        "zero": 0
+      },
+      "obs_path_hourly_72h": {
+        "n": 5,
+        "median": 78.488,
+        "mean": 90.886,
+        "min": 46.796,
+        "max": 153.056
+      },
+      "delta_sign_persistent_count": 3,
+      "delta_sign_change_counts": {
+        "0": 3,
+        "1": 2,
+        "2": 0
+      },
+      "highest_error_cases_72h_a002": [
+        {
+          "drifter_id": "90141",
+          "unit": "KE-2",
+          "E72_a002": 158.931,
+          "E72_a0": 154.377,
+          "obs_disp_72h": 70.905,
+          "model_disp_72h_a002": 93.295,
+          "bearing_diff_72h_a002": 150.61
+        },
+        {
+          "drifter_id": "90145",
+          "unit": "KE-2",
+          "E72_a002": 104.183,
+          "E72_a0": 112.157,
+          "obs_disp_72h": 131.458,
+          "model_disp_72h_a002": 139.966,
+          "bearing_diff_72h_a002": 45.011
+        },
+        {
+          "drifter_id": "90142",
+          "unit": "KE-2",
+          "E72_a002": 44.239,
+          "E72_a0": 40.173,
+          "obs_disp_72h": 37.048,
+          "model_disp_72h_a002": 45.298,
+          "bearing_diff_72h_a002": 64.076
+        }
+      ],
+      "top1_share_of_sum_E72_a002": 0.448
+    },
+    "AG-1": {
+      "n": 9,
+      "smallN": true,
+      "a002": {
+        "E24": {
+          "n": 9,
+          "median": 39.952,
+          "mean": 60.952,
+          "min": 23.293,
+          "max": 144.38
+        },
+        "bearing_diff_24h": {
+          "n": 9,
+          "median": 28.428,
+          "mean": 40.91,
+          "min": 3.169,
+          "max": 118.25
+        },
+        "east_offset_24h": {
+          "n": 9,
+          "median": -3.636,
+          "mean": -21.076,
+          "min": -138.528,
+          "max": 46.939
+        },
+        "north_offset_24h": {
+          "n": 9,
+          "median": -20.109,
+          "mean": -8.258,
+          "min": -42.779,
+          "max": 51.813
+        },
+        "model_disp_24h": {
+          "n": 9,
+          "median": 45.909,
+          "mean": 48.279,
+          "min": 33.376,
+          "max": 81.579
+        },
+        "disp_ratio_24h": {
+          "n": 9,
+          "median": 0.575,
+          "mean": 0.744,
+          "min": 0.266,
+          "max": 1.814
+        },
+        "path_ratio_hourly_24h": {
+          "n": 9,
+          "median": 0.565,
+          "mean": 0.728,
+          "min": 0.297,
+          "max": 1.802
+        },
+        "path_excess_24h": {
+          "n": 9,
+          "median": 1.055,
+          "mean": 1.063,
+          "min": 1.002,
+          "max": 1.128
+        },
+        "east_sign_counts_24h": {
+          "east": 4,
+          "west": 5
+        },
+        "north_sign_counts_24h": {
+          "north": 3,
+          "south": 6
+        },
+        "E48": {
+          "n": 9,
+          "median": 60.676,
+          "mean": 103.323,
+          "min": 19.304,
+          "max": 238.223
+        },
+        "bearing_diff_48h": {
+          "n": 9,
+          "median": 24.014,
+          "mean": 31.332,
+          "min": 3.164,
+          "max": 73.509
+        },
+        "east_offset_48h": {
+          "n": 9,
+          "median": 12.199,
+          "mean": -28.989,
+          "min": -236.455,
+          "max": 102.257
+        },
+        "north_offset_48h": {
+          "n": 9,
+          "median": 25.739,
+          "mean": 14.192,
+          "min": -49.463,
+          "max": 99.245
+        },
+        "model_disp_48h": {
+          "n": 9,
+          "median": 118.193,
+          "mean": 115.823,
+          "min": 74.596,
+          "max": 168.186
+        },
+        "disp_ratio_48h": {
+          "n": 9,
+          "median": 0.653,
+          "mean": 0.897,
+          "min": 0.546,
+          "max": 1.866
+        },
+        "path_ratio_hourly_48h": {
+          "n": 9,
+          "median": 0.716,
+          "mean": 0.829,
+          "min": 0.417,
+          "max": 1.851
+        },
+        "path_excess_48h": {
+          "n": 9,
+          "median": 1.071,
+          "mean": 1.081,
+          "min": 1.006,
+          "max": 1.277
+        },
+        "east_sign_counts_48h": {
+          "east": 5,
+          "west": 4
+        },
+        "north_sign_counts_48h": {
+          "north": 6,
+          "south": 3
+        },
+        "E72": {
+          "n": 9,
+          "median": 106.115,
+          "mean": 153.786,
+          "min": 45.89,
+          "max": 323.38
+        },
+        "bearing_diff_72h": {
+          "n": 9,
+          "median": 20.162,
+          "mean": 38.056,
+          "min": 5.635,
+          "max": 74.418
+        },
+        "east_offset_72h": {
+          "n": 9,
+          "median": -37.031,
+          "mean": -42.64,
+          "min": -302.156,
+          "max": 215.3
+        },
+        "north_offset_72h": {
+          "n": 9,
+          "median": 27.029,
+          "mean": 27.782,
+          "min": -70.546,
+          "max": 109.671
+        },
+        "model_disp_72h": {
+          "n": 9,
+          "median": 182.984,
+          "mean": 168.424,
+          "min": 88.772,
+          "max": 240.965
+        },
+        "disp_ratio_72h": {
+          "n": 9,
+          "median": 1.011,
+          "mean": 1.138,
+          "min": 0.536,
+          "max": 2.306
+        },
+        "path_ratio_hourly_72h": {
+          "n": 9,
+          "median": 0.751,
+          "mean": 0.923,
+          "min": 0.364,
+          "max": 2.244
+        },
+        "path_excess_72h": {
+          "n": 9,
+          "median": 1.062,
+          "mean": 1.108,
+          "min": 1.011,
+          "max": 1.296
+        },
+        "east_sign_counts_72h": {
+          "east": 3,
+          "west": 6
+        },
+        "north_sign_counts_72h": {
+          "north": 6,
+          "south": 3
+        },
+        "growth_48_24": {
+          "n": 9,
+          "median": 27.586,
+          "mean": 42.371,
+          "min": -5.822,
+          "max": 94.904
+        },
+        "growth_72_48": {
+          "n": 9,
+          "median": 49.292,
+          "mean": 50.463,
+          "min": -14.786,
+          "max": 95.277
+        },
+        "growth_ratio_72_24": {
+          "n": 9,
+          "median": 2.624,
+          "mean": 2.704,
+          "min": 0.97,
+          "max": 3.863
+        },
+        "growth_class_counts": {
+          "A": 7,
+          "B": 1,
+          "C": 1,
+          "D": 0
+        }
+      },
+      "a0": {
+        "E24": {
+          "n": 9,
+          "median": 40.743,
+          "mean": 61.169,
+          "min": 24.375,
+          "max": 144.014
+        },
+        "bearing_diff_24h": {
+          "n": 9,
+          "median": 30.502,
+          "mean": 40.967,
+          "min": 3.169,
+          "max": 117.26
+        },
+        "east_offset_24h": {
+          "n": 9,
+          "median": -1.691,
+          "mean": -20.023,
+          "min": -138.321,
+          "max": 48.324
+        },
+        "north_offset_24h": {
+          "n": 9,
+          "median": -19.443,
+          "mean": -7.845,
+          "min": -42.206,
+          "max": 52.57
+        },
+        "model_disp_24h": {
+          "n": 9,
+          "median": 46.585,
+          "mean": 47.707,
+          "min": 33.541,
+          "max": 80.329
+        },
+        "disp_ratio_24h": {
+          "n": 9,
+          "median": 0.584,
+          "mean": 0.732,
+          "min": 0.268,
+          "max": 1.768
+        },
+        "path_ratio_hourly_24h": {
+          "n": 9,
+          "median": 0.557,
+          "mean": 0.717,
+          "min": 0.299,
+          "max": 1.757
+        },
+        "path_excess_24h": {
+          "n": 9,
+          "median": 1.06,
+          "mean": 1.064,
+          "min": 1.002,
+          "max": 1.127
+        },
+        "east_sign_counts_24h": {
+          "east": 4,
+          "west": 5
+        },
+        "north_sign_counts_24h": {
+          "north": 3,
+          "south": 6
+        },
+        "E48": {
+          "n": 9,
+          "median": 64.073,
+          "mean": 104.289,
+          "min": 24.056,
+          "max": 237.414
+        },
+        "bearing_diff_48h": {
+          "n": 9,
+          "median": 26.483,
+          "mean": 31.864,
+          "min": 2.763,
+          "max": 73.148
+        },
+        "east_offset_48h": {
+          "n": 9,
+          "median": 16.211,
+          "mean": -26.985,
+          "min": -235.587,
+          "max": 104.012
+        },
+        "north_offset_48h": {
+          "n": 9,
+          "median": 26.182,
+          "mean": 14.916,
+          "min": -47.792,
+          "max": 100.282
+        },
+        "model_disp_48h": {
+          "n": 9,
+          "median": 114.311,
+          "mean": 115.181,
+          "min": 76.827,
+          "max": 166.411
+        },
+        "disp_ratio_48h": {
+          "n": 9,
+          "median": 0.653,
+          "mean": 0.892,
+          "min": 0.54,
+          "max": 1.805
+        },
+        "path_ratio_hourly_48h": {
+          "n": 9,
+          "median": 0.716,
+          "mean": 0.822,
+          "min": 0.428,
+          "max": 1.791
+        },
+        "path_excess_48h": {
+          "n": 9,
+          "median": 1.072,
+          "mean": 1.08,
+          "min": 1.006,
+          "max": 1.276
+        },
+        "east_sign_counts_48h": {
+          "east": 5,
+          "west": 4
+        },
+        "north_sign_counts_48h": {
+          "north": 6,
+          "south": 3
+        },
+        "E72": {
+          "n": 9,
+          "median": 112.085,
+          "mean": 153.705,
+          "min": 47.705,
+          "max": 321.997
+        },
+        "bearing_diff_72h": {
+          "n": 9,
+          "median": 20.362,
+          "mean": 38.107,
+          "min": 5.614,
+          "max": 74.21
+        },
+        "east_offset_72h": {
+          "n": 9,
+          "median": -37.252,
+          "mean": -41.646,
+          "min": -301.34,
+          "max": 216.187
+        },
+        "north_offset_72h": {
+          "n": 9,
+          "median": 29.725,
+          "mean": 27.61,
+          "min": -78.57,
+          "max": 107.954
+        },
+        "model_disp_72h": {
+          "n": 9,
+          "median": 182.865,
+          "mean": 168.509,
+          "min": 91.261,
+          "max": 240.645
+        },
+        "disp_ratio_72h": {
+          "n": 9,
+          "median": 1.017,
+          "mean": 1.14,
+          "min": 0.535,
+          "max": 2.264
+        },
+        "path_ratio_hourly_72h": {
+          "n": 9,
+          "median": 0.754,
+          "mean": 0.924,
+          "min": 0.376,
+          "max": 2.206
+        },
+        "path_excess_72h": {
+          "n": 9,
+          "median": 1.061,
+          "mean": 1.11,
+          "min": 1.012,
+          "max": 1.301
+        },
+        "east_sign_counts_72h": {
+          "east": 3,
+          "west": 6
+        },
+        "north_sign_counts_72h": {
+          "north": 6,
+          "south": 3
+        },
+        "growth_48_24": {
+          "n": 9,
+          "median": 25.141,
+          "mean": 43.12,
+          "min": -1.628,
+          "max": 94.434
+        },
+        "growth_72_48": {
+          "n": 9,
+          "median": 51.67,
+          "mean": 49.416,
+          "min": -16.368,
+          "max": 94.071
+        },
+        "growth_ratio_72_24": {
+          "n": 9,
+          "median": 2.391,
+          "mean": 2.693,
+          "min": 0.981,
+          "max": 3.955
+        },
+        "growth_class_counts": {
+          "A": 7,
+          "B": 1,
+          "C": 1,
+          "D": 0
+        }
+      },
+      "obs_disp_24h": {
+        "n": 9,
+        "median": 78.492,
+        "mean": 83.235,
+        "min": 33.621,
+        "max": 144.73
+      },
+      "delta_24h": {
+        "n": 9,
+        "median": -0.559,
+        "mean": -0.217,
+        "min": -1.318,
+        "max": 1.48
+      },
+      "alpha_sep_24h": {
+        "n": 9,
+        "median": 1.268,
+        "mean": 1.228,
+        "min": 0.601,
+        "max": 2.096
+      },
+      "windage_toward_obs_24h": {
+        "n": 9,
+        "median": 0.019,
+        "mean": 0.005,
+        "min": -0.057,
+        "max": 0.045
+      },
+      "delta_sign_counts_24h": {
+        "neg": 5,
+        "pos": 4,
+        "zero": 0
+      },
+      "obs_disp_48h": {
+        "n": 9,
+        "median": 125.507,
+        "mean": 154.307,
+        "min": 62.537,
+        "max": 308.077
+      },
+      "delta_48h": {
+        "n": 9,
+        "median": -0.535,
+        "mean": -0.966,
+        "min": -4.752,
+        "max": 3.925
+      },
+      "alpha_sep_48h": {
+        "n": 9,
+        "median": 2.665,
+        "mean": 2.756,
+        "min": 0.888,
+        "max": 4.903
+      },
+      "windage_toward_obs_48h": {
+        "n": 9,
+        "median": 0.007,
+        "mean": 0.027,
+        "min": -0.077,
+        "max": 0.199
+      },
+      "delta_sign_counts_48h": {
+        "neg": 5,
+        "pos": 4,
+        "zero": 0
+      },
+      "obs_disp_72h": {
+        "n": 9,
+        "median": 135.1,
+        "mean": 193.115,
+        "min": 80.755,
+        "max": 449.489
+      },
+      "delta_72h": {
+        "n": 9,
+        "median": 1.071,
+        "mean": 0.082,
+        "min": -6.918,
+        "max": 4.499
+      },
+      "alpha_sep_72h": {
+        "n": 9,
+        "median": 2.606,
+        "mean": 3.155,
+        "min": 0.899,
+        "max": 8.262
+      },
+      "windage_toward_obs_72h": {
+        "n": 9,
+        "median": -0.004,
+        "mean": -0.002,
+        "min": -0.073,
+        "max": 0.063
+      },
+      "delta_sign_counts_72h": {
+        "neg": 4,
+        "pos": 5,
+        "zero": 0
+      },
+      "obs_path_hourly_72h": {
+        "n": 9,
+        "median": 221.503,
+        "mean": 246.029,
+        "min": 83.923,
+        "max": 471.872
+      },
+      "delta_sign_persistent_count": 6,
+      "delta_sign_change_counts": {
+        "0": 6,
+        "1": 3,
+        "2": 0
+      },
+      "highest_error_cases_72h_a002": [
+        {
+          "drifter_id": "127198",
+          "unit": "AG-1",
+          "E72_a002": 323.38,
+          "E72_a0": 321.997,
+          "obs_disp_72h": 308.466,
+          "model_disp_72h_a002": 210.616,
+          "bearing_diff_72h_a002": 74.418
+        },
+        {
+          "drifter_id": "127199",
+          "unit": "AG-1",
+          "E72_a002": 319.828,
+          "E72_a0": 318.506,
+          "obs_disp_72h": 308.854,
+          "model_disp_72h_a002": 209.404,
+          "bearing_diff_72h_a002": 73.416
+        },
+        {
+          "drifter_id": "127313",
+          "unit": "AG-1",
+          "E72_a002": 238.212,
+          "E72_a0": 239.003,
+          "obs_disp_72h": 449.489,
+          "model_disp_72h_a002": 240.965,
+          "bearing_diff_72h_a002": 20.162
+        }
+      ],
+      "top1_share_of_sum_E72_a002": 0.234
+    },
+    "AG-2": {
+      "n": 1,
+      "smallN": true,
+      "a002": {
+        "E24": {
+          "n": 1,
+          "median": 116.865,
+          "mean": 116.865,
+          "min": 116.865,
+          "max": 116.865
+        },
+        "bearing_diff_24h": {
+          "n": 1,
+          "median": 23.898,
+          "mean": 23.898,
+          "min": 23.898,
+          "max": 23.898
+        },
+        "east_offset_24h": {
+          "n": 1,
+          "median": 84.277,
+          "mean": 84.277,
+          "min": 84.277,
+          "max": 84.277
+        },
+        "north_offset_24h": {
+          "n": 1,
+          "median": 80.535,
+          "mean": 80.535,
+          "min": 80.535,
+          "max": 80.535
+        },
+        "model_disp_24h": {
+          "n": 1,
+          "median": 25.086,
+          "mean": 25.086,
+          "min": 25.086,
+          "max": 25.086
+        },
+        "disp_ratio_24h": {
+          "n": 1,
+          "median": 0.18,
+          "mean": 0.18,
+          "min": 0.18,
+          "max": 0.18
+        },
+        "path_ratio_hourly_24h": {
+          "n": 1,
+          "median": 0.18,
+          "mean": 0.18,
+          "min": 0.18,
+          "max": 0.18
+        },
+        "path_excess_24h": {
+          "n": 1,
+          "median": 1.051,
+          "mean": 1.051,
+          "min": 1.051,
+          "max": 1.051
+        },
+        "east_sign_counts_24h": {
+          "east": 1,
+          "west": 0
+        },
+        "north_sign_counts_24h": {
+          "north": 1,
+          "south": 0
+        },
+        "E48": {
+          "n": 1,
+          "median": 232.889,
+          "mean": 232.889,
+          "min": 232.889,
+          "max": 232.889
+        },
+        "bearing_diff_48h": {
+          "n": 1,
+          "median": 33.371,
+          "mean": 33.371,
+          "min": 33.371,
+          "max": 33.371
+        },
+        "east_offset_48h": {
+          "n": 1,
+          "median": 190.794,
+          "mean": 190.794,
+          "min": 190.794,
+          "max": 190.794
+        },
+        "north_offset_48h": {
+          "n": 1,
+          "median": 131.344,
+          "mean": 131.344,
+          "min": 131.344,
+          "max": 131.344
+        },
+        "model_disp_48h": {
+          "n": 1,
+          "median": 28.36,
+          "mean": 28.36,
+          "min": 28.36,
+          "max": 28.36
+        },
+        "disp_ratio_48h": {
+          "n": 1,
+          "median": 0.111,
+          "mean": 0.111,
+          "min": 0.111,
+          "max": 0.111
+        },
+        "path_ratio_hourly_48h": {
+          "n": 1,
+          "median": 0.139,
+          "mean": 0.139,
+          "min": 0.139,
+          "max": 0.139
+        },
+        "path_excess_48h": {
+          "n": 1,
+          "median": 1.313,
+          "mean": 1.313,
+          "min": 1.313,
+          "max": 1.313
+        },
+        "east_sign_counts_48h": {
+          "east": 1,
+          "west": 0
+        },
+        "north_sign_counts_48h": {
+          "north": 1,
+          "south": 0
+        },
+        "E72": {
+          "n": 1,
+          "median": 331.318,
+          "mean": 331.318,
+          "min": 331.318,
+          "max": 331.318
+        },
+        "bearing_diff_72h": {
+          "n": 1,
+          "median": 25.252,
+          "mean": 25.252,
+          "min": 25.252,
+          "max": 25.252
+        },
+        "east_offset_72h": {
+          "n": 1,
+          "median": 296.77,
+          "mean": 296.77,
+          "min": 296.77,
+          "max": 296.77
+        },
+        "north_offset_72h": {
+          "n": 1,
+          "median": 142.047,
+          "mean": 142.047,
+          "min": 142.047,
+          "max": 142.047
+        },
+        "model_disp_72h": {
+          "n": 1,
+          "median": 23.912,
+          "mean": 23.912,
+          "min": 23.912,
+          "max": 23.912
+        },
+        "disp_ratio_72h": {
+          "n": 1,
+          "median": 0.068,
+          "mean": 0.068,
+          "min": 0.068,
+          "max": 0.068
+        },
+        "path_ratio_hourly_72h": {
+          "n": 1,
+          "median": 0.127,
+          "mean": 0.127,
+          "min": 0.127,
+          "max": 0.127
+        },
+        "path_excess_72h": {
+          "n": 1,
+          "median": 2.088,
+          "mean": 2.088,
+          "min": 2.088,
+          "max": 2.088
+        },
+        "east_sign_counts_72h": {
+          "east": 1,
+          "west": 0
+        },
+        "north_sign_counts_72h": {
+          "north": 1,
+          "south": 0
+        },
+        "growth_48_24": {
+          "n": 1,
+          "median": 116.024,
+          "mean": 116.024,
+          "min": 116.024,
+          "max": 116.024
+        },
+        "growth_72_48": {
+          "n": 1,
+          "median": 98.429,
+          "mean": 98.429,
+          "min": 98.429,
+          "max": 98.429
+        },
+        "growth_ratio_72_24": {
+          "n": 1,
+          "median": 2.835,
+          "mean": 2.835,
+          "min": 2.835,
+          "max": 2.835
+        },
+        "growth_class_counts": {
+          "A": 1,
+          "B": 0,
+          "C": 0,
+          "D": 0
+        }
+      },
+      "a0": {
+        "E24": {
+          "n": 1,
+          "median": 116.375,
+          "mean": 116.375,
+          "min": 116.375,
+          "max": 116.375
+        },
+        "bearing_diff_24h": {
+          "n": 1,
+          "median": 24.644,
+          "mean": 24.644,
+          "min": 24.644,
+          "max": 24.644
+        },
+        "east_offset_24h": {
+          "n": 1,
+          "median": 84.375,
+          "mean": 84.375,
+          "min": 84.375,
+          "max": 84.375
+        },
+        "north_offset_24h": {
+          "n": 1,
+          "median": 79.721,
+          "mean": 79.721,
+          "min": 79.721,
+          "max": 79.721
+        },
+        "model_disp_24h": {
+          "n": 1,
+          "median": 25.835,
+          "mean": 25.835,
+          "min": 25.835,
+          "max": 25.835
+        },
+        "disp_ratio_24h": {
+          "n": 1,
+          "median": 0.185,
+          "mean": 0.185,
+          "min": 0.185,
+          "max": 0.185
+        },
+        "path_ratio_hourly_24h": {
+          "n": 1,
+          "median": 0.185,
+          "mean": 0.185,
+          "min": 0.185,
+          "max": 0.185
+        },
+        "path_excess_24h": {
+          "n": 1,
+          "median": 1.051,
+          "mean": 1.051,
+          "min": 1.051,
+          "max": 1.051
+        },
+        "east_sign_counts_24h": {
+          "east": 1,
+          "west": 0
+        },
+        "north_sign_counts_24h": {
+          "north": 1,
+          "south": 0
+        },
+        "E48": {
+          "n": 1,
+          "median": 232.677,
+          "mean": 232.677,
+          "min": 232.677,
+          "max": 232.677
+        },
+        "bearing_diff_48h": {
+          "n": 1,
+          "median": 35.823,
+          "mean": 35.823,
+          "min": 35.823,
+          "max": 35.823
+        },
+        "east_offset_48h": {
+          "n": 1,
+          "median": 191.61,
+          "mean": 191.61,
+          "min": 191.61,
+          "max": 191.61
+        },
+        "north_offset_48h": {
+          "n": 1,
+          "median": 129.778,
+          "mean": 129.778,
+          "min": 129.778,
+          "max": 129.778
+        },
+        "model_disp_48h": {
+          "n": 1,
+          "median": 29.624,
+          "mean": 29.624,
+          "min": 29.624,
+          "max": 29.624
+        },
+        "disp_ratio_48h": {
+          "n": 1,
+          "median": 0.116,
+          "mean": 0.116,
+          "min": 0.116,
+          "max": 0.116
+        },
+        "path_ratio_hourly_48h": {
+          "n": 1,
+          "median": 0.142,
+          "mean": 0.142,
+          "min": 0.142,
+          "max": 0.142
+        },
+        "path_excess_48h": {
+          "n": 1,
+          "median": 1.283,
+          "mean": 1.283,
+          "min": 1.283,
+          "max": 1.283
+        },
+        "east_sign_counts_48h": {
+          "east": 1,
+          "west": 0
+        },
+        "north_sign_counts_48h": {
+          "north": 1,
+          "south": 0
+        },
+        "E72": {
+          "n": 1,
+          "median": 330.76,
+          "mean": 330.76,
+          "min": 330.76,
+          "max": 330.76
+        },
+        "bearing_diff_72h": {
+          "n": 1,
+          "median": 29.756,
+          "mean": 29.756,
+          "min": 29.756,
+          "max": 29.756
+        },
+        "east_offset_72h": {
+          "n": 1,
+          "median": 297.386,
+          "mean": 297.386,
+          "min": 297.386,
+          "max": 297.386
+        },
+        "north_offset_72h": {
+          "n": 1,
+          "median": 139.511,
+          "mean": 139.511,
+          "min": 139.511,
+          "max": 139.511
+        },
+        "model_disp_72h": {
+          "n": 1,
+          "median": 25.655,
+          "mean": 25.655,
+          "min": 25.655,
+          "max": 25.655
+        },
+        "disp_ratio_72h": {
+          "n": 1,
+          "median": 0.073,
+          "mean": 0.073,
+          "min": 0.073,
+          "max": 0.073
+        },
+        "path_ratio_hourly_72h": {
+          "n": 1,
+          "median": 0.127,
+          "mean": 0.127,
+          "min": 0.127,
+          "max": 0.127
+        },
+        "path_excess_72h": {
+          "n": 1,
+          "median": 1.945,
+          "mean": 1.945,
+          "min": 1.945,
+          "max": 1.945
+        },
+        "east_sign_counts_72h": {
+          "east": 1,
+          "west": 0
+        },
+        "north_sign_counts_72h": {
+          "north": 1,
+          "south": 0
+        },
+        "growth_48_24": {
+          "n": 1,
+          "median": 116.302,
+          "mean": 116.302,
+          "min": 116.302,
+          "max": 116.302
+        },
+        "growth_72_48": {
+          "n": 1,
+          "median": 98.084,
+          "mean": 98.084,
+          "min": 98.084,
+          "max": 98.084
+        },
+        "growth_ratio_72_24": {
+          "n": 1,
+          "median": 2.842,
+          "mean": 2.842,
+          "min": 2.842,
+          "max": 2.842
+        },
+        "growth_class_counts": {
+          "A": 1,
+          "B": 0,
+          "C": 0,
+          "D": 0
+        }
+      },
+      "obs_disp_24h": {
+        "n": 1,
+        "median": 139.357,
+        "mean": 139.357,
+        "min": 139.357,
+        "max": 139.357
+      },
+      "delta_24h": {
+        "n": 1,
+        "median": 0.49,
+        "mean": 0.49,
+        "min": 0.49,
+        "max": 0.49
+      },
+      "alpha_sep_24h": {
+        "n": 1,
+        "median": 0.819,
+        "mean": 0.819,
+        "min": 0.819,
+        "max": 0.819
+      },
+      "windage_toward_obs_24h": {
+        "n": 1,
+        "median": -0.004,
+        "mean": -0.004,
+        "min": -0.004,
+        "max": -0.004
+      },
+      "delta_sign_counts_24h": {
+        "neg": 0,
+        "pos": 1,
+        "zero": 0
+      },
+      "obs_disp_48h": {
+        "n": 1,
+        "median": 256.05,
+        "mean": 256.05,
+        "min": 256.05,
+        "max": 256.05
+      },
+      "delta_48h": {
+        "n": 1,
+        "median": 0.212,
+        "mean": 0.212,
+        "min": 0.212,
+        "max": 0.212
+      },
+      "alpha_sep_48h": {
+        "n": 1,
+        "median": 1.771,
+        "mean": 1.771,
+        "min": 1.771,
+        "max": 1.771
+      },
+      "windage_toward_obs_48h": {
+        "n": 1,
+        "median": -0.001,
+        "mean": -0.001,
+        "min": -0.001,
+        "max": -0.001
+      },
+      "delta_sign_counts_48h": {
+        "neg": 0,
+        "pos": 1,
+        "zero": 0
+      },
+      "obs_disp_72h": {
+        "n": 1,
+        "median": 352.788,
+        "mean": 352.788,
+        "min": 352.788,
+        "max": 352.788
+      },
+      "delta_72h": {
+        "n": 1,
+        "median": 0.557,
+        "mean": 0.557,
+        "min": 0.557,
+        "max": 0.557
+      },
+      "alpha_sep_72h": {
+        "n": 1,
+        "median": 2.612,
+        "mean": 2.612,
+        "min": 2.612,
+        "max": 2.612
+      },
+      "windage_toward_obs_72h": {
+        "n": 1,
+        "median": -0.001,
+        "mean": -0.001,
+        "min": -0.001,
+        "max": -0.001
+      },
+      "delta_sign_counts_72h": {
+        "neg": 0,
+        "pos": 1,
+        "zero": 0
+      },
+      "obs_path_hourly_72h": {
+        "n": 1,
+        "median": 392.66,
+        "mean": 392.66,
+        "min": 392.66,
+        "max": 392.66
+      },
+      "delta_sign_persistent_count": 1,
+      "delta_sign_change_counts": {
+        "0": 1,
+        "1": 0,
+        "2": 0
+      },
+      "highest_error_cases_72h_a002": [
+        {
+          "drifter_id": "127281",
+          "unit": "AG-2",
+          "E72_a002": 331.318,
+          "E72_a0": 330.76,
+          "obs_disp_72h": 352.788,
+          "model_disp_72h_a002": 23.912,
+          "bearing_diff_72h_a002": 25.252
+        }
+      ],
+      "top1_share_of_sum_E72_a002": 1.0
+    },
+    "KE-H1": {
+      "n": 5,
+      "smallN": true,
+      "a002": {
+        "E24": {
+          "n": 5,
+          "median": 8.223,
+          "mean": 11.895,
+          "min": 1.941,
+          "max": 23.705
+        },
+        "bearing_diff_24h": {
+          "n": 5,
+          "median": 27.933,
+          "mean": 21.597,
+          "min": 5.615,
+          "max": 37.164
+        },
+        "east_offset_24h": {
+          "n": 5,
+          "median": -8.218,
+          "mean": -8.785,
+          "min": -17.331,
+          "max": 1.913
+        },
+        "north_offset_24h": {
+          "n": 5,
+          "median": 0.33,
+          "mean": 0.01,
+          "min": -16.154,
+          "max": 13.528
+        },
+        "model_disp_24h": {
+          "n": 5,
+          "median": 28.488,
+          "mean": 25.381,
+          "min": 10.468,
+          "max": 43.26
+        },
+        "disp_ratio_24h": {
+          "n": 5,
+          "median": 0.92,
+          "mean": 0.905,
+          "min": 0.69,
+          "max": 1.123
+        },
+        "path_ratio_hourly_24h": {
+          "n": 5,
+          "median": 0.938,
+          "mean": 0.88,
+          "min": 0.678,
+          "max": 1.103
+        },
+        "path_excess_24h": {
+          "n": 5,
+          "median": 1.028,
+          "mean": 1.037,
+          "min": 1.004,
+          "max": 1.103
+        },
+        "east_sign_counts_24h": {
+          "east": 1,
+          "west": 4
+        },
+        "north_sign_counts_24h": {
+          "north": 4,
+          "south": 1
+        },
+        "E48": {
+          "n": 5,
+          "median": 21.544,
+          "mean": 24.538,
+          "min": 6.096,
+          "max": 58.664
+        },
+        "bearing_diff_48h": {
+          "n": 5,
+          "median": 18.745,
+          "mean": 28.474,
+          "min": 4.182,
+          "max": 69.123
+        },
+        "east_offset_48h": {
+          "n": 5,
+          "median": -20.517,
+          "mean": -16.308,
+          "min": -37.945,
+          "max": 5.493
+        },
+        "north_offset_48h": {
+          "n": 5,
+          "median": 5.782,
+          "mean": -3.631,
+          "min": -44.651,
+          "max": 16.758
+        },
+        "model_disp_48h": {
+          "n": 5,
+          "median": 56.187,
+          "mean": 50.481,
+          "min": 19.502,
+          "max": 86.501
+        },
+        "disp_ratio_48h": {
+          "n": 5,
+          "median": 1.012,
+          "mean": 0.989,
+          "min": 0.795,
+          "max": 1.167
+        },
+        "path_ratio_hourly_48h": {
+          "n": 5,
+          "median": 0.865,
+          "mean": 0.926,
+          "min": 0.792,
+          "max": 1.123
+        },
+        "path_excess_48h": {
+          "n": 5,
+          "median": 1.031,
+          "mean": 1.087,
+          "min": 1.017,
+          "max": 1.328
+        },
+        "east_sign_counts_48h": {
+          "east": 1,
+          "west": 4
+        },
+        "north_sign_counts_48h": {
+          "north": 3,
+          "south": 2
+        },
+        "E72": {
+          "n": 5,
+          "median": 24.444,
+          "mean": 38.464,
+          "min": 12.091,
+          "max": 89.37
+        },
+        "bearing_diff_72h": {
+          "n": 5,
+          "median": 14.31,
+          "mean": 31.649,
+          "min": 1.508,
+          "max": 85.193
+        },
+        "east_offset_72h": {
+          "n": 5,
+          "median": -24.111,
+          "mean": -23.107,
+          "min": -52.464,
+          "max": 11.624
+        },
+        "north_offset_72h": {
+          "n": 5,
+          "median": 4.058,
+          "mean": -6.886,
+          "min": -72.183,
+          "max": 20.562
+        },
+        "model_disp_72h": {
+          "n": 5,
+          "median": 79.693,
+          "mean": 78.371,
+          "min": 40.051,
+          "max": 125.215
+        },
+        "disp_ratio_72h": {
+          "n": 5,
+          "median": 1.111,
+          "mean": 1.114,
+          "min": 0.936,
+          "max": 1.281
+        },
+        "path_ratio_hourly_72h": {
+          "n": 5,
+          "median": 1.049,
+          "mean": 1.05,
+          "min": 0.873,
+          "max": 1.255
+        },
+        "path_excess_72h": {
+          "n": 5,
+          "median": 1.05,
+          "mean": 1.112,
+          "min": 1.024,
+          "max": 1.391
+        },
+        "east_sign_counts_72h": {
+          "east": 1,
+          "west": 4
+        },
+        "north_sign_counts_72h": {
+          "north": 3,
+          "south": 2
+        },
+        "growth_48_24": {
+          "n": 5,
+          "median": 5.988,
+          "mean": 12.643,
+          "min": 4.155,
+          "max": 34.959
+        },
+        "growth_72_48": {
+          "n": 5,
+          "median": 8.723,
+          "mean": 13.926,
+          "min": -3.06,
+          "max": 30.706
+        },
+        "growth_ratio_72_24": {
+          "n": 5,
+          "median": 4.305,
+          "mean": 4.275,
+          "min": 1.136,
+          "max": 6.228
+        },
+        "growth_class_counts": {
+          "A": 4,
+          "B": 0,
+          "C": 1,
+          "D": 0
+        }
+      },
+      "a0": {
+        "E24": {
+          "n": 5,
+          "median": 8.106,
+          "mean": 12.224,
+          "min": 2.389,
+          "max": 25.276
+        },
+        "bearing_diff_24h": {
+          "n": 5,
+          "median": 28.045,
+          "mean": 22.394,
+          "min": 7.412,
+          "max": 35.549
+        },
+        "east_offset_24h": {
+          "n": 5,
+          "median": -8.054,
+          "mean": -8.938,
+          "min": -17.653,
+          "max": 2.344
+        },
+        "north_offset_24h": {
+          "n": 5,
+          "median": -0.461,
+          "mean": -1.222,
+          "min": -18.07,
+          "max": 12.176
+        },
+        "model_disp_24h": {
+          "n": 5,
+          "median": 27.903,
+          "mean": 25.433,
+          "min": 9.275,
+          "max": 44.623
+        },
+        "disp_ratio_24h": {
+          "n": 5,
+          "median": 0.949,
+          "mean": 0.885,
+          "min": 0.682,
+          "max": 1.1
+        },
+        "path_ratio_hourly_24h": {
+          "n": 5,
+          "median": 0.901,
+          "mean": 0.867,
+          "min": 0.674,
+          "max": 1.081
+        },
+        "path_excess_24h": {
+          "n": 5,
+          "median": 1.025,
+          "mean": 1.045,
+          "min": 1.004,
+          "max": 1.144
+        },
+        "east_sign_counts_24h": {
+          "east": 1,
+          "west": 4
+        },
+        "north_sign_counts_24h": {
+          "north": 2,
+          "south": 3
+        },
+        "E48": {
+          "n": 5,
+          "median": 21.494,
+          "mean": 25.66,
+          "min": 7.536,
+          "max": 63.93
+        },
+        "bearing_diff_48h": {
+          "n": 5,
+          "median": 18.874,
+          "mean": 30.325,
+          "min": 6.854,
+          "max": 71.084
+        },
+        "east_offset_48h": {
+          "n": 5,
+          "median": -20.795,
+          "mean": -17.016,
+          "min": -39.364,
+          "max": 6.327
+        },
+        "north_offset_48h": {
+          "n": 5,
+          "median": 3.451,
+          "mean": -6.497,
+          "min": -50.28,
+          "max": 12.969
+        },
+        "model_disp_48h": {
+          "n": 5,
+          "median": 54.905,
+          "mean": 51.407,
+          "min": 18.532,
+          "max": 90.833
+        },
+        "disp_ratio_48h": {
+          "n": 5,
+          "median": 1.005,
+          "mean": 0.985,
+          "min": 0.845,
+          "max": 1.14
+        },
+        "path_ratio_hourly_48h": {
+          "n": 5,
+          "median": 0.843,
+          "mean": 0.93,
+          "min": 0.784,
+          "max": 1.102
+        },
+        "path_excess_48h": {
+          "n": 5,
+          "median": 1.032,
+          "mean": 1.095,
+          "min": 1.021,
+          "max": 1.363
+        },
+        "east_sign_counts_48h": {
+          "east": 1,
+          "west": 4
+        },
+        "north_sign_counts_48h": {
+          "north": 3,
+          "south": 2
+        },
+        "E72": {
+          "n": 5,
+          "median": 24.844,
+          "mean": 40.671,
+          "min": 13.843,
+          "max": 99.98
+        },
+        "bearing_diff_72h": {
+          "n": 5,
+          "median": 16.17,
+          "mean": 33.408,
+          "min": 3.193,
+          "max": 87.292
+        },
+        "east_offset_72h": {
+          "n": 5,
+          "median": -24.676,
+          "mean": -24.883,
+          "min": -56.47,
+          "max": 12.749
+        },
+        "north_offset_72h": {
+          "n": 5,
+          "median": -2.85,
+          "mean": -12.034,
+          "min": -82.311,
+          "max": 18.92
+        },
+        "model_disp_72h": {
+          "n": 5,
+          "median": 77.507,
+          "mean": 80.272,
+          "min": 38.936,
+          "max": 132.96
+        },
+        "disp_ratio_72h": {
+          "n": 5,
+          "median": 1.18,
+          "mean": 1.119,
+          "min": 0.897,
+          "max": 1.246
+        },
+        "path_ratio_hourly_72h": {
+          "n": 5,
+          "median": 1.038,
+          "mean": 1.065,
+          "min": 0.839,
+          "max": 1.24
+        },
+        "path_excess_72h": {
+          "n": 5,
+          "median": 1.052,
+          "mean": 1.121,
+          "min": 1.027,
+          "max": 1.415
+        },
+        "east_sign_counts_72h": {
+          "east": 1,
+          "west": 4
+        },
+        "north_sign_counts_72h": {
+          "north": 2,
+          "south": 3
+        },
+        "growth_48_24": {
+          "n": 5,
+          "median": 5.146,
+          "mean": 13.436,
+          "min": 4.849,
+          "max": 38.655
+        },
+        "growth_72_48": {
+          "n": 5,
+          "median": 6.673,
+          "mean": 15.011,
+          "min": -1.368,
+          "max": 36.049
+        },
+        "growth_ratio_72_24": {
+          "n": 5,
+          "median": 3.956,
+          "mean": 4.131,
+          "min": 1.179,
+          "max": 6.031
+        },
+        "growth_class_counts": {
+          "A": 4,
+          "B": 0,
+          "C": 1,
+          "D": 0
+        }
+      },
+      "obs_disp_24h": {
+        "n": 5,
+        "median": 25.359,
+        "mean": 28.701,
+        "min": 13.598,
+        "max": 47.029
+      },
+      "delta_24h": {
+        "n": 5,
+        "median": -0.188,
+        "mean": -0.329,
+        "min": -1.571,
+        "max": 0.446
+      },
+      "alpha_sep_24h": {
+        "n": 5,
+        "median": 1.225,
+        "mean": 1.312,
+        "min": 0.901,
+        "max": 1.943
+      },
+      "windage_toward_obs_24h": {
+        "n": 5,
+        "median": 0.063,
+        "mean": 0.071,
+        "min": -0.019,
+        "max": 0.241
+      },
+      "delta_sign_counts_24h": {
+        "neg": 3,
+        "pos": 2,
+        "zero": 0
+      },
+      "obs_disp_48h": {
+        "n": 5,
+        "median": 48.16,
+        "mean": 52.171,
+        "min": 18.444,
+        "max": 85.456
+      },
+      "delta_48h": {
+        "n": 5,
+        "median": -0.247,
+        "mean": -1.122,
+        "min": -5.267,
+        "max": 1.292
+      },
+      "alpha_sep_48h": {
+        "n": 5,
+        "median": 2.89,
+        "mean": 3.089,
+        "min": 1.168,
+        "max": 5.807
+      },
+      "windage_toward_obs_48h": {
+        "n": 5,
+        "median": 0.077,
+        "mean": 0.063,
+        "min": -0.04,
+        "max": 0.197
+      },
+      "delta_sign_counts_48h": {
+        "neg": 3,
+        "pos": 2,
+        "zero": 0
+      },
+      "obs_disp_72h": {
+        "n": 5,
+        "median": 62.188,
+        "mean": 71.914,
+        "min": 31.456,
+        "max": 112.667
+      },
+      "delta_72h": {
+        "n": 5,
+        "median": -0.4,
+        "mean": -2.207,
+        "min": -10.61,
+        "max": 1.803
+      },
+      "alpha_sep_72h": {
+        "n": 5,
+        "median": 6.808,
+        "mean": 5.764,
+        "min": 1.826,
+        "max": 10.906
+      },
+      "windage_toward_obs_72h": {
+        "n": 5,
+        "median": 0.054,
+        "mean": 0.054,
+        "min": -0.028,
+        "max": 0.133
+      },
+      "delta_sign_counts_72h": {
+        "neg": 4,
+        "pos": 1,
+        "zero": 0
+      },
+      "obs_path_hourly_72h": {
+        "n": 5,
+        "median": 66.776,
+        "mean": 79.984,
+        "min": 52.948,
+        "max": 115.2
+      },
+      "delta_sign_persistent_count": 2,
+      "delta_sign_change_counts": {
+        "0": 2,
+        "1": 3,
+        "2": 0
+      },
+      "highest_error_cases_72h_a002": [
+        {
+          "drifter_id": "90150",
+          "unit": "KE-H1",
+          "E72_a002": 89.37,
+          "E72_a0": 99.98,
+          "obs_disp_72h": 112.667,
+          "model_disp_72h_a002": 125.215,
+          "bearing_diff_72h_a002": 43.741
+        },
+        {
+          "drifter_id": "48985",
+          "unit": "KE-H1",
+          "E72_a002": 48.81,
+          "E72_a0": 48.885,
+          "obs_disp_72h": 31.456,
+          "model_disp_72h_a002": 40.051,
+          "bearing_diff_72h_a002": 85.193
+        },
+        {
+          "drifter_id": "90135",
+          "unit": "KE-H1",
+          "E72_a002": 24.444,
+          "E72_a0": 24.844,
+          "obs_disp_72h": 104.782,
+          "model_disp_72h_a002": 101.547,
+          "bearing_diff_72h_a002": 13.49
+        }
+      ],
+      "top1_share_of_sum_E72_a002": 0.465
+    },
+    "KE-H3": {
+      "n": 7,
+      "smallN": true,
+      "a002": {
+        "E24": {
+          "n": 7,
+          "median": 13.802,
+          "mean": 14.82,
+          "min": 7.39,
+          "max": 22.802
+        },
+        "bearing_diff_24h": {
+          "n": 7,
+          "median": 17.137,
+          "mean": 26.671,
+          "min": 2.578,
+          "max": 69.342
+        },
+        "east_offset_24h": {
+          "n": 7,
+          "median": -9.608,
+          "mean": -9.36,
+          "min": -16.651,
+          "max": -4.442
+        },
+        "north_offset_24h": {
+          "n": 7,
+          "median": -8.226,
+          "mean": -0.927,
+          "min": -13.016,
+          "max": 15.592
+        },
+        "model_disp_24h": {
+          "n": 7,
+          "median": 26.538,
+          "mean": 31.269,
+          "min": 6.327,
+          "max": 63.852
+        },
+        "disp_ratio_24h": {
+          "n": 7,
+          "median": 1.36,
+          "mean": 2.256,
+          "min": 0.486,
+          "max": 7.673
+        },
+        "path_ratio_hourly_24h": {
+          "n": 7,
+          "median": 1.083,
+          "mean": 1.05,
+          "min": 0.408,
+          "max": 1.607
+        },
+        "path_excess_24h": {
+          "n": 7,
+          "median": 1.159,
+          "mean": 1.179,
+          "min": 1.008,
+          "max": 1.489
+        },
+        "east_sign_counts_24h": {
+          "east": 0,
+          "west": 7
+        },
+        "north_sign_counts_24h": {
+          "north": 3,
+          "south": 4
+        },
+        "E48": {
+          "n": 7,
+          "median": 22.74,
+          "mean": 25.504,
+          "min": 12.402,
+          "max": 43.279
+        },
+        "bearing_diff_48h": {
+          "n": 7,
+          "median": 13.464,
+          "mean": 21.785,
+          "min": 2.623,
+          "max": 55.422
+        },
+        "east_offset_48h": {
+          "n": 7,
+          "median": -11.58,
+          "mean": -13.567,
+          "min": -30.548,
+          "max": 11.42
+        },
+        "north_offset_48h": {
+          "n": 7,
+          "median": -4.831,
+          "mean": 2.114,
+          "min": -25.946,
+          "max": 31.843
+        },
+        "model_disp_48h": {
+          "n": 7,
+          "median": 53.442,
+          "mean": 61.058,
+          "min": 10.793,
+          "max": 115.961
+        },
+        "disp_ratio_48h": {
+          "n": 7,
+          "median": 1.408,
+          "mean": 2.084,
+          "min": 0.269,
+          "max": 7.337
+        },
+        "path_ratio_hourly_48h": {
+          "n": 7,
+          "median": 1.128,
+          "mean": 1.077,
+          "min": 0.329,
+          "max": 1.635
+        },
+        "path_excess_48h": {
+          "n": 7,
+          "median": 1.216,
+          "mean": 1.243,
+          "min": 1.084,
+          "max": 1.591
+        },
+        "east_sign_counts_48h": {
+          "east": 1,
+          "west": 6
+        },
+        "north_sign_counts_48h": {
+          "north": 3,
+          "south": 4
+        },
+        "E72": {
+          "n": 7,
+          "median": 33.118,
+          "mean": 38.684,
+          "min": 10.265,
+          "max": 90.497
+        },
+        "bearing_diff_72h": {
+          "n": 7,
+          "median": 21.626,
+          "mean": 44.881,
+          "min": 0.353,
+          "max": 152.923
+        },
+        "east_offset_72h": {
+          "n": 7,
+          "median": -11.759,
+          "mean": -16.341,
+          "min": -62.431,
+          "max": 22.557
+        },
+        "north_offset_72h": {
+          "n": 7,
+          "median": 13.162,
+          "mean": 7.188,
+          "min": -65.306,
+          "max": 50.709
+        },
+        "model_disp_72h": {
+          "n": 7,
+          "median": 66.716,
+          "mean": 77.804,
+          "min": 12.233,
+          "max": 150.297
+        },
+        "disp_ratio_72h": {
+          "n": 7,
+          "median": 1.187,
+          "mean": 1.338,
+          "min": 0.154,
+          "max": 3.498
+        },
+        "path_ratio_hourly_72h": {
+          "n": 7,
+          "median": 1.069,
+          "mean": 1.033,
+          "min": 0.386,
+          "max": 1.468
+        },
+        "path_excess_72h": {
+          "n": 7,
+          "median": 1.401,
+          "mean": 1.62,
+          "min": 1.152,
+          "max": 3.028
+        },
+        "east_sign_counts_72h": {
+          "east": 2,
+          "west": 5
+        },
+        "north_sign_counts_72h": {
+          "north": 5,
+          "south": 2
+        },
+        "growth_48_24": {
+          "n": 7,
+          "median": 6.697,
+          "mean": 10.684,
+          "min": -0.67,
+          "max": 22.827
+        },
+        "growth_72_48": {
+          "n": 7,
+          "median": 6.757,
+          "mean": 13.18,
+          "min": -6.815,
+          "max": 55.37
+        },
+        "growth_ratio_72_24": {
+          "n": 7,
+          "median": 2.091,
+          "mean": 2.667,
+          "min": 0.744,
+          "max": 7.358
+        },
+        "growth_class_counts": {
+          "A": 4,
+          "B": 1,
+          "C": 2,
+          "D": 0
+        }
+      },
+      "a0": {
+        "E24": {
+          "n": 7,
+          "median": 13.214,
+          "mean": 14.489,
+          "min": 7.809,
+          "max": 23.709
+        },
+        "bearing_diff_24h": {
+          "n": 7,
+          "median": 21.509,
+          "mean": 25.256,
+          "min": 2.772,
+          "max": 57.942
+        },
+        "east_offset_24h": {
+          "n": 7,
+          "median": -8.635,
+          "mean": -9.009,
+          "min": -16.418,
+          "max": -4.55
+        },
+        "north_offset_24h": {
+          "n": 7,
+          "median": -7.399,
+          "mean": 0.318,
+          "min": -11.661,
+          "max": 17.119
+        },
+        "model_disp_24h": {
+          "n": 7,
+          "median": 26.075,
+          "mean": 31.099,
+          "min": 6.304,
+          "max": 63.247
+        },
+        "disp_ratio_24h": {
+          "n": 7,
+          "median": 1.341,
+          "mean": 2.287,
+          "min": 0.484,
+          "max": 7.916
+        },
+        "path_ratio_hourly_24h": {
+          "n": 7,
+          "median": 1.119,
+          "mean": 1.045,
+          "min": 0.392,
+          "max": 1.584
+        },
+        "path_excess_24h": {
+          "n": 7,
+          "median": 1.159,
+          "mean": 1.17,
+          "min": 1.009,
+          "max": 1.435
+        },
+        "east_sign_counts_24h": {
+          "east": 0,
+          "west": 7
+        },
+        "north_sign_counts_24h": {
+          "north": 3,
+          "south": 4
+        },
+        "E48": {
+          "n": 7,
+          "median": 21.974,
+          "mean": 24.118,
+          "min": 11.059,
+          "max": 41.253
+        },
+        "bearing_diff_48h": {
+          "n": 7,
+          "median": 10.468,
+          "mean": 17.216,
+          "min": 2.275,
+          "max": 54.508
+        },
+        "east_offset_48h": {
+          "n": 7,
+          "median": -10.585,
+          "mean": -12.179,
+          "min": -27.261,
+          "max": 9.8
+        },
+        "north_offset_48h": {
+          "n": 7,
+          "median": -5.12,
+          "mean": 2.993,
+          "min": -23.638,
+          "max": 32.557
+        },
+        "model_disp_48h": {
+          "n": 7,
+          "median": 50.204,
+          "mean": 60.497,
+          "min": 11.915,
+          "max": 115.936
+        },
+        "disp_ratio_48h": {
+          "n": 7,
+          "median": 1.4,
+          "mean": 2.056,
+          "min": 0.297,
+          "max": 7.257
+        },
+        "path_ratio_hourly_48h": {
+          "n": 7,
+          "median": 1.104,
+          "mean": 1.06,
+          "min": 0.344,
+          "max": 1.611
+        },
+        "path_excess_48h": {
+          "n": 7,
+          "median": 1.212,
+          "mean": 1.228,
+          "min": 1.081,
+          "max": 1.504
+        },
+        "east_sign_counts_48h": {
+          "east": 1,
+          "west": 6
+        },
+        "north_sign_counts_48h": {
+          "north": 3,
+          "south": 4
+        },
+        "E72": {
+          "n": 7,
+          "median": 30.134,
+          "mean": 37.147,
+          "min": 10.224,
+          "max": 84.199
+        },
+        "bearing_diff_72h": {
+          "n": 7,
+          "median": 24.337,
+          "mean": 41.123,
+          "min": 0.937,
+          "max": 132.569
+        },
+        "east_offset_72h": {
+          "n": 7,
+          "median": -13.363,
+          "mean": -15.147,
+          "min": -58.002,
+          "max": 19.835
+        },
+        "north_offset_72h": {
+          "n": 7,
+          "median": 16.921,
+          "mean": 7.944,
+          "min": -60.855,
+          "max": 49.291
+        },
+        "model_disp_72h": {
+          "n": 7,
+          "median": 63.34,
+          "mean": 76.48,
+          "min": 6.824,
+          "max": 150.017
+        },
+        "disp_ratio_72h": {
+          "n": 7,
+          "median": 1.21,
+          "mean": 1.332,
+          "min": 0.086,
+          "max": 3.591
+        },
+        "path_ratio_hourly_72h": {
+          "n": 7,
+          "median": 1.031,
+          "mean": 1.013,
+          "min": 0.379,
+          "max": 1.443
+        },
+        "path_excess_72h": {
+          "n": 7,
+          "median": 1.411,
+          "mean": 1.927,
+          "min": 1.145,
+          "max": 5.317
+        },
+        "east_sign_counts_72h": {
+          "east": 1,
+          "west": 6
+        },
+        "north_sign_counts_72h": {
+          "north": 5,
+          "south": 2
+        },
+        "growth_48_24": {
+          "n": 7,
+          "median": 6.465,
+          "mean": 9.629,
+          "min": -1.459,
+          "max": 20.641
+        },
+        "growth_72_48": {
+          "n": 7,
+          "median": 8.16,
+          "mean": 13.028,
+          "min": -7.023,
+          "max": 53.364
+        },
+        "growth_ratio_72_24": {
+          "n": 7,
+          "median": 1.972,
+          "mean": 2.772,
+          "min": 0.774,
+          "max": 8.259
+        },
+        "growth_class_counts": {
+          "A": 5,
+          "B": 1,
+          "C": 1,
+          "D": 0
+        }
+      },
+      "obs_disp_24h": {
+        "n": 7,
+        "median": 22.428,
+        "mean": 22.459,
+        "min": 2.64,
+        "max": 51.035
+      },
+      "delta_24h": {
+        "n": 7,
+        "median": 0.554,
+        "mean": 0.331,
+        "min": -0.907,
+        "max": 2.104
+      },
+      "alpha_sep_24h": {
+        "n": 7,
+        "median": 1.545,
+        "mean": 1.406,
+        "min": 0.642,
+        "max": 2.127
+      },
+      "windage_toward_obs_24h": {
+        "n": 7,
+        "median": -0.043,
+        "mean": -0.031,
+        "min": -0.206,
+        "max": 0.059
+      },
+      "delta_sign_counts_24h": {
+        "neg": 3,
+        "pos": 4,
+        "zero": 0
+      },
+      "obs_disp_48h": {
+        "n": 7,
+        "median": 40.109,
+        "mean": 49.438,
+        "min": 5.291,
+        "max": 109.446
+      },
+      "delta_48h": {
+        "n": 7,
+        "median": 0.837,
+        "mean": 1.386,
+        "min": -0.167,
+        "max": 4.291
+      },
+      "alpha_sep_48h": {
+        "n": 7,
+        "median": 2.439,
+        "mean": 2.764,
+        "min": 0.995,
+        "max": 4.879
+      },
+      "windage_toward_obs_48h": {
+        "n": 7,
+        "median": -0.047,
+        "mean": -0.055,
+        "min": -0.138,
+        "max": 0.014
+      },
+      "delta_sign_counts_48h": {
+        "neg": 1,
+        "pos": 6,
+        "zero": 0
+      },
+      "obs_disp_72h": {
+        "n": 7,
+        "median": 79.433,
+        "mean": 77.873,
+        "min": 12.151,
+        "max": 154.559
+      },
+      "delta_72h": {
+        "n": 7,
+        "median": 0.693,
+        "mean": 1.538,
+        "min": -1.574,
+        "max": 6.297
+      },
+      "alpha_sep_72h": {
+        "n": 7,
+        "median": 3.453,
+        "mean": 4.149,
+        "min": 1.616,
+        "max": 6.975
+      },
+      "windage_toward_obs_72h": {
+        "n": 7,
+        "median": -0.001,
+        "mean": -0.004,
+        "min": -0.106,
+        "max": 0.118
+      },
+      "delta_sign_counts_72h": {
+        "neg": 2,
+        "pos": 5,
+        "zero": 0
+      },
+      "obs_path_hourly_72h": {
+        "n": 7,
+        "median": 95.675,
+        "mean": 100.471,
+        "min": 50.354,
+        "max": 167.449
+      },
+      "delta_sign_persistent_count": 2,
+      "delta_sign_change_counts": {
+        "0": 2,
+        "1": 3,
+        "2": 2
+      },
+      "highest_error_cases_72h_a002": [
+        {
+          "drifter_id": "98996",
+          "unit": "KE-H3",
+          "E72_a002": 90.497,
+          "E72_a0": 84.199,
+          "obs_disp_72h": 79.433,
+          "model_disp_72h_a002": 12.233,
+          "bearing_diff_72h_a002": 152.923
+        },
+        {
+          "drifter_id": "98998",
+          "unit": "KE-H3",
+          "E72_a002": 58.451,
+          "E72_a0": 55.689,
+          "obs_disp_72h": 51.185,
+          "model_disp_72h_a002": 66.716,
+          "bearing_diff_72h_a002": 57.653
+        },
+        {
+          "drifter_id": "98997",
+          "unit": "KE-H3",
+          "E72_a002": 37.114,
+          "E72_a0": 36.421,
+          "obs_disp_72h": 12.151,
+          "model_disp_72h_a002": 42.506,
+          "bearing_diff_72h_a002": 56.045
+        }
+      ],
+      "top1_share_of_sum_E72_a002": 0.334
+    }
+  },
+  "perRegionCalibration": {
+    "KE": {
+      "n": 13,
+      "smallN": false,
+      "a002": {
+        "E24": {
+          "n": 13,
+          "median": 14.072,
+          "mean": 15.378,
+          "min": 1.487,
+          "max": 28.443
+        },
+        "bearing_diff_24h": {
+          "n": 13,
+          "median": 23.881,
+          "mean": 36.944,
+          "min": 0.348,
+          "max": 115.804
+        },
+        "east_offset_24h": {
+          "n": 13,
+          "median": -0.702,
+          "mean": -3.709,
+          "min": -26.668,
+          "max": 17.57
+        },
+        "north_offset_24h": {
+          "n": 13,
+          "median": 8.206,
+          "mean": 2.932,
+          "min": -11.419,
+          "max": 15.602
+        },
+        "model_disp_24h": {
+          "n": 13,
+          "median": 24.584,
+          "mean": 31.43,
+          "min": 2.692,
+          "max": 84.473
+        },
+        "disp_ratio_24h": {
+          "n": 13,
+          "median": 1.034,
+          "mean": 1.14,
+          "min": 0.309,
+          "max": 3.476
+        },
+        "path_ratio_hourly_24h": {
+          "n": 13,
+          "median": 0.996,
+          "mean": 1.006,
+          "min": 0.517,
+          "max": 1.377
+        },
+        "path_excess_24h": {
+          "n": 13,
+          "median": 1.028,
+          "mean": 1.4,
+          "min": 1.006,
+          "max": 5.147
+        },
+        "east_sign_counts_24h": {
+          "east": 4,
+          "west": 9
+        },
+        "north_sign_counts_24h": {
+          "north": 7,
+          "south": 6
+        },
+        "E48": {
+          "n": 13,
+          "median": 30.812,
+          "mean": 31.905,
+          "min": 5.112,
+          "max": 77.943
+        },
+        "bearing_diff_48h": {
+          "n": 13,
+          "median": 36.29,
+          "mean": 55.837,
+          "min": 0.614,
+          "max": 155.301
+        },
+        "east_offset_48h": {
+          "n": 13,
+          "median": -10.631,
+          "mean": -9.873,
+          "min": -75.376,
+          "max": 33.358
+        },
+        "north_offset_48h": {
+          "n": 13,
+          "median": 6.487,
+          "mean": 0.432,
+          "min": -34.357,
+          "max": 28.758
+        },
+        "model_disp_48h": {
+          "n": 13,
+          "median": 48.532,
+          "mean": 59.492,
+          "min": 4.892,
+          "max": 138.707
+        },
+        "disp_ratio_48h": {
+          "n": 13,
+          "median": 0.946,
+          "mean": 1.487,
+          "min": 0.346,
+          "max": 7.94
+        },
+        "path_ratio_hourly_48h": {
+          "n": 13,
+          "median": 1.008,
+          "mean": 0.968,
+          "min": 0.544,
+          "max": 1.361
+        },
+        "path_excess_48h": {
+          "n": 13,
+          "median": 1.068,
+          "mean": 1.468,
+          "min": 1.01,
+          "max": 5.69
+        },
+        "east_sign_counts_48h": {
+          "east": 4,
+          "west": 9
+        },
+        "north_sign_counts_48h": {
+          "north": 7,
+          "south": 6
+        },
+        "E72": {
+          "n": 13,
+          "median": 44.239,
+          "mean": 56.251,
+          "min": 16.207,
+          "max": 158.931
+        },
+        "bearing_diff_72h": {
+          "n": 13,
+          "median": 45.011,
+          "mean": 60.888,
+          "min": 5.808,
+          "max": 168.193
+        },
+        "east_offset_72h": {
+          "n": 13,
+          "median": -14.475,
+          "mean": -14.792,
+          "min": -157.158,
+          "max": 79.007
+        },
+        "north_offset_72h": {
+          "n": 13,
+          "median": -6.851,
+          "mean": -6.583,
+          "min": -64.675,
+          "max": 35.46
+        },
+        "model_disp_72h": {
+          "n": 13,
+          "median": 70.923,
+          "mean": 84.294,
+          "min": 11.989,
+          "max": 172.172
+        },
+        "disp_ratio_72h": {
+          "n": 13,
+          "median": 1.082,
+          "mean": 1.161,
+          "min": 0.563,
+          "max": 2.38
+        },
+        "path_ratio_hourly_72h": {
+          "n": 13,
+          "median": 0.98,
+          "mean": 1.002,
+          "min": 0.537,
+          "max": 1.28
+        },
+        "path_excess_72h": {
+          "n": 13,
+          "median": 1.084,
+          "mean": 1.402,
+          "min": 1.018,
+          "max": 3.697
+        },
+        "east_sign_counts_72h": {
+          "east": 4,
+          "west": 9
+        },
+        "north_sign_counts_72h": {
+          "north": 6,
+          "south": 7
+        },
+        "growth_48_24": {
+          "n": 13,
+          "median": 12.897,
+          "mean": 16.527,
+          "min": -10.498,
+          "max": 49.5
+        },
+        "growth_72_48": {
+          "n": 13,
+          "median": 19.24,
+          "mean": 24.346,
+          "min": -2.105,
+          "max": 80.987
+        },
+        "growth_ratio_72_24": {
+          "n": 13,
+          "median": 3.134,
+          "mean": 4.44,
+          "min": 1.585,
+          "max": 17.96
+        },
+        "growth_class_counts": {
+          "A": 9,
+          "B": 1,
+          "C": 3,
+          "D": 0
+        }
+      },
+      "a0": {
+        "E24": {
+          "n": 13,
+          "median": 13.615,
+          "mean": 15.086,
+          "min": 1.947,
+          "max": 28.682
+        },
+        "bearing_diff_24h": {
+          "n": 13,
+          "median": 22.038,
+          "mean": 39.846,
+          "min": 2.989,
+          "max": 148.824
+        },
+        "east_offset_24h": {
+          "n": 13,
+          "median": -2.118,
+          "mean": -4.126,
+          "min": -26.674,
+          "max": 15.683
+        },
+        "north_offset_24h": {
+          "n": 13,
+          "median": 8.328,
+          "mean": 2.254,
+          "min": -11.188,
+          "max": 14.915
+        },
+        "model_disp_24h": {
+          "n": 13,
+          "median": 26.075,
+          "mean": 31.099,
+          "min": 0.673,
+          "max": 83.907
+        },
+        "disp_ratio_24h": {
+          "n": 13,
+          "median": 1.006,
+          "mean": 1.103,
+          "min": 0.077,
+          "max": 3.191
+        },
+        "path_ratio_hourly_24h": {
+          "n": 13,
+          "median": 0.994,
+          "mean": 0.999,
+          "min": 0.529,
+          "max": 1.367
+        },
+        "path_excess_24h": {
+          "n": 13,
+          "median": 1.027,
+          "mean": 2.607,
+          "min": 1.007,
+          "max": 20.897
+        },
+        "east_sign_counts_24h": {
+          "east": 5,
+          "west": 8
+        },
+        "north_sign_counts_24h": {
+          "north": 7,
+          "south": 6
+        },
+        "E48": {
+          "n": 13,
+          "median": 28.175,
+          "mean": 30.807,
+          "min": 3.487,
+          "max": 77.023
+        },
+        "bearing_diff_48h": {
+          "n": 13,
+          "median": 38.002,
+          "mean": 52.28,
+          "min": 0.297,
+          "max": 150.993
+        },
+        "east_offset_48h": {
+          "n": 13,
+          "median": -9.833,
+          "mean": -11.225,
+          "min": -74.014,
+          "max": 30.43
+        },
+        "north_offset_48h": {
+          "n": 13,
+          "median": 5.829,
+          "mean": -0.324,
+          "min": -37.584,
+          "max": 25.945
+        },
+        "model_disp_48h": {
+          "n": 13,
+          "median": 47.267,
+          "mean": 58.999,
+          "min": 6.218,
+          "max": 134.866
+        },
+        "disp_ratio_48h": {
+          "n": 13,
+          "median": 1.006,
+          "mean": 1.428,
+          "min": 0.44,
+          "max": 7.129
+        },
+        "path_ratio_hourly_48h": {
+          "n": 13,
+          "median": 1.03,
+          "mean": 0.961,
+          "min": 0.554,
+          "max": 1.304
+        },
+        "path_excess_48h": {
+          "n": 13,
+          "median": 1.067,
+          "mean": 1.387,
+          "min": 1.01,
+          "max": 4.584
+        },
+        "east_sign_counts_48h": {
+          "east": 4,
+          "west": 9
+        },
+        "north_sign_counts_48h": {
+          "north": 7,
+          "south": 6
+        },
+        "E72": {
+          "n": 13,
+          "median": 43.791,
+          "mean": 53.981,
+          "min": 14.404,
+          "max": 154.377
+        },
+        "bearing_diff_72h": {
+          "n": 13,
+          "median": 40.954,
+          "mean": 58.385,
+          "min": 7.605,
+          "max": 164.906
+        },
+        "east_offset_72h": {
+          "n": 13,
+          "median": -14.093,
+          "mean": -16.882,
+          "min": -152.143,
+          "max": 63.584
+        },
+        "north_offset_72h": {
+          "n": 13,
+          "median": -8.857,
+          "mean": -6.688,
+          "min": -61.258,
+          "max": 30.751
+        },
+        "model_disp_72h": {
+          "n": 13,
+          "median": 72.918,
+          "mean": 82.663,
+          "min": 13.263,
+          "max": 167.802
+        },
+        "disp_ratio_72h": {
+          "n": 13,
+          "median": 1.074,
+          "mean": 1.132,
+          "min": 0.623,
+          "max": 2.086
+        },
+        "path_ratio_hourly_72h": {
+          "n": 13,
+          "median": 0.961,
+          "mean": 0.985,
+          "min": 0.548,
+          "max": 1.325
+        },
+        "path_excess_72h": {
+          "n": 13,
+          "median": 1.101,
+          "mean": 1.391,
+          "min": 1.019,
+          "max": 3.452
+        },
+        "east_sign_counts_72h": {
+          "east": 4,
+          "west": 9
+        },
+        "north_sign_counts_72h": {
+          "north": 6,
+          "south": 7
+        },
+        "growth_48_24": {
+          "n": 13,
+          "median": 11.17,
+          "mean": 15.721,
+          "min": -11.43,
+          "max": 48.341
+        },
+        "growth_72_48": {
+          "n": 13,
+          "median": 16.829,
+          "mean": 23.175,
+          "min": -3.259,
+          "max": 77.354
+        },
+        "growth_ratio_72_24": {
+          "n": 13,
+          "median": 3.347,
+          "mean": 3.888,
+          "min": 1.929,
+          "max": 11.639
+        },
+        "growth_class_counts": {
+          "A": 10,
+          "B": 1,
+          "C": 2,
+          "D": 0
+        }
+      },
+      "obs_disp_24h": {
+        "n": 13,
+        "median": 22.04,
+        "mean": 30.578,
+        "min": 6.645,
+        "max": 76.331
+      },
+      "delta_24h": {
+        "n": 13,
+        "median": 0.224,
+        "mean": 0.292,
+        "min": -1.438,
+        "max": 1.842
+      },
+      "alpha_sep_24h": {
+        "n": 13,
+        "median": 1.397,
+        "mean": 1.463,
+        "min": 0.638,
+        "max": 2.248
+      },
+      "windage_toward_obs_24h": {
+        "n": 13,
+        "median": -0.021,
+        "mean": 0.046,
+        "min": -0.115,
+        "max": 0.81
+      },
+      "delta_sign_counts_24h": {
+        "neg": 6,
+        "pos": 7,
+        "zero": 0
+      },
+      "obs_disp_48h": {
+        "n": 13,
+        "median": 57.347,
+        "mean": 57.244,
+        "min": 3.919,
+        "max": 121.161
+      },
+      "delta_48h": {
+        "n": 13,
+        "median": 0.823,
+        "mean": 1.098,
+        "min": -3.257,
+        "max": 8.861
+      },
+      "alpha_sep_48h": {
+        "n": 13,
+        "median": 2.567,
+        "mean": 3.224,
+        "min": 0.821,
+        "max": 8.984
+      },
+      "windage_toward_obs_48h": {
+        "n": 13,
+        "median": -0.027,
+        "mean": -0.078,
+        "min": -0.462,
+        "max": 0.045
+      },
+      "delta_sign_counts_48h": {
+        "neg": 4,
+        "pos": 9,
+        "zero": 0
+      },
+      "obs_disp_72h": {
+        "n": 13,
+        "median": 70.905,
+        "mean": 79.536,
+        "min": 16.535,
+        "max": 204.736
+      },
+      "delta_72h": {
+        "n": 13,
+        "median": 0.789,
+        "mean": 2.27,
+        "min": -7.974,
+        "max": 26.215
+      },
+      "alpha_sep_72h": {
+        "n": 13,
+        "median": 4.662,
+        "mean": 6.302,
+        "min": 0.693,
+        "max": 27.8
+      },
+      "windage_toward_obs_72h": {
+        "n": 13,
+        "median": -0.021,
+        "mean": -0.042,
+        "min": -0.335,
+        "max": 0.149
+      },
+      "delta_sign_counts_72h": {
+        "neg": 5,
+        "pos": 8,
+        "zero": 0
+      },
+      "obs_path_hourly_72h": {
+        "n": 13,
+        "median": 104.174,
+        "mean": 106.291,
+        "min": 37.331,
+        "max": 207.376
+      },
+      "delta_sign_persistent_count": 8,
+      "delta_sign_change_counts": {
+        "0": 8,
+        "1": 5,
+        "2": 0
+      },
+      "highest_error_cases_72h_a002": [
+        {
+          "drifter_id": "90141",
+          "unit": "KE-2",
+          "E72_a002": 158.931,
+          "E72_a0": 154.377,
+          "obs_disp_72h": 70.905,
+          "model_disp_72h_a002": 93.295,
+          "bearing_diff_72h_a002": 150.61
+        },
+        {
+          "drifter_id": "90145",
+          "unit": "KE-2",
+          "E72_a002": 104.183,
+          "E72_a0": 112.157,
+          "obs_disp_72h": 131.458,
+          "model_disp_72h_a002": 139.966,
+          "bearing_diff_72h_a002": 45.011
+        },
+        {
+          "drifter_id": "71155",
+          "unit": "KE-1",
+          "E72_a002": 102.331,
+          "E72_a0": 76.116,
+          "obs_disp_72h": 127.48,
+          "model_disp_72h_a002": 172.16,
+          "bearing_diff_72h_a002": 36.208
+        }
+      ],
+      "top1_share_of_sum_E72_a002": 0.217
+    },
+    "AG": {
+      "n": 10,
+      "smallN": false,
+      "a002": {
+        "E24": {
+          "n": 10,
+          "median": 43.626,
+          "mean": 66.543,
+          "min": 23.293,
+          "max": 144.38
+        },
+        "bearing_diff_24h": {
+          "n": 10,
+          "median": 26.163,
+          "mean": 39.209,
+          "min": 3.169,
+          "max": 118.25
+        },
+        "east_offset_24h": {
+          "n": 10,
+          "median": 6.871,
+          "mean": -10.54,
+          "min": -138.528,
+          "max": 84.277
+        },
+        "north_offset_24h": {
+          "n": 10,
+          "median": -13.026,
+          "mean": 0.622,
+          "min": -42.779,
+          "max": 80.535
+        },
+        "model_disp_24h": {
+          "n": 10,
+          "median": 42.969,
+          "mean": 45.959,
+          "min": 25.086,
+          "max": 81.579
+        },
+        "disp_ratio_24h": {
+          "n": 10,
+          "median": 0.57,
+          "mean": 0.687,
+          "min": 0.18,
+          "max": 1.814
+        },
+        "path_ratio_hourly_24h": {
+          "n": 10,
+          "median": 0.543,
+          "mean": 0.673,
+          "min": 0.18,
+          "max": 1.802
+        },
+        "path_excess_24h": {
+          "n": 10,
+          "median": 1.053,
+          "mean": 1.062,
+          "min": 1.002,
+          "max": 1.128
+        },
+        "east_sign_counts_24h": {
+          "east": 5,
+          "west": 5
+        },
+        "north_sign_counts_24h": {
+          "north": 4,
+          "south": 6
+        },
+        "E48": {
+          "n": 10,
+          "median": 68.235,
+          "mean": 116.279,
+          "min": 19.304,
+          "max": 238.223
+        },
+        "bearing_diff_48h": {
+          "n": 10,
+          "median": 28.692,
+          "mean": 31.536,
+          "min": 3.164,
+          "max": 73.509
+        },
+        "east_offset_48h": {
+          "n": 10,
+          "median": 26.71,
+          "mean": -7.01,
+          "min": -236.455,
+          "max": 190.794
+        },
+        "north_offset_48h": {
+          "n": 10,
+          "median": 26.386,
+          "mean": 25.907,
+          "min": -49.463,
+          "max": 131.344
+        },
+        "model_disp_48h": {
+          "n": 10,
+          "median": 104.947,
+          "mean": 107.076,
+          "min": 28.36,
+          "max": 168.186
+        },
+        "disp_ratio_48h": {
+          "n": 10,
+          "median": 0.652,
+          "mean": 0.818,
+          "min": 0.111,
+          "max": 1.866
+        },
+        "path_ratio_hourly_48h": {
+          "n": 10,
+          "median": 0.716,
+          "mean": 0.76,
+          "min": 0.139,
+          "max": 1.851
+        },
+        "path_excess_48h": {
+          "n": 10,
+          "median": 1.073,
+          "mean": 1.104,
+          "min": 1.006,
+          "max": 1.313
+        },
+        "east_sign_counts_48h": {
+          "east": 6,
+          "west": 4
+        },
+        "north_sign_counts_48h": {
+          "north": 7,
+          "south": 3
+        },
+        "E72": {
+          "n": 10,
+          "median": 114.655,
+          "mean": 171.539,
+          "min": 45.89,
+          "max": 331.318
+        },
+        "bearing_diff_72h": {
+          "n": 10,
+          "median": 22.707,
+          "mean": 36.776,
+          "min": 5.635,
+          "max": 74.418
+        },
+        "east_offset_72h": {
+          "n": 10,
+          "median": -28.7,
+          "mean": -8.699,
+          "min": -302.156,
+          "max": 296.77
+        },
+        "north_offset_72h": {
+          "n": 10,
+          "median": 39.784,
+          "mean": 39.209,
+          "min": -70.546,
+          "max": 142.047
+        },
+        "model_disp_72h": {
+          "n": 10,
+          "median": 164.508,
+          "mean": 153.972,
+          "min": 23.912,
+          "max": 240.965
+        },
+        "disp_ratio_72h": {
+          "n": 10,
+          "median": 0.847,
+          "mean": 1.031,
+          "min": 0.068,
+          "max": 2.306
+        },
+        "path_ratio_hourly_72h": {
+          "n": 10,
+          "median": 0.736,
+          "mean": 0.843,
+          "min": 0.127,
+          "max": 2.244
+        },
+        "path_excess_72h": {
+          "n": 10,
+          "median": 1.105,
+          "mean": 1.206,
+          "min": 1.011,
+          "max": 2.088
+        },
+        "east_sign_counts_72h": {
+          "east": 4,
+          "west": 6
+        },
+        "north_sign_counts_72h": {
+          "north": 7,
+          "south": 3
+        },
+        "growth_48_24": {
+          "n": 10,
+          "median": 34.601,
+          "mean": 49.736,
+          "min": -5.822,
+          "max": 116.024
+        },
+        "growth_72_48": {
+          "n": 10,
+          "median": 50.175,
+          "mean": 55.26,
+          "min": -14.786,
+          "max": 98.429
+        },
+        "growth_ratio_72_24": {
+          "n": 10,
+          "median": 2.628,
+          "mean": 2.717,
+          "min": 0.97,
+          "max": 3.863
+        },
+        "growth_class_counts": {
+          "A": 8,
+          "B": 1,
+          "C": 1,
+          "D": 0
+        }
+      },
+      "a0": {
+        "E24": {
+          "n": 10,
+          "median": 44.68,
+          "mean": 66.69,
+          "min": 24.375,
+          "max": 144.014
+        },
+        "bearing_diff_24h": {
+          "n": 10,
+          "median": 27.573,
+          "mean": 39.335,
+          "min": 3.169,
+          "max": 117.26
+        },
+        "east_offset_24h": {
+          "n": 10,
+          "median": 8.519,
+          "mean": -9.583,
+          "min": -138.321,
+          "max": 84.375
+        },
+        "north_offset_24h": {
+          "n": 10,
+          "median": -12.448,
+          "mean": 0.912,
+          "min": -42.206,
+          "max": 79.721
+        },
+        "model_disp_24h": {
+          "n": 10,
+          "median": 43.175,
+          "mean": 45.519,
+          "min": 25.835,
+          "max": 80.329
+        },
+        "disp_ratio_24h": {
+          "n": 10,
+          "median": 0.569,
+          "mean": 0.678,
+          "min": 0.185,
+          "max": 1.768
+        },
+        "path_ratio_hourly_24h": {
+          "n": 10,
+          "median": 0.543,
+          "mean": 0.664,
+          "min": 0.185,
+          "max": 1.757
+        },
+        "path_excess_24h": {
+          "n": 10,
+          "median": 1.056,
+          "mean": 1.063,
+          "min": 1.002,
+          "max": 1.127
+        },
+        "east_sign_counts_24h": {
+          "east": 5,
+          "west": 5
+        },
+        "north_sign_counts_24h": {
+          "north": 4,
+          "south": 6
+        },
+        "E48": {
+          "n": 10,
+          "median": 70.201,
+          "mean": 117.127,
+          "min": 24.056,
+          "max": 237.414
+        },
+        "bearing_diff_48h": {
+          "n": 10,
+          "median": 30.661,
+          "mean": 32.26,
+          "min": 2.763,
+          "max": 73.148
+        },
+        "east_offset_48h": {
+          "n": 10,
+          "median": 29.569,
+          "mean": -5.126,
+          "min": -235.587,
+          "max": 191.61
+        },
+        "north_offset_48h": {
+          "n": 10,
+          "median": 26.707,
+          "mean": 26.402,
+          "min": -47.792,
+          "max": 129.778
+        },
+        "model_disp_48h": {
+          "n": 10,
+          "median": 101.119,
+          "mean": 106.626,
+          "min": 29.624,
+          "max": 166.411
+        },
+        "disp_ratio_48h": {
+          "n": 10,
+          "median": 0.652,
+          "mean": 0.815,
+          "min": 0.116,
+          "max": 1.805
+        },
+        "path_ratio_hourly_48h": {
+          "n": 10,
+          "median": 0.715,
+          "mean": 0.754,
+          "min": 0.142,
+          "max": 1.791
+        },
+        "path_excess_48h": {
+          "n": 10,
+          "median": 1.072,
+          "mean": 1.101,
+          "min": 1.006,
+          "max": 1.283
+        },
+        "east_sign_counts_48h": {
+          "east": 6,
+          "west": 4
+        },
+        "north_sign_counts_48h": {
+          "north": 7,
+          "south": 3
+        },
+        "E72": {
+          "n": 10,
+          "median": 118.305,
+          "mean": 171.41,
+          "min": 47.705,
+          "max": 330.76
+        },
+        "bearing_diff_72h": {
+          "n": 10,
+          "median": 25.059,
+          "mean": 37.272,
+          "min": 5.614,
+          "max": 74.21
+        },
+        "east_offset_72h": {
+          "n": 10,
+          "median": -29.228,
+          "mean": -7.743,
+          "min": -301.34,
+          "max": 297.386
+        },
+        "north_offset_72h": {
+          "n": 10,
+          "median": 40.386,
+          "mean": 38.8,
+          "min": -78.57,
+          "max": 139.511
+        },
+        "model_disp_72h": {
+          "n": 10,
+          "median": 162.62,
+          "mean": 154.224,
+          "min": 25.655,
+          "max": 240.645
+        },
+        "disp_ratio_72h": {
+          "n": 10,
+          "median": 0.847,
+          "mean": 1.033,
+          "min": 0.073,
+          "max": 2.264
+        },
+        "path_ratio_hourly_72h": {
+          "n": 10,
+          "median": 0.735,
+          "mean": 0.844,
+          "min": 0.127,
+          "max": 2.206
+        },
+        "path_excess_72h": {
+          "n": 10,
+          "median": 1.105,
+          "mean": 1.193,
+          "min": 1.012,
+          "max": 1.945
+        },
+        "east_sign_counts_72h": {
+          "east": 4,
+          "west": 6
+        },
+        "north_sign_counts_72h": {
+          "north": 7,
+          "south": 3
+        },
+        "growth_48_24": {
+          "n": 10,
+          "median": 34.055,
+          "mean": 50.438,
+          "min": -1.628,
+          "max": 116.302
+        },
+        "growth_72_48": {
+          "n": 10,
+          "median": 51.897,
+          "mean": 54.283,
+          "min": -16.368,
+          "max": 98.084
+        },
+        "growth_ratio_72_24": {
+          "n": 10,
+          "median": 2.571,
+          "mean": 2.708,
+          "min": 0.981,
+          "max": 3.955
+        },
+        "growth_class_counts": {
+          "A": 8,
+          "B": 1,
+          "C": 1,
+          "D": 0
+        }
+      },
+      "obs_disp_24h": {
+        "n": 10,
+        "median": 79.133,
+        "mean": 88.847,
+        "min": 33.621,
+        "max": 144.73
+      },
+      "delta_24h": {
+        "n": 10,
+        "median": -0.11,
+        "mean": -0.146,
+        "min": -1.318,
+        "max": 1.48
+      },
+      "alpha_sep_24h": {
+        "n": 10,
+        "median": 1.226,
+        "mean": 1.187,
+        "min": 0.601,
+        "max": 2.096
+      },
+      "windage_toward_obs_24h": {
+        "n": 10,
+        "median": 0.008,
+        "mean": 0.005,
+        "min": -0.057,
+        "max": 0.045
+      },
+      "delta_sign_counts_24h": {
+        "neg": 5,
+        "pos": 5,
+        "zero": 0
+      },
+      "obs_disp_48h": {
+        "n": 10,
+        "median": 128.575,
+        "mean": 164.481,
+        "min": 62.537,
+        "max": 308.077
+      },
+      "delta_48h": {
+        "n": 10,
+        "median": -0.161,
+        "mean": -0.848,
+        "min": -4.752,
+        "max": 3.925
+      },
+      "alpha_sep_48h": {
+        "n": 10,
+        "median": 2.361,
+        "mean": 2.658,
+        "min": 0.888,
+        "max": 4.903
+      },
+      "windage_toward_obs_48h": {
+        "n": 10,
+        "median": 0.003,
+        "mean": 0.025,
+        "min": -0.077,
+        "max": 0.199
+      },
+      "delta_sign_counts_48h": {
+        "neg": 5,
+        "pos": 5,
+        "zero": 0
+      },
+      "obs_disp_72h": {
+        "n": 10,
+        "median": 158.066,
+        "mean": 209.083,
+        "min": 80.755,
+        "max": 449.489
+      },
+      "delta_72h": {
+        "n": 10,
+        "median": 0.814,
+        "mean": 0.129,
+        "min": -6.918,
+        "max": 4.499
+      },
+      "alpha_sep_72h": {
+        "n": 10,
+        "median": 2.609,
+        "mean": 3.101,
+        "min": 0.899,
+        "max": 8.262
+      },
+      "windage_toward_obs_72h": {
+        "n": 10,
+        "median": -0.003,
+        "mean": -0.002,
+        "min": -0.073,
+        "max": 0.063
+      },
+      "delta_sign_counts_72h": {
+        "neg": 4,
+        "pos": 6,
+        "zero": 0
+      },
+      "obs_path_hourly_72h": {
+        "n": 10,
+        "median": 259.725,
+        "mean": 260.692,
+        "min": 83.923,
+        "max": 471.872
+      },
+      "delta_sign_persistent_count": 7,
+      "delta_sign_change_counts": {
+        "0": 7,
+        "1": 3,
+        "2": 0
+      },
+      "highest_error_cases_72h_a002": [
+        {
+          "drifter_id": "127281",
+          "unit": "AG-2",
+          "E72_a002": 331.318,
+          "E72_a0": 330.76,
+          "obs_disp_72h": 352.788,
+          "model_disp_72h_a002": 23.912,
+          "bearing_diff_72h_a002": 25.252
+        },
+        {
+          "drifter_id": "127198",
+          "unit": "AG-1",
+          "E72_a002": 323.38,
+          "E72_a0": 321.997,
+          "obs_disp_72h": 308.466,
+          "model_disp_72h_a002": 210.616,
+          "bearing_diff_72h_a002": 74.418
+        },
+        {
+          "drifter_id": "127199",
+          "unit": "AG-1",
+          "E72_a002": 319.828,
+          "E72_a0": 318.506,
+          "obs_disp_72h": 308.854,
+          "model_disp_72h_a002": 209.404,
+          "bearing_diff_72h_a002": 73.416
+        }
+      ],
+      "top1_share_of_sum_E72_a002": 0.193
+    }
+  },
+  "step20Consistency": {
+    "toleranceKm": 0.001,
+    "checked": 210,
+    "inconsistent": []
+  },
+  "step20FrozenReference": "Calibration-selected alpha=0.002 did not show a consistent performance advantage over alpha=0 on the 12 evaluable KE holdout drifters.",
+  "adequacyCategories": {
+    "A": "magnitude error dominant",
+    "B": "directional error dominant",
+    "C": "temporal error growth dominant",
+    "D": "regional / event-dependent error dominant",
+    "rule": "no threshold; indicators recorded; categorisation is descriptive text in the report, 'INSUFFICIENT EVIDENCE' where indicators do not separate"
+  },
+  "outlierPolicyApplied": {
+    "removed": 0,
+    "trimmed": 0,
+    "winsorized": 0,
+    "reweighted": 0
+  },
+  "alphaReselection": false,
+  "thresholdsIntroduced": false,
+  "pValues": false,
+  "interpretation": "DESCRIPTIVE ONLY"
+}

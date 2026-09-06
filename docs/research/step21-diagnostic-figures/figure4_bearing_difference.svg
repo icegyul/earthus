@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="420" viewBox="0 0 760 420" font-family="Arial, sans-serif" font-size="11">
+<rect width="760" height="420" fill="white"/>
+<text x="12" y="18" font-size="14" font-weight="bold">FIGURE 4 — Absolute bearing difference observed vs model 72 h displacement, per unit</text>
+<text x="12" y="34" fill="#444">datasets: CALIBRATION n=23 (blue), HOLDOUT n=12 (red); alpha 0.002 = filled, alpha 0 = hollow; metric: haversine R=6371008.8 m, exact UTC; axes start at 0, full range</text>
+<line x1="60" y1="370" x2="730" y2="370" stroke="#000"/>
+<line x1="60" y1="50" x2="60" y2="370" stroke="#000"/>
+<text x="60.0" y="384" text-anchor="middle" font-size="9">0</text>
+<text x="56" y="373.0" text-anchor="end" font-size="9">0</text>
+<line x1="60" y1="370.0" x2="730" y2="370.0" stroke="#eee"/>
+<text x="194.0" y="384" text-anchor="middle" font-size="9">1.2</text>
+<text x="56" y="309.0" text-anchor="end" font-size="9">36</text>
+<line x1="60" y1="306.0" x2="730" y2="306.0" stroke="#eee"/>
+<text x="328.0" y="384" text-anchor="middle" font-size="9">2.4</text>
+<text x="56" y="245.0" text-anchor="end" font-size="9">72</text>
+<line x1="60" y1="242.0" x2="730" y2="242.0" stroke="#eee"/>
+<text x="462.0" y="384" text-anchor="middle" font-size="9">3.6</text>
+<text x="56" y="181.0" text-anchor="end" font-size="9">108</text>
+<line x1="60" y1="178.0" x2="730" y2="178.0" stroke="#eee"/>
+<text x="596.0" y="384" text-anchor="middle" font-size="9">4.8</text>
+<text x="56" y="117.0" text-anchor="end" font-size="9">144</text>
+<line x1="60" y1="114.0" x2="730" y2="114.0" stroke="#eee"/>
+<text x="730.0" y="384" text-anchor="middle" font-size="9">6</text>
+<text x="56" y="53.0" text-anchor="end" font-size="9">180</text>
+<line x1="60" y1="50.0" x2="730" y2="50.0" stroke="#eee"/>
+<text x="395.0" y="398" text-anchor="middle">unit (1 KE-1, 2 KE-2, 3 AG-1, 4 AG-2, 5 KE-H1, 6 KE-H3)</text>
+<text x="22" y="210.0" text-anchor="middle" transform="rotate(-90 22 210.0)">|bearing difference| (deg)</text>
+<circle cx="328.2" cy="237.7" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="344.2" cy="238.1" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="328.2" cy="239.5" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="344.2" cy="239.8" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="329.2" cy="360.0" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="345.2" cy="360.0" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="326.2" cy="334.2" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="342.2" cy="333.8" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="329.2" cy="338.2" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="345.2" cy="336.1" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="324.2" cy="338.3" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="340.2" cy="339.1" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="329.2" cy="268.8" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="345.2" cy="267.5" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="328.2" cy="346.1" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="344.2" cy="348.5" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="330.2" cy="258.3" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="346.2" cy="257.4" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="440.8" cy="325.1" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="456.8" cy="317.1" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="101.8" cy="305.6" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="117.8" cy="321.4" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="103.8" cy="350.3" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="119.8" cy="352.0" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="101.8" cy="289.1" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="117.8" cy="297.2" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="101.8" cy="112.2" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="117.8" cy="145.0" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="104.8" cy="240.3" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="120.8" cy="237.3" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="106.8" cy="359.7" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="122.8" cy="356.5" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="101.8" cy="350.7" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="117.8" cy="350.0" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="100.8" cy="71.0" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="116.8" cy="76.8" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="213.5" cy="330.1" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="229.5" cy="330.4" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="218.5" cy="345.6" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="234.5" cy="350.4" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="214.5" cy="102.2" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="230.5" cy="99.7" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="215.5" cy="256.1" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="231.5" cy="260.0" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="214.5" cy="290.0" r="3" fill="#1f77b4" stroke="#1f77b4"/>
+<circle cx="230.5" cy="283.9" r="3" fill="none" stroke="#1f77b4"/>
+<circle cx="553.5" cy="218.5" r="3" fill="#d62728" stroke="#d62728"/>
+<circle cx="569.5" cy="214.8" r="3" fill="none" stroke="#d62728"/>
+<circle cx="552.5" cy="344.6" r="3" fill="#d62728" stroke="#d62728"/>
+<circle cx="568.5" cy="341.3" r="3" fill="none" stroke="#d62728"/>
+<circle cx="551.5" cy="346.0" r="3" fill="#d62728" stroke="#d62728"/>
+<circle cx="567.5" cy="346.5" r="3" fill="none" stroke="#d62728"/>
+<circle cx="549.5" cy="367.3" r="3" fill="#d62728" stroke="#d62728"/>
+<circle cx="565.5" cy="364.3" r="3" fill="none" stroke="#d62728"/>
+<circle cx="552.5" cy="292.2" r="3" fill="#d62728" stroke="#d62728"/>
+<circle cx="568.5" cy="286.2" r="3" fill="none" stroke="#d62728"/>
+<circle cx="661.2" cy="369.4" r="3" fill="#d62728" stroke="#d62728"/>
+<circle cx="677.2" cy="368.3" r="3" fill="none" stroke="#d62728"/>
+<circle cx="665.2" cy="345.3" r="3" fill="#d62728" stroke="#d62728"/>
+<circle cx="681.2" cy="342.0" r="3" fill="none" stroke="#d62728"/>
+<circle cx="660.2" cy="349.2" r="3" fill="#d62728" stroke="#d62728"/>
+<circle cx="676.2" cy="351.6" r="3" fill="none" stroke="#d62728"/>
+<circle cx="665.2" cy="98.1" r="3" fill="#d62728" stroke="#d62728"/>
+<circle cx="681.2" cy="134.3" r="3" fill="none" stroke="#d62728"/>
+<circle cx="664.2" cy="270.4" r="3" fill="#d62728" stroke="#d62728"/>
+<circle cx="680.2" cy="286.7" r="3" fill="none" stroke="#d62728"/>
+<circle cx="664.2" cy="267.5" r="3" fill="#d62728" stroke="#d62728"/>
+<circle cx="680.2" cy="268.6" r="3" fill="none" stroke="#d62728"/>
+<circle cx="659.2" cy="331.6" r="3" fill="#d62728" stroke="#d62728"/>
+<circle cx="675.2" cy="326.7" r="3" fill="none" stroke="#d62728"/>
+</svg>

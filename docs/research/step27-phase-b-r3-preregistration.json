@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "revision": "Phase B r3",
+  "ruleId": "depth-sensitivity-step27",
+  "createdAtUTC": "2026-09-06T14:17:29Z",
+  "baseLock": "60350559",
+  "ruleSha256": "603435292009708e7516eb39b2ba8ff705b4331dbc93f4ab98c9e55b3b217ca4",
+  "phaseBR2PreregistrationSha256": "0681daf9fe126b0c2346cd40ab9b3a8a3005da8ef09cfb28a507ff9a6dfd0291",
+  "reason": "the r2 builder (locked at 60350559) iterated D05 before D15 and raised KeyError('KE-1') at the crop step before creating any output directory or manifest; no forcing file and no model run resulted",
+  "change": "loop order D15 first (so the D15 axes exist before cropping D05/D10/D20); r3 preregistration bound; nothing else changed",
+  "tools": {
+    "tools/research/build_step27_forcing_r3.py": "d7a01e14ea44ae04701c5d379ac9528ef2c9a66460da9e7204ee8f1495bd4f98"
+  },
+  "modelRunCountBeforeR3": 0
+}

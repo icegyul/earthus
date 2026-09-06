@@ -1,0 +1,423 @@
+{
+  "ruleId": "d20-acquisition-quality-gate-step27c",
+  "accessStatus": "AUTHORIZED",
+  "depthIdentityToleranceMeters": 0.01,
+  "gateImplementation": {
+    "file": "tools/research/quality_step25b.py",
+    "sha256": "fd06dee31b3d0377dc09dd6a6cd9298944a598bc7af6d3d42d7298352a16c82f"
+  },
+  "depths": [
+    {
+      "id": "D20",
+      "targetMeters": 20,
+      "expectedNativeLevelMeters": 18.495559692382812,
+      "acquisitionStatus": "ACQUIRE",
+      "windows": [
+        {
+          "windowId": "KE-1",
+          "role": "CALIBRATION",
+          "status": "WINDOW_PASS",
+          "gates": {
+            "G1": "PASS",
+            "G2": "PASS",
+            "G3": "PASS",
+            "G4": "PASS",
+            "G5": "PASS",
+            "G6": "PASS",
+            "G7": "PASS",
+            "G8": "PASS",
+            "G9": "PASS",
+            "G10": "PASS",
+            "G11": "PENDING_VALIDATOR"
+          },
+          "depthIdentity": "PASS",
+          "returnedDepthLevelsMeters": [
+            18.495559692382812
+          ],
+          "detail": {
+            "file": "data/research/step27/D20/KE-1.glorys12v1.uo_vo.D20.nc",
+            "sha256": "a14058c049abfa54c53ddba82a8c7dc83467b44c6ea82f0d5dd632d3508d1239",
+            "bytes": 873766,
+            "G3": true,
+            "G4": true,
+            "timestamps": [
+              "2010-05-10T00:00:00Z",
+              "2010-05-11T00:00:00Z",
+              "2010-05-12T00:00:00Z",
+              "2010-05-13T00:00:00Z",
+              "2010-05-14T00:00:00Z",
+              "2010-05-15T00:00:00Z"
+            ],
+            "G5": true,
+            "units": {
+              "uo": "m s-1",
+              "vo": "m s-1"
+            },
+            "G9": true,
+            "depthLevels": [
+              18.495559692382812
+            ],
+            "depthNative": true,
+            "G6": true,
+            "G7": true,
+            "missingSourceFrames": [],
+            "missingFractionBox": 0.002656434474616293,
+            "G8": true,
+            "G10": true
+          }
+        },
+        {
+          "windowId": "KE-2",
+          "role": "CALIBRATION",
+          "status": "WINDOW_PASS",
+          "gates": {
+            "G1": "PASS",
+            "G2": "PASS",
+            "G3": "PASS",
+            "G4": "PASS",
+            "G5": "PASS",
+            "G6": "PASS",
+            "G7": "PASS",
+            "G8": "PASS",
+            "G9": "PASS",
+            "G10": "PASS",
+            "G11": "PENDING_VALIDATOR"
+          },
+          "depthIdentity": "PASS",
+          "returnedDepthLevelsMeters": [
+            18.495559692382812
+          ],
+          "detail": {
+            "file": "data/research/step27/D20/KE-2.glorys12v1.uo_vo.D20.nc",
+            "sha256": "074e43b27b3342a2d70a59b22246c6fe8640df72cb08e9037e9078985aa677bf",
+            "bytes": 909070,
+            "G3": true,
+            "G4": true,
+            "timestamps": [
+              "2010-06-29T00:00:00Z",
+              "2010-06-30T00:00:00Z",
+              "2010-07-01T00:00:00Z",
+              "2010-07-02T00:00:00Z",
+              "2010-07-03T00:00:00Z",
+              "2010-07-04T00:00:00Z"
+            ],
+            "G5": true,
+            "units": {
+              "uo": "m s-1",
+              "vo": "m s-1"
+            },
+            "G9": true,
+            "depthLevels": [
+              18.495559692382812
+            ],
+            "depthNative": true,
+            "G6": true,
+            "G7": true,
+            "missingSourceFrames": [],
+            "missingFractionBox": 0.09348513598987983,
+            "G8": true,
+            "G10": true
+          }
+        },
+        {
+          "windowId": "AG-1",
+          "role": "CALIBRATION",
+          "status": "WINDOW_PASS",
+          "gates": {
+            "G1": "PASS",
+            "G2": "PASS",
+            "G3": "PASS",
+            "G4": "PASS",
+            "G5": "PASS",
+            "G6": "PASS",
+            "G7": "PASS",
+            "G8": "PASS",
+            "G9": "PASS",
+            "G10": "PASS",
+            "G11": "PENDING_VALIDATOR"
+          },
+          "depthIdentity": "PASS",
+          "returnedDepthLevelsMeters": [
+            18.495559692382812
+          ],
+          "detail": {
+            "file": "data/research/step27/D20/AG-1.glorys12v1.uo_vo.D20.nc",
+            "sha256": "48b2f285a63ec46e9816a57295660d39f000d22daab3eca7322f4a662d90f9f1",
+            "bytes": 482422,
+            "G3": true,
+            "G4": true,
+            "timestamps": [
+              "2015-04-22T00:00:00Z",
+              "2015-04-23T00:00:00Z",
+              "2015-04-24T00:00:00Z",
+              "2015-04-25T00:00:00Z",
+              "2015-04-26T00:00:00Z",
+              "2015-04-27T00:00:00Z"
+            ],
+            "G5": true,
+            "units": {
+              "uo": "m s-1",
+              "vo": "m s-1"
+            },
+            "G9": true,
+            "depthLevels": [
+              18.495559692382812
+            ],
+            "depthNative": true,
+            "G6": true,
+            "G7": true,
+            "missingSourceFrames": [],
+            "missingFractionBox": 0.1770547581073897,
+            "G8": true,
+            "G10": true
+          }
+        },
+        {
+          "windowId": "AG-2",
+          "role": "CALIBRATION",
+          "status": "WINDOW_PASS",
+          "gates": {
+            "G1": "PASS",
+            "G2": "PASS",
+            "G3": "PASS",
+            "G4": "PASS",
+            "G5": "PASS",
+            "G6": "PASS",
+            "G7": "PASS",
+            "G8": "PASS",
+            "G9": "PASS",
+            "G10": "PASS",
+            "G11": "PENDING_VALIDATOR"
+          },
+          "depthIdentity": "PASS",
+          "returnedDepthLevelsMeters": [
+            18.495559692382812
+          ],
+          "detail": {
+            "file": "data/research/step27/D20/AG-2.glorys12v1.uo_vo.D20.nc",
+            "sha256": "5efef0b531398b589086d899837eeae0a10f941ef9ab6853dff0dcba7f305ec8",
+            "bytes": 117198,
+            "G3": true,
+            "G4": true,
+            "timestamps": [
+              "2015-04-25T00:00:00Z",
+              "2015-04-26T00:00:00Z",
+              "2015-04-27T00:00:00Z",
+              "2015-04-28T00:00:00Z",
+              "2015-04-29T00:00:00Z",
+              "2015-04-30T00:00:00Z"
+            ],
+            "G5": true,
+            "units": {
+              "uo": "m s-1",
+              "vo": "m s-1"
+            },
+            "G9": true,
+            "depthLevels": [
+              18.495559692382812
+            ],
+            "depthNative": true,
+            "G6": true,
+            "G7": true,
+            "missingSourceFrames": [],
+            "missingFractionBox": 0.0008680555555555555,
+            "G8": true,
+            "G10": true
+          }
+        },
+        {
+          "windowId": "KE-H1",
+          "role": "HOLDOUT",
+          "status": "WINDOW_PASS",
+          "gates": {
+            "G1": "PASS",
+            "G2": "PASS",
+            "G3": "PASS",
+            "G4": "PASS",
+            "G5": "PASS",
+            "G6": "PASS",
+            "G7": "PASS",
+            "G8": "PASS",
+            "G9": "PASS",
+            "G10": "PASS",
+            "G11": "PENDING_VALIDATOR"
+          },
+          "depthIdentity": "PASS",
+          "returnedDepthLevelsMeters": [
+            18.495559692382812
+          ],
+          "detail": {
+            "file": "data/research/step27/D20/KE-H1.glorys12v1.uo_vo.D20.nc",
+            "sha256": "834fcee20694606aaac758ecdde1cb87034d78e998d6711c26f053c4e3508b3e",
+            "bytes": 1063718,
+            "G3": true,
+            "G4": true,
+            "timestamps": [
+              "2010-08-09T00:00:00Z",
+              "2010-08-10T00:00:00Z",
+              "2010-08-11T00:00:00Z",
+              "2010-08-12T00:00:00Z",
+              "2010-08-13T00:00:00Z",
+              "2010-08-14T00:00:00Z"
+            ],
+            "G5": true,
+            "units": {
+              "uo": "m s-1",
+              "vo": "m s-1"
+            },
+            "G9": true,
+            "depthLevels": [
+              18.495559692382812
+            ],
+            "depthNative": true,
+            "G6": true,
+            "G7": true,
+            "missingSourceFrames": [],
+            "missingFractionBox": 0.06819298198608544,
+            "G8": true,
+            "G10": true
+          }
+        },
+        {
+          "windowId": "KE-H2",
+          "role": "HOLDOUT",
+          "status": "WINDOW_PASS",
+          "gates": {
+            "G1": "PASS",
+            "G2": "PASS",
+            "G3": "PASS",
+            "G4": "PASS",
+            "G5": "PASS",
+            "G6": "PASS",
+            "G7": "PASS",
+            "G8": "PASS",
+            "G9": "PASS",
+            "G10": "PASS",
+            "G11": "PENDING_VALIDATOR"
+          },
+          "depthIdentity": "PASS",
+          "returnedDepthLevelsMeters": [
+            18.495559692382812
+          ],
+          "detail": {
+            "file": "data/research/step27/D20/KE-H2.glorys12v1.uo_vo.D20.nc",
+            "sha256": "374ccdb4475533c7dc4e701a89f903b3ba87aa25aafe75ba1a61ec7cec94184f",
+            "bytes": 117190,
+            "G3": true,
+            "G4": true,
+            "timestamps": [
+              "2010-08-15T00:00:00Z",
+              "2010-08-16T00:00:00Z",
+              "2010-08-17T00:00:00Z",
+              "2010-08-18T00:00:00Z",
+              "2010-08-19T00:00:00Z",
+              "2010-08-20T00:00:00Z"
+            ],
+            "G5": true,
+            "units": {
+              "uo": "m s-1",
+              "vo": "m s-1"
+            },
+            "G9": true,
+            "depthLevels": [
+              18.495559692382812
+            ],
+            "depthNative": true,
+            "G6": true,
+            "G7": true,
+            "missingSourceFrames": [],
+            "missingFractionBox": 0.0,
+            "G8": true,
+            "G10": true
+          }
+        },
+        {
+          "windowId": "KE-H3",
+          "role": "HOLDOUT",
+          "status": "WINDOW_PASS",
+          "gates": {
+            "G1": "PASS",
+            "G2": "PASS",
+            "G3": "PASS",
+            "G4": "PASS",
+            "G5": "PASS",
+            "G6": "PASS",
+            "G7": "PASS",
+            "G8": "PASS",
+            "G9": "PASS",
+            "G10": "PASS",
+            "G11": "PENDING_VALIDATOR"
+          },
+          "depthIdentity": "PASS",
+          "returnedDepthLevelsMeters": [
+            18.495559692382812
+          ],
+          "detail": {
+            "file": "data/research/step27/D20/KE-H3.glorys12v1.uo_vo.D20.nc",
+            "sha256": "619567337cf3037e8cdfd7e92197077df9d3295836ce2c369f6e95adb1de1b7f",
+            "bytes": 699514,
+            "G3": true,
+            "G4": true,
+            "timestamps": [
+              "2010-11-14T00:00:00Z",
+              "2010-11-15T00:00:00Z",
+              "2010-11-16T00:00:00Z",
+              "2010-11-17T00:00:00Z",
+              "2010-11-18T00:00:00Z",
+              "2010-11-19T00:00:00Z"
+            ],
+            "G5": true,
+            "units": {
+              "uo": "m s-1",
+              "vo": "m s-1"
+            },
+            "G9": true,
+            "depthLevels": [
+              18.495559692382812
+            ],
+            "depthNative": true,
+            "G6": true,
+            "G7": true,
+            "missingSourceFrames": [],
+            "missingFractionBox": 0.007786195286195286,
+            "G8": true,
+            "G10": true
+          }
+        }
+      ],
+      "returnedNativeLevelsMeters": [
+        18.49556
+      ],
+      "actualNativeLevelMeters": 18.49556,
+      "pairedWindowsPass": [
+        "KE-1",
+        "KE-2",
+        "AG-1",
+        "AG-2",
+        "KE-H1",
+        "KE-H3"
+      ],
+      "status": "DEPTH_READY"
+    }
+  ],
+  "d15": {
+    "unchanged": true,
+    "levelMeters": 15.81007,
+    "reacquired": false
+  },
+  "d05d10": {
+    "unchanged": true,
+    "reacquired": false,
+    "levelsMeters": [
+      5.078224,
+      9.572997
+    ]
+  },
+  "status": "STEP27C_D20_READY",
+  "substitutionPerformed": false,
+  "interpolationPerformed": false,
+  "verticalInterpolation": false,
+  "depthSelection": false,
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0
+}

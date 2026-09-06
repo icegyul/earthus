@@ -1,0 +1,50 @@
+{
+  "ruleId": "d20-acquisition-quality-gate-step27c",
+  "status": "STEP27C_D20_READY",
+  "accessStatus": "AUTHORIZED",
+  "depths": {
+    "D20": {
+      "status": "DEPTH_READY",
+      "actualNativeLevelMeters": 18.49556,
+      "expectedNativeLevelMeters": 18.495559692382812,
+      "pairedWindowsPass": [
+        "KE-1",
+        "KE-2",
+        "AG-1",
+        "AG-2",
+        "KE-H1",
+        "KE-H3"
+      ],
+      "reason": null
+    }
+  },
+  "d15": {
+    "unchanged": true,
+    "levelMeters": 15.81007,
+    "reacquired": false
+  },
+  "d05d10": {
+    "unchanged": true,
+    "reacquired": false,
+    "levelsMeters": [
+      5.078224,
+      9.572997
+    ]
+  },
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0,
+  "trajectoryCount": 0,
+  "newObservations": 0,
+  "verticalInterpolation": false,
+  "depthSelection": false,
+  "alpha": 0.002,
+  "alphaModified": false,
+  "statements": [
+    "STEP 27C performs data acquisition and quality validation only; no model run, no depth comparison, no statistic.",
+    "D20 = 18.495560 m as resolved in STEP 27B-r2; 21.598816 m is not acquired or evaluated.",
+    "D05, D10 and D15 are unchanged and not re-acquired.",
+    "No vertical interpolation, averaging, multi-level extraction or substitution was performed.",
+    "No depth is ranked or chosen; alpha = 0.002 and STEP 20-26 are unchanged."
+  ],
+  "interpretation": "DATA ACQUISITION / QUALITY ASSESSMENT ONLY"
+}

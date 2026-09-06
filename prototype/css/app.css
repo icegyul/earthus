@@ -3026,3 +3026,18 @@ body.menu-bar .sheet-panel{
   bottom:max(82px,calc(env(safe-area-inset-bottom) + 72px));
   max-height:min(78vh,720px,calc(100dvh - 190px));
 }
+/* 오른쪽 판의 '다른 화면을 여는 줄'(지금 일어난 일 · 지켜볼 곳 · 여행 둘러보기) —
+   가로 칩 줄에서는 설명·화살표를 숨겼지만 세로 판에서는 원래대로 제목 + 설명 + › 로 보인다. */
+body.menu-bar #menuSub.layers-right #layerStrip .ly-open{
+  flex:none; width:100%; min-height:0; margin:0 0 2px; padding:9px 11px;
+  display:grid; grid-template-columns:1fr auto; align-items:center; column-gap:8px;
+  border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04);
+  color:var(--paper); font-size:13px; line-height:1.3; white-space:normal; text-align:left; opacity:.95;
+}
+body.menu-bar #menuSub.layers-right #layerStrip .ly-open:hover{ opacity:1; background:rgba(255,255,255,.08); }
+body.menu-bar #menuSub.layers-right #layerStrip .ly-open .ly-open-copy{ display:block; min-width:0; }
+body.menu-bar #menuSub.layers-right #layerStrip .ly-open .ly-open-copy b{ display:block; font-size:13px; font-weight:500; }
+body.menu-bar #menuSub.layers-right #layerStrip .ly-open em{
+  display:block !important; margin-top:2px; font-size:10.5px; font-weight:300; font-style:normal; opacity:.55; line-height:1.35;
+}
+body.menu-bar #menuSub.layers-right #layerStrip .ly-open-arrow{ display:block !important; font-size:15px; opacity:.5; }

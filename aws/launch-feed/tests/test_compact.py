@@ -56,3 +56,37 @@ class CompactTest(unittest.TestCase):
             self.assertNotIn(k, c, k)
 
 if __name__ == "__main__": unittest.main()
+
+
+class RecentTest(unittest.TestCase):
+    """과거 기록 — 1시간 캐시, 실패해도 예전 목록을 지우지 않는다."""
+    def setUp(self):
+        from datetime import datetime, timezone
+        self.now = datetime(2026, 9, 6, 12, 0, tzinfo=timezone.utc)
+        self.calls = []
+        M.fetch = lambda url, timeout=60: (self.calls.append(url) or self._raw)
+        import json as _j
+        self._raw = _j.dumps({"results": [rec(id="p1", net="2026-09-05T00:00:00Z",
+                                              status={"name": "Launch Successful", "abbrev": "Success"})]}).encode()
+    def test_cached_within_ttl(self):
+        prev = {"recent": [{"id": "old"}], "recentAt": "2026-09-06T11:30:00Z"}   # 30분 전
+        items, at, state = M.recent_block(prev, self.now)
+        self.assertEqual(state, "cached"); self.assertEqual(items[0]["id"], "old"); self.assertEqual(self.calls, [])
+    def test_refetch_after_ttl(self):
+        prev = {"recent": [{"id": "old"}], "recentAt": "2026-09-06T10:00:00Z"}   # 2시간 전
+        items, at, state = M.recent_block(prev, self.now)
+        self.assertEqual(state, "fresh"); self.assertEqual(items[0]["id"], "p1")
+        self.assertEqual(items[0]["status"], "Launch Successful"); self.assertEqual(len(self.calls), 1)
+    def test_failure_keeps_previous(self):
+        def boom(url, timeout=60): raise RuntimeError("429")
+        M.fetch = boom
+        items, at, state = M.recent_block({"recent": [{"id": "old"}], "recentAt": "2026-09-05T00:00:00Z"}, self.now)
+        self.assertEqual(state, "stale"); self.assertEqual(items[0]["id"], "old")
+        items2, _, state2 = M.recent_block(None, self.now)
+        self.assertEqual(state2, "unavailable"); self.assertEqual(items2, [])
+    def test_fail_reason_relayed(self):
+        import json as _j
+        self._raw = _j.dumps({"results": [rec(id="f1", failreason="Second stage anomaly",
+                                              status={"name": "Launch Failure", "abbrev": "Failure"})]}).encode()
+        items, _, _ = M.recent_block(None, self.now)
+        self.assertEqual(items[0]["failReason"], "Second stage anomaly")

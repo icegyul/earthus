@@ -33,7 +33,14 @@ s3 = boto3.client("s3", region_name=REGION)
 
 SRC = ("https://ll.thespacedevs.com/2.2.0/launch/upcoming/"
        "?limit=30&mode=detailed&ordering=net&hide_recent_previous=true")
+# 지난 발사(결과 포함) — 관제패널의 '과거 기록'. LL2 는 시간당 호출 한도가 빡빡해서
+# 예정 목록과 달리 **1시간에 한 번만** 새로 받고, 그 사이에는 직전 결과를 그대로 들고 간다.
+SRC_PREV = ("https://ll.thespacedevs.com/2.2.0/launch/previous/"
+            "?limit=20&mode=detailed&ordering=-net")
+PREV_TTL_SEC = 3600
 DST = "events/launches.json"
+# 과거 기록은 관제패널을 열 때만 필요하다 — 첫 화면이 늘 받는 파일에 20건(약 47 KB)을 얹지 않는다.
+DST_RECENT = "events/launches-recent.json"
 RAW_PREFIX = "archive/launch-ll2"
 UA = {"User-Agent": "earthus.net (dalur@kakao.com)"}
 
@@ -128,13 +135,54 @@ def compact(rec):
     return {k: v for k, v in out.items() if v not in (None, "", [], {})}
 
 
+def read_json(key):
+    try:
+        return json.loads(s3.get_object(Bucket=BUCKET, Key=key)["Body"].read().decode("utf-8"))
+    except Exception:  # noqa: BLE001 — 없으면 없는 대로
+        return None
+
+
+def fetch(url, timeout=60):
+    with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=timeout) as r:
+        return r.read()
+
+
+def recent_block(prev_doc, now, force=False):
+    """지난 발사. 아직 신선하면 그대로 재사용하고, 아니면 새로 받는다.
+    받기에 실패하면 예전 것을 그대로 둔다 — 과거 기록이 통째로 사라지는 것이 더 나쁘다."""
+    old = (prev_doc or {}).get("recent") or []
+    at = (prev_doc or {}).get("recentAt")
+    if old and at and not force:
+        try:
+            age = (now - datetime.strptime(at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)).total_seconds()
+            if age < PREV_TTL_SEC:
+                return old, at, "cached"
+        except ValueError:
+            pass
+    try:
+        raw = fetch(SRC_PREV)
+    except Exception as e:  # noqa: BLE001
+        print(f"[launch] 지난 발사 조회 실패 {e!r} — 직전 목록 유지({len(old)}건)")
+        return old, at, "stale" if old else "unavailable"
+    items = []
+    for r in (json.loads(raw.decode("utf-8")).get("results") or []):
+        c = compact(r)
+        if not c:
+            continue
+        # 결과가 이 목록의 핵심이다 — 실패 사유도 기관이 밝힌 그대로 옮긴다
+        if r.get("failreason"):
+            c["failReason"] = str(r["failreason"])[:300]
+        items.append(c)
+    if not items:
+        return old, at, "stale" if old else "unavailable"
+    return items, now.strftime("%Y-%m-%dT%H:%M:%SZ"), "fresh"
+
+
 def handler(event=None, context=None):
     now = datetime.now(timezone.utc)
     t0 = time.time()
-    req = urllib.request.Request(SRC, headers=UA)
     try:
-        with urllib.request.urlopen(req, timeout=60) as r:
-            raw = r.read()
+        raw = fetch(SRC)
     except urllib.error.HTTPError as e:
         # 429(호출 한도)·5xx — 축약본을 덮어쓰지 않는다. 이전 파일이 남아 화면은 STALE 로 보인다.
         print(f"[launch] HTTP {e.code} — 축약본 미기록")
@@ -153,6 +201,21 @@ def handler(event=None, context=None):
                   Body=gzip.compress(raw, 6), ContentType="application/json", ContentEncoding="gzip")
 
     items = [x for x in (compact(r) for r in results) if x]
+    prev_doc = read_json(DST_RECENT)
+    recent, recent_at, recent_state = recent_block(prev_doc, now, force=bool((event or {}).get("forceRecent")))
+
+    # 지금 날고 있거나 곧 뜨는 발사 — 이것만 예정 파일에 함께 싣는다(보통 0~2건).
+    # LL2 는 이륙한 발사를 upcoming 에서 빼고 previous 로 옮기며 'Launch in Flight' 라고 적는다.
+    # 그래서 '진행 중'은 두 목록을 함께 봐야 한다: previous 의 In Flight + upcoming 의 T-60분 이내.
+    live = [x for x in recent if "in flight" in str(x.get("status") or "").lower() or x.get("webcastLive")]
+    for x in items:
+        try:
+            t = datetime.strptime(x.get("net") or "", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
+        mins = (t - now).total_seconds() / 60
+        if x.get("webcastLive") or (-30 <= mins <= 60):
+            live.append(x)
     out = {
         "schema": "earthus.launches.v1",
         "generated": now.strftime("%Y-%m-%dT%H:%M:00Z"),
@@ -166,10 +229,27 @@ def handler(event=None, context=None):
         "raw": {"bytes": len(raw), "fetchMs": fetch_ms, "count": len(results)},
         "count": len(items),
         "launches": items,
+        # 지난 발사 — 관제패널의 과거 기록. state 는 fresh/cached/stale/unavailable 
+        "live": live,
+        "recentKey": DST_RECENT,
+        "recentAt": recent_at,
+        "recentState": recent_state,
+        "recentCount": len(recent),
     }
     body = json.dumps(out, ensure_ascii=False, separators=(",", ":")).encode()
     s3.put_object(Bucket=BUCKET, Key=DST, Body=body,
                   ContentType="application/json; charset=utf-8", CacheControl="no-cache")
+    if recent:
+        rbody = json.dumps({
+            "schema": "earthus.launches-recent.v1", "generated": out["generated"],
+            "source": out["source"], "license": out["license"],
+            "note": {"ko": "지난 발사와 그 결과입니다. 결과·실패 사유는 발사 기관 발표를 그대로 옮깁니다."},
+            "recentAt": recent_at, "recentState": recent_state,
+            "count": len(recent), "recent": recent,
+        }, ensure_ascii=False, separators=(",", ":")).encode()
+        s3.put_object(Bucket=BUCKET, Key=DST_RECENT, Body=rbody,
+                      ContentType="application/json; charset=utf-8", CacheControl="no-cache")
     withvid = sum(1 for x in items if x.get("videos"))
-    print(f"[launch] raw {len(raw)} B → compact {len(body)} B · {len(items)}건 · 중계 있는 발사 {withvid}건")
-    return {"ok": True, "rawBytes": len(raw), "compactBytes": len(body), "count": len(items), "withVideos": withvid}
+    print(f"[launch] raw {len(raw)} B → compact {len(body)} B · 예정 {len(items)}건 · 중계 {withvid}건 · 지난 {len(recent)}건({recent_state}) · 진행 중 {len(live)}건")
+    return {"ok": True, "rawBytes": len(raw), "compactBytes": len(body), "count": len(items),
+            "withVideos": withvid, "recent": len(recent), "recentState": recent_state, "live": len(live)}

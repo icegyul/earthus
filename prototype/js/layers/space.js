@@ -31,17 +31,10 @@ export const launches = {
     return this.layer;
   },
 
-  /** EARTHUS 축약본(events/launches.json) → 화면 항목. 실패하면 null 을 돌려 LL2 폴백으로 간다. */
-  async _fromFeed(now) {
-    const res = await fetchT(API.LAUNCH_FEED, { timeout: 15_000 });
-    if (!res.ok) throw new Error('feed ' + res.status);
-    const doc = await res.json();
-    if (!Array.isArray(doc.launches) || !doc.launches.length) throw new Error('feed empty');
+  /** 축약본 한 건 → 화면 항목. 예정·진행 중·과거가 같은 모양이라 한 함수로 만든다. */
+  _fromRecord(L, now, generated) {
     const t = i18n.t.F;
-    this.retrievedAt = doc.generated;
-    this.cached = false;
-    this.feedSource = 'compact';
-    return doc.launches.map(L => {
+    {
       const net = L.net ? new Date(L.net).getTime() : null;
       const hoursOut = net != null ? (net - now) / 3600_000 : null;
       const vids = L.videos || [];
@@ -68,7 +61,7 @@ export const launches = {
           _webcastLive: L.webcastLive === true,
           _statusNote: L.statusNote || null,
           _source: 'Launch Library 2 (The Space Devs)',
-          _retrievedAt: doc.generated,
+          _retrievedAt: generated,
           _cached: false,
           [t.provider]: L.provider || '—',
           [t.pad]: L.pad || '—',
@@ -78,8 +71,41 @@ export const launches = {
              갖춰 보여주므로, 같은 것이 위에 '중계 ↗' 한 줄로 또 나오면 두 번 읽힌다. */
         },
       };
-    });
+    }
   },
+
+  /** EARTHUS 축약본(events/launches.json) → 화면 항목. 실패하면 던져서 LL2 폴백으로 간다. */
+  async _fromFeed(now) {
+    const res = await fetchT(API.LAUNCH_FEED, { timeout: 15_000 });
+    if (!res.ok) throw new Error('feed ' + res.status);
+    const doc = await res.json();
+    if (!Array.isArray(doc.launches) || !doc.launches.length) throw new Error('feed empty');
+    this.retrievedAt = doc.generated;
+    this.cached = false;
+    this.feedSource = 'compact';
+    /* 진행 중 — 이륙한 발사는 LL2 upcoming 에서 빠지고 previous 로 'Launch in Flight' 가 되므로
+       서버가 두 목록에서 골라 live 로 실어 준다. 화면 '진행 중' 칸이 이것을 쓴다. */
+    this.live = (doc.live || []).map(L => this._fromRecord(L, now, doc.generated));
+    this.recentKey = doc.recentKey || null;
+    this.recentAt = doc.recentAt || null;
+    return doc.launches.map(L => this._fromRecord(L, now, doc.generated));
+  },
+
+  /** 과거 기록 — 관제패널을 열 때만 받는다(첫 화면을 무겁게 하지 않는다). */
+  async recent() {
+    if (this._recent && Date.now() - this._recentAt < 10 * 60_000) return this._recent;
+    const res = await fetchT(API.LAUNCH_RECENT, { timeout: 15_000 });
+    if (!res.ok) throw new Error('recent ' + res.status);
+    const doc = await res.json();
+    const now = Date.now();
+    this._recent = (doc.recent || []).map(L => this._fromRecord(L, now, doc.generated));
+    this._recentAt = now;
+    this._recentDoc = { at: doc.recentAt, state: doc.recentState, generated: doc.generated };
+    return this._recent;
+  },
+  live: [],
+  _recent: null,
+  _recentAt: 0,
 
   async refresh() {
     const now = Date.now();

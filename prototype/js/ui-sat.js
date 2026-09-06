@@ -67,6 +67,18 @@ export const satPanel = {
     list = list.slice(0, 6);
     box.innerHTML = '';
 
+    /* ── 진행 중 (2026-09-06 받은 지시: "예정된 발사 위에 진행 중 만들어서 정보 넣어주고") ──
+       LL2 는 이륙한 발사를 예정 목록에서 빼고 'Launch in Flight' 로 옮긴다. 축약본이 두 목록에서
+       골라 live 로 실어 주므로 여기서는 그대로 그린다. 없으면 칸을 만들지 않는다 — 빈 칸은 정보가 아니다. */
+    const live = launches.live || [];
+    if (live.length) {
+      const lh = document.createElement('div');
+      lh.className = 'sl-head live';
+      lh.innerHTML = `<span class="sl-dot"></span>${ko ? '진행 중' : 'In progress'}`;
+      box.appendChild(lh);
+      live.forEach(m => box.appendChild(this._launchRow(m, ko, true)));
+    }
+
     const head = document.createElement('div');
     head.className = 'sl-head';
     head.textContent = ko ? '예정된 발사' : 'Upcoming launches';
@@ -82,35 +94,23 @@ export const satPanel = {
       return;
     }
 
-    list.forEach(m => {
-      const h = m.data._hoursOut;
-      const soon = h != null && h <= 24;
-      const row = document.createElement('button');
-      row.className = 'sl-row' + (soon ? ' soon' : '');
-      const when = h == null ? '—'
-        : h < 1 ? (ko ? `${Math.round(h * 60)}분 뒤` : `in ${Math.round(h * 60)}m`)
-        : h < 48 ? (ko ? `${Math.round(h)}시간 뒤` : `in ${Math.round(h)}h`)
-        : (ko ? `${Math.round(h / 24)}일 뒤` : `in ${Math.round(h / 24)}d`);
-      row.innerHTML = `<b>${m.name}</b>`
-        + `<span>${m.data[i18n.t.F.pad] || '—'}</span>`
-        + `<em>${when}</em>`;
-      row.onclick = async () => {
+    list.forEach(m => box.appendChild(this._launchRow(m, ko, false)));
+
+    /* 관제패널 입구 (받은 지시: "위성 관제패널 메뉴도 넣어줘 — 발사 기록과 과거 기록 모두")
+       ⚠️ 레이어 스위치가 아니라 다른 화면을 여는 줄이다. 우주쓰레기 입구와 같은 문법으로 둔다. */
+    const ops = document.createElement('button');
+    ops.type = 'button';
+    ops.className = 'sat-orbit sl-ops';
+    ops.innerHTML = `<b>${ko ? '위성 관제패널' : 'Launch operations'}</b>`
+      + `<em>${ko ? '진행 중 · 예정 전체 · 지난 발사 기록 · 저장한 발사' : 'In progress · all upcoming · past launches · saved'}</em>`;
+    ops.onclick = async () => {
+      try {
+        const { launchOps } = await import('./ui-launchops.js');
         document.getElementById('satSheet').classList.remove('up');
-        const { flyTo } = await import('./viewer.js');
-        flyTo(m.lon, m.lat, 900_000);
-        /* 발사대 자리에 핀을 세운다(받은 지시). launch 레이어가 꺼져 있어도 보인다. 선택이 풀리면 걷는다. */
-        try {
-          const { launchPads } = await import('./layers/launchpad.js');
-          launchPads.pin(m);
-          if (!this._pinWatch) {
-            this._pinWatch = true;
-            store.on('select', s => { if (!s || s.kind !== 'launch') launchPads.clearPin(); });
-          }
-        } catch (e) { console.warn('[sat] 발사대 핀', e?.message || e); }
-        store.select(m);
-      };
-      box.appendChild(row);
-    });
+        launchOps.open();
+      } catch (e) { console.warn('[sat] 관제패널', e?.message || e); }
+    };
+    box.appendChild(ops);
 
     const note = document.createElement('div');
     note.className = 'sl-note';
@@ -118,6 +118,39 @@ export const satPanel = {
       ? '자료: The Space Devs (Launch Library 2). 발사 시각은 자주 변경됩니다 — 기관 공지가 정본입니다.'
       : 'Source: The Space Devs (Launch Library 2). Launch times change often — the agency notice is authoritative.';
     box.appendChild(note);
+  },
+
+  /** 발사 한 줄. 진행 중이면 시각 대신 상태를 적는다. */
+  _launchRow(m, ko, isLive) {
+    const h = m.data._hoursOut;
+    const row = document.createElement('button');
+    row.className = 'sl-row' + (isLive ? ' now' : (h != null && h <= 24 ? ' soon' : ''));
+    const when = isLive
+      ? (m.data._webcastLive ? (ko ? '중계 중' : 'live') : (m.data[i18n.t.F.status] || (ko ? '비행 중' : 'in flight')))
+      : h == null ? '—'
+        : h < 0 ? (ko ? '지남' : 'past')
+        : h < 1 ? (ko ? `${Math.round(h * 60)}분 뒤` : `in ${Math.round(h * 60)}m`)
+        : h < 48 ? (ko ? `${Math.round(h)}시간 뒤` : `in ${Math.round(h)}h`)
+        : (ko ? `${Math.round(h / 24)}일 뒤` : `in ${Math.round(h / 24)}d`);
+    row.innerHTML = `<b>${m.name}</b>`
+      + `<span>${m.data._mission || m.data[i18n.t.F.pad] || '—'}</span>`
+      + `<em>${when}</em>`;
+    row.onclick = async () => {
+      document.getElementById('satSheet').classList.remove('up');
+      const { flyTo } = await import('./viewer.js');
+      flyTo(m.lon, m.lat, 900_000);
+      /* 발사대 자리에 핀을 세운다(받은 지시). launch 레이어가 꺼져 있어도 보인다. 선택이 풀리면 걷는다. */
+      try {
+        const { launchPads } = await import('./layers/launchpad.js');
+        launchPads.pin(m);
+        if (!this._pinWatch) {
+          this._pinWatch = true;
+          store.on('select', s => { if (!s || s.kind !== 'launch') launchPads.clearPin(); });
+        }
+      } catch (e) { console.warn('[sat] 발사대 핀', e?.message || e); }
+      store.select(m);
+    };
+    return row;
   },
 
   /* ── 우주쓰레기 · 궤도 인텔리전스 ──────────────────────────────

@@ -96,6 +96,8 @@ export const API = {
      mode=detailed 에만 있는데 그건 30건에 360 KB 다. 서버가 한 번 받아 35 KB 로 줄인다.
      위 LAUNCH 는 축약본을 못 받을 때만 쓰는 폴백으로 남긴다. */
   LAUNCH_FEED: CDN + '/events/launches.json',
+  /* 과거 발사 기록 — 위성 관제패널을 열 때만 받는다(첫 화면을 무겁게 하지 않는다). */
+  LAUNCH_RECENT: CDN + '/events/launches-recent.json',
   KP:          'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json',
   AURORA:      'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json',
   OVERPASS:    'https://overpass-api.de/api/interpreter',

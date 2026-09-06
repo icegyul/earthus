@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "revision": "validator r2",
+  "ruleId": "forcing-sensitivity-test02-step25c",
+  "createdAtUTC": "2026-09-06T11:51:57Z",
+  "baseLock": "4953719d",
+  "reason": "the r1 validator (tools/research/check_step25c_test02.py, locked at aee3943c) compared the stored float32 GLORYS depth level 15.810070037841797 m to the literal 15.81007 with exact equality and therefore reported FAIL on all six windows ('no gap interpolation / substitution: <window>') although the level is the locked native level; every other check passed (run twice, byte-identical FAIL output)",
+  "r1Result": {
+    "result": "FAIL",
+    "failures": 6,
+    "onlyFailingCheck": "depthLevelMeters == 15.81007 (exact float comparison)",
+    "label": "NO CLEAR DESCRIPTIVE DIFFERENCE",
+    "m3Compared": 420
+  },
+  "change": {
+    "newValidator": "tools/research/check_step25c_test02_r2.py",
+    "differences": [
+      "depth level compared with 1e-4 m tolerance",
+      "additionally verifies the r2 runner / replay tool SHAs against step25c-r2-preregistration.json, that all r2 result arrays are identical to attempt 1, and its own SHA against this record"
+    ],
+    "unchanged": "all other checks"
+  },
+  "r1ValidatorSha256": "52e8c8bddf27bbdd66bb177225824039b2fe471145d6b18e02dcfb475399132a",
+  "validatorR2Sha256": "c1f14ea68d1038823244331ffe434ad617f4915b043bc6c1d1629defe3111e65",
+  "outputsUnchanged": true,
+  "noResultInspectionBeforeFix": "the fix concerns a metadata comparison only; no metric, pairing, or label logic changed"
+}

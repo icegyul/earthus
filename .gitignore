@@ -105,3 +105,5 @@ data/research/step25c/
 data/research/step26/
 # STEP 27 / 27B raw native-depth GLORYS files and trajectories are never committed; only docs/research/step27-* records are
 data/research/step27/
+# STEP 28 field-diagnostic derived data (KE-H2 normalized GLORYS) is never committed; docs/research/step28-* records and SVG figures are
+data/research/step28/

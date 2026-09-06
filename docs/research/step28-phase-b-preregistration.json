@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "phase": "B",
+  "ruleId": "forcing-field-agreement-step28",
+  "createdAtUTC": "2026-09-06T14:44:32Z",
+  "phaseALock": "79a0d69d",
+  "phaseAPreregistrationSha256": "0b9da69cdbd4ea1df4d8d6bd0084463b8162388d4b12371990910b1020668b16",
+  "scope": "field diagnostic only: KE-H2 GLORYS normalization (data), primary AVISO-grid comparisons A/B/C, HYCOM_NATIVE_FIELD_DIAGNOSTIC (A), depth diagnostic (C at D05/D10/D15/D20 where registered), frozen STEP 25C trajectory context, figures 1-7 per window; no model run, no download, no parameter change",
+  "questionRules": {
+    "majorityFraction": 0.75,
+    "Q1": "per window: implied 72 h displacement of the A median vector difference (median|delta| x 259200 s) divided by the STEP 25C per-window median GLORYS-HYCOM 72 h separation; COMPARABLE_ORDER if ratio in [1/3, 3], FIELD_SMALLER if < 1/3, FIELD_LARGER if > 3; overall label = class reached by >= 3 of 4 windows, else MIXED",
+    "Q2Q3": "per window with both B and C: closer = lower median vector difference to AVISO; GLORYS/HYCOM descriptively closer if >= 3 of 4 windows agree; otherwise no clear field-level difference; AVISO is a reference field, not ground truth",
+    "Q4": "per window (comparison A): MAGNITUDE if |median relative speed difference| >= 0.25, DIRECTION if median absolute direction difference >= 30 degrees, MAGNITUDE_AND_DIRECTION if both, SPATIAL_STRUCTURE if neither and Pearson r(u) or r(v) < 0.5, else NONE_DOMINANT; overall = class reached by >= 3 of 4 windows, else MIXED",
+    "magnitudeThresholdRelative": 0.25,
+    "directionThresholdDegrees": 30,
+    "patternCorrelationThreshold": 0.5,
+    "Q5": "per window: max |relative change| of the C median vector difference at D05/D10/D20 versus D15; MATERIAL if > 0.10 in >= 3 of 4 windows (KE-1, KE-2, KE-H1, KE-H3), else NO_MATERIAL_CHANGE_WITH_DEPTH; no ranking",
+    "depthMaterialRelativeChange": 0.1,
+    "Q6": "rank concordance between the STEP 25C per-window trajectory separation and the A median vector difference over the windows with both (pairs concordant / (concordant + discordant)); RANK_CONSISTENT if >= 5/6, RANK_INCONSISTENT if <= 1/6, else MIXED; evidence at most PLAUSIBLE_BUT_UNTESTED (n = 4)",
+    "rankConsistentFraction": 0.8333333333333334
+  },
+  "outputs": [
+    "docs/research/step28-field-comparison-manifest.json",
+    "docs/research/step28-field-evaluation.json",
+    "docs/research/step28-field-summary.json",
+    "docs/research/step28-field-table.csv",
+    "docs/research/step28-field-window-summary.csv",
+    "docs/research/step28-figures/ (SVG, committed)",
+    "data/research/step28/ (KE-H2 normalized GLORYS, gitignored)"
+  ],
+  "tools": {
+    "tools/research/prepare_step28_fields.py": "ef00a6a0dda586835e7c3ee3a94c775e5bddc208e4070a3253886ac81c4508ed",
+    "tools/research/evaluate_step28_fields.py": "e7efdbd788c1ec307542a157f185d68b5576dc0e1cf61468e0970a51f0889d56",
+    "tools/research/check_step28_field_execution.py": "bb7c65dadc1e048b6fd0bbbebf72b4e4c74d86f5704061e1b3ae012aaf7eaa4e",
+    "tools/research/glorys_reader_step25c.py": "11b7d987434a55a9e42a9776e851fad49b8ec65d2df0f23130c7a7e6234ab63e"
+  },
+  "modelRunCount": 0,
+  "newDownloads": 0,
+  "requiredStatements": [
+    "STEP 28 is a forcing-field diagnostic with AVISO as a surface-geostrophic REFERENCE FIELD, not ground truth; no model performance result is produced.",
+    "No trajectory was run; alpha = 0.002, depths, windage, weights and blending are unchanged; no forcing or depth is selected.",
+    "HYCOM is compared at its exact instantaneous frame at T; GLORYS by the daily mean of the UTC day containing T (label T - 12 h); this cadence distinction is recorded and not removed.",
+    "KE-H2 contributes GLORYS-AVISO only (HYCOM frame missing per immutable STEP 20); AG-1 and AG-2 are not AVISO-eligible.",
+    "Trajectory context uses frozen STEP 25C values only; no M3 was recomputed; no regression or causal attribution was made."
+  ]
+}

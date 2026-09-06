@@ -652,10 +652,23 @@ export const layerBar = {
       const aetherusOpen = this.open && this.sub === 'aetherus';
       const earthusOpen = this.open && !aetherusOpen;
       main.classList.toggle('open', earthusOpen);
-      main.classList.toggle('sub-open', earthusOpen && !!this.sub);
+      /* 2단은 옆이 아니라 **누른 항목 바로 아래**에 펼친다 (2026-09-06 받은 지시).
+         #menuSub 를 그 버튼 뒤로 옮기고 inline 로 표시한다. AETHERUS 2단(숨김)은 예전 방식 그대로. */
+      const inline = earthusOpen && !!this.sub && this.sub !== 'aetherus';
+      const anchor = inline ? main.querySelector(`[data-open="${this.sub}"]`) : null;
+      if (inline && anchor) {
+        if (!this._subHome) { this._subHome = document.createComment('menuSub-home'); sub.parentNode.insertBefore(this._subHome, sub); }
+        if (anchor.nextSibling !== sub) anchor.insertAdjacentElement('afterend', sub);
+        sub.classList.add('inline');
+      } else if (sub.classList.contains('inline')) {
+        sub.classList.remove('inline');
+        if (this._subHome?.parentNode) this._subHome.parentNode.insertBefore(sub, this._subHome);
+      }
+      main.classList.toggle('has-inline', inline);
+      main.classList.toggle('sub-open', earthusOpen && !!this.sub && !inline);
       sub.classList.toggle('open', this.open && !!this.sub);
       tab.classList.toggle('open', earthusOpen);
-      tab.classList.toggle('sub', earthusOpen && !!this.sub);
+      tab.classList.toggle('sub', earthusOpen && !!this.sub && !inline);
       aetherusTab.classList.toggle('open', aetherusOpen);
       /* AETHERUS 패널이 열리면 EARTHUS 손잡이도 패널 왼쪽으로 옮긴다.
          그대로 두면 z29 손잡이가 패널(z28) 오른쪽 위에 떠서 항목을 가리고,
@@ -664,7 +677,7 @@ export const layerBar = {
       tab.classList.toggle('beside', aetherusOpen);
       /* 2단을 보는 동안 1단은 모바일에서 화면 밖으로 나가므로, 보조기술에도
          같은 한 장 메뉴만 읽힌다. */
-      main.setAttribute('aria-hidden', String(!earthusOpen || !!this.sub));
+      main.setAttribute('aria-hidden', String(!earthusOpen || (!!this.sub && !inline)));
       sub.setAttribute('aria-hidden', String(!(this.open && this.sub)));
       /* ⚠️⚠️ aria-hidden 만으로는 **키보드 탭이 그대로 들어간다.** (감사 P2-2)
          화면 밖으로 밀어 둔 메뉴 버튼들이 탭 순서에 남아, 탭을 누르면
@@ -678,8 +691,9 @@ export const layerBar = {
       };
       /* 모바일에서는 2단이 1단을 완전히 대체한다. 화면 밖의 1단까지 탭으로
          들어가면 사용자가 길을 잃으므로, 2단을 연 동안은 1단도 inert 처리한다. */
-      seal(main, !earthusOpen || !!this.sub);
+      seal(main, !earthusOpen || (!!this.sub && !inline));
       seal(sub, !(this.open && this.sub));
+      if (inline && anchor) requestAnimationFrame(() => { try { anchor.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (_) { } });
       tab.setAttribute('aria-expanded', String(earthusOpen));
       aetherusTab.setAttribute('aria-expanded', String(aetherusOpen));
       // 열린 쪽 버튼만 펼침 표시 — 보조기술에도 같은 상태를 알린다
@@ -789,8 +803,9 @@ export const layerBar = {
             detail: { view: 'style', reason: 'style-opened' },
           }));
         } else if (wasEarthStyle) {
+          /* 다른 2단(Alert 등)으로 갈아탄 것이면 메뉴는 그대로 둔다 — 아래로 펼치는 모드에서 닫히면 갈아타기가 안 된다 */
           document.dispatchEvent(new CustomEvent('earthus:earth-view-intent', {
-            detail: { view: 'earth', reason: 'style-closed' },
+            detail: { view: 'earth', reason: 'style-closed', keepMenu: !!this.sub },
           }));
         }
       };

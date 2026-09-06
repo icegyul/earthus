@@ -46,7 +46,8 @@ export const earthViewState = {
         /* 레이어를 고른 뒤 메뉴만 닫는 것은 Data View를 닫는 행동이 아니다.
            Style 단계에서 아무것도 고르지 않고 닫았을 때만 Earth로 돌아간다. */
         if (detail.reason !== 'style-closed' || store.earthView.view === 'style') {
-          this.goEarth({ resetLayers: detail.resetLayers === true });
+          /* 2단을 다른 묶음(Alert 등)으로 갈아탈 때는 메뉴를 닫지 않는다 (keepMenu) — 2026-09-06 */
+          this.goEarth({ resetLayers: detail.resetLayers === true, keepMenu: detail.keepMenu === true });
         }
       }
       else if (detail.view === 'data' && detail.layer) {
@@ -205,7 +206,7 @@ export const earthViewState = {
     this._restoring = true;
     try {
       this._deps.sourceNote?.setPoint?.(null, null);
-      this._deps.layerBar.closeMenus?.();
+      if (!options.keepMenu) this._deps.layerBar.closeMenus?.();   // 2단 갈아타기(keepMenu)는 메뉴를 둔다
       if (options.resetLayers) store.resetLayersToDefaults();
       this._commit(EMPTY, store.earthView.view === 'earth' ? 'replace' : 'push', true);
     } finally {

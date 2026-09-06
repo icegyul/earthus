@@ -247,6 +247,13 @@
   }
   .seg button.on { background: var(--accent); color: #06121f; border-color: var(--accent); font-weight: 600; }
   .cloud-note { color: var(--text-dim); font-size: 10px; margin-top: 5px; line-height: 1.5; min-height: 13px; }
+  /* 좌하단 출처 한 줄 — 박스 없이 글씨만 (2026-09-06 받은 지시, 세 지구 공통 규칙). 내용은 main.js 가 #cloud-note 를 따라 채운다. */
+  #srcNote { position: fixed; left: max(10px, env(safe-area-inset-left)); bottom: max(12px, env(safe-area-inset-bottom)); z-index: 3;
+    max-width: min(44vw, 460px); pointer-events: none; color: rgba(239,246,248,.62); font-size: 9px; line-height: 1.45;
+    text-shadow: 0 1px 4px rgba(0,0,0,.85); }
+  #srcNote b { font-weight: 500; color: rgba(239,246,248,.82); }
+  @media (max-width: 640px) { #srcNote { max-width: 60vw; font-size: 8.5px; bottom: max(64px, calc(env(safe-area-inset-bottom) + 56px)); } }
+  @media (min-width: 1600px) { #srcNote { font-size: 11px; left: 18px; bottom: 16px; } }
 
   #focus-chip {
     position: fixed; top: 14px; left: 14px; z-index: 7;
@@ -1089,6 +1096,7 @@
   </div><!-- /settings-drawer -->
 </div>
 
+<div id="srcNote" aria-live="polite"></div>
 <div id="focus-chip"></div>
 
 <div id="mapview">
@@ -1108,7 +1116,7 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=185-ext"></script>
+<script type="module" src="./js/main.js?v=186-srcnote"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

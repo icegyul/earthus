@@ -4363,6 +4363,22 @@ async function main() {
   });
   window.__earthusSynop = synop;   // 선언 뒤에 대입한다 — 앞에 두면 TDZ 로 main() 이 통째로 죽는다
   const shell = initShell(shellHooks);
+  /* 좌하단 출처 글씨 (index.html #srcNote). 구름 출처 줄(#cloud-note)을 그대로 따라가고,
+     늘 있는 지형·기본색 크레딧을 뒤에 붙인다. 박스 없이 글씨만 — 세 지구 공통 규칙(2026-09-06). */
+  {
+    const srcNote = document.getElementById('srcNote');
+    const cloudNote = document.getElementById('cloud-note');
+    const paintSrc = () => {
+      if (!srcNote) return;
+      const cloud = (cloudNote?.textContent || '').trim();
+      const ko = i18n.ko;
+      const fixed = ko ? '<b>AWS Terrarium</b> 지형 · <b>Natural Earth II</b> 기본색' : '<b>AWS Terrarium</b> terrain · <b>Natural Earth II</b> base';
+      srcNote.innerHTML = `${ko ? '출처' : 'Source'}: ${cloud ? `${escUI(cloud)} · ` : ''}${fixed}`;
+    };
+    if (cloudNote) new MutationObserver(paintSrc).observe(cloudNote, { childList: true, characterData: true, subtree: true });
+    paintSrc();
+    document.addEventListener('earthus:lang', paintSrc);
+  }
   askEarth.init();
 
   // ---------------------------------------------------------------------------

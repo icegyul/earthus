@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "d20-depth-identity-step27b-r2",
+  "createdAtUTC": "2026-09-06T13:33:17Z",
+  "gitCommitAtDesign": "d242165d",
+  "authorProcess": "Claude Fable 5.1 session, user-directed STEP 27B-r2",
+  "protocolDocument": "docs/research/step27b-r2-depth-identity-protocol.md",
+  "protocolSha256": "15125882f0cb84b607039f9c694ae6faa43abaad078b496abf442aed784b3581",
+  "ruleSha256": "22fa3ad36e4e2870104a9e8862e0ab63f5c8f3742987a68c571d5a05eb0a98b0",
+  "validator": {
+    "path": "tools/research/check_step27b_r2_depth_identity.py",
+    "sha256": "1bcbb656cea21f5b276792da7329d29af447ef4029c7c9992872a6c7765f49bf"
+  },
+  "decision": {
+    "D20": 18.495559692382812,
+    "rule": "literal nearest native level to 20 m",
+    "performanceInspected": false
+  },
+  "modelRunCount": 0,
+  "d20Acquired": false,
+  "nextStep": "STEP 27C — D20 acquisition + quality gate (separate instruction)"
+}

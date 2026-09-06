@@ -1,0 +1,1597 @@
+{
+  "schemaVersion": "1.0",
+  "createdAtUTC": "2026-09-05T23:59:51Z",
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "files": [
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2010-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-01-01T00:00:00Z&time%3C%3D2010-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:30:03Z",
+      "httpStatus": 200,
+      "bytes": 2619563,
+      "sha256": "ef8eadf846972b9c5474a9688b57bc943f7f45e0985b570035e26f39cb54b401"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2010-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-04-01T00:00:00Z&time%3C%3D2010-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:30:34Z",
+      "httpStatus": 200,
+      "bytes": 4301952,
+      "sha256": "c3ed5c875c432fee743a657e1d845cc551a427ddcda94be40358a376341c3490"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2010-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-07-01T00:00:00Z&time%3C%3D2010-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:31:03Z",
+      "httpStatus": 200,
+      "bytes": 3687427,
+      "sha256": "28c78bb483185f73021e11bd2b4a41fa66060411f0df215733d877c2417ddc25"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2010-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-10-01T00:00:00Z&time%3C%3D2011-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:31:31Z",
+      "httpStatus": 200,
+      "bytes": 4674480,
+      "sha256": "17c757501f8a5bd2a9ffe9db6af8acbf2430c56e780fda544a27196adf3591cb"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2011-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-01-01T00:00:00Z&time%3C%3D2011-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:31:57Z",
+      "httpStatus": 200,
+      "bytes": 3832809,
+      "sha256": "6e9d3200734804a81d06a18d6164fd0a912925e45191cd0c01eb9127af611842"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2011-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-04-01T00:00:00Z&time%3C%3D2011-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:32:23Z",
+      "httpStatus": 200,
+      "bytes": 2615958,
+      "sha256": "87f7c72af8b3f89ec9aa5bfdaaa9dbdb65b65bf2cdceb3dc517e09fd097f0002"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2011-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-07-01T00:00:00Z&time%3C%3D2011-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:32:45Z",
+      "httpStatus": 200,
+      "bytes": 1036131,
+      "sha256": "741cb6accb8621a07539675b920ddd1896e89da6ac01f83afdf1e9a3ca5126ae"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2011-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-10-01T00:00:00Z&time%3C%3D2012-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:33:06Z",
+      "httpStatus": 200,
+      "bytes": 721761,
+      "sha256": "aa5146f4bfc5fd90b40f2bac465d5c63a734c8510038983818dfa13f8a80e6b5"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2012-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-01-01T00:00:00Z&time%3C%3D2012-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:33:22Z",
+      "httpStatus": 200,
+      "bytes": 1192512,
+      "sha256": "ee60a7e41757b8bb3a94083d72a0921e9b67b4649c3008ccc67b0048c1f86f21"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2012-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-04-01T00:00:00Z&time%3C%3D2012-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:33:36Z",
+      "httpStatus": 200,
+      "bytes": 2996515,
+      "sha256": "ffb1fa9c9bca3e8ad0f5253ad1c365b3f1a88a3e28c054478751053048be78db"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2012-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-07-01T00:00:00Z&time%3C%3D2012-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:33:50Z",
+      "httpStatus": 200,
+      "bytes": 2547963,
+      "sha256": "0404be94427505e7612cb669e71c2e559bfc882b509a5aed5a53f9e912755c5e"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2012-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-10-01T00:00:00Z&time%3C%3D2013-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:34:02Z",
+      "httpStatus": 200,
+      "bytes": 2086118,
+      "sha256": "0d0b5dcae2442054f3a74f3ff8e7dfc3b162445102a703aa9b91a80904cf4329"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2013-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-01-01T00:00:00Z&time%3C%3D2013-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:34:16Z",
+      "httpStatus": 200,
+      "bytes": 1381483,
+      "sha256": "73a6f05958aed1ebbee49f19e7c8983cf6e524488c599e41ca8d2fe05f2f8e11"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2013-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-04-01T00:00:00Z&time%3C%3D2013-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:34:27Z",
+      "httpStatus": 200,
+      "bytes": 618888,
+      "sha256": "e7c20e3de1a083bcc1531f3d4cf90936dc601c34e8dcfcc5faf51b5731eaa9e3"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2013-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-07-01T00:00:00Z&time%3C%3D2013-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:34:40Z",
+      "httpStatus": 200,
+      "bytes": 541330,
+      "sha256": "31de500919392b2ab4bab51cc112c56866f66d0e86148daa044714c98c503a6b"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2013-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-10-01T00:00:00Z&time%3C%3D2014-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:34:52Z",
+      "httpStatus": 200,
+      "bytes": 475292,
+      "sha256": "52dc5b3fab1f76dfcdc978f6d1d29fb82f0b02f9eaed8ab1baff0631d91d3e54"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2014-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-01-01T00:00:00Z&time%3C%3D2014-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:35:05Z",
+      "httpStatus": 200,
+      "bytes": 549054,
+      "sha256": "52b9777a06fbcb7b56d58e5c0c96e063c15cfa2dad336fd807f21df2805378a1"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2014-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-04-01T00:00:00Z&time%3C%3D2014-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:35:20Z",
+      "httpStatus": 200,
+      "bytes": 286132,
+      "sha256": "e2ad0ddb78c403168a765eea2fa84f60a2a42d8e0580c9e7306cf4621f0cd336"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2014-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-07-01T00:00:00Z&time%3C%3D2014-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:35:34Z",
+      "httpStatus": 200,
+      "bytes": 378166,
+      "sha256": "f37f9e137074d1a04bd8b876ff170280442ff36672c1929500a71e2aeec8655f"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2014-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-10-01T00:00:00Z&time%3C%3D2015-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:35:47Z",
+      "httpStatus": 200,
+      "bytes": 602270,
+      "sha256": "133edc1fdd4153d8d92b513f4ba88cbee314644a6994583391e288d887937704"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2015-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-01-01T00:00:00Z&time%3C%3D2015-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:36:01Z",
+      "httpStatus": 200,
+      "bytes": 1183048,
+      "sha256": "017bebf6d0b44f6a8a4f5e81acc1f722bc50ae525a1301558e8921efeb337191"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2015-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-04-01T00:00:00Z&time%3C%3D2015-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:36:16Z",
+      "httpStatus": 200,
+      "bytes": 2791963,
+      "sha256": "344fda06e3da9e55c0b7822a06ed04c28510b626e7d3af5e073326de3376788d"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2015-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-07-01T00:00:00Z&time%3C%3D2015-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:36:33Z",
+      "httpStatus": 200,
+      "bytes": 2988810,
+      "sha256": "b5f320eb94cf9bfc1029a45b36d842d11ac6705f99dc3d53e0c95204bf2a45dd"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2015-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-10-01T00:00:00Z&time%3C%3D2016-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:36:53Z",
+      "httpStatus": 200,
+      "bytes": 1805253,
+      "sha256": "b7b2c4354b765d2d19866626cc85f5d6e4072ef96eaf79f815d4a548276c0f2d"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2016-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-01-01T00:00:00Z&time%3C%3D2016-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:37:20Z",
+      "httpStatus": 200,
+      "bytes": 2644191,
+      "sha256": "6b9a0f4532cc663d07e9388a75ab8fc0475913cada8a4a4c111632860c09a074"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2016-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-04-01T00:00:00Z&time%3C%3D2016-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:37:46Z",
+      "httpStatus": 200,
+      "bytes": 2926207,
+      "sha256": "2a24f090993eb3d23c4fd454a6c658d8b888c1af9f8b348c1f1659923ea80d47"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2016-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-07-01T00:00:00Z&time%3C%3D2016-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:38:10Z",
+      "httpStatus": 200,
+      "bytes": 2015684,
+      "sha256": "a94a37a8f9bdcad6e33117477dce7b73baab76f6b54e57e4171858421fc23c9c"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2016-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-10-01T00:00:00Z&time%3C%3D2017-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:38:37Z",
+      "httpStatus": 200,
+      "bytes": 1226237,
+      "sha256": "1dcf17acb7aae863d9f4804e4a89ba144b58c2e889716d9477265eacd6229ef8"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2017-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-01-01T00:00:00Z&time%3C%3D2017-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:39:06Z",
+      "httpStatus": 200,
+      "bytes": 2963365,
+      "sha256": "42164cc8a24f4cde3789dc58754088a1eaa436949dfd2c85d7edc9830bb7cc1c"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2017-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-04-01T00:00:00Z&time%3C%3D2017-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:39:35Z",
+      "httpStatus": 200,
+      "bytes": 3642301,
+      "sha256": "4386b5de8bfa2a8dd5420d85ef10b852ecaf089c336adcba3a562ed84f81faff"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2017-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-07-01T00:00:00Z&time%3C%3D2017-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:40:07Z",
+      "httpStatus": 200,
+      "bytes": 3757716,
+      "sha256": "e4be067d24549947ea789bbd24d42d3543c08379c19bae8e663928e566ef60eb"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2017-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-10-01T00:00:00Z&time%3C%3D2018-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:40:36Z",
+      "httpStatus": 200,
+      "bytes": 3698666,
+      "sha256": "7727e24b760dc73bee8128ecfb3203596b111d27d1af70f58fc402154289b4e6"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2018-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-01-01T00:00:00Z&time%3C%3D2018-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:41:07Z",
+      "httpStatus": 200,
+      "bytes": 3448967,
+      "sha256": "ad361e3f0c199e93e0697f8c07fbfb4d607ae1e0e8fce7f01bddb142572deebf"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2018-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-04-01T00:00:00Z&time%3C%3D2018-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:41:36Z",
+      "httpStatus": 200,
+      "bytes": 3863694,
+      "sha256": "a82271115278e930ccfb520e027d4c79ae7afbbca31d3d5670e93558e1a3c365"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2018-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-07-01T00:00:00Z&time%3C%3D2018-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:42:04Z",
+      "httpStatus": 200,
+      "bytes": 4901144,
+      "sha256": "7d52a947acb470f6b361126016b4407d8a88169b45c6db3e76bf9fdfc057526c"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2018-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-10-01T00:00:00Z&time%3C%3D2019-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:42:31Z",
+      "httpStatus": 200,
+      "bytes": 4050040,
+      "sha256": "abf8f88ff4ebb166729cac7a53f77ca83d7261f22012ebc1f954f764757da6d6"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2019-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-01-01T00:00:00Z&time%3C%3D2019-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:43:02Z",
+      "httpStatus": 200,
+      "bytes": 2434946,
+      "sha256": "b3b2806e0f14c3d2f56555e82e55c1ab0fea48c82ef82970b648d9f0c64b0b63"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2019-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-04-01T00:00:00Z&time%3C%3D2019-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:43:32Z",
+      "httpStatus": 200,
+      "bytes": 3832941,
+      "sha256": "6cb2568379a366d710bcbd4adbbc88cb8180ff0763c4789cef0c1b51d2f26a3d"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2019-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-07-01T00:00:00Z&time%3C%3D2019-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:43:58Z",
+      "httpStatus": 200,
+      "bytes": 4498668,
+      "sha256": "d1c0cff92c9a8e935e5a3e29a07796cd5789d307e5cbbf1b592b8218fb1121e6"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2019-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-10-01T00:00:00Z&time%3C%3D2020-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:44:25Z",
+      "httpStatus": 200,
+      "bytes": 3264901,
+      "sha256": "16abb67b41a50cbe3002c3678fa06689d89fe5bb29eec85982c8726437ec0b3c"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2020-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-01-01T00:00:00Z&time%3C%3D2020-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:44:51Z",
+      "httpStatus": 200,
+      "bytes": 2660738,
+      "sha256": "a008a155332a254d7fac307ddc68f61d0758e9f249b6a810151f58df71724234"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2020-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-04-01T00:00:00Z&time%3C%3D2020-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:45:15Z",
+      "httpStatus": 200,
+      "bytes": 3154814,
+      "sha256": "13d47caf77c722a21856877b09f0ce54a60359081424bfeaec18181e3d04d5a4"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2020-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-07-01T00:00:00Z&time%3C%3D2020-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:45:42Z",
+      "httpStatus": 200,
+      "bytes": 3004934,
+      "sha256": "20a2d9251f00312c1b9d25ef348c98f65bc4b35ca708ba638b3e19206b3e4eba"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "AG-2020-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-10-01T00:00:00Z&time%3C%3D2021-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D12&longitude%3C%3D38",
+      "retrievedAtUTC": "2026-09-05T23:46:05Z",
+      "httpStatus": 200,
+      "bytes": 2421516,
+      "sha256": "dad216df0b90e0ecc79afbe95d81df5da31b6a178880f514ecb8dbb4a28a5985"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2010-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-01-01T00:00:00Z&time%3C%3D2010-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:30:14Z",
+      "httpStatus": 200,
+      "bytes": 3984888,
+      "sha256": "ab7e7791a5c4e8ca34c22c19c16d3ba6395663c7ed6bd6132937f8777bd2946b"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2010-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-04-01T00:00:00Z&time%3C%3D2010-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:30:41Z",
+      "httpStatus": 200,
+      "bytes": 3270257,
+      "sha256": "77131c64bb79ce84dffb39451f2256ebe98f11743e16dc38fcfd806391b9c773"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2010-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-07-01T00:00:00Z&time%3C%3D2010-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:31:09Z",
+      "httpStatus": 200,
+      "bytes": 1781578,
+      "sha256": "1747440028806c2e8036157388b82f1135c747ecd872d5486e82cbc75150b71e"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2010-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-10-01T00:00:00Z&time%3C%3D2011-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:31:37Z",
+      "httpStatus": 200,
+      "bytes": 1838221,
+      "sha256": "3489632835b315f8cd4ac3939d10839db33440c3265667ea43ce7b2e0aad10ab"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2011-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-01-01T00:00:00Z&time%3C%3D2011-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:32:04Z",
+      "httpStatus": 200,
+      "bytes": 2608530,
+      "sha256": "b9497f0d417b15bc812d4bbff6439a61a84f267c0313a971231fab6b1d36459d"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2011-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-04-01T00:00:00Z&time%3C%3D2011-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:32:27Z",
+      "httpStatus": 200,
+      "bytes": 2884447,
+      "sha256": "e8e8a3451b0489fa9a71c6a132dfb79169c4674bb9aa8e63850059e56c98e888"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2011-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-07-01T00:00:00Z&time%3C%3D2011-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:32:50Z",
+      "httpStatus": 200,
+      "bytes": 1472963,
+      "sha256": "4e59b181462fb64cc60a2c51cda56aa80c170562301b385ed7559e3127489365"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2011-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-10-01T00:00:00Z&time%3C%3D2012-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:33:11Z",
+      "httpStatus": 200,
+      "bytes": 1686160,
+      "sha256": "5adda826109c4643944014886e61f70d097526d5841ba365aa233d802d2a6ead"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2012-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-01-01T00:00:00Z&time%3C%3D2012-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:33:25Z",
+      "httpStatus": 200,
+      "bytes": 914138,
+      "sha256": "0e8f946979e4fbe98af147bf7744cfb3f096d3a399b560ca4a3e20cac3de871d"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2012-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-04-01T00:00:00Z&time%3C%3D2012-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:33:40Z",
+      "httpStatus": 200,
+      "bytes": 626509,
+      "sha256": "afb182c6a95df207eb94af200f1079dff998fa699feca1b1af4b29e511dc6292"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2012-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-07-01T00:00:00Z&time%3C%3D2012-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:33:53Z",
+      "httpStatus": 200,
+      "bytes": 124423,
+      "sha256": "8f4c0bc3f695a9949d8a74cc87e938543ebe003a510d0f478ade7b0cf998566b"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2012-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-10-01T00:00:00Z&time%3C%3D2013-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:34:07Z",
+      "httpStatus": 404,
+      "bytes": 116,
+      "sha256": "108d623d4e598a90529c68b7f40ff7812e31cf592426d2ba2f5652dcda2ec336"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2013-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-01-01T00:00:00Z&time%3C%3D2013-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:34:19Z",
+      "httpStatus": 200,
+      "bytes": 180843,
+      "sha256": "46b38c783986be3751a16aea1cce2435a53efc166bd7d9ff17f052c365f793de"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2013-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-04-01T00:00:00Z&time%3C%3D2013-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:34:30Z",
+      "httpStatus": 200,
+      "bytes": 362590,
+      "sha256": "9839028272c65ba84ae02e67616f5a343aa46594a1c2090d6be0d4dbc1d7e36b"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2013-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-07-01T00:00:00Z&time%3C%3D2013-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:34:43Z",
+      "httpStatus": 200,
+      "bytes": 132354,
+      "sha256": "171e59b90cc6b3684b949aab6e4563b982864d6cff895e3957d3677ea232ef10"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2013-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-10-01T00:00:00Z&time%3C%3D2014-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:34:56Z",
+      "httpStatus": 200,
+      "bytes": 1360844,
+      "sha256": "58ce8c5a20ec50495a653c09b92bac332a1479f0fb251942338b56ee42a97a58"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2014-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-01-01T00:00:00Z&time%3C%3D2014-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:35:09Z",
+      "httpStatus": 200,
+      "bytes": 2417018,
+      "sha256": "4aa5e6b8479cd68be9aa8f0696b12a4b7942c3257a17e2a754f3c6fcd2b815c6"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2014-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-04-01T00:00:00Z&time%3C%3D2014-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:35:24Z",
+      "httpStatus": 200,
+      "bytes": 1534030,
+      "sha256": "a6ff90602681d99eabd06f51aab79ce6fb93d49a18d7116a51e08f214d17622d"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2014-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-07-01T00:00:00Z&time%3C%3D2014-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:35:37Z",
+      "httpStatus": 200,
+      "bytes": 1238771,
+      "sha256": "c86ec53468187b144e15790ee3f16e6b15ffece75a2d15bdae8ec84a1cade1ac"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2014-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-10-01T00:00:00Z&time%3C%3D2015-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:35:49Z",
+      "httpStatus": 200,
+      "bytes": 869416,
+      "sha256": "d85b33e377900c5ddd9a0bb49159c75f3ff82dd385392172de212b48fe2b7bb1"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2015-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-01-01T00:00:00Z&time%3C%3D2015-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:36:04Z",
+      "httpStatus": 200,
+      "bytes": 774330,
+      "sha256": "0fac22b1633af9499faf8ad0f99fe01073bcf131c341069b7ebae433acb25298"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2015-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-04-01T00:00:00Z&time%3C%3D2015-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:36:20Z",
+      "httpStatus": 200,
+      "bytes": 871709,
+      "sha256": "4d292c7f2186d487924b5668d78a8fe1f2b69250ac0170529851397034597625"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2015-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-07-01T00:00:00Z&time%3C%3D2015-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:36:37Z",
+      "httpStatus": 200,
+      "bytes": 857843,
+      "sha256": "8e46d82a82e14546a1fb941d190ef275c077b65fb66156c1ef9096d5a6863293"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2015-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-10-01T00:00:00Z&time%3C%3D2016-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:36:57Z",
+      "httpStatus": 200,
+      "bytes": 2635365,
+      "sha256": "ede21e4b1fc401fecc82a2c7e64adb8dbd7d07bb18984c883f7f913f96c1b36c"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2016-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-01-01T00:00:00Z&time%3C%3D2016-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:37:26Z",
+      "httpStatus": 200,
+      "bytes": 1889655,
+      "sha256": "14dcd859cb60c1e03d5633156d3608dd4c9776d3b346d61812fbc6be52615e76"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2016-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-04-01T00:00:00Z&time%3C%3D2016-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:37:51Z",
+      "httpStatus": 200,
+      "bytes": 1128234,
+      "sha256": "1d2b86693f27f28a431bccddab9cdf9275e555e8daa2668ce8022b3fb2ab022f"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2016-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-07-01T00:00:00Z&time%3C%3D2016-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:38:14Z",
+      "httpStatus": 200,
+      "bytes": 686185,
+      "sha256": "b33909d0d44571160b9496c71fd13634a7fe40d6fe5667749926992419260029"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2016-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-10-01T00:00:00Z&time%3C%3D2017-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:38:42Z",
+      "httpStatus": 200,
+      "bytes": 1062632,
+      "sha256": "534d7a8cf715f037284c98dc90412d18c2fd327b9282575394f82754a1a7ab5a"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2017-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-01-01T00:00:00Z&time%3C%3D2017-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:39:12Z",
+      "httpStatus": 200,
+      "bytes": 1615180,
+      "sha256": "ab50bcc151dbda1c3c1ae8d9a934ecc703b27eb2117a18a9c844e12cadc5a4cc"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2017-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-04-01T00:00:00Z&time%3C%3D2017-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:39:40Z",
+      "httpStatus": 200,
+      "bytes": 1674509,
+      "sha256": "15bdb8593308c29f82e4a3894d08c76c2aafced330cb73285dec782f65c57d37"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2017-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-07-01T00:00:00Z&time%3C%3D2017-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:40:13Z",
+      "httpStatus": 200,
+      "bytes": 1245007,
+      "sha256": "6150959c6f7ea2e92410d7d76dea29e652828b517d5ed562219e8d33f89f5d7c"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2017-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-10-01T00:00:00Z&time%3C%3D2018-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:40:41Z",
+      "httpStatus": 200,
+      "bytes": 1367712,
+      "sha256": "3a40f6baf5fb5c852bddcfba62ed4fa7de3694f2eba7388e8b561b8e32dd898a"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2018-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-01-01T00:00:00Z&time%3C%3D2018-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:41:13Z",
+      "httpStatus": 200,
+      "bytes": 1954092,
+      "sha256": "edffc88c056c9b4b80c3ceff01fdb7e401a5ed42fbfb7f65c075aedee6fee828"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2018-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-04-01T00:00:00Z&time%3C%3D2018-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:41:41Z",
+      "httpStatus": 200,
+      "bytes": 1897379,
+      "sha256": "28374f15e46369004b698db07c45344081f92ae9e1300e0a5739cc5a411b5cc5"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2018-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-07-01T00:00:00Z&time%3C%3D2018-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:42:11Z",
+      "httpStatus": 200,
+      "bytes": 1967600,
+      "sha256": "aa639a02ad7ed56fc19c074b00edbbdedbc7cdbff4a37e4ea97f809f9e0a9550"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2018-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-10-01T00:00:00Z&time%3C%3D2019-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:42:39Z",
+      "httpStatus": 200,
+      "bytes": 3373978,
+      "sha256": "a0005679fdf31764e4990dc47a8c394d2c017b1ae7d9255dc1797fce8e580099"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2019-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-01-01T00:00:00Z&time%3C%3D2019-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:43:08Z",
+      "httpStatus": 200,
+      "bytes": 3942675,
+      "sha256": "17d4e9b45a14c5b9ea10d529eba48d275684618fdf943576350383edfef1221a"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2019-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-04-01T00:00:00Z&time%3C%3D2019-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:43:37Z",
+      "httpStatus": 200,
+      "bytes": 2734754,
+      "sha256": "1f15ddc9fe812a00ab4f04111cd9a40d79c577c257414dff99461e9c9b20de3e"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2019-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-07-01T00:00:00Z&time%3C%3D2019-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:44:03Z",
+      "httpStatus": 200,
+      "bytes": 1766175,
+      "sha256": "67a9ffb928319232d924dfe4fe8b88af9b3882c4ddf77be00cdf5bf288779f13"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2019-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-10-01T00:00:00Z&time%3C%3D2020-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:44:30Z",
+      "httpStatus": 200,
+      "bytes": 2145676,
+      "sha256": "80b18b67682daf27c689c46b5dca07df71d43a6d0df072394916bf87984bf796"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2020-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-01-01T00:00:00Z&time%3C%3D2020-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:44:57Z",
+      "httpStatus": 200,
+      "bytes": 2611501,
+      "sha256": "1dd23adb763d36e6091a5b2bb8938722e277204fea690682a129ca3b368d0c5c"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2020-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-04-01T00:00:00Z&time%3C%3D2020-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:45:19Z",
+      "httpStatus": 200,
+      "bytes": 1955045,
+      "sha256": "c2991e48500dc7b75b344bcc6a605a65e6f5445f8799798c4599b532d13b732f"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2020-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-07-01T00:00:00Z&time%3C%3D2020-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:45:46Z",
+      "httpStatus": 200,
+      "bytes": 956349,
+      "sha256": "2048208b7a23f757b005d003105ae29567e5941f54220ed03957df1e3c62c276"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "BM-2020-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-10-01T00:00:00Z&time%3C%3D2021-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-27&longitude%3E%3D-63&longitude%3C%3D-42",
+      "retrievedAtUTC": "2026-09-05T23:46:10Z",
+      "httpStatus": 200,
+      "bytes": 830682,
+      "sha256": "2d911278ac296657c2ac77380252e808a206c8811238cc00b430cb08c715b5a0"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2010-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-01-01T00:00:00Z&time%3C%3D2010-04-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:29:13Z",
+      "httpStatus": 200,
+      "bytes": 2977680,
+      "sha256": "0aa36a5da88947784b120e624dc31bb29954b9f2f5778605aab4af181fcf5bc0"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2010-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-04-01T00:00:00Z&time%3C%3D2010-07-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:30:22Z",
+      "httpStatus": 200,
+      "bytes": 3284790,
+      "sha256": "f9da42a4103870b30ca2c3e270a256a64118a273fc28b4c40b304d109a9c8c4c"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2010-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-07-01T00:00:00Z&time%3C%3D2010-10-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:30:49Z",
+      "httpStatus": 200,
+      "bytes": 7176557,
+      "sha256": "074ae91f289b1b7d9aaae09dffa976f3a45a2b7606c9560dee1b63ceb3da9ca9"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2010-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-10-01T00:00:00Z&time%3C%3D2011-01-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:31:16Z",
+      "httpStatus": 200,
+      "bytes": 6209258,
+      "sha256": "b138736c47bb987a7482d414feb007a09ea007dbbc4f2e488225aaa203037873"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2011-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-01-01T00:00:00Z&time%3C%3D2011-04-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:31:44Z",
+      "httpStatus": 200,
+      "bytes": 5818498,
+      "sha256": "1b5053b50237c7a97b90b257415baf2800cd33217d4cb02ccfbb230e647149e5"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2011-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-04-01T00:00:00Z&time%3C%3D2011-07-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:32:11Z",
+      "httpStatus": 200,
+      "bytes": 5458369,
+      "sha256": "25e9d0aa078d4cdb209607e6d5c3e25d4e89f353d2f9ee3e658be08d8e93e097"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2011-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-07-01T00:00:00Z&time%3C%3D2011-10-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:32:33Z",
+      "httpStatus": 200,
+      "bytes": 7287600,
+      "sha256": "25789368ad6247097b5ea28f25634eefbda7e4870340566ea93ab68fdea32d7e"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2011-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-10-01T00:00:00Z&time%3C%3D2012-01-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:32:55Z",
+      "httpStatus": 200,
+      "bytes": 8906172,
+      "sha256": "8173ed7c4dbd5db8a22fe3aefbfb49cf0780d00a0cb55253174b36f0d11e0f8e"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2012-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-01-01T00:00:00Z&time%3C%3D2012-04-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:33:15Z",
+      "httpStatus": 200,
+      "bytes": 5658819,
+      "sha256": "60cfb931d678213fb6a2cbf8acc510cb586035b76302e51143c33095ee9ef2bb"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2012-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-04-01T00:00:00Z&time%3C%3D2012-07-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:33:29Z",
+      "httpStatus": 200,
+      "bytes": 3441200,
+      "sha256": "4aefc1adafadfe022859c5872a29c2b2ee38f4009086c9fa9e01dbb3f5789095"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2012-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-07-01T00:00:00Z&time%3C%3D2012-10-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:33:43Z",
+      "httpStatus": 200,
+      "bytes": 2295834,
+      "sha256": "a87cd9da33ff8143ccdef14e5dfdfba4c974e0d747d08a6b87b0ded6f3818964"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2012-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-10-01T00:00:00Z&time%3C%3D2013-01-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:33:56Z",
+      "httpStatus": 200,
+      "bytes": 1009496,
+      "sha256": "9beb24d6440844d929fc35322137855d7968a44c78e06b74a836d18818d4ebe8"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2013-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-01-01T00:00:00Z&time%3C%3D2013-04-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:34:10Z",
+      "httpStatus": 200,
+      "bytes": 1018294,
+      "sha256": "b836e4b3fab294a81ebf8221183c2a41d750f66954434b87361e8523364d58ff"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2013-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-04-01T00:00:00Z&time%3C%3D2013-07-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:34:22Z",
+      "httpStatus": 200,
+      "bytes": 1355845,
+      "sha256": "57d3056cbae7d2a054610af48c1c06f81402993e807c329f40bcb905bbf5b40e"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2013-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-07-01T00:00:00Z&time%3C%3D2013-10-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:34:34Z",
+      "httpStatus": 200,
+      "bytes": 2707191,
+      "sha256": "f3f33ec7c5a33ffe48fd55c0c851749fdb72a0d0694a5775e55f84fddc9ecc52"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2013-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-10-01T00:00:00Z&time%3C%3D2014-01-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:34:46Z",
+      "httpStatus": 200,
+      "bytes": 3174469,
+      "sha256": "f5e661f02eec2a525af0fd93191ceda44c7565a2cecef4e28de82ced18b82014"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2014-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-01-01T00:00:00Z&time%3C%3D2014-04-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:35:00Z",
+      "httpStatus": 200,
+      "bytes": 3349661,
+      "sha256": "b89010fc9f10c2f911f070888c3eb714e3bbd5bbaaddc8d353b48ba1ddd7d5cc"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2014-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-04-01T00:00:00Z&time%3C%3D2014-07-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:35:14Z",
+      "httpStatus": 200,
+      "bytes": 4662597,
+      "sha256": "c93b56c09fb773a631dee22f7b98f92faa00f73b083f7bc5369eba350d73ecbb"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2014-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-07-01T00:00:00Z&time%3C%3D2014-10-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:35:29Z",
+      "httpStatus": 200,
+      "bytes": 5834974,
+      "sha256": "0f19859f8f7cc258cb13671aad989067400dd7cd9ddeb1c70033d7b277a9be2c"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2014-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-10-01T00:00:00Z&time%3C%3D2015-01-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:35:40Z",
+      "httpStatus": 200,
+      "bytes": 5613317,
+      "sha256": "011213e879b1fc7334ebe148ce68f70f6fb466ca8bf3f9ba45865b83a4ce9f1d"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2015-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-01-01T00:00:00Z&time%3C%3D2015-04-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:35:54Z",
+      "httpStatus": 200,
+      "bytes": 3748860,
+      "sha256": "bd3b521d4d4577024d5ee2f8c595cfb3ed608ca7222c0ec1e6d8ee6db13104b7"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2015-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-04-01T00:00:00Z&time%3C%3D2015-07-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:36:09Z",
+      "httpStatus": 200,
+      "bytes": 2957885,
+      "sha256": "d609f11cd145779659e0412e0d79dffdc73d926af8ff5b62dc0ea6e3881ead19"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2015-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-07-01T00:00:00Z&time%3C%3D2015-10-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:36:26Z",
+      "httpStatus": 200,
+      "bytes": 4607439,
+      "sha256": "30e48efff4cdf1a5dc52b7add3f56922923e77192eaa917b8727e05199752c31"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2015-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-10-01T00:00:00Z&time%3C%3D2016-01-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:36:43Z",
+      "httpStatus": 200,
+      "bytes": 4500848,
+      "sha256": "d306046e57883642e656f8ca703979abf1bfea201c12c292d2d5c4e65ef0561d"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2016-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-01-01T00:00:00Z&time%3C%3D2016-04-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:37:04Z",
+      "httpStatus": 200,
+      "bytes": 4330932,
+      "sha256": "b87ad796ad20769037511ba80f7574e01546d4852a23a7b42379a10ad5d8438b"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2016-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-04-01T00:00:00Z&time%3C%3D2016-07-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:37:33Z",
+      "httpStatus": 200,
+      "bytes": 5318966,
+      "sha256": "e8124f22fcf7d3a3f90464e7444f64370e2b64e5029576f0cd34d50f267d8750"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2016-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-07-01T00:00:00Z&time%3C%3D2016-10-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:37:58Z",
+      "httpStatus": 200,
+      "bytes": 5770210,
+      "sha256": "f730c30d16d85146874444d60770e0e07ee1d12d0807fce3a5e39f55a32889a1"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2016-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-10-01T00:00:00Z&time%3C%3D2017-01-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:38:23Z",
+      "httpStatus": 200,
+      "bytes": 6419264,
+      "sha256": "bca98e829d02cfcf87d262077fb9e24f294587aa841502aa5058a9ad1310d7af"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2017-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-01-01T00:00:00Z&time%3C%3D2017-04-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:38:49Z",
+      "httpStatus": 200,
+      "bytes": 4928591,
+      "sha256": "18b2b167a17d252bca93fa73ab1db824af0b2482d0a233fe9a94508396e7fdfb"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2017-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-04-01T00:00:00Z&time%3C%3D2017-07-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:39:21Z",
+      "httpStatus": 200,
+      "bytes": 4540774,
+      "sha256": "e947d61d7e7b11e0e3d9c725bfef1fc38407993c2dba1e707c0e8854c7644044"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2017-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-07-01T00:00:00Z&time%3C%3D2017-10-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:39:50Z",
+      "httpStatus": 200,
+      "bytes": 6614126,
+      "sha256": "3ba6b5615dd2c11340fa57aff7465d0b5fdf5ccd9c6150ddff1929693fe96a2d"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2017-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-10-01T00:00:00Z&time%3C%3D2018-01-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:40:22Z",
+      "httpStatus": 200,
+      "bytes": 9703432,
+      "sha256": "8e1cc63959d681c6d47809720fa6132f1ce3ed9fb145d6ffdaf6f8cad9a66063"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2018-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-01-01T00:00:00Z&time%3C%3D2018-04-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:40:53Z",
+      "httpStatus": 200,
+      "bytes": 8332876,
+      "sha256": "da0a03c39eada27acfbadcbaf7d5cfba98276dd2948031f6f0879217d45dc3cc"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2018-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-04-01T00:00:00Z&time%3C%3D2018-07-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:41:21Z",
+      "httpStatus": 200,
+      "bytes": 8178977,
+      "sha256": "3a82cc24efbba5cfe2870d891754bb08942b779f4aed84ec68fb662595b409c1"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2018-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-07-01T00:00:00Z&time%3C%3D2018-10-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:41:51Z",
+      "httpStatus": 200,
+      "bytes": 9206385,
+      "sha256": "7fe2e187a3a222845c9bbcc56ac8a7326b8b4b45b980ec9936d6690a4dc5165c"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2018-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-10-01T00:00:00Z&time%3C%3D2019-01-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:42:18Z",
+      "httpStatus": 200,
+      "bytes": 8422122,
+      "sha256": "eb74227c8e12b17a5a12be73b0d659b0b60ce1568c96291b9ce8adc7a8183361"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2019-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-01-01T00:00:00Z&time%3C%3D2019-04-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:42:49Z",
+      "httpStatus": 200,
+      "bytes": 5690687,
+      "sha256": "bded413f6d57ca18f2d32e7e0b1914aa8f768c75717eb0765af3f491747d3949"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2019-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-04-01T00:00:00Z&time%3C%3D2019-07-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:43:18Z",
+      "httpStatus": 200,
+      "bytes": 6608362,
+      "sha256": "d1522eccf9e85d6bef718f260920c18ce6e54747d92f1f03c4e8d8a52f25d931"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2019-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-07-01T00:00:00Z&time%3C%3D2019-10-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:43:46Z",
+      "httpStatus": 200,
+      "bytes": 8127114,
+      "sha256": "b959e73ef55b541ada022cc237483e5985fdcb56940c7968e7076659f6834edc"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2019-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-10-01T00:00:00Z&time%3C%3D2020-01-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:44:12Z",
+      "httpStatus": 200,
+      "bytes": 7304319,
+      "sha256": "d5a6f06cc4c0b34067235570f0a32fbedd0f39e7b7ddacc2cc925a275d2286d2"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2020-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-01-01T00:00:00Z&time%3C%3D2020-04-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:44:39Z",
+      "httpStatus": 200,
+      "bytes": 4609365,
+      "sha256": "5a328693616edfa81b586cc69ceda64619e569009bf362226e615ab625395958"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2020-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-04-01T00:00:00Z&time%3C%3D2020-07-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:45:05Z",
+      "httpStatus": 200,
+      "bytes": 4850296,
+      "sha256": "ef7844107486f165ec6c88a22e4c0da4919cd5bb2a71cadbaca9b352c429a985"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2020-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-07-01T00:00:00Z&time%3C%3D2020-10-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:45:29Z",
+      "httpStatus": 200,
+      "bytes": 7606484,
+      "sha256": "fd71dcc8cf0b5d9ef715cce61500e1a052f7c35744f3008f439f21fa503e0cf7"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "GS-2020-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-10-01T00:00:00Z&time%3C%3D2021-01-03T12:00:00Z&latitude%3E%3D29&latitude%3C%3D43&longitude%3E%3D-78&longitude%3C%3D-52",
+      "retrievedAtUTC": "2026-09-05T23:45:54Z",
+      "httpStatus": 200,
+      "bytes": 11545348,
+      "sha256": "af1d6154a90a67ef0c003241d125738afb9f3e658f12009e8fc8607cded4744c"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2010-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-01-01T00:00:00Z&time%3C%3D2010-04-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:29:22Z",
+      "httpStatus": 200,
+      "bytes": 6870620,
+      "sha256": "294a91008e0ec8b8ad28b39b82f7bf0524c0479e804870c63df8b06de842c430"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2010-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-04-01T00:00:00Z&time%3C%3D2010-07-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:30:27Z",
+      "httpStatus": 200,
+      "bytes": 7502292,
+      "sha256": "c2cdced4cd1aaaca9bde94da4bec0ef1ba7472241631252fba15a437d9b87d17"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2010-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-07-01T00:00:00Z&time%3C%3D2010-10-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:30:54Z",
+      "httpStatus": 200,
+      "bytes": 8279067,
+      "sha256": "3e200cc2a1c49248b4052d67fd0be9a8a1e710346b810c07d6f9d40d323d2355"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2010-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-10-01T00:00:00Z&time%3C%3D2011-01-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:31:22Z",
+      "httpStatus": 200,
+      "bytes": 7856048,
+      "sha256": "7f900d79331aabcba48a624f251753859f9aabe863321ef03516b90ba8bcff99"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2011-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-01-01T00:00:00Z&time%3C%3D2011-04-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:31:49Z",
+      "httpStatus": 200,
+      "bytes": 4265146,
+      "sha256": "284e1d0e40ce024d7fecfb28abcba5dd7e0a3fb1c983916376ee45e07454baba"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2011-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-04-01T00:00:00Z&time%3C%3D2011-07-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:32:17Z",
+      "httpStatus": 200,
+      "bytes": 6948244,
+      "sha256": "f11944754569525f5fa19e9b1f60d0fd2afae4981b2d261a4a2ae21e02f399fd"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2011-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-07-01T00:00:00Z&time%3C%3D2011-10-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:32:39Z",
+      "httpStatus": 200,
+      "bytes": 11823898,
+      "sha256": "218f2390283079c5cb643fbbe17ccd8b2578d1de06d5955d47f9eb75dd3d01a0"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2011-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-10-01T00:00:00Z&time%3C%3D2012-01-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:33:01Z",
+      "httpStatus": 200,
+      "bytes": 10968107,
+      "sha256": "0251feb40a621174bd09ca0147654a9b41fe90c8d9b3817b24bf2dc7d3911937"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2012-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-01-01T00:00:00Z&time%3C%3D2012-04-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:33:18Z",
+      "httpStatus": 200,
+      "bytes": 4177067,
+      "sha256": "f263b5ccc8e92c67cbafcf2cb891dbb08bf109bc3f58ba8add8de6b94ad8e536"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2012-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-04-01T00:00:00Z&time%3C%3D2012-07-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:33:32Z",
+      "httpStatus": 200,
+      "bytes": 2576284,
+      "sha256": "a356733b131157c11a8fff33ecd6fde66c97610b64c2691c4b19603372e35ec4"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2012-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-07-01T00:00:00Z&time%3C%3D2012-10-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:33:46Z",
+      "httpStatus": 200,
+      "bytes": 2614055,
+      "sha256": "f2d073360531a85f36960c7b36a89941efbd3d767f81b8e7d4e2df41c2841444"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2012-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-10-01T00:00:00Z&time%3C%3D2013-01-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:33:59Z",
+      "httpStatus": 200,
+      "bytes": 2706858,
+      "sha256": "714ae611d6396c399682748fd5288b5d98aaf4578adca51e116db28225670a21"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2013-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-01-01T00:00:00Z&time%3C%3D2013-04-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:34:13Z",
+      "httpStatus": 200,
+      "bytes": 1515310,
+      "sha256": "847be295710f75d55b950cc2e959dabe9afed0ec8be8a32a65feae78a95adc4c"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2013-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-04-01T00:00:00Z&time%3C%3D2013-07-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:34:24Z",
+      "httpStatus": 200,
+      "bytes": 428717,
+      "sha256": "86e0bef6b6ec6ca179b417b02a02ce97f0f4a5ea9fccda35c60efba50a10e3a2"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2013-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-07-01T00:00:00Z&time%3C%3D2013-10-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:34:37Z",
+      "httpStatus": 200,
+      "bytes": 1591901,
+      "sha256": "328113a408aed572095c811089c456ff51b621752815783be544663da24138ac"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2013-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-10-01T00:00:00Z&time%3C%3D2014-01-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:34:49Z",
+      "httpStatus": 200,
+      "bytes": 2002365,
+      "sha256": "025f5c4c12245803d2e1990c7e3e5770bfc58d2f02cc1da6de1dca0cc358c212"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2014-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-01-01T00:00:00Z&time%3C%3D2014-04-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:35:03Z",
+      "httpStatus": 200,
+      "bytes": 2138230,
+      "sha256": "0fdb5eba48b91ba6392e824f73af6cbd105b48ff6117700f31364338d93160a5"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2014-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-04-01T00:00:00Z&time%3C%3D2014-07-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:35:17Z",
+      "httpStatus": 200,
+      "bytes": 1615825,
+      "sha256": "4c6b9a92ad2bfd929e6e6fac7991c142d37c3c49695a674bec90146a9c1e25a4"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2014-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-07-01T00:00:00Z&time%3C%3D2014-10-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:35:32Z",
+      "httpStatus": 200,
+      "bytes": 1891964,
+      "sha256": "c354cbd77fde3b79a4b57b208f8e6876756ffaa6fefefe6cfac397fbc3d0ede1"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2014-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-10-01T00:00:00Z&time%3C%3D2015-01-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:35:44Z",
+      "httpStatus": 200,
+      "bytes": 2462486,
+      "sha256": "06e439a81a4da6ab3641de26540e48b0062257a1c52f90914d7b3f67f9689207"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2015-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-01-01T00:00:00Z&time%3C%3D2015-04-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:35:57Z",
+      "httpStatus": 200,
+      "bytes": 2214684,
+      "sha256": "050b796ba65c56910a4b190f2deece94cffe79cfd04ef153187307f34c6743db"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2015-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-04-01T00:00:00Z&time%3C%3D2015-07-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:36:12Z",
+      "httpStatus": 200,
+      "bytes": 3828225,
+      "sha256": "7ee82f9d090d74aba5fd8dddc1c2a7d2224cf809db47ad43f4ba4b90180a8f64"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2015-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-07-01T00:00:00Z&time%3C%3D2015-10-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:36:29Z",
+      "httpStatus": 200,
+      "bytes": 4755394,
+      "sha256": "bd8acf97e05d8cd8143974923e24089c8d8a3f563da28d12580077c700773e10"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2015-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-10-01T00:00:00Z&time%3C%3D2016-01-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:36:47Z",
+      "httpStatus": 200,
+      "bytes": 5810589,
+      "sha256": "d9a2a2dbd7c654d3ab840956e8075475280b5cabce7f28877af7b5334ed2c6e5"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2016-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-01-01T00:00:00Z&time%3C%3D2016-04-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:37:08Z",
+      "httpStatus": 200,
+      "bytes": 4535914,
+      "sha256": "21c413d732c40fb67ebff92d67b265c333c817b83539f386cb7340fdd2486e30"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2016-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-04-01T00:00:00Z&time%3C%3D2016-07-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:37:38Z",
+      "httpStatus": 200,
+      "bytes": 4171654,
+      "sha256": "1fcf9320b4c9f6f43c3b012b7ffb43c10408fcc1c686ffe7177998d8317dd4d1"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2016-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-07-01T00:00:00Z&time%3C%3D2016-10-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:38:03Z",
+      "httpStatus": 200,
+      "bytes": 4219237,
+      "sha256": "261249836ca8f51a8fb5bbd079012b65c832e79fda1a83adcf248f965a0c1371"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2016-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-10-01T00:00:00Z&time%3C%3D2017-01-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:38:28Z",
+      "httpStatus": 200,
+      "bytes": 4572116,
+      "sha256": "6a788cdae5e931f75d2269edc4f56b11a1e2082a0c039e67d05a66af125cf228"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2017-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-01-01T00:00:00Z&time%3C%3D2017-04-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:38:54Z",
+      "httpStatus": 200,
+      "bytes": 3958659,
+      "sha256": "ee65d3d6d6483745cf2b81e4bc8e65532182f042ffb419c7ef671bd5db7ecb85"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2017-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-04-01T00:00:00Z&time%3C%3D2017-07-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:39:26Z",
+      "httpStatus": 200,
+      "bytes": 4430024,
+      "sha256": "2b74402245382c52e0ce7abff030928e1320fb1845809a06d58c6971937528b4"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2017-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-07-01T00:00:00Z&time%3C%3D2017-10-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:39:55Z",
+      "httpStatus": 200,
+      "bytes": 7161498,
+      "sha256": "bb9e92de17ba8c7495dd488a7dc3cceaaec1501c5bcce6fb068c63663e9ee624"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2017-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2017-10-01T00:00:00Z&time%3C%3D2018-01-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:40:27Z",
+      "httpStatus": 200,
+      "bytes": 7121582,
+      "sha256": "74920a4520701a782067e8e278686ff4fc34d37a0c81010525caba840d76f6ff"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2018-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-01-01T00:00:00Z&time%3C%3D2018-04-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:40:57Z",
+      "httpStatus": 200,
+      "bytes": 4699944,
+      "sha256": "f631194c8b900c6375117c2c622a99f7ca44ba964564aef05f6e569e353448b2"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2018-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-04-01T00:00:00Z&time%3C%3D2018-07-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:41:26Z",
+      "httpStatus": 200,
+      "bytes": 4350772,
+      "sha256": "f60a1626a9d9abb130f34f299bfe170990f31e56a357b7994ca4c4c4eb2b6af6"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2018-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-07-01T00:00:00Z&time%3C%3D2018-10-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:41:56Z",
+      "httpStatus": 200,
+      "bytes": 7667188,
+      "sha256": "c4580201992f2988136ed6cf6835d24d306eb0b889794c847caebf3cabb0dc45"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2018-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2018-10-01T00:00:00Z&time%3C%3D2019-01-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:42:22Z",
+      "httpStatus": 200,
+      "bytes": 6229756,
+      "sha256": "a3f6a81e975a599a1c4fe19d6a2b4d35483b31151ef8c6dac26c7626bc519c3d"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2019-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-01-01T00:00:00Z&time%3C%3D2019-04-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:42:53Z",
+      "httpStatus": 200,
+      "bytes": 3031045,
+      "sha256": "cecf7489b6b7dc1ea802ea920212106a48db2fca530c8aaf16d3b886582a094d"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2019-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-04-01T00:00:00Z&time%3C%3D2019-07-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:43:23Z",
+      "httpStatus": 200,
+      "bytes": 2672827,
+      "sha256": "a5d93146b64da748f607861014a36e6e51752b1b0bce903c20989aacac3a5bf4"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2019-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-07-01T00:00:00Z&time%3C%3D2019-10-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:43:51Z",
+      "httpStatus": 200,
+      "bytes": 4763093,
+      "sha256": "fa8ff903946074d22613bf2bb62b2f1f09818dcf8e4b03ed0d1dbacec216d5e2"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2019-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2019-10-01T00:00:00Z&time%3C%3D2020-01-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:44:17Z",
+      "httpStatus": 200,
+      "bytes": 9874604,
+      "sha256": "7f7861f69152b4310df4cf86678f4dc36fbcfb7f515e991f23b777964863cb07"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2020-q1.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-01-01T00:00:00Z&time%3C%3D2020-04-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:44:43Z",
+      "httpStatus": 200,
+      "bytes": 6789461,
+      "sha256": "a3df0991b819ffd45e55a4260b69a2b456a9300d03678e45790c58e70a350205"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2020-q2.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-04-01T00:00:00Z&time%3C%3D2020-07-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:45:09Z",
+      "httpStatus": 200,
+      "bytes": 4799994,
+      "sha256": "acf7ca26f172a3dbc8e048c93fa74a1a3be8ac95746d66222f8fd23830574b23"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2020-q3.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-07-01T00:00:00Z&time%3C%3D2020-10-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:45:35Z",
+      "httpStatus": 200,
+      "bytes": 5246409,
+      "sha256": "3aed729034fec3dc8f956a75a0e8bd87fd71469e4cf5358c1b849df32f2f332d"
+    },
+    {
+      "source": "NOAA AOML GDP hourly QC (ERDDAP drifter_hourly_qc), CC BY 4.0",
+      "filename": "KE-2020-q4.csv",
+      "query": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2020-10-01T00:00:00Z&time%3C%3D2021-01-03T12:00:00Z&latitude%3E%3D27&latitude%3C%3D43&longitude%3E%3D132&longitude%3C%3D163",
+      "retrievedAtUTC": "2026-09-05T23:45:59Z",
+      "httpStatus": 200,
+      "bytes": 6340280,
+      "sha256": "9b4c00c498dbd5b8b9da92160dccfea2e2b9eba2ded16692c98b2a857a19cf76"
+    }
+  ],
+  "acquisitionScript": "tools/research/acquire_step15_observations.sh",
+  "rawLocation": "data/research/step15/noaa-gdp-hourly-qc/ (not committed; SHAs here)",
+  "coastline": {
+    "file": "ne_10m_coastline.geojson",
+    "sha256": "6f75ae0e0de157b14946e2255eb1f5486d9a13819032e26d4610852d296788f6"
+  }
+}

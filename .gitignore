@@ -67,3 +67,20 @@ build/
 .studio-auto-data/
 artifacts/character-studio/
 artifacts/character-studio-deploy/
+
+# 124종 캐릭터 팩 원본 이미지 — 약 194MB, git이 아니라 배포 스크립트(파일시스템 sync)로 옮긴다.
+# manifest(docs/)는 작고 추적할 가치가 있어 남긴다. 원본 소스는 D:\## APP\EARTHUS v2_APP\v3_CHARACTERS\.
+prototype/v3-kids/pack124/characters/
+prototype/v3-kids/pack124/scenes/
+
+# 124종 통합 증거 캡처 — 실행할 때마다 새로 만든다.
+artifacts/v3-kids-pack124/
+
+# 종이 지구(v3-paper) — 깃허브에는 v1·v2 만 둔다(사용자 결정 2026-09-05). 원본은 Earthus v2_DOC/v3/paper-globe-live,
+# 배포는 aws/deploy-v3-paper.sh 가 파일시스템에서 바로 올린다.
+prototype/v3-paper/
+artifacts/v3-paper/
+artifacts/v3-paper/
+
+# STEP 15 raw observation inputs (hundreds of MB) — SHAs and acquisition log are kept in docs/research/step15-observation-manifest.json
+data/research/step15/

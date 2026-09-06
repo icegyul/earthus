@@ -1,0 +1,386 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "model-protocol-step18-openloop-72h-alpha0007",
+  "protocolDocument": "docs/research/step18-model-protocol.md",
+  "protocolDocumentSha256": "519b3d35bc13524b3e0a30f5521cd2e696ffecdceead58535b0c4959ac3bea2b",
+  "createdAtUTC": "2026-09-06T04:37:07Z",
+  "authorProcess": "Claude Code session (Research Intelligence PHASE 2, STEP 18 Phase A) — preregistration only; no model run, no trajectory computed",
+  "gitCommitAtDesign": "cc4d8c48",
+  "immutabilityCheck": {
+    "step15Commit": "7091c5cb",
+    "step16CohortSha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+    "step16CohortCommit": "5bc3590b",
+    "step17LockCommit": "551668ef",
+    "step17ProtocolSha256": "db73ef67d1a191d67b29d488805a3c9998a65bf70b80dffe15b40ed8eb041792",
+    "step17PreregistrationSha256": "b4bad6447e8de801fa44ba5e51de161ddaee066638bebe11011b5d495e131378",
+    "step17PhaseBCommit": "cc4d8c48",
+    "step17ForcingManifestSha256": "591cc05799da03e6bb604321d9e2b129a32a201112922c4d06823026a0b5ac86",
+    "aggregateForcingSha256": "01acda6b9a30d9038df866ca378e3a4b2e041aa37667309810cabbf3e36c6dcd",
+    "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "workingTreeResearchPathsClean": true,
+    "step18OutputDirectoryExists": false,
+    "result": "PASS",
+    "checkedAtUTC": "2026-09-06T04:37:07Z"
+  },
+  "inputs": {
+    "cohort": "docs/research/cohort-step16.json",
+    "forcingManifest": "docs/research/step17-forcing-manifest.json",
+    "observationRoot": "data/research/step15/noaa-gdp-hourly-qc/",
+    "glorys": "NOT USED (BLOCKED/PENDING; no substitute)"
+  },
+  "cohort": {
+    "uniqueDrifters": 23,
+    "KE": 13,
+    "AG": 10,
+    "releasePositions": "t0 observed position of each cohort drifter (startLon/startLat in cohort file)",
+    "modificationsAllowed": false
+  },
+  "runUnits": [
+    {
+      "windowId": "KE-1",
+      "region": "KE",
+      "t0": "2010-05-11T12:00:00Z",
+      "end": "2010-05-14T12:00:00Z",
+      "drifterCount": 8,
+      "drifterIds": [
+        "81801",
+        "81805",
+        "81807",
+        "81811",
+        "81813",
+        "81814",
+        "71155",
+        "81816"
+      ],
+      "oceanDomain": {
+        "south": 28.12786,
+        "north": 38.19472,
+        "west": 140.60959,
+        "east": 161.61974
+      },
+      "modelArea": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": -40.0,
+        "north": 40.0
+      },
+      "forcingSha256": "eebd0c38e647b9fbdc3bc08202589fddce3e57892a3edfc1c2c12f01eddfca8d",
+      "hycomGridSha256": "649ebad52f64b7d2bbe05ef6e8e818f7f0e8791fc8ac01ac5422c9d53d3fb74a",
+      "hycomFileSha256": "8d5310d4823db910d4038c5bcca6474f83c6bbb369ff0528bef34a2bf31becac",
+      "ncepGridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+      "ncepFileSha256": "6e6c0c225cf70d676e7adb1cf0ba2b18f3805db9e0e02eef710295f564473a71"
+    },
+    {
+      "windowId": "KE-2",
+      "region": "KE",
+      "t0": "2010-06-30T12:00:00Z",
+      "end": "2010-07-03T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "81802",
+        "48965",
+        "90141",
+        "90142",
+        "90145"
+      ],
+      "oceanDomain": {
+        "south": 29.70784,
+        "north": 40.0,
+        "west": 133.53249,
+        "east": 154.78535
+      },
+      "modelArea": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": -40.0,
+        "north": 40.0
+      },
+      "forcingSha256": "b3da27677e778d6e29af7bb1ad13119f8d7049f9b161950dbf1ed6a5ac213226",
+      "hycomGridSha256": "1d597036f12febb4d962b7418c25fd752677fa471d8afa12b8811801afe76a9e",
+      "hycomFileSha256": "0f8c97f095d589595cb5b3da5245925409285c5f4274cdf953346e070cb03747",
+      "ncepGridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+      "ncepFileSha256": "2b913475ada3a1fa16d3a29b3441151b328eb99df64f798ee3467527cedda71f"
+    },
+    {
+      "windowId": "AG-1",
+      "region": "AG",
+      "t0": "2015-04-23T12:00:00Z",
+      "end": "2015-04-26T12:00:00Z",
+      "drifterCount": 9,
+      "drifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634"
+      ],
+      "oceanDomain": {
+        "south": -40.0,
+        "north": -32.13828,
+        "west": 18.31773,
+        "east": 32.013940000000005
+      },
+      "modelArea": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": 40.0
+      },
+      "forcingSha256": "dd0342c513139fd7c6de4033416f838e4423570e4fbdf89e6de4d4810337966c",
+      "hycomGridSha256": "ee9af738d169cb6302b1987cafa5022f5d41f450e2cb3c7df1f5284fa58aae3b",
+      "hycomFileSha256": "a069519ba811973756a84f8b0441eea0db37fd228dbad00fee0f95b419fe9d0e",
+      "ncepGridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+      "ncepFileSha256": "00ff12e9daabcca05c9db6e5542eb788871c5fbae14a6d3774152d36cfbc6785"
+    },
+    {
+      "windowId": "AG-2",
+      "region": "AG",
+      "t0": "2015-04-26T12:00:00Z",
+      "end": "2015-04-29T12:00:00Z",
+      "drifterCount": 1,
+      "drifterIds": [
+        "127281"
+      ],
+      "oceanDomain": {
+        "south": -38.76674,
+        "north": -34.76674,
+        "west": 19.79639,
+        "east": 23.79639
+      },
+      "modelArea": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -40.0,
+        "north": 40.0
+      },
+      "forcingSha256": "78fc422e2a29e99ba9275dbb9d9c9370fffa13a0db193e2d9d7052a2473ef057",
+      "hycomGridSha256": "c53b91b4922c5b1f97ff4c704f87bb2a0fa14d6ea8da4a11bbcc9719dfe43859",
+      "hycomFileSha256": "98cdef34b02da691a32792126540c0628327802653a0e015e57782dafc6404ec",
+      "ncepGridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+      "ncepFileSha256": "f32e7a2a4f2e7d991d516e5ac97308ac1f4c0b143b9cf39612f604c1910f7699"
+    }
+  ],
+  "model": {
+    "modelId": "surface-passive-advection.v2.windage",
+    "modelVersion": "0.1.0",
+    "implementation": "services/research-runtime/research_runtime/models_v2.py (no code change)",
+    "v1SourceSha256Prefix": "42e5886b (4-file snapshot, immutable)",
+    "equation": "dX/dt = U_ocean(15 m) + alpha * U_wind(10 m)",
+    "coordinateConversion": "spherical geographic: dlon/dt = u/(R_deg*cos(lat)), dlat/dt = v/R_deg, R_deg = 1852*60 m/deg, evaluated at the current latitude at every RK4 stage; no fixed km/deg constant",
+    "integrator": "RK4, ocean and wind re-interpolated at all four stages, alpha*U_wind added at every stage",
+    "depth": "15 m only, no vertical motion",
+    "excluded": [
+      "diffusion/random walk",
+      "Stokes drift",
+      "vertical mixing",
+      "leeway angle",
+      "data assimilation",
+      "nudging",
+      "observation reset"
+    ],
+    "observationUsedByModel": false,
+    "randomSeed": null,
+    "deterministic": true
+  },
+  "time": {
+    "start": "t0 = window start 12Z",
+    "durationSeconds": 259200,
+    "lastTimestamp": "t0 + 72 h exactly",
+    "outputStepSeconds": 900,
+    "outputSamplesPerDrifter": 289,
+    "integrationStepSeconds": 300,
+    "integrationSubstepsPerOutput": 3,
+    "integrationStepRationale": "locked runtime preflight (models.py, immutable V1 source) enforces integrationStepSeconds <= floor(min_grid_m/(4*max_speed)); from the STEP 17 Phase B normalized forcing this bound is KE-1 655 s, KE-2 733 s, AG-1 579 s, AG-2 663 s, so 900 s is rejected for all four windows; 300 s (runtime default, same as STEP 11) satisfies all four; 900 s is therefore the output/evaluation/status timestep and the RK4 substep is 300 s; fixed before any run and not changed afterwards",
+    "gridTravelBoundSeconds": {
+      "KE-1": 655,
+      "KE-2": 733,
+      "AG-1": 579,
+      "AG-2": 663
+    }
+  },
+  "interpolation": {
+    "spatial": "bilinear on native grids (HYCOM 0.08° regular; NCEP Gaussian)",
+    "temporal": "linear between adjacent frames",
+    "extrapolation": false,
+    "regridding": false,
+    "smoothing": false,
+    "zeroFill": false,
+    "landValues": false,
+    "frameDuplication": false,
+    "stencil": "all 4 nodes wet and non-null"
+  },
+  "domain": {
+    "latitude": [
+      -40.0,
+      40.0
+    ],
+    "longitude": "locked ocean forcing domain [west, east] of the run unit",
+    "runtimeSpecArea": "area = {west, east from ocean domain; south -40; north 40}"
+  },
+  "statusRules": {
+    "vocabulary": [
+      "OUT_OF_DOMAIN",
+      "FORCING_UNAVAILABLE"
+    ],
+    "OUT_OF_DOMAIN": "particle position outside the model domain (latitude outside [-40, 40] or longitude outside the locked ocean domain)",
+    "FORCING_UNAVAILABLE": "particle inside the model domain but the forcing stencil at that time/position is invalid (outside forcing grid, null node, land-mask node, wind box/time outside)",
+    "runtimeMapping": {
+      "OUT_OF_DOMAIN": "OUT_OF_DOMAIN (only when the position is outside the model domain; otherwise FORCING_UNAVAILABLE)",
+      "MISSING_FORCING": "FORCING_UNAVAILABLE",
+      "STRANDED": "FORCING_UNAVAILABLE",
+      "ACTIVE": "ACTIVE",
+      "COMPLETED": "COMPLETED"
+    },
+    "decisionTimestep": "each 900 s output timestep",
+    "onTermination": "terminate that drifter's run at that timestep; last valid=true point is the previous output timestep; runtime boundary-crossing sample exported with valid=false; drifter never removed; no rows after termination; metrics NOT_AVAILABLE for missing horizons",
+    "independentPerRun": true,
+    "AG-1": "t0 latitudes down to -39.8; OUT_OF_DOMAIN south of -40 recorded as-is; no special handling",
+    "releasePreflightFailure": "record that drifter at t0 as FORCING_UNAVAILABLE (single row, valid=false); run continues; STEP 17 QC showed all 23 t0 stencils valid, so an occurrence is treated as a forcing mismatch and documented"
+  },
+  "runs": [
+    {
+      "runId": "step18-A-alpha0007",
+      "alpha": 0.0007,
+      "role": "primary"
+    },
+    {
+      "runId": "step18-B-alpha0",
+      "alpha": 0.0,
+      "role": "control",
+      "identicalExceptAlpha": true
+    }
+  ],
+  "runOrder": [
+    "KE-1/A",
+    "KE-1/B",
+    "KE-2/A",
+    "KE-2/B",
+    "AG-1/A",
+    "AG-1/B",
+    "AG-2/A",
+    "AG-2/B"
+  ],
+  "otherAlphaRuns": "PROHIBITED",
+  "precomputedAlphaRuns": false,
+  "output": {
+    "root": "data/research/step18/",
+    "committed": false,
+    "gitignore": "data/research/step18/",
+    "files": "data/research/step18/<windowId>/<run_id>.trajectories.csv (+ <run_id>.result.json raw runtime result)",
+    "columns": [
+      "run_id",
+      "drifter_id",
+      "timestamp",
+      "lat",
+      "lon",
+      "alpha",
+      "status",
+      "valid"
+    ],
+    "columnRules": {
+      "timestamp": "ISO-8601 UTC YYYY-MM-DDTHH:MM:SSZ",
+      "lat": "6 decimals WGS84",
+      "lon": "6 decimals, -180..180",
+      "alpha": "literal 0.0007 or 0",
+      "status": [
+        "ACTIVE",
+        "COMPLETED",
+        "OUT_OF_DOMAIN",
+        "FORCING_UNAVAILABLE"
+      ],
+      "valid": "true for ACTIVE/COMPLETED model positions, false for termination rows"
+    },
+    "rowOrder": "drifter_id ascending (string), then timestamp ascending",
+    "optionalVelocityColumns": "NOT INCLUDED (runtime result has no velocities; post-hoc re-evaluation would be derived, excluded now)"
+  },
+  "manifest": {
+    "file": "docs/research/step18-model-manifest.json",
+    "committed": true,
+    "fields": [
+      "ruleId",
+      "status",
+      "protocolSha256",
+      "preregistrationSha256",
+      "modelRuleSha256",
+      "cohortSha256",
+      "forcingManifestSha256",
+      "aggregateForcingSha256",
+      "observationSha256",
+      "modelId",
+      "modelVersion",
+      "modelSourceSha256",
+      "modelCommit",
+      "environment",
+      "runs[].runId",
+      "runs[].windowId",
+      "runs[].alpha",
+      "runs[].drifterCount",
+      "runs[].integrationStepSeconds",
+      "runs[].outputStepSeconds",
+      "runs[].durationSeconds",
+      "runs[].area",
+      "runs[].datasetVersions",
+      "runs[].windDataset",
+      "runs[].forcingSha256",
+      "runs[].gridSha256",
+      "runs[].windGridSha256",
+      "runs[].resultFile",
+      "runs[].resultSha256",
+      "runs[].trajectoriesFile",
+      "runs[].trajectoriesSha256",
+      "runs[].rows",
+      "runs[].statusCounts",
+      "runs[].replayMatched",
+      "outputSchema",
+      "metrics",
+      "createdAtUTC",
+      "deterministic",
+      "randomSeed"
+    ],
+    "reproducibility": "each run executed twice (second in a separate replay process); trajectories SHA-256 must match (replayMatched) else MODEL_RUN_FAIL"
+  },
+  "metrics": {
+    "distance": "haversine, radius 6371008.8 m, km",
+    "observationMatching": "exact UTC timestamp match with STEP 15 hourly QC files; no interpolation; missing → NOT_AVAILABLE",
+    "M1": "72 h endpoint displacement: release point → model position at t0+72h; NOT_AVAILABLE if not valid at t0+72h",
+    "M2": "total trajectory displacement: sum of distances between consecutive valid=true output points up to the last valid point; valid duration (h) recorded",
+    "M3": "observed-vs-modeled position error at every on-the-hour timestamp with an observation; horizons 24/48/72 h reported separately; NOT_AVAILABLE if model not valid or no observation",
+    "M4": "alpha effect: RUN A vs RUN B position distance at timestamps where both valid; paired difference A−B of M3(72 h) when both available",
+    "M5": "observed 72 h displacement (reference against cohort A2)",
+    "aggregation": "per run, per run unit, overall (23): n, median, mean, min, max; paired metrics on the same drifter only",
+    "acceptanceThresholds": "NONE in this protocol — trajectory production and descriptive statistics only; PASS/FAIL judgement requires a separate preregistration fixing STEP 12 K1–K5 numerically (validation-plan-v3)",
+    "independenceNote": "temporal overlap within and across windows does not imply statistical independence; n=23 is not an independent sample count",
+    "confidenceIntervals": "none for the deterministic model; no bootstrap at this step",
+    "postHocMetrics": "PROHIBITED"
+  },
+  "failurePolicy": {
+    "inputShaMismatch": "MODEL_RUN_BLOCKED_IMMUTABILITY (no run)",
+    "preflightError": "MODEL_RUN_BLOCKED_PREFLIGHT (no run; no parameter change to satisfy the bound)",
+    "runtimeException": "MODEL_RUN_FAIL; partial output preserved; one retry with identical input only",
+    "replayMismatch": "MODEL_RUN_FAIL (reproducibility)",
+    "earlyTermination": "not a failure; recorded; metrics NOT_AVAILABLE",
+    "allRunsCompleteAndReplayMatched": "MODEL_RUN_PASS (trajectory production only, not validation PASS)"
+  },
+  "prohibited": [
+    "changing alpha, integration/output step, domain, status rules, metrics or output schema after seeing results",
+    "excluding or adding drifters",
+    "correcting the model with observations",
+    "running multiple configurations and choosing",
+    "precomputed alpha scans",
+    "modifying STEP 15/16/17 files",
+    "re-acquiring forcing",
+    "committing result files",
+    "committing credentials"
+  ],
+  "modelRun": false,
+  "trajectoryComputed": false,
+  "resultFilesCreated": false,
+  "lockedAtUTC": "2026-09-06T04:37:07Z",
+  "lockPolicy": "after LOCK no change to model, equation, timestep, interpolation, domain, status rules, runs, output schema, manifest fields, metrics or failure policy; changes require a new ruleId",
+  "nextStep": "STEP 18 — PHASE B: MODEL RUN (separate instruction only; nothing executed in Phase A)"
+}

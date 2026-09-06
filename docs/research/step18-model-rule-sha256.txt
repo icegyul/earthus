@@ -1,0 +1,2 @@
+519b3d35bc13524b3e0a30f5521cd2e696ffecdceead58535b0c4959ac3bea2b  docs/research/step18-model-protocol.md
+f02b17379140c8d0f7304dc2f15d512341c089b6773d2b4f6021da382972ecf4  docs/research/step18-preregistration.json

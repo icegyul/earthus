@@ -89,3 +89,5 @@ data/research/step15/
 .copernicusmarine/
 .cdsapirc
 secrets/
+# STEP 18 model/trajectory outputs are never committed; only docs/research/step18-model-manifest.json is
+data/research/step18/

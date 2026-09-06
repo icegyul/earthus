@@ -1,0 +1,165 @@
+{
+  "ruleId": "glorys12v1-acquisition-quality-gate-step25b",
+  "accessStatus": "CREDENTIALS_REQUIRED",
+  "depthRule": {
+    "targetMeters": 15.0,
+    "nearestNativeLevelMeters": 15.81,
+    "rule": "single native GLORYS level nearest to 15 m, taken as stored (expected 15.81 m); recorded from the file; no vertical interpolation; no depth search; no best-depth selection; depth sensitivity belongs to TEST-04 only",
+    "verticalInterpolation": false,
+    "depthSearch": false,
+    "bestDepthSelection": false
+  },
+  "gateDefinitions": {
+    "G1": "provenance: productId GLOBAL_MULTIYEAR_PHY_001_030 / datasetId cmems_mod_glo_phy_my_0.083deg_P1D-m recorded from the client request",
+    "G2": "file integrity: SHA-256 and byte size of every acquired file recorded in the manifest and re-verified",
+    "G3": "coordinate integrity: strictly increasing, uniform longitude/latitude axes; latitude within [-90, 90]",
+    "G4": "time axis: strictly increasing, uniform 86400 s daily steps",
+    "G5": "variables uo and vo present, 4-D (time, depth, lat, lon)",
+    "G6": "spatial coverage: the locked ocean box lies inside the acquired grid",
+    "G7": "temporal coverage: daily means bracketing t0 and end on both sides with no gap",
+    "G8": "missingness: masked fraction of uo/vo inside the ocean box recorded (fact only; no fill)",
+    "G9": "units: uo/vo in m s-1",
+    "G10": "release-window stencil: the 2x2 bilinear stencil around every release position is unmasked at the bracketing days of t0 and end",
+    "G11": "reproducibility: quality tool re-run to a temporary directory yields byte-identical outputs (checked by the validator)"
+  },
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "status": "NOT_ACQUIRED",
+      "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+      "gates": {
+        "G1": "NOT_EVALUATED",
+        "G2": "NOT_EVALUATED",
+        "G3": "NOT_EVALUATED",
+        "G4": "NOT_EVALUATED",
+        "G5": "NOT_EVALUATED",
+        "G6": "NOT_EVALUATED",
+        "G7": "NOT_EVALUATED",
+        "G8": "NOT_EVALUATED",
+        "G9": "NOT_EVALUATED",
+        "G10": "NOT_EVALUATED",
+        "G11": "NOT_EVALUATED"
+      }
+    },
+    {
+      "windowId": "KE-2",
+      "status": "NOT_ACQUIRED",
+      "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+      "gates": {
+        "G1": "NOT_EVALUATED",
+        "G2": "NOT_EVALUATED",
+        "G3": "NOT_EVALUATED",
+        "G4": "NOT_EVALUATED",
+        "G5": "NOT_EVALUATED",
+        "G6": "NOT_EVALUATED",
+        "G7": "NOT_EVALUATED",
+        "G8": "NOT_EVALUATED",
+        "G9": "NOT_EVALUATED",
+        "G10": "NOT_EVALUATED",
+        "G11": "NOT_EVALUATED"
+      }
+    },
+    {
+      "windowId": "AG-1",
+      "status": "NOT_ACQUIRED",
+      "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+      "gates": {
+        "G1": "NOT_EVALUATED",
+        "G2": "NOT_EVALUATED",
+        "G3": "NOT_EVALUATED",
+        "G4": "NOT_EVALUATED",
+        "G5": "NOT_EVALUATED",
+        "G6": "NOT_EVALUATED",
+        "G7": "NOT_EVALUATED",
+        "G8": "NOT_EVALUATED",
+        "G9": "NOT_EVALUATED",
+        "G10": "NOT_EVALUATED",
+        "G11": "NOT_EVALUATED"
+      }
+    },
+    {
+      "windowId": "AG-2",
+      "status": "NOT_ACQUIRED",
+      "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+      "gates": {
+        "G1": "NOT_EVALUATED",
+        "G2": "NOT_EVALUATED",
+        "G3": "NOT_EVALUATED",
+        "G4": "NOT_EVALUATED",
+        "G5": "NOT_EVALUATED",
+        "G6": "NOT_EVALUATED",
+        "G7": "NOT_EVALUATED",
+        "G8": "NOT_EVALUATED",
+        "G9": "NOT_EVALUATED",
+        "G10": "NOT_EVALUATED",
+        "G11": "NOT_EVALUATED"
+      }
+    },
+    {
+      "windowId": "KE-H1",
+      "status": "NOT_ACQUIRED",
+      "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+      "gates": {
+        "G1": "NOT_EVALUATED",
+        "G2": "NOT_EVALUATED",
+        "G3": "NOT_EVALUATED",
+        "G4": "NOT_EVALUATED",
+        "G5": "NOT_EVALUATED",
+        "G6": "NOT_EVALUATED",
+        "G7": "NOT_EVALUATED",
+        "G8": "NOT_EVALUATED",
+        "G9": "NOT_EVALUATED",
+        "G10": "NOT_EVALUATED",
+        "G11": "NOT_EVALUATED"
+      }
+    },
+    {
+      "windowId": "KE-H2",
+      "status": "NOT_ACQUIRED",
+      "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+      "gates": {
+        "G1": "NOT_EVALUATED",
+        "G2": "NOT_EVALUATED",
+        "G3": "NOT_EVALUATED",
+        "G4": "NOT_EVALUATED",
+        "G5": "NOT_EVALUATED",
+        "G6": "NOT_EVALUATED",
+        "G7": "NOT_EVALUATED",
+        "G8": "NOT_EVALUATED",
+        "G9": "NOT_EVALUATED",
+        "G10": "NOT_EVALUATED",
+        "G11": "NOT_EVALUATED"
+      }
+    },
+    {
+      "windowId": "KE-H3",
+      "status": "NOT_ACQUIRED",
+      "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+      "gates": {
+        "G1": "NOT_EVALUATED",
+        "G2": "NOT_EVALUATED",
+        "G3": "NOT_EVALUATED",
+        "G4": "NOT_EVALUATED",
+        "G5": "NOT_EVALUATED",
+        "G6": "NOT_EVALUATED",
+        "G7": "NOT_EVALUATED",
+        "G8": "NOT_EVALUATED",
+        "G9": "NOT_EVALUATED",
+        "G10": "NOT_EVALUATED",
+        "G11": "NOT_EVALUATED"
+      }
+    }
+  ],
+  "windowsPass": 0,
+  "windowsAcquired": 0,
+  "keH2": "NOT_ACQUIRED",
+  "test02Eligibility": {
+    "status": "STEP25B_CREDENTIALS_REQUIRED",
+    "pairedWindowsEligible": [],
+    "acceptedForTestMeaning": "technically eligible for the preregistered TEST-02; NOT 'better than HYCOM'"
+  },
+  "substitutionPerformed": false,
+  "interpolationPerformed": false,
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0
+}

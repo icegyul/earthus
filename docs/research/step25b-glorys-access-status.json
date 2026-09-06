@@ -1,0 +1,43 @@
+{
+  "ruleId": "glorys12v1-acquisition-quality-gate-step25b",
+  "product": {
+    "productId": "GLOBAL_MULTIYEAR_PHY_001_030",
+    "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+    "name": "Global Ocean Physics Reanalysis (GLORYS12V1)",
+    "doi": "10.48670/moi-00021",
+    "resolution": "1/12 deg (~8 km)",
+    "levels": 50,
+    "cadence": "daily mean"
+  },
+  "tool": {
+    "name": "copernicusmarine (Copernicus Marine Toolbox, official client)",
+    "isolatedVenv": "data/research/step25b/toolbox-venv",
+    "installedInIsolatedVenv": true,
+    "runtimeIsolated": true,
+    "installationMethod": "python -m venv + pip install copernicusmarine (no credentials involved)",
+    "version": "copernicusmarine, version 2.4.1",
+    "versionCheckedAtUTC": "2026-09-06T09:54:34Z",
+    "installedAtUTC": "2026-09-06T09:53:15Z",
+    "revision": "r2 (console script instead of python -m; stdin closed)"
+  },
+  "credentialExistence": {
+    "copernicusmarine_credentials_file": false,
+    "netrc": false,
+    "env": false,
+    "contentsRead": false
+  },
+  "authentication": {
+    "method": "copernicusmarine login --check-credentials-valid (exit code only)",
+    "checkedAtUTC": "2026-09-06T09:54:34Z",
+    "credentialsEntered": false,
+    "credentialsStored": false,
+    "exitCode": 1,
+    "outputScrubbed": "INFO - 2026-09-06T09:54:35Z - Checking if credentials are valid.\nINFO - 2026-09-06T09:54:35Z - No credentials found.\nINFO - 2026-09-06T09:54:35Z - Please provide credentials as arguments or environment variables, or use the 'login' command to create a credentials file.\n",
+    "authenticated": false
+  },
+  "accessStatus": "CREDENTIALS_REQUIRED",
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0,
+  "step17GlorysRecord": "BLOCKED/PENDING — historically immutable",
+  "checkedAtUTC": "2026-09-06T09:54:35Z"
+}

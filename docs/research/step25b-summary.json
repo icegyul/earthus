@@ -1,0 +1,34 @@
+{
+  "ruleId": "glorys12v1-acquisition-quality-gate-step25b",
+  "status": "STEP25B_CREDENTIALS_REQUIRED",
+  "accessStatus": "CREDENTIALS_REQUIRED",
+  "toolbox": {
+    "name": "copernicusmarine (Copernicus Marine Toolbox, official client)",
+    "isolatedVenv": "data/research/step25b/toolbox-venv",
+    "installedInIsolatedVenv": true,
+    "runtimeIsolated": true,
+    "installationMethod": "python -m venv + pip install copernicusmarine (no credentials involved)",
+    "version": "copernicusmarine, version 2.4.1",
+    "versionCheckedAtUTC": "2026-09-06T09:54:34Z",
+    "installedAtUTC": "2026-09-06T09:53:15Z",
+    "revision": "r2 (console script instead of python -m; stdin closed)"
+  },
+  "windowsAcquired": 0,
+  "windowsPass": 0,
+  "pairedWindowsEligible": [],
+  "keH2GlorysCoverageFact": "NOT_ACQUIRED",
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0,
+  "trajectoryCount": 0,
+  "frozenAlpha": 0.002,
+  "comparisonAlpha": 0.0,
+  "statements": [
+    "STEP25B performs data acquisition and quality validation only.",
+    "STEP25A experimental design remains unchanged.",
+    "No model performance result is generated.",
+    "STEP20 alpha=0.002 remains calibration-selected but not established as superior on holdout.",
+    "STEP17 GLORYS BLOCKED/PENDING remains historically immutable.",
+    "GLORYS acceptance for TEST-02 does not imply superiority over HYCOM."
+  ],
+  "interpretation": "DATA ACQUISITION / QUALITY ASSESSMENT ONLY"
+}

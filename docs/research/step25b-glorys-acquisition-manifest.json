@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "glorys12v1-acquisition-quality-gate-step25b",
+  "protocolSha256": "0a542a94ee0c04a54ac7bd543c7f89eb0462e0a19e89668c969935178dc76eb9",
+  "preregistrationSha256": "ecc1fdbc59ff8773135f62175e951bc8d88958d9f4c4bfb97aac5a3b0a233f62",
+  "accessStatus": "CREDENTIALS_REQUIRED",
+  "product": {
+    "productId": "GLOBAL_MULTIYEAR_PHY_001_030",
+    "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+    "name": "Global Ocean Physics Reanalysis (GLORYS12V1)",
+    "doi": "10.48670/moi-00021",
+    "resolution": "1/12 deg (~8 km)",
+    "levels": 50,
+    "cadence": "daily mean"
+  },
+  "tool": {
+    "name": "copernicusmarine (Copernicus Marine Toolbox, official client)",
+    "isolatedVenv": "data/research/step25b/toolbox-venv",
+    "installedInIsolatedVenv": true,
+    "runtimeIsolated": true,
+    "installationMethod": "python -m venv + pip install copernicusmarine (no credentials involved)",
+    "version": "copernicusmarine, version 2.4.1",
+    "versionCheckedAtUTC": "2026-09-06T09:54:34Z",
+    "installedAtUTC": "2026-09-06T09:53:15Z",
+    "revision": "r2 (console script instead of python -m; stdin closed)"
+  },
+  "startedAtUTC": "2026-09-06T09:54:35Z",
+  "credentialsInManifest": false,
+  "windows": [],
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0,
+  "downloaded": 0,
+  "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+  "completedAtUTC": "2026-09-06T09:54:35Z"
+}

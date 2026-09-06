@@ -1,0 +1,99 @@
+{
+  "ruleId": "data06-license-evidence-scope-correction-step24b",
+  "documents": [
+    {
+      "id": "ifremer_ww3_top_listing",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/",
+      "status": "ok",
+      "bytes": 1215,
+      "sha256": "ecce2c34a9e7fa562aeea2d7993c18bf72bc4dd6f33f8e0abe45e8b74fa5e353",
+      "error": null
+    },
+    {
+      "id": "ifremer_hindcast_listing",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/",
+      "status": "ok",
+      "bytes": 2476,
+      "sha256": "f5a3cf7e880c2317899cd48f1433f0704983d3189fba2f854a8c11f2db0f52e0",
+      "error": null
+    },
+    {
+      "id": "ifremer_hindcast_readme",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/README",
+      "status": "ok",
+      "bytes": 8479,
+      "sha256": "474be33ab38a948baed777be2336d457e0f3fb4ca0440f8433ffc7763ad9d342",
+      "error": null
+    },
+    {
+      "id": "ifremer_hindcast_readme_sav",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/README.sav",
+      "status": "ok",
+      "bytes": 4677,
+      "sha256": "221b3fdf1f445c311cbe9fe9ebb9b038209157a4ac157d1b6c50b3d8e23be444",
+      "error": null
+    },
+    {
+      "id": "ifremer_hindcast_readme_netcdf",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/readme_netcdf",
+      "status": "ok",
+      "bytes": 2910,
+      "sha256": "b4c7818e0b162aab474c8a10b331f813e8c7a609b056e6a4d4156a3556d5d843",
+      "error": null
+    },
+    {
+      "id": "ifremer_hindcast_old_readmes_listing",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/OLD_READMES/",
+      "status": "ok",
+      "bytes": 1044,
+      "sha256": "76c42608a1701da1bc27e46ce28e0691ae62bfa926d5df5267b4d96100a9e70b",
+      "error": null
+    },
+    {
+      "id": "ifremer_global_listing",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/",
+      "status": "ok",
+      "bytes": 7652,
+      "sha256": "60c61bacd1af349c649019c6f7309c823d03b2903021081a10f000d269289431",
+      "error": null
+    },
+    {
+      "id": "ifremer_global_readme",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/README",
+      "status": "ok",
+      "bytes": 819,
+      "sha256": "9a4fa39056451ff8affc33bea67afe91e754027d028644df6cd70cf869d4e69a",
+      "error": null
+    }
+  ],
+  "claims": [
+    {
+      "claimId": "ifremer_hindcast_readme#p3",
+      "document": "ifremer_hindcast_readme",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/README",
+      "documentSha256": "474be33ab38a948baed777be2336d457e0f3fb4ca0440f8433ffc7763ad9d342",
+      "categories": [
+        "restriction"
+      ],
+      "productApplicable": true,
+      "applicabilityBasis": "paragraph names the product/hindcast/WW3"
+    },
+    {
+      "claimId": "ifremer_hindcast_readme_netcdf#p1",
+      "document": "ifremer_hindcast_readme_netcdf",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/readme_netcdf",
+      "documentSha256": "b4c7818e0b162aab474c8a10b331f813e8c7a609b056e6a4d4156a3556d5d843",
+      "categories": [
+        "license"
+      ],
+      "productApplicable": true,
+      "applicabilityBasis": "paragraph names the product/hindcast/WW3"
+    }
+  ],
+  "orphanClaims": 0,
+  "copernicusDocuments": 0,
+  "forbiddenDocumentIds": [
+    "cmems_terms",
+    "cmems_stac_product"
+  ]
+}

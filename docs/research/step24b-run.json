@@ -1,0 +1,16 @@
+{
+  "status": "STEP24B_LICENSE_UNKNOWN",
+  "evidenceIndexSha256": "652215e8b1cce9e79883d9923b56f48bad91ca12e91805a8884f8adc869dd2b2",
+  "outputs": {
+    "step24b-license-evidence-scope-correction.json": "702493a0bfc61a48fb4d3d78d81d00e687b49d2199e011cac7ebffb44b5a4b69",
+    "step24b-license-status.json": "7f9a8b9983dd3849e852d31514b6b512ed12195457930c70a104f24dcf8807ef",
+    "step24b-evidence-index.json": "6f99a04d017b3dbbd4fe4c6c134a603de1b5b5e636231a0f78373acb4dfb3c62",
+    "step24b-summary.json": "162f266b78bde91c37c69c110154eb5182602c64e98d1e353b57f19ff7148925"
+  },
+  "tool": {
+    "file": "tools/research/assess_step24b.py",
+    "sha256": "9f54f1e9f23c1d82ff25db9fcc3bb28f8744d454a97f434ec79ba9bb8d244af8"
+  },
+  "createdAtUTC": "2026-09-06T09:25:04Z",
+  "modelRunCount": 0
+}

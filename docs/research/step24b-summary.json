@@ -1,0 +1,26 @@
+{
+  "ruleId": "data06-license-evidence-scope-correction-step24b",
+  "status": "STEP24B_LICENSE_UNKNOWN",
+  "DATA-06": "LICENSE_UNKNOWN",
+  "DATA-01": "CREDENTIALS_REQUIRED",
+  "DATA-03": "REFERENCE_ELIGIBLE_PARTIAL",
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0,
+  "frozenAlpha": 0.002,
+  "frozenBaselineAlpha": 0.0,
+  "documentsConsulted": 8,
+  "documentsReachable": 8,
+  "applicableStatements": 2,
+  "citationStatements": 0,
+  "explicitNamedLicense": 0,
+  "explicitRestrictions": 0,
+  "test06": "NOT RUN; remains REGISTERED_CONDITIONAL_ON_LICENSE unless status is LICENSE_CONFIRMED",
+  "statements": [
+    "STEP24 remains immutable.",
+    "STEP24b supersedes only the DATA-06 license-evidence scope.",
+    "STEP20 alpha=0.002 remains calibration-selected but not established as superior on holdout.",
+    "STEP17 GLORYS BLOCKED/PENDING remains historically immutable.",
+    "No model performance conclusion is generated."
+  ],
+  "interpretation": "LICENSE EVIDENCE CORRECTION ONLY"
+}

@@ -1,0 +1,179 @@
+In this folder you will find an almost full database of 
+various hindcast generated with the wave model WAVEWATCH III.
+
+Using google-earth, you can visualize the different grids and the output points:
+IOWAGA_WWATCH_MULTI_output_points.kmz
+
+You can also access to the data using the opendap service to help you getting what you exactly need : 
+http://tds1.ifremer.fr/thredds/IOWAGA-WW3-HINDCAST/IOWAGA-WW3-HINDCAST.html
+
+
+***********
+*ALTIMETER*
+***********
+area : Global grid
+time : 1991 to 2014
+info : ASCII and NETCDF formats with a file per sat
+info : The satellite ids are : 1:ERS1 ; 2:ERS2 ; 3:ENVISAT ; 4:TOPEX ; 5:POSEIDON ; 6:JASON1 ; 7:GFO ; 8:JASON2; 9: CRYOSAT; 10: SARAL 
+
+
+********
+*ARCTIC*
+********
+area : Arctic grid
+time : 2013 to 2015
+spatial resolution : curvilinear grid
+temporal resolution : 3-hourly for gridded field - 3-hourly for spectral point
+wind forcing : ECMWF
+current forcing : NO
+level forcing : NO
+ice forcing : CFSR with homogeneous input IC1 and IC5
+iceberg forcing : NO
+info : still under development
+
+
+*******
+*BLACK*
+*******
+area : Black sea grid
+time : 2004 to 2015 - data are missing for 2005 and 2012
+spatial resolution : ?
+temporal resolution : 3-hourly for gridded field
+wind forcing : ECMWF
+current forcing : NO
+level forcing : NO
+ice forcing : NO
+iceberg forcing : NO
+info : some months are missing in 2011, 2014 and 2015
+
+
+**********
+*ATNE*
+**********
+area : North East Atlantic grid
+time : 2007 to 2015 - data are missing from 2009-07 to 2012-01
+spatial resolution : 10min
+temporal resolution : 3-hourly for gridded field - spectral point in ASCII 
+wind forcing : ECMWF or NCEP (CFSR) depending on the directory
+current forcing : NO
+level forcing : NO
+ice forcing : NCEP
+iceberg forcing : NO
+
+
+
+**********
+*ATNW*
+**********
+area : North West Atlantic grid
+time : 1990 to 2016 - data are missing from 1992-09 to 1992-12
+spatial resolution : 10min
+temporal resolution : 3-hourly for gridded field . See GLOBAL for spectral point output
+wind forcing : ECMWF or NCEP (CFSR) depending on the directory
+current forcing : NO
+level forcing : NO
+ice forcing : NCEP
+iceberg forcing : NO
+
+
+*********
+*CRB*
+*********
+area : Carribean grid
+time : 1990 to 2016 - data are missing from 2009-07 to 2012-01
+spatial resolution : 2min
+temporal resolution : 3-hourly for gridded field - See GLOBAL for spectral point output
+wind forcing : ECMWF or NCEP (CFSR) depending on the directory
+current forcing : NO
+level forcing : NO
+ice forcing : NCEP
+iceberg forcing : NO
+
+
+************
+*GLOBAL*
+************
+area : Global grid
+time : 1990 to 2016 -
+spatial resolution : 30min - 0.5deg
+temporal resolution : 3-hourly for gridded field - 3-hourly for spectral point
+wind forcing : ECMWF or NCEP (CFSR) depending on the directory
+current forcing : NO
+level forcing : NO
+ice forcing : NCEP
+iceberg forcing : Yes for some years ... 
+Parameterization: ST4 - TEST471 
+
+********
+*NC*
+********
+area : New Caledonia grid
+time : 1990 to 2016 - 
+spatial resolution : 3min
+temporal resolution : 3-hourly for gridded field - 
+wind forcing : ECMWF or NCEP (CFSR) depending on the directory
+current forcing : NO
+level forcing : NO
+ice forcing : NCEP
+iceberg forcing : NO
+
+
+**********
+*PACE*
+**********
+area : West Pacific grid
+time : 1990 to 2016 - data are missing from 2010-01 to 2012-01
+spatial resolution : 10min
+temporal resolution : 3-hourly for gridded field - spectral point in ASCII
+wind forcing : ECMWF or NCEP (CFSR) depending on the directory
+current forcing : NO
+level forcing : NO
+ice forcing : NCEP
+iceberg forcing : NO
+
+
+**********
+*NORGASUG*
+**********
+area : all along the French coast on the Atlantic ocean
+time : 2008 to 2015
+spatial resolution : unstructured mesh with resolution up to 300m along the coast
+temporal resolution : hourly for gridded field and hourly spectral point
+wind forcing : ECMWF
+current forcing : harmonic
+level forcing : harmonic
+ice forcing : NO
+iceberg forcing : NO
+
+
+*******
+*SISMO*
+*******
+area : global. These are specific model runs with different shoreline reflection, as used for seismic noise investigations
+time : 1993 to 2015
+spatial resolution : 30min - 0.5deg
+temporal resolution : 3-hourly for gridded field - no spectral point
+wind forcing : ECMWF
+current forcing : NO
+level forcing : NO
+ice forcing : ?
+iceberg forcing : ?
+
+
+***********
+*GLOBAL_IG*
+***********
+area : global grid for infragravity waves
+time : 2012 to 2014
+spatial resolution : 30min - 0.5deg
+temporal resolution of outpu : 3-hourly for gridded field - no spectral point
+wind forcing : ECMWF
+current forcing : NO
+level forcing : NO
+ice forcing : CFSR
+iceberg forcing : Yes 
+
+************
+OTHER & OTHER2
+************
+Miscellaneous other runs ...

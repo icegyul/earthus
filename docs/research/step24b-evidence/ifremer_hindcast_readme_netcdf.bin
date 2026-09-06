@@ -1,0 +1,76 @@
+This short text gives some tips and advice on how to use our NetCDF wave model 
+output archive. You will find some useful matlab tools here: 
+tinyurl.com/iowagaftp/pub/TOOLS/MATLAB/
+with tutorials here: 
+https://forge.ifremer.fr/plugins/mediawiki/wiki/ww3/index.php/En:toolbox:read-netcdf
+
+and a free IDL tool (that works without a IDL licence) here: 
+tinyurl.com/iowagaftp/pub/TOOLS/IDL/
+see https://forge.ifremer.fr/plugins/mediawiki/wiki/ww3/index.php/En:idl_tool
+
+Otherwise the examples below use the command-line NCO tools ( http://nco.sourceforge.net/ )
+
+###################################################
+# extract data for a specified station            #
+###################################################
+In SPECTRA_NC folder, if you want to extract data for only one specified station, just type this command : (i is the index of the station, beginning by 0)
+
+ncks -h -a -d station,i,i input.nc output.nc
+
+example:
+
+extract the first station 62163 in a netCDF file
+ncks -h -a -d station,0,0 ww3.200701_spec.nc ww3.200701_62163_spec.nc
+
+###################################################
+# convert from netCDF4 to netCDF3                 #
+###################################################
+
+If you want to convert netCDF files from netCDF4 to netCDF3 , you can type on of these commands :
+
+nccopy -k 1 nc4.nc nc3.nc
+or
+ncks -a -h -3 nc4.nc nc3.nc
+
+
+###################################################
+# extract defined variable from GRIDDED/UNGRIDDED #
+###################################################
+
+For example, to extract hs variable only, just type:
+
+ncks -a -h -v longitude,latitude,time,MAPSTA,tri,hs ww3.200701.nc  ww3.200701_hs.nc
+
+
+###################################################
+# extract defined variable from SPECTRA_NC        #
+###################################################
+
+#!/usr/bin/env sh
+
+mkdir -p EFTH DEPTH U10M UDIR CURR CURRDIR
+
+for file in $(ls -1 ww3.*_spec.nc)
+do
+  echo $file
+
+  ncks -a -h -v time,station,string16,station_name,longitude,latitude,frequency,frequency1,frequency2,direction,Efth $file EFTH/${file%.*}_Efth.nc
+  ncks -a -h -v time,station,string16,station_name,longitude,latitude,depth  $file DEPTH/${file%.*}_depth.nc
+  ncks -a -h -v time,station,string16,station_name,longitude,latitude,u10m  $file U10M/${file%.*}_u10m.nc
+  ncks -a -h -v time,station,string16,station_name,longitude,latitude,udir  $file UDIR/${file%.*}_udir.nc
+  ncks -a -h -v time,station,string16,station_name,longitude,latitude,curr  $file CURR/${file%.*}_curr.nc
+  ncks -a -h -v time,station,string16,station_name,longitude,latitude,currdir  $file CURRDIR/${file%.*}_currdir.nc
+
+done
+
+###################################################
+# concatenate monthly files                       #
+###################################################
+
+for file in $(ls -1 2010/hs/*.nc)
+do
+  ncks -h -O --mk_rec_dmn time $file $file
+done
+ncrcat -h 2010/hs/*.nc ww3.2010_hs.n
+
+

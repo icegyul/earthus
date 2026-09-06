@@ -1,0 +1,22 @@
+{
+  "ruleId": "data06-license-evidence-scope-correction-step24b",
+  "parentStep24Commit": "e0e7cfd2",
+  "parentStep24LockCommit": "275d06e6",
+  "parentStep24LicenseStatusSha256": "2fed50d520b63fb3303926c78ec4668926db9cfb41f025df7d59a6cfed07a3e2",
+  "defect": "assess_step24.py scanned all fetched documents for license statements; two Copernicus Marine terms snippets (document id cmems_terms) were attached to the DATA-06 (IFREMER WW3) license record and noExplicitLicenseExists was set to false",
+  "whyInvalid": "Copernicus Marine terms govern Copernicus products (DATA-01), not the IFREMER/SHOM WAVEWATCH III hindcast; they are not provider documents for DATA-06 and carry no information about its terms",
+  "correctionScope": "DATA-06 license-evidence scope only: evidence restricted to IFREMER WW3 hindcast documents (FTP listings and README files directly associated with the product); statements filtered for product applicability; every claim mapped to its source",
+  "step24FilesImmutable": true,
+  "step24StatusUnchanged": "STEP24_CREDENTIALS_REQUIRED",
+  "modelRunCount": 0,
+  "datasetsChanged": false,
+  "data01": "CREDENTIALS_REQUIRED (unchanged; no access attempt)",
+  "data03": "REFERENCE_ELIGIBLE_PARTIAL (unchanged)",
+  "statements": [
+    "STEP24 remains immutable.",
+    "STEP24b supersedes only the DATA-06 license-evidence scope.",
+    "STEP20 alpha=0.002 remains calibration-selected but not established as superior on holdout.",
+    "STEP17 GLORYS BLOCKED/PENDING remains historically immutable.",
+    "No model performance conclusion is generated."
+  ]
+}

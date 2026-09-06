@@ -1,0 +1,26 @@
+This folder contains result from global multi-grid runs using
+the following grids:
+GLOBAL
+PACE
+ATNW
+ATNE
+NC
+CRB
+Hence if you want higher resolution data from some of these regions 
+you will have in these other folders a fully consistent higher resolution 
+data. 
+
+The model was run with both ECMWF operational analyses and CFSR / CFSRR winds. 
+The runs used to have only ~ 1000 output spectral points (ASCII files in 
+SPEC folder). The model is being rerun with ~9000 points, now stored in NetCDF. 
+As a result the frequency spectra (in FREQ) are changing names from mww3.* 
+to ww3.*  
+
+As of August 21, 2013, this has been done for 
+2011_CFSR
+2008_ECMWF
+2013_ECMWF. 
+
+Also, CFSR runs for years 2007-2012 use a lower wind-wave growth parameter
+to correct for time-varying biases (see README in main HINDCAST folder). 
+

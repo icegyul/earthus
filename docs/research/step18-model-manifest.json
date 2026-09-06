@@ -1,0 +1,462 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "model-protocol-step18-openloop-72h-alpha0007",
+  "status": "MODEL_RUN_BLOCKED_PREFLIGHT",
+  "protocolSha256": "519b3d35bc13524b3e0a30f5521cd2e696ffecdceead58535b0c4959ac3bea2b",
+  "preregistrationSha256": "f02b17379140c8d0f7304dc2f15d512341c089b6773d2b4f6021da382972ecf4",
+  "modelRuleSha256": "1a107b7edd49844e01e881de46c4bef477ac7dae336beac431dbd6efafd1388c",
+  "modelRuleFileContent": [
+    "519b3d35bc13524b3e0a30f5521cd2e696ffecdceead58535b0c4959ac3bea2b  docs/research/step18-model-protocol.md",
+    "f02b17379140c8d0f7304dc2f15d512341c089b6773d2b4f6021da382972ecf4  docs/research/step18-preregistration.json"
+  ],
+  "cohortSha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+  "forcingManifestSha256": "591cc05799da03e6bb604321d9e2b129a32a201112922c4d06823026a0b5ac86",
+  "aggregateForcingSha256": "01acda6b9a30d9038df866ca378e3a4b2e041aa37667309810cabbf3e36c6dcd",
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "lockCommit": "d505cc5e",
+  "modelId": "surface-passive-advection.v2.windage",
+  "modelVersion": "0.1.0",
+  "modelSourceSha256": null,
+  "modelCommit": null,
+  "environment": null,
+  "orchestrator": {
+    "file": "tools/research/run_step18_model.py",
+    "sha256": "ead0d23eb338379ccb13b0cb700ca51b93d1c5607cbc64f53a195e5c1e6f4e46"
+  },
+  "statusMapping": {
+    "OUT_OF_DOMAIN": "OUT_OF_DOMAIN (only when the position is outside the model domain; otherwise FORCING_UNAVAILABLE)",
+    "MISSING_FORCING": "FORCING_UNAVAILABLE",
+    "STRANDED": "FORCING_UNAVAILABLE",
+    "ACTIVE": "ACTIVE",
+    "COMPLETED": "COMPLETED"
+  },
+  "boundaryClassificationToleranceDegrees": 1e-06,
+  "runs": [
+    {
+      "runId": "step18-A-alpha0007-KE-1",
+      "windowId": "KE-1",
+      "alpha": 0.0007,
+      "role": "primary",
+      "drifterCount": 8,
+      "released": 8,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": -40.0,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-1-15m",
+          "version": "2010-05-11T12_2010-05-14T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-1",
+        "version": "2010-05-11T12.earthus1"
+      },
+      "forcingSha256": "eebd0c38e647b9fbdc3bc08202589fddce3e57892a3edfc1c2c12f01eddfca8d",
+      "gridSha256": "649ebad52f64b7d2bbe05ef6e8e818f7f0e8791fc8ac01ac5422c9d53d3fb74a",
+      "windGridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+      "preflight": {
+        "ok": false,
+        "errors": [
+          "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+        ],
+        "estimate": {}
+      },
+      "status": "MODEL_RUN_BLOCKED_PREFLIGHT"
+    },
+    {
+      "runId": "step18-B-alpha0-KE-1",
+      "windowId": "KE-1",
+      "alpha": 0.0,
+      "role": "control",
+      "drifterCount": 8,
+      "released": 8,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": -40.0,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-1-15m",
+          "version": "2010-05-11T12_2010-05-14T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-1",
+        "version": "2010-05-11T12.earthus1"
+      },
+      "forcingSha256": "eebd0c38e647b9fbdc3bc08202589fddce3e57892a3edfc1c2c12f01eddfca8d",
+      "gridSha256": "649ebad52f64b7d2bbe05ef6e8e818f7f0e8791fc8ac01ac5422c9d53d3fb74a",
+      "windGridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+      "preflight": {
+        "ok": false,
+        "errors": [
+          "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+        ],
+        "estimate": {}
+      },
+      "status": "MODEL_RUN_BLOCKED_PREFLIGHT"
+    },
+    {
+      "runId": "step18-A-alpha0007-KE-2",
+      "windowId": "KE-2",
+      "alpha": 0.0007,
+      "role": "primary",
+      "drifterCount": 5,
+      "released": 5,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": -40.0,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-2-15m",
+          "version": "2010-06-30T12_2010-07-03T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-2",
+        "version": "2010-06-30T12.earthus1"
+      },
+      "forcingSha256": "b3da27677e778d6e29af7bb1ad13119f8d7049f9b161950dbf1ed6a5ac213226",
+      "gridSha256": "1d597036f12febb4d962b7418c25fd752677fa471d8afa12b8811801afe76a9e",
+      "windGridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+      "preflight": {
+        "ok": false,
+        "errors": [
+          "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+        ],
+        "estimate": {}
+      },
+      "status": "MODEL_RUN_BLOCKED_PREFLIGHT"
+    },
+    {
+      "runId": "step18-B-alpha0-KE-2",
+      "windowId": "KE-2",
+      "alpha": 0.0,
+      "role": "control",
+      "drifterCount": 5,
+      "released": 5,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": -40.0,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ke-2-15m",
+          "version": "2010-06-30T12_2010-07-03T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-2",
+        "version": "2010-06-30T12.earthus1"
+      },
+      "forcingSha256": "b3da27677e778d6e29af7bb1ad13119f8d7049f9b161950dbf1ed6a5ac213226",
+      "gridSha256": "1d597036f12febb4d962b7418c25fd752677fa471d8afa12b8811801afe76a9e",
+      "windGridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+      "preflight": {
+        "ok": false,
+        "errors": [
+          "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+        ],
+        "estimate": {}
+      },
+      "status": "MODEL_RUN_BLOCKED_PREFLIGHT"
+    },
+    {
+      "runId": "step18-A-alpha0007-AG-1",
+      "windowId": "AG-1",
+      "alpha": 0.0007,
+      "role": "primary",
+      "drifterCount": 9,
+      "released": 9,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-1-15m",
+          "version": "2015-04-23T12_2015-04-26T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-1",
+        "version": "2015-04-23T12.earthus1"
+      },
+      "forcingSha256": "dd0342c513139fd7c6de4033416f838e4423570e4fbdf89e6de4d4810337966c",
+      "gridSha256": "ee9af738d169cb6302b1987cafa5022f5d41f450e2cb3c7df1f5284fa58aae3b",
+      "windGridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+      "preflight": {
+        "ok": false,
+        "errors": [
+          "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+        ],
+        "estimate": {}
+      },
+      "status": "MODEL_RUN_BLOCKED_PREFLIGHT"
+    },
+    {
+      "runId": "step18-B-alpha0-AG-1",
+      "windowId": "AG-1",
+      "alpha": 0.0,
+      "role": "control",
+      "drifterCount": 9,
+      "released": 9,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-1-15m",
+          "version": "2015-04-23T12_2015-04-26T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-1",
+        "version": "2015-04-23T12.earthus1"
+      },
+      "forcingSha256": "dd0342c513139fd7c6de4033416f838e4423570e4fbdf89e6de4d4810337966c",
+      "gridSha256": "ee9af738d169cb6302b1987cafa5022f5d41f450e2cb3c7df1f5284fa58aae3b",
+      "windGridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+      "preflight": {
+        "ok": false,
+        "errors": [
+          "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+        ],
+        "estimate": {}
+      },
+      "status": "MODEL_RUN_BLOCKED_PREFLIGHT"
+    },
+    {
+      "runId": "step18-A-alpha0007-AG-2",
+      "windowId": "AG-2",
+      "alpha": 0.0007,
+      "role": "primary",
+      "drifterCount": 1,
+      "released": 1,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -40.0,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-2-15m",
+          "version": "2015-04-26T12_2015-04-29T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-2",
+        "version": "2015-04-26T12.earthus1"
+      },
+      "forcingSha256": "78fc422e2a29e99ba9275dbb9d9c9370fffa13a0db193e2d9d7052a2473ef057",
+      "gridSha256": "c53b91b4922c5b1f97ff4c704f87bb2a0fa14d6ea8da4a11bbcc9719dfe43859",
+      "windGridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+      "preflight": {
+        "ok": false,
+        "errors": [
+          "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+        ],
+        "estimate": {}
+      },
+      "status": "MODEL_RUN_BLOCKED_PREFLIGHT"
+    },
+    {
+      "runId": "step18-B-alpha0-AG-2",
+      "windowId": "AG-2",
+      "alpha": 0.0,
+      "role": "control",
+      "drifterCount": 1,
+      "released": 1,
+      "releaseFailures": [],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -40.0,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "hycom-gofs31-53x-ag-2-15m",
+          "version": "2015-04-26T12_2015-04-29T12.earthus1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-2",
+        "version": "2015-04-26T12.earthus1"
+      },
+      "forcingSha256": "78fc422e2a29e99ba9275dbb9d9c9370fffa13a0db193e2d9d7052a2473ef057",
+      "gridSha256": "c53b91b4922c5b1f97ff4c704f87bb2a0fa14d6ea8da4a11bbcc9719dfe43859",
+      "windGridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+      "preflight": {
+        "ok": false,
+        "errors": [
+          "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+        ],
+        "estimate": {}
+      },
+      "status": "MODEL_RUN_BLOCKED_PREFLIGHT"
+    }
+  ],
+  "outputSchema": {
+    "columns": [
+      "run_id",
+      "drifter_id",
+      "timestamp",
+      "lat",
+      "lon",
+      "alpha",
+      "status",
+      "valid"
+    ],
+    "rules": {
+      "timestamp": "ISO-8601 UTC YYYY-MM-DDTHH:MM:SSZ",
+      "lat": "6 decimals WGS84",
+      "lon": "6 decimals, -180..180",
+      "alpha": "literal 0.0007 or 0",
+      "status": [
+        "ACTIVE",
+        "COMPLETED",
+        "OUT_OF_DOMAIN",
+        "FORCING_UNAVAILABLE"
+      ],
+      "valid": "true for ACTIVE/COMPLETED model positions, false for termination rows"
+    },
+    "rowOrder": "drifter_id ascending (string), then timestamp ascending"
+  },
+  "metrics": null,
+  "glorys": "NOT USED",
+  "startedAtUTC": "2026-09-06T04:59:56Z",
+  "createdAtUTC": "2026-09-06T05:00:14Z",
+  "deterministic": true,
+  "randomSeed": null,
+  "resultFilesCommitted": false,
+  "interpretation": "NOT PERFORMED",
+  "log": [
+    {
+      "utc": "2026-09-06T04:59:56Z",
+      "phase": "precheck",
+      "status": "PASS",
+      "head": "363ca1fc"
+    },
+    {
+      "utc": "2026-09-06T05:00:06Z",
+      "phase": "preflight",
+      "status": "BLOCKED",
+      "runId": "step18-A-alpha0007-KE-1",
+      "errors": [
+        "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+      ]
+    },
+    {
+      "utc": "2026-09-06T05:00:08Z",
+      "phase": "preflight",
+      "status": "BLOCKED",
+      "runId": "step18-B-alpha0-KE-1",
+      "errors": [
+        "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+      ]
+    },
+    {
+      "utc": "2026-09-06T05:00:10Z",
+      "phase": "preflight",
+      "status": "BLOCKED",
+      "runId": "step18-A-alpha0007-KE-2",
+      "errors": [
+        "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+      ]
+    },
+    {
+      "utc": "2026-09-06T05:00:12Z",
+      "phase": "preflight",
+      "status": "BLOCKED",
+      "runId": "step18-B-alpha0-KE-2",
+      "errors": [
+        "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+      ]
+    },
+    {
+      "utc": "2026-09-06T05:00:13Z",
+      "phase": "preflight",
+      "status": "BLOCKED",
+      "runId": "step18-A-alpha0007-AG-1",
+      "errors": [
+        "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+      ]
+    },
+    {
+      "utc": "2026-09-06T05:00:14Z",
+      "phase": "preflight",
+      "status": "BLOCKED",
+      "runId": "step18-B-alpha0-AG-1",
+      "errors": [
+        "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+      ]
+    },
+    {
+      "utc": "2026-09-06T05:00:14Z",
+      "phase": "preflight",
+      "status": "BLOCKED",
+      "runId": "step18-A-alpha0007-AG-2",
+      "errors": [
+        "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+      ]
+    },
+    {
+      "utc": "2026-09-06T05:00:14Z",
+      "phase": "preflight",
+      "status": "BLOCKED",
+      "runId": "step18-B-alpha0-AG-2",
+      "errors": [
+        "WIND_COVERAGE: wind dataset does not cover the experiment window/area; run blocked (missing is never zero)"
+      ]
+    }
+  ]
+}

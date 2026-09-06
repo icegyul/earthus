@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "revision": "Phase B r2",
+  "ruleId": "depth-sensitivity-step27",
+  "createdAtUTC": "2026-09-06T14:16:58Z",
+  "baseLock": "f38d5450",
+  "ruleSha256": "603435292009708e7516eb39b2ba8ff705b4331dbc93f4ab98c9e55b3b217ca4",
+  "phaseBPreregistrationSha256": "f8740eb6e33106b5a51b6833ec1837c645fa2b0e00e9b07ff42b178fd5975bd1",
+  "reason": "attempt 1 (r1 builder, locked at f38d5450) normalized D05/D10/D20 and found sameGridAndFramesAcrossDepths=false: the STEP 27B/27C subsets (client selection method nearest) hold the exact D15 node set plus one extra outer edge row and/or column (KE-1 lon 140.0833; KE-2 lon 133.0 + lat 29.1667; AG-2 lon 24.3333 + lat -34.25; KE-H1 lon 134.75 + lat 29.75; KE-H3 lon 156.5833 + lat 28.5; AG-1 identical). Time axes identical. The runner precheck refused (STEP27_BLOCKED_IMMUTABILITY: forcing manifest); no model run occurred.",
+  "change": {
+    "newBuilder": "tools/research/build_step27_forcing_r2.py",
+    "operation": "crop D05/D10/D20 to the exact D15 lon/lat node set by exact k/12 coordinate match (native nodes only); landMask subset likewise; no interpolation, no value change; dropped edge nodes recorded per window",
+    "unchanged": [
+      "reader",
+      "runner",
+      "evaluator",
+      "validator",
+      "depth set",
+      "windows",
+      "alpha",
+      "label rules"
+    ]
+  },
+  "attempt1": {
+    "manifest": "docs/research/step27-depth-forcing-manifest.attempt1-grid-extent-mismatch.json",
+    "sha256": "241ef50c710ef1001435e6cdddb623fab29fa2c725c7b60e0055a86a2e4f6dc1",
+    "sameGridAndFramesAcrossDepths": false,
+    "modelRunCount": 0,
+    "forcingDir": "data/research/step27/forcing.attempt1/ (gitignored)"
+  },
+  "tools": {
+    "tools/research/build_step27_forcing_r2.py": "c190290e45179d8c0fc4527cfeb68b63c27c9d432ec5802e2ea1963adf321f25"
+  },
+  "modelRunCountBeforeR2": 0
+}

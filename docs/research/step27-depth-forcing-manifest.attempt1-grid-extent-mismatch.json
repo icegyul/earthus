@@ -1,0 +1,776 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "depth-sensitivity-step27",
+  "ruleSha256": "603435292009708e7516eb39b2ba8ff705b4331dbc93f4ab98c9e55b3b217ca4",
+  "phaseBPreregistrationSha256": "f8740eb6e33106b5a51b6833ec1837c645fa2b0e00e9b07ff42b178fd5975bd1",
+  "reader": {
+    "file": "tools/research/glorys_reader_step25c.py",
+    "sha256": "11b7d987434a55a9e42a9776e851fad49b8ec65d2df0f23130c7a7e6234ab63e",
+    "version": "earthus-glorys-netcdf/1"
+  },
+  "depths": {
+    "D05": {
+      "targetMeters": 5,
+      "nativeLevelMeters": 5.078224182128906,
+      "source": "STEP 27B"
+    },
+    "D10": {
+      "targetMeters": 10,
+      "nativeLevelMeters": 9.572997093200684,
+      "source": "STEP 27B"
+    },
+    "D15": {
+      "targetMeters": 15,
+      "nativeLevelMeters": 15.81007,
+      "source": "STEP 25B/25C (control)"
+    },
+    "D20": {
+      "targetMeters": 20,
+      "nativeLevelMeters": 18.495559692382812,
+      "source": "STEP 27C (STEP 27B-r2 identity)"
+    }
+  },
+  "records": [
+    {
+      "depth": "D05",
+      "windowId": "KE-1",
+      "nativeLevelMeters": 5.078224182128906,
+      "rawFile": "data/research/step27/D05/KE-1.glorys12v1.uo_vo.D05.nc",
+      "rawSha256": "45fdb09ad398c7a6a9710430a65f88a794af1dfd079489b8a782c166c8b88a70",
+      "normalized": {
+        "file": "data/research/step27/forcing/D05/KE-1.glorys.dataset.json",
+        "fileSha256": "dec663d50b06bc46c0677123eaa96e476bd73820c897444198a00556f52c40f6",
+        "gridSha256": "82fd910eca90039922e77393b51d374d9bbbe080b3a6c08786618aeac5f0cb7f",
+        "shape": [
+          6,
+          133,
+          265
+        ],
+        "timeUTC": [
+          "2010-05-10T00:00:00Z",
+          "2010-05-11T00:00:00Z",
+          "2010-05-12T00:00:00Z",
+          "2010-05-13T00:00:00Z",
+          "2010-05-14T00:00:00Z",
+          "2010-05-15T00:00:00Z"
+        ],
+        "maskedNodes": 410,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        }
+      },
+      "source": "STEP 27B",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D05",
+      "windowId": "KE-2",
+      "nativeLevelMeters": 5.078224182128906,
+      "rawFile": "data/research/step27/D05/KE-2.glorys12v1.uo_vo.D05.nc",
+      "rawSha256": "0d4c0a252683582a2d73f1aefbf6d5a440dd98dc810984a61677a57e515a4b55",
+      "normalized": {
+        "file": "data/research/step27/forcing/D05/KE-2.glorys.dataset.json",
+        "fileSha256": "1167f45e6cd696c6313f1b2b882f52b672f52f9e6996655dd1c6e9d8efa0c3f7",
+        "gridSha256": "6290de1f701b85bb03e69a6efa0d728cb786d0bff2a8d5f66d1c660d1ab83f0c",
+        "shape": [
+          6,
+          137,
+          268
+        ],
+        "timeUTC": [
+          "2010-06-29T00:00:00Z",
+          "2010-06-30T00:00:00Z",
+          "2010-07-01T00:00:00Z",
+          "2010-07-02T00:00:00Z",
+          "2010-07-03T00:00:00Z",
+          "2010-07-04T00:00:00Z"
+        ],
+        "maskedNodes": 3098,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        }
+      },
+      "source": "STEP 27B",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D05",
+      "windowId": "AG-1",
+      "nativeLevelMeters": 5.078224182128906,
+      "rawFile": "data/research/step27/D05/AG-1.glorys12v1.uo_vo.D05.nc",
+      "rawSha256": "61442fdc99901f088a150af2451b2f081bc599d4b7b75d7b3f3e8795bc20aeba",
+      "normalized": {
+        "file": "data/research/step27/forcing/D05/AG-1.glorys.dataset.json",
+        "fileSha256": "1b05aa93711f9c9b9859f230063d786997bef6e7123f880e0401aeea4cc61caf",
+        "gridSha256": "0fd0d5051d53b596951b776356ef84e0497dfb03fad0b2d8c489a28645f8bcdf",
+        "shape": [
+          6,
+          107,
+          177
+        ],
+        "timeUTC": [
+          "2015-04-22T00:00:00Z",
+          "2015-04-23T00:00:00Z",
+          "2015-04-24T00:00:00Z",
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z"
+        ],
+        "maskedNodes": 3547,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 1.2715657575768091e-06
+        }
+      },
+      "source": "STEP 27B",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D05",
+      "windowId": "AG-2",
+      "nativeLevelMeters": 5.078224182128906,
+      "rawFile": "data/research/step27/D05/AG-2.glorys12v1.uo_vo.D05.nc",
+      "rawSha256": "935c8ef4f21501d933a3fb735b746a22f32bfec3482a9197579ba351aac79314",
+      "normalized": {
+        "file": "data/research/step27/forcing/D05/AG-2.glorys.dataset.json",
+        "fileSha256": "4fa555588bf67467be2bb8487143ab1fe61c8d1c7f4599702ca9c828b67c1931",
+        "gridSha256": "487a46ed1dd0bae9d4cc1b608f9ca4761d3a3749fa2f0b3ae0e9b91225ff9199",
+        "shape": [
+          6,
+          61,
+          61
+        ],
+        "timeUTC": [
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z",
+          "2015-04-28T00:00:00Z",
+          "2015-04-29T00:00:00Z",
+          "2015-04-30T00:00:00Z"
+        ],
+        "maskedNodes": 112,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 6.357828787884046e-07
+        }
+      },
+      "source": "STEP 27B",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D05",
+      "windowId": "KE-H1",
+      "nativeLevelMeters": 5.078224182128906,
+      "rawFile": "data/research/step27/D05/KE-H1.glorys12v1.uo_vo.D05.nc",
+      "rawSha256": "ef7656118fdeba2a0d494e817f7fcf93977f9831d2047bf732e3575b2659f422",
+      "normalized": {
+        "file": "data/research/step27/forcing/D05/KE-H1.glorys.dataset.json",
+        "fileSha256": "57d793a0a753f984151f715abb3e342b7b134aefa0f46c26ba2c556327ea7af2",
+        "gridSha256": "1e1261389d981cdc7eec98ccc64cbff468778860e844bb22fedda4192ffba643",
+        "shape": [
+          6,
+          130,
+          332
+        ],
+        "timeUTC": [
+          "2010-08-09T00:00:00Z",
+          "2010-08-10T00:00:00Z",
+          "2010-08-11T00:00:00Z",
+          "2010-08-12T00:00:00Z",
+          "2010-08-13T00:00:00Z",
+          "2010-08-14T00:00:00Z"
+        ],
+        "maskedNodes": 2685,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        }
+      },
+      "source": "STEP 27B",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D05",
+      "windowId": "KE-H3",
+      "nativeLevelMeters": 5.078224182128906,
+      "rawFile": "data/research/step27/D05/KE-H3.glorys12v1.uo_vo.D05.nc",
+      "rawSha256": "65d6520b173a59decbb163980c96dd7d4e0fbf52bf804a83edb88c93716fb6b7",
+      "normalized": {
+        "file": "data/research/step27/forcing/D05/KE-H3.glorys.dataset.json",
+        "fileSha256": "a909a4825e8a813afc7002f58c574779e326032ccaf38457406b7f3c0a8fe9c2",
+        "gridSha256": "05ab350cd72a05c278c09bd347c069926a49ce6ea171ccadb04bc90fee1e1f80",
+        "shape": [
+          6,
+          145,
+          193
+        ],
+        "timeUTC": [
+          "2010-11-14T00:00:00Z",
+          "2010-11-15T00:00:00Z",
+          "2010-11-16T00:00:00Z",
+          "2010-11-17T00:00:00Z",
+          "2010-11-18T00:00:00Z",
+          "2010-11-19T00:00:00Z"
+        ],
+        "maskedNodes": 498,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        }
+      },
+      "source": "STEP 27B",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D10",
+      "windowId": "KE-1",
+      "nativeLevelMeters": 9.572997093200684,
+      "rawFile": "data/research/step27/D10/KE-1.glorys12v1.uo_vo.D10.nc",
+      "rawSha256": "a76c1a3b2d9289d578b1da2e0dbf5142c22893656ee845e5753a6622eab1ffcf",
+      "normalized": {
+        "file": "data/research/step27/forcing/D10/KE-1.glorys.dataset.json",
+        "fileSha256": "f3c4d8d56be5e3aaa2144d11a4315deaad7f330249bf4db2c65b04cf7aa21a81",
+        "gridSha256": "dde632a8875e843bf9cb47a31e359a5464e21357dd32f095d96bd582d06a89f7",
+        "shape": [
+          6,
+          133,
+          265
+        ],
+        "timeUTC": [
+          "2010-05-10T00:00:00Z",
+          "2010-05-11T00:00:00Z",
+          "2010-05-12T00:00:00Z",
+          "2010-05-13T00:00:00Z",
+          "2010-05-14T00:00:00Z",
+          "2010-05-15T00:00:00Z"
+        ],
+        "maskedNodes": 412,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        }
+      },
+      "source": "STEP 27B",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D10",
+      "windowId": "KE-2",
+      "nativeLevelMeters": 9.572997093200684,
+      "rawFile": "data/research/step27/D10/KE-2.glorys12v1.uo_vo.D10.nc",
+      "rawSha256": "6e0717a629e3946740a6eb7eacfecca3dc26d7e4630878f440ed877711d359c1",
+      "normalized": {
+        "file": "data/research/step27/forcing/D10/KE-2.glorys.dataset.json",
+        "fileSha256": "8539a8fb507bff3b54e13d66a42e52d2f058c7cd1dbdcb7959e34dbd4d1c7fd9",
+        "gridSha256": "90dc178954c67dcf170780f24d85dbcbc3b60453bea32054b312b95121909f52",
+        "shape": [
+          6,
+          137,
+          268
+        ],
+        "timeUTC": [
+          "2010-06-29T00:00:00Z",
+          "2010-06-30T00:00:00Z",
+          "2010-07-01T00:00:00Z",
+          "2010-07-02T00:00:00Z",
+          "2010-07-03T00:00:00Z",
+          "2010-07-04T00:00:00Z"
+        ],
+        "maskedNodes": 3151,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        }
+      },
+      "source": "STEP 27B",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D10",
+      "windowId": "AG-1",
+      "nativeLevelMeters": 9.572997093200684,
+      "rawFile": "data/research/step27/D10/AG-1.glorys12v1.uo_vo.D10.nc",
+      "rawSha256": "9b3fd56aff7d40f391a9d17eb75770eca9f14f9d3171de7f9d7a67db6a3644f2",
+      "normalized": {
+        "file": "data/research/step27/forcing/D10/AG-1.glorys.dataset.json",
+        "fileSha256": "90adea068adc3496d6d33cc5dd5553d228ce8dc92e2d542cc098dd7e81b6c511",
+        "gridSha256": "e03506b43a45e9167b917607ff420e4f7eaaa40b6eb72ee9536b1eed32ed5a12",
+        "shape": [
+          6,
+          107,
+          177
+        ],
+        "timeUTC": [
+          "2015-04-22T00:00:00Z",
+          "2015-04-23T00:00:00Z",
+          "2015-04-24T00:00:00Z",
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z"
+        ],
+        "maskedNodes": 3564,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 1.2715657575768091e-06
+        }
+      },
+      "source": "STEP 27B",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D10",
+      "windowId": "AG-2",
+      "nativeLevelMeters": 9.572997093200684,
+      "rawFile": "data/research/step27/D10/AG-2.glorys12v1.uo_vo.D10.nc",
+      "rawSha256": "b3d9e3e1f1d2d57476e886ba72b1e66f21dd0849d0583007b52eb419cc71540f",
+      "normalized": {
+        "file": "data/research/step27/forcing/D10/AG-2.glorys.dataset.json",
+        "fileSha256": "fc7435b3ec210b41f8c196c16a20fa60d1ab0904bed035f6d4d4928ebe84766a",
+        "gridSha256": "0d0a85edcf159a63961ac27ba7e6b6104b8963875f5a788c9d4713c3bb2e15d9",
+        "shape": [
+          6,
+          61,
+          61
+        ],
+        "timeUTC": [
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z",
+          "2015-04-28T00:00:00Z",
+          "2015-04-29T00:00:00Z",
+          "2015-04-30T00:00:00Z"
+        ],
+        "maskedNodes": 119,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 6.357828787884046e-07
+        }
+      },
+      "source": "STEP 27B",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D10",
+      "windowId": "KE-H1",
+      "nativeLevelMeters": 9.572997093200684,
+      "rawFile": "data/research/step27/D10/KE-H1.glorys12v1.uo_vo.D10.nc",
+      "rawSha256": "25240c67e6968904b73bf975d2ee362531ba013cf71d47605aeeb15ec31e129d",
+      "normalized": {
+        "file": "data/research/step27/forcing/D10/KE-H1.glorys.dataset.json",
+        "fileSha256": "728670b9cc3f58dfbf6c4c208b54aeca8d128f5c9d32ec027f12ae2a22e0ec21",
+        "gridSha256": "6a5519b6c6a27f42502165ab225eec15c311dc4fb4be4c6aed3a091570a0c738",
+        "shape": [
+          6,
+          130,
+          332
+        ],
+        "timeUTC": [
+          "2010-08-09T00:00:00Z",
+          "2010-08-10T00:00:00Z",
+          "2010-08-11T00:00:00Z",
+          "2010-08-12T00:00:00Z",
+          "2010-08-13T00:00:00Z",
+          "2010-08-14T00:00:00Z"
+        ],
+        "maskedNodes": 2722,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        }
+      },
+      "source": "STEP 27B",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D10",
+      "windowId": "KE-H3",
+      "nativeLevelMeters": 9.572997093200684,
+      "rawFile": "data/research/step27/D10/KE-H3.glorys12v1.uo_vo.D10.nc",
+      "rawSha256": "1978b96e0d31bff7f3a688c91eb48f3b13714b468cd75d294905134b72fed180",
+      "normalized": {
+        "file": "data/research/step27/forcing/D10/KE-H3.glorys.dataset.json",
+        "fileSha256": "7adaac4b3ce8f97d6b7bc2356f9295febe05231dfd24c2b7725b8d275c6c07eb",
+        "gridSha256": "1a72935402989cba01d8472c2098b1297be3c59bb32e1bb0e0d5129e9fc10382",
+        "shape": [
+          6,
+          145,
+          193
+        ],
+        "timeUTC": [
+          "2010-11-14T00:00:00Z",
+          "2010-11-15T00:00:00Z",
+          "2010-11-16T00:00:00Z",
+          "2010-11-17T00:00:00Z",
+          "2010-11-18T00:00:00Z",
+          "2010-11-19T00:00:00Z"
+        ],
+        "maskedNodes": 499,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        }
+      },
+      "source": "STEP 27B",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D15",
+      "windowId": "KE-1",
+      "nativeLevelMeters": 15.81007,
+      "rawFile": "data/research/step25b/glorys/KE-1.glorys12v1.uo_vo.15.81m.nc",
+      "rawSha256": "d399a2b586b3eea97838bfc9eab2bf0e58afcd33d07c4e9fcef7b02de033c2dc",
+      "normalized": {
+        "file": "data/research/step25c/forcing/KE-1.glorys15.81m.dataset.json",
+        "fileSha256": "5eac44039387614c00d84df59c6805c2d275369cc4c1e25af80c0a23588230eb",
+        "gridSha256": "57e0916e8e4204ed0e07c0c34cb5cd451a018157425b5de9ac1b766d29a484f2",
+        "shape": [
+          6,
+          133,
+          264
+        ],
+        "timeUTC": [
+          "2010-05-10T00:00:00Z",
+          "2010-05-11T00:00:00Z",
+          "2010-05-12T00:00:00Z",
+          "2010-05-13T00:00:00Z",
+          "2010-05-14T00:00:00Z",
+          "2010-05-15T00:00:00Z"
+        ]
+      },
+      "source": "STEP 25C Condition C forcing (not re-normalized)",
+      "status": "REUSED"
+    },
+    {
+      "depth": "D15",
+      "windowId": "KE-2",
+      "nativeLevelMeters": 15.81007,
+      "rawFile": "data/research/step25b/glorys/KE-2.glorys12v1.uo_vo.15.81m.nc",
+      "rawSha256": "f2ca50183aea583d69e3b73f4609568b221106a7c119a0c8c0bd43d7623f4bbe",
+      "normalized": {
+        "file": "data/research/step25c/forcing/KE-2.glorys15.81m.dataset.json",
+        "fileSha256": "3c454919b343754740dd861ac8d147282be60392b043771e7f5a7f6407ef28ae",
+        "gridSha256": "99364bcd6a0dd93db4e4c7c09420e03d8cfb29e5d0443c872492b41ac00b30d5",
+        "shape": [
+          6,
+          136,
+          267
+        ],
+        "timeUTC": [
+          "2010-06-29T00:00:00Z",
+          "2010-06-30T00:00:00Z",
+          "2010-07-01T00:00:00Z",
+          "2010-07-02T00:00:00Z",
+          "2010-07-03T00:00:00Z",
+          "2010-07-04T00:00:00Z"
+        ]
+      },
+      "source": "STEP 25C Condition C forcing (not re-normalized)",
+      "status": "REUSED"
+    },
+    {
+      "depth": "D15",
+      "windowId": "AG-1",
+      "nativeLevelMeters": 15.81007,
+      "rawFile": "data/research/step25b/glorys/AG-1.glorys12v1.uo_vo.15.81m.nc",
+      "rawSha256": "87fffab5d0cfc0ff96387be7089b408681ea55a1f87bfba72f7f8f3ccf875759",
+      "normalized": {
+        "file": "data/research/step25c/forcing/AG-1.glorys15.81m.dataset.json",
+        "fileSha256": "a41f03647dcf12c048f92bb389d5ce80340060b4a953051ab0da43394823237c",
+        "gridSha256": "6821bf8fef4cd232353f030f51f836eb06adf331f5a7a6568eaabceca60009e2",
+        "shape": [
+          6,
+          107,
+          177
+        ],
+        "timeUTC": [
+          "2015-04-22T00:00:00Z",
+          "2015-04-23T00:00:00Z",
+          "2015-04-24T00:00:00Z",
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z"
+        ]
+      },
+      "source": "STEP 25C Condition C forcing (not re-normalized)",
+      "status": "REUSED"
+    },
+    {
+      "depth": "D15",
+      "windowId": "AG-2",
+      "nativeLevelMeters": 15.81007,
+      "rawFile": "data/research/step25b/glorys/AG-2.glorys12v1.uo_vo.15.81m.nc",
+      "rawSha256": "595c2bace7156f3dab92698a251e29a87920eb4d2375cc730fbdf69562cc9b25",
+      "normalized": {
+        "file": "data/research/step25c/forcing/AG-2.glorys15.81m.dataset.json",
+        "fileSha256": "27de6bdf0d7284aa5989f3c0c75d08b61eb3776dbf1b93c0ec055bdff42bb2bb",
+        "gridSha256": "96894ed4c1b40a0d5db94d3cdcbab83f8a4d4502342ac983ae84eda4e97d0a26",
+        "shape": [
+          6,
+          60,
+          60
+        ],
+        "timeUTC": [
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z",
+          "2015-04-28T00:00:00Z",
+          "2015-04-29T00:00:00Z",
+          "2015-04-30T00:00:00Z"
+        ]
+      },
+      "source": "STEP 25C Condition C forcing (not re-normalized)",
+      "status": "REUSED"
+    },
+    {
+      "depth": "D15",
+      "windowId": "KE-H1",
+      "nativeLevelMeters": 15.81007,
+      "rawFile": "data/research/step25b/glorys/KE-H1.glorys12v1.uo_vo.15.81m.nc",
+      "rawSha256": "5fcb3b013aa4f0fa8dabf516ea2ef9d669f7009aceb5d960c339e92f4debcb25",
+      "normalized": {
+        "file": "data/research/step25c/forcing/KE-H1.glorys15.81m.dataset.json",
+        "fileSha256": "5cd22aece73dbb1d613ad99535d93b09b417b22ce300b2d3bfe79670e2656f16",
+        "gridSha256": "e12142bace085deb9a83837334205d8d26c33c13cef9b06be3525c7a738bf1b5",
+        "shape": [
+          6,
+          129,
+          331
+        ],
+        "timeUTC": [
+          "2010-08-09T00:00:00Z",
+          "2010-08-10T00:00:00Z",
+          "2010-08-11T00:00:00Z",
+          "2010-08-12T00:00:00Z",
+          "2010-08-13T00:00:00Z",
+          "2010-08-14T00:00:00Z"
+        ]
+      },
+      "source": "STEP 25C Condition C forcing (not re-normalized)",
+      "status": "REUSED"
+    },
+    {
+      "depth": "D15",
+      "windowId": "KE-H3",
+      "nativeLevelMeters": 15.81007,
+      "rawFile": "data/research/step25b/glorys/KE-H3.glorys12v1.uo_vo.15.81m.nc",
+      "rawSha256": "403ed3a5b4b2882d6f1a102d2edea299ae9436598b250a46e0c0bcb834c10152",
+      "normalized": {
+        "file": "data/research/step25c/forcing/KE-H3.glorys15.81m.dataset.json",
+        "fileSha256": "f3955b90eb1c2715accc8675d8a8338b3816434d96a70754bc7d5fe3f70cc059",
+        "gridSha256": "f00cb7fec7d318234f7ed6dd2af3c92f332b92cb076d82cec947ea300735421f",
+        "shape": [
+          6,
+          144,
+          192
+        ],
+        "timeUTC": [
+          "2010-11-14T00:00:00Z",
+          "2010-11-15T00:00:00Z",
+          "2010-11-16T00:00:00Z",
+          "2010-11-17T00:00:00Z",
+          "2010-11-18T00:00:00Z",
+          "2010-11-19T00:00:00Z"
+        ]
+      },
+      "source": "STEP 25C Condition C forcing (not re-normalized)",
+      "status": "REUSED"
+    },
+    {
+      "depth": "D20",
+      "windowId": "KE-1",
+      "nativeLevelMeters": 18.495559692382812,
+      "rawFile": "data/research/step27/D20/KE-1.glorys12v1.uo_vo.D20.nc",
+      "rawSha256": "a14058c049abfa54c53ddba82a8c7dc83467b44c6ea82f0d5dd632d3508d1239",
+      "normalized": {
+        "file": "data/research/step27/forcing/D20/KE-1.glorys.dataset.json",
+        "fileSha256": "29a39108db74c30b0ea430a7df8bc6298085aa7ca659e02731f5d88ce8a72f5d",
+        "gridSha256": "b5724af6aa96d853ae780f8b3609cc720ae82e06722c3cd6288a544fe2c54c27",
+        "shape": [
+          6,
+          133,
+          265
+        ],
+        "timeUTC": [
+          "2010-05-10T00:00:00Z",
+          "2010-05-11T00:00:00Z",
+          "2010-05-12T00:00:00Z",
+          "2010-05-13T00:00:00Z",
+          "2010-05-14T00:00:00Z",
+          "2010-05-15T00:00:00Z"
+        ],
+        "maskedNodes": 429,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        }
+      },
+      "source": "STEP 27C",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D20",
+      "windowId": "KE-2",
+      "nativeLevelMeters": 18.495559692382812,
+      "rawFile": "data/research/step27/D20/KE-2.glorys12v1.uo_vo.D20.nc",
+      "rawSha256": "074e43b27b3342a2d70a59b22246c6fe8640df72cb08e9037e9078985aa677bf",
+      "normalized": {
+        "file": "data/research/step27/forcing/D20/KE-2.glorys.dataset.json",
+        "fileSha256": "43033598758b5fe18692fb75d70882d3f597593d0975ecdf3e58ba84a16000e7",
+        "gridSha256": "068377be36b3e91006a443197a0f5362d06beadf8dbe2af785bbc8ec33ab01f7",
+        "shape": [
+          6,
+          137,
+          268
+        ],
+        "timeUTC": [
+          "2010-06-29T00:00:00Z",
+          "2010-06-30T00:00:00Z",
+          "2010-07-01T00:00:00Z",
+          "2010-07-02T00:00:00Z",
+          "2010-07-03T00:00:00Z",
+          "2010-07-04T00:00:00Z"
+        ],
+        "maskedNodes": 3266,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        }
+      },
+      "source": "STEP 27C",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D20",
+      "windowId": "AG-1",
+      "nativeLevelMeters": 18.495559692382812,
+      "rawFile": "data/research/step27/D20/AG-1.glorys12v1.uo_vo.D20.nc",
+      "rawSha256": "48b2f285a63ec46e9816a57295660d39f000d22daab3eca7322f4a662d90f9f1",
+      "normalized": {
+        "file": "data/research/step27/forcing/D20/AG-1.glorys.dataset.json",
+        "fileSha256": "01e3c52073ecd34bc85270ca77a25845343674d88c6d9165be15976d8047ecba",
+        "gridSha256": "8fe1f3b6a8f88c98a1720dd95d9a24a9cce30627a3fe775e61332f4478faa61b",
+        "shape": [
+          6,
+          107,
+          177
+        ],
+        "timeUTC": [
+          "2015-04-22T00:00:00Z",
+          "2015-04-23T00:00:00Z",
+          "2015-04-24T00:00:00Z",
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z"
+        ],
+        "maskedNodes": 3601,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 1.2715657575768091e-06
+        }
+      },
+      "source": "STEP 27C",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D20",
+      "windowId": "AG-2",
+      "nativeLevelMeters": 18.495559692382812,
+      "rawFile": "data/research/step27/D20/AG-2.glorys12v1.uo_vo.D20.nc",
+      "rawSha256": "5efef0b531398b589086d899837eeae0a10f941ef9ab6853dff0dcba7f305ec8",
+      "normalized": {
+        "file": "data/research/step27/forcing/D20/AG-2.glorys.dataset.json",
+        "fileSha256": "63e83ab3f74b34af80d48d7909c96ec3d150c7d526431bbb076625a45a761cd7",
+        "gridSha256": "f551e94e08b1c06c3bfbae24b3d78431e8bb06dc59c24ac4e967a36e1ee936d0",
+        "shape": [
+          6,
+          61,
+          61
+        ],
+        "timeUTC": [
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z",
+          "2015-04-28T00:00:00Z",
+          "2015-04-29T00:00:00Z",
+          "2015-04-30T00:00:00Z"
+        ],
+        "maskedNodes": 129,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 6.357828787884046e-07
+        }
+      },
+      "source": "STEP 27C",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D20",
+      "windowId": "KE-H1",
+      "nativeLevelMeters": 18.495559692382812,
+      "rawFile": "data/research/step27/D20/KE-H1.glorys12v1.uo_vo.D20.nc",
+      "rawSha256": "834fcee20694606aaac758ecdde1cb87034d78e998d6711c26f053c4e3508b3e",
+      "normalized": {
+        "file": "data/research/step27/forcing/D20/KE-H1.glorys.dataset.json",
+        "fileSha256": "a6e90876fdc1946f4cf22c94bedb8d6e440b0cd6e851335be51f6004b180987f",
+        "gridSha256": "a67dbf67213bebc0a87249432a8cfb519d42d7280c9e2d92cd4bdbc03d9f2ac5",
+        "shape": [
+          6,
+          130,
+          332
+        ],
+        "timeUTC": [
+          "2010-08-09T00:00:00Z",
+          "2010-08-10T00:00:00Z",
+          "2010-08-11T00:00:00Z",
+          "2010-08-12T00:00:00Z",
+          "2010-08-13T00:00:00Z",
+          "2010-08-14T00:00:00Z"
+        ],
+        "maskedNodes": 2787,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        }
+      },
+      "source": "STEP 27C",
+      "status": "NORMALIZED"
+    },
+    {
+      "depth": "D20",
+      "windowId": "KE-H3",
+      "nativeLevelMeters": 18.495559692382812,
+      "rawFile": "data/research/step27/D20/KE-H3.glorys12v1.uo_vo.D20.nc",
+      "rawSha256": "619567337cf3037e8cdfd7e92197077df9d3295836ce2c369f6e95adb1de1b7f",
+      "normalized": {
+        "file": "data/research/step27/forcing/D20/KE-H3.glorys.dataset.json",
+        "fileSha256": "108bea048881f17c14f83579f39708c2ebe6fc86b495bb3a32fddc6d35f488a2",
+        "gridSha256": "450c32c8697b37246d7c20cbd59248402dc088272a90c86b1b29e62bec711d73",
+        "shape": [
+          6,
+          145,
+          193
+        ],
+        "timeUTC": [
+          "2010-11-14T00:00:00Z",
+          "2010-11-15T00:00:00Z",
+          "2010-11-16T00:00:00Z",
+          "2010-11-17T00:00:00Z",
+          "2010-11-18T00:00:00Z",
+          "2010-11-19T00:00:00Z"
+        ],
+        "maskedNodes": 517,
+        "maxAbsoluteCoordinateCorrectionDegrees": {
+          "lat": 1.2715657575768091e-06,
+          "lon": 5.0862630303072365e-06
+        }
+      },
+      "source": "STEP 27C",
+      "status": "NORMALIZED"
+    }
+  ],
+  "sameGridAndFramesAcrossDepths": false,
+  "modelRunCount": 0,
+  "createdAtUTC": "2026-09-06T14:14:47Z"
+}

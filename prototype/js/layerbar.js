@@ -14,6 +14,7 @@
 //   각 레이어의 대표 색을 코드로 칠하면 항목이 늘어도 한 줄만 추가하면 된다.
 
 import { store } from './store.js';
+import { panels } from './panels.js';
 import { LAYER_DEFS, TIER } from './config.js';
 import { i18n } from './i18n.js';
 import { toast } from './ui.js';
@@ -456,7 +457,7 @@ export function drawThumb(cv, kind) {
      그리고 어떤 것끼리 서로를 대체하는지도 안 보인다.
 
    ⚠️ 순서는 "많이 쓰는 것부터"다. 알파벳순이나 만든 순서가 아니다. */
-const CATEGORIES = [
+const CATEGORIES_FULL = [
   /* ⚠️⚠️ **이 순서가 화면 순서다.** ITEMS 의 순서가 아니다 —
      ITEMS 만 고쳐 놓고 여기를 안 고치면 새 항목이 조용히 '그 밖에'로 밀려난다
      (실제로 천리안 3종이 그렇게 목록 맨 아래로 갔다).
@@ -495,6 +496,56 @@ const CATEGORIES = [
   { id: 'events',  ko: '이벤트',     en: 'Events',
     ids: ['news'] },
 ];
+
+/* ── v1 정리(2026-09-06) ─────────────────────────────────────────
+   받은 지시(그대로): v1 의 전체 레이어는
+     바탕  전지구 합성 · 수오미 NPP · 천리안2A · 히마와리9
+     기상  기온(현재) · 습도(현재) · 수증기 통로 · 바람(현재) · 기압 배치 · 토양수분
+     대기  대기오염(실측) · 초미세먼지 · 미세먼지 · 먼지(모래·황사) · 대기질 · 자외선 · 오존
+     해양  해수면 온도 · 수온 편차 · 파고 · 너울 · 해류
+   그 밖의 항목(내일 예보·일기도 기호·비구름·안개·관측소·사람·도시·하늘·이동·이벤트)과
+   위성 전문 채널은 목록에서 뺀다. 시간 전환·한 번에 보기·기상청 라이브 입구·질문 항목도
+   같이 숨긴다(V1_LEAN). ITEMS·LAYER_DEFS 자체는 건드리지 않는다 — 검색·딥링크·
+   저장된 상태가 그 id 를 계속 쓴다. 되돌리려면 V1_LEAN 만 false 로.
+   ⚠️ 첫 로딩 무게는 여기가 아니라 main.js 의 lazy 표가 줄인다. 이 표는 화면만 정리한다. */
+const V1_LEAN = true;
+const CATEGORIES_LEAN = [
+  { id: 'base',    ko: '바탕',       en: 'Base',
+    ids: ['clouds', 'truecolor', 'gk2aAuto', 'himawari'] },
+  { id: 'weather', ko: '기상',       en: 'Weather',
+    ids: ['temp', 'humidity', 'tpw', 'wind', 'pressure', 'drought'] },
+  { id: 'air',     ko: '대기질',     en: 'Air quality',
+    ids: ['airkr', 'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone'] },
+  { id: 'ocean',   ko: '해양',       en: 'Ocean',
+    ids: ['sst', 'sstanom', 'wave', 'swell', 'current'] },
+];
+const CATEGORIES = V1_LEAN ? CATEGORIES_LEAN : CATEGORIES_FULL;
+
+/* ── 메뉴 이동 = 한 화면만 (2026-09-06) ──────────────────────
+   받은 지적: 서울 관광 밀도 시트를 보다가 AETHERUS 미션 컨트롤에 들어가니 둘이 겹쳐 보였다.
+   규칙 (받은 말 그대로):
+     1. 지구 보기·읽고 분석·활동 어느 카테고리든 **다른 항목을 열면 열려 있던 시트는 전부 닫는다.**
+     2. 테마 묶음(기상·해양·재난 같은 한 묶음) 안에서만 겹쳐 켜고, 묶음 밖으로 옮기면 기존 레이어는 끈다.
+   바탕(base) 묶음은 지구 표면 자체라 끄지 않는다 — 끄면 빈 지구가 남는다.
+   ⚠️ 시트 닫기는 동기다. 새 화면을 연 **뒤에** 닫으면 방금 연 것까지 닫힌다. */
+const ALL_GROUPS = () => [...CATEGORIES, ...TRAVEL_CATEGORIES, ...ALERT_CATEGORIES];
+function groupIdsOf(groupId) { return ALL_GROUPS().filter(c => c.id === groupId).flatMap(c => c.ids); }
+function groupsOfLayer(layerId) { return ALL_GROUPS().filter(c => c.ids.includes(layerId)).map(c => c.id); }
+/** 지금 열린 화면을 떠난다. keep: 살려 둘 묶음 id(들). layers:false 면 시트만 닫는다. 끈 레이어 수를 돌려준다. */
+function leaveMenus({ keep = null, layers = true } = {}) {
+  panels.closeAll();
+  if (!layers) return 0;
+  const hold = new Set(groupIdsOf('base'));
+  (Array.isArray(keep) ? keep : keep ? [keep] : []).forEach(g => groupIdsOf(g).forEach(id => hold.add(id)));
+  let n = 0;
+  LAYER_DEFS.forEach(d => { if (!hold.has(d.id) && store.isOn(d.id)) { store.setLayer(d.id, false); n += 1; } });
+  return n;
+}
+/* 1단 동작·질문 항목이 곧바로 여는 화면과 짝인 묶음 — 그 묶음의 레이어는 살려 둔다 */
+const ACTION_KEEP = { news: 'events', flight: 'move', outdoor: 'ocean', surf: 'ocean', fishing: 'ocean', sky: 'sky' };
+/* 설정·질문·커뮤니티·내 위치·지구로 는 자료를 보여주는 메뉴가 아니라 이동·도구다 — 시트만 닫고 레이어는 둔다 */
+const ACTION_SHEET_ONLY = new Set(['settings', 'ask', 'community', 'locate', 'earth-home', 'intel']);
+const QUESTION_KEEP = { weather: 'weather', alerts: 'hazard', ocean: 'ocean', travel: ['travel', 'human'], sky: 'sky' };
 
 /* 여행은 목적별 입구다. 같은 tourism/poi 레이어를 켜므로 지구 레이어 상태·시간·출처가
    그대로 이어지고, 여행 화면만의 별도 값이나 중복 수집기를 만들지 않는다. */
@@ -802,7 +853,7 @@ export const layerBar = {
   },
 
   _renderQuestionEntries(main, ko) {
-    if (!main) return;
+    if (!main || V1_LEAN) return;   // v1 정리: 질문 항목이 여는 화면(기상청·취미·여행·하늘)이 숨겨졌다
     main.querySelector('.mm-questions')?.remove();
     const section = el('section', 'mm-questions');
     const title = el('h2', 'mm-question-title');
@@ -819,13 +870,15 @@ export const layerBar = {
       section.appendChild(button);
     });
     this._mountSelection(section, ko);
-    main.querySelector('.mm-head')?.after(section);
+    // 기존 메뉴(지구 보기·읽고 분석…)가 먼저, 질문 항목은 그 뒤에(2026-09-06 요청).
+    main.appendChild(section);
   },
 
   async _openQuestion(id, button) {
     if (button) button.disabled = true;
     try {
       document.dispatchEvent(new CustomEvent('earthus:close-menu'));
+      this.leave({ keep: QUESTION_KEEP[id] || null });
       await openQuestionEntry(id, {
         weather: async () => (await import('./ui-korea.js?v=20260814-n5')).koreaPanel.open(),
         alerts: async () => {
@@ -927,10 +980,13 @@ export const layerBar = {
     }
   },
 
+  /** 메뉴 이동 규칙 — 파일 머리의 leaveMenus 참고. main.js 등 바깥에서도 부를 수 있다. */
+  leave(opts) { return leaveMenus(opts); },
+
   /** 1단 항목의 동작을 바깥(main.js)에서 붙인다 */
   onAction(name, fn) {
     const b = document.querySelector(`#menuMain [data-act="${name}"]`);
-    if (b) b.onclick = () => { fn(); this.open = false; this.sub = null; this._apply(); };
+    if (b) b.onclick = () => { this.leave(ACTION_SHEET_ONLY.has(name) ? { layers: false } : { keep: ACTION_KEEP[name] || null }); fn(); this.open = false; this.sub = null; this._apply(); };
   },
 
   /** 2단 목록을 그린다. kind: 'earth'(레이어) | 'travel'(여행) | 'alert'(재난) | 'aetherus'(우주) */
@@ -972,7 +1028,8 @@ export const layerBar = {
       items.forEach(x => placed.add(x.id));
       order.push({ cat: c, items });
     });
-    if (!isAlert && !isTravel) {
+    /* v1 정리: 목록에서 뺀 항목이 '그 밖에'로 되살아나면 안 된다 → V1_LEAN 이면 수거하지 않는다 */
+    if (!isAlert && !isTravel && !V1_LEAN) {
       const rest = ITEMS.filter(x => !placed.has(x.id) && !ALERT_IDS.has(x.id));
       if (rest.length) {
         order.push({ cat: { id: 'etc', ko: '그 밖에', en: 'Other' }, items: rest });
@@ -1002,6 +1059,7 @@ export const layerBar = {
            메뉴는 바깥 눌림 감지가 알아서 닫는다. 손대지 않는다. */
         try {
           const { eventPanel } = await import('./ui-events.js');
+          this.leave({ keep: 'hazard' });
           eventPanel.mode = 'alert';
           eventPanel.show = 'warn';
           eventPanel.open();
@@ -1029,6 +1087,7 @@ export const layerBar = {
           this.open = false;
           this.sub = null;
           this._apply?.();
+          this.leave({ keep: 'hazard' });
           alertsSheet.open();
         } catch (e) {
           console.warn('[layerbar] 알림 설정을 못 열었습니다', e.message);
@@ -1038,7 +1097,7 @@ export const layerBar = {
       strip.appendChild(el('div', 'ly-gap'));
     }
 
-    if (!isAlert && !isTravel) {
+    if (!isAlert && !isTravel && !V1_LEAN) {   // v1 정리: 기상청 라이브·시간 전환·한 번에 보기 숨김
       /* 받은 지적: 기상청 자료는 이미 9개 수집기가 살아 있는데 날씨 상세의 작은 링크
          뒤에 숨어 있어 업데이트가 사용자 눈에는 '별거 없음'으로 보였다. 데이터 레이어와
          성격이 다른 관측·공식예보·특보 탐색판이므로 스위치가 아닌 공개 입구로 둔다. */
@@ -1051,6 +1110,7 @@ export const layerBar = {
         try {
           const { koreaPanel } = await import('./ui-korea.js?v=20260814-n5');
           this.open = false; this.sub = null; this._apply?.();
+          this.leave({ keep: 'weather' });
           koreaPanel.open();
         } catch (error) {
           console.warn('[layerbar] 기상청 라이브를 못 열었습니다', error?.message || error);
@@ -1106,7 +1166,7 @@ export const layerBar = {
         + `<small>${ko ? '시군구 228곳 · 근거와 제외 사유를 함께' : '228 districts, with evidence and exclusions'}</small>`;
       discover.addEventListener('click', () => {
         import('./ui-travel-discovery.js?v=20260903-travel-discovery')
-          .then(({ travelSheet }) => travelSheet.open());
+          .then(({ travelSheet }) => { this.leave({ keep: ['travel', 'human'] }); travelSheet.open(); });
       });
       strip.appendChild(discover);
       order.flatMap(group => group.items).forEach(it => this._item(strip, it, ko, 'ly-purpose-item'));
@@ -1137,6 +1197,7 @@ export const layerBar = {
       input.oninput = () => { this.query = input.value; this._filterAll(strip); };
       strip.prepend(search);
       groups.regular.forEach(it => this._item(strip, it, ko, 'ly-all-item'));
+      if (groups.expert.length) {   // v1 정리: 전문 채널이 없으면 빈 접이식을 그리지 않는다
       const expert = el('details', 'ly-expert');
       expert.open = this.expertExpanded;
       const summary = el('summary'); summary.textContent = ko ? `위성 전문 채널 ${groups.expert.length}개` : `${groups.expert.length} satellite channels`;
@@ -1146,6 +1207,7 @@ export const layerBar = {
       expert.append(summary, intro, expertItems);
       expert.ontoggle = () => { if (!this.query.trim()) this.expertExpanded = expert.open; };
       strip.appendChild(expert);
+      }
       this._filterAll(strip);
     }
     this.sync();
@@ -1201,6 +1263,7 @@ export const layerBar = {
         this.open = false;
         this.sub = null;
         this._apply?.();
+        this.leave();
         document.dispatchEvent(new CustomEvent('aetherus:route', { detail: route.id }));
       };
       strip.appendChild(button);
@@ -1258,6 +1321,7 @@ export const layerBar = {
         b.onclick = async () => {
           try {
             this.open = false; this.sub = null; this._apply?.();
+            this.leave({ keep: groupsOfLayer(it.id) });
             if (it.open === 'flight') {
               const { flightPanel } = await import('./ui-flight.js');
               await flightPanel.open();
@@ -1294,7 +1358,7 @@ export const layerBar = {
             : `${it.en} is available with a subscription.`);
         };
       } else {
-        b.onclick = () => store.toggle(it.id);
+        b.onclick = () => { if (!store.isOn(it.id)) this.leave({ keep: groupsOfLayer(it.id) }); store.toggle(it.id); };
       }
       strip.appendChild(b);
     }
@@ -1349,6 +1413,7 @@ export const layerBar = {
     /* 다른 바탕·관측소는 그대로 두고 시간에 따라 바뀌는 기온·바람만 교체한다.
        전체 프리셋 applyPreset을 쓰면 부이·구름까지 꺼져 '시간만 바꿨는데 화면이
        초기화됐다'가 된다. */
+    this.leave({ layers: false });
     ['temp', 'tmax', 'tmin', 'wind', 'windfc'].forEach(id => {
       if (!ids.has(id) && store.isOn(id)) store.setLayer(id, false);
     });
@@ -1368,6 +1433,7 @@ export const layerBar = {
     const target = new Set(preset.ids);
     /* ⚠️ 끄기부터 한다. 격자·바탕 배타 그룹의 교대 순서가 뒤집히면 짧게 두 장이
        겹쳐 보일 수 있다. 모든 변경은 setLayer를 지나 정리 이벤트를 보낸다. */
+    this.leave({ layers: false });
     LAYER_DEFS.forEach(d => {
       if (!target.has(d.id) && store.isOn(d.id)) store.setLayer(d.id, false);
     });

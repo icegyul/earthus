@@ -64,17 +64,20 @@ export const imagery = {
        다만 전지구 뷰에서 이걸 쓰면 리빙어스 룩이 깨진다 (구름·계절·이음매가 섞인 실사).
        → 전지구에선 Blue Marble, 확대하면 Esri 로 넘긴다. 아래 updateForHeight 참고.
 
-       ⚠️ 출처 표기 의무가 있다. credit 을 지우지 말 것. */
-    this.detail = viewer.imageryLayers.addImageryProvider(
-      new Cesium.UrlTemplateImageryProvider({
-        url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        maximumLevel: 19,
-        /* 서비스가 현재 직접 반환하는 copyrightText와 맞춘다.
-           ⚠️ 공급사가 Maxar→Vantor로 바뀌었는데 옛 문자열을 계속 쓰고 있었다. */
-        credit: 'Powered by Esri · Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community',
-      })
-    );
-    this.detail.alpha = 0.0;   // updateForHeight 가 고도에 따라 올린다
+       ⚠️ 출처 표기 의무가 있다. credit 을 지우지 말 것.
+
+       v1 정리(2026-09-06) — 받은 지시: "다음 지도(실사)로 넘어가지 말 것."
+       Esri 층을 **만들지 않는다.** 카메라 하한을 700 km 로 올려(viewer.js) Blue Marble 이
+       뭉개지는 높이까지 내려가지 않게 했으므로 고해상도 면이 필요 없다.
+       ⚠️ alpha 0 으로 두기만 하면 안 된다 — Cesium 은 show 가 true 면 alpha 와 무관하게
+          타일을 요청한다. 실측에서 전지구 시점에도 Esri 타일이 내려오고 있었다.
+       되살리려면 아래 주석의 provider 를 다시 만들고 viewer.js 하한도 함께 되돌린다:
+         new Cesium.UrlTemplateImageryProvider({
+           url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+           maximumLevel: 19,
+           credit: 'Powered by Esri · Source: Esri, Vantor, Earthstar Geographics, and the GIS User Community',
+         }) */
+    this.detail = null;
 
     /* ── 오늘의 실제 위성 영상 (트루컬러) ──────────────────────────
        기본면(Blue Marble)은 정지 사진이다. 계절도 구름도 연기도 없다.
@@ -1608,7 +1611,8 @@ export const imagery = {
 
     // 고해상도 면은 더 가까이서 들어온다. 전지구에서 실사가 섞이면 리빙어스 룩이 깨진다.
     const D_FAR = 3_000_000, D_NEAR = 700_000;
-    const d = Math.min(1, Math.max(0, (D_FAR - h) / (D_FAR - D_NEAR)));
+    // 고해상도 층이 없으면(v1 정리) 트루컬러도 물리지 않는다 — 넘겨줄 면이 없다.
+    const d = this.detail ? Math.min(1, Math.max(0, (D_FAR - h) / (D_FAR - D_NEAR))) : 0;
 
     // 매 프레임 호출된다. 값이 그대로면 쓰지 않는다 —
     // 알파를 대입하면 Cesium 이 레이어를 다시 합성한다.

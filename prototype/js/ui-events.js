@@ -126,11 +126,15 @@ export const eventPanel = {
   _warn: null,
 
   init() {
+    if (this._inited) return this;
+    this._inited = true;
     i18n.onChange(() => { if ($('#eventSheet')?.classList.contains('up')) this.render(); });
     return this;
   },
 
   async open() {
+    // v1 정리: 부팅 때 init 하지 않는다. Alert 의 '지금 일어난 일'이 먼저 열어도 스스로 준비한다.
+    this.init();
     $('#eventSheet').classList.add('up');
     this.render();
     // ⚠️ 둘을 함께 받는다. 브리핑을 이벤트 뒤에 순차로 받으면 열고 나서 두 번 깜빡인다.

@@ -42,6 +42,7 @@ export const koreaPanel = {
   tab: 'now',
 
   init() {
+    this._inited = true;
     this._bind();
     if (!document.querySelector('link[data-kma-live-style]')) {
       const link = document.createElement('link');
@@ -65,6 +66,9 @@ export const koreaPanel = {
   },
 
   open() {
+    /* v1 정리(2026-09-06): 부팅 때 init 하지 않는다(첫 로딩에서 뺐다). 누가 먼저 열든
+       여기서 한 번 스스로 준비한다 — 안 그러면 kma-live.css 없이 맨 화면이 뜬다. */
+    if (!this._inited) { this._inited = true; this.init(); }
     if (!this._bind()) { console.warn('[한국탭] 화면 요소를 못 찾았다'); return; }
     const title = document.getElementById('koreaTitle');
     if (title) title.innerHTML = i18n.lang === 'ko'

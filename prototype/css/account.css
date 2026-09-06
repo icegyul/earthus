@@ -202,6 +202,16 @@
   padding:7px 2px; cursor:pointer; font-size:12.5px; font-weight:300;
 }
 .sat-row.always{ cursor:default; opacity:.85; }
+/* 우주쓰레기(AETHERUS 궤도 인텔리전스) 스위치 — 위성 시트 맨 위 */
+.sat-orbit{
+  display:flex; flex-direction:column; align-items:flex-start; gap:2px; width:100%;
+  padding:9px 10px; border-radius:10px; text-align:left; cursor:pointer;
+  border:1px solid rgba(242,245,248,.14); background:rgba(242,245,248,.05); color:inherit; font:inherit;
+}
+.sat-orbit b{ font-size:12.5px; font-weight:500; }
+.sat-orbit em{ font-style:normal; font-size:11px; opacity:.7; }
+.sat-orbit.on{ border-color:var(--teal); background:rgba(0,180,170,.12); }
+.sat-orbit:disabled{ opacity:.55; cursor:progress; }
 .sat-row input{
   appearance:none; -webkit-appearance:none; flex:none;
   width:15px; height:15px; border-radius:4px; cursor:pointer;

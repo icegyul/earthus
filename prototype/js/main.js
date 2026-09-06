@@ -4,14 +4,11 @@
 import { initViewer, viewer, scene, cameraHeight, onCameraIdle, flyTo, setAmbientView, fitGlobeHeight } from './viewer.js';
 import { alarms } from './alarms.js';
 import { windField } from './windfield.js';
-import { stationModel } from './station-model.js';
 import { myLocation } from './mylocation.js';
 import { layerBar } from './layerbar.js';
 import { search } from './search.js';
 import { onboard } from './onboard.js';
 import { weatherPanel } from './ui-weather.js';
-import { tourismSheet } from './ui-tourism.js?v=20260821-tourism-density2';
-import { travelSheet } from './ui-travel-discovery.js?v=20260903-travel-discovery';
 import { createWeatherEarthSync } from './weather-earth-sync.js';
 import { createWeatherMomentLayer } from './weather-moment-layer.js';
 import { power } from './power.js';
@@ -31,38 +28,18 @@ import { subscriptionUiAllowed } from './access-mode.js';
 import { initAccount, loginSheet, consentSheet, accountSheet,
          legalView, waitlistUI } from './ui-account.js';
 import { analytics } from './analytics.js';
-import { renderChangelog } from './changelog.js';
 import { satPanel } from './ui-sat.js';
 // 별보기 근거 베타는 서비스워커의 이전 Sky 패널 캐시를 재사용하면 공개 화면에
 // 나타나지 않는다. 화면 계약이 바뀔 때만 revision을 올려 새 모듈을 받는다.
-import { skyPanel } from './ui-sky.js';
-import { flightPanel } from './ui-flight.js';
-import { subscribeSheet } from './ui-subscribe.js';
-import { communityPanel } from './ui-community.js';
-import { askPanel } from './ask/panel.js';
 import { sourceNote } from './ui-source.js';
 import { readability } from './readability.js';
 import { decisionRail } from './decision-rail.js';
 import { continuousContours } from './continuous-contours.js';
 import { warn } from './warn.js';
 import { warnUI } from './ui-warn.js';
-import { koreaPanel } from './ui-korea.js?v=20260814-n5';
-import { japanPanel } from './ui-japan.js';
-import { mountainPanel } from './ui-mountain.js';
-import { surfPanel } from './ui-surf.js';
-import { fishPanel } from './ui-fishing.js';
-import { outdoorPanel } from './ui-outdoor.js';
-import { oceanPanel } from './ui-ocean.js?v=20260821-v8p3-1';
-import { paraPanel } from './ui-para.js';
-import { apiKeysPanel } from './ui-apikeys.js';
-import { eventPanel } from './ui-events.js';
 import { activeBar } from './ui-active.js';
 import { sceneMgr } from './scene.js';
-import { initSkyframeDiagnostic } from './space/skyframe.js';
-import { cosmic3d } from './space/cosmic3d.js?v=20260815-mc14';
 import { decodeAetherusRoute, replaceAetherusRoute } from './space/route-state.js';
-import { trenchCards } from './ocean/trenchcards.js';
-import { trenchGlobe } from './ocean/trenchglobe.js';
 import { createV8Runtime } from './v8/runtime-coordinator.js';
 
 /* 늦게 불러오는 바다거북 모듈을 붙잡아 두는 곳.
@@ -74,6 +51,49 @@ let turtleMod = null;
 let seabirdMod = null;
 let migbirdMod = null;
 let ecobirdMod = null;
+
+/* ── v1 정리(2026-09-06): 메뉴에서 숨긴 기능은 첫 로딩에서도 뺀다 ────────────
+   받은 지시: Alert 만 남기고 News·LAB·물어보기·여행·취미·항공편·AETHERUS 는 숨김.
+   "메뉴만 숨기면 속도는 거의 안 빨라진다" → 모듈 자체를 정적 import 에서 뺐다.
+   실측(2026-09-06): 첫 화면 앱 JS 163 파일 2.8 MB 중 약 2 MB 가 아래 표의 모듈이었다.
+   누르는 순간 받아 한 번 init 하고 붙잡아 둔다 — onPick·OFF·HAS_MARKS 표가 `loaded` 로
+   같은 객체를 본다(안 받았으면 undefined → 지울 것도 없으니 아무 일도 안 한다).
+   ⚠️ 메뉴 버튼(index.html, hidden)과 onAction 배선은 남겨 뒀다 — 검색·딥링크·다른
+      시트가 이 이름으로 부른다. 화면에 되살리려면 index.html 의 hidden 만 걷으면 된다. */
+const loaded = {};
+const loading = new Map();
+function lazy(path, key, init = x => x.init?.()) {
+  if (!loading.has(key)) {
+    loading.set(key, import(path).then(async m => {
+      const x = m[key];
+      if (!x._inited) { await init(x); x._inited = true; }
+      loaded[key] = x;
+      return x;
+    }));
+  }
+  return loading.get(key);
+}
+const L = {
+  surf:        () => lazy('./ui-surf.js', 'surfPanel'),
+  fishing:     () => lazy('./ui-fishing.js', 'fishPanel'),
+  para:        () => lazy('./ui-para.js', 'paraPanel'),
+  mountain:    () => lazy('./ui-mountain.js', 'mountainPanel'),
+  sky:         () => lazy('./ui-sky.js', 'skyPanel'),
+  flight:      () => lazy('./ui-flight.js', 'flightPanel'),
+  community:   () => lazy('./ui-community.js', 'communityPanel'),
+  events:      () => lazy('./ui-events.js', 'eventPanel'),
+  ask:         () => lazy('./ask/panel.js', 'askPanel'),
+  korea:       () => lazy('./ui-korea.js?v=20260814-n5', 'koreaPanel'),
+  japan:       () => lazy('./ui-japan.js', 'japanPanel'),
+  tourism:     () => lazy('./ui-tourism.js?v=20260821-tourism-density2', 'tourismSheet'),
+  apikeys:     () => lazy('./ui-apikeys.js', 'apiKeysPanel'),
+  trenchGlobe: () => lazy('./ocean/trenchglobe.js', 'trenchGlobe'),
+  trenchCards: () => lazy('./ocean/trenchcards.js', 'trenchCards'),
+  cosmic:      () => lazy('./space/cosmic3d.js?v=20260815-mc14', 'cosmic3d'),
+  /* 취미·바다 도구는 init 에 동작 표가 필요하다 — boot() 안에서 채운다 */
+  outdoor:     null,
+  ocean:       null,
+};
 
 /* 여러 자료를 받는 레이어의 실제 작업 상태를 한 곳에서 표시한다.
    key별로 잡아 둬 한 요청이 먼저 끝났다고 다른 요청의 막대까지 숨기지 않는다. */
@@ -144,7 +164,9 @@ async function boot() {
   /* 등치선은 gridoverlay의 ready 이벤트보다 먼저 구독해야 딥링크 첫 렌더도 놓치지 않는다. */
   continuousContours.init();
   // B0 실험은 ?skyframe=1에서만 보인다. 일반 방문자 화면에는 진단 마커를 섞지 않는다.
-  initSkyframeDiagnostic(viewer);
+  if (new URLSearchParams(location.search).get('skyframe') === '1') {
+    import('./space/skyframe.js').then(m => m.initSkyframeDiagnostic(viewer)).catch(() => {});
+  }
 
   // 화면 크기가 바뀌면 Ambient 상태일 때만 지구 크기를 다시 맞춘다
   let rz;
@@ -160,9 +182,7 @@ async function boot() {
 
   power.init();
   sceneMgr.init();
-  cosmic3d.init();
-  trenchCards.init();
-  trenchGlobe.init();
+  /* v1 정리: 우주(cosmic3d 197 KB)·해구 모듈은 딥링크나 문을 열 때만 받는다 (위 lazy 표) */
   // 수심 장면을 공유하거나 동일 좌표로 재현할 수 있게 한다.
   // ⚠️ 좌표만 받고 수심은 반드시 배포된 GEBCO 격자에서 다시 읽는다.
   const sceneParams = new URLSearchParams(location.search);
@@ -202,6 +222,7 @@ async function boot() {
     if (Number.isFinite(lat) && Number.isFinite(lon) && lat >= -90 && lat <= 90) {
       queueMicrotask(async () => {
         try {
+          const trenchCards = await L.trenchCards();
           await sceneMgr.to('ocean', { stage: 'dive' });
           await trenchCards.openDiveAt(lat, lon, `${lat.toFixed(2)}, ${lon.toFixed(2)}`);
         } catch (error) {
@@ -211,14 +232,16 @@ async function boot() {
     }
   } else if (aetherusRoute?.stage) {
     queueMicrotask(async () => {
+      let cosmic3d = null;
       try {
+        cosmic3d = await L.cosmic();
         await sceneMgr.to('space', { stage: aetherusRoute.stage });
         await cosmic3d.restoreRoute(aetherusRoute);
       } catch (error) {
         console.warn('[aetherus-link]', error.message);
       } finally {
         aetherusRouteSyncReady = true;
-        syncAetherusRoute(cosmic3d.routeState());
+        syncAetherusRoute(cosmic3d?.routeState() || null);
       }
     });
   }
@@ -272,6 +295,7 @@ async function boot() {
     const request = typeof event.detail === 'string'
       ? { telescope: event.detail }
       : (event.detail || {});
+    const cosmic3d = await L.cosmic();
     if (store.scene !== 'space') await sceneMgr.to('space', { stage: 'solar' });
     await cosmic3d.openPhotoAtlas(request.telescope || 'ALL', request.photo || null);
   });
@@ -279,6 +303,7 @@ async function boot() {
      기존 은하·태양계·사진관의 실제 이동 동작은 하나도 줄이지 않는다. */
   document.addEventListener('aetherus:route', async event => {
     const route = event.detail;
+    await L.cosmic();   // 우주 장면의 실제 이동은 cosmic3d 가 듣는다 — 먼저 받아 둔다
     if (route === 'galaxy-structure' || route === 'milkyway') {
       await sceneMgr.to('space', { stage: 'milkyway' });
       document.dispatchEvent(new CustomEvent('aetherus:galaxy-guide'));
@@ -304,12 +329,12 @@ async function boot() {
      ⚠️ 선택 전 활동 CTA와 같은 이유로 코치마크도 자동 노출하지 않는다. */
   onboard.init({ chips: false, coach: false });
   weatherPanel.init();    // 하단 온도 탭 → 내 자리 날씨 시트
-  tourismSheet.init();    // 서울시 공식 혼잡 저층 3D 블록 → 관광 흐름 시트
-  travelSheet.init();     // 여행 메뉴 → 시군구 발견 후보(근거·제외사유 포함)
+  /* v1 정리: 관광 흐름·여행 발견 시트는 여행 메뉴를 숨기며 첫 로딩에서 뺐다 (누를 때 받는다) */
 
   // 내 위치 — 실패해도 조용히 넘어간다 (HTTP 접속·권한 거부 등)
   windField.init();
-  stationModel.init();   // 일기도 기입 모형 — store 의 'synop' 레이어로 켜고 끈다
+  // 일기도 기입 모형 — v1 정리로 메뉴에서 뺐다. 저장된 상태로 켜져 있을 때만 받는다.
+  if (store.isOn('synop')) import('./station-model.js').then(m => m.stationModel.init()).catch(() => {});
   myLocation.init();
 
   /* 위치 응답이 오기 전에 사람이 화면을 쓰기 시작했는지 기록한다.
@@ -389,17 +414,23 @@ async function boot() {
   /* 취미 — 바다·생물 관측·땅과 하늘을 한자리에 모았다 (ui-outdoor.js 머리말 참고).
      ⚠️ 옛 메뉴 항목(surf/mountain/sky)도 그대로 살려 둔다. 검색·코치마크·딥링크가
         그 이름으로 부르고 있어, 지우면 조용히 안 열린다. */
-  layerBar.onAction('outdoor', () => outdoorPanel.open());
-  layerBar.onAction('surf', () => surfPanel.open());
-  layerBar.onAction('fishing', () => fishPanel.open());
-  layerBar.onAction('para', () => paraPanel.open());
+  layerBar.onAction('outdoor', () => L.outdoor().then(p => p.open()));
+  layerBar.onAction('surf', () => L.surf().then(p => p.open()));
+  layerBar.onAction('fishing', () => L.fishing().then(p => p.open()));
+  layerBar.onAction('para', () => L.para().then(p => p.open()));
   /* ⚠️ 바다거북은 여기가 아니다. layerBar 에 'turtle' 을 내보내는 곳이 없어서
      이 자리에 등록해 두었더니 **눌러도 안 열렸다.** 취미 카드가 쓰는
      `outdoorPanel.init()` 의 표(아래)로 옮겼다. */
-  layerBar.onAction('mountain', () => mountainPanel.open());
-  layerBar.onAction('sky', () => skyPanel.open());
-  layerBar.onAction('flight', () => flightPanel.open());
-  layerBar.onAction('community', () => communityPanel.open());
+  layerBar.onAction('mountain', () => L.mountain().then(p => p.open()));
+  layerBar.onAction('sky', () => L.sky().then(p => p.open()));
+  layerBar.onAction('flight', () => L.flight().then(p => p.open()));
+  layerBar.onAction('community', () => L.community().then(p => p.open()));
+  /* Intelligence 지구로 (받은 요청: 메뉴에도 넣어달라). 좌상단 전환기(earth-switch.js)와
+     같은 주소 규칙이다 — 개발 서버에는 /Intelligence 별칭이 없어 폴더명을 쓴다. */
+  layerBar.onAction('intel', () => {
+    const dev = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+    location.href = dev ? '/v2-three/' : '/Intelligence';
+  });
   /* ⚠️ 1단의 '이벤트' 메뉴는 없앴다 (받은 요청). News 와 같은 패널을 여는 문 두 개였다.
      지진·쓰나미 같은 **지금 일어난 일**은 Alert 메뉴 안 '지금 일어난 일'로 들어간다
      (layerbar.js render()). 여기 배선도 함께 지웠다 —
@@ -410,11 +441,9 @@ async function boot() {
     /* ⚠️ 여기서 레이어를 **강제로 켜지 않는다.** 껐던 사람이 목록을 보려고
        눌렀는데 지도가 도로 켜지면 끈 것이 무시된 것이다.
        대신 패널 안에 켜고 끄는 버튼을 뒀다 (ui-events.js). */
-    eventPanel.mode = 'news';
-    eventPanel.show = 'local';
-    eventPanel.open();
+    L.events().then(p => { p.mode = 'news'; p.show = 'local'; p.open(); });
   });
-  layerBar.onAction('ask', () => askPanel.open());
+  layerBar.onAction('ask', () => L.ask().then(p => p.open()));
   layerBar.onAction('settings', () => document.getElementById('settings').classList.add('up'));
   sheet.init();
   settings.init();
@@ -440,7 +469,7 @@ async function boot() {
   await registry.init();
   // 딥링크는 레이어 초기화보다 먼저 해구 모드에 들어올 수 있다. 초기화가 끝난 뒤
   // 기존 지구 위 해구 영역이 반드시 다시 보이도록 상태를 한 번 맞춘다.
-  if (store.scene === 'earth' && store.sceneStage === 'trench') trenchGlobe.setVisible(true, 'trench');
+  if (store.scene === 'earth' && store.sceneStage === 'trench') L.trenchGlobe().then(t => t.setVisible(true, 'trench'));
 
   /* 지구(베이스맵)가 준비됐다 → 로딩을 걷어내고 인트로를 시작한다.
      나머지 UI·데이터(chrome·계정·패널·점 데이터)는 지구 뒤에서 계속 붙는다. */
@@ -466,11 +495,7 @@ async function boot() {
   await initAccount();
   await analytics.init();
   satPanel.init();
-  skyPanel.init();
-  await flightPanel.init();
-  communityPanel.init();
-  eventPanel.init();
-  askPanel.init();
+  /* v1 정리: sky·flight·community·event·ask 패널은 누를 때 받고 그때 init 한다 (lazy 표) */
   sourceNote.init();
   readability.init();
   decisionRail.init();
@@ -485,17 +510,14 @@ async function boot() {
   /* 기상특보 — 한국 안에 있을 때만 띠가 뜬다.
      ⚠️ await 하지 않는다. 특보 서버가 느리다고 지구본이 늦게 뜨면 안 된다. */
   warnUI.init();
-  koreaPanel.init();
-  japanPanel.init();
+  /* v1 정리: 기상청 라이브·일본 패널은 첫 로딩에서 뺐다. 여는 쪽(ui-weather 의 '기상청 자료
+     자세히' 등)이 열 때 스스로 init 한다 (ui-korea.open 참고). */
   /* ⚠️ 브라우저가 푸시 구독을 말없이 갱신·만료시킨다. 한 번 등록했으니 됐다고
      두면 조용히 알림이 끊긴다 — 켤 때마다 서버와 맞춘다.
      ⚠️ 실패해도 앱을 막지 않는다. 알림은 부가 기능이다. */
   import('./push.js').then((m) => m.push.sync().catch(() => { })).catch(() => { });
-  mountainPanel.init();
-  surfPanel.init();
-  fishPanel.init();
-  paraPanel.init();
   const openFeaturedDive = async () => {
+    const trenchCards = await L.trenchCards();
     await sceneMgr.to('ocean', { stage: 'dive' });
     await trenchCards.openFeaturedDive();
   };
@@ -506,22 +528,22 @@ async function boot() {
      → 카드를 추가하면 **반드시 이 표에도 넣는다.** */
   /* 수정(2026-08-15): OCEAN 독립 메뉴는 없앴다. 바다 세부 화면까지 이 표에서
      직접 열어 같은 기능을 두 허브에 반복하지 않는다. */
-  outdoorPanel.init(act => {
+  const outdoorActions = act => {
     if (act.startsWith('layer:')) {
       const id = act.slice('layer:'.length);
       sceneMgr.to('earth', { stage: 'surface' }).then(() => store.setLayer(id, true));
       return;
     }
     const go = {
-      surf: () => surfPanel.open(),
-      fishing: () => fishPanel.open(),
-      vessel: () => oceanPanel.open('vessel'),
-      'my-ocean': () => oceanPanel.open('my'),
+      surf: () => L.surf().then(p => p.open()),
+      fishing: () => L.fishing().then(p => p.open()),
+      vessel: () => L.ocean().then(p => p.open('vessel')),
+      'my-ocean': () => L.ocean().then(p => p.open('my')),
       dive: openFeaturedDive,
-      trench: () => sceneMgr.to('earth', { stage: 'trench' }),
-      para: () => paraPanel.open(),
-      mountain: () => mountainPanel.open(),
-      sky: () => skyPanel.open(),
+      trench: () => L.trenchGlobe().then(() => sceneMgr.to('earth', { stage: 'trench' })),
+      para: () => L.para().then(p => p.open()),
+      mountain: () => L.mountain().then(p => p.open()),
+      sky: () => L.sky().then(p => p.open()),
       /* 자료가 1.7MB 다(경로 28,770점). 누른 사람에게만 받는다.
          ⚠️ 받아온 모듈을 붙잡아 둔다 — 아래 "지도에서 지우기"가 이걸 쓴다.
             늦게 불러오는 것이라 여기 말고는 손잡이가 없다. */
@@ -545,8 +567,9 @@ async function boot() {
     // ⚠️ 조용히 넘어가지 않는다. 빠뜨린 것이 눈에 보여야 다시 안 빠뜨린다.
     if (!go) { console.warn(`[취미] '${act}' 를 여는 곳이 없습니다 — main.js 의 표를 보세요`); return; }
     go();
-  });
-  oceanPanel.init(async action => {
+  };
+  L.outdoor = () => lazy('./ui-outdoor.js', 'outdoorPanel', p => p.init(outdoorActions));
+  const oceanActions = async action => {
     if (action.startsWith('layer:')) {
       const id = action.slice('layer:'.length);
       await sceneMgr.to('earth', { stage: 'surface' });
@@ -554,10 +577,10 @@ async function boot() {
       return;
     }
     const go = {
-      hobby: () => outdoorPanel.open(),
-      safety: () => koreaPanel.open(),
-      surf: () => surfPanel.open(),
-      fishing: () => fishPanel.open(),
+      hobby: () => L.outdoor().then(p => p.open()),
+      safety: () => L.korea().then(p => p.open()),
+      surf: () => L.surf().then(p => p.open()),
+      fishing: () => L.fishing().then(p => p.open()),
       dive: openFeaturedDive,
       turtle: async () => {
         turtleMod = (await import('./ui-turtle.js')).turtlePanel;
@@ -578,11 +601,11 @@ async function boot() {
     }[action];
     if (!go) { console.warn(`[바다 도구] '${action}' 연결이 없습니다`); return; }
     await go();
-  });
-  if (oceanHubRoute) queueMicrotask(() => outdoorPanel.open());
+  };
+  L.ocean = () => lazy('./ui-ocean.js?v=20260821-v8p3-1', 'oceanPanel', p => p.init(oceanActions));
+  if (oceanHubRoute) queueMicrotask(() => L.outdoor().then(p => p.open()));
   warn.init();
-  apiKeysPanel.init();
-  document.getElementById('btnApi')?.addEventListener('click', () => apiKeysPanel.open());
+  document.getElementById('btnApi')?.addEventListener('click', () => L.apikeys().then(p => p.open()));
   /* API 신청 관리는 운영자용이라 설정에서 숨겨 두었다 (index.html 의 #rowApi).
      ⚠️ 지우지 않은 이유: 공공데이터포털 활용신청이 2년이면 만료되고,
         만료되면 오류 없이 조용히 자료가 끊긴다. 그걸 미리 알려주는 화면이다.
@@ -590,7 +613,7 @@ async function boot() {
   const showApiRow = () => {
     if (location.hash !== '#api') return;
     document.getElementById('rowApi')?.removeAttribute('hidden');
-    apiKeysPanel.open();
+    L.apikeys().then(p => p.open());
   };
   /* 개발할 수 있는 것 — 갖고 있는데 안 쓰는 자료 목록 (운영자용).
      ⚠️ #api 와 같은 방식이다. 주소 뒤에 #dev 를 붙여야 설정에 줄이 나타난다.
@@ -629,7 +652,7 @@ async function boot() {
   import('./ui-cyclone.js').then(m => m.openSharedCyclone()).catch(() => {});
 
   // 개발용 전역 핸들 (콘솔에서 __e.viewer 등으로 접근)
-  Object.assign(window.__e, { viewer, scene, store, registry, i18n, imagery, cosmic3d,
+  Object.assign(window.__e, { viewer, scene, store, registry, i18n, imagery, lazy: L, loaded,
                               orbits: (await import('./layers/space.js')).orbits });
 }
 
@@ -764,8 +787,12 @@ function bindAccountUI() {
   $('#btnChangelog').onclick = () => {
     close('settings');
     $('#clTitle').textContent = i18n.lang === 'ko' ? '업데이트' : 'Updates';
-    $('#clBody').innerHTML = renderChangelog(i18n.lang);
     open('changelogSheet');
+    /* v1 정리: 업데이트 목록(changelog.js 223 KB — 앱 JS 중 가장 컸다)은 누를 때만 받는다 */
+    $('#clBody').textContent = '…';
+    import('./changelog.js')
+      .then(m => { $('#clBody').innerHTML = m.renderChangelog(i18n.lang); })
+      .catch(() => { $('#clBody').textContent = i18n.lang === 'ko' ? '업데이트 목록을 불러오지 못했습니다.' : 'Could not load updates.'; });
   };
 
   /* ⚠️⚠️ **닫기와 끄기는 다르다.**
@@ -778,8 +805,8 @@ function bindAccountUI() {
         지도 위에 "○○ 표시 끄기" 칩을 띄워, 창을 닫아도 끄는 길이 늘 보이게 한다.
         (걸어 두면 "서핑 선택 후 계속 유지되는데" 문제가 되돌아온다 — 칩이 그 답이다) */
   const OFF = {
-    sfSheet: () => surfPanel.close(), fsSheet: () => fishPanel.close(),
-    pgSheet: () => paraPanel.close(), mtSheet: () => mountainPanel.close(),
+    sfSheet: () => loaded.surfPanel?.close(), fsSheet: () => loaded.fishPanel?.close(),
+    pgSheet: () => loaded.paraPanel?.close(), mtSheet: () => loaded.mountainPanel?.close(),
     /* ⚠️ 거북은 늦게 불러오는 모듈이라 아직 안 눌렀으면 turtleMod 가 null 이다.
        그때는 지울 것도 없으니 아무 일도 안 하는 게 맞다. */
     turtleSheet: () => turtleMod?.close(),
@@ -818,9 +845,9 @@ function bindAccountUI() {
   /* 닫기 버튼·Esc·바깥 탭으로 창만 내렸을 때 — 표시가 남아 있으면 칩을 띄운다.
      ⚠️ 표시가 없으면 띄우지 않는다. 아무것도 안 하는 버튼이 떠 있으면 안 된다. */
   const HAS_MARKS = {
-    sfSheet: () => (surfPanel._ds?.entities.values.length || 0) > 0,
-    fsSheet: () => (fishPanel._ds?.entities.values.length || 0) > 0,
-    pgSheet: () => (paraPanel._ds?.entities.values.length || 0) > 0,
+    sfSheet: () => (loaded.surfPanel?._ds?.entities.values.length || 0) > 0,
+    fsSheet: () => (loaded.fishPanel?._ds?.entities.values.length || 0) > 0,
+    pgSheet: () => (loaded.paraPanel?._ds?.entities.values.length || 0) > 0,
     mtSheet: () => (trailsHasMarks()),
     turtleSheet: () => (turtleMod?._ents.length || 0) > 0,
     seabirdSheet: () => (seabirdMod?._ents.length || 0) > 0,
@@ -929,18 +956,19 @@ function onPick(ev) {
   /* 지도에 찍은 해변을 눌렀을 때 — 목록의 그 카드로 데려간다.
      ⚠️ 아래 _meta 갈래보다 **먼저** 본다. 해변 표시에는 _meta 가 없어서
         그냥 두면 지도 클릭으로 처리돼 엉뚱한 지점 날씨가 열린다. */
-  if (picked?.id?._beach) { surfPanel.focus(picked.id._beach); return; }
+  /* 이 표시들은 해당 모듈이 이미 받아져야 지구에 있을 수 있다 → L.* 는 즉시 풀린다 */
+  if (picked?.id?._beach) { L.surf().then(p => p.focus(picked.id._beach)); return; }
   // 권역 대표를 누르면 그 권역으로 들어간다 (멀리서 → 가까이)
-  if (picked?.id?._surfRegion) { surfPanel.openRegion(picked.id._surfRegion); return; }
-  if (picked?.id?._fishSpot) { fishPanel.focus(picked.id._fishSpot); return; }
-  if (picked?.id?._fishRegion) { fishPanel.openRegion(picked.id._fishRegion); return; }
-  if (picked?.id?._paraSite) { paraPanel.focus(picked.id._paraSite); return; }
-  if (picked?.id?._trench) { trenchGlobe.focus(picked.id._trench); return; }
+  if (picked?.id?._surfRegion) { L.surf().then(p => p.openRegion(picked.id._surfRegion)); return; }
+  if (picked?.id?._fishSpot) { L.fishing().then(p => p.focus(picked.id._fishSpot)); return; }
+  if (picked?.id?._fishRegion) { L.fishing().then(p => p.openRegion(picked.id._fishRegion)); return; }
+  if (picked?.id?._paraSite) { L.para().then(p => p.focus(picked.id._paraSite)); return; }
+  if (picked?.id?._trench) { L.trenchGlobe().then(t => t.focus(picked.id._trench)); return; }
   const tourismPlace = picked?.id?._tourism
     || (picked?.id?._tourismLabelCandidate
       ? scene.drillPick(ev.position, 8, 16, 16).find(result => result?.id?._tourism)?.id?._tourism
       : null);
-  if (tourismPlace) { tourismSheet.open(tourismPlace); return; }
+  if (tourismPlace) { L.tourism().then(s => s.open(tourismPlace)); return; }
 
   /* 철새·거북·바닷새 — 누르면 무엇인지 한 줄로 말한다.
      받은 요청: "거북이나 새 선을 누르면 어떤 새인지 나오게 해줘"

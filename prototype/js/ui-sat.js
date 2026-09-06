@@ -21,6 +21,9 @@ export const satPanel = {
     document.getElementById('satSheet')?.classList.add('up');
     if (orbits.selected?.length && !store.isOn('orbits')) store.setLayer('orbits', true);
     this.renderStatus();
+    /* 발사 목록은 열 때 받는다 — 부팅 때는 launch 레이어가 꺼져 있어 비어 있었고,
+       그래서 시트에 늘 "불러오지 못했습니다"가 떴다(받은 지적: "여기서는 에러나네"). */
+    this.renderLaunches();
   },
 
   init() {
@@ -34,9 +37,10 @@ export const satPanel = {
       };
     }
     this.render();
+    this.renderOrbitRow();
     this.renderLaunches();
     orbits.onChange(() => this.renderStatus());
-    i18n.onChange(() => { this.render(); this.renderLaunches(); });
+    i18n.onChange(() => { this.render(); this.renderOrbitRow(); this.renderLaunches(); });
   },
 
   /* ── 예정된 발사 ────────────────────────────────────────────
@@ -46,8 +50,21 @@ export const satPanel = {
     const box = document.getElementById('satLaunches');
     if (!box) return;
     const ko = i18n.lang === 'ko';
-    const { upcomingLaunches } = await import('./community.js');
-    const list = await upcomingLaunches(6);
+    /* ⚠️ 예전에는 community.js 를 거쳐 launches.upcoming 을 **읽기만** 했다. 그 목록은
+       launch 레이어를 켠 사람에게만 채워지므로 위성 시트에서는 항상 비어 있었다.
+       이제 비어 있으면 여기서 한 번 받는다. LL2 는 429 가 잦아 10분에 한 번만 다시 시도한다. */
+    const { launches } = await import('./layers/space.js');
+    let list = launches.upcoming || [];
+    const RETRY_MS = 10 * 60_000;
+    if (!list.length && (!this._launchTriedAt || Date.now() - this._launchTriedAt > RETRY_MS)) {
+      this._launchTriedAt = Date.now();
+      box.innerHTML = `<div class="sl-head">${ko ? '예정된 발사' : 'Upcoming launches'}</div>`
+        + `<div class="sl-empty">${ko ? '발사 일정을 받는 중…' : 'Loading launch schedule…'}</div>`;
+      try { await launches.refresh(); }
+      catch (e) { console.warn('[sat] 발사 일정', e?.message || e); }
+      list = launches.upcoming || [];
+    }
+    list = list.slice(0, 6);
     box.innerHTML = '';
 
     const head = document.createElement('div');
@@ -59,8 +76,8 @@ export const satPanel = {
       const p = document.createElement('div');
       p.className = 'sl-empty';
       p.textContent = ko
-        ? '발사 일정을 불러오지 못했습니다 (Launch Library 호출 한도).'
-        : 'Could not load the launch schedule (Launch Library rate limit).';
+        ? '예정된 발사를 아직 받지 못했습니다. 잠시 뒤 다시 열어 주세요 (Launch Library 호출 한도).'
+        : 'No launch schedule yet. Open again in a moment (Launch Library rate limit).';
       box.appendChild(p);
       return;
     }
@@ -92,6 +109,41 @@ export const satPanel = {
       ? '자료: The Space Devs (Launch Library 2). 발사 시각은 자주 변경됩니다 — 기관 공지가 정본입니다.'
       : 'Source: The Space Devs (Launch Library 2). Launch times change often — the agency notice is authoritative.';
     box.appendChild(note);
+  },
+
+  /* ── 우주쓰레기 · 궤도 인텔리전스 ──────────────────────────────
+     v1 정리(2026-09-06): AETHERUS 메뉴를 숨기면서 그 안의 '궤도 인텔리전스'(우주쓰레기·
+     정본 카탈로그·근접사건)를 인공위성 시트로 옮겼다 (받은 지시: "aetherus 의 우주쓰레기도
+     여기에 함께"). 그리기·판정은 전부 ui-aetherus.js → js/aetherus/ 정본이 한다.
+     ⚠️ 무겁다 — 누를 때 처음 받는다. 안 누르면 카탈로그도 satellite.js 도 안 받는다. */
+  renderOrbitRow() {
+    const box = document.getElementById('satOrbitRow');
+    if (!box) return;
+    const ko = i18n.lang === 'ko';
+    box.innerHTML = '';
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'sat-orbit';
+    const paint = note => {
+      row.classList.toggle('on', !!note);
+      row.setAttribute('aria-pressed', note ? 'true' : 'false');
+      row.innerHTML = `<b>${ko ? '우주쓰레기 · 궤도 인텔리전스' : 'Space debris · orbital intelligence'}</b>`
+        + `<em>${note || (ko ? 'AETHERUS 정본 카탈로그 · 근접사건 · 누르면 지구 위에 겹쳐 그립니다'
+                              : 'AETHERUS canonical catalogue · conjunctions · tap to overlay on Earth')}</em>`;
+    };
+    paint(this._orbitNote || null);
+    row.onclick = async () => {
+      row.disabled = true;
+      try {
+        const { aetherusOrbit } = await import('./ui-aetherus.js');
+        await aetherusOrbit.toggle();
+        this._orbitNote = aetherusOrbit.note();
+        paint(this._orbitNote);
+      } catch (e) {
+        console.warn('[sat] 궤도 인텔리전스', e?.message || e);
+      } finally { row.disabled = false; }
+    };
+    box.appendChild(row);
   },
 
   render() {

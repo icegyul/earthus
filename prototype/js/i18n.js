@@ -173,6 +173,8 @@ export const i18n = {
     'm.menuMove':{ ko: '이동',               en: 'Move' },
     'm.sat':      { ko: '인공위성',          en: 'Satellites' },
     'm.alert':    { ko: '경보·재난',         en: 'Alerts' },
+    'm.intel':    { ko: 'Intelligence',      en: 'Intelligence' },
+    'm.intelSub': { ko: '예보 · 시나리오 지구', en: 'Forecast & scenario Earth' },
     'm.explore':  { ko: '탐색·활동',         en: 'Explore & activities' },
     'm.news':     { ko: '뉴스',              en: 'News' },
     'm.lab':      { ko: 'LAB',               en: 'LAB' },

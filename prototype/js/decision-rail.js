@@ -13,7 +13,6 @@ import { wxText } from './layers/weather.js';
 import { kmaFcst, condText } from './kma-fcst.js';
 import { warn } from './warn.js';
 import { safetyGateMarkup } from './safety-gate-ui.js';
-import { askPanel } from './ask/panel.js';
 import { viewer, scene } from './viewer.js';
 import { store } from './store.js';
 
@@ -188,10 +187,13 @@ export const decisionRail = {
     this.root.querySelectorAll('[data-activity]').forEach(button => {
       button.addEventListener('click', () => this.selectActivity(button.dataset.activity));
     });
-    $('decisionRailAsk')?.addEventListener('click', () => {
+    $('decisionRailAsk')?.addEventListener('click', async () => {
       if (!this.point) return;
       const ko = i18n.lang === 'ko';
       const activity = ACTIVITIES[this.activity];
+      /* v1 정리: 물어보기 모듈(ask/* 약 50 KB)은 누를 때만 받는다. */
+      const { askPanel } = await import('./ask/panel.js');
+      if (!askPanel._inited) { askPanel._inited = true; askPanel.init(); }
       askPanel.openContext({
         label: this.place?.detail || this.place?.country || latLonText(this.point.lat, this.point.lon, ko),
         coordinates: latLonText(this.point.lat, this.point.lon, ko),

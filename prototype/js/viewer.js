@@ -100,7 +100,19 @@ export function initViewer(containerId) {
      ⚠️ 크레딧은 ui-source.js와 설정 화면에 항상 보인다. 지우지 말 것. */
   /* 실제 WebGL MAX_TEXTURE_SIZE와 데이터 절약/메모리 힌트로 6K·4K·2K를 고른다.
      context loss가 나면 한 단계 낮춰 복구하고, 지구 첫 화면은 멈추지 않는다. */
-  installMilkyWayPanorama(scene);
+  /* v1 정리(2026-09-06): 은하수 파노라마(webp 1.4 MB)는 첫 화면의 단일 최대 자산이었다.
+     지구 첫 타일이 다 그려진 뒤에 받는다 — 그 전까지는 Cesium 기본 별하늘이 잠깐 보인다.
+     타일 이벤트가 안 오는 경우(캐시·오류)를 위해 5초 안전망을 둔다. */
+  {
+    let skyInstalled = false;
+    const installSky = () => {
+      if (skyInstalled) return;
+      skyInstalled = true;
+      try { installMilkyWayPanorama(scene); } catch (e) { console.warn('[sky]', e?.message || e); }
+    };
+    const off = globe.tileLoadProgressEvent.addEventListener(n => { if (n === 0) { installSky(); off(); } });
+    setTimeout(installSky, 5000);
+  }
   globe.baseColor = Cesium.Color.BLACK;
   globe.enableLighting = true;         // 주야 경계선
   globe.showGroundAtmosphere = true;   // 지표 대기산란
@@ -140,7 +152,14 @@ export function initViewer(containerId) {
         둘이 어긋나면 "저기까지 갔는데 왜 더 못 가지"가 된다.
      ⚠️ 8km 로 정한 이유: 등산로 갈림길과 방파제 하나가 구분되는 높이다.
         더 내려가면 우리가 쓰는 위성 영상이 뭉개져서 보여줄 것이 없다. */
-  cc.minimumZoomDistance = 8_000;
+  /* v1 정리(2026-09-06) — 받은 지시: "처음 지도(Blue Marble)를 줌인해서 나오는 최대 화면까지만.
+     다음 지도(Esri 실사)로 넘어가지 말 것."
+     Blue Marble 은 레벨 8 = 적도 약 611 m/px 다. 카메라 700 km 에서 화면 한 폭이 대략
+     그 해상도와 맞아떨어진다(imagery.js 의 옛 D_NEAR 가 바로 이 값이었다 — Esri 가
+     완전히 들어오던 높이). 그 아래로는 위성면이 뭉개지므로 여기서 멈춘다.
+     ⚠️ 위 8 km 사유(서핑·등산로 확대)는 그 메뉴들을 v1 에서 숨기면서 함께 물러났다.
+        되살리려면 이 값과 imagery.js 의 Esri 층을 같이 되돌려야 한다. */
+  cc.minimumZoomDistance = 700_000;
   /* 우주 전환 B0 스파이크. 종전 45,000km 상한에서는 지구 바깥의 크기를
      시험할 수조차 없었다. 2,000,000km까지 조작은 허용하되, 실제 우주 장면은
      sceneMgr가 별도 전환하므로 이 값을 근거로 위치·자료를 지어내지 않는다. */

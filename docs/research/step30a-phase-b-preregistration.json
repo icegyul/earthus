@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "phase": "B",
+  "ruleId": "final-candidate-benchmark-step30a",
+  "createdAtUTC": "2026-09-06T22:03:24Z",
+  "phaseALock": "94d414b6",
+  "gitCommitAtDesign": "94d414b6",
+  "ruleSha256": "9251be51fc3fc8cc3a3b9570a0b3902c01e653754389da55852bdd4e83ab803d",
+  "phaseAPreregistrationSha256": "2abab8c30d4a45c6d2925155e5114663c1de1af73ad6ca24268e9f7179a9db8c",
+  "protocolSha256": "8ae362c325c324efeac40854fa67a0168d60c2b28f45f667678e5a4da1c464fb",
+  "evaluationOnly": true,
+  "modelRunCount": 0,
+  "newData": 0,
+  "alpha": 0.002,
+  "stokesCoefficient": 1.0,
+  "candidateDepthMeters": 15.81007,
+  "baselineDepthMeters": 15.0,
+  "candidate": "STEP 29 treatment alpha 0.002 trajectories (GLORYS12V1 15.810070 m + WW3 Stokes x 1.0 + NCEP-R2 windage), six windows, SHA-locked in step30a-rule.json",
+  "baseline": "STEP 25C hycomBaseline 0.002 = STEP 20 HYCOM trajectories, six windows, SHA-locked in step30a-rule.json",
+  "pairing": "exact drifter_id and exact UTC timestamp; both sources and the observation valid; no interpolation, no nearest matching, no imputation",
+  "horizonsHours": [
+    24,
+    48,
+    72
+  ],
+  "tieToleranceKm": 1e-06,
+  "labelRules": {
+    "scope": "overall stratum",
+    "primaryHorizonHours": 72,
+    "consistencyFraction": 0.6666666666666666,
+    "A": "CANDIDATE_DESCRIPTIVELY_FAVORED if median delta < -tie AND wins/(wins+losses) >= 2/3",
+    "B": "HYCOM_DESCRIPTIVELY_FAVORED if median delta > +tie AND losses/(wins+losses) >= 2/3",
+    "C": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE otherwise",
+    "labels": [
+      "CANDIDATE_DESCRIPTIVELY_FAVORED",
+      "HYCOM_DESCRIPTIVELY_FAVORED",
+      "NO_CLEAR_DESCRIPTIVE_DIFFERENCE"
+    ],
+    "newThreshold": false,
+    "operationalSuperiorityClaim": false
+  },
+  "signTest": "nominal, descriptive only, n >= 10; never the decision rule",
+  "threeWayContext": {
+    "A": "STEP 25C error_H002 (frozen table)",
+    "B": "STEP 25C error_G002 (frozen table)",
+    "C": "STEP 29 error_T002 (frozen table)",
+    "recompute": false,
+    "movementVocabulary": [
+      "TOWARD_HYCOM_ERROR_LEVEL",
+      "AWAY_FROM_HYCOM_ERROR_LEVEL",
+      "NEITHER"
+    ],
+    "movementDefinition": "|median(C-A)| versus |median(B-A)| over drifters with all three values; descriptive only"
+  },
+  "step29ContextFrozen": {
+    "overall72h": {
+      "median_delta": -3.496,
+      "wins_stokes": 19,
+      "losses_stokes": 14
+    },
+    "holdout72h": {
+      "median_delta": -3.832,
+      "wins_stokes": 8,
+      "losses_stokes": 4
+    },
+    "source": "docs/research/step29-stokes-evaluation.json"
+  },
+  "frozenInputs": {
+    "docs/research/step25c-paired-table.csv": "3a5c6b1a339c050a053279514299004a7be5bd614cf6e542433953888c78e002",
+    "docs/research/step25c-evaluation.json": "974073b81757f47f2f205ffdd49b46dda37733f1163b5169709d6b373d5894f5",
+    "docs/research/step25c-summary.json": "42965f31980b47ca9f5dedecc9976a969a6e00d22e9bf227464fbbeea460e78d",
+    "docs/research/step25c-test02-protocol.json": "7ff8468ea8399b8bf9d563980a184203b1b69c55a52cf7a493d1c140c97901ab",
+    "docs/research/step29-stokes-paired-table.csv": "972ec47f28c637a8116e2f107f71c2e0a64cc10e2421a96181c2242f1ac9c568",
+    "docs/research/step29-stokes-evaluation.json": "acb1a5389e64e6e2f31207f7c32af4ed8f02c4a681ec3c349f96163ba9e2813b",
+    "docs/research/step29-stokes-summary.json": "921783b2db14cb069f4578cb4a7aff29edf0672866c61eb495b7883a20a61e1f",
+    "docs/research/step29-stokes-manifest.json": "8906b46090db07a9254382b6fa953f871833d611ad6958eac44e9f5c7459e936",
+    "docs/research/step29-stokes-forcing-manifest.json": "a38e1672472592bd1e90c6c671514178e501b613033dad17f9cd970d3dad7d44",
+    "data/research/step29/trajectories/KE-1/treatment-alpha0.002/trajectories.csv": "4de8920fad4548f3b818f57d78d90c6d8cdb40b9ee41a5e17419a32caa9ae234",
+    "data/research/step20/calibration/KE-1/alpha0.002.trajectories.csv": "cc38b0d7fd171f187b990f16f9ab3a18d836ea2a7a6913e0d8dce996a1915069",
+    "data/research/step29/trajectories/KE-2/treatment-alpha0.002/trajectories.csv": "9ac0aaa9c4560b4089cd15232b0381c939b7df995e33a8d986f8f9535ca7a479",
+    "data/research/step20/calibration/KE-2/alpha0.002.trajectories.csv": "e2c8ca1336b3ef967e08a2b641579158e61617ec5c0b770762919769b416aa99",
+    "data/research/step29/trajectories/AG-1/treatment-alpha0.002/trajectories.csv": "19629ab74541ea4c579e1a083aeb98320172baa23be0d4f8ff9e851ccbee8f1c",
+    "data/research/step20/calibration/AG-1/alpha0.002.trajectories.csv": "58f9ca262b7e74d1fba1daac951b51e9f32847e7b500ec87bb9e7d75f716976b",
+    "data/research/step29/trajectories/AG-2/treatment-alpha0.002/trajectories.csv": "87d00536ab3d379a5bdcc4090eb7abc2be21bab242707eb92dda872fc5b2622c",
+    "data/research/step20/calibration/AG-2/alpha0.002.trajectories.csv": "afc98cf9d2e1d66f97d1c3f2637ae9c0e7c24bdfdade8d2dc785a10f990ba0e2",
+    "data/research/step29/trajectories/KE-H1/treatment-alpha0.002/trajectories.csv": "d1c1de2b6f37d2f2ed02f2ad1ac5ad3251fa841d749b9d9624c5fe0329e0b659",
+    "data/research/step20/holdout/trajectories/KE-H1/alpha0.002.trajectories.csv": "5f68152824cf8b548187181fed37b06b6c3b3482d024c72ecd1ce679bc580d18",
+    "data/research/step29/trajectories/KE-H3/treatment-alpha0.002/trajectories.csv": "38b382264c3152ddb2d1aa77c124b1afd038ed290b3984cc4ca0ad36a0daf03e",
+    "data/research/step20/holdout/trajectories/KE-H3/alpha0.002.trajectories.csv": "00d9db9f183b53e2d7261cc42e4db997a06b7b8b9d0a1e421f73f4517a723fd6"
+  },
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "observationFiles": "data/research/step15/noaa-gdp-hourly-qc/{region}-{year}-q*.csv (STEP 15 locked)",
+  "outputs": [
+    "docs/research/step30a-final-candidate-manifest.json",
+    "docs/research/step30a-final-candidate-evaluation.json",
+    "docs/research/step30a-final-candidate-summary.json",
+    "docs/research/step30a-final-candidate-table.csv",
+    "docs/research/step30a-final-candidate-window-summary.csv"
+  ],
+  "tools": {
+    "tools/research/evaluate_step30a_final_candidate.py": "4d3bc0805701ae9827d05d4fbfd772acce3331211a9a3de6a9812ae7de594d4e",
+    "tools/research/check_step30a_final_candidate.py": "2716b2509766f66517e4e5ed89ed09126354edb5d100d3309d650b73e7bb88a0"
+  },
+  "reproducibility": {
+    "evaluationRunTwice": true,
+    "byteIdentical": [
+      "table",
+      "window summary",
+      "summary",
+      "evaluation"
+    ],
+    "permittedTimestampFields": [
+      "manifest.createdAtUTC"
+    ],
+    "inputTrajectorySha256Unchanged": true
+  },
+  "forbidden": [
+    "model run",
+    "trajectory generation",
+    "forcing construction",
+    "alpha change",
+    "Stokes coefficient change",
+    "depth change",
+    "outlier removal",
+    "trimming",
+    "winsorization",
+    "weighting",
+    "case exclusion",
+    "re-ranking",
+    "holdout selection",
+    "blending",
+    "STEP 31"
+  ],
+  "requiredStatements": [
+    "STEP 30A is a descriptive paired benchmark of two already-computed trajectory sets; no statistical significance, causal, universal or operational claim is made.",
+    "STEP 29 (GLORYS + Stokes vs GLORYS) and STEP 30A (GLORYS + Stokes vs HYCOM) are different comparisons and are never interchanged.",
+    "alpha = 0.002, Stokes coefficient 1.0, GLORYS depth 15.810070 m and HYCOM depth 15.000 m are unchanged; no alpha, coefficient, depth or forcing selection was made; MODEL_RUN_COUNT = 0.",
+    "Holdout results are descriptive only; the candidate was fixed before this step; no re-ranking, no selective rerun, no outlier handling.",
+    "AVISO and any other field are reference fields, not ground truth; STEP 17-29 results are unchanged."
+  ]
+}

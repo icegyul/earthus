@@ -1,0 +1,44 @@
+{
+  "ruleId": "forcing-decomposition-step26",
+  "phase": "A",
+  "status": "PREREGISTRATION_LOCKED",
+  "conditions": 4,
+  "conditionNames": [
+    "HYCOM_NATIVE_3H",
+    "HYCOM_DAILY",
+    "GLORYS_NATIVE_DAILY",
+    "GLORYS_COARSE_DAILY"
+  ],
+  "conditionB": "STEP26_DATA_BLOCKED",
+  "conditionBReason": "acquired HYCOM frames cover t0 12Z .. t0+72 h 12Z only (2 complete UTC days per window; 5 daily means required); no new download",
+  "comparisons": {
+    "1": "BLOCKED",
+    "2": "EXECUTABLE_PHASE_B",
+    "3": "BLOCKED",
+    "4": "EXECUTABLE_PHASE_B"
+  },
+  "windows": 6,
+  "drifters": 35,
+  "alpha": 0.002,
+  "modelRunCount": 0,
+  "trajectoryCount": 0,
+  "newDataCount": 0,
+  "derivedFieldsCreated": 0,
+  "depthAudit": {
+    "hycomDepthMeters": "15.000 m",
+    "glorysDepthMeters": "15.810070 m",
+    "depthDifferenceMeters": "0.810070 m",
+    "identicalDepthForcing": false,
+    "attributedInStep26": false
+  },
+  "test02Preserved": "NO CLEAR DESCRIPTIVE DIFFERENCE (c974ce42, unchanged)",
+  "interpretation": "NONE",
+  "statements": [
+    "STEP 26 Phase A registers a decomposition design only; no field is derived, no model is run, no metric is computed.",
+    "HYCOM (15.000 m) and GLORYS12V1 (15.810070 m) are not identical-depth forcings; the 0.810070 m difference is a disclosed confound, not attributed here.",
+    "Condition HYCOM_DAILY cannot be built from existing data under the 8-frame rule; Comparisons 1 and 3 are BLOCKED until a separately preregistered re-acquisition exists.",
+    "STEP 20 alpha = 0.002 is unchanged; no alpha search.",
+    "TEST-02 result is preserved unchanged.",
+    "No forcing is selected; only descriptive difference, temporal sensitivity, spatial representation sensitivity and product difference may be reported in Phase B."
+  ]
+}

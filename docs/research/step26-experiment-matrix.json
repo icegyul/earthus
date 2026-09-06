@@ -1,0 +1,261 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "forcing-decomposition-step26",
+  "phase": "A",
+  "conditions": [
+    {
+      "id": "A",
+      "name": "HYCOM_NATIVE_3H",
+      "newRuns": 0,
+      "status": "IMMUTABLE_REFERENCE"
+    },
+    {
+      "id": "B",
+      "name": "HYCOM_DAILY",
+      "newRuns": 0,
+      "status": "STEP26_DATA_BLOCKED (all six windows)"
+    },
+    {
+      "id": "C",
+      "name": "GLORYS_NATIVE_DAILY",
+      "newRuns": 6,
+      "status": "CONSTRUCTIBLE"
+    },
+    {
+      "id": "D",
+      "name": "GLORYS_COARSE_DAILY",
+      "newRuns": 6,
+      "status": "CONSTRUCTIBLE"
+    }
+  ],
+  "comparisons": [
+    {
+      "id": 1,
+      "X": "A",
+      "Y": "B",
+      "name": "HYCOM_NATIVE_3H vs HYCOM_DAILY",
+      "tests": "temporal aggregation effect (same product, grid, depth)",
+      "type": "TEMPORAL_SENSITIVITY",
+      "status": "BLOCKED",
+      "reason": "condition B STEP26_DATA_BLOCKED",
+      "generalization": "within-product only"
+    },
+    {
+      "id": 2,
+      "X": "C",
+      "Y": "D",
+      "name": "GLORYS_NATIVE_DAILY vs GLORYS_COARSE_DAILY",
+      "tests": "spatial representation effect (same source, cadence, native depth)",
+      "type": "SPATIAL_REPRESENTATION_SENSITIVITY",
+      "status": "EXECUTABLE_PHASE_B",
+      "causalClaim": false
+    },
+    {
+      "id": 3,
+      "X": "B",
+      "Y": "D",
+      "name": "HYCOM_DAILY vs GLORYS_COARSE_DAILY",
+      "tests": "product difference at matched approximate grid and daily representation; depth dataset-native (15.000 vs 15.810070 m)",
+      "type": "PRODUCT_COMPARISON",
+      "notType": "PURE_RESOLUTION_COMPARISON",
+      "status": "BLOCKED",
+      "reason": "condition B STEP26_DATA_BLOCKED"
+    },
+    {
+      "id": 4,
+      "X": "A",
+      "Y": "C",
+      "name": "HYCOM_NATIVE_3H vs GLORYS_NATIVE_DAILY",
+      "tests": "full TEST-02 forcing contrast; consistency of STEP 26 condition C with STEP 25C",
+      "type": "FULL_TEST02_REFERENCE",
+      "status": "EXECUTABLE_PHASE_B",
+      "hycomRerun": false,
+      "consistencyRequirement": "C result arrays bitwise equal to STEP 25C; paired deltas equal to STEP 25C table"
+    }
+  ],
+  "cells": [
+    {
+      "comparison": 1,
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "status": "BLOCKED",
+      "drifters": 8
+    },
+    {
+      "comparison": 1,
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "status": "BLOCKED",
+      "drifters": 5
+    },
+    {
+      "comparison": 1,
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "status": "BLOCKED",
+      "drifters": 9
+    },
+    {
+      "comparison": 1,
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "status": "BLOCKED",
+      "drifters": 1
+    },
+    {
+      "comparison": 1,
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "status": "BLOCKED",
+      "drifters": 5
+    },
+    {
+      "comparison": 1,
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "status": "BLOCKED",
+      "drifters": 7
+    },
+    {
+      "comparison": 2,
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "status": "PLANNED_PHASE_B",
+      "drifters": 8
+    },
+    {
+      "comparison": 2,
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "status": "PLANNED_PHASE_B",
+      "drifters": 5
+    },
+    {
+      "comparison": 2,
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "status": "PLANNED_PHASE_B",
+      "drifters": 9
+    },
+    {
+      "comparison": 2,
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "status": "PLANNED_PHASE_B",
+      "drifters": 1
+    },
+    {
+      "comparison": 2,
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "status": "PLANNED_PHASE_B",
+      "drifters": 5
+    },
+    {
+      "comparison": 2,
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "status": "PLANNED_PHASE_B",
+      "drifters": 7
+    },
+    {
+      "comparison": 3,
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "status": "BLOCKED",
+      "drifters": 8
+    },
+    {
+      "comparison": 3,
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "status": "BLOCKED",
+      "drifters": 5
+    },
+    {
+      "comparison": 3,
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "status": "BLOCKED",
+      "drifters": 9
+    },
+    {
+      "comparison": 3,
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "status": "BLOCKED",
+      "drifters": 1
+    },
+    {
+      "comparison": 3,
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "status": "BLOCKED",
+      "drifters": 5
+    },
+    {
+      "comparison": 3,
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "status": "BLOCKED",
+      "drifters": 7
+    },
+    {
+      "comparison": 4,
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "status": "PLANNED_PHASE_B",
+      "drifters": 8
+    },
+    {
+      "comparison": 4,
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "status": "PLANNED_PHASE_B",
+      "drifters": 5
+    },
+    {
+      "comparison": 4,
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "status": "PLANNED_PHASE_B",
+      "drifters": 9
+    },
+    {
+      "comparison": 4,
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "status": "PLANNED_PHASE_B",
+      "drifters": 1
+    },
+    {
+      "comparison": 4,
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "status": "PLANNED_PHASE_B",
+      "drifters": 5
+    },
+    {
+      "comparison": 4,
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "status": "PLANNED_PHASE_B",
+      "drifters": 7
+    }
+  ],
+  "phaseBPlannedRuns": 12,
+  "executedRuns": 0,
+  "alpha": 0.002,
+  "hycomRerun": false,
+  "depthAudit": {
+    "hycomDepthMeters": 15.0,
+    "glorysDepthMeters": 15.81007,
+    "depthDifferenceMeters": 0.81007,
+    "identicalDepthForcing": false,
+    "attributedInStep26": false,
+    "verticalInterpolation": false,
+    "commonDepthInvented": false,
+    "depthSensitivity": "TEST-04 (separate, not started)",
+    "mandatoryInEveryOutput": true
+  }
+}

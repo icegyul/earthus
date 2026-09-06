@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "forcing-decomposition-step26",
+  "phase": "A",
+  "createdAtUTC": "2026-09-06T12:16:15Z",
+  "gitCommitAtDesign": "c974ce42",
+  "authorProcess": "Claude Fable 5.1 session, user-directed STEP 26 Phase A",
+  "protocolDocument": "docs/research/step26-forcing-decomposition-protocol.md",
+  "protocolSha256": "3b597d6331330d64a45f758e324f6196912e735a8cb30c96f929ef3e43047f90",
+  "ruleSha256": "b0ee1dc154998b6d2d140581636a1d11412bd57bceafbf0c0a3980697b91787c",
+  "experimentMatrixSha256": "9486d60eb9d7c139b47d513ce24c8c173e279c12f8783df88301dfafb6c307f0",
+  "summarySha256": "d908506d058180c12017cc887b597b007fefb9c5a794a10c4eaba8abf9d25b03",
+  "validator": {
+    "path": "tools/research/check_step26_preregistration.py",
+    "sha256": "4f88184455b978670913a68f91dffe52d52607ede6457740ed920d4687e23b7e",
+    "checks": 20
+  },
+  "ancestry": {
+    "step25c": "c974ce42",
+    "step25b": "929d3468",
+    "step25a": "2841f511",
+    "step20AlphaLock": "73fafffb",
+    "step20Lock": "155995dd"
+  },
+  "possibleOutcomesPhaseB": [
+    "descriptive difference",
+    "temporal sensitivity (blocked at lock)",
+    "spatial representation sensitivity",
+    "product difference (blocked at lock)",
+    "STEP26_DATA_BLOCKED"
+  ],
+  "expectedWinner": "NONE DECLARED",
+  "modelRunPlan": {
+    "phaseA": 0,
+    "phaseB": 12,
+    "hycomRerun": false
+  },
+  "alpha": {
+    "value": 0.002,
+    "search": false
+  },
+  "newData": 0,
+  "lockPolicy": "this rule file, the protocol, the preregistration, the matrix and the validator are SHA-locked and committed before any derivation or run"
+}

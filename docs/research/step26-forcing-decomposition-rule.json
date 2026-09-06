@@ -1,0 +1,1266 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "forcing-decomposition-step26",
+  "status": "PREREGISTRATION LOCKED",
+  "phase": "A",
+  "createdAtUTC": "2026-09-06T12:16:15Z",
+  "baseCommit": "c974ce42",
+  "test02Preserved": {
+    "commit": "c974ce42",
+    "label": "NO CLEAR DESCRIPTIVE DIFFERENCE",
+    "summarySha256": "42965f31980b47ca9f5dedecc9976a969a6e00d22e9bf227464fbbeea460e78d",
+    "modified": false
+  },
+  "objective": "decompose the TEST-02 HYCOM-vs-GLORYS difference into temporal representation, spatial representation, product difference and (visible only) native-depth representation, using already acquired data",
+  "frozenReference": {
+    "name": "FROZEN HYCOM BASELINE",
+    "ocean": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X, 0.08 deg, 15 m, 3-hourly",
+    "wind": "NCEP-DOE R2 10 m 6-hourly",
+    "alpha": 0.002,
+    "source": "STEP 20 calibration (B-1) and B-6 holdout trajectories, SHA-locked; NOT re-run",
+    "rerun": false,
+    "numerics": "RK4 300 s, output 900 s, 72 h; bilinear spatial, linear temporal, cos(phi) every RK4 stage"
+  },
+  "depthAudit": {
+    "hycomDepthMeters": 15.0,
+    "glorysDepthMeters": 15.81007,
+    "depthDifferenceMeters": 0.81007,
+    "identicalDepthForcing": false,
+    "attributedInStep26": false,
+    "verticalInterpolation": false,
+    "commonDepthInvented": false,
+    "depthSensitivity": "TEST-04 (separate, not started)",
+    "mandatoryInEveryOutput": true
+  },
+  "conditions": [
+    {
+      "id": "A",
+      "name": "HYCOM_NATIVE_3H",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 (STEP 17 / STEP 20 B-3 normalized datasets)",
+      "spatial": {
+        "resolutionDegrees": 0.08,
+        "grid": "native"
+      },
+      "temporal": {
+        "cadenceSeconds": 10800,
+        "representation": "native 3-hourly instantaneous"
+      },
+      "depthMeters": 15.0,
+      "verticalInterpolation": false,
+      "trajectories": "immutable STEP 20 alpha 0.002 runs (SHA-locked); never re-run",
+      "newRuns": 0,
+      "purpose": "frozen native baseline"
+    },
+    {
+      "id": "B",
+      "name": "HYCOM_DAILY",
+      "source": "same HYCOM frames as A",
+      "spatial": {
+        "resolutionDegrees": 0.08,
+        "grid": "unchanged"
+      },
+      "temporal": {
+        "algorithm": "hycom-daily-8frame-mean/1",
+        "representation": "arithmetic daily mean of all eight native frames of a UTC day, u and v separately",
+        "requiredFramesPerDay": [
+          "00:00",
+          "03:00",
+          "06:00",
+          "09:00",
+          "12:00",
+          "15:00",
+          "18:00",
+          "21:00"
+        ],
+        "label": "00:00Z of the averaged UTC day",
+        "missingFramePolicy": "day absent; window blocked if the day is required; no interpolation, no gap filling",
+        "nodeRule": "node valid only if valid in all eight frames; otherwise null and landMask=true",
+        "requiredDailyLabelsPerWindow": 5
+      },
+      "depthMeters": 15.0,
+      "verticalInterpolation": false,
+      "statusAtLock": "STEP26_DATA_BLOCKED (all six windows)",
+      "newRuns": 0,
+      "purpose": "temporal aggregation sensitivity"
+    },
+    {
+      "id": "C",
+      "name": "GLORYS_NATIVE_DAILY",
+      "source": "GLORYS12V1 GLOBAL_MULTIYEAR_PHY_001_030 / cmems_mod_glo_phy_my_0.083deg_P1D-m (STEP 25B raw, STEP 25C normalized, SHA-locked)",
+      "spatial": {
+        "resolutionDegrees": 0.08333333333333333,
+        "grid": "native"
+      },
+      "temporal": {
+        "cadenceSeconds": 86400,
+        "representation": "native daily mean, 00:00Z label as stored"
+      },
+      "depthMeters": 15.81007,
+      "verticalInterpolation": false,
+      "newRuns": 6,
+      "mustReproduce": "STEP 25C GLORYS alpha 0.002 result arrays bitwise",
+      "purpose": "native high-resolution forcing"
+    },
+    {
+      "id": "D",
+      "name": "GLORYS_COARSE_DAILY",
+      "sourceCondition": "C",
+      "spatial": {
+        "algorithm": "glorys-to-hycom-grid-bilinear/1",
+        "interpolation": "bilinear",
+        "targetGrid": "exact immutable HYCOM lon/lat nodes of the window (axes SHA per window in windows[].hycomGrid)",
+        "stencilRule": "target node valid only if all four GLORYS stencil nodes are wet in every frame; otherwise null and landMask=true",
+        "smoothing": false,
+        "extrapolation": false,
+        "nearestNeighbourSubstitution": false,
+        "zeroFill": false,
+        "temporalTransformation": false,
+        "windowBlockRule": "WINDOW_BLOCKED if any release point cannot be evaluated on the derived grid at t0"
+      },
+      "temporal": {
+        "cadenceSeconds": 86400,
+        "representation": "same GLORYS daily frames and labels as C"
+      },
+      "depthMeters": 15.81007,
+      "verticalInterpolation": false,
+      "newRuns": 6,
+      "purpose": "spatial representation sensitivity within one product"
+    }
+  ],
+  "conditionCount": 4,
+  "comparisons": [
+    {
+      "id": 1,
+      "X": "A",
+      "Y": "B",
+      "name": "HYCOM_NATIVE_3H vs HYCOM_DAILY",
+      "tests": "temporal aggregation effect (same product, grid, depth)",
+      "type": "TEMPORAL_SENSITIVITY",
+      "status": "BLOCKED",
+      "reason": "condition B STEP26_DATA_BLOCKED",
+      "generalization": "within-product only"
+    },
+    {
+      "id": 2,
+      "X": "C",
+      "Y": "D",
+      "name": "GLORYS_NATIVE_DAILY vs GLORYS_COARSE_DAILY",
+      "tests": "spatial representation effect (same source, cadence, native depth)",
+      "type": "SPATIAL_REPRESENTATION_SENSITIVITY",
+      "status": "EXECUTABLE_PHASE_B",
+      "causalClaim": false
+    },
+    {
+      "id": 3,
+      "X": "B",
+      "Y": "D",
+      "name": "HYCOM_DAILY vs GLORYS_COARSE_DAILY",
+      "tests": "product difference at matched approximate grid and daily representation; depth dataset-native (15.000 vs 15.810070 m)",
+      "type": "PRODUCT_COMPARISON",
+      "notType": "PURE_RESOLUTION_COMPARISON",
+      "status": "BLOCKED",
+      "reason": "condition B STEP26_DATA_BLOCKED"
+    },
+    {
+      "id": 4,
+      "X": "A",
+      "Y": "C",
+      "name": "HYCOM_NATIVE_3H vs GLORYS_NATIVE_DAILY",
+      "tests": "full TEST-02 forcing contrast; consistency of STEP 26 condition C with STEP 25C",
+      "type": "FULL_TEST02_REFERENCE",
+      "status": "EXECUTABLE_PHASE_B",
+      "hycomRerun": false,
+      "consistencyRequirement": "C result arrays bitwise equal to STEP 25C; paired deltas equal to STEP 25C table"
+    }
+  ],
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "region": "KE",
+      "t0": "2010-05-11T12:00:00Z",
+      "end": "2010-05-14T12:00:00Z",
+      "drifterCount": 8,
+      "drifterIds": [
+        "71155",
+        "81801",
+        "81805",
+        "81807",
+        "81811",
+        "81813",
+        "81814",
+        "81816"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "71155",
+          "lon": 142.60959,
+          "lat": 35.68513
+        },
+        {
+          "drifterId": "81801",
+          "lon": 150.57346,
+          "lat": 30.12786
+        },
+        {
+          "drifterId": "81805",
+          "lon": 150.6728,
+          "lat": 30.8741
+        },
+        {
+          "drifterId": "81807",
+          "lon": 149.87982,
+          "lat": 30.91725
+        },
+        {
+          "drifterId": "81811",
+          "lon": 151.57515,
+          "lat": 32.09739
+        },
+        {
+          "drifterId": "81813",
+          "lon": 157.64886,
+          "lat": 30.87311
+        },
+        {
+          "drifterId": "81814",
+          "lon": 159.61974,
+          "lat": 36.19472
+        },
+        {
+          "drifterId": "81816",
+          "lon": 148.6675,
+          "lat": 30.73258
+        }
+      ],
+      "computationArea": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "oceanBox": {
+        "south": 28.12786,
+        "north": 38.19472,
+        "west": 140.60959,
+        "east": 161.61974
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/KE-1.ncep10m.wind.json",
+        "sha256": "6e6c0c225cf70d676e7adb1cf0ba2b18f3805db9e0e02eef710295f564473a71",
+        "gridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "hycomReference": {
+        "runId": "step20-cal-alpha0.002-KE-1",
+        "file": "data/research/step20/calibration/KE-1/alpha0.002.trajectories.csv",
+        "sha256": "cc38b0d7fd171f187b990f16f9ab3a18d836ea2a7a6913e0d8dce996a1915069",
+        "resultArraySha256": "2b7547ed6151ad908f91513a6d54a7ab140f3413f42eb5b706f0e79ad296ec9d",
+        "segmented": false
+      },
+      "hycomGrid": {
+        "file": "data/research/step17/normalized/KE-1.hycom15m.dataset.json",
+        "fileSha256": "8d5310d4823db910d4038c5bcca6474f83c6bbb369ff0528bef34a2bf31becac",
+        "axesSha256": "15cfff26d1cc5f80d235b1c368cdd3086c3d074b91e1fa08dc711399d2a01992",
+        "shape": [
+          126,
+          263
+        ],
+        "resolutionDegrees": 0.08,
+        "depthMeters": 15.0,
+        "immutable": true
+      },
+      "hycomFrames": {
+        "files": [
+          "data/research/step17/normalized/KE-1.hycom15m.dataset.json"
+        ],
+        "fileSha256": [
+          "8d5310d4823db910d4038c5bcca6474f83c6bbb369ff0528bef34a2bf31becac"
+        ],
+        "frameCount": 25,
+        "first": "2010-05-11T12:00:00Z",
+        "last": "2010-05-14T12:00:00Z",
+        "cadenceSeconds": 10800,
+        "completeUtcDays": [
+          "2010-05-12",
+          "2010-05-13"
+        ],
+        "incompleteUtcDays": {
+          "2010-05-11": [
+            "12:00",
+            "15:00",
+            "18:00",
+            "21:00"
+          ],
+          "2010-05-14": [
+            "00:00",
+            "03:00",
+            "06:00",
+            "09:00",
+            "12:00"
+          ]
+        },
+        "requiredDailyLabels": [
+          "2010-05-11T00:00:00Z",
+          "2010-05-12T00:00:00Z",
+          "2010-05-13T00:00:00Z",
+          "2010-05-14T00:00:00Z",
+          "2010-05-15T00:00:00Z"
+        ]
+      },
+      "glorysNormalized": {
+        "file": "data/research/step25c/forcing/KE-1.glorys15.81m.dataset.json",
+        "fileSha256": "5eac44039387614c00d84df59c6805c2d275369cc4c1e25af80c0a23588230eb",
+        "gridSha256": "57e0916e8e4204ed0e07c0c34cb5cd451a018157425b5de9ac1b766d29a484f2",
+        "rawSha256": "d399a2b586b3eea97838bfc9eab2bf0e58afcd33d07c4e9fcef7b02de033c2dc",
+        "timeUTC": [
+          "2010-05-10T00:00:00Z",
+          "2010-05-11T00:00:00Z",
+          "2010-05-12T00:00:00Z",
+          "2010-05-13T00:00:00Z",
+          "2010-05-14T00:00:00Z",
+          "2010-05-15T00:00:00Z"
+        ],
+        "depthMeters": 15.81007
+      },
+      "conditionB": {
+        "status": "STEP26_DATA_BLOCKED",
+        "reason": "only 2 complete UTC days (2010-05-12, 2010-05-13) exist in the acquired HYCOM frames; five daily means (2010-05-11 .. 2010-05-15) are required; no download, no partial-day mean, no interpolation"
+      },
+      "conditionD": {
+        "status": "CONSTRUCTIBLE",
+        "targetGridAxesSha256": "15cfff26d1cc5f80d235b1c368cdd3086c3d074b91e1fa08dc711399d2a01992",
+        "sourceInsideExtent": true
+      }
+    },
+    {
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "region": "KE",
+      "t0": "2010-06-30T12:00:00Z",
+      "end": "2010-07-03T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "48965",
+        "81802",
+        "90141",
+        "90142",
+        "90145"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "48965",
+          "lon": 135.53249,
+          "lat": 37.60833
+        },
+        {
+          "drifterId": "81802",
+          "lon": 151.58324,
+          "lat": 31.70784
+        },
+        {
+          "drifterId": "90141",
+          "lon": 145.17612,
+          "lat": 38.3657
+        },
+        {
+          "drifterId": "90142",
+          "lon": 152.78535,
+          "lat": 39.3177
+        },
+        {
+          "drifterId": "90145",
+          "lon": 147.0891,
+          "lat": 37.12376
+        }
+      ],
+      "computationArea": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "oceanBox": {
+        "south": 29.70784,
+        "north": 40.0,
+        "west": 133.53249,
+        "east": 154.78535
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/KE-2.ncep10m.wind.json",
+        "sha256": "2b913475ada3a1fa16d3a29b3441151b328eb99df64f798ee3467527cedda71f",
+        "gridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "hycomReference": {
+        "runId": "step20-cal-alpha0.002-KE-2",
+        "file": "data/research/step20/calibration/KE-2/alpha0.002.trajectories.csv",
+        "sha256": "e2c8ca1336b3ef967e08a2b641579158e61617ec5c0b770762919769b416aa99",
+        "resultArraySha256": "a063e35a2ec6ac764d590e792b98482974c60b6d5580c59029a167f7dfd05043",
+        "segmented": false
+      },
+      "hycomGrid": {
+        "file": "data/research/step17/normalized/KE-2.hycom15m.dataset.json",
+        "fileSha256": "0f8c97f095d589595cb5b3da5245925409285c5f4274cdf953346e070cb03747",
+        "axesSha256": "3254be46a0b4c497d36454a2c3c00fc5e3d91d75181b031d1cf32130ca22b0bf",
+        "shape": [
+          130,
+          267
+        ],
+        "resolutionDegrees": 0.08,
+        "depthMeters": 15.0,
+        "immutable": true
+      },
+      "hycomFrames": {
+        "files": [
+          "data/research/step17/normalized/KE-2.hycom15m.dataset.json"
+        ],
+        "fileSha256": [
+          "0f8c97f095d589595cb5b3da5245925409285c5f4274cdf953346e070cb03747"
+        ],
+        "frameCount": 25,
+        "first": "2010-06-30T12:00:00Z",
+        "last": "2010-07-03T12:00:00Z",
+        "cadenceSeconds": 10800,
+        "completeUtcDays": [
+          "2010-07-01",
+          "2010-07-02"
+        ],
+        "incompleteUtcDays": {
+          "2010-06-30": [
+            "12:00",
+            "15:00",
+            "18:00",
+            "21:00"
+          ],
+          "2010-07-03": [
+            "00:00",
+            "03:00",
+            "06:00",
+            "09:00",
+            "12:00"
+          ]
+        },
+        "requiredDailyLabels": [
+          "2010-06-30T00:00:00Z",
+          "2010-07-01T00:00:00Z",
+          "2010-07-02T00:00:00Z",
+          "2010-07-03T00:00:00Z",
+          "2010-07-04T00:00:00Z"
+        ]
+      },
+      "glorysNormalized": {
+        "file": "data/research/step25c/forcing/KE-2.glorys15.81m.dataset.json",
+        "fileSha256": "3c454919b343754740dd861ac8d147282be60392b043771e7f5a7f6407ef28ae",
+        "gridSha256": "99364bcd6a0dd93db4e4c7c09420e03d8cfb29e5d0443c872492b41ac00b30d5",
+        "rawSha256": "f2ca50183aea583d69e3b73f4609568b221106a7c119a0c8c0bd43d7623f4bbe",
+        "timeUTC": [
+          "2010-06-29T00:00:00Z",
+          "2010-06-30T00:00:00Z",
+          "2010-07-01T00:00:00Z",
+          "2010-07-02T00:00:00Z",
+          "2010-07-03T00:00:00Z",
+          "2010-07-04T00:00:00Z"
+        ],
+        "depthMeters": 15.81007
+      },
+      "conditionB": {
+        "status": "STEP26_DATA_BLOCKED",
+        "reason": "only 2 complete UTC days (2010-07-01, 2010-07-02) exist in the acquired HYCOM frames; five daily means (2010-06-30 .. 2010-07-04) are required; no download, no partial-day mean, no interpolation"
+      },
+      "conditionD": {
+        "status": "CONSTRUCTIBLE",
+        "targetGridAxesSha256": "3254be46a0b4c497d36454a2c3c00fc5e3d91d75181b031d1cf32130ca22b0bf",
+        "sourceInsideExtent": true
+      }
+    },
+    {
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "region": "AG",
+      "t0": "2015-04-23T12:00:00Z",
+      "end": "2015-04-26T12:00:00Z",
+      "drifterCount": 9,
+      "drifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "127198",
+          "lon": 20.32911,
+          "lat": -39.81819
+        },
+        {
+          "drifterId": "127199",
+          "lon": 20.31773,
+          "lat": -39.82213
+        },
+        {
+          "drifterId": "127272",
+          "lon": 27.2557,
+          "lat": -34.85449
+        },
+        {
+          "drifterId": "127313",
+          "lon": 23.25523,
+          "lat": -35.43792
+        },
+        {
+          "drifterId": "127314",
+          "lon": 30.01394,
+          "lat": -34.13828
+        },
+        {
+          "drifterId": "127315",
+          "lon": 24.83593,
+          "lat": -35.31406
+        },
+        {
+          "drifterId": "132511",
+          "lon": 21.4817,
+          "lat": -37.10636
+        },
+        {
+          "drifterId": "132528",
+          "lon": 23.86592,
+          "lat": -34.97313
+        },
+        {
+          "drifterId": "132634",
+          "lon": 29.88758,
+          "lat": -34.64967
+        }
+      ],
+      "computationArea": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "oceanBox": {
+        "south": -40.0,
+        "north": -32.13828,
+        "west": 18.31773,
+        "east": 32.013940000000005
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/AG-1.ncep10m.wind.json",
+        "sha256": "00ff12e9daabcca05c9db6e5542eb788871c5fbae14a6d3774152d36cfbc6785",
+        "gridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "hycomReference": {
+        "runId": "step20-cal-alpha0.002-AG-1",
+        "file": "data/research/step20/calibration/AG-1/alpha0.002.trajectories.csv",
+        "sha256": "58f9ca262b7e74d1fba1daac951b51e9f32847e7b500ec87bb9e7d75f716976b",
+        "resultArraySha256": "afac7313dd5dc7decd013aca1d7da6691bfa48933f98273d4c02c09beb9891d3",
+        "segmented": false
+      },
+      "hycomGrid": {
+        "file": "data/research/step17/normalized/AG-1.hycom15m.dataset.json",
+        "fileSha256": "a069519ba811973756a84f8b0441eea0db37fd228dbad00fee0f95b419fe9d0e",
+        "axesSha256": "e47d224b29bf95bf0a809ac337bfcfd4c08893d2eead912e6af4a042b6d36ea2",
+        "shape": [
+          99,
+          172
+        ],
+        "resolutionDegrees": 0.08,
+        "depthMeters": 15.0,
+        "immutable": true
+      },
+      "hycomFrames": {
+        "files": [
+          "data/research/step17/normalized/AG-1.hycom15m.dataset.json"
+        ],
+        "fileSha256": [
+          "a069519ba811973756a84f8b0441eea0db37fd228dbad00fee0f95b419fe9d0e"
+        ],
+        "frameCount": 25,
+        "first": "2015-04-23T12:00:00Z",
+        "last": "2015-04-26T12:00:00Z",
+        "cadenceSeconds": 10800,
+        "completeUtcDays": [
+          "2015-04-24",
+          "2015-04-25"
+        ],
+        "incompleteUtcDays": {
+          "2015-04-23": [
+            "12:00",
+            "15:00",
+            "18:00",
+            "21:00"
+          ],
+          "2015-04-26": [
+            "00:00",
+            "03:00",
+            "06:00",
+            "09:00",
+            "12:00"
+          ]
+        },
+        "requiredDailyLabels": [
+          "2015-04-23T00:00:00Z",
+          "2015-04-24T00:00:00Z",
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z"
+        ]
+      },
+      "glorysNormalized": {
+        "file": "data/research/step25c/forcing/AG-1.glorys15.81m.dataset.json",
+        "fileSha256": "a41f03647dcf12c048f92bb389d5ce80340060b4a953051ab0da43394823237c",
+        "gridSha256": "6821bf8fef4cd232353f030f51f836eb06adf331f5a7a6568eaabceca60009e2",
+        "rawSha256": "87fffab5d0cfc0ff96387be7089b408681ea55a1f87bfba72f7f8f3ccf875759",
+        "timeUTC": [
+          "2015-04-22T00:00:00Z",
+          "2015-04-23T00:00:00Z",
+          "2015-04-24T00:00:00Z",
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z"
+        ],
+        "depthMeters": 15.81007
+      },
+      "conditionB": {
+        "status": "STEP26_DATA_BLOCKED",
+        "reason": "only 2 complete UTC days (2015-04-24, 2015-04-25) exist in the acquired HYCOM frames; five daily means (2015-04-23 .. 2015-04-27) are required; no download, no partial-day mean, no interpolation"
+      },
+      "conditionD": {
+        "status": "CONSTRUCTIBLE",
+        "targetGridAxesSha256": "e47d224b29bf95bf0a809ac337bfcfd4c08893d2eead912e6af4a042b6d36ea2",
+        "sourceInsideExtent": true
+      }
+    },
+    {
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "region": "AG",
+      "t0": "2015-04-26T12:00:00Z",
+      "end": "2015-04-29T12:00:00Z",
+      "drifterCount": 1,
+      "drifterIds": [
+        "127281"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "127281",
+          "lon": 21.79639,
+          "lat": -36.76674
+        }
+      ],
+      "computationArea": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "oceanBox": {
+        "south": -38.76674,
+        "north": -34.76674,
+        "west": 19.79639,
+        "east": 23.79639
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/AG-2.ncep10m.wind.json",
+        "sha256": "f32e7a2a4f2e7d991d516e5ac97308ac1f4c0b143b9cf39612f604c1910f7699",
+        "gridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "hycomReference": {
+        "runId": "step20-cal-alpha0.002-AG-2",
+        "file": "data/research/step20/calibration/AG-2/alpha0.002.trajectories.csv",
+        "sha256": "afc98cf9d2e1d66f97d1c3f2637ae9c0e7c24bdfdade8d2dc785a10f990ba0e2",
+        "resultArraySha256": "42c0010f77f96608364fdb55450f40f22851947b085bc7184b04fc9afe5dd42b",
+        "segmented": false
+      },
+      "hycomGrid": {
+        "file": "data/research/step17/normalized/AG-2.hycom15m.dataset.json",
+        "fileSha256": "98cdef34b02da691a32792126540c0628327802653a0e015e57782dafc6404ec",
+        "axesSha256": "bb718e28a7e51de7eea992c939bf5af871f90afbc810ca54945b6ae5bd7b44da",
+        "shape": [
+          51,
+          51
+        ],
+        "resolutionDegrees": 0.08,
+        "depthMeters": 15.0,
+        "immutable": true
+      },
+      "hycomFrames": {
+        "files": [
+          "data/research/step17/normalized/AG-2.hycom15m.dataset.json"
+        ],
+        "fileSha256": [
+          "98cdef34b02da691a32792126540c0628327802653a0e015e57782dafc6404ec"
+        ],
+        "frameCount": 25,
+        "first": "2015-04-26T12:00:00Z",
+        "last": "2015-04-29T12:00:00Z",
+        "cadenceSeconds": 10800,
+        "completeUtcDays": [
+          "2015-04-27",
+          "2015-04-28"
+        ],
+        "incompleteUtcDays": {
+          "2015-04-26": [
+            "12:00",
+            "15:00",
+            "18:00",
+            "21:00"
+          ],
+          "2015-04-29": [
+            "00:00",
+            "03:00",
+            "06:00",
+            "09:00",
+            "12:00"
+          ]
+        },
+        "requiredDailyLabels": [
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z",
+          "2015-04-28T00:00:00Z",
+          "2015-04-29T00:00:00Z",
+          "2015-04-30T00:00:00Z"
+        ]
+      },
+      "glorysNormalized": {
+        "file": "data/research/step25c/forcing/AG-2.glorys15.81m.dataset.json",
+        "fileSha256": "27de6bdf0d7284aa5989f3c0c75d08b61eb3776dbf1b93c0ec055bdff42bb2bb",
+        "gridSha256": "96894ed4c1b40a0d5db94d3cdcbab83f8a4d4502342ac983ae84eda4e97d0a26",
+        "rawSha256": "595c2bace7156f3dab92698a251e29a87920eb4d2375cc730fbdf69562cc9b25",
+        "timeUTC": [
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z",
+          "2015-04-28T00:00:00Z",
+          "2015-04-29T00:00:00Z",
+          "2015-04-30T00:00:00Z"
+        ],
+        "depthMeters": 15.81007
+      },
+      "conditionB": {
+        "status": "STEP26_DATA_BLOCKED",
+        "reason": "only 2 complete UTC days (2015-04-27, 2015-04-28) exist in the acquired HYCOM frames; five daily means (2015-04-26 .. 2015-04-30) are required; no download, no partial-day mean, no interpolation"
+      },
+      "conditionD": {
+        "status": "CONSTRUCTIBLE",
+        "targetGridAxesSha256": "bb718e28a7e51de7eea992c939bf5af871f90afbc810ca54945b6ae5bd7b44da",
+        "sourceInsideExtent": true
+      }
+    },
+    {
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "region": "KE",
+      "t0": "2010-08-10T12:00:00Z",
+      "end": "2010-08-13T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "48985",
+        "81806",
+        "90135",
+        "90149",
+        "90150"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "48985",
+          "lon": 137.25655,
+          "lat": 39.19842
+        },
+        {
+          "drifterId": "81806",
+          "lon": 157.94424,
+          "lat": 32.2673
+        },
+        {
+          "drifterId": "90135",
+          "lon": 156.24634,
+          "lat": 37.19708
+        },
+        {
+          "drifterId": "90149",
+          "lon": 159.85992,
+          "lat": 38.45439
+        },
+        {
+          "drifterId": "90150",
+          "lon": 155.67223,
+          "lat": 38.35129
+        }
+      ],
+      "computationArea": {
+        "west": 135.25655,
+        "east": 161.85992,
+        "south": 30.2673,
+        "north": 40.0
+      },
+      "oceanBox": {
+        "south": 30.2673,
+        "north": 40.0,
+        "west": 135.25655,
+        "east": 161.85992
+      },
+      "wind": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H1.ncep10m.wind.json",
+        "sha256": "7b16b08358e2ca50769cfb4106674703f7da70190e8bb6601fec4ceeae5bcfcd",
+        "gridSha256": "2efe5efe8feed013a2c0b64fb3257938d8f85a129f35ecc0167cc35db0154d21",
+        "source": "STEP 20 B-3 normalized NCEP-DOE R2 10 m 6 h (holdout)"
+      },
+      "hycomReference": {
+        "runId": "step20-hold-alpha0.002-KE-H1",
+        "file": "data/research/step20/holdout/trajectories/KE-H1/alpha0.002.trajectories.csv",
+        "sha256": "5f68152824cf8b548187181fed37b06b6c3b3482d024c72ecd1ce679bc580d18",
+        "resultArraySha256": "0a0a80728f9ef58f0d1637ebd7e57db44d45d94380405402dc19de47308368da",
+        "segmented": true
+      },
+      "hycomGrid": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H1.hycom15m.chunkA.dataset.json",
+        "fileSha256": "1b26ecb7e982ea529a246eddc0f4045ba6364e48e23a77cda19491a4c1510b42",
+        "axesSha256": "077bbce052678115c597bd4e00c335319fdb603ced63952c1de692fed96bb821",
+        "shape": [
+          123,
+          333
+        ],
+        "resolutionDegrees": 0.08,
+        "depthMeters": 15.0,
+        "immutable": true
+      },
+      "hycomFrames": {
+        "files": [
+          "data/research/step20/holdout/forcing/normalized/KE-H1.hycom15m.chunkA.dataset.json",
+          "data/research/step20/holdout/forcing/normalized/KE-H1.hycom15m.chunkB.dataset.json"
+        ],
+        "fileSha256": [
+          "1b26ecb7e982ea529a246eddc0f4045ba6364e48e23a77cda19491a4c1510b42",
+          "ce3003d6f6d30039776f73ec292dd6c3ab8aca360f692cfd60c4ef41c81278b3"
+        ],
+        "frameCount": 25,
+        "first": "2010-08-10T12:00:00Z",
+        "last": "2010-08-13T12:00:00Z",
+        "cadenceSeconds": 10800,
+        "completeUtcDays": [
+          "2010-08-11",
+          "2010-08-12"
+        ],
+        "incompleteUtcDays": {
+          "2010-08-10": [
+            "12:00",
+            "15:00",
+            "18:00",
+            "21:00"
+          ],
+          "2010-08-13": [
+            "00:00",
+            "03:00",
+            "06:00",
+            "09:00",
+            "12:00"
+          ]
+        },
+        "requiredDailyLabels": [
+          "2010-08-10T00:00:00Z",
+          "2010-08-11T00:00:00Z",
+          "2010-08-12T00:00:00Z",
+          "2010-08-13T00:00:00Z",
+          "2010-08-14T00:00:00Z"
+        ]
+      },
+      "glorysNormalized": {
+        "file": "data/research/step25c/forcing/KE-H1.glorys15.81m.dataset.json",
+        "fileSha256": "5cd22aece73dbb1d613ad99535d93b09b417b22ce300b2d3bfe79670e2656f16",
+        "gridSha256": "e12142bace085deb9a83837334205d8d26c33c13cef9b06be3525c7a738bf1b5",
+        "rawSha256": "5fcb3b013aa4f0fa8dabf516ea2ef9d669f7009aceb5d960c339e92f4debcb25",
+        "timeUTC": [
+          "2010-08-09T00:00:00Z",
+          "2010-08-10T00:00:00Z",
+          "2010-08-11T00:00:00Z",
+          "2010-08-12T00:00:00Z",
+          "2010-08-13T00:00:00Z",
+          "2010-08-14T00:00:00Z"
+        ],
+        "depthMeters": 15.81007
+      },
+      "conditionB": {
+        "status": "STEP26_DATA_BLOCKED",
+        "reason": "only 2 complete UTC days (2010-08-11, 2010-08-12) exist in the acquired HYCOM frames; five daily means (2010-08-10 .. 2010-08-14) are required; no download, no partial-day mean, no interpolation"
+      },
+      "conditionD": {
+        "status": "CONSTRUCTIBLE",
+        "targetGridAxesSha256": "077bbce052678115c597bd4e00c335319fdb603ced63952c1de692fed96bb821",
+        "sourceInsideExtent": true
+      }
+    },
+    {
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "region": "KE",
+      "t0": "2010-11-15T12:00:00Z",
+      "end": "2010-11-18T12:00:00Z",
+      "drifterCount": 7,
+      "drifterIds": [
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "89898",
+          "lon": 143.26125,
+          "lat": 31.29767
+        },
+        {
+          "drifterId": "90146",
+          "lon": 152.8268,
+          "lat": 38.44446
+        },
+        {
+          "drifterId": "92981",
+          "lon": 143.06795,
+          "lat": 31.02459
+        },
+        {
+          "drifterId": "98996",
+          "lon": 147.97673,
+          "lat": 33.89059
+        },
+        {
+          "drifterId": "98997",
+          "lon": 152.19716,
+          "lat": 34.03334
+        },
+        {
+          "drifterId": "98998",
+          "lon": 154.05711,
+          "lat": 33.55673
+        },
+        {
+          "drifterId": "99006",
+          "lon": 151.61525,
+          "lat": 31.19199
+        }
+      ],
+      "computationArea": {
+        "west": 141.06795,
+        "east": 156.05711,
+        "south": 29.02459,
+        "north": 40.0
+      },
+      "oceanBox": {
+        "south": 29.02459,
+        "north": 40.0,
+        "west": 141.06795,
+        "east": 156.05711
+      },
+      "wind": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H3.ncep10m.wind.json",
+        "sha256": "c1f1e3d70697a41b5d39d4f0b422869378256930d5e9d9b8393cbff996ab9bbc",
+        "gridSha256": "94b50b5ac56e7224b260eb0a03bddccd9785e3454a69471cdc3a39bc61e43cd8",
+        "source": "STEP 20 B-3 normalized NCEP-DOE R2 10 m 6 h (holdout)"
+      },
+      "hycomReference": {
+        "runId": "step20-hold-alpha0.002-KE-H3",
+        "file": "data/research/step20/holdout/trajectories/KE-H3/alpha0.002.trajectories.csv",
+        "sha256": "00d9db9f183b53e2d7261cc42e4db997a06b7b8b9d0a1e421f73f4517a723fd6",
+        "resultArraySha256": "a9ae8822f873fd2695ae39ebd8e8132bbac52e7f416033645f5fba2f7f96e1de",
+        "segmented": false
+      },
+      "hycomGrid": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H3.hycom15m.dataset.json",
+        "fileSha256": "b88e9390bf3f0b7fa1e81d9bf28ee8960f5e7cbce4d4bc0f2e9cf95a485f5b3e",
+        "axesSha256": "3f6b04aebe29a618cd8c6b573ef04a7eb51f4a99fb7abc88308283ebdb03b553",
+        "shape": [
+          138,
+          189
+        ],
+        "resolutionDegrees": 0.08,
+        "depthMeters": 15.0,
+        "immutable": true
+      },
+      "hycomFrames": {
+        "files": [
+          "data/research/step20/holdout/forcing/normalized/KE-H3.hycom15m.dataset.json"
+        ],
+        "fileSha256": [
+          "b88e9390bf3f0b7fa1e81d9bf28ee8960f5e7cbce4d4bc0f2e9cf95a485f5b3e"
+        ],
+        "frameCount": 25,
+        "first": "2010-11-15T12:00:00Z",
+        "last": "2010-11-18T12:00:00Z",
+        "cadenceSeconds": 10800,
+        "completeUtcDays": [
+          "2010-11-16",
+          "2010-11-17"
+        ],
+        "incompleteUtcDays": {
+          "2010-11-15": [
+            "12:00",
+            "15:00",
+            "18:00",
+            "21:00"
+          ],
+          "2010-11-18": [
+            "00:00",
+            "03:00",
+            "06:00",
+            "09:00",
+            "12:00"
+          ]
+        },
+        "requiredDailyLabels": [
+          "2010-11-15T00:00:00Z",
+          "2010-11-16T00:00:00Z",
+          "2010-11-17T00:00:00Z",
+          "2010-11-18T00:00:00Z",
+          "2010-11-19T00:00:00Z"
+        ]
+      },
+      "glorysNormalized": {
+        "file": "data/research/step25c/forcing/KE-H3.glorys15.81m.dataset.json",
+        "fileSha256": "f3955b90eb1c2715accc8675d8a8338b3816434d96a70754bc7d5fe3f70cc059",
+        "gridSha256": "f00cb7fec7d318234f7ed6dd2af3c92f332b92cb076d82cec947ea300735421f",
+        "rawSha256": "403ed3a5b4b2882d6f1a102d2edea299ae9436598b250a46e0c0bcb834c10152",
+        "timeUTC": [
+          "2010-11-14T00:00:00Z",
+          "2010-11-15T00:00:00Z",
+          "2010-11-16T00:00:00Z",
+          "2010-11-17T00:00:00Z",
+          "2010-11-18T00:00:00Z",
+          "2010-11-19T00:00:00Z"
+        ],
+        "depthMeters": 15.81007
+      },
+      "conditionB": {
+        "status": "STEP26_DATA_BLOCKED",
+        "reason": "only 2 complete UTC days (2010-11-16, 2010-11-17) exist in the acquired HYCOM frames; five daily means (2010-11-15 .. 2010-11-19) are required; no download, no partial-day mean, no interpolation"
+      },
+      "conditionD": {
+        "status": "CONSTRUCTIBLE",
+        "targetGridAxesSha256": "3f6b04aebe29a618cd8c6b573ef04a7eb51f4a99fb7abc88308283ebdb03b553",
+        "sourceInsideExtent": true
+      }
+    }
+  ],
+  "windowCount": 6,
+  "excluded": {
+    "KE-H2": {
+      "paired": false,
+      "reason": "immutable STEP 20 HYCOM baseline FORCING_UNAVAILABLE",
+      "modelRun": false
+    },
+    "AG-holdout": "UNAVAILABLE; not invented"
+  },
+  "calibrationWindows": [
+    "KE-1",
+    "KE-2",
+    "AG-1",
+    "AG-2"
+  ],
+  "holdoutWindows": [
+    "KE-H1",
+    "KE-H3"
+  ],
+  "strata": [
+    "overall",
+    "calibration",
+    "holdout",
+    "perWindow"
+  ],
+  "poolingRule": "never combined without label; per-window results reported (small-n descriptive)",
+  "alpha": {
+    "value": 0.002,
+    "search": false,
+    "reselection": false,
+    "windageTuning": false,
+    "step20Changed": false,
+    "alpha0StructuralControl": "not registered in Phase A; only if a later phase explicitly registers it"
+  },
+  "dataPolicy": {
+    "newDownload": false,
+    "newObservation": false,
+    "newWindow": false,
+    "cohortReplacement": false,
+    "sources": [
+      "STEP17 HYCOM",
+      "STEP20 B-3 HYCOM (holdout)",
+      "STEP25B GLORYS",
+      "STEP17/STEP20 NCEP-R2 wind",
+      "STEP15/16 observations"
+    ],
+    "ifNotConstructible": "STEP26_DATA_BLOCKED for that condition; no substitute"
+  },
+  "modelMechanics": {
+    "runtime": "services/research-runtime (frozen at 155995dd)",
+    "modelId": "surface-passive-advection.v2.windage",
+    "modelVersion": "0.1.0",
+    "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+    "equation": "dX/dt = U_ocean + 0.002 * U_wind",
+    "integrator": "RK4",
+    "integrationStepSeconds": 300,
+    "outputStepSeconds": 900,
+    "durationSeconds": 259200,
+    "spatialInterpolation": "bilinear",
+    "temporalInterpolation": "linear",
+    "extrapolation": false,
+    "coordinateConversion": "OceanParcels Geographic (111120 m/deg, cos(phi) at every RK4 stage)",
+    "backend": "oceanparcels 3.1.4",
+    "python": "3.12.10",
+    "statusRules": "STEP 18b (OUT_OF_DOMAIN only at +/-40 deg; else FORCING_UNAVAILABLE)"
+  },
+  "windForAllConditions": "identical STEP 17 / STEP 20 B-3 normalized NCEP-DOE R2 10 m 6 h files (SHA in windows[].wind)",
+  "metrics": {
+    "M3": {
+      "definition": "observed-vs-model position error, haversine",
+      "radiusMeters": 6371008.8,
+      "horizonsHours": [
+        24,
+        48,
+        72
+      ],
+      "exactUTC": true,
+      "observationInterpolation": false,
+      "primaryStatistic": "median",
+      "secondaryStatistic": "mean",
+      "report": [
+        "n",
+        "median",
+        "mean",
+        "min",
+        "max",
+        "NOT_AVAILABLE"
+      ]
+    },
+    "delta": "error(condition X) - error(condition Y), km",
+    "tieToleranceKm": 1e-06,
+    "pairedReport": [
+      "paired median delta",
+      "paired mean delta",
+      "wins",
+      "losses",
+      "ties"
+    ],
+    "M1": "72 h endpoint displacement",
+    "M2": "total path length",
+    "M4": "72 h separation between the compared conditions",
+    "M5": "observed 72 h displacement",
+    "secondaryOnly": [
+      "M1",
+      "M2",
+      "M4",
+      "M5"
+    ],
+    "signTest": "descriptive only, n >= 10, pairs not independent"
+  },
+  "outlierPolicy": {
+    "removal": false,
+    "trimming": false,
+    "winsorization": false,
+    "weighting": false,
+    "caseDeletion": false,
+    "highestErrorReportedDescriptively": true
+  },
+  "allowedLanguage": [
+    "descriptive difference",
+    "temporal sensitivity",
+    "spatial representation sensitivity",
+    "product difference"
+  ],
+  "forbiddenLanguage": [
+    "GLORYS selected",
+    "HYCOM selected",
+    "best forcing",
+    "optimal forcing",
+    "superior",
+    "validated",
+    "proven",
+    "significance",
+    "generalization",
+    "operational",
+    "production-ready"
+  ],
+  "forbidden": {
+    "extrapolation": false,
+    "smoothing": false,
+    "zeroFill": false,
+    "landSubstitution": false,
+    "sourceGapFilling": false,
+    "frameDuplication": false,
+    "biasCorrection": false,
+    "nudging": false,
+    "assimilation": false,
+    "blending": false,
+    "verticalInterpolation": false,
+    "depthSearch": false,
+    "alphaSearch": false,
+    "newDownload": false,
+    "modelSelection": false
+  },
+  "reproducibility": {
+    "derivedForcing": [
+      "sourceSha256",
+      "sourceFileIds",
+      "sourceTimestamps",
+      "derivationAlgorithm",
+      "derivationScriptSha256",
+      "targetGridSha256",
+      "derivedFieldSha256"
+    ],
+    "run": [
+      "configurationSha256",
+      "forcingSha256",
+      "runnerSha256",
+      "resultSha256",
+      "replayResultSha256"
+    ],
+    "independentRerun": true,
+    "conditionCMustEqualStep25C": true
+  },
+  "phaseA": {
+    "modelRunCount": 0,
+    "derivedFieldsCreated": 0,
+    "regriddingPerformed": false,
+    "metricsComputed": false,
+    "interpretation": "NONE",
+    "outputs": [
+      "docs/research/step26-forcing-decomposition-protocol.md",
+      "docs/research/step26-forcing-decomposition-rule.json",
+      "docs/research/step26-preregistration.json",
+      "docs/research/step26-experiment-matrix.json",
+      "docs/research/step26-summary.json",
+      "tools/research/check_step26_preregistration.py"
+    ]
+  },
+  "phaseB": {
+    "status": "NOT_STARTED",
+    "plannedRuns": {
+      "C": 6,
+      "D": 6,
+      "A": 0,
+      "B": 0
+    },
+    "plannedRunCount": 12,
+    "executableComparisons": [
+      2,
+      4
+    ],
+    "blockedComparisons": [
+      1,
+      3
+    ],
+    "unblockRequirement": "separately preregistered HYCOM re-acquisition covering t0-1 d 00Z .. t0+5 d 00Z with all 3-hourly frames"
+  },
+  "lockPolicy": "this rule file, the protocol, the preregistration, the matrix and the validator are SHA-locked and committed before any derivation or run",
+  "stopRule": "Phase A ends at the LOCK commit; Phase B requires a separate instruction"
+}

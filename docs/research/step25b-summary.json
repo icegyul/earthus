@@ -1,7 +1,7 @@
 {
   "ruleId": "glorys12v1-acquisition-quality-gate-step25b",
-  "status": "STEP25B_CREDENTIALS_REQUIRED",
-  "accessStatus": "CREDENTIALS_REQUIRED",
+  "status": "STEP25B_GLORYS_READY_FOR_TEST",
+  "accessStatus": "AUTHORIZED",
   "toolbox": {
     "name": "copernicusmarine (Copernicus Marine Toolbox, official client)",
     "isolatedVenv": "data/research/step25b/toolbox-venv",
@@ -9,14 +9,21 @@
     "runtimeIsolated": true,
     "installationMethod": "python -m venv + pip install copernicusmarine (no credentials involved)",
     "version": "copernicusmarine, version 2.4.1",
-    "versionCheckedAtUTC": "2026-09-06T09:54:34Z",
+    "versionCheckedAtUTC": "2026-09-06T11:31:36Z",
     "installedAtUTC": "2026-09-06T09:53:15Z",
     "revision": "r2 (console script instead of python -m; stdin closed)"
   },
-  "windowsAcquired": 0,
-  "windowsPass": 0,
-  "pairedWindowsEligible": [],
-  "keH2GlorysCoverageFact": "NOT_ACQUIRED",
+  "windowsAcquired": 7,
+  "windowsPass": 7,
+  "pairedWindowsEligible": [
+    "KE-1",
+    "KE-2",
+    "AG-1",
+    "AG-2",
+    "KE-H1",
+    "KE-H3"
+  ],
+  "keH2GlorysCoverageFact": "WINDOW_PASS",
   "MODEL_RUN": "FORBIDDEN",
   "modelRunCount": 0,
   "trajectoryCount": 0,

@@ -1,6 +1,6 @@
 {
   "ruleId": "glorys12v1-acquisition-quality-gate-step25b",
-  "accessStatus": "CREDENTIALS_REQUIRED",
+  "accessStatus": "AUTHORIZED",
   "depthRule": {
     "targetMeters": 15.0,
     "nearestNativeLevelMeters": 15.81,
@@ -25,137 +25,361 @@
   "windows": [
     {
       "windowId": "KE-1",
-      "status": "NOT_ACQUIRED",
-      "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+      "status": "WINDOW_PASS",
       "gates": {
-        "G1": "NOT_EVALUATED",
-        "G2": "NOT_EVALUATED",
-        "G3": "NOT_EVALUATED",
-        "G4": "NOT_EVALUATED",
-        "G5": "NOT_EVALUATED",
-        "G6": "NOT_EVALUATED",
-        "G7": "NOT_EVALUATED",
-        "G8": "NOT_EVALUATED",
-        "G9": "NOT_EVALUATED",
-        "G10": "NOT_EVALUATED",
-        "G11": "NOT_EVALUATED"
+        "G1": "PASS",
+        "G2": "PASS",
+        "G3": "PASS",
+        "G4": "PASS",
+        "G5": "PASS",
+        "G6": "PASS",
+        "G7": "PASS",
+        "G8": "PASS",
+        "G9": "PASS",
+        "G10": "PASS",
+        "G11": "PENDING_VALIDATOR"
+      },
+      "depthNative15m": true,
+      "detail": {
+        "file": "data/research/step25b/glorys/KE-1.glorys12v1.uo_vo.15.81m.nc",
+        "sha256": "d399a2b586b3eea97838bfc9eab2bf0e58afcd33d07c4e9fcef7b02de033c2dc",
+        "bytes": 870562,
+        "G3": true,
+        "G4": true,
+        "timestamps": [
+          "2010-05-10T00:00:00Z",
+          "2010-05-11T00:00:00Z",
+          "2010-05-12T00:00:00Z",
+          "2010-05-13T00:00:00Z",
+          "2010-05-14T00:00:00Z",
+          "2010-05-15T00:00:00Z"
+        ],
+        "G5": true,
+        "units": {
+          "uo": "m s-1",
+          "vo": "m s-1"
+        },
+        "G9": true,
+        "depthLevels": [
+          15.810070037841797
+        ],
+        "depthNative": true,
+        "G6": true,
+        "G7": true,
+        "missingSourceFrames": [],
+        "missingFractionBox": 0.0025252525252525255,
+        "G8": true,
+        "G10": true
       }
     },
     {
       "windowId": "KE-2",
-      "status": "NOT_ACQUIRED",
-      "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+      "status": "WINDOW_PASS",
       "gates": {
-        "G1": "NOT_EVALUATED",
-        "G2": "NOT_EVALUATED",
-        "G3": "NOT_EVALUATED",
-        "G4": "NOT_EVALUATED",
-        "G5": "NOT_EVALUATED",
-        "G6": "NOT_EVALUATED",
-        "G7": "NOT_EVALUATED",
-        "G8": "NOT_EVALUATED",
-        "G9": "NOT_EVALUATED",
-        "G10": "NOT_EVALUATED",
-        "G11": "NOT_EVALUATED"
+        "G1": "PASS",
+        "G2": "PASS",
+        "G3": "PASS",
+        "G4": "PASS",
+        "G5": "PASS",
+        "G6": "PASS",
+        "G7": "PASS",
+        "G8": "PASS",
+        "G9": "PASS",
+        "G10": "PASS",
+        "G11": "PENDING_VALIDATOR"
+      },
+      "depthNative15m": true,
+      "detail": {
+        "file": "data/research/step25b/glorys/KE-2.glorys12v1.uo_vo.15.81m.nc",
+        "sha256": "f2ca50183aea583d69e3b73f4609568b221106a7c119a0c8c0bd43d7623f4bbe",
+        "bytes": 899382,
+        "G3": true,
+        "G4": true,
+        "timestamps": [
+          "2010-06-29T00:00:00Z",
+          "2010-06-30T00:00:00Z",
+          "2010-07-01T00:00:00Z",
+          "2010-07-02T00:00:00Z",
+          "2010-07-03T00:00:00Z",
+          "2010-07-04T00:00:00Z"
+        ],
+        "G5": true,
+        "units": {
+          "uo": "m s-1",
+          "vo": "m s-1"
+        },
+        "G9": true,
+        "depthLevels": [
+          15.810070037841797
+        ],
+        "depthNative": true,
+        "G6": true,
+        "G7": true,
+        "missingSourceFrames": [],
+        "missingFractionBox": 0.09247311827956989,
+        "G8": true,
+        "G10": true
       }
     },
     {
       "windowId": "AG-1",
-      "status": "NOT_ACQUIRED",
-      "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+      "status": "WINDOW_PASS",
       "gates": {
-        "G1": "NOT_EVALUATED",
-        "G2": "NOT_EVALUATED",
-        "G3": "NOT_EVALUATED",
-        "G4": "NOT_EVALUATED",
-        "G5": "NOT_EVALUATED",
-        "G6": "NOT_EVALUATED",
-        "G7": "NOT_EVALUATED",
-        "G8": "NOT_EVALUATED",
-        "G9": "NOT_EVALUATED",
-        "G10": "NOT_EVALUATED",
-        "G11": "NOT_EVALUATED"
+        "G1": "PASS",
+        "G2": "PASS",
+        "G3": "PASS",
+        "G4": "PASS",
+        "G5": "PASS",
+        "G6": "PASS",
+        "G7": "PASS",
+        "G8": "PASS",
+        "G9": "PASS",
+        "G10": "PASS",
+        "G11": "PENDING_VALIDATOR"
+      },
+      "depthNative15m": true,
+      "detail": {
+        "file": "data/research/step25b/glorys/AG-1.glorys12v1.uo_vo.15.81m.nc",
+        "sha256": "87fffab5d0cfc0ff96387be7089b408681ea55a1f87bfba72f7f8f3ccf875759",
+        "bytes": 482402,
+        "G3": true,
+        "G4": true,
+        "timestamps": [
+          "2015-04-22T00:00:00Z",
+          "2015-04-23T00:00:00Z",
+          "2015-04-24T00:00:00Z",
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z"
+        ],
+        "G5": true,
+        "units": {
+          "uo": "m s-1",
+          "vo": "m s-1"
+        },
+        "G9": true,
+        "depthLevels": [
+          15.810070037841797
+        ],
+        "depthNative": true,
+        "G6": true,
+        "G7": true,
+        "missingSourceFrames": [],
+        "missingFractionBox": 0.17628920786815525,
+        "G8": true,
+        "G10": true
       }
     },
     {
       "windowId": "AG-2",
-      "status": "NOT_ACQUIRED",
-      "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+      "status": "WINDOW_PASS",
       "gates": {
-        "G1": "NOT_EVALUATED",
-        "G2": "NOT_EVALUATED",
-        "G3": "NOT_EVALUATED",
-        "G4": "NOT_EVALUATED",
-        "G5": "NOT_EVALUATED",
-        "G6": "NOT_EVALUATED",
-        "G7": "NOT_EVALUATED",
-        "G8": "NOT_EVALUATED",
-        "G9": "NOT_EVALUATED",
-        "G10": "NOT_EVALUATED",
-        "G11": "NOT_EVALUATED"
+        "G1": "PASS",
+        "G2": "PASS",
+        "G3": "PASS",
+        "G4": "PASS",
+        "G5": "PASS",
+        "G6": "PASS",
+        "G7": "PASS",
+        "G8": "PASS",
+        "G9": "PASS",
+        "G10": "PASS",
+        "G11": "PENDING_VALIDATOR"
+      },
+      "depthNative15m": true,
+      "detail": {
+        "file": "data/research/step25b/glorys/AG-2.glorys12v1.uo_vo.15.81m.nc",
+        "sha256": "595c2bace7156f3dab92698a251e29a87920eb4d2375cc730fbdf69562cc9b25",
+        "bytes": 114286,
+        "G3": true,
+        "G4": true,
+        "timestamps": [
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z",
+          "2015-04-28T00:00:00Z",
+          "2015-04-29T00:00:00Z",
+          "2015-04-30T00:00:00Z"
+        ],
+        "G5": true,
+        "units": {
+          "uo": "m s-1",
+          "vo": "m s-1"
+        },
+        "G9": true,
+        "depthLevels": [
+          15.810070037841797
+        ],
+        "depthNative": true,
+        "G6": true,
+        "G7": true,
+        "missingSourceFrames": [],
+        "missingFractionBox": 0.0,
+        "G8": true,
+        "G10": true
       }
     },
     {
       "windowId": "KE-H1",
-      "status": "NOT_ACQUIRED",
-      "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+      "status": "WINDOW_PASS",
       "gates": {
-        "G1": "NOT_EVALUATED",
-        "G2": "NOT_EVALUATED",
-        "G3": "NOT_EVALUATED",
-        "G4": "NOT_EVALUATED",
-        "G5": "NOT_EVALUATED",
-        "G6": "NOT_EVALUATED",
-        "G7": "NOT_EVALUATED",
-        "G8": "NOT_EVALUATED",
-        "G9": "NOT_EVALUATED",
-        "G10": "NOT_EVALUATED",
-        "G11": "NOT_EVALUATED"
+        "G1": "PASS",
+        "G2": "PASS",
+        "G3": "PASS",
+        "G4": "PASS",
+        "G5": "PASS",
+        "G6": "PASS",
+        "G7": "PASS",
+        "G8": "PASS",
+        "G9": "PASS",
+        "G10": "PASS",
+        "G11": "PENDING_VALIDATOR"
+      },
+      "depthNative15m": true,
+      "detail": {
+        "file": "data/research/step25b/glorys/KE-H1.glorys12v1.uo_vo.15.81m.nc",
+        "sha256": "5fcb3b013aa4f0fa8dabf516ea2ef9d669f7009aceb5d960c339e92f4debcb25",
+        "bytes": 1052642,
+        "G3": true,
+        "G4": true,
+        "timestamps": [
+          "2010-08-09T00:00:00Z",
+          "2010-08-10T00:00:00Z",
+          "2010-08-11T00:00:00Z",
+          "2010-08-12T00:00:00Z",
+          "2010-08-13T00:00:00Z",
+          "2010-08-14T00:00:00Z"
+        ],
+        "G5": true,
+        "units": {
+          "uo": "m s-1",
+          "vo": "m s-1"
+        },
+        "G9": true,
+        "depthLevels": [
+          15.810070037841797
+        ],
+        "depthNative": true,
+        "G6": true,
+        "G7": true,
+        "missingSourceFrames": [],
+        "missingFractionBox": 0.06754994686029168,
+        "G8": true,
+        "G10": true
       }
     },
     {
       "windowId": "KE-H2",
-      "status": "NOT_ACQUIRED",
-      "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+      "status": "WINDOW_PASS",
       "gates": {
-        "G1": "NOT_EVALUATED",
-        "G2": "NOT_EVALUATED",
-        "G3": "NOT_EVALUATED",
-        "G4": "NOT_EVALUATED",
-        "G5": "NOT_EVALUATED",
-        "G6": "NOT_EVALUATED",
-        "G7": "NOT_EVALUATED",
-        "G8": "NOT_EVALUATED",
-        "G9": "NOT_EVALUATED",
-        "G10": "NOT_EVALUATED",
-        "G11": "NOT_EVALUATED"
+        "G1": "PASS",
+        "G2": "PASS",
+        "G3": "PASS",
+        "G4": "PASS",
+        "G5": "PASS",
+        "G6": "PASS",
+        "G7": "PASS",
+        "G8": "PASS",
+        "G9": "PASS",
+        "G10": "PASS",
+        "G11": "PENDING_VALIDATOR"
+      },
+      "depthNative15m": true,
+      "detail": {
+        "file": "data/research/step25b/glorys/KE-H2.glorys12v1.uo_vo.15.81m.nc",
+        "sha256": "bfc66034654eb10b1c2d7f2570d31cca6e10ccc4a925e355663593c58d8a7ce7",
+        "bytes": 114286,
+        "G3": true,
+        "G4": true,
+        "timestamps": [
+          "2010-08-15T00:00:00Z",
+          "2010-08-16T00:00:00Z",
+          "2010-08-17T00:00:00Z",
+          "2010-08-18T00:00:00Z",
+          "2010-08-19T00:00:00Z",
+          "2010-08-20T00:00:00Z"
+        ],
+        "G5": true,
+        "units": {
+          "uo": "m s-1",
+          "vo": "m s-1"
+        },
+        "G9": true,
+        "depthLevels": [
+          15.810070037841797
+        ],
+        "depthNative": true,
+        "G6": true,
+        "G7": true,
+        "missingSourceFrames": [],
+        "missingFractionBox": 0.0,
+        "G8": true,
+        "G10": true
       }
     },
     {
       "windowId": "KE-H3",
-      "status": "NOT_ACQUIRED",
-      "reason": "no authorized Copernicus Marine credentials in this environment (existence check only); acquisition stopped per STEP 25B §3",
+      "status": "WINDOW_PASS",
       "gates": {
-        "G1": "NOT_EVALUATED",
-        "G2": "NOT_EVALUATED",
-        "G3": "NOT_EVALUATED",
-        "G4": "NOT_EVALUATED",
-        "G5": "NOT_EVALUATED",
-        "G6": "NOT_EVALUATED",
-        "G7": "NOT_EVALUATED",
-        "G8": "NOT_EVALUATED",
-        "G9": "NOT_EVALUATED",
-        "G10": "NOT_EVALUATED",
-        "G11": "NOT_EVALUATED"
+        "G1": "PASS",
+        "G2": "PASS",
+        "G3": "PASS",
+        "G4": "PASS",
+        "G5": "PASS",
+        "G6": "PASS",
+        "G7": "PASS",
+        "G8": "PASS",
+        "G9": "PASS",
+        "G10": "PASS",
+        "G11": "PENDING_VALIDATOR"
+      },
+      "depthNative15m": true,
+      "detail": {
+        "file": "data/research/step25b/glorys/KE-H3.glorys12v1.uo_vo.15.81m.nc",
+        "sha256": "403ed3a5b4b2882d6f1a102d2edea299ae9436598b250a46e0c0bcb834c10152",
+        "bytes": 691438,
+        "G3": true,
+        "G4": true,
+        "timestamps": [
+          "2010-11-14T00:00:00Z",
+          "2010-11-15T00:00:00Z",
+          "2010-11-16T00:00:00Z",
+          "2010-11-17T00:00:00Z",
+          "2010-11-18T00:00:00Z",
+          "2010-11-19T00:00:00Z"
+        ],
+        "G5": true,
+        "units": {
+          "uo": "m s-1",
+          "vo": "m s-1"
+        },
+        "G9": true,
+        "depthLevels": [
+          15.810070037841797
+        ],
+        "depthNative": true,
+        "G6": true,
+        "G7": true,
+        "missingSourceFrames": [],
+        "missingFractionBox": 0.007702020202020202,
+        "G8": true,
+        "G10": true
       }
     }
   ],
-  "windowsPass": 0,
-  "windowsAcquired": 0,
-  "keH2": "NOT_ACQUIRED",
+  "windowsPass": 7,
+  "windowsAcquired": 7,
+  "keH2": "WINDOW_PASS",
   "test02Eligibility": {
-    "status": "STEP25B_CREDENTIALS_REQUIRED",
-    "pairedWindowsEligible": [],
+    "status": "STEP25B_GLORYS_READY_FOR_TEST",
+    "pairedWindowsEligible": [
+      "KE-1",
+      "KE-2",
+      "AG-1",
+      "AG-2",
+      "KE-H1",
+      "KE-H3"
+    ],
     "acceptedForTestMeaning": "technically eligible for the preregistered TEST-02; NOT 'better than HYCOM'"
   },
   "substitutionPerformed": false,

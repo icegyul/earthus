@@ -1,0 +1,257 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "revisionId": "step20-b3-forcing-resolution-revision",
+  "parentRuleId": "model-protocol-step20-generalization-parameter-validation",
+  "supersedesStep20": false,
+  "protocolDocument": "docs/research/step20-b3-forcing-resolution-protocol.md",
+  "protocolDocumentSha256": "b7a2ad2309553c05f261598773df7ca5295a8dcd92ef76fd3467e4d1787ef466",
+  "selectionRuleDocument": "docs/research/step20-b3-forcing-resolution-selection-rule.json",
+  "selectionRuleSha256": "87f7750bd3f95089402da565a8801677955f2e078c8616905752bef9e17e9126",
+  "createdAtUTC": "2026-09-06T07:20:00Z",
+  "gitCommitAtDesign": "86213644",
+  "authorProcess": "Claude Code session (Research Intelligence PHASE 2, STEP 20 Phase B-3) — revision preregistration only; 0 model runs",
+  "immutabilityCheck": {
+    "step20LockCommit": "155995dd",
+    "step20ProtocolSha256": "65b004589570e7e409201e82c9388b17ec53002c4b31282112056d005baabb00",
+    "step20PreregistrationSha256": "1e4ed8c1d004b00812c0710fd3df32c8a6c7537ff5287474a4c0a3e8ae33cae4",
+    "step20SelectionRuleSha256": "5d980be74fbeb752160143c2e44ecb6611f01f21e94ea528908fc5867d9b46d7",
+    "step20HoldoutDerivationSha256": "68dce1d200c73fd6f1c392446f61d2d240c40068bd34992efce8c14622becfb8",
+    "selectedAlphaLockCommit": "73fafffb",
+    "selectedAlphaContentSha256": "27e0c940a4beed5b6a1068b83856ba1711300f91b45905f93b1de5c5bfccebc3",
+    "selectedAlphaFileSha256": "68e43a0f91e3a6bd81427399adbe2cf8a7543d85cf0249d4926f3df093649efd",
+    "calibrationCommit": "904a27a9",
+    "calibrationManifestSha256": "41ca439ec6540fd98b3c9ecf5c74af7afdd8731e94bea5d33bfac3397afe8498",
+    "b2RecordCommit": "86213644",
+    "b2HoldoutForcingManifestSha256": "8e4c55928707cfe4c6f9c5d962cd789ebd2767737af23407ffb5cb48e60b065b",
+    "step17LockCommit": "551668ef",
+    "step18LockCommit": "d505cc5e",
+    "step18bLockCommit": "5b9567e5",
+    "step19LockCommit": "5f27dc2d",
+    "cohortSha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+    "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "existingLockedFileMutation": 0,
+    "result": "PASS"
+  },
+  "resolution": {
+    "reasonForRevision": "STEP 20 Phase B-2 forcing validation failure (R1 FORCING_PARTIAL)",
+    "failure1": {
+      "unit": "KE-H1",
+      "kind": "reader capacity limitation",
+      "detail": "25 x 123 x 333 x 2 = 2,047,950 values > MAX_VALUES 2,000,000 (datasets.validate_dataset, immutable V1 source, unchanged)",
+      "resolution": "deterministic chunked reading only: same raw files, unchanged reader, two overlapping temporal chunks A (t0..t0+45h, parts day1+day2) / B (t0+24h..t0+72h, parts day2+day3+day4); landMask = union over all 25 frames; model integration split at t0+36h (segment 1 on chunk A, segment 2 on chunk B released from segment-1 float64 positions); reader/runtime code unchanged",
+      "prohibited": [
+        "resampling",
+        "smoothing",
+        "extrapolation",
+        "interpolation",
+        "zero-fill",
+        "frame duplication",
+        "value modification",
+        "spatial domain reduction",
+        "temporal domain reduction",
+        "changing netcdf_reader.py/datasets.py/models.py/models_v2.py/wind.py or MAX_VALUES"
+      ],
+      "readerEquivalenceVerified": {
+        "KE-H3": {
+          "framesCompared": 33,
+          "framesEqual": 33,
+          "axesEqual": true,
+          "landMaskEqual": true,
+          "equivalent": true
+        },
+        "KE-1": {
+          "framesCompared": 33,
+          "framesEqual": 33,
+          "axesEqual": true,
+          "landMaskEqual": true,
+          "equivalent": true
+        },
+        "KE-2": {
+          "framesCompared": 33,
+          "framesEqual": 33,
+          "axesEqual": true,
+          "landMaskEqual": true,
+          "equivalent": true
+        },
+        "AG-1": {
+          "framesCompared": 33,
+          "framesEqual": 33,
+          "axesEqual": true,
+          "landMaskEqual": true,
+          "equivalent": true
+        },
+        "AG-2": {
+          "framesCompared": 33,
+          "framesEqual": 33,
+          "axesEqual": true,
+          "landMaskEqual": true,
+          "equivalent": true
+        }
+      },
+      "runEquivalenceGate": {
+        "when": "Phase B-4, before any holdout run",
+        "test": "KE-1 (STEP 17 forcing, chunked identically) segmented run for alpha 0 and alpha 0.002 must reproduce the STEP 20 calibration single-run result arrays bitwise",
+        "reference": {
+          "step20-cal-alpha0-KE-1": {
+            "resultArraySha256": "aa6987ed8fcabd89",
+            "trajectoriesSha256Prefix": "0e6f034f7f999821"
+          },
+          "step20-cal-alpha0.002-KE-1": {
+            "resultArraySha256": "2b7547ed6151ad90",
+            "trajectoriesSha256Prefix": "cc38b0d7fd171f18"
+          }
+        },
+        "onFailure": "SEGMENTED_EQUIVALENCE_FAIL → KE-H1 not run (HOLDOUT_BLOCKED_SEGMENTATION); no fallback"
+      }
+    },
+    "failure2": {
+      "unit": "KE-H2",
+      "kind": "source-data missing frame",
+      "missingRequiredOceanFrame": "2010-08-18T12:00:00Z",
+      "availableAdjacentFrames": [
+        "2010-08-18T09:00:00Z",
+        "2010-08-18T15:00:00Z"
+      ],
+      "rawFramesPresent": 24,
+      "resolution": "FORCING_UNAVAILABLE; unit not modeled; no synthetic replacement",
+      "rule": "IF a required forcing frame is absent in the original source dataset → unit status = FORCING_UNAVAILABLE → unit is not modeled → no synthetic replacement; applies regardless of results",
+      "prohibited": [
+        "temporal interpolation",
+        "nearest-neighbor substitution",
+        "previous-frame duplication",
+        "next-frame duplication",
+        "zero-fill",
+        "model-side extrapolation",
+        "other HYCOM product",
+        "GLORYS",
+        "ERA5"
+      ],
+      "postHocExclusion": false
+    },
+    "keH3": {
+      "unit": "KE-H3",
+      "status": "FORCING_AVAILABLE"
+    },
+    "alpha": {
+      "primary": 0.002,
+      "baseline": 0.0,
+      "locked": true,
+      "reselection": false,
+      "otherCandidatesRunOnHoldout": false
+    },
+    "cohort": {
+      "reselection": false,
+      "newHoldout": false,
+      "replacementForKEH2": false
+    },
+    "holdoutSet": {
+      "preregistered": 13,
+      "evaluable": 12,
+      "unavailable": 1,
+      "units": {
+        "KE-H1": {
+          "n": 5,
+          "evaluated": 5,
+          "status": "FORCING_AVAILABLE_CHUNKED"
+        },
+        "KE-H2": {
+          "n": 1,
+          "evaluated": 0,
+          "status": "FORCING_UNAVAILABLE"
+        },
+        "KE-H3": {
+          "n": 7,
+          "evaluated": 7,
+          "status": "FORCING_AVAILABLE"
+        }
+      },
+      "wording": "never '13-drifter holdout result'; report PREREGISTERED 13 / EVALUABLE 12 / UNAVAILABLE 1",
+      "smallN": [
+        "KE-H1",
+        "KE-H3"
+      ],
+      "signTest": "overall n=12 only, exploratory nominal (STEP 20 rule n>=10)",
+      "agHoldout": "HOLDOUT_UNAVAILABLE"
+    },
+    "unchanged": {
+      "primaryMetric": "M3 24/48/72 h, haversine R=6371008.8 m, exact UTC matching",
+      "model": "STEP 18b mechanics, RK4 300 s substep, 900 s output, bilinear spatial / linear temporal between existing frames only",
+      "policies": "STEP 20 §11–§14"
+    }
+  },
+  "b3HoldoutForcingManifest": {
+    "file": "docs/research/step20-b3-holdout-forcing-manifest.json",
+    "sha256": "10c4f7420d16757b7cd3f23805ce63dde1f58ea63591e8dc9411647d7bc27701",
+    "summary": {
+      "KE-H1": "FORCING_AVAILABLE_CHUNKED",
+      "KE-H2": "FORCING_UNAVAILABLE",
+      "KE-H3": "FORCING_AVAILABLE"
+    },
+    "evaluableDrifters": 12,
+    "unavailableDrifters": 1
+  },
+  "keH1Chunks": {
+    "A": {
+      "file": "data/research/step20/holdout/forcing/normalized/KE-H1.hycom15m.chunkA.dataset.json",
+      "fileSha256": "1b26ecb7e982ea529a246eddc0f4045ba6364e48e23a77cda19491a4c1510b42",
+      "gridSha256": "4faa735ccf2f2993ff2fa6c1d74595a3c269c3e2c9ff6991cacbb6f80bb3dc20",
+      "datasetId": "hycom-gofs31-53x-ke-h1-15m-chunka",
+      "version": "2010-08-10T12_2010-08-12T00.earthus1.chunkA",
+      "frames": 16,
+      "timeStart": "2010-08-10T12:00:00Z",
+      "timeEnd": "2010-08-12T09:00:00Z",
+      "shape": [
+        16,
+        123,
+        333
+      ],
+      "values": 1310688,
+      "segment": [
+        "2010-08-10T12:00:00Z",
+        "2010-08-12T00:00:00Z"
+      ],
+      "missingRate": 0.06970385019165504,
+      "withinPhysicalBounds": true
+    },
+    "B": {
+      "file": "data/research/step20/holdout/forcing/normalized/KE-H1.hycom15m.chunkB.dataset.json",
+      "fileSha256": "ce3003d6f6d30039776f73ec292dd6c3ab8aca360f692cfd60c4ef41c81278b3",
+      "gridSha256": "ee8db8c8f81d58b82286cd9c74ebb5a6780c91dcf38ed9252c9f0e71e884624a",
+      "datasetId": "hycom-gofs31-53x-ke-h1-15m-chunkb",
+      "version": "2010-08-12T00_2010-08-13T12.earthus1.chunkB",
+      "frames": 17,
+      "timeStart": "2010-08-11T12:00:00Z",
+      "timeEnd": "2010-08-13T12:00:00Z",
+      "shape": [
+        17,
+        123,
+        333
+      ],
+      "values": 1392606,
+      "segment": [
+        "2010-08-12T00:00:00Z",
+        "2010-08-13T12:00:00Z"
+      ],
+      "missingRate": 0.06970385019165504,
+      "withinPhysicalBounds": true
+    }
+  },
+  "phaseB4Order": [
+    "B-4.1 segmented-run equivalence gate on KE-1 calibration (alpha 0 and 0.002) vs STEP 20 calibration result arrays (bitwise)",
+    "B-4.2 holdout runs: KE-H1 segmented (A/B) x {0.002, 0}; KE-H3 single x {0.002, 0}; KE-H2 not modeled; exactly once; replay per segment/run",
+    "B-4.3 evaluation on n=12 (STEP 20 §8–§12), KE-H2 listed as FORCING_UNAVAILABLE"
+  ],
+  "counters": {
+    "modelRuns": 0,
+    "holdoutTrajectories": 0,
+    "forcingDownloads": 0
+  },
+  "modelRun": false,
+  "trajectoryComputed": false,
+  "interpolationOfMissingSourceFrame": false,
+  "glorys": false,
+  "era5": false,
+  "lockedAtUTC": "2026-09-06T07:20:00Z",
+  "nextStep": "STEP 20 PHASE B-4 — REVISED HOLDOUT EXECUTION (separate instruction only)"
+}

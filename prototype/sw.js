@@ -15,8 +15,9 @@
  *     시작하면 그 화성 세션 복원에 필요한 exact catalog/detail texture만 제한 저장한다.
  */
 
-const CACHE = 'earthus-shell-2026-08-21-tourism-density2';
+const CACHE = 'earthus-shell-2026-09-07-scope';
 const LEGACY_CACHES = new Set([
+  'earthus-shell-2026-08-21-tourism-density2',   // 2026-09-07 scope 수정 전 캐시 — 활성화 때 지운다
   'earthus-shell-2026-08-21-tourism-density1',
   'earthus-shell-2026-08-20-weather-tourism1',
   'earthus-shell-2026-08-20-hobby-ocean1',
@@ -85,6 +86,10 @@ self.addEventListener('fetch', (e) => {
   let url;
   try { url = new URL(req.url); } catch { return; }
   if (url.origin !== self.location.origin) return;   // CDN·NASA 타일·외부 API 는 통과
+  /* ⚠️ 이 워커의 범위가 사이트 루트라 다른 지구(/v2 Intelligence, /v3·/wonder 종이 지구, 개발 폴더)의 요청도 여기로 온다.
+     2026-09-07 실측: /v3 의 모듈 스크립트 fetch 가 한 번 실패하자 아래 폴백이 **v1 index.html** 을 돌려줘
+     "module script … MIME type text/html" 오류로 종이 지구가 0% 에서 멈췄다. 다른 지구는 손대지 않는다. */
+  if (['/v2','/v3','/Intelligence','/wonder','/v2-three','/v3-paper','/v3-kids','/v2-deploy'].some(p => url.pathname === p || url.pathname.toLowerCase().startsWith(p.toLowerCase() + '/'))) return;
 
   /* 천구는 content-hash라 오래 캐시해도 stale code가 되지 않는다. 오프라인에서 6K/4K를
      못 받으면 install 때 검증해 둔 2K로 내려 첫 지구의 검은 배경만 남는 일을 막는다. */
@@ -119,7 +124,8 @@ self.addEventListener('fetch', (e) => {
         return res;
       })
       .catch(() => caches.match(req).then(
-        (r) => r || caches.match('./index.html', { ignoreSearch: true })))
+        /* index.html 폴백은 화면 이동(navigate)에만. 스크립트·스타일에 HTML 을 주면 MIME 오류로 앱이 멈춘다. */
+        (r) => r || (req.mode === 'navigate' ? caches.match('./index.html', { ignoreSearch: true }) : undefined)))
   );
 });
 

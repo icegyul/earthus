@@ -1,0 +1,89 @@
+lrwxrwxrwx    1 ftp      ftp            34 May 25  2021 1989_ERA5 -> ../GLOBMULTI_ERA5_05/GLOB-30M/1989
+drwxrwsr-t   37 ftp      ftp          4096 Oct 26  2016 1990_CFSR
+lrwxrwxrwx    1 ftp      ftp            34 May 25  2021 1990_ERA5 -> ../GLOBMULTI_ERA5_05/GLOB-30M/1990
+drwxrwsr-t   33 ftp      ftp          4096 May 03  2019 1991_CFSR
+drwxrwsr-t   34 ftp      ftp          4096 May 03  2019 1991_ECMWF
+lrwxrwxrwx    1 ftp      ftp            34 May 25  2021 1991_ERA5 -> ../GLOBMULTI_ERA5_05/GLOB-30M/1991
+drwxrwsr-t   37 ftp      ftp          4096 Oct 26  2016 1992_CFSR
+lrwxrwxrwx    1 ftp      ftp            34 May 25  2021 1992_ERA5 -> ../GLOBMULTI_ERA5_05/GLOB-30M/1992
+drwxrwsr-t   37 ftp      ftp          4096 Oct 26  2016 1993_CFSR
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 1993_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/1993
+drwxrwsr-t   34 ftp      ftp          4096 Oct 26  2016 1994_CFSR
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 1994_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/1994
+drwxrwsr-t   36 ftp      ftp          4096 Oct 26  2016 1995_CFSR
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 1995_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/1995
+drwxrwsr-t   36 ftp      ftp          4096 Oct 26  2016 1996_CFSR
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 1996_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/1996
+drwxrwsr-t   36 ftp      ftp          4096 Oct 26  2016 1997_CFSR
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 1997_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/1997
+drwxrwsr-t   36 ftp      ftp          4096 Oct 26  2016 1998_CFSR
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 1998_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/1998
+drwxrwsr-t   35 ftp      ftp          4096 Oct 26  2016 1999_CFSR
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 1999_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/1999
+drwxrwsr-t   36 ftp      ftp          4096 Oct 26  2016 2000_CFSR
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2000_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2000
+drwxrwsr-t   40 ftp      ftp          4096 May 03  2019 2001_CFSR
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2001_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2001
+drwxrwsr-t   36 ftp      ftp          4096 Oct 26  2016 2002_CFSR
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2002_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2002
+drwxrwsr-t   37 ftp      ftp          4096 Oct 26  2016 2003_CFSR
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2003_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2003
+drwxrwsr-t   37 ftp      ftp          4096 Oct 26  2016 2004_CFSR
+drwxrwsr-t   41 ftp      ftp          4096 Feb 05  2018 2004_ECMWF
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2004_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2004
+drwxrwsr-t   37 ftp      ftp          4096 Oct 26  2016 2005_CFSR
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2005_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2005
+drwxrwsr-t   38 ftp      ftp          4096 Oct 26  2016 2006_CFSR
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2006_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2006
+drwxrwsr-t   37 ftp      ftp          4096 Oct 26  2016 2007_CFSR
+drwxrwsr-t   42 ftp      ftp          4096 May 03  2019 2007_ECMWF
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2007_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2007
+drwxrwsr-t   37 ftp      ftp          4096 Oct 25  2016 2008_CFSR
+drwxrwsr-t   41 ftp      ftp          4096 May 03  2019 2008_ECMWF
+drwxrwsr-t   30 ftp      ftp          4096 Feb 05  2018 2008_ECMWF_AVISO
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2008_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2008
+drwxrwsr-t   37 ftp      ftp          4096 Oct 25  2016 2009_CFSR
+drwxrwsr-t   35 ftp      ftp          4096 May 03  2019 2009_ECMWF
+drwxrwsr-t    3 ftp      ftp          4096 Aug 22  2013 2009_ECWAM
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2009_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2009
+drwxrwsr-t   38 ftp      ftp          4096 Apr 18  2019 2010_CFSR
+drwxrwsr-t   37 ftp      ftp          4096 May 03  2019 2010_ECMWF
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2010_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2010
+drwxrwsr-t   41 ftp      ftp          4096 May 03  2019 2011_CFSR
+drwxrwsr-t   40 ftp      ftp          4096 Mar 23  2020 2011_ECMWF
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2011_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2011
+drwxrwsr-t   39 ftp      ftp          4096 May 03  2019 2012_CFSR
+drwxrwsr-t   41 ftp      ftp          4096 May 03  2019 2012_ECMWF
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2012_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2012
+drwxrwsr-t   56 ftp      ftp          4096 May 03  2019 2013_CFSR
+drwxrwsr-t   41 ftp      ftp          4096 May 03  2019 2013_ECMWF
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2013_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2013
+drwxrwsr-t   68 ftp      ftp          4096 Jun 25  2019 2014_CFSR
+drwxrwsr-t   53 ftp      ftp          4096 Apr 01  2019 2014_ECMWF
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2014_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2014
+drwxrwsr-t   68 ftp      ftp          4096 Apr 09  2020 2015_CFSR
+drwxrwsr-t   54 ftp      ftp          4096 Mar 26  2019 2015_ECMWF
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2015_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2015
+drwxrwsr-t   68 ftp      ftp          4096 Jun 25  2019 2016_CFSR
+drwxrwsr-t   55 ftp      ftp          4096 Mar 25  2019 2016_ECMWF
+drwxrwsr-t   53 ftp      ftp          4096 Feb 05  2018 2016_ECMWF_AVISO
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2016_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2016
+drwxrwsr-t   32 ftp      ftp          4096 Apr 28  2020 2017_CFSR
+drwxrwsr-t   45 ftp      ftp          4096 Jun 26  2019 2017_ECMWF
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2017_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2017
+drwxrwsr-t   32 ftp      ftp          4096 Apr 28  2020 2018_CFSR
+lrwxrwxrwx    1 ftp      ftp            35 Nov 18  2020 2018_ECMWF -> ../GLOBMULTI_ECMWF_02/GLOB-30M/2018
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2018_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2018
+drwxrwsr-t   32 ftp      ftp          4096 Apr 28  2020 2019_CFSR
+lrwxrwxrwx    1 ftp      ftp            35 Nov 18  2020 2019_ECMWF -> ../GLOBMULTI_ECMWF_02/GLOB-30M/2019
+lrwxrwxrwx    1 ftp      ftp            42 Nov 09  2020 2019_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2019
+drwxrwsr-t   30 ftp      ftp          4096 Jun 29  2020 2020_CFSR
+lrwxrwxrwx    1 ftp      ftp            42 Sep 07  2021 2020_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2020
+lrwxrwxrwx    1 ftp      ftp            42 Jul 01  2024 2021_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2021
+lrwxrwxrwx    1 ftp      ftp            42 Jul 01  2024 2022_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2022
+lrwxrwxrwx    1 ftp      ftp            42 Jul 01  2024 2023_ERA5 -> ../GLOBMULTI_ERA5_GLOBCUR_01/GLOB-30M/2023
+drwxrwsr-t    5 ftp      ftp          4096 Jul 01  2024 OLD
+-rwxrwsr-x    1 ftp      ftp           819 Aug 22  2013 README
+drwxr-sr-x    2 ftp      ftp          4096 Jul 04  2018 data
+drwxrwsr-t    2 ftp      ftp          4096 Nov 18  2016 summary_CFSR_ALTI
+drwxrwsr-t    2 ftp      ftp          4096 Nov 16  2016 summary_ECMWF_ALTI

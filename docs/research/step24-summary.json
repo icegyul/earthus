@@ -1,0 +1,55 @@
+{
+  "ruleId": "p1-forcing-access-resolution-step24",
+  "status": "STEP24_CREDENTIALS_REQUIRED",
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0,
+  "DATA-01": "CREDENTIALS_REQUIRED",
+  "DATA-03": "REFERENCE_ELIGIBLE_PARTIAL",
+  "DATA-06": "LICENSE_UNKNOWN",
+  "futureTests": {
+    "TEST-01": "NOT_READY",
+    "TEST-02": "BLOCKED_CREDENTIALS_REQUIRED",
+    "TEST-03": "ELIGIBLE_PARTIAL_REFERENCE",
+    "TEST-04": "NOT_READY",
+    "TEST-05": "NOT_READY",
+    "TEST-06": "REGISTERED_CONDITIONAL_ON_LICENSE",
+    "TEST-07": "BLOCKED_CREDENTIALS_REQUIRED",
+    "TEST-08": "NOT_INDICATED"
+  },
+  "priorityOrder": [
+    {
+      "priority": 1,
+      "item": "DATA-01 higher-resolution ocean current",
+      "note": "requires user-authorized Copernicus access"
+    },
+    {
+      "priority": 2,
+      "item": "DATA-06 Stokes drift",
+      "note": "ONLY after license confirmation"
+    },
+    {
+      "priority": 3,
+      "item": "DATA-03 AVISO surface-current reference"
+    },
+    {
+      "priority": 4,
+      "item": "DATA-04 depth sensitivity"
+    },
+    {
+      "priority": 5,
+      "item": "remaining structural tests"
+    },
+    {
+      "basis": "priority order fixed by STEP 22/24 preregistration; not a performance ranking"
+    }
+  ],
+  "statements": [
+    "STEP24 does not establish that any new forcing is superior to the frozen HYCOM+NCEP baseline.",
+    "STEP20 alpha=0.002 remains calibration-selected but not established as superior on holdout.",
+    "STEP17 GLORYS BLOCKED/PENDING remains historically immutable.",
+    "No model performance conclusion is generated in STEP24."
+  ],
+  "frozenAlpha": 0.002,
+  "frozenBaselineAlpha": 0.0,
+  "interpretation": "DATA ACCESS / EXPERIMENT REGISTRATION ONLY"
+}

@@ -1,0 +1,395 @@
+{
+  "id": "GLOBAL_MULTIYEAR_PHY_001_030",
+  "type": "Collection",
+  "stac_version": "1.0.0",
+  "stac_extensions": [
+    "https://stac-extensions.github.io/scientific/v1.0.0/schema.json"
+  ],
+  "title": "Global Ocean Physics Reanalysis",
+  "description": "The GLORYS12V1 product is the CMEMS global ocean eddy-resolving (1/12° horizontal resolution, 50 vertical levels) reanalysis covering the altimetry (1993 onward).\n\nIt is based largely on the current real-time global forecasting CMEMS system. The model component is the NEMO platform driven at surface by ECMWF ERA-Interim then ERA5 reanalyses for recent years. Observations are assimilated by means of a reduced-order Kalman filter. Along track altimeter data (Sea Level Anomaly), Satellite Sea Surface Temperature, Sea Ice Concentration and In situ Temperature and Salinity vertical Profiles are jointly assimilated. Moreover, a 3D-VAR scheme provides a correction for the slowly-evolving large-scale biases in temperature and salinity.\n\nThis product includes daily and monthly mean files for  temperature, salinity, currents, sea level, mixed layer depth and ice parameters from the top to the bottom. The global ocean output files are displayed on a standard regular grid at 1/12° (approximatively 8 km) and on 50 standard levels.\n\n**References:**\n\n* Lellouche Jean-Michel, Greiner Eric, Bourdallé-Badie Romain, Garric Gilles, Melet Angélique, Drévillon Marie, Bricaud Clément, Hamon Mathieu, Le Galloudec Olivier, Regnier Charly, Candela Tony, Testut Charles-Emmanuel, Gasparin Florent, Ruggiero Giovanni, Benkiran Mounir, Drillet Yann, Le Traon Pierre-Yves https://doi.org/10.3389/feart.2021.698876\n",
+  "license": "proprietary",
+  "providers": [
+    {
+      "name": "Mercator Ocean International",
+      "roles": [
+        "producer"
+      ]
+    },
+    {
+      "name": "Copernicus Marine Service",
+      "roles": [
+        "host",
+        "processor"
+      ],
+      "url": "https://marine.copernicus.eu"
+    }
+  ],
+  "keywords": [
+    "target-application#seaiceclimate",
+    "oceanographic-geographical-features",
+    "numerical-model",
+    "sea-water-potential-temperature-at-sea-floor",
+    "northward-sea-ice-velocity",
+    "eastward-sea-ice-velocity",
+    "model-level-number-at-sea-floor",
+    "sea-ice-area-fraction",
+    "northward-sea-water-velocity",
+    "sea-ice-thickness",
+    "sea-floor-depth-below-geoid",
+    "cell-thickness",
+    "sea-water-potential-temperature",
+    "eastward-sea-water-velocity",
+    "sea-water-salinity",
+    "ocean-mixed-layer-thickness-defined-by-sigma-theta",
+    "sea-surface-height-above-geoid",
+    "invariant",
+    "multi-year",
+    "weather-climate-and-seasonal-forecasting",
+    "marine-safety",
+    "marine-resources",
+    "coastal-marine-environment",
+    "global-ocean",
+    "level-4",
+    "in-situ-ts-profiles",
+    "sea-ice-concentration-and/or-thickness",
+    "sst",
+    "sea-level",
+    "data",
+    "north-mid-atlantic-ridge",
+    "atlantic-ocean",
+    "wp5-assessing-state,-drivers-and-tipping-points",
+    "/physical-oceanography/water-column-temperature-and-salinity",
+    "modelling-data",
+    "salinity",
+    "sea-temperature",
+    "simulation-data"
+  ],
+  "links": [
+    {
+      "rel": "root",
+      "href": "../catalog.stac.json",
+      "title": "Copernicus Marine Data Store",
+      "type": "application/json"
+    },
+    {
+      "rel": "parent",
+      "href": "../catalog.stac.json",
+      "title": "Copernicus Marine Data Store",
+      "type": "application/json"
+    },
+    {
+      "rel": "item",
+      "href": "cmems_mod_glo_phy_my_0.083deg_P1D-m_202311/dataset.stac.json",
+      "title": "Daily",
+      "type": "application/json"
+    },
+    {
+      "rel": "item",
+      "href": "cmems_mod_glo_phy_my_0.083deg_P1M-m_202311/dataset.stac.json",
+      "title": "Monthly",
+      "type": "application/json"
+    },
+    {
+      "rel": "item",
+      "href": "cmems_mod_glo_phy_my_0.083deg_static_202311--ext--coords/dataset.stac.json",
+      "title": "Statics (coordinates)",
+      "type": "application/json"
+    },
+    {
+      "rel": "item",
+      "href": "cmems_mod_glo_phy_my_0.083deg_static_202311--ext--bathy/dataset.stac.json",
+      "title": "Statics (bathymetry)",
+      "type": "application/json"
+    },
+    {
+      "rel": "item",
+      "href": "cmems_mod_glo_phy_my_0.083deg_static_202311--ext--mdt/dataset.stac.json",
+      "title": "Statics (mean dynamic topography)",
+      "type": "application/json"
+    },
+    {
+      "rel": "item",
+      "href": "cmems_mod_glo_phy_my_0.083deg-climatology_P1M-m_202311/dataset.stac.json",
+      "title": "Climatology, month of year",
+      "type": "application/json"
+    },
+    {
+      "rel": "license",
+      "href": "https://marine.copernicus.eu/user-corner/service-commitments-and-licence",
+      "title": "Copernicus Marine Service Commitments and Licence",
+      "type": "text/html"
+    },
+    {
+      "rel": "cite-as",
+      "href": "https://doi.org/10.48670/moi-00021",
+      "title": "10.48670/moi-00021",
+      "type": "text/html"
+    },
+    {
+      "rel": "alternative",
+      "href": "https://data.marine.copernicus.eu/product/GLOBAL_MULTIYEAR_PHY_001_030",
+      "title": "Product page",
+      "type": "text/html"
+    },
+    {
+      "rel": "describedby",
+      "href": "https://documentation.marine.copernicus.eu/PUM/CMEMS-GLO-PUM-001-030.pdf",
+      "title": "Product User Manual",
+      "type": "application/pdf",
+      "ref": "CMEMS-GLO-PUM-001-030",
+      "createdAt": "2015-03-26",
+      "updatedAt": "2024-07-26T13:43:15.444Z"
+    },
+    {
+      "rel": "describedby",
+      "href": "https://documentation.marine.copernicus.eu/QUID/CMEMS-GLO-QUID-001-030.pdf",
+      "title": "Quality Information Document",
+      "type": "application/pdf",
+      "ref": "CMEMS-GLO-QUID-001-030",
+      "createdAt": "2015-03-26",
+      "updatedAt": "2024-07-26T15:43:07.414Z"
+    },
+    {
+      "rel": "describedby",
+      "href": "https://documentation.marine.copernicus.eu/SQO/CMEMS-GLO-SQO-001-030.pdf",
+      "title": "Synthesis Quality Overview",
+      "type": "application/pdf",
+      "ref": "CMEMS-GLO-SQO-001-030",
+      "createdAt": "2023-11-30",
+      "updatedAt": "2024-07-26T15:59:05.273Z"
+    }
+  ],
+  "extent": {
+    "spatial": {
+      "bbox": [
+        [
+          -180,
+          -80,
+          179.9166717529297,
+          90
+        ]
+      ]
+    },
+    "temporal": {
+      "interval": [
+        [
+          "1993-01-01T00:00:00Z",
+          "2026-06-23T00:00:00Z"
+        ]
+      ]
+    }
+  },
+  "assets": {
+    "thumbnail": {
+      "href": "https://mdl-metadata.s3.waw3-1.cloudferro.com/metadata/thumbnails/GLOBAL_MULTIYEAR_PHY_001_030.jpg",
+      "type": "image/jpeg",
+      "roles": [
+        "thumbnail"
+      ],
+      "title": "Global Ocean Physics Reanalysis thumbnail"
+    }
+  },
+  "properties": {
+    "altId": "c0635fc4-07d3-4309-9d55-cfd3e6aa788b",
+    "providerMetadata": {
+      "source": "cmems",
+      "type": "csw",
+      "url": "https://csw.marine.copernicus.eu/geonetwork/csw-MYOCEAN-CORE-PRODUCTS/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&id=c0635fc4-07d3-4309-9d55-cfd3e6aa788b&elementsetname=full&outputSchema=http://www.isotc211.org/2005/gmd"
+    },
+    "thumbnailMeta": {
+      "creationDate": "2023-06-18T05:53:00.901Z",
+      "layerId": "GLOBAL_MULTIYEAR_PHY_001_030/cmems_mod_glo_phy_my_0.083_P1M-m_202112/thetao",
+      "time": 1542326400000,
+      "elevation": -0.49402499198913574,
+      "basemapId": "light",
+      "overlays": {
+        "tags": []
+      },
+      "crs": "epsg:4326",
+      "valueMin": -1.696981430053711,
+      "valueMax": 29.106693267822266,
+      "valueClamp": true,
+      "logScale": false,
+      "style": "default",
+      "colormapId": "thermal",
+      "colormapInvert": false
+    },
+    "creationDate": "2012-08-26",
+    "modifiedDate": "2023-11-30",
+    "contacts": [
+      {
+        "name": "",
+        "organisationName": "GLO-MERCATOR-TOULOUSE-FR",
+        "responsiblePartyRole": "resourceProvider",
+        "email": ""
+      }
+    ],
+    "projection": "Equirectangular",
+    "assimilatedData": [
+      "In-Situ TS Profiles",
+      "Sea Ice Concentration and/or Thickness",
+      "SST",
+      "Sea Level"
+    ],
+    "formats": [
+      "NetCDF-4"
+    ],
+    "updateFrequencies": {
+      "annually": null,
+      "monthly": null
+    },
+    "featureTypes": [
+      "Grid"
+    ],
+    "indicatorFamilies": [],
+    "geoExtent": {
+      "type": "envelope",
+      "coordinates": [
+        [
+          -180,
+          90
+        ],
+        [
+          180,
+          -90
+        ]
+      ]
+    },
+    "geoResolution": {
+      "row": {
+        "magnitude": 0.083,
+        "units": "degree"
+      },
+      "column": {
+        "magnitude": 0.083,
+        "units": "degree"
+      }
+    },
+    "tempExtentBegin": "1993-01-01",
+    "tempExtentEnd": "",
+    "tempResolutions": [
+      "Daily",
+      "Monthly"
+    ],
+    "vertExtentMin": -5500,
+    "vertExtentMax": 0,
+    "vertLevels": 50,
+    "rank": 1500,
+    "useCases": [
+      {
+        "title": "Ending uncertainty in marine weather forecasts to power safer, greener and more profitable maritime operations",
+        "imageSrc": "https://marine.copernicus.eu/sites/default/files/media/image/use_case/uiux_fig1.png",
+        "href": "https://marine.copernicus.eu/services/use-cases/ending-uncertainty-marine-weather-forecasts-power-safer-greener-and-more"
+      },
+      {
+        "title": "Seasonal Water Quality Forecasts for Coastal Water Quality Services ",
+        "imageSrc": "https://marine.copernicus.eu/sites/default/files/media/image/use_case/ClimForce_UC1_1.jpg",
+        "href": "https://marine.copernicus.eu/services/use-cases/seasonal-water-quality-forecasts-coastal-water-quality-services"
+      },
+      {
+        "title": "The iMED model supporting Ocean Energy in the Mediterranean",
+        "imageSrc": "https://marine.copernicus.eu/sites/default/files/media/image/use_case/ModelMesh_Bathy.png",
+        "href": "https://marine.copernicus.eu/services/use-cases/supporting-Ocean-Energy-in-Mediterranean"
+      },
+      {
+        "title": "Harnessing Predictable Tidal Energy in the Faroe Islands",
+        "imageSrc": "https://marine.copernicus.eu/sites/default/files/media/image/use_case/Minesto-1.jpg",
+        "href": "https://marine.copernicus.eu/services/use-cases/harnessing-predictable-tidal-energy-faroe-islands"
+      },
+      {
+        "title": "Iberian Ocean Hindcast (IBv2.0): Exploring environmental impacts on small pelagic fish abundance & distribution",
+        "imageSrc": "https://marine.copernicus.eu/sites/default/files/media/image/use_case/Imagem1.png",
+        "href": "https://marine.copernicus.eu/services/use-cases/iberian-ocean-hindcast-ibv20-exploring-environmental-impacts-small-pelagic-fish"
+      },
+      {
+        "title": "Modelled prey fields predict predator foraging success",
+        "imageSrc": "https://marine.copernicus.eu/sites/default/files/media/image/use_case/Fig%20-%20option%201.png",
+        "href": "https://marine.copernicus.eu/services/use-cases/modelled-prey-fields-predict-predator-foraging-success"
+      },
+      {
+        "title": "TURTLES: Effects of swimming behaviour and oceanography on sea turtle hatchling dispersal ",
+        "imageSrc": "https://marine.copernicus.eu/sites/default/files/media/image/use_case/Turtle.jpg",
+        "href": "https://marine.copernicus.eu/services/use-cases/turtles-effects-swimming-behaviour-and-oceanography-sea-turtle-hatchling"
+      },
+      {
+        "title": "SATORI: Online statistical weather routing",
+        "imageSrc": "https://marine.copernicus.eu/sites/default/files/media/image/use_case/iStock-591986620.jpg",
+        "href": "https://marine.copernicus.eu/services/use-cases/satori-online-statistical-weather-routing"
+      },
+      {
+        "title": "SOSeas: Assessment tool for predicting the dynamic risk of drowning on beaches",
+        "imageSrc": "https://marine.copernicus.eu/sites/default/files/media/image/use_case/illustration_1.png",
+        "href": "https://marine.copernicus.eu/services/use-cases/soseas-assessment-tool-predicting-dynamic-risk-drowning-beaches"
+      },
+      {
+        "title": "Metocean risk estimation: a project for offshore operations",
+        "imageSrc": "https://marine.copernicus.eu/sites/default/files/media/image/use_case/AS_893804127203328%401590110918354_xl.jpg",
+        "href": "https://marine.copernicus.eu/services/use-cases/metocean-risk-estimation-project-offshore-operations"
+      },
+      {
+        "title": "High resolution wind forecast to assess environmental risk",
+        "imageSrc": "https://marine.copernicus.eu/sites/default/files/media/image/use_case/ThinkstockPhotos-511586462.jpg",
+        "href": "https://marine.copernicus.eu/services/use-cases/high-resolution-wind-forecast-assess-environmental-risk"
+      },
+      {
+        "title": "Turtles monitored thanks to what they eat",
+        "imageSrc": "https://marine.copernicus.eu/sites/default/files/media/image/use_case/UC16-image1-ThinkstockPhotos-519510365.jpg",
+        "href": "https://marine.copernicus.eu/services/use-cases/turtles-monitored-thanks-what-they-eat"
+      }
+    ],
+    "areas": [
+      "Global Ocean"
+    ],
+    "times": [
+      "Past"
+    ],
+    "sources": [
+      "Numerical models"
+    ],
+    "colors": [
+      "White Ocean",
+      "Blue Ocean"
+    ],
+    "communities": [
+      "Polar environment monitoring",
+      "Policy & governance",
+      "Science & innovation",
+      "Extremes, hazards & safety",
+      "Coastal services",
+      "Natural resources & energy",
+      "Trade & marine navigation"
+    ],
+    "processingLevel": "Level 4",
+    "mainVariables": [
+      "Temperature",
+      "Salinity",
+      "Sea surface height",
+      "Velocity",
+      "Mixed layer thickness",
+      "Sea ice"
+    ],
+    "allVariables": [
+      "Cell thickness",
+      "Eastward sea ice velocity",
+      "Eastward sea water velocity",
+      "Model level number at sea floor",
+      "Northward sea ice velocity",
+      "Northward sea water velocity",
+      "Ocean mixed layer thickness defined by sigma theta",
+      "Sea floor depth below geoid",
+      "Sea ice area fraction",
+      "Sea ice thickness",
+      "Sea surface height above geoid",
+      "Sea water potential temperature",
+      "Sea water potential temperature at sea floor",
+      "Sea water salinity"
+    ],
+    "directives": [
+      "Maritime Spatial Planning (MSP)",
+      "Bathing Water Directive (BWD)"
+    ],
+    "isStaging": false,
+    "admp_updated": "2026-09-03T11:21:46.674766Z"
+  },
+  "sci:doi": "10.48670/moi-00021"
+}

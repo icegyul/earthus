@@ -1,0 +1,519 @@
+{
+  "ruleId": "p1-forcing-access-resolution-step24",
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0,
+  "downloadsOfForcing": 0,
+  "credentialsEntered": false,
+  "frozenBaseline": {
+    "ocean": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X, 0.08 degree, 15 m, 3-hourly",
+    "wind": "NCEP-DOE R2, 10 m, 6-hourly",
+    "equation": "dX/dt = U_ocean + alpha * U_wind",
+    "alpha": 0.002,
+    "baselineAlpha": 0.0,
+    "integrator": "RK4",
+    "integrationStepSeconds": 300,
+    "outputStepSeconds": 900,
+    "interpolation": "bilinear spatial, linear temporal, cos(phi) every RK4 stage",
+    "forbidden": [
+      "temporal extrapolation",
+      "spatial extrapolation",
+      "smoothing",
+      "zero filling",
+      "land-value substitution",
+      "duplicated forcing frames",
+      "artificial interpolation across missing source frames",
+      "post-hoc forcing repair"
+    ],
+    "modifiable": false,
+    "step20ResultsFrozen": true
+  },
+  "step23Copied": {
+    "DATA-01": {
+      "status": "DATASET_BLOCKED",
+      "reason": "credentials/toolbox absent (existence check only; nothing read or entered); STEP 17 BLOCKED/PENDING preserved",
+      "futureTestEligibility": "NOT ELIGIBLE (no data)"
+    },
+    "DATA-03": {
+      "jplOscar": {
+        "status": "DATASET_BLOCKED",
+        "windowsCovered": [],
+        "futureTestEligibility": "NOT ELIGIBLE"
+      },
+      "nesdisSSH1day": {
+        "status": "DATASET_BLOCKED",
+        "windowsCovered": [],
+        "futureTestEligibility": "NOT ELIGIBLE"
+      },
+      "erdTAgeo1day": {
+        "status": "PARTIAL_COVERAGE",
+        "windowsCovered": [
+          "KE-2",
+          "KE-H1",
+          "KE-H2",
+          "KE-H3"
+        ],
+        "futureTestEligibility": "ELIGIBLE for 2010 windows only (TEST-03), reference role"
+      },
+      "erdTAssh1day": {
+        "status": "PARTIAL_COVERAGE",
+        "windowsCovered": [
+          "KE-1",
+          "KE-2",
+          "KE-H1",
+          "KE-H2",
+          "KE-H3"
+        ],
+        "futureTestEligibility": "ELIGIBLE for 2010 windows only (TEST-03), reference role"
+      }
+    },
+    "DATA-06": {
+      "status": "LICENSE_STATUS_UNKNOWN",
+      "qualityStatusIgnoringLicense": "ACCEPTED_FOR_FUTURE_TEST",
+      "windowsCovered": [
+        "KE-1",
+        "KE-2",
+        "AG-1",
+        "AG-2",
+        "KE-H1",
+        "KE-H2",
+        "KE-H3"
+      ],
+      "futureTestEligibility": "quality sufficient for TEST-06 on covered windows; use conditional on license confirmation"
+    }
+  },
+  "DATA-01": {
+    "dataset": "DATA-01",
+    "product": {
+      "productId": "GLOBAL_MULTIYEAR_PHY_001_030",
+      "stacFetched": true,
+      "title": "Global Ocean Physics Reanalysis",
+      "description": "The GLORYS12V1 product is the CMEMS global ocean eddy-resolving (1/12° horizontal resolution, 50 vertical levels) reanalysis covering the altimetry (1993 onward).\n\nIt is based largely on the current real-time global forecasting CMEMS system. The model component is the NEMO platform driven at surface by ECMWF ERA-Interim then ERA5 reanalyses for recent years. Observations are assimilated by means o",
+      "datasets": [
+        "Climatology, month of year",
+        "Daily",
+        "Monthly",
+        "Statics (bathymetry)",
+        "Statics (coordinates)",
+        "Statics (mean dynamic topography)"
+      ],
+      "temporalExtent": {
+        "interval": [
+          [
+            "1993-01-01T00:00:00Z",
+            "2026-06-23T00:00:00Z"
+          ]
+        ]
+      },
+      "keywords": [
+        "target-application#seaiceclimate",
+        "oceanographic-geographical-features",
+        "numerical-model",
+        "sea-water-potential-temperature-at-sea-floor",
+        "northward-sea-ice-velocity",
+        "eastward-sea-ice-velocity",
+        "model-level-number-at-sea-floor",
+        "sea-ice-area-fraction",
+        "northward-sea-water-velocity",
+        "sea-ice-thickness",
+        "sea-floor-depth-below-geoid",
+        "cell-thickness",
+        "sea-water-potential-temperature",
+        "eastward-sea-water-velocity",
+        "sea-water-salinity",
+        "ocean-mixed-layer-thickness-defined-by-sigma-theta",
+        "sea-surface-height-above-geoid",
+        "invariant",
+        "multi-year",
+        "weather-climate-and-seasonal-forecasting"
+      ],
+      "license": "proprietary"
+    },
+    "A_environmentAuthenticated": false,
+    "B_toolboxAvailable": {
+      "installed": false
+    },
+    "C_officialAnonymousDownloadPath": false,
+    "C_note": "STAC/metadata catalogue is public; data download requires a Copernicus Marine account (registration free)",
+    "D_registrationRequired": true,
+    "E_productAccessibleUnderCurrentIdentity": true,
+    "F_officialCoverageForRequirement": {
+      "years2010and2015": "1993-01-01 to present per catalogue",
+      "resolution": "1/12 deg (~8 km)",
+      "depths": "50 levels incl. ~0.49, 5.08, 9.57, 15.81, 21.6 m (nearest to surface/5/10/15/20 m; exact selection deferred)",
+      "type": "reanalysis"
+    },
+    "credentialsEntered": false,
+    "credentialsFabricated": false,
+    "downloadPerformed": false,
+    "status": "CREDENTIALS_REQUIRED",
+    "step17GlorysRecord": "BLOCKED/PENDING — historically immutable; not changed",
+    "requiredWindowsIfAccessGranted": [
+      {
+        "windowId": "KE-1",
+        "t0": "2010-05-11T12:00:00Z",
+        "end": "2010-05-14T12:00:00Z",
+        "oceanBox": {
+          "south": 28.12786,
+          "north": 38.19472,
+          "west": 140.60959,
+          "east": 161.61974
+        },
+        "variables": [
+          "uo",
+          "vo"
+        ],
+        "depthInventoryRequested": [
+          "surface",
+          "5 m",
+          "10 m",
+          "15 m",
+          "20 m"
+        ]
+      },
+      {
+        "windowId": "KE-2",
+        "t0": "2010-06-30T12:00:00Z",
+        "end": "2010-07-03T12:00:00Z",
+        "oceanBox": {
+          "south": 29.70784,
+          "north": 40.0,
+          "west": 133.53249,
+          "east": 154.78535
+        },
+        "variables": [
+          "uo",
+          "vo"
+        ],
+        "depthInventoryRequested": [
+          "surface",
+          "5 m",
+          "10 m",
+          "15 m",
+          "20 m"
+        ]
+      },
+      {
+        "windowId": "AG-1",
+        "t0": "2015-04-23T12:00:00Z",
+        "end": "2015-04-26T12:00:00Z",
+        "oceanBox": {
+          "south": -40.0,
+          "north": -32.13828,
+          "west": 18.31773,
+          "east": 32.013940000000005
+        },
+        "variables": [
+          "uo",
+          "vo"
+        ],
+        "depthInventoryRequested": [
+          "surface",
+          "5 m",
+          "10 m",
+          "15 m",
+          "20 m"
+        ]
+      },
+      {
+        "windowId": "AG-2",
+        "t0": "2015-04-26T12:00:00Z",
+        "end": "2015-04-29T12:00:00Z",
+        "oceanBox": {
+          "south": -38.76674,
+          "north": -34.76674,
+          "west": 19.79639,
+          "east": 23.79639
+        },
+        "variables": [
+          "uo",
+          "vo"
+        ],
+        "depthInventoryRequested": [
+          "surface",
+          "5 m",
+          "10 m",
+          "15 m",
+          "20 m"
+        ]
+      },
+      {
+        "windowId": "KE-H1",
+        "t0": "2010-08-10T12:00:00Z",
+        "end": "2010-08-13T12:00:00Z",
+        "oceanBox": {
+          "south": 30.2673,
+          "north": 40.0,
+          "west": 135.25655,
+          "east": 161.85992
+        },
+        "variables": [
+          "uo",
+          "vo"
+        ],
+        "depthInventoryRequested": [
+          "surface",
+          "5 m",
+          "10 m",
+          "15 m",
+          "20 m"
+        ]
+      },
+      {
+        "windowId": "KE-H2",
+        "t0": "2010-08-16T12:00:00Z",
+        "end": "2010-08-19T12:00:00Z",
+        "oceanBox": {
+          "south": 32.62506,
+          "north": 36.62506,
+          "west": 143.81236,
+          "east": 147.81236
+        },
+        "variables": [
+          "uo",
+          "vo"
+        ],
+        "depthInventoryRequested": [
+          "surface",
+          "5 m",
+          "10 m",
+          "15 m",
+          "20 m"
+        ]
+      },
+      {
+        "windowId": "KE-H3",
+        "t0": "2010-11-15T12:00:00Z",
+        "end": "2010-11-18T12:00:00Z",
+        "oceanBox": {
+          "south": 29.02459,
+          "north": 40.0,
+          "west": 141.06795,
+          "east": 156.05711
+        },
+        "variables": [
+          "uo",
+          "vo"
+        ],
+        "depthInventoryRequested": [
+          "surface",
+          "5 m",
+          "10 m",
+          "15 m",
+          "20 m"
+        ]
+      }
+    ],
+    "depthSelection": "NOT MADE (future preregistration)"
+  },
+  "DATA-03": {
+    "dataset": "DATA-03",
+    "products": {
+      "erdTAgeo1day": {
+        "identity": {
+          "datasetId": "erdTAgeo1day",
+          "title": "Currents, Geostrophic, Aviso, 0.25 degrees, Global, 1992-2012 (1 Day Composite)",
+          "institution": "NOAA NMFS SWFSC ERD",
+          "timeCoverageStart": "1992-10-14T12:00:00Z",
+          "timeCoverageEnd": "2012-12-08T12:00:00Z",
+          "latResolution": "0.25",
+          "lonResolution": "0.24998263888888891",
+          "infoUrl": "https://coastwatch.pfeg.noaa.gov/erddap/info/erdTAgeo1day/index.csv"
+        },
+        "cadenceMeasuredSeconds": 604800.0,
+        "cadenceNote": "product named '1 Day Composite' by ERDDAP; frames are 7 days apart in the acquired subsets (STEP 23 measurement)",
+        "status": "PARTIAL_COVERAGE",
+        "windowsCovered": [
+          "KE-2",
+          "KE-H1",
+          "KE-H2",
+          "KE-H3"
+        ],
+        "windowsNotCovered": [
+          "KE-1",
+          "AG-1",
+          "AG-2"
+        ],
+        "license": "ERDDAP standard notice: free use/redistribution, not for legal use (see licenseText)"
+      },
+      "erdTAssh1day": {
+        "identity": {
+          "datasetId": "erdTAssh1day",
+          "title": "Sea Surface Height, Absolute, Aviso, 0.25 degrees, Global, 1992-2012, Science Quality (1 Day Composite)",
+          "institution": "NOAA NMFS SWFSC ERD",
+          "timeCoverageStart": "1992-10-14T12:00:00Z",
+          "timeCoverageEnd": "2012-12-09T12:00:00Z",
+          "latResolution": "0.25",
+          "lonResolution": "0.25",
+          "infoUrl": "https://coastwatch.pfeg.noaa.gov/erddap/info/erdTAssh1day/index.csv"
+        },
+        "status": "PARTIAL_COVERAGE",
+        "windowsCovered": [
+          "KE-1",
+          "KE-2",
+          "KE-H1",
+          "KE-H2",
+          "KE-H3"
+        ],
+        "role": "reference field only; no velocity conversion defined"
+      },
+      "jplOscar": {
+        "status": "DATASET_BLOCKED",
+        "reason": "no window inside the product period held by the server; no download issued"
+      },
+      "nesdisSSH1day": {
+        "status": "DATASET_BLOCKED",
+        "reason": "no window inside the product period held by the server; no download issued"
+      }
+    },
+    "perWindow": [
+      {
+        "windowId": "KE-1",
+        "drifters": 8,
+        "geostrophicCovered": false,
+        "geostrophicReason": "G10 FAIL: release stencil masked",
+        "geostrophicBracket": {
+          "t0_le": "2010-05-05T12:00:00Z",
+          "end_ge": "2010-05-19T12:00:00Z"
+        },
+        "sshCovered": true,
+        "missingFractionGeo": 0.077381,
+        "eligibleForTest03": false
+      },
+      {
+        "windowId": "KE-2",
+        "drifters": 5,
+        "geostrophicCovered": true,
+        "geostrophicReason": "covered",
+        "geostrophicBracket": {
+          "t0_le": "2010-06-30T12:00:00Z",
+          "end_ge": "2010-07-07T12:00:00Z"
+        },
+        "sshCovered": true,
+        "missingFractionGeo": 0.191877,
+        "eligibleForTest03": true
+      },
+      {
+        "windowId": "AG-1",
+        "drifters": 9,
+        "geostrophicCovered": false,
+        "geostrophicReason": "outside product period (no request issued)",
+        "geostrophicBracket": null,
+        "sshCovered": false,
+        "missingFractionGeo": null,
+        "eligibleForTest03": false
+      },
+      {
+        "windowId": "AG-2",
+        "drifters": 1,
+        "geostrophicCovered": false,
+        "geostrophicReason": "outside product period (no request issued)",
+        "geostrophicBracket": null,
+        "sshCovered": false,
+        "missingFractionGeo": null,
+        "eligibleForTest03": false
+      },
+      {
+        "windowId": "KE-H1",
+        "drifters": 5,
+        "geostrophicCovered": true,
+        "geostrophicReason": "covered",
+        "geostrophicBracket": {
+          "t0_le": "2010-08-04T12:00:00Z",
+          "end_ge": "2010-08-18T12:00:00Z"
+        },
+        "sshCovered": true,
+        "missingFractionGeo": 0.184083,
+        "eligibleForTest03": true
+      },
+      {
+        "windowId": "KE-H2",
+        "drifters": 1,
+        "geostrophicCovered": true,
+        "geostrophicReason": "covered",
+        "geostrophicBracket": {
+          "t0_le": "2010-08-11T12:00:00Z",
+          "end_ge": "2010-08-25T12:00:00Z"
+        },
+        "sshCovered": true,
+        "missingFractionGeo": 0.1875,
+        "eligibleForTest03": true
+      },
+      {
+        "windowId": "KE-H3",
+        "drifters": 7,
+        "geostrophicCovered": true,
+        "geostrophicReason": "covered",
+        "geostrophicBracket": {
+          "t0_le": "2010-11-10T12:00:00Z",
+          "end_ge": "2010-11-24T12:00:00Z"
+        },
+        "sshCovered": true,
+        "missingFractionGeo": 0.119318,
+        "eligibleForTest03": true
+      }
+    ],
+    "eligibleWindowsTest03": [
+      "KE-2",
+      "KE-H1",
+      "KE-H2",
+      "KE-H3"
+    ],
+    "eligibleDrifters": 18,
+    "rules": {
+      "treatedAsObservedDrifterVelocity": false,
+      "addedToHYCOM": false,
+      "usedToTuneAlpha": false,
+      "formulationChosen": false,
+      "candidateRoles": [
+        "A HYCOM vs AVISO current-field comparison",
+        "B structural forcing sensitivity",
+        "C surface-current reference diagnostic"
+      ],
+      "candidateFormulations": [
+        "U_model = U_AVISO",
+        "U_model = U_HYCOM + structural component",
+        "other scientifically justified formulation (future preregistration)"
+      ]
+    },
+    "status": "REFERENCE_ELIGIBLE_PARTIAL"
+  },
+  "DATA-06": {
+    "status": "LICENSE_UNKNOWN",
+    "qualityStatusFromStep23": "ACCEPTED_FOR_FUTURE_TEST",
+    "gates": {
+      "G1": "PASS",
+      "G2": "PASS",
+      "G3": "PASS",
+      "G4": "PASS",
+      "G5": "PASS",
+      "G6": "PASS",
+      "G7": "PASS",
+      "G8": "PASS",
+      "G9": "PASS",
+      "G10": "PASS",
+      "G11": "PENDING_VALIDATOR"
+    },
+    "windowsCovered": [
+      "KE-1",
+      "KE-2",
+      "AG-1",
+      "AG-2",
+      "KE-H1",
+      "KE-H2",
+      "KE-H3"
+    ],
+    "modelUseAllowed": false
+  },
+  "credentialExistence": {
+    "copernicusmarine_credentials_file": false,
+    "copernicusmarine_dir": false,
+    "netrc": false,
+    "cdsapirc": false,
+    "env_COPERNICUSMARINE": false,
+    "contentsRead": false
+  },
+  "toolbox": {
+    "installed": false
+  },
+  "overallStatus": "STEP24_CREDENTIALS_REQUIRED"
+}

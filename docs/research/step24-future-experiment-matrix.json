@@ -1,0 +1,216 @@
+{
+  "ruleId": "p1-forcing-access-resolution-step24",
+  "tests": [
+    {
+      "id": "TEST-01",
+      "name": "higher temporal ocean forcing",
+      "requiredDataset": "DATA-02 (hourly ocean)",
+      "currentAvailability": "UNAVAILABLE",
+      "licenseStatus": "n/a",
+      "coverage": "none",
+      "missingness": "n/a",
+      "requiredVariables": [
+        "u",
+        "v"
+      ],
+      "requiredDepth": "15 m",
+      "numericalCompatibility": "would require the same reader contract",
+      "holdoutUsable": false,
+      "prerequisites": [
+        "new forcing preregistration; product change confounds cadence with model version"
+      ],
+      "status": "NOT_READY"
+    },
+    {
+      "id": "TEST-02",
+      "name": "higher spatial resolution ocean forcing",
+      "requiredDataset": "DATA-01 GLORYS12V1",
+      "currentAvailability": "BLOCKED (CREDENTIALS_REQUIRED)",
+      "licenseStatus": "Copernicus terms (public metadata; account required for data)",
+      "coverage": "0/7 windows acquired",
+      "missingness": "n/a",
+      "requiredVariables": [
+        "uo",
+        "vo"
+      ],
+      "requiredDepth": "inventory surface/5/10/15/20 m; selection deferred",
+      "numericalCompatibility": "new reader (daily means; different assimilation) — separate preregistration",
+      "holdoutUsable": true,
+      "prerequisites": [
+        "authorized Copernicus access by the user",
+        "forcing preregistration under STEP 17 rules",
+        "reader + tests"
+      ],
+      "status": "BLOCKED_CREDENTIALS_REQUIRED"
+    },
+    {
+      "id": "TEST-03",
+      "name": "surface current / altimetry structural comparison",
+      "requiredDataset": "DATA-03 erdTAgeo1day (+ erdTAssh1day reference)",
+      "currentAvailability": "PARTIAL (acquired)",
+      "licenseStatus": "ERDDAP notice: free use/redistribution, not for legal use",
+      "coverage": "4/7 windows (KE-2, KE-H1, KE-H2, KE-H3); AG 2015 outside product period; KE-1 release stencil masked",
+      "missingness": "box missing 0.12–0.19 (geo)",
+      "requiredVariables": [
+        "u_current",
+        "v_current"
+      ],
+      "requiredDepth": "surface geostrophic (altitude 0) — not 15 m",
+      "numericalCompatibility": "weekly frames bracket each window; linear temporal interpolation over 7 days is a structural assumption to be declared; 0.25 deg regular grid",
+      "holdoutUsable": true,
+      "prerequisites": [
+        "formulation choice (A/B/C) by preregistration",
+        "no alpha tuning"
+      ],
+      "status": "ELIGIBLE_PARTIAL_REFERENCE"
+    },
+    {
+      "id": "TEST-04",
+      "name": "depth sensitivity",
+      "requiredDataset": "DATA-04 (HYCOM other depths via STEP 17 NCSS protocol)",
+      "currentAvailability": "UNAVAILABLE (acquirable anonymously)",
+      "licenseStatus": "HYCOM Distribution A",
+      "coverage": "n/a until acquired",
+      "missingness": "n/a",
+      "requiredVariables": [
+        "water_u",
+        "water_v"
+      ],
+      "requiredDepth": "fixed set e.g. 0/5/10/15/20 m preregistered",
+      "numericalCompatibility": "same reader",
+      "holdoutUsable": true,
+      "prerequisites": [
+        "forcing preregistration with fixed depth set; no post-hoc depth selection"
+      ],
+      "status": "NOT_READY"
+    },
+    {
+      "id": "TEST-05",
+      "name": "windage structural sensitivity (no alpha search)",
+      "requiredDataset": "DATA-05 drifter metadata",
+      "currentAvailability": "PARTIAL",
+      "licenseStatus": "GDP CC BY 4.0",
+      "coverage": "all windows",
+      "missingness": "no uncertainty fields",
+      "requiredVariables": [
+        "typebuoy",
+        "drogue_lost_date"
+      ],
+      "requiredDepth": "n/a",
+      "numericalCompatibility": "n/a",
+      "holdoutUsable": true,
+      "prerequisites": [
+        "metadata acquisition preregistration"
+      ],
+      "status": "NOT_READY"
+    },
+    {
+      "id": "TEST-06",
+      "name": "Stokes drift inclusion",
+      "requiredDataset": "DATA-06 WW3 GLOB-30M CFSR uss",
+      "currentAvailability": "ACQUIRED (quality gates G1–G11 PASS, 7/7 windows)",
+      "licenseStatus": "LICENSE_UNKNOWN",
+      "coverage": "7/7 windows (KE-2 spans two contiguous monthly files)",
+      "missingness": "box missing 0.0–0.167",
+      "requiredVariables": [
+        "uuss",
+        "vuss"
+      ],
+      "requiredDepth": "surface Stokes drift (wave quantity)",
+      "numericalCompatibility": "0.5 deg, 3 h regular; needs a new reader (unchanged runtime contract) — separate preregistration",
+      "holdoutUsable": true,
+      "prerequisites": [
+        "LICENSE_CONFIRMED required before any model use",
+        "reader + tests",
+        "formulation fixed below"
+      ],
+      "status": "REGISTERED_CONDITIONAL_ON_LICENSE",
+      "registeredDesign": {
+        "BASE": "U_ocean + alpha U_wind",
+        "STOKES": "U_ocean + U_Stokes + alpha U_wind",
+        "alpha": {
+          "primary": 0.002,
+          "baseline": 0.0,
+          "frozen": true,
+          "search": false
+        },
+        "stokesCoefficient": 1.0,
+        "coefficientSearch": false,
+        "scalingSearch": false,
+        "tuning": false,
+        "runInStep24": false
+      }
+    },
+    {
+      "id": "TEST-07",
+      "name": "eddy-resolving / event-stratified forcing",
+      "requiredDataset": "DATA-01 + DATA-03",
+      "currentAvailability": "BLOCKED / PARTIAL",
+      "licenseStatus": "see TEST-02/03",
+      "coverage": "depends on DATA-01",
+      "missingness": "n/a",
+      "requiredVariables": [
+        "uo",
+        "vo",
+        "u_current",
+        "v_current"
+      ],
+      "requiredDepth": "deferred",
+      "numericalCompatibility": "see TEST-02",
+      "holdoutUsable": true,
+      "prerequisites": [
+        "DATA-01 access",
+        "event stratification preregistered"
+      ],
+      "status": "BLOCKED_CREDENTIALS_REQUIRED"
+    },
+    {
+      "id": "TEST-08",
+      "name": "coastal / bathymetric effects",
+      "requiredDataset": "DATA-08",
+      "currentAvailability": "PARTIAL (coastline only)",
+      "licenseStatus": "Natural Earth public domain",
+      "coverage": "n/a",
+      "missingness": "n/a",
+      "requiredVariables": [
+        "bathymetry"
+      ],
+      "requiredDepth": "n/a",
+      "numericalCompatibility": "n/a",
+      "holdoutUsable": false,
+      "prerequisites": [
+        "nearshore cohort rule (none exists)"
+      ],
+      "status": "NOT_INDICATED"
+    }
+  ],
+  "priorityOrder": [
+    {
+      "priority": 1,
+      "item": "DATA-01 higher-resolution ocean current",
+      "note": "requires user-authorized Copernicus access"
+    },
+    {
+      "priority": 2,
+      "item": "DATA-06 Stokes drift",
+      "note": "ONLY after license confirmation"
+    },
+    {
+      "priority": 3,
+      "item": "DATA-03 AVISO surface-current reference"
+    },
+    {
+      "priority": 4,
+      "item": "DATA-04 depth sensitivity"
+    },
+    {
+      "priority": 5,
+      "item": "remaining structural tests"
+    },
+    {
+      "basis": "priority order fixed by STEP 22/24 preregistration; not a performance ranking"
+    }
+  ],
+  "executed": 0,
+  "MODEL_RUN": "FORBIDDEN"
+}

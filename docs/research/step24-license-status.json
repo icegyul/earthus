@@ -1,0 +1,164 @@
+{
+  "ruleId": "p1-forcing-access-resolution-step24",
+  "DATA-06": {
+    "dataset": "DATA-06",
+    "product": {
+      "provider": "IFREMER and SHOM (file attribute institution)",
+      "product": "WAVEWATCH III GLOBMULTI global hindcast, GLOB-30M (0.5 deg), CFSR-forced",
+      "productVersion": "1.0 (file attribute product_version)",
+      "distributionAuthority": "IFREMER anonymous FTP ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/",
+      "referencesAttribute": "http://wwz.ifremer.fr/iowaga/ (file attribute references)"
+    },
+    "documentsConsulted": [
+      {
+        "id": "ifremer_ftp_ww3_root",
+        "purpose": "DATA-06: list root of the WW3 hindcast FTP tree for README/LICENSE/terms files",
+        "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/",
+        "timestamp": "2026-09-06T09:14:31Z",
+        "status": "ftp",
+        "bytes": 2476,
+        "sha256": "f5a3cf7e880c2317899cd48f1433f0704983d3189fba2f854a8c11f2db0f52e0",
+        "contentType": ""
+      },
+      {
+        "id": "ifremer_ftp_ww3_global",
+        "purpose": "DATA-06: list GLOBAL directory for README/LICENSE/terms files",
+        "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/",
+        "timestamp": "2026-09-06T09:14:35Z",
+        "status": "ftp",
+        "bytes": 7652,
+        "sha256": "60c61bacd1af349c649019c6f7309c823d03b2903021081a10f000d269289431",
+        "contentType": ""
+      },
+      {
+        "id": "ifremer_ftp_ww3_top",
+        "purpose": "DATA-06: list ww3 top directory for README/LICENSE/terms files",
+        "url": "ftp://ftp.ifremer.fr/ifremer/ww3/",
+        "timestamp": "2026-09-06T09:14:38Z",
+        "status": "ftp",
+        "bytes": 1215,
+        "sha256": "ecce2c34a9e7fa562aeea2d7993c18bf72bc4dd6f33f8e0abe45e8b74fa5e353",
+        "contentType": ""
+      },
+      {
+        "id": "ifremer_iowaga_page",
+        "purpose": "DATA-06: IOWAGA project page referenced by the file attribute 'references' (http://wwz.ifremer.fr/iowaga/)",
+        "url": "https://wwz.ifremer.fr/iowaga/",
+        "timestamp": "2026-09-06T09:14:42Z",
+        "status": "error",
+        "error": "URLError: <urlopen error [Errno 11001] getaddrinfo failed>"
+      },
+      {
+        "id": "ifremer_iowaga_data_page",
+        "purpose": "DATA-06: IOWAGA data/products page (license/terms/citation)",
+        "url": "https://wwz.ifremer.fr/iowaga/Products",
+        "timestamp": "2026-09-06T09:14:42Z",
+        "status": "error",
+        "error": "URLError: <urlopen error [Errno 11001] getaddrinfo failed>"
+      },
+      {
+        "id": "ifremer_data_terms",
+        "purpose": "DATA-06: IFREMER data portal general terms of use",
+        "url": "https://data.ifremer.fr/Conditions-d-utilisation",
+        "timestamp": "2026-09-06T09:14:42Z",
+        "status": "error",
+        "error": "HTTPError: HTTP Error 404: Not Found"
+      },
+      {
+        "id": "cmems_stac_product",
+        "purpose": "DATA-01: public Copernicus Marine STAC product record for GLOBAL_MULTIYEAR_PHY_001_030 (identity, version, extent, license field)",
+        "url": "https://stac.marine.copernicus.eu/metadata/GLOBAL_MULTIYEAR_PHY_001_030/product.stac.json",
+        "timestamp": "2026-09-06T09:14:44Z",
+        "status": 200,
+        "bytes": 14553,
+        "sha256": "97b2f4ddd4926fd1528300ea52ea3a15b20f5a2d5b8f38ca4b5fa24a3d8bda38",
+        "contentType": "application/json"
+      },
+      {
+        "id": "cmems_terms",
+        "purpose": "DATA-01: Copernicus Marine service commitments / terms (registration requirement)",
+        "url": "https://marine.copernicus.eu/user-corner/service-commitments-and-licence",
+        "timestamp": "2026-09-06T09:14:46Z",
+        "status": 200,
+        "bytes": 294080,
+        "sha256": "a5016fee8c3703095bde36e023fb4cae98254d498c92cf7ddef8e001b92a8c04",
+        "contentType": "text/html; charset=UTF-8"
+      }
+    ],
+    "licenseFilesInFtpListing": [
+      "OLD_READMES",
+      "README",
+      "README.sav",
+      "readme_netcdf",
+      "README"
+    ],
+    "explicitLicenseStatements": [
+      {
+        "document": "cmems_terms",
+        "pattern": "terms of use",
+        "snippet": "ate. Failure to comply with the terms and conditions of the Licence Permissions constitutes a material breach of the terms of use for which&nbsp;the Licensee is permitted to use the Copernicus Marine Service Products and may result in the Copernicus Marine Service taking all or&nbsp;any o"
+      },
+      {
+        "document": "cmems_terms",
+        "pattern": "conditions of use",
+        "snippet": "er . Before signing the SLA, the User is informed of the commitments on service (paragraph 2) and conditions of use described in the CMEMS licence (Annex). This SLA concerns the operational phase of the Copernicus Marine Service from N"
+      }
+    ],
+    "citationStatements": [
+      {
+        "document": "cmems_stac_product",
+        "snippet": "\"title\": \"Copernicus Marine Service Commitments and Licence\", \"type\": \"text/html\" }, { \"rel\": \"cite-as\", \"href\": \"https://doi.org/10.48670/moi-00021\", \"title\": \"10.48670/moi-00021\", \"type\": \"text/html\" }, { \"rel\": \"alternative\""
+      },
+      {
+        "document": "cmems_terms",
+        "snippet": "ences for scientific data, and enable data for each Copernicus Marine Product to be easily and reliably found, used and cited. Copernicus Marine Service Information <td class=\"text-justify\" style=\"width:"
+      },
+      {
+        "document": "cmems_terms",
+        "snippet": "(c) In case of any publication, the Licensee will ensure credit the Copernicus Marine Service&nbsp;and cite the DOIs links guaranteeing the traceability of the scientific studies and experiments, in the following manner: “Thi"
+      }
+    ],
+    "keywordHits": {
+      "ifremer_ftp_ww3_root": {},
+      "ifremer_ftp_ww3_global": {},
+      "ifremer_ftp_ww3_top": {},
+      "cmems_stac_product": {
+        "licen[cs]e": 3,
+        "cite": 1
+      },
+      "cmems_terms": {
+        "licen[cs]e": 3,
+        "terms of use": 1,
+        "conditions of use": 1,
+        "redistribut": 3,
+        "cite": 2,
+        "free of charge": 2,
+        "copyright": 1
+      }
+    },
+    "determinations": {
+      "providerIdentity": "IFREMER/SHOM (file metadata) — confirmed from file attributes",
+      "productIdentity": "WW3 GLOBMULTI GLOB-30M CFSR hindcast v1.0 — confirmed from file attributes and FTP path",
+      "distributionAuthority": "IFREMER FTP — confirmed (files served)",
+      "explicitLicenseOrTerms": "FOUND",
+      "redistributionPermission": "see explicit statements",
+      "scientificUsePermission": "see explicit statements",
+      "derivedQuantitiesUss": "see explicit statements",
+      "citationRequirement": "citation/reference statements found",
+      "accessRestrictions": "anonymous FTP (no authentication)",
+      "noExplicitLicenseExists": false
+    },
+    "rule": "anonymous FTP access is not treated as a research-use license; status LICENSE_UNKNOWN unless an authoritative statement was found",
+    "status": "LICENSE_UNKNOWN",
+    "modelUseAllowed": false
+  },
+  "DATA-03": {
+    "erdTAgeo1day": "ERDDAP standard notice: free use/redistribution, not for legal use (see licenseText)",
+    "erdTAssh1day": "ERDDAP standard notice: free use/redistribution, not for legal use (see licenseText)",
+    "text": "The data may be used and redistributed for free but is not intended\\nfor legal use, since it may contain inaccuracies. Neither the data\\nContributor, ERD, NOAA, nor the United States Government, nor any\\nof their employees or contractors, makes any warranty, express or\\nimplied, including warranties"
+  },
+  "DATA-01": {
+    "status": "not verifiable without access; Copernicus Marine terms apply (account required)",
+    "stacLicenseField": "proprietary"
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "model-protocol-step20-generalization-parameter-validation",
+  "step20LockCommit": "155995dd",
+  "status": "ALPHA_SELECTED",
+  "selectedAlpha": 0.002,
+  "selectedAlphaText": "0.002",
+  "meaning": "calibration-selected alpha under the locked STEP 20 selection rule; NOT a validated or general-purpose parameter",
+  "selectionHierarchy": [
+    "72h M3 median",
+    "48h M3 median",
+    "24h M3 median",
+    "smaller alpha"
+  ],
+  "tieToleranceKm": 1e-06,
+  "selectionSetN": 23,
+  "excludedFromSelection": [],
+  "candidateResults": [
+    {
+      "rank": 1,
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "M3_median_72h": 59.054884,
+      "M3_median_48h": 39.025807,
+      "M3_median_24h": 25.125922
+    },
+    {
+      "rank": 2,
+      "alpha": 0.001,
+      "alphaText": "0.001",
+      "M3_median_72h": 60.188961,
+      "M3_median_48h": 39.84388,
+      "M3_median_24h": 25.389837
+    },
+    {
+      "rank": 3,
+      "alpha": 0.0007,
+      "alphaText": "0.0007",
+      "M3_median_72h": 60.52752,
+      "M3_median_48h": 40.090711,
+      "M3_median_24h": 25.475179
+    },
+    {
+      "rank": 4,
+      "alpha": 0.0003,
+      "alphaText": "0.0003",
+      "M3_median_72h": 60.977785,
+      "M3_median_48h": 40.421133,
+      "M3_median_24h": 25.593058
+    },
+    {
+      "rank": 5,
+      "alpha": 0.0,
+      "alphaText": "0",
+      "M3_median_72h": 61.31387,
+      "M3_median_48h": 40.66858,
+      "M3_median_24h": 25.684466
+    }
+  ],
+  "selectionReason": "lowest 72h M3 median on the selection set (n=23)",
+  "calibrationInputHashes": {
+    "calibrationManifestSha256": "41ca439ec6540fd98b3c9ecf5c74af7afdd8731e94bea5d33bfac3397afe8498",
+    "trajectoryFiles": [
+      {
+        "file": "data/research/step20/calibration/KE-1/alpha0.trajectories.csv",
+        "sha256": "0e6f034f7f99982148708d0cf67302249141fbb2063d410c96547c329b4740b3"
+      },
+      {
+        "file": "data/research/step20/calibration/KE-1/alpha0.0003.trajectories.csv",
+        "sha256": "115f67dcb7ae6011e10986e56697c1b48ec365f1581e20218f9d40740c82091d"
+      },
+      {
+        "file": "data/research/step20/calibration/KE-1/alpha0.0007.trajectories.csv",
+        "sha256": "0e565be705a267407a866bb914df90d56827ac1115690b3bc074bbdc58b0f228"
+      },
+      {
+        "file": "data/research/step20/calibration/KE-1/alpha0.001.trajectories.csv",
+        "sha256": "0ec650ed3924ead227b2da3f530eb8e3f1d693d4d60cc22b4c89dd881aaa93e0"
+      },
+      {
+        "file": "data/research/step20/calibration/KE-1/alpha0.002.trajectories.csv",
+        "sha256": "cc38b0d7fd171f187b990f16f9ab3a18d836ea2a7a6913e0d8dce996a1915069"
+      },
+      {
+        "file": "data/research/step20/calibration/KE-2/alpha0.trajectories.csv",
+        "sha256": "f52849f24e6cf02a51e1594b018d601496b292b77a899bb59d8cbf0f39eeef82"
+      },
+      {
+        "file": "data/research/step20/calibration/KE-2/alpha0.0003.trajectories.csv",
+        "sha256": "987ee7e9edf0e8ed72640edb64aa8e344062f495a5cdd383643e5e4411cf238d"
+      },
+      {
+        "file": "data/research/step20/calibration/KE-2/alpha0.0007.trajectories.csv",
+        "sha256": "b06c6cb25ee7dc5d364607ec2582fa6d0eb2f15c30cb7f4eb29b773aec38fd43"
+      },
+      {
+        "file": "data/research/step20/calibration/KE-2/alpha0.001.trajectories.csv",
+        "sha256": "c8a8541417d1e80eb21329a1a748025e9172e90417ed17317f7de784b805a1ff"
+      },
+      {
+        "file": "data/research/step20/calibration/KE-2/alpha0.002.trajectories.csv",
+        "sha256": "e2c8ca1336b3ef967e08a2b641579158e61617ec5c0b770762919769b416aa99"
+      },
+      {
+        "file": "data/research/step20/calibration/AG-1/alpha0.trajectories.csv",
+        "sha256": "8970e7010f555482aafe210a66a41664c2fa6482726296a0d31f01ed2aeaee3b"
+      },
+      {
+        "file": "data/research/step20/calibration/AG-1/alpha0.0003.trajectories.csv",
+        "sha256": "5b13ec372fd27a1a292ff331a1df6ea6a8edda2f0074b12fd0cbd5b2167a9fbc"
+      },
+      {
+        "file": "data/research/step20/calibration/AG-1/alpha0.0007.trajectories.csv",
+        "sha256": "cda8c1e2782b3e5e479a14d67f960d5021c870a324648194594c20ca92a145af"
+      },
+      {
+        "file": "data/research/step20/calibration/AG-1/alpha0.001.trajectories.csv",
+        "sha256": "966470b3bbca0bc0bb3324f9fde0ef6faccfe15204fe8923479a41f2754fb90c"
+      },
+      {
+        "file": "data/research/step20/calibration/AG-1/alpha0.002.trajectories.csv",
+        "sha256": "58f9ca262b7e74d1fba1daac951b51e9f32847e7b500ec87bb9e7d75f716976b"
+      },
+      {
+        "file": "data/research/step20/calibration/AG-2/alpha0.trajectories.csv",
+        "sha256": "158100c502fbe5f985fe5dbb5979229c77bc55731453f938b5fec9ffcd169da7"
+      },
+      {
+        "file": "data/research/step20/calibration/AG-2/alpha0.0003.trajectories.csv",
+        "sha256": "77ec2051875e60b27efe6984466de63f96c54e8dd31fbcf6d005981e2dd97091"
+      },
+      {
+        "file": "data/research/step20/calibration/AG-2/alpha0.0007.trajectories.csv",
+        "sha256": "74615fb4bef30a65e8a1472c4573f4ad9af90c916573cdb4de6c06edbb1d2f79"
+      },
+      {
+        "file": "data/research/step20/calibration/AG-2/alpha0.001.trajectories.csv",
+        "sha256": "7d990ac5b28f366c5d63117b54e82d192cc8f0441e2bdd6a84f4608fc54f967b"
+      },
+      {
+        "file": "data/research/step20/calibration/AG-2/alpha0.002.trajectories.csv",
+        "sha256": "afc98cf9d2e1d66f97d1c3f2637ae9c0e7c24bdfdade8d2dc785a10f990ba0e2"
+      }
+    ],
+    "cohortSha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+    "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "protocolSha256": "65b004589570e7e409201e82c9388b17ec53002c4b31282112056d005baabb00",
+    "preregistrationSha256": "1e4ed8c1d004b00812c0710fd3df32c8a6c7537ff5287474a4c0a3e8ae33cae4",
+    "selectionRuleSha256": "5d980be74fbeb752160143c2e44ecb6611f01f21e94ea528908fc5867d9b46d7"
+  },
+  "evaluationTableSha256": "a15df2a059ba11e5e3900f10b29ad3cfed1dca610c8ad421898374cd31a8425f",
+  "holdoutUsed": false,
+  "holdoutAccess": 0,
+  "frozen": true,
+  "contentSha256": "27e0c940a4beed5b6a1068b83856ba1711300f91b45905f93b1de5c5bfccebc3",
+  "createdAtUTC": "2026-09-06T06:37:12Z"
+}

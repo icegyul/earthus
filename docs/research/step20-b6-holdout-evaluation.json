@@ -1,0 +1,824 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "model-protocol-step20-generalization-parameter-validation",
+  "phase": "B-6.3",
+  "status": "EVALUATION_COMPLETE",
+  "lockCommit": "155995dd",
+  "alphaLockCommit": "73fafffb",
+  "b3Commit": "9113e8b5",
+  "b5Commit": "c395a098",
+  "holdoutManifestSha256": "968da55a4553c00f373d6a0f26bc2b1c9e3f3af421d37db7a1e58e99a5727653",
+  "gateSha256": "b5cca409e6f62a8afc26c39c43ad6b49791f4689c0c9825c7cd35a7dd75ccafa",
+  "gateStatus": "SEGMENTATION_EQUIVALENCE_PASS",
+  "step20PreregistrationSha256": "1e4ed8c1d004b00812c0710fd3df32c8a6c7537ff5287474a4c0a3e8ae33cae4",
+  "selectedAlphaArtifactSha256": "68e43a0f91e3a6bd81427399adbe2cf8a7543d85cf0249d4926f3df093649efd",
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "inputFileShas": [
+    {
+      "file": "data/research/step20/holdout/trajectories/KE-H1/alpha0.002.trajectories.csv",
+      "expected": "5f68152824cf8b548187181fed37b06b6c3b3482d024c72ecd1ce679bc580d18",
+      "actual": "5f68152824cf8b548187181fed37b06b6c3b3482d024c72ecd1ce679bc580d18",
+      "verified": true
+    },
+    {
+      "file": "data/research/step20/holdout/trajectories/KE-H1/alpha0.trajectories.csv",
+      "expected": "56c327e0b21ad59b4a1a840a13bc9d45e9f913ba4e9196032aed60230fa44d8c",
+      "actual": "56c327e0b21ad59b4a1a840a13bc9d45e9f913ba4e9196032aed60230fa44d8c",
+      "verified": true
+    },
+    {
+      "file": "data/research/step20/holdout/trajectories/KE-H3/alpha0.002.trajectories.csv",
+      "expected": "00d9db9f183b53e2d7261cc42e4db997a06b7b8b9d0a1e421f73f4517a723fd6",
+      "actual": "00d9db9f183b53e2d7261cc42e4db997a06b7b8b9d0a1e421f73f4517a723fd6",
+      "verified": true
+    },
+    {
+      "file": "data/research/step20/holdout/trajectories/KE-H3/alpha0.trajectories.csv",
+      "expected": "e63fe31926121e2fad2445a7ef10d95276fbd0b1bd204adbf5c87500995c70be",
+      "actual": "e63fe31926121e2fad2445a7ef10d95276fbd0b1bd204adbf5c87500995c70be",
+      "verified": true
+    }
+  ],
+  "perDrifter": [
+    {
+      "drifter_id": "48985",
+      "unit": "KE-H1",
+      "error_A_24h": 8.223,
+      "error_B_24h": 8.106,
+      "delta_24h": 0.117,
+      "error_A_48h": 21.544,
+      "error_B_48h": 21.494,
+      "delta_48h": 0.049,
+      "error_A_72h": 48.81,
+      "error_B_72h": 48.885,
+      "delta_72h": -0.075,
+      "endpoint_A_72h": 40.051,
+      "path_A": 55.705,
+      "endpoint_B_72h": 38.936,
+      "path_B": 55.098,
+      "A_B_separation_72h": 1.826,
+      "observed_72h": 31.456
+    },
+    {
+      "drifter_id": "81806",
+      "unit": "KE-H1",
+      "error_A_24h": 1.941,
+      "error_B_24h": 2.389,
+      "delta_24h": -0.448,
+      "error_A_48h": 6.096,
+      "error_B_48h": 7.536,
+      "delta_48h": -1.439,
+      "error_A_72h": 12.091,
+      "error_B_72h": 13.843,
+      "delta_72h": -1.752,
+      "endpoint_A_72h": 45.351,
+      "path_A": 47.599,
+      "endpoint_B_72h": 43.496,
+      "path_B": 45.771,
+      "A_B_separation_72h": 2.35,
+      "observed_72h": 48.477
+    },
+    {
+      "drifter_id": "89898",
+      "unit": "KE-H3",
+      "error_A_24h": 13.802,
+      "error_B_24h": 13.214,
+      "delta_24h": 0.589,
+      "error_A_48h": 17.08,
+      "error_B_48h": 17.247,
+      "delta_48h": -0.167,
+      "error_A_72h": 10.265,
+      "error_B_72h": 10.224,
+      "delta_72h": 0.04,
+      "endpoint_A_72h": 150.297,
+      "path_A": 173.068,
+      "endpoint_B_72h": 150.017,
+      "path_B": 171.818,
+      "A_B_separation_72h": 3.394,
+      "observed_72h": 140.071
+    },
+    {
+      "drifter_id": "90135",
+      "unit": "KE-H1",
+      "error_A_24h": 21.517,
+      "error_B_24h": 21.07,
+      "delta_24h": 0.446,
+      "error_A_48h": 27.504,
+      "error_B_48h": 26.212,
+      "delta_48h": 1.292,
+      "error_A_72h": 24.444,
+      "error_B_72h": 24.844,
+      "delta_72h": -0.4,
+      "endpoint_A_72h": 101.547,
+      "path_A": 106.154,
+      "endpoint_B_72h": 108.461,
+      "path_B": 113.093,
+      "A_B_separation_72h": 6.931,
+      "observed_72h": 104.782
+    },
+    {
+      "drifter_id": "90146",
+      "unit": "KE-H3",
+      "error_A_24h": 16.625,
+      "error_B_24h": 15.509,
+      "delta_24h": 1.116,
+      "error_A_48h": 22.74,
+      "error_B_48h": 21.974,
+      "delta_48h": 0.766,
+      "error_A_72h": 29.497,
+      "error_B_72h": 30.134,
+      "delta_72h": -0.637,
+      "endpoint_A_72h": 101.085,
+      "path_A": 141.661,
+      "endpoint_B_72h": 98.758,
+      "path_B": 139.301,
+      "A_B_separation_72h": 4.031,
+      "observed_72h": 81.357
+    },
+    {
+      "drifter_id": "90149",
+      "unit": "KE-H1",
+      "error_A_24h": 4.089,
+      "error_B_24h": 4.277,
+      "delta_24h": -0.188,
+      "error_A_48h": 8.88,
+      "error_B_48h": 9.127,
+      "delta_48h": -0.247,
+      "error_A_72h": 17.603,
+      "error_B_72h": 15.8,
+      "delta_72h": 1.803,
+      "endpoint_A_72h": 79.693,
+      "path_A": 83.845,
+      "endpoint_B_72h": 77.507,
+      "path_B": 82.918,
+      "A_B_separation_72h": 6.808,
+      "observed_72h": 62.188
+    },
+    {
+      "drifter_id": "90150",
+      "unit": "KE-H1",
+      "error_A_24h": 23.705,
+      "error_B_24h": 25.276,
+      "delta_24h": -1.571,
+      "error_A_48h": 58.664,
+      "error_B_48h": 63.93,
+      "delta_48h": -5.267,
+      "error_A_72h": 89.37,
+      "error_B_72h": 99.98,
+      "delta_72h": -10.61,
+      "endpoint_A_72h": 125.215,
+      "path_A": 128.243,
+      "endpoint_B_72h": 132.96,
+      "path_B": 136.577,
+      "A_B_separation_72h": 10.906,
+      "observed_72h": 112.667
+    },
+    {
+      "drifter_id": "92981",
+      "unit": "KE-H3",
+      "error_A_24h": 13.072,
+      "error_B_24h": 12.518,
+      "delta_24h": 0.554,
+      "error_A_48h": 12.402,
+      "error_B_48h": 11.059,
+      "delta_48h": 1.343,
+      "error_A_72h": 33.118,
+      "error_B_72h": 29.938,
+      "delta_72h": 3.181,
+      "endpoint_A_72h": 140.511,
+      "path_A": 174.169,
+      "endpoint_B_72h": 140.892,
+      "path_B": 172.702,
+      "A_B_separation_72h": 3.275,
+      "observed_72h": 154.559
+    },
+    {
+      "drifter_id": "98996",
+      "unit": "KE-H3",
+      "error_A_24h": 12.299,
+      "error_B_24h": 10.195,
+      "delta_24h": 2.104,
+      "error_A_48h": 35.126,
+      "error_B_48h": 30.835,
+      "delta_48h": 4.291,
+      "error_A_72h": 90.497,
+      "error_B_72h": 84.199,
+      "delta_72h": 6.297,
+      "endpoint_A_72h": 12.233,
+      "path_A": 37.045,
+      "endpoint_B_72h": 6.824,
+      "path_B": 36.286,
+      "A_B_separation_72h": 6.3,
+      "observed_72h": 79.433
+    },
+    {
+      "drifter_id": "98997",
+      "unit": "KE-H3",
+      "error_A_24h": 17.752,
+      "error_B_24h": 18.468,
+      "delta_24h": -0.717,
+      "error_A_48h": 33.816,
+      "error_B_48h": 33.209,
+      "delta_48h": 0.607,
+      "error_A_72h": 37.114,
+      "error_B_72h": 36.421,
+      "delta_72h": 0.693,
+      "endpoint_A_72h": 42.506,
+      "path_A": 70.311,
+      "endpoint_B_72h": 43.631,
+      "path_B": 71.689,
+      "A_B_separation_72h": 6.975,
+      "observed_72h": 12.151
+    },
+    {
+      "drifter_id": "98998",
+      "unit": "KE-H3",
+      "error_A_24h": 22.802,
+      "error_B_24h": 23.709,
+      "delta_24h": -0.907,
+      "error_A_48h": 43.279,
+      "error_B_48h": 41.253,
+      "delta_48h": 2.025,
+      "error_A_72h": 58.451,
+      "error_B_72h": 55.689,
+      "delta_72h": 2.762,
+      "endpoint_A_72h": 66.716,
+      "path_A": 82.714,
+      "endpoint_B_72h": 63.34,
+      "path_B": 77.384,
+      "A_B_separation_72h": 3.453,
+      "observed_72h": 51.185
+    },
+    {
+      "drifter_id": "99006",
+      "unit": "KE-H3",
+      "error_A_24h": 7.39,
+      "error_B_24h": 7.809,
+      "delta_24h": -0.42,
+      "error_A_48h": 14.086,
+      "error_B_48h": 13.249,
+      "delta_48h": 0.837,
+      "error_A_72h": 11.846,
+      "error_B_72h": 13.42,
+      "delta_72h": -1.574,
+      "endpoint_A_72h": 31.281,
+      "path_A": 50.781,
+      "endpoint_B_72h": 31.896,
+      "path_B": 48.73,
+      "A_B_separation_72h": 1.616,
+      "observed_72h": 26.356
+    }
+  ],
+  "summary": {
+    "ruleId": "model-protocol-step20-generalization-parameter-validation",
+    "phase": "B-6.3 HOLDOUT EVALUATION (revised KE holdout)",
+    "comparison": {
+      "selected": 0.002,
+      "baseline": 0.0
+    },
+    "horizons": [
+      24,
+      48,
+      72
+    ],
+    "tieToleranceKm": 1e-06,
+    "holdout": {
+      "preregistered": 13,
+      "evaluable": 12,
+      "unavailable": 1,
+      "evaluated": 12,
+      "KE-H2": {
+        "status": "FORCING_UNAVAILABLE",
+        "n": 1,
+        "missingSourceFrame": "2010-08-18T12:00:00Z",
+        "interpolation": false,
+        "substitution": false,
+        "modelRun": false
+      },
+      "AG": "HOLDOUT_UNAVAILABLE"
+    },
+    "overall": {
+      "24h": {
+        "n": 12,
+        "notAvailable": 0,
+        "error_alpha0.002": {
+          "n": 12,
+          "median": 13.437,
+          "mean": 13.601,
+          "min": 1.941,
+          "max": 23.705
+        },
+        "error_alpha0": {
+          "n": 12,
+          "median": 12.866,
+          "mean": 13.545,
+          "min": 2.389,
+          "max": 25.276
+        },
+        "delta": {
+          "median_delta": -0.035,
+          "mean_delta": 0.056,
+          "min_delta": -1.571,
+          "max_delta": 2.104
+        },
+        "wins_alpha0.002": 6,
+        "losses_alpha0.002": 6,
+        "ties": 0
+      },
+      "48h": {
+        "n": 12,
+        "notAvailable": 0,
+        "error_alpha0.002": {
+          "n": 12,
+          "median": 22.142,
+          "mean": 25.101,
+          "min": 6.096,
+          "max": 58.664
+        },
+        "error_alpha0": {
+          "n": 12,
+          "median": 21.734,
+          "mean": 24.761,
+          "min": 7.536,
+          "max": 63.93
+        },
+        "delta": {
+          "median_delta": 0.686,
+          "mean_delta": 0.341,
+          "min_delta": -5.267,
+          "max_delta": 4.291
+        },
+        "wins_alpha0.002": 4,
+        "losses_alpha0.002": 8,
+        "ties": 0
+      },
+      "72h": {
+        "n": 12,
+        "notAvailable": 0,
+        "error_alpha0.002": {
+          "n": 12,
+          "median": 31.308,
+          "mean": 38.592,
+          "min": 10.265,
+          "max": 90.497
+        },
+        "error_alpha0": {
+          "n": 12,
+          "median": 30.036,
+          "mean": 38.615,
+          "min": 10.224,
+          "max": 99.98
+        },
+        "delta": {
+          "median_delta": -0.017,
+          "mean_delta": -0.023,
+          "min_delta": -10.61,
+          "max_delta": 6.297
+        },
+        "wins_alpha0.002": 6,
+        "losses_alpha0.002": 6,
+        "ties": 0
+      },
+      "M1_endpoint72h": {
+        "alpha0.002": {
+          "n": 12,
+          "median": 73.204,
+          "mean": 78.041,
+          "min": 12.233,
+          "max": 150.297
+        },
+        "alpha0": {
+          "n": 12,
+          "median": 70.423,
+          "mean": 78.06,
+          "min": 6.824,
+          "max": 150.017
+        }
+      },
+      "M2_totalPath": {
+        "alpha0.002": {
+          "n": 12,
+          "median": 83.279,
+          "mean": 95.941,
+          "min": 37.045,
+          "max": 174.169
+        },
+        "alpha0": {
+          "n": 12,
+          "median": 80.151,
+          "mean": 95.947,
+          "min": 36.286,
+          "max": 172.702
+        }
+      },
+      "M4_separation72h": {
+        "n": 12,
+        "median": 3.742,
+        "mean": 4.822,
+        "min": 1.616,
+        "max": 10.906
+      },
+      "M5_observed72h": {
+        "n": 12,
+        "median": 70.81,
+        "mean": 75.39,
+        "min": 12.151,
+        "max": 154.559
+      },
+      "n": 12
+    },
+    "perUnit": {
+      "KE-H1": {
+        "24h": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_alpha0.002": {
+            "n": 5,
+            "median": 8.223,
+            "mean": 11.895,
+            "min": 1.941,
+            "max": 23.705
+          },
+          "error_alpha0": {
+            "n": 5,
+            "median": 8.106,
+            "mean": 12.224,
+            "min": 2.389,
+            "max": 25.276
+          },
+          "delta": {
+            "median_delta": -0.188,
+            "mean_delta": -0.329,
+            "min_delta": -1.571,
+            "max_delta": 0.446
+          },
+          "wins_alpha0.002": 3,
+          "losses_alpha0.002": 2,
+          "ties": 0
+        },
+        "48h": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_alpha0.002": {
+            "n": 5,
+            "median": 21.544,
+            "mean": 24.538,
+            "min": 6.096,
+            "max": 58.664
+          },
+          "error_alpha0": {
+            "n": 5,
+            "median": 21.494,
+            "mean": 25.66,
+            "min": 7.536,
+            "max": 63.93
+          },
+          "delta": {
+            "median_delta": -0.247,
+            "mean_delta": -1.122,
+            "min_delta": -5.267,
+            "max_delta": 1.292
+          },
+          "wins_alpha0.002": 3,
+          "losses_alpha0.002": 2,
+          "ties": 0
+        },
+        "72h": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_alpha0.002": {
+            "n": 5,
+            "median": 24.444,
+            "mean": 38.464,
+            "min": 12.091,
+            "max": 89.37
+          },
+          "error_alpha0": {
+            "n": 5,
+            "median": 24.844,
+            "mean": 40.671,
+            "min": 13.843,
+            "max": 99.98
+          },
+          "delta": {
+            "median_delta": -0.4,
+            "mean_delta": -2.207,
+            "min_delta": -10.61,
+            "max_delta": 1.803
+          },
+          "wins_alpha0.002": 4,
+          "losses_alpha0.002": 1,
+          "ties": 0
+        },
+        "M1_endpoint72h": {
+          "alpha0.002": {
+            "n": 5,
+            "median": 79.693,
+            "mean": 78.371,
+            "min": 40.051,
+            "max": 125.215
+          },
+          "alpha0": {
+            "n": 5,
+            "median": 77.507,
+            "mean": 80.272,
+            "min": 38.936,
+            "max": 132.96
+          }
+        },
+        "M2_totalPath": {
+          "alpha0.002": {
+            "n": 5,
+            "median": 83.845,
+            "mean": 84.309,
+            "min": 47.599,
+            "max": 128.243
+          },
+          "alpha0": {
+            "n": 5,
+            "median": 82.918,
+            "mean": 86.691,
+            "min": 45.771,
+            "max": 136.577
+          }
+        },
+        "M4_separation72h": {
+          "n": 5,
+          "median": 6.808,
+          "mean": 5.764,
+          "min": 1.826,
+          "max": 10.906
+        },
+        "M5_observed72h": {
+          "n": 5,
+          "median": 62.188,
+          "mean": 71.914,
+          "min": 31.456,
+          "max": 112.667
+        },
+        "n": 5,
+        "smallN": true,
+        "label": "SMALL-N / DESCRIPTIVE ONLY"
+      },
+      "KE-H3": {
+        "24h": {
+          "n": 7,
+          "notAvailable": 0,
+          "error_alpha0.002": {
+            "n": 7,
+            "median": 13.802,
+            "mean": 14.82,
+            "min": 7.39,
+            "max": 22.802
+          },
+          "error_alpha0": {
+            "n": 7,
+            "median": 13.214,
+            "mean": 14.489,
+            "min": 7.809,
+            "max": 23.709
+          },
+          "delta": {
+            "median_delta": 0.554,
+            "mean_delta": 0.331,
+            "min_delta": -0.907,
+            "max_delta": 2.104
+          },
+          "wins_alpha0.002": 3,
+          "losses_alpha0.002": 4,
+          "ties": 0
+        },
+        "48h": {
+          "n": 7,
+          "notAvailable": 0,
+          "error_alpha0.002": {
+            "n": 7,
+            "median": 22.74,
+            "mean": 25.504,
+            "min": 12.402,
+            "max": 43.279
+          },
+          "error_alpha0": {
+            "n": 7,
+            "median": 21.974,
+            "mean": 24.118,
+            "min": 11.059,
+            "max": 41.253
+          },
+          "delta": {
+            "median_delta": 0.837,
+            "mean_delta": 1.386,
+            "min_delta": -0.167,
+            "max_delta": 4.291
+          },
+          "wins_alpha0.002": 1,
+          "losses_alpha0.002": 6,
+          "ties": 0
+        },
+        "72h": {
+          "n": 7,
+          "notAvailable": 0,
+          "error_alpha0.002": {
+            "n": 7,
+            "median": 33.118,
+            "mean": 38.684,
+            "min": 10.265,
+            "max": 90.497
+          },
+          "error_alpha0": {
+            "n": 7,
+            "median": 30.134,
+            "mean": 37.147,
+            "min": 10.224,
+            "max": 84.199
+          },
+          "delta": {
+            "median_delta": 0.693,
+            "mean_delta": 1.538,
+            "min_delta": -1.574,
+            "max_delta": 6.297
+          },
+          "wins_alpha0.002": 2,
+          "losses_alpha0.002": 5,
+          "ties": 0
+        },
+        "M1_endpoint72h": {
+          "alpha0.002": {
+            "n": 7,
+            "median": 66.716,
+            "mean": 77.804,
+            "min": 12.233,
+            "max": 150.297
+          },
+          "alpha0": {
+            "n": 7,
+            "median": 63.34,
+            "mean": 76.48,
+            "min": 6.824,
+            "max": 150.017
+          }
+        },
+        "M2_totalPath": {
+          "alpha0.002": {
+            "n": 7,
+            "median": 82.714,
+            "mean": 104.25,
+            "min": 37.045,
+            "max": 174.169
+          },
+          "alpha0": {
+            "n": 7,
+            "median": 77.384,
+            "mean": 102.559,
+            "min": 36.286,
+            "max": 172.702
+          }
+        },
+        "M4_separation72h": {
+          "n": 7,
+          "median": 3.453,
+          "mean": 4.149,
+          "min": 1.616,
+          "max": 6.975
+        },
+        "M5_observed72h": {
+          "n": 7,
+          "median": 79.433,
+          "mean": 77.873,
+          "min": 12.151,
+          "max": 154.559
+        },
+        "n": 7,
+        "smallN": true,
+        "label": "SMALL-N / DESCRIPTIVE ONLY"
+      }
+    },
+    "topErrors": {
+      "24h": [
+        {
+          "drifter_id": "90150",
+          "unit": "KE-H1",
+          "error_alpha0.002": 23.705,
+          "error_alpha0": 25.276,
+          "delta": -1.571
+        },
+        {
+          "drifter_id": "98998",
+          "unit": "KE-H3",
+          "error_alpha0.002": 22.802,
+          "error_alpha0": 23.709,
+          "delta": -0.907
+        },
+        {
+          "drifter_id": "90135",
+          "unit": "KE-H1",
+          "error_alpha0.002": 21.517,
+          "error_alpha0": 21.07,
+          "delta": 0.446
+        }
+      ],
+      "48h": [
+        {
+          "drifter_id": "90150",
+          "unit": "KE-H1",
+          "error_alpha0.002": 58.664,
+          "error_alpha0": 63.93,
+          "delta": -5.267
+        },
+        {
+          "drifter_id": "98998",
+          "unit": "KE-H3",
+          "error_alpha0.002": 43.279,
+          "error_alpha0": 41.253,
+          "delta": 2.025
+        },
+        {
+          "drifter_id": "98996",
+          "unit": "KE-H3",
+          "error_alpha0.002": 35.126,
+          "error_alpha0": 30.835,
+          "delta": 4.291
+        }
+      ],
+      "72h": [
+        {
+          "drifter_id": "98996",
+          "unit": "KE-H3",
+          "error_alpha0.002": 90.497,
+          "error_alpha0": 84.199,
+          "delta": 6.297
+        },
+        {
+          "drifter_id": "90150",
+          "unit": "KE-H1",
+          "error_alpha0.002": 89.37,
+          "error_alpha0": 99.98,
+          "delta": -10.61
+        },
+        {
+          "drifter_id": "98998",
+          "unit": "KE-H3",
+          "error_alpha0.002": 58.451,
+          "error_alpha0": 55.689,
+          "delta": 2.762
+        }
+      ]
+    },
+    "exploratorySignTest": {
+      "24h": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 6,
+        "p": 1.0,
+        "ties_excluded": 0,
+        "computedOn": "overall n=12 only (STEP 20 §11: n >= 10); units not tested",
+        "caveat": "pairs are not independent (shared window forcing/time; same region/year); nominal only; not an acceptance criterion"
+      },
+      "48h": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 4,
+        "p": 0.387695,
+        "ties_excluded": 0,
+        "computedOn": "overall n=12 only (STEP 20 §11: n >= 10); units not tested",
+        "caveat": "pairs are not independent (shared window forcing/time; same region/year); nominal only; not an acceptance criterion"
+      },
+      "72h": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 6,
+        "p": 1.0,
+        "ties_excluded": 0,
+        "computedOn": "overall n=12 only (STEP 20 §11: n >= 10); units not tested",
+        "caveat": "pairs are not independent (shared window forcing/time; same region/year); nominal only; not an acceptance criterion"
+      }
+    },
+    "independenceNote": [
+      "shared forcing",
+      "shared temporal windows",
+      "regional correlation",
+      "possible common model error"
+    ],
+    "outlierPolicyApplied": {
+      "removed": 0,
+      "winsorized": 0,
+      "trimmed": 0,
+      "weighted": 0
+    },
+    "acceptanceThresholds": "NONE",
+    "alphaReselection": false,
+    "interpretation": "NONE"
+  },
+  "tableSha256": "d21d029bba4e09a15ef19a393f0d8389df0e5750cb1459ed0b1e92372aeea681",
+  "summarySha256": "fe2043b30aaba17d34e3d9a780379de9612541b75caa4ed487a10931a784d93b",
+  "tool": {
+    "file": "tools/research/evaluate_step20_b6_holdout.py",
+    "sha256": "b3bd55ab687f45b567e7336e06fe847b873a04a2a890c8dc7ea3b3d2f989c08b"
+  },
+  "gitHead": "7b3d2a0e",
+  "createdAtUTC": "2026-09-06T07:39:20Z",
+  "deterministic": true,
+  "randomSeed": null,
+  "positionalToleranceInM3": null,
+  "interpretation": "NONE"
+}
